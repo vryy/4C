@@ -382,8 +382,11 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
         Epetra_SerialDenseMatrix* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // Alpha_{n+1}
         Epetra_SerialDenseMatrix* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
         // alphao := alpha
-        if (eastype_ == soh8_eassosh8p8) {
-          LINALG::DENSEFUNCTIONS::update<NUMEASSHL_,1>(*alphao,*alpha);
+        if (eastype_ == soh8_eassosh8) {
+          LINALG::DENSEFUNCTIONS::update<NUMEAS_SOSH8_,1>(*alphao,*alpha);
+        }
+        else if (eastype_ == soh8_easa) {
+          LINALG::DENSEFUNCTIONS::update<NUMEAS_A_,1>(*alphao,*alpha);
         }
         else {
           dserror("Not impl.");
@@ -413,9 +416,13 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
         Epetra_SerialDenseMatrix* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // Alpha_{n+1-alphaf}
         Epetra_SerialDenseMatrix* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
         // alphao = (-alphaf/(1.0-alphaf))*alphao  + 1.0/(1.0-alphaf) * alpha
-        if (eastype_ == soh8_eassosh8p8) {
-          LINALG::DENSEFUNCTIONS::update<NUMEASSHL_,1>(-alphaf/(1.0-alphaf),*alphao,1.0/(1.0-alphaf),*alpha);
-          LINALG::DENSEFUNCTIONS::update<NUMEASSHL_,1>(*alpha,*alphao); // alpha := alphao
+        if (eastype_ == soh8_eassosh8) {
+          LINALG::DENSEFUNCTIONS::update<NUMEAS_SOSH8_,1>(-alphaf/(1.0-alphaf),*alphao,1.0/(1.0-alphaf),*alpha);
+          LINALG::DENSEFUNCTIONS::update<NUMEAS_SOSH8_,1>(*alpha,*alphao); // alpha := alphao
+        }
+        else if (eastype_ == soh8_easa) {
+          LINALG::DENSEFUNCTIONS::update<NUMEAS_A_,1>(-alphaf/(1.0-alphaf),*alphao,1.0/(1.0-alphaf),*alpha);
+          LINALG::DENSEFUNCTIONS::update<NUMEAS_A_,1>(*alpha,*alphao); // alpha := alphao
         }
         else {
           dserror("Not impl.");
@@ -442,8 +449,11 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
         Epetra_SerialDenseMatrix* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // Alpha_{n+1}
         Epetra_SerialDenseMatrix* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
         // alpha := alphao
-        if (eastype_ == soh8_eassosh8p8) {
-          LINALG::DENSEFUNCTIONS::update<NUMEASSHL_,1>(*alpha, *alphao);
+        if (eastype_ == soh8_eassosh8) {
+          LINALG::DENSEFUNCTIONS::update<NUMEAS_SOSH8_,1>(*alpha, *alphao);
+        }
+        else if (eastype_ == soh8_easa) {
+          LINALG::DENSEFUNCTIONS::update<NUMEAS_A_,1>(*alpha, *alphao);
         }
         else {
           dserror("Not impl.");
@@ -563,83 +573,52 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
     xcurr(i,2) = xrefe(i,2) + disp(i*NODDISP_+2,0);
   }
 
-  //
   // EAS Technology: declare, intialize, set up, and alpha history
   //
-
-  // in any case declare variables, sizes etc. only in EAS case
-  Epetra_SerialDenseMatrix* alpha = NULL;         // EAS alphas
-  std::vector<Epetra_SerialDenseMatrix>* M_GP = NULL;  // EAS matrix M at all GPs
-  Epetra_SerialDenseVector M; // EAS matrix M at current GP, fixed for sosh8
-  Epetra_SerialDenseVector feas;                  // EAS portion of internal forces
-  Epetra_SerialDenseMatrix Kaa;                   // EAS matrix Kaa
-  Epetra_SerialDenseMatrix Kap;                   // EAS matrix Kpa
-  Epetra_SerialDenseMatrix Kad;                   // EAS matrix Kda
-  double detJ0;                                   // detJ(origin)
-  Epetra_SerialDenseMatrix* oldfeas = NULL;       // EAS history
-  Epetra_SerialDenseMatrix* oldKaainv = NULL;     // EAS history
-  Epetra_SerialDenseMatrix* oldKad = NULL;        // EAS history
-  Epetra_SerialDenseMatrix* oldKap = NULL;        // EAS history
-
-  // transformation matrix T0, maps M-matrix evaluated at origin
-  // between local element coords and global coords
-  // here we already get the inverse transposed T0
-  LINALG::Matrix<NUMSTR_,NUMSTR_> T0invT;  // trafo matrix
-
-  // EAS Update of alphas:
   // the current alphas are (re-)evaluated out of
   // Kaa and Kda, Kpa of previous step to avoid additional element call.
   // This corresponds to the (innermost) element update loop
   // in the nonlinear FE-Skript page 120 (load-control alg. with EAS)
+  //
+  // in any case declare variables, sizes etc. only in EAS case
+  Epetra_SerialDenseMatrix* oldfeas = NULL;  // EAS history
+  Epetra_SerialDenseMatrix* oldKaainv = NULL;  // EAS history
+  Epetra_SerialDenseMatrix* oldKad = NULL;  // EAS history
+  Epetra_SerialDenseMatrix* oldKap = NULL;  // EAS history
+  Teuchos::RCP<Epetra_SerialDenseVector> feas = Teuchos::null;  // EAS portion of internal forces
+  Teuchos::RCP<Epetra_SerialDenseMatrix> Kaa = Teuchos::null;  // EAS matrix Kaa
+  Teuchos::RCP<Epetra_SerialDenseMatrix> Kap = Teuchos::null;  // EAS matrix Kpa
+  Teuchos::RCP<Epetra_SerialDenseMatrix> Kad = Teuchos::null;  // EAS matrix Kda
+  Epetra_SerialDenseMatrix* alpha = NULL;  // EAS alphas
+  Teuchos::RCP<Epetra_SerialDenseMatrix> M = Teuchos::null; // EAS matrix M at current GP, fixed for sosh8
+  // make update
   if (eastype_ == soh8_easnone) {
     ;  // continue
-  } else if (eastype_ == soh8_eassosh8p8) {
-    // retrieve history
-    alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");   // get old alpha
-    // evaluate current (updated) EAS alphas (from history variables)
-    // get stored EAS history
-    oldfeas = data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
-    oldKaainv = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaa");
-    oldKad = data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");  // actually k_ad
-    oldKap = data_.GetMutable<Epetra_SerialDenseMatrix>("Kap");
-    if (!alpha || !oldKaainv || !oldKad || !oldKap || !oldfeas)
-      dserror("Missing EAS history-data");
-    //cout << "oldfeas=" << *oldfeas << endl;
-    //cout << "oldKaainv=" << *oldKaainv << endl;
-    //cout << "oldKad=" << *oldKad << endl;
-    //cout << "oldKap=" << *oldKap << endl;
-
-    // feas^{k+1} := feas^k + k_ad^k . Ddisp^k + k_ap^k . Dpres^k
-    LINALG::DENSEFUNCTIONS::multiplyNN<NUMEASSHL_,NUMDISP_,1>(1.0,oldfeas->A(), 1.0,oldKad->A(),dispi.A());
-    LINALG::DENSEFUNCTIONS::multiplyNN<NUMEASSHL_,NUMPRES_,1>(1.0,oldfeas->A(), 1.0,oldKap->A(),presi.A());
-    //cout << "dispi=" << dispi << ", presi=" << presi << endl;
-
-    // alpha^{k+1} := alpha^k + Dalpha^k
-    //                alpha^k - k_aa^{k;-1} . feas^{k+1}
-    LINALG::DENSEFUNCTIONS::multiply<NUMEASSHL_,NUMEASSHL_,1>(1.0,*alpha, -1.0,*oldKaainv,*oldfeas);
-
-    // EAS portion of internal forces, also called enhacement vector s or Rtilde
-    feas.Size(NUMEASSHL_);
-    // EAS matrix K_{alpha alpha}, also called Dtilde
-    Kaa.Shape(NUMEASSHL_,NUMEASSHL_);
-    // EAS matrix K_{alpha disp}
-    Kad.Shape(NUMEASSHL_,NUMDISP_);
-    // EAS matrix K_{alpha pres}
-    Kap.Shape(NUMEASSHL_,NUMPRES_);
-    
-    // M-operator
-    M.Shape(NUMSTR_,NUMEASSHL_);
-
-    // evaluation of EAS variables (which are constant for the following):
-    // -> M defining interpolation of enhanced strains alpha, evaluated at GPs
-    // -> determinant of Jacobi matrix at element origin (r=s=t=0.0)
-    // -> T0^{-T}
-    soh8_eassetup(&M_GP,detJ0,T0invT,xrefe);
+  }
+  else if (eastype_ == soh8_eassosh8) {
+    EasUpdateIncrementally<NUMEAS_SOSH8_>(oldfeas, oldKaainv, oldKad, oldKap,
+                                          feas, Kaa, Kad, Kap,
+                                          alpha, M, data_, dispi, presi);
+  }
+  else if (eastype_ == soh8_easa) {
+    EasUpdateIncrementally<NUMEAS_A_>(oldfeas, oldKaainv, oldKad, oldKap,
+                                      feas, Kaa, Kad, Kap,
+                                      alpha, M, data_, dispi, presi);
   }
   else {
     dserror("EAS ain't easy");
   }
 
+  // evaluation of EAS variables (which are constant for the following):
+  // -> M defining interpolation of enhanced strains alpha, evaluated at GPs
+  // -> determinant of Jacobi matrix at element origin (r=s=t=0.0)
+  // -> T0^{-T}
+  std::vector<Epetra_SerialDenseMatrix>* M_GP = NULL;  // EAS matrix M at all GPs
+  double detJ0;  // detJ(origin)
+  LINALG::Matrix<NUMSTR_,NUMSTR_> T0invT;  // trafo matrix
+  if (eastype_ != soh8_easnone) {
+    soh8_eassetup(&M_GP,detJ0,T0invT,xrefe);
+  }
 
   //
   // ANS Element technology to remedy
@@ -885,12 +864,17 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
     if (eastype_ == soh8_easnone) {
       ;  // continue
     }
-    else if (eastype_ == soh8_eassosh8p8) {
+    else if (eastype_ == soh8_eassosh8) {
       // map local M to global, also enhancement is refered to element origin
-      // M = detJ0/detJ T0^{-T} . M
-      LINALG::DENSEFUNCTIONS::multiply<NUMSTR_,NUMSTR_,NUMEASSHL_>(M.A(), detJ0/detJ,T0invT.A(),M_GP->at(gp).A());
+      EasMaterialiseShapeFcts<NUMEAS_SOSH8_>(M, detJ0, detJ, T0invT, M_GP->at(gp));
       // add enhanced strains = M . alpha to GL strains to "unlock" element
-      LINALG::DENSEFUNCTIONS::multiply<NUMSTR_,NUMEASSHL_,1>(1.0,glstrain.A(), 1.0,M.A(),(*alpha).A());
+      EasAddStrain<NUMEAS_SOSH8_>(glstrain, M, alpha);
+    }
+    else if (eastype_ == soh8_easa) {
+      // map local M to global, also enhancement is refered to element origin
+      EasMaterialiseShapeFcts<NUMEAS_A_>(M, detJ0, detJ, T0invT, M_GP->at(gp));
+      // add enhanced strains = M . alpha to GL strains to "unlock" element
+      EasAddStrain<NUMEAS_A_>(glstrain, M, alpha);
     }
     else {
       dserror("EAS ain't easy.");
@@ -1205,90 +1189,19 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
             if (eastype_ == soh8_easnone) {
               ;  // continue
             }
-            else if (eastype_ == soh8_eassosh8p8) {
-              // derivative of assumed right stretch tensor w.r.t. EAS parameters
-              LINALG::Matrix<NUMSTR_,NUMEASSHL_> rgtstrbyalpha;
-              LINALG::DENSEFUNCTIONS::multiplyNN<NUMSTR_,NUMSTR_,NUMEASSHL_>(rgtstrbyalpha.A(), 2.0,rcgbyrgtstr.A(),M.A());
-
-              // derivative of pseudo identity with respect to EAS parameters
-              // I^{assd}_{CB,e} = U^{d;-1}_{CD} . U^{ass}_{DB,e}
-              // WARNING: I^{assd}_{CB} and I^{assd}_{CB,e} might be non-symmetric in CB
-              LINALG::Matrix<NUMDFGR_,NUMEASSHL_> pseudoidentity;
-              for (int e=0; e<NUMEASSHL_; ++e) {
-                for (int CB=0; CB<NUMDFGR_; ++CB) {
-                  const int C = VOIGT9ROW_[CB];
-                  const int B = VOIGT9COL_[CB];
-                  double pseudoidentity_CBe = 0.0;
-                  for (int D=0; D<NUMDIM_; ++D) {
-                    const int DB = VOIGT3X3SYM_[NUMDIM_*D+B];
-                    const double DBfact = (D==B) ? 1.0 : 0.5;
-                    pseudoidentity_CBe 
-                      += invrgtstrD(C,D) * DBfact*rgtstrbyalpha(DB,e);
-                  }
-                  pseudoidentity(CB,e) = pseudoidentity_CBe;
-                }
-              }
-
-              // derivative of def.grad. with respect to e EAS parameters alpha^e
-              // F_{aB,e} = F^d_{aC} . U^{d;-1}_{CD} . U^{ass}_{DB,e}
-              //            = F^d_{aC} . I^{assd}_{CB,e}
-              LINALG::Matrix<NUMDFGR_,NUMEASSHL_> defgradbyalpha;
-              for (int e=0; e<NUMEASSHL_; ++e) {
-                for (int aB=0; aB<NUMDFGR_; ++aB) {
-                  const int a = VOIGT9ROW_[aB];
-                  const int B = VOIGT9COL_[aB];
-                  double defgradbyalpha_aBe = 0.0;
-                  for (int C=0; C<NUMDIM_; ++C) {
-                    const int CB = VOIGT3X3_[NUMDIM_*C+B];
-                    defgradbyalpha_aBe
-                      += defgradD(a,C) * pseudoidentity(CB,e);
-                  }
-                  defgradbyalpha(aB,e) = defgradbyalpha_aBe;
-                }
-              }
-              
-              // M^T = M
-              // cmat = cmat
-              // detJ * w = detJ_w
-              // fv = tinvdefgrad
-              // B_F = defgradbydisp
-              // M_F = defgradbyalpha
-              // H = prshfct
-              // H.p = effpressure
-              // ( fv . fv^T + Wm ) = WmT
-              // B = bop
-              // cmat . B = cb
-              // sigma = stress
-
-              // temporary c . M
-              LINALG::Matrix<NUMSTR_,NUMEASSHL_> cM;
-              LINALG::DENSEFUNCTIONS::multiplyNN<NUMSTR_,NUMSTR_,NUMEASSHL_>(cM.A(), cmat.A(), M.A());
-              // temporary ( fv . fv^T + Wm ) . M_F
-              LINALG::Matrix<NUMDFGR_,NUMEASSHL_> ffwmf;
-              ffwmf.MultiplyNN(WmT,defgradbyalpha);
-              // temporary ( fv . fv^T + Wm ) . M_F with stress-like rows
-              LINALG::Matrix<NUMSTR_,NUMEASSHL_> ffwmf2;
-              for (int e=0; e<NUMEASSHL_; ++e)
-                for (int AB=0; AB<NUMSTR_; ++AB)
-                  ffwmf2(AB,e) = ffwmf(AB,e);
-              // temporary M_F^T . fv
-              LINALG::Matrix<NUMEASSHL_,1> mff;
-              mff.MultiplyTN(defgradbyalpha,tinvdefgrad);
-
-              // integrate Kaa: Kaa += (M^T . cmat . M) * detJ * w(gp)
-              //                     - (M_F^T . ( fv . fv^T + Wm ) . M_F) * (H . p) * detF * detJ * w
-              LINALG::DENSEFUNCTIONS::multiplyTN<NUMEASSHL_,NUMSTR_,NUMEASSHL_>(1.0,Kaa.A(), detJ_w,M.A(),cM.A());
-              LINALG::DENSEFUNCTIONS::multiplyTN<NUMEASSHL_,NUMDFGR_,NUMEASSHL_>(1.0,Kaa.A(), -effpressure*detdefgrad*detJ_w,defgradbyalpha.A(),ffwmf.A());
-              // integrate Kad: Kad += (M^T . cmat . B) * detJ * w(gp)
-              //                     - (M_F^T . ( fv . fv^T + Wm ) . B_F) * (H . p) * detF * detJ * w
-              LINALG::DENSEFUNCTIONS::multiplyTN<NUMEASSHL_,NUMSTR_,NUMDISP_>(1.0,Kad.A(), detJ_w,M.A(),cb.A());
-              LINALG::DENSEFUNCTIONS::multiplyTN<NUMEASSHL_,NUMDFGR_,NUMDISP_>(1.0,Kad.A(), -effpressure*detdefgrad*detJ_w,ffwmf.A(),defgradbydisp.A());
-              // integrate Kap: Kap += - (M_F^T . fv . H)  * detF * detJ * w
-              LINALG::DENSEFUNCTIONS::multiplyNT<NUMEASSHL_,1,NUMPRES_>(1.0,Kap.A(), -detdefgrad*detJ_w,mff.A(),prshfct.A());
-              // integrate feas: feas += (M^T . sigma) * detJ *wp(gp)
-              //                       - (M_F^T . fv) * (H . p)  * detF * detJ * w
-              LINALG::DENSEFUNCTIONS::multiplyTN<NUMEASSHL_,NUMSTR_,1>(1.0,feas.A(), detJ_w,M.A(),stress.A());
-              LINALG::DENSEFUNCTIONS::update<NUMEASSHL_,1>(1.0,feas.A(), -detdefgrad*effpressure*detJ_w,mff.A());
+            else if (eastype_ == soh8_eassosh8) {
+              EasConstraintAndTangent<NUMEAS_SOSH8_>(feas, Kaa, Kad, Kap,
+                                                     defgradD, invrgtstrD, rcgbyrgtstr,
+                                                     detdefgrad, tinvdefgrad, WmT,
+                                                     cmat, stress, effpressure, detJ_w,
+                                                     cb, defgradbydisp, prshfct, M);
+            }
+            else if (eastype_ == soh8_easa) {
+              EasConstraintAndTangent<NUMEAS_A_>(feas, Kaa, Kad, Kap,
+                                                 defgradD, invrgtstrD, rcgbyrgtstr,
+                                                 detdefgrad, tinvdefgrad, WmT,
+                                                 cmat, stress, effpressure, detJ_w,
+                                                 cb, defgradbydisp, prshfct, M);
             }
             else {
               dserror("EAS ain't easy.");
@@ -1664,44 +1577,17 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
   if (eastype_ == soh8_easnone) {
     ;  // continue
   }
-  else if (eastype_ == soh8_eassosh8p8) {
-    // we need the inverse of Kaa
-    Epetra_SerialDenseSolver solve_for_inverseKaa;
-    solve_for_inverseKaa.SetMatrix(Kaa);
-    solve_for_inverseKaa.Invert();
-
-    // temporary Kda.Kaa^{-1}
-    LINALG::Matrix<NUMDISP_,NUMEASSHL_> KdaKaa(false);
-    LINALG::DENSEFUNCTIONS::multiplyTN<NUMDISP_,NUMEASSHL_,NUMEASSHL_>(KdaKaa.A(), Kad.A(),Kaa.A());
-    // temporary Kpa.Kaa^{-1}
-    LINALG::Matrix<NUMPRES_,NUMEASSHL_> KpaKaa(false);
-    LINALG::DENSEFUNCTIONS::multiplyTN<NUMPRES_,NUMEASSHL_,NUMEASSHL_>(KpaKaa.A(), Kap.A(),Kaa.A());
-
-    // EAS stiffness matrix is: Kdd - Kda . Kaa^-1 . Kad
-    if (stiffmatrix != NULL)
-      LINALG::DENSEFUNCTIONS::multiplyNN<NUMDISP_,NUMEASSHL_,NUMDISP_>(1.0,stiffmatrix->A(), -1.0,KdaKaa.A(),Kad.A());
-    // EAS stiffness matrix is: Kdp - Kda . Kaa^-1 . Kap
-    if (gradmatrix != NULL)
-      LINALG::DENSEFUNCTIONS::multiplyNN<NUMDISP_,NUMEASSHL_,NUMPRES_>(1.0,gradmatrix->A(), -1.0,KdaKaa.A(),Kap.A());
-    // EAS stiffness matrix is: Kpd - Kpa . Kaa^-1 . Kad
-    if (dargmatrix != NULL)
-      LINALG::DENSEFUNCTIONS::multiplyNN<NUMPRES_,NUMEASSHL_,NUMDISP_>(1.0,dargmatrix->A(), -1.0,KpaKaa.A(),Kad.A());
-    // EAS stiffness matrix is: Kpp - Kpa . Kaa^-1 . Kap
-    if (stabmatrix != NULL)
-      LINALG::DENSEFUNCTIONS::multiplyNN<NUMPRES_,NUMEASSHL_,NUMPRES_>(1.0,stabmatrix->A(), -1.0,KpaKaa.A(),Kap.A());
-
-    // EAS internal force is: fint - Kda^T . Kaa^-1 . feas
-    if (force != NULL)
-      LINALG::DENSEFUNCTIONS::multiplyNN<NUMDISP_,NUMEASSHL_,1>(1.0,force->A(), -1.0,KdaKaa.A(),feas.A());
-    // EAS incompressibility is: fint - Kpa^T . Kaa^-1 . feas
-    if (incomp != NULL)
-      LINALG::DENSEFUNCTIONS::multiplyNN<NUMPRES_,NUMEASSHL_,1>(1.0,incomp->A(), -1.0,KpaKaa.A(),feas.A());
-
-    // store current EAS data in history
-    LINALG::DENSEFUNCTIONS::update<NUMEASSHL_,NUMEASSHL_>(*oldKaainv, Kaa);
-    LINALG::DENSEFUNCTIONS::update<NUMEASSHL_,NUMDISP_>(*oldKad, Kad);
-    LINALG::DENSEFUNCTIONS::update<NUMEASSHL_,NUMPRES_>(*oldKap, Kap);
-    LINALG::DENSEFUNCTIONS::update<NUMEASSHL_,1>(*oldfeas, feas);
+  else if (eastype_ == soh8_eassosh8) {
+    EasCondensation<NUMEAS_SOSH8_>(force, stiffmatrix, gradmatrix,
+                                   incomp, dargmatrix, stabmatrix, 
+                                   oldfeas, oldKaainv, oldKad, oldKap,
+                                   feas, Kaa, Kad, Kap);
+  }
+  else if (eastype_ == soh8_easa) {
+    EasCondensation<NUMEAS_A_>(force, stiffmatrix, gradmatrix,
+                               incomp, dargmatrix, stabmatrix, 
+                               oldfeas, oldKaainv, oldKad, oldKap,
+                               feas, Kaa, Kad, Kap);
   }
   else {
     dserror("EAS ain't easy.");

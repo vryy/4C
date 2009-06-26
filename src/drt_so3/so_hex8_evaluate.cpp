@@ -288,6 +288,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
         case DRT::ELEMENTS::So_hex8::soh8_easmild : LINALG::DENSEFUNCTIONS::update<soh8_easmild, 1>(*alphao,*alpha); break;
         case DRT::ELEMENTS::So_hex8::soh8_eassosh8: LINALG::DENSEFUNCTIONS::update<soh8_eassosh8,1>(*alphao,*alpha); break;
         case DRT::ELEMENTS::So_hex8::soh8_easnone: break;
+        default: dserror("Don't know what to do with EAS type %d", eastype_); break;
         }
       }
       // Update of history for visco material
@@ -332,6 +333,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
           LINALG::DENSEFUNCTIONS::update<soh8_eassosh8,1>(*alpha,*alphao); // alpha := alphao
           break;
         case DRT::ELEMENTS::So_hex8::soh8_easnone: break;
+        default: dserror("Don't know what to do with EAS type %d", eastype_); break;
         }
       }
       // Update of history for visco material
@@ -361,6 +363,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
         case DRT::ELEMENTS::So_hex8::soh8_easmild : LINALG::DENSEFUNCTIONS::update<soh8_easmild,1> (*alpha, *alphao); break;
         case DRT::ELEMENTS::So_hex8::soh8_eassosh8: LINALG::DENSEFUNCTIONS::update<soh8_eassosh8,1>(*alpha, *alphao); break;
         case DRT::ELEMENTS::So_hex8::soh8_easnone: break;
+        default: dserror("Don't know what to do with EAS type %d", eastype_); break;
         }
       }
       // Reset of history for visco material
@@ -694,6 +697,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
       LINALG::DENSEFUNCTIONS::multiply<soh8_eassosh8,soh8_eassosh8,1>(1.0,*alpha,-1.0,*oldKaainv,*oldfeas);
       break;
     case DRT::ELEMENTS::So_hex8::soh8_easnone: break;
+    default: dserror("Don't know what to do with EAS type %d", eastype_); break;
     }
     /* end of EAS Update ******************/
 
@@ -822,6 +826,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
         LINALG::DENSEFUNCTIONS::multiply<NUMSTR_SOH8,soh8_eassosh8,1>(1.0,glstrain.A(),1.0,M.A(),alpha->A());
         break;
       case DRT::ELEMENTS::So_hex8::soh8_easnone: break;
+      default: dserror("Don't know what to do with EAS type %d", eastype_); break;
       }
     } // ------------------------------------------------------------------ EAS
 
@@ -1036,6 +1041,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
           LINALG::DENSEFUNCTIONS::multiplyTN<soh8_eassosh8,NUMSTR_SOH8,1>(1.0, feas.A(), detJ_w, M.A(), stress.A());
           break;
         case DRT::ELEMENTS::So_hex8::soh8_easnone: break;
+        default: dserror("Don't know what to do with EAS type %d", eastype_); break;
         }
       } // ---------------------------------------------------------------- EAS
     }
@@ -1094,6 +1100,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
         LINALG::DENSEFUNCTIONS::multiply<NUMDOF_SOH8,soh8_eassosh8,1>(1.0, force->A(), -1.0, KdaKaa.A(), feas.A());
         break;
       case DRT::ELEMENTS::So_hex8::soh8_easnone: break;
+      default: dserror("Don't know what to do with EAS type %d", eastype_); break;
       }
 
       // store current EAS data in history

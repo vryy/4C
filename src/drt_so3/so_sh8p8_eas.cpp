@@ -36,6 +36,6 @@ void DRT::ELEMENTS::So_sh8p8::EasInit()
   return;
 }
 
-
+/*----------------------------------------------------------------------*/
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOLID3

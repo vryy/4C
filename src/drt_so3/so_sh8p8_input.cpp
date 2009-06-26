@@ -180,8 +180,12 @@ bool DRT::ELEMENTS::So_sh8p8::ReadElement()
   if (ierr)
   {
     if (strncmp(buffer,"sosh8",5)==0) {
-      eastype_ = soh8_eassosh8p8;
-      neas_ = NUMEASSHL_;
+      eastype_ = soh8_eassosh8;
+      neas_ = NUMEAS_SOSH8_;
+    }
+    else if (strncmp(buffer,"atype",5)==0) {
+      eastype_ = soh8_easa;
+      neas_ = NUMEAS_A_;
     }
     else if (strncmp(buffer,"None",4)==0)
       eastype_ = soh8_easnone;

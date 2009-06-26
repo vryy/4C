@@ -154,8 +154,9 @@ public:
   /// number of modified ANS strains (E_rt,E_st,E_tt), here 3
   static const int NUMANS_ = 3;
 
-  /// number of EAS parameters
-  static const int NUMEASSHL_ = 5;
+  // number of EAS parameters
+  static const int NUMEAS_SOSH8_ = 7;  ///< number of EAS parameters of sosh8-like EAS
+  static const int NUMEAS_A_ = 5;  ///< number of EAS parameters of A-type EAS
 
   // Voigt index arrays
   static const int VOIGT6ROW_[];  ///< 6-Voigt row index of corresponding 2-tensor
@@ -394,8 +395,91 @@ private:
 
   //@}
 
+  /// @name EAS functions
+  //@{
+
   /// set-up of EAS data
   void EasInit();
+
+  /// retrieve EAS parameters and incremental update of them
+  template<int NUMEAS_T>
+  static void EasUpdateIncrementally(
+    Epetra_SerialDenseMatrix*& oldfeas,  ///< EAS constraint \$f_{EAS}^{k}\f$ of last iteration
+    Epetra_SerialDenseMatrix*& oldKaainv,  ///< inverted tangent k_aa^{-1} of last iteration
+    Epetra_SerialDenseMatrix*& oldKad,  ///< tangent k_ad of last iteration
+    Epetra_SerialDenseMatrix*& oldKap,  ///< tangent k_ap of last iteration
+    Teuchos::RCP<Epetra_SerialDenseVector>& feas,  ///< current EAS constraint \$f_{EAS}^{k+1}\f$
+    Teuchos::RCP<Epetra_SerialDenseMatrix>& Kaa,  ///< current tangent k_aa
+    Teuchos::RCP<Epetra_SerialDenseMatrix>& Kad,  ///< current tangent k_ad
+    Teuchos::RCP<Epetra_SerialDenseMatrix>& Kap,  ///< current tangent k_ap
+    Epetra_SerialDenseMatrix*& alpha,  ///< EAS parameters
+    Teuchos::RCP<Epetra_SerialDenseMatrix>& M,  ///< EAS shape functions
+    DRT::Container& data,  ///< (input) data
+    const LINALG::Matrix<NUMDISP_,1>& dispi,  ///< current residual displacements
+    const LINALG::Matrix<NUMPRES_,1>& presi  ///< current residual pressures
+    );
+
+  /// push parametric EAS GL strain to material/reference configuration
+  template<int NUMEAS_T>
+  static void EasMaterialiseShapeFcts(
+    Teuchos::RCP<Epetra_SerialDenseMatrix> M,  ///< EAS shape functions in material configuration
+    const double& detJ0,  ///< material-to-parameter Jacobian determinant at origin
+    const double& detJ,  ///< material-to-parameter Jacobian determinant at GP
+    const LINALG::Matrix<NUMSTR_,NUMSTR_>& T0invT,  ///< parameter-to-material transformation for 2-tensors
+    const Epetra_SerialDenseMatrix& Mloc  ///< parametric EAS shape function eval. at GP
+    );
+
+  /// add EAS strain contribution
+  template<int NUMEAS_T>
+  static void EasAddStrain(
+    LINALG::Matrix<NUMSTR_,1>& glstrain,  ///< Green-Lagrange strain vector
+    const Teuchos::RCP<Epetra_SerialDenseMatrix>& M,  ///< EAS shape functions in material configuration
+    const Epetra_SerialDenseMatrix* alpha  ///< EAS parameters
+    );
+
+  /// build EAS constraint and its tangents
+  template<int NUMEAS_T>
+  static void EasConstraintAndTangent(
+    Teuchos::RCP<Epetra_SerialDenseVector>& feas,  ///< current EAS constraint \$f_{EAS}^{k+1}\f$
+    Teuchos::RCP<Epetra_SerialDenseMatrix>& Kaa,  ///< current tangent k_aa
+    Teuchos::RCP<Epetra_SerialDenseMatrix>& Kad,  ///< current tangent k_ad
+    Teuchos::RCP<Epetra_SerialDenseMatrix>& Kap,  ///< current tangent k_ap
+    const LINALG::Matrix<NUMDIM_,NUMDIM_>& defgradD,  ///< compatible deformation gradient
+    const LINALG::Matrix<NUMDIM_,NUMDIM_>& invrgtstrD,  ///< compatible inverse right stretch tensor
+    const LINALG::Matrix<NUMSTR_,NUMSTR_>& rcgbyrgtstr,  ///< right stretch tensor diff'd w.r.t right CG
+    const double& detdefgrad,  ///< determinant of deformation gradient
+    const LINALG::Matrix<NUMDFGR_,1>& tinvdefgrad,  ///< vector of transposed inverse deformation gradient
+    const LINALG::Matrix<NUMDFGR_,NUMDFGR_>& WmT,  ///< 
+    const LINALG::Matrix<NUMSTR_,NUMSTR_>& cmat,  ///< (isotropic) elasticity matrix
+    const LINALG::Matrix<NUMSTR_,1>& stress,  ///< 2nd Piola-Kirchhoff stress vector
+    const double& effpressure,  ///< effective pressure at Gauss point
+    const double& detJ_w,  ///< integration factor
+    const LINALG::Matrix<NUMSTR_,NUMDISP_>& cb,  ///< elasticity matrix times B-operator
+    const LINALG::Matrix<NUMDFGR_,NUMDISP_>& defgradbydisp,  ///< deformation gradient diff'd w.r.t. displacements
+    const LINALG::Matrix<NUMPRES_,1>& prshfct,  ///< effective pressure shape functions
+    const Teuchos::RCP<Epetra_SerialDenseMatrix>& M  ///< EAS shape functions in material configuration
+    );
+
+  /// static condensation 
+  template<int NUMEAS_T>
+  static void EasCondensation(
+    LINALG::Matrix<NUMDISP_,1>* force,  ///< element internal force vector
+    LINALG::Matrix<NUMDISP_,NUMDISP_>* stiffmatrix, ///< element stiffness matrix
+    LINALG::Matrix<NUMDISP_,NUMPRES_>* gradmatrix, ///< element gradient matrix
+    LINALG::Matrix<NUMPRES_,1>* incomp,  ///< incompressibility residual
+    LINALG::Matrix<NUMPRES_,NUMDISP_>* dargmatrix,  ///< 'transposed' element gradient matrix
+    LINALG::Matrix<NUMPRES_,NUMPRES_>* stabmatrix,  ///< element stabilisation matrix
+    Epetra_SerialDenseMatrix*& oldfeas,  ///< EAS constraint \$f_{EAS}^{k}\f$ of last iteration
+    Epetra_SerialDenseMatrix*& oldKaainv,  ///< inverted tangent k_aa^{-1} of last iteration
+    Epetra_SerialDenseMatrix*& oldKad,  ///< tangent k_ad of last iteration
+    Epetra_SerialDenseMatrix*& oldKap,  ///< tangent k_ap of last iteration
+    const Teuchos::RCP<Epetra_SerialDenseVector>& feas,  ///< current EAS constraint \$f_{EAS}^{k+1}\f$
+    const Teuchos::RCP<Epetra_SerialDenseMatrix>& Kaa,  ///< current tangent k_aa
+    const Teuchos::RCP<Epetra_SerialDenseMatrix>& Kad,  ///< current tangent k_ad
+    const Teuchos::RCP<Epetra_SerialDenseMatrix>& Kap  ///< current tangent k_ap
+    );
+
+  //@}
 
   /// @name Voigt vector/matrix converters
   //@{
@@ -821,6 +905,11 @@ public:
 
 } // namespace ELEMENTS
 } // namespace DRT
+
+
+/*----------------------------------------------------------------------*/
+/* definitions of above declared template functions */
+#include "so_sh8p8_eas.H"
 
 
 #endif  // #ifndef SO_SH8P8_H

@@ -381,23 +381,22 @@ protected:
    * \brief EAS technology enhancement types of so_hex8
    *
    * Solid Hex8 has EAS enhancement of GL-strains to avoid locking.
-   * \param soh8_easmild: 9 parameters consisting of modes to alleviate
-   * shear locking (bending) and main incompressibility modes
-   * \param soh8_easfull: 21 parameters to prevent almost all locking modes.
-   * Equivalent to all 30 parameters to fully complete element
-   * with quadratic modes (see Andelfinger 1993 for details) and therefore
-   * also suitable for distorted elements.
-   * \param soh8_eassoh8: related to Solid-Shell, 7 parameters to alleviate
-   * inplane (membrane) locking and main modes for Poisson-locking
-   * \param soh8_easnone: no EAS i.e. displacement based with tremendous locking
    */
   enum EASType  // with meaningfull value for matrix size info
   {
-    soh8_easnone = 0,
-    soh8_eassosh8p8 = 1,  ///< NOTE: not actual number of EAS parameters
-    soh8_eassosh8 = 7,
-    soh8_easmild = 9,
-    soh8_easfull = 21
+    soh8_easnone = 0,  //!< no EAS i.e. displacement based with tremendous locking
+    soh8_eassosh8 = 7,  //!< related to Solid-Shell, 7 parameters to alleviate
+                        //!< inplane (membrane) locking and main modes for Poisson-locking
+    soh8_easmild = 9,  //!< 9 parameters consisting of modes to alleviate
+                       //!< shear locking (bending) and main incompressibility modes
+                       //!< (for Solid Hex8)
+    soh8_easfull = 21,  //!< 21 parameters to prevent almost all locking modes.
+                        //!< Equivalent to all 30 parameters to fully complete element
+                        //!< with quadratic modes (see Andelfinger 1993 for details) and therefore
+                        //!< also suitable for distorted elements.
+                        //!< (for Solid Hex8)
+    soh8_easa = 1000  //!< A-type EAS for sosh8p8
+                      //!< NOTE: not the actual number of EAS parameters
   };
   //! kinematic type
   KinematicType                                                         kintype_;
