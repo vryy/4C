@@ -244,6 +244,12 @@ public:
   /// calculate error compared to analytical solution
   void EvaluateErrorComparedToAnalyticalSol();
 
+  /// routine to calculate mass/heat flux vector field in computational domain
+  Teuchos::RCP<Epetra_MultiVector> CalcFluxInDomain(const std::string fluxtype);
+
+  /// routine to calculate mass/heat normal flux at specified boundaries
+  Teuchos::RCP<Epetra_MultiVector> CalcFluxAtBoundary(std::vector<string>& condnames);
+
 protected:
 
   /// don't want = operator and cctor
@@ -311,6 +317,9 @@ protected:
   /// write additional data required for restart
   virtual void OutputRestart() = 0;
 
+  /// routine to calculate mass/heat flux vectors (in domain / at boundary)
+  Teuchos::RCP<Epetra_MultiVector> CalcFlux();
+
   /// compute contribution of electrode kinetics to eq. system
   void EvaluateElectrodeKinetics(
       RCP<LINALG::SparseOperator>& matrix,
@@ -326,9 +335,6 @@ protected:
 
   /// write flux vectors to BINIO
   void OutputFlux();
-
-  /// routine to calculate mass/heat flux vectors
-  Teuchos::RCP<Epetra_MultiVector> CalcFlux();
 
   //! compute outward pointing unit normal vectors at given bc's
   RCP<Epetra_MultiVector> ComputeNormalVectors(const vector<string>& condnames);

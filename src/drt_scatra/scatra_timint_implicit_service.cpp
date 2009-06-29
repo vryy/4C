@@ -797,14 +797,6 @@ void SCATRA::ScaTraTimIntImpl::OutputFlux()
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
 {
-  // get a vector layout from the discretization to construct matching
-  // vectors and matrices
-  //                 local <-> global dof numbering
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
-
-  // empty vector for (normal) mass or heat flux vectors (always 3D)
-  Teuchos::RCP<Epetra_MultiVector> flux = rcp(new Epetra_MultiVector(*dofrowmap,3,true));
-
   // set control parameters
   string fluxcomputation("nowhere"); // domain / boundary
   string fluxtype("noflux"); // noflux / totalflux / diffusiveflux
@@ -818,50 +810,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
   // now compute the fluxes
   if (fluxcomputation=="domain")
   {
-    // The normal flux calculation is based on the idea proposed in
-    // GRESHO ET AL.,
-    // "THE CONSISTENT GALERKIN FEM FOR COMPUTING DERIVED BOUNDARY
-    // QUANTITIES IN THERMAL AND/OR FLUIDS PROBLEMS",
-    // INTERNATIONAL JOURNAL FOR NUMERICAL METHODS IN FLUIDS, VOL. 7, 371-394 (1987)
-    // For the moment, we are lumping the 'boundary mass matrix' instead of solving
-    // a smal linear system!
-
-    // We have to treat each spatial direction separately
-    Teuchos::RCP<Epetra_Vector> fluxx = LINALG::CreateVector(*dofrowmap,true);
-    Teuchos::RCP<Epetra_Vector> fluxy = LINALG::CreateVector(*dofrowmap,true);
-    Teuchos::RCP<Epetra_Vector> fluxz = LINALG::CreateVector(*dofrowmap,true);
-
-    // set action for elements
-    ParameterList params;
-    params.set("action","calc_condif_flux");
-    params.set("problem type",prbtype_);
-    params.set("frt",frt_);
-    params.set("fluxtype",fluxtype);
-
-    //provide velocity field (export to column map necessary for parallel evaluation)
-    AddMultiVectorToParameterList(params,"velocity field",convel_);
-    AddMultiVectorToParameterList(params,"subgrid-scale velocity field",sgvel_);
-
-    //provide displacement field in case of ALE
-    params.set("isale",isale_);
-    if (isale_)
-      AddMultiVectorToParameterList(params,"dispnp",dispnp_);
-
-    // set vector values needed by elements
-    discret_->ClearState();
-    discret_->SetState("phinp",phinp_);
-    discret_->SetState("densnp",densnp_);
-
-    // evaluate fluxes in the whole computational domain (e.g., for visualization of particle path-lines)
-    discret_->Evaluate(params,Teuchos::null,Teuchos::null,fluxx,fluxy,fluxz);
-
-    // insert values into final flux vector for visualization
-    for (int i = 0;i<flux->MyLength();++i)
-    {
-      flux->ReplaceMyValue(i,0,(*fluxx)[i]);
-      flux->ReplaceMyValue(i,1,(*fluxy)[i]);
-      flux->ReplaceMyValue(i,2,(*fluxz)[i]);
-    }
+    return CalcFluxInDomain(fluxtype);
   }
   if (fluxcomputation=="boundary")
   {
@@ -872,205 +821,294 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
     condnames.push_back("LineNeumann");
     condnames.push_back("SurfaceNeumann");
 
-    // determine the averaged normal vector field for indicated boundaries
-    // used for the output of the normal flux as a vector field
-    // is computed only once, since there is no ALE support at the moment
-    if (normals_ == Teuchos::null)
-      normals_ = ComputeNormalVectors(condnames);
+    return CalcFluxAtBoundary(condnames);
+  }
 
-    // was the residual already prepared? (Important only for
-    // the result test)
-    if (not incremental_ and lastfluxoutputstep_ != step_)
+  // we have to crash here  :-(
+  dserror("Error in CalcFlux(): Got unknown parameter %s", fluxcomputation.c_str());
+  return Teuchos::null;
+
+}
+
+
+/*----------------------------------------------------------------------*
+ |  calculate mass / heat flux vector field in comp. domain    gjb 06/09|
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain
+(const std::string fluxtype)
+{
+  // get a vector layout from the discretization to construct matching
+  // vectors and matrices
+  //                 local <-> global dof numbering
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+  // empty vector for (normal) mass or heat flux vectors (always 3D)
+  Teuchos::RCP<Epetra_MultiVector> flux = rcp(new Epetra_MultiVector(*dofrowmap,3,true));
+
+  // We have to treat each spatial direction separately
+  Teuchos::RCP<Epetra_Vector> fluxx = LINALG::CreateVector(*dofrowmap,true);
+  Teuchos::RCP<Epetra_Vector> fluxy = LINALG::CreateVector(*dofrowmap,true);
+  Teuchos::RCP<Epetra_Vector> fluxz = LINALG::CreateVector(*dofrowmap,true);
+
+  // set action for elements
+  ParameterList params;
+  params.set("action","calc_condif_flux");
+  params.set("problem type",prbtype_);
+  params.set("frt",frt_);
+  params.set("fluxtype",fluxtype);
+
+  //provide velocity field (export to column map necessary for parallel evaluation)
+  AddMultiVectorToParameterList(params,"velocity field",convel_);
+  AddMultiVectorToParameterList(params,"subgrid-scale velocity field",sgvel_);
+
+  //provide displacement field in case of ALE
+  params.set("isale",isale_);
+  if (isale_)
+    AddMultiVectorToParameterList(params,"dispnp",dispnp_);
+
+  // set vector values needed by elements
+  discret_->ClearState();
+  discret_->SetState("phinp",phinp_);
+  discret_->SetState("densnp",densnp_);
+
+  // evaluate fluxes in the whole computational domain (e.g., for visualization of particle path-lines)
+  discret_->Evaluate(params,Teuchos::null,Teuchos::null,fluxx,fluxy,fluxz);
+
+  // insert values into final flux vector for visualization
+  for (int i = 0;i<flux->MyLength();++i)
+  {
+    flux->ReplaceMyValue(i,0,(*fluxx)[i]);
+    flux->ReplaceMyValue(i,1,(*fluxy)[i]);
+    flux->ReplaceMyValue(i,2,(*fluxz)[i]);
+  }
+
+  // clean up
+  discret_->ClearState();
+
+  return flux;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  calculate mass / heat normal flux at specified boundaries  gjb 06/09|
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
+    std::vector<string>& condnames)
+{
+  // The normal flux calculation is based on the idea proposed in
+  // GRESHO ET AL.,
+  // "THE CONSISTENT GALERKIN FEM FOR COMPUTING DERIVED BOUNDARY
+  // QUANTITIES IN THERMAL AND/OR FLUIDS PROBLEMS",
+  // INTERNATIONAL JOURNAL FOR NUMERICAL METHODS IN FLUIDS, VOL. 7, 371-394 (1987)
+  // For the moment, we are lumping the 'boundary mass matrix' instead of solving
+  // a smal linear system!
+
+
+  // get a vector layout from the discretization to construct matching
+  // vectors and matrices
+  //                 local <-> global dof numbering
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+  // empty vector for (normal) mass or heat flux vectors (always 3D)
+  Teuchos::RCP<Epetra_MultiVector> flux = rcp(new Epetra_MultiVector(*dofrowmap,3,true));
+
+  // determine the averaged normal vector field for indicated boundaries
+  // used for the output of the normal flux as a vector field
+  // is computed only once, since there is no ALE support at the moment
+  if (normals_ == Teuchos::null)
+    normals_ = ComputeNormalVectors(condnames);
+
+  // was the residual already prepared? (Important only for
+  // the result test)
+  if (not incremental_ and lastfluxoutputstep_ != step_)
+  {
+    lastfluxoutputstep_ = step_;
+
+    // For nonlinear problems we already have the actual residual vector.
+    // For linear problems we have to compute this information first:
+
+    // zero out matrix entries
+    sysmat_->Zero();
+
+    // zero out residual vector
+    residual_->PutScalar(0.0);
+
+    ParameterList eleparams;
+    // action for elements
+    eleparams.set("action","calc_condif_systemmat_and_residual");
+
+    // other parameters that might be needed by the elements
+    eleparams.set("time-step length",dta_);
+    eleparams.set("problem type",prbtype_);
+    eleparams.set("incremental solver",true); // say yes and you get the residual!!
+    eleparams.set("reaction",reaction_);
+    eleparams.set("form of convective term",convform_);
+    eleparams.set("fs subgrid diffusivity",fssgd_);
+    eleparams.set("turbulence model",turbmodel_);
+    eleparams.set("frt",frt_);
+
+    //provide velocity field (export to column map necessary for parallel evaluation)
+    AddMultiVectorToParameterList(eleparams,"velocity field",convel_);
+    AddMultiVectorToParameterList(eleparams,"subgrid-scale velocity field",sgvel_);
+
+    //provide displacement field in case of ALE
+    eleparams.set("isale",isale_);
+    if (isale_)
+      AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+
+    // parameters for stabilization
+    eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
+
+    // set vector values needed by elements
+    discret_->ClearState();
+    discret_->SetState("hist",hist_);
+    if (turbmodel_) discret_->SetState("subgrid diffusivity",subgrdiff_);
+
+    // add element parameters and density state according to time-int. scheme
+    AddSpecificTimeIntegrationParameters(eleparams);
+
     {
-      lastfluxoutputstep_ = step_;
-
-      // For nonlinear problems we already have the actual residual vector.
-      // For linear problems we have to compute this information first:
-
-      // zero out matrix entries
-      sysmat_->Zero();
-
-      // zero out residual vector
-      residual_->PutScalar(0.0);
-
-      ParameterList eleparams;
-      // action for elements
-      eleparams.set("action","calc_condif_systemmat_and_residual");
-
-      // other parameters that might be needed by the elements
-      eleparams.set("time-step length",dta_);
-      eleparams.set("problem type",prbtype_);
-      eleparams.set("incremental solver",true); // say yes and you get the residual!!
-      eleparams.set("reaction",reaction_);
-      eleparams.set("form of convective term",convform_);
-      eleparams.set("fs subgrid diffusivity",fssgd_);
-      eleparams.set("turbulence model",turbmodel_);
-      eleparams.set("frt",frt_);
-
-      //provide velocity field (export to column map necessary for parallel evaluation)
-      AddMultiVectorToParameterList(eleparams,"velocity field",convel_);
-      AddMultiVectorToParameterList(eleparams,"subgrid-scale velocity field",sgvel_);
-
-      //provide displacement field in case of ALE
-      eleparams.set("isale",isale_);
-      if (isale_)
-        AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
-
-      // parameters for stabilization
-      eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
-
-      // set vector values needed by elements
+      // call standard loop over elements
+      discret_->Evaluate(eleparams,sysmat_,null,residual_,null,null);
       discret_->ClearState();
-      discret_->SetState("hist",hist_);
-      if (turbmodel_) discret_->SetState("subgrid diffusivity",subgrdiff_);
-
-      // add element parameters and density state according to time-int. scheme
-      AddSpecificTimeIntegrationParameters(eleparams);
-
-      {
-        // call standard loop over elements
-        discret_->Evaluate(eleparams,sysmat_,null,residual_,null,null);
-        discret_->ClearState();
-      }
-
-      // scaling to get true residual vector for all time integration schemes
-      trueresidual_->Update(ResidualScaling(),*residual_,0.0);
-
-    } // if ((!nonlinear_) && (lastfluxoutputstep_ != step_))
-
-    double normfluxsum(0.0);
-
-    for (unsigned int i=0; i < condnames.size(); i++)
-    {
-      vector<DRT::Condition*> cond;
-      discret_->GetCondition(condnames[i],cond);
-
-      // go to the next condition type, if there's nothing to do!
-      if (!cond.size()) continue;
-
-      if (myrank_ == 0)
-      {
-        cout<<"Normal fluxes at boundary '"<<condnames[i]<<"':\n"
-        <<"+----+-------------------------+------------------+--------------------------+"<<endl;
-        printf("| ID | Integral of normal flux | Area of boundary | Mean normal flux density |\n");
-      }
-
-      // first, add to all conditions of interest a ConditionID
-      for (int condid = 0; condid < (int) cond.size(); condid++)
-      {
-        // is there already a ConditionID?
-        const vector<int>*    CondIDVec  = cond[condid]->Get<vector<int> >("ConditionID");
-        if (CondIDVec)
-        {
-          if ((*CondIDVec)[0] != condid)
-            dserror("Condition %s has non-matching ConditionID",condnames[i].c_str());
-        }
-        else
-        {
-          // let's add a ConditionID
-          cond[condid]->Add("ConditionID",condid);
-        }
-      }
-
-      // now we evaluate the conditions and separate via ConditionID
-      for (int condid = 0; condid < (int) cond.size(); condid++)
-      {
-        ParameterList params;
-
-        // calculate integral of shape functions over indicated boundary and it's area
-        params.set("boundaryint",0.0);
-        params.set("action","integrate_shape_functions");
-
-        //provide displacement field in case of ALE
-        params.set("isale",isale_);
-        if (isale_)
-          AddMultiVectorToParameterList(params,"dispnp",dispnp_);
-
-        // create vector (+ initialization with zeros)
-        Teuchos::RCP<Epetra_Vector> integratedshapefunc = LINALG::CreateVector(*dofrowmap,true);
-
-        // call loop over elements
-        discret_->ClearState();
-        discret_->EvaluateCondition(params,integratedshapefunc,condnames[i],condid);
-        discret_->ClearState();
-
-        double normfluxintegral(0.0);
-
-        // insert values into final flux vector for visualization
-        int numrownodes = discret_->NumMyRowNodes();
-        for (int lnodid = 0; lnodid < numrownodes; ++lnodid )
-        {
-          DRT::Node* actnode = discret_->lRowNode(lnodid);
-          for (int idof = 0; idof < discret_->NumDof(actnode); ++idof)
-          {
-            int dofgid = discret_->Dof(actnode,idof);
-            int doflid = dofrowmap->LID(dofgid);
-
-            if ((*integratedshapefunc)[doflid] != 0.0)
-            {
-              // this is the value of the normal flux
-              double normflux = ((*trueresidual_)[doflid])/(*integratedshapefunc)[doflid];
-              if (idof == 0) // integral value only for first scalar!
-              {
-                normfluxintegral += (*trueresidual_)[doflid];
-              }
-              // for visualization, we plot the normal flux with
-              // outward pointing normal vector
-              for (int idim = 0; idim < 3; idim++)
-              {
-                Epetra_Vector* normalcomp = (*normals_)(idim);
-                double normalveccomp =(*normalcomp)[lnodid];
-                flux->ReplaceMyValue(doflid,idim,normflux*normalveccomp);
-              }
-            }
-          }
-        }
-
-        // get area of the boundary on this proc
-        double boundaryint = params.get<double>("boundaryint");
-
-        // care for the parallel case
-        double parnormfluxintegral = 0.0;
-        discret_->Comm().SumAll(&normfluxintegral,&parnormfluxintegral,1);
-        double parboundaryint = 0.0;
-        discret_->Comm().SumAll(&boundaryint,&parboundaryint,1);
-
-        // print out results
-        if (myrank_ == 0)
-        {
-          printf("| %2d |       %10.3E        |    %10.3E    |        %10.3E        |\n",
-              condid,parnormfluxintegral,parboundaryint,parnormfluxintegral/parboundaryint);
-        }
-        normfluxsum+=parnormfluxintegral;
-
-        // statistics section for normfluxintegral
-        if (step_>=samstart_ && step_<=samstop_)
-        {
-          (*sumnormfluxintegral_)[condid] += parnormfluxintegral;
-          int samstep = step_-samstart_+1;
-
-          // dump every dumperiod steps
-          if (samstep%dumperiod_==0)
-          {
-            double meannormfluxintegral = (*sumnormfluxintegral_)[condid]/samstep;
-            // dump statistical results
-            if (myrank_ == 0)
-            {
-              printf("| %2d | Mean normal-flux integral (step %5d -- step %5d) :   %12.5E |\n", condid,samstart_,step_,meannormfluxintegral);
-            }
-          }
-        }
-      } // loop over condid
-
-      if (myrank_==0)
-        cout<<"+----+-------------------------+------------------+--------------------------+"<<endl;
     }
 
-    // print out the accumulated normal flux over all indicated boundaries
-    if (myrank_ == 0)
-      printf("Sum of all normal flux boundary integrals: %10.3E\n\n",normfluxsum);
+    // scaling to get true residual vector for all time integration schemes
+    trueresidual_->Update(ResidualScaling(),*residual_,0.0);
 
-  } // boundary
+  } // if ((!nonlinear_) && (lastfluxoutputstep_ != step_))
+
+  double normfluxsum(0.0);
+
+  for (unsigned int i=0; i < condnames.size(); i++)
+  {
+    vector<DRT::Condition*> cond;
+    discret_->GetCondition(condnames[i],cond);
+
+    // go to the next condition type, if there's nothing to do!
+    if (!cond.size()) continue;
+
+    if (myrank_ == 0)
+    {
+      cout<<"Normal fluxes at boundary '"<<condnames[i]<<"':\n"
+      <<"+----+-------------------------+------------------+--------------------------+"<<endl;
+      printf("| ID | Integral of normal flux | Area of boundary | Mean normal flux density |\n");
+    }
+
+    // first, add to all conditions of interest a ConditionID
+    for (int condid = 0; condid < (int) cond.size(); condid++)
+    {
+      // is there already a ConditionID?
+      const vector<int>*    CondIDVec  = cond[condid]->Get<vector<int> >("ConditionID");
+      if (CondIDVec)
+      {
+        if ((*CondIDVec)[0] != condid)
+          dserror("Condition %s has non-matching ConditionID",condnames[i].c_str());
+      }
+      else
+      {
+        // let's add a ConditionID
+        cond[condid]->Add("ConditionID",condid);
+      }
+    }
+
+    // now we evaluate the conditions and separate via ConditionID
+    for (int condid = 0; condid < (int) cond.size(); condid++)
+    {
+      ParameterList params;
+
+      // calculate integral of shape functions over indicated boundary and it's area
+      params.set("boundaryint",0.0);
+      params.set("action","integrate_shape_functions");
+
+      //provide displacement field in case of ALE
+      params.set("isale",isale_);
+      if (isale_)
+        AddMultiVectorToParameterList(params,"dispnp",dispnp_);
+
+      // create vector (+ initialization with zeros)
+      Teuchos::RCP<Epetra_Vector> integratedshapefunc = LINALG::CreateVector(*dofrowmap,true);
+
+      // call loop over elements
+      discret_->ClearState();
+      discret_->EvaluateCondition(params,integratedshapefunc,condnames[i],condid);
+      discret_->ClearState();
+
+      double normfluxintegral(0.0);
+
+      // insert values into final flux vector for visualization
+      int numrownodes = discret_->NumMyRowNodes();
+      for (int lnodid = 0; lnodid < numrownodes; ++lnodid )
+      {
+        DRT::Node* actnode = discret_->lRowNode(lnodid);
+        for (int idof = 0; idof < discret_->NumDof(actnode); ++idof)
+        {
+          int dofgid = discret_->Dof(actnode,idof);
+          int doflid = dofrowmap->LID(dofgid);
+
+          if ((*integratedshapefunc)[doflid] != 0.0)
+          {
+            // this is the value of the normal flux
+            double normflux = ((*trueresidual_)[doflid])/(*integratedshapefunc)[doflid];
+            if (idof == 0) // integral value only for first scalar!
+            {
+              normfluxintegral += (*trueresidual_)[doflid];
+            }
+            // for visualization, we plot the normal flux with
+            // outward pointing normal vector
+            for (int idim = 0; idim < 3; idim++)
+            {
+              Epetra_Vector* normalcomp = (*normals_)(idim);
+              double normalveccomp =(*normalcomp)[lnodid];
+              flux->ReplaceMyValue(doflid,idim,normflux*normalveccomp);
+            }
+          }
+        }
+      }
+
+      // get area of the boundary on this proc
+      double boundaryint = params.get<double>("boundaryint");
+
+      // care for the parallel case
+      double parnormfluxintegral = 0.0;
+      discret_->Comm().SumAll(&normfluxintegral,&parnormfluxintegral,1);
+      double parboundaryint = 0.0;
+      discret_->Comm().SumAll(&boundaryint,&parboundaryint,1);
+
+      // print out results
+      if (myrank_ == 0)
+      {
+        printf("| %2d |       %10.3E        |    %10.3E    |        %10.3E        |\n",
+            condid,parnormfluxintegral,parboundaryint,parnormfluxintegral/parboundaryint);
+      }
+      normfluxsum+=parnormfluxintegral;
+
+      // statistics section for normfluxintegral
+      if (step_>=samstart_ && step_<=samstop_)
+      {
+        (*sumnormfluxintegral_)[condid] += parnormfluxintegral;
+        int samstep = step_-samstart_+1;
+
+        // dump every dumperiod steps
+        if (samstep%dumperiod_==0)
+        {
+          double meannormfluxintegral = (*sumnormfluxintegral_)[condid]/samstep;
+          // dump statistical results
+          if (myrank_ == 0)
+          {
+            printf("| %2d | Mean normal-flux integral (step %5d -- step %5d) :   %12.5E |\n", condid,samstart_,step_,meannormfluxintegral);
+          }
+        }
+      }
+    } // loop over condid
+
+    if (myrank_==0)
+      cout<<"+----+-------------------------+------------------+--------------------------+"<<endl;
+  }
+
+  // print out the accumulated normal flux over all indicated boundaries
+  if (myrank_ == 0)
+    printf("Sum of all normal flux boundary integrals: %10.3E\n\n",normfluxsum);
 
   // clean up
   discret_->ClearState();

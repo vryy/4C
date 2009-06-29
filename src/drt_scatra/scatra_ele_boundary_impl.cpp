@@ -810,11 +810,11 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
     // surface overpotential eta at integration point
     const double eta = (pot0 - potint);
 
-    double pow_conint_gamma_k = pow(conint,gamma);
-    // note: gamma==0 deactivates concentration dependency in Butler-Volmer!
-
     if (iselch)
     {
+      double pow_conint_gamma_k = pow(conint,gamma);
+      // note: gamma==0 deactivates concentration dependency in Butler-Volmer!
+ 
       const double expterm = exp(alphaa*frt*eta)-exp((-alphac)*frt*eta);
 
       for (int vi=0; vi<iel; ++vi)
@@ -946,13 +946,10 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
     // surface overpotential eta at integration point
     const double eta = (pot0 - potint);
 
-    double pow_conint_gamma_k = pow(conint,gamma);
-    // note: gamma==0 deactivates concentration dependency in Butler-Volmer!
-
     // Butler-Volmer
     double expterm(0.0);
     if (iselch)
-      expterm = pow_conint_gamma_k * (exp(alphaa*frt*eta)-exp((-alphac)*frt*eta));
+      expterm = pow(conint,gamma) * (exp(alphaa*frt*eta)-exp((-alphac)*frt*eta));
     else
       expterm = exp(alphaa*eta)-exp((-alphac)*eta);
 
