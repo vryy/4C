@@ -1666,6 +1666,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   BoolParameter("OUTMEAN","No","Output of total and mean values",&elchcontrol);
   DoubleParameter("TEMPERATURE",298.0,"Constant temperature (Kelvin)",&elchcontrol);
   BoolParameter("MOVINGBOUNDARY","No","ELCH algorithm for deforming meshes",&elchcontrol);
+  DoubleParameter("MOLARVOLUME",0.0,"Molar volume for electrode shape change computations",&elchcontrol);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& combustcontrol = list->sublist("COMBUSTION CONTROL",false,"");

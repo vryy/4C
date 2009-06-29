@@ -216,13 +216,14 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
 
     // access parameters of the condition
     const std::string* kinetics = cond->Get<std::string>("kinetic model");
-    const int    reactantid = cond->GetInt("reactant id");
-    double       pot0 = cond->GetDouble("pot0");
+    const int    reactantid = cond->GetInt("matid");
+    double       pot0 = cond->GetDouble("pot");
     const int    curvenum = cond->GetInt("curve");
     const double alphaa = cond->GetDouble("alpha_a");
     const double alphac = cond->GetDouble("alpha_c");
     double       i0 = cond->GetDouble("i0");
     if (i0>0.0) dserror("i0 is positive, ergo not pointing INTO the domain: %f",i0);
+    const double gamma = cond->GetDouble("gamma");
     const double frt = params.get<double>("frt"); // = F/RT
 
     // get control parameter from parameter list
@@ -278,12 +279,13 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
           ephinp,
           mat,
           reactantid,
-          kinetics,
+          *kinetics,
           pot0,
           alphaa,
           alphac,
           i0,
           frt,
+          gamma,
           iselch
       );
     }
@@ -295,12 +297,13 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
             ele,
             params,
             ephinp,
-            kinetics,
+            *kinetics,
             pot0,
             alphaa,
             alphac,
             i0,
             frt,
+            gamma,
             iselch);}
     }
   }
@@ -715,18 +718,19 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
     Epetra_SerialDenseVector& erhs,
     const vector<double>&   ephinp,
     Teuchos::RCP<const MAT::Material> material,
-    const int&               rctid,
-    const std::string*    kinetics,
-    const double&             pot0,
-    const double&           alphaa,
-    const double&           alphac,
-    const double&               i0,
-    const double&              frt,
-    const bool&             iselch
+    const int                rctid,
+    const std::string     kinetics,
+    const double              pot0,
+    const double            alphaa,
+    const double            alphac,
+    const double                i0,
+    const double               frt,
+    const double             gamma,
+    const bool              iselch
 )
 {
-  if ((*kinetics) != "Butler-Volmer")
-    dserror("Only Butler-Volmer model allowed. Got: %s",(*kinetics).c_str());
+  if (kinetics != "Butler-Volmer")
+    dserror("Only Butler-Volmer model allowed. Got: %s",kinetics.c_str());
 
   //pre-multiplication with 1/(F*z_1)
   double fz = 1.0/96485.3399;
@@ -806,8 +810,8 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
     // surface overpotential eta at integration point
     const double eta = (pot0 - potint);
 
-    double gammak = 1.0;
-    double pow_conint_gamma_k = pow(conint,gammak);
+    double pow_conint_gamma_k = pow(conint,gamma);
+    // note: gamma==0 deactivates concentration dependency in Butler-Volmer!
 
     if (iselch)
     {
@@ -819,7 +823,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
         // ---------------------matrix
         for (int ui=0; ui<iel; ++ui)
         {
-          emat(vi*numdofpernode_,ui*numdofpernode_) += fac_fz_i0_funct_vi*gammak*pow(conint,(gammak-1.0))*funct_(ui)*expterm;
+          emat(vi*numdofpernode_,ui*numdofpernode_) += fac_fz_i0_funct_vi*gamma*pow(conint,(gamma-1.0))*funct_(ui)*expterm;
           emat(vi*numdofpernode_,ui*numdofpernode_+numscal_) += fac_fz_i0_funct_vi*pow_conint_gamma_k*(((-alphaa)*frt*exp(alphaa*frt*eta))+((-alphac)*frt*exp((-alphac)*frt*eta)))*funct_(ui);
         }
         // ------------right-hand-side
@@ -878,13 +882,14 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
     const DRT::Element*        ele,
     ParameterList&          params,
     const vector<double>&   ephinp,
-    const std::string*    kinetics,
-    const double&             pot0,
-    const double&           alphaa,
-    const double&           alphac,
-    const double&               i0,
-    const double&              frt,
-    const bool&             iselch
+    const std::string     kinetics,
+    const double              pot0,
+    const double            alphaa,
+    const double            alphac,
+    const double                i0,
+    const double               frt,
+    const double             gamma,
+    const bool              iselch
 )
 {
   // get node coordinates (we have a nsd_+1 dimensional domain!)
@@ -940,10 +945,14 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
 
     // surface overpotential eta at integration point
     const double eta = (pot0 - potint);
+
+    double pow_conint_gamma_k = pow(conint,gamma);
+    // note: gamma==0 deactivates concentration dependency in Butler-Volmer!
+
     // Butler-Volmer
     double expterm(0.0);
     if (iselch)
-      expterm = conint * (exp(alphaa*frt*eta)-exp((-alphac)*frt*eta));
+      expterm = pow_conint_gamma_k * (exp(alphaa*frt*eta)-exp((-alphac)*frt*eta));
     else
       expterm = exp(alphaa*eta)-exp((-alphac)*eta);
 

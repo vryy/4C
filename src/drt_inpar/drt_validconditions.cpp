@@ -1152,18 +1152,26 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   std::vector<Teuchos::RCP<ConditionComponent> > eleccomponents;
 
-  eleccomponents.push_back(Teuchos::rcp(new IntConditionComponent("reactant id")));
   eleccomponents.push_back(
     Teuchos::rcp(
       new StringConditionComponent(
         "kinetic model","Butler-Volmer",
         Teuchos::tuple<std::string>("Butler-Volmer","Tafel","linear"),
         Teuchos::tuple<std::string>("Butler-Volmer","Tafel","linear"))));
-  eleccomponents.push_back(Teuchos::rcp(new RealConditionComponent("pot0")));
+  eleccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("matid")));
+  eleccomponents.push_back(Teuchos::rcp(new IntConditionComponent("matid")));
+  eleccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("pot")));
+  eleccomponents.push_back(Teuchos::rcp(new RealConditionComponent("pot")));
+  eleccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("curve")));
   eleccomponents.push_back(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
+  eleccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("alpha_a")));
   eleccomponents.push_back(Teuchos::rcp(new RealConditionComponent("alpha_a")));
+  eleccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("alpha_c")));
   eleccomponents.push_back(Teuchos::rcp(new RealConditionComponent("alpha_c")));
+  eleccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("i0")));
   eleccomponents.push_back(Teuchos::rcp(new RealConditionComponent("i0")));
+  eleccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("gamma")));
+  eleccomponents.push_back(Teuchos::rcp(new RealConditionComponent("gamma")));
 
   Teuchos::RCP<ConditionDefinition> lineelec =
     Teuchos::rcp(new ConditionDefinition("ELECTRODE KINETICS LINE CONDITIONS",

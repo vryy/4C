@@ -167,14 +167,15 @@ public:
        Epetra_SerialDenseVector& erhs,  ///< element-rhs
        const vector<double>&   ephinp,  ///< actual conc. and pot. values
        Teuchos::RCP<const MAT::Material> material,  ///< the material
-       const int&          reactantid,  ///< MATERIAL id of reactive species
-       const std::string*    kinetics,  ///< desired electrode kinetics model
-       const double&             pot0,  ///< actual electrode potential on metal side
-       const double&           alphaa,  ///< anodic factor in Butler-Volmer model
-       const double&           alphac,  ///< cathodic factor in Butler-Volmer model
-       const double&               i0,  ///< exchange current density
-       const double&              frt,  ///< factor F/RT
-       const bool&             iselch   ///< problemtype elch or scatra
+       const int           reactantid,  ///< MATERIAL id of reactive species
+       const std::string     kinetics,  ///< desired electrode kinetics model
+       const double              pot0,  ///< actual electrode potential on metal side
+       const double            alphaa,  ///< anodic factor in Butler-Volmer model
+       const double            alphac,  ///< cathodic factor in Butler-Volmer model
+       const double                i0,  ///< exchange current density
+       const double               frt,  ///< factor F/RT
+       const double             gamma,  ///< exponent for concentration dependency
+       const bool              iselch   ///< problemtype elch or scatra
        );
 
     //! provide electrode kinetics status information
@@ -182,13 +183,14 @@ public:
         const DRT::Element*        ele,  ///< the actual boundary element
         ParameterList&          params,  ///< the parameter list
         const vector<double>&   ephinp,  ///< actual conc. and pot. values
-        const std::string*    kinetics,  ///< desired electrode kinetics model
-        const double&             pot0,  ///< actual electrode potential on metal side
-        const double&           alphaa,  ///< anodic factor in Butler-Volmer model
-        const double&           alphac,  ///< cathodic factor in Butler-Volmer model
-        const double&               i0,  ///< exchange current density
-        const double&              frt,  ///< factor F/RT
-        const bool&             iselch   ///< problemtype elch or scatra
+        const std::string     kinetics,  ///< desired electrode kinetics model
+        const double              pot0,  ///< actual electrode potential on metal side
+        const double            alphaa,  ///< anodic factor in Butler-Volmer model
+        const double            alphac,  ///< cathodic factor in Butler-Volmer model
+        const double                i0,  ///< exchange current density
+        const double               frt,  ///< factor F/RT
+        const double             gamma,  ///< exponent for concentration dependency
+        const bool              iselch   ///< problemtype elch or scatra
     );
 
      //! integral of shape functions over boundary surface

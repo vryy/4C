@@ -722,20 +722,20 @@ void SCATRA::ScaTraTimIntImpl::OutputElectrodeInfo()
     discret_->Comm().SumAll(&cint,&parcint,1);
 
     // access some parameters of the actual condition
-    double pot0 = cond[condid]->GetDouble("pot0");
+    double pot = cond[condid]->GetDouble("pot");
     const int curvenum = cond[condid]->GetInt("curve");
     if (curvenum>=0)
     {
       const double curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time_);
       // adjust potential at metal side accordingly
-      pot0 *= curvefac;
+      pot *= curvefac;
     }
 
     // print out results
     if (myrank_ == 0)
     {
       printf("|| %2d |     %10.3E      |    %10.3E    |      %10.3E      |     %10.3E     |   %10.3E   |   %10.3E   |\n",
-        condid,parcurrentintegral,parboundaryint,parcurrentintegral/parboundaryint,paroverpotentialint/parboundaryint, pot0, parcint/parboundaryint);
+        condid,parcurrentintegral,parboundaryint,parcurrentintegral/parboundaryint,paroverpotentialint/parboundaryint, pot, parcint/parboundaryint);
     }
     sum+=parcurrentintegral;
   } // loop over condid
