@@ -914,8 +914,8 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
 
   // determine the averaged normal vector field for indicated boundaries
   // used for the output of the normal flux as a vector field
-  // is computed only once, since there is no ALE support at the moment
-  if (normals_ == Teuchos::null)
+  // is computed only once; for ALE formulation recalculation is necessary
+  if ((normals_ == Teuchos::null) or (isale_== true))
     normals_ = ComputeNormalVectors(condnames);
 
   // was the residual already prepared? (Important only for
