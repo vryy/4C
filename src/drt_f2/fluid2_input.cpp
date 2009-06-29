@@ -33,12 +33,26 @@ bool DRT::ELEMENTS::Fluid2::ReadElement()
     gid2distype["TRI6"]     = tri6;
     gid2distype["NURBS4"]   = nurbs4;
     gid2distype["NURBS9"]   = nurbs9;
+    gid2distype["THQ9"]	    = quad9;		// Taylor-Hood (Q2Q1)
+
+    // discretization mode (equal-order, nonequal order)
+    typedef map<string, DiscretizationMode> Gid2DisMode;
+    Gid2DisMode gid2dismode;
+    gid2dismode["QUAD4"]	= dismod_equalorder;
+    gid2dismode["QUAD8"]	= dismod_equalorder;
+    gid2dismode["QUAD9"]	= dismod_equalorder;
+    gid2dismode["TRI3"] 	= dismod_equalorder;
+    gid2dismode["TRI6"] 	= dismod_equalorder;
+    gid2dismode["NURBS4"]	= dismod_equalorder;
+    gid2dismode["NURBS9"]	= dismod_equalorder;
+    gid2dismode["THQ9"]	 	= dismod_taylorhood;
 
     // read element's nodes
     int   ierr = 0;
     int   nnode = 0;
     int   nodes[9];
     DiscretizationType distype = dis_none;
+    dismode_ = dismod_equalorder;		// standard
 
     Gid2DisType::const_iterator iter;
     for( iter = gid2distype.begin(); iter != gid2distype.end(); iter++ )
@@ -48,6 +62,7 @@ bool DRT::ELEMENTS::Fluid2::ReadElement()
         if (ierr == 1)
         {
             distype = gid2distype[eletext];
+            dismode_ = gid2dismode[eletext];	// equal or nonequal order element
             nnode = DRT::UTILS::getNumberOfElementNodes(distype);
             frint_n(eletext.c_str(), nodes, nnode, &ierr);
             dsassert(ierr==1, "Reading of ELEMENT Topology failed\n");
@@ -151,7 +166,7 @@ bool DRT::ELEMENTS::Fluid2::ReadElement()
         dserror("Reading of FLUID2 element net algorithm failed: NA\n");
 
     // set discretization mode for non-equal or equal order elements
-    switch(distype)
+    /*switch(distype)
     {
     case quad4: case tri3: case tri6: case nurbs9: case nurbs4: case quad8:
     {
@@ -166,7 +181,7 @@ bool DRT::ELEMENTS::Fluid2::ReadElement()
     default:
     	dserror("distype not recognized? TO DO: more accurate distinction of discretization types necessary. => Fluid2::DiscretizationMode");
     	break;
-    }
+    }*/
 
 
   // input of ale and free surface related stuff is not supported

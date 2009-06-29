@@ -152,7 +152,7 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
 
       // implicit 'standard' fluid solver
       // distinction between element types (equal order <-> Taylor Hood)
-      if(DisMode()==dismod_equal || act==calc_fluid_afgenalpha_systemmat_and_residual)
+      if(DisMode()==dismod_equalorder || act==calc_fluid_afgenalpha_systemmat_and_residual)
       {
     	  // equal-order elements
     	  return DRT::ELEMENTS::Fluid2ImplInterface::Impl(this)->Evaluate(this,
@@ -166,7 +166,7 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
     			  elevec3,
     			  mat);
       }
-      else if(DisMode()==dismod_nonequal)
+      else if(DisMode()==dismod_taylorhood)
       {
     	  // Taylor-Hood elements
     	  return DRT::ELEMENTS::Fluid2THInterface::Impl(this)->CalcSysmatAndResidual(this,
@@ -183,12 +183,14 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
     break;
     case calc_gradop_and_massmatrix:
     {
+    	if(DisMode()!=dismod_taylorhood) dserror("calc_gradop_and_massmatrix not implemented for non-Taylor-Hood element");
     	// for pressure correction fluid solver
     	return DRT::ELEMENTS::Fluid2THInterface::Impl(this)->CalcGradPAndMassMatrix(this,params,discretization,lm,elemat1,elemat2,elevec1);
     }
     break;
     case calc_impulseeqn_implicit:
     {
+    	if(DisMode()!=dismod_taylorhood) dserror("calc_impulseeqn_implicit not implemented for non-Taylor-Hood element");
     	// if not available, define map from string to action
     	if(stabstrtoact_.empty())
     	{
@@ -219,6 +221,7 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
     break;
     case calc_impulseeqn_semiimplicit:
     {
+    	if(DisMode()!=dismod_taylorhood) dserror("calc_impulseeqn_semiimplicit not implemented for non-Taylor-Hood element");
 		// if not available, define map from string to action
 		if(stabstrtoact_.empty())
 		{
@@ -249,6 +252,7 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
     break;
     case calc_fluid_residual:
     {
+    	if(DisMode()!=dismod_taylorhood) dserror("calc_fluid_residual not implemented for non-Taylor-Hood element");
     	// if not available, define map from string to action
     	if(stabstrtoact_.empty())
     	{

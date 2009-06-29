@@ -29,7 +29,7 @@ map<string,DRT::ELEMENTS::Fluid2::StabilisationAction> DRT::ELEMENTS::Fluid2::st
 DRT::ELEMENTS::Fluid2::Fluid2(int id, int owner) :
 DRT::Element(id,element_fluid2,owner),
 is_ale_(false),
-dismode_(dismod_equal),
+dismode_(dismod_equalorder),
 data_()
 {
   gaussrule_ = intrule2D_undefined;
@@ -249,16 +249,21 @@ int DRT::ELEMENTS::Fluid2::NumDofPerNode(const DRT::Node& node) const
 	case quad8:
 		return 3;	// standard
 		break;
-	case quad9:		// we suppose quad9 = Taylor Hood
-		if(node.Id() == (NodeIds())[4] ||
-				node.Id() == (NodeIds())[5] ||
-				node.Id() == (NodeIds())[6] ||
-				node.Id() == (NodeIds())[7] ||
-				node.Id() == (NodeIds())[8])
+	case quad9:
+	{
+		if(dismode_ == dismod_equalorder)	return 3;
+		else if(dismode_ == dismod_taylorhood)	// Taylor Hood
 		{
-			return 2; // no "corner"-node, but edge-node
+			if(node.Id() == (NodeIds())[4] ||
+					node.Id() == (NodeIds())[5] ||
+					node.Id() == (NodeIds())[6] ||
+					node.Id() == (NodeIds())[7] ||
+					node.Id() == (NodeIds())[8])
+				 return 2; // no "corner"-node, but edge-node
+			else return 3;
 		}
 		break;
+	}
 	case nurbs4:	// 4 control point first order nurbs surface element
 	case nurbs9:	// 9 control point second order nurbs surface element
 		return 3;

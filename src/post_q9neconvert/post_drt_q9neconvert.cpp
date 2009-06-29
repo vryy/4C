@@ -117,6 +117,7 @@ Converter::Converter(PostField* field, PostProblem& problem)
 
 		if(actfluid==NULL) dserror("error: no fluid2 element?");
 		if(actfluid->Shape()!=DRT::Element::quad9) dserror("no quad9 fluid2 elment?");
+		if(actfluid->DisMode()!=DRT::ELEMENTS::Fluid2::dismod_taylorhood) dserror("no Taylor Hood element?");
 
 		// 9 Knoten für aktuelles Element bestimmen
 		std::vector<int> sourcenodeids;

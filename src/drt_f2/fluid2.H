@@ -295,19 +295,23 @@ public:
 
   //@}
 
-private:
-
-  //! discretization layouts supported by fluid2 (equal-order or Taylor-Hood Q2Q1)
+  //! discretization layouts supported by fluid2 (equal-order (quad or tri) or Taylor-Hood Q2Q1 (quad9))
   enum DiscretizationMode
   {
-	  dismod_equal,		// equal-order elements (Q1Q1)
-	  dismod_nonequal	// non equal-order (by now only Taylor Hood Q2Q1)
+	  dismod_equalorder,		// equal-order elements (Q1Q1)
+	  dismod_taylorhood	// non equal-order Taylor-Hood (Q2Q1)
   };
 
-  /*
-   * \brief get discretization mode (dismod_equal or dismod_nonequal for Taylor-Hood)
-   */
-  inline DiscretizationMode DisMode() const {return dismode_; }
+
+   /*
+    * \brief get discretization mode (dismod_equalorder or dismod_taylorhood for Taylor-Hood)
+    */
+   inline DiscretizationMode DisMode() const {return dismode_; }
+
+
+private:
+
+
 
   //! action parameters recognized by fluid2
   enum ActionType

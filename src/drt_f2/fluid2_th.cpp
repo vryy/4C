@@ -419,12 +419,6 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcImpulseEqnImplicit(Fluid2* ele,
 
 	// stabilization
 	ParameterList& stablist = params.sublist("STABILIZATION");
-	//Fluid2::StabilisationAction pspg     = ele->ConvertStringToStabAction(stablist.get<string>("PSPG"));
-	//Fluid2::StabilisationAction supg     = ele->ConvertStringToStabAction(stablist.get<string>("SUPG"));
-	Fluid2::StabilisationAction vstab    = ele->ConvertStringToStabAction(stablist.get<string>("VSTAB"));
-	//Fluid2::StabilisationAction cstab    = ele->ConvertStringToStabAction(stablist.get<string>("CSTAB"));
-	Fluid2::StabilisationAction cross    = ele->ConvertStringToStabAction(stablist.get<string>("CROSS-STRESS"));
-	Fluid2::StabilisationAction reynolds = ele->ConvertStringToStabAction(stablist.get<string>("REYNOLDS-STRESS"));
 
 	Fluid2::TauType whichtau = Fluid2::tau_not_defined;
 	{
@@ -497,7 +491,7 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcImpulseEqnImplicit(Fluid2* ele,
 	Caltau(ele,evelnp,fsevelnp,edensnp,whichtau,material,visc,timefac,dt,turb_mod_action,Cs,visceff,fssgv);
 
 	// in case of viscous stabilization decide whether to use GLS or USFEM
-	double vstabfac= 0.0;
+	/*double vstabfac= 0.0;
 	if (vstab == Fluid2::viscous_stab_usfem || vstab == Fluid2::viscous_stab_usfem_only_rhs)
 	{
 		vstabfac =  1.0;
@@ -505,7 +499,7 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcImpulseEqnImplicit(Fluid2* ele,
 	else if(vstab == Fluid2::viscous_stab_gls || vstab == Fluid2::viscous_stab_gls_only_rhs)
 	{
 		vstabfac = -1.0;
-	}
+	}*/
 
 	// gaussian points
 	const DRT::UTILS::IntegrationPoints2D intpoints(ele->gaussrule_);
@@ -626,24 +620,6 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcImpulseEqnImplicit(Fluid2* ele,
 		  // get pressure gradient at integration point
 		  gradp_.Multiply(pderxy_, epren);
 
-		  // get pressure at integration point
-		  //double press = pfunct_.Dot(epren);
-
-		  //--------------------------------------------------------------
-		  // perform integration for entire matrix and rhs
-		  //--------------------------------------------------------------
-
-		  // stabilisation parameter
-		  //const double tau_M  = tau_(0)*fac;
-		  //const double tau_Mp = tau_(1)*fac;
-		  //const double tau_C  = tau_(2)*fac;
-
-		  // integration factors and coefficients of single terms
-		  //const double timetauM   = timefac * tau_M;
-		  //const double timetauMp  = timefac * tau_Mp;
-
-		  //const double ttimetauM  = timefac * timetauM;
-		  //const double ttimetauMp = timefac * timetauMp;
 		  const double timefacfac = timefac * fac;
 
 		  // get (density-weighted) bodyforce in gausspoint
@@ -700,24 +676,6 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcImpulseEqnImplicit(Fluid2* ele,
 		  mdiv_ = mderxy_(0, 0) + mderxy_(1, 1);
 		  if (loma) vdiv_ = vderxy_(0, 0) + vderxy_(1, 1);
 
-		  // evaluate residual once for all stabilization right hand sides
-		  res_old_(0) = velint_(0)-rhsmom_(0)+timefac*(conv_old_(0)+gradp_(0)-2*visceff*visc_old_(0));
-		  res_old_(1) = velint_(1)-rhsmom_(1)+timefac*(conv_old_(1)+gradp_(1)-2*visceff*visc_old_(1));
-
-		  /*
-		       This is the operator
-
-		                     /               \
-		                    | resM    o nabla |
-		                    \    (i)        /
-
-		                     required for (lhs) cross- and (rhs) Reynolds-stress calculation
-
-		   */
-
-		  if (cross    == Fluid2::cross_stress_stab ||
-				  reynolds == Fluid2::reynolds_stress_stab_only_rhs)
-			  conv_resM_.MultiplyTN(densderxy_, res_old_);
 
 		  {
 			  ////////////////// GALERKIN ANTEIL ///////////////////////
@@ -1009,12 +967,6 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcImpulseEqnSemiImplicit(Fluid2* ele,
 	if(lomastr=="Yes") loma = true;
 
 	ParameterList& stablist = params.sublist("STABILIZATION");
-	//Fluid2::StabilisationAction pspg     = ele->ConvertStringToStabAction(stablist.get<string>("PSPG"));
-	//Fluid2::StabilisationAction supg     = ele->ConvertStringToStabAction(stablist.get<string>("SUPG"));
-	Fluid2::StabilisationAction vstab    = ele->ConvertStringToStabAction(stablist.get<string>("VSTAB"));
-	//Fluid2::StabilisationAction cstab    = ele->ConvertStringToStabAction(stablist.get<string>("CSTAB"));
-	Fluid2::StabilisationAction cross    = ele->ConvertStringToStabAction(stablist.get<string>("CROSS-STRESS"));
-	Fluid2::StabilisationAction reynolds = ele->ConvertStringToStabAction(stablist.get<string>("REYNOLDS-STRESS"));
 
 	Fluid2::TauType whichtau = Fluid2::tau_not_defined;
 	{
@@ -1087,7 +1039,7 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcImpulseEqnSemiImplicit(Fluid2* ele,
 	Caltau(ele,evelnp,fsevelnp,edensnp,whichtau,material,visc,timefac,dt,turb_mod_action,Cs,visceff,fssgv);
 
 	// in case of viscous stabilization decide whether to use GLS or USFEM
-	double vstabfac= 0.0;
+	/*double vstabfac= 0.0;
 	if (vstab == Fluid2::viscous_stab_usfem || vstab == Fluid2::viscous_stab_usfem_only_rhs)
 	{
 		vstabfac =  1.0;
@@ -1095,7 +1047,7 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcImpulseEqnSemiImplicit(Fluid2* ele,
 	else if(vstab == Fluid2::viscous_stab_gls || vstab == Fluid2::viscous_stab_gls_only_rhs)
 	{
 		vstabfac = -1.0;
-	}
+	}*/
 
 	// gaussian points
 	const DRT::UTILS::IntegrationPoints2D intpoints(ele->gaussrule_);
@@ -1220,24 +1172,10 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcImpulseEqnSemiImplicit(Fluid2* ele,
 		  // get pressure gradient at integration point
 		  gradp_.Multiply(pderxy_, epren);
 
-		  // get pressure at integration point
-		  //double press = pfunct_.Dot(epren);
-
 		  //--------------------------------------------------------------
 		  // perform integration for entire matrix and rhs
 		  //--------------------------------------------------------------
 
-		  // stabilisation parameter
-		  //const double tau_M  = tau_(0)*fac;
-		  //const double tau_Mp = tau_(1)*fac;
-		  //const double tau_C  = tau_(2)*fac;
-
-		  // integration factors and coefficients of single terms
-		  //const double timetauM   = timefac * tau_M;
-		  //const double timetauMp  = timefac * tau_Mp;
-
-		  //const double ttimetauM  = timefac * timetauM;
-		  //const double ttimetauMp = timefac * timetauMp;
 		  const double timefacfac = timefac * fac;
 
 		  // get (density-weighted) bodyforce in gausspoint
@@ -1294,24 +1232,6 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcImpulseEqnSemiImplicit(Fluid2* ele,
 		  mdiv_ = mderxy_(0, 0) + mderxy_(1, 1);
 		  if (loma) vdiv_ = vderxy_(0, 0) + vderxy_(1, 1);
 
-		  // evaluate residual once for all stabilization right hand sides
-		  res_old_(0) = velint_(0)-rhsmom_(0)+timefac*(conv_old_(0)+gradp_(0)-2*visceff*visc_old_(0));
-		  res_old_(1) = velint_(1)-rhsmom_(1)+timefac*(conv_old_(1)+gradp_(1)-2*visceff*visc_old_(1));
-
-		  /*
-			   This is the operator
-
-							 /               \
-							| resM    o nabla |
-							\    (i)        /
-
-							 required for (lhs) cross- and (rhs) Reynolds-stress calculation
-
-		   */
-
-		  if (cross    == Fluid2::cross_stress_stab ||
-				  reynolds == Fluid2::reynolds_stress_stab_only_rhs)
-			  conv_resM_.MultiplyTN(densderxy_, res_old_);
 
 		  {
 			  ////////////////// GALERKIN ANTEIL ///////////////////////
@@ -1599,12 +1519,6 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcSysmatAndResidual(Fluid2* ele,
 	if(lomastr=="Yes") loma = true;
 
 	ParameterList& stablist = params.sublist("STABILIZATION");
-	//Fluid2::StabilisationAction pspg     = ele->ConvertStringToStabAction(stablist.get<string>("PSPG"));
-	//Fluid2::StabilisationAction supg     = ele->ConvertStringToStabAction(stablist.get<string>("SUPG"));
-	Fluid2::StabilisationAction vstab    = ele->ConvertStringToStabAction(stablist.get<string>("VSTAB"));
-	//Fluid2::StabilisationAction cstab    = ele->ConvertStringToStabAction(stablist.get<string>("CSTAB"));
-	Fluid2::StabilisationAction cross    = ele->ConvertStringToStabAction(stablist.get<string>("CROSS-STRESS"));
-	Fluid2::StabilisationAction reynolds = ele->ConvertStringToStabAction(stablist.get<string>("REYNOLDS-STRESS"));
 
 	Fluid2::TauType whichtau = Fluid2::tau_not_defined;
 	{
@@ -1633,11 +1547,6 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcSysmatAndResidual(Fluid2* ele,
 	// BDF2:           timefac = 2/3 * dt
 	const double timefac = params.get<double>("thsl",-1.0);
 	if (timefac < 0.0) dserror("No thsl supplied");
-
-	// --------------------------------------------------
-	// set parameters for classical turbulence models
-	// --------------------------------------------------
-	//ParameterList& turbmodelparams = params.sublist("TURBULENCE MODEL");
 
 	// initialise the Smagorinsky constant Cs to zero
 	double Cs            = 0.0;
@@ -1677,7 +1586,7 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcSysmatAndResidual(Fluid2* ele,
 	Caltau(ele,evelnp,fsevelnp,edensnp,whichtau,material,visc,timefac,dt,turb_mod_action,Cs,visceff,fssgv);
 
 	// in case of viscous stabilization decide whether to use GLS or USFEM
-	double vstabfac= 0.0;
+	/*double vstabfac= 0.0;
 	if (vstab == Fluid2::viscous_stab_usfem || vstab == Fluid2::viscous_stab_usfem_only_rhs)
 	{
 		vstabfac =  1.0;
@@ -1685,7 +1594,7 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcSysmatAndResidual(Fluid2* ele,
 	else if(vstab == Fluid2::viscous_stab_gls || vstab == Fluid2::viscous_stab_gls_only_rhs)
 	{
 		vstabfac = -1.0;
-	}
+	}*/
 
 	// gaussian points
 	const DRT::UTILS::IntegrationPoints2D intpoints(ele->gaussrule_);
@@ -1816,17 +1725,6 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcSysmatAndResidual(Fluid2* ele,
 		  // perform integration for entire matrix and rhs
 		  //--------------------------------------------------------------
 
-		  // stabilisation parameter
-		  //const double tau_M  = tau_(0)*fac;
-		  //const double tau_Mp = tau_(1)*fac;
-		  //const double tau_C  = tau_(2)*fac;
-
-		  // integration factors and coefficients of single terms
-		  //const double timetauM   = timefac * tau_M;
-		  //const double timetauMp  = timefac * tau_Mp;
-
-		  //const double ttimetauM  = timefac * timetauM;
-		  //const double ttimetauMp = timefac * timetauMp;
 		  const double timefacfac = timefac * fac;
 
 		  // get (density-weighted) bodyforce in gausspoint
@@ -1882,25 +1780,6 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcSysmatAndResidual(Fluid2* ele,
 		  // momentum and velocity divergence:
 		  mdiv_ = mderxy_(0, 0) + mderxy_(1, 1);
 		  if (loma) vdiv_ = vderxy_(0, 0) + vderxy_(1, 1);
-
-		  // evaluate residual once for all stabilization right hand sides
-		  res_old_(0) = velint_(0)-rhsmom_(0)+timefac*(conv_old_(0)+gradp_(0)-2*visceff*visc_old_(0));
-		  res_old_(1) = velint_(1)-rhsmom_(1)+timefac*(conv_old_(1)+gradp_(1)-2*visceff*visc_old_(1));
-
-		  /*
-		       This is the operator
-
-		                     /               \
-		                    | resM    o nabla |
-		                    \    (i)        /
-
-		                     required for (lhs) cross- and (rhs) Reynolds-stress calculation
-
-		   */
-
-		  if (cross    == Fluid2::cross_stress_stab ||
-				  reynolds == Fluid2::reynolds_stress_stab_only_rhs)
-			  conv_resM_.MultiplyTN(densderxy_, res_old_);
 
 		  /////////////////////////////////
 		  // build fluid matrix
@@ -2226,12 +2105,9 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcResidual(Fluid2* ele,
 	if(lomastr=="Yes") loma = true;
 
 	ParameterList& stablist = params.sublist("STABILIZATION");
-	/*Fluid2::StabilisationAction pspg     = ele->ConvertStringToStabAction(stablist.get<string>("PSPG"));
-	Fluid2::StabilisationAction supg     = ele->ConvertStringToStabAction(stablist.get<string>("SUPG"));
-	Fluid2::StabilisationAction vstab    = ele->ConvertStringToStabAction(stablist.get<string>("VSTAB"));
-	Fluid2::StabilisationAction cstab    = ele->ConvertStringToStabAction(stablist.get<string>("CSTAB"));*/
-	Fluid2::StabilisationAction cross    = ele->ConvertStringToStabAction(stablist.get<string>("CROSS-STRESS"));
-	Fluid2::StabilisationAction reynolds = ele->ConvertStringToStabAction(stablist.get<string>("REYNOLDS-STRESS"));
+
+	//Fluid2::StabilisationAction cross    = ele->ConvertStringToStabAction(stablist.get<string>("CROSS-STRESS"));
+	//Fluid2::StabilisationAction reynolds = ele->ConvertStringToStabAction(stablist.get<string>("REYNOLDS-STRESS"));
 
 	Fluid2::TauType whichtau = Fluid2::tau_not_defined;
 	{
@@ -2431,17 +2307,6 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcResidual(Fluid2* ele,
 		  // perform integration for entire matrix and rhs
 		  //--------------------------------------------------------------
 
-		  // stabilisation parameter
-		  //const double tau_M  = tau_(0)*fac;
-		  //const double tau_Mp = tau_(1)*fac;
-		  //const double tau_C  = tau_(2)*fac;
-
-		  // integration factors and coefficients of single terms
-		  //const double timetauM   = timefac * tau_M;
-		  //const double timetauMp  = timefac * tau_Mp;
-
-		  //const double ttimetauM  = timefac * timetauM;
-		  //const double ttimetauMp = timefac * timetauMp;
 		  const double timefacfac = timefac * fac;
 
 		  // get (density-weighted) bodyforce in gausspoint
@@ -2498,28 +2363,8 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcResidual(Fluid2* ele,
 		  mdiv_ = mderxy_(0, 0) + mderxy_(1, 1);
 		  if (loma) vdiv_ = vderxy_(0, 0) + vderxy_(1, 1);
 
-		  // evaluate residual once for all stabilization right hand sides
-		  res_old_(0) = velint_(0)-rhsmom_(0)+timefac*(conv_old_(0)+gradp_(0)-2*visceff*visc_old_(0));
-		  res_old_(1) = velint_(1)-rhsmom_(1)+timefac*(conv_old_(1)+gradp_(1)-2*visceff*visc_old_(1));
-
-		  /*
-		       This is the operator
-
-		                     /               \
-		                    | resM    o nabla |
-		                    \    (i)        /
-
-		                     required for (lhs) cross- and (rhs) Reynolds-stress calculation
-
-		   */
-
-		  if (cross    == Fluid2::cross_stress_stab ||
-				  reynolds == Fluid2::reynolds_stress_stab_only_rhs)
-			  conv_resM_.MultiplyTN(densderxy_, res_old_);
-
-
-		  /////////////////////////////////
-		  // Residual-Terme (RHS) ermitteln
+          /////////////////////////////////
+		  // get rhs
 		  {
 			  for (int vi=0; vi<iel; ++vi)
 			  {
@@ -2530,7 +2375,6 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcResidual(Fluid2* ele,
 				  eleres(tvi + 1) += v*velint_(1) ;
 			  }
 
-#if 1
 			  for (int vi=0; vi<iel; ++vi)
 			  {
 				  const int tvi = ndofs[vi];
@@ -2543,7 +2387,6 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcResidual(Fluid2* ele,
 						  +
 						  convvelint_(1)*vderxy_(1, 1)) ;
 			  }
-#endif
 
 			  for (int vi=0; vi<iel; ++vi)	// this term only here and not in CalcIntUsfem
 			  {
