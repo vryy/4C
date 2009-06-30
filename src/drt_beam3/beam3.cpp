@@ -273,11 +273,14 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Beam3::Lines()
  | sets up geometric data from current nodal position as reference 
  | position; this method can be used by the register class or when ever
  | a new beam element is generated for which some reference configuration
- | has to be stored; prerequesite for applying this method is that the
- | element nodes are already known (public)                   cyron 10/08|
+ | has to be stored; variable rotrefe carries rotational displacements with
+ | respect to the nodes of the new element as stored in the global displace-
+ | ment vector; at the beginning these are usually zero; if an element is
+ | added after simulation start they have to be calculated accordingly
+ |                                 (public)                   cyron 10/08|
  *----------------------------------------------------------------------*/
 template<int nnode>
-void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const vector<double>& xrefe)
+void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const vector<double>& xrefe,const vector<double>& rotrefe)
 {
   /*this method initialized geometric variables of the element; such an initialization can only be done once when the element is
    * generated and never again (especially not in the frame of a restart); to make sure that this requirement is not violated this 
@@ -288,8 +291,11 @@ void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const vector<double>& xrefe)
   {
     isinit_ = true;
 
-    //create Matrix for the derivates of the shapefunctions at the GP
+  //create Matrix for the derivates of the shapefunctions at the GP
 	LINALG::Matrix<1,nnode> shapefuncderiv;
+	
+	//create Matrix for the shapefunctions at the GP
+	LINALG::Matrix<1,nnode> funct;
 	
 	//Get DiscretizationType
 	DRT::Element::DiscretizationType distype = Shape();
@@ -307,85 +313,87 @@ void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const vector<double>& xrefe)
 		//Get derivatives of shapefunctions at GP
 		DRT::UTILS::shape_function_1D_deriv1(shapefuncderiv,xi,distype);
 		  
-	    //triad in reference configuration at GP
+		//Get shapefunctions at GP
+		DRT::UTILS::shape_function_1D(funct,xi,distype);
+	    
+		//triad in reference configuration at GP
 		LINALG::Matrix<3,3> Tref;
 	
-	    //length in reference configuration
-	    lrefe_ = pow(pow(xrefe[0]-xrefe[3*nnode-3],2)+pow(xrefe[1]-xrefe[3*nnode-2],2)+pow(xrefe[2]-xrefe[3*nnode-1],2),0.5);   
-	    
-	    /*initial triad Tref = [t1,t2,t3] is set in a way for which we don`t have strains in reference configuration*/
-	    LINALG::Matrix<3,1> dxdxi;
-	    dxdxi.Clear();
-
-	    //calculate vector dxdxi
-	    for(int node=0; node<nnode; node++)
-	    {
-		    dxdxi(0) += shapefuncderiv(node) * xrefe[3*node];  
-		    dxdxi(1) += shapefuncderiv(node) * xrefe[3*node+1];
-		    dxdxi(2) += shapefuncderiv(node) * xrefe[3*node+2];
-		    
-	    }//for(int node=0; node<nnode; node++)
-	  
-	    //Store length factor for every GP
-	    //note: the length factor alpha replaces the determinant and refers to the reference configuration by definition 
-	    alpha_[numgp]= pow(pow( dxdxi(0) ,2.0) + pow( dxdxi(1) ,2.0) + pow(dxdxi(2) ,2.0) ,0.5);	    
-
-	    for (int k=0; k<3; k++) 
-	    {
-	  		//t1 axis points in positive direction along xi and is a unit vector
-	  		Tref(k,0)=dxdxi(k)/alpha_[numgp];    
-	    }
-	    
-	    //t2 is a unit vector in the x2x3-plane orthogonal to t1
-	    Tref(0,1) = 0;
-	    //if t1 is parallel to the x1-axis t2 is set parallel to the x2-axis
-	    if (Tref(1,0) == 0 && Tref(2,0) == 0)
-	    {    
-	         Tref(1,1) = 1;
-	         Tref(2,1) = 0;
-	    } 
-	    //otherwise t2 is calculated from the scalar product with t1
-	    else
-	    { 
-	        //setting t2(0)=0 and calculating other elements by setting scalar product t1 o t2 to zero
-	        double lin1norm = pow(pow(Tref(1,0),2)+pow(Tref(2,0),2),0.5);
-	        Tref(1,1) = -Tref(2,0)/lin1norm;
-	        Tref(2,1) =  Tref(1,0)/lin1norm;    
-	    }	    
-	           	
-        //calculating t3 by crossproduct t1 x t2
-        Tref(0,2) = Tref(1,0)*Tref(2,1)-Tref(1,1)*Tref(2,0);
-        Tref(1,2) = Tref(2,0)*Tref(0,1)-Tref(2,1)*Tref(0,0);
-        Tref(2,2) = Tref(0,0)*Tref(1,1)-Tref(0,1)*Tref(1,0);
-        
-        /*the center triad in reference configuration is stored as a quaternion whose equivalent would be the rotation
-        * from the identity matrix into the reference configuration*/
-        triadtoquaternion(Tref,Qconv_[numgp]);
-         
-        //the here employed beam element does not need data about the current position of the nodal directors so that
-        //initilization of those can be skipped (the nodal displacements handeled in beam3_evaluate.cpp are not the current angles,
-        //but only the differences between current angles and angles in reference configuration, respectively. Thus the
-        //director orientation in reference configuration cancels out and can be assumed to be zero without loss of 
-        //generality
-        for (int dof=0; dof<3; dof++) 
-        {
-    	    curvconv_[numgp](dof) = 0.0;
-    	    curvold_[numgp](dof)  = 0.0;
-    	    curvnew_[numgp](dof)  = 0.0;
-    	    thetaconv_[numgp](dof)      = 0.0;
-    	    thetaold_[numgp](dof)       = 0.0;   
-    	    thetanew_[numgp](dof)       = 0.0;
-      	    thetaprimeconv_[numgp](dof) = 0.0;
-      	    thetaprimeold_[numgp](dof)  = 0.0;
-      	    thetaprimeold_[numgp](dof)  = 0.0;
-        }//for (int dof=0; dof<3; dof++) 
+    //length in reference configuration
+    lrefe_ = pow(pow(xrefe[0]-xrefe[3*nnode-3],2)+pow(xrefe[1]-xrefe[3*nnode-2],2)+pow(xrefe[2]-xrefe[3*nnode-1],2),0.5);   
+    
+    /*initial triad Tref = [t1,t2,t3] is set in a way for which we don`t have strains in reference configuration*/
+    LINALG::Matrix<3,1> dxdxi;
   
-    }//for(int numgp=0; numgp < gausspoints.nquad; numgp++)
+    dxdxi.Clear();
+    thetaconv_[numgp].Clear();
+    thetaprimeconv_[numgp].Clear();
+    
+    //calculate vector dxdxi
+    for(int node=0; node<nnode; node++)
+    {
+    	for(int dof=0; dof<3 ; dof++)
+    	{
+	    	dxdxi(dof) += shapefuncderiv(node) * xrefe[3*node+dof];
+		    thetaconv_[numgp](dof) += funct(node) * rotrefe[3*node+dof];
+		    thetaprimeconv_[numgp](dof) += shapefuncderiv(node) * rotrefe[3*node+dof]; 		
+    	}//for(int dof=0; dof<3 ; dof++)
+    }//for(int node=0; node<nnode; node++)
+    
+    //Store length factor for every GP
+    //note: the length factor alpha replaces the determinant and refers to the reference configuration by definition 
+    alpha_[numgp]= pow(pow( dxdxi(0) ,2.0) + pow( dxdxi(1) ,2.0) + pow(dxdxi(2) ,2.0) ,0.5);	    
+
+    for (int k=0; k<3; k++) 
+    {
+  		//t1 axis points in positive direction along xi and is a unit vector
+  		Tref(k,0)=dxdxi(k)/alpha_[numgp];    
+    }
+    
+    //t2 is a unit vector in the x2x3-plane orthogonal to t1
+    Tref(0,1) = 0;
+    //if t1 is parallel to the x1-axis t2 is set parallel to the x2-axis
+    if (Tref(1,0) == 0 && Tref(2,0) == 0)
+    {    
+         Tref(1,1) = 1;
+         Tref(2,1) = 0;
+    } 
+    
+    //otherwise t2 is calculated from the scalar product with t1
+    else
+    { 
+        //setting t2(0)=0 and calculating other elements by setting scalar product t1 o t2 to zero
+        double lin1norm = pow(pow(Tref(1,0),2)+pow(Tref(2,0),2),0.5);
+        Tref(1,1) = -Tref(2,0)/lin1norm;
+        Tref(2,1) =  Tref(1,0)/lin1norm;    
+    }	    
+           	
+    //calculating t3 by crossproduct t1 x t2
+    Tref(0,2) = Tref(1,0)*Tref(2,1)-Tref(1,1)*Tref(2,0);
+    Tref(1,2) = Tref(2,0)*Tref(0,1)-Tref(2,1)*Tref(0,0);
+    Tref(2,2) = Tref(0,0)*Tref(1,1)-Tref(0,1)*Tref(1,0);
+    
+    /*the center triad in reference configuration is stored as a quaternion whose equivalent would be the rotation
+    * from the identity matrix into the reference configuration*/
+    triadtoquaternion(Tref,Qconv_[numgp]);
+     
+    //zero initial curvature is assumed for this element 
+    curvconv_[numgp].Clear();
+  }//for(int numgp=0; numgp < gausspoints.nquad; numgp++)
 	
-	//Now all triads have been calculated and Qold_ and Qnew_ can be updated
-    Qold_ = Qconv_;
-    Qnew_ = Qconv_;  
-	
+	//Now geometrical data has been computed completely and old and new version can be initialized equally.
+  Qold_ = Qconv_;
+  Qnew_ = Qconv_;
+  
+  curvold_ = curvconv_;        
+  curvnew_ = curvconv_;
+                    
+  thetaold_ = thetaconv_;
+  thetanew_ = thetaconv_;
+  
+  thetaprimeold_ = thetaprimeconv_;  
+  thetaprimenew_ = thetaprimeconv_;    
+
 	//Now we get the integrationfactor alphamass_ for a complete integration of the massmatrix therefor we increase the gaussrule by 1
 	gaussrule_ = static_cast<enum DRT::UTILS::GaussRule1D>(nnode);
 	  
@@ -538,11 +546,12 @@ int DRT::ELEMENTS::Beam3Register::Initialize(DRT::Discretization& dis)
 	    
 	    //reference node position
 	    vector<double> xrefe;
-	    
+	    vector<double> rotrefe;
 	    const int nnode= currele->NumNode();
 	    
 	    //resize xrefe for the number of coordinates we need to store
 	    xrefe.resize(3*nnode);
+	    rotrefe.resize(3*nnode);
 	    
 	    //getting element's nodal coordinates and treating them as reference configuration
 	    if (currele->Nodes()[0] == NULL || currele->Nodes()[1] == NULL)
@@ -553,6 +562,7 @@ int DRT::ELEMENTS::Beam3Register::Initialize(DRT::Discretization& dis)
 	        for(int dof= 0; dof < 3; dof++)// element node has three coordinates x1, x2 and x3
 	        {
 	        	xrefe[node*3 + dof] = currele->Nodes()[node]->X()[dof];
+	        	rotrefe[node*3 + dof]= 0.0;
 	        }	
 	    }
 	    
@@ -577,22 +587,22 @@ int DRT::ELEMENTS::Beam3Register::Initialize(DRT::Discretization& dis)
 	    {
 	  		case 2:  		
 	  		{	
-	  			currele->SetUpReferenceGeometry<2>(xrefe);
+	  			currele->SetUpReferenceGeometry<2>(xrefe,rotrefe);
 	  			break;
 	  		}
 	  		case 3:
 	  		{
-	  			currele->SetUpReferenceGeometry<3>(xrefe);
+	  			currele->SetUpReferenceGeometry<3>(xrefe,rotrefe);
 	  			break;
 	  		}
 	  		case 4:
 	  		{
-	  			currele->SetUpReferenceGeometry<4>(xrefe);
+	  			currele->SetUpReferenceGeometry<4>(xrefe,rotrefe);
 	  			break;
 	  		} 
 	  		case 5:
 	  		{
-	  			currele->SetUpReferenceGeometry<5>(xrefe);
+	  			currele->SetUpReferenceGeometry<5>(xrefe,rotrefe);
 	  			break;
 	  		}   		
 	  		default:

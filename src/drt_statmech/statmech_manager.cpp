@@ -1232,21 +1232,21 @@ void StatMechManager::SetCrosslinkers(const Epetra_Vector& setcrosslinkercol,con
       //only the owner processor of node i establishes the crosslinker actually
       if( (discret_.gNode(nodecolmap.GID(i)))->Owner() == discret_.Comm().MyPID() )
       {    
-       //fixed size variable for storing positions and rotational displacmenets of the two nodes to be crosslinked
-       LINALG::Matrix<6,1> xrefe;
-       LINALG::Matrix<6,1> rotrefe;
+         //vector for storing positions and rotational displacmenets of the two nodes to be crosslinked (3 vector elements per node, respectively)
+         vector<double> rotrefe;
+         vector<double> xrefe;
       
-       //current position of nodes with LIDs i and nearestneighbour[i]
-       for(int k = 0; k<3; k++)
-       {
-         //set nodal positions
-         xrefe(k  ) = (posi->second)(k);
-         xrefe(k+3) = (posneighbour->second)(k);
-         
-         //set nodal rotations (not true ones, only those given in the displacment vector)
-         rotrefe(k  ) = (roti->second)(k);
-         rotrefe(k+3) = (rotneighbour->second)(k);
-       }
+         //current position of nodes with LIDs i and nearestneighbour[i]
+         for(int k = 0; k<3; k++)
+         {
+           //set nodal positions
+           xrefe[k  ] = (posi->second)(k);
+           xrefe[k+3] = (posneighbour->second)(k);
+           
+           //set nodal rotations (not true ones, only those given in the displacment vector)
+           rotrefe[k  ] = (roti->second)(k);
+           rotrefe[k+3] = (rotneighbour->second)(k);
+         }
 
        
        /*a new crosslinker element is generated according to a crosslinker dummy defined during construction 
@@ -1266,8 +1266,9 @@ void StatMechManager::SetCrosslinkers(const Epetra_Vector& setcrosslinkercol,con
        DRT::Node *nodes[] = {discret_.gNode( globalnodeids[0] ) , discret_.gNode( globalnodeids[1] )};
        newcrosslinker->BuildNodalPointers(&nodes[0]);
                    
-       //correct reference configuration data is computed for the new crosslinker element
-       newcrosslinker->SetUpReferenceGeometry(xrefe,rotrefe); 
+       /*correct reference configuration data is computed for the new crosslinker element;
+        * function SetUpReferenceGeometry is template and here only linear beam elements can be applied as crosslinkers*/
+       newcrosslinker->SetUpReferenceGeometry<2>(xrefe,rotrefe); 
        
        //setting drag coefficient for new crosslinker element
        newcrosslinker->eta_ = statmechparams_.get<double>("ETA",0.0);
@@ -1363,15 +1364,6 @@ void StatMechManager::StatMechBrownian(ParameterList& params, RCP<Epetra_Vector>
    * vector related to the same GID*/
   Epetra_Export dofexporter(*discret_.DofColMap(),*discret_.DofRowMap());
   brownianrow->Export(*browniancol,dofexporter,Add);
-  
-  /*In the end we need a column map vector of which we can be sure that the same DOFs always have the same entries; to this
-   * end we first exported the column map vector to a row map vector and now we reexport the rowmap vector in combine mode
-   * "Insert" to the column map vector*/ 
-  Epetra_Export dofreexporter(*discret_.DofRowMap(),*discret_.DofColMap());
-  browniancol->Export(*brownianrow,dofreexporter,Insert);
-  
-  
-
   
 
   return;
