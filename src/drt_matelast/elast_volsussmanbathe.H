@@ -3,7 +3,7 @@
 \file elast_volsussmanbathe.H
 \brief
 This file contains the routines required for logarithmic neo-Hooke material
-according to Bonet and Wood, "Nonlinear continuum mechanics for finite 
+according to Bonet and Wood, "Nonlinear continuum mechanics for finite
 element analysis", Cambridge, 1997.
 
 <pre>
@@ -53,7 +53,7 @@ namespace ELASTIC
       //@{
 
       /// Dilatation modulus
-      const double kappa_;
+      double kappa_;
 
       //@}
 
@@ -108,7 +108,7 @@ namespace ELASTIC
 
       return;
     };
-    
+
     /// Add modified coeffiencts.
     void AddCoefficientsModified(
         bool& havecoefficients,  ///< non-zero coefficients of this type are provided
@@ -116,7 +116,7 @@ namespace ELASTIC
         LINALG::Matrix<5,1>& delta,  ///< necessary coefficients for second derivative
         const LINALG::Matrix<3,1>& modinv  ///< modified invariants of right Cauchy-Green tensor
     );
-    
+
     /// Add anisotropic principal coeffiencts.
     /// Nothing to do for this (isotropic) material!
     void AddCoefficientsPrincipalAniso(
@@ -128,7 +128,7 @@ namespace ELASTIC
     {
       havecoefficients = havecoefficients or false;
     };
-                
+
     /// Add anisotropic modified coeffiencts.
     /// Nothing to do for this (isotropic) material!
     void AddCoefficientsModifiedAniso(
@@ -140,8 +140,17 @@ namespace ELASTIC
     {
       havecoefficients = havecoefficients or false;
     };
-        
 
+    /// @name Access methods
+    //@{
+    double Kappa() const { return params_->kappa_; }
+
+    //@}
+
+    /// @name Write methods
+    //@{
+    void SetKappa(const double kappa) { params_->kappa_ = kappa; }
+    //@}
 
   private:
 

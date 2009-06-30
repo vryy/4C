@@ -53,11 +53,11 @@ namespace ELASTIC
       //@{
 
       /// Shear modulus
-      const double mue_;
+      double mue_;
       /// Possion's ratio
-      const double nue_;
+      double nue_;
       /// interpolation parameter
-      const double f_;
+      double f_;
 
       //@}
 
@@ -147,6 +147,20 @@ namespace ELASTIC
       havecoefficients = havecoefficients or false;
     };
 
+        /// @name Access methods
+    //@{
+    double Mue() const { return params_->mue_; }
+    double Nue() const { return params_->nue_; }
+    double F() const { return params_->f_; }
+
+    //@}
+
+    /// @name Write methods
+    //@{
+    void SetMue(const double mue) { params_->mue_ = mue; }
+    void SetNue(const double nue) { params_->nue_ = nue; }
+    void SetF(const double f) { params_->f_ = f; }
+    //@}
 
   private:
 

@@ -27,17 +27,23 @@ Maintainer: Sophie Rausch
 #include "Epetra_Vector.h"
 #include "Teuchos_RefCountPtr.hpp"
 #include "Teuchos_ParameterList.hpp"
-#include "../drt_lib/drt_condition.H"
-#include "../drt_lib/drt_element.H"
-#include "../drt_adapter/adapter_structure.H"
-#include "../drt_structure/strugenalpha.H"
 #include <Teuchos_RefCountPtr.hpp>
 #include <Epetra_SerialDenseVector.h>
+#include <math.h>
+#include "../drt_adapter/adapter_structure.H"
+#include "../drt_lib/drt_condition.H"
+#include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_parobject.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/linalg_fixedsizematrix.H"
-#include <math.h>
+#include "../drt_structure/strugenalpha.H"
 #include "../drt_structure/strtimint.H"
+#include "../drt_inpar/inpar_material.H"
+#include "../drt_mat/matpar_parameter.H"
+#include "../drt_mat/material.H"
+#include "../drt_mat/elasthyper.H"
+#include "../drt_matelast/elast_summand.H"
+
 
 namespace STR
 {

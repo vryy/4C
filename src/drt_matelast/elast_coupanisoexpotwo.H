@@ -3,7 +3,7 @@
 \file elast_isoneohooke.H
 \brief
 This file contains the routines required for logarithmic neo-Hooke material
-according to Bonet and Wood, "Nonlinear continuum mechanics for finite 
+according to Bonet and Wood, "Nonlinear continuum mechanics for finite
 element analysis", Cambridge, 1997.
 
 <pre>
@@ -53,10 +53,10 @@ namespace ELASTIC
       //@{
 
       /// fiber params
-      const double k1_;
-      const double k2_;
-      const double k3_;
-      const double k4_;
+      double k1_;
+      double k2_;
+      double k3_;
+      double k4_;
 
       //@}
 
@@ -65,9 +65,9 @@ namespace ELASTIC
   }  // namespace PAR
 
   /*----------------------------------------------------------------------*/
-  /// Coupled anisotropic exponential fiber function, implemented for two possible fiber families 
+  /// Coupled anisotropic exponential fiber function, implemented for two possible fiber families
   /// [1]
-  /// This is a hyperelastic, anisotropic material 
+  /// This is a hyperelastic, anisotropic material
   /// of the most simple kind.
   ///
   /// Strain energy function is given by
@@ -75,7 +75,7 @@ namespace ELASTIC
   ///   \Psi = \frac {k_1}{2 k_2} \left(e^{k_2 (IV_{\boldsymbol C}-1)^2 }-1 \right)+\frac {k_3}{2 k_4} \left(e^{k_4 (VI_{\boldsymbol C}-1)^2 }-1 \right).
   ///\f]
   ///
-  ///  
+  ///
   /// <h3>References</h3>
   /// <ul>
   /// <li> [1] GA Holzapfel, TC Gasser, A viscoelastic model for fiber-reinforced composites at finite strains: ... 2000
@@ -116,7 +116,7 @@ namespace ELASTIC
 
       return;
     };
-    
+
     /// Add modified coeffiencts.
     void AddCoefficientsModified(
         bool& havecoefficients,  ///< non-zero coefficients of this type are provided
@@ -148,7 +148,25 @@ namespace ELASTIC
     {
       havecoefficients = havecoefficients or false;
     };
-  private:
+
+    /// @name Access methods
+    //@{
+    double K1() const { return params_->k1_; }
+    double K2() const { return params_->k2_; }
+    double K3() const { return params_->k3_; }
+    double K4() const { return params_->k4_; }
+
+    //@}
+
+    /// @name Write methods
+    //@{
+    void SetK1(const double k1) { params_->k1_ = k1; }
+    void SetK2(const double k2) { params_->k2_ = k2; }
+    void SetK3(const double k3) { params_->k3_ = k3; }
+    void SetK4(const double k4) { params_->k4_ = k4; }
+    //@}
+
+    private:
 
     /// my material parameters
     MAT::ELASTIC::PAR::CoupAnisoExpoTwo* params_;

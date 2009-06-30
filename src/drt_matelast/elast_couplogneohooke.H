@@ -3,7 +3,7 @@
 \file elast_couplogneohooke.H
 \brief
 This file contains the routines required for logarithmic neo-Hooke material
-according to Bonet and Wood, "Nonlinear continuum mechanics for finite 
+according to Bonet and Wood, "Nonlinear continuum mechanics for finite
 element analysis", Cambridge, 1997.
 
 <pre>
@@ -56,15 +56,15 @@ namespace ELASTIC
       //@{
 
       /// Shear modulus
-      const double mue_;
+      double mue_;
       /// Lame's constant
-      const double lambda_;
+      double lambda_;
       /// Parameter mode
-      const int parmode_;
+      int parmode_;
       /// Young's modulus
-      const double youngs_;
+      double youngs_;
       /// Possion's ratio
-      const double nue_;
+      double nue_;
 
       //@}
 
@@ -75,7 +75,7 @@ namespace ELASTIC
   /*----------------------------------------------------------------------*/
   /// Logarithmic neo-Hooke material according to [1]
   ///
-  /// This is a compressible, hyperelastic, isotropic material 
+  /// This is a compressible, hyperelastic, isotropic material
   /// of the most simple kind.
   ///
   /// The material strain energy density function is
@@ -88,7 +88,7 @@ namespace ELASTIC
   ///
   /// <h3>References</h3>
   /// <ul>
-  /// <li> [1] J Bonet and RD Wood, "Nonlinear continuum mechanics for finite 
+  /// <li> [1] J Bonet and RD Wood, "Nonlinear continuum mechanics for finite
   ///          element analysis", Cambridge, 1997.
   /// <li> [2] GA Holzapfel, "Nonlinear solid mechanics", Wiley, 2000.
   /// </ul>
@@ -131,7 +131,7 @@ namespace ELASTIC
     /// which was taken from [1].
     ///
     /// Here is \f$I_{\boldsymbol{C}}\f$ the first principal invariant
-    /// of the right Cauchy--Green strain tensor \f$\boldsymbol{C}\f$ 
+    /// of the right Cauchy--Green strain tensor \f$\boldsymbol{C}\f$
     /// and \f$I\!I\!I_{\boldsymbol{C}}\f$ its third.
     /// The isochoric part is proportional to \f$\mu\f$,
     /// whereas the \f$\lambda\f$-proportional part constitutes the volumetric contribution.
@@ -159,7 +159,7 @@ namespace ELASTIC
     /// \f$\boldsymbol{C}_\text{m}=C_{IJKL}\boldsymbol{E}^I\otimes\boldsymbol{E}^J\otimes\boldsymbol{E}^K\otimes\boldsymbol{E}^L\f$
     /// is determined by
     ///\f[
-    /// C_{IJKL} 
+    /// C_{IJKL}
     /// = \lambda (\boldsymbol{C}^{-1})_{IJ} \, (\boldsymbol{C}^{-1})_{KL}
     /// + 2\big(\mu-\lambda \log(\sqrt{I\!I\!I_{\boldsymbol{C}}})\big)
     ///   \, \frac{1}{2} \big( \boldsymbol{C}^{-1})_{IK} \, (\boldsymbol{C}^{-1})_{JL}
@@ -178,7 +178,7 @@ namespace ELASTIC
         LINALG::Matrix<8,1>& delta,  ///< necessary coefficients for second derivative
         const LINALG::Matrix<3,1>& prinv  ///< principal invariants of right Cauchy-Green tensor
     );
-    
+
     /// Add modified coeffiencts.
     /// Nothing to do for this (coupled) material!
     void AddCoefficientsModified(
@@ -190,7 +190,7 @@ namespace ELASTIC
     {
       havecoefficients = havecoefficients or false;
     };
-        
+
     /// Add anisotropic principal coeffiencts.
     /// Nothing to do for this (isotropic) material!
     void AddCoefficientsPrincipalAniso(
@@ -202,7 +202,7 @@ namespace ELASTIC
     {
       havecoefficients = havecoefficients or false;
     };
-        
+
     /// Add anisotropic modified coeffiencts.
     /// Nothing to do for this (isotropic) material!
     void AddCoefficientsModifiedAniso(
@@ -213,8 +213,27 @@ namespace ELASTIC
     )
     {
       havecoefficients = havecoefficients or false;
-    };        
-    
+    };
+
+    /// @name Access methods
+    //@{
+    double Mue() const { return params_->mue_; }
+    double Lambda() const { return params_->lambda_; }
+    int Parmode() const { return params_->parmode_; }
+    double Youngs() const { return params_->youngs_; }
+    double Nue() const { return params_->nue_; }
+
+    //@}
+
+    /// @name Write methods
+    //@{
+    void SetMue    (const double mue    ) { params_->mue_     =  mue    ; }
+    void SetLambda (const double lambda ) { params_->lambda_  =  lambda ; }
+    void SetParmode(const int    parmode) { params_->parmode_ =  parmode; }
+    void SetYoungs (const double youngs ) { params_->youngs_  =  youngs ; }
+    void SetNue    (const double nue    ) { params_->nue_     =  nue    ; }
+    //@}
+
 
   private:
 

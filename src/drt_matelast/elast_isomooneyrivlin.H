@@ -3,7 +3,7 @@
 \file elast_isomooneyrivlin.H
 \brief
 
-This file contains the routines required to calculate the isochoric contribution 
+This file contains the routines required to calculate the isochoric contribution
 of a Mooney-Rivlin-type material
 
 <pre>
@@ -36,7 +36,7 @@ namespace ELASTIC
     /// material parameters for isochoric contribution of a Mooney-Rivlin type material
     ///
     /// <h3>Input line</h3>
-    /// MAT 1 ELAST_IsoMooneyRivlin C1 100 C2 50  
+    /// MAT 1 ELAST_IsoMooneyRivlin C1 100 C2 50
     class IsoMooneyRivlin : public MAT::PAR::Parameter
     {
     public:
@@ -53,8 +53,8 @@ namespace ELASTIC
       //@{
 
       /// Shear modulus
-      const double c1_;
-      const double c2_;
+      double c1_;
+      double c2_;
 
       //@}
 
@@ -71,7 +71,7 @@ namespace ELASTIC
   ///   \Psi = C1 (\overline{I}_{\boldsymbol{C}}-3) + C2 (\overline{II}_{\boldsymbol{C}}-3).
   ///\f]
   ///
-  /// 
+  ///
   /// <h3>References</h3>
   /// <ul>
   /// <li> [1] GA Holzapfel, "Nonlinear solid mechanics", Wiley, 2000.
@@ -111,7 +111,7 @@ namespace ELASTIC
 
       return;
     };
-    
+
     /// Add modified coeffiencts.
     void AddCoefficientsModified(
         bool& havecoefficients,  ///< non-zero coefficients of this type are provided
@@ -119,8 +119,8 @@ namespace ELASTIC
         LINALG::Matrix<5,1>& delta,  ///< necessary coefficients for second derivative
         const LINALG::Matrix<3,1>& modinv  ///< modified invariants of right Cauchy-Green tensor
     );
-    
-    
+
+
     /// Add anisotropic principal coeffiencts.
     /// Nothing to do for this (isotropic) material!
     void AddCoefficientsPrincipalAniso(
@@ -132,7 +132,7 @@ namespace ELASTIC
     {
       havecoefficients = havecoefficients or false;
     };
-        
+
     /// Add anisotropic modified coeffiencts.
     /// Nothing to do for this (isotropic) material!
     void AddCoefficientsModifiedAniso(
@@ -145,6 +145,18 @@ namespace ELASTIC
       havecoefficients = havecoefficients or false;
     };
 
+    /// @name Access methods
+    //@{
+    double C1() const { return params_->c1_; }
+    double C2() const { return params_->c2_; }
+
+    //@}
+
+    /// @name Write methods
+    //@{
+    void SetC1(const double c1) { params_->c1_ = c1; }
+    void SetC2(const double c2) { params_->c2_ = c2; }
+    //@}
   private:
 
     /// my material parameters
@@ -156,4 +168,4 @@ namespace ELASTIC
 }  // namespace MAT
 
 #endif  // CCADISCRET
-#endif  
+#endif

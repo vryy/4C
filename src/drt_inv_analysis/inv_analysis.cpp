@@ -26,6 +26,16 @@ Maintainer: Sophie Rausch
 #include "../drt_mat/lung_ogden.H"
 #include "../drt_mat/lung_penalty.H"
 #include "../drt_structure/strtimint_create.H"
+#include "../drt_matelast/elast_coupanisoexpotwo.H"
+#include "../drt_matelast/elast_coupanisoneohooketwo.H"
+#include "../drt_matelast/elast_coupblatzko.H"
+#include "../drt_matelast/elast_couplogneohooke.H"
+#include "../drt_matelast/elast_isomooneyrivlin.H"
+#include "../drt_matelast/elast_isoneohooke.H"
+#include "../drt_matelast/elast_isoyeoh.H"
+#include "../drt_matelast/elast_summand.H"
+#include "../drt_matelast/elast_vologden.H"
+#include "../drt_matelast/elast_volsussmanbathe.H"
 
 
 //using namespace LINALG::ANA;
@@ -97,7 +107,7 @@ STR::InvAnalysis::InvAnalysis(Teuchos::RCP<DRT::Discretization> dis,
   // error: diference of the measured to the calculated curve
   error_  = 1.0E6;
   error_o_= 1.5E6;
-  pp_ =3;
+
 
   // trainings parameter
   mu_  = 1;                                     // start value
@@ -105,8 +115,8 @@ STR::InvAnalysis::InvAnalysis(Teuchos::RCP<DRT::Discretization> dis,
   mup_ = 10;
 
   // material parameters
-  p_.Resize(3);
-  p_o_.Resize(3);
+  //p_.Resize(3);
+  //p_o_.Resize(3);
 
   // Which material is used in the input file
   {
@@ -114,25 +124,148 @@ STR::InvAnalysis::InvAnalysis(Teuchos::RCP<DRT::Discretization> dis,
     if (material->MaterialType() == INPAR::MAT::m_lung_penalty)
     {
       const MAT::LungPenalty* actmat = static_cast<const MAT::LungPenalty*>(material.get());
-      p_(0) = actmat->C();
-      p_(1) = actmat->K1();
-      p_(2) = actmat->K2();
+      int j = p_.Length();
+      p_.Resize(j+3);
+      p_(j)   = actmat->C();
+      p_(j+1) = actmat->K1();
+      p_(j+2) = actmat->K2();
     }
     else if (material->MaterialType() == INPAR::MAT::m_lung_ogden)
     {
       const MAT::LungOgden* actmat = static_cast<const MAT::LungOgden*>(material.get());
-      p_(0) = actmat->C();
-      p_(1) = actmat->K1();
-      p_(2) = actmat->K2();
+      int j = p_.Length();
+      p_.Resize(j+3);
+      p_(j)   = actmat->C();
+      p_(j+1) = actmat->K1();
+      p_(j+2) = actmat->K2();
     }
-    else dserror("The inverse analysis is only implemented for the LungOgden and the LungPenalty material");
+    else if (material->MaterialType() == INPAR::MAT::m_elasthyper)
+    {
+      // Create a pointer on the Material
+      const MAT::ElastHyper* actmat = static_cast<const MAT::ElastHyper*>(material.get());
+
+      // For each of the summed up materials we need to add the
+      // parameters to the inverse analysis
+      cout << endl;
+      cout << "Anzahl der Materialien: " << actmat->NumMat() << endl;
+
+      for (int i=0; i< actmat->NumMat(); i++)
+      {
+        cout << " Run for the " << i << ". material" << endl;
+        //get the material of the summand
+        Teuchos::RCP< MAT::ELASTIC::Summand > summat = MAT::ELASTIC::Summand::Factory(actmat->MatID(i));
+
+        switch (summat->MaterialType())
+        {
+          case INPAR::MAT::mes_couplogneohooke:
+          {
+            const MAT::ELASTIC::CoupLogNeoHooke* actmat2 = static_cast<const MAT::ELASTIC::CoupLogNeoHooke*>(summat.get());
+            int j = p_.Length();
+            p_.Resize(j+5);
+            p_[j]   = actmat2->Mue();
+            p_[j+1] = actmat2->Lambda();
+            p_[j+2] = actmat2->Parmode();
+            p_[j+3] = actmat2->Youngs();
+            p_[j+4] = actmat2->Nue();
+            break;
+          }
+          case INPAR::MAT::mes_coupblatzko:
+          {
+            const MAT::ELASTIC::CoupBlatzKo* actmat2 = static_cast<const MAT::ELASTIC::CoupBlatzKo*>(summat.get());
+            int j = p_.Length();
+            p_.Resize(j+3);
+            p_[j]   = actmat2->Mue();
+            p_[j+1] = actmat2->Nue();
+            p_[j+2] = actmat2->F();
+            break;
+          }
+          case INPAR::MAT::mes_isoneohooke:
+          {
+            const MAT::ELASTIC::IsoNeoHooke* actmat2 = static_cast<const MAT::ELASTIC::IsoNeoHooke*>(summat.get());
+            int j = p_.Length();
+            p_.Resize(j+1);
+            p_[j]   = actmat2->Mue();
+            break;
+          }
+          case INPAR::MAT::mes_isoyeoh:
+          {
+            const MAT::ELASTIC::IsoYeoh* actmat2 = static_cast<const MAT::ELASTIC::IsoYeoh*>(summat.get());
+            int j = p_.Length();
+            p_.Resize(j+3);
+            p_[j]   = actmat2->C1();
+            p_[j+1] = actmat2->C2();
+            p_[j+2] = actmat2->C3();
+            break;
+          }
+          case INPAR::MAT::mes_isomooneyrivlin:
+          {
+            const MAT::ELASTIC::IsoMooneyRivlin* actmat2 = static_cast<const MAT::ELASTIC::IsoMooneyRivlin*>(summat.get());
+            int j = p_.Length();
+            p_.Resize(j+2);
+            p_[j]   = actmat2->C1();
+            p_[j+1] = actmat2->C2();
+            break;
+          }
+          case INPAR::MAT::mes_volsussmanbathe:
+          {
+            const MAT::ELASTIC::VolSussmanBathe* actmat2 = static_cast<const MAT::ELASTIC::VolSussmanBathe*>(summat.get());
+            int j = p_.Length();
+            p_.Resize(j+1);
+            p_[j]   = actmat2->Kappa();
+            break;
+          }
+          case INPAR::MAT::mes_vologden:
+          {
+            const MAT::ELASTIC::VolOgden* actmat2 = static_cast<const MAT::ELASTIC::VolOgden*>(summat.get());
+            int j = p_.Length();
+            p_.Resize(j+2);
+            p_[j]   = actmat2->Kappa();
+            p_[j+1] = actmat2->Beta();
+            break;
+          }
+          case INPAR::MAT::mes_coupanisoexpotwo:
+          {
+            const MAT::ELASTIC::CoupAnisoExpoTwo* actmat2 = static_cast<const MAT::ELASTIC::CoupAnisoExpoTwo*>(summat.get());
+            int j = p_.Length();
+            p_.Resize(j+4);
+            p_[j]   = actmat2->K1();
+            p_[j+1] = actmat2->K2();
+            p_[j+2] = actmat2->K3();
+            p_[j+3] = actmat2->K4();
+            break;
+          }
+          case INPAR::MAT::mes_coupanisoneohooketwo:
+          {
+            const MAT::ELASTIC::CoupAnisoNeoHookeTwo* actmat2 = static_cast<const MAT::ELASTIC::CoupAnisoNeoHookeTwo*>(summat.get());
+            int j = p_.Length();
+            p_.Resize(j+2);
+            p_[j]   = actmat2->C1();
+            p_[j+1] = actmat2->C2();
+            break;
+          }
+          default:
+            dserror("cannot deal with this material");
+        }
+      }
+
+    }
+    else dserror("The inverse analysis is not implemented for this material");
   }
 
-  p_neg_ = p_;
-  delta_p_.Resize(3);
-  delta_p_(0) = 10;
-  delta_p_(1) = 10;
-  delta_p_(2) = 0.1;
+  for (int i=0; i<p_.Length();i++)
+  {
+    cout << p_[i] << " ";
+  }
+  cout << endl;
+
+  pp_ = p_.Length();
+  p_neg_.Resize(pp_);
+  delta_p_.Resize(pp_);
+  for (int i=0;  i< pp_; i++)
+  {
+    p_neg_ [i] = p_[i];
+    delta_p_[i] = 1;
+  }
 
   // controlling parameter
   precond_ =   0;         // counter where in the preconditioning we are
@@ -543,9 +676,12 @@ void STR::InvAnalysis::GetCalculatedCurve(const Teuchos::RCP<Epetra_Vector> valu
   }
   else                                         // disp controlled
   {
-    cout << "Laenge des Vektors: " << value->MyLength() << endl;
-    value->MeanValue(&(ccurve_[numb]));
-    ccurve_[numb] *= value->MyLength()/2;
+    for (unsigned int i=0; i<value->MyLength();i++)
+    {
+      ccurve_[numb]+=(*value)[i];
+    }
+    ccurve_[numb] /= 2;
+
     //this just works for symmetric problems because then the other two
     //directions neutralize themselfs
   }

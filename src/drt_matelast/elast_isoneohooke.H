@@ -3,7 +3,7 @@
 \file elast_isoneohooke.H
 \brief
 This file contains the routines required for logarithmic neo-Hooke material
-according to Bonet and Wood, "Nonlinear continuum mechanics for finite 
+according to Bonet and Wood, "Nonlinear continuum mechanics for finite
 element analysis", Cambridge, 1997.
 
 <pre>
@@ -53,7 +53,7 @@ namespace ELASTIC
       //@{
 
       /// Shear modulus
-      const double mue_;
+      double mue_;
 
       //@}
 
@@ -64,7 +64,7 @@ namespace ELASTIC
   /*----------------------------------------------------------------------*/
   /// Isochoric neo-Hooke material according to [1]
   ///
-  /// This is a hyperelastic, isotropic material 
+  /// This is a hyperelastic, isotropic material
   /// of the most simple kind.
   ///
   /// Strain energy function is given by
@@ -72,7 +72,7 @@ namespace ELASTIC
   ///   \Psi = \frac \mu 2 (\overline{I}_{\boldsymbol{C}}-3).
   ///\f]
   ///
-  ///  
+  ///
   /// <h3>References</h3>
   /// <ul>
   /// <li> [1] GA Holzapfel, "Nonlinear solid mechanics", Wiley, 2000.
@@ -113,7 +113,7 @@ namespace ELASTIC
 
       return;
     };
-    
+
     /// Add modified coeffiencts.
     void AddCoefficientsModified(
         bool& havecoefficients,  ///< non-zero coefficients of this type are provided
@@ -145,6 +145,18 @@ namespace ELASTIC
     {
       havecoefficients = havecoefficients or false;
     };
+
+
+    /// @name Access methods
+    //@{
+    double Mue() const { return params_->mue_; }
+
+    //@}
+
+    /// @name Write methods
+    //@{
+    void SetMue(const double mue) { params_->mue_ = mue; }
+    //@}
   private:
 
     /// my material parameters

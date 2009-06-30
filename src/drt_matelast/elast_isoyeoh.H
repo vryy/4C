@@ -2,7 +2,7 @@
 /*!
 \file elast_isoyeoh.H
 \brief
-This file contains the routines required to calculate the isochoric contribution 
+This file contains the routines required to calculate the isochoric contribution
 of a Yeoh-type material.
 
 <pre>
@@ -33,7 +33,7 @@ namespace ELASTIC
     /// material parameters for isochoric contribution of a Yeoh material
     ///
     /// <h3>Input line</h3>
-    /// MAT 1 ELAST_IsoYeoh C1 100 C2 0 C3 200 
+    /// MAT 1 ELAST_IsoYeoh C1 100 C2 0 C3 200
     class IsoYeoh : public MAT::PAR::Parameter
     {
     public:
@@ -50,9 +50,9 @@ namespace ELASTIC
       //@{
 
       /// Shear modulus
-      const double c1_;
-      const double c2_;
-      const double c3_;
+      double c1_;
+      double c2_;
+      double c3_;
 
       //@}
 
@@ -63,12 +63,12 @@ namespace ELASTIC
   /*----------------------------------------------------------------------*/
   /// Isochoric Yeoh material according to [1]
   ///
-  /// This is the isochoric part of a third order hyperelastic, isotropic 
+  /// This is the isochoric part of a third order hyperelastic, isotropic
   /// material depending on the modified trace of the right Cauchy-Green tensor.
   ///
   /// Strain energy function is given by
   ///\f[
-  ///   \Psi = C1 (\overline{I}_{\boldsymbol{C}}-3) + C2 (\overline{I}_{\boldsymbol{C}}-3)^2 + 
+  ///   \Psi = C1 (\overline{I}_{\boldsymbol{C}}-3) + C2 (\overline{I}_{\boldsymbol{C}}-3)^2 +
   ///          C3 (\overline{I}_{\boldsymbol{C}}-3)^3.
   ///\f]
   ///
@@ -111,7 +111,7 @@ namespace ELASTIC
       havecoefficients = havecoefficients or false;
       return;
     };
-    
+
     /// Add modified coeffiencts.
     void AddCoefficientsModified(
         bool& havecoefficients,  ///< non-zero coefficients of this type are provided
@@ -131,7 +131,7 @@ namespace ELASTIC
     {
       havecoefficients = havecoefficients or false;
     };
-        
+
     /// Add anisotropic modified coeffiencts.
     /// Nothing to do for this (isotropic) material!
     void AddCoefficientsModifiedAniso(
@@ -143,8 +143,22 @@ namespace ELASTIC
     {
       havecoefficients = havecoefficients or false;
     };
-        
-        
+
+    /// @name Access methods
+    //@{
+    double C1() const { return params_->c1_; }
+    double C2() const { return params_->c2_; }
+    double C3() const { return params_->c3_; }
+
+    //@}
+
+    /// @name Write methods
+    //@{
+    void SetC1(const double c1) { params_->c1_ = c1; }
+    void SetC2(const double c2) { params_->c2_ = c2; }
+    void SetC3(const double c3) { params_->c3_ = c3; }
+    //@}
+
   private:
 
     /// my material parameters

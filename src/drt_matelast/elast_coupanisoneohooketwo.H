@@ -54,8 +54,8 @@ namespace ELASTIC
       //@{
 
       /// fiber params
-      const double c1_;
-      const double c2_;
+      double c1_;
+      double c2_;
 
       //@}
 
@@ -147,6 +147,21 @@ namespace ELASTIC
     {
       havecoefficients = havecoefficients or false;
     };
+
+
+    /// @name Access methods
+    //@{
+    double C1() const { return params_->c1_; }
+    double C2() const { return params_->c2_; }
+
+    //@}
+
+    /// @name Write methods
+    //@{
+    void SetC1(const double c1) { params_->c1_ = c1; }
+    void SetC2(const double c2) { params_->c2_ = c2; }
+    //@}
+
   private:
 
     /// my material parameters

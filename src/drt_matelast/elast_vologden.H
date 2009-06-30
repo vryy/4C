@@ -55,9 +55,9 @@ namespace ELASTIC
       //@{
 
       /// Dilatation modulus
-      const double kappa_;
+      double kappa_;
       /// empiric constant
-      const double beta_;
+      double beta_;
 
       //@}
 
@@ -145,6 +145,18 @@ namespace ELASTIC
       havecoefficients = havecoefficients or false;
     };
 
+        /// @name Access methods
+    //@{
+    double Kappa() const { return params_->kappa_; }
+    double Beta() const { return params_->beta_; }
+
+    //@}
+
+    /// @name Write methods
+    //@{
+    void SetKappa(const double kappa) { params_->kappa_ = kappa; }
+    void SetBeta(const double beta) { params_->beta_ = beta; }
+    //@}
 
 
   private:
