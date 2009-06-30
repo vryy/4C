@@ -54,7 +54,14 @@ of generality since any initial rotation cancels out in the equations (17.72) an
 the current nodal directors do not appear in the element, but only the values of the current director
 angles minus reference director angles, respectively 
 
-\author cyron (cyron @lnm.mw.tum.de)
+The element is capable of using higher order functions from linear to quartic. Please make sure you put the nodes in the right order
+in the input file.
+LIN2  1---2
+LIN3	 1---3---2
+LIN4  1---4---2---3
+LIN5	 1---5---2---3---4
+
+author cyron (cyron @lnm.mw.tum.de)
 */
 class Beam3 : public DRT::Element
 {
@@ -340,37 +347,34 @@ private:
   //! variable saving whether element has already been initialized (then isinit_ == true)
   bool isinit_;
   
-  //!reference node position (not needed explicitly, but stored for the sake of completeness)
-  LINALG::Matrix<6,1> X_;
-  
-  //! length in reference configuration
+  //! length in reference configuration has been replaced by alpha_ only needed for damping calculations
   double lrefe_;
   
-  //! quaternion of central triad at the end of the preceeding time step due to Crisfield, Vol. 2, equation (17.65)
-  LINALG::Matrix<4,1> Qconv_;
-  //! quaternion of central triad at the end of the preceeding iteration step due to Crisfield, Vol. 2, equation (17.65)
-  LINALG::Matrix<4,1> Qold_;
-  //! quaternion of central triad during the current iteration step due to Crisfield, Vol. 2, equation (17.65)
-  LINALG::Matrix<4,1> Qnew_;
-  //!curvature at the end of the preceeding time step due to Crisfield, Vol. 2, equation (17.72)
-  LINALG::Matrix<3,1> curvconv_;
-  //!curvature at the end of the preceeding iteration step due to Crisfield, Vol. 2, equation (17.72)
-  LINALG::Matrix<3,1> curvold_;
-  //!curvature during the current iteration step due to Crisfield, Vol. 2, equation (17.72)
-  LINALG::Matrix<3,1> curvnew_;
+  //! quaternions of triads at GPs at the end of the preceeding time step due to Crisfield, Vol. 2, equation (17.65)
+  vector<LINALG::Matrix<4,1> > Qconv_;
+  //! quaternions of triads at GPs at the end of the preceeding iteration step due to Crisfield, Vol. 2, equation (17.65)
+  vector<LINALG::Matrix<4,1> > Qold_;
+  //! quaternions of triads at GPs during the current iteration step due to Crisfield, Vol. 2, equation (17.65)
+  vector<LINALG::Matrix<4,1> > Qnew_;
+  //!curvaturea at the end of the preceeding time step due to Crisfield, Vol. 2, equation (17.72)
+  vector<LINALG::Matrix<3,1> > curvconv_;
+  //!curvaturea at the end of the preceeding iteration step due to Crisfield, Vol. 2, equation (17.72)
+  vector<LINALG::Matrix<3,1> > curvold_;
+  //!curvaturea during the current iteration step due to Crisfield, Vol. 2, equation (17.72)
+  vector<LINALG::Matrix<3,1> > curvnew_;
   
   //!angle displacement taken from discretization and interpolated for a specific Gauss point by Crisfield, Vol. 2, equation (17.93); relates to the end of the preceeding time step
-  LINALG::Matrix<3,1> thetaconv_;
+  vector<LINALG::Matrix<3,1> > thetaconv_;
   //!angle displacement taken from discretization and interpolated for a specific Gauss point by Crisfield, Vol. 2, equation (17.93); relates to the end of the preceeding iteration step
-  LINALG::Matrix<3,1> thetaold_;
+  vector<LINALG::Matrix<3,1> > thetaold_;
   //!angle displacement taken from discretization and interpolated for a specific Gauss point by Crisfield, Vol. 2, equation (17.93); relates to current iteration step
-  LINALG::Matrix<3,1> thetanew_;
+  vector<LINALG::Matrix<3,1> > thetanew_;
   //!derivative of angle displacement taken from discretization with respect to curve parameter at a specific Gauss point; derivative due to Crisfield, Vol. 2, equation (17.93); relates to the end of the preceeding time step
-  LINALG::Matrix<3,1> thetaprimeconv_;
+  vector<LINALG::Matrix<3,1> > thetaprimeconv_;
   //!derivative of angle displacement taken from discretization with respect to curve parameter at a specific Gauss point; derivative due to Crisfield, Vol. 2, equation (17.93); relates to the end of the preceeding iteration step
-  LINALG::Matrix<3,1> thetaprimeold_;
+  vector<LINALG::Matrix<3,1> > thetaprimeold_;
   //!derivative of angle displacement taken from discretization with respect to curve parameter at a specific Gauss point; derivative due to Crisfield, Vol. 2, equation (17.93); relates to the current iteration step
-  LINALG::Matrix<3,1> thetaprimenew_;
+  vector<LINALG::Matrix<3,1> > thetaprimenew_;
   
   //! cross section area
   double crosssec_;
@@ -380,22 +384,32 @@ private:
   
   //!moment of inertia of area around y-axis(orthognoal to beam axis in yz-plane)
   double Iyy_;
+  
   //!moment of inertia of area around z-axis(forming cartesian system with beam- and y-axis)
   double Izz_;
+  
   //!polar moment of inertia of area
   double Irr_;
  
   //! viscosity of surrounding fluid
   double eta_;
+  
+  //! Vector holding alpha for each gausspoint
+  vector<double> alpha_;
+   
+  //! Vector holding alpha for each gausspoint for complete integration of massmatrix
+  vector<double> alphamass_;
 
-  //! gaussrule_ will be initialized automatically to a 2 point integration rule 
+  //! gaussrule_ will be initialized automatically for underintegration in order to get rid of Locking 
   DRT::UTILS::GaussRule1D gaussrule_;
   
 
   //! @name methods for initilization of the element
   
   //!sets up from current nodal position all geometric parameters (considering current position as reference configuration)
-  void SetUpReferenceGeometry(const LINALG::Matrix<6,1>& xrefe, const LINALG::Matrix<6,1>& rotrefe);
+  //this function is templated and receives nnode from Beam3Register::Initialize
+  template<int nnode>
+  void SetUpReferenceGeometry(const vector<double>& xrefe);
   
   //@}
   
@@ -433,26 +447,30 @@ private:
   
   //! @name Internal calculation methods
   
-  /*!this function performs an update of the central triad as in principle given in Crisfield, Vol. 2, equation (17.65), 
-   * but by means of a quaterion product and then multiplication of the rotation matrix in (16.69) with reference triad Tref_*/
-  void updatetriad(LINALG::Matrix<3,1>& deltatheta, LINALG::Matrix<3,3>& Tnew);
+  /*!this function performs an update of the central triad as in principle given in Crisfield, Vol. 2, equation (16.65), 
+   * but by means of a quaternion product and then multiplication of the rotation matrix in (16.69) with the reference triad Tref*/
+  void updatetriad(const LINALG::Matrix<3,1>& deltatheta, LINALG::Matrix<3,3>& Tnew, const int numgp);
   
-  //!updating local curvature according to Crisfield, Vol. 2, pages 209 - 210
-  void updatecurvature(const LINALG::Matrix<3,3>& Tnew, LINALG::Matrix<3,1>& deltatheta,LINALG::Matrix<3,1>& deltathetaprime);
+  //!updating local curvature according to Crisfield, Vol. 2, pages 209 - 210, basically equation (16.148)
+  void updatecurvature(const LINALG::Matrix<3,3>& Tnew, LINALG::Matrix<3,1>& deltatheta,LINALG::Matrix<3,1>& deltathetaprime, const int numgp);
   
-  //!updating local curvature approximately according to Crisfield, Vol. 2, eqs. (17.72) & (17.73)
-  void approxupdatecurvature(const LINALG::Matrix<3,3>& Tnew, LINALG::Matrix<3,1> deltabetaplusalpha,LINALG::Matrix<3,1> deltabetaminusalpha);
+  //!updating local curvature approximately according to Crisfield, Vol. 2, eqs. (17.72) & (17.73) (only possible for linear elements)
+  void approxupdatecurvature(const LINALG::Matrix<3,3>& Tnew, LINALG::Matrix<3,1> deltatheta,LINALG::Matrix<3,1> deltathetaprime, const int numgp);
   
-  //!computing stiffness matrix Ksigma1 according to Crisfield, Vol. 2, equation (17.83)
-  void computeKsig1(Epetra_SerialDenseMatrix& Ksig1, const LINALG::Matrix<3,1>& stressn, const LINALG::Matrix<3,1>& stressm);
+  //!computing stiffness matrix Ksigma1 according to Crisfield, Vol. 2, equation (17.106)
+  template<int nnode>
+  void computeKsig1(LINALG::Matrix<6*nnode,6*nnode>& Ksig1, const LINALG::Matrix<3,1>& stressn, const LINALG::Matrix<3,1>& stressm, const LINALG::Matrix<1,nnode>& funct, const LINALG::Matrix<1,nnode>& deriv);
   
-  //!computing stiffness matrix Ksigma2 according to Crisfield, Vol. 2, equation (17.87)
-  void computeKsig2(Epetra_SerialDenseMatrix& Ksig1, const LINALG::Matrix<3,1>& stressn, const LINALG::Matrix<3,1>& x21);
+  //!computing stiffness matrix Ksigma2 according to Crisfield, Vol. 2, equation (17.107a) and (17.107b)
+  template<int nnode>
+  void computeKsig2(LINALG::Matrix<6*nnode,6*nnode>& Ksig2, const LINALG::Matrix<3,1>& stressn, const LINALG::Matrix<3,3>& S, const LINALG::Matrix<1,nnode>& funct, const LINALG::Matrix<1,nnode>& deriv);
   
-  //!computing basis of stiffness matrix according to Crisfield, Vol. 2, equation (17.81)
-  void computestiffbasis(const LINALG::Matrix<3,3>& Tnew, const LINALG::Matrix<3,1>& Cm, const LINALG::Matrix<3,1>& Cb, const LINALG::Matrix<3,3>& spinx21, Epetra_SerialDenseMatrix& stiffmatrix);
+  //!computing basis of stiffness matrix according to Crisfield, Vol. 2, equation (17.105)
+  template<int nnode>
+  void computestiffbasis(const LINALG::Matrix<3,3>& Tnew, const LINALG::Matrix<3,1>& Cm, const LINALG::Matrix<3,1>& Cb, const LINALG::Matrix<3,3>& S, LINALG::Matrix<6*nnode,6*nnode>& stiffmatrix, const LINALG::Matrix<1,nnode>& funct, const LINALG::Matrix<1,nnode>& deriv);
                     
   //!calculation of nonlinear stiffness and mass matrix
+  template<int nnode>
   void b3_nlnstiffmass( ParameterList& params,
                         vector<double>&           vel,
                         vector<double>&           disp,
@@ -460,8 +478,9 @@ private:
                         Epetra_SerialDenseMatrix* massmatrix,
                         Epetra_SerialDenseVector* force);
    
-  //! lump mass matrix (bborn 07/08)
-  void b3_lumpmass(Epetra_SerialDenseMatrix* emass);
+  //! lump mass matrix
+  template<int nnode>
+  void lumpmass(Epetra_SerialDenseMatrix* emass);
   
   //@}
 			    
