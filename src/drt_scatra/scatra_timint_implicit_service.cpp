@@ -824,10 +824,9 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
     return CalcFluxAtBoundary(condnames);
   }
 
-  // we have to crash here  :-(
-  dserror("Error in CalcFlux(): Got unknown parameter %s", fluxcomputation.c_str());
-  return Teuchos::null;
-
+  // else: we just return a zero vector field (needed for result testing)
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  return rcp(new Epetra_MultiVector(*dofrowmap,3,true));
 }
 
 
