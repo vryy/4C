@@ -161,7 +161,7 @@ void DRT::UTILS::TimeCurveManager::ReadInput()
           else if (string(buffer)=="f(t)=(1-C2/C1)*T+C2")
             numex=-12; /* linearly increasing function with non-zero initial value */
           else
-            dserror("cannot read function of CURVE%d",i);
+            dserror("Cannot read function of CURVE%d: %s",i,string(buffer).c_str());
 
           double c1;
           double c2;
