@@ -29,7 +29,9 @@ Maintainer: Georg Bauer
 #include <MLAPI_Workspace.h>
 #include <MLAPI_Aggregation.h>
 #include <MLAPI_Eig.h>
-
+// for printing electrode status to file
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_io/io_control.H"
 
 /*----------------------------------------------------------------------*
  | calculate initial time derivative of phi at t=t_0           gjb 08/08|
@@ -690,7 +692,7 @@ void SCATRA::ScaTraTimIntImpl::OutputElectrodeInfo()
       cond[condid]->Add("ConditionID",condid);
     }
   }
-  // now we evaluate the conditions and seperate via ConditionID
+  // now we evaluate the conditions and separate via ConditionID
   for (int condid = 0; condid < (int) cond.size(); condid++)
   {
     // calculate integral of normal fluxes over indicated boundary and it's area
@@ -731,13 +733,38 @@ void SCATRA::ScaTraTimIntImpl::OutputElectrodeInfo()
       pot *= curvefac;
     }
 
-    // print out results
+    // print out results to screen
     if (myrank_ == 0)
     {
       printf("|| %2d |     %10.3E      |    %10.3E    |      %10.3E      |     %10.3E     |   %10.3E   |   %10.3E   |\n",
         condid,parcurrentintegral,parboundaryint,parcurrentintegral/parboundaryint,paroverpotentialint/parboundaryint, pot, parcint/parboundaryint);
     }
     sum+=parcurrentintegral;
+
+    // print out results to file as well
+    if (myrank_ == 0)
+    {
+      ostringstream temp;
+      temp << condid;
+      const std::string fname 
+      = DRT::Problem::Instance()->OutputControlFile()->FileName()+".electrode_status_"+temp.str()+".txt";
+
+      std::ofstream f;
+      if (Step() <= 1)
+      {
+        f.open(fname.c_str(),std::fstream::trunc);
+        f << "#| ID | Step | Time | Total current | Area of boundary | Mean current density | Mean overpotential | Electrode pot. | Mean Concentr. |\n";
+      }
+      else
+        f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+
+      f << condid << " " << Step() << " " << Time() << " " << parcurrentintegral << " " << parboundaryint 
+      << " " << parcurrentintegral/parboundaryint << " " << paroverpotentialint/parboundaryint << " " 
+      << pot << " " << parcint/parboundaryint << "\n";
+      f.flush();
+      f.close();
+    }
+
   } // loop over condid
 
   if (myrank_==0)
