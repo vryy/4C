@@ -80,6 +80,14 @@ class DomainIntCell : public IntCell
         const LINALG::SerialDenseMatrix&            physDomainCoordinates       ///< coordinates in physical coordinates
         );
     
+    //! constructor used for combustion problems
+    explicit DomainIntCell(
+        const DRT::Element::DiscretizationType&     distype,                    ///< distype of the integration cell
+        const LINALG::SerialDenseMatrix&            xfemEleDomainCoordinates,   ///< coordinates in xfem element coordinates
+        const LINALG::SerialDenseMatrix&            physDomainCoordinates,      ///< coordinates in physical coordinates
+        const bool                                  indomainplus                ///< domain part of the integration cell
+        );
+    
     /*!
      \brief Standard Constructor for dummy integration cell
             This is the default integration cell, if no intersections 
@@ -111,7 +119,7 @@ class DomainIntCell : public IntCell
     const LINALG::Matrix<3,1>&  GetPhysicalCenterPosition() const{ return phys_center_;}
     
     double VolumeInXiDomain(const DRT::Element& ele) const;
-       
+    
     //! return string representation of the DomainIntCell
     virtual std::string toString() const;
     
@@ -120,10 +128,12 @@ class DomainIntCell : public IntCell
     
     //! return label of domain intcell
     int getLabel() const {return label_; }
-        
+    
+    //! return domain indicator
+    bool getDomainPlus() const {return indomainplus_;}
+    
     //! set label of domain intcell
     void setLabel(const int   label);
-    
 
   private:
      
@@ -147,6 +157,9 @@ class DomainIntCell : public IntCell
     
     // xfem label if fluid label = 0; otherwise label = solid id
     int                                             label_;
+    
+    // boolean indicating that cell belongs to "+"-part of the domain
+    bool indomainplus_;
 };
 
 //! shortcut for a vector of DomainIntCells

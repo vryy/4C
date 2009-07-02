@@ -86,9 +86,27 @@ GEO::DomainIntCell::DomainIntCell(
             nodalpos_xi_domain_(xfemEleDomainCoordinates),
             nodalpos_xyz_domain_(physDomainCoordinates),
             phys_center_(ComputePhysicalCenterPosition(distype, physDomainCoordinates)),
-            label_(-1)
+            label_(-1),
+            indomainplus_(false)
 {}
 
+//URSULA
+/*----------------------------------------------------------------------*
+ * Constructor Domain integration cell                                  *
+ *----------------------------------------------------------------------*/
+GEO::DomainIntCell::DomainIntCell(
+        const DRT::Element::DiscretizationType&     distype,
+        const LINALG::SerialDenseMatrix&            xfemEleDomainCoordinates,    
+        const LINALG::SerialDenseMatrix&            physDomainCoordinates,
+        const bool                                  indomainplus) :
+            IntCell(distype),
+            nodalpos_xi_domain_(xfemEleDomainCoordinates),
+            nodalpos_xyz_domain_(physDomainCoordinates),
+            phys_center_(ComputePhysicalCenterPosition(distype, physDomainCoordinates)),
+            label_(-1),
+            indomainplus_(indomainplus)
+{}
+//URSULA
    
         
 /*----------------------------------------------------------------------*
@@ -102,7 +120,8 @@ GEO::DomainIntCell::DomainIntCell(
             nodalpos_xi_domain_(DRT::UTILS::getEleNodeNumbering_nodes_paramspace(distype)),
             nodalpos_xyz_domain_(xyze_ele),
             phys_center_(ComputePhysicalCenterPosition(distype, xyze_ele)),
-            label_(-1)
+            label_(-1),
+            indomainplus_(false)
 {}
     
         
@@ -116,7 +135,8 @@ GEO::DomainIntCell::DomainIntCell(
           nodalpos_xi_domain_(old.nodalpos_xi_domain_),
           nodalpos_xyz_domain_(old.nodalpos_xyz_domain_),
           phys_center_(old.phys_center_),
-          label_(old.label_)
+          label_(old.label_),
+          indomainplus_(old.indomainplus_)
 {}
 
 

@@ -250,11 +250,14 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 	}
 
 	// --------------------------sublist for combustion-specific fluid parameters
-	/* This sublist COMBUSTION DYNAMIC/FLUID contains parameters for the fluid field
+	/* This sublist COMBUSTION FLUID contains parameters for the fluid field
 	 * which are only relevant for a combustion problem.                 07/08 henke */
 	if (genprob.probtyp == prb_combust)
 	{
 		fluidtimeparams->sublist("COMBUSTION FLUID")=prbdyn.sublist("COMBUSTION FLUID");
+		// parameter COMBUSTTYPE from sublist COMBUSTION FLUID is also added to sublist XFEM
+		fluidtimeparams->sublist("XFEM").set<INPAR::COMBUST::CombustionType>("combusttype",
+		  getIntegralValue<INPAR::COMBUST::CombustionType>(prbdyn.sublist("COMBUSTION FLUID"),"COMBUSTTYPE"));
 	}
 
 	// -------------------------------------------------------------------

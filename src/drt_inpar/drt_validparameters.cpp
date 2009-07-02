@@ -1669,7 +1669,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("MOLARVOLUME",0.0,"Molar volume for electrode shape change computations",&elchcontrol);
 
   /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& combustcontrol = list->sublist("COMBUSTION CONTROL",false,"");
+  Teuchos::ParameterList& combustcontrol = list->sublist("COMBUSTION CONTROL",false,
+      "control parameters for a combustion problem");
 
   DoubleParameter("MAXTIME",10.0,"Total simulation time",&combustcontrol);
   IntParameter("NUMSTEP",100,"Total number of Timesteps",&combustcontrol);
@@ -1688,13 +1689,24 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &combustcontrol);
 
   /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& combustcontrolfluid = combustcontrol.sublist("COMBUSTION FLUID",false,"");
+  Teuchos::ParameterList& combustcontrolfluid = combustcontrol.sublist("COMBUSTION FLUID",false,
+      "control parameters for the fluid field of a combustion problem");
 
+  setStringToIntegralParameter<INPAR::COMBUST::CombustionType>("COMBUSTTYPE","Premixed_Combustion",
+                               "Type of combustion problem",
+                               tuple<std::string>(
+                                 "Premixed_Combustion",
+                                 "Two_Phase_Flow"),
+                               tuple<INPAR::COMBUST::CombustionType>(
+                                 INPAR::COMBUST::premixedcombustion,
+                                 INPAR::COMBUST::twophaseflow),
+                               &combustcontrolfluid);
   DoubleParameter("LAMINAR_FLAMESPEED",1.0,"The laminar flamespeed incorporates all chemical kinetics into the problem for now",&combustcontrolfluid);
   DoubleParameter("MARKSTEIN_LENGTH",0.0,"The Markstein length takes flame curvature into account",&combustcontrolfluid);
 
   /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& combustcontrolgfunc = combustcontrol.sublist("COMBUSTION GFUNCTION",false,"");
+  Teuchos::ParameterList& combustcontrolgfunc = combustcontrol.sublist("COMBUSTION GFUNCTION",false,
+      "control parameters for the G-function (level set) field of a combustion problem");
 
   setStringToIntegralParameter<INPAR::COMBUST::ReInitialActionGfunc>("REINITIALIZATION","Signed_Distance_Function",
                                "Type of reinitialization strategy for level set function",

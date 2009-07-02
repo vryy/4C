@@ -22,6 +22,13 @@ namespace INPAR
 
   namespace COMBUST
   {
+    /// Type of combustion problem
+    enum CombustionType
+    {
+      premixedcombustion,
+      twophaseflow
+    };
+
     /// Type of reinitialization for level set function (G-function)
     enum ReInitialActionGfunc
     {
