@@ -17,18 +17,12 @@
 #include "adapter_coupling_mortar.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/standardtypes_cpp.H"
-
-#include <mrtr_manager.H>
-
-#include <mrtr_segment.H>
-#include <mrtr_segment_linear1D.H>
-#include <mrtr_segment_bilineartri.H>
-#include <mrtr_segment_bilinearquad.H>
+#include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_contact/drt_contact_manager.H"
 #include "../drt_contact/drt_contact_interface.H"
 #include "../drt_contact/contactdefines.H"
-#include "../drt_lib/linalg_ana.H"
+//#include "../drt_lib/linalg_ana.H"
 #include "../drt_io/io.H"
 #include "../drt_lib/linalg_utils.H"
 
@@ -60,14 +54,14 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
       "FSICoupling");
 
   //	parameter list for contact definition 
-  Teuchos::ParameterList tmpscontact;
-  tmpscontact.set<string> ("friction type", "stick");
-  tmpscontact.set<string> ("contact type", "meshtying");
-
+  // const Teuchos::ParameterList& input = DRT::Problem::Instance()->StructuralContactParams();
+  
+  Teuchos::ParameterList tmpinput;
+  tmpinput.set<string> ("search algorithm", "binarytree");
   // get problem dimension (2D or 3D) and initialize (CONTACT::) interface
   const int dim = genprob.ndim;
   RCP<CONTACT::Interface> interface = rcp(
-      new CONTACT::Interface(0, comm, dim, tmpscontact));
+      new CONTACT::Interface(0, comm, dim, tmpinput));
 
   
   //feeding master nodes to the interface
