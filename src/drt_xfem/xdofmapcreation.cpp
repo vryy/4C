@@ -130,7 +130,7 @@ bool XFEM::ApplyNodalEnrichments(
 /*------------------------------------------------------------------------------------------------*
  | original function: XFEM::ApplyNodalEnrichments                                     henke 03/09 |
  *------------------------------------------------------------------------------------------------*/
-bool XFEM::ApplyJumpEnrichmentCombust(
+bool XFEM::ApplyJumpEnrichment(
     const DRT::Element*                       xfemele,
     const std::set<XFEM::PHYSICS::Field>&     fieldset,
     const double                              volumeRatioLimit,
@@ -148,7 +148,8 @@ bool XFEM::ApplyJumpEnrichmentCombust(
 //  {
 
     // jump enrichments for all nodes of intersected element
-    // remark: already existing standard enrichments are overwritten, this might be inefficient
+    // remark: jump enrichments are added to already existing standard enrichments
+    //         if jump enrichments already exist, nothing is added to set
     const int numnodes = xfemele->NumNode();
     const int* nodeidptrs = xfemele->NodeIds();
     for (int inode = 0; inode<numnodes; ++inode)
@@ -161,6 +162,83 @@ bool XFEM::ApplyJumpEnrichmentCombust(
         {
           nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, jumpenr));
 //          std::cout << "Jump Enrichment applied for node " << nodeid << std::endl;
+        }
+//      }
+    };
+
+  //  }
+
+  /* almost_empty_element: diesen Fall schließen wir erstmal aus!   henke 03/09
+  else
+  { // void enrichments only in the fluid domain
+    const int nen = xfemele->NumNode();
+    const int* nodeidptrs = xfemele->NodeIds();
+    for (int inen = 0; inen<nen; ++inen)
+    {
+      const int node_gid = nodeidptrs[inen];
+      const LINALG::Matrix<3,1> nodalpos(ih.xfemdis()->gNode(node_gid)->X());
+      const int label = ih.PositionWithinConditionNP(nodalpos);
+      const bool in_fluid = (0 == label);
+
+      if (in_fluid)
+      {
+        const bool anothervoidenrichment_in_set = EnrichmentInNodalDofSet(node_gid, enrtype, nodalDofSet);
+        if (not anothervoidenrichment_in_set)
+        {
+          for (std::set<XFEM::PHYSICS::Field>::const_iterator field = fieldset.begin();field != fieldset.end();++field)
+          {
+            nodalDofSet[node_gid].insert(XFEM::FieldEnr(*field, voidenr));
+          }
+        }
+      }
+    };
+    skipped_element = true;
+//    cout << "skipped interior void unknowns for element: "<< xfemele->Id() << ", volumeratio limit: " << std::scientific << volumeRatioLimit << ", volumeratio: abs (" << std::scientific << (1.0 - volumeratio) << " )" << endl;
+  }*/
+
+  return skipped_element;
+}
+
+bool XFEM::ApplyKinkEnrichment(
+    const DRT::Element*                       xfemele,
+    const std::set<XFEM::PHYSICS::Field>&     fieldset,
+    const double                              volumeRatioLimit,
+    std::map<int, std::set<XFEM::FieldEnr> >& nodeDofMap)
+{
+  // type of enrichment determined by name of function; label (first argument) = 0
+  // kann ich für mehr als ein Interfacestück je Element diese mit label = 0 bis n-1
+  // durchnummerieren
+  const XFEM::Enrichment kinkenr(0, XFEM::Enrichment::typeKink);
+
+//  const double volumeratio = XFEM::DomainCoverageRatio(*xfemele,ih);
+//  const bool almost_empty_element = (fabs(1.0-volumeratio) < volumeRatioLimit);
+
+  bool skipped_element = false;
+
+//  if ( not almost_empty_element)
+//  {
+
+    // kink enrichments for all nodes of intersected element
+    // remark: already existing standard enrichments are overwritten, this might be inefficient
+    const int numnodes = xfemele->NumNode();
+    const int* nodeidptrs = xfemele->NodeIds();
+    for (int inode = 0; inode<numnodes; ++inode)
+    {
+      const int nodeid = nodeidptrs[inode];
+//      const bool anothervoidenrichment_in_set = XFEM::EnrichmentInNodalDofSet(node_gid, enrtype, nodalDofSet);
+//      if (not anothervoidenrichment_in_set)
+//      {
+      // jedes Feld bekommet ein KinkEnrichment auch der Druck (im Moment)
+      // überschreibt das die alten Werte
+        for (std::set<XFEM::PHYSICS::Field>::const_iterator field = fieldset.begin();field != fieldset.end();++field)
+        {
+//          nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, kinkenr));
+          //cout << "Kink Enrichment applied for all fields" << endl;
+//          std::cout << "Kink Enrichment applied for node " << nodeid << std::endl;
+          //Falls nur die Geschw ein KinkEnr bekommen
+          if (*field != XFEM::PHYSICS::Pres)
+        	  nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, kinkenr));
+          //cout << "Kink Enrichment applied for velocity fields only" << endl;
         }
 //      }
     };
@@ -653,37 +731,69 @@ void XFEM::createDofMapCombust(
     // any regular call of DofManager (existing flame front) will end up here
     else
     {
-/*      for (int j=0; j < ih.xfemdis()->NumMyColElements(); ++j)
+      // apply standard enrichment to every node
+      ApplyStandardEnrichmentCombust(xfemele, fieldset, nodeDofMap);
+
+/*
+  Check der FlameFrontPatches für das Element muss drin bleiben, bis ih.ElementIntersected funktioniert
+      // if fluid element is intersected
+      if(ih.ElementIntersected(xfemele->Id()))
       {
-        const DRT::Element* xfemele = ih.xfemdis()->lColElement(j);
-        std::map<int,const Teuchos::RCP<const COMBUST::RefinementCell> >::const_iterator iter = ih.FlameFront()->FlameFrontPatches().find(xfemele->Id());
-        std::cout << "Proc " << ih.xfemdis()->Comm().MyPID() << " found element: " << iter->first << xfemele->Id() << "in FlameFront" << endl;
+        Anreicherung
       }
 */
-    // get the refinement cell belonging to a fluid element
+      // get the refinement cell belonging to a fluid element
       std::map<int,const Teuchos::RCP<const COMBUST::RefinementCell> >::const_iterator iter = ih.FlameFront()->FlameFrontPatches().find(xfemele->Id());
-
-      // ask refinement cell if it is intersected
       if (iter->second->Intersected())
       {
+        const INPAR::COMBUST::CombustionType combusttype = params.get<INPAR::COMBUST::CombustionType>("combusttype");
+        // build a DofMap holding dofs for all nodes including additional dofs of enriched nodes
+        switch(combusttype)
+        {
+          case INPAR::COMBUST::premixedcombustion:
+          {
+            // apply jump enrichments to all nodes of an intersected element
+            skipped_node_enr = ApplyJumpEnrichment(xfemele, fieldset, volumeRatioLimit, nodeDofMap);
+            // remark: Brauche ich hier tatsächlich einen Rückgabewert, nur um zu checken, ob die
+            //         Anreicherung funktioniert hat?
+          }
+          break;
+          case INPAR::COMBUST::twophaseflow:
+          {
+            // apply kink enrichments to all nodes of an intersected element
+            skipped_node_enr = ApplyKinkEnrichment(xfemele, fieldset, volumeRatioLimit, nodeDofMap);
+          }
+          break;
+          default:
+            dserror("unknown type of combustion problem");
+        }
         std::cout << "Element "<< xfemele->Id() << " ist geschnitten und Knoten werden angereichert" << std::endl;
-        // apply jump enrichments to all nodes of an intersected element
-        // remark: Brauche ich hier tatsächlich einen Rückgabewert, nur um zu checken, ob die
-        //         Anreicherung funktioniert hat?
-        skipped_node_enr = ApplyJumpEnrichmentCombust(xfemele, fieldset, volumeRatioLimit, nodeDofMap);
+/*
+        std::cout << "Enrichments des Elements" << std::endl;
+        const int numnodes = xfemele->NumNode();
+        const int* nodeidptrs = xfemele->NodeIds();
+        for (int inode = 0; inode<numnodes; ++inode)
+        {
+          const int nodeid = nodeidptrs[inode];
+          std::set<XFEM::FieldEnr> nodeenrset = nodeDofMap[nodeid];
+          for (std::set<XFEM::FieldEnr>::const_iterator nodeenr = nodeenrset.begin();nodeenr != nodeenrset.end();++nodeenr)
+          std::cout << "Angereichertes Feld " << physVarToString(nodeenr->getField()) << "Anreicherungstyp " << nodeenr->getEnrichment().toString() <<  std::endl;      	  
+        }
+*/
         // in case there are enriched element dofs they have to be applied now   henke 04/09
 //        ApplyElementEnrichments();
       }
-      else
+/*      else
       {
         std::cout << "Element "<< xfemele->Id() << " ist nicht geschnitten" << std::endl;
         // apply standard enrichments to all nodes of an intersected element
         ApplyStandardEnrichmentCombust(xfemele, fieldset, nodeDofMap);
-        /*
-         * Funktion sollte checken, ob schon JumpEnrichments (andere Enrichments) vorliegen. Sollen
-         * diese überschrieben werden? Kläre die Theorie dazu!
-         */
+        //
+        //  Funktion sollte checken, ob schon JumpEnrichments (andere Enrichments) vorliegen. Sollen
+        //  diese überschrieben werden? Kläre die Theorie dazu!
+        //
       }
+*/
     }
   }
 
@@ -705,7 +815,8 @@ void XFEM::ApplyStandardEnrichmentCombust(
   const XFEM::Enrichment stdenr(0, XFEM::Enrichment::typeStandard);
 
   // standard enrichments for all nodes of element
-  // remark: already existing standard enrichments are overwritten, this might be inefficient
+  // remark: standard enrichments are added to already existing jump enrichments;
+  //         if standard enrichments already exist, nothing is added to set
   const int numnodes = xfemele->NumNode();
   const int* nodeidptrs = xfemele->NodeIds();
   for (int inode = 0; inode<numnodes; ++inode)

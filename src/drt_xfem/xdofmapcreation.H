@@ -18,6 +18,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/dof_management.H"
 #include "../drt_xfem/interface.H"
 #include "../drt_xfem/element_ansatz.H"
+#include "../drt_inpar/inpar_combust.H"
 // Der ist hier nur drin, damit ich (Florian Henke) auf die FlameFront im InterfaceHandle zugreifen kann
 #include "../drt_combust/combust_interface.H"
 
@@ -47,11 +48,19 @@ namespace XFEM
       );
 
   //! apply nodal enrichments to intersected element: used for combustion problem only
-  bool ApplyJumpEnrichmentCombust(
+  bool ApplyJumpEnrichment(
       const DRT::Element*                           xfemele,
       const std::set<XFEM::PHYSICS::Field>&         fieldset,
       const double                                  volumeRatioLimit,
       std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet
+      );
+
+  //! apply nodal enrichments to intersected element: used for two phase problem only
+  bool ApplyKinkEnrichment(
+      const DRT::Element*                       xfemele,
+      const std::set<XFEM::PHYSICS::Field>&     fieldset,
+      const double                              volumeRatioLimit,
+      std::map<int, std::set<XFEM::FieldEnr> >& nodeDofMap
       );
 
   //! apply nodal enrichments to intersected element

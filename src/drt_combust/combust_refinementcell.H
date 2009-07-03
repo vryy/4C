@@ -62,6 +62,9 @@ namespace COMBUST
     //! find out, whether this refinement cell is intersected by flame G-function or not
     void IdentifyIntersectionStatus();
 
+    //! remote access method to coordinates of a refinement cell
+    std::vector<std::vector<double> > GetVertexCoord() const { return vertexcoord_; }
+
     //! map of cell edge ID and intersection point coodinates (zero G-function)
     std::map<int,std::vector<double> > intersectionpoints_;
 

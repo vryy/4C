@@ -36,8 +36,6 @@ XFEM::ElementEnrichmentValues::ElementEnrichmentValues(
           dofman_(dofman) 
 {
     enrvals_.clear();
-
-    // mamber variables required for kink enrichment
     enrvalnodes_.clear();
     enrvalderxy_.clear();
     enrvalderxy2_.clear();
@@ -51,6 +49,65 @@ XFEM::ElementEnrichmentValues::ElementEnrichmentValues(
         enrvals_[*enriter] = enrval;
     }
     return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | constructor called for combustion problems (jump enrichment)         |
+ |                                                          henke 06/09 |
+ *----------------------------------------------------------------------*/
+XFEM::ElementEnrichmentValues::ElementEnrichmentValues(
+        const DRT::Element&                   ele,
+        const XFEM::ElementDofManager&        dofman,
+        const GEO::DomainIntCell&             cell
+        //const LINALG::Matrix<3,1>&            actpos
+        //const LINALG::Matrix<1,8>&            phi
+        ) :
+        ele_(ele),
+        dofman_(dofman)
+{
+  enrvals_.clear();
+  enrvalnodes_.clear();
+  enrvalderxy_.clear();  // not used for jump enrichment
+  enrvalderxy2_.clear(); // not used for jump enrichment
+
+  const std::set<XFEM::Enrichment>& enrset(dofman.getUniqueEnrichments());
+  const int numnode = ele_.NumNode();
+  std::map<int,std::map<XFEM::Enrichment, double> > enrvalnodes;
+
+  // evaluate enrichment values for this integration cell
+  for (std::set<XFEM::Enrichment>::const_iterator enriter = enrset.begin(); enriter != enrset.end(); ++enriter)
+  {
+    const double enrvalcell = enriter->EnrValueLevelSet(cell,0);
+    enrvals_[*enriter] = enrvalcell;
+  }
+
+  // loop over nodes to evaluate enrichment values at the nodes
+  for(int inode=0; inode < numnode; inode++)
+  {
+    std::map<XFEM::Enrichment, double> enrvalstmp;
+    for (std::set<XFEM::Enrichment>::const_iterator enriter = enrset.begin(); enriter != enrset.end(); ++enriter)
+    {
+      const double enrvalnode = enriter->EnrValueLevelSet(cell,inode);
+      enrvalstmp[*enriter] = enrvalnode;
+    }
+    enrvalnodes[inode] = enrvalstmp;
+    enrvalstmp.clear();
+  }
+
+  // evaluate final enrichment values for each node H(G(cell)) - H(G(nodes))
+  for(int inode=0; inode < numnode; inode++)
+  {
+    std::map<XFEM::Enrichment, double> enrvalstmp;
+    for (std::set<XFEM::Enrichment>::const_iterator enriter = enrset.begin(); enriter != enrset.end(); ++enriter)
+    {
+      enrvalstmp[*enriter] = enrvals_.find(*enriter)->second - (enrvalnodes.find(inode)->second).find(*enriter)->second;
+    }
+    enrvalnodes_[inode] = enrvalstmp;
+    enrvalstmp.clear();
+  }
+
+  return;
 }
 
 
@@ -71,61 +128,60 @@ XFEM::ElementEnrichmentValues::ElementEnrichmentValues(
         dofman_(dofman) 
 {
 
-    enrvals_.clear(); // not used for kink enrichment
+  enrvals_.clear(); // not used for kink enrichment
+  enrvalnodes_.clear();
+  enrvalderxy_.clear();
+  enrvalderxy2_.clear();
 
-    enrvalnodes_.clear();
-    enrvalderxy_.clear();
-    enrvalderxy2_.clear();
-    
-    const std::set<XFEM::Enrichment>& enrset(dofman.getUniqueEnrichments());
-    
-    const int numnode = ele_.NumNode();
-    
-    for(int inode=0; inode<numnode; inode++)
-    {
-    	//nodalpos braucht man noch, globale oder lokale Koordinaten
-//    	LINALG::Matrix<3,1> nodalpos;
-//    	nodalpos(0,1) = ele_.Nodes()[inode]->X()[0];
-//    	nodalpos(1,1) = ele_.Nodes()[inode]->X()[1];
-//    	nodalpos(2,1) = ele_.Nodes()[inode]->X()[2];
-    	//jetzt sind es die globalen
-    	//eigentlich würde es reichen phi am Knoten zu verwenden
-    	//dann müsste man nur inode übergeben
-    	std::map<XFEM::Enrichment, double> enrvalues;
-    	for (std::set<XFEM::Enrichment>::const_iterator enriter = enrset.begin(); enriter != enrset.end(); ++enriter)
-    	{
-    		const double enrval = enriter->ModifiedKinkEnrValue(actpos, inode, *ih, approachdirection, ele_);
-    		//const double enrval = enriter->ModifiedEnrValue(actpos, inode, *ih, approachdirection, ele_, phi);
-    		enrvalues[*enriter] = enrval;
-    	}
-    	enrvalnodes_[inode] = enrvalues;
-    	enrvalues.clear();
-    }
-    
+  const std::set<XFEM::Enrichment>& enrset(dofman.getUniqueEnrichments());
+
+  const int numnode = ele_.NumNode();
+
+  for(int inode=0; inode<numnode; inode++)
+  {
+    //nodalpos braucht man noch, globale oder lokale Koordinaten
+//    LINALG::Matrix<3,1> nodalpos;
+//    nodalpos(0,1) = ele_.Nodes()[inode]->X()[0];
+//    nodalpos(1,1) = ele_.Nodes()[inode]->X()[1];
+//    nodalpos(2,1) = ele_.Nodes()[inode]->X()[2];
+    //jetzt sind es die globalen
+    //eigentlich würde es reichen phi am Knoten zu verwenden
+    //dann müsste man nur inode übergeben
+    std::map<XFEM::Enrichment, double> enrvalues;
     for (std::set<XFEM::Enrichment>::const_iterator enriter = enrset.begin(); enriter != enrset.end(); ++enriter)
     {
-    	const std::vector<double> enrvalderxy = enriter->ModifiedEnrValue_derxy(actpos, *ih, ele_);
-    	//const std::vector<double> enrvalderxy = enriter->ModifiedEnrValue_derxy(actpos, *ih, ele_, phi);
-    	enrvalderxy_[*enriter] = enrvalderxy;
-    	
-//    	std::vector<double> enrvalderxy2;
-//    	switch(ele_.Shape())
-//    	{
-//    	case DRT::Element::hex8:
-//    		enrvalderxy2 = enriter->ModifiedEnrValue_derxy2<DRT::Element::hex8>(actpos, *ih, ele_);
-//    		break;
-////    	case DRT::Element::hex20:
-////    		enrvalderxy2 = enriter->ModifiedEnrValue_derxy2<DRT::Element::hex20>(actpos, *ih, approachdirection, ele_);
-////    		break;
-//    	default:
-//    		dserror("Element not templated in enrichment second derivatives yet");
-//    	};
-    	const std::vector<double> enrvalderxy2 = enriter->ModifiedEnrValue_derxy2(actpos, *ih, ele_);
-    	//const std::vector<double> enrvalderxy2 = enriter->ModifiedEnrValue_derxy2(actpos, *ih, ele_, phi);
-    	enrvalderxy2_[*enriter] = enrvalderxy2;
+      const double enrval = enriter->ModifiedKinkEnrValue(actpos, inode, *ih, approachdirection, ele_);
+      //const double enrval = enriter->ModifiedEnrValue(actpos, inode, *ih, approachdirection, ele_, phi);
+      enrvalues[*enriter] = enrval;
     }
-    
-    return;
+    enrvalnodes_[inode] = enrvalues;
+    enrvalues.clear();
+  }
+
+  for (std::set<XFEM::Enrichment>::const_iterator enriter = enrset.begin(); enriter != enrset.end(); ++enriter)
+  {
+    const std::vector<double> enrvalderxy = enriter->ModifiedEnrValue_derxy(actpos, *ih, ele_);
+    //const std::vector<double> enrvalderxy = enriter->ModifiedEnrValue_derxy(actpos, *ih, ele_, phi);
+    enrvalderxy_[*enriter] = enrvalderxy;
+
+//    std::vector<double> enrvalderxy2;
+//    switch(ele_.Shape())
+//    {
+//      case DRT::Element::hex8:
+//      enrvalderxy2 = enriter->ModifiedEnrValue_derxy2<DRT::Element::hex8>(actpos, *ih, ele_);
+//      break;
+////      case DRT::Element::hex20:
+////      enrvalderxy2 = enriter->ModifiedEnrValue_derxy2<DRT::Element::hex20>(actpos, *ih, approachdirection, ele_);
+////      break;
+//      default:
+//    dserror("Element not templated in enrichment second derivatives yet");
+//    };
+    const std::vector<double> enrvalderxy2 = enriter->ModifiedEnrValue_derxy2(actpos, *ih, ele_);
+    //const std::vector<double> enrvalderxy2 = enriter->ModifiedEnrValue_derxy2(actpos, *ih, ele_, phi);
+    enrvalderxy2_[*enriter] = enrvalderxy2;
+  }
+
+  return;
 }
 
 

@@ -744,6 +744,11 @@ void SysmatTwoPhase(
 {
     TEUCHOS_FUNC_TIME_MONITOR(" - evaluate - Sysmat4 - domain");
    
+    std::cout << "                      -------Sysmat-------" << std::endl;
+    std::cout << "***********************************************************" << std::endl;
+    std::cout << "* Warning! Does only test case with one gauss point, yet! *" << std::endl;
+    std::cout << "***********************************************************" << std::endl;
+    
     // number of nodes for element
     const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
@@ -786,6 +791,9 @@ void SysmatTwoPhase(
     //const int numparamvelx = getNumParam<ASSTYPE>(dofman, Velx, numnode);
     const size_t numparamvelx = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velx);
     const size_t numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
+    std::cout << "Element " << ele->Id() << std::endl;
+    std::cout << "Geschwindigkeitsdofs " << numparamvelx << std::endl;
+    std::cout << "Druckdofs " << numparampres << std::endl;
     // put one here to create arrays of size 1, since they are not needed anyway
     // in the xfem assembly, the numparam is determined by the dofmanager
     
@@ -795,11 +803,15 @@ void SysmatTwoPhase(
     
     // information about domain integration cells
     const GEO::DomainIntCells&  domainIntCells(ih->GetDomainIntCells(ele));
+    //im Moment kommt hier nur eine Dummy Zelle an, vgl. ih->GetDomainIntCells
 //    cout << "Element "<< ele->Id() << ": ";
 
     // loop over integration cells
     for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
     {
+    	
+    	std::cout << "jetzt kommt die Schleife ueber alle Integrationszellen" << std::endl;
+    	
     	// für FSI: Intergrationszelle liegt im Fluid, wird geschnitten oder liegt vollständig in der Struktur
     	// für Zweiphasenströmungen sollte hier geprüft werden, ob sich die Intergrationszelle im Gebiet +
     	// oder - befindet -> Viskosität, Dichte(?)
@@ -809,7 +821,17 @@ void SysmatTwoPhase(
     	
     	//NEU
         //steht oben: const MAT::MatList* actmaterials = static_cast<const MAT::MatList*>(material.get());
-    	bool in_fluid_plus = true;
+    	
+    	//bool in_fluid_plus = true;
+    	//das geht sobald ich alle Integrationszellen habe
+    	//ich mache das besser über das InterfaceHandle
+    	bool in_fluid_plus = ih->GetIntCellPosition(*cell, ele);
+    	//bool in_fluid_plus = cell->getDomainPlus();
+    	  if (in_fluid_plus)
+    	   std::cout << "domain + sys " << std::endl;
+    	  else
+    	   std::cout << "domain - sys " << std::endl;
+    	
     	//hier fehlt noch der Test, ob man sich wirklich in positiven Teil der Level Set Funktion befindet
     	//entweder durch überprüfen direkt
     	//oder die Intergrationszelle weiß, auf welcher Seite des Interfaces sie sich befindet
@@ -832,6 +854,7 @@ void SysmatTwoPhase(
         // ggf const double visc = kinvisc * dens
         const double dens = actmat->Density();
         // Elementmatrizen mit Dichte multiplizieren
+        //std::cout << "Viscositaet" << visc << std::endl;
     	
     	
     	
@@ -859,14 +882,27 @@ void SysmatTwoPhase(
         // sollten mehr Gausspunkte gewählt werden , da man bei Kink-Enrichment wegen
         // Multiplikation  von Psi mit N quadratische Funktionen erhält?
         // GEO Eingabewerte
+        if (cell->Shape()==DRT::Element::hex8)
+        {
+         std::cout << "hex8 " << std::endl;
+        }
+        //das macht probleme, da bisher nur tatsächlich geschnittene Elemente im ih in elementintcells ankommen
+        //da ich aber den Zellen mit geben möchte, in welchem Fluid sie liegen, berechne ich
+        //das in der FlameFront für alles, da dort Phi vorliegt
+        //daher stecken jetzt in ih->elementintcell auch die nicht geschnittenen Element
+        //ih->Intersected prüft aber, ob eine Zelle in elementintcell steckt oder nicht
         const DRT::UTILS::GaussRule3D gaussrule = XFLUID::getXFEMGaussrule<DISTYPE>(ele, xyze, ih->ElementIntersected(ele->Id()),cell->Shape());
         
         // gaussian points
         const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
 
         // integration loop over Gauss points
-        for (int iquad=0; iquad<intpoints.nquad; ++iquad)
+        // zum Test mal nur ein Gausspunkt, der dann noch auf den Ursprung gesetzt wird
+        for (int iquad=0; iquad<1; ++iquad)//(int iquad=0; iquad<intpoints.nquad; ++iquad)
         {
+        	
+        	std::cout << "jetzt kommt Gausspunktschleife" << std::endl;
+        	
             // coordinates of the current integration point in cell coordinates \eta
             LINALG::Matrix<nsd,1> pos_eta_domain;
             pos_eta_domain(0) = intpoints.qxg[iquad][0];
@@ -878,6 +914,12 @@ void SysmatTwoPhase(
             GEO::mapEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain, posXiDomain);
             const double detcell = GEO::detEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain);
             
+            //Vorgabe des Gausspunktes zum Test der Enrichmentrechnung
+//            posXiDomain(0) = 0.0;
+//            posXiDomain(1) = 0.0;
+//            posXiDomain(2) = 0.0;
+            //std::cout << ele->Shape() << std::endl;
+            
             // shape functions and their first derivatives
             static LINALG::Matrix<numnode,1> funct;
             static LINALG::Matrix<nsd,numnode> deriv;
@@ -887,6 +929,8 @@ void SysmatTwoPhase(
             //Berechnung der Anreicherungen hierher verschoben und nun als Auswertepunkt
             //den aktuellen Gausspunkt übergeben
             //in Xi-Coordinaten?
+
+            //std::cout << "Aufruf ElementEnrichmentValues" << std::endl;
             const XFEM::ElementEnrichmentValues enrvals(
                   *ele,
                   ih,
@@ -925,7 +969,13 @@ void SysmatTwoPhase(
             
             // derxy(i,j) = xji(i,k) * deriv(k,j)
             derxy.Multiply(xji,deriv);
-
+            //TEST
+//            for (std::size_t no=0; no<numnode; no++)
+//            {
+//        	   std::cout << derxy(0,no) << "    " << derxy(1,no) << "    " << derxy(2,no) << std::endl;
+////        	   std::cout << derxy(1,no) << std::endl;
+////        	   std::cout << derxy(2,no) << std::endl;
+//            }
             // compute second global derivative
             static LINALG::Matrix<6,numnode> derxy2;
             if (higher_order_ele)
@@ -933,6 +983,16 @@ void SysmatTwoPhase(
                 static LINALG::Matrix<6,numnode> deriv2;
                 DRT::UTILS::shape_function_3D_deriv2(deriv2,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
                 DRT::UTILS::gder2<DISTYPE>(xjm, derxy, deriv2, xyze, derxy2);
+                //TEST
+//                for (std::size_t no=0; no<numnode; no++)
+//                {
+//            	   std::cout << derxy2(0,no) << "   " << derxy2(1,no) << "   " << derxy2(2,no) << "   " << derxy2(3,no) << "   " << derxy2(4,no) << "   " << derxy2(5,no) << std::endl;
+////            	   std::cout << derxy2(1,no) << std::endl;
+////            	   std::cout << derxy2(2,no) << std::endl;
+////            	   std::cout << derxy2(3,no) << std::endl;
+////            	   std::cout << derxy2(5,no) << std::endl;
+////            	   std::cout << derxy2(5,no) << std::endl;
+//                }
             }
             else
             {
@@ -985,6 +1045,7 @@ void SysmatTwoPhase(
 //                      XFEM::Enrichment::approachUnknown));
               
                 // shape function for nodal dofs
+                //std::cout << "Aufruf Berechnung Shapefunction XFEM" << std::endl;
                 enrvals.ComputeKinkEnrichedNodalShapefunction(
                         Velx,
                         funct,
@@ -1009,14 +1070,26 @@ void SysmatTwoPhase(
                   shpvel.dzdx(iparam) = shpvel.dxdz(iparam);
                   shpvel.dzdy(iparam) = shpvel.dydz(iparam);
                   shpvel.dzdz(iparam) = enr_derxy2_vel(2,iparam);
+                  //nur zur Ueberprüfung
+//                  std::cout << "Geschwindigkeit " << std::endl;
+//                  std::cout << "Enr " << enr_funct_vel(iparam) << std::endl;
+//                  std::cout << "Enrderxx " << enr_derxy_vel(0,iparam) << std::endl;
+//                  std::cout << "Enrderyy " << enr_derxy_vel(1,iparam) << std::endl;
+//                  std::cout << "Enrderzz " << enr_derxy_vel(2,iparam) << std::endl;
+//                  std::cout << "Enrderxx2 " << enr_derxy2_vel(0,iparam) << std::endl;
+//                  std::cout << "Enrderyy2 " << enr_derxy2_vel(1,iparam) << std::endl;
+//                  std::cout << "Enrderzz2 " << enr_derxy2_vel(2,iparam) << std::endl;
+//                  std::cout << "Enrderxy2 " << enr_derxy2_vel(3,iparam) << std::endl;
+//                  std::cout << "Enrderxz2 " << enr_derxy2_vel(4,iparam) << std::endl;
+//                  std::cout << "Enrderyz2 " << enr_derxy2_vel(5,iparam) << std::endl;
                 }
                 
 //                static LINALG::SerialDenseVector enr_funct_pres(numparampres);
 //                static LINALG::SerialDenseMatrix enr_derxy_pres(3,numparampres);
 //                static LINALG::SerialDenseMatrix enr_derxy2_pres(6,numparampres);
                 static LINALG::Matrix<shpVecSize,1> enr_funct_pres;
-                static LINALG::Matrix<shpVecSize,3> enr_derxy_pres;
-                static LINALG::Matrix<shpVecSize,6> enr_derxy2_pres;
+                static LINALG::Matrix<3,shpVecSize> enr_derxy_pres;
+                static LINALG::Matrix<6,shpVecSize> enr_derxy2_pres;
                 // shape function for nodal dofs pressure
                 enrvals.ComputeKinkEnrichedNodalShapefunction(
                         Pres,
@@ -1041,10 +1114,25 @@ void SysmatTwoPhase(
                   shppres.dzdx(iparam) = shppres.dxdz(iparam);
                   shppres.dzdy(iparam) = shppres.dydz(iparam);
                   shppres.dzdz(iparam) = enr_derxy2_pres(2,iparam);
+                  
+                  //zur Ueberpruefung
+//                  std::cout << "Druck " << std::endl;
+//                  std::cout << "Enr " << enr_funct_pres(iparam) << std::endl;
+//                  std::cout << "Enrderxx " << enr_derxy_pres(0,iparam) << std::endl;
+//                  std::cout << "Enrderyy " << enr_derxy_pres(1,iparam) << std::endl;
+//                  std::cout << "Enrderzz " << enr_derxy_pres(2,iparam) << std::endl;
+//                  std::cout << "Enrderxx2 " << enr_derxy2_pres(0,iparam) << std::endl;
+//                  std::cout << "Enrderyy2 " << enr_derxy2_pres(1,iparam) << std::endl;
+//                  std::cout << "Enrderzz2 " << enr_derxy2_pres(2,iparam) << std::endl;
+//                  std::cout << "Enrderxy2 " << enr_derxy2_pres(3,iparam) << std::endl;
+//                  std::cout << "Enrderxz2 " << enr_derxy2_pres(4,iparam) << std::endl;
+//                  std::cout << "Enrderyz2 " << enr_derxy2_pres(5,iparam) << std::endl;
                 }
+                //std::cout << "nach Aufruf Berechnung Shapefunction XFEM" << std::endl;
             }
             else // not xfem_assembly
             {
+              //std::cout << "Shapefunction FEM" << std::endl;
               for (size_t iparam = 0; iparam < numnode; ++iparam)
               {
                 shpvel.d0(iparam) = funct(iparam);
@@ -1171,7 +1259,6 @@ void SysmatTwoPhase(
             double pres = 0.0;
             for (size_t iparam = 0; iparam != numparampres; ++iparam)
               pres += shppres.d0(iparam)*eprenp(iparam);
-            
             // get bodyforce in gausspoint
 //            LINALG::Matrix<3,1> bodyforce;
 //            bodyforce = 0.0;
@@ -1204,7 +1291,6 @@ void SysmatTwoPhase(
                 rhsint(isd) = dens*histvec(isd) + bodyforce(isd)*timefac*dens;
 
             /*----------------- get numerical representation of single operators ---*/
-
             /* Convective term  u_old * grad u_old: */
             LINALG::Matrix<nsd,1> conv_old;
             //conv_old = vderxy(i, j)*gpvelnp(j);
@@ -1227,7 +1313,6 @@ void SysmatTwoPhase(
             	for(size_t isd=0; isd<nsd; ++isd)
             		res_old(isd) += dens * gpvelnp(isd);
             }
-            
             //res_old += gpvelnp;
             
       
@@ -1239,6 +1324,7 @@ void SysmatTwoPhase(
              with  N .. form function matrix                                   */
             //const LINALG::SerialDenseVector enr_conv_c_(enr_derxy(j,i)*gpvelnp(j));
             static LINALG::Matrix<shpVecSize,1> enr_conv_c_;
+            //static ShpVec enr_conv_c_;
             enr_conv_c_.Clear();
             for (size_t iparam = 0; iparam != numparamvelx; ++iparam)
             {
@@ -1264,7 +1350,7 @@ void SysmatTwoPhase(
     
                with N_x .. x-line of N
                N_y .. y-line of N                                             */
-            static XFLUID::EnrViscs2<shpVecSize> enr_viscs2;
+            static COMBUST::EnrViscs2<shpVecSize> enr_viscs2;
 
             for (size_t iparam = 0; iparam != numparamvelx; ++iparam)
             {
@@ -1280,7 +1366,7 @@ void SysmatTwoPhase(
             }
 
 
-
+            std::cout << "----Berechnung der Matrixteile----" << std::endl;
             //////////////////////////////////////
             // now build single stiffness terms //
             //////////////////////////////////////
@@ -1759,9 +1845,11 @@ void SysmatTwoPhase(
                 assembler.template Vector<Velz>(shpvel.dz, -timefac_timefac_tau_C_divunp);
             } // endif cstab
 
-                
+            //dserror("Ende Gausspunkt");   
         } // end loop over gauss points
     } // end loop over integration cells
+    //std::cout << "ENDE Sysmat" << std::endl;
+    //dserror("Ende Sysmat");
 
     return;
 }
@@ -1801,7 +1889,7 @@ void SysmatDomain4(
     // number of nodes for element
     const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     
-    // space dimension for 3d fluid element
+    // space dimension for 3d combustion element
     const size_t nsd = 3;
     
     // time integration constant
@@ -1819,17 +1907,11 @@ void SysmatDomain4(
     // dead load in element nodes
     //////////////////////////////////////////////////// , LINALG::SerialDenseMatrix edeadng_(BodyForce(ele->Nodes(),time));
 
-    // check here, if we really have a two fluids !!
+    // check if we really have a list of materials
     dsassert(material->MaterialType() == INPAR::MAT::m_matlist, "Material law is not of type m_matlist.");
+    // get material list for this element
     const MAT::MatList* actmaterials = static_cast<const MAT::MatList*>(material.get());
 
-    // get viscosity
-    // check here, if we really have a fluid !!
-//    dsassert(material->MaterialType() == INPAR::MAT::m_fluid, "Material law is not of type m_fluid.");
-//    const MAT::NewtonianFluid* actmat = dynamic_cast<const MAT::NewtonianFluid*>(material.get());
-//    const double visc = actmat->Viscosity();
-
-    
     // flag for higher order elements
     const bool higher_order_ele = XFLUID::secondDerivativesAvailable<DISTYPE>();
     
@@ -1848,13 +1930,9 @@ void SysmatDomain4(
 //    cout << "stress unknowns present  : " << stress_unknowns_present << endl;
 //    cout << "velocity unknowns present: " << velocity_unknowns_present << endl;
 //    cout << "pressure unknowns present: " << pressure_unknowns_present << endl;
-    
-    
-    // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
 
-//URSULA bei Zweiphasenströmungen nicht unbedingt bzw verschiedene Anreicherungen fuer vel und pres möglich
-
-    //const int numparamvelx = getNumParam<ASSTYPE>(dofman, Velx, numnode);
+    // get number of parameters (dofs) for each field
+    // remark: it is assumed that all fields are enriched -> equal for all velocity components and pressure
     const size_t numparamvelx = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velx);
     const size_t numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
     // put one here to create arrays of size 1, since they are not needed anyway
@@ -1865,64 +1943,55 @@ void SysmatDomain4(
     const double hk = XFLUID::HK<DISTYPE>(evelnp,xyze);
     const double mk = XFLUID::MK<DISTYPE>();
     
-    // information about domain integration cells
+    // get domain integration cells for this element
     const GEO::DomainIntCells&  domainIntCells(ih->GetDomainIntCells(ele));
-//    cout << "Element "<< ele->Id() << ": ";
 
+    //----------------------------------------------------------------------------------------------
     // loop over integration cells
+    //----------------------------------------------------------------------------------------------
     for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
     {
-        const LINALG::Matrix<nsd,1> cellcenter_xyz(cell->GetPhysicalCenterPosition());
+        // brauch ich nicht!
+//        const LINALG::Matrix<nsd,1> cellcenter_xyz(cell->GetPhysicalCenterPosition());
         
-        int labelnp = 0;
-
+        //------------------------------------------------------------------------------------------
+        // get material parameters for this integration cell
+        //------------------------------------------------------------------------------------------
         // TODO: hack to compile - only one material is used! henke 06/09
         int matid = 3;
-
+        // here I need a check on which side of the interface the cell is
+        /* if(cell->indomainplus_) // cell is burnt
+        {
+          matid = 1; // burnt material
+        }
+        else
+        {
+          matid = 2; // unburnt material
+        }*/
+        // get material from list of materials
         Teuchos::RCP<const MAT::Material> mat = actmaterials->MaterialById(matid);
+        // check if we really have a fluid material
         dsassert(mat->MaterialType() == INPAR::MAT::m_fluid, "Material law is not of type m_fluid.");
         const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
+        // get the viscosity
         const double visc = actmat->Viscosity();
-        // kinvisc statt visc?
-        // mit dyn Druck rechnen
-        // visc wird dann zur dynamischen Viskosität
-        // von was geht man im Datfile aus
-        // ggf const double visc = kinvisc * dens
-//          const double dens = actmat->Density();
-
-// Das ist anders für combustion! Es müssen beide Seiten des Interfaces integriert werden
-        if (ASSTYPE == XFEM::xfem_assembly)
-        {
-          // integrate only in fluid integration cells (works well only with void enrichments!!!)
-
-// Hier fliegt der Code raus! henke 25.5.09
-          labelnp = ih->PositionWithinConditionNP(cellcenter_xyz);
-          std::cout << "position2" << std::endl;
-          const std::set<int> xlabelset(dofman.getUniqueEnrichmentLabels());
-          bool compute = false;
-          if (labelnp == 0) // fluid
-          {
-            compute = true;
-          }
-          if (not compute)
-          {
-            continue; // next integration cell
-          }
-        }
-            
-        const XFEM::ElementEnrichmentValues enrvals(
-              *ele,
-              ih,
-              dofman,
-              cellcenter_xyz,
-              XFEM::Enrichment::approachUnknown);
         
+        /* kinvisc statt visc?; mit dyn Druck rechnen; visc wird dann zur dynamischen Viskosität
+           von was geht man im Datfile aus?
+           ggf const double visc = kinvisc * dens
+           const double dens = actmat->Density(); */
+
+        // evaluate the enrichment function for this integration cell
+        const XFEM::ElementEnrichmentValues enrvals(*ele,dofman,*cell);
+
         const DRT::UTILS::GaussRule3D gaussrule = XFLUID::getXFEMGaussrule<DISTYPE>(ele, xyze, ih->ElementIntersected(ele->Id()),cell->Shape());
         
         // gaussian points
         const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
 
+        //------------------------------------------------------------------------------------------
         // integration loop over Gauss points
+        //------------------------------------------------------------------------------------------
         for (int iquad=0; iquad<intpoints.nquad; ++iquad)
         {
             // coordinates of the current integration point in cell coordinates \eta
@@ -2667,7 +2736,8 @@ void Sysmat4(
         const bool                        supg,          ///< flag for stabilisation
         const bool                        cstab,         ///< flag for stabilisation
         const bool                        instationary,  ///< switch between stationary and instationary formulation
-        const bool                        ifaceForceContribution
+        const bool                        ifaceForceContribution,
+        const INPAR::COMBUST::CombustionType combusttype
         )
 {
     // initialize arrays
@@ -2694,19 +2764,25 @@ void Sysmat4(
     
     fillElementUnknownsArrays4<DISTYPE,ASSTYPE>(dofman, mystate, evelnp, eveln, evelnm, eaccn, eprenp, etau);
 
-    if (true) // if (jump enrichment) combustion problem
+    switch(combusttype)
     {
-      SysmatDomain4<DISTYPE,ASSTYPE,NUMDOF>(
-          ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, etau,
-          material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, assembler);
+      case INPAR::COMBUST::premixedcombustion:
+      {
+        SysmatDomain4<DISTYPE,ASSTYPE,NUMDOF>(
+            ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, etau,
+            material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, assembler);
+      }
+      break;
+      case INPAR::COMBUST::twophaseflow:
+      {
+        SysmatTwoPhase<DISTYPE,ASSTYPE,NUMDOF>(
+            ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, etau,
+            material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, assembler);
+      }
+      break;
+      default:
+        dserror("unknown type of combustion problem");
     }
-    if (false) // if (kink enrichment) two-phase flow problem
-    {
-      SysmatTwoPhase<DISTYPE,ASSTYPE,NUMDOF>(
-          ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, etau,
-          material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, assembler);
-    }
-
 //    if (ASSTYPE == XFEM::xfem_assembly)
 //    {
 //      SysmatBoundary4<DISTYPE,ASSTYPE,NUMDOF>(
@@ -2737,7 +2813,8 @@ void COMBUST::callSysmat4(
         const bool                        supg   ,
         const bool                        cstab  ,
         const bool                        instationary,
-        const bool                        ifaceForceContribution
+        const bool                        ifaceForceContribution,
+        const INPAR::COMBUST::CombustionType combusttype
         )
 {
     if (assembly_type == XFEM::standard_assembly)
@@ -2747,27 +2824,32 @@ void COMBUST::callSysmat4(
             case DRT::Element::hex8:
                 Sysmat4<DRT::Element::hex8,XFEM::standard_assembly>(
                         ele, ih, eleDofManager, mystate, Teuchos::null, Teuchos::null, estif, eforce,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary,
+                        ifaceForceContribution, combusttype);
                 break;
             case DRT::Element::hex20:
                 Sysmat4<DRT::Element::hex20,XFEM::standard_assembly>(
                         ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary,
+                        ifaceForceContribution, combusttype);
                 break;
             case DRT::Element::hex27:
                 Sysmat4<DRT::Element::hex27,XFEM::standard_assembly>(
                         ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary,
+                        ifaceForceContribution, combusttype);
                 break;
             case DRT::Element::tet4:
                 Sysmat4<DRT::Element::tet4,XFEM::standard_assembly>(
                         ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary,
+                        ifaceForceContribution, combusttype);
                 break;
             case DRT::Element::tet10:
                 Sysmat4<DRT::Element::tet10,XFEM::standard_assembly>(
                         ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary,
+                        ifaceForceContribution, combusttype);
                 break;
             default:
                 dserror("standard_assembly Sysmat not templated yet");
@@ -2780,27 +2862,32 @@ void COMBUST::callSysmat4(
             case DRT::Element::hex8:
                 Sysmat4<DRT::Element::hex8,XFEM::xfem_assembly>(
                         ele, ih, eleDofManager, mystate, Teuchos::null, Teuchos::null, estif, eforce,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary,
+                        ifaceForceContribution, combusttype);
                 break;
             case DRT::Element::hex20:
                 Sysmat4<DRT::Element::hex20,XFEM::xfem_assembly>(
                         ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary,
+                        ifaceForceContribution, combusttype);
                 break;
             case DRT::Element::hex27:
                 Sysmat4<DRT::Element::hex27,XFEM::xfem_assembly>(
                         ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary,
+                        ifaceForceContribution, combusttype);
                 break;
             case DRT::Element::tet4:
                 Sysmat4<DRT::Element::tet4,XFEM::xfem_assembly>(
                         ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary,
+                        ifaceForceContribution, combusttype);
                 break;
             case DRT::Element::tet10:
                 Sysmat4<DRT::Element::tet10,XFEM::xfem_assembly>(
                         ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary,
+                        ifaceForceContribution, combusttype);
                 break;
             default:
                 dserror("xfem_assembly Sysmat not templated yet");

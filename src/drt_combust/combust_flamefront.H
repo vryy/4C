@@ -16,6 +16,8 @@ Maintainer: Florian Henke
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "combust_refinementcell.H"
+#include <tetgen.h>
+#include "../drt_geometry/intersection.H"
 
 namespace COMBUST
 {
@@ -67,6 +69,11 @@ namespace COMBUST
     /// remote access method to flame front patches
     const std::map< int,const Teuchos::RCP<const COMBUST::RefinementCell> > FlameFrontPatches() const
         { return flamefrontpatches_; }
+    
+    //URSULA
+    const std::map<int,GEO::DomainIntCells> DomainIntCells() const {return elementintcells_;}
+    const std::map<int,GEO::BoundaryIntCells> BoundaryIntCells() const {return boundaryintcells_;}
+    //URSULA
 
     /// flame front control routine
     void ProcessFlameFront(
@@ -96,16 +103,65 @@ namespace COMBUST
     void CaptureFlameFront(const Teuchos::RCP<const COMBUST::RefinementCell> cell);
 
     /// not documented yet
-    void TriangulateFlameFront();
+    void TriangulateFlameFront(
+            std::vector<std::vector<int> >&        trianglelist,
+            std::multimap<int,std::vector<int> >&  segmentlist,
+            std::vector<std::vector<double> >&     pointlist,
+            std::map<int,int>&          intersectionpoints_id, //
+            const std::vector<double>&  gfuncvalue //
+            );
+
+    void IdentifyPolygonOrientation(
+            std::vector<int>&           segment,
+            const int                   surf_id,
+            std::map<int,int>&          intersectionpoints_id,
+            const std::vector<double>&  gfuncvalue
+            );
+
+    void buildFlameFrontSegments(
+            std::map<int,int>&                    intersectionpoints_id,
+            std::multimap<int,std::vector<int> >& segmentlist,
+            const std::vector<double>&            gfuncvalue,
+            const std::vector<std::vector<double> >& pointlist
+            );
 
     // these 3 should be moved to a class accepting the 2D flame front as an input and producing 3D
     // integration cells as an output
     /// not documented yet
-    void buildPLC();
+    void buildPLC(
+            const Teuchos::RCP<const COMBUST::RefinementCell> cell,
+            GEO::DomainIntCells&                              domainintcelllist,
+            GEO::BoundaryIntCells&                            boundaryintcelllist
+            );
+
     /// not documented yet
-    void CreateIntegrationCells();
+    void CreateIntegrationCells(
+            const std::vector<std::vector<double> >&  pointlist,
+            std::multimap<int,std::vector<int> >&          segmentlist,
+            const std::vector<std::vector<int> >&     XFEMsurfacelist,
+            const std::vector<std::vector<int> >&     trianglelist,
+            GEO::DomainIntCells&                      domainintcelllist,
+            //GEO::BoundaryIntCells&                    boundaryintcelllist,
+            const LINALG::SerialDenseMatrix   xyze
+            //const std::vector<double>& gfuncvalue
+            );
+
     /// not documented yet
-    void TransformIntegrationCells();
+    void TransformIntegrationCells(
+            tetgenio&                out,
+            GEO::DomainIntCells&     domainintcelllist,
+            //GEO::BoundaryIntCells&   boundaryintcelllist,
+            const LINALG::SerialDenseMatrix xyze
+            //const std::vector<double>& gfuncvalue
+            );
+
+    /// not documented yet
+    bool GetIntCellDomain(
+            const LINALG::SerialDenseMatrix               IntCellCoord,
+            const std::vector<double>&              gfuncvalue,
+            const DRT::Element::DiscretizationType  xfem_distype,
+            const DRT::Element::DiscretizationType  cell_distype
+            );
 
     /// pointer to fluid discretization
     const Teuchos::RCP<const DRT::Discretization> fluiddis_;
@@ -115,6 +171,13 @@ namespace COMBUST
 
     /// pointer to vector on fluid NodeColMap holding G-function values originally stored in phinp
     Teuchos::RCP<Epetra_Vector> phinp_;
+
+    //URSULA
+    // integration cells of intersected element
+    std::map<int,GEO::DomainIntCells> elementintcells_;
+    // boundary integration cells
+    std::map<int,GEO::BoundaryIntCells> boundaryintcells_;
+    //URSULA
 
     /// map containing, for each column fluid element on this processor, the flame front geometry to
     /// be exported to the interfacehandle

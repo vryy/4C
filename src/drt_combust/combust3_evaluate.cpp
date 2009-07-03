@@ -176,6 +176,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       // check, whether this map is still identical with the current node map in the discretization
       if (not phimap.SameAs(*discretization.NodeColMap())) dserror("node column map has changed!");
 
+      const INPAR::COMBUST::CombustionType combusttype = params.get<INPAR::COMBUST::CombustionType>("combusttype");
       // extract G-function values to element level (used kink enrichment)
       DRT::UTILS::ExtractMyNodeBasedValues(this, mystate.phinp, *phinp);
 
@@ -207,7 +208,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       // calculate element coefficient matrix and rhs
       COMBUST::callSysmat4(assembly_type,
         this, ih_, *eleDofManager_, mystate, Teuchos::null, Teuchos::null, elemat1, elevec1,
-        mat, timealgo, dt, theta, newton, pstab, supg, cstab, true, ifaceForceContribution);
+        mat, timealgo, dt, theta, newton, pstab, supg, cstab, true, ifaceForceContribution, combusttype);
     }
     break;
     case calc_fluid_beltrami_error:
@@ -262,6 +263,8 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 //      if (iforcecol==null)
 //        dserror("Cannot get interface force from parameters");
 
+      const INPAR::COMBUST::CombustionType combusttype = params.get<INPAR::COMBUST::CombustionType>("combusttype");
+
       // time integration factors
       const FLUID_TIMEINTTYPE timealgo = params.get<FLUID_TIMEINTTYPE>("timealgo");
       const double            dt       = 1.0;
@@ -294,7 +297,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
               // calculate element coefficient matrix and rhs
               COMBUST::callSysmat4(assembly_type,
                       this, ih_, eleDofManager_, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
-                      mat, pseudotime, 1.0, newton, pstab, supg, cstab, false);
+                      mat, pseudotime, 1.0, newton, pstab, supg, cstab, false, combusttype);
 
               LINALG::SerialDensevector eforce_0(locval.size());
               for (unsigned i = 0;i < locval.size(); ++i)
@@ -322,7 +325,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
               // calculate element coefficient matrix and rhs
               COMBUST::callSysmat4(assembly_type,
                       this, ih_, eleDofManager_, locval_disturbed, locval_hist, ivelcol, iforcecol, estif, eforce,
-                      mat, pseudotime, 1.0, newton, pstab, supg, cstab, false);
+                      mat, pseudotime, 1.0, newton, pstab, supg, cstab, false, combusttype);
 
               
               
@@ -344,7 +347,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
         // calculate element coefficient matrix and rhs
         COMBUST::callSysmat4(assembly_type,
                  this, ih_, *eleDofManager_, mystate, Teuchos::null, Teuchos::null, elemat1, elevec1,
-                 mat, timealgo, dt, theta, newton, pstab, supg, cstab, false, ifaceForceContribution);
+                 mat, timealgo, dt, theta, newton, pstab, supg, cstab, false, ifaceForceContribution, combusttype);
       }
     }
     break;

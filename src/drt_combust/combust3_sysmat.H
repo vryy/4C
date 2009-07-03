@@ -48,7 +48,8 @@ namespace COMBUST
           const bool                        supg   ,
           const bool                        cstab  ,
           const bool                        instationary,
-          const bool                        ifaceForceContribution
+          const bool                        ifaceForceContribution,
+          const INPAR::COMBUST::CombustionType combusttype
           );
 }
 

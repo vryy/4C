@@ -24,6 +24,7 @@ Maintainer: Florian Henke
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/linalg_serialdensematrix.H"
 #include "../drt_lib/linalg_serialdensevector.H"
+#include "../drt_inpar/inpar_combust.H"
 #include "combust_interface.H"
 
 namespace DRT

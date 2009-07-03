@@ -64,6 +64,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   output_ (output),
   myrank_(discret_->Comm().MyPID()),
   cout0_(discret_->Comm(), std::cout),
+  combusttype_(Teuchos::getIntegralValue<INPAR::COMBUST::CombustionType>(params_.sublist("COMBUSTION FLUID"),"COMBUSTTYPE")),
   step_(0),
   time_(0.0),
   stepmax_ (params_.get<int>   ("max number timesteps")),
@@ -528,6 +529,9 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
         eleparams.set("action","calc_fluid_stationary_systemmat_and_residual");
       else
         eleparams.set("action","calc_fluid_systemmat_and_residual");
+
+      // flag for type of combustion problem
+      eleparams.set("combusttype",combusttype_);
 
       // other parameters that might be needed by the elements
       //eleparams.set("total time",time_);

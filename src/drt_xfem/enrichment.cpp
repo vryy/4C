@@ -153,6 +153,17 @@ double XFEM::Enrichment::EnrValue(
 }
 
 
+double XFEM::Enrichment::EnrValueLevelSet(
+        // const DRT::Element&                    ele,
+        const GEO::DomainIntCell&             cell,
+        const int                              nodelid
+        // const LINALG::Matrix<3,1>&             actpos,
+        //const LINALG::Matrix<1,8>&             phi
+) const
+{
+  return 0.0;
+}
+
 /*----------------------------------------------------------------------*
  | get modified enrichment value                               ag 11/07 |
  | remark: the enrichment function is 0 at nodes and hence the usual    |
@@ -248,7 +259,8 @@ double XFEM::Enrichment::ModifiedKinkEnrValue(
         const LINALG::Matrix<3,1>&             actpos,
         //const LINALG::Matrix<3,1>&             nodalpos,
         const int                              nodelid,
-        const XFEM::InterfaceHandle&           ih,
+        //const XFEM::InterfaceHandle&           ih,
+        const COMBUST::InterfaceHandleCombust&  ih,
         const XFEM::Enrichment::ApproachFrom   approachdirection,
         const DRT::Element&                    ele
         //const LINALG::Matrix<1,8>&             phi
@@ -274,19 +286,19 @@ double XFEM::Enrichment::ModifiedKinkEnrValue(
     
     //phi an den Elementknoten wird noch benötigt
     //ih wird bisher nicht gebraucht, allerdings möglicherweise dann für die Knotenwerte von Phi
-    //Dummy
-    Epetra_SerialDenseVector  phi(numnode);
-    for (int inode=0; inode<numnode; inode++)
-    {
-    	phi(inode) = 0.0;
-    }
-    
-//    double phiactpos =0.0;
-//    for (int inode=0; inode<numnode; inode++)
-//    {
-//    	phiactpos += phi(inode) * funct(inode);
-//    }
-    
+    const Teuchos::RCP<Epetra_Vector>  phinp = ih.FlameFront()->Phinp();
+    // remark: vector "lm" is neccessary, because ExtractMyValues() only accepts "vector<int>"
+    // arguments, but ele->NodeIds delivers an "int*" argument
+    vector<int> lm(numnode);
+    // get vector of node GIDs for this element
+    const int* nodeids = ele.NodeIds();
+    for (unsigned inode=0; inode < lm.size(); inode++)
+      lm[inode] = nodeids[inode];
+    // create vector "phi" holding phi values for this element
+    vector<double> phi(numnode,1000.0);
+    // get entries in "phinp" corresponding to node GIDs "lm" and store them in "phi"
+    DRT::UTILS::ExtractMyValues(*phinp,phi,lm);
+
     // TODO @ Axel: What does that mean?
     //dserror("needs update for the approach variable");
     // return value
@@ -301,59 +313,6 @@ double XFEM::Enrichment::ModifiedKinkEnrValue(
         enrval = 1.0;
         break;
     }
-    //was passiert mit der Bestimmung auf welcher Seite man sich befindet
-    //if (phiactpos<0)
-    //if (phi(nodelid)<0)
-    //dann brauche ich approachdirection nicht und nodepos wird durch nodelid ersetzt
-//    case XFEM::Enrichment::typeVoid:
-//    {
-//        double actpos_enr_val = 0.0;
-//        if (ih.PositionWithinConditionNP(actpos) == this->XFEMConditionLabel()) {
-//            actpos_enr_val = 0.0;
-//        } else {
-//            actpos_enr_val = 1.0;
-//        }
-//        
-//        double nodepos_enr_val = 0.0;
-//        if (ih.PositionWithinConditionNP(nodalpos) == this->XFEMConditionLabel()) {
-//            nodepos_enr_val = 0.0;
-//        } else {
-//            nodepos_enr_val = 1.0;
-//        }
-//        
-//        enrval = actpos_enr_val - nodepos_enr_val;
-//        
-//        break;
-//    }
-//    case XFEM::Enrichment::typeJump:
-//    {
-//        /* literature (p. 1006, penultimate line):
-//         * Belytschko, T., Moës, N., Usui, S. and Parimi, C.
-//         * Arbitrary discontinuities in finite elements:
-//         * "International Journal for Numerical Methods in Engineering", 50:993--1013,2001.
-//         */
-//        double actpos_enr_val = 0.0;
-//        if (ih.PositionWithinConditionNP(actpos) == this->XFEMConditionLabel()) {
-//            actpos_enr_val = -1.0;
-//        } else {
-//            actpos_enr_val = 1.0;
-//        }
-//        
-//        double nodepos_enr_val = 0.0;
-//        if (ih.PositionWithinConditionNP(nodalpos) == this->XFEMConditionLabel()) {
-//            nodepos_enr_val = -1.0;
-//        } else {
-//            nodepos_enr_val = 1.0;
-//        }
-//        
-//        enrval = actpos_enr_val - nodepos_enr_val;
-//        
-//        break;
-//    }
-    
-    //ist ok, falls das Interface das Element nur einmal schneidet
-    //schneidet das Interface das Element mehrmals ist approachdirection in Bezug auf
-    //das zugehörige Interfacestück zu wählen
     case XFEM::Enrichment::typeVoid:
     {
         double actpos_enr_val = 0.0;
@@ -364,7 +323,7 @@ double XFEM::Enrichment::ModifiedKinkEnrValue(
         }
         
         double nodepos_enr_val = 0.0;
-        if (phi(nodelid)<0) {
+        if (phi[nodelid]<0) {
             nodepos_enr_val = 0.0;
         } else {
             nodepos_enr_val = 1.0;
@@ -389,7 +348,7 @@ double XFEM::Enrichment::ModifiedKinkEnrValue(
         }
         
         double nodepos_enr_val = 0.0;
-        if (phi(nodelid)<0) {
+        if (phi[nodelid]<0) {
             nodepos_enr_val = -1.0;
         } else {
             nodepos_enr_val = 1.0;
@@ -405,35 +364,19 @@ double XFEM::Enrichment::ModifiedKinkEnrValue(
          * Moës, N., Cloirec, M.,Cartraud, P. and Remacle, J. F.
          * A computational approach to handle complex microstructure geometries:
          * "Computer Methods in Applied Mechanics and Engineering", 192:3163--3177, 2003.
-         */
-        //dserror("kink enrichment function not implemented yet");
-        // enrval = something involving the standard shape functions
-    	
-        /*
+         *
          * psi = sum(abs(phi(i))*N(i))-abs(sum(phi(i)*N(i)), i=0...numnode-1
          */
-        //ICH
-//    	const DRT::Element::DiscretizationType distype = ele.Shape();
-//    	const int numnode = ele.NumNode();//8
-//    	Epetra_SerialDenseVector  funct(numnode);
-//        DRT::UTILS::shape_function_3D(funct,actpos(0),actpos(1),actpos(2),distype);
-//        
-//        //phi an den Elementknoten wird noch benötigt
-//        //Dummy
-//        Epetra_SerialDenseVector  phi(numnode);
-//        for (int inode=0; inode<numnode; inode++)
-//        {
-//        	phi(inode,1) = 0.0;
-//        }
-        
+
         double sum_1 = 0.0;
         double sum_2 = 0.0;
         for (int inode=0; inode<numnode; inode++)
         {
-        	sum_1 += fabs(phi(inode)) * funct(inode); //Betrag in C++: fabs() und include math.h
-        	sum_2 += phi(inode) * funct(inode);
+          sum_1 += fabs(phi[inode]) * funct(inode); //Betrag in C++: fabs() und include math.h
+          sum_2 += phi[inode] * funct(inode);
         }
         enrval = sum_1 - fabs(sum_2);
+        break;
     }
     default:
         dserror("unsupported enrichment (modified)!");
@@ -443,7 +386,8 @@ double XFEM::Enrichment::ModifiedKinkEnrValue(
 
 std::vector<double> XFEM::Enrichment::ModifiedEnrValue_derxy(
         const LINALG::Matrix<3,1>&             actpos,
-        const XFEM::InterfaceHandle&           ih,
+        //const XFEM::InterfaceHandle&           ih,
+        const COMBUST::InterfaceHandleCombust&   ih,
         const DRT::Element&                    ele
         //const LINALG::Matrix<1,8>&             phi
         ) const
@@ -478,54 +422,55 @@ std::vector<double> XFEM::Enrichment::ModifiedEnrValue_derxy(
         enrvalderxy[0] = 0.0;
         enrvalderxy[1] = 0.0;
         enrvalderxy[2] = 0.0;
+        
+        // number of nodes for element
     	const DRT::Element::DiscretizationType distype = ele.Shape();
-    	const int numnode = ele.NumNode();//8
-    	Epetra_SerialDenseVector  funct(numnode);
-    	Epetra_SerialDenseMatrix  deriv(3,numnode);
+    	//gibt Fehlermeldung aus, falls es sich um kein hex8 Element handelt
+    	//besser wäre template
+    	if (distype != DRT::Element::hex8)
+    	{
+    		dserror("Element not templated in kink enrichment second derivatives yet");
+    	}
+    	const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+        static LINALG::Matrix<numnode,1> funct;
+        static LINALG::Matrix<3,numnode> deriv;
+        
         DRT::UTILS::shape_function_3D(funct,actpos(0),actpos(1),actpos(2),distype);
         //local derivatives
         DRT::UTILS::shape_function_3D_deriv1(deriv,actpos(0),actpos(1),actpos(2),distype);
+
 //      //global derivatives -> Jacobi-Matrix
 //      //xyze global coordinates of nodes
-        Epetra_SerialDenseMatrix  xyze(3,numnode);
-          
-//           // aus combust3_evaluate
-//           Epetra_SerialDenseVector  funct(iel);
-//           Epetra_SerialDenseMatrix  xjm(3,3);
-//           Epetra_SerialDenseMatrix  deriv(3,iel);
-//
-//           // get node coordinates of element
-//           Epetra_SerialDenseMatrix xyze(3,iel);
-//           for(int inode=0;inode<iel;inode++)
-//           {
-//             xyze(0,inode)=Nodes()[inode]->X()[0];
-//             xyze(1,inode)=Nodes()[inode]->X()[1];
-//             xyze(2,inode)=Nodes()[inode]->X()[2];
-//           } 
-        
+        static LINALG::Matrix<3,numnode> xyze;
         for(int inode=0;inode<numnode;inode++)
         {
           xyze(0,inode) = ele.Nodes()[inode]->X()[0];
           xyze(1,inode) = ele.Nodes()[inode]->X()[1];
           xyze(2,inode) = ele.Nodes()[inode]->X()[2];
         }
-        //Jacobi-Matix and inverse 
-        Epetra_SerialDenseMatrix  xjm(3,3);
-        xjm.Multiply('N','T',1,deriv,xyze,0); //-> xjm = deriv * xyze^T
-        Epetra_SerialDenseMatrix  xji(3,3);
-        xji.ApplyInverse(xjm,xji);
-        // compute global derivates
-        Epetra_SerialDenseMatrix  derxy(3,numnode);
-        derxy.Multiply('N','N',1,xji,deriv,0);
-        
+
+        //Jacobi-Matix and inverse
+        static LINALG::Matrix<3,3> xjm;
+        xjm.MultiplyNT(deriv,xyze);
+        static LINALG::Matrix<3,3> xji;
+        xji.Invert(xjm);
+        static LINALG::Matrix<3,numnode> derxy;
+        derxy.Multiply(xji,deriv);
+               
         //phi an den Elementknoten wird noch benötigt
-        //Dummy
-        Epetra_SerialDenseVector  phi(numnode);
-        for (int inode=0; inode<numnode; inode++)
-        {
-        	phi(inode) = 0.0;
-        }
-        
+        const Teuchos::RCP<Epetra_Vector>  phinp = ih.FlameFront()->Phinp();
+        // remark: vector "lm" is neccessary, because ExtractMyValues() only accepts "vector<int>"
+        // arguments, but ele->NodeIds delivers an "int*" argument
+        vector<int> lm(numnode);
+        // get vector of node GIDs for this element
+        const int* nodeids = ele.NodeIds();
+        for (unsigned inode=0; inode < lm.size(); inode++)
+          lm[inode] = nodeids[inode];
+        // create vector "phi" holding phi values for this element
+        vector<double> phi(numnode,1000.0);
+        // get entries in "phinp" corresponding to node GIDs "lm" and store them in "phi"
+        DRT::UTILS::ExtractMyValues(*phinp,phi,lm);
+
         for (int isd=0; isd<3; isd++)
         {
         	double sum_1_der = 0.0;
@@ -533,9 +478,9 @@ std::vector<double> XFEM::Enrichment::ModifiedEnrValue_derxy(
         	double sum_2 = 0.0;
         	for (int inode=0; inode<numnode; inode++)
         	{
-        		sum_1_der += fabs(phi(inode)) * derxy(isd,inode);
-        		sum_2_der += phi(inode) * derxy(isd,inode);
-        		sum_2 += phi(inode) * funct(inode);
+        		sum_1_der += fabs(phi[inode]) * derxy(isd,inode);
+        		sum_2_der += phi[inode] * derxy(isd,inode);
+        		sum_2 += phi[inode] * funct(inode);
         	}
         	
         	if (sum_2<0)
@@ -560,12 +505,13 @@ std::vector<double> XFEM::Enrichment::ModifiedEnrValue_derxy(
 //template <DRT::Element::DiscretizationType DISTYPE>
 std::vector<double> XFEM::Enrichment::ModifiedEnrValue_derxy2(
         const LINALG::Matrix<3,1>&             actpos,
-        const XFEM::InterfaceHandle&           ih,
+        //const XFEM::InterfaceHandle&           ih,
+        const COMBUST::InterfaceHandleCombust&  ih,
         const DRT::Element&                    ele
         //const LINALG::Matrix<1,8>&             phi
         ) const
 {
-	std::vector<double> enrvalderxy2;
+	std::vector<double> enrvalderxy2(6);
 	
     switch (Type()){
     case XFEM::Enrichment::typeStandard:
@@ -640,19 +586,22 @@ std::vector<double> XFEM::Enrichment::ModifiedEnrValue_derxy2(
         
         static LINALG::Matrix<6,numnode> derxy2;
         
-        //wie mit template umgehen?
-        //Funktion benötigt Input als LINALG::Matrix
         DRT::UTILS::gder2<DRT::Element::hex8>(xjm, derxy, deriv2, xyze, derxy2);
         
         
         //phi an den Elementknoten wird noch benötigt
-        //Dummy
-        //Epetra_SerialDenseVector  phi(numnode);
-        static LINALG::Matrix<numnode,1> phi;
-        for (int inode=0; inode<numnode; inode++)
-        {
-        	phi(inode) = 0.0;
-        }
+        const Teuchos::RCP<Epetra_Vector>  phinp = ih.FlameFront()->Phinp();
+        // remark: vector "lm" is neccessary, because ExtractMyValues() only accepts "vector<int>"
+        // arguments, but ele->NodeIds delivers an "int*" argument
+        vector<int> lm(numnode);
+        // get vector of node GIDs for this element
+        const int* nodeids = ele.NodeIds();
+        for (unsigned inode=0; inode < lm.size(); inode++)
+          lm[inode] = nodeids[inode];
+        // create vector "phi" holding phi values for this element
+        vector<double> phi(numnode,1000.0);
+        // get entries in "phinp" corresponding to node GIDs "lm" and store them in "phi"
+        DRT::UTILS::ExtractMyValues(*phinp,phi,lm);
         
         for (int isd=0; isd<6; isd++)
         {
@@ -661,9 +610,9 @@ std::vector<double> XFEM::Enrichment::ModifiedEnrValue_derxy2(
         	double sum_2 = 0.0;
         	for (int inode=0; inode<numnode; inode++)
         	{
-        		sum_1_der2 += fabs(phi(inode)) * derxy2(isd,inode);
-        		sum_2_der2 += phi(inode) * derxy2(isd,inode);
-        		sum_2 += phi(inode) * funct(inode);
+        		sum_1_der2 += fabs(phi[inode]) * derxy2(isd,inode);
+        		sum_2_der2 += phi[inode] * derxy2(isd,inode);
+        		sum_2 += phi[inode] * funct(inode);
         	}
         	
         	if (sum_2<0)
@@ -673,7 +622,7 @@ std::vector<double> XFEM::Enrichment::ModifiedEnrValue_derxy2(
         	else
         	{
         		enrvalderxy2[isd] = sum_1_der2 - sum_2_der2;
-        	}    	
+        	}
         }
     	
         break;

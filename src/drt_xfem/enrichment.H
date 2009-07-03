@@ -155,9 +155,9 @@ namespace XFEM
       
       //! working method for kink enrichments; to be merged with ModifiedEnrValue()
       double ModifiedKinkEnrValue(
-          const LINALG::Matrix<3,1>&             actpos,            ///< \f$x\f$
+          const LINALG::Matrix<3,1>&             actpos,             ///< \f$x\f$
           const int                              nodelid,
-          const XFEM::InterfaceHandle&           ih,                ///< the ubiquitous interface handle with all geometry information
+          const COMBUST::InterfaceHandleCombust&    ih,                 ///< the ubiquitous interface handle with all geometry information
           const XFEM::Enrichment::ApproachFrom   approachdirection,  ///< approach direction
           const DRT::Element&                    ele
       ) const;
@@ -166,7 +166,7 @@ namespace XFEM
       //! calculate modified enrichment value derivative
       std::vector<double> ModifiedEnrValue_derxy(
               const LINALG::Matrix<3,1>&             actpos,
-              const XFEM::InterfaceHandle&           ih,
+              const COMBUST::InterfaceHandleCombust&           ih,
               const DRT::Element&                    ele
               //const LINALG::Matrix<1,8>&             phi
               ) const;
@@ -175,7 +175,7 @@ namespace XFEM
       //! calculate modified enrichment value second derivative
       std::vector<double> ModifiedEnrValue_derxy2(
               const LINALG::Matrix<3,1>&             actpos,
-              const XFEM::InterfaceHandle&           ih,
+              const COMBUST::InterfaceHandleCombust&           ih,
               const DRT::Element&                    ele
               //const LINALG::Matrix<1,8>&             phi
               ) const;
@@ -187,7 +187,16 @@ namespace XFEM
           const XFEM::InterfaceHandle&          ih,                ///< the ubiquitous interface handle with all geometry information
           const XFEM::Enrichment::ApproachFrom  approachdirection  ///< approach direction
       ) const;
-              
+
+      //! compute enrichment value based on level set function
+      double EnrValueLevelSet(
+              // const DRT::Element&                    ele,
+              const GEO::DomainIntCell&             cell,
+              const int                              nodelid
+              // const LINALG::Matrix<3,1>&             actpos,
+              //const LINALG::Matrix<1,8>&             phi
+      ) const;
+
     private:
       
       //! a global id used to distuinguish several surfaces within one element

@@ -69,6 +69,10 @@ namespace COMBUST
     int PositionWithinConditionN(const LINALG::Matrix<3,1>&     x_in,
                                  GEO::NearestObject&  nearestobject) const;
 
+    //! determine which part of the domain (separated by level set function) an integration cell belongs to
+    bool GetIntCellPosition(const GEO::DomainIntCell& intcell,
+                            const DRT::Element*       xfemele);
+
   private:
 
     /// don't want default constructor, therefore declared private!

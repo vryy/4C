@@ -47,6 +47,19 @@ namespace XFEM
     );
     
     /*!
+     * \brief compute enrichment value for integration cell
+     * 
+     * used for combustion problems
+     */
+    explicit ElementEnrichmentValues(
+            const DRT::Element&                   ele,       ///< pointer to element
+            const XFEM::ElementDofManager&        dofman,    ///< pointer to element dof manager
+            const GEO::DomainIntCell&             cell       ///< pointer to integration cell
+            //const LINALG::Matrix<3,1>&            actpos
+            //const LINALG::Matrix<1,8>&            phi
+     );
+
+    /*!
     * \brief for each given Enrichment in enrset, compute the enrichment value at actpos
     * 
     * if one already knows, an which side of the discontinuity one computes something,
@@ -338,12 +351,14 @@ namespace XFEM
     const DRT::Element&                        ele_;
     //  const RCP<XFEM::InterfaceHandle>           ih_;
     const XFEM::ElementDofManager&             dofman_;
-    
+
+    //! map holding values for enrichments
     std::map<XFEM::Enrichment, double>        enrvals_;
-    
+    //! map holding values for enrichments for every node
+    std::map<int,std::map<XFEM::Enrichment, double> > enrvalnodes_;
+
 //URSULA
     // member variables required for kink enrichment
-    std::map<int,std::map<XFEM::Enrichment, double> > enrvalnodes_;
     std::map<XFEM::Enrichment, std::vector<double> > enrvalderxy_;
     std::map<XFEM::Enrichment, std::vector<double> > enrvalderxy2_;
 //URSULA

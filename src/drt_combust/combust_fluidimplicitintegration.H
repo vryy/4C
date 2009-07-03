@@ -20,6 +20,7 @@ Maintainer: Florian Henke
 #include "../drt_io/io.H"
 #include "../drt_io/io_ostream0.H"
 #include "../drt_xfem/dof_management.H"
+#include "../drt_inpar/inpar_combust.H"
 #include "combust_interface.H"
 
 namespace FLD
@@ -316,6 +317,9 @@ protected:
   //!< a singular stream to stdout in parallel environment
   IO::Ostream0 cout0_;
   //@}
+
+  /// flag for type of combustion problem 
+  INPAR::COMBUST::CombustionType combusttype_;
 
   //! @name time stepping variables
   int     step_;    ///< timestep
