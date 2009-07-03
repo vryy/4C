@@ -132,6 +132,7 @@ Input/fsi_ow32x32_usfem.dat                             x        x        x     
 Input/fsi_ow32x32_usfem_2xaztec.dat                     x        x        x        x        -        -
 Input/fsi_ow32x32_drt.dat                               x        x        x        -        -        -
 Input/fsi_ow32x32_sti_drt.dat                           x        x        x        -        -        -
+Input/fsi_ow32x32_mtr_sti_drt.dat                       x        x        x        -        -        -
 Input/fsi_ow32x32_drt_ca.dat                            x        x        x        -        -        -
 Input/fsi_ow32x32_drt_force.dat                         x        x        x        -        -        -
 Input/fsi_ow32x32_sd_drt.dat                            x        x        x        -        x        x
@@ -143,6 +144,7 @@ Input/fsi_ow32x32_drt_ga_mfsi.dat                       x        x        x     
 Input/fsi_ow3D_sd.dat                                   x        x        x        x        -        -
 Input/fsi_ow3D_sd_is.dat                                x        x        x        x        -        -
 Input/fsi_ow3D_usfem.dat                                x        x        x        x        -        -
+Input/fsi_ow3D_mtr_drt.dat                              x        x        x        x        -        -       
 Input/fsi_tank20x10.dat                                 x        x        x        x        -        -
 Input/fsi_tank3D.dat                                    x        -        x        -        -        -
 Input/fsi_tank3D_par.dat                                -        -        -        -        -        -
