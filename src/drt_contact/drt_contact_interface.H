@@ -144,13 +144,13 @@ public:
   \brief Get type of contact search algorithm
     
   */
-  virtual inline const string& SearchAlg() {return icontact_.get<string>("search algorithm","elements");};
+  virtual inline const string& SearchAlg() {return icontact_.get<string>("search algorithm","undefined");};
   
   /*!
   \brief Get contact search algorithm parameter
     
   */
-  virtual inline const double& SearchParam() {return icontact_.get<double>("search parameter",0.3);};
+  virtual inline const double& SearchParam() {return icontact_.get<double>("search parameter",0.0);};
     
   /*!
   \brief Get row map of slave nodes (Filled()==true is prerequisite)

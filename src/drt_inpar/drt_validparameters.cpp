@@ -770,16 +770,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("FRBOUND",0.0,"Friction bound for Tresca friction",&scontact);
   DoubleParameter("FRCOEFF",0.0,"Friction coefficient for Coulomb friction",&scontact);
 
-  setStringToIntegralParameter<int>("FULL_LINEARIZATION","No","If chosen full linearization of contact is applied",
+  setStringToIntegralParameter<int>("FULL_LINEARIZATION","Yes","If chosen full linearization of contact is applied",
                                yesnotuple,yesnovalue,&scontact);
 
-  setStringToIntegralParameter<int>("SEMI_SMOOTH_NEWTON","No","If chosen semi-smooth Newton concept is applied",
+  setStringToIntegralParameter<int>("SEMI_SMOOTH_NEWTON","Yes","If chosen semi-smooth Newton concept is applied",
                                yesnotuple,yesnovalue,&scontact);
 
-  DoubleParameter("SEMI_SMOOTH_CN",0.0,"Weighting factor cn for semi-smooth PDASS",&scontact);
-  DoubleParameter("SEMI_SMOOTH_CT",0.0,"Weighting factor ct for semi-smooth PDASS",&scontact);
+  DoubleParameter("SEMI_SMOOTH_CN",1.0,"Weighting factor cn for semi-smooth PDASS",&scontact);
+  DoubleParameter("SEMI_SMOOTH_CT",1.0,"Weighting factor ct for semi-smooth PDASS",&scontact);
 
-  setStringToIntegralParameter<INPAR::CONTACT::ContactSearchAlgorithm>("SEARCH_ALGORITHM","BruteForceEleBased","Type of contact search",
+  setStringToIntegralParameter<INPAR::CONTACT::ContactSearchAlgorithm>("SEARCH_ALGORITHM","Binarytree","Type of contact search",
                                tuple<std::string>("BruteForceNodeBased","bruteforcenodebased",
                                                   "BruteForceEleBased","bruteforceelebased",
                                                   "BinaryTree","Binarytree","binarytree"),
