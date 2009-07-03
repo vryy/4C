@@ -49,8 +49,6 @@ Maintainer: Michael Gee
 #include "contactdefines.H"
 #include "drt_contact_binarytree.H"
 #include "../drt_lib/linalg_utils.H"
-#include "../drt_io/io_gmsh.H"
-#include "../drt_lib/drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
