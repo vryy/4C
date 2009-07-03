@@ -20,6 +20,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_io/io_control.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_inpar/inpar_fsi.H"
+#include "../drt_inpar/inpar_combust.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
