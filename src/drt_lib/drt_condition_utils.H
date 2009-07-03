@@ -67,16 +67,28 @@ namespace DRT
 
     /// collect all local nodes and elements in a condition, e.g. an interface
     void FindInterfaceObjects(
-      const DRT::Discretization& dis,
-      map<int, DRT::Node*>& nodes,
-      map< int, RefCountPtr<DRT::Element> >& elements,
-      const string& condname
+      const DRT::Discretization& dis,  ///< discretization
+      map<int, DRT::Node*>& nodes, ///< unique map of nodes
+      map< int, RefCountPtr<DRT::Element> >& elements, ///< unique map of elements
+      const string& condname ///< name of condition
+      );
+    
+    /// collect all nodes (in- and excluding 'ghosts') and 
+    /// elements (including ghosts) in a condition, e.g. an interface
+    void FindInterfaceObjects(
+      const DRT::Discretization& dis, ///< discretization
+      map<int, DRT::Node*>& nodes,  ///< unique map of nodes
+      map<int, DRT::Node*>& ghostnodes,   ///< overlapping map of nodes
+      map< int, RefCountPtr<DRT::Element> >& elements,  ///< overlapping map of elements
+      const string& condname  ///< name of condition
       );
 
-    /// collect all local nodes and elements in a condition including ghosts
-    void FindInterfaceObjects(const DRT::Discretization& dis,
-                              map<int, RCP<DRT::Element> >& elements,
-                              const string& condname);
+    /// collect all elements in a condition including ghosts
+    void FindInterfaceObjects(
+        const DRT::Discretization& dis,  ///< discretization
+        map<int, RCP<DRT::Element> >& elements,  ///< overlapping map of elements
+        const string& condname  ///< name of condition
+    );
 
     //! create discretization from a given condition
     /*

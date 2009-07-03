@@ -5,10 +5,10 @@
 \brief
 
 <pre>
-Maintainer: Ulrich Kuettler
-            kuettler@lnm.mw.tum.de
+Maintainer: Thomas Kloeppel
+            kloeppel@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15238
+            089 - 289-15257
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -19,29 +19,23 @@ Maintainer: Ulrich Kuettler
 
 #include <Teuchos_RefCountPtr.hpp>
 #include <Epetra_Map.h>
+#include "../drt_contact/drt_contact_interface.H"
 
 #include "../drt_lib/drt_discret.H"
 
-
 namespace ADAPTER
 {
-  /// Couple nonmatching FSI interfaces using mortar method (trilinos::Moertel)
+  /// Couple nonmatching FSI interfaces using mortar method implemented in 
+  /// contact framework  
   /*!
     This is a special class used by the Dirichlet-Neumann coupling algorithm
     to interpolate between fluid and structure fields at the interface. The
-    hard work is done by the Moertel package from trilinos. (Thus we use the
-    mortar method here.)
+    hard work is done by the CONTACT::Interface. (Thus we use the mortar method 
+    here.)
 
     The major part of this code is the Setup() method that feeds the FSI
-    interface into Moertel and extracts the coupling matrices D and M in
-    return. A lot of the work involved is due to the different node, element
-    and dof numbering in baci and moertel. Whereas baci uses independant
-    numberings for both fields (fluid and structure) moertel thinks in terms
-    of one big system of equations, so all participating nodes, elements, dofs
-    have to have an unique number. The returned matrices D and M also come
-    within the global mortar map (the system of three blocks of equations that
-    couples the two sides and contains the Lagrangian multiplier.) So we have
-    to extract D and M to get interface matrices.
+    interface and extracts the coupling matrices D and M in
+    return.
 
     The actual coupling methods MasterToSlave() and SlaveToMaster() just
     evaluate one simple equation each.
@@ -49,11 +43,11 @@ namespace ADAPTER
     \note This class is specific to FSI coupling with structure being the
     master and fluid the slave.
 
-    \note The force coupling in SlaveToMaster() expacts interface loads on the
-    fluid side and returns consistant interface forces on the structural side.
+    \note The force coupling in SlaveToMaster() expects interface loads on the
+    fluid side and returns consistent interface forces on the structural side.
 
-    \author h.kue
-    \date 09/07
+    \author tk (Georg Hammerl)
+    \date 06/09
    */
   class CouplingMortar
   {
@@ -67,20 +61,32 @@ namespace ADAPTER
                 const DRT::Discretization& slavedis,
                 Epetra_Comm& comm );
 
+    
+    ///filling matrices
+    void Evaluate();
+    
     /// transfer a dof vector from master to slave
     /*!
       Expects the structural interface displacements and returns interface
       displacements on the fluid side.
+      Compute sv = D^{-1}M(mv)
      */
-    RefCountPtr<Epetra_Vector> MasterToSlave( RefCountPtr<Epetra_Vector> mv );
+    RefCountPtr<Epetra_Vector> MasterToSlave
+    ( 
+        RefCountPtr<Epetra_Vector> mv ///< structural interface displacements
+    );
 
     /// transfer a dof vector from slave to master
     /*!
-      Expects the fluid interface loads and returns consistant interface
+      Expects the fluid interface loads and returns consistent interface
       forces at the structural side. So here we have a subtle change of the
       meaning these numbers.
+      Computes mv = M^{T}(sv).
      */
-    RefCountPtr<Epetra_Vector> SlaveToMaster( RefCountPtr<Epetra_Vector> sv );
+    RefCountPtr<Epetra_Vector> SlaveToMaster
+    ( 
+        RefCountPtr<Epetra_Vector> sv   ///< fluid interface loads
+    );
 
     /// the interface dof map of the master side
     RefCountPtr<Epetra_Map> MasterDofMap() const { return masterdofmap_; }
@@ -89,16 +95,17 @@ namespace ADAPTER
     RefCountPtr<Epetra_Map> SlaveDofMap()  const { return slavedofmap_; }
 
   private:
-
-    RefCountPtr<Epetra_Map> masterdofmap_;
-    RefCountPtr<Epetra_Map> slavedofmap_;
-    RefCountPtr<Epetra_Map> slavemortardofmap_;
-
-    RefCountPtr<Epetra_CrsMatrix> D_;
-    RefCountPtr<Epetra_CrsMatrix> Dinv_;
-    RefCountPtr<Epetra_CrsMatrix> M_;
+	
+    RCP<CONTACT::Interface> interface_;  ///< interface
+    RefCountPtr<Epetra_Map> masterdofmap_; ///< map of master dofs
+    RefCountPtr<Epetra_Map> slavedofmap_;  ///< map of slave dofs
+    RefCountPtr<Epetra_Map> slavemortardofmap_; ///< map of slave dofs without pressure
+    
+    RefCountPtr<Epetra_CrsMatrix> D_; ///< mortar matrix
+    RefCountPtr<Epetra_CrsMatrix> Dinv_;  ///< inverse of mortar matrix #D_
+    RefCountPtr<Epetra_CrsMatrix> M_;  ///< mortar matrix
   };
 }
 
-#endif // FSI_COUPLING_MORTAR_H
+#endif // FSI_COUPLING_MORTAR_CONTACT_H
 #endif // CCADISCRET

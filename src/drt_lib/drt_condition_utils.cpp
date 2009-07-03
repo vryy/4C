@@ -64,6 +64,48 @@ void DRT::UTILS::FindInterfaceObjects(const DRT::Discretization& dis,
   }
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::UTILS::FindInterfaceObjects(const DRT::Discretization& dis,
+                                      map<int, DRT::Node*>& nodes,
+                                      map<int, DRT::Node*>& gnodes,
+                                      map<int, RCP<DRT::Element> >& elements,
+                                      const string& condname)
+{
+  int myrank = dis.Comm().MyPID();
+  vector<DRT::Condition*> conds;
+  dis.GetCondition(condname, conds);
+  for (unsigned i = 0; i < conds.size(); ++i)
+  {
+    // get this condition's nodes
+    const vector<int>* n = conds[i]->Nodes();
+    for (unsigned j=0; j < n->size(); ++j)
+    {
+      const int gid = (*n)[j];
+      if (dis.HaveGlobalNode(gid))
+      {
+        // nodes only gets locally owned, gnodes all locally known nodes
+        if(dis.gNode(gid)->Owner() == myrank)
+          nodes[gid] = dis.gNode(gid);
+        
+        gnodes[gid] = dis.gNode(gid);
+      }
+    }
+
+    // get this condition's elements
+    map< int, RCP< DRT::Element > >& geo = conds[i]->Geometry();
+    map< int, RCP< DRT::Element > >::iterator iter, pos;
+    pos = elements.begin();
+    for (iter = geo.begin(); iter != geo.end(); ++iter)
+    {
+      {
+        // get all elements locally known, including ghost elements
+        pos = elements.insert(pos, *iter);
+      }
+    }
+  }
+}
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
