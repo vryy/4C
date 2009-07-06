@@ -133,8 +133,8 @@ namespace UTILS
     */
     void ComputeError
     (
-      double time,   /// time, at which the error is to compute at
-      RCP<Epetra_Vector> disp  /// displacement vector at the given time  
+      double time,   ///< time, at which the error is to compute at
+      RCP<Epetra_Vector> disp  ///< displacement vector at the given time  
     );
   
     /*!

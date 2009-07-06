@@ -280,7 +280,6 @@ void UTILS::ConstrManager::SetRefBaseValues(RCP<Epetra_Vector> newrefval,const d
 void UTILS::ConstrManager::UpdateLagrMult(double factor)
 {
   lagrMultVec_->Update(factor,*constrainterr_,1.0);
-  cout<<"I am there!"<<endl;
   if(volconstr3d_->HaveConstraint())
   {
     vector<int> volconID = volconstr3d_->GetActiveCondID();
