@@ -170,13 +170,13 @@ Maintainer: Axel Gerstenberger
                   | virt tau , eps(Du) |
                    \                 */
       
-      assembler.template Matrix<HeatFlux_x,Temp>(shp_tau,     timefacfac    , shp.dx);
-      assembler.template Matrix<HeatFlux_y,Temp>(shp_tau,     timefacfac    , shp.dy);
-      assembler.template Matrix<HeatFlux_z,Temp>(shp_tau,     timefacfac    , shp.dz);
+      assembler.template Matrix<HeatFlux_x,Temp>(shp_tau,     -timefacfac    , shp.dx);
+      assembler.template Matrix<HeatFlux_y,Temp>(shp_tau,     -timefacfac    , shp.dy);
+      assembler.template Matrix<HeatFlux_z,Temp>(shp_tau,     -timefacfac    , shp.dz);
       
-      assembler.template Vector<HeatFlux_x>(shp_tau,    - timefacfac*Tderxy(0));
-      assembler.template Vector<HeatFlux_y>(shp_tau,    - timefacfac*Tderxy(1));
-      assembler.template Vector<HeatFlux_z>(shp_tau,    - timefacfac*Tderxy(2));
+      assembler.template Vector<HeatFlux_x>(shp_tau,     timefacfac*Tderxy(0));
+      assembler.template Vector<HeatFlux_y>(shp_tau,     timefacfac*Tderxy(1));
+      assembler.template Vector<HeatFlux_z>(shp_tau,     timefacfac*Tderxy(2));
       
   }
   
@@ -872,38 +872,38 @@ void SysmatBoundary4(
             - |  (virt tau) * n^f , Du  |
                \                      */
             
-            assembler.template Matrix<HeatFlux_x,Temp>(shp_tau, -timefacfac*normalvec_fluid(0), shp);
-            assembler.template Matrix<HeatFlux_y,Temp>(shp_tau, -timefacfac*normalvec_fluid(1), shp);
-            assembler.template Matrix<HeatFlux_z,Temp>(shp_tau, -timefacfac*normalvec_fluid(2), shp);
+            assembler.template Matrix<HeatFlux_x,Temp>(shp_tau, timefacfac*normalvec_fluid(0), shp);
+            assembler.template Matrix<HeatFlux_y,Temp>(shp_tau, timefacfac*normalvec_fluid(1), shp);
+            assembler.template Matrix<HeatFlux_z,Temp>(shp_tau, timefacfac*normalvec_fluid(2), shp);
 
             
-            assembler.template Vector<HeatFlux_x>(shp_tau, timefacfac*normalvec_fluid(0)*gpvelnp);
-            assembler.template Vector<HeatFlux_y>(shp_tau, timefacfac*normalvec_fluid(1)*gpvelnp);
-            assembler.template Vector<HeatFlux_z>(shp_tau, timefacfac*normalvec_fluid(2)*gpvelnp);
+            assembler.template Vector<HeatFlux_x>(shp_tau, -timefacfac*normalvec_fluid(0)*gpvelnp);
+            assembler.template Vector<HeatFlux_y>(shp_tau, -timefacfac*normalvec_fluid(1)*gpvelnp);
+            assembler.template Vector<HeatFlux_z>(shp_tau, -timefacfac*normalvec_fluid(2)*gpvelnp);
             
             
                /*                            \
               |  (virt tau) * n^f , u^\iface  |
                \                            */
             
-            assembler.template Vector<HeatFlux_x>(shp_tau, -timefacfac*normalvec_fluid(0)*interface_Temp);
-            assembler.template Vector<HeatFlux_y>(shp_tau, -timefacfac*normalvec_fluid(1)*interface_Temp);
-            assembler.template Vector<HeatFlux_z>(shp_tau, -timefacfac*normalvec_fluid(2)*interface_Temp);
+            assembler.template Vector<HeatFlux_x>(shp_tau, timefacfac*normalvec_fluid(0)*interface_Temp);
+            assembler.template Vector<HeatFlux_y>(shp_tau, timefacfac*normalvec_fluid(1)*interface_Temp);
+            assembler.template Vector<HeatFlux_z>(shp_tau, timefacfac*normalvec_fluid(2)*interface_Temp);
 
             
                /*               \
             - |  v , Dtau * n^f  |
                \               */
 
-            assembler.template Matrix<Temp,HeatFlux_x>(shp, -timefacfac*normalvec_fluid(0), shp_tau);
-            assembler.template Matrix<Temp,HeatFlux_y>(shp, -timefacfac*normalvec_fluid(1), shp_tau);
-            assembler.template Matrix<Temp,HeatFlux_z>(shp, -timefacfac*normalvec_fluid(2), shp_tau);
+            assembler.template Matrix<Temp,HeatFlux_x>(shp, timefacfac*normalvec_fluid(0), shp_tau);
+            assembler.template Matrix<Temp,HeatFlux_y>(shp, timefacfac*normalvec_fluid(1), shp_tau);
+            assembler.template Matrix<Temp,HeatFlux_z>(shp, timefacfac*normalvec_fluid(2), shp_tau);
             
             double q_times_n = 0.0;
             for (std::size_t isd = 0; isd < nsd; ++isd)
               q_times_n += heatflux(isd)*normalvec_fluid(isd);
             //cout << "sigmaijnj : " << disctau_times_n << endl;
-            assembler.template Vector<Temp>(shp, timefacfac*q_times_n);
+            assembler.template Vector<Temp>(shp, -timefacfac*q_times_n);
 //            
 //            // here the interface force is integrated
 //            // this is done using test shape functions of the boundary mesh
