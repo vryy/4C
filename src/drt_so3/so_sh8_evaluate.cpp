@@ -1187,11 +1187,11 @@ int DRT::ELEMENTS::Sosh8Register::Initialize(DRT::Discretization& dis)
         break;
       }
 
-      if (altered and (actele->thickdir_ !=  DRT::ELEMENTS::So_sh8p8::undefined)) {
+      if (altered and (actele->thickdir_ !=  DRT::ELEMENTS::So_sh8::undefined)) {
         // special element-dependent input of material parameters
         if (actele->Material()->MaterialType() == INPAR::MAT::m_viscoanisotropic) {
           MAT::ViscoAnisotropic* visco = static_cast<MAT::ViscoAnisotropic*>(actele->Material().get());
-          visco->Setup(DRT::ELEMENTS::So_sh8p8::NUMGPT_,actele->thickvec_);
+          visco->Setup(NUMGPT_SOH8,actele->thickvec_);
           if (actele->thickvec_.size() == 0)
             dserror("zero size thickness vector for element %d", actele->Id());
         }
