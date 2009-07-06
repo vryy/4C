@@ -123,6 +123,8 @@ std::string IO::GMSH::ScalarToString(
     const DRT::Element::DiscretizationType distype)
 {
   std::stringstream pos_array_string;
+  pos_array_string.setf(ios::scientific,ios::floatfield);
+  pos_array_string.precision(12);
 
   const int numnode = distypeToGmshNumNode(distype);
 
@@ -130,7 +132,7 @@ std::string IO::GMSH::ScalarToString(
   pos_array_string << "{";
   for (int i = 0; i<numnode; ++i)
   {
-    pos_array_string << scientific << scalar;
+    pos_array_string << scalar;
     if (i < numnode-1)
     {
       pos_array_string << ",";
@@ -148,14 +150,17 @@ std::string IO::GMSH::elementAtInitialPositionToString(const double scalar, cons
   const int numnode = distypeToGmshNumNode(distype);
 
   std::stringstream pos_array_string;
+  pos_array_string.setf(ios::scientific,ios::floatfield);
+  pos_array_string.precision(12);
+  
   pos_array_string << "S" << distypeToGmshElementHeader(distype) << "(";
   for (int i = 0; i<numnode; ++i)
   {
     const DRT::Node* node = nodes[i];
     const double* x = node->X();
-    pos_array_string << scientific << x[0] << ",";
-    pos_array_string << scientific << x[1] << ",";
-    pos_array_string << scientific << x[2];
+    pos_array_string << x[0] << ",";
+    pos_array_string << x[1] << ",";
+    pos_array_string << x[2];
     if (i < numnode-1)
     {
       pos_array_string << ",";

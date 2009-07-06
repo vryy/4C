@@ -39,6 +39,8 @@ namespace IO
     )
     {
       std::stringstream pos_array_string;
+      pos_array_string.setf(ios::scientific,ios::floatfield);
+      pos_array_string.precision(12);
 
       const int numnode = distypeToGmshNumNode(distype);
 
@@ -47,9 +49,9 @@ namespace IO
       for (int inen = 0; inen < numnode; ++inen)
       {
         // print position
-        pos_array_string << scientific << coord(0, inen) << ",";
-        pos_array_string << scientific << coord(1, inen) << ",";
-        pos_array_string << scientific << coord(2, inen);
+        pos_array_string << coord(0, inen) << ",";
+        pos_array_string << coord(1, inen) << ",";
+        pos_array_string << coord(2, inen);
         if (inen < numnode-1)
         {
           pos_array_string << ",";
@@ -71,22 +73,24 @@ namespace IO
         const DRT::Element::DiscretizationType distype      ///< element shape
     )
     {
-      std::stringstream pos_array_string;
-
+      std::stringstream s;
+      s.setf(ios::scientific,ios::floatfield);
+      s.precision(12);
+      
       const int numnode = distypeToGmshNumNode(distype);
 
       // values
-      pos_array_string << "{";
+      s << "{";
       for (int inode = 0; inode<numnode; ++inode)
       {
-        pos_array_string << scientific << scalarfield(inode);
+        s << scalarfield(inode);
         if (inode < numnode-1)
         {
-          pos_array_string << ",";
+          s << ",";
         }
       };
-      pos_array_string << "};";
-      return pos_array_string.str();
+      s << "};";
+      return s.str();
     }
 
     //! take an array (3,numnode) and translate it to the vector value section of an Gmsh element entry
@@ -95,28 +99,30 @@ namespace IO
         const DRT::Element::DiscretizationType distype      ///< element shape
     )
     {
-      std::stringstream pos_array_string;
+      std::stringstream s;
+      s.setf(ios::scientific,ios::floatfield);
+      s.precision(12);
 
       const int numnode = distypeToGmshNumNode(distype);
       const int nsd = 3;
 
       // values
-      pos_array_string << "{";
+      s << "{";
       for (int inode = 0; inode<numnode; ++inode)
       {
         for (int isd = 0; isd < nsd; ++isd)
         {
-          pos_array_string << scientific << vectorfield(isd, inode);
+          s << scientific << vectorfield(isd, inode);
           if (isd < nsd-1)
-            pos_array_string << ",";
+            s << ",";
         }
         if (inode < numnode-1)
         {
-          pos_array_string << ",";
+          s << ",";
         }
       };
-      pos_array_string << "};";
-      return pos_array_string.str();
+      s << "};";
+      return s.str();
     }
 
     //! take an array (9,numnode) and translate it to the tensor value section of an Gmsh element entry
@@ -125,28 +131,30 @@ namespace IO
         const DRT::Element::DiscretizationType distype      ///< element shape
     )
     {
-      std::stringstream pos_array_string;
+      std::stringstream s;
+      s.setf(ios::scientific,ios::floatfield);
+      s.precision(12);
 
       const int numnode = distypeToGmshNumNode(distype);
       const int numTensorEntries = 9;
 
       // values
-      pos_array_string << "{";
+      s << "{";
       for (int inode = 0; inode<numnode; ++inode)
       {
         for (int ientry = 0; ientry < numTensorEntries; ++ientry)
         {
-          pos_array_string << scientific << tensorfield(ientry, inode);
+          s << scientific << tensorfield(ientry, inode);
           if (ientry < numTensorEntries-1)
-            pos_array_string << ",";
+            s << ",";
         }
         if (inode < numnode-1)
         {
-          pos_array_string << ",";
+          s << ",";
         }
       };
-      pos_array_string << "};";
-      return pos_array_string.str();
+      s << "};";
+      return s.str();
     }
 
     //! take an entire DRT::Element and print it with constant scalar value at its initial pusition
