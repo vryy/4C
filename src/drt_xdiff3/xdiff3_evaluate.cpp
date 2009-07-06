@@ -214,6 +214,8 @@ int DRT::ELEMENTS::XDiff3::Evaluate(ParameterList& params,
       const Teuchos::RCP<const Epetra_Vector> ivelcol = params.get<Teuchos::RCP<const Epetra_Vector> >("interface velocity");
       const Teuchos::RCP<Epetra_Vector> iforcecol = params.get<Teuchos::RCP<Epetra_Vector> >("interface force");
 
+      double L2 = params.get<double>("L2");
+      
       // time integration factors
       const FLUID_TIMEINTTYPE timealgo = params.get<FLUID_TIMEINTTYPE>("timealgo");
       const double            dt       = params.get<double>("dt");
@@ -234,7 +236,7 @@ int DRT::ELEMENTS::XDiff3::Evaluate(ParameterList& params,
         // calculate element coefficient matrix and rhs
         XDIFF::callSysmat4(assembly_type,
                 this, ih_, *eleDofManager_, mystate, ivelcol, iforcecol, elemat1, elevec1,
-                mat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution);
+                mat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution, L2);
 
       }
       else // create bigger element matrix and vector, assemble, condense and copy to small matrix provided by discretization
@@ -265,11 +267,12 @@ int DRT::ELEMENTS::XDiff3::Evaluate(ParameterList& params,
         // calculate element coefficient matrix and rhs
         XDIFF::callSysmat4(assembly_type,
                 this, ih_, *eleDofManager_uncondensed_, mystate, ivelcol, iforcecol, elemat1_uncond, elevec1_uncond,
-                mat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution);
+                mat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution, L2);
 
         // condensation
         CondenseDLMAndStoreOldIterationStep(elemat1_uncond, elevec1_uncond, elemat1, elevec1);
       }
+      params.set<double>("L2",L2);
       break;
     }
     case calc_fluid_beltrami_error:
@@ -317,6 +320,8 @@ int DRT::ELEMENTS::XDiff3::Evaluate(ParameterList& params,
       const Teuchos::RCP<const Epetra_Vector> ivelcol = params.get<Teuchos::RCP<const Epetra_Vector> >("interface velocity");
       const Teuchos::RCP<Epetra_Vector> iforcecol = params.get<Teuchos::RCP<Epetra_Vector> >("interface force");
 
+      double L2 = params.get<double>("L2");
+      
       // time integration factors
       const FLUID_TIMEINTTYPE timealgo = params.get<FLUID_TIMEINTTYPE>("timealgo");
       const double            dt       = 1.0;
@@ -337,7 +342,7 @@ int DRT::ELEMENTS::XDiff3::Evaluate(ParameterList& params,
         // calculate element coefficient matrix and rhs
         XDIFF::callSysmat4(assembly_type,
                 this, ih_, *eleDofManager_, mystate, ivelcol, iforcecol, elemat1, elevec1,
-                mat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution);
+                mat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution, L2);
 
       }
       else // create bigger element matrix and vector, assemble, condense and copy to small matrix provided by discretization
@@ -368,12 +373,14 @@ int DRT::ELEMENTS::XDiff3::Evaluate(ParameterList& params,
         // calculate element coefficient matrix and rhs
         XDIFF::callSysmat4(assembly_type,
                 this, ih_, *eleDofManager_uncondensed_, mystate, ivelcol, iforcecol, elemat1_uncond, elevec1_uncond,
-                mat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution);
+                mat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution, L2);
 
         // condensation
         CondenseDLMAndStoreOldIterationStep(elemat1_uncond, elevec1_uncond, elemat1, elevec1);
       }
 
+      params.set<double>("L2",L2);
+      
 #if 0
           const XFEM::BoundaryIntCells&  boundaryIntCells(ih_->GetBoundaryIntCells(this->Id()));
           if ((assembly_type == XFEM::xfem_assembly) and (not boundaryIntCells.empty()))

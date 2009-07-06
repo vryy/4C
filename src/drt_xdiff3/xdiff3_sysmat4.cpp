@@ -146,7 +146,7 @@ Maintainer: Axel Gerstenberger
 
   
   // source term of the right hand side
-  assembler.template Vector<Temp>(shp.d0,     -rhsint);
+  assembler.template Vector<Temp>(shp.d0,     -rhsint*timefacfac);
 
   
   // Hellinger-Reissner terms
@@ -209,7 +209,8 @@ void SysmatDomain4(
     const bool                          supg,          ///< flag for stabilization
     const bool                          cstab,         ///< flag for stabilization
     const bool                          instationary,  ///< switch between stationary and instationary formulation
-    LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>&   assembler
+    LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>&   assembler,
+    double&                             L2
 )
 {
     // number of nodes for element
@@ -219,16 +220,16 @@ void SysmatDomain4(
     const size_t nsd = 3;
     
     // time integration constant
-    const double timefac = FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dt, theta);
+    const double timefac = 1.0;//FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dt, theta);
     
     // get node coordinates of the current element
     static LINALG::Matrix<nsd,numnode> xyze;
     GEO::fillInitialPositionArray<DISTYPE>(ele, xyze);
 
     // get older interface velocities and accelerations
-    const Epetra_Vector& ivelcoln  = *ih->cutterdis()->GetState("ivelcoln");
-    const Epetra_Vector& ivelcolnm = *ih->cutterdis()->GetState("ivelcolnm");
-    const Epetra_Vector& iacccoln  = *ih->cutterdis()->GetState("iacccoln");
+//    const Epetra_Vector& ivelcoln  = *ih->cutterdis()->GetState("ivelcoln");
+//    const Epetra_Vector& ivelcolnm = *ih->cutterdis()->GetState("ivelcolnm");
+//    const Epetra_Vector& iacccoln  = *ih->cutterdis()->GetState("iacccoln");
     
     // dead load in element nodes
     //////////////////////////////////////////////////// , LINALG::SerialDenseMatrix edeadng_(BodyForce(ele->Nodes(),time));
@@ -240,7 +241,7 @@ void SysmatDomain4(
     const double visc = actmat->Viscosity();
 
     // flag for higher order elements
-    const bool higher_order_ele = XDIFF::secondDerivativesAvailable<DISTYPE>();
+//    const bool higher_order_ele = XDIFF::secondDerivativesAvailable<DISTYPE>();
     
     const DRT::Element::DiscretizationType stressdistype = XDIFF::StressInterpolation3D<DISTYPE>::distype;
     
@@ -560,6 +561,66 @@ void SysmatDomain4(
             // now build single stiffness terms //
             //////////////////////////////////////
 
+            LINALG::Matrix<3,1> physpos(true);
+            GEO::elementToCurrentCoordinates(DISTYPE, xyze, posXiDomain, physpos); 
+            
+#if 1
+            // assume cylinder along z-axis
+            const double radius = sqrt(physpos(0)*physpos(0) + physpos(1)*physpos(1));
+            const double ri = 0.2;
+            const double ra = 1.0;
+            const double Ti = 5.0;
+            const double Ta = 1.0;
+//            cout << "radius = " << radius << endl;
+            if (ri < radius and radius < ra)
+            {
+              const double T_exact = Ti -(log(radius) - log(ri))*(-(Ta-Ti)/(log(ra)-log(ri)));
+              const double epsilon = (gpvelnp - T_exact);
+              
+              L2 += epsilon*epsilon*fac;
+//              cout << T_exact << "   " << gpvelnp << endl;
+            }
+#endif
+#if 0
+            // block problem 3d
+            const double x = physpos(0);
+            const double y = physpos(1);
+            const double z = physpos(2);
+            const double a = 0.5;
+            const double b = 1.0;
+            const double c = 1.0;
+            const double pi = PI;
+            
+//            rhsint = -2*sin(pi*y/b)*sin(2*pi*z/c) - x*pi*pi*(a - x)*sin(pi*y/b)*sin(2*pi*z/c)/(b*b) - 4*x*pi*pi*(a - x)*sin(pi*y/b)*sin(2*pi*z/c)/(c*c);
+//            rhsint = -2*sin(pi*y/b)*sin(pi*z/c) - x*pi*pi*(a - x)*sin(pi*y/b)*sin(pi*z/c)/(b*b) - x*pi*pi*(a - x)*sin(pi*y/b)*sin(pi*z/c)/(c*c);
+            rhsint = -pi*pi*sin(pi*x/a)*sin(pi*y/b)*sin(pi*z/c)/(a*a) - pi*pi*sin(pi*x/a)*sin(pi*y/b)*sin(pi*z/c)/(b*b) - pi*pi*sin(pi*x/a)*sin(pi*y/b)*sin(pi*z/c)/(c*c);
+            if (0.0<x and x<a and 0.0<y and y<b and 0.0<z and z<c)
+            {
+              const double T_exact = sin(x/a*pi)*sin(y/b*pi)*sin(z/c*pi);
+              const double epsilon = (gpvelnp - T_exact);
+              L2 += epsilon*epsilon*fac;
+            }
+#endif
+#if 0
+            // block problem 2d
+            const double x = physpos(0);
+            const double y = physpos(1);
+            const double a = 0.5;
+            const double b = 1.0;
+            const double pi = PI;
+            
+            rhsint = - (pi*pi*sin(pi*x/a)*sin(pi*y/b)/(a*a) + pi*pi*sin(pi*x/a)*sin(pi*y/b)/(b*b));
+            
+            
+            if (0.0<x and x<a and 0.0<y and y<b)
+            {
+              const double T_exact = sin(pi*x/a)*sin(pi*y/b);
+              const double epsilon = (gpvelnp - T_exact);
+              L2 += epsilon*epsilon*fac;
+            }
+#endif
+            
+                  
             BuildStiffnessMatrixEntries<DISTYPE,ASSTYPE,NUMDOF,shpVecSize,shpVecSizeStress>(
                 assembler, shp, shp_tau, fac, timefac, timefacfac, visc,
                 Tderxy, rhsint, heatflux,
@@ -789,8 +850,11 @@ void SysmatBoundary4(
             // get interface velocity
             const int belegid = cell->GetSurfaceEleGid();
             const int label = ih->GetLabelPerBoundaryElementId(belegid);
-            const double interface_Temp = double(label);
-            
+            double interface_Temp = 0.0;
+            if (label == 1)
+              interface_Temp = 1.0;
+            else if (label == 2)
+              interface_Temp = 5.0;
             
             
             // get viscous stress unknowns
@@ -898,7 +962,8 @@ void Sysmat4(
         const bool                        supg,          ///< flag for stabilisation
         const bool                        cstab,         ///< flag for stabilisation
         const bool                        instationary,  ///< switch between stationary and instationary formulation
-        const bool                        ifaceForceContribution
+        const bool                        ifaceForceContribution,
+        double&                           L2
         )
 {
     // initialize arrays
@@ -926,7 +991,7 @@ void Sysmat4(
     
     SysmatDomain4<DISTYPE,ASSTYPE,NUMDOF>(
         ele, ih, dofman, evelnp, etau,
-        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, assembler);
+        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, assembler, L2);
     
     if (ASSTYPE == XFEM::xfem_assembly)
     {
@@ -958,7 +1023,8 @@ void XDIFF::callSysmat4(
         const bool                        supg   ,
         const bool                        cstab  ,
         const bool                        instationary,
-        const bool                        ifaceForceContribution
+        const bool                        ifaceForceContribution,
+        double&                           L2
         )
 {
     if (assembly_type == XFEM::standard_assembly)
@@ -968,27 +1034,27 @@ void XDIFF::callSysmat4(
             case DRT::Element::hex8:
                 Sysmat4<DRT::Element::hex8,XFEM::standard_assembly>(
                         ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, L2);
                 break;
             case DRT::Element::hex20:
                 Sysmat4<DRT::Element::hex20,XFEM::standard_assembly>(
                         ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, L2);
                 break;
             case DRT::Element::hex27:
                 Sysmat4<DRT::Element::hex27,XFEM::standard_assembly>(
                         ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, L2);
                 break;
             case DRT::Element::tet4:
                 Sysmat4<DRT::Element::tet4,XFEM::standard_assembly>(
                         ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, L2);
                 break;
             case DRT::Element::tet10:
                 Sysmat4<DRT::Element::tet10,XFEM::standard_assembly>(
                         ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, L2);
                 break;
             default:
                 dserror("standard_assembly Sysmat not templated yet");
@@ -1001,27 +1067,27 @@ void XDIFF::callSysmat4(
             case DRT::Element::hex8:
                 Sysmat4<DRT::Element::hex8,XFEM::xfem_assembly>(
                         ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, L2);
                 break;
             case DRT::Element::hex20:
                 Sysmat4<DRT::Element::hex20,XFEM::xfem_assembly>(
                         ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, L2);
                 break;
             case DRT::Element::hex27:
                 Sysmat4<DRT::Element::hex27,XFEM::xfem_assembly>(
                         ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, L2);
                 break;
             case DRT::Element::tet4:
                 Sysmat4<DRT::Element::tet4,XFEM::xfem_assembly>(
                         ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, L2);
                 break;
             case DRT::Element::tet10:
                 Sysmat4<DRT::Element::tet10,XFEM::xfem_assembly>(
                         ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, L2);
                 break;
             default:
                 dserror("xfem_assembly Sysmat not templated yet");

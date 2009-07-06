@@ -236,7 +236,7 @@ DRT::UTILS::GaussRule3D getXFEMGaussrule(
         case DRT::Element::hex20:
         {
           if (xeleGeoType == GEO::CARTESIAN) // constant jacobian
-            rule = DRT::UTILS::intrule_tet_24point;
+            rule = DRT::UTILS::intrule_tet_45point;
           else
             rule = DRT::UTILS::intrule_tet_45point;
           break;
@@ -244,9 +244,9 @@ DRT::UTILS::GaussRule3D getXFEMGaussrule(
         case DRT::Element::hex27:
         {
           if (xeleGeoType == GEO::CARTESIAN) // constant jacobian
-            rule = DRT::UTILS::intrule_tet_45point;
+            rule = DRT::UTILS::intrule_tet_729point_peano;
           else
-            rule = DRT::UTILS::intrule_tet_45point;
+            rule = DRT::UTILS::intrule_tet_729point_peano;
           break;
         }
         case DRT::Element::tet4:
