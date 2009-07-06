@@ -146,6 +146,7 @@ namespace COMBUST
             //const std::vector<double>& gfuncvalue
             );
 
+#ifdef QHULL
     /// not documented yet
     void TransformIntegrationCells(
             tetgenio&                out,
@@ -154,6 +155,7 @@ namespace COMBUST
             const LINALG::SerialDenseMatrix xyze
             //const std::vector<double>& gfuncvalue
             );
+#endif
 
     /// not documented yet
     bool GetIntCellDomain(

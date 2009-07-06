@@ -1384,8 +1384,12 @@ void COMBUST::FlameFront::buildPLC(
   // stattdessen werden die Dreicke der trianglelist direkt verwendet
   if(trianglelist.size()!=0)
   {
-	//determine integration cells
+#ifdef QHULL
+    //determine integration cells
     CreateIntegrationCells(pointlist, segmentlist, XFEMsurfacelist, trianglelist, domainintcelllist, xyze);
+#else
+    dserror("Set QHULL flag to use Tetgen!");
+#endif
     //store boundary integration cells in boundaryintcelllist
     for (std::size_t itriangle=0; itriangle<trianglelist.size(); itriangle++)
     {
@@ -1507,6 +1511,7 @@ void COMBUST::FlameFront::buildPLC(
 //URSULA
 
 //URSULA
+#ifdef QHULL
 /*------------------------------------------------------------------------------------------------*
  | calls the CDT to create burnt and unburnt integration cells                        henke 10/08 |
  *------------------------------------------------------------------------------------------------*/
@@ -1660,9 +1665,11 @@ void COMBUST::FlameFront::CreateIntegrationCells(
   // URSULA
   return;
 }
+#endif
 //URSULA
 
 //URSULA
+#ifdef QHULL
 /*------------------------------------------------------------------------------------------------*
  | this could easlily be integrated into CreateIntegrationCells()                     henke 10/08 |
  *------------------------------------------------------------------------------------------------*/
@@ -1755,6 +1762,7 @@ void COMBUST::FlameFront::TransformIntegrationCells(
   
   return;
 }
+#endif
 //URSULA
 
 //URSULA

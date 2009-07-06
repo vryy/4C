@@ -825,8 +825,8 @@ void SysmatTwoPhase(
     	//bool in_fluid_plus = true;
     	//das geht sobald ich alle Integrationszellen habe
     	//ich mache das besser über das InterfaceHandle
-    	bool in_fluid_plus = ih->GetIntCellPosition(*cell, ele);
-    	//bool in_fluid_plus = cell->getDomainPlus();
+    	//bool in_fluid_plus = ih->GetIntCellPosition(*cell, ele);
+    	bool in_fluid_plus = cell->getDomainPlus();
     	  if (in_fluid_plus)
     	   std::cout << "domain + sys " << std::endl;
     	  else
