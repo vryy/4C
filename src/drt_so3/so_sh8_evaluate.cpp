@@ -1153,11 +1153,12 @@ int DRT::ELEMENTS::Sosh8Register::Initialize(DRT::Discretization& dis)
     if (!actele) dserror("cast to So_sh8* failed");
 
     if (!actele->nodes_rearranged_) {
-      bool altered = true;
+      bool altered = false;
       switch (actele->thickdir_) {
       // check for automatic definition of thickness direction
       case DRT::ELEMENTS::So_sh8::autoj: {
         actele->thickdir_ = actele->sosh8_findthickdir();
+        altered = true;
         break;
       }
       // check for enforced definition of thickness direction
@@ -1165,30 +1166,34 @@ int DRT::ELEMENTS::Sosh8Register::Initialize(DRT::Discretization& dis)
         LINALG::Matrix<NUMDIM_SOH8,1> thickdirglo(true);
         thickdirglo(0) = 1.0;
         actele->thickdir_ = actele->sosh8_enfthickdir(thickdirglo);
+        altered = true;
         break;
       }
       case DRT::ELEMENTS::So_sh8::globy: {
         LINALG::Matrix<NUMDIM_SOH8,1> thickdirglo(true);
         thickdirglo(1) = 1.0;
         actele->thickdir_ = actele->sosh8_enfthickdir(thickdirglo);
+        altered = true;
         break;
       }
       case DRT::ELEMENTS::So_sh8::globz: {
         LINALG::Matrix<NUMDIM_SOH8,1> thickdirglo(true);
         thickdirglo(2) = 1.0;
         actele->thickdir_ = actele->sosh8_enfthickdir(thickdirglo);
+        altered = true;
         break;
       }
       default:
-        altered = false;
         break;
       }
 
-      if (altered) {
+      if (altered and (actele->thickdir_ !=  DRT::ELEMENTS::So_sh8p8::undefined)) {
         // special element-dependent input of material parameters
         if (actele->Material()->MaterialType() == INPAR::MAT::m_viscoanisotropic) {
           MAT::ViscoAnisotropic* visco = static_cast<MAT::ViscoAnisotropic*>(actele->Material().get());
-          visco->Setup(NUMGPT_SOH8,actele->thickvec_);
+          visco->Setup(DRT::ELEMENTS::So_sh8p8::NUMGPT_,actele->thickvec_);
+          if (actele->thickvec_.size() == 0)
+            dserror("zero size thickness vector for element %d", actele->Id());
         }
       }
 
