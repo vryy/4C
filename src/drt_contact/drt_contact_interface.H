@@ -39,6 +39,7 @@ Maintainer: Michael Gee
 #ifndef DRT_CONTACT_INTERFACE_H
 #define DRT_CONTACT_INTERFACE_H
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "Epetra_Comm.h"
 #include "drt_cnode.H"
 #include "drt_celement.H"
@@ -46,6 +47,7 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_sparsematrix.H"
 #include "../drt_contact/drt_contact_binarytree.H"
+#include "../drt_inpar/inpar_contact.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -144,13 +146,15 @@ public:
   \brief Get type of contact search algorithm
     
   */
-  virtual inline const string& SearchAlg() {return icontact_.get<string>("search algorithm","undefined");};
+  virtual inline const INPAR::CONTACT::ContactSearchAlgorithm SearchAlg()
+  {return Teuchos::getIntegralValue<INPAR::CONTACT::ContactSearchAlgorithm>(icontact_,"SEARCH_ALGORITHM");};
   
   /*!
   \brief Get contact search algorithm parameter
     
   */
-  virtual inline const double& SearchParam() {return icontact_.get<double>("search parameter",0.0);};
+  virtual inline const double SearchParam()
+  {return icontact_.get<double>("SEARCH_PARAM");};
     
   /*!
   \brief Get row map of slave nodes (Filled()==true is prerequisite)

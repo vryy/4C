@@ -448,7 +448,7 @@ void CONTACT::Interface::FillComplete()
   }
 #endif //CONTACTGMSHCTN
 
-  if (SearchAlg()=="binarytree")
+  if (SearchAlg()==INPAR::CONTACT::search_binarytree)
   {
     // create binary tree object for contact search
 	  binarytree_ = rcp(new CONTACT::BinaryTree(Discret(),selecolmap_,melefullmap_,Dim(),SearchParam()));
@@ -664,10 +664,10 @@ void CONTACT::Interface::Evaluate()
   //lComm()->Barrier();
   //const double t_start = ds_cputime();
   
-  if (SearchAlg()=="nodes")           EvaluateContactSearch();
-  else if (SearchAlg()=="elements")   EvaluateContactSearchBruteForce(SearchParam());
-  else if (SearchAlg()=="binarytree") EvaluateContactSearchBinarytree();
-  else                                dserror("ERROR: Invalid contact search algorithm");
+  if (SearchAlg()==INPAR::CONTACT::search_bfnode)          EvaluateContactSearch();
+  else if (SearchAlg()==INPAR::CONTACT::search_bfele)      EvaluateContactSearchBruteForce(SearchParam());
+  else if (SearchAlg()==INPAR::CONTACT::search_binarytree) EvaluateContactSearchBinarytree();
+  else                                                     dserror("ERROR: Invalid contact search algorithm");
 
   //lComm()->Barrier();
   //const double t_end = ds_cputime()-t_start;
@@ -1197,7 +1197,7 @@ bool CONTACT::Interface::IntegrateCoupling(CONTACT::CElement& sele,
   // ************************************************************** 3D ***
   else if (Dim()==3)
   {
-    bool auxplane = IParams().get<bool>("coupling auxplane",false);
+    bool auxplane = Teuchos::getIntegralValue<int>(IParams(),"COUPLING_AUXPLANE");
     
     // ************************************************** quadratic 3D ***
     if (sele.IsQuad() || mele.IsQuad())
@@ -1257,7 +1257,7 @@ bool CONTACT::Interface::IntegrateCoupling(CONTACT::CElement& sele,
     dserror("ERROR: FD check of coupling vertices only for 3D!");
   else if (Dim()==3)
   {
-    bool auxplane = IParams().get<bool>("coupling auxplane",false);
+    bool auxplane = Teuchos::getIntegralValue<int>(IParams(),"COUPLING_AUXPLANE");
     // here the EvaluateCoupling routine is part of the constructor!
     CONTACT::Coupling3d coup(Discret(),Dim(),false,auxplane,sele,mele,testv,printderiv);
   }
@@ -1286,7 +1286,7 @@ bool CONTACT::Interface::IntegrateCoupling(CONTACT::CElement& sele,
     dserror("ERROR: FD check of Gauss points and Jacobian only for 3D!");
   else if (Dim()==3)
   {
-    bool auxplane = IParams().get<bool>("coupling auxplane",false);
+    bool auxplane = Teuchos::getIntegralValue<int>(IParams(),"COUPLING_AUXPLANE");
     // here the EvaluateCoupling routine is part of the constructor!
     CONTACT::Coupling3d coup(Discret(),Dim(),false,auxplane,sele,mele,testgps,testgpm,testjs,testji,printderiv);
   }
@@ -2739,18 +2739,19 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
     return;
   
   // information from interface contact parameter list
-  string ftype   = IParams().get<string>("friction type","none");  
-  double frbound = IParams().get<double>("friction bound",0.0);
-  double frcoeff = IParams().get<double>("friction coefficient",0.0);
-  double ct = IParams().get<double>("semismooth ct",0.0);
-  bool fulllin = IParams().get<bool>("full linearization",false);
+  INPAR::CONTACT::ContactFrictionType ftype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(IParams(),"FRICTION");
+  double frbound = IParams().get<double>("FRBOUND");
+  double frcoeff = IParams().get<double>("FRCOEFF");
+  double ct = IParams().get<double>("SEMI_SMOOTH_CT");
+  bool fulllin = Teuchos::getIntegralValue<int>(IParams(),"FULL_LINEARIZATION");
  
   // not yet implemented for 3D
 	if (Dim()==3)
 	  dserror("ERROR: AssembleLinSlip: 3D not yet implemented");
 
 	// Tresca Friction
-	if (ftype == "tresca")
+	if (ftype == INPAR::CONTACT::friction_tresca)
 	{
 		// loop over all slip nodes of the interface
 		for (int i=0;i<slipnodes_->NumMyElements();++i)
@@ -3244,7 +3245,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
 	}// Tresca friction
 	
 	// Coulomb Friction
-	if (ftype == "coulomb")
+	if (ftype == INPAR::CONTACT::friction_coulomb)
 	{
 		// loop over all slip nodes of the interface
 		for (int i=0;i<slipnodes_->NumMyElements();++i)

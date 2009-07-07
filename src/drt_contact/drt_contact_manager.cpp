@@ -374,125 +374,56 @@ bool CONTACT::Manager::ReadAndCheckInput()
 {
   // read parameter list from DRT::Problem
   const Teuchos::ParameterList& input = DRT::Problem::Instance()->StructuralContactParams();
-  
-  // read contact type
-  switch (Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(input,"CONTACT"))
-  {
-    case INPAR::CONTACT::contact_none:
-      scontact_.set<string>("contact type","none");
-      break;
-    case INPAR::CONTACT::contact_normal:
-      scontact_.set<string>("contact type","normal");
-      break;
-    case INPAR::CONTACT::contact_frictional:
-      scontact_.set<string>("contact type","frictional");
-      break;
-    case INPAR::CONTACT::contact_meshtying:
-      scontact_.set<string>("contact type","meshtying");
-      break;
-    default:
-      dserror("Cannot cope with choice of contact type");
-      break;
-  }
-  
-  // read friction type
-  switch (Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(input,"FRICTION"))
-  {
-    case INPAR::CONTACT::friction_none:
-      scontact_.set<string>("friction type","none");
-      break;
-    case INPAR::CONTACT::friction_stick:
-      scontact_.set<string>("friction type","stick");
-      break;
-    case INPAR::CONTACT::friction_tresca:
-      scontact_.set<string>("friction type","tresca");
-      break;
-    case INPAR::CONTACT::friction_coulomb:
-      scontact_.set<string>("friction type","coulomb");
-      break;
-    default:
-      dserror("Cannot cope with choice of friction type");
-      break;
-  }
-  
-  // read friction parameters
-  scontact_.set<double> ("friction bound",input.get<double>("FRBOUND"));
-  scontact_.set<double> ("friction coefficient",input.get<double>("FRCOEFF"));
-  
-  // read full linearization flag
-  scontact_.set<bool> ("full linearization",Teuchos::getIntegralValue<int>(input,"FULL_LINEARIZATION"));
-  
-  // read semi-smooth Newton flag and parameters
-  scontact_.set<bool> ("semismooth newton",Teuchos::getIntegralValue<int>(input,"SEMI_SMOOTH_NEWTON"));
-  scontact_.set<double>("semismooth cn",input.get<double>("SEMI_SMOOTH_CN"));
-  scontact_.set<double>("semismooth ct",input.get<double>("SEMI_SMOOTH_CT"));
-  
-  // read search algorithm type
-  switch (Teuchos::getIntegralValue<INPAR::CONTACT::ContactSearchAlgorithm>(input,"SEARCH_ALGORITHM"))
-  {
-    case INPAR::CONTACT::search_bfnode:
-      scontact_.set<string>("search algorithm","nodes");
-      break;
-    case INPAR::CONTACT::search_bfele:
-      scontact_.set<string>("search algorithm","elements");
-      break;
-    case INPAR::CONTACT::search_binarytree:
-      scontact_.set<string>("search algorithm","binarytree");
-      break;
-    default:
-      dserror("Cannot cope with choice of search algorithm");
-      break;
-  }
-  
-  // read contact search parameter
-  scontact_.set<double> ("search parameter",input.get<double>("SEARCH_PARAM"));
-  
-  // read auxiliary plane coupling flag (3D)
-  scontact_.set<bool> ("coupling auxplane",Teuchos::getIntegralValue<int>(input,"COUPLING_AUXPLANE"));
     
-  // check contact input parameters
-  string ctype   = scontact_.get<string>("contact type","none");
-  string ftype   = scontact_.get<string>("friction type","none");
-  double frbound = scontact_.get<double>("friction bound",0.0);
-  double frcoeff = scontact_.get<double>("friction coefficient",0.0);
-  double ct      = scontact_.get<double>("semismooth ct",0.0);
-  string stype   = scontact_.get<string>("search algorithm","elements");
-  double sp      = scontact_.get<double>("search parameter",0.3);
-  //bool auxplane  = scontact_.get<bool>("coupling auxplane",false);
-  
   // invalid parameter combinations
-  if (ctype=="normal" && ftype !="none")
+  if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(input,"CONTACT")   == INPAR::CONTACT::contact_normal &&
+      Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(input,"FRICTION") != INPAR::CONTACT::friction_none)
     dserror("Friction law supplied for normal contact");
-  if (ctype=="frictional" && ftype=="none")
+  
+  if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(input,"CONTACT")   == INPAR::CONTACT::contact_frictional &&
+      Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(input,"FRICTION") == INPAR::CONTACT::friction_none)
     dserror("No friction law supplied for frictional contact");
-  if (ctype=="frictional" && ct==0.0)
+  
+  if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(input,"CONTACT") == INPAR::CONTACT::contact_frictional &&
+                                          input.get<double>("SEMI_SMOOTH_CT") == 0.0)
   	dserror("Friction Parameter ct = 0, must be greater than 0");
-  if (ftype=="tresca" && frbound <= 0.0)
+  
+  if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(input,"FRICTION") == INPAR::CONTACT::friction_tresca &&
+                                                   input.get<double>("FRBOUND") <= 0.0)
     dserror("No valid Tresca friction bound provided, must be greater than 0");
-  if (ftype=="coulomb" && frcoeff <= 0.0)
+  
+  if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(input,"FRICTION") == INPAR::CONTACT::friction_coulomb &&
+                                                   input.get<double>("FRCOEFF") <= 0.0)
     dserror("No valid Coulomb friction coefficient provided, must be greater than 0");
-  if (stype=="nodes" && sp==0.0)
+  
+  if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(input,"CONTACT")   == INPAR::CONTACT::contact_meshtying &&
+      Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(input,"FRICTION") != INPAR::CONTACT::friction_stick)
+    dserror("Friction law other than stick supplied for mesh tying");
+  
+  if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactSearchAlgorithm>(input,"SEARCH_ALGORITHM") == INPAR::CONTACT::search_bfnode &&
+                                                                input.get<double>("SEARCH_PARAM") == 0.0)
     dserror("Search radius sp = 0, must be greater than 0 for node-based search");
-  //if (auxplane && Dim()==2)
-  //  dserror("Coupling in auxiliary planes only possible for 3D contact");
+  
 #ifdef CONTACTRELVELMATERIAL 
   // check full linearization
-  bool fulllin   = scontact_.get<bool>("full linearization",false);
+  bool fulllin   = Teuchos::getIntegralValue<int>(input,"FULL_LINEARIZATION");
   if (fulllin) dserror ("Full linearization only running for evaluating\n"
-  		"the relative velocity with change of projection");
+  		                  "the relative velocity with change of projection");
 #endif
   
   // warnings
-  if ((stype=="elements" || stype=="binarytree") && sp==0.0)
+  if ((Teuchos::getIntegralValue<INPAR::CONTACT::ContactSearchAlgorithm>(input,"SEARCH_ALGORITHM") == INPAR::CONTACT::search_bfele ||
+      Teuchos::getIntegralValue<INPAR::CONTACT::ContactSearchAlgorithm>(input,"SEARCH_ALGORITHM")  == INPAR::CONTACT::search_binarytree) &&
+                                                                 input.get<double>("SEARCH_PARAM") == 0.0)
     cout << ("Warning: Ele-based / binary tree search called without inflation of bounding volumes\n") << endl;
 
-  if (ctype=="frictional" && ftype=="coulomb")
+  if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(input,"CONTACT")   == INPAR::CONTACT::contact_frictional && 
+      Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(input,"FRICTION") == INPAR::CONTACT::friction_coulomb)
   	cout << ("Warning: Coulomb friction law not completely implemented\n") << endl;
 
-  // overrule input in certain cases
-  if (ctype=="meshtying" && ftype!="stick")
-    scontact_.set<string>("friction type","stick");
-    
+  // store ParameterList in contact manager
+  scontact_ = input;
+  
   return true;
 }
   

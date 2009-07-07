@@ -45,6 +45,7 @@ Maintainer: Alexander Popp
 #include "drt_celement.H"
 #include "contactdefines.H"
 #include "../drt_lib/linalg_utils.H"
+#include "../drt_inpar/inpar_contact.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 03/08|
@@ -142,16 +143,19 @@ void CONTACT::ManagerBase::Initialize()
   smatrix_ = rcp(new LINALG::SparseMatrix(*gactiven_,3));
   
   // further terms depend on friction case
-  string ftype   = scontact_.get<string>("friction type","none");
+  INPAR::CONTACT::ContactFrictionType ftype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(Params(),"FRICTION");
   
   // (re)setup global matrix containing "no-friction"-derivatives
-  if (ftype=="none")
+  if (ftype == INPAR::CONTACT::friction_none)
   {
     pmatrix_ = rcp(new LINALG::SparseMatrix(*gactivet_,3));
   }
     
   // (re)setup global Tresca friction / perfect stick / MeshTying
-  if (ftype=="tresca" || ftype == "coulomb" || ftype=="stick")
+  if (ftype == INPAR::CONTACT::friction_tresca ||
+      ftype == INPAR::CONTACT::friction_coulomb ||
+      ftype == INPAR::CONTACT::friction_stick)
   {
     lmatrix_ = rcp(new LINALG::SparseMatrix(*gslipt_,10));
     r_       = LINALG::CreateVector(*gslipt_,true);
@@ -357,14 +361,19 @@ void CONTACT::ManagerBase::Evaluate(RCP<LINALG::SparseMatrix> kteff,
                                     RCP<Epetra_Vector> feff)
 { 
   // check if friction should be applied
-  string ftype   = scontact_.get<string>("friction type","none");
+  INPAR::CONTACT::ContactFrictionType ftype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(Params(),"FRICTION");
   
   // friction case
   // (note that this also includes Mesh Tying)
-  if (ftype=="tresca" || ftype=="coulomb" || ftype=="stick" ) EvaluateFriction(kteff,feff);
+  if (ftype == INPAR::CONTACT::friction_tresca ||
+      ftype == INPAR::CONTACT::friction_coulomb ||
+      ftype == INPAR::CONTACT::friction_stick )
+    EvaluateFriction(kteff,feff);
   
   // Frictionless contact case
-  else EvaluateContact(kteff,feff);
+  else
+    EvaluateContact(kteff,feff);
   
   return;
 }
@@ -380,9 +389,7 @@ void CONTACT::ManagerBase::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
   // MLMultiply if a row has no entries! One day we should use ML...
   
   // input parameters
-  string ctype   = scontact_.get<string>("contact type","none");
-  string ftype   = scontact_.get<string>("friction type","none");
-  bool fulllin   = scontact_.get<bool>("full linearization",false);
+  bool fulllin = Teuchos::getIntegralValue<int>(Params(),"FULL_LINEARIZATION");
   
   /**********************************************************************/
   /* export weighted gap vector to gactiveN-map                         */
@@ -406,7 +413,7 @@ void CONTACT::ManagerBase::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
   RCP<Epetra_Map> gsmdofs = LINALG::MergeMap(gsdofrowmap_,gmdofrowmap_,false);
   
   // read tresca friction bound
-  double frbound = scontact_.get<double>("friction bound",0.0);
+  double frbound = Params().get<double>("FRBOUND");
     
   // read weighting factor ct
   // (this is necessary in semi-smooth Newton case, as the search for the
@@ -414,7 +421,7 @@ void CONTACT::ManagerBase::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
   // the active / inactive status in advance and we can have a state in
   // which both firctional conditions are violated. Here we have to weigh
   // the two violations via ct!
-  double ct = scontact_.get<double>("semismooth ct",0.0);
+  double ct = Params().get<double>("SEMI_SMOOTH_CT");
 
   for (int i=0; i<(int)interface_.size(); ++i)
   {
@@ -1072,9 +1079,7 @@ void CONTACT::ManagerBase::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
   // MLMultiply if a row has no entries! One day we should use ML...
   
   // input parameters
-  string ctype   = scontact_.get<string>("contact type","none");
-  string ftype   = scontact_.get<string>("friction type","none");
-  bool fulllin   = scontact_.get<bool>("full linearization",false);
+  bool fulllin = Teuchos::getIntegralValue<int>(Params(),"FULL_LINEARIZATION");
   
   /**********************************************************************/
   /* export weighted gap vector to gactiveN-map                         */
@@ -1536,7 +1541,7 @@ void CONTACT::ManagerBase::Recover(RCP<Epetra_Vector> disi)
     cout << *zinactive << endl;
   }
   
-  bool fulllin   = scontact_.get<bool>("full linearization",false);
+  bool fulllin = Teuchos::getIntegralValue<int>(Params(),"FULL_LINEARIZATION");
   
   // debugging (check for N*[d_a] = g_a and T*z_a = 0)
   if (gactivedofs_->NumGlobalElements())
@@ -1582,8 +1587,10 @@ void CONTACT::ManagerBase::Recover(RCP<Epetra_Vector> disi)
 void CONTACT::ManagerBase::UpdateActiveSet()
 {
   // get input parameter ctype
-  string ctype   = scontact_.get<string>("contact type","none");
-  string ftype   = scontact_.get<string>("friction type","none");
+  INPAR::CONTACT::ContactType ctype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(Params(),"CONTACT");
+  INPAR::CONTACT::ContactFrictionType ftype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(Params(),"FRICTION");
   
   // assume that active set has converged and check for opposite
   activesetconv_=true;
@@ -1618,7 +1625,7 @@ void CONTACT::ManagerBase::UpdateActiveSet()
       double tz = 0.0;
       double tjump = 0.0;
       
-      if(ftype=="tresca" || ftype=="coulomb")
+      if(ftype == INPAR::CONTACT::friction_tresca || ftype == INPAR::CONTACT::friction_coulomb)
       { 
         // compute tangential part of Lagrange multiplier
         tz = cnode->txi()[0]*cnode->lm()[0] + cnode->txi()[1]*cnode->lm()[1];
@@ -1662,12 +1669,12 @@ void CONTACT::ManagerBase::UpdateActiveSet()
         if (nz <= 0) // no averaging of Lagrange multipliers
         //if (0.5*nz+0.5*nzold <= 0) // averaging of Lagrange multipliers
         {
-          if (ctype!="meshtying")
+          if (ctype != INPAR::CONTACT::contact_meshtying)
           {
             cnode->Active() = false;
             
             // friction
-            if(ftype=="tresca" || ftype=="coulomb")
+            if(ftype == INPAR::CONTACT::friction_tresca || ftype == INPAR::CONTACT::friction_coulomb)
             {
               cnode->Slip() = false;    
             }
@@ -1684,10 +1691,10 @@ void CONTACT::ManagerBase::UpdateActiveSet()
         else
         {
           // friction tresca        	
-        	if(ftype=="tresca")
+        	if(ftype == INPAR::CONTACT::friction_tresca)
           {
-            double frbound = scontact_.get<double>("friction bound",0.0);
-            double ct = scontact_.get<double>("semismooth ct",0.0);
+            double frbound = Params().get<double>("FRBOUND");
+            double ct = Params().get<double>("SEMI_SMOOTH_CT");
             
             if(cnode->Slip() == false)  
             {
@@ -1721,13 +1728,13 @@ void CONTACT::ManagerBase::UpdateActiveSet()
 #endif                
               }  
             }
-          } // if(ftype=="tresca")
+          } // if(ftype == INPAR::CONTACT::friction_tresca)
           
         	// friction coulomb
-          if(ftype=="coulomb")
+          if(ftype == INPAR::CONTACT::friction_coulomb)
           {
-            double frcoeff = scontact_.get<double>("friction coefficient",0.0);
-            double ct = scontact_.get<double>("semismooth ct",0.0);
+            double frcoeff = Params().get<double>("FRCOEFF");
+            double ct = Params().get<double>("SEMI_SMOOTH_CT");
             
             if(cnode->Slip() == false)  
             {
@@ -1761,7 +1768,7 @@ void CONTACT::ManagerBase::UpdateActiveSet()
 #endif                
               }
             }
-          } // if(ftype=="coulomb")
+          } // if(ftype == INPAR::CONTACT::friction_coulomb)
         } // if (nz <= 0)
       } // if (cnode->Active()==false)
     } // loop over all slave nodes
@@ -1835,7 +1842,8 @@ void CONTACT::ManagerBase::UpdateActiveSet()
   // *********************************************************************
   bool zigzagging = false;
 
-  if(ftype!="tresca" and ftype!="coulomb") // FIXGIT: For tresca friction zig-zagging is not eliminated 
+  // FIXGIT: For tresca friction zig-zagging is not eliminated 
+  if(ftype != INPAR::CONTACT::friction_tresca && ftype != INPAR::CONTACT::friction_coulomb) 
   {
     if (ActiveSetSteps()>2)
     {
@@ -1867,7 +1875,8 @@ void CONTACT::ManagerBase::UpdateActiveSet()
         }
       }
     }
-  } // if (ftype!="tresca")
+  } // if (ftype != INPAR::CONTACT::friction_tresca && ftype != INPAR::CONTACT::friction_coulomb)
+  
   // reset zig-zagging history
   if (activesetconv_==true)
   {
@@ -1899,8 +1908,10 @@ void CONTACT::ManagerBase::UpdateActiveSetSemiSmooth()
   // FIXME: Here we do not consider zig-zagging yet!
   
   // get input parameter ctype
-  string ctype   = scontact_.get<string>("contact type","none");
-  string ftype   = scontact_.get<string>("friction type","none");
+  INPAR::CONTACT::ContactType ctype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(Params(),"CONTACT");
+  INPAR::CONTACT::ContactFrictionType ftype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(Params(),"FRICTION");
   
   // read weighting factor cn
   // (this is necessary in semi-smooth Newton case, as the search for the
@@ -1908,7 +1919,7 @@ void CONTACT::ManagerBase::UpdateActiveSetSemiSmooth()
   // the active / inactive status in advance and we can have a state in
   // which both the condition znormal = 0 and wgap = 0 are violated. Here
   // we have to weigh the two violations via cn!
-  double cn = scontact_.get<double>("semismooth cn",0.0);
+  double cn = Params().get<double>("SEMI_SMOOTH_CN");
         
   // assume that active set has converged and check for opposite
   activesetconv_=true;
@@ -1942,7 +1953,7 @@ void CONTACT::ManagerBase::UpdateActiveSetSemiSmooth()
       double tz = 0.0;
       double tjump = 0.0;
       
-      if(ftype=="tresca" || ftype == "coulomb")
+      if(ftype == INPAR::CONTACT::friction_tresca || ftype == INPAR::CONTACT::friction_coulomb)
       { 
         // compute tangential part of Lagrange multiplier
         tz = cnode->txi()[0]*cnode->lm()[0] + cnode->txi()[1]*cnode->lm()[1];
@@ -1982,12 +1993,12 @@ void CONTACT::ManagerBase::UpdateActiveSetSemiSmooth()
         if (nz - cn*wgap <= 0) // no averaging of Lagrange multipliers
         //if ((0.5*nz+0.5*nzold) - cn*wgap <= 0) // averaging of Lagrange multipliers
         {
-          if (ctype!="meshtying")
+          if (ctype != INPAR::CONTACT::contact_meshtying)
           {
             cnode->Active() = false;
             
             // friction
-            if(ftype=="tresca" || ftype == "coulomb")
+            if(ftype == INPAR::CONTACT::friction_tresca || ftype == INPAR::CONTACT::friction_coulomb)
             {
               cnode->Slip() = false;    
             }
@@ -2004,10 +2015,10 @@ void CONTACT::ManagerBase::UpdateActiveSetSemiSmooth()
         else
         {
           // friction tresca
-        	if(ftype=="tresca")
+        	if(ftype == INPAR::CONTACT::friction_tresca)
           {
-            double frbound = scontact_.get<double>("friction bound",0.0);
-            double ct = scontact_.get<double>("semismooth ct",0.0);
+            double frbound = Params().get<double>("FRBOUND");
+            double ct = Params().get<double>("SEMI_SMOOTH_CT");
             
             if(cnode->Slip() == false)  
             {
@@ -2044,10 +2055,10 @@ void CONTACT::ManagerBase::UpdateActiveSetSemiSmooth()
           } // if (fytpe=="tresca")
           
         	// friction coulomb
-          if(ftype=="coulomb")
+          if(ftype == INPAR::CONTACT::friction_coulomb)
           {
-            double frcoeff = scontact_.get<double>("friction coefficient",0.0);
-            double ct = scontact_.get<double>("semismooth ct",0.0);
+            double frcoeff = Params().get<double>("FRCOEFF");
+            double ct = Params().get<double>("SEMI_SMOOTH_CT");
             
             if(cnode->Slip() == false)  
             {
@@ -2081,7 +2092,7 @@ void CONTACT::ManagerBase::UpdateActiveSetSemiSmooth()
 #endif                
               }
             }
-          } // if(ftype=="coulomb")
+          } // if(ftype == INPAR::CONTACT::friction_coulomb)
         } // if (nz - cn*wgap <= 0)
       } // if (cnode->Active()==false)
     } // loop over all slave nodes
@@ -2173,41 +2184,186 @@ void CONTACT::ManagerBase::ContactForces(RCP<Epetra_Vector> fresm)
   
   /*
   // CHECK OF CONTACT FORCE EQUILIBRIUM ----------------------------------
-#ifdef DEBUG
   RCP<Epetra_Vector> fresmslave  = rcp(new Epetra_Vector(dmatrix_->RowMap()));
   RCP<Epetra_Vector> fresmmaster = rcp(new Epetra_Vector(mmatrix_->DomainMap()));
   LINALG::Export(*fresm,*fresmslave);
   LINALG::Export(*fresm,*fresmmaster);
   
+  // contact forces and moments
   vector<double> gfcs(3);
   vector<double> ggfcs(3);
   vector<double> gfcm(3);
   vector<double> ggfcm(3);
-  int dimcheck = (gsdofrowmap_->NumGlobalElements())/(gsnoderowmap_->NumGlobalElements());
-  if (dimcheck!=2 && dimcheck!=3) dserror("ERROR: ContactForces: Invalid problem dimension");
+  vector<double> gmcs(3);
+  vector<double> ggmcs(3);
+  vector<double> gmcm(3);
+  vector<double> ggmcm(3);
   
-  for (int i=0;i<fcslavetemp->MyLength();++i)
+  vector<double> gmcsnew(3);
+  vector<double> ggmcsnew(3);
+  vector<double> gmcmnew(3);
+  vector<double> ggmcmnew(3);
+  
+  // weighted gap vector
+  RCP<Epetra_Vector> gapslave  = rcp(new Epetra_Vector(dmatrix_->RowMap()));
+  RCP<Epetra_Vector> gapmaster = rcp(new Epetra_Vector(mmatrix_->DomainMap()));
+  
+  // loop over all interfaces
+  for (int i=0; i<(int)interface_.size(); ++i)
   {
-    if ((i+dimcheck)%dimcheck == 0) gfcs[0]+=(*fcslavetemp)[i];
-    else if ((i+dimcheck)%dimcheck == 1) gfcs[1]+=(*fcslavetemp)[i];
-    else if ((i+dimcheck)%dimcheck == 2) gfcs[2]+=(*fcslavetemp)[i];
-    else dserror("ERROR: Contact Forces: Dim. error in debugging part!");
+    // loop over all slave nodes on the current interface
+    for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)
+    {
+      int gid = interface_[i]->SlaveRowNodes()->GID(j);
+      DRT::Node* node = interface_[i]->Discret().gNode(gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      CNode* cnode = static_cast<CNode*>(node);
+
+      vector<double> nodeforce(3);
+      vector<double> position(3);
+      
+      // forces and positions
+      for (int d=0;d<Dim();++d)
+      {
+        int dofid = (fcslavetemp->Map()).LID(cnode->Dofs()[d]);
+        if (dofid<0) dserror("ERROR: ContactForces: Did not find slave dof in map");
+        nodeforce[d] = (*fcslavetemp)[dofid];
+        gfcs[d] += nodeforce[d];
+        position[d] = cnode->xspatial()[d];
+      }
+      
+      // moments
+      vector<double> nodemoment(3);
+      nodemoment[0] = position[1]*nodeforce[2]-position[2]*nodeforce[1];
+      nodemoment[1] = position[2]*nodeforce[0]-position[0]*nodeforce[2];
+      nodemoment[2] = position[0]*nodeforce[1]-position[1]*nodeforce[0];
+      for (int d=0;d<3;++d)
+        gmcs[d] += nodemoment[d];
+      
+      // weighted gap
+      Epetra_SerialDenseVector posnode(Dim());
+      vector<int> lm(Dim());
+      vector<int> lmowner(Dim());
+      for (int d=0;d<Dim();++d)
+      {
+        posnode[d] = cnode->xspatial()[d];
+        lm[d] = cnode->Dofs()[d];
+        lmowner[d] = cnode->Owner();
+      }
+      LINALG::Assemble(*gapslave,posnode,lm,lmowner);
+    }
+    
+    // loop over all master nodes on the current interface
+    for (int j=0;j<interface_[i]->MasterRowNodes()->NumMyElements();++j)
+    {
+      int gid = interface_[i]->MasterRowNodes()->GID(j);
+      DRT::Node* node = interface_[i]->Discret().gNode(gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      CNode* cnode = static_cast<CNode*>(node);
+
+      vector<double> nodeforce(3);
+      vector<double> position(3);
+      
+      // forces and positions
+      for (int d=0;d<Dim();++d)
+      {
+        int dofid = (fcmastertemp->Map()).LID(cnode->Dofs()[d]);
+        if (dofid<0) dserror("ERROR: ContactForces: Did not find master dof in map");
+        nodeforce[d] = -(*fcmastertemp)[dofid];
+        gfcm[d] += nodeforce[d];
+        position[d] = cnode->xspatial()[d];
+      }
+      
+      // moments
+      vector<double> nodemoment(3);
+      nodemoment[0] = position[1]*nodeforce[2]-position[2]*nodeforce[1];
+      nodemoment[1] = position[2]*nodeforce[0]-position[0]*nodeforce[2];
+      nodemoment[2] = position[0]*nodeforce[1]-position[1]*nodeforce[0];
+      for (int d=0;d<3;++d)
+        gmcm[d] += nodemoment[d];
+      
+      // weighted gap
+      Epetra_SerialDenseVector posnode(Dim());
+      vector<int> lm(Dim());
+      vector<int> lmowner(Dim());
+      for (int d=0;d<Dim();++d)
+      {
+        posnode[d] = cnode->xspatial()[d];
+        lm[d] = cnode->Dofs()[d];
+        lmowner[d] = cnode->Owner();
+      }
+      LINALG::Assemble(*gapmaster,posnode,lm,lmowner);
+    }
   }
   
-  for (int i=0;i<fcmastertemp->MyLength();++i)
+  // weighted gap
+  RCP<Epetra_Vector> gapslavefinal  = rcp(new Epetra_Vector(dmatrix_->RowMap()));
+  RCP<Epetra_Vector> gapmasterfinal = rcp(new Epetra_Vector(mmatrix_->RowMap()));
+  dmatrix_->Multiply(false,*gapslave,*gapslavefinal);
+  mmatrix_->Multiply(false,*gapmaster,*gapmasterfinal);
+  RCP<Epetra_Vector> gapfinal = rcp(new Epetra_Vector(dmatrix_->RowMap()));
+  gapfinal->Update(1.0,*gapslavefinal,0.0);
+  gapfinal->Update(-1.0,*gapmasterfinal,1.0);
+  
+  // again, for alternative moment: lambda x gap
+  // loop over all interfaces
+  for (int i=0; i<(int)interface_.size(); ++i)
   {
-    if ((i+dimcheck)%dimcheck == 0) gfcm[0]-=(*fcmastertemp)[i];
-    else if ((i+dimcheck)%dimcheck == 1) gfcm[1]-=(*fcmastertemp)[i];
-    else if ((i+dimcheck)%dimcheck == 2) gfcm[2]-=(*fcmastertemp)[i];
-    else dserror("ERROR: Contact Forces: Dim. error in debugging part!");
+    // loop over all slave nodes on the current interface
+    for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)
+    {
+      int gid = interface_[i]->SlaveRowNodes()->GID(j);
+      DRT::Node* node = interface_[i]->Discret().gNode(gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      CNode* cnode = static_cast<CNode*>(node);
+
+      vector<double> lm(3);
+      vector<double> nodegaps(3);
+      vector<double> nodegapm(3);
+      
+      // LMs and gaps
+      for (int d=0;d<Dim();++d)
+      {
+        int dofid = (fcslavetemp->Map()).LID(cnode->Dofs()[d]);
+        if (dofid<0) dserror("ERROR: ContactForces: Did not find slave dof in map");
+        nodegaps[d] = (*gapslavefinal)[dofid];
+        nodegapm[d] = (*gapmasterfinal)[dofid];
+        lm[d] = cnode->lm()[d];
+      }
+      
+      // moments
+      vector<double> nodemoments(3);
+      vector<double> nodemomentm(3);
+      nodemoments[0] = nodegaps[1]*lm[2]-nodegaps[2]*lm[1];
+      nodemoments[1] = nodegaps[2]*lm[0]-nodegaps[0]*lm[2];
+      nodemoments[2] = nodegaps[0]*lm[1]-nodegaps[1]*lm[0];
+      nodemomentm[0] = nodegapm[1]*lm[2]-nodegapm[2]*lm[1];
+      nodemomentm[1] = nodegapm[2]*lm[0]-nodegapm[0]*lm[2];
+      nodemomentm[2] = nodegapm[0]*lm[1]-nodegapm[1]*lm[0];
+      for (int d=0;d<3;++d)
+      {
+        gmcsnew[d] += nodemoments[d];
+        gmcmnew[d] -= nodemomentm[d];
+      }
+      
+      cout << "NORMAL: " << cnode->n()[0] << " " << cnode->n()[1] << " " << cnode->n()[2] << endl;
+      cout << "LM:     " << lm[0] << " " << lm[1] << " " << lm[2] << endl;
+      cout << "GAP:    " << nodegaps[0]-nodegapm[0] << " " << nodegaps[1]-nodegapm[1] << " " << nodegaps[2]-nodegapm[2] << endl;
+    }
   }
   
+  // summing up over all processors
   for (int i=0;i<3;++i)
   {
     Comm().SumAll(&gfcs[i],&ggfcs[i],1);
     Comm().SumAll(&gfcm[i],&ggfcm[i],1);
+    Comm().SumAll(&gmcs[i],&ggmcs[i],1);
+    Comm().SumAll(&gmcm[i],&ggmcm[i],1);
+    Comm().SumAll(&gmcsnew[i],&ggmcsnew[i],1);
+    Comm().SumAll(&gmcmnew[i],&ggmcmnew[i],1);
   }
   
+  // output
   double slavenorm = 0.0;
   fcslavetemp->Norm2(&slavenorm);
   double slavenormend = 0.0;
@@ -2220,6 +2376,8 @@ void CONTACT::ManagerBase::ContactForces(RCP<Epetra_Vector> fresm)
     cout << "Slave Contact Force Norm (n):  " << slavenormend << endl;
     cout << "Slave Residual Force Norm: " << fresmslavenorm << endl;
     cout << "Slave Contact Force Vector: " << ggfcs[0] << " " << ggfcs[1] << " " << ggfcs[2] << endl;
+    cout << "Slave Contact Moment Vector: " << ggmcs[0] << " " << ggmcs[1] << " " << ggmcs[2] << endl;
+    cout << "Slave Contact Moment Vector (2nd version): " << ggmcsnew[0] << " " << ggmcsnew[1] << " " << ggmcsnew[2] << endl;
   }
   double masternorm = 0.0;
   fcmastertemp->Norm2(&masternorm);
@@ -2233,8 +2391,9 @@ void CONTACT::ManagerBase::ContactForces(RCP<Epetra_Vector> fresm)
     cout << "Master Contact Force Norm (n): " << masternormend << endl;
     cout << "Master Residual Force Norm " << fresmmasternorm << endl;
     cout << "Master Contact Force Vector: " << ggfcm[0] << " " << ggfcm[1] << " " << ggfcm[2] << endl;
+    cout << "Master Contact Moment Vector: " << ggmcm[0] << " " << ggmcm[1] << " " << ggmcm[2] << endl;
+    cout << "Master Contact Moment Vector (2nd version): " << ggmcmnew[0] << " " << ggmcmnew[1] << " " << ggmcmnew[2] << endl;
   }
-#endif // #ifdef DEBUG
   // CHECK OF CONTACT FORCE EQUILIBRIUM ----------------------------------
   */
   
@@ -2334,7 +2493,7 @@ void CONTACT::ManagerBase::StoreNodalQuantities(ManagerBase::QuantityType type)
         {
           // print a warning if a non-DBC inactive dof has a non-zero value
           // (only in semi-smooth Newton case, of course!)
-          bool semismooth = scontact_.get<bool>("semismooth newton",false);
+          bool semismooth = Teuchos::getIntegralValue<int>(Params(),"SEMI_SMOOTH_NEWTON");
           if (semismooth && !cnode->Dbc()[dof] && !cnode->Active() && abs((*vectorinterface)[locindex[dof]])>1.0e-8)
             cout << "***WARNING***: Non-D.B.C. inactive node " << cnode->Id() << " has non-zero Lag. Mult.: dof "
                  << cnode->Dofs()[dof] << " lm " << (*vectorinterface)[locindex[dof]] << endl;
@@ -2529,8 +2688,10 @@ void CONTACT::ManagerBase::PrintActiveSet()
 {
   
   // get input parameter ctype
-  string ctype   = scontact_.get<string>("contact type","none");
-  string ftype   = scontact_.get<string>("friction type","none");
+  INPAR::CONTACT::ContactType ctype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(Params(),"CONTACT");
+  INPAR::CONTACT::ContactFrictionType ftype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(Params(),"FRICTION");
   
   if (Comm().MyPID()==0)
     cout << "Active contact set--------------------------------------------------------------\n";
@@ -2565,7 +2726,9 @@ void CONTACT::ManagerBase::PrintActiveSet()
       double tz = 0.0;
       double tjump = 0.0;
            
-      if(ftype=="tresca" || ftype=="coulomb" || ftype=="stick")
+      if(ftype == INPAR::CONTACT::friction_tresca ||
+         ftype == INPAR::CONTACT::friction_coulomb ||
+         ftype == INPAR::CONTACT::friction_stick)
       {     
         // compute tangential part of Lagrange multiplier
         tz = cnode->txi()[0]*cnode->lm()[0] + cnode->txi()[1]*cnode->lm()[1];
@@ -2584,7 +2747,7 @@ void CONTACT::ManagerBase::PrintActiveSet()
       // print nodes of active set ***************************************
       else
       {
-        if (ctype == "normal")
+        if (ctype == INPAR::CONTACT::contact_normal)
           cout << "ACTIVE:   " << dbc << " " << gid << " " << nz <<  " " << wgap << endl;
         
         else
@@ -2621,8 +2784,10 @@ void CONTACT::ManagerBase::VisualizeGmsh(const int step, const int iter)
 {
   //check for frictional contact
   bool fric = false;
-  string ftype   = scontact_.get<string>("friction type","none");
-  if (ftype == "tresca" || ftype == "coulomb") fric=true;
+  INPAR::CONTACT::ContactFrictionType ftype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(Params(),"FRICTION");
+  if (ftype == INPAR::CONTACT::friction_tresca || ftype == INPAR::CONTACT::friction_coulomb)
+    fric=true;
   
   // visualization with gmsh
   for (int i=0;i<(int)interface_.size();++i)

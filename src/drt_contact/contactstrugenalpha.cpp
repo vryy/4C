@@ -43,6 +43,7 @@ Maintainer: Alexander Popp
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_structure.H"
+#include "../drt_inpar/inpar_contact.H"
 
 #include <iostream>
 
@@ -122,8 +123,10 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   // for frictional contact we need history values and therefore we store 
   // the nodal entries of mortar matrices (reference configuration) before 
   // first time step
+  INPAR::CONTACT::ContactType ctype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(contactmanager_->Params(),"CONTACT");
   
-  if(params_.get<int>("step") == 0 and (contactmanager_->Params()).get<string>("contact type","none")=="frictional")
+  if(params_.get<int>("step") == 0 && ctype == INPAR::CONTACT::contact_frictional)
   {  
   	// set state and do mortar calculation 
   	contactmanager_->SetState("displacement",disn_);
@@ -489,9 +492,11 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   // for frictional contact we need history values and therefore we store 
   // the nodal entries of mortar matrices (reference configuration) before 
   // first time step
+  INPAR::CONTACT::ContactType ctype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(contactmanager_->Params(),"CONTACT");
   
-  if(params_.get<int>("step") == 0 and (contactmanager_->Params()).get<string>("contact type","none")=="frictional")
-  {  
+  if(params_.get<int>("step") == 0 && ctype == INPAR::CONTACT::contact_frictional)
+  {    
   	// set state and do mortar calculation 
   	contactmanager_->SetState("displacement",disn_);
     contactmanager_->InitializeMortar();
@@ -1316,7 +1321,9 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
       // here the relative movement of the contact bodies is evaluated
       // therefore the current configuration and the according mortar
       // matrices are needed
-      if((contactmanager_->Params()).get<string>("contact type","none")!="normal")
+      INPAR::CONTACT::ContactType ctype =
+        Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(contactmanager_->Params(),"CONTACT");
+      if(ctype != INPAR::CONTACT::contact_normal)
         contactmanager_->EvaluateRelMov(disi_); 
             
       contactmanager_->Initialize();
@@ -1701,7 +1708,9 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
       // here the relative movement of the contact bodies is evaluated
       // therefore the current configuration and the according mortar
       // matrices are needed
-      if((contactmanager_->Params()).get<string>("contact type","none")!="normal")
+      INPAR::CONTACT::ContactType ctype =
+        Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(contactmanager_->Params(),"CONTACT");
+      if(ctype != INPAR::CONTACT::contact_normal)
         contactmanager_->EvaluateRelMov(disi_); 
 
       // this is the correct place to update the active set!!!
@@ -1872,13 +1881,68 @@ void CONTACT::ContactStruGenAlpha::Update()
   // update contact
   contactmanager_->Update(istep);
   
+  /*
+  Teuchos::RCP<Epetra_Vector> linmom = LINALG::CreateVector(*(discret_.DofRowMap()), true);
+  mass_->Multiply(false, *vel_, *linmom);
+  
+  int dim = contactmanager_->Dim();
+  vector<double> sumlinmom(3);
+  vector<double> sumangmom(3);
+  
+  for (int k=0; k<(discret_.NodeRowMap())->NumMyElements();++k)
+  {
+    int gid = (discret_.NodeRowMap())->GID(k);
+    DRT::Node* mynode = discret_.gNode(gid);
+    
+    vector<double> nodelinmom(3);
+    vector<double> position(3);
+    
+    for (int d=0;d<dim;++d)
+    {
+      int dofid = (discret_.Dof(mynode))[d];
+      nodelinmom[d] = (*linmom)[dofid];
+      sumlinmom[d] += nodelinmom[d];
+      position[d] = mynode->X()[d] + (*dis_)[dofid];
+    }
+    
+    vector<double> nodeangmom(3);
+    nodeangmom[0] = position[1]*nodelinmom[2]-position[2]*nodelinmom[1];
+    nodeangmom[1] = position[2]*nodelinmom[0]-position[0]*nodelinmom[2];
+    nodeangmom[2] = position[0]*nodelinmom[1]-position[1]*nodelinmom[0];
+    
+    for (int d=0;d<3;++d)
+      sumangmom[d] += nodeangmom[d];
+    
+    // vector product position x nodelinmom
+  }
+  
+  // global calculation of kinetic energy
+  double kinergy = 0.0;  // total kinetic energy
+  {
+    linmom->Dot(*vel_,&kinergy);
+    kinergy *= 0.5;
+  }
+  
+  cout << "\n************************************************************************" << endl;
+  cout << "CONTACT CONSERVATION QUANTITIES" << endl;
+  cout << "Linear Momentum x-direction:  " << sumlinmom[0] << endl;
+  cout << "Linear Momentum y-direction:  " << sumlinmom[1] << endl;
+  cout << "Linear Momentum z-direction:  " << sumlinmom[2] << endl << endl;
+  cout << "Angular Momentum x-direction: " << sumangmom[0] << endl;
+  cout << "Angular Momentum y-direction: " << sumangmom[1] << endl;
+  cout << "Angular Momentum z-direction: " << sumangmom[2] << endl << endl;
+  cout << "Kinetic Energy:               " << kinergy << endl;
+  cout << "************************************************************************" << endl;
+  */
+  
   //----------------------------------------friction: store history values
   // in the case of frictional contact we have to store several 
   // informations and quantities at the end of a time step (converged 
   // state) which is needed in the next time step as history
   // information/quantities. These are:
-  
-  if((contactmanager_->Params()).get<string>("contact type","none")!="normal")
+  INPAR::CONTACT::ContactType ctype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(contactmanager_->Params(),"CONTACT");
+  if(ctype != INPAR::CONTACT::contact_normal)
   { 
   	
 #ifdef CONTACTSLIPFIRST  	
@@ -2138,7 +2202,7 @@ void CONTACT::ContactStruGenAlpha::Integrate()
     // linearization (=geimetrical nonlinearity) is treated by a standard
     // Newton scheme. This yields TWO nested iteration loops
     //********************************************************************
-    bool semismooth = (contactmanager_->Params()).get<bool>("semismooth newton",false);
+    bool semismooth = Teuchos::getIntegralValue<int>(contactmanager_->Params(),"SEMI_SMOOTH_NEWTON");
 
     //********************************************************************
     // 1) SEMI-SMOOTH NEWTON
@@ -2218,7 +2282,7 @@ void CONTACT::ContactStruGenAlpha::Integrate()
     //********************************************************************
     // OPTIONS FOR PRIMAL-DUAL ACTIVE SET STRATEGY (PDASS)
     //********************************************************************
-    bool semismooth = (contactmanager_->Params()).get<bool>("semismooth newton",false);
+    bool semismooth = Teuchos::getIntegralValue<int>(contactmanager_->Params(),"SEMI_SMOOTH_NEWTON");
 
     //********************************************************************
     // 1) SEMI-SMOOTH NEWTON
