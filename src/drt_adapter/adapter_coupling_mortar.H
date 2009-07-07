@@ -98,8 +98,7 @@ namespace ADAPTER
 	
     RCP<CONTACT::Interface> interface_;  ///< interface
     RefCountPtr<Epetra_Map> masterdofmap_; ///< map of master dofs
-    RefCountPtr<Epetra_Map> slavedofmap_;  ///< map of slave dofs
-    RefCountPtr<Epetra_Map> slavemortardofmap_; ///< map of slave dofs without pressure
+    RefCountPtr<Epetra_Map> slavedofmap_;  ///< map of slave dofs without pressure
     
     RefCountPtr<Epetra_CrsMatrix> D_; ///< mortar matrix
     RefCountPtr<Epetra_CrsMatrix> Dinv_;  ///< inverse of mortar matrix #D_

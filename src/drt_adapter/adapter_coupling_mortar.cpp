@@ -34,6 +34,8 @@ ADAPTER::CouplingMortar::CouplingMortar()
 
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
     const DRT::Discretization& slavedis, Epetra_Comm& comm)
 {
@@ -47,17 +49,18 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
   map<int, RefCountPtr<DRT::Element> > masterelements;
   map<int, RefCountPtr<DRT::Element> > slaveelements;
 
-  // fill maps
+
   DRT::UTILS::FindInterfaceObjects(masterdis, masternodes, mastergnodes, masterelements,
       "FSICoupling");
+
   DRT::UTILS::FindInterfaceObjects(slavedis, slavenodes, slavegnodes, slaveelements,
       "FSICoupling");
-
   //	parameter list for contact definition 
   // const Teuchos::ParameterList& input = DRT::Problem::Instance()->StructuralContactParams();
   
   Teuchos::ParameterList tmpinput;
   tmpinput.set<string> ("search algorithm", "binarytree");
+  tmpinput.set<double> ("search parameter", 0.3);
   // get problem dimension (2D or 3D) and initialize (CONTACT::) interface
   const int dim = genprob.ndim;
   RCP<CONTACT::Interface> interface = rcp(
@@ -109,15 +112,13 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
   
   for (nodeiter = slavenodes.begin(); nodeiter != slavenodes.end(); ++nodeiter)
   {
+    // We expect to have a pressure dof at each node. Mortar
+    // couples just the displacements, so remove the pressure dof.
+
     DRT::Node* node = nodeiter->second;
     vector<int> dofs = slavedis.Dof(node);
     dofs.resize(dofs.size() - 1);
     slavedofs.insert(slavedofs.end(), dofs.begin(), dofs.end());
-    // We expect to have a pressure dof at each node. Mortar
-    // couples just the displacements, so remove the pressure dof.
-    transform(dofs.begin(), dofs.end(), dofs.begin(), bind2nd(plus<int> (),
-        dofoffset));
-    slavemortardofs.insert(slavemortardofs.end(), dofs.begin(), dofs.end());
 
   }
   slavenodes.clear();
@@ -125,9 +126,6 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
   //build map of slave dofs and slave mortar dofs without pressure
   slavedofmap_ = rcp(
       new Epetra_Map(-1, slavedofs.size(), &slavedofs[0], 0, comm));
-  slavemortardofmap_ = rcp(
-      new Epetra_Map(-1, slavemortardofs.size(), &slavemortardofs[0], 0, comm));
-
 
   //feeding master elements to the interface
   map<int, RefCountPtr<DRT::Element> >::const_iterator elemiter;
@@ -163,14 +161,13 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
 
   //finalize the contact interface construction	
   interface->FillComplete();
-
+  
   // all the following stuff has to be done once in setup 
   // in order to get initial D_ and M_ 
 
   // interface displacement of the first time step (=0) has to be merged from
   // slave and master discretization
-  RCP<Epetra_Map> dofrowmap = LINALG::MergeMap(slavemortardofmap_,
-      masterdofmap_, true);
+  RCP<Epetra_Map> dofrowmap = LINALG::MergeMap(masterdofmap_,slavedofmap_, true);
 
   RCP<Epetra_Vector> dispn = LINALG::CreateVector(*dofrowmap, true);
 
@@ -235,10 +232,14 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
   //store interface	
   interface_ = interface;  
   
+
+  
   return;
 }
 
 //the next function is not used up to now
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void ADAPTER::CouplingMortar::Evaluate()
 {
 
@@ -246,12 +247,13 @@ void ADAPTER::CouplingMortar::Evaluate()
 
 }
 
-/*
-* Compute sv = D^{-1}M(mv)
-*/
+/*----------------------------------------------------------------------*
+ * Compute sv = D^{-1}M(mv)
+ *----------------------------------------------------------------------*/
 RefCountPtr<Epetra_Vector> ADAPTER::CouplingMortar::MasterToSlave(RefCountPtr<
     Epetra_Vector> mv)
 {
+  
   dsassert( masterdofmap_->SameAs( mv->Map() ),
       "Vector with master dof map expected" );
 
@@ -268,9 +270,8 @@ RefCountPtr<Epetra_Vector> ADAPTER::CouplingMortar::MasterToSlave(RefCountPtr<
     return sv;
   }
 
-/*
-
-*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 RefCountPtr<Epetra_Vector> ADAPTER::CouplingMortar::SlaveToMaster(RefCountPtr<
     Epetra_Vector> sv)
 {
