@@ -26,8 +26,8 @@ Maintainer: Georg Bauer
 #include "scatra_timint_implicit.H"
 #include "../drt_fluid/drt_periodicbc.H"
 #include "../drt_lib/drt_function.H"
-#include "../drt_fluid/fluid_utils.H" // for conpotsplitter
-#include "scatra_utils.H" // for conpotsplitstrategy
+#include "../drt_fluid/fluid_utils.H" // for splitter
+#include "scatra_utils.H" // for splitstrategy
 
 // for the condition writer output
 /*
@@ -130,13 +130,18 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     // number of concentrations transported is numdof-1
     numscal_ -= 1;
     // set up the concentration-el.potential splitter
-    FLD::UTILS::SetupFluidSplit(*discret_,numscal_,conpotsplitter_);
+    FLD::UTILS::SetupFluidSplit(*discret_,numscal_,splitter_);
     if (myrank_==0)
     {
-      cout<<"\nSetup of conpotsplitter: numscal = "<<numscal_<<endl;
+      cout<<"\nSetup of splitter: numscal = "<<numscal_<<endl;
       cout<<"Temperature value T (Kelvin)     = "<<params_->get<double>("TEMPERATURE",298.0)<<endl;
       cout<<"Constant F/RT                    = "<<frt_<<endl;
     }
+  }
+  else if (prbtype_ == "loma" and numscal_ > 1)
+  {
+    // set up a species-temperature splitter
+    FLD::UTILS::SetupFluidSplit(*discret_,numscal_-1,splitter_);
   }
 
   if (params_->get<int>("BLOCKPRECOND",0) )
@@ -146,14 +151,14 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
       dserror("Block-Preconditioning is only for ELCH problems");
     // initial guess for non-zeros per row: 27 neighboring nodes for hex8 times (numscal_+1) dofs
 
-    Teuchos::RCP<LINALG::BlockSparseMatrix<SCATRA::ConPotSplitStrategy> > blocksysmat =
-      Teuchos::rcp(new LINALG::BlockSparseMatrix<SCATRA::ConPotSplitStrategy>(conpotsplitter_,conpotsplitter_,27*(numscal_+1),false,true));
+    Teuchos::RCP<LINALG::BlockSparseMatrix<SCATRA::SplitStrategy> > blocksysmat =
+      Teuchos::rcp(new LINALG::BlockSparseMatrix<SCATRA::SplitStrategy>(splitter_,splitter_,27*(numscal_+1),false,true));
     blocksysmat->SetNumScal(numscal_);
 
     // the fluid assembly strategy still works, but it does not make use
     // of the ELCH-specific sparsity pattern
     //Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy> > blocksysmat =
-    //Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy>(conpotsplitter_,conpotsplitter_,27*(numscal_+1),false,true));
+    //Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy>(splitter_,splitter_,27*(numscal_+1),false,true));
     //blocksysmat->SetNumdim(numscal_);
 
     sysmat_ = blocksysmat;
@@ -748,22 +753,22 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
 
   if (prbtype_ == "elch")
   {
-    Teuchos::RCP<Epetra_Vector> onlycon = conpotsplitter_.ExtractOtherVector(residual_);
+    Teuchos::RCP<Epetra_Vector> onlycon = splitter_.ExtractOtherVector(residual_);
     onlycon->Norm2(&conresnorm);
 
-    conpotsplitter_.ExtractOtherVector(increment_,onlycon);
+    splitter_.ExtractOtherVector(increment_,onlycon);
     onlycon->Norm2(&incconnorm_L2);
 
-    conpotsplitter_.ExtractOtherVector(phinp_,onlycon);
+    splitter_.ExtractOtherVector(phinp_,onlycon);
     onlycon->Norm2(&connorm_L2);
 
-    Teuchos::RCP<Epetra_Vector> onlypot = conpotsplitter_.ExtractCondVector(residual_);
+    Teuchos::RCP<Epetra_Vector> onlypot = splitter_.ExtractCondVector(residual_);
     onlypot->Norm2(&potresnorm);
 
-    conpotsplitter_.ExtractCondVector(increment_,onlypot);
+    splitter_.ExtractCondVector(increment_,onlypot);
     onlypot->Norm2(&incpotnorm_L2);
 
-    conpotsplitter_.ExtractCondVector(phinp_,onlypot);
+    splitter_.ExtractCondVector(phinp_,onlypot);
     onlypot->Norm2(&potnorm_L2);
   }
   else

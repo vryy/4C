@@ -437,11 +437,11 @@ double SCATRA::ScaTraTimIntImpl::ComputeInitialMass(const double thermpress)
 
   // evaluate integral of inverse temperature
   Teuchos::RCP<Epetra_SerialDenseVector> scalars
-    = Teuchos::rcp(new Epetra_SerialDenseVector(3));
+    = Teuchos::rcp(new Epetra_SerialDenseVector(numscal_+2));
   discret_->EvaluateScalars(eleparams, scalars);
   discret_->ClearState();   // clean up
 
-  double initialmass = (*scalars)[1];
+  double initialmass = (*scalars)[numscal_];
 
   // print out initial total mass
   if (myrank_ == 0)
@@ -478,12 +478,12 @@ double SCATRA::ScaTraTimIntImpl::ComputeThermPressureFromMassCons(
 
   // evaluate integral of inverse temperature
   Teuchos::RCP<Epetra_SerialDenseVector> scalars
-    = Teuchos::rcp(new Epetra_SerialDenseVector(3));
+    = Teuchos::rcp(new Epetra_SerialDenseVector(numscal_+2));
   discret_->EvaluateScalars(eleparams, scalars);
   discret_->ClearState();   // clean up
 
   // compute thermodynamic pressure: tp = R*M_0/int(1/T)
-  thermpressnp_ = gasconstant*initialmass/(*scalars)[1];
+  thermpressnp_ = gasconstant*initialmass/(*scalars)[numscal_];
 
   // compute time derivative of thermodynamic pressure: tpdt = (tp(n+1)-tp(n))/dt
   thermpressdtnp_ = (thermpressnp_-thermpressn_)/dta_;
@@ -508,10 +508,56 @@ double SCATRA::ScaTraTimIntImpl::ComputeThermPressureFromMassCons(
 void SCATRA::ScaTraTimIntImpl::ComputeDensity(const double thermpress,
                                               const double gasconstant)
 {
-  // compute density based on equation of state:
-  // rho = (p_therm/R)*(1/T) = (thermpress/gasconstant)*(1/T)
-  densnp_->Reciprocal(*phinp_);
-  densnp_->Scale(thermpress/gasconstant);
+  // factor for equation of state
+  const double eosfac = thermpress/gasconstant;
+
+  // for reactive systems, temperature is last dof, and all other dofs
+  // need to get the same density
+  if (numscal_>1)
+  {
+    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+    // initialize vectors
+    vector<int>    Indices(numscal_);
+    vector<double> Values(numscal_);
+
+    // loop all nodes on the processor
+    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+    {
+      // get the processor local node
+      DRT::Node* lnode = discret_->lRowNode(lnodeid);
+      // the set of degrees of freedom associated with the node
+      vector<int> nodedofset = discret_->Dof(lnode);
+
+      // the number of degrees of freedom associated with the node
+      int numdofs = nodedofset.size();
+
+      // temperature is located on the last degree of freedom
+      const int dofgid = nodedofset[numdofs-1];
+      int doflid = dofrowmap->LID(dofgid);
+
+      // compute density based on equation of state:
+      // rho = p_therm/(R*T) = thermpress/(gasconstant*T)
+      double density = eosfac/(*phinp_)[doflid];
+
+      // substitute all degrees of freedom with correct density
+      for (int index=0;index<numdofs;++index)
+      {
+        Indices[index] = lnodeid*numdofs + index;
+
+        Values[index] = density;
+
+        densnp_->ReplaceMyValues(1,&Values[index],&Indices[index]);
+      }
+    }
+  }
+  else
+  {
+    // compute density based on equation of state:
+    // rho = (p_therm/R)*(1/T) = (thermpress/gasconstant)*(1/T)
+    densnp_->Reciprocal(*phinp_);
+    densnp_->Scale(eosfac);
+  }
 
   return;
 }
@@ -526,12 +572,27 @@ bool SCATRA::ScaTraTimIntImpl::LomaConvergenceCheck(int          itnum,
 {
   bool stopnonliniter = false;
 
-  // compute L2-norm of incremental temperature and temperature
+  // define L2-norm of incremental temperature and temperature
   double tempincnorm_L2;
   double tempnorm_L2;
+
+  // get increment of (species and) temperature
   tempincnp_->Update(1.0,*phinp_,-1.0);
-  tempincnp_->Norm2(&tempincnorm_L2);
-  phinp_->Norm2(&tempnorm_L2);
+
+  // for reactive systems, extract temperature and use as convergence criterion
+  if (numscal_>1)
+  {
+    Teuchos::RCP<Epetra_Vector> onlytemp = splitter_.ExtractCondVector(tempincnp_);
+    onlytemp->Norm2(&tempincnorm_L2);
+
+    splitter_.ExtractCondVector(phinp_,onlytemp);
+    onlytemp->Norm2(&tempnorm_L2);
+  }
+  else
+  {
+    tempincnp_->Norm2(&tempincnorm_L2);
+    phinp_->Norm2(&tempnorm_L2);
+  }
 
   /*double velincnorm_L2;
   double velnorm_L2;
@@ -615,7 +676,7 @@ void SCATRA::ScaTraTimIntImpl::OutputMeanTempAndDens()
   {
     if (prbtype_=="loma")
     {
-      cout << "Mean temperature: " << (*scalars)[0]/domint << endl;
+      cout << "Mean temperature: " << (*scalars)[numscal_-1]/domint << endl;
       cout << "Mean density:     " << densint/domint << endl;
     }
     else

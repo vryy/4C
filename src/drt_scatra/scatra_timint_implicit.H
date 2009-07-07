@@ -235,6 +235,9 @@ public:
   /// return current step number
   int Step() const { return step_; }
 
+  /// return number of transported scalars
+  int NumScal() const { return numscal_; }
+
   /// return system matrix down-casted as sparse matrix
   Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_); }
 
@@ -500,8 +503,8 @@ protected:
   /// only necessary for AVM3: normalized fine-scale subgrid-viscosity matrix
   RCP<LINALG::SparseMatrix> Mnsv_;
 
-  /// Extractor used for convergence check of nonlinear iteration
-  LINALG::MapExtractor      conpotsplitter_;
+  /// Extractor used for convergence check either in ELCH or LOMA case
+  LINALG::MapExtractor splitter_;
 
   /// Periodic Boundary Conditions. Guess what.
   RCP<PeriodicBoundaryConditions> pbc_;

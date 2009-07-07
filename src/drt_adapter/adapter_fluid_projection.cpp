@@ -214,6 +214,7 @@ void ADAPTER::FluidProjection::SetTimeLomaFields(RCP<const Epetra_Vector> densnp
 		RCP<const Epetra_Vector> densn,
 		RCP<const Epetra_Vector> densnm,
 		RCP<const Epetra_Vector> scatraresidual,
+                const int                numscal,
 		const double             eosfac)
 {
 	dserror("not implemented"); return;
@@ -221,6 +222,7 @@ void ADAPTER::FluidProjection::SetTimeLomaFields(RCP<const Epetra_Vector> densnp
 
 void ADAPTER::FluidProjection::SetIterLomaFields(RCP<const Epetra_Vector> densnp,
 		RCP<const Epetra_Vector> densdtnp,
+                const int                numscal,
 		const double             eosfac)
 {
 	dserror("not implemented"); return;

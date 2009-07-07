@@ -38,13 +38,13 @@ void CreateScaTraDiscretization(
     );
 
 
-  /// concentrations-el.potential block matrix split strategy for fast assembly
-  class ConPotSplitStrategy
+  /// concentrations-el.potential/species-temperature split strategy
+  class SplitStrategy
   {
   public:
 
     /// construct with a block matrix base
-    explicit ConPotSplitStrategy(LINALG::BlockSparseMatrixBase& mat)
+    explicit SplitStrategy(LINALG::BlockSparseMatrixBase& mat)
       : mat_(mat),
       matrix00_(mat_.Matrix(0,0)),
       matrix01_(mat_.Matrix(0,1)),
@@ -321,7 +321,7 @@ void CreateScaTraDiscretization(
     /// number of dofs per node (= numdim_ +1)
     int numdofpernode_;
 
-  }; // class ConPotSplitStrategy
+  }; // class SplitStrategy
 
 }
 

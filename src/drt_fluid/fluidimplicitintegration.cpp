@@ -156,10 +156,9 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // contains the velocity dofs and for one vector which only contains
   // pressure degrees of freedom.
   // -------------------------------------------------------------------
+  numdim_ = params_.get<int>("number of velocity degrees of freedom");
 
-  const int numdim = params_.get<int>("number of velocity degrees of freedom");
-
-  FLD::UTILS::SetupFluidSplit(*discret_,numdim,velpressplitter_);
+  FLD::UTILS::SetupFluidSplit(*discret_,numdim_,velpressplitter_);
 
   // -------------------------------------------------------------------
   // create empty system matrix --- stiffness and mass are assembled in
@@ -181,7 +180,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   {
     Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy> > blocksysmat =
       Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy>(velpressplitter_,velpressplitter_,108,false,true));
-    blocksysmat->SetNumdim(numdim);
+    blocksysmat->SetNumdim(numdim_);
     sysmat_ = blocksysmat;
   }
 
@@ -1302,7 +1301,6 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
 
         // in this case, we want to project out some zero pressure modes
         const string* definition = KSPcond->Get<string>("weight vector definition");
-        const int numdim = params_.get<int>("number of velocity degrees of freedom");
 
         if(*definition == "pointvalues")
         {
@@ -1313,7 +1311,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           // get pressure
           const vector<double>* mode = KSPcond->Get<vector<double> >("mode");
 
-          for(int rr=0;rr<numdim;++rr)
+          for(int rr=0;rr<numdim_;++rr)
           {
             if(abs((*mode)[rr]>1e-14))
             {
@@ -1321,7 +1319,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
             }
           }
 
-          int predof = numdim;
+          int predof = numdim_;
 
           Teuchos::RCP<Epetra_Vector> presmode = velpressplitter_.ExtractCondVector(*w_);
 
@@ -1385,7 +1383,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           // get pressure
           const vector<double>* mode = KSPcond->Get<vector<double> >("mode");
 
-          for(int rr=0;rr<numdim;++rr)
+          for(int rr=0;rr<numdim_;++rr)
           {
             if(abs((*mode)[rr]>1e-14))
             {
@@ -1806,7 +1804,6 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
 
         // in this case, we want to project out some zero pressure modes
         const string* definition = KSPcond->Get<string>("weight vector definition");
-        const int numdim = params_.get<int>("number of velocity degrees of freedom");
 
         if(*definition == "pointvalues")
         {
@@ -1817,7 +1814,7 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
           // get pressure
           const vector<double>* mode = KSPcond->Get<vector<double> >("mode");
 
-          for(int rr=0;rr<numdim;++rr)
+          for(int rr=0;rr<numdim_;++rr)
           {
             if(abs((*mode)[rr]>1e-14))
             {
@@ -1825,7 +1822,7 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
             }
           }
 
-          int predof = numdim;
+          int predof = numdim_;
 
           Teuchos::RCP<Epetra_Vector> presmode = velpressplitter_.ExtractCondVector(*w_);
 
@@ -1889,7 +1886,7 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
           // get pressure
           const vector<double>* mode = KSPcond->Get<vector<double> >("mode");
 
-          for(int rr=0;rr<numdim;++rr)
+          for(int rr=0;rr<numdim_;++rr)
           {
             if(abs((*mode)[rr]>1e-14))
             {
@@ -2937,15 +2934,14 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
 
     int err =0;
 
-    const int numdim  = params_.get<int>("number of velocity degrees of freedom");
-    const int npredof = numdim;
+    const int npredof = numdim_;
 
     double         p;
-    vector<double> u  (numdim);
-    vector<double> xyz(numdim);
+    vector<double> u  (numdim_);
+    vector<double> xyz(numdim_);
 
 
-    if(numdim!=3)
+    if(numdim_!=3)
     {
       dserror("Beltrami flow is three dimensional flow!");
     }
@@ -2964,7 +2960,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
       vector<int> nodedofset = discret_->Dof(lnode);
 
       // set node coordinates
-      for(int dim=0;dim<numdim;dim++)
+      for(int dim=0;dim<numdim_;dim++)
       {
         xyz[dim]=lnode->X()[dim];
       }
@@ -2987,7 +2983,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
       u[2] = -a * ( exp(a*xyz[2]) * sin(a*xyz[0] + d*xyz[1]) +
                     exp(a*xyz[1]) * cos(a*xyz[2] + d*xyz[0]) );
       // initial velocities
-      for(int nveldof=0;nveldof<numdim;nveldof++)
+      for(int nveldof=0;nveldof<numdim_;nveldof++)
       {
         const int gid = nodedofset[nveldof];
         int lid = dofrowmap->LID(gid);
@@ -3011,9 +3007,6 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
   }
   else if(whichinitialfield==2 || whichinitialfield==3)
   {
-    const int numdim = params_.get<int>("number of velocity degrees of freedom");
-
-
     // loop all nodes on the processor
     for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
     {
@@ -3022,10 +3015,10 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
       // the set of degrees of freedom associated with the node
       const vector<int> nodedofset = discret_->Dof(lnode);
 
-      for(int index=0;index<numdim+1;++index)
+      for(int index=0;index<numdim_+1;++index)
       {
         int gid = nodedofset[index];
-
+                            
         double initialval=DRT::UTILS::FunctionManager::Instance().Funct(startfuncno-1).Evaluate(index,lnode->X(),0.0,NULL);
 
         velnp_->ReplaceGlobalValues(1,&initialval,&gid);
@@ -3036,8 +3029,6 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
     // add random perturbation
     if(whichinitialfield==3)
     {
-      const int numdim = params_.get<int>("number of velocity degrees of freedom");
-
       const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
       int err =0;
@@ -3064,7 +3055,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
         // the set of degrees of freedom associated with the node
         vector<int> nodedofset = discret_->Dof(lnode);
 
-        for(int index=0;index<numdim;++index)
+        for(int index=0;index<numdim_;++index)
         {
           int gid = nodedofset[index];
           int lid = dofrowmap->LID(gid);
@@ -3105,7 +3096,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
         }
 
         // add random noise on initial function field
-        for(int index=0;index<numdim;++index)
+        for(int index=0;index<numdim_;++index)
         {
           int gid = nodedofset[index];
 
@@ -3141,27 +3132,16 @@ void FLD::FluidImplicitTimeInt::SetTimeLomaFields(
    RCP<const Epetra_Vector> densn,
    RCP<const Epetra_Vector> densnm,
    RCP<const Epetra_Vector> scatraresidual,
+   const int                numscal,
    const double             eosfac)
 {
   // get factor for equation of state (i.e., therm. press. / gas constant)
   eosfac_ = eosfac;
 
-  // check vector compatibility and determine space dimension
-  int numdim =-1;
-  int numdof =-1;
-  if (velnp_->MyLength()== (3* densnp->MyLength()))
-  {
-    numdim = 2;
-    numdof = 3;
-  }
-  else if (velnp_->MyLength()== (4* densnp->MyLength()))
-  {
-    numdim = 3;
-    numdof = 4;
-  }
-  else
-    dserror("velocity/pressure and density vectors do not match in size");
+  // set number of degrees of freedom based on number orf spatial dimensions
+  int numdof = numdim_ + 1;
 
+  // initialize vectors
   vector<int>    Indices(numdof);
   vector<double> Values(numdof);
 
@@ -3181,27 +3161,29 @@ void FLD::FluidImplicitTimeInt::SetTimeLomaFields(
       // loop all nodes on the processor
       for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
       {
-        for(int index=0;index<numdim;++index)
+        const int densloc = lnodeid*numscal + numscal - 1;
+
+        for(int index=0;index<numdim_;++index)
         {
           Indices[index] = lnodeid*numdof + index;
 
-          Values[index] = (*densnp)[lnodeid];
+          Values[index] = (*densnp)[densloc];
           vedenp_->ReplaceMyValues(1,&Values[index],&Indices[index]);
 
-          Values[index] = (*densn)[lnodeid];
+          Values[index] = (*densn)[densloc];
           veden_->ReplaceMyValues(1,&Values[index],&Indices[index]);
         }
 
-        Indices[numdim] = lnodeid*numdof + numdim;
+        Indices[numdim_] = lnodeid*numdof + numdim_;
 
-        Values[numdim] = (*densnp)[lnodeid];
-        vedenp_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
+        Values[numdim_] = (*densnp)[densloc];
+        vedenp_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
 
-        Values[numdim] = (*densn)[lnodeid];
-        veden_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
+        Values[numdim_] = (*densn)[densloc];
+        veden_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
 
-        Values[numdim] = (*densnm)[lnodeid];
-        accn_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
+        Values[numdim_] = (*densnm)[densloc];
+        accn_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
       }
     }
     else
@@ -3213,16 +3195,18 @@ void FLD::FluidImplicitTimeInt::SetTimeLomaFields(
       // loop all nodes on the processor
       for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
       {
-        Indices[numdim] = lnodeid*numdof + numdim;
+        const int densloc = lnodeid*numscal + numscal - 1;
 
-        Values[numdim] = (*densnp)[lnodeid];
-        vedenp_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
+        Indices[numdim_] = lnodeid*numdof + numdim_;
 
-        Values[numdim] = (*densn)[lnodeid];
-        veden_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
+        Values[numdim_] = (*densnp)[densloc];
+        vedenp_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
 
-        Values[numdim] = (*densnm)[lnodeid];
-        accn_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
+        Values[numdim_] = (*densn)[densloc];
+        veden_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
+
+        Values[numdim_] = (*densnm)[densloc];
+        accn_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
       }
     }
   }
@@ -3232,24 +3216,26 @@ void FLD::FluidImplicitTimeInt::SetTimeLomaFields(
     // loop all nodes on the processor
     for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
     {
-      for(int index=0;index<numdim;++index)
+      const int densloc = lnodeid*numscal + numscal - 1;
+
+      for(int index=0;index<numdim_;++index)
       {
         Indices[index] = lnodeid*numdof + index;
 
-        Values[index] = (*densnp)[lnodeid]*(*velnp_)[Indices[index]];
+        Values[index] = (*densnp)[densloc]*(*velnp_)[Indices[index]];
         vedenp_->ReplaceMyValues(1,&Values[index],&Indices[index]);
 
-        Values[index] = (*densn)[lnodeid]*(*veln_)[Indices[index]];
+        Values[index] = (*densn)[densloc]*(*veln_)[Indices[index]];
         veden_->ReplaceMyValues(1,&Values[index],&Indices[index]);
       }
 
-      Indices[numdim] = lnodeid*numdof + numdim;
+      Indices[numdim_] = lnodeid*numdof + numdim_;
 
-      Values[numdim] = (*densnp)[lnodeid];
-      vedenp_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
+      Values[numdim_] = (*densnp)[densloc];
+      vedenp_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
 
-      Values[numdim] = (*densn)[lnodeid];
-      veden_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
+      Values[numdim_] = (*densn)[densloc];
+      veden_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
     }
 
     if (timealgo_==timeint_bdf2)
@@ -3258,18 +3244,20 @@ void FLD::FluidImplicitTimeInt::SetTimeLomaFields(
       // loop all nodes on the processor
       for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
       {
-        for(int index=0;index<numdim;++index)
+        const int densloc = lnodeid*numscal + numscal - 1;
+
+        for(int index=0;index<numdim_;++index)
         {
           Indices[index] = lnodeid*numdof + index;
 
-          Values[index] = (*densnm)[lnodeid]*(*velnm_)[Indices[index]];
+          Values[index] = (*densnm)[densloc]*(*velnm_)[Indices[index]];
           vedenm_->ReplaceMyValues(1,&Values[index],&Indices[index]);
         }
 
-        Indices[numdim] = lnodeid*numdof + numdim;
+        Indices[numdim_] = lnodeid*numdof + numdim_;
 
-        Values[numdim] = (*densnm)[lnodeid];
-        vedenm_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
+        Values[numdim_] = (*densnm)[densloc];
+        vedenm_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
       }
     }
   }
@@ -3277,10 +3265,12 @@ void FLD::FluidImplicitTimeInt::SetTimeLomaFields(
   // add scatraresidual to trueresidual at pre-dofs
   for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
   {
-    Indices[numdim] = lnodeid*numdof + numdim;
+    const int densloc = lnodeid*numscal + numscal - 1;
 
-    Values[numdim] = (*scatraresidual)[lnodeid];
-    trueresidual_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
+    Indices[numdim_] = lnodeid*numdof + numdim_;
+
+    Values[numdim_] = (*scatraresidual)[densloc];
+    trueresidual_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
   }
 
   return;
@@ -3294,27 +3284,16 @@ void FLD::FluidImplicitTimeInt::SetTimeLomaFields(
 void FLD::FluidImplicitTimeInt::SetIterLomaFields(
    RCP<const Epetra_Vector> densnp,
    RCP<const Epetra_Vector> densdtnp,
+   const int                numscal,
    const double             eosfac)
 {
   // get factor for equation of state (i.e., therm. press. / gas constant)
   eosfac_ = eosfac;
 
-  // check vector compatibility and determine space dimension
-  int numdim =-1;
-  int numdof =-1;
-  if (velnp_->MyLength()== (3* densnp->MyLength()))
-  {
-    numdim = 2;
-    numdof = 3;
-  }
-  else if (velnp_->MyLength()== (4* densnp->MyLength()))
-  {
-    numdim = 3;
-    numdof = 4;
-  }
-  else
-    dserror("velocity/pressure and density vectors do not match in size");
+  // set number of degrees of freedom based on number orf spatial dimensions
+  int numdof = numdim_ + 1;
 
+  // initialize vectors
   vector<int>    Indices(numdof);
   vector<double> Values(numdof);
 
@@ -3332,21 +3311,23 @@ void FLD::FluidImplicitTimeInt::SetIterLomaFields(
       // loop all nodes on the processor
       for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
       {
-        for(int index=0;index<numdim;++index)
+        const int densloc = lnodeid*numscal + numscal - 1;
+
+        for(int index=0;index<numdim_;++index)
         {
           Indices[index] = lnodeid*numdof + index;
 
-          Values[index] = (*densnp)[lnodeid];
+          Values[index] = (*densnp)[densloc];
           vedenp_->ReplaceMyValues(1,&Values[index],&Indices[index]);
         }
 
-        Indices[numdim] = lnodeid*numdof + numdim;
+        Indices[numdim_] = lnodeid*numdof + numdim_;
 
-        Values[numdim] = (*densnp)[lnodeid];
-        vedenp_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
+        Values[numdim_] = (*densnp)[densloc];
+        vedenp_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
 
-        Values[numdim] = (*densdtnp)[lnodeid];
-        accnp_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
+        Values[numdim_] = (*densdtnp)[densloc];
+        accnp_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
       }
     }
     else
@@ -3358,13 +3339,15 @@ void FLD::FluidImplicitTimeInt::SetIterLomaFields(
       // loop all nodes on the processor
       for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
       {
-        Indices[numdim] = lnodeid*numdof + numdim;
+        const int densloc = lnodeid*numscal + numscal - 1;
 
-        Values[numdim] = (*densnp)[lnodeid];
-        vedenp_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
+        Indices[numdim_] = lnodeid*numdof + numdim_;
 
-        Values[numdim] = (*densdtnp)[lnodeid];
-        accnp_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
+        Values[numdim_] = (*densnp)[densloc];
+        vedenp_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
+
+        Values[numdim_] = (*densdtnp)[densloc];
+        accnp_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
       }
     }
   }
@@ -3374,18 +3357,20 @@ void FLD::FluidImplicitTimeInt::SetIterLomaFields(
     // loop all nodes on the processor
     for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
     {
-      for(int index=0;index<numdim;++index)
+      const int densloc = lnodeid*numscal + numscal - 1;
+
+      for(int index=0;index<numdim_;++index)
       {
         Indices[index] = lnodeid*numdof + index;
 
-        Values[index] = (*densnp)[lnodeid]*(*velnp_)[Indices[index]];
+        Values[index] = (*densnp)[densloc]*(*velnp_)[Indices[index]];
         vedenp_->ReplaceMyValues(1,&Values[index],&Indices[index]);
       }
 
-      Indices[numdim] = lnodeid*numdof + numdim;
+      Indices[numdim_] = lnodeid*numdof + numdim_;
 
-      Values[numdim] = (*densnp)[lnodeid];
-      vedenp_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
+      Values[numdim_] = (*densnp)[densloc];
+      vedenp_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
     }
   }
 

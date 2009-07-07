@@ -125,15 +125,61 @@ void SCATRA::TimIntGenAlpha::ComputeInitialDensityDerivative()
   // -------------------------------------------------------------------
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
-  // define auxiliary vectors
-  Teuchos::RCP<Epetra_Vector> invphi = LINALG::CreateVector(*dofrowmap,true);
-  Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*dofrowmap,true);
+  // for reactive systems, temperature is last dof, and all other dofs
+  // need to get the same density derivative
+  if (numscal_>1)
+  {
+    // ratio of thermodynamic pressures
+    const double thermpressratio = thermpressdtn_/thermpressn_;
 
-  // densdtn_ = densn_*thermpressdtn_/thermpressn_ - densn_*phidtn_/phin_
-  invphi->Reciprocal(*phin_);
-  tmp->Multiply(1.0, *invphi, *densn_, 0.0);
-  densdtn_->Multiply(-1.0, *tmp, *phidtn_, 0.0);
-  densdtn_->Update((thermpressdtn_/thermpressn_), *densn_, 1.0);
+    // initialize vectors
+    vector<int>    Indices(numscal_);
+    vector<double> Values(numscal_);
+
+    // loop all nodes on the processor
+    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+    {
+      // get the processor local node
+      DRT::Node* lnode = discret_->lRowNode(lnodeid);
+      // the set of degrees of freedom associated with the node
+      vector<int> nodedofset = discret_->Dof(lnode);
+
+      // the number of degrees of freedom associated with the node
+      int numdofs = nodedofset.size();
+
+      // temperature is located on the last degree of freedom
+      const int dofgid = nodedofset[numdofs-1];
+      int doflid = dofrowmap->LID(dofgid);
+      double tempn   = (*phin_)[doflid];
+      double tempdtn = (*phidtn_)[doflid];
+      double densn   = (*densn_)[doflid];
+
+      // densdtn_ = densn_*((thermpressdtn_/thermpressn_) - (tempdtn_/tempn_))
+      double densitydtn = densn * (thermpressratio - (tempdtn/tempn));
+
+      // substitute all degrees of freedom with correct density derivative
+      for (int index=0;index<numdofs;++index)
+      {
+        Indices[index] = lnodeid*numdofs + index;
+
+        Values[index] = densitydtn;
+
+        densdtn_->ReplaceMyValues(1,&Values[index],&Indices[index]);
+      }
+    }
+  }
+  else
+  {
+    // define auxiliary vectors
+    Teuchos::RCP<Epetra_Vector> invphi = LINALG::CreateVector(*dofrowmap,true);
+    Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*dofrowmap,true);
+
+    // densdtn_ = densn_*thermpressdtn_/thermpressn_ - densn_*phidtn_/phin_
+    invphi->Reciprocal(*phin_);
+    tmp->Multiply(1.0, *invphi, *densn_, 0.0);
+    densdtn_->Multiply(-1.0, *tmp, *phidtn_, 0.0);
+    densdtn_->Update((thermpressdtn_/thermpressn_), *densn_, 1.0);
+  }
 
   return;
 }

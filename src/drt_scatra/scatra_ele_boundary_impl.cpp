@@ -333,7 +333,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     DRT::UTILS::ExtractMyValues(*densnp,mydensnp,lmparent);
     DRT::UTILS::ExtractMyValues(*phinp,myphinp,lmparent);
 
-    // this routine is only for low-mach-number flow
+    // this routine is only for low-Mach-number flow
     bool temperature = true;
 
     // define vector for normal fluxes
@@ -352,10 +352,13 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     // compute fluxes on each node of the parent element
     LINALG::SerialDenseMatrix eflux(3,ielparent);
     DRT::Element* peleptr = (DRT::Element*) parentele;
-    // set some parameters
+
+    // set some parameters (temperature is always last degree of freedom in vector)
     double frt=0.0;
     string fluxtypestring("diffusiveflux");
-    int j=0;
+    int j=numscal_-1;
+
+    // compute elementwise flux
     DRT::ELEMENTS::ScaTraImplInterface::Impl(parentele)->CalculateFluxSerialDense(
         eflux,
         peleptr,

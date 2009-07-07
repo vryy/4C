@@ -2937,7 +2937,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
 
 
 /*----------------------------------------------------------------------*
- |  calculate mass flux                              (private) gjb 06/08|
+ |  calculate mass flux (no reactive flux so far)    (private) gjb 06/08|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
@@ -2984,6 +2984,57 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
       diffus = actsinglemat->Diffusivity();
       valence = actsinglemat->Valence();
       diffus_valence_frt = diffus*valence*frt;
+    }
+    else if (singlemat->MaterialType() == INPAR::MAT::m_arrhenius_spec)
+    {
+      const MAT::ArrheniusSpec* actsinglemat = static_cast<const MAT::ArrheniusSpec*>(singlemat.get());
+
+      // use one-point Gauss rule to calculate temperature at element center
+      DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
+
+      // coordinates of the integration point
+      const double* gpcoord = (intpoints_tau.IP().qxg)[0];
+      for (int idim = 0; idim < nsd_; idim++)
+        {xsi_(idim) = gpcoord[idim];}
+
+      // shape functions
+      DRT::UTILS::shape_function<distype>(xsi_,funct_);
+
+      // compute diffusivity according to Sutherland law
+      const double s   = actsinglemat->SuthTemp();
+      const double rt  = actsinglemat->RefTemp();
+      double phi = 0.0;
+      for (int i=0; i<iel; ++i)
+      {
+        phi += funct_(i)*ephinp[i];
+      }
+      diffus = pow((phi/rt),1.5)*((rt+s)/(phi+s))*actsinglemat->RefVisc()/actsinglemat->SchNum();
+    }
+    else if (singlemat->MaterialType() == INPAR::MAT::m_arrhenius_temp)
+    {
+      const MAT::ArrheniusTemp* actsinglemat = static_cast<const MAT::ArrheniusTemp*>(singlemat.get());
+
+      // use one-point Gauss rule to calculate temperature at element center
+      DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
+
+      // coordinates of the integration point
+      const double* gpcoord = (intpoints_tau.IP().qxg)[0];
+      for (int idim = 0; idim < nsd_; idim++)
+        {xsi_(idim) = gpcoord[idim];}
+
+      // shape functions
+      DRT::UTILS::shape_function<distype>(xsi_,funct_);
+
+      // compute diffusivity according to Sutherland law
+      shcacp_          = actsinglemat->Shc();
+      const double s   = actsinglemat->SuthTemp();
+      const double rt  = actsinglemat->RefTemp();
+      double phi = 0.0;
+      for (int i=0; i<iel; ++i)
+      {
+        phi += funct_(i)*ephinp[i];
+      }
+      diffus = (shcacp_/actsinglemat->PraNum())*pow((phi/rt),1.5)*((rt+s)/(phi+s))*actsinglemat->RefVisc();
     }
     else
       dserror("type of material found in material list is not supported.");
@@ -3136,7 +3187,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateTempAndDens(
   {
     EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
 
-    // calculate integrals of temperature or concentrations,
+    // calculate integrals of species, temperature or concentrations,
     // then of density and domain
     for (int i=0; i<iel; i++)
     {
@@ -3145,7 +3196,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateTempAndDens(
       {
         scalars[k] += fac_funct_i*ephinp[i*numdofpernode_+k];
       }
-      scalars[numscal_]    += fac_funct_i*edensnp[i];
+      scalars[numscal_]    += fac_funct_i*edensnp[i*numdofpernode_+numscal_-1];
       scalars[numscal_+1]  += fac_funct_i;
     }
   } // loop over integration points

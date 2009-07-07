@@ -237,6 +237,7 @@ void LOMA::Algorithm::GenAlphaPrepareTimeStep()
                                  ScaTraField().DensN(),
                                  ScaTraField().DensDtN(),
                                  ScaTraField().TrueResidual(),
+                                 ScaTraField().NumScal(),
                                  eosfac_);
 
   // prepare fluid time step, particularly predict velocity field
@@ -272,6 +273,7 @@ void LOMA::Algorithm::OSTBDF2PrepareTimeStep()
                                  ScaTraField().DensN(),
                                  ScaTraField().DensNm(),
                                  ScaTraField().TrueResidual(),
+                                 ScaTraField().NumScal(),
                                  eosfac_);
 
   // prepare fluid time step, particularly predict velocity field
@@ -341,6 +343,7 @@ void LOMA::Algorithm::GenAlphaOuterLoop()
     // set density (and density time derivative) at n+1 as well as eos factor
     FluidField().SetIterLomaFields(ScaTraField().DensNp(),
                                    ScaTraField().DensDtNp(),
+                                   ScaTraField().NumScal(),
                                    eosfac_);
 
     // solve low-Mach-number flow equations
@@ -439,6 +442,7 @@ void LOMA::Algorithm::OSTBDF2OuterLoop()
     // set density (and density time derivative) at n+1 as well as eos factor
     FluidField().SetIterLomaFields(ScaTraField().DensNp(),
                                    ScaTraField().DensDtNp(),
+                                   ScaTraField().NumScal(),
                                    eosfac_);
 
     // solve low-Mach-number flow equations
@@ -497,6 +501,7 @@ void LOMA::Algorithm::GenAlphaUpdate()
                                  ScaTraField().DensN(),
                                  ScaTraField().DensDtN(),
                                  ScaTraField().TrueResidual(),
+                                 ScaTraField().NumScal(),
                                  eosfac_);
 
   // update fluid
@@ -525,6 +530,7 @@ void LOMA::Algorithm::OSTBDF2Update()
                                  ScaTraField().DensN(),
                                  ScaTraField().DensNm(),
                                  ScaTraField().TrueResidual(),
+                                 ScaTraField().NumScal(),
                                  eosfac_);
 
   // update fluid

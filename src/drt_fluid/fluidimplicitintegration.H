@@ -294,6 +294,7 @@ public:
                          RCP<const Epetra_Vector> densn,
                          RCP<const Epetra_Vector> densnm,
                          RCP<const Epetra_Vector> scatraresidual,
+                         const int                numscal,
                          const double             eosfac);
 
   /*!
@@ -302,6 +303,7 @@ public:
   */
   void SetIterLomaFields(RCP<const Epetra_Vector> densnp,
                          RCP<const Epetra_Vector> densdtnp,
+                         const int                numscal,
                          const double             eosfac);
 
   /// introduce free surface extractor object
@@ -402,6 +404,9 @@ protected:
   bool                          alefluid_;
   bool                          dynamic_smagorinsky_;
   //@}
+
+  /// number of spatial dimensions
+  int numdim_;
 
   //! @name time stepping variables
   double  time_;        ///< physical time

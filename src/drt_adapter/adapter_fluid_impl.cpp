@@ -539,17 +539,17 @@ void ADAPTER::FluidImpl::SetInitialFlowField(int whichinitialfield,int startfunc
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidImpl::SetTimeLomaFields(RCP<const Epetra_Vector> densnp,RCP<const Epetra_Vector> densn,RCP<const Epetra_Vector> densnm,RCP<const Epetra_Vector> scatraresidual,const double eosfac)
+void ADAPTER::FluidImpl::SetTimeLomaFields(RCP<const Epetra_Vector> densnp,RCP<const Epetra_Vector> densn,RCP<const Epetra_Vector> densnm,RCP<const Epetra_Vector> scatraresidual,const int numscal,const double eosfac)
 {
-   fluid_.SetTimeLomaFields(densnp,densn,densnm,scatraresidual,eosfac);
+   fluid_.SetTimeLomaFields(densnp,densn,densnm,scatraresidual,numscal,eosfac);
    return;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidImpl::SetIterLomaFields(RCP<const Epetra_Vector> densnp,RCP<const Epetra_Vector> densdtnp,const double eosfac)
+void ADAPTER::FluidImpl::SetIterLomaFields(RCP<const Epetra_Vector> densnp,RCP<const Epetra_Vector> densdtnp,const int numscal,const double eosfac)
 {
-   fluid_.SetIterLomaFields(densnp,densdtnp,eosfac);
+   fluid_.SetIterLomaFields(densnp,densdtnp,numscal,eosfac);
    return;
 }
 
