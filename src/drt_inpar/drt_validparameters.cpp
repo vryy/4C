@@ -33,7 +33,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/inpar_scatra.H"
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_inpar/inpar_potential.H"
-
+#include "../drt_inpar/inpar_thermal.H"
 
 /*----------------------------------------------------------------------*/
 //! Print function to be called from C
@@ -884,6 +884,117 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("C_CROSSLINKER",0.0,"Molar concentration of crosslinking protein",&statmech);
   //order of interpolation for stochastical fields
   IntParameter("STOCH_ORDER",0,"order of interpolation for stochastical fields",&statmech);
+
+
+  /*----------------------------------------------------------------------*/
+   Teuchos::ParameterList& tdyn = list->sublist("THERMAL DYNAMIC",false,"");
+
+   setStringToIntegralParameter<INPAR::THR::DynamicType>("DYNAMICTYP","OneStepTheta",
+                                "type of time integration control",
+                                tuple<std::string>(
+                                  "Statics",
+                                  "OneStepTheta"
+                                  ),
+                                tuple<INPAR::THR::DynamicType>(
+                                   INPAR::THR::dyna_statics,
+                                   INPAR::THR::dyna_onesteptheta),
+                                &tdyn);
+
+   // Output type
+   IntParameter("RESEVRYGLOB",1,"save temperature and other global quantities every RESEVRYGLOB steps",&tdyn);
+   IntParameter("RESEVRYELEM",1,"save heat fluxes and other element quantities every RESEVRYELEM steps",&tdyn);
+   IntParameter("RESTARTEVRY",1,"write restart possibility every RESTARTEVRY steps",&tdyn);
+   // Time loop control
+   DoubleParameter("TIMESTEP",0.05,"time step size",&tdyn);
+   IntParameter("NUMSTEP",200,"maximum number of steps",&tdyn);
+   DoubleParameter("MAXTIME",5.0,"maximum time",&tdyn);
+   // Iterationparameters
+   DoubleParameter("TOLTEMP",1.0E-10,
+                   "tolerance in the temperature norm of the Newton iteration",
+                   &tdyn);
+   setStringToIntegralParameter<INPAR::THR::ConvNorm>("NORM_TEMP","Abs","type of norm for temperature convergence check",
+                                tuple<std::string>(
+                                  "Abs",
+                                  "Rel",
+                                  "Mix"),
+                                tuple<INPAR::THR::ConvNorm>(
+                                  INPAR::THR::convnorm_abs,
+                                  INPAR::THR::convnorm_rel,
+                                  INPAR::THR::convnorm_mix),
+                                &tdyn);
+
+   DoubleParameter("TOLRESF",1.0E-08,
+                   "tolerance in the residual norm for the Newton iteration",
+                   &tdyn);
+   setStringToIntegralParameter<INPAR::THR::ConvNorm>("NORM_RESF","Abs","type of norm for residual convergence check",
+                                tuple<std::string>(
+                                  "Abs",
+                                  "Rel",
+                                  "Mix"),
+                                tuple<INPAR::THR::ConvNorm>(
+                                  INPAR::THR::convnorm_abs,
+                                  INPAR::THR::convnorm_rel,
+                                  INPAR::THR::convnorm_mix),
+                                &tdyn);
+
+   setStringToIntegralParameter<INPAR::THR::BinaryOp>("NORMCOMBI_RESFTEMP","And","binary operator to combine temperature and residual force values",
+                                tuple<std::string>(
+                                  "And",
+                                  "Or"),
+                                tuple<INPAR::THR::BinaryOp>(
+                                  INPAR::THR::bop_and,
+                                  INPAR::THR::bop_or),
+                                &tdyn);
+
+
+   IntParameter("MAXITER",50,
+                "maximum number of iterations allowed for Newton-Raphson iteration before failure",
+                &tdyn);
+   IntParameter("MINITER",0,
+                "minimum number of iterations to be done within Newton-Raphson loop",
+                &tdyn);
+   setStringToIntegralParameter<INPAR::THR::VectorNorm>("ITERNORM","L2","type of norm to be applied to residuals",
+                                tuple<std::string>(
+                                  "L1",
+                                  "L2",
+                                  "Rms",
+                                  "Inf"),
+                                tuple<INPAR::THR::VectorNorm>(
+                                  INPAR::THR::norm_l1,
+                                  INPAR::THR::norm_l2,
+                                  INPAR::THR::norm_rms,
+                                  INPAR::THR::norm_inf),
+                                &tdyn);
+   setStringToIntegralParameter<int>("DIVERCONT","No",
+                                     "Go on with time integration even if Newton-Raphson iteration failed",
+                                     yesnotuple,yesnovalue,&tdyn);
+
+   setStringToIntegralParameter<INPAR::THR::NonlinSolTech>("NLNSOL","fullnewton","Nonlinear solution technique",
+                                tuple<std::string>(
+                                  "vague",
+                                  "fullnewton"),
+                                tuple<INPAR::THR::NonlinSolTech>(
+                                  INPAR::THR::soltech_vague,
+                                  INPAR::THR::soltech_newtonfull),
+                                &tdyn);
+
+   setStringToIntegralParameter<INPAR::THR::PredEnum>("PREDICT","ConstDis","",
+                                tuple<std::string>(
+                                  "Vague",
+                                  "ConstTemp",
+                                  "TangTemp"),
+                                tuple<INPAR::THR::PredEnum>(
+                                  INPAR::THR::pred_vague,
+                                  INPAR::THR::pred_consttemp,
+                                  INPAR::THR::pred_tangtemp),
+                                &tdyn);
+
+   // convergence criteria solver adaptivity
+   setStringToIntegralParameter<int>("ADAPTCONV","No",
+                                "Switch on adaptive control of linear solver tolerance for nonlinear solution",
+                                yesnotuple,yesnovalue,&tdyn);
+   DoubleParameter("ADAPTCONV_BETTER",0.1,"The linear solver shall be this much better than the current nonlinear residual in the nonlinear convergence limit",&tdyn);
+
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn = list->sublist("FLUID DYNAMIC",false,"");
@@ -1986,7 +2097,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   SetValidSolverParameters(alesolver);
 
   /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& thermalsolver = list->sublist("THERMAL SOLVER",false,"");
+  Teuchos::ParameterList& thermalsolver = list->sublist("THERMAL SOLVER",false,"linear solver for thermal problems");
   SetValidSolverParameters(thermalsolver);
 
   /*----------------------------------------------------------------------*/
