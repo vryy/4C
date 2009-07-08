@@ -978,7 +978,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                   INPAR::THR::soltech_newtonfull),
                                 &tdyn);
 
-   setStringToIntegralParameter<INPAR::THR::PredEnum>("PREDICT","ConstDis","",
+   setStringToIntegralParameter<INPAR::THR::PredEnum>("PREDICT","ConstTemp","Predictor of iterative solution techniques",
                                 tuple<std::string>(
                                   "Vague",
                                   "ConstTemp",
