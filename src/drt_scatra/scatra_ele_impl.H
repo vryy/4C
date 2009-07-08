@@ -168,8 +168,8 @@ public:
         DRT::Element*                         ele, ///< the element those matrix is calculated
         const vector<LINALG::Matrix<iel,1> >& ephinp,///< current scalar field
         const vector<LINALG::Matrix<iel,1> >& ehist, ///< rhs from beginning of time step
-        const LINALG::Matrix<iel,1>&          edensnp, ///< density field at n+1/n+alpha_F
-        const LINALG::Matrix<iel,1>&          edensam, ///< density field at n+alpha_M
+        const vector<LINALG::Matrix<iel,1> >& edensnp, ///< density field at n+1/n+alpha_F
+        const vector<LINALG::Matrix<iel,1> >& edensam, ///< density field at n+alpha_M
         const LINALG::Matrix<iel,1>&          epotnp, ///< el. potential at element nodes
         const LINALG::Matrix<iel,1>&          esubgrdiff,  ///< subgrid diffusivity at element nodes
         Epetra_SerialDenseMatrix&             sys_mat,///< element matrix to calculate
@@ -202,7 +202,7 @@ public:
     virtual void InitialTimeDerivative(
         DRT::Element*                         ele,  ///< the element
         const vector<LINALG::Matrix<iel,1> >& ephi0, ///< initial scalar field
-        const LINALG::Matrix<iel,1>&          edens0, ///< initial density field
+        const vector<LINALG::Matrix<iel,1> >& edens0, ///< initial density field
         const LINALG::Matrix<iel,1>&          epot0,  ///< el. potential at element nodes
         Epetra_SerialDenseMatrix&             emat, ///< element matrix to calculate
         Epetra_SerialDenseVector&             erhs, ///< element rhs to calculate
@@ -234,28 +234,29 @@ public:
         Teuchos::RCP<const MAT::Material>     material,    ///< material pointer
         const bool                            temperature,  ///< temperature flag
         const bool                            reaction, ///< flag for reaction term
-        const vector<LINALG::Matrix<iel,1> >& ephinp      /// scalar field
+        const vector<LINALG::Matrix<iel,1> >& ephinp,      /// scalar field
+        const vector<LINALG::Matrix<iel,1> >& edensnp      /// density field
     );
 
     //! calculate stabilization parameter
     virtual void CalTau(
-        DRT::Element*                       ele,
-        Epetra_SerialDenseVector&           subgrdiff,
-        const LINALG::Matrix<nsd_,iel>&     evel,
-        const LINALG::Matrix<iel,1>&        edens,
-        const LINALG::Matrix<iel,1>&        epot,
-        const LINALG::Matrix<iel,1>&        esubgrdiff,
-        const double                        dt,
-        const double                        timefac,
-        const enum SCATRA::TauType          whichtau,
-        const bool                          assgd,
-        const bool                          fssgd,
-        const bool                          turbmodel,
-        const bool                          reaction,
-        const bool                          is_incremental,
-        const bool                          is_stationary,
-        const double                        frt,
-        const double                        vol
+        DRT::Element*                         ele,
+        Epetra_SerialDenseVector&             subgrdiff,
+        const LINALG::Matrix<nsd_,iel>&       evel,
+        const vector<LINALG::Matrix<iel,1> >& edens,
+        const LINALG::Matrix<iel,1>&          epot,
+        const LINALG::Matrix<iel,1>&          esubgrdiff,
+        const double                          dt,
+        const double                          timefac,
+        const enum SCATRA::TauType            whichtau,
+        const bool                            assgd,
+        const bool                            fssgd,
+        const bool                            turbmodel,
+        const bool                            reaction,
+        const bool                            is_incremental,
+        const bool                            is_stationary,
+        const double                          frt,
+        const double                          vol
     );
 
     //! evaluate shape functions and their derivatives at current integration point
@@ -299,6 +300,7 @@ public:
         ParameterList&               params, ///< parameter list
         const vector<LINALG::Matrix<iel,1> >& ephinp, ///< actual numerical sol. of concentrations
         const LINALG::Matrix<iel,1>& epotnp, ///< actual numerical solution of el. potential
+        const vector<LINALG::Matrix<iel,1> >& edensnp, /// zero "dummy" density field
         Epetra_SerialDenseVector&    errors, ///< vector of error values
         Teuchos::RCP<const MAT::Material> material ///< material pointer
     );
@@ -382,10 +384,10 @@ public:
     };
 
     //! calculate momentum divergence
-    inline void GetMomentumDivergence(double&                          mdiv,
-                                      const LINALG::Matrix<nsd_,iel>&  evel,
-                                      const LINALG::Matrix<iel,1>&     edens,
-                                      const LINALG::Matrix<nsd_,iel>&  derxy)
+    inline void GetMomentumDivergence(double&                               mdiv,
+                                      const LINALG::Matrix<nsd_,iel>&       evel,
+                                      const vector<LINALG::Matrix<iel,1> >& edens,
+                                      const LINALG::Matrix<nsd_,iel>&       derxy)
     {
       LINALG::Matrix<nsd_,iel> densderxy;
       LINALG::Matrix<nsd_,nsd_> mderxy;
@@ -394,7 +396,7 @@ public:
       {
         for (int j = 0; j<nsd_; ++j)
         {
-          densderxy(j,i) = edens(i)*derxy(j,i);
+          densderxy(j,i) = edens[0](i)*derxy(j,i);
         }
       }
 
@@ -478,9 +480,9 @@ public:
     //! history vector of transported scalars
     vector<LINALG::Matrix<iel,1> > ehist_;
     //! density values at t_(n+1) (LOMA)
-    LINALG::Matrix<iel,1> edensnp_;
+    vector<LINALG::Matrix<iel,1> > edensnp_;
     //! density values at t_(n+alpham) (LOMA)
-    LINALG::Matrix<iel,1> edensam_;
+    vector<LINALG::Matrix<iel,1> > edensam_;
     //! actual electric potential (ELCH)
     LINALG::Matrix<iel,1> epotnp_;
     //! subgrid diffusivity

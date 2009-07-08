@@ -21,6 +21,7 @@ Maintainer: Georg Bauer
 #include "../drt_mat/sutherland_condif.H"
 #include "../drt_mat/arrhenius_spec.H"
 #include "../drt_mat/arrhenius_temp.H"
+#include "../drt_mat/arrhenius_pv.H"
 #include "../drt_mat/ion.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -174,8 +175,8 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(int numdofpernode, int numscal)
     esgvelnp_(true),
     ephinp_(numscal_),
     ehist_(numdofpernode_),
-    edensnp_(true),
-    edensam_(true),
+    edensnp_(numscal_),
+    edensam_(numscal_),
     epotnp_(true),
     esubgrdiff_(true),
     fsphinp_(numscal_),
@@ -299,13 +300,8 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     // set flag for potential inclusion of reaction term
     string reactiontype=params.get<string>("reaction");
     bool reaction = false;
-    if (reactiontype == "constant_coefficient") reaction = true;
-    else if (reactiontype == "Arrhenius_law")
-    {
+    if (reactiontype == "constant_coefficient" or reactiontype == "Arrhenius_law")
       reaction = true;
-      if (numscal_ != 2)
-        dserror("Only one-step global reaction (two scalars) so far!");
-    }
 
     // set flag for conservative form
     string convform = params.get<string>("form of convective term");
@@ -394,13 +390,17 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       for (int i=0;i<iel;++i)
       {
         epotnp_(i) = myphinp[i*numdofpernode_+numscal_];
+
+        // just to prevent accidental errors
+        for (int k = 0; k< numscal_; ++k)
+        {
+          // split for each transported scalar, insert into element arrays
+          edensnp_[k](i,0) = 1.0;
+          edensam_[k](i,0) = 1.0;
+        }
       }
       // get parameter F/RT needed for ELCH ;-)
       frt = params.get<double>("frt");
-
-      // just to prevent accidental errors
-      edensnp_.PutScalar(1.0);
-      edensam_.PutScalar(1.0);
     }
     else
     {
@@ -417,11 +417,14 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       DRT::UTILS::ExtractMyValues(*densam,mydensam,lm);
 
       // insert density vectors into element arrays
-      // (only take values belonging to the first transported scalar!)
       for (int i=0;i<iel;++i)
       {
-        edensnp_(i,0) = mydensnp[0+(i*numdofpernode_)];
-        edensam_(i,0) = mydensam[0+(i*numdofpernode_)];
+        for (int k = 0; k< numscal_; ++k)
+        {
+          // split for each transported scalar, insert into element arrays
+          edensnp_[k](i,0) = mydensnp[k+(i*numdofpernode_)];
+          edensam_[k](i,0) = mydensam[k+(i*numdofpernode_)];
+        }
       } // for i
     }
 
@@ -533,7 +536,11 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     DRT::UTILS::ExtractMyValues(*dens0,mydens0,lm);
     for (int i=0;i<iel;++i)
     {
-      edensnp_(i,0) = mydens0[0+(i*numdofpernode_)];
+      for (int k = 0; k< numscal_; ++k)
+      {
+        // split for each transported scalar, insert into element arrays
+        edensnp_[k](i,0) = mydens0[k+(i*numdofpernode_)];
+      }
     }
 
     // set flag for type of scalar whether it is temperature or not
@@ -549,13 +556,8 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     // set flag for potential inclusion of reaction term
     string reactiontype=params.get<string>("reaction");
     bool reaction = false;
-    if (reactiontype == "constant_coefficient") reaction = true;
-    else if (reactiontype == "Arrhenius_law")
-    {
+    if (reactiontype == "constant_coefficient" or reactiontype == "Arrhenius_law")
       reaction = true;
-      if (numscal_ != 2)
-        dserror("Only one-step global reaction (two scalars) so far!");
-    }
 
     double frt(0.0);
     if(scaltypestr =="elch")
@@ -754,6 +756,8 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       for (int k = 0; k< numscal_; ++k)
       {
         ephinp_[k](i) = myphinp[k+(i*numdofpernode_)];
+        // set zero "dummy" density vector which is required by material routine
+        edensnp_[k](i) = 0.0;
       }
       // get values for el. potential at element nodes
       epotnp_(i) = myphinp[i*numdofpernode_+numscal_];
@@ -764,6 +768,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         params,
         ephinp_,
         epotnp_,
+        edensnp_,
         elevec1_epetra,
         mat);
   }
@@ -822,8 +827,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
     DRT::Element*                         ele, ///< the element those matrix is calculated
     const vector<LINALG::Matrix<iel,1> >& ephinp,///< current scalar field
     const vector<LINALG::Matrix<iel,1> >& ehist, ///< rhs from beginning of time step
-    const LINALG::Matrix<iel,1>&          edensnp, ///< density field at n+1/n+alpha_F
-    const LINALG::Matrix<iel,1>&          edensam, ///< density field at n+alpha_M
+    const vector<LINALG::Matrix<iel,1> >& edensnp, ///< density field at n+1/n+alpha_F
+    const vector<LINALG::Matrix<iel,1> >& edensam, ///< density field at n+alpha_M
     const LINALG::Matrix<iel,1>&          epotnp, ///< el. potential at element nodes
     const LINALG::Matrix<iel,1>&          esubgrdiff,  ///< subgrid diffusivity at element nodes
     Epetra_SerialDenseMatrix&             sys_mat,///< element matrix to calculate
@@ -865,7 +870,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
   BodyForce(ele,time);
 
   // get material constants
-  GetMaterialParams(material,temperature,reaction,ephinp);
+  GetMaterialParams(material,temperature,reaction,ephinp,edensnp);
 
   // use one-point Gauss rule to do calculations at the element center
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
@@ -968,23 +973,23 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
     {
       EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
 
-      // density-weighted shape functions at n+1/n+alpha_F
-      densfunct_.EMultiply(funct_,edensnp);
-
-      // density-weighted shape functions at n+alpha_M
-      densamfunct_.EMultiply(funct_,edensam);
-
-      // get (density-weighted) velocity at integration point
-      velint_.Multiply(evelnp,densfunct_);
-
-      // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
-      conv_.MultiplyTN(derxy_,velint_);
-
-      // momentum divergence required for conservative form
-      if (conservative) GetMomentumDivergence(mdiv_,evelnp,edensnp,derxy_);
-
-      for (int k = 0;k<numdofpernode_;++k)     // loop of each transported sclar
+      for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
       {
+        // density-weighted shape functions at n+1/n+alpha_F
+        densfunct_.EMultiply(funct_,edensnp_[k]);
+
+        // density-weighted shape functions at n+alpha_M
+        densamfunct_.EMultiply(funct_,edensam_[k]);
+
+        // get (density-weighted) velocity at integration point
+        velint_.Multiply(evelnp,densfunct_);
+
+        // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
+        conv_.MultiplyTN(derxy_,velint_);
+
+        // momentum divergence required for conservative form
+        if (conservative) GetMomentumDivergence(mdiv_,evelnp,edensnp,derxy_);
+
         // computations for including subgrid-scale velocity
         if (sgvel)
         {
@@ -1011,17 +1016,14 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
         rhs_[k] = bodyforce_[k].Dot(funct_) / shcacp_;
         rhs_[k] += thermpressdt / shcacp_;
         rhs_[k] += reatemprhs_[k] / shcacp_;
-      }
 
-      //----------- perform integration for entire matrix and rhs
-      for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
-      {
         // gradient of current scalar value
         gradphi_.Multiply(derxy_,ephinp[k]);
 
         // gradient of current fine-scale part of scalar value
         if (is_incremental and fssgd) fsgradphi_.Multiply(derxy_,fsphinp[k]);
 
+        //----------- perform integration for entire matrix and rhs
         CalMatAndRHS(sys_mat,
                      residual,
                      ephinp,
@@ -1137,7 +1139,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
   Teuchos::RCP<const MAT::Material>        material,
     const bool                             temperature,
     const bool                             reaction,
-    const vector<LINALG::Matrix<iel,1> >&  ephinp
+    const vector<LINALG::Matrix<iel,1> >&  ephinp,
+    const vector<LINALG::Matrix<iel,1> >&  edensnp
 )
 {
 // get diffusivity / diffusivities
@@ -1188,8 +1191,11 @@ if (material->MaterialType() == INPAR::MAT::m_matlist)
       const double tempexp  = actsinglemat->TempExp();
       const double actemp   = actsinglemat->AcTemp();
 
+      // get density
+      const double dens = funct_.Dot(edensnp[numscal_-1]);
+
       // compute reaction rate for species equation
-      reacoeff_[k] = -preexcon * pow(phi,tempexp) * exp(-actemp/phi);
+      reacoeff_[k] = -preexcon * pow(phi,tempexp) * dens * exp(-actemp/phi);
     }
     else if (singlemat->MaterialType() == INPAR::MAT::m_arrhenius_temp)
     {
@@ -1223,10 +1229,13 @@ if (material->MaterialType() == INPAR::MAT::m_matlist)
       const double tempexp  = actsinglemat->TempExp();
       const double actemp   = actsinglemat->AcTemp();
 
+      // get density and species mass fraction
+      const double dens = funct_.Dot(edensnp[numscal_-1]);
+      const double spec = funct_.Dot(ephinp[0]);
+
       // compute sum of reaction rates for temperature equation
       // -> will be considered a right-hand side contribution
-      const double spec = funct_.Dot(ephinp[0]);
-      reatemprhs_[k] = -reaheat * preexcon * pow(phi,tempexp) * exp(-actemp/phi) * spec;
+      reatemprhs_[k] = -reaheat * preexcon * pow(phi,tempexp) * dens * exp(-actemp/phi) * spec;
     }
     else if (singlemat->MaterialType() == INPAR::MAT::m_condif)
     {
@@ -1295,6 +1304,48 @@ else if (material->MaterialType() == INPAR::MAT::m_sutherland_condif)
   reacoeff_[0] = 0.0;
   reatemprhs_[0] = 0.0;
 }
+else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
+{
+  const MAT::ArrheniusPV* actmat = static_cast<const MAT::ArrheniusPV*>(material.get());
+
+  // use one-point Gauss rule to calculate temperature at element center
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
+
+  // coordinates of the integration point
+  const double* gpcoord = (intpoints_tau.IP().qxg)[0];
+  for (int idim = 0; idim < nsd_; idim++)
+    {xsi_(idim) = gpcoord[idim];}
+
+  // shape functions
+  DRT::UTILS::shape_function<distype>(xsi_,funct_);
+
+  // compute diffusivity according to Sutherland law
+  shcacp_ = actmat->Shc();
+  const double s   = actmat->SuthTemp();
+  const double rt  = actmat->RefTemp();
+  const double phi = funct_.Dot(ephinp[0]);
+  diffus_[0] = pow((phi/rt),1.5)*((rt+s)/(phi+s))*actmat->RefVisc()/actmat->PraNum();
+
+  // get pre-exponential constant, temperature exponent
+  // and activation temperature
+  const double preexcon = actmat->PreExCon();
+  const double tempexp  = actmat->TempExp();
+  const double actemp   = actmat->AcTemp();
+  const double unbtemp  = actmat->UnbTemp();
+  const double burtemp  = actmat->BurTemp();
+
+  // get density
+  const double dens = funct_.Dot(edensnp[numscal_-1]);
+
+  // compute current temperature based on progress variable
+  const double temp = unbtemp + phi* (burtemp - unbtemp);
+
+  // compute reaction coefficient for progress variable
+  reacoeff_[0] = -preexcon * pow(temp,tempexp) * dens * exp(-actemp/temp);
+
+  // compute right-hand side contribution for progress variable
+  reatemprhs_[0] = -preexcon * pow(temp,tempexp) * dens * exp(-actemp/temp);
+}
 else
   dserror("Material type is not supported");
 
@@ -1307,30 +1358,30 @@ return;
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
-    DRT::Element*                       ele,
-    Epetra_SerialDenseVector&           subgrdiff,
-    const LINALG::Matrix<nsd_,iel>&     evel,
-    const LINALG::Matrix<iel,1>&        edens,
-    const LINALG::Matrix<iel,1>&        epot,
-    const LINALG::Matrix<iel,1>&        esubgrdiff,
-    const double                        dt,
-    const double                        timefac,
-    const enum SCATRA::TauType          whichtau,
-    const bool                          assgd,
-    const bool                          fssgd,
-    const bool                          turbmodel,
-    const bool                          reaction,
-    const bool                          is_incremental,
-    const bool                          is_stationary,
-    const double                        frt,
-    const double                        vol
+    DRT::Element*                         ele,
+    Epetra_SerialDenseVector&             subgrdiff,
+    const LINALG::Matrix<nsd_,iel>&       evel,
+    const vector<LINALG::Matrix<iel,1> >& edens,
+    const LINALG::Matrix<iel,1>&          epot,
+    const LINALG::Matrix<iel,1>&          esubgrdiff,
+    const double                          dt,
+    const double                          timefac,
+    const enum SCATRA::TauType            whichtau,
+    const bool                            assgd,
+    const bool                            fssgd,
+    const bool                            turbmodel,
+    const bool                            reaction,
+    const bool                            is_incremental,
+    const bool                            is_stationary,
+    const double                          frt,
+    const double                          vol
   )
 {
   // get element-type constant for tau
   const double mk = SCATRA::MK<distype>();
 
   // get density at element center
-  const double dens = funct_.Dot(edens);
+  const double dens = funct_.Dot(edens[0]);
 
 #ifdef MIGRATIONSTAB
   // get "migration velocity" divided by D_k*z_k at element center
@@ -2252,7 +2303,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
     DRT::Element*                         ele,
     const vector<LINALG::Matrix<iel,1> >& ephi0,
-    const LINALG::Matrix<iel,1>&          edens0,
+    const vector<LINALG::Matrix<iel,1> >& edens0,
     const LINALG::Matrix<iel,1>&          epot0,
     Epetra_SerialDenseMatrix&             emat,
     Epetra_SerialDenseVector&             erhs,
@@ -2276,7 +2327,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
   BodyForce(ele,time);
 
   // get material constants
-  GetMaterialParams(material,temperature,reaction,ephi0);
+  GetMaterialParams(material,temperature,reaction,ephi0,edens0);
 
   /*----------------------------------------------------------------------*/
   // integration loop for one element
@@ -2290,38 +2341,34 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
   {
     EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
 
-    // (density-weighted) shape functions
-    if (conservative) densfunct_.Update(funct_);
-    else              densfunct_.EMultiply(funct_,edens0);
-
-    // get (density-weighted) velocity at element center
-    velint_.Multiply(evel0,densfunct_);
-
-    // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
-    conv_.MultiplyTN(derxy_,velint_);
-
-    // momentum divergence required for conservative form
-    if (conservative) GetMomentumDivergence(mdiv_,evel0,edens0,derxy_);
-
     //------------ get values of variables at integration point
-    for (int k = 0;k<numdofpernode_;++k)     // loop of each transported sclar
+    for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
     {
       // get bodyforce in gausspoint (divided by shcacp)
       // (For temperature equation, time derivative of thermodynamic pressure
       //  is added, if not constant.)
       rhs_[k] = bodyforce_[k].Dot(funct_) / shcacp_;
       rhs_[k] += thermpressdt / shcacp_;
-    }
 
-    // get gradient of el. potential at integration point
-    gradpot_.Multiply(derxy_,epot0);
+      // get gradient of el. potential at integration point
+      gradpot_.Multiply(derxy_,epot0);
 
-    // migration part
-    migconv_.MultiplyTN(-frt,derxy_,gradpot_);
+      // migration part
+      migconv_.MultiplyTN(-frt,derxy_,gradpot_);
 
-    /*-------------- perform integration for entire matrix and rhs ---*/
-    for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
-    {
+      // (density-weighted) shape functions
+      if (conservative) densfunct_.Update(funct_);
+      else              densfunct_.EMultiply(funct_,edens0[k]);
+
+      // get (density-weighted) velocity at element center
+      velint_.Multiply(evel0,densfunct_);
+
+      // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
+      conv_.MultiplyTN(derxy_,velint_);
+
+      // momentum divergence required for conservative form
+      if (conservative) GetMomentumDivergence(mdiv_,evel0,edens0,derxy_);
+
       // diffusive integration factor
       const double fac_diffus = fac_*diffus_[k];
 
@@ -2820,12 +2867,13 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
  *---------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
-    const DRT::Element*            ele,
-    ParameterList&                 params,
+    const DRT::Element*                   ele,
+    ParameterList&                        params,
     const vector<LINALG::Matrix<iel,1> >& ephinp,
-    const LINALG::Matrix<iel,1>&   epotnp,
-    Epetra_SerialDenseVector&      errors,
-    Teuchos::RCP<const MAT::Material> material
+    const LINALG::Matrix<iel,1>&          epotnp,
+    const vector<LINALG::Matrix<iel,1> >& edensnp,
+    Epetra_SerialDenseVector&             errors,
+    Teuchos::RCP<const MAT::Material>     material
 )
 {
   //at the moment, there is only one analytical test problem available!
@@ -2850,7 +2898,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
   const double frt = params.get<double>("frt");
 
   // get material constants
-  GetMaterialParams(material,false,false,ephinp);
+  GetMaterialParams(material,false,false,ephinp,edensnp);
 
   // working arrays
   double                  potint;
@@ -2964,7 +3012,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
   double valence(0.0);
   double diffus_valence_frt(0.0);
 
-  //GetMaterialParams(material,temperature,false,ephinp);
+  //GetMaterialParams(material,temperature,false,ephinp,edensnp);
 
   if (material->MaterialType() == INPAR::MAT::m_matlist)
   {
@@ -3073,6 +3121,32 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
     }
     diffus = (shcacp_/actmat->PraNum())*pow((phi/rt),1.5)*((rt+s)/(phi+s))*actmat->RefVisc();
   }
+  else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
+  {
+    const MAT::ArrheniusPV* actmat = static_cast<const MAT::ArrheniusPV*>(material.get());
+
+    // use one-point Gauss rule to calculate temperature at element center
+    DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
+
+    // coordinates of the integration point
+    const double* gpcoord = (intpoints_tau.IP().qxg)[0];
+    for (int idim = 0; idim < nsd_; idim++)
+      {xsi_(idim) = gpcoord[idim];}
+
+    // shape functions
+    DRT::UTILS::shape_function<distype>(xsi_,funct_);
+
+    // compute diffusivity according to Sutherland law
+    shcacp_ = actmat->Shc();
+    const double s   = actmat->SuthTemp();
+    const double rt  = actmat->RefTemp();
+    double phi = 0.0;
+    for (int i=0; i<iel; ++i)
+    {
+      phi += funct_(i)*ephinp[i];
+    }
+    diffus = (shcacp_/actmat->PraNum())*pow((phi/rt),1.5)*((rt+s)/(phi+s))*actmat->RefVisc();
+}
   else
     dserror("Material type is not supported");
 

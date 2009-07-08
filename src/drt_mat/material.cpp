@@ -27,6 +27,9 @@ Maintainer: Lena Wiechert
 #include "logneohooke.H"
 #include "convecdiffus.H"
 #include "sutherland_condif.H"
+#include "arrhenius_spec.H"
+#include "arrhenius_temp.H"
+#include "arrhenius_pv.H"
 #include "anisotropic_balzani.H"
 #include "mooneyrivlin.H"
 #include "yeoh.H"
@@ -185,6 +188,27 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
       curmat->SetParameter(new MAT::PAR::SutherlandCondif(curmat));
     MAT::PAR::SutherlandCondif* params = static_cast<MAT::PAR::SutherlandCondif*>(curmat->Parameter());
     return Teuchos::rcp(new SutherlandCondif(params));
+  }
+  case INPAR::MAT::m_arrhenius_spec:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::ArrheniusSpec(curmat));
+    MAT::PAR::ArrheniusSpec* params = static_cast<MAT::PAR::ArrheniusSpec*>(curmat->Parameter());
+    return Teuchos::rcp(new ArrheniusSpec(params));
+  }
+  case INPAR::MAT::m_arrhenius_temp:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::ArrheniusTemp(curmat));
+    MAT::PAR::ArrheniusTemp* params = static_cast<MAT::PAR::ArrheniusTemp*>(curmat->Parameter());
+    return Teuchos::rcp(new ArrheniusTemp(params));
+  }
+  case INPAR::MAT::m_arrhenius_pv:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::ArrheniusPV(curmat));
+    MAT::PAR::ArrheniusPV* params = static_cast<MAT::PAR::ArrheniusPV*>(curmat->Parameter());
+    return Teuchos::rcp(new ArrheniusPV(params));
   }
   case INPAR::MAT::m_carreauyasuda:
   {

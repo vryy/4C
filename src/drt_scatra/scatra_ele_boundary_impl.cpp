@@ -22,6 +22,7 @@ Maintainer: Georg Bauer
 #include "../drt_mat/sutherland_condif.H"
 #include "../drt_mat/arrhenius_spec.H"
 #include "../drt_mat/arrhenius_temp.H"
+#include "../drt_mat/arrhenius_pv.H"
 #include "../drt_mat/ion.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -448,7 +449,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     DRT::UTILS::ExtractMyValues(*phinp,myphinp,lmparent);
 
     // create object for density and solution array
-    LINALG::Matrix<iel,1>          edensnp;
+    vector<LINALG::Matrix<iel,1> > edensnp(numscal_);
     vector<LINALG::Matrix<iel,1> > ephinp(numscal_);
     LINALG::Matrix<nsd_+1,iel>     evelnp;
 
@@ -459,8 +460,8 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
       {
         // split for each tranported scalar, insert into element arrays
         ephinp[k](i,0) = myphinp[k+(i*numdofpernode_)];
+        edensnp[k](i,0) = mydensnp[k+(i*numdofpernode_)];
       }
-      edensnp(i) = mydensnp[0+(i*numdofpernode_)];
 
       // insert velocity field into element array
       for (int idim=0 ; idim < nsd_+1 ; idim++)
@@ -590,7 +591,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
     const DRT::Element*                   ele,
     const vector<LINALG::Matrix<iel,1> >& ephinp,
-    const LINALG::Matrix<iel,1>&          edensnp,
+    const vector<LINALG::Matrix<iel,1> >& edensnp,
     const LINALG::Matrix<nsd_+1,iel>&     evelnp,
     Epetra_SerialDenseMatrix&             emat,
     Epetra_SerialDenseVector&             erhs,
@@ -617,34 +618,34 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
   {
     EvalShapeFuncAndIntFac(intpoints,iquad,ele->Id());
 
-    // density-weighted shape functions at n+1/n+alpha_F
-    densfunct_.EMultiply(funct_,edensnp);
-
-    // get (density-weighted) velocity at integration point
-    velint_.Multiply(evelnp,densfunct_);
-
-    // normal (density-weighted) velocity
-    const double normvel = velint_.Dot(normal_);
-
-    if (normvel<-0.0001)
+    for(int k=0;k<numdofpernode_;++k)
     {
-      // integration factor for left-hand side
-      const double lhsfac = normvel*timefac*fac_;
+      // density-weighted shape functions at n+1/n+alpha_F
+      densfunct_.EMultiply(funct_,edensnp[k]);
 
-      // integration factor for right-hand side
-      double rhsfac    = 0.0;
-      if (is_incremental and is_genalpha)
-        rhsfac = lhsfac/alphaF;
-      else if (not is_incremental and is_genalpha)
-        rhsfac = lhsfac*(1.0-alphaF)/alphaF;
-      else if (is_incremental and not is_genalpha)
-      {
-        if (not is_stationary) rhsfac = lhsfac;
-        else                   rhsfac = normvel*fac_;
-      }
+      // get (density-weighted) velocity at integration point
+      velint_.Multiply(evelnp,densfunct_);
 
-      for(int k=0;k<numdofpernode_;++k)
+      // normal (density-weighted) velocity
+      const double normvel = velint_.Dot(normal_);
+
+      if (normvel<-0.0001)
       {
+        // integration factor for left-hand side
+        const double lhsfac = normvel*timefac*fac_;
+
+        // integration factor for right-hand side
+        double rhsfac    = 0.0;
+        if (is_incremental and is_genalpha)
+          rhsfac = lhsfac/alphaF;
+        else if (not is_incremental and is_genalpha)
+          rhsfac = lhsfac*(1.0-alphaF)/alphaF;
+        else if (is_incremental and not is_genalpha)
+        {
+          if (not is_stationary) rhsfac = lhsfac;
+          else                   rhsfac = normvel*fac_;
+        }
+
         // matrix
         for (int vi=0; vi<iel; ++vi)
         {

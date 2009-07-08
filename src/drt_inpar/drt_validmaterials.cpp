@@ -192,7 +192,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"SCHNUM","Schmidt number");
     AddNamedReal(m,"PREEXCON","pre-exponential constant");
     AddNamedReal(m,"TEMPEXP","exponent of temperature dependence");
-    AddNamedReal(m,"ACTEMP","activation temperature");
+    AddNamedReal(m,"ACTEMP","activation temperature (K)");
 
     AppendMaterialDefinition(matlist,m);
   }
@@ -214,7 +214,30 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"REAHEAT","heat of reaction per unit mass");
     AddNamedReal(m,"PREEXCON","pre-exponential constant");
     AddNamedReal(m,"TEMPEXP","exponent of temperature dependence");
-    AddNamedReal(m,"ACTEMP","activation temperature");
+    AddNamedReal(m,"ACTEMP","activation temperature (K)");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // convection-diffusion material according to Sutherland law
+  // with Arrhenius-type chemical kinetics (progress variable)
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_arrhenius_pv",
+                                            "Arrhenius-type chemical kinetics (progress variable)",
+                                            INPAR::MAT::m_arrhenius_pv));
+
+    AddNamedReal(m,"REFVISC","reference dynamic viscosity (kg/(m*s))");
+    AddNamedReal(m,"REFTEMP","reference temperature (K)");
+    AddNamedReal(m,"SUTHTEMP","Sutherland temperature (K)");
+    AddNamedReal(m,"SHC","specific heat capacity at constant pressure");
+    AddNamedReal(m,"PRANUM","Prandtl number");
+    AddNamedReal(m,"PREEXCON","pre-exponential constant");
+    AddNamedReal(m,"TEMPEXP","exponent of temperature dependence");
+    AddNamedReal(m,"ACTEMP","activation temperature (K)");
+    AddNamedReal(m,"UNBTEMP","temperature of unburnt phase (K)");
+    AddNamedReal(m,"BURTEMP","temperature of burnt phase (K)");
 
     AppendMaterialDefinition(matlist,m);
   }

@@ -218,7 +218,7 @@ public:
     void NeumannInflow(
         const DRT::Element*                   ele,
         const vector<LINALG::Matrix<iel,1> >& ephinp,
-        const LINALG::Matrix<iel,1>&          edensnp,
+        const vector<LINALG::Matrix<iel,1> >& edensnp,
         const LINALG::Matrix<nsd_+1,iel>&     evelnp,
         Epetra_SerialDenseMatrix&             emat,
         Epetra_SerialDenseVector&             erhs,
