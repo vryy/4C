@@ -67,6 +67,7 @@ Input/f2_dc20x20_drt_afgenalpha.dat                     x        x        x     
 Input/f2_dc20x20_drt_afg_cons.dat                       x        x        x        -        -        -
 Input/f2_drivencavity20x20_drt.dat                      x        x        x        -        x        x
 Input/f2_nurbs9_dc_drt.dat                              x        x        x        -        -        -
+Input/f2_channel_q2q1_drt.dat                           x        -        -        -        -        -
 Input/f2_drivencavity20x20_is.dat                       x        x        x        x        -        -
 Input/f2_drivencavity20x20_q.dat                        x        x        x        x        -        -
 Input/f2_drivencavity20x20_sd.dat                       x        x        x        x        -        -
@@ -154,6 +155,8 @@ Input/fsi-pw-mfsi-fsiamg-be-structsplit.dat             x        x        x     
 Input/fsi-pw-mfsi-gena.dat                              x        x        x        -        x        x
 Input/fsi_potential_LJ.dat                              x        -        x        -        x        -
 Input/fsi_potential_LJ_par.dat                          -        x        -        x        -        x
+Input/fsi_dc3232q9i_drt.dat                             x        -        -        -        -        -
+Input/fsi_dc3232q9psi_drt.dat                           x        -        -        -        -        -
 Input/krag_2ele_expl.dat                                -        -        -        -        -        -
 Input/inv_analysis.dat                                  x        -        x        -        -        -
 Input/shell8_amg.dat                                    -        -        -        -        -        -
