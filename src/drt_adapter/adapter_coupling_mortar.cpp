@@ -55,16 +55,14 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
 
   DRT::UTILS::FindInterfaceObjects(slavedis, slavenodes, slavegnodes, slaveelements,
       "FSICoupling");
-  //	parameter list for contact definition 
-  // const Teuchos::ParameterList& input = DRT::Problem::Instance()->StructuralContactParams();
   
-  Teuchos::ParameterList tmpinput;
-  tmpinput.set<string> ("search algorithm", "binarytree");
-  tmpinput.set<double> ("search parameter", 0.3);
+  //	parameter list for contact definition 
+  const Teuchos::ParameterList& input = DRT::Problem::Instance()->StructuralContactParams();
+  
   // get problem dimension (2D or 3D) and initialize (CONTACT::) interface
   const int dim = genprob.ndim;
   RCP<CONTACT::Interface> interface = rcp(
-      new CONTACT::Interface(0, comm, dim, tmpinput));
+      new CONTACT::Interface(0, comm, dim, input));
 
   
   //feeding master nodes to the interface
