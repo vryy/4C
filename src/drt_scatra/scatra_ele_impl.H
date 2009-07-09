@@ -166,12 +166,6 @@ public:
     //! Calculate matrix and rhs. Here the whole thing is hidden.
     virtual void Sysmat(
         DRT::Element*                         ele, ///< the element those matrix is calculated
-        const vector<LINALG::Matrix<iel,1> >& ephinp,///< current scalar field
-        const vector<LINALG::Matrix<iel,1> >& ehist, ///< rhs from beginning of time step
-        const vector<LINALG::Matrix<iel,1> >& edensnp, ///< density field at n+1/n+alpha_F
-        const vector<LINALG::Matrix<iel,1> >& edensam, ///< density field at n+alpha_M
-        const LINALG::Matrix<iel,1>&          epotnp, ///< el. potential at element nodes
-        const LINALG::Matrix<iel,1>&          esubgrdiff,  ///< subgrid diffusivity at element nodes
         Epetra_SerialDenseMatrix&             sys_mat,///< element matrix to calculate
         Epetra_SerialDenseVector&             residual, ///< element rhs to calculate
         Epetra_SerialDenseVector&             subgrdiff, ///< subgrid-diff.-scaling vector
@@ -180,13 +174,11 @@ public:
         const double                          dt, ///< current time-step length
         const double                          timefac, ///< time discretization factor
         const double                          alphaF, ///< factor for generalized-alpha time integration
-        const LINALG::Matrix<nsd_,iel>&       evelnp,///< nodal velocities at t_{n+1}
-        const LINALG::Matrix<nsd_,iel>&       esgvelnp,///< nodal subgrid-scale velocities at t_{n+1}
-        const vector<LINALG::Matrix<iel,1> >& fsphinp,///< fine-scale part of current scalar field
         const bool                            temperature, ///< temperature flag
         const bool                            reaction, ///< flag for reaction term
         const bool                            conservative, ///< flag for conservative form
         const enum SCATRA::TauType            whichtau, ///< flag for stabilization parameter definition
+        const bool                            tau_gp, ///< tau-evaluation flag
         const bool                            sgvel, ///< subgrid-scale velocity flag
         const bool                            assgd, ///< all-scale subgrid-diff. flag
         const bool                            fssgd, ///< fine-scale subgrid-diff. flag
@@ -201,13 +193,9 @@ public:
     //! calculate mass matrix and rhs for determining initial time derivative
     virtual void InitialTimeDerivative(
         DRT::Element*                         ele,  ///< the element
-        const vector<LINALG::Matrix<iel,1> >& ephi0, ///< initial scalar field
-        const vector<LINALG::Matrix<iel,1> >& edens0, ///< initial density field
-        const LINALG::Matrix<iel,1>&          epot0,  ///< el. potential at element nodes
         Epetra_SerialDenseMatrix&             emat, ///< element matrix to calculate
         Epetra_SerialDenseVector&             erhs, ///< element rhs to calculate
         Teuchos::RCP<const MAT::Material>     material, ///< material pointer
-        const LINALG::Matrix<nsd_,iel>&       evel0, ///< initial nodal velocities
         const bool                            temperature, ///< temperature flag
         const bool                            reaction, ///< flag for reaction term
         const bool                            conservative, ///< flag for conservative form
@@ -233,19 +221,15 @@ public:
     virtual void GetMaterialParams(
         Teuchos::RCP<const MAT::Material>     material,    ///< material pointer
         const bool                            temperature,  ///< temperature flag
-        const bool                            reaction, ///< flag for reaction term
-        const vector<LINALG::Matrix<iel,1> >& ephinp,      /// scalar field
-        const vector<LINALG::Matrix<iel,1> >& edensnp      /// density field
+        const bool                            reaction  ///< flag for reaction term
     );
 
     //! calculate stabilization parameter
     virtual void CalTau(
         DRT::Element*                         ele,
         Epetra_SerialDenseVector&             subgrdiff,
-        const LINALG::Matrix<nsd_,iel>&       evel,
-        const vector<LINALG::Matrix<iel,1> >& edens,
-        const LINALG::Matrix<iel,1>&          epot,
-        const LINALG::Matrix<iel,1>&          esubgrdiff,
+        double                                diffus,
+        const double                          dens,
         const double                          dt,
         const double                          timefac,
         const enum SCATRA::TauType            whichtau,
@@ -255,8 +239,8 @@ public:
         const bool                            reaction,
         const bool                            is_incremental,
         const bool                            is_stationary,
-        const double                          frt,
-        const double                          vol
+        const double                          vol,
+        const int                             k
     );
 
     //! evaluate shape functions and their derivatives at current integration point
@@ -270,8 +254,6 @@ public:
     virtual void CalMatAndRHS(
         Epetra_SerialDenseMatrix&             emat,
         Epetra_SerialDenseVector&             erhs,
-        const vector<LINALG::Matrix<iel,1> >& ephinp,
-        const bool                            use2ndderiv,
         const bool                            conservative,
         const bool                            fssgd,
         const bool                            reaction,
@@ -287,8 +269,6 @@ public:
     virtual void CalMatElch(
         Epetra_SerialDenseMatrix&             emat,   ///< element matrix
         Epetra_SerialDenseVector&             erhs,   ///< element rhs
-        const vector<LINALG::Matrix<iel,1> >& ephinp, ///< current scalar field
-        const LINALG::Matrix<iel,1>&          epotnp, ///< el. potential at element nodes
         const double                          frt,    ///< factor F/RT
         const bool                            is_stationary, ///< flag indicating stationary formulation
         const double                          timefac ///< time discretization factor
@@ -298,9 +278,6 @@ public:
     virtual void CalErrorComparedToAnalytSolution(
         const DRT::Element*          ele, ///< the element
         ParameterList&               params, ///< parameter list
-        const vector<LINALG::Matrix<iel,1> >& ephinp, ///< actual numerical sol. of concentrations
-        const LINALG::Matrix<iel,1>& epotnp, ///< actual numerical solution of el. potential
-        const vector<LINALG::Matrix<iel,1> >& edensnp, /// zero "dummy" density field
         Epetra_SerialDenseVector&    errors, ///< vector of error values
         Teuchos::RCP<const MAT::Material> material ///< material pointer
     );

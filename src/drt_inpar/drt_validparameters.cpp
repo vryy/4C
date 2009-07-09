@@ -1711,6 +1711,19 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                 tuple<int>(0,1,2,3),
                                &scatradyn_stab);
 
+  // this parameter selects the location where tau is evaluated
+  setStringToIntegralParameter<int>("EVALUATION_TAU",
+                               "element_center",
+                               "Location where tau is evaluated",
+                               tuple<std::string>(
+                                 "element_center",
+                                 "integration_point"),
+                               tuple<std::string>(
+                                 "evaluate tau at element center",
+                                 "evaluate tau at integration point")  ,
+                                tuple<int>(0,1),
+                               &scatradyn_stab);
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& lomacontrol = list->sublist(
       "LOMA CONTROL",
