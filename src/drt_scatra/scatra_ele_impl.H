@@ -66,7 +66,6 @@ public:
       DRT::Element*&            ele,
       vector<double>&           ephinp,
       vector<double>&           edensnp,
-      Teuchos::RCP<const MAT::Material> material,
       bool                      temperature,
       double                    frt,
       Epetra_SerialDenseVector& evel,
@@ -153,7 +152,6 @@ public:
       DRT::Element*&                  ele,
       vector<double>&                 ephinp,
       vector<double>&                 edensnp,
-      Teuchos::RCP<const MAT::Material> material,
       bool                            temperature,
       double                          frt,
       Epetra_SerialDenseVector&       evel,
@@ -169,7 +167,6 @@ public:
         Epetra_SerialDenseMatrix&             sys_mat,///< element matrix to calculate
         Epetra_SerialDenseVector&             residual, ///< element rhs to calculate
         Epetra_SerialDenseVector&             subgrdiff, ///< subgrid-diff.-scaling vector
-        Teuchos::RCP<const MAT::Material>     material, ///< material pointer
         const double                          time, ///< current simulation time
         const double                          dt, ///< current time-step length
         const double                          timefac, ///< time discretization factor
@@ -179,6 +176,7 @@ public:
         const bool                            conservative, ///< flag for conservative form
         const enum SCATRA::TauType            whichtau, ///< flag for stabilization parameter definition
         const bool                            tau_gp, ///< tau-evaluation flag
+        const bool                            mat_gp, ///< material-evaluation flag
         const bool                            sgvel, ///< subgrid-scale velocity flag
         const bool                            assgd, ///< all-scale subgrid-diff. flag
         const bool                            fssgd, ///< fine-scale subgrid-diff. flag
@@ -195,10 +193,10 @@ public:
         DRT::Element*                         ele,  ///< the element
         Epetra_SerialDenseMatrix&             emat, ///< element matrix to calculate
         Epetra_SerialDenseVector&             erhs, ///< element rhs to calculate
-        Teuchos::RCP<const MAT::Material>     material, ///< material pointer
         const bool                            temperature, ///< temperature flag
         const bool                            reaction, ///< flag for reaction term
         const bool                            conservative, ///< flag for conservative form
+        const bool                            mat_gp, ///< material-evaluation flag
         const double                          frt, ///< factor F/RT needed for ELCH calculations
         const double                          thermpressdt ///< time deriv. of therm. press. (for temp. eq.)
     );
@@ -219,9 +217,9 @@ public:
 
     //! get the material parameters
     virtual void GetMaterialParams(
-        Teuchos::RCP<const MAT::Material>     material,    ///< material pointer
-        const bool                            temperature,  ///< temperature flag
-        const bool                            reaction  ///< flag for reaction term
+        const DRT::Element*  ele,
+        const bool           temperature,  ///< temperature flag
+        const bool           reaction  ///< flag for reaction term
     );
 
     //! calculate stabilization parameter
@@ -278,8 +276,7 @@ public:
     virtual void CalErrorComparedToAnalytSolution(
         const DRT::Element*          ele, ///< the element
         ParameterList&               params, ///< parameter list
-        Epetra_SerialDenseVector&    errors, ///< vector of error values
-        Teuchos::RCP<const MAT::Material> material ///< material pointer
+        Epetra_SerialDenseVector&    errors
     );
 
     //! calculate flux vector for actual solution
@@ -288,7 +285,6 @@ public:
         const DRT::Element*             ele,
         const vector<double>&           ephinp,
         const vector<double>&           edensnp,
-        Teuchos::RCP<const MAT::Material> material,
         const bool                      temperature,
         const double                    frt,
         const Epetra_SerialDenseVector& evel,

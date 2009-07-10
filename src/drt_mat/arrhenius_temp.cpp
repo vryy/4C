@@ -101,4 +101,25 @@ void MAT::ArrheniusTemp::Unpack(const vector<char>& data)
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double MAT::ArrheniusTemp::ComputeDiffusivity(const double temp) const
+{
+  const double diffus = pow((temp/RefTemp()),1.5)*((RefTemp()+SuthTemp())/(temp+SuthTemp()))*RefVisc()/PraNum();
+
+  return diffus;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double MAT::ArrheniusTemp::ComputeReactionRHS(const double spmf,
+                                              const double temp,
+                                              const double dens) const
+{
+  const double rearhs = -ReaHeat()*PreExCon()*pow(temp,TempExp())*dens*spmf*exp(-AcTemp()/temp);
+
+  return rearhs;
+}
+
 #endif

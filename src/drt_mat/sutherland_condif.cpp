@@ -97,4 +97,14 @@ void MAT::SutherlandCondif::Unpack(const vector<char>& data)
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double MAT::SutherlandCondif::ComputeDiffusivity(const double temp) const
+{
+  const double diffus = pow((temp/RefTemp()),1.5)*((RefTemp()+SuthTemp())/(temp+SuthTemp()))*RefVisc()/PraNum();
+
+  return diffus;
+}
+
+
 #endif

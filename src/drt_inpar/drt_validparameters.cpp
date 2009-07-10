@@ -1724,6 +1724,20 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                 tuple<int>(0,1),
                                &scatradyn_stab);
 
+  // this parameter selects the location where the material law is evaluated
+  // (does not fit here very well, but parameter transfer is easier)
+  setStringToIntegralParameter<int>("EVALUATION_MAT",
+                               "element_center",
+                               "Location where material law is evaluated",
+                               tuple<std::string>(
+                                 "element_center",
+                                 "integration_point"),
+                               tuple<std::string>(
+                                 "evaluate material law at element center",
+                                 "evaluate material law at integration point")  ,
+                                tuple<int>(0,1),
+                               &scatradyn_stab);
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& lomacontrol = list->sublist(
       "LOMA CONTROL",

@@ -122,6 +122,14 @@ namespace MAT
     /// material type 
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_arrhenius_temp; }
 
+    /// compute diffusivity
+    double ComputeDiffusivity(const double temp) const;
+
+    /// compute reaction coefficient
+    double ComputeReactionRHS(const double spmf,
+                              const double temp,
+                              const double dens) const;
+
     /// return material parameters for element calculation
     //@{
 

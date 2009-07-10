@@ -96,4 +96,14 @@ void MAT::SutherlandFluid::Unpack(const vector<char>& data)
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double MAT::SutherlandFluid::ComputeViscosity(const double temp) const
+{
+  const double diffus = pow((temp/RefTemp()),1.5)*((RefTemp()+SuthTemp())/(temp+SuthTemp()))*RefVisc();
+
+  return diffus;
+}
+
+
 #endif

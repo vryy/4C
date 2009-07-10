@@ -239,9 +239,6 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     Epetra_SerialDenseVector&  elevec3_epetra
     )
 {
-  // get the material
-  RefCountPtr<MAT::Material> mat = ele->Material();
-
   // get additional state vector for ALE case: grid displacement
   isale_ = params.get<bool>("isale");
   if (isale_)
@@ -320,11 +317,14 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       else if (taudef == "Exact_1D") whichtau = SCATRA::tau_exact_1d;
     }
 
-    // set flag for evaluation of tau at integration point
+    // set flags for potential evaluation of tau and material law at int. point
     bool tau_gp = false; //default
+    bool mat_gp = false; //default
     {
       const string tauloc = stablist.get<string>("EVALUATION_TAU");
       if (tauloc == "integration_point") tau_gp = true;
+      const string matloc = stablist.get<string>("EVALUATION_MAT");
+      if (matloc == "integration_point") mat_gp = true;
     }
 
     // set flags for subgrid-scale velocity and all-scale subgrid diffusivity
@@ -474,7 +474,6 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         elemat1_epetra,
         elevec1_epetra,
         elevec2_epetra,
-        mat,
         time,
         dt,
         timefac,
@@ -484,6 +483,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         conservative,
         whichtau,
         tau_gp,
+        mat_gp,
         sgvel,
         assgd,
         fssgd,
@@ -557,6 +557,16 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     if (reactiontype == "constant_coefficient" or reactiontype == "Arrhenius_law")
       reaction = true;
 
+    // get stabilization parameter sublist
+    ParameterList& stablist = params.sublist("STABILIZATION");
+
+    // set flags for potential evaluation of material law at int. point
+    bool mat_gp = false; //default
+    {
+      const string matloc = stablist.get<string>("EVALUATION_MAT");
+      if (matloc == "integration_point") mat_gp = true;
+    }
+
     double frt(0.0);
     if(scaltypestr =="elch")
     {
@@ -577,10 +587,10 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         ele,
         elemat1_epetra,
         elevec1_epetra,
-        mat,
         temperature,
         reaction,
         conservative,
+        mat_gp,
         frt,
         thermpressdt);
   }
@@ -680,7 +690,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     {
       // calculate flux vectors for actual scalar
       eflux.Clear();
-      CalculateFlux(eflux,ele,myphinp,mydensnp,mat,temperature,frt,evel,fluxtype,i);
+      CalculateFlux(eflux,ele,myphinp,mydensnp,temperature,frt,evel,fluxtype,i);
 
       // assembly
       for (int k=0;k<iel;k++)
@@ -760,8 +770,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     CalErrorComparedToAnalytSolution(
         ele,
         params,
-        elevec1_epetra,
-        mat);
+        elevec1_epetra);
   }
   else
     dserror("Unknown type of action for Scatra Implementation: %s",action.c_str());
@@ -779,7 +788,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFluxSerialDense(
     DRT::Element*&                  ele,
     vector<double>&                 ephinp,
     vector<double>&                 edensnp,
-    Teuchos::RCP<const MAT::Material> material,
     bool                            temperature,
     double                          frt,
     Epetra_SerialDenseVector&       evel,
@@ -798,7 +806,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFluxSerialDense(
 
   // we always get an 3D flux vector for each node
   LINALG::Matrix<3,iel> eflux(true); //initialize!
-  CalculateFlux(eflux,ele,ephinp,edensnp,material,temperature,frt,evel,fluxtype,dofindex);
+  CalculateFlux(eflux,ele,ephinp,edensnp,temperature,frt,evel,fluxtype,dofindex);
   for (int j = 0; j< iel; j++)
   {
     flux(0,j) = eflux(0,j);
@@ -819,7 +827,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
     Epetra_SerialDenseMatrix&             sys_mat,///< element matrix to calculate
     Epetra_SerialDenseVector&             residual, ///< element rhs to calculate
     Epetra_SerialDenseVector&             subgrdiff, ///< subgrid-diff.-scaling vector
-    Teuchos::RCP<const MAT::Material>     material, ///< material pointer
     const double                          time, ///< current simulation time
     const double                          dt, ///< current time-step length
     const double                          timefac, ///< time discretization factor
@@ -829,6 +836,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
     const bool                            conservative, ///< flag for conservative form
     const enum SCATRA::TauType            whichtau, ///< flag for stabilization parameter definition
     const bool                            tau_gp, ///< tau-evaluation flag
+    const bool                            mat_gp, ///< material-evaluation flag
     const bool                            sgvel, ///< subgrid-scale velocity flag
     const bool                            assgd, ///< all-scale subgrid-diff. flag
     const bool                            fssgd, ///< fine-scale subgrid-diff. flag
@@ -853,11 +861,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
   BodyForce(ele,time);
 
   //----------------------------------------------------------------------
-  // get material constants (evaluation at element center if required)
-  //----------------------------------------------------------------------
-  GetMaterialParams(material,temperature,reaction);
-
-  //----------------------------------------------------------------------
   // calculation of element volume both for tau at ele. cent. and int. pt.
   //----------------------------------------------------------------------
   // use one-point Gauss rule to do calculations at the element center
@@ -869,6 +872,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
   // volume of the element (2D: element surface area; 1D: element length)
   // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
   const double vol = fac_;
+
+  //----------------------------------------------------------------------
+  // get material parameters (evaluation at element center)
+  //----------------------------------------------------------------------
+  if (not mat_gp) GetMaterialParams(ele,temperature,reaction);
 
   //----------------------------------------------------------------------
   // calculation of stabilization parameter(s) tau at element center
@@ -938,6 +946,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
     for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
     {
       EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+
+      //----------------------------------------------------------------------
+      // get material parameters (evaluation at integration point)
+      //----------------------------------------------------------------------
+      if (mat_gp) GetMaterialParams(ele,temperature,reaction);
 
       // get velocity at integration point
       velint_.Multiply(evelnp_,funct_);
@@ -1018,6 +1031,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
     for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
     {
       EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+
+      //----------------------------------------------------------------------
+      // get material parameters (evaluation at integration point)
+      //----------------------------------------------------------------------
+      if (mat_gp) GetMaterialParams(ele,temperature,reaction);
 
       for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
       {
@@ -1208,11 +1226,14 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::BodyForce(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
-  Teuchos::RCP<const MAT::Material>        material,
-    const bool                             temperature,
-    const bool                             reaction
+    const DRT::Element*  ele,
+    const bool           temperature,
+    const bool           reaction
 )
 {
+// get the material
+RefCountPtr<MAT::Material> material = ele->Material();
+
 // get diffusivity / diffusivities
 if (material->MaterialType() == INPAR::MAT::m_matlist)
 {
@@ -1238,34 +1259,15 @@ if (material->MaterialType() == INPAR::MAT::m_matlist)
     {
       const MAT::ArrheniusSpec* actsinglemat = static_cast<const MAT::ArrheniusSpec*>(singlemat.get());
 
-      // use one-point Gauss rule to calculate temperature at element center
-      DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
-
-      // coordinates of the integration point
-      const double* gpcoord = (intpoints_tau.IP().qxg)[0];
-      for (int idim = 0; idim < nsd_; idim++)
-        {xsi_(idim) = gpcoord[idim];}
-
-      // shape functions
-      DRT::UTILS::shape_function<distype>(xsi_,funct_);
+      // get temperature and density
+      const double dens = funct_.Dot(edensnp_[numscal_-1]);
+      const double temp = funct_.Dot(ephinp_[numscal_-1]);
 
       // compute diffusivity according to Sutherland law
-      const double s   = actsinglemat->SuthTemp();
-      const double rt  = actsinglemat->RefTemp();
-      const double phi = funct_.Dot(ephinp_[numscal_-1]);
-      diffus_[k] = pow((phi/rt),1.5)*((rt+s)/(phi+s))*actsinglemat->RefVisc()/actsinglemat->SchNum();
+      diffus_[k] = actsinglemat->ComputeDiffusivity(temp);
 
-      // get pre-exponential constant, temperature exponent
-      // and activation temperature
-      const double preexcon = actsinglemat->PreExCon();
-      const double tempexp  = actsinglemat->TempExp();
-      const double actemp   = actsinglemat->AcTemp();
-
-      // get density
-      const double dens = funct_.Dot(edensnp_[numscal_-1]);
-
-      // compute reaction rate for species equation
-      reacoeff_[k] = -preexcon * pow(phi,tempexp) * dens * exp(-actemp/phi);
+      // compute reaction coefficient for species equation
+      reacoeff_[k] = actsinglemat->ComputeReactionCoeff(temp,dens);
     }
     else if (singlemat->MaterialType() == INPAR::MAT::m_arrhenius_temp)
     {
@@ -1273,39 +1275,20 @@ if (material->MaterialType() == INPAR::MAT::m_matlist)
 
       const MAT::ArrheniusTemp* actsinglemat = static_cast<const MAT::ArrheniusTemp*>(singlemat.get());
 
-      // use one-point Gauss rule to calculate temperature at element center
-      DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
+      // get specific heat capacity at constant pressure
+      shcacp_ = actsinglemat->Shc();
 
-      // coordinates of the integration point
-      const double* gpcoord = (intpoints_tau.IP().qxg)[0];
-      for (int idim = 0; idim < nsd_; idim++)
-        {xsi_(idim) = gpcoord[idim];}
-
-      // shape functions
-      DRT::UTILS::shape_function<distype>(xsi_,funct_);
+      // get species mass fraction, temperature and density
+      const double spmf = funct_.Dot(ephinp_[0]);
+      const double temp = funct_.Dot(ephinp_[k]);
+      const double dens = funct_.Dot(edensnp_[k]);
 
       // compute diffusivity according to Sutherland law
-      const double s   = actsinglemat->SuthTemp();
-      const double rt  = actsinglemat->RefTemp();
-      const double phi = funct_.Dot(ephinp_[k]);
-      diffus_[k] = pow((phi/rt),1.5)*((rt+s)/(phi+s))*actsinglemat->RefVisc()/actsinglemat->PraNum();
-
-      // get specific heat capacity at constant pressure, heat of reaction
-      // per unit mass, pre-exponential constant, temperature exponent
-      // and activation temperature
-      shcacp_               = actsinglemat->Shc();
-      const double reaheat  = actsinglemat->ReaHeat();
-      const double preexcon = actsinglemat->PreExCon();
-      const double tempexp  = actsinglemat->TempExp();
-      const double actemp   = actsinglemat->AcTemp();
-
-      // get density and species mass fraction
-      const double dens = funct_.Dot(edensnp_[numscal_-1]);
-      const double spec = funct_.Dot(ephinp_[0]);
+      diffus_[k] = actsinglemat->ComputeDiffusivity(temp);
 
       // compute sum of reaction rates for temperature equation
       // -> will be considered a right-hand side contribution
-      reatemprhs_[k] = -reaheat * preexcon * pow(phi,tempexp) * dens * exp(-actemp/phi) * spec;
+      reatemprhs_[k] = actsinglemat->ComputeReactionRHS(spmf,temp,dens);
     }
     else if (singlemat->MaterialType() == INPAR::MAT::m_condif)
     {
@@ -1352,23 +1335,12 @@ else if (material->MaterialType() == INPAR::MAT::m_sutherland_condif)
 
   dsassert(numdofpernode_==1,"more than 1 dof per node for condif material");
 
-  // use one-point Gauss rule to calculate temperature at element center
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
-
-  // coordinates of the integration point
-  const double* gpcoord = (intpoints_tau.IP().qxg)[0];
-  for (int idim = 0; idim < nsd_; idim++)
-    {xsi_(idim) = gpcoord[idim];}
-
-  // shape functions
-  DRT::UTILS::shape_function<distype>(xsi_,funct_);
+  // get specific heat capacity at constant pressure
+  shcacp_ = actmat->Shc();
 
   // compute diffusivity according to Sutherland law
-  shcacp_ = actmat->Shc();
-  const double s   = actmat->SuthTemp();
-  const double rt  = actmat->RefTemp();
-  const double phi = funct_.Dot(ephinp_[0]);
-  diffus_[0] = pow((phi/rt),1.5)*((rt+s)/(phi+s))*actmat->RefVisc()/actmat->PraNum();
+  const double temp = funct_.Dot(ephinp_[0]);
+  diffus_[0] = actmat->ComputeDiffusivity(temp);
 
   // set reaction coeff. and temperature rhs for reactive equation system to zero
   reacoeff_[0] = 0.0;
@@ -1378,43 +1350,27 @@ else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
 {
   const MAT::ArrheniusPV* actmat = static_cast<const MAT::ArrheniusPV*>(material.get());
 
-  // use one-point Gauss rule to calculate temperature at element center
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
+  dsassert(numdofpernode_==1,"more than 1 dof per node for condif material");
 
-  // coordinates of the integration point
-  const double* gpcoord = (intpoints_tau.IP().qxg)[0];
-  for (int idim = 0; idim < nsd_; idim++)
-    {xsi_(idim) = gpcoord[idim];}
+  // get specific heat capacity at constant pressure
+  shcacp_ = actmat->Shc();
 
-  // shape functions
-  DRT::UTILS::shape_function<distype>(xsi_,funct_);
+  // get progress variable and density
+  const double provar = funct_.Dot(ephinp_[0]);
+  const double dens   = funct_.Dot(edensnp_[numscal_-1]);
+
+  // compute temperature based on progress variable
+  const double temp = actmat->ComputeTemperature(provar);
 
   // compute diffusivity according to Sutherland law
-  shcacp_ = actmat->Shc();
-  const double s   = actmat->SuthTemp();
-  const double rt  = actmat->RefTemp();
-  const double phi = funct_.Dot(ephinp_[0]);
-  diffus_[0] = pow((phi/rt),1.5)*((rt+s)/(phi+s))*actmat->RefVisc()/actmat->PraNum();
-
-  // get pre-exponential constant, temperature exponent
-  // and activation temperature
-  const double preexcon = actmat->PreExCon();
-  const double tempexp  = actmat->TempExp();
-  const double actemp   = actmat->AcTemp();
-  const double unbtemp  = actmat->UnbTemp();
-  const double burtemp  = actmat->BurTemp();
-
-  // get density
-  const double dens = funct_.Dot(edensnp_[numscal_-1]);
-
-  // compute current temperature based on progress variable
-  const double temp = unbtemp + phi* (burtemp - unbtemp);
+  diffus_[0] = actmat->ComputeDiffusivity(temp);
 
   // compute reaction coefficient for progress variable
-  reacoeff_[0] = -preexcon * pow(temp,tempexp) * dens * exp(-actemp/temp);
+  reacoeff_[0] = actmat->ComputeReactionCoeff(temp,dens);
 
   // compute right-hand side contribution for progress variable
-  reatemprhs_[0] = -preexcon * pow(temp,tempexp) * dens * exp(-actemp/temp);
+  // -> equal to reaction coefficient
+  reatemprhs_[0] = reacoeff_[0];
 }
 else
   dserror("Material type is not supported");
@@ -2345,10 +2301,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
     DRT::Element*                         ele,
     Epetra_SerialDenseMatrix&             emat,
     Epetra_SerialDenseVector&             erhs,
-    Teuchos::RCP<const MAT::Material>     material,
     const bool                            temperature,
     const bool                            reaction,
     const bool                            conservative,
+    const bool                            mat_gp,
     const double                          frt,
     const double                          thermpressdt
 )
@@ -2363,20 +2319,34 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
   const double time = 0.0;
   BodyForce(ele,time);
 
-  // get material constants
-  GetMaterialParams(material,temperature,reaction);
+  //----------------------------------------------------------------------
+  // get material parameters (evaluation at element center)
+  //----------------------------------------------------------------------
+  if (not mat_gp)
+  {
+    // use one-point Gauss rule to do calculations at the element center
+    DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
 
-  /*----------------------------------------------------------------------*/
-  // integration loop for one element
-  /*----------------------------------------------------------------------*/
+    // evaluate shape functions and derivatives at element center
+    EvalShapeFuncAndDerivsAtIntPoint(intpoints_tau,0,ele->Id());
+
+    GetMaterialParams(ele,temperature,reaction);
+  }
 
   // integrations points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
-  // integration loop
+  /*----------------------------------------------------------------------*/
+  // element integration loop
+  /*----------------------------------------------------------------------*/
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
     EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+
+    //----------------------------------------------------------------------
+    // get material parameters (evaluation at integration point)
+    //----------------------------------------------------------------------
+    if (mat_gp) GetMaterialParams(ele,temperature,reaction);
 
     //------------ get values of variables at integration point
     for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
@@ -2904,8 +2874,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
     const DRT::Element*                   ele,
     ParameterList&                        params,
-    Epetra_SerialDenseVector&             errors,
-    Teuchos::RCP<const MAT::Material>     material
+    Epetra_SerialDenseVector&             errors
 )
 {
   //at the moment, there is only one analytical test problem available!
@@ -2930,7 +2899,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
   const double frt = params.get<double>("frt");
 
   // get material constants
-  GetMaterialParams(material,false,false);
+  GetMaterialParams(ele,false,false);
 
   // working arrays
   double                  potint;
@@ -3025,7 +2994,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
     const DRT::Element*             ele,
     const vector<double>&           ephinp,
     const vector<double>&           edensnp,
-    Teuchos::RCP<const MAT::Material> material,
     const bool                      temperature,
     const double                    frt,
     const Epetra_SerialDenseVector& evel,
@@ -3044,7 +3012,16 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
   double valence(0.0);
   double diffus_valence_frt(0.0);
 
-  //GetMaterialParams(material,temperature,false);
+  //GetMaterialParams(ele,temperature,false);
+
+  // get the material
+  RefCountPtr<MAT::Material> material = ele->Material();
+
+  // use one-point Gauss rule to do calculations at element center
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
+
+  // evaluate shape functions and derivatives at element center
+  EvalShapeFuncAndDerivsAtIntPoint(intpoints_tau,0,ele->Id());
 
   if (material->MaterialType() == INPAR::MAT::m_matlist)
   {
@@ -3069,52 +3046,28 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
     {
       const MAT::ArrheniusSpec* actsinglemat = static_cast<const MAT::ArrheniusSpec*>(singlemat.get());
 
-      // use one-point Gauss rule to calculate temperature at element center
-      DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
-
-      // coordinates of the integration point
-      const double* gpcoord = (intpoints_tau.IP().qxg)[0];
-      for (int idim = 0; idim < nsd_; idim++)
-        {xsi_(idim) = gpcoord[idim];}
-
-      // shape functions
-      DRT::UTILS::shape_function<distype>(xsi_,funct_);
-
       // compute diffusivity according to Sutherland law
-      const double s   = actsinglemat->SuthTemp();
-      const double rt  = actsinglemat->RefTemp();
       double phi = 0.0;
       for (int i=0; i<iel; ++i)
       {
         phi += funct_(i)*ephinp[i];
       }
-      diffus = pow((phi/rt),1.5)*((rt+s)/(phi+s))*actsinglemat->RefVisc()/actsinglemat->SchNum();
+      diffus = actsinglemat->ComputeDiffusivity(phi);
     }
     else if (singlemat->MaterialType() == INPAR::MAT::m_arrhenius_temp)
     {
       const MAT::ArrheniusTemp* actsinglemat = static_cast<const MAT::ArrheniusTemp*>(singlemat.get());
 
-      // use one-point Gauss rule to calculate temperature at element center
-      DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
-
-      // coordinates of the integration point
-      const double* gpcoord = (intpoints_tau.IP().qxg)[0];
-      for (int idim = 0; idim < nsd_; idim++)
-        {xsi_(idim) = gpcoord[idim];}
-
-      // shape functions
-      DRT::UTILS::shape_function<distype>(xsi_,funct_);
+      // get specific heat capacity at constant pressure
+      shcacp_ = actsinglemat->Shc();
 
       // compute diffusivity according to Sutherland law
-      shcacp_          = actsinglemat->Shc();
-      const double s   = actsinglemat->SuthTemp();
-      const double rt  = actsinglemat->RefTemp();
       double phi = 0.0;
       for (int i=0; i<iel; ++i)
       {
         phi += funct_(i)*ephinp[i];
       }
-      diffus = (shcacp_/actsinglemat->PraNum())*pow((phi/rt),1.5)*((rt+s)/(phi+s))*actsinglemat->RefVisc();
+      diffus = shcacp_*actsinglemat->ComputeDiffusivity(phi);
     }
     else
       dserror("type of material found in material list is not supported.");
@@ -3131,53 +3084,31 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
 
     dsassert(numdofpernode_==1,"more than 1 dof per node for condif material");
 
-    // use one-point Gauss rule to calculate temperature at element center
-    DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
-
-    // coordinates of the integration point
-    const double* gpcoord = (intpoints_tau.IP().qxg)[0];
-    for (int idim = 0; idim < nsd_; idim++)
-      {xsi_(idim) = gpcoord[idim];}
-
-    // shape functions
-    DRT::UTILS::shape_function<distype>(xsi_,funct_);
+    // get specific heat capacity at constant pressure
+    shcacp_ = actmat->Shc();
 
     // compute diffusivity according to Sutherland law
-    shcacp_ = actmat->Shc();
-    const double s   = actmat->SuthTemp();
-    const double rt  = actmat->RefTemp();
     double phi = 0.0;
     for (int i=0; i<iel; ++i)
     {
       phi += funct_(i)*ephinp[i];
     }
-    diffus = (shcacp_/actmat->PraNum())*pow((phi/rt),1.5)*((rt+s)/(phi+s))*actmat->RefVisc();
+    diffus = shcacp_*actmat->ComputeDiffusivity(phi);
   }
   else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
   {
     const MAT::ArrheniusPV* actmat = static_cast<const MAT::ArrheniusPV*>(material.get());
 
-    // use one-point Gauss rule to calculate temperature at element center
-    DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
-
-    // coordinates of the integration point
-    const double* gpcoord = (intpoints_tau.IP().qxg)[0];
-    for (int idim = 0; idim < nsd_; idim++)
-      {xsi_(idim) = gpcoord[idim];}
-
-    // shape functions
-    DRT::UTILS::shape_function<distype>(xsi_,funct_);
+    // get specific heat capacity at constant pressure
+    shcacp_ = actmat->Shc();
 
     // compute diffusivity according to Sutherland law
-    shcacp_ = actmat->Shc();
-    const double s   = actmat->SuthTemp();
-    const double rt  = actmat->RefTemp();
     double phi = 0.0;
     for (int i=0; i<iel; ++i)
     {
       phi += funct_(i)*ephinp[i];
     }
-    diffus = (shcacp_/actmat->PraNum())*pow((phi/rt),1.5)*((rt+s)/(phi+s))*actmat->RefVisc();
+    diffus = shcacp_*actmat->ComputeDiffusivity(phi);
 }
   else
     dserror("Material type is not supported");

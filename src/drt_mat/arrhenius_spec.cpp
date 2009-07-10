@@ -99,4 +99,24 @@ void MAT::ArrheniusSpec::Unpack(const vector<char>& data)
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double MAT::ArrheniusSpec::ComputeDiffusivity(const double temp) const
+{
+  const double diffus = pow((temp/RefTemp()),1.5)*((RefTemp()+SuthTemp())/(temp+SuthTemp()))*RefVisc()/SchNum();
+
+  return diffus;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double MAT::ArrheniusSpec::ComputeReactionCoeff(const double temp,
+                                                const double dens) const
+{
+  const double reacoeff = -PreExCon()*pow(temp,TempExp())*dens*exp(-AcTemp()/temp);
+
+  return reacoeff;
+}
+
 #endif

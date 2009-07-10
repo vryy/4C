@@ -101,5 +101,32 @@ void MAT::ArrheniusPV::Unpack(const vector<char>& data)
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double MAT::ArrheniusPV::ComputeTemperature(const double provar) const
+{
+  const double temperature = UnbTemp() + provar * (BurTemp() - UnbTemp());
+
+  return temperature;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double MAT::ArrheniusPV::ComputeDiffusivity(const double temp) const
+{
+  const double diffus = pow((temp/RefTemp()),1.5)*((RefTemp()+SuthTemp())/(temp+SuthTemp()))*RefVisc()/PraNum();
+
+  return diffus;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double MAT::ArrheniusPV::ComputeReactionCoeff(const double temp,
+                                              const double dens) const
+{
+  const double reacoeff = -PreExCon()*pow(temp,TempExp())*dens*exp(-AcTemp()/temp);
+
+  return reacoeff;
+}
 
 #endif

@@ -74,6 +74,9 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidt()
     AddMultiVectorToParameterList(eleparams,"velocity field",convel_);
     AddMultiVectorToParameterList(eleparams,"subgrid-scale velocity field",sgvel_);
 
+    // parameters for stabilization (here required for material evaluation location)
+    eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
+
     //provide displacement field in case of ALE
     eleparams.set("isale",isale_);
     if (isale_)

@@ -3570,11 +3570,11 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalVisc(
   {
     const MAT::SutherlandFluid* actmat = static_cast<const MAT::SutherlandFluid*>(material.get());
 
-    // compute viscosity according to Sutherland law
-    const double s  = actmat->SuthTemp();
-    const double rt = actmat->RefTemp();
-    const double t  = eosfac/dens;
-    visc = pow((t/rt),1.5)*((rt+s)/(t+s))*actmat->RefVisc();
+    // compute temperature based on density and equation-of-state factor
+    const double temp  = eosfac/dens;
+
+    // compute temperature-dependent viscosity according to Sutherland law
+    visc = actmat->ComputeViscosity(temp);
   }
   else
     dserror("material type is not yet implemented");

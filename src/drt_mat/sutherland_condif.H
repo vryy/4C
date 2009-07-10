@@ -111,8 +111,11 @@ namespace MAT
 
     //@}
 
-    /// material type 
+    /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_sutherland_condif; }
+
+    /// compute diffusivity
+    double ComputeDiffusivity(const double temp) const;
 
     /// return material parameters for element calculation
     //@{
