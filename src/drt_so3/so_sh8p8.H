@@ -99,8 +99,9 @@ public:
   /// Kind of ANS anti-locking technique
   enum AnsType
   {
-    ans_none,  ///< DEBUG ONLY: ANS switched off
-    ans_lateral  ///< ANS active in t-/out-of-plane/thickness direction
+    ans_none = 0,  ///< DEBUG ONLY: ANS switched off
+    ans_lateral,  ///< ANS active in t-/out-of-plane/thickness direction, ordinary solid-shell-like 
+    ans_onspot  ///< ANS active in t-/out-of-plane/thickness direction, specially adjusted at 4 spots to get nearly on-spot result
   };
 
   /// way to obtain isochoric material stress response
@@ -151,12 +152,14 @@ public:
 
   /// number of ANS sampling points, here 8
   static const int NUMSP_ = 8;
+  static const int NUMSP2ND_ = 8;  ///< number of 2nd set of sampling points
+  static const int NUMSP3RD_ = 8;  ///< number of 3rd set of sampling points
   /// number of modified ANS strains (E_rt,E_st,E_tt), here 3
   static const int NUMANS_ = 3;
 
   // number of EAS parameters
   static const int NUMEAS_SOSH8_ = 7;  ///< number of EAS parameters of sosh8-like EAS
-  static const int NUMEAS_A_ = 5;  ///< number of EAS parameters of A-type EAS
+  static const int NUMEAS_A_ = 1;  ///< number of EAS parameters of A-type EAS
 
   // Voigt index arrays
   static const int VOIGT6ROW_[];  ///< 6-Voigt row index of corresponding 2-tensor
@@ -394,6 +397,37 @@ private:
   );
 
   //@}
+
+  /// determine proportions of element at origin
+  void AxialMetricsAtOrigin(
+    const LINALG::Matrix<NUMNOD_,NUMDIM_>& xrefe,  ///< (material/reference) element coords
+    LINALG::Matrix<NUMDIM_,NUMDIM_>& jac0,  ///< Jacobian at origin
+    LINALG::Matrix<NUMDIM_,1>& metr0  ///< axial metrics at origin
+    );
+
+  /// EXPERIMENTAL: setup of constant ANS data, second set of points
+  ///
+  /// \sa #sosh8_anssetup()
+  void AnsSetup2(
+    const LINALG::Matrix<NUMNOD_,NUMDIM_>& xrefe,  ///< material/reference element coords
+    const LINALG::Matrix<NUMNOD_,NUMDIM_>& xcurr,  ///< spatial/current element coords
+    std::vector<LINALG::Matrix<NUMDIM_,NUMNOD_> >** deriv_sp,  ///< derivs eval. at all sampling points
+    std::vector<LINALG::Matrix<NUMDIM_,NUMDIM_> >& jac_sps,  ///< jac at all sampling points
+    std::vector<LINALG::Matrix<NUMDIM_,NUMDIM_> >& jac_cur_sps,  ///< current jac at all sampling points
+    LINALG::Matrix<NUMANS_*NUMSP2ND_,NUMDISP_>& B_ans_loc  ///< modified B
+    );
+
+  /// EXPERIMENTAL: setup of constant ANS data, third set of points
+  ///
+  /// \sa #sosh8_anssetup()
+  void AnsSetup3(
+    const LINALG::Matrix<NUMNOD_,NUMDIM_>& xrefe,  ///< material/reference element coords
+    const LINALG::Matrix<NUMNOD_,NUMDIM_>& xcurr,  ///< spatial/current element coords
+    std::vector<LINALG::Matrix<NUMDIM_,NUMNOD_> >** deriv_sp,  ///< derivs eval. at all sampling points
+    std::vector<LINALG::Matrix<NUMDIM_,NUMDIM_> >& jac_sps,  ///< jac at all sampling points
+    std::vector<LINALG::Matrix<NUMDIM_,NUMDIM_> >& jac_cur_sps,  ///< current jac at all sampling points
+    LINALG::Matrix<NUMANS_*NUMSP3RD_,NUMDISP_>& B_ans_loc  ///< modified B
+    );
 
   /// @name EAS functions
   //@{

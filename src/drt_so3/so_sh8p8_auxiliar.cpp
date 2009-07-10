@@ -35,6 +35,303 @@ Maintainer: Burkhard Bornemann
 #include "Teuchos_TimeMonitor.hpp"
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_sh8p8::AxialMetricsAtOrigin(
+  const LINALG::Matrix<NUMNOD_,NUMDIM_>& xrefe,
+  LINALG::Matrix<NUMDIM_,NUMDIM_>& jac0,
+  LINALG::Matrix<NUMDIM_,1>& metr0
+  )
+{
+  // vector of df(origin)
+  static double df0_vector[NUMDIM_*NUMNOD_]
+    = { -0.125,-0.125,-0.125,
+        +0.125,-0.125,-0.125,
+        +0.125,+0.125,-0.125,
+        -0.125,+0.125,-0.125,
+        -0.125,-0.125,+0.125,
+        +0.125,-0.125,+0.125,
+        +0.125,+0.125,+0.125,
+        -0.125,+0.125,+0.125 };
+
+  // shape function derivatives, evaluated at origin (r=s=t=0.0)
+  LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> df0(df0_vector,true); // view
+
+  // compute Jacobian, evaluated at element origin (r=s=t=0.0)
+  jac0.Multiply(df0,xrefe);
+  
+  // line metrics of r-, s- and t-axis in reference space
+  for (int i=0; i<NUMDIM_; ++i) {
+    double metr = 0.0;
+    for (int j=0; j<NUMDIM_; ++j) {
+      metr += jac0(i,j)*jac0(i,j);
+    }
+    metr0(i) = std::sqrt(metr);
+  }
+
+  // Kette rechts
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_sh8p8::AnsSetup2(
+  const LINALG::Matrix<NUMNOD_,NUMDIM_>& xrefe, // material element coords
+  const LINALG::Matrix<NUMNOD_,NUMDIM_>& xcurr, // current element coords
+  std::vector<LINALG::Matrix<NUMDIM_,NUMNOD_> >** deriv_sp,   // derivs eval. at all sampling points
+  std::vector<LINALG::Matrix<NUMDIM_,NUMDIM_> >& jac_sps,     // jac at all sampling points
+  std::vector<LINALG::Matrix<NUMDIM_,NUMDIM_> >& jac_cur_sps, // current jac at all sampling points
+  LINALG::Matrix<NUMANS_*NUMSP2ND_,NUMDISP_>& B_ans_loc // modified B
+  )
+{
+  const int num_sp = NUMSP2ND_;
+
+  // static matrix object of derivs at sampling points, kept in memory
+  static std::vector<LINALG::Matrix<NUMDIM_,NUMNOD_> > df_sp(num_sp);
+  static bool dfsp_eval;                      // flag for re-evaluate everything
+
+  if (dfsp_eval!=0){             // if true f,df already evaluated
+    *deriv_sp = &df_sp;         // return adress of static object to target of pointer
+  } else {
+  /*====================================================================*/
+  /* 8-node hexhedra Solid-Shell node topology
+   * and location of sampling points A to H                             */
+  /*--------------------------------------------------------------------*/
+  /*                      t
+   *                      |
+   *             4========|================7
+   *          // |        |   DU         //||
+   *        //   |        |   |        //  ||
+   *      // AU  |        |   D      //    ||
+   *     5=======E=================6   CU  H
+   *    ||   |   |        |   DL   ||   |  ||
+   *    ||   A   |     BU o--------||-- C -------s
+   *    ||   |   |      |/         ||   |  ||
+   *    F    AL  0----- B ---------G --CL--3
+   *    ||     //     / |          ||    //
+   *    ||   //     /   BL         ||  //
+   *    || //     r                ||//
+   *     1=========================2
+   *
+   */
+  /*====================================================================*/
+    // gp sampling point value for linear fct
+    const double gpl = 1.0/sqrt(3.0);
+    // (r,s,t) gp-locations of sampling points AL,AU,BL,BU,CL,CU,DL,DU
+    // numsp = 8 here set explicitly to allow direct initializing
+    //                           AL,  BL,  CL,  DL,  AU,  BU,  CU,  DU
+    const double r[NUMSP2ND_] = { 0.0, 1.0, 0.0,-1.0, 0.0, 1.0, 0.0,-1.0};
+    const double s[NUMSP2ND_] = {-1.0, 0.0, 1.0, 0.0,-1.0, 0.0, 1.0, 0.0};
+    const double t[NUMSP2ND_] = {-gpl,-gpl,-gpl,-gpl, gpl, gpl, gpl, gpl};
+
+    // fill up df_sp w.r.t. rst directions (NUMDIM) at each sp
+    for (int i=0; i<num_sp; ++i) {
+        // df wrt to r "+0" for each node(0..7) at each sp [i]
+        df_sp[i](0,0) = -(1.0-s[i])*(1.0-t[i])*0.125;
+        df_sp[i](0,1) =  (1.0-s[i])*(1.0-t[i])*0.125;
+        df_sp[i](0,2) =  (1.0+s[i])*(1.0-t[i])*0.125;
+        df_sp[i](0,3) = -(1.0+s[i])*(1.0-t[i])*0.125;
+        df_sp[i](0,4) = -(1.0-s[i])*(1.0+t[i])*0.125;
+        df_sp[i](0,5) =  (1.0-s[i])*(1.0+t[i])*0.125;
+        df_sp[i](0,6) =  (1.0+s[i])*(1.0+t[i])*0.125;
+        df_sp[i](0,7) = -(1.0+s[i])*(1.0+t[i])*0.125;
+
+        // df wrt to s "+1" for each node(0..7) at each sp [i]
+        df_sp[i](1,0) = -(1.0-r[i])*(1.0-t[i])*0.125;
+        df_sp[i](1,1) = -(1.0+r[i])*(1.0-t[i])*0.125;
+        df_sp[i](1,2) =  (1.0+r[i])*(1.0-t[i])*0.125;
+        df_sp[i](1,3) =  (1.0-r[i])*(1.0-t[i])*0.125;
+        df_sp[i](1,4) = -(1.0-r[i])*(1.0+t[i])*0.125;
+        df_sp[i](1,5) = -(1.0+r[i])*(1.0+t[i])*0.125;
+        df_sp[i](1,6) =  (1.0+r[i])*(1.0+t[i])*0.125;
+        df_sp[i](1,7) =  (1.0-r[i])*(1.0+t[i])*0.125;
+
+        // df wrt to t "+2" for each node(0..7) at each sp [i]
+        df_sp[i](2,0) = -(1.0-r[i])*(1.0-s[i])*0.125;
+        df_sp[i](2,1) = -(1.0+r[i])*(1.0-s[i])*0.125;
+        df_sp[i](2,2) = -(1.0+r[i])*(1.0+s[i])*0.125;
+        df_sp[i](2,3) = -(1.0-r[i])*(1.0+s[i])*0.125;
+        df_sp[i](2,4) =  (1.0-r[i])*(1.0-s[i])*0.125;
+        df_sp[i](2,5) =  (1.0+r[i])*(1.0-s[i])*0.125;
+        df_sp[i](2,6) =  (1.0+r[i])*(1.0+s[i])*0.125;
+        df_sp[i](2,7) =  (1.0-r[i])*(1.0+s[i])*0.125;
+    }
+
+    // return adresses of just evaluated matrices
+    *deriv_sp = &df_sp;         // return adress of static object to target of pointer
+    dfsp_eval = 1;               // now all arrays are filled statically
+  }
+
+  for (int sp=0; sp<num_sp; ++sp){
+    // compute (REFERENCE) Jacobian matrix at all sampling points
+    jac_sps[sp].Multiply(df_sp[sp],xrefe);
+    // compute CURRENT Jacobian matrix at all sampling points
+    jac_cur_sps[sp].Multiply(df_sp[sp],xcurr);
+  }
+
+  /*
+  ** Compute modified B-operator in local(parametric) space,
+  ** evaluated at all sampling points
+  */
+  // loop over each sampling point
+  LINALG::Matrix<NUMDIM_,NUMDIM_> jac_cur;
+  for (int sp = 0; sp < num_sp; ++sp) {
+    /* compute the CURRENT Jacobian matrix at the sampling point:
+    **         [ xcurr_,r  ycurr_,r  zcurr_,r ]
+    **  Jcur = [ xcurr_,s  ycurr_,s  zcurr_,s ]
+    **         [ xcurr_,t  ycurr_,t  zcurr_,t ]
+    ** Used to transform the global displacements into parametric space
+    */
+    jac_cur.Multiply(df_sp[sp],xcurr);
+
+    // fill up B-operator
+    for (int inode = 0; inode < NUMNOD_; ++inode) {
+      for (int dim = 0; dim < NUMDIM_; ++dim) {
+        // modify B_loc_tt = N_t.X_t
+        B_ans_loc(sp*num_ans+0,inode*3+dim) = df_sp[sp](2,inode)*jac_cur(2,dim);
+        // modify B_loc_st = N_s.X_t + N_t.X_s
+        B_ans_loc(sp*num_ans+1,inode*3+dim) = df_sp[sp](1,inode)*jac_cur(2,dim)
+                                            + df_sp[sp](2,inode)*jac_cur(1,dim);
+        // modify B_loc_rt = N_r.X_t + N_t.X_r
+        B_ans_loc(sp*num_ans+2,inode*3+dim) = df_sp[sp](0,inode)*jac_cur(2,dim)
+                                            + df_sp[sp](2,inode)*jac_cur(0,dim);
+      }
+    }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_sh8p8::AnsSetup3(
+  const LINALG::Matrix<NUMNOD_,NUMDIM_>& xrefe, // material element coords
+  const LINALG::Matrix<NUMNOD_,NUMDIM_>& xcurr, // current element coords
+  std::vector<LINALG::Matrix<NUMDIM_,NUMNOD_> >** deriv_sp,   // derivs eval. at all sampling points
+  std::vector<LINALG::Matrix<NUMDIM_,NUMDIM_> >& jac_sps,     // jac at all sampling points
+  std::vector<LINALG::Matrix<NUMDIM_,NUMDIM_> >& jac_cur_sps, // current jac at all sampling points
+  LINALG::Matrix<NUMANS_*NUMSP3RD_,NUMDISP_>& B_ans_loc // modified B
+  )
+{
+  const int num_sp = NUMSP3RD_;
+
+  // static matrix object of derivs at sampling points, kept in memory
+  static std::vector<LINALG::Matrix<NUMDIM_,NUMNOD_> > df_sp(num_sp);
+  static bool dfsp_eval;                      // flag for re-evaluate everything
+
+  if (dfsp_eval!=0){             // if true f,df already evaluated
+    *deriv_sp = &df_sp;         // return adress of static object to target of pointer
+  } else {
+  /*====================================================================*/
+  /* 8-node hexhedra Solid-Shell node topology
+   * and location of sampling points A to H                             */
+  /*--------------------------------------------------------------------*/
+  /*                      t
+   *                      |
+   *             4========|================7
+   *          // |        |   DU         //||
+   *        //   |        |   |        //  ||
+   *      // AU  |        |   D      //    ||
+   *     5=======E=================6   CU  H
+   *    ||   |   |        |   DL   ||   |  ||
+   *    ||   A   |     BU o--------||-- C -------s
+   *    ||   |   |      |/         ||   |  ||
+   *    F    AL  0----- B ---------G --CL--3
+   *    ||     //     / |          ||    //
+   *    ||   //     /   BL         ||  //
+   *    || //     r                ||//
+   *     1=========================2
+   *
+   */
+  /*====================================================================*/
+    // gp sampling point value for linear fct
+    const double gpl = 1.0/sqrt(3.0);
+    // (r,s,t) gp-locations of sampling points 
+    // numsp = 8 here set explicitly to allow direct initializing
+    //                             EL,  FL,  GL,  HL,  EU,  FU,  GU,  HU
+    const double r[NUMSP3RD_] = {-1.0, 1.0, 1.0,-1.0,-1.0, 1.0, 1.0,-1.0};
+    const double s[NUMSP3RD_] = {-1.0,-1.0, 1.0, 1.0,-1.0,-1.0, 1.0, 1.0};
+    const double t[NUMSP3RD_] = {-gpl,-gpl,-gpl,-gpl, gpl, gpl, gpl, gpl};
+
+    // fill up df_sp w.r.t. rst directions (NUMDIM) at each sp
+    for (int i=0; i<num_sp; ++i) {
+        // df wrt to r "+0" for each node(0..7) at each sp [i]
+        df_sp[i](0,0) = -(1.0-s[i])*(1.0-t[i])*0.125;
+        df_sp[i](0,1) =  (1.0-s[i])*(1.0-t[i])*0.125;
+        df_sp[i](0,2) =  (1.0+s[i])*(1.0-t[i])*0.125;
+        df_sp[i](0,3) = -(1.0+s[i])*(1.0-t[i])*0.125;
+        df_sp[i](0,4) = -(1.0-s[i])*(1.0+t[i])*0.125;
+        df_sp[i](0,5) =  (1.0-s[i])*(1.0+t[i])*0.125;
+        df_sp[i](0,6) =  (1.0+s[i])*(1.0+t[i])*0.125;
+        df_sp[i](0,7) = -(1.0+s[i])*(1.0+t[i])*0.125;
+
+        // df wrt to s "+1" for each node(0..7) at each sp [i]
+        df_sp[i](1,0) = -(1.0-r[i])*(1.0-t[i])*0.125;
+        df_sp[i](1,1) = -(1.0+r[i])*(1.0-t[i])*0.125;
+        df_sp[i](1,2) =  (1.0+r[i])*(1.0-t[i])*0.125;
+        df_sp[i](1,3) =  (1.0-r[i])*(1.0-t[i])*0.125;
+        df_sp[i](1,4) = -(1.0-r[i])*(1.0+t[i])*0.125;
+        df_sp[i](1,5) = -(1.0+r[i])*(1.0+t[i])*0.125;
+        df_sp[i](1,6) =  (1.0+r[i])*(1.0+t[i])*0.125;
+        df_sp[i](1,7) =  (1.0-r[i])*(1.0+t[i])*0.125;
+
+        // df wrt to t "+2" for each node(0..7) at each sp [i]
+        df_sp[i](2,0) = -(1.0-r[i])*(1.0-s[i])*0.125;
+        df_sp[i](2,1) = -(1.0+r[i])*(1.0-s[i])*0.125;
+        df_sp[i](2,2) = -(1.0+r[i])*(1.0+s[i])*0.125;
+        df_sp[i](2,3) = -(1.0-r[i])*(1.0+s[i])*0.125;
+        df_sp[i](2,4) =  (1.0-r[i])*(1.0-s[i])*0.125;
+        df_sp[i](2,5) =  (1.0+r[i])*(1.0-s[i])*0.125;
+        df_sp[i](2,6) =  (1.0+r[i])*(1.0+s[i])*0.125;
+        df_sp[i](2,7) =  (1.0-r[i])*(1.0+s[i])*0.125;
+    }
+
+    // return adresses of just evaluated matrices
+    *deriv_sp = &df_sp;         // return adress of static object to target of pointer
+    dfsp_eval = 1;               // now all arrays are filled statically
+  }
+
+  for (int sp=0; sp<num_sp; ++sp){
+    // compute (REFERENCE) Jacobian matrix at all sampling points
+    jac_sps[sp].Multiply(df_sp[sp],xrefe);
+    // compute CURRENT Jacobian matrix at all sampling points
+    jac_cur_sps[sp].Multiply(df_sp[sp],xcurr);
+  }
+
+  /*
+  ** Compute modified B-operator in local(parametric) space,
+  ** evaluated at all sampling points
+  */
+  // loop over each sampling point
+  LINALG::Matrix<NUMDIM_,NUMDIM_> jac_cur;
+  for (int sp = 0; sp < num_sp; ++sp) {
+    /* compute the CURRENT Jacobian matrix at the sampling point:
+    **         [ xcurr_,r  ycurr_,r  zcurr_,r ]
+    **  Jcur = [ xcurr_,s  ycurr_,s  zcurr_,s ]
+    **         [ xcurr_,t  ycurr_,t  zcurr_,t ]
+    ** Used to transform the global displacements into parametric space
+    */
+    jac_cur.Multiply(df_sp[sp],xcurr);
+
+    // fill up B-operator
+    for (int inode = 0; inode < NUMNOD_; ++inode) {
+      for (int dim = 0; dim < NUMDIM_; ++dim) {
+        // modify B_loc_tt = N_t.X_t
+        B_ans_loc(sp*num_ans+0,inode*3+dim) = df_sp[sp](2,inode)*jac_cur(2,dim);
+        // modify B_loc_st = N_s.X_t + N_t.X_s
+        B_ans_loc(sp*num_ans+1,inode*3+dim) = df_sp[sp](1,inode)*jac_cur(2,dim)
+                                            + df_sp[sp](2,inode)*jac_cur(1,dim);
+        // modify B_loc_rt = N_r.X_t + N_t.X_r
+        B_ans_loc(sp*num_ans+2,inode*3+dim) = df_sp[sp](0,inode)*jac_cur(2,dim)
+                                            + df_sp[sp](2,inode)*jac_cur(0,dim);
+      }
+    }
+  }
+
+  return;
+}
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

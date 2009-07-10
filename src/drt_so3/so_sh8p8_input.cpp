@@ -167,6 +167,8 @@ bool DRT::ELEMENTS::So_sh8p8::ReadElement()
   {
     if (strncmp(buffer,"Later",5)==0)
       ans_ = ans_lateral;
+    else if (strncmp(buffer,"OnSpot",6)==0)
+      ans_ = ans_onspot;
     else if (strncmp(buffer,"None",4)==0)
       ans_ = ans_none;
     else

@@ -609,6 +609,11 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
     dserror("EAS ain't easy");
   }
 
+#if 0
+  if (eastype_ != soh8_easnone)
+    cout << *alpha << endl;
+#endif
+
   // evaluation of EAS variables (which are constant for the following):
   // -> M defining interpolation of enhanced strains alpha, evaluated at GPs
   // -> determinant of Jacobi matrix at element origin (r=s=t=0.0)
@@ -629,7 +634,6 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
   // modified B-operator in local(parameter) element space
 
   // ANS modified rows of bop in local(parameter) coords
-  //LINALG::Matrix<NUMANS_*NUMSP_,NUMDOF_> B_ans_loc(true); //set to 0
   LINALG::Matrix<NUMANS_*NUMSP_,NUMDISP_> B_ans_loc;
   // Jacobian evaluated at all ANS sampling points
   std::vector<LINALG::Matrix<NUMDIM_,NUMDIM_> > jac_sps(NUMSP_);
@@ -644,6 +648,21 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
   const double gploc    = 1.0/sqrt(3.0);    // gp sampling point value for linear fct
   const double r[NUMGPT_] = {-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc,-gploc};
   const double s[NUMGPT_] = {-gploc,-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc};
+  //const double t[NUMGPT_] = {-gploc,-gploc,-gploc,-gploc, gploc, gploc, gploc, gploc};
+
+  // proportions of element
+  Teuchos::RCP<LINALG::Matrix<NUMDIM_,NUMDIM_> > jac0 = Teuchos::null;  // Jacobian at origin
+  Teuchos::RCP<LINALG::Matrix<NUMDIM_,1> > axmetr0 = Teuchos::null;  // axial metrics at origin
+  Teuchos::RCP<const double> hths = Teuchos::null;
+  Teuchos::RCP<const double> hthr = Teuchos::null;
+  if (ans_ == ans_onspot) {
+    jac0 = Teuchos::rcp(new LINALG::Matrix<NUMDIM_,NUMDIM_>(false));
+    axmetr0 = Teuchos::rcp(new LINALG::Matrix<NUMDIM_,1>(false));
+    AxialMetricsAtOrigin(xrefe,*jac0,*axmetr0);
+    hths = Teuchos::rcp(new double((*axmetr0)(2)/(*axmetr0)(1)));
+    hthr = Teuchos::rcp(new double((*axmetr0)(2)/(*axmetr0)(0)));
+  }
+
 
   // ---------------------------------------------------------------------
   // first loop over Gauss point
@@ -758,14 +777,44 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
                                  + 0.25*(1+r[gp])*(1-s[gp]) * B_ans_loc(0+5*NUMANS_,inode*3+dim)
                                  + 0.25*(1+r[gp])*(1+s[gp]) * B_ans_loc(0+6*NUMANS_,inode*3+dim)
                                  + 0.25*(1-r[gp])*(1+s[gp]) * B_ans_loc(0+7*NUMANS_,inode*3+dim);
-          // B_loc_st = interpolation along r of ANS B_loc_st
-          //          = (1+r)/2 * B_ans(SP B) + (1-r)/2 * B_ans(SP D)
-          bop_loc(4,inode*3+dim) = 0.5*(1.0+r[gp]) * B_ans_loc(1+1*NUMANS_,inode*3+dim)
-                                 + 0.5*(1.0-r[gp]) * B_ans_loc(1+3*NUMANS_,inode*3+dim);
-          // B_loc_rt = interpolation along s of ANS B_loc_rt
-          //          = (1-s)/2 * B_ans(SP A) + (1+s)/2 * B_ans(SP C)
-          bop_loc(5,inode*3+dim) = 0.5*(1.0-s[gp]) * B_ans_loc(2+0*NUMANS_,inode*3+dim)
-                                 + 0.5*(1.0+s[gp]) * B_ans_loc(2+2*NUMANS_,inode*3+dim);
+          // B_loc_st and B_loc_rt
+          if (ans_ == ans_lateral) {
+            // B_loc_st = interpolation along r of ANS B_loc_st
+            //          = (1+r)/2 * B_ans(SP B) + (1-r)/2 * B_ans(SP D)
+            bop_loc(4,inode*3+dim) = 0.5*(1.0+r[gp]) * B_ans_loc(1+1*NUMANS_,inode*3+dim)
+                                   + 0.5*(1.0-r[gp]) * B_ans_loc(1+3*NUMANS_,inode*3+dim);
+            // B_loc_rt = interpolation along s of ANS B_loc_rt
+            //          = (1-s)/2 * B_ans(SP A) + (1+s)/2 * B_ans(SP C)
+            bop_loc(5,inode*3+dim) = 0.5*(1.0-s[gp]) * B_ans_loc(2+0*NUMANS_,inode*3+dim)
+                                   + 0.5*(1.0+s[gp]) * B_ans_loc(2+2*NUMANS_,inode*3+dim);
+          }
+          else if (ans_ == ans_onspot) {
+            // B_loc_st = interpolation along r of ANS B_loc_st
+            //          = (1+r)/2 * B_ans(SP B) + (1-r)/2 * B_ans(SP D)
+            bop_loc(4,inode*3+dim) 
+              = 0.5*(1.0+r[gp]) * 0.5*(1-s[gp]) * B_ans_loc(1+1*NUMANS_,inode*3+dim)  // B
+              + 0.5*(1.0+r[gp]) * 0.5*(1-s[gp]) * (*hths)*B_ans_loc(1+5*NUMANS_,inode*3+dim)  // F
+              + 0.5*(1.0+r[gp]) * 0.5*(1+s[gp]) * B_ans_loc(1+1*NUMANS_,inode*3+dim)  // B
+              + 0.5*(1.0+r[gp]) * 0.5*(1+s[gp]) * (*hths)*B_ans_loc(1+6*NUMANS_,inode*3+dim)  // G
+              + 0.5*(1.0-r[gp]) * 0.5*(1-s[gp]) * B_ans_loc(1+3*NUMANS_,inode*3+dim)  // D
+              + 0.5*(1.0-r[gp]) * 0.5*(1-s[gp]) * (*hths)*B_ans_loc(1+4*NUMANS_,inode*3+dim)  // E
+              + 0.5*(1.0-r[gp]) * 0.5*(1+s[gp]) * B_ans_loc(1+3*NUMANS_,inode*3+dim)  // D
+              + 0.5*(1.0-r[gp]) * 0.5*(1+s[gp]) * (*hths)*B_ans_loc(1+7*NUMANS_,inode*3+dim);  // H
+            // B_loc_rt = interpolation along s of ANS B_loc_rt
+            //          = (1-s)/2 * B_ans(SP A) + (1+s)/2 * B_ans(SP C)
+            bop_loc(5,inode*3+dim) 
+              = 0.5*(1.0-s[gp]) * 0.5*(1-r[gp]) * B_ans_loc(2+0*NUMANS_,inode*3+dim)  // A
+              + 0.5*(1.0-s[gp]) * 0.5*(1-r[gp]) * (*hthr)*B_ans_loc(2+4*NUMANS_,inode*3+dim)  // E
+              + 0.5*(1.0-s[gp]) * 0.5*(1+r[gp]) * B_ans_loc(2+0*NUMANS_,inode*3+dim)  // A
+              + 0.5*(1.0-s[gp]) * 0.5*(1+r[gp]) * (*hthr)*B_ans_loc(2+5*NUMANS_,inode*3+dim)  // F
+              + 0.5*(1.0+s[gp]) * 0.5*(1-r[gp]) * B_ans_loc(2+2*NUMANS_,inode*3+dim)  // C
+              + 0.5*(1.0+s[gp]) * 0.5*(1-r[gp]) * (*hthr)*B_ans_loc(2+7*NUMANS_,inode*3+dim)  // H
+              + 0.5*(1.0+s[gp]) * 0.5*(1+r[gp]) * B_ans_loc(2+2*NUMANS_,inode*3+dim)  // C
+              + 0.5*(1.0+s[gp]) * 0.5*(1+r[gp]) * (*hthr)*B_ans_loc(2+6*NUMANS_,inode*3+dim);  // G
+          }
+          else {
+            dserror("You should not turn arb here.");
+          }
         }
       }
     }
@@ -815,6 +864,15 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
       double dxdt_C = 0.0; double dXdt_C = 0.0;
       double dydt_D = 0.0; double dYdt_D = 0.0;
 
+      double dxdt_E = 0.0; double dXdt_E = 0.0;
+      double dydt_E = 0.0; double dYdt_E = 0.0;
+      double dxdt_F = 0.0; double dXdt_F = 0.0;
+      double dydt_F = 0.0; double dYdt_F = 0.0;
+      double dxdt_G = 0.0; double dXdt_G = 0.0;
+      double dydt_G = 0.0; double dYdt_G = 0.0;
+      double dxdt_H = 0.0; double dXdt_H = 0.0;
+      double dydt_H = 0.0; double dYdt_H = 0.0;
+
       double dzdt_E = 0.0; double dZdt_E = 0.0;
       double dzdt_F = 0.0; double dZdt_F = 0.0;
       double dzdt_G = 0.0; double dZdt_G = 0.0;
@@ -831,6 +889,25 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
         dydt_D += jac_cur_sps[3](1,dim) * jac_cur_sps[3](2,dim);  // g_23^D
         dYdt_D += jac_sps[3](1,dim)     * jac_sps[3](2,dim);      // G_23^D
 
+        if (ans_ == ans_onspot) {
+          dxdt_E += jac_cur_sps[4](0,dim) * jac_cur_sps[4](2,dim);  // g_13^A
+          dXdt_E += jac_sps[4](0,dim)     * jac_sps[4](2,dim);      // G_13^A
+          dydt_E += jac_cur_sps[4](1,dim) * jac_cur_sps[4](2,dim);  // g_23^B
+          dYdt_E += jac_sps[4](1,dim)     * jac_sps[4](2,dim);      // G_23^B
+          dxdt_F += jac_cur_sps[5](0,dim) * jac_cur_sps[5](2,dim);  // g_13^A
+          dXdt_F += jac_sps[5](0,dim)     * jac_sps[5](2,dim);      // G_13^A
+          dydt_F += jac_cur_sps[5](1,dim) * jac_cur_sps[5](2,dim);  // g_23^B
+          dYdt_F += jac_sps[5](1,dim)     * jac_sps[5](2,dim);      // G_23^B
+          dxdt_G += jac_cur_sps[6](0,dim) * jac_cur_sps[6](2,dim);  // g_13^A
+          dXdt_G += jac_sps[6](0,dim)     * jac_sps[6](2,dim);      // G_13^A
+          dydt_G += jac_cur_sps[6](1,dim) * jac_cur_sps[6](2,dim);  // g_23^B
+          dYdt_G += jac_sps[6](1,dim)     * jac_sps[6](2,dim);      // G_23^B
+          dxdt_H += jac_cur_sps[7](0,dim) * jac_cur_sps[7](2,dim);  // g_13^A
+          dXdt_H += jac_sps[7](0,dim)     * jac_sps[7](2,dim);      // G_13^A
+          dydt_H += jac_cur_sps[7](1,dim) * jac_cur_sps[7](2,dim);  // g_23^B
+          dYdt_H += jac_sps[7](1,dim)     * jac_sps[7](2,dim);      // G_23^B
+        }
+
         dzdt_E += jac_cur_sps[4](2,dim) * jac_cur_sps[4](2,dim);
         dZdt_E += jac_sps[4](2,dim)     * jac_sps[4](2,dim);
         dzdt_F += jac_cur_sps[5](2,dim) * jac_cur_sps[5](2,dim);
@@ -843,16 +920,38 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
       // E33: remedy of curvature thickness locking
       // Ett = 0.5* ( (1-r)(1-s)/4 * Ett(SP E) + ... + (1-r)(1+s)/4 * Ett(SP H) )
       lstrain(2) = 0.5 * (
-        0.25*(1.0-r[gp])*(1.0-s[gp]) * (dzdt_E - dZdt_E)
-        + 0.25*(1.0+r[gp])*(1.0-s[gp]) * (dzdt_F - dZdt_F)
-        + 0.25*(1.0+r[gp])*(1.0+s[gp]) * (dzdt_G - dZdt_G)
-        + 0.25*(1.0-r[gp])*(1.0+s[gp]) * (dzdt_H - dZdt_H));
-      // E23: remedy of transverse shear locking
-      // Est = (1+r)/2 * Est(SP B) + (1-r)/2 * Est(SP D)
-      lstrain(4) = 0.5*(1+r[gp]) * (dydt_B - dYdt_B) + 0.5*(1-r[gp]) * (dydt_D - dYdt_D);
-      // E13: remedy of transverse shear locking
-      // Ert = (1-s)/2 * Ert(SP A) + (1+s)/2 * Ert(SP C)
-      lstrain(5) = 0.5*(1-s[gp]) * (dxdt_A - dXdt_A) + 0.5*(1+s[gp]) * (dxdt_C - dXdt_C);
+            0.25*(1.0-r[gp])*(1.0-s[gp]) * (dzdt_E - dZdt_E)
+          + 0.25*(1.0+r[gp])*(1.0-s[gp]) * (dzdt_F - dZdt_F)
+          + 0.25*(1.0+r[gp])*(1.0+s[gp]) * (dzdt_G - dZdt_G)
+          + 0.25*(1.0-r[gp])*(1.0+s[gp]) * (dzdt_H - dZdt_H));
+      // E23 and E31
+      if (ans_ == ans_lateral) {
+        // E23: remedy of transverse shear locking
+        // Est = (1+r)/2 * Est(SP B) + (1-r)/2 * Est(SP D)
+        lstrain(4) = 0.5*(1+r[gp]) * (dydt_B - dYdt_B) + 0.5*(1-r[gp]) * (dydt_D - dYdt_D);
+        // E13: remedy of transverse shear locking
+        // Ert = (1-s)/2 * Ert(SP A) + (1+s)/2 * Ert(SP C)
+        lstrain(5) = 0.5*(1-s[gp]) * (dxdt_A - dXdt_A) + 0.5*(1+s[gp]) * (dxdt_C - dXdt_C);
+      }
+      else if (ans_ == ans_onspot) {
+        // E23: remedy of transverse shear locking
+        // Est = (1+r)/2 * Est(SP B) + (1-r)/2 * Est(SP D)
+        lstrain(4) 
+          = 0.5*(1+r[gp]) * 0.5*(1-s[gp]) * ( (dydt_B - dYdt_B) + (*hths)*(dydt_F - dYdt_F) )
+          + 0.5*(1+r[gp]) * 0.5*(1+s[gp]) * ( (dydt_B - dYdt_B) + (*hths)*(dydt_G - dYdt_G) )
+          + 0.5*(1-r[gp]) * 0.5*(1-s[gp]) * ( (dydt_D - dYdt_D) + (*hths)*(dydt_E - dYdt_E) )
+          + 0.5*(1-r[gp]) * 0.5*(1+s[gp]) * ( (dydt_D - dYdt_D) + (*hths)*(dydt_H - dYdt_H) );
+        // E13: remedy of transverse shear locking
+        // Ert = (1-s)/2 * Ert(SP A) + (1+s)/2 * Ert(SP C)
+        lstrain(5) 
+          = 0.5*(1-s[gp]) * 0.5*(1-r[gp]) * ( (dxdt_A - dXdt_A) + (*hthr)*(dxdt_E - dXdt_E) )
+          + 0.5*(1-s[gp]) * 0.5*(1+r[gp]) * ( (dxdt_A - dXdt_A) + (*hthr)*(dxdt_F - dXdt_F) )
+          + 0.5*(1+s[gp]) * 0.5*(1-r[gp]) * ( (dxdt_C - dXdt_C) + (*hthr)*(dxdt_H - dXdt_H) )
+          + 0.5*(1+s[gp]) * 0.5*(1+r[gp]) * ( (dxdt_C - dXdt_C) + (*hthr)*(dxdt_G - dXdt_G) );
+      }
+      else {
+        dserror("Your should not turn up here.");
+      }
     }
     // end of ANS modification of strains
 
@@ -922,7 +1021,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
       Stress(elestress,iostress,gp,detdefgrad,defgrad,glstrain,stress,pressure);
 
     // effective shape function of scalar pressure field at current Gauss point
-    LINALG::Matrix<NUMPRES_,1> prshfct;
+    LINALG::Matrix<NUMPRES_,1> prshfct(true);
     if (stab_ == stab_nonaffine)
       prshfct.MultiplyNT(1.0/stabAA(0,0),stabHA,stabA[gp]);
     else if ( (stab_ == stab_affine)
@@ -985,16 +1084,60 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
                     + 0.25*(1.0+r[gp])*(1.0-s[gp]) * (*deriv_sp)[5](2,inod) * (*deriv_sp)[5](2,jnod)
                     + 0.25*(1.0+r[gp])*(1.0+s[gp]) * (*deriv_sp)[6](2,inod) * (*deriv_sp)[6](2,jnod)
                     + 0.25*(1.0-r[gp])*(1.0+s[gp]) * (*deriv_sp)[7](2,inod) * (*deriv_sp)[7](2,jnod);
-            // ANS modification in st-dir
-            G_ij(4) = 0.5*((1.0+r[gp]) * ((*deriv_sp)[1](1,inod) * (*deriv_sp)[1](2,jnod)
-                                         +(*deriv_sp)[1](2,inod) * (*deriv_sp)[1](1,jnod))
-                          +(1.0-r[gp]) * ((*deriv_sp)[3](1,inod) * (*deriv_sp)[3](2,jnod)
-                                         +(*deriv_sp)[3](2,inod) * (*deriv_sp)[3](1,jnod)));
-            // ANS modification in rt-dir
-            G_ij(5) = 0.5*((1.0-s[gp]) * ((*deriv_sp)[0](0,inod) * (*deriv_sp)[0](2,jnod)
-                                         +(*deriv_sp)[0](2,inod) * (*deriv_sp)[0](0,jnod))
-                          +(1.0+s[gp]) * ((*deriv_sp)[2](0,inod) * (*deriv_sp)[2](2,jnod)
-                                         +(*deriv_sp)[2](2,inod) * (*deriv_sp)[2](0,jnod)));
+            // st-dir and rt-dir
+            if (ans_ == ans_lateral) {
+              // ANS modification in st-dir
+              G_ij(4) = 0.5*((1.0+r[gp]) * ((*deriv_sp)[1](1,inod) * (*deriv_sp)[1](2,jnod)
+                                           +(*deriv_sp)[1](2,inod) * (*deriv_sp)[1](1,jnod))
+                            +(1.0-r[gp]) * ((*deriv_sp)[3](1,inod) * (*deriv_sp)[3](2,jnod)
+                                           +(*deriv_sp)[3](2,inod) * (*deriv_sp)[3](1,jnod)));
+              // ANS modification in rt-dir
+              G_ij(5) = 0.5*((1.0-s[gp]) * ((*deriv_sp)[0](0,inod) * (*deriv_sp)[0](2,jnod)
+                                           +(*deriv_sp)[0](2,inod) * (*deriv_sp)[0](0,jnod))
+                            +(1.0+s[gp]) * ((*deriv_sp)[2](0,inod) * (*deriv_sp)[2](2,jnod)
+                                           +(*deriv_sp)[2](2,inod) * (*deriv_sp)[2](0,jnod)));
+            }
+            else if (ans_ == ans_onspot) {
+              // ANS modification in st-dir
+              G_ij(4) 
+                = 0.5*(1.0+r[gp]) * 0.5*(1-s[gp]) * ((*deriv_sp)[1](1,inod) * (*deriv_sp)[1](2,jnod)
+                                                     + (*deriv_sp)[1](2,inod) * (*deriv_sp)[1](1,jnod))  // B
+                + 0.5*(1.0+r[gp]) * 0.5*(1-s[gp]) * (*hths)*((*deriv_sp)[5](1,inod) * (*deriv_sp)[5](2,jnod)
+                                                             + (*deriv_sp)[5](2,inod) * (*deriv_sp)[5](1,jnod))  // F
+                + 0.5*(1.0+r[gp]) * 0.5*(1+s[gp]) * ((*deriv_sp)[1](1,inod) * (*deriv_sp)[1](2,jnod)
+                                                     + (*deriv_sp)[1](2,inod) * (*deriv_sp)[1](1,jnod))  // B
+                + 0.5*(1.0+r[gp]) * 0.5*(1+s[gp]) * (*hths)*((*deriv_sp)[6](1,inod) * (*deriv_sp)[6](2,jnod) 
+                                                             + (*deriv_sp)[6](2,inod) * (*deriv_sp)[6](1,jnod))  // G
+                + 0.5*(1.0-r[gp]) * 0.5*(1-s[gp]) * ((*deriv_sp)[3](1,inod) * (*deriv_sp)[3](2,jnod) 
+                                                     + (*deriv_sp)[3](2,inod) * (*deriv_sp)[3](1,jnod))  // D
+                + 0.5*(1.0-r[gp]) * 0.5*(1-s[gp]) * (*hths)*((*deriv_sp)[4](1,inod) * (*deriv_sp)[4](2,jnod) 
+                                                             + (*deriv_sp)[4](2,inod) * (*deriv_sp)[4](1,jnod))  // E
+                + 0.5*(1.0-r[gp]) * 0.5*(1+s[gp]) * ((*deriv_sp)[3](1,inod) * (*deriv_sp)[3](2,jnod) 
+                                                     + (*deriv_sp)[3](2,inod) * (*deriv_sp)[3](1,jnod))  // D
+                + 0.5*(1.0-r[gp]) * 0.5*(1+s[gp]) * (*hths)*((*deriv_sp)[7](1,inod) * (*deriv_sp)[7](2,jnod) 
+                                                             + (*deriv_sp)[7](2,inod) * (*deriv_sp)[7](1,jnod));  // H
+              // ANS modification in rt-dir
+              G_ij(5) 
+                = 0.5*(1.0-s[gp]) * 0.5*(1-r[gp]) * ((*deriv_sp)[0](0,inod) * (*deriv_sp)[0](2,jnod) 
+                                                     + (*deriv_sp)[0](2,inod) * (*deriv_sp)[0](0,jnod))  // A
+                + 0.5*(1.0-s[gp]) * 0.5*(1-r[gp]) * (*hthr)*((*deriv_sp)[4](0,inod) * (*deriv_sp)[4](2,jnod) 
+                                                             + (*deriv_sp)[4](2,inod) * (*deriv_sp)[4](0,jnod))  // E
+                + 0.5*(1.0-s[gp]) * 0.5*(1+r[gp]) * ((*deriv_sp)[0](0,inod) * (*deriv_sp)[0](2,jnod) 
+                                                     + (*deriv_sp)[0](2,inod) * (*deriv_sp)[0](0,jnod))  // A
+                + 0.5*(1.0-s[gp]) * 0.5*(1+r[gp]) * (*hthr)*((*deriv_sp)[5](0,inod) * (*deriv_sp)[5](2,jnod) 
+                                                             + (*deriv_sp)[5](2,inod) * (*deriv_sp)[5](0,jnod))  // F
+                + 0.5*(1.0+s[gp]) * 0.5*(1-r[gp]) * ((*deriv_sp)[2](0,inod) * (*deriv_sp)[2](2,jnod) 
+                                                     + (*deriv_sp)[2](2,inod) * (*deriv_sp)[2](0,jnod))  // C
+                + 0.5*(1.0+s[gp]) * 0.5*(1-r[gp]) * (*hthr)*((*deriv_sp)[7](0,inod) * (*deriv_sp)[7](2,jnod) 
+                                                             + (*deriv_sp)[7](2,inod) * (*deriv_sp)[7](0,jnod))  // H
+                + 0.5*(1.0+s[gp]) * 0.5*(1+r[gp]) * ((*deriv_sp)[2](0,inod) * (*deriv_sp)[2](2,jnod) 
+                                                     + (*deriv_sp)[2](2,inod) * (*deriv_sp)[2](0,jnod))  // C
+                + 0.5*(1.0+s[gp]) * 0.5*(1+r[gp]) * (*hthr)*((*deriv_sp)[6](0,inod) * (*deriv_sp)[6](2,jnod) 
+                                                             + (*deriv_sp)[6](2,inod) * (*deriv_sp)[6](0,jnod));  // G
+            }
+            else {
+              dserror("You should not turn up here.");
+            }
           }
 
           // transformation of local(parameter) space 'back' to global(material) space
