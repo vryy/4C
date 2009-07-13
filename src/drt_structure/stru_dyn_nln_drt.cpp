@@ -17,6 +17,7 @@ Maintainer: Michael Gee
 #include <iostream>
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
+#include <Teuchos_TimeMonitor.hpp>
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -214,7 +215,7 @@ void dyn_nlnstructural_drt()
       genalphaparams.set<double>("measured_curve1",iap.get<double>("MEASURED_CURVE1"));
       genalphaparams.set<double>("measured_curve2",iap.get<double>("MEASURED_CURVE2"));
       genalphaparams.set<double>("inv_ana_tol",iap.get<double>("INV_ANA_TOL"));
-      
+
       // parameters for interaction potential
       switch (Teuchos::getIntegralValue<INPAR::POTENTIAL::PotentialType>(intpot,"POTENTIAL_TYPE"))
       {
@@ -240,7 +241,7 @@ void dyn_nlnstructural_drt()
           genalphaparams.set<string>("potential type","surface");
         break;
       }
-      
+
       // set approximation method for volume potentials
       switch (Teuchos::getIntegralValue<INPAR::POTENTIAL::ApproximationType>(intpot,"APPROXIMATION_TYPE"))
       {
@@ -402,6 +403,8 @@ void dyn_nlnstructural_drt()
     }
     break;
   } // end of switch(sdyn->Typ)
+
+  Teuchos::TimeMonitor::summarize();
 
   return;
 } // end of dyn_nlnstructural_drt()

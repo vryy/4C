@@ -12,6 +12,8 @@ Maintainer: Michael Gee
 #ifdef D_SOLID3
 #ifdef CCADISCRET
 
+#include <Teuchos_TimeMonitor.hpp>
+
 #include "so_ptet.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
@@ -37,6 +39,8 @@ using namespace std;
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::PtetRegister::Initialize(DRT::Discretization& dis)
 {
+  TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::PtetRegister::Initialize");
+
   const int myrank = dis.Comm().MyPID();
 
   const int numele = dis.NumMyColElements();
@@ -124,6 +128,8 @@ void DRT::ELEMENTS::PtetRegister::PreEvaluate(DRT::Discretization& dis,
                                               RCP<Epetra_Vector>          systemvector2,
                                               RCP<Epetra_Vector>          systemvector3)
 {
+  TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::PtetRegister::PreEvaluate");
+
   // nodal integration for nlnstiff and internal forces only
   // (this method does not compute stresses/strains/element updates)
   string& action = p.get<string>("action","none");
@@ -382,6 +388,8 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix*    
                                                    const INPAR::STR::StressType  iostress,
                                                    const INPAR::STR::StrainType  iostrain)
 {
+  TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::PtetRegister::NodalIntegration");
+
   const int nnodeinpatch = (int)nodepatch.size();
   const int ndofinpatch  = nnodeinpatch*3;
   const int neleinpatch  = (int)adjele.size();
