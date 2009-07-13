@@ -319,11 +319,11 @@ void DRT::ELEMENTS::PtetRegister::PreEvaluate(DRT::Discretization& dis,
     if (err) dserror("Epetra_FECrsMatrix::GlobalAssemble returned err=%d",err);
     for (int lrow=0; lrow<stifftmp->NumMyRows(); ++lrow)
     {
-      const int grow = stifftmp->RowMap().GID(lrow);
       int numentries;
       double* values;
       if (not stifftmp->Filled())
       {
+        const int grow = stifftmp->RowMap().GID(lrow);
         int* gindices;
         int err = stifftmp->ExtractGlobalRowView(grow,numentries,values,gindices);
         if (err) dserror("Epetra_FECrsMatrix::ExtractGlobalRowView returned err=%d",err);
@@ -335,8 +335,24 @@ void DRT::ELEMENTS::PtetRegister::PreEvaluate(DRT::Discretization& dis,
         int* lindices;
         int err = stifftmp->ExtractMyRowView(lrow,numentries,values,lindices);
         if (err) dserror("Epetra_FECrsMatrix::ExtractMyRowView returned err=%d",err);
-        for (int j=0; j<numentries; ++j)
-          systemmatrix1->Assemble(values[j],grow,cmap.GID(lindices[j]));
+        if (systemmatrix != null and systemmatrix->Filled())
+        {
+          Epetra_CrsMatrix& matrix = *systemmatrix->EpetraMatrix();
+          for (int j=0; j<numentries; ++j)
+          {
+            int err = matrix.SumIntoMyValues(lrow,1,&values[j],&lindices[j]);
+            if (err!=0)
+            {
+              dserror("Epetra_CrsMatrix::SumIntoMyValues returned err=%d",err);
+            }
+          }
+        }
+        else
+        {
+          const int grow = stifftmp->RowMap().GID(lrow);
+          for (int j=0; j<numentries; ++j)
+            systemmatrix1->Assemble(values[j],grow,cmap.GID(lindices[j]));
+        }
       }
     }
   }
