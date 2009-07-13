@@ -167,7 +167,25 @@ void DRT::ELEMENTS::PtetRegister::PreEvaluate(DRT::Discretization& dis,
   // (across-parallel-interface assembly)
   const Epetra_Map& rmap = *dis.DofRowMap();
   const Epetra_Map& dmap = rmap;
-  Epetra_FECrsMatrix stifftmp(Copy,rmap,256,false);
+
+  RCP<Epetra_FECrsMatrix> stifftmp;
+  RCP<LINALG::SparseMatrix> systemmatrix = rcp_dynamic_cast<LINALG::SparseMatrix>(systemmatrix1);
+  if (systemmatrix != null and systemmatrix->Filled())
+  {
+    //stifftmp = rcp(new Epetra_FECrsMatrix(Copy,systemmatrix->EpetraMatrix()->Graph()));
+
+    int nrows = systemmatrix->EpetraMatrix()->NumMyRows();
+    std::vector<int> numentries(nrows);
+    for (int i=0; i<nrows; ++i)
+    {
+      systemmatrix->EpetraMatrix()->NumMyRowEntries(i, numentries[i]);
+    }
+    stifftmp = rcp(new Epetra_FECrsMatrix(Copy,rmap,&numentries[0],false));
+  }
+  else
+  {
+    stifftmp = rcp(new Epetra_FECrsMatrix(Copy,rmap,256,false));
+  }
   // create temporary vector in column map to assemble to
   Epetra_Vector forcetmp1(*dis.DofColMap(),true);
 
@@ -254,10 +272,10 @@ void DRT::ELEMENTS::PtetRegister::PreEvaluate(DRT::Discretization& dis,
         for (int j=0; j<ndofperpatch; ++j)
         {
           const int cgid = lm[j];
-          int errone = stifftmp.SumIntoGlobalValues(1,&rgid,1,&cgid,&stiff(i,j));
+          int errone = stifftmp->SumIntoGlobalValues(1,&rgid,1,&cgid,&stiff(i,j));
           if (errone>0)
           {
-            int errtwo = stifftmp.InsertGlobalValues(1,&rgid,1,&cgid,&stiff(i,j));
+            int errtwo = stifftmp->InsertGlobalValues(1,&rgid,1,&cgid,&stiff(i,j));
             if (errtwo<0) dserror("Epetra_FECrsMatrix::InsertGlobalValues returned error code %d",errtwo);
           }
           else if (errone)
@@ -294,15 +312,15 @@ void DRT::ELEMENTS::PtetRegister::PreEvaluate(DRT::Discretization& dis,
   }
   if (assemblemat1)
   {
-    int err = stifftmp.GlobalAssemble(dmap,rmap,false);
+    int err = stifftmp->GlobalAssemble(dmap,rmap,false);
     if (err) dserror("Epetra_FECrsMatrix::GlobalAssemble returned err=%d",err);
-    for (int lrow=0; lrow<stifftmp.NumMyRows(); ++lrow)
+    for (int lrow=0; lrow<stifftmp->NumMyRows(); ++lrow)
     {
-      const int grow = stifftmp.RowMap().GID(lrow);
+      const int grow = stifftmp->RowMap().GID(lrow);
       int numentries;
       double* values;
       int* gindices;
-      int err = stifftmp.ExtractGlobalRowView(grow,numentries,values,gindices);
+      int err = stifftmp->ExtractGlobalRowView(grow,numentries,values,gindices);
       if (err) dserror("Epetra_FECrsMatrix::ExtractGlobalRowView returned err=%d",err);
       for (int j=0; j<numentries; ++j)
         systemmatrix1->Assemble(values[j],grow,gindices[j]);
