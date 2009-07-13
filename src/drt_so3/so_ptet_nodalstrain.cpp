@@ -172,8 +172,9 @@ void DRT::ELEMENTS::PtetRegister::PreEvaluate(DRT::Discretization& dis,
   RCP<LINALG::SparseMatrix> systemmatrix = rcp_dynamic_cast<LINALG::SparseMatrix>(systemmatrix1);
   if (systemmatrix != null and systemmatrix->Filled())
   {
-    //stifftmp = rcp(new Epetra_FECrsMatrix(Copy,systemmatrix->EpetraMatrix()->Graph()));
-
+#if 1
+    stifftmp = rcp(new Epetra_FECrsMatrix(Copy,systemmatrix->EpetraMatrix()->Graph()));
+#else
     int nrows = systemmatrix->EpetraMatrix()->NumMyRows();
     std::vector<int> numentries(nrows);
     for (int i=0; i<nrows; ++i)
@@ -181,6 +182,7 @@ void DRT::ELEMENTS::PtetRegister::PreEvaluate(DRT::Discretization& dis,
       systemmatrix->EpetraMatrix()->NumMyRowEntries(i, numentries[i]);
     }
     stifftmp = rcp(new Epetra_FECrsMatrix(Copy,rmap,&numentries[0],false));
+#endif
   }
   else
   {
@@ -313,17 +315,29 @@ void DRT::ELEMENTS::PtetRegister::PreEvaluate(DRT::Discretization& dis,
   if (assemblemat1)
   {
     int err = stifftmp->GlobalAssemble(dmap,rmap,false);
+    const Epetra_Map& cmap = stifftmp->ColMap();
     if (err) dserror("Epetra_FECrsMatrix::GlobalAssemble returned err=%d",err);
     for (int lrow=0; lrow<stifftmp->NumMyRows(); ++lrow)
     {
       const int grow = stifftmp->RowMap().GID(lrow);
       int numentries;
       double* values;
-      int* gindices;
-      int err = stifftmp->ExtractGlobalRowView(grow,numentries,values,gindices);
-      if (err) dserror("Epetra_FECrsMatrix::ExtractGlobalRowView returned err=%d",err);
-      for (int j=0; j<numentries; ++j)
-        systemmatrix1->Assemble(values[j],grow,gindices[j]);
+      if (not stifftmp->Filled())
+      {
+        int* gindices;
+        int err = stifftmp->ExtractGlobalRowView(grow,numentries,values,gindices);
+        if (err) dserror("Epetra_FECrsMatrix::ExtractGlobalRowView returned err=%d",err);
+        for (int j=0; j<numentries; ++j)
+          systemmatrix1->Assemble(values[j],grow,gindices[j]);
+      }
+      else
+      {
+        int* lindices;
+        int err = stifftmp->ExtractMyRowView(lrow,numentries,values,lindices);
+        if (err) dserror("Epetra_FECrsMatrix::ExtractMyRowView returned err=%d",err);
+        for (int j=0; j<numentries; ++j)
+          systemmatrix1->Assemble(values[j],grow,cmap.GID(lindices[j]));
+      }
     }
   }
 
