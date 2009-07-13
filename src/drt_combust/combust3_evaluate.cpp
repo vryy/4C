@@ -133,7 +133,6 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       // einzige Stelle, die die Dichte benötigt ist Output von Fluid
       // Druck ist schon mit Dichte skaliert -> Skalierung mit 1 ändert nichts
       params.set("density", 1.0); 
-      cout << "Warning: two-phase flows have different densities, evaluate(get_density) returns 1.0" << endl;
 //URSULA
       break;
     }
@@ -357,6 +356,38 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 
       // store pointer to interface handle
       ih_ = params.get< Teuchos::RCP< COMBUST::InterfaceHandleCombust > >("interfacehandle",Teuchos::null);
+
+      //---------------------------------------------------
+      // find out whether an element is intersected or not
+      //---------------------------------------------------
+      // initialization call of fluid time integration scheme will end up here:
+      // The initial flame front has not been incorporated into the fluid field -> no XFEM dofs, yet!
+      if (ih_->FlameFront() == Teuchos::null)
+      {
+        this->intersected_ = false;
+      }
+      else // regular call
+      {
+        // get vector of integration cells for this element
+        std::size_t numcells= ih_->GetNumDomainIntCells(this);
+        if (numcells > 1)
+        {
+          // more than one integration cell -> element intersected
+          this->intersected_ = true;
+          // std::cout << "Mehrere DomainIntCells für Element "<<  this->Id() << " gefunden " << std::endl;
+        }
+        else if (numcells == 1)
+        {
+          // only one integration cell -> element not intersected
+          this->intersected_ = false;
+          // std::cout << "Eine DomainIntCell für Element "<<  this->Id() << " gefunden " << std::endl;
+        }
+        else // numcells = 0 or negative number
+        {
+          // no integration cell -> impossible, something went wrong!
+          dserror ("There are no DomainIntCells for element %d ", this->Id());
+        }
+      }
 
       // get access to global dofman
       const Teuchos::RCP<XFEM::DofManager> globaldofman = params.get< Teuchos::RCP< XFEM::DofManager > >("dofmanager");

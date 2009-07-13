@@ -93,13 +93,35 @@ namespace COMBUST
 
     /// find the flame front within a refinement cell according to G-function field
     void FindFlameFront(
-           const Teuchos::RCP<Epetra_Vector>           phi,
            const Teuchos::RCP<COMBUST::RefinementCell> cell);
 
-    /// find intersection points of G-function (level set zero iso-surface) with refinement cell edges
+    /*!
+     * \brief find intersection points of G-function (level set zero iso-surface) with refinement cell edges
+
+       - phi values (level set function/ G-function) are known at the vertices of the cell
+       - for linear elements (hex8) there will be one intersection point (sign change) at most
+       - for quadratic elements there can be two intersection points (check derivatives, too!)
+       - intersection point can be determined via linear interpolation (linear elements), or via
+         shape functions (general case)
+       - it is useful to know which edge an intersection point belongs to
+       - transformation of vertices and intersection points to global coordinates necessary?
+         -> no, element coordinates should be fine (-> see Scilab test program)
+
+       loop over all edges
+       {
+         determine intersection point in local element coordinates
+         if edge is intersected
+         {
+           store edge number (key) and coordinates of corresponding spanning nodes (vector<int>) in map
+         }
+       }
+
+       \author rasthofer
+       \date 06/09
+     */
     void FindIntersectionPoints(const Teuchos::RCP<COMBUST::RefinementCell> cell);
 
-    /// capture flame front within one refinement cell to provide integration cells
+    /// capture flame front and provide integration cells
     void CaptureFlameFront(const Teuchos::RCP<const COMBUST::RefinementCell> cell);
 
     /// not documented yet
@@ -107,10 +129,11 @@ namespace COMBUST
             std::vector<std::vector<int> >&        trianglelist,
             std::multimap<int,std::vector<int> >&  segmentlist,
             std::vector<std::vector<double> >&     pointlist,
-            std::map<int,int>&          intersectionpoints_id, //
-            const std::vector<double>&  gfuncvalue //
+            std::map<int,int>&                     intersectionpoints_id, //
+            const std::vector<double>&             gfuncvalue //
             );
 
+    /// not documented yet
     void IdentifyPolygonOrientation(
             std::vector<int>&           segment,
             const int                   surf_id,
@@ -118,6 +141,7 @@ namespace COMBUST
             const std::vector<double>&  gfuncvalue
             );
 
+    /// not documented yet
     void buildFlameFrontSegments(
             std::map<int,int>&                    intersectionpoints_id,
             std::multimap<int,std::vector<int> >& segmentlist,
@@ -125,8 +149,6 @@ namespace COMBUST
             const std::vector<std::vector<double> >& pointlist
             );
 
-    // these 3 should be moved to a class accepting the 2D flame front as an input and producing 3D
-    // integration cells as an output
     /// not documented yet
     void buildPLC(
             const Teuchos::RCP<const COMBUST::RefinementCell> cell,
@@ -137,29 +159,29 @@ namespace COMBUST
     /// not documented yet
     void CreateIntegrationCells(
             const std::vector<std::vector<double> >&  pointlist,
-            std::multimap<int,std::vector<int> >&          segmentlist,
+            std::multimap<int,std::vector<int> >&     segmentlist,
             const std::vector<std::vector<int> >&     XFEMsurfacelist,
             const std::vector<std::vector<int> >&     trianglelist,
             GEO::DomainIntCells&                      domainintcelllist,
             //GEO::BoundaryIntCells&                    boundaryintcelllist,
-            const LINALG::SerialDenseMatrix   xyze
-            //const std::vector<double>& gfuncvalue
+            const LINALG::SerialDenseMatrix           xyze,
+            const std::vector<double>&                gfuncvalue
             );
 
 #ifdef QHULL
     /// not documented yet
     void TransformIntegrationCells(
-            tetgenio&                out,
-            GEO::DomainIntCells&     domainintcelllist,
-            //GEO::BoundaryIntCells&   boundaryintcelllist,
-            const LINALG::SerialDenseMatrix xyze
-            //const std::vector<double>& gfuncvalue
+            tetgenio&                        out,
+            GEO::DomainIntCells&             domainintcelllist,
+            //GEO::BoundaryIntCells&           boundaryintcelllist,
+            const LINALG::SerialDenseMatrix  xyze,
+            const std::vector<double>&       gfuncvalue
             );
 #endif
 
     /// not documented yet
     bool GetIntCellDomain(
-            const LINALG::SerialDenseMatrix               IntCellCoord,
+            const LINALG::SerialDenseMatrix         IntCellCoord,
             const std::vector<double>&              gfuncvalue,
             const DRT::Element::DiscretizationType  xfem_distype,
             const DRT::Element::DiscretizationType  cell_distype
@@ -175,7 +197,7 @@ namespace COMBUST
     Teuchos::RCP<Epetra_Vector> phinp_;
 
     //URSULA
-    // integration cells of intersected element
+    // integration cells for each element
     std::map<int,GEO::DomainIntCells> elementintcells_;
     // boundary integration cells
     std::map<int,GEO::BoundaryIntCells> boundaryintcells_;

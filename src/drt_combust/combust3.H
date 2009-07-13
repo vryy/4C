@@ -113,6 +113,8 @@ namespace DRT
         
         virtual void Unpack(const std::vector<char>& data);
         
+        virtual bool Intersected() const { return intersected_; };
+        
         //! Destructor
         virtual ~Combust3();
         
@@ -273,6 +275,9 @@ namespace DRT
         
         //! store information about the intersection handle
         Teuchos::RCP<COMBUST::InterfaceHandleCombust>                       ih_;
+        
+        //! boolean indicating whether element is intersected by the interface
+        bool intersected_;
         
         // internal calculation methods
         

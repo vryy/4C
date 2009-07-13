@@ -144,42 +144,6 @@ namespace XFEM
             return false;
         }
       }
-      
-      //! calculate modified enrichment value based on input \f$\psi(x) - \psi(x_{\mathrm{n}})\f$
-      double ModifiedEnrValue(
-          const LINALG::Matrix<3,1>&            actpos,            ///< \f$x\f$
-          const LINALG::Matrix<3,1>&            nodalpos,          ///< \f$x_{\mathrm{Node}}\f$
-          const XFEM::InterfaceHandle&          ih,                ///< the ubiquitous interface handle with all geometry information
-          const XFEM::Enrichment::ApproachFrom  approachdirection  ///< approach direction
-      ) const;
-      
-      //! working method for kink enrichments; to be merged with ModifiedEnrValue()
-      double ModifiedKinkEnrValue(
-          const LINALG::Matrix<3,1>&             actpos,             ///< \f$x\f$
-          const int                              nodelid,
-          const COMBUST::InterfaceHandleCombust&    ih,                 ///< the ubiquitous interface handle with all geometry information
-          const XFEM::Enrichment::ApproachFrom   approachdirection,  ///< approach direction
-          const DRT::Element&                    ele
-      ) const;
-
-
-      //! calculate modified enrichment value derivative
-      std::vector<double> ModifiedEnrValue_derxy(
-              const LINALG::Matrix<3,1>&             actpos,
-              const COMBUST::InterfaceHandleCombust&           ih,
-              const DRT::Element&                    ele
-              //const LINALG::Matrix<1,8>&             phi
-              ) const;
-
-
-      //! calculate modified enrichment value second derivative
-      std::vector<double> ModifiedEnrValue_derxy2(
-              const LINALG::Matrix<3,1>&             actpos,
-              const COMBUST::InterfaceHandleCombust&           ih,
-              const DRT::Element&                    ele
-              //const LINALG::Matrix<1,8>&             phi
-              ) const;
-
 
       //! calculate enrichment value based on input \f$\psi(x)\f$
       double EnrValue(
@@ -188,13 +152,281 @@ namespace XFEM
           const XFEM::Enrichment::ApproachFrom  approachdirection  ///< approach direction
       ) const;
 
-      //! compute enrichment value based on level set function
-      double EnrValueLevelSet(
-              // const DRT::Element&                    ele,
-              const GEO::DomainIntCell&             cell,
-              const int                              nodelid
-              // const LINALG::Matrix<3,1>&             actpos,
-              //const LINALG::Matrix<1,8>&             phi
+      //! compute enrichment value for integration cell (constant!)
+      double EnrValueIntCell(
+          const GEO::DomainIntCell& cell
+      ) const;
+
+      /*!
+       * \brief get enrichment value at node using the level set function
+       * 
+       * \author henke 07/09
+       */
+      template<class V1>
+      double EnrValueNodeLevelSet(
+          const int  inode,
+          const V1&  phi
+      ) const
+      {
+          //std::cout << "EnrValueNodeLevelSet()" << std::endl;
+          double enrval = 1.0;
+
+          switch (Type())
+          {
+          case XFEM::Enrichment::typeStandard:
+          {
+              enrval = 1.0;
+              break;
+          }
+          case XFEM::Enrichment::typeVoid:
+          {
+              if (phi(inode) < 0.0) { // Syntax () oder []?
+                  enrval = 0.0;
+              } else {
+                  enrval = 1.0; // phi == 0 is enriched!
+              }
+              break;
+          }
+          case XFEM::Enrichment::typeJump:
+          {
+              if (phi(inode) < 0.0) { // Syntax () oder []?
+                  enrval = -1.0;
+              } else {
+                  enrval = 1.0; // phi == 0 is enriched!
+              }
+              break;
+          }
+          case XFEM::Enrichment::typeKink:
+          {
+              enrval = 0.0;
+              dserror("(modified) kink enrichments are zero at all nodes!");
+          }
+          default:
+              dserror("unsupported type of enrichment!");
+          }
+          return enrval;
+      }
+
+
+      /*!
+       * \brief get enrichment value at (Gauss) point using the level set function
+       * 
+       * \author henke 07/09
+       */
+      template<class V1>
+      double EnrValueGaussPointLevelSet(
+          const DRT::Element&  ele,
+          const V1&            phi,
+          const V1&            funct
+      ) const
+      {
+          const size_t numnode = ele.NumNode();
+
+          double enrval = 1.0;
+
+          switch (Type())
+          {
+          case XFEM::Enrichment::typeStandard:
+          {
+              enrval = 1.0;
+              break;
+          }
+          case XFEM::Enrichment::typeVoid:
+          {
+              double phival = 0.0;
+              // evaluate phi using shape function values at given point
+              for (size_t inode=0; inode<numnode; inode++)
+              {
+                phival += phi(inode) * funct(inode);
+              }
+              if (phival < 0.0) {
+                  enrval = 0.0;
+              } else {
+                  enrval = 1.0; // phi == 0 is enriched!
+              }
+              break;
+          }
+          case XFEM::Enrichment::typeJump:
+          {
+              double phival = 0.0;
+              // evaluate phi using shape function values at given point
+              for (size_t inode=0; inode<numnode; inode++)
+              {
+                phival += phi(inode) * funct(inode);
+              }
+              if (phival < 0.0) {
+                  enrval = -1.0;
+              } else {
+                  enrval = 1.0; // phi == 0 is enriched!
+              }
+              break;
+          }
+          case XFEM::Enrichment::typeKink:
+          {
+          // literature:
+          // Moës, N., Cloirec, M.,Cartraud, P. and Remacle, J. F.
+          // A computational approach to handle complex microstructure geometries:
+          // "Computer Methods in Applied Mechanics and Engineering", 192:3163--3177, 2003.
+          //
+          // psi = sum(abs(phi(i))*N(i))-abs(sum(phi(i)*N(i)), i=0...numnode-1
+
+              double sum1 = 0.0;
+              double sum2 = 0.0;
+              for (size_t inode=0; inode<numnode; inode++)
+              {
+                sum1 += fabs(phi(inode)) * funct(inode); //absolute value in C++: fabs() and include math.h
+                sum2 += phi(inode) * funct(inode);
+              }
+              enrval = sum1 - fabs(sum2);
+              break;
+          }
+          default:
+              dserror("unsupported enrichment (modified)!");
+          }
+          return enrval;
+      }
+
+
+      /*!
+       * \brief get derivative of enrichment value at (Gauss) point
+       * 
+       * \autor rasthofer 06/09
+       */
+      template<class V1, class M1>
+      std::vector<double> EnrValueGaussPointDerivative(
+              const DRT::Element&   ele,
+              const V1&             phi,
+              const V1&             funct,
+              const M1&             derxy
+      ) const
+      {
+          const size_t numnode = ele.NumNode();
+
+          std::vector<double> enrvalderxy(3);
+          enrvalderxy[0] = 0.0;
+          enrvalderxy[1] = 0.0;
+          enrvalderxy[2] = 0.0;
+
+          switch (Type()){
+          case XFEM::Enrichment::typeStandard:
+          {
+              break;
+          }
+          case XFEM::Enrichment::typeVoid:
+          {
+              break;
+          }
+          case XFEM::Enrichment::typeJump:
+          {
+              break;
+          }
+          case XFEM::Enrichment::typeKink:
+          {
+              for (size_t isd=0; isd<3; isd++)
+              {
+                  double sum1der = 0.0;
+                  double sum2der = 0.0;
+                  double sum2 = 0.0;
+
+                  for (size_t inode=0; inode<numnode; inode++)
+                  {
+                      sum1der += fabs(phi(inode)) * derxy(isd,inode);
+                      sum2der += phi(inode) * derxy(isd,inode);
+                      sum2 += phi(inode) * funct(inode);
+                  }
+
+                  if (sum2 < 0)
+                  {
+                      enrvalderxy[isd] = sum1der + sum2der;
+                  }
+                  else
+                  {
+                      enrvalderxy[isd] = sum1der - sum2der;
+                  }
+              }
+              break;
+          }
+          default:
+              dserror("unsupported type of enrichment!");
+          }
+
+          return enrvalderxy;
+      }
+
+      /*!
+       * \brief get second derivative of enrichment value at (Gauss) point
+       * 
+       * \author rasthofer 06/09
+       */
+      template<class V1, class M2>
+      std::vector<double> EnrValueGaussPointDerivative2(
+              const DRT::Element&                    ele,
+              const V1&                              phi,
+              const V1&                              funct,
+              const M2&                              derxy2
+      ) const
+      {
+          const size_t numnode = ele.NumNode();
+
+          std::vector<double> enrvalderxy2(6);
+          for (int isd=0; isd<6; isd++)
+          {
+              enrvalderxy2[isd] = 0.0;
+          }
+
+          switch (Type()){
+          case XFEM::Enrichment::typeStandard:
+          {
+              break;
+          }
+          case XFEM::Enrichment::typeVoid:
+          {
+              break;
+          }
+          case XFEM::Enrichment::typeJump:
+          {
+              break;
+          }
+          case XFEM::Enrichment::typeKink:
+          {
+              for (size_t isd=0; isd<6; isd++)
+              {
+                  double sum1der2 = 0.0;
+                  double sum2der2 = 0.0;
+                  double sum2 = 0.0;
+
+                  for (size_t inode=0; inode<numnode; inode++)
+                  {
+                      sum1der2 += fabs(phi(inode)) * derxy2(isd,inode);
+                      sum2der2 += phi(inode) * derxy2(isd,inode);
+                      sum2 += phi(inode) * funct(inode);
+                  }
+
+                  if (sum2 < 0)
+                  {
+                      enrvalderxy2[isd] = sum1der2 + sum2der2;
+                  }
+                  else
+                  {
+                      enrvalderxy2[isd] = sum1der2 - sum2der2;
+                  }
+              }
+              break;
+          }
+          default:
+              dserror("unsupported enrichment (modified)!");
+          }
+
+        return enrvalderxy2;
+      }
+
+
+      //! calculate modified enrichment value based on input \f$\psi(x) - \psi(x_{\mathrm{n}})\f$
+      double ModifiedEnrValue(
+          const LINALG::Matrix<3,1>&            actpos,            ///< \f$x\f$
+          const LINALG::Matrix<3,1>&            nodalpos,          ///< \f$x_{\mathrm{Node}}\f$
+          const XFEM::InterfaceHandle&          ih,                ///< the ubiquitous interface handle with all geometry information
+          const XFEM::Enrichment::ApproachFrom  approachdirection  ///< approach direction
       ) const;
 
     private:

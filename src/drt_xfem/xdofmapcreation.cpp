@@ -725,7 +725,7 @@ void XFEM::createDofMapCombust(
     // initialization call of DofManager in CombustFluidImplicitTimeInt constructor will end up here
     if (ih.FlameFront() == Teuchos::null)
     {
-      std::cout << "dof initialization: element "<< xfemele->Id() << " gets standard enrichments (= 4 dofs)" << std::endl;
+      // std::cout << "dof initialization: element "<< xfemele->Id() << " gets standard enrichments (= 4 dofs)" << std::endl;
       ApplyStandardEnrichmentCombust(xfemele, fieldset, nodeDofMap);
     }
     // any regular call of DofManager (existing flame front) will end up here
@@ -735,16 +735,18 @@ void XFEM::createDofMapCombust(
       ApplyStandardEnrichmentCombust(xfemele, fieldset, nodeDofMap);
 
 /*
-  Check der FlameFrontPatches für das Element muss drin bleiben, bis ih.ElementIntersected funktioniert
-      // if fluid element is intersected
-      if(ih.ElementIntersected(xfemele->Id()))
-      {
-        Anreicherung
-      }
+  Check der FlameFrontPatches für das Element ist nur vorübergehende Lösung
+  // get the refinement cell belonging to a fluid element
+  std::map<int,const Teuchos::RCP<const COMBUST::RefinementCell> >::const_iterator iter = ih.FlameFront()->FlameFrontPatches().find(xfemele->Id());
+  if (iter->second->Intersected())
 */
-      // get the refinement cell belonging to a fluid element
-      std::map<int,const Teuchos::RCP<const COMBUST::RefinementCell> >::const_iterator iter = ih.FlameFront()->FlameFrontPatches().find(xfemele->Id());
-      if (iter->second->Intersected())
+      //---------------------------------------------------
+      // find out whether an element is intersected or not
+      // by looking at number of integration cells
+      //---------------------------------------------------
+      // get vector of integration cells for this element
+      std::size_t numcells= ih.GetNumDomainIntCells(xfemele);
+      if (numcells > 1) // element intersected
       {
         const INPAR::COMBUST::CombustionType combusttype = params.get<INPAR::COMBUST::CombustionType>("combusttype");
         // build a DofMap holding dofs for all nodes including additional dofs of enriched nodes
@@ -783,8 +785,9 @@ void XFEM::createDofMapCombust(
         // in case there are enriched element dofs they have to be applied now   henke 04/09
 //        ApplyElementEnrichments();
       }
-/*      else
+      else if (numcells == 1) // element not intersected
       {
+/*
         std::cout << "Element "<< xfemele->Id() << " ist nicht geschnitten" << std::endl;
         // apply standard enrichments to all nodes of an intersected element
         ApplyStandardEnrichmentCombust(xfemele, fieldset, nodeDofMap);
@@ -792,8 +795,13 @@ void XFEM::createDofMapCombust(
         //  Funktion sollte checken, ob schon JumpEnrichments (andere Enrichments) vorliegen. Sollen
         //  diese überschrieben werden? Kläre die Theorie dazu!
         //
-      }
 */
+      }
+      else // numcells == 0 or negative number
+      {
+        // no integration cell -> impossible, something went wrong!
+        dserror ("There are no DomainIntCells for element %d ", xfemele->Id());
+      }
     }
   }
 

@@ -72,6 +72,8 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
 
   // construct interfacehandle using initial flame front
   interfacehandle_ = rcp(new COMBUST::InterfaceHandleCombust(fluiddis,gfuncdis,flamefront_));
+  // get integration cells according to initial flame front
+  interfacehandle_->UpdateInterfaceHandle();
 
   std::cout << "Combustion Algorithm constructor done \n" << endl;
 }
@@ -331,7 +333,7 @@ void COMBUST::Algorithm::UpdateFGIteration()
   // update flame front according to evolved G-function field
   flamefront_->ProcessFlameFront(combustdyn_,ScaTraField().Phinp());
 
-  // update interfacehandle according to updated flame front
+  // update interfacehandle (get integration cells) according to updated flame front
   interfacehandle_->UpdateInterfaceHandle();
 
   // update the Fluid and the FGI vector at the end of the FGI loop

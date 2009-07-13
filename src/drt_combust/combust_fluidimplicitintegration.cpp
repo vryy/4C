@@ -178,6 +178,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   {
     ParameterList eleparams;
     eleparams.set("action","get_density");
+    std::cout << "Warning: two-phase flows have different densities, evaluate(get_density) returns 1.0" << std::endl;
     discret_->Evaluate(eleparams,null,null,null,null,null);
     density_ = eleparams.get<double>("density");
     if (density_ <= 0.0) dserror("received negative or zero density value from elements");

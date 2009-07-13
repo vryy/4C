@@ -129,6 +129,21 @@ GEO::DomainIntCells XFEM::InterfaceHandle::GetDomainIntCells(
 }
 
 
+/*------------------------------------------------------------------------------------------------*
+ | return number of domain integration cells for a given element                      henke 07/09 |
+ *------------------------------------------------------------------------------------------------*/
+std::size_t XFEM::InterfaceHandle::GetNumDomainIntCells(
+    const DRT::Element* xfemElement) const
+{ 
+  std::map<int,GEO::DomainIntCells>::const_iterator tmp = elementalDomainIntCells_.find(xfemElement->Id());
+  if (tmp == elementalDomainIntCells_.end())
+  {
+    return 0;
+  }
+  return (tmp->second).size();
+}
+
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 GEO::BoundaryIntCells XFEM::InterfaceHandle::GetBoundaryIntCells(

@@ -30,7 +30,8 @@ map<string,DRT::ELEMENTS::Combust3::StabilisationAction> DRT::ELEMENTS::Combust3
 DRT::ELEMENTS::Combust3::Combust3(int id, int owner) :
 DRT::Element(id,element_combust3,owner),
 eleDofManager_(Teuchos::null),
-output_mode_(false)
+output_mode_(false),
+intersected_(false)
 {
     return;
 }
@@ -42,7 +43,8 @@ output_mode_(false)
 DRT::ELEMENTS::Combust3::Combust3(const DRT::ELEMENTS::Combust3& old) :
 DRT::Element(old),
 eleDofManager_(old.eleDofManager_),
-output_mode_(old.output_mode_)
+output_mode_(old.output_mode_),
+intersected_(old.intersected_)
 {
     return;
 }
@@ -96,6 +98,7 @@ void DRT::ELEMENTS::Combust3::Pack(std::vector<char>& data) const
   AddtoPack(data,basedata);
 
   AddtoPack(data,output_mode_);
+  AddtoPack(data,intersected_);
 
   return;
 }
@@ -118,6 +121,7 @@ void DRT::ELEMENTS::Combust3::Unpack(const std::vector<char>& data)
   Element::Unpack(basedata);
 
   ExtractfromPack(position,data,output_mode_);
+  ExtractfromPack(position,data,intersected_);
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);

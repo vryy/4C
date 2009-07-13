@@ -52,7 +52,7 @@ Maintainer: Florian Henke
   //! fill a number of arrays with unknown values from the unknown vector given by the discretization
   template <DRT::Element::DiscretizationType DISTYPE,
             XFEM::AssemblyType ASSTYPE,
-            class M1, class V1, class M2>
+            class M1, class V1, class M2, class V2>
   void fillElementUnknownsArrays4(
           const XFEM::ElementDofManager& dofman,
           const DRT::ELEMENTS::Combust3::MyState& mystate,
@@ -61,6 +61,7 @@ Maintainer: Florian Henke
           M1& evelnm,
           M1& eaccn,
           V1& eprenp,
+          V2& ephi,
           M2& etau
           )
   {
@@ -148,6 +149,10 @@ Maintainer: Florian Henke
           for (size_t iparam=0; iparam<numparamtauxz; ++iparam)   etau(4,iparam) = mystate.velnp[tauxzdof[iparam]];
           for (size_t iparam=0; iparam<numparamtauyz; ++iparam)   etau(5,iparam) = mystate.velnp[tauyzdof[iparam]];
       }
+      // copy element phi vector from std::vector (mystate) to LINALG::Matrix (ephi)
+      // TODO: this is inefficient, but it is nice to have only fixed size matrices afterwards!
+      for (size_t iparam=0; iparam<numnode; ++iparam)
+          ephi(iparam) = mystate.phinp[iparam];
   }
 
   template <DRT::Element::DiscretizationType DISTYPE,
@@ -719,7 +724,7 @@ Maintainer: Florian Henke
 template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSTYPE,
           int NUMDOF,
-          class M1, class V1, class M2>
+          class M1, class V1, class M2, class V2>
 void SysmatTwoPhase(
     const DRT::Element*                 ele,           ///< the element those matrix is calculated
     const Teuchos::RCP<COMBUST::InterfaceHandleCombust>  ih,   ///< connection to the interface handler
@@ -729,6 +734,7 @@ void SysmatTwoPhase(
     const M1&                           evelnm,
     const M1&                           eaccn,
     const V1&                           eprenp,
+    const V2&                           ephi,
     const M2&                           etau,
     Teuchos::RCP<const MAT::Material>   material,      ///< fluid material
     const FLUID_TIMEINTTYPE             timealgo,      ///< time discretization type
@@ -822,12 +828,12 @@ void SysmatTwoPhase(
     	//NEU
         //steht oben: const MAT::MatList* actmaterials = static_cast<const MAT::MatList*>(material.get());
     	
-    	//bool in_fluid_plus = true;
+    	//bool influidplus = true;
     	//das geht sobald ich alle Integrationszellen habe
     	//ich mache das besser über das InterfaceHandle
-    	//bool in_fluid_plus = ih->GetIntCellPosition(*cell, ele);
-    	bool in_fluid_plus = cell->getDomainPlus();
-    	  if (in_fluid_plus)
+    	//bool influidplus = ih->GetIntCellPosition(*cell, ele);
+    	bool influidplus = cell->getDomainPlus();
+    	  if (influidplus)
     	   std::cout << "domain + sys " << std::endl;
     	  else
     	   std::cout << "domain - sys " << std::endl;
@@ -837,7 +843,7 @@ void SysmatTwoPhase(
     	//oder die Intergrationszelle weiß, auf welcher Seite des Interfaces sie sich befindet
     	int matid = 3;
     	XFEM::Enrichment::ApproachFrom   approachdirection = XFEM::Enrichment::approachFromPlus;
-    	if (not in_fluid_plus)
+    	if (not influidplus)
     	{
     		matid = 4;
     		approachdirection = XFEM::Enrichment::approachFromMinus;
@@ -926,27 +932,6 @@ void SysmatTwoPhase(
             DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
             DRT::UTILS::shape_function_3D_deriv1(deriv,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
            
-            //Berechnung der Anreicherungen hierher verschoben und nun als Auswertepunkt
-            //den aktuellen Gausspunkt übergeben
-            //in Xi-Coordinaten?
-
-            //std::cout << "Aufruf ElementEnrichmentValues" << std::endl;
-            const XFEM::ElementEnrichmentValues enrvals(
-                  *ele,
-                  ih,
-                  dofman,
-                  posXiDomain,
-                  approachdirection,
-                  true);
-//            const XFEM::ElementEnrichmentValues enrvals(
-//                  *ele,
-//                  ih,
-//                  dofman,
-//                  posXiDomain,
-//                  approachdirection,
-//                  ephi);
-      
-      
             // get transposed of the jacobian matrix d x / d \xi
             // xjm(i,j) = deriv(i,k)*xyze(j,k)
             static LINALG::Matrix<nsd,nsd> xjm;
@@ -998,6 +983,18 @@ void SysmatTwoPhase(
             {
                 derxy2.Clear();
             }
+            
+            //Berechnung der Anreicherungen hierher verschoben und nun als Auswertepunkt
+            //den aktuellen Gausspunkt übergeben
+            //in Xi-Coordinaten?
+
+            const XFEM::ElementEnrichmentValues enrvals(
+                  *ele,
+                  dofman,
+                  ephi,
+                  funct,
+                  derxy,
+                  derxy2);
 
             const size_t shpVecSize       = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
@@ -1861,7 +1858,7 @@ void SysmatTwoPhase(
 template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSTYPE,
           int NUMDOF,
-          class M1, class V1, class M2>
+          class M1, class V1, class M2, class V2>
 void SysmatDomain4(
     const DRT::Element*                 ele,           ///< the element those matrix is calculated
     const Teuchos::RCP<COMBUST::InterfaceHandleCombust>  ih,   ///< connection to the interface handler
@@ -1871,6 +1868,7 @@ void SysmatDomain4(
     const M1&                           evelnm,
     const M1&                           eaccn,
     const V1&                           eprenp,
+    const V2&                           ephi,
     const M2&                           etau,
     Teuchos::RCP<const MAT::Material>   material,      ///< fluid material
     const FLUID_TIMEINTTYPE             timealgo,      ///< time discretization type
@@ -1982,7 +1980,7 @@ void SysmatDomain4(
            const double dens = actmat->Density(); */
 
         // evaluate the enrichment function for this integration cell
-        const XFEM::ElementEnrichmentValues enrvals(*ele,dofman,*cell);
+        const XFEM::ElementEnrichmentValues enrvals(*ele,dofman,*cell,ephi);
 
         const DRT::UTILS::GaussRule3D gaussrule = XFLUID::getXFEMGaussrule<DISTYPE>(ele, xyze, ih->ElementIntersected(ele->Id()),cell->Shape());
         
@@ -2755,28 +2753,31 @@ void Sysmat4(
     const int shpVecSize       = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     const DRT::Element::DiscretizationType stressdistype = COMBUST::StressInterpolation3D<DISTYPE>::distype;
     const int shpVecSizeStress = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
+    const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     LINALG::Matrix<shpVecSize,1> eprenp;
     LINALG::Matrix<3,shpVecSize> evelnp;
     LINALG::Matrix<3,shpVecSize> eveln;
     LINALG::Matrix<3,shpVecSize> evelnm;
     LINALG::Matrix<3,shpVecSize> eaccn;
+    LINALG::Matrix<numnode,1> ephi;
     LINALG::Matrix<6,shpVecSizeStress> etau;
     
-    fillElementUnknownsArrays4<DISTYPE,ASSTYPE>(dofman, mystate, evelnp, eveln, evelnm, eaccn, eprenp, etau);
+    fillElementUnknownsArrays4<DISTYPE,ASSTYPE>(dofman, mystate, evelnp, eveln, evelnm, eaccn, eprenp,
+                                                ephi, etau);
 
     switch(combusttype)
     {
       case INPAR::COMBUST::premixedcombustion:
       {
         SysmatDomain4<DISTYPE,ASSTYPE,NUMDOF>(
-            ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, etau,
+            ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, ephi, etau,
             material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, assembler);
       }
       break;
       case INPAR::COMBUST::twophaseflow:
       {
         SysmatTwoPhase<DISTYPE,ASSTYPE,NUMDOF>(
-            ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, etau,
+            ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, ephi, etau,
             material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, assembler);
       }
       break;

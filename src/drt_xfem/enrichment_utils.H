@@ -49,31 +49,142 @@ namespace XFEM
     /*!
      * \brief compute enrichment value for integration cell
      * 
-     * used for combustion problems
+     * constructor called for combustion problems (jump enrichment)
+     * 
+     * \author henke 06/09
      */
+    template<class V1>
     explicit ElementEnrichmentValues(
-            const DRT::Element&                   ele,       ///< pointer to element
-            const XFEM::ElementDofManager&        dofman,    ///< pointer to element dof manager
-            const GEO::DomainIntCell&             cell       ///< pointer to integration cell
-            //const LINALG::Matrix<3,1>&            actpos
-            //const LINALG::Matrix<1,8>&            phi
-     );
+            const DRT::Element&             ele,    ///< pointer to element
+            const XFEM::ElementDofManager&  dofman, ///< pointer to element dof manager
+            const GEO::DomainIntCell&       cell,   ///< pointer to integration cell
+            const V1&                       phi     ///< vector of level set values
+     ) :
+       ele_(ele),
+       dofman_(dofman)
+    {
+      enrvals_.clear();
+      enrvalnodes_.clear();
+      enrvalderxy_.clear();  // not used for jump enrichment
+      enrvalderxy2_.clear(); // not used for jump enrichment
+
+      const std::set<XFEM::Enrichment>& enrset(dofman.getUniqueEnrichments());
+      const int numnode = ele_.NumNode();
+      std::map<int,std::map<XFEM::Enrichment, double> > enrvalnodes;
+
+      //------------------------------------------------------
+      // evaluate enrichment values for this integration cell
+      //------------------------------------------------------
+      for (std::set<XFEM::Enrichment>::const_iterator enriter = enrset.begin(); enriter != enrset.end(); ++enriter)
+      {
+        const double enrvalcell = enriter->EnrValueIntCell(cell);
+        enrvals_[*enriter] = enrvalcell;
+      }
+
+      //------------------------------------------------------------
+      // loop over nodes to evaluate enrichment values at the nodes
+      //------------------------------------------------------------
+      for(int inode=0; inode < numnode; inode++)
+      {
+        std::map<XFEM::Enrichment, double> enrvalstmp;
+        for (std::set<XFEM::Enrichment>::const_iterator enriter = enrset.begin(); enriter != enrset.end(); ++enriter)
+        {
+          const double enrvalnode = enriter->EnrValueNodeLevelSet(inode,phi);
+          enrvalstmp[*enriter] = enrvalnode;
+        }
+        enrvalnodes[inode] = enrvalstmp;
+        enrvalstmp.clear();
+      }
+
+      //------------------------------------------------------------------------
+      // evaluate final enrichment values for each node H(G(cell)) - H(G(node))
+      //------------------------------------------------------------------------
+      // literature (p. 1006, penultimate line):
+      // Belytschko, T., Moës, N., Usui, S. and Parimi, C.
+      // Arbitrary discontinuities in finite elements:
+      // "International Journal for Numerical Methods in Engineering", 50:993--1013,2001.
+
+      for(int inode=0; inode < numnode; inode++)
+      {
+        std::map<XFEM::Enrichment, double> enrvalstmp;
+        for (std::set<XFEM::Enrichment>::const_iterator enriter = enrset.begin(); enriter != enrset.end(); ++enriter)
+        {
+          enrvalstmp[*enriter] = enrvals_.find(*enriter)->second - (enrvalnodes.find(inode)->second).find(*enriter)->second;
+        }
+        enrvalnodes_[inode] = enrvalstmp;
+        enrvalstmp.clear();
+      }
+
+      return;
+    }
+
 
     /*!
     * \brief for each given Enrichment in enrset, compute the enrichment value at actpos
-    * 
-    * if one already knows, an which side of the discontinuity one computes something,
-    * the information can be given via approachdirection
+    *
+    * constructor called for two-phase flow problems (kink enrichment)
+    *
+    * \author rasthofer 06/09
     */
+    template<class V1, class M1, class M2>
     explicit ElementEnrichmentValues(
-        const DRT::Element&                   ele,
-        const RCP<COMBUST::InterfaceHandleCombust>&     ih,               ///< interface information
-        const XFEM::ElementDofManager&        dofman,
-        const LINALG::Matrix<3,1>&            actpos,           ///< a 3d position
-        const XFEM::Enrichment::ApproachFrom  approachdirection, ///< is location with respect to interface is known or not
-        bool twophaseflow
-    );
-    
+            const DRT::Element&             ele,
+            const XFEM::ElementDofManager&  dofman,
+            const V1&                       phi,
+            const V1&                       funct,   ///< vector of shape functions evaluated at Gauss point
+            const M1&                       derxy,
+            const M2&                       derxy2
+            ) :
+              ele_(ele),
+              dofman_(dofman) 
+    {
+      enrvals_.clear(); // not used for kink enrichment
+      enrvalnodes_.clear();
+      enrvalderxy_.clear();
+      enrvalderxy2_.clear();
+
+      const std::set<XFEM::Enrichment>& enrset(dofman.getUniqueEnrichments());
+
+      const int numnode = ele_.NumNode();
+
+      for(int inode=0; inode<numnode; inode++)
+      {
+        std::map<XFEM::Enrichment, double> enrvalues;
+        for (std::set<XFEM::Enrichment>::const_iterator enriter = enrset.begin(); enriter != enrset.end(); ++enriter)
+        {
+//          const double enrval = enriter->ModifiedKinkEnrValue(actpos, inode, *ih, approachdirection, ele_);
+          const double enrval = enriter->EnrValueGaussPointLevelSet(ele_,phi,funct);
+          enrvalues[*enriter] = enrval;
+        }
+        enrvalnodes_[inode] = enrvalues;
+        enrvalues.clear();
+      }
+
+      for (std::set<XFEM::Enrichment>::const_iterator enriter = enrset.begin(); enriter != enrset.end(); ++enriter)
+      {
+        const std::vector<double> enrvalderxy = enriter->EnrValueGaussPointDerivative(ele_,phi,funct,derxy);
+        enrvalderxy_[*enriter] = enrvalderxy;
+
+    //    std::vector<double> enrvalderxy2;
+    //    switch(ele_.Shape())
+    //    {
+    //      case DRT::Element::hex8:
+    //      enrvalderxy2 = enriter->ModifiedEnrValue_derxy2<DRT::Element::hex8>(actpos, *ih, ele_);
+    //      break;
+    ////      case DRT::Element::hex20:
+    ////      enrvalderxy2 = enriter->ModifiedEnrValue_derxy2<DRT::Element::hex20>(actpos, *ih, approachdirection, ele_);
+    ////      break;
+    //      default:
+    //    dserror("Element not templated in enrichment second derivatives yet");
+    //    };
+        const std::vector<double> enrvalderxy2 = enriter->EnrValueGaussPointDerivative2(ele_,phi,funct,derxy2);
+        enrvalderxy2_[*enriter] = enrvalderxy2;
+      }
+
+      return;
+    }
+
+
     /*!
     * \brief For a given situation compute the enriched shape functions
     * 
