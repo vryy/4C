@@ -65,37 +65,11 @@ void StatMechTime::Integrate()
   double dt = params_.get<double>("delta time" ,0.01);
 
 
-  {
-    //random generator for seeding only (necessary for thermal noise)
-    ranlib::Normal<double> seedgenerator(0,1);
-    //seeding random generator
-    int seedvariable = time(0);
-    //seedvariable = 1;
-    seedgenerator.seed((unsigned int)seedvariable);
-  }
+
   
   //getting number of dimensions for diffusion coefficient calculation
   const Teuchos::ParameterList& psize = DRT::Problem::Instance()->ProblemSizeParams();
   int ndim=psize.get<int>("DIM");
-
-  #ifdef D_BEAM3
-
-  /*before starting statistical calculations certain elements have to be initialized in order to make them know viscosity of
-   * their surrounding thermal bath*/
-  for (int num=0; num<  discret_.NumMyColElements(); ++num)
-  {
-    //in case that current element is not a beam3 or beam 2element there is nothing to do and we go back
-    //to the head of the loop
-    if (discret_.lColElement(num)->Type() != DRT::Element::element_beam3) continue;
-
-    DRT::ELEMENTS::Beam3 *currele = dynamic_cast< DRT::ELEMENTS::Beam3* >(discret_.lColElement(num));
-    if (!currele) dserror("cast to Beam3 failed");
-
-    //zeta denotes viscosity of surrounding fluid
-    currele->eta_ = statmechmanager_->statmechparams_.get<double>("ETA",0.0);
-  }
-
-  #endif  // #ifdef D_BEAM3
 
 
   for (int i=step; i<nstep; ++i)
@@ -136,8 +110,8 @@ void StatMechTime::Integrate()
     ConsistentPredictor(); 
 
 
-    FullNewton();
-    //PTC();
+    //FullNewton();
+    PTC();
           
     UpdateandOutput();
    
@@ -748,6 +722,8 @@ void StatMechTime::PTC()
       
       //add statistical vector to parameter list for statistical forces and damping matrix computation
       p.set("statistical vector",browniancol_);
+      p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
+      p.set("STOCH_ORDER",(statmechmanager_->statmechparams_).get<int>("STOCH_ORDER",0));
 
       //evaluate ptc stiffness contribution in all the elements
       discret_.Evaluate(p,stiff_,null,null,null,null);

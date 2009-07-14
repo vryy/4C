@@ -51,14 +51,14 @@ public:
   //! \brief updates system damping matrix and external force vector according to influence of thermal bath
   void StatMechBrownian(ParameterList& params, RCP<Epetra_Vector> dis, RCP<Epetra_Vector> browniancol);
   
-  //! \brief set crosslinkers according to setcrosslinkercol (if entry for a node equals 1 a crosslinker may be set for this node)
-  void SetCrosslinkers(const Epetra_Vector& setcrosslinkercol,const Epetra_Map& nodecolmap,const Epetra_Vector& nearestneighbour,const std::map<int,LINALG::Matrix<3,1> >& currentpositions,const std::map<int,LINALG::Matrix<3,1> >& currentrotations);
-  
   //! \brief initializing special output for statistical mechanics by looking for a suitable name of the outputfile and setting up an empty file with this name
   void StatMechInitOutput(const int ndim, const double& dt);
   
   //! \brief write output for Gmsh postprocessing
   void GmshOutput(const Epetra_Vector& disrow, const std::ostringstream& filename, const int& step);
+  
+  //! \brief set crosslinker if two nodes are close enough and probability check is passed
+  void SetCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,const std::map<int,LINALG::Matrix<3,1> >& currentpositions,const std::map<int,LINALG::Matrix<3,1> >& currentrotations);
   
   //! \brief containing statistical mechanics input parameters
   Teuchos::ParameterList statmechparams_;
@@ -68,9 +68,12 @@ protected:
   // don't want = operator and cctor
   StatMechManager operator = (const StatMechManager& old);
   StatMechManager(const StatMechManager& old); 
-  
+   
   //! \brief delete crosslinkers according to delcrosslinkercol (if entry for a node equals 1 its crosslinker is deleted)
-  void DelCrosslinkers(const Epetra_Vector& delcrosslinkercol,const Epetra_Map& nodecolmap);
+  void DelCrosslinkers(const double& dt, const Epetra_Map& noderowmap);
+  
+  //! \brief Searches and saves in variable  crosslinkerneighbours_ neighbours for each row node
+  void SearchNeighbours(const std::map<int,LINALG::Matrix<3,1> > currentpositions);
    
   //! \brief maximal simulation time
   double maxtime_; 
@@ -94,7 +97,7 @@ protected:
   double rlink_;
   
   //! \brief number of elements which are part of the discretization already before starting adding crosslinkers
-  int basiselements_;
+  int basisnodes_;
   
   //! \brief number of file into which output is written (only important for single filament dynamics)
   int outputfilenumber_;
@@ -105,8 +108,11 @@ protected:
   //! \brief reference to current stiffness matrix
   RCP<LINALG::SparseMatrix>& stiff_;
   
-  //! \brief storing for each node LID of node with which it is crosslinked; -1 means: no crosslink
-  RCP<Epetra_Vector>  crosslinkerpartner_;
+  //! \brief storing for each row map node the column map LID of all proper neighbour nodes
+  std::vector< vector<int> >  crosslinkerneighbours_;
+  
+  //! \brief storing for each node GIDs of nodes to which a crosslinker has been established
+  std::vector< vector<int> >  crosslinkerpartner_;
   
   //! \brief storing for each node LID number of filament to which it belongs
   RCP<Epetra_Vector> filamentnumber_;
@@ -118,7 +124,6 @@ protected:
   Teuchos::RCP<GEO::SearchTree>  octTree_;
 
   
-
 }; // class StatMechManager
 
 #endif /*STATMECH_MANAGER_H*/
