@@ -288,7 +288,7 @@ void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const vector<double>& xrefe,co
   {
     isinit_ = true;
 
-    //create Matrix for the derivates of the shapefunctions at the GP
+  //create Matrix for the derivates of the shapefunctions at the GP
 	LINALG::Matrix<1,nnode> shapefuncderiv;
 	
 	//create Matrix for the shapefunctions at the GP

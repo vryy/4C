@@ -59,7 +59,7 @@ bool DRT::ELEMENTS::Beam3::ReadElement()
       if (ierr == 1)
       {
           //Get DiscretizationType
-     	  distype = beam2rdistype[eletext];
+     	    distype = beam2rdistype[eletext];
           //Get Number of Nodes of DiscretizationType
           int nnode = DRT::UTILS::getNumberOfElementNodes(distype);
               
