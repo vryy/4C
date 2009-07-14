@@ -22,20 +22,20 @@ Maintainer: Burkhard Bornemann
 namespace MAT
 {
 
-  /// This namespace contains hyperelastic summands 
+  /// This namespace contains hyperelastic summands
   /// and their derivatives with respect to invariants
   namespace ELASTIC
   {
 
     /// This namespace contains the input data -- parameters -- for
-    /// hyperelastic summands 
+    /// hyperelastic summands
     namespace PAR { }
 
     /*----------------------------------------------------------------------*/
     /// Interface for hyperelastic potentials
     ///
     /// The interface defines the way how MAT::ElastHyper can access
-    /// coefficients to build the actual stress response and 
+    /// coefficients to build the actual stress response and
     /// elasticity tensor.
     ///
     /// <h3>References</h3>
@@ -75,7 +75,7 @@ namespace MAT
       /// The coefficients \f$\gamma_i\f$ and \f$\delta_j\f$ are based
       /// on the summand \f$\Psi(I_{\boldsymbol{C}},II_{\boldsymbol{C}},III_{\boldsymbol{C}})\f$
       /// in which the principal invariants of the right Cauchy-Green tensor \f$\boldsymbol{C}\f$
-      /// are the arguments, cf. Holzapfel [1], 
+      /// are the arguments, cf. Holzapfel [1],
       ///\f[
       ///  I_{\boldsymbol{C}} = C_{AA},
       ///  \quad
@@ -83,10 +83,10 @@ namespace MAT
       ///  \quad
       ///  III_{\boldsymbol{C}} = \det(\boldsymbol{C})
       ///\f]
-      /// 
+      ///
       /// cf. Holzapfel [1], p. 216 (6.32) and p. 248
       ///\f[
-      /// \gamma_1 = 2\left( \frac{\partial \Psi}{\partial I_{\boldsymbol{C}}} 
+      /// \gamma_1 = 2\left( \frac{\partial \Psi}{\partial I_{\boldsymbol{C}}}
       ///          + I_{\boldsymbol{C}}\frac{\partial \Psi}{\partial II_{\boldsymbol{C}}} \right);
       ///\f]
       ///\f[
@@ -99,9 +99,9 @@ namespace MAT
       /// material constitutive tensor coefficients
       /// cf. Holzapfel [1], p. 261
       ///\f[
-      /// \delta_1 = 4\left( \frac{\partial^2 \Psi}{\partial I_{\boldsymbol{C}}^2} 
+      /// \delta_1 = 4\left( \frac{\partial^2 \Psi}{\partial I_{\boldsymbol{C}}^2}
       ///          + 2 Ic \frac{\partial^2 \Psi}{\partial I_{\boldsymbol{C}} \partial II_{\boldsymbol{C}}}
-      ///          + \frac{\partial \Psi}{\partial II_{\boldsymbol{C}}} 
+      ///          + \frac{\partial \Psi}{\partial II_{\boldsymbol{C}}}
       ///          + I_{\boldsymbol{C}}^2 \frac{\partial^2 \Psi}{\partial II_{\boldsymbol{C}}^2} \right)
       ///\f]
       ///\f[
@@ -109,7 +109,7 @@ namespace MAT
       ///          + I_{\boldsymbol{C}}\frac{\partial^2 \Psi}{\partial II_{\boldsymbol{C}}^2} \right)
       ///\f]
       ///\f[
-      /// \delta_3 = 4\left( III_{\boldsymbol{C}} \frac{\partial^2 \Psi}{\partial I_{\boldsymbol{C}} \partial III_{\boldsymbol{C}}} 
+      /// \delta_3 = 4\left( III_{\boldsymbol{C}} \frac{\partial^2 \Psi}{\partial I_{\boldsymbol{C}} \partial III_{\boldsymbol{C}}}
       ///          + I_{\boldsymbol{C}} III_{\boldsymbol{C}} \frac{\partial^2 \Psi}{\partial IIc \partial III_{\boldsymbol{C}}} \right)
       ///\f]
       ///\f[
@@ -119,7 +119,7 @@ namespace MAT
       /// \delta_5 = -4 III_{\boldsymbol{C}}\frac{\partial^2 \Psi}{\partial II_{\boldsymbol{C}} \partial III_{\boldsymbol{C}}}
       ///\f]
       ///\f[
-      /// \delta_6 = 4\left( III_{\boldsymbol{C}} \frac{\partial \Psi}{\partial III_{\boldsymbol{C}}} 
+      /// \delta_6 = 4\left( III_{\boldsymbol{C}} \frac{\partial \Psi}{\partial III_{\boldsymbol{C}}}
       ///          + III_{\boldsymbol{C}}^2 \frac{\partial^2 \Psi}{\partial III_{\boldsymbol{C}}^2} \right)
       ///\f]
       ///\f[
@@ -141,19 +141,19 @@ namespace MAT
       /// The coefficients \f$\bar\gamma_i\f$ and \f$\bar\delta_j\f$ are based
       /// on the summand \f$\Psi(\overline{I}_{\boldsymbol{C}},\overline{II}_{\boldsymbol_{C}},J)=\Psi_{iso}(\overline{I}_{\boldsymbol{C}},\overline{II}_{\boldsymbol_{C}})+\Psi_{vol}(J)\f$
       /// in which the principal invariants of the modified right Cauchy-Green tensor \f$\overline{\boldsymbol{C}}=(\det\boldsymbol{C})^{-1/3} \boldsymbol{C}\f$
-      /// are the arguments, cf. Holzapfel [1], 
+      /// are the arguments, cf. Holzapfel [1],
       ///\f[
       ///  \overline{I}_{\boldsymbol{C}} = J^{-2/3} C_{AA},
       ///  \quad
-      ///  \overline{II}_{\boldsymbol{C}} = 1/2 \big( \mathrm{trace}^2(\boldsymbol{C}) - 
+      ///  \overline{II}_{\boldsymbol{C}} = 1/2 \big( \mathrm{trace}^2(\boldsymbol{C}) -
       ///         \mathrm{trace}(\boldsymbol{C}^2) \big),
       ///  \quad
       ///  J = \sqrt{\det(\boldsymbol{C})}
       ///\f]
-      /// 
+      ///
       /// cf. Holzapfel [1], p. 234 and p. 262
       ///\f[
-      /// \bar\gamma_1 = 2\left( \frac{\partial \Psi_{iso}}{\partial \overline{I}_{\boldsymbol{C}}} 
+      /// \bar\gamma_1 = 2\left( \frac{\partial \Psi_{iso}}{\partial \overline{I}_{\boldsymbol{C}}}
       ///          + \overline{I}_{\boldsymbol{C}} \frac{\partial \Psi_{iso}}{\partial \overline{II}_{\boldsymbol{C}}} \right);
       ///\f]
       ///\f[
@@ -166,9 +166,9 @@ namespace MAT
       /// material constitutive tensor coefficients
       /// cf. Holzapfel [1], p. 261
       ///\f[
-      /// \bar\delta_1 = 4 \left( \frac{\partial^2 \Psi_{iso}}{\partial \overline{I}_{\boldsymbol{C}}^2} 
+      /// \bar\delta_1 = 4 \left( \frac{\partial^2 \Psi_{iso}}{\partial \overline{I}_{\boldsymbol{C}}^2}
       ///          + 2 \overline{I}_{\boldsymbol{C}} \frac{\partial^2 \Psi_{iso}}{\partial \overline{I}_{\boldsymbol{C}} \partial \overline{II}_{\boldsymbol{C}}}
-      ///          + \frac{\partial \Psi_{iso}}{\partial \overline{II}_{\boldsymbol{C}}} 
+      ///          + \frac{\partial \Psi_{iso}}{\partial \overline{II}_{\boldsymbol{C}}}
       ///          + \overline{I}_{\boldsymbol{C}}^2 \frac{\partial^2 \Psi_{sio}}{\partial \overline{II}_{\boldsymbol{C}}^2} \right)
       ///\f]
       ///\f[
@@ -176,7 +176,7 @@ namespace MAT
       ///          + \overline{I}_{\boldsymbol{C}} \frac{\partial^2 \Psi_{iso}}{\partial \overline{II}_{\boldsymbol{C}}^2} \right)
       ///\f]
       ///\f[
-      /// \bar\delta_3 = 4 \frac{\partial^2 \Psi_{iso}}{\partial \overline{II}_{\boldsymbol{C}}^2} 
+      /// \bar\delta_3 = 4 \frac{\partial^2 \Psi_{iso}}{\partial \overline{II}_{\boldsymbol{C}}^2}
       ///\f]
       ///\f[
       /// \bar\delta_4 = -4 \frac{\partial \Psi_{iso}}{\partial \overline{II}_{\boldsymbol{C}}}
@@ -197,7 +197,7 @@ namespace MAT
       /// The coefficients \f$\gamma_i\f$ and \f$\delta_j\f$ are based
       /// on the summand \f$\Psi(I_{\boldsymbol{C}},II_{\boldsymbol{C}},III_{\boldsymbol{C}},IV_{\boldsymbol{C}},VI_{\boldsymbol{C}},VIII_{\boldsymbol{C}})\f$
       /// in which the principal invariants of the right Cauchy-Green tensor \f$\boldsymbol{C}\f$
-      /// are the arguments,  
+      /// are the arguments,
       ///\f[
       ///  I_{\boldsymbol{C}} = C_{AA},
       ///  \quad
@@ -212,13 +212,13 @@ namespace MAT
       ///  \quad
       ///  VIII_{\boldsymbol{C}} = \boldsymbol{a}_1*\boldsymbol{C}\boldsymbol{a}_2
       ///\f]
-      /// 
+      ///
       ///where \f$ \boldsymbol{a}_i \f$ is one fiber direction and \f$ \boldsymbol A_i= \boldsymbol a_i \otimes \boldsymbol a_i\f$.
-      ///  
+      ///
       ///
       /// cf. Holzapfel [1], p. 274
       ///\f[
-      /// \gamma^{aniso}_1 = 2\frac{\partial \Psi}{\partial IV_{\boldsymbol{C}}} 
+      /// \gamma^{aniso}_1 = 2\frac{\partial \Psi}{\partial IV_{\boldsymbol{C}}}
       ///\f]
       ///\f[
       /// \gamma^{aniso}_2 = 2\frac{\partial \Psi}{\partial VI_{\boldsymbol{C}}};
@@ -236,10 +236,10 @@ namespace MAT
       /// \delta^{aniso}_2 = 4\frac {\partial^2\Psi}{\partial VI_{\boldsymbol C}^2}
       ///\f]
       ///\f[
-      /// \delta^{aniso}_3 = 4\frac {\partial^2\Psi}{\partial I_{\boldsymbol C}\partial IV_{\boldsymbol C}} + 4\frac {\partial^2\Psi}{\partial II_{\boldsymbol C}\partial IV_{\boldsymbol C}}I_\boldsymbol C
+      /// \delta^{aniso}_3 = 4\frac {\partial^2\Psi}{\partial I_{\boldsymbol C}\partial IV_{\boldsymbol C}} + 4\frac {\partial^2\Psi}{\partial II_{\boldsymbol C}\partial IV_{\boldsymbol C}}I_{\boldsymbol C}
       ///\f]
       ///\f[
-      /// \delta^{aniso}_4 = 4\frac {\partial^2\Psi}{\partial I_{\boldsymbol C}\partial VI_{\boldsymbol C}} + 4\frac {\partial^2\Psi}{\partial II_{\boldsymbol C}\partial VI_{\boldsymbol C}}I_\boldsymbol C
+      /// \delta^{aniso}_4 = 4\frac {\partial^2\Psi}{\partial I_{\boldsymbol C}\partial VI_{\boldsymbol C}} + 4\frac {\partial^2\Psi}{\partial II_{\boldsymbol C}\partial VI_{\boldsymbol C}}I_{\boldsymbol C}
       ///\f]
       ///\f[
       /// \delta^{aniso}_5 = -4\frac {\partial^2\Psi}{\partial II_{\boldsymbol C}\partial IV_{\boldsymbol C}}
@@ -248,11 +248,11 @@ namespace MAT
       /// \delta^{aniso}_6 = -4\frac {\partial^2\Psi}{\partial II_{\boldsymbol C}\partial VI_{\boldsymbol C}}
       ///\f]
       ///\f[
-      /// \delta^{aniso}_7 = 4\frac {\partial^2\Psi}{\partial III_{\boldsymbol C}\partial VI_{\boldsymbol C}} III_\boldsymbol C
+      /// \delta^{aniso}_7 = 4\frac {\partial^2\Psi}{\partial III_{\boldsymbol C}\partial VI_{\boldsymbol C}} III_{\boldsymbol C}
       ///\f]
       ///\f[
-      /// \delta^{aniso}_8 = 4\frac {\partial^2\Psi}{\partial III_{\boldsymbol C}\partial VI_{\boldsymbol C}} III_\boldsymbol C
-      ///\f]      
+      /// \delta^{aniso}_8 = 4\frac {\partial^2\Psi}{\partial III_{\boldsymbol C}\partial VI_{\boldsymbol C}} III_{\boldsymbol C}
+      ///\f]
       ///\f[
       /// \delta^{aniso}_9 = 4\frac {\partial^2\Psi}{\partial IV_{\boldsymbol C}\partial VI_{\boldsymbol C}}
       ///\f]
@@ -263,7 +263,7 @@ namespace MAT
       /// \delta^{aniso}_{11} = -2\frac {\partial^2\Psi}{\partial II_{\boldsymbol C}\partial VIII_{\boldsymbol C}}
       ///\f]
       ///\f[
-      /// \delta^{aniso}_{12} = 2\frac {\partial^2\Psi}{\partial III_{\boldsymbol C}\partial VIII_{\boldsymbol C}} III_\boldsymbol C
+      /// \delta^{aniso}_{12} = 2\frac {\partial^2\Psi}{\partial III_{\boldsymbol C}\partial VIII_{\boldsymbol C}} III_{\boldsymbol C}
       ///\f]
       ///\f[
       /// \delta^{aniso}_{13} = 2\frac {\partial^2\Psi}{\partial IV_{\boldsymbol C}\partial VIII_{\boldsymbol C}}
@@ -278,19 +278,19 @@ namespace MAT
         bool& havecoefficients,  ///< non-zero coefficients of this type are provided
         LINALG::Matrix<3,1>& gamma,  ///< see above
         LINALG::Matrix<15,1>& delta,  ///< see above
-        const LINALG::Matrix<6,1>& inv  ///< modified invariants of right Cauchy-Green tensor         
+        const LINALG::Matrix<6,1>& inv  ///< modified invariants of right Cauchy-Green tensor
       ) = 0;
-      
-      /// To be done and commented by Moritz :-)      
+
+      /// To be done and commented by Moritz :-)
       virtual void AddCoefficientsModifiedAniso(
         bool& havecoefficients,  ///< non-zero coefficients of this type are provided
         LINALG::Matrix<3,1>& gamma,  ///< see above
         LINALG::Matrix<15,1>& delta,  ///< see above
-        const LINALG::Matrix<6,1>& inv  ///< modified invariants of right Cauchy-Green tensor         
+        const LINALG::Matrix<6,1>& inv  ///< modified invariants of right Cauchy-Green tensor
       ) = 0;
-      
+
     private:
-      
+
 
     };  // class Summand
 
