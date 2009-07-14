@@ -355,9 +355,6 @@ private:
   
   //!polar moment of inertia of area
   double Irr_;
- 
-  //! viscosity of surrounding fluid, attention: not been set in statmech (hering)
-  double eta_;
   
   //! Vector holding alpha for each gausspoint
   vector<double> alpha_;
@@ -366,7 +363,7 @@ private:
   vector<double> alphamass_;
   
   //! store stochastic forces of the element
-    LINALG::Matrix<6,1> floc_;
+  LINALG::Matrix<6,1> floc_;
 
   //! gaussrule_ will be initialized automatically for underintegration in order to get rid of Locking 
   DRT::UTILS::GaussRule1D gaussrule_;

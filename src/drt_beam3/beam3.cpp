@@ -35,7 +35,6 @@ crosssecshear_(0),
 Iyy_(0),
 Izz_(0),
 Irr_(0),
-eta_(0),
 gaussrule_(DRT::UTILS::intrule1D_undefined)
 {
   return;
@@ -65,9 +64,9 @@ DRT::ELEMENTS::Beam3::Beam3(const DRT::ELEMENTS::Beam3& old) :
  Iyy_(old.Iyy_),
  Izz_(old.Izz_),
  Irr_(old.Irr_),
- eta_(old.eta_),
  alpha_(old.alpha_),
  alphamass_(old.alphamass_),
+ floc_(old.floc_),
  gaussrule_(old.gaussrule_)
 {
   return;
@@ -183,12 +182,12 @@ void DRT::ELEMENTS::Beam3::Pack(vector<char>& data) const
   AddtoPack(data,Iyy_);
   AddtoPack(data,Izz_);
   AddtoPack(data,Irr_);
-  //viscosity of surrounding fluid
-  AddtoPack(data,eta_);
   //alpha for underintegration
   AddtoPack(data,alpha_);
   //alpha for complete integration
   AddtoPack(data,alphamass_);
+  //stochastic forces
+  AddtoPack(data,floc_);
   // gaussrule_
   AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
   vector<char> tmp(0);
@@ -239,12 +238,12 @@ void DRT::ELEMENTS::Beam3::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,Iyy_);
   ExtractfromPack(position,data,Izz_);
   ExtractfromPack(position,data,Irr_);
-  //viscosity of surrounding fluid
-  ExtractfromPack(position,data,eta_);
   //alpha for underintegration
   ExtractfromPack(position,data,alpha_);
   //alpha for complete integration
   ExtractfromPack(position,data,alphamass_);
+  //stochastic forces
+  ExtractfromPack(position,data,floc_);
   // gaussrule_
   int gausrule_integer;
   ExtractfromPack(position,data,gausrule_integer);

@@ -1911,7 +1911,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
 		    
 		    /*the following block adds a rotational damping and related internal forces; this damping goes along with the damping of a 
 		     * rigid straight rod spinning around its own axis; analytically it is given by a damping coefficient
-		     * gamma_a = 4*pi*eta_*r^2*lrefe_ where r is the radius of the crosssection; as this 
+		     * gamma_a = 4*pi*eta*r^2*lrefe_ where r is the radius of the crosssection; as this 
 		     * coefficient is very small for thin rods it is increased artificially by a factor for numerical convencience*/
 		    {
 		      double rsquare = pow((4*Iyy_/PI),0.5);
