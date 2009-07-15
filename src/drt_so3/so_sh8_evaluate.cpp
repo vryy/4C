@@ -218,7 +218,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
       int gid = Id();
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> gpstress(((*gpstressmap)[gid])->A(),true);
 
-      if (stresstype=="ndxyz") 
+      if (stresstype=="ndxyz")
       {
         // extrapolate stresses/strains at Gauss points to nodes
         soh8_expol(gpstress, elevec1, elevec2);
@@ -713,7 +713,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
     N_XYZ.Multiply(invJ_[gp],derivs[gp]);
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
     defgrd.MultiplyTT(xcurr,N_XYZ);
-    // 
+    //
     LINALG::Matrix<NUMSTR_SOH8,NUMSTR_SOH8> cmat(true);
     LINALG::Matrix<NUMSTR_SOH8,1> stress(true);
     soh8_mat_sel(&stress,&cmat,&density,&glstrain,&defgrd,gp,params);
@@ -1127,7 +1127,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_Cauchy(LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>
   (*elestress)(gp,3) = cauchystress(0,1);
   (*elestress)(gp,4) = cauchystress(1,2);
   (*elestress)(gp,5) = cauchystress(0,2);
-  
+
   return;
 }
 
@@ -1200,8 +1200,8 @@ int DRT::ELEMENTS::Sosh8Register::Initialize(DRT::Discretization& dis)
       int new_nodeids[NUMNOD_SOH8];
 
       switch (actele->thickdir_) {
-      case DRT::ELEMENTS::So_sh8::globx: 
-      case DRT::ELEMENTS::So_sh8::globy: 
+      case DRT::ELEMENTS::So_sh8::globx:
+      case DRT::ELEMENTS::So_sh8::globy:
       case DRT::ELEMENTS::So_sh8::globz: {
         dserror("This should have been replaced by auto(r|s|t)");
         break;
@@ -1275,7 +1275,7 @@ int DRT::ELEMENTS::Sosh8Register::Initialize(DRT::Discretization& dis)
   if (num_morphed_so_hex8_easmild>0){
     cout << endl << num_morphed_so_hex8_easmild
     << " Sosh8-Elements have no clear 'thin' direction and have morphed to So_hex8 with eas_mild" << endl;
-  } 
+  }
   if (num_morphed_so_hex8_easnone>0){
     cout << endl << num_morphed_so_hex8_easnone
     << " Sosh8-Elements have no clear 'thin' direction and have morphed to So_hex8 with eas_none" << endl;

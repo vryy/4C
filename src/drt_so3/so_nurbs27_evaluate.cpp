@@ -142,7 +142,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      
+
       sonurbs27_nlnstiffmass(lm            ,
 			     discretization,
 			     mydisp        ,
@@ -194,7 +194,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::EvaluateNeumann(
 
   bool zero_ele=false;
   (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id());
-  
+
   // there is nothing to be done for zero sized elements in knotspan
   if(zero_ele)
   {
@@ -208,7 +208,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::EvaluateNeumann(
     DRT::NURBS::ControlPoint* cp
       =
       dynamic_cast<DRT::NURBS::ControlPoint* > (nodes[inode]);
-    
+
     weights(inode) = cp->W();
   }
 
@@ -217,7 +217,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::EvaluateNeumann(
   /*------------------------------------------------------------------*/
 
   // material coord. of element
-  LINALG::Matrix<27,3> xrefe;  
+  LINALG::Matrix<27,3> xrefe;
   for (int i=0; i<27; ++i)
   {
     const double* x = nodes[i]->X();
@@ -248,9 +248,9 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::EvaluateNeumann(
   /*                  o CONST DERIVATIVES                             */
   /*                  o CONST GAUSSWEIGHTS                            */
   /*------------------------------------------------------------------*/
-  const static vector<LINALG::Matrix<27, 1> > shapefcts 
+  const static vector<LINALG::Matrix<27, 1> > shapefcts
     = sonurbs27_shapefcts(myknots,weights);
-  const static vector<LINALG::Matrix< 3,27> > derivs    
+  const static vector<LINALG::Matrix< 3,27> > derivs
     = sonurbs27_derivs   (myknots,weights);
   const static vector<double>                 gpweights = sonurbs27_gpweights();
 
@@ -274,10 +274,10 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::EvaluateNeumann(
     // integration factor
     double fac = gpweights[gp] * curvefac * detJ;
     // distribute/add over element load vector
-    for(int dim=0; dim<3; dim++) 
+    for(int dim=0; dim<3; dim++)
     {
       double dim_fac = (*onoff)[dim] * (*val)[dim] * fac;
-      for (int nodid=0; nodid<27; ++nodid) 
+      for (int nodid=0; nodid<27; ++nodid)
       {
 	elevec1[nodid*3+dim] += shapefcts[gp](nodid) * dim_fac;
       }
@@ -313,7 +313,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::InitJacobianMapping(DRT::Discretization& 
 
   bool zero_ele=false;
   (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id());
-  
+
   // there is nothing to be done for zero sized elements in knotspan
   if(zero_ele)
   {
@@ -327,11 +327,11 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::InitJacobianMapping(DRT::Discretization& 
     DRT::NURBS::ControlPoint* cp
       =
       dynamic_cast<DRT::NURBS::ControlPoint* > (nodes[inode]);
-    
+
     weights(inode) = cp->W();
   }
 
-  const static vector<LINALG::Matrix<3,27> > derivs 
+  const static vector<LINALG::Matrix<3,27> > derivs
     = sonurbs27_derivs(myknots,weights);
   LINALG::Matrix<27,3>                       xrefe;
   for (int i=0; i<27; ++i)
@@ -349,9 +349,9 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::InitJacobianMapping(DRT::Discretization& 
   {
     invJ_[gp].Multiply(derivs[gp],xrefe);
     detJ_[gp] = invJ_[gp].Invert();
-    if (detJ_[gp] == 0.0) 
+    if (detJ_[gp] == 0.0)
       dserror("ZERO JACOBIAN DETERMINANT");
-    else if (detJ_[gp] < 0.0) 
+    else if (detJ_[gp] < 0.0)
       dserror("NEGATIVE JACOBIAN DETERMINANT");
 
   }
@@ -390,7 +390,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
 
   bool zero_ele=false;
   (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id());
-  
+
   // there is nothing to be done for zero sized elements in knotspan
   if(zero_ele)
   {
@@ -404,7 +404,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
     DRT::NURBS::ControlPoint* cp
       =
       dynamic_cast<DRT::NURBS::ControlPoint* > (nodes[inode]);
-    
+
     weights(inode) = cp->W();
   }
 
@@ -416,7 +416,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
   /*------------------------------------------------------------------*/
   const static vector<LINALG::Matrix<27,1> > shapefcts
     = sonurbs27_shapefcts(myknots,weights);
-  const static vector<LINALG::Matrix<3,27> > derivs    
+  const static vector<LINALG::Matrix<3,27> > derivs
     = sonurbs27_derivs   (myknots,weights);
   const static vector<double>                gpweights = sonurbs27_gpweights();
 
@@ -520,7 +520,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
       bop(5,3*i+2) = defgrd(2,2)*N_XYZ(0,i) + defgrd(2,0)*N_XYZ(2,i);
     }
 
-    /* call material law 
+    /* call material law
     ** Here all possible material laws need to be incorporated,
     ** the stress vector, a C-matrix, and a density must be retrieved,
     ** every necessary data must be passed.
@@ -529,7 +529,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
     LINALG::Matrix<6,6> cmat  (true);
     LINALG::Matrix<6,1> stress(true);
     sonurbs27_mat_sel(&stress,&cmat,&density,&glstrain,&defgrd,gp,params);
-    // end of call material law 
+    // end of call material law
 
     double detJ_w = detJ*gpweights[gp];
     if (force != NULL && stiffmatrix != NULL)
@@ -547,7 +547,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
       sfac.Scale(detJ_w); // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
       vector<double> SmB_L(3); // intermediate Sm.B_L
       // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
-      for (int inod=0; inod<27; ++inod) 
+      for (int inod=0; inod<27; ++inod)
       {
         SmB_L[0] = sfac(0) * N_XYZ(0, inod) + sfac(3) * N_XYZ(1, inod)
             + sfac(5) * N_XYZ(2, inod);
@@ -555,7 +555,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
             + sfac(4) * N_XYZ(2, inod);
         SmB_L[2] = sfac(5) * N_XYZ(0, inod) + sfac(4) * N_XYZ(1, inod)
             + sfac(2) * N_XYZ(2, inod);
-        for (int jnod=0; jnod<27; ++jnod) 
+        for (int jnod=0; jnod<27; ++jnod)
 	{
           double bopstrbop = 0.0; // intermediate value
           for (int idim=0; idim<3; ++idim)
@@ -586,7 +586,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
           (*massmatrix)(3*inod+2,3*jnod+2) += massfactor;
         }
       }
-    } // end of mass matrix 
+    } // end of mass matrix
 
   }/* end of Loop over GP */
 
@@ -608,7 +608,7 @@ const vector<LINALG::Matrix<27,1> > DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_
   // fill up nodal f at each gp
   const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_hex_27point;
   const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
-  for (int igp = 0; igp < intpoints.nquad; ++igp) 
+  for (int igp = 0; igp < intpoints.nquad; ++igp)
   {
     LINALG::Matrix<3,1> gp;
     gp(0)=intpoints.qxg[igp][0];
@@ -641,7 +641,7 @@ const vector<LINALG::Matrix<3,27> > DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_
   // fill up df w.r.t. rst directions (NUMDIM) at each gp
   const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_hex_27point;
   const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
-  for (int igp = 0; igp < intpoints.nquad; ++igp) 
+  for (int igp = 0; igp < intpoints.nquad; ++igp)
   {
     LINALG::Matrix<3,1> gp;
     gp(0)=intpoints.qxg[igp][0];
@@ -662,7 +662,7 @@ const vector<LINALG::Matrix<3,27> > DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_
 }
 
 /*----------------------------------------------------------------------*
- |  Evaluate nurbs27 Weights at all 27 Gauss Points                     |         
+ |  Evaluate nurbs27 Weights at all 27 Gauss Points                     |
  *----------------------------------------------------------------------*/
 const vector<double> DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_gpweights()
 {
@@ -671,7 +671,7 @@ const vector<double> DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_gpweights()
   vector<double> gpweights(numgp);
   const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_hex_27point;
   const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
-  for (int i = 0; i < numgp; ++i) 
+  for (int i = 0; i < numgp; ++i)
   {
     gpweights[i] = intpoints.qwgt[i];
   }

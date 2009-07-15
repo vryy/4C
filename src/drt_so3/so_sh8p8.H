@@ -49,7 +49,7 @@ class Sosh8p8Register;
 class So_sh8;
 
 /// An incompressible 8-node solid shell element inherited from #DRT::ELEMENTS::so_sh8
-/// utilising a Bochev-stabilised equal-order approach for 
+/// utilising a Bochev-stabilised equal-order approach for
 /// tri-linearly Lagrangean interpolated displacement and pressure fields
 ///
 /// <h3>References</h3>
@@ -81,12 +81,12 @@ public:
   friend class Soh8Surface;
   friend class Soh8Line;
   //@}
-  
+
 public:
 
   /// @name Properties
   //@{
-  
+
   /// Kind of stabilisation for mixed, equal-order displacement-pressure appraoch
   enum StabilisationType
   {
@@ -100,7 +100,7 @@ public:
   enum AnsType
   {
     ans_none = 0,  ///< DEBUG ONLY: ANS switched off
-    ans_lateral,  ///< ANS active in t-/out-of-plane/thickness direction, ordinary solid-shell-like 
+    ans_lateral,  ///< ANS active in t-/out-of-plane/thickness direction, ordinary solid-shell-like
     ans_onspot  ///< ANS active in t-/out-of-plane/thickness direction, specially adjusted at 4 spots to get nearly on-spot result
   };
 
@@ -126,7 +126,7 @@ public:
     lin_half,  ///< half-way linearisation
     lin_one  ///< full linearisation
   };
-  
+
   //@}
 
   /// @name Element constants
@@ -139,11 +139,11 @@ public:
   static const int NUMDOF_ = 32;  ///< total DOFs per element
   static const int NUMDISP_ = 24;  ///< total discrete displacements per element
   static const int NUMDISPSQSYM_ = 300;  ///< (NUMDISP_*NUMDISP_ + NUMDISP_)/2, number
-                                         ///< of relevant entries 
+                                         ///< of relevant entries
                                          ///< if symmetric in element displacements
   static const int NUMPRES_ = 8;  ///< total discrete pressures per element
   static const int NUMPRESBRO_ = 1;  ///< total number of discrete, discontinuous/broken
-                                     ///< pressures per element  
+                                     ///< pressures per element
   static const int NUMSTR_ = 6;  ///< number of strains/stresses
   static const int NUMDFGR_ = 9;  ///< number of deformation gradient components
                                          ///< (deformation gradient is non-symmetric)
@@ -166,7 +166,7 @@ public:
   static const int VOIGT6COL_[];  ///< 6-Voigt column index of corresponding 2-tensor
   static const int VOIGT9ROW_[];  ///< 9-Voigt row index of corresponding 2-tensor
   static const int VOIGT9COL_[];  ///< 9-Voigt column index of corresponding 2-tensor
-  static const int VOIGT3X3_[];  ///< go from 2-tensor index pair to 9-Voigt index 
+  static const int VOIGT3X3_[];  ///< go from 2-tensor index pair to 9-Voigt index
                                  ///< by [NUMDIM_*i+j] for any i,j=0,1,2
   static const int VOIGT3X3SYM_[]; ///< go from symmtric 2-tensor index pair to 6-Voigt index
                                    ///< by [NUMDIM_*i+j] for any i,j=0,1,2
@@ -260,12 +260,12 @@ public:
   /// at the level of the total system of equations. Purely internal
   /// element dofs that are condensed internally should NOT be considered.
   virtual int NumDofPerElement() const { return 0; }
-  
+
   /// Set ANS type
   void SetANS(
      const AnsType& newans  ///< ANS to set
-     ) 
-   { 
+     )
+   {
       ans_ = newans;
    }
 
@@ -388,7 +388,7 @@ private:
   ///
   /// Shear modulus is needed for stabilisation
   double ShearMod() const;
-  
+
   /// Extrapolate Gauss-point values (e.g. stresses) to nodes and store results in elevectors
   void sosh8p8_expol(
     LINALG::Matrix<NUMGPT_,NUMSTR_>& stresses, ///< gp stresses
@@ -494,7 +494,7 @@ private:
     const Teuchos::RCP<Epetra_SerialDenseMatrix>& M  ///< EAS shape functions in material configuration
     );
 
-  /// static condensation 
+  /// static condensation
   template<int NUMEAS_T>
   static void EasCondensation(
     LINALG::Matrix<NUMDISP_,1>* force,  ///< element internal force vector
@@ -591,7 +591,7 @@ private:
   /// In index notation:
   ///\f[
   ///   \frac{\partial (F^{-1})_{ij}}{\partial F_{kl}}
-  ///   = -1/2*\big( (F^{-1})_{ik} \cdot (F^{-1})_{lj} 
+  ///   = -1/2*\big( (F^{-1})_{ik} \cdot (F^{-1})_{lj}
   ///                + (F^{-1})_{il} \cdot (F^{-1})_{kj} \big)
   ///\f]
   static void InvVector6VoigtDiffByItself(
@@ -627,7 +627,7 @@ private:
   ///   = \delta_{ik}\cdot F_{lj} + \delta_{jl}\cdot F_{ik}
   ///\f]
   static void SqVector6VoigtDiffByItself(
-    LINALG::Matrix<NUMSTR_,NUMSTR_>& sqfderf,  ///< diff. squared matrix 
+    LINALG::Matrix<NUMSTR_,NUMSTR_>& sqfderf,  ///< diff. squared matrix
     const LINALG::Matrix<NUMDIM_,NUMDIM_>& fmat,  ///< symmetric 2-tensor
     const VoigtType outvoigt6 = voigt6_strain  ///< 6-Voigt row type of resulting matrix
     );
@@ -641,7 +641,7 @@ private:
   ///   \big( \boldsymbol{F}^T \cdot \boldsymbol{F} \big)_{,\boldsymbol{F}}
   ///\f]
   static void SqVector9VoigtDiffByItself(
-    LINALG::Matrix<NUMDFGR_,NUMDFGR_>& sqfderf,  ///< diff. squared matrix 
+    LINALG::Matrix<NUMDFGR_,NUMDFGR_>& sqfderf,  ///< diff. squared matrix
     const LINALG::Matrix<NUMDIM_,NUMDIM_>& fmat,  ///< non-symmetric 2-tensor
     const bool transpose = false  ///< transpose non-symmetric 2-tensor
     );
@@ -653,10 +653,10 @@ private:
   /// \begin{array}{rl}
   ///    \dfrac{\partial (U_{EA} U_{AF})}{\partial U_{GH}\, \partial U_{IJ}}
   ///    = \frac{1}{4}\Big(
-  /// &  
+  /// &
   ///    \delta_E{}^G\delta^{HI}\delta_F{}^J+\delta_F{}^H\delta_E{}^I\delta^{GJ}
   ///    +\delta_E{}^G\delta^{HJ}\delta_F{}^I+\delta_F{}^H\delta_E{}^J\delta^{GI}
-  /// \\ &  
+  /// \\ &
   ///    +\delta_E{}^H\delta^{GI}\delta_F{}^J+\delta_F{}^G\delta_E{}^I\delta^{HJ}
   ///    +\delta_E{}^H\delta^{GJ}\delta_F{}^I+\delta_F{}^G\delta_E{}^J\delta^{HI}
   ///     \Big)
@@ -678,7 +678,7 @@ private:
 
   /// Build 6x9 Voigt matrix for 2-tensor-dot-2-tensor product
   ///
-  /// This method builds a matrix $\mathbf{B}$ which allows to perform the 
+  /// This method builds a matrix $\mathbf{B}$ which allows to perform the
   /// following operation utilising a Voigt matrix.
   ///
   /// The operation in
@@ -701,7 +701,7 @@ private:
     );
 
   /// Build 6x6-Voigt matrix to multiply 6-Voigt with which is equivalent to
-  /// multiplication with non-sym 2-tensor \f$\boldsymbol{F}\f$ from left and right 
+  /// multiplication with non-sym 2-tensor \f$\boldsymbol{F}\f$ from left and right
   /// of a symmetric 2-tensor \f$\boldsymbol{e}\f$
   ///
   /// The operation in
@@ -731,7 +731,7 @@ private:
 
   /// determine (inverse) right stretch tensor
   ///
-  /// The right stretch tensor is obtained by polar decomposition 
+  /// The right stretch tensor is obtained by polar decomposition
   /// of the right Cauchy-Green 2-tensor in 3 dimensions.
   ///
   /// About:
@@ -779,7 +779,7 @@ private:
   /// @name Local assemble of displacement and pressure quantities
   //@{
 
-  /// Extract 24x1 displacement and 8x1 pressure 
+  /// Extract 24x1 displacement and 8x1 pressure
   /// of 32x1 displacement-pressure vector
   ///
   /// From 32x1 general element state vector
@@ -807,7 +807,7 @@ private:
     );
 
   /// Build 32x32 element matrix
-  /// 
+  ///
   /// Following the pattern given at #ExtractDispAndPres()
   static void BuildElementMatrix(
     LINALG::Matrix<NUMDOF_,NUMDOF_>* mat,  ///< 32x32 matrix

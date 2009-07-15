@@ -224,7 +224,7 @@ void DRT::ELEMENTS::So_weg6::soweg6_expol
 (
     LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6>& stresses,
     LINALG::Matrix<NUMDOF_WEG6,1>& elevec1,
-    LINALG::Matrix<NUMDOF_WEG6,1>& elevec2    
+    LINALG::Matrix<NUMDOF_WEG6,1>& elevec2
 )
 {
   static LINALG::Matrix<NUMNOD_WEG6,NUMGPT_WEG6> expol;
@@ -261,7 +261,7 @@ void DRT::ELEMENTS::So_weg6::soweg6_expol
       }
     }
   }
-  
+
   LINALG::Matrix<NUMNOD_WEG6,NUMSTR_WEG6> nodalstresses;
   for (int i=0;i<NUMNOD_WEG6;++i)
   {
@@ -302,7 +302,7 @@ bool DRT::ELEMENTS::So_weg6::VisData(const string& name, vector<double>& data)
   // Put the owner of this element into the file (use base class method for this)
   if(DRT::Element::VisData(name,data))
     return true;
-  
+
   if (Material()->MaterialType() == INPAR::MAT::m_artwallremod){
     MAT::ArtWallRemod* art = static_cast <MAT::ArtWallRemod*>(Material().get());
     vector<double> a1 = art->Geta1()->at(0);  // get a1 of first gp

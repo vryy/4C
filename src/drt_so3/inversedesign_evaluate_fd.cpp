@@ -24,14 +24,14 @@ Maintainer: Michael Gee
  |  which is the 9x9 nonsym Boeppel product                             |
  |                                                             gee 08/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::InvDesign::FDLambda(LINALG::SerialDenseMatrix& L, 
+void DRT::ELEMENTS::InvDesign::FDLambda(LINALG::SerialDenseMatrix& L,
                                         const LINALG::SerialDenseMatrix& f) const
 
 {
   // non-permuted original
   LINALG::SerialDenseMatrix F(f);
   LINALG::NonsymInverse3x3(F);
-  
+
   double Lambda4[3][3][3][3];
   const double eps = 1.0e-8;
   for (int k=0; k<3; ++k)
@@ -45,11 +45,11 @@ void DRT::ELEMENTS::InvDesign::FDLambda(LINALG::SerialDenseMatrix& L,
           LINALG::NonsymInverse3x3(fperm);
           Lambda4[k][m][p][q] = ( fperm(k,m) - F(k,m) ) / eps;
         }
-      
+
     }
 
 
-  
+
   L(0,0) = Lambda4[0][0][0][0];
   L(0,1) = Lambda4[0][0][1][0];
   L(0,2) = Lambda4[0][0][2][0];
@@ -59,7 +59,7 @@ void DRT::ELEMENTS::InvDesign::FDLambda(LINALG::SerialDenseMatrix& L,
   L(0,6) = Lambda4[0][0][0][2];
   L(0,7) = Lambda4[0][0][1][2];
   L(0,8) = Lambda4[0][0][2][2];
-  
+
   L(1,0) = Lambda4[1][0][0][0];
   L(1,1) = Lambda4[1][0][1][0];
   L(1,2) = Lambda4[1][0][2][0];
@@ -69,7 +69,7 @@ void DRT::ELEMENTS::InvDesign::FDLambda(LINALG::SerialDenseMatrix& L,
   L(1,6) = Lambda4[1][0][0][2];
   L(1,7) = Lambda4[1][0][1][2];
   L(1,8) = Lambda4[1][0][2][2];
-  
+
   L(2,0) = Lambda4[2][0][0][0];
   L(2,1) = Lambda4[2][0][1][0];
   L(2,2) = Lambda4[2][0][2][0];
@@ -79,7 +79,7 @@ void DRT::ELEMENTS::InvDesign::FDLambda(LINALG::SerialDenseMatrix& L,
   L(2,6) = Lambda4[2][0][0][2];
   L(2,7) = Lambda4[2][0][1][2];
   L(2,8) = Lambda4[2][0][2][2];
-  
+
   L(3,0) = Lambda4[0][1][0][0];
   L(3,1) = Lambda4[0][1][1][0];
   L(3,2) = Lambda4[0][1][2][0];
@@ -89,7 +89,7 @@ void DRT::ELEMENTS::InvDesign::FDLambda(LINALG::SerialDenseMatrix& L,
   L(3,6) = Lambda4[0][1][0][2];
   L(3,7) = Lambda4[0][1][1][2];
   L(3,8) = Lambda4[0][1][2][2];
-  
+
   L(4,0) = Lambda4[1][1][0][0];
   L(4,1) = Lambda4[1][1][1][0];
   L(4,2) = Lambda4[1][1][2][0];
@@ -99,7 +99,7 @@ void DRT::ELEMENTS::InvDesign::FDLambda(LINALG::SerialDenseMatrix& L,
   L(4,6) = Lambda4[1][1][0][2];
   L(4,7) = Lambda4[1][1][1][2];
   L(4,8) = Lambda4[1][1][2][2];
-  
+
   L(5,0) = Lambda4[2][1][0][0];
   L(5,1) = Lambda4[2][1][1][0];
   L(5,2) = Lambda4[2][1][2][0];
@@ -109,7 +109,7 @@ void DRT::ELEMENTS::InvDesign::FDLambda(LINALG::SerialDenseMatrix& L,
   L(5,6) = Lambda4[2][1][0][2];
   L(5,7) = Lambda4[2][1][1][2];
   L(5,8) = Lambda4[2][1][2][2];
-  
+
   L(6,0) = Lambda4[0][2][0][0];
   L(6,1) = Lambda4[0][2][1][0];
   L(6,2) = Lambda4[0][2][2][0];
@@ -119,7 +119,7 @@ void DRT::ELEMENTS::InvDesign::FDLambda(LINALG::SerialDenseMatrix& L,
   L(6,6) = Lambda4[0][2][0][2];
   L(6,7) = Lambda4[0][2][1][2];
   L(6,8) = Lambda4[0][2][2][2];
-  
+
   L(7,0) = Lambda4[1][2][0][0];
   L(7,1) = Lambda4[1][2][1][0];
   L(7,2) = Lambda4[1][2][2][0];
@@ -129,7 +129,7 @@ void DRT::ELEMENTS::InvDesign::FDLambda(LINALG::SerialDenseMatrix& L,
   L(7,6) = Lambda4[1][2][0][2];
   L(7,7) = Lambda4[1][2][1][2];
   L(7,8) = Lambda4[1][2][2][2];
-  
+
   L(8,0) = Lambda4[2][2][0][0];
   L(8,1) = Lambda4[2][2][1][0];
   L(8,2) = Lambda4[2][2][2][0];
@@ -139,8 +139,8 @@ void DRT::ELEMENTS::InvDesign::FDLambda(LINALG::SerialDenseMatrix& L,
   L(8,6) = Lambda4[2][2][0][2];
   L(8,7) = Lambda4[2][2][1][2];
   L(8,8) = Lambda4[2][2][2][2];
-  
-  return; 
+
+  return;
 } // DRT::ELEMENTS::InvDesign::FDLambda
 
 
@@ -150,7 +150,7 @@ void DRT::ELEMENTS::InvDesign::FDLambda(LINALG::SerialDenseMatrix& L,
  |  which is the 9x9 nonsym Boeppel product                             |
  |                                                             gee 08/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::InvDesign::FDLambdaT(LINALG::SerialDenseMatrix& L, 
+void DRT::ELEMENTS::InvDesign::FDLambdaT(LINALG::SerialDenseMatrix& L,
                                         const LINALG::SerialDenseMatrix& f) const
 
 {
@@ -167,7 +167,7 @@ void DRT::ELEMENTS::InvDesign::FDLambdaT(LINALG::SerialDenseMatrix& L,
   FT(2,0) = F(0,2);
   FT(2,1) = F(1,2);
   FT(2,2) = F(2,2);
-  
+
   double Lambda4[3][3][3][3];
   const double eps = 1.0e-8;
   for (int k=0; k<3; ++k)
@@ -192,11 +192,11 @@ void DRT::ELEMENTS::InvDesign::FDLambdaT(LINALG::SerialDenseMatrix& L,
           fpermT(2,2) = fperm(2,2);
           Lambda4[k][m][p][q] = ( fpermT(k,m) - FT(k,m) ) / eps;
         }
-      
+
     }
 
 
-  
+
   L(0,0) = Lambda4[0][0][0][0];
   L(0,1) = Lambda4[0][0][1][0];
   L(0,2) = Lambda4[0][0][2][0];
@@ -206,7 +206,7 @@ void DRT::ELEMENTS::InvDesign::FDLambdaT(LINALG::SerialDenseMatrix& L,
   L(0,6) = Lambda4[0][0][0][2];
   L(0,7) = Lambda4[0][0][1][2];
   L(0,8) = Lambda4[0][0][2][2];
-  
+
   L(1,0) = Lambda4[1][0][0][0];
   L(1,1) = Lambda4[1][0][1][0];
   L(1,2) = Lambda4[1][0][2][0];
@@ -216,7 +216,7 @@ void DRT::ELEMENTS::InvDesign::FDLambdaT(LINALG::SerialDenseMatrix& L,
   L(1,6) = Lambda4[1][0][0][2];
   L(1,7) = Lambda4[1][0][1][2];
   L(1,8) = Lambda4[1][0][2][2];
-  
+
   L(2,0) = Lambda4[2][0][0][0];
   L(2,1) = Lambda4[2][0][1][0];
   L(2,2) = Lambda4[2][0][2][0];
@@ -226,7 +226,7 @@ void DRT::ELEMENTS::InvDesign::FDLambdaT(LINALG::SerialDenseMatrix& L,
   L(2,6) = Lambda4[2][0][0][2];
   L(2,7) = Lambda4[2][0][1][2];
   L(2,8) = Lambda4[2][0][2][2];
-  
+
   L(3,0) = Lambda4[0][1][0][0];
   L(3,1) = Lambda4[0][1][1][0];
   L(3,2) = Lambda4[0][1][2][0];
@@ -236,7 +236,7 @@ void DRT::ELEMENTS::InvDesign::FDLambdaT(LINALG::SerialDenseMatrix& L,
   L(3,6) = Lambda4[0][1][0][2];
   L(3,7) = Lambda4[0][1][1][2];
   L(3,8) = Lambda4[0][1][2][2];
-  
+
   L(4,0) = Lambda4[1][1][0][0];
   L(4,1) = Lambda4[1][1][1][0];
   L(4,2) = Lambda4[1][1][2][0];
@@ -246,7 +246,7 @@ void DRT::ELEMENTS::InvDesign::FDLambdaT(LINALG::SerialDenseMatrix& L,
   L(4,6) = Lambda4[1][1][0][2];
   L(4,7) = Lambda4[1][1][1][2];
   L(4,8) = Lambda4[1][1][2][2];
-  
+
   L(5,0) = Lambda4[2][1][0][0];
   L(5,1) = Lambda4[2][1][1][0];
   L(5,2) = Lambda4[2][1][2][0];
@@ -256,7 +256,7 @@ void DRT::ELEMENTS::InvDesign::FDLambdaT(LINALG::SerialDenseMatrix& L,
   L(5,6) = Lambda4[2][1][0][2];
   L(5,7) = Lambda4[2][1][1][2];
   L(5,8) = Lambda4[2][1][2][2];
-  
+
   L(6,0) = Lambda4[0][2][0][0];
   L(6,1) = Lambda4[0][2][1][0];
   L(6,2) = Lambda4[0][2][2][0];
@@ -266,7 +266,7 @@ void DRT::ELEMENTS::InvDesign::FDLambdaT(LINALG::SerialDenseMatrix& L,
   L(6,6) = Lambda4[0][2][0][2];
   L(6,7) = Lambda4[0][2][1][2];
   L(6,8) = Lambda4[0][2][2][2];
-  
+
   L(7,0) = Lambda4[1][2][0][0];
   L(7,1) = Lambda4[1][2][1][0];
   L(7,2) = Lambda4[1][2][2][0];
@@ -276,7 +276,7 @@ void DRT::ELEMENTS::InvDesign::FDLambdaT(LINALG::SerialDenseMatrix& L,
   L(7,6) = Lambda4[1][2][0][2];
   L(7,7) = Lambda4[1][2][1][2];
   L(7,8) = Lambda4[1][2][2][2];
-  
+
   L(8,0) = Lambda4[2][2][0][0];
   L(8,1) = Lambda4[2][2][1][0];
   L(8,2) = Lambda4[2][2][2][0];
@@ -286,8 +286,8 @@ void DRT::ELEMENTS::InvDesign::FDLambdaT(LINALG::SerialDenseMatrix& L,
   L(8,6) = Lambda4[2][2][0][2];
   L(8,7) = Lambda4[2][2][1][2];
   L(8,8) = Lambda4[2][2][2][2];
-  
-  return; 
+
+  return;
 } // DRT::ELEMENTS::InvDesign::FDLambdaT
 
 
@@ -296,7 +296,7 @@ void DRT::ELEMENTS::InvDesign::FDLambdaT(LINALG::SerialDenseMatrix& L,
  |                                                             gee 08/08|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::InvDesign::FDTheta(double Theta4[][3][3][3],
-                                       LINALG::SerialDenseMatrix& Theta, 
+                                       LINALG::SerialDenseMatrix& Theta,
                                        const LINALG::SerialDenseMatrix& F) const
 
 {
@@ -310,7 +310,7 @@ void DRT::ELEMENTS::InvDesign::FDTheta(double Theta4[][3][3][3],
   E.Scale(0.5);
 
   const double eps = 1.0e-8;
-  
+
   for (int i=0; i<3; ++i)
     for (int j=0; j<3; ++j)
     {
@@ -331,8 +331,8 @@ void DRT::ELEMENTS::InvDesign::FDTheta(double Theta4[][3][3][3],
           Theta4[i][j][k][l] = ( Eperm(i,j) - E(i,j) ) / eps;
         }
     }
-    
-    
+
+
   Theta(0,0) = Theta4[0][0][0][0]; // ok
   Theta(0,1) = Theta4[0][0][1][0];
   Theta(0,2) = Theta4[0][0][2][0]; // nok
@@ -342,7 +342,7 @@ void DRT::ELEMENTS::InvDesign::FDTheta(double Theta4[][3][3][3],
   Theta(0,6) = Theta4[0][0][0][2]; // nok
   Theta(0,7) = Theta4[0][0][1][2];
   Theta(0,8) = Theta4[0][0][2][2];
-  
+
   Theta(1,0) = Theta4[1][1][0][0];
   Theta(1,1) = Theta4[1][1][1][0];
   Theta(1,2) = Theta4[1][1][2][0];
@@ -393,7 +393,7 @@ void DRT::ELEMENTS::InvDesign::FDTheta(double Theta4[][3][3][3],
   Theta(5,7) = Theta4[2][0][1][2] * 2.0;
   Theta(5,8) = Theta4[2][0][2][2] * 2.0;
 
-  return; 
+  return;
 } // DRT::ELEMENTS::InvDesign::FDTheta
 
 
@@ -403,7 +403,7 @@ void DRT::ELEMENTS::InvDesign::FDTheta(double Theta4[][3][3][3],
  |                                                             gee 08/08|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::InvDesign::FDYpsilon(   double Y4[][3][3][3],
-                                            LINALG::SerialDenseMatrix& Y, 
+                                            LINALG::SerialDenseMatrix& Y,
                                       const LINALG::SerialDenseMatrix& F,
                                       const LINALG::SerialDenseMatrix& S) const
 
@@ -418,8 +418,8 @@ void DRT::ELEMENTS::InvDesign::FDYpsilon(   double Y4[][3][3][3],
         for (int n=0; n<3; ++n)
           IFS(k,l) += 0.5 * ( F(k,m)*F(l,n) + F(k,n)*F(l,m) ) * S(m,n);
     }
-  
-  const double eps = 1.0e-8;  
+
+  const double eps = 1.0e-8;
 
   for (int k=0; k<3; ++k)
     for (int l=0; l<3; ++l)
@@ -438,17 +438,17 @@ void DRT::ELEMENTS::InvDesign::FDYpsilon(   double Y4[][3][3][3],
               IFSperm(a,b) = 0.0;
               for (int c=0; c<3; ++c)
                 for (int d=0; d<3; ++d)
-                  IFSperm(a,b) += 
+                  IFSperm(a,b) +=
                     0.5 * ( Fperm(a,c)*Fperm(b,d) + Fperm(a,d)*Fperm(b,c) ) * S(c,d);
             }
           // do the differencing
           Y4[k][l][p][q] = ( IFSperm(k,l) - IFS(k,l) ) / eps;
         } // pq
     } // kl
-    
-    
-    
-    
+
+
+
+
   Y(0,0) = Y4[0][0][0][0];
   Y(0,1) = Y4[0][0][1][0];
   Y(0,2) = Y4[0][0][2][0];
@@ -458,7 +458,7 @@ void DRT::ELEMENTS::InvDesign::FDYpsilon(   double Y4[][3][3][3],
   Y(0,6) = Y4[0][0][0][2];
   Y(0,7) = Y4[0][0][1][2];
   Y(0,8) = Y4[0][0][2][2];
-  
+
   Y(1,0) = Y4[1][1][0][0];
   Y(1,1) = Y4[1][1][1][0];
   Y(1,2) = Y4[1][1][2][0];
@@ -509,7 +509,7 @@ void DRT::ELEMENTS::InvDesign::FDYpsilon(   double Y4[][3][3][3],
   Y(5,7) = Y4[2][0][1][2];
   Y(5,8) = Y4[2][0][2][2];
 
-  return; 
+  return;
 } // DRT::ELEMENTS::InvDesign::FDYpsilon
 
 
@@ -525,9 +525,9 @@ void DRT::ELEMENTS::InvDesign::FDstiffmatrix(Epetra_SerialDenseMatrix& stiff,
 
 {
   const static DRT::ELEMENTS::So_hex8::Integrator_So_hex8 int_hex8;
-  
+
   //********************** non-permuted original function cstress(disp)
-  LINALG::SerialDenseMatrix xcurr(NUMNOD_SOH8,NUMDIM_SOH8);  
+  LINALG::SerialDenseMatrix xcurr(NUMNOD_SOH8,NUMDIM_SOH8);
   Epetra_SerialDenseVector cstress(NUMSTR_SOH8);
   {
     LINALG::SerialDenseMatrix xrefe(NUMNOD_SOH8,NUMDIM_SOH8);
@@ -541,7 +541,7 @@ void DRT::ELEMENTS::InvDesign::FDstiffmatrix(Epetra_SerialDenseMatrix& stiff,
       xrefe(i,1) = xcurr(i,1) + disp[i*NODDOF_SOH8+1];
       xrefe(i,2) = xcurr(i,2) + disp[i*NODDOF_SOH8+2];
     }
-    
+
     // no gauss point loop, we just look at THE gauss point gp here
     const double              detj = ele->detJ_[gp];
     Epetra_SerialDenseMatrix& invj = ele->invJ_[gp];
@@ -555,13 +555,13 @@ void DRT::ELEMENTS::InvDesign::FDstiffmatrix(Epetra_SerialDenseMatrix& stiff,
     LINALG::SerialDenseMatrix F(f);
     const double detf = LINALG::NonsymInverse3x3(F);
     const double detF = 1.0/detf;
-    
+
     LINALG::SerialDenseMatrix IF(6,6);
     BuildIF(IF,F);
-    
+
     LINALG::SerialDenseMatrix cauchygreen(NUMDIM_SOH8,NUMDIM_SOH8);
     cauchygreen.Multiply('T','N',1.0,F,F,0.0);
-    
+
     LINALG::SerialDenseVector glstrain(NUMSTR_SOH8);
     glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
     glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
@@ -569,7 +569,7 @@ void DRT::ELEMENTS::InvDesign::FDstiffmatrix(Epetra_SerialDenseMatrix& stiff,
     glstrain(3) = cauchygreen(0,1);
     glstrain(4) = cauchygreen(1,2);
     glstrain(5) = cauchygreen(2,0);
-    
+
     Epetra_SerialDenseMatrix cmat(NUMSTR_SOH8,NUMSTR_SOH8);
     Epetra_SerialDenseVector stress(NUMSTR_SOH8);
     double density;
@@ -589,7 +589,7 @@ void DRT::ELEMENTS::InvDesign::FDstiffmatrix(Epetra_SerialDenseMatrix& stiff,
       // permuted the displacement in direction j
       dispperm = disp;
       dispperm[j] += eps;
-      
+
       // evaluated cstressperm
       LINALG::SerialDenseMatrix xrefe(NUMNOD_SOH8,NUMDIM_SOH8);
       for (int k=0; k<NUMNOD_SOH8; ++k)
@@ -609,13 +609,13 @@ void DRT::ELEMENTS::InvDesign::FDstiffmatrix(Epetra_SerialDenseMatrix& stiff,
       LINALG::SerialDenseMatrix F(f);
       const double detf = LINALG::NonsymInverse3x3(F);
       const double detF = 1.0/detf;
-      
+
       LINALG::SerialDenseMatrix IF(6,6);
       BuildIF(IF,F);
-      
+
       LINALG::SerialDenseMatrix cauchygreen(NUMDIM_SOH8,NUMDIM_SOH8);
       cauchygreen.Multiply('T','N',1.0,F,F,0.0);
-      
+
       LINALG::SerialDenseVector glstrain(NUMSTR_SOH8);
       glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
       glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
@@ -623,17 +623,17 @@ void DRT::ELEMENTS::InvDesign::FDstiffmatrix(Epetra_SerialDenseMatrix& stiff,
       glstrain(3) = cauchygreen(0,1);
       glstrain(4) = cauchygreen(1,2);
       glstrain(5) = cauchygreen(2,0);
-      
+
       Epetra_SerialDenseMatrix cmat(NUMSTR_SOH8,NUMSTR_SOH8);
       Epetra_SerialDenseVector stress(NUMSTR_SOH8);
       double density;
       ele->soh8_mat_sel(&stress,&cmat,&density,&glstrain,&F,gp,params);
-      
+
       Epetra_SerialDenseVector cstressperm(NUMSTR_SOH8);
       cstressperm.Multiply('N','N',detf,IF,stress,0.0);
       //cout << "cstressperm (i,j)=(" << i << "," << j << ")\n" << cstressperm;
-      
-      
+
+
       // do the finite differencing
       stiff(i,j) = ( cstressperm(i) - cstress(i) ) / eps;
 
@@ -642,7 +642,7 @@ void DRT::ELEMENTS::InvDesign::FDstiffmatrix(Epetra_SerialDenseMatrix& stiff,
 
 
 
-  return; 
+  return;
 } // DRT::ELEMENTS::InvDesign::FDstiffmatrix
 
 
@@ -660,9 +660,9 @@ void DRT::ELEMENTS::InvDesign::FD_djdX(Epetra_SerialDenseMatrix& djdX,
 
 {
   const static DRT::ELEMENTS::So_hex8::Integrator_So_hex8 int_hex8;
-  
+
   //********************** non-permuted original function cstress(disp)
-  LINALG::SerialDenseMatrix xcurr(NUMNOD_SOH8,NUMDIM_SOH8);  
+  LINALG::SerialDenseMatrix xcurr(NUMNOD_SOH8,NUMDIM_SOH8);
   double detf = 0.0;
   {
     LINALG::SerialDenseMatrix xrefe(NUMNOD_SOH8,NUMDIM_SOH8);
@@ -676,7 +676,7 @@ void DRT::ELEMENTS::InvDesign::FD_djdX(Epetra_SerialDenseMatrix& djdX,
       xrefe(i,1) = xcurr(i,1) + disp[i*NODDOF_SOH8+1];
       xrefe(i,2) = xcurr(i,2) + disp[i*NODDOF_SOH8+2];
     }
-    
+
     // no gauss point loop, we just look at THE gauss point gp here
     const double              detj = ele->detJ_[gp];
     Epetra_SerialDenseMatrix& invj = ele->invJ_[gp];
@@ -699,7 +699,7 @@ void DRT::ELEMENTS::InvDesign::FD_djdX(Epetra_SerialDenseMatrix& djdX,
     // permuted the displacement in direction j
     dispperm = disp;
     dispperm[j] += eps;
-    
+
     // evaluated detjperm
     LINALG::SerialDenseMatrix xrefe(NUMNOD_SOH8,NUMDIM_SOH8);
     for (int k=0; k<NUMNOD_SOH8; ++k)
@@ -718,7 +718,7 @@ void DRT::ELEMENTS::InvDesign::FD_djdX(Epetra_SerialDenseMatrix& djdX,
 
     LINALG::SerialDenseMatrix F(f);
     const double detfperm = LINALG::NonsymInverse3x3(F);
-    
+
     // do the finite differencing
     djdX(0,j) = ( detfperm - detf ) / eps;
 
@@ -726,7 +726,7 @@ void DRT::ELEMENTS::InvDesign::FD_djdX(Epetra_SerialDenseMatrix& djdX,
 
 
 
-  return; 
+  return;
 } // DRT::ELEMENTS::InvDesign::FD_djdX
 
 
@@ -744,9 +744,9 @@ void DRT::ELEMENTS::InvDesign::FD_dISdX(Epetra_SerialDenseMatrix& stiff,
 
 {
   const static DRT::ELEMENTS::So_hex8::Integrator_So_hex8 int_hex8;
-  
+
   //********************** non-permuted original function cstress(disp)
-  LINALG::SerialDenseMatrix xcurr(NUMNOD_SOH8,NUMDIM_SOH8);  
+  LINALG::SerialDenseMatrix xcurr(NUMNOD_SOH8,NUMDIM_SOH8);
   Epetra_SerialDenseVector cstress(NUMSTR_SOH8);
   Epetra_SerialDenseVector stress(NUMSTR_SOH8);
   double detf;
@@ -762,7 +762,7 @@ void DRT::ELEMENTS::InvDesign::FD_dISdX(Epetra_SerialDenseMatrix& stiff,
       xrefe(i,1) = xcurr(i,1) + disp[i*NODDOF_SOH8+1];
       xrefe(i,2) = xcurr(i,2) + disp[i*NODDOF_SOH8+2];
     }
-    
+
     // no gauss point loop, we just look at THE gauss point gp here
     const double              detj = ele->detJ_[gp];
     Epetra_SerialDenseMatrix& invj = ele->invJ_[gp];
@@ -776,13 +776,13 @@ void DRT::ELEMENTS::InvDesign::FD_dISdX(Epetra_SerialDenseMatrix& stiff,
     LINALG::SerialDenseMatrix F(f);
     detf = LINALG::NonsymInverse3x3(F);
     //const double detF = 1.0/detf;
-    
+
     LINALG::SerialDenseMatrix IF(6,6);
     BuildIF(IF,F);
-    
+
     LINALG::SerialDenseMatrix cauchygreen(NUMDIM_SOH8,NUMDIM_SOH8);
     cauchygreen.Multiply('T','N',1.0,F,F,0.0);
-    
+
     LINALG::SerialDenseVector glstrain(NUMSTR_SOH8);
     glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
     glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
@@ -790,7 +790,7 @@ void DRT::ELEMENTS::InvDesign::FD_dISdX(Epetra_SerialDenseMatrix& stiff,
     glstrain(3) = cauchygreen(0,1);
     glstrain(4) = cauchygreen(1,2);
     glstrain(5) = cauchygreen(2,0);
-    
+
     Epetra_SerialDenseMatrix cmat(NUMSTR_SOH8,NUMSTR_SOH8);
     double density;
     ele->soh8_mat_sel(&stress,&cmat,&density,&glstrain,&F,gp,params);
@@ -809,7 +809,7 @@ void DRT::ELEMENTS::InvDesign::FD_dISdX(Epetra_SerialDenseMatrix& stiff,
       // permuted the displacement in direction j
       dispperm = disp;
       dispperm[j] += eps;
-      
+
       // evaluated cstressperm
       LINALG::SerialDenseMatrix xrefe(NUMNOD_SOH8,NUMDIM_SOH8);
       for (int k=0; k<NUMNOD_SOH8; ++k)
@@ -829,15 +829,15 @@ void DRT::ELEMENTS::InvDesign::FD_dISdX(Epetra_SerialDenseMatrix& stiff,
       LINALG::SerialDenseMatrix F(f);
       LINALG::NonsymInverse3x3(F);
       //const double detF = 1.0/detf;
-      
+
       LINALG::SerialDenseMatrix IF(6,6);
       BuildIF(IF,F);
 
       Epetra_SerialDenseVector cstressperm(NUMSTR_SOH8);
       cstressperm.Multiply('N','N',detf,IF,stress,0.0);
       //cout << "cstressperm (i,j)=(" << i << "," << j << ")\n" << cstressperm;
-      
-      
+
+
       // do the finite differencing
       stiff(i,j) = ( cstressperm(i) - cstress(i) ) / eps;
 
@@ -846,7 +846,7 @@ void DRT::ELEMENTS::InvDesign::FD_dISdX(Epetra_SerialDenseMatrix& stiff,
 
 
 
-  return; 
+  return;
 } // DRT::ELEMENTS::InvDesign::FD_dISdX
 
 
@@ -862,17 +862,17 @@ void DRT::ELEMENTS::InvDesign::FD_dISdf(Epetra_SerialDenseMatrix& dISdf,
                                      const LINALG::SerialDenseMatrix& f) const
 
 {
-  
+
   //********************** non-permuted original function cstress(disp)
   Epetra_SerialDenseVector cstress(NUMSTR_SOH8);
   double detf;
   {
     LINALG::SerialDenseMatrix F(f);
     detf = LINALG::NonsymInverse3x3(F);
-    
+
     LINALG::SerialDenseMatrix IF(6,6);
     BuildIF(IF,F);
-    
+
     //cstress.Multiply('N','N',detf,IF,stress,0.0);
     cstress.Multiply('N','N',1.0,IF,stress,0.0); // detf is done outside
   }
@@ -893,9 +893,9 @@ void DRT::ELEMENTS::InvDesign::FD_dISdf(Epetra_SerialDenseMatrix& dISdf,
       fpermvec(6) = f(0,2);
       fpermvec(7) = f(1,2);
       fpermvec(8) = f(2,2);
-      
+
       fpermvec(j) += eps;
-      
+
       LINALG::SerialDenseMatrix fperm(3,3);
       fperm(0,0) = fpermvec(0);
       fperm(1,0) = fpermvec(1);
@@ -906,24 +906,24 @@ void DRT::ELEMENTS::InvDesign::FD_dISdf(Epetra_SerialDenseMatrix& dISdf,
       fperm(0,2) = fpermvec(6);
       fperm(1,2) = fpermvec(7);
       fperm(2,2) = fpermvec(8);
-      
+
       LINALG::SerialDenseMatrix Fperm(fperm);
       LINALG::NonsymInverse3x3(Fperm);
-      
+
       LINALG::SerialDenseMatrix IFperm(6,6);
       BuildIF(IFperm,Fperm);
-      
+
       Epetra_SerialDenseVector cstressperm(NUMSTR_SOH8);
       //cstressperm.Multiply('N','N',detf,IFperm,stress,0.0);
       cstressperm.Multiply('N','N',1.0,IFperm,stress,0.0); // detf is done outside
-      
+
 
       // do the finite differencing
       dISdf(i,j) = ( cstressperm(i) - cstress(i) ) / eps;
     } // j
 
 
-  return; 
+  return;
 } // DRT::ELEMENTS::InvDesign::FD_dISdf
 
 
@@ -938,7 +938,7 @@ void DRT::ELEMENTS::InvDesign::TensorMultiply(
 {
 
   double result[3][3][3][3];
-  
+
   for (int k=0; k<3; ++k)
     for (int l=0; l<3; ++l)
     {
@@ -951,8 +951,8 @@ void DRT::ELEMENTS::InvDesign::TensorMultiply(
               result[k][l][i][j] += Y4[k][l][p][q] * L4[p][q][i][j];
         }
     }
-  
-  
+
+
   sum(0,0) = result[0][0][0][0];
   sum(0,1) = result[0][0][1][0];
   sum(0,2) = result[0][0][2][0];
@@ -962,7 +962,7 @@ void DRT::ELEMENTS::InvDesign::TensorMultiply(
   sum(0,6) = result[0][0][0][2];
   sum(0,7) = result[0][0][1][2];
   sum(0,8) = result[0][0][2][2];
-  
+
   sum(1,0) = result[1][1][0][0];
   sum(1,1) = result[1][1][1][0];
   sum(1,2) = result[1][1][2][0];
@@ -1015,7 +1015,7 @@ void DRT::ELEMENTS::InvDesign::TensorMultiply(
 
   sum.Scale(fac);
 
-  return; 
+  return;
 } // DRT::ELEMENTS::InvDesign::BuildYpsilon
 
 

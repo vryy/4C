@@ -481,7 +481,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_mat_sel(
   LINALG::Matrix<MAT::NUM_STRESS_3D,1>*                  glstrain,
   LINALG::Matrix<3,3>*                                   defgrd  ,
   const int                                              gp      ,
-  ParameterList&                                         params  
+  ParameterList&                                         params
   )
 {
 

@@ -48,14 +48,14 @@ class SoHex8P1J1Register;
 /// tri-linear Lagrangean polynomials. Secondly, the pressure #p_,
 /// which is discretised discontinuously across element boundaries
 /// in a constant manner, ie one pressure DOF per element. Thirdly,
-/// the determinant of the deformation gradient (Jacobian) #t_, which is as 
+/// the determinant of the deformation gradient (Jacobian) #t_, which is as
 /// well discretised discontinuously across element boundaries
 /// in a constant manner, ie one Jacobian DOF per element.
 ///   The approach tackles volumetric locking. However, it does
 /// not prevent shear locking etc.
 ///
 /// <h3>References</h3>
-/// - [1] OC Zienkiewicz, RL Taylor, The Finite Element Method for Solid 
+/// - [1] OC Zienkiewicz, RL Taylor, The Finite Element Method for Solid
 ///       and Structural Mechanics, Butterworth Heinemann, 6th edition,
 ///       2005. Especially Section 5.5.
 ///

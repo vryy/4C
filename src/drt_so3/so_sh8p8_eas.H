@@ -78,7 +78,7 @@ void DRT::ELEMENTS::So_sh8p8::EasUpdateIncrementally(
   Kad = Teuchos::rcp(new Epetra_SerialDenseMatrix(NUMEAS_T,NUMDISP_));
   // EAS matrix K_{alpha pres}
   Kap = Teuchos::rcp(new Epetra_SerialDenseMatrix(NUMEAS_T,NUMPRES_));
-    
+
   // M-operator, ie EAS shape functions
   M = Teuchos::rcp(new Epetra_SerialDenseMatrix(NUMSTR_,NUMEAS_T));
 
@@ -160,7 +160,7 @@ void DRT::ELEMENTS::So_sh8p8::EasConstraintAndTangent(
       for (int D=0; D<NUMDIM_; ++D) {
         const int DB = VOIGT3X3SYM_[NUMDIM_*D+B];
         const double DBfact = (D==B) ? 1.0 : 0.5;
-        pseudoidentity_CBe 
+        pseudoidentity_CBe
           += invrgtstrD(C,D) * DBfact*rgtstrbyalpha(DB,e);
       }
       pseudoidentity(CB,e) = pseudoidentity_CBe;
@@ -184,7 +184,7 @@ void DRT::ELEMENTS::So_sh8p8::EasConstraintAndTangent(
       defgradbyalpha(aB,e) = defgradbyalpha_aBe;
     }
   }
-              
+
   // M^T = M
   // cmat = cmat
   // detJ * w = detJ_w
@@ -307,7 +307,7 @@ void DRT::ELEMENTS::So_sh8p8::EasCondensation(
   LINALG::DENSEFUNCTIONS::multiplyNN<NUMPRES_,NUMEAS_T,NUMPRES_>(1.0,KpaKaaKap.A(), -1.0,KpaKaa.A(),Kap->A());
   cout << "KpaKaaKap=" << KpaKaaKap << endl;
   cout << "stiffmatrix=" << *stiffmatrix << endl;
-  cout << "gradmatrix=" << *gradmatrix << endl; 
+  cout << "gradmatrix=" << *gradmatrix << endl;
   cout << "stabmatrix=" << *stabmatrix << endl;
 #endif
 

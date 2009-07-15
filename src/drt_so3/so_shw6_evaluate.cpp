@@ -611,7 +611,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
     N_XYZ.Multiply(invJ_[gp],derivs[gp]);
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
     defgrd.MultiplyTT(xcurr,N_XYZ);
-    // 
+    //
     LINALG::Matrix<NUMSTR_WEG6,NUMSTR_WEG6> cmat(true);
     LINALG::Matrix<NUMSTR_WEG6,1> stress(true);
     sow6_mat_sel(&stress,&cmat,&density,&glstrain, &defgrd, gp, params);

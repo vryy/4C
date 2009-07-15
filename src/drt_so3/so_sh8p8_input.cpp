@@ -81,7 +81,7 @@ bool DRT::ELEMENTS::So_sh8p8::ReadElement()
     MAT::ElastHyper* elahy = static_cast <MAT::ElastHyper*>(Material().get());
     elahy->Setup();
   }
-  
+
 
   // read possible gaussian points, obsolete for computation
   {

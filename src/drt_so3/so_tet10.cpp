@@ -202,7 +202,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_expol
 
     isfilled = true;
   }
-  
+
   LINALG::Matrix<NUMNOD_SOTET10,NUMSTR_SOTET10> nodalstresses;
   nodalstresses.Multiply(expol,stresses);
 
@@ -216,8 +216,8 @@ void DRT::ELEMENTS::So_tet10::so_tet10_expol
     elevec2(3*i+1)=nodalstresses(i,4);
     elevec2(3*i+2)=nodalstresses(i,5);
   }
-  
-  
+
+
 }
 
 

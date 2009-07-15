@@ -300,11 +300,11 @@ protected:
   //! Submethod to compute the enclosed volume for volume constraint boundary condition
   double ComputeConstrVols
   (
-      const LINALG::SerialDenseMatrix& xscurr, ///< current configuration 
+      const LINALG::SerialDenseMatrix& xscurr, ///< current configuration
       const int numnode ///< num nodes
   );
 
- 
+
   /*!
   \brief Submethod to compute interfacial area and its first and second
          derivatives w.r.t. the displacements (this is needed for surface energy problems)
@@ -318,7 +318,7 @@ protected:
     RCP<Epetra_SerialDenseVector> Adiff, ///< first derivative
     RCP<Epetra_SerialDenseMatrix> Adiff2 ///< second derivative
   );
-  
+
   //! Submethod to compute constraint volume and its first and second derivatives w.r.t. the displacements
   void ComputeVolDeriv
   (

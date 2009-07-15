@@ -214,7 +214,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
       {
         // extrapolate stresses/strains at Gauss points to nodes
         soh8_expol(gpstress, elevec1, elevec2);
-        
+
       }
       else if (stresstype=="cxyz")
       {
@@ -241,7 +241,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
       {
         // extrapolate stresses/strains at Gauss points to nodes
         soh8_expol(gpstress, elevec1, elevec2);
-        
+
         RCP<Epetra_MultiVector> elestress=params.get<RCP<Epetra_MultiVector> >("elestress",null);
         if (elestress==null)
           dserror("No element stress/strain vector available");

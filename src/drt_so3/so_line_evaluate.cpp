@@ -50,7 +50,7 @@ int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(ParameterList&            par
   };
   Configuration config = config_none;
   const string* type = condition.Get<string>("type");
-  if (*type == "neum_live") 
+  if (*type == "neum_live")
   {
     ltype  = neum_live;
     config = config_material;
@@ -81,16 +81,16 @@ int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(ParameterList&            par
   const int numnode = NumNode();
   LINALG::SerialDenseMatrix x(numnode,3);
   MaterialConfiguration(x);
-  
+
   // integration parameters
   const DRT::UTILS::IntegrationPoints1D  intpoints(gaussrule_);
   const int ngp = intpoints.nquad;
   LINALG::SerialDenseVector funct(numnode);
   LINALG::SerialDenseMatrix deriv(1,numnode);
   const DRT::Element::DiscretizationType shape = Shape();
-  
+
   // integration
-  for (int gp = 0; gp < ngp; ++gp) 
+  for (int gp = 0; gp < ngp; ++gp)
   {
     // get shape functions and derivatives of element surface
     const double e   = intpoints.qxg[gp][0];
@@ -105,8 +105,8 @@ int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(ParameterList&            par
       LineIntegration(dL,x,deriv);
       double fac = wgt * dL * curvefac;   // integration factor
       // distribute over element load vector
-      for (int nodid=0; nodid < numnode; ++nodid) 
-        for(int dim=0; dim < 3; ++dim) 
+      for (int nodid=0; nodid < numnode; ++nodid)
+        for(int dim=0; dim < 3; ++dim)
           elevec1[nodid*3 + dim] += funct[nodid] * (*onoff)[dim] * (*val)[dim] * fac;
     }
     break;
@@ -125,7 +125,7 @@ int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(ParameterList&            par
  * ---------------------------------------------------------------------*/
 void DRT::ELEMENTS::StructuralLine::LineIntegration(double&                          dL,
                                                     const LINALG::SerialDenseMatrix& x,
-                                                    const LINALG::SerialDenseMatrix& deriv)                        
+                                                    const LINALG::SerialDenseMatrix& deriv)
 {
   // compute dXYZ / drs
   LINALG::SerialDenseMatrix dxyzdrs(1,3);

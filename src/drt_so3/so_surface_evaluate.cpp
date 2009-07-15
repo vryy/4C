@@ -274,13 +274,13 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
   else if (action=="calc_potential_stiff")         act = StructuralSurface::calc_potential_stiff;
   else if (action=="calc_brownian_motion")         act = StructuralSurface::calc_brownian_motion;
   else if (action=="calc_brownian_motion_damping") act = StructuralSurface::calc_brownian_motion_damping;
-  else 
+  else
 
   {
     cout << action << endl;
     dserror("Unknown type of action for StructuralSurface");
   }
-  
+
   //create communicator
   const Epetra_Comm& Comm = discretization.Comm();
   // what the element has to do
@@ -695,13 +695,13 @@ double DRT::ELEMENTS::StructuralSurface::ComputeConstrVols
 )
 {
   double V = 0.0;
-  
-  //Volume is calculated by evaluating the integral 
+
+  //Volume is calculated by evaluating the integral
   // 1/3*int_A(x dydz + y dxdz + z dxdy)
-  
+
   // we compute the three volumes separately
   for (int indc = 0; indc < 3; indc++)
-  {  
+  {
     //split current configuration between "ab" and "c"
     // where a!=b!=c and a,b,c are in {x,y,z}
     LINALG::SerialDenseMatrix ab= xc;
@@ -714,29 +714,29 @@ double DRT::ELEMENTS::StructuralSurface::ComputeConstrVols
     // index of variables a and b
     int inda = (indc+1)%3;
     int indb = (indc+2)%3;
-    
+
     // get gaussrule
     const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
     int ngp = intpoints.nquad;
-    
+
     // allocate vector for shape functions and matrix for derivatives
     LINALG::SerialDenseVector  funct(numnode);
     LINALG::SerialDenseMatrix  deriv(2,numnode);
-  
+
     /*----------------------------------------------------------------------*
      |               start loop over integration points                     |
      *----------------------------------------------------------------------*/
     for (int gpid = 0; gpid < ngp; ++gpid)
-    { 
+    {
       const double e0 = intpoints.qxg[gpid][0];
       const double e1 = intpoints.qxg[gpid][1];
-  
+
       // get shape functions and derivatives of shape functions in the plane of the element
       DRT::UTILS::shape_function_2D(funct,e0,e1,Shape());
       DRT::UTILS::shape_function_2D_deriv1(deriv,e0,e1,Shape());
-      
+
       double detA;
-      // compute "metric tensor" deriv*ab, which is a 2x3 matrix with zero indc'th column 
+      // compute "metric tensor" deriv*ab, which is a 2x3 matrix with zero indc'th column
       LINALG::SerialDenseMatrix metrictensor(2,3);
       metrictensor.Multiply('N','N',1.0,deriv,ab,0.0);
       //LINALG::SerialDenseMatrix metrictensor(2,2);
@@ -745,7 +745,7 @@ double DRT::ELEMENTS::StructuralSurface::ComputeConstrVols
       const double dotprodc = funct.Dot(c);
       // add weighted volume at gausspoint
       V -= dotprodc*detA*intpoints.qwgt[gpid];
-      
+
     }
   }
   return V/3.0;
@@ -770,18 +770,18 @@ void DRT::ELEMENTS::StructuralSurface::ComputeVolDeriv
   // necessary constants
   const int numdim = 3;
   const double invnumind = 1.0/(maxindex-minindex+1.0);
-  
+
   // initialize
   V = 0.0;
   Vdiff1->Size(ndof);
   if (Vdiff2!=null) Vdiff2->Shape(ndof, ndof);
-  
-  //Volume is calculated by evaluating the integral 
+
+  //Volume is calculated by evaluating the integral
   // 1/3*int_A(x dydz + y dxdz + z dxdy)
-  
+
   // we compute the three volumes separately
   for (int indc = minindex; indc < maxindex+1; indc++)
-  {  
+  {
     //split current configuration between "ab" and "c"
     // where a!=b!=c and a,b,c are in {x,y,z}
     LINALG::SerialDenseMatrix ab= xc;
@@ -794,31 +794,31 @@ void DRT::ELEMENTS::StructuralSurface::ComputeVolDeriv
     // index of variables a and b
     int inda = (indc+1)%3;
     int indb = (indc+2)%3;
-  
+
     // get gaussrule
     const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
     int ngp = intpoints.nquad;
-    
+
     // allocate vector for shape functions and matrix for derivatives
     LINALG::SerialDenseVector  funct(numnode);
     LINALG::SerialDenseMatrix  deriv(2,numnode);
-  
+
     /*----------------------------------------------------------------------*
      |               start loop over integration points                     |
      *----------------------------------------------------------------------*/
     for (int gpid = 0; gpid < ngp; ++gpid)
-    { 
+    {
       const double e0 = intpoints.qxg[gpid][0];
       const double e1 = intpoints.qxg[gpid][1];
-  
+
       // get shape functions and derivatives of shape functions in the plane of the element
       DRT::UTILS::shape_function_2D(funct,e0,e1,Shape());
       DRT::UTILS::shape_function_2D_deriv1(deriv,e0,e1,Shape());
-      
+
       // evaluate Jacobi determinant, for projected dA*
       vector<double> normal(numdim);
       double detA;
-      // compute "metric tensor" deriv*xy, which is a 2x3 matrix with zero 3rd column 
+      // compute "metric tensor" deriv*xy, which is a 2x3 matrix with zero 3rd column
       LINALG::SerialDenseMatrix metrictensor(2,numdim);
       metrictensor.Multiply('N','N',1.0,deriv,ab,0.0);
       //metrictensor.Multiply('N','T',1.0,dxyzdrs,dxyzdrs,0.0);
@@ -826,7 +826,7 @@ void DRT::ELEMENTS::StructuralSurface::ComputeVolDeriv
       const double dotprodc = funct.Dot(c);
       // add weighted volume at gausspoint
       V -= dotprodc*detA*intpoints.qwgt[gpid];
-      
+
       //-------- compute first derivative
       for (int i = 0; i < numnode ; i++)
       {
@@ -834,7 +834,7 @@ void DRT::ELEMENTS::StructuralSurface::ComputeVolDeriv
         (*Vdiff1)[3*i+indb] += invnumind*intpoints.qwgt[gpid]*dotprodc*(deriv(1,i)*metrictensor(0,inda)-metrictensor(1,inda)*deriv(0,i));
         (*Vdiff1)[3*i+indc] += invnumind*intpoints.qwgt[gpid]*funct[i]*detA;
       }
-      
+
       //-------- compute second derivative
       if (Vdiff2!=null)
       {
@@ -852,8 +852,8 @@ void DRT::ELEMENTS::StructuralSurface::ComputeVolDeriv
           }
         }
       }
-    
-    }   
+
+    }
   }
   V*=invnumind;
   return;

@@ -56,9 +56,9 @@ class InvDesign;
 /*!
 \brief A C++ version of a 27-node hex solid element
 
-A structural 27-node hexahedral solid displacement element for large deformations. 
+A structural 27-node hexahedral solid displacement element for large deformations.
 As its discretization is fixed many data structures are evaluated just once and kept
-for performance. It heavily uses Epetra objects and methods and therefore relies 
+for performance. It heavily uses Epetra objects and methods and therefore relies
 on their performance.
 
 \author kloeppel
@@ -276,9 +276,9 @@ public:
 
   Evaluate So_hex27 element stiffness, mass, internal forces, etc.
 
-  If NULL on input, the controling method does not expect the element 
+  If NULL on input, the controling method does not expect the element
   to fill these matrices or vectors.
-  
+
   \return 0 if successful, negative otherwise
   */
   int Evaluate
@@ -286,7 +286,7 @@ public:
     ParameterList& params,  ///< ParameterList for communication between control routine and elements
     DRT::Discretization&      discretization,  ///< pointer to discretization for de-assembly
     vector<int>&              lm, ///< location matrix for de-assembly
-    Epetra_SerialDenseMatrix& elemat1,  ///< (stiffness-)matrix to be filled by element. 
+    Epetra_SerialDenseMatrix& elemat1,  ///< (stiffness-)matrix to be filled by element.
     Epetra_SerialDenseMatrix& elemat2,  ///< (mass-)matrix to be filled by element.
     Epetra_SerialDenseVector& elevec1,  ///< (internal force-)vector to be filled by element
     Epetra_SerialDenseVector& elevec2,  ///< vector to be filled by element
@@ -462,9 +462,9 @@ protected:
   //@}
 
   /// temporary method for compatibility with solidshell, needs clarification
-  vector<double> getthicknessvector() const 
+  vector<double> getthicknessvector() const
   {
-    dserror("not implemented"); 
+    dserror("not implemented");
     return vector<double>(3);
   };
 

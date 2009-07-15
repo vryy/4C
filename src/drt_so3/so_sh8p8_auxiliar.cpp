@@ -59,7 +59,7 @@ void DRT::ELEMENTS::So_sh8p8::AxialMetricsAtOrigin(
 
   // compute Jacobian, evaluated at element origin (r=s=t=0.0)
   jac0.Multiply(df0,xrefe);
-  
+
   // line metrics of r-, s- and t-axis in reference space
   for (int i=0; i<NUMDIM_; ++i) {
     double metr = 0.0;
@@ -247,7 +247,7 @@ void DRT::ELEMENTS::So_sh8p8::AnsSetup3(
   /*====================================================================*/
     // gp sampling point value for linear fct
     const double gpl = 1.0/sqrt(3.0);
-    // (r,s,t) gp-locations of sampling points 
+    // (r,s,t) gp-locations of sampling points
     // numsp = 8 here set explicitly to allow direct initializing
     //                             EL,  FL,  GL,  HL,  EU,  FU,  GU,  HU
     const double r[NUMSP3RD_] = {-1.0, 1.0, 1.0,-1.0,-1.0, 1.0, 1.0,-1.0};
@@ -351,7 +351,7 @@ void DRT::ELEMENTS::So_sh8p8::Matrix2TensorToVector9Voigt(
     voigt9row = &(VOIGT9ROW_[0]);
     voigt9col = &(VOIGT9COL_[0]);
   }
-    
+
   for (int ij=0; ij<NUMDFGR_; ++ij) {
     const int i = voigt9row[ij];
     const int j = voigt9col[ij];
@@ -577,7 +577,7 @@ void DRT::ELEMENTS::So_sh8p8::InvVector6VoigtTwiceDiffByItself(
 //             << "+(ct["<<i+1<<","<<m+1<<"]*ct["<<n+1<<","<<l+1<<"]+ct["<<i+1<<","<<n+1<<"]*ct["<<m+1<<","<<l+1<<"])*ct["<<k+1<<","<<j+1<<"]"
 //             << "+ct["<<i+1<<","<<l+1<<"]*(ct["<<k+1<<","<<m+1<<"]*ct["<<n+1<<","<<j+1<<"]+ct["<<k+1<<","<<n+1<<"]*ct["<<m+1<<","<<j+1<<"])"
 //             << "";
-        if (ij >= NUMDIM_)  // swap 'i' and 'j' 
+        if (ij >= NUMDIM_)  // swap 'i' and 'j'
         {
 #if 0
           invbvdderb_ijklmn += 0.25*(
@@ -783,7 +783,7 @@ void DRT::ELEMENTS::So_sh8p8::SqVector6VoigtTwiceDiffByItself(
       }
 //      cout << "\n";
     }
-//    cout << "],\n";       
+//    cout << "],\n";
   }
 #else
   sqfdderf.Clear();
@@ -921,7 +921,7 @@ void DRT::ELEMENTS::So_sh8p8::Matrix2TensorToMatrix6x9Voigt(
       }
 //      cout << ", ";
     }
-//    cout << "]," << endl;    
+//    cout << "]," << endl;
   }
 
   return;
@@ -1131,7 +1131,7 @@ int DRT::ELEMENTS::So_sh8p8::SymSpectralDecompJacIter(
 #else
   {
     asum = 0.0;
-    for (int jdim=0; jdim<NUMDIM_; jdim++)    
+    for (int jdim=0; jdim<NUMDIM_; jdim++)
     {
       for (int idim=0; idim<NUMDIM_; idim++)
       {
@@ -1183,7 +1183,7 @@ int DRT::ELEMENTS::So_sh8p8::SymSpectralDecompJacIter(
         //       [ cos(th)  0  -sin(th) ]
         //     = [       0  1         0 ]
         //       [ sin(th)  0   cos(th) ]
-        
+
         // update eigenvector matrix by right-multiplying with T
         // T is mostly 0 thus it is more efficient to do explicitly
         //    ev^<i+1> = ev^<i> . T^<i+1>
@@ -1369,7 +1369,7 @@ void DRT::ELEMENTS::So_sh8p8::BuildElementVector(
   const int* p2dp = &(PRESTODISPPRES_[0]);
 
   vct->Clear();
-  
+
   // r_d
   if (vctd != NULL) {
     for (int i=0; i<NUMDISP_; ++i) {
@@ -1387,7 +1387,7 @@ void DRT::ELEMENTS::So_sh8p8::BuildElementVector(
   }
 
   // What shall we do with a drunken sailor?
-  return; 
+  return;
 }
 
 
@@ -1469,7 +1469,7 @@ void DRT::ELEMENTS::So_sh8p8::GnuplotOut(
          gpltfile << ", \\";
        gpltfile << std::endl;
      }
-  
+
      // wait for user's activity
      gpltfile << "pause -1" << std::endl;
 
@@ -1529,7 +1529,7 @@ void DRT::ELEMENTS::So_sh8p8::GnuplotOut(
       txtline << std::scientific << " " << incresid(ir);
   }
 
-  // finish of line 
+  // finish of line
   txtline << std::endl;
 
   // store last time

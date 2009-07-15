@@ -48,7 +48,7 @@ const int DRT::ELEMENTS::So_sh8p8::VOIGT3X3_[NUMDFGR_] = {0,3,6, 8,1,4, 5,7,2};
 const int DRT::ELEMENTS::So_sh8p8::VOIGT3X3SYM_[NUMDFGR_] = {0,3,5, 3,1,4, 5,4,2};
 
 // 24 displacement and 8 pressure DOFs into 32 total element DOFs
-const int DRT::ELEMENTS::So_sh8p8::DISPTODISPPRES_[NUMDISP_] 
+const int DRT::ELEMENTS::So_sh8p8::DISPTODISPPRES_[NUMDISP_]
   = {0,1,2,  4,5,6,  8,9,10,   12,13,14,   16,17,18,   20,21,22,   24,25,26,   28,29,30  };
 const int DRT::ELEMENTS::So_sh8p8::PRESTODISPPRES_[NUMPRES_]
   = {      3,      7,       11,         15,         19,         23,         27,        31};
@@ -170,7 +170,7 @@ void DRT::ELEMENTS::So_sh8p8::sosh8p8_expol
   static LINALG::Matrix<NUMNOD_,NUMGPT_> expol;
   static bool isfilled;
 
-  
+
   if (isfilled==false)
   {
     double sq3=sqrt(3.0);
@@ -236,7 +236,7 @@ void DRT::ELEMENTS::So_sh8p8::sosh8p8_expol
     elevec2(NODDOF_*i+1)=nodalstresses(i,4);
     elevec2(NODDOF_*i+2)=nodalstresses(i,5);
   }
-  
+
 }
 
 

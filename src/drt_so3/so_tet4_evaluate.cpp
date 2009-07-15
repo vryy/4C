@@ -233,7 +233,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList& params,
       if (stresstype=="ndxyz") {
         // extrapolate stresses/strains at Gauss points to nodes
         so_tet4_expol(gpstress, elevec1, elevec2);
- 
+
       }
       else if (stresstype=="cxyz") {
         RCP<Epetra_MultiVector> elestress=params.get<RCP<Epetra_MultiVector> >("elestress",null);

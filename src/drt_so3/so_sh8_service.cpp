@@ -221,7 +221,7 @@ DRT::ELEMENTS::So_sh8::ThicknessDirection DRT::ELEMENTS::So_sh8::sosh8_enfthickd
     thickdir = autot;
   }
   else {
-    dserror("Trouble with thick_index=%g", thick_index); 
+    dserror("Trouble with thick_index=%g", thick_index);
   }
 
   // thickness-vector in parameter-space, has 1.0 in thickness-coord

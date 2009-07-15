@@ -199,9 +199,9 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::NURBS::So_nurbs27::Surfaces()
   dserror("Surfaces not implemented yet\n");
 
   vector<RCP<DRT::Element> > dummy;
-  
+
   return dummy;
- 
+
   //return DRT::UTILS::ElementBoundaryFactory<StructuralSurface,DRT::Element>(DRT::UTILS::buildSurfaces,this);
 }
 
@@ -218,7 +218,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::NURBS::So_nurbs27::Lines()
   dserror("Lines not implemented yet\n");
 
   vector<RCP<DRT::Element> > dummy;
-  
+
   return dummy;
 
   // so we have to allocate new line elements:

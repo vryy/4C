@@ -187,7 +187,7 @@ int DRT::ELEMENTS::So_hex27::Evaluate(ParameterList& params,
 
       if (stresstype=="ndxyz")
       {
-        dserror("No nodal stress output for Hex27 available yet!");        
+        dserror("No nodal stress output for Hex27 available yet!");
         // extrapolate stresses/strains at Gauss points to nodes
         LINALG::Matrix<NUMNOD_SOH27,NUMSTR_SOH27> nodalstresses;
         soh27_expol(gpstress,nodalstresses);
@@ -466,9 +466,9 @@ void DRT::ELEMENTS::So_hex27::InitJacobianMapping()
     //invJ_[gp].Shape(NUMDIM_SOH27,NUMDIM_SOH27);
     invJ_[gp].Multiply(derivs[gp],xrefe);
     detJ_[gp] = invJ_[gp].Invert();
-    if (detJ_[gp] == 0.0) 
+    if (detJ_[gp] == 0.0)
       dserror("ZERO JACOBIAN DETERMINANT");
-    else if (detJ_[gp] < 0.0) 
+    else if (detJ_[gp] < 0.0)
       dserror("NEGATIVE JACOBIAN DETERMINANT");
 
   }
@@ -798,7 +798,7 @@ const vector<LINALG::Matrix<NUMNOD_SOH27,1> > DRT::ELEMENTS::So_hex27::soh27_sha
   // fill up nodal f at each gp
   const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_hex_27point;
   const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
-  for (int igp = 0; igp < intpoints.nquad; ++igp) 
+  for (int igp = 0; igp < intpoints.nquad; ++igp)
   {
     const double r = intpoints.qxg[igp][0];
     const double s = intpoints.qxg[igp][1];
@@ -820,7 +820,7 @@ const vector<LINALG::Matrix<NUMDIM_SOH27,NUMNOD_SOH27> > DRT::ELEMENTS::So_hex27
   // fill up df w.r.t. rst directions (NUMDIM) at each gp
   const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_hex_27point;
   const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
-  for (int igp = 0; igp < intpoints.nquad; ++igp) 
+  for (int igp = 0; igp < intpoints.nquad; ++igp)
   {
     const double r = intpoints.qxg[igp][0];
     const double s = intpoints.qxg[igp][1];
@@ -832,14 +832,14 @@ const vector<LINALG::Matrix<NUMDIM_SOH27,NUMNOD_SOH27> > DRT::ELEMENTS::So_hex27
 }
 
 /*----------------------------------------------------------------------*
- |  Evaluate Hex27 Weights at all 27 Gauss Points                       |         
+ |  Evaluate Hex27 Weights at all 27 Gauss Points                       |
  *----------------------------------------------------------------------*/
 const vector<double> DRT::ELEMENTS::So_hex27::soh27_weights()
 {
   vector<double> weights(NUMGPT_SOH27);
   const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_hex_27point;
   const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
-  for (int i = 0; i < NUMGPT_SOH27; ++i) 
+  for (int i = 0; i < NUMGPT_SOH27; ++i)
   {
     weights[i] = intpoints.qwgt[i];
   }
@@ -867,14 +867,14 @@ void DRT::ELEMENTS::So_hex27::soh27_shapederiv(
     *weights = &weightfactors; // return adress of static object to target of pointer
     return;
   }
-  else 
+  else
   {
     // (r,s,t) gp-locations of fully integrated quadratic Hex 27
     // fill up nodal f at each gp
     // fill up df w.r.t. rst directions (NUMDIM) at each gp
     const DRT::UTILS::GaussRule3D gaussrule_ = DRT::UTILS::intrule_hex_27point;
     const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule_);
-    for (int igp = 0; igp < intpoints.nquad; ++igp) 
+    for (int igp = 0; igp < intpoints.nquad; ++igp)
     {
       const double r = intpoints.qxg[igp][0];
       const double s = intpoints.qxg[igp][1];
@@ -884,7 +884,7 @@ void DRT::ELEMENTS::So_hex27::soh27_shapederiv(
       LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27> deriv;
       DRT::UTILS::shape_function_3D(funct, r, s, t, hex27);
       DRT::UTILS::shape_function_3D_deriv1(deriv, r, s, t, hex27);
-      for (int inode = 0; inode < NUMNOD_SOH27; ++inode) 
+      for (int inode = 0; inode < NUMNOD_SOH27; ++inode)
       {
         f(inode, igp) = funct(inode);
         df(igp*NUMDIM_SOH27+0, inode) = deriv(0, inode);

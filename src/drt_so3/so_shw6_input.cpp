@@ -84,7 +84,7 @@ bool DRT::ELEMENTS::So_shw6::ReadElement()
    }
    else dserror("Reading of SOLIDSHW6 element failed");
   }
-  
+
   // read EAS technology flag
   frchar("EAS",buffer,&ierr);
   if (ierr){
@@ -107,16 +107,16 @@ bool DRT::ELEMENTS::So_shw6::ReadElement()
     neas_ = 1;                          // number of eas parameters
     soshw6_easinit();
   }
-  
+
   // check for automatically align material space optimally with parameter space
   optimal_parameterspace_map_ = false;
   nodes_rearranged_ = false;
   frchar("OPTORDER",buffer,&ierr);
-  if (ierr) 
+  if (ierr)
     if (strncmp(buffer,"true",4)==0)
       optimal_parameterspace_map_ = true;
-  
-    
+
+
 
   return true;
 } // So_weg6::ReadElement()

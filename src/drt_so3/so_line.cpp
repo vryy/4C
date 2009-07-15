@@ -39,7 +39,7 @@ lline_(lline)
   case line3:
     gaussrule_ = DRT::UTILS::intrule_line_3point;
   break;
-  default: 
+  default:
       dserror("shape type unknown!\n");
   }
   return;

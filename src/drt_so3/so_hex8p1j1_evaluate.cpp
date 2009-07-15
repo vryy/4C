@@ -213,7 +213,7 @@ int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(
       {
         // extrapolate stresses/strains at Gauss points to nodes
         soh8_expol(gpstress, elevec1, elevec2);
-        
+
         Teuchos::RCP<Epetra_MultiVector> elestress=params.get<Teuchos::RCP<Epetra_MultiVector> >("elestress",null);
         if (elestress==Teuchos::null)
           dserror("No element stress/strain vector available");
@@ -484,7 +484,7 @@ void DRT::ELEMENTS::So_Hex8P1J1::ForceStiffMass(
       Index1[4] = 1; Index2[4] = 2;  // 23
       Index1[5] = 2; Index2[5] = 0;  // 31
 
-      // build 
+      // build
       for (int i=0; i<NUMSTR_SOH8; ++i)
       {
         sigma_bar(i,0) = mod_defgrd(Index1[i],0) * stress(0,0) * mod_defgrd(Index2[i],0)
@@ -500,7 +500,7 @@ void DRT::ELEMENTS::So_Hex8P1J1::ForceStiffMass(
       sigma_bar.Scale(1.0/t_(0,0));
     }
 
-    // secondary pressure 
+    // secondary pressure
     const double p_bar = 1.0/3.0 * (sigma_bar(0,0) + sigma_bar(1,0) + sigma_bar(2,0));
 
     // primary pressure with respect to initial configuration (?)
@@ -515,7 +515,7 @@ void DRT::ELEMENTS::So_Hex8P1J1::ForceStiffMass(
       sigma_hook(i,0) += p_hook - p_bar;
     }
 
-    // deviatoric content of Cauchy stress 
+    // deviatoric content of Cauchy stress
     LINALG::Matrix<NUMSTR_SOH8,1> sigma_bar_dev(sigma_bar);
     for (int i=0; i<3; ++i)
     {
@@ -531,7 +531,7 @@ void DRT::ELEMENTS::So_Hex8P1J1::ForceStiffMass(
     const double detJ_w_t = detJ_w * t_(0,0);
     const double detJ_w_J = detJ_w * J;
 
-    // force and stiffness 
+    // force and stiffness
     if ( (force != NULL) and (stiffmatrix != NULL) )
     {
       // integrate internal force vector f = f + (B^T . sigma) * Theta * detJ * w(gp)
@@ -831,7 +831,7 @@ void DRT::ELEMENTS::So_Hex8P1J1::Strain(
       // create push forward 6x6 matrix
       LINALG::Matrix<NUMSTR_SOH8,NUMSTR_SOH8> invdefgradTinvdefgrad;
       PushPullOperator(invdefgradTinvdefgrad,invdefgrd,true,1.0);
-      
+
       // push forward
       LINALG::Matrix<NUMSTR_SOH8,1> eastrain;
       eastrain.MultiplyNN(invdefgradTinvdefgrad,glstrain);
@@ -863,13 +863,13 @@ void DRT::ELEMENTS::So_Hex8P1J1::PushPullOperator(
 {
   // co-variant: strain-like
   // push forward:   e^flat  = fac  F^-T . E^flat . F^-1  // fac = 1
-  //                 e_ab = fac  F_a^A  E_AB  F^B_b  
-  //                      = fac  F_a^A  F_b^B  E_AB  
+  //                 e_ab = fac  F_a^A  E_AB  F^B_b
+  //                      = fac  F_a^A  F_b^B  E_AB
   //                      = fac  G_ab^AB  E_AB
   // pull back:      E^flat  = fac  F^T . e^flat . F   // fac = 1
   //                 E_AB = fac  F_A^a  e_ab  F^b_B
   //                      = fac  G_AB^ab  e_ab
-  //                 
+  //
   // co-variant Voigt vector notation:
   //                 [E_11 E_22 E_33 2*E_12 2*E_23 2*E_31]
   //
@@ -878,10 +878,10 @@ void DRT::ELEMENTS::So_Hex8P1J1::PushPullOperator(
   //                 S^AB = fac  F^A_a  s^ab  F_b^B
   //                      = fac  F^A_a  F^B_b  s^ab
   //                      = fac  G^AB_ab  s^ab
-  //                 
+  //
   // push forward:   s^sharp = fac  F . S^sharp . F^T  // fac = 1/det(J)
-  //                 s^ab = fac  F^a_A  S^AB  F_B^b  
-  //                      = fac  F^a_A  F^b_B  S^AB  
+  //                 s^ab = fac  F^a_A  S^AB  F_B^b
+  //                      = fac  F^a_A  F^b_B  S^AB
   //                      = fac  G^ab_AB  S^AB
   // contra-variant Voigt vector notation:
   //                 [S^11 S^22 S^33 S^12 S^23 S^31]

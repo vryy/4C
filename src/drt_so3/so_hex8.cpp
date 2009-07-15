@@ -251,7 +251,7 @@ void DRT::ELEMENTS::So_hex8::soh8_expol
   static LINALG::Matrix<NUMNOD_SOH8,NUMGPT_SOH8> expol;
   static bool isfilled;
 
-  
+
   if (isfilled==false)
   {
     double sq3=sqrt(3.0);
@@ -612,12 +612,12 @@ bool DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
     {
       if (name == "Fiber1"){
       if ((int)data.size()!=3) dserror("size mismatch");
-      data[0] = (elahy->Geta1())(0); 
+      data[0] = (elahy->Geta1())(0);
       data[1] = (elahy->Geta1())(1);
       data[2] = (elahy->Geta1())(2);
     } else if (name == "Fiber2"){
       if ((int)data.size()!=3) dserror("size mismatch");
-      data[0] = (elahy->Geta2())(0); 
+      data[0] = (elahy->Geta2())(0);
       data[1] = (elahy->Geta2())(1);
       data[2] = (elahy->Geta2())(2);
     } else {

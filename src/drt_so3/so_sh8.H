@@ -190,7 +190,7 @@ public:
   {
     globx,    ///< global x
     globy,    ///< global y
-    globz,    ///< global z   
+    globz,    ///< global z
     autoj,    ///< find automatically by Jacobian
     autor,    ///< automatically set to x
     autos,    ///< automatically set to y

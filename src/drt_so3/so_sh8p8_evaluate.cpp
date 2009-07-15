@@ -149,7 +149,7 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
       LINALG::Matrix<NUMPRES_,1> incomp(true);
       double volume = 0.0;
       if (stab_ == stab_spatial) {
-        LINALG::Matrix<NUMPRES_,NUMDISP_> dargmatrix;        
+        LINALG::Matrix<NUMPRES_,NUMDISP_> dargmatrix;
         ForceStiffMass(lm,mydisp,mypres,mydispi,mypresi,
                        NULL,&stiffmatrix,&gradmatrix,&dargmatrix,&stabmatrix,&force,&incomp,
                        NULL,NULL,&volume,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
@@ -237,7 +237,7 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
       LINALG::Matrix<NUMPRES_,1> incomp(true);
       double volume = 0.0;
       if (stab_ == stab_spatial) {
-        LINALG::Matrix<NUMPRES_,NUMDISP_> dargmatrix;        
+        LINALG::Matrix<NUMPRES_,NUMDISP_> dargmatrix;
         ForceStiffMass(lm,mydisp,mypres,mydispi,mypresi,
                        &massmatrix,&stiffmatrix,&gradmatrix,&dargmatrix,&stabmatrix,&force,&incomp,
                        NULL,NULL,&volume,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
@@ -263,7 +263,7 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
       // data
       Teuchos::RCP<std::vector<char> > stressdata
         = params.get<Teuchos::RCP<std::vector<char> > >("stress", Teuchos::null);
-      Teuchos::RCP<std::vector<char> > straindata 
+      Teuchos::RCP<std::vector<char> > straindata
         = params.get<Teuchos::RCP<std::vector<char> > >("strain", Teuchos::null);
       if (stressdata==Teuchos::null) dserror("Cannot get stress 'data'");
       if (straindata==Teuchos::null) dserror("Cannot get strain 'data'");
@@ -288,9 +288,9 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
       // types
       LINALG::Matrix<NUMGPT_,NUMSTR_> stress;
       LINALG::Matrix<NUMGPT_,NUMSTR_> strain;
-      INPAR::STR::StressType iostress 
+      INPAR::STR::StressType iostress
         = params.get<INPAR::STR::StressType>("iostress", INPAR::STR::stress_none);
-      INPAR::STR::StrainType iostrain 
+      INPAR::STR::StrainType iostrain
         = params.get<INPAR::STR::StrainType>("iostrain", INPAR::STR::strain_none);
       ForceStiffMass(lm,mydisp,mypres,mydispi,mypresi,
                      NULL,NULL,NULL,NULL,NULL,NULL,NULL,
@@ -705,7 +705,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
     stabmatrix->MultiplyNT(-1.0/stabAA(0,0),stabHA,stabHA,1.0);
     stabmatrix->Scale(-1.0/shearmod);
   }
- 
+
   // extra matrices to deal with linearisation of stabilisation
   // matrix in case of spatial version
   Teuchos::RCP<LINALG::Matrix<NUMPRES_,NUMDISP_> > stabHHbydisp = Teuchos::null;
@@ -791,7 +791,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
           else if (ans_ == ans_onspot) {
             // B_loc_st = interpolation along r of ANS B_loc_st
             //          = (1+r)/2 * B_ans(SP B) + (1-r)/2 * B_ans(SP D)
-            bop_loc(4,inode*3+dim) 
+            bop_loc(4,inode*3+dim)
               = 0.5*(1.0+r[gp]) * 0.5*(1-s[gp]) * B_ans_loc(1+1*NUMANS_,inode*3+dim)  // B
               + 0.5*(1.0+r[gp]) * 0.5*(1-s[gp]) * (*hths)*B_ans_loc(1+5*NUMANS_,inode*3+dim)  // F
               + 0.5*(1.0+r[gp]) * 0.5*(1+s[gp]) * B_ans_loc(1+1*NUMANS_,inode*3+dim)  // B
@@ -802,7 +802,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
               + 0.5*(1.0-r[gp]) * 0.5*(1+s[gp]) * (*hths)*B_ans_loc(1+7*NUMANS_,inode*3+dim);  // H
             // B_loc_rt = interpolation along s of ANS B_loc_rt
             //          = (1-s)/2 * B_ans(SP A) + (1+s)/2 * B_ans(SP C)
-            bop_loc(5,inode*3+dim) 
+            bop_loc(5,inode*3+dim)
               = 0.5*(1.0-s[gp]) * 0.5*(1-r[gp]) * B_ans_loc(2+0*NUMANS_,inode*3+dim)  // A
               + 0.5*(1.0-s[gp]) * 0.5*(1-r[gp]) * (*hthr)*B_ans_loc(2+4*NUMANS_,inode*3+dim)  // E
               + 0.5*(1.0-s[gp]) * 0.5*(1+r[gp]) * B_ans_loc(2+0*NUMANS_,inode*3+dim)  // A
@@ -936,14 +936,14 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
       else if (ans_ == ans_onspot) {
         // E23: remedy of transverse shear locking
         // Est = (1+r)/2 * Est(SP B) + (1-r)/2 * Est(SP D)
-        lstrain(4) 
+        lstrain(4)
           = 0.5*(1+r[gp]) * 0.5*(1-s[gp]) * ( (dydt_B - dYdt_B) + (*hths)*(dydt_F - dYdt_F) )
           + 0.5*(1+r[gp]) * 0.5*(1+s[gp]) * ( (dydt_B - dYdt_B) + (*hths)*(dydt_G - dYdt_G) )
           + 0.5*(1-r[gp]) * 0.5*(1-s[gp]) * ( (dydt_D - dYdt_D) + (*hths)*(dydt_E - dYdt_E) )
           + 0.5*(1-r[gp]) * 0.5*(1+s[gp]) * ( (dydt_D - dYdt_D) + (*hths)*(dydt_H - dYdt_H) );
         // E13: remedy of transverse shear locking
         // Ert = (1-s)/2 * Ert(SP A) + (1+s)/2 * Ert(SP C)
-        lstrain(5) 
+        lstrain(5)
           = 0.5*(1-s[gp]) * 0.5*(1-r[gp]) * ( (dxdt_A - dXdt_A) + (*hthr)*(dxdt_E - dXdt_E) )
           + 0.5*(1-s[gp]) * 0.5*(1+r[gp]) * ( (dxdt_A - dXdt_A) + (*hthr)*(dxdt_F - dXdt_F) )
           + 0.5*(1+s[gp]) * 0.5*(1-r[gp]) * ( (dxdt_C - dXdt_C) + (*hthr)*(dxdt_H - dXdt_H) )
@@ -1030,13 +1030,13 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
       prshfct.Update(shapefcts[gp]);
     else
       dserror("Cannot handle requested stabilisation type %d", stab_);
- 
+
     // internal force
     if (force != NULL)
     {
       // integrate internal force vector
-      // fint := fint 
-      //      + (B^T . sigma) * detJ * w(gp) 
+      // fint := fint
+      //      + (B^T . sigma) * detJ * w(gp)
       //      + (-G) . ep   // will be done _after_ Gauss point loop
       force->MultiplyTN(detJ_w, bop, stress, 1.0);
     }
@@ -1044,7 +1044,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
     // incompressiblity equation
     if (incomp != NULL)
     {
-      // pint := pint 
+      // pint := pint
       //       - He . (Fdet - 1.0) * detJ * wp(gp)
       //       + (-Ce) . ep   // will be done _after_ Gauss point loop
       incomp->Update(-(detdefgrad-1.0)*detJ_w,prshfct,1.0);
@@ -1052,7 +1052,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
 
     // stiffness matrix
     if (stiffmatrix != NULL)
-    { 
+    {
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
       LINALG::Matrix<NUMSTR_,NUMDISP_> cb;
@@ -1099,40 +1099,40 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
             }
             else if (ans_ == ans_onspot) {
               // ANS modification in st-dir
-              G_ij(4) 
+              G_ij(4)
                 = 0.5*(1.0+r[gp]) * 0.5*(1-s[gp]) * ((*deriv_sp)[1](1,inod) * (*deriv_sp)[1](2,jnod)
                                                      + (*deriv_sp)[1](2,inod) * (*deriv_sp)[1](1,jnod))  // B
                 + 0.5*(1.0+r[gp]) * 0.5*(1-s[gp]) * (*hths)*((*deriv_sp)[5](1,inod) * (*deriv_sp)[5](2,jnod)
                                                              + (*deriv_sp)[5](2,inod) * (*deriv_sp)[5](1,jnod))  // F
                 + 0.5*(1.0+r[gp]) * 0.5*(1+s[gp]) * ((*deriv_sp)[1](1,inod) * (*deriv_sp)[1](2,jnod)
                                                      + (*deriv_sp)[1](2,inod) * (*deriv_sp)[1](1,jnod))  // B
-                + 0.5*(1.0+r[gp]) * 0.5*(1+s[gp]) * (*hths)*((*deriv_sp)[6](1,inod) * (*deriv_sp)[6](2,jnod) 
+                + 0.5*(1.0+r[gp]) * 0.5*(1+s[gp]) * (*hths)*((*deriv_sp)[6](1,inod) * (*deriv_sp)[6](2,jnod)
                                                              + (*deriv_sp)[6](2,inod) * (*deriv_sp)[6](1,jnod))  // G
-                + 0.5*(1.0-r[gp]) * 0.5*(1-s[gp]) * ((*deriv_sp)[3](1,inod) * (*deriv_sp)[3](2,jnod) 
+                + 0.5*(1.0-r[gp]) * 0.5*(1-s[gp]) * ((*deriv_sp)[3](1,inod) * (*deriv_sp)[3](2,jnod)
                                                      + (*deriv_sp)[3](2,inod) * (*deriv_sp)[3](1,jnod))  // D
-                + 0.5*(1.0-r[gp]) * 0.5*(1-s[gp]) * (*hths)*((*deriv_sp)[4](1,inod) * (*deriv_sp)[4](2,jnod) 
+                + 0.5*(1.0-r[gp]) * 0.5*(1-s[gp]) * (*hths)*((*deriv_sp)[4](1,inod) * (*deriv_sp)[4](2,jnod)
                                                              + (*deriv_sp)[4](2,inod) * (*deriv_sp)[4](1,jnod))  // E
-                + 0.5*(1.0-r[gp]) * 0.5*(1+s[gp]) * ((*deriv_sp)[3](1,inod) * (*deriv_sp)[3](2,jnod) 
+                + 0.5*(1.0-r[gp]) * 0.5*(1+s[gp]) * ((*deriv_sp)[3](1,inod) * (*deriv_sp)[3](2,jnod)
                                                      + (*deriv_sp)[3](2,inod) * (*deriv_sp)[3](1,jnod))  // D
-                + 0.5*(1.0-r[gp]) * 0.5*(1+s[gp]) * (*hths)*((*deriv_sp)[7](1,inod) * (*deriv_sp)[7](2,jnod) 
+                + 0.5*(1.0-r[gp]) * 0.5*(1+s[gp]) * (*hths)*((*deriv_sp)[7](1,inod) * (*deriv_sp)[7](2,jnod)
                                                              + (*deriv_sp)[7](2,inod) * (*deriv_sp)[7](1,jnod));  // H
               // ANS modification in rt-dir
-              G_ij(5) 
-                = 0.5*(1.0-s[gp]) * 0.5*(1-r[gp]) * ((*deriv_sp)[0](0,inod) * (*deriv_sp)[0](2,jnod) 
+              G_ij(5)
+                = 0.5*(1.0-s[gp]) * 0.5*(1-r[gp]) * ((*deriv_sp)[0](0,inod) * (*deriv_sp)[0](2,jnod)
                                                      + (*deriv_sp)[0](2,inod) * (*deriv_sp)[0](0,jnod))  // A
-                + 0.5*(1.0-s[gp]) * 0.5*(1-r[gp]) * (*hthr)*((*deriv_sp)[4](0,inod) * (*deriv_sp)[4](2,jnod) 
+                + 0.5*(1.0-s[gp]) * 0.5*(1-r[gp]) * (*hthr)*((*deriv_sp)[4](0,inod) * (*deriv_sp)[4](2,jnod)
                                                              + (*deriv_sp)[4](2,inod) * (*deriv_sp)[4](0,jnod))  // E
-                + 0.5*(1.0-s[gp]) * 0.5*(1+r[gp]) * ((*deriv_sp)[0](0,inod) * (*deriv_sp)[0](2,jnod) 
+                + 0.5*(1.0-s[gp]) * 0.5*(1+r[gp]) * ((*deriv_sp)[0](0,inod) * (*deriv_sp)[0](2,jnod)
                                                      + (*deriv_sp)[0](2,inod) * (*deriv_sp)[0](0,jnod))  // A
-                + 0.5*(1.0-s[gp]) * 0.5*(1+r[gp]) * (*hthr)*((*deriv_sp)[5](0,inod) * (*deriv_sp)[5](2,jnod) 
+                + 0.5*(1.0-s[gp]) * 0.5*(1+r[gp]) * (*hthr)*((*deriv_sp)[5](0,inod) * (*deriv_sp)[5](2,jnod)
                                                              + (*deriv_sp)[5](2,inod) * (*deriv_sp)[5](0,jnod))  // F
-                + 0.5*(1.0+s[gp]) * 0.5*(1-r[gp]) * ((*deriv_sp)[2](0,inod) * (*deriv_sp)[2](2,jnod) 
+                + 0.5*(1.0+s[gp]) * 0.5*(1-r[gp]) * ((*deriv_sp)[2](0,inod) * (*deriv_sp)[2](2,jnod)
                                                      + (*deriv_sp)[2](2,inod) * (*deriv_sp)[2](0,jnod))  // C
-                + 0.5*(1.0+s[gp]) * 0.5*(1-r[gp]) * (*hthr)*((*deriv_sp)[7](0,inod) * (*deriv_sp)[7](2,jnod) 
+                + 0.5*(1.0+s[gp]) * 0.5*(1-r[gp]) * (*hthr)*((*deriv_sp)[7](0,inod) * (*deriv_sp)[7](2,jnod)
                                                              + (*deriv_sp)[7](2,inod) * (*deriv_sp)[7](0,jnod))  // H
-                + 0.5*(1.0+s[gp]) * 0.5*(1+r[gp]) * ((*deriv_sp)[2](0,inod) * (*deriv_sp)[2](2,jnod) 
+                + 0.5*(1.0+s[gp]) * 0.5*(1+r[gp]) * ((*deriv_sp)[2](0,inod) * (*deriv_sp)[2](2,jnod)
                                                      + (*deriv_sp)[2](2,inod) * (*deriv_sp)[2](0,jnod))  // C
-                + 0.5*(1.0+s[gp]) * 0.5*(1+r[gp]) * (*hthr)*((*deriv_sp)[6](0,inod) * (*deriv_sp)[6](2,jnod) 
+                + 0.5*(1.0+s[gp]) * 0.5*(1+r[gp]) * (*hthr)*((*deriv_sp)[6](0,inod) * (*deriv_sp)[6](2,jnod)
                                                              + (*deriv_sp)[6](2,inod) * (*deriv_sp)[6](0,jnod));  // G
             }
             else {
@@ -1148,7 +1148,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
           if (lin_ > lin_sixth)
             for (int istr=0; istr<NUMSTR_; ++istr)
               (*bopbydisp)(istr,NUMNOD_*inod+jnod) = G_ij_glob(istr);
-            
+
           // Scalar Gij results from product of G_ij with stress, scaled with detJ*weights
           double Gij = detJ_w * stress.Dot(G_ij_glob);
 
@@ -1225,7 +1225,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
             // C^d_{,d} = 2 * Fm^d * Boplin, 6x24
             LINALG::Matrix<NUMSTR_,NUMDISP_> rcgDbydisp;
             rcgDbydisp.MultiplyNN(2.0,defgradDm,boplin);
-            
+
             // U^d_{,d} = (C^d_{,U^d})^{-1} . C^d_{,d}
             {
               LINALG::FixedSizeSerialDenseSolver<NUMSTR_,NUMSTR_,NUMDISP_> rcgDbyrgtstrDsolver;
@@ -1292,7 +1292,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
                     const int DB = VOIGT3X3SYM_[NUMDIM_*D+B];
                     const double CDfact = (C==D) ? 1.0 : 0.5;
                     const double DBfact = (D==B) ? 1.0 : 0.5;
-                    pseudoidenity_CBk 
+                    pseudoidenity_CBk
                       += CDfact*invrgtstrDbydisp(CD,k) * rgtstr(D,B)
                       + invrgtstrD(C,D) * DBfact*rgtstrbydisp(DB,k);
                   }
@@ -1363,14 +1363,14 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
               LINALG::Matrix<NUMSTR_,NUMDISPSQSYM_> temp;
               LINALG::Matrix<NUMSTR_,NUMDISPSQSYM_> tempD;
               {
-                // second derivative of assumed right Cauchy-Green tensor 
+                // second derivative of assumed right Cauchy-Green tensor
                 // w.r.t. to right stretch tensor
                 // C^{ass}_{,U^{ass} U^{ass}} = const
                 int ircgbybyrgtstr[NUMSTR_*6];  // for sparse access
                 LINALG::Matrix<NUMSTR_,6> rcgbybyrgtstr;
                 SqVector6VoigtTwiceDiffByItself(ircgbybyrgtstr,rcgbybyrgtstr);
 
-                // second derivative of disp-based right Cauchy-Green tensor 
+                // second derivative of disp-based right Cauchy-Green tensor
                 // w.r.t. to right stretch tensor
                 // C^{d}_{,U^{d} U^{d}} = const
                 // MARK: an extra variable is not needed as same as for assumed right CG tensor (above)
@@ -1416,10 +1416,10 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
                         const int aE = VOIGT3X3_[NUMDIM_*a+E];
                         const int aF = VOIGT3X3_[NUMDIM_*a+F];
                         if (E == F)  // make strain-like 6-Voigt vector
-                          rcgDbybydisp_EFdk 
+                          rcgDbybydisp_EFdk
                             += 2.0*boplin(aE,d)*boplin(aF,k);
                         else  // thus setting  V_EF + V_FE if E!=F
-                          rcgDbybydisp_EFdk 
+                          rcgDbybydisp_EFdk
                             += 2.0*boplin(aE,d)*boplin(aF,k)
                             +  2.0*boplin(aF,d)*boplin(aE,k);
                       }
@@ -1431,11 +1431,11 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
               }
 
               // second derivative of assumed right stretch tensor w.r.t. displacements
-              // U^{ass}_{DB,dk} = (C^{ass}_{,U^{ass}})_{DBEF}^{-1} 
+              // U^{ass}_{DB,dk} = (C^{ass}_{,U^{ass}})_{DBEF}^{-1}
               //                 . ( C^{ass}_{EF,dk} - C^{ass}_{EF,GHIJ}  U^{ass}_{IJ,d}  U^{ass}_{GH,k} )
               // and
               // second derivative of pure-disp right stretch tensor w.r.t. displacements
-              // U^{d}_{DB,dk} = (C^{d}_{,U^{d}})_{DBEF}^{-1} 
+              // U^{d}_{DB,dk} = (C^{d}_{,U^{d}})_{DBEF}^{-1}
               //               . ( C^{d}_{EF,dk} - C^{d}_{EF,GHIJ}  U^{d}_{IJ,d}  U^{d}_{GH,k} )
               LINALG::Matrix<NUMSTR_,NUMDISPSQSYM_> rgtstrbybydisp;
               LINALG::Matrix<NUMSTR_,NUMDISPSQSYM_> rgtstrDbybydisp;
@@ -1486,11 +1486,11 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
                       double invrgtstrDbybydisp_CDdk = 0.0;
                       for (int EF=0; EF<NUMSTR_; ++EF) {
                         const double rgtstrDbybydisp_EFdk = rgtstrDbybydisp(EF,dk);
-                        invrgtstrDbybydisp_CDdk 
+                        invrgtstrDbybydisp_CDdk
                           += invrgtstrDbyrgtstrD(CD,EF) * rgtstrDbybydisp_EFdk;
                         for (int GH=0; GH<NUMSTR_; ++GH) {
                           const int EFGH = NUMSTR_*EF + GH;
-                          invrgtstrDbybydisp_CDdk 
+                          invrgtstrDbybydisp_CDdk
                             += invrgtstrDbybyrgtstrD(CD,EFGH)  // col are strain-like 6-Voigt
                             * rgtstrDbydisp(GH,k)  // row are strain-like 6-Voigt too
                             * rgtstrDbydisp(EF,d);  // row are strain-like 6-Voigt too
@@ -1500,11 +1500,11 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
                     }
                   }
                 }
-        
+
 
                 // inverse assumed deformation gradient times #boplin
                 // Z^{assd}_{BCd} = F^{-1}_{Ba}  F^d_{aC,d}
-                // WARNING: Z^{assd}_{BCd} might be non-symmetric in BC 
+                // WARNING: Z^{assd}_{BCd} might be non-symmetric in BC
                 LINALG::Matrix<NUMDFGR_,NUMDISP_> invdefgradtimesboplin;
                 for (int d=0; d<NUMDISP_; ++d) {
                   for (int BC=0; BC<NUMDFGR_; ++BC) {
@@ -1513,7 +1513,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
                     double invdefgradtimesboplin_BCd = 0.0;
                     for (int a=0; a<NUMDIM_; ++a) {
                       const int aC = VOIGT3X3_[NUMDIM_*a+C];
-                      invdefgradtimesboplin_BCd 
+                      invdefgradtimesboplin_BCd
                         += invdefgrad(B,a)*boplin(aC,d);
                     }
                     invdefgradtimesboplin(BC,d) = invdefgradtimesboplin_BCd;
@@ -1544,7 +1544,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
                 // contribute stuff containing second derivatives in displacements
                 // F^{-T}_{aB} F_{aB,dk}
                 // = F^{-1}_{Ba} F_{aB,dk}
-                // = F^{-1}_{Ba}  ( F^d_{aC} U^{d;-1}_{CD} U^{ass}_{DB} )_{,dk} 
+                // = F^{-1}_{Ba}  ( F^d_{aC} U^{d;-1}_{CD} U^{ass}_{DB} )_{,dk}
                 //
                 // = F^{-1}_{Ba}  F^d_{aC,dk} U^{d;-1}_{CD} U^{ass}_{DB}         |  = 0
                 // + F^{-1}_{Ba}  F^d_{aC} U^{d;-1}_{CD,dk} U^{ass}_{DB}         |  # 0, very pricy
@@ -1566,7 +1566,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
                 // + Z^{assd}_{BCk} U^{d;-1}_{CD} U^{ass}_{DB,d}                 // (4)
                 // + I^{assd}_{BC} U^{d;-1}_{CD,k} U^{ass}_{DB,d}                //    (6)
                 for (int d=0; d<NUMDISP_; ++d) {
-                  for (int k=d; k<NUMDISP_; ++k) {  // symmetric matrix : only upper right triangle is computed 
+                  for (int k=d; k<NUMDISP_; ++k) {  // symmetric matrix : only upper right triangle is computed
                     const int dk = NUMDISP_*d - d*(d+1)/2 + k;
                     double defgradbybydisp_dk = 0.0;
                     for (int B=0; B<NUMDIM_; ++B) {
@@ -1669,7 +1669,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
   // internal force
   if ( (force != NULL) and (stabmatrix != NULL) ) {
     // integrate internal force vector
-    // fint := fint 
+    // fint := fint
     //      + (B^T . sigma) * detJ * w(gp)   // already done
     //      + (-G) . ep
     if (stab_ != stab_puredisp)
@@ -1677,7 +1677,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
   }
   // incompressiblity equation
   if ( (incomp != NULL) and (stabmatrix != NULL) ) {
-    // pint := pint 
+    // pint := pint
     //       - H . (Fdet - 1.0) * detJ * wp(gp)  // already done
     //       + (-Ce) . ep
     if (stab_ != stab_puredisp)
@@ -1698,7 +1698,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
       const double shearmod = ShearMod();
       // (-Cem . ep)_{,d} = -1./shearmod*( (Mem . ep)_{,d} - (Eem.inv(Dem).Eem')_{,d} . ep )
       // which is
-      // -1./shearmod * (Mem . ep)_{,d} 
+      // -1./shearmod * (Mem . ep)_{,d}
       dargmatrix->Update(-1.0/shearmod,*stabHHbydisp,1.0);
       // -1./shearmod * Eem_{,d} . (-inv(Dem).Eem'.ep)
       dargmatrix->Update(+1.0/shearmod/stabAA(0,0)*stabHA.Dot(pres),*stabHAbydisp,1.0);
@@ -1722,13 +1722,13 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
   }
   else if (eastype_ == soh8_eassosh8) {
     EasCondensation<NUMEAS_SOSH8_>(force, stiffmatrix, gradmatrix,
-                                   incomp, dargmatrix, stabmatrix, 
+                                   incomp, dargmatrix, stabmatrix,
                                    oldfeas, oldKaainv, oldKad, oldKap,
                                    feas, Kaa, Kad, Kap);
   }
   else if (eastype_ == soh8_easa) {
     EasCondensation<NUMEAS_A_>(force, stiffmatrix, gradmatrix,
-                               incomp, dargmatrix, stabmatrix, 
+                               incomp, dargmatrix, stabmatrix,
                                oldfeas, oldKaainv, oldKad, oldKap,
                                feas, Kaa, Kad, Kap);
   }
@@ -1905,7 +1905,7 @@ void DRT::ELEMENTS::So_sh8p8::AssDefGrad(
   // pure displacement-based deformation gradient
   // F = x_{,X} = x_{,xi} . xi_{,X} = x_{,xi} . (X_{,xi})^{-1} = jac^T . Jinv^T
   defgradD.MultiplyTT(jac,Jinv);
-  
+
   // pure displacement-based right Cauchy-Green strain
   LINALG::Matrix<NUMDIM_,NUMDIM_> cgD;
   cgD.MultiplyTN(defgradD,defgradD);
@@ -2008,7 +2008,7 @@ void DRT::ELEMENTS::So_sh8p8::AssDefGrad(
 //         }
 //       }
 //     }
-    
+
   }
 
   // assumed material stretch tensor
@@ -2218,8 +2218,8 @@ int DRT::ELEMENTS::Sosh8p8Register::Initialize(DRT::Discretization& dis)
       int new_nodeids[DRT::ELEMENTS::So_sh8p8::NUMNOD_];
 
       switch (actele->thickdir_) {
-      case DRT::ELEMENTS::So_sh8::globx: 
-      case DRT::ELEMENTS::So_sh8::globy: 
+      case DRT::ELEMENTS::So_sh8::globx:
+      case DRT::ELEMENTS::So_sh8::globy:
       case DRT::ELEMENTS::So_sh8::globz: {
         dserror("This should have been replaced by auto(r|s|t)");
         break;

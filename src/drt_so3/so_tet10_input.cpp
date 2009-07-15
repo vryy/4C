@@ -15,7 +15,7 @@ writen by : Alexander Volf
 #ifdef D_SOLID3
 #ifdef CCADISCRET
 
-#include "so_tet10.H" 
+#include "so_tet10.H"
 
 /*----------------------------------------------------------------------*
  |  read element input (public)                                maf 04/07|

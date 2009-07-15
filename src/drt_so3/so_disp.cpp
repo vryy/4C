@@ -130,10 +130,10 @@ void DRT::ELEMENTS::SoDisp::Unpack(const vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
-  
+
   ExtractfromPack(position,data,stresstype_);
   ExtractfromPack(position,data,kintype_);
-  
+
   int gausrule_integer;
   ExtractfromPack(position,data,gausrule_integer);
   gaussrule_ = GaussRule3D(gausrule_integer); //explicit conversion from integer to enum
@@ -141,7 +141,7 @@ void DRT::ELEMENTS::SoDisp::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,numnod_disp_);
   ExtractfromPack(position,data,numdof_disp_);
   ExtractfromPack(position,data,numgpt_disp_);
-  
+
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
@@ -182,9 +182,9 @@ RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::SoDisp::ElementRegister() const
  *----------------------------------------------------------------------*/
 vector<RCP<DRT::Element> > DRT::ELEMENTS::SoDisp::Lines()
 {
-  // do NOT store line or surface elements inside the parent element 
+  // do NOT store line or surface elements inside the parent element
   // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization, 
+  // Reason: if a Redistribute() is performed on the discretization,
   // stored node ids and node pointers owned by these boundary elements might
   // have become illegal and you will get a nice segmentation fault ;-)
 
@@ -198,9 +198,9 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::SoDisp::Lines()
  *----------------------------------------------------------------------*/
 vector<RCP<DRT::Element> > DRT::ELEMENTS::SoDisp::Surfaces()
 {
-  // do NOT store line or surface elements inside the parent element 
+  // do NOT store line or surface elements inside the parent element
   // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization, 
+  // Reason: if a Redistribute() is performed on the discretization,
   // stored node ids and node pointers owned by these boundary elements might
   // have become illegal and you will get a nice segmentation fault ;-)
 

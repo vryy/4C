@@ -51,10 +51,10 @@ gaussrule_(DRT::UTILS::intrule2D_undefined)
   case quad9:
     gaussrule_ = DRT::UTILS::intrule_quad_9point;
   break;
-  default: 
+  default:
       dserror("shape type unknown!\n");
   }
-  
+
   return;
 }
 

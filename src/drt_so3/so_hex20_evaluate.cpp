@@ -466,9 +466,9 @@ void DRT::ELEMENTS::So_hex20::InitJacobianMapping()
     //invJ_[gp].Shape(NUMDIM_SOH20,NUMDIM_SOH20);
     invJ_[gp].Multiply(derivs[gp],xrefe);
     detJ_[gp] = invJ_[gp].Invert();
-    if (detJ_[gp] == 0.0) 
+    if (detJ_[gp] == 0.0)
       dserror("ZERO JACOBIAN DETERMINANT");
-    else if (detJ_[gp] < 0.0) 
+    else if (detJ_[gp] < 0.0)
       dserror("NEGATIVE JACOBIAN DETERMINANT");
 
   }
@@ -798,7 +798,7 @@ const vector<LINALG::Matrix<NUMNOD_SOH20,1> > DRT::ELEMENTS::So_hex20::soh20_sha
   // fill up nodal f at each gp
   const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_hex_27point;
   const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
-  for (int igp = 0; igp < intpoints.nquad; ++igp) 
+  for (int igp = 0; igp < intpoints.nquad; ++igp)
   {
     const double r = intpoints.qxg[igp][0];
     const double s = intpoints.qxg[igp][1];
@@ -820,7 +820,7 @@ const vector<LINALG::Matrix<NUMDIM_SOH20,NUMNOD_SOH20> > DRT::ELEMENTS::So_hex20
   // fill up df w.r.t. rst directions (NUMDIM) at each gp
   const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_hex_27point;
   const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
-  for (int igp = 0; igp < intpoints.nquad; ++igp) 
+  for (int igp = 0; igp < intpoints.nquad; ++igp)
   {
     const double r = intpoints.qxg[igp][0];
     const double s = intpoints.qxg[igp][1];
@@ -832,14 +832,14 @@ const vector<LINALG::Matrix<NUMDIM_SOH20,NUMNOD_SOH20> > DRT::ELEMENTS::So_hex20
 }
 
 /*----------------------------------------------------------------------*
- |  Evaluate Hex20 Weights at all 20 Gauss Points                       |         
+ |  Evaluate Hex20 Weights at all 20 Gauss Points                       |
  *----------------------------------------------------------------------*/
 const vector<double> DRT::ELEMENTS::So_hex20::soh20_weights()
 {
   vector<double> weights(NUMGPT_SOH20);
   const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_hex_27point;
   const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
-  for (int i = 0; i < NUMGPT_SOH20; ++i) 
+  for (int i = 0; i < NUMGPT_SOH20; ++i)
   {
     weights[i] = intpoints.qwgt[i];
   }
@@ -867,14 +867,14 @@ void DRT::ELEMENTS::So_hex20::soh20_shapederiv(
     *weights = &weightfactors; // return adress of static object to target of pointer
     return;
   }
-  else 
+  else
   {
     // (r,s,t) gp-locations of fully integrated quadratic Hex 20
     // fill up nodal f at each gp
     // fill up df w.r.t. rst directions (NUMDIM) at each gp
     const DRT::UTILS::GaussRule3D gaussrule_ = DRT::UTILS::intrule_hex_27point;
     const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule_);
-    for (int igp = 0; igp < intpoints.nquad; ++igp) 
+    for (int igp = 0; igp < intpoints.nquad; ++igp)
     {
       const double r = intpoints.qxg[igp][0];
       const double s = intpoints.qxg[igp][1];
@@ -884,7 +884,7 @@ void DRT::ELEMENTS::So_hex20::soh20_shapederiv(
       LINALG::Matrix<NUMDIM_SOH20, NUMNOD_SOH20> deriv;
       DRT::UTILS::shape_function_3D(funct, r, s, t, hex20);
       DRT::UTILS::shape_function_3D_deriv1(deriv, r, s, t, hex20);
-      for (int inode = 0; inode < NUMNOD_SOH20; ++inode) 
+      for (int inode = 0; inode < NUMNOD_SOH20; ++inode)
       {
         f(inode, igp) = funct(inode);
         df(igp*NUMDIM_SOH20+0, inode) = deriv(0, inode);

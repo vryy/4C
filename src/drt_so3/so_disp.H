@@ -307,7 +307,7 @@ protected:
     sodisp_stress_ndrst,
     sodisp_stress_nd123
   };
-  
+
   KinematicType              kintype_;    ///< kinematic type
   StressType                 stresstype_; ///< type of stress evaluation
   DRT::UTILS::GaussRule3D    gaussrule_;  ///< Gaussrule

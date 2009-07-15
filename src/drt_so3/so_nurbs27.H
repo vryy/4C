@@ -57,7 +57,7 @@ namespace ELEMENTS
 
 */
 namespace NURBS
-{  
+{
 
 
 // forward declarations
@@ -66,7 +66,7 @@ class Sonurbs27Register;
 /*!
 \brief A C++ version of a 27-control point nurbs solid element
 
-A structural 27-control points nurbs solid displacement element for large deformations. 
+A structural 27-control points nurbs solid displacement element for large deformations.
 As its discretization is fixed many data structures are evaluated just once and kept
 for performance.
 
@@ -235,9 +235,9 @@ public:
 
   Evaluate So_nurbs27 element stiffness, mass, internal forces, etc.
 
-  If NULL on input, the controling method does not expect the element 
+  If NULL on input, the controling method does not expect the element
   to fill these matrices or vectors.
-  
+
   \return 0 if successful, negative otherwise
   */
   int Evaluate
@@ -245,7 +245,7 @@ public:
     ParameterList&            params        , ///< ParameterList for communication between control routine and elements
     DRT::Discretization&      discretization, ///< pointer to discretization for de-assembly
     vector<int>&              lm            , ///< location matrix for de-assembly
-    Epetra_SerialDenseMatrix& elemat1       , ///< (stiffness-)matrix to be filled by element. 
+    Epetra_SerialDenseMatrix& elemat1       , ///< (stiffness-)matrix to be filled by element.
     Epetra_SerialDenseMatrix& elemat2       , ///< (mass-)matrix to be filled by element.
     Epetra_SerialDenseVector& elevec1       , ///< (internal force-)vector to be filled by element
     Epetra_SerialDenseVector& elevec2       , ///< vector to be filled by element
@@ -291,7 +291,7 @@ protected:
     calc_struct_nlnstiffmass
   };
 
-  //! kinematic types of So_nurbs27; only total-lagrangian 
+  //! kinematic types of So_nurbs27; only total-lagrangian
   //! is implemented
   enum KinematicType
   {
@@ -313,7 +313,7 @@ protected:
   //! don't want = operator
   So_nurbs27& operator = (const So_nurbs27& old);
 
-  //! init the inverse of the jacobian and its determinant in 
+  //! init the inverse of the jacobian and its determinant in
   //! the material configuration
   virtual void InitJacobianMapping(DRT::Discretization& dis);
 
@@ -329,8 +329,8 @@ protected:
       ParameterList&         params        );
 
   /*!
-   \brief Interface to material laws 
-   
+   \brief Interface to material laws
+
    Here the interface to any material takes place. Stress and C-mat must be retrieved
    whereas all necessary data is passed. Add whatever your material needs, but
    make sure that exchange is not overdone performance-wise.
@@ -378,7 +378,7 @@ protected:
 
 
 /*!
-\brief Just another register 
+\brief Just another register
 
 \author gammi (gammi@lnm.mw.tum.de)
 */

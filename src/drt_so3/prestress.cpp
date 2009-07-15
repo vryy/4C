@@ -21,8 +21,8 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 07/08|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::PreStress::PreStress(const int numnode, 
-                                    const int ngp, 
+DRT::ELEMENTS::PreStress::PreStress(const int numnode,
+                                    const int ngp,
                                     const bool istet4) :
 ParObject(),
 isinit_(false),
@@ -54,7 +54,7 @@ invJhist_(Teuchos::rcp(new Epetra_SerialDenseMatrix(old.JHistory())))
   return;
 }
 
- 
+
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
@@ -69,16 +69,16 @@ void DRT::ELEMENTS::PreStress::Pack(vector<char>& data) const
 
   // pack isinit_
   AddtoPack(data,isinit_);
-  
+
   // pack numnode_
   AddtoPack(data,numnode_);
-  
+
   // pack Fhist_
   AddtoPack(data,*Fhist_);
-  
+
   // pack invJhist_
   AddtoPack(data,*invJhist_);
-  
+
   return;
 }
 
@@ -97,13 +97,13 @@ void DRT::ELEMENTS::PreStress::Unpack(const vector<char>& data)
 
   // extract isinit_
   ExtractfromPack(position,data,isinit_);
-  
+
   // extract numnode_
   ExtractfromPack(position,data,numnode_);
-  
+
   // extract Fhist_
   ExtractfromPack(position,data,*Fhist_);
-  
+
   // extract invJhist_
   ExtractfromPack(position,data,*invJhist_);
 

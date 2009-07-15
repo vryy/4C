@@ -27,7 +27,7 @@ bool DRT::ELEMENTS::Ptet::ReadElement()
   {
     frint_n(" TET4 ",nodes,nnode,&ierr);
     if (ierr != 1) dserror("Reading of ELEMENT Topology failed");
-    
+
   }
   else
   {
