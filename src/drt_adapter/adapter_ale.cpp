@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*!
  * \file adapter_ale.cpp
- * 
+ *
 \brief ALE base implementation
 
 <pre>
@@ -114,7 +114,7 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn)
 
   params->set<int>("ALE_TYPE",Teuchos::getIntegralValue<int>(adyn,"ALE_TYPE"));
 
-  
+
   bool dirichletcond = true;
   if (genprob.probtyp == prb_fsi)
   {

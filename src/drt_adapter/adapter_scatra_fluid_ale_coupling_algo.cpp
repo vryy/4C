@@ -21,7 +21,7 @@ Maintainer: Georg Bauer
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::ScaTraFluidAleCouplingAlgorithm::ScaTraFluidAleCouplingAlgorithm(
-    Epetra_Comm& comm, 
+    Epetra_Comm& comm,
     const Teuchos::ParameterList& prbdyn,
     const std::string condname
 )

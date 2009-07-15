@@ -273,7 +273,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
   }
   else
     structure_ = tmpstr;
-  
+
   // invoke contact strugen alpha
   bool contact = false;
   switch (Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(scontact,"CONTACT"))
@@ -294,14 +294,14 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
       dserror("Cannot cope with choice of contact type");
       break;
   }
-  
+
   if(contact)
   {
     structure_ = Teuchos::rcp(new ContactStructureGenAlpha(genalphaparams,actdis,solver,output));
   }
   else
     structure_ = tmpstr;
-  
+
 }
 
 /*----------------------------------------------------------------------*/
@@ -374,7 +374,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
          or (coupling == fsi_iter_monolithicstructuresplit) )
     {
       if ((Teuchos::getIntegralValue<INPAR::STR::PredEnum>(*sdyn,"PREDICT")
-          != INPAR::STR::pred_constdisvelacc) and 
+          != INPAR::STR::pred_constdisvelacc) and
           (Teuchos::getIntegralValue<INPAR::STR::PredEnum>(*sdyn,"PREDICT")
           != INPAR::STR::pred_constdisvelaccpres))
       {

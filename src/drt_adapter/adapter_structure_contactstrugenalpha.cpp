@@ -276,9 +276,9 @@ void ADAPTER::ContactStructureGenAlpha::Solve()
   {
     RCP<CONTACT::Manager> contactmanager = structure_.getContactmanager();
     bool semismooth = (contactmanager->Params()).get<bool>("semismooth newton",false);
-    
+
     if(semismooth)
-    {  
+    {
       // initialize convergence status and step no. for active set
       contactmanager->ActiveSetConverged() = false;
       contactmanager->ActiveSetSteps() = 1;

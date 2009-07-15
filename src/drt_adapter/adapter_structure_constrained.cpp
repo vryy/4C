@@ -36,44 +36,44 @@ ADAPTER::StructureConstrained::StructureConstrained
   RCP<Structure> stru
 )
 : structure_(stru)
-{    
+{
   // make sure
   if (structure_ == null)
     dserror("Failed to create the underlying structural adapter");
-  
+
   // build merged dof row map
   dofrowmap_ = LINALG::MergeMap(*(structure_->DofRowMap()),
                                 *(structure_->GetConstraintManager()->GetConstraintMap()),
                                 false);
 
   // set up interface between merged and single maps
-  conmerger_.Setup(*dofrowmap_, 
-                    structure_->DofRowMap(), 
+  conmerger_.Setup(*dofrowmap_,
+                    structure_->DofRowMap(),
                     structure_->GetConstraintManager()->GetConstraintMap());
 
   // initialise displacement increments to 0 (in words zero)
   // this variable in only used in monolithic FSI
   disinc_ = Teuchos::rcp(new Epetra_Vector(*dofrowmap_,true));
-  
+
   //setup fsi-Interface
   DRT::UTILS::SetupNDimExtractor(*(structure_->Discretization()),"FSICoupling",dofrowmap_,interface_);
 }
 
 
-  
+
 /*----------------------------------------------------------------------*/
 /* */
 RCP<const Epetra_Vector> ADAPTER::StructureConstrained::InitialGuess()
 {
   //get initial guesses from structure and constraintmanager
-  RCP<const Epetra_Vector> strucGuess = structure_->InitialGuess(); 
+  RCP<const Epetra_Vector> strucGuess = structure_->InitialGuess();
   RCP<const Epetra_Vector> lagrGuess = rcp(new Epetra_Vector(*(structure_->GetConstraintManager()->GetConstraintMap()),true));
-  
+
   //merge stuff together
   RCP<Epetra_Vector> mergedGuess = rcp(new Epetra_Vector(*dofrowmap_,true));
   conmerger_.AddCondVector(strucGuess,mergedGuess);
   conmerger_.AddOtherVector(lagrGuess,mergedGuess);
-  
+
   return mergedGuess;
 }
 
@@ -82,14 +82,14 @@ RCP<const Epetra_Vector> ADAPTER::StructureConstrained::InitialGuess()
 RCP<const Epetra_Vector> ADAPTER::StructureConstrained::RHS()
 {
   //get rhs-vectors from structure and constraintmanager
-  RCP<const Epetra_Vector> struRHS = structure_->RHS(); 
+  RCP<const Epetra_Vector> struRHS = structure_->RHS();
   RCP<const Epetra_Vector> lagrRHS = structure_->GetConstraintManager()->GetError();
-  
+
   //merge stuff together
   RCP<Epetra_Vector> mergedRHS = rcp(new Epetra_Vector(*dofrowmap_,true));
   conmerger_.AddCondVector(struRHS,mergedRHS);
   conmerger_.AddOtherVector(-1.0,lagrRHS,mergedRHS);
-  
+
   return mergedRHS;
 }
 
@@ -99,14 +99,14 @@ RCP<const Epetra_Vector> ADAPTER::StructureConstrained::RHS()
 RCP<const Epetra_Vector> ADAPTER::StructureConstrained::Dispnp()
 {
   //get current state from structure and constraintmanager
-  RCP<const Epetra_Vector> strudis = structure_->Dispnp(); 
+  RCP<const Epetra_Vector> strudis = structure_->Dispnp();
   RCP<const Epetra_Vector> lagrmult = structure_->GetConstraintManager()->GetLagrMultVector();
-  
+
   //merge stuff together
   RCP<Epetra_Vector> mergedstat = rcp(new Epetra_Vector(*dofrowmap_,true));
   conmerger_.AddCondVector(strudis,mergedstat);
   conmerger_.AddOtherVector(lagrmult,mergedstat);
-  
+
   return mergedstat;
 }
 
@@ -116,14 +116,14 @@ RCP<const Epetra_Vector> ADAPTER::StructureConstrained::Dispnp()
 RCP<const Epetra_Vector> ADAPTER::StructureConstrained::Dispn()
 {
   //get last converged state from structure and constraintmanager
-  RCP<const Epetra_Vector> strudis = structure_->Dispn(); 
+  RCP<const Epetra_Vector> strudis = structure_->Dispn();
   RCP<const Epetra_Vector> lagrmult = structure_->GetConstraintManager()->GetLagrMultVectorOld();
-   
+
   //merge stuff together
    RCP<Epetra_Vector> mergedstat = rcp(new Epetra_Vector(*dofrowmap_,true));
    conmerger_.AddCondVector(strudis,mergedstat);
    conmerger_.AddOtherVector(lagrmult,mergedstat);
-  
+
   return mergedstat;
 }
 
@@ -144,15 +144,15 @@ RCP<LINALG::SparseMatrix> ADAPTER::StructureConstrained::SystemMatrix()
   RCP<LINALG::SparseMatrix> mergedmatrix = rcp(new LINALG::SparseMatrix(*dofrowmap_,dofrowmap_->NumMyElements()));
   RCP<LINALG::SparseMatrix> strustiff = structure_->SystemMatrix();
   RCP<LINALG::SparseMatrix> constiff = structure_->GetConstraintManager()->GetConstrMatrix();
-  
+
   // Add matrices together
   mergedmatrix -> Add(*strustiff,false,1.0,0.0);
   mergedmatrix -> Add(*constiff,false,1.0,1.0);
   mergedmatrix -> Add(*constiff,true,1.0,1.0);
   mergedmatrix -> Complete(*dofrowmap_,*dofrowmap_);
-  
+
   mergedmatrix -> ApplyDirichlet( *(structure_->GetDBCMapExtractor()->CondMap()));
-  
+
   return mergedmatrix;
 }
 
@@ -201,8 +201,8 @@ void ADAPTER::StructureConstrained::Evaluate(
 {
   // 'initialize' structural displacement as null-pointer
   RCP<Epetra_Vector> dispstruct = Teuchos::null;
-  
-  // Compute residual increments, update total increments and update lagrange multipliers  
+
+  // Compute residual increments, update total increments and update lagrange multipliers
   if (disp != Teuchos::null)
   {
     // residual displacements (or iteration increments or iteratively incremental displacements)
@@ -212,16 +212,16 @@ void ADAPTER::StructureConstrained::Evaluate(
     // update incremental displacement member to provided step increments
     // shortly: disinc_^<i> := disp^<i+1>
     disinc_->Update(1.0, *disp, 0.0);
-    
+
     // Extract increments for lagr multipliers and do update
     RCP<Epetra_Vector> lagrincr = conmerger_.ExtractOtherVector(disi);
     structure_->UpdateIterIncrConstr(lagrincr);
     dispstruct = conmerger_.ExtractCondVector(disp);
   }
-  // Hand down incremental displacements, 
+  // Hand down incremental displacements,
   // structure_ will compute the residual increments on its own
   structure_->Evaluate(dispstruct);
-  
+
 }
 
 /*----------------------------------------------------------------------*/

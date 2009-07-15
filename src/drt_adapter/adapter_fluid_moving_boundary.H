@@ -103,7 +103,7 @@ namespace ADAPTER
     //@}
 
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceFluidVelocity() = 0;
-    
+
     /// extract old velocities
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln() = 0;
 

@@ -21,7 +21,7 @@ Maintainer: Georg Bauer
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
-    Epetra_Comm& comm, 
+    Epetra_Comm& comm,
     const Teuchos::ParameterList& prbdyn,
     bool isale
     )
@@ -47,7 +47,7 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
       FluidField().Discretization()
   );
 
-  // ensure that both single field solvers use the same 
+  // ensure that both single field solvers use the same
   // time integration scheme
   switch (ScaTraField().MethodName())
   {

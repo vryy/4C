@@ -25,12 +25,12 @@ Maintainer: Thomas Kloeppel
 
 namespace ADAPTER
 {
-  /// Couple nonmatching FSI interfaces using mortar method implemented in 
-  /// contact framework  
+  /// Couple nonmatching FSI interfaces using mortar method implemented in
+  /// contact framework
   /*!
     This is a special class used by the Dirichlet-Neumann coupling algorithm
     to interpolate between fluid and structure fields at the interface. The
-    hard work is done by the CONTACT::Interface. (Thus we use the mortar method 
+    hard work is done by the CONTACT::Interface. (Thus we use the mortar method
     here.)
 
     The major part of this code is the Setup() method that feeds the FSI
@@ -61,10 +61,10 @@ namespace ADAPTER
                 const DRT::Discretization& slavedis,
                 Epetra_Comm& comm );
 
-    
+
     ///filling matrices
     void Evaluate();
-    
+
     /// transfer a dof vector from master to slave
     /*!
       Expects the structural interface displacements and returns interface
@@ -72,7 +72,7 @@ namespace ADAPTER
       Compute sv = D^{-1}M(mv)
      */
     RefCountPtr<Epetra_Vector> MasterToSlave
-    ( 
+    (
         RefCountPtr<Epetra_Vector> mv ///< structural interface displacements
     );
 
@@ -84,7 +84,7 @@ namespace ADAPTER
       Computes mv = M^{T}(sv).
      */
     RefCountPtr<Epetra_Vector> SlaveToMaster
-    ( 
+    (
         RefCountPtr<Epetra_Vector> sv   ///< fluid interface loads
     );
 
@@ -99,7 +99,7 @@ namespace ADAPTER
     RCP<CONTACT::Interface> interface_;  ///< interface
     RefCountPtr<Epetra_Map> masterdofmap_; ///< map of master dofs
     RefCountPtr<Epetra_Map> slavedofmap_;  ///< map of slave dofs without pressure
-    
+
     RefCountPtr<Epetra_CrsMatrix> D_; ///< mortar matrix
     RefCountPtr<Epetra_CrsMatrix> Dinv_;  ///< inverse of mortar matrix #D_
     RefCountPtr<Epetra_CrsMatrix> M_;  ///< mortar matrix

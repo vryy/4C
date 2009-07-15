@@ -47,7 +47,7 @@ namespace ADAPTER {
     Teuchos::RCP<const Epetra_Vector> Dispnp();
     Teuchos::RCP<const Epetra_Vector> Dispn();
     /// original comment: 'unknown displacements at t(n-1)'
-    /// actually Dispm()-called, mid-displacement? 
+    /// actually Dispm()-called, mid-displacement?
     Teuchos::RCP<const Epetra_Vector> Dispnm();
     Teuchos::RCP<const Epetra_Map> DofRowMap();
     Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
@@ -64,7 +64,7 @@ namespace ADAPTER {
 
     /// Get the current time
     virtual double GetTime() const { dserror("Not impl."); return -1.0; }
-    
+
     /// Get upper limit of time range of interest
     virtual double GetTimeEnd() const { dserror("Not impl."); return -1.0; }
 
@@ -85,7 +85,7 @@ namespace ADAPTER {
       structure_.UpdateIterIncrConstr(lagrincr);
     }
     void Output();
-    
+
     //@}
 
     /// communication object at the interface
@@ -96,7 +96,7 @@ namespace ADAPTER {
     virtual void ReadRestart(int step);
 
     virtual void Solve();
-    
+
     /// are there any algebraic constraints?
     virtual bool HaveConstraint()
     {
@@ -108,13 +108,13 @@ namespace ADAPTER {
     {
       return structure_.GetConstraintManager();
     };
-    
-    //! Return MapExtractor for Dirichlet boundary conditions 
+
+    //! Return MapExtractor for Dirichlet boundary conditions
     virtual const RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
     {
       return LINALG::ConvertDirichletToggleVectorToMaps(structure_.Dirichlet());
     };
-    
+
     /// get the linear solver object used for this field
     virtual Teuchos::RCP<LINALG::Solver> LinearSolver() { return solver_; }
 

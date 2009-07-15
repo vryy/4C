@@ -42,9 +42,9 @@ namespace ADAPTER {
   /*====================================================================*/
   /*!
    * \brief Adapter to constrained structural time integration.
-   * This class wraps one of the standard adapters for structural time 
-   * integration. The results are modified and/or merged to account for the 
-   * additional degrees of freedom of the lagrange multipliers. 
+   * This class wraps one of the standard adapters for structural time
+   * integration. The results are modified and/or merged to account for the
+   * additional degrees of freedom of the lagrange multipliers.
    *
    * \date 11/08
    */
@@ -87,7 +87,7 @@ namespace ADAPTER {
 
     /// Get the current time
     virtual double GetTime() const { return structure_->GetTime(); }
-    
+
     /// Get upper limit of time range of interest
     virtual double GetTimeEnd() const { return structure_->GetTimeEnd(); }
 
@@ -116,16 +116,16 @@ namespace ADAPTER {
 
     /// communication object at the interface
     virtual const LINALG::MapExtractor& Interface() const
-    { 
+    {
       return interface_;
     }
 
-    //! Return MapExtractor for Dirichlet boundary conditions 
+    //! Return MapExtractor for Dirichlet boundary conditions
     virtual const RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
     {
       return structure_->GetDBCMapExtractor();
     };
-    
+
     /// domain map of system matrix (do we really need this?)
     virtual const Epetra_Map& DomainMap();
 
@@ -140,13 +140,13 @@ namespace ADAPTER {
      {
        return structure_->HaveConstraint();
      };
-    
+
     /// Return bool indicating if constraints are defined
     virtual const RCP<const UTILS::ConstrManager> GetConstraintManager()
     {
       return structure_->GetConstraintManager();
-    }; 
-    
+    };
+
     //! Update iteration
     //! Add residual increment to Lagrange multipliers stored in Constraint manager
     virtual void UpdateIterIncrConstr
@@ -156,7 +156,7 @@ namespace ADAPTER {
     {
       structure_->UpdateIterIncrConstr(lagrincr);
     }
-     
+
     /// @name Solver calls
     //@{
 
@@ -226,11 +226,11 @@ namespace ADAPTER {
 
     /// the interface map setup for interface <-> full translation
     LINALG::MapExtractor interface_;
-    
-    /// the constraint map setup for full <-> stuct+constr transition 
+
+    /// the constraint map setup for full <-> stuct+constr transition
     LINALG::MapExtractor conmerger_;
-    
-    /// the complete non-overlapping degree of freedom row map for structure and lagrange multipliers 
+
+    /// the complete non-overlapping degree of freedom row map for structure and lagrange multipliers
     RCP<Epetra_Map> dofrowmap_;
 
     /// sum of displacement vectors already applied,
@@ -241,12 +241,12 @@ namespace ADAPTER {
     //{@
     RCP<DRT::Discretization> discret_;  ///< the discretisation
     RCP<ParameterList> ioparams_;  ///< I/O flags ... not sure of really needed
-    RCP<ParameterList> sdynparams_;  ///< dynamic control flags ... used, 
+    RCP<ParameterList> sdynparams_;  ///< dynamic control flags ... used,
                                                        ///< but could/should be circumvented
     RCP<ParameterList> xparams_;  ///< eXtra input parameters
     RCP<LINALG::Solver> solver_;  ///< the solver
     RCP<IO::DiscretizationWriter> output_;  ///< the output writer
-    
+
     //@}
 
   };  // class StructureConstrained

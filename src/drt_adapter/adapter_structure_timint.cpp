@@ -228,7 +228,7 @@ void ADAPTER::StructureTimInt::Evaluate(
     structure_->UpdateIterIncrementally(disi);
   }
   else
-  { 
+  {
     structure_->UpdateIterIncrementally(Teuchos::null);
   }
 

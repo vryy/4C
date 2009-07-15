@@ -91,7 +91,7 @@ namespace ADAPTER {
 
     /// Get the current time
     virtual double GetTime() const { return structure_->GetTime(); }
-    
+
     /// Get upper limit of time range of interest
     virtual double GetTimeEnd() const { return structure_->GetTimeEnd(); }
 
@@ -114,7 +114,7 @@ namespace ADAPTER {
 
     /// update at time step end
     void Update();
-    
+
     /// Update iteration
     /// Add residual increment to Lagrange multipliers stored in Constraint manager
     virtual void UpdateIterIncrConstr
@@ -124,8 +124,8 @@ namespace ADAPTER {
     {
       structure_->UpdateIterIncrConstr(lagrincr);
     }
-    
-    /// Return MapExtractor for Dirichlet boundary conditions 
+
+    /// Return MapExtractor for Dirichlet boundary conditions
     virtual const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
     {
       return structure_->GetDBCMapExtractor();
@@ -138,7 +138,7 @@ namespace ADAPTER {
 
     /// communication object at the interface
     virtual const LINALG::MapExtractor& Interface() const
-    { 
+    {
       return interface_;
     }
 
@@ -156,13 +156,13 @@ namespace ADAPTER {
     {
       return structure_->HaveConstraint();
     };
-    
+
     /// get constraint manager defined in the structure
     virtual const RCP<const UTILS::ConstrManager> GetConstraintManager()
     {
       return structure_->GetConstraintManager();
     };
-    
+
     /// @name Solver calls
     //@{
 
@@ -241,7 +241,7 @@ namespace ADAPTER {
     //{@
     Teuchos::RCP<DRT::Discretization> discret_;  ///< the discretisation
     Teuchos::RCP<Teuchos::ParameterList> ioparams_;  ///< I/O flags ... not sure of really needed
-    Teuchos::RCP<Teuchos::ParameterList> sdynparams_;  ///< dynamic control flags ... used, 
+    Teuchos::RCP<Teuchos::ParameterList> sdynparams_;  ///< dynamic control flags ... used,
                                                        ///< but could/should be circumvented
     Teuchos::RCP<Teuchos::ParameterList> xparams_;  ///< eXtra input parameters
     Teuchos::RCP<LINALG::Solver> solver_;  ///< the solver

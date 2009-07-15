@@ -115,11 +115,11 @@ namespace ADAPTER {
 
     /// are there any algebraic constraints?
     virtual bool HaveConstraint() = 0;
-    
+
     /// get constraint manager defined in the structure
     virtual const RCP<const UTILS::ConstrManager> GetConstraintManager() = 0;
-    
-    //! Return MapExtractor for Dirichlet boundary conditions 
+
+    //! Return MapExtractor for Dirichlet boundary conditions
     virtual const RCP<const LINALG::MapExtractor> GetDBCMapExtractor() = 0;
 
     /// structure part of the rhs to enforce coupling condition at the interface
@@ -146,7 +146,7 @@ namespace ADAPTER {
 
     /// Get the current time
     virtual double GetTime() const = 0;
-    
+
     /// Get upper limit of time range of interest
     virtual double GetTimeEnd() const = 0;
 
@@ -171,11 +171,11 @@ namespace ADAPTER {
 
     /// update at time step end
     virtual void Update() = 0;
-    
+
     //! Update iteration
     //! Add residual increment to Lagrange multipliers stored in Constraint manager
     virtual void UpdateIterIncrConstr(Teuchos::RCP<Epetra_Vector> lagrincr) = 0;
- 
+
 
     /// output results
     virtual void Output() = 0;

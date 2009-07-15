@@ -42,7 +42,7 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
   // initialize maps for nodes and elements
   map<int, DRT::Node*> masternodes;
   map<int, DRT::Node*> slavenodes;
-  
+
   map<int, DRT::Node*> mastergnodes;
   map<int, DRT::Node*> slavegnodes;
 
@@ -55,16 +55,16 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
 
   DRT::UTILS::FindInterfaceObjects(slavedis, slavenodes, slavegnodes, slaveelements,
       "FSICoupling");
-  
-  //	parameter list for contact definition 
+
+  //	parameter list for contact definition
   const Teuchos::ParameterList& input = DRT::Problem::Instance()->StructuralContactParams();
-  
+
   // get problem dimension (2D or 3D) and initialize (CONTACT::) interface
   const int dim = genprob.ndim;
   RCP<CONTACT::Interface> interface = rcp(
       new CONTACT::Interface(0, comm, dim, input));
 
-  
+
   //feeding master nodes to the interface
   vector<int> masterdofs;
   map<int, DRT::Node*>::const_iterator nodeiter;
@@ -73,12 +73,12 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
     DRT::Node* node = nodeiter->second;
 
     RCP<CONTACT::CNode> cnode = rcp(
-                new CONTACT::CNode(node->Id(), node->X(), node->Owner(), 
+                new CONTACT::CNode(node->Id(), node->X(), node->Owner(),
                     masterdis.NumDof(node), masterdis.Dof(node), false, true));
 
     interface->AddCNode(cnode);
   }
-  
+
   for (nodeiter = masternodes.begin(); nodeiter != masternodes.end(); ++nodeiter)
   {
     DRT::Node* node = nodeiter->second;
@@ -91,23 +91,23 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
   masterdofmap_ = rcp(
       new Epetra_Map(-1, masterdofs.size(), &masterdofs[0], 0, comm));
 
-  //feeding slave nodes to the interface       
+  //feeding slave nodes to the interface
   vector<int> slavedofs;
   vector<int> slavemortardofs;
   int dofoffset = masterdofmap_->MaxAllGID() + 1;
 
-  
+
   for (nodeiter = slavegnodes.begin(); nodeiter != slavegnodes.end(); ++nodeiter)
   {
     DRT::Node* node = nodeiter->second;
 
     RCP<CONTACT::CNode> cnode = rcp(
-                new CONTACT::CNode(node->Id(), node->X(), node->Owner(), 
+                new CONTACT::CNode(node->Id(), node->X(), node->Owner(),
                     slavedis.NumDof(node)-1, slavedis.Dof(node), true, true));
 
     interface->AddCNode(cnode);
   }
-  
+
   for (nodeiter = slavenodes.begin(); nodeiter != slavenodes.end(); ++nodeiter)
   {
     // We expect to have a pressure dof at each node. Mortar
@@ -127,10 +127,10 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
 
   //feeding master elements to the interface
   map<int, RefCountPtr<DRT::Element> >::const_iterator elemiter;
-  
+
   // max master element ID needed for unique eleIDs in interface discretization
   // will be used as offset for slave elements
-  int EleOffset = masterdis.ElementRowMap()->MaxAllGID()+1; 
+  int EleOffset = masterdis.ElementRowMap()->MaxAllGID()+1;
 
   for (elemiter = masterelements.begin(); elemiter != masterelements.end(); ++elemiter)
   {
@@ -159,9 +159,9 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
 
   //finalize the contact interface construction	
   interface->FillComplete();
-  
-  // all the following stuff has to be done once in setup 
-  // in order to get initial D_ and M_ 
+
+  // all the following stuff has to be done once in setup
+  // in order to get initial D_ and M_
 
   // interface displacement of the first time step (=0) has to be merged from
   // slave and master discretization
@@ -215,7 +215,7 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
     int *indices;
 
     // do some validation
-    
+
     if (D_->ExtractMyRowView(row, numentries, values, indices))
       dserror("ExtractMyRowView failed");
     double value = 1.0/values[0];
@@ -228,10 +228,10 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
     dserror( "Filling failed" );
 
   //store interface	
-  interface_ = interface;  
-  
+  interface_ = interface;
 
-  
+
+
   return;
 }
 
@@ -251,7 +251,7 @@ void ADAPTER::CouplingMortar::Evaluate()
 RefCountPtr<Epetra_Vector> ADAPTER::CouplingMortar::MasterToSlave(RefCountPtr<
     Epetra_Vector> mv)
 {
-  
+
   dsassert( masterdofmap_->SameAs( mv->Map() ),
       "Vector with master dof map expected" );
 
