@@ -5,7 +5,7 @@
 
 
 the input line should read
-  MAT 1 ELAST_IsoNeoHooke MUE 100 
+  MAT 1 ELAST_IsoNeoHooke MUE 100
 
 <pre>
 Maintainer: Sophie Rausch & Thomas Kloeppel
@@ -65,9 +65,9 @@ void MAT::ELASTIC::IsoNeoHooke::AddCoefficientsModified(
   havecoefficients = havecoefficients or true;
 
   const double mue = params_ -> mue_;
-  
+
   gamma(0) += mue;
-  
+
   return;
 }
 

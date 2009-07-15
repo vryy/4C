@@ -3,7 +3,7 @@
 \file elast_isomooneyrivlin.cpp
 \brief
 
-This file contains the routines required to calculate the isochoric contribution 
+This file contains the routines required to calculate the isochoric contribution
 of a Mooney-Rivlin-type material
 
 <pre>
@@ -65,13 +65,13 @@ void MAT::ELASTIC::IsoMooneyRivlin::AddCoefficientsModified(
 
   const double c1 = params_ -> c1_;
   const double c2 = params_ -> c2_;
-  
+
   gamma(0) += 2*c1+2*modinv(0)*c2;
   gamma(1) += - 2*c2;
-  
+
   delta(0) += 4*c2;
   delta(3) += - 4*c2;
-  
+
   return;
 }
 

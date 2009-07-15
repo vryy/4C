@@ -78,7 +78,7 @@ void MAT::ELASTIC::CoupLogNeoHooke::AddShearMod(
   else {
     dserror("Cannot handle mode=%d", params_->parmode_);
   }
-  
+
   return;
 }
 

@@ -5,7 +5,7 @@
 
 
 the input line should read
-  MAT 1 ELAST_VolSussmanBathe KAPPA 100 
+  MAT 1 ELAST_VolSussmanBathe KAPPA 100
 
 <pre>
 Maintainer: Sophie Rausch & Thomas Kloeppel
@@ -62,10 +62,10 @@ void MAT::ELASTIC::VolSussmanBathe::AddCoefficientsModified(
   havecoefficients = havecoefficients or true;
 
   const double kappa = params_ -> kappa_;
-  
+
   gamma(2) += kappa*(modinv(2)-1);
   delta(4) += gamma(2) + modinv(2)*kappa;
-  
+
   return;
 }
 

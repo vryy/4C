@@ -5,7 +5,7 @@
 
 
 the input line should read
-  MAT 1 ELAST_CoupAnisoExpoTwo MUE 100 
+  MAT 1 ELAST_CoupAnisoExpoTwo MUE 100
 
 <pre>
 Maintainer: Sophie Rausch & Thomas Kloeppel
@@ -66,15 +66,15 @@ void MAT::ELASTIC::CoupAnisoExpoTwo::AddCoefficientsPrincipalAniso(
   )
 {
   havecoefficients = havecoefficients or true;
-  
+
   double k1=params_->k1_;
   double k2=params_->k2_;
   double k3=params_->k3_;
   double k4=params_->k4_;
-  
+
   gamma(0) +=  2.*(k1*(prinv(3)-1.)* exp(k2*(prinv(3)-1.)*(prinv(3)-1.)));
   gamma(1) +=  2.*(k3*(prinv(4)-1.)* exp(k4*(prinv(4)-1.)*(prinv(4)-1.)));
-  
+
   delta(0) += 2.*(1. + 2.*k2*(prinv(3)-1.)*(prinv(3)-1.))*2.*k1* exp(k2*(prinv(3)-1.)*(prinv(3)-1.));
   delta(1) += 2.*(1. + 2.*k4*(prinv(4)-1.)*(prinv(4)-1.))*2.*k3* exp(k4*(prinv(4)-1.)*(prinv(4)-1.));
 

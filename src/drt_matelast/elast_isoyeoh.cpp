@@ -5,7 +5,7 @@
 
 
 the input line should read
-  MAT 1 ELAST_IsoYeoh C1 100 C2 0 C3 200 
+  MAT 1 ELAST_IsoYeoh C1 100 C2 0 C3 200
 
 <pre>
 Maintainer: Sophie Rausch & Thomas Kloeppel
@@ -65,12 +65,12 @@ void MAT::ELASTIC::IsoYeoh::AddCoefficientsModified(
   const double c1 = params_ -> c1_;
   const double c2 = params_ -> c2_;
   const double c3 = params_ -> c2_;
-  
-  // 
+
+  //
   gamma(0) += 2*c1+4*c2*(modinv(0)-3)+6*c3*(modinv(0)-3)*(modinv(0)-3);
-  
+
   delta(0) += 8*(c2+3*c3*(modinv(0)-3));
-  
+
   return;
 }
 
