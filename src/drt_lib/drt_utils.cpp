@@ -1611,7 +1611,7 @@ void DRT::UTILS::ExtractMyNodeBasedValues(
     )
 {
   if (global==null) dserror("received a TEUCHOS::null pointer");
-  if (nsd > global->NumVectors()) 
+  if (nsd > global->NumVectors())
     dserror("Requested %d of %d available columns", nsd,global->NumVectors());
   const int iel = ele->NumNode(); // number of nodes
   if (local.Length()!=(iel*nsd)) dserror("vector size mismatch.");
@@ -1634,7 +1634,7 @@ void DRT::UTILS::ExtractMyNodeBasedValues(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis, 
+void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis,
                                       std::string condname, std::vector<int>& nodes)
 {
   std::vector<DRT::Condition*> conds;
@@ -1999,7 +1999,7 @@ void DRT::UTILS::PrintParallelDistribution(const DRT::Discretization& dis)
   if(numproc>1)
   {
     const int myrank=dis.Comm().MyPID();
-    
+
     vector<int> my_n_nodes     (numproc,0);
     vector<int>    n_nodes     (numproc,0);
     vector<int> my_n_ghostnodes(numproc,0);
@@ -2008,17 +2008,17 @@ void DRT::UTILS::PrintParallelDistribution(const DRT::Discretization& dis)
     vector<int>    n_elements  (numproc,0);
     vector<int> my_n_ghostele  (numproc,0);
     vector<int>    n_ghostele  (numproc,0);
-    
+
     my_n_nodes     [myrank]=dis.NumMyRowNodes();
     my_n_ghostnodes[myrank]=dis.NumMyColNodes()-my_n_nodes[myrank];
     my_n_elements  [myrank]=dis.NumMyRowElements();
     my_n_ghostele  [myrank]=dis.NumMyColElements()-my_n_elements[myrank];
-    
+
     dis.Comm().SumAll(&my_n_nodes     [0],&n_nodes     [0],numproc);
     dis.Comm().SumAll(&my_n_ghostnodes[0],&n_ghostnodes[0],numproc);
     dis.Comm().SumAll(&my_n_elements  [0],&n_elements  [0],numproc);
     dis.Comm().SumAll(&my_n_ghostele  [0],&n_ghostele  [0],numproc);
-    
+
     if(myrank==0)
     {
       cout << endl;

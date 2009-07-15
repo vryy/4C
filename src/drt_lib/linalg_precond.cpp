@@ -84,7 +84,7 @@ void LINALG::Preconditioner::Setup(Teuchos::RCP<Epetra_Operator>      matrix,
                              fsidofmapex,
                              inodes,
                              fdis);
-    
+
       Teuchos::ParameterList& mllist = solver_->Params().sublist("ML Parameters");
       // see whether we use standard ml or our own mlapi operator
       const bool domlapioperator = mllist.get<bool>("LINALG::AMG_Operator",false);
@@ -175,12 +175,12 @@ void LINALG::Preconditioner::EnrichFluidNullSpace(
 {
   // map of fluid problem
   const Teuchos::RCP<const Epetra_Map>& fluidmap = fsidofmapex->FullMap();
-  
+
   // increase number of null space vectors
   int nsdim = mllist.get("null space: dimension",0);
   if (!nsdim) dserror("null space: dimension does not exist in ML parameter list");
   int newnsdim = nsdim;
-  
+
   DRT::Element* ele = fdis->lRowElement(0);
   bool is3d = false;
   switch (ele->Type()) // only fluid elements accepted here
@@ -197,31 +197,31 @@ void LINALG::Preconditioner::EnrichFluidNullSpace(
       dserror("Element type not supported by ML");
     break;
   }
-  
+
   if (nsdim==3 && !is3d)      // add one rotation in case of 2D
-    newnsdim += 1; 
+    newnsdim += 1;
   else if (nsdim==4 && is3d)  // add three rotations in case of 3D
-    newnsdim += 3; 
+    newnsdim += 3;
   else if (nsdim==7 && is3d)  // ns has been previously enriched, do nothing
     return;
   else if (nsdim==4 && !is3d) // ns has been previously enriched, do nothing
     return;
   else
     dserror("Unexpected nullspace dimension %d",nsdim);
-    
+
   // row length of fluid problem
   const int size = fluidmap->NumMyElements();
-  
+
   // old nullspace
   Teuchos::RCP<vector<double> > ns = mllist.get<Teuchos::RCP<vector<double> > >("nullspace",Teuchos::null);
   if (ns == Teuchos::null) dserror("there is no nullspace in ml list");
-  
+
   // new nullspace
   Teuchos::RCP<vector<double> > newns = Teuchos::rcp(new vector<double>(newnsdim*size,0.0));
 
   // use old nullspace as the first modes of new nullspace
-  copy((*ns).begin(),(*ns).end(),(*newns).begin());  
-  
+  copy((*ns).begin(),(*ns).end(),(*newns).begin());
+
   // point to the modes to be added
   double* rot1 = NULL;
   double* rot2 = NULL;
@@ -303,7 +303,7 @@ void LINALG::Preconditioner::EnrichFluidNullSpace(
         }
       }
     } // for (int j=0; j<ndof; ++j)
-  } // for (int i=0; i<inodes->NumMyElements(); ++i)  
+  } // for (int i=0; i<inodes->NumMyElements(); ++i)
 
 #if 0 // debug output
   for (int i=0; i<size; ++i)

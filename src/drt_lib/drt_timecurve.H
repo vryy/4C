@@ -8,11 +8,11 @@
 -------------------------------------------------------------------------
                  BACI finite element library subsystem
             Copyright (2008) Technical University of Munich
-              
+
 Under terms of contract T004.008.000 there is a non-exclusive license for use
 of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
 
-This library is proprietary software. It must not be published, distributed, 
+This library is proprietary software. It must not be published, distributed,
 copied or altered in any form or any media without written permission
 of the copyright holder. It may be used under terms and conditions of the
 above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
@@ -24,11 +24,11 @@ This library contains and makes use of software copyrighted by Sandia Corporatio
 and distributed under LGPL licence. Licensing does not apply to this or any
 other third party software used here.
 
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de) 
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
                    or
                    Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
 
-http://www.lnm.mw.tum.de                   
+http://www.lnm.mw.tum.de
 
 -------------------------------------------------------------------------
 </pre>
@@ -86,8 +86,8 @@ namespace UTILS {
     /// \brief Evaluate time curve and its derivatives
     ///
     /// Delivers vector containing at position i of resulting vector
-    /// the i-th derivative of the time curve function at time \c t. 
-    /// The highest degree of resulting 
+    /// the i-th derivative of the time curve function at time \c t.
+    /// The highest degree of resulting
     /// time derivatives is set by the argument \c deg.
     /// \author bborn
     /// \date 02/08
@@ -222,9 +222,9 @@ namespace UTILS {
   class BloodTimeSlice : public TimeSlice
   {
   public:
-    BloodTimeSlice(double period, 
-                   double flowrate, 
-                   int points,  
+    BloodTimeSlice(double period,
+                   double flowrate,
+                   int points,
                    std::vector<double>& ArrayLength );
 
     /// function template

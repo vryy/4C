@@ -322,7 +322,7 @@ void DRT::UTILS::NodeMatchingOctree::CreateGlobalNodeMatching(
         if(nodeisinbox==true)
         {
 
-          map<int,vector<int> >::iterator found 
+          map<int,vector<int> >::iterator found
 	    = midtosid.find(idofclosestpoint);
 
           if( found != midtosid.end() )
@@ -335,9 +335,9 @@ void DRT::UTILS::NodeMatchingOctree::CreateGlobalNodeMatching(
 	      (midtosid[idofclosestpoint]).push_back(actnode->Id());
               diststom[idofclosestpoint] = distofclosestpoint;
             }
-	    else if(diststom[idofclosestpoint]<distofclosestpoint+1e-9 
-		    && 
-		    diststom[idofclosestpoint]>distofclosestpoint-1e-9 
+	    else if(diststom[idofclosestpoint]<distofclosestpoint+1e-9
+		    &&
+		    diststom[idofclosestpoint]>distofclosestpoint-1e-9
 	      )
 	    {
 	      (midtosid[idofclosestpoint]).push_back(actnode->Id());

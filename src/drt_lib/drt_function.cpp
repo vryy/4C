@@ -8,11 +8,11 @@
 -------------------------------------------------------------------------
                  BACI finite element library subsystem
             Copyright (2008) Technical University of Munich
-              
+
 Under terms of contract T004.008.000 there is a non-exclusive license for use
 of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
 
-This library is proprietary software. It must not be published, distributed, 
+This library is proprietary software. It must not be published, distributed,
 copied or altered in any form or any media without written permission
 of the copyright holder. It may be used under terms and conditions of the
 above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
@@ -24,11 +24,11 @@ This library contains and makes use of software copyrighted by Sandia Corporatio
 and distributed under LGPL licence. Licensing does not apply to this or any
 other third party software used here.
 
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de) 
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
                    or
                    Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
 
-http://www.lnm.mw.tum.de                   
+http://www.lnm.mw.tum.de
 
 -------------------------------------------------------------------------
 </pre>
@@ -116,7 +116,7 @@ void DRT::UTILS::FunctionManager::ReadInput()
         // that is able to handle straight lines.
         ostringstream expr;
         expr << "(" << b << ") + ((" << x2[0]-x1[0] << ")*x + (" << x2[1]-x1[1] << ")*y + (" << x2[2]-x1[2] << ")*z)/(" << length << ")/(" << length << ")*(" << m << ")";
-        
+
         functions_.push_back(rcp(new ExprFunction(const_cast<char*>(expr.str().c_str()), x1[0], x1[1], x1[2])));
       }
 
@@ -227,10 +227,10 @@ void DRT::UTILS::FunctionManager::ReadInput()
         int mat = -1;
         frint("MAT",&mat,&ierr);
         if (!ierr) dserror("Word MAT missing in WOMERSLEY FUNCT");
-        
-        
+
+
         // input other stuff here....
-        
+
         functions_.push_back(rcp(new WomersleyFunction(localcoordsystem,e-1,radius,mat)));
       }
 
@@ -258,7 +258,7 @@ void DRT::UTILS::FunctionManager::ReadInput()
       if (ierr==1)
       {
         Teuchos::RCP<ExprFunction> vecfunc = rcp(new ExprFunction());
-        
+
         for (int j=0;;++j)
         {
           char   component[255];
@@ -274,18 +274,18 @@ void DRT::UTILS::FunctionManager::ReadInput()
               dserror("For vector valued functions the components have to be \nspecified succesively, e.g. 0,1,..,ndof");
             }
           }
-          
+
           /* read the position of the function's origin */
           frdouble_n("EXPR",origin,3,&ierr);
           if (!ierr) dserror("failed to read coordinates");
-          
+
           /* read the expression */
           frchar("FUNCTION", component , &ierr);
 
           if (!ierr) dserror("failed to read expression string");
 
           (*vecfunc).AddExpr(component,origin[0],origin[1],origin[2]);
-          
+
           frread();
           // stop if there is no content to this curve
           // no further curves are read
@@ -295,12 +295,12 @@ void DRT::UTILS::FunctionManager::ReadInput()
             break;
           }
         }
-        
+
         functions_.push_back(vecfunc);
-       
+
       }
 
-    
+
 #if 0
       frread();
       frchk("---",&ierr);
@@ -319,13 +319,13 @@ void DRT::UTILS::FunctionManager::ReadInput()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::UTILS::Function& DRT::UTILS::FunctionManager::Funct(int num) 
-{ 
+DRT::UTILS::Function& DRT::UTILS::FunctionManager::Funct(int num)
+{
   // ensure that desired function is available (prevents segmentation fault)
-  if (functions_.size()< (unsigned int)(num+1) || num<0) 
+  if (functions_.size()< (unsigned int)(num+1) || num<0)
     dserror("function %d not available",num+1);
 
-  return *(functions_[num]); 
+  return *(functions_[num]);
 }
 
 
@@ -336,7 +336,7 @@ DRT::UTILS::ExprFunction::ExprFunction()
   x_.clear();
   y_.clear();
   z_.clear();
-    
+
   expr_.clear();
 
   return;
@@ -354,7 +354,7 @@ DRT::UTILS::ExprFunction::ExprFunction(char* buf,
   x_.push_back(x);
   y_.push_back(y);
   z_.push_back(z);
-    
+
   expr_.push_back(pss_parse(buf));
 
   return;
@@ -384,7 +384,7 @@ void DRT::UTILS::ExprFunction::AddExpr(char* buf,
   x_.push_back(x);
   y_.push_back(y);
   z_.push_back(z);
-                    
+
   return;
 }
 
@@ -398,7 +398,7 @@ double DRT::UTILS::ExprFunction::Evaluate(int index, const double* x, double t, 
   {
     index=0;
   }
-  
+
   if(index>(int)expr_.size()-1 || index<0)
   {
     dserror("Tried to evaluate a function in a not available dimension.\nSpecify either one function or functions for all dimensions! \n(including one for the pressure)");
@@ -514,8 +514,8 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
     }
     isinit_ = true;
   }
-  
-  
+
+
   //dserror("WomersleyFunction Evaluate not yet implemented");
   return 0.0;
 }
@@ -527,7 +527,7 @@ DRT::UTILS::ZalesaksDiskFunction::ZalesaksDiskFunction(double radius) :
 Function(),
 radius_(radius)
 {
-  /* 
+  /*
    * parameter "radius" is just an example for possible input parameters
    */
 }

@@ -382,10 +382,10 @@ namespace INPUT
 
     /// my condition description
     std::string Description() const { return description_; }
-    
+
     /// my condition inputline
     std::vector<Teuchos::RCP<ConditionComponent> > Inputline() const {return inputline_; }
-    
+
     /// my GeometryType
     Condition::GeometryType GeometryType() const {return gtype_;}
 
@@ -412,7 +412,7 @@ namespace INPUT
     conddef->AddComponent(Teuchos::rcp(new SeparatorConditionComponent(name)));
     conddef->AddComponent(Teuchos::rcp(new IntConditionComponent      (name)));
   }
-  
+
   /// add a separator followed by a single real value
   /*!
     The name on the input line becames the name used to put the value into DRT::Condition.
@@ -422,7 +422,7 @@ namespace INPUT
     conddef->AddComponent(Teuchos::rcp(new SeparatorConditionComponent(name)));
     conddef->AddComponent(Teuchos::rcp(new RealConditionComponent     (name)));
   }
-  
+
   /// add a separator followed by a single real value
   /*!
     The name on the input line becames the name used to put the value into DRT::Condition.

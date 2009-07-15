@@ -6,11 +6,11 @@
 -------------------------------------------------------------------------
                  BACI finite element library subsystem
             Copyright (2008) Technical University of Munich
-              
+
 Under terms of contract T004.008.000 there is a non-exclusive license for use
 of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
 
-This library is proprietary software. It must not be published, distributed, 
+This library is proprietary software. It must not be published, distributed,
 copied or altered in any form or any media without written permission
 of the copyright holder. It may be used under terms and conditions of the
 above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
@@ -22,11 +22,11 @@ This library contains and makes use of software copyrighted by Sandia Corporatio
 and distributed under LGPL licence. Licensing does not apply to this or any
 other third party software used here.
 
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de) 
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
                    or
                    Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
 
-http://www.lnm.mw.tum.de                   
+http://www.lnm.mw.tum.de
 
 -------------------------------------------------------------------------
 </pre>
@@ -67,21 +67,21 @@ void DRT::Discretization::ExportRowNodes(const Epetra_Map& newmap)
       ++curr;
     }
   }
-  
+
   // build rowmap of nodes noderowmap_ if it does not exist
   if (noderowmap_==null) BuildNodeRowMap();
   const Epetra_Map& oldmap = *noderowmap_;
-  
+
   // create an exporter object that will figure out the communication pattern
   DRT::Exporter exporter(oldmap,newmap,Comm());
 
   // Do the communication
   exporter.Export(node_);
-  
+
   // update all ownership flags
   for (curr=node_.begin(); curr!=node_.end(); ++curr)
     curr->second->SetOwner(myrank);
-  
+
   // maps and pointers are no longer correct and need rebuilding
   Reset();
 
@@ -110,21 +110,21 @@ void DRT::Discretization::ExportColumnNodes(const Epetra_Map& newmap)
   // build rowmap of nodes noderowmap_ if it does not exist
   if (noderowmap_==null) BuildNodeRowMap();
   const Epetra_Map& oldmap = *noderowmap_;
-  
+
   // test whether all nodes in oldmap are also in newmap, otherwise
   // this would be a change of owner which is not allowed here
   for (int i=0; i<oldmap.NumMyElements(); ++i)
   {
     int gid = oldmap.GID(i);
-    if (!(newmap.MyGID(gid))) 
+    if (!(newmap.MyGID(gid)))
       dserror("Proc %d: Node gid=%d from oldmap is not in newmap",myrank,gid);
   }
-  
+
   // create an exporter object that will figure out the communication pattern
   DRT::Exporter exporter(oldmap,newmap,Comm());
   // Do the communication
   exporter.Export(node_);
-  
+
   // maps and pointers are no longer correct and need rebuilding
   Reset();
 
@@ -171,16 +171,16 @@ void DRT::Discretization::ExportRowElements(const Epetra_Map& newmap)
   Comm().SumAll(&newmy,&newglobal,1);
 
   if (oldglobal != newglobal) dserror("New map is likely not non-overlapping");
-#endif  
-  
+#endif
+
   // create an exporter object that will figure out the communication pattern
   DRT::Exporter exporter(oldmap,newmap,Comm());
   exporter.Export(element_);
-  
+
   // update ownerships and kick out everything that's not in newmap
   for (curr=element_.begin(); curr!=element_.end(); ++curr)
     curr->second->SetOwner(myrank);
-  
+
   // maps and pointers are no longer correct and need rebuilding
   Reset();
 
@@ -207,11 +207,11 @@ void DRT::Discretization::ExportColumnElements(const Epetra_Map& newmap)
       ++curr;
     }
   }
-  
+
   // build map of elements elerowmap_ if it does not exist
   if (elerowmap_==null) BuildElementRowMap();
-  const Epetra_Map& oldmap = *elerowmap_; 
-  
+  const Epetra_Map& oldmap = *elerowmap_;
+
   // test whether all elements in oldmap are also in newmap
   // Otherwise, this would be a change of owner which is not allowed here
   for (int i=0; i<oldmap.NumMyElements(); ++i)
@@ -219,11 +219,11 @@ void DRT::Discretization::ExportColumnElements(const Epetra_Map& newmap)
     int gid = oldmap.GID(i);
     if (!(newmap.MyGID(gid))) dserror("Proc %d: Element gid=%d from oldmap is not in newmap",myrank,gid);
   }
-  
+
   // create an exporter object that will figure out the communication pattern
   DRT::Exporter exporter(oldmap,newmap,Comm());
   exporter.Export(element_);
-  
+
   // maps and pointers are no longer correct and need rebuilding
   Reset();
 
@@ -239,11 +239,11 @@ RefCountPtr<Epetra_CrsGraph> DRT::Discretization::BuildNodeGraph() const
 
   // get nodal row map
   const Epetra_Map* noderowmap = NodeRowMap();
-  
+
   // allocate graph
-  RefCountPtr<Epetra_CrsGraph> graph = 
+  RefCountPtr<Epetra_CrsGraph> graph =
                      rcp( new Epetra_CrsGraph(Copy,*noderowmap,108,false));
-  
+
   // iterate all elements on this proc including ghosted ones
   // Note:
   // if a proc stores the appropiate ghosted elements, the resulting
@@ -286,12 +286,12 @@ void DRT::Discretization::BuildElementRowColumn(
   const int myrank = Comm().MyPID();
   const int numproc = Comm().NumProc();
 
-  // note: 
+  // note:
   // - noderowmap need not match distribution of nodes in this
   //   discretization at all.
   // - noderowmap is a non-overlapping map, that's tested
   if (!noderowmap.UniqueGIDs()) dserror("noderowmap is not a unique map");
-  
+
   // find all owners for the overlapping node map
   const int ncnode = nodecolmap.NumMyElements();
   vector<int> cnodeowner(ncnode);
@@ -300,7 +300,7 @@ void DRT::Discretization::BuildElementRowColumn(
     noderowmap.RemoteIDList(ncnode,nodecolmap.MyGlobalElements(),&cnodeowner[0],&lids[0]);
     lids.clear();
   }
-  
+
   // build connectivity of elements
   // storing :  element gid
   //            no. of nodes
@@ -328,15 +328,15 @@ void DRT::Discretization::BuildElementRowColumn(
   stopo.resize(stoposize);
 
   vector<int> rtopo(stoposize);
-  
+
   // estimate no. of elements equal to no. of nodes
   vector<int> myele(noderowmap.NumMyElements());
   int nummyele=0;
   // estimate no. of ghosted elements much lower
   vector<int> myghostele(noderowmap.NumMyElements()/4);
   int nummyghostele=0;
-  
-  // loop processors and sort elements into 
+
+  // loop processors and sort elements into
   // elements owned by a proc
   // elements ghosted by a proc
   for (int proc=0; proc<numproc; ++proc)
@@ -344,7 +344,7 @@ void DRT::Discretization::BuildElementRowColumn(
     int size = stoposize;
     Comm().Broadcast(&size,1,proc);
     if (size>(int)rtopo.size()) rtopo.resize(size);
-    if (proc==myrank) 
+    if (proc==myrank)
       for (int i=0; i<size; ++i) rtopo[i] = stopo[i];
     Comm().Broadcast(&rtopo[0],size,proc);
     for (int i=0; i<size;)
@@ -353,7 +353,7 @@ void DRT::Discretization::BuildElementRowColumn(
       const int  numnode = rtopo[i++];
       const int* nodeids = &rtopo[i];
       i += numnode;
-          
+
       // resize arrays
       if (nummyele>=(int)myele.size()) myele.resize(myele.size()+500);
       if (nummyghostele>=(int)myghostele.size()) myghostele.resize(myghostele.size()+500);
@@ -363,18 +363,18 @@ void DRT::Discretization::BuildElementRowColumn(
       for (int j=0; j<numnode; ++j)
         if (noderowmap.MyGID(nodeids[j]))
           ++nummine;
-      
+
       // if I do not own any of the nodes, it is definitely not my element
       // and I do not ghost it
-      if (!nummine) 
+      if (!nummine)
         continue;
-      
+
       // check whether I ghost all nodes of this element
       // this is neccessary to be able to own or ghost the element
       for (int j=0; j<numnode; ++j)
         if (!nodecolmap.MyGID(nodeids[j]))
           dserror("I do not have own/ghosted node gid=%d",nodeids[j]);
-      
+
       // find out who owns how many of the nodes
       vector<int> nodeowner(numnode);
       vector<int> numperproc(numproc);
@@ -386,10 +386,10 @@ void DRT::Discretization::BuildElementRowColumn(
         nodeowner[j] = owner;
         numperproc[owner]++;
       }
-      
-      // the proc with the largest number of nodes owns the element, 
+
+      // the proc with the largest number of nodes owns the element,
       // all others ghost it
-      // if no. of nodes is equal among some procs, 
+      // if no. of nodes is equal among some procs,
       // the higher rank owns the element
       int owner   = -1;
       int maxnode = 0;
@@ -414,7 +414,7 @@ void DRT::Discretization::BuildElementRowColumn(
         continue;
       }
       dserror("Error in logic of element ownerships");
-      
+
     } // for (int i=0; i<size;)
   } // for (int proc=0; proc<numproc; ++proc)
 
@@ -423,7 +423,7 @@ void DRT::Discretization::BuildElementRowColumn(
   // myghostele, length nummyghostele
   myele.resize(nummyele);
   myghostele.resize(nummyghostele);
-  
+
   // allreduced nummyele must match the total no. of elements in this
   // discretization, otherwise we lost some
   // build the rowmap of elements
@@ -454,7 +454,7 @@ void DRT::Discretization::Redistribute(const Epetra_Map& noderowmap,
   RefCountPtr<Epetra_Map> elerowmap;
   RefCountPtr<Epetra_Map> elecolmap;
   BuildElementRowColumn(noderowmap,nodecolmap,elerowmap,elecolmap);
-  
+
   // export nodes and elements to the new maps
   ExportRowNodes(noderowmap);
   ExportColumnNodes(nodecolmap);

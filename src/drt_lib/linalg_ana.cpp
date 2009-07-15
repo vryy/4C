@@ -12,7 +12,7 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#include "linalg_ana.H" 
+#include "linalg_ana.H"
 
 /*----------------------------------------------------------------------*
   implicit operator product Operator*Operator
@@ -41,7 +41,7 @@ int LINALG::ANA::OperatorProduct::Apply(const Epetra_MultiVector& X, Epetra_Mult
     const_cast<LightWeightOperatorBase&>(*right_).SetUseTranspose(!right_->UseTranspose());
     return err1-err2;
   }
-  return 0; 
+  return 0;
 }
 int LINALG::ANA::OperatorProduct::ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
 {
@@ -101,7 +101,7 @@ int LINALG::ANA::OperatorSum::Apply(const Epetra_MultiVector& X, Epetra_MultiVec
     Y.Update((double)sign_,tmp,1.0);
     return err1-err2;
   }
-  return 0; 
+  return 0;
 }
 
 
@@ -115,14 +115,14 @@ int LINALG::ANA::OperatorInverse::Apply(const Epetra_MultiVector& X, Epetra_Mult
   RCP<Epetra_Vector> in = rcp(const_cast<Epetra_Vector*>(invec),false);
   Epetra_Vector* outvec = Y(0);
   RCP<Epetra_Vector> out = rcp(outvec,false);
-  
+
   // wrap underlying operator
   RCP<Epetra_Operator> rcpop = rcp(const_cast<Epetra_Operator*>(&op_),false);
-  
+
   out->PutScalar(0.0);
   solver_.Solve(rcpop,out,in,true,reset_);
-  
-  return 0; 
+
+  return 0;
 }
 
 
@@ -130,7 +130,7 @@ int LINALG::ANA::OperatorInverse::Apply(const Epetra_MultiVector& X, Epetra_Mult
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::ANA::LC_vec_pointwise_lc::Update(LINALG::ANA::Vector& v, const double& scale) const 
+void LINALG::ANA::LC_vec_pointwise_lc::Update(LINALG::ANA::Vector& v, const double& scale) const
 {
 #if DEBUGGING_ANA
   cout << "LINALG::ANA::LC_vec_pointwise_lc::Update(LINALG::ANA::Vector& v, const double& scale)" << endl; fflush(stdout);
@@ -144,7 +144,7 @@ void LINALG::ANA::LC_vec_pointwise_lc::Update(LINALG::ANA::Vector& v, const doub
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::ANA::LC_lc_pointwise_lc::Set(LINALG::ANA::Vector& v, const double& scale) const 
+void LINALG::ANA::LC_lc_pointwise_lc::Set(LINALG::ANA::Vector& v, const double& scale) const
 {
 #if DEBUGGING_ANA
   cout << "LINALG::ANA::LC_lc_pointwise_lc::Set(LINALG::ANA::Vector& v, const double& scale)" << endl; fflush(stdout);
@@ -154,7 +154,7 @@ void LINALG::ANA::LC_lc_pointwise_lc::Set(LINALG::ANA::Vector& v, const double& 
   right_.Set(tmp,1.0);
   v.Multiply(scale,v,tmp,0.0);
 }
-void LINALG::ANA::LC_lc_pointwise_lc::Update(LINALG::ANA::Vector& v, const double& scale) const 
+void LINALG::ANA::LC_lc_pointwise_lc::Update(LINALG::ANA::Vector& v, const double& scale) const
 {
 #if DEBUGGING_ANA
   cout << "LINALG::ANA::LC_lc_pointwise_lc::Update(LINALG::ANA::Vector& v, const double& scale)" << endl; fflush(stdout);
@@ -170,30 +170,30 @@ void LINALG::ANA::LC_lc_pointwise_lc::Update(LINALG::ANA::Vector& v, const doubl
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::ANA::LC_Operator_times_lcsv::Set(LINALG::ANA::Vector& v, const double& scale) const 
+void LINALG::ANA::LC_Operator_times_lcsv::Set(LINALG::ANA::Vector& v, const double& scale) const
 {
 #if DEBUGGING_ANA
   cout << "LINALG::ANA::LC_Operator_times_lcsv::Set(LINALG::ANA::Vector& v, const double& scale)" << endl; fflush(stdout);
 #endif
 #ifdef DEBUG
-  if (!v.Map().SameAs(op_->OperatorRangeMap())) 
+  if (!v.Map().SameAs(op_->OperatorRangeMap()))
     dserror("Range maps don't match - fatal");
-  if (!right_.Vector().Map().SameAs(op_->OperatorDomainMap())) 
+  if (!right_.Vector().Map().SameAs(op_->OperatorDomainMap()))
     dserror("Domain maps don't match - fatal");
 #endif
   int err = op_->Apply(right_.Vector(),v);
   if (err) dserror("LightWeightOperatorBase::Apply returned err=%d",err);
   if (scale*right_.Scalar() != 1.0) v.Scale(scale*right_.Scalar());
 }
-void LINALG::ANA::LC_Operator_times_lcsv::Update(LINALG::ANA::Vector& v, const double& scale) const 
+void LINALG::ANA::LC_Operator_times_lcsv::Update(LINALG::ANA::Vector& v, const double& scale) const
 {
 #if DEBUGGING_ANA
   cout << "LINALG::ANA::LC_Operator_times_lcsv::Update(LINALG::ANA::Vector& v, const double& scale)" << endl; fflush(stdout);
 #endif
 #ifdef DEBUG
-  if (!v.Map().SameAs(op_->OperatorRangeMap())) 
+  if (!v.Map().SameAs(op_->OperatorRangeMap()))
     dserror("Range maps don't match - fatal");
-  if (!right_.Vector().Map().SameAs(op_->OperatorDomainMap())) 
+  if (!right_.Vector().Map().SameAs(op_->OperatorDomainMap()))
     dserror("Domain maps don't match - fatal");
 #endif
   LINALG::ANA::Vector tmp(op_->OperatorRangeMap(),false);
@@ -204,15 +204,15 @@ void LINALG::ANA::LC_Operator_times_lcsv::Update(LINALG::ANA::Vector& v, const d
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::ANA::LC_Operator_times_lc::Set(LINALG::ANA::Vector& v, const double& scale) const 
+void LINALG::ANA::LC_Operator_times_lc::Set(LINALG::ANA::Vector& v, const double& scale) const
 {
 #if DEBUGGING_ANA
   cout << "LINALG::ANA::LC_Operator_times_lc::Set(LINALG::ANA::Vector& v, const double& scale)" << endl; fflush(stdout);
 #endif
 #ifdef DEBUG
-  if (!v.Map().SameAs(op_->OperatorRangeMap())) 
+  if (!v.Map().SameAs(op_->OperatorRangeMap()))
     dserror("Range maps don't match - fatal");
-  if (!right_.RangeMap().SameAs(op_->OperatorDomainMap())) 
+  if (!right_.RangeMap().SameAs(op_->OperatorDomainMap()))
     dserror("Domain maps don't match - fatal");
 #endif
   LINALG::ANA::Vector tmp(right_.RangeMap(),false);
@@ -220,15 +220,15 @@ void LINALG::ANA::LC_Operator_times_lc::Set(LINALG::ANA::Vector& v, const double
   int err = op_->Apply(tmp,v);
   if (err) dserror("LightWeightOperatorBase::Apply returned err=%d",err);
 }
-void LINALG::ANA::LC_Operator_times_lc::Update(LINALG::ANA::Vector& v, const double& scale) const 
+void LINALG::ANA::LC_Operator_times_lc::Update(LINALG::ANA::Vector& v, const double& scale) const
 {
 #if DEBUGGING_ANA
   cout << "LINALG::ANA::LC_Operator_times_lc::Update(LINALG::ANA::Vector& v, const double& scale)" << endl; fflush(stdout);
 #endif
 #ifdef DEBUG
-  if (!v.Map().SameAs(op_->OperatorRangeMap())) 
+  if (!v.Map().SameAs(op_->OperatorRangeMap()))
     dserror("Range maps don't match - fatal");
-  if (!right_.RangeMap().SameAs(op_->OperatorDomainMap())) 
+  if (!right_.RangeMap().SameAs(op_->OperatorDomainMap()))
     dserror("Domain maps don't match - fatal");
 #endif
   LINALG::ANA::Vector tmp1(right_.RangeMap(),false);
@@ -316,23 +316,23 @@ double LINALG::ANA::operator* (const LINALG::ANA::LC_s_times_vec& left, const LI
 /*----------------------------------------------------------------------*
    norms
  *----------------------------------------------------------------------*/
-double LINALG::ANA::norm2(const LINALG::ANA::LCBase& lc) 
-{ 
-  LINALG::ANA::Vector tmp(lc.RangeMap(),false); 
-  lc.Set(tmp,1.0); 
-  return norm2(tmp); 
+double LINALG::ANA::norm2(const LINALG::ANA::LCBase& lc)
+{
+  LINALG::ANA::Vector tmp(lc.RangeMap(),false);
+  lc.Set(tmp,1.0);
+  return norm2(tmp);
 }
-double LINALG::ANA::norm1(const LINALG::ANA::LCBase& lc) 
-{ 
-  LINALG::ANA::Vector tmp(lc.RangeMap(),false); 
-  lc.Set(tmp,1.0); 
-  return norm1(tmp); 
+double LINALG::ANA::norm1(const LINALG::ANA::LCBase& lc)
+{
+  LINALG::ANA::Vector tmp(lc.RangeMap(),false);
+  lc.Set(tmp,1.0);
+  return norm1(tmp);
 }
-double LINALG::ANA::norminf(const LINALG::ANA::LCBase& lc) 
-{ 
-  LINALG::ANA::Vector tmp(lc.RangeMap(),false); 
-  lc.Set(tmp,1.0); 
-  return norminf(tmp); 
+double LINALG::ANA::norminf(const LINALG::ANA::LCBase& lc)
+{
+  LINALG::ANA::Vector tmp(lc.RangeMap(),false);
+  lc.Set(tmp,1.0);
+  return norminf(tmp);
 }
 
 

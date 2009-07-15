@@ -62,8 +62,8 @@ public:
   /*!
   \brief Standard Constructor
   */
-  explicit AMG_Operator(RCP<Epetra_RowMatrix> A, 
-                        ParameterList& params, 
+  explicit AMG_Operator(RCP<Epetra_RowMatrix> A,
+                        ParameterList& params,
                         const bool compute);
 
   /*!
@@ -78,46 +78,46 @@ public:
 
   /*!
   \brief get Comm of this class
-  
-  Derived from Epetra_Operator, returns ref to the Epetra_Comm of this class 
-  
+
+  Derived from Epetra_Operator, returns ref to the Epetra_Comm of this class
+
   */
   const Epetra_Comm & Comm() const {return(Ainput_->Comm());}
 
   /*!
   \brief get reference to parameter list
-  
+
   */
   ParameterList& Params() const {return params_;}
 
   /*!
   \brief get input matrix
-  
+
   */
   RCP<Epetra_CrsMatrix> A() {return Ainput_;}
 
   /*!
   \brief Get fine level OperatorDomainMap
-  
+
   Derived from Epetra_Operator, get fine level OperatorDomainMap
-  
+
   */
   const Epetra_Map & OperatorDomainMap() const {return Ainput_->OperatorDomainMap();}
 
   /*!
   \brief Get fine level OperatorRangeMap
-  
+
   Derived from Epetra_Operator, get fine level OperatorRangeMap
-  
+
   */
   const Epetra_Map & OperatorRangeMap() const {return Ainput_->OperatorRangeMap();}
-  
+
   /*!
   \brief ApplyInverse the preconditioner
-  
-   ApplyInverse the preconditioner. Method is derived from Epetra_Operator. 
-   
-   
+
+   ApplyInverse the preconditioner. Method is derived from Epetra_Operator.
+
+
    \param X   (In) : Epetra_MultiVector matching the fine level map of this
                      preconditioner
    \param Y (Out)  : Epetra_MultiVector containing the result on output
@@ -127,17 +127,17 @@ public:
   /*!
   \brief not implemented
   */
-  int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const 
-  { 
+  int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
+  {
     dserror("Apply does not make sense for LINALG::AMG_Operator");
     return(-1);
   }
-    
+
   /*!
   \brief not implemented
   */
-  int SetUseTranspose(bool UseTranspose) 
-  { 
+  int SetUseTranspose(bool UseTranspose)
+  {
     dserror("SetUseTranspose not impl.");
     return -1;
   }
@@ -145,7 +145,7 @@ public:
   /*!
   \brief not implemented
   */
-  double NormInf() const 
+  double NormInf() const
   {
     dserror("NormInf not impl.");
     return(-1.0);
@@ -155,7 +155,7 @@ public:
   /*!
   \brief not implemented
   */
-  bool UseTranspose() const 
+  bool UseTranspose() const
   {
     dserror("UseTranspose not impl.");
     return false;
@@ -164,7 +164,7 @@ public:
   /*!
   \brief not implemented
   */
-  bool HasNormInf() const 
+  bool HasNormInf() const
   {
     dserror("HasNormInf not impl.");
     return false;
@@ -180,17 +180,17 @@ private:
   \brief Compute the preconditioner
   */
   void SetupNonSymStab();
-  
+
   /*!
   \brief Compute row wise 1-norm of a matrix
   */
-  MLAPI::MultiVector Row1Norm(Operator& A); 
+  MLAPI::MultiVector Row1Norm(Operator& A);
 
   /*!
   \brief Get number of levels in hierarchy
   */
   inline int NLevel() const { return nlevel_; }
-  
+
   /*!
   \brief Multigrid vcycle
   */
@@ -228,14 +228,14 @@ private:
 
   string                  label_;      // name of this operator
   ParameterList&          params_;     // ml parameter list (intput)
-  RCP<Epetra_CrsMatrix>   Ainput_;     // input matrix  
+  RCP<Epetra_CrsMatrix>   Ainput_;     // input matrix
   int                     nlevel_;     // no. of grids in hierarchy
-  vector<Operator>        P_;          // the matrix hierarchy  
-  vector<Operator>        R_;          // the matrix hierarchy  
-  vector<Operator>        A_;          // the matrix hierarchy  
-  vector<Operator>        Astab_;      // the matrix hierarchy  
-  vector<Operator>        Anonstab_;   // the matrix hierarchy  
-  vector<InverseOperator> S_;          // the matrix hierarchy  
+  vector<Operator>        P_;          // the matrix hierarchy
+  vector<Operator>        R_;          // the matrix hierarchy
+  vector<Operator>        A_;          // the matrix hierarchy
+  vector<Operator>        Astab_;      // the matrix hierarchy
+  vector<Operator>        Anonstab_;   // the matrix hierarchy
+  vector<InverseOperator> S_;          // the matrix hierarchy
 
 
 }; // class  AMG_Operator : public virtual Epetra_Operator

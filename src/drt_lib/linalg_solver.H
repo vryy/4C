@@ -143,11 +143,11 @@ public:
   /*!
   \brief Constructor taking a validated input parameter list for Solver
 
-  Creates a solver using the parameters provided by inparams. This parameter 
-  list differs from the internally stored #params_. They are translated 
+  Creates a solver using the parameters provided by inparams. This parameter
+  list differs from the internally stored #params_. They are translated
   by #TranslateSolverParameters.
-  
-  \param inparams (in): input parameter list as provided by DRT::Problem, 
+
+  \param inparams (in): input parameter list as provided by DRT::Problem,
                         e.g. DRT::Problem::StructSolverParams in case of solver for structures
   \param comm     (in): a reference to a Epetra communicator object
   \param outfile  (in): pointer to an error file
@@ -157,8 +157,8 @@ public:
   Solver(const Teuchos::ParameterList& inparams, const Epetra_Comm& comm, FILE* outfile);
 
   /*!
-  \brief Set-up of stuff common to all constructors 
- 
+  \brief Set-up of stuff common to all constructors
+
   \date 11/08
   */
   void Setup();
@@ -183,14 +183,14 @@ public:
   \param refactor              (in)    : flag indicating whether system should be refactorized
   \param reset                 (in)    : flag indicating whether all data from previous solves
                                          should be recalculated including preconditioners
-  \param weighted_basis_mean_w (in)    : weight vector defining projector for iterative solution 
-                                         of singluar problems using iterative solvers. Required 
+  \param weighted_basis_mean_w (in)    : weight vector defining projector for iterative solution
+                                         of singluar problems using iterative solvers. Required
                                          if project!=false. (Aztec only option)
                                          x will be orthogonalized to these weights on output.
-  \param kernel_c              (in)    : Vector of ones in the respective components. Necessary 
+  \param kernel_c              (in)    : Vector of ones in the respective components. Necessary
                                          if project!=false. (Aztec only option)
-                                         Krylov space will be orthogonalized to this basis! 
-  \param project               (in)    : flag indicating whether several modes will be projected 
+                                         Krylov space will be orthogonalized to this basis!
+  \param project               (in)    : flag indicating whether several modes will be projected
                                          out of the Krylov space (Aztec only option)
   */
   void Solve(
@@ -259,15 +259,15 @@ public:
 
   //@}
   //! @name Input of parameters
-  
+
   /*!
   \brief Translate solver input parameters from input parameter list to
          internal solver parameters list style
 
-  \param inparams (in): input parameter list as provided by DRT::Problem, 
-                        e.g. DRT::Problem::StructSolverParams in case of 
+  \param inparams (in): input parameter list as provided by DRT::Problem,
+                        e.g. DRT::Problem::StructSolverParams in case of
                         solver for structures
-  \return             : internal parameter list ready to be associated 
+  \return             : internal parameter list ready to be associated
                         with #params_
   \date 02/07,11/08
   */
@@ -276,10 +276,10 @@ public:
   /*!
   \brief Add a validated input parameter list as sublist to internal
          parameters
-  
+
   \param name     (in): name for sublist for #params_ to attach data to
-  \param inparams (in): input parameter list as provided by DRT::Problem, 
-                        e.g. DRT::Problem::FluidPressureSolverParams in case 
+  \param inparams (in): input parameter list as provided by DRT::Problem,
+                        e.g. DRT::Problem::FluidPressureSolverParams in case
                         of additional solver for pressure preconditioner
   \author bborn
   \date 11/08
@@ -323,7 +323,7 @@ public:
 
   */
   inline bool IsFactored() const { return factored_; }
-  
+
   /*!
   \brief //! Returns the condition number estimate for the current preconditioner, if one exists, returns -1.0 if no estimate.
 
@@ -365,35 +365,35 @@ private:
   virtual void Solve_lapack(const bool reset);
 
   /*!
-  \brief Solve using aztec. If project==false, system-matrix has to be 
+  \brief Solve using aztec. If project==false, system-matrix has to be
          non-singular. For project==true, the user can specify the
          matrix kernel and a weight vector to solve the problem
          iteratively on a residue class modulo the kernel.
          The representative returned in x_ will be orthogonal to
          the weighted_basis_mean_w vector.
 
-  \param (i) reset        
+  \param (i) reset
              flag indicating whether all data from previous solves
              should be recalculated including preconditioners
-  \param (i) project              
-             flag indicating whether several modes will be projected 
+  \param (i) project
+             flag indicating whether several modes will be projected
              out of the Krylov space (Aztec only option)
   \param (i) weighted_basis_mean_w
-             weight vector defining projector for iterative solution 
-             of singluar problems using iterative solvers. Required 
+             weight vector defining projector for iterative solution
+             of singluar problems using iterative solvers. Required
              if project!=false.
              x will be orthogonalized to these weights on output.
-  \param (i) kernel_c             
+  \param (i) kernel_c
              Vector of ones in the respective components. Necess
              if project!=false.
-             Krylov space will be orthogonalized to this basis! 
+             Krylov space will be orthogonalized to this basis!
 
   */
   virtual void Solve_aztec(
     const bool                    reset                ,
     const bool                    project              ,
     const RCP<Epetra_MultiVector> weighted_basis_mean_w,
-    const RCP<Epetra_MultiVector> kernel_c             
+    const RCP<Epetra_MultiVector> kernel_c
     );
 
   //! a communicator
@@ -545,19 +545,19 @@ RCP<SparseMatrix> MLMultiply(const SparseMatrix& A,
 
 /*!
   \brief Compute a condition number estimate of given matrix A
-  
+
   condition number kappa of a matrix A is defined as kappa(A) = ||A|| * ||A^-1||
   for A = singulaer, kappa = infinity
-  
+
   \return kappa
 
-  copied and adapted from 
+  copied and adapted from
   Trilinos/packages/ifpack/src/Ifpack_Condest.h and Ifpack_Condest.cpp
 */
 double Condest(
     SparseMatrix&                            A,  ///< sparse matrix
     const Ifpack_CondestType CT = Ifpack_Cheap,  ///< select approach for computing condition number estimate
-    const int MaxIters = 1000,                   ///< maximum number of linear iterations 
+    const int MaxIters = 1000,                   ///< maximum number of linear iterations
     const double Tol = 1e-9                      ///< tolerance
     );
 

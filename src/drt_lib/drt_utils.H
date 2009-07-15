@@ -6,11 +6,11 @@
 -------------------------------------------------------------------------
                  BACI finite element library subsystem
             Copyright (2008) Technical University of Munich
-              
+
 Under terms of contract T004.008.000 there is a non-exclusive license for use
 of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
 
-This library is proprietary software. It must not be published, distributed, 
+This library is proprietary software. It must not be published, distributed,
 copied or altered in any form or any media without written permission
 of the copyright holder. It may be used under terms and conditions of the
 above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
@@ -22,11 +22,11 @@ This library contains and makes use of software copyrighted by Sandia Corporatio
 and distributed under LGPL licence. Licensing does not apply to this or any
 other third party software used here.
 
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de) 
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
                    or
                    Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
 
-http://www.lnm.mw.tum.de                   
+http://www.lnm.mw.tum.de
 
 -------------------------------------------------------------------------
 </pre>
@@ -140,7 +140,7 @@ namespace UTILS
 
 
   /// Locally extract a subset of values from a (column)-nodemap-based Epetra_MultiVector
-  /*  \author g.bau 
+  /*  \author g.bau
    *  \date 08/08
    */
   void ExtractMyNodeBasedValues
@@ -154,7 +154,7 @@ namespace UTILS
 
   /// Locally extract a subset of values from a (column)-nodemap-based Epetra_MultiVector
   /// and fill a local matrix that has implemented the (.,.) operator
-  /*  \author g.bau 
+  /*  \author g.bau
    *  \date 04/09
    */
   template <class M>
@@ -166,7 +166,7 @@ namespace UTILS
       )
   {
     if (global==null) dserror("received a TEUCHOS::null pointer");
-    if (nsd > global->NumVectors()) 
+    if (nsd > global->NumVectors())
       dserror("Requested %d of %d available columns", nsd,global->NumVectors());
     const int iel = ele->NumNode(); // number of nodes
 
@@ -346,14 +346,14 @@ namespace UTILS
                             Teuchos::RCP<Epetra_Map> fullmap,
                             LINALG::MapExtractor& extractor);
 
-  
+
   /// setup the extractor object to couple some dofs at the named condition
   void SetupExtractor(const DRT::Discretization& dis,
                       std::string condname,
                       unsigned startdim,
                       unsigned enddim,
                       LINALG::MapExtractor& extractor);
-  
+
   /// setup the extractor object to couple some dofs at the named condition
   void SetupExtractor(const DRT::Discretization& dis,
                       std::string condname,
@@ -372,7 +372,7 @@ namespace UTILS
 
   /// print information about parallel mesh distribution
   void PrintParallelDistribution(const DRT::Discretization& dis);
-  
+
 } // namespace UTILS
 } // namespace DRT
 

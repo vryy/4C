@@ -653,8 +653,8 @@ void DRT::Discretization::BuildVolumesinCondition(
        ++actele)
   {
     std::vector<int> myelenodes(actele->second->NodeIds(),actele->second->NodeIds()+actele->second->NumNode());
-    
-    // check whether all node ids of the element are nodes belonging 
+
+    // check whether all node ids of the element are nodes belonging
     // to the condition and stored on this proc
     bool allin=true;
     for(std::vector<int>::iterator myid=myelenodes.begin();myid!=myelenodes.end();++myid)

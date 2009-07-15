@@ -171,7 +171,7 @@ void DRT::INPUT::SeparatorMaterialComponent::Describe(
   )
 {
   stream << "    "
-         << std::setw(15) << std::left << separator_ 
+         << std::setw(15) << std::left << separator_
          << std::setw(15) << std::left << (optional_ ? "(optional)" : "")
          << description_;
 }
@@ -522,7 +522,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealVectorMaterialComponent::Read(
     else
       dserror("Trouble to get length of real vector material component.");
   }
-  
+
   std::vector<double> numbers(length_,defaultvalue_);
 
   for (int i=0; i<length_; ++i)
@@ -603,7 +603,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::BoolMaterialComponent::Read(
 {
   std::string sval;
   (*condline) >> sval;
-  
+
   int ival = -1;
   if (sval == lineTrue_)
     ival = 1;
@@ -668,7 +668,7 @@ void DRT::INPUT::MaterialDefinition::Read(
       if (not (*condline) or mat!="MAT")
         dserror("invalid material line in '%s'",name.c_str());
 
-      if (name == materialname_) 
+      if (name == materialname_)
       {
         int matid = -1;
         {
@@ -683,10 +683,10 @@ void DRT::INPUT::MaterialDefinition::Read(
           dserror("Either- failed to convert material ID -or- illegal negative ID provided");
 
         // what was read
-        //std::cout << "PE=" << reader.Comm()->MyPID() 
+        //std::cout << "PE=" << reader.Comm()->MyPID()
         //          << " MAT=" << matid
-        //          << " MaterialType=" << mattype_ 
-        //          << " Name=" << materialname_ 
+        //          << " MaterialType=" << mattype_
+        //          << " Name=" << materialname_
         //          << std::endl;
 
         // check if material ID is already in use
@@ -767,7 +767,7 @@ std::ostream& DRT::INPUT::MaterialDefinition::Print(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::INPUT::AppendMaterialDefinition(  
+void DRT::INPUT::AppendMaterialDefinition(
   std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> >& matlist,
   Teuchos::RCP<DRT::INPUT::MaterialDefinition> mat
   )

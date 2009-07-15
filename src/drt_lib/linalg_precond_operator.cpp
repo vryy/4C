@@ -38,10 +38,10 @@ LINALG::LinalgPrecondOperator::~LinalgPrecondOperator()
                     (Modified) ApplyInverse call
    -------------------------------------------------------------------- */
 int LINALG::LinalgPrecondOperator::ApplyInverse(
-  const Epetra_MultiVector &X, 
+  const Epetra_MultiVector &X,
   Epetra_MultiVector       &Y
   ) const
-{ 
+{
 
   int ierr=0;
 
@@ -59,7 +59,7 @@ int LINALG::LinalgPrecondOperator::ApplyInverse(
       dserror("no c_ and w_ supplied");
     }
 
-    // there is only one solution vector --- so solution 
+    // there is only one solution vector --- so solution
     // vector index is zero
     if(Y.NumVectors()!=1)
     {
@@ -71,15 +71,15 @@ int LINALG::LinalgPrecondOperator::ApplyInverse(
     // loop all weight vectors and orthogonalize against them
     for(int rr=0;rr<w_->NumVectors();++rr)
     {
- 
+
       /*
                    T
                   w * Y
       */
       double wTY=0.0;
- 
+
       (Y(v))->Dot(*((*w_)(rr)),&wTY);
-       
+
       // loop all basis vectors of kernel
       for(int mm=0;mm<c_->NumVectors();++mm)
       {
@@ -89,10 +89,10 @@ int LINALG::LinalgPrecondOperator::ApplyInverse(
                   w * c
         */
         double cTw=cTw_(mm,rr);
-    
+
         /*
 
-                                    T   
+                                    T
                                    x * w
                         P x = x - ------- c
                                     T

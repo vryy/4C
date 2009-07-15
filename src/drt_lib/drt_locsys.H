@@ -32,7 +32,7 @@ class LocsysManager
 public:
 
   //! @name Enums and Friends
-  
+
   //@}
 
 
@@ -68,33 +68,33 @@ public:
    *
    */
   inline const Epetra_Comm& Comm() const { return discret_.Comm();};
-    
+
   //! @name Access methods
-  
+
   /*!
    * \brief Get discretization
    *
    */
   inline DRT::Discretization& Discret() const { return discret_;};
-  
+
   /*!
    * \brief Get problem dimension
-   * 
+   *
    */
   inline const int& Dim() {return dim_;};
-    
+
   /*!
    * \brief Get local system conditions
    *
    */
   inline vector<DRT::Condition*> Conditions() const { return locsysconds_;};
-  
+
   /*!
    * \brief Get a specific local system condition
    *
    */
   inline DRT::Condition* Conditions(int k) const
-  { 
+  {
     if (k>=numlocsys_)
     {
       dserror("Invalid vector index");
@@ -105,19 +105,19 @@ public:
       return locsysconds_[k];
     }
   };
-                                                   
+
   /*!
    * \brief Get number of local system conditions
    *
    */
   inline int NumLocsys() const { return numlocsys_;};
-  
+
   /*!
    * \brief Get types of local system conditions
    *
    */
   inline vector<DRT::Condition::ConditionType> TypeLocsys() const { return typelocsys_;};
-  
+
   /*!
    * \brief Get type of a specific local system condition
    *
@@ -131,11 +131,11 @@ public:
    *
    */
   Teuchos::RCP<const LINALG::SparseMatrix> Trafo() const { return trafo_; }
-    
+
   //@}
-  
+
   //! @name Evaluation methods
-  
+
   /*!
    * \brief Apply forward transformation of linear system of equations
    *
@@ -146,7 +146,7 @@ public:
    * respectively. The transformation matrix #trafo_ is denoted \f$Q : D \mapsto \tilde{D}\f$.
    * The similar thing is done for the right-hand-side vector:
    *   \f[ \tilde{R} = Q \cdot R \f]
-   * 
+   *
    * In case of #transformleftonly_==true the matrix is only transformed from
    * the left. This yields
    *   \f[ \hat{K} = Q \cdot K \f]
@@ -155,25 +155,25 @@ public:
     RCP<LINALG::SparseMatrix> sysmat,  ///< systemmatrix, will be transformed
     RCP<Epetra_Vector> rhs  ///< right-hand-side vector, will be transformed
     );
-  
+
   /*!
    * \brief Apply forward transformation of a single vector
    *
    */
   void RotateGlobalToLocal(RCP<Epetra_Vector> vec);
-    
+
   /*!
    * \brief Apply backward transformation of result and linear system of equations
    *
    */
   void RotateLocalToGlobal(RCP<Epetra_Vector> result, RCP<LINALG::SparseMatrix> sysmat, RCP<Epetra_Vector> rhs);
-  
+
   /*!
    * \brief Apply backward transformation of a single vector
    *
    */
   void RotateLocalToGlobal(RCP<Epetra_Vector> vec);
-    
+
   //@}
 
 protected:
@@ -183,7 +183,7 @@ protected:
   LocsysManager(const LocsysManager& old);
 
   /// @name Methods for Local coordinate systems varying in space
-                   
+
   /*!
 
   \brief Construct rotation matrix around given axis
@@ -242,7 +242,7 @@ protected:
     R_(0,2)=n(0)*n(2)*omca +      n(1)*sa;
     R_(1,2)=n(1)*n(2)*omca -      n(0)*sa;
     R_(2,2)=            ca + n(2)*n(2)*omca;
-    
+
     return;
   }
   /*
@@ -257,18 +257,18 @@ protected:
     vec.Multiply(R_,old);
 
     return;
-  }  
+  }
   // @}
 
   /// @name Private Attributes
   //@{
-  
+
   /// current discretization
   DRT::Discretization&                     discret_;
 
   /// transform system matrix only by left-multiplying
   bool                                     transformleftonly_;
-  
+
   /// type of locsys
   enum Type
   {
@@ -277,38 +277,38 @@ protected:
     originradialsliding
   };
   vector<DRT::UTILS::LocsysManager::Type>  type_;
-  
+
   /// id of locsys condition
   vector<int>                              id_;
-  
+
   /// problem dimension
   int                                      dim_;
-  
+
   /// local system conditions
   vector<DRT::Condition*>                  locsysconds_;
-  
+
   /// number of local systems
   int                                      numlocsys_;
 
   /// Rotation matrix for coordinate systems varying in space
   LINALG::Matrix<3,3>                      R_;
 
-  
+
   /// types of local systems conditions
   vector<DRT::Condition::ConditionType>    typelocsys_;
-  
+
   /// local system normals / tangents
   Epetra_SerialDenseMatrix                 normals_;
   Epetra_SerialDenseMatrix                 tangents_;
   Epetra_SerialDenseMatrix                 thirddir_;
-  
+
   /// assignment of local systems to nodes
   RCP<Epetra_Vector>                       locsystoggle_;
 
   /// maps containing the DOFs affected by locsys
   RCP<Epetra_Map>                          locsysdofmap_;
-  
-  /// Transformation matrix which maps globally oriented components 
+
+  /// Transformation matrix which maps globally oriented components
   /// into locally oriented components (dubbed 'forward' transformation)
   ///
   /// Even if this matrix bears the general name transformation matrix here,
@@ -322,9 +322,9 @@ protected:
   /// This is actually not a sub-matrix, but a global matrix
   /// with nil entries at (a lot) places
   RCP<LINALG::SparseMatrix>                subtrafo_;
-  
+
   //@}
-  
+
 }; // class LocsysManager
 } // namespace UTILS
 } // namespace DRT

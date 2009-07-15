@@ -6,11 +6,11 @@
 -------------------------------------------------------------------------
                  BACI finite element library subsystem
             Copyright (2008) Technical University of Munich
-              
+
 Under terms of contract T004.008.000 there is a non-exclusive license for use
 of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
 
-This library is proprietary software. It must not be published, distributed, 
+This library is proprietary software. It must not be published, distributed,
 copied or altered in any form or any media without written permission
 of the copyright holder. It may be used under terms and conditions of the
 above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
@@ -22,11 +22,11 @@ This library contains and makes use of software copyrighted by Sandia Corporatio
 and distributed under LGPL licence. Licensing does not apply to this or any
 other third party software used here.
 
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de) 
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
                    or
                    Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
 
-http://www.lnm.mw.tum.de                   
+http://www.lnm.mw.tum.de
 
 -------------------------------------------------------------------------
 </pre>
@@ -87,7 +87,7 @@ DRT::ElementRegister* DRT::ElementRegister::Clone() const
  *----------------------------------------------------------------------*/
 ostream& operator << (ostream& os, const DRT::ElementRegister& eler)
 {
-  eler.Print(os); 
+  eler.Print(os);
   return os;
 }
 
@@ -121,13 +121,13 @@ void DRT::ElementRegister::Print(ostream& os) const
 void DRT::ElementRegister::Pack(vector<char>& data) const
 {
   data.resize(0);
-  
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
   // add type of element
   AddtoPack(data,etype_);
-  
+
   return;
 }
 
@@ -144,11 +144,11 @@ void DRT::ElementRegister::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
   ExtractfromPack(position,data,etype_);
-  
+
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
-} 
+}
 
 /*----------------------------------------------------------------------*
  |  Init the elements of a discretization                      (public) |
@@ -160,6 +160,6 @@ int DRT::ElementRegister::Initialize(DRT::Discretization& dis)
   // It does not even print a message because it might become
   // heavily used by elements that do not need an initialize call
   return 0;
-} 
+}
 
 #endif  // #ifdef CCADISCRET

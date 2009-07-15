@@ -45,14 +45,14 @@ public:
 
   /*!
   \brief Standard Constructor
-  
+
   \param A (in) : Matrix to create downwind numbering for
   \param nv (in): number of velocity degrees of freedom per node, may not be zero
   \param np (in): number of pressure degrees of freedom per node, may be zero
   \param tau (in): threshold parameter, somewhere between 1.0 and about 4.0
   \param outlevel (in): level of output to screen (0 no output, >0 output)
   */
-  explicit DownwindMatrix(RCP<Epetra_CrsMatrix> A, const int nv, 
+  explicit DownwindMatrix(RCP<Epetra_CrsMatrix> A, const int nv,
                           const int np, const double tau, const int outlevel);
 
   /*!
@@ -122,27 +122,27 @@ private:
 
   /// setup phase of downwinding
   void Setup(const Epetra_CrsMatrix& A);
-  
+
   /// sets an index in the Bey&Wittum method
-  void SetF(const int i, int& nf, Epetra_IntVector& index, 
+  void SetF(const int i, int& nf, Epetra_IntVector& index,
             const Epetra_CrsMatrix& graph, int rec);
 
   /// sets an index in the Hackbusch method
-  void SetL(const int i, int& nf, Epetra_IntVector& index, 
+  void SetL(const int i, int& nf, Epetra_IntVector& index,
             const Epetra_CrsMatrix& graph,int rec);
 
   /// Do downwinding according to Bey & Wittum
   void DownwindBeyWittum(const Epetra_CrsMatrix& nnodegraph,
                          Epetra_IntVector& index,
                          const Epetra_IntVector& oninflow);
-  
+
   /// Do downwinding according to Hackbusch
   void DownwindHackbusch(const Epetra_CrsMatrix& nnodegraph,
                          Epetra_IntVector& index,
                          const Epetra_IntVector& oninflow);
 
   /// test whether k is successor of i
-  inline bool IsSuccessor(const int k,const int gi, 
+  inline bool IsSuccessor(const int k,const int gi,
                           const Epetra_CrsMatrix& graph)
   {
     int numentries;

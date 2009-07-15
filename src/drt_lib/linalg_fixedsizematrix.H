@@ -3073,7 +3073,7 @@ public:
       whether the data is to be viewed or copied
    */
   explicit Matrix(const double* d, bool view=false);
-  
+
   /// Constructor
   /*!
     Constructs a new Matrix from data \e d. If

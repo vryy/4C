@@ -5,11 +5,11 @@
 -------------------------------------------------------------------------
                  BACI finite element library subsystem
             Copyright (2008) Technical University of Munich
-              
+
 Under terms of contract T004.008.000 there is a non-exclusive license for use
 of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
 
-This library is proprietary software. It must not be published, distributed, 
+This library is proprietary software. It must not be published, distributed,
 copied or altered in any form or any media without written permission
 of the copyright holder. It may be used under terms and conditions of the
 above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
@@ -21,11 +21,11 @@ This library contains and makes use of software copyrighted by Sandia Corporatio
 and distributed under LGPL licence. Licensing does not apply to this or any
 other third party software used here.
 
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de) 
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
                    or
                    Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
 
-http://www.lnm.mw.tum.de                   
+http://www.lnm.mw.tum.de
 
 -------------------------------------------------------------------------
 </pre>
@@ -64,16 +64,16 @@ public:
   /*!
   \brief Standard Constructor wrapping
          Epetra_SerialDenseMatrix(bool set_object_label=true);
-         
+
   */
   SerialDenseMatrix(bool set_object_label=true);
 
   /*!
   \brief Standard Constructor wrapping
          Epetra_SerialDenseMatrix(int NumRows, int NumCols, bool set_object_label=true);
-         
+
   Opposed to the base class constructor, this one does NOT initialize the matrix to zero.
-  
+
   \param NumRows          (in): no. of rows the matrix is supposed to have
   \param NumCols          (in): no. of cols the matrix is supposed to have
   \param init             (in): flag indicating whether matrix is zeroed out (defaults to false!)
@@ -97,9 +97,9 @@ public:
 
   */
   SerialDenseMatrix(const SerialDenseMatrix& Source);
-  
 
-  
+
+
   /*!
   \brief Shape dimensions of this matrix but do NOT initialize to zero
          (as opposed to Epetra_SerialDenseMatrix::Shape(...))
@@ -109,7 +109,7 @@ public:
   /*!
   \brief Reshape dimensions of this matrix but do NOT initialize to zero
          (as opposed to Epetra_SerialDenseMatrix::Reshape(...))
-         
+
   Existing values are kept as far as they fir into the new shape but
   potentially excess space in the matrix is NOT zeroed out
 
@@ -133,7 +133,7 @@ public:
   Internal computation is based on the long double data type (80/128 bit depending on platform)
   this allows for higher precision when used on a bigger matrix. Long double is also used for output,
   therefore it has to be expicitly casted to a double if used in a "double only" context.
-  
+
   \author volf (alexander.volf@mytum.de)
   */
   long double Det_long();

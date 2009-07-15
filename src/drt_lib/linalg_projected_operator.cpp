@@ -38,10 +38,10 @@ LINALG::LinalgProjectedOperator::~LinalgProjectedOperator()
                       (Modified) Apply call
    -------------------------------------------------------------------- */
 int LINALG::LinalgProjectedOperator::Apply(
-  const Epetra_MultiVector &X, 
+  const Epetra_MultiVector &X,
   Epetra_MultiVector       &Y
   ) const
-{ 
+{
   int ierr=0;
 
   // if necessary, project out matrix kernel
@@ -60,11 +60,11 @@ int LINALG::LinalgProjectedOperator::Apply(
     // Apply the operator
     ierr=A_->Apply(X,Y);
 
-    // if necessary, orthogonalize to matrix kernel in 
-    // order to get suitable new basis vectors for the 
+    // if necessary, orthogonalize to matrix kernel in
+    // order to get suitable new basis vectors for the
     // restricted Krylov space
 
-    // there is only one solution vector --- so solution 
+    // there is only one solution vector --- so solution
     // vector index is zero
     if(Y.NumVectors()!=1)
     {
@@ -72,8 +72,8 @@ int LINALG::LinalgProjectedOperator::Apply(
     }
 
     int sv=0;
-    
-    // loop all basis vectors of kernel and orthogonalize 
+
+    // loop all basis vectors of kernel and orthogonalize
     // against them
     for(int mm=0;mm<c_->NumVectors();++mm)
     {
@@ -82,10 +82,10 @@ int LINALG::LinalgProjectedOperator::Apply(
                   c * Y
       */
       double cTY=0.0;
-          
+
       ((*c_)(mm))->Dot(*(Y(sv)),&cTY);
 
-        // loop all weight vectors 
+        // loop all weight vectors
         for(int rr=0;rr<w_->NumVectors();++rr)
         {
           /*
@@ -102,7 +102,7 @@ int LINALG::LinalgProjectedOperator::Apply(
                                  w * c
           */
           (Y(sv))->Update(-cTY/cTw,*((*w_)(rr)),1.0);
-          
+
         } // loop all weight vectors
       } // loop kernel basis vectors
   }

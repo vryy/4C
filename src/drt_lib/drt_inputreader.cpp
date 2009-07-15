@@ -343,8 +343,8 @@ void DatFileReader::ReadKnots(
       {
         // check whether it is the knotvectorsection
         string::size_type loc=string::npos;
-        
-        // only the knotvector section of this discretisation 
+
+        // only the knotvector section of this discretisation
         // type is of interest
         if(name=="fluid")
         {
@@ -383,7 +383,7 @@ void DatFileReader::ReadKnots(
 
           if (loc != string::npos)
           {
-            // if this is true, we are at the beginning of a 
+            // if this is true, we are at the beginning of a
             // knot section
             knotvectorsection=true;
             // there is nothing more to be done in this line
@@ -392,26 +392,26 @@ void DatFileReader::ReadKnots(
           else
           {
             knotvectorsection=false;
-          
+
             // there is nothing more to be done in this line
             continue;
           }
         }
       }
-      
-      // count number of patches in knotvector section of 
+
+      // count number of patches in knotvector section of
       // this discretisation
       if(knotvectorsection)
       {
         // check for a new patch
         string::size_type loc;
-        
+
         loc = tmp.rfind("ID");
         if (loc != string::npos)
         {
           // increase number of patches
           npatches++;
-          
+
           continue;
         }
       }
@@ -445,7 +445,7 @@ void DatFileReader::ReadKnots(
 
   //--------------------------------------------------------------------
   //--------------------------------------------------------------------
-  //                finally read knotvector section  
+  //                finally read knotvector section
   //--------------------------------------------------------------------
   //--------------------------------------------------------------------
   {
@@ -457,13 +457,13 @@ void DatFileReader::ReadKnots(
     ifstream file;
 
     file.open(filename_.c_str());
-    
+
     // temporary string
     string tmp;
- 
+
     // start to read something when read is true
     bool read=false;
-    
+
     // flag indicating knot vector section in input
     bool knotvectorsection=false;
 
@@ -493,7 +493,7 @@ void DatFileReader::ReadKnots(
         // check whether it is the knotvectorsection
         string::size_type loc=string::npos;
 
-        // only the knotvector section of this discretisation 
+        // only the knotvector section of this discretisation
         // type is of interest
         if(name=="fluid")
         {
@@ -532,7 +532,7 @@ void DatFileReader::ReadKnots(
 
           if (loc != string::npos)
           {
-            // if this is true, we are at the beginning of a 
+            // if this is true, we are at the beginning of a
             // knot section
             knotvectorsection=true;
             // there is nothing more to be done in this line
@@ -541,7 +541,7 @@ void DatFileReader::ReadKnots(
           else
           {
             knotvectorsection=false;
-          
+
             // there is nothing more to be done in this line
             continue;
           }
@@ -594,7 +594,7 @@ void DatFileReader::ReadKnots(
           continue;
         }
 
-        // get number of knots in the knotvector direction 
+        // get number of knots in the knotvector direction
         // we are currently reading
         loc = tmp.rfind("NUMKNOTS");
         if (loc != string::npos)
@@ -602,7 +602,7 @@ void DatFileReader::ReadKnots(
           string str_numknots;
           file >> str_numknots;
 
-          // increase dimesion for knotvector (i.e. next time 
+          // increase dimesion for knotvector (i.e. next time
           // we'll fill the following knot vector)
           actdim++;
           if(actdim>dim)
@@ -616,8 +616,8 @@ void DatFileReader::ReadKnots(
           continue;
         }
 
-        // get number of bspline polinomial associated with 
-        // knots in this direction 
+        // get number of bspline polinomial associated with
+        // knots in this direction
         loc = tmp.rfind("DEGREE");
         if (loc != string::npos)
         {
@@ -677,7 +677,7 @@ void DatFileReader::ReadKnots(
           continue;
         }
 
-        //  reading of knot values if read is true and no 
+        //  reading of knot values if read is true and no
         // other keyword was found
         if(read)
         {
@@ -2371,7 +2371,7 @@ void NodeReader::Read()
   int bsize = max(numnodes/nblock, 1);
 
   // for block sizes larger than about 50000 elements (empirical value !)
-  // the code sometimes hangs during ExportRowElements 
+  // the code sometimes hangs during ExportRowElements
   // Therefore an upper limit for bsize is ensured below.
   int maxblocksize = 50000;
 
@@ -2412,7 +2412,7 @@ void NodeReader::Read()
         {
           printf(" ");
         }
-        fflush(stdout);    
+        fflush(stdout);
       }
 #endif
 

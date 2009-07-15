@@ -8,11 +8,11 @@
 -------------------------------------------------------------------------
                  BACI finite element library subsystem
             Copyright (2008) Technical University of Munich
-              
+
 Under terms of contract T004.008.000 there is a non-exclusive license for use
 of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
 
-This library is proprietary software. It must not be published, distributed, 
+This library is proprietary software. It must not be published, distributed,
 copied or altered in any form or any media without written permission
 of the copyright holder. It may be used under terms and conditions of the
 above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
@@ -24,11 +24,11 @@ This library contains and makes use of software copyrighted by Sandia Corporatio
 and distributed under LGPL licence. Licensing does not apply to this or any
 other third party software used here.
 
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de) 
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
                    or
                    Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
 
-http://www.lnm.mw.tum.de                   
+http://www.lnm.mw.tum.de
 
 -------------------------------------------------------------------------
 </pre>
@@ -245,12 +245,12 @@ void DRT::UTILS::TimeCurveManager::ReadInput()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 DRT::UTILS::TimeCurve& DRT::UTILS::TimeCurveManager::Curve(int num)
-{  
+{
   // ensure that desired curve is available (prevents segmentation fault)
-  if ((curves_.size()< (unsigned int)(num+1)) || num<0) 
+  if ((curves_.size()< (unsigned int)(num+1)) || num<0)
     dserror("time curve %d not available",num+1);
 
-  return curves_[num]; 
+  return curves_[num];
 }
 
 
@@ -293,19 +293,19 @@ std::vector<double> DRT::UTILS::PolygonalTimeSlice::FctDer(const double t,
     res[1] = (value_end_-value_begin_)/(end()-begin());
   }
 
-  // 2nd derivative of time curve f at time t  
+  // 2nd derivative of time curve f at time t
   if (deg >= 2)
   {
     res[2] = 0;
   }
-  
+
   return res;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::UTILS::ExplicitTimeSlice::ExplicitTimeSlice(int numex, 
-                                                 double c1, 
+DRT::UTILS::ExplicitTimeSlice::ExplicitTimeSlice(int numex,
+                                                 double c1,
                                                  double c2)
   : TimeSlice(0.,1e100),
     numex_(numex),
@@ -460,7 +460,7 @@ std::vector<double> DRT::UTILS::ExplicitTimeSlice::FctDer(const double t,
     tfad.val() = Sacado::Fad::DFad<double>(nvar, ivar, t);
 
     // 1st & 2nd derivative of time curve function
-    Sacado::Fad::DFad<Sacado::Fad::DFad<double> > fdfad 
+    Sacado::Fad::DFad<Sacado::Fad::DFad<double> > fdfad
       = Fct< Sacado::Fad::DFad< Sacado::Fad::DFad<double> > >(tfad);
 
     // return 1st derivative value at time t
@@ -479,8 +479,8 @@ std::vector<double> DRT::UTILS::ExplicitTimeSlice::FctDer(const double t,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::UTILS::LungTimeSlice::LungTimeSlice(double frequ, 
-                                         double ppeep, 
+DRT::UTILS::LungTimeSlice::LungTimeSlice(double frequ,
+                                         double ppeep,
                                          double phase)
   : TimeSlice(0.,1e100),
     frequ_(frequ),
@@ -526,7 +526,7 @@ std::vector<double> DRT::UTILS::LungTimeSlice::FctDer(const double t,
 
   // function
   res[0] = f(t);
-  
+
   // derivatives
   if (deg >= 1)
   {
@@ -541,7 +541,7 @@ std::vector<double> DRT::UTILS::LungTimeSlice::FctDer(const double t,
     tfad.val() = Sacado::Fad::DFad<double>(nvar, ivar, t);
 
     // 1st & 2nd derivative of time curve function
-    Sacado::Fad::DFad<Sacado::Fad::DFad<double> > fdfad 
+    Sacado::Fad::DFad<Sacado::Fad::DFad<double> > fdfad
       = Fct< Sacado::Fad::DFad< Sacado::Fad::DFad<double> > >(tfad);
 
     // return 1st derivative value at time t
@@ -590,7 +590,7 @@ ScalarT DRT::UTILS::BloodTimeSlice::Fct(const ScalarT& t)
     {
       SampleNumber.push_back(ArrayLength_[p]*flowrate_);
     }
-  
+
   for (int p=0; p<=DataLength/2; p++)
     {
 	  EvenCoefficient.push_back(0);
@@ -622,7 +622,7 @@ ScalarT DRT::UTILS::BloodTimeSlice::Fct(const ScalarT& t)
         + (ScalarT)OddCoefficient[h]*sin(2*PI*h*t/period_);
   }
 
-  
+
   return fac;
 }
 
@@ -659,7 +659,7 @@ std::vector<double> DRT::UTILS::BloodTimeSlice::FctDer(const double t,
     tfad.val() = Sacado::Fad::DFad<double>(nvar, ivar, t);
 
     // 1st & 2nd derivative of time curve function
-    Sacado::Fad::DFad<Sacado::Fad::DFad<double> > fdfad 
+    Sacado::Fad::DFad<Sacado::Fad::DFad<double> > fdfad
       = Fct< Sacado::Fad::DFad< Sacado::Fad::DFad<double> > >(tfad);
 
     // return 1st derivative value at time t
@@ -726,7 +726,7 @@ std::vector<double> DRT::UTILS::ExprTimeSlice::FctDer(const double t,
     tfad.val() = Sacado::Fad::DFad<double>(nvar, ivar, t);
 
     // 1st & 2nd derivative of time curve function
-    Sacado::Fad::DFad<Sacado::Fad::DFad<double> > fdfad 
+    Sacado::Fad::DFad<Sacado::Fad::DFad<double> > fdfad
       = parsexprdd_.EvaluateCurve(tfad);
 
     // return 1st derivative value at time t
@@ -774,7 +774,7 @@ double DRT::UTILS::TimeCurve::f(double t)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::vector<double> DRT::UTILS::TimeCurve::FctDer(const double t, 
+std::vector<double> DRT::UTILS::TimeCurve::FctDer(const double t,
                                                   const unsigned deg)
 {
   // verify

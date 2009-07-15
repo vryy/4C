@@ -75,7 +75,7 @@ DRT::DofSetBase::~DofSetBase()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int DRT::DofSetBase::NumGlobalElements() const 
+int DRT::DofSetBase::NumGlobalElements() const
 {
   if (dofrowmap_ == Teuchos::null)
     dserror("DRT::DofSetBase::NumGlobalElements(): dofrowmap_ not initialized, yet");
@@ -115,11 +115,11 @@ const Epetra_Map* DRT::DofSetBase::DofColMap() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::DofSetBase::AddDofSettoList() 
-{ 
+void DRT::DofSetBase::AddDofSettoList()
+{
   if (std::find(static_dofsets_.begin(),static_dofsets_.end(),this)==static_dofsets_.end())
   {
-    static_dofsets_.push_back(this);      
+    static_dofsets_.push_back(this);
   }
   return;
 }
@@ -127,8 +127,8 @@ void DRT::DofSetBase::AddDofSettoList()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool DRT::DofSetBase::Initialized() const 
-{ 
+bool DRT::DofSetBase::Initialized() const
+{
   if (dofcolmap_ == Teuchos::null or dofrowmap_ == Teuchos::null)
     return false;
   else

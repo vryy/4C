@@ -5,11 +5,11 @@
 -------------------------------------------------------------------------
                  BACI finite element library subsystem
             Copyright (2008) Technical University of Munich
-              
+
 Under terms of contract T004.008.000 there is a non-exclusive license for use
 of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
 
-This library is proprietary software. It must not be published, distributed, 
+This library is proprietary software. It must not be published, distributed,
 copied or altered in any form or any media without written permission
 of the copyright holder. It may be used under terms and conditions of the
 above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
@@ -21,11 +21,11 @@ This library contains and makes use of software copyrighted by Sandia Corporatio
 and distributed under LGPL licence. Licensing does not apply to this or any
 other third party software used here.
 
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de) 
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
                    or
                    Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
 
-http://www.lnm.mw.tum.de                   
+http://www.lnm.mw.tum.de
 
 -------------------------------------------------------------------------
 </pre>
@@ -78,14 +78,14 @@ class ElementRegister : public DRT::ParObject
 {
 public:
 
-  
-  
+
+
 
   //! @name Constructors and destructors and related methods
 
   /*!
   \brief Standard Constructor
-  
+
   */
   ElementRegister(DRT::Element::ElementType etype);
 
@@ -93,13 +93,13 @@ public:
   \brief Copy Constructor
 
   Makes a deep copy
-  
+
   */
   ElementRegister(const DRT::ElementRegister& old);
 
   /*!
   \brief Deep copy the derived class and return pointer to it
-  
+
   */
   virtual DRT::ElementRegister* Clone() const;
 
@@ -111,7 +111,7 @@ public:
 
   /*!
   \brief Return unique ParObject id
-  
+
   Every class implementing ParObject needs a unique id defined at the
   top of drt_parobject.H
   */
@@ -119,15 +119,15 @@ public:
 
   /*!
   \brief Pack this class so it can be communicated
-  
+
   \ref Pack and \ref Unpack are used to communicate this element
-  
+
   */
   virtual void Pack(vector<char>& data) const;
 
   /*!
   \brief Unpack data from a char vector into this class
-  
+
   \ref Pack and \ref Unpack are used to communicate this element
 
   */
@@ -144,7 +144,7 @@ public:
 
   /*!
   \brief Print this element
-  
+
   This class also implements the ostream << operator.
   */
   virtual void Print(ostream& os) const;
@@ -155,11 +155,11 @@ public:
 
   /*!
   \brief Call Element init routines
-  
-  This method performs all steps needed to initialize the 
+
+  This method performs all steps needed to initialize the
   finite elements in the discretization dis when reimplemented
   by a derived element register class.<br>
-  It is called once by DRT::Discretization::FillComplete for every 
+  It is called once by DRT::Discretization::FillComplete for every
   type of finite element contained in dis.
   All necessary steps to init the finite elements of a certain type
    should be performed by the reimplementation of this method.
@@ -167,27 +167,27 @@ public:
   \note The Discretization dis may contain a mixture of various types of
         elements, so care of this should be taken when reimplementing this
         method. The reimplementation should only
-         initialize the ONE type of finite element it was written for, 
+         initialize the ONE type of finite element it was written for,
          as other elements will have their own call to their distinct Initialize.
-    
-  \param dis (in/out): Discretization with finite elements that have to 
+
+  \param dis (in/out): Discretization with finite elements that have to
                        be initialized.
 
-  \note This class implements a dummy version of this method so finite 
+  \note This class implements a dummy version of this method so finite
   elements that do not need an initialization can use this base class
-  as their register class.  
+  as their register class.
   */
   virtual int Initialize(DRT::Discretization& dis);
 
 
   /*!
   \brief Call pre-evaluation of elements
-  
-  \param dis (in/out): Discretization with finite elements that have to 
+
+  \param dis (in/out): Discretization with finite elements that have to
                        be initialized.
   \param p   (in)    : parameter list of the evaluation call
 
-  \note This class implements a dummy version of this method so finite 
+  \note This class implements a dummy version of this method so finite
   elements that do not need pre-evaluation can use this base class dummy
   */
   virtual inline void PreEvaluate(DRT::Discretization& dis,
@@ -203,9 +203,9 @@ public:
 
 
 private:
-  
+
   //! type of element this register class refers to
-  DRT::Element::ElementType           etype_;     
+  DRT::Element::ElementType           etype_;
 
 }; // class ElementRegister
 } // namespace DRT

@@ -51,25 +51,25 @@ void DRT::UTILS::LocsysManager::Setup()
   // AND Dirichlet condition have to formulated for the same entity
   // (i.e. point, line, surface, volume). Due to the coordinate trafo
   // the Dirichlet DOFs in the input file transform: x->n, y->t1, z->t2
-  
+
   // STILL MISSING:
   // - Testing on fluid problems in 2D and 3D
   // - Check, if D.B.C condition is defined wherever Locsys is defined
   // - Efficiency (at the moment, we use standard methods like LINALG::
   //   Multiply for the transformation of global vectors and matrices)
-  
+
   // get problem dimension (2D or 3D) and store into dim_
   dim_ = DRT::Problem::Instance()->ProblemSizeParams().get<int>("DIM");
-  
+
   if (Dim()!= 2 && Dim()!=3) dserror("ERROR: Locsys problem must be 2D or 3D");
-    
+
   // get node row layout of discretization
   const Epetra_Map* noderowmap = discret_.NodeRowMap();
-  
+
   // create locsys vector and initialize to -1
   locsystoggle_ = LINALG::CreateVector(*noderowmap,false);
   locsystoggle_->PutScalar(-1.0);
-  
+
   // check for locsys boundary conditions
   Discret().GetCondition("Locsys",locsysconds_);
   numlocsys_ = (int)locsysconds_.size();
@@ -79,12 +79,12 @@ void DRT::UTILS::LocsysManager::Setup()
   normals_.Reshape(numlocsys_,3);
   tangents_.Reshape(numlocsys_,3);
   thirddir_.Reshape(numlocsys_,3);
-  
+
   for (int i=0; i<NumLocsys(); ++i)
   {
     id_[i] = locsysconds_[i]->Id();
     const std::string* type = locsysconds_[i]->Get<std::string>("Type");
-    if (*type=="default") 
+    if (*type=="default")
       type_[i] = DRT::UTILS::LocsysManager::def;
     else if (*type=="FunctionEvaluation")
       type_[i] = DRT::UTILS::LocsysManager::functionevaluation;
@@ -101,24 +101,24 @@ void DRT::UTILS::LocsysManager::Setup()
   // different types of locsys conditions are dominated by the rule "Point
   // above Line above Surface above Volume". When two locsys conditions of
   // the same type are defined for one node, ordering in the input file matters!
-  
+
   //**********************************************************************
   // read volume locsys conditions
   //**************************+*******************************************
   for (int i=0; i<NumLocsys(); ++i)
   {
     DRT::Condition* currlocsys = locsysconds_[i];
-    
+
     if (currlocsys->Type() == DRT::Condition::VolumeLocsys)
     {
       typelocsys_[i] = DRT::Condition::VolumeLocsys;
-      
+
       const vector<double>* n = currlocsys->Get<vector<double> >("normal");
       const vector<double>* t = currlocsys->Get<vector<double> >("tangent");
       double ln = sqrt((*n)[0]*(*n)[0] + (*n)[1]*(*n)[1] + (*n)[2]*(*n)[2]);
       double lt = sqrt((*t)[0]*(*t)[0] + (*t)[1]*(*t)[1] + (*t)[2]*(*t)[2]);
       const vector<int>* nodes = currlocsys->Nodes();
-      
+
       // check for sanity of input data
       if (Dim()==2)
       {
@@ -130,36 +130,36 @@ void DRT::UTILS::LocsysManager::Setup()
         // normal has to be provided
         if (ln==0.0 || n->size() != 3)
           dserror("ERROR: No normal provided for 3D locsys definition");
-        
+
         // tangent has to be provided
         if (lt==0.0 || t->size() != 3)
           dserror("ERROR: No tangent provided for 3D locsys definition");
-        
+
         // tangent has to be orthogonal
         double ndott = (*n)[0]*(*t)[0] + (*n)[1]*(*t)[1] + (*n)[2]*(*t)[2];
         if (abs(ndott)>1.0e-8)
           dserror("ERROR: Locsys normal and tangent not orthogonal");
       }
-      
+
       // build unit normal and tangent
       for (int k=0;k<3;++k)
       {
         normals_(i,k)  = (*n)[k]/ln;
         tangents_(i,k) = (*t)[k]/lt;
       }
-      
+
       // build third direction (corkscrew rule)
       thirddir_(i,0) = normals_(i,1)*tangents_(i,2)-normals_(i,2)*tangents_(i,1);
       thirddir_(i,1) = normals_(i,2)*tangents_(i,0)-normals_(i,0)*tangents_(i,2);
       thirddir_(i,2) = normals_(i,0)*tangents_(i,1)-normals_(i,1)*tangents_(i,0);
-      
+
       // build locsystoggle vector with locsys IDs
       if (type_[i] == DRT::UTILS::LocsysManager::def)
         for (int k=0;k<(int)nodes->size();++k)
         {
           bool havenode = Discret().HaveGlobalNode((*nodes)[k]);
           if (!havenode) continue;
-        
+
           int indices = (*nodes)[k];
           double values  = i;
           locsystoggle_->ReplaceGlobalValues(1,&values,&indices);
@@ -174,43 +174,43 @@ void DRT::UTILS::LocsysManager::Setup()
     else
       dserror("ERROR: Unknown type of locsys condition!");
   }
-    
+
   //**********************************************************************
   // read surface locsys conditions
   //**************************+*******************************************
   for (int i=0; i<NumLocsys(); ++i)
   {
     DRT::Condition* currlocsys = locsysconds_[i];
-    
+
     if (currlocsys->Type() == DRT::Condition::SurfaceLocsys)
     {
       typelocsys_[i] = DRT::Condition::SurfaceLocsys;
-      
+
       const vector<double>* n = currlocsys->Get<vector<double> >("normal");
       const vector<double>* t = currlocsys->Get<vector<double> >("tangent");
       double ln = sqrt((*n)[0]*(*n)[0] + (*n)[1]*(*n)[1] + (*n)[2]*(*n)[2]);
       double lt = sqrt((*t)[0]*(*t)[0] + (*t)[1]*(*t)[1] + (*t)[2]*(*t)[2]);
       const vector<int>* nodes = currlocsys->Nodes();
-      
+
       // check for sanity of input data
       if (Dim()==2)
       {
         // normal has to be provided
         if (ln==0.0 || n->size()!=3)
           dserror("ERROR: No normal provided for 2D locsys definition");
-                
+
         // normal must lie in x1x2-plane
         if ((*n)[2]!=0.0)
           dserror("ERROR: Invalid normal provided for 2D locsys definition");
-        
+
         // tangent must not be provided
         if (lt!=0.0)
           dserror("ERROR: Tangent provided for 2D locsys definition");
-        
+
         // build unit normal and tangent
         normals_(i,0)  = (*n)[0]/ln;
         normals_(i,1)  = (*n)[1]/ln;
-        
+
         // build unit tangent from 2D orthogonality
         tangents_(i,0)  = -(*n)[1]/ln;
         tangents_(i,1)  =  (*n)[0]/ln;
@@ -220,16 +220,16 @@ void DRT::UTILS::LocsysManager::Setup()
         // normal has to be provided
         if (ln==0.0 || n->size()!=3)
           dserror("ERROR: No normal provided for 3D locsys definition");
-        
+
         // tangent has to be provided
         if (lt==0.0 || t->size()!=3)
           dserror("ERROR: No tangent provided for 3D locsys definition");
-        
+
         // tangent has to be orthogonal
         double ndott = (*n)[0]*(*t)[0] + (*n)[1]*(*t)[1] + (*n)[2]*(*t)[2];
         if (abs(ndott)>1.0e-8)
           dserror("ERROR: Locsys normal and tangent not orthogonal");
-           
+
         // build unit normal and tangent
         for (int k=0;k<3;++k)
         {
@@ -237,19 +237,19 @@ void DRT::UTILS::LocsysManager::Setup()
           tangents_(i,k) = (*t)[k]/lt;
         }
       }
-      
+
       // build third direction (corkscrew rule)
       thirddir_(i,0) = normals_(i,1)*tangents_(i,2)-normals_(i,2)*tangents_(i,1);
       thirddir_(i,1) = normals_(i,2)*tangents_(i,0)-normals_(i,0)*tangents_(i,2);
       thirddir_(i,2) = normals_(i,0)*tangents_(i,1)-normals_(i,1)*tangents_(i,0);
-      
+
       // build locsystoggle vector with locsys IDs
       if (type_[i] == DRT::UTILS::LocsysManager::def)
         for (int k=0;k<(int)nodes->size();++k)
         {
           bool havenode = Discret().HaveGlobalNode((*nodes)[k]);
           if (!havenode) continue;
-        
+
           int indices = (*nodes)[k];
           double values  = i;
           locsystoggle_->ReplaceGlobalValues(1,&values,&indices);
@@ -264,82 +264,82 @@ void DRT::UTILS::LocsysManager::Setup()
     else
       dserror("ERROR: Unknown type of locsys condition!");
   }
-  
+
   //**********************************************************************
   // read line locsys conditions
   //**********************************************************************
   for (int i=0; i<NumLocsys(); ++i)
   {
     DRT::Condition* currlocsys = locsysconds_[i];
-    
+
     if (currlocsys->Type() == DRT::Condition::LineLocsys)
     {
       typelocsys_[i] = DRT::Condition::LineLocsys;
-      
+
       const vector<double>* n = currlocsys->Get<vector<double> >("normal");
       const vector<double>* t = currlocsys->Get<vector<double> >("tangent");
       double ln = sqrt((*n)[0]*(*n)[0] + (*n)[1]*(*n)[1] + (*n)[2]*(*n)[2]);
       double lt = sqrt((*t)[0]*(*t)[0] + (*t)[1]*(*t)[1] + (*t)[2]*(*t)[2]);
       const vector<int>* nodes = currlocsys->Nodes();
-      
+
       // check for sanity of input data
       if (Dim()==2)
       {
         // normal has to be provided
         if (ln==0.0)
           dserror("ERROR: No normal provided for 2D locsys definition");
-                
+
         // normal must lie in x1x2-plane
         if ((*n)[2]!=0.0)
           dserror("ERROR: Invalid normal provided for 2D locsys definition");
-        
+
         // tangent must not be provided
         if (lt!=0.0)
           dserror("ERROR: Tangent provided for 2D locsys definition");
-        
+
         // build unit normal and tangent
         normals_(i,0)  = (*n)[0]/ln;
         normals_(i,1)  = (*n)[1]/ln;
-        
+
         // build unit tangent from 2D orthogonality
         tangents_(i,0)  = -(*n)[1]/ln;
-        tangents_(i,1)  =  (*n)[0]/ln;      
+        tangents_(i,1)  =  (*n)[0]/ln;
       }
       else
       {
         // normal has to be provided
         if (ln==0.0)
           dserror("ERROR: No normal provided for 3D locsys definition");
-        
+
         // tangent has to be provided
         if (lt==0.0)
           dserror("ERROR: No tangent provided for 3D locsys definition");
-        
+
         // tangent has to be orthogonal
         double ndott = (*n)[0]*(*t)[0] + (*n)[1]*(*t)[1] + (*n)[2]*(*t)[2];
         if (abs(ndott)>1.0e-8)
           dserror("ERROR: Locsys normal and tangent not orthogonal");
-        
+
         // build unit normal and tangent
         for (int k=0;k<3;++k)
         {
           normals_(i,k)  = (*n)[k]/ln;
           tangents_(i,k) = (*t)[k]/lt;
-        }    
+        }
       }
-      
+
       // build third direction (corkscrew rule)
       thirddir_(i,0) = normals_(i,1)*tangents_(i,2)-normals_(i,2)*tangents_(i,1);
       thirddir_(i,1) = normals_(i,2)*tangents_(i,0)-normals_(i,0)*tangents_(i,2);
       thirddir_(i,2) = normals_(i,0)*tangents_(i,1)-normals_(i,1)*tangents_(i,0);
-      
+
       // build locsystoggle vector with locsys IDs
       if (type_[i] == DRT::UTILS::LocsysManager::def)
         for (int k=0;k<(int)nodes->size();++k)
         {
           bool havenode = Discret().HaveGlobalNode((*nodes)[k]);
           if (!havenode) continue;
-        
+
           int indices = (*nodes)[k];
           double values  = i;
           locsystoggle_->ReplaceGlobalValues(1,&values,&indices);
@@ -354,82 +354,82 @@ void DRT::UTILS::LocsysManager::Setup()
     else
       dserror("ERROR: Unknown type of locsys condition!");
   }
-  
+
   //**********************************************************************
   // read point locsys conditions
   //**********************************************************************
   for (int i=0; i<NumLocsys(); ++i)
   {
     DRT::Condition* currlocsys = locsysconds_[i];
-    
+
     if (currlocsys->Type() == DRT::Condition::PointLocsys)
     {
       typelocsys_[i] = DRT::Condition::PointLocsys;
-      
+
       const vector<double>* n = currlocsys->Get<vector<double> >("normal");
       const vector<double>* t = currlocsys->Get<vector<double> >("tangent");
       double ln = sqrt((*n)[0]*(*n)[0] + (*n)[1]*(*n)[1] + (*n)[2]*(*n)[2]);
       double lt = sqrt((*t)[0]*(*t)[0] + (*t)[1]*(*t)[1] + (*t)[2]*(*t)[2]);
       const vector<int>* nodes = currlocsys->Nodes();
-      
+
       // check for sanity of input data
       if (Dim()==2)
       {
         // normal has to be provided
         if (ln==0.0)
           dserror("ERROR: No normal provided for 2D locsys definition");
-                
+
         // normal must lie in x1x2-plane
         if ((*n)[2]!=0.0)
           dserror("ERROR: Invalid normal provided for 2D locsys definition");
-        
+
         // tangent must not be provided
         if (lt!=0.0)
           dserror("ERROR: Tangent provided for 2D locsys definition");
-        
+
         // build unit normal and tangent
         normals_(i,0)  = (*n)[0]/ln;
         normals_(i,1)  = (*n)[1]/ln;
-        
+
         // build unit tangent from 2D orthogonality
         tangents_(i,0)  = -(*n)[1]/ln;
-        tangents_(i,1)  =  (*n)[0]/ln;      
+        tangents_(i,1)  =  (*n)[0]/ln;
       }
       else
       {
         // normal has to be provided
         if (ln==0.0)
           dserror("ERROR: No normal provided for 3D locsys definition");
-        
+
         // tangent has to be provided
         if (lt==0.0)
           dserror("ERROR: No tangent provided for 3D locsys definition");
-        
+
         // tangent has to be orthogonal
         double ndott = (*n)[0]*(*t)[0] + (*n)[1]*(*t)[1] + (*n)[2]*(*t)[2];
         if (abs(ndott)>1.0e-8)
           dserror("ERROR: Locsys normal and tangent not orthogonal");
-        
+
         // build unit normal and tangent
         for (int k=0;k<3;++k)
         {
           normals_(i,k)  = (*n)[k]/ln;
           tangents_(i,k) = (*t)[k]/lt;
-        }    
+        }
       }
-      
+
       // build third direction (corkscrew rule)
       thirddir_(i,0) = normals_(i,1)*tangents_(i,2)-normals_(i,2)*tangents_(i,1);
       thirddir_(i,1) = normals_(i,2)*tangents_(i,0)-normals_(i,0)*tangents_(i,2);
       thirddir_(i,2) = normals_(i,0)*tangents_(i,1)-normals_(i,1)*tangents_(i,0);
-      
+
       // build locsystoggle vector with locsys IDs
       if (type_[i] == DRT::UTILS::LocsysManager::def)
         for (int k=0;k<(int)nodes->size();++k)
         {
           bool havenode = Discret().HaveGlobalNode((*nodes)[k]);
           if (!havenode) continue;
-        
+
           int indices = (*nodes)[k];
           double values  = i;
           locsystoggle_->ReplaceGlobalValues(1,&values,&indices);
@@ -444,9 +444,9 @@ void DRT::UTILS::LocsysManager::Setup()
     else
       dserror("ERROR: Unknown type of locsys condition!");
   }
-  
+
   Print(cout);
-  
+
   // When building the transformation matrix we apply a node-by-node
   // strategy. The global matrix trafo_ will consist of nodal blocks
   // of dimension (numdof)x(numdof). To be consistent with as many
@@ -458,15 +458,15 @@ void DRT::UTILS::LocsysManager::Setup()
   // dofs (isotropic). If special fields are constructed with more than
   // dim geometric dofs, i.e. that have to be transformed, then the
   // following code might have to be modified!
-  
+
   //**********************************************************************
   // Build transformation matrix trafo_
   //**********************************************************************
-  
+
   // get dof row layout of discretization
   const Epetra_Map* dofrowmap = discret_.DofRowMap();
 
-  // we need to make sure that two nodes sharing the same dofs are not 
+  // we need to make sure that two nodes sharing the same dofs are not
   // transformed twice. This is a NURBS/periodic boundary feature.
   RCP<Epetra_Vector> already_processed = LINALG::CreateVector(*dofrowmap,true);
   already_processed->PutScalar(0.0);
@@ -477,9 +477,9 @@ void DRT::UTILS::LocsysManager::Setup()
 
   // number of nodes subjected to local co-ordinate systems
   set<int> locsysdofset;
-    
+
   trafo_ = rcp(new LINALG::SparseMatrix(*dofrowmap,3));
-  
+
   for (int i=0;i<noderowmap->NumMyElements();++i)
   {
     int gid = noderowmap->GID(i);
@@ -488,7 +488,7 @@ void DRT::UTILS::LocsysManager::Setup()
     vector<int> dofs = Discret().Dof(node);
     int numdof = (int)dofs.size();
     int locsysindex = (int)(*locsystoggle_)[i];
-    
+
     // skip nodes whos dofs have already been processed
     bool skip=false;
 
@@ -499,7 +499,7 @@ void DRT::UTILS::LocsysManager::Setup()
         skip=true;
       }
     }
-    
+
     if(skip)
     {
       continue;
@@ -520,14 +520,14 @@ void DRT::UTILS::LocsysManager::Setup()
       Epetra_SerialDenseMatrix nodetrafo(numdof,numdof);
 
       for (int k=0;k<numdof;++k) nodetrafo(k,k)=1.0;
-       
+
       // ---------------------------------------------------
       //
       // tnb-vectors (tangent, normal, binormal)
       //
-      // o in the default case without a spatial function, they are just 
+      // o in the default case without a spatial function, they are just
       //   copies of the vectors stored in the condition
-      // o in the case of spatial functions applied to the local coordinate 
+      // o in the case of spatial functions applied to the local coordinate
       //   system, they are rotated according to the prescribed function
       //
       LINALG::Matrix<3,1> n;
@@ -554,7 +554,7 @@ void DRT::UTILS::LocsysManager::Setup()
       DRT::Condition* currlocsys = locsysconds_[locsysindex];
       const vector<int>*   funct = currlocsys->Get<vector<int> >("(axis,angle)-funct");
       if(funct)
-      { 
+      {
         // sanity checks
         if(funct->size()!=2)
         {
@@ -572,12 +572,12 @@ void DRT::UTILS::LocsysManager::Setup()
           {
             dserror("expecting scalar function for rotation angle of local coordinate system, got %d components\n",(DRT::UTILS::FunctionManager::Instance().Funct((*funct)[1]-1)).NumberComponents());
           }
-          
-          // if necessary, the local coordinate system is rotated according to 
+
+          // if necessary, the local coordinate system is rotated according to
           // a given spatial functions (for curved surfaces etc.)
           const double time =0.0;
-  
-          
+
+
           const double angle=(DRT::UTILS::FunctionManager::Instance().Funct((*funct)[1]-1)).Evaluate(
             0        ,
             node->X(),
@@ -598,11 +598,11 @@ void DRT::UTILS::LocsysManager::Setup()
             node->X(),
             time     ,
             &discret_);
-      
+
           // set rotation matrix R_
-          SetAxisRotation(x,y,z,angle);      
-          
-          // compute rotated local coordinate system according to precomputed 
+          SetAxisRotation(x,y,z,angle);
+
+          // compute rotated local coordinate system according to precomputed
           // rotation matrix R_
           LocalRotation(n);
           LocalRotation(t);
@@ -619,14 +619,14 @@ void DRT::UTILS::LocsysManager::Setup()
         }
       }
       // ---------------------------------------------------
-      // set rotation of this nodes dofs ('nodetrafo') 
+      // set rotation of this nodes dofs ('nodetrafo')
 
       // trafo for 2D and 3D case
       nodetrafo(0,0)=n(0);
       nodetrafo(0,1)=n(1);
       nodetrafo(1,0)=t(0);
       nodetrafo(1,1)=t(1);
-      
+
       // additional trafo for 3D case
       if (Dim()==3)
       {
@@ -663,7 +663,7 @@ void DRT::UTILS::LocsysManager::Setup()
   trafo_->Complete();
 
   // throw warning if transformation matrix has zero diagonal elements since
-  // they end up on the diagonal of the system matrix in the fast 
+  // they end up on the diagonal of the system matrix in the fast
   // transformleftonly_ case
   if(sanity_check && transformleftonly_)
   {
@@ -693,13 +693,13 @@ void DRT::UTILS::LocsysManager::Setup()
       myglobalentries = &(locsysdofs[0]);
     }
     locsysdofmap_ = rcp(new Epetra_Map(-1, nummyentries, myglobalentries,
-                                       discret_.DofRowMap()->IndexBase(), 
+                                       discret_.DofRowMap()->IndexBase(),
                                        discret_.Comm()));
     if (locsysdofmap_ == null) dserror("Creation failed.");
 
     subtrafo_ = trafo_->ExtractDirichletRows(*locsysdofmap_);
-    //cout << "Subtrafo: nummyrows=" << subtrafo_->EpetraMatrix()->NumMyRows() 
-    //     << " nummycols=" << subtrafo_->EpetraMatrix()->NumMyCols() 
+    //cout << "Subtrafo: nummyrows=" << subtrafo_->EpetraMatrix()->NumMyRows()
+    //     << " nummycols=" << subtrafo_->EpetraMatrix()->NumMyCols()
     //     << endl;
   }
 
@@ -728,8 +728,8 @@ void DRT::UTILS::LocsysManager::Print(ostream& os) const
     for (int i=0;i<NumLocsys();++i)
     {
       printf("Locsys entity ID: %3d ",locsysconds_[i]->Id());
-      if (TypeLocsys(i)==DRT::Condition::PointLocsys)        printf("Point   "); 
-      else if (TypeLocsys(i)==DRT::Condition::LineLocsys)    printf("Line    "); 
+      if (TypeLocsys(i)==DRT::Condition::PointLocsys)        printf("Point   ");
+      else if (TypeLocsys(i)==DRT::Condition::LineLocsys)    printf("Line    ");
       else if (TypeLocsys(i)==DRT::Condition::SurfaceLocsys) printf("Surface ");
       else if (TypeLocsys(i)==DRT::Condition::VolumeLocsys)  printf("Volume  ");
       else dserror("ERROR: Unknown type of locsys condition!");
@@ -750,7 +750,7 @@ void DRT::UTILS::LocsysManager::Print(ostream& os) const
         break;
       }
       printf("\n");
-    }    
+    }
     os << "-------------------------------------------------------------\n\n";
   }
   return;
@@ -765,7 +765,7 @@ void DRT::UTILS::LocsysManager::RotateGlobalToLocal(RCP<LINALG::SparseMatrix> sy
 {
   // transform rhs vector
   RotateGlobalToLocal(rhs);
-  
+
   // transform system matrix
   if (transformleftonly_)
   {
@@ -782,7 +782,7 @@ void DRT::UTILS::LocsysManager::RotateGlobalToLocal(RCP<LINALG::SparseMatrix> sy
     temp2 = LINALG::Multiply(*temp,false,*trafo_,true,true);  // multiply from right
     *sysmat = *temp2;
   }
-  
+
   return;
 }
 
@@ -807,17 +807,17 @@ void DRT::UTILS::LocsysManager::RotateLocalToGlobal(RCP<Epetra_Vector> result,
 {
   // transform result
   RotateLocalToGlobal(result);
-  
+
   // transform rhs vector
   RotateLocalToGlobal(rhs);
-    
+
   // transform system matrix
   RCP<LINALG::SparseMatrix> temp;
   RCP<LINALG::SparseMatrix> temp2;
   temp = LINALG::Multiply(*sysmat,false,*trafo_,false,true);
   temp2 = LINALG::Multiply(*trafo_,true,*temp,false,true);
   *sysmat = *temp2;
-    
+
   return;
 }
 

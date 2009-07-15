@@ -539,7 +539,7 @@ void DoDirichletCondition(DRT::Condition&             cond,
       if (funct) funct_num = (*funct)[j];
       {
          if (funct_num>0)
-           functfac = 
+           functfac =
              DRT::UTILS::FunctionManager::Instance().Funct(funct_num-1).Evaluate(j,
                                                                                  actnode->X(),
                                                                                  time,

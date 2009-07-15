@@ -97,7 +97,7 @@ void LINALG::SIMPLER_Operator::Setup(RCP<Epetra_Operator> A,
   //-------------------------------------------------------------------------
   // get the dof splitting anyway (I know, this is not really logical, is it)
   //-------------------------------------------------------------------------
-  else 
+  else
   {
     nv   = vlist_.sublist("Aztec Parameters").get<int>("downwinding nv",1);
     np   = vlist_.sublist("Aztec Parameters").get<int>("downwinding np",1);
@@ -119,7 +119,7 @@ void LINALG::SIMPLER_Operator::Setup(RCP<Epetra_Operator> A,
     vlist_.sublist("Aztec Parameters").set<int>("downwinding nv",nv);
     vlist_.sublist("Aztec Parameters").set<int>("downwinding np",0);
   }
-  
+
   //-------------------------------------------------------------------------
   // either do manual split or use provided BlockSparseMatrixBase
   //-------------------------------------------------------------------------
@@ -268,7 +268,7 @@ void LINALG::SIMPLER_Operator::Setup(RCP<Epetra_Operator> A,
   }
   if (!myrank && SIMPLER_TIMING) printf("--- Time to do S            %10.3E\n",time.ElapsedTime());
   time.ResetStartTime();
-  
+
 
 #if CHEAPSIMPLE_ALGORITHM
   //-------------------------------------------------------------------------
@@ -287,7 +287,7 @@ void LINALG::SIMPLER_Operator::Setup(RCP<Epetra_Operator> A,
       vdwin_  = rcp(new LINALG::ANA::Vector(vdwind_->DownwindRowMap(),false));
       vdwout_ = rcp(new LINALG::ANA::Vector(vdwind_->DownwindRowMap(),false));
     }
-    else 
+    else
       A00 = (*A_)(0,0).EpetraMatrix().get();
     if (pdw_)
     {
@@ -299,18 +299,18 @@ void LINALG::SIMPLER_Operator::Setup(RCP<Epetra_Operator> A,
       pdwin_  = rcp(new LINALG::ANA::Vector(pdwind_->DownwindRowMap(),false));
       pdwout_ = rcp(new LINALG::ANA::Vector(pdwind_->DownwindRowMap(),false));
     }
-    else 
+    else
       A11 = S_->EpetraMatrix().get();
 
     if (!myrank && SIMPLER_TIMING) printf("--- Time to do downwinding  %10.3E\n",time.ElapsedTime());
     time.ResetStartTime();
-    
+
   //-------------------------------------------------------------------------
   // Allocate preconditioner for pressure and velocity
   //-------------------------------------------------------------------------
-    if (visml) 
+    if (visml)
       Pv_ = rcp(new ML_Epetra::MultiLevelPreconditioner(*A00,vlist_.sublist("ML Parameters"),true));
-    else       
+    else
     {
       string type = vlist_.sublist("Aztec Parameters").get("preconditioner","ILU");
       Ifpack factory;
@@ -426,18 +426,18 @@ void LINALG::SIMPLER_Operator::Simple(LINALG::ANA::Vector& vx, LINALG::ANA::Vect
   SparseMatrix& A01      = (*A_)(0,1);
   SparseMatrix& diagAinv = *diagAinv_;
   SparseMatrix& S        = *S_;
-  
-  
+
+
   //------------------------------------------------------------ L-solve
-  
+
   *vwork1_ = inverse(A00,*vsolver_,false) * vb;
-  
+
   px = inverse(S,*psolver_,false) * (pb - A10 * vwork1_);
 
   //------------------------------------------------------------ U-solve
-  
+
   if (alpha_ != 1.0) px *= 1./alpha_;
-  
+
   vx = vwork1_ - diagAinv * (A01 * px);
 
   return;
@@ -465,15 +465,15 @@ void LINALG::SIMPLER_Operator::Simpler(LINALG::ANA::Vector& vx, LINALG::ANA::Vec
   //-------------------------------------------------- L-solve / U-solve
 
   px = inverse(S,*psolver_,false) * ( pb - A10 * (diagAinv * vb) );
-  
+
   vx = inverse(A00,*vsolver_,false) * ( vb - A01 * px );
-  
+
   //------------------------------------------------ Implicit projection
 
   if (alpha_ != 1.0) px *= alpha_;
 
   *vwork2_ = diagAinv * A01 * ( inverse(S,*psolver_,false) * ( A10 * vx ) );
-  
+
   vx -= vwork2_;
 
   return;

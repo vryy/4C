@@ -7,11 +7,11 @@
 -------------------------------------------------------------------------
                  BACI finite element library subsystem
             Copyright (2008) Technical University of Munich
-              
+
 Under terms of contract T004.008.000 there is a non-exclusive license for use
 of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
 
-This library is proprietary software. It must not be published, distributed, 
+This library is proprietary software. It must not be published, distributed,
 copied or altered in any form or any media without written permission
 of the copyright holder. It may be used under terms and conditions of the
 above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
@@ -23,11 +23,11 @@ This library contains and makes use of software copyrighted by Sandia Corporatio
 and distributed under LGPL licence. Licensing does not apply to this or any
 other third party software used here.
 
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de) 
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
                    or
                    Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
 
-http://www.lnm.mw.tum.de                   
+http://www.lnm.mw.tum.de
 
 -------------------------------------------------------------------------
 </pre>
@@ -245,7 +245,7 @@ public:
   */
   virtual void Dof(const Node* node, const unsigned startindex, vector<int>& lm) const
   { dsassert(havedof_,"no dofs assigned"); dofsets_[currentdofset_]->Dof(node,startindex,lm); }
-  
+
   /*!
   \brief Print this discretization to os (Filled()==true NOT prerequisite)
          (ostream << also supported)
@@ -449,7 +449,7 @@ public:
   virtual inline DRT::Node* lRowNode(int lid) const
   {
   #ifdef DEBUG
-    if (!Filled()) 
+    if (!Filled())
       dserror("DRT::Discretization::lRowNode: Filled() != true");
   #endif
     return noderowptr_[lid];
@@ -467,7 +467,7 @@ public:
   virtual inline DRT::Node* lColNode(int lid) const
   {
     #ifdef DEBUG
-      if (!Filled()) 
+      if (!Filled())
         dserror("DRT::Discretization::lRowNode: Filled() != true");
     #endif
     return nodecolptr_[lid];
@@ -514,7 +514,7 @@ public:
   Delete an element from the discretization. Element can either be ghosted or not.
   If element on calling processor is not found nothing is done and false is returned.
   Note that this is not a fatal error and no message will be posted.
-  
+
   \return Returns true upon successful deletion or element, returns false if element
           was not found on calling proc.
 
@@ -523,13 +523,13 @@ public:
   virtual bool DeleteElement(RCP<DRT::Element> ele);
 
   /*!
-  \brief Delete an element with global id gid from the discretization 
+  \brief Delete an element with global id gid from the discretization
          (Filled()==true NOT prerequisite)
 
   Delete an element from the discretization. Element can either be ghosted or not.
   If element on calling processor is not found nothing is done and false is returned.
   Note that this is not a fatal error and no message will be posted.
-  
+
   \return Returns true upon successful deletion or element, returns false if element
           was not found on calling proc.
 
@@ -661,15 +661,15 @@ public:
   \param assigndegreesoffreedom (in) : if true, resets existing dofsets and performs
                                        assigning of degrees of freedoms to nodes and
                                        elements.
-  \param initelements           (in) : if true, build element register classes and 
-                                       call Initialize() on each type of finite element 
+  \param initelements           (in) : if true, build element register classes and
+                                       call Initialize() on each type of finite element
                                        present
   \param doboundaryconditions   (in) : if true, build geometry of boundary conditions
                                        present.
 
   \note Filled()==true is a prerequisite, Filled()==true on exit
   */
-  virtual void Redistribute(const Epetra_Map& noderowmap, 
+  virtual void Redistribute(const Epetra_Map& noderowmap,
                             const Epetra_Map& nodecolmap,
                             bool assigndegreesoffreedom=true,
                             bool initelements          =true,
@@ -966,7 +966,7 @@ public:
 
   /// Call elements to evaluate
   /*!
-  Call element routines to perform tasks defined in the parameter list and 
+  Call element routines to perform tasks defined in the parameter list and
   return element information via the parameter list. The element loop
   is over all col elements, hence, Filled() status is tested.
   HaveDofs() is NOT tested and the lm vector is empty. No assembly is performed.
@@ -979,7 +979,7 @@ public:
   void Evaluate(
       Teuchos::ParameterList&  params
       );
-  
+
   /*!
   \brief Evaluate Neumann boundary conditions
 
@@ -1032,7 +1032,7 @@ public:
   \param systemvectord (out): Vector holding 1st time derivative of prescribed Dirichlet values
   \param systemvectordd (out): Vector holding 2nd time derivative prescribed Dirichlet values
   \param toggle (out): Vector containing 1.0 for each Dirichlet dof and 0 for everything else
-  \param dbcmapextractor (out): Map extractor containing maps for the DOFs subjected to 
+  \param dbcmapextractor (out): Map extractor containing maps for the DOFs subjected to
                                 Dirichlet boundary conditions and the remaining/free DOFs
   */
   virtual void EvaluateDirichlet(ParameterList& params,
@@ -1049,7 +1049,7 @@ public:
   This method considers all conditions in condition_ with the names
   matching the user-provided string condstring.
   Calls more general EvaluateCondition method, see below.
-  
+
   */
   virtual void EvaluateCondition
   (
@@ -1066,7 +1066,7 @@ public:
   This method considers all conditions in condition_ with the names
   matching the user-provided string condstring.
   Calls more general EvaluateCondition method, see below.
-  
+
   */
   virtual void EvaluateCondition
   (
@@ -1117,7 +1117,7 @@ public:
   );
 
   /*!
-  \brief Evaluate a specific surface conditon which requires data 
+  \brief Evaluate a specific surface conditon which requires data
   from the whole element but is essentially a surface condition.
   (for example a weak Dirichlet condition)
 
@@ -1127,8 +1127,8 @@ public:
   o The condition       (in)
   o parent lm           (out)
   o parent lmowner      (out)
-  
-  the element resizes systemmatrices and systemvectors according to 
+
+  the element resizes systemmatrices and systemvectors according to
   the parents requirements.
 
   \param params        (in) : List of parameters for use at element level
@@ -1156,7 +1156,7 @@ public:
     const string&               condstring,
     const int                   condid=-1
   );
-  
+
   /*!
   \brief Compute the nullspace of the discretization
 
@@ -1176,8 +1176,8 @@ public:
   /*!
    * \brief Assemble scalar quantities across elements
    *
-   * Every element is only called \b once by its owning processor. (We are 
-   * parsing the element row map.) At this call the element return its value(s), 
+   * Every element is only called \b once by its owning processor. (We are
+   * parsing the element row map.) At this call the element return its value(s),
    * i.e. its scalar(s), and contributes to the global
    * value of the respective scalar quantity(ies).
    *

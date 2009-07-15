@@ -46,7 +46,7 @@ inside a function allows for an extremely simplified linear algebra syntax:
 
 <b>Example 1:</b>
 
-The user wants to implement \f$ x = x - M^{-1} ( b - A^T * y ) \f$,<br> 
+The user wants to implement \f$ x = x - M^{-1} ( b - A^T * y ) \f$,<br>
 where \f$ x , y , b \f$ are LINALG::ANA:Vector and \f$ M , A \f$ are some<br>
 implementation of Epetra_Operator.
 
@@ -96,7 +96,7 @@ disn += disi;
 dism = ( 1. - alphaf ) * disn + alphaf * dis;
 \endcode
 
-Here is a short, incomplete list of what LINALG::ANA can do 
+Here is a short, incomplete list of what LINALG::ANA can do
 (vectors \f$ a,b,c \f$, Operators \f$ A,B,C \f$, scalar \f$s\f$):
 \code
 using namespace LINALG::ANA;
@@ -127,10 +127,10 @@ c = pw( 2.0*a + b , A * b);         // pointwise multiplication of generic linea
 
 <b>Important issues:</b>
 
-The LINALG::ANA layer on top of algorithms is of cost \f$ o \left( 1 \right) \f$, 
-where \f$ n \f$ is the size of the problem. This means, the extra cost is size independent 
+The LINALG::ANA layer on top of algorithms is of cost \f$ o \left( 1 \right) \f$,
+where \f$ n \f$ is the size of the problem. This means, the extra cost is size independent
 and neglectable for \f$ n >> 1 \f$.<br>
-However, one should keep a couple of things in mind (also for performance reasons) 
+However, one should keep a couple of things in mind (also for performance reasons)
 when writing algorithms with ANA:
 
 - ANA is an abstract, implicit layer on top of Epetra. All ANA operations are reduced
@@ -144,10 +144,10 @@ when writing algorithms with ANA:
   "=" operator. The "=" operation is explicit.
 
 - There is an explicit "double =" and an explicit "LINALG::ANA::Vector = " operation.
-  There intentionally is no explicit "Operator =" operation. 
+  There intentionally is no explicit "Operator =" operation.
   This means you can not become explicit on matrices.<br>
   The following won't work:
-  \code 
+  \code
   A = B;
   A = B+C;
   A = trans(C);
@@ -155,28 +155,28 @@ when writing algorithms with ANA:
   \endcode
   but the compiler will tell you so as well....
   Use classical LINALG and Epetra methods (on the same objects) instead.
-  
-- ANA handles rectangular (non-square) Operators correctly.  
+
+- ANA handles rectangular (non-square) Operators correctly.
 
 - ANA works with scalar double, vectorial LINALG::ANA::Vector and Operator Epetra_Operator.
-  This means, you can use it with Epetra_CrsMatrix, Epetra_Operator, SparseMatrix, SparseOperator, 
+  This means, you can use it with Epetra_CrsMatrix, Epetra_Operator, SparseMatrix, SparseOperator,
   BlockSparseMatrix etc. You can not use it with Epetra_Vector or Epetra_MultiVector.
-  
+
 - You can use LINALG::ANA::Vector everywhere instead of Epetra_Vector as it completely implements
-  Epetra_Vector including all of its constructors.  
+  Epetra_Vector including all of its constructors.
 
 - ANA respects + - before * / and brackets ().
 
 - Of course, ANA works in parallel.
 
 - ANA never changes objects on the right hand side of the "=" operator (Yes, they are all 'const' ;-))
-  
+
 - The statements
-  \code 
+  \code
   c = 2.0*a + A*b - 3.0*d;
   \endcode
   and
-  \code 
+  \code
   c = 2.0*a - 3.0*d + A*b;
   \endcode
   do have the same result, but the latter is slightly faster. The reason is, that ANA tries to squeeze as large
@@ -185,28 +185,28 @@ when writing algorithms with ANA:
   ANA can only recognize operations that are directly next to each other to be squeezable into
   one Epetra call.
   If you are an Epetra expert, you can help ANA by being more explicit:
-  \code 
+  \code
   c = (2.0*a - 3.0*d) + A*b; // ANA would have done this anyway even without brackets
   c = A*b + (2.0*a - 3.0*d); // Here, ANA actually benefits from your help (hard to understand why)
   \endcode
-  A statement like  
-  \code 
+  A statement like
+  \code
   c = 2.0*a - (3.0*d - A*b);
   \endcode
   would still have the same result, but would be slightly slower.
 
 - ANA never allocates extra memory unless needed by Epetra to perform the operation.<br>
   This does not need extra memory:
-  \code 
+  \code
   c = A*b;
   \endcode
   This DOES need extra memory:
-  \code 
+  \code
   c += A*b;
   \endcode
-  A good rule of thumb is, that if Epetra can do it without extra temporary Vector objects, 
+  A good rule of thumb is, that if Epetra can do it without extra temporary Vector objects,
   ANA can as well.
-  
+
 - ANA works with RCPed Vectors on the right hand side of the "=" operator as well.
   It does not work with RCPed Operators and does not accept RCPed quantities on the
   left hand side of the "=" operator:
@@ -221,10 +221,10 @@ when writing algorithms with ANA:
   *c += 2.0 * (*A) * b;    // ANA will not accept RCPed Operator objects -> always need to dereference
   \endcode
   The compiler will tell you when its ok to use RCPed objects.
-  
-  - Of course you are free to mix with classical Epetra calls (not on the same line, though). 
+
+  - Of course you are free to mix with classical Epetra calls (not on the same line, though).
     You can also continue using classical Epetra style programming, you can use ANA but you don't have to.
-  
+
   - Obey the important warning below.
 
 \warning Unless you are an Epetra and ANA expert user, your objects on the left and right side of the
@@ -245,7 +245,7 @@ when writing algorithms with ANA:
          ANA does not check or safeguard against illegal in-place operations! You will NOT
          receive notification of failure but just wrong results.
          Safeguarding against illegal in-place operations is yet to be implemented.
-         
+
 <pre>
 Maintainer: Michael Gee
             gee@lnm.mw.tum.de
@@ -274,10 +274,10 @@ public:
 
   /// ctor
   LCBase() {}
-  
+
   /// dtor
   virtual ~LCBase() {}
-  
+
   /*!
   \brief Return the range space of the result of the linear combination
   */
@@ -286,9 +286,9 @@ public:
   /*!
   \brief Perform " v += scale * " operation
 
-  \param v    (out): A vector with range map this->RangeMap() 
+  \param v    (out): A vector with range map this->RangeMap()
                      with values to be updated on output
-  \param scale (in): a scaling factor for the linear combination 
+  \param scale (in): a scaling factor for the linear combination
                      (usually -1.0 or 1.0, used for sign changes)
   */
   virtual void Update(LINALG::ANA::Vector& v, const double& scale) const = 0;
@@ -320,67 +320,67 @@ public:
 
   /// ctor
   LightWeightOperatorBase() {}
-  
+
   /// cctor
   LightWeightOperatorBase(const LightWeightOperatorBase& old) {}
-  
+
   /// dtor
   virtual ~LightWeightOperatorBase() {}
-  
+
   /*!
   \brief The derived class shall return a clone of itself by calling its own copy-ctor
   */
   virtual const RCP<LightWeightOperatorBase> Clone() const = 0;
-  
+
   /*!
   \brief Use transpose of operator
   */
   virtual int SetUseTranspose(bool UseTranspose) = 0;
-  
+
   /*!
   \brief Apply operator to X and return result in Y
-  
+
   \note X and Y might be in-place pointing to the same physical Epetra_MultiVector
   */
   virtual int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const = 0;
-  
+
   /*!
   \brief Apply the inverse of the operator to X and return result in Y
-  
+
   \note X and Y might be in-place pointing to the same physical Epetra_MultiVector
   */
   virtual int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const = 0;
-  
+
   /*!
   \brief return inf-norm of operator
   */
   virtual double NormInf() const = 0;
-  
+
   /*!
   \brief return label of operator
   */
   virtual const char * Label() const  = 0;
-  
+
   /*!
   \brief return flag indicating whether transposed of operator is used in Apply and ApplyInverse
   */
   virtual bool UseTranspose() const = 0;
-  
+
   /*!
   \brief return flag indicating whether operator supports inf-norm
   */
   virtual bool HasNormInf() const = 0;
-  
+
   /*!
   \brief return communicator
   */
   virtual const Epetra_Comm & Comm() const = 0;
-  
+
   /*!
   \brief return domain map of operator
   */
   virtual const Epetra_Map& OperatorDomainMap() const = 0;
-  
+
   /*!
   \brief return range map of operator
   */
@@ -409,46 +409,46 @@ class  LightWeightOperator : public LightWeightOperatorBase
 public:
 
   LightWeightOperator(const Epetra_Operator& op) :
-  op_(op) 
+  op_(op)
   {}
-  
+
   LightWeightOperator(const LightWeightOperator& old) :
   LightWeightOperatorBase(old),
-  op_(old.op_) 
+  op_(old.op_)
   {}
-  
+
   virtual const RCP<LightWeightOperatorBase> Clone() const
   { return rcp(new LightWeightOperator(*this));}
 
   virtual ~LightWeightOperator() {}
-  
+
   virtual int SetUseTranspose(bool UseTranspose)
   { return const_cast<Epetra_Operator&>(op_).SetUseTranspose(UseTranspose);}
-  
+
   virtual int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
   { return op_.Apply(X,Y); }
-  
+
   virtual int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
   { return op_.ApplyInverse(X,Y);}
-  
+
   virtual double NormInf() const
   { return  op_.NormInf(); }
-  
+
   virtual const char * Label() const
   { return "LINALG::ANA::LightWeightOperator"; }
-  
+
   virtual bool UseTranspose() const
-  { return op_.UseTranspose(); } 
-  
+  { return op_.UseTranspose(); }
+
   virtual bool HasNormInf() const
   { return op_.HasNormInf(); }
-  
+
   virtual const Epetra_Comm & Comm() const
   { return op_.Comm(); }
-  
+
   virtual const Epetra_Map& OperatorDomainMap() const
-  { return op_.OperatorDomainMap(); } 
-  
+  { return op_.OperatorDomainMap(); }
+
   virtual const Epetra_Map& OperatorRangeMap() const
   { return op_.OperatorRangeMap(); }
 
@@ -476,64 +476,64 @@ class  OperatorTransposed : public LightWeightOperatorBase
 public:
 
   OperatorTransposed(const LightWeightOperatorBase& op) :
-  op_(op.Clone()) 
+  op_(op.Clone())
   {}
-  
+
   OperatorTransposed(const OperatorTransposed& old) :
   LightWeightOperatorBase(old),
-  op_(old.op_) 
+  op_(old.op_)
   {}
 
   virtual ~OperatorTransposed() {}
-  
+
   virtual const RCP<LightWeightOperatorBase> Clone() const
   { return rcp(new OperatorTransposed(*this)); }
-  
+
   virtual int SetUseTranspose(bool UseTranspose)
-  { 
+  {
     // we are transposing the transposed operator
     return const_cast<LightWeightOperatorBase&>(*op_).SetUseTranspose(!UseTranspose);
   }
-  
+
   virtual int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
   { // apply the transposed
     const_cast<LightWeightOperatorBase&>(*op_).SetUseTranspose(!op_->UseTranspose());
     int err = op_->Apply(X,Y);
     const_cast<LightWeightOperatorBase&>(*op_).SetUseTranspose(!op_->UseTranspose());
-    return err; 
+    return err;
   }
-  
+
   virtual int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
-  { 
+  {
     const_cast<LightWeightOperatorBase&>(*op_).SetUseTranspose(!op_->UseTranspose());
     int err = op_->ApplyInverse(X,Y);
     const_cast<LightWeightOperatorBase&>(*op_).SetUseTranspose(!op_->UseTranspose());
-    return err; 
+    return err;
   }
-  
+
   virtual double NormInf() const
-  { 
+  {
     const_cast<LightWeightOperatorBase&>(*op_).SetUseTranspose(!op_->UseTranspose());
     double out =  op_->NormInf();
     const_cast<LightWeightOperatorBase&>(*op_).SetUseTranspose(!op_->UseTranspose());
     return out;
   }
-  
+
   virtual const char * Label() const
   { return "LINALG::ANA::OperatorTransposed"; }
-  
+
   virtual bool UseTranspose() const
-  { return ( ! op_->UseTranspose()); } 
-  
+  { return ( ! op_->UseTranspose()); }
+
   virtual bool HasNormInf() const
   { return op_->HasNormInf(); }
-  
+
   virtual const Epetra_Comm & Comm() const
   { return op_->Comm(); }
-  
+
   virtual const Epetra_Map& OperatorDomainMap() const
-  { return op_->OperatorRangeMap(); } 
-  
+  { return op_->OperatorRangeMap(); }
+
   virtual const Epetra_Map& OperatorRangeMap() const
   { return op_->OperatorDomainMap(); }
 
@@ -563,7 +563,7 @@ public:
   op_(op.Clone()),
   scalar_(scalar)
   {}
-  
+
   OperatorScaled(const OperatorScaled& old) :
   LightWeightOperatorBase(old),
   op_(old.op_),
@@ -571,51 +571,51 @@ public:
   {}
 
   virtual ~OperatorScaled() {}
-  
+
   virtual const RCP<LightWeightOperatorBase> Clone() const
   { return rcp(new OperatorScaled(*this)); }
 
   virtual int SetUseTranspose(bool UseTranspose)
-  { 
+  {
     return const_cast<LightWeightOperatorBase&>(*op_).SetUseTranspose(UseTranspose);
   }
-  
+
   virtual int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
   { // apply the transposed
     const_cast<LightWeightOperatorBase&>(*op_).SetUseTranspose(!op_->UseTranspose());
     int err = op_->Apply(X,Y);
     const_cast<LightWeightOperatorBase&>(*op_).SetUseTranspose(!op_->UseTranspose());
     Y.Scale(scalar_);
-    return err; 
+    return err;
   }
-  
+
   virtual int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
-  { 
+  {
     const_cast<LightWeightOperatorBase&>(*op_).SetUseTranspose(!op_->UseTranspose());
     int err = op_->ApplyInverse(X,Y);
     const_cast<LightWeightOperatorBase&>(*op_).SetUseTranspose(!op_->UseTranspose());
     Y.Scale(1./scalar_);
-    return err; 
+    return err;
   }
-  
+
   virtual double NormInf() const
   { return scalar_ * op_->NormInf();}
-  
+
   virtual const char * Label() const
   { return "LINALG::ANA::OperatorScaled"; }
-  
+
   virtual bool UseTranspose() const
-  { return ( op_->UseTranspose()); } 
-  
+  { return ( op_->UseTranspose()); }
+
   virtual bool HasNormInf() const
   { return op_->HasNormInf(); }
-  
+
   virtual const Epetra_Comm & Comm() const
   { return op_->Comm(); }
-  
+
   virtual const Epetra_Map& OperatorDomainMap() const
-  { return op_->OperatorDomainMap(); } 
-  
+  { return op_->OperatorDomainMap(); }
+
   virtual const Epetra_Map& OperatorRangeMap() const
   { return op_->OperatorRangeMap(); }
 
@@ -647,7 +647,7 @@ public:
   left_(left.Clone()),
   right_(right.Clone())
   {}
-  
+
   OperatorProduct(const OperatorProduct& old) :
   LightWeightOperatorBase(old),
   usetransposed_(old.usetransposed_),
@@ -656,43 +656,43 @@ public:
   {}
 
   virtual ~OperatorProduct() {}
-  
+
   virtual const RCP<LightWeightOperatorBase> Clone() const
   { return rcp(new OperatorProduct(*this)); }
 
   virtual int SetUseTranspose(bool UseTranspose)
   { usetransposed_ = UseTranspose; return 0;}
-  
+
   virtual int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
-  
+
   virtual int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
-  
+
   virtual double NormInf() const
-  { 
+  {
     dserror("LINALG::ANA::OperatorProduct does not implement LightWeightOperatorBase::NormInf()");
     return -1.0;
   }
-  
+
   virtual const char * Label() const
   { return "LINALG::ANA::OperatorProduct"; }
-  
+
   virtual bool UseTranspose() const
-  { return usetransposed_; } 
-  
+  { return usetransposed_; }
+
   virtual bool HasNormInf() const
   { return false; }
-  
+
   virtual const Epetra_Comm & Comm() const
   { return left_->Comm(); }
-  
+
   virtual const Epetra_Map& OperatorDomainMap() const
-  { 
+  {
     if (usetransposed_) return left_->OperatorRangeMap();
     else                return right_->OperatorDomainMap();
-  } 
-  
+  }
+
   virtual const Epetra_Map& OperatorRangeMap() const
-  { 
+  {
     if (usetransposed_) return right_->OperatorDomainMap();
     else                return left_->OperatorRangeMap();
   }
@@ -722,7 +722,7 @@ class  OperatorSum : public LightWeightOperatorBase
 {
 public:
 
-  OperatorSum(const LightWeightOperatorBase& left, 
+  OperatorSum(const LightWeightOperatorBase& left,
               const LightWeightOperatorBase& right,
               const int sign) :
   sign_(sign),
@@ -732,7 +732,7 @@ public:
   {
     if (sign != 1 && sign != -1) dserror("sign parameter has to be 1 or -1");
   }
-  
+
   OperatorSum(const OperatorSum& old) :
   LightWeightOperatorBase(old),
   sign_(old.sign_),
@@ -742,47 +742,47 @@ public:
   {}
 
   virtual ~OperatorSum() {}
-  
+
   virtual const RCP<LightWeightOperatorBase> Clone() const
   { return rcp(new OperatorSum(*this)); }
 
   virtual int SetUseTranspose(bool UseTranspose)
   { usetransposed_ = UseTranspose; return 0;}
-  
+
   virtual int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
-  
+
   virtual int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
-  { 
+  {
     dserror("LINALG::ANA::OperatorSum does not implement LightWeightOperatorBase::ApplyInverse");
     return -1;
   }
-  
+
   virtual double NormInf() const
-  { 
+  {
     dserror("LINALG::ANA::OperatorSum does not implement LightWeightOperatorBase::NormInf()");
     return -1.0;
   }
-  
+
   virtual const char * Label() const
   { return "LINALG::ANA::OperatorSum"; }
-  
+
   virtual bool UseTranspose() const
-  { return usetransposed_; } 
-  
+  { return usetransposed_; }
+
   virtual bool HasNormInf() const
   { return false; }
-  
+
   virtual const Epetra_Comm & Comm() const
   { return left_->Comm(); }
-  
+
   virtual const Epetra_Map& OperatorDomainMap() const
-  { 
+  {
     if (usetransposed_) return left_->OperatorRangeMap();
     else                return left_->OperatorDomainMap();
-  } 
-  
+  }
+
   virtual const Epetra_Map& OperatorRangeMap() const
-  { 
+  {
     if (usetransposed_) return left_->OperatorDomainMap();
     else                return left_->OperatorRangeMap();
   }
@@ -822,7 +822,7 @@ public:
   solver_(solver),
   op_(op)
   {}
-  
+
   OperatorInverse(const LINALG::SparseOperator& op, LINALG::Solver& solver, bool reset=true) :
   reset_(reset),
   solver_(solver),
@@ -835,7 +835,7 @@ public:
   solver_(*defaultsolver_),
   op_(op)
   {}
-  
+
   OperatorInverse(const LINALG::SparseOperator& op) :
   reset_(true),
   defaultsolver_(rcp(new LINALG::Solver(op.Comm()))),
@@ -852,16 +852,16 @@ public:
   {}
 
   virtual ~OperatorInverse() {}
-  
+
   virtual const RCP<LightWeightOperatorBase> Clone() const
   { return rcp(new OperatorInverse(*this)); }
 
   virtual int SetUseTranspose(bool UseTranspose)
-  { 
+  {
     dserror("LINALG::ANA::OperatorInverse does not support transpose");
     return -1;
   }
-  
+
   virtual int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
 
   virtual int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
@@ -869,28 +869,28 @@ public:
     dserror("LINALG::ANA::OperatorInverse does not support inverse of inverse of underlying operator, use Apply instead");
     return -1;
   }
-  
+
   virtual double NormInf() const
-  { 
+  {
     dserror("LINALG::ANA::OperatorInverse does not support NormInf of inverse of operator");
     return -1.0;
   }
-  
+
   virtual const char * Label() const
   { return "LINALG::ANA::OperatorInverse"; }
-  
+
   virtual bool UseTranspose() const
-  { return false; } 
-  
+  { return false; }
+
   virtual bool HasNormInf() const
   { return false; }
-  
+
   virtual const Epetra_Comm & Comm() const
   { return op_.Comm(); }
-  
+
   virtual const Epetra_Map& OperatorRangeMap() const // no, this is NOT a bug
-  { return op_.OperatorDomainMap(); } 
-  
+  { return op_.OperatorDomainMap(); }
+
   virtual const Epetra_Map& OperatorDomainMap() const // no, this is NOT a bug
   { return op_.OperatorRangeMap(); }
 
@@ -930,11 +930,11 @@ public:
   {}
 
   /// Implements Epetra_Vector ctor
-  Vector(Epetra_DataAccess CV, const Epetra_BlockMap& m, double* V) : 
+  Vector(Epetra_DataAccess CV, const Epetra_BlockMap& m, double* V) :
   Epetra_Vector(CV,m,V) {}
 
   /// Implements Epetra_Vector ctor
-  Vector(Epetra_DataAccess CV, const Epetra_MultiVector& mv, int i) : 
+  Vector(Epetra_DataAccess CV, const Epetra_MultiVector& mv, int i) :
   Epetra_Vector(CV,mv,i) {}
 
   /// dtor
@@ -946,11 +946,11 @@ public:
   \param rhs (in): Scalar value to init this vector with
   */
   inline void operator = (const double& rhs)
-  { 
+  {
 #if DEBUGGING_ANA
     cout << "Vector::operator = (const double& rhs)" << endl; fflush(stdout);
 #endif
-    PutScalar(rhs); 
+    PutScalar(rhs);
   }
 
   /*!
@@ -959,11 +959,11 @@ public:
   \param rhs (in): Vector to init this vector with
   */
   inline void operator = (const LINALG::ANA::Vector& rhs)
-  { 
+  {
 #if DEBUGGING_ANA
     cout << "Vector::operator = (const LINALG::ANA::Vector& rhs)" << endl; fflush(stdout);
 #endif
-    Update(1.0,rhs,0.0); 
+    Update(1.0,rhs,0.0);
   }
 
   /// RCP version of the above method
@@ -976,11 +976,11 @@ public:
   \param rhs (in): Vector to update this vector with
   */
   inline void operator += (const LINALG::ANA::Vector& rhs)
-  { 
+  {
 #if DEBUGGING_ANA
     cout << "Vector::operator += (const LINALG::ANA::Vector& rhs)" << endl; fflush(stdout);
 #endif
-    Update(1.0,rhs,1.0); 
+    Update(1.0,rhs,1.0);
   }
 
   /// RCP version of the above method
@@ -993,11 +993,11 @@ public:
   \param rhs (in): Vector to update this vector with
   */
   inline void operator -= (const LINALG::ANA::Vector& rhs)
-  { 
+  {
 #if DEBUGGING_ANA
     cout << "Vector::operator -= (const LINALG::ANA::Vector& rhs)" << endl; fflush(stdout);
 #endif
-    Update(-1.0,rhs,1.0); 
+    Update(-1.0,rhs,1.0);
   }
 
   /// RCP version of the above method
@@ -1010,11 +1010,11 @@ public:
   \param scalar (in): Scalar the vector is scaled with
   */
   inline void operator *= (const double& scalar)
-  { 
+  {
 #if DEBUGGING_ANA
     cout << "Vector::operator *= (const double& scalar)" << endl; fflush(stdout);
 #endif
-    Scale(scalar); 
+    Scale(scalar);
   }
 
   /*!
@@ -1023,11 +1023,11 @@ public:
   \param scalar (in): Scalar the vector is inverse-scaled with
   */
   inline void operator /= (const double& scalar)
-  { 
+  {
 #if DEBUGGING_ANA
     cout << "Vector::operator /= (const double& scalar)" << endl; fflush(stdout);
 #endif
-    Scale(1.0/scalar); 
+    Scale(1.0/scalar);
   }
 
   /*!
@@ -1036,11 +1036,11 @@ public:
   \param rhs (in): Linear combination of which the result is put into this Vector
   */
   inline void operator = (const LINALG::ANA::LCBase& rhs)
-  { 
+  {
 #if DEBUGGING_ANA
     cout << "Vector::operator = (const LINALG::ANA::LCBase& rhs)" << endl; fflush(stdout);
 #endif
-    rhs.Set(*this,1.0); 
+    rhs.Set(*this,1.0);
   }
 
   /*!
@@ -1049,11 +1049,11 @@ public:
   \param rhs (in): Linear combination of which the result is used to update this Vector
   */
   inline void operator += (const LINALG::ANA::LCBase& rhs)
-  { 
+  {
 #if DEBUGGING_ANA
     cout << "Vector::operator += (LINALG::ANA::LCBase& rhs)" << endl; fflush(stdout);
 #endif
-    rhs.Update(*this,1.0); 
+    rhs.Update(*this,1.0);
   }
 
   /*!
@@ -1062,11 +1062,11 @@ public:
   \param rhs (in): Linear combination of which the result is used to negatively update this Vector
   */
   inline void operator -= (const LINALG::ANA::LCBase& rhs)
-  { 
+  {
 #if DEBUGGING_ANA
     cout << "Vector::operator -= (LINALG::ANA::LCBase& rhs)" << endl; fflush(stdout);
 #endif
-    rhs.Update(*this,-1.0); 
+    rhs.Update(*this,-1.0);
   }
 
 private:
@@ -1317,7 +1317,7 @@ private:
 class  LC_s_times_vec : public LCBase
 {
 public:
-  
+
   LC_s_times_vec(const double scalar, const LINALG::ANA::Vector& vec) :
   LCBase(),
   scalar_(scalar),
@@ -1327,8 +1327,8 @@ public:
     cout << "LC_s_times_vec(const double scalar, const LINALG::ANA::Vector& vec)" << endl; fflush(stdout);
 #endif
   }
-  
-  virtual ~LC_s_times_vec() 
+
+  virtual ~LC_s_times_vec()
   {
 #if DEBUGGING_ANA
     cout << "~LC_s_times_vec() " << endl; fflush(stdout);
@@ -1353,7 +1353,7 @@ private:
 
   const double       scalar_;
   const LINALG::ANA::Vector& vec_;
-  
+
 }; // class LC_s_times_vec
 
 /*----------------------------------------------------------------------*
@@ -1368,7 +1368,7 @@ private:
 class  LC_s_times_lc : public LCBase
 {
 public:
-  
+
   LC_s_times_lc(const double scalar, const LINALG::ANA::LCBase& right) :
   LCBase(),
   scalar_(scalar),
@@ -1378,8 +1378,8 @@ public:
     cout << "LC_s_times_lc(const double scalar, const LINALG::ANA::LCBase& right)" << endl; fflush(stdout);
 #endif
   }
-  
-  virtual ~LC_s_times_lc() 
+
+  virtual ~LC_s_times_lc()
   {
 #if DEBUGGING_ANA
     cout << "~LC_s_times_lc() " << endl; fflush(stdout);
@@ -1397,7 +1397,7 @@ private:
 
   const double       scalar_;
   const LINALG::ANA::LCBase& right_;
-  
+
 }; // class LC_s_times_lc
 
 
@@ -1688,7 +1688,7 @@ private:
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 /*!
-\brief Element by element product of Vector and generic linear combination, 
+\brief Element by element product of Vector and generic linear combination,
        result is a Vector, where Result[i] = vec[i]*right[i]
 
 \sa LCBase, LC_vec_pointwise_vec
@@ -1736,7 +1736,7 @@ private:
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 /*!
-\brief Element by element product of Vector and linear combination, 
+\brief Element by element product of Vector and linear combination,
        result is a Vector, where Result[i] = vec[i]*right[i].
        Specialization of LC_vec_pointwise_lc for performance reasons
 
@@ -1786,7 +1786,7 @@ private:
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 /*!
-\brief Element by element product of 2 linear combinations, 
+\brief Element by element product of 2 linear combinations,
        result is a Vector, where Result[i] = left[i]*right[i].
 
 \sa LCBase, LC_vec_pointwise_vec
@@ -1832,7 +1832,7 @@ private:
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 /*!
-\brief Element by element product of 2 linear combinations, 
+\brief Element by element product of 2 linear combinations,
        result is a Vector, where Result[i] = left[i]*right[i].
        Specialization of LC_lc_pointwise_lc for performance reasons
 
@@ -2013,7 +2013,7 @@ inline LINALG::ANA::LC_lcsv_minus_lcsv operator- (const RCP<const LINALG::ANA::V
 
 
 /*----------------------------------------------------------------------*
-   LightWeightOperatorBase and  Epetra_Operator operations 
+   LightWeightOperatorBase and  Epetra_Operator operations
  *----------------------------------------------------------------------*/
 inline LINALG::ANA::LC_Operator_times_lc operator* (const LINALG::ANA::LightWeightOperatorBase& op, const LINALG::ANA::LCBase& right) { return LINALG::ANA::LC_Operator_times_lc(op,right); }
 inline LINALG::ANA::LC_Operator_times_lc operator* (const Epetra_Operator& op, const LINALG::ANA::LCBase& right) { return LINALG::ANA::LC_Operator_times_lc(LINALG::ANA::lw(op),right); }

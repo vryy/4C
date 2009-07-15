@@ -67,8 +67,8 @@ ncall_(0)
 /*----------------------------------------------------------------------*
  |  ctor (public)                                                  11/08|
  *----------------------------------------------------------------------*/
-LINALG::Solver::Solver(const Teuchos::ParameterList& inparams, 
-                       const Epetra_Comm& comm, 
+LINALG::Solver::Solver(const Teuchos::ParameterList& inparams,
+                       const Epetra_Comm& comm,
                        FILE* outfile) :
 comm_(comm),
 params_(rcp(new ParameterList())),
@@ -278,7 +278,7 @@ void LINALG::Solver::Solve(
   }
 
   // set the data passed to the method
-  if (refactor) 
+  if (refactor)
   {
     A_ = rcp(new LINALG::LinalgProjectedOperator::LinalgProjectedOperator(matrix,project));
   }
@@ -308,7 +308,7 @@ void LINALG::Solver::Solve(
   {
     dserror("a projection of Krylov space basis vectors is possible only for aztec type iterative solvers\n");
   }
-  
+
   if ("aztec"  ==solvertype)
   Solve_aztec(reset,project,weighted_basis_mean,kernel_c);
   else if ("klu"    ==solvertype)
@@ -340,7 +340,7 @@ void LINALG::Solver::Solve(
  |  solve (protected)                                        mwgee 02/07|
  *----------------------------------------------------------------------*/
 void LINALG::Solver::Solve_aztec(
-  const bool                    reset              , 
+  const bool                    reset              ,
   const bool                    project            ,
   const RCP<Epetra_MultiVector> weighted_basis_mean,
   const RCP<Epetra_MultiVector> kernel_c
@@ -359,14 +359,14 @@ void LINALG::Solver::Solve_aztec(
     dserror("Projection out nullspaces is only possible for Epetra_CrsMatrix-type Operators\n");
   }
 
-  // For singular systems, forcing (i.e. right hand side, residual etc) 
+  // For singular systems, forcing (i.e. right hand side, residual etc)
   // must be orthogonal to matrix kernel. Make sure this is true.
   if(project)
   {
     // loop all basis vectors of kernel
     for(int mm=0;mm<kernel_c->NumVectors();++mm)
     {
-  
+
       /*
                    T
                   c * b
@@ -379,15 +379,15 @@ void LINALG::Solver::Solve_aztec(
       {
         // -------------------------------------
         // loop basis vector of matrix kernel and orthogonalize residual against it
-        
+
         /*
                    T
                   w * c
         */
         double wTc=0.0;
-      
+
         ((*kernel_c)(mm))->Dot(*((*weighted_basis_mean)(rr)),&wTc);
-        
+
         if(fabs(wTc)<1e-14)
         {
           dserror("weight vector must not be orthogonal to c");
@@ -412,7 +412,7 @@ void LINALG::Solver::Solve_aztec(
   else if (!Ncall())         create = true;
   else if (!reuse)           create = true;
   else if (Ncall()%reuse==0) create = true;
-  
+
   // Allocate an aztec solver with default parameters
   // We do this every time because reusing the solver object
   // does lead to crashes that are not understood
@@ -541,7 +541,7 @@ void LINALG::Solver::Solve_aztec(
     {
       // parameter list (ifpack parameters)
       ParameterList&  ifpacklist = Params().sublist("IFPACK Parameters");
- 
+
       // free old matrix to avoid usage of (temporary) memory during copy procedure
       Pmatrix_ = Teuchos::null;
 
@@ -560,7 +560,7 @@ void LINALG::Solver::Solve_aztec(
 
       P_ = rcp(new LINALG::LinalgPrecondOperator::LinalgPrecondOperator(rcp(prec),project));
     }
-    
+
     // do ml if desired
     if(doml)
     {
@@ -593,7 +593,7 @@ void LINALG::Solver::Solve_aztec(
         //dynamic_cast<ML_Epetra::MultiLevelPreconditioner&>(*P_).PrintUnused(0);
       }
     }
-    
+
     // do simpler if desired
     if(dosimpler)
     {
@@ -605,7 +605,7 @@ void LINALG::Solver::Solve_aztec(
           = rcp(new LINALG::SIMPLER_Operator(A_->UnprojectedOperator(),Params(),
                                              Params().sublist("SIMPLER"),
                                              outfile_));
-      
+
       P_ = rcp(new LINALG::LinalgPrecondOperator::LinalgPrecondOperator(SimplerOperator,project));
 
       Pmatrix_ = null;
@@ -615,7 +615,7 @@ void LINALG::Solver::Solve_aztec(
   // set preconditioner
   if (doifpack || doml || dosimpler)
   {
-    // in case of singular matrices, the kernel has to be projected 
+    // in case of singular matrices, the kernel has to be projected
     // out of the krylov space
     //
     // -> has to be provided for the modified Preconditioner ApplyInverse
@@ -638,7 +638,7 @@ void LINALG::Solver::Solve_aztec(
   // iterate on the solution
   int iter = azlist.get("AZ_max_iter",500);
   double tol = azlist.get("AZ_tol",1.0e-6);
-  
+
   // create an aztec convergence test as combination of
   // L2-norm and Inf-Norm to be both satisfied where we demand
   // L2 < tol and Linf < 10*tol
@@ -671,9 +671,9 @@ void LINALG::Solver::Solve_aztec(
     // set status test
     aztec_->SetStatusTest(aztest_combo2_.get());
   }
-  
+
   // if you want to get some information on eigenvalues of the Hessenberg matrix/the
-  // estimated condition number of the preconditioned system, uncomment the following 
+  // estimated condition number of the preconditioned system, uncomment the following
   // line and set AZOUTPUT>0 in your .dat-file
   // aztec_->SetAztecOption(AZ_solver,AZ_gmres_condnum);
 
@@ -757,7 +757,7 @@ void LINALG::Solver::Solve_aztec(
  *----------------------------------------------------------------------*/
 void LINALG::Solver::Solve_superlu(const bool reset)
 {
-  
+
 #ifndef HAVENOT_SUPERLU
 #ifdef PARALLEL
   if (reset || !IsFactored())
@@ -1101,7 +1101,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
       mllist.set("aggregation: damping factor"     ,inparams.get<double>("ML_PROLONG_SMO"));
       mllist.set("aggregation: nodes per aggregate",inparams.get<int>("ML_AGG_SIZE"));
       // override the default sweeps=2 with a default sweeps=1
-      // individual level sweeps are set below  
+      // individual level sweeps are set below
       mllist.set("smoother: sweeps",1);
       switch (Teuchos::getIntegralValue<int>(inparams,"ML_COARSEN"))
       {
@@ -1206,7 +1206,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
         default: dserror("Unknown type of smoother for ML: tuple %d",type); break;
         } // switch (type)
       } // for (int i=0; i<azvar->mlmaxlevel-1; ++i)
-      
+
       // set coarse grid solver
       const int coarse = mlmaxlevel-1;
       switch (Teuchos::getIntegralValue<int>(inparams,"ML_SMOOTHERCOARSE"))

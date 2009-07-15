@@ -83,13 +83,13 @@ namespace LINALG
                bool refactor,
                bool reset = false);
 
-    
+
     /// get underlying preconditioner Epetra_Operator
     Teuchos::RCP<Epetra_Operator> EpetraOperator() { return prec_; }
-    
+
     /// get underlying solver parameter list
     Teuchos::ParameterList& Params();
-    
+
     /// @name Attribute set methods
 
     /// If set true, transpose of this operator will be applied.
@@ -138,7 +138,7 @@ namespace LINALG
                                       Teuchos::RCP<LINALG::MapExtractor> fsidofmapex,
                                       Teuchos::RCP<Epetra_Map>           inodes,
                                       Teuchos::RCP<DRT::Discretization>  fdis);
-    
+
     /// my internal preconditioner
     Teuchos::RCP<Epetra_Operator> prec_;
 

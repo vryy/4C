@@ -308,7 +308,7 @@ void DRT::UTILS::CollectElementsByConditionLabel(
   // get condition
   vector< DRT::Condition * >  conditions;
   discret.GetCondition (name, conditions);
-  
+
   // collect elements by xfem coupling label
   for(vector<DRT::Condition*>::const_iterator conditer = conditions.begin(); conditer!= conditions.end(); ++conditer)
   {
@@ -331,7 +331,7 @@ void DRT::UTILS::CollectElementsByConditionLabel(
   int numOfCollectedIds = 0;
   for(unsigned int i = 0; i < elementsByLabel.size(); i++)
     numOfCollectedIds += elementsByLabel[i].size();
-  
+
   if(discret.NumMyColElements() != numOfCollectedIds)
     dserror("not all elements collected.");
 }

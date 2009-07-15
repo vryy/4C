@@ -400,7 +400,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
    * following table where in the left column x,y,z denote
    * translations in x-, y- and z-direction of a node due to
    * the application of a rigid body mode, whereas dx,dy,dz
-   * denote increments of the node's rotational degrees of 
+   * denote increments of the node's rotational degrees of
    * freedom, which relate to a rotation around the x-,y-
    * and z-axis.
    *
@@ -413,7 +413,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   dx  |    0       0       0       1          0          0
   dy  |    0       0       0       0          1          0
   dz  |    0       0       0       0          0          1
-  
+
   for example the first line means: a translation of a node in
   x-direction may be caused either by a x-translation of the whole
   structure (which is rigid body mode 0) or by a rotation either
@@ -421,17 +421,17 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   y-axis for example the resulting x-translation is dtheta times the
   lever arm z - z0. Here z0 represents the z-coordinate of the point
   around which the structure is rotated. This point may be chosen
-  arbitrarily and by the algorithms underlying to this method it is 
+  arbitrarily and by the algorithms underlying to this method it is
   chosen automatically according to some mathematical considerations.
   Note that this holds true for infinitesimal rotations dtehta, only, of
   course.
   On the other hand e.g. the fourth column means that a rigid body
   rotation dtheta around the x-axis entails translations (-z+z0)*dtheta
-  in y-direction and (y-y0)*dtheta in z-direction and a rotation 
+  in y-direction and (y-y0)*dtheta in z-direction and a rotation
   increment 1*dtheta of the rotational degree of freedom related to the
   x-axis.
   */
-  
+
   /* for beam2 elements the above table reduces to
    *
         xtrans   ytrans    zrot
@@ -440,7 +440,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   x   |    1       0       -y+y0
   y   |    0       1       x-x0
   dz  |    0       0       1
-  note: for the here employed Timoshenko beam elements a rigid body 
+  note: for the here employed Timoshenko beam elements a rigid body
   rotation entails also an increment of the rotation degree of freedom
   dz which makes the director of the beam move accordingly; only then
   a rotation does not lead to any shear stress and is truely a rigid
@@ -457,13 +457,13 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     {
       //getting pointer at current node
       DRT::Node* actnode = lRowNode(i);
-      
+
       //getting coordinates of current node
       const double* x = actnode->X();
-      
+
       //getting number of degrees of freedom of current node
       vector<int> dofs = Dof(actnode);
-      
+
       //looping through all degrees of freedom of a node
       for (unsigned j=0; j<dofs.size(); ++j)
       {
@@ -495,10 +495,10 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
       } // for (int j=0; j<actnode->Dof().NumDof(); ++j)
     } // for (int i=0; i<NumMyRowNodes(); ++i)
   } // else if (ele->Type() == DRT::Element::element_beam2 || ele->Type() == DRT::Element::element_beam2r)
-  
+
   /* for beam3 elements the relation between rigid body modes and
    * increments on the degrees of freedom is non-trivial since
-   * rotational increments in 3D are non-additive in general. In 
+   * rotational increments in 3D are non-additive in general. In
    * general this relation may require calling all the elements.
    * However, in opposition to the SHELL8 element it is not
    * sufficient to just call a director saved in the element.

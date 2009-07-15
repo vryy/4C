@@ -2,8 +2,8 @@
 /*!
 \file drt_parser.H
 
-\brief Parser for mathematical expressions, which contain literals 
-       ('1.0', 'pi', etc) operations ('+', '-', 'sin', etc.). 
+\brief Parser for mathematical expressions, which contain literals
+       ('1.0', 'pi', etc) operations ('+', '-', 'sin', etc.).
        The parsed expression is organised in a syntax tree whose nodes
        can either hold an operation or a literal.
 
@@ -11,11 +11,11 @@
 -------------------------------------------------------------------------
                  BACI finite element library subsystem
             Copyright (2008) Technical University of Munich
-              
+
 Under terms of contract T004.008.000 there is a non-exclusive license for use
 of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
 
-This library is proprietary software. It must not be published, distributed, 
+This library is proprietary software. It must not be published, distributed,
 copied or altered in any form or any media without written permission
 of the copyright holder. It may be used under terms and conditions of the
 above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
@@ -27,11 +27,11 @@ This library contains and makes use of software copyrighted by Sandia Corporatio
 and distributed under LGPL licence. Licensing does not apply to this or any
 other third party software used here.
 
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de) 
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
                    or
                    Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
 
-http://www.lnm.mw.tum.de                   
+http://www.lnm.mw.tum.de
 
 -------------------------------------------------------------------------
 </pre>
@@ -119,7 +119,7 @@ protected:
 
   //! constructor
   Lexer(std::string funct) : funct_(funct), pos_(0) {}
-  
+
   //! delivers funct_ character at position pos_++
   int GetNext();
 
@@ -264,7 +264,7 @@ T Parser<T>::EvaluateFunct(double x, double y, double z)
 
 /*----------------------------------------------------------------------*/
 /*!
-\brief Parse primary entities, i.e. literals and unary operators, 
+\brief Parse primary entities, i.e. literals and unary operators,
        such as numbers, parentheses, independent variables, operator names
 \author u.kue
 \date 10/07
@@ -344,9 +344,9 @@ SyntaxTreeNode<T>* Parser<T>::ParsePrimary()
       else
       {
         // get substring from str_ to &(str_[integer_])
-        //std::string name(str_, &str_[integer_]);  
+        //std::string name(str_, &str_[integer_]);
         // get substring starting from str_ with length of integer_
-        std::string name(str_, integer_);  
+        std::string name(str_, integer_);
         if (name=="acos" or
             name=="asin" or
             name=="atan" or
@@ -516,7 +516,7 @@ T Parser<T>::Interpret(SyntaxTreeNode<T>* node)
   switch (node->type_)
   {
   // literal numbers: leaf of syntax tree node
-  case SyntaxTreeNode<T>::lt_number:  
+  case SyntaxTreeNode<T>::lt_number:
     res = node->v_.number;
     break;
   // binary operators: bifurcating branch of syntax tree node

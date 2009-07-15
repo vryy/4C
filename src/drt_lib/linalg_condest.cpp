@@ -2,7 +2,7 @@
 \file linalg_condest.cpp
 \brief estimate condition number of a matrix
 
-copied and adapted from 
+copied and adapted from
 Trilinos/packages/ifpack/src/Ifpack_Condest.h and Ifpack_Condest.cpp
 
 <pre>
@@ -29,7 +29,7 @@ double LINALG::Condest(
 {
 
   TEUCHOS_FUNC_TIME_MONITOR("LINALG::Condest");
-  
+
   double ConditionNumberEstimate = -1.0;
 
   if (CT == Ifpack_Cheap) {
@@ -82,12 +82,12 @@ double LINALG::Condest(
     Solver.SetAztecOption(AZ_solver,AZ_gmres_condnum);
     Solver.SetAztecOption(AZ_output,AZ_none);
     //Solver.SetAztecOption(AZ_output,10);
-    
+
     // the following can be problematic for large problems,
     // but any restart would destroy useful information about
     // the condition number.
     const int iterlimit = 150;
-    int MaxIters_mod = MaxIters;    
+    int MaxIters_mod = MaxIters;
     if (MaxIters > iterlimit and Matrix.Comm().MyPID() == 0)
     {
 //      MaxIters_mod = iterlimit;

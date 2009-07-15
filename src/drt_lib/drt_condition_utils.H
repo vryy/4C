@@ -72,8 +72,8 @@ namespace DRT
       map< int, RefCountPtr<DRT::Element> >& elements, ///< unique map of elements
       const string& condname ///< name of condition
       );
-    
-    /// collect all nodes (in- and excluding 'ghosts') and 
+
+    /// collect all nodes (in- and excluding 'ghosts') and
     /// elements (including ghosts) in a condition, e.g. an interface
     void FindInterfaceObjects(
       const DRT::Discretization& dis, ///< discretization
@@ -109,8 +109,8 @@ namespace DRT
         const Epetra_Map&        noderowmap,
         const Epetra_Map&        nodecolmap
         );
-    
-    
+
+
     //!collects elements by labels (have to be implemented in the corresponding condition                                          *
     void CollectElementsByConditionLabel(
         const DRT::Discretization&           discret,               ///< discretization with condition

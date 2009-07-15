@@ -8,11 +8,11 @@
 -------------------------------------------------------------------------
                  BACI finite element library subsystem
             Copyright (2008) Technical University of Munich
-              
+
 Under terms of contract T004.008.000 there is a non-exclusive license for use
 of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
 
-This library is proprietary software. It must not be published, distributed, 
+This library is proprietary software. It must not be published, distributed,
 copied or altered in any form or any media without written permission
 of the copyright holder. It may be used under terms and conditions of the
 above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
@@ -24,11 +24,11 @@ This library contains and makes use of software copyrighted by Sandia Corporatio
 and distributed under LGPL licence. Licensing does not apply to this or any
 other third party software used here.
 
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de) 
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
                    or
                    Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
 
-http://www.lnm.mw.tum.de                   
+http://www.lnm.mw.tum.de
 
 -------------------------------------------------------------------------
 </pre>
@@ -59,7 +59,7 @@ Epetra_SerialDenseVector()
  | ctor (public)                                             mwgee 05/07|
  *----------------------------------------------------------------------*/
 LINALG::SerialDenseVector::SerialDenseVector(int Length, bool init) :
-Epetra_SerialDenseVector()                                     
+Epetra_SerialDenseVector()
 {
   SetLabel("LINALG::SerialDenseVector");
   if(Length < 0)
@@ -115,7 +115,7 @@ LINALG::SerialDenseVector::~SerialDenseVector()
 /*----------------------------------------------------------------------*
  |  size the matrix but do not init to zero  (public)       mwgee 05/07|
  *----------------------------------------------------------------------*/
-int LINALG::SerialDenseVector::LightSize(int Length) 
+int LINALG::SerialDenseVector::LightSize(int Length)
 {
   if(Length < 0) return(-1);
 
@@ -136,7 +136,7 @@ int LINALG::SerialDenseVector::LightSize(int Length)
 /*----------------------------------------------------------------------*
  |  resize the matrix but do not init excess space to zero  mwgee 05/07|
  *----------------------------------------------------------------------*/
-int LINALG::SerialDenseVector::LightResize(int Length) 
+int LINALG::SerialDenseVector::LightResize(int Length)
 {
 	if(Length < 0)
 		return(-1);
@@ -149,10 +149,10 @@ int LINALG::SerialDenseVector::LightResize(int Length)
 		A_tmp = new double[newsize];
 		int M_tmp = EPETRA_MIN(M_, Length);
 		int N_tmp = EPETRA_MIN(N_, 1);
-		if (A_ != 0) 
+		if (A_ != 0)
 			CopyMat(A_, LDA_, M_tmp, N_tmp, A_tmp, Length); // Copy principal submatrix of A to new A
   }
-  CleanupData(); // Get rid of anything that might be already allocated  
+  CleanupData(); // Get rid of anything that might be already allocated
   M_ = Length;
   N_ = 1;
   LDA_ = M_;

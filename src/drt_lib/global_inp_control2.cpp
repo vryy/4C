@@ -104,7 +104,7 @@ void ntainp_ccadiscret()
   problem->ReadKnots(reader);
 
   // the one and only Fillcomplete should be here (reader.Complete()) gee 09/08
-  
+
   /*---------------------------------------- input of result descriptions */
   inp_resultdescr();
 

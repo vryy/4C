@@ -7,11 +7,11 @@
 -------------------------------------------------------------------------
                  BACI finite element library subsystem
             Copyright (2008) Technical University of Munich
-              
+
 Under terms of contract T004.008.000 there is a non-exclusive license for use
 of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
 
-This library is proprietary software. It must not be published, distributed, 
+This library is proprietary software. It must not be published, distributed,
 copied or altered in any form or any media without written permission
 of the copyright holder. It may be used under terms and conditions of the
 above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
@@ -23,11 +23,11 @@ This library contains and makes use of software copyrighted by Sandia Corporatio
 and distributed under LGPL licence. Licensing does not apply to this or any
 other third party software used here.
 
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de) 
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
                    or
                    Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
 
-http://www.lnm.mw.tum.de                   
+http://www.lnm.mw.tum.de
 
 -------------------------------------------------------------------------
 </pre>
@@ -59,7 +59,7 @@ Epetra_SerialDenseMatrix(false)
  *----------------------------------------------------------------------*/
 LINALG::SerialDenseMatrix::SerialDenseMatrix(int NumRows, int NumCols,
                                              bool init, bool set_object_label) :
-Epetra_SerialDenseMatrix(false)                                     
+Epetra_SerialDenseMatrix(false)
 {
   if (set_object_label) SetLabel("LINALG::SerialDenseMatrix");
   if(NumRows < 0)
@@ -131,7 +131,7 @@ long double LINALG::SerialDenseMatrix::Det_long(void )
    int sign=1;
    for (int i_col=0;i_col < N();i_col++)
    {
-     
+
      SerialDenseMatrix temp_matrix(N()-1,N()-1);
      for (int c_col=0;c_col < i_col;c_col++)
      {				
@@ -142,7 +142,7 @@ long double LINALG::SerialDenseMatrix::Det_long(void )
      {
        for(int row=1;row<N();row++)
          temp_matrix(row-1,c_col-1)=(*this)(row,c_col);	
-     } 
+     }
      out_det = out_det + ((long double )( sign)* (long double) ((*this)(0,i_col)) \
                           * (long double) (temp_matrix.Det_long()));
      sign*=-1;
@@ -156,7 +156,7 @@ long double LINALG::SerialDenseMatrix::Det_long(void )
 /*----------------------------------------------------------------------*
  |  shape the matrix but do not init to zero  (public)       mwgee 05/07|
  *----------------------------------------------------------------------*/
-int LINALG::SerialDenseMatrix::LightShape(int NumRows, int NumCols) 
+int LINALG::SerialDenseMatrix::LightShape(int NumRows, int NumCols)
 {
   if(NumRows < 0 || NumCols < 0) return(-1);
 
@@ -177,7 +177,7 @@ int LINALG::SerialDenseMatrix::LightShape(int NumRows, int NumCols)
 /*----------------------------------------------------------------------*
  |  reshape the matrix but do not init excess space to zero  mwgee 05/07|
  *----------------------------------------------------------------------*/
-int LINALG::SerialDenseMatrix::LightReshape(int NumRows, int NumCols) 
+int LINALG::SerialDenseMatrix::LightReshape(int NumRows, int NumCols)
 {
 	if(NumRows < 0 || NumCols < 0)
 		return(-1);
@@ -190,10 +190,10 @@ int LINALG::SerialDenseMatrix::LightReshape(int NumRows, int NumCols)
 		A_tmp = new double[newsize];
 		int M_tmp = EPETRA_MIN(M_, NumRows);
 		int N_tmp = EPETRA_MIN(N_, NumCols);
-		if (A_ != 0) 
+		if (A_ != 0)
 			CopyMat(A_, LDA_, M_tmp, N_tmp, A_tmp, NumRows); // Copy principal submatrix of A to new A
   }
-  CleanupData(); // Get rid of anything that might be already allocated  
+  CleanupData(); // Get rid of anything that might be already allocated
   M_ = NumRows;
   N_ = NumCols;
   LDA_ = M_;

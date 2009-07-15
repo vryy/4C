@@ -21,8 +21,8 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 03/08|
  *----------------------------------------------------------------------*/
-LINALG::DownwindMatrix::DownwindMatrix(RCP<Epetra_CrsMatrix> A, const int nv, 
-                                       const int np, const double tau, 
+LINALG::DownwindMatrix::DownwindMatrix(RCP<Epetra_CrsMatrix> A, const int nv,
+                                       const int np, const double tau,
                                        const int outlevel) :
 outlevel_(outlevel),
 nv_(nv),
@@ -57,7 +57,7 @@ void LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
     for (i=0; i<numdofrows; ++i)
     {
       const int gdofid = A.RowMap().GID(i);
-//      if (gdofid%bsize) 
+//      if (gdofid%bsize)
 //        dserror("dof id is not a multiple of block size");
 //      const int gnodeid = gdofid/bsize;
       const int gnodeid = gdofid;
@@ -67,8 +67,8 @@ void LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
     if (count != numnoderows) dserror("# nodes wrong: %d != %d",count,numnoderows);
     onoderowmap = rcp(new Epetra_Map(-1,numnoderows,&gnodeids[0],0,A.Comm()));
   }
-  
-  
+
+
   // compute a nodal block weighted graph
   RCP<Epetra_CrsMatrix> onodegraph;
   {
@@ -82,7 +82,7 @@ void LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
 //      if (gdofrow%bsize) dserror("Row map is not a multiple of bsize");
 //      const int gnoderow = gdofrow / bsize;
       const int gnoderow = gdofrow;
-      
+
       for (int ii=0; ii<vsize; ++ii)
       {
         int iii = i+ii;
@@ -104,7 +104,7 @@ void LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
             j += (bsize-1);
             continue;
           }
-          
+
           double sum = 0.0;
           for (int jj=0; jj<vsize; ++jj)
           {
@@ -137,7 +137,7 @@ void LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
         continue;
       }
       double sum=0.0;
-      for (int j=0; j<numentries; ++j) 
+      for (int j=0; j<numentries; ++j)
       {
         values[j] = sqrt(values[j]);
         sum += values[j];
@@ -146,7 +146,7 @@ void LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
       oninflow[i] = numentries;
     }
   }
-  
+
   // create directed graph
   RCP<Epetra_CrsMatrix> nnodegraph;
   {
@@ -172,7 +172,7 @@ void LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
       int* indicest;
       double* valuest;
       onodegrapht->ExtractMyRowView(i,numentriest,valuest,indicest);
-      
+
       for (int j=0; j<numentries; ++j)
       {
         const int gcnode = colmap.GID(indices[j]);
@@ -182,7 +182,7 @@ void LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
         for (k=0; k<numentriest; ++k)
         {
           const int gcnodet = colmapt.GID(indicest[k]);
-          if (gcnodet==gcnode) 
+          if (gcnodet==gcnode)
           {
             foundit = true;
             break;
@@ -225,10 +225,10 @@ void LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
   }
 
   Epetra_IntVector index(nnodegraph->RowMap(),false);
-  
+
   DownwindBeyWittum(*nnodegraph,index,oninflow);
   //DownwindHackbusch(*nnodegraph,index,oninflow);
-  
+
   // index now specifies the local order in which the rows should be processed
   RCP<Epetra_Map> nnoderowmap;
   {
@@ -255,17 +255,17 @@ void LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
     ML_az_sort(&gindices[0],mynodelength*bs_,NULL,NULL);
     sndofrowmap_ = rcp(new Epetra_Map(-1,mynodelength*bs_,&gindices[0],0,A.Comm()));
   }
-  
-  
+
+
   // Allocate an exporter from ndofrowmap_ to sndofrowmap_ and back
   sexporter_ = rcp(new Epetra_Export(*ndofrowmap_,*sndofrowmap_));
   rexporter_ = rcp(new Epetra_Export(*sndofrowmap_,*ndofrowmap_));
-  
-  
-  if (!A.Comm().MyPID() && outlevel_) 
-    cout << "                Downwinding Setup time " 
-         << time.ElapsedTime() << " s\n" 
-         << "                nv " << nv_ 
+
+
+  if (!A.Comm().MyPID() && outlevel_)
+    cout << "                Downwinding Setup time "
+         << time.ElapsedTime() << " s\n"
+         << "                nv " << nv_
          << " np " << np_ << " bs " << bs_ << " tau " << tau_ << endl;
 
 #if 0 // for debugging and viz of matrix data
@@ -277,7 +277,7 @@ void LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
     exit(0);
   }
 #endif
-  
+
 #if 0 // for debugging and viz of matrix data
   // reindex the matrix to see how it looks like then
   {
@@ -298,13 +298,13 @@ void LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
  |  (private)                                                mwgee 03/08|
  *----------------------------------------------------------------------*/
 void LINALG::DownwindMatrix::DownwindBeyWittum(const Epetra_CrsMatrix& nnodegraph,
-                                               Epetra_IntVector& index, 
+                                               Epetra_IntVector& index,
                                                const Epetra_IntVector& oninflow)
 {
   const int myrank = nnodegraph.Comm().MyPID();
   index.PutValue(-1);
   int nf = 0;
-  
+
   // number Dirichlet BCs first
   for (int i=0; i<nnodegraph.NumMyRows(); ++i)
     if (oninflow[i]==0)
@@ -312,7 +312,7 @@ void LINALG::DownwindMatrix::DownwindBeyWittum(const Epetra_CrsMatrix& nnodegrap
       index[i] = nf;
       ++nf;
     }
-  
+
   // do downwind numbering
   for (int i=0; i<nnodegraph.NumMyRows(); ++i)
     if (index[i]<0) SetF(i,nf,index,nnodegraph,0);
@@ -322,11 +322,11 @@ void LINALG::DownwindMatrix::DownwindBeyWittum(const Epetra_CrsMatrix& nnodegrap
     if (!myrank)
     cout << "                Downwinding:" << endl;
     nnodegraph.Comm().Barrier();
-    cout << "                Proc " << myrank 
-         << " lastindex " << index.MyLength() 
+    cout << "                Proc " << myrank
+         << " lastindex " << index.MyLength()
          << " lastdownwind " << nf << endl;
   }
-  
+
   // number everything that's left over in old order
   for (int i=0; i<nnodegraph.NumMyRows(); ++i)
     if (index[i]<0)
@@ -356,7 +356,7 @@ void LINALG::DownwindMatrix::DownwindHackbusch(const Epetra_CrsMatrix& nnodegrap
       index[i] = nf;
       ++nf;
     }
-    
+
   // do down- and upwind numbering
   for (int i=0; i<nnodegraph.NumMyRows(); ++i)
   {
@@ -367,10 +367,10 @@ void LINALG::DownwindMatrix::DownwindHackbusch(const Epetra_CrsMatrix& nnodegrap
   {
     nnodegraph.Comm().Barrier();
     if (!myrank)
-    cout << "                Downwinding:" << endl; 
+    cout << "                Downwinding:" << endl;
     nnodegraph.Comm().Barrier();
-    cout << "                Proc " << myrank 
-         << " lastindex " << index.MyLength()  
+    cout << "                Proc " << myrank
+         << " lastindex " << index.MyLength()
          << " lastdownwind " << nf-1
          << " lastupwind " << nl+1 << endl;
   }
@@ -388,7 +388,7 @@ void LINALG::DownwindMatrix::DownwindHackbusch(const Epetra_CrsMatrix& nnodegrap
 /*----------------------------------------------------------------------*
  |  (private)                                                mwgee 03/08|
  *----------------------------------------------------------------------*/
-void LINALG::DownwindMatrix::SetF(const int i, int& nf, Epetra_IntVector& index, 
+void LINALG::DownwindMatrix::SetF(const int i, int& nf, Epetra_IntVector& index,
                                   const Epetra_CrsMatrix& graph, int rec)
 {
   //cout << "SetF::Recursion " << rec << "\n"; fflush(stdout);
@@ -430,7 +430,7 @@ void LINALG::DownwindMatrix::SetF(const int i, int& nf, Epetra_IntVector& index,
 /*----------------------------------------------------------------------*
  |  (private)                                                mwgee 03/08|
  *----------------------------------------------------------------------*/
-void LINALG::DownwindMatrix::SetL(const int i, int& nl, Epetra_IntVector& index, 
+void LINALG::DownwindMatrix::SetL(const int i, int& nl, Epetra_IntVector& index,
                                   const Epetra_CrsMatrix& graph,int rec)
 {
   //cout << "SetL::Recursion " << rec << "\n"; fflush(stdout);
@@ -444,7 +444,7 @@ void LINALG::DownwindMatrix::SetL(const int i, int& nl, Epetra_IntVector& index,
   const int gi = rowmap.GID(i);
   for (int k=0; k<graph.NumMyRows(); ++k)
   {
-    if (!IsSuccessor(k,gi,graph)) 
+    if (!IsSuccessor(k,gi,graph))
       continue;
     if (index[k]<0)
     {
@@ -464,15 +464,15 @@ void LINALG::DownwindMatrix::SetL(const int i, int& nl, Epetra_IntVector& index,
     for (int j=0; j<numentries; ++j)
     {
       int gj = colmap.GID(indices[j]);
-      if (!rowmap.MyGID(gj)) 
+      if (!rowmap.MyGID(gj))
         continue;
       int lj = rowmap.LID(gj);
-      if (index[lj]>=0) 
+      if (index[lj]>=0)
         continue;
       SetL(lj,nl,index,graph,rec+1);
     }
   }
-  
+
   return;
 }
 

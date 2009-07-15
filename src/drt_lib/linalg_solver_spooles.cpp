@@ -47,7 +47,7 @@ void LINALG::Solver::Solve_spooles(const bool reset)
     if (mtxA_)           InpMtx_free(mtxA_);              mtxA_          =NULL;
     if (symbfacIVL_)     IVL_free(symbfacIVL_);           symbfacIVL_    =NULL;
   }
-  
+
 
   // see whether Operator is a Epetra_CrsMatrix
   Epetra_CrsMatrix* A = dynamic_cast<Epetra_CrsMatrix*>(A_.get());
@@ -68,7 +68,7 @@ void LINALG::Solver::Solve_spooles(const bool reset)
   int            nedges;
   double         *opcounts,minops,cutoff,cpus[20],tau=100.;
   DVzero(20,cpus);
-  int            seed = 10101; 
+  int            seed = 10101;
   int            sym=SPOOLES_NONSYMMETRIC;
   double         droptol=0.0;
   vector<double> recv(numeq_total);
@@ -100,13 +100,13 @@ void LINALG::Solver::Solve_spooles(const bool reset)
     InpMtx_sortAndCompress(mtxA_);
     InpMtx_changeStorageMode(mtxA_,INPMTX_BY_VECTORS) ;
   }
-  
+
 /*
    -----------------------------------------
    STEP 2: read the right hand side matrix B
    -----------------------------------------
 */
-  if (mtxY_) DenseMtx_free(mtxY_); 
+  if (mtxY_) DenseMtx_free(mtxY_);
   mtxY_ = DenseMtx_new();
   DenseMtx_init(mtxY_,SPOOLES_REAL,0,0,numeq,1,1,numeq);
   DenseMtx_zero(mtxY_);
@@ -130,11 +130,11 @@ void LINALG::Solver::Solve_spooles(const bool reset)
     _IVL* adjIVL = InpMtx_MPI_fullAdjacency(mtxA_,stats,msglvl,msgFile,comm.GetMpiComm());
     nedges = IVL_tsize(adjIVL);
     Graph_init2(graph_,0,numeq_total,0,nedges,numeq_total,nedges,adjIVL,NULL,NULL);
-    
+
     frontETree_ = orderViaMMD(graph_,seed+comm.MyPID(),msglvl,msgFile);
     Graph_free(graph_);
     graph_ = NULL;
-    
+
     opcounts               = DVinit(comm.NumProc(),0.0);
     opcounts[comm.MyPID()] = ETree_nFactorOps(frontETree_,SPOOLES_REAL,sym);
     MPI_Allgather(&opcounts[comm.MyPID()],1,MPI_DOUBLE,
@@ -160,7 +160,7 @@ void LINALG::Solver::Solve_spooles(const bool reset)
     InpMtx_changeCoordType(mtxA_,INPMTX_BY_CHEVRONS);
     InpMtx_changeStorageMode(mtxA_,INPMTX_BY_VECTORS);
   }
-  
+
 /*
    -------------------------------------------
    STEP 5: generate the owners map IV object
@@ -180,7 +180,7 @@ void LINALG::Solver::Solve_spooles(const bool reset)
     IVgather(numeq_total,IV_entries(vtxmapIV_),IV_entries(ownersIV_),
              ETree_vtxToFront(frontETree_));
   }
-  
+
 /*
    ---------------------------------------------------
    STEP 6: redistribute the matrix and right hand side
@@ -202,7 +202,7 @@ void LINALG::Solver::Solve_spooles(const bool reset)
   mtxY_ = newY_;
   newY_ = NULL;
   firsttag += comm.NumProc();
-  
+
 /*
    ------------------------------------------
    STEP 7: compute the symbolic factorization
@@ -214,9 +214,9 @@ void LINALG::Solver::Solve_spooles(const bool reset)
                                              msglvl,msgFile,firsttag,
                                              comm.GetMpiComm());
     firsttag += frontETree_->nfront;
-    
+
   }
-  
+
 /*
    -----------------------------------
    STEP 8: initialize the front matrix
@@ -253,7 +253,7 @@ void LINALG::Solver::Solve_spooles(const bool reset)
    if ( error >= 0 )
       dserror("Error in spooles numeric factorization");
   }
-  
+
 /*
    --------------------------------------
    STEP 10: post-process the factorization
@@ -264,7 +264,7 @@ void LINALG::Solver::Solve_spooles(const bool reset)
     FrontMtx_MPI_postProcess(frontmtx_,ownersIV_,stats,msglvl,msgFile,firsttag,
                              comm.GetMpiComm());
     firsttag += 5*comm.NumProc();
-  }  
+  }
 
 /*
    -----------------------------------
@@ -289,7 +289,7 @@ void LINALG::Solver::Solve_spooles(const bool reset)
   if (!IsFactored())
     FrontMtx_MPI_split(frontmtx_,solvemap_,stats,msglvl,msgFile,firsttag,
                        comm.GetMpiComm());
-  
+
 /*
    ------------------------------------------------
    STEP 13: permute and redistribute Y if necessary
@@ -361,7 +361,7 @@ void LINALG::Solver::Solve_spooles(const bool reset)
   MPI_Bcast(&recv[0],numeq_total,MPI_DOUBLE,0,comm.GetMpiComm());
   for (int i=0; i<numeq; ++i)
     (*x_)[i] = recv[x_->Map().GID(i)];
-  
+
 /*
    -----------
    free memory

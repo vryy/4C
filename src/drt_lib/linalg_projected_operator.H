@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file  linalg_projected_operator.H
 
-\brief 
+\brief
 
 <pre>
 Maintainer: Peter Gamnitzer
@@ -29,9 +29,9 @@ Maintainer: Peter Gamnitzer
 
 namespace LINALG
 {
-  /*! 
-  \brief A slightly modified Epetra_Operator class allowing the 
-         application of a 'rank 1' projector P^T after applying the 
+  /*!
+  \brief A slightly modified Epetra_Operator class allowing the
+         application of a 'rank 1' projector P^T after applying the
          underlying operator
 
   Only the Apply method is modified. All other calls are 'pass-through'.
@@ -41,7 +41,7 @@ namespace LINALG
   System of equations to solve:
 
                          A * x = b
-                         
+
   (Right-) preconditioned system:
                                                 -+
                               -1                 |
@@ -51,7 +51,7 @@ namespace LINALG
                                  x = M  * xi     |
                                                 -+
 
-  A is singular, so use projectors for singular matrices; for the right 
+  A is singular, so use projectors for singular matrices; for the right
   preconditioned system we solve:
 
                                                 -+
@@ -67,17 +67,17 @@ namespace LINALG
   defines a solution x with zero mean.
 
   The whole operator is split in matrix and preconditioner part:
- 
-           / T   \     /      -1 \  
-          | P * A | * |  P * M    | 
-           \     /     \         /  
- 
-  This class deals with the first brackets via a modified Apply call, the 
+
+           / T   \     /      -1 \
+          | P * A | * |  P * M    |
+           \     /     \         /
+
+  This class deals with the first brackets via a modified Apply call, the
   right bracket is done in the corresponding preconditioner class.
-                                  
+
   Abbreviations:
 
-  A     : operator (singular matrix) 
+  A     : operator (singular matrix)
   M^{-1}: inverse preconditioner
   P, P^T: projectors
 
@@ -87,13 +87,13 @@ namespace LINALG
 class LinalgProjectedOperator : public Epetra_Operator
 {
 public:
-  
+
   /*!
   \brief Standard Constructor
 
   */
   LinalgProjectedOperator(Teuchos::RCP<Epetra_Operator> A,bool project);
-    
+
 
   /*!
   \brief Destructor
@@ -105,10 +105,10 @@ public:
   /*!
 
   \brief Set kernel space and weight vectors.
-  
+
   The projector P^T is completely defined by w and c.
 
-  \param w vector(s) of weights 
+  \param w vector(s) of weights
   \param c kernel basis vector(s)
 
   */
@@ -127,12 +127,12 @@ public:
         dserror("no kernel/weight supplied for projection (but projection flag was set)");
       }
 
-      // resize 
+      // resize
       cTw_.Shape(c_->NumVectors(),w_->NumVectors());
 
       for(int mm=0;mm<c_->NumVectors();++mm)
       {
-        // loop all weight vectors 
+        // loop all weight vectors
         for(int rr=0;rr<w_->NumVectors();++rr)
         {
 
@@ -141,7 +141,7 @@ public:
                   w * c
           */
           ((*c_)(mm))->Dot(*((*w_)(rr)),&(cTw_(mm,rr)));
-          
+
           if(fabs(cTw_(mm,rr))<1e-14)
           {
             dserror("weight vector must not be orthogonal to c");
@@ -155,7 +155,7 @@ public:
   //! @}
 
   //! @name Atribute set methods required to support the Epetra_Operator interface
-  
+
   virtual int SetUseTranspose (bool UseTranspose)
   {
     return(A_->SetUseTranspose(UseTranspose));
@@ -166,18 +166,18 @@ public:
   /*!
     \brief (Modified) Apply call
 
-    Given the underlying Epetra_Operator A, we apply P^T*A using 
+    Given the underlying Epetra_Operator A, we apply P^T*A using
 
                                         T
                          T         w * c
                         P  x = x - ------ x
                                     T
-                                   w * c                                    T   
+                                   w * c                                    T
 
     instead of A if projetion_ flag is set. If projection_ is false,
     this is just the standard Apply call.
 
-                       
+
     See the following article for further reading
 
     @article{1055401,
@@ -193,7 +193,7 @@ public:
      publisher = {Society for Industrial and Applied Mathematics},
      address = {Philadelphia, PA, USA},
      }
-    
+
      and the documentation to LinalgPrecondOperator as well as the source
      to LINALG::Solver::Solve_aztec.
 
@@ -213,12 +213,12 @@ public:
     return(A_->Label());
   }
 
-  virtual bool UseTranspose () const 
+  virtual bool UseTranspose () const
   {
     return(A_->UseTranspose());
   }
 
-  virtual bool HasNormInf () const 
+  virtual bool HasNormInf () const
   {
     return(A_->HasNormInf());
   }
@@ -228,12 +228,12 @@ public:
     return(A_->Comm());
   }
 
-  virtual const Epetra_Map & OperatorDomainMap () const 
+  virtual const Epetra_Map & OperatorDomainMap () const
   {
     return(A_->OperatorDomainMap());
   }
 
-  virtual const Epetra_Map & OperatorRangeMap () const 
+  virtual const Epetra_Map & OperatorRangeMap () const
   {
     return(A_->OperatorRangeMap());
   }
@@ -258,7 +258,7 @@ private:
   //! a set of vectors defining weighted basis mean vector for the projector
   Teuchos::RCP<Epetra_MultiVector>   w_;
 
-  //! a set of vectors defining the vectors of ones (in the respective components) 
+  //! a set of vectors defining the vectors of ones (in the respective components)
   //! for the matrix kernel
   Teuchos::RCP<Epetra_MultiVector>   c_;
 

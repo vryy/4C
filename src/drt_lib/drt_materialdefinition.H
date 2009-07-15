@@ -50,7 +50,7 @@ namespace DRT
     /// consists of one line. This line might consist of various components, each
     /// one corresponding to one variable that has to be defined in the
     /// DRT::Material object. This class does represent one such component.
-    /// 
+    ///
     /// There are different types of variables stored in a DRT::Material. And
     /// accordingly there are different subclasses of MaterialComponent that
     /// implement the reading and writing of these types.
@@ -82,7 +82,7 @@ namespace DRT
 
       /// write my part of this actual material
       virtual void Print(
-        std::ostream& stream, 
+        std::ostream& stream,
         const MAT::PAR::Material* cond
         ) = 0;
 
@@ -150,7 +150,7 @@ namespace DRT
         );
 
       virtual void Print(
-        std::ostream& stream, 
+        std::ostream& stream,
         const MAT::PAR::Material* cond
         );
 
@@ -255,7 +255,7 @@ namespace DRT
         );
 
       virtual void Print(
-        std::ostream& stream, 
+        std::ostream& stream,
         const MAT::PAR::Material* cond
         );
 
@@ -376,7 +376,7 @@ namespace DRT
         );
 
     private:
-      
+
       double defaultvalue_;
     };
 
@@ -460,7 +460,7 @@ namespace DRT
         );
 
       virtual void Print(
-        std::ostream& stream, 
+        std::ostream& stream,
         const MAT::PAR::Material* cond
         );
 
@@ -508,13 +508,13 @@ namespace DRT
     /// MAT::PAR::Material objects for each line in this section and (c) write the DAT
     /// file section filled with all corresponding materials from a given
     /// DRT::Discretization.
-    ///  
+    ///
     /// So this is quite sophisticated internal stuff here. If you want to
     /// introduce a new material to BACI, all you have to do is add an
     /// appropriate definition in ValidMaterials(). This will take care of the
     /// reading part and you will get your DRT::Discretization filled with proper
     /// DRT::Material objects.
-    /// 
+    ///
     /// \author bborn
     /// \date 02/09
     class MaterialDefinition
@@ -557,12 +557,12 @@ namespace DRT
 
       /// my material description
       std::string Description() const { return description_; }
-    
+
       /// my material inputline
       std::vector<Teuchos::RCP<MaterialComponent> > Inputline() const { return inputline_; }
-    
+
     private:
-      
+
       /// name of material
       std::string materialname_;
       /// description of material type
@@ -619,7 +619,7 @@ namespace DRT
       matdef->AddComponent(Teuchos::rcp(new SeparatorMaterialComponent(name,description,optional)));
       matdef->AddComponent(Teuchos::rcp(new IntVectorMaterialComponent(name,sizename,optional)));
     }
-  
+
     /// add a separator followed by a single real value
     ///
     /// The name on the input line becomes the name used to put the value into MAT::PAR::Material
@@ -633,7 +633,7 @@ namespace DRT
       matdef->AddComponent(Teuchos::rcp(new SeparatorMaterialComponent(name,description,optional)));
       matdef->AddComponent(Teuchos::rcp(new RealMaterialComponent(name,optional)));
     }
-  
+
     /// add a separator followed by a number of real values
     ///
     /// The name on the input line becomes the name used to put the value into MAT::PAR::Material.

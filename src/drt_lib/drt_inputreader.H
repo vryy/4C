@@ -132,7 +132,7 @@ public:
   /*!
     \brief read the knotvector section (for isogeometric analysis)
 
-    \param  dim            (in ): dimension, i.e. number of knotvectors in one patch 
+    \param  dim            (in ): dimension, i.e. number of knotvectors in one patch
     \param  name           (in ): Name/type of discretisation
     \param  disknots       (out): node vector coordinates
 

@@ -2,9 +2,9 @@
 /*!
 \file drt_parser.cpp
 
-\brief Parser for mathematical expressions, which contain literals 
+\brief Parser for mathematical expressions, which contain literals
        ('1.0', 'pi', etc) and operations ('+', '-', 'sin', etc.)
-       is a templated class. Thus its methods are defined in 
+       is a templated class. Thus its methods are defined in
        drt_parser.H (otherwise binding issues).
        A few non-templated methods of the Lexer base class
        are declared here.
@@ -13,11 +13,11 @@
 -------------------------------------------------------------------------
                  BACI finite element library subsystem
             Copyright (2008) Technical University of Munich
-              
+
 Under terms of contract T004.008.000 there is a non-exclusive license for use
 of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
 
-This library is proprietary software. It must not be published, distributed, 
+This library is proprietary software. It must not be published, distributed,
 copied or altered in any form or any media without written permission
 of the copyright holder. It may be used under terms and conditions of the
 above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
@@ -29,11 +29,11 @@ This library contains and makes use of software copyrighted by Sandia Corporatio
 and distributed under LGPL licence. Licensing does not apply to this or any
 other third party software used here.
 
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de) 
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
                    or
                    Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
 
-http://www.lnm.mw.tum.de                   
+http://www.lnm.mw.tum.de
 
 -------------------------------------------------------------------------
 </pre>
@@ -78,8 +78,8 @@ int DRT::Lexer::GetNext()
 /*----------------------------------------------------------------------*/
 /*!
 \brief Identify current token
-       type: tok_, 
-       value: integer_, real_, 
+       type: tok_,
+       value: integer_, real_,
        operator name: str_
 \author u.kue
 \date 10/07
