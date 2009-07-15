@@ -5,11 +5,11 @@
 -------------------------------------------------------------------------
                         BACI Contact library
             Copyright (2008) Technical University of Munich
-              
+
 Under terms of contract T004.008.000 there is a non-exclusive license for use
 of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
 
-This library is proprietary software. It must not be published, distributed, 
+This library is proprietary software. It must not be published, distributed,
 copied or altered in any form or any media without written permission
 of the copyright holder. It may be used under terms and conditions of the
 above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
@@ -18,11 +18,11 @@ This library contains and makes use of software copyrighted by Sandia Corporatio
 and distributed under LGPL licence. Licensing does not apply to this or any
 other third party software used here.
 
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de) 
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
                    or
                    Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
 
-http://www.lnm.mw.tum.de                   
+http://www.lnm.mw.tum.de
 
 -------------------------------------------------------------------------
 </pre>
@@ -63,16 +63,16 @@ namespace CONTACT
 class Projector
 {
 public:
-  
+
   /*!
   \brief Standard constructor
-  
+
   Constructs an instance of this class.<br>
   Note that this is \b not a collective call as projections are
   performed in parallel by individual processes.
-  
+
   \param dim (in): Global problem dimension
-  
+
   */
   explicit Projector(int dim);
 
@@ -81,151 +81,151 @@ public:
 
   */
   virtual ~Projector() {}
-  
+
   //! @name Access methods
-  
+
   /*!
   \brief Get problem dimension
-    
+
   */
   virtual inline const int& Dim() {return dim_;};
-  
+
   //@}
-  
+
   //! @name 2D and 3D projection methods
-  
+
   /*!
   \brief Project a node onto a CElement along the node's normal
-  
+
   Used to project a slave side node onto a CElement of the master side
-  
+
   This method will compute the coordinates of a projection of a Node in
   the local coordinate system of a CElement. The projection point will
   not neccesarily fall inside the CElement. However, if the projection
   point is far outside the segment's boundaries, problems with the
   internal nonlinear iteration might occur and a warning is issued when
   convergence can not be achieved in a limited number of iterations.
-  
+
   \param node (in): Slave node to project
   \param ele (in) : Master Celement to project on
   \param xi (out) : Local coordinates of projection on CElement
-  
+
   */
   bool ProjectNodalNormal(CONTACT::CNode& node,
                           CONTACT::CElement& ele,
                           double* xi);
-  
+
   /*!
   \brief Project a node onto a Celement along the interpolated
          outward normal field of the Celement
-    
+
   Used to project a master side node onto a Celement of the slave side
-    
+
   This method will compute the coordinates of a projection of a Node in
   the local coordinate system of a Celement. The projection point will
   not neccesarily fall inside the Celement. However, if the projection
   point is far outside the segment's boundaries, problems with the
   internal nonlinear iteration might occur and a warning is issued when
   convergence can not be achieved in a limited number of iterations.
-    
+
   \param node (in): Master Node to project
   \param ele (in) : Slave Celement to project on
   \param xi (out) : Local coordinates of projection on Celement
-  
+
   */
   bool ProjectElementNormal(CONTACT::CNode& node,
                             CONTACT::CElement& ele,
                             double* xi);
- 
+
   /*!
   \brief Project a node onto a Celement along the interpolated
          outward normal field of the Celement (3D)
-    
+
   Used to project a master side node onto a Celement of the slave side (3D)
-    
+
   This method will compute the coordinates of a projection of a Node in
   the local coordinate system of a Celement. The projection point will
   not neccesarily fall inside the Celement. However, if the projection
   point is far outside the segment's boundaries, problems with the
   internal nonlinear iteration might occur.
-    
+
   \param node (in): Master Node to project
   \param ele (in) : Slave Celement to project on
   \param xi (out) : Local coordinates of projection on Celement
   \param par (out): Projection parameter alpha
-  
+
   */
   bool ProjectElementNormal3D(CONTACT::CNode& node,
                               CONTACT::CElement& ele,
                               double* xi, double& par);
-    
+
   /*!
   \brief Project a Gauss point onto a CElement along GP normal
-    
+
   Used to project a slave side GP onto a CElement of the master side
-    
+
   This method will compute the coordinates of a projection of a Gauss
   point in the local coordinate system of a CElement.
-    
+
   \param gpele (in): Slave CElement containing GP to project
   \param gpeta (in): Local coordinates of GP on gpele
   \param ele (in)  : Master Celement to project on
   \param xi (out)  : Local coordinates of projection on CElement
-  
+
   */
   bool ProjectGaussPoint(CONTACT::CElement& gpele,
                          const double* gpeta,
                          CONTACT::CElement& ele,
                          double* xi);
-  
+
   /*!
   \brief Project a Gauss point onto a CElement along GP normal (3D)
-    
+
   Used to project a slave side GP onto a CElement of the master side
-    
+
   This method will compute the coordinates of a projection of a Gauss
   point in the local coordinate system of a CElement.
-    
+
   \param gpele (in): Slave CElement containing GP to project
   \param gpeta (in): Local coordinates of GP on gpele
   \param ele (in)  : Master Celement to project on
   \param xi (out)  : Local coordinates of projection on CElement
   \param par (out ): Projection parameter alpha
-  
+
   */
   bool ProjectGaussPoint3D(CONTACT::CElement& gpele,
                            const double* gpeta,
                            CONTACT::CElement& ele,
                            double* xi, double& par);
-   
+
   /*!
   \brief Project a Gauss point onto a CElement along AuxPlane normal (3D)
-    
+
   Used to project an AuxPlane GP onto a CElement of the slave or master side
-     
+
   This method will compute the coordinates of a projection of a Gauss
   point in the local coordinate system of a CElement.
-     
+
   \param globgp(in): Gauss point to project, given in global coords
   \param auxn(in)  : Normal of AuxPlane along which to project
   \param ele (in)  : Slave / master Celement to project on
   \param xi (out)  : Local coordinates of projection on CElement
   \param par (out ): Projection parameter alpha
-   
+
   */
   bool ProjectGaussPointAuxn3D(const double* globgp,
                                const double* auxn,
                                CONTACT::CElement& ele,
                                double* xi, double& par);
-    
+
   /*!
   \brief Evaluate F for nodal normal projection
 
   */
   double EvaluateFNodalNormal(CONTACT::CNode& node,
                               CONTACT::CElement& ele,
-                              const double* eta);  
-  
+                              const double* eta);
+
   /*!
   \brief Evaluate GradF for nodal normal projection
 
@@ -240,8 +240,8 @@ public:
   */
   double EvaluateFElementNormal(CONTACT::CNode& node,
                                 CONTACT::CElement& ele,
-                                const double* eta);  
-  
+                                const double* eta);
+
   /*!
   \brief Evaluate GradF for element normal projection
 
@@ -249,7 +249,7 @@ public:
   double EvaluateGradFElementNormal(CONTACT::CNode& node,
                                     CONTACT::CElement& ele,
                                     const double* eta);
-  
+
   /*!
   \brief Evaluate F for element normal projection (3D)
 
@@ -258,8 +258,8 @@ public:
                                 CONTACT::CNode& node,
                                 CONTACT::CElement& ele,
                                 const double* eta,
-                                const double& alpha);  
-    
+                                const double& alpha);
+
   /*!
   \brief Evaluate GradF for element normal projection (3D)
 
@@ -268,8 +268,8 @@ public:
                               CONTACT::CNode& node,
                               CONTACT::CElement& ele,
                               const double* eta,
-                              const double& alpha); 
-    
+                              const double& alpha);
+
   /*!
   \brief Evaluate F for Gauss point projection
 
@@ -277,16 +277,16 @@ public:
   double EvaluateFGaussPoint(const double* gpx,
                              const double* gpn,
                              CONTACT::CElement& ele,
-                             const double* eta);  
-    
+                             const double* eta);
+
   /*!
   \brief Evaluate GradF for Gauss point projection
 
   */
   double EvaluateGradFGaussPoint(const double* gpn,
                                  CONTACT::CElement& ele,
-                                 const double* eta);  
-  
+                                 const double* eta);
+
   /*!
   \brief Evaluate F for Gauss point projection (3D)
 
@@ -296,8 +296,8 @@ public:
                              const double* gpn,
                              CONTACT::CElement& ele,
                              const double* eta,
-                             const double& alpha);  
-    
+                             const double& alpha);
+
   /*!
   \brief Evaluate GradF for Gauss point projection (3D)
 
@@ -307,8 +307,8 @@ public:
                                  const double* gpn,
                                  CONTACT::CElement& ele,
                                  const double* eta,
-                                 const double& alpha); 
-    
+                                 const double& alpha);
+
   /*!
   \brief Evaluate F for AuxPlane Gauss point projection (3D)
 
@@ -318,8 +318,8 @@ public:
                                  const double* auxn,
                                  CONTACT::CElement& ele,
                                  const double* eta,
-                                 const double& alpha);  
-    
+                                 const double& alpha);
+
   /*!
   \brief Evaluate GradF for AuxPlane Gauss point projection (3D)
 
@@ -329,16 +329,16 @@ public:
                                      const double* auxn,
                                      CONTACT::CElement& ele,
                                      const double* eta,
-                                     const double& alpha); 
-    
+                                     const double& alpha);
+
   //@}
-      
+
 protected:
-    
+
   // don't want = operator and cctor
   Projector operator = (const Projector& old);
   Projector(const Projector& old);
-  
+
   int       dim_;          // dimension of problem (2D or 3D)
 
 }; // class Projector

@@ -5,11 +5,11 @@
 -------------------------------------------------------------------------
                         BACI Contact library
             Copyright (2008) Technical University of Munich
-              
+
 Under terms of contract T004.008.000 there is a non-exclusive license for use
 of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
 
-This library is proprietary software. It must not be published, distributed, 
+This library is proprietary software. It must not be published, distributed,
 copied or altered in any form or any media without written permission
 of the copyright holder. It may be used under terms and conditions of the
 above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
@@ -18,11 +18,11 @@ This library contains and makes use of software copyrighted by Sandia Corporatio
 and distributed under LGPL licence. Licensing does not apply to this or any
 other third party software used here.
 
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de) 
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
                    or
                    Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
 
-http://www.lnm.mw.tum.de                   
+http://www.lnm.mw.tum.de
 
 -------------------------------------------------------------------------
 </pre>
@@ -67,17 +67,17 @@ namespace CONTACT
 class Integrator
 {
 public:
-  
+
   /*!
   \brief Standard constructor
-  
+
   Constructs an instance of this class.<br>
   Note that this is \b not a collective call as overlaps are
   integrated in parallel by individual processes.<br>
   Note also that this constructor relies heavily on the
   DRT::UTILS::IntegrationPoints structs to get Gauss points
   and corresponding weights.
-  
+
   */
   explicit Integrator(DRT::Element::DiscretizationType eletype);
 
@@ -86,58 +86,58 @@ public:
 
   */
   virtual ~Integrator() {}
-  
+
   //! @name Access methods
-  
+
   /*!
   \brief Get problem dimension
-  
+
   Note that only 2D and 3D are possible here as this refers to the global
   problem dimension. On integration level this corresponds to 1D integration
   (dim_==2) and 2D integration (dim_==3) on the interface!
-      
+
   */
   virtual inline const int& Dim() {return dim_;};
-  
+
   /*!
   \brief Return number of Gauss points for this instance
-    
+
   */
   inline int nGP() {return ngp_;}
-  
+
   /*!
   \brief Return coordinates of a specific GP in 1D/2D CElement
-    
+
   */
   inline double Coordinate(int& gp, int dir) {return coords_(gp,dir);}
-  
+
   /*!
   \brief Return weight of a specific GP in 1D/2D CElement
-      
+
   */
   inline double Weight(int& gp) {return weights_[gp];}
-  
+
   //@}
-  
+
   //! @name 2D and 3D integration methods
-  
+
   /*!
   \brief Build all integrals and linearizations on a 1D or 2D
          slave element (i.e. D, LinD).
-  
+
   This method is only called if the flag CONTACTONEMORTARLOOP is
   not set. Otherwise we obtain the D-matrix entries via a fundamental
   Mortar equation from the M-matrix entries.
-          
+
   */
   void IntegrateDerivSlave2D3D(
       CONTACT::CElement& sele, double* sxia, double* sxib,
       RCP<Epetra_SerialDenseMatrix> dseg);
-    
+
   /*!
   \brief Build all integrals and linearizations on a 1D slave /
          master overlap (i.e. M, g, LinM, Ling and possibly D, LinD)
-          
+
   */
   void IntegrateDerivSegment2D(
       CONTACT::CElement& sele, double& sxia, double& sxib,
@@ -145,44 +145,44 @@ public:
       RCP<Epetra_SerialDenseMatrix> dseg,
       RCP<Epetra_SerialDenseMatrix> mseg,
       RCP<Epetra_SerialDenseVector> gseg);
-    
+
   /*!
   \brief Compute directional derivative of segment end coordinates
          Xi on a 1D slave / master overlap
-          
+
   */
   void DerivXiAB2D(CONTACT::CElement& sele, double& sxia, double& sxib,
                    CONTACT::CElement& mele, double& mxia, double& mxib,
                    vector<map<int,double> >& derivxi,
                    bool& startslave, bool& endslave);
-  
+
   /*!
   \brief Compute directional derivative of master Gauss point
-         coordinates XiGP on a 1D slave / master overlap 
-            
+         coordinates XiGP on a 1D slave / master overlap
+
   */
   void DerivXiGP2D(CONTACT::CElement& sele, CONTACT::CElement& mele,
                    double& sxigp, double& mxigp, const map<int,double>& derivsxi,
                    map<int,double>& derivmxi);
-    
+
   /*!
   \brief Integrate modification Mmod on a 1D slave / master overlap
-   
+
   This modification is based on a paper by Puso/Wohlmuth, 2005.<br>
   It is necessary in the case of linear slave side elements
   and dual shape functions for the Lagrange multipliers, when
   the interface is curved (but only for mesh tying)!
-  
+
   */
   RCP<Epetra_SerialDenseMatrix> IntegrateMmod2D(CONTACT::CElement& sele,
                                                 double& sxia, double& sxib,
                                                 CONTACT::CElement& mele,
                                                 double& mxia, double& mxib);
-  
+
   /*!
   \brief Build all integrals and linearizations on a 2D slave /
          master integration cell (i.e. M, g, LinM, Ling and possibly D, LinD)
-         
+
   */
   void IntegrateDerivCell3D(
      CONTACT::CElement& sele, CONTACT::CElement& mele,
@@ -190,7 +190,7 @@ public:
      RCP<Epetra_SerialDenseMatrix> dseg,
      RCP<Epetra_SerialDenseMatrix> mseg,
      RCP<Epetra_SerialDenseVector> gseg);
- 
+
   // THIS IS A FINITE DIFFERENCE VERSION ONLY!!!
   void IntegrateDerivCell3D(
      CONTACT::CElement& sele, CONTACT::CElement& mele,
@@ -200,12 +200,12 @@ public:
      vector<vector<double> >& testgps, vector<vector<double> >& testgpm,
      vector<vector<double> >& testjs, vector<vector<double> >& testji,
      bool printderiv=false);
-  
+
   /*!
   \brief Build all integrals and linearizations on a 2D slave /
          master integration cell (i.e. M, g, LinM, Ling and possibly D, LinD)
          for the auxiliary plane coupling case
-         
+
   */
   void IntegrateDerivCell3DAuxPlane(
      CONTACT::CElement& sele, CONTACT::CElement& mele,
@@ -213,7 +213,7 @@ public:
      RCP<Epetra_SerialDenseMatrix> dseg,
      RCP<Epetra_SerialDenseMatrix> mseg,
      RCP<Epetra_SerialDenseVector> gseg);
- 
+
   // THIS IS A FINITE DIFFERENCE VERSION ONLY!!!
   void IntegrateDerivCell3DAuxPlane(
      CONTACT::CElement& sele, CONTACT::CElement& mele,
@@ -223,12 +223,12 @@ public:
      vector<vector<double> >& testgps, vector<vector<double> >& testgpm,
      vector<vector<double> >& testjs, vector<vector<double> >& testji,
      bool printderiv=false);
-  
+
   /*!
   \brief Build all integrals and linearizations on a 2D slave /
          master integration cell (i.e. M, g, LinM, Ling) for
          the auxiliary plane coupling case with quadratic interpolation
-         
+
   */
   void IntegrateDerivCell3DAuxPlaneQuad(
      CONTACT::CElement& sele, CONTACT::CElement& mele,
@@ -237,69 +237,69 @@ public:
      RCP<Epetra_SerialDenseMatrix> dseg,
      RCP<Epetra_SerialDenseMatrix> mseg,
      RCP<Epetra_SerialDenseVector> gseg);
-    
+
   /*!
   \brief Compute directional derivative of master Gauss point
-         coordinates XiGP on a 2D slave / master integration cell 
-            
+         coordinates XiGP on a 2D slave / master integration cell
+
   */
   void DerivXiGP3D(CONTACT::CElement& sele, CONTACT::CElement& mele,
                    double* sxigp, double* mxigp, const vector<map<int,double> >& derivsxi,
                    vector<map<int,double> >& derivmxi, double& alpha);
-  
+
   /*!
   \brief Compute directional derivative of slave / master Gauss point
          coordinates XiGP on a 2D slave / master integration cell
          (This is the AuxPlane version, thus master and slave are projected)
-           
+
   */
   void DerivXiGP3DAuxPlane(CONTACT::CElement& ele, double* xigp, double* auxn,
                    vector<map<int,double> >& derivxi, double& alpha,
                    const vector<map<int,double> >& derivauxn,
                    const vector<map<int,double> >& derivgp);
-  
+
   /*!
   \brief Assemble D contribution of current overlap into slave nodes
-  
+
   */
   bool AssembleD(const Epetra_Comm& comm,
                  CONTACT::CElement& sele,
                  Epetra_SerialDenseMatrix& D_seg);
-  
+
   /*!
   \brief Assemble M contribution of current overlap into slave nodes
-    
+
   */
   bool AssembleM(const Epetra_Comm& comm,
                  CONTACT::CElement& sele,
                  CONTACT::CElement& mele,
                  Epetra_SerialDenseMatrix& M_seg);
-  
+
   /*!
   \brief Assemble Mmod contribution of current overlap into slave nodes
-      
+
   */
   bool AssembleMmod(const Epetra_Comm& comm,
                     CONTACT::CElement& sele,
                     CONTACT::CElement& mele,
                     Epetra_SerialDenseMatrix& Mmod_seg);
-  
+
   /*!
   \brief Assemble g~ contribution of current overlap into slave nodes
-      
+
   */
   bool AssembleG(const Epetra_Comm& comm,
                  CONTACT::CElement& sele,
                  Epetra_SerialDenseVector& g_seg);
-       
+
   //@}
-      
+
 protected:
-    
+
     // don't want = operator and cctor
     Integrator operator = (const Integrator& old);
     Integrator(const Integrator& old);
-  
+
     int                        dim_;         // dimension of problem (2D or 3D)
     int                        ngp_;         // number of Gauss points
     Epetra_SerialDenseMatrix   coords_;      // Gauss point coordinates

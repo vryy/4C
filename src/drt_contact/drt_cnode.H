@@ -5,11 +5,11 @@
 -------------------------------------------------------------------------
                         BACI Contact library
             Copyright (2008) Technical University of Munich
-              
+
 Under terms of contract T004.008.000 there is a non-exclusive license for use
 of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
 
-This library is proprietary software. It must not be published, distributed, 
+This library is proprietary software. It must not be published, distributed,
 copied or altered in any form or any media without written permission
 of the copyright holder. It may be used under terms and conditions of the
 above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
@@ -18,11 +18,11 @@ This library contains and makes use of software copyrighted by Sandia Corporatio
 and distributed under LGPL licence. Licensing does not apply to this or any
 other third party software used here.
 
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de) 
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
                    or
                    Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
 
-http://www.lnm.mw.tum.de                   
+http://www.lnm.mw.tum.de
 
 -------------------------------------------------------------------------
 </pre>
@@ -86,9 +86,9 @@ public:
   \param dofs   (in): list of global degrees of freedom
   \param isslave(in): flag indicating whether node is slave or master
   \param initactive (in): flag indicating whether initially set to active
-  
+
   */
-  CNode(int id, const double* coords, const int owner, 
+  CNode(int id, const double* coords, const int owner,
         const int numdof, const vector<int>& dofs, const bool isslave,
         const bool initactive);
 
@@ -117,7 +117,7 @@ public:
 
   every class implementing ParObject needs a unique id defined at the
   top of drt_lib/drt_parobject.H.
-  
+
   */
   virtual int UniqueParObjectId() const { return ParObject_CNode;}
 
@@ -153,56 +153,56 @@ public:
 
   /*!
   \brief Modify slave / master status of current node
-  
+
   This belated modification is necessary to be able to deal
   with boundary nodes on the slave side of the interface. Their
   status is changed to master, thy do NOT carry Lagrange multi-
   pliers and their neighbors' dual shape fct. are modified!
   */
   inline virtual bool& SetSlave() { return isslave_; }
-  
+
   /*!
   \brief Is Node initialized as active node (only slave nodes)
   */
   inline virtual bool IsInitActive() const
   { if (!IsSlave()) dserror("ERROR: InitActive requested for Master node");
     return initactive_; }
-  
+
   /*!
   \brief Modify initial active status of slave node
-  
+
   This belated modification is necessary to be able to use
   the binary search tree for contact initialization in the
   load-controlled quasistatic case (instead of input file
   information Active/Inactive)
-   
+
   */
   inline virtual bool& SetActive()
   { if (!IsSlave()) dserror("ERROR: InitActive requested for Master node");
     return initactive_; }
-    
+
   /*!
   \brief Is Node on boundary of slave side of contact interface
   */
   inline virtual bool IsOnBound() const { return isonbound_; }
-  
+
   /*!
   \brief Set slave side boundary status of current node
   */
   inline virtual bool& SetBound() { return isonbound_; }
-  
+
   /*!
   \brief Return D.B.C. status of this node's dofs (length 3)
   */
   virtual inline bool* Dbc() { return dbc_; }
-  
+
   /*!
   \brief Return D.B.C. status of this node (true if at least one dof with D.B.C)
   */
   virtual inline bool IsDbc() const { bool globaldbc = false;
                                       for(int i=0;i<NumDof();++i) globaldbc += dbc_[i];
                                       return globaldbc; }
-    
+
   /*!
   \brief Get number of degrees of freedom
   */
@@ -217,7 +217,7 @@ public:
   \brief Return current configuration (length 3)
   */
   virtual inline double* xspatial() { return xspatial_; }
-  
+
   /*!
   \brief Return current displacements (length 3)
   */
@@ -227,47 +227,47 @@ public:
   \brief Return old displacement (length 3)
   */
   virtual inline double* uold() { return uold_; }
-  
+
   /*!
   \brief Return current nodal normal (only for slave side!) (length 3)
   */
   virtual inline double* n() { return n_; }
-  
+
   /*!
   \brief Return current nodal tangent t_xi (only for slave side!) (length 3)
   */
   virtual inline double* txi() { return txi_; }
-   
+
   /*!
   \brief Return current nodal tangent t_eta (only for slave side!) (length 3)
   */
   virtual inline double* teta() { return teta_; }
-    
+
   /*!
   \brief Return current Lagrange mutliplier (only for slave side!) (length 3)
   */
   virtual inline double* lm() { return lm_; }
-  
+
   /*!
   \brief Return old Lagrange mutliplier (only for slave side!) (length 3)
   */
   virtual inline double* lmold() { return lmold_; }
-  
+
   /*!
   \brief Return summation of incremental jumps per time step (only for slave side!) (length 3)
   */
   virtual inline double* jump() { return jump_; }
-   
+
   /*!
   \brief Return current closest node's global id (by reference)
   */
   virtual inline int& ClosestNode() { return closestnode_; }
-  
+
   /*!
   \brief Return projection status of this node (only for slave side!)
   */
   virtual inline bool& HasProj() { return hasproj_; }
-    
+
   /*!
   \brief Return contact status of this node (active=true)
   */
@@ -277,76 +277,76 @@ public:
   \brief Return contact status of last converged state n (active=true)
   */
   virtual inline bool& ActiveOld() { return activeold_; }
-  
+
   /*!
   \brief Return friction status of this node (slip=true)
   */
   virtual inline bool& Slip() { return slip_; }
-  
+
   /*!
   brief Add a value to the 'D' map of this node
-  
+
   The 'D' map is later assembled to the D matrix.
   Note that drows_ here is a vector.
-    
+
   \param row : local dof row id to add to (rowwise)
   \param val : value to be added
   \param col : global dof column id of the value added
-  
+
   */
   void AddDValue(int& row, int& col, double& val);
-  
+
   /*!
   brief Add a value to the 'M' map of this node
-    
+
   The 'M' map is later assembled to the M matrix.
   Note that mrows_ here is a vector.
-      
+
   \param row : local dof row id to add to (rowwise)
   \param val : value to be added
   \param col : global dof column id of the value added
-  
+
   */
   void AddMValue(int& row, int& col, double& val);
-    
+
   /*!
   brief Add a value to the 'Mmod' map of this node
-     
+
   The 'Mmod' map is later assembled to the M matrix.
   Note that mmodrows_ here is a vector.
-       
+
   \param row : local dof row id to add to (rowwise)
   \param val : value to be added
   \param col : global dof column id of the value added
-  
+
   */
-  void AddMmodValue(int& row, int& col, double& val);  
+  void AddMmodValue(int& row, int& col, double& val);
 
   /*!
   brief Add a value to the weighted gap of this node
-    
+
   This value is later assembled to the weighted gap vec.
   Note that grow_ here is a scalar.
-     
+
   \param val : value to be added
-  
+
   */
   void AddgValue(double& val);
-  
+
   /*!
   brief Write nodal entries of D and M to Dold and Mold
-    
+
   At the end of a time step the nodal entries (vector) of the Mortar
-  Matrices D and M are stored to the old ones. 
-     
+  Matrices D and M are stored to the old ones.
+
   */
   void StoreDMOld();
-  
+
   /*!
   \brief Return the 'D' map (vector) of this node
   */
   virtual inline vector<map<int,double> >& GetD() { return drows_; }
-  
+
   /*!
   \brief Return the 'M' map (vector) of this node
   */
@@ -356,79 +356,79 @@ public:
   \brief Return the old 'D' map (vector) of this node (last converged state)
   */
   virtual inline vector<map<int,double> >& GetDOld() { return drowsold_; }
-  
+
   /*!
   \brief Return the old 'M' map (vector) of this node (last converged state)
   */
   virtual inline vector<map<int,double> >& GetMOld() { return mrowsold_; }
-  
+
   /*!
   \brief Return the 'Mmod' map (vector) of this node
   */
   virtual inline vector<map<int,double> >& GetMmod() { return mmodrows_; }
-  
+
   /*!
   \brief Return the weighted gap (scalar) of this node
   */
   virtual inline double& Getg() { return grow_; }
-  
+
   /*!
   \brief Return the 'DerivN' map (vector) of this node
-  
+
   These maps contain the directional derivatives of the node's
   averaged normal vector with respect to the slave displacements.
   A vector is used because the normal itself is a vector (2 or 3 components).
-  
+
   */
   virtual inline vector<map<int,double> >& GetDerivN() { return derivn_; }
-  
+
   /*!
   \brief Return the 'DerivTxi' map (vector) of this node
-    
+
   These maps contain the directional derivatives of the node's
   unit tangent vector t_xi with respect to the slave displacements.
   A vector is used because the tangent itself is a vector (2 or 3 components).
-  
+
   */
   virtual inline vector<map<int,double> >& GetDerivTxi() { return derivtxi_; }
-  
+
   /*!
   \brief Return the 'DerivTeta' map (vector) of this node
-    
+
   These maps contain the directional derivatives of the node's
   unit tangent vector t_eta with respect to the slave displacements.
   A vector is used because the tangent itself is a vector (2 or 3 components).
-  
+
   */
   virtual inline vector<map<int,double> >& GetDerivTeta() { return derivteta_; }
-    
+
   /*!
   \brief Return the 'DerivD' map of this node
-  
+
   This map contains the directional derivatives of the node's
   D-matrix diagonal entry with respect to the slave displacements.
-  
+
   */
   virtual inline map<int,double>& GetDerivD() { return derivd_; }
-  
+
   /*!
   \brief Return the 'DerivM' map of maps of this node
-   
+
   This map contains the directional derivatives of the node's
   M-matrix diagonal entries with respect to the slave/master displacements.
   It is a "map of maps", with the outer map containing all master
   node indices k adjacent to this node i and the inner map containing
   all directional derivatives l existing for M_ik.
-  
+
   */
   virtual inline map<int,map<int,double> >& GetDerivM() { return derivm_; }
-  
+
   /*!
   \brief Return one specific 'DerivM' map of this node
-     
+
   This method returns the map of directional derivatives of one
   specific M-matrix M_ik entry of this node i.
-  
+
   */
   virtual inline map<int,double>& GetDerivM(int& k)
   {
@@ -438,16 +438,16 @@ public:
      dserror("ERROR: GetDerivM: No map entry existing for given index");
     return derivm_[k];
   }
-  
+
   /*!
   \brief Return the 'DerivG' map of this node
-  
+
   This map contains the directional derivatives of the node's
   weighted gap entry g~ with respect to the slave/master displacements.
-  
+
   */
   virtual inline map<int,double>& GetDerivG() { return derivg_; }
-    
+
   //@}
 
   //! @name Construction methods
@@ -456,10 +456,10 @@ public:
   \brief Build nodal normal
   */
   virtual void BuildAveragedNormal();
-  
+
   /*!
   \brief Build directional derivative of nodal normal + tangents
-  
+
   This method will be called after having finished the method
   BuildAveragedNormal() for the computation of nodal normals. The result
   (directional derivatives) will be stored in the nodal maps derivn_ and
@@ -467,7 +467,7 @@ public:
   Please note that we also compute the directional derivative of the
   nodal tangent here,and the results will be stored analogously in
   the nodal maps derivtxi_ (2D and 3D) and derivteta_ (only 3D).
-  
+
   \param elens (in):  Matrix containing normals of adjacent elements
   \param length (in): Length of the nodal averaged normal
   \param ltxi (in):   Length of the nodal tangent txi
@@ -475,22 +475,22 @@ public:
   */
   virtual void DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
                                    double length, double ltxi);
-    
+
   /*!
   \brief Find closest node from given node set and return global ID
-    
+
   This method will compute the distance of the active CNode to all
   nodes of the given Epetra_Map on the given DRT::Discretization
-    
+
   \param intdis (in):         Master Node to project
   \param nodesearchmap (in) : Slave Celement to project on
   \param xi (out) : Local coordinates of projection on Celement
-  
+
   */
   virtual CONTACT::CNode* FindClosestNode(const RCP<DRT::Discretization> intdis,
                                           const RCP<Epetra_Map> nodesearchmap,
                                           double& mindist);
-    
+
   //@}
 
 protected:
@@ -509,27 +509,27 @@ protected:
   double          uold_[3];        // old displacement (last converged state)
   double          lm_[3];          // current Lagrange multiplier value (n+1)
   double          lmold_[3];       // old Lagrange multiplier value (last converged state n)
-  double          jump_[3];        // summation of incremental jumps per time step 
+  double          jump_[3];        // summation of incremental jumps per time step
   int             closestnode_;    // closest node id on the other side of interface
   bool            hasproj_;        // true if feasible projection within search set (slave nodes only)
   bool            active_;         // true if cnode is in contact (active set strategy)
   bool            activeold_;      // true if cnode was in contact (last converged state n)
   bool            slip_;           // true if cnode slips (contact force reaches friction bound)
-  
+
   vector<map<int,double> >      drows_;      // nodal rows of D matrix
   vector<map<int,double> >      mrows_;      // nodal rows of M matrix
   vector<map<int,double> >      drowsold_;   // nodal rows of old D matrix
   vector<map<int,double> >      mrowsold_;   // nodal rows of old M matrix
   vector<map<int,double> >      mmodrows_;   // nodal rows of Mmod matrix
   double                        grow_;       // nodal entry of g vector
-  
+
   vector<map<int,double> >      derivn_;     // directional derivative of nodal normal
   vector<map<int,double> >      derivtxi_;   // directional derivative of nodal tangent t_xi
   vector<map<int,double> >      derivteta_;  // directional derivative of nodal tangent t_eta
   map<int,double>               derivd_;     // directional derivative of nodal D-matrix value
   map<int,map<int,double> >     derivm_;     // directional derivative of nodal M-matrix values
   map<int,double>               derivg_;     // directional derivative of nodal weighted gap value
-  
+
 
 }; // class CNode
 } // namespace CONTACT

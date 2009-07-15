@@ -5,11 +5,11 @@
 -------------------------------------------------------------------------
                         BACI Contact library
             Copyright (2008) Technical University of Munich
-              
+
 Under terms of contract T004.008.000 there is a non-exclusive license for use
 of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
 
-This library is proprietary software. It must not be published, distributed, 
+This library is proprietary software. It must not be published, distributed,
 copied or altered in any form or any media without written permission
 of the copyright holder. It may be used under terms and conditions of the
 above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
@@ -18,11 +18,11 @@ This library contains and makes use of software copyrighted by Sandia Corporatio
 and distributed under LGPL licence. Licensing does not apply to this or any
 other third party software used here.
 
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de) 
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
                    or
                    Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
 
-http://www.lnm.mw.tum.de                   
+http://www.lnm.mw.tum.de
 
 -------------------------------------------------------------------------
 </pre>
@@ -87,30 +87,30 @@ public:
 
   */
   void ConsistentPredictor();
-  
-  
+
+
   /// setup equilibrium with additional external forces
   void ApplyExternalForce(  const LINALG::MapExtractor& extractor,
                             Teuchos::RCP<Epetra_Vector> iforce
                             );
-  
-  
+
+
   /// compute F (FSI)
-  void computeF(  const Epetra_Vector& x, 
+  void computeF(  const Epetra_Vector& x,
                   Epetra_Vector& F);
-  
-  
+
+
   /// compute J at x (FSI)
   void computeJacobian(const Epetra_Vector& x);
 
-  
-  /// build linear system matrix and rhs (FSI)           
+
+  /// build linear system matrix and rhs (FSI)
   void Evaluate(Teuchos::RCP<const Epetra_Vector> disp);
-  
-  
+
+
   /// linear relaxation solve (FSI)
   Teuchos::RCP<Epetra_Vector> LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax);
-  
+
   /*!
   \brief do full Newton iteration
 
@@ -128,7 +128,7 @@ public:
 
   */
   void FullNewtonLineSearch();
-    
+
   /*!
   \brief do semi-smooth full Newton iteration
 
@@ -137,16 +137,16 @@ public:
   and the large deformation linearization (=geometrical nonlinearity) are
   merged into one semi-smooth Newton method and can therefore besolved
   within ONE iteration loop!
-  
+
   */
   void SemiSmoothNewton();
-  
+
   /*!
   \brief do semi-smooth full Newton iteration with line search
 
   */
   void SemiSmoothNewtonLineSearch();
-    
+
   /*!
   \brief update configuration and output to file/screen
 
@@ -158,14 +158,14 @@ public:
 
   /// output to file/screen
   virtual void Output();
- 
+
 
   /*!
   \brief restart calculation from a given step
 
   */
   void ReadRestart(int step);
-  
+
   /// getContactManager
   RCP<CONTACT::Manager> getContactmanager() {return contactmanager_; }
 

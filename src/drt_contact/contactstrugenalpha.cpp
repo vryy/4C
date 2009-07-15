@@ -70,7 +70,7 @@ StruGenAlpha(params,dis,solver,output)
     double alphaf = params_.get<double>("alpha f",0.459);
     contactmanager_ = rcp(new CONTACT::Manager(discret_,alphaf));
   }
-  
+
   // map containing Dirichlet DOFs
   Teuchos::ParameterList p;
   double time = params_.get<double>("total time"     ,0.0);
@@ -79,7 +79,7 @@ StruGenAlpha(params,dis,solver,output)
   discret_.EvaluateDirichlet(p, zeros_, Teuchos::null, Teuchos::null,
                               Teuchos::null, dbcmaps);
   zeros_->PutScalar(0.0); // just in case of change
-  
+
   // save Dirichlet B.C. status in Contact Manager
   // all CNodes on all interfaces then know if D.B.C.s are applied on their dofs
   contactmanager_->StoreDirichletStatus(dbcmaps);
@@ -118,25 +118,25 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   {
     CalcRefNorms();
   }
-  
-  //-------------friction: calculate quantities of reference configuration 
-  // for frictional contact we need history values and therefore we store 
-  // the nodal entries of mortar matrices (reference configuration) before 
+
+  //-------------friction: calculate quantities of reference configuration
+  // for frictional contact we need history values and therefore we store
+  // the nodal entries of mortar matrices (reference configuration) before
   // first time step
   INPAR::CONTACT::ContactType ctype =
     Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(contactmanager_->Params(),"CONTACT");
-  
+
   if(params_.get<int>("step") == 0 && ctype == INPAR::CONTACT::contact_frictional)
-  {  
-  	// set state and do mortar calculation 
+  {
+  	// set state and do mortar calculation
   	contactmanager_->SetState("displacement",disn_);
     contactmanager_->InitializeMortar();
     contactmanager_->EvaluateMortar();
 
-    // store contact state to contact nodes (active or inactive) 
+    // store contact state to contact nodes (active or inactive)
   	contactmanager_->StoreNodalQuantities(Manager::activeold);
   	
-  	// store D and M to old ones 
+  	// store D and M to old ones
   	contactmanager_->StoreDM("old");
   	
    	// store nodal entries from D and M to old ones
@@ -314,7 +314,7 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
     discret_.Evaluate(p,stiff_,null,fint_,null,null);
 #endif
     discret_.ClearState();
-    
+
     // include potential conditions in fint_ and stiff_
     if (pot_man_!=null)
     {
@@ -487,25 +487,25 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   {
     CalcRefNorms();
   }
-  
-  //-------------friction: calculate quantities of reference configuration 
-  // for frictional contact we need history values and therefore we store 
-  // the nodal entries of mortar matrices (reference configuration) before 
+
+  //-------------friction: calculate quantities of reference configuration
+  // for frictional contact we need history values and therefore we store
+  // the nodal entries of mortar matrices (reference configuration) before
   // first time step
   INPAR::CONTACT::ContactType ctype =
     Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(contactmanager_->Params(),"CONTACT");
-  
+
   if(params_.get<int>("step") == 0 && ctype == INPAR::CONTACT::contact_frictional)
-  {    
-  	// set state and do mortar calculation 
+  {
+  	// set state and do mortar calculation
   	contactmanager_->SetState("displacement",disn_);
     contactmanager_->InitializeMortar();
     contactmanager_->EvaluateMortar();
 
-    // store contact state to contact nodes (active or inactive) 
-  	contactmanager_->StoreNodalQuantities(Manager::activeold);  
+    // store contact state to contact nodes (active or inactive)
+  	contactmanager_->StoreNodalQuantities(Manager::activeold);
   	
-  	// store D and M to old ones 
+  	// store D and M to old ones
   	contactmanager_->StoreDM("old");
   	
   	// store nodal entries from D and M to old ones
@@ -606,7 +606,7 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
     discret_.Evaluate(p,stiff_,null,fint_,null,null);
 #endif
     discret_.ClearState();
-    
+
     // include potential conditions in fint_ and stiff_
     if (pot_man_!=null)
     {
@@ -722,7 +722,7 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
     fresm_->Multiply(1.0,*invtoggle_,fresmdbc,0.0);
     if (locsysmanager_ != null) locsysmanager_->RotateLocalToGlobal(fresm_);
   }
- 
+
   //------------------------------------------------ build residual norm
   double fresmnorm = 1.0;
 
@@ -985,8 +985,8 @@ void CONTACT::ContactStruGenAlpha::ApplyExternalForce(  const LINALG::MapExtract
     fresm_->Multiply(1.0,*invtoggle_,fresmdbc,0.0);
     if (locsysmanager_ != null) locsysmanager_->RotateLocalToGlobal(fresm_);
   }
-  
-  
+
+
   //------------------------------------------------ build residual norm
   double fresmnorm = 1.0;
 
@@ -1216,7 +1216,7 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
       discret_.Evaluate(p,stiff_,null,fint_,null,null);
 #endif
       discret_.ClearState();
-      
+
       // include potential conditions in fint_ and stiff_
       if (pot_man_!=null)
       {
@@ -1324,19 +1324,19 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
       INPAR::CONTACT::ContactType ctype =
         Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(contactmanager_->Params(),"CONTACT");
       if(ctype != INPAR::CONTACT::contact_normal)
-        contactmanager_->EvaluateRelMov(disi_); 
-            
+        contactmanager_->EvaluateRelMov(disi_);
+
       contactmanager_->Initialize();
       contactmanager_->Evaluate(stiff_,fresm_);
     }
 
     //--------------------------------------------------- contact forces
     contactmanager_->ContactForces(fresmcopy);
-    
+
 #ifdef CONTACTGMSH2
     dserror("Gmsh Output for every iteration only implemented for semi-smooth Newton");
 #endif // #ifdef CONTACTGMSH2
-    
+
     // blank residual DOFs that are on Dirichlet BC
     // in the case of local systems we have to rotate forth and back
     {
@@ -1483,7 +1483,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
     const double t_end = ds_cputime()-t_start;
     cout << "\n***\nSolve: " << t_end << " seconds\n***\n";
 #endif // #ifdef CONTACTTIME
-    
+
     //--------------------------------------- recover disi and Lag. Mult.
     contactmanager_->Recover(disi_);
 
@@ -1545,7 +1545,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
 #ifdef CONTACTTIME
     const double t_start2 = ds_cputime();
 #endif // #ifdef CONTACTTIME
-    
+
     //---------------------------- compute internal forces and stiffness
     {
       // zero out stiffness
@@ -1580,7 +1580,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
       discret_.Evaluate(p,stiff_,null,fint_,null,null);
 #endif
       discret_.ClearState();
-      
+
       // include potential conditions in fint_ and stiff_
       if (pot_man_!=null)
       {
@@ -1652,7 +1652,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
     fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
 
 #endif
-    
+
     //---------------------------------------------- build effective lhs
     // (using matrix stiff_ as effective matrix)
     // (again without contact, this is just Gen-alpha stuff here)
@@ -1680,7 +1680,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
 #ifdef CONTACTTIME
     const double t_start3 = ds_cputime();
 #endif // #ifdef CONTACTTIME
-    
+
     //-------------------------make contact modifications to lhs and rhs
     //-------------------- update active set for semi-smooth Newton case
     {
@@ -1703,7 +1703,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
       cout << "\nContact.InitMortar: " << t_end321 << " seconds";
       cout << "\nContact.EvalMortar: " << t_end322 << " seconds";
 #endif // #ifdef CONTACTTIME
-      
+
       // friction
       // here the relative movement of the contact bodies is evaluated
       // therefore the current configuration and the according mortar
@@ -1711,7 +1711,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
       INPAR::CONTACT::ContactType ctype =
         Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(contactmanager_->Params(),"CONTACT");
       if(ctype != INPAR::CONTACT::contact_normal)
-        contactmanager_->EvaluateRelMov(disi_); 
+        contactmanager_->EvaluateRelMov(disi_);
 
       // this is the correct place to update the active set!!!
       // (on the one hand we need the new weighted gap vector g, which is
@@ -1740,7 +1740,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
     const double t_end3 = ds_cputime()-t_start3;
     cout << "\n->Contact.Evaluate: " << t_end3 << " seconds\n***\n";
 #endif // #ifdef CONTACTTIME
-    
+
 #ifdef CONTACTGMSH2
     int step  = params_.get<int>("step",0);
     int istep = step + 1;
@@ -1763,7 +1763,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
     const double t_end0 = ds_cputime()-t_start0;
     cout << "\n***\nIteration Step (overall): " << t_end0 << " seconds\n***\n";
 #endif // #ifdef CONTACTTIME
-    
+
     // a short message
     if (!myrank_ and (printscreen or printerr))
     {
@@ -1880,23 +1880,23 @@ void CONTACT::ContactStruGenAlpha::Update()
 
   // update contact
   contactmanager_->Update(istep);
-  
+
   /*
   Teuchos::RCP<Epetra_Vector> linmom = LINALG::CreateVector(*(discret_.DofRowMap()), true);
   mass_->Multiply(false, *vel_, *linmom);
-  
+
   int dim = contactmanager_->Dim();
   vector<double> sumlinmom(3);
   vector<double> sumangmom(3);
-  
+
   for (int k=0; k<(discret_.NodeRowMap())->NumMyElements();++k)
   {
     int gid = (discret_.NodeRowMap())->GID(k);
     DRT::Node* mynode = discret_.gNode(gid);
-    
+
     vector<double> nodelinmom(3);
     vector<double> position(3);
-    
+
     for (int d=0;d<dim;++d)
     {
       int dofid = (discret_.Dof(mynode))[d];
@@ -1904,25 +1904,25 @@ void CONTACT::ContactStruGenAlpha::Update()
       sumlinmom[d] += nodelinmom[d];
       position[d] = mynode->X()[d] + (*dis_)[dofid];
     }
-    
+
     vector<double> nodeangmom(3);
     nodeangmom[0] = position[1]*nodelinmom[2]-position[2]*nodelinmom[1];
     nodeangmom[1] = position[2]*nodelinmom[0]-position[0]*nodelinmom[2];
     nodeangmom[2] = position[0]*nodelinmom[1]-position[1]*nodelinmom[0];
-    
+
     for (int d=0;d<3;++d)
       sumangmom[d] += nodeangmom[d];
-    
+
     // vector product position x nodelinmom
   }
-  
+
   // global calculation of kinetic energy
   double kinergy = 0.0;  // total kinetic energy
   {
     linmom->Dot(*vel_,&kinergy);
     kinergy *= 0.5;
   }
-  
+
   cout << "\n************************************************************************" << endl;
   cout << "CONTACT CONSERVATION QUANTITIES" << endl;
   cout << "Linear Momentum x-direction:  " << sumlinmom[0] << endl;
@@ -1934,31 +1934,31 @@ void CONTACT::ContactStruGenAlpha::Update()
   cout << "Kinetic Energy:               " << kinergy << endl;
   cout << "************************************************************************" << endl;
   */
-  
+
   //----------------------------------------friction: store history values
-  // in the case of frictional contact we have to store several 
-  // informations and quantities at the end of a time step (converged 
+  // in the case of frictional contact we have to store several
+  // informations and quantities at the end of a time step (converged
   // state) which is needed in the next time step as history
   // information/quantities. These are:
   INPAR::CONTACT::ContactType ctype =
     Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(contactmanager_->Params(),"CONTACT");
   if(ctype != INPAR::CONTACT::contact_normal)
-  { 
+  {
   	
 #ifdef CONTACTSLIPFIRST  	
   	contactmanager_->CorrectSlip();
 #endif
   	
-  	// store contact state to contact nodes (active or inactive) 
-  	contactmanager_->StoreNodalQuantities(Manager::activeold);  
+  	// store contact state to contact nodes (active or inactive)
+  	contactmanager_->StoreNodalQuantities(Manager::activeold);
   	  	
-  	// store nodal entries of D and M to old ones   
-    contactmanager_->StoreDMToNodes();    
-    
+  	// store nodal entries of D and M to old ones
+    contactmanager_->StoreDMToNodes();
+
     // store the displacements to contact nodes
     contactmanager_->SetState("olddisplacement",dis_);
   }
-  
+
 #ifdef PRESTRESS
   //----------- save the current green-lagrange strains in the material
   {
@@ -2061,7 +2061,7 @@ void CONTACT::ContactStruGenAlpha::Output()
 
     // write restart information for contact
     contactmanager_->WriteRestart(output_);
-    
+
     if (discret_.Comm().MyPID()==0 and printscreen)
     {
       cout << "====== Restart written in step " << istep << endl;
@@ -2143,7 +2143,7 @@ void CONTACT::ContactStruGenAlpha::Output()
 
   // print active set
   contactmanager_->PrintActiveSet();
-  
+
   //---------------------------------------------------------- print out
   if (!myrank_)
   {
@@ -2228,12 +2228,12 @@ void CONTACT::ContactStruGenAlpha::Integrate()
       SemiSmoothNewton();
 
       UpdateandOutput();
-      
+
 #ifdef CONTACTTIME
       const double t_end = ds_cputime()-t_start;
       cout << "\n***\nTime Step (overall): " << t_end << " seconds\n***\n";
 #endif // #ifdef CONTACTTIME
-      
+
       double time = params_.get<double>("total time",0.0);
       if (time>=maxtime) break;
     }
@@ -2380,7 +2380,7 @@ void CONTACT::ContactStruGenAlpha::ReadRestart(int step)
 
   // read restart information for contact
   contactmanager_->ReadRestart(reader,dis_);
-  
+
   // override current time and step with values from file
   params_.set<double>("total time",time);
   params_.set<int>   ("step",rstep);

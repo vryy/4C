@@ -6,11 +6,11 @@
 -------------------------------------------------------------------------
                         BACI Contact library
             Copyright (2008) Technical University of Munich
-              
+
 Under terms of contract T004.008.000 there is a non-exclusive license for use
 of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
 
-This library is proprietary software. It must not be published, distributed, 
+This library is proprietary software. It must not be published, distributed,
 copied or altered in any form or any media without written permission
 of the copyright holder. It may be used under terms and conditions of the
 above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
@@ -19,11 +19,11 @@ This library contains and makes use of software copyrighted by Sandia Corporatio
 and distributed under LGPL licence. Licensing does not apply to this or any
 other third party software used here.
 
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de) 
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
                    or
                    Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
 
-http://www.lnm.mw.tum.de                   
+http://www.lnm.mw.tum.de
 
 -------------------------------------------------------------------------
 </pre>
@@ -58,15 +58,15 @@ discret_(discret)
   alphaf_ = alphaf;
   comm_ = rcp(Discret().Comm().Clone());
   problemrowmap_ = rcp(new Epetra_Map(*(Discret().DofRowMap())));
-  
+
   // get problem dimension (2D or 3D) and store into dim_
   const Teuchos::ParameterList& psize = DRT::Problem::Instance()->ProblemSizeParams();
   dim_=psize.get<int>("DIM");
   if (Dim()!= 2 && Dim()!=3) dserror("ERROR: Contact problem must be 2D or 3D");
-  
+
   // read and check contact input parameters
   ReadAndCheckInput();
-  
+
   // check for FillComplete of discretization
   if (!Discret().Filled()) dserror("Discretization is not fillcomplete");
 
@@ -76,25 +76,25 @@ discret_(discret)
   vector<DRT::Condition*> contactconditions(0);
   Discret().GetCondition("Contact",contactconditions);
   if ((int)contactconditions.size()<=1)  dserror("Not enough contact conditions in discretization");
-  
+
   // find all pairs of matching contact conditions
   // there is a maximum of (conditions / 2) groups
   vector<int> foundgroups(0);
   int numgroupsfound = 0;
-  
+
   for (int i=0; i<(int)contactconditions.size(); ++i)
   {
     // initialize vector for current group of conditions and temp condition
     vector<DRT::Condition*> currentgroup(0);
     DRT::Condition* tempcond = NULL;
-    
+
     // try to build contact group around this condition
     currentgroup.push_back(contactconditions[i]);
     const vector<int>* group1v = currentgroup[0]->Get<vector<int> >("contact id");
     if (!group1v) dserror("Contact Conditions does not have value 'contact id'");
     int groupid1 = (*group1v)[0];
     bool foundit = false;
-    
+
     for (int j=0; j<(int)contactconditions.size(); ++j)
     {
       if (j==i) continue; // do not detect contactconditions[i] again
@@ -128,7 +128,7 @@ discret_(discret)
 
     // create an empty interface and store it in this Manager
     interface_.push_back(rcp(new CONTACT::Interface(groupid1,Comm(),Dim(),Params())));
-    
+
     // get it again
     RCP<CONTACT::Interface> interface = interface_[(int)interface_.size()-1];
 
@@ -137,7 +137,7 @@ discret_(discret)
     bool hasmaster = false;
     vector<const string*> sides((int)currentgroup.size());
     vector<bool> isslave((int)currentgroup.size());
-    
+
     for (int j=0;j<(int)sides.size();++j)
     {
       sides[j] = currentgroup[j]->Get<string>("Side");
@@ -153,15 +153,15 @@ discret_(discret)
       }
       else
         dserror("ERROR: ContactManager: Unknown contact side qualifier!");
-    } 
-    
+    }
+
     if (!hasslave) dserror("Slave side missing in contact condition group!");
     if (!hasmaster) dserror("Master side missing in contact condition group!");
-       
+
     // find out which sides are initialized as Active
     vector<const string*> active((int)currentgroup.size());
     vector<bool> isactive((int)currentgroup.size());
-    
+
     for (int j=0;j<(int)sides.size();++j)
     {
       active[j] = currentgroup[j]->Get<string>("Initialization");
@@ -182,16 +182,16 @@ discret_(discret)
       else
         dserror("ERROR: ContactManager: Unknown contact side qualifier!");
     }
-    
+
     // note that the nodal ids are unique because they come from
     // one global problem discretization conatining all nodes of the
     // contact interface
     // We rely on this fact, therefore it is not possible to
     // do contact between two distinct discretizations here
-    
+
     // collect all intial active nodes
     std::vector<int> initialactive;
-    
+
     //-------------------------------------------------- process nodes
     for (int j=0;j<(int)currentgroup.size();++j)
     {
@@ -205,10 +205,10 @@ discret_(discret)
         if (!Discret().NodeColMap()->MyGID(gid)) continue;
         DRT::Node* node = Discret().gNode(gid);
         if (!node) dserror("Cannot find node with gid %",gid);
-        
+
         // store initial active node gids
         if (isactive[j]) initialactive.push_back(gid);
-        
+
         // find out if this node is initial active on another Condition
         // and do NOT overwrite this status then!
         bool foundinitialactive = false;
@@ -221,7 +221,7 @@ discret_(discret)
               break;
             }
         }
-        
+
         // create CNode object
         // for the boolean variable initactive we use isactive[j]+foundinitialactive,
         // as this is true for BOTH initial active nodes found for the first time
@@ -231,7 +231,7 @@ discret_(discret)
                                                            Discret().NumDof(node),
                                                            Discret().Dof(node),
                                                            isslave[j],isactive[j]+foundinitialactive));
-        
+
         // note that we do not have to worry about double entries
         // as the AddNode function can deal with this case!
         // the only problem would have occured for the initial active nodes,
@@ -259,8 +259,8 @@ discret_(discret)
       int lsize = (int)currele.size();
       int gsize = 0;
       Comm().SumAll(&lsize,&gsize,1);
-      
-    
+
+
       map<int,RCP<DRT::Element> >::iterator fool;
       for (fool=currele.begin(); fool != currele.end(); ++fool)
       {
@@ -274,20 +274,20 @@ discret_(discret)
                                                                 isslave[j]));
         interface->AddCElement(cele);
       } // for (fool=ele1.start(); fool != ele1.end(); ++fool)
-      
+
       ggsize += gsize; // update global element counter
     }
-    
+
     //-------------------- finalize the contact interface construction
     interface->FillComplete();
 
   } // for (int i=0; i<(int)contactconditions.size(); ++i)
-  
+
 #ifdef DEBUG
   //for (int i=0;i<(int)interface_.size();++i)
   //  cout << *interface_[i];
 #endif // #ifdef DEBUG
-  
+
   // setup global slave / master Epetra_Maps
   // (this is done by looping over all interfaces and merging)
   for (int i=0;i<(int)interface_.size();++i)
@@ -296,12 +296,12 @@ discret_(discret)
   	gsdofrowmap_ = LINALG::MergeMap(gsdofrowmap_,interface_[i]->SlaveRowDofs());
   	gmdofrowmap_ = LINALG::MergeMap(gmdofrowmap_,interface_[i]->MasterRowDofs());
   }
-  
+
   // setup global dof map of non-slave-ormaster dofs
-  // (this is done by splitting from the dicretization dof map) 
+  // (this is done by splitting from the dicretization dof map)
   gndofrowmap_ = LINALG::SplitMap(*(discret_.DofRowMap()),*gsdofrowmap_);
   gndofrowmap_ = LINALG::SplitMap(*gndofrowmap_,*gmdofrowmap_);
-  
+
   // initialize active sets and slip sets of all interfaces
   // (these maps are NOT allowed to be overlapping !!!)
   for (int i=0;i<(int)interface_.size();++i)
@@ -315,11 +315,11 @@ discret_(discret)
     gslipdofs_ = LINALG::MergeMap(gslipdofs_,interface_[i]->SlipDofs(),false);
     gslipt_ = LINALG::MergeMap(gslipt_,interface_[i]->SlipTDofs(),false);
   }
-    
+
   // setup Lagrange muliplier vectors
   z_          = rcp(new Epetra_Vector(*gsdofrowmap_));
   zold_       = rcp(new Epetra_Vector(*gsdofrowmap_));
-  
+
   // setup global Mortar matrices Dold and Mold
   dold_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_));
   dold_->Zero();
@@ -327,11 +327,11 @@ discret_(discret)
   mold_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_));
   mold_->Zero();
   mold_->Complete(*gmdofrowmap_,*gsdofrowmap_);
-  
+
   // friction
-  // setup vector of displacement jumps (slave dof) 
+  // setup vector of displacement jumps (slave dof)
   jump_       = rcp(new Epetra_Vector(*gsdofrowmap_));
-  
+
   return;
 }
 
@@ -374,59 +374,59 @@ bool CONTACT::Manager::ReadAndCheckInput()
 {
   // read parameter list from DRT::Problem
   const Teuchos::ParameterList& input = DRT::Problem::Instance()->StructuralContactParams();
-    
+
   // invalid parameter combinations
   if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(input,"CONTACT")   == INPAR::CONTACT::contact_normal &&
       Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(input,"FRICTION") != INPAR::CONTACT::friction_none)
     dserror("Friction law supplied for normal contact");
-  
+
   if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(input,"CONTACT")   == INPAR::CONTACT::contact_frictional &&
       Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(input,"FRICTION") == INPAR::CONTACT::friction_none)
     dserror("No friction law supplied for frictional contact");
-  
+
   if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(input,"CONTACT") == INPAR::CONTACT::contact_frictional &&
                                           input.get<double>("SEMI_SMOOTH_CT") == 0.0)
   	dserror("Friction Parameter ct = 0, must be greater than 0");
-  
+
   if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(input,"FRICTION") == INPAR::CONTACT::friction_tresca &&
                                                    input.get<double>("FRBOUND") <= 0.0)
     dserror("No valid Tresca friction bound provided, must be greater than 0");
-  
+
   if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(input,"FRICTION") == INPAR::CONTACT::friction_coulomb &&
                                                    input.get<double>("FRCOEFF") <= 0.0)
     dserror("No valid Coulomb friction coefficient provided, must be greater than 0");
-  
+
   if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(input,"CONTACT")   == INPAR::CONTACT::contact_meshtying &&
       Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(input,"FRICTION") != INPAR::CONTACT::friction_stick)
     dserror("Friction law other than stick supplied for mesh tying");
-  
+
   if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactSearchAlgorithm>(input,"SEARCH_ALGORITHM") == INPAR::CONTACT::search_bfnode &&
                                                                 input.get<double>("SEARCH_PARAM") == 0.0)
     dserror("Search radius sp = 0, must be greater than 0 for node-based search");
-  
-#ifdef CONTACTRELVELMATERIAL 
+
+#ifdef CONTACTRELVELMATERIAL
   // check full linearization
   bool fulllin   = Teuchos::getIntegralValue<int>(input,"FULL_LINEARIZATION");
   if (fulllin) dserror ("Full linearization only running for evaluating\n"
   		                  "the relative velocity with change of projection");
 #endif
-  
+
   // warnings
   if ((Teuchos::getIntegralValue<INPAR::CONTACT::ContactSearchAlgorithm>(input,"SEARCH_ALGORITHM") == INPAR::CONTACT::search_bfele ||
       Teuchos::getIntegralValue<INPAR::CONTACT::ContactSearchAlgorithm>(input,"SEARCH_ALGORITHM")  == INPAR::CONTACT::search_binarytree) &&
                                                                  input.get<double>("SEARCH_PARAM") == 0.0)
     cout << ("Warning: Ele-based / binary tree search called without inflation of bounding volumes\n") << endl;
 
-  if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(input,"CONTACT")   == INPAR::CONTACT::contact_frictional && 
+  if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(input,"CONTACT")   == INPAR::CONTACT::contact_frictional &&
       Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(input,"FRICTION") == INPAR::CONTACT::friction_coulomb)
   	cout << ("Warning: Coulomb friction law not completely implemented\n") << endl;
 
   // store ParameterList in contact manager
   scontact_ = input;
-  
+
   return true;
 }
-  
+
 /*----------------------------------------------------------------------*
  |  write restart information for contact (public)            popp 03/08|
  *----------------------------------------------------------------------*/
@@ -435,7 +435,7 @@ void CONTACT::Manager::WriteRestart(IO::DiscretizationWriter& output)
   // quantities to be written for restart
   RCP<Epetra_Vector> activetoggle = rcp(new Epetra_Vector(*gsnoderowmap_));
   RCP<Epetra_Vector> sliptoggle = rcp(new Epetra_Vector(*gsnoderowmap_));
-  
+
   // loop over all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
   {
@@ -446,18 +446,18 @@ void CONTACT::Manager::WriteRestart(IO::DiscretizationWriter& output)
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
       CNode* cnode = static_cast<CNode*>(node);
-      
+
       // set value active / inactive in toggle vector
       if (cnode->Active()) (*activetoggle)[j]=1;
-      if (cnode->Slip()) (*sliptoggle)[j]=1; 
+      if (cnode->Slip()) (*sliptoggle)[j]=1;
     }
   }
-  
+
   // write restart information for contact
   output.WriteVector("lagrmultold",LagrMultOld());
   output.WriteVector("activetoggle",activetoggle);
-  output.WriteVector("sliptoggle",sliptoggle); 
-  
+  output.WriteVector("sliptoggle",sliptoggle);
+
   return;
 }
 
@@ -472,13 +472,13 @@ void CONTACT::Manager::ReadRestart(IO::DiscretizationReader& reader,
   reader.ReadVector(LagrMult(),"lagrmultold");
   StoreNodalQuantities(Manager::lmold);
   StoreNodalQuantities(Manager::lmcurrent);
-  
+
   RCP<Epetra_Vector> activetoggle =rcp(new Epetra_Vector(*(SlaveRowNodes())));
   reader.ReadVector(activetoggle,"activetoggle");
 
   RCP<Epetra_Vector> sliptoggle =rcp(new Epetra_Vector(*(SlaveRowNodes())));
   reader.ReadVector(sliptoggle,"sliptoggle");
-  
+
   // loop over all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
   {
@@ -491,17 +491,17 @@ void CONTACT::Manager::ReadRestart(IO::DiscretizationReader& reader,
         DRT::Node* node = interface_[i]->Discret().gNode(gid);
         if (!node) dserror("ERROR: Cannot find node with gid %",gid);
         CNode* cnode = static_cast<CNode*>(node);
-      
+
         // set value active / inactive in cnode
         cnode->Active()=true;
-        
+
         // set value stick / slip in cnode
-        if ((*sliptoggle)[j]==1) 
+        if ((*sliptoggle)[j]==1)
         cnode->Slip()=true;
       }
     }
   }
-  
+
   // update active sets of all interfaces
   // (these maps are NOT allowed to be overlapping !!!)
   for (int i=0;i<(int)interface_.size();++i)
@@ -515,11 +515,11 @@ void CONTACT::Manager::ReadRestart(IO::DiscretizationReader& reader,
     gslipdofs_ = LINALG::MergeMap(gslipdofs_,interface_[i]->SlipDofs(),false);
     gslipt_ = LINALG::MergeMap(gslipt_,interface_[i]->SlipTDofs(),false);
   }
-  
+
   // update flag for global contact status
   if (gactivenodes_->NumGlobalElements())
     IsInContact()=true;
-  
+
   // build restart Mortar matrices D and M
   SetState("displacement",dis);
   InitializeMortar();
@@ -527,7 +527,7 @@ void CONTACT::Manager::ReadRestart(IO::DiscretizationReader& reader,
   StoreDM("old");
   StoreNodalQuantities(Manager::activeold);
   StoreDMToNodes();
- 
+
   return;
 }
 

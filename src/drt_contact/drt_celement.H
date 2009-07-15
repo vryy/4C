@@ -5,11 +5,11 @@
 -------------------------------------------------------------------------
                         BACI Contact library
             Copyright (2008) Technical University of Munich
-              
+
 Under terms of contract T004.008.000 there is a non-exclusive license for use
 of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
 
-This library is proprietary software. It must not be published, distributed, 
+This library is proprietary software. It must not be published, distributed,
 copied or altered in any form or any media without written permission
 of the copyright holder. It may be used under terms and conditions of the
 above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
@@ -18,11 +18,11 @@ This library contains and makes use of software copyrighted by Sandia Corporatio
 and distributed under LGPL licence. Licensing does not apply to this or any
 other third party software used here.
 
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de) 
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
                    or
                    Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
 
-http://www.lnm.mw.tum.de                   
+http://www.lnm.mw.tum.de
 
 -------------------------------------------------------------------------
 </pre>
@@ -94,7 +94,7 @@ public:
       biquad2D,               // biquadratic 2D
       biquaddual2D            // dual biquadratic 2D
     };
-      
+
   //@}
 
   //! @name Constructors and destructors and related methods
@@ -110,10 +110,10 @@ public:
   \param nodeids (in): ids of nodes adjacent to this element
   \param isslave (in): flag indicating whether element is slave or master side
   */
-  explicit CElement(int id, ElementType etype, int owner, 
-                    const DRT::Element::DiscretizationType& shape, 
+  explicit CElement(int id, ElementType etype, int owner,
+                    const DRT::Element::DiscretizationType& shape,
                     const int numnode,
-                    const int* nodeids, 
+                    const int* nodeids,
                     const bool isslave);
 
   /*!
@@ -142,7 +142,7 @@ public:
 
   Every class implementing ParObject needs a unique id defined at the
   top of drt_parobject.H
-  
+
   */
   virtual int UniqueParObjectId() const { return ParObject_CElement; }
 
@@ -165,7 +165,7 @@ public:
   /*!
   \brief Allocate and return a ElementRegister class
 
-  Assuming the contact elements do not need initialization, we return a 
+  Assuming the contact elements do not need initialization, we return a
   dummy base class here.
 
   */
@@ -178,25 +178,25 @@ public:
 
   /*!
   \brief Get shape type of element
-  
+
   */
   virtual DiscretizationType Shape() const { return shape_;}
 
   /*!
   \brief Return number of lines to this element
-  
+
   */
   virtual int NumLine() const {return 0;}
 
   /*!
   \brief Return number of surfaces to this element
-  
+
   */
   virtual int NumSurface() const {return 0;}
 
   /*!
   \brief Get vector of RefCountPtrs to the lines of this element
-  
+
   */
   virtual vector<RCP<DRT::Element> > Lines()
   {
@@ -206,7 +206,7 @@ public:
 
   /*!
   \brief Get vector of RefCountPtrs to the surfaces of this element
-  
+
   */
   virtual vector<RCP<DRT::Element> > Surfaces()
   {
@@ -216,10 +216,10 @@ public:
 
   /*!
   \brief Get number of degrees of freedom of a certain node
-  
+
   This CElement is picky: It cooperates only with CNodes, not with
   standard Node objects!
-  
+
   */
   virtual int NumDofPerNode(const DRT::Node& node) const
   {
@@ -233,7 +233,7 @@ public:
 
   For now contact elements do not have degrees of freedom independent of
   the nodes
-  
+
   */
   virtual int NumDofPerElement() const { return 0; }
 
@@ -242,19 +242,19 @@ public:
 
   */
   virtual void Print(ostream& os) const;
-  
+
   /*!
   \brief Return current area
 
   */
   virtual inline double& Area() { return area_; }
-  
+
   /*!
   \brief Return slave (true) or master status
 
   */
   virtual inline bool IsSlave() { return isslave_; }
-  
+
   /*!
   \brief Return ansatz type (true = quad) of element
 
@@ -264,19 +264,19 @@ public:
     if (Shape()==quad8 || Shape()==quad9 || Shape()==tri6) return true;
     else return false;
   }
-    
+
   /*!
   \brief Return number of potentially contacting elements
-  
+
   */
   virtual inline int NumSearchElements() const { return (int)searchelements_.size(); }
-  
+
   /*!
   \brief Return global ids of potentially contacting elements
-  
+
   */
   virtual inline vector<int>& SearchElements() {return searchelements_; }
-  
+
   //@}
 
   //! @name Construction
@@ -328,30 +328,30 @@ public:
   \brief Get local coordinates for local node id
   */
   virtual bool LocalCoordinatesOfNode(int& lid, double* xi);
-    
+
   /*!
   \brief Get local numbering for global node id
   */
   virtual int GetLocalNodeId(int& nid);
-  
+
   /*!
   \brief Build element normal at node passed in
   */
   virtual void BuildNormalAtNode(int nid, int& i, Epetra_SerialDenseMatrix& elens);
-  
+
   /*!
   \brief Build element normal derivative at node passed in
   */
   virtual void DerivNormalAtNode(int nid, int& i, Epetra_SerialDenseMatrix& elens,
                                  vector<map<int,double> >& derivn);
-    
+
   /*!
   \brief Compute element normal at local coordinate xi
          Caution: This function cannot be called stand-alone! It is
          integrated into the whole nodal normal calculation process.
   */
   virtual void ComputeNormalAtXi(double* xi, int& i, Epetra_SerialDenseMatrix& elens);
-  
+
   /*!
   \brief Compute unit element normal at local coordinate xi
          This function is a real stand-alone function to be called
@@ -359,7 +359,7 @@ public:
          Returns the length of the non-unit interpolated normal at xi.
   */
   virtual double ComputeUnitNormalAtXi(double* xi, double* n);
-    
+
   /*!
   \brief Compute element normal derivative at local coordinate xi
          Caution: This function cannot be called stand-alone! It is
@@ -367,54 +367,54 @@ public:
   */
   virtual void DerivNormalAtXi(double* xi, int& i, Epetra_SerialDenseMatrix& elens,
                                vector<map<int,double> >& derivn);
-  
+
   /*!
   \brief Compute element unit normal derivative at local coordinate xi
          This function is a real stand-alone function to be called
          for a CElement in order to compute a unit normal derivative at any point.
   */
   virtual void DerivUnitNormalAtXi(double* xi, vector<map<int,double> >& derivn);
-    
+
   /*!
   \brief Get nodal reference / spatial coords of current element
-  
+
   \param isinit (in): true if called for reference coords
   */
   virtual void GetNodalCoords(LINALG::SerialDenseMatrix& coord,
                               bool isinit = false);
-  
+
   /*!
   \brief Evaluate element metrics (local basis vectors)
   */
   virtual void Metrics(double* xi, vector<double>& gxi, vector<double>& geta);
-  
+
   /*!
   \brief Evaluate Jacobian determinant for parameter space integration
   */
   virtual double Jacobian(double* xi);
-  
+
   /*!
   \brief Evaluate derivative J,xi of Jacobian determinant
   */
   virtual void DJacDXi(double* djacdxi, double* xi,
                        const LINALG::SerialDenseMatrix& secderiv);
-    
-    
+
+
   /*!
   \brief Compute Jacobian determinant derivative
   */
   virtual void DerivJacobian(double* xi, map<int,double>& derivjac);
-  
+
   /*!
   \brief Compute length/area of the element
   */
   virtual double ComputeArea();
-  
+
   /*!
   \brief Compute length/area derivative of the element
   */
   virtual void DerivArea(map<int,double>& derivarea);
-    
+
   /*!
   \brief A repository for all kinds of 1D/2D shape functions
   */
@@ -422,17 +422,17 @@ public:
                               const double* xi,
                               LINALG::SerialDenseVector& val,
                               LINALG::SerialDenseMatrix& deriv);
-  
+
   /*!
   \brief A repository for 1D/2D shape function linearizations
-  
+
   Currently this only contains the dual 1D quadratic shape functions.
   Linearization with respect to the displacements slave displacements
   is necessary here due to the adaption for distorted elements. The
   shape functions are thus dependent of the element geometry !!!
-  
+
   \param derivdual (in): derivative maps to be filled
-                         (= derivatives of the dual coefficient matrix Ae) 
+                         (= derivatives of the dual coefficient matrix Ae)
   */
   void ShapeFunctionLinearizations(CElement::ShapeType shape,
                                    vector<vector<map<int,double> > >& derivdual);
@@ -441,34 +441,34 @@ public:
   */
   virtual bool EvaluateShape(const double* xi, LINALG::SerialDenseVector& val,
                              LINALG::SerialDenseMatrix& deriv, const int& valdim);
-   
+
   /*!
   \brief Evaluate dual shape functions and derivatives
   */
   virtual bool EvaluateShapeDual(const double* xi, LINALG::SerialDenseVector& val,
                                  LINALG::SerialDenseMatrix& deriv, const int& valdim);
-  
+
   /*!
   \brief Evaluate 2nd derivative of shape functions
   */
   virtual bool Evaluate2ndDerivShape(const double* xi, LINALG::SerialDenseMatrix& val,
                                      const int& valdim);
-    
+
   /*!
   \brief Compute directional derivative of dual shape functions
-  
+
   \param derivdual (in): derivative maps to be filled
-                         (= derivatives of the dual coefficient matrix Ae) 
+                         (= derivatives of the dual coefficient matrix Ae)
   */
   virtual bool DerivShapeDual(vector<vector<map<int,double> > >& derivdual);
-  
+
   /*!
   \brief Interpolate global coordinates for given local element coordinates
-  
+
   This method interpolates global coordinates for a given local element
   coordinate variable using the element node coordinates. For interpolation
   one can choose between shape functions or shape function derivatives!
-  
+
   \param xi (in)        : local element coordinates
   \param inttype (in)   : set to 0 for shape function usage,
                           set to 1 for derivative xi usage
@@ -479,50 +479,50 @@ public:
 
   /*!
   \brief Evaluate minimal edge size of CElement
-  
+
   \param isinit (in): true if called for reference coords
   */
   virtual double MinEdgeSize(bool isinit = false);
-  
+
   /*!
   \brief Evaluate maximal edge size of CElement
-  
+
   \param isinit (in): true if called for reference coords
   */
   virtual double MaxEdgeSize(bool isinit = false);
-  
+
   /*!
   \brief Add CElements to this CElement's potential contact partners
-  
+
   This is for the classical node-based brute-force search. We have to
   additionally check, if the given CElements have already been added
   to this CElement's potential contact partners before, in order to
   avoid double integrations!!
-  
+
   */
   virtual bool AddSearchElements(const vector<int>& gids);
-  
+
   /*!
   \brief Add one CElement to this CElement's potential contact partners
-  
+
   This is for the element-based brute-force search and for the new
   binary search tree. We do NOT have to additionally check, if the
   given CElement has already been added to this CElement's potential
   contact partners before. This cannot happen by construction!
-  
+
   */
   virtual bool AddSearchElements(const int& gid);
   //@}
 
 
 private:
-  
+
   DRT::Element::DiscretizationType   shape_;   // shape of this element
-  
+
   bool          isslave_;           // indicating slave or master side
   double        area_;              // element length/area in current configuration
-  
-  vector<int>   searchelements_;    // global ids of potentially contacting elements 
+
+  vector<int>   searchelements_;    // global ids of potentially contacting elements
 
 }; // class CElement
 } // namespace CONTACT

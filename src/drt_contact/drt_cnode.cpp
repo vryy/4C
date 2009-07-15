@@ -6,11 +6,11 @@
 -------------------------------------------------------------------------
                         BACI Contact library
             Copyright (2008) Technical University of Munich
-              
+
 Under terms of contract T004.008.000 there is a non-exclusive license for use
 of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
 
-This library is proprietary software. It must not be published, distributed, 
+This library is proprietary software. It must not be published, distributed,
 copied or altered in any form or any media without written permission
 of the copyright holder. It may be used under terms and conditions of the
 above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
@@ -19,11 +19,11 @@ This library contains and makes use of software copyrighted by Sandia Corporatio
 and distributed under LGPL licence. Licensing does not apply to this or any
 other third party software used here.
 
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de) 
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
                    or
                    Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
 
-http://www.lnm.mw.tum.de                   
+http://www.lnm.mw.tum.de
 
 -------------------------------------------------------------------------
 </pre>
@@ -47,7 +47,7 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
-CONTACT::CNode::CNode(int id, const double* coords, const int owner, 
+CONTACT::CNode::CNode(int id, const double* coords, const int owner,
                       const int numdof, const vector<int>& dofs, const bool isslave,
                       const bool initactive) :
 DRT::Node(id,coords,owner),
@@ -76,7 +76,7 @@ grow_(1.0e12)
     lmold()[i]=0.0;
     jump()[i]=0.0;
   }
-   
+
   return;
 }
 
@@ -115,7 +115,7 @@ grow_(old.grow_)
     lmold()[i]=old.lmold_[i];
     jump()[i]=old.jump_[i];
   }
-  
+
   return;
 }
 
@@ -288,19 +288,19 @@ void CONTACT::CNode::AddDValue(int& row, int& col, double& val)
     dserror("ERROR: AddDValue: function called for master node %i", Id());
   if (IsOnBound()==true)
     dserror("ERROR: AddDValue: function called for boundary node %i", Id());
-  
+
   // check if this has been called before
   if ((int)drows_.size()==0)
     drows_.resize(NumDof());
-  
+
   // check row index input
   if ((int)drows_.size()<=row)
     dserror("ERROR: AddDValue: tried to access invalid row index!");
-  
+
   // add the pair (col,val) to the given row
   map<int,double>& dmap = drows_[row];
   dmap[col] += val;
-    
+
   return;
 }
 
@@ -314,19 +314,19 @@ void CONTACT::CNode::AddMValue(int& row, int& col, double& val)
     dserror("ERROR: AddDValue: function called for master node %i", Id());
   if (IsOnBound()==true)
     dserror("ERROR: AddDValue: function called for boundary node %i", Id());
-    
+
   // check if this has been called before
   if ((int)mrows_.size()==0)
     mrows_.resize(NumDof());
-    
+
   // check row index input
   if ((int)mrows_.size()<=row)
     dserror("ERROR: AddMValue: tried to access invalid row index!");
-    
+
   // add the pair (col,val) to the given row
   map<int,double>& mmap = mrows_[row];
   mmap[col] += val;
-      
+
   return;
 }
 
@@ -340,19 +340,19 @@ void CONTACT::CNode::AddMmodValue(int& row, int& col, double& val)
     dserror("ERROR: AddDValue: function called for master node %i", Id());
   if (IsOnBound()==true)
     dserror("ERROR: AddDValue: function called for boundary node %i", Id());
-    
+
   // check if this has been called before
   if ((int)mmodrows_.size()==0)
     mmodrows_.resize(NumDof());
-    
+
   // check row index input
   if ((int)mmodrows_.size()<=row)
     dserror("ERROR: AddMmodValue: tried to access invalid row index!");
-    
+
   // add the pair (col,val) to the given row
   map<int,double>& mmodmap = mmodrows_[row];
   mmodmap[col] += val;
-      
+
   return;
 }
 
@@ -366,13 +366,13 @@ void CONTACT::CNode::AddgValue(double& val)
     dserror("ERROR: AddDValue: function called for master node %i", Id());
   if (IsOnBound()==true)
     dserror("ERROR: AddDValue: function called for boundary node %i", Id());
-  
+
   // initialize if called for the first time
   if (grow_==1.0e12) grow_=0;
-  
+
   // add given value to grow_
   grow_+=val;
-  
+
   return;
 }
 
@@ -381,21 +381,21 @@ void CONTACT::CNode::AddgValue(double& val)
  *----------------------------------------------------------------------*/
 void CONTACT::CNode::StoreDMOld()
 {
-  // copy drows_ to drowsold_  
-  
+  // copy drows_ to drowsold_
+
   // reset old nodal Mortar maps
   for (int j=0;j<(int)(GetDOld().size());++j)
   (GetDOld())[j].clear();
   for (int j=0;j<(int)((GetMOld()).size());++j)
   (GetMOld())[j].clear();
-  
-  // clear and zero nodal vectors   
+
+  // clear and zero nodal vectors
   drowsold_.clear();
   mrowsold_.clear();
   drowsold_.resize(0);
 	mrowsold_.resize(0);
 	
-	// write drows_ to drowsold_ 
+	// write drows_ to drowsold_
 	drowsold_ = drows_;
   mrowsold_ = mrows_;
 	
@@ -414,10 +414,10 @@ void CONTACT::CNode::BuildAveragedNormal()
     txi()[j]=0.0;
     teta()[j]=0.0;
   }
-    
+
   int nseg = NumElement();
   DRT::Element** adjeles = Elements();
-  
+
   // we need to store some stuff here
   //**********************************************************************
   // elens(0,i): x-coord of element normal
@@ -428,7 +428,7 @@ void CONTACT::CNode::BuildAveragedNormal()
   // elens(5,i): length/area of element itself
   //**********************************************************************
   Epetra_SerialDenseMatrix elens(6,nseg);
-  
+
   // loop over all adjacent elements
   for (int i=0;i<nseg;++i)
   {
@@ -438,28 +438,28 @@ void CONTACT::CNode::BuildAveragedNormal()
     // (we have to pass in the index i to be able to store the
     // normal and other information at the right place in elens)
     adjcele->BuildNormalAtNode(Id(),i,elens);
-    
+
     // add (weighted) element normal to nodal normal n
     for (int j=0;j<3;++j)
       n()[j]+=elens(j,i)/elens(4,i);
   }
-  
+
   // create unit normal vector
   double length = sqrt(n()[0]*n()[0]+n()[1]*n()[1]+n()[2]*n()[2]);
   if (length==0.0) dserror("ERROR: Nodal normal length 0, node ID %i",Id());
   else             for (int j=0;j<3;++j) n()[j]/=length;
-  
+
   // create unit tangent vectors
   // (note that this definition is not unique in 3D!)
   double ltxi = 1.0;
-  
+
   if (NumDof()==2)
   {
     // simple definition for txi
     txi()[0] = -n()[1];
     txi()[1] =  n()[0];
     txi()[2] =  0.0;
-    
+
     // teta is z-axis
     teta()[0] = 0.0;
     teta()[1] = 0.0;
@@ -474,11 +474,11 @@ void CONTACT::CNode::BuildAveragedNormal()
     teta()[0] = 0.0;
     teta()[1] = 0.0;
     teta()[2] = 1.0;
-    
+
     // txi follows from corkscrew rule (txi = teta x n)
     txi()[0] = teta()[1]*n()[2]-teta()[2]*n()[1];
     txi()[1] = teta()[2]*n()[0]-teta()[0]*n()[2];
-    txi()[2] = teta()[0]*n()[1]-teta()[1]*n()[0]; 
+    txi()[2] = teta()[0]*n()[1]-teta()[1]*n()[0];
 #else
     // arbitrary definition for txi
     if (abs(n()[2])>1.0e-6)
@@ -501,22 +501,22 @@ void CONTACT::CNode::BuildAveragedNormal()
     }
     else
       dserror("ERROR: Something wrong with nodal normal");
-    
+
     ltxi = sqrt(txi()[0]*txi()[0]+txi()[1]*txi()[1]+txi()[2]*txi()[2]);
     for (int j=0;j<3;++j) txi()[j]/=ltxi;
-    
+
     // teta follows from corkscrew rule (teta = n x txi)
     teta()[0] = n()[1]*txi()[2]-n()[2]*txi()[1];
     teta()[1] = n()[2]*txi()[0]-n()[0]*txi()[2];
-    teta()[2] = n()[0]*txi()[1]-n()[1]*txi()[0]; 
+    teta()[2] = n()[0]*txi()[1]-n()[1]*txi()[0];
 #endif // #ifdef CONTACTPSEUDO2D
   }
   else
     dserror("ERROR: Contact problems must be either 2D or 3D");
-  
+
   // build linearization of averaged nodal normal and tangents
   DerivAveragedNormal(elens,length,ltxi);
- 
+
   return;
 }
 
@@ -530,19 +530,19 @@ void CONTACT::CNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
   if ((int)GetDerivN().size()==0) GetDerivN().resize(3);
   if ((int)GetDerivTxi().size()==0) GetDerivTxi().resize(3);
   if ((int)GetDerivTeta().size()==0) GetDerivTeta().resize(3);
-  
+
   int nseg = NumElement();
   DRT::Element** adjeles = Elements();
-  
+
   // loop over all adjacent elements
   for (int i=0;i<nseg;++i)
   {
     CElement* adjcele = static_cast<CElement*> (adjeles[i]);
-    
+
     // build element normal derivative at current node
     adjcele->DerivNormalAtNode(Id(),i,elens,GetDerivN());
   }
-  
+
   // normalize directional derivative
   // (length differs for weighted/unweighted case bot not the procedure!)
   // (be careful with reference / copy of derivative maps!)
@@ -559,7 +559,7 @@ void CONTACT::CNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
   double nyny = n()[1] * n()[1];
   double nynz = n()[1] * n()[2];
   double nznz = n()[2] * n()[2];
-  
+
   // build a vector with all keys from x,y,z maps
   // (we need this in order not to miss any entry!)
   vector<int> allkeysn;
@@ -569,7 +569,7 @@ void CONTACT::CNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
     for (int j=0;j<(int)allkeysn.size();++j)
       if ((p->first)==allkeysn[j]) found = true;
     if (!found) allkeysn.push_back(p->first);
-    
+
   }
   for (CI p=derivny.begin();p!=derivny.end();++p)
   {
@@ -577,7 +577,7 @@ void CONTACT::CNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
     for (int j=0;j<(int)allkeysn.size();++j)
       if ((p->first)==allkeysn[j]) found = true;
     if (!found) allkeysn.push_back(p->first);
-    
+
   }
   for (CI p=derivnz.begin();p!=derivnz.end();++p)
   {
@@ -586,28 +586,28 @@ void CONTACT::CNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
       if ((p->first)==allkeysn[j]) found = true;
     if (!found) allkeysn.push_back(p->first);
   }
-  
+
   // normalize x-components
   for (int j=0;j<(int)allkeysn.size();++j)
   {
     double val = cderivnx[allkeysn[j]];
     derivnx[allkeysn[j]] = (val-nxnx*val-nxny*cderivny[allkeysn[j]]-nxnz*cderivnz[allkeysn[j]])/length;
   }
-  
+
   // normalize y-components
   for (int j=0;j<(int)allkeysn.size();++j)
   {
     double val = cderivny[allkeysn[j]];
     derivny[allkeysn[j]] = (val-nxny*cderivnx[allkeysn[j]]-nyny*val-nynz*cderivnz[allkeysn[j]])/length;
   }
-  
+
   // normalize z-components
   for (int j=0;j<(int)allkeysn.size();++j)
   {
     double val = cderivnz[allkeysn[j]];
     derivnz[allkeysn[j]] = (val-nxnz*cderivnx[allkeysn[j]]-nynz*cderivny[allkeysn[j]]-nznz*val)/length;
   }
-  
+
   //**********************************************************************
   // tangent derivatives 2D
   //**********************************************************************
@@ -618,13 +618,13 @@ void CONTACT::CNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
     // the directional derivative of nodal tangent teta is 0
     map<int,double>& derivtxix = GetDerivTxi()[0];
     map<int,double>& derivtxiy = GetDerivTxi()[1];
-    
+
     for (CI p=derivny.begin();p!=derivny.end();++p)
       derivtxix[p->first] = -(p->second);
     for (CI p=derivnx.begin();p!=derivnx.end();++p)
       derivtxiy[p->first] = (p->second);
   }
-  
+
   //**********************************************************************
   // tangent derivatives 3D
   //**********************************************************************
@@ -633,13 +633,13 @@ void CONTACT::CNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
 #ifdef CONTACTPSEUDO2D
     // trivial tangent derivative teta
     // this is 0 as teta is fixed to (0,0,1)
-    
+
     // get normalized tangent derivative txi
     // use corkscrew rule from BuildAveragedNormal()
     map<int,double>& derivtxix = GetDerivTxi()[0];
     map<int,double>& derivtxiy = GetDerivTxi()[1];
     map<int,double>& derivtxiz = GetDerivTxi()[2];
-    
+
     for (CI p=derivnx.begin();p!=derivnx.end();++p)
     {
       derivtxiy[p->first] += teta()[2]*(p->second);
@@ -668,7 +668,7 @@ void CONTACT::CNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
         derivtxiz[p->first] -= 1/n()[2]*(p->second);
       for (CI p=derivnz.begin();p!=derivnz.end();++p)
         derivtxiz[p->first] += (n()[0]+n()[1])/(n()[2]*n()[2])*(p->second);
-  
+
     }
     else if (abs(n()[1])>1.0e-6)
     {
@@ -692,7 +692,7 @@ void CONTACT::CNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
     }
     else
       dserror("ERROR: Something wrong with nodal normal");
-    
+
     // normalize txi directional derivative
     // (identical to normalization of normal derivative)
     typedef map<int,double>::const_iterator CI;
@@ -708,7 +708,7 @@ void CONTACT::CNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
     double tyty = txi()[1] * txi()[1];
     double tytz = txi()[1] * txi()[2];
     double tztz = txi()[2] * txi()[2];
-    
+
     // build a vector with all keys from x,y,z maps
     // (we need this in order not to miss any entry!)
     vector<int> allkeyst;
@@ -718,7 +718,7 @@ void CONTACT::CNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
       for (int j=0;j<(int)allkeyst.size();++j)
         if ((p->first)==allkeyst[j]) found = true;
       if (!found) allkeyst.push_back(p->first);
-      
+
     }
     for (CI p=derivtxiy.begin();p!=derivtxiy.end();++p)
     {
@@ -726,7 +726,7 @@ void CONTACT::CNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
       for (int j=0;j<(int)allkeyst.size();++j)
         if ((p->first)==allkeyst[j]) found = true;
       if (!found) allkeyst.push_back(p->first);
-      
+
     }
     for (CI p=derivtxiz.begin();p!=derivtxiz.end();++p)
     {
@@ -735,34 +735,34 @@ void CONTACT::CNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
         if ((p->first)==allkeyst[j]) found = true;
       if (!found) allkeyst.push_back(p->first);
     }
-    
+
     // normalize x-components
     for (int j=0;j<(int)allkeyst.size();++j)
     {
       double val = cderivtxix[allkeyst[j]];
       derivtxix[allkeyst[j]] = (val-txtx*val-txty*cderivtxiy[allkeyst[j]]-txtz*cderivtxiz[allkeyst[j]])/ltxi;
     }
-    
+
     // normalize y-components
     for (int j=0;j<(int)allkeyst.size();++j)
     {
       double val =cderivtxiy[allkeyst[j]];
       derivtxiy[allkeyst[j]] = (val-txty*cderivtxix[allkeyst[j]]-tyty*val-tytz*cderivtxiz[allkeyst[j]])/ltxi;
     }
-    
+
     // normalize z-components
     for (int j=0;j<(int)allkeyst.size();++j)
     {
       double val = cderivtxiz[allkeyst[j]];
       derivtxiz[allkeyst[j]] = (val-txtz*cderivtxix[allkeyst[j]]-tytz*cderivtxiy[allkeyst[j]]-tztz*val)/ltxi;
     }
-    
+
     // get normalized tangent derivative teta
     // use corkscrew rule from BuildAveragedNormal()
     map<int,double>& derivtetax = GetDerivTeta()[0];
     map<int,double>& derivtetay = GetDerivTeta()[1];
     map<int,double>& derivtetaz = GetDerivTeta()[2];
-    
+
     for (CI p=derivnx.begin();p!=derivnx.end();++p)
     {
       derivtetay[p->first] -= txi()[2]*(p->second);
@@ -786,7 +786,7 @@ void CONTACT::CNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
     for (CI p=derivtxiy.begin();p!=derivtxiy.end();++p)
     {
       derivtetax[p->first] -= n()[2]*(p->second);
-      derivtetaz[p->first] += n()[0]*(p->second); 
+      derivtetaz[p->first] += n()[0]*(p->second);
     }
     for (CI p=derivtxiz.begin();p!=derivtxiz.end();++p)
     {
@@ -795,7 +795,7 @@ void CONTACT::CNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
     }
   }
 #endif // #ifdef CONTACTPSEUDO2D
-  
+
   return;
 }
 
@@ -807,7 +807,7 @@ CONTACT::CNode* CONTACT::CNode::FindClosestNode(const RCP<DRT::Discretization> i
                                                 double& mindist)
 {
   CNode* closestnode = NULL;
-  
+
   // loop over all nodes of the DRT::Discretization that are
   // included in the given Epetra_Map ("brute force" search)
   for(int i=0; i<nodesearchmap->NumMyElements();++i)
@@ -816,16 +816,16 @@ CONTACT::CNode* CONTACT::CNode::FindClosestNode(const RCP<DRT::Discretization> i
     DRT::Node* node = intdis->gNode(gid);
     if (!node) dserror("ERROR: FindClosestNode: Cannot find node with gid %",gid);
     CNode* cnode = static_cast<CNode*>(node);
-    
+
     // build distance between the two nodes
     double dist = 0.0;
     const double* p1 = xspatial();
     const double* p2 = cnode->xspatial();
-    
+
     for (int j=0;j<3;++j)
       dist+=(p1[j]-p2[j])*(p1[j]-p2[j]);
     dist=sqrt(dist);
-    
+
     // new closest node found, update
     if (dist <= mindist)
     {
@@ -833,10 +833,10 @@ CONTACT::CNode* CONTACT::CNode::FindClosestNode(const RCP<DRT::Discretization> i
       closestnode=cnode;
     }
   }
-  
+
   if (!closestnode)
     dserror("ERROR: FindClosestNode: No closest node found at all!");
-  
+
   return closestnode;
 }
 

@@ -7,11 +7,11 @@
 -------------------------------------------------------------------------
                         BACI Contact library
             Copyright (2008) Technical University of Munich
-              
+
 Under terms of contract T004.008.000 there is a non-exclusive license for use
 of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
 
-This library is proprietary software. It must not be published, distributed, 
+This library is proprietary software. It must not be published, distributed,
 copied or altered in any form or any media without written permission
 of the copyright holder. It may be used under terms and conditions of the
 above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
@@ -20,11 +20,11 @@ This library contains and makes use of software copyrighted by Sandia Corporatio
 and distributed under LGPL licence. Licensing does not apply to this or any
 other third party software used here.
 
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de) 
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
                    or
                    Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
 
-http://www.lnm.mw.tum.de                   
+http://www.lnm.mw.tum.de
 
 -------------------------------------------------------------------------
 </pre>
@@ -79,10 +79,10 @@ mleafsmap_(mleafsmap)
   if (dim_==2)      slabs_.Reshape(kdop_/2,2);
   else if (dim_==3) slabs_.Reshape(kdop_/2,2);
   else              dserror("ERROR: Problem dimension must be 2D or 3D!");
- 
+
   return;
 }
-                                                  
+
 /*----------------------------------------------------------------------*
  | Initialize tree (public)       								            popp 10/08|
  *----------------------------------------------------------------------*/
@@ -94,7 +94,7 @@ void CONTACT::BinaryTree::BinaryTreeNode::InitializeTree(double& enlarge)
 	// calculate bounding volume
   CalculateSlabsDop(true);
   EnlargeGeometry(enlarge);
-  
+
   // if current treenode is inner treenode
   if (type_==0 || type_==2)
   {
@@ -139,7 +139,7 @@ void CONTACT::BinaryTree::BinaryTreeNode::InitializeTree(double& enlarge)
   		rightchild_->InitializeTree(enlarge);	
   	}		
   }
-  
+
   return;
 }
 
@@ -153,7 +153,7 @@ void CONTACT::BinaryTree::BinaryTreeNode::CalculateSlabsDop(bool isinit)
 	{
 	  slabs_(j,0) =  1.0e12;
 	  slabs_(j,1) = -1.0e12;
-	} 
+	}
 
   // calculate slabs for every element
   for (int i=0; i<(int)elelist_.size();++i)
@@ -163,13 +163,13 @@ void CONTACT::BinaryTree::BinaryTreeNode::CalculateSlabsDop(bool isinit)
     if (!element) dserror("ERROR: Cannot find element with gid %\n",gid);
     DRT::Node** nodes = element->Nodes();
     if (!nodes) dserror("ERROR: Null pointer!");
-    
+
     // calculate slabs for every node on every element
     for (int k=0;k<element->NumNode();k++)
     {
       CNode* cnode=static_cast<CNode*>(nodes[k]);
       if (!cnode) dserror("ERROR: Null pointer!");
-      
+
       // decide which position is relevant (initial or current)
       double pos[3] = {0.0, 0.0, 0.0};
       for (int j=0;j<dim_;++j)
@@ -189,7 +189,7 @@ void CONTACT::BinaryTree::BinaryTreeNode::CalculateSlabsDop(bool isinit)
 			                     +(dopnormals_(j,1)*dopnormals_(j,1))
 			                     +(dopnormals_(j,2)*dopnormals_(j,2)));
 	      double dcurrent = num/denom;
-	      
+	
 	      if (dcurrent > slabs_(j,1)) slabs_(j,1) = dcurrent;
 	      if (dcurrent < slabs_(j,0)) slabs_(j,0) = dcurrent;
 		  }
@@ -214,7 +214,7 @@ void CONTACT::BinaryTree::BinaryTreeNode::CalculateSlabsDop(bool isinit)
                              +(dopnormals_(j,1)*dopnormals_(j,1))
                              +(dopnormals_(j,2)*dopnormals_(j,2)));
           double dcurrent = num/denom;
-	  		          
+	  		
 	  			if (dcurrent > slabs_(j,1)) slabs_(j,1) = dcurrent;
 	  			if (dcurrent < slabs_(j,0)) slabs_(j,0) = dcurrent;
     		}
@@ -224,7 +224,7 @@ void CONTACT::BinaryTree::BinaryTreeNode::CalculateSlabsDop(bool isinit)
 
   //Prints Slabs to std::cout
   //PrintSlabs();
-  
+
   return;
 }
 
@@ -236,13 +236,13 @@ void CONTACT::BinaryTree::BinaryTreeNode::UpdateSlabsBottomUp(double & enlarge)
 	// if current treenode is inner node
 	if (type_==0||type_==2)
 	{
-		//cout <<"\n"<< Comm().MyPID() << " Treenode "<< j <<" is a inner treenode!"; 
+		//cout <<"\n"<< Comm().MyPID() << " Treenode "<< j <<" is a inner treenode!";
 	  for (int k=0;k<kdop_/2;k++)
 		{
 			//for minimum
 			if (leftchild_->Slabs()(k,0)<=rightchild_->Slabs()(k,0))
 				slabs_(k,0)=leftchild_->Slabs()(k,0);
-			else 
+			else
 				slabs_(k,0)=rightchild_->Slabs()(k,0);
 				
 			// for maximum
@@ -262,19 +262,19 @@ void CONTACT::BinaryTree::BinaryTreeNode::UpdateSlabsBottomUp(double & enlarge)
       slabs_(j,0) =  1.0e12;
       slabs_(j,1) = -1.0e12;
     }
-	  
+	
     int gid = Elelist()[0];
     DRT::Element* element= idiscret_.gElement(gid);
     if (!element) dserror("ERROR: Cannot find element with gid %\n",gid);
     DRT::Node** nodes = element->Nodes();
     if (!nodes) dserror("ERROR: Null pointer!");
-    
+
     // update slabs for every node
     for (int k=0;k<element->NumNode();++k)
     {
       CNode* cnode=static_cast<CNode*>(nodes[k]);
       if (!cnode) dserror("ERROR: Null pointer!");
-      
+
       // decide which position is relevant (initial or current)
       double pos[3] = {0.0, 0.0, 0.0};
       for (int j=0;j<dim_;++j) pos[j] = cnode->xspatial()[j];
@@ -290,21 +290,21 @@ void CONTACT::BinaryTree::BinaryTreeNode::UpdateSlabsBottomUp(double & enlarge)
                            +(dopnormals_(j,1)*dopnormals_(j,1))
                            +(dopnormals_(j,2)*dopnormals_(j,2)));
         double dcurrent = num/denom;
-        
+
         if (dcurrent > slabs_(j,1)) slabs_(j,1) = dcurrent;
         if (dcurrent < slabs_(j,0)) slabs_(j,0) = dcurrent;
       }
-      
+
       // if current treenode is slave leaf --> enlarge slabs with auxiliary position
       if (type_==1)
-      {      
+      {
         double auxpos [3] = {0.0, 0.0, 0.0};
         double scalar=0.0;
         for (int j=0;j<dim_;j++)
           scalar=scalar+(cnode->X()[j]+cnode->uold()[j]-cnode->xspatial()[j])*cnode->n()[j];
         for (int j=0;j<dim_;j++)
           auxpos[j]=cnode->xspatial()[j]+scalar*cnode->n()[j];
-  
+
         for(int j=0; j<kdop_/2;j++)
         {
           //= ax+by+cz=d/sqrt(aa+bb+cc)
@@ -315,19 +315,19 @@ void CONTACT::BinaryTree::BinaryTreeNode::UpdateSlabsBottomUp(double & enlarge)
                              +(dopnormals_(j,1)*dopnormals_(j,1))
                              +(dopnormals_(j,2)*dopnormals_(j,2)));
           double dcurrent = num/denom;
-                  
+
           if (dcurrent > slabs_(j,1)) slabs_(j,1) = dcurrent;
           if (dcurrent < slabs_(j,0)) slabs_(j,0) = dcurrent;
         }
       }
     }
-	 
+	
 		for (int i=0 ; i<kdop_/2 ; i++)
 		{
 			slabs_(i,0)=slabs_(i,0)-enlarge;	
 			slabs_(i,1)=slabs_(i,1)+enlarge;
 		}
-	 
+	
 	  //Prints Slabs to std::cout
 	  //PrintSlabs();
 		
@@ -388,11 +388,11 @@ void CONTACT::BinaryTree::BinaryTreeNode::DivideTreeNode()
 	    DRT::Element* element= idiscret_.gElement(gid);
 	    if (!element) dserror("ERROR: Cannot find element with gid %\n",gid);
 	    DRT::Node** nodes = element->Nodes();
-	 
+	
 	    //vector of values of Hesse-Normalform of nodes of elements
 	    Epetra_SerialDenseVector  axbycz;
 	    axbycz.Resize(element->NumNode());
-	    
+	
 	    for (int k=0;k<element->NumNode();++k)
 		  {
 	      CNode* cnode = static_cast<CNode*>(nodes[k]);
@@ -401,19 +401,19 @@ void CONTACT::BinaryTree::BinaryTreeNode::DivideTreeNode()
 				
 				//split along chosen area
 				//ax+by+cz< or > d = criterion
-				//compute ax+by+cz for chosen node 
+				//compute ax+by+cz for chosen node
 				if (dim_==2)
 				  axbycz[k] = posnode[0]*dopnormals_(splittingnormal,0)
-				            + posnode[1]*dopnormals_(splittingnormal,1); 
+				            + posnode[1]*dopnormals_(splittingnormal,1);
 				else if (dim_==3)
 				  axbycz[k] = posnode[0]*dopnormals_(splittingnormal,0)
-				            + posnode[1]*dopnormals_(splittingnormal,1) 
-				 						+ posnode[2]*dopnormals_(splittingnormal,2); 
+				            + posnode[1]*dopnormals_(splittingnormal,1)
+				 						+ posnode[2]*dopnormals_(splittingnormal,2);
 				else
 				  dserror("ERROR: Problem dimension must be 2D or 3D!");
-				 
+				
 				 if (axbycz[k]>=d) isright=true;
-				 if (axbycz[k]<d)  isleft=true; 
+				 if (axbycz[k]<d)  isleft=true;
 		  }
 
 	    if (isright==false && isleft==false)
@@ -421,7 +421,7 @@ void CONTACT::BinaryTree::BinaryTreeNode::DivideTreeNode()
 	
 	    // if element is split through, it is sorted into left treenode
 	    if (isright==true && isleft==true) isright=false;
-	    
+	
 			// sort elements into child treenodes
 	    if (isright) rightelements.push_back(gid);
 			if (isleft)  leftelements.push_back(gid);	
@@ -448,7 +448,7 @@ void CONTACT::BinaryTree::BinaryTreeNode::DivideTreeNode()
     //defines type of left and right TreeNode
 	  BinaryTreeNodeType lefttype = UNDEFINED;
 	  BinaryTreeNodeType righttype = UNDEFINED;
-	  
+	
 	  // is the new left child treenode a leaf node?
 	  if (leftelements.size()==1)
 	  {
@@ -462,7 +462,7 @@ void CONTACT::BinaryTree::BinaryTreeNode::DivideTreeNode()
 	  	else if (type_==2) lefttype = MASTER_INNER;
 	  	else               dserror("ERROR: Invalid TreeNodeType");
 	  }
-	  
+	
 	  // is the new right child treenode a leaf node?
 	  if (rightelements.size()==1)
 	  {
@@ -512,8 +512,8 @@ void CONTACT::BinaryTree::BinaryTreeNode::DivideTreeNode()
 			mtreenodesmap_[(layer_+1)].push_back(rightchild_);
 		}				
   }
-  
-  else dserror( "ERROR: Only 1 or 0 elements in map-->TreeNode cannot be devided!!");    
+
+  else dserror( "ERROR: Only 1 or 0 elements in map-->TreeNode cannot be devided!!");
 
 	return;
 }
@@ -604,27 +604,27 @@ void CONTACT::BinaryTree::BinaryTreeNode::PrintDopsForGmsh(std::string filename)
 	  	                        << position(i+1,2) << ")";
 	  	gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
 	  }
-	  gmshfilecontent << "SL(" << scientific << position(7,0) << "," << position(7,1) << "," 
+	  gmshfilecontent << "SL(" << scientific << position(7,0) << "," << position(7,1) << ","
 	                << position(7,2) << "," << position(0,0) << "," << position(0,1) << ","
                   << position(0,2) << ")";
 	  gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
 	  fprintf(fp,gmshfilecontent.str().c_str());
 	  fclose(fp);
   }
-  
+
   else if (dim_==3)
   {
     //PrintSlabs();
     //plot 3D-DOPs
-    
+
     //defines coords of points defining k-DOP
     vector < vector < double> > coords;
     coords.resize(1);
-    
+
     //trianglepoints[i] contains all needed points (i of coords[i]) to plot triangles
     vector< vector < int > > trianglepoints ;
     trianglepoints.resize(kdop_);
-    
+
     double dcurrent;
     LINALG::Matrix<3,3> A;
     for (int i=0;i<kdop_/2;i++)
@@ -658,7 +658,7 @@ void CONTACT::BinaryTree::BinaryTreeNode::PrintDopsForGmsh(std::string filename)
                 A(2,0)=(dopnormals_(k,0))/norm2;
                 A(2,1)=(dopnormals_(k,1))/norm2;
                 A(2,2)=(dopnormals_(k,2))/norm2;
-                
+
                 //only if matrix a is not singular
                 if (A.Determinant()!=0)
                 {
@@ -669,18 +669,18 @@ void CONTACT::BinaryTree::BinaryTreeNode::PrintDopsForGmsh(std::string filename)
                   }
                   //check current position if its inside dops defined by slabs
                   bool isoutside=false;
-                  
+
                   for (int m=0;m<kdop_/2;m++)
                   {
                     dcurrent = (dopnormals_(m,0)*position[0]+dopnormals_(m,1)*position[1]+
                         dopnormals_(m,2)*position[2])/sqrt((dopnormals_(m,0)*dopnormals_(m,0))+
                             (dopnormals_(m,1)*dopnormals_(m,1))+(dopnormals_(m,2)*dopnormals_(m,2)));
-                    
+
                     if (dcurrent > (slabs_(m,1)+0.0001))
                       isoutside=true;
                     if (dcurrent < (slabs_(m,0)-0.0001))
                       isoutside=true;
-                                                 
+
                   }
                   //continue only if position is inside dop
                   if (!isoutside)
@@ -689,7 +689,7 @@ void CONTACT::BinaryTree::BinaryTreeNode::PrintDopsForGmsh(std::string filename)
                     //check if current position is in coords-list
 
                     int currentsize=coords.size();
-                    
+
                     for (int m=0;m<currentsize;m++)
                     {
                       if (coords[m][0] < position[0]+0.0001 && coords[m][0] > position[0]-0.0001)
@@ -709,7 +709,7 @@ void CONTACT::BinaryTree::BinaryTreeNode::PrintDopsForGmsh(std::string filename)
                     coords.resize(currentsize+1);
                     coords[currentsize-1].push_back(position[0]);
                     coords[currentsize-1].push_back(position[1]);
-                    coords[currentsize-1].push_back(position[2]);  
+                    coords[currentsize-1].push_back(position[2]);
                     }
                   }
                 }
@@ -719,7 +719,7 @@ void CONTACT::BinaryTree::BinaryTreeNode::PrintDopsForGmsh(std::string filename)
         }
       }
     }
-    
+
     //plot triangles
     //first look for points that are on max/min slab layer=trianglepoints
     for (int i=0;i<kdop_/2;i++)
@@ -729,23 +729,23 @@ void CONTACT::BinaryTree::BinaryTreeNode::PrintDopsForGmsh(std::string filename)
         for (int j=0;j<(int)coords.size()-1;j++)
         {
           bool isonlayer=true;
-          
+
           double dcurrent = (dopnormals_(i,0)*coords[j][0]+dopnormals_(i,1)*coords[j][1]+
               dopnormals_(i,2)*coords[j][2])/sqrt((dopnormals_(i,0)*dopnormals_(i,0))+
                   (dopnormals_(i,1)*dopnormals_(i,1))+(dopnormals_(i,2)*dopnormals_(i,2)));
-         
+
           if (dcurrent>slabs_(i,ismin)+0.0001)
             isonlayer=false;
           if (dcurrent<slabs_(i,ismin)-0.0001)
             isonlayer=false;
- 
+
           if (isonlayer)
             trianglepoints[(2*i)+ismin].push_back(j);
         }
       }
     }
-    
-    
+
+
     int count=0;
     //print k-DOP to gmsh-file
     for (int i=0;i<(int) trianglepoints.size();i++)
@@ -760,16 +760,16 @@ void CONTACT::BinaryTree::BinaryTreeNode::PrintDopsForGmsh(std::string filename)
             if ( l!=m && l!=n && m!=n )
             {
               count++;
-              //print triangle to gmsh file            
+              //print triangle to gmsh file
               double position0[3],position1[3],position2[3];
-              
+
               //set coords(vector) to position (double)
               for (int p=0;p<3;p++)
               {
                 position0[p]=coords[trianglepoints[i][l]][p];
                 position1[p]=coords[trianglepoints[i][m]][p];
                 position2[p]=coords[trianglepoints[i][n]][p];
-              }  
+              }
               PlotGmshTriangle(filename,position0,position1,position2);
 
             }
@@ -778,18 +778,18 @@ void CONTACT::BinaryTree::BinaryTreeNode::PrintDopsForGmsh(std::string filename)
      }
     }
     //cout << endl << "Number needed triangles to plot current treenode: " << count;
-   
+
     //delete vector coords
     for (int i=0;i<(int)(coords.size())-1;i++)
       coords[i].clear();
-    coords.clear();  
+    coords.clear();
     //delete vector trianglepoints
     for (int i=0;i<(int)(trianglepoints.size());i++)
       trianglepoints[i].clear();
-    trianglepoints.clear();  
-    
+    trianglepoints.clear();
+
   } //END 3D-case
-  
+
 	return;
 }
 
@@ -801,19 +801,19 @@ void CONTACT::BinaryTree::BinaryTreeNode::PlotGmshPoint(  std::string filename, 
   FILE* fp = NULL;
   fp = fopen(filename.c_str(), "a");
   std::stringstream gmshfilecontent;
-  
+
   // plot quadrangle 0,1,2,3
   gmshfilecontent << "SP(" << scientific << position0[0] << "," << position0[1] << ","
                   << position0[2] <<  ")";
   gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "," << 0.0 << "," << 0.0 << "};" << endl;
-  
+
   //plots nr of point
   gmshfilecontent << "T3(" << scientific << position0[0] << "," << position0[1] << ","
                   << position0[2] << "," << 17 << ")";
   gmshfilecontent << "{" << "SK" << nr << "};" << endl;
   fprintf(fp,gmshfilecontent.str().c_str());
   fclose(fp);
-  
+
   return;
 }
 
@@ -827,7 +827,7 @@ void CONTACT::BinaryTree::BinaryTreeNode::PlotGmshQuadrangle( std::string filena
   FILE* fp = NULL;
   fp = fopen(filename.c_str(), "a");
   std::stringstream gmshfilecontent;
-  
+
   // plot quadrangle 0,1,2,3
   gmshfilecontent << "SQ(" << scientific << position0[0] << "," << position0[1] << ","
                   << position0[2] << "," << position1[0] << "," << position1[1] << ","
@@ -837,7 +837,7 @@ void CONTACT::BinaryTree::BinaryTreeNode::PlotGmshQuadrangle( std::string filena
   gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "," << 0.0 << "," << 0.0 << "};" << endl;
   fprintf(fp,gmshfilecontent.str().c_str());
   fclose(fp);
-  
+
   return;
 }
 
@@ -850,7 +850,7 @@ void CONTACT::BinaryTree::BinaryTreeNode::PlotGmshTriangle( std::string filename
   FILE* fp = NULL;
   fp = fopen(filename.c_str(), "a");
   std::stringstream gmshfilecontent;
-  
+
   // plot triangle 0,1,2
   gmshfilecontent << "ST(" << scientific << position0[0] << "," << position0[1] << ","
                   << position0[2] << "," << position1[0] << "," << position1[1] << ","
@@ -859,7 +859,7 @@ void CONTACT::BinaryTree::BinaryTreeNode::PlotGmshTriangle( std::string filename
   gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "," << 0.0 << "};" << endl;
   fprintf(fp,gmshfilecontent.str().c_str());
   fclose(fp);
-  
+
   return;
 }
 
@@ -920,11 +920,11 @@ eps_(eps)
   //**********************************************************************
   if (dim_==2)
   {
-    // set number of DOP sides to 8 
+    // set number of DOP sides to 8
     kdop_=8;
-    
+
     // setup normals for DOP
-    dopnormals_.Reshape(4,3); 
+    dopnormals_.Reshape(4,3);
     dopnormals_(0,0)= 1; dopnormals_(0,1)= 0; dopnormals_(0,2)= 0;
     dopnormals_(1,0)= 0; dopnormals_(1,1)= 1; dopnormals_(1,2)= 0;
     dopnormals_(2,0)= 1; dopnormals_(2,1)= 1; dopnormals_(2,2)= 0;
@@ -934,9 +934,9 @@ eps_(eps)
   {
     // set number of DOP sides to  18
     kdop_=18;
-    
+
     // setup normals for DOP
-    dopnormals_.Reshape(9,3); 
+    dopnormals_.Reshape(9,3);
     dopnormals_(0,0)= 1; dopnormals_(0,1)= 0; dopnormals_(0,2)= 0;
     dopnormals_(1,0)= 0; dopnormals_(1,1)= 1; dopnormals_(1,2)= 0;
     dopnormals_(2,0)= 0; dopnormals_(2,1)= 0; dopnormals_(2,2)= 1;
@@ -956,34 +956,34 @@ eps_(eps)
   // create element lists
   vector<int> slist;
   vector<int> mlist;
- 
+
   for (int i=0;i<selements_->NumMyElements();++i)
   {
     int gid = selements_->GID(i);
     slist.push_back(gid);
   }
-  
+
   for (int i=0;i<melements_->NumMyElements();++i)
   {
     int gid = melements_->GID(i);
     mlist.push_back(gid);
   }
-  
+
   // check slave root node case
   if (slist.size()>=2)
   {
     sroot_ = rcp(new BinaryTreeNode(SLAVE_INNER,idiscret_,sroot_ ,slist,DopNormals(),
              Kdop(),Dim(),0,streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
-    
+
     // do initialization
     streenodesmap_[0].push_back(sroot_);
-    sroot_->InitializeTree(enlarge_);  
+    sroot_->InitializeTree(enlarge_);
   }
   else if (slist.size()==1)
   {
     sroot_ = rcp(new BinaryTreeNode(SLAVE_LEAF,idiscret_,sroot_,slist,DopNormals(),
              Kdop(),Dim(),0,streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
-    
+
     // trivial initialization
     streenodesmap_[0].push_back(sroot_);
     sleafsmap_[0].push_back(sroot_);
@@ -992,17 +992,17 @@ eps_(eps)
   {
     sroot_ = rcp(new BinaryTreeNode(NOSLAVE_ELEMENTS,idiscret_,sroot_,slist,DopNormals(),
              Kdop(),Dim(),0,streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
-    
+
     // trivial initialization
     streenodesmap_[0].push_back(sroot_);
   }
-  
+
   // check master root node case
   if (mlist.size()>=2)
   {
     mroot_ = rcp(new BinaryTreeNode(MASTER_INNER,idiscret_,mroot_,mlist,DopNormals(),
              Kdop(),Dim(),0,streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
-    
+
     // do initialization
     mtreenodesmap_[0].push_back(mroot_);
     mroot_->InitializeTree(enlarge_);
@@ -1011,7 +1011,7 @@ eps_(eps)
   {
     mroot_ = rcp(new BinaryTreeNode(MASTER_LEAF,idiscret_,mroot_,mlist,DopNormals(),
              Kdop(),Dim(),0,streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
-    
+
     // trivial initialization
     mtreenodesmap_[0].push_back(mroot_);
     mleafsmap_[0].push_back(mroot_);
@@ -1020,14 +1020,14 @@ eps_(eps)
   {
     mroot_ = rcp(new BinaryTreeNode(NOMASTER_ELEMENTS,idiscret_,mroot_,mlist,DopNormals(),
              Kdop(),Dim(),0,streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
-    
+
     // trivial initialization / error
     mtreenodesmap_[0].push_back(mroot_);
     dserror("No master element for Binarytree initialization on this processor");
   }
-  
+
   /*
-  // print binarytree to std::cout 
+  // print binarytree to std::cout
   for (int k=0;k<Comm().NumProc();++k)
   {
     Comm().Barrier();
@@ -1037,11 +1037,11 @@ eps_(eps)
       cout <<"\n" <<Comm().MyPID()<< " Slave Tree:";
       PrintTree(sroot_);
       cout <<"\n" <<Comm().MyPID()<< " Master Tree:";
-      PrintTree(mroot_);    
+      PrintTree(mroot_);
     }
     Comm().Barrier();
   }
-  
+
   for (int k=0;k<Comm().NumProc();++k)
   {
     Comm().Barrier();
@@ -1051,7 +1051,7 @@ eps_(eps)
       cout <<"\n" <<Comm().MyPID()<< " Slave Tree:";
       PrintTreeOfMap(streenodesmap_);
       cout <<"\n" <<Comm().MyPID()<< " Master Tree:";
-      PrintTreeOfMap(mtreenodesmap_);   
+      PrintTreeOfMap(mtreenodesmap_);
     }
     Comm().Barrier();
   }
@@ -1088,13 +1088,13 @@ void CONTACT::BinaryTree::SetEnlarge(bool isinit)
   	double mincurrent=celement->MinEdgeSize(isinit);
 	  if (mincurrent < lmin) lmin = mincurrent;
 	}
-  
+
   if (lmin<=0.0) dserror("ERROR: Minimal element length < 0!");
-  
+
   // set the class variables
   minlengthele_= lmin;
   enlarge_ = eps_ * minlengthele_;
-  
+
   return;
 }
 
@@ -1122,7 +1122,7 @@ void CONTACT::BinaryTree::PrintTree(RCP<BinaryTreeNode> treenode)
 	
 	return;	
 }
-  
+
 /*----------------------------------------------------------------------*
  | Print tree with treenodesmap_ (public) 		                popp 10/08|
  *----------------------------------------------------------------------*/
@@ -1219,7 +1219,7 @@ void CONTACT::BinaryTree::SearchContactInit(RCP<BinaryTreeNode> streenode,RCP<Bi
 		// slave and master treenodes are inner nodes
 		if (streenode->Type()==0 && mtreenode->Type()==2)
 		{
-			//cout <<"\n"<< Comm().MyPID() << " 2 inner nodes!"; 
+			//cout <<"\n"<< Comm().MyPID() << " 2 inner nodes!";
 			SearchContactInit(streenode->Leftchild(),mtreenode->Leftchild());
 			SearchContactInit(streenode->Leftchild(),mtreenode->Rightchild());
 			SearchContactInit(streenode->Rightchild(),mtreenode->Leftchild());
@@ -1229,7 +1229,7 @@ void CONTACT::BinaryTree::SearchContactInit(RCP<BinaryTreeNode> streenode,RCP<Bi
 		// slave treenode is inner, master treenode is leaf
 		if (streenode->Type()==0 && mtreenode->Type()==3)
 		{
-			//cout <<"\n"<< Comm().MyPID() << " slafe inner, master leaf!"; 
+			//cout <<"\n"<< Comm().MyPID() << " slafe inner, master leaf!";
 			SearchContactInit(streenode->Leftchild(),mtreenode);
 			SearchContactInit(streenode->Rightchild(),mtreenode);
 		}
@@ -1237,7 +1237,7 @@ void CONTACT::BinaryTree::SearchContactInit(RCP<BinaryTreeNode> streenode,RCP<Bi
 		// slave treenode is leaf,  master treenode is inner
 		if (streenode->Type()==1 && mtreenode->Type()==2)
 		{
-			//cout <<"\n"<< Comm().MyPID() << " slave leaf, master inner!"; 
+			//cout <<"\n"<< Comm().MyPID() << " slave leaf, master inner!";
 			SearchContactInit(streenode,mtreenode->Leftchild());
 			SearchContactInit(streenode,mtreenode->Rightchild());
 		}
@@ -1299,7 +1299,7 @@ void CONTACT::BinaryTree::EvaluateSearchContactSeparate(RCP<BinaryTreeNode> stre
 		// slave and master treenodes are inner nodes
 		if (streenode->Type()==0 && mtreenode->Type()==2)
 		{
-			//cout <<"\n"<< Comm().MyPID() << " 2 inner nodes!"; 
+			//cout <<"\n"<< Comm().MyPID() << " 2 inner nodes!";
 			EvaluateSearchContactSeparate(streenode->Leftchild(),mtreenode->Leftchild());
 			EvaluateSearchContactSeparate(streenode->Leftchild(),mtreenode->Rightchild());
 			EvaluateSearchContactSeparate(streenode->Rightchild(),mtreenode->Leftchild());
@@ -1309,7 +1309,7 @@ void CONTACT::BinaryTree::EvaluateSearchContactSeparate(RCP<BinaryTreeNode> stre
 		// slave treenode is inner, master treenode is leaf
 		if (streenode->Type()==0 && mtreenode->Type()==3)
 		{
-			//cout <<"\n"<< Comm().MyPID() << " slafe inner, master leaf!"; 
+			//cout <<"\n"<< Comm().MyPID() << " slafe inner, master leaf!";
 			EvaluateSearchContactSeparate(streenode->Leftchild(),mtreenode);
 			EvaluateSearchContactSeparate(streenode->Rightchild(),mtreenode);
 		}
@@ -1317,7 +1317,7 @@ void CONTACT::BinaryTree::EvaluateSearchContactSeparate(RCP<BinaryTreeNode> stre
 		// slave treenode is leaf,  master treenode is inner
 		if (streenode->Type()==1 && mtreenode->Type()==2)
 		{
-			//cout <<"\n"<< Comm().MyPID() << " slave leaf, master inner!"; 
+			//cout <<"\n"<< Comm().MyPID() << " slave leaf, master inner!";
 			EvaluateSearchContactSeparate(streenode,mtreenode->Leftchild());
 			EvaluateSearchContactSeparate(streenode,mtreenode->Rightchild());
 		}
@@ -1327,8 +1327,8 @@ void CONTACT::BinaryTree::EvaluateSearchContactSeparate(RCP<BinaryTreeNode> stre
 		{
 	    int sgid = (int)streenode->Elelist().at(0);		//global id of slave element
 	    int mgid = (int)mtreenode->Elelist().at(0);		//global id of masterelement
-			//cout <<"\n"<< Comm().MyPID() << "TreeDividedContact found between slave-Element: " 
-	    //		 << sgid <<"and master-Element: "<< mgid; 
+			//cout <<"\n"<< Comm().MyPID() << "TreeDividedContact found between slave-Element: "
+	    //		 << sgid <<"and master-Element: "<< mgid;
 	    DRT::Element* element= idiscret_.gElement(sgid);
 	    CONTACT::CElement* selement = static_cast<CONTACT::CElement*>(element);
 			selement->AddSearchElements(mgid);
@@ -1385,11 +1385,11 @@ void CONTACT::BinaryTree::EvaluateSearchContactCombined(RCP<BinaryTreeNode> stre
 		// slave and master treenodes are inner nodes
 		if (streenode->Type()==0 && mtreenode->Type()==2)
 		{
-			//cout <<"\n"<< Comm().MyPID() << " 2 inner nodes!"; 
+			//cout <<"\n"<< Comm().MyPID() << " 2 inner nodes!";
 			streenode->Leftchild()->CalculateSlabsDop(false);
       streenode->Leftchild()->EnlargeGeometry(enlarge_);	
 			streenode->Rightchild()->CalculateSlabsDop(false);
-      streenode->Rightchild()->EnlargeGeometry(enlarge_); 
+      streenode->Rightchild()->EnlargeGeometry(enlarge_);
 			mtreenode->Leftchild()->CalculateSlabsDop(false);
 			mtreenode->Leftchild()->EnlargeGeometry(enlarge_);
 			mtreenode->Rightchild()->CalculateSlabsDop(false);
@@ -1404,11 +1404,11 @@ void CONTACT::BinaryTree::EvaluateSearchContactCombined(RCP<BinaryTreeNode> stre
 		// slave treenode is inner,  master treenode is leaf
 		if (streenode->Type()==0 && mtreenode->Type()==3)
 		{
-			//cout <<"\n"<< Comm().MyPID() << " slafe inner, master leaf!"; 
+			//cout <<"\n"<< Comm().MyPID() << " slafe inner, master leaf!";
 			streenode->Leftchild()->CalculateSlabsDop(false);
-      streenode->Leftchild()->EnlargeGeometry(enlarge_); 
+      streenode->Leftchild()->EnlargeGeometry(enlarge_);
 			streenode->Rightchild()->CalculateSlabsDop(false);
-      streenode->Rightchild()->EnlargeGeometry(enlarge_); 
+      streenode->Rightchild()->EnlargeGeometry(enlarge_);
 			
       EvaluateSearchContactCombined(streenode->Leftchild(),mtreenode);
 			EvaluateSearchContactCombined(streenode->Rightchild(),mtreenode);
@@ -1417,7 +1417,7 @@ void CONTACT::BinaryTree::EvaluateSearchContactCombined(RCP<BinaryTreeNode> stre
 		// slave treenode is leaf,  master treenode is inner
 		if (streenode->Type()==1 && mtreenode->Type()==2)
 		{
-			//cout <<"\n"<< Comm().MyPID() << " slave leaf, master inner!"; 
+			//cout <<"\n"<< Comm().MyPID() << " slave leaf, master inner!";
 			mtreenode->Leftchild()->CalculateSlabsDop(false);
       mtreenode->Leftchild()->EnlargeGeometry(enlarge_);
 			mtreenode->Rightchild()->CalculateSlabsDop(false);
@@ -1430,11 +1430,11 @@ void CONTACT::BinaryTree::EvaluateSearchContactCombined(RCP<BinaryTreeNode> stre
 		// both treenodes are leaf --> CONTACT
 		if (streenode->Type()==1 && mtreenode->Type()==3)
 		{
-			//cout <<"\n"<< Comm().MyPID() << " 2 leaf nodes!"; 
+			//cout <<"\n"<< Comm().MyPID() << " 2 leaf nodes!";
 	    int sgid = (int)streenode->Elelist()[0]; //global id of slave element
 	    int mgid = (int)mtreenode->Elelist()[0]; //global id of master element
-			//cout <<"\n"<< Comm().MyPID() << "TreeCombinedContact found between slave-Element: " 
-	    //     << sgid <<"and master-Element: "<< mgid; 
+			//cout <<"\n"<< Comm().MyPID() << "TreeCombinedContact found between slave-Element: "
+	    //     << sgid <<"and master-Element: "<< mgid;
 	    DRT::Element* element= idiscret_.gElement(sgid);
 	    CONTACT::CElement* selement = static_cast<CONTACT::CElement*>(element);
 			selement->AddSearchElements(mgid);	
@@ -1448,7 +1448,7 @@ void CONTACT::BinaryTree::EvaluateSearchContactCombined(RCP<BinaryTreeNode> stre
     contactmap_[1].push_back(mtreenode);
   }
 #endif // #ifdef CONTACTGMSHCTN
-  
+
 	return;
 }
 
