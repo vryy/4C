@@ -28,7 +28,7 @@ Maintainer: Florian Henke
 
 
 /*------------------------------------------------------------------------------------------------*
- | constructor                                                                         henke 10/08 | 
+ | constructor                                                                         henke 10/08 |
  *------------------------------------------------------------------------------------------------*/
 COMBUST::InterfaceHandleCombust::InterfaceHandleCombust(
     const Teuchos::RCP<DRT::Discretization> fluiddis,
@@ -43,9 +43,9 @@ COMBUST::InterfaceHandleCombust::InterfaceHandleCombust(
 
 /* Ich muss erstmal schauen, ob die DomainIntCell für meine Zwecke sinnvoll ist. Falls nicht, steht
  * das ganze InterfaceHandle in Frage. Es könnte auch alles in die FlameFront integriert werden.
- * 
+ *
  * henke 03/09 */
-  
+
   //URSULA
   /*
    * die DomainIntCells für alle Element werden jetzt in der FlameFront berechnet
@@ -54,8 +54,8 @@ COMBUST::InterfaceHandleCombust::InterfaceHandleCombust(
    * zur Berechnung der Enrichmentfunction zu erhalten
    * das heißt: InterfaceHandle ist nur Verbindung zwischen FlameFront() und Sysmat und daher
    * eigentlich nicht zwingend notwendig
-   * 
-   * dennoch könnte man das InterfaceHandle weiter verwenden 
+   *
+   * dennoch könnte man das InterfaceHandle weiter verwenden
    * um bei der Sysmat nichts ändern zu müssen
    * dazu müssen die Integrationszellen von der FlameFront an das InterfaceHandle übergeben werden
    * elementalDomainIntCells_ = flamefront_->DomainIntCells();
@@ -77,7 +77,7 @@ COMBUST::InterfaceHandleCombust::InterfaceHandleCombust(
 //  //flamefront_->ProcessFlameFront();
 //  elementalDomainIntCells_ = flamefront_->DomainIntCells();
   //URSULA
-  
+
   std::cout << "Proc " << fluiddis->Comm().MyPID() << ": Hier passiert absolut nichts" << std::endl;
   // Dinge, die hier passieren müssen, sind in diesen Funktionen zu finden:
   // computeIntersection
@@ -97,7 +97,7 @@ COMBUST::InterfaceHandleCombust::InterfaceHandleCombust(
   //  octTreen_->initializeTree(AABB, elementsByLabel_, GEO::TreeType(GEO::OCTTREE));
 }
 /*------------------------------------------------------------------------------------------------*
- | destructor                                                                         henke 10/08 | 
+ | destructor                                                                         henke 10/08 |
  *------------------------------------------------------------------------------------------------*/
 COMBUST::InterfaceHandleCombust::~InterfaceHandleCombust()
 {
@@ -112,7 +112,7 @@ void COMBUST::InterfaceHandleCombust::toGmsh(const int step) const
 }
 
 /*------------------------------------------------------------------------------------------------*
- | fill integration cells according to current flame front                            henke 10/08 | 
+ | fill integration cells according to current flame front                            henke 10/08 |
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::InterfaceHandleCombust::UpdateInterfaceHandle()
 {

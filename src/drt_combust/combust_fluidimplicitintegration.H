@@ -318,7 +318,7 @@ protected:
   IO::Ostream0 cout0_;
   //@}
 
-  /// flag for type of combustion problem 
+  /// flag for type of combustion problem
   INPAR::COMBUST::CombustionType combusttype_;
 
   //! @name time stepping variables

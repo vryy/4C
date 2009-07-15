@@ -124,9 +124,9 @@ void DRT::ELEMENTS::Combust3Surface::Print(ostream& os) const
  *----------------------------------------------------------------------*/
 vector<RCP<DRT::Element> > DRT::ELEMENTS::Combust3Surface::Lines()
 {
-  // do NOT store line or surface elements inside the parent element 
+  // do NOT store line or surface elements inside the parent element
   // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization, 
+  // Reason: if a Redistribute() is performed on the discretization,
   // stored node ids and node pointers owned by these boundary elements might
   // have become illegal and you will get a nice segmentation fault ;-)
 

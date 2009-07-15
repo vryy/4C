@@ -27,10 +27,10 @@ namespace COMBUST
  *------------------------------------------------------------------------------------------------*/
 void printlogo();
 
-/*! 
+/*!
  * \brief create a map which, for each node (gid) and element (gid) on this processor, holds the
- * corresponding enriched fields 
- * 
+ * corresponding enriched fields
+ *
  * remark: Sind das nicht eigentlich einfach die dofs? Es sind ja auch Standard
  * Anreicherungen (also eben auch nicht angereicherte dofs!) dabei              .   henke 10/08
  */
@@ -56,7 +56,7 @@ void applyStandardEnrichment(
     std::map<int, std::set<XFEM::FieldEnr> >&     elementalDofs
 );
 
-/*! 
+/*!
  * \brief apply standard dofs to nodes
  * \note this is 3d fluid specific and should somehow be generalized
  */

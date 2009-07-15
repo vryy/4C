@@ -22,10 +22,10 @@ namespace COMBUST
   /// Then, for standard FEM, P = N
   ///
   /// Two examples:
-  /// 
+  ///
   /// u^h = SUM_I P^I u^I
   ///  u^I are the free parameters (nodal unknowns in the standard FEM) and
-  ///  normal and enriched parameters combined in the XFEM 
+  ///  normal and enriched parameters combined in the XFEM
   ///
   /// | P1 |   | N1     |
   /// | P2 |   | N2     |
@@ -33,7 +33,7 @@ namespace COMBUST
   /// | P4 |   | N2*psi |
   ///   ...
   /// similar
-  /// du^h/dx = SUM_I dP^I/dx u^I 
+  /// du^h/dx = SUM_I dP^I/dx u^I
   ///   P is the approximation function
   ///
   /// | P1/dx |   | N1/dx                   |
@@ -43,7 +43,7 @@ namespace COMBUST
   ///   ...
   ///   Note the chain rule above!
   template <size_t numparam>
-  struct ApproxFunc 
+  struct ApproxFunc
   {
     LINALG::Matrix<numparam,1>  d0;
     LINALG::Matrix<numparam,1>  dx;

@@ -27,11 +27,11 @@ Maintainer: Florian Henke
 // support routines for the combust3 element
 namespace COMBUST
 {
-  
+
   /*!
    * \brief Returns the distype for stress interpolation
    *        for each parent element discretization type in 3d
-   * 
+   *
    * \return distype for stress interpolation
    */
   template<DRT::Element::DiscretizationType veldistype>
@@ -43,12 +43,12 @@ namespace COMBUST
   template<> struct StressInterpolation3D<DRT::Element::hex20> {static const DRT::Element::DiscretizationType distype = DRT::Element::hex20;};
   template<> struct StressInterpolation3D<DRT::Element::hex27> {static const DRT::Element::DiscretizationType distype = DRT::Element::hex27;};
   /// @endcond
-  
-  
+
+
   /*!
    * \brief Returns the distype for discont. pressure interpolation
    *        for each parent element discretization type in 3d
-   * 
+   *
    * \return distype for discont. pressure interpolation
    */
   template<DRT::Element::DiscretizationType veldistype>
@@ -60,13 +60,13 @@ namespace COMBUST
   template<> struct DiscPressureInterpolation3D<DRT::Element::hex20> {static const DRT::Element::DiscretizationType distype = DRT::Element::hex20;};
   template<> struct DiscPressureInterpolation3D<DRT::Element::hex27> {static const DRT::Element::DiscretizationType distype = DRT::Element::hex27;};
   /// @endcond
-  
+
   /*!
    * \brief Returns the distype for stress interpolation
    *        for each parent element discretization type in 3d
-   * 
+   *
    * \return distype for stress interpolation
-   */  
+   */
   inline DRT::Element::DiscretizationType getStressInterpolationType3D(DRT::Element::DiscretizationType veldistype)
   {
     DRT::Element::DiscretizationType distype = DRT::Element::dis_none;
@@ -92,11 +92,11 @@ namespace COMBUST
     }
     return distype;
   }
-  
+
   /*!
    * \brief Returns the distype for discont. pressure interpolation
    *        for each parent element discretization type in 3d
-   * 
+   *
    * \return distype for discont. pressure interpolation
    */
   inline DRT::Element::DiscretizationType getDiscPressureInterpolationType3D(DRT::Element::DiscretizationType veldistype)
@@ -124,9 +124,9 @@ namespace COMBUST
     }
     return distype;
   }
-  
+
   //! implementation for combust3 element
-  class CombustElementAnsatz : public XFEM::ElementAnsatz 
+  class CombustElementAnsatz : public XFEM::ElementAnsatz
   {
   public:
     //! for a given velocity interpolation, a map is produced which has the number of element unknowns per physical field

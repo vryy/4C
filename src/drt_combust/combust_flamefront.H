@@ -69,7 +69,7 @@ namespace COMBUST
     /// remote access method to flame front patches
     const std::map< int,const Teuchos::RCP<const COMBUST::RefinementCell> > FlameFrontPatches() const
         { return flamefrontpatches_; }
-    
+
     //URSULA
     const std::map<int,GEO::DomainIntCells> DomainIntCells() const {return elementintcells_;}
     const std::map<int,GEO::BoundaryIntCells> BoundaryIntCells() const {return boundaryintcells_;}

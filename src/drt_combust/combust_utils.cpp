@@ -48,7 +48,7 @@ void COMBUST::printlogo()
  |
  | These functions are actually not of general XFEM kind, but combustion (former xfluid) specific!
  | This is why they are "parked" here, in this combust_utils-file.
- | 
+ |
  | - functionality for elemental dofs was removed
  | - option to condsense the DLMs was removed
  *------------------------------------------------------------------------------------------------*/
@@ -72,7 +72,7 @@ void COMBUST::createDofMap(
 //  //             - element2
 //  // xfemlabel_2 - element6
 //  //             - element9
-//  const std::map<int,std::set<int> >& elementsByLabel = *ih.elementsByLabel(); 
+//  const std::map<int,std::set<int> >& elementsByLabel = *ih.elementsByLabel();
 //
 //  // invert collection
 //  // element1 - xfemlabel_1
@@ -94,11 +94,11 @@ void COMBUST::createDofMap(
 //      const DRT::Element* xfemele = ih.xfemdis()->lColElement(i);
 //      const int element_gid = xfemele->Id();
 //
-//      if (ih.ElementIntersected(element_gid)) // Wurde das Element vom Interface geschnitten? 
+//      if (ih.ElementIntersected(element_gid)) // Wurde das Element vom Interface geschnitten?
 //      {
 //        if (ih.ElementHasLabel(element_gid, label)) // Wurde das Element von diesem Interface (label) geschnitten?
 //        {
-//          ApplyNodalEnrichments(xfemele, ih, label, nodalDofSet); 
+//          ApplyNodalEnrichments(xfemele, ih, label, nodalDofSet);
 //        }
 //      }
 //
@@ -121,7 +121,7 @@ void COMBUST::createDofMap(
 }
 
 /*------------------------------------------------------------------------------------------------*
- | Diese Funktion beeinhaltet eine Fallunterscheidung, wenn nur ein kleines Eck eines Fluidelementes 
+ | Diese Funktion beeinhaltet eine Fallunterscheidung, wenn nur ein kleines Eck eines Fluidelementes
  | abgeschnitten wird (siehe Zeichnung von Axel 28.10.08)                             henke 10/08 |
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::ApplyNodalEnrichments(
@@ -129,19 +129,19 @@ void COMBUST::ApplyNodalEnrichments(
     const XFEM::InterfaceHandle&                  ih,
     const int&                                    label,
     std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet
-) 
+)
 {
   return;
 //  const double volumeratiolimit = 1.0e-4; // Hängt von Auflösung ab -> anpassen?
-//  
+//
 //  const double volumeratio = XFEM::DomainCoverageRatio(*xfemele,ih);
 //  // "almost empty" means that the volume ratio is close to 1, meaning that almost the entire fluid
-//  // element is covered by the structure element. "Empty" refers to the amount of fluid in a fluid 
+//  // element is covered by the structure element. "Empty" refers to the amount of fluid in a fluid
 //  // element domain.
 //  const bool almost_empty_element = (fabs(1.0-volumeratio) < volumeratiolimit);
-//  
+//
 //  const XFEM::Enrichment voidenr(label, XFEM::Enrichment::typeVoid);
-//  
+//
 //  if ( not almost_empty_element) // all nodes of that fluid element are enriched
 //  { // void enrichments for everybody !!!
 //    const int nen = xfemele->NumNode();
@@ -157,7 +157,7 @@ void COMBUST::ApplyNodalEnrichments(
 //  }
 //  else
 //  { // void enrichments only in the fluid domain
-//    // other nodes connected by intersected element edges will be enriched during the loop over 
+//    // other nodes connected by intersected element edges will be enriched during the loop over
 //    // adjacent elements          henke 10/08
 //    const int nen = xfemele->NumNode();  // couldn't part of this stuff around here be moved outside the if/else almost_empty_element?
 //    const int* nodeidptrs = xfemele->NodeIds();
@@ -167,7 +167,7 @@ void COMBUST::ApplyNodalEnrichments(
 //      const BlitzVec3 nodalpos(toBlitzArray(ih.xfemdis()->gNode(node_gid)->X()));
 //      const int label = ih.PositionWithinConditionNP(nodalpos);
 //      const bool in_fluid = (label == 0); // Abfrage, ob der Knoten im Fluid, oder in der Struktur liegt
-//  
+//
 //      if (in_fluid) // Knoten im Fluid soll ein Enrichment erhalten
 //      {
 //        nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Velx, voidenr));
@@ -249,7 +249,7 @@ void COMBUST::applyStandardEnrichmentNodalBasedApproach(
 //        nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Pres, enr_std));
 //      }
 //    }
-//    
+//
 //  };
 }
 

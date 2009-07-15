@@ -144,7 +144,7 @@ void COMBUST::FlameFront::ProcessFlameFront(
   //------------------------------------------------------------------------------------------------
   const Teuchos::RCP<Epetra_Vector> phinpcol = rcp(new Epetra_Vector(*fluiddis_->NodeColMap()));
   LINALG::Export(*phinprow,*phinpcol);
-  
+
   // Jetzt hab ich einen Vektor auf der ColMap. Was mach ich jetzt damit? Muss an Elemente/Dis gehen!
   // eleparams.set("velocity field",tmp);
   // store vector on fluiddis NodeColMap holding G-function values in member variable
@@ -495,7 +495,7 @@ void COMBUST::FlameFront::FindIntersectionPoints(const Teuchos::RCP<COMBUST::Ref
 //      const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
 //      static LINALG::Matrix<numnode,1> funct;
 //      DRT::UTILS::shape_function_3D(funct,coordinates[0],coordinates[1],coordinates[2],cell->Ele()->Shape());
-//      
+//
 //      //jetzt braucht man noch die Knotenkoordinaten des zugehörigen Elements (global)
 //      std::vector<double> globalcoordinates(3);
 //
@@ -546,7 +546,7 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
 {
   // The rootcell (= element) enters this function. If element is cut, a tree of refinement cells
   // belongs to it. They can be cut, or not.
-  // 
+  //
   // loop refinement cells of rootcell
   // {
   //   if cell is intersected
@@ -718,9 +718,9 @@ void COMBUST::FlameFront::TriangulateFlameFront(
     //einschließlich des Umlaufsinns
     int j=0;
     //loop over all polygons
-    for (std::multimap<int,std::vector<int> >::iterator segmentiter=segmentlist.equal_range(beginpolygon).first; segmentiter!=segmentlist.equal_range(beginpolygon).second; segmentiter++) 
+    for (std::multimap<int,std::vector<int> >::iterator segmentiter=segmentlist.equal_range(beginpolygon).first; segmentiter!=segmentlist.equal_range(beginpolygon).second; segmentiter++)
     {
-      // int actkey = segmentiter->first; 
+      // int actkey = segmentiter->first;
       // std::vector<int> actsegmentpoints = segmentiter->second;
       // es reicht aus dem ersten Segment den richtigen Umlaufsinn zugeben
       // der Rest ergibt sich im Folgenden automatisch
@@ -795,7 +795,7 @@ void COMBUST::FlameFront::TriangulateFlameFront(
     {
       std::vector<int> polypoints = polygonpoints[ipolygons];
       if (polypoints.size()<4)
-        dserror("TriangulateFlameFront needs at least 3 intersectionpoints");  
+        dserror("TriangulateFlameFront needs at least 3 intersectionpoints");
 
       if (polypoints.size()==4) //erster und letzter Punkt identisch
       {
@@ -821,7 +821,7 @@ void COMBUST::FlameFront::TriangulateFlameFront(
         else // odd
         {
           point1 = pointlist[polypoints[0]];
-          point2 = pointlist[polypoints[(numpoints+1)/2]]; 
+          point2 = pointlist[polypoints[(numpoints+1)/2]];
         }
         for (int dim=0; dim<3; dim++)
         {
@@ -838,7 +838,7 @@ void COMBUST::FlameFront::TriangulateFlameFront(
           trianglepoints[0] = polypoints[j];
           trianglepoints[1] = polypoints[j+1];
           trianglepoints[2] = midpoint_id;
-          trianglelist.push_back(trianglepoints); 
+          trianglelist.push_back(trianglepoints);
         }
       }
     }
@@ -874,7 +874,7 @@ void COMBUST::FlameFront::IdentifyPolygonOrientation(
                             {4,11, 7, 3},
                             {8, 9,10,11}};
   // array containing test vertex for each surface
-  // that means : test of sign of g-func 
+  // that means : test of sign of g-func
   int testnode[6][4] = {{0, 3, 2, 1},
                         {0, 1, 5, 4},
                         {1, 2, 6, 5},
@@ -1176,7 +1176,7 @@ void COMBUST::FlameFront::buildFlameFrontSegments(
       std::vector<double> point2 (3);
       if(k<3)
       {
-        std::vector<double> point2 = pointlist[segmentpoints[k+1]]; 
+        std::vector<double> point2 = pointlist[segmentpoints[k+1]];
       }
       else
       {
@@ -1419,7 +1419,7 @@ void COMBUST::FlameFront::buildPLC(
         cellcoord(dim,inode) = vertexcoord[inode][dim];
         ccoord(dim) = cellcoord(dim,inode);
       }
-      GEO::elementToCurrentCoordinatesInPlace(distype, xyze, ccoord);  
+      GEO::elementToCurrentCoordinatesInPlace(distype, xyze, ccoord);
       for(int  dim=0; dim<3; dim++)
         physcellcoord(dim,inode) = ccoord(dim);
     }
@@ -1508,10 +1508,10 @@ void COMBUST::FlameFront::CreateIntegrationCells(
   // zusätzlich braucht man noch tetgenio out, wird von TetGen gefüllt
   // damit dann in TransformIntegrationCells()
 
-  const int dim = 3; 
+  const int dim = 3;
   tetgenio in;
   tetgenio out;
-  char switches[] = "pQ";    //- p     tetrahedralizes a PLC 
+  char switches[] = "pQ";    //- p     tetrahedralizes a PLC
                              //-Q      no terminal output except errors
   tetgenio::facet *f;
   tetgenio::polygon *p;
@@ -1652,7 +1652,7 @@ void COMBUST::FlameFront::TransformIntegrationCells(
 {
   DRT::Element::DiscretizationType distype = DRT::Element::tet4;
   const int numTetNodes = DRT::UTILS::getNumberOfElementNodes(distype);
-  
+
   for(int i=0; i<out.numberoftetrahedra; i++ )
   {
     LINALG::SerialDenseMatrix tetrahedroncoord(3, numTetNodes);

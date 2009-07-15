@@ -37,7 +37,7 @@ DRT::ELEMENTS::Combust3::ActionType DRT::ELEMENTS::Combust3::convertStringToActi
   else if (action == "calc_linear_fluid")
     act = Combust3::calc_linear_fluid;
   else if (action == "calc_fluid_stationary_systemmat_and_residual")
-    act = Combust3::calc_fluid_stationary_systemmat_and_residual;  
+    act = Combust3::calc_fluid_stationary_systemmat_and_residual;
   else if (action == "calc_fluid_beltrami_error")
     act = Combust3::calc_fluid_beltrami_error;
   else if (action == "calc_turbulence_statistics")
@@ -104,7 +104,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
   // TODO: here, I should check the content of the list, too!
   if (mat->MaterialType()!=INPAR::MAT::m_matlist)
     dserror("material list with newtonian fluid material expected but got type %d", mat->MaterialType());
-  
+
   //TEST
 //  const MAT::MatList* actmaterials = static_cast<const MAT::MatList*>(mat.get());
 //  Teuchos::RCP<const MAT::Material> mater = actmaterials->MaterialById(4);
@@ -112,8 +112,8 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 //  const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mater.get());
 //  const double visc = actmat->Viscosity();
 //  std::cout << "Viskositaet Fluid 3 ist " << visc << std::endl;
-  
-  
+
+
   // was macht man dann mit der Dichte
 //  if (mat->MaterialType()!=INPAR::MAT::m_fluid)
 //    dserror("newtonian fluid material expected but got type %d", mat->MaterialType());
@@ -129,10 +129,10 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
     {
       // This is a very poor way to transport the density to the outside world. Is there a better one?
 //      params.set("density", actmat->Density());
-//URSULA 
+//URSULA
       // einzige Stelle, die die Dichte benötigt ist Output von Fluid
       // Druck ist schon mit Dichte skaliert -> Skalierung mit 1 ändert nichts
-      params.set("density", 1.0); 
+      params.set("density", 1.0);
 //URSULA
       break;
     }
@@ -303,7 +303,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
               {
                   eforce_0(i) = eforce(i);
               }
-              
+
               // create disturbed vector
               vector<double> locval_disturbed(locval.size());
               for (unsigned i = 0;i < locval.size(); ++i)
@@ -318,7 +318,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
                   }
                   std::cout << locval[i] <<  " " << locval_disturbed[i] << endl;
               }
-              
+
 
               // R_0+dx
               // calculate element coefficient matrix and rhs
@@ -326,8 +326,8 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
                       this, ih_, eleDofManager_, locval_disturbed, locval_hist, ivelcol, iforcecol, estif, eforce,
                       mat, pseudotime, 1.0, newton, pstab, supg, cstab, false, combusttype);
 
-              
-              
+
+
               // compare
               std::cout << "sekante" << endl;
               for (int i = 0;i < locval.size(); ++i)
@@ -335,9 +335,9 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
                   //cout << i << endl;
                   const double matrixentry = (eforce_0(i) - eforce(i))/disturbance;
                   printf("should be %+12.8E, is %+12.8E, factor = %5.2f, is %+12.8E, factor = %5.2f\n", matrixentry, estif(i, entry), estif(i, entry)/matrixentry, estif(entry,i), estif(entry,i)/matrixentry);
-                  //cout << "should be: " << std::scientific << matrixentry << ", is: " << estif(entry, i) << " " << estif(i, entry) << endl;                
+                  //cout << "should be: " << std::scientific << matrixentry << ", is: " << estif(entry, i) << " " << estif(i, entry) << endl;
               }
-              
+
               exit(0);
           }
           else

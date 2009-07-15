@@ -34,7 +34,7 @@ Maintainer: Florian Henke
    *
    * Zusammenfassend kann an sagen, dass alles was in der Verbrennungsrechnung vor der Zeitschleife
    * passieren soll, hier passieren muss, weil die combust dyn gleich die Zeitschleife ruft.
-   * 
+   *
    * scalar transport velocity field has been initialized in ScaTraFluidCouplingAlgorithm()
   */
 COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& combustdyn)
@@ -248,8 +248,8 @@ void COMBUST::Algorithm::PrepareTimeStep()
   FluidField().PrepareTimeStep();
 
   // prepare time step
-  /* remark: initial velocity field has been transfered to scalar transport field in constructor of 
-   * ScaTraFluidCouplingAlgorithm (initialvelset_ == true). Time integration schemes, such as 
+  /* remark: initial velocity field has been transfered to scalar transport field in constructor of
+   * ScaTraFluidCouplingAlgorithm (initialvelset_ == true). Time integration schemes, such as
    * the one-step-theta scheme, are thus initialized correctly.
    */
   ScaTraField().PrepareTimeStep();
