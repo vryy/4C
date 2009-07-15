@@ -168,7 +168,7 @@ namespace UTILS
   public:
     explicit Monolithic(Epetra_Comm& comm);
 
-    /// 
+    ///
     /*! do the setup for the monolithic system
 
     <pre>
@@ -179,8 +179,8 @@ namespace UTILS
 
     </pre>
 
-    \note We want to do this setup after reading the restart information, not 
-    directly in the constructor. This is necessary since during restart (if 
+    \note We want to do this setup after reading the restart information, not
+    directly in the constructor. This is necessary since during restart (if
     ReadMesh is called), the dofmaps for the blocks might get invalid.
 
     */

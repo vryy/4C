@@ -228,7 +228,7 @@ void fsi_ale_drt()
       dserror("Cannot find appropriate monolithic solver for coupling %d and linear strategy %d",coupling,linearsolverstrategy);
     }
 
-    // read the restart information, set vectors and variables --- 
+    // read the restart information, set vectors and variables ---
     // be careful, dofmaps might be changed here in a Redistribute call
     if (genprob.restart)
     {

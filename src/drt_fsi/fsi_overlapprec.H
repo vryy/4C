@@ -149,7 +149,7 @@ namespace FSI
     ADAPTER::Structure& structure_;
     ADAPTER::Fluid&     fluid_;
     ADAPTER::Ale&       ale_;
-    
+
   };
 
 }

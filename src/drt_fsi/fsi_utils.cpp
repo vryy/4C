@@ -263,14 +263,14 @@ void FSI::UTILS::CreateAleDiscretization()
       const int gid = noderowmap->GID(i);
       if (rownodeset.find(gid)!=rownodeset.end())
       {
-        DRT::NURBS::ControlPoint* fluidnode 
+        DRT::NURBS::ControlPoint* fluidnode
         =
           dynamic_cast<DRT::NURBS::ControlPoint* >(fluiddis->lRowNode(i));
           aledis->AddNode(rcp(new DRT::NURBS::ControlPoint(gid, fluidnode->X(),fluidnode->W(),myrank)));
       }
     }
   }
-  
+
 
   // we get the node maps almost for free
 
@@ -444,7 +444,7 @@ void FSI::UTILS::CreateAleDiscretization()
   for (std::size_t i=0; i<cond.size(); ++i)
   {
     // We use the same nodal ids and therefore we can just copy the
-    // conditions. 
+    // conditions.
     // Needed for Electrochemistry simulations with moving boundaries
     aledis->SetCondition("ElectrodeKinetics", rcp(new DRT::Condition(*cond[i])));
   }
@@ -480,7 +480,7 @@ void FSI::UTILS::CreateAleDiscretization()
     {
       dserror("Nurbs fluid discretisation but no nurbs ALE discretisation\n");
     }
-    
+
     Teuchos::RCP<DRT::NURBS::Knotvector> knots
       =
       Teuchos::rcp(new DRT::NURBS::Knotvector(*(nurbsdis->GetKnotVector())));

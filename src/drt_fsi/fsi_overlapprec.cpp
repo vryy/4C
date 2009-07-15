@@ -222,7 +222,7 @@ void FSI::OverlappingBlockMatrix::SetupPreconditioner()
   const LINALG::SparseMatrix& structInnerOp = Matrix(0,0);
   const LINALG::SparseMatrix& fluidInnerOp  = Matrix(1,1);
   const LINALG::SparseMatrix& aleInnerOp    = Matrix(2,2);
-  
+
   RCP<LINALG::MapExtractor> fsidofmapex = null;
   RCP<Epetra_Map>           irownodes = null;
 #if 0
@@ -244,13 +244,13 @@ void FSI::OverlappingBlockMatrix::SetupPreconditioner()
         for (int j=0; j<numdof; ++j)
           fsidofs.push_back(dis->Dof(node,j));
       }
-    RCP<Epetra_Map> fsimap = 
+    RCP<Epetra_Map> fsimap =
       rcp(new Epetra_Map(-1,(int)fsidofs.size(),&fsidofs[0],0,dis->DofRowMap()->Comm()));
     irownodes = rcp(new Epetra_Map(-1,(int)fsirownodes.size(),&(fsirownodes[0]),0,fsimap->Comm()));
     fsidofmapex = rcp(new LINALG::MapExtractor(*(dis->DofRowMap()),fsimap));
   }
-#endif  
-  
+#endif
+
   structuresolver_->Setup(structInnerOp.EpetraMatrix());
   fluidsolver_->Setup(fluidInnerOp.EpetraMatrix(),
                       fsidofmapex,

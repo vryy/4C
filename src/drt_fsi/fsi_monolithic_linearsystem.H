@@ -30,13 +30,13 @@ namespace FSI
   {
   public:
 
-    /// create 
+    /// create
     explicit MonolithicLinearSystem(
        Teuchos::ParameterList& printingParams,
-       Teuchos::ParameterList& linearSolverParams, 
-       const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac, 
-       const Teuchos::RCP<Epetra_Operator>& J,  
-       const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec, 
+       Teuchos::ParameterList& linearSolverParams,
+       const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
+       const Teuchos::RCP<Epetra_Operator>& J,
+       const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec,
        const Teuchos::RCP<Epetra_Operator>& M,
        const NOX::Epetra::Vector& cloneVector,
        const Teuchos::RCP<NOX::Epetra::Scaling> scalingObject = Teuchos::null);
@@ -45,8 +45,8 @@ namespace FSI
     virtual ~MonolithicLinearSystem();
 
     /// overload the solve to incorporate our own convergence test
-    virtual bool applyJacobianInverse(Teuchos::ParameterList& linearSolverParams, 
-	   			      const NOX::Epetra::Vector& input, 
+    virtual bool applyJacobianInverse(Teuchos::ParameterList& linearSolverParams,
+	   			      const NOX::Epetra::Vector& input,
 				      NOX::Epetra::Vector& result);
 
   protected:
@@ -55,7 +55,7 @@ namespace FSI
 
     //! copy of the linear solver parameters passed in constructor
     Teuchos::ParameterList                   lsparams_;
-    
+
     Teuchos::RCP<AztecOO_StatusTestMaxIters> aztest_maxiter_;
     //! an aztec 2-norm convergence test
     Teuchos::RCP<AztecOO_StatusTestResNorm>  aztest_norm2_;
