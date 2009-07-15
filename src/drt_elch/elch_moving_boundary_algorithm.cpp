@@ -20,7 +20,7 @@ Maintainer: Georg Bauer
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ELCH::MovingBoundaryAlgorithm::MovingBoundaryAlgorithm(
-    Epetra_Comm& comm, 
+    Epetra_Comm& comm,
     const Teuchos::ParameterList& prbdyn
     )
 :  ScaTraFluidAleCouplingAlgorithm(comm,prbdyn,"FSICoupling"),
@@ -89,8 +89,8 @@ void ELCH::MovingBoundaryAlgorithm::PrepareTimeStep()
   AleField().PrepareTimeStep();
 
   // prepare time step
-  /* remark: initial velocity field has been transfered to scalar transport field in constructor of 
-   * ScaTraFluidCouplingMovingBoundaryAlgorithm (initialvelset_ == true). Time integration schemes, such as 
+  /* remark: initial velocity field has been transfered to scalar transport field in constructor of
+   * ScaTraFluidCouplingMovingBoundaryAlgorithm (initialvelset_ == true). Time integration schemes, such as
    * the one-step-theta scheme, are thus initialized correctly.
    */
   ScaTraField().PrepareTimeStep();
@@ -103,7 +103,7 @@ void ELCH::MovingBoundaryAlgorithm::PrepareTimeStep()
 /*----------------------------------------------------------------------*/
 void ELCH::MovingBoundaryAlgorithm::DoFluidStep()
 {
-  
+
   Teuchos::RCP<Epetra_Vector> iveln_ = FluidField().ExtractInterfaceVeln();
 //  Teuchos::RCP<Epetra_Vector> idisp_ = new FluidField().ExtractInterfaceVeln();
   const Teuchos::RCP<Epetra_Vector> idispn_ = rcp(new Epetra_Vector(*(FluidField().ExtractInterfaceVeln())));
@@ -135,7 +135,7 @@ void ELCH::MovingBoundaryAlgorithm::DoFluidStep()
 /*----------------------------------------------------------------------*/
 void ELCH::MovingBoundaryAlgorithm::DoTransportStep()
 {
-  
+
   if (Comm().MyPID()==0)
   {
     cout<<"\n******************\n TRANSPORT SOLVER \n******************\n";
@@ -147,7 +147,7 @@ void ELCH::MovingBoundaryAlgorithm::DoTransportStep()
       FluidField().SgVelVisc(),
       FluidField().Discretization()
   );
-  // solve coupled transport equations for ion concentrations and electric 
+  // solve coupled transport equations for ion concentrations and electric
   // potential
   ScaTraField().NonlinearSolve();
   return;
@@ -174,7 +174,7 @@ void ELCH::MovingBoundaryAlgorithm::Output()
   // Discretizations.
   FluidField().StatisticsAndOutput();
   ScaTraField().Output();
-  if (outmean_) 
+  if (outmean_)
   {
     ScaTraField().OutputElectrodeInfo();
     ScaTraField().OutputMeanTempAndDens();

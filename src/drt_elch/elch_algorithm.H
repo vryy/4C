@@ -59,10 +59,10 @@ namespace ELCH
 
     /// start a new time step
     void PrepareTimeStep();
-    
+
     /// solve Navier-Stokes equations for current time step
     void DoFluidStep();
-    
+
     /// solve transport equations for current time step
     void DoTransportStep();
 

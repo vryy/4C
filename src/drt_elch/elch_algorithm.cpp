@@ -20,7 +20,7 @@ Maintainer: Georg Bauer
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ELCH::Algorithm::Algorithm(
-    Epetra_Comm& comm, 
+    Epetra_Comm& comm,
     const Teuchos::ParameterList& prbdyn
     )
 :  ScaTraFluidCouplingAlgorithm(comm,prbdyn,false),
@@ -88,8 +88,8 @@ void ELCH::Algorithm::PrepareTimeStep()
   FluidField().PrepareTimeStep();
 
   // prepare time step
-  /* remark: initial velocity field has been transfered to scalar transport field in constructor of 
-   * ScaTraFluidCouplingAlgorithm (initialvelset_ == true). Time integration schemes, such as 
+  /* remark: initial velocity field has been transfered to scalar transport field in constructor of
+   * ScaTraFluidCouplingAlgorithm (initialvelset_ == true). Time integration schemes, such as
    * the one-step-theta scheme, are thus initialized correctly.
    */
   ScaTraField().PrepareTimeStep();
@@ -112,7 +112,7 @@ void ELCH::Algorithm::DoFluidStep()
 /*----------------------------------------------------------------------*/
 void ELCH::Algorithm::DoTransportStep()
 {
-  
+
   if (Comm().MyPID()==0)
   {
     cout<<"\n******************\n TRANSPORT SOLVER \n******************\n";
@@ -125,7 +125,7 @@ void ELCH::Algorithm::DoTransportStep()
       FluidField().Discretization()
   );
 
-  // solve coupled transport equations for ion concentrations and electric 
+  // solve coupled transport equations for ion concentrations and electric
   // potential
   ScaTraField().NonlinearSolve();
   return;
@@ -152,7 +152,7 @@ void ELCH::Algorithm::Output()
   FluidField().Output();
   FluidField().LiftDrag();
   ScaTraField().Output();
-  if (outmean_) 
+  if (outmean_)
   {
     ScaTraField().OutputElectrodeInfo();
     ScaTraField().OutputMeanTempAndDens();

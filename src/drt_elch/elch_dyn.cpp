@@ -56,7 +56,7 @@ void elch_dyn(int disnumff,int disnumscatra,int disnumale,int restart)
 #if 0
   std::ofstream f_system("mydiscretization.pos");
   f_system<<IO::GMSH::disToString("Fluid",0,fluiddis);
-#endif  
+#endif
   // access the scatra discretization
   RefCountPtr<DRT::Discretization> scatradis = DRT::Problem::Instance()->Dis(disnumscatra,0);
   if (!scatradis->Filled()) scatradis->FillComplete();
@@ -84,7 +84,7 @@ void elch_dyn(int disnumff,int disnumscatra,int disnumale,int restart)
     // read the restart information, set vectors and variables
     if (restart) scatraonly->ScaTraField().ReadRestart(restart);
 
-    // set velocity field 
+    // set velocity field
     //(this is done only once. Time-dependent velocity fields are not supported)
     (scatraonly->ScaTraField()).SetVelocityField();
 
@@ -156,7 +156,7 @@ void elch_dyn(int disnumff,int disnumscatra,int disnumale,int restart)
         dserror("Providing an ALE mesh is not supported for problemtype Electrochemistry.");
 
       // create an ELCH::MovingBoundaryAlgorithm instance
-      Teuchos::RCP<ELCH::MovingBoundaryAlgorithm> elch 
+      Teuchos::RCP<ELCH::MovingBoundaryAlgorithm> elch
       = Teuchos::rcp(new ELCH::MovingBoundaryAlgorithm(comm,elchcontrol));
 
       // read the restart information, set vectors and variables
