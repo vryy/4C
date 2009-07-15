@@ -46,7 +46,7 @@ namespace DRT
 namespace ELEMENTS
 {
 /*!
-\brief two dimensional nonlinear beam element using Reissner`s beam theory according to Crisfield, Vol.1, section 7.4 
+\brief two dimensional nonlinear beam element using Reissner`s beam theory according to Crisfield, Vol.1, section 7.4
 \The element is capable of using higher order functions from linear to quartic. Please make sure you put the nodes in the right order
 \in the input file.
 \LIN2    1---2
@@ -153,9 +153,9 @@ public:
   /*!
   \brief Get number of degrees of freedom of a certain node
   */
-  virtual int NumDofPerNode(const DRT::Node& node) const 
-  { 
-    /*note: this is not necessarily the number of DOF assigned to this node by the discretization finally, but only 
+  virtual int NumDofPerNode(const DRT::Node& node) const
+  {
+    /*note: this is not necessarily the number of DOF assigned to this node by the discretization finally, but only
     *the number of DOF requested for this node by this element; the discretization will finally assign the maximal
     *number of DOF to this node requested by any element connected to this node*/
     return 3;
@@ -270,8 +270,8 @@ public:
   virtual int EvaluateBrownianDamp(ParameterList& params,
                                     vector<double> mydisp,
                                     double zeta,
-                                    Epetra_SerialDenseMatrix& elemat1);  
-  
+                                    Epetra_SerialDenseMatrix& elemat1);
+
   /*!
   \brief Evaluate forces for Brownian motion
 
@@ -289,8 +289,8 @@ public:
                                     vector<double> mydisp,
                                     double zeta,
                                     Epetra_SerialDenseVector& elevec1);
-  
-  
+
+
   //@}
 
 
@@ -315,10 +315,10 @@ private:
     calc_brownian_damp,
     calc_struct_ptcstiff
   };
-  
+
   //! container containing all kind of beam2r thisandthat
   DRT::Container data_;
-  
+
   //! variable saving whether element has already been initialized (then isinit_ == true)
   bool isinit_;
 
@@ -329,19 +329,19 @@ private:
   double crosssecshear_;
 
   //! moment of inertia of area
-  double mominer_;  
+  double mominer_;
 
   //! Vector holding alpha for each gausspoint
   vector<double> alpha_;
-  
+
   //! Vector holding alpha for each gausspoint for complete integration of massmatrix
   vector<double> alphamass_;
-  
+
   //! Vector holding theta0 for each gausspoint. The current
   //implementation sets the initial director angles to zero, which can be done without loss
   //of generality since any initial rotation cancels out in the equations (7.131). As a consequence
   //the current nodal directors do not appear in the element, but only the values of the current director
-  //at the GP 
+  //at the GP
 
   vector<double> theta0_;
 
@@ -370,17 +370,17 @@ private:
                        Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
                        Epetra_SerialDenseMatrix* massmatrix,  //!< element mass matrix
                        Epetra_SerialDenseVector* force);  //!< element internal force vector
-  
+
   //!this function transforms the consistent massmatrix into a lumped massmatrix. Only called when needed
   template<int nnode>
   void lumpedmass(Epetra_SerialDenseMatrix* massmatrix);
-              
-  
-  
+
+
+
   //!sets up element reference geometry for reference nodal position vector xrefe (may be used also after simulation start)
   template<int nnode>
   void SetUpReferenceGeometry(const vector<double>& xrefe);
-  
+
   // don't want = operator
   Beam2r& operator = (const Beam2r& old);
 
