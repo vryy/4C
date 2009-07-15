@@ -30,7 +30,7 @@ Maintainer: Markus Gitterle
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_inpar/inpar_structure.H"
 
-#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H" 
+#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 
 // forward declarations
 struct _W1_DATA;  ///< additional wall element data

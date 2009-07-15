@@ -250,21 +250,21 @@ void DRT::ELEMENTS::Wall1::w1_expol
   static bool isfilled;
 
   if (isfilled==false)
-  { 
+  {
   	// tri3, quad4, tri6, quad8 and quad9
     if (dt==tri3 or dt==tri6 or dt==quad4 or dt==quad8 or dt==quad9)
-    { 
-    	// loop over gaussian points 
+    {
+    	// loop over gaussian points
       for (int ip=0; ip<intpoints.nquad; ++ip)
       {
         // gaussian coordinates
         const double e1 = intpoints.qxg[ip][0];
         const double e2 = intpoints.qxg[ip][1];
-        
-        // coordinates of the extrapolated points       
+
+        // coordinates of the extrapolated points
         double e1expol;
         double e2expol;
-        
+
         if (e1!=0)
         {
         	e1expol = 1/e1;
@@ -273,7 +273,7 @@ void DRT::ELEMENTS::Wall1::w1_expol
         {
         	e1expol = 0;	
         }
-        
+
         if (e2!=0)
         {
         e2expol = 1/e2;
@@ -282,26 +282,26 @@ void DRT::ELEMENTS::Wall1::w1_expol
         {
         e2expol = 0;	
         }
-        
+
         // shape functions for the extrapolated coordinates
         DRT::UTILS::shape_function_2D(funct,e1expol,e2expol,dt);
-        
+
         // extrapolation matrix
-        for(int i=0;i<numnode;++i)     
+        for(int i=0;i<numnode;++i)
         {
         	expol(ip,i)=funct(i);
         }
-      } 
+      }
       isfilled = true;
     }
-        
+
     else dserror("extrapolation not yet implemented for this element type");
   }
-  
+
   Epetra_SerialDenseMatrix nodalstresses(numnode,Wall1::numstr_);
   nodalstresses.Multiply('N','N',1.0,expol,stresses,0.0);
-  
-  // distribute nodal stresses to elevectors for assembling 
+
+  // distribute nodal stresses to elevectors for assembling
   for (int i=0;i<numnode;++i)
   {
     elevec1(2*i)=nodalstresses(i,0);
@@ -311,8 +311,8 @@ void DRT::ELEMENTS::Wall1::w1_expol
   {
     elevec2(2*i)=nodalstresses(i,2);
     elevec2(2*i+1)=nodalstresses(i,3);
-  }  
-  
+  }
+
 }
 
 

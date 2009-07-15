@@ -42,17 +42,17 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(ParameterList& params,
     neum_live,
     neum_orthopressure
   };
-  
+
   LoadType ltype = neum_none;
   const string* type = condition.Get<string>("type");
   if      (*type == "neum_live")          ltype = neum_live;
   else if (*type == "neum_orthopressure") ltype = neum_orthopressure;
   else dserror("Unknown type of SurfaceNeumann condition");
-  
+
   // get values and switches from the condition
   const vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");
   const vector<double>* val   = condition.Get<vector<double> >("val"  );
-  
+
   // find out whether we will use a time curve
   bool usetime = true;
   const double time = params.get("total time",-1.0);
@@ -69,15 +69,15 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(ParameterList& params,
    // set number of nodes
   const int numnod   = NumNode();
   const DiscretizationType distype = Shape();
-  
-  // gaussian points 
-  const DRT::UTILS::GaussRule1D gaussrule = getOptimalGaussrule(distype); 
+
+  // gaussian points
+  const DRT::UTILS::GaussRule1D gaussrule = getOptimalGaussrule(distype);
   const DRT::UTILS::IntegrationPoints1D  intpoints(gaussrule);
-  
+
   // allocate vector for shape functions and for derivatives
   LINALG::SerialDenseVector    funct(numnod);
   LINALG::SerialDenseMatrix    deriv(1,numnod);
-  
+
   // element geometry update
   RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
   if (disp==null) dserror("Cannot get state vector 'displacement'");
@@ -87,33 +87,33 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(ParameterList& params,
   LINALG::SerialDenseMatrix xyecurr(Wall1::numdim_,numnod);  // spatial coord. of element
   for (int i=0; i<numnod; ++i)
   {
-    xye(0,i)=Nodes()[i]->X()[0]; 
+    xye(0,i)=Nodes()[i]->X()[0];
     xye(1,i)=Nodes()[i]->X()[1];
-    
+
     xyecurr(0,i) = xye(0,i) + mydisp[i*Wall1::noddof_+0];
     xyecurr(1,i) = xye(1,i) + mydisp[i*Wall1::noddof_+1];
-    
+
   }
- 
+
   // loop over integration points //new
   for (int gpid=0;gpid<intpoints.nquad;gpid++)
-  {  
+  {
      const double e1 = intpoints.qxg[gpid][0];
-     
+
   // get shape functions and derivatives in the line
      DRT::UTILS::shape_function_1D(funct,e1,distype);
      DRT::UTILS::shape_function_1D_deriv1(deriv,e1,distype);
-  
+
      switch(ltype)
      {
        case neum_live:{ // uniform load on reference configuration
-         
+
          // compute infinitesimal line element dr for integration along the line
          const double dr = w1_substitution(xye,deriv,NULL,numnod);
-         
+
          // load vector ar
          vector<double> ar(Wall1::noddof_);
-            
+
          // loop the dofs of a node
          // ar[i] = ar[i] * facr * ds * onoff[i] * val[i]*curvefac
          for (int i=0; i<Wall1::noddof_; ++i)
@@ -123,11 +123,11 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(ParameterList& params,
          for (int node=0; node<numnod; ++node)
            for (int j=0; j<Wall1::noddof_; ++j)
              elevec1[node*Wall1::noddof_+j] += funct[node]*ar[j];
-         
+
          break;
        }
        case neum_orthopressure:{ // orthogonal pressure on deformed config.
-         
+
          // check for correct input
          if ((*onoff)[0] != 1) dserror("orthopressure on 1st dof only!");
          for (int checkdof = 1; checkdof < 3; ++checkdof) {
@@ -135,16 +135,16 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(ParameterList& params,
          }
          double ortho_value = (*val)[0];
          if (!ortho_value) dserror("no orthopressure value given!");
-         
+
          // outward normal vector (unit vector)
          vector<double> unrm(Wall1::numdim_);
-          
+
          // compute infinitesimal line element dr for integration along the line
          const double dr = w1_substitution(xyecurr,deriv,&unrm,numnod);
-         
+
          // load vector ar
          vector<double> ar(Wall1::noddof_);
-           
+
          // loop the dofs of a node
          // ar[i] = ar[i] * facr * ds * onoff[i] * val[i]*curvefac
          for (int i=0; i<Wall1::noddof_; ++i)
@@ -154,7 +154,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(ParameterList& params,
            for (int node=0; node<numnod; ++node)
              for (int j=0; j<Wall1::noddof_; ++j)
                elevec1[node*Wall1::noddof_+j] += funct[node] * ar[j] * unrm[j];
-          
+
          break;
        }
        default:{
@@ -162,8 +162,8 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(ParameterList& params,
          break;
        }
      }
-  
-  } 
+
+  }
   return 0;
 }
 
@@ -179,7 +179,7 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Wall1Line::getOptimalGaussrule(const Disc
     case line3:
       rule = DRT::UTILS::intrule_line_3point;
       break;
-    default: 
+    default:
     dserror("unknown number of nodes for gaussrule initialization");
     }
   return rule;
@@ -193,7 +193,7 @@ double  DRT::ELEMENTS::Wall1Line::w1_substitution(const Epetra_SerialDenseMatrix
                                                   const int iel)
 {
 	  /*
-	  |                                            0 1 
+	  |                                            0 1
 	  |                                           +-+-+
 	  |       0 1              0...iel-1          | | | 0
 	  |      +-+-+             +-+-+-+-+          +-+-+
@@ -278,7 +278,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(ParameterList& params,
         {
           xsrefe(i,0) = Nodes()[i]->X()[0];
           xsrefe(i,1) = Nodes()[i]->X()[1];
-          
+
           xscurr(i,0) = xsrefe(i,0) + mydisp[i*Wall1::noddof_];
           xscurr(i,1) = xsrefe(i,1) + mydisp[i*Wall1::noddof_+1];
         }
@@ -286,7 +286,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(ParameterList& params,
         double areaele =  0.5*(xscurr(0,1)+xscurr(1,1))*(xscurr(1,0)-xscurr(0,0));
         elevector3[0] = areaele;
       }
-      
+
     }
     break;
     case calc_struct_areaconstrstiff:
@@ -296,7 +296,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(ParameterList& params,
         dserror("Area Constraint only works for line2 curves!");
       }  // element geometry update
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp==null) 
+      if (disp==null)
       {
         dserror("Cannot get state vector 'displacement'");
       }
@@ -309,7 +309,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(ParameterList& params,
       {
         xsrefe(i,0) = Nodes()[i]->X()[0];
         xsrefe(i,1) = Nodes()[i]->X()[1];
-        
+
         xscurr(i,0) = xsrefe(i,0) + mydisp[i*Wall1::noddof_];
         xscurr(i,1) = xsrefe(i,1) + mydisp[i*Wall1::noddof_+1];
       }
@@ -322,7 +322,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(ParameterList& params,
       elevector3[0] = areaele;
     }
     break;
-    
+
         // compute additional stresses due to intermolecular potential forces
     case calc_potential_stiff:
     {
@@ -334,8 +334,8 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(ParameterList& params,
       RefCountPtr<DRT::Condition> cond = params.get<RefCountPtr<DRT::Condition> >("condition",null);
       if (cond==null)
         dserror("Condition not available in Wall1 line");
-        
-      const DRT::UTILS::GaussRule1D gaussrule = getOptimalGaussrule(distype); 
+
+      const DRT::UTILS::GaussRule1D gaussrule = getOptimalGaussrule(distype);
 
       if (cond->Type()==DRT::Condition::LJ_Potential_2D) // Lennard-Jones potential
       {
@@ -349,7 +349,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(ParameterList& params,
         dserror("Unknown condition type %d",cond->Type());
     }
     break;
-      
+
     default:
       dserror("Unimplemented type of action for Soh8Surface");
 
@@ -394,7 +394,7 @@ void DRT::ELEMENTS::Wall1Line::ComputeAreaConstrStiff(Epetra_SerialDenseMatrix x
   elematrix(1,1)=0.0;
   elematrix(1,2)=0.5;
   elematrix(1,3)=0.0;
-  
+
   elematrix(2,0)=0.0;
   elematrix(2,1)=0.5;
   elematrix(2,2)=0.0;

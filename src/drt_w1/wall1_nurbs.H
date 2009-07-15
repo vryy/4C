@@ -21,26 +21,26 @@ Maintainer: Peter Gamnitzer
 
 /*!
   \brief DRT: namespace of the ccarat discretization module
-  
+
 */
 namespace DRT
 {
 /*!
   \brief ELEMENTS: namespace of elements
-  
+
 */
-  
+
 namespace ELEMENTS
 {
 
 /*!
   \brief NURBS: namespace of all isogeometric analysis tools
-  
+
 */
 namespace NURBS
 {
 
-    
+
 
 class Wall1Nurbs : public DRT::ELEMENTS::Wall1
 {
@@ -81,7 +81,7 @@ public:
 
   every class implementing ParObject needs a unique id defined at the
   top of this file.
-  
+
   \return my parobject id
   */
   virtual int UniqueParObjectId() const { return ParObject_Wall1Nurbs;}
@@ -127,7 +127,7 @@ public:
   */
   virtual vector<Teuchos::RCP<DRT::Element> > Surfaces();
 
-  
+
 private:
 
 };

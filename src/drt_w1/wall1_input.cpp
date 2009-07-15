@@ -3,7 +3,7 @@
 \brief
 
 <pre>
-Maintainer: Markus Gitterle 
+Maintainer: Markus Gitterle
             gitterle@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15251
@@ -24,7 +24,7 @@ bool DRT::ELEMENTS::Wall1::ReadElement()
   // read element's nodes
   int ierr=0;
   int nnode=0;
-  int nodes[9]; 
+  int nodes[9];
   frchk("QUAD4",&ierr);
   if (ierr==1)
   {
@@ -74,18 +74,18 @@ bool DRT::ELEMENTS::Wall1::ReadElement()
     frint_n("NURBS9",nodes,nnode,&ierr);
     if (ierr != 1) dserror("Reading of ELEMENT Topology of NURBS9 failed");
   }
-  
+
   // reduce node numbers by one
   for (int i=0; i<nnode; ++i) nodes[i]--;
-  
+
   SetNodeIds(nnode,nodes);
-  
+
   // read number of material model
   material_ = 0;
   frint("MAT",&material_,&ierr);
   if (ierr!=1) dserror("Reading of WALL1 element failed");
   SetMaterial(material_);
-  
+
   // read wall thickness
   thickness_ = 1.0;
   frdouble("THICK",&thickness_,&ierr);
@@ -95,34 +95,34 @@ bool DRT::ELEMENTS::Wall1::ReadElement()
   int ngp[2];
   frint_n("GP",ngp,2,&ierr);
   if (ierr!=1) dserror("Reading of WALL1 element failed");
-  
-  if ((nnode==4) and ((ngp[0]<2) or (ngp[1]<2))) 
+
+  if ((nnode==4) and ((ngp[0]<2) or (ngp[1]<2)))
   {	
       dserror("Insufficient number of Gauss points");
   }
-  else if ((nnode==8) and ((ngp[0]<3) or (ngp[1]<3)))   
-  {	  
+  else if ((nnode==8) and ((ngp[0]<3) or (ngp[1]<3)))
+  {	
   	dserror("Insufficient number of Gauss points");
-  }  
-  else if ((nnode==9) and ((ngp[0]<3) or (ngp[1]<3))) 
-  {   
+  }
+  else if ((nnode==9) and ((ngp[0]<3) or (ngp[1]<3)))
+  {
      dserror("Insufficient number of Gauss points");
-  }   
-  
-    gaussrule_ = getGaussrule(ngp); 
+  }
+
+    gaussrule_ = getGaussrule(ngp);
 
   //read 2D problem type
   frchk("PLANE_STRESS",&ierr);
-  if (ierr==1) wtype_ = plane_stress; 
+  if (ierr==1) wtype_ = plane_stress;
   frchk("PLANE_STRAIN",&ierr);
   if (ierr==1) wtype_ = plane_strain;
-  
+
   //read model (EAS or not)
   frchk("EAS_Model",&ierr);
   if (ierr==1)
   {
     iseas_ = true;
-    
+
     if (nnode==9)
     {
       dserror("eas-technology not necessary with 9 nodes");
@@ -153,7 +153,7 @@ bool DRT::ELEMENTS::Wall1::ReadElement()
       Epetra_SerialDenseMatrix Kda(2*NumNode(),Wall1::neas_);
       // EAS matrix K_{alpha d} // ONLY NEEDED FOR GENERALISED ENERGY-MOMENTUM METHOD
       Epetra_SerialDenseMatrix Kad(Wall1::neas_,2*NumNode());
-    
+
       // save EAS data into element container easdata_
       data_.Add("alpha",alpha);
       data_.Add("alphao",alphao);
@@ -216,7 +216,7 @@ DRT::UTILS::GaussRule2D DRT::ELEMENTS::Wall1::getGaussrule(int* ngp)
          rule = DRT::UTILS::intrule_quad_9point;
        }
        else
-         dserror("Unknown number of Gauss points for quad element");  
+         dserror("Unknown number of Gauss points for quad element");
        break;
     }
     case DRT::Element::tri3:
@@ -233,20 +233,20 @@ DRT::UTILS::GaussRule2D DRT::ELEMENTS::Wall1::getGaussrule(int* ngp)
             {
                 if (ngp[1] == 1)
                     {
-                    rule = DRT::UTILS::intrule_tri_3point_gauss_radau; 
+                    rule = DRT::UTILS::intrule_tri_3point_gauss_radau;
                     }
                 else if (ngp[1] == 2)
                     {
-                    rule = DRT::UTILS::intrule_tri_3point; 
+                    rule = DRT::UTILS::intrule_tri_3point;
                     }
                 else
                     {
                     dserror("Integration case %g is not available\n", ngp[1]);
                     }
-     
+
                 break;
             }
-            case 6: 
+            case 6:
             {
                 rule = DRT::UTILS::intrule_tri_6point;
                 break;
@@ -257,11 +257,11 @@ DRT::UTILS::GaussRule2D DRT::ELEMENTS::Wall1::getGaussrule(int* ngp)
                 dserror("Unknown number of Gauss points for tri element");
             }
         }
-        break;        
+        break;
     default:
        dserror("Unknown distype");
     }
-  } 
+  }
   return rule;
 }
 

@@ -59,7 +59,7 @@ void DRT::ELEMENTS::Wall1::w1_eassetup(
   // derivatives at origin
   Epetra_SerialDenseMatrix deriv0;
   deriv0.Shape(2,NumNode());
-  
+
   DRT::UTILS::shape_function_2D_deriv1(deriv0,0.0,0.0,distype);
 
    // compute jacobian matrix at origin
@@ -165,7 +165,7 @@ void DRT::ELEMENTS::Wall1::w1_call_defgrad_enh(
   //
   // Q1ET4:
   //     M1 = r 0    M2 = 0 r    M3 = 0 0    M4 = 0 0
-  //          0 0         0 0         s 0         0 s 
+  //          0 0         0 0         s 0         0 s
   //
   //     M = M1*alpha1 + M2*alpha2 + M3*alpha3 + M4*alpha4
   //
@@ -219,7 +219,7 @@ void DRT::ELEMENTS::Wall1::w1_call_defgrad_enh(
     A.Multiply('N','N',detJ0/det,xjm0,M_temp,0.0);
   else
     dserror("Cannot handle EAS type=%d", eastype_);
- 
+
   // enhanced deformation gradient at origin (four rows, one column)
 
   F_enh(0,0) = A(0,0)*F0(0) + A(1,0)*F0(2);
@@ -259,14 +259,14 @@ void DRT::ELEMENTS::Wall1::w1_call_defgrad_enh(
   for (int ieas=0; ieas<Wall1::neas_; ieas++)
   {
     (M_ges[ieas]).Shape(2,2);
-    
+
     memset((M_ges[ieas]).A(),0,(M_ges[ieas]).N()*(M_ges[ieas]).M()*sizeof(double));
-    
+
     (A_ges[ieas]).Shape(2,2);
   }
 
   // fill M-Matrixes, not including eas-parameters alpha
-  
+
   if (eastype_ == eas_q1e4)
   {
     (M_ges[0])(0,0) = e1;

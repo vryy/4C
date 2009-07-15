@@ -79,7 +79,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Wall1Line::Shape() const
 void DRT::ELEMENTS::Wall1Line::Pack(vector<char>& data) const
 {
   data.resize(0);
-  
+
   dserror("this Wall1Line element does not support communication");
 
   return;
@@ -93,7 +93,7 @@ void DRT::ELEMENTS::Wall1Line::Unpack(const vector<char>& data)
 {
   dserror("this line element does not support communication");
   return;
-} 
+}
 
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mgit 03/07|

@@ -421,7 +421,7 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(ParameterList&            params,
         DRT::NURBS::ControlPoint* cp
           =
           dynamic_cast<DRT::NURBS::ControlPoint* > (Nodes()[inode]);
-        
+
         weights(inode) = cp->W();
       }
   }
@@ -624,7 +624,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(
       DRT::NURBS::ControlPoint* cp
         =
         dynamic_cast<DRT::NURBS::ControlPoint* > (Nodes()[inode]);
-      
+
       weights(inode) = cp->W();
     }
   }
