@@ -643,7 +643,7 @@ void DRT::ELEMENTS::Shell8::VisNames(map<string,int>& names)
 bool DRT::ELEMENTS::Shell8::VisData(const string& name, vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
-  if(DRT::Element::VisData(name,data)) 
+  if(DRT::Element::VisData(name,data))
     return true;
 
   // these are the names shell8 recognizes, do nothing for everything else
@@ -1377,7 +1377,7 @@ void DRT::ELEMENTS::Shell8::s8_lumpmass(Epetra_SerialDenseMatrix* emass)
     // we assume #elemat2 is a square matrix
     for (int c=0; c<(*emass).N(); ++c)  // parse columns
     {
-      double d = 0.0;  
+      double d = 0.0;
       for (int r=0; r<(*emass).M(); ++r)  // parse rows
       {
         d += (*emass)(r,c);  // accumulate row entries

@@ -25,7 +25,7 @@ bool DRT::ELEMENTS::Shell8::ReadElement()
   // read element's nodes
   int ierr=0;
   int nnode=0;
-  int nodes[9]; 
+  int nodes[9];
   frchk("QUAD4",&ierr);
   if (ierr==1)
   {
@@ -61,18 +61,18 @@ bool DRT::ELEMENTS::Shell8::ReadElement()
     frint_n("TRI6",nodes,nnode,&ierr);
     if (ierr != 1) dserror("Reading of ELEMENT Topology failed");
   }
-  
+
   // reduce node numbers by one
   for (int i=0; i<nnode; ++i) nodes[i]--;
-  
+
   SetNodeIds(nnode,nodes);
-  
+
   // read number of material model
   material_ = 0;
   frint("MAT",&material_,&ierr);
   if (ierr!=1) dserror("Reading of SHELL8 element failed");
   SetMaterial(material_);
-  
+
   // read shell thickness
   thickness_ = 1.0;
   frdouble("THICK",&thickness_,&ierr);
@@ -81,11 +81,11 @@ bool DRT::ELEMENTS::Shell8::ReadElement()
   // read gaussian points
   frint_n("GP",ngp_,3,&ierr);
   if (ierr!=1) dserror("Reading of SHELL8 element failed");
-    
+
   // read gaussian points for triangle element
   frint("GP_TRI",&ngptri_,&ierr);
   if (ierr!=1) dserror("Reading of SHELL8 element failed");
-  
+
   // read local or global forces
   char buffer[50];
   frchar("FORCES",buffer,&ierr);
@@ -96,13 +96,13 @@ bool DRT::ELEMENTS::Shell8::ReadElement()
    else if (strncmp(buffer,"RST_ortho",9)==0) forcetype_ = s8_rst_ortho;
    else dserror("Reading of SHELL8 element failed");
   }
-  
+
   // read EAS parameters
   for (int i=0; i<5; ++i) eas_[i] = 0;
   char* colpointer = strstr(fractplace(),"EAS");
   colpointer+=3;
   colpointer = strpbrk(colpointer,"Nn");
-  ierr = sscanf(colpointer," %s ",buffer);  
+  ierr = sscanf(colpointer," %s ",buffer);
   if (ierr!=1) dserror("Reading of shell8 eas failed");
   if (strncmp(buffer,"none",4)==0)  eas_[0]=0;
   if (strncmp(buffer,"N4_1",4)==0)  eas_[0]=1;
@@ -115,7 +115,7 @@ bool DRT::ELEMENTS::Shell8::ReadElement()
   if (strncmp(buffer,"N9_9",4)==0)  eas_[0]=9;
   if (strncmp(buffer,"N9_11",4)==0) eas_[0]=11;
   colpointer += strlen(buffer);
-  
+
   colpointer = strpbrk(colpointer,"Nn");
   ierr = sscanf(colpointer," %s ",buffer);
   if (ierr!=1) dserror("Reading of shell8 eas failed");
@@ -127,7 +127,7 @@ bool DRT::ELEMENTS::Shell8::ReadElement()
   if (strncmp(buffer,"N9_9",4)==0)  eas_[1]=9;
   if (strncmp(buffer,"N9_11",4)==0) eas_[1]=11;
   colpointer += strlen(buffer);
-    
+
   colpointer = strpbrk(colpointer,"Nn");
   ierr = sscanf(colpointer," %s ",buffer);
   if (ierr!=1) dserror("Reading of shell8 eas failed");
@@ -139,7 +139,7 @@ bool DRT::ELEMENTS::Shell8::ReadElement()
   if (strncmp(buffer,"N_8",4)==0)   eas_[2]=8;
   if (strncmp(buffer,"N_9",4)==0)   eas_[2]=9;
   colpointer += strlen(buffer);
-  
+
   colpointer = strpbrk(colpointer,"Nn");
   ierr = sscanf(colpointer," %s ",buffer);
   if (ierr!=1) dserror("Reading of shell8 eas failed");
@@ -149,8 +149,8 @@ bool DRT::ELEMENTS::Shell8::ReadElement()
   if (strncmp(buffer,"N9_2",4)==0)  eas_[3]=2;
   if (strncmp(buffer,"N9_4",4)==0)  eas_[3]=4;
   if (strncmp(buffer,"N9_6",4)==0)  eas_[3]=6;
-  colpointer += strlen(buffer);                   
-  
+  colpointer += strlen(buffer);
+
   colpointer = strpbrk(colpointer,"Nn");
   ierr = sscanf(colpointer," %s ",buffer);
   if (ierr!=1) dserror("Reading of shell8 eas failed");
@@ -168,7 +168,7 @@ bool DRT::ELEMENTS::Shell8::ReadElement()
   vector<double> alfa(nhyb_);
   vector<double> alfao(nhyb_);
   vector<double> Rtild(nhyb_);
-  for (int i=0; i<nhyb_; ++i) 
+  for (int i=0; i<nhyb_; ++i)
   {
     alfa[i] = 0.0;
     alfao[i] = 0.0;
@@ -181,9 +181,9 @@ bool DRT::ELEMENTS::Shell8::ReadElement()
   data_.Add("alfa",alfa);
   data_.Add("alfao",alfao);
   data_.Add("Rtild",Rtild);
-  data_.Add("Dtildinv",Dtildinv);                                                  
-  data_.Add("Lt",Lt);                                                  
-    
+  data_.Add("Dtildinv",Dtildinv);
+  data_.Add("Lt",Lt);
+
   // read ANS
   ans_ = 0;
   frchar("ANS",buffer,&ierr);
@@ -193,12 +193,12 @@ bool DRT::ELEMENTS::Shell8::ReadElement()
   if (strncmp(buffer,"T",4)==0)    ans_=2;
   if (strncmp(buffer,"QT",4)==0)   ans_=3;
   if (strncmp(buffer,"TQ",4)==0)   ans_=3;
-      
+
   // read SDC
-  sdc_ = 1.0;  
+  sdc_ = 1.0;
   frdouble("SDC",&sdc_,&ierr);
   if (ierr!=1) dserror("Reading of shell8 sdc failed");
-    
+
   return true;
 } // Shell8::ReadElement()
 
