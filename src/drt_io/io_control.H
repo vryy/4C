@@ -77,7 +77,7 @@ namespace IO
 
     /// number of output steps per binary file
     int FileSteps() const { return filesteps_; }
-    
+
     /// creates new result files for the inverse analysis
     void NewResultFile(int numb_run);
 
@@ -112,7 +112,7 @@ namespace IO
     MAP table_;
   };
 
-  
+
   /// Controller for error files
   ///
   /// This object determines the names of error files #errname_, e.g. 'xxx2.err',

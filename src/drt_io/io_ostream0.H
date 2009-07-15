@@ -32,7 +32,7 @@ Maintainer: Burkhard Bornemann
 /* namespace */
 namespace IO
 {
-  
+
   /*====================================================================*/
   /*!
    * \brief This object allows to write to std::cout
@@ -93,10 +93,10 @@ namespace IO
 }  // namspace IO
 
 /*======================================================================*/
-/*! 
+/*!
  * \brief The core function. This allows to write to std::cout
  *        (if out is a refence on this variable) only on
- *        the single processor with rank equal IO::Ostream0::targetpid_. 
+ *        the single processor with rank equal IO::Ostream0::targetpid_.
  *        The remaining processors keep quiet.
  *
  * \author bborn \date 08/08

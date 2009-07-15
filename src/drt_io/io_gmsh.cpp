@@ -152,7 +152,7 @@ std::string IO::GMSH::elementAtInitialPositionToString(const double scalar, cons
   std::stringstream pos_array_string;
   pos_array_string.setf(ios::scientific,ios::floatfield);
   pos_array_string.precision(12);
-  
+
   pos_array_string << "S" << distypeToGmshElementHeader(distype) << "(";
   for (int i = 0; i<numnode; ++i)
   {
@@ -176,13 +176,13 @@ std::string IO::GMSH::elementAtInitialPositionToString(const double scalar, cons
 
 
 std::string IO::GMSH::elementAtCurrentPositionToString(
-    const double                            scalar, 
+    const double                            scalar,
     const DRT::Element*                     ele,
     const map<int,LINALG::Matrix<3,1> >&    currentelepositions)
 {
 
   const DRT::Element::DiscretizationType distype = ele->Shape();
-  
+
   std::stringstream gmshfilecontent;
   gmshfilecontent << IO::GMSH::cellWithScalarToString(
       distype, scalar, GEO::getCurrentNodalPositions(ele,currentelepositions)
@@ -194,7 +194,7 @@ std::string IO::GMSH::elementAtCurrentPositionToString(
 
 std::string text3dToString(
     const LINALG::Matrix<3,1>&            xyz,      ///< 3d Position of text
-    const std::string                     text,     ///< text to be printed 
+    const std::string                     text,     ///< text to be printed
     const int                             fontsize  ///< font size
     )
 {
@@ -204,7 +204,7 @@ std::string text3dToString(
   // coordinates
   gmsh_ele_line << "("<< scientific << xyz(0)<<",";
   gmsh_ele_line << scientific << xyz(1)<<",";
-  gmsh_ele_line << scientific << xyz(2) <<",";             
+  gmsh_ele_line << scientific << xyz(2) <<",";
   gmsh_ele_line << fontsize << ")";
   gmsh_ele_line <<"{\"" << text <<"\"};";
 

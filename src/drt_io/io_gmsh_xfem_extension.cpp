@@ -25,7 +25,7 @@ std::string IO::GMSH::XdisToString(
 {
   std::stringstream gmshfilecontent;
   gmshfilecontent << "View \" " << s << " Elements and Integration Cells \" {\n";
-  
+
   for (int i=0; i<dis->NumMyRowElements(); ++i)
   {
     const DRT::Element* actele = dis->lRowElement(i);

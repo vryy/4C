@@ -1,15 +1,15 @@
 /*!
  * \file io_gmsh.H
  * \brief simple element print library for Gmsh (mostly for debugging, only output per processor (no communication)
- * 
+ *
  * <pre>
  * Maintainer: Axel Gerstenberger
  *             gerstenberger@lnm.mw.tum.de
  *             http://www.lnm.mw.tum.de
  *             089 - 289-15236
  * </pre>
- * 
- * For a complete description, see the section about post processing formations in the Gmsh documentation 
+ *
+ * For a complete description, see the section about post processing formations in the Gmsh documentation
  */
 #ifndef GMSH_H
 #define GMSH_H
@@ -76,7 +76,7 @@ namespace IO
       std::stringstream s;
       s.setf(ios::scientific,ios::floatfield);
       s.precision(12);
-      
+
       const int numnode = distypeToGmshNumNode(distype);
 
       // values
@@ -240,11 +240,11 @@ namespace IO
 
       return gmsh_ele_line.str();
     }
-    
+
     /// print a piece of text at a given position
     std::string text3dToString(
         const LINALG::Matrix<3,1>&            xyz,      ///< 3d Position of text
-        const std::string                     text,     ///< text to be printed 
+        const std::string                     text,     ///< text to be printed
         const int                             fontsize  ///< font size
         );
 

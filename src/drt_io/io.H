@@ -76,8 +76,8 @@ public:
 
   //! read a non discretisation based vector of doubles
   /*!
-    This vector should have been written only by proc0. 
-    It is assumed that this is a 'small' vector which has to be present on all procs. 
+    This vector should have been written only by proc0.
+    It is assumed that this is a 'small' vector which has to be present on all procs.
     It is read from proc0 again and then communicated to all present procs.
    */
   void ReadRedundantDoubleVector(Teuchos::RCP<vector<double> >& doublevec, const string name);
@@ -231,7 +231,7 @@ public:
 
   /*!
     \brief write a knotvector for a nurbs discretisation
-    
+
     \author gammi
     \date 06/08
   */

@@ -110,8 +110,8 @@ public:
   //      */
   Teuchos::RCP<std::vector<char> > ReadKnotvector(
     const int step) const;
-  
-  
+
+
   //! read an Epetra_MultiVector from the result files
   /*!
     Right now an Epetra_MultiVector has to be read along with its map. Thus
