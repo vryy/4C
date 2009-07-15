@@ -32,7 +32,7 @@ bool DRT::ELEMENTS::Torsion3::ReadElement()
   // provide an array of length two in order to store the two node IDs read by frint_n
   int nodes[nnode];
   frint_n("LIN2",nodes,nnode,&ierr);
-  
+
   // if that does not work try LINE2, in case .dat file was created with pre_exodus
   if (ierr != 1)
   {
@@ -40,7 +40,7 @@ bool DRT::ELEMENTS::Torsion3::ReadElement()
     frchk("LINE2",&ierr);
     frint_n("LINE2",nodes,nnode,&ierr);
   }
-  
+
   if (ierr != 1) dserror("Reading of ELEMENT Topology failed");
 
   // reduce node numbers by one for meeting BACI intern standard
@@ -59,7 +59,7 @@ bool DRT::ELEMENTS::Torsion3::ReadElement()
   crosssec_ = 0;
   frdouble("CROSS",&crosssec_,&ierr);
   if (ierr!=1) dserror("Reading of Torsion3 element failed");
-  
+
   // we expect kintype to be total lagrangian
   kintype_ = tr3_totlag;
 
@@ -72,9 +72,9 @@ bool DRT::ELEMENTS::Torsion3::ReadElement()
    if (strncmp(buffer,"totlag",6)==0)    kintype_ = tr3_totlag;
    // geometrically non-linear approach with engineering strains
    else if (strncmp(buffer,"engstr",6)==0)   kintype_ = tr3_engstrain;
-   
+
    else dserror("Reading of Torsion3 element failed because of unknown kinematic type!");
-  }  
+  }
   return true;
 } // Torsion3::ReadElement()
 
