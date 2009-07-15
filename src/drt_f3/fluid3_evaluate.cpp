@@ -649,8 +649,8 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         const DiscretizationType distype = this->Shape();
         switch (distype)
         {
-        case DRT::Element::hex27: 
-        case DRT::Element::nurbs27: 
+        case DRT::Element::hex27:
+        case DRT::Element::nurbs27:
         {
           this->integrateShapefunction<27>(
 	    discretization,
@@ -658,7 +658,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
 	    elevec1       );
 	  break;
 	}
-        case DRT::Element::hex20: 
+        case DRT::Element::hex20:
         {
           this->integrateShapefunction<20>(
 	    discretization,
@@ -928,7 +928,7 @@ void DRT::ELEMENTS::Fluid3::f3_int_beltrami_err(
 }
 
 /*---------------------------------------------------------------------*
- | Calculate spatial mean values for channel flow 
+ | Calculate spatial mean values for channel flow
  |                                                           gammi 07/07
  *---------------------------------------------------------------------*/
 template<int iel>
@@ -982,24 +982,24 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
     xyze(1,inode)=x[1];
     xyze(2,inode)=x[2];
   }
-  
+
   if(is_ale_)
   {
     for (int inode=0; inode<iel; inode++)
     {
       const int finode = 4*inode;
-      
+
       xyze(0,inode) += displacement[ +finode];
       xyze(1,inode) += displacement[1+finode];
       xyze(2,inode) += displacement[2+finode];
-      
+
       if(abs(displacement[normdirect+finode])>1e-6)
       {
         dserror("no sampling possible if homogeneous planes are not conserved\n");
       }
     }
   }
-  
+
   if(distype == DRT::Element::hex8
      ||
      distype == DRT::Element::hex27
@@ -1140,7 +1140,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
     {
       // reset temporary values
       double area=0;
-        
+
       double ubar=0;
       double vbar=0;
       double wbar=0;
@@ -1176,7 +1176,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
 
 	// compute the shape function values
 	shape_function_3D(funct,e[0],e[1],e[2],distype);
-        
+
         shape_function_3D_deriv1(deriv,e[0],e[1],e[2],distype);
 
         // get transposed Jacobian matrix and determinant
@@ -1213,7 +1213,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
 
         // we assume that every plane parallel to the wall is preserved
         // hence we can compute the jacobian determinant of the 2d cutting
-        // element by replacing max-min by one on the diagonal of the 
+        // element by replacing max-min by one on the diagonal of the
         // jacobi matrix (the two non-diagonal elements are zero)
         if(xjm(normdirect,normdirect)<0)
         {
@@ -1224,7 +1224,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
           xjm(normdirect,normdirect)= 1.0;
         }
 
-        const double det = 
+        const double det =
           xjm(0,0)*xjm(1,1)*xjm(2,2)
           +
           xjm(0,1)*xjm(1,2)*xjm(2,0)
@@ -1271,8 +1271,8 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
 	double pgp=0;
         double svgp=0;
 
-        // the computation of this jacobian determinant from the 3d 
-        // mapping is based on the assumption that we do not deform 
+        // the computation of this jacobian determinant from the 3d
+        // mapping is based on the assumption that we do not deform
         // our elements in wall normal direction!
 	const double fac=det*intpoints.qwgt[iquad];
 
@@ -1383,7 +1383,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
     bool zero_size = false;
     zero_size = knots->GetEleKnots(eleknots,gid);
 
-    // if we have a zero sized element due to a interpolated 
+    // if we have a zero sized element due to a interpolated
     // point --- exit here
     if(zero_size)
     {
@@ -1499,7 +1499,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
 
         // we assume that every plane parallel to the wall is preserved
         // hence we can compute the jacobian determinant of the 2d cutting
-        // element by replacing max-min by one on the diagonal of the 
+        // element by replacing max-min by one on the diagonal of the
         // jacobi matrix (the two non-diagonal elements are zero)
         if(xjm(normdirect,normdirect)<0)
         {
@@ -1510,7 +1510,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
           xjm(normdirect,normdirect)= 1.0;
         }
 
-        const double det = 
+        const double det =
           xjm(0,0)*xjm(1,1)*xjm(2,2)
           +
           xjm(0,1)*xjm(1,2)*xjm(2,0)
@@ -1535,8 +1535,8 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
 	double wgp=0;
 	double pgp=0;
 
-        // the computation of this jacobian determinant from the 3d 
-        // mapping is based on the assumption that we do not deform 
+        // the computation of this jacobian determinant from the 3d
+        // mapping is based on the assumption that we do not deform
         // our elements in wall normal direction!
 	const double fac=det*intpoints.qwgt[iquad];
 
@@ -1871,7 +1871,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_loma_means(
 
         // we assume that every plane parallel to the wall is preserved
         // hence we can compute the jacobian determinant of the 2d cutting
-        // element by replacing max-min by one on the diagonal of the 
+        // element by replacing max-min by one on the diagonal of the
         // jacobi matrix (the two non-diagonal elements are zero)
         if (xjm(normdirect,normdirect)<0) xjm(normdirect,normdirect)=-1.0;
         else                              xjm(normdirect,normdirect)= 1.0;
@@ -1904,8 +1904,8 @@ void DRT::ELEMENTS::Fluid3::f3_calc_loma_means(
         double svgp=0;
         double usave=0;
 
-        // the computation of this jacobian determinant from the 3d 
-        // mapping is based on the assumption that we do not deform 
+        // the computation of this jacobian determinant from the 3d
+        // mapping is based on the assumption that we do not deform
         // our elements in wall normal direction!
         const double fac=det*intpoints.qwgt[iquad];
 
@@ -2633,7 +2633,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
   return;
 } // DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij
 
-template<int iel> 
+template<int iel>
 void DRT::ELEMENTS::Fluid3::integrateShapefunction(
     DRT::Discretization&      discretization,
     vector<int>&              lm            ,
@@ -2653,15 +2653,15 @@ void DRT::ELEMENTS::Fluid3::integrateShapefunction(
     RefCountPtr<const Epetra_Vector> dispnp
       =
       discretization.GetState("dispnp");
-      
+
     if (dispnp==null)
     {
       dserror("Cannot get state vector 'dispnp'");
     }
-    
+
     vector<double> mydispnp(lm.size());
     DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
-    
+
     // extract velocity part from "mygridvelaf" and get
     // set element displacements
     for (int i=0;i<iel;++i)
@@ -2707,7 +2707,7 @@ void DRT::ELEMENTS::Fluid3::integrateShapefunction(
       xyze(2,inode) += edispnp(2,inode);
     }
   }
- 
+
   // --------------------------------------------------
   // Now do the nurbs specific stuff
   std::vector<Epetra_SerialDenseVector> myknots(3);
@@ -2723,7 +2723,7 @@ void DRT::ELEMENTS::Fluid3::integrateShapefunction(
     bool zero_size = false;
     zero_size = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id());
 
-    // if we have a zero sized element due to a interpolated 
+    // if we have a zero sized element due to a interpolated
     // point --- exit here
     if(zero_size)
     {
@@ -2736,11 +2736,11 @@ void DRT::ELEMENTS::Fluid3::integrateShapefunction(
       DRT::NURBS::ControlPoint* cp
         =
         dynamic_cast<DRT::NURBS::ControlPoint* > (nodes[inode]);
-      
+
       weights(inode) = cp->W();
     }
   }
- 
+
 
   //------------------------------------------------------------------
   //                       INTEGRATION LOOP
@@ -2758,7 +2758,7 @@ void DRT::ELEMENTS::Fluid3::integrateShapefunction(
     gp(0)=intpoints.qxg[iquad][0];
     gp(1)=intpoints.qxg[iquad][1];
     gp(2)=intpoints.qxg[iquad][2];
-    
+
     if(!(distype == DRT::Element::nurbs8
          ||
          distype == DRT::Element::nurbs27))
@@ -2777,7 +2777,7 @@ void DRT::ELEMENTS::Fluid3::integrateShapefunction(
 	 weights,
 	 distype);
     }
-    
+
     // get transposed Jacobian matrix and determinant
     //
     //        +-            -+ T      +-            -+
@@ -2820,8 +2820,8 @@ void DRT::ELEMENTS::Fluid3::integrateShapefunction(
       }
     }
 
-    // the bm as well as the other const doubles values 
-    // here will be reused later for the linear system 
+    // the bm as well as the other const doubles values
+    // here will be reused later for the linear system
     // for the second derivatives
     bm(3,3) = xjm(0,0)*xjm(1,1);
     bm(3,4) = xjm(0,0)*xjm(1,2);
@@ -2834,7 +2834,7 @@ void DRT::ELEMENTS::Fluid3::integrateShapefunction(
     bm(5,3) = xjm(1,0)*xjm(2,1);
     bm(5,4) = xjm(1,0)*xjm(2,2);
     bm(5,5) = xjm(1,1)*xjm(2,2);
-   
+
     // The determinant ist computed using Sarrus's rule
     const double det = xjm(0,0)*bm(5,5)+
                        xjm(2,0)*bm(3,5)+

@@ -55,7 +55,7 @@ int DRT::ELEMENTS::Fluid3Line::EvaluateNeumann(ParameterList& params,
                                            DRT::Condition&           condition,
                                            vector<int>&              lm,
                                            Epetra_SerialDenseVector& elevec1)
-{  
+{
   dserror("Neumann condition on line not implemented");
   return 0;
 }

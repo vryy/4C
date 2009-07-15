@@ -56,7 +56,7 @@ data_       (old.data_       ),
 Cs_delta_sq_(old.Cs_delta_sq_),
 saccn_      (old.saccn_      ),
 svelnp_     (old.svelnp_     ),
-sveln_      (old.sveln_      ) 
+sveln_      (old.sveln_      )
 {
     return;
 }
@@ -224,9 +224,9 @@ RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Fluid3::ElementRegister() const
  *----------------------------------------------------------------------*/
 vector<RCP<DRT::Element> > DRT::ELEMENTS::Fluid3::Lines()
 {
-  // do NOT store line or surface elements inside the parent element 
+  // do NOT store line or surface elements inside the parent element
   // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization, 
+  // Reason: if a Redistribute() is performed on the discretization,
   // stored node ids and node pointers owned by these boundary elements might
   // have become illegal and you will get a nice segmentation fault ;-)
 
@@ -240,9 +240,9 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Fluid3::Lines()
  *----------------------------------------------------------------------*/
 vector<RCP<DRT::Element> > DRT::ELEMENTS::Fluid3::Surfaces()
 {
-  // do NOT store line or surface elements inside the parent element 
+  // do NOT store line or surface elements inside the parent element
   // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization, 
+  // Reason: if a Redistribute() is performed on the discretization,
   // stored node ids and node pointers owned by these boundary elements might
   // have become illegal and you will get a nice segmentation fault ;-)
 

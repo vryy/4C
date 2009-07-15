@@ -37,7 +37,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/drt_function.H"
 
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
-#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H" 
+#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
@@ -61,11 +61,11 @@ namespace DRT
     //
     //-----------------------------------------------------------------
     //-----------------------------------------------------------------
-    
+
     /*-----------------------------------------------------------------
 
     \brief an interface class for the weak Dirichlet boundary condition
-           for every surface element distype this class allocates one 
+           for every surface element distype this class allocates one
            instance of the weak Dirichlet implementation
 
     \author gammi (gamnitzer@lnm.mw.tum.de), 11/09
@@ -80,7 +80,7 @@ namespace DRT
       virtual ~Fluid3SurfaceWeakDBCInterface() {}
 
       /*!
-        \brief Evaluate the surface elements weak Dirichlet boundary 
+        \brief Evaluate the surface elements weak Dirichlet boundary
                conditions
 
         This class does not provide a definition for this function, it
@@ -88,7 +88,7 @@ namespace DRT
 
         \author gammi (gamnitzer@lnm.mw.tum.de), 11/09
 
-        \param surfele             (in): surface element in geometry 
+        \param surfele             (in): surface element in geometry
                                          associated with weak dbc
         \param params              (in): parameters (time integration
                                          parent lms, condition)
@@ -107,8 +107,8 @@ namespace DRT
         Epetra_SerialDenseVector&  elevec_epetra ) = 0;
 
       /*!
-        \brief Allocate one static instance of the internal 
-               implementation class for weak dirichlet condition and 
+        \brief Allocate one static instance of the internal
+               implementation class for weak dirichlet condition and
                return pointer to it
 
         \author gammi (gamnitzer@lnm.mw.tum.de), 11/09
@@ -135,7 +135,7 @@ namespace DRT
     */
 
     //-----------------------------------------------------------------
-    ///     
+    ///
     //-----------------------------------------------------------------
     template<DRT::Element::DiscretizationType distype ,
              DRT::Element::DiscretizationType pdistype>
@@ -191,7 +191,7 @@ namespace DRT
       //! array of nodal grid displacements, parent element, new time level
       LINALG::Matrix<3,piel> pedispnp_;
       //! array of nodal grid displacements, surface element, new time level
-      LINALG::Matrix<3,piel> edispnp_; 
+      LINALG::Matrix<3,piel> edispnp_;
       //! node coordinates of boundary element
       LINALG::Matrix<3, iel> xyze_;
 
@@ -250,10 +250,10 @@ namespace DRT
     //-----------------------------------------------------------------
 
     /*!
-      \brief a class providing a method for the dynamic computation of 
-             the penalty parameter tauB for the weak Dirichlet boundary 
+      \brief a class providing a method for the dynamic computation of
+             the penalty parameter tauB for the weak Dirichlet boundary
              condition. It is computed such that the resulting traction
-             corresponds to Spaldings formulation of the law of the 
+             corresponds to Spaldings formulation of the law of the
              wall
 
       Literature:
@@ -274,20 +274,20 @@ namespace DRT
       \param B_in   (in) empirical paramter of Spaldings law, usually 5.5
 
       */
-      Fluid3SurfaceWeakDBCSpaldingsLaw(const double chi_in, 
+      Fluid3SurfaceWeakDBCSpaldingsLaw(const double chi_in,
                                        const double B_in  );
 
       /// Empty destructor
       virtual ~Fluid3SurfaceWeakDBCSpaldingsLaw() {}
 
-      /*! \brief dynamic computation of the penalty paramter using Spaldings 
+      /*! \brief dynamic computation of the penalty paramter using Spaldings
                  law
 
 
       \param  tau_B (in/out) start/final value for penalty parameter tau_B
       \param  normu (in)     norm velocity in this point on surface
       \param  h     (in)     cell size in wall normal direction
-      \param  Cb    (in)     constant originating from weak Dirichlet 
+      \param  Cb    (in)     constant originating from weak Dirichlet
                              framework
       \param  visc  (in)     kinematic viscosity
 
@@ -308,7 +308,7 @@ namespace DRT
 
       /*! \brief evaluate the residual of Spaldings law of the wall
 
-  
+
 
       <pre>
 
@@ -336,7 +336,7 @@ namespace DRT
       \return residual of Spaldings equation
       */
       double SpaldingResidual(
-        const double y     , 
+        const double y     ,
         const double nu    ,
         const double tau_B ,
         const double normu
@@ -353,7 +353,7 @@ namespace DRT
 
       */
       double JacobianSpaldingResidual(
-        const double y    , 
+        const double y    ,
         const double nu   ,
         const double tau_B,
         const double normu);
@@ -362,13 +362,13 @@ namespace DRT
 
       <pre>
 
-                                               +-------------+ 
-                     ||  n+af ||              /  ||  n+af||    
-           +         || u     ||             /   || u    ||    
-          u  = ---------------------- =     /   -------------  
-                 +------------------+    \ /        tau        
-                / tau  * ||  n+af ||      v            B       
-               v     B   || u     || 
+                                               +-------------+
+                     ||  n+af ||              /  ||  n+af||
+           +         || u     ||             /   || u    ||
+          u  = ---------------------- =     /   -------------
+                 +------------------+    \ /        tau
+                / tau  * ||  n+af ||      v            B
+               v     B   || u     ||
 
       </pre>
 
@@ -378,27 +378,27 @@ namespace DRT
       \return u+
 
        */
-      double Uplus(const double normu, 
+      double Uplus(const double normu,
                    const double tau_B);
 
       /*! \brief compute dimensionless thickness of modeled layer y+
 
       <pre>
-                   +-------------+              +-------------+     
-                  / tau  * ||u||          h *  / tau  * ||u||       
-           +     v     B                   b  v     B               
-          y  =  ------------------- * y = ---------------------- = 
-                        nu                      C  * nu             
-                                                 b                  
-                  +-------------+ 
-                 / tau  * ||u||   
-                v     B           
+                   +-------------+              +-------------+
+                  / tau  * ||u||          h *  / tau  * ||u||
+           +     v     B                   b  v     B
+          y  =  ------------------- * y = ---------------------- =
+                        nu                      C  * nu
+                                                 b
+                  +-------------+
+                 / tau  * ||u||
+                v     B
              = -------------------
-                     tau          
+                     tau
                         B,0
 
       </pre>
-        
+
       \param  normu (in)     norm velocity in this point on surface
       \param  tau_B (in)     value for penalty parameter tau_B
       \param  visc  (in)     kinematic viscosity
@@ -406,9 +406,9 @@ namespace DRT
 
       \return y+
        */
-      double Yplus(const double normu, 
-                   const double tau_B, 
-                   const double visc , 
+      double Yplus(const double normu,
+                   const double tau_B,
+                   const double visc ,
                    const double y    );
 
     };

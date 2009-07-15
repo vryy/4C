@@ -27,10 +27,10 @@ namespace XFLUID
   /// Then, for standard FEM, P = N
   ///
   /// Two examples:
-  /// 
+  ///
   /// u^h = SUM_I P^I u^I
   ///  u^I are the free parameters (nodal unknowns in the standard FEM) and
-  ///  normal and enriched parameters combined in the XFEM 
+  ///  normal and enriched parameters combined in the XFEM
   ///
   /// | P1 |   | N1     |
   /// | P2 |   | N2     |
@@ -38,7 +38,7 @@ namespace XFLUID
   /// | P4 |   | N2*psi |
   ///   ...
   /// similar
-  /// du^h/dx = SUM_I dP^I/dx u^I 
+  /// du^h/dx = SUM_I dP^I/dx u^I
   ///   P is the approximation function
   ///
   /// | P1/dx |   | N1/dx                   |
@@ -64,7 +64,7 @@ namespace XFLUID
     LINALG::Matrix<numparam,1>  dzdy;
     LINALG::Matrix<numparam,1>  dzdz;
   };
-  
+
   template <size_t numparam>
   struct EnrViscs2
   {
@@ -78,8 +78,8 @@ namespace XFLUID
     LINALG::Matrix<numparam,1> zy;
     LINALG::Matrix<numparam,1> zz;
   };
-  
-  
+
+
 template<class M1, class M2>
 void fill_tau(
     const size_t         numparamtau,
@@ -106,7 +106,7 @@ void fill_tau(
 
 /*!
  * \brief calculate the body force from the nodes condition
- * 
+ *
  *  get the body force in the nodes of the element (private) gammi 04/07
  *  the Neumann condition associated with the nodes is stored in the
  *  array edeadng only if all nodes have a VolumeNeumann condition
@@ -116,7 +116,7 @@ template <DRT::Element::DiscretizationType DISTYPE>
 LINALG::SerialDenseMatrix BodyForce(DRT::Node** nodes, const double pseudotime)
 {
   dserror("not adapted to xfem (, yet)!!!");
-    
+
   std::vector<DRT::Condition*> myneumcond;
   const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
   // check whether all nodes have a unique VolumeNeumann condition
@@ -187,7 +187,7 @@ LINALG::SerialDenseMatrix BodyForce(DRT::Node** nodes, const double pseudotime)
     // we have no dead load
     edeadng_.Zero();
   }
-  
+
   return edeadng_;
 }
 
@@ -241,7 +241,7 @@ DRT::UTILS::GaussRule3D getXFEMGaussrule(
   else
   {
     const GEO::EleGeoType xeleGeoType = GEO::checkGeoTypeT<XELEDISTYPE>(xele,xyze_element);
-    
+
     if (celldistype == DRT::Element::tet4 or celldistype == DRT::Element::tet10)
     {
       switch (XELEDISTYPE)

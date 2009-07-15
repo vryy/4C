@@ -29,7 +29,7 @@ DRT::ELEMENTS::Fluid3Line::Fluid3Line(  int id,
                                         int nnode,
                                         const int* nodeids,
                                         DRT::Node** nodes,
-                                        DRT::Element* parent,  
+                                        DRT::Element* parent,
                                         const int lline) :
 DRT::Element(id,element_fluid3line,owner),
 parent_(parent),

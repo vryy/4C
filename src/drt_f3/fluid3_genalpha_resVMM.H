@@ -3,7 +3,7 @@
 \file fluid3_genalpha_resVMM.H
 
 \brief Internal implementation of Fluid3 element with a generalised alpha
-       time integration. The major difference to the standard 
+       time integration. The major difference to the standard
        one-step-theta/BDF2 implementation is that the pressure and the
        continuity equation are treated fully implicitly.
 
@@ -37,7 +37,7 @@ Maintainer: Peter Gamnitzer
 
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 
-#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H" 
+#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 namespace DRT
@@ -75,7 +75,7 @@ namespace DRT
                            Epetra_SerialDenseVector&  elevec3_epetra,
                            RefCountPtr<MAT::Material> mat) = 0;
 
-      /// Calculate averages for residual, dissipation rates etc for 
+      /// Calculate averages for residual, dissipation rates etc for
       /// elements in a turbulent channel flow. The computed values are
       /// are added to a vector associated with an element layer
       /*!
@@ -87,10 +87,10 @@ namespace DRT
                               DRT::Discretization&       discretization,
                               vector<int>&               lm,
                               RefCountPtr<MAT::Material> mat) = 0;
-      
+
       /// Internal implementation class for fluid element
       static Fluid3GenalphaResVMMInterface* Impl(DRT::ELEMENTS::Fluid3* f3);
-      
+
     };
 
 
@@ -99,14 +99,14 @@ namespace DRT
     /*----------------------------------------------------------------------*/
     /*----------------------------------------------------------------------*/
 
-    
+
     /// Internal Fluid3 implementation (genalpha version)
     /*!
       This internal class keeps all the working arrays needed to
       calculate the Fluid3 element (genalpha implementation).
       Additionally the methods Sysmat_...() provide this elements
       implementations.
-      
+
       <h3>Purpose</h3>
 
       The idea is to separate the element maintenance (class Fluid3)
@@ -115,7 +115,7 @@ namespace DRT
       scheme and the residual based stabilisation. This affects the
       factors of some of the contributions and some additional
       element contributions arise.
-      
+
       The Fluid3 will allocate exactly one object of this class for all
       fluid elements with the same number of nodes in the mesh. This
       allows us to use exactly matching working arrays (and keep them
@@ -131,14 +131,14 @@ namespace DRT
       discretisation with an implicit treatment of the continuity
       equation and pressure, assuring that every solution is divergence
       free on output.
-      
+
       There are multiple stabilisation options included in this
       implementation. For the standard residual based method these are:
       <pre>
-    
+
       o Newton/Quasi-Newton/minimal (on/off)
         ------------------------------------
-        Reactive terms are/are not linearised, minimal does not 
+        Reactive terms are/are not linearised, minimal does not
         include second derivatives in tangent matrix
 
       o SUPG Stabilisation
@@ -161,7 +161,7 @@ namespace DRT
 
       </pre>
 
-      Available versions of the stabilisation parameters are 
+      Available versions of the stabilisation parameters are
       <pre>
 
       o tauM: Codina
@@ -258,30 +258,30 @@ namespace DRT
 
         Get statevetors, extract values required by the element using the
         location vector.
-        
-        Set parameters for time integration and nonlinear iteration  (i.e. 
+
+        Set parameters for time integration and nonlinear iteration  (i.e.
         read control parameters from the parameterlist)
-        
+
         Do setup for stabilisation, turbulence models and so on.
 
         Get knots for the nurbs implementation.
 
-        In the end, call the specific Sysmat implementation, i.e. assemble 
+        In the end, call the specific Sysmat implementation, i.e. assemble
         element residual (and matrix).
 
         \param ele            (i)   the element to evaluate
-        \param params         (i/o) list of all parameters --- Smagorinsky model 
-                                    stores some stuff in there to return it to 
+        \param params         (i/o) list of all parameters --- Smagorinsky model
+                                    stores some stuff in there to return it to
                                     the time integration level
         \param discretization (i)   the discretisation containing knot vectors etc
-        \param lm             (i)   location vector to acces element dofs in 
+        \param lm             (i)   location vector to acces element dofs in
                                     global vectors
         \param elemat1_epetra (i/o) element matrix
         \param elemat2_epetra (-)   dummy
         \param elevec1_epetra (i/o) (negative) element residual
         \param elevec2_epetra (-)   dummy
         \param elevec3_epetra (-)   dummy
-        \param mat            (i)   interface class for materials in elements 
+        \param mat            (i)   interface class for materials in elements
 
       */
       virtual int Evaluate(Fluid3*                    ele,
@@ -302,23 +302,23 @@ namespace DRT
       /*!
         \brief evaluate residuals resM and resC on the element and return
                averaged values together with averaged subgrid-scale quantities.
-        
-        The calculation of averages for residual, dissipation rates etc for 
-        elements in a turbulent channel flow is based on a generalized-alpha 
-        time integration. 
 
-        The computed values are added to a vector associated with an 
-        element layer and communicated with the time integration via the 
+        The calculation of averages for residual, dissipation rates etc for
+        elements in a turbulent channel flow is based on a generalized-alpha
+        time integration.
+
+        The computed values are added to a vector associated with an
+        element layer and communicated with the time integration via the
         parameterlist.
 
         The following things are done:
 
         o Get statevetors, extract values required by the element using the
           location vector.
-        
-        o Set parameters for time integration (i.e. read control parameters 
+
+        o Set parameters for time integration (i.e. read control parameters
           from the parameterlist)
-        
+
         o Do setup for stabilization, turbulence models and so on.
 
         o Get knots for the nurbs implementation.
@@ -326,22 +326,22 @@ namespace DRT
         o evaluate the gausspoint quantities, average over the element
 
         o add values to layer vectors
-        
+
         Note:
 
         In large parts, this method is a copy of Sysmat... (concerning
         the computations of the residuals). Its only purpose is to
         allow an output of time averaged residuals and subscale
         accelerations to study their influence
-        
+
 
         \param ele            (i)   the element to evaluate
-        \param params         (i/o) list of all parameters; returns averages to 
+        \param params         (i/o) list of all parameters; returns averages to
                                     time integration
         \param discretization (i)   the discretisation containing knot vectors etc
-        \param lm             (i)   location vector to acces element dofs in 
+        \param lm             (i)   location vector to acces element dofs in
                                     global vectors
-        \param mat            (i)   interface class for materials in elements 
+        \param mat            (i)   interface class for materials in elements
         \param actmat         (i)   actual material storing density
 
       */
@@ -416,7 +416,7 @@ namespace DRT
                          const double                           dt,
                          const double                           time,
                          const enum Fluid3::LinearisationAction newton,
-                         const bool                             higher_order_ele,                  
+                         const bool                             higher_order_ele,
                          const enum Fluid3::FineSubgridVisc     fssgv,
                          const enum Fluid3::StabilisationAction inertia,
                          const enum Fluid3::StabilisationAction pspg,
@@ -494,7 +494,7 @@ namespace DRT
                          const double                           dt,
                          const double                           time,
                          const enum Fluid3::LinearisationAction newton,
-                         const bool                             higher_order_ele,                  
+                         const bool                             higher_order_ele,
                          const enum Fluid3::FineSubgridVisc     fssgv,
                          const enum Fluid3::StabilisationAction inertia,
                          const enum Fluid3::StabilisationAction pspg,
@@ -571,7 +571,7 @@ namespace DRT
                           const double                           dt,
                           const double                           time,
                           const enum Fluid3::LinearisationAction newton,
-                          const bool                             higher_order_ele,                  
+                          const bool                             higher_order_ele,
                           const enum Fluid3::FineSubgridVisc     fssgv,
                           const enum Fluid3::StabilisationAction pspg,
                           const enum Fluid3::StabilisationAction supg,
@@ -648,7 +648,7 @@ namespace DRT
                           const double                           dt,
                           const double                           time,
                           const enum Fluid3::LinearisationAction newton,
-                          const bool                             higher_order_ele,                  
+                          const bool                             higher_order_ele,
                           const enum Fluid3::FineSubgridVisc     fssgv,
                           const enum Fluid3::StabilisationAction inertia,
                           const enum Fluid3::StabilisationAction pspg,
@@ -682,7 +682,7 @@ namespace DRT
       //  \param turb_mod_action  (o) enum specifying the turbulence approach used
       //  \param Cs               (o) Smagorinsky constant, read from parameterlist
       //  \param Cs_delta_sq      (o) Computed for dynamic Smagorinsky model
-      //  \param l_tau            (o) viscous length scale of problem (set for van Driest 
+      //  \param l_tau            (o) viscous length scale of problem (set for van Driest
       //                              damping)
       //  \param nlayer           (o) number of the element layer in a turbulent channel
       //                              this one is used for a dynamic Smagorinsky model
@@ -694,11 +694,11 @@ namespace DRT
         const Fluid3*                       ele            ,
         ParameterList                     & turbmodelparams,
         const Fluid3::FineSubgridVisc     & fssgv          ,
-        Fluid3::TurbModelAction           & turb_mod_action, 
+        Fluid3::TurbModelAction           & turb_mod_action,
         double                            & Cs             ,
         double                            & Cs_delta_sq    ,
         double                            & l_tau          ,
-        int                               & nlayer         
+        int                               & nlayer
         );
 
       ///  extract velocities, pressure and accelerations etc from the global distributed vectors
@@ -745,7 +745,7 @@ namespace DRT
       //  \param velderxy   (o) velocity derivatives
       //
       //  \return computed rate of strain
-      
+
       */
       double GetStrainRate(
         const LINALG::Matrix<3,iel>& evel     ,
@@ -758,7 +758,7 @@ namespace DRT
           // get velocity derivatives at integration point
           //
           //              +-----  dN (x)
-          //   dvel (x)    \        k        
+          //   dvel (x)    \        k
           //   -------- =   +     ------ * vel
           //      dx       /        dx        k
           //        j     +-----      j
@@ -783,11 +783,11 @@ namespace DRT
           //          +-                                 -+ 1
           //          |          /   \           /   \    | -
           //          | 2 * eps | vel |   * eps | vel |   | 2
-          //          |          \   / ij        \   / ij |  
-          //          +-                                 -+  
+          //          |          \   / ij        \   / ij |
+          //          +-                                 -+
           //
           LINALG::Matrix<3,3> two_epsilon;
-        
+
           for(int rr=0;rr<3;++rr)
           {
             for(int mm=0;mm<3;++mm)
@@ -795,7 +795,7 @@ namespace DRT
               two_epsilon(rr,mm) = velderxy(rr,mm) + velderxy(mm,rr);
             }
           }
-          
+
           for(int rr=0;rr<3;rr++)
           {
             for(int mm=0;mm<3;mm++)
@@ -804,12 +804,12 @@ namespace DRT
             }
           }
           // sqrt(two_epsilon(rr,mm)*two_epsilon(rr,mm)/4.0*2.0)
-        
+
           return(sqrt(rateofstrain/2.0));
         }
 
       /*!
-        \brief Get all global shape functions, first and eventually second 
+        \brief Get all global shape functions, first and eventually second
                derivatives in a gausspoint
 
     	\param ele       (i) pointer to element for debug io
@@ -829,7 +829,7 @@ namespace DRT
         const bool                                    hoel
         );
 
-           
+
       /*!
         \brief calculates viscosity at a given point (element center or Gaussian point)
 
@@ -859,7 +859,7 @@ namespace DRT
                    const double &                         hk       ,
                    const double &                         mk       ,
                    const double &                         visceff  );
-             
+
 
       /*!
         \brief calculates all quantities which are defined at the element center
@@ -869,7 +869,7 @@ namespace DRT
                         o element size hk, constant mk from inverse estimate
                         o dead load
                         o viscosity, effective viscosity
-                        
+
 
      	\param ele                      (i) pointer to element
         \param edispnp                  (i) nodal mesh displacements, t_{n+1} (for ALE)
@@ -889,7 +889,7 @@ namespace DRT
         \param Cs_delta_sq              (o) Computed for dynamic Smagorinsky model
         \param visceff        		(o) effective material viscosity
 
-       */                 
+       */
       void SetElementData
       (
         Fluid3*                                      ele            ,
@@ -943,7 +943,7 @@ namespace DRT
         \param fssgv             (i) Control parameter: use a fine-scale subgrid viscosity
         \param higher_order_ele  (i) include second derivatives in residual for stabilization
 
-       */     
+       */
       void InterpolateToGausspoint(
         Fluid3*                                     ele             ,
         const LINALG::Matrix<3,iel>               & egridvaf        ,
@@ -1015,7 +1015,7 @@ namespace DRT
       LINALG::Matrix<3,1>   normed_velintaf_;
       //! fine-scale velocity in gausspoint, time n+af
       LINALG::Matrix<3,1>   fsvelintaf_;
-      //! grid velocity at time level n+af 
+      //! grid velocity at time level n+af
       LINALG::Matrix<3,1>   u_G_af_;
       //! ale convective velocity at intermediate time level n+af
       //! aleconvint_af_ = velintaf_ - gridvelintaf_
@@ -1098,7 +1098,7 @@ namespace DRT
 
       // temporary working arrays
       // ------------------------
-      //! array used for the computation of jacobian 
+      //! array used for the computation of jacobian
       //! determinant and second derivatives
       LINALG::Matrix<6,6>   bm_;
 

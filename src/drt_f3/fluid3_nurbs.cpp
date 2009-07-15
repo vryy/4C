@@ -52,7 +52,7 @@ DRT::ELEMENTS::NURBS::Fluid3Nurbs::~Fluid3Nurbs()
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::NURBS::Fluid3Nurbs::Clone() const
 {
-  DRT::ELEMENTS::NURBS::Fluid3Nurbs* newelement 
+  DRT::ELEMENTS::NURBS::Fluid3Nurbs* newelement
     =
     new DRT::ELEMENTS::NURBS::Fluid3Nurbs(*this);
   return newelement;
@@ -82,7 +82,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::NURBS::Fluid3Nurbs::Shape() cons
 vector<RCP<DRT::Element> > DRT::ELEMENTS::NURBS::Fluid3Nurbs::Surfaces()
 {
 
-  return 
+  return
     DRT::UTILS::ElementBoundaryFactory
     <Fluid3NurbsSurface,Fluid3Nurbs>
     (
@@ -102,9 +102,9 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::NURBS::Fluid3Nurbs::Surfaces()
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::NURBS::Fluid3NurbsSurface::Fluid3NurbsSurface(
-  int                    id      , 
+  int                    id      ,
   int                    owner   ,
-  int                    nnode   , 
+  int                    nnode   ,
   const int*             nodeids ,
   DRT::Node**            nodes   ,
   DRT::ELEMENTS::Fluid3* parent  ,
@@ -143,7 +143,7 @@ DRT::ELEMENTS::NURBS::Fluid3NurbsSurface::~Fluid3NurbsSurface()
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::NURBS::Fluid3NurbsSurface::Clone() const
 {
-  DRT::ELEMENTS::NURBS::Fluid3NurbsSurface* newelement 
+  DRT::ELEMENTS::NURBS::Fluid3NurbsSurface* newelement
     =
     new DRT::ELEMENTS::NURBS::Fluid3NurbsSurface(*this);
   return newelement;

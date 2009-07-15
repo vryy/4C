@@ -21,28 +21,28 @@ Maintainer: Peter Gamnitzer
 
 /*!
   \brief DRT: namespace of the ccarat discretization module
-  
+
 */
 namespace DRT
 {
 /*!
   \brief ELEMENTS: namespace of elements
-  
+
 */
-  
+
 namespace ELEMENTS
 {
 
 /*!
   \brief NURBS: namespace of all isogeometric analysis tools
-  
+
 */
 namespace NURBS
 {
 
 // forward declarations
 class Fluid3NurbsSurface;
-   
+
 class Fluid3Nurbs : public DRT::ELEMENTS::Fluid3
 {
 
@@ -70,11 +70,11 @@ public:
   virtual ~Fluid3Nurbs();
 
   /*!
-  \brief Deep copy this instance of Fluid3Nurbs and return 
+  \brief Deep copy this instance of Fluid3Nurbs and return
   pointer to the copy
 
-  The Clone() method is used from the virtual base class 
-  Element in cases where the type of the derived class is 
+  The Clone() method is used from the virtual base class
+  Element in cases where the type of the derived class is
   unknown and a copy-ctor is needed
   */
   DRT::Element* Clone() const;
@@ -84,7 +84,7 @@ public:
 
   every class implementing ParObject needs a unique id defined at the
   top of this file.
-  
+
   \return my parobject id
   */
   virtual int UniqueParObjectId() const { return ParObject_Fluid3Nurbs;}
@@ -108,7 +108,7 @@ public:
     {
       return 12;
     }
-    else 
+    else
     {
       dserror("Could not determine number of lines");
       return -1;
@@ -124,7 +124,7 @@ public:
     {
       return 6;
     }
-    else 
+    else
     {
       dserror("Could not determine number of surfaces");
       return -1;
@@ -134,23 +134,23 @@ public:
   /*!
   \brief Get vector of RefCountPtrs to the surfaces of this element
 
-  According to Georg, we do NOT store line or surface elements inside 
+  According to Georg, we do NOT store line or surface elements inside
   the parent element after their creation.
-  Reason: if a Redistribute() is performed on the discretization, 
-          stored node ids and node pointers owned by these boundary 
+  Reason: if a Redistribute() is performed on the discretization,
+          stored node ids and node pointers owned by these boundary
 	  elements might have become illegal
 
   -> new surface elements are allocated each time
 
   */
   virtual vector<RCP<DRT::Element> > Surfaces();
-  
+
 private:
 
 };
 /*----------------------------------------------------------------------
 
-  \brief Fluid3Surface class. this is a warning. Nurbs surfaces are only 
+  \brief Fluid3Surface class. this is a warning. Nurbs surfaces are only
          valid if the corresponding knotvektor is interpolating.
 
   \author gammi (gamnitzer@lnm.mw.tum.de), 02/09
@@ -174,12 +174,12 @@ public:
 
   */
   Fluid3NurbsSurface(
-    int                    id, 
-    int                    owner, 
-    int                    nnode, 
+    int                    id,
+    int                    owner,
+    int                    nnode,
     const int*             nodeids,
-    DRT::Node**            nodes, 
-    DRT::ELEMENTS::Fluid3* parent, 
+    DRT::Node**            nodes,
+    DRT::ELEMENTS::Fluid3* parent,
     const int              lsurface
     );
 
@@ -198,11 +198,11 @@ public:
   virtual ~Fluid3NurbsSurface();
 
   /*!
-  \brief Deep copy this instance of Fluid3NurbsSurface 
+  \brief Deep copy this instance of Fluid3NurbsSurface
   and return pointer to the copy
 
-  The Clone() method is used from the virtual base class 
-  Element in cases where the type of the derived class is 
+  The Clone() method is used from the virtual base class
+  Element in cases where the type of the derived class is
   unknown and a copy-ctor is needed
   */
   DRT::Element* Clone() const;

@@ -12,7 +12,7 @@
 //-----------------------------------------------------------------
 
 //-----------------------------------------------------------------
-//   Allocate one static instance of the internal implementation 
+//   Allocate one static instance of the internal implementation
 //   class for weak dirichlet condition and return pointer to it
 //-----------------------------------------------------------------
 DRT::ELEMENTS::Fluid3SurfaceWeakDBCInterface* DRT::ELEMENTS::Fluid3SurfaceWeakDBCInterface::Impl(
@@ -95,15 +95,15 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 
   //--------------------------------------------------
   // get the condition information
-  RefCountPtr<DRT::Condition> wdbc_cond 
-    = 
+  RefCountPtr<DRT::Condition> wdbc_cond
+    =
     params.get<RefCountPtr<DRT::Condition> >("condition");
-  
+
   // default is adjoint consistent
-  const string* consistency  
+  const string* consistency
     =
     (*wdbc_cond).Get<string>("Choice of gamma parameter");
-  
+
   double wd_gamma=0.0;
   if(*consistency=="adjoint-consistent")
   {
@@ -120,7 +120,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 
   // initialise Spaldings law with parameters chi=0.4 and B=5.5
   Fluid3SurfaceWeakDBCSpaldingsLaw::Fluid3SurfaceWeakDBCSpaldingsLaw SpaldingsLaw(0.4,5.5);
-  
+
   // decide whether to use it or not
   const string* deftauB
     =
@@ -173,13 +173,13 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   double curvefac = 1.0;
   if (curvenum>=0 && usetime)
   curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
-      
+
   // get values and switches from the condition
   // (assumed to be constant on element boundary)
   const vector<int>* functions = (*wdbc_cond).Get<vector<int> >   ("funct");
 
   // I hope we have a linear element.
-  // Ciarlet PG. The Finite element method for elliptic 
+  // Ciarlet PG. The Finite element method for elliptic
   // problems. Amsterdam: North-Holland; 1978.
 
   // Bazilevs Michler etal use 4.0 for quadratic nurbs as well
@@ -232,7 +232,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       if((*val)[i]*(*val)[i]>1e-9)
       {
         dserror("Applying Spaldings law to a wall with nonzero velocity\n");
-      }      
+      }
     }
   }
 
@@ -246,13 +246,13 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 
   // the vectors have been allocated outside in
   // EvaluateConditionUsingParentData
-  RefCountPtr<vector<int> > plm      
+  RefCountPtr<vector<int> > plm
     =
     params.get<RefCountPtr<vector<int> > >("plm");
-  RefCountPtr<vector<int> > plmowner 
+  RefCountPtr<vector<int> > plmowner
     =
     params.get<RefCountPtr<vector<int> > >("plmowner");
-      
+
   surfele->parent_->LocationVector(discretization,*plm,*plmowner);
 
   // --------------------------------------------------
@@ -260,16 +260,16 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   const int eledim = 4*piel;
   elemat_epetra.Shape(eledim,eledim);
   elevec_epetra.Size (eledim);
-  // 
+  //
   LINALG::Matrix<eledim,eledim> elemat(elemat_epetra.A(),true);
   LINALG::Matrix<eledim,     1> elevec(elevec_epetra.A(),true);
 
 
   // --------------------------------------------------
   // extract velocities from global distributed vectors
-  
+
   // velocities (intermediate time step, n+alpha_F)
-  RefCountPtr<const Epetra_Vector> velaf 
+  RefCountPtr<const Epetra_Vector> velaf
     =
     discretization.GetState("u and p (n+alpha_F,trial)");
   if (velaf==null)
@@ -340,7 +340,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     for (int i=0;i<piel;++i)
     {
       const int fi=4*i;
-      
+
       pedispnp_(0,i) = mypedispnp[  fi];
       pedispnp_(1,i) = mypedispnp[1+fi];
       pedispnp_(2,i) = mypedispnp[2+fi];
@@ -349,7 +349,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     for (int i=0;i<piel;++i)
     {
       const int fi=4*i;
-      
+
       edispnp_(0,i) = myedispnp[  fi];
       edispnp_(1,i) = myedispnp[1+fi];
       edispnp_(2,i) = myedispnp[2+fi];
@@ -394,7 +394,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   {
     dserror("up to now I expect a constant viscosity to inforce weak DBCs\n");
   }
-  
+
   //--------------------------------------------------
   //          GET BOUNDARY ELEMENT DATA
   //--------------------------------------------------
@@ -445,15 +445,15 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule);
 
   //--------------------------------------------------
-  // the gausspoints above have to be mapped to the 
+  // the gausspoints above have to be mapped to the
   // parent element to be able to evaluate one sided
   // derivatives on the boundary
   //
   // in addition, get information on the orientation of the
   // outward normal
-  
+
   Epetra_SerialDenseMatrix pqxg(intpoints.nquad,3);
-  
+
   SurfaceGPToParentGP(pqxg     ,
                       intpoints,
                       pdistype ,
@@ -504,7 +504,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       DRT::NURBS::ControlPoint* cp
         =
         dynamic_cast<DRT::NURBS::ControlPoint* > (surfele->Nodes()[inode]);
-      
+
       weights(inode) = cp->W();
     }
 
@@ -514,7 +514,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       DRT::NURBS::ControlPoint* cp
         =
         dynamic_cast<DRT::NURBS::ControlPoint* > (surfele->parent_->Nodes()[i]);
-      
+
       pweights(i) = cp->W();
     }
   }
@@ -632,7 +632,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     const double fac = drs_*wquad;
 
     // ------------------------------------------------
-    // compute normal 
+    // compute normal
     if(distype!=DRT::Element::nurbs9)
     {
       double length = 0.0;
@@ -645,9 +645,9 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       n_(2) = (xyze_(0,1)-xyze_(0,0))*(xyze_(1,2)-xyze_(1,0))
         -
         (xyze_(1,1)-xyze_(1,0))*(xyze_(0,2)-xyze_(0,0));
-      
+
       length = n_.Norm2();
-      
+
       for(int i=0;i<3;++i)
       {
         n_(i)/=length;
@@ -671,13 +671,13 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       |                      | dr |     | ds |
       |                      +-  -+     +-  -+
       |
-    */ 
+    */
       n_(0) = dxyzdrs_(0,1)*dxyzdrs_(1,2)-dxyzdrs_(1,1)*dxyzdrs_(0,2);
       n_(1) = dxyzdrs_(0,2)*dxyzdrs_(1,0)-dxyzdrs_(1,2)*dxyzdrs_(0,0);
       n_(2) = dxyzdrs_(0,0)*dxyzdrs_(1,1)-dxyzdrs_(1,0)*dxyzdrs_(0,1);
 
       const double length = n_.Norm2()*normalfac;
-  
+
       for(int i=0;i<3;++i)
       {
         n_(i)/=length;
@@ -756,11 +756,11 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 
     //-----------------------------------------------------
     //
-    //                       +-------------+       
+    //                       +-------------+
     //                      / /  T       \ |
     //           h = 2 * \ / |  n * G * n |
     //            b       +   \          /
-    //              
+    //
 
     // get Jacobian matrix and determinant
     pxjm_=0;
@@ -775,7 +775,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 	}
       }
     }
-    
+
     const double pdet =
       pxjm_(0,0)*pxjm_(1,1)*pxjm_(2,2)+
       pxjm_(0,1)*pxjm_(1,2)*pxjm_(2,0)+
@@ -787,8 +787,8 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     // check for degenerated elements
     if (pdet < 0.0)
     {
-      dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", 
-              surfele->parent_->Id(), 
+      dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f",
+              surfele->parent_->Id(),
               pdet);
     }
 
@@ -867,15 +867,15 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
         }
       }
     }
-    
+
     //
     //                           2.0
     //             h  = ---------------------
-    //              b        +-------------+       
+    //              b        +-------------+
     //                      / /  T       \ |
     //                   \ / |  n * G * n |
     //                    +   \          /
-    //              
+    //
 
     double nGn=0;
     for (int nn=0;nn<3;++nn)
@@ -1010,8 +1010,8 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       //                             +--------------------+
       //                            /  +---+              |
       //       ||  n+af ||         /    \    n+af    n+af
-      //       || u     ||  =     /      +  u     * u       
-      //                         /      /    j       j   
+      //       || u     ||  =     /      +  u     * u
+      //                         /      /    j       j
       //                      \ /      +---+
       //                       +       dim j
 
@@ -1023,15 +1023,15 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
                                                 Cb   ,
                                                 visc );
     }
-    
+
     // ---------------------------------------------------
     // velocities on boundary
-    //                 
-    //         n+af    
-    //        u    - u 
+    //
+    //         n+af
+    //        u    - u
     //                b
     //
-    
+
     LINALG::Matrix<3,1> bvres;
 
     bvres(0)=(velintaf_(0)-(*val)[0]*functionfac(0)*curvefac);
@@ -1041,7 +1041,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 
     // ---------------------------------------------------
     // momentum flux over boundary
-    
+
     const double flux=velintaf_(0)*n_(0)+velintaf_(1)*n_(1)+velintaf_(2)*n_(2);
 
     //--------------------------------------------------
@@ -1056,9 +1056,9 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     //             \            / boundaryele
     //
     */
-    for (int ui=0; ui<piel; ++ui) 
+    for (int ui=0; ui<piel; ++ui)
     {
-      for (int vi=0; vi<piel; ++vi) 
+      for (int vi=0; vi<piel; ++vi)
       {
         elemat(vi*4  ,ui*4+3) += fac*gdt*pfunct_(vi)*pfunct_(ui)*n_(0);
         elemat(vi*4+1,ui*4+3) += fac*gdt*pfunct_(vi)*pfunct_(ui)*n_(1);
@@ -1066,7 +1066,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       }
     }
 
-    for (int vi=0; vi<piel; ++vi) 
+    for (int vi=0; vi<piel; ++vi)
     {
       elevec(vi*4    ) -= fac*pfunct_(vi)*n_(0)*prenp_;
       elevec(vi*4 + 1) -= fac*pfunct_(vi)*n_(1)*prenp_;
@@ -1085,10 +1085,10 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     //             \              / boundaryele
     //
     */
-    for (int ui=0; ui<piel; ++ui) 
+    for (int ui=0; ui<piel; ++ui)
     {
-      for (int vi=0; vi<piel; ++vi) 
-      { 
+      for (int vi=0; vi<piel; ++vi)
+      {
         elemat(vi*4+3,ui*4  ) -= fac*gdt*pfunct_(vi)*pfunct_(ui)*n_(0);
         elemat(vi*4+3,ui*4+1) -= fac*gdt*pfunct_(vi)*pfunct_(ui)*n_(1);
         elemat(vi*4+3,ui*4+2) -= fac*gdt*pfunct_(vi)*pfunct_(ui)*n_(2);
@@ -1105,7 +1105,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     //             \                       / boundaryele
     //
     */
-    for (int vi=0; vi<piel; ++vi) 
+    for (int vi=0; vi<piel; ++vi)
     {
       elevec(vi*4+3) += fac*pfunct_(vi)*
         ((velintnp_(0)-(*val)[0]*functionfac(0)*curvefac)*n_(0)
@@ -1137,10 +1137,10 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       //
       */
 
-      for (int ui=0; ui<piel; ++ui) 
+      for (int ui=0; ui<piel; ++ui)
       {
         double nabla_u_o_n_lin[3][3];
-        
+
         nabla_u_o_n_lin[0][0]=timefacnu*(    pderxy_(0,ui)*n_(0)
                                          +
                                          0.5*pderxy_(1,ui)*n_(1)
@@ -1148,7 +1148,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
                                          0.5*pderxy_(2,ui)*n_(2));
         nabla_u_o_n_lin[0][1]=timefacnu*(0.5*pderxy_(0,ui)*n_(1));
         nabla_u_o_n_lin[0][2]=timefacnu*(0.5*pderxy_(0,ui)*n_(2));
-        
+
         nabla_u_o_n_lin[1][0]=timefacnu*(0.5*pderxy_(1,ui)*n_(0));
         nabla_u_o_n_lin[1][1]=timefacnu*(0.5*pderxy_(0,ui)*n_(0)
                                          +
@@ -1156,32 +1156,32 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
                                          +
                                          0.5*pderxy_(2,ui)*n_(2));
         nabla_u_o_n_lin[1][2]=timefacnu*(0.5*pderxy_(1,ui)*n_(2));
-        
+
         nabla_u_o_n_lin[2][0]=timefacnu*(0.5*pderxy_(2,ui)*n_(0));
         nabla_u_o_n_lin[2][1]=timefacnu*(0.5*pderxy_(2,ui)*n_(1));
         nabla_u_o_n_lin[2][2]=timefacnu*(0.5*pderxy_(0,ui)*n_(0)
                                          +
                                          0.5*pderxy_(1,ui)*n_(1)
-                                         + 
+                                         +
                                          pderxy_(2,ui)*n_(2));
 
 
-        for (int vi=0; vi<piel; ++vi) 
+        for (int vi=0; vi<piel; ++vi)
         {
           elemat(vi*4    ,ui*4    ) -= pfunct_(vi)*nabla_u_o_n_lin[0][0];
           elemat(vi*4    ,ui*4 + 1) -= pfunct_(vi)*nabla_u_o_n_lin[0][1];
           elemat(vi*4    ,ui*4 + 2) -= pfunct_(vi)*nabla_u_o_n_lin[0][2];
-          
+
           elemat(vi*4 + 1,ui*4    ) -= pfunct_(vi)*nabla_u_o_n_lin[1][0];
           elemat(vi*4 + 1,ui*4 + 1) -= pfunct_(vi)*nabla_u_o_n_lin[1][1];
           elemat(vi*4 + 1,ui*4 + 2) -= pfunct_(vi)*nabla_u_o_n_lin[1][2];
-          
+
           elemat(vi*4 + 2,ui*4    ) -= pfunct_(vi)*nabla_u_o_n_lin[2][0];
           elemat(vi*4 + 2,ui*4 + 1) -= pfunct_(vi)*nabla_u_o_n_lin[2][1];
           elemat(vi*4 + 2,ui*4 + 2) -= pfunct_(vi)*nabla_u_o_n_lin[2][2];
         }
       }
-      
+
       /*
       // factor: 2*nu
       //
@@ -1200,25 +1200,25 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
            +0.5*(vderxyaf_(0,1)+vderxyaf_(1,0))*n_(1)
            +0.5*(vderxyaf_(0,2)+vderxyaf_(2,0))*n_(2));
         nabla_u_o_n[1]=fac*2.0*visc*
-          ( 0.5*(vderxyaf_(1,0)+vderxyaf_(0,1))*n_(0) 
+          ( 0.5*(vderxyaf_(1,0)+vderxyaf_(0,1))*n_(0)
             +                    vderxyaf_(1,1) *n_(1)
             +0.5*(vderxyaf_(1,2)+vderxyaf_(2,1))*n_(2));
         nabla_u_o_n[2]=fac*2.0*visc*
           ( 0.5*(vderxyaf_(2,0)+vderxyaf_(0,2))*n_(0)
            +0.5*(vderxyaf_(2,1)+vderxyaf_(1,2))*n_(1)
            +                    vderxyaf_(2,2) *n_(2));
-        
-        for (int vi=0; vi<piel; ++vi) 
+
+        for (int vi=0; vi<piel; ++vi)
         {
           elevec(vi*4    ) += pfunct_(vi)*nabla_u_o_n[0];
           elevec(vi*4 + 1) += pfunct_(vi)*nabla_u_o_n[1];
           elevec(vi*4 + 2) += pfunct_(vi)*nabla_u_o_n[2];
         }
       }
-    
+
       //--------------------------------------------------
       // (adjoint) consistency term, viscous part
-      
+
       const double consistencytimefac=fac*2.0*visc*wd_gamma*afgdt;
 
 
@@ -1231,34 +1231,34 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       //   |                       |
       //    \                     / boundaryele
       //
-      */                                        
-      
+      */
+
       LINALG::Matrix<3,3> nabla_s_w_o_n;
-      for (int vi=0; vi<piel; ++vi) 
+      for (int vi=0; vi<piel; ++vi)
       {
         nabla_s_w_o_n(0,0)=consistencytimefac*(n_(0)*(    pderxy_(0,vi))+n_(1)*(0.5*pderxy_(1,vi))+n_(2)*(0.5*pderxy_(2,vi)));
         nabla_s_w_o_n(0,1)=consistencytimefac*(n_(0)*(0.5*pderxy_(1,vi)));
         nabla_s_w_o_n(0,2)=consistencytimefac*(n_(0)*(0.5*pderxy_(2,vi)));
-        
+
         nabla_s_w_o_n(1,0)=consistencytimefac*(n_(1)*(0.5*pderxy_(0,vi)));
         nabla_s_w_o_n(1,1)=consistencytimefac*(n_(0)*(0.5*pderxy_(0,vi))+n_(1)*(    pderxy_(1,vi))+n_(2)*(0.5*pderxy_(2,vi)));
         nabla_s_w_o_n(1,2)=consistencytimefac*(n_(1)*(0.5*pderxy_(2,vi)));
-        
+
         nabla_s_w_o_n(2,0)=consistencytimefac*(n_(2)*(0.5*pderxy_(0,vi)));
         nabla_s_w_o_n(2,1)=consistencytimefac*(n_(2)*(0.5*pderxy_(1,vi)));
         nabla_s_w_o_n(2,2)=consistencytimefac*(n_(0)*(0.5*pderxy_(0,vi))+n_(1)*(0.5*pderxy_(1,vi))+n_(2)*(    pderxy_(2,vi)));
-        
 
-        for (int ui=0; ui<piel; ++ui) 
+
+        for (int ui=0; ui<piel; ++ui)
         {
           elemat(vi*4    ,ui*4    ) -= pfunct_(ui)*nabla_s_w_o_n(0,0);
           elemat(vi*4    ,ui*4 + 1) -= pfunct_(ui)*nabla_s_w_o_n(0,1);
           elemat(vi*4    ,ui*4 + 2) -= pfunct_(ui)*nabla_s_w_o_n(0,2);
-                                                                           
+
           elemat(vi*4 + 1,ui*4    ) -= pfunct_(ui)*nabla_s_w_o_n(1,0);
           elemat(vi*4 + 1,ui*4 + 1) -= pfunct_(ui)*nabla_s_w_o_n(1,1);
           elemat(vi*4 + 1,ui*4 + 2) -= pfunct_(ui)*nabla_s_w_o_n(1,2);
-          
+
           elemat(vi*4 + 2,ui*4    ) -= pfunct_(ui)*nabla_s_w_o_n(2,0);
           elemat(vi*4 + 2,ui*4 + 1) -= pfunct_(ui)*nabla_s_w_o_n(2,1);
           elemat(vi*4 + 2,ui*4 + 2) -= pfunct_(ui)*nabla_s_w_o_n(2,2);
@@ -1275,7 +1275,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       //
       */
 
-      for (int vi=0; vi<piel; ++vi) 
+      for (int vi=0; vi<piel; ++vi)
       {
         elevec(vi*4    ) += fac*2.0*visc*wd_gamma*(
           n_(0)*bvres(0)*(    pderxy_(0,vi))
@@ -1287,7 +1287,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
           n_(0)*bvres(1)*(0.5*pderxy_(1,vi))
           +
           n_(0)*bvres(2)*(0.5*pderxy_(2,vi)));
-        
+
         elevec(vi*4 + 1) += fac*2.0*visc*wd_gamma*(
           n_(1)*bvres(0)*(0.5*pderxy_(0,vi))
           +
@@ -1298,7 +1298,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
           n_(2)*bvres(1)*(0.5*pderxy_(2,vi))
           +
           n_(1)*bvres(2)*(0.5*pderxy_(2,vi)));
-        
+
         elevec(vi*4 + 2) += fac*2.0*visc*wd_gamma*(
           n_(2)*bvres(0)*(0.5*pderxy_(0,vi))
           +
@@ -1313,7 +1313,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 
       //--------------------------------------------------
       // adjoint consistency term, convective part (only on inflow)
-      
+
       if(flux<0)
       {
         if(complete_linearisation)
@@ -1329,28 +1329,28 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
           // - |   | Dacc * n | w , u    - u   |
           //   |    \        /              b  |
           //    \                             / boundaryele, inflow
-          //               
+          //
           */
           const double timefac=fac*afgdt;
-      
-          for (int ui=0; ui<piel; ++ui) 
+
+          for (int ui=0; ui<piel; ++ui)
           {
-            for (int vi=0; vi<piel; ++vi) 
+            for (int vi=0; vi<piel; ++vi)
             {
               elemat(vi*4    ,ui*4    ) -= timefac*pfunct_(vi)*n_(0)*bvres(0);
               elemat(vi*4    ,ui*4 + 1) -= timefac*pfunct_(vi)*n_(1)*bvres(0);
               elemat(vi*4    ,ui*4 + 2) -= timefac*pfunct_(vi)*n_(2)*bvres(0);
-            
+
               elemat(vi*4 + 1,ui*4    ) -= timefac*pfunct_(vi)*n_(0)*bvres(1);
               elemat(vi*4 + 1,ui*4 + 1) -= timefac*pfunct_(vi)*n_(1)*bvres(1);
               elemat(vi*4 + 1,ui*4 + 2) -= timefac*pfunct_(vi)*n_(2)*bvres(1);
-            
+
               elemat(vi*4 + 2,ui*4    ) -= timefac*pfunct_(vi)*n_(0)*bvres(2);
               elemat(vi*4 + 2,ui*4 + 1) -= timefac*pfunct_(vi)*n_(1)*bvres(2);
               elemat(vi*4 + 2,ui*4 + 2) -= timefac*pfunct_(vi)*n_(2)*bvres(2);
             }
           }
-        
+
           /*
           // factor: afgdt
           //
@@ -1362,12 +1362,12 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
           //       +----------+
           //           <0
           */
-        
+
           const double fluxtimefac =fac*afgdt*flux;
-        
-          for (int ui=0; ui<piel; ++ui) 
+
+          for (int ui=0; ui<piel; ++ui)
           {
-            for (int vi=0; vi<piel; ++vi) 
+            for (int vi=0; vi<piel; ++vi)
             {
               elemat(vi*4    ,ui*4    ) -= fluxtimefac*pfunct_(ui)*pfunct_(vi);
               elemat(vi*4 + 1,ui*4 + 1) -= fluxtimefac*pfunct_(ui)*pfunct_(vi);
@@ -1389,7 +1389,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
         //       +----------+
         //           <0
         */
-        for (int vi=0; vi<piel; ++vi) 
+        for (int vi=0; vi<piel; ++vi)
         {
           elevec(vi*4    ) += fluxfac*pfunct_(vi)*bvres(0);
           elevec(vi*4 + 1) += fluxfac*pfunct_(vi)*bvres(1);
@@ -1399,7 +1399,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 
       //--------------------------------------------------
       // penalty term
-    
+
       /*
       // factor: nu*Cb/h*afgdt
       //
@@ -1413,12 +1413,12 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 
       const double penaltytimefac=afgdt*tau_B*fac;
 
-      for (int ui=0; ui<piel; ++ui) 
+      for (int ui=0; ui<piel; ++ui)
       {
-        for (int vi=0; vi<piel; ++vi) 
+        for (int vi=0; vi<piel; ++vi)
         {
           const double temp=penaltytimefac*pfunct_(ui)*pfunct_(vi);
-          
+
           elemat(vi*4    ,ui*4    ) += temp;
           elemat(vi*4 + 1,ui*4 + 1) += temp;
           elemat(vi*4 + 2,ui*4 + 2) += temp;
@@ -1426,7 +1426,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       }
 
       const double penaltyfac=tau_B*fac;
-      
+
       /*
       // factor: nu*Cb/h
       //
@@ -1438,7 +1438,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       //
       */
 
-      for (int vi=0; vi<piel; ++vi) 
+      for (int vi=0; vi<piel; ++vi)
       {
         elevec(vi*4    ) -= penaltyfac*pfunct_(vi)*bvres(0);
         elevec(vi*4 + 1) -= penaltyfac*pfunct_(vi)*bvres(1);
@@ -1467,20 +1467,20 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       //    \                             / boundaryele
       //
       */
-      for (int ui=0; ui<piel; ++ui) 
+      for (int ui=0; ui<piel; ++ui)
       {
 
         const double aux=timefacnu*(pderxy_(0,ui)*n_(0)+pderxy_(1,ui)*n_(1)+pderxy_(2,ui)*n_(2));
-        for (int vi=0; vi<piel; ++vi) 
+        for (int vi=0; vi<piel; ++vi)
         {
           elemat(vi*4    ,ui*4    ) -= pfunct_(vi)*n_(0)*n_(0)*aux;
           elemat(vi*4    ,ui*4 + 1) -= pfunct_(vi)*n_(0)*n_(1)*aux;
           elemat(vi*4    ,ui*4 + 2) -= pfunct_(vi)*n_(0)*n_(2)*aux;
-          
+
           elemat(vi*4 + 1,ui*4    ) -= pfunct_(vi)*n_(1)*n_(0)*aux;
           elemat(vi*4 + 1,ui*4 + 1) -= pfunct_(vi)*n_(1)*n_(1)*aux;
           elemat(vi*4 + 1,ui*4 + 2) -= pfunct_(vi)*n_(1)*n_(2)*aux;
-          
+
           elemat(vi*4 + 2,ui*4    ) -= pfunct_(vi)*n_(2)*n_(0)*aux;
           elemat(vi*4 + 2,ui*4 + 1) -= pfunct_(vi)*n_(2)*n_(1)*aux;
           elemat(vi*4 + 2,ui*4 + 2) -= pfunct_(vi)*n_(2)*n_(2)*aux;
@@ -1510,7 +1510,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
         +
         (vderxyaf_(1,2)+vderxyaf_(2,1))*n_(2)*n_(1);
 
-      for (int vi=0; vi<piel; ++vi) 
+      for (int vi=0; vi<piel; ++vi)
       {
         elevec(vi*4    ) += fac*2.0*visc*wd_gamma*pfunct_(vi)*n_(0)*n_o_nabla_u_o_n;
         elevec(vi*4 + 1) += fac*2.0*visc*wd_gamma*pfunct_(vi)*n_(1)*n_o_nabla_u_o_n;
@@ -1519,9 +1519,9 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 
       //--------------------------------------------------
       // (adjoint) consistency term, viscous part
-      
+
       const double consistencytimefac=fac*2.0*visc*wd_gamma*afgdt;
-    
+
       /*
       // factor: 2*nu*gamma_wd
       //
@@ -1533,20 +1533,20 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       //
       */
 
-      for (int vi=0; vi<piel; ++vi) 
+      for (int vi=0; vi<piel; ++vi)
       {
-        for (int ui=0; ui<piel; ++ui) 
+        for (int ui=0; ui<piel; ++ui)
         {
           const double aux=pderxy_(0,vi)*n_(0)+pderxy_(1,vi)*n_(1)+pderxy_(2,vi)*n_(2);
 
           elemat(vi*4    ,ui*4    ) -= aux*n_(0)*n_(0)*pfunct_(ui)*consistencytimefac;
           elemat(vi*4    ,ui*4 + 1) -= aux*n_(0)*n_(1)*pfunct_(ui)*consistencytimefac;
           elemat(vi*4    ,ui*4 + 2) -= aux*n_(0)*n_(2)*pfunct_(ui)*consistencytimefac;
-                                       
+
           elemat(vi*4 + 1,ui*4    ) -= aux*n_(1)*n_(0)*pfunct_(ui)*consistencytimefac;
           elemat(vi*4 + 1,ui*4 + 1) -= aux*n_(1)*n_(1)*pfunct_(ui)*consistencytimefac;
           elemat(vi*4 + 1,ui*4 + 2) -= aux*n_(1)*n_(2)*pfunct_(ui)*consistencytimefac;
-                                                        
+
           elemat(vi*4 + 2,ui*4    ) -= aux*n_(2)*n_(0)*pfunct_(ui)*consistencytimefac;
           elemat(vi*4 + 2,ui*4 + 1) -= aux*n_(2)*n_(1)*pfunct_(ui)*consistencytimefac;
           elemat(vi*4 + 2,ui*4 + 2) -= aux*n_(2)*n_(2)*pfunct_(ui)*consistencytimefac;
@@ -1565,7 +1565,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 
       double bvres_o_n=bvres(0)*n_(0)+bvres(1)*n_(1)+bvres(2)*n_(2);
 
-      for (int vi=0; vi<piel; ++vi) 
+      for (int vi=0; vi<piel; ++vi)
       {
         double aux=(pderxy_(0,vi)*n_(0)+pderxy_(1,vi)*n_(1)+pderxy_(2,vi)*n_(2));
 
@@ -1578,7 +1578,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       // penalty term
 
       const double penaltytimefac=afgdt*tau_B*fac;
-    
+
       /*
       // factor: nu*Cb/h*afgdt
       //
@@ -1589,18 +1589,18 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       //    \                  / boundaryele
       //
       */
-      for (int ui=0; ui<piel; ++ui) 
+      for (int ui=0; ui<piel; ++ui)
       {
-        for (int vi=0; vi<piel; ++vi) 
+        for (int vi=0; vi<piel; ++vi)
         {
           elemat(vi*4    ,ui*4    ) += penaltytimefac*pfunct_(vi)*n_(0)*n_(0)*pfunct_(ui);
           elemat(vi*4    ,ui*4 + 1) += penaltytimefac*pfunct_(vi)*n_(0)*n_(1)*pfunct_(ui);
           elemat(vi*4    ,ui*4 + 2) += penaltytimefac*pfunct_(vi)*n_(0)*n_(2)*pfunct_(ui);
-          
+
           elemat(vi*4 + 1,ui*4    ) += penaltytimefac*pfunct_(vi)*n_(1)*n_(0)*pfunct_(ui);
           elemat(vi*4 + 1,ui*4 + 1) += penaltytimefac*pfunct_(vi)*n_(1)*n_(1)*pfunct_(ui);
           elemat(vi*4 + 1,ui*4 + 2) += penaltytimefac*pfunct_(vi)*n_(1)*n_(2)*pfunct_(ui);
-          
+
           elemat(vi*4 + 2,ui*4    ) += penaltytimefac*pfunct_(vi)*n_(2)*n_(0)*pfunct_(ui);
           elemat(vi*4 + 2,ui*4 + 1) += penaltytimefac*pfunct_(vi)*n_(2)*n_(1)*pfunct_(ui);
           elemat(vi*4 + 2,ui*4 + 2) += penaltytimefac*pfunct_(vi)*n_(2)*n_(2)*pfunct_(ui);
@@ -1620,7 +1620,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       //
       */
 
-      for (int vi=0; vi<piel; ++vi) 
+      for (int vi=0; vi<piel; ++vi)
       {
         elevec(vi*4    ) -= penaltyfac*pfunct_(vi)*n_(0)*bvres_o_n;
         elevec(vi*4 + 1) -= penaltyfac*pfunct_(vi)*n_(1)*bvres_o_n;
@@ -1645,30 +1645,30 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
           // - |   | Dacc * n |  | w o n | , | u    - u   | o n |
           //   |    \        /    \     /     \        b /      |
           //    \                                              / boundaryele, inflow
-          //               
+          //
           */
           const double timefac=fac*afgdt;
-      
-          for (int ui=0; ui<piel; ++ui) 
+
+          for (int ui=0; ui<piel; ++ui)
           {
-            for (int vi=0; vi<piel; ++vi) 
+            for (int vi=0; vi<piel; ++vi)
             {
               elemat(vi*4    ,ui*4    ) -= timefac*bvres_o_n*pfunct_(vi)*n_(0)*n_(0)*pfunct_(ui);
               elemat(vi*4    ,ui*4 + 1) -= timefac*bvres_o_n*pfunct_(vi)*n_(0)*n_(1)*pfunct_(ui);
               elemat(vi*4    ,ui*4 + 2) -= timefac*bvres_o_n*pfunct_(vi)*n_(0)*n_(2)*pfunct_(ui);
-              
+
               elemat(vi*4 + 1,ui*4    ) -= timefac*bvres_o_n*pfunct_(vi)*n_(1)*n_(0)*pfunct_(ui);
               elemat(vi*4 + 1,ui*4 + 1) -= timefac*bvres_o_n*pfunct_(vi)*n_(1)*n_(1)*pfunct_(ui);
               elemat(vi*4 + 1,ui*4 + 2) -= timefac*bvres_o_n*pfunct_(vi)*n_(1)*n_(2)*pfunct_(ui);
-              
+
               elemat(vi*4 + 2,ui*4    ) -= timefac*bvres_o_n*pfunct_(vi)*n_(2)*n_(0)*pfunct_(ui);
               elemat(vi*4 + 2,ui*4 + 1) -= timefac*bvres_o_n*pfunct_(vi)*n_(2)*n_(1)*pfunct_(ui);
               elemat(vi*4 + 2,ui*4 + 2) -= timefac*bvres_o_n*pfunct_(vi)*n_(2)*n_(2)*pfunct_(ui);
             }
           }
-      
+
           const double fluxtimefac =fac*afgdt*flux;
-          
+
           /*
           // factor: afgdt
           //
@@ -1680,18 +1680,18 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
           //       +----------+
           //           <0
           */
-          for (int ui=0; ui<piel; ++ui) 
+          for (int ui=0; ui<piel; ++ui)
           {
-            for (int vi=0; vi<piel; ++vi) 
+            for (int vi=0; vi<piel; ++vi)
             {
               elemat(vi*4    ,ui*4    ) -= fluxtimefac*pfunct_(vi)*n_(0)*n_(0)*pfunct_(ui);
               elemat(vi*4    ,ui*4 + 1) -= fluxtimefac*pfunct_(vi)*n_(0)*n_(1)*pfunct_(ui);
               elemat(vi*4    ,ui*4 + 2) -= fluxtimefac*pfunct_(vi)*n_(0)*n_(2)*pfunct_(ui);
-              
+
               elemat(vi*4 + 1,ui*4    ) -= fluxtimefac*pfunct_(vi)*n_(1)*n_(0)*pfunct_(ui);
               elemat(vi*4 + 1,ui*4 + 1) -= fluxtimefac*pfunct_(vi)*n_(1)*n_(1)*pfunct_(ui);
               elemat(vi*4 + 1,ui*4 + 2) -= fluxtimefac*pfunct_(vi)*n_(1)*n_(2)*pfunct_(ui);
-              
+
               elemat(vi*4 + 2,ui*4    ) -= fluxtimefac*pfunct_(vi)*n_(2)*n_(0)*pfunct_(ui);
               elemat(vi*4 + 2,ui*4 + 1) -= fluxtimefac*pfunct_(vi)*n_(2)*n_(1)*pfunct_(ui);
               elemat(vi*4 + 2,ui*4 + 2) -= fluxtimefac*pfunct_(vi)*n_(2)*n_(2)*pfunct_(ui);
@@ -1713,7 +1713,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
         //       +----------+
         //           <0
         */
-        for (int vi=0; vi<piel; ++vi) 
+        for (int vi=0; vi<piel; ++vi)
         {
           elevec(vi*4    ) += fluxfac*pfunct_(vi)*n_(0)*bvres_o_n;
           elevec(vi*4 + 1) += fluxfac*pfunct_(vi)*n_(1)*bvres_o_n;
@@ -1741,7 +1741,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 //                                            (public) gammi 11/09
 //-----------------------------------------------------------------
 DRT::ELEMENTS::Fluid3SurfaceWeakDBCSpaldingsLaw::Fluid3SurfaceWeakDBCSpaldingsLaw(
-  const double chi_in, 
+  const double chi_in,
   const double B_in  )
   :
   chi_(chi_in),
@@ -1764,7 +1764,7 @@ void DRT::ELEMENTS::Fluid3SurfaceWeakDBCSpaldingsLaw::ComputeTauBUsingSpaldingsL
 {
 
   /*
-  // the penalty term could be interpretaed as a traction 
+  // the penalty term could be interpretaed as a traction
   // boundary condition (normally g=0 for wall bounded flows)
   //
   //      /                       \
@@ -1778,22 +1778,22 @@ void DRT::ELEMENTS::Fluid3SurfaceWeakDBCSpaldingsLaw::ComputeTauBUsingSpaldingsL
   //                t  /   "
   //               " W/ rho
   */
-  
+
   /*
-  // this gives rise to the following definition of the 
+  // this gives rise to the following definition of the
   // friction velocity
   //
   //                 +---------+     +----------------+
-  //      u    =    / t   /      =  / tau  * || n+af||  
-  //       tau     v   W / rho     v     B   ||u    ||   
+  //      u    =    / t   /      =  / tau  * || n+af||
+  //       tau     v   W / rho     v     B   ||u    ||
   */
-  
+
   /*
   // and hence the following dimensionless value for y
   //
   //                             +-------------+
   //           h           y *  / tau  * ||u||
-  //            b      +       v     B          
+  //            b      +       v     B
   //      y = ---- -> y  = ----------------------
   //           C                     nu
   //            b
@@ -1801,32 +1801,32 @@ void DRT::ELEMENTS::Fluid3SurfaceWeakDBCSpaldingsLaw::ComputeTauBUsingSpaldingsL
   // note that y is constant but y  is depending on tau !
   //                                                   B
   //
-  //              +-------------+       +-------------+  
-  //        h *  / tau  * ||u||        / tau  * ||u||    
-  //    +    b  v     B               v     B            
-  //   y  = ---------------------- = ------------------- 
-  //              C  * nu                  tau          
-  //               b                          B,0       
+  //              +-------------+       +-------------+
+  //        h *  / tau  * ||u||        / tau  * ||u||
+  //    +    b  v     B               v     B
+  //   y  = ---------------------- = -------------------
+  //              C  * nu                  tau
+  //               b                          B,0
   */
-  
+
   /*
   // accordingly, we are able to define the dimensioneless velocity
-  //                                            +-------------+ 
-  //                  ||  n+af ||              /  ||  n+af||    
-  //        +         || u     ||             /   || u    ||    
-  //       u  = ---------------------- =     /   -------------  
-  //              +------------------+    \ /        tau        
-  //             / tau  * ||  n+af ||      v            B       
-  //            v     B   || u     || 
+  //                                            +-------------+
+  //                  ||  n+af ||              /  ||  n+af||
+  //        +         || u     ||             /   || u    ||
+  //       u  = ---------------------- =     /   -------------
+  //              +------------------+    \ /        tau
+  //             / tau  * ||  n+af ||      v            B
+  //            v     B   || u     ||
   */
-  
+
   // we assume a boundary layer thickness of
   //
-  //               
-  //                    h   
+  //
+  //                    h
   //                     b       nu
   //               y = ---- = --------
-  //                    C      tau 
+  //                    C      tau
   //                     b        B,0
   //
   // (proportional to the grid size normal to the wall)
@@ -1836,31 +1836,31 @@ void DRT::ELEMENTS::Fluid3SurfaceWeakDBCSpaldingsLaw::ComputeTauBUsingSpaldingsL
   double res=SpaldingResidual(y,visc,tau_B,normu);
 
   int count = 0;
-      
+
   while(res*res>1e-6)
   {
     const double drdtauB=JacobianSpaldingResidual(y,visc,tau_B,normu);
-    
+
     if(drdtauB <1e-10)
     {
       dserror("(Nearly) singular Jacobian of Spaldings equation");
     }
-    
+
     double inc = res/drdtauB;
-    
+
     // do damping to avoid negative values of tau_B (robustness)
     while(tau_B-inc < 0)
     {
       inc/=2.0;
     }
-    
+
     // get jacobian, do damped Newton step
     tau_B-=inc;
-    
+
     // get residual of Spaldings equation (law of the wall)
     res   = SpaldingResidual(y,visc,tau_B,normu);
 
-    ++count;  
+    ++count;
     if(count>100)
     {
       dserror("no convergence in 100 steps in Newton iteration during solution of Spaldings equation\n");
@@ -1877,7 +1877,7 @@ void DRT::ELEMENTS::Fluid3SurfaceWeakDBCSpaldingsLaw::ComputeTauBUsingSpaldingsL
 //                                           (private) gammi 11/09
 //-----------------------------------------------------------------
 double DRT::ELEMENTS::Fluid3SurfaceWeakDBCSpaldingsLaw::SpaldingResidual(
-  const double y     , 
+  const double y     ,
   const double visc  ,
   const double tau_B ,
   const double normu
@@ -1887,7 +1887,7 @@ double DRT::ELEMENTS::Fluid3SurfaceWeakDBCSpaldingsLaw::SpaldingResidual(
   const double up = Uplus(normu,tau_B);
 
   //      +
-  // get y , a dimensionless boundary layer thickness 
+  // get y , a dimensionless boundary layer thickness
   const double yp = Yplus(normu,tau_B,visc,y);
 
   /*
@@ -1909,7 +1909,7 @@ double DRT::ELEMENTS::Fluid3SurfaceWeakDBCSpaldingsLaw::SpaldingResidual(
 //                                           (private) gammi 11/09
 //-----------------------------------------------------------------
 double DRT::ELEMENTS::Fluid3SurfaceWeakDBCSpaldingsLaw::JacobianSpaldingResidual(
-  const double y    , 
+  const double y    ,
   const double visc ,
   const double tau_B,
   const double normu)
@@ -1919,7 +1919,7 @@ double DRT::ELEMENTS::Fluid3SurfaceWeakDBCSpaldingsLaw::JacobianSpaldingResidual
 
   // compute the derivative of the Spalding residual w.r.t. tau_B
   double drdtauB = y/(2.0*visc*sqrt(tau_B))*sqrt(normu);
-  
+
   drdtauB += (1+chi_*exp(-chi_*B_)*(exp(chi_*up)-1.0-chi_*up*(1.0+0.5*chi_*up)))
              *0.5*sqrt(normu)/(sqrt(tau_B)*sqrt(tau_B)*sqrt(tau_B));
 
@@ -1932,18 +1932,18 @@ double DRT::ELEMENTS::Fluid3SurfaceWeakDBCSpaldingsLaw::JacobianSpaldingResidual
 //                                           (private) gammi 11/09
 //-----------------------------------------------------------------
 double DRT::ELEMENTS::Fluid3SurfaceWeakDBCSpaldingsLaw::Uplus(
-  const double normu, 
+  const double normu,
   const double tau_B)
 {
   /*
   // define dimensionless velocity
-  //                                            +-------------+ 
-  //                  ||  n+af ||              /  ||  n+af||    
-  //        +         || u     ||             /   || u    ||    
-  //       u  = ---------------------- =     /   -------------  
-  //              +------------------+    \ /        tau        
-  //             / tau  * ||  n+af ||      v            B       
-  //            v     B   || u     || 
+  //                                            +-------------+
+  //                  ||  n+af ||              /  ||  n+af||
+  //        +         || u     ||             /   || u    ||
+  //       u  = ---------------------- =     /   -------------
+  //              +------------------+    \ /        tau
+  //             / tau  * ||  n+af ||      v            B
+  //            v     B   || u     ||
   */
   return(sqrt(normu/tau_B));
 }
@@ -1953,39 +1953,39 @@ double DRT::ELEMENTS::Fluid3SurfaceWeakDBCSpaldingsLaw::Uplus(
 //                                           (private) gammi 11/09
 //-----------------------------------------------------------------
 double DRT::ELEMENTS::Fluid3SurfaceWeakDBCSpaldingsLaw::Yplus(
-  const double normu, 
-  const double tau_B, 
-  const double visc , 
+  const double normu,
+  const double tau_B,
+  const double visc ,
   const double y    )
 {
   /*
   //  +
-  // y  is a dimensionless boundary layer thickness (law of the 
+  // y  is a dimensionless boundary layer thickness (law of the
   // wall is a model for the flow between this point and 0)
   //
-  //            +-------------+              +-------------+     
-  //           / tau  * ||u||          h *  / tau  * ||u||       
-  //    +     v     B                   b  v     B               
-  //   y  =  ------------------- * y = ---------------------- = 
-  //                 nu                      C  * nu             
-  //                                          b                  
-  //           +-------------+ 
-  //          / tau  * ||u||   
-  //         v     B           
+  //            +-------------+              +-------------+
+  //           / tau  * ||u||          h *  / tau  * ||u||
+  //    +     v     B                   b  v     B
+  //   y  =  ------------------- * y = ---------------------- =
+  //                 nu                      C  * nu
+  //                                          b
+  //           +-------------+
+  //          / tau  * ||u||
+  //         v     B
   //      = -------------------
-  //              tau          
+  //              tau
   //                 B,0
   //
   //
-  // note that this means that in the first iteration we initialise 
+  // note that this means that in the first iteration we initialise
   // y+ and u+ as the near wall limit of Spaldings equation
   //
-  //                     +-------------+ 
-  //                    /  ||  n+af||    
-  //     +    +        /   || u    ||    
-  //    y  = u  =     /   -------------  
-  //               \ /        tau        
-  //                v            B       
+  //                     +-------------+
+  //                    /  ||  n+af||
+  //     +    +        /   || u    ||
+  //    y  = u  =     /   -------------
+  //               \ /        tau
+  //                v            B
   */
 
   return((sqrt(tau_B*normu)/visc)*y);

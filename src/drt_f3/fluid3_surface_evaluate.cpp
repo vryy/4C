@@ -312,7 +312,7 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
                                                        normalfac    ,
                                                        parent_->Id(),
                                                        surfaceid    );
-    
+
     if(zero_size)
     {
       return 0;
@@ -325,7 +325,7 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
       DRT::NURBS::ControlPoint* cp
         =
         dynamic_cast<DRT::NURBS::ControlPoint* > (Nodes()[inode]);
-      
+
       weights(inode) = cp->W();
     }
   }
@@ -608,7 +608,7 @@ void DRT::ELEMENTS::Fluid3Surface::SurfaceConservativeOutflowConsistency(
       DRT::NURBS::ControlPoint* cp
         =
         dynamic_cast<DRT::NURBS::ControlPoint* > (Nodes()[inode]);
-      
+
       weights(inode) = cp->W();
     }
 
@@ -618,7 +618,7 @@ void DRT::ELEMENTS::Fluid3Surface::SurfaceConservativeOutflowConsistency(
       DRT::NURBS::ControlPoint* cp
         =
         dynamic_cast<DRT::NURBS::ControlPoint* > (parent_->Nodes()[i]);
-      
+
       pweights(i) = cp->W();
     }
   }
@@ -697,7 +697,7 @@ void DRT::ELEMENTS::Fluid3Surface::SurfaceConservativeOutflowConsistency(
 
 
     // ------------------------------------------------
-    // compute normal 
+    // compute normal
     if(distype!=DRT::Element::nurbs9)
     {
       double length = 0.0;
@@ -710,9 +710,9 @@ void DRT::ELEMENTS::Fluid3Surface::SurfaceConservativeOutflowConsistency(
       norm(2) = (xyze(0,1)-xyze(0,0))*(xyze(1,2)-xyze(1,0))
         -
         (xyze(1,1)-xyze(1,0))*(xyze(0,2)-xyze(0,0));
-      
+
       length = norm.Norm2();
-      
+
       norm(0) = (1.0/length)*norm(0);
       norm(1) = (1.0/length)*norm(1);
       norm(2) = (1.0/length)*norm(2);
@@ -735,13 +735,13 @@ void DRT::ELEMENTS::Fluid3Surface::SurfaceConservativeOutflowConsistency(
       |                      | dr |     | ds |
       |                      +-  -+     +-  -+
       |
-    */ 
+    */
       norm(0) = dxyzdrs(0,1)*dxyzdrs(1,2)-dxyzdrs(1,1)*dxyzdrs(0,2);
       norm(1) = dxyzdrs(0,2)*dxyzdrs(1,0)-dxyzdrs(1,2)*dxyzdrs(0,0);
       norm(2) = dxyzdrs(0,0)*dxyzdrs(1,1)-dxyzdrs(1,0)*dxyzdrs(0,1);
 
       const double length = norm.Norm2()*normalfac;
-  
+
       norm(0) = (1.0/length)*norm(0);
       norm(1) = (1.0/length)*norm(1);
       norm(2) = (1.0/length)*norm(2);

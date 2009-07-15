@@ -27,11 +27,11 @@ Maintainer: Axel Gerstenberger
 //! support routines for the xfluid3 element
 namespace XFLUID
 {
-  
+
   /*!
    * \brief Returns the distype for stress interpolation
    *        for each parent element discretization type in 3d
-   * 
+   *
    * \return distype for stress interpolation
    */
   template<DRT::Element::DiscretizationType veldistype>
@@ -43,12 +43,12 @@ namespace XFLUID
   template<> struct StressInterpolation3D<DRT::Element::hex20> {static const DRT::Element::DiscretizationType distype = DRT::Element::hex20;};
   template<> struct StressInterpolation3D<DRT::Element::hex27> {static const DRT::Element::DiscretizationType distype = DRT::Element::hex27;};
   /// @endcond
-  
-  
+
+
   /*!
    * \brief Returns the distype for discont. pressure interpolation
    *        for each parent element discretization type in 3d
-   * 
+   *
    * \return distype for discont. pressure interpolation
    */
   template<DRT::Element::DiscretizationType veldistype>
@@ -60,13 +60,13 @@ namespace XFLUID
   template<> struct DiscPressureInterpolation3D<DRT::Element::hex20> {static const DRT::Element::DiscretizationType distype = DRT::Element::hex20;};
   template<> struct DiscPressureInterpolation3D<DRT::Element::hex27> {static const DRT::Element::DiscretizationType distype = DRT::Element::hex27;};
   /// @endcond
-  
+
   /*!
    * \brief Returns the distype for stress interpolation
    *        for each parent element discretization type in 3d
-   * 
+   *
    * \return distype for stress interpolation
-   */  
+   */
   inline DRT::Element::DiscretizationType getStressInterpolationType3D(DRT::Element::DiscretizationType veldistype)
   {
     DRT::Element::DiscretizationType distype = DRT::Element::dis_none;
@@ -92,11 +92,11 @@ namespace XFLUID
     }
     return distype;
   }
-  
+
   /*!
    * \brief Returns the distype for discont. pressure interpolation
    *        for each parent element discretization type in 3d
-   * 
+   *
    * \return distype for discont. pressure interpolation
    */
   inline DRT::Element::DiscretizationType getDiscPressureInterpolationType3D(DRT::Element::DiscretizationType veldistype)
@@ -124,9 +124,9 @@ namespace XFLUID
     }
     return distype;
   }
-  
+
   //! implementation for xfluid3 element
-  class FluidElementAnsatz : public XFEM::ElementAnsatz 
+  class FluidElementAnsatz : public XFEM::ElementAnsatz
   {
   public:
     //! default constructor

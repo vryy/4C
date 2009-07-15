@@ -517,7 +517,7 @@ private:
     integrated over this plane and this element contribution is added
     to a processor local vector (see formulas below for a exact
     description of the output).
-    It is assumed that the sampling planes are distributed equidistant 
+    It is assumed that the sampling planes are distributed equidistant
     in the element. The result is normalized by the area afterwards
 
 
@@ -550,18 +550,18 @@ private:
 
     Example for a mean value evaluation:
 
-           1.0       /                     1.0      /                          
-    _               |                              |            detJ           
+           1.0       /                     1.0      /
+    _               |                              |            detJ
     u = -------- *  | u(x,y,z) dx dz =  -------- * | u(r,s,t) * ---- dr ds
-        +---        |                   +---       |             h            
-         \         / A                   \        /  [-1:1]^2     y             
-         / area                          / area                                
-        +---                            +---                    +--+               
+        +---        |                   +---       |             h
+         \         / A                   \        /  [-1:1]^2     y
+         / area                          / area
+        +---                            +---                    +--+
                                                                Jacobi-
                                                              determinant
                                                               computed
                                                            from 3d mapping
-                                                         h  is the (constant) 
+                                                         h  is the (constant)
                                                           y
                                                         height of the element
 
@@ -582,7 +582,7 @@ private:
     </pre>
 
    */
-  template<int iel> 
+  template<int iel>
   void f3_calc_means(
     DRT::Discretization&      discretization,
     vector<double>&           vel   ,
@@ -594,7 +594,7 @@ private:
   /*!
     \brief same as above for low-Mach-number flow
    */
-  template<int iel> 
+  template<int iel>
   void f3_calc_loma_means(
     DRT::Discretization&      discretization,
     vector<double>&           velocitypressure ,
@@ -633,7 +633,7 @@ private:
     \return void
 
    */
-  template<int iel> 
+  template<int iel>
   void f3_apply_box_filter(
     vector<double>&           myvel,
     double*                   vel_hat,
@@ -695,7 +695,7 @@ private:
     \return void
 
    */
-template<int iel> 
+template<int iel>
 void f3_calc_smag_const_LijMij_and_MijMij(
   RCP<Epetra_MultiVector>& filtered_vel                       ,
   RCP<Epetra_MultiVector>& col_filtered_reynoldsstress        ,
@@ -719,9 +719,9 @@ void f3_calc_smag_const_LijMij_and_MijMij(
     \param lm             (i) location vector (to get ale displacements from global vectors)
     \param w              (o) shape functions integrated over element (a so called 'weight' vector)
 
-    \return 
+    \return
    */
-  template<int iel> 
+  template<int iel>
   void integrateShapefunction(
     DRT::Discretization&      discretization,
     vector<int>&              lm            ,
