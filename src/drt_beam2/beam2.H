@@ -45,7 +45,7 @@ namespace DRT
 namespace ELEMENTS
 {
 /*!
-\brief two dimensional nonlinear corotational Timoshenko beam element according to Crisfield, Vol.1, section 7.3 
+\brief two dimensional nonlinear corotational Timoshenko beam element according to Crisfield, Vol.1, section 7.3
 
 \author cyron (cyron @lnm.mw.tum.de)
 */
@@ -147,9 +147,9 @@ public:
   /*!
   \brief Get number of degrees of freedom of a certain node
   */
-  virtual int NumDofPerNode(const DRT::Node& node) const 
-  { 
-    /*note: this is not necessarily the number of DOF assigned to this node by the discretization finally, but only 
+  virtual int NumDofPerNode(const DRT::Node& node) const
+  {
+    /*note: this is not necessarily the number of DOF assigned to this node by the discretization finally, but only
     *the number of DOF requested for this node by this element; the discretization will finally assign the maximal
     *number of DOF to this node requested by any element connected to this node*/
     return 3;
@@ -246,7 +246,7 @@ public:
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
                               vector<int>&              lm,
-                              Epetra_SerialDenseVector& elevec1); 
+                              Epetra_SerialDenseVector& elevec1);
   //@}
 
 
@@ -274,7 +274,7 @@ private:
 
   //! container containing all kind of beam2 thisandthat
   DRT::Container data_;
-  
+
   //! variable saving whether element has already been initialized (then isinit_ == true)
   bool isinit_;
 
@@ -288,26 +288,26 @@ private:
   double crosssecshear_;
 
   //! moment of inertia of area
-  double mominer_;  
-  
+  double mominer_;
+
   //! number of 2*PI rotations between the aboslute element frame rotation and the angle beta in current iteration step
   int numperiodsnew_;
-  
+
   //! number of 2*PI rotations between the aboslute element frame rotation and the angle beta in last iteration step
   int numperiodsold_;
-  
+
   //! number of 2*PI rotations between the aboslute element frame rotation and the angle beta at the end of last time step
   int numperiodsconv_;
-  
+
   //! absolute angle by which beam has rotated out of x-axis including reference rotation by alpha0_ in current iteration step
   double alphanew_;
-  
+
   //! absolute angle by which beam has rotated out of x-axis including reference rotation by alpha0_ in last iteration step
   double alphaold_;
-  
+
   //! absolute angle by which beam has rotated out of x-axis including reference rotation by alpha0_ at the end of last time step
   double alphaconv_;
-  
+
   //! absolute angle between x-axis and element frame in reference configuration
   double alpha0_;
 
@@ -322,11 +322,11 @@ private:
                     LINALG::Matrix<6,1>& z_curr,
                     const double& lcurr_,
                     const double& lrefe_);
-  
+
   //!computes current rotation angle beta relative to x-axis
   void updatealpha(const LINALG::Matrix<3,2>& xcurr,
                    const double& lcurr);
-  
+
   //! calculation of nonlinear stiffness and mass matrix
   void nlnstiffmass(ParameterList& params,
                     vector<int>&              lm,
@@ -336,10 +336,10 @@ private:
                     Epetra_SerialDenseMatrix* massmatrix,  //!< element mass matrix
                     Epetra_SerialDenseVector* force,  //!< element internal force vector
                     int lumpedmass); //!< if set to one lumped mass matrix is calculated
-  
+
   //!sets up element reference geomtry for reference nodal position vector xrefe (may be used also after simulation start)
   void SetUpReferenceGeometry(const LINALG::Matrix<4,1>& xrefe);
-  
+
   //!Compute statistical forces in local coordinate system and do not(!) yet assemble them
 
   /*This function allows for computation of Brownian forces in a local coordinate system according to
@@ -354,15 +354,15 @@ private:
   */
   virtual int ComputeLocalBrownianForces(ParameterList& params,
                                          Epetra_SerialDenseVector& brownian);
-  
+
   //!coputed damping matrix and statistical forces according to fluctuation dissipation theorem
   void CalcBrownian(ParameterList& params,
                     vector<int>&              lm,
                     vector<double>&           vel,  //!< element velocity vector
                     Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
                     Epetra_SerialDenseVector* force);  //!< element internal force vector
-  
-  
+
+
   // don't want = operator
   Beam2& operator = (const Beam2& old);
 
