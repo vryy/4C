@@ -6,7 +6,7 @@
 1) computation of kovariant metric tensor for surface element
 2) mapping of gausspoints on surface element to 3d space of parent element
    (required for integrations of parent-element shape functions
-    over boundary elements, required for example in weak 
+    over boundary elements, required for example in weak
     dirichlet boundary conditions).
 
 <pre>
@@ -34,16 +34,16 @@ namespace UTILS
 {
 /*-----------------------------------------------------------------
 
-\brief Transform Gausspoints on surface element to 3d space of 
-       parent element (required for integrations of parent-element 
-       shape functions over boundary elements, required for example 
+\brief Transform Gausspoints on surface element to 3d space of
+       parent element (required for integrations of parent-element
+       shape functions over boundary elements, required for example
        in weak dirichlet boundary conditions).
 
 
-\param pqxg      (o) transformed integration points of surface 
-                     elements in parent elements reference 
+\param pqxg      (o) transformed integration points of surface
+                     elements in parent elements reference
                      coordinates
-\param intpoints (i) integration points of surface element in its 
+\param intpoints (i) integration points of surface element in its
                      reference coordinates
 \param pdistype  (i) discretisation type of parent element
 \param distype   (i) discretisation type of surface element
@@ -61,16 +61,16 @@ void SurfaceGPToParentGP(
 
 /*-----------------------------------------------------------------
 
-\brief Transform Gausspoints on line element to 2d space of 
-       parent element (required for integrations of parent-element 
-       shape functions over boundary elements, for example 
+\brief Transform Gausspoints on line element to 2d space of
+       parent element (required for integrations of parent-element
+       shape functions over boundary elements, for example
        in weak dirichlet boundary conditions).
 
 
-\param pqxg      (o) transformed integration points of surface 
-                     elements in parent elements reference 
+\param pqxg      (o) transformed integration points of surface
+                     elements in parent elements reference
                      coordinates
-\param intpoints (i) integration points of surface element in its 
+\param intpoints (i) integration points of surface element in its
                      reference coordinates
 \param pdistype  (i) discretisation type of parent element
 \param distype   (i) discretisation type of surface element

@@ -3,13 +3,13 @@
 
  \brief Provide function values of basis-functions used in STDG-FEM
 
- Provided are 1D, 2D and 3D shape functions with special functions to be used 
+ Provided are 1D, 2D and 3D shape functions with special functions to be used
  for the FEM discretization in time.
- 
- Use is made of Legendre polynomial basis-functions using the Rodrigues representation 
+
+ Use is made of Legendre polynomial basis-functions using the Rodrigues representation
  for which the $p$-th order polynomial is given by $P_p=\frac{1}{2^p p!}\frac{d^p}{dx^p}(x^2-1)^p$
  and the first realizations are given by $1$,$x$,$(3x^2-1)/2$,$\ldots$.
- 
+
  \author Fedderik van der Bos
  bos@lnm.mw.tum.de
  http://www.lnm.mw.tum.de

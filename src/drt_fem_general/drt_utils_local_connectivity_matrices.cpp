@@ -7,11 +7,11 @@
 -------------------------------------------------------------------------
                  BACI finite element library subsystem
             Copyright (2008) Technical University of Munich
-              
+
 Under terms of contract T004.008.000 there is a non-exclusive license for use
 of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
 
-This library is proprietary software. It must not be published, distributed, 
+This library is proprietary software. It must not be published, distributed,
 copied or altered in any form or any media without written permission
 of the copyright holder. It may be used under terms and conditions and of the
 above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
@@ -23,11 +23,11 @@ This library contains and makes use of software copyrighted by Sandia Corporatio
 and distributed under LGPL licence. Licensing does not apply to this or any
 other third party software used here.
 
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de) 
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
                    or
                    Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
 
-http://www.lnm.mw.tum.de                   
+http://www.lnm.mw.tum.de
 
 -------------------------------------------------------------------------
 </pre>
@@ -861,7 +861,7 @@ int DRT::UTILS::getNode(
 {
     const double TOL = 1e-7;
     int node = -1;
-   
+
     switch(distype)
     {
     case DRT::Element::hex8 : case DRT::Element::hex20 : case DRT::Element::hex27 :
@@ -878,7 +878,7 @@ int DRT::UTILS::getNode(
 
       break;
     }
-    case DRT::Element::tet4 : case DRT::Element::tet10 : 
+    case DRT::Element::tet4 : case DRT::Element::tet10 :
     {
       if	   (fabs(rst(0)    ) < TOL && fabs(rst(1)    ) < TOL && fabs(rst(2)    ) < TOL)      node = 0;  // 0 0 0
       else if(fabs(rst(0)-1.0) < TOL && fabs(rst(1)    ) < TOL && fabs(rst(2)    ) < TOL)      node = 1;  // 1 0 0

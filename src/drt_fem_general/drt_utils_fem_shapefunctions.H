@@ -7,11 +7,11 @@
 -------------------------------------------------------------------------
                  BACI finite element library subsystem
             Copyright (2008) Technical University of Munich
-              
+
 Under terms of contract T004.008.000 there is a non-exclusive license for use
 of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
 
-This library is proprietary software. It must not be published, distributed, 
+This library is proprietary software. It must not be published, distributed,
 copied or altered in any form or any media without written permission
 of the copyright holder. It may be used under terms and conditions and of the
 above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
@@ -23,11 +23,11 @@ This library contains and makes use of software copyrighted by Sandia Corporatio
 and distributed under LGPL licence. Licensing does not apply to this or any
 other third party software used here.
 
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de) 
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
                    or
                    Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
 
-http://www.lnm.mw.tum.de                   
+http://www.lnm.mw.tum.de
 
 -------------------------------------------------------------------------
 </pre>
@@ -35,7 +35,7 @@ http://www.lnm.mw.tum.de
  Provided are 1D, 2D and 3D shape functions
 
  The corresponding graphics and a detailed description can be found in the Baci guide in the Convention chapter.
- 
+
  \author Axel Gerstenberger
  gerstenberger@lnm.mw.tum.de
  http://www.lnm.mw.tum.de
@@ -292,11 +292,11 @@ namespace UTILS
     const DRT::Element::DiscretizationType&  distype  ///< distuinguish between DiscretizationType
     )
   {
-      
+
       const int dr = 0;
       const int ds = 1;
       const int dt = 2;
-      
+
       const double Q18 = 1.0/8.0;
       const double Q12 = 1.0/2.0;
       const double Q14 = 1.0/4.0;
@@ -1535,10 +1535,10 @@ namespace UTILS
     const DRT::Element::DiscretizationType&  distype  ///< distuinguish between DiscretizationType
     )
   {
-      
+
       const int dr = 0;
       const int ds = 1;
-      
+
       switch (distype)
       {
       case DRT::Element::point1:
@@ -2024,9 +2024,9 @@ namespace UTILS
           break;
       /*
        *nodegeometry    x-------x-------x-------x-----> xi
-       * 
+       *
        *nodenumbering   1   3   4   2
-      */          
+      */
       }
       case DRT::Element::line5:
       {
@@ -2038,10 +2038,10 @@ namespace UTILS
           break;
           /*
            *nodegeometry    x-------x-------x-------x-------x-----> xi
-           * 
+           *
            *nodenumbering   1   3   4   5   2
           */
-      }   
+      }
       default:
           dserror("distype unknown\n");
       }
@@ -2090,7 +2090,7 @@ namespace UTILS
           break;
           /*
            *nodegeometry    x-------x-------x-------x-----> xi
-           * 
+           *
            *nodenumbering   1   3   4   2
           */
       }
@@ -2104,10 +2104,10 @@ namespace UTILS
           break;
           /*
            *nodegeometry    x-------x-------x-------x-------x-----> xi
-           * 
+           *
            *nodenumbering   1   3   4   5   2
           */
-      }    
+      }
       default:
           dserror("distype unknown\n");
       }

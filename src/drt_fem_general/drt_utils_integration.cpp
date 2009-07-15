@@ -5,11 +5,11 @@
 -------------------------------------------------------------------------
                  BACI finite element library subsystem
             Copyright (2008) Technical University of Munich
-              
+
 Under terms of contract T004.008.000 there is a non-exclusive license for use
 of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
 
-This library is proprietary software. It must not be published, distributed, 
+This library is proprietary software. It must not be published, distributed,
 copied or altered in any form or any media without written permission
 of the copyright holder. It may be used under terms and conditions and of the
 above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
@@ -21,11 +21,11 @@ This library contains and makes use of software copyrighted by Sandia Corporatio
 and distributed under LGPL licence. Licensing does not apply to this or any
 other third party software used here.
 
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de) 
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
                    or
                    Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
 
-http://www.lnm.mw.tum.de                   
+http://www.lnm.mw.tum.de
 
 -------------------------------------------------------------------------
 </pre>
@@ -330,7 +330,7 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
     qxg[21][0] = 0.0636610018750175;  qxg[21][1] = 0.6030056647916491;  qxg[21][2] = 0.2696723314583159;
     qxg[22][0] = 0.2696723314583159;  qxg[22][1] = 0.0636610018750175;  qxg[22][2] = 0.6030056647916491;
     qxg[23][0] = 0.6030056647916491;  qxg[23][1] = 0.2696723314583159;  qxg[23][2] = 0.0636610018750175;
-    
+
     qwgt[ 0] = 0.0399227502581679*Q16;
     qwgt[ 1] = 0.0399227502581679*Q16;
     qwgt[ 2] = 0.0399227502581679*Q16;
@@ -3200,7 +3200,7 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
     std::cout << "Sorry if I interrupt your work, but I think this rule is not sufficient for a wedge15 element. ";
     std::cout << "In my opinion, you need 18 integration points here. If you are sure, go ahead, otherwise ask me or implement the 18 point rule. Axel (06.06.08)\n";
     dserror("stopped code due to believed insufficient integration rule 'intrule_wedge_9point' for wedge15. Axel");
-      
+
     const double xi3 = 0.77459666924;
     const double Q23 = 2.0/3.0;
     const double Q5913 = 5.0/9.0*1.0/3.0;
@@ -3332,7 +3332,7 @@ DRT::UTILS::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule
     //    |    1            2     |
     //    |                       |
     //    |_ _ _ _ _ _ _ _ _ _ _ _|
-    //    
+    //
     nquad = 4;
     qwgt[0]  =  1.0;
     qwgt[1]  =  1.0;
@@ -3366,7 +3366,7 @@ DRT::UTILS::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule
     //    |    1      5     2     |
     //    |                       |
     //    |_ _ _ _ _ _ _ _ _ _ _ _|
-    
+
     nquad = 9;
     qwgt[0]  =  0.5555555555556*0.5555555555556;
     qwgt[1]  =  0.5555555555556*0.5555555555556;
@@ -3377,7 +3377,7 @@ DRT::UTILS::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule
     qwgt[6]  =  0.8888888888889*0.5555555555556;
     qwgt[7]  =  0.5555555555556*0.8888888888889;
     qwgt[8]  =  0.8888888888889*0.8888888888889;
-   
+
     qxg[0][0] = -0.7745966692415;
     qxg[0][1] = -0.7745966692415;
     qxg[1][0] =  0.7745966692415;
@@ -3396,7 +3396,7 @@ DRT::UTILS::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule
     qxg[7][1] =  0.0;
     qxg[8][0] =  0.0;
     qxg[8][1] =  0.0;
-    
+
     break;
   }
   case intrule_tri_1point:
@@ -3467,7 +3467,7 @@ DRT::UTILS::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule
     nquad = 7;
 
     const double q12 = 0.5;
-    
+
     // weights
     qwgt[0] = q12 * 0.225;
     qwgt[1] = q12 * 0.125939180545;
@@ -3598,8 +3598,8 @@ DRT::UTILS::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule
     qwgt[34] = q12*0.0370386836814;
     qwgt[35] = q12*0.0370386836814;
     qwgt[36] = q12*0.0370386836814;
-    
-    
+
+
     qxg[0][0] = 0.333333333333;
     qxg[0][1] = 0.333333333333;
 
@@ -3715,7 +3715,7 @@ DRT::UTILS::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule
   case intrule_tri_64point:
   {
     dserror("temporarily switched off. Gives wrong surface integrals (liftdrag) in XFEM computations. Check!  (a.ger, 8.12.2008)");
-    
+
     nquad = 64;
 
     // weights
@@ -3901,7 +3901,7 @@ DRT::UTILS::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gaussrule
       qwgt[1]  =  0.6521451548625;
       qwgt[2]  =  0.6521451548625;
       qwgt[3]  =  0.3478548451375;
-      
+
       qxg[0][0]   = -0.8611363115941;
       qxg[1][0]   = -0.3399810435849;
       qxg[2][0]   =  0.3399810435849;
@@ -3916,7 +3916,7 @@ DRT::UTILS::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gaussrule
       qwgt[2]  =  0.5688888888889;
       qwgt[3]  =  0.4786286704994;
       qwgt[4]  =  0.2369268850562;
-        
+
       qxg[0][0]   = -0.9061798459387;
       qxg[1][0]   = -0.5384693101057;
       qxg[2][0]   =  0.0;
@@ -3927,7 +3927,7 @@ DRT::UTILS::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gaussrule
   case intrule_line_6point:
   {
       nquad = 6;
- 
+
       qwgt[0]  =  0.171324492;
       qwgt[1]  =  0.360761573;
       qwgt[2]  =  0.467913935;
@@ -3935,12 +3935,12 @@ DRT::UTILS::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gaussrule
       qwgt[4]  =  0.360761573;
       qwgt[5]  =  0.171324492;
 
-      qxg[0][0]  = -0.9324695142; 
-      qxg[1][0]  = -0.6612093865; 
-      qxg[2][0]  = -0.2386191861; 
-      qxg[3][0]  =  0.2386191861; 
-      qxg[4][0]  =  0.6612093865; 
-      qxg[5][0]  =  0.9324695142;  
+      qxg[0][0]  = -0.9324695142;
+      qxg[1][0]  = -0.6612093865;
+      qxg[2][0]  = -0.2386191861;
+      qxg[3][0]  =  0.2386191861;
+      qxg[4][0]  =  0.6612093865;
+      qxg[5][0]  =  0.9324695142;
 
       break;
   }
@@ -3993,7 +3993,7 @@ DRT::UTILS::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gaussrule
   case intrule_line_9point:
   {
       nquad = 9;
- 
+
       qwgt[0]  =  0.08127438494;
       qwgt[1]  =  0.1806481559;
       qwgt[2]  =  0.2606106954;

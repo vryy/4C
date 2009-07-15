@@ -26,7 +26,7 @@ DRT::NURBS::UTILS::BsplinePolynomial::BsplinePolynomial(
   myknotvector_   (local_knotvector),
   bspline_        (degree+1)        ,
   degree_         (degree)          ,
-  degree_plus_one_(degree+1)        
+  degree_plus_one_(degree+1)
 {
   return;
 }
@@ -58,45 +58,45 @@ DRT::NURBS::UTILS::BsplinePolynomial::~BsplinePolynomial()
 void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBspline (
   double       & bspline_value,
   const double   x            ,
-  const int      ldofid         
+  const int      ldofid
   )
 {
 
   //                        ^
-  //             ****       ^        +-----------+  
-  //            *    *      ^        | ldofid==0 | 
-  //           *      *     ^        +-----------+  
-  //         **        **   ^                   
-  //      ***            ***^   
+  //             ****       ^        +-----------+
+  //            *    *      ^        | ldofid==0 |
+  //           *      *     ^        +-----------+
+  //         **        **   ^
+  //      ***            ***^
   //  +***---+-----+-----+--***+-----+-----+-----+
   //                        ^
-  //                        ^                    
-  //                   **** ^        +-----------+             
-  //                  *    *^        | ldofid==1 |             
-  //                 *      *        +-----------+             
-  //               **       ^**                    
-  //            ***         ^  ***                
+  //                        ^
+  //                   **** ^        +-----------+
+  //                  *    *^        | ldofid==1 |
+  //                 *      *        +-----------+
+  //               **       ^**
+  //            ***         ^  ***
   //  +-----+***---+-----+-----+--***+-----+-----+
   //                        ^
   //                        ^
   //  +-----------+         ^****
   //  | ldofid==2 |         *    *
   //  +-----------+        *^     *
-  //                     ** ^      **    
-  //                  ***   ^        ***    
+  //                     ** ^      **
+  //                  ***   ^        ***
   //  +-----+-----+***---+-----+-----+--***+-----+
   //                        ^
-  //                        ^   
+  //                        ^
   //  +-----------+         ^      ****
   //  | ldofid==3 |         ^     *    *
   //  +-----------+         ^    *      *
-  //                        ^  **        **    
-  //                        ***            ***    
+  //                        ^  **        **
+  //                        ***            ***
   //  +-----+-----+-----+***---+-----+-----+--***+
   //                        ^
   //                        ^
   //                        x
-    
+
 #ifdef DEBUG
   // consistency vhecks
   if(0>ldofid || ldofid>degree_)
@@ -123,7 +123,7 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBspline (
   if(myknotvector_.Length()!=2*degree_+2)
   {
     std::string errorstring;
-    
+
     errorstring.append("node support size is not 2*degree_+2\n");
     errorstring.append("Cannot compute bspline values\n");
     this->Throwerror(errorstring);
@@ -136,14 +136,14 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBspline (
     this->Throwerror("Point not in evaluation interval\n");
   }
 #endif
-    
-  // define the vector of values at x of all initial polynomials 
+
+  // define the vector of values at x of all initial polynomials
   vector<double> bspline(degree_+1);
-    
+
   // The nonzero initial bspline polynomial and the intervals
   // that define the compact support of the bspline number lid
   // of given degree:
-  // 
+  //
   //
   //  ldofid = 0:
   //                    +-----+
@@ -151,12 +151,12 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBspline (
   //                    |     |
   //                    |     |
   //  +-----+-----+-----+--x--+
-  //  
+  //
   //  all other initial bsplines are zero at x
   //  (empty intervals indicate the compact support of
   //   the other bspline polynomials which contribute
-  //   to the bspline value associated with the given 
-  //   dof lid. The union of all intervals defines the 
+  //   to the bspline value associated with the given
+  //   dof lid. The union of all intervals defines the
   //   support of the computed bspline of degree 3)
   //
   //
@@ -165,16 +165,16 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBspline (
   //                    |     |
   //                    |     |
   //                    |     |
-  //        +-----+-----+--x--+-----+            
-  //  
+  //        +-----+-----+--x--+-----+
+  //
   //
   //  ldofid = 2:
   //                    +-----+
   //                    |     |
   //                    |     |
   //                    |     |
-  //              +-----+--x--+-----+-----+       
-  //  
+  //              +-----+--x--+-----+-----+
+  //
   //
   //  ldofid = 3:
   //                    +-----+
@@ -182,7 +182,7 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBspline (
   //                    |     |
   //                    |     |
   //                    +--x--+-----+-----+-----+
-  //  
+  //
   //                    |     |
   //                    |     |
   //                    |<--->|
@@ -201,29 +201,29 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBspline (
   //        |        |        |        |
   //
   //      N(0,0)  N(1,0)   N(2,0)   N(3,0)    p == 0
-  //        |       /|       /|       / 
-  //        |      / |      / |      / 
-  //        |     /  |     /  |     /  
-  //        |    /   |    /   |    /   
-  //        |   /    |   /    |   /    
-  //        |  /     |  /     |  /     
-  //        | /      | /      | /      
+  //        |       /|       /|       /
+  //        |      / |      / |      /
+  //        |     /  |     /  |     /
+  //        |    /   |    /   |    /
+  //        |   /    |   /    |   /
+  //        |  /     |  /     |  /
+  //        | /      | /      | /
   //      N(0,1)  N(1,1)   N(2,1)             p == 1
-  //        |       /|       / 
-  //        |      / |      / 
-  //        |     /  |     /  
-  //        |    /   |    /   
-  //        |   /    |   /    
-  //        |  /     |  /     
-  //        | /      | /      
+  //        |       /|       /
+  //        |      / |      /
+  //        |     /  |     /
+  //        |    /   |    /
+  //        |   /    |   /
+  //        |  /     |  /
+  //        | /      | /
   //      N(0,2)  N(1,2)                      p == 2
-  //        |       / 
-  //        |      / 
-  //        |     /  
-  //        |    /   
-  //        |   /    
-  //        |  /     
-  //        | /      
+  //        |       /
+  //        |      /
+  //        |     /
+  //        |    /
+  //        |   /
+  //        |  /
+  //        | /
   //      N(0,3)                              p == 3
   //
   //
@@ -243,7 +243,7 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBspline (
       int  first = ldofid+rr;
 
       double fact1;
-      // the first part of the if statement allows to 
+      // the first part of the if statement allows to
       // enforce interpolation using multiple nodes
       // the second part is a part of the bspline recursion
       if(fabs(myknotvector_(first+p+1)-myknotvector_(first))<10e-9)
@@ -257,7 +257,7 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBspline (
       }
 
       double fact2;
-      // the first part of the if statement allows to 
+      // the first part of the if statement allows to
       // enforce interpolation using multiple nodes
       // the second part is a part of the bspline recursion
       if(fabs(myknotvector_(first+p+2)-myknotvector_(first+1))<10e-9)
@@ -279,7 +279,7 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBspline (
 
   // set the output
   bspline_value=bspline[0];
-    
+
   return;
 }
 
@@ -292,46 +292,46 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineAndDeriv(
   double       & bsplineval,
   double       & bsplineder,
   const double   x         ,
-  const int      ldofid         
+  const int      ldofid
   )
 {
 
   //                        ^
-  //             ****       ^        +-----------+  
-  //            *    *      ^        | ldofid==0 | 
-  //           *      *     ^        +-----------+  
-  //         **        **   ^                   
-  //      ***            ***^   
+  //             ****       ^        +-----------+
+  //            *    *      ^        | ldofid==0 |
+  //           *      *     ^        +-----------+
+  //         **        **   ^
+  //      ***            ***^
   //  +***---+-----+-----+--***+-----+-----+-----+
   //                        ^
-  //                        ^                    
-  //                   **** ^        +-----------+             
-  //                  *    *^        | ldofid==1 |             
-  //                 *      *        +-----------+             
-  //               **       ^**                    
-  //            ***         ^  ***                
+  //                        ^
+  //                   **** ^        +-----------+
+  //                  *    *^        | ldofid==1 |
+  //                 *      *        +-----------+
+  //               **       ^**
+  //            ***         ^  ***
   //  +-----+***---+-----+-----+--***+-----+-----+
   //                        ^
   //                        ^
   //  +-----------+         ^****
   //  | ldofid==2 |         *    *
   //  +-----------+        *^     *
-  //                     ** ^      **    
-  //                  ***   ^        ***    
+  //                     ** ^      **
+  //                  ***   ^        ***
   //  +-----+-----+***---+-----+-----+--***+-----+
   //                        ^
-  //                        ^   
+  //                        ^
   //  +-----------+         ^      ****
   //  | ldofid==3 |         ^     *    *
   //  +-----------+         ^    *      *
-  //                        ^  **        **    
-  //                        ***            ***    
+  //                        ^  **        **
+  //                        ***            ***
   //  +-----+-----+-----+***---+-----+-----+--***+
   //                        ^
   //                        ^
   //                        x
 
-#ifdef DEBUG    
+#ifdef DEBUG
   // consistency vhecks
   if(0>ldofid || ldofid>degree_)
   {
@@ -357,7 +357,7 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineAndDeriv(
   if(myknotvector_.Length()!=2*degree_+2)
   {
     std::string errorstring;
-    
+
     errorstring.append("node support size is not 2*degree_+2\n");
     errorstring.append("Cannot compute bspline values\n");
     this->Throwerror(errorstring);
@@ -371,13 +371,13 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineAndDeriv(
   }
 #endif
 
-  // define the vector of values at x of all initial polynomials 
+  // define the vector of values at x of all initial polynomials
   vector<double> bspline(degree_+1);
-    
+
   // The nonzero initial bspline polynomial and the intervals
   // that define the compact support of the bspline number lid
   // of given degree:
-  // 
+  //
   //
   //  ldofid = 0:
   //                    +-----+
@@ -385,12 +385,12 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineAndDeriv(
   //                    |     |
   //                    |     |
   //  +-----+-----+-----+--x--+
-  //  
+  //
   //  all other initial bsplines are zero at x
   //  (empty intervals indicate the compact support of
   //   the other bspline polynomials which contribute
-  //   to the bspline value associated with the given 
-  //   dof lid. The union of all intervals defines the 
+  //   to the bspline value associated with the given
+  //   dof lid. The union of all intervals defines the
   //   support of the computed bspline of degree 3)
   //
   //
@@ -399,16 +399,16 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineAndDeriv(
   //                    |     |
   //                    |     |
   //                    |     |
-  //        +-----+-----+--x--+-----+            
-  //  
+  //        +-----+-----+--x--+-----+
+  //
   //
   //  ldofid = 2:
   //                    +-----+
   //                    |     |
   //                    |     |
   //                    |     |
-  //              +-----+--x--+-----+-----+       
-  //  
+  //              +-----+--x--+-----+-----+
+  //
   //
   //  ldofid = 3:
   //                    +-----+
@@ -416,7 +416,7 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineAndDeriv(
   //                    |     |
   //                    |     |
   //                    +--x--+-----+-----+-----+
-  //  
+  //
   //                    |     |
   //                    |     |
   //                    |<--->|
@@ -427,10 +427,10 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineAndDeriv(
   // initial values for recursion
   //
   //           +-
-  //           | 
+  //           |
   //    0      |  1   for x contained in interval i
   //   N (x) = |
-  //    i      |  0   otherwise 
+  //    i      |  0   otherwise
   //           |
   //           +-
   //
@@ -446,21 +446,21 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineAndDeriv(
   //        |        |        |        |
   //
   //      N(0,0)  N(1,0)   N(2,0)   N(3,0)    p == 0
-  //        |       /|       /|       / 
-  //        |      / |      / |      / 
-  //        |     /  |     /  |     /  
-  //        |    /   |    /   |    /   
-  //        |   /    |   /    |   /    
-  //        |  /     |  /     |  /     
-  //        | /      | /      | /      
+  //        |       /|       /|       /
+  //        |      / |      / |      /
+  //        |     /  |     /  |     /
+  //        |    /   |    /   |    /
+  //        |   /    |   /    |   /
+  //        |  /     |  /     |  /
+  //        | /      | /      | /
   //      N(0,1)  N(1,1)   N(2,1)             p == 1
-  //        |       /|       / 
-  //        |      / |      / 
-  //        |     /  |     /  
-  //        |    /   |    /   
-  //        |   /    |   /    
-  //        |  /     |  /     
-  //        | /      | /      
+  //        |       /|       /
+  //        |      / |      /
+  //        |     /  |     /
+  //        |    /   |    /
+  //        |   /    |   /
+  //        |  /     |  /
+  //        | /      | /
   //      N(0,2)  N(1,2)                      p == 2
   //
   //
@@ -486,9 +486,9 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineAndDeriv(
   // N(0,3) twice
   //
 
-  // loop all rows in the upper table up to the last 
+  // loop all rows in the upper table up to the last
   // but one. Both arguments are still required to compute
-  // the derivatives, so do not throw them away 
+  // the derivatives, so do not throw them away
   // (or overwrite)
   for(int p=0;p<degree_-1;++p)
   {	
@@ -499,14 +499,14 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineAndDeriv(
       // id of first bspline function of this combination
       int  i = ldofid+rr;
 
-      // recursion for the computation of the basis 
+      // recursion for the computation of the basis
       // function
       //
-      //          x - x                x     - x            
-      //  p            i     p-1        i+p+1         p-1     
-      // N (x) = -------- * N   (x) + ------------ * N   (x)  
-      //  i      x   - x     i        x     - x       i+1     
-      //          i+p   i              i+p+1   i+1          
+      //          x - x                x     - x
+      //  p            i     p-1        i+p+1         p-1
+      // N (x) = -------- * N   (x) + ------------ * N   (x)
+      //  i      x   - x     i        x     - x       i+1
+      //          i+p   i              i+p+1   i+1
       //
       //        |        |           |            |
       //        +--------+           +------------+
@@ -514,7 +514,7 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineAndDeriv(
       //
 
       double fact1;
-      // the first part of the if statement allows to 
+      // the first part of the if statement allows to
       // enforce interpolation using multiple nodes
       // the second part is a part of the bspline recursion
       if(fabs(myknotvector_(i+p+1)-myknotvector_(i))<10e-9)
@@ -528,7 +528,7 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineAndDeriv(
       }
 
       double fact2;
-      // the first part of the if statement allows to 
+      // the first part of the if statement allows to
       // enforce interpolation using multiple nodes
       // the second part is a part of the bspline recursion
       if(fabs(myknotvector_(i+p+2)-myknotvector_(i+1))<10e-9)
@@ -547,13 +547,13 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineAndDeriv(
 	fact2*bspline[rr+1];
     }
   }
-  
+
   //---------------------------------------------------
-  // do computation of bspline value in the last level 
+  // do computation of bspline value in the last level
   // corresponding to one row in the scheme above
-    
+
   double fact1;
-  // the first part of the if statement allows to 
+  // the first part of the if statement allows to
   // enforce interpolation using multiple nodes
   // the second part is a part of the bspline recursion
   if(fabs(myknotvector_(ldofid+degree_)-myknotvector_(ldofid))<10e-9)
@@ -565,9 +565,9 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineAndDeriv(
     fact1 =(x-myknotvector_(ldofid));
     fact1/=(myknotvector_(ldofid+degree_)-myknotvector_(ldofid));
   }
-  
+
   double fact2;
-  // the first part of the if statement allows to 
+  // the first part of the if statement allows to
   // enforce interpolation using multiple nodes
   // the second part is a part of the bspline recursion
   if(fabs(myknotvector_(ldofid+degree_+1)-myknotvector_(ldofid+1))<10e-9)
@@ -586,24 +586,24 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineAndDeriv(
     fact2*bspline[1];
 
   //---------------------------------------------------
-  // do computation of bspline derivatives from the 
-  // last level corresponding to one row in the scheme 
+  // do computation of bspline derivatives from the
+  // last level corresponding to one row in the scheme
   // above
 
   if(degree_>0)
   {
     //
-    //                            
-    //   p          p        p-1           p         p-1     
-    // N'  (x) = -------- * N   (x) - ----------- * N   (x)  
-    //   i       x   - x     i        x     - x      i+1     
-    //            i+p   i              i+p+1   i+1          
+    //
+    //   p          p        p-1           p         p-1
+    // N'  (x) = -------- * N   (x) - ----------- * N   (x)
+    //   i       x   - x     i        x     - x      i+1
+    //            i+p   i              i+p+1   i+1
     //
     //          |        |           |            |
     //          +--------+           +------------+
     //             fact1                  fact2
-    
-    // the first part of the if statement allows to 
+
+    // the first part of the if statement allows to
     // enforce interpolation using multiple nodes
     // the second part computes fact1 in the equation
     // above
@@ -616,8 +616,8 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineAndDeriv(
       fact1 =degree_;
       fact1/=(myknotvector_(ldofid+degree_)-myknotvector_(ldofid));
     }
-    
-    // the first part of the if statement allows to 
+
+    // the first part of the if statement allows to
     // enforce interpolation using multiple nodes
     // the second part is a part of the bspline recursion
     // see above
@@ -630,7 +630,7 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineAndDeriv(
       fact2 =degree_;
       fact2/=(myknotvector_(ldofid+degree_+1)-myknotvector_(ldofid+1));
     }
-    
+
     // compute the actual bspline derivative formula
     bsplineder=
       fact1*bspline[0]
@@ -639,7 +639,7 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineAndDeriv(
   }
   else
   {
-    // piecewise constants get 0 derivatives 
+    // piecewise constants get 0 derivatives
     bsplineder=0;
   }
 
@@ -656,74 +656,74 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineFirstAndSecondDeriv(
   double &             bsplineder  ,
   double &             bsplineder2 ,
   const double         x           ,
-  const int            ldofid         
+  const int            ldofid
   )
 {
 
 
   /*
- 
-            x - x                x     - x            
-    p            i     p-1        i+p+1         p-1     
-   N (x) = -------- * N   (x) + ------------ * N   (x)  
-    i      x   - x     i        x     - x       i+1     
-            i+p   i              i+p+1   i+1          
 
-     p          p        p-1           p         p-1     
-   N'  (x) = -------- * N   (x) - ----------- * N   (x)  
-     i       x   - x     i        x     - x      i+1     
-              i+p   i              i+p+1   i+1          
+            x - x                x     - x
+    p            i     p-1        i+p+1         p-1
+   N (x) = -------- * N   (x) + ------------ * N   (x)
+    i      x   - x     i        x     - x       i+1
+            i+p   i              i+p+1   i+1
+
+     p          p        p-1           p         p-1
+   N'  (x) = -------- * N   (x) - ----------- * N   (x)
+     i       x   - x     i        x     - x      i+1
+              i+p   i              i+p+1   i+1
 
   -------------------------------------------------------
 
-     p          p        p-1           p         p-1     
-   N'' (x) = -------- * N'  (x) - ----------- * N'  (x)  
-     i       x   - x     i        x     - x      i+1     
-              i+p   i              i+p+1   i+1          
+     p          p        p-1           p         p-1
+   N'' (x) = -------- * N'  (x) - ----------- * N'  (x)
+     i       x   - x     i        x     - x      i+1
+              i+p   i              i+p+1   i+1
 
-     p-1         p-1       p-2          p-1        p-2     
-   N'  (x) = ---------- * N   (x) - ----------- * N   (x)  
-     i       x     - x     i        x   - x        i+1     
-              i+p-1   i              i+p   i+1          
+     p-1         p-1       p-2          p-1        p-2
+   N'  (x) = ---------- * N   (x) - ----------- * N   (x)
+     i       x     - x     i        x   - x        i+1
+              i+p-1   i              i+p   i+1
 
 
   */
 
   //                        ^
-  //             ****       ^        +-----------+  
-  //            *    *      ^        | ldofid==0 | 
-  //           *      *     ^        +-----------+  
-  //         **        **   ^                   
-  //      ***            ***^   
+  //             ****       ^        +-----------+
+  //            *    *      ^        | ldofid==0 |
+  //           *      *     ^        +-----------+
+  //         **        **   ^
+  //      ***            ***^
   //  +***---+-----+-----+--***+-----+-----+-----+
   //                        ^
-  //                        ^                    
-  //                   **** ^        +-----------+             
-  //                  *    *^        | ldofid==1 |             
-  //                 *      *        +-----------+             
-  //               **       ^**                    
-  //            ***         ^  ***                
+  //                        ^
+  //                   **** ^        +-----------+
+  //                  *    *^        | ldofid==1 |
+  //                 *      *        +-----------+
+  //               **       ^**
+  //            ***         ^  ***
   //  +-----+***---+-----+-----+--***+-----+-----+
   //                        ^
   //                        ^
   //  +-----------+         ^****
   //  | ldofid==2 |         *    *
   //  +-----------+        *^     *
-  //                     ** ^      **    
-  //                  ***   ^        ***    
+  //                     ** ^      **
+  //                  ***   ^        ***
   //  +-----+-----+***---+-----+-----+--***+-----+
   //                        ^
-  //                        ^   
+  //                        ^
   //  +-----------+         ^      ****
   //  | ldofid==3 |         ^     *    *
   //  +-----------+         ^    *      *
-  //                        ^  **        **    
-  //                        ***            ***    
+  //                        ^  **        **
+  //                        ***            ***
   //  +-----+-----+-----+***---+-----+-----+--***+
   //                        ^
   //                        ^
   //                        x
-    
+
 #ifdef DEBUG
   // consistency vhecks
   if(0>ldofid || ldofid>degree_)
@@ -750,7 +750,7 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineFirstAndSecondDeriv(
   if(myknotvector_.Length()!=2*degree_+2)
   {
     std::string errorstring;
-    
+
     errorstring.append("node support size is not 2*degree_+2\n");
     errorstring.append("Cannot compute bspline values\n");
     this->Throwerror(errorstring);
@@ -767,7 +767,7 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineFirstAndSecondDeriv(
   // The nonzero initial bspline polynomial and the intervals
   // that define the compact support of the bspline number lid
   // of given degree:
-  // 
+  //
   //
   //  ldofid = 0:
   //                    +-----+
@@ -775,12 +775,12 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineFirstAndSecondDeriv(
   //                    |     |
   //                    |     |
   //  +-----+-----+-----+--x--+
-  //  
+  //
   //  all other initial bsplines are zero at x
   //  (empty intervals indicate the compact support of
   //   the other bspline polynomials which contribute
-  //   to the bspline value associated with the given 
-  //   dof lid. The union of all intervals defines the 
+  //   to the bspline value associated with the given
+  //   dof lid. The union of all intervals defines the
   //   support of the computed bspline of degree 3)
   //
   //
@@ -789,16 +789,16 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineFirstAndSecondDeriv(
   //                    |     |
   //                    |     |
   //                    |     |
-  //        +-----+-----+--x--+-----+            
-  //  
+  //        +-----+-----+--x--+-----+
+  //
   //
   //  ldofid = 2:
   //                    +-----+
   //                    |     |
   //                    |     |
   //                    |     |
-  //              +-----+--x--+-----+-----+       
-  //  
+  //              +-----+--x--+-----+-----+
+  //
   //
   //  ldofid = 3:
   //                    +-----+
@@ -806,7 +806,7 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineFirstAndSecondDeriv(
   //                    |     |
   //                    |     |
   //                    +--x--+-----+-----+-----+
-  //  
+  //
   //                    |     |
   //                    |     |
   //                    |<--->|
@@ -817,10 +817,10 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineFirstAndSecondDeriv(
   // initial values for recursion
   //
   //           +-
-  //           | 
+  //           |
   //    0      |  1   for x contained in interval i
   //   N (x) = |
-  //    i      |  0   otherwise 
+  //    i      |  0   otherwise
   //           |
   //           +-
   //
@@ -836,13 +836,13 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineFirstAndSecondDeriv(
   //        |        |        |        |
   //
   //      N(0,0)  N(1,0)   N(2,0)   N(3,0)    p == 0
-  //        |       /|       /|       / 
-  //        |      / |      / |      / 
-  //        |     /  |     /  |     /  
-  //        |    /   |    /   |    /   
-  //        |   /    |   /    |   /    
-  //        |  /     |  /     |  /     
-  //        | /      | /      | /      
+  //        |       /|       /|       /
+  //        |      / |      / |      /
+  //        |     /  |     /  |     /
+  //        |    /   |    /   |    /
+  //        |   /    |   /    |   /
+  //        |  /     |  /     |  /
+  //        | /      | /      | /
   //      N(0,1)  N(1,1)   N(2,1)             p == 1
   //
   //
@@ -851,15 +851,15 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineFirstAndSecondDeriv(
   //
   //
   //
-  //      N(0,1)  N(1,1)   N(2,1)             p == 1   +--	    
-  //        |       /|       / 			       |	    
-  //        |      / |      / 			       | branch	    
-  //        |     /  |     /  			       |	    
-  //        |    /   |    /   			       | for second  
-  //        |   /    |   /    			       |	    
+  //      N(0,1)  N(1,1)   N(2,1)             p == 1   +--	
+  //        |       /|       / 			       |	
+  //        |      / |      / 			       | branch	
+  //        |     /  |     /  			       |	
+  //        |    /   |    /   			       | for second
+  //        |   /    |   /    			       |	
   //        |  /     |  /     			       | derivatives
-  //        | /      | /      			       |	    
-  //      N(0,2)  N(1,2)                      p == 2   +--          
+  //        | /      | /      			       |	
+  //      N(0,2)  N(1,2)                      p == 2   +--
   //
   //
   //
@@ -875,7 +875,7 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineFirstAndSecondDeriv(
   //        |   /\   |                                 |
   //        |  /  \  |                                 | derivatives
   //        | /    \ |                                 |
-  //     val(0,3) der(0,3)                    p == 3   +--          
+  //     val(0,3) der(0,3)                    p == 3   +--
   //
   //
   //
@@ -885,9 +885,9 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineFirstAndSecondDeriv(
   //
 
 
-  // loop all rows in the upper table up to the last 
+  // loop all rows in the upper table up to the last
   // but one. Both arguments are still required to compute
-  // the derivatives, so do not throw them away 
+  // the derivatives, so do not throw them away
   // (or overwrite)
   for(int p=0;p<degree_-2;++p)
   {	
@@ -898,21 +898,21 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineFirstAndSecondDeriv(
       // id of first bspline function of this combination
       const int  i     = ldofid+rr;
 
-      // recursion for the computation of the basis 
+      // recursion for the computation of the basis
       // function
       //
-      //          x - x                x     - x            
-      //  p            i     p-1        i+p+1         p-1     
-      // N (x) = -------- * N   (x) + ------------ * N   (x)  
-      //  i      x   - x     i        x     - x       i+1     
-      //          i+p   i              i+p+1   i+1          
+      //          x - x                x     - x
+      //  p            i     p-1        i+p+1         p-1
+      // N (x) = -------- * N   (x) + ------------ * N   (x)
+      //  i      x   - x     i        x     - x       i+1
+      //          i+p   i              i+p+1   i+1
       //
       //        |        |           |            |
       //        +--------+           +------------+
       //         fact_[0]               fact_[1]
       //
 
-      // the first part of the if statement allows to 
+      // the first part of the if statement allows to
       // enforce interpolation using multiple nodes
       // the second part is a part of the bspline recursion
       double dx = myknotvector_(i+p+1)-myknotvector_(i);
@@ -927,7 +927,7 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineFirstAndSecondDeriv(
       }
 
       dx = myknotvector_(i+p+2)-myknotvector_(i+1);
-      // the first part of the if statement allows to 
+      // the first part of the if statement allows to
       // enforce interpolation using multiple nodes
       // the second part is a part of the bspline recursion
       if(fabs(dx)<10e-9)
@@ -951,8 +951,8 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineFirstAndSecondDeriv(
   //
 
   //---------------------------------------------------
-  // do computation of both bspline derivatives  
-  // from the p-1 level 
+  // do computation of both bspline derivatives
+  // from the p-1 level
 
   if(degree_>1)
   {
@@ -961,17 +961,17 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineFirstAndSecondDeriv(
       // id of first bspline function of this combination
       const int  i             = ldofid+rr;
       const int  i_plus_degree = i+degree_;
-      
-      // the first part of the if statement allows to 
+
+      // the first part of the if statement allows to
       // enforce interpolation using multiple nodes
       // the second part computes fact_[0] in the equation
       // above
 
-      const double dxi  = 
+      const double dxi  =
 	myknotvector_(i_plus_degree-1)
 	-
 	myknotvector_(i);
-      
+
       if(fabs(dxi)<10e-9)
       {
 	fact_[2]=0;
@@ -982,13 +982,13 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineFirstAndSecondDeriv(
 	fact_[2] = (degree_-1)/dxi;
 	fact_[0] = (x-myknotvector_(i))/dxi;
       }
-      
-      const double dxip = 
+
+      const double dxip =
 	myknotvector_(i_plus_degree)
 	-
 	myknotvector_(i+1);
-     
-      // the first part of the if statement allows to 
+
+      // the first part of the if statement allows to
       // enforce interpolation using multiple nodes
       // the second part is a part of the bspline recursion
       // see above
@@ -1004,34 +1004,34 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineFirstAndSecondDeriv(
       }
 
       //
-      //                            
       //
-      //     p-1         p-1       p-2          p-1        p-2     
-      //   N'  (x) = ---------- * N   (x) - ----------- * N   (x)  
-      //     i       x     - x     i        x   - x        i+1     
-      //              i+p-1   i              i+p   i+1          
+      //
+      //     p-1         p-1       p-2          p-1        p-2
+      //   N'  (x) = ---------- * N   (x) - ----------- * N   (x)
+      //     i       x     - x     i        x   - x        i+1
+      //              i+p-1   i              i+p   i+1
       //             |        |           |            |
       //             +--------+           +------------+
       //              fact_[2]               fact_[3]
-      
+
       // compute the actual bspline derivative formula
       pmo_deriv_[rr]=
 	fact_[2]*bspline_[rr]
 	-
 	fact_[3]*bspline_[rr+1];
       //----------------------------------------------
-      // bspline[rr] for this level will be destroyed 
+      // bspline[rr] for this level will be destroyed
       // NOW and is replaced by the next levels value!
       //----------------------------------------------
-      
-      // recursion for the computation of the basis 
+
+      // recursion for the computation of the basis
       // function
       //
-      //            x - x                  x   - x            
-      //  p-1            i       p-2        i+p           p-2     
-      // N   (x) = ---------- * N   (x) + ------------ * N   (x)  
-      //  i        x     - x     i         x   - x       i+1     
-      //            i+p-1   i               i+p   i+1          
+      //            x - x                  x   - x
+      //  p-1            i       p-2        i+p           p-2
+      // N   (x) = ---------- * N   (x) + ------------ * N   (x)
+      //  i        x     - x     i         x   - x       i+1
+      //            i+p-1   i               i+p   i+1
       //
       //           |        |            |            |
       //           +--------+            +------------+
@@ -1047,7 +1047,7 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineFirstAndSecondDeriv(
   }
   else
   {
-    // piecewise constants get 0 derivatives 
+    // piecewise constants get 0 derivatives
     pmo_deriv_[0]=0;
     pmo_deriv_[1]=0;
   }
@@ -1057,9 +1057,9 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineFirstAndSecondDeriv(
   //
 
   //---------------------------------------------------
-  // do computation of bspline value in the last level 
-    
-  // the first part of the if statement allows to 
+  // do computation of bspline value in the last level
+
+  // the first part of the if statement allows to
   // enforce interpolation using multiple nodes
   // the second part is a part of the bspline recursion
   const double dxilast=myknotvector_(ldofid+degree_)-myknotvector_(ldofid);
@@ -1074,8 +1074,8 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineFirstAndSecondDeriv(
     fact_[0] =(x-myknotvector_(ldofid))/dxilast;
     fact_[2] = degree_/dxilast;
   }
-  
-  // the first part of the if statement allows to 
+
+  // the first part of the if statement allows to
   // enforce interpolation using multiple nodes
   // the second part is a part of the bspline recursion
   const double dxiplast=
@@ -1102,33 +1102,33 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineFirstAndSecondDeriv(
   //---------------------------------------------------
   // evaluate the second derivatives
 
-  //   p          p        p-1           p         p-1     
-  // N'' (x) = -------- * N'  (x) - ----------- * N'  (x)  
-  //   i       x   - x     i        x     - x      i+1     
-  //            i+p   i              i+p+1   i+1          
+  //   p          p        p-1           p         p-1
+  // N'' (x) = -------- * N'  (x) - ----------- * N'  (x)
+  //   i       x   - x     i        x     - x      i+1
+  //            i+p   i              i+p+1   i+1
   //
   //          |        |           |            |
   //          +--------+           +------------+
   //           fact_[2]               fact_[3]
- 
+
   bsplineder2=
     fact_[2]*pmo_deriv_[0]
     -
     fact_[3]*pmo_deriv_[1];
 
   //---------------------------------------------------
-  // do computation of bspline derivatives from the 
-  // last level corresponding to one row in the scheme 
+  // do computation of bspline derivatives from the
+  // last level corresponding to one row in the scheme
   // above
 
   if(degree_>0)
   {
     //
-    //                            
-    //   p          p        p-1           p         p-1     
-    // N'  (x) = -------- * N   (x) - ----------- * N   (x)  
-    //   i       x   - x     i        x     - x      i+1     
-    //            i+p   i              i+p+1   i+1          
+    //
+    //   p          p        p-1           p         p-1
+    // N'  (x) = -------- * N   (x) - ----------- * N   (x)
+    //   i       x   - x     i        x     - x      i+1
+    //            i+p   i              i+p+1   i+1
     //
     //          |        |           |            |
     //          +--------+           +------------+
@@ -1142,10 +1142,10 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineFirstAndSecondDeriv(
   }
   else
   {
-    // piecewise constants get 0 derivatives 
+    // piecewise constants get 0 derivatives
     bsplineder=0;
   }
-  
+
   return;
 }
 

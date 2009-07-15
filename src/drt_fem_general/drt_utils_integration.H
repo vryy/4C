@@ -7,11 +7,11 @@
 -------------------------------------------------------------------------
                  BACI finite element library subsystem
             Copyright (2008) Technical University of Munich
-              
+
 Under terms of contract T004.008.000 there is a non-exclusive license for use
 of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
 
-This library is proprietary software. It must not be published, distributed, 
+This library is proprietary software. It must not be published, distributed,
 copied or altered in any form or any media without written permission
 of the copyright holder. It may be used under terms and conditions and of the
 above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
@@ -23,11 +23,11 @@ This library contains and makes use of software copyrighted by Sandia Corporatio
 and distributed under LGPL licence. Licensing does not apply to this or any
 other third party software used here.
 
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de) 
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
                    or
                    Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
 
-http://www.lnm.mw.tum.de                   
+http://www.lnm.mw.tum.de
 
 -------------------------------------------------------------------------
 </pre>
@@ -132,13 +132,13 @@ public:
     //! Standard constructor
     explicit IntegrationPoint(
             const Vec&       pos,
-            const double     weight) : 
+            const double     weight) :
                 position_(pos),
                 weight_(weight)
     {
         return;
     }
-    
+
     //! copy constructor
     explicit IntegrationPoint(
             const IntegrationPoint&     other) :
@@ -147,9 +147,9 @@ public:
     {
         return;
     }
-    
+
     ~IntegrationPoint();
-    
+
     //! return string representation of this class
     std::string toString() const
     {
@@ -157,20 +157,20 @@ public:
         s << "IntPoint, Position: " << position_ << ", weight: " << weight_;
         return s.str();
     }
-    
+
     //! get integration point position
     Vec Position() const { return position_; }
-    
+
     //! get integration point weight
     double Weight() const { return weight_; }
-    
+
 private:
     //! 1d, 2d or 3d position of integration point in element coordinates
     const Vec position_;
-    
+
     //! integration weight
     const double weight_;
-    
+
     //! Empty constructor
     explicit IntegrationPoint() :
                 position_(),
@@ -259,8 +259,8 @@ public:
 
 This class unifies the access of integration points and corresponding weights
 w.r.t. to the number of space dimensions.
-For each number of space dimensions (i.e., 1,2 and 3) a specialization of this class 
-is defined. This avoids performing a switch over the number of space dimensions 
+For each number of space dimensions (i.e., 1,2 and 3) a specialization of this class
+is defined. This avoids performing a switch over the number of space dimensions
 during runtime!
 The already existing structs IntegrationPoints3D,... are reused in the specializations
 in form of member variables of the class.

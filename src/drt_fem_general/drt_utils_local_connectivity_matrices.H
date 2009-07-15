@@ -7,11 +7,11 @@
 -------------------------------------------------------------------------
                  BACI finite element library subsystem
             Copyright (2008) Technical University of Munich
-              
+
 Under terms of contract T004.008.000 there is a non-exclusive license for use
 of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
 
-This library is proprietary software. It must not be published, distributed, 
+This library is proprietary software. It must not be published, distributed,
 copied or altered in any form or any media without written permission
 of the copyright holder. It may be used under terms and conditions and of the
 above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
@@ -23,11 +23,11 @@ This library contains and makes use of software copyrighted by Sandia Corporatio
 and distributed under LGPL licence. Licensing does not apply to this or any
 other third party software used here.
 
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de) 
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
                    or
                    Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
 
-http://www.lnm.mw.tum.de                   
+http://www.lnm.mw.tum.de
 
 -------------------------------------------------------------------------
 </pre>
@@ -178,7 +178,7 @@ namespace UTILS
   //!       (3) |       |
   //!           +   +   +  ^
   //!        ^ 3|   4   |5 |
-  //!        |  |       |   
+  //!        |  |       |
   //!           +---+---+
   //!          0    1    2
   //!            (0) -->
@@ -272,32 +272,32 @@ namespace UTILS
                                                                 { 0.0,  0.0} };
 
 
-  //! 6 Surfaces of a nurbs8 element with 4 control points per 
-  //! surface we apply the nurbs specific cartesian numbering, 
+  //! 6 Surfaces of a nurbs8 element with 4 control points per
+  //! surface we apply the nurbs specific cartesian numbering,
   //! only interpolated surfaces are valid!
   //!
   //! \verbatim
   //!                         v
   //!                        /
-  //!                       / 
-  //!          X-------------------X      
-  //!         /|6         /       /|7       
-  //!  w     / |         /       / |       
-  //!  ^    /  |        /       /  |       
-  //!  |   /   |               /   |     
-  //!  |  /    |              /    |       
-  //!  | /     |             /     |        
-  //!   /      |            /      |      
-  //!  X-------------------X       |       
-  //!  |4      |           |5      |      
-  //!  |       |           |       |      
-  //!  |       |           |       |         
-  //!  |       X-----------|-------X        
-  //!  |      / 2          |      / 3       
-  //!  |     /             |     /          
-  //!  |    /              |    /    
-  //!  |   /               |   /     
-  //!  |  /                |  / 
+  //!                       /
+  //!          X-------------------X
+  //!         /|6         /       /|7
+  //!  w     / |         /       / |
+  //!  ^    /  |        /       /  |
+  //!  |   /   |               /   |
+  //!  |  /    |              /    |
+  //!  | /     |             /     |
+  //!   /      |            /      |
+  //!  X-------------------X       |
+  //!  |4      |           |5      |
+  //!  |       |           |       |
+  //!  |       |           |       |
+  //!  |       X-----------|-------X
+  //!  |      / 2          |      / 3
+  //!  |     /             |     /
+  //!  |    /              |    /
+  //!  |   /               |   /
+  //!  |  /                |  /
   //!  | /                 | /
   //!  |/                  |/
   //!  X-------------------X ----->u
@@ -320,24 +320,24 @@ namespace UTILS
   //! \verbatim
   //!                          v
   //!                         /
-  //!                        / 
-  //!          X---------X---------X      
-  //!         /|24      /|25      /|26       
-  //!  w     / |       / |       / |       
-  //!  ^    /  |      /  |      /  |       
-  //!  |   X---------X---------X   |     
-  //!  |  /|21 |    /|22 |    /|23 |       
-  //!  | / |   X---/-|---X---/-|---X        
-  //!   /  |  /|15/  |  /|16/  |  /|17    
-  //!  X---------X---------X   | / |       
-  //!  |18 |/  | |19 |/  | |20 |/  |      
-  //!  |   X-----|---X-----|---X   |      
-  //!  |  /|12 | |  /|13 | |  /|14 |         
-  //!  | / |   X-|-/-|---X-|-/-|---X        
-  //!  |/  |  /6 |/  |  /7 |/  |  /8        
-  //!  X---------X---------X   | /          
-  //!  |9  |/    |10 |/    |11 |/    
-  //!  |   X-----|---X-----|---X     
+  //!                        /
+  //!          X---------X---------X
+  //!         /|24      /|25      /|26
+  //!  w     / |       / |       / |
+  //!  ^    /  |      /  |      /  |
+  //!  |   X---------X---------X   |
+  //!  |  /|21 |    /|22 |    /|23 |
+  //!  | / |   X---/-|---X---/-|---X
+  //!   /  |  /|15/  |  /|16/  |  /|17
+  //!  X---------X---------X   | / |
+  //!  |18 |/  | |19 |/  | |20 |/  |
+  //!  |   X-----|---X-----|---X   |
+  //!  |  /|12 | |  /|13 | |  /|14 |
+  //!  | / |   X-|-/-|---X-|-/-|---X
+  //!  |/  |  /6 |/  |  /7 |/  |  /8
+  //!  X---------X---------X   | /
+  //!  |9  |/    |10 |/    |11 |/
+  //!  |   X-----|---X-----|---X
   //!  |  /3     |  /4     |  /5
   //!  | /       | /       | /
   //!  |/        |/        |/
@@ -353,7 +353,7 @@ namespace UTILS
           { 6, 7, 8,15,16,17,24,25,26},
           { 2, 5, 8,11,14,17,20,23,26},
           { 0, 3, 6, 9,12,15,18,21,24}};
-  
+
   //! for each node the reference coordinates are stored for tri6
   const double eleNodeNumbering_tri6_nodes_reference[6][2] = { {0.0, 0.0},
                                                                {1.0, 0.0},
@@ -449,7 +449,7 @@ namespace UTILS
   template<> struct DisTypeToNumNodePerEle<DRT::Element::wedge15>  {static const int numNodePerElement = 15;};
   template<> struct DisTypeToNumNodePerEle<DRT::Element::pyramid5> {static const int numNodePerElement =  5;};
 
-  
+
   /*!
   \brief Returns the number of corner nodes
          for each discretization type
@@ -459,13 +459,13 @@ namespace UTILS
   int getNumberOfElementCornerNodes(
     const DRT::Element::DiscretizationType&     distype
     );
-    
-  
+
+
   /*!
   \brief  Returns the number of corner nodes
           for each surface element of a given volume discretization type
 
-  \return   number of corner nodes for each surface element of a given volume 
+  \return   number of corner nodes for each surface element of a given volume
              of the discretization type
    */
   std::vector<int> getNumberOfSurfaceElementCornerNodes(
