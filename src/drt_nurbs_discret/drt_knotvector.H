@@ -3,8 +3,8 @@
 
 \brief knot vectors for nurbs problems (isogeometric analysis)
 
-       the class is containing the data structures + some 
-       service functions (do we have interpolation, is it an 
+       the class is containing the data structures + some
+       service functions (do we have interpolation, is it an
        open knot vector or periodic, access methods etc)
 
        ParObject is implemented to be able to write the knotvector
@@ -41,7 +41,7 @@ namespace DRT
 
 namespace NURBS
 {
-  
+
 /*!
 \brief A class to manage a nurbs knotvector
 
@@ -63,7 +63,7 @@ public:
   Knotvector(int                  dim       ,
 	     int                  npatches  );
 
-  
+
   /*!
     \brief empty constructor
    */
@@ -75,57 +75,57 @@ public:
 
   /*!
       \brief copy constructor
-      
-      \param old const Knotvector (i)         
+
+      \param old const Knotvector (i)
   */
   Knotvector(const DRT::NURBS::Knotvector & old);
 
   //@}
 
-  //! @name Access methods for shapefunction 
+  //! @name Access methods for shapefunction
   //!       evaluation
 
   /*!
-      \brief convert an element gid to its 
+      \brief convert an element gid to its
              corresponding triple knot index
-      
+
       \param gid (i)
              given a global element id, this
 	     method will return the base indices
 	     of the elements 'local' knotspans
 
-      \param npatch (o)	     
-             The number of the patch this element 
+      \param npatch (o)	
+             The number of the patch this element
              belongs to.
 
       \param loc_cart_id (o)
-             patch local cartesian base indices 
+             patch local cartesian base indices
              for knotvectors, elements and control points
 
-      \note This method heavily relies on the 
+      \note This method heavily relies on the
             cartesian structure of the knotspan.
             We assume a element/control point numbering
 	    as follows:
-	    
+	
       \verbatim
-      
-            patch local cartesian element index: 
-	    
+
+            patch local cartesian element index:
+	
 	             (num_u,num_v,num_w)
 
 	    gid = patchoffset+num_u+num_v*nele                 (2d)
 
 	    gid = patchoffset+num_u+num_v*nele+num_w*nele*mele (3d)
-	    
+	
       \endverbatim
 
       \note Here, all elements in a patch are assumed to be
             numbered consecutively and patchoffset is the nuber
             of all elements from previous patches.
-	        
+	
 	    Example: Element gid=7, linear element, 2D, npatch 1
-	    
-                     domain size: nele=6,mele=2	    
+	
+                     domain size: nele=6,mele=2	
 
                      The numbers in the picture are control
 		     point gids
@@ -136,23 +136,23 @@ public:
                |
                   +----------------+
               24  | 25    26    27 |  28     29    30    31
-                  |                |       
+                  |                |
               16  | 17    18    19 |  20     21    22    23
-                  |                |       
+                  |                |
                8  |  9    10    11 |  12     13    14    15
-                  +----------------+       
+                  +----------------+
                0     1     2     3     4      5     6     7  ->
                                                               u
          will return (1,1)
 
       \endverbatim
 
-      The numbering of the control points, is assumed to be 
+      The numbering of the control points, is assumed to be
       accordingly.
 
   */
   void ConvertEleGidToKnotIds(
-    const int      gid        , 
+    const int      gid        ,
     int         &  npatch     ,
     vector<int> &  loc_cart_id);
 
@@ -160,35 +160,35 @@ public:
 /*!
       \brief convert an element local id + patch number to its corresponding gid
 
-      \param  npatch (i)	     
-              The number of the patch this element 
+      \param  npatch (i)	
+              The number of the patch this element
               belongs to.
 
       \param  loc_cart_id (i)
-              patch local cartesian base indices 
+              patch local cartesian base indices
               for knotvectors, elements and control points
 
       \return gid
               given the base indices of the elements 'local' knotspans and the id
-              of the local knotspan, i.e. the patch number, a global element id 
+              of the local knotspan, i.e. the patch number, a global element id
               will be returned
 
-             
-      \note This method heavily relies on the 
+
+      \note This method heavily relies on the
             cartesian structure of the knotspan.
             We assume a element/control point numbering
 	    as follows:
-	    
+	
       \verbatim
-      
-            patch local cartesian element index: 
-	    
+
+            patch local cartesian element index:
+	
 	             (num_u,num_v,num_w)
 
 	    gid = patchoffset+num_u+num_v*nele                 (2d)
 
 	    gid = patchoffset+num_u+num_v*nele+num_w*nele*mele (3d)
-	    
+	
       \endverbatim
 
       \note This is the inverse method to ConvertEleGidToKnotIds. See its docu
@@ -203,30 +203,30 @@ public:
   /*!
     \brief get element knot vectors to a given element id
 
-           This method will be called before any 
+           This method will be called before any
            shapefunction evaluation
 
     \param eleknots (o)
-           the element local knotvector to the 
-	   given a global element id 
-      
-    \param gid (i)
-           given a global element id 
+           the element local knotvector to the
+	   given a global element id
 
-    \note  This method heavily relies on the 
+    \param gid (i)
+           given a global element id
+
+    \note  This method heavily relies on the
            cartesian structure of the knotspan
-           and the consecutive order of elements/control 
+           and the consecutive order of elements/control
            points in the patches.
-	    
+	
 	   Example: Element gid=7, linear element, 2D
                     The numbers in the picture are control
 		    point gids (see above)
 
    \return bool zero_size
-           If the integration elements size in the knotspace 
+           If the integration elements size in the knotspace
            is zero, this value will be returned true (and
            otherwise false)
-           Zero sized elements are simply to be skipped during 
+           Zero sized elements are simply to be skipped during
            integration.
 
       \verbatim
@@ -244,7 +244,7 @@ public:
 
       eleknots[0]
 
-            |----|----|----|----|           
+            |----|----|----|----|
 
 
       eleknots[1]
@@ -263,7 +263,7 @@ public:
 
 
   /*
-    \brief extract element surface's knot vectors out of the 
+    \brief extract element surface's knot vectors out of the
            knot vector of the parent element. On the fly, get
            orientation of normal vector.
 
@@ -275,10 +275,10 @@ public:
 
     \return bool zero_size
 
-    If the integration elements size in the knotspace 
+    If the integration elements size in the knotspace
     is zero, this value will be returned true (and
     otherwise false)
-    Zero sized elements are simply to be skipped during 
+    Zero sized elements are simply to be skipped during
     integration
   */
 
@@ -305,7 +305,7 @@ public:
            the number of the patch this knotvector
 	   belongs to
     \param degree (i)
-           the degree of the bspline polynomial 
+           the degree of the bspline polynomial
 	   belonging to this knot vector
     \param numknots (i)
            the number knots that will be added here
@@ -317,10 +317,10 @@ public:
 
   */
   void SetKnots(
-    const int                     & direction        , 
-    const int                     & npatch           , 
-    const int                     & degree          , 
-    const int                     & numknots        , 
+    const int                     & direction        ,
+    const int                     & npatch           ,
+    const int                     & degree          ,
+    const int                     & numknots        ,
     const std::string             & knotvectortype   ,
     Teuchos::RCP<vector<double> >   directions_knots);
 
@@ -330,30 +330,30 @@ public:
 
   /*!
     \brief finish
-    
+
     counting the number of knots added, doing
     consistency checks for size and periodicity
 
-    Calculate offset arrays for patches for 
+    Calculate offset arrays for patches for
     access methods.
-    
+
     An unfinished knotvector can not be accessed!
 
     \param smallest_gid_in_dis (i)
            The gid of the first element to be stired in the offset array
-    
+
   */
   void FinishKnots(const int smallest_gid_in_dis);
 
   //@}
 
   //! @name Pack/Unpack for io --- implementation of ParObject's
-  //!       virtual classes 
+  //!       virtual classes
 
   /*!
   \brief Return unique ParObject id
 
-  every class implementing ParObject needs a unique id defined in the 
+  every class implementing ParObject needs a unique id defined in the
   ParObject header file
   */
   virtual int UniqueParObjectId() const { return ParObject_Knotvector;}
@@ -381,7 +381,7 @@ public:
   /*!
   \brief Return the degree of the nurbs patch
 
-      \param npatch (i)	     
+      \param npatch (i)	
              The number of the patch
 
   */
@@ -397,7 +397,7 @@ public:
   /*!
   \brief Return the knot sizes of the nurbs patch
 
-      \param npatch (i)	     
+      \param npatch (i)	
              The number of the patch
 
   */
@@ -415,18 +415,18 @@ public:
   \brief Return number of zero sized elements in each direction of
          knotspan of this patch
 
-         \return vector number of zero sized elements in knotspan of 
+         \return vector number of zero sized elements in knotspan of
                  this patch
   */
   virtual vector<int> Return_n_zerosize_ele(const int npatch);
 
 
   /*!
-  \brief Return the global id of the next nonzero sized element in 
+  \brief Return the global id of the next nonzero sized element in
          the knotspan
 
          This method is required for postprocessing only, where
-         we visualize dummy elements as a replacement for zero-sized 
+         we visualize dummy elements as a replacement for zero-sized
          elements (to maintain the connectivity and the cartesian
          knot-span structure)
 
@@ -438,7 +438,7 @@ public:
   /*!
   \brief Return the element sizes of the nurbs patch
 
-      \param npatch (i)	     
+      \param npatch (i)	
              The number of the patch
 
   */
@@ -468,9 +468,9 @@ public:
     };
 
   /*!
-    \brief Return the id of the patch containing the actual global 
+    \brief Return the id of the patch containing the actual global
          node
-         
+
     \param gid (i) global node id
 
     \return npatch  --- The number of the patch
@@ -480,7 +480,7 @@ public:
   {
     // gid is at least in patch 0 (or higher)
     int npatch=0;
-    
+
     for(int np=1;np<npatches_;++np)
     {
       // if this is true, gid is in this patch (or higher)
@@ -519,10 +519,10 @@ private:
   {
     knotvector_is_interpolating,
     knotvector_is_periodic     ,
-    knotvector_is_not_defined     
+    knotvector_is_not_defined
   };
 
-  //! dimension 
+  //! dimension
   int                                    dim_;
 
   //! number of patches
@@ -553,7 +553,7 @@ private:
 };
 
 } // namespace NURBS
-  
+
 } // namespace DRT
 
 #endif // KNOTVECTOR_H

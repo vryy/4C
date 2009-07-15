@@ -2,7 +2,7 @@
 \file drt_control_point.H
 
    This is basically a (3d-) node with an additional weight.
-   The weight is required for the evaluation of the nurbs 
+   The weight is required for the evaluation of the nurbs
    basis functions.
 
    note that X() is not the coordinate of some grid point
@@ -42,12 +42,12 @@ namespace NURBS
 \brief Control points for nurbs surfaces/volumes
 
 Control points are derived from nodes. For isogeometric
-analysis, they replace the nodes in the (nurbs) 
+analysis, they replace the nodes in the (nurbs)
 discretisation.
-They are connected to elements, have degrees of freedom 
+They are connected to elements, have degrees of freedom
 etc just like normal nodes (and hence the discretisation
 can handle them correctly), the only difference is that
-their coordinate is just a control point coordinate and 
+their coordinate is just a control point coordinate and
 not a mesh point coordinate.
 
 \author gammi (gamnitzer@lnm.mw.tum.de)
@@ -75,9 +75,9 @@ public:
   \param weight (in): nurbs weight
   \param owner  (in): Owner of this node.
   */
-  ControlPoint(int           id    , 
-	       const double* coords, 
-	       const double  weight, 
+  ControlPoint(int           id    ,
+	       const double* coords,
+	       const double  weight,
 	       const int     owner );
 
   /*!
@@ -86,12 +86,12 @@ public:
   Makes a deep copy of a control point
 
   \param old (in): The control point to copy
-  
+
   */
   ControlPoint(const DRT::NURBS::ControlPoint& old);
 
   /*!
-  \brief Deep copy the derived class and return 
+  \brief Deep copy the derived class and return
          pointer to it
 
   */
@@ -106,7 +106,7 @@ public:
   /*!
   \brief Return unique ParObject id
 
-  every class implementing ParObject needs a unique 
+  every class implementing ParObject needs a unique
   id defined at the top of drt_parobject.H.
 
   \return the parobject id
@@ -118,8 +118,8 @@ public:
 
   \ref Pack and \ref Unpack are used to communicate this CP
 
-  \param data (in/out): a char vector to pack the data into 
-  
+  \param data (in/out): a char vector to pack the data into
+
   */
   virtual void Pack(vector<char>& data) const;
 
@@ -128,7 +128,7 @@ public:
 
   \ref Pack and \ref Unpack are used to communicate this CP
 
-  \param data (in): a char vector to unpack the data from 
+  \param data (in): a char vector to unpack the data from
 
   */
   virtual void Unpack(const vector<char>& data);
@@ -141,7 +141,7 @@ public:
   \brief Return weight
 
   \return weight
-  
+
   */
   virtual inline double W() const { return w_; }
 

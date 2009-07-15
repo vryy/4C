@@ -32,17 +32,17 @@ namespace DRT
 
 */
 namespace NURBS
-{  
+{
 
 /*!
 \brief A class to manage a nurbs discretization in parallel
 
-       Up to now, it's only a standard discretisation 
+       Up to now, it's only a standard discretisation
        extendend by a knotvector.
 
-       The nodes are replaced by control points on 
+       The nodes are replaced by control points on
        construction/input; the control points are
-       derived from the node class and are hence 
+       derived from the node class and are hence
        managed by the original discretisation
 
 \author gammi (gamnitzer@lnm.mw.tum.de)
@@ -66,13 +66,13 @@ public:
   virtual ~NurbsDiscretization();
 
   /*!
-  \brief Set a knot vector 
+  \brief Set a knot vector
 
-  Store a the knot vector in the discretization. 
+  Store a the knot vector in the discretization.
   It can then be accessed with the GetKnotVector method.
 
   \note Knot vectors attached to the discretization have to be
-        completely redundant meaning that they are the same on 
+        completely redundant meaning that they are the same on
         each processor. I think its affordable.
 
   \param knots : The Knotvector class

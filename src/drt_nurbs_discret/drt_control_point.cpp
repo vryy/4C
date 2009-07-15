@@ -2,7 +2,7 @@
 \file drt_control_point.cpp
 
    This is basically a (3d-) node with an additional weight.
-   The weight is required for the evaluation of the nurbs 
+   The weight is required for the evaluation of the nurbs
    basis functions.
 
    note that X() is not the coordinate of some grid point

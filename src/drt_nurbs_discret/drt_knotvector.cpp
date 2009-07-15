@@ -56,15 +56,15 @@ DRT::NURBS::Knotvector::Knotvector(
   }
 
   // resize degrees
-  
+
   // loop patches, resize to dimension
   for(int rr=0;rr<npatches_;++rr)
   {
     (degree_[rr]).resize(dim_);
   }
 
-  // resize n_x_m_x_l, 
-  
+  // resize n_x_m_x_l,
+
   // loop patches, resize to dimension
   for(int rr=0;rr<npatches_;++rr)
   {
@@ -80,7 +80,7 @@ DRT::NURBS::Knotvector::Knotvector(
     {
       (interpolation_[rr])[mm]=knotvector_is_not_defined;
     }
-  }  
+  }
 
   // provide knot vectors for all patches and dimensions
   for(int rr=0;rr<npatches_;++rr)
@@ -162,10 +162,10 @@ void DRT::NURBS::Knotvector::ConvertEleGidToKnotIds(
     //         |              |       |       |
     //         +--------------+       +-------+
     //            inthislayer          uv_layer
-    int uv_layer   = 
+    int uv_layer   =
       (nele_x_mele_x_lele_[npatch])[0]
       *
-      (nele_x_mele_x_lele_[npatch])[1]; 
+      (nele_x_mele_x_lele_[npatch])[1];
 
     // compute num_w
     loc_cart_id[2]   = locid/uv_layer;
@@ -201,15 +201,15 @@ bool DRT::NURBS::Knotvector::GetEleKnots(
   vector<Epetra_SerialDenseVector> & eleknots,
   int                                gid
   )
-{  
+{
   //------------------------------------------------
-  // determine the segments knot values 
-  // --- remember, nurbs are a cartesian thing, 
-  // that means there is a matching between control 
+  // determine the segments knot values
+  // --- remember, nurbs are a cartesian thing,
+  // that means there is a matching between control
   // point ids and knot ids ....
 
-  // this is the number of knots associated with  
-  // this specific element: 
+  // this is the number of knots associated with
+  // this specific element:
   //
   //         +----------------+
   //         |                |
@@ -219,7 +219,7 @@ bool DRT::NURBS::Knotvector::GetEleKnots(
   //         |                |
   //         +----------------+
 
- 
+
   if(filled_==false)
   {
     dserror("cannot get ele knots when filled is false\n");
@@ -278,7 +278,7 @@ bool DRT::NURBS::Knotvector::GetBoundaryEleAndParentKnots(
     const int                               surfaceid
     )
 {
-  // get parent element local knotspan to extract the surface's knotspan 
+  // get parent element local knotspan to extract the surface's knotspan
   // from
   //
   // immediately, check for multiple knots indicating zero sized elements
@@ -291,9 +291,9 @@ bool DRT::NURBS::Knotvector::GetBoundaryEleAndParentKnots(
   {
     // check for nurbs27 elements to get numbering
     if((degree_[np])[0]==2
-       &&                
-       (degree_[np])[1]==2 
-       &&                
+       &&
+       (degree_[np])[1]==2
+       &&
        (degree_[np])[2]==2)
     {
       switch(surfaceid)
@@ -304,20 +304,20 @@ bool DRT::NURBS::Knotvector::GetBoundaryEleAndParentKnots(
         /*
                 parent               surface
 
-                 s|                    s|                    
-                  |                     |                    
-              +---+---+             +---+---+                
-	     6|  7|  8|      r     6|  7|  8|      r  
-              +   +-- +  -----      +   +-- +  -----  
-             3|  4   5|            3|  4   5|                
-              +---+---+             +---+---+                
-             0   1   2             0   1   2                 
+                 s|                    s|
+                  |                     |
+              +---+---+             +---+---+
+	     6|  7|  8|      r     6|  7|  8|      r
+              +   +-- +  -----      +   +-- +  -----
+             3|  4   5|            3|  4   5|
+              +---+---+             +---+---+
+             0   1   2             0   1   2
         */
         surfknots[0].Size(eleknots[0].Length());
         surfknots[1].Size(eleknots[1].Length());
         surfknots[0]=eleknots[0];
         surfknots[1]=eleknots[1];
-        
+
         normalfac=-1.0;
         break;
       }
@@ -327,14 +327,14 @@ bool DRT::NURBS::Knotvector::GetBoundaryEleAndParentKnots(
         /*
                 parent               surface
 
-                 s|                    s|                    
-                  |                     |                    
-              +---+---+             +---+---+                
-	    24| 25| 26|      r     6|  7|  8|      r  
-              +   +-- +  -----      +   +-- +  -----  
-            21| 22  23|            3|  4   5|                
-              +---+---+             +---+---+                
-            18  19  20             0   1   2                 
+                 s|                    s|
+                  |                     |
+              +---+---+             +---+---+
+	    24| 25| 26|      r     6|  7|  8|      r
+              +   +-- +  -----      +   +-- +  -----
+            21| 22  23|            3|  4   5|
+              +---+---+             +---+---+
+            18  19  20             0   1   2
         */
         surfknots[0].Size(eleknots[0].Length());
         surfknots[1].Size(eleknots[1].Length());
@@ -350,14 +350,14 @@ bool DRT::NURBS::Knotvector::GetBoundaryEleAndParentKnots(
         /*
                 parent               surface
 
-                 t|                    s|                    
-                  |                     |                    
-              +---+---+             +---+---+                
-	    18| 19| 20|      r     6|  7|  8|      r  
-              +   +-- +  -----      +   +-- +  -----  
-             9| 10  11|            3|  4   5|                
-              +---+---+             +---+---+                
-             0   1   2             0   1   2                 
+                 t|                    s|
+                  |                     |
+              +---+---+             +---+---+
+	    18| 19| 20|      r     6|  7|  8|      r
+              +   +-- +  -----      +   +-- +  -----
+             9| 10  11|            3|  4   5|
+              +---+---+             +---+---+
+             0   1   2             0   1   2
         */
         surfknots[0].Size(eleknots[0].Length());
         surfknots[1].Size(eleknots[2].Length());
@@ -373,14 +373,14 @@ bool DRT::NURBS::Knotvector::GetBoundaryEleAndParentKnots(
         /*
                 parent               surface
 
-                 t|                    s|                    
-                  |                     |                    
-              +---+---+             +---+---+                
- 	    24| 25| 26|    r       6|  7|  8|      r  
-              +   +-- + ----        +   +-- +  -----  
-            15| 16  17|            3|  4   5|                
-              +---+---+             +---+---+                
-             6   7   8             0   1   2                 
+                 t|                    s|
+                  |                     |
+              +---+---+             +---+---+
+ 	    24| 25| 26|    r       6|  7|  8|      r
+              +   +-- + ----        +   +-- +  -----
+            15| 16  17|            3|  4   5|
+              +---+---+             +---+---+
+             6   7   8             0   1   2
         */
         surfknots[0].Size(eleknots[0].Length());
         surfknots[1].Size(eleknots[2].Length());
@@ -396,14 +396,14 @@ bool DRT::NURBS::Knotvector::GetBoundaryEleAndParentKnots(
         /*
                 parent               surface
 
-                 t|                    s|                    
-                  |                     |                    
-              +---+---+             +---+---+                
-	    20| 23| 26|      s     6|  7|  8|      r  
-              +   +-- +  -----      +   +-- +  -----  
-            11| 14  17|            3|  4   5|                
-              +---+---+             +---+---+                
-             2   5   8             0   1   2                 
+                 t|                    s|
+                  |                     |
+              +---+---+             +---+---+
+	    20| 23| 26|      s     6|  7|  8|      r
+              +   +-- +  -----      +   +-- +  -----
+            11| 14  17|            3|  4   5|
+              +---+---+             +---+---+
+             2   5   8             0   1   2
         */
         surfknots[0].Size(eleknots[1].Length());
         surfknots[1].Size(eleknots[2].Length());
@@ -419,14 +419,14 @@ bool DRT::NURBS::Knotvector::GetBoundaryEleAndParentKnots(
         /*
                 parent               surface
 
-                 t|                    s|                    
-                  |                     |                    
-              +---+---+             +---+---+                
-	    18| 21| 24|      s     6|  7|  8|      r  
-              +   +-- +  -----      +   +-- +  -----  
-             9| 12  15|            3|  4   5|                
-              +---+---+             +---+---+                
-             0   3   6             0   1   2                 
+                 t|                    s|
+                  |                     |
+              +---+---+             +---+---+
+	    18| 21| 24|      s     6|  7|  8|      r
+              +   +-- +  -----      +   +-- +  -----
+             9| 12  15|            3|  4   5|
+              +---+---+             +---+---+
+             0   3   6             0   1   2
         */
         surfknots[0].Size(eleknots[1].Length());
         surfknots[1].Size(eleknots[2].Length());
@@ -449,7 +449,7 @@ bool DRT::NURBS::Knotvector::GetBoundaryEleAndParentKnots(
   {
     // check for nurbs9 elements to apply numbering
     if((degree_[np])[0]==2
-       &&                
+       &&
        (degree_[np])[1]==2)
     {
       switch(surfaceid)
@@ -459,16 +459,16 @@ bool DRT::NURBS::Knotvector::GetBoundaryEleAndParentKnots(
         // s=-1
         /*
 
-                parent                line  
+                parent                line
 
                              r                     r
-              +---+---+  -----      +---+---+ ------         
-             0   1   2             0   1   2                 
+              +---+---+  -----      +---+---+ ------
+             0   1   2             0   1   2
 
         */
         surfknots[0].Size(eleknots[0].Length());
         surfknots[0]=eleknots[0];
-        
+
         normalfac= 1.0;
         break;
       }
@@ -478,14 +478,14 @@ bool DRT::NURBS::Knotvector::GetBoundaryEleAndParentKnots(
         /*
                 parent               surface
 
-                 s|                        r|                    
-                  |                         |                    
-                      +                     +                
-	             8|                    2|         
-                      +                     +         
-                     5|                    1|                
-                      +                     +                
-                     2                     0                 
+                 s|                        r|
+                  |                         |
+                      +                     +
+	             8|                    2|
+                      +                     +
+                     5|                    1|
+                      +                     +
+                     2                     0
         */
         surfknots[0].Size(eleknots[1].Length());
         surfknots[0]=eleknots[1];
@@ -498,7 +498,7 @@ bool DRT::NURBS::Knotvector::GetBoundaryEleAndParentKnots(
         // s=+1
         /*
 
-                parent                line  
+                parent                line
 
                              r                           r
               +---+---+  -----             +---+---+ -----
@@ -517,14 +517,14 @@ bool DRT::NURBS::Knotvector::GetBoundaryEleAndParentKnots(
         /*
                 parent               surface
 
-                 s|                        r|                    
-                  |                         |                    
-               +                            +                
-	      6|                           2|         
-               +                            +         
-              3|                           1|                
-               +                            +                
-              0                            0                 
+                 s|                        r|
+                  |                         |
+               +                            +
+	      6|                           2|
+               +                            +
+              3|                           1|
+               +                            +
+              0                            0
         */
 
         surfknots[0].Size(eleknots[1].Length());
@@ -555,10 +555,10 @@ bool DRT::NURBS::Knotvector::GetBoundaryEleAndParentKnots(
  | set knots in one direction                       (public) gammi 05/08|
  *----------------------------------------------------------------------*/
 void DRT::NURBS::Knotvector::SetKnots(
-  const int                     & direction       , 
-  const int                     & npatch          , 
-  const int                     & degree          , 
-  const int                     & numknots        , 
+  const int                     & direction       ,
+  const int                     & npatch          ,
+  const int                     & degree          ,
+  const int                     & numknots        ,
   const std::string             & knotvectortype  ,
   Teuchos::RCP<vector<double> >   directions_knots)
 {
@@ -604,7 +604,7 @@ void DRT::NURBS::Knotvector::SetKnots(
 
 /*----------------------------------------------------------------------*
  | finish                                           (public) gammi 05/08|
- *----------------------------------------------------------------------*/ 
+ *----------------------------------------------------------------------*/
 void DRT::NURBS::Knotvector::FinishKnots(const int smallest_gid_in_dis)
 {
   //--------------------------------------------------
@@ -656,7 +656,7 @@ void DRT::NURBS::Knotvector::FinishKnots(const int smallest_gid_in_dis)
     }
   }
 
-  // do we have a knotvector for each dimension 
+  // do we have a knotvector for each dimension
   // and each patch?
   if((int)knot_values_.size()!=npatches_)
   {
@@ -688,7 +688,7 @@ void DRT::NURBS::Knotvector::FinishKnots(const int smallest_gid_in_dis)
 		(*((knot_values_[np])[rr])).size(),
 		(n_x_m_x_l_[np])[rr]);
       }
-    
+
       // is interpolation/periodicity assigned correctly?
       if((interpolation_[np])[rr]==knotvector_is_not_defined)
       {
@@ -705,9 +705,9 @@ void DRT::NURBS::Knotvector::FinishKnots(const int smallest_gid_in_dis)
 	{
 	  double db =
 	    abs((*((knot_values_[np])[rr]))[                       mm]-firstval);
-	  double de = 
+	  double de =
 	    abs((*((knot_values_[np])[rr]))[(n_x_m_x_l_[np])[rr]-1-mm]-lastval );
-	  
+	
 	  if(de>1e-9||db>1e-9)
 	  {
 	    dserror("need multiple knots at the beginning and end of an interpolated knotvector\n");
@@ -716,19 +716,19 @@ void DRT::NURBS::Knotvector::FinishKnots(const int smallest_gid_in_dis)
       }
       else if((interpolation_[np])[rr]==knotvector_is_periodic)
       {
-	// for periodic knot vectors, distances between the 
+	// for periodic knot vectors, distances between the
 	// degree+1 first and last nodes have to be equal
 	for(int mm=1;mm<(degree_[np])[rr]+1;++mm)
 	{
-	  double db = 
+	  double db =
 	    (*((knot_values_[np])[rr]))[mm  ]
 	    -
 	    (*((knot_values_[np])[rr]))[mm-1];
-	  double de = 
+	  double de =
 	    (*((knot_values_[np])[rr]))[(n_x_m_x_l_[np])[rr]  -mm]
 	    -
 	    (*((knot_values_[np])[rr]))[(n_x_m_x_l_[np])[rr]-1-mm];
-	  
+	
 	  if(abs(de-db)>1e-9)
 	  {
 	    dserror("periodic knotvector doesn't obey periodicity\n");
@@ -788,7 +788,7 @@ void DRT::NURBS::Knotvector::Pack(vector<char>& data) const
   // add dimension
   AddtoPack(data,dim_);
 
-  // add degree vector  
+  // add degree vector
   for(int np=0;np<npatches_;++np)
   {
     AddtoPack(data,degree_[np]);
@@ -852,7 +852,7 @@ void DRT::NURBS::Knotvector::Unpack(const vector<char>& data)
   // extract dimension
   ExtractfromPack(position,data,dim_);
 
-  // resize all vectors 
+  // resize all vectors
   degree_            .resize(npatches_);
   n_x_m_x_l_         .resize(npatches_);
   nele_x_mele_x_lele_.resize(npatches_);
@@ -867,8 +867,8 @@ void DRT::NURBS::Knotvector::Unpack(const vector<char>& data)
     (interpolation_     [np]).resize(dim_);
     (knot_values_       [np]).resize(dim_);
   }
-  
-  // extract degree vector 
+
+  // extract degree vector
   for(int np=0;np<npatches_;++np)
   {
     ExtractfromPack(position,data,degree_[np]);
@@ -879,7 +879,7 @@ void DRT::NURBS::Knotvector::Unpack(const vector<char>& data)
   {
     ExtractfromPack(position,data,n_x_m_x_l_[np]);
   }
-    
+
   // extract element numbers in all cartesian
   // directions
   for(int np=0;np<npatches_;++np)
@@ -898,7 +898,7 @@ void DRT::NURBS::Knotvector::Unpack(const vector<char>& data)
 
   // extract patch offsets
   ExtractfromPack(position,data,offsets_);
-  
+
   // extract knotvector coordinates itself
   for(int np=0;np<npatches_;++np)
   {
@@ -907,7 +907,7 @@ void DRT::NURBS::Knotvector::Unpack(const vector<char>& data)
       (knot_values_[np])[rr]
 	=
 	Teuchos::rcp(new vector<double>((n_x_m_x_l_[np])[rr]));
-    
+
       ExtractfromPack(position,data,(*((knot_values_[np])[rr])));
     }
   }
@@ -928,7 +928,7 @@ vector<int> DRT::NURBS::Knotvector::Return_n_zerosize_ele(const int npatch)
   }
 
   vector<int> num_zero_sized(dim_);
-  
+
   switch(dim_)
   {
   case 1:
@@ -938,7 +938,7 @@ vector<int> DRT::NURBS::Knotvector::Return_n_zerosize_ele(const int npatch)
       double size=1.0;
 
       size*=(*(knot_values_[npatch])[0])[rr+1]-(*(knot_values_[npatch])[0])[rr];
-          
+
       if(fabs(size)<1e-12)
       {
         ++(num_zero_sized[0]);
@@ -962,7 +962,7 @@ vector<int> DRT::NURBS::Knotvector::Return_n_zerosize_ele(const int npatch)
     {
 
       size=(*(knot_values_[npatch])[1])[mm+1]-(*(knot_values_[npatch])[1])[mm];
-          
+
       if(fabs(size)<1e-12)
       {
         ++(num_zero_sized[1]);
@@ -985,7 +985,7 @@ vector<int> DRT::NURBS::Knotvector::Return_n_zerosize_ele(const int npatch)
     for(int mm=(degree_[npatch])[1];mm<(n_x_m_x_l_[npatch])[1]-(degree_[npatch])[1]-1;++mm)
     {
       size=(*(knot_values_[npatch])[1])[mm+1]-(*(knot_values_[npatch])[1])[mm];
-          
+
       if(fabs(size)<1e-12)
       {
         ++(num_zero_sized[1]);
@@ -995,7 +995,7 @@ vector<int> DRT::NURBS::Knotvector::Return_n_zerosize_ele(const int npatch)
     for(int kk=(degree_[npatch])[2];kk<(n_x_m_x_l_[npatch])[2]-(degree_[npatch])[2]-1;++kk)
     {
       size=(*(knot_values_[npatch])[2])[kk+1]-(*(knot_values_[npatch])[2])[kk];
-          
+
       if(fabs(size)<1e-12)
       {
         ++(num_zero_sized[2]);
@@ -1004,7 +1004,7 @@ vector<int> DRT::NURBS::Knotvector::Return_n_zerosize_ele(const int npatch)
     }
     break;
   }
-  default: 
+  default:
     dserror("implemented only for 1,2 and 3 dimensions\n");
   }
 
@@ -1033,7 +1033,7 @@ int DRT::NURBS::Knotvector::Return_next_nonzero_ele_gid(
   {
     int location;
     location=zero_ele_cart_id[dir]+degree_[npatch][dir];
-    
+
     double size=0.0;
     while(fabs(size)<1e-12)
     {
@@ -1048,7 +1048,7 @@ int DRT::NURBS::Knotvector::Return_next_nonzero_ele_gid(
     nonzero_ele_cart_id[dir]=zero_ele_cart_id[dir]+count[dir];
   }
   int nextnonzero_gid=ConvertEleKnotIdsToGid(npatch,nonzero_ele_cart_id);
-  
+
   return(nextnonzero_gid);
 } // DRT::NURBS::Knotvector::Return_next_nonzero_ele_gid
 
@@ -1073,8 +1073,8 @@ int DRT::NURBS::Knotvector::ConvertEleKnotIdsToGid(
   {
     //   gid = num_u+num_v*nele                     (1d)
     //         |              |
-    //         +--------------+ 
-    //            inthislayer   
+    //         +--------------+
+    //            inthislayer
     gid  = loc_cart_id[0];
     gid += offsets_[npatch];
 
@@ -1084,8 +1084,8 @@ int DRT::NURBS::Knotvector::ConvertEleKnotIdsToGid(
   {
     //   gid = num_u+num_v*nele                     (2d)
     //         |              |
-    //         +--------------+ 
-    //            inthislayer   
+    //         +--------------+
+    //            inthislayer
     gid  = loc_cart_id[1]*nele_x_mele_x_lele_[npatch][0];
     gid += loc_cart_id[0];
     gid += offsets_[npatch];
@@ -1106,7 +1106,7 @@ int DRT::NURBS::Knotvector::ConvertEleKnotIdsToGid(
 
     break;
   }
-  default: 
+  default:
     dserror("implemented only for 1,2 and 3 dimensions\n");
   }
 

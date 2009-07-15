@@ -19,12 +19,12 @@ Maintainer: Peter Gamnitzer
  |  ctor (public)                                            gammi 05/08|
  *----------------------------------------------------------------------*/
 DRT::NURBS::NurbsDiscretization::NurbsDiscretization(
-  const string             name, 
-  RefCountPtr<Epetra_Comm> comm) 
+  const string             name,
+  RefCountPtr<Epetra_Comm> comm)
   :
   DRT::Discretization::Discretization(name,comm    ),
   npatches_                          (            0),
-  knots_                             (Teuchos::null)  
+  knots_                             (Teuchos::null)
 {
   return;
 }
@@ -42,7 +42,7 @@ DRT::NURBS::NurbsDiscretization::~NurbsDiscretization()
 /*----------------------------------------------------------------------*
  |  add a knotvector to the discretization (public)          gammi 05/08|
  *----------------------------------------------------------------------*/
-void 
+void
 DRT::NURBS::NurbsDiscretization::SetKnotVector
 (RefCountPtr<DRT::NURBS::Knotvector> knots)
 {
@@ -54,7 +54,7 @@ DRT::NURBS::NurbsDiscretization::SetKnotVector
  |  get a pointer to knotvector from the discretization         (public)|
  |                                                           gammi 05/08|
  *----------------------------------------------------------------------*/
-RefCountPtr<DRT::NURBS::Knotvector> 
+RefCountPtr<DRT::NURBS::Knotvector>
 DRT::NURBS::NurbsDiscretization::GetKnotVector
 ()
 {

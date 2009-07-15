@@ -2,15 +2,15 @@
 /*!
 \file drt_apply_nurbs_initial_condition.H
 
-\brief A service method allowing the application of initial conditions 
+\brief A service method allowing the application of initial conditions
        for nurbs discretisations.
 
-Since nurbs shape functions are not interpolating, it is not as 
+Since nurbs shape functions are not interpolating, it is not as
 straightforward to apply initial conditions to the degrees of freedom.
 (dofs are always associated with control points, i.e. the location
 associated with the 'node'=control point is not the physical location
-and the value at the control point is not the prescribed value at this 
-position since dofs associated with neighbouring control points influence 
+and the value at the control point is not the prescribed value at this
+position since dofs associated with neighbouring control points influence
 the function value as well)
 
 
@@ -43,7 +43,7 @@ namespace NURBS
 {
 /*----------------------------------------------------------------------*/
 /*!
-\brief A service method allowing the application of initial conditions 
+\brief A service method allowing the application of initial conditions
        for nurbs discretisations.
 
 This method provides the following:
@@ -67,16 +67,16 @@ This is equivalent to the solution of the following linear system:
 
 <pre>
 
-         /                         \               /                         \                  
-        |    /                      |             |    /                      |        
- +----+ |   |                       |             |   |                       |        
-  \     |   |                       |    dim      |   |            dim        |  
-   +    |   | N   (x) * N   (x) dx  | * u     =   |   | N   (x) * u   (x) dx  |  
-  /     |   |  cp        cp         |    cp       |   |  cp        0          | 
- +----+ |   |    j         i        |      j      |   |    j                  | 
-   cp   |  /                        |             |  /                        |        
-     j   \                         /               \                         /         
-       
+         /                         \               /                         \
+        |    /                      |             |    /                      |
+ +----+ |   |                       |             |   |                       |
+  \     |   |                       |    dim      |   |            dim        |
+   +    |   | N   (x) * N   (x) dx  | * u     =   |   | N   (x) * u   (x) dx  |
+  /     |   |  cp        cp         |    cp       |   |  cp        0          |
+ +----+ |   |    j         i        |      j      |   |    j                  |
+   cp   |  /                        |             |  /                        |
+     j   \                         /               \                         /
+
         |                           |             |                           |
         +---------------------------+             +---------------------------+
 
@@ -88,7 +88,7 @@ This is equivalent to the solution of the following linear system:
 \param dis         (i) the discretisation
 \param solver      (i) a solver object for the least-squares problem
 \param ndim        (i) problem dimension
-\param startfuncno (i) the number of the startfunction defining 
+\param startfuncno (i) the number of the startfunction defining
                        the initial field (i.e. u_0(x))
 \param initialvals (o) the initial field on output (i.e. u_cp)
 

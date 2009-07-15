@@ -2,7 +2,7 @@
 /*!
 \file drt_apply_nurbs_initial_condition.cpp
 
-\brief A service method allowing the application of initial conditions 
+\brief A service method allowing the application of initial conditions
        for nurbs discretisations.
 <pre>
 Maintainer: Peter Gamnitzer
@@ -17,7 +17,7 @@ Maintainer: Peter Gamnitzer
 
 /*----------------------------------------------------------------------*/
 /*!
-   A service method allowing the application of initial conditions 
+   A service method allowing the application of initial conditions
                     for nurbs discretisations.
 */
 /*----------------------------------------------------------------------*/
@@ -42,7 +42,7 @@ void DRT::NURBS::apply_nurbs_initial_condition(
 
   // get the knotvector from nurbs discretisation
   RefCountPtr<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
-  
+
   // get the processor ID from the communicator
   const int myrank  = dis.Comm().MyPID();
 
@@ -60,7 +60,7 @@ void DRT::NURBS::apply_nurbs_initial_condition(
   const Epetra_Map* dofrowmap = dis.DofRowMap();
 
   // -------------------------------------------------------------------
-  // create empty mass matrix 
+  // create empty mass matrix
   // -------------------------------------------------------------------
   Teuchos::RCP<LINALG::SparseMatrix> massmatrix
     = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,false,true));
@@ -85,7 +85,7 @@ void DRT::NURBS::apply_nurbs_initial_condition(
     // define element matrices and vectors
     Epetra_SerialDenseMatrix elemass;
     Epetra_SerialDenseVector elerhs;
-  
+
     vector<int> lm;
     vector<int> lmowner;
 
@@ -134,14 +134,14 @@ void DRT::NURBS::apply_nurbs_initial_condition(
         const DRT::Element::DiscretizationType distype = actele->Shape();
         switch (distype)
         {
-        case DRT::Element::nurbs4: 
-        case DRT::Element::nurbs9: 
+        case DRT::Element::nurbs4:
+        case DRT::Element::nurbs9:
         {
           spacedim=2;
           break;
         }
-        case DRT::Element::nurbs8: 
-        case DRT::Element::nurbs27: 
+        case DRT::Element::nurbs8:
+        case DRT::Element::nurbs27:
         {
           spacedim=3;
           break;
@@ -149,7 +149,7 @@ void DRT::NURBS::apply_nurbs_initial_condition(
         default:
           dserror("this method is designed for usage with NurbsDiscretization only");
         }
-         
+
         // set element data
         const int iel = actele->NumNode();
 
@@ -167,26 +167,26 @@ void DRT::NURBS::apply_nurbs_initial_condition(
             xyze(dim,inode)=x[dim];
           }
         }
-        
+
         // aquire weights from nodes
         Epetra_SerialDenseVector weights(iel);
-        
+
         for (int inode=0; inode<iel; ++inode)
         {
           DRT::NURBS::ControlPoint* cp
             =
             dynamic_cast<DRT::NURBS::ControlPoint* > (nodes[inode]);
-          
+
           weights(inode) = cp->W();
         }
 
         // access elements knot span
         std::vector<Epetra_SerialDenseVector> eleknots(spacedim);
-        
+
         bool zero_size = false;
         zero_size = knots->GetEleKnots(eleknots,actele->Id());
-        
-        // nothing to be done for a zero sized element 
+
+        // nothing to be done for a zero sized element
         if(zero_size)
         {
           continue;
@@ -199,7 +199,7 @@ void DRT::NURBS::apply_nurbs_initial_condition(
         Epetra_SerialDenseVector  position(spacedim);
         Epetra_SerialDenseVector  initialval(spacedim);
 
-        // depending on the spatial dimension, we need a different 
+        // depending on the spatial dimension, we need a different
         // integration scheme
         switch(spacedim)
         {
@@ -212,7 +212,7 @@ void DRT::NURBS::apply_nurbs_initial_condition(
           {
             // set gauss point coordinates
             for(int rr=0;rr<spacedim;++rr)
-            {            
+            {
               gp(rr)=intpoints.qxg[iquad][rr];
             }
 
@@ -272,8 +272,8 @@ void DRT::NURBS::apply_nurbs_initial_condition(
             // get real physical coordinates of integration point
             /*
             //              +-----
-            //               \               
-            //    pos (x) =   +      N (x) * x  
+            //               \
+            //    pos (x) =   +      N (x) * x
             //               /        j       j
             //              +-----
             //              node j
@@ -286,7 +286,7 @@ void DRT::NURBS::apply_nurbs_initial_condition(
                 position(rr)+=funct(mm)*xyze(rr,mm);
               }
             }
-            
+
             for(int rr=0;rr<spacedim;++rr)
             {
               initialval(rr)=DRT::UTILS::FunctionManager::Instance().Funct(startfuncno-1).Evaluate(rr,position.Values(),0.0,NULL);
@@ -301,7 +301,7 @@ void DRT::NURBS::apply_nurbs_initial_condition(
 
             // set total integration factor
             double fac = intpoints.qwgt[iquad]*det;
-    
+
             for (int vi=0; vi<iel; ++vi) // loop rows  (test functions)
             {
               const int fvi=dofblock*vi;
@@ -309,7 +309,7 @@ void DRT::NURBS::apply_nurbs_initial_condition(
               for (int ui=0; ui<iel; ++ui) // loop columns  (test functions)
               {
                 const int fui=dofblock*ui;
-  
+
                 const double diag=fac*funct(ui)*funct(vi);
 
                 for(int rr=0;rr<dofblock;++rr)
@@ -334,7 +334,7 @@ void DRT::NURBS::apply_nurbs_initial_condition(
           {
             // set gauss point coordinates
             for(int rr=0;rr<spacedim;++rr)
-            {            
+            {
               gp(rr)=intpoints.qxg[iquad][rr];
             }
 
@@ -389,7 +389,7 @@ void DRT::NURBS::apply_nurbs_initial_condition(
             }
 
             // The determinant ist computed using Sarrus's rule
-            const double det = 
+            const double det =
               xjm(0,0)*xjm(1,1)*xjm(2,2)+xjm(2,0)*xjm(0,1)*xjm(1,2)+
               xjm(0,2)*(xjm(1,0)*xjm(2,1)-xjm(2,0)*xjm(1,1))-
               xjm(2,1)*xjm(0,0)*xjm(1,2)-xjm(0,1)*xjm(1,0)*xjm(2,2);
@@ -398,8 +398,8 @@ void DRT::NURBS::apply_nurbs_initial_condition(
             // get real physical coordinates of integration point
             /*
             //              +-----
-            //               \               
-            //    pos (x) =   +      N (x) * x  
+            //               \
+            //    pos (x) =   +      N (x) * x
             //               /        j       j
             //              +-----
             //              node j
@@ -412,7 +412,7 @@ void DRT::NURBS::apply_nurbs_initial_condition(
                 position(rr)+=funct(mm)*xyze(rr,mm);
               }
             }
-            
+
             for(int rr=0;rr<spacedim;++rr)
             {
               initialval(rr)=DRT::UTILS::FunctionManager::Instance().Funct(startfuncno-1).Evaluate(rr,position.Values(),0.0,NULL);
@@ -426,7 +426,7 @@ void DRT::NURBS::apply_nurbs_initial_condition(
 
             // set total integration factor
             double fac = intpoints.qwgt[iquad]*det;
-    
+
             for (int vi=0; vi<iel; ++vi) // loop rows  (test functions)
             {
               const int fvi=dofblock*vi;
@@ -434,7 +434,7 @@ void DRT::NURBS::apply_nurbs_initial_condition(
               for (int ui=0; ui<iel; ++ui) // loop columns  (test functions)
               {
                 const int fui=dofblock*ui;
-  
+
                 const double diag=fac*funct(ui)*funct(vi);
 
                 for(int rr=0;rr<dofblock;++rr)
@@ -477,11 +477,11 @@ void DRT::NURBS::apply_nurbs_initial_condition(
   // -------------------------------------------------------------------
   // solve system
   // -------------------------------------------------------------------
-  
+
   // always refactor and reset the matrix before a single new solver call
   bool refactor=true;
   bool reset   =true;
-  
+
   initialvals->PutScalar(0.0);
 
   solver.Solve(massmatrix->EpetraOperator(),
@@ -489,7 +489,7 @@ void DRT::NURBS::apply_nurbs_initial_condition(
                rhs                         ,
                refactor                    ,
                reset                       );
-  
+
 
   if(myrank==0)
   {
