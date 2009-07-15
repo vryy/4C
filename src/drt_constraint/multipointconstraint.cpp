@@ -40,7 +40,7 @@ UTILS::MPConstraint::MPConstraint(RCP<DRT::Discretization> discr,
     minID,
     maxID
   )
-{  
+{
   return;
 }
 
@@ -54,7 +54,7 @@ UTILS::MPConstraint::MPConstraint(RCP<DRT::Discretization> discr,
     discr,
     conditionname
   )
-{  
+{
   return;
 }
 

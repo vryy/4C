@@ -72,11 +72,11 @@ void UTILS::ConstraintSolver::Setup
 )
 {
   solver_ = rcp(&solver,false);
-  // this exception handler is not the nicest thing, 
-  // but the original (and verified) input 
-  // parameter list is copied to another parameter list in case of 
-  // the StruGenAlpha time integrator object (and apparently other time 
-  // integrators). This is actually done in dyn_nlnstructural_drt(). 
+  // this exception handler is not the nicest thing,
+  // but the original (and verified) input
+  // parameter list is copied to another parameter list in case of
+  // the StruGenAlpha time integrator object (and apparently other time
+  // integrators). This is actually done in dyn_nlnstructural_drt().
   // The approach in StruTimIntImpl (and thus StruTimIntGenAlpha)
   // is not to change the parameter list after input nor to copy
   // them to new lists. This copy mechanism does not improve the
@@ -125,7 +125,7 @@ void UTILS::ConstraintSolver::Setup
   uzawaparam_ = params.get<double>("UZAWAPARAM", 1);
   minparam_ = uzawaparam_*1E-3;
   uzawatol_ = params.get<double>("UZAWATOL", 1E-8);
-  
+
 
   counter_ = 0;
   return;
@@ -160,7 +160,7 @@ void UTILS::ConstraintSolver::Solve
   }
   return;
 }
-  
+
 /*----------------------------------------------------------------------*
 |(public)                                                               |
 |Solve linear constrained system by iterative Uzawa algorithm           |
@@ -174,7 +174,7 @@ void UTILS::ConstraintSolver::SolveIterative
   const RCP<Epetra_Vector> rhsstand,
   const RCP<Epetra_Vector> rhsconstr
 )
-{ 
+{
   const int myrank=(actdisc_->Comm().MyPID());
   // For every iteration step an uzawa algorithm is used to solve the linear system.
   //Preparation of uzawa method to solve the linear system.
@@ -189,7 +189,7 @@ void UTILS::ConstraintSolver::SolveIterative
   int count_paramadapt = 1;
 
   const double computol = 1E-8;
-  
+
   RCP<Epetra_Vector> constrTLagrInc = rcp(new Epetra_Vector(rhsstand->Map()));
   RCP<Epetra_Vector> constrTDispInc = rcp(new Epetra_Vector(rhsconstr->Map()));
 
@@ -200,29 +200,29 @@ void UTILS::ConstraintSolver::SolveIterative
 
   RCP<Epetra_Vector> zeros = rcp(new Epetra_Vector(rhsstand->Map(),true));
   RCP<Epetra_Vector> dirichzeros = dbcmaps_->ExtractCondVector(zeros);
-  
+
   // Compute residual of the uzawa algorithm
   RCP<Epetra_Vector> fresmcopy=rcp(new Epetra_Vector(*rhsstand));
   Epetra_Vector uzawa_res(*fresmcopy);
   (*stiff).Multiply(false,*dispinc,uzawa_res);
   uzawa_res.Update(1.0,*fresmcopy,-1.0);
-  
-  // blank residual DOFs which are on Dirichlet BC 
+
+  // blank residual DOFs which are on Dirichlet BC
   dbcmaps_->InsertCondVector(dirichzeros, Teuchos::rcp(&uzawa_res,false));
-  
+
   uzawa_res.Norm2(&norm_uzawa);
   Epetra_Vector constr_res(lagrinc->Map());
-  
+
   constr_res.Update(1.0,*(rhsconstr),0.0);
   constr_res.Norm2(&norm_constr_uzawa);
   quotient =1;
   //Solve one iteration step with augmented lagrange
   //Since we calculate displacement norm as well, at least one step has to be taken
-  while (((norm_uzawa > uzawatol_ or norm_constr_uzawa > uzawatol_) and numiter_uzawa < maxIter_) 
+  while (((norm_uzawa > uzawatol_ or norm_constr_uzawa > uzawatol_) and numiter_uzawa < maxIter_)
       or numiter_uzawa < minstep)
   {
     LINALG::ApplyDirichlettoSystem(stiff,dispinc,fresmcopy,zeros,*(dbcmaps_->CondMap()));
-    
+
 #if 0
     const double cond_number = LINALG::Condest(static_cast<LINALG::SparseMatrix&>(*stiff),Ifpack_GMRES, 1000);
     // computation of significant digits might be completely bogus, so don't take it serious
@@ -231,7 +231,7 @@ void UTILS::ConstraintSolver::SolveIterative
     if (!myrank)
       cout << " cond est: " << scientific << cond_number << ", max.sign.digits: " << sign_digits;
 #endif
-    
+
     // solve for disi
     // Solve K . IncD = -R  ===>  IncD_{n+1}
     if (isadapttol_ && counter_ && numiter_uzawa)
@@ -247,10 +247,10 @@ void UTILS::ConstraintSolver::SolveIterative
     constrTDispInc->PutScalar(0.0);
     constr->Multiply(true,*dispinc,*constrTDispInc) ;
     lagrinc->Update(uzawaparam_,*constrTDispInc,uzawaparam_,*rhsconstr,1.0);
-    
+
     //Compute residual of the uzawa algorithm
     constr->Multiply(false,*lagrinc,*constrTLagrInc);
-    
+
     fresmcopy->Update(-1.0,*constrTLagrInc,1.0,*rhsstand,0.0);
     Epetra_Vector uzawa_res(*fresmcopy);
     (*stiff).Multiply(false,*dispinc,uzawa_res);
@@ -278,7 +278,7 @@ void UTILS::ConstraintSolver::SolveIterative
           uzawaparam_ = uzawaparam_/2.;
         quotient=1;
       }
-      else 
+      else
       {
         // In case the newly computed quotient is better than the one obtained from the
         // previous parameter, the parameter is increased by a factor (1+quotient_new)
@@ -289,14 +289,14 @@ void UTILS::ConstraintSolver::SolveIterative
         }
         // In case the newly computed quotient is worse than the one obtained from the
         // previous parameter, the parameter is decreased by a factor 1/(1+quotient_new)
-        else 
+        else
         {
           if (uzawaparam_>2.*minparam_)
             uzawaparam_=uzawaparam_/(1.+quotient_new);
           quotient=quotient_new;
         }
       }
-      
+
       if (uzawaparam_<=minparam_)
       {
         if (!myrank)
@@ -309,7 +309,7 @@ void UTILS::ConstraintSolver::SolveIterative
     count_paramadapt++;
     numiter_uzawa++;
   } //Uzawa loop
-  
+
   if (!myrank)
   {
      cout<<"Uzawa steps "<<numiter_uzawa<<", Uzawa parameter: "<< uzawaparam_;
@@ -333,16 +333,16 @@ void UTILS::ConstraintSolver::SolveDirect
   const RCP<Epetra_Vector> rhsconstr
 )
 {
-  
+
   // define maps of standard dofs and additional lagrange multipliers
   RCP<Epetra_Map> standrowmap = rcp(new Epetra_Map(stiff->RowMap()));
   RCP<Epetra_Map> conrowmap = rcp(new Epetra_Map(constr->DomainMap()));
   // merge maps to one large map
   RCP<Epetra_Map> mergedmap = LINALG::MergeMap(standrowmap,conrowmap,false);
-  
+
   // define MapExtractor
   LINALG::MapExtractor mapext(*mergedmap,standrowmap,conrowmap);
-  
+
   // initialize large Sparse Matrix and Epetra_Vectors
   RCP<LINALG::SparseMatrix> mergedmatrix = rcp(new LINALG::SparseMatrix(*mergedmap,mergedmap->NumMyElements()));
   RCP<Epetra_Vector> mergedrhs = rcp(new Epetra_Vector(*mergedmap));
@@ -353,7 +353,7 @@ void UTILS::ConstraintSolver::SolveDirect
   // dirichtoggle_ changed and we need to rebuild associated DBC maps
   if (dirichtoggle_ != Teuchos::null)
     dbcmaps_ = LINALG::ConvertDirichletToggleVectorToMaps(dirichtoggle_);
-  
+
   // fill merged matrix using Add
   mergedmatrix -> Add(*stiff,false,1.0,1.0);
   mergedmatrix -> Add(*constr,false,1.0,1.0);
@@ -367,7 +367,7 @@ void UTILS::ConstraintSolver::SolveDirect
 
   // apply dirichlet boundary conditions
   LINALG::ApplyDirichlettoSystem(mergedmatrix,mergedsol,mergedrhs,mergedzeros,*(dbcmaps_->CondMap()));
-  
+
 #if 0
     const int myrank=(actdisc_->Comm().MyPID());
     const double cond_number = LINALG::Condest(static_cast<LINALG::SparseMatrix&>(*mergedmatrix),Ifpack_GMRES, 100);
@@ -377,7 +377,7 @@ void UTILS::ConstraintSolver::SolveDirect
     if (!myrank)
       cout << " cond est: " << scientific << cond_number << ", max.sign.digits: " << sign_digits<<endl;
 #endif
-  
+
   // solve
   solver_->Solve(mergedmatrix->EpetraMatrix(),mergedsol,mergedrhs,true,counter_==0);
   solver_->ResetTolerance();
@@ -385,7 +385,7 @@ void UTILS::ConstraintSolver::SolveDirect
   // store results in smaller vectors
   mapext.ExtractCondVector(mergedsol,dispinc);
   mapext.ExtractOtherVector(mergedsol,lagrinc);
-  
+
   counter_++;
   return;
 }

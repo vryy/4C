@@ -35,7 +35,7 @@ namespace UTILS
 {
   /*!
   \brief Class containing uzawa algorithm to solve linear system.
-  
+
   \author Kloeppel (kloeppel@lnm.mw.tum.de)
   */
   class ConstraintSolver
@@ -45,7 +45,7 @@ namespace UTILS
 
 
     /*!
-    \brief Constructor 
+    \brief Constructor
     */
     ConstraintSolver
     (
@@ -128,11 +128,11 @@ private:
       direct, ///< solve directly
       iterative  ///< solve iteratively with Uzawa algorithm
     };
-  
+
     // do not want = operator, cctor
     ConstraintSolver operator = (const ConstraintSolver& old);
     ConstraintSolver(const ConstraintSolver& old);
-    
+
     /*!
       \brief Solve linear system using uzawa algorithm to deal with zero entries on the diagonal;
     */
@@ -145,7 +145,7 @@ private:
       const RCP<Epetra_Vector> rhsstandard,  ///< standard right hand side
       const RCP<Epetra_Vector> rhsconstr     ///< constraint errors
     );
-    
+
     /*!
       \brief Solve linear system directly by assembling everything into one big matrix
     */
@@ -158,7 +158,7 @@ private:
       const RCP<Epetra_Vector> rhsstandard,  ///< standard right hand side
       const RCP<Epetra_Vector> rhsconstr     ///< constraint errors
     );
-    
+
     RCP<DRT::Discretization> actdisc_; ///<standard discretization
     int maxIter_;  ///< number of maximal iterations
     double uzawaparam_; ///< parameter for Uzawa algorithm
@@ -175,7 +175,7 @@ private:
     RCP<LINALG::Solver> solver_; ///< solver for linear standard linear system
     int counter_;  ///< counts how often #Solve is called
     algorithm algo_;  ///< the algorithm to use
-    
+
 
   }; //class
 }

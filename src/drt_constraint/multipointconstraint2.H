@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file multipointconstraint2.H
 
-\brief Basic constraint class, dealing with multi point constraints 
+\brief Basic constraint class, dealing with multi point constraints
 
 <pre>
 Maintainer: Thomas Kloeppel
@@ -24,63 +24,63 @@ using namespace Teuchos;
 namespace UTILS
 {
   /*!
-  \brief This class can handle twodimensional multi point constraints. It is derived from the basic constraint class 
+  \brief This class can handle twodimensional multi point constraints. It is derived from the basic constraint class
   and reimplements the evaluate routine.
-  
+
   \author Kloeppel (kloeppel@lnm.mw.tum.de)
   */
   class MPConstraint2 : public MPConstraint
   {
   public:
-  
+
     /*!
     \brief Standard Constructor
-    */  
+    */
     MPConstraint2
     (
       RCP<DRT::Discretization> discr,  ///< Discretization constraint lives on
       const string& CondName, ///< Name of condition to creat constraint from
       int& minID,  ///< minimum constraint or monitor ID so far
-      int& maxID  ///< maximum constraint or monitor ID so far   
-    );  
-  
+      int& maxID  ///< maximum constraint or monitor ID so far
+    );
+
     /// initialization routine called by the manager ctor to get correct reference base values and activating the right conditions at the beginning
     void Initialize
     (
       ParameterList&        params,  ///< parameter list to communicate between elements and discretization
       RCP<Epetra_Vector>    systemvector  ///< distributed vector that may be filled by assembly of element contributions
     );
-    
+
     /// initialization routine called at restart to activate the right conditions
     void Initialize
     (
       const double& time  ///< current time
     );
-    
-    //! Evaluate routine to call from outside. In here the right action is determined and the #EvaluateConstraint routine is called 
+
+    //! Evaluate routine to call from outside. In here the right action is determined and the #EvaluateConstraint routine is called
     void Evaluate
-    ( 
+    (
       ParameterList&  params,  ///< parameter list to communicate between elements and discretization
       RCP<LINALG::SparseMatrix> systemmatrix1, ///< sparse matrix that may be filled by assembly of element contributions
       RCP<LINALG::SparseMatrix> systemmatrix2, ///< sparse (rectangular) matrix that may be filled by assembly of element contributions
       RCP<Epetra_Vector> systemvector1, ///< distributed vector that may be filled by assembly of element contributions
       RCP<Epetra_Vector> systemvector2, ///< distributed vector that may be filled by assembly of element contributions
       RCP<Epetra_Vector> systemvector3  ///< distributed vector that may be filled by assembly of element contributions
-    ); 
-  
+    );
+
   private:
-      
+
     // don't want = operator, cctor
     MPConstraint2 operator = (const MPConstraint2& old);
     MPConstraint2(const MPConstraint2& old);
-  
+
     //!Private Member Functions
-      
+
     //! Return the ConstrType based on the condition name
     ConstrType GetConstrType(const string& Name);///<condition name
-    
+
     //! Evaluate constraint discretization and assemble the results
-    void EvaluateConstraint( 
+    void EvaluateConstraint(
         RCP<DRT::Discretization> disc,  ///< discretization to evaluate
         ParameterList&        params,  ///< parameter list to communicate between elements and discretization
         RCP<LINALG::SparseMatrix> systemmatrix1, ///< sparse matrix that may be filled by assembly of element contributions
@@ -88,24 +88,24 @@ namespace UTILS
         RCP<Epetra_Vector>    systemvector1, ///< distributed vector that may be filled by assembly of element contributions
         RCP<Epetra_Vector>    systemvector2, ///< distributed vector that may be filled by assembly of element contributions
         RCP<Epetra_Vector>    systemvector3); ///< distributed vector that may be filled by assembly of element contributions
-    
-    
+
+
     //! creating a new discretization based on conditions containing constraint elements
     map<int,RCP<DRT::Discretization> > CreateDiscretizationFromCondition
     (
       RCP<DRT::Discretization> actdisc,
-      vector< DRT::Condition* >      constrcond, ///< conditions as discretization basis  
+      vector< DRT::Condition* >      constrcond, ///< conditions as discretization basis
       const string&             discret_name, ///< name of new discretization
       const string&             element_name, ///< name of element type to create
       int& startID
     );
-     
-    //! Reorder MPC nodes based on condition input 
+
+    //! Reorder MPC nodes based on condition input
     void ReorderConstraintNodes(
          vector<int>& nodeids,  ///< reordered node ids
          const DRT::Condition* condname); ///< condition to deal with
-    
-  
+
+
   }; //class
 }
 #endif /*MPCONSTRAINT_H*/

@@ -55,10 +55,10 @@ public:
 
   /*!
   \brief Standard Constructor
-  
+
   */
   ConstraintElement2(
-    int id,  ///< A unique global id 
+    int id,  ///< A unique global id
     int owner ///< element owner
   );
 
@@ -133,7 +133,7 @@ public:
   separately.
   */
   virtual int NumDofPerNode(const DRT::Node& node) const {return 2;}
- 
+
   /*!
   \brief Get number of degrees of freedom per element
          (implements pure virtual DRT::Element)
@@ -193,7 +193,7 @@ public:
     Epetra_SerialDenseVector& elevec1,  ///< third matrix to be filled by element
     Epetra_SerialDenseVector& elevec2,  ///< first vector to be filled by element
     Epetra_SerialDenseVector& elevec3  ///< second vector to be filled by element
-  );  
+  );
 
 
   /*!
@@ -228,11 +228,11 @@ private:
 
   //! vector of surfaces of this element (length 1)
   vector<DRT::Element*>                           surface_;
-  
+
   // don't want = operator
   ConstraintElement2& operator = (const ConstraintElement2& old);
-  
- 
+
+
   /*!
   \brief Create matrix with material configuration for 2 dimensions and 3 nodes
   */
@@ -245,19 +245,19 @@ private:
     const int numdim=2;
     for (int i=0; i<numnode; ++i)
     {
-      for (int j = 0; j < numdim; ++j) 
+      for (int j = 0; j < numdim; ++j)
       {
         x(i,j) = Nodes()[i]->X()[j];
       }
     }
     return;
   }
-  
+
   /*!
   \brief Create matrix with spatial configuration for 2 dimensions and 3 nodes
   */
   inline void SpatialConfiguration
-  (   
+  (
     LINALG::Matrix<3,2>& x, ///< nodal coords in spatial frame
     const vector<double> disp  ///< displacements
   ) const
@@ -266,14 +266,14 @@ private:
       const int numdim = 2;
       for (int i=0; i<numnode; ++i)
       {
-        for (int j = 0; j < numdim; ++j) 
+        for (int j = 0; j < numdim; ++j)
         {
           x(i,j) = Nodes()[i]->X()[j] + disp[i*numdim+j];
         }
       }
       return;
   }
-  
+
 
   /// compute normal for 2D case using the first two nodes to specify a line
   void ComputeNormal
@@ -281,14 +281,14 @@ private:
     const LINALG::Matrix<3,2>& xc,  ///< nodal coords in spatial frame
     LINALG::Matrix<2,1>& elenormal  ///< resulting element normal
   );
-  
+
   /// Compute normal distance between line and third node
   double ComputeNormalDist
   (
     const LINALG::Matrix<3,2>& xc,  ///< nodal coords in spatial frame
     const LINALG::Matrix<2,1>& elenormal  ///< element normal
   );
-  
+
   /// Compute first derivatives of normal distance with respect to the nodal displacements
   void ComputeFirstDerivDist
   (
@@ -296,7 +296,7 @@ private:
     Epetra_SerialDenseVector& elevector,  ///< vector to store results into
     const LINALG::Matrix<2,1>& elenormal  ///< element normal
   );
-  
+
   /// Compute second derivatives of normal distance with respect to the nodal displacements
   void ComputeSecondDerivDist
   (
@@ -305,19 +305,19 @@ private:
     const LINALG::Matrix<2,1>& elenormal  ///< element normal
   );
 
-  /// Compute angle at second node 
+  /// Compute angle at second node
   double ComputeAngle
   (
     const LINALG::Matrix<3,2>& xc  ///< nodal coords in spatial frame
   );
-  
+
   /// Compute first derivatives of angle at second node with respect to the nodal displacements
   void ComputeFirstDerivAngle
   (
     const LINALG::Matrix<3,2>& xc,  ///< nodal coords in spatial frame
     Epetra_SerialDenseVector& elevector  ///< vector to store results into
   );
-  
+
   /// Compute second derivatives of angle at second node with respect to the nodal displacements
   void ComputeSecondDerivAngle
   (

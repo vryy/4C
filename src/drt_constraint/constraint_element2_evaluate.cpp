@@ -176,7 +176,7 @@ double DRT::ELEMENTS::ConstraintElement2::ComputeAngle
 void DRT::ELEMENTS::ConstraintElement2::ComputeFirstDerivDist
 (
   const LINALG::Matrix<3,2>& xc,
-  Epetra_SerialDenseVector& elevector, 
+  Epetra_SerialDenseVector& elevector,
   const LINALG::Matrix<2,1>& normal
 )
 {

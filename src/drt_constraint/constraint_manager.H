@@ -39,13 +39,13 @@ namespace UTILS
 {
   /*!
   \brief Class controlling constraints and containing the necessary data
-  
+
   \author Kloeppel (kloeppel@lnm.mw.tum.de)
   */
   class ConstrManager
   {
   public:
-  
+
     /*!
       \brief Constructor of constraint manager, allocating the constraints
     */
@@ -57,13 +57,13 @@ namespace UTILS
     );
     /*!
         \brief Destructor
-  
+
      */
     ~ConstrManager()
     {
         return;
     };
-  
+
     /*!
       \brief Change stiffness matrix and force vector according to the constraints.
       Values of lagrange multiplier are taken from intern variable.
@@ -78,7 +78,7 @@ namespace UTILS
       RCP<LINALG::SparseMatrix> stiff,  ///< stiffness matrix
       ParameterList scalelist
     );
-  
+
     /*!
      \brief Return norm of difference between actual and constraint values
     */
@@ -88,7 +88,7 @@ namespace UTILS
       constrainterr_->Norm2(&foo);
       return foo;
     };
-  
+
     /*!
          \brief Return number of constraints
     */
@@ -96,7 +96,7 @@ namespace UTILS
     {
         return numConstrID_;
     };
-  
+
     /*!
      \brief Scale all lagrange multipliers by a double d
     */
@@ -108,12 +108,12 @@ namespace UTILS
         lagrMultVec_->Scale(d);
         return;
     };
-  
+
     /*!
          \brief Update constraint variables
     */
     void Update();
-      
+
     /*!
          \brief Update lagrange multiplier \f$\lambda_{n+1}=\lambda_{n}+factor*\f$(volerr)
     */
@@ -121,22 +121,22 @@ namespace UTILS
     (
       double factor
     );
-    
-    /// Add a vector to the vector of lagrange multipliers 
+
+    /// Add a vector to the vector of lagrange multipliers
     void UpdateLagrMult
     (
       RCP<Epetra_Vector> vect  ///< vector to add
     );
-  
+
     /*!
          \brief Compute difference between current and prescribed values at a given time and a given displacement
     */
     void ComputeError
     (
       double time,   ///< time, at which the error is to compute at
-      RCP<Epetra_Vector> disp  ///< displacement vector at the given time  
+      RCP<Epetra_Vector> disp  ///< displacement vector at the given time
     );
-  
+
     /*!
          \brief Return differences between prescribed and actual value of constraint number i
     */
@@ -147,13 +147,13 @@ namespace UTILS
     {
         return (*constrainterr_)[i];
     }
-  
+
     /// return vector of differences between prescribed and actual values
     RCP<Epetra_Vector> GetError() const
     {
       return constrainterr_;
     }
-  
+
     /*!
      \brief Return EpetraMap that determined distribution of constraints and lagrange
      multiplier over processors
@@ -162,24 +162,24 @@ namespace UTILS
     {
       return constrmap_;
     };
-  
+
     //! Return the additional rectangular matrix, constructed for lagrange multiplier evaluation
     RCP<LINALG::SparseMatrix> GetConstrMatrix() const
     {
       return constrMatrix_;
     };
-  
+
     /*!
       \brief Return lagrange multiplier for constraint i
     */
-    double GetLagrMult 
+    double GetLagrMult
     (
       int i ///< ID of constraint of interest
     ) const
     {
       return (*lagrMultVec_)[i];
     };
-  
+
     /*!
       \brief Return lagrange multiplier vector
     */
@@ -187,7 +187,7 @@ namespace UTILS
     {
       return lagrMultVec_;
     };
-    
+
     /*!
       \brief Return lagrange multiplier of last converged step
     */
@@ -195,7 +195,7 @@ namespace UTILS
     {
       return lagrMultVecOld_;
     };
-  
+
     /*!
      \brief Return if there are constraints
     */
@@ -203,7 +203,7 @@ namespace UTILS
     {
         return haveconstraint_;
     };
-    
+
     /*!
        \brief Return if there are monitors
     */
@@ -211,9 +211,9 @@ namespace UTILS
     {
         return havemonitor_;
     };
-  
+
     /*!
-     \brief Return current value 
+     \brief Return current value
     */
     double GetCurrValue
     (
@@ -222,12 +222,12 @@ namespace UTILS
     {
         return (*actvalues_)[i];
     };
-  
+
     /*!
          \brief Print out the values of current monitor values
      */
     void PrintMonitorValues() const;
-  
+
     /*!
        \brief Compute values described by a monitor boundary condition
     */
@@ -235,14 +235,14 @@ namespace UTILS
     (
       RCP<Epetra_Vector> disp ///< current displacement
     );
-    
+
     /// Reset reference base values for restart computations
     void SetRefBaseValues
     (
       RCP<Epetra_Vector> newrefvals,  ///< new reference base values
       const double& time   ///< current time
     );
-    
+
     /// Reset lagrange multipliers
     void SetLagrMultVector
     (
@@ -253,23 +253,23 @@ namespace UTILS
       lagrMultVecOld_->Update(1.0,*newlagrmult,0.0);
       return;
     }
-    
+
     /// Return Reference base values to write restart
     RCP<Epetra_Vector> GetRefBaseValues() const
     {
       return refbasevalues_;
     }
-    
+
   private:
-  
+
     // don't want = operator, cctor and destructor
     ConstrManager operator = (const ConstrManager& old);
     ConstrManager(const ConstrManager& old);
-    
+
     ///Build Monitor type Vector
     void BuildMoniType();
-  
-    RCP<DRT::Discretization> actdisc_; ///< discretization, elements to constraint live in 
+
+    RCP<DRT::Discretization> actdisc_; ///< discretization, elements to constraint live in
     RCP<ConstraintDofSet> constrdofset_; ///< degrees of freedom of lagrange multipliers
     RCP<Epetra_Map> constrmap_;  ///< unique map of constraint values
     RCP<Epetra_Map> redconstrmap_;   ///< fully redundant map of constraint values
@@ -278,7 +278,7 @@ namespace UTILS
     RCP<Epetra_Map> redmonmap_;  ///< fully redundant map of monitor values
     RCP<Epetra_Export> monimpo_;  ///< importer for fully redundant monitor vector into distributed one
     RCP<Epetra_Vector> referencevalues_;  ///< reference at current time step to constrain values to
-    RCP<Epetra_Vector> refbasevalues_;   ///< reference base values at activation time of constrained structures 
+    RCP<Epetra_Vector> refbasevalues_;   ///< reference base values at activation time of constrained structures
     RCP<Epetra_Vector> actvalues_;   ///< current values of constrained structures
     RCP<Epetra_Vector> constrainterr_;   ///< vector with deflection between reference and current values
     RCP<Epetra_Vector> monitorvalues_;  ///< current values of monitored structures
@@ -291,22 +291,22 @@ namespace UTILS
     RCP<Epetra_Vector> fact_;  ///< vector with current time curve values
     RCP<Epetra_Vector> lagrMultVec_;  ///< lagrange multipliers
     RCP<Epetra_Vector> lagrMultVecOld_;  ///< lagrange multipliers
-    RCP<LINALG::SparseMatrix> constrMatrix_;  ///< additional rectangular matrix 
+    RCP<LINALG::SparseMatrix> constrMatrix_;  ///< additional rectangular matrix
     bool haveconstraint_;  ///< are there constraints at all?
     bool havemonitor_;  ///< are there monitor conditions?
-    double uzawaparam_;  ///< parameter of Uzawa algorithm (only for the case the linear uzawa is not used) 
-    
-    RCP<Constraint> volconstr3d_;  ///< 3d volume constraints defined on surfaces 
+    double uzawaparam_;  ///< parameter of Uzawa algorithm (only for the case the linear uzawa is not used)
+
+    RCP<Constraint> volconstr3d_;  ///< 3d volume constraints defined on surfaces
     RCP<Constraint> areaconstr3d_;  ///< 3d area constraints defined on surfaces
     RCP<Constraint> areaconstr2d_;  ///< 2d area constraints defined on lines
     RCP<MPConstraint3> mpconplane3d_;  ///< 3d multipoint constraint prescribing the motion of a node relatively to a plane
     RCP<MPConstraint3> mpcnormcomp3d_;  ///< 3d multipoint constraint prescribing the motion of a node to a plane masternode
     RCP<MPConstraint2> mpconline2d_; ///< 2d multipoint constraint prescribing the motion of a node relatively to a straight line
-  
+
     RCP<Monitor> volmonitor3d_; ///< 3d volume monitors defined on surfaces
     RCP<Monitor> areamonitor3d_;  ///< 3d area monitors defined on surfaces
     RCP<Monitor> areamonitor2d_;  ///< 2d area monitors defined on lines
-    
+
   }; //class
 }
 #endif /*CONSTRAINTMANAGER_H*/

@@ -44,7 +44,7 @@ actdisc_(discr)
       {
         offsetID=condID;
       }
-      
+
       vector<double> myinittime=*(constrcond_[i]->Get<vector<double> >("activTime"));
       if (myinittime.size())
       {
@@ -61,7 +61,7 @@ actdisc_(discr)
   else
   {
     constrtype_=none;
-  }  
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -94,7 +94,7 @@ actdisc_(discr)
   else
   {
     constrtype_=none;
-  }  
+  }
 }
 
 /*-----------------------------------------------------------------------*
@@ -128,7 +128,7 @@ void UTILS::Constraint::Initialize(
   // choose action
   switch (constrtype_)
   {
-    case volconstr3d: 
+    case volconstr3d:
       params.set("action","calc_struct_constrvol");
     break;
     case areaconstr3d:
@@ -142,7 +142,7 @@ void UTILS::Constraint::Initialize(
     default:
       dserror("Unknown constraint/monitor type to be evaluated in Constraint class!");
   }
-  // start computing 
+  // start computing
   InitializeConstraint(params,systemvector3);
   return;
 }
@@ -162,9 +162,9 @@ void UTILS::Constraint::Initialize
 
     // Get ConditionID of current condition if defined and write value in parameterlist
     int condID=cond.GetInt("ConditionID");
-   
-    // if current time (at) is larger than activation time of the condition, activate it 
-    if((inittimes_.find(condID)->second<=time) && (activecons_.find(condID)->second==false)) 
+
+    // if current time (at) is larger than activation time of the condition, activate it
+    if((inittimes_.find(condID)->second<=time) && (activecons_.find(condID)->second==false))
     {
       activecons_.find(condID)->second=true;
       if (actdisc_->Comm().MyPID()==0)
@@ -189,7 +189,7 @@ void UTILS::Constraint::Evaluate(
 {
   switch (constrtype_)
   {
-    case volconstr3d: 
+    case volconstr3d:
       params.set("action","calc_struct_volconstrstiff");
     break;
     case areaconstr3d:
@@ -199,7 +199,7 @@ void UTILS::Constraint::Evaluate(
       params.set("action","calc_struct_areaconstrstiff");
     break;
     case none:
-      return;  
+      return;
     default:
       dserror("Wrong constraint type to evaluate systemvector!");
   }
@@ -219,7 +219,7 @@ void UTILS::Constraint::EvaluateConstraint(
     RCP<Epetra_Vector>    systemvector1,
     RCP<Epetra_Vector>    systemvector2,
     RCP<Epetra_Vector>    systemvector3)
-{  
+{
   if (!(actdisc_->Filled())) dserror("FillComplete() was not called");
   if (!actdisc_->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
   // get the current time
@@ -237,22 +237,22 @@ void UTILS::Constraint::EvaluateConstraint(
   for (unsigned int i = 0; i < constrcond_.size(); ++i)
   {
     DRT::Condition& cond = *(constrcond_[i]);
-    
-    // get values from time integrator to scale matrices with 
+
+    // get values from time integrator to scale matrices with
     double scStiff = params.get("scaleStiffEntries",1.0);
     double scConMat = params.get("scaleConstrMat",1.0);
 
     // Get ConditionID of current condition if defined and write value in parameterlist
     int condID=cond.GetInt("ConditionID");
     params.set("ConditionID",condID);
-    
+
     // is conditions supposed to be active?
     if(inittimes_.find(condID)->second<=time)
     {
       // is conditions already labeled as active?
       if(activecons_.find(condID)->second==false)
       {
-        const string action = params.get<string>("action"); 
+        const string action = params.get<string>("action");
         RCP<Epetra_Vector> displast=params.get<RCP<Epetra_Vector> >("old disp");
         actdisc_->SetState("displacement",displast);
         Initialize(params,systemvector2);
@@ -260,7 +260,7 @@ void UTILS::Constraint::EvaluateConstraint(
         actdisc_->SetState("displacement",disp);
         params.set("action",action);
       }
-      
+
       // Evaluate loadcurve if defined. Put current load factor in parameterlist
       const vector<int>*    curve  = cond.Get<vector<int> >("curve");
       int curvenum = -1;
@@ -268,21 +268,21 @@ void UTILS::Constraint::EvaluateConstraint(
       double curvefac = 1.0;
       if (curvenum>=0 )
         curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
-      
+
       // global and local ID of this bc in the redundant vectors
       const int offsetID = params.get<int>("OffsetID");
       int gindex = condID-offsetID;
       const int lindex = (systemvector3->Map()).LID(gindex);
-      
+
       // store loadcurve values
       RCP<Epetra_Vector> timefact = params.get<RCP<Epetra_Vector> >("vector curve factors");
       timefact->ReplaceGlobalValues(1,&curvefac,&gindex);
-      
-      // Get the current lagrange multiplier value for this condition  
+
+      // Get the current lagrange multiplier value for this condition
       const RCP<Epetra_Vector> lagramul = params.get<RCP<Epetra_Vector> >("LagrMultVector");
       const double lagraval = (*lagramul)[lindex];
-      
-      // elements might need condition 
+
+      // elements might need condition
       params.set<RefCountPtr<DRT::Condition> >("condition", rcp(&cond,false));
 
       // define element matrices and vectors
@@ -321,8 +321,8 @@ void UTILS::Constraint::EvaluateConstraint(
 
         // assembly
         int eid = curr->second->Id();
-        if (assemblemat1) 
-        { 
+        if (assemblemat1)
+        {
           // scale with time integrator dependent value
           elematrix1.Scale(scStiff*lagraval);
           systemmatrix1->Assemble(eid,elematrix1,lm,lmowner);
@@ -336,7 +336,7 @@ void UTILS::Constraint::EvaluateConstraint(
           elevector2.Scale(scConMat);
           systemmatrix2->Assemble(eid,elevector2,lm,lmowner,colvec);
         }
-        if (assemblevec1) 
+        if (assemblevec1)
         {
           elevector1.Scale(lagraval);
           LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
@@ -377,19 +377,19 @@ void UTILS::Constraint::InitializeConstraint(
 
     int condID=cond.GetInt("ConditionID");
     params.set("ConditionID",condID);
-    
+
     // if current time is larger than initialization time of the condition, start computing
     if((inittimes_.find(condID)->second<=time) && (!(activecons_.find(condID)->second)))
     {
       params.set<RefCountPtr<DRT::Condition> >("condition", rcp(&cond,false));
-  
+
       // define element matrices and vectors
       Epetra_SerialDenseMatrix elematrix1;
       Epetra_SerialDenseMatrix elematrix2;
       Epetra_SerialDenseVector elevector1;
       Epetra_SerialDenseVector elevector2;
       Epetra_SerialDenseVector elevector3;
-  
+
       map<int,RefCountPtr<DRT::Element> >& geom = cond.Geometry();
       // no check for empty geometry here since in parallel computations
       // can exist processors which do not own a portion of the elements belonging
@@ -401,18 +401,18 @@ void UTILS::Constraint::InitializeConstraint(
         vector<int> lm;
         vector<int> lmowner;
         curr->second->LocationVector(*actdisc_,lm,lmowner);
-  
+
         // get dimension of element matrices and vectors
         // Reshape element matrices and vectors and init to zero
         elevector3.Size(1);
-  
+
         // call the element specific evaluate method
         int err = curr->second->Evaluate(params,*actdisc_,lm,elematrix1,elematrix2,
                                          elevector1,elevector2,elevector3);
         if (err) dserror("error while evaluating elements");
-  
+
         // assembly
-          
+
         vector<int> constrlm;
         vector<int> constrowner;
         int offsetID = params.get<int> ("OffsetID");
@@ -428,7 +428,7 @@ void UTILS::Constraint::InitializeConstraint(
         cout << "Encountered a new active condition (Id = " << condID << ")  at time t = "<< time << endl;
       }
     }
-    
+
   }
   return;
 } // end of Initialize Constraint

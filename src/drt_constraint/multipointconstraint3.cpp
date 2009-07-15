@@ -40,7 +40,7 @@ MPConstraint
   discr,
   conditionname
 )
-{ 
+{
   if (constrcond_.size())
   {
     maxID++;
@@ -55,15 +55,15 @@ MPConstraint
       else
       {
         const string* type = (*conditer)-> Get<string>("control");
-        if (*type == "abs")  
+        if (*type == "abs")
           absconstraint_[condID]=true;
-        else 
+        else
           absconstraint_[condID]=false;
       }
     }
-    
+
     constraintdis_=CreateDiscretizationFromCondition(actdisc_,constrcond_,"ConstrDisc","CONSTRELE3",maxID);
-    
+
     map<int, RCP<DRT::Discretization> > ::iterator discriter;
     for (discriter=constraintdis_.begin(); discriter!=constraintdis_.end(); discriter++)
     {
@@ -73,7 +73,7 @@ MPConstraint
       RCP<DRT::DofSet> newdofset=rcp(new MPCDofSet(actdisc_));
       (discriter->second)->ReplaceDofSet(newdofset);
       newdofset=null;
-      (discriter->second)->FillComplete(); 
+      (discriter->second)->FillComplete();
     }
   }
 
@@ -95,10 +95,10 @@ void UTILS::MPConstraint3::Initialize
 
     // Get ConditionID of current condition if defined and write value in parameterlist
     int condID=cond.GetInt("ConditionID");
-   
-    // if current time (at) is larger than activation time of the condition, activate it 
+
+    // if current time (at) is larger than activation time of the condition, activate it
     if((inittimes_.find(condID)->second < time) && (!activecons_.find(condID)->second))
-    {     
+    {
       activecons_.find(condID)->second=true;
       if (actdisc_->Comm().MyPID()==0)
       {
@@ -115,20 +115,20 @@ void UTILS::MPConstraint3::Initialize
 void UTILS::MPConstraint3::Initialize(
     ParameterList&        params,
     RCP<Epetra_Vector>    systemvector)
-{ 
+{
   const double time = params.get("total time",-1.0);
-  // in case init is set to true we want to set systemvector1 to the amplitudes defined 
+  // in case init is set to true we want to set systemvector1 to the amplitudes defined
   // in the input file
   // allocate vectors for amplitudes and IDs
-  
+
   vector<double> amplit(constrcond_.size());
   vector<int> IDs(constrcond_.size());
   // read data of the input files
-  
+
   for (unsigned int i=0;i<constrcond_.size();i++)
   {
     DRT::Condition& cond = *(constrcond_[i]);
-    
+
     int condID=cond.GetInt("ConditionID");
     if(inittimes_.find(condID)->second<=time&& (!(activecons_.find(condID)->second)))
     {
@@ -152,7 +152,7 @@ void UTILS::MPConstraint3::Initialize(
       {
         switch (Type())
         {
-          case mpcnodeonplane3d: 
+          case mpcnodeonplane3d:
           case mpcnormalcomp3d:
             params.set("action","calc_MPC_state");
           break;
@@ -170,9 +170,9 @@ void UTILS::MPConstraint3::Initialize(
       }
     }
   }
- 
+
   if (actdisc_->Comm().MyPID()==0) systemvector->SumIntoGlobalValues(amplit.size(),&(amplit[0]),&(IDs[0]));
-  
+
   return;
 }
 
@@ -187,11 +187,11 @@ void UTILS::MPConstraint3::Evaluate(
     RCP<Epetra_Vector>    systemvector1,
     RCP<Epetra_Vector>    systemvector2,
     RCP<Epetra_Vector>    systemvector3)
-{ 
-  
+{
+
   switch (Type())
   {
-    case mpcnodeonplane3d: 
+    case mpcnodeonplane3d:
     case mpcnormalcomp3d:
       params.set("action","calc_MPC_stiff");
     break;
@@ -203,7 +203,7 @@ void UTILS::MPConstraint3::Evaluate(
   map<int, RCP<DRT::Discretization> > ::iterator discriter;
   for (discriter=constraintdis_.begin(); discriter!=constraintdis_.end(); discriter++)
     EvaluateConstraint(discriter->second,params,systemmatrix1,systemmatrix2,systemvector1,systemvector2,systemvector3);
-  
+
   return;
 }
 
@@ -212,7 +212,7 @@ void UTILS::MPConstraint3::Evaluate(
  |subroutine creating a new discretization containing constraint elements |
  *------------------------------------------------------------------------*/
 map<int,RCP<DRT::Discretization> > UTILS::MPConstraint3::CreateDiscretizationFromCondition
-(  
+(
   RCP<DRT::Discretization> actdisc,
   vector< DRT::Condition* >      constrcondvec,
   const string&             discret_name,
@@ -222,7 +222,7 @@ map<int,RCP<DRT::Discretization> > UTILS::MPConstraint3::CreateDiscretizationFro
 {
   // start with empty map
   map<int,RCP<DRT::Discretization> > newdiscmap;
-  
+
    if (!actdisc->Filled())
   {
     actdisc->FillComplete();
@@ -233,8 +233,8 @@ map<int,RCP<DRT::Discretization> > UTILS::MPConstraint3::CreateDiscretizationFro
 
 
   // Loop all conditions in constrcondvec and build discretization for any condition ID
-  
-  int index=0; // counter for the index of condition in vector 
+
+  int index=0; // counter for the index of condition in vector
   vector<DRT::Condition*>::iterator conditer;
   for (conditer=constrcondvec.begin();conditer!=constrcondvec.end();conditer++)
   {
@@ -258,7 +258,7 @@ map<int,RCP<DRT::Discretization> > UTILS::MPConstraint3::CreateDiscretizationFro
     }
     break;
     case mpcnormalcomp3d:
-    { 
+    {
       // take master node
       const int defn = (*conditer)->GetInt("masterNode");
       defnv.push_back(defn);
@@ -270,16 +270,16 @@ map<int,RCP<DRT::Discretization> > UTILS::MPConstraint3::CreateDiscretizationFro
     set<int>::iterator nsit;
     // safe gids of definition nodes in a vector
     vector<int> defnodeIDs;
-    
-    int counter=1;//counter is used to keep track of deleted node ids from the vector, input starts with 1 
-    
+
+    int counter=1;//counter is used to keep track of deleted node ids from the vector, input starts with 1
+
     for (nsit=defns.begin(); nsit!=defns.end();++nsit)
     {
       defnodeIDs.push_back(ngid.at((*nsit)-counter));
       ngid.erase(ngid.begin()+(*nsit)-counter);
       counter++;
     }
-    
+
     unsigned int nodeiter;
     // loop over all free nodes of condition
     for (nodeiter=0; nodeiter<ngid.size();nodeiter++)
@@ -287,14 +287,14 @@ map<int,RCP<DRT::Discretization> > UTILS::MPConstraint3::CreateDiscretizationFro
       vector<int> ngid_ele = defnodeIDs;
       ngid_ele.push_back(ngid[nodeiter]);
       const int numnodes=ngid_ele.size();
-      
+
       remove_copy_if(&ngid_ele[0], &ngid_ele[0]+numnodes,
                        inserter(rownodeset, rownodeset.begin()),
                        not1(DRT::UTILS::MyGID(actnoderowmap)));
       // copy node ids specified in condition to colnodeset
       copy(&ngid_ele[0], &ngid_ele[0]+numnodes,
             inserter(colnodeset, colnodeset.begin()));
-  
+
       // construct constraint nodes, which use the same global id as the standard nodes
       for (int i=0; i<actnoderowmap->NumMyElements(); ++i)
       {
@@ -305,7 +305,7 @@ map<int,RCP<DRT::Discretization> > UTILS::MPConstraint3::CreateDiscretizationFro
           newdis->AddNode(rcp(new DRT::Node(gid, standardnode->X(), myrank)));
         }
       }
-  
+
       if (myrank == 0)
       {
         RCP<DRT::Element> constraintele = DRT::UTILS::Factory(element_name,"Polynomial", nodeiter+startID, myrank);
@@ -314,7 +314,7 @@ map<int,RCP<DRT::Discretization> > UTILS::MPConstraint3::CreateDiscretizationFro
         // add constraint element
         newdis->AddElement(constraintele);
       }
-      // save the connection between element and condition 
+      // save the connection between element and condition
       eletocondID_[nodeiter+startID]=(*conditer)->GetInt("ConditionID");
       eletocondvecindex_[nodeiter+startID]=index;
     }
@@ -324,7 +324,7 @@ map<int,RCP<DRT::Discretization> > UTILS::MPConstraint3::CreateDiscretizationFro
 
     // now care about the parallel distribution and ghosting.
     // So far every processor only knows about his nodes
-  
+
     //build unique node row map
     vector<int> boundarynoderowvec(rownodeset.begin(), rownodeset.end());
     rownodeset.clear();
@@ -334,7 +334,7 @@ map<int,RCP<DRT::Discretization> > UTILS::MPConstraint3::CreateDiscretizationFro
                                                                0,
                                                                newdis->Comm()));
     boundarynoderowvec.clear();
-  
+
     //build overlapping node column map
     vector<int> constraintnodecolvec(colnodeset.begin(), colnodeset.end());
     colnodeset.clear();
@@ -343,15 +343,15 @@ map<int,RCP<DRT::Discretization> > UTILS::MPConstraint3::CreateDiscretizationFro
                                                                &constraintnodecolvec[0],
                                                                0,
                                                                newdis->Comm()));
-  
+
     constraintnodecolvec.clear();
     newdis->Redistribute(*constraintnoderowmap,*constraintnodecolmap);
     //put new discretization into the map
     newdiscmap[(*conditer)->GetInt("ConditionID")]=newdis;
-    // increase counter 
+    // increase counter
     index++;
   }
-   
+
   startID--; // set counter back to ID of the last element
   return newdiscmap;
 }
@@ -392,11 +392,11 @@ void UTILS::MPConstraint3::EvaluateConstraint(
 
   const double time = params.get("total time",-1.0);
   const int numcolele = disc->NumMyColElements();
-  
-  // get values from time integrator to scale matrices with 
+
+  // get values from time integrator to scale matrices with
   double scStiff = params.get("scaleStiffEntries",1.0);
   double scConMat = params.get("scaleConstrMat",1.0);
-  
+
   // loop over column elements
   for (int i=0; i<numcolele; ++i)
   {
@@ -405,7 +405,7 @@ void UTILS::MPConstraint3::EvaluateConstraint(
     int eid=actele->Id();
     int condID = eletocondID_.find(eid)->second;
     DRT::Condition* cond=constrcond_[eletocondvecindex_.find(eid)->second];
-    
+
     // computation only if time is larger or equal than initialization time for constraint
     if(inittimes_.find(condID)->second<=time)
     {
@@ -420,17 +420,17 @@ void UTILS::MPConstraint3::EvaluateConstraint(
         RCP<Epetra_Vector> disp=params.get<RCP<Epetra_Vector> >("new disp");
         SetConstrState("displacement",disp);
         params.set("action",action);
-      }   
-  
-      //define global and local index of this bc in redundant vectors      
+      }
+
+      //define global and local index of this bc in redundant vectors
       const int offsetID = params.get<int>("OffsetID");
       int gindex = eid-offsetID;
       const int lindex = (systemvector3->Map()).LID(gindex);
-      
-      // Get the current lagrange multiplier value for this condition  
+
+      // Get the current lagrange multiplier value for this condition
       const RCP<Epetra_Vector> lagramul = params.get<RCP<Epetra_Vector> >("LagrMultVector");
       const double lagraval = (*lagramul)[lindex];
-      
+
       // get element location vector, dirichlet flags and ownerships
       vector<int> lm;
       vector<int> lmowner;
@@ -441,18 +441,18 @@ void UTILS::MPConstraint3::EvaluateConstraint(
       if (assemblemat1) elematrix1.Shape(eledim,eledim);
       if (assemblemat2) elematrix2.Shape(eledim,eledim);
       if (assemblevec1) elevector1.Size(eledim);
-      if (assemblevec2) elevector2.Size(eledim);        
+      if (assemblevec2) elevector2.Size(eledim);
       if (assemblevec3) elevector3.Size(1);
       params.set("ConditionID",eid);
-      
+
       params.set< RCP<DRT::Condition> >("condition", rcp(cond,false));
       // call the element evaluate method
       int err = actele->Evaluate(params,*disc,lm,elematrix1,elematrix2,
                                  elevector1,elevector2,elevector3);
       if (err) dserror("Proc %d: Element %d returned err=%d",disc->Comm().MyPID(),eid,err);
-        
-      if (assemblemat1) 
-      { 
+
+      if (assemblemat1)
+      {
         // scale with time integrator dependent value
         elematrix1.Scale(scStiff*lagraval);
         systemmatrix1->Assemble(eid,elematrix1,lm,lmowner);
@@ -464,7 +464,7 @@ void UTILS::MPConstraint3::EvaluateConstraint(
         elevector2.Scale(scConMat);
         systemmatrix2->Assemble(eid,elevector2,lm,lmowner,colvec);
       }
-      if (assemblevec1) 
+      if (assemblevec1)
       {
         elevector1.Scale(lagraval);
         LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
@@ -477,8 +477,8 @@ void UTILS::MPConstraint3::EvaluateConstraint(
         constrowner.push_back(actele->Owner());
         LINALG::Assemble(*systemvector3,elevector3,constrlm,constrowner);
       }
-      
-      //loadcurve business      
+
+      //loadcurve business
       const vector<int>*    curve  = cond->Get<vector<int> >("curve");
       int curvenum = -1;
       if (curve) curvenum = (*curve)[0];
@@ -523,7 +523,7 @@ void UTILS::MPConstraint3::InitializeConstraint(RCP<DRT::Discretization> disc,
     int eid=actele->Id();
     int condID = eletocondID_.find(eid)->second;
     DRT::Condition* cond=constrcond_[eletocondvecindex_.find(eid)->second];
-    
+
     // get element location vector, dirichlet flags and ownerships
     vector<int> lm;
     vector<int> lmowner;
@@ -534,13 +534,13 @@ void UTILS::MPConstraint3::InitializeConstraint(RCP<DRT::Discretization> disc,
     elematrix1.Shape(eledim,eledim);
     elematrix2.Shape(eledim,eledim);
     elevector1.Size(eledim);
-    elevector2.Size(eledim);        
+    elevector2.Size(eledim);
     elevector3.Size(1);
     // call the element evaluate method
     int err = actele->Evaluate(params,*disc,lm,elematrix1,elematrix2,
                                elevector1,elevector2,elevector3);
     if (err) dserror("Proc %d: Element %d returned err=%d",disc->Comm().MyPID(),actele->Id(),err);
-    
+
     //assembly
     vector<int> constrlm;
     vector<int> constrowner;
@@ -548,7 +548,7 @@ void UTILS::MPConstraint3::InitializeConstraint(RCP<DRT::Discretization> disc,
     constrlm.push_back(eid-offsetID);
     constrowner.push_back(actele->Owner());
     LINALG::Assemble(*systemvector,elevector3,constrlm,constrowner);
-    
+
     // loadcurve business
     const vector<int>*    curve  = cond->Get<vector<int> >("curve");
     int curvenum = -1;
@@ -563,7 +563,7 @@ void UTILS::MPConstraint3::InitializeConstraint(RCP<DRT::Discretization> disc,
     char factorname[30];
     sprintf(factorname,"LoadCurveFactor %d",condID);
     params.set(factorname,curvefac);
-  
+
   }
   return;
 } // end of InitializeConstraint

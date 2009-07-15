@@ -31,8 +31,8 @@ actdisc_(discr)
 {
   //----------------------------------------------------------------------------
   //---------------------------------------------------------Constraint Conditions!
-  
-  // constructors of constraints increment number of constraints defined and the minimum 
+
+  // constructors of constraints increment number of constraints defined and the minimum
   // ConditionID read so far.
   numConstrID_=0;
   offsetID_=10000;
@@ -44,10 +44,10 @@ actdisc_(discr)
   mpconline2d_=rcp(new MPConstraint2(actdisc_,"MPC_NodeOnLine_2D",offsetID_,maxConstrID));
   mpconplane3d_=rcp(new MPConstraint3(actdisc_,"MPC_NodeOnPlane_3D",offsetID_,maxConstrID));
   mpcnormcomp3d_=rcp(new MPConstraint3(actdisc_,"MPC_NormalComponent_3D",offsetID_,maxConstrID));
-  
+
   numConstrID_ = max(maxConstrID-offsetID_+1,0);
   constrdofset_ = rcp(new ConstraintDofSet());
-  constrdofset_ ->AssignDegreesOfFreedom(actdisc_,numConstrID_,0); 
+  constrdofset_ ->AssignDegreesOfFreedom(actdisc_,numConstrID_,0);
   offsetID_-= constrdofset_->FirstGID();
   //----------------------------------------------------
   //-----------include possible further constraints here
@@ -66,7 +66,7 @@ actdisc_(discr)
     const Epetra_Map* dofrowmap = actdisc_->DofRowMap();
     //initialize constrMatrix
     constrMatrix_=rcp(new LINALG::SparseMatrix(*dofrowmap,numConstrID_,true,true));
-    //build Epetra_Map used as domainmap for constrMatrix and rowmap for result vectors 
+    //build Epetra_Map used as domainmap for constrMatrix and rowmap for result vectors
     constrmap_=rcp(new Epetra_Map(*(constrdofset_->DofRowMap())));
     //build an all reduced version of the constraintmap, since sometimes all processors
     //have to know all values of the constraints and Lagrange multipliers
@@ -84,17 +84,17 @@ actdisc_(discr)
     volconstr3d_->Initialize(p,refbaseredundant);
     areaconstr3d_->Initialize(p,refbaseredundant);
     areaconstr2d_->Initialize(p,refbaseredundant);
-    
+
     mpconline2d_->SetConstrState("displacement",disp);
     mpconline2d_->Initialize(p,refbaseredundant);
     mpconplane3d_->SetConstrState("displacement",disp);
     mpconplane3d_->Initialize(p,refbaseredundant);
     mpcnormcomp3d_->SetConstrState("displacement",disp);
     mpcnormcomp3d_->Initialize(p,refbaseredundant);
-    
+
     // Export redundant vector into distributed one
     refbasevalues_ -> Export(*refbaseredundant,*conimpo_,Add);
-    
+
     //Initialize Lagrange Multipliers, reference values and errors
     actdisc_->ClearState();
     referencevalues_=rcp(new Epetra_Vector(*constrmap_));
@@ -132,7 +132,7 @@ actdisc_(discr)
     monimpo_ = rcp (new Epetra_Export(*redmonmap_,*monitormap_));
     monitorvalues_=rcp(new Epetra_Vector(*monitormap_));
     initialmonvalues_=rcp(new Epetra_Vector(*monitormap_));
-    
+
     RCP<Epetra_Vector> initialmonredundant = rcp(new Epetra_Vector(*redmonmap_));
     p1.set("OffsetID",minMonitorID_);
     volmonitor3d_->Evaluate(p1,initialmonredundant);
@@ -162,13 +162,13 @@ void UTILS::ConstrManager::StiffnessAndInternalForces(
 {
   double scStiff = scalelist.get("scaleStiffEntries",1.0);
   double scConMat = scalelist.get("scaleConstrMat",1.0);
-  
+
   // create the parameters for the discretization
   ParameterList p;
   vector<DRT::Condition*> constrcond(0);
   const Epetra_Map* dofrowmap = actdisc_->DofRowMap();
   constrMatrix_=rcp(new LINALG::SparseMatrix(*dofrowmap,numConstrID_,true,true));
-    
+
   // other parameters that might be needed by the elements
   p.set("total time",time);
   p.set("OffsetID",offsetID_);
@@ -186,16 +186,16 @@ void UTILS::ConstrManager::StiffnessAndInternalForces(
   // Construct a redundant time curve factor and put it into parameter list
   RCP<Epetra_Vector> factredundant = rcp(new Epetra_Vector(*redconstrmap_));
   p.set("vector curve factors",factredundant);
-  
+
   RCP<Epetra_Vector> actredundant = rcp(new Epetra_Vector(*redconstrmap_));
   RCP<Epetra_Vector> refbaseredundant = rcp(new Epetra_Vector(*redconstrmap_));
-  
+
   actdisc_->ClearState();
   actdisc_->SetState("displacement",disp);
   volconstr3d_->Evaluate(p,stiff,constrMatrix_,fint,refbaseredundant,actredundant);
   areaconstr3d_->Evaluate(p,stiff,constrMatrix_,fint,refbaseredundant,actredundant);
   areaconstr2d_->Evaluate(p,stiff,constrMatrix_,fint,refbaseredundant,actredundant);
-  
+
   mpconplane3d_->SetConstrState("displacement",disp);
   mpconplane3d_->Evaluate(p,stiff,constrMatrix_,fint,refbaseredundant,actredundant);
   mpcnormcomp3d_->SetConstrState("displacement",disp);
@@ -214,7 +214,7 @@ void UTILS::ConstrManager::StiffnessAndInternalForces(
   // -----------include possible further constraints here
   // ----------------------------------------------------
   // Compute current reference volumes as elemetwise product of timecurvefactor and initialvalues
-  referencevalues_->Multiply(1.0,*fact_,*refbasevalues_,0.0);  
+  referencevalues_->Multiply(1.0,*fact_,*refbasevalues_,0.0);
   constrainterr_->Update(scConMat,*referencevalues_,-1.0*scConMat,*actvalues_,0.0);
   actdisc_->ClearState();
   // finalize the constraint matrix
@@ -232,7 +232,7 @@ void UTILS::ConstrManager::ComputeError(double time, RCP<Epetra_Vector> disp)
     ParameterList p;
     p.set("total time",time);
     actdisc_->SetState("displacement",disp);
-    
+
     RCP<Epetra_Vector> actredundant = rcp(new Epetra_Vector(*redconstrmap_));
     LINALG::Export(*actvalues_,*actredundant);
     //Compute current values and assemble them to the completely redundant vector
@@ -241,13 +241,13 @@ void UTILS::ConstrManager::ComputeError(double time, RCP<Epetra_Vector> disp)
     volconstr3d_->Evaluate(p,null,null,null,null,actredundant);
     areaconstr3d_->Evaluate(p,null,null,null,null,actredundant);
     areaconstr2d_->Evaluate(p,null,null,null,null,actredundant);
-     
+
     mpconplane3d_->Evaluate(p,null,null,null,null,actredundant);
     mpconplane3d_->Evaluate(p,null,null,null,null,actredundant);
-    
+
     mpcnormcomp3d_->Evaluate(p,null,null,null,null,actredundant);
     mpcnormcomp3d_->Evaluate(p,null,null,null,null,actredundant);
-    
+
     // Export redundant vectors into distributed ones
     actvalues_->PutScalar(0.0);
     actvalues_->Export(*actredundant,*conimpo_,Add);
@@ -292,7 +292,7 @@ void UTILS::ConstrManager::UpdateLagrMult(double factor)
       }
     }
   }
-  
+
   return;
 }
 
@@ -334,17 +334,17 @@ void UTILS::ConstrManager::ComputeMonitorValues(RCP<Epetra_Vector> disp)
   monitorvalues_->PutScalar(0.0);
   ParameterList p;
   actdisc_->SetState("displacement",disp);
-  
+
   RCP<Epetra_Vector> actmonredundant = rcp(new Epetra_Vector(*redmonmap_));
   p.set("OffsetID",minMonitorID_);
-  
+
   volmonitor3d_->Evaluate(p,actmonredundant);
   areamonitor3d_->Evaluate(p,actmonredundant);
   areamonitor2d_->Evaluate(p,actmonredundant);
- 
+
   Epetra_Import monimpo(*monitormap_,*redmonmap_);
   monitorvalues_->Export(*actmonredundant,*monimpo_,Add);
-  
+
   return;
 }
 
@@ -356,9 +356,9 @@ void UTILS::ConstrManager::PrintMonitorValues() const
 {
   if (numMonitorID_ == 1)
       printf("Monitor value:\n");
-  else if (numMonitorID_>1) 
+  else if (numMonitorID_>1)
     printf("Monitor values:\n");
-  
+
   for (int i = 0; i < numMonitorID_; ++i)
   {
     if ((*monitortypes_)[i] == 1.0)
@@ -379,7 +379,7 @@ void UTILS::ConstrManager::BuildMoniType()
   RCP<Epetra_Vector> dummymonredundant = rcp(new Epetra_Vector(*redmonmap_));
   RCP<Epetra_Vector> dummymondist = rcp(new Epetra_Vector(*monitormap_));
   p1.set("OffsetID",minMonitorID_);
-  
+
   // do the volumes
   volmonitor3d_->Evaluate(p1,dummymonredundant);
   // Export redundant vector into distributed one
@@ -391,7 +391,7 @@ void UTILS::ConstrManager::BuildMoniType()
     if ((*dummymonredundant)[i] != 0.0)
       (*monitortypes_)[i] = 1.0;
   }
-  
+
   //do the area in 3D
   dummymonredundant->Scale(0.0);
   dummymondist->Scale(0.0);
@@ -405,7 +405,7 @@ void UTILS::ConstrManager::BuildMoniType()
     if ((*dummymonredundant)[i] != 0.0)
       (*monitortypes_)[i] = 2.0;
   }
-  
+
   //do the area in 2D
   dummymonredundant->Scale(0.0);
   dummymondist->Scale(0.0);

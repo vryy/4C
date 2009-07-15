@@ -44,12 +44,12 @@ actdisc_(discr)
       {
         minID=condID;
       }
-    }      
+    }
   }
   else
   {
     montype_=none;
-  }  
+  }
 }
 
 
@@ -63,7 +63,7 @@ UTILS::Monitor::MoniType UTILS::Monitor::GetMoniType(const string& name)
   else if (name=="AreaMonitor_3D")
     return areamonitor3d;
   else if (name=="AreaMonitor_2D")
-    return areamonitor2d;  
+    return areamonitor2d;
   return none;
 }
 
@@ -90,8 +90,8 @@ void UTILS::Monitor::Evaluate(
     case none:
       return;
     default:
-      dserror("Unknown monitor type to be evaluated in Monitor class!");  
-  }  
+      dserror("Unknown monitor type to be evaluated in Monitor class!");
+  }
   EvaluateMonitor(params,systemvector);
   return;
 }
@@ -161,6 +161,6 @@ void UTILS::Monitor::EvaluateMonitor
     }
   }
   return;
-} 
+}
 
 #endif
