@@ -121,7 +121,7 @@ namespace MAT
 
     //@}
 
-    /// material type 
+    /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_arrhenius_pv; }
 
     /// compute temperature

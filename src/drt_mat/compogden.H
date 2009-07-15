@@ -110,7 +110,7 @@ namespace MAT
 
     /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_compogden; }
-    
+
     /// get parameters
     int Init() const { return params_->init_; }
     double Nue() const { return params_->nue_; }

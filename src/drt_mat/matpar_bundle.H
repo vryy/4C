@@ -50,7 +50,7 @@ namespace MAT
     ///
     /// <h4>About</h4>
     /// The bundle provides an interface between unique material IDs and
-    /// associated material parameters/data. The material ID is set via 
+    /// associated material parameters/data. The material ID is set via
     /// input file. It has to be unique, larger than zero or equal zero.
     /// Material ID and data are hold in #matmap_.
     ///
@@ -59,7 +59,7 @@ namespace MAT
     /// However, this fact is not transparanet at the read time of the elements
     /// which are only aware of their material ID. The variable #materialreadfromproblem_
     /// of the material bundle of the 0th DRT::Problem instance make it possible to switch
-    /// among different DRT::Problem. (The variable #materialreadfromproblem_ is redundant 
+    /// among different DRT::Problem. (The variable #materialreadfromproblem_ is redundant
     /// in the material bundles of all non-0th DRT::Problem instances.)
     ///
     /// \author bborn
@@ -110,7 +110,7 @@ namespace MAT
       }
 
       /// return (first) ID by material type
-      /// 
+      ///
       /// \return The ID of seached for material type.
       ///         If the search is unsuccessful -1 is returned
       int FirstIdByType(
@@ -128,7 +128,7 @@ namespace MAT
 
       /// reset problem index to read from, i.e. to index 0
       void ResetReadFromProblem() { materialreadfromproblem_ = 0; }
-      
+
     private:
 
       /// the map linking material IDs to input materials

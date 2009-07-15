@@ -454,7 +454,7 @@ void MAT::ArtWallRemod::Evaluate(
   double fib1_tension = 1.;
   double fib2_tension = 1.;
   if (tensonly==1)
-  { 
+  {
     if (J4 < 1.0) fib1_tension = 0.;
     if (J6 < 1.0) fib2_tension = 0.;
   }
@@ -537,7 +537,7 @@ void MAT::ArtWallRemod::Remodel(const int gp, const double time, const LINALG::M
 //  }
 
   EvaluateFiberVecs(gp,newgamma,stresses_->at(gp)); // remember! stresses holds eigenvectors
-  
+
   // pull-back of new fiber vecs
   vector<double> a1_0(3);
   vector<double> a2_0(3);

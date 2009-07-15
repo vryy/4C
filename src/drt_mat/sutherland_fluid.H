@@ -107,7 +107,7 @@ namespace MAT
 
     //@}
 
-    /// material type 
+    /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_sutherland_fluid; }
 
     /// compute diffusivity
@@ -116,7 +116,7 @@ namespace MAT
     /// return material parameters for element calculation
     //@{
 
-    ///  reference dynamic viscosity (kg/(m*s)) 
+    ///  reference dynamic viscosity (kg/(m*s))
     double RefVisc() const { return params_->refvisc_; }
     /// reference temperature (K)
     double RefTemp() const { return params_->reftemp_; }

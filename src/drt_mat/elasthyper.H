@@ -68,12 +68,12 @@ namespace MAT
 
       /// the list of material IDs
       const std::vector<int>* matids_;
- 
+
       /// material mass density
       const double density_;
-      
+
       double gamma_;
-      
+
    private:
 
       /// map to materials/potential summands
@@ -184,16 +184,16 @@ namespace MAT
       );
 
     void Setup();
-    
+
     /// return if anisotropic
     bool Anisotropic() const { return anisotropic_;}
-    
+
     /// return a1s
     LINALG::Matrix<3,1> Geta1() const {return a1_;}
 
     /// return a2s
     LINALG::Matrix<3,1> Geta2() const {return a2_;}
-    
+
   private:
 
     /// calculate principal invariants
@@ -201,22 +201,22 @@ namespace MAT
       LINALG::Matrix<3,1>& prinv,  ///< principal invariants
       const LINALG::Matrix<6,1>& rcg  ///< symmetric Cartesian 2-tensor in strain-like 6-Voigt notation
       );
-    
+
     /// calculate principal invariants
     void InvariantsPrincipalAniso(
       LINALG::Matrix<6,1>& prinv,  ///< principal invariants
       const LINALG::Matrix<6,1>& rcg  ///< symmetric Cartesian 2-tensor in strain-like 6-Voigt notation
       );
-    
+
     /// calculate modified invariants
     void InvariantsModified(
       LINALG::Matrix<3,1>& modinv,  ///< modified invariants
       const LINALG::Matrix<3,1>& prinv  ///< principal invariants
       );
-    
+
     /// my material parameters
     MAT::PAR::ElastHyper* params_;
-    
+
     /// Am I anisotropic?
     bool anisotropic_;
 

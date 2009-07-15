@@ -183,10 +183,10 @@ void MAT::ViscoAnisotropic::Unpack(const vector<char>& data)
  *----------------------------------------------------------------------*/
 void MAT::ViscoAnisotropic::Setup(const int numgp)
 {
- 
-  /*fiber directions can be defined in the element line  
+
+  /*fiber directions can be defined in the element line
     or by element thickness direction.
-    Since we do not know know if thickness direction is defined, fibers are 
+    Since we do not know know if thickness direction is defined, fibers are
     related to a local element cosy which has to be specified in the element line */
 
   a1_ = rcp(new vector<vector<double> > (numgp));
@@ -239,7 +239,7 @@ void MAT::ViscoAnisotropic::Setup(const int numgp)
   histstresslast_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
   artstresslast_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
   const LINALG::Matrix<NUM_STRESS_3D,1> emptyvec(true);
-  
+
   // how many stress types are used?
   const int numst = params_->numstresstypes_;
   histstresscurr_->resize(numst*numgp);
@@ -262,8 +262,8 @@ void MAT::ViscoAnisotropic::Setup(const int numgp)
  *----------------------------------------------------------------------*/
 void MAT::ViscoAnisotropic::Setup(const int numgp, const vector<double> thickvec)
 {
- 
-  //fiber directions can be defined by element thickness direction if specified 
+
+  //fiber directions can be defined by element thickness direction if specified
   //in material definition
   if (params_->elethick_==1)
   {
@@ -271,12 +271,12 @@ void MAT::ViscoAnisotropic::Setup(const int numgp, const vector<double> thickvec
     a2_ = rcp(new vector<vector<double> > (numgp));
     if (abs(params_->gamma_)>=1.0E-6) dserror("Fibers can only be aligned in thickness direction for gamma = 0.0!");
     const double gamma = (params_->gamma_*PI)/180.; //convert
-    
+
     // Fibers are related to the element thickness direction
     vector<double> rad = thickvec;
     vector<double> axi = thickvec;
     vector<double> cir = thickvec;
-  
+
     LINALG::Matrix<3,3> locsys;
     // basis is local cosy with third vec e3 = circumferential dir and e2 = axial dir
     double radnorm=0.; double axinorm=0.; double cirnorm=0.;
@@ -300,7 +300,7 @@ void MAT::ViscoAnisotropic::Setup(const int numgp, const vector<double> thickvec
       }
     }
   }
-  
+
   return;
 
 }
@@ -309,11 +309,11 @@ void MAT::ViscoAnisotropic::Setup(const int numgp, const vector<double> thickvec
  *----------------------------------------------------------------------*/
 void MAT::ViscoAnisotropic::Update()
 {
-  // make current values to values of last step 
+  // make current values to values of last step
   histstresslast_=histstresscurr_;
   artstresslast_=artstresscurr_;
-  
-  // empty vectors of current data 
+
+  // empty vectors of current data
   const LINALG::Matrix<NUM_STRESS_3D,1> emptyvec(true);
   histstresscurr_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
   artstresscurr_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
@@ -345,7 +345,7 @@ void MAT::ViscoAnisotropic::Evaluate
   const double k1 = params_->k1_;
   const double k2 = params_->k2_;
   const double minstretch = params_->minstretch_;
-  
+
   // right Cauchy-Green Tensor  C = 2 * E + I
   // build identity tensor I
   LINALG::Matrix<NUM_STRESS_3D,1> Id(true);
@@ -440,12 +440,12 @@ void MAT::ViscoAnisotropic::Evaluate
                     + 1.*(A1(3)*C(3) + A1(4)*C(4) + A1(5)*C(5))); //J4 = trace(A1:C^dev)
   double J6 = incJ * ( A2(0)*C(0) + A2(1)*C(1) + A2(2)*C(2)
                     + 1.*(A2(3)*C(3) + A2(4)*C(4) + A2(5)*C(5))); //J6 = trace(A2:C^dev)
- 
-  // fibers can only stretch/compress down to a minimal value 
+
+  // fibers can only stretch/compress down to a minimal value
   double fib1_tension = 1.;
   double fib2_tension = 1.;
 
-  if (J4 < minstretch) 
+  if (J4 < minstretch)
   {
 //    cout<<"Fiber compression exceeded minstretch! J4 = " << J4 <<endl;
     J4 = minstretch;
@@ -457,7 +457,7 @@ void MAT::ViscoAnisotropic::Evaluate
     J6 = minstretch;
     fib2_tension = 0.;
   }
-  
+
   // PK2 fiber part in splitted formulation, see Holzapfel p. 271
   LINALG::Matrix<NUM_STRESS_3D,1> SisoEla_fib1(A1); // first compute Sfbar1 = dWf/dJ4 A1
   LINALG::Matrix<NUM_STRESS_3D,1> SisoEla_fib2(A2); // first compute Sfbar2 = dWf/dJ6 A2
@@ -532,7 +532,7 @@ void MAT::ViscoAnisotropic::Evaluate
   // get time algorithmic parameters
   double dt = params.get("delta time",-1.0);
 
-  
+
   /* Time integration according Holzapfel paper
    * with some intrinsic usage of the analytic solution
    * of the underlying ODE (exp-function) */
@@ -557,8 +557,8 @@ void MAT::ViscoAnisotropic::Evaluate
   SisoEla_fib2_old.Scale(-beta_fib*expfac_fib);
   Q_fib2_old.Scale(expfac_fib*expfac_fib);
   */
-  
-  
+
+
   /* Time integration according Zien/Taylor and the viscoNeoHooke */
   const double theta = 0.5;
   const double artscalar1_nh=(tau_nh - dt + theta*dt)/tau_nh;
@@ -566,7 +566,7 @@ void MAT::ViscoAnisotropic::Evaluate
   const double artscalar1_fib=(tau_fib - dt + theta*dt)/tau_fib;
   const double artscalar2_fib=tau_fib/(tau_fib + theta*dt);
 
-  
+
   // evaluate current Q's
   LINALG::Matrix<NUM_STRESS_3D,1> Q_nh(SisoEla_nh);
   Q_nh.Scale(artscalar2_nh*beta_nh);
@@ -574,7 +574,7 @@ void MAT::ViscoAnisotropic::Evaluate
   Q_fib1.Scale(beta_fib*artscalar2_fib);
   LINALG::Matrix<NUM_STRESS_3D,1> Q_fib2(SisoEla_fib2);
   Q_fib2.Scale(beta_fib*artscalar2_fib);
-  
+
   // scale history
   SisoEla_nh_old.Scale(-beta_nh*artscalar2_nh);
   Q_nh_old.Scale(artscalar1_nh*artscalar2_nh);
@@ -582,8 +582,8 @@ void MAT::ViscoAnisotropic::Evaluate
   Q_fib1_old.Scale(artscalar1_fib*artscalar2_fib);
   SisoEla_fib2_old.Scale(-beta_fib*artscalar2_fib);
   Q_fib2_old.Scale(artscalar1_fib*artscalar2_fib);
-  
-  
+
+
   /* evaluate current stress */
 
   // elastic part
@@ -605,21 +605,21 @@ void MAT::ViscoAnisotropic::Evaluate
   (*stress) += Q_fib2;            // S_{n+1} += H_fib2 + Q_fib2_{n+1}
 
   /* evaluate current C-mat */
- 
+
   /* Time integration according Holzapfel paper */
   /*
   CisoEla_nh.Scale(1.+beta_nh*expfac_nh);
   CisoEla_fib1.Scale(1.+beta_fib*expfac_fib);
   CisoEla_fib2.Scale(1.+beta_fib*expfac_fib);
   */
-  
-  
+
+
   /* Time integration according Zien/Taylor and the viscoNeoHooke */
   CisoEla_nh.Scale(1+beta_nh*artscalar2_nh);
   CisoEla_fib1.Scale(1+beta_fib*artscalar2_fib);
   CisoEla_fib2.Scale(1+beta_fib*artscalar2_fib);
 
-  
+
   (*cmat) += CisoEla_nh;
   (*cmat) += CisoEla_fib1;
   (*cmat) += CisoEla_fib2;
@@ -631,7 +631,7 @@ void MAT::ViscoAnisotropic::Evaluate
   artstresscurr_->at(numst*gp + 0) = Q_nh;
   artstresscurr_->at(numst*gp + 1) = Q_fib1;
   artstresscurr_->at(numst*gp + 2) = Q_fib2;
-  
+
   return;
 }
 

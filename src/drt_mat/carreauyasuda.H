@@ -54,7 +54,7 @@ namespace MAT
 
   }  // namespace PAR
 
-  /// Nonlinear viscosity according to Carreau-Yasuda 
+  /// Nonlinear viscosity according to Carreau-Yasuda
   class CarreauYasuda : public Material
   {
   public:
@@ -73,7 +73,7 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    
+
     virtual int UniqueParObjectId() const { return ParObject_CarreauYasuda; }
 
     /*!
@@ -104,12 +104,12 @@ namespace MAT
 
     //@}
 
-    /// material type 
+    /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_carreauyasuda; }
 
     /// return material parameters for element calculation
     //@{
-    
+
     /// return parameter for zero-shear viscosity
     double Nu0() const { return params_->nu_0_; }
     /// return parameter for infinite-shear viscosity

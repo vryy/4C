@@ -309,7 +309,7 @@ void MAT::ContChainNetw::Evaluate(const LINALG::Matrix<NUM_STRESS_3D,1>* glstrai
 //  Siso1 = Id;
 //  Siso1.Scale(mue);
 //  *stress += Siso1;
-  
+
   (*stress).Update((lambda*lJ-mue),Cinv,0.0);
   (*stress).Update(mue,Id,1.0);
 
@@ -359,7 +359,7 @@ void MAT::ContChainNetw::Evaluate(const LINALG::Matrix<NUM_STRESS_3D,1>* glstrai
 
     // evaluate eigenproblem
     Epetra_SerialDenseVector lambda(dim);
-    
+
     //needs improvement:
     Epetra_SerialDenseMatrix Phi(3,3);
     for (int i = 0; i < 3; ++i) {
@@ -367,7 +367,7 @@ void MAT::ContChainNetw::Evaluate(const LINALG::Matrix<NUM_STRESS_3D,1>* glstrai
         Phi(i,j) = stresses_->at(gp)(i,j);
       }
     }
-    
+
     //Epetra_SerialDenseMatrix Phi = S;
     LINALG::SymmetricEigenProblem(Phi,lambda);
     //Epetra_SerialDenseMatrix strain = MAT::StrainVoigt2Mat(glstrain);

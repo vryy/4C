@@ -55,7 +55,7 @@ namespace MAT
       /// Possion's ratio
       const double nue_;
       /// 2nd parameter
-      const double beta_; 
+      const double beta_;
       /// mass density
       const double density_;
 

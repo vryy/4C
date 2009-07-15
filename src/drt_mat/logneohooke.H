@@ -3,7 +3,7 @@
 \file logneohooke.H
 \brief
 This file contains the routines required for logarithmic neo-Hooke material
-according to Bonet and Wood, "Nonlinear continuum mechanics for finite 
+according to Bonet and Wood, "Nonlinear continuum mechanics for finite
 element analysis", Cambridge, 1997.
 
 <pre>
@@ -68,7 +68,7 @@ namespace MAT
   /*----------------------------------------------------------------------*/
   /// Logarithmic neo-Hooke material according to [1]
   ///
-  /// This is a compressible, hyperelastic, isotropic material 
+  /// This is a compressible, hyperelastic, isotropic material
   /// of the most simple kind.
   ///
   /// You can easily get a purely incompressible (or isochoric) response
@@ -78,7 +78,7 @@ namespace MAT
   ///
   /// <h3>References</h3>
   /// <ul>
-  /// <li> [1] J Bonet and RD Wood, "Nonlinear continuum mechanics for finite 
+  /// <li> [1] J Bonet and RD Wood, "Nonlinear continuum mechanics for finite
   ///          element analysis", Cambridge, 1997.
   /// <li> [2] GA Holzapfel, "Nonlinear solid mechanics", Wiley, 2000.
   /// </ul>
@@ -154,7 +154,7 @@ namespace MAT
     /// which was taken from [1].
     ///
     /// Here is \f$I_{\boldsymbol{C}}\f$ the first principal invariant
-    /// of the right Cauchy--Green strain tensor \f$\boldsymbol{C}\f$ 
+    /// of the right Cauchy--Green strain tensor \f$\boldsymbol{C}\f$
     /// and \f$I\!I\!I_{\boldsymbol{C}}\f$ its third.
     /// The isochoric part is proportional to \f$\mu\f$,
     /// whereas the \f$\lambda\f$-proportional part constitutes the volumetric contribution.
@@ -181,7 +181,7 @@ namespace MAT
     /// \f$\boldsymbol{C}_\text{m}=C_{IJKL}\boldsymbol{E}^I\otimes\boldsymbol{E}^J\otimes\boldsymbol{E}^K\otimes\boldsymbol{E}^L\f$
     /// is determined by
     ///\f[
-    /// C_{IJKL} 
+    /// C_{IJKL}
     /// = \lambda (\boldsymbol{C}^{-1})_{IJ} \, (\boldsymbol{C}^{-1})_{KL}
     /// + 2\big(\mu-\lambda \log(\sqrt{I\!I\!I_{\boldsymbol{C}}})\big)
     ///   \, \frac{1}{2} \big( \boldsymbol{C}^{-1})_{IK} \, (\boldsymbol{C}^{-1})_{JL}
@@ -213,7 +213,7 @@ namespace MAT
     /// which was taken from [1] and adapted to a clean volumetric-isochoric decomposition.
     ///
     /// Here \f$I_{\boldsymbol{C}}\f$ is the first principal invariant
-    /// of the right Cauchy--Green strain tensor \f$\boldsymbol{C}\f$ 
+    /// of the right Cauchy--Green strain tensor \f$\boldsymbol{C}\f$
     /// and \f$I\!I\!I_{\boldsymbol{C}}\f$ its third.
     /// The isochoric part is proportional to \f$\mu_1\f$,
     /// whereas the \f$\mu_3,\lambda\f$-proportional parts constitute the volumetric contribution.
@@ -239,10 +239,10 @@ namespace MAT
     ///
     /// The 2nd Piola--Kirchhoff stress is
     ///\f[
-    /// \boldsymbol{S} = \frac{\mu_1}{\sqrt[3]{I\!I\!I_{\boldsymbol{C}}}} \Big( 
+    /// \boldsymbol{S} = \frac{\mu_1}{\sqrt[3]{I\!I\!I_{\boldsymbol{C}}}} \Big(
     ///                  \boldsymbol{1} - \frac{I_{\boldsymbol{C}}}{3} \boldsymbol{C}^{-1}
     ///                \Big)
-    ///                - \Big( 
+    ///                - \Big(
     ///                  \mu_3 - \frac{\lambda}{2} \, \log(I\!I\!I_{\boldsymbol{C}})
     ///                \Big) \,  \boldsymbol{C}^{-1}
     ///\f]

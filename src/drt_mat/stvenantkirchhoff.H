@@ -108,12 +108,12 @@ namespace MAT
 
     /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_stvenant; }
-    
+
     //evaluates stresses for 3d
     void Evaluate(const Epetra_SerialDenseVector* glstrain_e,
                   Epetra_SerialDenseMatrix* cmat_e,
                   Epetra_SerialDenseVector* stress_e);
-                  
+
     //evaluates stresses for 3d
     void Evaluate(const LINALG::Matrix<6,1>& glstrain,
                   LINALG::Matrix<6,6>& cmat,
@@ -121,7 +121,7 @@ namespace MAT
 
     // computes isotropic elasticity tensor in matrix notion for 3d
     void SetupCmat(LINALG::Matrix<6,6>& cmat);
-    
+
     // computes isotropic elasticity tensor in matrix notion for 2d
     // plane strain, rotational symmetry
     void SetupCmat2d(Epetra_SerialDenseMatrix* cmat);
@@ -143,7 +143,7 @@ namespace MAT
 
     /// my material parameters
     MAT::PAR::StVenantKirchhoff* params_;
-  
+
   };
 }
 

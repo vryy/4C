@@ -69,7 +69,7 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    
+
     virtual int UniqueParObjectId() const { return ParObject_ModPowerLaw; }
 
     /*!
@@ -100,11 +100,11 @@ namespace MAT
 
     //@}
 
-    /// material type 
+    /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_modpowerlaw; }
 
     /// return material parameters for element calculation
-    
+
     /// consistency constant
     double MCons() const { return params_->m_cons_; }
     /// safety factor

@@ -135,7 +135,7 @@ void MAT::LogNeoHooke::EvaluateModelZero(
   const double nue = params_->nue_;  // Poisson's ratio
   const double lambda = (nue==0.5) ? 0.0 : youngs*nue/((1.0+nue)*(1.0-2.0*nue));  // Lame coeff.
   const double mue = youngs/(2.0*(1.0+nue));  // shear modulus
-  
+
   // build identity tensor I
   LINALG::Matrix<6,1> identity(true);
   for (int i = 0; i < 3; i++)
@@ -158,7 +158,7 @@ void MAT::LogNeoHooke::EvaluateModelZero(
   if (iiinv < 0.0)
     dserror("fatal failure in logarithmic neo-Hooke material");
   // determinant of deformation gradient
-  const double detf = std::sqrt(iiinv); 
+  const double detf = std::sqrt(iiinv);
 
   // invert right Cauchy-Green tensor
   LINALG::Matrix<6,1> invc(false);
@@ -185,7 +185,7 @@ void MAT::LogNeoHooke::EvaluateModelZero(
     // deltas (see also Holzapfel [2] at p.261)
     const double delta6 = lambda;
     const double delta7 = 2.0*(mue - lambda*std::log(detf));
-    
+
     // contribution: Cinv \otimes Cinv
     cmat.MultiplyNT(delta6, invc, invc);
 
@@ -210,7 +210,7 @@ void MAT::LogNeoHooke::EvaluateModelOne(
   const double lambda = (nue==0.5) ? 0.0 : youngs*nue/((1.0+nue)*(1.0-2.0*nue));  // Lame coeff.
   const double mue1 = youngs/(2.0*(1.0+nue));  // shear modulus at I_C-proportional term
   const double mue3 = (nue==0.5) ? 0.0 : mue1;  // shear modulus at III_C-proportional term
-  
+
   // build identity tensor I
   LINALG::Matrix<6,1> identity(true);
   for (int i = 0; i < 3; i++)
@@ -270,7 +270,7 @@ void MAT::LogNeoHooke::EvaluateModelOne(
     const double delta6 = 2.0*mue1*inv/(9.0*iiinvpowthird)
                         + lambda;
     const double delta7 = 2.0*mue1*inv/(3.0*iiinvpowthird)
-                        + 2.0*mue3 
+                        + 2.0*mue3
                         - lambda*std::log(iiinv);
 
     // contribution Id \otimes Cinv + Cinv \otimes Id
@@ -279,7 +279,7 @@ void MAT::LogNeoHooke::EvaluateModelOne(
 
     // contribution: Cinv \otimes Cinv
     cmat.MultiplyNT(delta6, icg, icg, 1.0);
-    
+
     // contribution: Cinv \odot Cinv
     AddtoCmatHolzapfelProduct(cmat, icg, delta7);
   }

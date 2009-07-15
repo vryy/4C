@@ -94,11 +94,11 @@ namespace MAT
         const std::string name  ///< name of material
         );
 
-      
+
       /// Empty Constructor with type condition_none
       Material();
 
-  
+
       /// Copy Constructor
       ///
       /// Makes a deep copy of a condition
@@ -126,7 +126,7 @@ namespace MAT
       /// Set pointer to readily allocated 'quick access' material parameters
       ///
       /// This function is called by the material factory MAT::Material::Factory.
-      /// To circumvent more than this single major switch of material type to 
+      /// To circumvent more than this single major switch of material type to
       /// object, #params_ are allocated externally.
       inline void SetParameter(
         MAT::PAR::Parameter* matparam  ///< the pointer
@@ -139,7 +139,7 @@ namespace MAT
 
       /// @name Query methods
       //@{
-  
+
       /// Return material id
       inline virtual int Id() const { return id_; }
 
@@ -156,7 +156,7 @@ namespace MAT
       inline const Teuchos::RCP<Epetra_Comm> Comm() const { return comm_; }
 
       /// Return quick accessible material parameter data
-      /// 
+      ///
       /// These quick access parameters are stored in separate member #params_;
       /// whereas the originally read ones are stored in DRT::Container base
       inline MAT::PAR::Parameter* Parameter() const { return params_; }
@@ -164,7 +164,7 @@ namespace MAT
       //@}
 
     protected:
-      
+
       /// don't want = operator
       Material operator = (const Material& old);
 
@@ -184,7 +184,7 @@ namespace MAT
       MAT::PAR::Parameter* params_;
 
     };  // class Material
-    
+
   }  // namespec PAR
 
 }  // namespace MAT

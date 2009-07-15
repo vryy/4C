@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file biocell.H
-\brief 
+\brief
 <pre>
 Maintainer: Robert Metzke
             metzke@lnm.mw.tum.de
@@ -104,11 +104,11 @@ namespace MAT
 
     /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_biocell; }
-    
+
     void Evaluate(const LINALG::Matrix<6,1>* glstrain,
             LINALG::Matrix<6,6>* cmat,
             LINALG::Matrix<6,1>* stress);
-    
+
 
     inline double Density() const { return params_->density_; }
 
@@ -117,7 +117,7 @@ namespace MAT
 
     /// my material parameters
     MAT::PAR::BioCell* params_;
-    
+
     void InverseTensor(
                   const Epetra_SerialDenseMatrix& M,
                   Epetra_SerialDenseMatrix& Minv,
@@ -126,7 +126,7 @@ namespace MAT
                   const LINALG::SerialDenseMatrix& A,
                   const LINALG::SerialDenseMatrix& B,
                   LINALG::SerialDenseMatrix& AB);
-  
+
   };
 }
 

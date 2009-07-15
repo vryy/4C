@@ -166,11 +166,11 @@ void MAT::ViscoNeoHooke::Setup(const int numgp)
     artstresscurr_->at(j) = emptyvec;
     artstresslast_->at(j) = emptyvec;
   }
- 
+
   const double E_s  = params_->youngs_slow_;
   double E_f  = params_->youngs_fast_;
   double tau  = params_->relax_;
- 
+
   if (E_f < E_s) dserror("Wrong ratio between fast and slow Young's modulus");
   if (tau<=0.0) dserror("Relaxation time tau has to be positive!");
   isinit_=true;
@@ -229,10 +229,10 @@ void MAT::ViscoNeoHooke::Evaluate(const LINALG::Matrix<NUM_STRESS_3D,1>* glstrai
   const double theta= params_->theta_;
 
   // get time algorithmic parameters
-  // NOTE: dt can be zero (in restart of STI) for Generalized Maxwell model 
+  // NOTE: dt can be zero (in restart of STI) for Generalized Maxwell model
   // there is no special treatment required. Adaptation for Kelvin-Voigt were necessary.
   double dt = params.get<double>("delta time");
-  
+
   // compute algorithmic relaxation time
   double tau1=tau;
   //check for meaningful values
@@ -252,7 +252,7 @@ void MAT::ViscoNeoHooke::Evaluate(const LINALG::Matrix<NUM_STRESS_3D,1>* glstrai
   double scalarvisco;
 
 #define GEN_MAXWELL
-#ifdef GEN_MAXWELL 
+#ifdef GEN_MAXWELL
   tau=tau1;
   // evaluate "alpha" factors which distribute stress or stiffness between parallel springs
   // sum_0^i alpha_j = 1
@@ -271,7 +271,7 @@ void MAT::ViscoNeoHooke::Evaluate(const LINALG::Matrix<NUM_STRESS_3D,1>* glstrai
 
   // factor to calculate visco stiffness matrix from elastic stiffness matrix
   scalarvisco = alpha0+alpha1*tau/(tau+theta*dt);
-  
+
 #else
   //in this case we have a parallel layout of a spring and a dashpot,
   //so no stress distribution between parallel springs
@@ -302,7 +302,7 @@ void MAT::ViscoNeoHooke::Evaluate(const LINALG::Matrix<NUM_STRESS_3D,1>* glstrai
     // factor to calculate visco stiffness matrix from elastic stiffness matrix
     scalarvisco = 2.0;
   }
-  
+
 #endif
 
   // right Cauchy-Green Tensor  C = 2 * E + I

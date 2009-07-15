@@ -114,11 +114,11 @@ namespace MAT
 
     /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_neohooke; }
-    
+
     void Evaluate(const Epetra_SerialDenseVector* glstrain_e,
                   Epetra_SerialDenseMatrix* cmat_e,
                   Epetra_SerialDenseVector* stress_e);
-    
+
     void Evaluate(const LINALG::Matrix<6,1>& glstrain,
                   LINALG::Matrix<6,6>& cmat,
                   LINALG::Matrix<6,1>& stress);
@@ -128,7 +128,7 @@ namespace MAT
 
     /// Poisson's ratio
     double PoissonRatio() const { return params_->poissonratio_; }
-    
+
     /// density
     inline double Density() const { return params_->density_; }
 
@@ -146,7 +146,7 @@ namespace MAT
                   Epetra_SerialDenseMatrix& Minv,
 		  const double I3);
 
-  
+
   };
 }
 

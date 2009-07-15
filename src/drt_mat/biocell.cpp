@@ -108,7 +108,7 @@ void MAT::BioCell::Evaluate(
   const double kappa_mt = 1./3.; // dispersion factor for microtubuli
   const double c_af = 0.5 * 6.0e-0;
   //////////////////////////////////////////////////////////////////////////////
-  
+
   int i,j,k,l;
   const double drittel = 1./3.;
   // Preparation of several tensors ////////////////////////////////////////////
@@ -120,7 +120,7 @@ void MAT::BioCell::Evaluate(
   I(0,1) = 0.0; I(1,0) = 0.0;
   I(1,2) = 0.0; I(2,1) = 0.0;
   I(0,2) = 0.0; I(2,0) = 0.0;
-  
+
   // Green-Lagrange Strain Tensor
   LINALG::SerialDenseMatrix E(3,3);
   E(0,0) = (*glstrain)(0);
@@ -129,24 +129,24 @@ void MAT::BioCell::Evaluate(
   E(0,1) = 0.5 * (*glstrain)(3);  E(1,0) = 0.5 * (*glstrain)(3);
   E(1,2) = 0.5 * (*glstrain)(4);  E(2,1) = 0.5 * (*glstrain)(4);
   E(0,2) = 0.5 * (*glstrain)(5);  E(2,0) = 0.5 * (*glstrain)(5);
-  
+
   // Right Cauchy-Green Tensor  C = 2 * E + I
   LINALG::SerialDenseMatrix C(E);
   C.Scale(2.0);
   C(0,0) += 1.0;
   C(1,1) += 1.0;
   C(2,2) += 1.0;
-  
+
   // Principal Invariants I1 = tr(C) and I3 = det(C)
   const double I1 = C(0,0)+C(1,1)+C(2,2); // Necessary only for energy
   const double I3 = C(0,0)*C(1,1)*C(2,2) + C(0,1)*C(1,2)*C(2,0)
                   + C(0,2)*C(1,0)*C(2,1) - (C(0,2)*C(1,1)*C(2,0)
                   + C(0,1)*C(1,0)*C(2,2) + C(0,0)*C(1,2)*C(2,1));
-  
+
   // Calculation of C^-1 (Cinv)
-  LINALG::SerialDenseMatrix Cinv(3,3); 
+  LINALG::SerialDenseMatrix Cinv(3,3);
   InverseTensor(C,Cinv,I3);
-  
+
   // Preparation of anisotropic tensors ////////////////////////////////////////
   vector<double> a(3); // anisotropic direction vector
   a[0]=0.0;
@@ -182,14 +182,14 @@ void MAT::BioCell::Evaluate(
   // anisotropic invariant J4 = tr(HC)
   double J4_af = HC_af(0,0)+HC_af(1,1)+HC_af(2,2);
   //double J4_mt = HC_mt(0,0)+HC_mt(1,1)+HC_mt(2,2);  // unused
-  
-  
+
+
   // Strain Energy /////////////////////////////////////////////////////////////
   double W,W_an,W_af;
   if (AN) { W_an = c_an * (I1 - 3) + (c_an/beta) * (pow(I3,-beta) - 1); }
   if (AF) { W_af = c_af * (J4_af/pow(I3,drittel) - 1) * (J4_af/pow(I3,drittel) - 1); }
   W = W_an + W_af;
-  
+
   // PK2 Stresses //////////////////////////////////////////////////////////////
   LINALG::SerialDenseMatrix PK2(3,3);
   LINALG::SerialDenseMatrix PK2_an(3,3);
@@ -200,14 +200,14 @@ void MAT::BioCell::Evaluate(
         if (AN) {
             PK2_an(i,j) = 2.0 * c_an * ( I(i,j) - pow(I3,-beta) * Cinv(i,j) ); /*2.0*c1*(pow(I3,(-drittel)))*(I[i][j]- drittel*I1*Cinv[j][i]);*/
         } else { PK2_an(i,j) = 0.0; }
-        
+
         if (AF && (J4_af > 1)) {
             PK2_af(i,j) = 4.0 * c_af * (J4_af*pow(I3,-1./3.) - 1.0) * pow(I3,-1./3.) * (HT_af(i,j) - 1./3. * J4_af * Cinv(i,j));
         } else { PK2_af(i,j) = 0.0; }
-        
+
       PK2(i,j)= PK2_an(i,j) + PK2_af(i,j);
     }
-  
+
   // Transfer PK2 tensor to stress vector
   (*stress)(0) = PK2(0,0);
   (*stress)(1) = PK2(1,1);
@@ -215,7 +215,7 @@ void MAT::BioCell::Evaluate(
   (*stress)(3) = PK2(0,1);
   (*stress)(4) = PK2(1,2);
   (*stress)(5) = PK2(0,2);
-  
+
   // Constitutive Tensor ///////////////////////////////////////////////////////
   // deltas
   vector<double> delta_an(8);
@@ -252,7 +252,7 @@ void MAT::BioCell::Evaluate(
   } else if (!AF) {
       for (i=0;i<8;i++) { delta_af[i]=0.0; }
   } else { exit(1); }
-  
+
   // Calculate Tensorproducts for all cases (slow, but makes things very flexible)
   LINALG::SerialDenseMatrix I9(9,9);
   LINALG::SerialDenseMatrix IC(9,9);
@@ -270,7 +270,7 @@ void MAT::BioCell::Evaluate(
   LINALG::SerialDenseMatrix C_H(9,9);
   LINALG::SerialDenseMatrix H_Cinv(9,9);
   LINALG::SerialDenseMatrix Cinv_H(9,9);
-  
+
   TensorProduct(I,I,I9);
   TensorProduct(I,C,IC);
   TensorProduct(C,I,CI);
@@ -280,7 +280,7 @@ void MAT::BioCell::Evaluate(
   TensorProduct(C,Cinv,CCinv);
   TensorProduct(Cinv,C,CinvC);
   TensorProduct(Cinv,Cinv,CinvCinv);
-  
+
   for (k=0; k<9; k+=3) {
 	for (l=0; l<9; l+=3) {
 		for (i=0; i<3; i++) {
@@ -301,7 +301,7 @@ void MAT::BioCell::Evaluate(
   TensorProduct(C,H_af,C_H);
   TensorProduct(H_af,Cinv,H_Cinv);
   TensorProduct(Cinv,H_af,Cinv_H);
-  
+
   // Assemble Constitutive Tensor
   LINALG::SerialDenseMatrix Celasticity(9,9); // Elasticity Tensor
   vector<double> Celas_ap(8); // additive parts of the elasticity tensor in its most general form
@@ -319,7 +319,7 @@ void MAT::BioCell::Evaluate(
                   Celas_ap[7] = (delta_an[7]+delta_af[7]) * II(i+k,j+l);
                   Celasticity(i+k,j+l) = Celas_ap[0]+Celas_ap[1]+Celas_ap[2]+Celas_ap[3]+Celas_ap[4]+Celas_ap[5]+Celas_ap[6]+Celas_ap[7];
               } } } }	
-  
+
   // copy to Voigt notation
   (*cmat)(0,0)=Celasticity(0,0);
   (*cmat)(0,1)=Celasticity(1,1);
@@ -327,42 +327,42 @@ void MAT::BioCell::Evaluate(
   (*cmat)(0,3)=Celasticity(1,0);
   (*cmat)(0,4)=Celasticity(2,1);
   (*cmat)(0,5)=Celasticity(2,0);
-  
+
   (*cmat)(1,0)=Celasticity(3,3);
   (*cmat)(1,1)=Celasticity(4,4);
   (*cmat)(1,2)=Celasticity(5,5);
   (*cmat)(1,3)=Celasticity(4,3);
   (*cmat)(1,4)=Celasticity(5,4);
   (*cmat)(1,5)=Celasticity(5,3);
-  
+
   (*cmat)(2,0)=Celasticity(6,6);
   (*cmat)(2,1)=Celasticity(7,7);
   (*cmat)(2,2)=Celasticity(8,8);
   (*cmat)(2,3)=Celasticity(7,6);
   (*cmat)(2,4)=Celasticity(8,7);
   (*cmat)(2,5)=Celasticity(8,6);
-  
+
   (*cmat)(3,0)=Celasticity(3,0);
   (*cmat)(3,1)=Celasticity(4,1);
   (*cmat)(3,2)=Celasticity(5,2);
   (*cmat)(3,3)=Celasticity(4,0);
   (*cmat)(3,4)=Celasticity(5,1);
   (*cmat)(3,5)=Celasticity(5,0);
-  
+
   (*cmat)(4,0)=Celasticity(6,3);
   (*cmat)(4,1)=Celasticity(7,4);
   (*cmat)(4,2)=Celasticity(8,5);
   (*cmat)(4,3)=Celasticity(7,3);
   (*cmat)(4,4)=Celasticity(8,4);
   (*cmat)(4,5)=Celasticity(8,3);
-  
+
   (*cmat)(5,0)=Celasticity(6,0);
   (*cmat)(5,1)=Celasticity(7,1);
   (*cmat)(5,2)=Celasticity(8,2);
   (*cmat)(5,3)=Celasticity(7,0);
   (*cmat)(5,4)=Celasticity(8,1);
   (*cmat)(5,5)=Celasticity(8,0);
-  
+
   return;
 } // end of biological cell model
 

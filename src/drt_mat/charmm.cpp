@@ -237,7 +237,7 @@ void MAT::CHARMM::Evaluate(const LINALG::Matrix<NUM_STRESS_3D, 1 > * glstrain,
     // Scale factor (by default c_CHARMm will be in N/m^2. This should be revised)
     const double c_scale = CScale(); //1E-9;
     //////////////////////////////////////////////////////////////////////////
-    
+
     // Identity Matrix
     LINALG::Matrix < 3, 3 > I(true);
     for (int i = 0; i < 3; ++i) I(i, i) = 1.0;
@@ -428,7 +428,7 @@ void MAT::CHARMM::Evaluate(const LINALG::Matrix<NUM_STRESS_3D, 1 > * glstrain,
             double E_MD = charmm_result[1] - charmm_result[0]; // kcal/mole
             double Volume = 0.5 * (charmm_result[4] + charmm_result[5]) * 1E-30; // A^3 *  (10^-10)^3
             double noAtoms = 0.5 * (charmm_result[3] + charmm_result[2]);
-            
+
             double c;
             if (I1 != I1_lastt) {
                 c = (1 / (I1 - I1_lastt)) * (1 / Volume) * E_MD * 1000 * 4.1868 * (noAtoms / 6.02214E23);
@@ -438,14 +438,14 @@ void MAT::CHARMM::Evaluate(const LINALG::Matrix<NUM_STRESS_3D, 1 > * glstrain,
             if (isnan(c)) c = 0;
             if (isinf(c)) c = 0;
             c = c_scale * c;
-            
+
             if (FCD_STARTD != FCD_ENDD) {
                 if (I1_lastt == 3) (*his_mat)[0] = c;
                 else (*his_mat)[0] = c * ((I1 - I1_lastt) / (I1 - 3));
             } else {
                 (*his_mat)[0] = 0.0;
             }
-            
+
         } else if (energy.compare("store") == 0) {
             // Calculate new c (Neo-Hooke) parameter
             // c = E_FE / (I1(t_n) - 3) [N/m^2]
@@ -474,12 +474,12 @@ void MAT::CHARMM::Evaluate(const LINALG::Matrix<NUM_STRESS_3D, 1 > * glstrain,
             } else {
                 (*his_mat)[0] = 0.0;
             }
-        
+
         }
         if (FCD_STARTD != FCD_ENDD) cout << "ACE: c = " << (*his_mat)[0] << " I1(t_n-1) = " << I1_lastt << " I1(t_n) = " << I1<<  endl;
-        
-	//cout << "MD Result: " << charmm_result[0] << ":" << charmm_result[1] << " " 
-	//        << ( charmm_result[1] - charmm_result[0]) << " " 
+
+	//cout << "MD Result: " << charmm_result[0] << ":" << charmm_result[1] << " "
+	//        << ( charmm_result[1] - charmm_result[0]) << " "
 	//        << charmm_result[5] << endl;
 
     }
@@ -798,7 +798,7 @@ void MAT::CHARMM::Readresults(map<string, double>& CHARMmPar,
     cout << setw(4) << "dV:" << setw(15) << left << scientific << setprecision(6) << (md_ENDD["E"] - md_STARTD["E"]);
     cout << setw(8) << "#Atoms:" << setw(10) << left << fixed << setprecision(0) << md_ENDD["NUM"];
     cout << setw(8) << "Volume:" << setw(12) << left << setprecision(3) << md_ENDD["VOL"] << endl;
-    
+
     ////////////////////////////////////////////////////////////////////////////
     // Results vector: charmm_result
     // (Energy STARTD, Energy ENDD, #Atoms STARTD, #Atoms ENDD, Volume STARTD, Volume ENDD)
@@ -837,7 +837,7 @@ void MAT::CHARMM::Reader(const ostringstream& file,
 	filestream.close();
     } else dserror("CHARMM API READER: File cannot be opened: ");
 
-    
+
     //cout << endl << "File Content: " << endl;
     //for( map<string, double>::iterator ii=content.begin(); ii!=content.end(); ++ii) {
     //	cout << (*ii).first << ": " << (*ii).second << endl;

@@ -21,7 +21,7 @@ namespace MAT
 
   namespace PAR
   {
-   
+
     /*----------------------------------------------------------------------*/
     /// material parameters for convection-diffusion
     class Ion : public Parameter
@@ -110,7 +110,7 @@ namespace MAT
 
   private:
 
-    /// my material parameters 
+    /// my material parameters
     MAT::PAR::Ion* params_;
   };
 

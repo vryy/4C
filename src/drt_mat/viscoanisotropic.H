@@ -117,12 +117,12 @@ namespace MAT
     (
       const int numgp  ///< number of Gauss points
     );
-    
+
     /// Setup and Initialize internal stress variables and align fibers based on a given vector
      void Setup
      (
        const int numgp,  ///< number of Gauss points
-       const vector<double> fibervec  ///< direction fibers should be oriented in 
+       const vector<double> fibervec  ///< direction fibers should be oriented in
      );
 
     /// Update internal stress variables
@@ -148,15 +148,15 @@ namespace MAT
 
     /// Return density
     double Density() const {return params_->density_;};
-    
+
     /// Return shear modulus
     double ShearMod() const {return params_->mue_;};
-        
+
 
     /// Check if history variables are already initialized
     bool Initialized() const
       { return isinit_&&(histstresscurr_!=Teuchos::null);}
-    
+
     /// return a1s
     RCP<vector<vector<double> > > Geta1() const {return a1_;}
 
@@ -178,7 +178,7 @@ namespace MAT
     RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histstresslast_; ///< stress of last converged state
     RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > artstresscurr_;  ///< current artificial stress
     RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > artstresslast_;  ///< artificial stress in last converged state
-   
+
     bool isinit_;  ///< indicates if material is initialized
 
   };

@@ -18,7 +18,7 @@ Maintainer: Georg Bauer
 
 namespace MAT
 {
- 
+
   namespace PAR
   {
     /*----------------------------------------------------------------------*/
@@ -130,7 +130,7 @@ namespace MAT
     int MatID(
       const unsigned index
     ) const
-    { 
+    {
       if ((int)index < params_->nummat_)
         return params_->matids_->at(index);
       else

@@ -39,7 +39,7 @@ namespace MAT
    * variables in elements. Each element owns one object derived from
    * this class. Each derived class implements a specific material and
    * might even store history data.
-   * 
+   *
    * \note There is one material object to each element, so one material
    * object must store the history data of all Gauss points.
    *
@@ -72,7 +72,7 @@ namespace MAT
 
   /*! \brief Multiply two 2nd order tensors A x B and add the result to a
    *         4th order symmetric material tensor in matrix notation
-   * 
+   *
    * In tensor index notation this method does
    * \f[
    * C_{IJKL} := ScalarThis \cdot C_{IJKL}
@@ -84,7 +84,7 @@ namespace MAT
    * a 4th order tensor (in Voigt matrix notation!) using the
    * symmetry-conditions inherent to elasticity tensors
    * The implementation is based on the Epetra-Method Matrix.Multiply.
-   * 
+   *
    * \param C (in/out)    : Material tangent matrix to be modified
    * \param ScalarAB (in) : Scalar to multiply with A x B
    * \param A (in)        : Dense matrix (3 by 3) as 2nd order tensor A
@@ -99,7 +99,7 @@ namespace MAT
 
   /*! \brief Multiply two 2nd order tensors A x B and add the result to a
    *         4th order symmetric material tensor in matrix notation
-   * 
+   *
    * In tensor index notation this method does
    * \f[
    * C_{IJKL} := ScalarThis \cdot C_{IJKL}
@@ -126,13 +126,13 @@ namespace MAT
 
   /*! \brief Multiply two 2nd order tensors (A x B + B x A) and add the result to a
    *         4th order symmetric material tensor in matrix notation
-   * 
+   *
    * In tensor index notation this method does
    * \f[
    * C_{IJKL} := ScalarThis \cdot C_{IJKL}
    *          + ScalarAB \cdot ( A_{IJ} \cdot B_{KL} + B_{IJ} \cdot A_{KL} )
    * \f]
-   * 
+   *
    * compute the "elasticity tensor product" (A x B + B x A) of
    * two 2nd order tensors (in matrix notation) and add the result to
    * a 4th order tensor (in Voigt matrix notation!) using the
@@ -164,7 +164,7 @@ namespace MAT
    * a 4th order tensor (in Voigt matrix notation!) using the
    * symmetry-conditions inherent to elasticity tensors
    * This is another version of this function using the fixed size matrix.
-   * 
+   *
    * \param C (in/out)     : Material tangent matrix to be modified
    * \param ScalarAB (in)  : Scalar to multiply with (A x B + B x A)
    * \param A (in)         : Dense matrix (3 by 3) as 2nd order tensor A
@@ -176,10 +176,10 @@ namespace MAT
                                     const LINALG::Matrix<3,3>& A,
                                     const LINALG::Matrix<3,3>& B,
                                     const double ScalarThis);
-  
+
   /*! \brief Multiply two 2nd order tensors A o B and add the result to a
    *         4th order symmetric material tensor in matrix notation
-   * 
+   *
    * In tensor index notation this method does
    * \f[
    * C_{IJKL} := ScalarThis \cdot C_{IJKL}
@@ -238,14 +238,14 @@ namespace MAT
      \partial tensor(C)^-1
      -----------------------
      \partial tensor(C)
-   * \endverbatim 
+   * \endverbatim
    *
    * which yields the following product
-   * 
+   *
    * \verbatim
      - ( Cinv boeppel Cinv )_{abcd} = 1/2 * ( Cinv_{ac} Cinv_{bd} + Cinv_{ad} Cinv_{bc} )
    * \endverbatim
-   * 
+   *
    * For more details see Holzapfel p. 254
    *
    * \param cmat (in/out): Material tangent matrix(6x6) to be modified
@@ -258,7 +258,7 @@ namespace MAT
 
   /*! \brief Add 'Holzapfel product' contribution to constitutive tensor
    *         using Voigt notation
-   * 
+   *
    * This function adds the following contribution to the given constitutive
    * matrix #cmat based on the inverse of the right Cauchy-Green vector
    * #invc.
@@ -278,8 +278,8 @@ namespace MAT
    *
    * In tensor index notation this \f$\odot\f$-product means
    * \f[
-   * C^{ABCD} := C^{ABCD} 
-   *          + scalar ( (C^{-1})^{AC} (C^{-1})^{BD} 
+   * C^{ABCD} := C^{ABCD}
+   *          + scalar ( (C^{-1})^{AC} (C^{-1})^{BD}
    *                     + (C^{-1})^{AD} (C^{-1})^{BC} )
    * \f]
    *
@@ -293,9 +293,9 @@ namespace MAT
    *                       and its columns strain-like 6-Voigt, i.e.
    *                       \f$[ ()_{11}, \; ()_{22}, \; ()_{33},
    *                       \; 2*()_{12}, \; 2*()_{23}, \; 2*()_{31} ]\f$
-   *                       
+   *
    * \param invc   (in)  : inverse right Cauchy-Green vector
-   *                       in stress-like 6-Voigt notation 
+   *                       in stress-like 6-Voigt notation
    *                       \f$[ C^{-1}_{11} \; C^{-1}_{22} \; C^{-1}_{33}
    *                       \; C^{-1}_{12} \; C^{-1}_{23} \; C^{-1}_{31}]\f$
    * \param scalar (in)  : scalar, corresponding to \f$\delta_7\f$ in Holzapfel [1], p.261
@@ -303,19 +303,19 @@ namespace MAT
   void AddtoCmatHolzapfelProduct(LINALG::Matrix<6,6>& cmat,
                                  const LINALG::Matrix<6,1>& invc,
                                  const double scalar);
-  
+
 
   /*! \brief Put apart the volumetric and isochoric part
    *         of the 2nd Piola--Kirchhoff stress and the
    *         material constitutive tensor
    *
-   * The volumetric 2nd Piola--Kirchhof stress \f$S^{AB}_\text{vol}\f$ 
+   * The volumetric 2nd Piola--Kirchhof stress \f$S^{AB}_\text{vol}\f$
    * are obtained by
    * \f[
    *   S^{AB}_\text{vol}
    *   = \frac{1}{3} \big( S^{CD} \, C_{CD} \big) \, (C^{-1})^{AB}
    * \f]
-   * and its corresponding contribution to the constitutive tensor 
+   * and its corresponding contribution to the constitutive tensor
    * \f$C^{ABCD}_\text{vol}\f$ is
    * \f[
    *   C^{ABCD}_\text{vol}
@@ -331,7 +331,7 @@ namespace MAT
    *
    * The isochoric 2nd Piola--Kirchhoff stress \f$S^{AB}_\text{iso}\f$
    * and and the isochoric constribution \f$C^{ABCD}_\text{iso}\f$
-   * to the constitutive tensor are 
+   * to the constitutive tensor are
    * \f[
    *   S^{AB}_\text{iso} = S^{AB} - S^{AB}_\text{vol}
    * \f]

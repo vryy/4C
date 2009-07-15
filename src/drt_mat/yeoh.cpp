@@ -115,7 +115,7 @@ void MAT::Yeoh::Evaluate(
   const double c2  = params_->c2_;
   const double c3  = params_->c3_;
   const double kappa = params_->kap_;
-  
+
   // right Cauchy-Green Tensor  C = 2 * E + I
   // build identity tensor I
   LINALG::Matrix<NUM_STRESS_3D,1> Id(true);
@@ -134,10 +134,10 @@ void MAT::Yeoh::Evaluate(
 
   const double J = sqrt(I3);
   const double incJ = pow(I3,-1.0/3.0);  // J^{-2/3}
-  
+
   const double I1bar= incJ*I1; //first invariant of modified right Cauchy-Green
-  
-    
+
+
   // invert C
   LINALG::Matrix<NUM_STRESS_3D,1> Cinv(false);
 
@@ -147,8 +147,8 @@ void MAT::Yeoh::Evaluate(
   Cinv(3) = C(5)*C(4) - C(3)*C(2);
   Cinv(4) = C(3)*C(5) - C(0)*C(4);
   Cinv(5) = C(3)*C(4) - C(5)*C(1);
-  Cinv.Scale(1.0/I3);  
-  
+  Cinv.Scale(1.0/I3);
+
   // *** strain energy function  ************************************************
   // Yeoh (Holzapfel, p.248)
   // W = c1 (I1bar-3) + c2 (I1bar-3)^2 + c3 (I1bar-3)^3 +1/2 kappa (J-1)^2
@@ -159,55 +159,55 @@ void MAT::Yeoh::Evaluate(
   // Isochoric (deviatoric) part via projection PP:Sbar, see Holzapfel p. 230
   // Siso = J^{-2/3}  Dev[Sbar] = J^{-2/3} [Sbar - 1/3 trace(Sbar C) Cinv]
   // here: Sbar = (2* c1 + 4 * c2* (I1bar-3) + 6* c3 * (I1bar-3)^2) * Id  (Holzapfel, p. 249)
-  
+
   const double third = 1./3.;
   const double p = kappa*(J-1);
   const double gamma1 = 2.*c1 + 4.*c2*(I1bar-3.) + 6.*c3*(I1bar-3.)*(I1bar-3.);
   for (int i = 0; i < 6; ++i) {
     (*stress)(i) = J*p * Cinv(i);  // volumetric part
     (*stress)(i) += incJ* (gamma1*Id(i) - third*gamma1*I1*Cinv(i));  //isochoric part
-  }  
-  
+  }
+
   // *** Elasticity =  CCvol + CCiso *******************************************
   // CCvol = J(p + J dp/dJ) Cinv x Cinv  -  2 J p Cinv o Cinv
   // CCiso = PP:CCbar::PP^T + 2/3 J^{-2/3} Sbar:C Psl - 2/3 (Cinv x Siso + Siso x Cinv)
   // with CCbar = (2*J^{-4/3}* dSbar/dCbar) (see Holzapfel p. 255)
-  
+
   //first part of volumetric CC
   AddtoCmatHolzapfelProduct((*cmat),Cinv,(-2*J*p));  // -2 J p Cinv o Cinv
-  
+
   LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>  Psl(true);        // Psl = Cinv o Cinv - 1/3 Cinv x Cinv
   AddtoCmatHolzapfelProduct(Psl,Cinv,1.0);  // first part Psl = Cinv o Cinv
 
   const double delta1 = 8.*c2+24.*c3*(I1bar-3.); //dSbar/dCbar
   const double alpha = incJ*incJ*delta1;
   const double fac = 2.*third*incJ*gamma1*I1;  // 2/3 J^{-2/3} Sbar:C
-  
+
   for (int i = 0; i < 6; ++i) {
     for (int j = 0; j < 6; ++j) {
       //second part of volumetric CC
       (*cmat)(i,j) += J*(p+J*kappa) * Cinv(i) * Cinv(j);  // J(p + J dp/dJ) Cinv x Cinv
       // on the fly complete Psl needed later
       Psl(i,j) += (-third) * Cinv(i) * Cinv(j);
-      
+
       //isochoric part: PP:CCbar::PP^T
       (*cmat)(i,j) += alpha * ( Id(i)*Id(j) //alpha* Id x Id
                       - third * I1 * Id(i)*Cinv(j) // alpha*I1 / 3 * ID x Cinv
                       - third * I1 * Id(j)*Cinv(i) // alpha*I1 / 3 * Cinv x Id
                       + third * third * I1 * I1 * Cinv(i) * Cinv(j)); // alpha*I1^2/9*Cinv x Cinv
-      
+
       //isochoric parts: 2/3 J^{-2/3} Sbar:C Psl - 2/3 (Cinv x Siso + Siso x Cinv)
       (*cmat)(i,j) += fac * Psl(i,j)                            // fac Psl
                       - 2*third * Cinv(i) * incJ * (gamma1*Id(j) - third*gamma1*I1*Cinv(j)) // -2/3 Cinv x Siso
                       - 2*third * Cinv(j) * incJ * (gamma1*Id(i) - third*gamma1*I1*Cinv(i));// -2/3 Siso x Cinv
     }
   }
-  
-  
-  
-  
+
+
+
+
   // do the dirty scaling!!!
- 
+
 //  (*stress).Scale(c2);
 //  (*cmat).Scale(c2);
 

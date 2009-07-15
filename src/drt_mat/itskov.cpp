@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file Itskov.cpp
-\brief 
+\brief
 This file contains the routines required for incompressible Itskov material law
 with a penalty-function acocrding to Balzani et al.
 
@@ -118,19 +118,19 @@ void MAT::Itskov::Unpack(const vector<char>& data)
  *----------------------------------------------------------------------*/
  void MAT::Itskov::Evaluate(
             const LINALG::Matrix<6,1>& glstrain,
-            const int gp, const int ele_ID, 
+            const int gp, const int ele_ID,
             DRT::Container& data_,
             const double time,
                   LINALG::Matrix<6,6>& cmat,
                   LINALG::Matrix<6,1>& stress)
- 
- 
+
+
 /*void MAT::itskov::Evaluate(
             const LINALG::Matrix<6,1> *glstrain,
             const int gp, const int ele_ID, const double time,
                   LINALG::Matrix<6,6> *cmat,
                   LINALG::Matrix<6,1> *stress)*/
-                  
+
 {
 	int i,k;
 	double energy, energy_constr, delta1, delta2;
@@ -216,7 +216,7 @@ void MAT::Itskov::Unpack(const vector<char>& data)
 	E(0,1) = 0.5 * (glstrain)(3);  E(1,0) = 0.5 * (glstrain)(3);
 	E(1,2) = 0.5 * (glstrain)(4);  E(2,1) = 0.5 * (glstrain)(4);
 	E(0,2) = 0.5 * (glstrain)(5);  E(2,0) = 0.5 * (glstrain)(5);
-  
+
 // Right Cauchy-Green Tensor  C = 2 * E + I
 	LINALG::Matrix<3,3> C(E);
 	C.Scale(2.0);
@@ -228,12 +228,12 @@ void MAT::Itskov::Unpack(const vector<char>& data)
 	/*C(0,0) = 1.410156;
 	C(1,1) = 1.0;
 	C(2,2) = 1.0;*/
-   
+
 // Principal Invariants I3 = det(C)
 	const double I3 = C(0,0)*C(1,1)*C(2,2) + C(0,1)*C(1,2)*C(2,0)
                   + C(0,2)*C(1,0)*C(2,1) - (C(0,2)*C(1,1)*C(2,0)
                   + C(0,1)*C(1,0)*C(2,2) + C(0,0)*C(1,2)*C(2,1));
-  
+
 // Calculation of Inverse Cinv of C
 	LINALG::Matrix<3,3> Cinv(C);
 	Cinv.Invert();
@@ -260,7 +260,7 @@ void MAT::Itskov::Unpack(const vector<char>& data)
 //-----------------------------------------------strain-energy-function
 	energy=energy_constr+factors1[0]+factors1[1]+factors2[0]+factors2[1];
 
-//---------------------------------------------------------------------  
+//---------------------------------------------------------------------
 // PK2 Stresses
 //--------------------------------constraint function incompressibility
 	LINALG::Matrix<3,3> PK2_constr(Cinv);
@@ -268,7 +268,7 @@ void MAT::Itskov::Unpack(const vector<char>& data)
 //------------------------------------2nd Piola-Kirchhoff Stress tensor
 	LINALG::Matrix<3,3> PK2(PK2_constr);
 	PK2+=PK2_1;					
-	PK2+=PK2_2;  
+	PK2+=PK2_2;
 // Transfer PK2 tensor to stress vector
 	(stress)(0) = PK2(0,0);
   	(stress)(1) = PK2(1,1);
@@ -295,7 +295,7 @@ void MAT::Itskov::Unpack(const vector<char>& data)
 //zum testen
 if(gp==-1)
 {
-	printf("\ntime: %f, gp: %d \n", time, gp);  
+	printf("\ntime: %f, gp: %d \n", time, gp);
 	/*printf("\ntime: %f, element: %f \n", time, ele_ID);  */
 	printf("I3: %.10f   \n", I3);
 	printf("ePenSoll: %f   ePen: %f\n", epsilonPen_soll, epsilonPen);
@@ -347,12 +347,12 @@ printf("\nSecond Piola Kirchhoff_Constr\n");
 
 
 //Calculation of the factors in front of the tensor-Products
-void MAT::Itskov::calc_factors (	LINALG::Matrix<3,3>&C, 
-						LINALG::Matrix<3,3>&Cinv, 
-						LINALG::Matrix<3,3>&L, 
-						DOUBLE alpha, 
-						DOUBLE beta, 
-						DOUBLE mu, 
+void MAT::Itskov::calc_factors (	LINALG::Matrix<3,3>&C,
+						LINALG::Matrix<3,3>&Cinv,
+						LINALG::Matrix<3,3>&L,
+						DOUBLE alpha,
+						DOUBLE beta,
+						DOUBLE mu,
 						DOUBLE *factors)
 {
 	DOUBLE Ir, Kr;
@@ -381,11 +381,11 @@ factors[5]=mu/4.0*(beta*exp(beta*(Kr-1.0)));					//gII
 
 
 //Berechnung von Spannung und elasticity tensor von einer schicht mit entsprecheneden Parametern
-void MAT::Itskov::calc_Itskov (	LINALG::Matrix<3,3>&C, 
-						LINALG::Matrix<3,3>&Cinv, 
-						LINALG::Matrix<3,3>&L, 
-						LINALG::Matrix<3,3>&PK2_, 
-						LINALG::Matrix<6,6>&cmat_, 
+void MAT::Itskov::calc_Itskov (	LINALG::Matrix<3,3>&C,
+						LINALG::Matrix<3,3>&Cinv,
+						LINALG::Matrix<3,3>&L,
+						LINALG::Matrix<3,3>&PK2_,
+						LINALG::Matrix<6,6>&cmat_,
 						DOUBLE *factors)
 {
 //--------------------------------------------Tensorproduct Cinv*L*Cinv
@@ -395,7 +395,7 @@ void MAT::Itskov::calc_Itskov (	LINALG::Matrix<3,3>&C,
 	LINALG::Matrix<3,3> CinvLCinv(true);	//false
 	CinvLCinv.Multiply(1.0,CinvL,Cinv,0.0);	
 //---------------------------------------------------------------------
-//-------------------------------------------2nd Piola-Kirchhoff Stress 
+//-------------------------------------------2nd Piola-Kirchhoff Stress
 //PK2=2*(fI*L-gI*CinvLCinv)
 //---------------------------------------------------------------------
 	PK2_=L;

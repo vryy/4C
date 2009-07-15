@@ -109,16 +109,16 @@ namespace MAT
     \brief Mooney-Rivlin type nearly incompressible, hyperelastic 3D material law.
 
     The underlying strain-energy function is (expressed in invariants I1 and I2):
-    
+
     W = c_1 (I1 - 3)  +  c_2 (I2 - 3)  -  (2 c_1 + 4 c_2) ln(J) + kappa * (J - 1)^2 +
         lambda / 4 * (J^2 - 1 - 2 ln(J))
 
     For references see Holzapfel p. 245, (Klinkel et al 2007).
 
-    Parameters are c_1, c_2 and kappa as penalty factor to effectuate incompressibility 
+    Parameters are c_1, c_2 and kappa as penalty factor to effectuate incompressibility
     (shear modulus mu = (c1 + c2) / 2)
 
-    Note that this special form is stress-free in reference configuration iff lambda == 0.0 
+    Note that this special form is stress-free in reference configuration iff lambda == 0.0
     (See Holzapfel for discussion with d = 2 c_1 + 4 c_2)
     */
     void Evaluate(

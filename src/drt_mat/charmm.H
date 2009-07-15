@@ -43,7 +43,7 @@ namespace MAT {
 
 	    /// @name material parameters
 	    //@{
-	    
+	
 	    /// \b ORIGIN: boolean (1/0) to decide if F is computed at the element origin
 	    const int origin_;
 	    /// \b FCL: first characteristic (fc) length (double) [AKMA]
@@ -126,7 +126,7 @@ namespace MAT {
      P. v. R. Schleyer et al., editors (John Wiley & Sons: Chichester, 1998),
      by A. D. MacKerell, Jr., B. Brooks,C. L. Brooks, III, L. Nilsson, B. Roux,
      Y. Won, and M. Karplus.
-       
+
     */
 
     class CHARMM : public Material {
@@ -315,7 +315,7 @@ namespace MAT {
 
 	 This functions allows for testing purpose and external run dynamics
 	 runs the storing of CHARMm results.
-	 
+	
 	 \param STARTD (in) : FCD beginning
 	 \param ENDD (in) : FCD end
 	 \param charmm_result (out) : CHARMm result vector

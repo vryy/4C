@@ -342,7 +342,7 @@ void MAT::AAAneohooke::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
                                       Epetra_SerialDenseMatrix* cmat_e,
                                       Epetra_SerialDenseVector* stress_e)
 {
-  // this is temporary as long as the material does not have a 
+  // this is temporary as long as the material does not have a
   // Matrix-type interface
   const LINALG::Matrix<6,1> glstrain(glstrain_e->A(),true);
         LINALG::Matrix<6,6> cmat(cmat_e->A(),true);
@@ -356,7 +356,7 @@ void MAT::AAAneohooke::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
 
   // material parameters for volumetric part
   double beta2 = 9.0;                                   // parameter from Holzapfel
-  double komp  = 2.0*alpha / (1.0-2.0*nue);              // bulk modulus               
+  double komp  = 2.0*alpha / (1.0-2.0*nue);              // bulk modulus
 
   //--------------------------------------------------------------------------------------
   // build identity tensor I

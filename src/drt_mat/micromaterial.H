@@ -69,7 +69,7 @@ namespace MAT
       const std::string microfile_;
       /// Number of microscale discretization
       const int microdisnum_;
-      /// 
+      ///
       const double initvol_;
 
       //@}

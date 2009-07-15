@@ -132,7 +132,7 @@ namespace MAT
 
     /// Return density
     double Density() const {return params_->density_;}
-    
+
     /// Return shear modulus
     double ShearMod() const {return 0.5*params_->youngs_slow_/(1.0+params_->poisson_);};
 

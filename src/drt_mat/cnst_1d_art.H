@@ -117,22 +117,22 @@ namespace MAT
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_cnst_art; }
 
     /// return viscosity
-    double Viscosity() const { return params_->viscosity_; } 
+    double Viscosity() const { return params_->viscosity_; }
 
     /// return density
-    double Density() const { return params_->density_; } 
+    double Density() const { return params_->density_; }
 
     /// return Youngs modulus
-    double Young() const { return params_->young_; } 
+    double Young() const { return params_->young_; }
 
     /// return Poisson's ratio
-    double Nue() const { return params_->nue_; } 
+    double Nue() const { return params_->nue_; }
 
     /// return artery diameter
-    double Diam() const { return params_->diam_; } 
+    double Diam() const { return params_->diam_; }
 
     /// return artery wall thickness
-    double Th() const { return params_->th_; } 
+    double Th() const { return params_->th_; }
 
   private:
 

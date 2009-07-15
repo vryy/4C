@@ -18,7 +18,7 @@ namespace MAT
 
   namespace PAR
   {
-   
+
     /*----------------------------------------------------------------------*/
     /// material parameters for convection-diffusion
     class ConvecDiffus : public Parameter

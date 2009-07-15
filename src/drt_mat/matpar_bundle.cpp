@@ -91,17 +91,17 @@ void MAT::PAR::Bundle::MakeParameters()
 Teuchos::RCP<MAT::PAR::Material> MAT::PAR::Bundle::ById(
   const int num
   ) const
-{ 
+{
   std::map<int,Teuchos::RCP<MAT::PAR::Material> >::const_iterator m = matmap_.find(num);
-        
+
   if (matmap_.size() == 0)
     dserror("No materials avialable");
-        
+
   if (m == matmap_.end())
     dserror("Material 'MAT %d' could not be found", num);
   else
     return m->second;
-        
+
   // catch up
   return Teuchos::null;
 }
@@ -112,7 +112,7 @@ int MAT::PAR::Bundle::FirstIdByType(
   ) const
 {
   std::map<int,Teuchos::RCP<MAT::PAR::Material> >::const_iterator m;
-        
+
   int id = -1;
   for (m=matmap_.begin(); m!=matmap_.end(); ++m)
   {

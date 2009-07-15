@@ -165,7 +165,7 @@ void MAT::AnisotropicBalzani::Setup()
       a1_.at(i) = params_->a1_[i];
       a2_.at(i) = params_->a2_[i];
     }
-    
+
   }
 }
 

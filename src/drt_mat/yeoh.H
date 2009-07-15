@@ -20,7 +20,7 @@ Maintainer: Thomas Kloeppel
 
 namespace MAT
 {
-  
+
   namespace PAR
   {
 
@@ -108,11 +108,11 @@ namespace MAT
     \brief Yeoh type nearly incompressible, hyperelastic 3D material law.
 
     The underlying strain-energy function in decoupled form is given by:
-    
-    W = c_1 (I1_bar - 3)  +  c_2 (I1_bar - 3)^2  +  c_3 (I1_bar-3)^3 + kappa * (J - 1)^2, 
+
+    W = c_1 (I1_bar - 3)  +  c_2 (I1_bar - 3)^2  +  c_3 (I1_bar-3)^3 + kappa * (J - 1)^2,
     where I1_bar is the first invariant of the modified Cauchy-Green tensor C_bar = J^{-2/3} C.
-    
-    
+
+
     For references see Holzapfel p. 248f, 255, 263
 
     */
@@ -123,7 +123,7 @@ namespace MAT
 
     /// return density
     double Density() const { return params_->density_; }
-    
+
     /// Return shear modulus
     double ShearMod() const {return params_->c1_/2.0;};
 

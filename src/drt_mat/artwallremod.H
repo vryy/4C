@@ -61,7 +61,7 @@ namespace MAT
 
     };  // class ArtWallRemod
 
-  }  // namespace PAR 
+  }  // namespace PAR
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for Mooney-Rivlin material

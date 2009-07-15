@@ -2,9 +2,9 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file Itskov.H
-\brief 
+\brief
 This file contains the routines required for incompressible Itskov material law
-with a penalty-function acocrding to Balzani et al. 
+with a penalty-function acocrding to Balzani et al.
 
 Itskov, M.; Ehret, A. & Mavrilas, D.
 A polyconvex anisotropic strain energy function for soft collagenous tissues
@@ -51,7 +51,7 @@ namespace MAT
 	\brief material parameters for Itskov material law
 	
 	 MAT 1 MAT_ITSKOV  MU_GS 0.0 MU_FIBERS 2.026255352 ALPHA 20.0 BETA 20.0 EPSILON 100.0 GAMMA 10.0 C 0.0 DENS 1.0E-6
-	 
+	
 	*/
     class Itskov : public Parameter
     {
@@ -101,26 +101,26 @@ namespace MAT
    to capture the nature of collagen. Both formulations are isotropic. Anisotropic
    formulations exist as external code, but have been not included. Feel free to pop by
    for a coffee to get them.
-   
+
   Adaptive Penaly Approach: In order to avoid problems in the high strain regime (and
    therefore the collagen dominant strain regime) a new method was developed to adaptiveley
    change the penalty parameters according to a maximum deviation from the ideal compressible
    case.
-   
+
   The input line should read like that:
-   
+
   MAT 1 MAT_ITSKOV  MU_GS 0.0 MU_FIBERS 2.026255352 ALPHA 20.0 BETA 20.0 EPSILON 100.0 GAMMA 10.0 C 0.0 DENS 1.0E-6
-	 
+	
   References:
-	 
+	
   Itskov, M.; Ehret, A. & Mavrilas, D.
   A polyconvex anisotropic strain energy function for soft collagenous tissues
   Biomechanics and Modeling in Mechanobiology, 2006, 5, 17-26
-	 
+	
   Ehret, A. & Itskov, M.
   A polyconvex hyperelastic model for fiber-reinforced materials in application to soft tissues
   Journal of Materials Science, 2007, 42, 8853-8863
-	 
+	
   \author Robert Metzke
   \date 03/09
   */
@@ -174,10 +174,10 @@ namespace MAT
 
     /// material type
 	virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_itskov; }
-    
+
 	/// Computation of stresses and constitutive tensor
     void Evaluate(const LINALG::Matrix<6,1>& glstrain,
-    			const int gp, const int ele_ID, 
+    			const int gp, const int ele_ID,
     			DRT::Container& data_,
     			const double time,
 				LINALG::Matrix<6,6>& cmat,
@@ -191,21 +191,21 @@ namespace MAT
     /// Itskov material parameters
     MAT::PAR::Itskov* params_;
 
-    void calc_factors (	LINALG::Matrix<3,3>&C, 
-				LINALG::Matrix<3,3>&Cinv, 
-				LINALG::Matrix<3,3>&L, 
-				DOUBLE alpha, 
-				DOUBLE beta, 
-				DOUBLE mu, 
+    void calc_factors (	LINALG::Matrix<3,3>&C,
+				LINALG::Matrix<3,3>&Cinv,
+				LINALG::Matrix<3,3>&L,
+				DOUBLE alpha,
+				DOUBLE beta,
+				DOUBLE mu,
 				DOUBLE *factors);
 
-    void calc_Itskov (	LINALG::Matrix<3,3>&C, 
-						LINALG::Matrix<3,3>&Cinv, 
-						LINALG::Matrix<3,3>&L, 
-						LINALG::Matrix<3,3>&PK2_, 
-						LINALG::Matrix<6,6>&cmat_, 
+    void calc_Itskov (	LINALG::Matrix<3,3>&C,
+						LINALG::Matrix<3,3>&Cinv,
+						LINALG::Matrix<3,3>&L,
+						LINALG::Matrix<3,3>&PK2_,
+						LINALG::Matrix<6,6>&cmat_,
 						DOUBLE *factors);
-  
+
   };
 }
 

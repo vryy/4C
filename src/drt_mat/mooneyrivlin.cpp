@@ -117,21 +117,21 @@ void MAT::MooneyRivlin::Evaluate(
   const double c2  = params_->c2_;
   const double kappa_q1 = params_->kap_; // kappa_q1*(J-1)^2
   const double lambda = params_->lambda_;
-  
-  // penalty param for Klinkel-formulation 
+
+  // penalty param for Klinkel-formulation
   // Watch out: It is not stress free in reference configuration!
-  double kappa_q2 = 0.;  
-  double kappa_ln = 0.; 
+  double kappa_q2 = 0.;
+  double kappa_ln = 0.;
 
   if (lambda !=0.0)
   {
     kappa_q2 = lambda/4.;  // kappa_q2*(J^2-1)
     kappa_ln = lambda/2.-6.*c2;  //kappa_ln*ln(J)
   }
-  
+
   // aux param d (to ensure stress free reference configuration -> Holzapfel)
   const double d = 2.*c1+4.*c2+kappa_ln;
-  
+
   // right Cauchy-Green Tensor  C = 2 * E + I
   // build identity tensor I
   LINALG::Matrix<NUM_STRESS_3D,1> Id(true);
@@ -149,7 +149,7 @@ void MAT::MooneyRivlin::Evaluate(
         - C(0)*C(4)*C(4);    // 3rd invariant, determinant
 
   const double J = sqrt(I3);
-  
+
   // invert C
   LINALG::Matrix<NUM_STRESS_3D,1> Cinv(false);
 
@@ -173,13 +173,13 @@ void MAT::MooneyRivlin::Evaluate(
 
   // ******* evaluate 2nd PK stress ********************
   // gammas from Holzapfel page 248
-  
+
   const double gamma1 = 2.0 * (c1 + I1*c2); //2 (dW/dI1 + I1 dW/dI2)
   (*stress).Update(gamma1,Id,0.0); //S +=  gamma1 times Identity
 
   const double gamma2 = -2.0 * c2;     // -2 dW/dI2
   (*stress).Update(gamma2,C,1.0);       // S = gamma2 times C
-    
+
   const double gamma3 = 2.*kappa_q1*J*(J-1.0)-d+2.*kappa_q2*J*J;   // 2 I3 dW/dI3
   (*stress).Update(gamma3,Cinv,1.0);    // S += gamma3 times Cinv
   // end of ******* evaluate 2nd PK stress ********************
@@ -200,7 +200,7 @@ void MAT::MooneyRivlin::Evaluate(
 
   AddtoCmatHolzapfelProduct((*cmat),Cinv,delta7);  // add d7 Cinv o Cinv
   AddtoCmatHolzapfelProduct((*cmat),Id,delta8);    // add d8 I o I
-  
+
   // end of ********** evaluate C-Matrix *****************************
 
 
