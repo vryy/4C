@@ -1,6 +1,6 @@
 /*!
  * \file vele3.H
- * 
+ *
  * <pre>
  * Maintainer: Ursula Mayer
  *             mayer@lnm.mw.tum.de
@@ -33,16 +33,16 @@ namespace ELEMENTS
 
 /*!
  * A 3D volume element with no physics attached
- * 
+ *
  * This element is meant to have no physics. It can be used to have a volume discretization
  * of volume elements. They can be of any 3d shape
- * 
+ *
  * The number of dof per node is set to 3, so we can define displacement vectors by
  * using FillComplete on the discretization.
- * 
+ *
  * \author u.may (mayer@lnm.mw.tum.de)
  */
- 
+
 
 /*!
 \brief A register for bele3 element
@@ -51,7 +51,7 @@ namespace ELEMENTS
 */
 class Vele3 : public DRT::Element
 {
-  
+
 public:
 
   //@}
@@ -73,7 +73,7 @@ public:
   */
   explicit Vele3(   const Vele3& old);
 
-  
+
   /*!
   \brief Deep copy this instance of Fluid3 and return pointer to the copy
 
@@ -82,12 +82,12 @@ public:
 
   */
   DRT::Element* Clone() const;
-  
+
   /*!
   \brief Get shape type of element
   */
   virtual DiscretizationType Shape() const;
-  
+
   /*!
   \brief Return number of lines of this element
   */
@@ -99,7 +99,7 @@ public:
     return -1;
     }
   }
-  
+
   /*!
   \brief Return number of surfaces of this element
   */
@@ -132,8 +132,8 @@ public:
   \brief Get vector of RefCountPtrs to the volume of this element
   */
   virtual vector<RCP<DRT::Element> > Volumes();
-  
-  
+
+
   /*!
   \brief Return unique ParObject id
 
@@ -178,7 +178,7 @@ public:
   separately.
   */
   virtual int NumDofPerNode(const DRT::Node& node) const {return 3;}
-  
+
     /*!
   \brief Get number of degrees of freedom per element
          (implements pure virtual DRT::Element)
@@ -191,9 +191,9 @@ public:
         element dofs that are condensed internally should NOT be considered.
   */
   virtual int NumDofPerElement() const { return 0; }
-  
+
   void Print(ostream& os) const;
-  
+
   virtual Teuchos::RCP<DRT::ElementRegister> ElementRegister() const;
 
   //@}
@@ -221,7 +221,7 @@ public:
                Epetra_SerialDenseVector& elevec1,
                Epetra_SerialDenseVector& elevec2,
                Epetra_SerialDenseVector& elevec3);
-               
+
 
   virtual int EvaluateNeumann(ParameterList& params,
                               DRT::Discretization&      discretization,
@@ -262,11 +262,11 @@ private:
       }
       return hoel;
     };
-    
+
 
   //! don't want = operator
   Vele3& operator = (const Vele3& old);
-  
+
   //! set number of gauss points to element shape default
   DRT::UTILS::GaussRule3D getOptimalGaussrule(const DiscretizationType& distype) const;
 
@@ -351,7 +351,7 @@ private:
 //=======================================================================
 class Vele3Surface : public DRT::Element
 {
-  
+
 public:
 
   //@}
@@ -465,7 +465,7 @@ private:
           case quad4: case quad8: case quad9: case tri6:
             hoel = true;
             break;
-          case tri3: 
+          case tri3:
             hoel = false;
             break;
           default:
@@ -473,17 +473,17 @@ private:
       }
       return hoel;
     };
-  
+
 
   //! don't want = operator
   Vele3Surface& operator = (const Vele3Surface& old);
-  
+
   //! set number of gauss points to element shape default
   DRT::UTILS::GaussRule2D getOptimalGaussrule(const DiscretizationType& distype) const;
-  
+
       //! The parent element of this line
   DRT::ELEMENTS::Vele3*         parent_;
-  
+
   //! The local line number of this line w.r.t to the parent_ element
   int                           lsurface_;
 
@@ -596,7 +596,7 @@ private:
 
     //! The parent element of this line
   DRT::Element*                 parent_;
-  
+
   //! The local line number of this line w.r.t to the parent_ element
   int                           lline_;
 

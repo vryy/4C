@@ -1,6 +1,6 @@
 /*!
  * \file bele3.H
- * 
+ *
  * <pre>
  * Maintainer: Axel Gerstenberger
  *             gerstenberger@lnm.mw.tum.de
@@ -33,13 +33,13 @@ namespace ELEMENTS
 
 /*!
  * A 3D boundary element with no physics attached
- * 
+ *
  * This element is meant to have no physics. It can be used to have a boundary discretization
  * of surface/boundary elements. They can be of any 2d shape (quad4,quad9,tri3,...)
- * 
+ *
  * The number of dof per node is set to 3, so we can define displacement vectors by
  * using FillComplete on the boundary discretization.
- * 
+ *
  * \author axelchen (gerstenberger@lnm.mw.tum.de)
  */
 class Bele3 : public DRT::Element
@@ -165,7 +165,7 @@ private:
           case quad4: case quad8: case quad9: case tri6:
             hoel = true;
             break;
-          case tri3: 
+          case tri3:
             hoel = false;
             break;
           default:
@@ -173,16 +173,16 @@ private:
       }
       return hoel;
     };
-  
+
   //! vector with line elements
 //  vector<RCP<DRT::Element> >                      lines_;
-  
+
   //! flag for fixed or moving boundary
 //  const bool                                      is_moving_;
 
   //! don't want = operator
   Bele3& operator = (const Bele3& old);
-  
+
   //! set number of gauss points to element shape default
   DRT::UTILS::GaussRule2D getOptimalGaussrule(const DiscretizationType& distype) const;
 

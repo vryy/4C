@@ -77,9 +77,9 @@ void DRT::ELEMENTS::Vele3::Pack(vector<char>& data) const
   AddtoPack(data,type);
   // add base class Element
   vector<char> basedata(0);
-  
+
   Element::Pack(basedata);
-  
+
   AddtoPack(data,basedata);
 
   return;
@@ -102,7 +102,7 @@ void DRT::ELEMENTS::Vele3::Unpack(const vector<char>& data)
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",data.size(),position);
-  
+
   return;
 }
 
@@ -136,9 +136,9 @@ RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Vele3::ElementRegister() const
  *----------------------------------------------------------------------*/
 vector<RCP<DRT::Element> > DRT::ELEMENTS::Vele3::Lines()
 {
-  // do NOT store line or surface elements inside the parent element 
+  // do NOT store line or surface elements inside the parent element
   // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization, 
+  // Reason: if a Redistribute() is performed on the discretization,
   // stored node ids and node pointers owned by these boundary elements might
   // have become illegal and you will get a nice segmentation fault ;-)
 
@@ -152,9 +152,9 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Vele3::Lines()
  *----------------------------------------------------------------------*/
 vector<RCP<DRT::Element> > DRT::ELEMENTS::Vele3::Surfaces()
 {
-  // do NOT store line or surface elements inside the parent element 
+  // do NOT store line or surface elements inside the parent element
   // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization, 
+  // Reason: if a Redistribute() is performed on the discretization,
   // stored node ids and node pointers owned by these boundary elements might
   // have become illegal and you will get a nice segmentation fault ;-)
 
