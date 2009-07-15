@@ -319,7 +319,7 @@ namespace ELEMENTS
       // get velocity derivatives at integration point
       //
       //              +-----  dN (x)
-      //   dvel (x)    \        k        
+      //   dvel (x)    \        k
       //   -------- =   +     ------ * vel
       //      dx       /        dx        k
       //        j     +-----      j
@@ -334,8 +334,8 @@ namespace ELEMENTS
       //          +-                                 -+ 1
       //          |          /   \           /   \    | -
       //          | 2 * eps | vel |   * eps | vel |   | 2
-      //          |          \   / ij        \   / ij |  
-      //          +-                                 -+  
+      //          |          \   / ij        \   / ij |
+      //          +-                                 -+
       //
       LINALG::Matrix<2,2> two_epsilon;
       for(int rr=0;rr<2;++rr)

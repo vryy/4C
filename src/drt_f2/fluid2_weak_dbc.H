@@ -37,7 +37,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/drt_function.H"
 
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
-#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H" 
+#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
@@ -61,11 +61,11 @@ namespace DRT
     //
     //-----------------------------------------------------------------
     //-----------------------------------------------------------------
-    
+
     /*-----------------------------------------------------------------
 
     \brief an interface class for the weak Dirichlet boundary condition
-           for every surface element distype this class allocates one 
+           for every surface element distype this class allocates one
            instance of the weak Dirichlet implementation
 
     \author gammi (gamnitzer@lnm.mw.tum.de), 11/09
@@ -80,7 +80,7 @@ namespace DRT
       virtual ~Fluid2LineWeakDBCInterface() {}
 
       /*!
-        \brief Evaluate the line elements weak Dirichlet boundary 
+        \brief Evaluate the line elements weak Dirichlet boundary
                conditions
 
         This class does not provide a definition for this function, it
@@ -88,7 +88,7 @@ namespace DRT
 
         \author gammi (gamnitzer@lnm.mw.tum.de), 11/09
 
-        \param lineele             (in): line element in geometry 
+        \param lineele             (in): line element in geometry
                                          associated with weak dbc
         \param params              (in): parameters (time integration
                                          parent lms, condition)
@@ -107,8 +107,8 @@ namespace DRT
         Epetra_SerialDenseVector&  elevec_epetra ) = 0;
 
       /*!
-        \brief Allocate one static instance of the internal 
-               implementation class for weak dirichlet condition and 
+        \brief Allocate one static instance of the internal
+               implementation class for weak dirichlet condition and
                return pointer to it
 
         \author gammi (gamnitzer@lnm.mw.tum.de), 11/09
@@ -135,7 +135,7 @@ namespace DRT
     */
 
     //-----------------------------------------------------------------
-    ///     
+    ///
     //-----------------------------------------------------------------
     template<DRT::Element::DiscretizationType distype ,
              DRT::Element::DiscretizationType pdistype>
@@ -191,7 +191,7 @@ namespace DRT
       //! array of nodal grid displacements, parent element, new time level
       LINALG::Matrix<2,piel> pedispnp_;
       //! array of nodal grid displacements, surface element, new time level
-      LINALG::Matrix<2,piel> edispnp_; 
+      LINALG::Matrix<2,piel> edispnp_;
       //! node coordinates of boundary element
       LINALG::Matrix<2, iel> xyze_;
 

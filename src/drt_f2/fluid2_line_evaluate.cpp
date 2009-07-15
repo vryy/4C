@@ -253,7 +253,7 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
     //           3*   4   |5
     //            *       |
     //            +---+---+
-    //           0    1    2  
+    //           0    1    2
     //
     // Example: Id()=3 -> (Id())%2=1, i.e. direction v (OK)
     myknots.Size((surfaceknots[(Id())%2]).Length());
@@ -1194,7 +1194,7 @@ void DRT::ELEMENTS::Fluid2Line::LineConservativeOutflowConsistency(
       DRT::NURBS::ControlPoint* cp
         =
         dynamic_cast<DRT::NURBS::ControlPoint* > (Nodes()[inode]);
-      
+
       weights(inode) = cp->W();
     }
 
@@ -1204,7 +1204,7 @@ void DRT::ELEMENTS::Fluid2Line::LineConservativeOutflowConsistency(
       DRT::NURBS::ControlPoint* cp
         =
         dynamic_cast<DRT::NURBS::ControlPoint* > (parent_->Nodes()[i]);
-      
+
       pweights(i) = cp->W();
     }
   }
@@ -1247,31 +1247,31 @@ void DRT::ELEMENTS::Fluid2Line::LineConservativeOutflowConsistency(
     // area element drs for the integration
 
     /*
-      |                       
-      |                                        0 1                                                
-      |                                       +-+-+               
-      |                                       | | | 0             
-      |         0 1             0...iel-1     +-+-+               
-      |        +-+-+            +-+-+-+-+     | | | .             
-      |        | | |      =     | | | | |  *  +-+-+ .             
-      |        +-+-+            +-+-+-+-+     | | | .             
-      |                                       +-+-+               
-      |                                       | | | iel-1         
-      |                                       +-+-+               
-      |                                                           
-      |       dxydr               deriv       xyze^T                               
-      |                    
+      |
+      |                                        0 1
+      |                                       +-+-+
+      |                                       | | | 0
+      |         0 1             0...iel-1     +-+-+
+      |        +-+-+            +-+-+-+-+     | | | .
+      |        | | |      =     | | | | |  *  +-+-+ .
+      |        +-+-+            +-+-+-+-+     | | | .
+      |                                       +-+-+
+      |                                       | | | iel-1
+      |                                       +-+-+
+      |
+      |       dxydr               deriv       xyze^T
       |
       |
-      |                                 
-      |                                 
+      |
+      |
+      |
       |                                 +-        -+
       |                                 | dx   dy  |
       |     yields             dxydr =  | --   --  |
       |                                 | dr   dr  |
       |                                 +-        -+
-      |                                
-      |                                
+      |
+      |
       |
     */
     dxydr.Multiply('N','T',1.0,deriv,xyze,0.0);
@@ -1289,7 +1289,7 @@ void DRT::ELEMENTS::Fluid2Line::LineConservativeOutflowConsistency(
     /*
                          +-+
               sqrtg =  \/ g
-                  
+
     */
 
     dr= sqrt(g);
@@ -1320,12 +1320,12 @@ void DRT::ELEMENTS::Fluid2Line::LineConservativeOutflowConsistency(
       |                      |    |     |    |
       |                      +-  -+     +-  -+
       |
-    */ 
+    */
       norm(0) =  dxydr(0,1);
       norm(1) = -dxydr(0,0);
 
       const double length = norm.Norm2()*normalfac;
-  
+
       for(int i=0;i<2;++i)
       {
         norm(i)/=length;

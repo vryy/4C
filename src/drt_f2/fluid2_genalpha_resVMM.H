@@ -12,7 +12,7 @@
        Subscales are either treated as quasi-static or time dependent.
 
        Both versions provide a conservative and an advective form. ALE
-       is fully supported. 
+       is fully supported.
 Internal implementation of Fluid2 element with a generalised alpha
        time integration.
 
@@ -32,7 +32,7 @@ Maintainer: Peter Gamnitzer
 
 #include "fluid2.H"
 #include "fluid2_nurbs.H"
-#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H" 
+#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 #include "../drt_lib/drt_utils.H"
 
 namespace DRT
@@ -71,7 +71,7 @@ namespace DRT
 
       /// Internal implementation class for fluid element
       static Fluid2GenalphaResVMMInterface* Impl(DRT::ELEMENTS::Fluid2* f2);
-      
+
     };
 
 
@@ -83,7 +83,7 @@ namespace DRT
 
     /// Internal Fluid2 implementation (genalpha version)
     /*!
-      
+
     This internal class keeps all the working arrays needed to
     calculate the Fluid2 element (genalpha implementation).
     Additionally the method Sysmat() provides this element
@@ -108,7 +108,7 @@ namespace DRT
     (There might be room for improvements.)
 
     <h3>Description</h3>
-    
+
     The implementation here is based on a generalised alpha time
     discretisation with an implicit treatment of the continuity
     equation and pressure, assuring that every solution is divergence
@@ -117,51 +117,51 @@ namespace DRT
     There are multiple stabilisation options included in this
     implementation. For the standard residual based method these are:
     <pre>
-    
+
     o Newton/Quasi-Newton (on/off)
       -------------------
       Reactive terms are/are not linearised
 
-    o SUPG Stabilisation 
+    o SUPG Stabilisation
       ------------------
-    
-    o PSPG Stabilisation 
+
+    o PSPG Stabilisation
       ------------------
-    
-    o Viscous Stabilisation 
+
+    o Viscous Stabilisation
       ---------------------
       Of the (A)GLS type
 
-    o Cross stress (ResVMM) 
+    o Cross stress (ResVMM)
       ---------------------
       Fix point treatment, no linearisation
 
-    o Reynolds stress (ResVMM) 
+    o Reynolds stress (ResVMM)
       ------------------------
       Fix point treatment, no linearisation
-      
+
     </pre>
     For the choice of the stabilisation parameter see the inline
     documentation.
-    
+
     For time dependent subscale stabilisation we have an additional
     option:
     <pre>
-    
-    o Stabilisation using subscale accelerations 
+
+    o Stabilisation using subscale accelerations
       ------------------------------------------
       Equivalent to include a reaction like expression into the
       stablilisation operator --- should be included if any remarkable
       change on the matrix should occur in comparison to quasistatic
       subscales formulation.
 
-      It means to stop to neglect the time derivative of the subgrid 
-      scales in the coarse scale equation. Obviously, this one is used 
-      only in the case of time-dependent subgrid scales. We allow to 
+      It means to stop to neglect the time derivative of the subgrid
+      scales in the coarse scale equation. Obviously, this one is used
+      only in the case of time-dependent subgrid scales. We allow to
       switch it off for debugging purposes.
-      
+
     </pre>
-        
+
     The stabilisation flags are read from the input file and passed
     through the evaluate interface.
 
@@ -192,30 +192,30 @@ namespace DRT
 
       Get statevetors, extract values required by the element using the
       location vector.
-        
-      Set parameters for time integration and nonlinear iteration  (i.e. 
+
+      Set parameters for time integration and nonlinear iteration  (i.e.
       read control parameters from the parameterlist)
-      
+
       Do setup for stabilisation and so on.
-      
+
       Get knots for the nurbs implementation.
 
-      In the end, call the specific Sysmat implementation, i.e. assemble 
+      In the end, call the specific Sysmat implementation, i.e. assemble
       element residual (and matrix).
 
       \param ele            (i)   the element to evaluate
-      \param params         (i/o) list of all parameters --- Smagorinsky model 
-                                  stores some stuff in there to return it to 
+      \param params         (i/o) list of all parameters --- Smagorinsky model
+                                  stores some stuff in there to return it to
                                   the time integration level
       \param discretization (i)   the discretisation containing knot vectors etc
-      \param lm             (i)   location vector to acces element dofs in 
+      \param lm             (i)   location vector to acces element dofs in
                                   global vectors
       \param elemat1_epetra (i/o) element matrix
       \param elemat2_epetra (-)   dummy
       \param elevec1_epetra (i/o) element residual (negative)
       \param elevec2_epetra (-)   dummy
       \param elevec3_epetra (-)   dummy
-      \param mat            (i)   interface class for materials in elements 
+      \param mat            (i)   interface class for materials in elements
 
     */
       virtual int Evaluate(Fluid2*                    ele,
@@ -285,7 +285,7 @@ namespace DRT
         const double                           dt,
         const double                           time,
         const enum Fluid2::LinearisationAction newton,
-        const bool                             higher_order_ele,                  
+        const bool                             higher_order_ele,
         const enum Fluid2::StabilisationAction inertia,
         const enum Fluid2::StabilisationAction pspg,
         const enum Fluid2::StabilisationAction supg,
@@ -348,7 +348,7 @@ namespace DRT
         const double                           dt,
         const double                           time,
         const enum Fluid2::LinearisationAction newton,
-        const bool                             higher_order_ele,                  
+        const bool                             higher_order_ele,
         const enum Fluid2::StabilisationAction inertia,
         const enum Fluid2::StabilisationAction pspg,
         const enum Fluid2::StabilisationAction supg,
@@ -411,7 +411,7 @@ namespace DRT
         const double                           dt,
         const double                           time,
         const enum Fluid2::LinearisationAction newton,
-        const bool                             higher_order_ele,                  
+        const bool                             higher_order_ele,
         const enum Fluid2::StabilisationAction pspg,
         const enum Fluid2::StabilisationAction supg,
         const enum Fluid2::StabilisationAction vstab,
@@ -474,7 +474,7 @@ namespace DRT
         const double                           dt,
         const double                           time,
         const enum Fluid2::LinearisationAction newton,
-        const bool                             higher_order_ele,                  
+        const bool                             higher_order_ele,
         const enum Fluid2::StabilisationAction inertia,
         const enum Fluid2::StabilisationAction pspg,
         const enum Fluid2::StabilisationAction supg,
@@ -486,7 +486,7 @@ namespace DRT
         double&                                visceff,
         const bool                             compute_elemat
         );
-    
+
       //@}
 
     private:
@@ -533,7 +533,7 @@ namespace DRT
       //  \param velderxy   (o) velocity derivatives
       //
       //  \return computed rate of strain
-      
+
       */
       double GetStrainRate(
         const LINALG::Matrix<2,iel>& evel     ,
@@ -546,13 +546,13 @@ namespace DRT
           // get velocity derivatives at integration point
           //
           //              +-----  dN (x)
-          //   dvel (x)    \        k        
+          //   dvel (x)    \        k
           //   -------- =   +     ------ * vel
           //      dx       /        dx        k
           //        j     +-----      j
           //              node k
           //
-          // j : direction of derivative x/y  
+          // j : direction of derivative x/y
           //
           for(int rr=0;rr<2;++rr)
           {
@@ -571,11 +571,11 @@ namespace DRT
           //          +-                                 -+ 1
           //          |          /   \           /   \    | -
           //          | 2 * eps | vel |   * eps | vel |   | 2
-          //          |          \   / ij        \   / ij |  
-          //          +-                                 -+  
+          //          |          \   / ij        \   / ij |
+          //          +-                                 -+
           //
           LINALG::Matrix<2,2> two_epsilon;
-        
+
           for(int rr=0;rr<2;++rr)
           {
             for(int mm=0;mm<2;++mm)
@@ -583,7 +583,7 @@ namespace DRT
               two_epsilon(rr,mm) = velderxy(rr,mm) + velderxy(mm,rr);
             }
           }
-          
+
           for(int rr=0;rr<2;rr++)
           {
             for(int mm=0;mm<2;mm++)
@@ -592,12 +592,12 @@ namespace DRT
             }
           }
           // sqrt(two_epsilon(rr,mm)*two_epsilon(rr,mm)/4.0*2.0)
-        
+
           return(sqrt(rateofstrain/2.0));
         }
 
       /*!
-        \brief Get all global shape functions, first and eventually second 
+        \brief Get all global shape functions, first and eventually second
                derivatives in a gausspoint
 
     	\param ele       (i) pointer to element for debug io
@@ -617,7 +617,7 @@ namespace DRT
         const bool                                    hoel
         );
 
-           
+
       /*!
         \brief calculates viscosity at a given point (element center or Gaussian point)
 
@@ -647,7 +647,7 @@ namespace DRT
                    const double &                         hk       ,
                    const double &                         mk       ,
                    const double &                         visceff  );
-             
+
 
       /*!
         \brief calculates all quantities which are defined at the element center
@@ -657,7 +657,7 @@ namespace DRT
                         o element size hk, constant mk from inverse estimate
                         o dead load
                         o viscosity, effective viscosity
-                        
+
 
      	\param ele                      (i) pointer to element
         \param edispnp                  (i) nodal mesh displacements, t_{n+1} (for ALE)
@@ -670,7 +670,7 @@ namespace DRT
         \param visc                     (o) kinematicmaterial viscosity
         \param visceff        		(o) effective material viscosity
 
-       */                 
+       */
       void SetElementData
       (
         Fluid2*                                      ele            ,
@@ -715,7 +715,7 @@ namespace DRT
         \param visceff        	 (i) effective material viscosity
         \param higher_order_ele  (i) include second derivatives in residual for stabilization
 
-       */     
+       */
       void InterpolateToGausspoint(
         Fluid2*                                     ele             ,
         const LINALG::Matrix<2,iel>               & egridvaf        ,
@@ -782,7 +782,7 @@ namespace DRT
       LINALG::Matrix<2,1>   normed_velintaf_;
       //! fine-scale velocity in gausspoint, time n+af
       LINALG::Matrix<2,1>   fsvelintaf_;
-      //! grid velocity at time level n+af 
+      //! grid velocity at time level n+af
       LINALG::Matrix<2,1>   u_G_af_;
       //! ale convective velocity at intermediate time level n+af
       //! aleconvint_af_ = velintaf_ - gridvelintaf_
@@ -862,7 +862,7 @@ namespace DRT
 
       // temporary working arrays
       // ------------------------
-      //! array used for the computation of jacobian 
+      //! array used for the computation of jacobian
       //! determinant and second derivatives
       LINALG::Matrix<3,3>   bm_;
 

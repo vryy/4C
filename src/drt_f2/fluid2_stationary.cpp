@@ -535,7 +535,7 @@ void DRT::ELEMENTS::Fluid2Stationary<distype>::Sysmat(
       visc_old_(0) = viscs2_(0,0)*evelnp(0,0)+viscs2_(1,0)*evelnp(1,0);
       visc_old_(1) = viscs2_(1,0)*evelnp(0,0)+viscs2_(3,0)*evelnp(1,0);
 
-      for (int i=1; i<numnode; ++i) 
+      for (int i=1; i<numnode; ++i)
       {
         double sum = (derxy2_(0,i)+derxy2_(1,i))/prefac;
 
