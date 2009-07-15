@@ -121,9 +121,9 @@ RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Ale2::ElementRegister() const
 //
 vector<RCP<DRT::Element> > DRT::ELEMENTS::Ale2::Lines()
 {
-  // do NOT store line or surface elements inside the parent element 
+  // do NOT store line or surface elements inside the parent element
   // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization, 
+  // Reason: if a Redistribute() is performed on the discretization,
   // stored node ids and node pointers owned by these boundary elements might
   // have become illegal and you will get a nice segmentation fault ;-)
 
@@ -157,7 +157,7 @@ GaussRule2D DRT::ELEMENTS::Ale2::getOptimalGaussrule(const DiscretizationType& d
     case tri6:
         rule = intrule_tri_6point;
         break;
-    default: 
+    default:
         dserror("unknown number of nodes for gaussrule initialization");
   }
   return rule;

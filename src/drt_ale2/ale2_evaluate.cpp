@@ -548,7 +548,7 @@ void DRT::ELEMENTS::Ale2::static_ke(
     DRT::NURBS::NurbsDiscretization* nurbsdis
       =
       dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(dis));
-    
+
     bool zero_sized=(*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id());
 
     if(zero_sized)
@@ -561,7 +561,7 @@ void DRT::ELEMENTS::Ale2::static_ke(
       DRT::NURBS::ControlPoint* cp
         =
         dynamic_cast<DRT::NURBS::ControlPoint* > (Nodes()[inode]);
-      
+
       weights(inode) = cp->W();
     }
   }
@@ -780,7 +780,7 @@ void DRT::ELEMENTS::Ale2::static_ke_laplace(
     DRT::NURBS::NurbsDiscretization* nurbsdis
       =
       dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(dis));
-    
+
     (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id());
 
     for (int inode=0; inode<iel; ++inode)
@@ -788,7 +788,7 @@ void DRT::ELEMENTS::Ale2::static_ke_laplace(
       DRT::NURBS::ControlPoint* cp
         =
         dynamic_cast<DRT::NURBS::ControlPoint* > (Nodes()[inode]);
-      
+
       weights(inode) = cp->W();
     }
   }
@@ -807,7 +807,7 @@ void DRT::ELEMENTS::Ale2::static_ke_laplace(
   const IntegrationPoints2D  intpoints(gaussrule);
   DOUBLE              min_detF;         /* minimal Jacobian determinant   */
   ale2_min_jaco(Shape(),xyze,&min_detF);
-  
+
   // integration loops
   for (int iquad=0;iquad<intpoints.nquad;iquad++)
   {
@@ -885,8 +885,8 @@ void DRT::ELEMENTS::Ale2::static_ke_laplace(
                                       + deriv_xy(1,i) * deriv_xy(1,j) )*fac*k_diff;
          }
       }
-      
-      
+
+
   }
 }
 
