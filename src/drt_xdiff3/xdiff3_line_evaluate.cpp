@@ -53,7 +53,7 @@ int DRT::ELEMENTS::XDiff3Line::EvaluateNeumann(
         DRT::Condition&           condition,
         std::vector<int>&         lm,
         Epetra_SerialDenseVector& elevec1)
-{  
+{
   dserror("Neumann condition on line not implemented");
   return 0;
 }

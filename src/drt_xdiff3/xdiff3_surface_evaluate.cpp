@@ -49,7 +49,7 @@ int DRT::ELEMENTS::XDiff3Surface::Evaluate(
     else dserror("Unknown type of action for Fluid3_Surface");
 
     cout << "diffusion" << endl;
-    
+
     switch(act)
     {
       case integrate_Shapefunction:
@@ -68,7 +68,7 @@ int DRT::ELEMENTS::XDiff3Surface::Evaluate(
       case calc_flow_rate:
       {
         const Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
-        
+
         std::vector<double> myvelnp(lm.size());
         DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
         IntegrateSurfaceFlowRate(params,discretization,lm,elevec1,myvelnp);
@@ -77,7 +77,7 @@ int DRT::ELEMENTS::XDiff3Surface::Evaluate(
       case calc_impuls_rate:
       {
         const Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
-        
+
         std::vector<double> myvelnp(lm.size());
         DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
         IntegrateSurfaceImpulsRate(params,discretization,lm,elevec1,myvelnp);
@@ -253,11 +253,11 @@ void  DRT::ELEMENTS::XDiff3Surface::ComputeMetricTensorForSurface(
   LINALG::Matrix<3,2> dxyzdrs;
   // dxyzdrs(i,j) = xyze_boundary(i,k)*deriv_boundary(j,k);
   xyze.GEMM('N','T',3,2,numnode,1.0,xyze.A(),xyze.LDA(),deriv.A(),deriv.LDA(),0.0,dxyzdrs.A(),dxyzdrs.M());
-  
+
   // compute covariant metric tensor G for surface element (2x2)
   // metric = dxyzdrs(k,i)*dxyzdrs(k,j);
   metrictensor.MultiplyTN(dxyzdrs,dxyzdrs);
-  
+
   detmetric = sqrt(metrictensor.Determinant());
 
   return;
@@ -436,7 +436,7 @@ void DRT::ELEMENTS::XDiff3Surface::IntegrateSurfaceFlowRate(
     xyze(1,i)=this->Nodes()[i]->X()[1];
     xyze(2,i)=this->Nodes()[i]->X()[2];
   }
-  
+
   // get element velocities
   for(std::size_t i=0;i<iel;i++)
   {
@@ -463,20 +463,20 @@ void DRT::ELEMENTS::XDiff3Surface::IntegrateSurfaceFlowRate(
     // compute measure tensor for surface element and the infinitesimal
     // area element drs for the integration
     ComputeMetricTensorForSurface(iel,xyze,deriv,metrictensor,drs);
-    
+
     // values are multiplied by the product from inf. area element and gauss weight
     const double fac = drs * intpoints.qwgt[gpid];
 
     // velocity at gausspoint
     const LINALG::Matrix<3,1> gpvelnp = XDIFF::interpolateVectorFieldToIntPoint(evelnp, funct, iel);
-    
+
     // get normal vector (in x coordinates) to surface element at integration point
     LINALG::Matrix<3,1> n(true);
     GEO::computeNormalToSurfaceElement(this->Shape(), xyze, xi_gp, n);
 
     // flowrate = u_i * n_i
     const double flowrate = gpvelnp(0)*n(0) + gpvelnp(1)*n(1) + gpvelnp(2)*n(2);
-    
+
     // store flowrate at first dof of each node
     // use negatve value so that inflow is positiv
     for (std::size_t node=0;node<iel;++node)
@@ -505,13 +505,13 @@ void DRT::ELEMENTS::XDiff3Surface::IntegrateSurfaceImpulsRate(
   {
     elevec1(idof) = 0.0;
   }
-  
+
   const DiscretizationType distype = this->Shape();
 
   // set number of nodes
   const std::size_t iel   = this->NumNode();
 //  const Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih = params.get< Teuchos::RCP< XFEM::InterfaceHandleXFSI > >("interfacehandle",null);
-    
+
   // check, if we have not enough dofs (intersected element or element in a hole)
   if (lm.size() != iel*4)
   {
@@ -557,7 +557,7 @@ void DRT::ELEMENTS::XDiff3Surface::IntegrateSurfaceImpulsRate(
     xyze(1,i)=this->Nodes()[i]->X()[1];
     xyze(2,i)=this->Nodes()[i]->X()[2];
   }
-  
+
   // get element velocities
   for(std::size_t i=0;i<iel;i++)
   {
@@ -565,7 +565,7 @@ void DRT::ELEMENTS::XDiff3Surface::IntegrateSurfaceImpulsRate(
     evelnp(1,i)=myvelnp[i*numdf+1];
     evelnp(2,i)=myvelnp[i*numdf+2];
   }
-  
+
  /*----------------------------------------------------------------------*
   |               start loop over integration points                     |
   *----------------------------------------------------------------------*/
@@ -584,7 +584,7 @@ void DRT::ELEMENTS::XDiff3Surface::IntegrateSurfaceImpulsRate(
     // compute measure tensor for surface element and the infinitesimal
     // area element drs for the integration
     ComputeMetricTensorForSurface(iel,xyze,deriv,metrictensor,drs);
-    
+
     // values are multiplied by the product from inf. area element and gauss weight
     const double fac = drs * intpoints.qwgt[gpid];
 
@@ -597,7 +597,7 @@ void DRT::ELEMENTS::XDiff3Surface::IntegrateSurfaceImpulsRate(
 
     // flowrate = u_i * n_i
     const double flowrate = gpvelnp(0)*n(0) + gpvelnp(1)*n(1) + gpvelnp(2)*n(2);
-    
+
     if (abs(flowrate) > 1.0e10)
       dserror("abnormal values!");
     // store impuls rate
@@ -609,7 +609,7 @@ void DRT::ELEMENTS::XDiff3Surface::IntegrateSurfaceImpulsRate(
       elevec1[node*numdf+2] -= funct[node] * fac * gpvelnp(2) * flowrate;
     }
   }
-  
+
   return;
 }
 

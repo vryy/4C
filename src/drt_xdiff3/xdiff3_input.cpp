@@ -26,7 +26,7 @@ bool DRT::ELEMENTS::XDiff3::ReadElement()
 {
   if (genprob.ndim!=3)
     dserror("Not a 3d problem. Panic.");
-  
+
   typedef map<string, DiscretizationType> Gid2DisType;
   Gid2DisType gid2distype;
   gid2distype.insert(make_pair("HEX8"     , hex8));
@@ -39,13 +39,13 @@ bool DRT::ELEMENTS::XDiff3::ReadElement()
   gid2distype.insert(make_pair("PYRAMID5" , pyramid5));
   gid2distype.insert(make_pair("NURBS8"   , nurbs8));
   gid2distype.insert(make_pair("NURBS27"  , nurbs27));
-  
+
   // read element's nodes
   int   ierr = 0;
   int   nnode = 0;
   int   nodes[27];
   DiscretizationType distype = dis_none;
-  
+
   Gid2DisType::const_iterator iter;
   for( iter = gid2distype.begin(); iter != gid2distype.end(); iter++ )
   {
@@ -60,12 +60,12 @@ bool DRT::ELEMENTS::XDiff3::ReadElement()
       break;
     }
   }
-  
+
   // reduce node numbers by one
   for (int i=0; i<nnode; ++i) nodes[i]--;
-  
+
   SetNodeIds(nnode,nodes);
-  
+
   // read number of material model
   int material = 0;
   frint("MAT",&material,&ierr);

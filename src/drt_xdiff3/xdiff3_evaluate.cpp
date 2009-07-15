@@ -39,7 +39,7 @@ DRT::ELEMENTS::XDiff3::ActionType DRT::ELEMENTS::XDiff3::convertStringToActionTy
   else if (action == "calc_linear_fluid")
     act = XDiff3::calc_linear_fluid;
   else if (action == "calc_fluid_stationary_systemmat_and_residual")
-    act = XDiff3::calc_fluid_stationary_systemmat_and_residual;  
+    act = XDiff3::calc_fluid_stationary_systemmat_and_residual;
   else if (action == "calc_fluid_beltrami_error")
     act = XDiff3::calc_fluid_beltrami_error;
   else if (action == "store_xfem_info")
@@ -134,9 +134,9 @@ int DRT::ELEMENTS::XDiff3::Evaluate(ParameterList& params,
     case store_xfem_info:
     {
       // after this part the element can answer, how many DOFs it has
-      
+
       output_mode_ = false;
-      
+
       // store pointer to interface handle
       ih_ = params.get< Teuchos::RCP< XFEM::InterfaceHandleXFSI > >("interfacehandle");
 
@@ -145,11 +145,11 @@ int DRT::ELEMENTS::XDiff3::Evaluate(ParameterList& params,
 
       const bool DLM_condensation = params.get<bool>("DLM_condensation");
       const double boundaryRatioLimit = params.get<double>("boundaryRatioLimit");
-      
+
       const XDIFF::Diff3ElementAnsatz elementAnsatz;
       const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz_empty;
       const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz_filled(elementAnsatz.getElementAnsatz(this->Shape()));
-      
+
       // always build the eledofman that fits to the global dofs
       // problem: tight connectivity to xdofmapcreation
       if (not DLM_condensation)
@@ -180,13 +180,13 @@ int DRT::ELEMENTS::XDiff3::Evaluate(ParameterList& params,
             const bool anothervoidenrichment_in_set = XFEM::EnrichmentInDofSet(XFEM::Enrichment::typeVoid, enrfieldset);
             if (not anothervoidenrichment_in_set)
             {
-              XFEM::ApplyElementEnrichments(this, element_ansatz_filled, *ih_, label, XFEM::Enrichment::typeVoid, boundaryRatioLimit, enrfieldset);                
+              XFEM::ApplyElementEnrichments(this, element_ansatz_filled, *ih_, label, XFEM::Enrichment::typeVoid, boundaryRatioLimit, enrfieldset);
             }
           }
         };
 
         // nodal dofs for ele
-        eleDofManager_uncondensed_ = 
+        eleDofManager_uncondensed_ =
           rcp(new XFEM::ElementDofManager(*this, eleDofManager_->getNodalDofSet(), enrfieldset, element_ansatz_filled));
 
         const int nd = eleDofManager_uncondensed_->NumNodeDof();
@@ -215,7 +215,7 @@ int DRT::ELEMENTS::XDiff3::Evaluate(ParameterList& params,
       const Teuchos::RCP<Epetra_Vector> iforcecol = params.get<Teuchos::RCP<Epetra_Vector> >("interface force");
 
       double L2 = params.get<double>("L2");
-      
+
       // time integration factors
       const FLUID_TIMEINTTYPE timealgo = params.get<FLUID_TIMEINTTYPE>("timealgo");
       const double            dt       = params.get<double>("dt");
@@ -321,7 +321,7 @@ int DRT::ELEMENTS::XDiff3::Evaluate(ParameterList& params,
       const Teuchos::RCP<Epetra_Vector> iforcecol = params.get<Teuchos::RCP<Epetra_Vector> >("interface force");
 
       double L2 = params.get<double>("L2");
-      
+
       // time integration factors
       const FLUID_TIMEINTTYPE timealgo = params.get<FLUID_TIMEINTTYPE>("timealgo");
       const double            dt       = 1.0;
@@ -380,7 +380,7 @@ int DRT::ELEMENTS::XDiff3::Evaluate(ParameterList& params,
       }
 
       params.set<double>("L2",L2);
-      
+
 #if 0
           const XFEM::BoundaryIntCells&  boundaryIntCells(ih_->GetBoundaryIntCells(this->Id()));
           if ((assembly_type == XFEM::xfem_assembly) and (not boundaryIntCells.empty()))
@@ -405,7 +405,7 @@ int DRT::ELEMENTS::XDiff3::Evaluate(ParameterList& params,
               {
                   eforce_0(i) = eforce(i);
               }
-              
+
               // create disturbed vector
               vector<double> locval_disturbed(locval.size());
               for (std::size_t i = 0;i < locval.size(); ++i)
@@ -420,7 +420,7 @@ int DRT::ELEMENTS::XDiff3::Evaluate(ParameterList& params,
                   }
                   std::cout << locval[i] <<  " " << locval_disturbed[i] << endl;
               }
-              
+
 
               // R_0+dx
               // calculate element coefficient matrix and rhs
@@ -428,8 +428,8 @@ int DRT::ELEMENTS::XDiff3::Evaluate(ParameterList& params,
                       this, ih_, eleDofManager_, locval_disturbed, locval_hist, ivelcol, iforcecol, estif, eforce,
                       mat, pseudotime, 1.0, newton, pstab, supg, cstab, false);
 
-              
-              
+
+
               // compare
               std::cout << "sekante" << endl;
               for (std::size_t i = 0;i < locval.size(); ++i)
@@ -437,9 +437,9 @@ int DRT::ELEMENTS::XDiff3::Evaluate(ParameterList& params,
                   //cout << i << endl;
                   const double matrixentry = (eforce_0(i) - eforce(i))/disturbance;
                   printf("should be %+12.8E, is %+12.8E, factor = %5.2f, is %+12.8E, factor = %5.2f\n", matrixentry, estif(i, entry), estif(i, entry)/matrixentry, estif(entry,i), estif(entry,i)/matrixentry);
-                  //cout << "should be: " << std::scientific << matrixentry << ", is: " << estif(entry, i) << " " << estif(i, entry) << endl;                
+                  //cout << "should be: " << std::scientific << matrixentry << ", is: " << estif(entry, i) << " " << estif(i, entry) << endl;
               }
-              
+
               exit(0);
           }
           else
@@ -696,25 +696,25 @@ void DRT::ELEMENTS::XDiff3::UpdateOldDLMAndDLMRHS(
 {
   const int nd = eleDofManager_uncondensed_->NumNodeDof();
   const int na = eleDofManager_uncondensed_->NumElemDof();
-  
+
   if (na > 0)
   {
     // add Kda . inc_velnp to feas
     // new alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
-    
+
     vector<double> inc_velnp(lm.size());
     DRT::UTILS::ExtractMyValues(*discretization.GetState("nodal increment"),inc_velnp,lm);
-    
+
     static const Epetra_BLAS blas;
-    
+
     // update old iteration residual of the stresses
     // DLM_info_->oldfa_(i) += DLM_info_->oldKad_(i,j)*inc_velnp[j];
     blas.GEMV('N', na, nd,-1.0, DLM_info_->oldKad_.A(), DLM_info_->oldKad_.LDA(), &inc_velnp[0], 1.0, DLM_info_->oldfa_.A());
-    
+
     // compute element stresses
     // DLM_info_->stressdofs_(i) -= DLM_info_->oldKaainv_(i,j)*DLM_info_->oldfa_(j);
     blas.GEMV('N', na, na,1.0, DLM_info_->oldKaainv_.A(), DLM_info_->oldKaainv_.LDA(), DLM_info_->oldfa_.A(), 1.0, DLM_info_->stressdofs_.A());
-    
+
     // increase size of element vector (old values stay and zeros are added)
     const int numdof_uncond = eleDofManager_uncondensed_->NumDofElemAndNode();
     mystate.velnp.resize(numdof_uncond,0.0);
@@ -734,13 +734,13 @@ void DRT::ELEMENTS::XDiff3::CondenseDLMAndStoreOldIterationStep(
     const Epetra_SerialDenseMatrix& elemat1_uncond,
     const Epetra_SerialDenseVector& elevec1_uncond,
     Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseVector& elevec1    
+    Epetra_SerialDenseVector& elevec1
 ) const
 {
 
   const int nd = eleDofManager_uncondensed_->NumNodeDof();
   const int na = eleDofManager_uncondensed_->NumElemDof();
-  
+
   // copy nodal dof entries
   for (int i = 0; i < nd; ++i)
   {
@@ -750,10 +750,10 @@ void DRT::ELEMENTS::XDiff3::CondenseDLMAndStoreOldIterationStep(
       elemat1(i,j) = elemat1_uncond(i,j);
     }
   }
-  
+
   if (na > 0)
   {
-    // note: the full (u,p,sigma) matrix is asymmetric, 
+    // note: the full (u,p,sigma) matrix is asymmetric,
     // hence we need both rectangular matrices Kda and Kad
     LINALG::SerialDenseMatrix Kda(nd,na);
     LINALG::SerialDenseMatrix Kaa(na,na);
@@ -761,12 +761,12 @@ void DRT::ELEMENTS::XDiff3::CondenseDLMAndStoreOldIterationStep(
     LINALG::SerialDenseVector fa(na);
 
 //    cout << elemat1_uncond << endl;
-    
+
     // copy data of uncondensed matrix into submatrices
     for (int i=0;i<nd;i++)
       for (int j=0;j<na;j++)
         Kda(i,j) = elemat1_uncond(   i,nd+j);
-    
+
     for (int i=0;i<na;i++)
       for (int j=0;j<na;j++)
         Kaa(i,j) = elemat1_uncond(nd+i,nd+j);
@@ -774,14 +774,14 @@ void DRT::ELEMENTS::XDiff3::CondenseDLMAndStoreOldIterationStep(
     for (int i=0;i<na;i++)
       for (int j=0;j<nd;j++)
         Kad(i,j) = elemat1_uncond(nd+i,   j);
-    
+
     for (int i=0;i<na;i++)
       fa(i) = elevec1_uncond(nd+i);
-    
-    
+
+
     // DLM-stiffness matrix is: Kdd - Kda . Kaa^-1 . Kad
     // DLM-internal force is: fint - Kda . Kaa^-1 . feas
-    
+
     // we need the inverse of Kaa
     Epetra_SerialDenseSolver solve_for_inverseKaa;
     solve_for_inverseKaa.SetMatrix(Kaa);
@@ -791,17 +791,17 @@ void DRT::ELEMENTS::XDiff3::CondenseDLMAndStoreOldIterationStep(
     static const Epetra_BLAS blas;
     {
       LINALG::SerialDenseMatrix KdaKaainv(nd,na); // temporary Kda.Kaa^{-1}
-      
+
       // KdaKaainv(i,j) = Kda(i,k)*Kaainv(k,j);
       blas.GEMM('N','N',nd,na,na,1.0,Kda.A(),Kda.LDA(),Kaa.A(),Kaa.LDA(),0.0,KdaKaainv.A(),KdaKaainv.LDA());
 
       // elemat1(i,j) += - KdaKaainv(i,k)*Kad(k,j);
       blas.GEMM('N','N',nd,nd,na,-1.0,KdaKaainv.A(),KdaKaainv.LDA(),Kad.A(),Kad.LDA(),1.0,elemat1.A(),elemat1.LDA());
-      
+
       // elevec1(i) += - KdaKaainv(i,j)*fa(j);
       blas.GEMV('N', nd, na,-1.0, KdaKaainv.A(), KdaKaainv.LDA(), fa.A(), 1.0, elevec1.A());
     }
-    
+
     // store current DLM data in iteration history
     //DLM_info_->oldKaainv_.Update(1.0,Kaa,0.0);
     blas.COPY(DLM_info_->oldKaainv_.M()*DLM_info_->oldKaainv_.N(), Kaa.A(), DLM_info_->oldKaainv_.A());

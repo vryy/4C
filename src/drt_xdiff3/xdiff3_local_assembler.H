@@ -64,13 +64,13 @@ struct SymmetryMangle {static const XFEM::PHYSICS::Field name = FIELD;};
 //template<> struct ShapeMangle<XFEM::PHYSICS::Tauzz>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxx;};
 
 //! class that assembles one after another integral of the weak form into the stiffness matrix
-template <DRT::Element::DiscretizationType DISTYPE, 
+template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSEMBLYTYPE,
           std::size_t NUMDOF>
 class LocalAssembler
 {
 public:
-    
+
     explicit LocalAssembler(
             const XFEM::ElementDofManager&    dofman,
             Epetra_SerialDenseMatrix& estif,
@@ -82,12 +82,12 @@ public:
     {
         return;
     }
-    
+
     ~LocalAssembler()
     {
         return;
     }
-    
+
 private:
     template<std::size_t numparamtest,
     std::size_t numparamtrial,
@@ -115,7 +115,7 @@ private:
         ++trialpos;
       }
     }
-    
+
     template<std::size_t numparamtest,
              class V1>
     void IntegrateVector(
@@ -131,7 +131,7 @@ private:
           ++testpos;
       }
     }
-    
+
 public:
     //! assemble one expression for the element stiffness matrix for a given test and trial field
     template <XFEM::PHYSICS::Field testfield,
@@ -144,13 +144,13 @@ public:
             const V2&           trialshape
             ) const
     {
-        
+
         const std::vector<int>& testdof (dofman_.LocalDofPosPerField<SymmetryMangle<testfield>::name>());
         const std::vector<int>& trialdof(dofman_.LocalDofPosPerField<SymmetryMangle<trialfield>::name>());
-        
+
         const std::size_t numparamtest  = testdof.size();
         const std::size_t numparamtrial = trialdof.size();
-        
+
         bool found_template = true;
         switch (numparamtest)
         {
@@ -173,7 +173,7 @@ public:
         default:
           found_template = false;
         }
-        
+
         if (not found_template)
         {
 //          cout << numparamtest << "   " << numparamtrial << endl;
@@ -201,7 +201,7 @@ public:
         }
         }
     }
-    
+
     //! assemble one expression for the element rhs for a given test field
     template <XFEM::PHYSICS::Field testfield,
               class V1>
@@ -211,9 +211,9 @@ public:
             ) const
     {
         const std::vector<int>& testdof(dofman_.LocalDofPosPerField<SymmetryMangle<testfield>::name>());
-        
+
         const std::size_t numparamtest  = testdof.size();
-        
+
         bool found_template = true;
         switch (numparamtest)
         {
@@ -228,7 +228,7 @@ public:
         default:
           found_template = false;
         }
-//        
+//
 //        for (std::size_t vi=0; vi<numparamtest; ++vi)
 //        {
 //            const int testpos = testdof[vi];
@@ -244,12 +244,12 @@ public:
         }
         }
     }
-    
+
 private:
     // don't want = operator and cctor
     LocalAssembler operator = (const LocalAssembler& old);
     LocalAssembler(const LocalAssembler& old);
-    
+
     const XFEM::ElementDofManager& dofman_;
     Epetra_SerialDenseMatrix& estif_;
     Epetra_SerialDenseVector& eforce_;
@@ -257,14 +257,14 @@ private:
 
 /*!
  * class that assembles one after another integral of the weak form into the stiffness matrix
- * 
+ *
  * specialization for standard assembly
  */
 template <DRT::Element::DiscretizationType DISTYPE, int NUMDOF>
 class LocalAssembler<DISTYPE, XFEM::standard_assembly, NUMDOF>
 {
 public:
-    
+
     explicit LocalAssembler(
             const XFEM::ElementDofManager&    ,
             Epetra_SerialDenseMatrix&                         estif,
@@ -275,7 +275,7 @@ public:
     {
         return;
     }
-            
+
     explicit LocalAssembler(
             Epetra_SerialDenseMatrix&                         estif,
             Epetra_SerialDenseVector&                         eforce
@@ -285,12 +285,12 @@ public:
     {
         return;
     }
-    
+
     ~LocalAssembler()
     {
         return;
     }
-    
+
     //! assemble one expression for the element stiffness matrix for a given test and trial field
     template <XFEM::PHYSICS::Field testfield,
               XFEM::PHYSICS::Field trialfield,
@@ -318,7 +318,7 @@ public:
             }
         }
     }
-    
+
     //! assemble one expression for the element rhs for a given test field
     template <XFEM::PHYSICS::Field testfield,
               class V1>
@@ -338,17 +338,17 @@ public:
             eforce_(testpos) += fac*testshape(vi);
         }
     }
-    
+
 private:
     // don't want = operator and cctor
     LocalAssembler operator = (const LocalAssembler& old);
     LocalAssembler(const LocalAssembler& old);
-    
+
     LINALG::Matrix<NUMDOF*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement,NUMDOF*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement> estif_;
     LINALG::Matrix<NUMDOF*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement,1> eforce_;
 };
 
-  
+
 #endif
 
 #endif

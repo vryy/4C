@@ -95,7 +95,7 @@ void DRT::ELEMENTS::XDiff3::Pack(std::vector<char>& data) const
   vector<char> basedata(0);
   Element::Pack(basedata);
   AddtoPack(data,basedata);
-  
+
   AddtoPack(data,output_mode_);
 
   return;
@@ -117,7 +117,7 @@ void DRT::ELEMENTS::XDiff3::Unpack(const std::vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
-  
+
   ExtractfromPack(position,data,output_mode_);
 
   if (position != (int)data.size())
@@ -163,9 +163,9 @@ RCP<DRT::ElementRegister> DRT::ELEMENTS::XDiff3::ElementRegister() const
  *----------------------------------------------------------------------*/
 vector<RCP<DRT::Element> > DRT::ELEMENTS::XDiff3::Lines()
 {
-  // do NOT store line or surface elements inside the parent element 
+  // do NOT store line or surface elements inside the parent element
   // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization, 
+  // Reason: if a Redistribute() is performed on the discretization,
   // stored node ids and node pointers owned by these boundary elements might
   // have become illegal and you will get a nice segmentation fault ;-)
 
@@ -179,9 +179,9 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::XDiff3::Lines()
  *----------------------------------------------------------------------*/
 vector<RCP<DRT::Element> > DRT::ELEMENTS::XDiff3::Surfaces()
 {
-  // do NOT store line or surface elements inside the parent element 
+  // do NOT store line or surface elements inside the parent element
   // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization, 
+  // Reason: if a Redistribute() is performed on the discretization,
   // stored node ids and node pointers owned by these boundary elements might
   // have become illegal and you will get a nice segmentation fault ;-)
 
