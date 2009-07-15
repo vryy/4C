@@ -89,13 +89,13 @@ public:
 
   /*!
   \brief Deep copy this instance of Torsion2 and return pointer to the copy
-    
+
   The Clone() method is used by the virtual base class Element in cases
   where the type of the derived class is unknown and a copy-ctor is needed
 .
   */
   virtual DRT::Element* Clone() const;
-  
+
    /*!
   \brief Get shape type of element
   */
@@ -154,14 +154,14 @@ public:
   /*!
   \brief Get number of degrees of freedom of a single node
   */
-  virtual int NumDofPerNode(const DRT::Node& node) const 
-  { 
-    /*note: this is not necessarily the number of DOF assigned to this node by the discretization finally, but only 
+  virtual int NumDofPerNode(const DRT::Node& node) const
+  {
+    /*note: this is not necessarily the number of DOF assigned to this node by the discretization finally, but only
      *the number of DOF requested for this node by this element; the discretization will finally assign the maximal
      *number of DOF to this node requested by any element connected to this node*/
     return 3;
   }
-  
+
 
   /*!
   \brief Get number of degrees of freedom per element not including nodal degrees of freedom
@@ -172,7 +172,7 @@ public:
   \brief Print this element
   */
   virtual void Print(ostream& os) const;
-  
+
 
   //@}
 
@@ -254,7 +254,7 @@ public:
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
                               vector<int>&              lm,
-                              Epetra_SerialDenseVector& elevec1);    
+                              Epetra_SerialDenseVector& elevec1);
   /*!
   \brief Evaluate a statistical Neumann boundary condition and related damping matrix
 
@@ -273,8 +273,8 @@ public:
                                     vector<double> mydisp,
                                     Epetra_SerialDenseVector& elevec1,
                                     Epetra_SerialDenseMatrix& elemat1,
-                                    int& ActNumDof0);  
-  
+                                    int& ActNumDof0);
+
   /*!
   \brief Evaluate PTC addition to stiffness for free Brownian motion
 
@@ -293,7 +293,7 @@ public:
                           int& ActNumDof0);
   //@}
 
-  
+
 private:
 
   //! action parameters recognized by Torsion2
@@ -318,83 +318,83 @@ private:
     calc_stat_force_damp, //calculate statistical forces and damping for Brownian dynamics
     calc_struct_ptcstiff //calculate artificial stiffness due to PTC solution strategy
   };
-  
+
   //! possible kinematic types
   enum KinematicType
   {
     tr3_totlag,
     tr3_engstrain
   };
-  
+
   //! container containing all kind of Torsion2 thisandthat
-  DRT::Container data_; 
-  
+  DRT::Container data_;
+
   //! variable saving whether element has already been initialized (then isinit_ == true)
   bool isinit_;
-  
+
   //!reference node position
   LINALG::Matrix<6,1> X_;
-  
+
   //! material type
   int material_;
-  
+
   //! length in reference configuration
   double lrefe_;
-  
+
   //! cross section area
   double crosssec_;
-  
+
   //! Kinematic type
   KinematicType kintype_;
-  
-  //! gaussrule_ will be initialized automatically to a 2 point integration rule 
+
+  //! gaussrule_ will be initialized automatically to a 2 point integration rule
   DRT::UTILS::GaussRule1D gaussrule_;
-  
+
   //! @name methods for initilization of the element
-  
+
   //!sets reference coordinates X_ and refenrence length lrefe_ for elements added to the discretization after simulation start
   void SetUpReferenceGeometry(const LINALG::Matrix<6,1>& xrefe);
-  
+
   //@}
 
   //! @name Internal calculation methods
-              
+
   //!calculation of nonlinear stiffness and mass matrix switching between total lagrange and enginerring strains
-  void t2_nlnstiffmass(vector<double>&           disp, 
+  void t2_nlnstiffmass(vector<double>&           disp,
                        Epetra_SerialDenseMatrix* stiffmatrix,
                        Epetra_SerialDenseMatrix* massmatrix,
                        Epetra_SerialDenseVector* force,
                        int& ActNumDof0);
-  
-  
+
+
   //!calculation of nonlinear stiffness and mass matrix
   void t2_nlnstiffmass_totlag( vector<double>& disp,
       Epetra_SerialDenseMatrix* stiffmatrix,
       Epetra_SerialDenseMatrix* massmatrix,
       Epetra_SerialDenseVector* force,
       int& ActNumDof0);
-  
-  /*! 
+
+  /*!
    * \brief calculate force, nonlinear stiffness and mass matrix using a engineering strain measure.
-   * 
+   *
    * Unlike the fully nonlinear implementation of #t2_nlnstiffmass_totlag, this function uses \f$\varepsilon=\Delta d / d\f$
-   * as strain measure. 
-   *  
-  */ 
+   * as strain measure.
+   *
+  */
   void t2_nlnstiffmass_engstr( vector<double>& disp,
       Epetra_SerialDenseMatrix* stiffmatrix,
       Epetra_SerialDenseMatrix* massmatrix,
       Epetra_SerialDenseVector* force,
       int& ActNumDof0);
-  
+
   //! lump mass matrix
   void t2_lumpmass(Epetra_SerialDenseMatrix* emass);
-  
+
   //@}
-			    
+			
   // don't want = operator
   Torsion2& operator = (const Torsion2& old);
-  
+
 
 }; // class Torsion2
 
@@ -422,7 +422,7 @@ public:
 
   /*!
   \brief Standard Constructor
-  
+
   */
   Torsion2Register(DRT::Element::ElementType etype);
 
@@ -430,22 +430,22 @@ public:
   \brief Copy Constructor
 
   Makes a deep copy of an Torsion2Register
-  
+
   */
   Torsion2Register(const DRT::ELEMENTS::Torsion2Register& old);
 
   /*!
   \brief Deep copy this instance of Torsion2Register and return pointer to the copy
-  
+
   The Clone() method is used from the virtual base class Element in cases
   where the type of the derived class is unknown and a copy-ctor is needed
-  
+
   */
   DRT::ELEMENTS::Torsion2Register* Clone() const;
 
   /*!
   \brief Return unique ParObject id
-  
+
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
@@ -453,15 +453,15 @@ public:
 
   /*!
   \brief Pack this class so it can be communicated
-  
+
   \ref Pack and \ref Unpack are used to communicate this element
-  
+
   */
   virtual void Pack(vector<char>& data) const;
 
   /*!
   \brief Unpack data from a char vector into this class
-  
+
   \ref Pack and \ref Unpack are used to communicate this element
 
   */
@@ -488,7 +488,7 @@ public:
 
   /*!
   \brief Call Element init routines
-  
+
   The method performs all steps needed to init the torsion2 elements. it e.g. calculates the
   field of averaged directors at nodes.
   */

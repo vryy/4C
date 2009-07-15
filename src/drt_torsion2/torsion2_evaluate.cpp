@@ -41,7 +41,7 @@ int DRT::ELEMENTS::Torsion2::Evaluate(ParameterList& params,
     Epetra_SerialDenseVector& elevec1,
     Epetra_SerialDenseVector& elevec2,
     Epetra_SerialDenseVector& elevec3)
-{ 
+{
   DRT::ELEMENTS::Torsion2::ActionType act = Torsion2::calc_none;
   // get the action required
   string action = params.get<string>("action","calc_none");
@@ -61,12 +61,12 @@ int DRT::ELEMENTS::Torsion2::Evaluate(ParameterList& params,
   else if (action=="postprocess_stress") act = Torsion2::postprocess_stress;
   else if (action=="calc_stat_force_damp") act = Torsion2::calc_stat_force_damp;
   else if (action=="calc_struct_ptcstiff") act = Torsion2::calc_struct_ptcstiff;
-  else 
+  else
     {
       cout<<action<<endl;
       dserror("Unknown type of action for Torsion2");
     }
-  
+
   /*number of degrees of freedom actually assigned to the discretization by the first node
    *(allows connectin Torsion2 and beam3 directly)*/
   int ActNumDof0 = discretization.NumDof(Nodes()[0]);
@@ -99,42 +99,42 @@ int DRT::ELEMENTS::Torsion2::Evaluate(ParameterList& params,
        * evaluation is cancelled) and finally this processor assembles the evaluated forces for degrees of
        * freedom right no matter whether its the row map owner of these DOF (outside the element routine
        * in the evaluation method of the discretization this would be not possible by default*/
-  
-  
+
+
       //test whether current processor is row map owner of the element
       if(this->Owner() != discretization.Comm().MyPID()) return 0;
-  
+
       // get element displacements (for use in shear flow fields)
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp==null) dserror("Cannot get state vector 'displacement'");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-  
+
       //evaluation of statistical forces with the local statistical forces vector fstat
       Epetra_SerialDenseVector fstat(lm.size());
       EvaluateStatForceDamp(params,mydisp,fstat,elemat1,ActNumDof0);
-  
+
       /*all the above evaluated forces are used in assembly of the column map force vector no matter if the current processor if
        * the row map owner of these DOF*/
       //note carefully: a space between the two subsequal ">" signs is mandatory for the C++ parser in order to avoid confusion with ">>" for streams
       RCP<Epetra_Vector>    fstatcol = params.get<  RCP<Epetra_Vector> >("statistical force vector",Teuchos::null);
-  
+
       for(unsigned int i = 0; i < lm.size(); i++)
       {
         //note: lm contains the global Ids of the degrees of freedom of this element
         //testing whether the fstatcol vector has really an element related with the i-th element of fstat by the i-the entry of lm
         if (!(fstatcol->Map()).MyGID(lm[i])) dserror("Sparse vector fstatcol does not have global row %d",lm[i]);
-  
+
         //get local Id of the fstatcol vector related with a certain element of fstat
         int lid = (fstatcol->Map()).LID(lm[i]);
-  
+
         //add to the related element of fstatcol the contribution of fstat
         (*fstatcol)[lid] += fstat[i];
       }
-  
+
     }
     break;
-    /*in case that only linear stiffness matrix is required b3_nlstiffmass is called with zero dispalcement and 
+    /*in case that only linear stiffness matrix is required b3_nlstiffmass is called with zero dispalcement and
      residual values*/
     case Torsion2::calc_struct_linstiff:
     {
@@ -163,7 +163,7 @@ int DRT::ELEMENTS::Torsion2::Evaluate(ParameterList& params,
       if (res==null) dserror("Cannot get state vectors 'residual displacement'");
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-           
+
       // get element velocities (UNCOMMENT IF NEEDED)
       /*
       RefCountPtr<const Epetra_Vector> vel  = discretization.GetState("velocity");
@@ -171,7 +171,7 @@ int DRT::ELEMENTS::Torsion2::Evaluate(ParameterList& params,
       vector<double> myvel(lm.size());
       DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
       */
-      
+
       // for engineering strains instead of total lagrange use t2_nlnstiffmass2
       if (act == Torsion2::calc_struct_nlnstiffmass)
       t2_nlnstiffmass(mydisp,&elemat1,&elemat2,&elevec1,ActNumDof0);
@@ -186,7 +186,7 @@ int DRT::ELEMENTS::Torsion2::Evaluate(ParameterList& params,
       t2_nlnstiffmass(mydisp,&elemat1,NULL,&elevec1,ActNumDof0);
       else if (act == Torsion2::calc_struct_internalforce)
       t2_nlnstiffmass(mydisp,NULL,NULL,&elevec1,ActNumDof0);
-    
+
     }
     break;
     case calc_struct_update_istep:
@@ -208,9 +208,9 @@ int DRT::ELEMENTS::Torsion2::Evaluate(ParameterList& params,
     case postprocess_stress:
     {
       //no stress calculation for postprocess. Does not really make sense!
-      dserror("No stress output for Torsion2!");      
+      dserror("No stress output for Torsion2!");
     }
-    break;  
+    break;
     default:
     dserror("Unknown type of action for Torsion2 %d", act);
   }
@@ -231,7 +231,7 @@ int DRT::ELEMENTS::Torsion2::EvaluateNeumann(ParameterList& params,
   //first the actual number of DOF of each node is detected
   int ActNumDof0 = discretization.NumDof(Nodes()[0]);
   int ActNumDof1 = discretization.NumDof(Nodes()[1]);
-  
+
   // get element displacements
   RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
   if (disp==null) dserror("Cannot get state vector 'displacement'");
@@ -259,7 +259,7 @@ int DRT::ELEMENTS::Torsion2::EvaluateNeumann(ParameterList& params,
 
   const DiscretizationType distype = this->Shape();
 
-  // gaussian points 
+  // gaussian points
   const DRT::UTILS::IntegrationPoints1D intpoints(gaussrule_);
 
   //declaration of variable in order to store shape function
@@ -297,17 +297,17 @@ int DRT::ELEMENTS::Torsion2::EvaluateNeumann(ParameterList& params,
     {
       ar[i] = fac * (*onoff)[i]*(*val)[i]*curvefac;
     }
-    
+
     //computing entries for first node
     for (int dof=0; dof < ActNumDof0; ++dof)
         elevec1[dof] += funct[0] *ar[dof];
-    
+
     //computing entries for second node
     for (int dof=0; dof < ActNumDof1; ++dof)
       elevec1[ActNumDof0 + dof] += funct[1] *ar[dof];
 
   } // for (int ip=0; ip<intpoints.nquad; ++ip)
-  
+
   return 0;
 }
 
@@ -327,9 +327,9 @@ int DRT::ELEMENTS::Torsion2::EvaluateStatForceDamp(ParameterList& params,
   /*the following funcitons are assuming linear interpolation of thermal and drag forces between the nodes
    * comparable to the case stoch_order == 1 for the beam3 element*/
 
-  //computing damping matrix (by background fluid of thermal bath) 
-  
-  //diagonal entries 
+  //computing damping matrix (by background fluid of thermal bath)
+
+  //diagonal entries
   for(int i= 0; i<3; i++)
   {
     //first node
@@ -337,8 +337,8 @@ int DRT::ELEMENTS::Torsion2::EvaluateStatForceDamp(ParameterList& params,
     //second node
     elemat1(ActNumDof0+i,ActNumDof0+i) += zeta/3.0;
   }
-  
-  //offdiagonal entries 
+
+  //offdiagonal entries
   for(int i= 0; i<3; i++)
   {
     elemat1(i,ActNumDof0+i) += zeta/6.0;
@@ -356,7 +356,7 @@ int DRT::ELEMENTS::Torsion2::EvaluateStatForceDamp(ParameterList& params,
   //creating a random generator object which creates random numbers with mean = 0 and standard deviation
   //stand_dev; using Blitz namespace "ranlib" for random number generation
   ranlib::Normal<double> normalGen(0,stand_dev_trans);
-  
+
   //uncorrelated part of the statistical forces
   for(int i= 0; i<3; i++)
   {
@@ -365,19 +365,19 @@ int DRT::ELEMENTS::Torsion2::EvaluateStatForceDamp(ParameterList& params,
     //second node
     elevec1[ActNumDof0+i] += normalGen.random();
   }
-  
+
   //correlated part of the statistical forces
   for(int i= 0; i<3; i++)
   {
     double force = normalGen.random();
-    
+
     //first node
     elevec1[i] += force;
     //second node
     elevec1[ActNumDof0+i] += force;
   }
 
-  
+
   return 0;
 } //DRT::ELEMENTS::Torsion2::EvaluateStatisticalNeumann
 
@@ -396,7 +396,7 @@ int DRT::ELEMENTS::Torsion2::EvaluatePTC(ParameterList& params,
   //first node
   for(int i= 0; i<3; i++)
     elemat1(i,i) += dti;
-  
+
   //second node
   for(int i= 0; i<3; i++)
     elemat1(i+ActNumDof0,i+ActNumDof0) += dti;
@@ -433,35 +433,35 @@ void DRT::ELEMENTS::Torsion2::t2_nlnstiffmass_totlag( vector<double>& disp,
     Epetra_SerialDenseMatrix* massmatrix,
     Epetra_SerialDenseVector* force,
     int& ActNumDof0)
-{     
+{
   //current node position (first entries 0 .. 2 for first node, 3 ..5 for second node)
   LINALG::Matrix<6,1> xcurr;
-  
+
   /*current nodal displacement (first entries 0 .. 2 for first node, 3 ..5 for second node) compared
-   * to reference configuration; note: in general this is not equal to the values in disp since the 
+   * to reference configuration; note: in general this is not equal to the values in disp since the
    * latter one referes to a nodal displacement compared to a reference configuration before the first
    * time step whereas the following variable referes to the displacement with respect to a reference
    * configuration which may have been set up at any point of time during the simulation (usually this
    * is only important if an element has been added to the discretization after the start of the simulation)*/
-  LINALG::Matrix<6,1> ucurr; 
-  
+  LINALG::Matrix<6,1> ucurr;
+
   //Green-Lagrange strain
   double epsilon;
-  
+
   //auxiliary vector for both internal force and stiffness matrix: N^T_(,xi)*N_(,xi)*xcurr
   LINALG::Matrix<6,1> aux;
 
   //current nodal position
-  for (int j=0; j<3; ++j) 
+  for (int j=0; j<3; ++j)
   {
     xcurr(j  )   = Nodes()[0]->X()[j] + disp[  j]; //first node
     xcurr(j+3)   = Nodes()[1]->X()[j] + disp[ActNumDof0 + j]; //second node
   }
-  
+
   //current displacement = current position - reference position
   ucurr  = xcurr;
   ucurr -= X_;
-  
+
   //computing auxiliary vector aux = N^T_{,xi} * N_{,xi} * xcurr
   aux(0) = 0.25 * (xcurr(0) - xcurr(3));
   aux(1) = 0.25 * (xcurr(1) - xcurr(4));
@@ -469,7 +469,7 @@ void DRT::ELEMENTS::Torsion2::t2_nlnstiffmass_totlag( vector<double>& disp,
   aux(3) = 0.25 * (xcurr(3) - xcurr(0));
   aux(4) = 0.25 * (xcurr(4) - xcurr(1));
   aux(5) = 0.25 * (xcurr(5) - xcurr(2));
-  
+
   //calculating strain epsilon from node position by scalar product:
   //epsilon = (xrefe + 0.5*ucurr)^T * N_{,s}^T * N_{,s} * d
   epsilon = 0;
@@ -494,7 +494,7 @@ void DRT::ELEMENTS::Torsion2::t2_nlnstiffmass_totlag( vector<double>& disp,
   double sm = 0;
   double density = 0;
 
-  //assignment of material parameters; only St.Venant material is accepted for this truss 
+  //assignment of material parameters; only St.Venant material is accepted for this truss
   switch(currmat->MaterialType())
   {
     case INPAR::MAT::m_stvenant:// only linear elastic material supported
@@ -508,25 +508,25 @@ void DRT::ELEMENTS::Torsion2::t2_nlnstiffmass_totlag( vector<double>& disp,
     default:
     dserror("unknown or improper type of material law");
   }
-  
+
 
   //computing global internal forces
   if (force != NULL)
   {
     for (int i=0; i<3; ++i)
      (*force)(i) = (4*ym*crosssec_*epsilon/lrefe_) * aux(i);
-    
+
     for (int i=0; i<3; ++i)
      (*force)(ActNumDof0 + i) = (4*ym*crosssec_*epsilon/lrefe_) * aux(i+3);
-    
+
   }
-  
+
 
   //computing linear stiffness matrix
   if (stiffmatrix != NULL)
-  {      
+  {
     for (int i=0; i<3; ++i)
-    { 
+    {
         //stiffness entries for first node
         (*stiffmatrix)(i              ,i             )   =  (ym*crosssec_*epsilon/lrefe_);
         (*stiffmatrix)(i              ,ActNumDof0 + i)   = -(ym*crosssec_*epsilon/lrefe_);
@@ -538,7 +538,7 @@ void DRT::ELEMENTS::Torsion2::t2_nlnstiffmass_totlag( vector<double>& disp,
     //auxiliary variables for handling indices:
     int id = 0;
     int jd = 0;
-    
+
     for (int i=0; i<6; ++i)
     {
       for (int j=0; j<6; ++j)
@@ -551,14 +551,14 @@ void DRT::ELEMENTS::Torsion2::t2_nlnstiffmass_totlag( vector<double>& disp,
           jd = j;
         else
           jd = j + ActNumDof0 - 3;
-        
-        (*stiffmatrix)(id,jd) += (16*ym*crosssec_/pow(lrefe_,3))*aux(i)*aux(j);
-      }     
-    }  
 
-      
+        (*stiffmatrix)(id,jd) += (16*ym*crosssec_/pow(lrefe_,3))*aux(i)*aux(j);
+      }
+    }
+
+
   }
-  
+
   //calculating consistent mass matrix
   if (massmatrix != NULL)
   {
@@ -570,7 +570,7 @@ void DRT::ELEMENTS::Torsion2::t2_nlnstiffmass_totlag( vector<double>& disp,
       (*massmatrix)(i + ActNumDof0,i             ) = density*lrefe_*crosssec_ / 6;
     }
   }
-  
+
   return;
 } // DRT::ELEMENTS::Torsion2::t2_nlnstiffmass
 
@@ -587,20 +587,20 @@ void DRT::ELEMENTS::Torsion2::t2_nlnstiffmass_engstr( vector<double>& disp,
 {
   //current node position (first entries 0 .. 2 for first node, 3 ..5 for second node)
   LINALG::Matrix<6,1> xcurr;
-  
+
   //Green-Lagrange strain
   double epsilon;
-  
+
   //auxiliary vector for both internal force and stiffness matrix: N^T_(,xi)*N_(,xi)*xcurr
   LINALG::Matrix<6,1> aux;
 
   //current nodal position (first
-  for (int j=0; j<3; ++j) 
+  for (int j=0; j<3; ++j)
   {
     xcurr(j  )   = Nodes()[0]->X()[j] + disp[  j]; //first node
     xcurr(j+3)   = Nodes()[1]->X()[j] + disp[ActNumDof0 + j]; //second node
   }
-  
+
   //computing auxiliary vector aux = 4.0*N^T_{,xi} * N_{,xi} * xcurr
   aux(0) = (xcurr(0) - xcurr(3));
   aux(1) = (xcurr(1) - xcurr(4));
@@ -608,9 +608,9 @@ void DRT::ELEMENTS::Torsion2::t2_nlnstiffmass_engstr( vector<double>& disp,
   aux(3) = (xcurr(3) - xcurr(0));
   aux(4) = (xcurr(4) - xcurr(1));
   aux(5) = (xcurr(5) - xcurr(2));
-  
+
   double lcurr = sqrt(pow(aux(0),2)+pow(aux(1),2)+pow(aux(2),2));
-  
+
   //calculating strain epsilon from node position by scalar product:
   epsilon = (lcurr-lrefe_)/lrefe_;
 
@@ -625,7 +625,7 @@ void DRT::ELEMENTS::Torsion2::t2_nlnstiffmass_engstr( vector<double>& disp,
   double ym = 0;
   double density = 0;
 
-  //assignment of material parameters; only St.Venant material is accepted for this truss 
+  //assignment of material parameters; only St.Venant material is accepted for this truss
   switch(currmat->MaterialType())
   {
   case INPAR::MAT::m_stvenant:// only linear elastic material supported
@@ -638,13 +638,13 @@ void DRT::ELEMENTS::Torsion2::t2_nlnstiffmass_engstr( vector<double>& disp,
     default:
     dserror("unknown or improper type of material law");
   }
-  
+
   // resulting force scaled by current length
   double forcescalar=(ym*crosssec_*epsilon)/lcurr;
-  
+
   //computing global internal forces
   if (force != NULL)
-  {  
+  {
     //node 1
     for (int i=0; i<3; ++i)
      (*force)(i) = forcescalar * aux(i);
@@ -652,13 +652,13 @@ void DRT::ELEMENTS::Torsion2::t2_nlnstiffmass_engstr( vector<double>& disp,
     for (int i=0; i<3; ++i)
      (*force)(ActNumDof0 + i) = forcescalar * aux(i+3);
   }
-  
+
   //computing linear stiffness matrix
   if (stiffmatrix != NULL)
-  {      
-    
+  {
+
     for (int i=0; i<3; ++i)
-    { 
+    {
         //stiffness entries for first node
         (*stiffmatrix)(i              ,i             )   =  forcescalar;
         (*stiffmatrix)(i              ,ActNumDof0 + i)   = -forcescalar;
@@ -666,11 +666,11 @@ void DRT::ELEMENTS::Torsion2::t2_nlnstiffmass_engstr( vector<double>& disp,
         (*stiffmatrix)(i + ActNumDof0 ,i + ActNumDof0)   =  forcescalar;
         (*stiffmatrix)(i + ActNumDof0 ,i             )   = -forcescalar;
     }
-    
+
     //auxiliary variables for handling indices:
     int id = 0;
     int jd = 0;
-    
+
     for (int i=0; i<6; ++i)
     {
       for (int j=0; j<6; ++j)
@@ -683,13 +683,13 @@ void DRT::ELEMENTS::Torsion2::t2_nlnstiffmass_engstr( vector<double>& disp,
           jd = j;
         else
           jd = j + ActNumDof0 - 3;
-        
+
         (*stiffmatrix)(id,jd) += (ym*crosssec_/pow(lrefe_,3))*aux(i)*aux(j);
-      }     
-    }  
- 
+      }
+    }
+
   }
-  
+
   //calculating consistent mass matrix
   if (massmatrix != NULL)
   {
@@ -701,7 +701,7 @@ void DRT::ELEMENTS::Torsion2::t2_nlnstiffmass_engstr( vector<double>& disp,
       (*massmatrix)(i + ActNumDof0,i             ) = density*lrefe_*crosssec_ / 6;
     }
   }
-  
+
   return;
 } // DRT::ELEMENTS::Torsion2::bt_nlnstiffmass2
 
