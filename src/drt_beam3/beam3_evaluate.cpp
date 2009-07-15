@@ -585,106 +585,164 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
                               Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
                               Epetra_SerialDenseVector* force) //!< element internal force vector
 {
-
-   double dt = params.get<double>("delta time",0.0);//timestep 
+ int stochasticorder = params.get<int>("STOCH_ORDER",-2);// polynomial order for interpolation of stochastic line load
  
-   int stochasticorder = params.get<int>("STOCH_ORDER",0);// polynomial order for interpolation of stochastic line load
-
-   double zeta = 4 * PI * lrefe_ * params.get<double>("ETA",0.0);//damping parameter zeta
-   
-   
-   switch(stochasticorder)
-   {
-   //simple isotropic model of Brownian motion with uncorrelated nodal forces
-   case -1:
-   {
-   	 
-  	//calc brownian damp matrix 
-  	if (stiffmatrix != NULL) // necessary to run stiffmatrix control routine
-  	{
-  		(*stiffmatrix)(0,0) += zeta/(2.0*dt);
-  		(*stiffmatrix)(1,1) += zeta/(2.0*dt);
-  		(*stiffmatrix)(2,2) += zeta/(2.0*dt);
-  		(*stiffmatrix)(6,6) += zeta/(2.0*dt);
-  		(*stiffmatrix)(7,7) += zeta/(2.0*dt);
-  		(*stiffmatrix)(8,8) += zeta/(2.0*dt);
-  	}
-  	    
-  	if (force != NULL)
-  	{
-  	 //calc int brownian forces  
-     (*force)(0) +=zeta/(2.0)*vel[0];
-     (*force)(1) +=zeta/(2.0)*vel[1];
-     (*force)(2) +=zeta/(2.0)*vel[2];
-     (*force)(6) +=zeta/(2.0)*vel[6];
-     (*force)(7) +=zeta/(2.0)*vel[7];
-     (*force)(8) +=zeta/(2.0)*vel[8];
+ //if no stochasticorder has been chosen explicitly we exit this function without any action
+ if(stochasticorder == -2)
+   return;
+ 
+ double dt = params.get<double>("delta time",0.0);//timestep 
+ 
+ double zeta = 4 * PI * lrefe_ * params.get<double>("ETA",0.0);//damping parameter zeta
+ 
+ /*the following block adds a rotational damping and related internal forces; this damping goes along with the damping of a 
+ * rigid straight rod spinning around its own axis; analytically it is given by a damping coefficient
+ * gamma_a = 4*pi*eta*r^2*lrefe_ where r is the radius of the crosssection; as this 
+ * coefficient is very small for thin rods it is increased artificially by a factor for numerical convencience*/
+  double rsquare = pow((4*Iyy_/PI),0.5);
+  //gamma_a artificially increased by factor artificial; this factor should scale with lrefe_^2 and comprise a heuristically calculated constant (here 60)
+  double artificial = 60*(lrefe_*lrefe_);
+  double gammaa = 4*PI*params.get<double>("ETA",0.0)*(rsquare)*artificial; 
+  
+ 
+  //computing angle increment from current position in comparison with last converged position for damping
+  LINALG::Matrix<4,1> deltaQ;
+  LINALG::Matrix<3,1> deltatheta;     
+  quaternionproduct(inversequaternion(Qconv_[0]),Qnew_[0],deltaQ);      
+  quaterniontoangle(deltaQ,deltatheta);
+  
+  //angular velocity
+  LINALG::Matrix<3,1> omega = deltatheta;
+  omega.Scale(1/ params.get<double>("delta time",0.01));
+          
+  //computing special matrix for anisotropic damping
+  LINALG::Matrix<3,3> Tconv;
+  quaterniontotriad(Qconv_[0],Tconv);
+  LINALG::Matrix<3,3> Theta;
+  for(int i = 0; i<3; i++)
+    for(int j = 0; j<3; j++)
+      Theta(i,j) = Tconv(i,0)*Tconv(j,0);
+  
+  //inverse exponential map
+  LINALG::Matrix<3,3> Hinverse = Hinv(deltatheta);
     
-     
-     //calc ext brownian forces
-     (*force)(0) -=floc_(0,0);
-     (*force)(1) -=floc_(1,0);
-     (*force)(2) -=floc_(2,0);
-     (*force)(6) -=floc_(3,0);
-     (*force)(7) -=floc_(4,0);
-     (*force)(8) -=floc_(5,0);	
-     
-  	
-  	}
-    
-     
-     
+  //stiffness due to rotational damping    
+  LINALG::Matrix<3,3> artstiff;
+  artstiff.Multiply(Theta,Hinverse);
+  artstiff.Scale(gammaa*0.5 / params.get<double>("delta time",0.01));
+      
+  //forces due to rotational damping 
+  LINALG::Matrix<3,1> artforce;
+  artforce.Multiply(Theta,omega);
+  artforce.Scale(gammaa);
+  
+  //adding artificial contributions to stiffness matrix and force vector
+  for(int i= 0; i<3; i++)
+  {
+    for(int j=0;j<3;j++)
+    {
+      (*stiffmatrix)(3+i, 3+j) += artstiff(i,j);
+      (*stiffmatrix)(9+i, 9+j) += artstiff(i,j);
+      (*stiffmatrix)(9+i, 3+j) += artstiff(i,j);
+      (*stiffmatrix)(3+i, 9+j) += artstiff(i,j);
     }
-   break;
+  }    
+
+  for(int i = 0; i<3; i++)
+  {    
+    (*force)[3+i] += artforce(i);
+    (*force)[9+i] += artforce(i);      
+  }     
+
+ 
+//the following code blocks incalculate damping due to translation of the nodes
+ 
+ switch(stochasticorder)
+ {
+ //simple isotropic model of Brownian motion with uncorrelated nodal forces
+ case -1:
+ {
+ 	 
+	//calc brownian damp matrix 
+	if (stiffmatrix != NULL) // necessary to run stiffmatrix control routine
+	{
+		(*stiffmatrix)(0,0) += zeta/(2.0*dt);
+		(*stiffmatrix)(1,1) += zeta/(2.0*dt);
+		(*stiffmatrix)(2,2) += zeta/(2.0*dt);
+		(*stiffmatrix)(6,6) += zeta/(2.0*dt);
+		(*stiffmatrix)(7,7) += zeta/(2.0*dt);
+		(*stiffmatrix)(8,8) += zeta/(2.0*dt);
+	}
+	    
+	if (force != NULL)
+	{
+	 //calc int brownian forces  
+   (*force)(0) +=zeta/(2.0)*vel[0];
+   (*force)(1) +=zeta/(2.0)*vel[1];
+   (*force)(2) +=zeta/(2.0)*vel[2];
+   (*force)(6) +=zeta/(2.0)*vel[6];
+   (*force)(7) +=zeta/(2.0)*vel[7];
+   (*force)(8) +=zeta/(2.0)*vel[8];
+  
    
-   //isotropic model of Brownian motion with correlated forces
-   case 0:
-   {   
- 	
-     //calc brownian damp matrix 
-  	 if (stiffmatrix != NULL) // necessary to run stiffmatrix control routine
-  	 {
-     (*stiffmatrix)(0,0) += zeta/(3.0*dt);
-     (*stiffmatrix)(1,1) += zeta/(3.0*dt);
-     (*stiffmatrix)(2,2) += zeta/(3.0*dt);
-     (*stiffmatrix)(6,6) += zeta/(3.0*dt);
-     (*stiffmatrix)(7,7) += zeta/(3.0*dt);
-     (*stiffmatrix)(8,8) += zeta/(3.0*dt);
-     (*stiffmatrix)(0,6) += zeta/(6.0*dt);
-     (*stiffmatrix)(1,7) += zeta/(6.0*dt);
-     (*stiffmatrix)(2,8) += zeta/(6.0*dt);
-     (*stiffmatrix)(6,0) += zeta/(6.0*dt);
-     (*stiffmatrix)(7,1) += zeta/(6.0*dt);
-     (*stiffmatrix)(8,2) += zeta/(6.0*dt);    
-  	 } 
-     
-  	 if (force != NULL)
-  	 {
-  	 //calc int brownian forces
-  	 (*force)(0) +=zeta/(3.0)*vel[0]+zeta/(6.0)*vel[6];
-     (*force)(1) +=zeta/(3.0)*vel[1]+zeta/(6.0)*vel[7];
-     (*force)(2) +=zeta/(3.0)*vel[2]+zeta/(6.0)*vel[8];
-     (*force)(6) +=zeta/(6.0)*vel[0]+zeta/(3.0)*vel[6];
-     (*force)(7) +=zeta/(6.0)*vel[1]+zeta/(3.0)*vel[7];
-     (*force)(8) +=zeta/(6.0)*vel[2]+zeta/(3.0)*vel[8];
-     
-     //calc ext brownian forces
-     (*force)(0) -=floc_(0,0);
-     (*force)(1) -=floc_(1,0);
-     (*force)(2) -=floc_(2,0);
-     (*force)(6) -=floc_(3,0);
-     (*force)(7) -=floc_(4,0);
-     (*force)(8) -=floc_(5,0); 
-  	 }
-     
-     
-     }
-   break;
-   //anisotropic model of Brownian motion with correlated nodal forces
-   case 1:
-   {
-  	  	 
-  	 
+   //calc ext brownian forces
+   (*force)(0) -=floc_(0,0);
+   (*force)(1) -=floc_(1,0);
+   (*force)(2) -=floc_(2,0);
+   (*force)(6) -=floc_(3,0);
+   (*force)(7) -=floc_(4,0);
+   (*force)(8) -=floc_(5,0);	
+	}
+  
+ }
+ break;
+   
+ //isotropic model of Brownian motion with correlated forces
+ case 0:
+ {   
+
+   //calc brownian damp matrix 
+	 if (stiffmatrix != NULL) // necessary to run stiffmatrix control routine
+	 {
+   (*stiffmatrix)(0,0) += zeta/(3.0*dt);
+   (*stiffmatrix)(1,1) += zeta/(3.0*dt);
+   (*stiffmatrix)(2,2) += zeta/(3.0*dt);
+   (*stiffmatrix)(6,6) += zeta/(3.0*dt);
+   (*stiffmatrix)(7,7) += zeta/(3.0*dt);
+   (*stiffmatrix)(8,8) += zeta/(3.0*dt);
+   (*stiffmatrix)(0,6) += zeta/(6.0*dt);
+   (*stiffmatrix)(1,7) += zeta/(6.0*dt);
+   (*stiffmatrix)(2,8) += zeta/(6.0*dt);
+   (*stiffmatrix)(6,0) += zeta/(6.0*dt);
+   (*stiffmatrix)(7,1) += zeta/(6.0*dt);
+   (*stiffmatrix)(8,2) += zeta/(6.0*dt);    
+	 } 
+   
+	 if (force != NULL)
+	 {
+	 //calc int brownian forces
+	 (*force)(0) +=zeta/(3.0)*vel[0]+zeta/(6.0)*vel[6];
+   (*force)(1) +=zeta/(3.0)*vel[1]+zeta/(6.0)*vel[7];
+   (*force)(2) +=zeta/(3.0)*vel[2]+zeta/(6.0)*vel[8];
+   (*force)(6) +=zeta/(6.0)*vel[0]+zeta/(3.0)*vel[6];
+   (*force)(7) +=zeta/(6.0)*vel[1]+zeta/(3.0)*vel[7];
+   (*force)(8) +=zeta/(6.0)*vel[2]+zeta/(3.0)*vel[8];
+   
+   //calc ext brownian forces
+   (*force)(0) -=floc_(0,0);
+   (*force)(1) -=floc_(1,0);
+   (*force)(2) -=floc_(2,0);
+   (*force)(6) -=floc_(3,0);
+   (*force)(7) -=floc_(4,0);
+   (*force)(8) -=floc_(5,0); 
+	 }
+   
+   
+  }
+  break;
+  //anisotropic model of Brownian motion with correlated nodal forces
+  case 1:
+  { 
   	 //local damping matrix
   	 LINALG::Matrix<3,3> dampbasis(true);
   	 dampbasis(0,0)=zeta/2.0;
@@ -738,213 +796,210 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
 			 
   	 //define seperate spin matrix for each rot dof
 			
-			 LINALG::Matrix<3,3> S1(true);//delta alpha1
-			 S1(1,2)=-1.0;
-			 S1(2,1)=1.0;
-			 
-			 LINALG::Matrix<3,3> S2(true);//delta alpha2
-			 S2(0,2)=1.0;
-			 S2(2,0)=-1.0;
-			 
-			 LINALG::Matrix<3,3> S3(true);//delta alpha3
-			 S3(0,1)=-1.0;
-			 S3(1,0)=1.0;
-  	 
-			 LINALG::Matrix<3,3> aux2(true);
-			 
-			 //values due to alpha 1
-			 aux1.Multiply(S1,dampbasis);//multiply S1 from left
-			 aux2.Multiply(dampbasis,S1);//multiply S1 from right
-			 
-			 
-			 for(int i=0; i<3; i++)//calc difference
- 	   	 {
- 	   		 for (int j=0; j<3; j++)
- 	   		 {
- 	   			aux1(i,j)=aux1(i,j)-aux2(i,j); 
- 	   		 }
- 	   	 }
-  	 
-			 LINALG::Matrix<6,6> aux3(true); //to store result for two nodes multiply velcoef
-			 
-			 for(int i=0; i<3; i++)//now two nodes
- 	   	 {
- 	   		 for (int j=0; j<3; j++)
- 	   		 {
- 	   			 aux3(i,j)=aux1(i,j)/3.0;
- 	   			 aux3(i+3,j)=aux1(i,j)/6.0;
- 	   			 aux3(i,j+3)=aux1(i,j)/6.0;
- 	   			 aux3(i+3,j+3)=aux1(i,j)/3.0;
- 	   		 }
- 	   	 }
-  	
-			 LINALG::Matrix<6,1> aux4(true);
-			 
-			 for(int i=0; i<6; i++)//multiply velocity
- 	   	 {
- 	   		 for (int j=0; j<3; j++)
- 	   		 {
- 	   			 aux4(i,0)+=aux3(i,j)*vel[j];
- 	   			 aux4(i,0)+=aux3(i,j+3)*vel[j+6];
- 	   		 }
- 	   	 }
-  	 
-			 for (int i=0; i<3; i++)//fill stiffness values due to delta alpha1 in stiffmatrix
-  		 {
-  			 (*stiffmatrix)(i,3)+=aux4(i,0)*0.5;
-  			 (*stiffmatrix)(i+6,3)+=aux4(i+3,0)*0.5;
-  			 (*stiffmatrix)(i,9)+=aux4(i,0)*0.5;
-  			 (*stiffmatrix)(i+6,9)+=aux4(i+3,0)*0.5;
-  		 } 		 //end delta alpha1
-  	 
-  		 //values due to alpha 2
- 			 aux1.Multiply(S2,dampbasis);//multiply S2 from left
- 			 aux2.Multiply(dampbasis,S2);//multiply S2 from right
- 			 
- 			 
- 			 for(int i=0; i<3; i++)//calc difference
-  	   	 {
-  	   		 for (int j=0; j<3; j++)
-  	   		 {
-  	   			aux1(i,j)=aux1(i,j)-aux2(i,j); 
-  	   		 }
-  	   	 }
-   	 
- 			 
- 			 for(int i=0; i<3; i++)//now two nodes
-  	   	 {
-  	   		 for (int j=0; j<3; j++)
-  	   		 {
-  	   			 aux3(i,j)=aux1(i,j)/3.0;
-  	   			 aux3(i+3,j)=aux1(i,j)/6.0;
-  	   			 aux3(i,j+3)=aux1(i,j)/6.0;
-  	   			 aux3(i+3,j+3)=aux1(i,j)/3.0;
-  	   		 }
-  	   	 }
-   	
- 			 
- 			 for (int i=0; i<6; i++)//set aux4 to zero
- 				 aux4(i,0)=0.0;
- 			 
- 			 for(int i=0; i<6; i++)//multiply velocity
-  	   	 {
-  	   		 for (int j=0; j<3; j++)
-  	   		 {
-  	   			 aux4(i,0)+=aux3(i,j)*vel[j];
-  	   			 aux4(i,0)+=aux3(i,j+3)*vel[j+6];
-  	   		 }
-  	   	 }
-   	 
- 			 for (int i=0; i<3; i++)//fill stiffness values due to delta alpha2 in stiffmatrix
+		 LINALG::Matrix<3,3> S1(true);//delta alpha1
+		 S1(1,2)=-1.0;
+		 S1(2,1)=1.0;
+		 
+		 LINALG::Matrix<3,3> S2(true);//delta alpha2
+		 S2(0,2)=1.0;
+		 S2(2,0)=-1.0;
+		 
+		 LINALG::Matrix<3,3> S3(true);//delta alpha3
+		 S3(0,1)=-1.0;
+		 S3(1,0)=1.0;
+	 
+		 LINALG::Matrix<3,3> aux2(true);
+		 
+		 //values due to alpha 1
+		 aux1.Multiply(S1,dampbasis);//multiply S1 from left
+		 aux2.Multiply(dampbasis,S1);//multiply S1 from right
+		 
+		 
+		 for(int i=0; i<3; i++)//calc difference
+   	 {
+   		 for (int j=0; j<3; j++)
    		 {
-   			 (*stiffmatrix)(i,4)+=aux4(i,0)*0.5;
-   			 (*stiffmatrix)(i+6,4)+=aux4(i+3,0)*0.5;
-   			 (*stiffmatrix)(i,10)+=aux4(i,0)*0.5;
-   			 (*stiffmatrix)(i+6,10)+=aux4(i+3,0)*0.5;
-   			 
-   		 }//end delta alpha2
-  		 
-  		 
-   		//values due to alpha 3
- 			 aux1.Multiply(S3,dampbasis);//multiply S3 from left
- 			 aux2.Multiply(dampbasis,S3);//multiply S3 from right
- 			 
- 			 
- 			 for(int i=0; i<3; i++)//calc difference
-  	   	 {
-  	   		 for (int j=0; j<3; j++)
-  	   		 {
-  	   			aux1(i,j)=aux1(i,j)-aux2(i,j); 
-  	   		 }
-  	   	 }
-   	 
- 			 
- 			 for(int i=0; i<3; i++)//now two nodes
-  	   	 {
-  	   		 for (int j=0; j<3; j++)
-  	   		 {
-  	   			 aux3(i,j)=aux1(i,j)/3.0;
-  	   			 aux3(i+3,j)=aux1(i,j)/6.0;
-  	   			 aux3(i,j+3)=aux1(i,j)/6.0;
-  	   			 aux3(i+3,j+3)=aux1(i,j)/3.0;
-  	   		 }
-  	   	 }
-   	
- 			 
- 			 for (int i=0; i<6; i++)//set aux4 to zero
- 			 				 aux4(i,0)=0.0;
- 			
- 			 for(int i=0; i<6; i++)//multiply velocity
-  	   	 {
-  	   		 for (int j=0; j<3; j++)
-  	   		 {
-  	   			 aux4(i,0)+=aux3(i,j)*vel[j];
-  	   			 aux4(i,0)+=aux3(i,j+3)*vel[j+6];
-  	   		 }
-  	   	 }
-   	 
- 			 for (int i=0; i<3; i++)//fill stiffness values due to delta alpha3 in stiffmatrix
+   			aux1(i,j)=aux1(i,j)-aux2(i,j); 
+   		 }
+   	 }
+	 
+		 LINALG::Matrix<6,6> aux3(true); //to store result for two nodes multiply velcoef
+		 
+		 for(int i=0; i<3; i++)//now two nodes
+   	 {
+   		 for (int j=0; j<3; j++)
    		 {
-   			 (*stiffmatrix)(i,5)+=aux4(i,0)*0.5;
-   			 (*stiffmatrix)(i+6,5)+=aux4(i+3,0)*0.5;
-   			 (*stiffmatrix)(i,11)+=aux4(i,0)*0.5;
-   			 (*stiffmatrix)(i+6,11)+=aux4(i+3,0)*0.5;
-   		 } //end delta alpha3
-  		 
-  		//end internal stiffness 
-  		 
-  		//calc ext stiffness 
+   			 aux3(i,j)=aux1(i,j)/3.0;
+   			 aux3(i+3,j)=aux1(i,j)/6.0;
+   			 aux3(i,j+3)=aux1(i,j)/6.0;
+   			 aux3(i+3,j+3)=aux1(i,j)/3.0;
+   		 }
+   	 }
+	
+		 LINALG::Matrix<6,1> aux4(true);
+		 
+		 for(int i=0; i<6; i++)//multiply velocity
+   	 {
+   		 for (int j=0; j<3; j++)
+   		 {
+   			 aux4(i,0)+=aux3(i,j)*vel[j];
+   			 aux4(i,0)+=aux3(i,j+3)*vel[j+6];
+   		 }
+   	 }
+	 
+		 for (int i=0; i<3; i++)//fill stiffness values due to delta alpha1 in stiffmatrix
+		 {
+			 (*stiffmatrix)(i,3)+=aux4(i,0)*0.5;
+			 (*stiffmatrix)(i+6,3)+=aux4(i+3,0)*0.5;
+			 (*stiffmatrix)(i,9)+=aux4(i,0)*0.5;
+			 (*stiffmatrix)(i+6,9)+=aux4(i+3,0)*0.5;
+		 } 		 //end delta alpha1
+	 
+		 //values due to alpha 2
+		 aux1.Multiply(S2,dampbasis);//multiply S2 from left
+		 aux2.Multiply(dampbasis,S2);//multiply S2 from right
+		 
+		 
+		 for(int i=0; i<3; i++)//calc difference
+	   		 for (int j=0; j<3; j++)
+	   			aux1(i,j)=aux1(i,j)-aux2(i,j); 
+
+ 	 
+		 
+		 for(int i=0; i<3; i++)//now two nodes
+   	 {
+   		 for (int j=0; j<3; j++)
+   		 {
+   			 aux3(i,j)=aux1(i,j)/3.0;
+   			 aux3(i+3,j)=aux1(i,j)/6.0;
+   			 aux3(i,j+3)=aux1(i,j)/6.0;
+   			 aux3(i+3,j+3)=aux1(i,j)/3.0;
+   		 }
+   	 }
+ 	
+		 
+		 for (int i=0; i<6; i++)//set aux4 to zero
+			 aux4(i,0)=0.0;
+		 
+		 for(int i=0; i<6; i++)//multiply velocity
+   	 {
+   		 for (int j=0; j<3; j++)
+   		 {
+   			 aux4(i,0)+=aux3(i,j)*vel[j];
+   			 aux4(i,0)+=aux3(i,j+3)*vel[j+6];
+   		 }
+   	 }
+ 	 
+		for (int i=0; i<3; i++)//fill stiffness values due to delta alpha2 in stiffmatrix
+ 		{
+ 			(*stiffmatrix)(i,4)+=aux4(i,0)*0.5;
+ 			(*stiffmatrix)(i+6,4)+=aux4(i+3,0)*0.5;
+ 			(*stiffmatrix)(i,10)+=aux4(i,0)*0.5;
+ 			(*stiffmatrix)(i+6,10)+=aux4(i+3,0)*0.5;
+ 			 
+ 		}//end delta alpha2
+		 
+		 
+ 		//values due to alpha 3
+		aux1.Multiply(S3,dampbasis);//multiply S3 from left
+		aux2.Multiply(dampbasis,S3);//multiply S3 from right
+		 
+		 
+		 for(int i=0; i<3; i++)//calc difference
+	   	 {
+	   		 for (int j=0; j<3; j++)
+	   		 {
+	   			aux1(i,j)=aux1(i,j)-aux2(i,j); 
+	   		 }
+	   	 }
+ 	 
+		 
+		 for(int i=0; i<3; i++)//now two nodes
+	   	 {
+	   		 for (int j=0; j<3; j++)
+	   		 {
+	   			 aux3(i,j)=aux1(i,j)/3.0;
+	   			 aux3(i+3,j)=aux1(i,j)/6.0;
+	   			 aux3(i,j+3)=aux1(i,j)/6.0;
+	   			 aux3(i+3,j+3)=aux1(i,j)/3.0;
+	   		 }
+	   	 }
+ 	
+		 
+		 for (int i=0; i<6; i++)//set aux4 to zero
+		 				 aux4(i,0)=0.0;
+		
+		 for(int i=0; i<6; i++)//multiply velocity
+	   	 {
+	   		 for (int j=0; j<3; j++)
+	   		 {
+	   			 aux4(i,0)+=aux3(i,j)*vel[j];
+	   			 aux4(i,0)+=aux3(i,j+3)*vel[j+6];
+	   		 }
+	   	 }
+ 	 
+		 for (int i=0; i<3; i++)//fill stiffness values due to delta alpha3 in stiffmatrix
+ 		 {
+ 			 (*stiffmatrix)(i,5)+=aux4(i,0)*0.5;
+ 			 (*stiffmatrix)(i+6,5)+=aux4(i+3,0)*0.5;
+ 			 (*stiffmatrix)(i,11)+=aux4(i,0)*0.5;
+ 			 (*stiffmatrix)(i+6,11)+=aux4(i+3,0)*0.5;
+ 		 } //end delta alpha3
+		 
+		//end internal stiffness 
+		 
+		//calc ext stiffness 
  
    		 //begin delta alpha1
-   		 aux1.Multiply(S1,Tnew);
-  		 
-  		 
-  		 for (int i=0; i<3; i++)
-  		 {
-  			 for (int j=0; j<3; j++)
-  			 {
-  				 aux4(i,0) = aux1(i,j)*floc_(j,0);
-  				 aux4(i+3,0) = aux1(i,j)*floc_(j+3,0);
-  			 }
-  		 }
-  		 
-  		 for (int i=0; i<3; i++)//fill ext stiffness values due to delta alpha1 in stiffmatrix
-   		 {
-   			 (*stiffmatrix)(i,3)-=aux4(i,0)*0.5;
-   			 (*stiffmatrix)(i+6,3)-=aux4(i+3,0)*0.5;
-   			 (*stiffmatrix)(i,9)-=aux4(i,0)*0.5;
-   			 (*stiffmatrix)(i+6,9)-=aux4(i+3,0)*0.5;
-   		 }//end delta alpha 1
-   		 
-   		 
-   		 //begin delta alpha2
-   		 aux1.Multiply(S2,Tnew);
-   		 
-   		 for (int i=0; i<6; i++)//set aux4 to zero
-   			 aux4(i,0)=0.0;
-   		  		 
-   		  		 
-			 for (int i=0; i<3; i++)
+ 		 aux1.Multiply(S1,Tnew);
+		 
+		 
+		 for (int i=0; i<3; i++)
+		 {
+			 for (int j=0; j<3; j++)
 			 {
-				 for (int j=0; j<3; j++)
-				 {
-					 aux4(i,0) += aux1(i,j)*floc_(j,0);
-					 aux4(i+3,0) += aux1(i,j)*floc_(j+3,0);
-				 }
+				 aux4(i,0) = aux1(i,j)*floc_(j,0);
+				 aux4(i+3,0) = aux1(i,j)*floc_(j+3,0);
 			 }
-			 
-			 for (int i=0; i<3; i++)//fill extstiffness values due to delta alpha2 in stiffmatrix
-  		 {
-  			 (*stiffmatrix)(i,4)-=aux4(i,0)*0.5;
-  			 (*stiffmatrix)(i+6,4)-=aux4(i+3,0)*0.5;
-  			 (*stiffmatrix)(i,10)-=aux4(i,0)*0.5;
-  			 (*stiffmatrix)(i+6,10)-=aux4(i+3,0)*0.5;
-  		 }//end delta alpha2
-  		 
-  		 //begin delta alpha3
-  		 aux1.Multiply(S3,Tnew);
-    		  		 
-  		 for (int i=0; i<6; i++)//set aux4 to zero
+		 }
+		 
+		 for (int i=0; i<3; i++)//fill ext stiffness values due to delta alpha1 in stiffmatrix
+ 		 {
+ 			 (*stiffmatrix)(i,3)-=aux4(i,0)*0.5;
+ 			 (*stiffmatrix)(i+6,3)-=aux4(i+3,0)*0.5;
+ 			 (*stiffmatrix)(i,9)-=aux4(i,0)*0.5;
+ 			 (*stiffmatrix)(i+6,9)-=aux4(i+3,0)*0.5;
+ 		 }//end delta alpha 1
+ 		 
+ 		 
+ 		 //begin delta alpha2
+ 		 aux1.Multiply(S2,Tnew);
+ 		 
+ 		 for (int i=0; i<6; i++)//set aux4 to zero
+ 			 aux4(i,0)=0.0;
+ 		  		 
+ 		  		 
+		 for (int i=0; i<3; i++)
+		 {
+			 for (int j=0; j<3; j++)
+			 {
+				 aux4(i,0) += aux1(i,j)*floc_(j,0);
+				 aux4(i+3,0) += aux1(i,j)*floc_(j+3,0);
+			 }
+		 }
+		 
+		 for (int i=0; i<3; i++)//fill extstiffness values due to delta alpha2 in stiffmatrix
+		 {
+			 (*stiffmatrix)(i,4)-=aux4(i,0)*0.5;
+			 (*stiffmatrix)(i+6,4)-=aux4(i+3,0)*0.5;
+			 (*stiffmatrix)(i,10)-=aux4(i,0)*0.5;
+			 (*stiffmatrix)(i+6,10)-=aux4(i+3,0)*0.5;
+		 }//end delta alpha2
+		 
+		 //begin delta alpha3
+		 aux1.Multiply(S3,Tnew);
+  		  		 
+		 for (int i=0; i<6; i++)//set aux4 to zero
   			 aux4(i,0)=0.0;
   		 
  			 for (int i=0; i<3; i++)
@@ -957,67 +1012,66 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
  			 }
  
  			 for (int i=0; i<3; i++)//fill ext stiffness values due to delta alpha3 in stiffmatrix
-	 		 {
-	 			 (*stiffmatrix)(i,5)-=aux4(i,0)*0.5;
-	 			 (*stiffmatrix)(i+6,5)-=aux4(i+3,0)*0.5;
-	 			 (*stiffmatrix)(i,11)-=aux4(i,0)*0.5;
-	 			 (*stiffmatrix)(i+6,11)-=aux4(i+3,0)*0.5;
-	 		 } //end delta alpha3
-  		 
-  		//end calc ext stiffness 
-  	 
-  	 }//end stiffmatrix calc
-  	 
-  	 
-
-  	 
-  	 if (force != NULL)
-  	 {
-  		 
-  		 //calc internal forces
-  		 LINALG::Matrix<6,6> aux5(true);
-  		 for (int i=0; i<3; i++)
-  		 {
-  			 for (int j=0; j<3; j++)
-  			 {
-  				 aux5(i,j)=dampbasis(i,j)/3.0;
-  				 aux5(i+3,j)=dampbasis(i,j)/6.0;
-  				 aux5(i,j+3)=dampbasis(i,j)/6.0;
-  				 aux5(i+3,j+3)=dampbasis(i,j)/3.0;
-  			 }
-  		 }
-  		 
+ 		 {
+ 			 (*stiffmatrix)(i,5)-=aux4(i,0)*0.5;
+ 			 (*stiffmatrix)(i+6,5)-=aux4(i+3,0)*0.5;
+ 			 (*stiffmatrix)(i,11)-=aux4(i,0)*0.5;
+ 			 (*stiffmatrix)(i+6,11)-=aux4(i+3,0)*0.5;
+ 		 } //end delta alpha3
+		 
+		//end calc ext stiffness 
 	 
-  		 for (int i=0; i<3; i++)
-  		 {
-  			 for (int j=0; j<3; j++)
-  			 {
-  				 (*force)(i) +=aux5(i,j)*vel[j];
-  				 (*force)(i) +=aux5(i,j+3)*vel[j+6];
-  				 (*force)(i+6) +=aux5(i+3,j)*vel[j];
-  				 (*force)(i+6) +=aux5(i+3,j+3)*vel[j+6];
-  			 }			 
-  		 }
-  		 
-  		 //calc external forces
-  		 for (int i=0; i<3; i++)
-  		 {
-  			 for (int j=0; j<3; j++)
-  			 {
-  				 (*force)(i) -= Tnew(i,j)*floc_(j,0);
-  				 (*force)(i+6) -= Tnew(i,j)*floc_(j+3,0);
-  			 }
-  		 } 			 
-  		 
-  	 }//end calc forces
+	 }//end stiffmatrix calc
+	 
+	 
+
+	 
+	 if (force != NULL)
+	 {
+		 
+		 //calc internal forces
+		 LINALG::Matrix<6,6> aux5(true);
+		 for (int i=0; i<3; i++)
+		 {
+			 for (int j=0; j<3; j++)
+			 {
+				 aux5(i,j)=dampbasis(i,j)/3.0;
+				 aux5(i+3,j)=dampbasis(i,j)/6.0;
+				 aux5(i,j+3)=dampbasis(i,j)/6.0;
+				 aux5(i+3,j+3)=dampbasis(i,j)/3.0;
+			 }
+		 }
+		 
+ 
+		 for (int i=0; i<3; i++)
+		 {
+			 for (int j=0; j<3; j++)
+			 {
+				 (*force)(i) +=aux5(i,j)*vel[j];
+				 (*force)(i) +=aux5(i,j+3)*vel[j+6];
+				 (*force)(i+6) +=aux5(i+3,j)*vel[j];
+				 (*force)(i+6) +=aux5(i+3,j+3)*vel[j+6];
+			 }			 
+		 }
+		 
+		 //calc external forces
+		 for (int i=0; i<3; i++)
+		 {
+			 for (int j=0; j<3; j++)
+			 {
+				 (*force)(i) -= Tnew(i,j)*floc_(j,0);
+				 (*force)(i+6) -= Tnew(i,j)*floc_(j+3,0);
+			 }
+		 } 			 
+		 
+	 }//end calc forces
     
   	 
    } //end case 1
    break;
   }
 
-  //end calc brownian
-  return;
+return;
   
 }//DRT::ELEMENTS::Beam2::CalcBrownian
 
@@ -1786,8 +1840,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
 				 * taken from discretization and interpolated with the according shapefunctions*/
 				thetaprimenew_gp(dof)     += disp[6*node+3+dof]*deriv(node)/alpha_[numgp];
 				
-			}//for (int node=0; node<nnode; ++node)
-			
+			}//for (int node=0; node<nnode; ++node)		
 		}//for (int dof=0; dof<3; ++dof)
 		
 		//update theta and thetaprime
@@ -1861,9 +1914,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
 					(*force)(6*node+3+j) += wgt * deriv(node) * stressm(j);
 					
 					for (int i=0; i<3; ++i)
-					{
 						(*force)(6*node+3+j) += wgt * funct(node) * S_gp(i,j) * stressn(i);
-					}
 				}     
 			}
 		}//if (force != NULL)
@@ -1878,100 +1929,36 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
 			Ksig2_gp.Clear();
 			
 			//setting constitutive parameters , Crisfield, Vol. 2, equation (17.76)
-		    Cm(0) = ym*crosssec_;
-		    Cm(1) = sm*crosssecshear_;
-		    Cm(2) = sm*crosssecshear_;
-		    Cb(0) = sm*Irr_;
-		    Cb(1) = ym*Iyy_;
-		    Cb(2) = ym*Izz_;
+	    Cm(0) = ym*crosssec_;
+	    Cm(1) = sm*crosssecshear_;
+	    Cm(2) = sm*crosssecshear_;
+	    Cb(0) = sm*Irr_;
+	    Cb(1) = ym*Iyy_;
+	    Cb(2) = ym*Izz_;
 
 			//setting up basis of stiffness matrix according to Crisfield, Vol. 2, equation (17.105)
-		    computestiffbasis<nnode>(Tnew,Cm,Cb,S_gp,Kstiff_gp,funct,deriv);
-		    
-		    Kstiff_gp.Scale(wgt/alpha_[numgp]);
-		    
-		    //adding nonlinear (stress dependent) parts to tangent stiffness matrix, Crisfield, Vol. 2 equs. (17.106), (17.107) and (17.107b)
-		    computeKsig1<nnode>(Ksig1_gp,stressn,stressm,funct,deriv);
-		    computeKsig2<nnode>(Ksig2_gp,stressn,S_gp,funct,deriv);	    
+	    computestiffbasis<nnode>(Tnew,Cm,Cb,S_gp,Kstiff_gp,funct,deriv);
+	    
+	    Kstiff_gp.Scale(wgt/alpha_[numgp]);
+	    
+	    //adding nonlinear (stress dependent) parts to tangent stiffness matrix, Crisfield, Vol. 2 equs. (17.106), (17.107) and (17.107b)
+	    computeKsig1<nnode>(Ksig1_gp,stressn,stressm,funct,deriv);
+	    computeKsig2<nnode>(Ksig2_gp,stressn,S_gp,funct,deriv);	    
 
-		    Ksig1_gp.Scale(wgt);
-		    Ksig2_gp.Scale(wgt);
-		    
-		    //shifting values from fixed size matrix to epetra matrix *stiffmatrix
-	       	for(int i = 0; i < 6*nnode; i++)
-	       	{
-	       		for(int j = 0; j < 6*nnode; j++)
-	       		{
-	       			(*stiffmatrix)(i,j) += Kstiff_gp(i,j);
-	       			(*stiffmatrix)(i,j) += Ksig1_gp(i,j);
-	       			(*stiffmatrix)(i,j) += Ksig2_gp(i,j);
-	       		}
-	       	}
-		
-		    
-		    /*the following block adds a rotational damping and related internal forces; this damping goes along with the damping of a 
-		     * rigid straight rod spinning around its own axis; analytically it is given by a damping coefficient
-		     * gamma_a = 4*pi*eta*r^2*lrefe_ where r is the radius of the crosssection; as this 
-		     * coefficient is very small for thin rods it is increased artificially by a factor for numerical convencience*/
-		    {
-		      double rsquare = pow((4*Iyy_/PI),0.5);
-		      //gamma_a artificially increased by factor artificial; this factor should scale with lrefe_^2 and comprise a heuristically calculated constant (here 60)
-		      double artificial = 60*(lrefe_*lrefe_);
-		      double gammaa = 4*PI*params.get<double>("ETA",0.0)*(rsquare)*artificial; 
-		      
-		     
-		      //computing angle increment from current position in comparison with last converged position for damping
-		      LINALG::Matrix<4,1> deltaQ;
-		      LINALG::Matrix<3,1> deltatheta;     
-		      quaternionproduct(inversequaternion(Qconv_[0]),Qnew_[0],deltaQ);      
-		      quaterniontoangle(deltaQ,deltatheta);
-		      
-		      //angular velocity
-		      LINALG::Matrix<3,1> omega = deltatheta;
-		      omega.Scale(1/ params.get<double>("delta time",0.01));
-		              
-		      //computing special matrix for anisotropic damping
-		      LINALG::Matrix<3,3> Tconv;
-		      quaterniontotriad(Qconv_[0],Tconv);
-		      LINALG::Matrix<3,3> Theta;
-		      for(int i = 0; i<3; i++)
-		        for(int j = 0; j<3; j++)
-		          Theta(i,j) = Tconv(i,0)*Tconv(j,0);
-		      
-		      //inverse exponential map
-		      LINALG::Matrix<3,3> Hinverse = Hinv(deltatheta);
-		        
-		      //stiffness due to rotational damping    
-		      LINALG::Matrix<3,3> artstiff;
-		      artstiff.Multiply(Theta,Hinverse);
-		      artstiff.Scale(gammaa*0.5 / params.get<double>("delta time",0.01));
-		          
-		      //forces due to rotational damping 
-		      LINALG::Matrix<3,1> artforce;
-		      artforce.Multiply(Theta,omega);
-		      artforce.Scale(gammaa);
-		      
-		      //adding artificial contributions to stiffness matrix and force vector
-		      for(int i= 0; i<3; i++)
-		      {
-		        for(int j=0;j<3;j++)
-		        {
-		          (*stiffmatrix)(3+i, 3+j) += artstiff(i,j);
-		          (*stiffmatrix)(9+i, 9+j) += artstiff(i,j);
-		          (*stiffmatrix)(9+i, 3+j) += artstiff(i,j);
-		          (*stiffmatrix)(3+i, 9+j) += artstiff(i,j);
-		        }
-		      }    
-		  
-		      for(int i = 0; i<3; i++)
-		      {    
-		        (*force)[3+i] += artforce(i);
-		        (*force)[9+i] += artforce(i);      
-		      }     
-		    }
-		    
-
-		  }//if (stiffmatrix != NULL)
+	    Ksig1_gp.Scale(wgt);
+	    Ksig2_gp.Scale(wgt);
+	    
+	    //shifting values from fixed size matrix to epetra matrix *stiffmatrix
+     	for(int i = 0; i < 6*nnode; i++)
+     	{
+     		for(int j = 0; j < 6*nnode; j++)
+     		{
+     			(*stiffmatrix)(i,j) += Kstiff_gp(i,j);
+     			(*stiffmatrix)(i,j) += Ksig1_gp(i,j);
+     			(*stiffmatrix)(i,j) += Ksig2_gp(i,j);
+     		}
+     	}
+	  }//if (stiffmatrix != NULL)
   }//for(int numgp=0; numgp < gausspoints.nquad; numgp++)
 
 
@@ -2005,39 +1992,32 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
 		 
 		  //Fill up N as defined in the FE lecture
 		  for (int node=0; node<nnode; node++)
-		  {
 			  for (int dof=0; dof<6; dof++)
-			  {
 				  N(dof,6*node+dof)=funct(node);
-			  }	 
-		  }
 		 
 		  //m= density*crosssec* integraloverxi [N_t*N]
-     	  massmatrixgp.MultiplyTN(density*crosssec_,N,N);
+     	massmatrixgp.MultiplyTN(density*crosssec_,N,N);
 		 	
-     	  for (int i=0; i<6*nnode; i++)
-     	  {
-     		  for (int j=0; j<nnode; j++) 
-     		  {
-     			  massmatrixgp(i,6*j+3)= Irr_/crosssec_ * massmatrixgp(i,6*j+3);
-     			  massmatrixgp(i,6*j+4)= Irr_/crosssec_ * massmatrixgp(i,6*j+4);
-     			  massmatrixgp(i,6*j+5)= Irr_/crosssec_ * massmatrixgp(i,6*j+5);
-     			  //This function multiplies all entries associated with 
-     			  //the rotations. The Irr_ comes from calculations considering
-     			  //the moment created by a rotation theta and refers to the assumed direction
-     			  //Note: This is an approximation for the rotational values around t2 and t3. For exact
-     			  //one would have to differntiate again.
-     		  }
-     	  } 		 
+   	  for (int i=0; i<6*nnode; i++)
+   	  {
+   		  for (int j=0; j<nnode; j++) 
+   		  {
+   			  massmatrixgp(i,6*j+3)= Irr_/crosssec_ * massmatrixgp(i,6*j+3);
+   			  massmatrixgp(i,6*j+4)= Irr_/crosssec_ * massmatrixgp(i,6*j+4);
+   			  massmatrixgp(i,6*j+5)= Irr_/crosssec_ * massmatrixgp(i,6*j+5);
+   			  //This function multiplies all entries associated with 
+   			  //the rotations. The Irr_ comes from calculations considering
+   			  //the moment created by a rotation theta and refers to the assumed direction
+   			  //Note: This is an approximation for the rotational values around t2 and t3. For exact
+   			  //one would have to differntiate again.
+   		  }
+   	  } 		 
 		 
-     	  //Sum up the massmatrices calculated at each gp using the lengthfactor and the weight
-     	  for (int i=0; i<6*nnode; i++)
-     	  {
-     		  for (int j=0; j<6*nnode; j++) 
-     		  {
-     			  (*massmatrix)(i,j)+= alphamass_[numgp]*wgt*massmatrixgp(i,j);
-     		  }
-     	  }        	
+   	  //Sum up the massmatrices calculated at each gp using the lengthfactor and the weight
+   	  for (int i=0; i<6*nnode; i++)
+   		  for (int j=0; j<6*nnode; j++) 
+   			  (*massmatrix)(i,j)+= alphamass_[numgp]*wgt*massmatrixgp(i,j);
+      	
 	  
 	  }//for(int numgp=0; numgp < gausspointsmass.nquad; numgp++)
 	  	  
@@ -2054,16 +2034,9 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
    CalcBrownian(params,vel,disp,stiffmatrix,force);
   
   
-  
-  
-  
-  
   return;
   
 } // DRT::ELEMENTS::Beam3::b3_nlnstiffmass
-
-
-
 
 /*------------------------------------------------------------------------------------------------------------*
  | lump mass matrix					   (private)                                                   cyron 01/08|
