@@ -151,7 +151,7 @@ void STR::TimIntAB2::IntegrateStep()
     dsassert(mass_->Filled(), "Mass matrix has to be completed");
     // blank linear momentum zero on DOFs subjected to DBCs
     dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), frimpn_);
-    // get accelerations 
+    // get accelerations
     accn_->PutScalar(0.0);
     // refactor==false: This is not necessary, because we always
     // use the same constant mass matrix, which was firstly factorised
@@ -188,7 +188,7 @@ void STR::TimIntAB2::UpdateStepState()
     p.set("total time", timen_);
     p.set("delta time", (*dt_)[0]);
     // action for elements
-    p.set("action", "calc_struct_update_istep");    
+    p.set("action", "calc_struct_update_istep");
     // go to elements
     discret_->Evaluate(p, Teuchos::null, Teuchos::null,
                        Teuchos::null, Teuchos::null, Teuchos::null);

@@ -202,7 +202,7 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual()
 
   // apply forces and stiffness due to contact
   ApplyForceStiffContact(stiff_,fres_);
-    
+
   // hallelujah
   return;
 }
@@ -258,7 +258,7 @@ double STR::TimIntOneStepTheta::CalcRefNormDisplacement()
   }
   else
     charnormdis = STR::AUX::CalculateVectorNorm(iternorm_, (*dis_)(0));
-  
+
   // rise your hat
   return charnormdis;
 }
@@ -403,7 +403,7 @@ void STR::TimIntOneStepTheta::UpdateStepState()
 
   // update contact
   UpdateStepContact();
-    
+
   // look out
   return;
 }

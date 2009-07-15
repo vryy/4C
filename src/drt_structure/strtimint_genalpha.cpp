@@ -300,7 +300,7 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual()
 
   // apply forces and stiffness due to contact
   ApplyForceStiffContact(stiff_,fres_);
-  
+
   // hallelujah
   return;
 }
@@ -359,7 +359,7 @@ double STR::TimIntGenAlpha::CalcRefNormDisplacement()
   }
   else
     charnormdis = STR::AUX::CalculateVectorNorm(iternorm_, (*dis_)(0));
-  
+
   // rise your hat
   return charnormdis;
 }

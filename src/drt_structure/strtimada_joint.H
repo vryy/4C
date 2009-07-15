@@ -70,8 +70,8 @@ namespace STR
       {
       case INPAR::STR::dyna_ab2 :
         return INPAR::STR::timada_kind_ab2;
-        break; 
-      default : 
+        break;
+      default :
         dserror("Cannot handle requested time integrator");
         return INPAR::STR::timada_kind_none;
         break;
@@ -101,7 +101,7 @@ namespace STR
     {
       // allocate auxiliar integrator
       sta_ = Teuchos::rcp(new T(ioparams, sdynparams, xparams,
-                                sti->Discretization(), 
+                                sti->Discretization(),
                                 sti->Solver(),
                                 sti->DiscWriter()));
       // check explicitness
@@ -128,12 +128,12 @@ namespace STR
         ada_ = ada_orderequal;
       }
 
-      // merge 
+      // merge
       sta_->Merge(*sti);
-      
+
       // resize multi-step quantities
       sta_->ResizeMStep();
-      
+
       // I am lost
       return;
     }
@@ -164,7 +164,7 @@ namespace STR
       // reset
       // remember: sta_ and sti_ are merged and work on the same vectors
       sta_->ResetStep();
-      
+
       // provide local discretisation error vector
       // l_{n+1}^{A2} = D_{n+1}^{Joint} - D_{n+1}^{A1}
       //locerrdisn_->Update(-1.0, *disn, 1.0);
@@ -220,14 +220,14 @@ namespace STR
 
     //! not wanted: = operator
     TimAdaJoint operator=(const TimAdaJoint& old);
-  
+
     //! not wanted: copy constructor
     TimAdaJoint(const TimAdaJoint& old);
 
     //! type of adaptivity algorithm
     enum AdaEnum ada_;
 
-    //! The auxiliar integrator 
+    //! The auxiliar integrator
     Teuchos::RCP<T> sta_;
 
   };

@@ -130,7 +130,7 @@ namespace STR
 
     //! not wanted: = operator
     TimAdaZienXie operator = (const TimAdaZienXie& old);
-  
+
     //! not wanted: copy constructor
     TimAdaZienXie(const TimAdaZienXie& old);
 

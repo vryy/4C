@@ -127,7 +127,7 @@ namespace STR
 
     //! Make one step with auxiliar scheme
     //!
-    //! Afterwards, we are going to hold 
+    //! Afterwards, we are going to hold
     //! \f$D_{n+1}^{AUX}\f$ on #locdiserrn_
     //! and \f$V_{n+1}^{AUX}\f$ on #locvelerrn_
     virtual void IntegrateStepAuxiliar() = 0;
@@ -192,7 +192,7 @@ namespace STR
     {
       if (not outsizefile_)
       {
-        std::string filename 
+        std::string filename
           = DRT::Problem::Instance()->OutputControlFile()->FileName()
           + ".stepsize";
         outsizefile_ = new std::ofstream(filename.c_str());
@@ -224,7 +224,7 @@ namespace STR
       return MapKindEnumToString(MethodName());
     }
 
-    //! Provide local order of accuracy based upon linear test equation 
+    //! Provide local order of accuracy based upon linear test equation
     //! for displacements
     virtual int MethodOrderOfAccuracyDis() const = 0;
 
@@ -264,7 +264,7 @@ namespace STR
     int myrank_;  //!< processor ID
     Teuchos::RCP<LINALG::Solver> solver_;  //!< linear algebraic solver
     Teuchos::RCP<IO::DiscretizationWriter> output_;  //!< binary output
-    IO::Ostream0 cout0_;  //!< a singular stream to stdout 
+    IO::Ostream0 cout0_;  //!< a singular stream to stdout
                           //!< in parallel environment
     //@}
 
@@ -284,10 +284,10 @@ namespace STR
     //@{
     double stepsizemax_;  //!< maximum time step size (upper limit)
     double stepsizemin_;  //!< minimum time step size (lower limit)
-    double sizeratiomax_;  //!< maximally permitted increase of current step size 
+    double sizeratiomax_;  //!< maximally permitted increase of current step size
                            //!< relative to last converged one
-    double sizeratiomin_;  //!< minimally permitted increase 
-                           //!< (or maximally permitted decrease) 
+    double sizeratiomin_;  //!< minimally permitted increase
+                           //!< (or maximally permitted decrease)
                            //!< of current step size relative to last converged one
     double sizeratioscale_;  //!< safety factor, should be lower than 1.0
     enum CtrlEnum errctrl_;  //!< type of control, see #CtrlEnum
@@ -307,9 +307,9 @@ namespace STR
     //@{
     double stepsizepre_;  //!< previous time step size \f$\Delta t_{n-1}\f$
     double stepsize_;  //!< current time step size \f$\Delta t_n\f$
-    Teuchos::RCP<Epetra_Vector> locerrdisn_;  //!< current local disp. error 
+    Teuchos::RCP<Epetra_Vector> locerrdisn_;  //!< current local disp. error
                                               //!< estimation \f$l_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> locerrveln_;  //!< current local vel. error 
+    Teuchos::RCP<Epetra_Vector> locerrveln_;  //!< current local vel. error
                                               //!< estimation \f$\dot{l}_{n+1}\f$
     int adaptstep_;  //!< trial counter, cf. #adaptstepmax_
     //@}
@@ -320,13 +320,13 @@ namespace STR
     bool outstr_;  //!< do it this step: write stress/strain to file
     bool outene_;  //!< do it this step: write energy to file
     bool outrest_;  //!< do it this step: write restart data to file
-    double outsysperiod_;  //!< print system (dis,vel,acc,...) 
+    double outsysperiod_;  //!< print system (dis,vel,acc,...)
                            //!< every given period of time
-    double outstrperiod_;  //!< print stress/strain every given 
+    double outstrperiod_;  //!< print stress/strain every given
                            //!< period of time
-    double outeneperiod_;  //!< print energies every given 
+    double outeneperiod_;  //!< print energies every given
                            //!< period of time
-    double outrestperiod_;  //!< print restart every given 
+    double outrestperiod_;  //!< print restart every given
                             //!< period of time
     int outsizeevery_;  //!< print step size every given step
     double outsystime_;  //!< next output time point for system

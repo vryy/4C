@@ -71,7 +71,7 @@ namespace STR
 
     //! Return name
     enum INPAR::STR::DynamicType MethodName() const
-    { 
+    {
       return INPAR::STR::dyna_statics;
     }
 
@@ -80,14 +80,14 @@ namespace STR
 
     //! Give local order of accuracy of displacement part
     int MethodOrderOfAccuracyDis()
-    { 
+    {
       dserror("Sensible to ask?");
       return 0;
     }
 
     //! Give local order of accuracy of velocity part
     int MethodOrderOfAccuracyVel()
-    { 
+    {
       dserror("Sensible to ask?");
       return 0;
     }
@@ -130,7 +130,7 @@ namespace STR
     //! This update is carried out by computing the new #veln_ and #acc_
     //! from scratch by using the newly updated #disn_. The method
     //! respects the Dirichlet DOFs which are not touched.
-    //! This method is necessary for certain predictors 
+    //! This method is necessary for certain predictors
     //! (like #PredictConstDisConsistVelAcc)
     void UpdateIterIncrementally();
 

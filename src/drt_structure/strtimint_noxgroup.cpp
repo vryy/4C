@@ -58,7 +58,7 @@ NOX::Abstract::Group::ReturnType NOX::STR::Group::computeF()
 /*----------------------------------------------------------------------*/
 NOX::Abstract::Group::ReturnType NOX::STR::Group::computeJacobian()
 {
-  NOX::Abstract::Group::ReturnType ret 
+  NOX::Abstract::Group::ReturnType ret
     = NOX::Epetra::Group::computeJacobian();
   if (ret == NOX::Abstract::Group::Ok)
   {
@@ -78,7 +78,7 @@ NOX::Abstract::Group::ReturnType NOX::STR::Group::computeNewton
   Teuchos::ParameterList& p
 )
 {
-  NOX::Abstract::Group::ReturnType status 
+  NOX::Abstract::Group::ReturnType status
     = NOX::Epetra::Group::computeNewton(p);
   return status;
 }

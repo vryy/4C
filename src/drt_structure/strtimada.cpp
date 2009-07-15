@@ -85,8 +85,8 @@ STR::TimAda::TimAda
   locerrdisn_ = LINALG::CreateVector(*(discret_->DofRowMap()), true);
 
   // check wether energyout_ file handle was attached
-  if ( (not sti_->AttachedEnergyFile()) 
-       and (outeneperiod_ != 0.0) 
+  if ( (not sti_->AttachedEnergyFile())
+       and (outeneperiod_ != 0.0)
        and (myrank_ == 0) )
   {
     sti_->AttachEnergyFile();
@@ -140,7 +140,7 @@ void STR::TimAda::Integrate()
       // and \f$V_{n+1}^{AUX}\f$ on #locvelerrn_
       IntegrateStepAuxiliar();
 
-      // integrate system with marching TIS and 
+      // integrate system with marching TIS and
       sti_->IntegrateStep();
 
       // get local error vector on #locerrdisn_
@@ -176,11 +176,11 @@ void STR::TimAda::Integrate()
       cout0_ << "Could not find acceptable time step size"
              << " ... continuing" << std::endl;
     }
-    else 
+    else
     {
       dserror("Do not know what to do");
     }
-    
+
     // sti_->time_ = time_ + stepsize_;
     sti_->time_->UpdateSteps(time_ + stepsize_);
     sti_->step_ = timestep_ + 1;
@@ -192,7 +192,7 @@ void STR::TimAda::Integrate()
     sti_->PrintStep();
     OutputPeriod();
     OutputStepSize();
-    
+
     // update
     sti_->stepn_ = timestep_ += 1;
     sti_->timen_ = time_ += stepsize_;
@@ -201,13 +201,13 @@ void STR::TimAda::Integrate()
     //
     UpdatePeriod();
     outrest_ = outsys_ = outstr_ = outene_ = false;
-    
+
     // the user reads but rarely listens
     if (myrank_ == 0)
     {
-      std::cout << "Step " << timestep_ 
-                << ", Time " << time_ 
-                << ", StepSize " << stepsize_ 
+      std::cout << "Step " << timestep_
+                << ", Time " << time_
+                << ", StepSize " << stepsize_
                 << std::endl;
     }
   }
@@ -227,7 +227,7 @@ void STR::TimAda::EvaluateLocalErrorDis()
     locerrdisn_->Update(-1.0, *(sti_->disn_), 1.0);
     locerrdisn_->Scale(coeffmarch/(coeffaux-coeffmarch));
   }
-  else 
+  else
   {
     // schemes do not have the same order of accuracy
     locerrdisn_->Update(-1.0, *(sti_->disn_), 1.0);
@@ -243,7 +243,7 @@ void STR::TimAda::Indicate
 )
 {
   // norm of local discretisation error vector
-  double norm = STR::AUX::CalculateVectorNorm(errnorm_, locerrdisn_); 
+  double norm = STR::AUX::CalculateVectorNorm(errnorm_, locerrdisn_);
 
   // check if acceptable
   accepted = (norm < errtol_);
@@ -251,9 +251,9 @@ void STR::TimAda::Indicate
   // debug
   if (myrank_ == 0)
   {
-    std::cout << "LocErrNorm " << std::scientific << norm 
-              << ", LocErrTol " << errtol_ 
-              << ", Accept " << std::boolalpha << accepted 
+    std::cout << "LocErrNorm " << std::scientific << norm
+              << ", LocErrTol " << errtol_
+              << ", Accept " << std::boolalpha << accepted
               << std::endl;
   }
 
@@ -290,7 +290,7 @@ void STR::TimAda::Indicate
     stpsiznew = sizeratiomin_ * stepsizepre_;
   }
 
-  // new step size subject to safety measurements 
+  // new step size subject to safety measurements
   if (stpsiznew > stepsizemax_)
   {
     stpsiznew = stepsizemax_;
@@ -478,7 +478,7 @@ void STR::TimAda::Print
 /* Out stream */
 std::ostream& operator<<
 (
-  std::ostream& str, 
+  std::ostream& str,
   const STR::TimAda::TimAda& ta
 )
 {

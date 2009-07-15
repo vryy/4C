@@ -42,7 +42,7 @@ using namespace Teuchos;
 
 /* headers and prototypes of functions also acessible from c */
 #ifdef __cplusplus
-extern "C" 
+extern "C"
 {
 #endif
 

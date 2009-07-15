@@ -30,7 +30,7 @@ namespace STR
    *        with \b explicit time integrators
    *
    * <h3> About </h3>
-   * This object bridges the gap between the base time integator STR::TimInt 
+   * This object bridges the gap between the base time integator STR::TimInt
    * and the specific implementation of explicit time integrators.
    *
    * \author bborn

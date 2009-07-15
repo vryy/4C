@@ -33,16 +33,16 @@ namespace STR
    * \f[
    *   F(y,\dot{y},t) = \dot{y}(t) - f(y(t),t) = 0
    * \f]
-   * 
+   *
    * The one-step-theta time integration method discretises this equation into the following reference formula
    * \f[
-   *   \frac{y_{n+1} - y_n}{\Delta t} 
+   *   \frac{y_{n+1} - y_n}{\Delta t}
    *   - \theta f(y_{n+1},t_{n+1}) + (1-\theta) f(y_n,t_n)
    *   = 0
-   * \qquad 
+   * \qquad
    * \f]
    * in which \f$\theta\in[0,1]\f$ is the key parameter. The method is implicit unless \f$\theta=0\f$, which is the forward Euler scheme. The method recovers the backward Euler method with \f$\theta=1\f$. The trapezoidal rule (TR, or average acceleration method) is obtained with \f$\theta=1/2\f$. Only the trapezoidal rule is second order accurate, all other schemes are only first order.
-   * 
+   *
    * This method is applied to the set of ODEs reflecting the second order degree of the governing equations in structural dynamics:
    * \f[\left\{\begin{array}{rcl}
    *   M \, \dot{D}(t) - M \, V(t) & = & 0
@@ -52,28 +52,28 @@ namespace STR
    * in which \f$M\f$ is the global mass matrix (#mass_), \f$C\f$ a global damping matrix (in our algorithm the Rayleigh damping matrix, #damp_), \f$D(t)\f$ the displacements (#dis_), \f$V(t)\f$ the velocities (#vel_), \f$F_{int}\f$ the internal forces and \f$F_{ext}\f$ the external forces. One obtains
    * \f[\left\{\begin{array}{rcl}
    *   \frac{D_{n+1} - D_n}{\Delta t}
-   *   - \theta V_{n+1} - (1-\theta) V_n 
+   *   - \theta V_{n+1} - (1-\theta) V_n
    *   & = & 0
    * \\
    *   M \frac{V_{n+1} + V_n}{\Delta t}
    *   + C \big( \theta V_{n+1} - (1-\theta) V_n \big)
    *   + F_{int,n+\theta}
-   *   - F_{ext,n+\theta} 
+   *   - F_{ext,n+\theta}
    *   & = & 0
    * \end{array}\right.\f]
    * with
    * \f[
-   *   F_{int,n+\theta} 
+   *   F_{int,n+\theta}
    *   = \theta F_{int}(D_{n+1},t_{n+1}) + (1-\theta) F_{int}(D_{n+1},t_{n+1})
    *   \quad\mbox{and}\quad
-   *   F_{ext,n+\theta} 
+   *   F_{ext,n+\theta}
    *   = \theta F_{ext}(t_{n+1}) + (1-\theta) F_{ext}(t_{n+1})
    * \f]
    * These vector equations can be rewritten such that the unknown velocities \f$V_{n+1}\f$ can be suppressed or rather expressed by the unknown displacements \f$D_{n+1}\f$. The residual is achieved
    * \f[
    *   R_{n+\theta}(D_{n+1})
    *   = M A_{n+\theta}(D_{n+1}) + C V_{n+\theta}(D_{n+1})
-   *   + F_{int,n+\theta} - F_{ext,n+\theta} 
+   *   + F_{int,n+\theta} - F_{ext,n+\theta}
    *   = 0
    * \f]
    * in which
@@ -121,8 +121,8 @@ namespace STR
    * - [2] TJR Hughes, The finite element method, Dover, Mineola, 1987.
    * - [3] P Deuflhard and F Bornemann, Numerische Mathematik II: Integration gewohnlicher Differentialgleichungen, Walter de Gryter, Berlin, 1994.
    * - [4] ...
-   * 
-   * 
+   *
+   *
    * \author bborn
    * \date 06/08
    */
@@ -159,7 +159,7 @@ namespace STR
 
     //! Return name
     enum INPAR::STR::DynamicType MethodName() const
-    { 
+    {
       return INPAR::STR::dyna_onesteptheta;
     }
 
@@ -168,13 +168,13 @@ namespace STR
 
     //! Give local order of accuracy of displacement part
     int MethodOrderOfAccuracyDis()
-    { 
+    {
       return fabs(MethodLinErrCoeff1()) < EPS6 ? 2 : 1;
     }
 
     //! Give local order of accuracy of velocity part
     int MethodOrderOfAccuracyVel()
-    { 
+    {
       return MethodOrderOfAccuracyDis();
     }
 
@@ -183,7 +183,7 @@ namespace STR
     {
       if (MethodOrderOfAccuracyDis() == 1)
         return MethodLinErrCoeff1();
-      else 
+      else
         return MethodLinErrCoeff2();
     }
 
@@ -198,7 +198,7 @@ namespace STR
     {
       return 1./2. - theta_;
     }
-    
+
     //! Linear error coefficent if 2nd order accurate
     double MethodLinErrCoeff2()
     {
@@ -229,7 +229,7 @@ namespace STR
     //! This update is carried out by computing the new #veln_ and #acc_
     //! from scratch by using the newly updated #disn_. The method
     //! respects the Dirichlet DOFs which are not touched.
-    //! This method is necessary for certain predictors 
+    //! This method is necessary for certain predictors
     //! (like #PredictConstDisConsistVelAcc)
     void UpdateIterIncrementally();
 
@@ -294,7 +294,7 @@ namespace STR
     //! mid-velocities \f$V_m = V_{n+1-\theta}\f$
     Teuchos::RCP<Epetra_Vector> velt_;
     //! mid-accelerations \f$A_m = A_{n+1-\theta}\f$
-    Teuchos::RCP<Epetra_Vector> acct_;  
+    Teuchos::RCP<Epetra_Vector> acct_;
     //@}
 
     //! @name Global force vectors

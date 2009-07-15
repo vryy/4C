@@ -80,29 +80,29 @@ namespace STR {
       const Epetra_Operator& Op
       );
 
-    /// 
+    ///
     virtual void reset(Teuchos::ParameterList& linearSolverParams);
 
-    /// Applies Jacobian to the given input vector and puts the answer in the result. 
+    /// Applies Jacobian to the given input vector and puts the answer in the result.
     virtual bool applyJacobian(
       const NOX::Epetra::Vector& input,
       NOX::Epetra::Vector& result
       ) const;
 
-    /// Applies Jacobian-Transpose to the given input vector and puts the answer in the result. 
+    /// Applies Jacobian-Transpose to the given input vector and puts the answer in the result.
     virtual bool applyJacobianTranspose(
       const NOX::Epetra::Vector& input,
       NOX::Epetra::Vector& result
       ) const;
 
-    /// Applies the inverse of the Jacobian matrix to the given input vector and puts the answer in result. 
+    /// Applies the inverse of the Jacobian matrix to the given input vector and puts the answer in result.
     virtual bool applyJacobianInverse(
       Teuchos::ParameterList &params,
       const NOX::Epetra::Vector &input,
       NOX::Epetra::Vector &result
       );
 
-    /// Apply right preconditiong to the given input vector. 
+    /// Apply right preconditiong to the given input vector.
     virtual bool applyRightPreconditioning(
       bool useTranspose,
       Teuchos::ParameterList& params,
@@ -110,64 +110,64 @@ namespace STR {
       NOX::Epetra::Vector& result
       ) const;
 
-    /// Get the scaling object. 
+    /// Get the scaling object.
     virtual Teuchos::RCP< NOX::Epetra::Scaling> getScaling();
 
-    /// Sets the diagonal scaling vector(s) used in scaling the linear system. 
+    /// Sets the diagonal scaling vector(s) used in scaling the linear system.
     virtual void resetScaling(
       const Teuchos::RCP< NOX::Epetra::Scaling>& s
       );
 
-    /// Evaluates the Jacobian based on the solution vector x. 
+    /// Evaluates the Jacobian based on the solution vector x.
     virtual bool computeJacobian(
       const NOX::Epetra::Vector& x
       );
 
-    /// Explicitly constructs a preconditioner based on the solution vector x and the parameter list p. 
+    /// Explicitly constructs a preconditioner based on the solution vector x and the parameter list p.
     virtual bool createPreconditioner(
       const NOX::Epetra::Vector& x,
       Teuchos::ParameterList& p,
       bool recomputeGraph
       ) const;
 
-    /// Deletes the preconditioner. 
+    /// Deletes the preconditioner.
     virtual bool destroyPreconditioner() const;
 
-    /// Recalculates the preconditioner using an already allocated graph. 
+    /// Recalculates the preconditioner using an already allocated graph.
     virtual bool recomputePreconditioner(
       const NOX::Epetra::Vector& x,
       Teuchos::ParameterList& linearSolverParams
       ) const;
 
-    /// Evaluates the preconditioner policy at the current state. 
+    /// Evaluates the preconditioner policy at the current state.
     virtual PreconditionerReusePolicyType getPreconditionerPolicy(
       bool advanceReuseCounter=true
       );
 
-    /// Indicates whether a preconditioner has been constructed. 
+    /// Indicates whether a preconditioner has been constructed.
     virtual bool isPreconditionerConstructed() const;
 
-    /// Indicates whether the linear system has a preconditioner. 
+    /// Indicates whether the linear system has a preconditioner.
     virtual bool hasPreconditioner() const;
 
-    /// Return Jacobian operator. 
+    /// Return Jacobian operator.
     virtual Teuchos::RCP<const Epetra_Operator> getJacobianOperator() const;
 
-    /// Return Jacobian operator. 
+    /// Return Jacobian operator.
     virtual Teuchos::RCP<Epetra_Operator> getJacobianOperator();
 
-    /// Return preconditioner operator. 
+    /// Return preconditioner operator.
     virtual Teuchos::RCP<const Epetra_Operator> getGeneratedPrecOperator() const;
 
-    /// Return preconditioner operator. 
+    /// Return preconditioner operator.
     virtual Teuchos::RCP<Epetra_Operator> getGeneratedPrecOperator();
 
-    /// Set Jacobian operator for solve. 
+    /// Set Jacobian operator for solve.
     virtual void setJacobianOperatorForSolve(
       const Teuchos::RCP<const Epetra_Operator>& solveJacOp
       );
 
-    /// Set preconditioner operator for solve. 
+    /// Set preconditioner operator for solve.
     virtual void setPrecOperatorForSolve(
       const Teuchos::RCP<const Epetra_Operator>& solvePrecOp
       );

@@ -414,7 +414,7 @@ namespace STR
 
     //! Read and set restart values for constraints
     void ReadRestartConstraint();
-    
+
     //! Read and set restart values for contact
     void ReadRestartContact();
 
@@ -544,7 +544,7 @@ namespace STR
 
     //! potential conditions
     Teuchos::RCP<POTENTIAL::PotentialManager>   potman_;
-    
+
     //! contact
     Teuchos::RCP<CONTACT::Manager>   contactman_;
 

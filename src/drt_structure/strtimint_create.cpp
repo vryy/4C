@@ -60,7 +60,7 @@ Teuchos::RCP<STR::TimInt> STR::TimIntCreate
 {
   // set default output
   Teuchos::RCP<STR::TimInt> sti = Teuchos::null;
-  
+
   // exclude old names
   switch (Teuchos::getIntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP"))
   {
@@ -73,7 +73,7 @@ Teuchos::RCP<STR::TimInt> STR::TimIntCreate
       dserror("You should not turn up here.");
       break;
     }
-    
+
     // new style
     default :
     {

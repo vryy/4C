@@ -72,19 +72,19 @@ void STR::strudyn_direct()
   if (not actdis->Filled()) actdis->FillComplete();
 
   // context for output and restart
-  Teuchos::RCP<IO::DiscretizationWriter> output 
+  Teuchos::RCP<IO::DiscretizationWriter> output
     = Teuchos::rcp(new IO::DiscretizationWriter(actdis));
 
   // get input parameter lists
-  //const Teuchos::ParameterList& probtype 
+  //const Teuchos::ParameterList& probtype
   //  = DRT::Problem::Instance()->ProblemTypeParams();
   const Teuchos::ParameterList& ioflags
     = DRT::Problem::Instance()->IOParams();
   const Teuchos::ParameterList& sdyn
     = DRT::Problem::Instance()->StructuralDynamicParams();
-  //const Teuchos::ParameterList& scontact 
+  //const Teuchos::ParameterList& scontact
   //  = DRT::Problem::Instance()->StructuralContactParams();
-  const Teuchos::ParameterList& tap 
+  const Teuchos::ParameterList& tap
     = sdyn.sublist("TIMEADAPTIVITY");
   const Teuchos::ParameterList& snox
     = DRT::Problem::Instance()->StructuralNoxParams();
@@ -102,7 +102,7 @@ void STR::strudyn_direct()
 //  noxsolver = *(new Teuchos::ParameterList(DRT::Problem::Instance()->StructSolverParams()));
 
   // create a solver
-  Teuchos::RCP<LINALG::Solver> solver 
+  Teuchos::RCP<LINALG::Solver> solver
     = Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->StructSolverParams(),
                                       actdis->Comm(),
                                       DRT::Problem::Instance()->ErrorFile()->Handle()));
@@ -123,8 +123,8 @@ void STR::strudyn_direct()
   if ((bool) Teuchos::getIntegralValue<int>(sdyn,"ADAPTERDRIVE"))
   {
     asti = Teuchos::rcp(new ADAPTER::StructureTimInt(Teuchos::rcp(new Teuchos::ParameterList(ioflags)),
-                                                     Teuchos::rcp(new Teuchos::ParameterList(sdyn)), 
-                                                     Teuchos::rcp(new Teuchos::ParameterList(xparams)), 
+                                                     Teuchos::rcp(new Teuchos::ParameterList(sdyn)),
+                                                     Teuchos::rcp(new Teuchos::ParameterList(xparams)),
                                                      actdis, solver, output));
     if (asti == Teuchos::null) dserror("Failed in creating integrator.");
   }
@@ -135,7 +135,7 @@ void STR::strudyn_direct()
   }
 
   // create auxiliar time integrator
-  Teuchos::RCP<STR::TimAda> sta 
+  Teuchos::RCP<STR::TimAda> sta
     = TimAdaCreate(ioflags, sdyn, xparams, tap, sti);
 
   // do restart if demanded from input file

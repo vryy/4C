@@ -62,7 +62,7 @@ void STR::TimAdaZienXie::IntegrateStepAuxiliar()
   const Teuchos::RCP<Epetra_Vector> vel = sti_->Vel();  // V_{n}^{A2}
   const Teuchos::RCP<Epetra_Vector> acc = sti_->Acc();  // A_{n}^{A2}
   const Teuchos::RCP<Epetra_Vector> accn = sti_->AccNew();  // A_{n+1}^{A2}
-  
+
   // build ZX displacements D_{n+1}^{ZX}
   // using the second order (or lower) accurate new accelerations
   locerrdisn_->Update(1.0, *dis,
@@ -71,7 +71,7 @@ void STR::TimAdaZienXie::IntegrateStepAuxiliar()
   locerrdisn_->Update(stepsize_*stepsize_/3.0, *acc,
                       stepsize_*stepsize_/6.0, *accn,
                       1.0);
-  
+
   // provide local discretisation error vector
   // l_{n+1}^{A2} = D_{n+1}^{ZX} - D_{n+1}^{A2}
   //locerrdisn_->Update(-1.0, *disn, 1.0);

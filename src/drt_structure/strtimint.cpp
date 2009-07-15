@@ -123,7 +123,7 @@ STR::TimInt::TimInt
     if (pbc.HasPBC())
     {
       pbc.UpdateDofsForPeriodicBoundaryConditions();
-      
+
       discret_->ComputeNullSpaceIfNecessary(solver->Params(),true);
 
       dofrowmap_ = discret_->DofRowMap();
@@ -214,7 +214,7 @@ STR::TimInt::TimInt
       // contact and constraints together still needs discussion
       if (conman_->HaveConstraint())
         dserror("ERROR: Constraints and contact cannot be treated at the same time yet");
-      
+
       // store integration parameter alphaf into cmanager as well
       // for all cases except GenAlpha / GEMM this is zero
       double alphaf = 0.0;
@@ -222,15 +222,15 @@ STR::TimInt::TimInt
         alphaf = sdynparams.sublist("GENALPHA").get<double>("ALPHA_F");
       if (Teuchos::getIntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") == INPAR::STR::dyna_gemm)
         alphaf = sdynparams.sublist("GEMM").get<double>("ALPHA_F");
-      
-      // create contact manager  
+
+      // create contact manager
       contactman_ = Teuchos::rcp(new CONTACT::Manager(*discret_,alphaf));
-      
+
       // store DBC status in contact nodes
       contactman_->StoreDirichletStatus(dbcmaps_);
     }
   }
-  
+
   // check whether we have locsys BCs and create LocSysManager if so
   // after checking
   {
@@ -323,7 +323,7 @@ void STR::TimInt::DetermineMassDampConsistAccel()
     damp_->Complete();
   }
 
-  // in case of C0 pressure field, we need to get rid of 
+  // in case of C0 pressure field, we need to get rid of
   // pressure equations
   Teuchos::RCP<LINALG::SparseMatrix> mass = Teuchos::null;
   if (pressure_ != Teuchos::null)
@@ -635,7 +635,7 @@ void STR::TimInt::OutputRestart
   {
       contactman_->WriteRestart(*output_);
   }
-      
+
   // info dedicated to user's eyes staring at standard out
   if ( (myrank_ == 0) and printscreen_)
   {

@@ -32,9 +32,9 @@ namespace STR
    * - [1] NM Newmark, A method of computation for structural dynamics,
    *   Journal of Earthquake Mechanic Division, 85(EM3):67-94, 1959.
    * - [2] HM Hilber, TJR Hughes and RL Taylor, Improved numerical
-   *   dissipation for time integration algorithms, Earthquake 
+   *   dissipation for time integration algorithms, Earthquake
    *   Engineering and Structural Mechanics, 5:283-292, 1977.
-   *     
+   *
    *
    * \author bborn
    * \date 06/08
@@ -79,26 +79,26 @@ namespace STR
 
     //! Return name
     enum INPAR::STR::DynamicType MethodName() const
-    { 
+    {
       return INPAR::STR::dyna_genalpha;
     }
 
     //! Provide number of steps, e.g. a single-step method returns 1,
     //! a m-multistep method returns m
     int MethodSteps()
-    { 
+    {
       return 1;
     }
 
     //! Give linear order of accuracy of displacement part
     int MethodOrderOfAccuracyDis()
-    { 
+    {
       return (fabs(MethodLinErrCoeffDis2()) < EPS6) ? 3 : 2;
     }
 
     //! Give linear order of accuracy of velocity part
     int MethodOrderOfAccuracyVel()
-    { 
+    {
       return (fabs(MethodLinErrCoeffVel1()) < EPS6) ? 2 : 1;
     }
 
@@ -107,7 +107,7 @@ namespace STR
     {
       if (MethodOrderOfAccuracyDis() == 2)
         return MethodLinErrCoeffDis2();
-      else 
+      else
         return MethodLinErrCoeffDis3();
     }
 
@@ -122,8 +122,8 @@ namespace STR
     double MethodLinErrCoeffDis3()
     {
       // at least true for am<1/2 and large enough n->infty
-      return 1./24. 
-             - beta_/2.*(1.-2*alphaf_+2.*alpham_) 
+      return 1./24.
+             - beta_/2.*(1.-2*alphaf_+2.*alpham_)
              - 1./4.*(alphaf_-alpham_)*(1.-2.*alpham_);
     }
 
@@ -132,7 +132,7 @@ namespace STR
     {
       if (MethodOrderOfAccuracyVel() == 1)
         return MethodLinErrCoeffVel1();
-      else 
+      else
         return MethodLinErrCoeffVel2();
     }
 
@@ -147,8 +147,8 @@ namespace STR
     double MethodLinErrCoeffVel2()
     {
       // at least true for am<1/2 and large enough n->infty
-      return 1./6. 
-             - gamma_/2.*(1.-2*alphaf_+2.*alpham_) 
+      return 1./6.
+             - gamma_/2.*(1.-2*alphaf_+2.*alpham_)
              - 1./2.*(alphaf_-alpham_)*(1.-2.*alpham_);
     }
 
@@ -176,7 +176,7 @@ namespace STR
     //! This update is carried out by computing the new #veln_ and #acc_
     //! from scratch by using the newly updated #disn_. The method
     //! respects the Dirichlet DOFs which are not touched.
-    //! This method is necessary for certain predictors 
+    //! This method is necessary for certain predictors
     //! (like #PredictConstDisConsistVelAcc)
     void UpdateIterIncrementally();
 
@@ -191,7 +191,7 @@ namespace STR
 
     //! Update step
     void UpdateStepState();
-    
+
     //! Read and set restart for forces
     void ReadRestartForce();
 
@@ -242,8 +242,8 @@ namespace STR
     //! \f[ \alpha_f = \rho_\infty/(\rho_\infty + 1) \f]
     //! \f[ \beta = 1/4*(1 - \alpha_m + \alpha_f)^2 \mbox{(max. damp. of high-freq. modes)} \f]
     //! \f[ \gamma = 1/2 - \alpha_m + \alpha_f \f]
-    //! The spectral radius is responsible for the magnitude of 
-    //! numerical dissipation introduced. 
+    //! The spectral radius is responsible for the magnitude of
+    //! numerical dissipation introduced.
     //! For instance
     //! Without numerical dissipation at \f$\rho_\infty=1\f$
     //! \f[ \beta=0.25, \gamma=0.5, \alpha_m=0.5, \alpha_f=0.5 \f]

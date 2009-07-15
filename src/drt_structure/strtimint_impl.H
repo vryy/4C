@@ -111,7 +111,7 @@ namespace STR
     //! This is <i>the</i> central method which is different for each
     //! derived implicit time integrator. The time integrator implementation
     //! is expected to set members #fres_ and #stiff_.
-    //! The residual #fres_ is expected to follow the <i>same</i> sign 
+    //! The residual #fres_ is expected to follow the <i>same</i> sign
     //! convention like its tangent #stiff_, i.e. to use
     //! Newton--Raphson's method the residual will be scaled by -1.
     virtual void EvaluateForceStiffResidual() = 0;
@@ -158,7 +158,7 @@ namespace STR
       Teuchos::RCP<LINALG::SparseMatrix>& stiff,  //!< stiffness is modified
       Teuchos::RCP<Epetra_Vector>& fres  //!< residual forces are modified
     );
-        
+
     //@}
 
     //! @name Solution
@@ -393,13 +393,13 @@ namespace STR
     {
       if (conman_ -> HaveConstraint()) conman_->Update();
     }
-    
+
     //! Update step for contact
     void UpdateStepContact()
     {
       if (contactman_ != Teuchos::null) contactman_->Update(stepn_);
     }
-        
+
     //! @name Output
     //@{
 
@@ -417,7 +417,7 @@ namespace STR
     (
       FILE* ofile  //!< output file handle
     );
-    
+
     //! Contains header to PrintNewtonIter
     //! \author lw (originally) \date 12/07
     void PrintNewtonIterHeader
@@ -545,7 +545,7 @@ namespace STR
     //! This is a vector of length holding zeros at
     //! free DOFs and reaction force component at DOFs on DBCs.
     //! Mark, this is not true for DBCs with local co-ordinate
-    //! systems in which the non-global reaction force 
+    //! systems in which the non-global reaction force
     //! component is stored in global Cartesian components.
     //! The reaction force resultant is not affected by
     //! this operation.
@@ -575,7 +575,7 @@ namespace STR
 
     //! copy constructor is NOT wanted
     TimIntImpl(const TimIntImpl& old);
-    
+
     //! convert old-style convergence check
     void ConvertConvCheck
     (
@@ -602,11 +602,11 @@ namespace STR
     enum INPAR::STR::ConvNorm normtypefres_; //!< convergence check for residual forces
     enum INPAR::STR::ConvNorm normtypepres_; //!< convergence check for residual pressure
     enum INPAR::STR::ConvNorm normtypepfres_; //!< convergence check for residual pressure forces
-    
+
     enum INPAR::STR::BinaryOp combdispre_; //!< binary operator to combine field norms
     enum INPAR::STR::BinaryOp combfrespfres_; //!< binary operator to combine field norms
     enum INPAR::STR::BinaryOp combdisifres_; //!< binary operator to combine displacement and forces
-    
+
     enum INPAR::STR::VectorNorm iternorm_;  //!< vector norm to check with
     int itermax_;  //!< maximally permitted iterations
     int itermin_;  //!< minimally requested iterations

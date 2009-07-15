@@ -209,7 +209,7 @@ void STR::TimIntGEMM::EvaluateForceStiffResidual()
 
   // apply forces and stiffness due to contact
   ApplyForceStiffContact(stiff_,fres_);
-    
+
   // hallelujah
   return;
 }
@@ -265,7 +265,7 @@ double STR::TimIntGEMM::CalcRefNormDisplacement()
   }
   else
     charnormdis = STR::AUX::CalculateVectorNorm(iternorm_, (*dis_)(0));
-  
+
   // rise your hat
   return charnormdis;
 }
@@ -405,7 +405,7 @@ void STR::TimIntGEMM::UpdateStepState()
 
   // update constraints
   UpdateStepConstraint();
-  
+
   // update contact
   UpdateStepContact();
 

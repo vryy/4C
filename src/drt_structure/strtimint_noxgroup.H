@@ -40,7 +40,7 @@ namespace NOX
 
     /*==================================================================*/
     /*!
-     * \brief Special NOX::Epetra::Group that always 
+     * \brief Special NOX::Epetra::Group that always
      *        sets Jacobian and RHS at the same time.
      *
      * \author bborn
@@ -49,30 +49,30 @@ namespace NOX
     class Group : public NOX::Epetra::Group
     {
     public:
-      
+
       //! Constructor
       Group
       (
         ::STR::TimIntImpl& sti,  //!< time integrator
         Teuchos::ParameterList& printParams,  //!< printing parameters
-        const Teuchos::RCP<NOX::Epetra::Interface::Required>& i,  //!< basically the NOXified 
-                                                                  //!< time integrator 
+        const Teuchos::RCP<NOX::Epetra::Interface::Required>& i,  //!< basically the NOXified
+                                                                  //!< time integrator
         const NOX::Epetra::Vector& x,  //!< current solution vector
-        const Teuchos::RCP<NOX::Epetra::LinearSystem>& linSys  //!< linear system, 
+        const Teuchos::RCP<NOX::Epetra::LinearSystem>& linSys  //!< linear system,
                                                                //!< i.e. matrix and RHS etc.
       );
 
       //! Compute and store \f$F(x)\f$
       virtual NOX::Abstract::Group::ReturnType computeF();
-      
+
       //! Compute and store Jacobian \f$\frac{\partial F(x)}{\partial x}\f$
       virtual NOX::Abstract::Group::ReturnType computeJacobian();
-      
+
       //! Compute the Newton direction, using parameters for the linear solvexs
       NOX::Abstract::Group::ReturnType computeNewton(Teuchos::ParameterList& p);
-      
+
     private:
-      
+
       //! structural time integrator
       //! HINT: Currently this variable is unused within the group
       ::STR::TimIntImpl& sti_;

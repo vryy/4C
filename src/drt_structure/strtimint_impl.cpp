@@ -83,7 +83,7 @@ STR::TimIntImpl::TimIntImpl
     if (pressure_ != Teuchos::null)
       dserror("For new structural time integration and pressure formulation, please choose CONV_CHECK = None");
     else
-      ConvertConvCheck(Teuchos::getIntegralValue<INPAR::STR::ConvCheck>(sdynparams,"CONV_CHECK"));      
+      ConvertConvCheck(Teuchos::getIntegralValue<INPAR::STR::ConvCheck>(sdynparams,"CONV_CHECK"));
   }
 
   // verify: if system has constraints, then Uzawa-type solver is used
@@ -220,7 +220,7 @@ void STR::TimIntImpl::Predict()
     // build residual force norm
     normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
   }
- 
+
   // determine characteristic norms
   // we set the minumum of CalcRefNormForce() and #tolfres_, because
   // we want to prevent the case of a zero characteristic fnorm
@@ -451,12 +451,12 @@ void STR::TimIntImpl::ApplyForceStiffContact
   {
     // contact modifications need -fres
     fres_->Scale(-1.0);
-    
+
     // keep a copy of fresm for contact forces / equilibrium check
     Teuchos::RCP<Epetra_Vector> frescopy = Teuchos::rcp(new Epetra_Vector(*fres_));
 
     // make contact modifications to lhs and rhs
-    contactman_->SetState("displacement",disn_); 
+    contactman_->SetState("displacement",disn_);
     contactman_->InitializeMortar();
     contactman_->EvaluateMortar();
     contactman_->UpdateActiveSetSemiSmooth();
@@ -465,7 +465,7 @@ void STR::TimIntImpl::ApplyForceStiffContact
 
     // evaluate contact forces
     contactman_->ContactForces(frescopy);
-    
+
     // scaling back
     fres_->Scale(-1.0);
   }
@@ -494,7 +494,7 @@ bool STR::TimIntImpl::Converged()
   // check for single norms
   bool convdis = false;
   bool convfres = false;
-    
+
   // residual displacement
   switch (normtypedisi_)
   {
@@ -510,7 +510,7 @@ bool STR::TimIntImpl::Converged()
   default:
     dserror("Cannot check for convergence of residual displacements!");
   }
-  
+
   // residual forces
   switch (normtypefres_)
   {
@@ -526,27 +526,27 @@ bool STR::TimIntImpl::Converged()
   default:
     dserror("Cannot check for convergence of residual forces!");
   }
-  
+
   // check constraint
   bool cc = true;
   if (conman_->HaveConstraint())
   {
     cc = normcon_ < tolcon_;
   }
-  
+
   // check contact (active set)
   bool ccontact = true;
   if (contactman_!=Teuchos::null)
   {
     ccontact = contactman_->ActiveSetConverged();
   }
-  
+
   //pressure related stuff
   if (pressure_ != Teuchos::null)
   {
     bool convpre = false;
     bool convfpre = false;
-    
+
     //pressure
     switch (normtypepres_)
     {
@@ -556,7 +556,7 @@ bool STR::TimIntImpl::Converged()
      default:
       dserror("Cannot check for convergence of residual pressures! Only for absolute residuals implemeted so far!");
     }
-    
+
     // incompressible residual
     switch (normtypepfres_)
     {
@@ -566,8 +566,8 @@ bool STR::TimIntImpl::Converged()
     default:
       dserror("Cannot check for convergence of incompressible force residuals!");
     }
-    
-    
+
+
     // combine fields
     if (combdispre_==INPAR::STR::bop_and)
       convdis = convdis and convpre;
@@ -575,16 +575,16 @@ bool STR::TimIntImpl::Converged()
       convdis = convdis or convpre;
     else
       dserror("Something went terribly wrong with binary operator!");
-    
+
     if (combfrespfres_==INPAR::STR::bop_and)
       convfres = convfres and convfpre;
     else if (combfrespfres_==INPAR::STR::bop_or)
       convfres = convfres or convfpre;
     else
       dserror("Something went terribly wrong with binary operator!");
-    
+
   }
-  
+
   // combine displacement-like and force-like residuals
   bool conv = false;
   if (combdisifres_ == INPAR::STR::bop_and)
@@ -594,7 +594,7 @@ bool STR::TimIntImpl::Converged()
    else
      dserror("Something went terribly wrong with binary operator!");
 
-  
+
   // return things
   return (conv and cc and ccontact);
 }
@@ -681,7 +681,7 @@ void STR::TimIntImpl::NewtonFull()
     // recover contact Lagrange multipliers
     if (contactman_ != Teuchos::null)
       contactman_->Recover(disi_);
-    
+
     // update end-point displacements etc
     UpdateIter(iter_);
 
@@ -878,7 +878,7 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
     consolv_->Solve(stiff_, conmatrix,
                     disi_, lagrincr,
                     fres_, conrhs);
-    
+
     // transform back to global co-ordinate system
     if (locsysman_ != Teuchos::null)
       locsysman_->RotateLocalToGlobal(disi_);
@@ -920,7 +920,7 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
     normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
     // build residual Lagrange multiplier norm
     normcon_ = conman_->GetErrorNorm();
-    
+
     if (pressure_ != Teuchos::null)
     {
       Teuchos::RCP<Epetra_Vector> pres = pressure_->ExtractCondVector(fres_);
@@ -961,11 +961,11 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
     // print newton message on proc 0
     if (myrank_ == 0)
       printf("Newton unconverged in %d iterations ... continuing\n", iter_);
-    
+
     // compute and print monitor values
     if (conman_->HaveMonitor())
       conman_->ComputeMonitorValues(disn_);
-    
+
   }
   else if ( Converged() )
   {
@@ -974,15 +974,15 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
     {
       conman_->ComputeMonitorValues(disn_);
     }
-    
-    
+
+
     // print newton message on proc 0
     if (myrank_ == 0)
       conman_->PrintMonitorValues();
-    
+
   }
-  
- 
+
+
   // good evening
   return;
 }
@@ -1109,7 +1109,7 @@ void STR::TimIntImpl::PrintNewtonIterHeader
 
   // enter converged state etc
   oss << std::setw(6)<< "numiter";
-  
+
   // different style due relative or absolute error checking
   // displacement
   switch ( normtypefres_ )
@@ -1126,7 +1126,7 @@ void STR::TimIntImpl::PrintNewtonIterHeader
   default:
     dserror("You should not turn up here.");
   }
-  
+
   if (pressure_ != Teuchos::null)
   {
     switch (normtypepfres_)
@@ -1138,7 +1138,7 @@ void STR::TimIntImpl::PrintNewtonIterHeader
       dserror("You should not turn up here.");
     }
   }
-  
+
   switch ( normtypedisi_ )
   {
   case INPAR::STR::convnorm_rel:
@@ -1153,7 +1153,7 @@ void STR::TimIntImpl::PrintNewtonIterHeader
   default:
     dserror("You should not turn up here.");
   }
-  
+
   if (pressure_ != Teuchos::null)
   {
     switch (normtypepfres_)
@@ -1165,7 +1165,7 @@ void STR::TimIntImpl::PrintNewtonIterHeader
       dserror("You should not turn up here.");
     }
   }
-  
+
   // add constraint norm
   if (conman_->HaveConstraint())
   {
@@ -1201,7 +1201,7 @@ void STR::TimIntImpl::PrintNewtonIterText
 
   // enter converged state etc
   oss << std::setw(7)<< iter_;
-  
+
   // different style due relative or absolute error checking
   // displacement
   switch ( normtypefres_ )
@@ -1218,7 +1218,7 @@ void STR::TimIntImpl::PrintNewtonIterText
   default:
     dserror("You should not turn up here.");
   }
-  
+
   if (pressure_ != Teuchos::null)
   {
     switch (normtypepfres_)
@@ -1230,7 +1230,7 @@ void STR::TimIntImpl::PrintNewtonIterText
       dserror("You should not turn up here.");
     }
   }
-  
+
   switch ( normtypedisi_ )
   {
   case INPAR::STR::convnorm_rel:
@@ -1245,7 +1245,7 @@ void STR::TimIntImpl::PrintNewtonIterText
   default:
     dserror("You should not turn up here.");
   }
-  
+
   if (pressure_ != Teuchos::null)
   {
     switch (normtypepfres_)
@@ -1257,7 +1257,7 @@ void STR::TimIntImpl::PrintNewtonIterText
       dserror("You should not turn up here.");
     }
   }
-  
+
   // add constraint norm
   if (conman_->HaveConstraint())
   {
@@ -1278,7 +1278,7 @@ void STR::TimIntImpl::PrintNewtonIterText
 
   // nice to have met you
   return;
-  
+
 }
 
 
@@ -1303,7 +1303,7 @@ void STR::TimIntImpl::PrintStep()
   // print active contact set
   if (contactman_ != Teuchos::null)
     contactman_->PrintActiveSet();
-    
+
   // print out (only on master CPU)
   if ( (myrank_ == 0) and printscreen_ )
   {
@@ -1435,7 +1435,7 @@ void STR::TimIntImpl::PrepareSystemForNewtonSolve()
 /*----------------------------------------------------------------------*/
 void STR::TimIntImpl::ConvertConvCheck
 (
-  const INPAR::STR::ConvCheck convcheck 
+  const INPAR::STR::ConvCheck convcheck
 )
 {
   if (myrank_ == 0)
@@ -1447,9 +1447,9 @@ void STR::TimIntImpl::ConvertConvCheck
     std::cout << "and convergence check should be defined via 'NORM_DISP', 'NORM_FRES' and 'NORMCOMBI_RESFDISP'. "<<std::endl;
     std::cout << "These values will now be overwritten as you can see below! "<<std::endl<<std::endl;
   }
-  
+
   // conversion
-  switch (convcheck)  
+  switch (convcheck)
   {
   case INPAR::STR::convcheck_absres_or_absdis:
     normtypefres_ = INPAR::STR::convnorm_abs;

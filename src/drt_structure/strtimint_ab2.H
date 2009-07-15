@@ -26,7 +26,7 @@ namespace STR
 
   /*====================================================================*/
   /*!
-   * \brief Adams-Bashforth2: 2nd order accurate, 
+   * \brief Adams-Bashforth2: 2nd order accurate,
    *                          explicit time integrator,
    *                          linear 2-step method
    * \author bborn
@@ -77,7 +77,7 @@ namespace STR
 
     //! Update configuration after time step
     //!
-    //! Thus the 'last' converged is lost and a reset of the time step 
+    //! Thus the 'last' converged is lost and a reset of the time step
     //! becomes impossible. We are ready and keen awating the next time step.
     void UpdateStepState();
 
@@ -87,8 +87,8 @@ namespace STR
     //@{
 
     //! Return time integrator name
-    enum INPAR::STR::DynamicType MethodName() const 
-    { 
+    enum INPAR::STR::DynamicType MethodName() const
+    {
       return INPAR::STR::dyna_ab2;
     }
 
@@ -129,7 +129,7 @@ namespace STR
 
     //! Read and set restart for forces
     void ReadRestartForce();
-    
+
     //@}
 
   protected:

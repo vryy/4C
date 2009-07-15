@@ -43,7 +43,7 @@ namespace STR
    * Multi-step quantities occur --surprisingly indeed-- in multi-step time
    * integrators. However, they are needed in single-step integrators
    * as well, if the auxiliar scheme is multi-step. The idea is to be
-   * able to resize the multi-step quantities dynamically and have 
+   * able to resize the multi-step quantities dynamically and have
    * intrinsic update mechanism such that a single-step integrator
    * can provide the data on which a multi-step auxiliar integrator
    * can work.
@@ -74,7 +74,7 @@ namespace STR
     (
       const int step  //!< inquire step
     )
-    { 
+    {
       if (not StepExists(step)) dserror("Step %d is not admissible", step);
       return Teuchos::rcp<STATE>(&(state_[IndexByStep(step)]),false);
     }
@@ -134,7 +134,7 @@ namespace STR
       sane = sane and (steppast <= stepfuture);
       if (not sane)
         dserror("Past step must be lower than future step");
-      
+
       sane = sane and (stepfuture == stepfuture_);
       if (not sane)
         dserror("Future step cannot be changed");
@@ -150,7 +150,7 @@ namespace STR
     )
     {
       return ( (step >= steppast_) and (step <= stepfuture_) );
-    }  
+    }
 
     //! determine wether index lies in given bounds
     bool IndexExists
@@ -166,8 +166,8 @@ namespace STR
     (
       const int index  //!< vector index
     )
-    { 
-      return index + steppast_; 
+    {
+      return index + steppast_;
     }
 
     //! Map vector index to step
@@ -234,7 +234,7 @@ namespace STR
       {
         MStepBase::state_.push_back(STATE(init));
       }
-  
+
       // good bye
       return;
     }
@@ -252,7 +252,7 @@ namespace STR
         bool sane = MStepBase::ResizeSane(steppast, stepfuture);
         if (not sane) dserror("Sanity check not passed.");
       }
-      
+
       // add states for steps in past
       if (steppast < MStepBase::steppast_)
       {
@@ -284,7 +284,7 @@ namespace STR
     }
 
     //! Update multi-step state
-    //! i.e. state_{n} := state_{n+1}, 
+    //! i.e. state_{n} := state_{n+1},
     //!      state_{n-1} := state_{n},
     //!      state_{n} := state_{n+1},
     //!      etc.
@@ -298,7 +298,7 @@ namespace STR
         MStepBase::state_[ind] = MStepBase::state_[ind+1];
       }
       MStepBase::state_[MStepBase::steps_-1] = staten;
-      
+
       // ciao
       return;
     }
@@ -308,10 +308,10 @@ namespace STR
   };
 
   /*====================================================================*/
-  /*! \brief Specialise general #TimIntMStepBase object 
+  /*! \brief Specialise general #TimIntMStepBase object
    *         for \c Epetra_Vector as needed for state vectors
    *         -- displacements, velocities and accelerations
-   *         (alright, accelerations do not truely belong to the phase 
+   *         (alright, accelerations do not truely belong to the phase
    *         state) -- in structural dynamics
    */
   template <> class TimIntMStep<Epetra_Vector>
@@ -319,7 +319,7 @@ namespace STR
   {
 
   protected :
-    
+
     //! base template class
     typedef TimIntMStepBase<Epetra_Vector> MStepBase;
 
@@ -328,7 +328,7 @@ namespace STR
     //! @name Life
     //@{
 
-    //! Dummy constructor 
+    //! Dummy constructor
     TimIntMStep()
     : MStepBase::TimIntMStepBase()
     { ; }
@@ -348,7 +348,7 @@ namespace STR
       {
         state_.push_back(Epetra_Vector(*dofrowmap, inittozero));
       }
-  
+
       // good bye
       return;
     }
@@ -364,7 +364,7 @@ namespace STR
       const Epetra_Map* dofrowmap,  //!< vector layout from discretization
       const bool inittozero  //!< initialse to zero, if true
     )
-    { 
+    {
       // check this
       {
         bool sane = MStepBase::ResizeSane(steppast, stepfuture);
@@ -393,7 +393,7 @@ namespace STR
     //@{
 
     //! Update multi-step state
-    //! i.e. state_{n} := state_{n+1}, 
+    //! i.e. state_{n} := state_{n+1},
     //!      state_{n-1} := state_{n},
     //!      state_{n} := state_{n+1},
     //!      etc.
@@ -407,7 +407,7 @@ namespace STR
         (MStepBase::state_[ind]).Update(1.0, (MStepBase::state_[ind+1]), 0.0);
       }
       (MStepBase::state_[steps_-1]).Update(1.0, staten, 0.0);
-      
+
       // ciao
       return;
     }
@@ -415,7 +415,7 @@ namespace STR
     //@}
 
   };  // class TimIntMStep<Epetra_Vector>
-  
+
 }  // namespace STR
 
 /*----------------------------------------------------------------------*/

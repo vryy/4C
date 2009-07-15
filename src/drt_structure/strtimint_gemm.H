@@ -71,26 +71,26 @@ namespace STR
 
     //! Return name
     enum INPAR::STR::DynamicType MethodName() const
-    { 
+    {
       return INPAR::STR::dyna_gemm;
     }
 
     //! Provide number of steps, e.g. a single-step method returns 1,
     //! a m-multistep method returns m
     int MethodSteps()
-    { 
+    {
       return 1;
     }
 
     //! Give linear order of accuracy of displacement part
     int MethodOrderOfAccuracyDis()
-    { 
+    {
       return (fabs(MethodLinErrCoeffDis2()) < EPS6) ? 3 : 2;
     }
 
     //! Give linear order of accuracy of velocity part
     int MethodOrderOfAccuracyVel()
-    { 
+    {
       return (fabs(MethodLinErrCoeffVel1()) < EPS6) ? 2 : 1;
     }
 
@@ -99,7 +99,7 @@ namespace STR
     {
       if (MethodOrderOfAccuracyDis() == 2)
         return MethodLinErrCoeffDis2();
-      else 
+      else
         return MethodLinErrCoeffDis3();
     }
 
@@ -114,8 +114,8 @@ namespace STR
     double MethodLinErrCoeffDis3()
     {
       // at least true for am<1/2 and large enough n->infty and xi=0
-      return 1./24. 
-             - beta_/2.*(1.-2*alphaf_+2.*alpham_) 
+      return 1./24.
+             - beta_/2.*(1.-2*alphaf_+2.*alpham_)
              - 1./4.*(alphaf_-alpham_)*(1.-2.*alpham_);
     }
 
@@ -124,7 +124,7 @@ namespace STR
     {
       if (MethodOrderOfAccuracyVel() == 1)
         return MethodLinErrCoeffVel1();
-      else 
+      else
         return MethodLinErrCoeffVel2();
     }
 
@@ -139,8 +139,8 @@ namespace STR
     double MethodLinErrCoeffVel2()
     {
       // at least true for am<1/2 and large enough n->infty and xi=0
-      return 1./6. 
-             - gamma_/2.*(1.-2*alphaf_+2.*alpham_) 
+      return 1./6.
+             - gamma_/2.*(1.-2*alphaf_+2.*alpham_)
              - 1./2.*(alphaf_-alpham_)*(1.-2.*alpham_);
     }
 
@@ -168,7 +168,7 @@ namespace STR
     //! This update is carried out by computing the new #veln_ and #acc_
     //! from scratch by using the newly updated #disn_. The method
     //! respects the Dirichlet DOFs which are not touched.
-    //! This method is necessary for certain predictors 
+    //! This method is necessary for certain predictors
     //! (like #PredictConstDisConsistVelAcc)
     void UpdateIterIncrementally();
 
@@ -235,7 +235,7 @@ namespace STR
 
     //! @name Key coefficients
     //@{
-    const double beta_;  //!< must be 0.25 
+    const double beta_;  //!< must be 0.25
     const double gamma_;  //!< must be 0.5
     double alphaf_;  //!< factor [0,1)
     double alpham_;  //!< factor [0,1)

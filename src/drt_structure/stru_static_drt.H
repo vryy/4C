@@ -33,7 +33,7 @@ Maintainer: Moritz Frenzel
 
 using namespace std;
 
-void synchronize_VolConstraint(const Epetra_Comm& Comm, 
+void synchronize_VolConstraint(const Epetra_Comm& Comm,
                                ParameterList& params,
                                Epetra_SerialDenseVector& vect,
                                int& mi, int& ma, int & numID);
@@ -53,7 +53,7 @@ void foolfunction();
 
 /* headers and prototypes of functions also acessible from c */
 #ifdef __cplusplus
-extern "C" 
+extern "C"
 {
 #endif
 
