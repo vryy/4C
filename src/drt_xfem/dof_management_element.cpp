@@ -42,12 +42,12 @@ XFEM::ElementDofManager::ElementDofManager(
   DisTypePerElementField_(element_ansatz)
 {
   ComputeDependentInfo(ele, nodalDofSet, enrfieldset, element_ansatz);
- 
+
   return;
 }
-   
-    
-    
+
+
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void XFEM::ElementDofManager::ComputeDependentInfo(
@@ -64,7 +64,7 @@ void XFEM::ElementDofManager::ComputeDependentInfo(
     const int gid = tmp->first;
     nodalNumDof_[gid] = tmp->second.size();
   }
-  
+
   // set number of parameters per field to zero
   for (map<int, const std::set<XFEM::FieldEnr> >::const_iterator tmp = nodalDofSet.begin();
        tmp != nodalDofSet.end();
@@ -88,8 +88,8 @@ void XFEM::ElementDofManager::ComputeDependentInfo(
     numParamsPerField_[field] = 0;
     paramsLocalEntries_[field] = vector<int>();
   }
-      
-      
+
+
   unique_enrichments_.clear();
   // count number of parameters per field
   // define local position of unknown by looping first over nodes and then over its unknowns!
@@ -102,7 +102,7 @@ void XFEM::ElementDofManager::ComputeDependentInfo(
     if (entry == nodalDofSet.end())
       dserror("impossible ;-)");
     const std::set<XFEM::FieldEnr> lenrfieldset = entry->second;
-    
+
     for (std::set<XFEM::FieldEnr>::const_iterator enrfield = lenrfieldset.begin();
          enrfield != lenrfieldset.end();
          ++enrfield)
@@ -115,7 +115,7 @@ void XFEM::ElementDofManager::ComputeDependentInfo(
     }
   }
   numNodeDof_ = dofcounter;
-  
+
   // loop now over element dofs
   // we first loop over the fields and then over the params
   numElemDof_ = 0;
@@ -130,9 +130,9 @@ void XFEM::ElementDofManager::ComputeDependentInfo(
       cout << XFEM::PHYSICS::physVarToString(field) << endl;
       dserror("field not found -> bug");
     }
-    
+
     enrichedFieldperPhysField_[field].insert(*enrfield);
-    
+
     const DRT::Element::DiscretizationType eledofdistype = schnack->second;
     const int numparam = DRT::UTILS::getNumberOfElementNodes(eledofdistype);
     for (int inode=0; inode<numparam; ++inode)
@@ -144,13 +144,13 @@ void XFEM::ElementDofManager::ComputeDependentInfo(
       dofcounter++;
     }
   }
-  
+
   if (dofcounter != (numNodeDof_ + numElemDof_))
     dserror("dof number mismatch! -> bug!");
-  
+
   return;
 }
-  
+
 
 
 /*----------------------------------------------------------------------*
@@ -170,10 +170,10 @@ XFEM::ElementDofManager::ElementDofManager(
     const int gid = ele.NodeIds()[inode];
     nodalDofSet_.insert(make_pair(gid,dofman.getNodeDofSet(gid)));
   }
-  
+
   // element dofs for ele
   const std::set<XFEM::FieldEnr>& enrfieldset(dofman.getElementDofSet(ele.Id()));
-  
+
   ComputeDependentInfo(ele, nodalDofSet_, enrfieldset, element_ansatz);
 }
 
@@ -255,5 +255,5 @@ std::set<int> XFEM::ElementDofManager::getUniqueEnrichmentLabels() const
   }
   return xlabelset;
 }
-    
+
 #endif  // #ifdef CCADISCRET

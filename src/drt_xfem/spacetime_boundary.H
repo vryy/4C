@@ -47,45 +47,45 @@ namespace XFEM
     //! Copy Constructor
     SpaceTimeBoundaryCell(
             const SpaceTimeBoundaryCell& old);
-    
+
     //! Default Constructor
     explicit SpaceTimeBoundaryCell();
-    
+
     //! operator
     SpaceTimeBoundaryCell& operator = (const SpaceTimeBoundaryCell& old);
-    
+
     //! return position array
     const LINALG::SerialDenseMatrix& get_xyzt() const {return xyzt_;};
-    
+
     //! get global id of boundary element for which this space-time cell is constructed
     int getBeleId() const {return bele_id_;};
-    
+
     //! get global id of boundary element for which this space-time cell is constructed
     DRT::Element::DiscretizationType Shape() const {return DRT::Element::hex8;};
-    
+
     //! return string representation
     std::string toString() const;
-    
+
   private:
-     
+
     /// id of boundary element we want to track
     int bele_id_;
-    
+
     /// shape of the boundary element
     DRT::Element::DiscretizationType surf_distype_;
-    
+
     /// number of timesteps this cell covers
     int num_timestep_;
-    
+
     /// nodal positions at (x,y,z,tnp,tn)
     LINALG::SerialDenseMatrix xyzt_;
-    
+
     //! from surface positions at two time steps, create prism element (e.g. hex)
     LINALG::SerialDenseMatrix getLinearPositionArray(
         const LINALG::SerialDenseMatrix&      posnp, ///< nodal positions at n+1
         const LINALG::SerialDenseMatrix&      posn   ///< nodal positions at n
     ) const;
-    
+
   };
 }
 

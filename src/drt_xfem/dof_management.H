@@ -121,7 +121,7 @@ namespace XFEM
       const Teuchos::RCP<XFEM::InterfaceHandle> getInterfaceHandle() const { return ih_; }
 
     private:
-      
+
       DofManager operator = (const DofManager& old);
 
       /// find unique enrichments among all dofs in this DofManager

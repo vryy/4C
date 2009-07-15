@@ -173,7 +173,7 @@ void XFEM::DofDistributionSwitcher::generateTransferInformation(
     const RCP<Epetra_Vector>&             vector
 ) const
 {
-  
+
   dserror("not ready, yet!");
   // create new vector with new number of dofs
   RCP<Epetra_Vector> newVector = LINALG::CreateVector(newdofrowmap_,true);

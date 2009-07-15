@@ -23,9 +23,9 @@ namespace XFEM
 
   /*!
  * It knows everything about the XFEM interface geometry
- * 
+ *
  * It does not deal with DOFs in any way. DOF management is done by
- * the DofManager and ElementDofManager classes. 
+ * the DofManager and ElementDofManager classes.
  *
  */
   class InterfaceHandle
@@ -61,19 +61,19 @@ namespace XFEM
 
 //    //! get pointer to elementsByLabel_
 //    const std::map<int,std::set<int> >& BoundaryElementsByLabel() const {return boundaryElementsByLabel_;}
-    
+
     //! get set of all available labels
     std::set<int> GetAvailableBoundaryLabels() const;
 
     //! tell me, whether the element is intersected or not
     bool ElementIntersected(const int element_gid) const;
-    
+
     //! check, whether given element id has been intersected by the given interface (label)
     bool ElementHasLabel(
         const int element_gid,
         const int label
     ) const;
-    
+
     //! get labels for each element
     std::set<int> LabelsPerElement( const int element_gid) const;
 
@@ -99,7 +99,7 @@ namespace XFEM
     //! get domain information at x_in at timestep n
     virtual int PositionWithinConditionN(const LINALG::Matrix<3,1>&     x_in,
                                          GEO::NearestObject&  nearestobject) const;
-    
+
     //! get the label to which the boundary element belongs
     virtual int GetLabelPerBoundaryElementId(const int boundaryEleId) const
     {
@@ -107,7 +107,7 @@ namespace XFEM
     }
 
   protected:
-  
+
     //! fill label per element list
     void InvertElementsPerLabel();
 
@@ -122,7 +122,7 @@ namespace XFEM
 
     //! for each xfem condition label there is a set of boundary elements
     std::map<int,std::set<int> >              boundaryElementsByLabel_;
-    
+
      //! each boundary element belongs to one label (inverted information of elementsByLabel_)
     std::map<int,int>                         labelPerBoundaryElementId_;
 
@@ -131,18 +131,18 @@ namespace XFEM
 
     //! SearchTree octtree for timestep n
     const Teuchos::RCP<GEO::SearchTree>       octTreen_;
-    
-    
+
+
   private:
-    
+
     //! don't want copy constructor
     explicit InterfaceHandle(const InterfaceHandle&);
-    
+
     //! disabled assignment operator
-    InterfaceHandle operator = (const InterfaceHandle& old);  
+    InterfaceHandle operator = (const InterfaceHandle& old);
 
   }; // class InterfaceHandle
-  
+
 } // namespace XFEM
 
 #endif  // #ifndef INTERFACE_H

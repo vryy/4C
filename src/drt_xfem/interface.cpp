@@ -30,7 +30,7 @@ Maintainer: Axel Gerstenberger
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 XFEM::InterfaceHandle::InterfaceHandle(
-    const Teuchos::RCP<DRT::Discretization>&  xfemdis 
+    const Teuchos::RCP<DRT::Discretization>&  xfemdis
     ) :
       xfemdis_(xfemdis),
       octTreenp_(rcp( new GEO::SearchTree(20))),
@@ -116,10 +116,10 @@ std::string XFEM::InterfaceHandle::toString() const
  *----------------------------------------------------------------------*/
 GEO::DomainIntCells XFEM::InterfaceHandle::GetDomainIntCells(
     const DRT::Element* xfemElement) const
-{ 
+{
   std::map<int,GEO::DomainIntCells>::const_iterator tmp = elementalDomainIntCells_.find(xfemElement->Id());
   if (tmp == elementalDomainIntCells_.end())
-  {   
+  {
     // create default set with one dummy DomainIntCell of proper size
     GEO::DomainIntCells cells;
     cells.push_back(GEO::DomainIntCell(xfemElement->Shape(), GEO::InitialPositionArray(xfemElement)));
@@ -134,7 +134,7 @@ GEO::DomainIntCells XFEM::InterfaceHandle::GetDomainIntCells(
  *------------------------------------------------------------------------------------------------*/
 std::size_t XFEM::InterfaceHandle::GetNumDomainIntCells(
     const DRT::Element* xfemElement) const
-{ 
+{
   std::map<int,GEO::DomainIntCells>::const_iterator tmp = elementalDomainIntCells_.find(xfemElement->Id());
   if (tmp == elementalDomainIntCells_.end())
   {
@@ -151,7 +151,7 @@ GEO::BoundaryIntCells XFEM::InterfaceHandle::GetBoundaryIntCells(
 {
   std::map<int,GEO::BoundaryIntCells>::const_iterator tmp = elementalBoundaryIntCells_.find(gid);
   if (tmp == elementalBoundaryIntCells_.end())
-  {   
+  {
     // return empty list
     return GEO::BoundaryIntCells();
   }
@@ -161,7 +161,7 @@ GEO::BoundaryIntCells XFEM::InterfaceHandle::GetBoundaryIntCells(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::set<int> XFEM::InterfaceHandle::GetAvailableBoundaryLabels() const 
+std::set<int> XFEM::InterfaceHandle::GetAvailableBoundaryLabels() const
 {
   std::set<int> labels;
   for(std::map<int,std::set<int> >::const_iterator conditer = boundaryElementsByLabel_.begin();
@@ -179,7 +179,7 @@ std::set<int> XFEM::InterfaceHandle::GetAvailableBoundaryLabels() const
 bool XFEM::InterfaceHandle::ElementIntersected(
     const int element_gid) const
 {
-  if (elementalDomainIntCells_.find(element_gid) == elementalDomainIntCells_.end())   
+  if (elementalDomainIntCells_.find(element_gid) == elementalDomainIntCells_.end())
     return false;
   else
     return true;
@@ -194,7 +194,7 @@ bool XFEM::InterfaceHandle::ElementHasLabel(
 {
   if(elementalBoundaryIntCells_.empty())
     dserror("boundary intcells are empty");
-  
+
   const GEO::BoundaryIntCells& bcells = elementalBoundaryIntCells_.find(element_gid)->second;
   bool has_label = false;
   for (GEO::BoundaryIntCells::const_iterator bcell = bcells.begin(); bcell != bcells.end(); ++bcell)
@@ -219,7 +219,7 @@ std::set<int> XFEM::InterfaceHandle::LabelsPerElement(
   std::set<int> labelset;
   if(elementalBoundaryIntCells_.empty())
     return labelset;
-  
+
   const GEO::BoundaryIntCells& bcells = elementalBoundaryIntCells_.find(element_gid)->second;
   for (GEO::BoundaryIntCells::const_iterator bcell = bcells.begin(); bcell != bcells.end(); ++bcell)
   {

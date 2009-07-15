@@ -26,7 +26,7 @@ namespace XFEM
     standard_assembly,    ///< fixed layout of element matrices
     xfem_assembly         ///< variable layout of element matrices - ask dofmanagers for layout information
   };
-  
+
 }
 
 #endif

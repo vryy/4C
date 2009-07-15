@@ -92,7 +92,7 @@ void XFEM::DofManager::GatherUniqueEnrichments() const
 {
   // set of unique enrichments
   std::set<XFEM::Enrichment> unique_enrichments;
-  
+
   // collect enrichments from nodal dofs
   for (map<int, const std::set<XFEM::FieldEnr> >::const_iterator fieldenriter=nodalDofSet_.begin();
   fieldenriter!=nodalDofSet_.end(); ++fieldenriter)
@@ -104,7 +104,7 @@ void XFEM::DofManager::GatherUniqueEnrichments() const
       unique_enrichments.insert(enrfield->getEnrichment());
     }
   }
-  
+
   // collect enrichments from elemental dofs
   for (map<int, const std::set<XFEM::FieldEnr> >::const_iterator fieldenriter=elementalDofs_.begin();
   fieldenriter!=elementalDofs_.end(); ++fieldenriter)

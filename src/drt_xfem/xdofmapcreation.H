@@ -159,7 +159,7 @@ namespace XFEM
       std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet
       );
 
-  /*! 
+  /*!
    * \brief apply standard dofs to nodes
    * \note this is 3d fluid specific and should somehow be generalized
    */
@@ -168,9 +168,9 @@ namespace XFEM
       const std::set<XFEM::PHYSICS::Field>&         fieldset,
       std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet
       );
-  
 
-  /*! 
+
+  /*!
    * \brief create dofkeyset from nodal dofmap
    */
   void fillNodalDofKeySet(
@@ -187,25 +187,25 @@ namespace XFEM
       );
 
 
-  /*! 
+  /*!
    * \brief pack dofkeys from set into char array
    */
   void packDofKeys(
       const set<XFEM::DofKey<XFEM::onNode> >&     dofkeyset,
       vector<char>&                               dataSend
       );
-        
 
-  /*! 
+
+  /*!
    * \brief unpack dofkeys from char array
    */
   void unpackDofKeys(
-      const vector<char>&                     dataRecv, 
+      const vector<char>&                     dataRecv,
       set<XFEM::DofKey<XFEM::onNode> >&       dofkeyset
       );
 
 #ifdef PARALLEL
-  /*! 
+  /*!
    * \brief parallel syncronization
    */
   void syncNodalDofs(
@@ -213,7 +213,7 @@ namespace XFEM
       std::map<int, std::set<XFEM::FieldEnr> >&  nodalDofSet
       );
 #endif
-  
+
 } // namespace XFEM
 
 #endif  // #ifndef XDOFMAPCREATION_H

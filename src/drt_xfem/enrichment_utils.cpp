@@ -34,7 +34,7 @@ XFEM::ElementEnrichmentValues::ElementEnrichmentValues(
         const XFEM::Enrichment::ApproachFrom   approachdirection
         ) :
           ele_(ele),
-          dofman_(dofman) 
+          dofman_(dofman)
 {
     enrvals_.clear();
     enrvalnodes_.clear();  // not used for void enrichment
@@ -77,7 +77,7 @@ void XFEM::computeScalarCellNodeValuesFromNodalUnknowns(
         dofman,
         cellcenterpos,
         XFEM::Enrichment::approachUnknown);
-  
+
   cellvalues.Zero();
   for (int inen = 0; inen < cell.NumNode(); ++inen)
   {
@@ -117,7 +117,7 @@ void XFEM::computeScalarCellNodeValuesFromElementUnknowns(
   // however, we approach the interface from one particular side and therefore,
   // -> we use the center of the cell to determine, where we come from
   const LINALG::Matrix<3,1> cellcenterpos(cell.GetPhysicalCenterPosition());
-  
+
   const XFEM::ElementEnrichmentValues enrvals(
         ele,
         ih,
@@ -131,11 +131,11 @@ void XFEM::computeScalarCellNodeValuesFromElementUnknowns(
     const std::size_t numparam  = dofman.NumDofPerField(field);
     if (numparam == 0)
       continue;
-    
+
     const DRT::Element::DiscretizationType eleval_distype = dofman.getDisTypePerField(field);
     const std::size_t numvirtnode = DRT::UTILS::getNumberOfElementNodes(eleval_distype);
     if (numvirtnode != numparam) dserror("bug");
-    
+
     LINALG::SerialDenseVector funct(numparam);
     // fill shape functions
     DRT::UTILS::shape_function_3D(funct,
@@ -179,18 +179,18 @@ void XFEM::computeTensorCellNodeValuesFromElementUnknowns(
         dofman,
         cellcenterpos,
         XFEM::Enrichment::approachUnknown);
-  
+
   cellvalues.Zero();
   for (int incn = 0; incn < cell.NumNode(); ++incn)
   {
     const int numparam  = dofman.NumDofPerField(field);
     if (numparam == 0)
       continue;
-    
+
     const DRT::Element::DiscretizationType eleval_distype = dofman.getDisTypePerField(field);
     const int numvirtnode = DRT::UTILS::getNumberOfElementNodes(eleval_distype);
     if (numvirtnode != numparam) dserror("bug");
-    
+
     LINALG::SerialDenseVector funct(numparam);
     // fill shape functions
     DRT::UTILS::shape_function_3D(funct,
@@ -204,7 +204,7 @@ void XFEM::computeTensorCellNodeValuesFromElementUnknowns(
     // interpolate value
     for (int iparam = 0; iparam < numparam; ++iparam)
       for (int ientry = 0; ientry < 9; ++ientry)
-        cellvalues(ientry,incn) += elementvalues(ientry,iparam) * enr_funct(iparam);        
+        cellvalues(ientry,incn) += elementvalues(ientry,iparam) * enr_funct(iparam);
   }
   return;
 }
@@ -236,7 +236,7 @@ void XFEM::computeVectorCellNodeValues(
         dofman,
         cellcenterpos,
         XFEM::Enrichment::approachUnknown);
-  
+
   // cell corner nodes
   LINALG::SerialDenseVector enr_funct(numparam);
   //LINALG::SerialDenseVector funct(DRT::UTILS::getNumberOfElementNodes(ele.Shape()));
@@ -254,7 +254,7 @@ void XFEM::computeVectorCellNodeValues(
     // interpolate value
     for (std::size_t iparam = 0; iparam < numparam; ++iparam)
       for (std::size_t isd = 0; isd < 3; ++isd)
-        cellvalues(isd,inen) += elementvalues(isd,iparam) * enr_funct(iparam);        
+        cellvalues(isd,inen) += elementvalues(isd,iparam) * enr_funct(iparam);
   }
   return;
 }
@@ -287,8 +287,8 @@ void XFEM::computeVectorCellNodeValues(
         dofman,
         cellcenterpos,
         XFEM::Enrichment::approachFromPlus);
-  
-  
+
+
   LINALG::SerialDenseVector enr_funct(numparam);
   //LINALG::SerialDenseVector funct(DRT::UTILS::getNumberOfElementNodes(ele.Shape()));
   LINALG::SerialDenseVector funct(27);
@@ -306,7 +306,7 @@ void XFEM::computeVectorCellNodeValues(
     // interpolate value
     for (std::size_t iparam = 0; iparam < numparam; ++iparam)
       for (std::size_t isd = 0; isd < 3; ++isd)
-        cellvalues(isd,inen) += elementvalues(isd,iparam) * enr_funct(iparam);        
+        cellvalues(isd,inen) += elementvalues(isd,iparam) * enr_funct(iparam);
   }
   return;
 }
@@ -327,17 +327,17 @@ double DomainCoverageRatioT(
   // get node coordinates of the current element
   LINALG::Matrix<3,numnode> xyze;
   GEO::fillInitialPositionArray<DISTYPE>(&ele, xyze);
-  
-  //double 
+
+  //double
   double area_ele  = 0.0;
   double area_fict = 0.0;
-  
+
   // information about domain integration cells
   const GEO::DomainIntCells&  domainIntCells(ih.GetDomainIntCells(&ele));
   // loop over integration cells
   for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
   {
-    const LINALG::Matrix<3,1> cellcenter(cell->GetPhysicalCenterPosition());            
+    const LINALG::Matrix<3,1> cellcenter(cell->GetPhysicalCenterPosition());
     const int label = ih.PositionWithinConditionNP(cellcenter);
     DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule3D_undefined;
     switch (cell->Shape())
@@ -355,7 +355,7 @@ double DomainCoverageRatioT(
       default:
         dserror("add your element type here...");
     }
-    
+
     // gaussian points
     const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
 
@@ -372,7 +372,7 @@ double DomainCoverageRatioT(
       LINALG::Matrix<3,1> posXiDomain;
       GEO::mapEtaToXi3D<XFEM::xfem_assembly>(*cell, pos_eta_domain, posXiDomain);
       const double detcell = GEO::detEtaToXi3D<XFEM::xfem_assembly>(*cell, pos_eta_domain);
-      
+
       // shape functions and their first derivatives
       LINALG::Matrix<numnode,1> funct;
       LINALG::Matrix<3,numnode> deriv;
@@ -389,12 +389,12 @@ double DomainCoverageRatioT(
 
       if(det < 0.0)
         dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele.Id(), det);
-         
+
         area_ele += fac;
-        
+
       if(label != 0)
         area_fict += fac;
- 
+
     } // end loop over gauss points
   } // end loop over integration cells
   return area_fict / area_ele;
@@ -441,15 +441,15 @@ vector<double> DomainCoverageRatioPerNodeT(
   const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
   double area_ele  = 0.0;
   vector<double> portions(numnode,0.0);
-  
+
   // information about domain integration cells
   const GEO::DomainIntCells&  domainIntCells(ih.GetDomainIntCells(&ele));
   // loop over integration cells
   for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
   {
-    const LINALG::Matrix<3,1> cellcenter(cell->GetPhysicalCenterPosition());          
+    const LINALG::Matrix<3,1> cellcenter(cell->GetPhysicalCenterPosition());
     const int label = ih.PositionWithinConditionNP(cellcenter);
-    
+
     DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule3D_undefined;
     switch (cell->Shape())
     {
@@ -471,7 +471,7 @@ vector<double> DomainCoverageRatioPerNodeT(
       default:
         dserror("add your element type here...");
     }
-    
+
     // gaussian points
     const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
 
@@ -488,25 +488,25 @@ vector<double> DomainCoverageRatioPerNodeT(
       LINALG::Matrix<3,1> posXiDomain;
       GEO::mapEtaToXi3D<XFEM::xfem_assembly>(*cell, pos_eta_domain, posXiDomain);
       const double detcell = GEO::detEtaToXi3D<XFEM::xfem_assembly>(*cell, pos_eta_domain);
-      
+
       // shape functions and their first derivatives
       LINALG::Matrix<numnode,1> funct;
       DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
 
       const double fac = intpoints.qwgt[iquad]*detcell;
-      
+
       area_ele += fac;
-      
+
       if (label == 0)
         for (int inode = 0;inode < numnode;++inode)
           portions[inode] += funct(inode) * fac;
-        
+
     } // end loop over gauss points
   } // end loop over integration cells
 
   for(int inode = 0; inode < numnode; ++inode)
-    portions[inode] /= area_ele;    
-  
+    portions[inode] /= area_ele;
+
   return portions;
 }
 
@@ -546,12 +546,12 @@ template <DRT::Element::DiscretizationType DISTYPE>
         )
 {
   static const Epetra_BLAS blas;
-  
+
   double area_fict = 0.0;
-  
+
   // information about boundary integration cells
   const GEO::BoundaryIntCells& boundaryIntCells = ih.GetBoundaryIntCells(ele.Id());
-  
+
   double base_area = 0.0;
   if (DISTYPE == DRT::Element::tet10 or DISTYPE == DRT::Element::tet4)
   {
@@ -565,11 +565,11 @@ template <DRT::Element::DiscretizationType DISTYPE>
   {
     dserror("think about it. factor at the end of this function needs another values");
   }
-  
+
   // loop over boundary integration cells
   for (GEO::BoundaryIntCells::const_iterator cell = boundaryIntCells.begin(); cell != boundaryIntCells.end(); ++cell)
   {
-    
+
     DRT::UTILS::GaussRule2D gaussrule = DRT::UTILS::intrule2D_undefined;
     switch (cell->Shape())
     {
@@ -581,13 +581,13 @@ template <DRT::Element::DiscretizationType DISTYPE>
     default:
       dserror("add your element type here...");
     }
-    
+
     // gaussian points
     const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule);
-    
+
     const LINALG::SerialDenseMatrix& nodalpos_xi_domain(cell->CellNodalPosXiDomain());
     const int numnode_cell = cell->NumNode();
-    
+
     // integration loop
     for (int iquad=0; iquad<intpoints.nquad; ++iquad)
     {
@@ -595,32 +595,32 @@ template <DRT::Element::DiscretizationType DISTYPE>
       LINALG::Matrix<2,1> pos_eta_boundary;
       pos_eta_boundary(0) = intpoints.qxg[iquad][0];
       pos_eta_boundary(1) = intpoints.qxg[iquad][1];
-      
+
       LINALG::Matrix<3,1> posXiDomain;
       mapEtaBToXiD(*cell, pos_eta_boundary, posXiDomain);
-      
+
       // shape functions and their first derivatives
       LINALG::SerialDenseVector funct_boundary(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
       DRT::UTILS::shape_function_2D(funct_boundary, pos_eta_boundary(0),pos_eta_boundary(1),cell->Shape());
       LINALG::SerialDenseMatrix deriv_boundary(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
       DRT::UTILS::shape_function_2D_deriv1(deriv_boundary, pos_eta_boundary(0),pos_eta_boundary(1),cell->Shape());
-      
+
       // shape functions and their first derivatives
       LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement,1> funct;
       DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
-      
+
       // get jacobian matrix d x / d \xi  (3x2)
       // dxyzdrs = xyze_boundary(i,k)*deriv_boundary(j,k);
       LINALG::Matrix<3,2> dxyzdrs;
       blas.GEMM('N','T',3,2,numnode_cell,1.0,nodalpos_xi_domain.A(),nodalpos_xi_domain.LDA(),deriv_boundary.A(),deriv_boundary.LDA(),0.0,dxyzdrs.A(),dxyzdrs.M());
-      
+
       // compute covariant metric tensor G for surface element (2x2)
       // metric = dxyzdrs(k,i)*dxyzdrs(k,j);
       LINALG::Matrix<2,2> metric;
       metric.MultiplyTN(dxyzdrs,dxyzdrs);
-      
+
       const double detmetric = sqrt(metric.Determinant());
-      
+
       const double fac = intpoints.qwgt[iquad]*detmetric;//*detcell;
       if (fac < 0.0)
       {
@@ -629,12 +629,12 @@ template <DRT::Element::DiscretizationType DISTYPE>
         cout << "fac       = " << fac << endl;
         dserror("negative fac! should be a bug!");
       }
-      
+
       area_fict += fac;
-      
+
     } // end loop over gauss points
   } // end loop over integration cells
-  
+
   // scale result by area of one surface of the volume element
   return area_fict / base_area;
 }
@@ -676,19 +676,19 @@ vector<double> DomainIntCellCoverageRatioT(
 {
   // number of nodes for element
   const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
- 
+
   // information about domain integration cells
   const GEO::DomainIntCells&  domainIntCells(ih.GetDomainIntCells(&ele));
-  
+
   double area_ele  = 0.0;
-  
+
   std::vector<double> portions(domainIntCells.size(),0.0);
-  
+
   // loop over integration cells
   int cellcount = 0;
   for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
   {
-    const LINALG::Matrix<3,1> cellcenter(cell->GetPhysicalCenterPosition()); 
+    const LINALG::Matrix<3,1> cellcenter(cell->GetPhysicalCenterPosition());
     DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule3D_undefined;
     switch (cell->Shape())
     {
@@ -710,7 +710,7 @@ vector<double> DomainIntCellCoverageRatioT(
       default:
         dserror("add your element type here...");
     }
-    
+
     // gaussian points
     const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
 
@@ -727,24 +727,24 @@ vector<double> DomainIntCellCoverageRatioT(
       LINALG::Matrix<3,1> posXiDomain;
       GEO::mapEtaToXi3D<XFEM::xfem_assembly>(*cell, pos_eta_domain, posXiDomain);
       const double detcell = GEO::detEtaToXi3D<XFEM::xfem_assembly>(*cell, pos_eta_domain);
-      
+
       // shape functions and their first derivatives
       LINALG::Matrix<numnode,1> funct;
       DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
-      
+
       const double fac = intpoints.qwgt[iquad]*detcell;
 
       area_ele += fac;
       portions[cellcount] += fac;
-        
+
     } // end loop over gauss points
     cellcount++;
   } // end loop over integration cells
 
   for (std::size_t icell = 0; icell < domainIntCells.size(); ++icell)
     portions[icell] /= area_ele;
-  
-  
+
+
   return portions;
 }
 
@@ -790,7 +790,7 @@ XFEM::AssemblyType XFEM::CheckForStandardEnrichmentsOnly(
   {
     if (assembly_type == XFEM::xfem_assembly)
       break;
-   
+
     const int gid = nodeids[inode];
     const std::set<XFEM::FieldEnr>& fields = eleDofManager.FieldEnrSetPerNode(gid);
     if (fields.size() != 4)
@@ -798,7 +798,7 @@ XFEM::AssemblyType XFEM::CheckForStandardEnrichmentsOnly(
       assembly_type = XFEM::xfem_assembly;
       break;
     }
-    
+
     for (std::set<XFEM::FieldEnr>::const_iterator fieldenr = fields.begin(); fieldenr != fields.end(); ++fieldenr)
       if (fieldenr->getEnrichment().Type() != XFEM::Enrichment::typeStandard)
       {
@@ -806,12 +806,12 @@ XFEM::AssemblyType XFEM::CheckForStandardEnrichmentsOnly(
         break;
       };
   };
-  
+
   const std::size_t eledof = eleDofManager.NumElemDof();
   if (eledof != 0)
     assembly_type = XFEM::xfem_assembly;
-  
-  
+
+
   return assembly_type;
 }
 

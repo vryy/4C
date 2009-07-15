@@ -59,21 +59,21 @@ namespace XFEM
 //        }
       return;
     }
-          
-            
+
+
     //! destructor
     ~DofDistributionSwitcher()
     {
       return;
     }
-    
-    
+
+
     //! switch from old to new dof distribution
     void mapVectorToNewDofDistribution(
         Teuchos::RCP<Epetra_Vector>&     vector
     ) const;
-    
-    
+
+
     //! switch from old to new dof distribution
     void generateTransferInformation(
         const RCP<Epetra_Vector>&     vector
@@ -85,12 +85,12 @@ namespace XFEM
     explicit DofDistributionSwitcher(const XFEM::DofDistributionSwitcher& dofdist);
 
     //! disabled assignment operator
-    DofDistributionSwitcher operator = (const DofDistributionSwitcher& old);    
+    DofDistributionSwitcher operator = (const DofDistributionSwitcher& old);
 
     //! disabled default constructor
     explicit DofDistributionSwitcher();
 
-    
+
     const RCP<XFEM::InterfaceHandle>     ih_;                      ///< interface information
     const RCP<XFEM::DofManager>          dofman_;                  ///< dofmanager for this proc
     const Epetra_Map                     olddofrowmap_;            ///< dofrowmap of the old state vector

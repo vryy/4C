@@ -434,7 +434,7 @@ void XFEM::fillNodalDofKeySet(
       continue;
     }
     const std::set<XFEM::FieldEnr> dofset = entry->second;
-    
+
     std::set<XFEM::FieldEnr>::const_iterator fieldenr;
     for(fieldenr = dofset.begin(); fieldenr != dofset.end(); ++fieldenr )
     {
@@ -621,14 +621,14 @@ void XFEM::createDofMap(
   std::map<int, std::set<XFEM::FieldEnr> >  elementalDofs;
 
   // get list of coupling label
-  const std::set<int> labels = ih.GetAvailableBoundaryLabels(); 
+  const std::set<int> labels = ih.GetAvailableBoundaryLabels();
 
   const double volumeRatioLimit = params.get<double>("volumeRatioLimit");
   const double boundaryRatioLimit = params.get<double>("boundaryRatioLimit");
-  
+
   int skipped_node_enr_count = 0;
   int skipped_elem_enr_count = 0;
-  
+
   // loop condition labels
   for(std::set<int>::const_iterator labeliter = labels.begin(); labeliter!=labels.end(); ++labeliter)
   {
@@ -641,15 +641,15 @@ void XFEM::createDofMap(
       // add discontinuous stress unknowns
       // the number of each of these parameters will be determined later
       // by using a discretization type and appropriate shape functions
-      map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz; 
+      map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz;
       if (not params.get<bool>("DLM_condensation"))
       {
         element_ansatz = elementAnsatz.getElementAnsatz(xfemele->Shape());
       }
-      
+
       bool skipped_node_enr = false;
       bool skipped_elem_enr = false;
-      
+
       XFEM::ApplyVoidEnrichmentForElement(
           xfemele, element_ansatz, ih, label, fieldset,
           volumeRatioLimit, boundaryRatioLimit,
@@ -668,13 +668,13 @@ void XFEM::createDofMap(
 
   cout << " skipped node unknowns for "<< skipped_node_enr_count << " elements (volumeratio limit:   " << std::scientific << volumeRatioLimit   << ")" << endl;
   cout << " skipped elem unknowns for "<< skipped_elem_enr_count << " elements (boundaryratio limit: " << std::scientific << boundaryRatioLimit << ")" << endl;
-  
+
   XFEM::applyStandardEnrichmentNodalBasedApproach(ih, fieldset, nodalDofSet);
-  
+
 //#ifdef PARALLEL
 //  syncNodalDofs(ih, nodalDofSet);
 //#endif
-  
+
   // create const sets from standard sets, so the sets cannot be accidently changed
   // could be removed later, if this is a performance bottleneck
   for ( std::map<int, std::set<XFEM::FieldEnr> >::const_iterator oneset = nodalDofSet.begin(); oneset != nodalDofSet.end(); ++oneset )
@@ -779,7 +779,7 @@ void XFEM::createDofMapCombust(
           const int nodeid = nodeidptrs[inode];
           std::set<XFEM::FieldEnr> nodeenrset = nodeDofMap[nodeid];
           for (std::set<XFEM::FieldEnr>::const_iterator nodeenr = nodeenrset.begin();nodeenr != nodeenrset.end();++nodeenr)
-          std::cout << "Angereichertes Feld " << physVarToString(nodeenr->getField()) << "Anreicherungstyp " << nodeenr->getEnrichment().toString() <<  std::endl;      	  
+          std::cout << "Angereichertes Feld " << physVarToString(nodeenr->getField()) << "Anreicherungstyp " << nodeenr->getEnrichment().toString() <<  std::endl;      	
         }
 */
         // in case there are enriched element dofs they have to be applied now   henke 04/09

@@ -24,7 +24,7 @@ namespace PHYSICS
 
 /*!
  * \brief unique name of a physical field / primary unknown
- * 
+ *
  * If one has, for instance pressure at nodes AND element level, one has to define to distinct names for that purpose
  * like Pres and PresEle
  *

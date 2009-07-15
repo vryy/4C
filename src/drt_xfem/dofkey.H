@@ -22,15 +22,15 @@ Maintainer: Axel Gerstenberger
 
 namespace XFEM
 {
-  
+
   //! A DofType to distinguish between nodal and elemental dofs
   enum DofType
   {
     onNode,
     onElem
   };
-  
-  
+
+
   //! create a string from the DofType enum
   inline std::string dofTypeToString(DofType t)
   {
@@ -43,8 +43,8 @@ namespace XFEM
         exit(1);
     }
   }
-  
-  
+
+
   /*!
    * \brief A unique identifier for a degree of freedom (DOF)
    *
@@ -84,7 +84,7 @@ namespace XFEM
         Unpack(data);
         return;
       }
-          
+
       //! copy constructor
       DofKey(
           const DofKey& other           ///< source
@@ -92,12 +92,12 @@ namespace XFEM
         DRT::ParObject(other),
         fieldenr_(other.fieldenr_),
         gid_(other.gid_)
-        
+
       {
           assert(&other != this);
           return;
       }
-     
+
       //! return string representation of this class
       std::string toString() const
       {
@@ -105,7 +105,7 @@ namespace XFEM
         s << "Dofkey: [" << dofTypeToString(doftype) << " " << setw(3) << gid_ << ", " << fieldenr_.toString() << "]";
         return s.str();
       };
-      
+
       virtual int UniqueParObjectId() const { return ParObject_DofKey;}
 
       //! pack all content to char array
@@ -121,7 +121,7 @@ namespace XFEM
         const XFEM::Enrichment::EnrType enrtype = fieldenr_.getEnrichment().Type();
         AddtoPack(data,enrtype);
       }
-      
+
       //! unpack all content from char array
       virtual void Unpack(const vector<char>& data)
       {
@@ -130,43 +130,43 @@ namespace XFEM
         int type = 0;
         ExtractfromPack(position,data,type);
         if (type != UniqueParObjectId()) dserror("wrong instance type data");
-        
+
         ExtractfromPack(position,data,gid_);
-        
+
         // read field
         PHYSICS::Field field;
         ExtractfromPack(position,data,field);
-        
+
         // read xfem condition label
         int label;
         ExtractfromPack(position,data,label);
-        
+
         // read enrichment type
         XFEM::Enrichment::EnrType enrtype;
         ExtractfromPack(position,data,enrtype);
-        
+
         // check correct reading
         if (position != (int)data.size())
           dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
-        
+
         // create my enriched field
         fieldenr_ = FieldEnr(field,Enrichment(label,enrtype));
-        
+
         return;
       }
-      
+
       //! return global node or element Id
       int getGid() const
       {
         return gid_;
       };
-      
+
       //! return enriched field
       const FieldEnr& getFieldEnr() const
       {
         return fieldenr_;
       };
-      
+
       //! compare: dofkeys are ordered first by the global id and then by their enrichment
       bool operator <(const DofKey& rhs) const
       {
@@ -182,7 +182,7 @@ namespace XFEM
             return false;
         }
       }
-      
+
       //! test for equality: only equal, if gid and enriched field are identical
       bool operator ==(const DofKey& rhs) const
       {
@@ -191,7 +191,7 @@ namespace XFEM
         else
           return false;
       }
-      
+
       //! test for inequality: if any member differs, the objects are not equal
       bool operator !=(const DofKey& rhs) const
       {
@@ -201,18 +201,18 @@ namespace XFEM
         else
           return false;
       }
-      
+
       friend ostream& operator<<(ostream& out, const DofKey& key)
       {
         out << key.toString();
         return out;
       }
-      
+
     private:
-      
+
       //! don't want default constructor
       explicit DofKey();
-      
+
       //! no assignment operator implemented
       DofKey& operator = (const DofKey& old);
       //    :
@@ -222,18 +222,18 @@ namespace XFEM
       //        dserror("DofKey() -> please don't call me!");
       //        return;
       //    }
-      
+
       //! specific enriched field
       XFEM::FieldEnr  fieldenr_;
-      
+
       //! unique id among the choosen type of dof (for example: nodal global id)
       int             gid_;
-      
+
   };
-  
+
   //! global Position in Epetra vector
   typedef int DofGID;
-  
+
 } // namespace XFEM
 
 #endif  // #ifndef DOFKEY_H

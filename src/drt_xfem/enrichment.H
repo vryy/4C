@@ -1,6 +1,6 @@
 /*!
  * \file enrichment.H
- * 
+ *
  * \brief describes the enrichment class
  *
  * <pre>
@@ -24,13 +24,13 @@ namespace XFEM
 
   /*!
    * \brief Corresponds to a specific enrichment with unique id and type
-   * 
+   *
    * Implements a tuple of (iface_label, enrtype) and is sorted in that order
    */
   class Enrichment
   {
     public:
-      
+
       /*! Various kinds of enrichments, which differ in the way,
        *  the enrichment function is evaluated
        */
@@ -42,7 +42,7 @@ namespace XFEM
         typeVoid,      ///< void enrichment - Heaviside function from +1 (in Omega+) to  0 (in Omega-)
         typeKink       ///< kink enrichment - TODO: discription missing
       };
-      
+
       /*!
        * we want to be able to say, whether we approach from a particular side towards the discontinuity
        * this makes sense for jump or kink enrichments,
@@ -54,7 +54,7 @@ namespace XFEM
         approachFromPlus,  ///<  we are coming from Omega+ \note there is a check needed, whether we are in the fluid ore not!!! thin structures will cause problems here!!!!!!
         approachFromMinus  ///<  we are coming from Omega-
       };
-      
+
       //! default constructor
       explicit Enrichment(
       ) :
@@ -64,7 +64,7 @@ namespace XFEM
       //dserror("Enrichment() -> please don't call me!");
       return;
       }
-      
+
       //! constructor
       explicit Enrichment(
           const int      xfemconditionlabel,   ///< unique label identifying the xfem interface
@@ -75,7 +75,7 @@ namespace XFEM
       {
         return;
       }
-          
+
       //! copy constructor
       Enrichment(
           const Enrichment& other
@@ -86,28 +86,28 @@ namespace XFEM
         assert(&other != this);
         return;
       }
-          
+
       //!assignment operator
       Enrichment& operator = (const Enrichment& old) ;
-      
+
       //! return string representation of the Enrichment
       std::string toString() const;
-      
+
       //! return string representation of an EnrType
       std::string enrTypeToString(const EnrType type) const;
-      
+
       //! return label of the condition that this enrichment belongs to
       int XFEMConditionLabel() const
       {
         return xfemconditionlabel_;
       };
-              
+
       //! return type of enrichment
       EnrType Type() const
       {
         return type_;
       };
-      
+
       //! comparison operator
       bool operator ==(const Enrichment& rhs) const
       {
@@ -116,7 +116,7 @@ namespace XFEM
         else
           return false;
       };
-      
+
       //! (redundant?) not equal operator
       bool operator !=(const Enrichment& rhs) const
       {
@@ -126,7 +126,7 @@ namespace XFEM
         else
           return false;
       }
-              
+
       /*! less than operator
        *  Enrichments are ordered first by their condition label, then by type
        */
@@ -159,7 +159,7 @@ namespace XFEM
 
       /*!
        * \brief get enrichment value at node using the level set function
-       * 
+       *
        * \author henke 07/09
        */
       template<class V1>
@@ -210,7 +210,7 @@ namespace XFEM
 
       /*!
        * \brief get enrichment value at (Gauss) point using the level set function
-       * 
+       *
        * \author henke 07/09
        */
       template<class V1>
@@ -289,7 +289,7 @@ namespace XFEM
 
       /*!
        * \brief get derivative of enrichment value at (Gauss) point
-       * 
+       *
        * \autor rasthofer 06/09
        */
       template<class V1, class M1>
@@ -355,7 +355,7 @@ namespace XFEM
 
       /*!
        * \brief get second derivative of enrichment value at (Gauss) point
-       * 
+       *
        * \author rasthofer 06/09
        */
       template<class V1, class M2>
@@ -430,13 +430,13 @@ namespace XFEM
       ) const;
 
     private:
-      
+
       //! a global id used to distuinguish several surfaces within one element
       int xfemconditionlabel_;
       //! the specific type of enrichment
       EnrType type_;
   };
-  
+
 }
 
 

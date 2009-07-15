@@ -28,7 +28,7 @@ Maintainer: Axel Gerstenberger
 /*----------------------------------------------------------------------*
  | ASSIGNMENT OPERATOR                                       u.may 04/09|
  *----------------------------------------------------------------------*/
-XFEM::Enrichment& XFEM::Enrichment::operator = (const XFEM::Enrichment& old) 
+XFEM::Enrichment& XFEM::Enrichment::operator = (const XFEM::Enrichment& old)
 {
   xfemconditionlabel_ = old.xfemconditionlabel_;
   type_ = old.type_;
@@ -46,7 +46,7 @@ std::string XFEM::Enrichment::toString() const
     int width = 1;
     if (xfemconditionlabel_ > 9)
       width = 2;
-      
+
     s << "Enr(" << setw(width) << xfemconditionlabel_ << ", " << enrTypeToString(type_) << ")";
     return s.str();
 }
@@ -108,7 +108,7 @@ double XFEM::Enrichment::EnrValue(
                 break;
             }
         }
-        
+
         break;
     }
     case XFEM::Enrichment::typeJump:
@@ -157,7 +157,7 @@ double XFEM::Enrichment::EnrValueIntCell(const GEO::DomainIntCell& cell) const
 {
     //std::cout << "EnrValueIntCell()" << std::endl;
     double enrval = 1.0;
-    
+
     switch (Type())
     {
     case XFEM::Enrichment::typeStandard:
@@ -209,7 +209,7 @@ double XFEM::Enrichment::ModifiedEnrValue(
     dserror("function not in use; needs update for the approach variable");
     // return value
     double enrval = 1.0;
-    
+
     switch (Type()){
     case XFEM::Enrichment::typeStandard:
     {
@@ -224,16 +224,16 @@ double XFEM::Enrichment::ModifiedEnrValue(
         } else {
             actpos_enr_val = 1.0;
         }
-        
+
         double nodepos_enr_val = 0.0;
         if (ih.PositionWithinConditionNP(nodalpos) == this->XFEMConditionLabel()) {
             nodepos_enr_val = 0.0;
         } else {
             nodepos_enr_val = 1.0;
         }
-        
+
         enrval = actpos_enr_val - nodepos_enr_val;
-        
+
         break;
     }
     case XFEM::Enrichment::typeJump:

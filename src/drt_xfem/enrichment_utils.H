@@ -29,12 +29,12 @@ namespace XFEM
    */
   class ElementEnrichmentValues
   {
-    
+
   public:
-    
+
     /*!
     * \brief for each given Enrichment in enrset, compute the enrichment value at actpos
-    * 
+    *
     * if one already knows, an which side of the discontinuity one computes something,
     * the information can be given via approachdirection
     */
@@ -45,12 +45,12 @@ namespace XFEM
         const LINALG::Matrix<3,1>&            actpos,           ///< a 3d position
         const XFEM::Enrichment::ApproachFrom  approachdirection ///< is location with respect to interface is known or not
     );
-    
+
     /*!
      * \brief compute enrichment value for integration cell
-     * 
+     *
      * constructor called for combustion problems (jump enrichment)
-     * 
+     *
      * \author henke 06/09
      */
     template<class V1>
@@ -136,7 +136,7 @@ namespace XFEM
             const M2&                       derxy2
             ) :
               ele_(ele),
-              dofman_(dofman) 
+              dofman_(dofman)
     {
       enrvals_.clear(); // not used for kink enrichment
       enrvalnodes_.clear();
@@ -187,7 +187,7 @@ namespace XFEM
 
     /*!
     * \brief For a given situation compute the enriched shape functions
-    * 
+    *
     * simplest case: jump or void enrichment
     * -> no chain rule, since enrichment function derivative is zero
     * TODO: if enrichment function has derivatives not equal to zero, we need the chain rule here
@@ -201,7 +201,7 @@ namespace XFEM
     {
       const int* nodeids = ele_.NodeIds();
       const std::size_t numnode = ele_.NumNode();
-      
+
       std::size_t dofcounter = 0;
       for (std::size_t inode=0; inode < numnode; ++inode)
       {
@@ -220,10 +220,10 @@ namespace XFEM
       }
       dsassert(dofcounter == dofman_.NumDofPerField(field), "mismatch in information from eledofmanager!");
     }
-    
+
     /*!
     * \brief For a given situation compute the enriched shape functions
-    * 
+    *
     * simplest case: jump or void enrichment
     * -> no chain rule, since enrichment function derivative is zero
     * TODO: if enrichment function has derivatives not equal to zero, we need the chain rule here
@@ -239,7 +239,7 @@ namespace XFEM
     {
       const int* nodeids = ele_.NodeIds();
       const std::size_t numnode = ele_.NumNode();
-      
+
       std::size_t dofcounter = 0;
       for (std::size_t inode=0; inode < numnode; ++inode)
       {
@@ -262,10 +262,10 @@ namespace XFEM
       }
       dsassert(dofcounter == dofman_.NumDofPerField(field), "mismatch in information from eledofmanager!");
     }
-    
+
     /*!
     * \brief For a given situation compute the enriched shape functions
-    * 
+    *
     * simplest case: jump or void enrichment
     * -> no chain rule, since enrichment function derivative is zero
     * TODO: if enrichment function has derivatives not equal to zero, we need the chain rule here
@@ -283,7 +283,7 @@ namespace XFEM
     {
       const int* nodeids = ele_.NodeIds();
       const std::size_t numnode = ele_.NumNode();
-      
+
       std::size_t dofcounter = 0;
       for (std::size_t inode=0; inode < numnode; ++inode)
       {
@@ -313,9 +313,9 @@ namespace XFEM
 
     /*!
      * \brief For a given situation compute the enriched shape functions for kink enrichment
-     * 
+     *
      * due to the kink enrichment, the chain rule is applied here
-     * 
+     *
      * \author henke (rasthofer) 06/09
      */
     template<class VI, class MI1, class MI2, class VO, class MO1, class MO2 >
@@ -331,14 +331,14 @@ namespace XFEM
     {
       const int* nodeids = ele_.NodeIds();
       const std::size_t numnode = ele_.NumNode();
-      
+
       std::size_t dofcounter = 0;
       for (std::size_t inode=0; inode < numnode; ++inode)
       {
         const int gid = nodeids[inode];
         const std::set<XFEM::FieldEnr>& enrfieldset = dofman_.FieldEnrSetPerNode(gid);
         const std::map<XFEM::Enrichment, double> enrvalues = enrvalnodes_.find(inode)->second;
-        
+
         for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
           enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
         {
@@ -347,15 +347,15 @@ namespace XFEM
             const double enrval = enrvalues.find(enrfield->getEnrichment())->second;
             const std::vector<double> enrvalderxy = enrvalderxy_.find(enrfield->getEnrichment())->second;
             const std::vector<double> enrvalderxy2 = enrvalderxy2_.find(enrfield->getEnrichment())->second;
-            
+
             enr_funct(dofcounter) = funct(inode) * enrval;
-            
+
             for (std::size_t isd = 0; isd < 3; ++isd)
             {
               //product rule
               enr_derxy(isd,dofcounter) = derxy(isd,inode) * enrval + funct(inode) * enrvalderxy[isd];
             }
-            
+
 //            for (std::size_t isd = 0; isd < 6; ++isd)
 //            {
 //              //product rule
@@ -378,7 +378,7 @@ namespace XFEM
 
     /*!
     * \brief For a given situation compute the enriched shape functions
-    * 
+    *
     * simplest case: jump or void enrichment
     * -> no chain rule, since enrichment function derivative is zero
     * TODO: if enrichment function has derivatives not equal to zero, we need the chain rule here
@@ -391,7 +391,7 @@ namespace XFEM
     ) const
     {
       std::size_t dofcounter = 0;
-      
+
       const std::set<XFEM::FieldEnr>& enrfieldset(dofman_.getEnrichedFieldsPerEleField(field));
       const DRT::Element::DiscretizationType distype = dofman_.getDisTypePerField(field);
       const std::size_t numvirtualnode = DRT::UTILS::getNumberOfElementNodes(distype);
@@ -408,10 +408,10 @@ namespace XFEM
       }
       dsassert(dofcounter == dofman_.NumDofPerField(field), "mismatch in information from eledofmanager!");
     }
-    
+
     /*!
     * \brief For a given situation compute the enriched shape functions
-    * 
+    *
     * simplest case: jump or void enrichment
     * -> no chain rule, since enrichment function derivative is zero
     * TODO: if enrichment function has derivatives not equal to zero, we need the chain rule here
@@ -426,7 +426,7 @@ namespace XFEM
     ) const
     {
       std::size_t dofcounter = 0;
-      
+
       const std::set<XFEM::FieldEnr>& enrfieldset(dofman_.getEnrichedFieldsPerEleField(field));
       const DRT::Element::DiscretizationType distype = dofman_.getDisTypePerField(field);
       const std::size_t numvirtualnode = DRT::UTILS::getNumberOfElementNodes(distype);
@@ -447,18 +447,18 @@ namespace XFEM
       }
       dsassert(dofcounter == dofman_.NumDofPerField(field), "mismatch in information from eledofmanager!");
     }
-    
+
   private:
-    
+
     //! don't want copy constructor
     explicit ElementEnrichmentValues(const ElementEnrichmentValues&);
-    
+
     //! don't want assignement operator
     ElementEnrichmentValues& operator = (const ElementEnrichmentValues& old);
-    
+
     //! don't want default constructor
     explicit ElementEnrichmentValues();
-    
+
     const DRT::Element&                        ele_;
     //  const RCP<XFEM::InterfaceHandle>           ih_;
     const XFEM::ElementDofManager&             dofman_;
@@ -532,10 +532,10 @@ void computeVectorCellNodeValues(
   LINALG::SerialDenseMatrix&     cellvalues
   );
 
-/*! 
+/*!
  * \brief calculates the fraction of an element that is covered by fictitious domains.
  * \warning should be done separately for each enrichment, but currently it's not done
- * 
+ *
  * \return ration between fictitious volume and element volume (can be between 0.0 and 1.0)
  */
 double DomainCoverageRatio(
@@ -543,10 +543,10 @@ double DomainCoverageRatio(
     const XFEM::InterfaceHandle&  ih             ///< interface information
     );
 
-/*! 
+/*!
  * \brief calculates the fraction of an element that is covered by fictitious domains.
  * \warning should be done separately for each enrichment, but currently it's not done
- * 
+ *
  * \return ratio between fictitious volume and element volume (can be between 0.0 and 1.0)
  */
 std::vector<double> DomainCoverageRatioPerNode(
@@ -554,7 +554,7 @@ std::vector<double> DomainCoverageRatioPerNode(
     const XFEM::InterfaceHandle&  ih             ///< interface information
     );
 
-/*! 
+/*!
  * \brief calculates the area fraction of an element that is covered by fictitious domains.
  * \warning should be done separately for each enrichment, but currently it's not done
  */
@@ -563,9 +563,9 @@ double BoundaryCoverageRatio(
     const XFEM::InterfaceHandle&  ih             ///< interface information
     );
 
-/*! 
+/*!
  * \brief calculates the volume fraction for each cell of an element .
- * 
+ *
  * \return ratio between cell volume and element volume (can be between 0.0 and 1.0)
  */
 std::vector<double> DomainIntCellCoverageRatio(
@@ -592,7 +592,7 @@ inline std::size_t getNumParam(
 {
     return dofman.NumDofPerField(field);
 }
-template<> 
+template<>
 inline std::size_t getNumParam<XFEM::standard_assembly>(
         const XFEM::ElementDofManager&,
         const XFEM::PHYSICS::Field,
@@ -619,7 +619,7 @@ template<std::size_t NUMNODE> struct NumParam<NUMNODE,XFEM::standard_assembly>
 {
   static std::size_t get(
       const XFEM::ElementDofManager& ,
-      const XFEM::PHYSICS::Field     
+      const XFEM::PHYSICS::Field
       )
   {
     return NUMNODE;

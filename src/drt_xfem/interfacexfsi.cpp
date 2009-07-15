@@ -44,19 +44,19 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
 {
   if (cutterdis == Teuchos::null)
     dserror("We need a real boundary discretization here!");
-      
+
   if (xfemdis->Comm().MyPID() == 0)
     std::cout << "Constructing InterfaceHandle" << std::endl;
-      
+
   FillCurrentCutterPositionMap(cutterdis, *cutterdis->GetState("idispcolnp"), cutterposnp_);
   FillCurrentCutterPositionMap(cutterdis, *cutterdis->GetState("idispcoln") , cutterposn_ );
   currentXAABBs_ = GEO::getCurrentXAABBs(*cutterdis, cutterposnp_);
-  
+
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
   const bool gmshdebugout = (bool)getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
 
   const bool screen_out = false;
-  
+
   const int myrank = xfemdis_->Comm().MyPID();
 
   if (gmshdebugout)
@@ -79,19 +79,19 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
   // collect elements by xfem label for tree and invert
   DRT::UTILS::CollectElementsByConditionLabel(*cutterdis, boundaryElementsByLabel_, "XFEMCoupling");
   InvertElementsPerLabel();
-  
+
   if(cutterdis_->NumMyColElements()!=0)
   {
     Teuchos::RCP<GEO::Intersection> is = rcp(new GEO::Intersection());
-    is->computeIntersection(xfemdis, cutterdis, cutterposnp_, currentXAABBs_, elementalDomainIntCells_, elementalBoundaryIntCells_, labelPerBoundaryElementId_);  
+    is->computeIntersection(xfemdis, cutterdis, cutterposnp_, currentXAABBs_, elementalDomainIntCells_, elementalBoundaryIntCells_, labelPerBoundaryElementId_);
     is = Teuchos::null;
   }
-  
-  
+
+
   xfemdis->Comm().Barrier();
-   
+
   PrintStatistics();
-  
+
   const LINALG::Matrix<3,2> cutterAABBnp = GEO::getXAABBofDis(*cutterdis,cutterposnp_);
   const LINALG::Matrix<3,2> cutterAABBn = GEO::getXAABBofDis(*cutterdis,cutterposn_);
   const LINALG::Matrix<3,2> cutterAABB = GEO::mergeAABB(cutterAABBn, cutterAABBnp);
@@ -100,9 +100,9 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
 
   octTreenp_->initializeTree(AABB, boundaryElementsByLabel_, GEO::TreeType(GEO::OCTTREE));
   octTreen_->initializeTree(AABB, boundaryElementsByLabel_, GEO::TreeType(GEO::OCTTREE));
-  
+
   ClassifyIntegrationCells();
- 
+
   GenerateSpaceTimeLayer(cutterdis_, cutterposnp_, cutterposn_);
 
   xfemdis->Comm().Barrier();
@@ -110,7 +110,7 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
     cout << "Interfacehandle constructed" << endl;
 }
 
-    
+
 
 /*----------------------------------------------------------------------*
  * destructor
@@ -131,7 +131,7 @@ void XFEM::InterfaceHandleXFSI::FillCurrentCutterPositionMap(
     ) const
 {
   currentcutterpositions.clear();
-  
+
   for (int lid = 0; lid < cutterdis->NumMyColNodes(); ++lid)
   {
     const DRT::Node* node = cutterdis->lColNode(lid);
@@ -141,7 +141,7 @@ void XFEM::InterfaceHandleXFSI::FillCurrentCutterPositionMap(
     DRT::UTILS::ExtractMyValues(idispcol,mydisp,lm);
     if (mydisp.size() != 3)
       dserror("we need 3 displacements here");
-    
+
     LINALG::Matrix<3,1> currpos;
     currpos(0) = node->X()[0] + mydisp[0];
     currpos(1) = node->X()[1] + mydisp[1];
@@ -184,14 +184,14 @@ void XFEM::InterfaceHandleXFSI::ClassifyIntegrationCells()
       ele_to_delete.insert(xfemele->Id());
     }
   }
-  
+
   // remove malicious entries from both maps
   for (std::set<int>::const_iterator eleid = ele_to_delete.begin(); eleid != ele_to_delete.end(); ++eleid)
   {
     elementalDomainIntCells_.erase(*eleid);
     elementalBoundaryIntCells_.erase(*eleid);
   }
- 
+
   return;
 }
 
@@ -209,7 +209,7 @@ void XFEM::InterfaceHandleXFSI::TestDomainIntCells() const
     const GEO::DomainIntCells cells = entry->second;
     const DRT::Element* xfemele = xfemdis_->gElement(entry->first);
     double cellFillFactor = 0.0;
-    
+
     for (GEO::DomainIntCells::const_iterator cell = cells.begin(); cell != cells.end(); ++cell)
       cellFillFactor += cell->VolumeInXiDomain(*xfemele);
 
@@ -229,7 +229,7 @@ void XFEM::InterfaceHandleXFSI::TestDomainIntCells() const
 int XFEM::InterfaceHandleXFSI::PositionWithinConditionNP(
     const LINALG::Matrix<3,1>&        x_in) const
 {
-  
+
   TEUCHOS_FUNC_TIME_MONITOR(" - search - InterfaceHandle::PositionWithinConditionNP");
   return octTreenp_->queryXFEMFSIPointType(*(cutterdis_), cutterposnp_, currentXAABBs_, x_in);
 }
@@ -241,7 +241,7 @@ int XFEM::InterfaceHandleXFSI::PositionWithinConditionNP(
 int XFEM::InterfaceHandleXFSI::PositionWithinConditionN(
     const LINALG::Matrix<3,1>&        x_in) const
 {
-  
+
   TEUCHOS_FUNC_TIME_MONITOR(" - search - InterfaceHandle::PositionWithinConditionN");
   return octTreen_->queryXFEMFSIPointType(*(cutterdis_), cutterposn_, currentXAABBs_, x_in);
 }
@@ -279,7 +279,7 @@ void XFEM::InterfaceHandleXFSI::GenerateSpaceTimeLayer(
     const std::map<int,LINALG::Matrix<3,1> >&           cutterposnp,
     const std::map<int,LINALG::Matrix<3,1> >&           cutterposn)
 {
- 
+
   for (int i=0; i<cutterdis->NumMyColElements(); ++i)
   {
     const DRT::Element* cutterele = cutterdis->lColElement(i);
@@ -309,7 +309,7 @@ void XFEM::InterfaceHandleXFSI::GenerateSpaceTimeLayer(
     stlayer_.insert(make_pair(cutterele->Id(),XFEM::SpaceTimeBoundaryCell(cutterele->Id(),cutterele->Shape(),posnp,posn)));
     //cout << "XFEM::SpaceTimeBoundaryCell" << slab.getBeleId() << endl;
   }
-  
+
   return;
 }
 
@@ -336,11 +336,11 @@ bool XFEM::InterfaceHandleXFSI::FindSpaceTimeLayerCell(
     {
       stcell = XFEM::SpaceTimeBoundaryCell(slabitem);
 //      cout << "slabitem " << slabitem.toString() << endl;
-      rst = xsi;    
+      rst = xsi;
       return true;
     }
   }
-  
+
 //  if (not in_spacetimecell)
 //  {
 //    dserror("should be in one space time cell");
@@ -359,7 +359,7 @@ void XFEM::InterfaceHandleXFSI::PrintStatistics() const
 
   // loop intersected elements and count intcells
   const std::size_t numintersectedele = elementalDomainIntCells_.size();
-  
+
   if (numintersectedele > 0)
   {
     std::size_t numcells = 0;
@@ -383,13 +383,13 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
 {
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
   const bool gmshdebugout = (bool)getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
-  
+
   const bool screen_out = false;
-  
+
   const bool gmsh_tree_output = false;
-  
+
   const int myrank = xfemdis_->Comm().MyPID();
-  
+
   if (gmshdebugout)
   {
     // debug: write both meshes to file in Gmsh format
@@ -405,7 +405,7 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
     f_system.close();
     if (screen_out) cout << " done" << endl;
   }
-  
+
   if (gmshdebugout)
   {
     std::stringstream filename;
@@ -420,7 +420,7 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
       // stringstream for domains
       stringstream gmshfilecontent;
       gmshfilecontent << "View \" " << "Domains using CellCenter of Elements and Integration Cells \" {" << endl;
-      
+
       for (int i=0; i<xfemdis_->NumMyColElements(); ++i)
       {
         const DRT::Element* actele = xfemdis_->lColElement(i);
@@ -442,7 +442,7 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
     f_system.close();
     if (screen_out) cout << " done" << endl;
   }
-  
+
   if (gmshdebugout) // print space time layer
   {
     std::stringstream filename;
@@ -463,7 +463,7 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
       for (std::map<int,XFEM::SpaceTimeBoundaryCell>::const_iterator slabiter = stlayer_.begin(); slabiter != stlayer_.end(); ++slabiter)
       {
         const XFEM::SpaceTimeBoundaryCell& slabitem = slabiter->second;
-        
+
         gmshfilecontent << IO::GMSH::cellWithScalarFieldToString(DRT::Element::hex8, vals, slabitem.get_xyzt()) << endl;
       }
       gmshfilecontent << "};" << endl;
@@ -472,8 +472,8 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
     f_system.close();
     if (screen_out) cout << " done" << endl;
   }
-  
-  
+
+
   if (gmsh_tree_output)
   {
     // debug: write information about which structure we are in
@@ -489,7 +489,7 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
       // stringstream for cellcenter points
       stringstream gmshfilecontentP;
       gmshfilecontentP << "View \" " << "CellCenter of Elements and Integration Cells \" {" << endl;
-     
+
       for (int i=0; i<xfemdis_->NumMyColElements(); ++i)
       {
         const DRT::Element* actele = xfemdis_->lColElement(i);
@@ -498,15 +498,15 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
         for(cell = elementDomainIntCells.begin(); cell != elementDomainIntCells.end(); ++cell )
         {
           const LINALG::Matrix<3,1> cellcenterpos(cell->GetPhysicalCenterPosition());
-          
+
           //const int domain_id = PositionWithinConditionNP(cellcenterpos);
-          
+
           LINALG::SerialDenseMatrix point(3,1);
           point(0,0)=cellcenterpos(0);
           point(1,0)=cellcenterpos(1);
           point(2,0)=cellcenterpos(2);
 
-          gmshfilecontentP << IO::GMSH::cellWithScalarToString(DRT::Element::point1, (actele->Id()), point) << endl;              
+          gmshfilecontentP << IO::GMSH::cellWithScalarToString(DRT::Element::point1, (actele->Id()), point) << endl;
         };
       };
       gmshfilecontentP << "};" << endl;
@@ -514,11 +514,11 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
     }
     f_systemP.close();
     cout << " done" << endl;
-    
+
     octTreenp_->printTree(DRT::Problem::Instance()->OutputControlFile()->FileName(), step);
     octTreenp_->evaluateTreeMetrics(step);
   }
-  
+
   return;
 }
 
