@@ -7,7 +7,7 @@
 \date 03/06
 */
 #ifndef CCADISCRET
-#ifdef D_THERM2
+#ifdef D_THERM3
 
 /*----------------------------------------------------------------------*/
 /* headers */
