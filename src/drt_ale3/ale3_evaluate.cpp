@@ -690,26 +690,26 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_nurbs27(
 
   //                          v
   //                         /
-  //                        / 
-  //          X---------X---------X      
-  //         /|24      /|25      /|26       
-  //  w     / |       / |       / |       
-  //  ^    /  |      /  |      /  |       
-  //  |   X---------X---------X   |     
-  //  |  /|21 |    /|22 |    /|23 |       
-  //  | / |   X---/-|---X---/-|---X        
-  //   /  |  /|15/  |  /|16/  |  /|17                X---------X   	     
-  //  X---------X---------X   | / |                 /|7       /|6     0,1,3,4   
-  //  |18 |/  | |19 |/  | |20 |/  |                / |       / |      0,1,2,5   
-  //  |   X-----|---X-----|---X   |               /  |      /  |      1,2,3,6   
-  //  |  /|12 | |  /|13 | |  /|14 |              X---------X   |      0,2,3,7   
-  //  | / |   X-|-/-|---X-|-/-|---X              |4  |     |5  |	             
-  //  |/  |  /6 |/  |  /7 |/  |  /8              |   X-----|---X      0,4,5,7   
-  //  X---------X---------X   | /                |  /3     |  /2      1,4,5,6   
-  //  |9  |/    |10 |/    |11 |/    	         | /       | /        2,5,6,7   
-  //  |   X-----|---X-----|---X     	         |/        |/         3,4,6,7   
-  //  |  /3     |  /4     |  /5		         X---------X		     
-  //  | /       | /       | /		          0         1                   
+  //                        /
+  //          X---------X---------X
+  //         /|24      /|25      /|26
+  //  w     / |       / |       / |
+  //  ^    /  |      /  |      /  |
+  //  |   X---------X---------X   |
+  //  |  /|21 |    /|22 |    /|23 |
+  //  | / |   X---/-|---X---/-|---X
+  //   /  |  /|15/  |  /|16/  |  /|17                X---------X   	
+  //  X---------X---------X   | / |                 /|7       /|6     0,1,3,4
+  //  |18 |/  | |19 |/  | |20 |/  |                / |       / |      0,1,2,5
+  //  |   X-----|---X-----|---X   |               /  |      /  |      1,2,3,6
+  //  |  /|12 | |  /|13 | |  /|14 |              X---------X   |      0,2,3,7
+  //  | / |   X-|-/-|---X-|-/-|---X              |4  |     |5  |	
+  //  |/  |  /6 |/  |  /7 |/  |  /8              |   X-----|---X      0,4,5,7
+  //  X---------X---------X   | /                |  /3     |  /2      1,4,5,6
+  //  |9  |/    |10 |/    |11 |/    	         | /       | /        2,5,6,7
+  //  |   X-----|---X-----|---X     	         |/        |/         3,4,6,7
+  //  |  /3     |  /4     |  /5		         X---------X		
+  //  | /       | /       | /		          0         1
   //  |/        |/        |/
   //  X---------X---------X ----->u
   //   0         1         2
@@ -721,91 +721,91 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_nurbs27(
   ale3_add_tetra_stiffness(0, 1, 4,10,sys_mat,xyze);
   ale3_add_tetra_stiffness(1, 4, 3,13,sys_mat,xyze);
   ale3_add_tetra_stiffness(0, 4, 3,12,sys_mat,xyze);
-			             
+			
   ale3_add_tetra_stiffness(0, 9,10,12,sys_mat,xyze);
   ale3_add_tetra_stiffness(1, 9,10,13,sys_mat,xyze);
   ale3_add_tetra_stiffness(4,10,13,12,sys_mat,xyze);
   ale3_add_tetra_stiffness(3, 9,13,12,sys_mat,xyze);
-  
-  // -----------------------------------------------  
+
+  // -----------------------------------------------
 
   ale3_add_tetra_stiffness(1, 2, 4,10,sys_mat,xyze);
   ale3_add_tetra_stiffness(1, 2, 5,11,sys_mat,xyze);
   ale3_add_tetra_stiffness(2, 5, 4,14,sys_mat,xyze);
   ale3_add_tetra_stiffness(1, 5, 4,13,sys_mat,xyze);
-			   	    
+			   	
   ale3_add_tetra_stiffness(1,10,11,13,sys_mat,xyze);
   ale3_add_tetra_stiffness(2,10,11,14,sys_mat,xyze);
   ale3_add_tetra_stiffness(5,11,14,13,sys_mat,xyze);
   ale3_add_tetra_stiffness(4,10,14,13,sys_mat,xyze);
 
-  // -----------------------------------------------  
+  // -----------------------------------------------
 
   ale3_add_tetra_stiffness(4, 5, 7,13,sys_mat,xyze);
   ale3_add_tetra_stiffness(4, 5, 8,14,sys_mat,xyze);
   ale3_add_tetra_stiffness(5, 8, 7,17,sys_mat,xyze);
   ale3_add_tetra_stiffness(4, 8, 7,16,sys_mat,xyze);
-			   	    
+			   	
   ale3_add_tetra_stiffness(4,13,14,16,sys_mat,xyze);
   ale3_add_tetra_stiffness(5,13,14,17,sys_mat,xyze);
   ale3_add_tetra_stiffness(8,14,17,16,sys_mat,xyze);
   ale3_add_tetra_stiffness(7,13,17,16,sys_mat,xyze);
 
-  // -----------------------------------------------  
+  // -----------------------------------------------
 
   ale3_add_tetra_stiffness(3, 4, 6,12,sys_mat,xyze);
   ale3_add_tetra_stiffness(3, 4, 7,13,sys_mat,xyze);
   ale3_add_tetra_stiffness(4, 7, 6,16,sys_mat,xyze);
   ale3_add_tetra_stiffness(3, 7, 6,15,sys_mat,xyze);
-			   	    
+			   	
   ale3_add_tetra_stiffness(3,12,13,15,sys_mat,xyze);
   ale3_add_tetra_stiffness(4,12,13,16,sys_mat,xyze);
   ale3_add_tetra_stiffness(7,13,16,15,sys_mat,xyze);
   ale3_add_tetra_stiffness(6,12,16,15,sys_mat,xyze);
 
-  // -----------------------------------------------  
-  
+  // -----------------------------------------------
+
   ale3_add_tetra_stiffness( 9,10,12,18,sys_mat,xyze);
   ale3_add_tetra_stiffness( 9,10,13,19,sys_mat,xyze);
   ale3_add_tetra_stiffness(10,13,12,22,sys_mat,xyze);
   ale3_add_tetra_stiffness( 9,13,12,21,sys_mat,xyze);
-			   	    
+			   	
   ale3_add_tetra_stiffness( 9,18,19,21,sys_mat,xyze);
   ale3_add_tetra_stiffness(10,18,19,22,sys_mat,xyze);
   ale3_add_tetra_stiffness(13,19,22,21,sys_mat,xyze);
   ale3_add_tetra_stiffness(12,18,22,21,sys_mat,xyze);
 
-  // -----------------------------------------------  
+  // -----------------------------------------------
 
   ale3_add_tetra_stiffness(10,11,13,19,sys_mat,xyze);
   ale3_add_tetra_stiffness(10,11,14,20,sys_mat,xyze);
   ale3_add_tetra_stiffness(11,14,13,23,sys_mat,xyze);
   ale3_add_tetra_stiffness(10,14,13,22,sys_mat,xyze);
-			   	    
+			   	
   ale3_add_tetra_stiffness(10,19,20,22,sys_mat,xyze);
   ale3_add_tetra_stiffness(11,19,20,23,sys_mat,xyze);
   ale3_add_tetra_stiffness(14,20,23,22,sys_mat,xyze);
   ale3_add_tetra_stiffness(13,19,23,22,sys_mat,xyze);
 
-  // -----------------------------------------------  
- 
+  // -----------------------------------------------
+
   ale3_add_tetra_stiffness(13,14,16,22,sys_mat,xyze);
   ale3_add_tetra_stiffness(13,14,17,23,sys_mat,xyze);
   ale3_add_tetra_stiffness(14,17,16,26,sys_mat,xyze);
   ale3_add_tetra_stiffness(13,17,16,25,sys_mat,xyze);
-			   	    
+			   	
   ale3_add_tetra_stiffness(13,22,23,25,sys_mat,xyze);
   ale3_add_tetra_stiffness(14,22,23,26,sys_mat,xyze);
   ale3_add_tetra_stiffness(17,23,26,25,sys_mat,xyze);
   ale3_add_tetra_stiffness(16,22,26,25,sys_mat,xyze);
 
-  // -----------------------------------------------  
+  // -----------------------------------------------
 
   ale3_add_tetra_stiffness(12,13,15,21,sys_mat,xyze);
   ale3_add_tetra_stiffness(12,13,16,22,sys_mat,xyze);
   ale3_add_tetra_stiffness(13,16,15,25,sys_mat,xyze);
   ale3_add_tetra_stiffness(12,16,15,24,sys_mat,xyze);
-			   	    
+			   	
   ale3_add_tetra_stiffness(12,21,22,24,sys_mat,xyze);
   ale3_add_tetra_stiffness(13,21,22,25,sys_mat,xyze);
   ale3_add_tetra_stiffness(16,22,25,24,sys_mat,xyze);
@@ -1281,7 +1281,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke(
     DRT::NURBS::NurbsDiscretization* nurbsdis
       =
       dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(dis));
-    
+
     (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,ele->Id());
 
     for (int inode=0; inode<iel; ++inode)
@@ -1289,7 +1289,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke(
       DRT::NURBS::ControlPoint* cp
         =
         dynamic_cast<DRT::NURBS::ControlPoint* > (ele->Nodes()[inode]);
-      
+
       weights(inode) = cp->W();
     }
   }
@@ -1314,7 +1314,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke(
     const double e1 = intpoints.qxg[iquad][0];
     const double e2 = intpoints.qxg[iquad][1];
     const double e3 = intpoints.qxg[iquad][2];
-    
+
 
     // get values of shape functions and derivatives in the gausspoint
     if(distype != DRT::Element::nurbs8
