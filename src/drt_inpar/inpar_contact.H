@@ -41,7 +41,7 @@ namespace INPAR
       friction_tresca,  ///< Tresca friction law
       friction_coulomb  ///< Coulomb friction law
     };
-    
+
     /// Type of contact search algorithm
     /// (this enum represents the input file parameter SEARCH_ALGORITHM)
     enum ContactSearchAlgorithm

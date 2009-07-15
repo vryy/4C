@@ -40,7 +40,7 @@ namespace INPAR
       dyna_centr_diff,                 ///< central differences (explicit)
       dyna_Gen_EMM,                    ///< generalised energy-momentum method
       dyna_statics,                    ///< static analysis
-      dyna_genalpha,                   ///< generalised-alpha time integrator, 
+      dyna_genalpha,                   ///< generalised-alpha time integrator,
                                        ///< new style (implicit)
       dyna_onesteptheta,               ///< one-step-theta time integrator (implicit)
       dyna_gemm,                       ///< generalised energy-momementum method
@@ -107,8 +107,8 @@ namespace INPAR
     enum MidAverageEnum
     {
       midavg_vague = 0,  ///< undefined mid-averaging type
-      midavg_imrlike,  ///< alphaf-mid-averaging is done IMR-like, i.e. 
-                       ///< \f$F_{int,m}\f$ 
+      midavg_imrlike,  ///< alphaf-mid-averaging is done IMR-like, i.e.
+                       ///< \f$F_{int,m}\f$
                        ///< \f$= F_{int}(D_m)\f$
                        ///< \f$= F_{int}( (1-\alpha_f)*D_{n+1} + \alpha_f*D_n )\f$
                        ///< (IMR means implicit mid-point rule.)
@@ -131,9 +131,9 @@ namespace INPAR
       soltech_newtonfull,  ///< full Newton-Raphson iteration
       soltech_newtonls,  ///< line search Newton-Raphson
       soltech_newtonmod,  ///< modified Newton-Raphson iteration
-      soltech_newtonuzawalin,  ///< linear Uzawa iteration for 
+      soltech_newtonuzawalin,  ///< linear Uzawa iteration for
                                ///< constraint system
-      soltech_newtonuzawanonlin,  ///< non-linear Uzawa iteration 
+      soltech_newtonuzawanonlin,  ///< non-linear Uzawa iteration
                                   ///< for constraint system
       soltech_nlncg,  ///< nonlinear CG iteration using Nox
       soltech_ptc,  ///< pseudo transient continuation nonlinear iteration
@@ -191,7 +191,7 @@ namespace INPAR
     {
       pred_vague,  ///< undetermined
       pred_constdis,  ///< constant displacements
-      pred_constdisvelacc,  ///< constant displacements, 
+      pred_constdisvelacc,  ///< constant displacements,
                            ///< velocities and accelerations
       pred_tangdis, ///< linearised solution obeying DBC displacements via tangent
                     ///< D_{n+1}^{<0>} = D_{n} + Ktang_{n,eff}^{-1} . (- Ktang_{n} . (D_{n+1}^{DBC} - D_{n}))
@@ -199,7 +199,7 @@ namespace INPAR
                     ///< the inverse of Ktan_{n} due to the application of the
                     ///< Dirichlet BCs (i.e. the reduction to the test space).
       pred_constdispres,  ///< constant displacements and pressure
-      pred_constdisvelaccpres  ///< constant displacements, 
+      pred_constdisvelaccpres  ///< constant displacements,
                            ///< velocities and accelerations
                            ///< and pressures
     };
@@ -302,18 +302,18 @@ namespace INPAR
     /// type of norm to check for convergence
     enum ConvNorm
     {
-      convnorm_abs,         ///< absolute norm 
+      convnorm_abs,         ///< absolute norm
       convnorm_rel,         ///< relative norm
       convnorm_mix         ///< mixed absolute-relative norm
     };
-    
+
     /// type of norm to check for convergence
     enum BinaryOp
     {
-      bop_or,         ///<  or 
+      bop_or,         ///<  or
       bop_and         ///<  and
     };
-    
+
     //@}
 
     /// @name Constraints (global, geometric)

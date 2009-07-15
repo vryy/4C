@@ -343,7 +343,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                                                        Teuchos::tuple<std::string>("default","OriginRadialSliding","FunctionEvaluation"),
                                                                        true)));
   locsyscomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("(axis,angle)-funct",2,false,false,true)));
- 
+
   Teuchos::RCP<ConditionDefinition> pointlocsys =
     Teuchos::rcp(new ConditionDefinition("DESIGN POINT LOCSYS CONDITIONS",
                                          "Locsys",
@@ -455,7 +455,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
         Teuchos::tuple<std::string>("all_directions","only_in_normal_direction"),
         Teuchos::tuple<std::string>("all_directions","only_in_normal_direction"))));
 
-  // the penalty parameter could be computed dynamically (using Spaldings 
+  // the penalty parameter could be computed dynamically (using Spaldings
   // law of the wall) or using a fixed value
   weakDirichletcomponents.push_back(
     Teuchos::rcp(
@@ -467,7 +467,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   // scaling factor for penalty parameter tauB
   weakDirichletcomponents.push_back(Teuchos::rcp(new RealConditionComponent("TauBscaling")));
 
-  // linearisation strategies --- the linearisation (i.e. the matrix 
+  // linearisation strategies --- the linearisation (i.e. the matrix
   // contribution) of the convective term on the inflow could be
   // suppressed, since the flux is a kink function and including this one
   // might result in even worse convergence behaviour
@@ -478,7 +478,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
         Teuchos::tuple<std::string>("lin_all","no_lin_conv_inflow"),
         Teuchos::tuple<std::string>("lin_all","no_lin_conv_inflow"))));
 
-  // we provide a vector of 3 values for velocities 
+  // we provide a vector of 3 values for velocities
   weakDirichletcomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("val",3)));
 
   // values for curves
@@ -488,7 +488,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   weakDirichletcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("funct",3,false,false,true)));
 
 
-  Teuchos::RCP<ConditionDefinition> lineweakdirichlet 
+  Teuchos::RCP<ConditionDefinition> lineweakdirichlet
     =
     Teuchos::rcp(new ConditionDefinition("DESIGN LINE WEAK DIRICHLET CONDITIONS",
                                          "LineWeakDirichlet",
@@ -497,7 +497,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          true,
                                          DRT::Condition::Line));
 
-  Teuchos::RCP<ConditionDefinition> surfweakdirichlet 
+  Teuchos::RCP<ConditionDefinition> surfweakdirichlet
     =
     Teuchos::rcp(new ConditionDefinition("DESIGN SURFACE WEAK DIRICHLET CONDITIONS",
                                          "SurfaceWeakDirichlet",
@@ -521,7 +521,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   /*--------------------------------------------------------------------*/
   // consistent outflow bcs for conservative element formulations
 
-  Teuchos::RCP<ConditionDefinition> surfconsistentoutflowconsistency 
+  Teuchos::RCP<ConditionDefinition> surfconsistentoutflowconsistency
     =
     Teuchos::rcp(new ConditionDefinition("DESIGN SURFACE CONSERVATIVE OUTFLOW CONSISTENCY",
                                          "SurfaceConservativeOutflowConsistency",
@@ -723,11 +723,11 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   AddNamedReal(surfactant,"gamma_min_eq");
 
   condlist.push_back(surfactant);
-  
-  
+
+
   /*--------------------------------------------------------------------*/
   // Lennard Jones potential
-  
+
   Teuchos::RCP<ConditionDefinition> lj_potential_3D =
     Teuchos::rcp(new ConditionDefinition("DESIGN SURF LJ_POTENTIAL CONDITIONS",
                                          "Potential",
@@ -745,8 +745,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   AddNamedReal(lj_potential_3D,"beta");
 
   condlist.push_back(lj_potential_3D);
-  
-  
+
+
   /*-------------------------------------------------------------------*/
   // Zeta Potential
   Teuchos::RCP<ConditionDefinition> zeta_potential_3D =
@@ -766,8 +766,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   AddNamedReal(zeta_potential_3D,"beta");
 
   condlist.push_back(zeta_potential_3D);
-  
-  
+
+
   /*--------------------------------------------------------------------*/
   // Lennard Jones potential 2D
   Teuchos::RCP<ConditionDefinition> lj_potential_2D =
@@ -788,10 +788,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   condlist.push_back(lj_potential_2D);
 
-  
+
   /*-------------------------------------------------------------------*/
   // Zeta Potential 2D
-  
+
   Teuchos::RCP<ConditionDefinition> zeta_potential_2D =
     Teuchos::rcp(new ConditionDefinition("DESIGN LINE ZETA_POTENTIAL CONDITIONS",
                                          "Potential",
@@ -809,11 +809,11 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   AddNamedReal(zeta_potential_2D,"beta");
 
   condlist.push_back(zeta_potential_2D);
-  
- 
+
+
   /*--------------------------------------------------------------------*/
-  // Brownian Motion 
-  
+  // Brownian Motion
+
   Teuchos::RCP<ConditionDefinition> brownian_motion =
     Teuchos::rcp(new ConditionDefinition("DESIGN BROWNIAN MOTION SURF CONDITIONS",
                                          "BrownianMotion",
@@ -829,16 +829,16 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   AddNamedReal(brownian_motion,"frict_coeff");
 
   condlist.push_back(brownian_motion);
-  
+
   /*--------------------------------------------------------------------*/
-  // Filament Number 
-  
+  // Filament Number
+
   //declaration of a variable which contains all the components of the condition
   std::vector<Teuchos::RCP<ConditionComponent> > filamentnumbercomponents;
-  
+
   //the condition consists of one component which has to read an integer value (the so called filament number):
   filamentnumbercomponents.push_back(Teuchos::rcp(new IntConditionComponent("Filament Number")));
-    
+
   //the condition itself hast to be defined so that it is clear how to read or write such a condition in the dat file
   Teuchos::RCP<ConditionDefinition> filamentnumber =
     Teuchos::rcp(new ConditionDefinition("FILAMENT NUMBERS",              //name of input file section
@@ -854,17 +854,17 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   //the condition itself has to be added to the condition list
   condlist.push_back(filamentnumber);
-  
+
   /*--------------------------------------------------------------------*/
-  // Force Sensor 
-  
+  // Force Sensor
+
   //declaration of a variable which contains all the components of the condition
   std::vector<Teuchos::RCP<ConditionComponent> > forcesensorcomponents;
-  
+
   /*the condition consists of one component which has to read an integer value (the number of the dof of the node with respect
    * to which the force is to be measured; note: numbering starts at zero):*/
   forcesensorcomponents.push_back(Teuchos::rcp(new IntConditionComponent("DOF Number")));
-    
+
   //the condition itself hast to be defined so that it is clear how to read or write such a condition in the dat file
   Teuchos::RCP<ConditionDefinition> forcesensor =
     Teuchos::rcp(new ConditionDefinition("FORCE SENSORS",                 //name of input file section
@@ -976,7 +976,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
       Teuchos::tuple<std::string>("none","xy","yz","xz"),
       Teuchos::tuple<std::string>("none","xy","yz","xz"),
       true)));
-  
+
   condlist.push_back(volumeconstraint);
 
   /*--------------------------------------------------------------------*/
@@ -993,7 +993,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   areaconstraint->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
   areaconstraint->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
   areaconstraint->AddComponent(Teuchos::rcp(new RealConditionComponent("activTime")));
-  
+
   condlist.push_back(areaconstraint);
 
   /*--------------------------------------------------------------------*/
@@ -1105,9 +1105,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
       Teuchos::tuple<std::string>("rel","abs"),
       true)));
   condlist.push_back(nodeonplaneconst3D);
-  
+
   /*--------------------------------------------------------------------*/
-  // Multi point constraint in 3D, moving all constraint nodes synchronously 
+  // Multi point constraint in 3D, moving all constraint nodes synchronously
 
    Teuchos::RCP<ConditionDefinition> nodemasterconst3D =
      Teuchos::rcp(new ConditionDefinition("DESIGN SURFACE NORMALDIR MULTIPNT CONSTRAINT 3D",
@@ -1217,7 +1217,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     surfflowrate->AddComponent(flowratecomponents[i]);
   }
   condlist.push_back(surfflowrate);
-  
+
   /*--------------------------------------------------------------------*/
   // impuls rate through surface
 
@@ -1243,7 +1243,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   //
   // this option could be used for purely Dirichlet constrained fluid
   // problems or insufficiently supported static structural problems
-  // (i.e. for the linear iterative solution of singular matrix-systems 
+  // (i.e. for the linear iterative solution of singular matrix-systems
   //  using reduced solution spaces)
 
   std::vector<Teuchos::RCP<ConditionComponent> > rigidbodymodecomponents;

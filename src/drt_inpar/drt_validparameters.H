@@ -84,7 +84,7 @@ namespace INPUT {
   void PrintDefaultParameters(std::ostream& stream, const Teuchos::ParameterList& list);
 
   /// print flag sections of dat file with given list
-  void PrintDatHeader(std::ostream& stream, 
+  void PrintDatHeader(std::ostream& stream,
                       const Teuchos::ParameterList& list,
                       std::string parentname="",
                       bool color=false);
