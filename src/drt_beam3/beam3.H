@@ -52,7 +52,7 @@ section 17.2 ("an interpretation of an element due to simo and vu-quoc"), p. 226
 implementation sets the initial director angles and curvature to zero, which can be done without loss
 of generality since any initial rotation cancels out in the equations (17.72) and (17.76). As a consequence
 the current nodal directors do not appear in the element, but only the values of the current director
-angles minus reference director angles, respectively 
+angles minus reference director angles, respectively
 
 The element is capable of using higher order functions from linear to quartic. Please make sure you put the nodes in the right order
 in the input file.
@@ -98,13 +98,13 @@ public:
 
   /*!
   \brief Deep copy this instance of Beam3 and return pointer to the copy
-    
+
   The Clone() method is used by the virtual base class Element in cases
   where the type of the derived class is unknown and a copy-ctor is needed
 .
   */
   virtual DRT::Element* Clone() const;
-  
+
    /*!
   \brief Get shape type of element
   */
@@ -163,9 +163,9 @@ public:
   /*!
   \brief Get number of degrees of freedom of a single node
   */
-  virtual int NumDofPerNode(const DRT::Node& node) const 
-  { 
-    /*note: this is not necessarily the number of DOF assigned to this node by the discretization finally, but only 
+  virtual int NumDofPerNode(const DRT::Node& node) const
+  {
+    /*note: this is not necessarily the number of DOF assigned to this node by the discretization finally, but only
     *the number of DOF requested for this node by this element; the discretization will finally assign the maximal
     *number of DOF to this node requested by any element connected to this node*/
     return 6;
@@ -180,7 +180,7 @@ public:
   \brief Print this element
   */
   virtual void Print(ostream& os) const;
-  
+
 
   //@}
 
@@ -238,7 +238,7 @@ public:
                        Epetra_SerialDenseVector& elevec1,
                        Epetra_SerialDenseVector& elevec2,
                        Epetra_SerialDenseVector& elevec3);
-  
+
   /*!
   \brief Evaluate a Neumann boundary condition
 
@@ -264,7 +264,7 @@ public:
                               vector<int>&              lm,
                               Epetra_SerialDenseVector& elevec1);
 
-  
+
   /*!
   \brief Evaluate PTC addition to stiffness for free Brownian motion
 
@@ -280,10 +280,10 @@ public:
   */
   virtual int EvaluatePTC(ParameterList& params,
                           Epetra_SerialDenseMatrix& elemat1);
-  
+
   //@}
 
-  
+
 private:
 
   //! action parameters recognized by Beam3
@@ -305,16 +305,16 @@ private:
     calc_brownian, //calculate statistical forces and damping for Brownian dynamics
     calc_struct_ptcstiff //calculate artificial stiffness due to PTC solution strategy
   };
-  
+
   //! container containing all kind of Beam3 thisandthat
-  DRT::Container data_; 
-  
+  DRT::Container data_;
+
   //! variable saving whether element has already been initialized (then isinit_ == true)
   bool isinit_;
-  
+
   //! length in reference configuration has been replaced by alpha_ only needed for damping calculations
   double lrefe_;
-  
+
   //! quaternions of triads at GPs at the end of the preceeding time step due to Crisfield, Vol. 2, equation (17.65)
   vector<LINALG::Matrix<4,1> > Qconv_;
   //! quaternions of triads at GPs at the end of the preceeding iteration step due to Crisfield, Vol. 2, equation (17.65)
@@ -327,7 +327,7 @@ private:
   vector<LINALG::Matrix<3,1> > curvold_;
   //!curvaturea during the current iteration step due to Crisfield, Vol. 2, equation (17.72)
   vector<LINALG::Matrix<3,1> > curvnew_;
-  
+
   //!angle displacement taken from discretization and interpolated for a specific Gauss point by Crisfield, Vol. 2, equation (17.93); relates to the end of the preceeding time step
   vector<LINALG::Matrix<3,1> > thetaconv_;
   //!angle displacement taken from discretization and interpolated for a specific Gauss point by Crisfield, Vol. 2, equation (17.93); relates to the end of the preceeding iteration step
@@ -340,100 +340,100 @@ private:
   vector<LINALG::Matrix<3,1> > thetaprimeold_;
   //!derivative of angle displacement taken from discretization with respect to curve parameter at a specific Gauss point; derivative due to Crisfield, Vol. 2, equation (17.93); relates to the current iteration step
   vector<LINALG::Matrix<3,1> > thetaprimenew_;
-  
+
   //! cross section area
   double crosssec_;
-  
+
    //! cross section area including shear corretion factor
   double crosssecshear_;
-  
+
   //!moment of inertia of area around y-axis(orthognoal to beam axis in yz-plane)
   double Iyy_;
-  
+
   //!moment of inertia of area around z-axis(forming cartesian system with beam- and y-axis)
   double Izz_;
-  
+
   //!polar moment of inertia of area
   double Irr_;
-  
+
   //! Vector holding alpha for each gausspoint
   vector<double> alpha_;
-   
+
   //! Vector holding alpha for each gausspoint for complete integration of massmatrix
   vector<double> alphamass_;
-  
+
   //! store stochastic forces of the element
   LINALG::Matrix<6,1> floc_;
 
-  //! gaussrule_ will be initialized automatically for underintegration in order to get rid of Locking 
+  //! gaussrule_ will be initialized automatically for underintegration in order to get rid of Locking
   DRT::UTILS::GaussRule1D gaussrule_;
-  
+
 
   //! @name methods for initilization of the element
-  
+
   //!sets up from current nodal position all geometric parameters (considering current position as reference configuration)
   //this function is templated and receives nnode from Beam3Register::Initialize
   template<int nnode>
   void SetUpReferenceGeometry(const vector<double>& xrefe,const vector<double>& rotrefe);
-  
+
   //@}
-  
+
   //! @name auxiliary computation methods for non-additive, large rotation variables
 
   //!computing spin matrix out of a rotation vector
   void computespin(LINALG::Matrix<3,3>& spin, LINALG::Matrix<3,1> rotationangle, const double& spinscale);
-  
+
   //!computing a rotation matrix R from a quaternion q
   void quaterniontotriad(const LINALG::Matrix<4,1>& q, LINALG::Matrix<3,3>& R);
-  
+
   //!computing a quaternion from an angle vector
   void angletoquaternion(const LINALG::Matrix<3,1>& theta, LINALG::Matrix<4,1>& q);
-  
+
   //!computing an angle vector from a quaternion q
   void quaterniontoangle(const LINALG::Matrix<4,1>& q, LINALG::Matrix<3,1>& theta);
-  
+
   //!computing from a quaternion q the Rodrigues parameters omega, Crisfield, Vol. 2, equation (16.79)
   void quaterniontorodrigues(const LINALG::Matrix<4,1>& q, LINALG::Matrix<3,1>& omega);
-  
+
   //!computing a quaternion q from a rotation matrix R
   void triadtoquaternion(const LINALG::Matrix<3,3>& R, LINALG::Matrix<4,1>& q);
-  
+
   //!quaternion product q12 = q2*q1, Crisfield, Vol. 2, equation (16.71)
   void quaternionproduct(const LINALG::Matrix<4,1>& q1,const LINALG::Matrix<4,1>& q2,LINALG::Matrix<4,1>& q12);
-  
+
   //!computes inverse quaternion q^{-1} for input quaternion q
   LINALG::Matrix<4,1> inversequaternion(const LINALG::Matrix<4,1>& q);
-  
+
   //!inverse of matrix H which make rotation variables additive in the limit, eq. (16.94)
   LINALG::Matrix<3,3> Hinv(LINALG::Matrix<3,1> theta);
 
-  
+
   //@}
-  
+
   //! @name Internal calculation methods
-  
-  /*!this function performs an update of the central triad as in principle given in Crisfield, Vol. 2, equation (16.65), 
+
+  /*!this function performs an update of the central triad as in principle given in Crisfield, Vol. 2, equation (16.65),
    * but by means of a quaternion product and then multiplication of the rotation matrix in (16.69) with the reference triad Tref*/
   void updatetriad(const LINALG::Matrix<3,1>& deltatheta, LINALG::Matrix<3,3>& Tnew, const int numgp);
-  
+
   //!updating local curvature according to Crisfield, Vol. 2, pages 209 - 210, basically equation (16.148)
   void updatecurvature(const LINALG::Matrix<3,3>& Tnew, LINALG::Matrix<3,1>& deltatheta,LINALG::Matrix<3,1>& deltathetaprime, const int numgp);
-  
+
   //!updating local curvature approximately according to Crisfield, Vol. 2, eqs. (17.72) & (17.73) (only possible for linear elements)
   void approxupdatecurvature(const LINALG::Matrix<3,3>& Tnew, LINALG::Matrix<3,1> deltatheta,LINALG::Matrix<3,1> deltathetaprime, const int numgp);
-  
+
   //!computing stiffness matrix Ksigma1 according to Crisfield, Vol. 2, equation (17.106)
   template<int nnode>
   void computeKsig1(LINALG::Matrix<6*nnode,6*nnode>& Ksig1, const LINALG::Matrix<3,1>& stressn, const LINALG::Matrix<3,1>& stressm, const LINALG::Matrix<1,nnode>& funct, const LINALG::Matrix<1,nnode>& deriv);
-  
+
   //!computing stiffness matrix Ksigma2 according to Crisfield, Vol. 2, equation (17.107a) and (17.107b)
   template<int nnode>
   void computeKsig2(LINALG::Matrix<6*nnode,6*nnode>& Ksig2, const LINALG::Matrix<3,1>& stressn, const LINALG::Matrix<3,3>& S, const LINALG::Matrix<1,nnode>& funct, const LINALG::Matrix<1,nnode>& deriv);
-  
+
   //!computing basis of stiffness matrix according to Crisfield, Vol. 2, equation (17.105)
   template<int nnode>
   void computestiffbasis(const LINALG::Matrix<3,3>& Tnew, const LINALG::Matrix<3,1>& Cm, const LINALG::Matrix<3,1>& Cb, const LINALG::Matrix<3,3>& S, LINALG::Matrix<6*nnode,6*nnode>& stiffmatrix, const LINALG::Matrix<1,nnode>& funct, const LINALG::Matrix<1,nnode>& deriv);
-                    
+
   //!calculation of nonlinear stiffness and mass matrix
   template<int nnode>
   void b3_nlnstiffmass( ParameterList& params,
@@ -442,13 +442,13 @@ private:
                         Epetra_SerialDenseMatrix* stiffmatrix,
                         Epetra_SerialDenseMatrix* massmatrix,
                         Epetra_SerialDenseVector* force);
-   
+
   //! lump mass matrix
   template<int nnode>
   void lumpmass(Epetra_SerialDenseMatrix* emass);
-  
+
   //@}
-  
+
   //!Compute statistical forces in local coordinate system and do not(!) yet assemble them
 
    /*This function allows for computation of Brownian forces in a local coordinate system according to
@@ -462,19 +462,19 @@ private:
    \return 0 if successful, negative otherwise
    */
    virtual int ComputeLocalBrownianForces(ParameterList& params);
-   
+
    //!compute damping matrix and statistical forces according to fluctuation dissipation theorem
    void CalcBrownian(ParameterList& params,  //!<parameter list
                      vector<double>&           vel,  //!< element velocity vector
                      vector<double>&           disp, //!<element disp vector
                      Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
                      Epetra_SerialDenseVector* force);//!< element internal force vector
-  
-  
-			    
+
+
+			
   // don't want = operator
   Beam3& operator = (const Beam3& old);
-  
+
 
 }; // class Beam3
 
@@ -502,7 +502,7 @@ public:
 
   /*!
   \brief Standard Constructor
-  
+
   */
   Beam3Register(DRT::Element::ElementType etype);
 
@@ -510,22 +510,22 @@ public:
   \brief Copy Constructor
 
   Makes a deep copy of an Beam3Register
-  
+
   */
   Beam3Register(const DRT::ELEMENTS::Beam3Register& old);
 
   /*!
   \brief Deep copy this instance of Beam3Register and return pointer to the copy
-  
+
   The Clone() method is used from the virtual base class Element in cases
   where the type of the derived class is unknown and a copy-ctor is needed
-  
+
   */
   DRT::ELEMENTS::Beam3Register* Clone() const;
 
   /*!
   \brief Return unique ParObject id
-  
+
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
@@ -533,15 +533,15 @@ public:
 
   /*!
   \brief Pack this class so it can be communicated
-  
+
   \ref Pack and \ref Unpack are used to communicate this element
-  
+
   */
   virtual void Pack(vector<char>& data) const;
 
   /*!
   \brief Unpack data from a char vector into this class
-  
+
   \ref Pack and \ref Unpack are used to communicate this element
 
   */
@@ -568,7 +568,7 @@ public:
 
   /*!
   \brief Call Element init routines
-  
+
   The method performs all steps needed to init the Beam3 elements. it e.g. calculates the
   field of averaged directors at nodes.
   */

@@ -136,9 +136,9 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Beam3::Shape() const
   			break;
   	
   }
-  
+
   return dis_none;
-	  
+	
 }
 
 
@@ -167,7 +167,7 @@ void DRT::ELEMENTS::Beam3::Pack(vector<char>& data) const
   AddtoPack(data,Qnew_);
   AddtoPack(data,curvconv_);
   AddtoPack(data,curvold_);
-  AddtoPack(data,curvnew_);  
+  AddtoPack(data,curvnew_);
   AddtoPack(data,thetaconv_);
   AddtoPack(data,thetaold_);
   AddtoPack(data,thetanew_);
@@ -223,13 +223,13 @@ void DRT::ELEMENTS::Beam3::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,Qnew_);
   ExtractfromPack(position,data,curvconv_);
   ExtractfromPack(position,data,curvold_);
-  ExtractfromPack(position,data,curvnew_); 
+  ExtractfromPack(position,data,curvnew_);
   ExtractfromPack(position,data,thetaconv_);
   ExtractfromPack(position,data,thetaold_);
   ExtractfromPack(position,data,thetanew_);
   ExtractfromPack(position,data,thetaprimeconv_);
   ExtractfromPack(position,data,thetaprimeold_);
-  ExtractfromPack(position,data,thetaprimenew_);   
+  ExtractfromPack(position,data,thetaprimenew_);
   //cross section
   ExtractfromPack(position,data,crosssec_);
   //cross section with shear correction
@@ -269,7 +269,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Beam3::Lines()
 
 
 /*----------------------------------------------------------------------*
- | sets up geometric data from current nodal position as reference 
+ | sets up geometric data from current nodal position as reference
  | position; this method can be used by the register class or when ever
  | a new beam element is generated for which some reference configuration
  | has to be stored; prerequesite for applying this method is that the
@@ -279,10 +279,10 @@ template<int nnode>
 void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const vector<double>& xrefe,const vector<double>& rotrefe)
 {
   /*this method initialized geometric variables of the element; such an initialization can only be done once when the element is
-   * generated and never again (especially not in the frame of a restart); to make sure that this requirement is not violated this 
-   * method will initialize the geometric variables if the class variable isinit_ == false and afterwards set this variable to 
+   * generated and never again (especially not in the frame of a restart); to make sure that this requirement is not violated this
+   * method will initialize the geometric variables if the class variable isinit_ == false and afterwards set this variable to
    * isinit_ = true; if this method is called and finds alreday isinit_ == true it will just do nothing*/
-  
+
   if(!isinit_)
   {
     isinit_ = true;
@@ -305,26 +305,26 @@ void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const vector<double>& xrefe,co
 	  	
 		//Get position xi of GP
 		const double xi = gausspoints.qxg[numgp][0];
-		  
+		
 		//Get derivatives of shapefunctions at GP
 		DRT::UTILS::shape_function_1D_deriv1(shapefuncderiv,xi,distype);
-		  
+		
 		//Get shapefunctions at GP
 		DRT::UTILS::shape_function_1D(funct,xi,distype);
-	    
+	
 		//triad in reference configuration at GP
 		LINALG::Matrix<3,3> Tref;
 	
 	    //length in reference configuration
-	    lrefe_ = pow(pow(xrefe[0]-xrefe[3*nnode-3],2)+pow(xrefe[1]-xrefe[3*nnode-2],2)+pow(xrefe[2]-xrefe[3*nnode-1],2),0.5);   
-	    
+	    lrefe_ = pow(pow(xrefe[0]-xrefe[3*nnode-3],2)+pow(xrefe[1]-xrefe[3*nnode-2],2)+pow(xrefe[2]-xrefe[3*nnode-1],2),0.5);
+	
 	    /*initial triad Tref = [t1,t2,t3] is set in a way for which we don`t have strains in reference configuration*/
 	    LINALG::Matrix<3,1> dxdxi;
-	  
+	
 	    dxdxi.Clear();
 	    thetaconv_[numgp].Clear();
 	    thetaprimeconv_[numgp].Clear();
-	    
+	
 	    //calculate vector dxdxi
 	    for(int node=0; node<nnode; node++)
 	    {
@@ -335,69 +335,69 @@ void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const vector<double>& xrefe,co
 			    thetaprimeconv_[numgp](dof) += shapefuncderiv(node) * rotrefe[3*node+dof]; 		
 	    	}//for(int dof=0; dof<3 ; dof++)
 	    }//for(int node=0; node<nnode; node++)
-	    
+	
 	    //Store length factor for every GP
-	    //note: the length factor alpha replaces the determinant and refers to the reference configuration by definition 
-	    alpha_[numgp]= pow(pow( dxdxi(0) ,2.0) + pow( dxdxi(1) ,2.0) + pow(dxdxi(2) ,2.0) ,0.5);	    
+	    //note: the length factor alpha replaces the determinant and refers to the reference configuration by definition
+	    alpha_[numgp]= pow(pow( dxdxi(0) ,2.0) + pow( dxdxi(1) ,2.0) + pow(dxdxi(2) ,2.0) ,0.5);	
 
-	    for (int k=0; k<3; k++) 
+	    for (int k=0; k<3; k++)
 	    {
 	  		//t1 axis points in positive direction along xi and is a unit vector
-	  		Tref(k,0)=dxdxi(k)/alpha_[numgp];    
+	  		Tref(k,0)=dxdxi(k)/alpha_[numgp];
 	    }
-	    
+	
 	    //t2 is a unit vector in the x2x3-plane orthogonal to t1
 	    Tref(0,1) = 0;
 	    //if t1 is parallel to the x1-axis t2 is set parallel to the x2-axis
 	    if (Tref(1,0) == 0 && Tref(2,0) == 0)
-	    {    
+	    {
 	         Tref(1,1) = 1;
 	         Tref(2,1) = 0;
-	    } 
-	    
+	    }
+	
 	    //otherwise t2 is calculated from the scalar product with t1
 	    else
-	    { 
+	    {
 	        //setting t2(0)=0 and calculating other elements by setting scalar product t1 o t2 to zero
 	        double lin1norm = pow(pow(Tref(1,0),2)+pow(Tref(2,0),2),0.5);
 	        Tref(1,1) = -Tref(2,0)/lin1norm;
-	        Tref(2,1) =  Tref(1,0)/lin1norm;    
-	    }	    
+	        Tref(2,1) =  Tref(1,0)/lin1norm;
+	    }	
 	           	
         //calculating t3 by crossproduct t1 x t2
         Tref(0,2) = Tref(1,0)*Tref(2,1)-Tref(1,1)*Tref(2,0);
         Tref(1,2) = Tref(2,0)*Tref(0,1)-Tref(2,1)*Tref(0,0);
         Tref(2,2) = Tref(0,0)*Tref(1,1)-Tref(0,1)*Tref(1,0);
-        
+
         /*the center triad in reference configuration is stored as a quaternion whose equivalent would be the rotation
         * from the identity matrix into the reference configuration*/
         triadtoquaternion(Tref,Qconv_[numgp]);
-         
+
         //the here employed beam element does not need data about the current position of the nodal directors so that
         //initilization of those can be skipped (the nodal displacements handeled in beam3_evaluate.cpp are not the current angles,
         //but only the differences between current angles and angles in reference configuration, respectively. Thus the
-        //director orientation in reference configuration cancels out and can be assumed to be zero without loss of 
+        //director orientation in reference configuration cancels out and can be assumed to be zero without loss of
         //generality
-        
+
         curvconv_[numgp].Clear();
     }//for(int numgp=0; numgp < gausspoints.nquad; numgp++)
 	
 	//Now all triads have been calculated and Qold_ and Qnew_ can be updated
     Qold_ = Qconv_;
     Qnew_ = Qconv_;
-    
-    curvold_ = curvconv_;        
+
+    curvold_ = curvconv_;
     curvnew_ = curvconv_;
-                      
+
     thetaold_ = thetaconv_;
     thetanew_ = thetaconv_;
-    
-    thetaprimeold_ = thetaprimeconv_;  
-    thetaprimenew_ = thetaprimeconv_;    
+
+    thetaprimeold_ = thetaprimeconv_;
+    thetaprimenew_ = thetaprimeconv_;
 
 	//Now we get the integrationfactor alphamass_ for a complete integration of the massmatrix therefor we increase the gaussrule by 1
 	gaussrule_ = static_cast<enum DRT::UTILS::GaussRule1D>(nnode);
-	  
+	
 	//Get the applied integrationpoints
 	DRT::UTILS::IntegrationPoints1D gausspointsmass(gaussrule_);
 	  	
@@ -407,35 +407,35 @@ void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const vector<double>& xrefe,co
 	  	
 		//Get position xi of GP
 		const double xi = gausspointsmass.qxg[numgp][0];
-		  
+		
 		//Get derivatives of shapefunctions at GP
 		DRT::UTILS::shape_function_1D_deriv1(shapefuncderiv,xi,distype);
-	  
+	
 	    LINALG::Matrix<3,1> dxdximass;
-	    
+	
 	    dxdximass.Clear();
 	    //calculate dx/dxi and dz/dxi
 	    for(int node=0; node<nnode; node++)
 	    {
-		    dxdximass(0)+=shapefuncderiv(node)*xrefe[3*node];  
+		    dxdximass(0)+=shapefuncderiv(node)*xrefe[3*node];
 		    dxdximass(1)+=shapefuncderiv(node)*xrefe[3*node+1];
 		    dxdximass(2)+=shapefuncderiv(node)*xrefe[3*node+2];
-		    
+		
 	    }//for(int node=0; node<nnode; node++)
-	  
+	
 	    //Store length factor for every GP
 	    //note: the length factor alpha replaces the determinant and refers by definition always to the reference configuration
-	    alphamass_[numgp]= pow(pow( dxdximass(0) ,2.0) + pow( dxdximass(1) ,2.0) + pow(dxdximass(2) ,2.0) ,0.5);	 
-	    
+	    alphamass_[numgp]= pow(pow( dxdximass(0) ,2.0) + pow( dxdximass(1) ,2.0) + pow(dxdximass(2) ,2.0) ,0.5);	
+	
 	}//for(int numgp=0; numgp < gausspointsmass.nquad; numgp++)
-    
+
 	//reset gaussrule_ for further calculations
 	gaussrule_ = static_cast<enum DRT::UTILS::GaussRule1D>(nnode-1);
 	
 	return;
-    
+
   }//if(!isinit_)
-  
+
 }//DRT::ELEMENTS::Beam3::SetUpReferenceGeometry()
 
 //------------- class Beam3Register: -------------------------------------
@@ -534,31 +534,31 @@ void DRT::ELEMENTS::Beam3Register::Print(ostream& os) const
 int DRT::ELEMENTS::Beam3Register::Initialize(DRT::Discretization& dis)
 {		
 	  //setting up geometric variables for beam3 elements
-	  
+	
 	  for (int num=0; num<  dis.NumMyColElements(); ++num)
-	  {    
+	  {
 	    //in case that current element is not a beam3 element there is nothing to do and we go back
 	    //to the head of the loop
 	    if (dis.lColElement(num)->Type() != DRT::Element::element_beam3) continue;
-	    
+	
 	    //if we get so far current element is a beam3 element and  we get a pointer at it
 	    DRT::ELEMENTS::Beam3* currele = dynamic_cast<DRT::ELEMENTS::Beam3*>(dis.lColElement(num));
 	    if (!currele) dserror("cast to Beam3* failed");
-	    
+	
 	    //reference node position
 	    vector<double> xrefe;
 	    vector<double> rotrefe;
 	    const int nnode= currele->NumNode();
-	    
+	
 	    //resize xrefe for the number of coordinates we need to store
 	    xrefe.resize(3*nnode);
 	    rotrefe.resize(3*nnode);
-	    
+	
 	    //getting element's nodal coordinates and treating them as reference configuration
 	    if (currele->Nodes()[0] == NULL || currele->Nodes()[1] == NULL)
 	      dserror("Cannot get nodes in order to compute reference configuration'");
 	    else
-	    {   
+	    {
 	      for (int node=0; node<nnode; node++) //element has k nodes
 	        for(int dof= 0; dof < 3; dof++)// element node has three coordinates x1, x2 and x3
 	        {
@@ -566,7 +566,7 @@ int DRT::ELEMENTS::Beam3Register::Initialize(DRT::Discretization& dis)
 	        	rotrefe[node*3 + dof]= 0.0;
 	        }	
 	    }
-	    
+	
 	    //resize alpha_, alphamass_ and theta0_ so they can each store 1 value at each GP
 	    currele->alpha_.resize(nnode-1);
 	    currele->alphamass_.resize(nnode);
@@ -600,7 +600,7 @@ int DRT::ELEMENTS::Beam3Register::Initialize(DRT::Discretization& dis)
 	  		{
 	  			currele->SetUpReferenceGeometry<4>(xrefe,rotrefe);
 	  			break;
-	  		} 
+	  		}
 	  		case 5:
 	  		{
 	  			currele->SetUpReferenceGeometry<5>(xrefe,rotrefe);
@@ -608,8 +608,8 @@ int DRT::ELEMENTS::Beam3Register::Initialize(DRT::Discretization& dis)
 	  		}   		
 	  		default:
 	  			dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");	
-	  	} 
-	       
+	  	}
+	
 	  } //for (int num=0; num<dis_.NumMyColElements(); ++num)
 
 	  return 0;
