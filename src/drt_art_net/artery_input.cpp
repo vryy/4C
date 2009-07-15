@@ -24,7 +24,7 @@ using namespace DRT::UTILS;
  *----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::Artery::ReadElement()
 {
-  
+
   typedef map<string, DiscretizationType> Gid2DisType;
     Gid2DisType gid2distype;
     gid2distype["LINE2"]    = line2;
@@ -67,7 +67,7 @@ bool DRT::ELEMENTS::Artery::ReadElement()
     // read gaussian points and set gaussrule
     char  buffer[50];
     int ngp[1];
-    
+
     switch (distype)
     {
     case line2:

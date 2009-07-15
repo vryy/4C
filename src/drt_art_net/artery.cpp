@@ -80,7 +80,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Artery::Shape() const
 void DRT::ELEMENTS::Artery::Pack(vector<char>& data) const
 {
   data.resize(0);
-  
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
