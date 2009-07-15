@@ -183,8 +183,8 @@ public:
   void EvaluatePointwiseMeanValuesInPlanes();
 
   /*!
-    \brief Add computed dynamic Smagorinsky quantities (Smagorinsky 
-           constant, effective viscosity and (Cs_delta)^2 used 
+    \brief Add computed dynamic Smagorinsky quantities (Smagorinsky
+           constant, effective viscosity and (Cs_delta)^2 used
            during the computation)
 
     The increment is computed during the computation of Cs
@@ -199,7 +199,7 @@ public:
 
 
   /*!
-    \brief do averaging of residuals, dissipation rates etc 
+    \brief do averaging of residuals, dissipation rates etc
            (all gausspoint-quantities)
 
   */
@@ -232,7 +232,7 @@ public:
 
   /*!
   \brief Compute a time average of the mean values for low-Mach-number
-  flow over all steps of the sampling period so far. Dump the result to 
+  flow over all steps of the sampling period so far. Dump the result to
   file.
 
   */
@@ -300,24 +300,24 @@ private:
   //! The discretisation (required for nodes, dofs etc;)
   RefCountPtr<DRT::Discretization> discret_;
 
-  //! flag for ale discretisation 
+  //! flag for ale discretisation
   bool                             alefluid_;
 
   //! node displacements due to mesh motion
   RefCountPtr<Epetra_Vector>       dispnp_;
 
-  //! contains plane normal direction etc --- this is the original 
+  //! contains plane normal direction etc --- this is the original
   //! fluid dynamic parameterlist
   ParameterList&                   params_;
 
-  //! toggle evaluation of dynamic Smagorinsky/Smagorinsky with 
+  //! toggle evaluation of dynamic Smagorinsky/Smagorinsky with
   //! wall damping quantities
   bool                             smagorinsky_;
 
   //! toggle whether to evaluate residuals, taus, dissipation rates etc
   bool                             subgrid_dissipation_;
 
-  //! parameterlist for the element call when averages of residuals 
+  //! parameterlist for the element call when averages of residuals
   //! are calculated --- used for communication between element
   //! and averaging methods
   ParameterList                    eleparams_;
@@ -485,7 +485,7 @@ private:
 
   //! sum over all in plane element sizes
   RefCountPtr<vector<double> >     sumhk_;
-  //! sum over all in plane element sizes for the Bazilevs 
+  //! sum over all in plane element sizes for the Bazilevs
   //! parameter in the viscous regime
   RefCountPtr<vector<double> >     sumhbazilevs_;
   //! sum over all in plane stream lengths
@@ -549,7 +549,7 @@ private:
   //! sum over all in plane averaged dissipation rates from Galerkin convective term
   RefCountPtr<vector<double> >     sum_eps_conv_;
 
-  //! sum over all in plane averaged supg+cross stress 
+  //! sum over all in plane averaged supg+cross stress
   RefCountPtr<vector<double> >     sum_crossstress_;
   //! sum over all in plane averaged reynolds stress
   RefCountPtr<vector<double> >     sum_reystress_;

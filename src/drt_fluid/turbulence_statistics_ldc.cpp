@@ -877,7 +877,7 @@ const double                        eosfac)
       subgrvisc->Dot(*togglep_,&sv);
 
       //----------------------------------------------------------------------
-      // calculate spatial means for vel., press., dens., temp., and 
+      // calculate spatial means for vel., press., dens., temp., and
       // subgrid viscsosity on this centerline
       // (if more than one node contributing to this centerline node)
       //----------------------------------------------------------------------
@@ -987,7 +987,7 @@ const double                        eosfac)
       subgrvisc->Dot(*togglep_,&sv);
 
       //----------------------------------------------------------------------
-      // calculate spatial means for vel., press., dens., temp., and 
+      // calculate spatial means for vel., press., dens., temp., and
       // subgrid viscsosity on this centerline
       // (if more than one node contributing to this centerline node)
       //----------------------------------------------------------------------
@@ -1096,7 +1096,7 @@ const double                        eosfac)
       subgrvisc->Dot(*togglep_,&sv);
 
       //----------------------------------------------------------------------
-      // calculate spatial means for vel., press., dens., temp., and 
+      // calculate spatial means for vel., press., dens., temp., and
       // subgrid viscsosity on this centerline
       // (if more than one node contributing to this centerline node)
       //----------------------------------------------------------------------

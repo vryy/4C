@@ -100,7 +100,7 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
 
   // ensure that degrees of freedom in the discretization have been set
   if (!discret_->Filled() || !actdis->HaveDofs()) discret_->FillComplete();
-  
+
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
@@ -225,7 +225,7 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
     ParameterList eleparams;
     // other parameters needed by the elements
     eleparams.set("total time",time_);
-    discret_->EvaluateDirichlet(eleparams, zeros_, Teuchos::null, Teuchos::null, 
+    discret_->EvaluateDirichlet(eleparams, zeros_, Teuchos::null, Teuchos::null,
                                 Teuchos::null, dbcmaps_);
     zeros_->PutScalar(0.0); // just in case of change
   }
@@ -538,7 +538,7 @@ void FLD::FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
 
   {
 
-    // in the case of local systems we have to rotate back for the 
+    // in the case of local systems we have to rotate back for the
     // convergence check ...
     if (locsysman_ != Teuchos::null)
     {
@@ -781,7 +781,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaApplyDirichletAndNeumann()
   discret_->EvaluateDirichlet(eleparams,velnp_,null,null,null,dbcmaps_);
   discret_->ClearState();
 
-  // in the case of local systems we have to rotate back into global 
+  // in the case of local systems we have to rotate back into global
   // Cartesian frame
   if (locsysman_ != Teuchos::null)
   {
@@ -951,7 +951,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaStatisticsAndOutput()
   //   calculate lift and drag values
   // -------------------------------------------------------------------
   this->LiftDrag();
-  
+
   // -------------------------------------------------------------------
   //                         output of solution
   // -------------------------------------------------------------------
@@ -1007,7 +1007,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaOutput()
     {
       n+=num_y_all[rr];
     }
-    
+
     for(int rr=0;rr<myrank_;++rr)
     {
       n_lower_procs+=num_y_all[rr];
@@ -1021,16 +1021,16 @@ void FLD::FluidGenAlphaIntegration::GenAlphaOutput()
 
     vector<double> u    (n,0.0);
     vector<double> u_loc(n,0.0);
-   
+
     vector<double> v    (n,0.0);
     vector<double> v_loc(n,0.0);
-    
+
     vector<double> w    (n,0.0);
     vector<double> w_loc(n,0.0);
-  
+
     vector<double> p    (n,0.0);
     vector<double> p_loc(n,0.0);
-       
+
     vector<double> y    (n,0.0);
     vector<double> y_loc(n,0.0);
 
@@ -1054,7 +1054,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaOutput()
 
         // the set of degrees of freedom associated with the node
         vector<int> nodedofset = discret_->Dof(lnode);
-        
+
         lid = dofrowmap->LID(nodedofset[0]);
         u_loc[count]=(*velnp_)[lid];
 
@@ -1420,7 +1420,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   }
 
   //----------------------------------------------------------------------
-  // apply consistent outflow boundary condition for conservative element 
+  // apply consistent outflow boundary condition for conservative element
   //     formulation (expressions arising from partial integration)
   //----------------------------------------------------------------------
   if(params_.get<string>("form of convective term")=="conservative")
@@ -1466,7 +1466,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
 
 
   // -------------------------------------------------------------------
-  // Apply strong Dirichlet boundary conditions to system of equations 
+  // Apply strong Dirichlet boundary conditions to system of equations
   // residuals are supposed to be zero at boundary conditions
   // -------------------------------------------------------------------
   // start time measurement for application of dirichlet conditions
@@ -1483,7 +1483,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
       {
         locsysman_->RotateGlobalToLocal(rcp(A,false),residual_);
       }
-    
+
       // apply the dirichlet conditions to the (rotated) system
       zeros_->PutScalar(0.0);
       {
@@ -1516,14 +1516,14 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   }
 
   // -------------------------------------------------------------------
-  // For purely Dirichlet bounded problems, compute mean basis function 
+  // For purely Dirichlet bounded problems, compute mean basis function
   // weight vector and define nullspace for matrix
   // -------------------------------------------------------------------
   if (project_)
   {
     DRT::Condition* KSPcond=discret_->GetCondition("KrylovSpaceProjection");
 
-    // in this case, we want to project out some zero pressure modes 
+    // in this case, we want to project out some zero pressure modes
     const string* definition = KSPcond->Get<string>("weight vector definition");
 
     if(*definition == "pointvalues")
@@ -1531,8 +1531,8 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
       // zero w and c
       w_->PutScalar(0.0);
       c_->PutScalar(0.0);
-      
-      // get pressure 
+
+      // get pressure
       const vector<double>* mode = KSPcond->Get<vector<double> >("mode");
 
       for(int rr=0;rr<numdim_;++rr)
@@ -1544,20 +1544,20 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
       }
 
       int predof = numdim_;
-      
+
       Teuchos::RCP<Epetra_Vector> presmode = velpressplitter_.ExtractCondVector(*w_);
-      
+
       presmode->PutScalar((*mode)[predof]);
 
       /* export to vector to normalize against
       //
       // Note that in the case of definition pointvalue based,
-      // the average pressure will vanish in a pointwise sense 
+      // the average pressure will vanish in a pointwise sense
       //
       //    +---+
-      //     \   
+      //     \
       //      +   p_i  = 0
-      //     / 
+      //     /
       //    +---+
       */
 #if 0
@@ -1593,17 +1593,17 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
       {
         discret_->SetState("dispnp",dispnp_);
       }
-      
+
       /* evaluate KrylovSpaceProjection condition in order to get
       // integrated nodal basis functions w_
       // Note that in the case of definition integration based,
-      // the average pressure will vanish in an integral sense 
+      // the average pressure will vanish in an integral sense
       //
       //                    /              /                      /
       //   /    \          |              |  /          \        |  /    \
       //  | w_*p | = p_i * | N_i(x) dx =  | | N_i(x)*p_i | dx =  | | p(x) | dx = 0
-      //   \    /          |              |  \          /        |  \    / 
-      //  	          /  	         /  		        /  
+      //   \    /          |              |  \          /        |  \    /
+      //  	          /  	         /  		        /
       */
 
       discret_->EvaluateCondition
@@ -1614,8 +1614,8 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
        Teuchos::null      ,
        Teuchos::null      ,
        "KrylovSpaceProjection");
-     
-      // get pressure 
+
+      // get pressure
       const vector<double>* mode = KSPcond->Get<vector<double> >("mode");
 
       for(int rr=0;rr<numdim_;++rr)
@@ -1625,9 +1625,9 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
           dserror("expecting only an undetermined pressure");
         }
       }
-      
+
       Teuchos::RCP<Epetra_Vector> presmode = velpressplitter_.ExtractCondVector(*w_);
-      
+
       // export to vector of ones
       presmode->PutScalar(1.0);
       LINALG::Export(*presmode,*c_);
@@ -1738,23 +1738,23 @@ void FLD::FluidGenAlphaIntegration::GenAlphaNonlinearUpdate()
   //             + gamma * dt * dacc = vel     +  gamma * dt * dacc =
   //                                      (i)
   //               n+1
-  //          = vel     +   dvel  
+  //          = vel     +   dvel
   //               (i)           ,
   //
   // the velocity could be updated incremently.
   //
-  // Incremental updates seem to be dangerous in this place. Round-off 
+  // Incremental updates seem to be dangerous in this place. Round-off
   // errors could evolve on velocity and pressure seperately through the
-  // nonlinear process. That means that accelerations and velocities at 
+  // nonlinear process. That means that accelerations and velocities at
   // the current iteration level might get decoupled due to numerical
   // errors.
   //
-  // For this reason we use a different update formula here, making sure 
+  // For this reason we use a different update formula here, making sure
   // that accelerations and velocities at the current iteration level are
   // alway syncronised:
   //
-  //    n+1         n    +-         -+           n                   n+1    
-  // vel      =  vel   + | 1 - gamma | * dt * acc  + gamma * dt * acc     
+  //    n+1         n    +-         -+           n                   n+1
+  // vel      =  vel   + | 1 - gamma | * dt * acc  + gamma * dt * acc
   //    (i+1)            +-         -+                               (i+1)
   //
   Teuchos::RCP<Epetra_Vector> vel    = velpressplitter_.ExtractOtherVector(veln_ );

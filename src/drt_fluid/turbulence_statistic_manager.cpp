@@ -1,7 +1,7 @@
 /*!
 
-Manage the computation of averages for several 
-canonical flows like channel flow, flow around a square 
+Manage the computation of averages for several
+canonical flows like channel flow, flow around a square
 cylinder, flow in a lid driven cavity, flow over a backward-facing step etc.
 
 The manager is intended to remove as much of the averaging
@@ -51,7 +51,7 @@ namespace FLD
   {
     // get density
 
-    // activate the computation of subgrid dissipation, 
+    // activate the computation of subgrid dissipation,
     // residuals etc
     subgrid_dissipation_=true;
 
@@ -188,7 +188,7 @@ namespace FLD
                fluid.VelPresSplitter()));
     }
     return;
-    
+
   }
 
   /*----------------------------------------------------------------------
@@ -361,7 +361,7 @@ namespace FLD
   }
 
   /*----------------------------------------------------------------------
-  
+
     Time integration independent setup called by Constructor (private)
 
   ----------------------------------------------------------------------*/
@@ -473,7 +473,7 @@ namespace FLD
       case loma_channel_flow_of_height_2:
       {
 
-        // add computed dynamic Smagorinsky quantities 
+        // add computed dynamic Smagorinsky quantities
         // (effective viscosity etc. used during the computation)
         if(smagorinsky_) statistics_channel_->AddDynamicSmagorinskyQuantities();
         break;
@@ -504,7 +504,7 @@ namespace FLD
       double tcpu=ds_cputime();
 
       //--------------------------------------------------
-      // calculate means, fluctuations etc of velocity, 
+      // calculate means, fluctuations etc of velocity,
       // pressure, boundary forces etc.
       switch(flow_)
       {
@@ -582,7 +582,7 @@ namespace FLD
       }
       case rotating_circular_cylinder_nurbs:
       {
-        
+
         if(statistics_ccy_==null)
           dserror("need statistics_ccy_ to do a time sample for a flow in a rotating circular cylinder");
 
@@ -604,7 +604,7 @@ namespace FLD
       }
 
       //--------------------------------------------------
-      // do averaging of residuals, dissipation rates etc 
+      // do averaging of residuals, dissipation rates etc
       // (all gausspoint-quantities)
       if(subgrid_dissipation_)
       {
@@ -625,7 +625,7 @@ namespace FLD
           statevecs.insert(pair<string,RCP<Epetra_Vector> >("u and p (n+1      ,trial)",myvelnp_));
           statevecs.insert(pair<string,RCP<Epetra_Vector> >("u and p (n+alpha_F,trial)",myvelaf_));
           statevecs.insert(pair<string,RCP<Epetra_Vector> >("acc     (n+alpha_M,trial)",myaccam_));
-                           
+
           if (alefluid_)
           {
             statevecs.insert(pair<string,RCP<Epetra_Vector> >("dispnp"    , mydispnp_   ));
@@ -633,7 +633,7 @@ namespace FLD
           }
 
           statistics_channel_->EvaluateResiduals(statevecs,time);
-      
+
           break;
         }
         default:
@@ -776,7 +776,7 @@ namespace FLD
       }
       case rotating_circular_cylinder_nurbs:
       {
-        
+
         if(statistics_ccy_==null)
           dserror("need statistics_ccy_ to do a time sample for a flow in a rotating circular cylinder");
 

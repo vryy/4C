@@ -198,8 +198,8 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   {
     cout0_ << endl<<endl << "Computing a diffusion problem!" << endl << endl;
   }
-  
-  
+
+
   physprob_.fieldset_.clear();
   if (diffusion_problem_)
   {
@@ -214,7 +214,7 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
     physprob_.fieldset_.insert(XFEM::PHYSICS::Pres);
     physprob_.elementAnsatzp_ = rcp(new XFLUID::FluidElementAnsatz());
   }
-  
+
   cout0_ << "Element shapes in xfluid discretization: ";
   discret_->Comm().Barrier();
   bool moreThanOne = false;
@@ -808,10 +808,10 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
   x_test(0) = 0.5;
   x_test(1) = 0.5;
   x_test(2) = 0.01;
-  
+
   double min_dist = 1.0e12;
   int min_node = -1;
-  
+
   // brute force node finding for test cases
   for (int i=0; i<discret_->NumMyColNodes(); ++i)
   {
@@ -824,7 +824,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 
     // absolute distance between point and node
     const double distance = distance_vector.Norm2();
-    
+
     if (distance < min_dist)
     {
       min_dist = distance;
@@ -832,7 +832,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     }
   }
 #endif
-  
+
   if (myrank_ == 0)
   {
     printf("+------------+-------------------+--------------+--------------+--------------+--------------+--------------+--------------+\n");
@@ -906,7 +906,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 
       double L2 = 0.0;
       eleparams.set("L2",L2);
-      
+
       eleparams.set("DLM_condensation",xparams_.get<bool>("DLM_condensation"));
       eleparams.set("boundaryRatioLimit",xparams_.get<double>("boundaryRatioLimit"));
 
@@ -926,9 +926,9 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
         // finalize the complete matrix
         sysmat_->Complete();
       }
-      
+
       L2 = sqrt(eleparams.get<double>("L2"));
-      
+
       cout << "L2 norm = " << scientific << L2 << endl;
       {
         std::ofstream f;
@@ -939,7 +939,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
         f << L2;
         f.close();
       }
-      
+
 #if 0
       std::vector<double> myvel(1);
       std::vector<int> gdofs(1);
@@ -947,7 +947,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       DRT::UTILS::ExtractMyValues(*state_.velnp_,myvel,gdofs);
       const double temp = myvel[0];
       cout << "Temp("<< x_test(0) <<", "<< x_test(1) <<", "<< x_test(02) <<") = " << scientific << temp << endl;
-      
+
       {
         std::ofstream f;
         const std::string fname = "Temp.txt";
@@ -958,7 +958,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
         f.close();
       }
 #endif
-      
+
       // end time measurement for element
       // to get realistic element times, this barrier results in the longest
       // time being printed (processors with no intersected elements are too fast...)
@@ -1369,24 +1369,24 @@ void FLD::XFluidImplicitTimeInt::Output()
   {
     output_->NewStep    (step_,time_);
     //output_->WriteVector("velnp", state_.velnp_);
-    
+
     Teuchos::RCP<Epetra_Vector> velnp_out = dofmanagerForOutput_->fillPhysicalOutputVector(
         *state_.velnp_, dofset_out_, state_.nodalDofDistributionMap_, physprob_.fieldset_);
-    
+
     if (physprob_.fieldset_.find(XFEM::PHYSICS::Velx) != physprob_.fieldset_.end())
     {
       output_->WriteVector("velnp", velnp_out);
   //    Teuchos::RCP<Epetra_Vector> accn_out = dofmanagerForOutput_->fillPhysicalOutputVector(
   //        *state_.accn_, dofset_out_, nodalDofDistributionMap_, fields_out);
   //    output_->WriteVector("accn", accn_out);
-  
+
       // output (hydrodynamic) pressure
       Teuchos::RCP<Epetra_Vector> pressure = velpressplitterForOutput_.ExtractCondVector(velnp_out);
       pressure->Scale(density_);
       output_->WriteVector("pressure", pressure);
-  
+
       //output_->WriteVector("residual", trueresidual_);
-  
+
       //only perform stress calculation when output is needed
       if (writestresses_)
       {
@@ -1394,11 +1394,11 @@ void FLD::XFluidImplicitTimeInt::Output()
         Teuchos::RCP<Epetra_Vector> traction = CalcStresses();
         output_->WriteVector("traction",traction);
       }
-  
+
       // write domain decomposition for visualization (only once!)
       if (step_==upres_)
        output_->WriteElementData();
-  
+
       if (uprestart_ != 0 and step_%uprestart_ == 0) //add restart data
       {
         output_->WriteVector("accn", state_.accn_);
@@ -1669,32 +1669,32 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
           XFEM::computeScalarCellNodeValuesFromNodalUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
               *cell, field, elementvalues, cellvalues);
           LINALG::SerialDenseMatrix xyze_cell = cell->CellNodalPosXYZ();
-          
+
           if (cell->Shape() == DRT::Element::tet4)
           {
             const int numNodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet4>::numNodePerElement;
-            
-            
+
+
             // central gausspoint
             static LINALG::Matrix<3, 1> xsi;
             xsi(0) = 0.25;
             xsi(1) = 0.25;
             xsi(2) = 0.25;
-            
+
             static LINALG::Matrix<3,numNodes> deriv;
             DRT::UTILS::shape_function_3D_deriv1(deriv,xsi(0),xsi(1),xsi(2),DRT::Element::tet4);
-            
+
   //          qwgt[0]   =  Q16 ;
-            
+
             LINALG::Matrix<3,3> xjm(true);
             // xjm(i,j) = deriv(i,k)*xyze(j,k);
             for(int i=0; i<3; i++)
               for(int j=0; j<3; j++)
                 for(int k=0; k<numNodes; k++)
                   xjm(i,j) += deriv(i,k)*xyze_cell(j,k);
-            
+
             double det = xjm.Determinant();
-            
+
             if (det < 0.0)
             {
               // swap node 3 and 4
@@ -1705,11 +1705,11 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
                 xyze_cell(i,4) = xyze_cell(i,3);
               for(int i=0; i<3; i++)
                 xyze_cell(i,3) = xsi(i);
-              
+
               double v = cellvalues(4);
               cellvalues(4) = cellvalues(3);
               cellvalues(3) = v;
-              
+
   //            cout << "test for cell determinant" << endl;
             }
           }
@@ -1724,7 +1724,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
     f_system.close();
     if (screen_out) std::cout << " done" << endl;
   }
-  
+
 #if 0
   if (gmshdebugout)
   {

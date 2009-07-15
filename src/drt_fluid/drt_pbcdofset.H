@@ -60,14 +60,14 @@ public:
 
   create a dofset that allows coupled nodes for periodic boundary
   conditions                                         gammi 05/07
-  
+
   </pre>
 
   \param couplednodes (i) list of coupled nodes
 
 
   \return void
-  
+
   */
   PBCDofSet(RefCountPtr<map<int,vector<int> > >  couplednodes);
 
@@ -91,7 +91,7 @@ public:
   This version of AssignDegreesOfFreedom takes care of the numbering
   of coupled degrees of freedom (for periodic boundary conditions,
   several coupled nodes have the same degrees of freedom)   gammi 05/07
-  
+
   </pre>
 
   \param  dis   (i) discretisation
@@ -99,7 +99,7 @@ public:
 
 
   \return int highest dof number assigned up to now
-  
+
   */
   virtual int AssignDegreesOfFreedom(const DRT::Discretization& dis, const int start);
 
@@ -108,7 +108,7 @@ public:
 protected:
 
   //!\brief master and slave node connectivity for periodic boundary conditions
-  RefCountPtr<map<int,vector<int> > >           perbndcouples_;   
+  RefCountPtr<map<int,vector<int> > >           perbndcouples_;
 }; // class PBCDofSet
 
 

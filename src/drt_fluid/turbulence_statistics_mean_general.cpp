@@ -86,7 +86,7 @@ FLD::TurbulenceStatisticsGeneralMean::~TurbulenceStatisticsGeneralMean()
 //
 //----------------------------------------------------------------------
 void FLD::TurbulenceStatisticsGeneralMean::AddToCurrentTimeAverage(
-  const double             dt , 
+  const double             dt ,
   const RCP<Epetra_Vector> vec)
 {
   // remember time included in this average
@@ -119,7 +119,7 @@ void FLD::TurbulenceStatisticsGeneralMean::AddToCurrentTimeAverage(
 //----------------------------------------------------------------------
 //
 //       Perform a averaging of the current, already time averaged
-//              vector, in space in a homogeneous direction.             
+//              vector, in space in a homogeneous direction.
 //
 //----------------------------------------------------------------------
 void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
@@ -150,7 +150,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
       odim[0]=0;
       odim[1]=2;
       break;
-    }    
+    }
     case 2:
     {
       odim[0]=0;
@@ -173,26 +173,26 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
   {
     // first on this proc
     double lminxdim = 1e9;
-    
+
     for(int nn=0;nn<discret_->NumMyRowNodes();++nn)
     {
       // get the processor local node
       DRT::Node*  lnode      = discret_->lRowNode(nn);
 
       double xdim = (lnode->X())[dim];
-      
+
       if(lminxdim>xdim)
       {
         lminxdim=xdim;
       }
     }
-    
+
     // do communication for global mins
     avgcomm.MinAll(&lminxdim,&minxdim,1);
   }
 
 
-  // get a vector of all ((X[odim[0]],X[odim[1]]),X[dim) pairs on 
+  // get a vector of all ((X[odim[0]],X[odim[1]]),X[dim) pairs on
   // this proc
 
   vector<double> x;
@@ -206,7 +206,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
     {
       // get the processor local node
       DRT::Node*  lnode      = discret_->lRowNode(nn);
-      
+
       // check for slave nodes  to skip them
       vector<DRT::Condition*> mypbcs;
       lnode->GetCondition("SurfacePeriodic",mypbcs);
@@ -225,7 +225,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
           const string* dofsforpbcplanename
             =
             pbc->Get<string>("degrees of freedom for the pbc plane");
-                
+
           bool active=false;
 
           if(*dofsforpbcplanename=="xyz")
@@ -314,7 +314,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
   //
   // 1) is skipped in the first step, 4) in the last
   //----------------------------------------------------------------------
-  
+
   const int myrank  =avgcomm.MyPID();
   const int numprocs=avgcomm.NumProc();
 
@@ -346,7 +346,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
   for (int np=0;np<numprocs+1;++np)
   {
     // in the first step, we cannot receive anything
-    if(np >0) 
+    if(np >0)
     {
 #ifdef PARALLEL
       //--------------------------------------------------
@@ -419,7 +419,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
       rblock.clear();
     }
 
-    
+
     // in the last step, we keep everything on this proc
     if(np < numprocs)
     {
@@ -431,12 +431,12 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
       {
         // check whether x is already in the map
         x_and_y=xtoy.find(x[i]);
-      
+
         if(x_and_y!=xtoy.end())
         {
-          // it is already in the map. This y cannot overwrite 
+          // it is already in the map. This y cannot overwrite
           // something since pairs (x,y) are unique
-          
+
           (x_and_y->second).insert(pair<double,int>(y[i],i));
         }
         else
@@ -445,18 +445,18 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
           // one initial connection
           map<double,int,doublecomp> y_to_i_map;
           y_to_i_map.insert(pair<double,int>(y[i],i));
-          
+
           xtoy.insert(pair<double,map<double,int,doublecomp> >(x[i],y_to_i_map));
         }
       }
 
-      // 3) for each node on this proc: search in map, add 
+      // 3) for each node on this proc: search in map, add
       //    value to avg
       for(int nn=0;nn<discret_->NumMyRowNodes();++nn)
       {
         // get the processor local node
         DRT::Node*  lnode      = discret_->lRowNode(nn);
-        
+
         // check for slave nodes  to skip them
         vector<DRT::Condition*> mypbcs;
         lnode->GetCondition("SurfacePeriodic",mypbcs);
@@ -475,7 +475,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
             const string* dofsforpbcplanename
               =
               pbc->Get<string>("degrees of freedom for the pbc plane");
-                
+
             bool active=false;
 
             if(*dofsforpbcplanename=="xyz")
@@ -523,40 +523,40 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
         }
 
         double xodim[2];
-        
+
         xodim[0]= (lnode->X())[odim[0]];
-        
+
         x_and_y=xtoy.find(xodim[0]);
-        
+
         if(x_and_y!=xtoy.end())
         {
           xodim[1]= (lnode->X())[odim[1]];
-          
+
           y_and_i=(x_and_y->second).find(xodim[1]);
-          
+
           if(y_and_i!=(x_and_y->second).end())
           {
             const int pos = y_and_i->second;
-            
-            // get dofs of vector to average 
+
+            // get dofs of vector to average
             int gid;
             int lid;
-            
+
             // the set of degrees of freedom associated with the node
             vector<int> nodedofset = discret_->Dof(lnode);
-            
+
             // u velocity
             gid = nodedofset[0];
             lid = dofrowmap->LID(gid);
 
             avg_u[pos]+=(*curr_avg_)[lid];
-            
+
             // v velocity
             gid = nodedofset[1];
             lid = dofrowmap->LID(gid);
-            
+
             avg_v[pos]+=(*curr_avg_)[lid];
-            
+
             // w velocity
             gid = nodedofset[2];
             lid = dofrowmap->LID(gid);
@@ -566,9 +566,9 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
             // pressure p
             gid = nodedofset[3];
             lid = dofrowmap->LID(gid);
-            
+
             avg_p[pos]+=(*curr_avg_)[lid];
-            
+
             // count nodes
             count[pos] +=1;
           }
@@ -647,7 +647,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
   for (int np=0;np<numprocs+1;++np)
   {
     // in the first step, we cannot receive anything
-    if(np >0) 
+    if(np >0)
     {
 #ifdef PARALLEL
       //--------------------------------------------------
@@ -722,10 +722,10 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
     {
       // check whether x is already in the map
       x_and_y=xtoy.find(x[i]);
-      
+
       if(x_and_y!=xtoy.end())
       {
-        // it is already in the map. This y cannot overwrite 
+        // it is already in the map. This y cannot overwrite
         // something since pairs (x,y) are unique
 
         (x_and_y->second).insert(pair<double,int>(y[i],i));
@@ -741,13 +741,13 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
       }
     }
 
-    // 3) for each node on this proc: search in map, insert 
-    //    avg into global vector 
+    // 3) for each node on this proc: search in map, insert
+    //    avg into global vector
     for(int nn=0;nn<discret_->NumMyRowNodes();++nn)
     {
       // get the processor local node
       DRT::Node*  lnode      = discret_->lRowNode(nn);
-      
+
       // check for slave nodes  to skip them
       vector<DRT::Condition*> mypbcs;
       lnode->GetCondition("SurfacePeriodic",mypbcs);
@@ -766,7 +766,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
           const string* dofsforpbcplanename
             =
             pbc->Get<string>("degrees of freedom for the pbc plane");
-                
+
           bool active=false;
 
           if(*dofsforpbcplanename=="xyz")
@@ -824,18 +824,18 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
 	xodim[1]= (lnode->X())[odim[1]];
 
 	y_and_i=(x_and_y->second).find(xodim[1]);
-      
+
 	if(y_and_i!=(x_and_y->second).end())
 	{
 	  int pos = y_and_i->second;
 
-	  // get dofs of vector to average 
+	  // get dofs of vector to average
 	  int gid;
 	  int lid;
 
 	  // the set of degrees of freedom associated with the node
 	  vector<int> nodedofset = discret_->Dof(lnode);
-	  
+	
 	  int err=0;
 
 	  // u velocity
@@ -855,13 +855,13 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
 	  lid = dofrowmap->LID(gid);
 
 	  err += curr_avg_->ReplaceMyValues(1,&(avg_w[pos]),&lid);
-          
+
 	  // pressure p
 	  gid = nodedofset[3];
 	  lid = dofrowmap->LID(gid);
 
 	  err += curr_avg_->ReplaceMyValues(1,&(avg_p[pos]),&lid);
-          
+
           if(err>0)
           {
             dserror("lid was not on proc %d\n",myrank);
@@ -871,7 +871,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
     }
 
     // in the last step, we keep everything on this proc
-    if(np < numprocs) 
+    if(np < numprocs)
     {
       //--------------------------------------------------
       // Pack block to send
@@ -962,7 +962,7 @@ void FLD::TurbulenceStatisticsGeneralMean::ReadOldStatistics(
 {
   prev_n_        = input.ReadInt   ("num_steps_in_sample");
   prev_avg_time_ = input.ReadDouble("sampling_time"      );
- 
+
   input.ReadVector(prev_avg_,"averaged_velnp");
 
   return;

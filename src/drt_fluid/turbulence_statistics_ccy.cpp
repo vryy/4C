@@ -19,7 +19,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(
   RefCountPtr<DRT::Discretization> actdis             ,
   bool                             alefluid           ,
   RefCountPtr<Epetra_Vector>       dispnp             ,
-  ParameterList&                   params             
+  ParameterList&                   params
   )
   :
   discret_            (actdis             ),
@@ -69,7 +69,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(
   nodeshells_ = rcp(new vector<double> );
 
   // available homogeneous (sampling) shells --- there are
-  // numsubdivisions layers per element layer 
+  // numsubdivisions layers per element layer
   shellcoordinates_ = rcp(new vector<double> );
 
   const int numsubdivisions=5;
@@ -88,11 +88,11 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(
   else
   {
 
-    // real pointwise control point sampling does not make any sense 
+    // real pointwise control point sampling does not make any sense
     // for Nurbs discretisations since shape functions are not interpolating
 
-    // radial shellcoordinates are determined by the element 
-    // (cartesian) number in the second knotspan direction and 
+    // radial shellcoordinates are determined by the element
+    // (cartesian) number in the second knotspan direction and
     // the number of sampling shells in between are added
 
     // for nurbs discretisations, all vector sizes are already determined
@@ -303,7 +303,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(
 
     std::vector<double> lnodeplanes      (*nodeshells_      );
     std::vector<double> lplanecoordinates(*shellcoordinates_);
-    
+
     vector<int> lnodeshells_numnodes      (nodeshells_numnodes);
     vector<int> lshellcoordinates_numnodes(shellcoordinates_numnodes);
 
@@ -355,7 +355,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(
       {
         shellset.insert(*coord);
       }
-      
+
       int rr=0;
       for (shell  = shellset.begin();
            shell != shellset.end()  ;
@@ -364,13 +364,13 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(
         (*nodeshells_)[rr]=*shell;
         ++rr;
       }
-      
+
     }
 
     shellset.clear();
 
     {
-      
+
       for (coord  = (*shellcoordinates_).begin();
            coord != (*shellcoordinates_).end()  ;
            ++coord)
@@ -465,7 +465,7 @@ FLD::TurbulenceStatisticsCcy::~TurbulenceStatisticsCcy()
 }// TurbulenceStatisticsCcy::~TurbulenceStatisticsCcy()
 
 /*----------------------------------------------------------------------*
- 
+
        Compute the in-plane mean values of first and second order
        moments for velocities, pressure and Cs are added to global
                             'sum' vectors.
@@ -497,7 +497,7 @@ void FLD::TurbulenceStatisticsCcy::DoTimeSample(
   ----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
 {
-  
+
   const int numsubdivisions=5;
 
   //----------------------------------------------------------------------
@@ -514,7 +514,7 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
   map<double,double,PlaneSortCriterion> meanuv;
   map<double,double,PlaneSortCriterion> meanuw;
   map<double,double,PlaneSortCriterion> meanvw;
-  
+
   for (vector<double>::iterator coord  = (*shellcoordinates_).begin();
        coord != (*shellcoordinates_).end()  ;
        ++coord)
@@ -551,13 +551,13 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
 
   // get nurbs dis' element numbers
   vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(0));
-  
+
   // get the knotvector itself
   RefCountPtr<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
 
   // get element map
   const Epetra_Map* elementmap = nurbsdis->ElementRowMap();
-  
+
   // loop all available elements
   for (int iele=0; iele<elementmap->NumMyElements(); ++iele)
   {
@@ -579,14 +579,14 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
       DRT::NURBS::ControlPoint* cp
         =
         dynamic_cast<DRT::NURBS::ControlPoint* > (nodes[inode]);
-      
+
 	weights(inode) = cp->W();
     }
     // get gid, location in the patch
     int gid = actele->Id();
-    
+
     int patchid=0;
-    
+
     vector<int> ele_cart_id(3);
     knots->ConvertEleGidToKnotIds(gid,patchid,ele_cart_id);
 
@@ -625,7 +625,7 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
       evelnp(0,i) = myvelnp[  fi];
       evelnp(1,i) = myvelnp[1+fi];
       evelnp(2,i) = myvelnp[2+fi];
-      
+
       eprenp(  i) = myvelnp[3+fi];
     }
 
@@ -736,11 +736,11 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
           meanuw[r]+=uphi*vel(2);
           meanvw[r]+=ur*vel(2);
         }
-        
+
         for(int rr=1;rr<numsubdivisions-1;++rr)
         {
           uv(1) += 2.0/(numsubdivisions-1);
-          
+
           DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
                                                 uv               ,
                                                 knots            ,
@@ -804,11 +804,11 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
             meanu[r]+=uphi;
             meanv[r]+=ur;
             meanw[r]+=vel(2);
-            
+
             meanuu[r]+=uphi*uphi;
             meanvv[r]+=ur*ur;
             meanww[r]+=vel(2)*vel(2);
-            
+
             meanuv[r]+=uphi*ur;
             meanuw[r]+=uphi*vel(2);
             meanvw[r]+=ur*vel(2);
@@ -836,7 +836,7 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
             }
             x[isd]=val;
           }
-          
+
 
           const double r=sqrt(x[0]*x[0]+x[1]*x[1]);
 
@@ -882,15 +882,15 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
 
             double uphi=1.0/r*(x[0]*vel(1)-x[1]*vel(0));
             double ur  =1.0/r*(x[0]*vel(0)+x[1]*vel(1));
-            
+
             meanu[r]+=uphi;
             meanv[r]+=ur;
             meanw[r]+=vel(2);
-            
+
             meanuu[r]+=uphi*uphi;
             meanvv[r]+=ur*ur;
             meanww[r]+=vel(2)*vel(2);
-            
+
             meanuv[r]+=uphi*ur;
             meanuw[r]+=uphi*vel(2);
             meanvw[r]+=ur*vel(2);
@@ -903,7 +903,7 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
       dserror("Unknown element shape for a nurbs element or nurbs type not valid for turbulence calculation\n");
     }
   } // end element loop
-  
+
   // communicate results among processors
   int size=countpoints.size();
   int rr;
@@ -911,7 +911,7 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
   // collect number of samples
   vector<int> lpointcount;
   vector<int> pointcount(size);
-  
+
   for (map<double,int,PlaneSortCriterion>::iterator shell  = countpoints.begin();
        shell != countpoints.end();
        ++shell)
@@ -948,7 +948,7 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
   vector<double> gmeanuv(size);
   vector<double> gmeanuw(size);
   vector<double> gmeanvw(size);
-  
+
   rr=0;
   for (map<double,double,PlaneSortCriterion>::iterator shell  = meanu.begin();
        shell != meanu.end();
@@ -1066,19 +1066,19 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
     ++rr;
   }
   discret_->Comm().SumAll(&(lmeanvw[0]),&(gmeanvw[0]),size);
-  
+
   for(int mm=0;mm<size;++mm)
   {
     (*pointsumu_ )[mm]+=gmeanu [mm];
     (*pointsumv_ )[mm]+=gmeanv [mm];
     (*pointsumw_ )[mm]+=gmeanw [mm];
     (*pointsump_ )[mm]+=gmeanp [mm];
-                                                     
+
     (*pointsumuu_)[mm]+=gmeanuu[mm];
     (*pointsumvv_)[mm]+=gmeanvv[mm];
     (*pointsumww_)[mm]+=gmeanww[mm];
     (*pointsumpp_)[mm]+=gmeanpp[mm];
-                                                     
+
     (*pointsumuv_)[mm]+=gmeanuv[mm];
     (*pointsumuw_)[mm]+=gmeanuw[mm];
     (*pointsumvw_)[mm]+=gmeanvw[mm];
@@ -1089,7 +1089,7 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
 
 
 /*----------------------------------------------------------------------*
-  
+
        Compute a time average of the mean values over all steps
           since the last output. Dump the result to file.
 

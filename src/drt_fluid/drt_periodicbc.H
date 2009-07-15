@@ -42,16 +42,16 @@ using namespace Teuchos;
 
         o effects distribution of master and slave nodes. Master and
           slave are owned by one proc afterwards.
-          
+
         o effects ghosting of nodes. Master and slave nodes are ghosted
           in pairs.
-          
+
         o passes list of coupled nodes to the dofset
-        
+
 
 \author gammi
 
-        
+
 
 <pre>
 Maintainer: Peter Gamnitzer
@@ -71,16 +71,16 @@ public:
   This method gets the periodic boundary conditions from the discretisation
   and creates some empty maps which will be filled by the node matching.
 
-  
+
   \param  dis (i) Discretisation which contains the nodes of the
                   periodic boundary condition
 
-                  
+
   \return void
-  
+
   */
   PeriodicBoundaryConditions(RefCountPtr<DRT::Discretization> dis);
-  
+
   /*!
   \brief Destructor
 
@@ -90,16 +90,16 @@ public:
   //! @name Framework
 
   /*!
-    \brief This method gathers all slave nodes on the master node's 
-    proc, eliminates their dofs and redistributes (nodes and 
-    master/slave couples) afterwards to get a better distribution 
+    \brief This method gathers all slave nodes on the master node's
+    proc, eliminates their dofs and redistributes (nodes and
+    master/slave couples) afterwards to get a better distribution
     of dofs among processors.
 
-    After this function, the nodes and elements are redistributed among 
+    After this function, the nodes and elements are redistributed among
     the processors according to the generated connectivity. During this
     procedure, the dof set is changed (coupled dofs are eliminated)
     and the dofs are renumbered.
-    
+
   \return void
 
   */
@@ -132,10 +132,10 @@ protected:
   /*!
   \brief generate maps of master->slave couples and send the slaves
   to the master's proc. Update the dofset.
-                                                                         
-   o generate master->slave connectivities                                 
-      * allcoupledrownodes_                                                 
-      * allcoupledcolnodes_ (including ghosted master/slave nodes)          
+
+   o generate master->slave connectivities
+      * allcoupledrownodes_
+      * allcoupledcolnodes_ (including ghosted master/slave nodes)
 
       This method contains a loop over all existing pairs of
       periodic boundary conditions (always two surfaces (3d) or lines
@@ -151,15 +151,15 @@ protected:
       previous periodic boundary conditions (this allows pbcs in
       several spatial directions which are nescessary for example
       for 3d channel flows).
-                                                                         
-   o send slave nodes to master proc.
-                                                                          
-   o Generate a new dofset in which slaves do not have their own dofs      
-     anymore; they just point to the master's dofs  
 
-     After this function call, the nodes and elements are distributed 
-     among the processors according to the generated connectivity. 
-     During this procedure, the dof set is changed (coupled dofs are 
+   o send slave nodes to master proc.
+
+   o Generate a new dofset in which slaves do not have their own dofs
+     anymore; they just point to the master's dofs
+
+     After this function call, the nodes and elements are distributed
+     among the processors according to the generated connectivity.
+     During this procedure, the dof set is changed (coupled dofs are
      eliminated) and the dofs are renumbered.
 
      \return void
@@ -172,7 +172,7 @@ protected:
 
   //! @name Methods to process one pair of pbcs
 
-  
+
   /*!
   \brief Couple nodes for specific pair of periodic boundary conditions.
 
@@ -186,15 +186,15 @@ protected:
 
 
                      (1,1,0)    xy-plane
-  
+
                      (0,1,1)    yz-plane
-  
+
                      (1,0,1)    xz-plane
-                                                                      
+
   The search algorithm will substitute the coordinate with 0 of the
   slavenodes by the corresponding coordinate of the masternode plane
   to calculate the closest node.
-  
+
   Keep in mind that the masternodes and the slavenodes are distributed
   among several processors. The connectivity information will be only
   available on the proc which owns the specific masternode --- but the
@@ -205,15 +205,15 @@ protected:
   this proc (NodeMatchingOctree nodematchingoctree).
   The second part searches for the closest slave node on
   all processors (nodematchingoctree.CreateGlobalNodeMatching).
-  
-  
+
+
   \param  midtosid        (o) map from master to slavenodes
   \param  masternodeids   (i) all master node ids
   \param  slavenodeids    (i) all slave node ids
   \param  dofsforpbcplane (i) periodic boundary is in this plane
 
   \return void
-  
+
   */
   void CreateNodeCouplingForSinglePBC(
     map<int,vector<int> > &midtosid,
@@ -242,21 +242,21 @@ protected:
          |xxxxxxxxxx|
 
         SM----------SS
-         
+
   Since not all information is available on every proc, the completion
   of this coupling requires some additional communication of the coupling
   behaviour of multiple coupled nodes.
-  
+
 
   \param  midtosid        (i) map from master to slavenodes of current condition
   \param  pbcid           (i) the id of the current periodic boundary condition
-  
+
   \return void
 
   */
   void AddConnectivity(
     map<int,vector<int> > &midtosid,const int pbcid);
-  
+
   //@}
 
 
@@ -279,36 +279,36 @@ protected:
 
   o Redistribute nodes and call FillComplete including a call
     to the modified AssignDegreeesOfFreedom
-    
+
   \return void
 
   */
   void RedistributeAndCreateDofCoupling();
-  
+
   //@}
 
   /*!
   \brief generate a better distribution of nodes for more efficiency
   in a parallel setting
 
-   o adjust weights of slavenodes                                        
-     they need a small weight since they do not contribute any dofs      
-     to the linear system                                                
-                                                                         
-   o compute connectivity                                                
-     iterate all elements on this proc including ghosted ones. Include   
-     additional connections between master and slave nodes                          
-                                                                         
-   o set weights of edges between master/slave pairs to a high value     
-     in order to keep both on the same proc when redistributing          
-                                                                         
+   o adjust weights of slavenodes
+     they need a small weight since they do not contribute any dofs
+     to the linear system
+
+   o compute connectivity
+     iterate all elements on this proc including ghosted ones. Include
+     additional connections between master and slave nodes
+
+   o set weights of edges between master/slave pairs to a high value
+     in order to keep both on the same proc when redistributing
+
    o gather all data to proc 1, do partitioning using METIS with
      both, weights for edges and nodes
-                                                                         
+
    o redistribute nodes without assigning dofs
-                                                                         
-   o repair master/slave distribution, finally assign dofs               
-    
+
+   o repair master/slave distribution, finally assign dofs
+
    \return void
 
   */
@@ -318,7 +318,7 @@ protected:
 
   //!\brief the discretisation
   RefCountPtr<DRT::Discretization> discret_;
-  
+
   //!\brief number of pairs of periodic boundary conditions
   int                     numpbcpairs_;
 
@@ -349,12 +349,12 @@ protected:
   RefCountPtr<Time> timepbcaddcon_  ;
   //!\brief time measurement (repair ghosting)
   RefCountPtr<Time> timepbcghost_   ;
-  //!\brief time measurement (make colmap for ghosting) 
+  //!\brief time measurement (make colmap for ghosting)
   RefCountPtr<Time> timepbcmakeghostmap_   ;
   //!\brief time measurement (discret->Redistribute)
   RefCountPtr<Time> timepbcrenumdofs_   ;
 
-  
+
   //!\brief time measurement (total)
   RefCountPtr<TimeMonitor> tm0_ref_ ;
   //!\brief time measurement (create master slave matching for pairs)
@@ -367,13 +367,13 @@ protected:
   RefCountPtr<TimeMonitor> tm4_ref_ ;
   //!\brief time measurement (redistribute nodes)
   RefCountPtr<TimeMonitor> tm5_ref_ ;
-  //!\brief time measurement (make row and colmap for ghosting) 
+  //!\brief time measurement (make row and colmap for ghosting)
   RefCountPtr<TimeMonitor> tm6_ref_ ;
   //!\brief time measurement (repair ghosting)
   RefCountPtr<TimeMonitor> tm7_ref_ ;
   //!\brief time measurement (discret->Redistribute)
   RefCountPtr<TimeMonitor> tm8_ref_ ;
-  
+
 };
 
 #endif  // #ifndef PERIODICBC_H

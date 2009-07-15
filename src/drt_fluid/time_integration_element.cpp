@@ -88,7 +88,7 @@ double FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(
   case timeint_bdf2:
     timefac = 2.0/3.0 * dt;
     break;
-    
+
   default:
     dserror("Time integration scheme unknown!");
     exit(1);

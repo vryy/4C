@@ -149,12 +149,12 @@ void FLD::UTILS::SetupXFluidSplit(
   // velocity degrees of freedom --- this won't work for inf-sup stable
   // elements at the moment!
   // -------------------------------------------------------------------
-  
+
   // Allocate integer vectors which will hold the dof number of the
   // velocity or pressure dofs
   vector<int> velmapdata;
   vector<int> premapdata;
-  
+
   // collect global dofids for velocity and pressure in vectors
   for (int i=0; i<dis.NumMyRowNodes(); ++i) {
     const DRT::Node* node = dis.lRowNode(i);
@@ -180,7 +180,7 @@ void FLD::UTILS::SetupXFluidSplit(
       countdof++;
     }
   }
-  
+
   // the rowmaps are generated according to the pattern provided by
   // the data vectors
   RCP<Epetra_Map> velrowmap = rcp(new Epetra_Map(-1,
@@ -189,7 +189,7 @@ void FLD::UTILS::SetupXFluidSplit(
   RCP<Epetra_Map> prerowmap = rcp(new Epetra_Map(-1,
       premapdata.size(),&premapdata[0],0,
       dis.Comm()));
-  
+
   const Epetra_Map* map = dis.DofRowMap();
   extractor.Setup(*map, prerowmap, velrowmap);
 }
@@ -212,14 +212,14 @@ void FLD::UTILS::SetupEnrichmentSplit(
   // velocity degrees of freedom --- this won't work for inf-sup stable
   // elements at the moment!
   // -------------------------------------------------------------------
-  
+
   // Allocate integer vectors which will hold the dof number of the
   // velocity or pressure dofs
   vector<int> normalmapdata;
   vector<int> enrichmapdata;
-  
+
   const size_t numdof = 4;
-  
+
   // collect global dofids for velocity and pressure in vectors
   for (int inode=0; inode<dis.NumMyRowNodes(); ++inode)
   {
@@ -228,7 +228,7 @@ void FLD::UTILS::SetupEnrichmentSplit(
     const vector<int> dof = dis.Dof(node);
     dsassert(dof.size() == enrvarset.size(), "mismatch in length!");
     size_t countdof = 0;
-    
+
     if (ext_enr_node_gids.find(node->Id()) == ext_enr_node_gids.end())
     {
       // normal node
@@ -248,7 +248,7 @@ void FLD::UTILS::SetupEnrichmentSplit(
       }
     }
   }
-  
+
   // the rowmaps are generated according to the pattern provided by
   // the data vectors
   RCP<Epetra_Map> normalrowmap = rcp(new Epetra_Map(-1,
@@ -257,7 +257,7 @@ void FLD::UTILS::SetupEnrichmentSplit(
   RCP<Epetra_Map> enrichrowmap = rcp(new Epetra_Map(-1,
       enrichmapdata.size(),&enrichmapdata[0],0,
       dis.Comm()));
-  
+
   const Epetra_Map* map = dis.DofRowMap();
   extractor.Setup(*map, enrichrowmap, normalrowmap);
 }
@@ -267,14 +267,14 @@ void FLD::UTILS::SetupEnrichmentSplit(
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------
 void FLD::UTILS::LiftDrag(
-  const DRT::Discretization      & dis         ,      
-  const Epetra_Vector            & trueresidual,    
+  const DRT::Discretization      & dis         ,
+  const Epetra_Vector            & trueresidual,
   const ParameterList            & params      ,
   RCP<map<int,vector<double> > > & liftdragvals
   )
 {
   const int liftdrag = params.get<int>("liftdrag");
-  
+
   if (liftdrag == 0); // do nothing, we don't want lift & drag
   if (liftdrag == 1)
     dserror("we do not support lift&drag calculation by stresses anymore; use nodal forces!");
@@ -405,7 +405,7 @@ void FLD::UTILS::LiftDrag(
             double lambda = distances.Dot(axisvec);
             if (axisvec.Norm2() != 0.0)
               lambda = lambda / axisvec.Norm2();
-            else 
+            else
               dserror("zero vector is not a valid direction vector for axis of rotation.");
             distances.Update(lambda,axisvec,1.0);
           }
@@ -450,7 +450,7 @@ void FLD::UTILS::LiftDrag(
       }
     }
   }
-  
+
   return;
 }
 
@@ -470,8 +470,8 @@ void FLD::UTILS::WriteLiftDragToFile(
          << right << std::setw(16) << "F_x"
          << right << std::setw(16) << "F_y"
          << right << std::setw(16) << "F_z";
-  
-  
+
+
   for (map<int,vector<double> >::const_iterator liftdragval = liftdragvals.begin(); liftdragval != liftdragvals.end(); ++liftdragval)
   {
     std::stringstream s;
@@ -481,13 +481,13 @@ void FLD::UTILS::WriteLiftDragToFile(
       << right << std::setw(16) << scientific << liftdragval->second[0]
       << right << std::setw(16) << scientific << liftdragval->second[1]
       << right << std::setw(16) << scientific << liftdragval->second[2];
-    
+
     std::stringstream slabel;
     slabel << std::setw(3) << setfill('0') << liftdragval->first;
     std::ofstream f;
     const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
                             + ".liftdrag_label_"+slabel.str()+".txt";
-  
+
     if (step <= 1)
     {
       f.open(fname.c_str(),std::fstream::trunc);
@@ -497,7 +497,7 @@ void FLD::UTILS::WriteLiftDragToFile(
     {
       f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
     }
-    
+
     f << s.str() << "\n";
     f.close();
   }
@@ -506,27 +506,27 @@ void FLD::UTILS::WriteLiftDragToFile(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 std::map<int,double> FLD::UTILS::ComputeSurfaceFlowRates(
-    DRT::Discretization&           dis  ,      
+    DRT::Discretization&           dis  ,
     const RCP<Epetra_Vector>       velnp
     )
 {
   ParameterList eleparams;
   // set action for elements
   eleparams.set("action","calc_flow_rate");
-  
+
   std::map<int,double> volumeflowratepersurface;
-  
+
   // get condition
   std::vector< DRT::Condition * >      conds;
   dis.GetCondition ("SurfFlowRate", conds);
-  
+
   // collect elements by xfem coupling label
   for(vector<DRT::Condition*>::const_iterator conditer = conds.begin(); conditer!=conds.end(); ++conditer)
   {
     const DRT::Condition* cond = *conditer;
-    
+
     const int condID = cond->GetInt("ConditionID");
-    
+
     // get a vector layout from the discretization to construct matching
     // vectors and matrices
     //                 local <-> global dof numbering
@@ -540,16 +540,16 @@ std::map<int,double> FLD::UTILS::ComputeSurfaceFlowRates(
     dis.SetState("velnp",velnp);
     dis.EvaluateCondition(eleparams,flowrates,"SurfFlowRate",condID);
     dis.ClearState();
-    
+
     double locflowrate = 0.0;
     for (int i=0; i < dofrowmap->NumMyElements(); i++)
     {
       locflowrate += (*flowrates)[i];
     }
-    
+
     double flowrate = 0.0;
     dofrowmap->Comm().SumAll(&locflowrate,&flowrate,1);
-    
+
     volumeflowratepersurface[condID] += flowrate;
   }
 
@@ -559,25 +559,25 @@ std::map<int,double> FLD::UTILS::ComputeSurfaceFlowRates(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 std::map<int,LINALG::Matrix<3,1> > FLD::UTILS::ComputeSurfaceImpulsRates(
-    DRT::Discretization&           dis  ,      
+    DRT::Discretization&           dis  ,
     const RCP<Epetra_Vector>       velnp
     )
 {
   ParameterList eleparams;
   // set action for elements
   eleparams.set("action","calc_impuls_rate");
-  
+
   std::map<int,LINALG::Matrix<3,1> > volumeflowratepersurface;
-  
+
   // get condition
   std::vector< DRT::Condition * >      conds;
   dis.GetCondition ("SurfImpulsRate", conds);
-  
+
   // collect elements by xfem coupling label
   for(vector<DRT::Condition*>::const_iterator conditer = conds.begin(); conditer!=conds.end(); ++conditer)
   {
     const DRT::Condition* cond = *conditer;
-    
+
     const int condID = cond->GetInt("ConditionID");
 
     // create vector (+ initialization with zeros)
@@ -602,7 +602,7 @@ std::map<int,LINALG::Matrix<3,1> > FLD::UTILS::ComputeSurfaceImpulsRates(
 //        cout << (*impulsrates)[dis.DofColMap()->LID(gdofs[isd])] << endl;
       }
     }
-    
+
 //    LINALG::Matrix<3,1> flowrate(true);
 //    dofrowmap->Comm().SumAll(&locflowrate(0),&flowrate(0),1);
 //    dofrowmap->Comm().SumAll(&locflowrate(1),&flowrate(1),1);
@@ -617,7 +617,7 @@ std::map<int,LINALG::Matrix<3,1> > FLD::UTILS::ComputeSurfaceImpulsRates(
     tmp += locflowrate;
     volumeflowratepersurface[condID] = tmp;
   }
-  
+
   return volumeflowratepersurface;
 }
 

@@ -686,16 +686,16 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   {
     // extended statistics (plane average of Cs, (Cs_delta)^2, visceff)
     // for dynamic Smagorinsky model
-    
+
     // vectors for element -> statistics communication
     // -----------------------------------------------
 
-    // vectors containing processor local values to sum element 
+    // vectors containing processor local values to sum element
     // contributions on this proc
     RefCountPtr<vector<double> > local_Cs_sum          =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
     RefCountPtr<vector<double> > local_Cs_delta_sq_sum =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
     RefCountPtr<vector<double> > local_visceff_sum     =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-          
+
     // store them in parameterlist for access on the element
     ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
 
@@ -707,25 +707,25 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
 
     // vectors for statistics computation (sums and increments)
     // ----------------------------------
-      
+
     // means for the Smagorinsky constant
     sumCs_  =  rcp(new vector<double> );
     sumCs_->resize(nodeplanes_->size()-1,0.0);
-      
+
     incrsumCs_  =  rcp(new vector<double> );
     incrsumCs_->resize(nodeplanes_->size()-1,0.0);
-      
+
     // means for (Cs*delta)^2
     sumCs_delta_sq_  =  rcp(new vector<double> );
     sumCs_delta_sq_->resize(nodeplanes_->size()-1,0.0);
-      
+
     incrsumCs_delta_sq_  =  rcp(new vector<double> );
     incrsumCs_delta_sq_->resize(nodeplanes_->size()-1,0.0);
-        
+
     // means for the effective viscosity
     sumvisceff_  =  rcp(new vector<double> );
     sumvisceff_->resize(nodeplanes_->size()-1,0.0);
-      
+
     incrsumvisceff_  =  rcp(new vector<double> );
     incrsumvisceff_->resize(nodeplanes_->size()-1,0.0);
   }
@@ -733,7 +733,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   //----------------------------------------------------------------------
   // arrays for averaging of residual, subscales etc.
 
-  // prepare time averaging for subscales and residual 
+  // prepare time averaging for subscales and residual
   if(subgrid_dissipation_)
   {
     //--------------------------------------------------
@@ -753,7 +753,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
 
     RefCountPtr<vector<double> > local_incrtauC          = rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
     RefCountPtr<vector<double> > local_incrtauM          = rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
-    
+
     RefCountPtr<vector<double> > local_incrres           = rcp(new vector<double> (3*(nodeplanes_->size()-1),0.0));
     RefCountPtr<vector<double> > local_incrres_sq        = rcp(new vector<double> (3*(nodeplanes_->size()-1),0.0));
     RefCountPtr<vector<double> > local_incrabsres        = rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
@@ -837,21 +837,21 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     sumabsres_->resize((nodeplanes_->size()-1),0.0);
     sumtauinvsvel_ =  rcp(new vector<double> );
     sumtauinvsvel_->resize(3*(nodeplanes_->size()-1),0.0);
-    
+
     sumsacc_   =  rcp(new vector<double> );
     sumsacc_->resize(3*(nodeplanes_->size()-1),0.0);
     sumsacc_sq_=  rcp(new vector<double> );
     sumsacc_sq_->resize(3*(nodeplanes_->size()-1),0.0);
     sumabssacc_=  rcp(new vector<double> );
     sumabssacc_->resize((nodeplanes_->size()-1),0.0);
-    
+
     sumsvelaf_=  rcp(new vector<double> );
     sumsvelaf_->resize(3*(nodeplanes_->size()-1),0.0);
     sumsvelaf_sq_=  rcp(new vector<double> );
     sumsvelaf_sq_->resize(3*(nodeplanes_->size()-1),0.0);
     sumabssvelaf_=  rcp(new vector<double> );
     sumabssvelaf_->resize((nodeplanes_->size()-1),0.0);
-    
+
     sumresC_       =  rcp(new vector<double> );
     sumresC_->resize(nodeplanes_->size()-1,0.0);
     sumresC_sq_    =  rcp(new vector<double> );
@@ -861,7 +861,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     sumspressnp_->resize(nodeplanes_->size()-1,0.0);
     sumspressnp_sq_=  rcp(new vector<double> );
     sumspressnp_sq_->resize(nodeplanes_->size()-1,0.0);
-    
+
 
     sumhk_         =  rcp(new vector<double> );
     sumhk_->resize(nodeplanes_->size()-1,0.0);
@@ -927,7 +927,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     {
       std::string s_smag = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
       s_smag.append(".Cs_statistic");
-      
+
       log_Cs = Teuchos::rcp(new std::ofstream(s_smag.c_str(),ios::out));
       (*log_Cs) << "# Statistics for turbulent channel flow (Smagorinsky constant)\n\n";
     }
@@ -959,7 +959,7 @@ FLD::TurbulenceStatisticsCha::~TurbulenceStatisticsCha()
 }// TurbulenceStatisticsCha::~TurbulenceStatisticsCha()
 
 /*----------------------------------------------------------------------*
- 
+
        Compute the in-plane mean values of first and second order
        moments for velocities, pressure and Cs are added to global
                             'sum' vectors.
@@ -1230,7 +1230,7 @@ void FLD::TurbulenceStatisticsCha::DoLomaTimeSample(
 }// TurbulenceStatisticsCha::DoLomaTimeSample
 
 /*----------------------------------------------------------------------*
- 
+
           Compute in plane means of u,u^2 etc. (integral version)
 
  -----------------------------------------------------------------------*/
@@ -1874,14 +1874,14 @@ void FLD::TurbulenceStatisticsCha::EvaluatePointwiseMeanValuesInPlanes()
 
 /*----------------------------------------------------------------------*
 
-        Add computed dynamic Smagorinsky quantities (Smagorinsky 
-           constant, effective viscosity and (Cs_delta)^2 used 
+        Add computed dynamic Smagorinsky quantities (Smagorinsky
+           constant, effective viscosity and (Cs_delta)^2 used
                       during the computation)
 
   ----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsCha::AddDynamicSmagorinskyQuantities()
 {
-  // get sublist of turbulence parameters from the fluid dynamic 
+  // get sublist of turbulence parameters from the fluid dynamic
   // parameter list --- it is used to transfer data between element
   // and statistics method
   ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
@@ -1895,14 +1895,14 @@ void FLD::TurbulenceStatisticsCha::AddDynamicSmagorinskyQuantities()
   local_Cs_sum                = modelparams->get<RefCountPtr<vector<double> > >("local_Cs_sum"         ,Teuchos::null);
   if(local_Cs_sum==Teuchos::null)
     dserror("local_Cs_sum==null from parameterlist");
-        
+
   RefCountPtr<vector<double> > global_incr_Cs_delta_sq_sum;
   RefCountPtr<vector<double> > local_Cs_delta_sq_sum;
   global_incr_Cs_delta_sq_sum = rcp(new vector<double> (nodeplanes_->size()-1,0.0));
   local_Cs_delta_sq_sum       = modelparams->get<RefCountPtr<vector<double> > >("local_Cs_delta_sq_sum",Teuchos::null);
   if(local_Cs_delta_sq_sum==Teuchos::null)
     dserror("local_Cs_delta_sq_sum==null from parameterlist");
-  
+
   RefCountPtr<vector<double> > global_incr_visceff_sum;
   RefCountPtr<vector<double> > local_visceff_sum;
   global_incr_visceff_sum     = rcp(new vector<double> (nodeplanes_->size()-1,0.0));
@@ -1920,7 +1920,7 @@ void FLD::TurbulenceStatisticsCha::AddDynamicSmagorinskyQuantities()
   discret_->Comm().SumAll(&((*local_visceff_sum          )[0]),
                           &((*global_incr_visceff_sum    )[0]),
                           local_visceff_sum->size());
- 
+
   // Replace increment to compute average of Smagorinsky Constant, effective
   // viscosity and (Cs_delta)^2
   for (unsigned rr=0;rr<global_incr_Cs_sum->size();++rr)
@@ -1929,16 +1929,16 @@ void FLD::TurbulenceStatisticsCha::AddDynamicSmagorinskyQuantities()
     (*incrsumCs_delta_sq_)[rr] =(*global_incr_Cs_delta_sq_sum)[rr];
     (*incrsumvisceff_    )[rr] =(*global_incr_visceff_sum    )[rr];
   }
-        
+
   // reinitialise to zero for next element call
   local_Cs_sum          =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
   local_Cs_delta_sq_sum =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
   local_visceff_sum     =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-          
+
   modelparams->set<RefCountPtr<vector<double> > >("local_Cs_sum"         ,local_Cs_sum         );
   modelparams->set<RefCountPtr<vector<double> > >("local_Cs_delta_sq_sum",local_Cs_delta_sq_sum);
   modelparams->set<RefCountPtr<vector<double> > >("local_visceff_sum"    ,local_visceff_sum    );
-  
+
   return;
 } // FLD::TurbulenceStatisticsCha::AddDynamicSmagorinskyQuantities
 
@@ -1957,26 +1957,26 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
   {
     //--------------------------------------------------------------------
     // set parameter list (time integration)
-    
+
     // action for elements
     eleparams_.set("action","time average for subscales and residual");
 
     // other parameters that might be needed by the elements
     {
       ParameterList& timelist = eleparams_.sublist("time integration parameters");
-      
+
       timelist.set("alpha_M",params_.get<double>("alpha_M"       ));
       timelist.set("alpha_F",params_.get<double>("alpha_F"       ));
       timelist.set("gamma"  ,params_.get<double>("gamma"         ));
       timelist.set("dt"     ,params_.get<double>("time step size"));
       timelist.set("time"   ,time                                 );
     }
-  
+
     // parameters for stabilisation
     {
       eleparams_.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
     }
-    
+
     // parameters for a turbulence model
     {
       eleparams_.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
@@ -1985,7 +1985,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
     // parameters for usage of conservative/convective form
     eleparams_.set("CONVFORM",params_.get<string>("form of convective term"));
 
-    
+
     // set state vectors for element call
     for(map<string,RCP<Epetra_Vector> >::iterator state =statevecs.begin();
                                                   state!=statevecs.end()  ;
@@ -1996,9 +1996,9 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
 
     // call loop over elements to compute means
     discret_->Evaluate(eleparams_,null,null,null,null,null);
-  
+
     discret_->ClearState();
- 
+
     // ------------------------------------------------
     // get results from element call via parameter list
     RefCountPtr<vector<double> > local_vol               =eleparams_.get<RefCountPtr<vector<double> > >("incrvol"         );
@@ -2072,35 +2072,35 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
 
     RefCountPtr<vector<double> > global_incrtauM;
     global_incrtauM=  rcp(new vector<double> (presize,0.0));
-    
+
     RefCountPtr<vector<double> > global_incrtauC;
     global_incrtauC=  rcp(new vector<double> (presize,0.0));
-    
+
     // (in plane) averaged values of resM (^2) (abs)
 
     RefCountPtr<vector<double> > global_incrres;
     global_incrres=  rcp(new vector<double> (velsize,0.0));
-    
+
     RefCountPtr<vector<double> > global_incrres_sq;
     global_incrres_sq=  rcp(new vector<double> (velsize,0.0));
-  
+
     RefCountPtr<vector<double> > global_incrtauinvsvel;
     global_incrtauinvsvel=  rcp(new vector<double> (velsize,0.0));
-  
+
     RefCountPtr<vector<double> > global_incrabsres;
     global_incrabsres=  rcp(new vector<double> (presize,0.0));
-  
+
     // (in plane) averaged values of sacc (^2) (abs)
 
     RefCountPtr<vector<double> > global_incrsacc;
     global_incrsacc=  rcp(new vector<double> (velsize,0.0));
-      
+
     RefCountPtr<vector<double> > global_incrsacc_sq;
     global_incrsacc_sq=  rcp(new vector<double> (velsize,0.0));
 
     RefCountPtr<vector<double> > global_incrabssacc;
     global_incrabssacc=  rcp(new vector<double> (presize,0.0));
-    
+
     // (in plane) averaged values of svelaf (^2) (abs)
 
     RefCountPtr<vector<double> > global_incrsvelaf;
@@ -2247,7 +2247,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
     discret_->Comm().SumAll(&((*local_incrabssacc   )[0]),
                             &((*global_incrabssacc  )[0]),
                             presize);
-      
+
     discret_->Comm().SumAll(&((*local_incrsvelaf    )[0]),
                             &((*global_incrsvelaf   )[0]),
                             velsize);
@@ -2265,14 +2265,14 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
     discret_->Comm().SumAll(&((*local_incrresC_sq   )[0]),
                             &((*global_incrresC_sq  )[0]),
                             presize);
-      
+
     discret_->Comm().SumAll(&((*local_incrspressnp     )[0]),
                             &((*global_incrspressnp    )[0]),
                             presize);
     discret_->Comm().SumAll(&((*local_incrspressnp_sq  )[0]),
                             &((*global_incrspressnp_sq )[0]),
                             presize);
-    
+
     // compute global sums, disspiation rates
 
     discret_->Comm().SumAll(&((*local_incr_eps_sacc  )[0]),
@@ -2357,7 +2357,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
       (*sum_eps_visc_    )[rr]+=(*global_incr_eps_visc    )[rr];
       (*sum_eps_conv_    )[rr]+=(*global_incr_eps_conv    )[rr];
     }
- 
+
     for (int rr=0;rr<stresssize;++rr)
     {
       (*sum_crossstress_)[rr]+=(*global_incrcrossstress)[rr];
@@ -2414,7 +2414,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
 
     eleparams_.set<RefCountPtr<vector<double> > >("incrtauC"         ,local_incrtauC         );
     eleparams_.set<RefCountPtr<vector<double> > >("incrtauM"         ,local_incrtauM         );
-    
+
     eleparams_.set<RefCountPtr<vector<double> > >("incrres"          ,local_incrres          );
     eleparams_.set<RefCountPtr<vector<double> > >("incrres_sq"       ,local_incrres_sq       );
     eleparams_.set<RefCountPtr<vector<double> > >("incrabsres"       ,local_incrabsres       );
@@ -2452,7 +2452,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
 
 
 /*----------------------------------------------------------------------*
-  
+
        Compute a time average of the mean values over all steps
           since the last output. Dump the result to file.
 
@@ -2634,9 +2634,9 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(int ste
 
       std::string s_smag = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
       s_smag.append(".Cs_statistic");
-      
+
       log_Cs = Teuchos::rcp(new std::ofstream(s_smag.c_str(),ios::app));
-      
+
       (*log_Cs) << "\n\n\n";
       (*log_Cs) << "# Statistics record " << countrecord_;
       (*log_Cs) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
@@ -2685,7 +2685,7 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(int ste
       (*log_res) << "     svel_x  ";
       (*log_res) << "     svel_y  ";
       (*log_res) << "     svel_z  ";
-      
+
       (*log_res) << "   res_sq_x  ";
       (*log_res) << "   res_sq_y  ";
       (*log_res) << "   res_sq_z  ";
@@ -2758,7 +2758,7 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(int ste
         (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_   )[3*rr  ]/(numele_*numsamp_) << "  ";
         (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_   )[3*rr+1]/(numele_*numsamp_) << "  ";
         (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_   )[3*rr+2]/(numele_*numsamp_) << "  ";
-        
+
         (*log_res)  << setw(11) << setprecision(4) << (*sumres_sq_   )[3*rr  ]/(numele_*numsamp_) << "  ";
         (*log_res)  << setw(11) << setprecision(4) << (*sumres_sq_   )[3*rr+1]/(numele_*numsamp_) << "  ";
         (*log_res)  << setw(11) << setprecision(4) << (*sumres_sq_   )[3*rr+2]/(numele_*numsamp_) << "  ";
@@ -2784,10 +2784,10 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(int ste
 
         (*log_res)  << setw(11) << setprecision(4) << (*sumresC_sq_      )[rr]/(numele_*numsamp_) << "  ";
         (*log_res)  << setw(11) << setprecision(4) << (*sumspressnp_sq_  )[rr]/(numele_*numsamp_) << "  ";
-        
+
         (*log_res)  << setw(11) << setprecision(4) << (*sumtauM_         )[rr]/(numele_*numsamp_) << "  ";
         (*log_res)  << setw(11) << setprecision(4) << (*sumtauC_         )[rr]/(numele_*numsamp_) << "  ";
-      
+
         (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_sacc_    )[rr]/(numele_*numsamp_) << "  ";
         (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_pspg_    )[rr]/(numele_*numsamp_) << "  ";
         (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_supg_    )[rr]/(numele_*numsamp_) << "  ";
@@ -2837,7 +2837,7 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(int ste
 /*----------------------------------------------------------------------*
 
       Compute a time average of the mean values over all steps
-       of the sampling period so far. Dump the result to file.  
+       of the sampling period so far. Dump the result to file.
 
   ----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsCha::DumpStatistics(int step)
@@ -2946,7 +2946,7 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(int step)
     {
       // get the outfile
       Teuchos::RefCountPtr<std::ofstream> log_Cs;
-      
+
       std::string s_smag = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
       s_smag.append(".Cs_statistic");
 
@@ -2956,7 +2956,7 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(int step)
       (*log_Cs) << "# Statistics record ";
       (*log_Cs) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
 
-      
+
       (*log_Cs) << "#     y      ";
       (*log_Cs) << "     Cs     ";
       (*log_Cs) << "   (Cs*hk)^2 ";
@@ -3007,7 +3007,7 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(int step)
         (*log_res)  << setw(11) << setprecision(4) << (*sumres_)[3*rr  ]/(numele_*numsamp_) << "  ";
         (*log_res)  << setw(11) << setprecision(4) << (*sumres_)[3*rr+1]/(numele_*numsamp_) << "  ";
         (*log_res)  << setw(11) << setprecision(4) << (*sumres_)[3*rr+2]/(numele_*numsamp_) << "  ";
-        
+
         (*log_res)  << setw(11) << setprecision(4) << (*sumsacc_)[3*rr  ]/(numele_*numsamp_) << "  ";
         (*log_res)  << setw(11) << setprecision(4) << (*sumsacc_)[3*rr+1]/(numele_*numsamp_) << "  ";
         (*log_res)  << setw(11) << setprecision(4) << (*sumsacc_)[3*rr+2]/(numele_*numsamp_) << "  ";
@@ -3019,7 +3019,7 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(int step)
         (*log_res)  << setw(11) << setprecision(4) << (*sumsacc_sq_)[3*rr  ]/(numele_*numsamp_) << "  ";
         (*log_res)  << setw(11) << setprecision(4) << (*sumsacc_sq_)[3*rr+1]/(numele_*numsamp_) << "  ";
         (*log_res)  << setw(11) << setprecision(4) << (*sumsacc_sq_)[3*rr+2]/(numele_*numsamp_) << "  ";
-        
+
         (*log_res)  << &endl;
       }
       log_res->flush();
@@ -3254,7 +3254,7 @@ void FLD::TurbulenceStatisticsCha::ClearStatistics()
       (*sumsacc_     )[3*rr  ]=0.0;
       (*sumsacc_     )[3*rr+1]=0.0;
       (*sumsacc_     )[3*rr+2]=0.0;
-      
+
       (*sumsvelaf_   )[3*rr  ]=0.0;
       (*sumsvelaf_   )[3*rr+1]=0.0;
       (*sumsvelaf_   )[3*rr+2]=0.0;
@@ -3294,7 +3294,7 @@ void FLD::TurbulenceStatisticsCha::ClearStatistics()
 
       (*sumtauM_         )[rr]=0.0;
       (*sumtauC_         )[rr]=0.0;
-      
+
       (*sum_eps_sacc_    )[rr]=0.0;
       (*sum_eps_pspg_    )[rr]=0.0;
       (*sum_eps_supg_    )[rr]=0.0;
@@ -3308,7 +3308,7 @@ void FLD::TurbulenceStatisticsCha::ClearStatistics()
 
       (*sumresC_         )[rr]=0.0;
       (*sumspressnp_     )[rr]=0.0;
-      
+
       (*sumresC_sq_      )[rr]=0.0;
       (*sumspressnp_sq_  )[rr]=0.0;
     }

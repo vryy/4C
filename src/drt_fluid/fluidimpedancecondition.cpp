@@ -368,7 +368,7 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
     return;
   }
 #endif
-  
+
   // time of restart
   double t = reader.ReadDouble("time");
   // old number of flowrates in vector
@@ -383,7 +383,7 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
   // new flowratesposition = (opos*odta)/ndta
   //int npos = (int)(tinperiod / ndta);
   int npos = (int)(t / ndta + 0.5);
-  
+
   if (!myrank_)
   {
     printf("Impedance restart with time step change:\n");
@@ -399,10 +399,10 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
     printf("new position in flowrates %d \n",npos);
     fflush(stdout);
   }
-  
+
   RCP<std::vector<double> > rcpfr = rcp(new vector<double>(nnfr,0.0));
   std::vector<double>& fr = *rcpfr;
-  
+
   // loop through the new time intervals
   for (int i=0; i<nnfr; ++i)
   {
@@ -412,12 +412,12 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
     const double x1 = j*odta;
     const double x2 = (j+1)*odta;
     double y1;
-    if (j-1<0) 
+    if (j-1<0)
     {
       if (t <= period_) y1 = 0.0;                    // within first period starting value
       else              y1 = (*flowrates_)[onfr-1];  // subsequent periods starting value
     }
-    else       
+    else
       y1 = (*flowrates_)[j-1];
     double y2;
     if (j>=onfr) y2 = 0.0;
@@ -429,11 +429,11 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
     //if (myrank_==0) printf("i %4d acttime %10.5e fr %15.10e\n",i,acttime,fr[i]);
     //if (myrank_==0) printf("j %4d      x2 %10.5e y2 %15.10e\n\n",j,x2,y2);
   }
-  
+
   // store new values in class
   flowratespos_ = npos;
   flowrates_    = rcpfr;
-  
+
   // finally, recompute the outflow boundary condition from last step
   // this way the vector need not to be stored
   OutflowBoundary(t,ndta,0.66,condnum);
@@ -1088,7 +1088,7 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::LungImpedance(int k,
   // some auxiliary stuff
   complex<double> imag(0,1), Z1, Z2, Z3, ZW;
   complex<double> koeff, cwave;
-  // terminal resistance is assumed zero 
+  // terminal resistance is assumed zero
   complex<double> zterminal (0,0);
 
   double omega = 2.0*PI*k/period_;
@@ -1131,7 +1131,7 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::LungImpedance(int k,
               zstored.insert( make_pair( leftradius, zleft ) );
             }
 
-            iter = zstored.find(rightradius);    
+            iter = zstored.find(rightradius);
             if(iter != zstored.end()) // impedance of this right radius was already computed, is in map
               zright = iter->second;
             else                      // right hand side impedance not yet stored
@@ -1171,8 +1171,8 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::LungImpedance(int k,
     // calculate impedance of this, the present vessel
     complex<double> argument = omega*length/cwave;
     complex<double> zparent  = (imag/gcoeff * sin(argument) + zdown*cos(argument) ) /
-                                     ( cos(argument) + imag*gcoeff*zdown*sin(argument) );  
-    
+                                     ( cos(argument) + imag*gcoeff*zdown*sin(argument) );
+
   // calculate impedance of this, the present vessel
 
   /*ZW=rw+1.0/(imag*omega*cw)+imag*omega*lw;
@@ -1236,7 +1236,7 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::DCLungImpedance(int generatio
              zstored.insert( make_pair( leftradius, zleft ) );
            }
 
-           iter = zstored.find(rightradius);    
+           iter = zstored.find(rightradius);
            if(iter != zstored.end()) // impedance of this right radius was already computed, is in map
              zright = iter->second;
            else                      // right hand side impedance not yet stored
@@ -1245,7 +1245,7 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::DCLungImpedance(int generatio
              zstored.insert( make_pair( rightradius, zright ) );
            }
          }
-    
+
     // ... combine this to the impedance at my downstream end ...
     //*************************************************************
     // note, we truncate both terminal vessels at once!

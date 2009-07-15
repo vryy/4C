@@ -184,17 +184,17 @@ private:
   //! The discretisation (required for nodes, dofs etc;)
   RefCountPtr<DRT::Discretization> discret_;
 
-  //! flag for ale discretisation 
+  //! flag for ale discretisation
   bool                             alefluid_;
 
   //! node displacements due to mesh motion
   RefCountPtr<Epetra_Vector>       dispnp_;
 
-  //! contains plane normal direction etc --- this is the original 
+  //! contains plane normal direction etc --- this is the original
   //! fluid dynamic parameterlist
   ParameterList&                   params_;
 
-  //! parameterlist for the element call when averages of residuals 
+  //! parameterlist for the element call when averages of residuals
   //! are calculated --- used for communication between element
   //! and averaging methods
   ParameterList                    eleparams_;

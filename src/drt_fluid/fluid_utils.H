@@ -83,7 +83,7 @@ namespace UTILS
       if (mat_.Filled())
       {
         // We use the maps of the matrix to gain fast access to the LID's.
-        // Assembling with SumIntoMyValues based on LID's is two times faster 
+        // Assembling with SumIntoMyValues based on LID's is two times faster
         // than inserting single values based on the global row and column ids.
 
         // There is the case of nodes without dofs (XFEM).
@@ -203,7 +203,7 @@ namespace UTILS
           } // for (int lrow=0; lrow<ldim; ++lrow)
         }
         else
-        { 
+        {
           // the maps of the blockmatrix are not yet available; use global ids instead
 
           // loop rows of local matrix
@@ -243,7 +243,7 @@ namespace UTILS
 
     /// set number of velocity dofs
     void SetNumdim(int numdim)
-    { numdim_ = numdim; 
+    { numdim_ = numdim;
       numdofpernode_ = numdim +1;}
 
   private:
@@ -416,19 +416,19 @@ Maintainer: Peter Gamnitzer
             http://www.lnm.mw.tum.de
             089 - 289-15235
 </pre>
-  \author chfoe 
+  \author chfoe
   \date 11/07
  */
 void LiftDrag(
   const DRT::Discretization      & dis         , //! fluid discretization (node distribution, conditions)
   const Epetra_Vector            & force       , //! vector of nodalforces
   const ParameterList            & params      , //! parameterlist including the lifdrag flag
-  RCP<map<int,vector<double> > > & liftdragvals  //! the computed values for lift and drag in an array 
+  RCP<map<int,vector<double> > > & liftdragvals  //! the computed values for lift and drag in an array
   );
 
 /*!
  * \brief proc 0 writes transient liftdrag values to files (1 file per label)
- * 
+ *
  * \author axel
  * \date 02/09
  */
@@ -453,7 +453,7 @@ void WriteLiftDragToFile(
  */
 std::map<int,double> ComputeSurfaceFlowRates(
     DRT::Discretization&       dis  ,      ///< the discretisation (node distribution, conditions)
-    const RCP<Epetra_Vector>   velnp       ///< solution vector with velocities and pressure 
+    const RCP<Epetra_Vector>   velnp       ///< solution vector with velocities and pressure
                                            ///< (only velocities are used)
     );
 
@@ -462,7 +462,7 @@ std::map<int,double> ComputeSurfaceFlowRates(
 
   for each condition Id, compute the impulse rate vector through the surface
 
-  integral over surface: rho * u_i * u_j * n_j dx 
+  integral over surface: rho * u_i * u_j * n_j dx
 
   \return a map, where for each condition Id, we get the impulse rate.
           positive and negative signs indicate net inflow and outflow
@@ -473,7 +473,7 @@ std::map<int,double> ComputeSurfaceFlowRates(
  */
 std::map<int,LINALG::Matrix<3,1> > ComputeSurfaceImpulsRates(
     DRT::Discretization&       dis  ,      ///< the discretisation (node distribution, conditions)
-    const RCP<Epetra_Vector>   velnp       ///< solution vector with velocities and pressure 
+    const RCP<Epetra_Vector>   velnp       ///< solution vector with velocities and pressure
                                            ///< (only velocities are used)
     );
 

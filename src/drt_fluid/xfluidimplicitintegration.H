@@ -118,7 +118,7 @@ public:
          iteration. Current solution becomes old solution of next
          timestep.
   <pre>
-  
+
     // -------------------------------------------------------------------
     //                         update solution
     //        current solution becomes old solution of next timestep
@@ -153,9 +153,9 @@ public:
     //  accn_  = (velnp_-veln_) / (dt)
     //
     // -------------------------------------------------------------------
-  
+
   </pre>
-         
+
   */
   void TimeUpdate();
 
@@ -263,10 +263,10 @@ public:
     Needed for Mortar coupling at the FSI interface
    */
   Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape(std::string condname);
-  
+
   /// integrate mass flow over a surface
   void ComputeSurfaceFlowRates() const;
-  
+
   /// integrate impuls flow rate over a surface
   void ComputeSurfaceImpulsRates() const;
 
@@ -317,14 +317,14 @@ protected:
 
   /*!
   \brief compute Interface
-  
+
     // calling this function multiple times should always result
     // in the same solution vectors and system matrix
   */
   void ComputeInterfaceAndSetDOFs(
       const Teuchos::RCP<DRT::Discretization>  cutterdiscret
       );
-  
+
   /*!
   \brief give DOF information to elements
   */
@@ -332,7 +332,7 @@ protected:
       const Teuchos::RCP<XFEM::InterfaceHandleXFSI>  ih,
       const Teuchos::RCP<XFEM::DofManager> dofmanager
       );
-  
+
   /*!
    * \brief plot a vector field to a Gmsh postprocessing file
    *
@@ -358,15 +358,15 @@ protected:
   const ParameterList&                         params_;
   const ParameterList&                         xparams_;
   const Teuchos::RCP<IO::DiscretizationWriter> output_;
-  
+
   //! the processor ID from the communicator
   const int                           myrank_;
   //!< a singular stream to stdout in parallel environment
   IO::Ostream0 cout0_;
-  
+
   //! do we move the fluid mesh and calculate the fluid on this moving mesh?
   const bool                          alefluid_;
-  
+
   bool                                diffusion_problem_;
   //@}
 
@@ -379,7 +379,7 @@ protected:
 
   /// time algorithm flag
   FLUID_TIMEINTTYPE timealgo_;
-  
+
   /// max nonlin iter steps
   int itemax_;
 
@@ -417,7 +417,7 @@ protected:
 
   /// (standard) system matrix
   Teuchos::RCP<LINALG::SparseOperator> sysmat_;
-//  
+//
 //  /// (standard) system matrix
 //  Teuchos::RCP<LINALG::SparseOperator> enrichsysmat_;
 
@@ -455,13 +455,13 @@ protected:
      *  should always fit to the current Epetra_Maps of this classes vectors
      */
     std::map<XFEM::DofKey<XFEM::onNode>, XFEM::DofGID>   nodalDofDistributionMap_;
-    
+
     /*! contains connection between elemental DofKey and a position in the global state arrays
      *
      *  should always fit to the current Epetra_Maps of this classes vectors
      */
     std::map<XFEM::DofKey<XFEM::onElem>, XFEM::DofGID>   elementalDofDistributionMap_;
-    
+
     //! @name accelerations
     Teuchos::RCP<Epetra_Vector>    accnp_;  ///< accelerations at time n+1
     Teuchos::RCP<Epetra_Vector>    accn_;   ///< accelerations at time n
@@ -474,7 +474,7 @@ protected:
     //@}
 
   } state_;
-  
+
   /// this struct holds information about degrees of freedom for the problem
   struct PhysProb
   {
@@ -491,7 +491,7 @@ protected:
 
 //  //! Extractor used for convergence check
 //  LINALG::MapExtractor      normalenrichedsplitter_;
-  
+
   //! Extractor used for output
   LINALG::MapExtractor      velpressplitterForOutput_;
 

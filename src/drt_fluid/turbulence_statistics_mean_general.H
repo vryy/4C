@@ -2,17 +2,17 @@
 \file turbulence_statistics_mean_general.H
 
 \brief Computation of mean values of nodal/cp quantities. The
-means are computed as time averages. 
+means are computed as time averages.
 
-An additional method to do an averaging in a homogeneous, axis 
+An additional method to do an averaging in a homogeneous, axis
 aligned, direction is provided. A requirement for this averaging
 procedure is that all nodes are repeated in identical planes
 along the axis along we do the averaging (like it is the case
 for a flow around a square cylinder, a backward facing step,
-a diffuser or a plane channel).  
---- all space averaged information is distributed back to all 
-nodes (for easy visualisation in paraview). Note that this 
-involves heavy communication --- including two round robin 
+a diffuser or a plane channel).
+--- all space averaged information is distributed back to all
+nodes (for easy visualisation in paraview). Note that this
+involves heavy communication --- including two round robin
 loops --- and produces additional output.
 
 <pre>
@@ -72,7 +72,7 @@ public:
   \param vec (in) vector to add to time average
 
   */
-  void AddToCurrentTimeAverage(const double             dt , 
+  void AddToCurrentTimeAverage(const double             dt ,
                                const RCP<Epetra_Vector> vec);
 
   /*!

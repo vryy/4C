@@ -659,10 +659,10 @@ public:
   void LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax);
 
 
-  /*! 
+  /*!
     Return (rotatory) transformation matrix of local co-ordinate systems if
     existent. Else return Teuchos::null.
-    
+
    */
   Teuchos::RCP<const LINALG::SparseMatrix> GetLocSysTrafo() const
   {
@@ -734,7 +734,7 @@ private:
   //! predictor used in nonlinear iteration
   string                      predictor_;
 
-  //! in the case of a constant incremnt predictor we need velnm. This bool 
+  //! in the case of a constant incremnt predictor we need velnm. This bool
   //! indicates whether it has been computed before or whether we need a
   //! different start predictor
   bool                        velnm_available_;

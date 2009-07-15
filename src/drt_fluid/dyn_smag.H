@@ -1,7 +1,7 @@
 /*!
 
 \file dyn_smag.H
-  
+
 \brief Filter methods for the dynamic Smagorinsky model
 
 References are
@@ -54,7 +54,7 @@ Maintainer: Peter Gamnitzer
 using namespace std;
 using namespace Teuchos;
 
-namespace FLD 
+namespace FLD
 {
 
 class DynSmagFilter
@@ -73,22 +73,22 @@ public:
 
   /*!
   \brief Destructor
-  
+
   */
   virtual ~DynSmagFilter();
 
   /*!
   \brief Perform box filter operation, compare filtered quantities
-  to solution to get an estimate for Cs (using clpping), average 
+  to solution to get an estimate for Cs (using clpping), average
   over element layers in turbulent channel flows.
- 
-  This method initialises element quantities (standard case) or 
+
+  This method initialises element quantities (standard case) or
   provides information for the element via the parameter list
   (in plane averaging for channel flow)
-  
-  \param solution     (in) velocity field to filter and to 
+
+  \param solution     (in) velocity field to filter and to
                            determine Cs from
-  \param dirichtoggle (in) information on dirichlet dofs to be 
+  \param dirichtoggle (in) information on dirichlet dofs to be
                            able to exclude boundary nodes from
                            filtering
 
@@ -102,20 +102,20 @@ private:
   /*!
   \brief perform box filtering in five steps
 
-  1) Integrate element Heaviside functions against the quantities 
+  1) Integrate element Heaviside functions against the quantities
      which are filtered. Add the result to the nodevectors
      (we get a contribution for every node of the element)
      This is an element call!
-  2) send/add values from slaves to masters 
+  2) send/add values from slaves to masters
   3) zero out dirichlet nodes
   4) do normalization by division by the patchvolume
      (Heaviside function -> box filter function)
-  5) Communication part: Export filtered quantities from row to 
+  5) Communication part: Export filtered quantities from row to
      column map
 
-     \param velocity     (i) the velocity defining the 
+     \param velocity     (i) the velocity defining the
                              unfiltered quantities
-     \param dirichtoggle (i) specifying which nodes have to be 
+     \param dirichtoggle (i) specifying which nodes have to be
                              set to zero
 
   */
@@ -128,7 +128,7 @@ private:
   \brief Compute Cs using the filtered quantities.
   This is an element call!
 
-  For a turbulent channel flow, the averaging of the Smagorinsky 
+  For a turbulent channel flow, the averaging of the Smagorinsky
   constant is done in here.
   */
   void DynSmagComputeCs();

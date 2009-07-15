@@ -1,8 +1,8 @@
 /*!
 \file turbulence_statistic_manager.H
 
-\brief Manage the computation of averages for several 
-canonical flows like channel flow, flow around a square 
+\brief Manage the computation of averages for several
+canonical flows like channel flow, flow around a square
 cylinder, flow in a lid driven cavity etc.
 
 The manager is intended to remove as much of the averaging
@@ -65,19 +65,19 @@ public:
   virtual ~TurbulenceStatisticManager();
 
 
-  //! @name managing methods 
+  //! @name managing methods
 
   /*!
   \brief Store values computed during the element call
 
-  (including Cs, visceff etc for a dynamic 
+  (including Cs, visceff etc for a dynamic
    Smagorinsky model)
 
   */
   void StoreElementValues(int step);
 
   /*!
-  \brief Include current quantities in the time 
+  \brief Include current quantities in the time
   averaging procedure
 
   */
@@ -128,18 +128,18 @@ private:
   int                                  samstart_;
   //! stop sampling at step samstop
   int                                  samstop_;
-  //! incremental dump every dumperiod steps or standalone 
+  //! incremental dump every dumperiod steps or standalone
   //! records (0)
   int                                  dumperiod_  ;
 
   //! the discretization
   RCP<DRT::Discretization>             discret_    ;
 
-  //! parameterlist of the discretization including time params, 
+  //! parameterlist of the discretization including time params,
   //! stabilization params and turbulence sublist
   ParameterList&                       params_     ;
 
-  //! parameterlist specially designed for the evaluation of 
+  //! parameterlist specially designed for the evaluation of
   //! gausspoint statistics
   ParameterList                        eleparams_  ;
 
@@ -183,12 +183,12 @@ private:
     square_cylinder_nurbs           ,
     rotating_circular_cylinder_nurbs}    flow_;
 
-  //! toggle evaluation of dynamic Smagorinsky/Smagorinsky with 
+  //! toggle evaluation of dynamic Smagorinsky/Smagorinsky with
   //! wall damping quantities
   bool                                 smagorinsky_;
 
   //! toggle evaluation of subgrid quantities, dissipation rates etc
-  //! this is only possible for the genalpha implementation since 
+  //! this is only possible for the genalpha implementation since
   //! we need a corresponding element implementation
   bool                                 subgrid_dissipation_;
 

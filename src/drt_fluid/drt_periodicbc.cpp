@@ -104,7 +104,7 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
 
     // fetch all slaves to the proc of the master
     PutAllSlavesToMastersProc();
-    
+
 
     if(discret_->Comm().NumProc()>1)
     {
@@ -134,11 +134,11 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
     {
       cout<<endl<<endl;
     }
-      
+
     {
       const Epetra_Map* dofrowmap = discret_->DofRowMap();
       const Epetra_Map* noderowmap = discret_->NodeRowMap();
-      
+
       int mypid   =discret_->Comm().MyPID()  ;
       int numprocs=discret_->Comm().NumProc();
 
@@ -237,7 +237,7 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
   // clear old data
   allcoupledrownodes_=rcp(new map<int,vector<int> >);
   allcoupledcolnodes_=rcp(new map<int,vector<int> >);
-     
+
   // map from global masternodeids (on this proc) to global slavenodeids
   // for a single condition
   map<int,vector<int> > midtosid;
@@ -279,13 +279,13 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
 
       //----------------------------------------------------
       // in the following, we loop all periodic boundary
-      // conditions which have the prescribed periodic 
-      // direction. 
+      // conditions which have the prescribed periodic
+      // direction.
       // For every Master condition, we add the nodes into
       // the set of all masternodeids for periodic boundary
       // conditions with this homogeneous direction.
       // The same is done for the slave conditions.
-      
+
       // loop pairs of periodic boundary conditions
       for (int pbcid=0;pbcid<numpbcpairs_;++pbcid)
       {
@@ -303,29 +303,29 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
           {
             const string* mymasterslavetoggle
               = mysurfpbcs_[numcond]->Get<string>("Is slave periodic boundary condition");
-              
+
             if(*mymasterslavetoggle=="Master")
             {
               mastercond =mysurfpbcs_[numcond];
-                
+
               //--------------------------------------------------
               // check whether this periodic boundary condition belongs
               // to thisplane
-                
+
               const string* dofsforpbcplanename
                 =
                 mastercond->Get<string>("degrees of freedom for the pbc plane");
-                
+
               if(*dofsforpbcplanename == *thisplane)
               {
                 // add all master nodes to masterset
-                  
+
                 //--------------------------------------------------
                 // get global master node Ids
                 const vector <int>* masteridstoadd;
-                    
+
                 masteridstoadd = mastercond->Nodes();
-                  
+
                 for(vector<int>::const_iterator idtoadd =(*masteridstoadd).begin();
                     idtoadd!=(*masteridstoadd).end();
                     ++idtoadd)
@@ -337,22 +337,22 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
             else if (*mymasterslavetoggle=="Slave")
             {
               slavecond =mysurfpbcs_[numcond];
-                
+
               //--------------------------------------------------
               // check whether this periodic boundary condition belongs
               // to thisplane
               const string* dofsforpbcplanename = slavecond->Get<string>("degrees of freedom for the pbc plane");
-                
+
               if(*dofsforpbcplanename == *thisplane)
               {
                 // add all slave nodes to slaveset
-                  
+
                 //--------------------------------------------------
                 // get global slave node Ids
                 const vector <int>* slaveidstoadd;
-                  
+
                 slaveidstoadd = slavecond->Nodes();
-                  
+
                 for(vector<int>::const_iterator idtoadd =(*slaveidstoadd).begin();
                     idtoadd!=(*slaveidstoadd).end();
                     ++idtoadd)
@@ -366,9 +366,9 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
               dserror("pbc is neither master nor slave");
             }
           } // end if i am the right condition in the right layer
-        } // end loop over conditions 
+        } // end loop over conditions
       } // end loop pairs of periodic boundary conditions
-      
+
 
         //--------------------------------------------------
         // vector specifying the plane of this pair
@@ -383,18 +383,18 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
         //   slave                      master
         //
         //
-        
+
         // we transform the three strings "xy", "xz", "yz" into integer
         // values dofsforpbcplanename
       vector<int> dofsforpbcplane(2);
-        
+
       // this is a char-operation:
       //
       //       x -> 0
       //       y -> 1
       //       z -> 2
       //
-      // it is based on the fact that the letters x, y and z are 
+      // it is based on the fact that the letters x, y and z are
       // consecutive in the ASCII table --- 'x' is the ASCII
       // calue of x ....
 
@@ -412,36 +412,36 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
       // we just write the sets into vectors
       (masternodeids).clear();
       (slavenodeids ).clear();
-        
+
       for(std::set<int>::iterator appendednode = masterset.begin();
           appendednode != masterset.end();
           ++appendednode)
       {
         masternodeids.push_back(*appendednode);
       }
-        
+
       for(std::set<int>::iterator appendednode = slaveset.begin();
           appendednode != slaveset.end();
           ++appendednode)
       {
         slavenodeids.push_back(*appendednode);
       }
-        
+
       //----------------------------------------------------------------------
       //      CONSTRUCT NODE MATCHING BETWEEN MASTER AND SLAVE NODES
       //                        FOR THIS DIRECTION
       //----------------------------------------------------------------------
-        
+
       // clear map from global masternodeids (on this proc) to global
       // slavenodeids --- it belongs to this master slave pair!!!
       midtosid.clear();
-        
+
       if (discret_->Comm().MyPID() == 0)
       {
         cout << " creating layer " << nlayer << " of midtosid-map in " << *thisplane << " direction ... ";
         fflush(stdout);
       }
-        
+
       // get map master on this proc -> slave on some proc
       CreateNodeCouplingForSinglePBC(
         midtosid,
@@ -456,7 +456,7 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
         cout << "adding connectivity to previous pbcs ... ";
         fflush(stdout);
       }
-        
+
       // time measurement --- start TimeMonitor tm4
       tm4_ref_        = rcp(new TimeMonitor(*timepbcaddcon_ ));
 
@@ -471,13 +471,13 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
 
       // time measurement --- this causes the TimeMonitor tm4 to stop here
       tm4_ref_ = null;
-        
+
       if (discret_->Comm().MyPID() == 0)
       {
         cout << " done\n";
         fflush(stdout);
       }
-        
+
       ++num;
     } // end loop over layers
   } // end loop over planes
@@ -614,7 +614,7 @@ void PeriodicBoundaryConditions::AddConnectivity(
     {
       // get id of masternode and slavenode
       masterid  = iter->first;
-      
+
       vector<int>::iterator i;
       for(i=(iter->second).begin();i!=(iter->second).end();++i)
       {
@@ -623,9 +623,9 @@ void PeriodicBoundaryConditions::AddConnectivity(
 	// is masterid already in allcoupledrownodes?
 	{
 	  alreadyinlist=false;
-	  
+	
 	  map<int,vector<int> >::iterator found;
-	  
+	
 	  found = allcoupledrownodes_->find(masterid);
 	  if(found != allcoupledrownodes_->end())
 	  {
@@ -1146,26 +1146,26 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
     // to the linear system
     {
       map<int,vector<int> >::iterator masterslavepair;
-      
+
       for(masterslavepair =allcoupledcolnodes_->begin();
           masterslavepair!=allcoupledcolnodes_->end()  ;
           ++masterslavepair)
       {
         // get masternode
         DRT::Node*  master = discret_->gNode(masterslavepair->first);
-        
+
         if(master->Owner()!=discret_->Comm().MyPID())
         {
           continue;
         }
-        
+
         // loop slavenodes associated with master
         for(vector<int>::iterator iter=masterslavepair->second.begin();
             iter!=masterslavepair->second.end();++iter)
         {
           double initval=1.0;
           int gid       =*iter;
-          
+
           weights.ReplaceGlobalValues(1,&initval,&gid);
         }
       }
@@ -1196,7 +1196,7 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
       for (int row=0; row<nnode; ++row)
       {
         const int rownode = nodeids[row];
-        
+
         // insert into line of graph only when this proc owns the node
         if (!noderowmap->MyGID(rownode)) continue;
 
@@ -1212,7 +1212,7 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
 
     // -------------------------------------------------------------
     // additional coupling between master and slave
-    // we do not only connect master and slave nodes but if a master/slave 
+    // we do not only connect master and slave nodes but if a master/slave
     // is connected to a master/slave, we connect the corresponding slaves/master
     // as well
 
@@ -1228,7 +1228,7 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
       for (int row=0; row<nnode; ++row)
       {
         const int rownode = nodeids[row];
-        
+
         // insert into line of graph only when this proc owns the node
         if (!noderowmap->MyGID(rownode)) continue;
 
@@ -1251,12 +1251,12 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
                 int othermastersslaveindex = *iter;
                 int masterindex            = rownode;
                 int err = nodegraph->InsertGlobalIndices(rownode,1,&othermastersslaveindex);
-                if (err<0) dserror("nodegraph->InsertGlobalIndices returned err=%d",err); 
+                if (err<0) dserror("nodegraph->InsertGlobalIndices returned err=%d",err);
 
                 if (noderowmap->MyGID(*iter))
                 {
                   err = nodegraph->InsertGlobalIndices(*iter,1,&masterindex);
-                  if (err<0) dserror("nodegraph->InsertGlobalIndices returned err=%d",err); 
+                  if (err<0) dserror("nodegraph->InsertGlobalIndices returned err=%d",err);
                 }
               }
             }
@@ -1290,7 +1290,7 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
       // them. So we have to keep rowrecv until the redistributed map is
       // build.
 
-      // rowrecv is a fully redundant vector (size of number of nodes) 
+      // rowrecv is a fully redundant vector (size of number of nodes)
       vector<int> rowrecv(rowmap.NumGlobalElements());
 
       // after AllreduceEMap rowrecv contains
@@ -1298,8 +1298,8 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
       // *-+-+-    -+-+-*-+-+-    -+-+-*-           -*-+-+-    -+-+-*
       // * | | .... | | * | | .... | | * ..........  * | | .... | | *
       // *-+-+-    -+-+-*-+-+-    -+-+-*-           -*-+-+-    -+-+-*
-      //   gids stored     gids stored                  gids stored 
-      //  on first proc  on second proc                 on last proc 
+      //   gids stored     gids stored                  gids stored
+      //  on first proc  on second proc                 on last proc
       //
       // the ordering of the gids on the procs is arbitrary (as copied
       // from the map)
@@ -1331,7 +1331,7 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
       // metis requests indexes. So we need a reverse lookup from gids
       // to indexes.
       map<int,int> idxmap;
-      // xadj points from index i to the index of the 
+      // xadj points from index i to the index of the
       // first adjacent node
       vector<int> xadj  (rowmap.NumGlobalElements()+1);
       // a list of adjacent nodes, adressed using xadj
@@ -1349,7 +1349,7 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
       if (myrank==workrank)
       {
         // ----------------------------------------
-        
+
         // rowrecv(i)       rowrecv(i+1)                      node gids
         //     ^                 ^
         //     |                 |
@@ -1364,10 +1364,10 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
         //    +-+-+-+-+-+-+-+-+-+-+                -+-+-+
         //    | | | | | | | | | | | ............... | | |      adjncy
         //    +-+-+-+-+-+-+-+-+-+-+                -+-+-+
-        //   
-        //    |       i's       |    (i+1)'s 
+        //
+        //    |       i's       |    (i+1)'s
         //    |    neighbours   |   neighbours           (numbered by equivalent indices)
-        //  
+        //
 
         int count=0;
         xadj[0] = 0;
@@ -1378,7 +1378,7 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
           int* lindices;
           int err = tgraph.ExtractMyRowView(row,numindices,lindices);
           if (err) dserror("Epetra_CrsGraph::ExtractMyRowView returned err=%d",err);
-          
+
           for (int col=0; col<numindices; ++col)
           {
             int gcid = tgraph.ColMap().GID(lindices[col]);
@@ -1420,18 +1420,18 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
       {
         // get masternode
         DRT::Node*  master = discret_->gNode(masterslavepair->first);
-          
+
         if(master->Owner()!=myrank)
         {
           continue;
         }
-      
+
         map<int,int>::iterator paul=idxmap.find(master->Id());
         if (paul == idxmap.end())
         {
           dserror("master not in reverse lookup");
         }
-    
+
         // inverse lookup
         int masterindex=idxmap[master->Id()];
 
@@ -1445,15 +1445,15 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
           {
             dserror("own master but not slave\n");
           }
-          
+
           int slaveindex=idxmap[slave->Id()];
-          
+
           map<int,int>::iterator foo=idxmap.find(slave->Id());
           if (foo == idxmap.end())
           {
             dserror("slave not in reverse lookup");
           }
-          
+
           // -------------------------------------------------------------
           // connections between master and slavenodes are very strong
           // we do not want to partition between master and slave nodes
@@ -1464,7 +1464,7 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
               ladjwgt[j]=100;
             }
           }
-          
+
           for(int j = xadj[slaveindex];j<xadj[slaveindex+1];++j)
           {
             if(adjncy[j] == masterindex)
@@ -1526,7 +1526,7 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
         int edgecut=0;
         // The number of vertices in the graph.
         int nummyele = tmap.NumMyElements();
-       
+
         cout << "proc " <<  myrank << " repartition graph using metis\n";
         if (numproc<8) // better for smaller no. of partitions
         {
@@ -1564,7 +1564,7 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
 #endif
         }
 
-        
+
       } // if (myrank==workrank)
 
       // broadcast partitioning result
@@ -1572,7 +1572,7 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
       tmap.Comm().Broadcast(&size,1,workrank);
       part.resize(size);
       tmap.Comm().Broadcast(&part[0],size,workrank);
-        
+
       // loop part and count no. of nodes belonging to me
       // (we reuse part to save on memory)
       int count=0;
@@ -1591,7 +1591,7 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
 
       // create the new graph and export to it
       RefCountPtr<Epetra_CrsGraph> newnodegraph;
-    
+
       newnodegraph = rcp(new Epetra_CrsGraph(Copy,newmap,108,false));
       Epetra_Export exporter2(nodegraph->RowMap(),newmap);
       err = newnodegraph->Export(*nodegraph,exporter2,Add);
@@ -1602,7 +1602,7 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
       // the rowmap will become the new distribution of nodes
       const Epetra_BlockMap rntmp = newnodegraph->RowMap();
       Epetra_Map newnoderowmap(-1,rntmp.NumMyElements(),rntmp.MyGlobalElements(),0,discret_->Comm());
-      
+
       // the column map will become the new ghosted distribution of nodes
       const Epetra_BlockMap Mcntmp = newnodegraph->ColMap();
       Epetra_Map newnodecolmap(-1,Mcntmp.NumMyElements(),Mcntmp.MyGlobalElements(),0,discret_->Comm());
@@ -1617,11 +1617,11 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
         cout<<endl<<endl;
       }
 
-      // assign the new dofs, make absolutely sure that we always 
+      // assign the new dofs, make absolutely sure that we always
       // have all slaves to a master
       // the finite edge weights are not a 100% warranty for that...
       PutAllSlavesToMastersProc();
-    }    
+    }
   }
 
   return;
