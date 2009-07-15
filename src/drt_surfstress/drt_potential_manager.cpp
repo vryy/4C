@@ -35,22 +35,22 @@ POTENTIAL::PotentialManager::PotentialManager(
     volumePotential_(Teuchos::null),
     surface_(false),
     volume_(false)
-    
+
 {
-      
+
   string pot_type = params_.get<string>("potential type");
   // construct surface and contact potential
   if( pot_type =="surface" ||
       pot_type =="surfacevolume")
       surface_ = true;
-      
+
   if( pot_type =="volume" ||
       pot_type =="surfacevolume")
       volume_ = true;
 
   if(surface_)
     surfacePotential_ = rcp(new POTENTIAL::SurfacePotential(discretRCP,discret));
-  
+
   if(volume_)
     volumePotential_ = rcp(new POTENTIAL::VolumePotential(discretRCP,discret));
 
@@ -58,9 +58,9 @@ POTENTIAL::PotentialManager::PotentialManager(
 /*  if( (params_.get<string>("POTENTIAL TYPE") == "Surface")
     || (params_.get<string>("POTENTIAL TYPE") == "SurfaceVolume"))
   {
-  
+
   }
-    
+
   // construct volume potential
   if( (params_.get<string>("POTENTIAL TYPE") == "Volume")
     || (params_.get<string>("POTENTIAL TYPE") == "SurfaceVolume"))
@@ -71,7 +71,7 @@ POTENTIAL::PotentialManager::PotentialManager(
 }
 
 
-    
+
 /*-------------------------------------------------------------------*
 | (public)                                                 umay 06/08|
 |                                                                    |
@@ -82,11 +82,11 @@ void POTENTIAL::PotentialManager::EvaluatePotential(  ParameterList&            
                                                       RefCountPtr<Epetra_Vector>        disp,
                                                       RefCountPtr<Epetra_Vector>        fint,
                                                       RefCountPtr<LINALG::SparseMatrix> stiff)
-{  
+{
   if(surface_)
     surfacePotential_->EvaluatePotential(p, disp, fint, stiff);
   if(volume_)
-    volumePotential_->EvaluatePotential(p, disp, fint, stiff);                                      
+    volumePotential_->EvaluatePotential(p, disp, fint, stiff);
   return;
 }
 
@@ -97,7 +97,7 @@ void POTENTIAL::PotentialManager::EvaluatePotential(  ParameterList&            
 | Calculate additional internal forces and corresponding stiffness   |
 | on element level for Lennard-Jones potential interaction forces    |
 *--------------------------------------------------------------------*/
-void POTENTIAL::PotentialManager::StiffnessAndInternalForcesPotential( 
+void POTENTIAL::PotentialManager::StiffnessAndInternalForcesPotential(
     const DRT::Element*             element,
     const DRT::UTILS::GaussRule2D&  gaussrule,
     ParameterList&                  eleparams,
@@ -111,9 +111,9 @@ void POTENTIAL::PotentialManager::StiffnessAndInternalForcesPotential(
   else
   {
     if( params_.get<string>("approximation type")== "none" )
-      volumePotential_->StiffnessAndInternalForcesPotential(element, gaussrule, eleparams, lm, K_stiff, F_int);   
+      volumePotential_->StiffnessAndInternalForcesPotential(element, gaussrule, eleparams, lm, K_stiff, F_int);
     //if( params_.get<string>("approximation type")== "surface_approx" )
-    //if( params_.get<string>("approximation type")== "point_approx" )                                
+    //if( params_.get<string>("approximation type")== "point_approx" )
   }
   return;
 }
@@ -126,7 +126,7 @@ void POTENTIAL::PotentialManager::StiffnessAndInternalForcesPotential(
 | Calculate additional internal forces and corresponding stiffness   |
 | for line elements                                                  |
 *--------------------------------------------------------------------*/
-void POTENTIAL::PotentialManager::StiffnessAndInternalForcesPotential( 
+void POTENTIAL::PotentialManager::StiffnessAndInternalForcesPotential(
     const DRT::Element*             element,
     const DRT::UTILS::GaussRule1D&  gaussrule,
     ParameterList&                  eleparams,
@@ -138,7 +138,7 @@ void POTENTIAL::PotentialManager::StiffnessAndInternalForcesPotential(
   if(lineElement)
     surfacePotential_->StiffnessAndInternalForcesPotential(element, gaussrule, eleparams, lm, K_stiff, F_int);
   else
-    volumePotential_->StiffnessAndInternalForcesPotential(element, gaussrule, eleparams, lm, K_stiff, F_int);                                   
+    volumePotential_->StiffnessAndInternalForcesPotential(element, gaussrule, eleparams, lm, K_stiff, F_int);
   return;
 }
 

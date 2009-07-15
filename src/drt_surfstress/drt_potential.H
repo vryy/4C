@@ -44,7 +44,7 @@ using namespace Teuchos;
 namespace POTENTIAL
 {
 /*!
-\brief  Base class controlling surface and volume stresses due 
+\brief  Base class controlling surface and volume stresses due
         to potential forces and containing all necessary history data
 */
 
@@ -61,8 +61,8 @@ public:
       Teuchos::RCP<DRT::Discretization>     discretRCP,
       DRT::Discretization&                  discret
       );
-      
- 
+
+
   //! copy constructor
   Potential(const POTENTIAL::Potential& old);
 
@@ -71,8 +71,8 @@ public:
     \brief Destructor
    */
   ~Potential() {};
-  
-  
+
+
 
 protected:
 
@@ -118,8 +118,8 @@ protected:
       Teuchos::RCP<Epetra_Vector>             systemvector3,
       const string&                           condstring
       );
-      
-  
+
+
   /*!
   \brief  select correct potential out of condition
    */
@@ -130,8 +130,8 @@ protected:
     LINALG::Matrix<3,1>&          potderiv1,
     LINALG::Matrix<3,3>&          potderiv2
     );
-  
-  
+
+
   /*!
   \brief  compute first and second derivative of the Lennard-Jones potential
    */
@@ -143,8 +143,8 @@ protected:
       LINALG::Matrix<3,1>&        potderiv1,
       LINALG::Matrix<3,3>&        potderiv2
       );
-  
-      
+
+
   /*!
   \brief  compute first and second derivative of the Zeta potential
    */
@@ -155,9 +155,9 @@ protected:
     const LINALG::Matrix<3,1>&    y,
     LINALG::Matrix<3,1>&          potderiv1,
     LINALG::Matrix<3,3>&          potderiv2
-    );    
-  
-  
+    );
+
+
   /*!
   \brief  computes distance related structures
    */
@@ -169,8 +169,8 @@ protected:
       LINALG::Matrix<3,1>&        dist_unit,
       double&                     distance
       );
-  
-  
+
+
   /*!
   \brief  collect global column indices for stiffness matrices with non-local entries
    */
@@ -179,32 +179,32 @@ protected:
       std::map<int,std::set<int> >&               potentialElementIds,
       vector<int>&                                lmcol
       );
-  
- 
+
+
   //! get local index
   int GetLocalIndex(
       vector<int>&    lmcol,
       int             value
       );
-  
-  
+
+
   //! compute element nodes in reference configuration
   void ReferenceConfiguration(
       const DRT::Element*         element,
-      LINALG::SerialDenseMatrix&  X, 
+      LINALG::SerialDenseMatrix&  X,
       const int                   numdim
       ) const;
-  
-  
+
+
   //! compute element nodes in spatial configuration
   void SpatialConfiguration(
       const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
       const DRT::Element*                         element,
-      LINALG::SerialDenseMatrix&                  x, 
+      LINALG::SerialDenseMatrix&                  x,
       const int                                   numdim
       ) const;
- 
-  
+
+
   //! name@ Protected Attributes
 
   //!  current discretization
@@ -212,14 +212,14 @@ protected:
 
   //!  current discretization
   DRT::Discretization&                        discret_;
-  
+
   //! SearchTree xTree_
   Teuchos::RCP<GEO::SearchTree>               searchTree_;
-  
+
   //! problem dimension
   int                                         prob_dim_;
 
-  
+
 
 private:
 

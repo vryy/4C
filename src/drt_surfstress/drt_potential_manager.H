@@ -43,7 +43,7 @@ public:
   PotentialManager(
       const Teuchos::RCP<DRT::Discretization>     discretRCP,
       DRT::Discretization&                        discret,
-      const ParameterList&                        params 
+      const ParameterList&                        params
       );
 
   /*!
@@ -59,13 +59,13 @@ public:
     \param fint (out): internal forces
     \param stiff (out): stiffness matrix
    */
-  void EvaluatePotential(   
+  void EvaluatePotential(
       ParameterList&                      p,
       RefCountPtr<Epetra_Vector>          disp,
       RefCountPtr<Epetra_Vector>          fint,
       RefCountPtr<LINALG::SparseMatrix>   stiff);
 
-  
+
   /*!
     \brief Routine to calculate additional internal forces and
     stiffnesses due to interfacial phenomena for surface elements
@@ -85,8 +85,8 @@ public:
       Epetra_SerialDenseVector&         fint,
       const bool                        surfaceElement
       );
-  
-  
+
+
   /*!
     \brief Routine to calculate additional internal forces and
     stiffnesses due to interfacial phenomena for line elements
@@ -120,19 +120,19 @@ private:
 
   //!  current discretization
   DRT::Discretization&                          discret_;
-  
+
   //!  parameter list
   const Teuchos::ParameterList&                 params_;
 
   //! surface potential
   Teuchos::RCP<POTENTIAL::SurfacePotential>     surfacePotential_;
-  
+
   //! volume potential
   Teuchos::RCP<POTENTIAL::VolumePotential>      volumePotential_;
-  
-  //! surface 
+
+  //! surface
   bool                                          surface_;
-  
+
   //! volume
   bool                                          volume_;
 

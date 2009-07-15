@@ -2,7 +2,7 @@
 \file drt_potential.cpp
 
 \brief  Base class controlling surface stresses due to potential forces
-        between mesoscopic structures 
+        between mesoscopic structures
 
 <pre>
 Maintainer: Ursula Mayer
@@ -37,7 +37,7 @@ POTENTIAL::Potential::Potential(
     discretRCP_(discretRCP),
     discret_(discret),
     prob_dim_(genprob.ndim)
-    
+
 {
   searchTree_ = rcp(new GEO::SearchTree(8));
   return;
@@ -52,7 +52,7 @@ POTENTIAL::Potential::Potential(const POTENTIAL::Potential& old):
     discretRCP_(old.discretRCP_),
     discret_(old.discret_),
     searchTree_(old.searchTree_),
-    prob_dim_(old.prob_dim_)  
+    prob_dim_(old.prob_dim_)
 {
   return;
 }
@@ -85,10 +85,10 @@ void POTENTIAL::Potential::searchElementsInCutOffRadius(
     {
       const double comp_diff = currpos(k) - point(k);
       const double diff_square = comp_diff*comp_diff;
-      distance += diff_square; 
+      distance += diff_square;
     }
     distance = sqrt(distance);
-    
+
     // if node lies within cutoff radius -> collect element id in set
     if(fabs(distance) - fabs(radius) < tol)
     {
@@ -118,9 +118,9 @@ void POTENTIAL::Potential::treeSearchElementsInCutOffRadius(
     const double                                radius,
     const int                                   label)
 {
-  potentialElementIds = 
+  potentialElementIds =
     searchTree_->searchElementsInRadius(*potentialdis, currentpositions, point, radius, label);
-  
+
   return;
 }
 
@@ -155,7 +155,7 @@ void POTENTIAL::Potential::EvaluatePotentialCondition(
   const bool assemblevec3 = systemvector3!=Teuchos::null;
 
   //----------------------------------------------------------------------
-  // loop through potential conditions and evaluate them 
+  // loop through potential conditions and evaluate them
   //----------------------------------------------------------------------
   vector<DRT::Condition*> potentialcond;
   discret_.GetCondition(condstring, potentialcond);
@@ -175,7 +175,7 @@ void POTENTIAL::Potential::EvaluatePotentialCondition(
     double                curvefac = 1.0;
     if (curvenum>=0 && usetime)
       curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
-      
+
     params.set("LoadCurveFactor",curvefac);
 
     params.set<RefCountPtr<DRT::Condition> >("condition", Teuchos::rcp(*condIter,false));
@@ -200,7 +200,7 @@ void POTENTIAL::Potential::EvaluatePotentialCondition(
       int err = curr->second->Evaluate( params,discret_,lm, elematrix1,elematrix2,
                                         elevector1,elevector2,elevector3);
       if (err) dserror("error while evaluating elements");
-   
+
       // specify lm row and lm col
       vector<int> lmrow;
       vector<int> lmcol;
@@ -217,18 +217,18 @@ void POTENTIAL::Potential::EvaluatePotentialCondition(
       {
         for(int i = 0; i < rowsize; i++)
           lmrow.push_back(lm[i]);
-        
+
         lmcol.resize(lm.size());
         lmcol = lm;
       }
       else
         dserror("lm is not properly filled");
-         
+
       // assembly
       int eid = curr->second->Id();
       if (assemblemat1) systemmatrix1->FEAssemble(eid,elematrix1,lmrow,lmcol);
       if (assemblemat2) systemmatrix2->FEAssemble(eid,elematrix2,lmrow,lmcol);
-      
+
       if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,lmrow,lmowner);
       if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,lmrow,lmowner);
       if (assemblevec3) LINALG::Assemble(*systemvector3,elevector3,lmrow,lmowner);
@@ -256,15 +256,15 @@ void POTENTIAL::Potential::EvaluatePotentialfromCondition(
   {
     const double depth    = cond->GetDouble("depth");
     const double rootDist = cond->GetDouble("rootDist");
-    
+
     EvaluateLennardJonesPotential(depth, rootDist, x, y, potderiv1, potderiv2);
-    
+
   }
   else if (cond->Type()==DRT::Condition::Zeta_Potential_3D || cond->Type()==DRT::Condition::Zeta_Potential_2D)
   {
     const double zeta_param_1 = cond->GetDouble("zeta_param_1");
     const double zeta_param_2 = cond->GetDouble("zeta_param_2");
-    
+
     EvaluateZetaPotential(zeta_param_1, zeta_param_2, x, y, potderiv1, potderiv2);
   }
   else
@@ -311,7 +311,7 @@ void POTENTIAL::Potential::EvaluateLennardJonesPotential(
   for(int i = 0; i < 3; i++)
     for(int j = 0; j < 3; j++)
       potderiv2(i,j) = 0.0;
-  
+
   for(int i = 0; i < 3; i++)
   {
       potderiv2(i,i) += dpotdr/distance;
@@ -358,7 +358,7 @@ void POTENTIAL::Potential::EvaluateZetaPotential(
   for(int i = 0; i < 3; i++)
     for(int j = 0; j < 3; j++)
       potderiv2(i,j) = 0.0;
-  
+
   for(int i = 0; i < 3; i++)
   {
       potderiv2(i,i) += dpotdr/distance;
@@ -385,7 +385,7 @@ void POTENTIAL::Potential::computeDistance(
 {
   // compute distance vector
   dist_vec.Update(1.0, x, -1.0, y);
-  
+
   // compute distance
   distance = dist_vec.Norm2();
 
@@ -396,7 +396,7 @@ void POTENTIAL::Potential::computeDistance(
   // compute r_unit tensorproduct tensor_product
   for(int i=0; i<3; i++)
     for(int j=0; j<3; j++)
-      du_tensor_du(i,j) = dist_unit(i)*dist_unit(j); 
+      du_tensor_du(i,j) = dist_unit(i)*dist_unit(j);
 
 }
 
@@ -404,7 +404,7 @@ void POTENTIAL::Potential::computeDistance(
 
 /*----------------------------------------------------------------------*
  |  determine global column indices for the stiffness matrix u.may 08/08|
- |  with nonlocal entries                                               |  
+ |  with nonlocal entries                                               |
  *----------------------------------------------------------------------*/
 void POTENTIAL::Potential::CollectLmcol(
     const Teuchos::RCP<DRT::Discretization>     potentialdis,
@@ -418,7 +418,7 @@ void POTENTIAL::Potential::CollectLmcol(
       vector<int> lmowner;
       vector<int> lm;
       element->LocationVector(*potentialdis,lm,lmowner);
-      
+
       for(int i = 0; i < (int) lm.size(); i++)
       {
         bool alreadyInserted = false;
@@ -428,7 +428,7 @@ void POTENTIAL::Potential::CollectLmcol(
           {
             alreadyInserted = true;
             break;
-          } 
+          }
         }
         if(!alreadyInserted)
           lmcol.push_back(lm[i]);
@@ -455,10 +455,10 @@ int POTENTIAL::Potential::GetLocalIndex(
       localindex = i;
       break;
     }
-  
+
   if(localindex == -1)
     dserror("no local index found");
-        
+
   return localindex;
 }
 
@@ -469,12 +469,12 @@ int POTENTIAL::Potential::GetLocalIndex(
  *----------------------------------------------------------------------*/
 void POTENTIAL::Potential::ReferenceConfiguration(
     const DRT::Element*                         element,
-    LINALG::SerialDenseMatrix&                  X, 
+    LINALG::SerialDenseMatrix&                  X,
     const int                                   numdim) const
 {
   const int numnode = element->NumNode();
   for (int i=0; i<numnode; ++i)
-    for (int j = 0; j < numdim; ++j) 
+    for (int j = 0; j < numdim; ++j)
       X(i,j) = element->Nodes()[i]->X()[j];
 
   return;
@@ -488,12 +488,12 @@ void POTENTIAL::Potential::ReferenceConfiguration(
 void POTENTIAL::Potential::SpatialConfiguration(
     const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
     const DRT::Element*                         element,
-    LINALG::SerialDenseMatrix&                  x, 
+    LINALG::SerialDenseMatrix&                  x,
     const int                                   numdim) const
 {
   const int numnode = element->NumNode();
   for (int i=0; i<numnode; ++i)
-    for (int j = 0; j < numdim; ++j) 
+    for (int j = 0; j < numdim; ++j)
       x(i,j) = currentpositions.find(element->NodeIds()[i])->second(j);
   return;
 }

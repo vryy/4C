@@ -28,40 +28,40 @@ namespace POTENTIAL
   class PotentialDofSet : public DRT::DofSet
   {
   public:
-  
+
     /*!
     \brief Standard Constructor
-  
+
     */
     explicit PotentialDofSet(RCP<DRT::Discretization> sourcedis);
-  
+
     /*!
     \brief Destructor
-  
+
     */
     virtual ~PotentialDofSet() { return; }
-  
+
     /// Assign dof numbers to all elements and nodes of the discretization.
     virtual int AssignDegreesOfFreedom(
             const DRT::Discretization& dis,
             const int start);
-  
+
     /// Assign dof numbers for new discretization using dof numbering from source discretization.
     void TransferDegreesOfFreedom(
             const DRT::Discretization& sourcedis,    ///< source discret
             const DRT::Discretization& newdis,       ///< discretization that gets dof numbering from source discret
             const int                  start         ///< offset for dof numbering (obsolete)
             );
-  
+
   private:
-    
+
     // no copy constructor and assignment operator
     PotentialDofSet operator = (const PotentialDofSet& old);
     PotentialDofSet(const PotentialDofSet& old);
-    
+
     RCP<DRT::Discretization> sourcedis_; ///< source discretization
-  
-  
+
+
   }; // class PotentialDofSet
 } //namespace
 
