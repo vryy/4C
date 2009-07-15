@@ -1812,17 +1812,17 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
   //Loop through all GP and calculate their contribution to the forcevector and stiffnessmatrix
   for(int numgp=0; numgp < gausspoints.nquad; numgp++)
   {
-	  	//Get location and weight of GP in parameter space	
-	  	const double xi = gausspoints.qxg[numgp][0];
-	  	const double wgt = gausspoints.qwgt[numgp];
-	
-	  	//Get h and h,xi
-	  	DRT::UTILS::shape_function_1D(funct,xi,distype);
-	  	DRT::UTILS::shape_function_1D_deriv1(deriv,xi,distype);
-	  	
-	  	dxdxi_gp.Clear();
-	  	thetanew_gp.Clear();
-	  	thetaprimenew_gp.Clear();
+  	//Get location and weight of GP in parameter space	
+  	const double xi = gausspoints.qxg[numgp][0];
+  	const double wgt = gausspoints.qwgt[numgp];
+  
+  	//Get h and h,xi
+  	DRT::UTILS::shape_function_1D(funct,xi,distype);
+  	DRT::UTILS::shape_function_1D_deriv1(deriv,xi,distype);
+  	
+  	dxdxi_gp.Clear();
+  	thetanew_gp.Clear();
+  	thetaprimenew_gp.Clear();
 
 	    //set up current dxdxi, theta, and thetaprime at the GP
 		for (int dof=0; dof<3; ++dof)//j

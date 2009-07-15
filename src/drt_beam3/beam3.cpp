@@ -286,6 +286,10 @@ void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const vector<double>& xrefe,co
   if(!isinit_)
   {
     isinit_ = true;
+    
+  //Set the applied Gaussrule ( It can be proven that we need 1 GP less than nodes to integrate exact )
+  //note: we use a static cast for the enumeration here cf. Practical C++ Programming p.185
+  gaussrule_ = static_cast<enum DRT::UTILS::GaussRule1D>(nnode-1);
 
   //create Matrix for the derivates of the shapefunctions at the GP
 	LINALG::Matrix<1,nnode> shapefuncderiv;

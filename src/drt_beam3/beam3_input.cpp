@@ -63,11 +63,8 @@ bool DRT::ELEMENTS::Beam3::ReadElement()
           //Get Number of Nodes of DiscretizationType
           int nnode = DRT::UTILS::getNumberOfElementNodes(distype);
 
-          //Set the applied Gaussrule ( It can be proven that we need 1 GP less than nodes to integrate exact )
-          //note: we use a static cast for the enumeration here cf. Practical C++ Programming p.185
-          gaussrule_ = static_cast<enum DRT::UTILS::GaussRule1D>(nnode-1);
           //Get an array for the global node numbers
-          vector<int> nodes(nnode,0);
+          std::vector<int> nodes(nnode,0);
           //Read global node numbers
           frint_n(eletext.c_str(), &nodes[0], nnode, &ierr);
 

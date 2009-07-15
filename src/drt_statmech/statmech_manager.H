@@ -109,10 +109,10 @@ protected:
   RCP<LINALG::SparseMatrix>& stiff_;
 
   //! \brief storing for each row map node the column map LID of all proper neighbour nodes
-  std::vector< vector<int> >  crosslinkerneighbours_;
+  std::vector< std::vector<int> >  crosslinkerneighbours_;
 
   //! \brief storing for each node GIDs of nodes to which a crosslinker has been established
-  std::vector< vector<int> >  crosslinkerpartner_;
+  std::vector< std::vector<int> >  crosslinkerpartner_;
 
   //! \brief storing for each node LID number of filament to which it belongs
   RCP<Epetra_Vector> filamentnumber_;
