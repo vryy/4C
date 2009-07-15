@@ -41,32 +41,32 @@ public:
 
   //! \brief Do time integration
   void Integrate();
-  
+
   //! \brief do consistent predictor step
-  virtual void ConsistentPredictor();    
+  virtual void ConsistentPredictor();
 
   //!\brief do full Newton iteration
   virtual void FullNewton();
-  
+
   //!\brief solve non-linear problem by means of PTC method
   virtual void PTC();
-  
+
   //!\brief writing output including restart information
   virtual void Output();
-  
+
   //!\brief read restart information
   virtual void ReadRestart(int step);
-    
+
 
 protected:
 
   // don't want = operator and cctor
   StatMechTime operator = (const StatMechTime& old);
   StatMechTime(const StatMechTime& old);
-  
+
   //! \brief manager for administration of statistical mechanics stuff
   RCP<StatMechManager>         statmechmanager_;
-  
+
   //! \brief class variable to make statistical forces globally accessible in time integration
   RCP<Epetra_Vector>    browniancol_;
 

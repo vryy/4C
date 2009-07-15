@@ -29,8 +29,8 @@ BroMotion_Manager::BroMotion_Manager(
     discretRCP_(discretRCP),
     discret_(discret)
 {
-  
-  
+
+
 }
 
 
@@ -40,7 +40,7 @@ BroMotion_Manager::BroMotion_Manager(
 |                                                                    |
 | Calculate additional forces according to stochastical processes    |
 *--------------------------------------------------------------------*/
-void BroMotion_Manager::StochasticalForces( 
+void BroMotion_Manager::StochasticalForces(
     const DRT::Element*             element,
     const DRT::UTILS::GaussRule2D&  gaussrule,
     ParameterList&                  params,

@@ -33,7 +33,7 @@ StatMechTime::StatMechTime(ParameterList& params,
 StruGenAlpha(params,dis,solver,output)
 {
   statmechmanager_ = rcp(new StatMechManager(params,dis,stiff_));
-  
+
   //create vector for statistical forces
   browniancol_ = LINALG::CreateVector(*(discret_.DofRowMap()),true);
 
@@ -66,7 +66,7 @@ void StatMechTime::Integrate()
 
 
 
-  
+
   //getting number of dimensions for diffusion coefficient calculation
   const Teuchos::ParameterList& psize = DRT::Problem::Instance()->ProblemSizeParams();
   int ndim=psize.get<int>("DIM");
@@ -74,7 +74,7 @@ void StatMechTime::Integrate()
 
   for (int i=step; i<nstep; ++i)
   {
-    
+
     /*
     //the following block makes the random number generation dependent on the time step number
     {
@@ -86,41 +86,41 @@ void StatMechTime::Integrate()
       seedgenerator.seed((unsigned int)seedvariable);
     }
     */
-    
+
     double time = params_.get<double>("total time",0.0);
-    
+
     /*in the very first step and in case that special output for statistical mechanics is requested we have
      * to initialized the related output method*/
     if(i == 0)
       statmechmanager_->StatMechInitOutput(ndim,dt);
-        
+
     //processor 0 write total number of elements at the beginning of time step i to console:
     if(!discret_.Comm().MyPID())
       std::cout<<"\nNumber of elements at the beginning of time step "<<i<<" : "<<discret_.NumGlobalElements()<<"\n";
-    
-    
+
+
     //pay attention: for a constant predictor an incremental velocity update is necessary, which has
     //been deleted out of the code in oder to simplify it
-    
+
     /*
     if      (predictor==1) ConstantPredictor();
     else if (predictor==2) ConsistentPredictor();
     */
 
-    ConsistentPredictor(); 
+    ConsistentPredictor();
 
 
     //FullNewton();
     PTC();
-          
+
     UpdateandOutput();
-   
+
     /*special update for statistical mechanics; this output has to be handled seperately from the time integration scheme output
      * as it may take place independently on writing geometric output data in a specific time step or not*/
     statmechmanager_->StatMechUpdate(dt,*dis_);
     statmechmanager_->StatMechOutput(params_,ndim,time,i,dt,*dis_,*fint_);
 
-    
+
 
     if (time>=maxtime) break;
   }
@@ -224,11 +224,11 @@ void StatMechTime::ConsistentPredictor()
   // increment time and step
   double timen = time + dt;  // t_{n+1}
   //int istep = step + 1;  // n+1
-  
-  
+
+
   // constant predictor : displacement in domain
   disn_->Update(1.0,*dis_,0.0);
- 
+
   /*compute new ordinary external forces (if dependent on displacement with respect to old displacemnet for a
    * semi-implicit-time-integration scheme)*/
   {
@@ -253,14 +253,14 @@ void StatMechTime::ConsistentPredictor()
     discret_.EvaluateNeumann(p,*fextn_);
     discret_.ClearState();
   }
-  
+
   /*Statistical mechanics includes some Brownian forces. These are evaluated at the beginning of a time step, i.e. in the sense
    * of an Ito integral by means of random numbers. Thus currently a semi-implicit time step scheme is applied (implicit in drift
    * term and explicit in noise term). The Brownian forces are evaluated in such a way that the resulting Langevin equation goes
    * along with the correct Fokker-Planck-Diffusion equation*/
   statmechmanager_->StatMechBrownian(params_,dis_,browniancol_);
 
-  
+
 
   //cout << *disn_ << endl;
 
@@ -269,8 +269,8 @@ void StatMechTime::ConsistentPredictor()
   // V_{n+1} := gamma/(beta*dt) * (D_{n+1} - D_n)
   //          + (beta-gamma)/beta * V_n
   //          + (2.*beta-gamma)/(2.*beta) * A_n
-  
-  //backward Euler 
+
+  //backward Euler
   veln_->Update(1.0/dt,*disn_,-1.0/dt,*dis_,0.0);
 
 
@@ -317,7 +317,7 @@ void StatMechTime::ConsistentPredictor()
     discret_.ClearState();
   }
 #endif
-  
+
 
   //------------------------------ compute interpolated dis, vel and acc
   // consistent predictor
@@ -355,14 +355,14 @@ void StatMechTime::ConsistentPredictor()
     p.set("total time",timen);
     p.set("delta time",dt);
     p.set("alpha f",alphaf);
-    
+
     //passing statistical mechanics parameters to elements
     p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
     p.set("STOCH_ORDER",(statmechmanager_->statmechparams_).get<int>("STOCH_ORDER",0));
 
     //add statistical vector to parameter list for statistical forces and damping matrix computation
     p.set("statistical vector",browniancol_);
-    
+
     // set vector values needed by elements
     discret_.ClearState();
     disi_->PutScalar(0.0);
@@ -377,7 +377,7 @@ void StatMechTime::ConsistentPredictor()
     discret_.Evaluate(p,stiff_,null,fint_,null,null);
 
     discret_.ClearState();
-    
+
 
 
 
@@ -386,7 +386,7 @@ void StatMechTime::ConsistentPredictor()
 
     // do NOT finalize the stiffness matrix, add mass and damping to it later
   }
-  
+
 
   //-------------------------------------------- compute residual forces
   // build residual
@@ -410,8 +410,8 @@ void StatMechTime::ConsistentPredictor()
 
   fresm_->Update(-1.0,*fint_,1.0,*fextm_,0.0);
 
-  
-  
+
+
   // blank residual at DOFs on Dirichlet BC
   {
     Epetra_Vector fresmcopy(*fresm_);
@@ -484,18 +484,18 @@ void StatMechTime::FullNewton()
   while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) and numiter<=maxiter)
   {
 
-    
+
     //------------------------------------------- effective rhs is fresm
     //---------------------------------------------- build effective lhs
     //stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(delta*dt),1.0);
     //stiff_->Complete();
-    
+
     //backward Euler
     stiff_->Complete();
 
     //----------------------- apply dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
-    LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);    
+    LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
 
 
     //--------------------------------------------------- solve for disi
@@ -508,7 +508,7 @@ void StatMechTime::FullNewton()
     }
     solver_.Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,numiter==0);
     solver_.ResetTolerance();
-    
+
 
     //---------------------------------- update mid configuration values
     // displacements
@@ -520,10 +520,10 @@ void StatMechTime::FullNewton()
     // velocities
 
     // incremental (required for constant predictor)
-    
+
     //backward Euler
     velm_->Update(1.0/dt,*dism_,-1.0/dt,*dis_,0.0);
-    
+
     //velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
     //velm_->Update((delta-(1.0-alphaf)*gamma)/delta,*vel_,gamma/(delta*dt));
 
@@ -540,15 +540,15 @@ void StatMechTime::FullNewton()
       p.set("total time",timen);
       p.set("delta time",dt);
       p.set("alpha f",alphaf);
-      
+
       //passing statistical mechanics parameters to elements
       p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
       p.set("STOCH_ORDER",(statmechmanager_->statmechparams_).get<int>("STOCH_ORDER",0));
 
-      //add statistical vector to parameter list for statistical forces 
+      //add statistical vector to parameter list for statistical forces
       p.set("statistical vector",browniancol_);
-      
-      
+
+
       // set vector values needed by elements
       discret_.ClearState();
 
@@ -577,11 +577,11 @@ void StatMechTime::FullNewton()
     //        + F_int(D_{n+1-alpha_f})
     //        - F_{ext;n+1-alpha_f}
     // add mid-inertial force
-    
+
 
     //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
     fresm_->Update(-1.0,*fint_,1.0,*fextm_,0.0);
-     
+
 
     // blank residual DOFs that are on Dirichlet BC
     {
@@ -592,10 +592,10 @@ void StatMechTime::FullNewton()
     //---------------------------------------------- build residual norm
     disi_->Norm2(&disinorm);
     fresm_->Norm2(&fresmnorm);
-    
 
-    
-    //if code is compiled with DEBUG flag each iteration is written into file for Gmsh visualization    
+
+
+    //if code is compiled with DEBUG flag each iteration is written into file for Gmsh visualization
 #ifdef DEBUG
     // first index = time step index
     std::ostringstream filename;
@@ -603,12 +603,12 @@ void StatMechTime::FullNewton()
     //creating complete file name dependent on step number with 5 digits and leading zeros
     if (numiter<100000)
       filename << "./GmshOutput/konvergenz"<< std::setw(5) << setfill('0') << numiter <<".pos";
-    else 
+    else
       dserror("Gmsh output implemented for a maximum of 99999 steps");
-    
-    statmechmanager_->GmshOutput(*dism_,filename,numiter);  
+
+    statmechmanager_->GmshOutput(*dism_,filename,numiter);
 #endif  // #ifdef D_BEAM3
-    
+
 
     // a short message
     if (!myrank_ and (printscreen or printerr))
@@ -660,11 +660,11 @@ void StatMechTime::PTC()
   bool printscreen = params_.get<bool>  ("print to screen",true);
   bool printerr    = params_.get<bool>  ("print to err",false);
   FILE* errfile    = params_.get<FILE*> ("err file",NULL);
-  
+
   #ifndef STRUGENALPHA_BE
     //double delta = beta;
   #endif
-  
+
   if (!errfile) printerr = false;
   //------------------------------ turn adaptive solver tolerance on/off
   const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
@@ -675,15 +675,15 @@ void StatMechTime::PTC()
 
 
   // hard wired ptc parameters
-  double ptcdt = 1.3e1; //1.3e1 
+  double ptcdt = 1.3e1; //1.3e1
   double nc;
   fresm_->NormInf(&nc);
   double dti = 1/ptcdt;
   double dti0 = dti;
   RCP<Epetra_Vector> x0 = rcp(new Epetra_Vector(*disi_));
-  
+
   double resinit = nc;
- 
+
 
   //=================================================== equilibrium loop
   int numiter=0;
@@ -696,13 +696,13 @@ void StatMechTime::PTC()
 
   while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) and numiter<=maxiter)
   {
-   
-    
+
+
 #if 1 // SER
 #else // TTE
     double dtim = dti0;
 #endif
-    
+
     dti0 = dti;
     RCP<Epetra_Vector> xm = rcp(new Epetra_Vector(*x0));
     x0->Update(1.0,*disi_,0.0);
@@ -719,7 +719,7 @@ void StatMechTime::PTC()
       p.set("action","calc_struct_ptcstiff");
       p.set("delta time",dt);
       p.set("dti",dti);
-      
+
       //add statistical vector to parameter list for statistical forces and damping matrix computation
       p.set("statistical vector",browniancol_);
       p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
@@ -773,14 +773,14 @@ void StatMechTime::PTC()
       p.set("total time",timen);
       p.set("delta time",dt);
       p.set("alpha f",alphaf);
-      
+
       //passing statistical mechanics parameters to elements
       p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
       p.set("STOCH_ORDER",(statmechmanager_->statmechparams_).get<int>("STOCH_ORDER",0));
 
       //add statistical vector to parameter list for statistical forces and damping matrix computation
       p.set("statistical vector",browniancol_);
-      
+
       // set vector values needed by elements
       discret_.ClearState();
 
@@ -813,7 +813,7 @@ void StatMechTime::PTC()
 
     //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
     fresm_->Update(-1.0,*fint_,1.0,*fextm_,0.0);
-    
+
 
     // blank residual DOFs that are on Dirichlet BC
     {
@@ -842,13 +842,13 @@ void StatMechTime::PTC()
     dti *= (np/nc);
     dti = max(dti,0.0);
     nc = np;
-    
-    
-    //Modifikation: sobald Residuum klein, PTC ausgeschaltet 
+
+
+    //Modifikation: sobald Residuum klein, PTC ausgeschaltet
     if(np < 0.01*resinit)
-      dti = 0.0;    
-      
-    
+      dti = 0.0;
+
+
 #else
     {
       // TTE step size control
@@ -870,11 +870,11 @@ void StatMechTime::PTC()
       ett = ett / (2.*ttau);
       dti = sqrt(ett);
       nc = np;
-      
-      //Modifikation: sobald Residuum klein, PTC ausgeschaltet 
+
+      //Modifikation: sobald Residuum klein, PTC ausgeschaltet
       if(np < 0.01*resinit)
         dti = 0.0;
-      
+
     }
 #endif
 
@@ -954,13 +954,13 @@ void StatMechTime::Output()
     output_.WriteInt("InverseDesignRestartFlag",1);
 #endif
 
-    isdatawritten = true;   
-    
-//____________________________________________________________________________________________________________    
+    isdatawritten = true;
+
+//____________________________________________________________________________________________________________
 //note:the following block is the only difference to Output() in strugenalpha.cpp-----------------------------
 /* write restart information for statistical mechanics problems; all the information is saved as class variables
- * of StatMechManager*/      
-    statmechmanager_->StatMechWriteRestart(output_); 
+ * of StatMechManager*/
+    statmechmanager_->StatMechWriteRestart(output_);
 //------------------------------------------------------------------------------------------------------------
 //____________________________________________________________________________________________________________
 
@@ -1095,7 +1095,7 @@ void StatMechTime::ReadRestart(int step)
   reader.ReadVector(acc_, "acceleration");
   reader.ReadVector(fext_,"fexternal");
   reader.ReadMesh(step);
-  
+
   // read restart information for contact
   statmechmanager_->StatMechReadRestart(reader);
 

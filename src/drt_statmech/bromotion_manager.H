@@ -29,9 +29,9 @@ Maintainer: Ursula Mayer
 
 class BroMotion_Manager
 {
-  
+
   public :
-    
+
     //! constructor
     explicit BroMotion_Manager(
         Teuchos::RCP<DRT::Discretization>   discretRCP,
@@ -39,9 +39,9 @@ class BroMotion_Manager
 
     //! \brief Destructor
     virtual ~BroMotion_Manager() {};
-    
+
     //! \brief Stochastical Forces
-    void StochasticalForces( 
+    void StochasticalForces(
         const DRT::Element*             element,
         const DRT::UTILS::GaussRule2D&  gaussrule,
         ParameterList&                  params,
@@ -49,13 +49,13 @@ class BroMotion_Manager
         Epetra_SerialDenseMatrix&       K_surf,
         Epetra_SerialDenseVector&       F_int
         );
-    
+
   private:
 
     // don't want = operator and cctor
     BroMotion_Manager operator = (const BroMotion_Manager& old);
     BroMotion_Manager(const BroMotion_Manager& old);
-    
+
     //! name@ Private Attributes
 
     //! rcp on discretization
@@ -63,8 +63,8 @@ class BroMotion_Manager
 
     //! discretization
     DRT::Discretization& discret_;
-   
-  
+
+
 };
 
 #endif /*CCADISCRET*/
