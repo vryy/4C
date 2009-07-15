@@ -2,7 +2,7 @@
 /*!
 \file pre_exodus.H
 
-\brief preprocessor for exodusII format 
+\brief preprocessor for exodusII format
 
 <pre>
 Maintainer: Moritz & Georg
@@ -47,4 +47,4 @@ int CreateDefaultBCFile(EXODUS::Mesh& mesh);
 
 #endif /* of CCADISCRET */
 #endif /*PRE_EXODUS_H_*/
-#endif 
+#endif

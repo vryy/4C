@@ -230,7 +230,7 @@ void StructureEnsightWriter::WriteNodalStressStep(ofstream& file,
       const DRT::Node* lnode = dis->lRowNode(i);
       const std::vector<int> lnodedofs = dis->Dof(lnode);
       if (lnodedofs.size() < 3)
-        dserror("Too few DOFs at node of interest"); 
+        dserror("Too few DOFs at node of interest");
       const int adjele = lnode->NumElement();
       (*((*nodal_stresses)(0)))[i] = (*normal_stresses)[lnodedofs[0]]/adjele;
       (*((*nodal_stresses)(1)))[i] = (*normal_stresses)[lnodedofs[1]]/adjele;
@@ -247,7 +247,7 @@ void StructureEnsightWriter::WriteNodalStressStep(ofstream& file,
       const DRT::Node* lnode = dis->lRowNode(i);
       const std::vector<int> lnodedofs = dis->Dof(lnode);
       if (lnodedofs.size() < 2)
-        dserror("Too few DOFs at node of interest"); 
+        dserror("Too few DOFs at node of interest");
       const int adjele = lnode->NumElement();
       (*((*nodal_stresses)(0)))[i] = (*normal_stresses)[lnodedofs[0]]/adjele;
       (*((*nodal_stresses)(1)))[i] = (*normal_stresses)[lnodedofs[1]]/adjele;

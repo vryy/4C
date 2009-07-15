@@ -26,8 +26,8 @@ using namespace std;
 /*----------------------------------------------------------------------*/
 /*
     Write the coordinates for a Nurbs discretization
-    The ccordinates of the vizualisation points (i.e. the corner 
-    nodes of elements displayed in paraview) are not the control point 
+    The ccordinates of the vizualisation points (i.e. the corner
+    nodes of elements displayed in paraview) are not the control point
     coordinates of the nodes in the discretization but the points the
     knot values are mapped to.
 */
@@ -42,7 +42,7 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions
   // refcountpointer to vector of all coordinates
   // distributed among all procs
   RefCountPtr<Epetra_MultiVector> nodecoords;
-  
+
   // the ids of the visualisation points on this proc
   vector<int> local_vis_point_ids;
   local_vis_point_ids.clear();
@@ -118,10 +118,10 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions
       // if we just skip them, we would loose some connectivity
       // in the result;
       // as a work-around, we replace the zero-sized element
-      // with the next nonzero element --- this preserves the 
+      // with the next nonzero element --- this preserves the
       // connectivity, and everything looks nice and smooth again.
       // Note: This work-around will not work in parallel (or a
-      //       special ghosting for elements along interpolated 
+      //       special ghosting for elements along interpolated
       //       boundries has to be applied)
       // Note: The following element will be plotted twice
 
@@ -1524,10 +1524,10 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions
 
 /*----------------------------------------------------------------------
          Write the cells for a Nurbs discretization
-         quadratic nurbs split one element in knot space into 
-         four(2d)/eight(3d) cells. The global numbering of the 
-         vizualisation points (i.e. the corner points of the 
-         cells) is computed from the local patch numbering and 
+         quadratic nurbs split one element in knot space into
+         four(2d)/eight(3d) cells. The global numbering of the
+         vizualisation points (i.e. the corner points of the
+         cells) is computed from the local patch numbering and
          the patch offset.                             (gammi)
 ----------------------------------------------------------------------*/
 void EnsightWriter::WriteNurbsCell(
@@ -1719,7 +1719,7 @@ void EnsightWriter::WriteNurbsCell(
 
     // number of visualisation points in u direction
     int nvpu=2*(nurbsdis->Return_nele_x_mele_x_lele(npatch))[0]+1;
-    
+
     // number of visualisation points in v direction
     int nvpv=2*(nurbsdis->Return_nele_x_mele_x_lele(npatch))[1]+1;
 
@@ -1775,19 +1775,19 @@ void EnsightWriter::WriteNurbsCell(
 /*----------------------------------------------------------------------*/
 /*
     Write the results for a NURBS discretisation (dof based).
-    
+
     On input, result data for an ndimensional computation
     is provided (from the result file)
 
     This element data is communicated in such a way that
     all elements have access to their (dof-accessible) data.
-    Here we seperate velocity/displacement and pressure 
-    output, since for velocity/displacement and pressure 
+    Here we seperate velocity/displacement and pressure
+    output, since for velocity/displacement and pressure
     different dofs are required.
 
     Then, all elements are looped and function values are
-    evaluated at visualisation points. This is the place 
-    where we need the dof data (again, different data for 
+    evaluated at visualisation points. This is the place
+    where we need the dof data (again, different data for
     velocity/displacement and pressure output)
 
     The resulting vector is allreduced on proc0 and written.
@@ -1887,7 +1887,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(
     for (int inode=0; inode<actele->NumNode(); ++inode)
     {
 
-      if(name == "velocity" 
+      if(name == "velocity"
 	 ||
 	 name == "averaged_velocity"
 	 ||
@@ -1915,7 +1915,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(
           coldofset.insert(lm[inode*dim+rr]);
         }
       }
-      else if(name == "pressure" 
+      else if(name == "pressure"
 	      ||
 	      name == "averaged_pressure")
       {
@@ -1967,17 +1967,17 @@ void EnsightWriter::WriteDofResultStepForNurbs(
     bool zero_size=(*knotvec).GetEleKnots(knots,actele->Id());
 
     knotvec->ConvertEleGidToKnotIds(gid,np,ele_cart_id);
-    
+
     // zero sized elements in knot span cannot be visualised
     if(zero_size)
     {
       // if we just skip them, we would loose some connectivity
       // in the result;
       // as a work-around, we replace the zero-sized element
-      // with the next nonzero element --- this preserves the 
+      // with the next nonzero element --- this preserves the
       // connectivity, and everything looks nice and smooth again.
       // Note: This work-around will not work in parallel (or a
-      //       special ghosting for elements along interpolated 
+      //       special ghosting for elements along interpolated
       //       boundries has to be applied)
       // Note: The following element will be plotted twice
 
@@ -2021,7 +2021,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(
     Epetra_SerialDenseVector uv(dim);
 
     vector<double> my_data(lm.size());
-    if(name == "velocity" 
+    if(name == "velocity"
        ||
        name == "averaged_velocity"
        ||

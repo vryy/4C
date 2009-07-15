@@ -22,7 +22,7 @@ using namespace std;
 
 
 //! 6 Surfaces of a Hex27 element with 9 nodes per surface
-const int Hex20_BaciToEnsightGold[20] = 
+const int Hex20_BaciToEnsightGold[20] =
         { 0,  1,  2,  3,
           4,  5,  6,  7,
           8,  9, 10, 11,
@@ -1132,7 +1132,7 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
       file ,
       numdf,
       data ,
-      name 
+      name
       );
   }
   else if(field_->problem()->SpatialApproximation()=="Polynomial")
@@ -1850,8 +1850,8 @@ string EnsightWriter::GetFileSectionStringFromFilesets(
 /*----------------------------------------------------------------------*/
 /*
     Write the coordinates for a Polynomial discretization
-    The ccordinates of the vizualisation points (i.e. the corner 
-    nodes of elements displayed in paraview) are just the node 
+    The ccordinates of the vizualisation points (i.e. the corner
+    nodes of elements displayed in paraview) are just the node
     coordinates of the nodes in the discretization.
 */
 /*----------------------------------------------------------------------*/

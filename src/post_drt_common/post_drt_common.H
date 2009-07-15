@@ -145,7 +145,7 @@ public:
 
   //! returns type of the spatial approximation (nurbs/polynomial)
   string SpatialApproximation() { return spatial_approx_; }
-  
+
   //! returns stress type
   string stresstype() { return stresstype_; }
 

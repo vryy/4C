@@ -1396,11 +1396,11 @@ EXODUS::Mesh EXODUS::QuadtoTri(EXODUS::Mesh& basemesh)
       //dserror("Only quad4 or shell4 in quad->tri conversion");
       cout << "Warning! Only quad4 or shell4 in quad->tri conversion. Skipping EBlock" << endl;
     } else {
-    
+
       RCP<map<int,vector<int> > > quad_conn = quadblock->GetEleConn();
       map<int,vector<int> >::const_iterator i_quad;
       RCP<map<int,vector<int> > > triconn = rcp(new map<int,vector<int> >);
-      
+
       for (i_quad = quad_conn->begin(); i_quad != quad_conn->end(); ++i_quad){
         vector<int> quad = i_quad->second;
         vector<int> tri1(3);
@@ -1412,7 +1412,7 @@ EXODUS::Mesh EXODUS::QuadtoTri(EXODUS::Mesh& basemesh)
         triconn->insert(pair<int,vector<int> >(tri1_id,tri1));
         triconn->insert(pair<int,vector<int> >(tri2_id,tri2));
       }
-      
+
       RCP<EXODUS::ElementBlock> triblock = rcp(new EXODUS::ElementBlock(EXODUS::ElementBlock::tri3,triconn,quadblock->GetName()));
       neweblocks.insert(pair<int,RCP<EXODUS::ElementBlock> >(i_ebs->first,triblock));
       basemesh.EraseElementBlock(i_ebs->first);

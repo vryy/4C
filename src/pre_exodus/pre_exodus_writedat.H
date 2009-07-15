@@ -2,7 +2,7 @@
 /*!
 \file pre_exodus_writedat.H
 
-\brief pre_exodus .dat-file writer 
+\brief pre_exodus .dat-file writer
 
 <pre>
 Maintainer: Moritz
@@ -78,9 +78,9 @@ void DatEles(RCP< const EXODUS::ElementBlock> eb, const EXODUS::elem_def& acte, 
 inline string CondGeomTypeToString(const EXODUS::cond_def& def)
 {
   switch (def.gtype){
-  case DRT::Condition::Volume:  return "DVOL  "; break; 
-  case DRT::Condition::Surface: return "DSURF "; break; 
-  case DRT::Condition::Line:    return "DLINE "; break; 
+  case DRT::Condition::Volume:  return "DVOL  "; break;
+  case DRT::Condition::Surface: return "DSURF "; break;
+  case DRT::Condition::Line:    return "DLINE "; break;
   case DRT::Condition::Point:   return "DPOINT"; break;
   case DRT::Condition::NoGeom:  return ""; break;
   default: dserror("Unknown Condition GeometryType");

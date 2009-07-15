@@ -19,12 +19,12 @@ map<int,map<int,vector<vector<double> > > > EXODUS::EleCenterlineInfo(string& cl
     bool clbool;
     for(i_ns=nss.begin();i_ns!=nss.end();++i_ns){
       const string myname = i_ns->second.GetName();
-      if (myname.find("centerline") != string::npos) 
+      if (myname.find("centerline") != string::npos)
       {
         centerlineid = i_ns->first;
         clbool=true;
       }
-      else if (myname.find("centerpoint") != string::npos) 
+      else if (myname.find("centerpoint") != string::npos)
       {
         clbool=false;
         centerlineid = i_ns->first;
@@ -52,7 +52,7 @@ map<int,map<int,vector<vector<double> > > > EXODUS::EleCenterlineInfo(string& cl
     if (clbool)
       centlineinfo = EXODUS::element_cosys(myCLine,mymesh,eb_ids);
     //generation of degenerated coordinate systems
-    else 
+    else
       centlineinfo = EXODUS::element_degcosys(myCLine,mymesh,eb_ids);
     if (clbool)
       EXODUS::PlotCosys(myCLine,mymesh,eb_ids);       //generation of accordant Gmsh-file
@@ -65,7 +65,7 @@ map<int,map<int,vector<vector<double> > > > EXODUS::EleCenterlineInfo(string& cl
 
   } else if (cline.find(".exo") != string::npos){ // read centerline from another exodus file
     EXODUS::Mesh centerlinemesh(cline);
-    
+
     int centerlineid = -1;
 
     map<int,EXODUS::NodeSet> nss = centerlinemesh.GetNodeSets();
@@ -74,12 +74,12 @@ map<int,map<int,vector<vector<double> > > > EXODUS::EleCenterlineInfo(string& cl
     bool clbool;
     for(i_ns=nss.begin();i_ns!=nss.end();++i_ns){
       const string myname = i_ns->second.GetName();
-      if (myname.find("centerline") != string::npos) 
+      if (myname.find("centerline") != string::npos)
       {
         centerlineid = i_ns->first;
         clbool=true;
       }
-      else if (myname.find("centerpoint") != string::npos) 
+      else if (myname.find("centerpoint") != string::npos)
       {
         clbool=false;
         centerlineid = i_ns->first;
@@ -107,7 +107,7 @@ map<int,map<int,vector<vector<double> > > > EXODUS::EleCenterlineInfo(string& cl
     if (clbool)
       centlineinfo = EXODUS::element_cosys(myCLine,mymesh,eb_ids);
     //generation of degenerated coordinate systems
-    else 
+    else
       centlineinfo = EXODUS::element_degcosys(myCLine,mymesh,eb_ids);
     if (clbool)
       EXODUS::PlotCosys(myCLine,mymesh,eb_ids);       //generation of accordant Gmsh-file
@@ -117,7 +117,7 @@ map<int,map<int,vector<vector<double> > > > EXODUS::EleCenterlineInfo(string& cl
 
 
     return centlineinfo;
-    
+
   } else { //creation of a Centerline object from file
     cout << "Reading centerline..." << endl;
     EXODUS::Centerline myCLine(cline,coordcorr);
@@ -535,7 +535,7 @@ map<int,map<int,vector<vector<double> > > > EXODUS::element_cosys(EXODUS::Center
 map<int,map<int,vector<vector<double> > > > EXODUS::element_degcosys
 (
   EXODUS::Centerline& mycline,
-  const EXODUS::Mesh& mymesh, 
+  const EXODUS::Mesh& mymesh,
   const vector<int>& eb_ids)
 {
   map<int,vector<double> > midpoints;  // here midpoints are stored

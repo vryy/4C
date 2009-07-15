@@ -2,7 +2,7 @@
 /*!
 \file pre_exodus_writedat.cpp
 
-\brief pre_exodus .dat-file writer 
+\brief pre_exodus .dat-file writer
 
 <pre>
 Maintainer: Moritz
@@ -35,10 +35,10 @@ int EXODUS::WriteDatFile(const string& datfile, const EXODUS::Mesh& mymesh,
 
   // write dat-file intro
   EXODUS::WriteDatIntro(headfile,mymesh,dat);
-  
+
   // write "header"
   EXODUS::WriteDatHead(headfile,dat);
-  
+
   // write "design description"
   EXODUS::WriteDatDesign(condefs,dat);
 
@@ -57,7 +57,7 @@ int EXODUS::WriteDatFile(const string& datfile, const EXODUS::Mesh& mymesh,
   // write END
   dat << "---------------------------------------------------------------END\n"\
          "// END\n";
-  
+
   // close datfile
   if (dat.is_open()) dat.close();
 
@@ -124,11 +124,11 @@ void EXODUS::WriteDatHead(const string& headfile, ostream& dat)
     headstring.erase(size_section,typ_section-size_section);
   }
   headstring.erase(headstring.end()-1);
-  
+
   // delete very first line with comment "//"
   if (headstring.find("//")== 0)
     headstring.erase(headstring.find("//"),headstring.find("\n")+1);//-headstring.find("//"));
-  
+
   size_t comment = headstring.find("\n//");
   while (comment != string::npos){
     headstring.erase(comment+1,headstring.find("\n",comment+1)-comment);
@@ -159,12 +159,12 @@ void EXODUS::WriteDatDesign(const vector<EXODUS::cond_def>& condefs, ostream& da
   dat << "NDLINE  " << ndl << endl;
   dat << "NDSURF  " << nds << endl;
   dat << "NDVOL   " << ndv << endl;
-  
+
   dat << "-----------------------------------------------------DESIGN POINTS" << endl;
   dat << "------------------------------------------------------DESIGN LINES" << endl;
   dat << "---------------------------------------------------DESIGN SURFACES" << endl;
   dat << "----------------------------------------------------DESIGN VOLUMES" << endl;
-  
+
   return;
 }
 
@@ -172,7 +172,7 @@ void EXODUS::WriteDatConditions(const vector<EXODUS::cond_def>& condefs,const EX
 {
   Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > condlist = DRT::INPUT::ValidConditions();
   vector<string> allsectionnames;
-  
+
   // count how often we have one specific condition
   map<string,vector<int> > count_cond;
   map<string,vector<int> >::const_iterator count;
@@ -181,7 +181,7 @@ void EXODUS::WriteDatConditions(const vector<EXODUS::cond_def>& condefs,const EX
   for (unsigned int i_cond = 0; i_cond < condefs.size(); ++i_cond)
   //for (i_cond = condefs.begin(); i_cond != condefs.end(); ++i_cond)
     (count_cond[condefs.at(i_cond).sec]).push_back(i_cond);
-  
+
   for (unsigned int i=0; i<(*condlist).size(); ++i)
   {
     size_t linelength = 66;
@@ -221,7 +221,7 @@ void EXODUS::WriteDatConditions(const vector<EXODUS::cond_def>& condefs,const EX
           if (pname!="none"){ dat << " " << pname;}
           dat << endl;
         } else if (pname!="none") dat << "// " << pname << endl;
-        
+
         // write the condition
         if (actcon.desc != ""){
           dat << "E " << actcon.e_id << " - " << actcon.desc << endl;
@@ -244,7 +244,7 @@ vector<double> EXODUS::CalcNormalSurfLocsys(const int ns_id,const EXODUS::Mesh& 
 {
   vector<double> normaltangent;
   EXODUS::NodeSet ns = m.GetNodeSet(ns_id);
-  
+
   set<int> nodes_from_nodeset = ns.GetNodeSet();
   set<int>::iterator it;
 
@@ -266,7 +266,7 @@ vector<double> EXODUS::CalcNormalSurfLocsys(const int ns_id,const EXODUS::Mesh& 
   if (normaltangent.size()==1){
     dserror("Warning! No normal defined for SurfLocsys within nodeset '%s'!",(ns.GetName()).c_str());
   }
-  
+
   // find tangent by Gram-Schmidt
   vector<double> t(3);
   t.at(0) = 1.0; t.at(1) = 0.0; t.at(2) = 0.0; // try this one
@@ -275,16 +275,16 @@ vector<double> EXODUS::CalcNormalSurfLocsys(const int ns_id,const EXODUS::Mesh& 
   t.at(0) -= normaltangent[0]*sp;
   t.at(1) -= normaltangent[1]*sp;
   t.at(2) -= normaltangent[2]*sp;
-  
+
   // very unlucky case
   if (t.at(0) < 1.0E-14){
     t.at(0) = 0.0; t.at(1) = 1.0; t.at(2) = 0.0; // rather use this
   }
-  
+
   normaltangent.push_back(t.at(0));
   normaltangent.push_back(t.at(1));
   normaltangent.push_back(t.at(2));
-  
+
   return normaltangent;
 }
 
@@ -295,7 +295,7 @@ void EXODUS::WriteDatDesignTopology(const vector<EXODUS::cond_def>& condefs, con
   map<int,EXODUS::cond_def> dlines;
   map<int,EXODUS::cond_def> dsurfs;
   map<int,EXODUS::cond_def> dvols;
-  
+
   map<int,EXODUS::cond_def>::const_iterator it;
   vector<EXODUS::cond_def>::const_iterator i;
   for (i=condefs.begin();i!=condefs.end();++i){
@@ -307,7 +307,7 @@ void EXODUS::WriteDatDesignTopology(const vector<EXODUS::cond_def>& condefs, con
     else if (acte.gtype==DRT::Condition::NoGeom);
     else dserror ("Cannot identify Condition GeometryType");
   }
-  
+
   dat << "-----------------------------------------------DNODE-NODE TOPOLOGY"<<endl;
   for (it=dpoints.begin();it!=dpoints.end();++it){
     EXODUS::cond_def acte = it->second;
@@ -401,14 +401,14 @@ void EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh& m
      const map<int,map<int,vector<vector<double> > > >& elecenterlineinfo)
 {
   dat << "----------------------------------------------------------ELEMENTS" << endl;
-  
+
   // sort elements w.r.t. structure, fluid, ale, scalar transport, etc.
   vector<EXODUS::elem_def> strus;
   vector<EXODUS::elem_def> fluids;
   vector<EXODUS::elem_def> ales;
   vector<EXODUS::elem_def> transport;
   vector<EXODUS::elem_def>::const_iterator i_et;
-  
+
   for(i_et=eledefs.begin();i_et!=eledefs.end();++i_et){
     EXODUS::elem_def acte = *i_et;
     if (acte.sec.compare("STRUCTURE")==0) strus.push_back(acte);
@@ -421,7 +421,7 @@ void EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh& m
       dserror("Unknown ELEMENT sectionname");
     }
   }
-  
+
   int startele = 1; // BACI-Dat eles start with 1, this int is adapted for more than one element section
 
   // print structure elements
@@ -432,7 +432,7 @@ void EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh& m
     RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
     EXODUS::DatEles(eb,acte,startele,dat,elecenterlineinfo,acte.id);
   }
-  
+
   // print fluid elements
   dat << "----------------------------------------------------FLUID ELEMENTS" << endl;
   for(i_et=fluids.begin();i_et!=fluids.end();++i_et)

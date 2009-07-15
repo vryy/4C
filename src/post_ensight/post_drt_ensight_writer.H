@@ -182,8 +182,8 @@ protected:
             ) ;
 
   /*! \brief Write the coordinates for a Polynomial discretization
-    The ccordinates of the vizualisation points (i.e. the corner 
-    nodes of elements displayed in paraview) are just the node 
+    The ccordinates of the vizualisation points (i.e. the corner
+    nodes of elements displayed in paraview) are just the node
     coordinates of the nodes in the discretization.
   */
     void WriteCoordinatesForPolynomialShapefunctions(
@@ -193,8 +193,8 @@ protected:
       );
 
   /*! \brief Write the coordinates for a Nurbs discretization
-    The ccordinates of the vizualisation points (i.e. the corner 
-    nodes of elements displayed in paraview) are not the control point 
+    The ccordinates of the vizualisation points (i.e. the corner
+    nodes of elements displayed in paraview) are not the control point
     coordinates of the nodes in the discretization but the points the
     knot values are mapped to.
   */
@@ -213,10 +213,10 @@ protected:
 
 
   /*! \brief Write the cells for a Nurbs discretization
-    quadratic nurbs split one element in knot space into 
-    four(2d)/eight(3d) cells. The global numbering of the 
-    vizualisation points (i.e. the corner points of the 
-    cells) is computed from the local patch numbering and 
+    quadratic nurbs split one element in knot space into
+    four(2d)/eight(3d) cells. The global numbering of the
+    vizualisation points (i.e. the corner points of the
+    cells) is computed from the local patch numbering and
     the patch offset.                              (gammi)
 
     \param DRT::Element::DiscretizationType (i)          the nurbs discretisation type
@@ -226,7 +226,7 @@ protected:
     \param RefCountPtr<DRT::Discretization> (i)          the discretisation holding knots etc
     \param RefCountPtr<Epetra_Map>          (i)          an allreduced nodemap
 
-  */  
+  */
     void WriteNurbsCell(const DRT::Element::DiscretizationType distype   ,
                         const int                              gid       ,
                         ofstream&                              geofile   ,
@@ -234,15 +234,15 @@ protected:
                         const RefCountPtr<DRT::Discretization> dis       ,
                         const RefCountPtr<Epetra_Map>&         proc0map  ) const;
 
-  /*! \brief Quadratic nurbs split one nurbs27 element 
-    in knot space into eight(3d) cells. The global 
-    numbering of the vizualisation points (i.e. the corner 
-    points of the cells) are computed from the local patch 
+  /*! \brief Quadratic nurbs split one nurbs27 element
+    in knot space into eight(3d) cells. The global
+    numbering of the vizualisation points (i.e. the corner
+    points of the cells) are computed from the local patch
     numbering and the patch offset. This method appends
     the node connectivity for one hex8 cell to the vector
     of cell nodes                                 (gammi)
 
-    \param DRT::Element::DiscretizationType (i/o)        the vector to which the node 
+    \param DRT::Element::DiscretizationType (i/o)        the vector to which the node
                                                          connectivity is appended to
     \param int                              (i)          0: left      1: right (which hex to generate)
     \param int                              (i)          0: front     1: rear  (which hex to generate)
@@ -254,7 +254,7 @@ protected:
 
     \return void
 
-  */  
+  */
   void AppendNurbsSubHex(
     vector<int>       & cellnodes,
     const int         & l,
@@ -265,7 +265,7 @@ protected:
     const int         & nvpv,
     const int         & npatch) const
     {
-      
+
       int twoid[3];
       twoid[0]=2*ele_cart_id[0];
       twoid[1]=2*ele_cart_id[1];
@@ -303,19 +303,19 @@ protected:
 
   /*! \brief Write the results for a NURBS discretisation
     (dof based).
-    
+
     On input, result data for an ndimensional computation
     is provided (from the result file)
 
     This element data is communicated in such a way that
     all elements have access to their (dof-accessible) data.
-    Here we seperate velocity/displacement and pressure 
-    output, since for velocity/displacement and pressure 
+    Here we seperate velocity/displacement and pressure
+    output, since for velocity/displacement and pressure
     different dofs are required.
 
     Then, all elements are looped and function values are
-    evaluated at visualisation points. This is the place 
-    where we need the dof data (again, different data for 
+    evaluated at visualisation points. This is the place
+    where we need the dof data (again, different data for
     velocity/displacement and pressure output)
 
     The resulting vector is allreduced on proc0 and written.
@@ -328,7 +328,7 @@ protected:
     \param string                           (i)          name of the thing we are writing
                                                          (velocity, pressure etc.)
 
-  */  
+  */
   void WriteDofResultStepForNurbs(
     ofstream&                        file ,
     const int                        numdf,
@@ -460,7 +460,7 @@ protected:
     RCP<Epetra_Map> proc0map_; ///< allreduced node row map for proc 0, empty on other procs
 
     Teuchos::RCP<Epetra_Map> vispointmap_; ///< map for all visualisation points
-    
+
     map<string,vector<int> > filesetmap_;
     map<string,vector<double> > timesetmap_;
 

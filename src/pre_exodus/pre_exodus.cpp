@@ -81,7 +81,7 @@ int main(
   double clinedx = 0.0;
   double clinedy = 0.0;
   double clinedz = 0.0;
-  
+
   // related to quad->tri conversion
   bool quadtri = false;
 
@@ -106,7 +106,7 @@ int main(
   My_CLP.setOption("clinedy",&clinedy,"move centerline coords to align with mesh: delta y");
   My_CLP.setOption("clinedz",&clinedz,"move centerline coords to align with mesh: delta z");
   map<int,map<int,vector<vector<double> > > >elecenterlineinfo;
-  
+
   // check for quad->tri conversion
   My_CLP.setOption("quadtri","noquadtri",&quadtri,"transform quads to tris by cutting in two halves");
 
@@ -177,7 +177,7 @@ int main(
   if (cline!=""){
     elecenterlineinfo = EleCenterlineInfo(cline,mymesh,cline_coordcorr);
   }
-  
+
   // transform quads->tris
   if (quadtri){
     EXODUS::Mesh trimesh = EXODUS::QuadtoTri(mymesh);
@@ -241,7 +241,7 @@ int main(
 
     // get valid input materials
     {
-      Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > mlist 
+      Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > mlist
        = DRT::INPUT::ValidMaterials();
       DRT::INPUT::PrintEmptyMaterialDefinitions(defaulthead, *mlist,false);
     }

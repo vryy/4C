@@ -135,7 +135,7 @@ void EXODUS::ValidateElementJacobian(Mesh& mymesh, const DRT::Element::Discretiz
           fflush(errfile);
         }
         // double check
-        if(!PositiveEle(i_ele->first,i_ele->second,mymesh,deriv)) 
+        if(!PositiveEle(i_ele->first,i_ele->second,mymesh,deriv))
           dserror("No proper rewinding for element id %d at gauss point %d",i_ele->first,igp);
         rewcount++;
       }
@@ -223,11 +223,11 @@ bool EXODUS::PositiveEle(const int& eleid, const vector<int>& nodes,const Mesh& 
     xjm.Multiply('N','T',1.0,deriv,xyze,0.0);
     LINALG::Matrix<3,3> jac(xjm.A(),true);
     const double det =  jac.Determinant();
-  
+
     if (abs(det) < 1E-16)
         dserror("ZERO JACOBIAN DETERMINANT FOR ELEMENT %d: DET = %f",eleid,det);
-  
-    if (det < 0.0) 
+
+    if (det < 0.0)
     {
       // write info to the error log file
       FILE* errfile = DRT::Problem::Instance()->ErrorFile()->Handle();
@@ -373,7 +373,7 @@ vector<int> EXODUS::RewindEle(vector<int> old_nodeids, const DRT::Element::Discr
     {
       new_nodeids[i] = old_nodeids[i];
     }
-    // rewind the nodes on the center of the 6 sides 
+    // rewind the nodes on the center of the 6 sides
     // and the center node of the actual hex27 element
     new_nodeids[20] = old_nodeids[21];
     new_nodeids[21] = old_nodeids[25];

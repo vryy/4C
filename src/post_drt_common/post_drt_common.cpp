@@ -471,11 +471,11 @@ void PostProblem::read_meshes()
 
         RCP<vector<char> > packed_knots =
           reader.ReadKnotvector(step);
-        
+
         RefCountPtr<DRT::NURBS::Knotvector> knots=Teuchos::rcp(new DRT::NURBS::Knotvector());
-        
+
         knots->Unpack(*packed_knots);
-        
+
         if(nurbsdis==NULL)
         {
           dserror("expected a nurbs discretisation for spatial approx. Nurbs\n");
@@ -491,7 +491,7 @@ void PostProblem::read_meshes()
         int smallest_gid_in_dis=nurbsdis->ElementRowMap()->MinAllGID();
 
         knots->FinishKnots(smallest_gid_in_dis);
-                  
+
         nurbsdis->SetKnotVector(knots);
       }
 
@@ -502,7 +502,7 @@ void PostProblem::read_meshes()
 #endif
       // to avoid building dofmanagers, in output mode elements answer
       // with a fixed number of nodal unknowns
-      if (currfield.problem()->Problemtype() == prb_fluid_xfem or 
+      if (currfield.problem()->Problemtype() == prb_fluid_xfem or
           currfield.problem()->Problemtype() == prb_fsi_xfem or
           currfield.problem()->Problemtype() == prb_combust)
       {
@@ -518,7 +518,7 @@ void PostProblem::read_meshes()
         }
         cout << endl;
       }
-      
+
 
       //distribute_drt_grids();
       currfield.discretization()->FillComplete();
@@ -863,12 +863,12 @@ vector<double> PostResult::get_result_times(const string& fieldname)
 
     while (this->next_result())
         times.push_back(this->time());
-    
+
     if (times.size() == 0)
     {
       dserror("PostResult::get_result_times(fieldname):\n  no solution steps found in specified timestep range! Check --start, --end, --step parameters.");
     }
-    
+
     return times;
 }
 
@@ -889,12 +889,12 @@ vector<double> PostResult::get_result_times(
 
     while (this->next_result(groupname))
         times.push_back(this->time());
-    
+
     if (times.size() == 0)
     {
       dserror("PostResult::get_result_times(fieldname, groupname):\n  no solution steps found in specified timestep range! Check --start, --end, --step parameters.");
     }
-    
+
     return times;
 }
 

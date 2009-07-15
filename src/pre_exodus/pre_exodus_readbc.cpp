@@ -2,7 +2,7 @@
 /*!
 \file pre_exodus_readbc.cpp
 
-\brief pre_exodus bc-file reader 
+\brief pre_exodus bc-file reader
 
 <pre>
 Maintainer: Moritz
@@ -37,28 +37,28 @@ void EXODUS::ReadBCFile(const string& bcfile, vector<EXODUS::elem_def>& eledefs,
   // string which contains the whole file
   string allconds = bcstream.str();
   allconds.erase(allconds.end()-1);  //delete last 'whatisthis'-char
-  
+
   // get rid of first part
   size_t found;
   found = allconds.find("BCSPECS");
   if (found==string::npos) dserror ("No specifications found in bcfile");
   allconds.erase(allconds.begin(),allconds.begin()+found);
-  
+
   // get rid of 'validconditions' part
   found = allconds.find("VALIDCONDITIONS");
   allconds.erase(allconds.begin()+found,allconds.end());
-  
+
   // define markers
   const string ebmarker("*eb");
   const string nsmarker("*ns");
   const string ssmarker("*ss");
   const int markerlength=3;
   const string marker("*");
-  
+
   // necessary counters
   int E_id = 0; //the 'E num -' in the datfile
   int ndp = 0; int ndl = 0; int nds = 0; int ndv = 0;
-  
+
   // map to avoid double assignment
   map<int,int> eb_dp2Eid;
   map<int,int> eb_dl2Eid;
@@ -68,15 +68,15 @@ void EXODUS::ReadBCFile(const string& bcfile, vector<EXODUS::elem_def>& eledefs,
   map<int,int> ns_dl2Eid;
   map<int,int> ns_ds2Eid;
   map<int,int> ns_dv2Eid;
-  
-  found = allconds.find_first_of(marker);  
+
+  found = allconds.find_first_of(marker);
   while (found != string::npos){
     int startpos=found;
     found = allconds.find(marker,found+1);  //step forward to find next match
     // get actual condition
     string actcond = allconds.substr(startpos,found-startpos);
-    
-    
+
+
     // find out what mesh_entity type we have
     string mesh_entity = actcond.substr(0,3);
 
@@ -92,7 +92,7 @@ void EXODUS::ReadBCFile(const string& bcfile, vector<EXODUS::elem_def>& eledefs,
     size_t left = actcond.find_first_of("\"",0);
     size_t right = actcond.find_first_of("\"",left+1);
     string type = actcond.substr(left+1,right-left-1);
-    
+
     if (mesh_entity.compare(ebmarker)==0) {
       // in case of eb we differntiate between 'element' or 'condition'
       if (type.compare("ELEMENT")==0) {
@@ -218,7 +218,7 @@ void EXODUS::ReadBCFile(const string& bcfile, vector<EXODUS::elem_def>& eledefs,
       dserror("Cannot identify marker. Use *el (element block), *ns (nodeset) or *ss (sideset)");
 
   }
-  
+
   return;
 }
 
@@ -242,7 +242,7 @@ EXODUS::elem_def EXODUS::ReadEdef(const string& mesh_entity,const int id, const 
   left = actcond.find("elementname=\"");  // 13 chars
   right = actcond.find_first_of("\"",left+13);
   edef.ename = actcond.substr(left+13,right-(left+13));
-  
+
   return edef;
 }
 
@@ -254,7 +254,7 @@ EXODUS::cond_def EXODUS::ReadCdef(const string& mesh_entity,const int id, const 
   else if (mesh_entity.compare(1,2,"ns")==0) cdef.me = EXODUS::bcns;
   else if (mesh_entity.compare(1,2,"ss")==0) cdef.me = EXODUS::bcss;
   else dserror("Cannot identify marker. Use *el (element block), *ns (nodeset) or *ss (sideset)");
-  
+
   // read sectionname
   size_t left = actcond.find("sectionname=\"");  // 13 chars
   size_t right = actcond.find_first_of("\"",left+13);
@@ -286,7 +286,7 @@ EXODUS::cond_def EXODUS::ReadCdef(const string& mesh_entity,const int id, const 
   }
   found = secname.find("VOL");
   if (found!=string::npos) cdef.gtype = DRT::Condition::Volume;
-  
+
   return cdef;
 }
 

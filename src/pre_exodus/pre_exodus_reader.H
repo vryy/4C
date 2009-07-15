@@ -81,7 +81,7 @@ public:
 
   //! Get number of dimensions
   int GetNumDim() const {return num_dim_;}
-  
+
   //! Get number of dimensions
   int GetBACIDim() const {return baci_dim_;}
 
@@ -175,7 +175,7 @@ public:
   //! Plot all ElementBlocks into Gmsh-file
   void PlotElementBlocksGmsh(const string fname,const EXODUS::Mesh& mymesh) const;
   void PlotElementBlocksGmsh(const string fname,const EXODUS::Mesh& mymesh, const vector<int>& ebids) const;
-  
+
   //! Plot Connectivity into Gmsh-file
   void PlotConnGmsh(const string fname,const EXODUS::Mesh& mymesh, const map<int,vector<int> >& conn) const;
 

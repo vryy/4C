@@ -131,7 +131,7 @@ void MonWriter::WriteMonFile(PostProblem& problem, string& infieldtype, int node
 
   // get actual results of total problem
   PostResult result = PostResult(field);
-  
+
   // global nodal dof numbers
   std::vector<int> gdof;
 
@@ -140,7 +140,7 @@ void MonWriter::WriteMonFile(PostProblem& problem, string& infieldtype, int node
   // this level. Hence offset is split up intot two parts!
   // First part:
   int offset1 = - field->discretization()->DofRowMap()->MinAllGID();
-  
+
   if (nodeowner_)
   {
     // test, if this node belongs to me
@@ -158,7 +158,7 @@ void MonWriter::WriteMonFile(PostProblem& problem, string& infieldtype, int node
     {
       gdof[i]+=offset1;
     }
-    
+
     // write header
     WriteHeader(outfile);
     outfile << node << "\n";
@@ -181,7 +181,7 @@ void MonWriter::WriteMonFile(PostProblem& problem, string& infieldtype, int node
     }
   }
 
-  
+
 
 
   // this is a loop over all time steps that should be written
@@ -295,7 +295,7 @@ void FluidMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::vec
 
   //compute second part of offset
   int offset2 = velmap.MinAllGID();
-  
+
   // do output for velocity and pressure
   for(unsigned i=0; i < gdof.size(); ++i)
   {
@@ -415,11 +415,11 @@ void StructMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::ve
   }
 
   // displacement
-  
+
   // get actual result vector displacement
   Teuchos::RCP<Epetra_Vector> resvec = result.read_result("displacement");
   const Epetra_BlockMap& dispmap = resvec->Map();
-  
+
   // compute second part of offset
   int offset2 = dispmap.MinAllGID();
 
@@ -439,7 +439,7 @@ void StructMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::ve
 
   // compute second part of offset
   offset2 = velmap.MinAllGID();
-  
+
   // do output of velocity
   for(unsigned i=0; i <  noddof; ++i)
   {
@@ -456,7 +456,7 @@ void StructMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::ve
 
   //compute second part of offset
   offset2 = accmap.MinAllGID();
-  
+
   // do output for acceleration
   for(unsigned i=0; i <  noddof; ++i)
   {
@@ -465,16 +465,16 @@ void StructMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::ve
     outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
   }
 
-  // pressure 
+  // pressure
   if (gdof.size() == (unsigned)dim+1)
   {
     // get actual result vector displacement/pressure
     resvec = result.read_result("displacement");
     const Epetra_BlockMap& pressmap = resvec->Map();
-  
+
     // compute second part of offset
     offset2 = pressmap.MinAllGID();
-  
+
     // do output of pressure
     {
       const unsigned i = (unsigned)dim;
@@ -561,7 +561,7 @@ void AleMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::vecto
 
   //compute second part of offset
   int offset2 = dispmap.MinAllGID();
-  
+
   // do output for velocity and pressure
   for(unsigned i=0; i < gdof.size()-1; ++i)
   {
@@ -641,7 +641,7 @@ void FsiFluidMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::
 
   //compute second part of offset
   int offset2 = dispmap.MinAllGID();
-  
+
   for(unsigned i=0; i < gdof.size()-1; ++i)
   {
     const int lid = dispmap.LID(gdof[i]+offset2);
@@ -655,7 +655,7 @@ void FsiFluidMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::
 
   //compute second part of offset
   offset2 = velmap.MinAllGID();
-  
+
   // do output for velocity and pressure
   for(unsigned i=0; i < gdof.size(); ++i)
   {

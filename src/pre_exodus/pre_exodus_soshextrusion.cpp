@@ -736,7 +736,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
     bool toextrude = CheckExtrusion(i_nss->second);
     if (toextrude){
       set<int> nodes_from_nodeset = (i_nss->second).GetNodeSet();
-      if (node_pair.find(*(nodes_from_nodeset.begin())) != node_pair.end())  
+      if (node_pair.find(*(nodes_from_nodeset.begin())) != node_pair.end())
       {
         set<int> nodes_extrusion_base;
         set<int> nodes_extrusion_roof;
@@ -751,7 +751,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
         EXODUS::NodeSet nodeset_extrusion_base(nodes_extrusion_base,nodesetname.str(),propname);
         newnodesets.insert(pair<int,EXODUS::NodeSet>(highestns,nodeset_extrusion_base));
         highestns ++;
-    
+
         std::ostringstream nodesetnamer;
         nodesetnamer << "roof_" << (i_nss->second).GetName();
         EXODUS::NodeSet nodeset_extrusion_roof(nodes_extrusion_roof,nodesetnamer.str(),propname);
@@ -787,9 +787,9 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
         // leave for loop if valid normal is found
         if (facenormal.size() != 1) break;
       }
-      
+
       PrintVec(cout,facenormal);
-      
+
       // could a normal direction be computed?
       if (facenormal.size()==1){
         cout << "  Warning! No normal defined within flat nodeset '"<< (i_nss->second).GetName() << "', stop flattening" << endl;

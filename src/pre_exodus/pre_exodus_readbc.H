@@ -2,7 +2,7 @@
 /*!
 \file pre_exodus_readbc.H
 
-\brief pre_exodus bc-file reader 
+\brief pre_exodus bc-file reader
 
 <pre>
 Maintainer: Moritz
@@ -53,7 +53,7 @@ struct cond_def{
   string sec;                 // see valid_condition 'sectionname'
   string desc;                // see valid_condition 'description'
   int e_id;                   // refers to datfile 'E num -'
-  DRT::Condition::GeometryType gtype;         
+  DRT::Condition::GeometryType gtype;
 };
 
 void ReadBCFile(const string& bcfile, vector<EXODUS::elem_def>& eledefs, vector<EXODUS::cond_def>& condefs);
