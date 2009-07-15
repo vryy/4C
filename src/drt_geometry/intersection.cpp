@@ -48,9 +48,9 @@ Maintainer: Ursula Mayer
 /*----------------------------------------------------------------------*
  | constructor intersection                                  u.may 07/08|
  *----------------------------------------------------------------------*/
-GEO::Intersection::Intersection()     
+GEO::Intersection::Intersection()
 {
-  intersectionpointmap_ =  Teuchos::null; 
+  intersectionpointmap_ =  Teuchos::null;
   intersectionpointinoutmap_ = Teuchos::null;
   return;
 }
@@ -82,25 +82,25 @@ void GEO::Intersection::computeIntersection(
 {
 
   TEUCHOS_FUNC_TIME_MONITOR(" GEO::Intersection");
-  
+
   if(xfemdis->Comm().MyPID() == 0)
     std::cout << std::endl << "GEO::Intersection:" << std::flush;
-  
+
   countMissedPoints_ = 0;
   facetMarkerOffset_ = 11;
   const double t_start = ds_cputime();
-  
+
   // stop intersection if cutterdis is empty
   if(cutterdis->NumMyColElements()==0)
     return;
-  
+
   // initialize tree for intersection candidates search
   const LINALG::Matrix<3,2> rootBox = GEO::getXAABBofDis(*cutterdis, currentcutterpositions);
   Teuchos::RCP<GEO::SearchTree> octTree = rcp(new GEO::SearchTree(20));
   octTree->initializeTree(rootBox, *cutterdis, GEO::TreeType(GEO::OCTTREE));
   std::vector< LINALG::Matrix<3,2> > structure_AABBs
       = GEO::computeXAABBForLabeledStructures(*cutterdis, currentcutterpositions, octTree->getRoot()->getElementList());
-  
+
   // xfemdis->NumMyColElements()
   for(int k = 0; k < xfemdis->NumMyColElements(); ++k)
   {
@@ -109,17 +109,17 @@ void GEO::Intersection::computeIntersection(
     initializeXFEM(k, xfemElement);
     EleGeoType xfemGeoType = HIGHERORDER;
     checkGeoType(xfemElement, xyze_xfemElement_, xfemGeoType);
-  
+
     LINALG::Matrix<3,2> xfemXAABB = computeFastXAABB(xfemDistype_, xyze_xfemElement_, xfemGeoType);
     std::set<int> cutterElementIds;
     // serial search
     // const std::vector<int> cutterElementIds = serialIntersectionCandidateSearch(cutterdis, currentcutterpositions, xfemElement);
     // tree search for intersection candidates
     octTree->queryIntersectionCandidates( currentXAABBs, structure_AABBs, xfemXAABB, cutterElementIds); //computeFastXAABB(xfemDistype_, xyze_xfemElement_, xfemGeoType));
-    
+
     if(cutterElementIds.size()==0)
       continue;
-    
+
     // debugIntersection(xfemElement, cutterElementIds, cutterdis);
     vector<RCP<DRT::Element> > xfemElementSurfaces;
     xfemElementSurfaces = xfemElement->Surfaces();
@@ -133,7 +133,7 @@ void GEO::Intersection::computeIntersection(
 
       DRT::Element* cutterElement = cutterdis->gElement(*id);
       cutterDistype_ = cutterElement->Shape();
-  
+
       if(cutterElement == NULL) dserror("cutter element is null\n");
       LINALG::SerialDenseMatrix xyze_cutterElement;
       xyze_cutterElement = GEO::getCurrentNodalPositions(cutterElement, currentcutterpositions);
@@ -143,7 +143,7 @@ void GEO::Intersection::computeIntersection(
       const DRT::Node*const* cutterElementNodes = cutterElement->Nodes();
 
       // debugIntersectionOfSingleElements(xfemElement, cutterElement, currentcutterpositions);
-     
+
       std::map< LINALG::Matrix<3,1>, InterfacePoint, ComparePoint>  interfacePoints((ComparePoint()));
 
       // collect internal points
@@ -156,9 +156,9 @@ void GEO::Intersection::computeIntersection(
         const bool doSVD = decideSVD(cutterGeoType, xfemGeoType);
         const DRT::Element* xfemElementLine = xfemElementLines[m].get();
         const LINALG::SerialDenseMatrix xyze_xfemElementLine(GEO::InitialPositionArray(xfemElementLine));
-        
+
         collectIntersectionPoints(   cutterElement, xyze_cutterElement,
-                                     xfemElementLine, xyze_xfemElementLine, 
+                                     xfemElementLine, xyze_xfemElementLine,
                                      interfacePoints, 0, m, false, doSVD);
       }
 
@@ -171,45 +171,45 @@ void GEO::Intersection::computeIntersection(
           const LINALG::SerialDenseMatrix xyze_xfemElementSurface(GEO::InitialPositionArray(xfemElementSurface));
           const DRT::Element* cutterElementLine = cutterElementLines[m].get();
           const LINALG::SerialDenseMatrix xyze_cutterElementLine(GEO::getCurrentNodalPositions(cutterElementLine, currentcutterpositions));
-          
+
           collectIntersectionPoints(  xfemElementSurface, xyze_xfemElementSurface,
-                                      cutterElementLine, xyze_cutterElementLine, 
+                                      cutterElementLine, xyze_cutterElementLine,
                                       interfacePoints, p, m, true, doSVD);
         }
       }
-      
+
       // order interface points
       if( interfacePoints.size() > 0)
       {
         intersectingCutterElements_.push_back(cutterElement);
-        intersectingCutterXYZE_.push_back(xyze_cutterElement);  
+        intersectingCutterXYZE_.push_back(xyze_cutterElement);
 #ifdef QHULL
 
-        preparePLC(xfemGeoType, cutterElement, xyze_cutterElement, interfacePoints); 
+        preparePLC(xfemGeoType, cutterElement, xyze_cutterElement, interfacePoints);
         interfacePoints.clear();
 #else
         dserror("Set QHULL flag to use XFEM intersections!!!");
-#endif 
-      }  
-      
+#endif
+      }
+
 
     }// for-loop over all cutter elements
 
 
     if(checkIfCDT())
     {
-      
+
       // quickFixForIntersectingStructures(xfemElement, labelPerElementId, currentcutterpositions);
       completePLC();
-      
+
       //debugTetgenDataStructure(xfemElement);
 #ifdef QHULL
       computeCDT(xfemElement, currentcutterpositions, domainintcells, boundaryintcells);
 #endif
     }
   }// for-loop over all  actdis->NumMyColElements()
-  
- 
+
+
   //debugDomainIntCells(domainintcells,2);
   const double t_end = ds_cputime()-t_start;
   if(countMissedPoints_ > 0)
@@ -230,18 +230,18 @@ void GEO::Intersection::initializeXFEM(
     const DRT::Element*   xfemElement)
 {
   xfemDistype_ = xfemElement->Shape();
-  
+
   // cout << "xfemLid = " << xfemLid << endl;
-  
+
   if(xfemLid == 0)
     xfemOldDistype_ = xfemDistype_;
-  
+
   // copy for first element or if previous element has a different element type
   if(xfemLid == 0 || xfemOldDistype_ != xfemDistype_ )
   {
     numXFEMSurfaces_ = xfemElement->NumSurface();
     numXFEMCornerNodes_  = DRT::UTILS::getNumberOfElementCornerNodes(xfemDistype_);
-        
+
     eleLinesSurfaces_      = DRT::UTILS::getEleNodeNumbering_lines_surfaces(xfemDistype_);
     eleNodesSurfaces_      = DRT::UTILS::getEleNodeNumbering_nodes_surfaces(xfemDistype_);
     eleNodesLines_         = DRT::UTILS::getEleNodeNumbering_nodes_lines(xfemDistype_);
@@ -249,33 +249,33 @@ void GEO::Intersection::initializeXFEM(
     eleNumberingSurfaces_  = DRT::UTILS::getEleNodeNumberingSurfaces(xfemDistype_);
     eleRefCoordinates_     = DRT::UTILS::getEleNodeNumbering_nodes_paramspace(xfemDistype_);
     eleSurfNumCornerNodes_ = DRT::UTILS::getNumberOfSurfaceElementCornerNodes(xfemDistype_);
-    
+
     startPointList();
-    
+
     xfemOldDistype_ = xfemDistype_;
   }
-  
+
   xyze_xfemElement_ = GEO::InitialPositionArray(xfemElement);
-  
+
   pointList_ = xfemPointList_;
 
   triangleList_.clear();
 
   segmentList_.clear();
   segmentList_.resize(numXFEMSurfaces_);
-  
+
   surfaceTriangleList_.clear();
-  
+
   isolatedPointList_.clear();
   isolatedPointList_.resize(numXFEMSurfaces_);
 
   intersectingCutterElements_.clear();
   intersectingCutterXYZE_.clear();
   faceMarker_ = xfemFaceMarker_;
-  
+
   // clear efficient node and intersection point map
-  intersectionpointmap_ = rcp(new std::map< std::vector<int>, std::vector< LINALG::Matrix<3,1> >, CompareVecInt >(CompareVecInt()) ); 
-  intersectionpointinoutmap_ = rcp(new std::map< std::vector<int>, bool, CompareVecInt >(CompareVecInt()) ); 
+  intersectionpointmap_ = rcp(new std::map< std::vector<int>, std::vector< LINALG::Matrix<3,1> >, CompareVecInt >(CompareVecInt()) );
+  intersectionpointinoutmap_ = rcp(new std::map< std::vector<int>, bool, CompareVecInt >(CompareVecInt()) );
   nodeInOut_.clear();
   nodemap_.clear();
   // cout << "finish initialization of xfem element" << endl;
@@ -294,7 +294,7 @@ std::vector<int> GEO::Intersection::serialIntersectionCandidateSearch(
   EleGeoType xfemGeoType = HIGHERORDER;
   checkGeoType(xfemElement, xyze_xfemElement_, xfemGeoType);
   const LINALG::Matrix<3,2> xfemXAABB = computeFastXAABB(xfemDistype_, xyze_xfemElement_, xfemGeoType);
-      
+
   std::vector<int> cutterElementIds;
   // search for intersection candidates
   for(int kk = 0; kk < cutterdis->NumMyColElements(); ++kk)
@@ -334,7 +334,7 @@ bool GEO::Intersection::collectInternalPoints(
   // current nodal position
   bool nodeWithinElement = false;
   static LINALG::Matrix<3,1> xsi;
-        
+
   const int cunoId = cutterNode->Id();
   std::map< int, bool >::const_iterator it_nodeInOut = nodeInOut_.find(cunoId);
   // check in node map if already computed an if it is in or out
@@ -346,21 +346,21 @@ bool GEO::Intersection::collectInternalPoints(
       xsi = nodemap_.find(cunoId)->second;
       nodeWithinElement = true;
     }
-    else 
+    else
       return false;
   }
   else
-  { 
+  {
     const LINALG::Matrix<3,1> x = currentcutterpositions.find(cunoId)->second;
     xsi = currentToVolumeElementCoordinatesExact(xfemDistype_, xyze_xfemElement_, x, TOL7);
     nodeWithinElement = nodeInOut_[cunoId] = checkPositionWithinElementParameterSpace(xsi, xfemDistype_);
     if(nodeWithinElement)
       nodemap_[cunoId] = xsi;
   }
-  
+
 
   if(nodeWithinElement)
-  {   
+  {
     InterfacePoint ip;
     // check if node lies on the boundary of the xfem element
     setInternalPointBoundaryStatus(xsi, ip);
@@ -407,7 +407,7 @@ void GEO::Intersection::setBoundaryPointBoundaryStatus(
   }
   // point lies on a node, which has three neighbouring surfaces
   else if(count == 3)
-  {   
+  {
     ip.setPointType(NODE);
     ip.setNodeId(DRT::UTILS::getNode(xsi, xfemDistype_));
     ip.setLineId(DRT::UTILS::getLines(xsi, xfemDistype_));
@@ -416,7 +416,7 @@ void GEO::Intersection::setBoundaryPointBoundaryStatus(
   }
   else
     dserror("not on surface !!!");
-    
+
   return;
 }
 
@@ -450,7 +450,7 @@ bool GEO::Intersection::setInternalPointBoundaryStatus(
   }
   // point lies on a node, which has three neighbouring surfaces
   else if(count == 3)
-  {   
+  {
     ip.setPointType(NODE);
     ip.setNodeId(DRT::UTILS::getNode(xsi, xfemDistype_));
     ip.setLineId(DRT::UTILS::getLines(xsi, xfemDistype_));
@@ -459,7 +459,7 @@ bool GEO::Intersection::setInternalPointBoundaryStatus(
   }
   else
     ip.setPointType(INTERNAL);
-  
+
   return false;
 }
 
@@ -469,7 +469,7 @@ bool GEO::Intersection::setInternalPointBoundaryStatus(
  |  CLI:    checks if a node that lies within an element     u.may 07/08|
  |          lies on one of its surfaces or nodes                        |
  *----------------------------------------------------------------------*/
-void GEO::Intersection::setIntersectionPointBoundaryStatus( 
+void GEO::Intersection::setIntersectionPointBoundaryStatus(
     const DRT::Element*                     surfaceElement,
     const LINALG::SerialDenseMatrix&        xyze_surfaceElement,
     const LINALG::Matrix<3,1>&              xsiSurface,
@@ -479,7 +479,7 @@ void GEO::Intersection::setIntersectionPointBoundaryStatus(
   LINALG::Matrix<3,1> x(true);
   // surface element is an xfem surface
   elementToCurrentCoordinates(surfaceElement->Shape(), xyze_surfaceElement, xsiSurface, x);
-  const LINALG::Matrix<3,1> xsi = currentToVolumeElementCoordinatesExact(xfemDistype_, xyze_xfemElement_, x, TOL7); 
+  const LINALG::Matrix<3,1> xsi = currentToVolumeElementCoordinatesExact(xfemDistype_, xyze_xfemElement_, x, TOL7);
   const vector<int> surfaces = DRT::UTILS::getSurfaces(xsi, xfemDistype_);
   const int count = surfaces.size();
 
@@ -524,34 +524,34 @@ bool GEO::Intersection::collectIntersectionPoints(
     const int                                                         surfaceId,
     const int                                                         lineId,
     const bool                                                        lines,
-    const bool                                                        doSVD) 
+    const bool                                                        doSVD)
 {
 	
   if(!checkLineSurfaceXAABBs(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement))
       return false;
-  
+
   if(!doSVD)
     if(pointInPlaneSurfaceElement(xyze_surfaceElement, xyze_lineElement))
       return false;
-   
-  
-  vector<int> keyVec(4,0);  
+
+
+  vector<int> keyVec(4,0);
   // xfem element surface
   if(lines)
     keyVec = fillKeyVector(-1, surfaceElement->Id(), lineElement->NodeIds()[0], lineElement->NodeIds()[1]);
   else
     keyVec = fillKeyVector(surfaceElement->Id(), -1, lineElement->NodeIds()[0], lineElement->NodeIds()[1]);
-  
-  
+
+
   std::map< std::vector<int>, bool, CompareVecInt >::const_iterator it_bool = (*intersectionpointinoutmap_).find(keyVec);
   if(it_bool != (*intersectionpointinoutmap_).end())
   {
     // if intersection point computed and lying in the parameter space
     if(it_bool->second)
-    {      
+    {
       std::vector<LINALG::Matrix<3,1> > intersectionPoins = (*intersectionpointmap_).find(keyVec)->second;
       for(unsigned int i = 0; i < intersectionPoins.size(); i++)
-        addIntersectionPoint( surfaceElement, xyze_surfaceElement, lineElement, 
+        addIntersectionPoint( surfaceElement, xyze_surfaceElement, lineElement,
                               xyze_lineElement, intersectionPoins[i], interfacePoints, lineId, lines);
       return true;
     }
@@ -567,7 +567,7 @@ bool GEO::Intersection::collectIntersectionPoints(
     return false;
   }
  */
-  
+
   // check line lies exactly in surface
 /*  if(!doSVD)
     if(pointInPlaneSurfaceElement(xyze_surfaceElement, xyze_lineElement))
@@ -577,27 +577,27 @@ bool GEO::Intersection::collectIntersectionPoints(
       return false;
     }
 */
-  
+
   static LINALG::Matrix<3,1> xsi;
   static LINALG::Matrix<3,1> upLimit;
   static LINALG::Matrix<3,1> loLimit;
 
   createInitialLimits(surfaceElement->Shape(), xsi, upLimit, loLimit);
-  
-  const bool intersected = computeCurveSurfaceIntersection(	surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, 
+
+  const bool intersected = computeCurveSurfaceIntersection(	surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement,
                                                          	  upLimit, loLimit, xsi, doSVD);
 
- 
+
   if(intersected)
-  {   
-    //printf("intersection point\n"); 
-    // printf("xsi = %20.16f   %20.16f   %20.16f\n", xsi(0), xsi(1), xsi(2)); 
+  {
+    //printf("intersection point\n");
+    // printf("xsi = %20.16f   %20.16f   %20.16f\n", xsi(0), xsi(1), xsi(2));
   	(*intersectionpointinoutmap_)[getOppositeKeyVector(keyVec)] = true;
     (*intersectionpointinoutmap_)[keyVec] = true;
     addIntersectionPoint( surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit,
                           interfacePoints, surfaceId, lineId, lines, doSVD, keyVec);
 
-  } 
+  }
   else
   {
     (*intersectionpointinoutmap_)[keyVec] = false;
@@ -619,12 +619,12 @@ std::vector<int> GEO::Intersection::fillKeyVector(
     const int   	lineNodeId2) const
 {
   vector<int> keyVec(4,0);
-  
+
   keyVec[0] = gCutterId;
-  keyVec[1] = lXSurfaceId; 
+  keyVec[1] = lXSurfaceId;
   keyVec[2] = lineNodeId1;
   keyVec[3] = lineNodeId2;
- 
+
   return keyVec;
 }
 
@@ -654,14 +654,14 @@ void GEO::Intersection::storePermutedIntersectionPoint(
 	const LINALG::Matrix<3,1>&    xsi,
 	const std::vector<int>&       keyVec) const
 {
-  
+
   // if the line nodes are permuted , its element coordinate has to bestored with the opposite sign
   LINALG::Matrix<3,1> newXsi = xsi;
   newXsi(2) = (-1)*xsi(2);
-  
+
   (*intersectionpointmap_)[getOppositeKeyVector(keyVec)].push_back(newXsi);
 
-  return;    
+  return;
 }
 
 
@@ -675,9 +675,9 @@ bool GEO::Intersection::decideSVD(
     const EleGeoType lineGeoType)
 {
   if(surfaceGeoType == CARTESIAN &&  lineGeoType != HIGHERORDER)
-    return false; // don t do svd 
+    return false; // don t do svd
 
-  return true; // do svd 
+  return true; // do svd
 }
 
 
@@ -695,7 +695,7 @@ bool GEO::Intersection::checkLineSurfaceXAABBs(
   EleGeoType lineGeoType = HIGHERORDER;
   checkGeoType(lineElement, xyze_lineElement, lineGeoType);
   const LINALG::Matrix<3,2> lineXAABB = computeFastXAABB(lineElement->Shape(), xyze_lineElement,lineGeoType);
-        
+
   EleGeoType surfaceGeoType = HIGHERORDER;
   checkGeoType(surfaceElement, xyze_surfaceElement, surfaceGeoType);
   const LINALG::Matrix<3,2>  surfaceXAABB = computeFastXAABB(surfaceElement->Shape(), xyze_surfaceElement, surfaceGeoType);
@@ -724,20 +724,20 @@ void GEO::Intersection::computeNewStartingPoint(
     std::map< LINALG::Matrix<3,1>, InterfacePoint, ComparePoint>& interfacePoints,
     const bool                                                    lines,
     const bool                                                    doSVD,
-    const std::vector<int>&                                       keyVec) 
+    const std::vector<int>&                                       keyVec)
 {
-  
+
   if(comparePoints<3>(upLimit, loLimit))
     return;
 
   static LINALG::Matrix<3,1> xsi;
   xsi.Update(0.5, upLimit, 0.5, loLimit);
-  
+
   //printf("xsi = %f   %f   %f\n", fabs(xsi(0)), fabs(xsi(1)), fabs(xsi(2)) );
   //printf("lolimit = %f   %f   %f\n", fabs(loLimit(0)), fabs(loLimit(1)), fabs(loLimit(2)) );
   //printf("uplimit = %f   %f   %f\n", fabs(upLimit(0)), fabs(upLimit(1)), fabs(upLimit(2)) );
 
-  if(!computeCurveSurfaceIntersection(  surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, 
+  if(!computeCurveSurfaceIntersection(  surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement,
       													        upLimit, loLimit, xsi, doSVD))
     return;
 
@@ -765,7 +765,7 @@ GEO::InterfacePoint GEO::Intersection::classifyIntersectionPoint(
   InterfacePoint ip;
   // cutter line with xfem surface
   if(lines)
-  {          
+  {
     setIntersectionPointBoundaryStatus(surfaceElement,xyze_surfaceElement,xsi, ip);
     ip.setCoord(DRT::UTILS::getLineCoordinates(lineId, xsi(2), cutterDistype_));
   }
@@ -779,7 +779,7 @@ GEO::InterfacePoint GEO::Intersection::classifyIntersectionPoint(
       lineNodeId = 0;
 
     if(fabs(xsi(2) - 1) < GEO::TOL7)
-      lineNodeId = 1; 
+      lineNodeId = 1;
 
     LINALG::Matrix<3,1> coord(true);
     if(lineNodeId > -1)
@@ -807,7 +807,7 @@ GEO::InterfacePoint GEO::Intersection::classifyIntersectionPoint(
       ip.setCoord(coord);
     }
   }
-  
+
   return ip;
 }
 
@@ -834,7 +834,7 @@ void GEO::Intersection::addIntersectionPoint(
 {
   (*intersectionpointmap_)[keyVec].push_back(xsi);
   storePermutedIntersectionPoint(xsi, keyVec);
-  
+
   InterfacePoint ip = classifyIntersectionPoint(surfaceElement, xyze_surfaceElement, xsi, lineId, lines);
 
   if(interfacePoints.find(ip.getCoord()) == interfacePoints.end())
@@ -848,11 +848,11 @@ void GEO::Intersection::addIntersectionPoint(
       vector< LINALG::Matrix<3,1> >  upperLimits(8, LINALG::Matrix<3,1>(true));
       vector< LINALG::Matrix<3,1> >  lowerLimits(8, LINALG::Matrix<3,1>(true));
       createNewLimits(xsi, upLimit, loLimit, upperLimits, lowerLimits);
-    
+
       for(int i = 0; i < 8; i++)
-        computeNewStartingPoint(  surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, 
+        computeNewStartingPoint(  surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement,
                                   surfaceId, lineId, xsi,
-                                  upperLimits[i], lowerLimits[i], interfacePoints, lines, doSVD, keyVec);     
+                                  upperLimits[i], lowerLimits[i], interfacePoints, lines, doSVD, keyVec);
     }
   }
   return;
@@ -872,14 +872,14 @@ void GEO::Intersection::addIntersectionPoint(
     const LINALG::Matrix<3,1>&                                      xsi,
     std::map< LINALG::Matrix<3,1>, InterfacePoint, ComparePoint>&  	interfacePoints,
     const int                         								              lineId,
-    const bool                        								              lines) 
+    const bool                        								              lines)
 {
 
   InterfacePoint ip = classifyIntersectionPoint(surfaceElement, xyze_surfaceElement, xsi, lineId, lines);
-  
+
   if(interfacePoints.find(ip.getCoord()) == interfacePoints.end())
   	interfacePoints[ip.getCoord()] = ip;
-  
+
   return;
 }
 
@@ -900,11 +900,11 @@ void GEO::Intersection::createInitialLimits(
     case DRT::Element::quad4 : case DRT::Element::quad8 : case DRT::Element::quad9 :
     {
       xsi.Clear();
-      upLimit.PutScalar(1.0);			// first two entries refer to surface elements 
+      upLimit.PutScalar(1.0);			// first two entries refer to surface elements
       loLimit.PutScalar(-1.0);		// last entry refer to line element
       break;
     }
-    case DRT::Element::tri3 : case DRT::Element::tri6 : 
+    case DRT::Element::tri3 : case DRT::Element::tri6 :
     {
       xsi.PutScalar(0.3); // starting value for triangle
       xsi(2) = 0.0;
@@ -947,19 +947,19 @@ void GEO::Intersection::createNewLimits(
    *          2_____________________3
    *        (-1,-1)                (1,-1)
    */
-   
-   
+
+
   /*        Triangle Surface:                     Line:
-   *        (0, 1)               
+   *        (0, 1)
    *          2
-   *          | \         s          
-   *          |   \        /\          
+   *          | \         s
+   *          |   \        /\
    *          |     \      |                            4 ___________x__________ 5
    *          |       \    |                         ( -1 )                    ( 1 )
-   *          |         \  x ----> r  
-   *          |           \            
-   *          |             \         
-   *          |                \       
+   *          |         \  x ----> r
+   *          |           \
+   *          |             \
+   *          |                \
    *          0_____________________1
    *        ( 0, 0)                (1,0)
    */
@@ -1031,7 +1031,7 @@ int GEO::Intersection::findCommonSurfaceID(
       xfemSurfPoints[surface].push_back(pos);
     }
   }
-  
+
   // check if more than 2 points are lying on one xfem surface
   for(int i = 0; i < numXFEMSurfaces_; i++)
   {
@@ -1055,7 +1055,7 @@ int GEO::Intersection::findCommonSurfaceID(
       if(checkIfCutterOnXFEMSurface(cutterElement, xyze_cutterElement, positions))
         surfId = i;
     }
-  }   
+  }
   return surfId;
 }
 
@@ -1063,14 +1063,14 @@ int GEO::Intersection::findCommonSurfaceID(
 
 /*----------------------------------------------------------------------*
  |  CLI:    checks if the part of a cutter element           u.may 07/08|
- |          spezified by position lies on a xfem surface                |                      
+ |          spezified by position lies on a xfem surface                |
  |          by checking if the cutter midpoint lies on the              |
  |          xfem surface                                                |
  *----------------------------------------------------------------------*/
 bool GEO::Intersection::checkIfCutterOnXFEMSurface(
     const DRT::Element*               cutterElement,
     const LINALG::SerialDenseMatrix&  xyze_cutterElement,
-    const vector<int>&                positions) 
+    const vector<int>&                positions)
 {
   bool onSurface = false;
 
@@ -1118,16 +1118,16 @@ void GEO::Intersection::preparePLC(
   {
   	// if all interface points are lying in one plane
     // and xfem is Cartesian, the facet does not need to be triangulated
-    if(interfacePoints.size() == 3) 
+    if(interfacePoints.size() == 3)
       inPlane = true;
     else if(xfemGeoType == CARTESIAN)
       if(SurfaceElementIsPlane(xyze_cutterElement) )
         inPlane = true;
-  
+
     // compute midpoint
-    // tolerance has to be twice as small than for other points because the midpoint is 
+    // tolerance has to be twice as small than for other points because the midpoint is
     // point by summing the other
-    // points and dividing by the number of points, other wise midpoint 
+    // points and dividing by the number of points, other wise midpoint
     // is moved on xfem boundary even though is is still inside
     // xfem element
     if(!inPlane)
@@ -1142,7 +1142,7 @@ void GEO::Intersection::preparePLC(
     computeConvexHull(cutterElement, xyze_cutterElement,interfacePoints, vertices);
   }
   // for 1 or 2 interface points (line segment or isolated point)
-  else if(interfacePoints.size() <= 2 && interfacePoints.size() > 0) 
+  else if(interfacePoints.size() <= 2 && interfacePoints.size() > 0)
   {
     for(std::map< LINALG::Matrix<3,1>, InterfacePoint, ComparePoint>::iterator ipoint = interfacePoints.begin(); ipoint != interfacePoints.end(); ++ipoint)
     {
@@ -1151,7 +1151,7 @@ void GEO::Intersection::preparePLC(
       elementToCurrentCoordinates(cutterElement->Shape(), xyze_cutterElement, (ipoint->second).getCoord(), curCoordVol);
       const LINALG::Matrix<3,1> eleCoordVol(currentToVolumeElementCoordinatesExact(xfemDistype_, xyze_xfemElement_, curCoordVol, TOL7));
       (ipoint->second).setCoord(eleCoordVol);
-     
+
       vertices.push_back(eleCoordVol);
     }
   }
@@ -1189,7 +1189,7 @@ void GEO::Intersection::computeConvexHull(
           const DRT::Element*                                             cutterElement,
           const LINALG::SerialDenseMatrix&    								            xyze_cutterElement,
           std::map< LINALG::Matrix<3,1>, InterfacePoint, ComparePoint>&   interfacePoints,
-          vector< LINALG::Matrix<3,1> >&      								            vertices)   
+          vector< LINALG::Matrix<3,1> >&      								            vertices)
 {
   // store coordinates in
   // points has numInterfacePoints*dim-dimensional components
@@ -1227,7 +1227,7 @@ void GEO::Intersection::computeConvexHull(
     for(int j = 0; j < 2; j++)
     {
       double* point  = SETelemt_(facet->vertices, j, vertexT)->point;
-      
+
       LINALG::Matrix<2,1>  eleCoordSurf;
       for(int m = 0; m < 2; m++)
         eleCoordSurf(m)  = point[m];
@@ -1267,24 +1267,24 @@ void GEO::Intersection::storePLC(
     const LINALG::SerialDenseMatrix&  xyze_cutterElement,
     const int                         surfId,
     vector<int>&                      positions,
-    InterfacePoint&                   midpoint)   
-{ 
-  
+    InterfacePoint&                   midpoint)
+{
+
   // NOTE: postion is filled in the order points appear in vertices to
   // keep the order which was determined by the convex hull computation
-  const int numPoints = (int) positions.size(); 
-  // store segments 
+  const int numPoints = (int) positions.size();
+  // store segments
   // cutter element lies on the surface of an xfem element
   if(surfId > -1)
   {
     if(numPoints == 1)
       storeIsolatedPoints(positions);
-    
+
     // store outer triangle segments
     // possible midpoint not added to position list and point list
-    if(numPoints > 1)       
+    if(numPoints > 1)
       storeSegments(positions);
- 
+
     if(numPoints > 2)
     {
       // tell midpoint on which xfem surface it lies
@@ -1294,19 +1294,19 @@ void GEO::Intersection::storePLC(
       storeSurfaceSegments(positions);
       // store boundary cells immediately after
       storeSurfaceTriangles(positions);
-    }     
+    }
   }
   else if(surfId == -1)
   {
     // possible midpoint not added to position list and point list
-    if(numPoints > 1) 
+    if(numPoints > 1)
       storeSegments( positions );
-        
+
     if(numPoints > 2)
-    {        
+    {
       storeMidPoint(midpoint, positions);
       storeTriangles(positions);
-    } 
+    }
     // this method should to be called after store segments !!!!
     // so time is saved in fillPLC
     storeIsolatedPoints(positions);
@@ -1325,33 +1325,33 @@ void GEO::Intersection::storePLCInPlane(
     const DRT::Element*               cutterElement,
     const LINALG::SerialDenseMatrix&  xyze_cutterElement,
     const int                         surfId,
-    vector<int>&                      positions)   
-{ 
-  
+    vector<int>&                      positions)
+{
+
   // NOTE: postion is filled in the order points appear in vertices to
   // keep the order which was determined by the convex hull computation
-  const int numPoints = (int) positions.size(); 
-  // store segments 
+  const int numPoints = (int) positions.size();
+  // store segments
   // cutter element lies on the surface of an xfem element
   if(surfId > -1)
   {
     if(numPoints == 1)
       storeIsolatedPoints(positions);
-    
+
     // store outer triangle segments
     // possible midpoint not added to position list and point list
-    if(numPoints > 1)   
+    if(numPoints > 1)
       storeSegments(positions);
-    
+
     // store boundary cells immediately after
     if(numPoints > 2)
-      storeSurfacePlaneFacetsInTriangles(positions);   
+      storeSurfacePlaneFacetsInTriangles(positions);
   }
   else if(surfId == -1)
   {
     if(numPoints > 1)
         storeSegments( positions );
-    if(numPoints > 2)       
+    if(numPoints > 2)
       storePlaneFacetsInTriangles(positions);
     // this method should to be called after store segments !!!!
     // so time is saved in fillPLC
@@ -1374,12 +1374,12 @@ void GEO::Intersection::completePLC(
   // store isolated points
   // if any isolated point appears in the segment list remove it
   for(int i = 0; i < numXFEMSurfaces_; i++)
-  {   
+  {
     vector<int> removePos;
     for(unsigned int  j = 0; j < isolatedPointList_[i].size(); j++)
     {
       removePoint = false;
-      const int pointPos = isolatedPointList_[i][j]; 
+      const int pointPos = isolatedPointList_[i][j];
       for(int ii = 0; ii < numXFEMSurfaces_; ii++)
       {
         for(unsigned int k = 0; k < segmentList_[ii].size(); k++)
@@ -1392,7 +1392,7 @@ void GEO::Intersection::completePLC(
 
         if(removePoint)
           break;
-      }  
+      }
     }
     // count reverse in order to be able to erase the points properly
     for(int m = (int) removePos.size()-1; m >= 0; m--)
@@ -1451,11 +1451,11 @@ bool GEO::Intersection::checkIfCDT()
   // the xfem element
   if(triangleList_.empty() && surfaceTriangleList_.empty() )
     return false;
-  
+
   for(int i  = 0; i < numXFEMSurfaces_; i++)
     if(!segmentList_[i].empty() || !isolatedPointList_[i].empty());
       return true;
-    
+
   return true;
 }
 
@@ -1541,21 +1541,21 @@ void GEO::Intersection::quickFixForIntersectingStructures(
 {
   cout << "quick fix start" << endl;
   std::set<int> labelList;
-  // check if more than two labels so more than to structures 
-  // are within a fluid element 
+  // check if more than two labels so more than to structures
+  // are within a fluid element
   for(unsigned int i = 0; i < intersectingCutterElements_.size(); i++)
     labelList.insert(labelPerElementId.find(intersectingCutterElements_[i]->Id())->second);
-  
+
   // only one or no structure is within the xfem element
   if(labelList.size() <= 1)
     return;
-  
+
   for (std::set<int>::const_iterator labelIter = labelList.begin(); labelIter != labelList.end(); labelIter++)
     cout << "labelList = "<< *labelIter << endl;
-  
+
   // order triangle corner points such that normal points outward of the structure
-  std::map<int,std::set<int> > triByLabel; 
-  //std::vector<int>             triByFace; 
+  std::map<int,std::set<int> > triByLabel;
+  //std::vector<int>             triByFace;
   std::vector<int> pointLabelList(((int)pointList_.size()-numXFEMCornerNodes_), -1);
   for(unsigned int i = 0; i < triangleList_.size(); i++)
   {
@@ -1563,11 +1563,11 @@ void GEO::Intersection::quickFixForIntersectingStructures(
     int facemarker = faceMarker_[i + numXFEMSurfaces_];
     //triByFace.push_back(facemarker);
     triByLabel[labelPerElementId.find(intersectingCutterElements_[facemarker]->Id())->second].insert(i);
-    
+
     // obtain triangle coordinates and midpoint
     LINALG::Matrix<3,3> xyze_triElement;
     LINALG::Matrix<3,1> midpoint(true);
-    
+
     for(int jnode = 0; jnode < 3; jnode++)
     {
       int index = triangleList_[i][jnode];
@@ -1578,27 +1578,27 @@ void GEO::Intersection::quickFixForIntersectingStructures(
       pointLabelList[index-numXFEMCornerNodes_] = facemarker;
     }
     midpoint.Scale(1.0/3.0);
-    
+
     LINALG::Matrix<2,1> eleMidpoint(true);
     CurrentToSurfaceElementCoordinates(DRT::Element::tri3, xyze_triElement, midpoint, eleMidpoint);
-    
+
     // compute element normal
     LINALG::Matrix<3,1> eleNormal;
-    computeNormalToSurfaceElement(intersectingCutterElements_[facemarker]->Shape(), 
-                                  GEO::getCurrentNodalPositions(intersectingCutterElements_[facemarker], currentcutterpositions), 
+    computeNormalToSurfaceElement(intersectingCutterElements_[facemarker]->Shape(),
+                                  GEO::getCurrentNodalPositions(intersectingCutterElements_[facemarker], currentcutterpositions),
                                   eleMidpoint, eleNormal);
-    
-    // compute triangle normal 
+
+    // compute triangle normal
     LINALG::Matrix<3,1> triNormal;
     LINALG::Matrix<2,1> triMidpoint;
     triMidpoint.PutScalar((1.0/3.0));
     computeNormalToSurfaceElement(DRT::Element::tri3, xyze_triElement, triMidpoint, triNormal);
-    
+
     // compare normals in case that normals point in opposite directions renumber triangles
     // from 1 - 2 - 3 to 1 -3 - 2
     const double scalarproduct = triNormal(0)*eleNormal(0) + triNormal(1)*eleNormal(1) + triNormal(2)*eleNormal(2);
     cout << "scalarproduct = " << scalarproduct << endl;
-    if(scalarproduct < 0.0) 
+    if(scalarproduct < 0.0)
     {
       cout << "renumber triangle" << endl;
       int index1 = triangleList_[i][1];
@@ -1606,14 +1606,14 @@ void GEO::Intersection::quickFixForIntersectingStructures(
       triangleList_[i][2] = index1;
     }
   }
-  
+
   // check for each point is it lies inside another structure,
   // if yes move it out of that structure
   const LINALG::Matrix<3,2> rootBox = computeFastXAABB(xfemDistype_, eleRefCoordinates_, GEO::EleGeoType(CARTESIAN));
   Teuchos::RCP<GEO::SearchTree> triTree = rcp(new GEO::SearchTree(5));
   triTree->initializeTree(rootBox, triByLabel, GEO::TreeType(GEO::OCTTREE));
   std::map<int, LINALG::Matrix<3,2> >triangleXAABBs = GEO::getTriangleXAABBs(triangleList_, pointList_);
-  
+
   // bool nodeMoved = true;
   // while(nodeMoved)
   // {
@@ -1624,7 +1624,7 @@ void GEO::Intersection::quickFixForIntersectingStructures(
     const int pointLabel = labelPerElementId.find(intersectingCutterElements_[face]->Id())->second;
     cout << "pointLabel = " << pointLabel << endl;
     // triTree->moveContactNodes(triangleList_, pointList_, triangleXAABBs,  pointList_[i].getCoord(), i, pointLabel);
-  }  
+  }
   // }
   cout << "quick fix end" << endl;
   return;
@@ -1667,7 +1667,7 @@ void GEO::Intersection::computeCDT(
         map< int, DomainIntCells >&             domainintcells,
         map< int, BoundaryIntCells >&           boundaryintcells)
 {
-  const int dim = 3; 
+  const int dim = 3;
   tetgenio in;
   tetgenio out;
   char switches[] = "pQ";    // pQ o2 Y R nn
@@ -1692,8 +1692,8 @@ void GEO::Intersection::computeCDT(
 
   if(xfemDistype_ == DRT::Element::tet4 || xfemDistype_ == DRT::Element::tet10 )
     roundOnXFEMTetSurface1(in, (int) scalefactor);
-  
-  
+
+
   in.pointmarkerlist = new int[in.numberofpoints];
   for(int i = 0; i < numXFEMCornerNodes_; i++)
     in.pointmarkerlist[i] = 3;    // 3 : point lying on the xfem element (corner nodes)
@@ -1708,15 +1708,15 @@ void GEO::Intersection::computeCDT(
   in.facetlist = new tetgenio::facet[in.numberoffacets];
   in.facetmarkerlist = new int[in.numberoffacets];
 
- 
- 
+
+
     // loop over all xfem element surfaces
   for(int i = 0; i < numXFEMSurfaces_; i++)
   {
     f = &in.facetlist[i];
     const int nsegments = (int) (segmentList_[i].size()/2);
     const int nisoPoints = isolatedPointList_[i].size();
- 
+
     f->numberofpolygons = 1 + nsegments + nisoPoints;
     f->polygonlist = new tetgenio::polygon[f->numberofpolygons];
     f->numberofholes = 0;
@@ -1777,11 +1777,11 @@ void GEO::Intersection::computeCDT(
     for(int j = 0; j < p->numberofvertices; j ++)
       p->vertexlist[j] = triangleList_[i - numXFEMSurfaces_][j];
   }
-  
+
   // set facetmarkers
   for(int i = 0; i < in.numberoffacets; i ++)
       in.facetmarkerlist[i] = faceMarker_[i] + facetMarkerOffset_;
-  
+
   //in.save_nodes("tetin");
   //in.save_poly("tetin");
 
@@ -1801,17 +1801,17 @@ void GEO::Intersection::computeCDT(
   //printTetViewOutputPLC( element, element->Id(), in);
 
   // store interface triangles (+ recovery of higher order meshes)
-  fill = 0; 
+  fill = 0;
   for(int i = 0; i <  out.numberofpoints; i++)
     for(int j = 0; j < dim; j++)
     {
       out.pointlist[fill] = (REAL) (out.pointlist[fill] * (1.0/scalefactor));
       fill++;
     }
-  
+
   const bool higherorder = false;
   const bool recovery = false;
-  
+
   if(higherorder)
   {
     std::cout << "DO RECOVERY " << endl;
@@ -1829,10 +1829,10 @@ void GEO::Intersection::computeCDT(
   //printTetViewOutput(element->Id(), out);
   // store domain integration cells
   addCellsToDomainIntCellsMap(xfemElement, domainintcells, out, higherorder);
-  
+
   // debugTetVolumes(xfemElement, out);
- 
-  
+
+
 }
 #endif
 
@@ -1845,7 +1845,7 @@ void GEO::Intersection::startPointList()
 {
   xfemPointList_.clear();
   xfemFaceMarker_.clear();
-  
+
   InterfacePoint ip;
   for(int i = 0; i < numXFEMCornerNodes_; i++)
   {
@@ -1875,9 +1875,9 @@ void GEO::Intersection::storePointList(
     vector< LINALG::Matrix<3,1> >&                                      vertices,
     vector<int>&                                                        positions,
     std::map< LINALG::Matrix<3,1>, InterfacePoint, ComparePoint>&       interfacePoints)
-{  
+{
   LINALG::Matrix<3,1>              searchPoint(true);
-  
+
   // store interface points in pointList_
   storePoint(vertices[0], interfacePoints, positions);
   vertices.erase(vertices.begin());
@@ -1887,7 +1887,7 @@ void GEO::Intersection::storePointList(
       searchPoint = vertices[0];
       storePoint(vertices[0], interfacePoints, positions );
       vertices.erase(vertices.begin());
-  } 
+  }
   while(vertices.size()>2)
   {
       findNextSegment(vertices, searchPoint);
@@ -1908,7 +1908,7 @@ void GEO::Intersection::storePoint(
     std::map< LINALG::Matrix<3,1>, InterfacePoint, ComparePoint>&  	interfacePoints,
     vector<int>&                      								              positions)
 {
-  // key in surface coords   
+  // key in surface coords
   for(std::map< LINALG::Matrix<3,1>, InterfacePoint, ComparePoint>::iterator ipoint = interfacePoints.begin(); ipoint != interfacePoints.end(); ++ipoint )
   {
     if(comparePoints<3>(point, (ipoint->second).getCoord()))
@@ -1922,7 +1922,7 @@ void GEO::Intersection::storePoint(
             positions.push_back(count);
             return;
         }
-      }    
+      }
       pointList_.push_back(ipoint->second);
       positions.push_back(pointList_.size()-1);
       return;
@@ -1956,7 +1956,7 @@ void GEO::Intersection::storeMidPoint(
 
   pointList_.push_back(midPoint);
   positions.push_back(pointList_.size()-1);
- 
+
   return;
 }
 
@@ -1969,7 +1969,7 @@ void GEO::Intersection::storeMidPoint(
 GEO::InterfacePoint GEO::Intersection::computeMidpoint(
     const std::map< LINALG::Matrix<3,1>, InterfacePoint, ComparePoint>& 	interfacePoints
     ) const
-{ 
+{
    InterfacePoint ip;
    LINALG::Matrix<3,1> coord(true);
 
@@ -1998,7 +1998,7 @@ GEO::InterfacePoint GEO::Intersection::computeMidpoint(
 
   for(unsigned int i = 0; i < positions.size() ; i++)
     coord += pointList_[positions[i]].getCoord();
- 
+
   coord.Scale(1.0/((double) positions.size()));
   ip.setPointType(INTERNAL);
   ip.setCoord(coord);
@@ -2035,7 +2035,7 @@ void GEO::Intersection::storeIsolatedPoints(
   bool noIsolatedPoint = false;
 
   for(unsigned int i = 0; i < positions.size(); i++)
-  {  
+  {
     // NODE type interface points don't need to be stored, these points are the corner
     // points
     noIsolatedPoint = false;
@@ -2050,7 +2050,7 @@ void GEO::Intersection::storeIsolatedPoints(
         const int surf_j = ip.getSurfId()[j];
         if(segmentList_[surf_j].size() > 0)
         {
-          vector<int>::iterator itSegment = find ( segmentList_[surf_j].begin(), 
+          vector<int>::iterator itSegment = find ( segmentList_[surf_j].begin(),
               segmentList_[surf_j].end(), positions[i]);
 
           if( (itSegment) != segmentList_[surf_j].end())
@@ -2063,8 +2063,8 @@ void GEO::Intersection::storeIsolatedPoints(
         if(isolatedPointList_[surf_j].size() > 0)
         {
           // check if point poistion is already stored in isolated point list
-          vector<int>::iterator itPoint = find (  isolatedPointList_[surf_j].begin(), 
-              isolatedPointList_[surf_j].end(), 
+          vector<int>::iterator itPoint = find (  isolatedPointList_[surf_j].begin(),
+              isolatedPointList_[surf_j].end(),
               positions[i]);
 
           if(itPoint == isolatedPointList_[surf_j].end())
@@ -2077,7 +2077,7 @@ void GEO::Intersection::storeIsolatedPoints(
       // store only on one surface even if the point lies on a line
       if(countEnd == ip.getNumSurface())
         isolatedPointList_[ip.getSurfId()[0]].push_back(positions[i]);
-    } 
+    }
   }
 }
 
@@ -2094,7 +2094,7 @@ void GEO::Intersection::storeSingleSegment(
     const int pos2)
 {
   if(!checkIfSegmentPointsOnSameXfemLine(pos1, pos2) && pos1 != pos2)
-  {   
+  {
     // loops over all NODE LINE and SURFACE type points
     for(int j = 0; j < pointList_[pos1].getNumSurface(); j++ )
     {
@@ -2175,11 +2175,11 @@ void GEO::Intersection::storeSurfaceSegments(
   // segments.
 
   // last entry in position vector corresponds to the midpoint
-  // store outer segments 
+  // store outer segments
   const int pos1 = positions[positions.size()-1];  // midpoint
   for(unsigned int i = 0; i < positions.size()-1; i++ )
   {
-    const int pos2 = positions[i];                   // all other points 
+    const int pos2 = positions[i];                   // all other points
 
     // if both point are lying on the same surface but not on the same line store segment
     // if not already stored
@@ -2196,11 +2196,11 @@ bool GEO::Intersection::checkIfSegmentPointsOnSameXfemLine(
     const int position1,
     const int position2)
 {
-  if((pointList_[position1].getPointType() == NODE || pointList_[position1].getPointType() == LINE) && 
+  if((pointList_[position1].getPointType() == NODE || pointList_[position1].getPointType() == LINE) &&
      (pointList_[position2].getPointType() == NODE || pointList_[position2].getPointType() == LINE))
-  { 
+  {
     for(int i = 0; i < pointList_[position1].getNumLine(); i++)
-    {  
+    {
       const int lineId = pointList_[position1].getLineId()[i];
       for(int j = 0; j < pointList_[position2].getNumLine(); j++)
         if(lineId == pointList_[position2].getLineId()[j])
@@ -2214,7 +2214,7 @@ bool GEO::Intersection::checkIfSegmentPointsOnSameXfemLine(
 
 /*----------------------------------------------------------------------*
  |  CDT:    removes equal interface points from              u.may 07/08|
- |          positions                                                   |  
+ |          positions                                                   |
  *----------------------------------------------------------------------*/
 void GEO::Intersection::removeDegenerateInterfacePoints(
     vector<int>&              positions)
@@ -2283,7 +2283,7 @@ void GEO::Intersection::storePlaneFacets(
   // facet has to be plane
   for(unsigned int i = 0; i < positions.size(); i++ )
     facet.push_back(positions[i]);
-  
+
   triangleList_.push_back(facet);
   faceMarker_.push_back(((int)intersectingCutterElements_.size()-1));
 }
@@ -2327,7 +2327,7 @@ void GEO::Intersection::storeSurfaceTriangles(
 {
     vector<int> triangle(3,0);
     vector<vector<int> > triangleList;
-    
+
     // store midpoint before in last entry in positions and point list
     for(unsigned int i = 0; i < positions.size()-2; i++ )
     {
@@ -2335,7 +2335,7 @@ void GEO::Intersection::storeSurfaceTriangles(
         triangle[1] = positions[i+1];
         triangle[2] = positions[positions.size()-1];      // add midpoint
 
-        triangleList.push_back(triangle); 
+        triangleList.push_back(triangle);
     }
 
     // last point to first point
@@ -2344,7 +2344,7 @@ void GEO::Intersection::storeSurfaceTriangles(
     triangle[2] = positions[positions.size()-1];      // add midpoint
 
     triangleList.push_back(triangle);
-    
+
     // current element is always the last element in vector
     const int cutterPosition = ((int) intersectingCutterElements_.size()-1);
     surfaceTriangleList_.insert(make_pair(cutterPosition,triangleList));
@@ -2364,12 +2364,12 @@ void GEO::Intersection::storeSurfacePlaneFacets(
 {
   vector<int> facet;
   vector<vector<int> > facetList;
-  
+
   // store midpoint before in last entry in positions and point list
   for(unsigned int i = 0; i < positions.size(); i++ )
     facet.push_back(positions[i]);
-  
-  facetList.push_back(facet); 
+
+  facetList.push_back(facet);
   // current element is always the last element in vector
   const int cutterPosition = ((int)intersectingCutterElements_.size()-1);
   surfaceTriangleList_.insert(make_pair(cutterPosition,facetList));
@@ -2389,17 +2389,17 @@ void GEO::Intersection::storeSurfacePlaneFacetsInTriangles(
 {
   vector<int> triangle(3,0);
   vector<vector<int> > triangleList;
-  
+
   // store midpoint before in last entry in positions and point list
   for(unsigned int i = 1; i < positions.size()-1; i++ )
   {
       triangle[0] = positions[0];
       triangle[1] = positions[i];
-      triangle[2] = positions[i+1];    
+      triangle[2] = positions[i+1];
 
-      triangleList.push_back(triangle); 
+      triangleList.push_back(triangle);
   }
-  
+
   // current element is always the last element in vector
   const int cutterPosition = ((int)intersectingCutterElements_.size()-1);
   surfaceTriangleList_.insert(make_pair(cutterPosition,triangleList));
@@ -2426,7 +2426,7 @@ void GEO::Intersection::recoverCurvedInterface(
   // store triface lying completey on xfem surfaces
   if(!surfaceTriangleList_.empty())
       storeSurfaceIntCells(true, currentcutterpositions,listBoundaryICPerElement);
-  
+
   // lifts all corner points into the curved interface
   if(recovery)
   	liftAllSteinerPoints(currentcutterpositions, out);
@@ -2450,8 +2450,8 @@ void GEO::Intersection::recoverCurvedInterface(
       getTetrahedronNodes(tetraCornerNodes, tetraCornerIndices, out);
 
       // check for degenerate triangle if yes continue
-      
-      
+
+
       // run over each triface
       for(int index1 = 0; index1 < 3 ;index1++)
       {
@@ -2567,7 +2567,7 @@ void GEO::Intersection::storeSurfaceIntCells(
         int index2 = index1+1;
         if(index2 > 2) index2 = 0;
 
-        addXFEMSurfaceCellsToBoundaryIntCellsMap( higherorder, index1, triface[index1], triface[index2], cutterPosition, 
+        addXFEMSurfaceCellsToBoundaryIntCellsMap( higherorder, index1, triface[index1], triface[index2], cutterPosition,
                                                   currentcutterpositions, eleDomainCoord, eleBoundaryCoord, physDomainCoord);
       }
       listBoundaryICPerElement.push_back(BoundaryIntCell(DRT::Element::tri3, ele_gid, eleDomainCoord, eleBoundaryCoord, physDomainCoord));
@@ -2587,9 +2587,9 @@ void GEO::Intersection::liftAllSteinerPoints(
 {
   vector< vector<int> > adjacentFacesList;
   vector< vector<int> > adjacentFacemarkerList;
-  
+
   locateSteinerPoints(adjacentFacesList, adjacentFacemarkerList, out);
-    
+
   if(!adjacentFacesList.empty())
   {
     // run over all Steiner points
@@ -2598,12 +2598,12 @@ void GEO::Intersection::liftAllSteinerPoints(
     {
       int lineIndex = -1;
       int cutterIndex = -1;
-      LINALG::Matrix<3,1> edgePoint(true);     
-      LINALG::Matrix<3,1> oppositePoint(true);  
+      LINALG::Matrix<3,1> edgePoint(true);
+      LINALG::Matrix<3,1> oppositePoint(true);
 
       const SteinerType caseSteiner = decideSteinerCase(  i, lineIndex, cutterIndex, adjacentFacesList, adjacentFacemarkerList, currentcutterpositions,
                                                    		    edgePoint, oppositePoint,  out);
-     
+
       switch(caseSteiner)
       {
         case S_SURFACE:
@@ -2612,7 +2612,7 @@ void GEO::Intersection::liftAllSteinerPoints(
           break;
         }
         case S_EDGE:
-        {   
+        {
           liftSteinerPointOnEdge( i, lineIndex, cutterIndex, edgePoint, oppositePoint,
                                   adjacentFacesList, currentcutterpositions, out);
           break;
@@ -2772,7 +2772,7 @@ void GEO::Intersection::liftSteinerPointOnSurface(
     LINALG::Matrix<3,1>   Steinerpoint;
     for(int j=0; j<3; ++j)
         Steinerpoint(j) = out.pointlist[adjacentFacesList[steinerIndex][0]*3 + j];
-    
+
     elementToCurrentCoordinatesInPlace(xfemDistype_, xyze_xfemElement_, Steinerpoint);
 
     LINALG::Matrix<3,1>  averageNormal(true);
@@ -2796,9 +2796,9 @@ void GEO::Intersection::liftSteinerPointOnSurface(
         elementToCurrentCoordinatesInPlace(xfemDistype_, xyze_xfemElement_, p1);
         elementToCurrentCoordinatesInPlace(xfemDistype_, xyze_xfemElement_, p2);
 
-        LINALG::Matrix<3,1> n1(true); 
+        LINALG::Matrix<3,1> n1(true);
         n1.Update(1.0, p1, -1.0, Steinerpoint);
-        LINALG::Matrix<3,1> n2(true); 
+        LINALG::Matrix<3,1> n2(true);
         n2.Update(1.0, p2, -1.0, Steinerpoint);
 
         LINALG::Matrix<3,1> normal = computeCrossProduct(n1, n2);
@@ -2823,7 +2823,7 @@ void GEO::Intersection::liftSteinerPointOnSurface(
     plane.push_back(normalNode);
     normalNode.Update(1.0, Steinerpoint, -1.0, averageNormal);
     plane.push_back(normalNode);
-    
+
     bool intersected = computeRecoveryNormal( cutterElement, xyze_cutterElement, plane, xsi, false);
     if(intersected)
     {
@@ -2883,13 +2883,13 @@ void GEO::Intersection::liftSteinerPointOnEdge(
 
     LINALG::Matrix<3,1> r1; r1.Update(1.0, edgePoint, -1.0, Steinerpoint);
     LINALG::Matrix<3,1> r2; r2.Update(1.0, oppositePoint, -1.0, Steinerpoint);
-   
-    
+
+
     LINALG::Matrix<3,1> n1 = computeCrossProduct( r1, r2);
     LINALG::Matrix<3,1> n2 = computeCrossProduct( r1, n1);
 
     //normalizeVectorInPLace(n1);
-    //normalizeVectorInPLace(n2);  
+    //normalizeVectorInPLace(n2);
     n1.Scale(1.0/n1.Norm2());
     n2.Scale(1.0/n2.Norm2());
 	
@@ -2897,16 +2897,16 @@ void GEO::Intersection::liftSteinerPointOnEdge(
     LINALG::Matrix<3,1> planeNode(true);
     planeNode.Update(1.0, Steinerpoint, 1.0, n1);
     plane.push_back(planeNode);
-    
+
     planeNode.Update(1.0,Steinerpoint, -1.0, n1);
     plane.push_back(planeNode);
-    
+
     planeNode.Update(1.0,plane[1], 1.0, n2);
     plane.push_back(planeNode);
-    
+
     planeNode.Update(1.0,plane[0], 1.0, n2);
     plane.push_back(planeNode);
-    
+
     static LINALG::Matrix<3,1> xsi;
     xsi.Clear();
     DRT::Element* 			cutterElement = intersectingCutterElements_[cutterIndex];
@@ -2914,9 +2914,9 @@ void GEO::Intersection::liftSteinerPointOnEdge(
     const vector<RCP<DRT::Element> > cutterElementLines = cutterElement->Lines();
     const DRT::Element* 	lineElement = (cutterElementLines[lineIndex]).get();
     const LINALG::SerialDenseMatrix xyze_lineElement(GEO::getCurrentNodalPositions(lineElement, currentcutterpositions));
-      
+
     const bool intersected = computeRecoveryPlane( lineElement, xyze_lineElement, plane, xsi);
-   
+
     if(intersected)
     {
         storeHigherOrderNode( false, adjacentFacesList[steinerIndex][0], lineIndex, xsi,
@@ -2989,25 +2989,25 @@ void GEO::Intersection::liftSteinerPointOnBoundary(
         if(!oppositeFound)
             break;
     }
-    
+
     // compute normal through Steiner point lying in the boundary triangle
     vector<LINALG::Matrix<3,1> > plane;
     computeIntersectionNormalC( adjacentFacesList[steinerIndex][0], edgeIndex, oppositeIndex, plane, out);
 
-    
+
     // compute intersection normal on boundary
     static LINALG::Matrix<3,1> xsi;
     xsi.Clear();
     DRT::Element* cutterElement = intersectingCutterElements_[faceIndex];
-    const LINALG::SerialDenseMatrix xyze_cutterElement(GEO::getCurrentNodalPositions(cutterElement, currentcutterpositions));   
-    
+    const LINALG::SerialDenseMatrix xyze_cutterElement(GEO::getCurrentNodalPositions(cutterElement, currentcutterpositions));
+
     //cout << "COMPUTE STEINER POINT ON BOUNDARY" << endl;
-    
+
     const bool intersected = computeRecoveryNormal(cutterElement, xyze_cutterElement, plane, xsi, true);
-   
-    
+
+
     if(intersected)
-    {      
+    {
         storeHigherOrderNode(   true, adjacentFacesList[steinerIndex][0], -1, xsi,
                                 intersectingCutterElements_[faceIndex], currentcutterpositions, out);
     }
@@ -3159,7 +3159,7 @@ void GEO::Intersection::computeHigherOrderPoint(
 
         DRT::Element* cutterElement = intersectingCutterElements_[faceMarker];
         const LINALG::SerialDenseMatrix xyze_cutterElement(GEO::getCurrentNodalPositions(cutterElement, currentcutterpositions));
-        
+
         vector<LINALG::Matrix<3,1> >  plane;
 
         computeIntersectionNormalA(  true,  index1, index2, oppositeIndex, globalHigherOrderIndex,
@@ -3383,7 +3383,7 @@ void GEO::Intersection::computeIntersectionNormalB(
 
     //normalizeVectorInPLace(averageNormal);
     //normalizeVectorInPLace(rPlane);
-    
+
     averageNormal.Scale(1.0/averageNormal.Norm2());
     rPlane.Scale(1.0/rPlane.Norm2());
 
@@ -3405,7 +3405,7 @@ void GEO::Intersection::computeIntersectionNormalB(
     plane.push_back(planeNode);
     planeNode.Update(1.0, plane[0],  1.0, rPlane); //TODO check signs
     plane.push_back(planeNode);
-    
+
 
    /* for(int i = 0; i < 4; i++)
     {
@@ -3474,11 +3474,11 @@ void GEO::Intersection::computeIntersectionNormalC(
 
     for(int i = 0; i < 4; i++)
       elementToCurrentCoordinatesInPlace(xfemDistype_, xyze_xfemElement_, plane[i]);
-    
+
     elementToCurrentCoordinatesInPlace(xfemDistype_, xyze_xfemElement_, p2);
-   
+
     plane.push_back(p2);
-    
+
     /*
     for(unsigned int i = 0; i < plane.size(); i++)
     {
@@ -3565,7 +3565,7 @@ int GEO::Intersection::findEdgeOppositeIndex(
   for(int i = 0; i < 3; i++)
     if((out.trifacelist[adjacentFaceIndex*3+i] != edgeIndex1) && (out.trifacelist[adjacentFaceIndex*3+i] != edgeIndex2 ))
       return out.trifacelist[adjacentFaceIndex*3+i];
-      
+
   return -1;
 }
 
@@ -3597,7 +3597,7 @@ bool GEO::Intersection::findCommonFaceEdge(
         }
         return true; // edgefound = true
       }
-      
+
   return false;
 }
 
@@ -3713,7 +3713,7 @@ int GEO::Intersection::findIntersectingSurfaceEdge(
 
         LINALG::Matrix<1,1> xsi1(1);
         LINALG::Matrix<1,1> xsi2(1);
-        GEO::CurrentToLineElementCoordinates( lineElement->Shape(), xyze_lineElement, node1, xsi1);  
+        GEO::CurrentToLineElementCoordinates( lineElement->Shape(), xyze_lineElement, node1, xsi1);
         GEO::CurrentToLineElementCoordinates( lineElement->Shape(), xyze_lineElement, node2, xsi2);
 
         const bool check1 = checkPositionWithinElementParameterSpace( xsi1, lineElement->Shape());
@@ -3749,7 +3749,7 @@ void GEO::Intersection::storeHigherOrderNode(
         LINALG::Matrix<2,1> xsiSurf;
         xsiSurf(0) = xsi(0);
         xsiSurf(1) = xsi(1);
-        
+
         const LINALG::SerialDenseMatrix xyze_cutterElement(GEO::getCurrentNodalPositions(cutterElement, currentcutterpositions));
         elementToCurrentCoordinates(cutterElement->Shape(), xyze_cutterElement, xsiSurf, curr);
     }
@@ -3788,11 +3788,11 @@ void GEO::Intersection::addCellsToDomainIntCellsMap(
     DomainIntCells                        listDomainICPerElement;
     DRT::Element::DiscretizationType		  distype = DRT::Element::tet4;
     if(higherorder)							          distype = DRT::Element::tet10;
-    
+
     const int numTetNodes = DRT::UTILS::getNumberOfElementNodes(distype);
     if (out.numberofcorners < numTetNodes)
       dserror("you fool, you need to turn on quadratic tets with tetgen -o2 switch!");
-    
+
     for(int i=0; i<out.numberoftetrahedra; i++ )
     {
       LINALG::SerialDenseMatrix tetrahedronCoord(3, numTetNodes);
@@ -3806,11 +3806,11 @@ void GEO::Intersection::addCellsToDomainIntCellsMap(
           tetCoord(k) = tetrahedronCoord(k,j);
         }
         // compute physical coordinates
-        elementToCurrentCoordinatesInPlace(xfemDistype_, xyze_xfemElement_, tetCoord);   
+        elementToCurrentCoordinatesInPlace(xfemDistype_, xyze_xfemElement_, tetCoord);
         for(int k = 0; k < 3; k++)
           physTetrahedronCoord(k,j) = tetCoord(k);
       }
-      
+
       // if degenerate don t store
       if(!checkDegenerateTet(numTetNodes, tetrahedronCoord, physTetrahedronCoord))
         listDomainICPerElement.push_back(DomainIntCell(distype, tetrahedronCoord, physTetrahedronCoord));
@@ -3829,8 +3829,8 @@ void GEO::Intersection::addCellsToBoundaryIntCellsMap(
     const int                         		  globalHigherOrderIndex,
     const int                         		  faceMarker,
     const map<int,LINALG::Matrix<3,1> >&  	currentcutterpositions,
-    LINALG::SerialDenseMatrix&              eleDomainCoord, 
-    LINALG::SerialDenseMatrix&              eleBoundaryCoord, 
+    LINALG::SerialDenseMatrix&              eleDomainCoord,
+    LINALG::SerialDenseMatrix&              eleBoundaryCoord,
     LINALG::SerialDenseMatrix&              physDomainCoord,
     const tetgenio&                         out) const
 {
@@ -3848,7 +3848,7 @@ void GEO::Intersection::addCellsToBoundaryIntCellsMap(
     physDomainCoord(k, cornerIndex) = physCoordCorner(k);
 
   const DRT::Element* cutterElement = intersectingCutterElements_[faceMarker];
-  
+
   LINALG::Matrix<2,1> eleCoordBoundaryCorner;
   CurrentToSurfaceElementCoordinates(cutterElement->Shape(), intersectingCutterXYZE_[faceMarker], physCoordCorner, eleCoordBoundaryCorner);
 
@@ -3870,7 +3870,7 @@ void GEO::Intersection::addCellsToBoundaryIntCellsMap(
     elementToCurrentCoordinates(xfemDistype_, xyze_xfemElement_, eleCoordDomaninHO, physCoordHO);
     for(int k = 0; k < 3; k++)
       physDomainCoord(k, cornerIndex+3) = physCoordHO(k);
-    
+
     LINALG::Matrix<2,1> eleCoordBoundaryHO;
     CurrentToSurfaceElementCoordinates(cutterElement->Shape(), intersectingCutterXYZE_[faceMarker], physCoordHO, eleCoordBoundaryHO);
 
@@ -3893,27 +3893,27 @@ void GEO::Intersection::addXFEMSurfaceCellsToBoundaryIntCellsMap(
     const int                             index2,
     const int                             cutterPos,
     const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions,
-    LINALG::SerialDenseMatrix&            eleDomainCoord, 
-    LINALG::SerialDenseMatrix&            eleBoundaryCoord, 
+    LINALG::SerialDenseMatrix&            eleDomainCoord,
+    LINALG::SerialDenseMatrix&            eleBoundaryCoord,
     LINALG::SerialDenseMatrix&            physDomainCoord) const
 {
   // store corner node
   static LINALG::Matrix<3,1> eleCoordDomainCorner;
   eleCoordDomainCorner = pointList_[index1].getCoord();
-  
+
   for(int k = 0; k < 3; k++)
     eleDomainCoord(k, cornerIndex) = eleCoordDomainCorner(k);
 
   static LINALG::Matrix<3,1> physCoordCorner;
   elementToCurrentCoordinates(xfemDistype_, xyze_xfemElement_, eleCoordDomainCorner, physCoordCorner);
-  
+
   for(int k = 0; k < 3; k++)
     physDomainCoord(k, cornerIndex) = physCoordCorner(k);
-  
+
   const DRT::Element* cutterElement = intersectingCutterElements_[cutterPos];
   LINALG::Matrix<2,1> eleCoordBoundaryCorner;
   CurrentToSurfaceElementCoordinates(cutterElement->Shape(), intersectingCutterXYZE_[cutterPos], physCoordCorner, eleCoordBoundaryCorner);
-  
+
   eleBoundaryCoord(0, cornerIndex) = eleCoordBoundaryCorner(0);
   eleBoundaryCoord(1, cornerIndex) = eleCoordBoundaryCorner(1);
   eleBoundaryCoord(2, cornerIndex) = 0.0;
@@ -3924,13 +3924,13 @@ void GEO::Intersection::addXFEMSurfaceCellsToBoundaryIntCellsMap(
   {
     static LINALG::Matrix<3,1> eleCoordDomaninHO;
     eleCoordDomaninHO.Update( 0.5, pointList_[index1].getCoord(), 0.5, pointList_[index2].getCoord());
-  
+
     for(int k = 0; k < 3; k++)
       eleDomainCoord(k, cornerIndex+3) = eleCoordDomaninHO(k);
 
     static LINALG::Matrix<3,1> physCoordHO;
     elementToCurrentCoordinates(xfemDistype_, xyze_xfemElement_, eleCoordDomaninHO, physCoordHO);
-    
+
     for(int k = 0; k < 3; k++)
       physDomainCoord(k, cornerIndex+3) = physCoordHO(k);
 
@@ -4373,9 +4373,9 @@ void GEO::Intersection::debugIntersection(
   int count = 0;
   ofstream f_system("intersection.pos");
   f_system << "View \" Intersection" << " \" {" << endl;
-  
+
   f_system << IO::GMSH::elementAtInitialPositionToString(0, xfemElement) << endl;
-  
+
   for(std::set<int>::const_iterator i = cutterElementIds.begin(); i != cutterElementIds.end(); ++i )
   {
   	const DRT::Element*  cutterElement = cutterdis->gElement(*i);
@@ -4398,10 +4398,10 @@ void GEO::Intersection::debugIntersectionOfSingleElements(
 {
   ofstream f_system("intersectionOfSingleElements.pos");
   f_system << "View \" IntersectionOfSingleElements" << " \" {" << endl;
-  
+
   f_system << IO::GMSH::elementAtInitialPositionToString(0, xfemElement) << endl;
   f_system << IO::GMSH::elementAtCurrentPositionToString(1, cutterElement, currentcutterpositions) << endl;
-  
+
   f_system << "};" << endl;
   f_system.close();
 }
@@ -4418,7 +4418,7 @@ static std::string XAABBToString(
 {
   const DRT::Element::DiscretizationType distype = DRT::Element::hex8;
   const int numnode = IO::GMSH::distypeToGmshNumNode(distype);
-  
+
   stringstream pos_array_string;
   pos_array_string << "S" << IO::GMSH::distypeToGmshElementHeader(distype)
       << "(";
@@ -4459,11 +4459,11 @@ void GEO::Intersection::debugXAABBs(
 {
   char filename[100];
   sprintf(filename, "element_XAABB%d.pos", id);
-  
+
   ofstream f_system(filename);
   f_system << "View \" XAABB " << " \" {" << endl;
   std::vector<std::vector<double> > nodes(8, vector<double>(3, 0.0));
-  
+
   //cutterXAABB
   nodes[0][0] = cutterXAABB(0, 0);
   nodes[0][1] = cutterXAABB(1, 0);
@@ -4491,7 +4491,7 @@ void GEO::Intersection::debugXAABBs(
   nodes[7][2] = cutterXAABB(2, 1); // node 7
 
   f_system << XAABBToString(id+1, nodes) << endl;
-  
+
   //xfemXAABB
   nodes[0][0] = xfemXAABB(0, 0);
   nodes[0][1] = xfemXAABB(1, 0);
@@ -4519,7 +4519,7 @@ void GEO::Intersection::debugXAABBs(
   nodes[7][2] = xfemXAABB(2, 1); // node 7
 
   f_system << XAABBToString(0, nodes) << endl;
-  
+
   f_system << "};" << endl;
   f_system.close();
 }
@@ -4530,7 +4530,7 @@ void GEO::Intersection::debugXAABBs(
  *----------------------------------------------------------------------*/
 #ifdef QHULL
 void GEO::Intersection::debugTetVolumes(
-    const DRT::Element*       xfemElement, 
+    const DRT::Element*       xfemElement,
     tetgenio&                 out)
 {
   // test volume
@@ -4545,21 +4545,21 @@ void GEO::Intersection::debugTetVolumes(
       for(int k = 0; k < 3; k++)
         tetrahedronCoord(k,j) = out.pointlist[out.tetrahedronlist[i*4+j]*3+k];
     }
-    
+
     LINALG::Matrix<3,1> v01;
     LINALG::Matrix<3,1> v02;
     LINALG::Matrix<3,1> v03;
     for (int isd = 0; isd < 3; ++isd)  v01(isd,0) = tetrahedronCoord(isd,1)-tetrahedronCoord(isd,0);
     for (int isd = 0; isd < 3; ++isd)  v02(isd,0) = tetrahedronCoord(isd,2)-tetrahedronCoord(isd,0);
     for (int isd = 0; isd < 3; ++isd)  v03(isd,0) = tetrahedronCoord(isd,3)-tetrahedronCoord(isd,0);
-        
+
     const LINALG::Matrix<3,1> nplane012 = GEO::computeCrossProduct(v01,v02);
-    const double vol_vec = (std::abs(  nplane012(0)*v03(0) + 
-                                       nplane012(1)*v03(1) + 
+    const double vol_vec = (std::abs(  nplane012(0)*v03(0) +
+                                       nplane012(1)*v03(1) +
                                        nplane012(2)*v03(2)   ))/6.0;
     tot_vol += vol_vec;
-  }  
-  
+  }
+
   if(std::abs(DRT::UTILS::getSizeInLocalCoordinates(xfemElement->Shape()) - tot_vol) > GEO::TOL7)
     dserror("tetrahedra don't add up to the full volume element , diff = %f\n", (xfemElement->Shape() - tot_vol));
 

@@ -7,11 +7,11 @@
 -------------------------------------------------------------------------
                  BACI finite element library subsystem
             Copyright (2008) Technical University of Munich
-              
+
 Under terms of contract T004.008.000 there is a non-exclusive license for use
 of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
 
-This library is proprietary software. It must not be published, distributed, 
+This library is proprietary software. It must not be published, distributed,
 copied or altered in any form or any media without written permission
 of the copyright holder. It may be used under terms and conditions and of the
 above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
@@ -23,16 +23,16 @@ This library contains and makes use of software copyrighted by Sandia Corporatio
 and distributed under LGPL licence. Licensing does not apply to this or any
 other third party software used here.
 
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de) 
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
                    or
                    Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
 
-http://www.lnm.mw.tum.de                   
+http://www.lnm.mw.tum.de
 
 -------------------------------------------------------------------------
 </pre>
-      
-      
+
+
 <pre>
 Maintainer: Ursula Mayer
             mayer@lnm.mw.tum.de
@@ -67,25 +67,25 @@ namespace GEO
 	      if( !( xsi(i)==xsi(i)) ) // is NaN
 	        return true;
 				
-	    return false; 
+	    return false;
 	  }
 
     /*!
     \brief checks if intersection point lies within a surface and line element
     */
     template<	DRT::Element::DiscretizationType surftype,
-    			class V1, 
-    			class V2, 
+    			class V1,
+    			class V2,
     			class V3>
     static inline bool intersectionPointInElements(
         const V1&        							xsi,
         const V2&        							upLimit,
-        const V3&        							loLimit) 
+        const V3&        							loLimit)
     {	
 	    switch (surftype)
 	    {
 	      case DRT::Element::quad4: case DRT::Element::quad8: case DRT::Element::quad9:
-	      {  
+	      {
 	        if( (xsi(0) > (upLimit(0)+GEO::TOL7)) || (xsi(1) > (upLimit(1)+GEO::TOL7)) || (xsi(2) > (upLimit(2)+GEO::TOL7))  ||
 	            (xsi(0) < (loLimit(0)-GEO::TOL7)) || (xsi(1) < (loLimit(1)-GEO::TOL7)) || (xsi(2) < (loLimit(2)-GEO::TOL7)))
 	          return false;
@@ -96,7 +96,7 @@ namespace GEO
 	      {
 	        if((xsi(0) > (upLimit(0)+GEO::TOL7)) || (xsi(1) > (upLimit(1)+GEO::TOL7)) || (xsi(2) > (upLimit(2)+GEO::TOL7))  ||
 	           (xsi(0) < (loLimit(0)-GEO::TOL7)) || (xsi(1) < (loLimit(1)-GEO::TOL7)) || (xsi(2) < (loLimit(2)-GEO::TOL7))  ||
-	           (xsi(1) > (1.0 - xsi(0) + GEO::TOL7) ) )   // checks if in triangle 
+	           (xsi(1) > (1.0 - xsi(0) + GEO::TOL7) ) )   // checks if in triangle
 	          return false;
 	        else
 	          return true;
@@ -106,9 +106,9 @@ namespace GEO
 	        return false;
 	      };	
     }
-    
-       
-    
+
+
+
     /*!
     \brief updates the systemmatrix at the corresponding element coordinates
            for the computation of curve surface intersections
@@ -127,29 +127,29 @@ namespace GEO
     {
       const int numNodesSurface = DRT::UTILS::DisTypeToNumNodePerEle<surftype>::numNodePerElement;
       const int numNodesLine = DRT::UTILS::DisTypeToNumNodePerEle<linetype>::numNodePerElement;
-    
+
       A.Clear();
       static LINALG::Matrix<2,numNodesSurface> surfaceDeriv1;
       DRT::UTILS::shape_function_2D_deriv1(surfaceDeriv1, xsi(0), xsi(1), surftype);
-      
+
       for(int inode=0; inode<numNodesSurface; inode++)
         for(int isd=0; isd<3; isd++)
         {
           A(isd,0) += xyze_surfaceElement(isd,inode) * surfaceDeriv1(0,inode);
           A(isd,1) += xyze_surfaceElement(isd,inode) * surfaceDeriv1(1,inode);
         }
-    
-    
+
+
       static LINALG::Matrix<2, numNodesLine> lineDeriv1;
       DRT::UTILS::shape_function_1D_deriv1(lineDeriv1, xsi(2), linetype);
-      
+
       for(int inode=0; inode<numNodesLine; inode++)
         for(int isd=0; isd<3; isd++)
           A(isd,2) -= xyze_lineElement(isd,inode) * lineDeriv1(0,inode);
     }
-    
-    
-    
+
+
+
     /*!
     \brief updates the rhs at the corresponding element coordinates
            for the computation of curve surface intersections
@@ -168,9 +168,9 @@ namespace GEO
     {
       const int numNodesSurface = DRT::UTILS::DisTypeToNumNodePerEle<surftype>::numNodePerElement;
       const int numNodesLine = DRT::UTILS::DisTypeToNumNodePerEle<linetype>::numNodePerElement;
-    
+
       b.Clear();
-    
+
       static LINALG::Matrix<numNodesSurface,1> surfaceFunct;
       DRT::UTILS::shape_function_2D(surfaceFunct, xsi(0), xsi(1), surftype);
       for(int i=0; i<numNodesSurface; i++)
@@ -178,7 +178,7 @@ namespace GEO
         for(int dim=0; dim<3; dim++)
           b(dim) -= xyze_surfaceElement(dim,i) * surfaceFunct(i);
       }
-    
+
       static LINALG::Matrix<numNodesLine,1> lineFunct;
       DRT::UTILS::shape_function_1D(lineFunct, xsi(2), linetype);
       for(int i=0; i<numNodesLine; i++)
@@ -187,8 +187,8 @@ namespace GEO
           b(dim) += xyze_lineElement(dim,i) * lineFunct(i);
       }
     }
-    
-    
+
+
     /*!
     \brief solves a singular system of equations
     \return true if resulting system is singular , false otherwise
@@ -210,37 +210,37 @@ namespace GEO
       static LINALG::Matrix<3,3> A;
       static LINALG::Matrix<3,1> b;
       static LINALG::Matrix<3,1> dx;
-    
+
       updateRHSForCSI<surftype,linetype>( b, xsi, xyze_surfaceElement, xyze_lineElement);
-    
+
       while(residual > GEO::TOL13)
       {
         updateAForCSI<surftype,linetype>( A, xsi, xyze_surfaceElement, xyze_lineElement);
-    
+
         dx.Clear();
         if(GEO::solveLinearSystemWithSVD<3>(A, b, dx, GEO::TOL14))
         {
           xsi += dx;
           return false;
         }
-    
+
         xsi += dx;
         updateRHSForCSI<surftype,linetype>( b, xsi, xyze_surfaceElement, xyze_lineElement);
         residual = b.Norm2();
         iter++;
-    
+
         if(  iter >= maxiter || GEO::SumOfFabsEntries(xsi) > GEO::TOLPLUS8 || isNaN<3>(xsi)  )
         	return true;
       }
       return true;
     }
-    
-    
+
+
     /*!
     \brief computes an interseticon point between a curve and a surface - templated part
-    
+
         The nonlinear system of equation is solved with help of the Newton-method.
-    
+
     \param xyze_surfaceElement      (in)    : nodal coordinates of surface element
     \param xyze_lineElement         (in)    : nodal coordinates of line element
     \param xsi                      (in/out): starting value/vector of element coordinates
@@ -263,21 +263,21 @@ namespace GEO
         const bool                     	doSVD
     )
     {
-    
+
       int iter = 0;
       const int maxiter = 20;
       double residual = 1.0;
       static LINALG::Matrix<3,3> A;
       static LINALG::Matrix<3,1> b;
       static LINALG::Matrix<3,1> dx;
-    
+
       updateRHSForCSI<surftype,linetype>( b, xsi, xyze_surfaceElement, xyze_lineElement);
-    
+
       while(residual > GEO::TOL13)
       {
         updateAForCSI<surftype,linetype>( A, xsi, xyze_surfaceElement, xyze_lineElement);
         const bool singular = !GEO::gaussElimination<true,3>(A, b, dx, GEO::TOL14);
-    
+
         if(singular && !doSVD)
           return false;
         else if(singular && doSVD)
@@ -288,17 +288,17 @@ namespace GEO
         	
           dx.Clear();
         }
-    
+
         xsi += dx;
         updateRHSForCSI<surftype,linetype>( b, xsi, xyze_surfaceElement, xyze_lineElement);
         residual = b.Norm2();
         iter++;
-    
+
         // printf("xsi = %20.16f   %20.16f   %20.16f  iter = %d res = %20.16f\n", xsi(0), xsi(1), xsi(2), iter, residual  );
         // has to to be 8 , otherwise not a number is reached               // detect not a number according to IEEE NaN is not comparable to itself
         if(	iter >= maxiter || GEO::SumOfFabsEntries(xsi) > GEO::TOLPLUS8 || isNaN<3>(xsi)    )
           return false;
-      }    
+      }
       //printf("xsi = %f   %f   %f  iter = %d res = %20.16f\n", xsi(0), xsi(1), xsi(2), iter, residual  );
       return intersectionPointInElements<surftype>(xsi, upLimit, loLimit);
     }
@@ -307,9 +307,9 @@ namespace GEO
 
     /*!
     \brief computes an interseticon point between a curve and a surface
-    
+
         The nonlinear system of equation is solved with help of the Newton-method.
-    
+
     \param surfaceElement           (in)    : surface element
     \param xyze_surfaceElement      (in)    : nodal coordinates of surface element
     \param lineElement              (in)    : line element
@@ -330,7 +330,7 @@ namespace GEO
         const V3&                         loLimit,
         V1&                               xsi,
         const bool                        doSVD
-    ) 
+    )
     {
       if (lineElement->Shape() == DRT::Element::line2)
       {
@@ -372,22 +372,22 @@ namespace GEO
       }
       return true;
     }
-    
-    
-    
-    
+
+
+
+
     /*!
     \brief checks if intersection point lies within a surface element
     */
     template<	DRT::Element::DiscretizationType surftype,
     			class V >
     static inline bool intersectionPointInElementsRCI(
-        const V&        							xsi) 
+        const V&        							xsi)
     {	
       switch (surftype)
 	    {
 	      case DRT::Element::quad4: case DRT::Element::quad8: case DRT::Element::quad9:
-	      {  
+	      {
 	        if((xsi(0) > ( 1.0 + GEO::TOL7)) || (xsi(1) > ( 1.0 + GEO::TOL7)) ||
 	           (xsi(0) < (-1.0 - GEO::TOL7)) || (xsi(1) < (-1.0 - GEO::TOL7))   )
 	          return false;
@@ -396,8 +396,8 @@ namespace GEO
 	      }
 	      case DRT::Element::tri3: case DRT::Element::tri6:
 	      {
-	        // checks if in triangle 
-	        if((xsi(0) > ( 1.0 + GEO::TOL7)) || (xsi(1) > (1.0 - xsi(0) + GEO::TOL7) )  ||  
+	        // checks if in triangle
+	        if((xsi(0) > ( 1.0 + GEO::TOL7)) || (xsi(1) > (1.0 - xsi(0) + GEO::TOL7) )  ||
 	           (xsi(0) < ((-1.0)*GEO::TOL7)) || (xsi(1) < ((-1.0)*GEO::TOL7)) )
 	          return false;
 	        else
@@ -409,15 +409,15 @@ namespace GEO
 	    };	
 	    return false;
     }
-    
-    
-    
-    
+
+
+
+
     /*!
     \brief  updates the system matrix for the intersection computation
             of an average normal and the corresponding cutter element
             to lift a point of the linearized interface onto the curved interface
-  
+
     \param A                    (out)       :   system matrix
     \param xsi                  (in)        :   intersection point
     \param normal               (in)        :   nodes of the intersection normal
@@ -435,7 +435,7 @@ namespace GEO
         const vector<LINALG::Matrix<3,1> >&         normal,
         const M&            						xyze_surfaceElement,
         const bool                                  onBoundary
-        ) 
+        )
     {
       const int numNodesSurface = DRT::UTILS::DisTypeToNumNodePerEle<surftype>::numNodePerElement;
 
@@ -485,7 +485,7 @@ namespace GEO
     \brief  updates the right-hand-side for the intersection computation
             of an average normal and the corresponding cutter element
             to lift a point of the linearized interface onto the curved interface
-  
+
     \param b                    (out)       :   right-hand-side
     \param xsi                  (in)        :   intersection point
     \param normal               (in)        :   nodes of the intersection normal
@@ -501,7 +501,7 @@ namespace GEO
   	    const V&            					xsi,
   	    const vector<LINALG::Matrix<3,1> >&   	normal,
   	    const M&      							xyze_surfaceElement,
-  	    const bool                            	onBoundary) 
+  	    const bool                            	onBoundary)
   	{
   	  const int numNodesSurface = DRT::UTILS::DisTypeToNumNodePerEle<surftype>::numNodePerElement;
   	  static LINALG::Matrix<numNodesSurface,1> surfaceFunct;
@@ -545,7 +545,7 @@ namespace GEO
 	
     /*!
     \brief solves a singular system of equations
-    
+
   	\return true if resulting system is singular , false otherwise
     */
     template<DRT::Element::DiscretizationType surftype,
@@ -602,12 +602,12 @@ namespace GEO
             const M&          						xyze_cutterElement,
             const vector<LINALG::Matrix<3,1> >&   	normal,
             V&                      				xsi,
-            const bool                             	onBoundary) 
+            const bool                             	onBoundary)
     {
 	    int                         iter = 0;
 	    const int                   maxiter = 20;
 	    double                      residual = 1.0;
-	    
+	
 	    // TODO remove
 	    bool doSVD = true;
 
@@ -629,20 +629,20 @@ namespace GEO
 	      {
 	        // cout << "SINGULAR " << endl;
 	        if(computeSingularRCI<surftype>(xsi, xyze_cutterElement, normal, onBoundary))
-	          return false; 
+	          return false;
 
 	        dx.Clear();
 	      }
 
 	      xsi += dx;
 	      //printf("dx0 = %20.16f\t, dx1 = %20.16f\t, dx2 = %20.16f\n", dx(0), dx(1), dx(2));
-	      if(	iter >= maxiter || GEO::SumOfFabsEntries(xsi) > GEO::TOLPLUS8 || isNaN<3>(xsi)) 
+	      if(	iter >= maxiter || GEO::SumOfFabsEntries(xsi) > GEO::TOLPLUS8 || isNaN<3>(xsi))
 	        return false;
 
 	      updateRHSForRCINormal<surftype>( b, xsi, normal, xyze_cutterElement, onBoundary);
 	      residual = b.Norm2();
 	      // cout << "residual = " << residual << endl;
-	      iter++;   
+	      iter++;
 	    }
 	    return intersectionPointInElementsRCI<surftype>(xsi);
 	}
@@ -654,7 +654,7 @@ namespace GEO
     \brief  computes the recovery of the curved interface
             for one xfem element after a Contrained Delaunay
             Tetrahedralization.
-  
+
     \param xsi                      (out)   :   intersection point
     \param normal                   (in)    :   nodes of the intersection normal
     \param xyze_cutterElement       (in)    :   nodal coordinates of cutter element
@@ -662,14 +662,14 @@ namespace GEO
                                                 boundary or not
     \return true if normal intersects with cutter element or false otherwise
     */
-    template<	class M, 
+    template<	class M,
     			    class V>
     bool computeRecoveryNormal(
         const DRT::Element*                   cutterElement,
         const M&                              xyze_cutterElement,
        	const vector<LINALG::Matrix<3,1> >&   normal,
         V&                                    xsi,
-        const bool                            onBoundary) 
+        const bool                            onBoundary)
     {
         switch (cutterElement->Shape())
         {
@@ -687,7 +687,7 @@ namespace GEO
           dserror("surftype not yet implemented");
         return false;
       };
-    
+
       return true;
     }
 
@@ -698,7 +698,7 @@ namespace GEO
     \brief  updates the system matrix for the intersection computation
             of an average normal and the corresponding cutter element
             to lift a point of the linearized interface onto the curved interface
-  
+
     \param A                        (out)       :   system matrix
     \param xsi                      (in)        :   intersection point
     \param plane                    (in)        :   nodes of the intersection normal
@@ -744,7 +744,7 @@ namespace GEO
             of the cutter element edge with a plane through the midpoint
             of the face edge to lift a point of the linearized interface
             onto the curved interface
-  
+
     \param b                        (out)       :   right-hand-side
     \param xsi                      (in)        :   intersection point
     \param plane                    (in)        :   nodes of the intersection normal
@@ -757,7 +757,7 @@ namespace GEO
         LINALG::Matrix<3,1>&                  	b,
         const V&            					xsi,
         const vector<LINALG::Matrix<3,1> >&   	plane,
-        const M&            					xyze_lineElement) 
+        const M&            					xyze_lineElement)
     {
       const int numNodesLine = DRT::UTILS::DisTypeToNumNodePerEle<linetype>::numNodePerElement;
       const int numNodesSurface = 4;
@@ -785,15 +785,15 @@ namespace GEO
     /*!
     \brief  computes the recovery of the curved interface
             for one xfem element after a Contrained Delaunay
-            Tetrahedralization. 
-  
+            Tetrahedralization.
+
     \param lineIndex                (in)    :   line index
     \param currentcutterpositions   (in)    :   current cutter node positions
     \param xsi                      (out)   :   intersection point
     \param plane                    (in)    :   nodes of the intersection normal
     \param cutterElement            (in)    :   cutter element
     \param xyze_cutterElement       (in)    :   nodal coordinates of cutter element
-  
+
     \return true if plane intersects with the line element or false otherwise
     */
     template< DRT::Element::DiscretizationType linetype,
@@ -802,7 +802,7 @@ namespace GEO
     bool computeRecoveryPlaneT(
     		    const M&                                xyze_lineElement,
             const vector<LINALG::Matrix<3,1> >&     plane,
-            V&                                      xsi) 
+            V&                                      xsi)
     {
       int                         iter = 0;
       const int                   maxiter = 20;
@@ -822,7 +822,7 @@ namespace GEO
         if(!gaussElimination<true,3>(A, b, dx, GEO::TOL13))
           return false;
 
-        if(iter >= maxiter || GEO::SumOfFabsEntries(xsi) > GEO::TOLPLUS8 || isNaN<3>(xsi)) 
+        if(iter >= maxiter || GEO::SumOfFabsEntries(xsi) > GEO::TOLPLUS8 || isNaN<3>(xsi))
           return false;
 
         xsi += dx;
@@ -833,7 +833,7 @@ namespace GEO
       }
 
       if( (xsi(2) > ( 1.0 + GEO::TOL7))  || (xsi(2) < (-1.0 - GEO::TOL7)) )     // planes coordinate may be bigger than 1
-        return false; 
+        return false;
 
       //printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi(0), xsi(1), xsi(2), residual, TOL14);
       return true;
@@ -844,25 +844,25 @@ namespace GEO
    /*!
     \brief  computes the recovery of the curved interface
             for one xfem element after a Contrained Delaunay
-            Tetrahedralization. 
-  
+            Tetrahedralization.
+
     \param lineIndex                (in)    :   line index
     \param currentcutterpositions   (in)    :   current cutter node positions
     \param xsi                      (out)   :   intersection point
     \param plane                    (in)    :   nodes of the intersection normal
     \param cutterElement            (in)    :   cutter element
     \param xyze_cutterElement       (in)    :   nodal coordinates of cutter element
-  
+
     \return true if plane intersects with the line element or false otherwise
     */
-    template<	class M, 
+    template<	class M,
     			    class V>
     bool computeRecoveryPlane(
         const DRT::Element*                 lineElement,
         const M&                            xyze_lineElement,
        	const vector<LINALG::Matrix<3,1> >& plane,
         V&                                  xsi
-    ) 
+    )
     {
       switch (lineElement->Shape())
       {

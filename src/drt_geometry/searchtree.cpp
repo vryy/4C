@@ -24,11 +24,11 @@ Maintainer: Ursula Mayer
  | constructor SearchTree                                    u.may 07/08|
  *----------------------------------------------------------------------*/
 GEO::SearchTree::SearchTree(
-    const int           max_depth): 
+    const int           max_depth):
     max_depth_(max_depth),
-    treeRoot_(NULL)      
+    treeRoot_(NULL)
 {}
-    
+
 
 
 /*----------------------------------------------------------------------*
@@ -39,40 +39,40 @@ GEO::SearchTree::~SearchTree(){}
 
 
 /*----------------------------------------------------------------------*
- | initialize or rebuild tree with possibly new              u.may 07/08| 
+ | initialize or rebuild tree with possibly new              u.may 07/08|
  | discretization, elements are sorted according to the given map       |
  *----------------------------------------------------------------------*/
 void GEO::SearchTree::initializeTree(
     const LINALG::Matrix<3,2>&            nodeBox,
     const std::map<int,std::set<int> >&   elementsByLabel,
-    const TreeType                        treetype) 
+    const TreeType                        treetype)
 {
-  
-  
+
+
   treeRoot_ = Teuchos::null;
-  treeRoot_ = rcp(new TreeNode(NULL, max_depth_, nodeBox, treetype)); 
+  treeRoot_ = rcp(new TreeNode(NULL, max_depth_, nodeBox, treetype));
 
   // insert element map into tree root node
   if(elementsByLabel.size()>0)
     treeRoot_->setElementList(elementsByLabel);
-  
+
 }
 
 
 
 /*----------------------------------------------------------------------*
- | initialize or rebuild tree with possibly new              u.may 07/08| 
+ | initialize or rebuild tree with possibly new              u.may 07/08|
  | discretization, elements are taken unsorted from discretization      |
  *----------------------------------------------------------------------*/
 void GEO::SearchTree::initializeTree(
     const LINALG::Matrix<3,2>&  nodeBox,
     const DRT::Discretization&  dis,
-    const TreeType              treetype) 
+    const TreeType              treetype)
 {
 
   treeRoot_ = Teuchos::null;
-  treeRoot_ = rcp( new TreeNode(NULL, max_depth_, nodeBox, treetype)); 
- 
+  treeRoot_ = rcp( new TreeNode(NULL, max_depth_, nodeBox, treetype));
+
   // inserts all elements in a map with key -1 and global id
   for (int i=0; i<dis.NumMyColElements(); i++)
     treeRoot_->insertElement(-1, dis.lColElement(i)->Id());
@@ -81,17 +81,17 @@ void GEO::SearchTree::initializeTree(
 
 
 /*----------------------------------------------------------------------*
- |                                                          cyron 04/09 | 
+ |                                                          cyron 04/09 |
  *----------------------------------------------------------------------*/
 void GEO::SearchTree::initializePointTree(
     const LINALG::Matrix<3,2>&  nodeBox,
     const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
-    const TreeType              treetype) 
+    const TreeType              treetype)
 {
 
   treeRoot_ = Teuchos::null;
-  treeRoot_ = rcp( new TreeNode(NULL, max_depth_, nodeBox, treetype)); 
-    
+  treeRoot_ = rcp( new TreeNode(NULL, max_depth_, nodeBox, treetype));
+
   for(std::map<int,LINALG::Matrix<3,1> >::const_iterator mapit = currentpositions.begin(); mapit != currentpositions.end(); mapit++)
     treeRoot_->insertElement(-1,mapit->first);
 
@@ -105,12 +105,12 @@ void GEO::SearchTree::initializePointTree(
  *----------------------------------------------------------------------*/
 void GEO::SearchTree::updateTree(
     const DRT::Discretization& 	dis,
-    const std::map<int,LINALG::Matrix<3,1> >& 	currentpositions_old, 
-    const std::map<int,LINALG::Matrix<3,1> >& 	currentpositions_new) 
+    const std::map<int,LINALG::Matrix<3,1> >& 	currentpositions_old,
+    const std::map<int,LINALG::Matrix<3,1> >& 	currentpositions_new)
 {
   if(treeRoot_ == Teuchos::null)
     dserror("tree is not yet initialized !!!");
-  
+
   std::vector< LINALG::Matrix<3,2> > AABBs_old = GEO::computeXAABBForLabeledStructures(dis, currentpositions_old, treeRoot_->getElementList());
   std::vector< LINALG::Matrix<3,2> > AABBs_new = GEO::computeXAABBForLabeledStructures(dis, currentpositions_new, treeRoot_->getElementList());
 
@@ -130,15 +130,15 @@ int GEO::SearchTree::queryFSINearestObject(
     const LINALG::Matrix<3,1>&                  point,
     GEO::NearestObject&                         nearestobject)
 {
-  
+
   TEUCHOS_FUNC_TIME_MONITOR("GEO::SearchTree - queryTime");
-  
+
   if(treeRoot_ == Teuchos::null)
     dserror("tree is not yet initialized !!!");
 
   if(!treeRoot_->getElementList().empty())
     return treeRoot_->queryFSINearestObject(dis, currentpositions, currentXAABBs, point, nearestobject);
-  else 
+  else
     return 0;
 }
 
@@ -153,15 +153,15 @@ int GEO::SearchTree::queryXFEMFSIPointType(
     const std::map<int,LINALG::Matrix<3,2> >&   currentXAABBs,
     const LINALG::Matrix<3,1>&                  point)
 {
-  
+
   TEUCHOS_FUNC_TIME_MONITOR("GEO::SearchTree - queryTime");
-  
+
   if(treeRoot_ == Teuchos::null)
     dserror("tree is not yet initialized !!!");
 
   if(!treeRoot_->getElementList().empty())
     return treeRoot_->queryXFEMFSIPointType(dis, currentpositions, currentXAABBs, point);
-  else 
+  else
     return 0;
 }
 
@@ -172,15 +172,15 @@ int GEO::SearchTree::queryXFEMFSIPointType(
  *----------------------------------------------------------------------*/
 void GEO::SearchTree::moveContactNodes(
     const vector<vector<int> >&                   triangleList,
-    vector< GEO::InterfacePoint >&                pointList, 
-    const std::map<int,LINALG::Matrix<3,2> >&     triangleXAABBs, 
+    vector< GEO::InterfacePoint >&                pointList,
+    const std::map<int,LINALG::Matrix<3,2> >&     triangleXAABBs,
     const LINALG::Matrix<3,1>&                    querypoint,
     const int                                     querypointId,
     const int                                     querypointLabel)
 {
-  
+
   TEUCHOS_FUNC_TIME_MONITOR("GEO::SearchTree - queryTime");
-  
+
   if(treeRoot_ == Teuchos::null)
     dserror("tree is not yet initialized !!!");
 
@@ -197,10 +197,10 @@ void GEO::SearchTree::moveContactNodes(
  *----------------------------------------------------------------------*/
 std::map<int,std::set<int> > GEO::SearchTree::searchElementsInRadius(
     const DRT::Discretization& 	                dis,
-    const std::map<int,LINALG::Matrix<3,1> >&   currentpositions, 
+    const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
     const LINALG::Matrix<3,1>&                  point,
-    const double                                radius, 
-    const int                                   label) 
+    const double                                radius,
+    const int                                   label)
 {
   TEUCHOS_FUNC_TIME_MONITOR("SearchTree - queryTime");
 
@@ -224,18 +224,18 @@ std::map<int,std::set<int> > GEO::SearchTree::searchElementsInRadius(
  | intersecting with the XAABB of a given volume element                |
  *----------------------------------------------------------------------*/
 void GEO::SearchTree::queryIntersectionCandidates(
-    const std::map<int,LINALG::Matrix<3,2> >&   currentXAABBs, 
+    const std::map<int,LINALG::Matrix<3,2> >&   currentXAABBs,
     const std::vector< LINALG::Matrix<3,2> >&   structure_AABBs,
     const LINALG::Matrix<3,2>&                  eleXAABB,
-    std::set<int>&                              elementset) 
+    std::set<int>&                              elementset)
 {
   TEUCHOS_FUNC_TIME_MONITOR("SearchTree - queryTime");
 
   elementset.clear();
-  
+
   if(treeRoot_ == Teuchos::null)
       dserror("tree is not yet initialized !!!");
-  
+
   if(!intersectionOfXAABB<3>(treeRoot_->getNodeBox(), eleXAABB))
     return;
 
@@ -243,10 +243,10 @@ void GEO::SearchTree::queryIntersectionCandidates(
   for(unsigned int i = 0; i < structure_AABBs.size(); i++ )
     if(intersectionOfXAABB<3>(structure_AABBs[i], eleXAABB))
       intersection = true;
-  
+
   if(!intersection)
     return;
-  
+
   if(!(treeRoot_->getElementList().empty()))
     treeRoot_->queryIntersectionCandidates(currentXAABBs, eleXAABB, elementset);
 
@@ -257,10 +257,10 @@ void GEO::SearchTree::queryIntersectionCandidates(
 
 /*----------------------------------------------------------------------*
  | returns contact elements for a given element              u.may 02/09|
- | for multibody contact                                                |                
+ | for multibody contact                                                |
  *----------------------------------------------------------------------*/
 void GEO::SearchTree::searchMultibodyContactElements(
-    const std::map<int,LINALG::Matrix<9,2> >&   currentKDOPs, 
+    const std::map<int,LINALG::Matrix<9,2> >&   currentKDOPs,
     const LINALG::Matrix<9,2>&                  queryKDOP,
     const int                                   label,
     std::set<int>&                              contactEleIds)
@@ -284,9 +284,9 @@ void GEO::SearchTree::searchMultibodyContactElements(
  |                                                            cyron 04/09|
  *-----------------------------------------------------------------------*/
 std::vector<int> GEO::SearchTree::searchPointsInRadius(
-    const std::map<int,LINALG::Matrix<3,1> >&     currentpositions, 
+    const std::map<int,LINALG::Matrix<3,1> >&     currentpositions,
     const LINALG::Matrix<3,1>&                    querypoint,
-    const double                                  radius) 
+    const double                                  radius)
 {
   TEUCHOS_FUNC_TIME_MONITOR("SearchTree - queryTime");
 
@@ -309,7 +309,7 @@ std::vector<int> GEO::SearchTree::searchPointsInRadius(
  | print tree to gmsh file                                 peder   07/08|
  *----------------------------------------------------------------------*/
 void GEO::SearchTree::printTree(
-    const string  prefix, 
+    const string  prefix,
     const int     step) const
 {
   cout << endl << "writing... ";
@@ -317,16 +317,16 @@ void GEO::SearchTree::printTree(
     cout << "nothing to write, tree not initialized yet -> done" << endl;
     return;
   }
-  if (treeRoot_->getElementList().empty()){ 
+  if (treeRoot_->getElementList().empty()){
     cout << "nothing to write, tree empty -> done" << endl;
     return;
   }
-  
+
   std::stringstream filename;
   std::stringstream node_string;
   filename << prefix << "_octtree" << std::setw(5) << setfill('0') << step << ".pos";
   cout << " " << filename.str() << " ...";
-  node_string << "View \" " << "XFEM_FSI_Octree \" {" << endl;  
+  node_string << "View \" " << "XFEM_FSI_Octree \" {" << endl;
   treeRoot_->printTreeNode(max_depth_,node_string);
   node_string << "};" << endl;
   std::ofstream f_system(filename.str().c_str());
@@ -346,11 +346,11 @@ void GEO::SearchTree::evaluateTreeMetrics(
   cout << "\t********************* TREE METRICS ******************" << endl;
 
   if (treeRoot_ == Teuchos::null)
-  { 
+  {
     cout << "tree root was not initialized yet, nothing to print" << endl;
     return;
   }
-  
+
   cout.precision(5);
   cout << "\tnumber tree nodes        : " << treeRoot_->getNumNodesInTree() << endl;
   cout << "\ttree depth               : " << max_depth_-treeRoot_->getDepth() << " (max: "<< max_depth_<<")"<< endl;
@@ -365,7 +365,7 @@ void GEO::SearchTree::evaluateTreeMetrics(
  *----------------------------------------------------------------------*/
 GEO::SearchTree::TreeNode::TreeNode(
     const TreeNode* const                       parent,
-    const int                                   depth, 
+    const int                                   depth,
     const LINALG::Matrix<3,2> &                 nodeBox,
     const TreeType                              treeType):
     parent_(parent),
@@ -377,29 +377,29 @@ GEO::SearchTree::TreeNode::TreeNode(
     xPlaneCoordinate_( (nodeBox_(0,0)+0.5*(nodeBox_(0,1)-nodeBox_(0,0))) ),
     yPlaneCoordinate_( (nodeBox_(1,0)+0.5*(nodeBox_(1,1)-nodeBox_(1,0))) ),
     zPlaneCoordinate_( (nodeBox_(2,0)+0.5*(nodeBox_(2,1)-nodeBox_(2,0))) )
-{    
-     
+{
+
       children_.assign(getNumChildren(), Teuchos::null);
 
 }
-  
-    
+
+
 
 /*====================================================================*/
   /* octtree */
   /*--------------------------------------------------------------------*/
   /* numbering of children
-   * child 0: 
-   * child 1: 
-   * child 2: 
-   * child 3: 
+   * child 0:
+   * child 1:
+   * child 2:
+   * child 3:
    * child 4:
-   * child 5: 
-   * child 6: 
-   * child 7: 
-   * 
+   * child 5:
+   * child 6:
+   * child 7:
+   *
    *                      z
-   *                      |           
+   *                      |
    *             4========|================6¨
    *           //|        |               /||
    *          // |        |              //||
@@ -435,8 +435,8 @@ GEO::SearchTree::TreeNode::TreeNode(
       index += 4;
 */
 
-    
-    
+
+
 
 /*----------------------------------------------------------------------*
  | d-tor TreeNode                                            u.may 07/08|
@@ -451,7 +451,7 @@ GEO::SearchTree::TreeNode::~TreeNode() {}
 void GEO::SearchTree::TreeNode::clear()
 {
   treeNodeType_ = LEAF_NODE;
-  label_ = -1; 
+  label_ = -1;
 
   children_.clear();
   children_.assign(getNumChildren(),Teuchos::null);
@@ -519,7 +519,7 @@ int GEO::SearchTree::TreeNode::getNumChildren(
     return 4;
   else
     dserror("treetype does not exist");
-  
+
   return -1;
 }
 
@@ -543,38 +543,38 @@ LINALG::Matrix<3,2> GEO::SearchTree::TreeNode::getChildNodeBox(
 	const int index) const
 {
   LINALG::Matrix<3,2> childNodeBox;
-  
+
   // determine x-coordinates
   if ((index==1) || (index==3) || (index==5) || (index==7))
   {
     childNodeBox(0,0) = xPlaneCoordinate_;
     childNodeBox(0,1) = nodeBox_(0,1);
   }
-  else 
+  else
   {
     childNodeBox(0,0) = nodeBox_(0,0);
     childNodeBox(0,1) = xPlaneCoordinate_;
-  }  
-  
+  }
+
   // determine y-coordinates
   if ((index==2) || (index==3) || (index==6) || (index==7))
   {
     childNodeBox(1,0) = yPlaneCoordinate_;
     childNodeBox(1,1) = nodeBox_(1,1);
   }
-  else 
+  else
   {
     childNodeBox(1,0) = nodeBox_(1,0);
     childNodeBox(1,1) = yPlaneCoordinate_;
   }
-  
+
   // determine z coordinates
   if (index>3)
   {
     childNodeBox(2,0) = zPlaneCoordinate_;
     childNodeBox(2,1) = nodeBox_(2,1);
   }
-  else 
+  else
   {
     if(treeType_ == OCTTREE)
     {
@@ -601,38 +601,38 @@ void GEO::SearchTree::TreeNode::getChildNodeBox(
   LINALG::Matrix<3,2>&  childNodeBox) const
 {
   childNodeBox.Clear();
-  
+
   // determine x-coordinates
   if ((index==1) || (index==3) || (index==5) || (index==7))
   {
     childNodeBox(0,0) = xPlaneCoordinate_;
     childNodeBox(0,1) = nodeBox_(0,1);
   }
-  else 
+  else
   {
     childNodeBox(0,0) = nodeBox_(0,0);
     childNodeBox(0,1) = xPlaneCoordinate_;
-  }  
-  
+  }
+
   // determine y-coordinates
   if ((index==2) || (index==3) || (index==6) || (index==7))
   {
     childNodeBox(1,0) = yPlaneCoordinate_;
     childNodeBox(1,1) = nodeBox_(1,1);
   }
-  else 
+  else
   {
     childNodeBox(1,0) = nodeBox_(1,0);
     childNodeBox(1,1) = yPlaneCoordinate_;
   }
-  
+
   // determine z coordinates
   if (index>3)
   {
     childNodeBox(2,0) = zPlaneCoordinate_;
     childNodeBox(2,1) = nodeBox_(2,1);
   }
-  else 
+  else
   {
     if(treeType_ == OCTTREE)
     {
@@ -658,7 +658,7 @@ void GEO::SearchTree::TreeNode::getChildNodeBox(
  *----------------------------------------------------------------------*/
 void GEO::SearchTree::TreeNode::insertElement(
     const int   label,
-    const int   eleId) 
+    const int   eleId)
 {
     elementList_[label].insert(eleId);
 }
@@ -675,7 +675,7 @@ void GEO::SearchTree::TreeNode::createChildren(
   // create empty children
   for(int index = 0; index < getNumChildren(); index++)
     children_[index] = rcp(new TreeNode(this, (treedepth_-1), getChildNodeBox(index), treeType_));
-   
+
   // insert elements into child node
   for (std::map<int, std::set<int> >::const_iterator labelIter = elementList_.begin(); labelIter != elementList_.end(); labelIter++)
     for (std::set<int>::const_iterator eleIter = (labelIter->second).begin(); eleIter != (labelIter->second).end(); eleIter++)
@@ -703,7 +703,7 @@ void GEO::SearchTree::TreeNode::createChildren(
 {
   for(int index = 0; index < getNumChildren(); index++)
     children_[index] = rcp(new TreeNode(this, (treedepth_-1), getChildNodeBox(index), treeType_));
-  
+
   for (std::map<int, std::set<int> >::const_iterator labelIter = elementList_.begin(); labelIter != elementList_.end(); labelIter++)
     for (std::set<int>::const_iterator pointIter = (labelIter->second).begin(); pointIter != (labelIter->second).end(); pointIter++)
     {
@@ -726,17 +726,17 @@ void GEO::SearchTree::TreeNode::createChildren(
   // create empty children
   static LINALG::Matrix<3,2> childNodeBox;
   for(int index = 0; index < getNumChildren(); index++)
-  { 
+  {
     getChildNodeBox(index, childNodeBox );
     children_[index] = rcp(new TreeNode(this, (treedepth_-1), childNodeBox, treeType_));
   }
-  
+
   static std::vector<int> elementClassification;
   // insert elements into child node
   for (std::map<int, std::set<int> >::const_iterator labelIter = elementList_.begin(); labelIter != elementList_.end(); labelIter++)
   {
     for (std::set<int>::const_iterator eleIter = (labelIter->second).begin(); eleIter != (labelIter->second).end(); eleIter++)
-    {    
+    {
       classifyXAABB(currentXAABBs.find(*eleIter)->second, elementClassification);
       for(unsigned int count = 0; count < elementClassification.size(); count++)
         children_[elementClassification[count]]->insertElement(labelIter->first,*eleIter);
@@ -757,17 +757,17 @@ void GEO::SearchTree::TreeNode::createChildren(
   // create empty children
   static LINALG::Matrix<3,2> childNodeBox;
   for(int index = 0; index < getNumChildren(); index++)
-  { 
+  {
     getChildNodeBox(index, childNodeBox );
     children_[index] = rcp(new TreeNode(this, (treedepth_-1), childNodeBox, treeType_));
   }
-  
+
   static std::vector<int> elementClassification;
   // insert elements into child node
   for (std::map<int, std::set<int> >::const_iterator labelIter = elementList_.begin(); labelIter != elementList_.end(); labelIter++)
   {
     for (std::set<int>::const_iterator eleIter = (labelIter->second).begin(); eleIter != (labelIter->second).end(); eleIter++)
-    {    
+    {
       classifyKDOP(currentKDOPs.find(*eleIter)->second, elementClassification);
       for(unsigned int count = 0; count < elementClassification.size(); count++)
         children_[elementClassification[count]]->insertElement(labelIter->first,*eleIter);
@@ -776,7 +776,7 @@ void GEO::SearchTree::TreeNode::createChildren(
   // this node becomes an inner tree node
   treeNodeType_ = INNER_NODE;
 }
-  
+
 
 
 /*----------------------------------------------------------------------*
@@ -785,7 +785,7 @@ void GEO::SearchTree::TreeNode::createChildren(
 void GEO::SearchTree::TreeNode::setXFEMLabelOfEmptyChildren(
     const DRT::Discretization&                    dis,
     const std::map<int,LINALG::Matrix<3,1> >&     currentpositions)
-{    
+{
   for(int index = 0; index < getNumChildren(); index++)
   {
     // if one of the created children is empty, set label immediately
@@ -806,7 +806,7 @@ void GEO::SearchTree::TreeNode::setXFEMLabelOfEmptyChildren(
 void GEO::SearchTree::TreeNode::setXFEMLabelOfEmptyChildren(
     const vector<vector<int> >&                   triangleList,
     const std::vector<GEO::InterfacePoint>&       pointList)
-{    
+{
   for(int index = 0; index < getNumChildren(); index++)
   {
     // if one of the created children is empty, set label immediately
@@ -827,7 +827,7 @@ void GEO::SearchTree::TreeNode::setXFEMLabelOfEmptyChildren(
 void GEO::SearchTree::TreeNode::setXFEMLabelAndNearestObjectOfEmptyChildren(
     const DRT::Discretization&                    dis,
     const std::map<int,LINALG::Matrix<3,1> >&     currentpositions)
-{    
+{
   for(int index = 0; index < getNumChildren(); index++)
   {
     // if one of the created children is empty, set label immediately
@@ -852,7 +852,7 @@ void GEO::SearchTree::TreeNode::setXFEMLabelAndNearestObjectOfEmptyChildren(
 inline int GEO::SearchTree::TreeNode::classifyPoint(
     const LINALG::Matrix<3,1>&   point) const
 {
-  
+
   int childIndex = 0;
   if (point(0) > xPlaneCoordinate_)
     childIndex += 1;
@@ -861,7 +861,7 @@ inline int GEO::SearchTree::TreeNode::classifyPoint(
   if(treeType_ == OCTTREE)
     if (point(2) > zPlaneCoordinate_)
       childIndex += 4;
-  
+
   return childIndex;
 }
 
@@ -871,19 +871,19 @@ inline int GEO::SearchTree::TreeNode::classifyPoint(
  | classifiy AABB in node                                  u.may   07/08|
  *----------------------------------------------------------------------*/
 std::vector<int> GEO::SearchTree::TreeNode::classifyXAABB(
-    const LINALG::Matrix<3,2>&   AABB) const 
+    const LINALG::Matrix<3,2>&   AABB) const
 {
   // collect all children the XAABB is lying in
-  // use tolerances such that it is ensured that no child is left behind :-) 
+  // use tolerances such that it is ensured that no child is left behind :-)
   // XAABB s which are lying between plane-tol and plane + tol are collected in each of the two chlidren
-  
+
   std::vector<int> octants;
-  
+
   // check max_x greater than x-plane
-  if (AABB(0, 1) > (xPlaneCoordinate_ - GEO::TOL7) ) 
+  if (AABB(0, 1) > (xPlaneCoordinate_ - GEO::TOL7) )
   {
     // check max_y greater than y-plane
-    if (AABB(1, 1) > (yPlaneCoordinate_ - GEO::TOL7) ) 
+    if (AABB(1, 1) > (yPlaneCoordinate_ - GEO::TOL7) )
     {
       if(treeType_ == OCTTREE)
       {
@@ -898,16 +898,16 @@ std::vector<int> GEO::SearchTree::TreeNode::classifyXAABB(
       else if (treeType_ == QUADTREE)
         octants.push_back(3);
     }
-    
+
     // check min_y less than y-plane
-    if (AABB(1, 0) < ( yPlaneCoordinate_ + GEO::TOL7) ) 
+    if (AABB(1, 0) < ( yPlaneCoordinate_ + GEO::TOL7) )
     {
       if(treeType_ == OCTTREE)
       {
         // check max_z greater than z-plane
         if (AABB(2, 1) > ( zPlaneCoordinate_ - GEO::TOL7) )
           octants.push_back(5);
-              
+
         // check min_z less than z-plane
         if (AABB(2, 0) < ( zPlaneCoordinate_ + GEO::TOL7) )
           octants.push_back(1);
@@ -918,41 +918,41 @@ std::vector<int> GEO::SearchTree::TreeNode::classifyXAABB(
   }
 
   // check min_x less than x-plane
-  if (AABB(0, 0) < ( xPlaneCoordinate_ + GEO::TOL7) ) 
+  if (AABB(0, 0) < ( xPlaneCoordinate_ + GEO::TOL7) )
   {
     // check min_y less than y-plane
-    if (AABB(1, 0) < ( yPlaneCoordinate_ + GEO::TOL7) ) 
+    if (AABB(1, 0) < ( yPlaneCoordinate_ + GEO::TOL7) )
     {
-      
+
       if(treeType_ == OCTTREE)
       {
         // check min_z less than z-plane
         if (AABB(2, 0) < ( zPlaneCoordinate_ + GEO::TOL7) )
           octants.push_back(0);
-      
+
         // check max_z greater than z-plane
         if (AABB(2, 1) > ( zPlaneCoordinate_ - GEO::TOL7) )
           octants.push_back(4);
       }
-      
+
       else if(treeType_ == QUADTREE)
         octants.push_back(0);
     }
-    
+
     // check max_y greater than y-plane
-    if (AABB(1, 1) > ( yPlaneCoordinate_ - GEO::TOL7) ) 
-    {       
+    if (AABB(1, 1) > ( yPlaneCoordinate_ - GEO::TOL7) )
+    {
       if(treeType_ == OCTTREE)
       {
         // check max_z greater than z-plane
         if (AABB(2, 1) > ( zPlaneCoordinate_ - GEO::TOL7) )
           octants.push_back(6);
-      
+
         // check min_z less than z-plane
         if (AABB(2, 0) < ( zPlaneCoordinate_ + GEO::TOL7) )
           octants.push_back(2);
       }
-      
+
       else if(treeType_ == QUADTREE)
         octants.push_back(2);
     }
@@ -967,21 +967,21 @@ std::vector<int> GEO::SearchTree::TreeNode::classifyXAABB(
  *----------------------------------------------------------------------*/
 void GEO::SearchTree::TreeNode::classifyXAABB(
     const LINALG::Matrix<3,2>&    AABB,
-    std::vector<int>&             octants) const 
+    std::vector<int>&             octants) const
 {
-  
+
   // collect all children the XAABB is lying in
-  // use tolerances such that it is ensured that no child is left behind :-) 
+  // use tolerances such that it is ensured that no child is left behind :-)
   // XAABB s which are lying between plane-tol and plane + tol are collected in each of the two chlidren
-  
+
   octants.clear();
   octants.reserve(8);
-  
+
   // check max_x greater than x-plane
-  if (AABB(0, 1) > (xPlaneCoordinate_ - GEO::TOL7) ) 
+  if (AABB(0, 1) > (xPlaneCoordinate_ - GEO::TOL7) )
   {
     // check max_y greater than y-plane
-    if (AABB(1, 1) > (yPlaneCoordinate_ - GEO::TOL7) ) 
+    if (AABB(1, 1) > (yPlaneCoordinate_ - GEO::TOL7) )
     {
         // check max_z greater than z-plane
         if (AABB(2, 1) > (zPlaneCoordinate_ - GEO::TOL7) )
@@ -992,14 +992,14 @@ void GEO::SearchTree::TreeNode::classifyXAABB(
           octants.push_back(3);
 
     }
-    
+
     // check min_y less than y-plane
-    if (AABB(1, 0) < ( yPlaneCoordinate_ + GEO::TOL7) ) 
+    if (AABB(1, 0) < ( yPlaneCoordinate_ + GEO::TOL7) )
     {
         // check max_z greater than z-plane
         if (AABB(2, 1) > ( zPlaneCoordinate_ - GEO::TOL7) )
           octants.push_back(5);
-              
+
         // check min_z less than z-plane
         if (AABB(2, 0) < ( zPlaneCoordinate_ + GEO::TOL7) )
           octants.push_back(1);
@@ -1007,28 +1007,28 @@ void GEO::SearchTree::TreeNode::classifyXAABB(
   }
 
   // check min_x less than x-plane
-  if (AABB(0, 0) < ( xPlaneCoordinate_ + GEO::TOL7) ) 
+  if (AABB(0, 0) < ( xPlaneCoordinate_ + GEO::TOL7) )
   {
     // check min_y less than y-plane
-    if (AABB(1, 0) < ( yPlaneCoordinate_ + GEO::TOL7) ) 
+    if (AABB(1, 0) < ( yPlaneCoordinate_ + GEO::TOL7) )
     {
         // check min_z less than z-plane
         if (AABB(2, 0) < ( zPlaneCoordinate_ + GEO::TOL7) )
           octants.push_back(0);
-      
+
         // check max_z greater than z-plane
         if (AABB(2, 1) > ( zPlaneCoordinate_ - GEO::TOL7) )
           octants.push_back(4);
 
     }
-    
+
     // check max_y greater than y-plane
-    if (AABB(1, 1) > ( yPlaneCoordinate_ - GEO::TOL7) ) 
-    {       
+    if (AABB(1, 1) > ( yPlaneCoordinate_ - GEO::TOL7) )
+    {
         // check max_z greater than z-plane
         if (AABB(2, 1) > ( zPlaneCoordinate_ - GEO::TOL7) )
           octants.push_back(6);
-      
+
         // check min_z less than z-plane
         if (AABB(2, 0) < ( zPlaneCoordinate_ + GEO::TOL7) )
           octants.push_back(2);
@@ -1044,21 +1044,21 @@ void GEO::SearchTree::TreeNode::classifyXAABB(
  *----------------------------------------------------------------------*/
 void GEO::SearchTree::TreeNode::classifyKDOP(
     const LINALG::Matrix<9,2>&    KDOP,
-    std::vector<int>&             octants) const 
+    std::vector<int>&             octants) const
 {
-  
+
   // collect all children the XAABB is lying in
-  // use tolerances such that it is ensured that no child is left behind :-) 
+  // use tolerances such that it is ensured that no child is left behind :-)
   // XAABB s which are lying between plane-tol and plane + tol are collected in each of the two chlidren
-  
+
   octants.clear();
   octants.reserve(8);
-  
+
   // check max_x greater than x-plane
-  if (KDOP(0, 1) > (xPlaneCoordinate_ - GEO::TOL7) ) 
+  if (KDOP(0, 1) > (xPlaneCoordinate_ - GEO::TOL7) )
   {
     // check max_y greater than y-plane
-    if (KDOP(1, 1) > (yPlaneCoordinate_ - GEO::TOL7) ) 
+    if (KDOP(1, 1) > (yPlaneCoordinate_ - GEO::TOL7) )
     {
         // check max_z greater than z-plane
         if (KDOP(2, 1) > (zPlaneCoordinate_ - GEO::TOL7) )
@@ -1069,14 +1069,14 @@ void GEO::SearchTree::TreeNode::classifyKDOP(
           octants.push_back(3);
 
     }
-    
+
     // check min_y less than y-plane
-    if (KDOP(1, 0) < ( yPlaneCoordinate_ + GEO::TOL7) ) 
+    if (KDOP(1, 0) < ( yPlaneCoordinate_ + GEO::TOL7) )
     {
         // check max_z greater than z-plane
         if (KDOP(2, 1) > ( zPlaneCoordinate_ - GEO::TOL7) )
           octants.push_back(5);
-              
+
         // check min_z less than z-plane
         if (KDOP(2, 0) < ( zPlaneCoordinate_ + GEO::TOL7) )
           octants.push_back(1);
@@ -1084,28 +1084,28 @@ void GEO::SearchTree::TreeNode::classifyKDOP(
   }
 
   // check min_x less than x-plane
-  if (KDOP(0, 0) < ( xPlaneCoordinate_ + GEO::TOL7) ) 
+  if (KDOP(0, 0) < ( xPlaneCoordinate_ + GEO::TOL7) )
   {
     // check min_y less than y-plane
-    if (KDOP(1, 0) < ( yPlaneCoordinate_ + GEO::TOL7) ) 
+    if (KDOP(1, 0) < ( yPlaneCoordinate_ + GEO::TOL7) )
     {
         // check min_z less than z-plane
         if (KDOP(2, 0) < ( zPlaneCoordinate_ + GEO::TOL7) )
           octants.push_back(0);
-      
+
         // check max_z greater than z-plane
         if (KDOP(2, 1) > ( zPlaneCoordinate_ - GEO::TOL7) )
           octants.push_back(4);
 
     }
-    
+
     // check max_y greater than y-plane
-    if (KDOP(1, 1) > ( yPlaneCoordinate_ - GEO::TOL7) ) 
-    {       
+    if (KDOP(1, 1) > ( yPlaneCoordinate_ - GEO::TOL7) )
+    {
         // check max_z greater than z-plane
         if (KDOP(2, 1) > ( zPlaneCoordinate_ - GEO::TOL7) )
           octants.push_back(6);
-      
+
         // check min_z less than z-plane
         if (KDOP(2, 0) < ( zPlaneCoordinate_ + GEO::TOL7) )
           octants.push_back(2);
@@ -1123,22 +1123,22 @@ void GEO::SearchTree::TreeNode::classifyKDOP(
  *----------------------------------------------------------------------*/
 bool GEO::SearchTree::TreeNode::classifyXAABB(
     int&                         index,
-    const LINALG::Matrix<3,2>&   AABB) const 
+    const LINALG::Matrix<3,2>&   AABB) const
 {
-  
+
   // collect all children the XAABB is lying in
-  // use tolerances such that it is ensured that no child is left behind :-) 
+  // use tolerances such that it is ensured that no child is left behind :-)
   // XAABB s which are lying between plane-tol and plane + tol are collected in each of the two chlidren
-  
+
   bool oneIndex = true;
   index = -1;
-  
-  
+
+
   // check max_x greater than x-plane
-  if (AABB(0, 1) > (xPlaneCoordinate_ - GEO::TOL7) ) 
+  if (AABB(0, 1) > (xPlaneCoordinate_ - GEO::TOL7) )
   {
     // check max_y greater than y-plane
-    if (AABB(1, 1) > (yPlaneCoordinate_ - GEO::TOL7) ) 
+    if (AABB(1, 1) > (yPlaneCoordinate_ - GEO::TOL7) )
     {
       if(treeType_ == OCTTREE)
       {
@@ -1174,9 +1174,9 @@ bool GEO::SearchTree::TreeNode::classifyXAABB(
           return false;
         }
     }
-    
+
     // check min_y less than y-plane
-    if (AABB(1, 0) < ( yPlaneCoordinate_ + GEO::TOL7) ) 
+    if (AABB(1, 0) < ( yPlaneCoordinate_ + GEO::TOL7) )
     {
       if(treeType_ == OCTTREE)
       {
@@ -1191,7 +1191,7 @@ bool GEO::SearchTree::TreeNode::classifyXAABB(
             return false;
           }
         }
-              
+
         // check min_z less than z-plane
         if (AABB(2, 0) < ( zPlaneCoordinate_ + GEO::TOL7) )
         {
@@ -1216,12 +1216,12 @@ bool GEO::SearchTree::TreeNode::classifyXAABB(
   }
 
   // check min_x less than x-plane
-  if (AABB(0, 0) < ( xPlaneCoordinate_ + GEO::TOL7) ) 
+  if (AABB(0, 0) < ( xPlaneCoordinate_ + GEO::TOL7) )
   {
     // check min_y less than y-plane
-    if (AABB(1, 0) < ( yPlaneCoordinate_ + GEO::TOL7) ) 
+    if (AABB(1, 0) < ( yPlaneCoordinate_ + GEO::TOL7) )
     {
-      
+
       if(treeType_ == OCTTREE)
       {
         // check min_z less than z-plane
@@ -1256,10 +1256,10 @@ bool GEO::SearchTree::TreeNode::classifyXAABB(
           return false;
         }
     }
-    
+
     // check max_y greater than y-plane
-    if (AABB(1, 1) > ( yPlaneCoordinate_ - GEO::TOL7) ) 
-    {       
+    if (AABB(1, 1) > ( yPlaneCoordinate_ - GEO::TOL7) )
+    {
       if(treeType_ == OCTTREE)
       {
         // check max_z greater than z-plane
@@ -1273,7 +1273,7 @@ bool GEO::SearchTree::TreeNode::classifyXAABB(
             return false;
           }
         }
-      
+
         // check min_z less than z-plane
         if (AABB(2, 0) < ( zPlaneCoordinate_ + GEO::TOL7) )
         {
@@ -1306,19 +1306,19 @@ bool GEO::SearchTree::TreeNode::classifyXAABB(
  *----------------------------------------------------------------------*/
 bool GEO::SearchTree::TreeNode::classifyKDOP(
     int&                         index,
-    const LINALG::Matrix<9,2>&   KDOP) const 
+    const LINALG::Matrix<9,2>&   KDOP) const
 {
   // collect all children the XAABB is lying in
-  // use tolerances such that it is ensured that no child is left behind :-) 
+  // use tolerances such that it is ensured that no child is left behind :-)
   // XAABB s which are lying between plane-tol and plane + tol are collected in each of the two chlidren
   bool oneIndex = true;
   index = -1;
-  
+
   // check max_x greater than x-plane
-  if (KDOP(0, 1) > (xPlaneCoordinate_ - GEO::TOL7) ) 
+  if (KDOP(0, 1) > (xPlaneCoordinate_ - GEO::TOL7) )
   {
     // check max_y greater than y-plane
-    if (KDOP(1, 1) > (yPlaneCoordinate_ - GEO::TOL7) ) 
+    if (KDOP(1, 1) > (yPlaneCoordinate_ - GEO::TOL7) )
     {
       if(treeType_ == OCTTREE)
       {
@@ -1354,9 +1354,9 @@ bool GEO::SearchTree::TreeNode::classifyKDOP(
           return false;
         }
     }
-    
+
     // check min_y less than y-plane
-    if (KDOP(1, 0) < ( yPlaneCoordinate_ + GEO::TOL7) ) 
+    if (KDOP(1, 0) < ( yPlaneCoordinate_ + GEO::TOL7) )
     {
       if(treeType_ == OCTTREE)
       {
@@ -1371,7 +1371,7 @@ bool GEO::SearchTree::TreeNode::classifyKDOP(
             return false;
           }
         }
-              
+
         // check min_z less than z-plane
         if (KDOP(2, 0) < ( zPlaneCoordinate_ + GEO::TOL7) )
         {
@@ -1396,12 +1396,12 @@ bool GEO::SearchTree::TreeNode::classifyKDOP(
   }
 
   // check min_x less than x-plane
-  if (KDOP(0, 0) < ( xPlaneCoordinate_ + GEO::TOL7) ) 
+  if (KDOP(0, 0) < ( xPlaneCoordinate_ + GEO::TOL7) )
   {
     // check min_y less than y-plane
-    if (KDOP(1, 0) < ( yPlaneCoordinate_ + GEO::TOL7) ) 
+    if (KDOP(1, 0) < ( yPlaneCoordinate_ + GEO::TOL7) )
     {
-      
+
       if(treeType_ == OCTTREE)
       {
         // check min_z less than z-plane
@@ -1436,10 +1436,10 @@ bool GEO::SearchTree::TreeNode::classifyKDOP(
           return false;
         }
     }
-    
+
     // check max_y greater than y-plane
-    if (KDOP(1, 1) > ( yPlaneCoordinate_ - GEO::TOL7) ) 
-    {       
+    if (KDOP(1, 1) > ( yPlaneCoordinate_ - GEO::TOL7) )
+    {
       if(treeType_ == OCTTREE)
       {
         // check max_z greater than z-plane
@@ -1453,7 +1453,7 @@ bool GEO::SearchTree::TreeNode::classifyKDOP(
             return false;
           }
         }
-      
+
         // check min_z less than z-plane
         if (KDOP(2, 0) < ( zPlaneCoordinate_ + GEO::TOL7) )
         {
@@ -1492,7 +1492,7 @@ std::vector<int> GEO::SearchTree::TreeNode::classifyElement(
   const LINALG::SerialDenseMatrix xyze(GEO::getCurrentNodalPositions(element,currentpositions));
   GEO::EleGeoType eleGeoType(GEO::HIGHERORDER);
   GEO::checkRoughGeoType(element, xyze, eleGeoType);
-  const LINALG::Matrix<3,2> elemXAABB(GEO::computeFastXAABB(element->Shape(), xyze, eleGeoType));  
+  const LINALG::Matrix<3,2> elemXAABB(GEO::computeFastXAABB(element->Shape(), xyze, eleGeoType));
   return classifyXAABB(elemXAABB);
 }
 
@@ -1503,12 +1503,12 @@ std::vector<int> GEO::SearchTree::TreeNode::classifyElement(
  *----------------------------------------------------------------------*/
 std::vector<int> GEO::SearchTree::TreeNode::classifyElement(
         const DRT::Element*               element,
-        const LINALG::SerialDenseMatrix&  xyze_element    
-        ) const 
+        const LINALG::SerialDenseMatrix&  xyze_element
+        ) const
 {
   GEO::EleGeoType eleGeoType(GEO::HIGHERORDER);
   GEO::checkRoughGeoType(element, xyze_element , eleGeoType);
-  const LINALG::Matrix<3,2> elemXAABB(GEO::computeFastXAABB(element->Shape(), xyze_element , eleGeoType));  
+  const LINALG::Matrix<3,2> elemXAABB(GEO::computeFastXAABB(element->Shape(), xyze_element , eleGeoType));
   return classifyXAABB(elemXAABB);
 }
 
@@ -1522,23 +1522,23 @@ std::vector<int> GEO::SearchTree::TreeNode::classifyRadius(
     const LINALG::Matrix<3,1>&	point
     ) const
 {
-  
-  /*coordinates of axis-aligned boundary box around point, which stretechs over 
+
+  /*coordinates of axis-aligned boundary box around point, which stretechs over
    * length radius in each coordinate direction*/
-  LINALG::Matrix<3,2> radiusXAABB;  
+  LINALG::Matrix<3,2> radiusXAABB;
 
   for(int dim = 0; dim < 3; dim++)
   {
     radiusXAABB(dim,0) = ( point(dim) - radius) - GEO::TOL7;
     radiusXAABB(dim,1) = ( point(dim) + radius) + GEO::TOL7;
   }
-  
+
   if(treeType_ == QUADTREE)
   {
     radiusXAABB(2,0) = 0.0;
     radiusXAABB(2,1) = 0.0;
   }
-   
+
   //return indices of childs which overlap with given axis-aligned boundary box of edge length 2*radius around point
   return classifyXAABB(radiusXAABB);
 }
@@ -1549,7 +1549,7 @@ std::vector<int> GEO::SearchTree::TreeNode::classifyRadius(
  | update tree node                                        u.may   08/08|
  *----------------------------------------------------------------------*/
 void GEO::SearchTree::TreeNode::updateTreeNode(
-   const LINALG::Matrix<3,2>& AABB_old, 
+   const LINALG::Matrix<3,2>& AABB_old,
    const LINALG::Matrix<3,2>& AABB_new)
 {
   for(int i = 0; i < getNumChildren(); i++)
@@ -1562,7 +1562,7 @@ void GEO::SearchTree::TreeNode::updateTreeNode(
         children_[i]->clear();
     }
   }
-} 
+}
 
 
 
@@ -1572,40 +1572,40 @@ void GEO::SearchTree::TreeNode::updateTreeNode(
  *----------------------------------------------------------------------*/
 int GEO::SearchTree::TreeNode::queryFSINearestObject(
     const DRT::Discretization&                      dis,
-    const std::map<int,LINALG::Matrix<3,1> >&       currentpositions, 
+    const std::map<int,LINALG::Matrix<3,1> >&       currentpositions,
     const std::map<int,LINALG::Matrix<3,2> >&       currentXAABBs,
     const LINALG::Matrix<3,1>&                      point,
     GEO::NearestObject&                             nearestObject
-    ) 
+    )
 {
-  
-  switch (treeNodeType_) 
+
+  switch (treeNodeType_)
   {
     case INNER_NODE:
-    {       
+    {
       return children_[classifyPoint(point)]->queryFSINearestObject(dis, currentpositions, currentXAABBs, point, nearestObject);
       break;
     }
-    case LEAF_NODE:   
+    case LEAF_NODE:
     {
       if (elementList_.empty())
       {
         nearestObject = nearestObject_;
         return label_;
       }
-      
+
       // max depth reached, counts reverse
       if (treedepth_ <= 0 || (elementList_.size()==1 && (elementList_.begin()->second).size() == 1) )
       {
         // nearest object refers only to the nearest object found in this particular tree node
         int xfemLabel = GEO::getXFEMLabelAndNearestObject(dis, currentpositions, point, elementList_, nearestObject);
-        
+
         const TreeNode* workingNode = this;
         while(!GEO::pointInMinCircleInTreeNode(nearestObject.getPhysCoord(), point, workingNode->getNodeBox(), (!workingNode->hasParent()) ))
         {
           if(!workingNode->hasParent())
             dserror("this treenode has no parent");
-          
+
           workingNode = workingNode->getParent();
           xfemLabel = GEO::getXFEMLabelAndNearestObject(dis, currentpositions, point, workingNode->getElementList(), nearestObject);
         }
@@ -1632,49 +1632,49 @@ int GEO::SearchTree::TreeNode::queryFSINearestObject(
  *----------------------------------------------------------------------*/
 int GEO::SearchTree::TreeNode::queryXFEMFSIPointType(
     const DRT::Discretization&                    dis,
-    const std::map<int,LINALG::Matrix<3,1> >&     currentpositions, 
+    const std::map<int,LINALG::Matrix<3,1> >&     currentpositions,
     const std::map<int,LINALG::Matrix<3,2> >&     currentXAABBs,
     const LINALG::Matrix<3,1>&                    point
-    ) 
-{ 
-  switch (treeNodeType_) 
+    )
+{
+  switch (treeNodeType_)
   {
     case INNER_NODE:
-    {       
+    {
       return children_[classifyPoint(point)]->queryXFEMFSIPointType(dis, currentpositions, currentXAABBs, point);
       break;
     }
-    case LEAF_NODE:   
+    case LEAF_NODE:
     {
       if (elementList_.empty())
         return label_;
-      
+
       // max depth reached, counts reverse
       if (treedepth_ <= 0 || (elementList_.size()==1 && (elementList_.begin()->second).size() == 1) )
       {
         // nearest object refers only to the nearest object found in this particular tree node
         GEO::NearestObject nearestObjectInNode;
         int xfemLabel = GEO::getXFEMLabelAndNearestObject(dis, currentpositions, point, elementList_, nearestObjectInNode);
-        
+
         const TreeNode* workingNode = this;
         //cout << "point = " << nearestObjectInNode.getPhysCoord() <<  endl;
         //cout << "nodebox = " << workingNode->nodeBox_ <<  endl;
-        
+
         while(!GEO::pointInTreeNode(nearestObjectInNode.getPhysCoord(), workingNode->nodeBox_))
         {
           //cout << "point = " << nearestObjectInNode.getPhysCoord() <<  endl;
           //cout << "nodebox = " << workingNode->nodeBox_ <<  endl;
-          
-          
+
+
           if(!workingNode->hasParent())
             dserror("this treenode has no parent");
-          
+
           workingNode = workingNode->getParent();
           xfemLabel = GEO::getXFEMLabelAndNearestObject(dis, currentpositions, point, workingNode->getElementList(), nearestObjectInNode);
         }
         return xfemLabel;
       }
-      
+
       // dynamically grow tree otherwise, create children and set label for empty children
       createChildren(currentXAABBs);
       setXFEMLabelOfEmptyChildren(dis, currentpositions);
@@ -1697,41 +1697,41 @@ int GEO::SearchTree::TreeNode::queryXFEMFSIPointType(
 void GEO::SearchTree::TreeNode::moveContactNodes(
     const vector<vector<int> >&                   triangleList,
     vector< GEO::InterfacePoint >&                pointList,
-    const std::map<int,LINALG::Matrix<3,2> >&     triangleXAABBs,  
+    const std::map<int,LINALG::Matrix<3,2> >&     triangleXAABBs,
     const LINALG::Matrix<3,1>&                    querypoint,
     const int                                     querypointId,
     const int                                     querypointLabel)
-{ 
-  switch (treeNodeType_) 
+{
+  switch (treeNodeType_)
   {
     case INNER_NODE:
-    {       
+    {
       return children_[classifyPoint(querypoint)]->moveContactNodes(triangleList, pointList, triangleXAABBs,  querypoint, querypointId, querypointLabel);
-      break; 
+      break;
     }
-    case LEAF_NODE:   
+    case LEAF_NODE:
     {
       // if leaf node is empty or contains only elements of the same structure
       if(elementList_.empty() || (elementList_.size()==1 && elementList_.begin()->first == querypointLabel ))
-      { 
+      {
         // point inside an empty node, step up and compute
         const TreeNode* workingNode = this;
         if(!workingNode->hasParent())
           dserror("this treenode has no parent LEAF");
-                  
+
         workingNode = workingNode->getParent();
         GEO::NearestObject nearestObjectInNode;
         LINALG::Matrix<3,1> minDistanceVec(true);
-        GEO::nearestObjectInNode(triangleList, pointList, workingNode->getElementList(), querypoint, querypointLabel, minDistanceVec, nearestObjectInNode);   
-        
+        GEO::nearestObjectInNode(triangleList, pointList, workingNode->getElementList(), querypoint, querypointLabel, minDistanceVec, nearestObjectInNode);
+
         while(!GEO::pointInTreeNode(nearestObjectInNode.getPhysCoord(), workingNode->nodeBox_))
         {
           if(!workingNode->hasParent())
             dserror("this treenode has no parent");
-          
+
           workingNode = workingNode->getParent();
           minDistanceVec.Clear();
-          GEO::nearestObjectInNode(triangleList, pointList, workingNode->getElementList(), querypoint, querypointLabel, minDistanceVec, nearestObjectInNode);   
+          GEO::nearestObjectInNode(triangleList, pointList, workingNode->getElementList(), querypoint, querypointLabel, minDistanceVec, nearestObjectInNode);
         }
         GEO::moveNodeOutOfStructure(triangleList, pointList, querypointId, nearestObjectInNode, minDistanceVec);
         return;
@@ -1742,23 +1742,23 @@ void GEO::SearchTree::TreeNode::moveContactNodes(
         // nearest object refers only to the nearest object found in this particular tree node
         GEO::NearestObject nearestObjectInNode;
         LINALG::Matrix<3,1> minDistanceVec(true);
-        GEO::nearestObjectInNode(triangleList, pointList, elementList_, querypoint, querypointLabel, minDistanceVec, nearestObjectInNode);   
-    
+        GEO::nearestObjectInNode(triangleList, pointList, elementList_, querypoint, querypointLabel, minDistanceVec, nearestObjectInNode);
+
         const TreeNode* workingNode = this;
         while(!GEO::pointInTreeNode(nearestObjectInNode.getPhysCoord(), workingNode->nodeBox_))
         {
           cout << "step up" << endl;
           if(!workingNode->hasParent())
             dserror("this treenode has no parent");
-          
+
           workingNode = workingNode->getParent();
           minDistanceVec.Clear();
-          GEO::nearestObjectInNode(triangleList, pointList, workingNode->getElementList(), querypoint, querypointLabel, minDistanceVec, nearestObjectInNode);   
+          GEO::nearestObjectInNode(triangleList, pointList, workingNode->getElementList(), querypoint, querypointLabel, minDistanceVec, nearestObjectInNode);
         }
         GEO::moveNodeOutOfStructure(triangleList, pointList, querypointId, nearestObjectInNode, minDistanceVec);
         return;
       }
-      
+
       // dynamically grow tree otherwise, create children and set label for empty children
       createChildren(triangleXAABBs);
       setXFEMLabelOfEmptyChildren(triangleList, pointList);
@@ -1781,47 +1781,47 @@ void GEO::SearchTree::TreeNode::moveContactNodes(
  *----------------------------------------------------------------------*/
 std::map<int,std::set<int> > GEO::SearchTree::TreeNode::searchElementsInRadius(
     const DRT::Discretization& 	                  dis,
-    const std::map<int,LINALG::Matrix<3,1> >&     currentpositions, 
+    const std::map<int,LINALG::Matrix<3,1> >&     currentpositions,
     const LINALG::Matrix<3,1>&                    point,
-    const double                                  radius, 
-    const int                                     label) 
-{  
+    const double                                  radius,
+    const int                                     label)
+{
   std::map<int,std::set<int> > eleMap;
 
-  switch (treeNodeType_) 
+  switch (treeNodeType_)
   {
     case INNER_NODE:
-    {       
+    {
       const vector<int> childindex = classifyRadius(radius, point);
       if(childindex.size() < 1)
         dserror("no child found\n");
       else if (childindex.size() ==1) // child node found which encloses AABB so step down
         return children_[childindex[0]]->searchElementsInRadius(dis, currentpositions, point, radius, label);
       else
-        return GEO::getElementsInRadius(dis, currentpositions, point, radius, label, elementList_); 
+        return GEO::getElementsInRadius(dis, currentpositions, point, radius, label, elementList_);
       break;
     }
-    case LEAF_NODE:   
+    case LEAF_NODE:
     {
       if(elementList_.empty())
         return eleMap;
 
       // max depth reached, counts reverse
       if (treedepth_ <= 0 || (elementList_.size()==1 && (elementList_.begin()->second).size() == 1) )
-        return GEO::getElementsInRadius(dis, currentpositions, point, radius, label, elementList_); 
+        return GEO::getElementsInRadius(dis, currentpositions, point, radius, label, elementList_);
 
       // dynamically grow tree otherwise, create children and set label for empty children
-      // search in apropriate child node 
+      // search in apropriate child node
       const vector<int> childindex = classifyRadius(radius, point);
       if(childindex.size() < 1)
         dserror("no child found\n");
       else if (childindex.size() ==1) // child node found which encloses AABB so refine further
-      { 
+      {
         createChildren(dis, currentpositions);
         return children_[childindex[0]]->searchElementsInRadius(dis, currentpositions, point, radius, label);
       }
       else // AABB does not fit into a single child node box anymore so don t refine any further
-        return GEO::getElementsInRadius(dis, currentpositions, point, radius, label, elementList_); 
+        return GEO::getElementsInRadius(dis, currentpositions, point, radius, label, elementList_);
       break;
     }
     default:
@@ -1837,9 +1837,9 @@ std::map<int,std::set<int> > GEO::SearchTree::TreeNode::searchElementsInRadius(
  *-----------------------------------------------------------------------*/
 /*
 std::vector<int> GEO::SearchTree::searchPointsInRadius(
-    const std::map<int,LINALG::Matrix<3,1> >&     currentpositions, 
+    const std::map<int,LINALG::Matrix<3,1> >&     currentpositions,
     const LINALG::Matrix<3,1>&                    querypoint,
-    const double                                  radius) 
+    const double                                  radius)
 {
   TEUCHOS_FUNC_TIME_MONITOR("SearchTree - queryTime");
 
@@ -1864,50 +1864,50 @@ std::vector<int> GEO::SearchTree::searchPointsInRadius(
  |                                                                   cyron 04/09|
  *------------------------------------------------------------------------------*/
 std::vector<int> GEO::SearchTree::TreeNode::searchPointsInRadius(
-    const std::map<int,LINALG::Matrix<3,1> >&     currentpositions, 
+    const std::map<int,LINALG::Matrix<3,1> >&     currentpositions,
     const LINALG::Matrix<3,1>&                    querypoint,
-    const double                                  radius) 
-{  
+    const double                                  radius)
+{
   std::vector<int> points;
-  
-  switch (treeNodeType_) 
+
+  switch (treeNodeType_)
   {
     case INNER_NODE:
-    {       
+    {
       const vector<int> childindex = classifyRadius(radius,querypoint);
-      
+
       //child node of tree found, which encloses AABB of querypoint completely; thus step down
-      if (childindex.size() ==1) 
+      if (childindex.size() ==1)
         return children_[childindex[0]]->searchPointsInRadius(currentpositions, querypoint, radius);
-     
+
       else if(childindex.size() < 1)
         dserror("no child found\n");
-                
+
       else
-        return GEO::getPointsInRadius(currentpositions,querypoint,radius,elementList_); 
+        return GEO::getPointsInRadius(currentpositions,querypoint,radius,elementList_);
       break;
     }
-    case LEAF_NODE:   
+    case LEAF_NODE:
     {
       if(elementList_.empty())
         return points;
 
       // max depth reached, counted reverse
       if (treedepth_ <= 0 || (elementList_.size()==1 && (elementList_.begin()->second).size() == 1) )
-        return GEO::getPointsInRadius(currentpositions, querypoint, radius,elementList_); 
+        return GEO::getPointsInRadius(currentpositions, querypoint, radius,elementList_);
 
       const vector<int> childindex = classifyRadius(radius, querypoint);
-      
+
       if(childindex.size() < 1)
         dserror("no child found\n");
-      
+
       else if (childindex.size() ==1) // child node found which encloses AABB so refine further
-      { 
+      {
         createChildren(currentpositions);
         return children_[childindex[0]]->searchPointsInRadius(currentpositions, querypoint, radius);
       }
-      else 
-        return GEO::getPointsInRadius(currentpositions,querypoint,radius,elementList_); 
+      else
+        return GEO::getPointsInRadius(currentpositions,querypoint,radius,elementList_);
       break;
     }
     default:
@@ -1923,14 +1923,14 @@ std::vector<int> GEO::SearchTree::TreeNode::searchPointsInRadius(
  | intersecting with the XAABB of a given volume element                |
  *----------------------------------------------------------------------*/
 void GEO::SearchTree::TreeNode::queryIntersectionCandidates(
-    const std::map<int,LINALG::Matrix<3,2> >&   currentXAABBs, 
+    const std::map<int,LINALG::Matrix<3,2> >&   currentXAABBs,
     const LINALG::Matrix<3,2>&                  eleXAABB,
     std::set<int>&                              elementset)
 {
-  switch(treeNodeType_) 
+  switch(treeNodeType_)
   {
     case INNER_NODE:
-    {     
+    {
       int index = -1;
       if(classifyXAABB(index,eleXAABB))
       {
@@ -1939,12 +1939,12 @@ void GEO::SearchTree::TreeNode::queryIntersectionCandidates(
       }
       else
       {
-        GEO::getIntersectionCandidates(currentXAABBs, eleXAABB, elementList_, elementset); 
+        GEO::getIntersectionCandidates(currentXAABBs, eleXAABB, elementList_, elementset);
         return;
       }
       break;
     }
-    case LEAF_NODE:   
+    case LEAF_NODE:
     {
       if(elementList_.empty())
         return;
@@ -1952,11 +1952,11 @@ void GEO::SearchTree::TreeNode::queryIntersectionCandidates(
       // max depth reached, counts reverse
       if(treedepth_ <= 0 || (elementList_.begin()->second).size() == 1)
       {
-        GEO::getIntersectionCandidates(currentXAABBs, eleXAABB, elementList_, elementset); 
+        GEO::getIntersectionCandidates(currentXAABBs, eleXAABB, elementList_, elementset);
         return;
       }
       // dynamically grow tree otherwise, create children and set label for empty children
-      // search in apropriate child node  
+      // search in apropriate child node
       int index = -1;
       if(classifyXAABB(index,eleXAABB))
       {
@@ -1966,7 +1966,7 @@ void GEO::SearchTree::TreeNode::queryIntersectionCandidates(
       }
       else
       {
-        GEO::getIntersectionCandidates(currentXAABBs, eleXAABB,  elementList_, elementset); 
+        GEO::getIntersectionCandidates(currentXAABBs, eleXAABB,  elementList_, elementset);
         return;
       }
       break;
@@ -1983,15 +1983,15 @@ void GEO::SearchTree::TreeNode::queryIntersectionCandidates(
  | returns contact elements based on kdops (CONTACT)         u.may 02/09|
  *----------------------------------------------------------------------*/
 void GEO::SearchTree::TreeNode::searchMultibodyContactElements(
-    const std::map<int,LINALG::Matrix<9,2> >&   currentKDOPs, 
+    const std::map<int,LINALG::Matrix<9,2> >&   currentKDOPs,
     const LINALG::Matrix<9,2>&                  queryKDOP,
     const int                                   label,
-    std::set<int>&                              contactEleIds) 
-{ 
-  switch (treeNodeType_) 
+    std::set<int>&                              contactEleIds)
+{
+  switch (treeNodeType_)
   {
     case INNER_NODE:
-    {     
+    {
       int index = -1;
       if(classifyKDOP(index, queryKDOP))
       {
@@ -2005,7 +2005,7 @@ void GEO::SearchTree::TreeNode::searchMultibodyContactElements(
       }
       break;
     }
-    case LEAF_NODE:   
+    case LEAF_NODE:
     {
       if(elementList_.empty())
         return;
@@ -2017,7 +2017,7 @@ void GEO::SearchTree::TreeNode::searchMultibodyContactElements(
         return;
       }
       // dynamically grow tree otherwise, create children and set label for empty children
-      // search in apropriate child node  
+      // search in apropriate child node
       int index = -1;
       if(classifyKDOP(index, queryKDOP))
       {
@@ -2066,12 +2066,12 @@ void GEO::SearchTree::TreeNode::printTreeNode(
     for (int i=0; i < getNumChildren(); i++)
       if (children_[i] != Teuchos::null)
         children_[i]->printTreeNode(max_depth, fc);
-   
+
   }
   else if (treeNodeType_== GEO::LEAF_NODE)
   {
     int factor = -1;
-    
+
     if (label_ < 0)
       factor = 0; // more than one candidate in this octant
     else if (label_ == 0)
@@ -2099,10 +2099,10 @@ void GEO::SearchTree::TreeNode::printTreeNode(
 int GEO::SearchTree::TreeNode::getDepth() const
 {
   int depth = -1;
-  
+
   if (treeNodeType_==LEAF_NODE)
     depth = treedepth_;
-  else 
+  else
   {
     int tmp_depth = -1;
     depth = treedepth_;
@@ -2110,9 +2110,9 @@ int GEO::SearchTree::TreeNode::getDepth() const
     {
       if (children_[i] != Teuchos::null)
         tmp_depth = children_[i]->getDepth();
-      else 
+      else
         dserror("inner node has to have leave nodes");
-      
+
       if(tmp_depth < depth)
         depth = tmp_depth;
     }
@@ -2128,9 +2128,9 @@ int GEO::SearchTree::TreeNode::getDepth() const
 int GEO::SearchTree::TreeNode::getNumNodesInTree() const
 {
   int numTreeNodes = 0;
-  
+
   switch(treeNodeType_)
-  { 
+  {
     case LEAF_NODE:
     {
       numTreeNodes = 1;
@@ -2140,7 +2140,7 @@ int GEO::SearchTree::TreeNode::getNumNodesInTree() const
     {
       for(int i = 0; i < getNumChildren(); i++)
         numTreeNodes += children_[i]->getNumNodesInTree();
-  
+
       break;
     }
     default:

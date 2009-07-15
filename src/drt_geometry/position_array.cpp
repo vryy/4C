@@ -18,7 +18,7 @@ Maintainer: Ursula Mayer
 #include "../drt_geometry/position_array.H"
 
 /*!
- * \brief create an often used array with 3D nodal positions 
+ * \brief create an often used array with 3D nodal positions
  */
 LINALG::SerialDenseMatrix GEO::InitialPositionArray(
         const DRT::Element* ele

@@ -27,13 +27,13 @@ namespace GEO
   template <DRT::Element::DiscretizationType DISTYPE, class M1>
     static inline double ElementVolumeT(
           const M1&                     xyze   ///> xyze nsd = 3 coords, number of nodes)
-          ) 
+          )
   {
     // number of nodes for element
     const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-        
+
     DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule3D_undefined;
-    
+
     switch (DISTYPE)
     {
       case DRT::Element::hex8: case DRT::Element::hex20: case DRT::Element::hex27:
@@ -49,7 +49,7 @@ namespace GEO
       default:
         dserror("add your element type here...");
     }
-    
+
     // gaussian points
     const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
 
@@ -62,33 +62,33 @@ namespace GEO
       eleCoord(0) = intpoints.qxg[iquad][0];
       eleCoord(1) = intpoints.qxg[iquad][1];
       eleCoord(2) = intpoints.qxg[iquad][2];
-      
+
       // shape functions and their first derivatives
       static LINALG::Matrix<3,numnode> deriv;
       DRT::UTILS::shape_function_3D_deriv1(deriv,eleCoord(0),eleCoord(1),eleCoord(2),DISTYPE);
-  
+
       // get transposed of the jacobian matrix d x / d \xi
       static LINALG::Matrix<3,3> xjm;
       xjm.Clear();
-      
+
       for (int inode = 0; inode < numnode; ++inode)
         for (int i = 0; i < 3; ++i)
           for (int j = 0; j < 3; ++j)
             xjm(i,j) += deriv(i,inode) * xyze(j,inode);
-  
+
       const double det = xjm.Determinant();
       const double fac = intpoints.qwgt[iquad]*det;
-  
+
       if (det <= 0.0)
         dserror("NEGATIVE JACOBIAN DETERMINANT: %f", det);
-     
+
       vol += fac;
     } // end loop over gauss points
     return vol;
   }
-  
-  
-  
+
+
+
   //! calculates the volume of an element in given configuration          u.may
   template <class M1>
     double ElementVolume(
@@ -110,10 +110,10 @@ namespace GEO
         return ElementVolumeT<DRT::Element::tet10>(xyze);
       default:
         dserror("add you distype here...");
-        
+
     }
     return -1.0;
-  } 
+  }
 }  // namespace GEO
 
 

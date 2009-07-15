@@ -31,22 +31,22 @@ namespace GEO
 /*----------------------------------------------------------------------*
  | GM:      transforms a node in element coordinates         u.may 07/07|
  |          into current coordinates                                    |
- *----------------------------------------------------------------------*/ 
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType DISTYPE, class M>
-static inline void elementToCurrentCoordinatesInPlaceT(   
+static inline void elementToCurrentCoordinatesInPlaceT(
         const M&                              xyze,
-        LINALG::Matrix<3,1>&                  eleCoord) 
+        LINALG::Matrix<3,1>&                  eleCoord)
 {
     const int numNodes = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     static LINALG::Matrix<numNodes, 1> funct;
-  
+
     DRT::UTILS::shape_function<DISTYPE>(eleCoord, funct);
-        
+
     eleCoord.Clear();
     for(int i=0; i<numNodes; i++)
         for(int j=0; j<3; j++)
             eleCoord(j) += xyze(j,i) * funct(i);
-    
+
     return;
 }
 
@@ -55,12 +55,12 @@ static inline void elementToCurrentCoordinatesInPlaceT(
 /*----------------------------------------------------------------------*
  | GM:      transforms a node in element coordinates       u.may 07/07|
  |          into current coordinates                                    |
- *----------------------------------------------------------------------*/  
+ *----------------------------------------------------------------------*/
 template <class M>
-static inline void elementToCurrentCoordinatesInPlace(   
+static inline void elementToCurrentCoordinatesInPlace(
         const DRT::Element::DiscretizationType  distype,
         const M&                                xyze,
-        LINALG::Matrix<3,1>&                    eleCoord) 
+        LINALG::Matrix<3,1>&                    eleCoord)
 {
   switch (distype)
   {
@@ -103,7 +103,7 @@ static inline void elementToCurrentCoordinatesInPlace(
   default:
       std::cout << DistypeToString(distype) << endl;
       dserror("add your 3D distype to this switch!");
-  }   
+  }
   return;
 }
 
@@ -113,28 +113,28 @@ static inline void elementToCurrentCoordinatesInPlace(
 /*!
 \brief transforms a point in element coordinates to a point
        in current coordinates with respect to a given element
-\param element              (in)        : element 
+\param element              (in)        : element
 \param xyze                 (in)        : nodal positions of element
 \param xsi                  (in)        : element coordinates
 \param x                    (out)       : position in physical coordinates (x, y, z)
 */
 template <DRT::Element::DiscretizationType DISTYPE, class V, class M>
-static inline void elementToCurrentCoordinatesT(   
-    const M&             xyze,    
-    const V&             xsi,      
+static inline void elementToCurrentCoordinatesT(
+    const M&             xyze,
+    const V&             xsi,
     LINALG::Matrix<3,1>& x      )
 {
     const int numNodes = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     static LINALG::Matrix<numNodes, 1> funct;
-    
+
     DRT::UTILS::shape_function<DISTYPE>(xsi, funct);
-    
+
     // set to zero
     x.Clear();
     for(int i=0; i<numNodes; i++)
         for(int j=0; j<3; j++)
           x(j) += xyze(j,i) * funct(i);
-    
+
     return;
 }
 
@@ -143,17 +143,17 @@ static inline void elementToCurrentCoordinatesT(
 /*!
 \brief transforms a point in element coordinates to a point
        in current coordinates with respect to a given element
-\param element              (in)        : element 
+\param element              (in)        : element
 \param xyze                 (in)        : nodal positions of element
 \param xsi                  (in)        : element coordinates
 \param x                    (out)       : position in physical coordinates (x, y, z)
 */
 template <class V, class M>
-static inline void elementToCurrentCoordinates(   
+static inline void elementToCurrentCoordinates(
         const DRT::Element::DiscretizationType  distype,
-        const M&                                xyze,    
-        const V&                                xsi,    
-        LINALG::Matrix<3,1>&                    x) 
+        const M&                                xyze,
+        const V&                                xsi,
+        LINALG::Matrix<3,1>&                    x)
 {
   switch (distype)
   {
@@ -196,7 +196,7 @@ static inline void elementToCurrentCoordinates(
   default:
       std::cout << DistypeToString(distype) << endl;
       dserror("add your 3D distype to this switch!");
-  }   
+  }
   return;
 }
 
@@ -208,7 +208,7 @@ static inline void elementToCurrentCoordinates(
 \param distype               (in)   shape of the element
 \return  true if point lies in the element, false otherwise
 */
-template <  DRT::Element::DiscretizationType distype, 
+template <  DRT::Element::DiscretizationType distype,
       class V>
 static inline void startingValueCurrentToElementCoords(
   V&      xsi)
@@ -220,7 +220,7 @@ static inline void startingValueCurrentToElementCoords(
     xsi.Clear();
     break;
   }
-  case DRT::Element::tet4 : case DRT::Element::tet10: 
+  case DRT::Element::tet4 : case DRT::Element::tet10:
   {
     xsi.PutScalar(0.3);
     break;
@@ -230,12 +230,12 @@ static inline void startingValueCurrentToElementCoords(
     xsi.Clear();
     break;
   }
-  case DRT::Element::tri3 : case DRT::Element::tri6 : 
+  case DRT::Element::tri3 : case DRT::Element::tri6 :
   {
     xsi.PutScalar(0.3);
     break;
   }
-  case DRT::Element::line2 : case DRT::Element::line3 : 
+  case DRT::Element::line2 : case DRT::Element::line3 :
   {
     xsi.Clear();
     break;
@@ -257,22 +257,22 @@ static inline void startingValueCurrentToElementCoords(
 */
 template <class V>
 bool checkPositionWithinElementParameterSpace(
-        const V&                               eleCoord, 
+        const V&                               eleCoord,
         const DRT::Element::DiscretizationType distype)
 {
   switch(distype)
   {
-  case DRT::Element::hex8: case DRT::Element::hex20: case DRT::Element::hex27: 
+  case DRT::Element::hex8: case DRT::Element::hex20: case DRT::Element::hex27:
   case DRT::Element::quad4: case DRT::Element::quad8:  case DRT::Element::quad9:
-  case DRT::Element::line2: case DRT::Element::line3:    
+  case DRT::Element::line2: case DRT::Element::line3:
   {
     for(int i = 0; i < DRT::UTILS::getDimension(distype); i++)
-      if(eleCoord(i) > (1.0+GEO::TOL7) || eleCoord(i) < (-1)*(1.0+GEO::TOL7) ) 
+      if(eleCoord(i) > (1.0+GEO::TOL7) || eleCoord(i) < (-1)*(1.0+GEO::TOL7) )
         return false;
 
     break;
   }
-  case DRT::Element::tri3 : case DRT::Element::tri6: 
+  case DRT::Element::tri3 : case DRT::Element::tri6:
   {
     if(eleCoord(0) > (1.0 + GEO::TOL7) || eleCoord(0) < (-1)*GEO::TOL7 )    // r = 0 ... 1
       return false;
@@ -280,7 +280,7 @@ bool checkPositionWithinElementParameterSpace(
       return false;
     break;
   }
-  case DRT::Element::tet4 : case DRT::Element::tet10: 
+  case DRT::Element::tet4 : case DRT::Element::tet10:
   {
     if(eleCoord(0) > (1.0 + GEO::TOL7) || eleCoord(0) < (-1)*GEO::TOL7 )    // r = 0 ... 1
       return false;
@@ -292,30 +292,30 @@ bool checkPositionWithinElementParameterSpace(
   }
   default:
     dserror("distype not yet implemented");
-  }        
+  }
   return true;
 }
 
 
 
 /*!
-\brief updates the system matrix at the corresponding element coordinates for the 
-       computation if a node in current coordinates lies within an element 
+\brief updates the system matrix at the corresponding element coordinates for the
+       computation if a node in current coordinates lies within an element
 
 \tparam dim   dimension of the problem
 
-*/  
+*/
 template <DRT::Element::DiscretizationType DISTYPE, int dim, class M1, class V, class M2>
 static inline void updateAForNWE(
     M1&                           A,     ///< system matrix
     const V&                      xsi,   ///< vector of element coordinates
     const M2&                     xyze   ///< nodal position array (3,numNodes)
-    )                                                  
-{   
+    )
+{
     const int numNodes = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     static LINALG::Matrix<dim, numNodes> deriv1;
     DRT::UTILS::shape_function_deriv1<DISTYPE>(xsi, deriv1);
-    
+
     A.Clear();
     for (int isd = 0; isd < 3; ++isd)
         for (int jsd = 0; jsd < dim; ++jsd)
@@ -327,8 +327,8 @@ static inline void updateAForNWE(
 
 
 /*!
-\brief updates the rhs at the corresponding element coordinates for the 
-       computation whether a node in current coordinates lies within an element 
+\brief updates the rhs at the corresponding element coordinates for the
+       computation whether a node in current coordinates lies within an element
 
 */
 template <DRT::Element::DiscretizationType DISTYPE,  ///< shape of the element
@@ -338,33 +338,33 @@ static inline void updateRHSForNWE(
         const V2&    xsi,     ///< vector of element coordinates
         const V3&    x,       ///< node in physical coordinates (x,y,z)
         const M1&    xyze     ///< nodal coordinates of an element with shape DISTYPE
-        )                                                  
+        )
 {
-    
+
     const int numNodes = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     static LINALG::Matrix<numNodes,1> funct;
     DRT::UTILS::shape_function<DISTYPE>(xsi, funct);
-    
+
     for (int isd = 0; isd < 3; ++isd)
     {
         b(isd) = x(isd);
         for (int inode = 0; inode < numNodes; ++inode)
             b(isd) -= xyze(isd,inode) * funct(inode);
     }
-    
+
 }
 
 
 /*!
 \brief transforms a point in current coordinates to a point
-       in element coordinates with respect to a given element       
+       in element coordinates with respect to a given element
        The nonlinear system of equation is solved with help of the Newton-method.
        Fast templated version
 
 \param xyze                 (in)        : element nodal positions (3,numnode)
 \param x                    (in)        : node in current coordinates \f$(x, y, z)\f$
 \param xsi                  (inout)     : node in element coordinates
-*/  
+*/
 template <DRT::Element::DiscretizationType DISTYPE, class M1, class V3>
 static inline bool currentToVolumeElementCoordinatesT(
     const M1&                                     xyze,            ///< nodal position array
@@ -388,26 +388,26 @@ static inline bool currentToVolumeElementCoordinatesT(
 
   int iter = 0;
   while(residual > GEO::TOL14)
-  {   
+  {
     updateAForNWE<DISTYPE,dim>( A, xsi, xyze);
 
     if(!GEO::gaussElimination<true,3>(A, b, dx, GEO::TOL14))
     {
       nodeWithinElement = false;
       break;
-    }   
+    }
 
     xsi += dx;
     updateRHSForNWE<DISTYPE,dim>(b, xsi, x, xyze);
 
     residual = b.Norm2();
-    iter++; 
+    iter++;
 
     if(iter >= maxiter || GEO::SumOfFabsEntries(xsi) > GEO::TOLPLUS8)
-    {   
+    {
       nodeWithinElement = false;
       break;
-    }   
+    }
   }
 
   return nodeWithinElement;
@@ -417,7 +417,7 @@ static inline bool currentToVolumeElementCoordinatesT(
 
 
 template <class M1, class V3>
-bool currentToVolumeElementCoordinates(  
+bool currentToVolumeElementCoordinates(
     const DRT::Element::DiscretizationType  distype,
     const M1&                               xyze,
     const V3&                               x,
@@ -445,7 +445,7 @@ bool currentToVolumeElementCoordinates(
         std::cout << DistypeToString(distype) << endl;
         dserror("add your 3D distype to this switch!");
         nodeWithinElement = false;
-    }   
+    }
 
     return nodeWithinElement;
 }
@@ -454,7 +454,7 @@ bool currentToVolumeElementCoordinates(
 
 /*----------------------------------------------------------------------*
  | GM:  transforms a node in current coordinates            u.may 12/07 |
- |      into element coordinates                                        | 
+ |      into element coordinates                                        |
  *----------------------------------------------------------------------*/
 template <class M1, class V3>
 LINALG::Matrix<3,1> currentToVolumeElementCoordinatesExact(
@@ -466,20 +466,20 @@ LINALG::Matrix<3,1> currentToVolumeElementCoordinatesExact(
 {
     LINALG::Matrix<3,1> xsi;
     currentToVolumeElementCoordinates(distype, xyze, x, xsi);
- 
+
     switch (distype)
     {
     case DRT::Element::hex8: case DRT::Element::hex20: case DRT::Element::hex27:
-    {  
+    {
       // rounding 1 and -1 to be exact for the CDT
       for(int j = 0; j < 3; j++)
       {
         if( fabs((fabs(xsi(j))-1.0)) < tol &&  xsi(j) < 0)    xsi(j) = -1.0;
-        if( fabs((fabs(xsi(j))-1.0)) < tol &&  xsi(j) > 0)    xsi(j) =  1.0;      
+        if( fabs((fabs(xsi(j))-1.0)) < tol &&  xsi(j) > 0)    xsi(j) =  1.0;
       }
       break;
     }
-    case DRT::Element::tet4: case DRT::Element::tet10: 
+    case DRT::Element::tet4: case DRT::Element::tet10:
     {
       // round r on 0 or 1
       // round s on 0 or 1
@@ -500,7 +500,7 @@ LINALG::Matrix<3,1> currentToVolumeElementCoordinatesExact(
     };
 
     return xsi;
-} 
+}
 
 
 
@@ -510,23 +510,23 @@ LINALG::Matrix<3,1> currentToVolumeElementCoordinatesExact(
 \param Jacobi               (in) :  Jacobi
 \param xsi                  (in) :  node in element coordinates (r, s)
 \param xyze_surfaceElement  (in) :  element nodal coordinates
-*/    
+*/
 template<DRT::Element::DiscretizationType DISTYPE, class M>
 static inline void updateJacobianForMap3To2(
-        LINALG::Matrix<3,2>&                    Jacobi,              
-        const LINALG::Matrix<2,1>&              xsi,                 
-        const M&                                xyze_surfaceElement 
+        LINALG::Matrix<3,2>&                    Jacobi,
+        const LINALG::Matrix<2,1>&              xsi,
+        const M&                                xyze_surfaceElement
         )
 {
     const int numNodes = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-    
+
     static LINALG::Matrix<2,numNodes> deriv1;
     DRT::UTILS::shape_function_2D_deriv1(deriv1, xsi(0), xsi(1), DISTYPE);
-    
+
     Jacobi.Clear();
     for(int isd=0; isd<3; isd++)
         for(int jsd=0; jsd<2; jsd++)
-            for(int inode=0; inode<numNodes; inode++) 
+            for(int inode=0; inode<numNodes; inode++)
                 Jacobi(isd, jsd) += xyze_surfaceElement(isd,inode) * deriv1(jsd,inode);
 
     return;
@@ -541,24 +541,24 @@ static inline void updateJacobianForMap3To2(
 \param xsi                  (in) :  node in element coordinates (r, s)
 \param x                    (in) :  node in physical coordinates
 \param xyze_surfaceElement  (in) :  element nodal coordinates
-*/   
+*/
 template<DRT::Element::DiscretizationType DISTYPE, class M>
 static inline void updateFForMap3To2(
-        LINALG::Matrix<3,1>&                F,                    
-        const LINALG::Matrix<2,1>&          xsi,                  
-        const LINALG::Matrix<3,1>&          x,                    
-        const M&                            xyze_surfaceElement   
-        )                                                  
-{   
+        LINALG::Matrix<3,1>&                F,
+        const LINALG::Matrix<2,1>&          xsi,
+        const LINALG::Matrix<3,1>&          x,
+        const M&                            xyze_surfaceElement
+        )
+{
     const int numNodes = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     static LINALG::Matrix<numNodes,1> funct;
     DRT::UTILS::shape_function_2D(funct, xsi(0), xsi(1), DISTYPE);
-    
+
     F.Clear();
     for(int isd=0; isd<3; ++isd)
-        for(int inode=0; inode<numNodes; inode++) 
+        for(int inode=0; inode<numNodes; inode++)
             F(isd) += xyze_surfaceElement(isd,inode) * funct(inode);
-    
+
     F -= x;
     return;
 }
@@ -575,34 +575,34 @@ static inline void updateFForMap3To2(
 \param xyze_surfaceElement  (in) :  element nodal coordinates
 */
 template<DRT::Element::DiscretizationType DISTYPE, class M>
-static void updateAForMap3To2(   
-        LINALG::Matrix<2,2>&              A,                   
-        const LINALG::Matrix<3,2>&        Jacobi,              
-        const LINALG::Matrix<3,1>&        F,                   
-        const LINALG::Matrix<2,1>&        xsi,                 
-        const M&                          xyze_surfaceElement)                                                  
-{   
+static void updateAForMap3To2(
+        LINALG::Matrix<2,2>&              A,
+        const LINALG::Matrix<3,2>&        Jacobi,
+        const LINALG::Matrix<3,1>&        F,
+        const LINALG::Matrix<2,1>&        xsi,
+        const M&                          xyze_surfaceElement)
+{
     const int numNodes = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     static LINALG::Matrix<3,numNodes> deriv2;
     DRT::UTILS::shape_function_2D_deriv2(deriv2, xsi(0), xsi(1), DISTYPE);
 
     // third order tensor 3 x 2 x 2 stored as 3x2 and 3x2 so 3x4
-    static LINALG::Matrix<3,4> tensor3order; 
+    static LINALG::Matrix<3,4> tensor3order;
     tensor3order.Clear();
-   
+
     for(int i=0; i<3; ++i)
         for(int j=0; j<2; ++j)
             for(int k=0; k<2; ++k)
                 for(int inode=0; inode<numNodes; inode++)
                   tensor3order(i, k*2+j) += xyze_surfaceElement(i,inode) * deriv2(j,inode);
-          
-    
+
+
     A.Clear();
     for (int i = 0; i < 2; ++i)
         for (int j = 0; j < 2; ++j)
             for (int k = 0; k < 3; ++k)
                 A(i,j) += Jacobi(k,i) * Jacobi(k,j) + F(k)*tensor3order(k,j*2+i);
-    
+
 }
 
 
@@ -610,30 +610,30 @@ static void updateAForMap3To2(
 /*!
 \brief compute element coordinates from a given point
        in the 3-dim physical space lies on a given surface element
-       Template version 
-\param xyze_surfaceElement      (in) :  element nodal coordinates 
+       Template version
+\param xyze_surfaceElement      (in) :  element nodal coordinates
 \param physCoord                (in) :  physical coordinates (x,y,z)
 \param eleCoord                 (in) :  element coordinates (r,s)
 
  RQI
  */
-template<DRT::Element::DiscretizationType DISTYPE, class M> 
+template<DRT::Element::DiscretizationType DISTYPE, class M>
 static void currentToSurfaceElementCoordinatesT(
-    const M&                    xyze_surfaceElement,  
-    const LINALG::Matrix<3,1>&  physCoord,             
-    LINALG::Matrix<2,1>&        eleCoord               
+    const M&                    xyze_surfaceElement,
+    const LINALG::Matrix<3,1>&  physCoord,
+    LINALG::Matrix<2,1>&        eleCoord
     )
 {
   bool nodeWithinElement = true;
-  
+
   startingValueCurrentToElementCoords<DISTYPE>(eleCoord);
-  
+
   const int maxiter = 20;
   int iter = 0;
   while (iter < maxiter)
   {
     iter++;
-    
+
     // compute Jacobian, f and b
     static LINALG::Matrix<3,2> Jacobi;
     static LINALG::Matrix<3,1> F;
@@ -645,20 +645,20 @@ static void currentToSurfaceElementCoordinatesT(
     for (int i = 0; i < 2; ++i)
       for (int j = 0; j < 3; ++j)
         b(i) -= Jacobi(j, i)*F(j);
-    
+
     const double residual = b.Norm2();
     if (residual < GEO::TOL14)
     {
       break;
     }
-    
+
     // compute system matrix A
     static LINALG::Matrix<2,2> A;
     updateAForMap3To2<DISTYPE>(A, Jacobi, F, eleCoord, xyze_surfaceElement);
 
     static LINALG::Matrix<2,1> dx;
     dx = 0.0;
-    
+
     if(!GEO::gaussElimination<true,2>(A, b, dx, GEO::TOL14))
     {
       nodeWithinElement = false;
@@ -667,7 +667,7 @@ static void currentToSurfaceElementCoordinatesT(
 
     eleCoord += dx;
   }
-  
+
 //  cout << "nodeWithinElement: " << nodeWithinElement << endl;
 //  printf("iter = %d\n", iter);
 //  printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", eleCoord(0),eleCoord(1), residual, GEO::TOL14);
@@ -716,54 +716,54 @@ static void CurrentToSurfaceElementCoordinates(
 /*!
 \brief compute element coordinates from a given point
        in the 3-dim physical space lies on a given line element
-       Template version 
-\param xyze_lineElement         (in) :  element nodal coordinates 
+       Template version
+\param xyze_lineElement         (in) :  element nodal coordinates
 \param physCoord                (in) :  physical coordinates (x,y,z)
 \param eleCoord                 (in) :  element coordinates (r)
 
  RQI
  */
-template<DRT::Element::DiscretizationType DISTYPE, class M> 
+template<DRT::Element::DiscretizationType DISTYPE, class M>
 static void currentToLineElementCoordinatesT(
-    const M&                            xyze_lineElement,  
-    const LINALG::Matrix<3,1>&          physCoord,             
-    LINALG::Matrix<1,1>&                eleCoord               
+    const M&                            xyze_lineElement,
+    const LINALG::Matrix<3,1>&          physCoord,
+    LINALG::Matrix<1,1>&                eleCoord
     )
 {
   const int numNodes = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-  
+
   const int maxiter = 20;
   int iter = 0;
   double residual = 1.0;
-  
+
   // starting value
-  startingValueCurrentToElementCoords<DISTYPE>(eleCoord); 
-  
+  startingValueCurrentToElementCoords<DISTYPE>(eleCoord);
+
   while(residual > GEO::TOL13)
   {
     iter++;
-    
+
     // determine shapefunction, 1. and 2. derivative at current solutiom
     static LINALG::Matrix<numNodes,1> funct;
     DRT::UTILS::shape_function_1D(funct, eleCoord(0), DISTYPE);
-      
+
     static LINALG::Matrix<1,numNodes> deriv1;
     DRT::UTILS::shape_function_1D_deriv1(deriv1, eleCoord(0), DISTYPE);
-    
+
     static LINALG::Matrix<1,numNodes> deriv2;
     DRT::UTILS::shape_function_1D_deriv2(deriv2, eleCoord(0), DISTYPE);
-      
+
     // compute nonlinear system
     static LINALG::Matrix<3,1> F;
-    // compute first derivative of r  
+    // compute first derivative of r
     static LINALG::Matrix<3,1> F_deriv1;
-    // compute first derivative of r  
+    // compute first derivative of r
     static LINALG::Matrix<3,1> F_deriv2;
-        
+
     F.Clear();
     F_deriv1.Clear();
     F_deriv2.Clear();
-    
+
     for(int i = 0; i < 3; i++)
       for(int inode = 0; inode < numNodes; inode++)
       {
@@ -771,23 +771,23 @@ static void currentToLineElementCoordinatesT(
         F_deriv1(i) += xyze_lineElement(i,inode) * deriv1(0,inode);
         F_deriv2(i) += xyze_lineElement(i,inode) * deriv2(0,inode);
       }
-      
+
     F -= physCoord;
-    
+
     //cout << "F " << F << endl;
     //cout << "F_deriv1 " << F_deriv1 << endl;
     //cout << "F_deriv2 " << F_deriv2 << endl;
-    
+
     // determine system matrix A and rhs b
     double A = 0.0;
     double b = 0.0;
     // update system matrix A and rhs b
     for(int i=0; i<3; i++)
     {
-      A += F(i)*F_deriv2(i) + F_deriv1(i)*F_deriv1(i);   
+      A += F(i)*F_deriv2(i) + F_deriv1(i)*F_deriv1(i);
       b += F_deriv1(i)*F(i);
     }
-  
+
     if(fabs(A) < GEO::TOL14)
     {
       //printf("A is equal to zero 0");
@@ -795,15 +795,15 @@ static void currentToLineElementCoordinatesT(
     }
     // solve scalar linear equation  Delta_x = -b/A
     eleCoord(0) += (-1)*b/A;
-    
+
     //cout << " A = " << A << endl;
     //cout << " b = " << b << endl;
     //cout << " x = " << eleCoord(0) << endl;
-    
+
     if(iter >= maxiter || fabs(eleCoord(0)) > GEO::TOLPLUS8)
       break;
 
-    residual = fabs(b); 
+    residual = fabs(b);
   }
 }
 

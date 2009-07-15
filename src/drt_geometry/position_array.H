@@ -7,11 +7,11 @@
 -------------------------------------------------------------------------
                  BACI finite element library subsystem
             Copyright (2008) Technical University of Munich
-              
+
 Under terms of contract T004.008.000 there is a non-exclusive license for use
 of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
 
-This library is proprietary software. It must not be published, distributed, 
+This library is proprietary software. It must not be published, distributed,
 copied or altered in any form or any media without written permission
 of the copyright holder. It may be used under terms and conditions and of the
 above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
@@ -23,11 +23,11 @@ This library contains and makes use of software copyrighted by Sandia Corporatio
 and distributed under LGPL licence. Licensing does not apply to this or any
 other third party software used here.
 
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de) 
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
                    or
                    Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
 
-http://www.lnm.mw.tum.de                   
+http://www.lnm.mw.tum.de
 
 -------------------------------------------------------------------------
 </pre>
@@ -66,10 +66,10 @@ namespace GEO
   )
   {
     const int numnode = ele->NumNode();
-    
+
     const DRT::Node*const* nodes = ele->Nodes();
     dsassert(nodes != NULL, "element has no nodal pointers, so getting a position array doesn't make sense!");
-    
+
     for (int inode=0; inode<numnode; inode++)
     {
       const double* x = nodes[inode]->X();
@@ -79,8 +79,8 @@ namespace GEO
     }
     return;
   }
-  
-  
+
+
   /*!
    * a common task is to get an array of the positions of all nodes of this element
    *
@@ -169,7 +169,7 @@ namespace GEO
        const DRT::Element* ele           ///< pointer to element, whose nodes we evaluate for their position
        );
 
-  
+
   /*!
    * fill array with current nodal positions
    *
@@ -184,13 +184,13 @@ namespace GEO
       const DRT::Element*                     ele,                   ///< element with nodal pointers
       const map<int,LINALG::Matrix<3,1> >&    currentcutterpositions ///< current positions of all cutter nodes
       );
-  
-  
+
+
   /*!
    * fill array with current nodal positions
-   * 
+   *
    * \note array is defined as (3,numnode)
-   * 
+   *
    * \author a.ger
    * \date 11/08
    */
@@ -211,7 +211,7 @@ namespace GEO
         xyze(2,inode) = x(2);
       }
   }
-  
+
 }
 
 

@@ -56,16 +56,16 @@ class Intersection
 {
 
   public:
-    
+
   //! constructor
   Intersection();
-  
+
   //! destructor
   ~Intersection();
 
   /*!
    * \brief  computes the intersection of two discretizations.
-   * 
+   *
    * This methods localizes the interface of the
    * cutter discretization within the xfem discretization. Each intersected xfem element
    * is tetrahedralized with help of a Constrained Delaunay Tetrahedralization.
@@ -86,23 +86,23 @@ class Intersection
 
 
   private:
-    
+
   //! no copy constructor and assignment operator wanted
   Intersection(const Intersection& old);
-  
+
   Intersection& operator =(const Intersection& old);
-        
+
   class CompareVecInt
   {
     public :
       CompareVecInt() {};
-    
+
       // Epetra_IntSerialDenseVector
     bool operator()(const std::vector<int>& vec1, const std::vector<int>& vec2) const
     {
       if(vec1.size() != vec2.size() || vec1.size() != 4)
         dserror("one or both vectors have the same size");
-          
+
       for(int i = 0; i < 3; i++)
       {
         if(vec1[i] > vec2[i])
@@ -110,19 +110,19 @@ class Intersection
         if(vec1[i] < vec2[i])
           return true;
       }
-      
+
       if(vec1[3] > vec2[3] || vec1[3] == vec2[3])
         return false;
-     
+
       return true;
     }
   };
-  
+
   class ComparePoint
   {
     public :
       ComparePoint() {};
-    
+
     bool operator()(const LINALG::Matrix<3,1>& vec1, const LINALG::Matrix<3,1>& vec2) const
     {
       for(int i = 0; i < 2; i++)
@@ -132,21 +132,21 @@ class Intersection
         if(vec1(i) < (vec2(i) - GEO::TOL7))
           return true;
       }
-      
+
       if(vec1(2) > vec2(2)  || (fabs(vec1(2) - vec2(2)) < GEO::TOL7) )
         return false;
-        
+
       return true;
     }
   };
 
-  
+
   //! offset in facet marker list
   int                    facetMarkerOffset_ ;
 
   //! discretization type of the xfem element
   DRT::Element::DiscretizationType     xfemDistype_;
-  
+
   //! discretization type of the previous xfem element
   DRT::Element::DiscretizationType     xfemOldDistype_;
 
@@ -161,19 +161,19 @@ class Intersection
 
   //! current nodal coordinates of the XFEM element
   LINALG::SerialDenseMatrix             xyze_xfemElement_;
-    
+
   //! counts missed points during the recovery
   int                                   countMissedPoints_;
 
   //! vector of nodes for each surface of a single element
   vector<vector<int> >                  eleNumberingSurfaces_;
-    
+
   //! vector of nodes for each line of a single element
   vector<vector<int> >                  eleNumberingLines_;
 
   //! vector of adjacent surfaces for each node of a single element
   vector<vector<int> >                  eleNodesSurfaces_;
-  
+
   //! vector of adjacent surfaces for each node of a single element
   vector<vector<int> >                  eleNodesLines_;
 
@@ -182,13 +182,13 @@ class Intersection
 
   //! nodal element coordinate
   LINALG::SerialDenseMatrix             eleRefCoordinates_;
-  
+
   //! vector of corner nodes for each surface of an xfem element
   vector<int>                           eleSurfNumCornerNodes_;
 
   //! list of interface points to be stored in the Tetgen data structure
   vector<InterfacePoint >               pointList_;
-  
+
   //! list of xfem interface points to be stored in the Tetgen data structure
   vector<InterfacePoint >               xfemPointList_;
 
@@ -203,35 +203,35 @@ class Intersection
 
   //! list of triangles lying on a xfem surface to be stored in the Tetgen data structure
   map< int, vector<vector<int> > >      surfaceTriangleList_;
-  
+
   //! list of intersecting cutter elements
   vector<DRT::Element*>                 intersectingCutterElements_;
-  
+
   //! list coordinates of intersecting cutter elements
   vector<LINALG::SerialDenseMatrix>     intersectingCutterXYZE_;
 
   //! list of face markers numbered in the order of the intersected surface elments
   vector<int>                           faceMarker_;
-  
+
   //! list of xfem face markers numbered in the order of the intersected surface elments
   vector<int>                           xfemFaceMarker_;
-  
+
   //! store internal points when computed per xfem element
   map< int, LINALG::Matrix<3,1> >       nodemap_;
-  
+
   //! store internal points when computed per xfem element
   map< int, bool >                      nodeInOut_;
-  
+
   //! store intersection points for faster access
   Teuchos::RCP< std::map< std::vector<int>, std::vector< LINALG::Matrix<3,1> >, CompareVecInt > > intersectionpointmap_;
-  
+
   //! store bool values if intersection points lies element or not for faster access
   Teuchos::RCP< std::map< std::vector<int>, bool, CompareVecInt > > intersectionpointinoutmap_;
-  
-  
+
+
   /*!
   \brief initializes the private members of the xfem element
-  
+
   \param xfemId        (in) : local id of the current xfem element
   \param xfemElement   (in) : xfem element
   */
@@ -239,24 +239,24 @@ class Intersection
     const int             xfemLid,
     const DRT::Element*   xfemElement
     );
-  
-  
+
+
   /*!
     \brief collects points belonging to an interface lying inside xfem elements
            The nonlinear system of equation is solved with help of the Newton-method.
- 
+
     \param cutterdis                (in)        : cutter discretization
     \param currentcutterpositions   (in)        : current nodal positions of the cutter element
     \param xfemElement              (in)        : xfem element
     */
-  
-  std::vector<int> serialIntersectionCandidateSearch(    
+
+  std::vector<int> serialIntersectionCandidateSearch(
       const Teuchos::RCP<DRT::Discretization>         cutterdis,
       const std::map<int,LINALG::Matrix<3,1> >&       currentcutterpositions,
       DRT::Element*                                   xfemElement
       );
 
-        
+
   /*!
   \brief collects points belonging to an interface lying inside xfem elements
          The nonlinear system of equation is solved with help of the Newton-method.
@@ -269,10 +269,10 @@ class Intersection
   \param nodeId                   (in)        : node id
   \return true if the node lies within the xfemElement, false otherwise
   */
-  bool collectInternalPoints(             
-    DRT::Element*                                                   cutterElement,                
-    const DRT::Node*                                                cutterNode,              
-    const map<int,LINALG::Matrix<3,1> >&    						            currentcutterpositions,  
+  bool collectInternalPoints(
+    DRT::Element*                                                   cutterElement,
+    const DRT::Node*                                                cutterNode,
+    const map<int,LINALG::Matrix<3,1> >&    						            currentcutterpositions,
     std::map< LINALG::Matrix<3,1>, InterfacePoint, ComparePoint>&   interfacePoints,
     const int                               						            elemId,
     const int                               						            nodeId
@@ -290,8 +290,8 @@ class Intersection
     const LINALG::Matrix<3,1>&              xsi,
     InterfacePoint&                         ip
     ) const;
-  
- 
+
+
   /*!
   \brief  checks if an internal point
           lies on one a xfem surface, line or node or internally          .
@@ -304,8 +304,8 @@ class Intersection
     const LINALG::Matrix<3,1>&              xsi,
     InterfacePoint&                         ip
     ) const;
-        
-        
+
+
   /*!
   \brief  checks if an intersection node
           lies on a xfem surface, line or node          .
@@ -348,14 +348,14 @@ class Intersection
     const bool                        								            doSVD
     ) ;
 
-  
+
   /*!
   \brief checks if surface is Cartesian and line is linear
 
-  \param gCutterId   (in)        : geotype of surface element 
-  \param lineGeoType      (in)        : geotype of line element 
-  \param surfaceGeoType   (in)        : geotype of surface element 
-  \param lineGeoType      (in)        : geotype of line element 
+  \param gCutterId   (in)        : geotype of surface element
+  \param lineGeoType      (in)        : geotype of line element
+  \param surfaceGeoType   (in)        : geotype of surface element
+  \param lineGeoType      (in)        : geotype of line element
   \return true if surface is Cartesian an line is linear
   */
   std::vector<int> fillKeyVector(
@@ -364,8 +364,8 @@ class Intersection
       const int   lineNodeId1,
       const int   lineNodeId2
       ) const;
- 
- 
+
+
   /*!
   \brief returns key vector with permuted line node ids
 
@@ -374,34 +374,34 @@ class Intersection
   */
  std::vector<int> getOppositeKeyVector(
     const vector<int>& 	keyVec
-    ) const;    
-    
- 
+    ) const;
+
+
   /*!
   \brief store intersection point with permuted line node ids
 
   \param xsi   		 (in)        : intersection point coordinates
   \param keyVec      (in)        : key vector for intersection
-  */  
+  */
   void storePermutedIntersectionPoint(
 	const LINALG::Matrix<3,1>&    xsi,
 	const std::vector<int>&       keyVec
 	) const;
-  
-  
+
+
   /*!
   \brief checks if surface is Cartesian and line is linear
 
-  \param surfaceGeoType   (in)        : geotype of surface element 
-  \param lineGeoType      (in)        : geotype of line element 
+  \param surfaceGeoType   (in)        : geotype of surface element
+  \param lineGeoType      (in)        : geotype of line element
   \return true if surface is Cartesian an line is linear
   */
   bool decideSVD(
       const EleGeoType surfaceGeoType,
       const EleGeoType lineGeoType
       );
-  
-  
+
+
   /*!
   \brief checks if a linear line lies in the plane of a Cartesian surface element
 
@@ -417,7 +417,7 @@ class Intersection
       const LINALG::SerialDenseMatrix&  xyze_lineElement
       ) const;
 
-  
+
   /*!
   \brief computes a new starting points for the Newton method recursively
          in order to find all intersection points
@@ -451,7 +451,7 @@ class Intersection
     const std::vector<int>&                                         keyVec
     ) ;
 
-  
+
   /*!
   \brief classify an intersection point
 
@@ -469,7 +469,7 @@ class Intersection
       const bool                              lines
       );
 
-  
+
 	/*!
 	\brief adds an intersection point to the list of interface points
 
@@ -501,8 +501,8 @@ class Intersection
     const bool                                                    doSVD,
     const std::vector<int>&                                       keyVec
     ) ;
-  
-  
+
+
   /*!
   \brief adds an intersection point to the list of interface points
 
@@ -542,7 +542,7 @@ class Intersection
     LINALG::Matrix<3,1>&        				      upLimit,
     LINALG::Matrix<3,1>&        				      loLimit
     ) const;
-    
+
 
   /*!
   \brief  creates new limits for the recursive intersection computation
@@ -561,7 +561,7 @@ class Intersection
     vector< LINALG::Matrix<3,1> >&    lowerLimits
     ) const;
 
-        
+
   /*!
   \brief  finds th id of the an xfem surface common to all interafce points.
           Returns -1 , if no common surface exists or the surface id
@@ -576,8 +576,8 @@ class Intersection
     const LINALG::SerialDenseMatrix&    xyze_cutterElement,
     const vector<int>&                  positions
     );
-      
-  
+
+
   /*!
   \brief  finds th id of the an xfem surface common to all interafce points.
           Returns -1 , if no common surface exists or the surface id
@@ -591,11 +591,11 @@ class Intersection
     const DRT::Element*               cutterElement,
     const LINALG::SerialDenseMatrix&  xyze_cutterElement,
     const vector<int>&                positions
-    ); 
-  
-  
+    );
+
+
   /*!
-  \brief  prepares a part of the piecewise linear complex for 
+  \brief  prepares a part of the piecewise linear complex for
           a xfem and a cutter element
 
   \param cutterElement            (in)    : cutter element
@@ -609,7 +609,7 @@ class Intersection
     std::map< LINALG::Matrix<3,1>, InterfacePoint, ComparePoint>&   interfacePoints
     );
 
-        
+
   /*!
   \brief  computes the convex hull of a set of points
           points ordered according to the convex hull are stored in vertices
@@ -625,11 +625,11 @@ class Intersection
     const LINALG::SerialDenseMatrix&                                xyze_cutterElement,
     std::map< LINALG::Matrix<3,1>, InterfacePoint, ComparePoint>&   interfacePoints,
     vector< LINALG::Matrix<3,1> >&      								            vertices
-    );   
-        
-        
+    );
+
+
   /*!
-  \brief  stores a part of the piecewise linear complex for 
+  \brief  stores a part of the piecewise linear complex for
           a xfem and a cutter element
 
   \param cutterElement            (in)      : cutter element
@@ -637,7 +637,7 @@ class Intersection
   \param surfId                   (in)      : id of xfem element surface
   \param vertices                 (in)      : position of points
   \param midpoint                 (in)      : midpoint
-  
+
   */
   void storePLC(
     const DRT::Element*               cutterElement,
@@ -645,35 +645,35 @@ class Intersection
     const int                         surfId,
     vector<int>&                      positions,
     InterfacePoint&                   midpoint
-    ); 
-  
-  
+    );
+
+
   void storePLCInPlane(
       const DRT::Element*               cutterElement,
       const LINALG::SerialDenseMatrix&  xyze_cutterElement,
       const int                         surfId,
-      vector<int>&                      positions); 
-       
-  
+      vector<int>&                      positions);
+
+
   /*!
   \brief  completes the PLC
 
   */
   void completePLC(
       );
-        
-        
-  /*!
-  \brief  fix intersection for contact 
 
-  */     
+
+  /*!
+  \brief  fix intersection for contact
+
+  */
   void quickFixForIntersectingStructures(
     const DRT::Element*                             xfemElement,
     const std::map<int,int>&                        labelPerElementId,
     const std::map<int,LINALG::Matrix<3,1> >&       currentcutterpositions
     );
-    
-    
+
+
   /*!
   \brief finds the next segment of a convex hull in clockwise order
 
@@ -686,15 +686,15 @@ class Intersection
     LINALG::Matrix<3,1>&              searchPoint
     ) const;
 
-  
+
   /*!
   \brief checks if a CDT has to be computed for the current xfem element
 
   */
   bool checkIfCDT(
     );
-    
-    
+
+
   /*!
   \brief round point on xfem tetrahedron surface 1 for tetgen
 
@@ -703,8 +703,8 @@ class Intersection
     tetgenio&	in,
     const int 	scalefactor
 	  );
-  
-  
+
+
   /*!
   \brief  computes the Constrained Delaunay Tetrahedralization CDT
           of an intersected xfem element
@@ -716,7 +716,7 @@ class Intersection
   */
   void computeCDT(
     const DRT::Element*                     xfemElement,
-    const map<int,LINALG::Matrix<3,1> >&    currentcutterpositions,  
+    const map<int,LINALG::Matrix<3,1> >&    currentcutterpositions,
     map< int, DomainIntCells >&             domainintcells,
     map< int, BoundaryIntCells >&           boundaryintcells
     );
@@ -730,7 +730,7 @@ class Intersection
 
 
   /*!
-  \brief  stores all interface point of a curve-surface intersection 
+  \brief  stores all interface point of a curve-surface intersection
           in a point list for the
           Constrained Delaunay Tetrahedralization (CDT) with Tetgen
 
@@ -743,8 +743,8 @@ class Intersection
     vector<int>&                    								                positions,
     std::map< LINALG::Matrix<3,1>, InterfacePoint, ComparePoint>&  	interfacePoints
     );
-  
-  
+
+
   /*!
   \brief  stores an interface point in a point list for the
           Constrained Delaunay Tetrahedralization (CDT) with Tetgen
@@ -759,20 +759,20 @@ class Intersection
     vector<int>&                      								              positions
     );
 
-  
+
   /*!
   \brief  stores an interface point in a point list for the
           Constrained Delaunay Tetrahedralization (CDT) with Tetgen
 
   \param midPoint            (in)     :   coordinates of the point to be stored
   \param positions        (in/out)    :   positions
-  */ 
+  */
   void storeMidPoint(
     const InterfacePoint&             midPoint,
     vector<int>&                      positions
     );
-  
- 
+
+
   /*!
   \brief  stores a single point in a list of surface points if no
           segment lies in that surface
@@ -783,8 +783,8 @@ class Intersection
   void storeSurfacePoints(
     const std::map< LINALG::Matrix<3,1>, InterfacePoint, ComparePoint>&     interfacePoints
     );
-        
-  
+
+
   /*!
   \brief  stores a single point in a list of surface points if no
           segment lies in that surface
@@ -795,8 +795,8 @@ class Intersection
   void storeIsolatedPoints(
     const vector<int>&                positions
     );
-    
-  
+
+
   /*!
   \brief  computes the midpoint of a collection of points
 
@@ -806,10 +806,10 @@ class Intersection
   InterfacePoint computeMidpoint(
     const std::map< LINALG::Matrix<3,1>, InterfacePoint, ComparePoint>&     interfacePoints
     ) const;
-        
-  
+
+
   /*!
-  \brief  computes the midpoint of a collection of points determined by 
+  \brief  computes the midpoint of a collection of points determined by
           a pointlist position vector
 
   \param positions           (in)        : vector of positions
@@ -818,10 +818,10 @@ class Intersection
   GEO::InterfacePoint computeMidpoint(
       const vector<int>&  positions
       ) const;
-     
-  
+
+
   /*!
-  \brief  classifies the midpoint 
+  \brief  classifies the midpoint
 
   \param surfId                     (in)        : surface Id of common surface
   \param interfacePoints            (in)        : vector of interface points
@@ -831,8 +831,8 @@ class Intersection
       const int         surfId,
       InterfacePoint&   midpoint
       ) const;
-        
-        
+
+
   /*!
   \brief  stores a segment in a segment list for the
           Constrained Delaunay Tetrahedralization (CDT) with Tetgen
@@ -842,8 +842,8 @@ class Intersection
   void storeSegments(
     const vector<int>&              positions
     );
-        
-  
+
+
   /*!
   \brief  store all segments for cutter elements lying with more than two
           intersection points on an xfem surface
@@ -854,7 +854,7 @@ class Intersection
     const vector<int>&              positions
     );
 
-        
+
   /*!
   \brief  store all segments for cutter elements lying with more than two
           intersection points on an xfem surface
@@ -866,8 +866,8 @@ class Intersection
     const int pos1,
     const int pos2
     );
-        
-  
+
+
   /*!
   \brief checks if two segment points are lying on the same xfemline
 
@@ -876,8 +876,8 @@ class Intersection
   */
   bool checkIfSegmentPointsOnSameXfemLine(const int position1,
     const int position2);
-        
-        
+
+
   /*!
   \brief remove equal interface points
   \param positions           (in)        :   point positions
@@ -885,7 +885,7 @@ class Intersection
   void removeDegenerateInterfacePoints(
     vector<int>&              positions
     );
-  
+
   /*!
   \brief  stores a triangle facet in a triangle list for the
           Constrained Delaunay Tetrahedralization (CDT) with Tetgen
@@ -895,8 +895,8 @@ class Intersection
   void storeTriangles(
     const vector<int>               positions
     );
-        
-  
+
+
   /*!
   \brief  stores a plane facet in a triangle list for the
           Constrained Delaunay Tetrahedralization (CDT) with Tetgen
@@ -906,8 +906,8 @@ class Intersection
   void storePlaneFacets(
       const vector<int>               positions
       ) ;
-  
-  
+
+
   /*!
   \brief  stores a plane facet in a triangle list for the
           Constrained Delaunay Tetrahedralization (CDT) with Tetgen
@@ -917,7 +917,7 @@ class Intersection
   void storePlaneFacetsInTriangles(
       const vector<int>               positions
       );
-        
+
   /*!
   \brief  stores a triangle facet in a triangle list for the
           Constrained Delaunay Tetrahedralization (CDT) with Tetgen
@@ -927,8 +927,8 @@ class Intersection
   void storeSurfaceTriangles(
     const vector<int>               positions
     );
-  
-  
+
+
   /*!
   \brief  stores a plane facet in a triangle list for the
           Constrained Delaunay Tetrahedralization (CDT) with Tetgen
@@ -938,8 +938,8 @@ class Intersection
   void storeSurfacePlaneFacets(
       const vector<int>               positions
       );
-  
-  
+
+
   /*!
   \brief  stores a plane facet in a triangle list for the
           Constrained Delaunay Tetrahedralization (CDT) with Tetgen
@@ -950,7 +950,7 @@ class Intersection
       const vector<int>               positions
       );
 
-  
+
   /*!
   \brief  computes the recovery of the curved interface
           for one xfem element after a Contrained Delaunay
@@ -963,13 +963,13 @@ class Intersection
   */
   void recoverCurvedInterface(
     const DRT::Element*                         xfemElement,
-    const map<int,LINALG::Matrix<3,1> >&        currentcutterpositions,  
+    const map<int,LINALG::Matrix<3,1> >&        currentcutterpositions,
     map< int, BoundaryIntCells >&               boundaryintcells,
     tetgenio&                                   out,
     bool 							                          recovery
     );
 
-  
+
  	/*!
   \brief  stores linear boundary cells
 
@@ -984,7 +984,7 @@ class Intersection
   	tetgenio&                                  out
     );
 
-  
+
   /*!
   \brief  stores linear boundary cells
 
@@ -1007,7 +1007,7 @@ class Intersection
   \param out                      (out)   :   output data structure of TetGen
   */
   void liftAllSteinerPoints(
-    const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions,  
+    const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions,
     tetgenio&                             out
     );
 
@@ -1047,7 +1047,7 @@ class Intersection
     int&                                  cutterIndex,
     const vector< vector<int> >&          adjacentFacesList,
     const vector< vector<int> >&          adjacentFacemarkerList,
-    const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions,  
+    const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions,
     LINALG::Matrix<3,1>&                  edgePoint,
     LINALG::Matrix<3,1>&                  oppositePoint,
     const tetgenio&                       out
@@ -1067,7 +1067,7 @@ class Intersection
     const int                             steinerIndex,
     const vector<vector<int> >&           adjacentFacesList,
     const vector<vector<int> >&           adjacentFacemarkerList,
-    const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions,  
+    const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions,
     tetgenio&                             out
     );
 
@@ -1087,12 +1087,12 @@ class Intersection
   */
   void liftSteinerPointOnEdge(
     const int                             steinerIndex,
-    int                                   lineIndex, 
+    int                                   lineIndex,
     const int                             cutterIndex,
     LINALG::Matrix<3,1>&                  edgePoint,
     LINALG::Matrix<3,1>&                  oppositePoint,
     const vector<vector<int> >&           adjacentFacesList,
-    const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions,  
+    const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions,
     tetgenio&                             out
     );
 
@@ -1110,7 +1110,7 @@ class Intersection
     const int                             steinerIndex,
     const vector<vector<int> >&           adjacentFacesList,
     const vector<vector<int> >&           adjacentFacemarkerList,
-    const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions,  
+    const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions,
     tetgenio&                             out
     );
 
@@ -1165,14 +1165,14 @@ class Intersection
    \param out                      (in)    :   output data structure of TetGen
    */
   void computeHigherOrderPoint(
-    const int                             index1, 
+    const int                             index1,
     const int                             index2,
-    const int                             faceIndex, 
+    const int                             faceIndex,
     const int                             faceMarker,
-    const int                             globalHigherOrderIndex, 
+    const int                             globalHigherOrderIndex,
     const vector<int>&                    tetraCornerIndices,
     const vector<LINALG::Matrix<3,1> >&   tetraCornerNodes,
-    const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions, 
+    const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions,
     tetgenio&                             out
     );
 
@@ -1248,7 +1248,7 @@ class Intersection
   /*!
   \brief  computes the normal to the interface edge of a triangular
           faces on the xfem boundary passing through the Steiner point of that edge.
-  
+
   \param steinerIndex             (in)    : index of Steiner point
   \param edgeIndex                (in)    : index of the other edge point
   \param oppositeIndex            (in)    : index of the point on the boundary triangle opposite the edge
@@ -1333,7 +1333,7 @@ class Intersection
   \return true if common line element was found, false otherwise
   */
   bool findCommonCutterLine(
-    const map<int,LINALG::Matrix<3,1> >&            currentcutterpositions,  
+    const map<int,LINALG::Matrix<3,1> >&            currentcutterpositions,
     const int                                       faceIndex1,
     const int                                       faceIndex2,
     int&                                            lineIndex,
@@ -1372,7 +1372,7 @@ class Intersection
   */
   int findIntersectingSurfaceEdge(
     DRT::Element*                         cutterElement,
-    const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions,  
+    const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions,
     const LINALG::Matrix<3,1>&            edgeNode1,
     const LINALG::Matrix<3,1>&            edgeNode2
     ) const;
@@ -1397,7 +1397,7 @@ class Intersection
     const int                                   lineIndex,
     LINALG::Matrix<3,1>&                        xsi,
     DRT::Element*                               cutterElement,
-    const map<int,LINALG::Matrix<3,1> >&        currentcutterpositions,  
+    const map<int,LINALG::Matrix<3,1> >&        currentcutterpositions,
     tetgenio&                                   out
     ) const;
 
@@ -1434,14 +1434,14 @@ class Intersection
   	const int                            cornerIndex,
   	const int                            globalHigherOrderIndex,
   	const int                            faceMarker,
-  	const map<int,LINALG::Matrix<3,1> >& currentcutterpositions,  
-    LINALG::SerialDenseMatrix&           eleDomainCoord, 
-    LINALG::SerialDenseMatrix&           eleBoundaryCoord, 
+  	const map<int,LINALG::Matrix<3,1> >& currentcutterpositions,
+    LINALG::SerialDenseMatrix&           eleDomainCoord,
+    LINALG::SerialDenseMatrix&           eleBoundaryCoord,
     LINALG::SerialDenseMatrix&           physDomainCoord,
   	const tetgenio&                	     out
     ) const;
 
-        
+
   /*!
   \brief  stores boundary integration cells
 
@@ -1461,13 +1461,13 @@ class Intersection
     const int                             index2,
     const int                             cutterPos,
     const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions,
-    LINALG::SerialDenseMatrix&            eleDomainCoord, 
-    LINALG::SerialDenseMatrix&            eleBoundaryCoord, 
+    LINALG::SerialDenseMatrix&            eleDomainCoord,
+    LINALG::SerialDenseMatrix&            eleBoundaryCoord,
     LINALG::SerialDenseMatrix&            physDomainCoord
     ) const;
 
 
-        
+
   /*!
   \brief Debugging the intersection of XAABB's (DEBUG ONLY)
 
@@ -1601,7 +1601,7 @@ class Intersection
   	tetgenio&					 out
   	) const;
 
-   
+
   /*!
   \brief  debug xfem condition (DEBUG ONLY)
 
@@ -1611,7 +1611,7 @@ class Intersection
     const RCP<DRT::Discretization>  cutterdis
    	) const;
 
-   
+
   /*!
   \brief  writes a gmsh file with xfem element and intersection candidates (DEBUG ONLY)
 
@@ -1624,8 +1624,8 @@ class Intersection
     const Teuchos::RCP<DRT::Discretization>     cutterdis
     ) const;
 
-  
-  
+
+
   /*!
   \brief  writes gmsh file with xfem element and the currently
           intersecting cutter element (DEBUG ONLY)
@@ -1639,8 +1639,8 @@ class Intersection
     const DRT::Element*                         cutterElement,
     const std::map<int,LINALG::Matrix<3,1> >&   currentcutterpositions
      ) const;
-       
-  
+
+
   /*!
   \brief  debugs XAABBs (DEBUG ONLY)
 
@@ -1653,8 +1653,8 @@ class Intersection
     const LINALG::SerialDenseMatrix&    cutterXAABB,
     const LINALG::SerialDenseMatrix&    xfemXAABB
      ) const;
-  
-  
+
+
   /*!
   \brief  debug tet volumes (DEBUG ONLY)
 
@@ -1663,7 +1663,7 @@ class Intersection
   */
   #ifdef QHULL
   void debugTetVolumes(
-      const DRT::Element*       xfemElement, 
+      const DRT::Element*       xfemElement,
       tetgenio&                 out
       );
   #endif

@@ -3,7 +3,7 @@
 
 \brief collection of service methods for intersection computations
 
-      
+
 <pre>
 Maintainer: Ursula Mayer
             mayer@lnm.mw.tum.de
@@ -22,17 +22,17 @@ Maintainer: Ursula Mayer
 /*----------------------------------------------------------------------*
  |  ML:     computes the cross product                       u.may 08/07|
  |          of 2 vectors c = a x b                                      |
- *----------------------------------------------------------------------*/  
+ *----------------------------------------------------------------------*/
 LINALG::Matrix<3,1> GEO::computeCrossProduct(
     const LINALG::Matrix<3,1>& a,
     const LINALG::Matrix<3,1>& b)
 {
     LINALG::Matrix<3,1> c;
-   
+
     c(0) = a(1)*b(2) - a(2)*b(1);
     c(1) = a(2)*b(0) - a(0)*b(2);
     c(2) = a(0)*b(1) - a(1)*b(0);
-    
+
     return c;
 }
 
@@ -51,26 +51,26 @@ void GEO::checkGeoType(
   const int dimCoord = 3;
   const DRT::Element::DiscretizationType distype = element->Shape();
   const int eleDim = DRT::UTILS::getDimension(distype);
-  
+
   if(DRT::UTILS::getOrder(distype) ==1)
     eleGeoType = LINEAR;
   else if(DRT::UTILS::getOrder(distype)==2)
     eleGeoType = HIGHERORDER;
   else
     dserror("order of element shapefuntion is not correct");
-  
+
   // check if cartesian
   if(eleDim == 3)
   {
     const vector< vector<int> > eleNodeNumbering = DRT::UTILS::getEleNodeNumberingSurfaces(distype);
     vector< RCP<DRT::Element> >surfaces = (const_cast< DRT::Element* >(element))->Surfaces();
     for(int i = 0; i < element->NumSurface(); i++)
-    {      
+    {
       CartesianCount = 0;
       const DRT::Element* surfaceP = surfaces[i].get();
-  
+
       for(int k = 0; k < dimCoord; k++)
-      { 
+      {
         int nodeId = eleNodeNumbering[i][0];
         const double nodalcoord =  xyze_element(k,nodeId);
         for(int j = 1; j < surfaceP->NumNode(); j++)
@@ -80,10 +80,10 @@ void GEO::checkGeoType(
           {
             CartesianCount++;
             break;
-          } 
+          }
         }
       }
-      if(CartesianCount > 2)  
+      if(CartesianCount > 2)
       {
         cartesian = false;
         break;
@@ -94,7 +94,7 @@ void GEO::checkGeoType(
   {
     CartesianCount = 0;
     for(int k = 0; k < dimCoord; k++)
-    { 
+    {
       const double nodalcoord =  xyze_element(k,0);
       for(int j = 1; j < element->NumNode(); j++)
       {
@@ -102,17 +102,17 @@ void GEO::checkGeoType(
         {
           CartesianCount++;
           break;
-        } 
+        }
       }
     }
-    if(CartesianCount > 2)  
+    if(CartesianCount > 2)
       cartesian = false;
   }
   else
     dserror("dimension of element is not correct");
 
-  
-  
+
+
   if(cartesian)
     eleGeoType = CARTESIAN;
 }
@@ -129,7 +129,7 @@ const std::map<int,LINALG::Matrix<3,2> > GEO::getCurrentXAABBs(
 {
   std::map<int,LINALG::Matrix<3,2> >  currentXAABBs;
   // loop over elements and merge XAABB with their eXtendedAxisAlignedBoundingBox
-  for (int j=0; j< dis.NumMyColElements(); ++j) 
+  for (int j=0; j< dis.NumMyColElements(); ++j)
   {
     const DRT::Element* element = dis.lColElement(j);
     const LINALG::SerialDenseMatrix xyze_element(GEO::getCurrentNodalPositions(element,currentpositions));
@@ -153,7 +153,7 @@ const std::map<int,LINALG::Matrix<3,2> > GEO::getTriangleXAABBs(
 {
   std::map<int,LINALG::Matrix<3,2> >  triangleXAABBs;
   // loop over elements and merge XAABB with their eXtendedAxisAlignedBoundingBox
-  for (int i = 0; i < (int) triangleList.size(); ++i) 
+  for (int i = 0; i < (int) triangleList.size(); ++i)
   {
     LINALG::SerialDenseMatrix xyze_triElement(3,3);
     for(int j = 0; j < 3; j++)
@@ -174,7 +174,7 @@ const std::map<int,LINALG::Matrix<3,2> > GEO::getTriangleXAABBs(
  |  ICS:    computes 18Dops                                  u.may 12/08|
  |          (only the slabs which are not present in an XAABB)          |
  *----------------------------------------------------------------------*/
-LINALG::Matrix<6,2> GEO::computeContact18Dop( 
+LINALG::Matrix<6,2> GEO::computeContact18Dop(
     const DRT::Element*                 element,
     const LINALG::SerialDenseMatrix&    xyze)
 {
@@ -183,7 +183,7 @@ LINALG::Matrix<6,2> GEO::computeContact18Dop(
 
   for (int j=0; j<6; j++)
     slabs(j,0) = slabs(j,1) = (GEO::Dop18Normals[j][0]*xyze(0,0)+GEO::Dop18Normals[j][1]*xyze(1,0)+GEO::Dop18Normals[j][2]*xyze(2,0))/sqrt(2.0);
-  
+
   // remaining element nodes
   for (int k=1; k<element->NumNode();k++)
     for(int j=0; j<6;j++)
@@ -194,8 +194,8 @@ LINALG::Matrix<6,2> GEO::computeContact18Dop(
         slabs(j,1)=dcurrent;
       if (dcurrent < slabs(j,0))
         slabs(j,0)=dcurrent;
-    }  
-  
+    }
+
   //CONTACT::CElement* selement = static_cast<CONTACT::CElement*>(element);
   //double area = selement->Area();
   double area = 0.01;
@@ -205,7 +205,7 @@ LINALG::Matrix<6,2> GEO::computeContact18Dop(
     slabs(j,0) -= 0.1*area;
     slabs(j,1) += 0.1*area;
   }
-  
+
   // if higher order include proper extension
   return slabs;
 }
@@ -215,27 +215,27 @@ LINALG::Matrix<6,2> GEO::computeContact18Dop(
 /*----------------------------------------------------------------------*
  |  ICS:    checks if two 18DOPs intersect                   u.may 12/08|                                  |
  *----------------------------------------------------------------------*/
-bool GEO::intersectionOfKDOPs(  
+bool GEO::intersectionOfKDOPs(
     const LINALG::Matrix<9,2>&    cutterDOP,
     const LINALG::Matrix<9,2>&    xfemDOP)
 {
   // check intersection of 18 kdops
   for(int i = 0; i < 9; i++)
-    if(! (  ((cutterDOP(i,0)  > (xfemDOP(i,0)   -GEO::TOL7))  && ( cutterDOP(i,0) < (xfemDOP(i,1)   +GEO::TOL7)) )  || 
-            ((cutterDOP(i,1)  > (xfemDOP(i,0)   -GEO::TOL7))  && ( cutterDOP(i,1) < (xfemDOP(i,1)   +GEO::TOL7)) )  || 
-            ((xfemDOP(i,0)    > (cutterDOP(i,0) -GEO::TOL7))  && ( xfemDOP(i,0)   < (cutterDOP(i,1) +GEO::TOL7)) )  || 
+    if(! (  ((cutterDOP(i,0)  > (xfemDOP(i,0)   -GEO::TOL7))  && ( cutterDOP(i,0) < (xfemDOP(i,1)   +GEO::TOL7)) )  ||
+            ((cutterDOP(i,1)  > (xfemDOP(i,0)   -GEO::TOL7))  && ( cutterDOP(i,1) < (xfemDOP(i,1)   +GEO::TOL7)) )  ||
+            ((xfemDOP(i,0)    > (cutterDOP(i,0) -GEO::TOL7))  && ( xfemDOP(i,0)   < (cutterDOP(i,1) +GEO::TOL7)) )  ||
             ((xfemDOP(i,1)    > (cutterDOP(i,0) -GEO::TOL7))  && ( xfemDOP(i,1)   < (cutterDOP(i,1) +GEO::TOL7)) )  ))
       return false;
-      
+
   return true;
 }
 
 
 
 /*----------------------------------------------------------------------*
- |  CLI:    checks if a position is within a given element   u.may 06/07|   
+ |  CLI:    checks if a position is within a given element   u.may 06/07|
  *----------------------------------------------------------------------*/
-bool GEO::checkPositionWithinElement(  
+bool GEO::checkPositionWithinElement(
     const DRT::Element*                 element,
     const LINALG::SerialDenseMatrix&    xyze,
     const LINALG::Matrix<3,1>&          x)
@@ -244,7 +244,7 @@ bool GEO::checkPositionWithinElement(
     LINALG::Matrix<3,1> xsi(true);
     bool nodeWithinElement = currentToVolumeElementCoordinates(element->Shape(), xyze, x, xsi);
     //printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi(0),xsi(1),xsi(2), residual, TOL14);
-    
+
     nodeWithinElement = checkPositionWithinElementParameterSpace(xsi,element->Shape());
 
     return nodeWithinElement;
@@ -264,23 +264,23 @@ bool GEO::searchForNearestPointOnSurface(
     LINALG::Matrix<3,1>&                    normal,
     double&                                 distance)
 {
-  
+
   CurrentToSurfaceElementCoordinates(surfaceElement->Shape(), xyze_surfaceElement, physCoord, eleCoord);
-  
+
   const bool pointWithinElement = checkPositionWithinElementParameterSpace(eleCoord, surfaceElement->Shape());
-  
+
   // normal vector at position xsi
   static LINALG::Matrix<3,1> eleNormalAtXsi;
   computeNormalToSurfaceElement(surfaceElement->Shape(), xyze_surfaceElement, eleCoord, eleNormalAtXsi);
-  
+
   LINALG::Matrix<3,1> x_surface_phys;
   elementToCurrentCoordinates(surfaceElement->Shape(), xyze_surfaceElement, eleCoord, x_surface_phys);
   // normal pointing away from the surface towards physCoord
   normal.Update(1.0, physCoord, -1.0, x_surface_phys);
   // absolute distance between point and surface
   distance = normal.Norm2();
- 
-  
+
+
   if(fabs(distance) > GEO::TOL7)
   {
     // compute distance with sign
@@ -292,7 +292,7 @@ bool GEO::searchForNearestPointOnSurface(
   }
   else
     distance = 0.0;
-  
+
   return pointWithinElement;
 }
 

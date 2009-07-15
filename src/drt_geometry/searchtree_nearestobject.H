@@ -7,11 +7,11 @@
 -------------------------------------------------------------------------
                  BACI finite element library subsystem
             Copyright (2008) Technical University of Munich
-              
+
 Under terms of contract T004.008.000 there is a non-exclusive license for use
 of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
 
-This library is proprietary software. It must not be published, distributed, 
+This library is proprietary software. It must not be published, distributed,
 copied or altered in any form or any media without written permission
 of the copyright holder. It may be used under terms and conditions and of the
 above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
@@ -23,11 +23,11 @@ This library contains and makes use of software copyrighted by Sandia Corporatio
 and distributed under LGPL licence. Licensing does not apply to this or any
 other third party software used here.
 
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de) 
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
                    or
                    Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
 
-http://www.lnm.mw.tum.de                   
+http://www.lnm.mw.tum.de
 
 -------------------------------------------------------------------------
 </pre>
@@ -61,7 +61,7 @@ enum ObjectType {
 
 
 /*!
-\brief  NearestObject stores and delivers all data , which is important 
+\brief  NearestObject stores and delivers all data , which is important
         during a nearest object in tree node search
 */
 class NearestObject
@@ -72,26 +72,26 @@ class NearestObject
     \brief constructor
     */
     NearestObject();
-           
+
     /*!
     \brief copy constructor
     */
     NearestObject(
         const GEO::NearestObject& old
         );
-    
+
     /*!
     \brief assignment operator
     */
     GEO::NearestObject& operator=(const GEO::NearestObject& old);
 
-    
+
     /*!
     \brief clear nearest object
     */
     void clear();
-    
-    
+
+
     /*!
     \brief Set node object type
     \param nodeId       (in)        : node gid
@@ -99,13 +99,13 @@ class NearestObject
     \param physcoord    (in)        : physical coordinates of point on object
     */
     void setNodeObjectType(
-          const int nodeId, 
+          const int nodeId,
           const int label,
           const LINALG::Matrix<3,1>& physcoord
           );
-   
+
     /*!
-    \brief Set line object type 
+    \brief Set line object type
     \param lineId       (in)        : line gid
     \param surfId       (in)        : surf gid
     \param label        (in)        : label
@@ -113,57 +113,57 @@ class NearestObject
     */
     void setLineObjectType(
           const int lineId,
-          const int surfId, 
+          const int surfId,
           const int label,
           const LINALG::Matrix<3,1>& physcoord
           );
-    
+
     /*!
-    \brief Set surface object type 
+    \brief Set surface object type
     \param surfId       (in)        : surf gid
     \param label        (in)        : label
     \param physcoord    (in)        : physical coordinates of point on object
     */
     void setSurfaceObjectType(
-          const int surfId, 
+          const int surfId,
           const int label,
           const LINALG::Matrix<3,1>& physcoord
-          );  
-    
+          );
+
     /*!
-    \brief Return object type 
+    \brief Return object type
      */
     inline ObjectType getObjectType() const { return objectType_;}
-           
+
     /*!
     \brief Return node Id of object
      */
-    inline int getNodeId() const { 
+    inline int getNodeId() const {
       if(objectType_ != NODE_OBJECT || nodeId_ == -1)
         dserror("objecttype is not correct (nodeId) or nodeId not set");
-      return nodeId_;}   
-    
+      return nodeId_;}
+
     /*!
     \brief Return line Id of object
      */
-    inline int getLineId() const { 
+    inline int getLineId() const {
       if(objectType_ != LINE_OBJECT || lineId_ == -1)
         dserror("objecttype is not correct (lineId) or line id not set");
       return lineId_;}
-       
+
     /*!
     \brief Return surface Id of object
      */
-    inline int getSurfaceId() const { 
+    inline int getSurfaceId() const {
       if( (objectType_ != LINE_OBJECT && objectType_ != SURFACE_OBJECT) || ( lineId_ == -1 && surfId_ == -1)  )
         dserror("objecttype is not correct (surfId) or ids are not set");
       return surfId_;}
-       
+
     /*!
     \brief Return label
      */
     inline int getLabel() const { return label_;}
-    
+
     /*!
     \brief Return vector of physical coordinates
      */
@@ -171,26 +171,26 @@ class NearestObject
       if(objectType_ == NOTYPE_OBJECT)
         dserror("no object type and physical coordinates are set");
       return physcoord_;}
-    
-    
+
+
 
   private:
-  
-    //! ObjectType NOTYPE SURFACE LINE NODE 
+
+    //! ObjectType NOTYPE SURFACE LINE NODE
     ObjectType                        objectType_;
-  
+
     //! id of node
     int                               nodeId_;
-  
-    //! id of line 
+
+    //! id of line
     int                               lineId_;
-    
+
     //! id of surface
     int                               surfId_;
-    
+
     //! label of object
     int                               label_;
-    
+
     //! physical coordinates of point on nearest object
     LINALG::Matrix<3,1>               physcoord_;
 
@@ -199,6 +199,6 @@ class NearestObject
 }
 
 #endif /*OCTTREE_NEARESTOBJECT_H_*/
-#endif /*CCADISCRET*/ 
+#endif /*CCADISCRET*/
 
 

@@ -1,8 +1,8 @@
 /*!
 \file intersection_interfacepoint.H
 
-\brief      InterfacePoint stores and delivers all data a point lying on the 
-            intersection interface has to know 
+\brief      InterfacePoint stores and delivers all data a point lying on the
+            intersection interface has to know
 <pre>
 Maintainer: Ursula Mayer
             mayer@lnm.mw.tum.de
@@ -33,8 +33,8 @@ enum pointType {NOTYPE, INTERNAL, SURFACE, LINE, NODE};
 
 
 /*!
-\brief      InterfacePoint stores and delivers all data a point lying on the 
-            intersection interface has to know 
+\brief      InterfacePoint stores and delivers all data a point lying on the
+            intersection interface has to know
 */
 class InterfacePoint
 {
@@ -45,8 +45,8 @@ class InterfacePoint
     \brief constructor
     */
     InterfacePoint();
-     
-    
+
+
     /*!
     \brief constructor
     \param pType                (in)        : point type
@@ -62,8 +62,8 @@ class InterfacePoint
       std::vector<int>&       surfId,
       LINALG::Matrix<3,1>&    coordinates
       );
-    
-    
+
+
     /*!
     \brief copy constructor
     */
@@ -71,15 +71,15 @@ class InterfacePoint
         const GEO::InterfacePoint& old
         );
 
-    
+
     //! destructor
     ~InterfacePoint();
-    
-    
+
+
     //! assignemnent operator
     InterfacePoint& operator=(const InterfacePoint& point);
-    
-    
+
+
     /*!
     \brief  set number of xfem nodes lines and surfaces the interface point is lying
 
@@ -88,8 +88,8 @@ class InterfacePoint
     void setNodeLineSurfNumbers(
       const GEO::pointType pType
       );
-    
-    
+
+
     /*!
     \brief  set xfem node Ids the interface points is lying on
 
@@ -98,7 +98,7 @@ class InterfacePoint
     void setPointType(
       const GEO::pointType   pType
       );
-      
+
     /*!
     \brief  set xfem node Ids the interface points is lying on
 
@@ -106,8 +106,8 @@ class InterfacePoint
     */
     void setNodeId(
       const int    nodeId
-      ); 
-       
+      );
+
     /*!
     \brief  set xfem line Ids the interface points is lying on
 
@@ -115,8 +115,8 @@ class InterfacePoint
     */
     void setLineId(
       const std::vector<int>&    lineId
-      );  
-      
+      );
+
     /*!
     \brief  set xfem surface Ids the interface points is lying on
 
@@ -124,8 +124,8 @@ class InterfacePoint
     */
     void setSurfaceId(
       const std::vector<int>&    surfId
-      );  
-      
+      );
+
     /*!
     \brief  set coordinates of the interface point
 
@@ -172,77 +172,77 @@ class InterfacePoint
       const int       index,
       const double    coord
       );
-      
+
     /*!
       \brief Return number of xfem nodes the interface point is lying on
     */
     inline int getNumNode() const { return nnode_;}
-    
+
     /*!
       \brief Return number of xfem lines the interface point is lying on
     */
     inline int getNumLine() const { return nline_;}
-    
+
     /*!
       \brief Return number of xfem surface the interface point is lying on
     */
     inline int getNumSurface() const { return nsurf_;}
-    
+
     /*!
     \brief Return Id of xfem nodes the interface point is lying on
     */
     inline int getNodeId() const { return nodeId_;}
-    
+
     /*!
     \brief Return Ids of xfem lines the interface point is lying on
      */
     inline std::vector<int> getLineId() const { return lineId_;}
-    
+
     /*!
     \brief Return Ids of xfem surface the interface point is lying on
      */
     inline std::vector<int> getSurfId() const { return surfId_;}
-    
+
     /*!
       \brief Return coordinates the interface points
      */
     inline LINALG::Matrix<3,1> getCoord() const { return coord_;}
-    
+
     /*!
     \brief Return point type the interface point ( NOTYPE INTERNAL SURFACE LINE NODE  )
      */
     inline GEO::pointType getPointType() const { return pType_;}
-    
-    
+
+
 
 
   private:
-  
-    //! pointType NOTYPE INTERNAL SURFACE LINE NODE 
+
+    //! pointType NOTYPE INTERNAL SURFACE LINE NODE
     GEO::pointType       pType_;
-        
+
     //! number of xfem nodes the point is lying on
     int                   nnode_;
-    
+
     //! number of xfem lines the point is lying on
     int                   nline_;
-    
+
     //! number of xfem surfaces the point is lying on
     int                   nsurf_;
-  
+
     //! ids of xfem nodes the point is lying on
     int                   nodeId_;
-  
+
     //! ids of xfem lines the point is lying on
     std::vector<int>      lineId_;
-    
+
     //! ids of xfem surfaces the point is lying on
     std::vector<int>      surfId_;
-    
+
     //! coordinates of interface points
     LINALG::Matrix<3,1>   coord_;
-    
-    
+
+
 };
 
 

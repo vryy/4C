@@ -32,18 +32,18 @@ GEO::IntCell::IntCell(
             distype_(distype)
 {}
 
-        
+
 
 /*----------------------------------------------------------------------*
  * copy constructor                                                     *
  *----------------------------------------------------------------------*/
 GEO::IntCell::IntCell(
-        const IntCell& old) : 
+        const IntCell& old) :
             distype_(old.distype_)
 {}
-        
-         
-        
+
+
+
 /*----------------------------------------------------------------------*
  * assignment operator                                                  *
  *----------------------------------------------------------------------*/
@@ -52,16 +52,16 @@ GEO::IntCell& GEO::IntCell::operator=(const IntCell& intcell)
   distype_ = intcell.distype_;
   return *this;
 }
- 
-        
- 
+
+
+
 /*----------------------------------------------------------------------*
  * destructor                                                           *
  *----------------------------------------------------------------------*/
 GEO::IntCell::~IntCell()
 {}
 
- 
+
 
 /*----------------------------------------------------------------------*
  * to string                                                            *
@@ -80,7 +80,7 @@ std::string GEO::IntCell::toString() const
  *----------------------------------------------------------------------*/
 GEO::DomainIntCell::DomainIntCell(
         const DRT::Element::DiscretizationType&     distype,
-        const LINALG::SerialDenseMatrix&            xfemEleDomainCoordinates,    
+        const LINALG::SerialDenseMatrix&            xfemEleDomainCoordinates,
         const LINALG::SerialDenseMatrix&            physDomainCoordinates) :
             IntCell(distype),
             nodalpos_xi_domain_(xfemEleDomainCoordinates),
@@ -96,7 +96,7 @@ GEO::DomainIntCell::DomainIntCell(
  *----------------------------------------------------------------------*/
 GEO::DomainIntCell::DomainIntCell(
         const DRT::Element::DiscretizationType&     distype,
-        const LINALG::SerialDenseMatrix&            xfemEleDomainCoordinates,    
+        const LINALG::SerialDenseMatrix&            xfemEleDomainCoordinates,
         const LINALG::SerialDenseMatrix&            physDomainCoordinates,
         const bool                                  indomainplus) :
             IntCell(distype),
@@ -107,8 +107,8 @@ GEO::DomainIntCell::DomainIntCell(
             indomainplus_(indomainplus)
 {}
 //URSULA
-   
-        
+
+
 /*----------------------------------------------------------------------*
  * Constructor                                                          *
  * Domain integration cell == xfem element if not intersected           *
@@ -123,9 +123,9 @@ GEO::DomainIntCell::DomainIntCell(
             label_(-1),
             indomainplus_(false)
 {}
-    
-        
-        
+
+
+
 /*----------------------------------------------------------------------*
  * Copy Constructor Domain integration cell                             *
  *----------------------------------------------------------------------*/
@@ -140,7 +140,7 @@ GEO::DomainIntCell::DomainIntCell(
 {}
 
 
-    
+
 /*----------------------------------------------------------------------*
  * assignment operator                                                  *
  *----------------------------------------------------------------------*/
@@ -154,9 +154,9 @@ GEO::DomainIntCell& GEO::DomainIntCell::operator=(
   label_ = domainintcell.label_;
   return *this;
 }
-      
-      
-      
+
+
+
 /*----------------------------------------------------------------------*
  * destructor                                                           *
  *----------------------------------------------------------------------*/
@@ -192,9 +192,9 @@ std::string GEO::DomainIntCell::toString() const
   s << " position in xyz coordinates: " << endl;
   for (int inode = 0; inode < 4; ++inode)
     s << "   " << PosToString(nodalpos_xyz_domain_(0,inode),nodalpos_xyz_domain_(1,inode),nodalpos_xyz_domain_(2,inode)) << endl;
-  
+
   s << endl << " Center : " << PosToString(phys_center_(0),phys_center_(1),phys_center_(2)) << endl;
-  
+
 //  s << phys_center_ << endl;
   return s.str();
 }
@@ -207,7 +207,7 @@ std::string GEO::DomainIntCell::toString() const
 void GEO::DomainIntCell::toGmsh(const std::string& filename) const
 {
   const LINALG::SerialDenseMatrix& cellpos = this->CellNodalPosXiDomain();
-  
+
   std::ofstream f_system(filename.c_str());
   f_system << "View \" " << "Bad Cell \" {\n";
   f_system << IO::GMSH::cellWithScalarToString(this->Shape(), 0.0, cellpos) << "\n";
@@ -231,7 +231,7 @@ LINALG::Matrix<3,1> GEO::DomainIntCell::ComputePhysicalCenterPosition(
   static LINALG::Matrix<3,1> pyhsicalcenterpos;
   GEO::elementToCurrentCoordinates(distype, xyze, localcenterpos, pyhsicalcenterpos);
   return pyhsicalcenterpos;
-} 
+}
 
 
 /*----------------------------------------------------------------------*
@@ -257,7 +257,7 @@ double GEO::DomainIntCell::VolumeInXiDomain(
     cout << this->toString() << endl;
     this->toGmsh("cell_with_negative_volume.pos");
     dserror("GLOBAL ELEMENT NO.%i\n NEGATIVE VOLUME OF INTEGRATION CELL: %20.16f", ele.Id(), volume_cell);
-  }    
+  }
   const double normed_cell_volume = volume_cell/DRT::UTILS::getSizeInLocalCoordinates(ele.Shape());
   return normed_cell_volume;
 }
@@ -271,8 +271,8 @@ double GEO::DomainIntCell::VolumeInXiDomain(
 GEO::BoundaryIntCell::BoundaryIntCell(
         const DRT::Element::DiscretizationType&   distype,
         const int                                 surface_ele_gid,
-        const LINALG::SerialDenseMatrix&          xfemEleDomainCoordinates,  
-        const LINALG::SerialDenseMatrix&          eleBoundaryCoordinates, 
+        const LINALG::SerialDenseMatrix&          xfemEleDomainCoordinates,
+        const LINALG::SerialDenseMatrix&          eleBoundaryCoordinates,
         const LINALG::SerialDenseMatrix&          physDomainCoordinates) :
             IntCell(distype),
             surface_ele_gid_(surface_ele_gid),
@@ -280,9 +280,9 @@ GEO::BoundaryIntCell::BoundaryIntCell(
             nodalpos_xi_boundary_(  eleBoundaryCoordinates),
             nodalpos_xyz_domain_(   physDomainCoordinates)
 {}
- 
-        
-        
+
+
+
 /*----------------------------------------------------------------------*
  * copy constructor Boundary integration cells                          *
  *----------------------------------------------------------------------*/
@@ -294,9 +294,9 @@ GEO::BoundaryIntCell::BoundaryIntCell(
             nodalpos_xi_boundary_(  old.nodalpos_xi_boundary_),
             nodalpos_xyz_domain_(   old.nodalpos_xyz_domain_)
 {}
- 
- 
-        
+
+
+
 /*----------------------------------------------------------------------*
  * destructor                                                           *
  *----------------------------------------------------------------------*/
@@ -310,7 +310,7 @@ GEO::BoundaryIntCell::~BoundaryIntCell()
  * assignment operator                                                  *
  *----------------------------------------------------------------------*/
 GEO::BoundaryIntCell& GEO::BoundaryIntCell::operator=(const GEO::BoundaryIntCell& boundaryintcell)
-{ 
+{
   this->GEO::IntCell::operator = (boundaryintcell);
   surface_ele_gid_ = boundaryintcell.surface_ele_gid_;
   nodalpos_xi_domain_ = boundaryintcell.nodalpos_xi_domain_;
@@ -318,12 +318,12 @@ GEO::BoundaryIntCell& GEO::BoundaryIntCell::operator=(const GEO::BoundaryIntCell
   nodalpos_xyz_domain_ = boundaryintcell.nodalpos_xyz_domain_;
   return *this;
 }
- 
 
- 
+
+
 /*----------------------------------------------------------------------*
  * to string                                                            *
- *----------------------------------------------------------------------*/    
+ *----------------------------------------------------------------------*/
 std::string GEO::BoundaryIntCell::toString() const
 {
   std::stringstream s;

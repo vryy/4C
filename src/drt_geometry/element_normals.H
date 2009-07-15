@@ -27,20 +27,20 @@ namespace GEO
 
 
 /*!
-\brief calculate surface element normal vector in gausspoint (r,s)         
+\brief calculate surface element normal vector in gausspoint (r,s)
 
 \param deriv              (in)        : shape functions derivative in (r,s) -> (2,numnode)
 \param xyze               (in)        : element nodal coordinates in (x,y,z) space -> (3,numnode)
 \param unrm               (out)       : unit normal vector at (r,s)
-*/  
+*/
 template<DRT::Element::DiscretizationType DISTYPE, class M1, class M2>
 inline void computeNormalToSurfaceElementViaShape(
-        const M1&                 deriv,  
-        const M2&                 xyze,     
+        const M1&                 deriv,
+        const M2&                 xyze,
         LINALG::Matrix<3,1>&      unrm)
 {
     const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-      
+
     // compute dXYZ / drs
     static LINALG::Matrix<3,2> dxyzdrs;
     dxyzdrs.Clear();
@@ -61,14 +61,14 @@ inline void computeNormalToSurfaceElementViaShape(
     */
     static LINALG::Matrix<2,2> metrictensor;
     metrictensor.MultiplyTN(dxyzdrs,dxyzdrs);
-    
+
     unrm(0) = dxyzdrs(1,0) * dxyzdrs(2,1) - dxyzdrs(2,0) * dxyzdrs(1,1);
     unrm(1) = dxyzdrs(2,0) * dxyzdrs(0,1) - dxyzdrs(0,0) * dxyzdrs(2,1);
     unrm(2) = dxyzdrs(0,0) * dxyzdrs(1,1) - dxyzdrs(1,0) * dxyzdrs(0,1);
-    
+
     // scale
     unrm.Scale(1.0 / unrm.Norm2());
-    
+
     return;
 }
 
@@ -82,14 +82,14 @@ inline void computeNormalToSurfaceElementViaShape(
 */
 template<DRT::Element::DiscretizationType DISTYPE, class M>
 inline void computeNormalToSurfaceElementT(
-    const M&                      xyze_surfaceElement,               
-    const LINALG::Matrix<2,1>&    eleCoord,               
+    const M&                      xyze_surfaceElement,
+    const LINALG::Matrix<2,1>&    eleCoord,
     LINALG::Matrix<3,1>&          unitnormalvec)
 {
   const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
   static LINALG::Matrix<2,numnode> deriv_boundary;
   DRT::UTILS::shape_function_2D_deriv1(deriv_boundary,eleCoord(0),eleCoord(1),DISTYPE);
-  
+
   computeNormalToSurfaceElementViaShape<DISTYPE>(deriv_boundary, xyze_surfaceElement, unitnormalvec);
   return;
 }
@@ -105,9 +105,9 @@ inline void computeNormalToSurfaceElementT(
 */
 template <class M>
 inline void computeNormalToSurfaceElement(
-    const DRT::Element::DiscretizationType  distype,   
-    const M&                                xyze_surfaceElement,                
-    const LINALG::Matrix<2,1>&              eleCoord,               
+    const DRT::Element::DiscretizationType  distype,
+    const M&                                xyze_surfaceElement,
+    const LINALG::Matrix<2,1>&              eleCoord,
     LINALG::Matrix<3,1>&                    unitnormalvec)
 {
   switch (distype)

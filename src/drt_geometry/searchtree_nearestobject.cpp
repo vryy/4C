@@ -41,12 +41,12 @@ lineId_(old.lineId_),
 surfId_(old.surfId_),
 label_(old.label_),
 physcoord_(old.physcoord_)
-{ 
+{
   return;
 }
-    
- 
-    
+
+
+
 /*----------------------------------------------------------------------*
  * assignment operator                                       u.may 08/08|
  *----------------------------------------------------------------------*/
@@ -67,7 +67,7 @@ GEO::NearestObject& GEO::NearestObject::operator=(const GEO::NearestObject& old)
  *----------------------------------------------------------------------*/
 void GEO::NearestObject::clear()
 {
-  
+
   objectType_ = NOTYPE_OBJECT;
   nodeId_=-1;
   lineId_=-1;
@@ -79,10 +79,10 @@ void GEO::NearestObject::clear()
 
 
 /*----------------------------------------------------------------------*
- |  set node object type                                     u.may 08/08|                                         
+ |  set node object type                                     u.may 08/08|
  *----------------------------------------------------------------------*/
 void GEO::NearestObject::setNodeObjectType(
-      const int nodeId, 
+      const int nodeId,
       const int label,
       const LINALG::Matrix<3,1>& physcoord)
 {
@@ -90,7 +90,7 @@ void GEO::NearestObject::setNodeObjectType(
   nodeId_ = nodeId;
   label_ = label;
   physcoord_ = physcoord;
-  
+
   // reset unused variables
   lineId_ = -1;
   surfId_ = -1;
@@ -98,11 +98,11 @@ void GEO::NearestObject::setNodeObjectType(
 
 
 /*----------------------------------------------------------------------*
- |  set line object type                                     u.may 08/08|                                         
+ |  set line object type                                     u.may 08/08|
  *----------------------------------------------------------------------*/
 void GEO::NearestObject::setLineObjectType(
       const int lineId,
-      const int surfId, 
+      const int surfId,
       const int label,
       const LINALG::Matrix<3,1>& physcoord)
 {
@@ -111,18 +111,18 @@ void GEO::NearestObject::setLineObjectType(
   surfId_ = surfId;
   label_ = label;
   physcoord_ = physcoord;
-  
+
   // reset unused variables
   nodeId_ = -1;
- 
+
 }
 
 
 /*----------------------------------------------------------------------*
- |  set surface object type                                  u.may 08/08|                                         
+ |  set surface object type                                  u.may 08/08|
  *----------------------------------------------------------------------*/
 void GEO::NearestObject::setSurfaceObjectType(
-      const int surfId, 
+      const int surfId,
       const int label,
       const LINALG::Matrix<3,1>& physcoord)
 {
@@ -130,12 +130,12 @@ void GEO::NearestObject::setSurfaceObjectType(
   surfId_ = surfId;
   label_ = label;
   physcoord_ = physcoord;
-  
+
   // reset unused variables
   nodeId_ = -1;
   lineId_ = -1;
 }
-    
+
 
 
 #endif  // #ifdef CCADISCRET

@@ -27,10 +27,10 @@ namespace GEO
 
     //! tolerance used for residuals in Newton-methods
     const double                 TOL14 = 1e-14;
-    
+
     //! tolerance used for residuals in Newton-methods
     const double                 TOL13 = 1e-13;
-    
+
     //! tolerance used for residuals in Newton-methods
     const double                 TOL10 = 1e-10;
 
@@ -49,7 +49,7 @@ namespace GEO
     //! named tolerance for easy search/grep
     const double                 TOLPLUS8 = 1e8;
     //! named tolerance for easy search/grep
-    const double                 TOLPLUS15 = 1e15;   
+    const double                 TOLPLUS15 = 1e15;
     //! large number to start computations of nearest distance in tree
     const double                 LARGENUMBER = 1e30;
 
@@ -59,9 +59,9 @@ namespace GEO
     {
         return (b >= 0.0 ? fabs(a) : -fabs(a));
     }
-    
-    
-    
+
+
+
     /*!
     \brief calculate a*a
     \param a
@@ -72,20 +72,20 @@ namespace GEO
     {
         return a * a;
     }
-    
-    
-    
+
+
+
     /*!
     \brief  computes the Theorem of Pythagoras
             (a^2 + b^2)^(1/2)
             (modified from NUMERICAL RECIPES)
-                   
+
     \param a    (in)        : a
     \param b    (in)        : b
     \return result of the Theorem of Pythagoras
-    */    
+    */
     inline double pythagoras(
-        const double  a, 
+        const double  a,
         const double  b
         )
     {
@@ -93,23 +93,23 @@ namespace GEO
       //      no check for zero needed
         return sqrt(sqr(a)+sqr(b));
     }
-    
-    
-    
+
+
+
     /*!
     \brief sum up the absolute value of all entries of a vector
     \param v (in) : LINALG::Matrix<3,1>
     \return sum
-    */   
+    */
     inline double SumOfFabsEntries(
-        const LINALG::Matrix<3,1>&     v  
+        const LINALG::Matrix<3,1>&     v
         )
     {
         return fabs(v(0)) + fabs(v(1)) + fabs(v(2));
     }
-    
-    
-    
+
+
+
     /*!
     \brief computes the cross product of two LINALG::Matrix<3,1> a x b
     \param a (in) : arbitrary vector
@@ -120,29 +120,29 @@ namespace GEO
         const LINALG::Matrix<3,1>& a,
         const LINALG::Matrix<3,1>& b
         );
-    
-    
-    
+
+
+
     /*!
-    \brief  Given a matrix A[1..m][1..n], this method computes its 
+    \brief  Given a matrix A[1..m][1..n], this method computes its
             singular value decomposition, A =U ·W ·V T .
-            The matrix U replaces a on output. The diagonal matrix of 
-            singular values W is output as a vector W[1..n]. 
+            The matrix U replaces a on output. The diagonal matrix of
+            singular values W is output as a vector W[1..n].
             The matrix V (not the transpose V T ) is output as V[1..n][1..n].
-            (modified from NUMERICAL RECIPES) 
-                   
+            (modified from NUMERICAL RECIPES)
+
     \param A    (in/out)        : system matrix / matrix U
     \param W    (out)           : diagonal matrix stored in a vector
     \param V    (out)           : V matrix (not its transpose)
-    */ 
+    */
     template <int n, int m>
     static void svdcmp(
-            LINALG::Matrix<m,n>&  A, 
-            LINALG::Matrix<n,1>&  W, 
+            LINALG::Matrix<m,n>&  A,
+            LINALG::Matrix<n,1>&  W,
             LINALG::Matrix<n,n>&  V)
     {
         static LINALG::Matrix<n,1> rv1;
-    
+
         //Householder reduction to bidiagonal form.
       double g = 0.0;
       double scale = 0.0;
@@ -152,7 +152,7 @@ namespace GEO
           const int l=i+1;
           rv1(i)=scale*g;
           g=scale=0.0;
-          if (i < m) 
+          if (i < m)
           {
               for (int k=i;k<m;k++)
               {
@@ -175,7 +175,7 @@ namespace GEO
                       double s = 0.0;
                       for (int k=i;k<m;++k)
                           s += A(k,i)*A(k,j);
-                      const double f=s/h; 
+                      const double f=s/h;
                       for (int k=i;k<m;++k)
                           A(k,j) += f*A(k,i);
                   }
@@ -235,13 +235,13 @@ namespace GEO
                   for (int j=l;j<n;j++)
                   {
                       double s = 0.0;
-                      for (int k=l;k<n;k++) 
+                      for (int k=l;k<n;k++)
                           s += A(i,k)*V(k,j);
-                      for (int k=l;k<n;k++) 
+                      for (int k=l;k<n;k++)
                           V(k,j) += s*V(k,i);
                   }
               }
-              for (int j=l;j<n;j++) 
+              for (int j=l;j<n;j++)
                   V(i,j)=V(j,i)=0.0;
           }
           V(i,i)=1.0;
@@ -266,11 +266,11 @@ namespace GEO
                   for (int k=i;k<m;++k)
                       A(k,j) += f*A(k,i);
               }
-              for (int j=i;j<m;++j) 
+              for (int j=i;j<m;++j)
                   A(j,i) *= g_inv;
-          } 
-          else 
-              for (int j=i;j<m;++j) 
+          }
+          else
+              for (int j=i;j<m;++j)
                   A(j,i)=0.0;
           ++A(i,i);
       }
@@ -396,13 +396,13 @@ namespace GEO
             }
         }
     }
-            
-         
+
+
     /*!
   \brief  Solves a linear system of equations with help of
           a singular value decomposition. The system matrix
           may be singular !!
-                 
+
   \tparam dim  (in)            : dimension of the square system matrix
   */
   template<int dim>
@@ -416,17 +416,17 @@ namespace GEO
       static LINALG::Matrix<dim,dim> V;
       static LINALG::Matrix<dim,dim> A;
       static LINALG::Matrix<dim, 1>  W;
-      
+
       // initialize vectors and matrices
       W = 0.0;
       V = 0.0;
-      
+
       A = U;
-      
+
       svdcmp<dim,dim>( U, W, V);
-      
+
       //test_svdcmp( A, U, W, V, 3);
-         
+
       x = 0.0;
       for(int i = 0; i < dim; i++ )
       {
@@ -441,7 +441,7 @@ namespace GEO
               x(i) += svdtemp * b(k);
           }
       }
-      
+
       bool nonsingular = true;
       for(int  j = 0; j < dim; j++ )
           if( fabs(W(j)) <= tol )
@@ -449,38 +449,38 @@ namespace GEO
                nonsingular = false;
                break;
           }
-      
-     /*  
+
+     /*
      BlitzVec b1(3);
      for(int i = 0; i < dim; i++ )
       {
           b1(i) = 0.0;
           for(int  k = 0; k < dim; k++ )
-          {  
+          {
               b1(i) += A(i,k)*x(k);
           }
           printf("b = %f\t  b1 = %f\n", b(i), b1(i));
       }
       printf("\n");
-      
+
       for(int i = 0; i < dim; i++ )
           printf("x = %f\t", x(i));
-          
+
       printf("\n");
       */
       return nonsingular;
   }
-   
-    
+
+
   /*!
   \brief  Tests the singular value decomposition
-                 
-  \param A    (in)        : system matrix 
+
+  \param A    (in)        : system matrix
   \param U    (in)        : decomposed matrix U
   \param W    (in)        : diagonal matrix W stored in  vector
   \param V    (in)        : decomposed matrix V
   \param dim  (in)        : dimension
-  */            
+  */
   void test_svdcmp(
       LINALG::Matrix<3,3>&   A,
       LINALG::Matrix<3,3>&   U,
@@ -488,8 +488,8 @@ namespace GEO
       LINALG::Matrix<3,3>&   V,
       int dim
       );
-      
-      
+
+
   /*!
   \brief computes a Gaussian elimination for a linear system of equations
 
@@ -507,30 +507,30 @@ namespace GEO
           )
   {
       bool solution = true;
-  
+
       //printf("A(0,) = %8e %8e %8e | %8e\n", A(0,0),A(0,1),A(0,2),b(0));
       //printf("A(1,) = %8e %8e %8e | %8e\n", A(1,0),A(1,1),A(1,2),b(1));
       //printf("A(2,) = %8e %8e %8e | %8e\n\n", A(2,0),A(2,1),A(2,2),b(2));
       if(dim > 1)
       {
-      
+
           if (!do_piv)
           {
               for (int k=0;k<dim;k++)
               {
                   A(k,k)=1./A(k,k);
-      
+
                   for (int i=k+1;i<dim;i++)
                   {
                       A(i,k) *= A(k,k);
                       x(i) = A(i,k);
-      
+
                       for (int j=k+1;j<dim;j++)
                       {
                           A(i,j) -= A(i,k) * A(k,j);
                       }
                   }
-      
+
                   for (int i=k+1;i<dim;i++)
                   {
                       b(i) -= x(i)*b(k);
@@ -561,22 +561,22 @@ namespace GEO
                           A(k,j) = tmp(j);
                       b(k) = tmp(dim);
                   }
-      
+
                   A(k,k) = 1./A(k,k);
                   //printf("inf_diag = %8e\n", A(k,k));
                   //fflush(NULL);
-          
+
                   for (int i=k+1;i<dim;i++)
                   {
                       A(i,k) *= A(k,k);
                       x(i) = A(i,k);
-          
+
                       for (int j=k+1;j<dim;j++)
                       {
                           A(i,j) -= A(i,k) * A(k,j);
                       }
                   }
-      
+
                   for (int i=k+1;i<dim;i++)
                   {
                       b(i) -= x(i)*b(k);
@@ -586,11 +586,11 @@ namespace GEO
                   //printf("A(2,) = %8e %8e %8e | %8e\n\n", A(2,0),A(2,1),A(2,2),b(2));
               }
           }
-      
-      
+
+
           /* backward substitution */
           x(dim-1) = b(dim-1) * A(dim-1,dim-1);
-          
+
           for (int i=dim-2;i>=0;i--)
           {
               for (int j=dim-1;j>i;j--)
@@ -599,23 +599,23 @@ namespace GEO
               }
               x(i) = b(i)*A(i,i);
           }
-      
+
           //for (i=0;i<dim;i++)
           //    printf("%8e ",x(i));
           //printf("\n");
-          
+
           double det = 1.0;
           for(int i = 0 ; i < dim; i++)
               det *= 1.0/A(i,i);
           //printf("matrix is singular A1 = %f, A2 = %f, A3 = %f, det = %f\n ", 1/A(0,0), 1/A(1,1), 1/A(2,2), fabs(det) );
           //printf("det = %f\n ", fabs(det) );
-          
+
           if(fabs(det) < tol)
           {
               solution = false;
               //printf("matrix is singular A1 = %f, A2 = %f, A3 = %f, det = %f\n ", 1/A(0,0), 1/A(1,1), 1/A(2,2), det );
           }
-          
+
       }
       else
       {
@@ -625,14 +625,14 @@ namespace GEO
               solution = false;
           }
           x(0) = b(0)/A(0,0);
-      
+
           printf("x = %f\n", x(0));
       }
-        
+
       return solution;
   }
-  
-  
+
+
   /*----------------------------------------------------------------------*
    |  ML:     solves a linear system of equation               u.may 02/08|
    |          with help of a Gaussian Elimination provide by Epetra       |
@@ -649,29 +649,29 @@ namespace GEO
       // view on hopefullx column major blitz arrays
       /*Epetra_SerialDenseMatrix A_Epetra(Copy, A.data(), A.columns(), A.rows(), A.columns());
       Epetra_SerialDenseVector b_Epetra(Copy, b.data(), b.rows());
-      Epetra_SerialDenseVector x_Epetra(dim); 
+      Epetra_SerialDenseVector x_Epetra(dim);
       */
       Epetra_SerialDenseMatrix A_Epetra(dim,dim);
       Epetra_SerialDenseVector b_Epetra(dim);
-      Epetra_SerialDenseVector x_Epetra(dim); 
-      
+      Epetra_SerialDenseVector x_Epetra(dim);
+
       // copy
       for(int i = 0; i < dim; i++)
         for(int j = 0; j < dim; j++)
           A_Epetra(i,j) = A(i,j);
-      
+
       for(int i = 0; i < dim; i++)
         b_Epetra(i) = b(i);
-        
+
       Epetra_SerialDenseSolver ge;
       ge.SetMatrix(A_Epetra);
       ge.SetVectors(x_Epetra, b_Epetra);
-      
+
 
       // Lu factorization
       ge.Factor();
       Epetra_SerialDenseMatrix* FactoredMa = ge.FactoredMatrix();
-      
+
       if(!ge.Factored())
           return false;
 
@@ -682,30 +682,30 @@ namespace GEO
           det = det*((*FactoredMa)(i,i) );
           //printf("det =  %f\n", det);
       }
-      
+
       //printf("matrix is singular A1 = %f, A2 = %f, A3 = %f, det = %f\n ", 1/A(0,0), 1/A(1,1), fabs(det) );
       if(fabs(det) < tol) //TODO: check! was TOL7
       {
           solution = false;
           //printf("matrix is singular A1 = %f, A2 = %f, A3 = %f, det = %f\n ", 1/A(0,0), 1/A(1,1), det );
       }
-      else    
-      {        
+      else
+      {
           ge.Solve();
       }
-      
+
       //for(int i = 0; i < dim; i++)
       //    printf("X = %f, x_epetra = %f\n", x(i), x_Epetra(i));
-      
+
       // copy solution
       for(int i = 0; i < dim; i++)
         x(i) = x_Epetra(i);
 
 
       return solution;
-  }    
-  
-    
+  }
+
+
 }
 
 

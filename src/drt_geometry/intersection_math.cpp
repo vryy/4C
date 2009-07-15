@@ -4,8 +4,8 @@
 \brief collection of math tools for the interface determination of trv1o meshes
 
     ML      math library for the interface computation
- 
-    
+
+
 <pre>
 Maintainer: Ursula Mayer
             mayer@lnm.mw.tum.de
@@ -38,7 +38,7 @@ void GEO::test_svdcmp(
 
     LINALG::Matrix<3,3>   H1;
     LINALG::Matrix<3,3>   H2;
-    
+
     printf("W U\n");
     for(int i = 0 ; i < dim; i++)
     {
@@ -46,11 +46,11 @@ void GEO::test_svdcmp(
         for(int j = 0 ; j < dim; j++)
         {
             printf("U = %f\t", U(i,j));
-        }   
+        }
         printf("\n");
     }
     printf("\n");
-    
+
     for(int i = 0 ; i < dim; i++)
     {
         for(int j = 0 ; j < dim; j++)
@@ -58,29 +58,29 @@ void GEO::test_svdcmp(
             H1(i,j) = U(i,j)*W(j);
         }
     }
-    
+
     printf("H1\n");
     for(int i = 0 ; i < dim; i++)
     {
         for(int j = 0 ; j < dim; j++)
         {
             printf("H1 = %f\t", H1(i,j));
-        }   
+        }
         printf("\n");
     }
     printf("\n");
-    
+
     printf("V\n");
     for(int i = 0 ; i < dim; i++)
     {
         for(int j = 0 ; j < dim; j++)
         {
             printf("V = %f\t", V(i,j));
-        }   
+        }
         printf("\n");
     }
     printf("\n");
-    
+
     for(int i = 0 ; i < dim; i++)
     {
         for(int j = 0 ; j < dim; j++)
@@ -92,25 +92,25 @@ void GEO::test_svdcmp(
             }
         }
     }
-    
+
     printf("system matrix\n");
     for(int i = 0 ; i < dim; i++)
     {
         for(int j = 0 ; j < dim; j++)
         {
             printf("A = %f\t", A(i,j));
-        }   
+        }
         printf("\n");
     }
     printf("\n");
-    
+
     printf("system matrix SVD\n");
     for(int i = 0 ; i < dim; i++)
     {
         for(int j = 0 ; j < dim; j++)
         {
             printf("H2 = %f\t", H2(i,j));
-        }   
+        }
         printf("\n");
     }
     printf("\n");

@@ -7,11 +7,11 @@
 -------------------------------------------------------------------------
                  BACI finite element library subsystem
             Copyright (2008) Technical University of Munich
-              
+
 Under terms of contract T004.008.000 there is a non-exclusive license for use
 of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
 
-This library is proprietary software. It must not be published, distributed, 
+This library is proprietary software. It must not be published, distributed,
 copied or altered in any form or any media without written permission
 of the copyright holder. It may be used under terms and conditions and of the
 above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
@@ -23,11 +23,11 @@ This library contains and makes use of software copyrighted by Sandia Corporatio
 and distributed under LGPL licence. Licensing does not apply to this or any
 other third party software used here.
 
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de) 
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
                    or
                    Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
 
-http://www.lnm.mw.tum.de                   
+http://www.lnm.mw.tum.de
 
 -------------------------------------------------------------------------
 </pre>
@@ -53,8 +53,8 @@ Maintainer: Ursula Mayer
 
 namespace GEO
 {
-    
-    
+
+
     const double Dop18Normals[6][3] = {
             { 1.0, 1.0, 0.0},  //  x  y
             { 1.0, 0.0, 1.0},  //  x  z
@@ -62,20 +62,20 @@ namespace GEO
             { 1.0, 0.0,-1.0},  //  x -z
             {-1.0, 1.0, 0.0},  // -x  y
             { 0.0,-1.0, 1.0}}; // -y  z
-    
-     
+
+
      /*!
      \brief compares two points
- 
-     \param point1       (in)    : first point   
-     \param point2       (in)    : second point  
+
+     \param point1       (in)    : first point
+     \param point2       (in)    : second point
      \return true if both points equal each other, false otherwise
      */
      template <int length>
-     bool comparePoints(    
+     bool comparePoints(
          const LINALG::Matrix<length,1>&     point1,
-         const LINALG::Matrix<length,1>&     point2) 
-     {   
+         const LINALG::Matrix<length,1>&     point2)
+     {
          for(int i = 0; i < length ; i++)
              if(fabs(point1(i) - point2(i)) > TOL7)
              {
@@ -84,32 +84,32 @@ namespace GEO
          return true;
      }
 
-     
+
     const std::map<int,LINALG::Matrix<3,2> > getCurrentXAABBs(
        const DRT::Discretization&                dis,
        const std::map<int,LINALG::Matrix<3,1> >& currentpositions
        );
-         
-      
+
+
     const std::map<int,LINALG::Matrix<3,2> > getTriangleXAABBs(
       const std::vector<vector<int> >&                triangleList,
       const std::vector<GEO::InterfacePoint>&         pointList
       );
-    
-    
+
+
     /*!
-    \brief Computes a rough overestimating extended  
+    \brief Computes a rough overestimating extended
            axis-aligned bounding box for an element (XAABB)
     \param element        (in)  element
     \param xyze           (in)  nodal position array (3,numnodes)
     \return extended axis-aligned bounding box  (XAABB) for an element
      */
-    LINALG::Matrix<6,2> computeContact18Dop( 
+    LINALG::Matrix<6,2> computeContact18Dop(
         const DRT::Element*                 element,
         const LINALG::SerialDenseMatrix&    xyze
         );
-    
-    
+
+
     /*!
     \brief checks if two 18 Dops are intersecting (note : for efficiency it only checks slabs
            which are not present for XAABBs)
@@ -118,7 +118,7 @@ namespace GEO
     \param xfemDOP     (in)         : DOP of the xfem element
     \return true if the DOP's intersect or false otherwise
      */
-    bool intersectionOfKDOPs(  
+    bool intersectionOfKDOPs(
       const LINALG::Matrix<9,2>&    cutterDOP,
       const LINALG::Matrix<9,2>&    xfemDOP
       );
@@ -152,32 +152,32 @@ namespace GEO
     {
       if (element->Shape() != DISTYPE)
         dserror("shape mismatch!");
-      
+
       EleGeoType eleGeoType = HIGHERORDER;
       bool cartesian = true;
       int CartesianCount = 0;
       const int dimCoord = 3;
       const int eleDim = DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
-      
+
       if(DRT::UTILS::DisTypeToEdgeOrder<DISTYPE>::order ==1)
         eleGeoType = LINEAR;
       else if(DRT::UTILS::DisTypeToEdgeOrder<DISTYPE>::order==2)
         eleGeoType = HIGHERORDER;
       else
         dserror("order of element shapefunction is not correct");
-      
+
       // check if cartesian
       if(eleDim == 3)
       {
         const vector< vector<int> > eleNodeNumbering = DRT::UTILS::getEleNodeNumberingSurfaces(DISTYPE);
         const vector< RCP<DRT::Element> >surfaces = (const_cast< DRT::Element* >(element))->Surfaces();
         for(int i = 0; i < element->NumSurface(); i++)
-        {      
+        {
           CartesianCount = 0;
           const RCP<DRT::Element>& surfaceP = surfaces[i];
-      
+
           for(int k = 0; k < dimCoord; k++)
-          { 
+          {
             int nodeId = eleNodeNumbering[i][0];
             const double nodalcoord =  xyze_element(k,nodeId);
             for(int j = 1; j < surfaceP->NumNode(); j++)
@@ -187,10 +187,10 @@ namespace GEO
               {
                 CartesianCount++;
                 break;
-              } 
+              }
             }
           }
-          if(CartesianCount > 2)  
+          if(CartesianCount > 2)
           {
             cartesian = false;
             break;
@@ -201,7 +201,7 @@ namespace GEO
       {
         CartesianCount = 0;
         for(int k = 0; k < dimCoord; k++)
-        { 
+        {
           const double nodalcoord =  xyze_element(k,0);
           for(int j = 1; j < element->NumNode(); j++)
           {
@@ -209,41 +209,41 @@ namespace GEO
             {
               CartesianCount++;
               break;
-            } 
+            }
           }
         }
-        if(CartesianCount > 2)  
+        if(CartesianCount > 2)
           cartesian = false;
       }
       else
         dserror("dimension of element is not correct");
 
-      
-      
+
+
       if(cartesian)
         eleGeoType = CARTESIAN;
-      
+
       return eleGeoType;
     }
-    
+
     /*!
-    \brief checks if a position in current coordinates lies within a certain element           
-    
+    \brief checks if a position in current coordinates lies within a certain element
+
     \param element              (in)        : element
     \param xyze                 (in)        : element nodal positions (3,numnode)
     \param x                    (in)        : node in current coordinates
-    */  
-    bool checkPositionWithinElement(  
+    */
+    bool checkPositionWithinElement(
         const DRT::Element*                 element,
         const LINALG::SerialDenseMatrix&    xyze,
         const LINALG::Matrix<3,1>&          x
-        );   
-       
+        );
+
     /*!
     \brief  finds the nearest point for a given point on a surface element
             the element coordinates of this point are stored in eleCoord, the normal
             point from the given point to the nearest point on the surface,
-            distance returns the absolut length of the normal. 
+            distance returns the absolut length of the normal.
             If the computed point lies outside the element , the distance which is retuned equals -1
             and the normal is set to zero.
     \param surfaceElement        (in) :   surface element
@@ -252,16 +252,16 @@ namespace GEO
     \param eleCoord              (out):   node in element coordinates (r, s)
     \param normal                (out):   normal point from a given point to the surface point
     \param distance              (out):   length of the normal
-    */         
+    */
     bool searchForNearestPointOnSurface(
-            const DRT::Element*                     surfaceElement,  
-            const LINALG::SerialDenseMatrix&        xyze_surfaceElement,     
-            const LINALG::Matrix<3,1>&              physCoord,       
-            LINALG::Matrix<2,1>&                    eleCoord,        
-            LINALG::Matrix<3,1>&                    normal,          
-            double&                                 distance        
+            const DRT::Element*                     surfaceElement,
+            const LINALG::SerialDenseMatrix&        xyze_surfaceElement,
+            const LINALG::Matrix<3,1>&              physCoord,
+            LINALG::Matrix<2,1>&                    eleCoord,
+            LINALG::Matrix<3,1>&                    normal,
+            double&                                 distance
             );
-    
+
 }
 
 

@@ -33,32 +33,32 @@ namespace GEO
       const GEO::DomainIntCell&   cell,
       const LINALG::Matrix<3,1>&  pos_eta_domain,
       LINALG::Matrix<3,1>&        pos_xsi_domain)
-  { 
+  {
     // get cell node coordinates
-    const LINALG::SerialDenseMatrix& xyze_cell(cell.CellNodalPosXiDomain()); 
+    const LINALG::SerialDenseMatrix& xyze_cell(cell.CellNodalPosXiDomain());
     GEO::elementToCurrentCoordinates(cell.Shape(), xyze_cell, pos_eta_domain, pos_xsi_domain);
     return;
   }
-  
-  
+
+
   //! map position from eta to xi space
-  template<> 
+  template<>
   inline void mapEtaToXi3D<XFEM::standard_assembly>(
       const GEO::DomainIntCell&,
       const LINALG::Matrix<3,1>&  pos_eta_domain,
       LINALG::Matrix<3,1>&        pos_xsi_domain)
-  {   
+  {
     pos_xsi_domain = pos_eta_domain;
     return;
-  }  
-  
-  
+  }
+
+
   //! compute determinant from eta to xi space
   template<DRT::Element::DiscretizationType  distype>
     static inline double detEtaToXi3DT(
       const LINALG::SerialDenseMatrix&    xyze_cell,
       const LINALG::Matrix<3,1>&          pos_eta_domain)
-  { 
+  {
     const int numNodes = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
     // get shape function derivative
     static LINALG::Matrix<3,numNodes> deriv;
@@ -76,9 +76,9 @@ namespace GEO
     // ...and return its determinant
     return xjm.Determinant();
   }
-  
-    
-  //! get determinant between eta and xi space  
+
+
+  //! get determinant between eta and xi space
   template<XFEM::AssemblyType ASSTYPE>
     inline double detEtaToXi3D(
         const GEO::DomainIntCell&   cell,
@@ -99,29 +99,29 @@ namespace GEO
     }
     return -1.0;
   }
-      
-  
+
+
   //! get determinant between eta and xi space
   template<>
     inline double detEtaToXi3D<XFEM::standard_assembly>(
       const GEO::DomainIntCell&,
       const LINALG::Matrix<3,1>&)
-  {   
+  {
     return 1.0;
   }
-  
-  
-    
+
+
+
   /////////////////////  Boundary Integration Cell ////////////////////////////////
-  
+
   //! map position from eta^boundary to xi^boundary space
-  template< DRT::Element::DiscretizationType  distype, 
+  template< DRT::Element::DiscretizationType  distype,
             class M>
   inline void mapEtaBToXiBT(
       const M&                    xyze_cell,
       const LINALG::Matrix<2,1>&  pos_eta_boundary,
       LINALG::Matrix<2,1>&        pos_xsi_boundary)
-  {   
+  {
     const int numNodes = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
     // create shape function vectors
@@ -137,8 +137,8 @@ namespace GEO
 
     return;
   }
-  
-  
+
+
   //! map position from eta^boundary to xi^boundary space
   inline void mapEtaBToXiB(
       const GEO::BoundaryIntCell& cell,
@@ -160,27 +160,27 @@ namespace GEO
     }
     return;
   }
-  
-  
+
+
   //! map position from eta^boundary to xi^domain space
   inline void mapEtaBToXiD(
       const GEO::BoundaryIntCell&  cell,
       const LINALG::Matrix<2,1>&   pos_eta_boundary,
       LINALG::Matrix<3,1>&         pos_xsi_domain)
-  {   
+  {
     // get cell node coordinates in xi_domain
     const LINALG::SerialDenseMatrix& xyze_cell(cell.CellNodalPosXiDomain());
     GEO::elementToCurrentCoordinates(cell.Shape(), xyze_cell, pos_eta_boundary, pos_xsi_domain);
     return;
   }
-  
-  
+
+
   //! get determinant between eta^boundary and xi^boundary space
   template<DRT::Element::DiscretizationType  distype>
     static inline double detEtaBToXiBT(
       const LINALG::SerialDenseMatrix&    xyze_cell,
       const LINALG::Matrix<2,1>&          pos_eta_boundary)
-  { 
+  {
     const int numNodes = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
     // get shape function derivative
@@ -199,8 +199,8 @@ namespace GEO
     // ...and return its determinant
     return xjm.Determinant();
   }
-  
-    
+
+
   //! get determinant between eta^boundary and xi^boundary space
   inline double detEtaBToXiB(
       const GEO::BoundaryIntCell&   cell,
