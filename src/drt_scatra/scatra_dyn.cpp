@@ -52,7 +52,7 @@ void scatra_dyn(int disnumff, int disnumscatra, int restart)
   // access the fluid discretization
   RefCountPtr<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(disnumff,0);
   if (!fluiddis->Filled()) fluiddis->FillComplete();
-  
+
   // access the scatra discretization
   RefCountPtr<DRT::Discretization> scatradis = DRT::Problem::Instance()->Dis(disnumscatra,0);
   if (!scatradis->Filled()) scatradis->FillComplete();
@@ -74,7 +74,7 @@ void scatra_dyn(int disnumff, int disnumscatra, int restart)
       // read the restart information, set vectors and variables
       if (restart) scatraonly->ScaTraField().ReadRestart(restart);
 
-      // set velocity field 
+      // set velocity field
       //(this is done only once. Time-dependent velocity fields are not supported)
       (scatraonly->ScaTraField()).SetVelocityField();
 
@@ -92,7 +92,7 @@ void scatra_dyn(int disnumff, int disnumscatra, int restart)
     {
       // we use the fluid discretization as layout for the scalar transport discretization
       if (fluiddis->NumGlobalNodes()==0) dserror("Fluid discretization is empty!");
- 
+
       // create scatra elements if the scatra discretization is empty
       if (scatradis->NumGlobalNodes()==0)
       {

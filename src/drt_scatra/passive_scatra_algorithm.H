@@ -2,7 +2,7 @@
 /*!
 \file passive_scatra_algorithm.H
 
-\brief Transport of passive scalars in Navier-Stokes velocity field 
+\brief Transport of passive scalars in Navier-Stokes velocity field
        (one-way coupling)
 
 <pre>
@@ -49,10 +49,10 @@ namespace SCATRA{
 
     /// start a new time step
     void PrepareTimeStep();
-    
+
     /// solve Navier-Stokes equations for current time step
     void DoFluidStep();
-    
+
     /// solve transport (convection-diffusion) equations for current time step
     void DoTransportStep();
 

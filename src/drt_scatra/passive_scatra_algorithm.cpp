@@ -51,7 +51,7 @@ void SCATRA::PassiveScaTraAlgorithm::TimeLoop()
     // solve nonlinear Navier-Stokes system
     DoFluidStep();
 
-    // solve transport (convection-diffusion) equations for passive scalar 
+    // solve transport (convection-diffusion) equations for passive scalar
     DoTransportStep();
 
     // update all field solvers
@@ -79,8 +79,8 @@ void SCATRA::PassiveScaTraAlgorithm::PrepareTimeStep()
   FluidField().PrepareTimeStep();
 
   // prepare time step
-  /* remark: initial velocity field has been transfered to scalar transport field in constructor of 
-   * ScaTraFluidCouplingAlgorithm (initialvelset_ == true). Time integration schemes, such as 
+  /* remark: initial velocity field has been transfered to scalar transport field in constructor of
+   * ScaTraFluidCouplingAlgorithm (initialvelset_ == true). Time integration schemes, such as
    * the one-step-theta scheme, are thus initialized correctly.
    */
   ScaTraField().PrepareTimeStep();

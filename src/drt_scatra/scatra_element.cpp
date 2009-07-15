@@ -191,7 +191,7 @@ void DRT::ELEMENTS::Transport::Print(ostream& os) const
  *----------------------------------------------------------------------*/
 RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Transport::ElementRegister() const
 {
-  //Assuming that this element do not need initialization, we return a 
+  //Assuming that this element do not need initialization, we return a
   //dummy base class here.
   return rcp(new DRT::ElementRegister(Type()));
 }
@@ -202,16 +202,16 @@ RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Transport::ElementRegister() co
  *----------------------------------------------------------------------*/
 vector<RCP<DRT::Element> > DRT::ELEMENTS::Transport::Lines()
 {
-  // do NOT store line or surface elements inside the parent element 
+  // do NOT store line or surface elements inside the parent element
   // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization, 
+  // Reason: if a Redistribute() is performed on the discretization,
   // stored node ids and node pointers owned by these boundary elements might
   // have become illegal and you will get a nice segmentation fault ;-)
 
   // so we have to allocate new line elements:
   if (NumLine() > 1) // 3D and 2D
     return DRT::UTILS::ElementBoundaryFactory<TransportBoundary,Transport>(DRT::UTILS::buildLines,this);
-  else 
+  else
   {
     // 1D (we return the element itself)
     vector<RCP<Element> > lines(1);
@@ -227,9 +227,9 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Transport::Lines()
  *----------------------------------------------------------------------*/
 vector<RCP<DRT::Element> > DRT::ELEMENTS::Transport::Surfaces()
 {
-  // do NOT store line or surface elements inside the parent element 
+  // do NOT store line or surface elements inside the parent element
   // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization, 
+  // Reason: if a Redistribute() is performed on the discretization,
   // stored node ids and node pointers owned by these boundary elements might
   // have become illegal and you will get a nice segmentation fault ;-)
 
@@ -263,7 +263,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Transport::Volumes()
     volumes[0]= rcp(this, false);
     return volumes;
   }
-  else 
+  else
   {
     dserror("Surfaces() for 1D-/2D-Transport element not implemented");
     return DRT::Element::Volumes();
@@ -324,9 +324,9 @@ bool DRT::ELEMENTS::Transport ::VisData(const string& name, vector<double>& data
   {
     ostringstream temp;
     temp << k;
-    if (   (name == "Pe_"+temp.str()    ) 
-        || (name == "Pe_mig_"+temp.str()) 
-        || (name == "hk_"+temp.str()    ) 
+    if (   (name == "Pe_"+temp.str()    )
+        || (name == "Pe_mig_"+temp.str())
+        || (name == "hk_"+temp.str()    )
         || (name == "tau_"+temp.str()   )
     )
     {
@@ -392,7 +392,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::TransportBoundary::Shape() const
   switch (NumNode())
   {
   case 2: return line2;
-  case 3: 
+  case 3:
     if ((parent_->Shape() == quad8) || (parent_->Shape() == quad9))
       return line3;
     else
@@ -451,9 +451,9 @@ void DRT::ELEMENTS::TransportBoundary::Print(ostream& os) const
  *----------------------------------------------------------------------*/
 vector<RCP<DRT::Element> > DRT::ELEMENTS::TransportBoundary::Lines()
 {
-  // do NOT store line or surface elements inside the parent element 
+  // do NOT store line or surface elements inside the parent element
   // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization, 
+  // Reason: if a Redistribute() is performed on the discretization,
   // stored node ids and node pointers owned by these boundary elements might
   // have become illegal and you will get a nice segmentation fault ;-)
 
@@ -468,9 +468,9 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::TransportBoundary::Lines()
  *----------------------------------------------------------------------*/
 vector<RCP<DRT::Element> > DRT::ELEMENTS::TransportBoundary::Surfaces()
 {
-  // do NOT store line or surface elements inside the parent element 
+  // do NOT store line or surface elements inside the parent element
   // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization, 
+  // Reason: if a Redistribute() is performed on the discretization,
   // stored node ids and node pointers owned by these boundary elements might
   // have become illegal and you will get a nice segmentation fault ;-)
 

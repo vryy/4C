@@ -817,7 +817,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
     {
       double pow_conint_gamma_k = pow(conint,gamma);
       // note: gamma==0 deactivates concentration dependency in Butler-Volmer!
- 
+
       const double expterm = exp(alphaa*frt*eta)-exp((-alphac)*frt*eta);
 
       for (int vi=0; vi<iel; ++vi)

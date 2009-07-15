@@ -39,8 +39,8 @@ void SCATRA::ScaTraResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& 
   if (res->dis != 0)
     dserror("fix me: only one scalar transport discretization supported for testing");
 
-  
-  
+
+
   if (dis_->HaveGlobalNode(res->node))
   {
     DRT::Node* actnode = dis_->gNode(res->node);

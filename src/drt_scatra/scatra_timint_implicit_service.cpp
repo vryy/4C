@@ -810,7 +810,7 @@ void SCATRA::ScaTraTimIntImpl::OutputElectrodeInfo()
     {
       ostringstream temp;
       temp << condid;
-      const std::string fname 
+      const std::string fname
       = DRT::Problem::Instance()->OutputControlFile()->FileName()+".electrode_status_"+temp.str()+".txt";
 
       std::ofstream f;
@@ -822,8 +822,8 @@ void SCATRA::ScaTraTimIntImpl::OutputElectrodeInfo()
       else
         f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
 
-      f << condid << " " << Step() << " " << Time() << " " << parcurrentintegral << " " << parboundaryint 
-      << " " << parcurrentintegral/parboundaryint << " " << paroverpotentialint/parboundaryint << " " 
+      f << condid << " " << Step() << " " << Time() << " " << parcurrentintegral << " " << parboundaryint
+      << " " << parcurrentintegral/parboundaryint << " " << paroverpotentialint/parboundaryint << " "
       << pot << " " << parcint/parboundaryint << "\n";
       f.flush();
       f.close();
