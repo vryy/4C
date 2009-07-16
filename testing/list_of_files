@@ -42,6 +42,7 @@ Input/beam3test2linear.dat                              x        x        x     
 Input/beam3test2quadratic.dat                           x        x        x        -        -        -
 Input/beam3test2cubic.dat                               x        x        x        -        -        -
 Input/beam3test2quartic.dat                             x        x        x        -        -        -
+Input/force_sensor_test.dat                             x        x        x        -        -        -
 Input/truss3test1.dat                                   x        -        -        -        -        -
 Input/c1_elast.dat                                      x        x        x        x        -        -
 Input/c1_elast_geonln.dat                               x        -        x        -        -        -
