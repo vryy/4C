@@ -405,6 +405,12 @@ private:
     LINALG::Matrix<NUMDIM_,1>& metr0  ///< axial metrics at origin
     );
 
+  /// determine metric coefficients in parametric/natural/local co-ordinate system
+  static void LocalMetrics(
+    const LINALG::Matrix<NUMDIM_,NUMDIM_>& jac,
+    LINALG::Matrix<NUMDIM_,NUMDIM_>& metr
+    );
+
   /// EXPERIMENTAL: setup of constant ANS data, second set of points
   ///
   /// \sa #sosh8_anssetup()

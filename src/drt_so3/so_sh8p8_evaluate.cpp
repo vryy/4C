@@ -655,12 +655,20 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
   Teuchos::RCP<LINALG::Matrix<NUMDIM_,1> > axmetr0 = Teuchos::null;  // axial metrics at origin
   Teuchos::RCP<const double> hths = Teuchos::null;
   Teuchos::RCP<const double> hthr = Teuchos::null;
+#if 0
+  std::vector<LINALG::Matrix<NUMDIM_,NUMDIM_> > metr_sps;
+#endif
   if (ans_ == ans_onspot) {
     jac0 = Teuchos::rcp(new LINALG::Matrix<NUMDIM_,NUMDIM_>(false));
     axmetr0 = Teuchos::rcp(new LINALG::Matrix<NUMDIM_,1>(false));
     AxialMetricsAtOrigin(xrefe,*jac0,*axmetr0);
     hths = Teuchos::rcp(new double((*axmetr0)(2)/(*axmetr0)(1)));
     hthr = Teuchos::rcp(new double((*axmetr0)(2)/(*axmetr0)(0)));
+#if 0
+    metr_sps.resize(NUMSP_);
+    for (int sp=0; sp<NUMSP_; ++sp)
+      LocalMetrics(jac_sps[sp],metr_sps[sp]);
+#endif
   }
 
 
@@ -934,20 +942,46 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
         lstrain(5) = 0.5*(1-s[gp]) * (dxdt_A - dXdt_A) + 0.5*(1+s[gp]) * (dxdt_C - dXdt_C);
       }
       else if (ans_ == ans_onspot) {
+#if 0
+        const double hths_B = std::sqrt(metr_sps[1](2,2)/metr_sps[1](1,1));
+        const double hths_D = std::sqrt(metr_sps[3](2,2)/metr_sps[3](1,1));
+        const double hthr_A = std::sqrt(metr_sps[0](2,2)/metr_sps[0](0,0));
+        const double hthr_C = std::sqrt(metr_sps[2](2,2)/metr_sps[2](0,0));
+        const double atas_B = 1;///(1-metr_sps[1](0,2)/std::sqrt(metr_sps[1](0,0)*metr_sps[1](2,2)));
+        const double atas_D = 1;///(1-metr_sps[3](0,2)/std::sqrt(metr_sps[3](0,0)*metr_sps[3](2,2)));
+        const double atar_A = 1;///(1-metr_sps[0](1,2)/std::sqrt(metr_sps[0](1,1)*metr_sps[0](2,2)));
+        const double atar_C = 1;///(1-metr_sps[2](1,2)/std::sqrt(metr_sps[2](1,1)*metr_sps[2](2,2)));
+//        cout << "atas_B="  << atas_B << ", atas_D" << atas_D << ", atar_A=" << atar_A << "atar_C=" << atar_C << endl;
         // E23: remedy of transverse shear locking
         // Est = (1+r)/2 * Est(SP B) + (1-r)/2 * Est(SP D)
         lstrain(4)
-          = 0.5*(1+r[gp]) * 0.5*(1-s[gp]) * ( (dydt_B - dYdt_B) + (*hths)*(dydt_F - dYdt_F) )
-          + 0.5*(1+r[gp]) * 0.5*(1+s[gp]) * ( (dydt_B - dYdt_B) + (*hths)*(dydt_G - dYdt_G) )
-          + 0.5*(1-r[gp]) * 0.5*(1-s[gp]) * ( (dydt_D - dYdt_D) + (*hths)*(dydt_E - dYdt_E) )
-          + 0.5*(1-r[gp]) * 0.5*(1+s[gp]) * ( (dydt_D - dYdt_D) + (*hths)*(dydt_H - dYdt_H) );
+          = 0.5*(1+r[gp]) * 0.5*(1-s[gp]) * ( (dydt_B - dYdt_B) + atas_B*hths_B*(dydt_F - dYdt_F) )
+          + 0.5*(1+r[gp]) * 0.5*(1+s[gp]) * ( (dydt_B - dYdt_B) + atas_B*hths_B*(dydt_G - dYdt_G) )
+          + 0.5*(1-r[gp]) * 0.5*(1-s[gp]) * ( (dydt_D - dYdt_D) + atas_D*hths_D*(dydt_E - dYdt_E) )
+          + 0.5*(1-r[gp]) * 0.5*(1+s[gp]) * ( (dydt_D - dYdt_D) + atas_D*hths_D*(dydt_H - dYdt_H) );
         // E13: remedy of transverse shear locking
         // Ert = (1-s)/2 * Ert(SP A) + (1+s)/2 * Ert(SP C)
         lstrain(5)
-          = 0.5*(1-s[gp]) * 0.5*(1-r[gp]) * ( (dxdt_A - dXdt_A) + (*hthr)*(dxdt_E - dXdt_E) )
-          + 0.5*(1-s[gp]) * 0.5*(1+r[gp]) * ( (dxdt_A - dXdt_A) + (*hthr)*(dxdt_F - dXdt_F) )
-          + 0.5*(1+s[gp]) * 0.5*(1-r[gp]) * ( (dxdt_C - dXdt_C) + (*hthr)*(dxdt_H - dXdt_H) )
-          + 0.5*(1+s[gp]) * 0.5*(1+r[gp]) * ( (dxdt_C - dXdt_C) + (*hthr)*(dxdt_G - dXdt_G) );
+          = 0.5*(1-s[gp]) * 0.5*(1-r[gp]) * ( (dxdt_A - dXdt_A) + atar_A*hthr_A*(dxdt_E - dXdt_E) )
+          + 0.5*(1-s[gp]) * 0.5*(1+r[gp]) * ( (dxdt_A - dXdt_A) + atar_A*hthr_A*(dxdt_F - dXdt_F) )
+          + 0.5*(1+s[gp]) * 0.5*(1-r[gp]) * ( (dxdt_C - dXdt_C) + atar_C*hthr_C*(dxdt_H - dXdt_H) )
+          + 0.5*(1+s[gp]) * 0.5*(1+r[gp]) * ( (dxdt_C - dXdt_C) + atar_C*hthr_C*(dxdt_G - dXdt_G) );
+#else
+         // E23: remedy of transverse shear locking
+         // Est = (1+r)/2 * Est(SP B) + (1-r)/2 * Est(SP D)
+         lstrain(4)
+           = 0.5*(1+r[gp]) * 0.5*(1-s[gp]) * ( (dydt_B - dYdt_B) + (*hths)*(dydt_F - dYdt_F) )
+           + 0.5*(1+r[gp]) * 0.5*(1+s[gp]) * ( (dydt_B - dYdt_B) + (*hths)*(dydt_G - dYdt_G) )
+           + 0.5*(1-r[gp]) * 0.5*(1-s[gp]) * ( (dydt_D - dYdt_D) + (*hths)*(dydt_E - dYdt_E) )
+           + 0.5*(1-r[gp]) * 0.5*(1+s[gp]) * ( (dydt_D - dYdt_D) + (*hths)*(dydt_H - dYdt_H) );
+         // E13: remedy of transverse shear locking
+         // Ert = (1-s)/2 * Ert(SP A) + (1+s)/2 * Ert(SP C)
+         lstrain(5)
+           = 0.5*(1-s[gp]) * 0.5*(1-r[gp]) * ( (dxdt_A - dXdt_A) + (*hthr)*(dxdt_E - dXdt_E) )
+           + 0.5*(1-s[gp]) * 0.5*(1+r[gp]) * ( (dxdt_A - dXdt_A) + (*hthr)*(dxdt_F - dXdt_F) )
+           + 0.5*(1+s[gp]) * 0.5*(1-r[gp]) * ( (dxdt_C - dXdt_C) + (*hthr)*(dxdt_H - dXdt_H) )
+           + 0.5*(1+s[gp]) * 0.5*(1+r[gp]) * ( (dxdt_C - dXdt_C) + (*hthr)*(dxdt_G - dXdt_G) );
+#endif
       }
       else {
         dserror("Your should not turn up here.");
@@ -1801,28 +1835,22 @@ void DRT::ELEMENTS::So_sh8p8::Stress(
       LINALG::Matrix<NUMSTR_,NUMSTR_> defgraddefgradT;
       Matrix2TensorToLeftRightProductMatrix6x6Voigt(defgraddefgradT,defgrd,
                                                     true,voigt6_stress,voigt6_strain);
-      // (deviatoric) Cauchy stress vector
+      // (deviatoric/isochoric) Cauchy stress vector
       LINALG::Matrix<NUMSTR_,1> cauchyv;
       cauchyv.MultiplyNN(1.0/detdefgrd,defgraddefgradT,stress);
 
-
-      // determine stress
-      if (stab_ == stab_puredisp)
+      // determine total stress
+      if (stab_ != stab_puredisp)
       {
-        // store stress
-        for (int i=0; i<NUMSTR_; ++i)
-          (*elestress)(gp,i) = cauchyv(i);
-      }
-      else
-      {
-        // above computed #cauchyv is deviatoric true stress
+        // above computed #cauchyv is deviatoric/isochoric true stress
         // isochoric Cauchy stress vector
-        LINALG::Matrix<NUMSTR_,1> isocauchyv(true);
-        for (int i=0; i<NUMDIM_; ++i) isocauchyv = -pressure;
-        // store stress
-        for (int i=0; i<NUMSTR_; ++i)
-          (*elestress)(gp,i) = cauchyv(i) + isocauchyv(i);
+        // the volumetric part is added here
+        for (int i=0; i<NUMDIM_; ++i) cauchyv(i) -= pressure;
       }
+
+      // store stress
+      for (int i=0; i<NUMSTR_; ++i)
+        (*elestress)(gp,i) = cauchyv(i);
     }
     break;
   case INPAR::STR::stress_none:

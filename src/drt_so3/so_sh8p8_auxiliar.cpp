@@ -73,6 +73,28 @@ void DRT::ELEMENTS::So_sh8p8::AxialMetricsAtOrigin(
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_sh8p8::LocalMetrics(
+  const LINALG::Matrix<NUMDIM_,NUMDIM_>& jac,
+  LINALG::Matrix<NUMDIM_,NUMDIM_>& metr
+  )
+{
+  // metrics of r-, s- and t-axis in reference space
+  for (int i=0; i<NUMDIM_; ++i) {
+    for (int j=0; j<NUMDIM_; ++j) {
+      double metrij = 0.0;
+      for (int k=0; k<NUMDIM_; ++k) {
+        metrij += jac(i,k)*jac(j,k);
+      }
+      metr(i,j) = metrij;
+    }
+  }
+
+  // Kette links
+  return;
+}
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -948,16 +970,16 @@ void DRT::ELEMENTS::So_sh8p8::Matrix2TensorToLeftRightProductMatrix6x6Voigt(
       if (transpose)
       {
         bm(AB,ab) = bt(A,a)*bt(B,b);
-        if (ab >= NUMSTR_) bm(AB,ab) += bt(A,b)*bt(B,a);
+        if (ab >= NUMDIM_) bm(AB,ab) += bt(A,b)*bt(B,a);
       }
       else
       {
         bm(AB,ab) = bt(a,A)*bt(b,B);
-        if (ab >= NUMSTR_) bm(AB,ab) += bt(b,A)*bt(a,B);
+        if (ab >= NUMDIM_) bm(AB,ab) += bt(b,A)*bt(a,B);
       }
-      if ( (colvoigt6 == voigt6_stress) and (ab >= NUMSTR_) )
+      if ( (colvoigt6 == voigt6_stress) and (ab >= NUMDIM_) )
         bm(AB,ab) *= 0.5;
-      if ( (rowvoigt6 == voigt6_strain) and (AB >= NUMSTR_) )
+      if ( (rowvoigt6 == voigt6_strain) and (AB >= NUMDIM_) )
         bm(AB,ab) *= 2.0;
     }
   }
