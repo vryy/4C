@@ -1083,6 +1083,16 @@ int DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
 {
   //get PTC dti parameter
   double dti = params.get<double>("dti",0.0);
+  
+  /*comment on the calculation of a proper PTC parameter: it is not a priori clear which phyiscal parameters
+   * should be incalculated when computing a proper PTC parameter; the reason for instability without PTC is
+   * seemingly the vast difference in stiffness of different eigenmodes (namely those related to bending and
+   * stretching, respectively). As both stiffnesses scale linearly with the Young's modulus E  one may assume 
+   * that the PTC parameter may be calculated independently on this parameter; this was indeed found in practice:
+   * varying E over 3 orders of magnitude upwards and downwards did not change stability. For too small values
+   * of E instability was found due to too large curvature in the beam elements, however, this is expected as the
+   * beam formulation is valid for moderate curvature only and small values of E naturally admit increasing
+   * curvature.
 
   /*note: artificial damping in the frame of ptc depends on eigenvalues of elastic stiffness matrix, but
    * not on mass or damping matrix or time step size; adjust ptc parameters depending on elastic parameters,

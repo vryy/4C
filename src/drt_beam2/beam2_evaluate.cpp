@@ -385,7 +385,7 @@ int DRT::ELEMENTS::Beam2::ComputeLocalBrownianForces(ParameterList& params)
   double zeta = 4 * PI * lrefe_ * params.get<double>("ETA",0.0);
   
 
-  int stochasticorder = params.get<int>("STOCH_ORDER",-1);
+  int stochasticorder = params.get<int>("STOCH_ORDER",-2);
 
   
   switch(stochasticorder)
@@ -437,9 +437,9 @@ inline void DRT::ELEMENTS::Beam2::CalcBrownian(ParameterList& params,
                               Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
                               Epetra_SerialDenseVector* force)  //!< element internal force vector
 {
-	//define parameters
+	 //define parameters
 	 double dt = params.get<double>("delta time",0.0);
-   int stochasticorder = params.get<int>("STOCH_ORDER",0);// polynomial order for interpolation of stochastic line load
+   int stochasticorder = params.get<int>("STOCH_ORDER",-2);// polynomial order for interpolation of stochastic line load
    double zeta = 4 * PI * lrefe_ * params.get<double>("ETA",0.0);
 
    switch(stochasticorder)
