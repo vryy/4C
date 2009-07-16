@@ -1087,19 +1087,42 @@ int DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
   /*comment on the calculation of a proper PTC parameter: it is not a priori clear which phyiscal parameters
    * should be incalculated when computing a proper PTC parameter; the reason for instability without PTC is
    * seemingly the vast difference in stiffness of different eigenmodes (namely those related to bending and
-   * stretching, respectively). As both stiffnesses scale linearly with the Young's modulus E  one may assume 
+   * stretching, respectively). Here we analyze the influence of different parameters to this critical ratio:
+   * 
+   * Young's modulus E: As both stiffnesses scale linearly with the Young's modulus E  one may assume 
    * that the PTC parameter may be calculated independently on this parameter; this was indeed found in practice:
    * varying E over 3 orders of magnitude upwards and downwards did not change stability. For too small values
    * of E instability was found due to too large curvature in the beam elements, however, this is expected as the
    * beam formulation is valid for moderate curvature only and small values of E naturally admit increasing
    * curvature.
+   * 
+   * Element length L: Consider a for example a clamped beam of length L with tip load F_h in horizontal and
+   * F_v in vertical direction, respectively. At the tip there will be a horizontal displacement w and vertical
+   * displacement u, respectively. In the dynamical case there holds true: F_h = EIw/L^3 + gamma*w/dt and 
+   * F_v = EAu/L + gamma*u/dt; as gamma ~ L for large L no stability problems arise since in that limit the
+   * different contributions of bending and stretching stiffness may be neglected compared to the effective
+   * damping stiffness gamma/dt. For small L again no problems arise as in that limit w gets more and more
+   * similar to u (in practice L never becomes that small that u becomes larger than w which would essentially
+   * mean that bending deformation becomes much smaller than streching deformation; the reason is that such small
+   * values of L would require very small values for dt as well, which again would make the effective damping
+   * stiffness dominant so that no stability problems would arise) This means that stability problems are to
+   * be expected for modearte L only; moderate L means L for which the elastic stiffness terms are dominant
+   * compared to the effective damping stiffness. For such L one should determine an appropriate PTC prefactor.
+   * Usually this prefactor than just can be kept also for vastly larger or smaller values of L as the system is
+   * numerically highly stable in this case anyway. This means that no explicit dependence of the PTC prefactor
+   * on L is required usually.
+   * 
+   * Cross section A and moment of inertia I: one might assume that the PTC prefactor should depend more or less
+   * linearly on the ratio A/I. However, in practice such a linear dependence was not found to work well.
+   * 
+   * If gamma and at the same time dt are changed by the same factor (time constants depend linearly on gamma),
+   * usually one has to readopt the PTC prefactor. Decreasing dt usually goes along with a decrease of the PTC 
+   * prefactor. The scaling bevaviour is not completely clear; currently a linear dependence of the PTC factor on
+   * time step dt is implemented */
 
-  /*note: artificial damping in the frame of ptc depends on eigenvalues of elastic stiffness matrix, but
-   * not on mass or damping matrix or time step size; adjust ptc parameters depending on elastic parameters,
-   * but independent on time step size*/
 
-  double isotorsdamp   = 5e-1;   //0.5e0
-  double anisotorsdamp = 5e0;  //0.5e1
+  double basisdamp   = (20e+1)*PI*params.get<double>("delta time",0.0); 
+  double anisofactor = 10;
 
   //computing angle increment from current position in comparison with last converged position for damping
   LINALG::Matrix<4,1> deltaQ;
@@ -1120,12 +1143,12 @@ int DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
 
   //isotropic artificial stiffness
   LINALG::Matrix<3,3> artstiff = Hinverse;
-  artstiff.Scale(isotorsdamp*4*PI*params.get<double>("ETA",0.0)*lrefe_*0.5);
+  artstiff.Scale(basisdamp);
 
   //anisotropic artificial stiffness
   LINALG::Matrix<3,3> auxstiff;
   auxstiff.Multiply(Theta,Hinverse);
-  auxstiff.Scale(anisotorsdamp*4*PI*params.get<double>("ETA",0.0)*lrefe_*0.5);
+  auxstiff.Scale(anisofactor*basisdamp);
   artstiff += auxstiff;
 
 
@@ -1140,10 +1163,10 @@ int DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
     {
       /*
       //translational damping; seemingly not necessary, rather bad for convergence
-      elemat1(  i,   j) += dti*0.5;
-      elemat1(6+i, 6+j) += dti*0.5;
-      elemat1(6+i,   j) += dti*0.5;
-      elemat1(  i, 6+j) += dti*0.5;
+      elemat1(  i,   j) += basisdamp;
+      elemat1(6+i, 6+j) += basisdamp;
+      elemat1(6+i,   j) += basisdamp;
+      elemat1(  i, 6+j) += basisdamp;
       */
 
       //rotational damping
