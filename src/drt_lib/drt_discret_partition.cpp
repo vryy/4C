@@ -43,8 +43,6 @@ Maintainer: Michael Gee
 
 #include <Epetra_FECrsGraph.h>
 
-#include "linalg_utils.H"
-
 #include "drt_discret.H"
 #include "drt_exporter.H"
 #include "drt_dserror.H"
@@ -480,49 +478,6 @@ void DRT::Discretization::SetupGhosting()
 {
   if (Filled())
     dserror("there is really no need to setup ghosting if the discretization is already filled");
-
-#if 0
-  std::set<int> rgids;
-  std::set<int> cgids;
-
-  // We assume to only have row nodes on each processor
-
-  std::transform(node_.begin(),
-                 node_.end(),
-                 std::inserter(rgids,rgids.begin()),
-                 LINALG::select1st<std::pair<int,RCP<DRT::Node> > >());
-
-  // The column node ids are determined from the elements
-
-  for (map<int,RCP<DRT::Element> >::iterator i=element_.begin();
-       i!=element_.end();
-       ++i)
-  {
-    int numnodes = i->second->NumNode();
-    const int* nodes = i->second->NodeIds();
-    std::copy(nodes,nodes+numnodes,std::inserter(cgids,cgids.begin()));
-  }
-
-  // map creation
-
-  std::vector<int> rgidvec(rgids.size());
-  std::vector<int> cgidvec(cgids.size());
-
-  rgidvec.assign(rgids.begin(),rgids.end());
-  cgidvec.assign(cgids.begin(),cgids.end());
-
-  Epetra_Map noderowmap(-1,rgidvec.size(),&rgidvec[0],0,*comm_);
-  Epetra_Map nodecolmap(-1,cgidvec.size(),&cgidvec[0],0,*comm_);
-
-  // get the ghosting done
-  // Simple. Maybe not too efficient.
-
-  noderowmap.Print(cout);
-  nodecolmap.Print(cout);
-
-  Redistribute(noderowmap,nodecolmap);
-#endif
-
 
   // build the graph ourselves
   std::map<int,std::set<int> > localgraph;
