@@ -157,19 +157,19 @@ void LINALG::BlockSparseMatrixBase::Complete()
   if (fullcolmap_==Teuchos::null)
   {
     // build full col map
-    int colmaplength = 0;
-    for (int c=0; c<Cols(); ++c)
-    {
-      colmaplength += Matrix(0,c).ColMap().NumMyElements();
-    }
     std::vector<int> colmapentries;
-    colmapentries.reserve(colmaplength);
     for (int c=0; c<Cols(); ++c)
     {
-      const Epetra_Map& colmap = Matrix(0,c).ColMap();
-      copy(colmap.MyGlobalElements(),
-           colmap.MyGlobalElements()+colmap.NumMyElements(),
-           back_inserter(colmapentries));
+      std::set<int> colset;
+      for (int r=0; r<Rows(); ++r)
+      {
+        const Epetra_Map& colmap = Matrix(r,c).ColMap();
+        copy(colmap.MyGlobalElements(),
+             colmap.MyGlobalElements()+colmap.NumMyElements(),
+             inserter(colset, colset.begin()));
+      }
+      colmapentries.reserve(colmapentries.size()+colset.size());
+      copy(colset.begin(), colset.end(), back_inserter(colmapentries));
     }
     fullcolmap_ = Teuchos::rcp(new Epetra_Map(-1,colmapentries.size(),&colmapentries[0],0,Comm()));
   }
