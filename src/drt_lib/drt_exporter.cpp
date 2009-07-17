@@ -532,4 +532,13 @@ void DRT::Exporter::Export(map<int,double>& data)
 }
 
 
+/*----------------------------------------------------------------------*
+ |  communicate objects (public)                             u.kue 07/09|
+ *----------------------------------------------------------------------*/
+void DRT::Exporter::Export(map<int,RCP<Epetra_SerialDenseMatrix> >& data)
+{
+  AnyObjectExporterHelper<Epetra_SerialDenseMatrix> helper(data);
+  GenericExport(helper);
+}
+
 #endif  // #ifdef CCADISCRET

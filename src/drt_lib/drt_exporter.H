@@ -198,6 +198,20 @@ public:
   */
   void Export(map<int,double>& data);
 
+  /*!
+  \brief Communicate a map of serial dense matrices
+
+  This method takes a map of serial dense matrices and redistributes them
+  according to the send and receive plans. It is implicitly assumed, that the
+  key in the map of objects pointwise matches SourceMap().
+
+  \param parobjects (in/out): A map of serial dense matrices. On input, the map
+                              has a distribution matching SourceMap().
+                              On output, the map has a distribution of
+                              TargetMap().
+  */
+  void Export(map<int,RCP<Epetra_SerialDenseMatrix> >& data);
+
 
 #ifdef PARALLEL
   /*!
@@ -562,6 +576,64 @@ private:
   private:
     map<int,RefCountPtr<T> >& parobjects_;
   };
+
+
+  /// Concrete helper class that handles RCPs to any object
+  /**!
+     The objects considered here must have a default constructor and must be
+     supported by ParObject::AddtoPack and ParObject::ExtractfromPack
+     functions.
+
+     Ideally one would manage ParObject with this helper as well, however, the
+     cast to the concrete ParObject type prevents that.
+   */
+  template<typename T>
+  class AnyObjectExporterHelper : public ExporterHelper
+  {
+  public:
+
+    explicit AnyObjectExporterHelper(map<int,RCP<T> >& objects)
+      : objects_(objects) {}
+
+    virtual void PreExportTest(Exporter* exporter)
+    {
+    }
+
+    virtual bool PackObject(int gid, vector<char>& sendblock)
+    {
+      typename map<int,RCP<T> >::const_iterator curr = objects_.find(gid);
+      if (curr!=objects_.end())
+      {
+        ParObject::AddtoPack(sendblock,*curr->second);
+        return true;
+      }
+      return false;
+    }
+
+    virtual void UnpackObject(int gid, int& index, const vector<char>& recvblock)
+    {
+      RCP<T> obj = rcp(new T);
+      ParObject::ExtractfromPack(index,recvblock,*obj);
+
+      // add object to my map
+      objects_[gid] = obj;
+    }
+
+    virtual void PostExportCleanup(Exporter* exporter)
+    {
+      // loop map and kick out everything that's not in TargetMap()
+      map<int,RCP<T> > newmap;
+      typename map<int,RCP<T> >::const_iterator fool;
+      for (fool=objects_.begin(); fool != objects_.end(); ++fool)
+        if (exporter->TargetMap().MyGID(fool->first))
+          newmap[fool->first] = fool->second;
+      swap(newmap,objects_);
+    }
+
+  private:
+    map<int,RCP<T> >& objects_;
+  };
+
 
 
   /// Concrete helper class that handles plain old data (POD) objects
