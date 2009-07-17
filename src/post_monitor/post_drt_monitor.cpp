@@ -25,91 +25,60 @@ Maintainer: Christiane Förster
 #include "../post_drt_common/post_drt_common.H"
 #include "../drt_lib/drt_discret.H"
 
+#include "post_drt_monitor.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-/*!
- * \brief pure virtual class to do monitoring
- */
-class MonWriter
+MonWriter::MonWriter(
+  PostProblem& problem,
+  string& infieldtype,
+  int node
+  )
+  : myrank_(problem.comm()->MyPID()) // get my processor id
 {
-public:
+  // determine the owner of the node
+  nodeowner_ = false;
   
-  //! constructor
-  MonWriter(PostProblem& problem, string& infieldtype, int node):
-    myrank_(problem.comm()->MyPID()) // get my processor id
+  int numdis = problem.num_discr();
+  //std::string fieldtype = "";
+  // loop over all available discretizations
+  for (int i=0; i<numdis; ++i)
   {
-    
-    // determine the owner of the node
-    nodeowner_ = false;
-    
-    int numdis = problem.num_discr();
-    std::string fieldtype = "";
-    // loop over all available discretizations
-    for (int i=0; i<numdis; ++i)
+    PostField* field = problem.get_discretization(i);
+    if (field->name()==infieldtype)
     {
-      PostField* field = problem.get_discretization(i);
-      if (field->name()==infieldtype)
+      // pointer (rcp) to actual discretisation
+      Teuchos::RCP< DRT::Discretization > mydiscrete = field->discretization();
+      // store, if this node belongs to me
+      if (mydiscrete->HaveGlobalNode(node))
       {
-        // pointer (rcp) to actual discretisation
-        Teuchos::RCP< DRT::Discretization > mydiscrete = field->discretization();
-        // store, if this node belongs to me
-        if (mydiscrete->HaveGlobalNode(node))
-        {
-          nodeowner_ = mydiscrete->HaveGlobalNode(node);
-        }
+        nodeowner_ = mydiscrete->HaveGlobalNode(node);
       }
-    }// end loop over dis
-    
-    //ensure that we really found exactly one node owner
-    {
-      int localnodeowner = (int) nodeowner_;
-      int numnodeowner = 0;
-      (problem.comm())->SumAll(&localnodeowner,&numnodeowner,1);
-      if ((myrank_==0) and (numnodeowner==0))
-        dserror("Could not find node %d",node);
-      if ((myrank_==0) and (numnodeowner>1))
-        dserror("Found more than one owner of node %d: %d",node,numnodeowner);
     }
-  }
-
-  //! destructor
-  virtual ~MonWriter()
+  }// end loop over dis
+    
+  //ensure that we really found exactly one node owner
   {
+    int localnodeowner = (int) nodeowner_;
+    int numnodeowner = 0;
+    (problem.comm())->SumAll(&localnodeowner,&numnodeowner,1);
+    if ((myrank_==0) and (numnodeowner==0))
+      dserror("Could not find node %d",node);
+    if ((myrank_==0) and (numnodeowner>1))
+      dserror("Found more than one owner of node %d: %d",node,numnodeowner);
   }
 
-  //! write something
-  virtual void WriteMonFile(PostProblem& problem, string& infieldtype, int node);
-
-protected:
-
-  virtual PostField* GetFieldPtr(PostProblem& problem) = 0;
-
-  virtual void CheckInfieldType(string& infieldtype) = 0;
-
-  virtual void FieldError(int node) = 0;
-
-  virtual void WriteHeader(ofstream& outfile) = 0;
-
-  virtual void WriteTableHead(ofstream& outfile, int dim) = 0;
-
-  virtual void WriteResult(ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim) = 0;
-
-  const int myrank_; //! local processor id
-  bool nodeowner_;   //! only true if proc owns the node
-
-private:
-  // undesired copy constructor
-  MonWriter(const MonWriter& old);
-  // undesired = operator
-  MonWriter& operator= (const MonWriter& old);
-
-}; // end of class MonWriter
+  return;
+}
 
 
 /*----------------------------------------------------------------------*/
-void MonWriter::WriteMonFile(PostProblem& problem, string& infieldtype, int node)
+void MonWriter::WriteMonFile(
+  PostProblem& problem,
+  string& infieldtype,
+  int node
+  )
 {
   // create my output file
   std::string filename = problem.outname() + ".mon";
@@ -122,6 +91,7 @@ void MonWriter::WriteMonFile(PostProblem& problem, string& infieldtype, int node
 
   // get pointer to discretisation of actual field
   PostField* field = GetFieldPtr(problem);
+  if (field == NULL) dserror("Could not obtain field");
 
   CheckInfieldType(infieldtype);
 
@@ -133,20 +103,20 @@ void MonWriter::WriteMonFile(PostProblem& problem, string& infieldtype, int node
   // get actual results of total problem
   PostResult result = PostResult(field);
 
+  // compute offset = datamap.MinAllGID() - field->discretization()->DofRowMap()->MinAllGID().
+  // Note that datamap can only be computed in WriteResult(...), which is pure virtual on
+  // this level. Hence offset is split up into two parts!
+  // First part:
+  const int offset1 = - field->discretization()->DofRowMap()->MinAllGID();
+
   // global nodal dof numbers
   std::vector<int> gdof;
-
-  // compute offset = datamap.MinAllGID() - field->discretization()->DofRowMap()->MinAllGID().
-  // Note that datamap can only be compute in WriteResult(...), which is pure virtual on
-  // this level. Hence offset is split up intot two parts!
-  // First part:
-  int offset1 = - field->discretization()->DofRowMap()->MinAllGID();
 
   if (nodeowner_)
   {
     // test, if this node belongs to me
     bool ismynode = mydiscrete->HaveGlobalNode(node);
-    if (!ismynode) // if this node does not belong to this field ( or proc, but we should be seriell)
+    if (!ismynode) // if this node does not belong to this field ( or proc, but we should be serial)
       FieldError(node);
 
     // pointer to my actual node
@@ -172,7 +142,6 @@ void MonWriter::WriteMonFile(PostProblem& problem, string& infieldtype, int node
 
     WriteTableHead(outfile,dim);
   }
-
   else // this proc is not the node owner
   {
     // set some dummy values
@@ -182,9 +151,6 @@ void MonWriter::WriteMonFile(PostProblem& problem, string& infieldtype, int node
     }
   }
 
-
-
-
   // this is a loop over all time steps that should be written
   // writing step size is considered
   if (nodeowner_)
@@ -193,32 +159,165 @@ void MonWriter::WriteMonFile(PostProblem& problem, string& infieldtype, int node
       WriteResult(outfile,result,gdof,dim);
   }
 
+  // close file
   if (outfile.is_open())
     outfile.close();
 }
 
-
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-class FieldMonWriter : public MonWriter
+void MonWriter::WriteMonStressFile(
+  PostProblem& problem,
+  string& infieldtype,
+  string stresstype,
+  int node
+  )
 {
-public:
-  //! constructor
-  FieldMonWriter(PostProblem& problem, string& infieldtype, int node):MonWriter(problem,infieldtype,node){}
+  // stop it now
+  if ( (stresstype != "none") and (stresstype != "ndxyz") )
+    dserror("Cannot deal with requested stress output type: %s", stresstype.c_str());
+  
+  // write stress
+  if (stresstype != "none")
+  { 
+    // file name
+    const std::string filename = problem.outname() + ".stress.mon";
 
-  //! destructor
-  virtual ~FieldMonWriter()
-  {}
+    // define kind of stresses
+    std::vector<std::string> groupnames;
+    groupnames.push_back("gauss_cauchy_stresses_xyz");
+    groupnames.push_back("gauss_2PK_stresses_xyz");
 
-protected:
+    // write it, now
+    WriteMonStrFile(filename, problem, infieldtype, stresstype, groupnames, node);  
+  }
 
-  virtual PostField* GetFieldPtr(PostProblem& problem);
+  return;
+}
 
-private:
-}; // end of class FieldMonWriter
+/*----------------------------------------------------------------------*/
+void MonWriter::WriteMonStrainFile(
+  PostProblem& problem,
+  string& infieldtype,
+  string straintype,
+  int node
+  )
+{
+  // stop it now
+  if ( (straintype != "none") and (straintype != "ndxyz") )
+    dserror("Cannot deal with requested strain output type: %s", straintype.c_str());
 
+  if (straintype != "none")
+  {
+    // output file name
+    const std::string filename = problem.outname() + ".strain.mon";
 
+    // define kind of strains
+    std::vector<std::string> groupnames;
+    groupnames.push_back("gauss_GL_strains_xyz");
+    groupnames.push_back("gauss_EA_strains_xyz");
+
+    // write, now
+    WriteMonStrFile(filename, problem, infieldtype, straintype, groupnames, node);
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+void MonWriter::WriteMonStrFile(
+  const string& filename,
+  PostProblem& problem,
+  string& infieldtype,
+  string strtype,
+  vector<string> groupnames,
+  int node
+  )
+{
+  // create my output file
+  std::ofstream outfile;
+  if (nodeowner_)
+  {
+    outfile.open(filename.c_str());
+  }
+  //int numdis = problem.num_discr();
+
+  // get pointer to discretisation of actual field
+  PostField* field = GetFieldPtr(problem);
+  if (field == NULL) dserror("Could not obtain field");
+
+  CheckInfieldType(infieldtype);
+
+  // pointer (rcp) to actual discretisation
+  Teuchos::RCP< DRT::Discretization > mydiscrete = field->discretization();
+  // space dimension of the problem
+  const int dim = problem.num_dim();
+
+  // get actual results of total problem
+  PostResult result = PostResult(field);
+
+  // global nodal dof numbers
+  std::vector<int> gdof;
+
+  // compute offset = datamap.MinAllGID() - field->discretization()->DofRowMap()->MinAllGID().
+  // Note that datamap can only be compute in WriteResult(...), which is pure virtual on
+  // this level. Hence offset is split up into two parts!
+  // First part:
+  const int offset1 = - field->discretization()->DofRowMap()->MinAllGID();
+
+  if (nodeowner_)
+  {
+    // test, if this node belongs to me
+    bool ismynode = mydiscrete->HaveGlobalNode(node);
+    if (!ismynode) // if this node does not belong to this field ( or proc, but we should be seriell)
+      FieldError(node);
+
+    // pointer to my actual node
+    const DRT::Node* mynode = mydiscrete->gNode(node);
+
+    // global nodal dof numbers
+    gdof = mydiscrete->Dof(mynode);
+    // set some dummy values
+    for(unsigned i=0;i < gdof.size();i++)
+    {
+      gdof[i] += offset1;
+    }
+
+    // write header
+    WriteHeader(outfile);
+    outfile << node << "\n";
+    outfile << "# control information: nodal coordinates   ";
+    outfile << "x = " << mynode->X()[0] << "    ";
+    outfile << "y = " << mynode->X()[1] << "    ";
+    if (dim > 2) outfile << "z = " << mynode->X()[2];
+    outfile << "\n";
+    outfile << "#\n";
+
+    WriteStrTableHead(outfile,strtype,dim);
+  }
+  else // this proc is not the node owner
+  {
+    // set some dummy values
+    for(int i=0; i < dim+1; ++i)
+    {
+      gdof.push_back(-1);
+    }
+  }
+
+  // This is a loop over all possible stress or strain modes (called groupnames).
+  // The call is handed to _all_ processors, because the extrapolation of the
+  // stresses/strains from Gauss points to nodes is done by DRT::Discretization
+  // utilising an assembly call. The assembly is parallel and thus all processors
+  // have to be incoporated --- at least I think so.
+  // (culpit: bborn, 07/09)
+  for (std::vector<std::string>::iterator gn=groupnames.begin(); gn!=groupnames.end(); ++gn)
+    WriteStrResults(outfile,problem,result,gdof,dim,strtype,*gn,node);
+
+  if (outfile.is_open())
+    outfile.close();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 PostField* FieldMonWriter::GetFieldPtr(PostProblem& problem)
 {
@@ -229,50 +328,25 @@ PostField* FieldMonWriter::GetFieldPtr(PostProblem& problem)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-class FluidMonWriter : public FieldMonWriter
-{
-public:
-  //! constructor
-  FluidMonWriter(PostProblem& problem, string& infieldtype, int node):
-    FieldMonWriter(problem,infieldtype,node){}
-
-  //! destructor
-  virtual ~FluidMonWriter()
-  {}
-
-protected:
-
-  virtual void CheckInfieldType(string& infieldtype);
-
-  void FieldError(int node);
-
-  virtual void WriteHeader(ofstream& outfile);
-
-  void WriteTableHead(ofstream& outfile, int dim);
-
-  virtual void WriteResult(ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim);
-
-private:
-}; // end of class FluidMonWriter
-
-
-/*----------------------------------------------------------------------*/
 void FluidMonWriter::CheckInfieldType(string& infieldtype)
 {
   if (infieldtype != "fluid")
     cout << "\nPure fluid problem, field option other than fluid has been ignored!\n\n";
 }
 
+/*----------------------------------------------------------------------*/
 void FluidMonWriter::FieldError(int node)
 {
   dserror("Node %i does not belong to fluid field!",node);
 }
 
+/*----------------------------------------------------------------------*/
 void FluidMonWriter::WriteHeader(ofstream& outfile)
 {
   outfile << "# fluid problem, writing nodal data of node ";
 }
 
+/*----------------------------------------------------------------------*/
 void FluidMonWriter::WriteTableHead(ofstream& outfile, int dim)
 {
   switch (dim)
@@ -288,7 +362,13 @@ void FluidMonWriter::WriteTableHead(ofstream& outfile, int dim)
   }
 }
 
-void FluidMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim)
+/*----------------------------------------------------------------------*/
+void FluidMonWriter::WriteResult(
+  ofstream& outfile,
+  PostResult& result,
+  std::vector<int>& gdof,
+  int dim
+  )
 {
   // get actual result vector
   Teuchos::RCP< Epetra_Vector > resvec = result.read_result("velnp");
@@ -312,33 +392,6 @@ void FluidMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::vec
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-class StructMonWriter : public FieldMonWriter
-{
-public:
-  //! constructor
-  StructMonWriter(PostProblem& problem, string& infieldtype, int node):
-    FieldMonWriter(problem,infieldtype,node){}
-  //! destructor
-  virtual ~StructMonWriter()
-  {}
-
-protected:
-
-  virtual void CheckInfieldType(string& infieldtype);
-
-  void FieldError(int node);
-
-  virtual void WriteHeader(ofstream& outfile);
-
-  void WriteTableHead(ofstream& outfile, int dim);
-
-  void WriteResult(ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim);
-
-private:
-}; // end of class StructMonWriter
-
-
 /*----------------------------------------------------------------------*/
 void StructMonWriter::CheckInfieldType(string& infieldtype)
 {
@@ -397,7 +450,12 @@ void StructMonWriter::WriteTableHead(ofstream& outfile, int dim)
 }
 
 /*----------------------------------------------------------------------*/
-void StructMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim)
+void StructMonWriter::WriteResult(
+  ofstream& outfile,
+  PostResult& result,
+  std::vector<int>& gdof,
+  int dim
+  )
 {
   // write front
 
@@ -494,36 +552,206 @@ void StructMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::ve
   outfile << "\n";
 }
 
-
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-class AleMonWriter : public FieldMonWriter
+void StructMonWriter::WriteStrTableHead(
+  ofstream& outfile,
+  const string strtype,
+  const int dim
+  )
 {
-public:
-  //! constructor
-  AleMonWriter(PostProblem& problem, string& infieldtype, int node):
-    FieldMonWriter(problem,infieldtype,node){}
-  //! destructor
-  virtual ~AleMonWriter()
-  {}
+  std::string componame = "";
+  if (strtype != "none")
+    componame = "str";
+  else
+    dserror("You should not turn up here.");
 
-protected:
+  switch (dim)
+  {
+  case 2:
+    outfile << "#"
+            << std::right << std::setw(9) << "step"
+            << std::right << std::setw(16) << "time"
+            << std::right << std::setw(16-3) << componame << "_xx"
+            << std::right << std::setw(16-3) << componame << "_yy"
+            << std::right << std::setw(16-3) << componame << "_xy"
+            << std::endl;
+    break;
+  case 3:
+    outfile << "#"
+            << std::right << std::setw(9) << "step"
+            << std::right << std::setw(16) << "time"
+            << std::right << std::setw(16-3) << componame << "_xx"
+            << std::right << std::setw(16-3) << componame << "_yy"
+            << std::right << std::setw(16-3) << componame << "_zz"
+            << std::right << std::setw(16-3) << componame << "_xy"
+            << std::right << std::setw(16-3) << componame << "_yz"
+            << std::right << std::setw(16-3) << componame << "_zx"
+            << std::endl;
+    break;
+  default:
+    dserror("Number of dimensions in space differs from 2 and 3!");
+  }
 
-  virtual void CheckInfieldType(string& infieldtype);
+  return;
+}
 
-  void FieldError(int node);
+/*----------------------------------------------------------------------*/
+void StructMonWriter::WriteStrResults(
+  ofstream& outfile,
+  PostProblem& problem,
+  PostResult& result,
+  std::vector<int>& gdof,
+  int dim,
+  string strtype,
+  string groupname,
+  const int node
+  )
+{
+  result.next_result();  // needed
+  if (map_has_map(result.group(), groupname.c_str()))
+  {
+    // strings
+    std::string name;
+    std::string out;
+    if (groupname == "gauss_2PK_stresses_xyz")
+    {
+      name = "nodal_2PK_stresses_xyz";
+      out = "2nd Piola-Kirchhoff stresses";
+    }
+    else if (groupname == "gauss_cauchy_stresses_xyz")
+    {
+      name = "nodal_cauchy_stresses_xyz";
+      out = "Cauchy stresses";
+    }
+    else if (groupname == "gauss_GL_strains_xyz")
+    {
+      name = "nodal_GL_strains_xyz";
+      out = "Green-Lagrange strains";
+    }
+    else if (groupname == "gauss_EA_strains_xyz")
+    {
+      name = "nodal_EA_strains_xyz";
+      out = "Euler-Almansi strains";
+    }
+    else
+    {
+      dserror("trying to write something that is not a stress or a strain");
+      exit(1);
+    }
 
-  void WriteHeader(ofstream& outfile);
+    // get pointer to discretisation of actual field
+    PostField* field = GetFieldPtr(problem);
+    // base file name
+    const std::string basename = problem.outname();
 
-  void WriteTableHead(ofstream& outfile, int dim);
+    // open file
+    const std::string filename = basename + "_"+ field->name() + "."+ name;
+    cout << "reading from " << filename << endl;
+    std::ofstream file;
+    int startfilepos = 0;
+    if (myrank_ == 0)
+    {
+      file.open(filename.c_str());
+      startfilepos = file.tellp(); // file position should be zero, but we stay flexible
+    }
 
-  void WriteResult(ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim);
+    if (myrank_ == 0)
+      cout << "writing node-based " << out << endl;
 
-private:
-}; // end of class AleMonWriter
+    // DOFs at node
+    int numdf = 0;
+    if (dim == 3)
+      numdf = 6;
+    else if (dim == 2)
+      numdf = 3;
+    else
+      dserror("Cannot handle dimension %d", dim);
 
+    // this is a loop over all time steps that should be written
+    // bottom control here, because first set has been read already
+    do {
+      WriteStrResult(outfile,field,result,groupname,name,numdf,node);
+    } while (result.next_result());
 
+    // close result file
+    if (file.is_open())
+      file.close();
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+void StructMonWriter::WriteStrResult(
+  ofstream& outfile,
+  PostField*& field,
+  PostResult& result,
+  const string groupname,
+  const string name,
+  const int numdf,
+  const int node
+  ) const
+{
+  // get stresses/strains at Gauss points
+  const Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > data
+    = result.read_result_serialdensematrix(groupname);
+  // discretisation (once more)
+  const Teuchos::RCP<DRT::Discretization> dis = field->discretization();
+
+  // extrapolate stresses/strains to nodes
+  // and assemble them in two global vectors
+  Teuchos::ParameterList p;
+  p.set("action", "postprocess_stress");
+  p.set("stresstype", "ndxyz");
+  p.set("gpstressmap", data);
+  Teuchos::RCP<Epetra_Vector> normal_stresses = Teuchos::rcp(new Epetra_Vector(*(dis->DofRowMap())));
+  Teuchos::RCP<Epetra_Vector> shear_stresses = Teuchos::rcp(new Epetra_Vector(*(dis->DofRowMap())));
+  dis->Evaluate(p,Teuchos::null,Teuchos::null,normal_stresses,shear_stresses,Teuchos::null);
+
+  // average stresses/strains and print to file
+  if (nodeowner_)
+  {
+    const DRT::Node* lnode = dis->gNode(node);
+    const std::vector<int> lnodedofs = dis->Dof(lnode);
+    const int adjele = lnode->NumElement();
+    std::vector<double> nodal_stresses;
+    if (numdf == 6)
+    {
+      if (lnodedofs.size() < 3)
+        dserror("Too few DOFs at node of interest");
+      nodal_stresses.push_back((*normal_stresses)[lnodedofs[0]]/adjele);
+      nodal_stresses.push_back((*normal_stresses)[lnodedofs[1]]/adjele);
+      nodal_stresses.push_back((*normal_stresses)[lnodedofs[2]]/adjele);
+      nodal_stresses.push_back((*shear_stresses)[lnodedofs[0]]/adjele);
+      nodal_stresses.push_back((*shear_stresses)[lnodedofs[1]]/adjele);
+      nodal_stresses.push_back((*shear_stresses)[lnodedofs[2]]/adjele);      
+    }
+    else if (numdf == 3)
+    {
+      if (lnodedofs.size() < 2)
+        dserror("Too few DOFs at node of interest");
+      nodal_stresses.push_back((*normal_stresses)[lnodedofs[0]]/adjele);
+      nodal_stresses.push_back((*normal_stresses)[lnodedofs[1]]/adjele);
+      nodal_stresses.push_back((*shear_stresses)[lnodedofs[0]]/adjele);
+    }
+    else
+    {
+      dserror("Don't know what to do with %d DOFs per node", numdf);
+    }
+    
+    // print to file
+    outfile << std::right << std::setw(10) << result.step();
+    outfile << std::right << std::setw(16) << std::scientific << result.time();
+    for (std::vector<double>::iterator ns=nodal_stresses.begin(); ns!=nodal_stresses.end(); ++ns)
+      outfile << std::right << std::setw(16) << std::scientific << *ns;
+    outfile << std::endl;
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void AleMonWriter::CheckInfieldType(string& infieldtype)
 {
@@ -560,7 +788,12 @@ void AleMonWriter::WriteTableHead(ofstream& outfile, int dim)
 }
 
 /*----------------------------------------------------------------------*/
-void AleMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim)
+void AleMonWriter::WriteResult(
+  ofstream& outfile,
+  PostResult& result,
+  std::vector<int>& gdof,
+  int dim
+  )
 {
   // get actual result vector for displacement
   Teuchos::RCP< Epetra_Vector > resvec = result.read_result("displacement");
@@ -581,35 +814,9 @@ void AleMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::vecto
   outfile << "\n";
 }
 
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-class FsiFluidMonWriter : public FluidMonWriter
-{
-public:
-  //! constructor
-  FsiFluidMonWriter(PostProblem& problem, string& infieldtype, int node):
-    FluidMonWriter(problem,infieldtype,node){}
-  //! destructor
-  virtual ~FsiFluidMonWriter()
-  {}
-
-protected:
-
-  void CheckInfieldType(string& infieldtype){};
-
-  PostField* GetFieldPtr(PostProblem& problem);
-
-  void WriteHeader(ofstream& outfile);
-
-  void WriteTableHead(ofstream& outfile, int dim);
-
-  void WriteResult(ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim);
-
-private:
-}; // end of class FsiFluidMonWriter
-
-
 /*----------------------------------------------------------------------*/
 PostField* FsiFluidMonWriter::GetFieldPtr(PostProblem& problem)
 {
@@ -643,7 +850,12 @@ void FsiFluidMonWriter::WriteTableHead(ofstream& outfile, int dim)
 }
 
 /*----------------------------------------------------------------------*/
-void FsiFluidMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim)
+void FsiFluidMonWriter::WriteResult(
+  ofstream& outfile,
+  PostResult& result,
+  std::vector<int>& gdof,
+  int dim
+  )
 {
   // get actual result vector for displacement
   Teuchos::RCP< Epetra_Vector > resvec = result.read_result("dispnp");
@@ -682,30 +894,6 @@ void FsiFluidMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-class FsiStructMonWriter : public StructMonWriter
-{
-public:
-  //! constructor
-  FsiStructMonWriter(PostProblem& problem, string& infieldtype, int node):
-    StructMonWriter(problem,infieldtype,node){}
-  //! destructor
-  virtual ~FsiStructMonWriter()
-  {}
-
-protected:
-
-  void CheckInfieldType(string& infieldtype){};
-
-  PostField* GetFieldPtr(PostProblem& problem);
-
-  void WriteHeader(ofstream& outfile);
-
-private:
-}; // end of class FsiStructMonWriter
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 PostField* FsiStructMonWriter::GetFieldPtr(PostProblem& problem)
 {
   // get pointer to discretisation of actual field
@@ -724,29 +912,6 @@ void FsiStructMonWriter::WriteHeader(ofstream& outfile)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-class FsiAleMonWriter : public AleMonWriter
-{
-public:
-  //! constructor
-  FsiAleMonWriter(PostProblem& problem, string& infieldtype, int node):
-    AleMonWriter(problem,infieldtype,node){}
-  //! destructor
-  virtual ~FsiAleMonWriter()
-  {}
-
-protected:
-
-  void CheckInfieldType(string& infieldtype){};
-
-  PostField* GetFieldPtr(PostProblem& problem);
-
-  void WriteHeader(ofstream& outfile);
-
-private:
-}; // end of class FsiAleMonWriter
-
-
 /*----------------------------------------------------------------------*/
 PostField* FsiAleMonWriter::GetFieldPtr(PostProblem& problem)
 {
@@ -826,6 +991,8 @@ int main(int argc, char** argv)
     {
       StructMonWriter mymonwriter(problem,infieldtype,node);
       mymonwriter.WriteMonFile(problem,infieldtype,node);
+      mymonwriter.WriteMonStressFile(problem,infieldtype,problem.stresstype(),node);
+      mymonwriter.WriteMonStrainFile(problem,infieldtype,problem.straintype(),node);
       break;
     }
     case prb_fluid:
