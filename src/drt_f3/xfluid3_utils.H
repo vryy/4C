@@ -31,6 +31,7 @@ namespace XFLUID
   /// u^h = SUM_I P^I u^I
   ///  u^I are the free parameters (nodal unknowns in the standard FEM) and
   ///  normal and enriched parameters combined in the XFEM
+  ///  psi denotes the enrichment function, e.g. a step function H
   ///
   /// | P1 |   | N1     |
   /// | P2 |   | N2     |
