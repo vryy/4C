@@ -637,20 +637,8 @@ void StructMonWriter::WriteStrResults(
 
     // get pointer to discretisation of actual field
     PostField* field = GetFieldPtr(problem);
-    // base file name
-    const std::string basename = problem.outname();
 
-    // open file
-    const std::string filename = basename + "_"+ field->name() + "."+ name;
-    cout << "reading from " << filename << endl;
-    std::ofstream file;
-    int startfilepos = 0;
-    if (myrank_ == 0)
-    {
-      file.open(filename.c_str());
-      startfilepos = file.tellp(); // file position should be zero, but we stay flexible
-    }
-
+    // inform (eagerly waiting) user
     if (myrank_ == 0)
       cout << "writing node-based " << out << endl;
 
@@ -669,9 +657,6 @@ void StructMonWriter::WriteStrResults(
       WriteStrResult(outfile,field,result,groupname,name,numdf,node);
     } while (result.next_result());
 
-    // close result file
-    if (file.is_open())
-      file.close();
   }
 
   return;
@@ -710,6 +695,7 @@ void StructMonWriter::WriteStrResult(
     const DRT::Node* lnode = dis->gNode(node);
     const std::vector<int> lnodedofs = dis->Dof(lnode);
     const int adjele = lnode->NumElement();
+
     std::vector<double> nodal_stresses;
     if (numdf == 6)
     {
