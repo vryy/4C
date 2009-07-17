@@ -30,18 +30,6 @@ DRT::Element(id,element_beam3,owner),
 data_(),
 isinit_(false),
 lrefe_(0),
-Qconv_(0),
-Qold_(0),
-Qnew_(0),
-curvconv_(0),
-curvold_(0),
-curvnew_(0),
-thetaconv_(0),
-thetaold_(0),
-thetanew_(0),
-thetaprimeconv_(0),
-thetaprimeold_(0),
-thetaprimenew_(0),
 crosssec_(0),
 crosssecshear_(0),
 Iyy_(0),
@@ -135,25 +123,23 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Beam3::Shape() const
   switch(numnodes)
   {
   	case 2:
-  			return line2;
-  			break;
+			return line2;
+			break;
   	case 3:
-  			return line3;
-  			break;
+			return line3;
+			break;
   	case 4:
-  	  		return line4;
-  	  		break;
+  		return line4;
+  		break;
   	case 5:
-  	  		return line5;
-  	  		break;
+  		return line5;
+  		break;
   	default:
-  			dserror("Only Line2, Line3 and Line4 elements are implemented.");
-  			break;
-  	
+			dserror("Only Line2, Line3 and Line4 elements are implemented.");
+			break;  	
   }
 
-  return dis_none;
-	
+  return dis_none;	
 }
 
 
@@ -351,7 +337,7 @@ void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const vector<double>& xrefe,co
 		LINALG::Matrix<3,3> Tref;
 	
     //length in reference configuration
-    lrefe_ = pow(pow(xrefe[0]-xrefe[3*nnode-3],2)+pow(xrefe[1]-xrefe[3*nnode-2],2)+pow(xrefe[2]-xrefe[3*nnode-1],2),0.5);
+    lrefe_ = pow( pow(xrefe[0]-xrefe[3*nnode-3],2) + pow(xrefe[1]-xrefe[3*nnode-2],2) + pow(xrefe[2]-xrefe[3*nnode-1],2) ,0.5 );
 
     /*initial triad Tref = [t1,t2,t3] is set in a way for which we don`t have strains in reference configuration*/
     LINALG::Matrix<3,1> dxdxi;

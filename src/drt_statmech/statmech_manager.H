@@ -49,7 +49,7 @@ public:
   void StatMechUpdate(const double dt, const Epetra_Vector& disrow);
 
   //! \brief updates system damping matrix and external force vector according to influence of thermal bath
-  void StatMechBrownian(ParameterList& params, RCP<Epetra_Vector> dis, RCP<Epetra_Vector> browniancol);
+  void StatMechBrownian(ParameterList& params, RCP<Epetra_Vector> dis);
 
   //! \brief initializing special output for statistical mechanics by looking for a suitable name of the outputfile and setting up an empty file with this name
   void StatMechInitOutput(const int ndim, const double& dt);
@@ -70,7 +70,7 @@ protected:
   StatMechManager(const StatMechManager& old);
 
   //! \brief delete crosslinkers according to delcrosslinkercol (if entry for a node equals 1 its crosslinker is deleted)
-  void DelCrosslinkers(const double& dt, const Epetra_Map& noderowmap);
+  void DelCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap);
 
   //! \brief Searches and saves in variable  crosslinkerneighbours_ neighbours for each row node
   void SearchNeighbours(const std::map<int,LINALG::Matrix<3,1> > currentpositions);

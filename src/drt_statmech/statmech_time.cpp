@@ -34,9 +34,6 @@ StruGenAlpha(params,dis,solver,output)
 {
   statmechmanager_ = rcp(new StatMechManager(params,dis,stiff_));
 
-  //create vector for statistical forces
-  browniancol_ = LINALG::CreateVector(*(discret_.DofRowMap()),true);
-
   return;
 } // StatMechTime::StatMechTime
 
@@ -93,27 +90,35 @@ void StatMechTime::Integrate()
      * to initialized the related output method*/
     if(i == 0)
       statmechmanager_->StatMechInitOutput(ndim,dt);
+    
+    
 
     //processor 0 write total number of elements at the beginning of time step i to console:
     if(!discret_.Comm().MyPID())
       std::cout<<"\nNumber of elements at the beginning of time step "<<i<<" : "<<discret_.NumGlobalElements()<<"\n";
 
-
     //pay attention: for a constant predictor an incremental velocity update is necessary, which has
     //been deleted out of the code in oder to simplify it
 
+    
+    
     /*
     if      (predictor==1) ConstantPredictor();
     else if (predictor==2) ConsistentPredictor();
     */
 
     ConsistentPredictor();
-
+    
+    
+    
+    
 
     //FullNewton();
     PTC();
 
     UpdateandOutput();
+    
+    
 
     /*special update for statistical mechanics; this output has to be handled seperately from the time integration scheme output
      * as it may take place independently on writing geometric output data in a specific time step or not*/
@@ -254,15 +259,14 @@ void StatMechTime::ConsistentPredictor()
     discret_.ClearState();
   }
 
+  
+  
   /*Statistical mechanics includes some Brownian forces. These are evaluated at the beginning of a time step, i.e. in the sense
    * of an Ito integral by means of random numbers. Thus currently a semi-implicit time step scheme is applied (implicit in drift
    * term and explicit in noise term). The Brownian forces are evaluated in such a way that the resulting Langevin equation goes
    * along with the correct Fokker-Planck-Diffusion equation*/
-  statmechmanager_->StatMechBrownian(params_,dis_,browniancol_);
+  statmechmanager_->StatMechBrownian(params_,dis_);
 
-
-
-  //cout << *disn_ << endl;
 
   // consistent predictor
   // predicting velocity V_{n+1} (veln)
@@ -360,8 +364,6 @@ void StatMechTime::ConsistentPredictor()
     p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
     p.set("STOCH_ORDER",(statmechmanager_->statmechparams_).get<int>("STOCH_ORDER",0));
 
-    //add statistical vector to parameter list for statistical forces and damping matrix computation
-    p.set("statistical vector",browniancol_);
 
     // set vector values needed by elements
     discret_.ClearState();
@@ -545,9 +547,6 @@ void StatMechTime::FullNewton()
       p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
       p.set("STOCH_ORDER",(statmechmanager_->statmechparams_).get<int>("STOCH_ORDER",0));
 
-      //add statistical vector to parameter list for statistical forces
-      p.set("statistical vector",browniancol_);
-
 
       // set vector values needed by elements
       discret_.ClearState();
@@ -720,8 +719,6 @@ void StatMechTime::PTC()
       p.set("delta time",dt);
       p.set("dti",dti);
 
-      //add statistical vector to parameter list for statistical forces and damping matrix computation
-      p.set("statistical vector",browniancol_);
       p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
       p.set("STOCH_ORDER",(statmechmanager_->statmechparams_).get<int>("STOCH_ORDER",0));
 
@@ -777,9 +774,6 @@ void StatMechTime::PTC()
       //passing statistical mechanics parameters to elements
       p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
       p.set("STOCH_ORDER",(statmechmanager_->statmechparams_).get<int>("STOCH_ORDER",0));
-
-      //add statistical vector to parameter list for statistical forces and damping matrix computation
-      p.set("statistical vector",browniancol_);
 
       // set vector values needed by elements
       discret_.ClearState();

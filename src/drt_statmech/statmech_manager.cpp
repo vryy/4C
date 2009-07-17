@@ -74,7 +74,18 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
    * column map is turned into a fully overlapping one even in case that dynamic crosslinkers are deactivated;
    * the reason is that also the method for Gmsh output currently relies on a fully overlapping column map
    * in case of parallel computing (otherwise the output is not written correctly*/
+  
+  /*
+  const Epetra_Map noderowmap = *(discret_.NodeRowMap());
+
+  // put all boundary nodes and elements onto all processors
+  const Epetra_Map nodecolmap = *LINALG::AllreduceEMap(noderowmap);
+
+  // redistribute nodes and elements to column (ghost) map
+  discret_.ExportColumnNodes(nodecolmap);
+  */
     
+  /*
     const Epetra_Map noderowmap = *(discret_.NodeRowMap());
 
     // fill my own row node ids into vector sdata
@@ -99,13 +110,13 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
     //declaring new variable into which the information of stproc on all processors is gathered
     vector<int> rtproc(0);
     
-    /*gathers information of stproc and writes it into rtproc; in the end rtproc is a vector which 
-     * contains the numbers of all processors which have elements*/
+    //gathers information of stproc and writes it into rtproc; in the end rtproc is a vector which 
+    // contains the numbers of all processors which have elements
     LINALG::Gather<int>(stproc,rtproc,discret_.Comm().NumProc(),&allproc[0],discret_.Comm());
       
-    /*in analogy to stproc and rtproc the variable rdata gathers all the element numbers which are 
-     * stored on different processors in their own variables sdata; thereby each processor gets
-     * the information about all the nodes numbers existing in this problem*/
+    //in analogy to stproc and rtproc the variable rdata gathers all the element numbers which are 
+    // stored on different processors in their own variables sdata; thereby each processor gets
+    // the information about all the nodes numbers existing in this problem
     vector<int> rdata;
 
     // gather all gids of nodes redundantly from sdata into rdata
@@ -121,6 +132,8 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
     
     //pass new fully overlapping column map to discretization
     discret_.ExportColumnNodes(*newnodecolmap);
+    
+    */
 
     /*rebuild discretization based on the new column map so that each processor creates new ghost elements
      * if necessary; after the following line we have a discretization, where each processor has a fully
@@ -139,10 +152,10 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
     filamentnumber_ = rcp( new Epetra_Vector(*(discret_.NodeColMap())) );
     filamentnumber_->PutScalar(-1);
     
-    //initialize crosslinkerpartner_ and crosslinkerneighbours_ with empty vector for each row node
+    //initialize crosslinkerneighbours_ and crosslinkerpartner with empty vector for each row node
     std::vector<int> emptyvector;
-    crosslinkerpartner_.resize(discret_.NumMyRowNodes(),emptyvector);
     crosslinkerneighbours_.resize(discret_.NumMyRowNodes(),emptyvector);
+    crosslinkerpartner_.resize(discret_.NumMyRowNodes(),emptyvector);
     
 
     
@@ -233,7 +246,6 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
   
       //we construct a search tree with maximal depth of 8 (different numbers might be tried out, too)
       octTree_ = rcp(new GEO::SearchTree(8));
-     
       
       /*after having generated a search tree and a discretization with fully overlapping column map we initialize the search tree
        * for accelerated search for each nodes neighbouring nodes; note: the tree is based on a bounding box
@@ -1021,18 +1033,18 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& disro
 #endif // #ifdef MEASURETIME 
     
     //setting the crosslinkers for neighbours in crosslinkerneighbours_ after probability check
-    SetCrosslinkers(dt,noderowmap,nodecolmap,currentpositions,currentrotations);
-    
+    //SetCrosslinkers(dt,noderowmap,nodecolmap,currentpositions,currentrotations);
+        
     //deleting the crosslinkers in crosslinkerpartner_ after probability check
-    DelCrosslinkers(dt,noderowmap);
+    //DelCrosslinkers(dt,noderowmap,nodecolmap);
      
     /*settling administrative stuff in order to make the discretization ready for the next time step: the following
      * commmand generates or deletes ghost elements if necessary and calls FillCompete() method of discretization; 
      * this is enough as long as only elements, but no nodes are added in a time step; finally Crs matrices stiff_ has
      * to be deleted completely and made ready for new assembly since their graph was changed*/     
-    DRT::UTILS::RedistributeWithNewNodalDistribution(discret_,noderowmap,nodecolmap);      
-    discret_.FillComplete(true,false,false);
-    stiff_->Reset();
+    //DRT::UTILS::RedistributeWithNewNodalDistribution(discret_,noderowmap,nodecolmap);      
+    //discret_.FillComplete(true,false,false);
+    //stiff_->Reset();
 
 
     
@@ -1058,7 +1070,7 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& disro
  | each row nod                                              cyron 07/09|
  *----------------------------------------------------------------------*/
 void StatMechManager::SearchNeighbours(const std::map<int,LINALG::Matrix<3,1> > currentpositions)
-{ 
+{   
   //maximal distance bridged by a crosslinker
   double rlink = statmechparams_.get<double>("R_LINK",0.0);
   
@@ -1105,17 +1117,17 @@ void StatMechManager::SearchNeighbours(const std::map<int,LINALG::Matrix<3,1> > 
     vector<int>::iterator iter = neighboursLID.begin();
     while( iter != neighboursLID.end() )
     {
-      if( (  (*filamentnumber_)[*iter] == (*filamentnumber_)[icolID]  && (*filamentnumber_)[i] >= 0 )
+      if( (  (*filamentnumber_)[*iter] == (*filamentnumber_)[icolID]  && (*filamentnumber_)[icolID] >= 0 )
          ||  (discret_.lColNode(*iter))->Id() < iGID )
         iter = neighboursLID.erase(iter);
       else
         ++iter;
     }
     
-    
     //finally the list of column map LIDs in neighboursLID is assigned to the entry of the i-th row node in crosslinkerneighbours_
     crosslinkerneighbours_[i] = neighboursLID;   
   }
+
 }//void SearchNeighbours(const int rlink, const std::map<int,LINALG::Matrix<3,1> > currentpositions)
 
 /*----------------------------------------------------------------------*
@@ -1124,25 +1136,6 @@ void StatMechManager::SearchNeighbours(const std::map<int,LINALG::Matrix<3,1> > 
  *----------------------------------------------------------------------*/
 void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,const std::map<int,LINALG::Matrix<3,1> >& currentpositions,const std::map<int,LINALG::Matrix<3,1> >& currentrotations)
 {  
-  /*in order not to have to set all the parameters for each single crosslinker element a dummy crosslinker element 
-   * is set up before setting crosslinkers*/ 
-  #ifdef D_BEAM3
-      RCP<DRT::ELEMENTS::Beam3> crosslinkerdummy;   
-      crosslinkerdummy = rcp(new DRT::ELEMENTS::Beam3(-1,discret_.Comm().MyPID()) );  
-      crosslinkerdummy->crosssec_ = 1.9e-09;
-      crosslinkerdummy->crosssecshear_ = 1.9e-09*1.1;
-      crosslinkerdummy->Iyy_ = 2.874e-11;
-      crosslinkerdummy->Izz_ = 2.874e-11;
-      crosslinkerdummy->Irr_ = 5.748e-11;        
-  #endif      
-   /*
-  #ifdef D_TRUSS3
-      RCP<DRT::ELEMENTS::Truss3> crosslinkerdummy;   
-      crosslinkerdummy = rcp(new DRT::ELEMENTS::Truss3(-1,discret_.Comm().MyPID()) );       
-      crosslinkerdummy->crosssec_ = 19e-6;
-  #endif
-  */
-
   //probability with which a crosslinker is established between neighbouring nodes
   double plink = 1.0 - exp( -dt*statmechparams_.get<double>("K_ON",0.0)*statmechparams_.get<double>("C_CROSSLINKER",0.0) );
 
@@ -1171,7 +1164,7 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
       {
         //check whether a crosslinker has already been established to the same node
         bool notyet = true;
-        for(int k = 0; k < crosslinkerpartner_[i].size(); k++)
+        for(int k = 0; k < (int)crosslinkerpartner_[i].size(); k++)
         {
           if((crosslinkerpartner_[i])[k] == (crosslinkerneighbours_[i])[j] )
             notyet = false;
@@ -1199,25 +1192,25 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
             rotrefe[k+3] = (rotj->second)(k);
           }
           
-          /*a new crosslinker element is generated according to a crosslinker dummy defined above; note that
-           * the dummy has already the proper owner number*/                   
-   #ifdef D_BEAM3
-          RCP<DRT::ELEMENTS::Beam3> newcrosslinker = rcp(new DRT::ELEMENTS::Beam3(*crosslinkerdummy) );
+          /*there is the problem of how to assign to a crosslinker element a GID which is certainly not used by any
+           * other element; we know that for a network at the beginning (without crosslinkers) each node has a
+           * connectivity of 1 or 2 so that the number of all elements used to discretized the filaments is smaller
+           * than basisnodes_. Thus we choose crosslinker GIDs >= basisnodes_. To make sure that two crosslinkers
+           * never have the same GID we add to basisnodes_ the value basisnodes_*GID1, where GID1 is the GID of the
+           * first nodes of the crosslinker element. Then we add GID2, which is the GID of the second node of the
+           * crosslinker element. Hence basisnodes_ + GID1*basisnodes_ + GID2 always give a GID which cannot be 
+           * used by any other element*/                  
+   #ifdef D_BEAM3         
+          RCP<DRT::ELEMENTS::Beam3> newcrosslinker = rcp(new DRT::ELEMENTS::Beam3((noderowmap.GID(i) + 1)*basisnodes_ +  nodecolmap.GID((crosslinkerneighbours_[i])[j]), discret_.Comm().MyPID()) );
           
-         
-          /*assigning correct global Id to new crosslinker element: the element Id for the k-th crosslinker of a
-           * node is set to k*basisnodes_ + noderowmap.GID(i)); note: for the discretization of a polymer
-           * network the connectivity of a node in the beginning is always 1 or 2. Thus there exist always more nodes
-           * than elements in the beginning. Thus element GIDs > basisnodes_ make sure that the newly added crosslinker
-           * elements get a GID certainly larger than the Id of any element present in the discretization when the 
-           * simulation starts. Thus no interference between crosslinkers and elements for filament discretization is
-           * possible. For the crosslinkers set up from a certain row node i we reserve the element GIDs k*basisnodes_ 
-           * + noderowmap.GID(i). Obviously, these GIDs cannot be taken by any of the elements discretizing
-           * the filaments themselves (thse have GIDs < basisnodes_) nor by crosslinker elements of any other node. The
-           * latter condition is clear from noderowmap.GID(i) < basisnodes_. Note also that k, i.e. the number of crosslinkers
-           * the row node i has including the one being established right now can be gained from the length of crosslinkerparter_[i]*/    
-          newcrosslinker->SetId( crosslinkerpartner_[i].size()*basisnodes_ + noderowmap.GID(i) ); 
-          
+          //setting up crosslinker element parameters
+          newcrosslinker ->crosssec_ = 1.9e-09;
+          newcrosslinker ->crosssecshear_ = 1.9e-09*1.1;
+          newcrosslinker ->Iyy_ = 2.874e-11;
+          newcrosslinker ->Izz_ = 2.874e-11;
+          newcrosslinker ->Irr_ = 5.748e-11; 
+
+  
           //nodes are assigned to the new crosslinker element by first assigning global node Ids and then assigning nodal pointers
           int globalnodeids[2] = {noderowmap.GID(i),nodecolmap.GID( (crosslinkerneighbours_[i])[j] )}; 
                  
@@ -1233,7 +1226,8 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
           newcrosslinker->SetMaterial(1);
           
           //add new element to discretization
-          discret_.AddElement(newcrosslinker);        
+          discret_.AddElement(newcrosslinker);  
+          
    #endif 
          }//if(notyet)
       }//if(UniformGen.random() < plink)     
@@ -1245,7 +1239,7 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
  | delete crosslinkers listed in crosslinkerpartner_ after random check |               
  | (private)                                                 cyron 02/09|
  *----------------------------------------------------------------------*/
-void StatMechManager::DelCrosslinkers(const double& dt, const Epetra_Map& noderowmap)
+void StatMechManager::DelCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap)
 { 
   
   //probability with which a crosslink breaks up in the current time step 
@@ -1262,23 +1256,25 @@ void StatMechManager::DelCrosslinkers(const double& dt, const Epetra_Map& nodero
    * we make sure that this method is unaffected by any changes in the discretization and its maps
    * in the turn of adding and deleting crosslinkers*/ 
   for(int i = 0; i < noderowmap.NumMyElements(); i++)
-  {    
-    for(std::vector<int>::iterator tempIterator = crosslinkerpartner_[i].end(); tempIterator != crosslinkerpartner_[i].begin(); tempIterator-- ) 
+  {      
+    vector<int>::iterator iter = crosslinkerpartner_[i].begin();
+    while( iter != crosslinkerpartner_[i].end() )
     {
-      //probablility check whether crosslinker has to be removed
       if(UniformGen.random() < punlink)
-      {     
-        //we compute the global GID of the crosslinker to be deleted 
-        int crosslinkerid = (*tempIterator)*basisnodes_ + noderowmap.GID(i);
-            
+      {       
+        //we compute the GID of the crosslinker to be deleted 
+        int crosslinkerid = (noderowmap.GID(i) + 1)*basisnodes_ +  nodecolmap.GID(*iter);
+                
         //delete crosslinker from discretization
         if( !discret_.DeleteElement(crosslinkerid) )
           dserror("Deleting crosslinker element failed");
-        
+               
         //delete crosslinker from list of established crosslinkers
-        crosslinkerpartner_[i].erase(tempIterator);
+        iter = crosslinkerpartner_[i].erase(iter);
       }
-     }//for( tempIterator = crosslinkerpartner_[i].end(); tempIterator != crosslinkerpartner_[i].begin(); tempIterator-- )
+      else
+        ++iter;
+    }
    }//for(int i = 0; i < discret_.NumMyRowNodes(); i++)
   
 }//void DelCrosslinkers(const Epetra_Vector& delcrosslinkercol)
@@ -1288,12 +1284,14 @@ void StatMechManager::DelCrosslinkers(const double& dt, const Epetra_Map& nodero
  | displacement vector according to influence of thermal bath (public)  |
  |                                                           cyron 10/08|
  *----------------------------------------------------------------------*/
-void StatMechManager::StatMechBrownian(ParameterList& params, RCP<Epetra_Vector> dis, RCP<Epetra_Vector> browniancol)
+void StatMechManager::StatMechBrownian(ParameterList& params, RCP<Epetra_Vector> dis)
 {   
   /*declaration of a column and row map Epetra_Vector for evaluation of statistical forces or Brownian stets in space;
    *  note: zero initilization mandatory for correct computations later on*/
   RCP<Epetra_Vector>    brownianrow;
+  RCP<Epetra_Vector>    browniancol;
   brownianrow = LINALG::CreateVector(*discret_.DofRowMap(),true);
+  browniancol = LINALG::CreateVector(*discret_.DofColMap(),true);
   
   //defining parameter list passed down to the elements in order to evalute statistical forces down there
   ParameterList pstat;
