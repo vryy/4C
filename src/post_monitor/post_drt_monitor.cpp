@@ -26,52 +26,54 @@ Maintainer: Christiane Förster
 #include "../drt_lib/drt_discret.H"
 
 
-
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*!
-\brief pure virtual class to do monitoring
-*/
-/*----------------------------------------------------------------------*/
+ * \brief pure virtual class to do monitoring
+ */
 class MonWriter
 {
 public:
-//! constructor
-MonWriter(PostProblem& problem, string& infieldtype, int node):
-  myrank_(problem.comm()->MyPID()) // get my processor id
+  
+  //! constructor
+  MonWriter(PostProblem& problem, string& infieldtype, int node):
+    myrank_(problem.comm()->MyPID()) // get my processor id
   {
-
-	// determine the owner of the node
-	nodeowner_=false;
-
-	int numdis = problem.num_discr();
-	string fieldtype="";
-	// loop over all available discretizations
-	for (int i=0;i<numdis;++i)
-	{
-		PostField* field = problem.get_discretization(i);
-		if (field->name()==infieldtype)
-		{
-			// pointer (rcp) to actual discretisation
-			RCP< DRT::Discretization > mydiscrete = field->discretization();
-			// store, if this node belongs to me
-			if (mydiscrete->HaveGlobalNode(node))
-			{
-				nodeowner_ = mydiscrete->HaveGlobalNode(node);
-			}
-		}
-	}// end loop over dis
-
-	//ensure that we really found exactly one node owner
-	{
-		int localnodeowner = (int) nodeowner_;
-		int numnodeowner = 0;
-		(problem.comm())->SumAll(&localnodeowner,&numnodeowner,1);
-		if ((myrank_==0) and (numnodeowner==0))
-			dserror("Could not find node %d",node);
-		if ((myrank_==0) and (numnodeowner>1))
-			dserror("Found more than one owner of node %d: %d",node,numnodeowner);
-	}
+    
+    // determine the owner of the node
+    nodeowner_ = false;
+    
+    int numdis = problem.num_discr();
+    std::string fieldtype = "";
+    // loop over all available discretizations
+    for (int i=0; i<numdis; ++i)
+    {
+      PostField* field = problem.get_discretization(i);
+      if (field->name()==infieldtype)
+      {
+        // pointer (rcp) to actual discretisation
+        Teuchos::RCP< DRT::Discretization > mydiscrete = field->discretization();
+        // store, if this node belongs to me
+        if (mydiscrete->HaveGlobalNode(node))
+        {
+          nodeowner_ = mydiscrete->HaveGlobalNode(node);
+        }
+      }
+    }// end loop over dis
+    
+    //ensure that we really found exactly one node owner
+    {
+      int localnodeowner = (int) nodeowner_;
+      int numnodeowner = 0;
+      (problem.comm())->SumAll(&localnodeowner,&numnodeowner,1);
+      if ((myrank_==0) and (numnodeowner==0))
+        dserror("Could not find node %d",node);
+      if ((myrank_==0) and (numnodeowner>1))
+        dserror("Found more than one owner of node %d: %d",node,numnodeowner);
+    }
   }
+
   //! destructor
   virtual ~MonWriter()
   {
@@ -107,12 +109,11 @@ private:
 
 
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MonWriter::WriteMonFile(PostProblem& problem, string& infieldtype, int node)
 {
   // create my output file
-  string filename = problem.outname() + ".mon";
-  ofstream outfile;
+  std::string filename = problem.outname() + ".mon";
+  std::ofstream outfile;
   if (nodeowner_)
   {
     outfile.open(filename.c_str());
@@ -125,7 +126,7 @@ void MonWriter::WriteMonFile(PostProblem& problem, string& infieldtype, int node
   CheckInfieldType(infieldtype);
 
   // pointer (rcp) to actual discretisation
-  RCP< DRT::Discretization > mydiscrete = field->discretization();
+  Teuchos::RCP< DRT::Discretization > mydiscrete = field->discretization();
   // space dimension of the problem
   int dim = problem.num_dim();
 
@@ -154,7 +155,7 @@ void MonWriter::WriteMonFile(PostProblem& problem, string& infieldtype, int node
     // global nodal dof numbers
     gdof = mydiscrete->Dof(mynode);
     // set some dummy values
-    for(unsigned  i=0;i < gdof.size();i++)
+    for(unsigned i=0;i < gdof.size();i++)
     {
       gdof[i]+=offset1;
     }
@@ -196,6 +197,8 @@ void MonWriter::WriteMonFile(PostProblem& problem, string& infieldtype, int node
     outfile.close();
 }
 
+
+/*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 class FieldMonWriter : public MonWriter
@@ -203,6 +206,7 @@ class FieldMonWriter : public MonWriter
 public:
   //! constructor
   FieldMonWriter(PostProblem& problem, string& infieldtype, int node):MonWriter(problem,infieldtype,node){}
+
   //! destructor
   virtual ~FieldMonWriter()
   {}
@@ -216,7 +220,6 @@ private:
 
 
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 PostField* FieldMonWriter::GetFieldPtr(PostProblem& problem)
 {
   return problem.get_discretization(0);
@@ -225,12 +228,14 @@ PostField* FieldMonWriter::GetFieldPtr(PostProblem& problem)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 class FluidMonWriter : public FieldMonWriter
 {
 public:
   //! constructor
   FluidMonWriter(PostProblem& problem, string& infieldtype, int node):
-	  FieldMonWriter(problem,infieldtype,node){}
+    FieldMonWriter(problem,infieldtype,node){}
+
   //! destructor
   virtual ~FluidMonWriter()
   {}
@@ -251,7 +256,6 @@ private:
 }; // end of class FluidMonWriter
 
 
-/*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FluidMonWriter::CheckInfieldType(string& infieldtype)
 {
@@ -287,7 +291,7 @@ void FluidMonWriter::WriteTableHead(ofstream& outfile, int dim)
 void FluidMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim)
 {
   // get actual result vector
-  RCP< Epetra_Vector > resvec = result.read_result("velnp");
+  Teuchos::RCP< Epetra_Vector > resvec = result.read_result("velnp");
   const Epetra_BlockMap& velmap = resvec->Map();
   // do output of general time step data
   outfile << right << std::setw(10) << result.step();
@@ -308,12 +312,13 @@ void FluidMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::vec
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 class StructMonWriter : public FieldMonWriter
 {
 public:
   //! constructor
   StructMonWriter(PostProblem& problem, string& infieldtype, int node):
-	  FieldMonWriter(problem,infieldtype,node){}
+    FieldMonWriter(problem,infieldtype,node){}
   //! destructor
   virtual ~StructMonWriter()
   {}
@@ -335,24 +340,25 @@ private:
 
 
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void StructMonWriter::CheckInfieldType(string& infieldtype)
 {
   if (infieldtype != "structure")
     cout << "\nPure structural problem, field option other than structure has been ignored!\n\n";
 }
 
+/*----------------------------------------------------------------------*/
 void StructMonWriter::FieldError(int node)
 {;
   dserror("Node %i does not belong to structure field!", node);
 }
 
+/*----------------------------------------------------------------------*/
 void StructMonWriter::WriteHeader(ofstream& outfile)
 {
   outfile << "# structure problem, writing nodal data of node ";
 }
 
-
+/*----------------------------------------------------------------------*/
 void StructMonWriter::WriteTableHead(ofstream& outfile, int dim)
 {
   switch (dim)
@@ -384,12 +390,13 @@ void StructMonWriter::WriteTableHead(ofstream& outfile, int dim)
             << std::right << std::setw(16) << "a_z"
             << std::right << std::setw(16) << "p"
             << std::endl;
-   break;
+    break;
   default:
     dserror("Number of dimensions in space differs from 2 and 3!");
   }
 }
 
+/*----------------------------------------------------------------------*/
 void StructMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim)
 {
   // write front
@@ -490,12 +497,13 @@ void StructMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::ve
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 class AleMonWriter : public FieldMonWriter
 {
 public:
   //! constructor
   AleMonWriter(PostProblem& problem, string& infieldtype, int node):
-	  FieldMonWriter(problem,infieldtype,node){}
+    FieldMonWriter(problem,infieldtype,node){}
   //! destructor
   virtual ~AleMonWriter()
   {}
@@ -517,24 +525,25 @@ private:
 
 
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void AleMonWriter::CheckInfieldType(string& infieldtype)
 {
   if (infieldtype != "ale")
     cout << "\nPure ALE problem, field option other than ale has been ignored!\n\n";
 }
 
+/*----------------------------------------------------------------------*/
 void AleMonWriter::FieldError(int node)
 {
   dserror("Node %i does not belong to ALE field!", node);
 }
 
+/*----------------------------------------------------------------------*/
 void AleMonWriter::WriteHeader(ofstream& outfile)
 {
   outfile << "# ALE problem, writing nodal data of node ";
 }
 
-
+/*----------------------------------------------------------------------*/
 void AleMonWriter::WriteTableHead(ofstream& outfile, int dim)
 {
   switch (dim)
@@ -550,10 +559,11 @@ void AleMonWriter::WriteTableHead(ofstream& outfile, int dim)
   }
 }
 
+/*----------------------------------------------------------------------*/
 void AleMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim)
 {
   // get actual result vector for displacement
-  RCP< Epetra_Vector > resvec = result.read_result("displacement");
+  Teuchos::RCP< Epetra_Vector > resvec = result.read_result("displacement");
   const Epetra_BlockMap& dispmap = resvec->Map();
   // do output of general time step data
   outfile << right << std::setw(10) << result.step();
@@ -573,12 +583,13 @@ void AleMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::vecto
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 class FsiFluidMonWriter : public FluidMonWriter
 {
 public:
   //! constructor
   FsiFluidMonWriter(PostProblem& problem, string& infieldtype, int node):
-	  FluidMonWriter(problem,infieldtype,node){}
+    FluidMonWriter(problem,infieldtype,node){}
   //! destructor
   virtual ~FsiFluidMonWriter()
   {}
@@ -600,7 +611,6 @@ private:
 
 
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 PostField* FsiFluidMonWriter::GetFieldPtr(PostProblem& problem)
 {
   // get pointer to discretisation of actual field
@@ -610,11 +620,13 @@ PostField* FsiFluidMonWriter::GetFieldPtr(PostProblem& problem)
   return myfield;
 }
 
+/*----------------------------------------------------------------------*/
 void FsiFluidMonWriter::WriteHeader(ofstream& outfile)
 {
   outfile << "# FSI problem, writing nodal data of fluid node ";
 }
 
+/*----------------------------------------------------------------------*/
 void FsiFluidMonWriter::WriteTableHead(ofstream& outfile, int dim)
 {
   switch (dim)
@@ -630,10 +642,11 @@ void FsiFluidMonWriter::WriteTableHead(ofstream& outfile, int dim)
   }
 }
 
+/*----------------------------------------------------------------------*/
 void FsiFluidMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim)
 {
   // get actual result vector for displacement
-  RCP< Epetra_Vector > resvec = result.read_result("dispnp");
+  Teuchos::RCP< Epetra_Vector > resvec = result.read_result("dispnp");
   const Epetra_BlockMap& dispmap = resvec->Map();
   // do output of general time step data
   outfile << right << std::setw(10) << result.step();
@@ -668,12 +681,13 @@ void FsiFluidMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 class FsiStructMonWriter : public StructMonWriter
 {
 public:
   //! constructor
   FsiStructMonWriter(PostProblem& problem, string& infieldtype, int node):
-	  StructMonWriter(problem,infieldtype,node){}
+    StructMonWriter(problem,infieldtype,node){}
   //! destructor
   virtual ~FsiStructMonWriter()
   {}
@@ -701,6 +715,7 @@ PostField* FsiStructMonWriter::GetFieldPtr(PostProblem& problem)
   return myfield;
 }
 
+/*----------------------------------------------------------------------*/
 void FsiStructMonWriter::WriteHeader(ofstream& outfile)
 {
   outfile << "# FSI problem, writing nodal data of structure node ";
@@ -709,12 +724,13 @@ void FsiStructMonWriter::WriteHeader(ofstream& outfile)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 class FsiAleMonWriter : public AleMonWriter
 {
 public:
   //! constructor
   FsiAleMonWriter(PostProblem& problem, string& infieldtype, int node):
-	  AleMonWriter(problem,infieldtype,node){}
+    AleMonWriter(problem,infieldtype,node){}
   //! destructor
   virtual ~FsiAleMonWriter()
   {}
@@ -732,7 +748,6 @@ private:
 
 
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 PostField* FsiAleMonWriter::GetFieldPtr(PostProblem& problem)
 {
   // get pointer to discretisation of actual field
@@ -742,6 +757,7 @@ PostField* FsiAleMonWriter::GetFieldPtr(PostProblem& problem)
   return myfield;
 }
 
+/*----------------------------------------------------------------------*/
 void FsiAleMonWriter::WriteHeader(ofstream& outfile)
 {
   outfile << "# FSI problem, writing nodal data of ALE node ";
@@ -750,15 +766,16 @@ void FsiAleMonWriter::WriteHeader(ofstream& outfile)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 /*!
- \brief filter main routine for monitoring filter
-
- Write ASCII file of one nodes history
-
- Note: Works in seriell version only! Requires to read one instance of the discretisation!!
-
- \author chfoe
- \date 11/07
+ * \brief filter main routine for monitoring filter
+ *
+ * Write ASCII file of one nodes history
+ *
+ * Note: Works in seriell version only! Requires to read one instance of the discretisation!!
+ *
+ * \author chfoe
+ * \date 11/07
  */
 int main(int argc, char** argv)
 {
@@ -766,7 +783,7 @@ int main(int argc, char** argv)
   Teuchos::CommandLineProcessor my_comlinproc;
   my_comlinproc.setDocString("Post DRT monitoring filter\n\nwrite nodal result data of specified node into outfile.mon");
 
-  bool required=true;
+  bool required = true;
   /* Set an additional integer command line option which is the global node Id
      of the node you're interested in */
   int node = 0;
@@ -800,7 +817,9 @@ int main(int argc, char** argv)
         mymonwriter.WriteMonFile(problem,infieldtype,node);
       }
       else
+      {
         dserror("handling for monitoring of this fieldtype not yet implemented");
+      }
       break;
     }
     case prb_structure:
@@ -822,7 +841,9 @@ int main(int argc, char** argv)
       break;
     }
     default:
-        dserror("problem type %d not yet supported", problem.Problemtype());
+    {
+      dserror("problem type %d not yet supported", problem.Problemtype());
+    }
   }
 
   return 0;
