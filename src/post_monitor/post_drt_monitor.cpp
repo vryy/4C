@@ -188,7 +188,7 @@ void MonWriter::WriteMonStressFile(
     groupnames.push_back("gauss_2PK_stresses_xyz");
 
     // write it, now
-    WriteMonStrFile(filename, problem, infieldtype, stresstype, groupnames, node);  
+    WriteMonStrFile(filename, problem, infieldtype, "stress", stresstype, groupnames, node);  
   }
 
   return;
@@ -217,7 +217,7 @@ void MonWriter::WriteMonStrainFile(
     groupnames.push_back("gauss_EA_strains_xyz");
 
     // write, now
-    WriteMonStrFile(filename, problem, infieldtype, straintype, groupnames, node);
+    WriteMonStrFile(filename, problem, infieldtype, "strain", straintype, groupnames, node);
   }
 
   return;
@@ -228,8 +228,9 @@ void MonWriter::WriteMonStrFile(
   const string& filename,
   PostProblem& problem,
   string& infieldtype,
-  string strtype,
-  vector<string> groupnames,
+  const string strname,
+  const string strtype,
+  std::vector<std::string> groupnames,
   int node
   )
 {
@@ -292,7 +293,7 @@ void MonWriter::WriteMonStrFile(
     outfile << "\n";
     outfile << "#\n";
 
-    WriteStrTableHead(outfile,strtype,dim);
+    WriteStrTableHead(outfile,strname,strtype,dim);
   }
   else // this proc is not the node owner
   {
@@ -555,37 +556,32 @@ void StructMonWriter::WriteResult(
 /*----------------------------------------------------------------------*/
 void StructMonWriter::WriteStrTableHead(
   ofstream& outfile,
+  const string strname,
   const string strtype,
   const int dim
   )
 {
-  std::string componame = "";
-  if (strtype != "none")
-    componame = "str";
-  else
-    dserror("You should not turn up here.");
-
   switch (dim)
   {
   case 2:
     outfile << "#"
             << std::right << std::setw(9) << "step"
             << std::right << std::setw(16) << "time"
-            << std::right << std::setw(16-3) << componame << "_xx"
-            << std::right << std::setw(16-3) << componame << "_yy"
-            << std::right << std::setw(16-3) << componame << "_xy"
+            << std::right << std::setw(16) << strname+"_xx"
+            << std::right << std::setw(16) << strname+"_yy"
+            << std::right << std::setw(16) << strname+"_xy"
             << std::endl;
     break;
   case 3:
     outfile << "#"
             << std::right << std::setw(9) << "step"
             << std::right << std::setw(16) << "time"
-            << std::right << std::setw(16-3) << componame << "_xx"
-            << std::right << std::setw(16-3) << componame << "_yy"
-            << std::right << std::setw(16-3) << componame << "_zz"
-            << std::right << std::setw(16-3) << componame << "_xy"
-            << std::right << std::setw(16-3) << componame << "_yz"
-            << std::right << std::setw(16-3) << componame << "_zx"
+            << std::right << std::setw(16) << strname+"_xx"
+            << std::right << std::setw(16) << strname+"_yy"
+            << std::right << std::setw(16) << strname+"_zz"
+            << std::right << std::setw(16) << strname+"_xy"
+            << std::right << std::setw(16) << strname+"_yz"
+            << std::right << std::setw(16) << strname+"_zx"
             << std::endl;
     break;
   default:

@@ -96,14 +96,16 @@ protected:
     const string& filename,
     PostProblem& problem,
     string& infieldtype,
-    string strtype,
+    const string strname,
+    const string strtype,
     vector<string> groupnames,
     int node
     );
 
   virtual void WriteStrTableHead(
     ofstream& outfile,
-    const string stresstype,
+    const string strname,
+    const string strtype,
     const int dim
     )
   {
@@ -242,6 +244,7 @@ protected:
 
   virtual void WriteStrTableHead(
     ofstream& outfile,
+    const string strname,
     const string strtype,
     const int dim
     );
