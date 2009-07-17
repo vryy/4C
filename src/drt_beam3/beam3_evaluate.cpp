@@ -148,89 +148,89 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
       if (act == Beam3::calc_struct_nlnstiffmass)
       {
     	  switch(nnode)
-    	      	  {
-    	      	  		case 2:  		
-    	      	  		{	
-    	      	  			b3_nlnstiffmass<2>(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
-    	      	  			break;
-    	      	  		}
-    	      	  		case 3:
-    	      	  		{
-    	      	  			b3_nlnstiffmass<3>(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
-    	      	  			break;
-    	      	  		}
-    	      	  		case 4:
-    	      	  		{
-    	      	  			b3_nlnstiffmass<4>(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
-    	      	  			break;
-    	      	  		}  		
-    	      	  		case 5:
-    	      	  		{
-    	      	  			b3_nlnstiffmass<5>(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
-    	      	  			break;
-    	      	  		}  		
-    	      	  		default:
-    	      	  			dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
-    	      	  }
+    	  {
+  	  		case 2:  		
+  	  		{	
+  	  			b3_nlnstiffmass<2>(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
+  	  			break;
+  	  		}
+  	  		case 3:
+  	  		{
+  	  			b3_nlnstiffmass<3>(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
+  	  			break;
+  	  		}
+  	  		case 4:
+  	  		{
+  	  			b3_nlnstiffmass<4>(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
+  	  			break;
+  	  		}  		
+  	  		case 5:
+  	  		{
+  	  			b3_nlnstiffmass<5>(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
+  	  			break;
+  	  		}  		
+  	  		default:
+  	  			dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
+    	  }
       }
       else if (act == Beam3::calc_struct_nlnstifflmass)
       {
     	  switch(nnode)
     	  {
-    	  		case 2:  		
-    	  		{	
-    	  			b3_nlnstiffmass<2>(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
-    	  			lumpmass<2>(&elemat2);
-    	  			break;
-    	  		}
-    	  		case 3:
-    	  		{
-    	  			b3_nlnstiffmass<3>(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
-    	  			lumpmass<3>(&elemat2);
-    	  			break;
-    	  		}
-    	  		case 4:
-    	  		{
-    	  			b3_nlnstiffmass<4>(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
-    	  			lumpmass<4>(&elemat2);
-    	  			break;
-    	  		}  		
-    	  		case 5:
-    	  		{
-    	  			b3_nlnstiffmass<5>(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
-    	  			lumpmass<5>(&elemat2);
-    	  			break;
-    	  		}  		
-    	  		default:
-    	  			dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
+  	  		case 2:  		
+  	  		{	
+  	  			b3_nlnstiffmass<2>(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
+  	  			lumpmass<2>(&elemat2);
+  	  			break;
+  	  		}
+  	  		case 3:
+  	  		{
+  	  			b3_nlnstiffmass<3>(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
+  	  			lumpmass<3>(&elemat2);
+  	  			break;
+  	  		}
+  	  		case 4:
+  	  		{
+  	  			b3_nlnstiffmass<4>(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
+  	  			lumpmass<4>(&elemat2);
+  	  			break;
+  	  		}  		
+  	  		case 5:
+  	  		{
+  	  			b3_nlnstiffmass<5>(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
+  	  			lumpmass<5>(&elemat2);
+  	  			break;
+  	  		}  		
+  	  		default:
+  	  			dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
     	  }
       }
       else if (act == Beam3::calc_struct_nlnstiff)
       {
     	  switch(nnode)
     	  {
-    	  		case 2:  		
-    	  		{	
-    	  			b3_nlnstiffmass<2>(params,myvel,mydisp,&elemat1,NULL,&elevec1);
-    	  			break;
-    	  		}
-    	  		case 3:
-    	  		{
-    	  			b3_nlnstiffmass<3>(params,myvel,mydisp,&elemat1,NULL,&elevec1);
-    	  			break;
-    	  		}
-    	  		case 4:
-    	  		{
-    	  			b3_nlnstiffmass<4>(params,myvel,mydisp,&elemat1,NULL,&elevec1);
-    	  			break;
-    	  		}  		
-    	  		case 5:
-    	  		{
-    	  			b3_nlnstiffmass<5>(params,myvel,mydisp,&elemat1,NULL,&elevec1);
-    	  			break;
-    	  		}  		
-    	  		default:
-    	  			dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
+  	  		case 2:  		
+  	  		{	
+  	  			b3_nlnstiffmass<2>(params,myvel,mydisp,&elemat1,NULL,&elevec1);
+  	  			break;
+  	  		}
+  	  		case 3:
+  	  		{
+  	  			b3_nlnstiffmass<3>(params,myvel,mydisp,&elemat1,NULL,&elevec1);
+  	  			break;
+  	  		}
+  	  		case 4:
+  	  		{
+  	  			b3_nlnstiffmass<4>(params,myvel,mydisp,&elemat1,NULL,&elevec1);
+  	  			break;
+  	  		}  		
+  	  		case 5:
+  	  		{
+  	  			b3_nlnstiffmass<5>(params,myvel,mydisp,&elemat1,NULL,&elevec1);
+  	  			break;
+  	  		}  		
+  	  		default:
+  	  			dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
     	  }
       }
 
@@ -238,28 +238,28 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
       {
     	  switch(nnode)
     	  {
-    	  		case 2:  		
-    	  		{	
-    	  			b3_nlnstiffmass<2>(params,myvel,mydisp,NULL,NULL,&elevec1);
-    	  			break;
-    	  		}
-    	  		case 3:
-    	  		{
-    	  			b3_nlnstiffmass<3>(params,myvel,mydisp,NULL,NULL,&elevec1);
-    	  			break;
-    	  		}
-    	  		case 4:
-    	  		{
-    	  			b3_nlnstiffmass<4>(params,myvel,mydisp,NULL,NULL,&elevec1);
-    	  			break;
-    	  		}  	
-    	  		case 5:
-    	  		{
-    	  			b3_nlnstiffmass<5>(params,myvel,mydisp,NULL,NULL,&elevec1);
-    	  			break;
-    	  		}  		
-    	  		default:
-    	  			dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
+  	  		case 2:  		
+  	  		{	
+  	  			b3_nlnstiffmass<2>(params,myvel,mydisp,NULL,NULL,&elevec1);
+  	  			break;
+  	  		}
+  	  		case 3:
+  	  		{
+  	  			b3_nlnstiffmass<3>(params,myvel,mydisp,NULL,NULL,&elevec1);
+  	  			break;
+  	  		}
+  	  		case 4:
+  	  		{
+  	  			b3_nlnstiffmass<4>(params,myvel,mydisp,NULL,NULL,&elevec1);
+  	  			break;
+  	  		}  	
+  	  		case 5:
+  	  		{
+  	  			b3_nlnstiffmass<5>(params,myvel,mydisp,NULL,NULL,&elevec1);
+  	  			break;
+  	  		}  		
+  	  		default:
+  	  			dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
     	  }       	
       }
 
@@ -487,14 +487,13 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(ParameterList& params,
 
     // loop the dofs of a node
     for (int dof=0; dof<numdf; ++dof)
-    {
       ar[dof] = fac * (*onoff)[dof]*(*val)[dof]*curvefac;
-    }
+
 
     //sum up load components
     for (int node=0; node<NumNode(); ++node)
-    for (int dof=0; dof<numdf; ++dof)
-    elevec1[node*numdf+dof] += funct[node] *ar[dof];
+      for (int dof=0; dof<numdf; ++dof)
+        elevec1[node*numdf+dof] += funct[node] *ar[dof];
 
   } // for (int numgp=0; numgp<intpoints.nquad; ++numgp)
 
@@ -527,9 +526,7 @@ int DRT::ELEMENTS::Beam3::ComputeLocalBrownianForces(ParameterList& params)
   * length is approximated by the one of an infinitely long staff for friciton orthogonal to staff axis*/
   double zeta = 4 * PI * lrefe_ * params.get<double>("ETA",0.0);
 
-
   int stochasticorder = params.get<int>("STOCH_ORDER",-1);
-
 
   switch(stochasticorder)
   {
@@ -1391,12 +1388,8 @@ inline void DRT::ELEMENTS::Beam3::quaterniontotriad(const LINALG::Matrix<4,1>& q
 
   //adding second summand of equation (16.70)
   for(int i = 0; i<3; i++)
-  {
     for(int j = 0; j<3; j++)
-    {
       R(i,j) += 2*q(i)*q(j);
-    }
-  }
 
   //adding diagonal entries according to first summand of equation (16.70)
   R(0,0) = 1 - 2*(q(1)*q(1) + q(2)*q(2));
@@ -1497,12 +1490,8 @@ LINALG::Matrix<3,3> DRT::ELEMENTS::Beam3::Hinv(LINALG::Matrix<3,1> theta)
       result(i,i) += theta_abs/( 2*tan(theta_abs/2) );
 
     for(int i = 0; i<3; i++)
-    {
       for(int j=0; j<3; j++)
-      {
         result(i,j) += theta(i) * theta(j) * (1 - theta_abs/(2*tan(theta_abs/2)) )/pow(theta_abs,2);
-      }
-    }
   }
   //in case of theta_abs == 0 H(theta) is the identity matrix and hence also Hinv
   else
@@ -1560,6 +1549,7 @@ inline LINALG::Matrix<4,1> DRT::ELEMENTS::Beam3::inversequaternion(const LINALG:
   //inverse quaternion q^(-1) = [-q0, -q1, -q2, q3] / ||q||^2;
   for(int i = 0; i<3; i++)
     qinv(i) = -q(i) / qnormsq;
+  
   qinv(3) = q(3) / qnormsq;
 
   return qinv;
@@ -1581,8 +1571,6 @@ inline void DRT::ELEMENTS::Beam3::quaternionproduct(const LINALG::Matrix<4,1>& q
   q12(2) = q2(3)*q1(2) + q1(3)*q2(2) + q2(0)*q1(1) - q1(0)*q2(1);
   q12(3) = q2(3)*q1(3) - q2(2)*q1(2) - q2(1)*q1(1) - q2(0)*q1(0);
 } //DRT::ELEMENTS::Beam3::quaternionproduct
-
-
 
 
 /*-------------------------------------------------------------------------------------------------------*
@@ -1716,10 +1704,10 @@ inline void DRT::ELEMENTS::Beam3::computeKsig1(LINALG::Matrix<6*nnode,6*nnode>& 
     	{
     		for (int j = 0; j < 3; ++j)
     		{
-    		      Ksig1(6 * n + i  ,6 * m + j)   =  0;
-    		      Ksig1(6 * n + 3 + i  ,6 * m + 3 + j)   =  -deriv(n) * funct(m) * Sm(i,j);
-    		      Ksig1(6 * n + 3 + i  ,6 * m + j)   =  0;
-    		      Ksig1(6 * n + i  ,6 * m + 3 + j)   =  -deriv(n) * funct(m) * Sn(i,j);
+		      Ksig1(6 * n + i  ,6 * m + j)   =  0;
+		      Ksig1(6 * n + 3 + i  ,6 * m + 3 + j)   =  -deriv(n) * funct(m) * Sm(i,j);
+		      Ksig1(6 * n + 3 + i  ,6 * m + j)   =  0;
+		      Ksig1(6 * n + i  ,6 * m + 3 + j)   =  -deriv(n) * funct(m) * Sn(i,j);
     		}
     	}
     }
@@ -1753,10 +1741,10 @@ inline void DRT::ELEMENTS::Beam3::computeKsig2(LINALG::Matrix<6*nnode,6*nnode>& 
     	{
     		for (int j = 0; j < 3; ++j)
     		{
-    		      Ksig2(6 * n + i  ,6 * m + j)   =  0;
-    		      Ksig2(6 * n + 3 + i  ,6 * m + 3 + j)   =  funct(n)*funct(m)*Y(i,j);
-    		      Ksig2(6 * n + 3 + i  ,6 * m + j)   =  funct(n)*deriv(m)*Sn(i,j);
-    		      Ksig2(6 * n + i  ,6 * m + 3 + j)   =  0;
+		      Ksig2(6 * n + i  ,6 * m + j)   =  0;
+		      Ksig2(6 * n + 3 + i  ,6 * m + 3 + j)   =  funct(n)*funct(m)*Y(i,j);
+		      Ksig2(6 * n + 3 + i  ,6 * m + j)   =  funct(n)*deriv(m)*Sn(i,j);
+		      Ksig2(6 * n + i  ,6 * m + 3 + j)   =  0;
     		}
     	}
     }
@@ -1818,7 +1806,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
   //assignment of material parameters; only St.Venant material is accepted for this beam
   switch(currmat->MaterialType())
   {
-  case INPAR::MAT::m_stvenant:// only linear elastic material supported
+    case INPAR::MAT::m_stvenant:// only linear elastic material supported
     {
       const MAT::StVenantKirchhoff* actmat = static_cast<const MAT::StVenantKirchhoff*>(currmat.get());
       ym = actmat->Youngs();
@@ -1861,8 +1849,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
 		for (int dof=0; dof<3; ++dof)//j
 		{
 			for (int node=0; node<nnode; ++node)
-			{
-				
+			{			
 				dxdxi_gp(dof)              += (Nodes()[node]->X()[dof]+disp[6*node+dof])*deriv(node);
 				
 				/*compute interpolated angle displacemnt at specific Gauss point; angle displacement is

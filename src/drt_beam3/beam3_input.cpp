@@ -54,27 +54,27 @@ bool DRT::ELEMENTS::Beam3::ReadElement()
 
   for( iter = beam2rdistype.begin(); iter != beam2rdistype.end(); iter++ )
   {
-      const string eletext = iter->first;
-      frchk(eletext.c_str(), &ierr);
-      if (ierr == 1)
-      {
-          //Get DiscretizationType
-     	    distype = beam2rdistype[eletext];
-          //Get Number of Nodes of DiscretizationType
-          int nnode = DRT::UTILS::getNumberOfElementNodes(distype);
+    const string eletext = iter->first;
+    frchk(eletext.c_str(), &ierr);
+    if (ierr == 1)
+    {
+      //Get DiscretizationType
+ 	    distype = beam2rdistype[eletext];
+      //Get Number of Nodes of DiscretizationType
+      int nnode = DRT::UTILS::getNumberOfElementNodes(distype);
 
-          //Get an array for the global node numbers
-          std::vector<int> nodes(nnode,0);
-          //Read global node numbers
-          frint_n(eletext.c_str(), &nodes[0], nnode, &ierr);
+      //Get an array for the global node numbers
+      std::vector<int> nodes(nnode,0);
+      //Read global node numbers
+      frint_n(eletext.c_str(), &nodes[0], nnode, &ierr);
 
-          dsassert(ierr==1, "Reading of ELEMENT Topology failed\n");
+      dsassert(ierr==1, "Reading of ELEMENT Topology failed\n");
 
-          // reduce global node numbers by one because BACI nodes begin with 0 and inputfile nodes begin with 1
-          for (int i=0; i<nnode; ++i) nodes[i]--;
-          SetNodeIds(nnode,&nodes[0]); // has to be executed in here because of the local scope of nodes
-          break;
-      }
+      // reduce global node numbers by one because BACI nodes begin with 0 and inputfile nodes begin with 1
+      for (int i=0; i<nnode; ++i) nodes[i]--;
+      SetNodeIds(nnode,&nodes[0]); // has to be executed in here because of the local scope of nodes
+      break;
+    }
   }
 
   // read material parameters using structure _MATERIAL which is defined by inclusion of

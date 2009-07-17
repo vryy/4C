@@ -30,11 +30,26 @@ DRT::Element(id,element_beam3,owner),
 data_(),
 isinit_(false),
 lrefe_(0),
+Qconv_(0),
+Qold_(0),
+Qnew_(0),
+curvconv_(0),
+curvold_(0),
+curvnew_(0),
+thetaconv_(0),
+thetaold_(0),
+thetanew_(0),
+thetaprimeconv_(0),
+thetaprimeold_(0),
+thetaprimenew_(0),
 crosssec_(0),
 crosssecshear_(0),
 Iyy_(0),
 Izz_(0),
 Irr_(0),
+alpha_(0),
+alphamass_(0),
+floc_(true),
 gaussrule_(DRT::UTILS::intrule1D_undefined)
 {
   return;
@@ -290,6 +305,22 @@ void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const vector<double>& xrefe,co
   //Set the applied Gaussrule ( It can be proven that we need 1 GP less than nodes to integrate exact )
   //note: we use a static cast for the enumeration here cf. Practical C++ Programming p.185
   gaussrule_ = static_cast<enum DRT::UTILS::GaussRule1D>(nnode-1);
+  
+  //resize all class STL vectors so that they can each store 1 value at each GP
+  alpha_.resize(nnode-1);
+  alphamass_.resize(nnode);
+  Qconv_.resize((nnode-1));
+  Qold_.resize((nnode-1));
+  Qnew_.resize((nnode-1));
+  curvconv_.resize((nnode-1));
+  curvold_.resize((nnode-1));
+  curvnew_.resize((nnode-1));
+  thetaconv_.resize((nnode-1));
+  thetaold_.resize((nnode-1));
+  thetanew_.resize((nnode-1));
+  thetaprimeconv_.resize((nnode-1));
+  thetaprimeold_.resize((nnode-1));
+  thetaprimenew_.resize((nnode-1));
 
   //create Matrix for the derivates of the shapefunctions at the GP
 	LINALG::Matrix<1,nnode> shapefuncderiv;
@@ -319,85 +350,85 @@ void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const vector<double>& xrefe,co
 		//triad in reference configuration at GP
 		LINALG::Matrix<3,3> Tref;
 	
-	    //length in reference configuration
-	    lrefe_ = pow(pow(xrefe[0]-xrefe[3*nnode-3],2)+pow(xrefe[1]-xrefe[3*nnode-2],2)+pow(xrefe[2]-xrefe[3*nnode-1],2),0.5);
-	
-	    /*initial triad Tref = [t1,t2,t3] is set in a way for which we don`t have strains in reference configuration*/
-	    LINALG::Matrix<3,1> dxdxi;
-	
-	    dxdxi.Clear();
-	    thetaconv_[numgp].Clear();
-	    thetaprimeconv_[numgp].Clear();
-	
-	    //calculate vector dxdxi
-	    for(int node=0; node<nnode; node++)
-	    {
-	    	for(int dof=0; dof<3 ; dof++)
-	    	{
-		    	dxdxi(dof) += shapefuncderiv(node) * xrefe[3*node+dof];
-			    thetaconv_[numgp](dof) += funct(node) * rotrefe[3*node+dof];
-			    thetaprimeconv_[numgp](dof) += shapefuncderiv(node) * rotrefe[3*node+dof]; 		
-	    	}//for(int dof=0; dof<3 ; dof++)
-	    }//for(int node=0; node<nnode; node++)
-	
-	    //Store length factor for every GP
-	    //note: the length factor alpha replaces the determinant and refers to the reference configuration by definition
-	    alpha_[numgp]= pow(pow( dxdxi(0) ,2.0) + pow( dxdxi(1) ,2.0) + pow(dxdxi(2) ,2.0) ,0.5);	
+    //length in reference configuration
+    lrefe_ = pow(pow(xrefe[0]-xrefe[3*nnode-3],2)+pow(xrefe[1]-xrefe[3*nnode-2],2)+pow(xrefe[2]-xrefe[3*nnode-1],2),0.5);
 
-	    for (int k=0; k<3; k++)
-	    {
-	  		//t1 axis points in positive direction along xi and is a unit vector
-	  		Tref(k,0)=dxdxi(k)/alpha_[numgp];
-	    }
-	
-	    //t2 is a unit vector in the x2x3-plane orthogonal to t1
-	    Tref(0,1) = 0;
-	    //if t1 is parallel to the x1-axis t2 is set parallel to the x2-axis
-	    if (Tref(1,0) == 0 && Tref(2,0) == 0)
-	    {
-	         Tref(1,1) = 1;
-	         Tref(2,1) = 0;
-	    }
-	
-	    //otherwise t2 is calculated from the scalar product with t1
-	    else
-	    {
-	        //setting t2(0)=0 and calculating other elements by setting scalar product t1 o t2 to zero
-	        double lin1norm = pow(pow(Tref(1,0),2)+pow(Tref(2,0),2),0.5);
-	        Tref(1,1) = -Tref(2,0)/lin1norm;
-	        Tref(2,1) =  Tref(1,0)/lin1norm;
-	    }	
-	           	
-        //calculating t3 by crossproduct t1 x t2
-        Tref(0,2) = Tref(1,0)*Tref(2,1)-Tref(1,1)*Tref(2,0);
-        Tref(1,2) = Tref(2,0)*Tref(0,1)-Tref(2,1)*Tref(0,0);
-        Tref(2,2) = Tref(0,0)*Tref(1,1)-Tref(0,1)*Tref(1,0);
+    /*initial triad Tref = [t1,t2,t3] is set in a way for which we don`t have strains in reference configuration*/
+    LINALG::Matrix<3,1> dxdxi;
 
-        /*the center triad in reference configuration is stored as a quaternion whose equivalent would be the rotation
-        * from the identity matrix into the reference configuration*/
-        triadtoquaternion(Tref,Qconv_[numgp]);
+    dxdxi.Clear();
+    thetaconv_[numgp].Clear();
+    thetaprimeconv_[numgp].Clear();
 
-        //the here employed beam element does not need data about the current position of the nodal directors so that
-        //initilization of those can be skipped (the nodal displacements handeled in beam3_evaluate.cpp are not the current angles,
-        //but only the differences between current angles and angles in reference configuration, respectively. Thus the
-        //director orientation in reference configuration cancels out and can be assumed to be zero without loss of
-        //generality
+    //calculate vector dxdxi
+    for(int node=0; node<nnode; node++)
+    {
+    	for(int dof=0; dof<3 ; dof++)
+    	{
+	    	dxdxi(dof) += shapefuncderiv(node) * xrefe[3*node+dof];
+		    thetaconv_[numgp](dof) += funct(node) * rotrefe[3*node+dof];
+		    thetaprimeconv_[numgp](dof) += shapefuncderiv(node) * rotrefe[3*node+dof]; 		
+    	}//for(int dof=0; dof<3 ; dof++)
+    }//for(int node=0; node<nnode; node++)
 
-        curvconv_[numgp].Clear();
-    }//for(int numgp=0; numgp < gausspoints.nquad; numgp++)
+    //Store length factor for every GP
+    //note: the length factor alpha replaces the determinant and refers to the reference configuration by definition
+    alpha_[numgp]= pow(pow( dxdxi(0) ,2.0) + pow( dxdxi(1) ,2.0) + pow(dxdxi(2) ,2.0) ,0.5);	
+
+    for (int k=0; k<3; k++)
+    {
+  		//t1 axis points in positive direction along xi and is a unit vector
+  		Tref(k,0)=dxdxi(k)/alpha_[numgp];
+    }
+
+    //t2 is a unit vector in the x2x3-plane orthogonal to t1
+    Tref(0,1) = 0;
+    //if t1 is parallel to the x1-axis t2 is set parallel to the x2-axis
+    if (Tref(1,0) == 0 && Tref(2,0) == 0)
+    {
+         Tref(1,1) = 1;
+         Tref(2,1) = 0;
+    }
+
+    //otherwise t2 is calculated from the scalar product with t1
+    else
+    {
+      //setting t2(0)=0 and calculating other elements by setting scalar product t1 o t2 to zero
+      double lin1norm = pow(pow(Tref(1,0),2)+pow(Tref(2,0),2),0.5);
+      Tref(1,1) = -Tref(2,0)/lin1norm;
+      Tref(2,1) =  Tref(1,0)/lin1norm;
+    }	
+           	
+    //calculating t3 by crossproduct t1 x t2
+    Tref(0,2) = Tref(1,0)*Tref(2,1)-Tref(1,1)*Tref(2,0);
+    Tref(1,2) = Tref(2,0)*Tref(0,1)-Tref(2,1)*Tref(0,0);
+    Tref(2,2) = Tref(0,0)*Tref(1,1)-Tref(0,1)*Tref(1,0);
+
+    /*the center triad in reference configuration is stored as a quaternion whose equivalent would be the rotation
+    * from the identity matrix into the reference configuration*/
+    triadtoquaternion(Tref,Qconv_[numgp]);
+
+    //the here employed beam element does not need data about the current position of the nodal directors so that
+    //initilization of those can be skipped (the nodal displacements handeled in beam3_evaluate.cpp are not the current angles,
+    //but only the differences between current angles and angles in reference configuration, respectively. Thus the
+    //director orientation in reference configuration cancels out and can be assumed to be zero without loss of
+    //generality
+
+    curvconv_[numgp].Clear();
+  }//for(int numgp=0; numgp < gausspoints.nquad; numgp++)
 	
 	//Now all triads have been calculated and Qold_ and Qnew_ can be updated
-    Qold_ = Qconv_;
-    Qnew_ = Qconv_;
+  Qold_ = Qconv_;
+  Qnew_ = Qconv_;
 
-    curvold_ = curvconv_;
-    curvnew_ = curvconv_;
+  curvold_ = curvconv_;
+  curvnew_ = curvconv_;
 
-    thetaold_ = thetaconv_;
-    thetanew_ = thetaconv_;
+  thetaold_ = thetaconv_;
+  thetanew_ = thetaconv_;
 
-    thetaprimeold_ = thetaprimeconv_;
-    thetaprimenew_ = thetaprimeconv_;
+  thetaprimeold_ = thetaprimeconv_;
+  thetaprimenew_ = thetaprimeconv_;
 
 	//Now we get the integrationfactor alphamass_ for a complete integration of the massmatrix therefor we increase the gaussrule by 1
 	gaussrule_ = static_cast<enum DRT::UTILS::GaussRule1D>(nnode);
@@ -415,21 +446,21 @@ void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const vector<double>& xrefe,co
 		//Get derivatives of shapefunctions at GP
 		DRT::UTILS::shape_function_1D_deriv1(shapefuncderiv,xi,distype);
 	
-	    LINALG::Matrix<3,1> dxdximass;
+    LINALG::Matrix<3,1> dxdximass;
+
+    dxdximass.Clear();
+    //calculate dx/dxi and dz/dxi
+    for(int node=0; node<nnode; node++)
+    {
+	    dxdximass(0)+=shapefuncderiv(node)*xrefe[3*node];
+	    dxdximass(1)+=shapefuncderiv(node)*xrefe[3*node+1];
+	    dxdximass(2)+=shapefuncderiv(node)*xrefe[3*node+2];
 	
-	    dxdximass.Clear();
-	    //calculate dx/dxi and dz/dxi
-	    for(int node=0; node<nnode; node++)
-	    {
-		    dxdximass(0)+=shapefuncderiv(node)*xrefe[3*node];
-		    dxdximass(1)+=shapefuncderiv(node)*xrefe[3*node+1];
-		    dxdximass(2)+=shapefuncderiv(node)*xrefe[3*node+2];
-		
-	    }//for(int node=0; node<nnode; node++)
-	
-	    //Store length factor for every GP
-	    //note: the length factor alpha replaces the determinant and refers by definition always to the reference configuration
-	    alphamass_[numgp]= pow(pow( dxdximass(0) ,2.0) + pow( dxdximass(1) ,2.0) + pow(dxdximass(2) ,2.0) ,0.5);	
+    }//for(int node=0; node<nnode; node++)
+
+    //Store length factor for every GP
+    //note: the length factor alpha replaces the determinant and refers by definition always to the reference configuration
+    alphamass_[numgp]= pow(pow( dxdximass(0) ,2.0) + pow( dxdximass(1) ,2.0) + pow(dxdximass(2) ,2.0) ,0.5);	
 	
 	}//for(int numgp=0; numgp < gausspointsmass.nquad; numgp++)
 
@@ -570,22 +601,6 @@ int DRT::ELEMENTS::Beam3Register::Initialize(DRT::Discretization& dis)
 	        	rotrefe[node*3 + dof]= 0.0;
 	        }	
 	    }
-	
-	    //resize alpha_, alphamass_ and theta0_ so they can each store 1 value at each GP
-	    currele->alpha_.resize(nnode-1);
-	    currele->alphamass_.resize(nnode);
-	    currele->Qconv_.resize((nnode-1));
-	    currele->Qold_.resize((nnode-1));
-	    currele->Qnew_.resize((nnode-1));
-	    currele->curvconv_.resize((nnode-1));
-	    currele->curvold_.resize((nnode-1));
-	    currele->curvnew_.resize((nnode-1));
-	    currele->thetaconv_.resize((nnode-1));
-	    currele->thetaold_.resize((nnode-1));
-	    currele->thetanew_.resize((nnode-1));
-	    currele->thetaprimeconv_.resize((nnode-1));
-	    currele->thetaprimeold_.resize((nnode-1));
-	    currele->thetaprimenew_.resize((nnode-1));
 
 	    //SetUpReferenceGeometry is a templated function
 	    switch(nnode)
