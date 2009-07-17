@@ -173,9 +173,6 @@ private:
   // Keeps track of global field variable
   PostField getfield(MAP* field_info);
 
-  //! creates the ghosting needed for a parallel discretization layout
-  void setup_ghosting(RCP<DRT::Discretization> dis);
-
   //! type of the problem we post process
   PROBLEM_TYP problemtype_;
 

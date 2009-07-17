@@ -675,6 +675,17 @@ public:
                             bool initelements          =true,
                             bool doboundaryconditions  =true);
 
+  /// Distribute to proper ghosting after the discretization has been read
+  /*!
+    After a discretization has been read (via restart or inside a filter),
+    only row elements and nodes are available. Yet the ghosting information in
+    the current distribution is already there. One just needs to use it.
+
+    We do a repartitioning here. This might be required for
+    load-balancing. But this involves graph-construction and a metis call.
+   */
+  virtual void SetupGhosting();
+
   /*!
   \brief Build element row and column map from nodal row and column maps
          (Filled()==true NOT prerequisite)

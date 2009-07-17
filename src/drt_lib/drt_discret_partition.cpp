@@ -41,6 +41,10 @@ Maintainer: Michael Gee
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+#include <Epetra_FECrsGraph.h>
+
+#include "linalg_utils.H"
+
 #include "drt_discret.H"
 #include "drt_exporter.H"
 #include "drt_dserror.H"
@@ -467,6 +471,155 @@ void DRT::Discretization::Redistribute(const Epetra_Map& noderowmap,
   if (err) dserror("FillComplete() returned err=%d",err);
 
   return;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::Discretization::SetupGhosting()
+{
+  if (Filled())
+    dserror("there is really no need to setup ghosting if the discretization is already filled");
+
+#if 0
+  std::set<int> rgids;
+  std::set<int> cgids;
+
+  // We assume to only have row nodes on each processor
+
+  std::transform(node_.begin(),
+                 node_.end(),
+                 std::inserter(rgids,rgids.begin()),
+                 LINALG::select1st<std::pair<int,RCP<DRT::Node> > >());
+
+  // The column node ids are determined from the elements
+
+  for (map<int,RCP<DRT::Element> >::iterator i=element_.begin();
+       i!=element_.end();
+       ++i)
+  {
+    int numnodes = i->second->NumNode();
+    const int* nodes = i->second->NodeIds();
+    std::copy(nodes,nodes+numnodes,std::inserter(cgids,cgids.begin()));
+  }
+
+  // map creation
+
+  std::vector<int> rgidvec(rgids.size());
+  std::vector<int> cgidvec(cgids.size());
+
+  rgidvec.assign(rgids.begin(),rgids.end());
+  cgidvec.assign(cgids.begin(),cgids.end());
+
+  Epetra_Map noderowmap(-1,rgidvec.size(),&rgidvec[0],0,*comm_);
+  Epetra_Map nodecolmap(-1,cgidvec.size(),&cgidvec[0],0,*comm_);
+
+  // get the ghosting done
+  // Simple. Maybe not too efficient.
+
+  noderowmap.Print(cout);
+  nodecolmap.Print(cout);
+
+  Redistribute(noderowmap,nodecolmap);
+#endif
+
+
+  // build the graph ourselves
+  std::map<int,std::set<int> > localgraph;
+  for (std::map<int,RCP<DRT::Element> >::iterator i=element_.begin();
+       i!=element_.end();
+       ++i)
+  {
+    int numnodes = i->second->NumNode();
+    const int* nodes = i->second->NodeIds();
+
+    // loop nodes and add this topology to the row in the graph of every node
+    for (int n=0; n<numnodes; ++n)
+    {
+      int nodelid = nodes[n];
+      copy(nodes,
+           nodes+numnodes,
+           inserter(localgraph[nodelid],
+                    localgraph[nodelid].begin()));
+    }
+  }
+
+  // Create node row map. Only the row nodes go there.
+
+  std::vector<int> gids;
+  std::vector<int> entriesperrow;
+
+  gids.reserve(localgraph.size());
+  entriesperrow.reserve(localgraph.size());
+
+  for (std::map<int,RCP<DRT::Node> >::iterator i=node_.begin();
+       i!=node_.end();
+       ++i)
+  {
+    gids.push_back(i->first);
+    entriesperrow.push_back(localgraph[i->first].size());
+  }
+
+  Epetra_Map rownodes(-1,gids.size(),&gids[0],0,*comm_);
+
+  // Construct FE graph. This graph allows processor off-rows to be inserted
+  // as well. The communication issue is solved.
+
+  Teuchos::RCP<Epetra_FECrsGraph> graph = rcp(new Epetra_FECrsGraph(Copy,rownodes,&entriesperrow[0],false));
+
+  gids.clear();
+  entriesperrow.clear();
+
+  // Insert all rows into the graph, including the off ones.
+
+  for (std::map<int,std::set<int> >::iterator i=localgraph.begin();
+       i!=localgraph.end();
+       ++i)
+  {
+    set<int>& rowset = i->second;
+    vector<int> row;
+    row.reserve(rowset.size());
+    row.assign(rowset.begin(),rowset.end());
+    rowset.clear();
+
+    int err = graph->InsertGlobalIndices(1,&i->first,row.size(),&row[0]);
+    if (err<0) dserror("graph->InsertGlobalIndices returned %d",err);
+  }
+
+  localgraph.clear();
+
+  // Finalize construction of this graph. Here the communication
+  // happens. The ghosting problem is solved at this point.
+
+  int err = graph->GlobalAssemble(rownodes,rownodes);
+  if (err) dserror("graph->GlobalAssemble returned %d",err);
+
+  // partition graph using metis
+  Epetra_Vector weights(graph->RowMap(),false);
+  weights.PutScalar(1.0);
+  Teuchos::RCP<Epetra_CrsGraph> gr = DRT::UTILS::PartGraphUsingMetis(*graph,weights);
+  graph = Teuchos::null;
+
+  // replace rownodes, colnodes with row and column maps from the graph
+  // do stupid conversion from Epetra_BlockMap to Epetra_Map
+  const Epetra_BlockMap& brow = gr->RowMap();
+  const Epetra_BlockMap& bcol = gr->ColMap();
+  RCP<Epetra_Map> noderowmap = rcp(new Epetra_Map(brow.NumGlobalElements(),
+                                                  brow.NumMyElements(),
+                                                  brow.MyGlobalElements(),
+                                                  0,
+                                                  *comm_));
+  RCP<Epetra_Map> nodecolmap = rcp(new Epetra_Map(bcol.NumGlobalElements(),
+                                                  bcol.NumMyElements(),
+                                                  bcol.MyGlobalElements(),
+                                                  0,
+                                                  *comm_));
+
+  gr = Teuchos::null;
+
+  // Redistribute discretization to match the new maps.
+
+  Redistribute(*noderowmap,*nodecolmap);
 }
 
 #endif  // #ifdef CCADISCRET
