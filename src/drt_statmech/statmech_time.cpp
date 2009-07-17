@@ -91,7 +91,7 @@ void StatMechTime::Integrate()
     if(i == 0)
       statmechmanager_->StatMechInitOutput(ndim,dt);
     
-    
+
 
     //processor 0 write total number of elements at the beginning of time step i to console:
     if(!discret_.Comm().MyPID())
@@ -100,7 +100,7 @@ void StatMechTime::Integrate()
     //pay attention: for a constant predictor an incremental velocity update is necessary, which has
     //been deleted out of the code in oder to simplify it
 
-    
+
     
     /*
     if      (predictor==1) ConstantPredictor();
@@ -110,22 +110,23 @@ void StatMechTime::Integrate()
     ConsistentPredictor();
     
     
-    
-    
 
     //FullNewton();
     PTC();
+    
+
 
     UpdateandOutput();
     
-    
 
+    
+    
     /*special update for statistical mechanics; this output has to be handled seperately from the time integration scheme output
      * as it may take place independently on writing geometric output data in a specific time step or not*/
     statmechmanager_->StatMechUpdate(dt,*dis_);
     statmechmanager_->StatMechOutput(params_,ndim,time,i,dt,*dis_,*fint_);
 
-
+    
 
     if (time>=maxtime) break;
   }
@@ -229,6 +230,8 @@ void StatMechTime::ConsistentPredictor()
   // increment time and step
   double timen = time + dt;  // t_{n+1}
   //int istep = step + 1;  // n+1
+  
+
 
 
   // constant predictor : displacement in domain
@@ -266,6 +269,8 @@ void StatMechTime::ConsistentPredictor()
    * term and explicit in noise term). The Brownian forces are evaluated in such a way that the resulting Langevin equation goes
    * along with the correct Fokker-Planck-Diffusion equation*/
   statmechmanager_->StatMechBrownian(params_,dis_);
+  
+
 
 
   // consistent predictor
@@ -321,6 +326,8 @@ void StatMechTime::ConsistentPredictor()
     discret_.ClearState();
   }
 #endif
+  
+
 
 
   //------------------------------ compute interpolated dis, vel and acc
@@ -374,9 +381,14 @@ void StatMechTime::ConsistentPredictor()
     discret_.SetState("velocity",velm_);
 
     //discret_.SetState("velocity",velm_); // not used at the moment
+    
+
 
     fint_->PutScalar(0.0);  // initialise internal force vector
     discret_.Evaluate(p,stiff_,null,fint_,null,null);
+    
+    //if(timen >= 2*dt)
+     //dserror("Haltepunkt");
 
     discret_.ClearState();
 

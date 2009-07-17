@@ -1118,8 +1118,10 @@ int DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
    * time step dt is implemented */
 
 
-  double basisdamp   = (20e+1)*PI*params.get<double>("delta time",0.0); 
+  double basisdamp   = (20e-1)*PI*params.get<double>("delta time",0.0); 
   double anisofactor = 10;
+  
+
 
   //computing angle increment from current position in comparison with last converged position for damping
   LINALG::Matrix<4,1> deltaQ;

@@ -85,62 +85,62 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
   discret_.ExportColumnNodes(nodecolmap);
   */
     
-  /*
-    const Epetra_Map noderowmap = *(discret_.NodeRowMap());
+  
+  const Epetra_Map noderowmap = *(discret_.NodeRowMap());
 
-    // fill my own row node ids into vector sdata
-    vector<int> sdata(noderowmap.NumMyElements());
-    for (int i=0; i<noderowmap.NumMyElements(); ++i)
-      sdata[i] = noderowmap.GID(i);
+  // fill my own row node ids into vector sdata
+  vector<int> sdata(noderowmap.NumMyElements());
+  for (int i=0; i<noderowmap.NumMyElements(); ++i)
+    sdata[i] = noderowmap.GID(i);
+  
+  //if current processor has elements it writes its number into stproc
+  vector<int> stproc(0); 
+  
+  
+  if (noderowmap.NumMyElements())
+    stproc.push_back(discret_.Comm().MyPID());
+  
+  
+  //information how many processor work at all
+  vector<int> allproc(discret_.Comm().NumProc());
+  
+  //in case of n processors allproc becomes a vector with entries (0,1,...,n-1)
+  for (int i=0; i<discret_.Comm().NumProc(); ++i) allproc[i] = i;
+  
+  //declaring new variable into which the information of stproc on all processors is gathered
+  vector<int> rtproc(0);
+  
+  //gathers information of stproc and writes it into rtproc; in the end rtproc is a vector which 
+  // contains the numbers of all processors which have elements
+  LINALG::Gather<int>(stproc,rtproc,discret_.Comm().NumProc(),&allproc[0],discret_.Comm());
     
-    //if current processor has elements it writes its number into stproc
-    vector<int> stproc(0); 
-    
-    
-    if (noderowmap.NumMyElements())
-      stproc.push_back(discret_.Comm().MyPID());
-    
-    
-    //information how many processor work at all
-    vector<int> allproc(discret_.Comm().NumProc());
-    
-    //in case of n processors allproc becomes a vector with entries (0,1,...,n-1)
-    for (int i=0; i<discret_.Comm().NumProc(); ++i) allproc[i] = i;
-    
-    //declaring new variable into which the information of stproc on all processors is gathered
-    vector<int> rtproc(0);
-    
-    //gathers information of stproc and writes it into rtproc; in the end rtproc is a vector which 
-    // contains the numbers of all processors which have elements
-    LINALG::Gather<int>(stproc,rtproc,discret_.Comm().NumProc(),&allproc[0],discret_.Comm());
-      
-    //in analogy to stproc and rtproc the variable rdata gathers all the element numbers which are 
-    // stored on different processors in their own variables sdata; thereby each processor gets
-    // the information about all the nodes numbers existing in this problem
-    vector<int> rdata;
+  //in analogy to stproc and rtproc the variable rdata gathers all the element numbers which are 
+  // stored on different processors in their own variables sdata; thereby each processor gets
+  // the information about all the nodes numbers existing in this problem
+  vector<int> rdata;
 
-    // gather all gids of nodes redundantly from sdata into rdata
-    LINALG::Gather<int>(sdata,rdata,(int)rtproc.size(),&rtproc[0],discret_.Comm());
+  // gather all gids of nodes redundantly from sdata into rdata
+  LINALG::Gather<int>(sdata,rdata,(int)rtproc.size(),&rtproc[0],discret_.Comm());
 
-    // build completely overlapping map (on participating processors)
-    RCP<Epetra_Map> newnodecolmap = rcp(new Epetra_Map(-1,(int)rdata.size(),&rdata[0],0,discret_.Comm()));
-    sdata.clear();
-    stproc.clear();
-    rdata.clear();
-    allproc.clear();
-    // rtproc still in use
-    
-    //pass new fully overlapping column map to discretization
-    discret_.ExportColumnNodes(*newnodecolmap);
-    
-    */
+  // build completely overlapping map (on participating processors)
+  RCP<Epetra_Map> newnodecolmap = rcp(new Epetra_Map(-1,(int)rdata.size(),&rdata[0],0,discret_.Comm()));
+  sdata.clear();
+  stproc.clear();
+  rdata.clear();
+  allproc.clear();
+  // rtproc still in use
+  
+  //pass new fully overlapping column map to discretization
+  discret_.ExportColumnNodes(*newnodecolmap);
+  
+  
 
-    /*rebuild discretization based on the new column map so that each processor creates new ghost elements
-     * if necessary; after the following line we have a discretization, where each processor has a fully
-     * overlapping column map regardlesse of how overlapping was managed when starting BACI; having ensured
-     * this allows convenient and correct (albeit not necessarily efficient) use of search algorithms and
-     * crosslinkers in parallel computing*/     
-    discret_.FillComplete(true,false,false);
+  /*rebuild discretization based on the new column map so that each processor creates new ghost elements
+   * if necessary; after the following line we have a discretization, where each processor has a fully
+   * overlapping column map regardlesse of how overlapping was managed when starting BACI; having ensured
+   * this allows convenient and correct (albeit not necessarily efficient) use of search algorithms and
+   * crosslinkers in parallel computing*/     
+  discret_.FillComplete(true,false,false);
   
   
   //if dynamic crosslinkers are used additional variables are initialized
@@ -634,6 +634,9 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
     
     //open file to write output data into
     fp = fopen(filename.str().c_str(), "w");
+    
+    if(fp == NULL)
+      dserror("cannot open Gmsh output file - make sure that subdirectory ./GmshOutput exists in working directory");
   
     // write output to temporary stringstream; 
     std::stringstream gmshfilecontent;
@@ -644,7 +647,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
     gmshfilecontent << "View \" Step " << step << " \" {" << endl;
   
     //looping through all elements on the processor
-    for (int i=0; i<discret_.NumMyColElements(); ++i)
+    for (int i=0; i < discret_.NumMyColElements(); ++i)
     {
       //getting pointer to current element
       DRT::Element* element = discret_.lColElement(i);
@@ -665,6 +668,8 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
          double displacement = discol[discret_.DofColMap()->LID( dofnode[id] )];
          coord(id,jd) =  referenceposition + displacement;
        }
+      
+
       
             
       //declaring variable for color of elements
@@ -694,6 +699,8 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
     fclose(fp);
     
   }//if(discret_.Comm().MyPID() == 0)
+  
+  
  
   return;
 } // StatMechManager::GmshOutput()
@@ -1033,19 +1040,19 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& disro
 #endif // #ifdef MEASURETIME 
     
     //setting the crosslinkers for neighbours in crosslinkerneighbours_ after probability check
-    //SetCrosslinkers(dt,noderowmap,nodecolmap,currentpositions,currentrotations);
+    SetCrosslinkers(dt,noderowmap,nodecolmap,currentpositions,currentrotations);
         
     //deleting the crosslinkers in crosslinkerpartner_ after probability check
-    //DelCrosslinkers(dt,noderowmap,nodecolmap);
+    DelCrosslinkers(dt,noderowmap,nodecolmap);
      
     /*settling administrative stuff in order to make the discretization ready for the next time step: the following
      * commmand generates or deletes ghost elements if necessary and calls FillCompete() method of discretization; 
      * this is enough as long as only elements, but no nodes are added in a time step; finally Crs matrices stiff_ has
      * to be deleted completely and made ready for new assembly since their graph was changed*/     
-    //DRT::UTILS::RedistributeWithNewNodalDistribution(discret_,noderowmap,nodecolmap);      
-    //discret_.FillComplete(true,false,false);
-    //stiff_->Reset();
-
+    DRT::UTILS::RedistributeWithNewNodalDistribution(discret_,noderowmap,nodecolmap);      
+    discret_.FillComplete(true,false,false);
+    stiff_->Reset();
+    
 
     
 #ifdef MEASURETIME
