@@ -24,6 +24,7 @@ Maintainer: Ulrich Kuettler
 #include <sstream>
 
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_exporter.H"
 #include <EpetraExt_Transpose_CrsGraph.h>
 
 #if 1
@@ -834,6 +835,10 @@ PostResult::read_result_serialdensematrix(const string name)
     DRT::ParObject::ExtractfromPack(position, *data, *gpstress);
     (*mapdata)[elemap->GID(i)]=gpstress;
   }
+
+  const Epetra_Map& elecolmap = *field_->discretization()->ElementColMap();
+  DRT::Exporter ex(*elemap, elecolmap, *comm);
+  ex.Export(*mapdata);
 
   return mapdata;
 }
