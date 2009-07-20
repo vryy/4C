@@ -85,7 +85,7 @@ NUMSTEP                         5
 UPPSS                           1
 UPRES                           1
 RESTARTEVRY                     1
-COUPALGO                        iter_monolithic
+COUPALGO                        iter_monolithicfluidsplit
 PREDICTOR                       d(n)
 CONVCRIT                        ||g(i)||:sqrt(neq)
 ENERGYCHECK                     no
