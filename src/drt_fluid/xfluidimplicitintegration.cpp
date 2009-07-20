@@ -613,7 +613,7 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
     // switch state vectors to new dof distribution
     // --------------------------------------------
 
-    cout0_ << " Initialize system vectors..." << endl;
+    cout0_ << " ->   Initialize system vectors..." << endl;
     // accelerations at time n and n-1
     dofswitch.mapVectorToNewDofDistribution(state_.accnp_);
     dofswitch.mapVectorToNewDofDistribution(state_.accn_);
@@ -1668,51 +1668,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
           LINALG::SerialDenseVector cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromNodalUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
               *cell, field, elementvalues, cellvalues);
-          LINALG::SerialDenseMatrix xyze_cell = cell->CellNodalPosXYZ();
-
-          if (cell->Shape() == DRT::Element::tet4)
-          {
-            const int numNodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet4>::numNodePerElement;
-
-
-            // central gausspoint
-            static LINALG::Matrix<3, 1> xsi;
-            xsi(0) = 0.25;
-            xsi(1) = 0.25;
-            xsi(2) = 0.25;
-
-            static LINALG::Matrix<3,numNodes> deriv;
-            DRT::UTILS::shape_function_3D_deriv1(deriv,xsi(0),xsi(1),xsi(2),DRT::Element::tet4);
-
-  //          qwgt[0]   =  Q16 ;
-
-            LINALG::Matrix<3,3> xjm(true);
-            // xjm(i,j) = deriv(i,k)*xyze(j,k);
-            for(int i=0; i<3; i++)
-              for(int j=0; j<3; j++)
-                for(int k=0; k<numNodes; k++)
-                  xjm(i,j) += deriv(i,k)*xyze_cell(j,k);
-
-            double det = xjm.Determinant();
-
-            if (det < 0.0)
-            {
-              // swap node 3 and 4
-              LINALG::Matrix<3, 1> xsi;
-              for(int i=0; i<3; i++)
-                xsi(i) = xyze_cell(i,4);
-              for(int i=0; i<3; i++)
-                xyze_cell(i,4) = xyze_cell(i,3);
-              for(int i=0; i<3; i++)
-                xyze_cell(i,3) = xsi(i);
-
-              double v = cellvalues(4);
-              cellvalues(4) = cellvalues(3);
-              cellvalues(3) = v;
-
-  //            cout << "test for cell determinant" << endl;
-            }
-          }
+          const LINALG::SerialDenseMatrix& xyze_cell = cell->CellNodalPosXYZ();
 
           gmshfilecontent << IO::GMSH::cellWithScalarFieldToString(
               cell->Shape(), cellvalues, xyze_cell) << "\n";
