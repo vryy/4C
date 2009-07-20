@@ -1896,7 +1896,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  fsi_iter_stagg_MFNK_FSI,
                                  fsi_iter_stagg_MPE,
                                  fsi_iter_stagg_RRE,
-                                 fsi_iter_monolithic,
+                                 fsi_iter_monolithicfluidsplit,
                                  fsi_iter_monolithiclagrange,
                                  fsi_iter_monolithicstructuresplit,
                                  fsi_pseudo_structureale),

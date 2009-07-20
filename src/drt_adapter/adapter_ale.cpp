@@ -121,7 +121,7 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn)
     // FSI input parameters
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
     int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
-    if (coupling == fsi_iter_monolithic or
+    if (coupling == fsi_iter_monolithicfluidsplit or
         coupling == fsi_iter_monolithiclagrange or
         coupling == fsi_iter_monolithicstructuresplit)
     {
@@ -142,7 +142,7 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn)
     // FSI input parameters
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
     int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
-    if (coupling == fsi_iter_monolithic or
+    if (coupling == fsi_iter_monolithicfluidsplit or
         coupling == fsi_iter_monolithiclagrange or
         coupling == fsi_iter_monolithicstructuresplit)
     {

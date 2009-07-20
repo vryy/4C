@@ -281,7 +281,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
                                Teuchos::getIntegralValue<int>(fsidyn,"SHAPEDERIVATIVES"));
 
     const int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
-    if (coupling == fsi_iter_monolithic or
+    if (coupling == fsi_iter_monolithicfluidsplit or
         coupling == fsi_iter_monolithiclagrange or
         coupling == fsi_iter_monolithicstructuresplit)
     {
@@ -302,7 +302,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
                                Teuchos::getIntegralValue<int>(fsidyn,"SHAPEDERIVATIVES"));
 
     const int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
-    if (coupling == fsi_iter_monolithic or
+    if (coupling == fsi_iter_monolithicfluidsplit or
         coupling == fsi_iter_monolithiclagrange or
         coupling == fsi_iter_monolithicstructuresplit)
     {
@@ -318,7 +318,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     fluidtimeparams->set<bool>("interface second order", Teuchos::getIntegralValue<int>(fsidyn,"SECONDORDER"));
 
     const int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
-    if (coupling == fsi_iter_monolithic or
+    if (coupling == fsi_iter_monolithicfluidsplit or
         coupling == fsi_iter_monolithiclagrange or
         coupling == fsi_iter_monolithicstructuresplit)
     {
@@ -365,7 +365,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       // FSI input parameters
       const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
       const int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
-      if (coupling == fsi_iter_monolithic or
+      if (coupling == fsi_iter_monolithicfluidsplit or
           coupling == fsi_iter_monolithiclagrange or
           coupling == fsi_iter_monolithicstructuresplit)
       {

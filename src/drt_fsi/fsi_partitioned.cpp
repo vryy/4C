@@ -277,7 +277,7 @@ void FSI::Partitioned::SetDefaultParameters(const Teuchos::ParameterList& fsidyn
   case fsi_iter_nox:
     dserror("obsolete");
     break;
-  case fsi_iter_monolithic:
+  case fsi_iter_monolithicfluidsplit:
     dserror("No monolithic coupling with Dirichlet-Neumann partitioning. Panic.");
     break;
   case fsi_basic_sequ_stagg:

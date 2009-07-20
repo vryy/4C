@@ -152,7 +152,7 @@ void fluid_freesurf_drt()
   int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
   switch (coupling)
   {
-  case fsi_iter_monolithic:
+  case fsi_iter_monolithicfluidsplit:
   case fsi_iter_monolithicstructuresplit:
   case fsi_iter_monolithiclagrange:
   {
@@ -255,7 +255,7 @@ void fsi_ale_drt()
     testmanager.TestAll();
     break;
   }
-  case fsi_iter_monolithic:
+  case fsi_iter_monolithicfluidsplit:
   case fsi_iter_monolithicstructuresplit:
   case fsi_iter_monolithiclagrange:
   {
@@ -270,7 +270,7 @@ void fsi_ale_drt()
     {
       fsi = Teuchos::rcp(new FSI::PartitionedMonolithic(comm));
     }
-    else if (coupling==fsi_iter_monolithic)
+    else if (coupling==fsi_iter_monolithicfluidsplit)
     {
       fsi = Teuchos::rcp(new FSI::MonolithicOverlap(comm));
     }

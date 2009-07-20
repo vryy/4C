@@ -248,7 +248,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
     genalphaparams->set<double>("alpha s",fsidyn.get<double>("ALPHA_S"));
 
     int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
-    if (coupling == fsi_iter_monolithic or
+    if (coupling == fsi_iter_monolithicfluidsplit or
         coupling == fsi_iter_monolithiclagrange or
         coupling == fsi_iter_monolithicstructuresplit)
     {
@@ -369,7 +369,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
 
     // check if predictor fits to FSI algo
     int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
-    if ( (coupling == fsi_iter_monolithic)
+    if ( (coupling == fsi_iter_monolithicfluidsplit)
          or (coupling == fsi_iter_monolithiclagrange)
          or (coupling == fsi_iter_monolithicstructuresplit) )
     {
