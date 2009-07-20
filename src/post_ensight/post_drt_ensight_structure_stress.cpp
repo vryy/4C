@@ -798,6 +798,8 @@ void StructureEnsightWriter::WriteNodalEigenStressStep(std::vector<RCP<ofstream>
     Write(*(files[i]), "coordinates");
   }
 
+  //cout << "normal stresses\n" << *normal_data_proc0 << "\nshear stresses\n" << *shear_data_proc0 << endl;
+
   //--------------------------------------------------------------------
   // write results
   //--------------------------------------------------------------------
@@ -813,15 +815,17 @@ void StructureEnsightWriter::WriteNodalEigenStressStep(std::vector<RCP<ofstream>
 
       for (int i=0;i<finalnumnode;++i)
       {
-        (eigenvec[i])(0,0) = (*normal_data_proc0)[3*i];
-        (eigenvec[i])(0,1) = (*shear_data_proc0)[3*i];
-        (eigenvec[i])(0,2) = (*shear_data_proc0)[3*i+2];
+        const DRT::Node* lnode = dis->lRowNode(i);
+        const int adjele = lnode->NumElement();
+        (eigenvec[i])(0,0) = (*normal_data_proc0)[3*i]/adjele;
+        (eigenvec[i])(0,1) = (*shear_data_proc0)[3*i]/adjele;
+        (eigenvec[i])(0,2) = (*shear_data_proc0)[3*i+2]/adjele;
         (eigenvec[i])(1,0) = (eigenvec[i])(0,1);
-        (eigenvec[i])(1,1) = (*normal_data_proc0)[3*i+1];
-        (eigenvec[i])(1,2) = (*shear_data_proc0)[3*i+1];
+        (eigenvec[i])(1,1) = (*normal_data_proc0)[3*i+1]/adjele;
+        (eigenvec[i])(1,2) = (*shear_data_proc0)[3*i+1]/adjele;
         (eigenvec[i])(2,0) = (eigenvec[i])(0,2);
         (eigenvec[i])(2,1) = (eigenvec[i])(1,2);
-        (eigenvec[i])(2,2) = (*normal_data_proc0)[3*i+2];
+        (eigenvec[i])(2,2) = (*normal_data_proc0)[3*i+2]/adjele;
 
         LINALG::SymmetricEigenProblem((eigenvec[i]), eigenval[i], true);
       }
@@ -1147,7 +1151,7 @@ void StructureEnsightWriter::WriteElementCenterEigenStressStep(std::vector<RCP<o
 
   RefCountPtr<Epetra_Map> proc0datamap;
   proc0datamap = LINALG::AllreduceEMap(*epetradatamap,0);
-  // sort proc0datamap so that we can loop it and get nodes in ascending order.
+  // sort proc0datamap so that we can loop it and get nodes in acending order.
   std::vector<int> sortmap;
   sortmap.reserve(proc0datamap->NumMyElements());
   sortmap.assign(proc0datamap->MyGlobalElements(), proc0datamap->MyGlobalElements()+proc0datamap->NumMyElements());
