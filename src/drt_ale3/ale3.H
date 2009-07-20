@@ -302,7 +302,8 @@ private:
     none,
     calc_ale_lin_stiff,
     calc_ale_spring,           ///< compute stiffness based on springs algorithm on last time step configuration
-    calc_ale_spring_fixed_ref  ///< compute stiffness based on springs algorithm on initial configuration
+    calc_ale_spring_fixed_ref,  ///< compute stiffness based on springs algorithm on initial configuration
+    calc_ale_node_normal
   };
 
   //! Gaussrule
@@ -344,6 +345,10 @@ public:
                          std::vector<double>&       my_dispnp,
                          RefCountPtr<MAT::Material> material,
                          ParameterList& 	    params) = 0;
+    virtual void ElementNodeNormal(Ale3*                      ele,
+                                   Epetra_SerialDenseVector&  elevec1,
+                                   std::vector<double>&       my_dispnp
+      ) = 0;
 
   static Ale3_Impl_Interface* Impl(Ale3* ele);
 protected:
@@ -369,6 +374,10 @@ public:
                  std::vector<double>&       my_dispnp,
                  RefCountPtr<MAT::Material> material,
                  ParameterList& 	    params);
+  void ElementNodeNormal(Ale3*                      ele,
+                              Epetra_SerialDenseVector&  elevec1,
+                              std::vector<double>&       my_dispnp
+    );
 private:
   static const int iel = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
   static const int numcnd = DisTypeToNumCornerNodes<distype>::numCornerNodes;

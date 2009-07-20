@@ -137,6 +137,27 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn)
     }
   }
 
+  if (genprob.probtyp == prb_freesurf)
+  {
+    // FSI input parameters
+    const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+    int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
+    if (coupling == fsi_iter_monolithic or
+        coupling == fsi_iter_monolithiclagrange or
+        coupling == fsi_iter_monolithicstructuresplit)
+    {
+      // partitioned MFSI solvers require Dirichlet conditions
+      INPAR::FSI::LinearBlockSolver linearsolverstrategy =
+        Teuchos::getIntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
+      if (linearsolverstrategy==INPAR::FSI::PartitionedAitken or
+          linearsolverstrategy==INPAR::FSI::PartitionedVectorExtrapolation or
+          linearsolverstrategy==INPAR::FSI::PartitionedJacobianFreeNewtonKrylov)
+        dirichletcond = true;
+      else
+        dirichletcond = false;
+    }
+  }
+
   int aletype = Teuchos::getIntegralValue<int>(adyn,"ALE_TYPE");
   if (aletype==ALE_DYNAMIC::classic_lin)
     ale_ = rcp(new AleLinear(actdis, solver, params, output, false, dirichletcond));

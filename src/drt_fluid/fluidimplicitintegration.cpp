@@ -994,19 +994,23 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
         if (alefluid_ and freesurface_->Relevant())
         {
 
-// 2D or TET: To possibilities work. FSTENS1 is a direct implementation of Wall et
-// al. eq. (25) with node normals obtained by weighted assembly of element
-// normals. Because geometric considerations are used to find the normals of
-// our flat (!) surface elements no second derivatives appear. FSTENS2 employs the
-// divergence theorem acc. to Saksono eq. (24).
+          // Two possibilities. FSTENS1 is a direct implementation of Wall et
+          // al.  eq. (25) with node normals obtained acc. to Wall (7.13).  If
+          // no interpolation step is used with 1st order elements, the
+          // c0-field of the curvature is not good enough for the surface
+          // tension calculation.  Even with interpolation, the surface
+          // tension simulation has problems (wiggles).
+          //
+          // FSTENS2 employs the divergence theorem acc. to Saksono eq. (24)
+          // and does not require second derivatives.
 
 #define FSTENS2
 #undef FSTENS1
 
-
           // select free surface elements
           std::string condname = "FREESURFCoupling";
 
+#ifdef FSTENS1
           // get a vector layout from the discretization to construct matching
           // vectors and matrices
           //                 local <-> global dof numbering
@@ -1014,6 +1018,8 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
 
           //vector ndnorm0 with pressure-entries is needed for EvaluateCondition
           Teuchos::RCP<Epetra_Vector> ndnorm0 = LINALG::CreateVector(*dofrowmap,true);
+          Teuchos::RCP<Epetra_Vector> curv0 = LINALG::CreateVector(*dofrowmap,true);
+#endif
 
           ParameterList eleparams;
 
@@ -1021,20 +1027,34 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           // set action for elements, calc_surface_tension uses node normals
           eleparams.set("action","calc_node_normal");
 
-          //call loop over elements, note: normal vectors do not yet have length = 1.0
+          //call loop over surface elements, note: normal vectors do not yet have length = 1.0
           discret_->ClearState();
           discret_->SetState("dispnp", dispnp_);
           discret_->EvaluateCondition(eleparams,ndnorm0,condname);
+
+          // set action for elements, calc_surface_tension uses interpolated
+          // curvature. c0 field -> c1 field.
+          eleparams.set("action","calc_node_curvature");
+
+          //call loop over surface elements, note: normal vectors do not yet have length = 1.0
+          discret_->ClearState();
+          discret_->SetState("dispnp", dispnp_);
+          discret_->SetState("normals", ndnorm0);
+          discret_->EvaluateCondition(eleparams,curv0,condname);
+
 #endif
 
           // set action for elements
           eleparams.set("action","calc_surface_tension");
+          eleparams.set("thsl",theta_*dta_);
+
           discret_->ClearState();
           discret_->SetState("dispnp", dispnp_);
 #ifdef FSTENS1
           discret_->SetState("normals", ndnorm0);
+          discret_->SetState("curvature", curv0);
 #endif
-          discret_->EvaluateCondition(eleparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null,condname);
+          discret_->EvaluateCondition(eleparams,Teuchos::null,Teuchos::null,residual_,Teuchos::null,Teuchos::null,condname);
           discret_->ClearState();
         }
         //---------------------------end of surface tension update
@@ -1454,6 +1474,14 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       }
 
       conds.clear();
+
+      // ================ HEIGHTFUNCTION =======================================
+      // This is the heightfunction implementation for the partitioned algorithm
+      // as it is. This is a very basic implementation - and it is not
+      // mass-consistent! We need another evaluate call here to find a
+      // mass-consistent heightfunction manipulation matrix.
+      //
+      // local lagrange is mass-consistent of course.
 
       if (hfconds.size()>0)
       {
@@ -2404,6 +2432,77 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   // call loop over elements
   discret_->Evaluate(eleparams,sysmat_,shapederivatives_,residual_,Teuchos::null,Teuchos::null);
   discret_->ClearState();
+
+  //---------------------------surface tension update
+  if (alefluid_ and freesurface_->Relevant())
+  {
+    // Two possibilities. FSTENS1 is a direct implementation of Wall et al.
+    // eq. (25) with node normals obtained acc. to Wall (7.13).  If no
+    // interpolation step is used with 1st order elements, the c0-field of the
+    // curvature is not good enough for the surface tension calculation.  Even
+    // with interpolation, the surface tension simulation has problems
+    // (wiggles).
+    //
+    // FSTENS2 employs the divergence theorem acc. to Saksono eq. (24) and
+    // does not require second derivatives.
+
+#define FSTENS2
+#undef FSTENS1
+// see also: ../drt_f2/fluid2_line_evaluate.cpp:109,
+// ../drt_f3/fluid3_surface_evaluate.cpp:181,
+// ../drt_fluid/fluidimplicitintegration.cpp:981
+
+    // select free surface elements
+    std::string condname = "FREESURFCoupling";
+
+#ifdef FSTENS1
+    // get a vector layout from the discretization to construct matching
+    // vectors and matrices
+    //                 local <-> global dof numbering
+    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+    //vectors ndnorm0 and curv0 with pressure-dofs for EvaluateCondition
+    Teuchos::RCP<Epetra_Vector> ndnorm0 = LINALG::CreateVector(*dofrowmap,true);
+    Teuchos::RCP<Epetra_Vector> curv0 = LINALG::CreateVector(*dofrowmap,true);
+#endif
+
+    ParameterList eleparams;
+
+#ifdef FSTENS1
+    // set action for elements, calc_surface_tension uses node normals
+    eleparams.set("action","calc_node_normal");
+
+    //call loop over surface elements, note: normal vectors do not yet have length = 1.0
+    discret_->ClearState();
+    discret_->SetState("dispnp", dispnp_);
+    discret_->EvaluateCondition(eleparams,ndnorm0,condname);
+
+    // set action for elements, calc_surface_tension uses interpolated
+    // curvature (for low order elements c0 field -> c1 field).
+    eleparams.set("action","calc_node_curvature");
+
+    //call loop over surface elements, note: normal vectors do not yet have length = 1.0
+    discret_->ClearState();
+    discret_->SetState("dispnp", dispnp_);
+    discret_->SetState("normals", ndnorm0);
+    discret_->EvaluateCondition(eleparams,curv0,condname);
+
+#endif
+
+    // set action for elements
+    eleparams.set("action","calc_surface_tension");
+    eleparams.set("thsl",theta_*dta_);
+
+    discret_->ClearState();
+    discret_->SetState("dispnp", dispnp_);
+#ifdef FSTENS1
+    discret_->SetState("normals", ndnorm0);
+    discret_->SetState("curvature", curv0);
+#endif
+    discret_->EvaluateCondition(eleparams,Teuchos::null,Teuchos::null,residual_,Teuchos::null,Teuchos::null,condname);
+    discret_->ClearState();
+  }
+  //---------------------------end of surface tension update
 
   // finalize the system matrix
   sysmat_->Complete();

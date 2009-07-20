@@ -289,6 +289,27 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       fluidtimeparams->set<bool>("do explicit predictor",false);
     }
   }
+  if (genprob.probtyp == prb_freesurf)
+  {
+    // in case of FSI calculations we do not want a stationary fluid solver
+    if (iop == timeint_stationary)
+      dserror("Stationary fluid solver not allowed for Freesurface problem.");
+
+    const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+
+    fluidtimeparams->set<bool>("interface second order", Teuchos::getIntegralValue<int>(fsidyn,"SECONDORDER"));
+    fluidtimeparams->set<bool>("shape derivatives",
+                               Teuchos::getIntegralValue<int>(fsidyn,"SHAPEDERIVATIVES"));
+
+    const int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
+    if (coupling == fsi_iter_monolithic or
+        coupling == fsi_iter_monolithiclagrange or
+        coupling == fsi_iter_monolithicstructuresplit)
+    {
+      // there are a couple of restrictions in monolithic Freesurface Algorithm
+      fluidtimeparams->set<bool>("do explicit predictor",false);
+    }
+  }
   // sanity checks and default flags
   if (genprob.probtyp == prb_fsi_xfem or
       genprob.probtyp == prb_fluid_xfem)

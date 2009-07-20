@@ -376,6 +376,14 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImpl::ExtractInterfaceVeln()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImpl::ExtractFreeSurfaceVeln()
+{
+  return freesurface_.ExtractCondVector(fluid_.Veln());
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void ADAPTER::FluidImpl::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel)
 {
   interface_.InsertCondVector(ivel,fluid_.Velnp());
@@ -467,6 +475,38 @@ void ADAPTER::FluidImpl::VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void ADAPTER::FluidImpl::FreeSurfDisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx)
+{
+  // get interface velocity at t(n)
+  const Teuchos::RCP<Epetra_Vector> veln = FreeSurface().ExtractCondVector(Veln());
+
+  // We convert Delta d(n+1,i+1) to Delta u(n+1,i+1) here.
+  //
+  // Delta d(n+1,i+1) = ( theta Delta u(n+1,i+1) + u(n) ) * dt
+  //
+  double timescale = TimeScaling();
+  fcx->Update(-timescale*fluid_.Dt(),*veln,timescale);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FluidImpl::FreeSurfVelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx)
+{
+  // get interface velocity at t(n)
+  const Teuchos::RCP<Epetra_Vector> veln = FreeSurface().ExtractCondVector(Veln());
+
+  // We convert Delta u(n+1,i+1) to Delta d(n+1,i+1) here.
+  //
+  // Delta d(n+1,i+1) = ( theta Delta u(n+1,i+1) + u(n) ) * dt
+  //
+  double timescale = 1./TimeScaling();
+  fcx->Update(fluid_.Dt(),*veln,timescale);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 int ADAPTER::FluidImpl::Itemax() const
 {
   return fluid_.Itemax();
@@ -493,10 +533,11 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImpl::IntegrateInterfaceShape()
  *----------------------------------------------------------------------*/
 void ADAPTER::FluidImpl::UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
                                         const LINALG::MultiMapExtractor& rangemaps,
+                                        std::string condname,
                                         bool splitmatrix)
 {
   Teuchos::RCP<std::set<int> > condelements = DRT::UTILS::ConditionElementMap(*Discretization(),
-                                                                         "FSICoupling");
+                                                                         condname);
   fluid_.UseBlockMatrix(condelements,domainmaps,rangemaps,splitmatrix);
 }
 

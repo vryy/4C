@@ -162,6 +162,9 @@ Input/fsi_potential_LJ.dat                              x        -        x     
 Input/fsi_potential_LJ_par.dat                          -        x        -        x        -        x
 Input/fsi_dc3232q9i_drt.dat                             x        -        -        -        -        -
 Input/fsi_dc3232q9psi_drt.dat                           x        -        -        -        -        -
+Input/fs-kugel-tet.dat                                  x        x        -        -        -        -
+Input/fs-wuerfel-tet.dat                                x        x        -        -        -        -
+Input/fs-quadrat.dat                                    x        x        -        -        -        -
 Input/krag_2ele_expl.dat                                -        -        -        -        -        -
 Input/inv_analysis.dat                                  x        -        x        -        -        -
 Input/shell8_amg.dat                                    -        -        -        -        -        -

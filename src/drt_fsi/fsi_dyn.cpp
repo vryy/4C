@@ -21,6 +21,9 @@
 #include "fsi_fluid_xfem.H"
 #include "fsi_utils.H"
 
+#include "fs_monolithic.H"
+
+
 #include "../drt_inpar/inpar_fsi.H"
 #include "../drt_lib/drt_resulttest.H"
 
@@ -65,7 +68,7 @@ void fluid_ale_drt()
   {
     FSI::UTILS::CreateAleDiscretization();
 
-    if(comm.MyPID()==0)
+    if (comm.MyPID()==0)
     {
       cout << "\n\nCreating ALE discretisation ....\n\n";
     }
@@ -126,20 +129,76 @@ void fluid_freesurf_drt()
   Epetra_SerialComm comm;
 #endif
 
-  RefCountPtr<DRT::Discretization> aledis = DRT::Problem::Instance()->Dis(genprob.numaf,0);
-  if (!aledis->Filled()) aledis->FillComplete();
+
+  RCP<DRT::Problem> problem = DRT::Problem::Instance();
+
+  // make sure the three discretizations are filled in the right order
+  // this creates dof numbers with
+  //
+  //       fluid dof < ale dof
+  //
+  // We rely on this ordering in certain non-intuitive places!
+
+  problem->Dis(genprob.numff,0)->FillComplete();
+  problem->Dis(genprob.numaf,0)->FillComplete();
 
   // create ale elements if the ale discretization is empty
+  RCP<DRT::Discretization> aledis = problem->Dis(genprob.numaf,0);
   if (aledis->NumGlobalNodes()==0)
     FSI::UTILS::CreateAleDiscretization();
 
-  Teuchos::RCP<FSI::FluidAleAlgorithm> fluid = Teuchos::rcp(new FSI::FluidAleAlgorithm(comm));
+  const Teuchos::ParameterList& fsidyn   = problem->FSIDynamicParams();
 
-  fluid->Timeloop();
+  int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
+  switch (coupling)
+  {
+  case fsi_iter_monolithic:
+  case fsi_iter_monolithicstructuresplit:
+  case fsi_iter_monolithiclagrange:
+  {
 
-  DRT::ResultTestManager testmanager(comm);
-  testmanager.AddFieldTest(fluid->MBFluidField().CreateFieldTest());
-  testmanager.TestAll();
+    INPAR::FSI::LinearBlockSolver linearsolverstrategy = Teuchos::getIntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
+
+    if (linearsolverstrategy==INPAR::FSI::PartitionedAitken or
+        linearsolverstrategy==INPAR::FSI::PartitionedVectorExtrapolation or
+        linearsolverstrategy==INPAR::FSI::PartitionedJacobianFreeNewtonKrylov or
+        linearsolverstrategy==INPAR::FSI::FSIAMG)
+      dserror("No partitioned linear solver strategy or FSIAMG supported in Monolithic Free Surface Algorithm. Use PreconditionedKrylov");
+
+    Teuchos::RCP<FSI::MonolithicMainFS> fsi;
+
+    // Monolithic Free Surface Algorithm
+
+    fsi = Teuchos::rcp(new FSI::MonolithicFS(comm));
+
+    if (genprob.restart)
+    {
+      // read the restart information, set vectors and variables
+      fsi->ReadRestart(genprob.restart);
+    }
+
+    fsi->Timeloop(fsi);
+
+    DRT::ResultTestManager testmanager(comm);
+    testmanager.AddFieldTest(fsi->FluidField().CreateFieldTest());
+    testmanager.TestAll();
+    break;
+  }
+  default:
+  {
+    Teuchos::RCP<FSI::FluidAleAlgorithm> fluid;
+
+    // Partitioned FS Algorithm
+    fluid = Teuchos::rcp(new FSI::FluidAleAlgorithm(comm));
+
+    fluid->Timeloop();
+
+    DRT::ResultTestManager testmanager(comm);
+    testmanager.AddFieldTest(fluid->MBFluidField().CreateFieldTest());
+    testmanager.TestAll();
+    break;
+  }
+  }
 }
 
 

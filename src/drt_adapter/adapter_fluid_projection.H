@@ -103,6 +103,7 @@ public:
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForcesRobin();
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceFluidVelocity();
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln();
+    virtual Teuchos::RCP<Epetra_Vector> ExtractFreeSurfaceVeln();
     virtual void ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel);
     virtual void ApplyInterfaceRobinValue(Teuchos::RCP<Epetra_Vector> ivel, Teuchos::RCP<Epetra_Vector> iforce);
     virtual void ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> fluiddisp);
@@ -110,6 +111,8 @@ public:
 
     virtual void DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx);
     virtual void VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx);
+    virtual void FreeSurfDisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx);
+    virtual void FreeSurfVelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx);
 
     virtual int  Itemax() const;
     virtual void SetItemax(int itemax);
@@ -120,8 +123,9 @@ public:
     virtual Teuchos::RCP<const Epetra_Vector> ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres);
     virtual Teuchos::RCP<Epetra_Vector>   IntegrateInterfaceShape();
     virtual void UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
-            const LINALG::MultiMapExtractor& rangemaps,
-            bool splitmatrix);
+                                const LINALG::MultiMapExtractor& rangemaps,
+                                std::string condname,
+                                bool splitmatrix);
     virtual Teuchos::RCP<DRT::ResultTest>  CreateFieldTest();
 private:
     /// the actual fluid algorithm

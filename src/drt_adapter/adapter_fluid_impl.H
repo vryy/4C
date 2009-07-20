@@ -134,6 +134,7 @@ namespace ADAPTER {
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForcesRobin();
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceFluidVelocity();
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln();
+    virtual Teuchos::RCP<Epetra_Vector> ExtractFreeSurfaceVeln();
     virtual void ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel);
     virtual void ApplyInterfaceRobinValue(Teuchos::RCP<Epetra_Vector> ivel, Teuchos::RCP<Epetra_Vector> iforce);
     virtual void ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> fluiddisp);
@@ -141,6 +142,9 @@ namespace ADAPTER {
 
     virtual void DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx);
     virtual void VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx);
+
+    virtual void FreeSurfDisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx);
+    virtual void FreeSurfVelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx);
 
     virtual int  Itemax() const;
     virtual void SetItemax(int itemax);
@@ -155,6 +159,7 @@ namespace ADAPTER {
 
     virtual void UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
                                 const LINALG::MultiMapExtractor& rangemaps,
+                                std::string condname,
                                 bool splitmatrix);
 
     /// linear fluid solve with just a interface load

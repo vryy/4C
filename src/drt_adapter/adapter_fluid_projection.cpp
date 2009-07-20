@@ -286,6 +286,12 @@ output_(output)
             return interface_.ExtractCondVector(fluid_.Veln());
         }
 
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidProjection::ExtractFreeSurfaceVeln()
+{
+  dserror("not implemented");
+  return Teuchos::null;
+}
+
         void ADAPTER::FluidProjection::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel)
         {
             interface_.InsertCondVector(ivel,fluid_.Velnp());
@@ -361,6 +367,16 @@ output_(output)
             fcx->Update(fluid_.Dt(),*veln,timescale);
         }
 
+void ADAPTER::FluidProjection::FreeSurfDisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx)
+{
+  dserror("not implemented");
+}
+
+void ADAPTER::FluidProjection::FreeSurfVelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx)
+{
+  dserror("not implemented");
+}
+
         int  ADAPTER::FluidProjection::Itemax() const
         {
             return fluid_.Itemax();
@@ -390,8 +406,9 @@ output_(output)
         }
 
         void ADAPTER::FluidProjection::UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
-                const LINALG::MultiMapExtractor& rangemaps,
-                bool splitmatrix)
+                                                      const LINALG::MultiMapExtractor& rangemaps,
+                                                      std::string condname,
+                                                      bool splitmatrix)
         {
             dserror("not implemented");
             return;

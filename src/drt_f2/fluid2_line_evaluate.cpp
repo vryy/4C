@@ -800,17 +800,6 @@ void DRT::ELEMENTS::Fluid2Line::ElementNodeNormal(ParameterList& params,
     }
   }
 
-  //this element's normal vector
-  Epetra_SerialDenseVector   norm(2);
-  double length = 0.0;
-  norm[0] = xye(1,1) - xye(1,0);
-  norm[1] = (-1.0)*(xye(0,1) - xye(0,0));
-
-  length = sqrt(norm[0]*norm[0]+norm[1]*norm[1]);
-
-  norm[0] = (1.0/length)*norm[0];
-  norm[1] = (1.0/length)*norm[1];
-
   // loop over integration points
   for (int gpid=0;gpid<intpoints.nquad;gpid++)
   {
@@ -824,6 +813,17 @@ void DRT::ELEMENTS::Fluid2Line::ElementNodeNormal(ParameterList& params,
 
     // values are multiplied by the product from inf. area element and the gauss weight
     const double fac = dr * intpoints.qwgt[gpid];
+
+    Epetra_SerialDenseMatrix dxydr(1,2);
+    dxydr.Multiply('N','T',1.0,deriv,xye,0.0);
+
+    // normal vector in gausspoint
+    Epetra_SerialDenseVector   norm(2);
+    norm[0] = dxydr(0,1);
+    norm[1] = (-1.0) * dxydr(0,0);
+    const double length = norm.Norm2();
+    norm[0] = norm[0] / length;
+    norm[1] = norm[1] / length;
 
     for (int node=0;node<iel;++node)
     {
@@ -851,6 +851,10 @@ void DRT::ELEMENTS::Fluid2Line::ElementSurfaceTension(ParameterList& params,
 
   // set number of nodes
   const int iel   = this->NumNode();
+
+  // get time integration parameters
+  const double timefac = params.get<double>("thsl",-1.0);
+  if (timefac < 0.0) dserror("No thsl supplied");
 
   // isotropic and isothermal surface tension coefficient
   double SFgamma = 0.0;
@@ -929,20 +933,20 @@ void DRT::ELEMENTS::Fluid2Line::ElementSurfaceTension(ParameterList& params,
 
     // values are multiplied by the product from inf. area element and the
     // the gauss weight
-    const double fac = intpoints.qwgt[gpid] *dr;
+    const double fac = intpoints.qwgt[gpid] * dr * timefac;
 
 #ifdef FSTENS1
 
     // Metric-tensor for surface element (a line) is 1x1
     double metrictensor = 0.0;
-    Epetra_SerialDenseVector  dxyds(2);
+    Epetra_SerialDenseVector  dxydr(2);
     for (int node=0;node<iel;++node)
     {
       for (int dim=0;dim<2;dim++)
-        dxyds[dim] += xye(dim,node)*deriv(0,node);
+        dxydr[dim] += xye(dim,node)*deriv(0,node);
     }
     for (int dim=0;dim<2;dim++)
-      metrictensor += dxyds[dim]*dxyds[dim];
+      metrictensor += dxydr[dim]*dxydr[dim];
 
     // calculate normal vector at integration point
     Epetra_SerialDenseVector  norm(2);
@@ -966,7 +970,7 @@ void DRT::ELEMENTS::Fluid2Line::ElementSurfaceTension(ParameterList& params,
     }
 
     // calculate double mean curvature 2*H at integration point.
-    double twoH = 0.0;
+    double H = 0.0;
     Epetra_SerialDenseVector dn12dr(2);
 
     for(int dim=0;dim<2;dim++)
@@ -980,7 +984,9 @@ void DRT::ELEMENTS::Fluid2Line::ElementSurfaceTension(ParameterList& params,
     //Acc. to Saksono eq. (4): 2H = - Surface_gradient*norm
     //see also Bronstein ..."mittlere Kruemmung" (2D: with H instead of 2H,
     //E=G, F=0,N=L)
-    twoH = (-1.0) * dn12dr[0] * dxyds[0] + (-1.0) * dn12dr[1] * dxyds[1];
+    H = (-1.0) *
+           (dn12dr[0] * dxydr[0] + dn12dr[1] * dxydr[1])
+           / (dxydr[0] * dxydr[0] + dxydr[1] * dxydr[1]);
 
 
     for (int node=0;node<iel;++node)
@@ -989,19 +995,21 @@ void DRT::ELEMENTS::Fluid2Line::ElementSurfaceTension(ParameterList& params,
         {
           // according to Saksono (23)
           elevec1[node*numdf+dim]+= SFgamma *
-                                    twoH * norm[dim] * funct[node]
+                                    H * norm[dim] * funct[node]
                                     * fac;
         }
         }
 
 #else //----> FSTENS2
-      // works fine
 
-    Epetra_SerialDenseVector  dxyds(2);
-  for (int node=0;node<iel;++node)
-  {
-      for (int dim=0;dim<2;dim++)
-        dxyds[dim] += xye(dim,node)*deriv(0,node);
+
+    Epetra_SerialDenseVector  dxydr(2);
+    for (int dim=0;dim<2;dim++)
+    {
+      for (int node=0;node<iel;++node)
+      {
+        dxydr[dim] += xye(dim,node)*deriv(0,node);
+      }
     }
 
     for (int node=0;node<iel;++node)
@@ -1013,8 +1021,9 @@ void DRT::ELEMENTS::Fluid2Line::ElementSurfaceTension(ParameterList& params,
           // See Saksono eq. (26)
           // discretized as surface gradient * ( Shapefunction-Matrix
           // transformed )
-          elevec1[node*numdf+dim]+= SFgamma *
-                                    (-1.0) * deriv(0, node) * dxyds[dim]
+          // 2D: See Slikkerveer ep. (17)
+          elevec1[node*numdf+dim]+= SFgamma / dr / dr *
+                                    (-1.0) * deriv(0, node) * dxydr[dim]
                                     * fac;
     }
   }

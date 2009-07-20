@@ -91,7 +91,14 @@ void ADAPTER::AleSpringsFixedRef::BuildSystemMatrix(bool full)
   }
   else
   {
-    sysmat_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(interface_,interface_,81,false,true));
+    if (freesurface_.Relevant())
+    {
+      sysmat_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(freesurface_,freesurface_,81,false,true));
+    }
+    else
+    {
+      sysmat_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(interface_,interface_,81,false,true));
+    }
   }
 
   if (not incremental_)

@@ -93,13 +93,17 @@ namespace ADAPTER
     virtual void DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx){ return; };
     virtual void VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx){ return; };
 
+    virtual void FreeSurfDisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx)  { dserror("not implemented!"); return; };
+    virtual void FreeSurfVelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx)  { dserror("not implemented!"); return; };
+
     virtual Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape(){
             dserror("not implemented!");
             return interface_.ExtractCondVector(fluid_.IntegrateInterfaceShape("FSICoupling")); };
 
     virtual void UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
                                 const LINALG::MultiMapExtractor& rangemaps,
-                                bool splitmatrix){ return; };
+                                std::string condname,
+                                bool splitmatrix)  { dserror("not implemented!"); return; };
 
     /// predictor
     virtual void Predictor(){ dserror("not implemented!"); return; };
@@ -192,6 +196,8 @@ namespace ADAPTER
 
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces();
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln();
+    virtual Teuchos::RCP<Epetra_Vector> ExtractFreeSurfaceVeln()  { dserror("not implemented!");
+                                                                         return Teuchos::null; };
     virtual void ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel);
 
     /// extract the velocity part of a vector of unknowns

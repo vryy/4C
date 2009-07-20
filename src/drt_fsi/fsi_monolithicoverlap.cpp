@@ -86,6 +86,7 @@ void FSI::MonolithicOverlap::SetupSystem()
   // Switch fluid to interface split block matrix
   FluidField().UseBlockMatrix(FluidField().Interface(),
                               FluidField().Interface(),
+                              "FSICoupling",
                               true);
 
   // build ale system matrix in splitted system

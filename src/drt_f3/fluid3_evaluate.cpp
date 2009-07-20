@@ -90,6 +90,8 @@ DRT::ELEMENTS::Fluid3::ActionType DRT::ELEMENTS::Fluid3::convertStringToActionTy
     act = Fluid3::calc_smagorinsky_const;
   else if (action == "get_density")
     act = Fluid3::get_density;
+  else if (action == "calc_node_normal")
+    act = Fluid3::calc_node_normal;
   else if (action == "integrate_shape")
     act = Fluid3::integrate_shape;
   else
@@ -137,7 +139,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
   const DRT::ELEMENTS::Fluid3::ActionType act = convertStringToActionType(action);
 
   // get the material
-  RefCountPtr<MAT::Material> mat = Material();
+  RCP<MAT::Material> mat = Material();
 
   switch(act)
   {
@@ -287,7 +289,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         {
 
           // need current velocity and history vector
-          RefCountPtr<const Epetra_Vector> vel_pre_np = discretization.GetState("u and p at time n+1 (converged)");
+          RCP<const Epetra_Vector> vel_pre_np = discretization.GetState("u and p at time n+1 (converged)");
           if (vel_pre_np==null) dserror("Cannot get state vectors 'velnp'");
 
           // extract local values from the global vectors
@@ -322,9 +324,9 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           // extract velocities and pressure from the global distributed vectors
 
           // velocity and pressure values (n+1)
-          RefCountPtr<const Epetra_Vector> velnp
+          RCP<const Epetra_Vector> velnp
             = discretization.GetState("u and p (n+1,converged)");
-          RefCountPtr<const Epetra_Vector> subgrviscnp
+          RCP<const Epetra_Vector> subgrviscnp
             = discretization.GetState("sv (n+1,converged)");
 
           if (velnp==null || subgrviscnp==null)
@@ -340,7 +342,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           if(is_ale_)
           {
             // get most recent displacements
-            RefCountPtr<const Epetra_Vector> dispnp
+            RCP<const Epetra_Vector> dispnp
               =
               discretization.GetState("dispnp");
 
@@ -400,11 +402,11 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           // from the global distributed vectors
 
           // velocity and pressure values (n+1)
-          RefCountPtr<const Epetra_Vector> velnp
+          RCP<const Epetra_Vector> velnp
             = discretization.GetState("u and p (n+1,converged)");
-          RefCountPtr<const Epetra_Vector> vedenp
+          RCP<const Epetra_Vector> vedenp
             = discretization.GetState("rho (n+1,converged)");
-          RefCountPtr<const Epetra_Vector> subgrviscnp
+          RCP<const Epetra_Vector> subgrviscnp
             = discretization.GetState("sv (n+1,converged)");
 
           if (velnp==null || vedenp==null || subgrviscnp==null)
@@ -457,7 +459,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         // velocity and pressure values (most recent
         // intermediate solution, i.e. n+alphaF for genalpha
         // and n+1 for one-step-theta)
-        RefCountPtr<const Epetra_Vector> vel =
+        RCP<const Epetra_Vector> vel =
           discretization.GetState("u and p (trial)");
 
         if (vel==null)
@@ -508,12 +510,12 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
       break;
       case calc_smagorinsky_const:
       {
-        RefCountPtr<Epetra_MultiVector> filtered_vel                        =
-          params.get<RefCountPtr<Epetra_MultiVector> >("col_filtered_vel");
-        RefCountPtr<Epetra_MultiVector> col_filtered_reynoldsstress         =
-          params.get<RefCountPtr<Epetra_MultiVector> >("col_filtered_reynoldsstress");
-        RefCountPtr<Epetra_MultiVector> col_filtered_modeled_subgrid_stress =
-          params.get<RefCountPtr<Epetra_MultiVector> >("col_filtered_modeled_subgrid_stress");
+        RCP<Epetra_MultiVector> filtered_vel                        =
+          params.get<RCP<Epetra_MultiVector> >("col_filtered_vel");
+        RCP<Epetra_MultiVector> col_filtered_reynoldsstress         =
+          params.get<RCP<Epetra_MultiVector> >("col_filtered_reynoldsstress");
+        RCP<Epetra_MultiVector> col_filtered_modeled_subgrid_stress =
+          params.get<RCP<Epetra_MultiVector> >("col_filtered_modeled_subgrid_stress");
 
         double LijMij   = 0;
         double MijMij   = 0;
@@ -640,6 +642,43 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           dserror("no fluid material found");
       }
       break;
+      case calc_node_normal:
+      {
+        const DiscretizationType distype = this->Shape();
+        switch (distype)
+        {
+        case DRT::Element::hex27:
+        {
+          this->ElementNodeNormal<27>(params,discretization,lm,elevec1);
+	  break;
+	}
+        case DRT::Element::hex20:
+        {
+          this->ElementNodeNormal<20>(params,discretization,lm,elevec1);
+	  break;
+	}
+        case DRT::Element::hex8:
+        {
+          this->ElementNodeNormal<8>(params,discretization,lm,elevec1);
+          break;
+        }
+        case DRT::Element::tet4:
+        {
+          this->ElementNodeNormal<4>(params,discretization,lm,elevec1);
+          break;
+        }
+        case DRT::Element::tet10:
+        {
+          this->ElementNodeNormal<10>(params,discretization,lm,elevec1);
+          break;
+        }
+        default:
+        {
+          dserror("Unknown element type for shape function integration\n");
+        }
+        }
+        break;
+      }
       case integrate_shape:
       {
 
@@ -952,25 +991,25 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
 
   // the vector planes contains the coordinates of the homogeneous planes (in
   // wall normal direction)
-  RefCountPtr<vector<double> > planes = params.get<RefCountPtr<vector<double> > >("coordinate vector for hom. planes");
+  RCP<vector<double> > planes = params.get<RCP<vector<double> > >("coordinate vector for hom. planes");
 
   // get the pointers to the solution vectors
-  RefCountPtr<vector<double> > sumarea= params.get<RefCountPtr<vector<double> > >("element layer area");
+  RCP<vector<double> > sumarea= params.get<RCP<vector<double> > >("element layer area");
 
-  RefCountPtr<vector<double> > sumu   = params.get<RefCountPtr<vector<double> > >("mean velocity u");
-  RefCountPtr<vector<double> > sumv   = params.get<RefCountPtr<vector<double> > >("mean velocity v");
-  RefCountPtr<vector<double> > sumw   = params.get<RefCountPtr<vector<double> > >("mean velocity w");
-  RefCountPtr<vector<double> > sump   = params.get<RefCountPtr<vector<double> > >("mean pressure p");
-  RefCountPtr<vector<double> > sumsv = params.get<RefCountPtr<vector<double> > >("mean subgrid visc");
+  RCP<vector<double> > sumu   = params.get<RCP<vector<double> > >("mean velocity u");
+  RCP<vector<double> > sumv   = params.get<RCP<vector<double> > >("mean velocity v");
+  RCP<vector<double> > sumw   = params.get<RCP<vector<double> > >("mean velocity w");
+  RCP<vector<double> > sump   = params.get<RCP<vector<double> > >("mean pressure p");
+  RCP<vector<double> > sumsv = params.get<RCP<vector<double> > >("mean subgrid visc");
 
-  RefCountPtr<vector<double> > sumsqu = params.get<RefCountPtr<vector<double> > >("mean value u^2");
-  RefCountPtr<vector<double> > sumsqv = params.get<RefCountPtr<vector<double> > >("mean value v^2");
-  RefCountPtr<vector<double> > sumsqw = params.get<RefCountPtr<vector<double> > >("mean value w^2");
-  RefCountPtr<vector<double> > sumuv  = params.get<RefCountPtr<vector<double> > >("mean value uv");
-  RefCountPtr<vector<double> > sumuw  = params.get<RefCountPtr<vector<double> > >("mean value uw");
-  RefCountPtr<vector<double> > sumvw  = params.get<RefCountPtr<vector<double> > >("mean value vw");
-  RefCountPtr<vector<double> > sumsqp = params.get<RefCountPtr<vector<double> > >("mean value p^2");
-  RefCountPtr<vector<double> > sumsqsv = params.get<RefCountPtr<vector<double> > >("mean value sv^2");
+  RCP<vector<double> > sumsqu = params.get<RCP<vector<double> > >("mean value u^2");
+  RCP<vector<double> > sumsqv = params.get<RCP<vector<double> > >("mean value v^2");
+  RCP<vector<double> > sumsqw = params.get<RCP<vector<double> > >("mean value w^2");
+  RCP<vector<double> > sumuv  = params.get<RCP<vector<double> > >("mean value uv");
+  RCP<vector<double> > sumuw  = params.get<RCP<vector<double> > >("mean value uw");
+  RCP<vector<double> > sumvw  = params.get<RCP<vector<double> > >("mean value vw");
+  RCP<vector<double> > sumsqp = params.get<RCP<vector<double> > >("mean value p^2");
+  RCP<vector<double> > sumsqsv = params.get<RCP<vector<double> > >("mean value sv^2");
 
   // get node coordinates of element
   LINALG::Matrix<3,iel>  xyze;
@@ -1360,7 +1399,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
     int numsublayers=(size-1)/nele_x_mele_x_lele[1];
 
     // get the knotvector itself
-    RefCountPtr<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
+    RCP<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
 
     DRT::Node**   nodes = Nodes();
 
@@ -1619,35 +1658,35 @@ void DRT::ELEMENTS::Fluid3::f3_calc_loma_means(
 
   // the vector planes contains the coordinates of the homogeneous planes (in
   // wall normal direction)
-  RefCountPtr<vector<double> > planes = params.get<RefCountPtr<vector<double> > >("coordinate vector for hom. planes");
+  RCP<vector<double> > planes = params.get<RCP<vector<double> > >("coordinate vector for hom. planes");
 
   // get the pointers to the solution vectors
-  RefCountPtr<vector<double> > sumarea= params.get<RefCountPtr<vector<double> > >("element layer area");
+  RCP<vector<double> > sumarea= params.get<RCP<vector<double> > >("element layer area");
 
-  RefCountPtr<vector<double> > sumu   = params.get<RefCountPtr<vector<double> > >("mean velocity u");
-  RefCountPtr<vector<double> > sumv   = params.get<RefCountPtr<vector<double> > >("mean velocity v");
-  RefCountPtr<vector<double> > sumw   = params.get<RefCountPtr<vector<double> > >("mean velocity w");
-  RefCountPtr<vector<double> > sump   = params.get<RefCountPtr<vector<double> > >("mean pressure p");
-  RefCountPtr<vector<double> > sumrho = params.get<RefCountPtr<vector<double> > >("mean density rho");
-  RefCountPtr<vector<double> > sumT   = params.get<RefCountPtr<vector<double> > >("mean temperature T");
-  RefCountPtr<vector<double> > sumrhou  = params.get<RefCountPtr<vector<double> > >("mean momentum rho*u");
-  RefCountPtr<vector<double> > sumrhouT = params.get<RefCountPtr<vector<double> > >("mean rho*u*T");
-  RefCountPtr<vector<double> > sumsv = params.get<RefCountPtr<vector<double> > >("mean subgrid visc");
+  RCP<vector<double> > sumu   = params.get<RCP<vector<double> > >("mean velocity u");
+  RCP<vector<double> > sumv   = params.get<RCP<vector<double> > >("mean velocity v");
+  RCP<vector<double> > sumw   = params.get<RCP<vector<double> > >("mean velocity w");
+  RCP<vector<double> > sump   = params.get<RCP<vector<double> > >("mean pressure p");
+  RCP<vector<double> > sumrho = params.get<RCP<vector<double> > >("mean density rho");
+  RCP<vector<double> > sumT   = params.get<RCP<vector<double> > >("mean temperature T");
+  RCP<vector<double> > sumrhou  = params.get<RCP<vector<double> > >("mean momentum rho*u");
+  RCP<vector<double> > sumrhouT = params.get<RCP<vector<double> > >("mean rho*u*T");
+  RCP<vector<double> > sumsv = params.get<RCP<vector<double> > >("mean subgrid visc");
 
-  RefCountPtr<vector<double> > sumsqu = params.get<RefCountPtr<vector<double> > >("mean value u^2");
-  RefCountPtr<vector<double> > sumsqv = params.get<RefCountPtr<vector<double> > >("mean value v^2");
-  RefCountPtr<vector<double> > sumsqw = params.get<RefCountPtr<vector<double> > >("mean value w^2");
-  RefCountPtr<vector<double> > sumsqp = params.get<RefCountPtr<vector<double> > >("mean value p^2");
-  RefCountPtr<vector<double> > sumsqrho = params.get<RefCountPtr<vector<double> > >("mean value rho^2");
-  RefCountPtr<vector<double> > sumsqT = params.get<RefCountPtr<vector<double> > >("mean value T^2");
-  RefCountPtr<vector<double> > sumsqsv = params.get<RefCountPtr<vector<double> > >("mean value sv^2");
+  RCP<vector<double> > sumsqu = params.get<RCP<vector<double> > >("mean value u^2");
+  RCP<vector<double> > sumsqv = params.get<RCP<vector<double> > >("mean value v^2");
+  RCP<vector<double> > sumsqw = params.get<RCP<vector<double> > >("mean value w^2");
+  RCP<vector<double> > sumsqp = params.get<RCP<vector<double> > >("mean value p^2");
+  RCP<vector<double> > sumsqrho = params.get<RCP<vector<double> > >("mean value rho^2");
+  RCP<vector<double> > sumsqT = params.get<RCP<vector<double> > >("mean value T^2");
+  RCP<vector<double> > sumsqsv = params.get<RCP<vector<double> > >("mean value sv^2");
 
-  RefCountPtr<vector<double> > sumuv  = params.get<RefCountPtr<vector<double> > >("mean value uv");
-  RefCountPtr<vector<double> > sumuw  = params.get<RefCountPtr<vector<double> > >("mean value uw");
-  RefCountPtr<vector<double> > sumvw  = params.get<RefCountPtr<vector<double> > >("mean value vw");
-  RefCountPtr<vector<double> > sumuT  = params.get<RefCountPtr<vector<double> > >("mean value uT");
-  RefCountPtr<vector<double> > sumvT  = params.get<RefCountPtr<vector<double> > >("mean value vT");
-  RefCountPtr<vector<double> > sumwT  = params.get<RefCountPtr<vector<double> > >("mean value wT");
+  RCP<vector<double> > sumuv  = params.get<RCP<vector<double> > >("mean value uv");
+  RCP<vector<double> > sumuw  = params.get<RCP<vector<double> > >("mean value uw");
+  RCP<vector<double> > sumvw  = params.get<RCP<vector<double> > >("mean value vw");
+  RCP<vector<double> > sumuT  = params.get<RCP<vector<double> > >("mean value uT");
+  RCP<vector<double> > sumvT  = params.get<RCP<vector<double> > >("mean value vT");
+  RCP<vector<double> > sumwT  = params.get<RCP<vector<double> > >("mean value wT");
 
   // get node coordinates of element
   LINALG::Matrix<3,iel>  xyze;
@@ -2633,6 +2672,9 @@ void DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
   return;
 } // DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij
 
+
+//----------------------------------------------------------------------
+//----------------------------------------------------------------------
 template<int iel>
 void DRT::ELEMENTS::Fluid3::integrateShapefunction(
     DRT::Discretization&      discretization,
@@ -2650,7 +2692,7 @@ void DRT::ELEMENTS::Fluid3::integrateShapefunction(
   if(is_ale_)
   {
     // get most recent displacements
-    RefCountPtr<const Epetra_Vector> dispnp
+    RCP<const Epetra_Vector> dispnp
       =
       discretization.GetState("dispnp");
 
@@ -2857,6 +2899,144 @@ void DRT::ELEMENTS::Fluid3::integrateShapefunction(
 
 
       w(fuippp)+=fac*funct(ui);
+    }
+  }
+
+  return;
+}
+
+
+//----------------------------------------------------------------------
+//----------------------------------------------------------------------
+template<int iel>
+void DRT::ELEMENTS::Fluid3::ElementNodeNormal(ParameterList& 		 params,
+                                              DRT::Discretization&       discretization,
+                                              vector<int>&               lm,
+                                              Epetra_SerialDenseVector&  elevec1)
+{
+  // this evaluates the node normals using the volume integral in Wall
+  // (7.13). That formula considers all surfaces of the element, not only the
+  // free surfaces. This causes difficulties because the free surface normals
+  // point outwards on nodes at the rim of a basin (e.g. channel-flow).
+
+  // create matrix objects for nodal values
+  LINALG::Matrix<3,iel>       edispnp;
+
+  if (is_ale_)
+  {
+    // get most recent displacements
+    RCP<const Epetra_Vector> dispnp
+      =
+      discretization.GetState("dispnp");
+
+    if (dispnp==null)
+    {
+      dserror("Cannot get state vector 'dispnp'");
+    }
+
+    vector<double> mydispnp(lm.size());
+    DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
+
+    // extract velocity part from "mygridvelaf" and get
+    // set element displacements
+    for (int i=0;i<iel;++i)
+    {
+      int fi    =4*i;
+      int fip   =fi+1;
+      int fipp  =fip+1;
+      edispnp(0,i)    = mydispnp   [fi  ];
+      edispnp(1,i)    = mydispnp   [fip ];
+      edispnp(2,i)    = mydispnp   [fipp];
+    }
+  }
+
+  // set element data
+  const DiscretizationType distype = this->Shape();
+
+  //----------------------------------------------------------------------------
+  //                         ELEMENT GEOMETRY
+  //----------------------------------------------------------------------------
+  LINALG::Matrix<3,iel>  xyze;
+
+  // get node coordinates
+  DRT::Node** nodes = Nodes();
+  for (int inode=0; inode<iel; inode++)
+  {
+    const double* x = nodes[inode]->X();
+    xyze(0,inode) = x[0];
+    xyze(1,inode) = x[1];
+    xyze(2,inode) = x[2];
+  }
+
+  // add displacement, when fluid nodes move in the ALE case
+  if (is_ale_)
+  {
+    for (int inode=0; inode<iel; inode++)
+    {
+      xyze(0,inode) += edispnp(0,inode);
+      xyze(1,inode) += edispnp(1,inode);
+      xyze(2,inode) += edispnp(2,inode);
+    }
+  }
+
+  //------------------------------------------------------------------
+  //                       INTEGRATION LOOP
+  //------------------------------------------------------------------
+  LINALG::Matrix<iel,1  > funct;
+  LINALG::Matrix<3,  iel> deriv;
+  LINALG::Matrix<3,  3  > xjm;
+  LINALG::Matrix<3,  3  > xji;
+
+  // gaussian points
+  const GaussRule3D          gaussrule = getOptimalGaussrule(distype);
+  const IntegrationPoints3D  intpoints(gaussrule);
+
+  for (int iquad=0;iquad<intpoints.nquad;++iquad)
+  {
+    // set gauss point coordinates
+    LINALG::Matrix<3,1> gp;
+
+    gp(0)=intpoints.qxg[iquad][0];
+    gp(1)=intpoints.qxg[iquad][1];
+    gp(2)=intpoints.qxg[iquad][2];
+
+    if(!(distype == DRT::Element::nurbs8
+         ||
+         distype == DRT::Element::nurbs27))
+    {
+      // get values of shape functions and derivatives in the gausspoint
+      DRT::UTILS::shape_function_3D       (funct,gp(0),gp(1),gp(2),distype);
+      DRT::UTILS::shape_function_3D_deriv1(deriv,gp(0),gp(1),gp(2),distype);
+    }
+    else
+    {
+      dserror("not implemented");
+    }
+
+    // compute jacobian matrix
+    // determine jacobian at point r,s,t
+    xjm.MultiplyNT(deriv,xyze);
+
+    // determinant and inverse of jacobian
+    const double det = xji.Invert(xjm);
+
+    // check for degenerated elements
+    if (det < 0.0)
+    {
+      dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", Id(), det);
+    }
+
+    // set total integration factor
+    const double fac = intpoints.qwgt[iquad] * det;
+
+    // integrate shapefunction gradient over element
+    for (int dim = 0; dim < 3; dim++)
+    {
+      for (int node = 0; node < iel; node++)
+      {
+        elevec1[4 * node + dim] += (deriv(0,node)*xji(dim,0) + deriv(1,node)*xji(dim,1) + deriv(2,node)*xji(dim,2))
+                                   * fac;
+      }
     }
   }
 

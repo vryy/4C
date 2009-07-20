@@ -852,16 +852,6 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidImpl::IntegrateInterfaceShape()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::XFluidImpl::UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
-                                         const LINALG::MultiMapExtractor& rangemaps,
-                                         bool splitmatrix)
-{
-  dserror("no, probably not");
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidImpl::RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel)
 {
   dserror("not implemented!");

@@ -143,6 +143,8 @@ int DRT::ELEMENTS::Ale3::Evaluate(ParameterList& params,
     act = Ale3::calc_ale_spring;
   else if (action == "calc_ale_spring_fixed_ref")
     act = Ale3::calc_ale_spring_fixed_ref;
+  else if (action == "calc_ale_node_normal")
+    act = Ale3::calc_ale_node_normal;
   else
     dserror("Unknown type of action for Ale3");
 
@@ -194,6 +196,17 @@ int DRT::ELEMENTS::Ale3::Evaluate(ParameterList& params,
     break;
   }
 
+  case calc_ale_node_normal:
+  {
+    RefCountPtr<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+    vector<double> my_dispnp(lm.size());
+    DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
+
+    Ale3_Impl_Interface::Impl(this)->ElementNodeNormal(this,elevec1,my_dispnp);
+
+    break;
+  }
+
   default:
     dserror("Unknown type of action for Ale3");
   }
@@ -216,6 +229,83 @@ int DRT::ELEMENTS::Ale3::EvaluateNeumann(ParameterList& params,
                                            Epetra_SerialDenseVector& elevec1)
 {
   return 0;
+}
+
+//=================== ElementNodeNormal =============================
+// Calculate node normals acc. to Wall (7.13)
+template <DRT::Element::DiscretizationType distype>
+inline void DRT::ELEMENTS::Ale3_Impl<distype>::ElementNodeNormal(
+  Ale3*                      ele,
+  Epetra_SerialDenseVector& elevec1,
+  std::vector<double>&       my_dispnp
+  )
+{
+  if (distype == DRT::Element::nurbs8 or
+      distype == DRT::Element::nurbs27)
+  {
+    dserror("not implemented!");
+  }
+
+  LINALG::Matrix<3,iel> xyze;
+
+  // get node coordinates
+  DRT::Node** nodes = ele->Nodes();
+  for(int i=0;i<iel;i++)
+  {
+    const double* x = nodes[i]->X();
+    xyze(0,i)=x[0];
+    xyze(1,i)=x[1];
+    xyze(2,i)=x[2];
+  }
+
+  for(int i=0;i<iel;i++)
+  {
+    xyze(0,i) += my_dispnp[3*i+0];
+    xyze(1,i) += my_dispnp[3*i+1];
+    xyze(2,i) += my_dispnp[3*i+2];
+  }
+
+  /*----------------------------------------- declaration of variables ---*/
+  LINALG::Matrix<iel,1  > funct;
+  LINALG::Matrix<3,  iel> deriv;
+  LINALG::Matrix<3,  3  > xjm;
+  LINALG::Matrix<3,  3  > xji;
+
+  // gaussian points
+  const GaussRule3D gaussrule = getOptimalGaussrule();
+  const IntegrationPoints3D  intpoints(gaussrule);
+
+  // integration loops
+  for (int iquad=0;iquad<intpoints.nquad;iquad++)
+  {
+    const double e1 = intpoints.qxg[iquad][0];
+    const double e2 = intpoints.qxg[iquad][1];
+    const double e3 = intpoints.qxg[iquad][2];
+
+    // get values of shape functions and derivatives in the gausspoint
+    DRT::UTILS::shape_function_3D       (funct,e1,e2,e3,distype);
+    DRT::UTILS::shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
+
+    // compute jacobian matrix
+    // determine jacobian at point r,s,t
+    xjm.MultiplyNT(deriv,xyze);
+
+    // determinant and inverse of jacobian
+    const double det = xji.Invert(xjm);
+
+    // integrate shapefunction gradient over element
+    const double fac = intpoints.qwgt[iquad]*det;
+
+    for (int node=0; node<iel; ++node)
+    {
+      for (int dim=0; dim<3; ++dim)
+      {
+        int row = 3 * node + dim;
+        elevec1(row) += (deriv(0,node)*xji(dim,0) + deriv(1,node)*xji(dim,1) + deriv(2,node)*xji(dim,2))
+                        *fac;
+      }
+    }
+  }
 }
 
 //////
@@ -698,17 +788,17 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_nurbs27(
   //  |   X---------X---------X   |
   //  |  /|21 |    /|22 |    /|23 |
   //  | / |   X---/-|---X---/-|---X
-  //   /  |  /|15/  |  /|16/  |  /|17                X---------X   	
+  //   /  |  /|15/  |  /|16/  |  /|17                X---------X
   //  X---------X---------X   | / |                 /|7       /|6     0,1,3,4
   //  |18 |/  | |19 |/  | |20 |/  |                / |       / |      0,1,2,5
   //  |   X-----|---X-----|---X   |               /  |      /  |      1,2,3,6
   //  |  /|12 | |  /|13 | |  /|14 |              X---------X   |      0,2,3,7
-  //  | / |   X-|-/-|---X-|-/-|---X              |4  |     |5  |	
+  //  | / |   X-|-/-|---X-|-/-|---X              |4  |     |5  |
   //  |/  |  /6 |/  |  /7 |/  |  /8              |   X-----|---X      0,4,5,7
   //  X---------X---------X   | /                |  /3     |  /2      1,4,5,6
   //  |9  |/    |10 |/    |11 |/    	         | /       | /        2,5,6,7
   //  |   X-----|---X-----|---X     	         |/        |/         3,4,6,7
-  //  |  /3     |  /4     |  /5		         X---------X		
+  //  |  /3     |  /4     |  /5		         X---------X
   //  | /       | /       | /		          0         1
   //  |/        |/        |/
   //  X---------X---------X ----->u
@@ -721,7 +811,7 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_nurbs27(
   ale3_add_tetra_stiffness(0, 1, 4,10,sys_mat,xyze);
   ale3_add_tetra_stiffness(1, 4, 3,13,sys_mat,xyze);
   ale3_add_tetra_stiffness(0, 4, 3,12,sys_mat,xyze);
-			
+
   ale3_add_tetra_stiffness(0, 9,10,12,sys_mat,xyze);
   ale3_add_tetra_stiffness(1, 9,10,13,sys_mat,xyze);
   ale3_add_tetra_stiffness(4,10,13,12,sys_mat,xyze);
@@ -733,7 +823,7 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_nurbs27(
   ale3_add_tetra_stiffness(1, 2, 5,11,sys_mat,xyze);
   ale3_add_tetra_stiffness(2, 5, 4,14,sys_mat,xyze);
   ale3_add_tetra_stiffness(1, 5, 4,13,sys_mat,xyze);
-			   	
+
   ale3_add_tetra_stiffness(1,10,11,13,sys_mat,xyze);
   ale3_add_tetra_stiffness(2,10,11,14,sys_mat,xyze);
   ale3_add_tetra_stiffness(5,11,14,13,sys_mat,xyze);
@@ -745,7 +835,7 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_nurbs27(
   ale3_add_tetra_stiffness(4, 5, 8,14,sys_mat,xyze);
   ale3_add_tetra_stiffness(5, 8, 7,17,sys_mat,xyze);
   ale3_add_tetra_stiffness(4, 8, 7,16,sys_mat,xyze);
-			   	
+
   ale3_add_tetra_stiffness(4,13,14,16,sys_mat,xyze);
   ale3_add_tetra_stiffness(5,13,14,17,sys_mat,xyze);
   ale3_add_tetra_stiffness(8,14,17,16,sys_mat,xyze);
@@ -757,7 +847,7 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_nurbs27(
   ale3_add_tetra_stiffness(3, 4, 7,13,sys_mat,xyze);
   ale3_add_tetra_stiffness(4, 7, 6,16,sys_mat,xyze);
   ale3_add_tetra_stiffness(3, 7, 6,15,sys_mat,xyze);
-			   	
+
   ale3_add_tetra_stiffness(3,12,13,15,sys_mat,xyze);
   ale3_add_tetra_stiffness(4,12,13,16,sys_mat,xyze);
   ale3_add_tetra_stiffness(7,13,16,15,sys_mat,xyze);
@@ -769,7 +859,7 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_nurbs27(
   ale3_add_tetra_stiffness( 9,10,13,19,sys_mat,xyze);
   ale3_add_tetra_stiffness(10,13,12,22,sys_mat,xyze);
   ale3_add_tetra_stiffness( 9,13,12,21,sys_mat,xyze);
-			   	
+
   ale3_add_tetra_stiffness( 9,18,19,21,sys_mat,xyze);
   ale3_add_tetra_stiffness(10,18,19,22,sys_mat,xyze);
   ale3_add_tetra_stiffness(13,19,22,21,sys_mat,xyze);
@@ -781,7 +871,7 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_nurbs27(
   ale3_add_tetra_stiffness(10,11,14,20,sys_mat,xyze);
   ale3_add_tetra_stiffness(11,14,13,23,sys_mat,xyze);
   ale3_add_tetra_stiffness(10,14,13,22,sys_mat,xyze);
-			   	
+
   ale3_add_tetra_stiffness(10,19,20,22,sys_mat,xyze);
   ale3_add_tetra_stiffness(11,19,20,23,sys_mat,xyze);
   ale3_add_tetra_stiffness(14,20,23,22,sys_mat,xyze);
@@ -793,7 +883,7 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_nurbs27(
   ale3_add_tetra_stiffness(13,14,17,23,sys_mat,xyze);
   ale3_add_tetra_stiffness(14,17,16,26,sys_mat,xyze);
   ale3_add_tetra_stiffness(13,17,16,25,sys_mat,xyze);
-			   	
+
   ale3_add_tetra_stiffness(13,22,23,25,sys_mat,xyze);
   ale3_add_tetra_stiffness(14,22,23,26,sys_mat,xyze);
   ale3_add_tetra_stiffness(17,23,26,25,sys_mat,xyze);
@@ -805,7 +895,7 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_nurbs27(
   ale3_add_tetra_stiffness(12,13,16,22,sys_mat,xyze);
   ale3_add_tetra_stiffness(13,16,15,25,sys_mat,xyze);
   ale3_add_tetra_stiffness(12,16,15,24,sys_mat,xyze);
-			   	
+
   ale3_add_tetra_stiffness(12,21,22,24,sys_mat,xyze);
   ale3_add_tetra_stiffness(13,21,22,25,sys_mat,xyze);
   ale3_add_tetra_stiffness(16,22,25,24,sys_mat,xyze);
@@ -1332,7 +1422,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke(
       gp(0)=e1;
       gp(1)=e2;
       gp(2)=e3;
-	
+
       DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv
 	(funct  ,
 	 deriv  ,

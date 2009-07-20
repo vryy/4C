@@ -279,6 +279,9 @@ namespace ADAPTER {
     /// extract fluid velocity at the interface from time step n
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln() = 0;
 
+    /// extract fluid velocity at the free surface from time step n
+    virtual Teuchos::RCP<Epetra_Vector> ExtractFreeSurfaceVeln() = 0;
+
     /// extract fluid forces at the interface
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces() = 0;
 
@@ -304,6 +307,12 @@ namespace ADAPTER {
     /// convert the fluid unknown to Delta d(n+1,i+1) at the interface
     virtual void VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx) = 0;
 
+    /// convert Delta d(n+1,i+1) to the fluid unknown at the free surface
+    virtual void FreeSurfDisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx) = 0;
+
+    /// convert the fluid unknown to Delta d(n+1,i+1) at the free surface
+    virtual void FreeSurfVelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx) = 0;
+
     //! @name Number of Newton iterations
     //! For simplified FD MFNK solve we want to temporally limit the
     /// number of Newton steps inside the fluid solver
@@ -321,6 +330,7 @@ namespace ADAPTER {
     /// switch fluid field to block matrix
     virtual void UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
                                 const LINALG::MultiMapExtractor& rangemaps,
+                                std::string condname,
                                 bool splitmatrix) = 0;
 
     /// create result test for encapulated fluid algorithm

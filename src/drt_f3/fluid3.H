@@ -390,7 +390,8 @@ private:
     calc_fluid_box_filter,
     calc_smagorinsky_const,
     get_density,
-    integrate_shape
+    integrate_shape,
+    calc_node_normal
   };
 
   //! stabilisation actions recognized by fluid3 (genalpha implementation)
@@ -726,6 +727,22 @@ void f3_calc_smag_const_LijMij_and_MijMij(
     DRT::Discretization&      discretization,
     vector<int>&              lm            ,
     Epetra_SerialDenseVector& w             );
+
+  /*!
+    \brief Calculate node normals using the volume integral in Wall (7.13).
+    That formula considers all surfaces of the element, not only the
+    free surfaces.
+
+    Acc. to Wall (7.13)
+
+    \param elevec1 (out)      : grad(N) integrated over Element
+    \param edispnp (in)       : Displacement-vector
+  */
+  template<int iel>
+  void ElementNodeNormal(ParameterList& 		 params,
+                         DRT::Discretization&       discretization,
+                         vector<int>&               lm,
+                         Epetra_SerialDenseVector&  elevec1);
 
   /*!
    * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are necessary
@@ -1073,6 +1090,7 @@ private:
     flowratecalc,
     Outletimpedance,
     calc_node_normal,
+    calc_node_curvature,
     calc_surface_tension,
     enforce_weak_dbc,
     conservative_outflow_bc,
@@ -1113,10 +1131,9 @@ private:
   /*!
     \brief Calculate node normals
 
-    For TET-elements only. Node normals are assembled using weighted element
-    normals. Of course these element normals need to be unique.
+    Acc. to Wall (7.13), surface integral.
 
-    \param elevec1 (out)      : Element normal multiplied by the element's area.
+    \param elevec1 (out)      : Weighted element normal for assembly
     \param edispnp (in)       : Displacement-vector
   */
   void ElementNodeNormal(ParameterList& 		 params,
@@ -1124,19 +1141,37 @@ private:
                        vector<int>&               lm,
                        Epetra_SerialDenseVector&  elevec1,
                        const std::vector<double>& edispnp);
+  /*!
+    \brief Calculate mean curvature H. Interpolate the results to achieve better
+    results in the surface tension algorithm (c0 field -> c1 field).
+
+    \param elevec1  (out)     : Nodal values of mean curvature
+    \param edispnp  (in)      : Displacement-vector
+    \param enormals (in)      : Node normals
+  */
+  void ElementMeanCurvature(ParameterList& params,
+                            DRT::Discretization& discretization,
+                            vector<int>& lm,
+                            Epetra_SerialDenseVector& elevec1,
+                            const std::vector<double>& edispnp,
+                            std::vector<double>& enormals);
+
 
   /*!
     \brief Integrate surface tension
 
-    \param elevec1 (out)      : RHS contribution of surface tension effect
-    \param edispnp (in)       : Displacement-vector
+    \param elevec1   (out)    : RHS contribution of surface tension effect
+    \param edispnp   (in)     : Displacement-vector
+    \param enormals  (in)     : Node normals
+    \param curvature (in)     : Interpolated curvature
   */
   void ElementSurfaceTension(ParameterList& params,
                              DRT::Discretization& discretization,
                              vector<int>& lm,
                              Epetra_SerialDenseVector& elevec1,
                              const std::vector<double>& edispnp,
-                             std::vector<double>& enormals);
+                             std::vector<double>& enormals,
+                             std::vector<double>& ecurvature);
 
   /*!
   brief integrate elemental areas over a surface
@@ -1154,7 +1189,7 @@ private:
   \param discretization (in): A reference to the underlying discretization
   \param lm (in)            : location vector of this element
   */
-  void FlowRateParameterCaculation(ParameterList& params,
+  void FlowRateParameterCalculation(ParameterList& params,
                   DRT::Discretization&       discretization,
                   vector<int>&               lm);
 

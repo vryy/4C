@@ -96,6 +96,7 @@ void FSI::MonolithicStructureSplit::SetupSystem()
   // linearization (if requested in the input file)
   FluidField().UseBlockMatrix(FluidField().Interface(),
                               FluidField().Interface(),
+                              "FSICoupling",
                               false);
 
   // build ale system matrix in splitted system
