@@ -98,6 +98,12 @@ namespace ELASTIC
     /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_isoneohooke; }
 
+    /// add shear modulus equivalent
+    virtual void AddShearMod(
+      bool& haveshearmod,  ///< non-zero shear modulus was added
+      double& shearmod  ///< variable to add upon
+      ) const;
+
     //@}
 
     /// Add principal coeffiencts.
