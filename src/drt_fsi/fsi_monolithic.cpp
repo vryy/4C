@@ -31,21 +31,11 @@
 // Discretizations.
 /*----------------------------------------------------------------------*/
 FSI::MonolithicBase::MonolithicBase(Epetra_Comm& comm)
-  : StructureBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams()),
+  : AlgorithmBase(comm,DRT::Problem::Instance()->FSIDynamicParams()),
+    StructureBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams()),
     FluidBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams(),true),
-    AleBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams()),
-    comm_(comm)
+    AleBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams())
 {
-  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-
-  if (comm_.MyPID()==0)
-    DRT::INPUT::PrintDefaultParameters(std::cout, fsidyn);
-
-  step_ = 0;
-  time_ = 0.;
-  dt_ = fsidyn.get<double>("TIMESTEP");
-  nstep_ = fsidyn.get<int>("NUMSTEP");
-  maxtime_ = fsidyn.get<double>("MAXTIME");
 }
 
 
@@ -64,8 +54,7 @@ void FSI::MonolithicBase::ReadRestart(int step)
   FluidField()    .ReadRestart(step);
   AleField()      .ReadRestart(step);
 
-  time_ = FluidField().Time();
-  step_ = FluidField().Step();
+  SetTimeStep(FluidField().Time(),FluidField().Step());
 }
 
 
@@ -73,18 +62,9 @@ void FSI::MonolithicBase::ReadRestart(int step)
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicBase::PrepareTimeStep()
 {
-  step_ += 1;
-  time_ += dt_;
+  FSI::AlgorithmBase::PrepareTimeStep();
 
-  if (Comm().MyPID()==0)
-    std::cout << "\n"
-              << method_ << "\n"
-              << "TIME:  "    << std::scientific << time_ << "/" << std::scientific << maxtime_
-              << "     DT = " << std::scientific << dt_
-              << "     STEP = " YELLOW_LIGHT << setw(4) << step_ << END_COLOR "/" << setw(4) << nstep_
-              << "\n"
-              << NOX::Utils::fill(82)
-              << "\n\n";
+  PrintHeader();
 
   StructureField().PrepareTimeStep();
   FluidField().    PrepareTimeStep();

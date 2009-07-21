@@ -7,6 +7,7 @@
 
 #include "fsi_overlapprec.H"
 #include "fsi_matrixtransform.H"
+#include "fsi_algorithmbase.H"
 
 #include "../drt_adapter/adapter_structure.H"
 #include "../drt_adapter/adapter_fluid.H"
@@ -182,7 +183,8 @@ namespace UTILS
     \author --
     \date --
    */
-  class MonolithicBaseFS : public ADAPTER::FluidBaseAlgorithm,
+  class MonolithicBaseFS : public AlgorithmBase,
+                           public ADAPTER::FluidBaseAlgorithm,
                            public ADAPTER::AleBaseAlgorithm
   {
   public:
@@ -196,21 +198,9 @@ namespace UTILS
     /// read restart data
     void ReadRestart(int step);
 
-    /// communicator
-    const Epetra_Comm& Comm() const { return comm_; }
-
   protected:
 
-    /// time step size
-    double Dt() const { return dt_; }
-
-    /// step number
-    int Step() const { return step_; }
-
     //! @name Time loop building blocks
-
-    /// tests if there are more time steps to do
-    bool NotFinished() { return step_ < nstep_ and time_ <= maxtime_; }
 
     /// start a new time step
     virtual void PrepareTimeStep();
@@ -220,9 +210,6 @@ namespace UTILS
 
     /// write output
     virtual void Output();
-
-    /// set method name for screen output
-    void SetMethod(std::string method) { method_ = method; }
 
     //@}
 
@@ -242,20 +229,6 @@ namespace UTILS
 
     /// coupling of fluid and ale
     ADAPTER::Coupling               coupfa_;
-
-    /// comunication (mainly for screen output)
-    Epetra_Comm& comm_;
-
-    /// method name prepared for output
-    std::string method_;
-
-    //! @name Time stepping variables
-    int step_;
-    int nstep_;
-    double time_;
-    double maxtime_;
-    double dt_;
-    //@}
   };
 
 

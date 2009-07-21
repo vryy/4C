@@ -27,6 +27,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_adapter/adapter_fluid_ale.H"
 #include "../drt_adapter/adapter_coupling.H"
 
+#include "fsi_algorithmbase.H"
 
 namespace FSI
 {
@@ -52,7 +53,8 @@ namespace FSI
     \author u.kue
     \date 02/08
    */
-  class Algorithm : public ADAPTER::StructureBaseAlgorithm,
+  class Algorithm : public AlgorithmBase,
+                    public ADAPTER::StructureBaseAlgorithm,
                     public ADAPTER::FluidMovingBoundaryBaseAlgorithm
   {
   public:
@@ -66,21 +68,9 @@ namespace FSI
     /// read restart data
     virtual void ReadRestart(int step);
 
-    /// communicator
-    const Epetra_Comm& Comm() const { return comm_; }
-
   protected:
 
-    /// time step size
-    double Dt() const { return dt_; }
-
-    /// step number
-    int Step() const { return step_; }
-
     //! @name Time loop building blocks
-
-    /// tests if there are more time steps to do
-    bool NotFinished() { return step_ < nstep_ and time_ <= maxtime_; }
 
     /// start a new time step
     virtual void PrepareTimeStep();
@@ -90,9 +80,6 @@ namespace FSI
 
     /// write output
     virtual void Output();
-
-    /// set method name for screen output
-    void SetMethod(std::string method) { method_ = method; }
 
     //@}
 
@@ -120,20 +107,6 @@ namespace FSI
 
     /// coupling of structure and fluid at the interface
     ADAPTER::Coupling               coupsf_;
-
-    /// comunication (mainly for screen output)
-    Epetra_Comm& comm_;
-
-    /// method name prepared for output
-    std::string method_;
-
-    //! @name Time stepping variables
-    int step_;
-    int nstep_;
-    double time_;
-    double maxtime_;
-    double dt_;
-    //@}
   };
 }
 

@@ -277,6 +277,7 @@ OBJS_DRT_SCATRA_LIB = src/drt_scatra/scatra_ele_impl.o \
 # ----------------------------- drt version of fluid structure interaction
 OBJS_DRT_FSI  = src/drt_fsi/fsi_dyn.o \
                 src/drt_fsi/fsi_algorithm.o \
+                src/drt_fsi/fsi_algorithmbase.o \
                 src/drt_fsi/fsi_partitioned.o \
                 src/drt_fsi/fsi_dirichletneumann.o \
                 src/drt_fsi/fsi_robinneumann.o \

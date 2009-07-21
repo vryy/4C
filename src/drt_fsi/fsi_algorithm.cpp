@@ -29,20 +29,10 @@ Maintainer: Ulrich Kuettler
 // turn defines the dof number ordering of the Discretizations.
 /*----------------------------------------------------------------------*/
 FSI::Algorithm::Algorithm(Epetra_Comm& comm)
-  : StructureBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams()),
-    FluidMovingBoundaryBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams(),"FSICoupling"),
-    comm_(comm)
+  : AlgorithmBase(comm,DRT::Problem::Instance()->FSIDynamicParams()),
+    StructureBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams()),
+    FluidMovingBoundaryBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams(),"FSICoupling")
 {
-  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-
-  if (comm_.MyPID()==0)
-    DRT::INPUT::PrintDefaultParameters(std::cout, fsidyn);
-
-  step_ = 0;
-  time_ = 0.;
-  dt_ = fsidyn.get<double>("TIMESTEP");
-  nstep_ = fsidyn.get<int>("NUMSTEP");
-  maxtime_ = fsidyn.get<double>("MAXTIME");
 }
 
 
@@ -58,9 +48,8 @@ FSI::Algorithm::~Algorithm()
 void FSI::Algorithm::ReadRestart(int step)
 {
   StructureField().ReadRestart(step);
-  time_ = MBFluidField().ReadRestart(step);
-  step_ = step;
-
+  double time = MBFluidField().ReadRestart(step);
+  SetTimeStep(time,step);
 }
 
 
@@ -68,18 +57,9 @@ void FSI::Algorithm::ReadRestart(int step)
 /*----------------------------------------------------------------------*/
 void FSI::Algorithm::PrepareTimeStep()
 {
-  step_ += 1;
-  time_ += dt_;
+  FSI::AlgorithmBase::PrepareTimeStep();
 
-  if (Comm().MyPID()==0)
-    std::cout << "\n"
-              << method_ << "\n"
-              << "TIME:  "    << std::scientific << time_ << "/" << std::scientific << maxtime_
-              << "     DT = " << std::scientific << dt_
-              << "     STEP = " YELLOW_LIGHT << setw(4) << step_ << END_COLOR "/" << setw(4) << nstep_
-              << "\n"
-              << NOX::Utils::fill(82)
-              << "\n\n";
+  PrintHeader();
 
   StructureField().PrepareTimeStep();
   MBFluidField().PrepareTimeStep();
