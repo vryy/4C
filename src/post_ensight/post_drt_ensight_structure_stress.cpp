@@ -229,15 +229,16 @@ void StructureEnsightWriter::WriteNodalStressStep(ofstream& file,
     {
       const DRT::Node* lnode = dis->lRowNode(i);
       const std::vector<int> lnodedofs = dis->Dof(lnode);
+
       if (lnodedofs.size() < 3)
         dserror("Too few DOFs at node of interest");
       const int adjele = lnode->NumElement();
-      (*((*nodal_stresses)(0)))[i] = (*normal_stresses)[lnodedofs[0]]/adjele;
-      (*((*nodal_stresses)(1)))[i] = (*normal_stresses)[lnodedofs[1]]/adjele;
-      (*((*nodal_stresses)(2)))[i] = (*normal_stresses)[lnodedofs[2]]/adjele;
-      (*((*nodal_stresses)(3)))[i] = (*shear_stresses)[lnodedofs[0]]/adjele;
-      (*((*nodal_stresses)(4)))[i] = (*shear_stresses)[lnodedofs[1]]/adjele;
-      (*((*nodal_stresses)(5)))[i] = (*shear_stresses)[lnodedofs[2]]/adjele;
+      (*((*nodal_stresses)(0)))[i] = (*normal_stresses)[dis->DofRowMap()->LID(lnodedofs[0])]/adjele;
+      (*((*nodal_stresses)(1)))[i] = (*normal_stresses)[dis->DofRowMap()->LID(lnodedofs[1])]/adjele;
+      (*((*nodal_stresses)(2)))[i] = (*normal_stresses)[dis->DofRowMap()->LID(lnodedofs[2])]/adjele;
+      (*((*nodal_stresses)(3)))[i] = (*shear_stresses)[dis->DofRowMap()->LID(lnodedofs[0])]/adjele;
+      (*((*nodal_stresses)(4)))[i] = (*shear_stresses)[dis->DofRowMap()->LID(lnodedofs[1])]/adjele;
+      (*((*nodal_stresses)(5)))[i] = (*shear_stresses)[dis->DofRowMap()->LID(lnodedofs[2])]/adjele;
     }
   }
   if (numdf==3)
@@ -249,9 +250,9 @@ void StructureEnsightWriter::WriteNodalStressStep(ofstream& file,
       if (lnodedofs.size() < 2)
         dserror("Too few DOFs at node of interest");
       const int adjele = lnode->NumElement();
-      (*((*nodal_stresses)(0)))[i] = (*normal_stresses)[lnodedofs[0]]/adjele;
-      (*((*nodal_stresses)(1)))[i] = (*normal_stresses)[lnodedofs[1]]/adjele;
-      (*((*nodal_stresses)(2)))[i] = (*shear_stresses)[lnodedofs[0]]/adjele;
+      (*((*nodal_stresses)(0)))[i] = (*normal_stresses)[dis->DofRowMap()->LID(lnodedofs[0])]/adjele;
+      (*((*nodal_stresses)(1)))[i] = (*normal_stresses)[dis->DofRowMap()->LID(lnodedofs[1])]/adjele;
+      (*((*nodal_stresses)(2)))[i] = (*shear_stresses)[dis->DofRowMap()->LID(lnodedofs[0])]/adjele;
     }
   }
 
@@ -758,27 +759,89 @@ void StructureEnsightWriter::WriteNodalEigenStressStep(std::vector<RCP<ofstream>
   RefCountPtr<Epetra_Vector> shear_stresses = LINALG::CreateVector(*(dis->DofRowMap()),true);
   dis->Evaluate(p,null,null,normal_stresses,shear_stresses,null);
 
-  const Epetra_BlockMap& datamap = normal_stresses->Map();
+  const Epetra_Map* nodemap = dis->NodeRowMap();
 
-  // do stupid conversion into Epetra map
-  RefCountPtr<Epetra_Map> epetradatamap;
-  epetradatamap = rcp(new Epetra_Map(datamap.NumGlobalElements(),
-                                     datamap.NumMyElements(),
-                                     datamap.MyGlobalElements(),
-                                     0,
-                                     datamap.Comm()));
+  // Epetra_MultiVector with eigenvalues (2/3) and eigenvectors (4/9 components) in each row (=node)
+  RCP<Epetra_MultiVector> nodal_eigen_val_vec = rcp(new Epetra_MultiVector(*nodemap, 2*numdf));
 
-  RefCountPtr<Epetra_Map> proc0datamap;
-  proc0datamap = LINALG::AllreduceEMap(*epetradatamap,0);
+  const int numnodes = dis->NumMyRowNodes();
+
+  if (numdf==6)
+  {
+    for (int i=0;i<numnodes;++i)
+    {
+
+      Epetra_SerialDenseMatrix eigenvec(3,3);
+      Epetra_SerialDenseVector eigenval(3);
+
+      const DRT::Node* lnode = dis->lRowNode(i);
+      const std::vector<int> lnodedofs = dis->Dof(lnode);
+      if (lnodedofs.size() < 3)
+        dserror("Too few DOFs at node of interest");
+      const int adjele = lnode->NumElement();
+
+      eigenvec(0,0) = (*normal_stresses)[dis->DofRowMap()->LID(lnodedofs[0])]/adjele;
+      eigenvec(0,1) = (*shear_stresses)[dis->DofRowMap()->LID(lnodedofs[0])]/adjele;
+      eigenvec(0,2) = (*shear_stresses)[dis->DofRowMap()->LID(lnodedofs[2])]/adjele;
+      eigenvec(1,0) = eigenvec(0,1);
+      eigenvec(1,1) = (*normal_stresses)[dis->DofRowMap()->LID(lnodedofs[1])]/adjele;
+      eigenvec(1,2) = (*shear_stresses)[dis->DofRowMap()->LID(lnodedofs[1])]/adjele;
+      eigenvec(2,0) = eigenvec(0,2);
+      eigenvec(2,1) = eigenvec(1,2);
+      eigenvec(2,2) = (*normal_stresses)[dis->DofRowMap()->LID(lnodedofs[2])]/adjele;
+
+      LINALG::SymmetricEigenProblem(eigenvec, eigenval, true);
+
+      (*((*nodal_eigen_val_vec)(0)))[i] = eigenval(0);
+      (*((*nodal_eigen_val_vec)(1)))[i] = eigenval(1);
+      (*((*nodal_eigen_val_vec)(2)))[i] = eigenval(2);
+      (*((*nodal_eigen_val_vec)(3)))[i] = eigenvec(0,0);
+      (*((*nodal_eigen_val_vec)(4)))[i] = eigenvec(1,0);
+      (*((*nodal_eigen_val_vec)(5)))[i] = eigenvec(2,0);
+      (*((*nodal_eigen_val_vec)(6)))[i] = eigenvec(0,1);
+      (*((*nodal_eigen_val_vec)(7)))[i] = eigenvec(1,1);
+      (*((*nodal_eigen_val_vec)(8)))[i] = eigenvec(2,1);
+      (*((*nodal_eigen_val_vec)(9)))[i] = eigenvec(0,2);
+      (*((*nodal_eigen_val_vec)(10)))[i] = eigenvec(1,2);
+      (*((*nodal_eigen_val_vec)(11)))[i] = eigenvec(2,2);
+
+    }
+  }
+  if (numdf==3)
+  {
+    for (int i=0;i<numnodes;++i)
+    {
+
+      Epetra_SerialDenseMatrix eigenvec(2,2);
+      Epetra_SerialDenseVector eigenval(2);
+
+      const DRT::Node* lnode = dis->lRowNode(i);
+      const std::vector<int> lnodedofs = dis->Dof(lnode);
+      if (lnodedofs.size() < 2)
+        dserror("Too few DOFs at node of interest");
+      const int adjele = lnode->NumElement();
+
+      eigenvec(0,0) = (*normal_stresses)[dis->DofRowMap()->LID(lnodedofs[0])]/adjele;
+      eigenvec(0,1) = (*shear_stresses)[dis->DofRowMap()->LID(lnodedofs[0])]/adjele;
+      eigenvec(1,0) = eigenvec(0,1);
+      eigenvec(1,1) = (*normal_stresses)[dis->DofRowMap()->LID(lnodedofs[1])]/adjele;
+
+      LINALG::SymmetricEigenProblem(eigenvec, eigenval, true);
+
+      (*((*nodal_eigen_val_vec)(0)))[i] = eigenval(0);
+      (*((*nodal_eigen_val_vec)(1)))[i] = eigenval(1);
+      (*((*nodal_eigen_val_vec)(2)))[i] = eigenvec(0,0);
+      (*((*nodal_eigen_val_vec)(3)))[i] = eigenvec(1,0);
+      (*((*nodal_eigen_val_vec)(4)))[i] = eigenvec(0,1);
+      (*((*nodal_eigen_val_vec)(5)))[i] = eigenvec(1,1);
+    }
+  }
 
   // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
-  RefCountPtr<Epetra_Vector> normal_data_proc0 = rcp(new Epetra_Vector(*proc0datamap));
-  RefCountPtr<Epetra_Vector> shear_data_proc0 = rcp(new Epetra_Vector(*proc0datamap));
-  Epetra_Import proc0dofimporter(*proc0datamap,*epetradatamap);
-  int err1 = normal_data_proc0->Import(*normal_stresses,proc0dofimporter,Insert);
-  if (err1>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err1);
-  int err2 = shear_data_proc0->Import(*shear_stresses,proc0dofimporter,Insert);
-  if (err2>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err2);
+  RCP<Epetra_MultiVector> data_proc0 = rcp(new Epetra_MultiVector(*proc0map_,2*numdf));
+  Epetra_Import proc0dofimporter(*proc0map_,*nodemap);
+  int err = data_proc0->Import(*nodal_eigen_val_vec,proc0dofimporter,Insert);
+  if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
 
   //--------------------------------------------------------------------
   // write some key words
@@ -798,84 +861,62 @@ void StructureEnsightWriter::WriteNodalEigenStressStep(std::vector<RCP<ofstream>
     Write(*(files[i]), "coordinates");
   }
 
-  //cout << "normal stresses\n" << *normal_data_proc0 << "\nshear stresses\n" << *shear_data_proc0 << endl;
-
   //--------------------------------------------------------------------
   // write results
   //--------------------------------------------------------------------
 
-  const int finalnumnode = proc0map_->NumGlobalElements();
 
-  if (myrank_==0) // ensures pointer dofgids is valid
+  if (numdf==6)
   {
-    if (numdf==6)
+    if (myrank_==0)
     {
-      vector<Epetra_SerialDenseMatrix> eigenvec(finalnumnode, Epetra_SerialDenseMatrix(3,3));
-      vector<Epetra_SerialDenseVector> eigenval(finalnumnode, Epetra_SerialDenseVector(3));
+      const int finalnumnode = proc0map_->NumGlobalElements();
 
-      for (int i=0;i<finalnumnode;++i)
+      for (int inode=0; inode<finalnumnode; inode++)
       {
-        const DRT::Node* lnode = dis->lRowNode(i);
-        const int adjele = lnode->NumElement();
-        (eigenvec[i])(0,0) = (*normal_data_proc0)[3*i]/adjele;
-        (eigenvec[i])(0,1) = (*shear_data_proc0)[3*i]/adjele;
-        (eigenvec[i])(0,2) = (*shear_data_proc0)[3*i+2]/adjele;
-        (eigenvec[i])(1,0) = (eigenvec[i])(0,1);
-        (eigenvec[i])(1,1) = (*normal_data_proc0)[3*i+1]/adjele;
-        (eigenvec[i])(1,2) = (*shear_data_proc0)[3*i+1]/adjele;
-        (eigenvec[i])(2,0) = (eigenvec[i])(0,2);
-        (eigenvec[i])(2,1) = (eigenvec[i])(1,2);
-        (eigenvec[i])(2,2) = (*normal_data_proc0)[3*i+2]/adjele;
-
-        LINALG::SymmetricEigenProblem((eigenvec[i]), eigenval[i], true);
-      }
-
-      for (int inode=0; inode<finalnumnode; inode++) // inode == lid of node because we use proc0datamap
-      {
-        for (int i=0;i<3;++i) Write(*(files[i]), static_cast<float>((eigenval[inode])[i]));
+        for (int i=0;i<3;++i)
+        {
+          Write(*(files[i]), static_cast<float>((*((*data_proc0)(i)))[inode]));
+        }
       }
 
       for (int idf=0; idf<3; ++idf)
       {
-        for (int inode=0; inode<finalnumnode; inode++) // inode == lid of node because we use proc0datamap
+        for (int inode=0; inode<finalnumnode; inode++)
         {
-          for (int i=0;i<3;++i) Write(*(files[i+3]), static_cast<float>((eigenvec[inode])(idf,i)));
+          for (int i=0;i<3;++i)
+          {
+            Write(*(files[i+3]), static_cast<float>((*((*data_proc0)(3*i+3+idf)))[inode]));
+          }
         }
       }
     }
-    else
+  }
+  if (numdf==3)
+  {
+    if (myrank_==0)
     {
-      vector<Epetra_SerialDenseMatrix> eigenvec(finalnumnode, Epetra_SerialDenseMatrix(2,2));
-      vector<Epetra_SerialDenseVector> eigenval(finalnumnode, Epetra_SerialDenseVector(2));
-
-      for (int i=0;i<finalnumnode;++i)
+      const int finalnumnode = proc0map_->NumGlobalElements();
+      for (int inode=0; inode<finalnumnode; inode++)
       {
-        (eigenvec[i])(0,0) = (*normal_data_proc0)[2*i];
-        (eigenvec[i])(0,1) = (*shear_data_proc0)[2*i];
-        (eigenvec[i])(1,0) = (eigenvec[i])(0,1);
-        (eigenvec[i])(1,1) = (*normal_data_proc0)[2*i+1];
-
-        LINALG::SymmetricEigenProblem((eigenvec[i]), eigenval[i], true);
-      }
-
-      for (int inode=0; inode<finalnumnode; inode++) // inode == lid of node because we use proc0datamap
-      {
-        for (int i=0;i<2;++i) Write(*(files[i]), static_cast<float>((eigenval[inode])[i]));
+        for (int i=0;i<2;++i) Write(*(files[i]), static_cast<float>((*((*data_proc0)(i)))[inode]));
       }
       for (int idf=0; idf<2; ++idf)
       {
-        for (int inode=0; inode<finalnumnode; inode++) // inode == lid of node because we use proc0datamap
+        for (int inode=0; inode<finalnumnode; inode++)
         {
-          for (int i=0;i<2;++i) Write(*(files[i+2]), static_cast<float>((eigenvec[inode])(idf,i)));
+          for (int i=0;i<2;++i)
+          {
+            Write(*(files[i+2]), static_cast<float>((*((*data_proc0)(2*i+2+idf)))[inode]));
+          }
         }
       }
-      // 2D vector for eigenproblem needed, 3D vector for paraview -> append 0.
-      for (int inode=0; inode<finalnumnode; inode++) // inode == lid of node because we use proc0datamap
+      for (int inode=0;inode<finalnumnode;inode++)
       {
-        for (int i=0;i<2;++i) Write(*(files[i+2]), static_cast<float>(0.));
+        for (int i=0;i<2;i++) Write(*(files[i+2]), static_cast<float>(0.));
       }
     }
-  } // if (myrank_==0)
+  }
 
   for (int i=0;i<numfiles;++i) Write(*(files[i]), "END TIME STEP");
 
