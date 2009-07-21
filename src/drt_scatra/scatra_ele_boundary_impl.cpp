@@ -16,6 +16,7 @@ Maintainer: Georg Bauer
 #if defined(D_FLUID2) || defined(D_FLUID3)
 #ifdef CCADISCRET
 
+#include <cstdlib>
 #include "scatra_ele_boundary_impl.H"
 #include "scatra_ele_impl.H"
 #include "../drt_mat/convecdiffus.H"
@@ -116,7 +117,7 @@ DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ScaTraBoundaryImpl
     isale_(false),
     xyze_(true),  // initialize to zero
     edispnp_(true),
-    bodyforce_(numdofpernode_,0),
+    bodyforce_(numdofpernode_),
     diffus_(numscal_,0),
     valence_(numscal_,0),
     shcacp_(0.0),
