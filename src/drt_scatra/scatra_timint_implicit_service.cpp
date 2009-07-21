@@ -679,19 +679,64 @@ void SCATRA::ScaTraTimIntImpl::OutputMeanTempAndDens()
   {
     if (prbtype_=="loma")
     {
-      cout << "Mean temperature: " << (*scalars)[numscal_-1]/domint << endl;
+      cout << "Mean temperature: " << (*scalars)[0]/domint << endl;
       cout << "Mean density:     " << densint/domint << endl;
     }
     else
     {
-        cout << "Domain integral:          " << domint << endl;
+      cout << "Domain integral:          " << domint << endl;
       for (int k = 0; k < numscal_; k++)
       {
         //cout << "Total concentration (c_"<<k+1<<"): "<< (*scalars)[k] << endl;
         cout << "Mean concentration (c_"<<k+1<<"): "<< (*scalars)[k]/domint << endl;
       }
-        cout << "Mean density:             " << densint/domint << endl;
+      cout << "Mean density:             " << densint/domint << endl;
     }
+  }
+
+  // print out results to file as well
+  if (myrank_ == 0)
+  {
+    const std::string fname 
+    = DRT::Problem::Instance()->OutputControlFile()->FileName()+".meanvalues.txt";
+
+    std::ofstream f;
+    if (Step() <= 1)
+    {
+      f.open(fname.c_str(),std::fstream::trunc);
+      if (prbtype_=="loma")
+      {
+        f << "#| Step | Time | Mean temperature | Mean density |\n";
+      }
+      else
+      {
+        f << "#| Step | Time | Domain integral ";
+        for (int k = 0; k < numscal_; k++)
+        {
+          f << "| Mean concentration (c_"<<k+1<<") ";
+        }
+        f << "| Mean density |\n";
+      }
+    }
+    else
+      f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+
+    f << Step() << " " << Time() << " ";
+    if (prbtype_=="loma")
+    {
+      f<< (*scalars)[0]/domint << " " << densint/domint << "\n";
+    }
+    else
+    {
+      f << domint << " ";
+      for (int k = 0; k < numscal_; k++)
+      {
+        f << (*scalars)[k]/domint << " ";
+      }
+      f << densint/domint << "\n";
+    }
+    f.flush();
+    f.close();
   }
 
   return;
@@ -1190,6 +1235,30 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
           }
         }
       }
+
+      // print out results to file as well
+      if (myrank_ == 0)
+      {
+        ostringstream temp;
+        temp << condid;
+        const std::string fname 
+        = DRT::Problem::Instance()->OutputControlFile()->FileName()+".boundaryflux_"+temp.str()+".txt";
+
+        std::ofstream f;
+        if (Step() <= 1)
+        {
+          f.open(fname.c_str(),std::fstream::trunc);
+          f << "#| ID | Step | Time | Integral of normal flux | Area of boundary | Mean normal flux density |\n";
+        }
+        else
+          f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+
+        f << condid << " " << Step() << " " << Time() << " " << parnormfluxintegral << " " << parboundaryint 
+        << " " << parnormfluxintegral/parboundaryint << "\n";
+        f.flush();
+        f.close();
+      }
+
     } // loop over condid
 
     if (myrank_==0)
