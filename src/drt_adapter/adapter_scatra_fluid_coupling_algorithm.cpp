@@ -25,20 +25,11 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
     const Teuchos::ParameterList& prbdyn,
     bool isale
     )
-:  FluidBaseAlgorithm(prbdyn,isale), // false -> no ALE in fluid algorithm
+:  FSI::AlgorithmBase(comm,prbdyn),
+   FluidBaseAlgorithm(prbdyn,isale), // false -> no ALE in fluid algorithm
    ScaTraBaseAlgorithm(prbdyn,isale), // false -> no ALE in scatra algorithm
-   comm_(comm),
-   params_(prbdyn),
-   step_(0),
-   nstep_(prbdyn.get<int>("NUMSTEP")),
-   time_(0.0),
-   maxtime_(prbdyn.get<double>("MAXTIME")),
-   dt_(prbdyn.get<double>("TIMESTEP"))
+   params_(prbdyn)
 {
-  //print default parameters of parameter list
-  if (comm_.MyPID()==0)
-    DRT::INPUT::PrintDefaultParameters(std::cout, prbdyn);
-
   // transfer the initial convective velocity from initial fluid field to scalar transport field
   // subgrid scales not transferred since they are zero at time t=0.0
   ScaTraField().SetVelocityField(
@@ -79,7 +70,6 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
   default:
     dserror("Fluid and Scatra time integration schemes do not match");
   }
-
 }
 
 
@@ -95,8 +85,7 @@ void ADAPTER::ScaTraFluidCouplingAlgorithm::ReadRestart(int step)
 {
   ScaTraField().ReadRestart(step);
   FluidField().ReadRestart(step);
-  time_ = FluidField().Time();
-  step_ = step;
+  SetTimeStep(FluidField().Time(),step);
   return;
 }
 

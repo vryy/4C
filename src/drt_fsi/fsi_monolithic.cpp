@@ -62,7 +62,7 @@ void FSI::MonolithicBase::ReadRestart(int step)
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicBase::PrepareTimeStep()
 {
-  FSI::AlgorithmBase::PrepareTimeStep();
+  IncrementTimeAndStep();
 
   PrintHeader();
 

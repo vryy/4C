@@ -40,19 +40,35 @@ namespace FSI
     /// step number
     int Step() const { return step_; }
 
+    /// total number of time steps
+    int NStep() const { return nstep_;}
+
+    /// maximum simulation time
+    double MaxTime() const { return maxtime_;}
+
+    /// current time
+    double Time() const {return time_;}
+
     //! @name Time loop building blocks
 
     /// tests if there are more time steps to do
-    bool NotFinished() { return step_ < nstep_ and time_ <= maxtime_; }
+    bool NotFinished() { return step_ < nstep_ and time_+1e-10*dt_ < maxtime_; }
+
+    /// increment time and step value
+    void IncrementTimeAndStep()
+    {
+      step_ += 1;
+      time_ += dt_;
+    }
 
     /// start a new time step
-    virtual void PrepareTimeStep();
+    virtual void PrepareTimeStep() {}
 
     /// take current results for converged and save for next time step
-    virtual void Update() = 0;
+    virtual void Update() {}
 
     /// write output
-    virtual void Output() = 0;
+    virtual void Output() {}
 
     /// set new time step in ReadRestart()
     void SetTimeStep(double time, int step);

@@ -24,6 +24,8 @@ Maintainer: Georg Bauer
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 #include "adapter_coupling.H"
 
+#include "../drt_fsi/fsi_algorithmbase.H"
+
 namespace ADAPTER
 {
 
@@ -39,7 +41,7 @@ namespace ADAPTER
     \author gjb
     \date 07/08
    */
-  class ScaTraFluidCouplingAlgorithm :
+  class ScaTraFluidCouplingAlgorithm : public FSI::AlgorithmBase,
         public ADAPTER::FluidBaseAlgorithm,
         public ADAPTER::ScaTraBaseAlgorithm
   {
@@ -58,62 +60,15 @@ namespace ADAPTER
     /// outer level time loop (to be implemented by deriving classes)
     virtual void TimeLoop() = 0;
 
-    /// communicator
-    const Epetra_Comm& Comm() const { return comm_; }
-
     /// read restart data
     virtual void ReadRestart(
         int step ///< step number where the calculation is continued
         );
 
-  protected:
-
-    /// time step size
-    double Dt() const { return dt_;}
-
-    /// time step number
-    int Step() const { return step_;}
-
-    /// total number of time steps
-    int NStep() const { return nstep_;}
-
-    /// maximum simulation time
-    double MaxTime() const { return maxtime_;}
-
-    /// current time
-    double Time() const {return time_;}
-
-    /// tests whether there are more time steps to do or not
-    bool NotFinished() { return ((step_ < nstep_) and ((time_ + EPS12) < maxtime_)); }
-
-    /// increment time and step value
-    void IncrementTimeAndStep()
-    {
-      step_ += 1;
-      time_ += dt_;
-    }
-
   private:
-
-    /// communication (mainly for screen output)
-    Epetra_Comm& comm_;
 
     /// problem-specific parameter list
     const Teuchos::ParameterList& params_;
-
-    //! @name Time stepping variables
-    /// time step counter
-    int step_;
-    /// maximum number of time steps
-    int nstep_;
-    /// current simulation time
-    double time_;
-    /// maximum simulation time
-    double maxtime_;
-    /// time step size
-    double dt_;
-    //@}
-
   };
 
 } // namespace ADAPTER

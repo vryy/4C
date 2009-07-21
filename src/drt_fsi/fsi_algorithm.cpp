@@ -57,7 +57,7 @@ void FSI::Algorithm::ReadRestart(int step)
 /*----------------------------------------------------------------------*/
 void FSI::Algorithm::PrepareTimeStep()
 {
-  FSI::AlgorithmBase::PrepareTimeStep();
+  IncrementTimeAndStep();
 
   PrintHeader();
 
