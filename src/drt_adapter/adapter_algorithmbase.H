@@ -1,10 +1,10 @@
-#ifndef FSI_ALGORITHMBASE_H
-#define FSI_ALGORITHMBASE_H
+#ifndef ADAPTER_ALGORITHMBASE_H
+#define ADAPTER_ALGORITHMBASE_H
 
 #include <Epetra_Comm.h>
 #include <Teuchos_ParameterList.hpp>
 
-namespace FSI
+namespace ADAPTER
 {
 
   /// base class for algorithms

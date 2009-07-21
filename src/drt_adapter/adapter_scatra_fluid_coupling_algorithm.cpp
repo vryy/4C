@@ -25,7 +25,7 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
     const Teuchos::ParameterList& prbdyn,
     bool isale
     )
-:  FSI::AlgorithmBase(comm,prbdyn),
+:  AlgorithmBase(comm,prbdyn),
    FluidBaseAlgorithm(prbdyn,isale), // false -> no ALE in fluid algorithm
    ScaTraBaseAlgorithm(prbdyn,isale), // false -> no ALE in scatra algorithm
    params_(prbdyn)

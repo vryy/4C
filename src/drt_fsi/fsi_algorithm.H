@@ -26,8 +26,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_adapter/adapter_structure.H"
 #include "../drt_adapter/adapter_fluid_ale.H"
 #include "../drt_adapter/adapter_coupling.H"
-
-#include "fsi_algorithmbase.H"
+#include "../drt_adapter/adapter_algorithmbase.H"
 
 namespace FSI
 {
@@ -53,7 +52,7 @@ namespace FSI
     \author u.kue
     \date 02/08
    */
-  class Algorithm : public AlgorithmBase,
+  class Algorithm : public ADAPTER::AlgorithmBase,
                     public ADAPTER::StructureBaseAlgorithm,
                     public ADAPTER::FluidMovingBoundaryBaseAlgorithm
   {

@@ -6,12 +6,12 @@
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_lib/drt_colors.H"
 
-#include "fsi_algorithmbase.H"
+#include "adapter_algorithmbase.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::AlgorithmBase::AlgorithmBase(Epetra_Comm& comm,
-                                  const Teuchos::ParameterList& timeparams)
+ADAPTER::AlgorithmBase::AlgorithmBase(Epetra_Comm& comm,
+                                      const Teuchos::ParameterList& timeparams)
   : comm_(comm)
 {
   if (comm_.MyPID()==0)
@@ -27,7 +27,7 @@ FSI::AlgorithmBase::AlgorithmBase(Epetra_Comm& comm,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::AlgorithmBase::SetTimeStep(double time, int step)
+void ADAPTER::AlgorithmBase::SetTimeStep(double time, int step)
 {
   step_ = step;
   time_ = time;
@@ -36,7 +36,7 @@ void FSI::AlgorithmBase::SetTimeStep(double time, int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::AlgorithmBase::PrintHeader()
+void ADAPTER::AlgorithmBase::PrintHeader()
 {
   if (Comm().MyPID()==0)
     std::cout << "\n"

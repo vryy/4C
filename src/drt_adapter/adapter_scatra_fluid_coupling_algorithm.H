@@ -24,7 +24,7 @@ Maintainer: Georg Bauer
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 #include "adapter_coupling.H"
 
-#include "../drt_fsi/fsi_algorithmbase.H"
+#include "adapter_algorithmbase.H"
 
 namespace ADAPTER
 {
@@ -41,7 +41,7 @@ namespace ADAPTER
     \author gjb
     \date 07/08
    */
-  class ScaTraFluidCouplingAlgorithm : public FSI::AlgorithmBase,
+  class ScaTraFluidCouplingAlgorithm : public AlgorithmBase,
         public ADAPTER::FluidBaseAlgorithm,
         public ADAPTER::ScaTraBaseAlgorithm
   {

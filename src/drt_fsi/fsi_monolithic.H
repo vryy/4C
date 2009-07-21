@@ -7,11 +7,10 @@
 #include "../drt_adapter/adapter_fluid_base_algorithm.H"
 #include "../drt_adapter/adapter_ale.H"
 #include "../drt_adapter/adapter_coupling.H"
+#include "../drt_adapter/adapter_algorithmbase.H"
 
 #include "../drt_lib/linalg_sparsematrix.H"
 #include "../drt_lib/linalg_mapextractor.H"
-
-#include "fsi_algorithmbase.H"
 
 #include <NOX_Epetra_Interface_Jacobian.H>
 #include <NOX_Epetra_Interface_Preconditioner.H>
@@ -57,7 +56,7 @@ namespace UTILS
     \author u.kue
     \date 02/08
    */
-  class MonolithicBase : public AlgorithmBase,
+  class MonolithicBase : public ADAPTER::AlgorithmBase,
                          public ADAPTER::StructureBaseAlgorithm,
                          public ADAPTER::FluidBaseAlgorithm,
                          public ADAPTER::AleBaseAlgorithm

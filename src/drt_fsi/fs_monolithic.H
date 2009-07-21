@@ -7,13 +7,13 @@
 
 #include "fsi_overlapprec.H"
 #include "fsi_matrixtransform.H"
-#include "fsi_algorithmbase.H"
 
 #include "../drt_adapter/adapter_structure.H"
 #include "../drt_adapter/adapter_fluid.H"
 #include "../drt_adapter/adapter_ale.H"
 #include "../drt_adapter/adapter_fluid_base_algorithm.H"
 #include "../drt_adapter/adapter_coupling.H"
+#include "../drt_adapter/adapter_algorithmbase.H"
 
 #include "../drt_lib/linalg_sparsematrix.H"
 #include "../drt_lib/linalg_mapextractor.H"
@@ -183,7 +183,7 @@ namespace UTILS
     \author --
     \date --
    */
-  class MonolithicBaseFS : public AlgorithmBase,
+  class MonolithicBaseFS : public ADAPTER::AlgorithmBase,
                            public ADAPTER::FluidBaseAlgorithm,
                            public ADAPTER::AleBaseAlgorithm
   {
