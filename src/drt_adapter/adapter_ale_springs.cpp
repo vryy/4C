@@ -504,8 +504,8 @@ void ADAPTER::AleSprings::EvaluateElements()
 
 
      //get values and indices of entries in this row
-      double values[numdof];
-      int cgids[numdof];
+      std::vector<double> values(numdof);
+      std::vector<int> cgids(numdof);
 
       for (int i=0; i<numdof; i++)
       {
@@ -513,10 +513,9 @@ void ADAPTER::AleSprings::EvaluateElements()
         cgids[i] = dofGID[i];
       }
 
-
       // write in 3rd row only. Internal ALE nodes cannot see Fluidvelocities in x and y direction.
       int rgid = dofGID[2];
-      const int err = ep_H->InsertGlobalValues(rgid,3,values,cgids);
+      const int err = ep_H->InsertGlobalValues(rgid,3,&values[0],&cgids[0]);
       if (err!=0) dserror("Epetra_CrsMatrix::InsertGlobalValues returned error code %d",err);
 
     }

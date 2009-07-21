@@ -1784,7 +1784,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       else if (frwordcmp(buffer,"iter_nox")==0)
         fsidyn->ifsi=fsi_iter_nox;
       else if (frwordcmp(buffer,"iter_monolithic")==0)
-        fsidyn->ifsi=fsi_iter_monolithic;
+        fsidyn->ifsi=fsi_iter_monolithicfluidsplit;
       else
          dserror("Coupling Algorithm COUPALGO unknown");
    }
