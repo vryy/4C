@@ -598,7 +598,7 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
  * coefficient is very small for thin rods it is increased artificially by a factor for numerical convencience*/
   double rsquare = pow((4*Iyy_/PI),0.5);
   //gamma_a artificially increased by factor artificial; this factor should scale with lrefe_^2 and comprise a heuristically calculated constant (here 60)
-  double artificial = 60;
+  double artificial = 60*16;
   double gammaa = 4*PI*params.get<double>("ETA",0.0)*(rsquare)*artificial;
 
 
@@ -1097,7 +1097,8 @@ int DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
    * which is always much smaller than the stiffness expression EI/L^3 related to bending and if dt is chosen 
    * according to tau_EA the same rationale applies. Therefore EI/L^3, EA/L << gamma/dt never arises in practice
    * and stability depends on the requirement EI/L^3 ~ EA/L. If this requirement is naturally violated an 
-   * artificial PTC damping has to be employed. 
+   * artificial PTC damping has to be employed, which increases the damping stiffness that far that the ratio
+   * EI/L^3 ~ EA/L can no longer destabilize the system.
    * 
    * The crucial question is obviously how the PTC damping parameter scales with different simulation parameters.
    * In the following we discuss the effect of variations of different parameters:
@@ -1124,11 +1125,21 @@ int DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
    * small strain assumption of this Reissner element. Thus the PTC parameter depends rather on physical parameters
    * than on the choice of the discretization.
    * 
+   * The above parameter discussion reveals how to adapt the PTC factor in case of changes of the environment of
+   * a structure with fixed cross section A, moment of inertia I and length L. However, how to choose the PTC
+   * factor and time step size dt for a first discretization and parameter set up has not been discussed so far.
+   * Indeed the latter step can be done heuristically once for
+   * 
    * Cross section A, moment of inertia I: from the above discussed physics one might assume a dependence of the
    * PTC parameter on the ratio of bending and strechting stiffness, i.e. on EI / EA. Such a dependence might
    * considerably exacerbate the application of the PTC algorithm. However, by means of numerical experiments a
    * different rule to deterime the PTC parameter was found: Beyond some ratio EI / EA simulations were found to
-   * be unstable
+   * be unstable without PTC damping. However, a constant PTC damping factor was capable of stabilizing the system
+   * over a large range of ratios EI / EA, if the time step size was adopted accordingly. The time step size
+   * has to be determined both with respect to bending and stretching time constants. When scaling I by a factor
+   * const_I and A by a factor const_A, one first has to decide which of both types of time constants may become
+   * critical by the parameter change. Subsequently one has to scale the time step size either by 1/const_A if 
+   * the stretching time constants are the critical ones or by 1/const_I otherwise.
    * 
    * 
    * Length L: reduing
@@ -1819,9 +1830,9 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
 
   //first of all we get the material law
   Teuchos::RCP<const MAT::Material> currmat = Material();
-  double ym;
-  double sm;
-  double density;
+  double ym = 0;
+  double sm = 0;
+  double density = 0;
 
   //assignment of material parameters; only St.Venant material is accepted for this beam
   switch(currmat->MaterialType())
