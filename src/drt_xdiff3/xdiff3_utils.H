@@ -228,25 +228,25 @@ DRT::UTILS::GaussRule3D getXFEMGaussrule(
         case DRT::Element::hex8:
         {
           if (xeleGeoType == GEO::CARTESIAN) // constant jacobian
-            rule = DRT::UTILS::intrule_tet_15point;
+            rule = DRT::UTILS::intrule_tet_4point;
           else
-            rule = DRT::UTILS::intrule_tet_24point;
+            rule = DRT::UTILS::intrule_tet_4point;
           break;
         }
         case DRT::Element::hex20:
         {
           if (xeleGeoType == GEO::CARTESIAN) // constant jacobian
-            rule = DRT::UTILS::intrule_tet_45point;
+            rule = DRT::UTILS::intrule_tet_11point;
           else
-            rule = DRT::UTILS::intrule_tet_45point;
+            rule = DRT::UTILS::intrule_tet_11point;
           break;
         }
         case DRT::Element::hex27:
         {
           if (xeleGeoType == GEO::CARTESIAN) // constant jacobian
-            rule = DRT::UTILS::intrule_tet_729point_peano;
+            rule = DRT::UTILS::intrule_tet_11point;
           else
-            rule = DRT::UTILS::intrule_tet_729point_peano;
+            rule = DRT::UTILS::intrule_tet_11point;
           break;
         }
         case DRT::Element::tet4:

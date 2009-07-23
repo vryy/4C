@@ -128,7 +128,6 @@ Maintainer: Axel Gerstenberger
         )
   {
 
-  /* Viskositaetsterm */
   /*
                 /                        \
                |       / \         /  \   |
@@ -571,7 +570,6 @@ void SysmatDomain4(
             const double ra = 1.0;
             const double Ti = 5.0;
             const double Ta = 1.0;
-//            cout << "radius = " << radius << endl;
             if (ri < radius and radius < ra)
             {
               const double T_exact = Ti -(log(radius) - log(ri))*(-(Ta-Ti)/(log(ra)-log(ri)));
@@ -850,7 +848,9 @@ void SysmatBoundary4(
             // get interface velocity
             const int belegid = cell->GetSurfaceEleGid();
             const int label = ih->GetLabelPerBoundaryElementId(belegid);
+            // block 2d/3d BC
             double interface_Temp = 0.0;
+            // cylinder BC
             if (label == 1)
               interface_Temp = 1.0;
             else if (label == 2)

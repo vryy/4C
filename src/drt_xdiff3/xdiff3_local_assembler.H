@@ -36,32 +36,6 @@ template<> struct FieldNum<XFEM::PHYSICS::Temp> {static const std::size_t pos = 
 template <XFEM::PHYSICS::Field FIELD>
 struct SymmetryMangle {static const XFEM::PHYSICS::Field name = FIELD;};
 
-////! which shape functions are equal anyway
-//template <XFEM::PHYSICS::Field FIELD>
-//struct ShapeMangle;
-//template<> struct ShapeMangle<XFEM::PHYSICS::Velx> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Velx;};
-//template<> struct ShapeMangle<XFEM::PHYSICS::Vely> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Velx;};
-//template<> struct ShapeMangle<XFEM::PHYSICS::Velz> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Velx;};
-//template<> struct ShapeMangle<XFEM::PHYSICS::Pres> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Velx;};
-//template<> struct ShapeMangle<XFEM::PHYSICS::DiscPres> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::DiscPres;};
-//template<> struct ShapeMangle<XFEM::PHYSICS::Sigmaxx> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxx;};
-//template<> struct ShapeMangle<XFEM::PHYSICS::Sigmaxy> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxx;};
-//template<> struct ShapeMangle<XFEM::PHYSICS::Sigmaxz> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxx;};
-//template<> struct ShapeMangle<XFEM::PHYSICS::Sigmayx> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxx;};
-//template<> struct ShapeMangle<XFEM::PHYSICS::Sigmayy> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxx;};
-//template<> struct ShapeMangle<XFEM::PHYSICS::Sigmayz> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxx;};
-//template<> struct ShapeMangle<XFEM::PHYSICS::Sigmazx> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxx;};
-//template<> struct ShapeMangle<XFEM::PHYSICS::Sigmazy> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxx;};
-//template<> struct ShapeMangle<XFEM::PHYSICS::Sigmazz> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxx;};
-//template<> struct ShapeMangle<XFEM::PHYSICS::Tauxx>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxx;};
-//template<> struct ShapeMangle<XFEM::PHYSICS::Tauxy>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxx;};
-//template<> struct ShapeMangle<XFEM::PHYSICS::Tauxz>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxx;};
-//template<> struct ShapeMangle<XFEM::PHYSICS::Tauyx>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxx;};
-//template<> struct ShapeMangle<XFEM::PHYSICS::Tauyy>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxx;};
-//template<> struct ShapeMangle<XFEM::PHYSICS::Tauyz>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxx;};
-//template<> struct ShapeMangle<XFEM::PHYSICS::Tauzx>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxx;};
-//template<> struct ShapeMangle<XFEM::PHYSICS::Tauzy>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxx;};
-//template<> struct ShapeMangle<XFEM::PHYSICS::Tauzz>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxx;};
 
 //! class that assembles one after another integral of the weak form into the stiffness matrix
 template <DRT::Element::DiscretizationType DISTYPE,
