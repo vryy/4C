@@ -137,7 +137,7 @@ namespace XFLUID
     // get velocity norm
     const double vel_norm = std::sqrt(gpvelnp(0)*gpvelnp(0)+gpvelnp(1)*gpvelnp(1)+gpvelnp(2)*gpvelnp(2));
 
-    // normed velocity at element centre
+    // normed velocity at Gauss point
     LINALG::Matrix<3,1> velino;
     if (vel_norm>=1e-6)
     {
