@@ -699,7 +699,8 @@ void XFEM::createDofMapCombust(
   const Teuchos::ParameterList&             params
   )
 {
-  std::cout << "Creating DofMap for combustion problem" << std::endl;
+  //if (fluiddis->Comm().MyPID() == 0)
+  //  std::cout << "Creating DofMap for combustion problem" << std::endl;
 
   const double volumeRatioLimit = params.get<double>("volumeRatioLimit");
 
@@ -769,7 +770,7 @@ void XFEM::createDofMapCombust(
           default:
             dserror("unknown type of combustion problem");
         }
-        std::cout << "Element "<< xfemele->Id() << " ist geschnitten und Knoten werden angereichert" << std::endl;
+//        std::cout << "Element "<< xfemele->Id() << " ist geschnitten und Knoten werden angereichert" << std::endl;
 /*
         std::cout << "Enrichments des Elements" << std::endl;
         const int numnodes = xfemele->NumNode();

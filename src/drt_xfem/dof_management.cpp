@@ -54,8 +54,8 @@ XFEM::DofManager::DofManager(
     ) :
   ih_(interfacehandle)
 {
-  if (ih_->xfemdis()->Comm().MyPID() == 0)
-    std::cout << "Constructing DofManager for combustion problem" << std::endl;
+  //if (ih_->xfemdis()->Comm().MyPID() == 0)
+  //  std::cout << "Constructing DofManager for combustion problem" << std::endl;
 
   // build a DofMap holding dofs for all nodes including additional dofs of enriched nodes
   XFEM::createDofMapCombust(*interfacehandle, nodeDofMap_, elementDofMap_, fieldset, params);
@@ -81,8 +81,8 @@ XFEM::DofManager::DofManager(
   // collect all unique enrichments and print them on the screen (only needed for verification)
   GatherUniqueEnrichments();
 
-  if (ih_->xfemdis()->Comm().MyPID() == 0)
-    std::cout << "Constructing DofManager for combustion problem done" << std::endl;
+  //if (ih_->xfemdis()->Comm().MyPID() == 0)
+  //  std::cout << "Constructing DofManager for combustion problem done" << std::endl;
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -309,6 +309,114 @@ Teuchos::RCP<Epetra_Vector> XFEM::DofManager::fillPhysicalOutputVector(
     }
   };
   return outvec;
+}
+
+
+/*----------------------------------------------------------------------*
+ | transform XFEM vector to (standard FEM) output vector     henke 07/09|
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> XFEM::DofManager::transformXFEMtoOutputVector(
+    const Epetra_Vector&                   xfemvector,
+    const DRT::DofSet&                     outdofset,
+    const map<DofKey<onNode>, DofGID>&     nodalDofDistributionMap,
+    const std::set<XFEM::PHYSICS::Field>&  outputfields
+) const
+{
+  // get DofRowMaps for output and XFEM vectors
+  const Epetra_Map* outdofrowmap = outdofset.DofRowMap();
+  const Epetra_Map* xfemdofrowmap = ih_->xfemdis()->DofRowMap();
+
+  // create output vector (standard FEM layout)
+  Teuchos::RCP<Epetra_Vector> outvector = LINALG::CreateVector(*outdofrowmap,true);
+
+  // loop nodes on this processor
+  for (int inode=0; inode<ih_->xfemdis()->NumMyRowNodes(); ++inode)
+  {
+    // get XFEM GID of this node
+    const DRT::Node* xfemnode = ih_->xfemdis()->lRowNode(inode);
+    const int nodegid = xfemnode->Id();
+    // get vector of dof GIDs for this node according to output (standard FEM) layout
+    const std::vector<int> outgid(outdofset.Dof(xfemnode));
+    // find the set of field enrichments (~ XFEM dofs) for this node
+    std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator nodeentry = nodalDofSet_.find(nodegid);
+
+    // node was not found in nodalDofSet_
+    if (nodeentry == nodalDofSet_.end())
+    {
+      dserror("Every node should have (at least a standard) field enrichments!");
+      // one dof for every physical field (standard FEM)
+      //const std::size_t numdof = outputfields.size();
+      // write zero values in output vector at position of original (standard FEM) degree of freedom
+      //for (std::size_t idof = 0; idof < numdof; ++idof)
+      //{
+      //  (*outvector)[outdofrowmap->LID(outgid[idof])] = 0.0;
+      //}
+    }
+    else // node was found in nodalDofSet_
+    {
+      // get set of field enrichments for this node
+      const std::set<FieldEnr> fieldenrset = nodeentry->second;
+      // build a standard enrichment (label = 0)
+      const XFEM::Enrichment stdenr(0,XFEM::Enrichment::typeStandard);
+
+      size_t idof = 0;
+      // loop over desired physical output fields
+      for(std::set<XFEM::PHYSICS::Field>::const_iterator outputfield = outputfields.begin(); outputfield != outputfields.end(); ++outputfield)
+      {
+        // build a standard field enrichment with this physical field
+        XFEM::FieldEnr fieldstdenr(*outputfield,stdenr);
+        // check if there is a standard enrichment for this physical field available for this node
+        std::set<FieldEnr>::const_iterator fieldenrentry = fieldenrset.find(fieldstdenr);
+
+        // there is no standard enrichment for this desired output field
+        if (fieldenrentry == fieldenrset.end())
+        {
+          dserror("There should be a standard enrichment for every physical field!");
+        }
+        else // there is a standard enrichment for this desired output field
+        {
+          // build a dofkey (= XFEM dof)
+          const XFEM::DofKey<XFEM::onNode> dofkey(nodegid,*fieldenrentry);
+          // get dof GID (XFEM layout) corresponding to this dofkey
+          const int xfemgid = nodalDofDistributionMap.find(dofkey)->second;
+          if (xfemgid < 0)
+            dserror("bug!");
+          if (outgid[idof] < 0)
+            dserror("bug!");
+          // fill output vector by writing value of standard enrichment (XFEM)
+          (*outvector)[outdofrowmap->LID(outgid[idof])] = xfemvector[xfemdofrowmap->LID(xfemgid)];
+        }
+//        // loop over field enrichments of this node
+//        for(std::set<FieldEnr>::const_iterator fieldenr = fieldenrset.begin(); fieldenr != fieldenrset.end(); ++fieldenr)
+//        {
+//          // get the physical field and enrichment type of this field enrichment
+//          const XFEM::PHYSICS::Field xfemfield = fieldenr->getField();
+//          const XFEM::Enrichment::EnrType xfemenrtype = fieldenr->getEnrichment().Type();
+//          // if node has a field enrichment which is also an output field and a standard dof
+//          if ((xfemfield == *outputfield) and (xfemenrtype == XFEM::Enrichment::typeStandard))
+//          {
+//            // build a dofkey (= XFEM dof)
+//            const XFEM::DofKey<XFEM::onNode> dofkey(nodegid,*fieldenr);
+//            // get dof GID (XFEM layout) corresponding to this dofkey
+//            const int xfemgid = nodalDofDistributionMap.find(dofkey)->second;
+//            if (xfemgid < 0)
+//              dserror("bug!");
+//            if (outgid[idof] < 0)
+//              dserror("bug!");
+//            // fill output vector by writing value of standard enrichment (XFEM)
+//            (*outvector)[outdofrowmap->LID(outgid[idof])] = xfemvector[xfemdofrowmap->LID(xfemgid)];
+//          }
+//        }
+        idof++;
+      }
+#ifdef DEBUG
+      if (idof != outgid.size())
+        // this is not really an error, but it would be unusual to intentionally skip fields for output
+        dserror("Not all available fields have been transformed to output vector!");
+#endif
+    }
+  };
+  return outvector;
 }
 
 

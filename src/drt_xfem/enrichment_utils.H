@@ -154,7 +154,14 @@ namespace XFEM
         {
 //          const double enrval = enriter->ModifiedKinkEnrValue(actpos, inode, *ih, approachdirection, ele_);
           const double enrval = enriter->EnrValueGaussPointLevelSet(ele_,phi,funct);
-          enrvalues[*enriter] = enrval;
+          double enrvalnode = 0.0;
+          // modified enrichment in the case of jump enrichment to maintain the interpolant properties
+          // Psi(xGauss)-Psi(xNode)
+          if (enriter->Type()==XFEM::Enrichment::typeJump || enriter->Type()==XFEM::Enrichment::typeVoid)
+          {
+            enrvalnode = enriter->EnrValueNodeLevelSet(inode,phi);
+          }
+          enrvalues[*enriter] = enrval - enrvalnode;
         }
         enrvalnodes_[inode] = enrvalues;
         enrvalues.clear();
@@ -165,18 +172,6 @@ namespace XFEM
         const std::vector<double> enrvalderxy = enriter->EnrValueGaussPointDerivative(ele_,phi,funct,derxy);
         enrvalderxy_[*enriter] = enrvalderxy;
 
-    //    std::vector<double> enrvalderxy2;
-    //    switch(ele_.Shape())
-    //    {
-    //      case DRT::Element::hex8:
-    //      enrvalderxy2 = enriter->ModifiedEnrValue_derxy2<DRT::Element::hex8>(actpos, *ih, ele_);
-    //      break;
-    ////      case DRT::Element::hex20:
-    ////      enrvalderxy2 = enriter->ModifiedEnrValue_derxy2<DRT::Element::hex20>(actpos, *ih, approachdirection, ele_);
-    ////      break;
-    //      default:
-    //    dserror("Element not templated in enrichment second derivatives yet");
-    //    };
         const std::vector<double> enrvalderxy2 = enriter->EnrValueGaussPointDerivative2(ele_,phi,funct,derxy2);
         enrvalderxy2_[*enriter] = enrvalderxy2;
       }

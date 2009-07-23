@@ -117,6 +117,30 @@ namespace XFEM
           const std::set<XFEM::PHYSICS::Field>&   fields_out
       ) const;
 
+      /*!
+       \brief transform XFEM vector to (standard FEM) output vector
+
+       This function assumes that a so-called modified enrichment strategy was used, which guarantees
+       that the values of standard dofs represent the enriched XFEM field. That is, all enrichment
+       values at nodes are identically 0!
+
+       An XFEM vector holds a different number of unknowns for each node. To write the output, a
+       uniform number of degrees of freedom is expected for each node. The XFEM vector is trans-
+       formed to the original (standard FEM) layout (dofsetout) with one dof per physical field per
+       node. The desired physical fields for output can be specified (fieldsout).
+
+       This function writes the value of the XFEM standard enrichment for every physical field to
+       the corresponding standard FEM dof in the output vector.
+       
+       \author henke 07/09
+      */
+      Teuchos::RCP<Epetra_Vector> transformXFEMtoOutputVector(
+          const Epetra_Vector&                    originalvector,
+          const DRT::DofSet&                      dofsetout,
+          const map<DofKey<onNode>, DofGID>&      nodalDofDistributionMap,
+          const std::set<XFEM::PHYSICS::Field>&   fieldsout
+      ) const;
+
       //! return pointer to interface handle
       const Teuchos::RCP<XFEM::InterfaceHandle> getInterfaceHandle() const { return ih_; }
 
