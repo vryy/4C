@@ -243,7 +243,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*----------------------------------------------------------------------*/
-  // material parameters for ion species in electrlyte solution (gjb 07/08)
+  // material parameters for ion species in electrolyte solution (gjb 07/08)
   {
     Teuchos::RCP<MaterialDefinition> m
       = Teuchos::rcp(new MaterialDefinition("MAT_ion",
@@ -252,6 +252,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AddNamedReal(m,"DIFFUSIVITY","kinematic diffusivity");
     AddNamedReal(m,"VALENCE","valence (= charge number)");
+    AddNamedReal(m,"DENSIFICATION","densification coefficient",true);
 
     AppendMaterialDefinition(matlist,m);
   }

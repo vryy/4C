@@ -1798,13 +1798,26 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("MAXTIME",1000.0,"Total simulation time",&elchcontrol);
   IntParameter("NUMSTEP",24,"Total number of time steps",&elchcontrol);
   DoubleParameter("TIMESTEP",0.1,"Time increment dt",&elchcontrol);
-  IntParameter("ITEMAX",10,"Maximum number of nonlinear iterations",&elchcontrol);
+  IntParameter("ITEMAX",10,"Maximum number of outer iterations",&elchcontrol);
   IntParameter("UPRES",1,"Increment for writing solution",&elchcontrol);
+  DoubleParameter("CONVTOL",1e-6,"Convergence check tolerance for outer loop",&elchcontrol);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&elchcontrol);
   BoolParameter("OUTMEAN","No","Output of total and mean values",&elchcontrol);
   DoubleParameter("TEMPERATURE",298.0,"Constant temperature (Kelvin)",&elchcontrol);
   BoolParameter("MOVINGBOUNDARY","No","ELCH algorithm for deforming meshes",&elchcontrol);
   DoubleParameter("MOLARVOLUME",0.0,"Molar volume for electrode shape change computations",&elchcontrol);
+  setStringToIntegralParameter<string>("NATURAL_CONVECTION","No",
+                               "Include natural convection effects",
+                               tuple<std::string>(
+                                 "No",
+                                 "Natural_Convection_substance",
+                                 "Natural_Convection_ion"
+                                 ),
+                                 tuple<string>(
+                                 "No",
+                                 "Natural_Convection_substance",
+                                 "Natural_Convection_ion"),
+                               &elchcontrol);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& combustcontrol = list->sublist("COMBUSTION CONTROL",false,

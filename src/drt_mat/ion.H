@@ -21,7 +21,7 @@ namespace MAT
 
   namespace PAR
   {
-
+   
     /*----------------------------------------------------------------------*/
     /// material parameters for convection-diffusion
     class Ion : public Parameter
@@ -43,6 +43,8 @@ namespace MAT
       const double valence_;
       /// diffusivity coefficient
       const double diffusivity_;
+      /// densification coefficient
+      const double densification_;
 
       //@}
 
@@ -107,10 +109,12 @@ namespace MAT
     double Valence() const { return params_->valence_; }
     /// diffusivity coefficient
     double Diffusivity() const { return params_->diffusivity_; }
+    /// densification coefficient
+    double Densification() const { return params_->densification_; }
 
   private:
 
-    /// my material parameters
+    /// my material parameters 
     MAT::PAR::Ion* params_;
   };
 

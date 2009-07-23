@@ -53,6 +53,7 @@ void FluidEnsightWriter::WriteAllResults(PostField* field)
   EnsightWriter::WriteResult("averaged_velnp", "averaged_velocity", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("velnp", "velocity", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("pressure", "pressure", dofbased, 1);
+  EnsightWriter::WriteResult("density", "density", dofbased, 1);
   EnsightWriter::WriteResult("residual", "residual", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("dispnp", "ale_displacement", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("traction", "traction", dofbased, field->problem()->num_dim());
@@ -163,6 +164,9 @@ void ElchEnsightWriter::WriteAllResults(PostField* field)
 
   // write displacement field (always 3D)
   EnsightWriter::WriteResult("dispnp", "ale-displacement", nodebased, 3);
+
+  // write density distribution
+  EnsightWriter::WriteResult("elchdensnp", "density", nodebased, 1);
 
   // write element results (e.g. element owner)
   WriteElementResults(field);
