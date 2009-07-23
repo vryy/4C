@@ -251,7 +251,7 @@ void DRT::UTILS::FunctionManager::ReadInput()
       frchk("ZALESAKSDISK",&ierr);
       if (ierr==1)
       {
-        functions_.push_back(rcp(new ZalesaksDiskFunction(-1.0)));
+        functions_.push_back(rcp(new ZalesaksDiskFunction()));
       }
 
       frchk("EXPR",&ierr);
@@ -523,13 +523,9 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
 /*----------------------------------------------------------------------*
  | constructor                                              henke 05/09 |
  *----------------------------------------------------------------------*/
-DRT::UTILS::ZalesaksDiskFunction::ZalesaksDiskFunction(double radius) :
-Function(),
-radius_(radius)
+DRT::UTILS::ZalesaksDiskFunction::ZalesaksDiskFunction() :
+Function()
 {
-  /*
-   * parameter "radius" is just an example for possible input parameters
-   */
 }
 
 /*----------------------------------------------------------------------*
@@ -537,8 +533,73 @@ radius_(radius)
  *----------------------------------------------------------------------*/
 double DRT::UTILS::ZalesaksDiskFunction::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
 {
-  dserror("Zalesak's disk function is not yet implemented");
-  return 0.0;
+  //here calculation of distance (sign is already taken in consideration)
+  double distance = 0;
+
+  //inner part of slot
+  if ((xp[0] <= 0.025) & (xp[0] >= -0.025) & (xp[1] >= 0.15) & (xp[1] <= 0.40))
+  {
+    distance = xp[1]-0.15;
+    if ((xp[0]+0.025) < distance)
+      distance = xp[0]+0.025;
+    if ((0.025-xp[0]) < distance)
+      distance = 0.025-xp[0];
+  }
+
+  //part directly under slot
+  else if ((xp[0] <= 0.025) & (xp[0] >= -0.025) & (xp[1] >= 0.10) & (xp[1] < 0.15))
+  {
+    distance = xp[1]-0.15;
+    if ((sqrt(DSQR(xp[0])+DSQR(xp[1]-0.25))-0.15) > distance)
+      distance = sqrt(DSQR(xp[0])+DSQR(xp[1]-0.25))-0.15;
+  }
+
+  //part on the right hand side under the slot
+  else if ((xp[0] > 0.025) & ((sqrt(DSQR(xp[0])+DSQR(xp[1]-0.25))-0.15)<0) & (xp[1] <= 0.15))
+  {
+    distance = sqrt(DSQR(xp[0])+DSQR(xp[1]-0.25))-0.15;
+    if (-sqrt(DSQR(xp[0]-0.025)+DSQR(xp[1]-0.15)) > distance)
+      distance = -sqrt(DSQR(xp[0]-0.025)+DSQR(xp[1]-0.15));
+  }
+
+  //part on the left hand side under the slot
+  else if ((xp[0] < -0.025) & ((sqrt(DSQR(xp[0])+DSQR(xp[1]-0.25))-0.15) < 0) & (xp[1] <= 0.15))
+  {
+    distance = sqrt(DSQR(xp[0])+DSQR(xp[1]-0.25))-0.15;
+
+    if (-sqrt(DSQR(xp[0]+0.025)+DSQR(xp[1]-0.15)) > distance)
+      distance = -sqrt(DSQR(xp[0]+0.025)+DSQR(xp[1]-0.15));
+  }
+
+  //part on the right side of the slot
+  else if ((xp[0]>0.025) & ((sqrt(DSQR(xp[0])+DSQR(xp[1]-0.25))-0.15)<0))
+  {
+    distance = sqrt(DSQR(xp[0])+DSQR(xp[1]-0.25))-0.15;
+    if ((0.025-xp[0]) > distance)
+      distance = 0.025-xp[0];
+  }
+
+  //part on the left side of the slot
+  else if ((xp[0] < -0.025) & ((sqrt(DSQR(xp[0])+DSQR(xp[1]-0.25))-0.15)<0))
+  {
+    distance = sqrt(DSQR(xp[0])+DSQR(xp[1]-0.25))-0.15;
+    if ((xp[0]+0.025) > distance)
+      distance = xp[0]+0.025;
+  }
+
+  //trapezoidal part over the slot
+  else if ((xp[1] > 0.40) & ((xp[1]-0.25-6*xp[0]) >= 0) & ((xp[1]-0.25+6*xp[0]) >= 0))
+  {
+    distance = sqrt(DSQR(xp[0]+0.025)+DSQR(xp[1]-0.4));
+    if (sqrt(DSQR(xp[0]-0.025)+DSQR(xp[1]-0.40)) < distance)
+      distance = sqrt(DSQR(xp[0]-0.025)+DSQR(xp[1]-0.40));
+  }
+
+  //rest of outer area
+  else
+  distance = sqrt(DSQR(xp[0])+DSQR(xp[1]-0.25))-0.15;
+
+  return distance;
 }
 
 /*----------------------------------------------------------------------*/

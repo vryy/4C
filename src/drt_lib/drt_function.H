@@ -344,14 +344,10 @@ namespace UTILS {
   public:
 
     /// ctor
-    ZalesaksDiskFunction(double radius);
+    ZalesaksDiskFunction();
 
     /// evaluate function at given position in space
     double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
-
-  private:
-
-    double radius_;
   };
 
   /// Singleton class that manages all defined spatial functions
