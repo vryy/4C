@@ -59,10 +59,10 @@ namespace UTILS
 enum GaussRule3D
 {
     intrule3D_undefined,            ///< use this to initialize a gaussrule, if you don't know the value, yet!
-    intrule_hex_1point,             ///< GAUSS INTEGRATION, DEG.OF PRECISION 0 (open)
+    intrule_hex_1point,             ///< GAUSS INTEGRATION, DEG.OF PRECISION 1 (open)
     intrule_hex_8point,             ///< GAUSS INTEGRATION, DEG.OF PRECISION 3 (open)
     intrule_hex_27point,            ///< GAUSS INTEGRATION, DEG.OF PRECISION 5 (open)
-    intrule_tet_1point,             ///< GAUSS INTEGRATION, DEG.OF PRECISION 0 (open)
+    intrule_tet_1point,             ///< GAUSS INTEGRATION, DEG.OF PRECISION 1 (open)
     intrule_tet_4point,             ///< GAUSS INTEGRATION, DEG.OF PRECISION 2 (open)
     intrule_tet_4point_gauss_radau, ///< GAUSS INTEGRATION, DEG.OF PRECISION 2 (closed)
     intrule_tet_5point,             ///< GAUSS INTEGRATION, DEG.OF PRECISION 3 (open)
