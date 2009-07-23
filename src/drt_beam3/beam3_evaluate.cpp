@@ -598,7 +598,7 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
  * coefficient is very small for thin rods it is increased artificially by a factor for numerical convencience*/
   double rsquare = pow((4*Iyy_/PI),0.5);
   //gamma_a artificially increased by factor artificial; this factor should scale with lrefe_^2 and comprise a heuristically calculated constant (here 60)
-  double artificial = 60*(lrefe_*lrefe_);
+  double artificial = 60;
   double gammaa = 4*PI*params.get<double>("ETA",0.0)*(rsquare)*artificial;
 
 
@@ -1077,48 +1077,66 @@ return;
  *----------------------------------------------------------------------------------------------------------*/
 int DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
                                       Epetra_SerialDenseMatrix& elemat1)
-{
-  //get PTC dti parameter
-  double dti = params.get<double>("dti",0.0);
-  
+{  
   /*comment on the calculation of a proper PTC parameter: it is not a priori clear which phyiscal parameters
    * should be incalculated when computing a proper PTC parameter; the reason for instability without PTC is
    * seemingly the vast difference in stiffness of different eigenmodes (namely those related to bending and
-   * stretching, respectively). Here we analyze the influence of different parameters to this critical ratio:
+   * stretching, respectively). To understand the influence of different parameters to the numerical stability
+   * we study a simple model problem: we consider a clamped beam of length L with horizontal and vertical tip
+   * loads F_h and F_v, respectively. These tip loads go along horizontal and vertical displacements u and w of
+   * the tip point, respectively. Let the beam be undeformed at the beginning of a time step and let the 
+   * displacements u and w arise at the end of a time step of lenght dt. Then simple calculus shows that with a 
+   * damping constat gamma ~ eta*L there holds true F_h = EIw/L^3 + gamma*w/dt and F_v = EAu/L + gamma*u/dt. 
+   * Stability is assumed to be preserved if the ratio between beding u and w is close to one for F_h = F_v.
+   * Thus we expect stability if either EI/L^3 ~ EA/L or EI/L^3, EA/L << gamma/dt. In the first case the
+   * elastic resistence against bending and streching is comparable, in the second case the problem is dominated
+   * by viscous instead of elastic forces. In practice time step size is oriented to either to the bending or
+   * stretching time constants tau of the system with dt ~ const1*tau and typically const1 ~ 1e-3. The bending time
+   * constants are given by tau_EI = const2*eta*L^4 / EI and the stretching time constants by tau_EA = const3*eta*L^4 / EA,
+   * with constant expressions const2, const3 < 1. If dt is chosen according to tau_EI we get gamma /dt ~ const1*const2*EI / L^3,
+   * which is always much smaller than the stiffness expression EI/L^3 related to bending and if dt is chosen 
+   * according to tau_EA the same rationale applies. Therefore EI/L^3, EA/L << gamma/dt never arises in practice
+   * and stability depends on the requirement EI/L^3 ~ EA/L. If this requirement is naturally violated an 
+   * artificial PTC damping has to be employed. 
    * 
-   * Young's modulus E: As both stiffnesses scale linearly with the Young's modulus E  one may assume 
+   * The crucial question is obviously how the PTC damping parameter scales with different simulation parameters.
+   * In the following we discuss the effect of variations of different parameters:
+   * 
+   * Young's modulus E: As both bending and axial stiffness scale linearly with the Young's modulus E  one may assume 
    * that the PTC parameter may be calculated independently on this parameter; this was indeed found in practice:
-   * varying E over 3 orders of magnitude upwards and downwards did not change stability. For too small values
-   * of E instability was found due to too large curvature in the beam elements, however, this is expected as the
-   * beam formulation is valid for moderate curvature only and small values of E naturally admit increasing
-   * curvature.
+   * varying E over 3 orders of magnitude upwards and downwards (and scaling time step size by the same factor
+   * as all eigenfrequencies depend linearly on Young's modulus) did not affect the PTC parameter required for
+   * stabilization.For too small values of E instability was found due to too large curvature in the beam elements,
+   * however, this is expected as the beam formulation is valid for moderate curvature only and small values 
+   * of E naturally admit increasing curvature.
    * 
-   * Element length L: Consider a for example a clamped beam of length L with tip load F_h in horizontal and
-   * F_v in vertical direction, respectively. At the tip there will be a horizontal displacement w and vertical
-   * displacement u, respectively. In the dynamical case there holds true: F_h = EIw/L^3 + gamma*w/dt and 
-   * F_v = EAu/L + gamma*u/dt; as gamma ~ L for large L no stability problems arise since in that limit the
-   * different contributions of bending and stretching stiffness may be neglected compared to the effective
-   * damping stiffness gamma/dt. For small L again no problems arise as in that limit w gets more and more
-   * similar to u (in practice L never becomes that small that u becomes larger than w which would essentially
-   * mean that bending deformation becomes much smaller than streching deformation; the reason is that such small
-   * values of L would require very small values for dt as well, which again would make the effective damping
-   * stiffness dominant so that no stability problems would arise) This means that stability problems are to
-   * be expected for modearte L only; moderate L means L for which the elastic stiffness terms are dominant
-   * compared to the effective damping stiffness. For such L one should determine an appropriate PTC prefactor.
-   * Usually this prefactor than just can be kept also for vastly larger or smaller values of L as the system is
-   * numerically highly stable in this case anyway. This means that no explicit dependence of the PTC prefactor
-   * on L is required usually.
+   * Viscosity eta: a similar rationale as for Young's modulus E applies. All the system time constants depend
+   * linearly on eta. On the other hand the critical ratio between bending and axial stiffness does not depend
+   * on eta. Thus scaling eta and time step size dt by the same factor does not change the PTC factor required
+   * for stabilization.
    * 
-   * Cross section A and moment of inertia I: one might assume that the PTC prefactor should depend more or less
-   * linearly on the ratio A/I. However, in practice such a linear dependence was not found to work well.
+   * Numerical tests revealed that refining the discretization by factor const and at the same time the time
+   * step size by a factor const^2 (because the critical axial eigenfrequencies scale with L^2 for element 
+   * length L) did not change the required PTC parameter. One and the same parameter could be used for a wide
+   * range of element lengths up to a scale where the element length became comparable with the persistnece
+   * length l_p. For L >= l_p / 2 the simulation became unstable, however, this is supposed to happen not due 
+   * to an improper PTC parameter, but rather due to the large deformations arsing then, which violated the 
+   * small strain assumption of this Reissner element. Thus the PTC parameter depends rather on physical parameters
+   * than on the choice of the discretization.
    * 
-   * If gamma and at the same time dt are changed by the same factor (time constants depend linearly on gamma),
-   * usually one has to readopt the PTC prefactor. Decreasing dt usually goes along with a decrease of the PTC 
-   * prefactor. The scaling bevaviour is not completely clear; currently a linear dependence of the PTC factor on
-   * time step dt is implemented */
+   * Cross section A, moment of inertia I: from the above discussed physics one might assume a dependence of the
+   * PTC parameter on the ratio of bending and strechting stiffness, i.e. on EI / EA. Such a dependence might
+   * considerably exacerbate the application of the PTC algorithm. However, by means of numerical experiments a
+   * different rule to deterime the PTC parameter was found: Beyond some ratio EI / EA simulations were found to
+   * be unstable
+   * 
+   * 
+   * Length L: reduing
+   */
 
 
-  double basisdamp   = (20e-1)*PI*params.get<double>("delta time",0.0); 
+
+  double basisdamp   = (20e-2)*PI; //2 for network0_5.dat
   double anisofactor = 10;
   
 
@@ -1153,7 +1171,7 @@ int DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
 
 
   //scale artificial damping with dti parameter for PTC method
-  artstiff.Scale(dti);
+  artstiff.Scale( params.get<double>("dti",0.0) );
 
 
   for(int i= 0; i<3; i++)
