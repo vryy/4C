@@ -238,8 +238,6 @@ public:
     LINALG::Matrix<nsd_+1,iel> xyze_;
     //! nodal displacement values for ALE
     LINALG::Matrix<nsd_+1,iel> edispnp_;
-    //! bodyforce in element nodes
-    vector<LINALG::Matrix<iel,1> > bodyforce_;
     //! diffusivity / diffusivities (in case of systems) / thermal conductivity
     vector<double> diffus_;
     //! charge numbers of all ion species (ELCH specific)

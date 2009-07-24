@@ -117,7 +117,6 @@ DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ScaTraBoundaryImpl
     isale_(false),
     xyze_(true),  // initialize to zero
     edispnp_(true),
-    bodyforce_(numdofpernode_),
     diffus_(numscal_,0),
     valence_(numscal_,0),
     shcacp_(0.0),
@@ -256,7 +255,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
         timefac *= alphaF;
         if (timefac < 0.0) dserror("time factor is negative.");
         // we multiply i0 with timefac. So we do not have to give down this paramater
-        // and perform autmatically the multiplication of matrix and rhs with timefac
+        // and perform automatically the multiplication of matrix and rhs with timefac
         i0 *= timefac;
       }
 
@@ -733,11 +732,8 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
     const bool              iselch
 )
 {
-  if (kinetics != "Butler-Volmer")
-    dserror("Only Butler-Volmer model allowed. Got: %s",kinetics.c_str());
-
-  //pre-multiplication with 1/(F*z_1)
-  double fz = 1.0/96485.3399;
+  //for pre-multiplication of i0 with 1/(F z_k)
+  double fz = 1.0/96485.3399; // unit of F: C/mol or mC/mmol
 
   // get node coordinates (we have a nsd_+1 dimensional domain!)
   GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,iel> >(ele,xyze_);
@@ -814,61 +810,100 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
     // surface overpotential eta at integration point
     const double eta = (pot0 - potint);
 
-    if (iselch)
+    if (iselch) // tertiary current distribution
     {
-      double pow_conint_gamma_k = pow(conint,gamma);
-      // note: gamma==0 deactivates concentration dependency in Butler-Volmer!
-
-      const double expterm = exp(alphaa*frt*eta)-exp((-alphac)*frt*eta);
-
-      for (int vi=0; vi<iel; ++vi)
+      if (kinetics=="Butler-Volmer")  // concentration-dependent Butler-Volmer law
       {
-        fac_fz_i0_funct_vi = fac_*fz*i0*funct_(vi);
-        // ---------------------matrix
-        for (int ui=0; ui<iel; ++ui)
+        double pow_conint_gamma_k = pow(conint,gamma);
+        // note: gamma==0 deactivates concentration dependency in Butler-Volmer!
+
+        const double expterm = exp(alphaa*frt*eta)-exp((-alphac)*frt*eta);
+
+        for (int vi=0; vi<iel; ++vi)
         {
-          emat(vi*numdofpernode_,ui*numdofpernode_) += fac_fz_i0_funct_vi*gamma*pow(conint,(gamma-1.0))*funct_(ui)*expterm;
-          emat(vi*numdofpernode_,ui*numdofpernode_+numscal_) += fac_fz_i0_funct_vi*pow_conint_gamma_k*(((-alphaa)*frt*exp(alphaa*frt*eta))+((-alphac)*frt*exp((-alphac)*frt*eta)))*funct_(ui);
+          fac_fz_i0_funct_vi = fac_*fz*i0*funct_(vi);
+          // ---------------------matrix
+          for (int ui=0; ui<iel; ++ui)
+          {
+            emat(vi*numdofpernode_,ui*numdofpernode_) += fac_fz_i0_funct_vi*gamma*pow(conint,(gamma-1.0))*funct_(ui)*expterm;
+            emat(vi*numdofpernode_,ui*numdofpernode_+numscal_) += fac_fz_i0_funct_vi*pow_conint_gamma_k*(((-alphaa)*frt*exp(alphaa*frt*eta))+((-alphac)*frt*exp((-alphac)*frt*eta)))*funct_(ui);
+          }
+          // ------------right-hand-side
+          erhs[vi*numdofpernode_] -= fac_fz_i0_funct_vi*pow_conint_gamma_k*expterm;
         }
-        // ------------right-hand-side
-        erhs[vi*numdofpernode_] -= fac_fz_i0_funct_vi*pow_conint_gamma_k*expterm;
       }
+      else if(kinetics=="linear") // linear law:  i_n = i_0*(alphaa*frt*(V_M - phi) + 1.0)
+      {
+        for (int vi=0; vi<iel; ++vi)
+        {
+          fac_fz_i0_funct_vi = fac_*fz*i0*funct_(vi);
+          if (true) //eta < -0.04)
+          {
+          // ---------------------matrix
+          for (int ui=0; ui<iel; ++ui)
+          {
+            emat(vi*numdofpernode_,ui*numdofpernode_+numscal_) += fac_fz_i0_funct_vi*(-alphaa)*frt*funct_(ui);
+          }
+          // ------------right-hand-side
+          erhs[vi*numdofpernode_] -= fac_fz_i0_funct_vi*(alphaa*frt*eta + 0.0);
+          }
+          else
+          {
+          // ---------------------matrix
+           double m = (alphaa*frt*(-0.04) + 1.0)/(-0.04);
+           m = alphaa*frt;
+          //cout<<"m = "<<m<<endl;
+            for (int ui=0; ui<iel; ++ui)
+          {
+            emat(vi*numdofpernode_,ui*numdofpernode_+numscal_) += fac_fz_i0_funct_vi*(-m)*funct_(ui);
+          }
+          // ------------right-hand-side
+          erhs[vi*numdofpernode_] -= fac_fz_i0_funct_vi*(m*eta + 0.0);
+          }
+        }
+      }
+      else
+        dserror("Kinetic model not implemented: %s",kinetics.c_str());
     }
-    else
+    else // secondary current distribution
     {
-#if 1
-      // Butler-Volmer kinetics
-      const double expterm = exp(alphaa*eta)-exp((-alphac)*eta);
-      const double exptermderiv = (((-alphaa)*exp(alphaa*eta))+((-alphac)*exp((-alphac)*eta)));
-
-      for (int vi=0; vi<iel; ++vi)
+      if (kinetics=="Butler-Volmer")  // concentration-dependent Butler-Volmer law
       {
-        const double fac_i0_funct_vi = fac_*i0*funct_(vi);
-        // ---------------------matrix
-        for (int ui=0; ui<iel; ++ui)
-        {
-          emat(vi*numdofpernode_,ui*numdofpernode_) += fac_i0_funct_vi*exptermderiv*funct_(ui);
-        }
-        // ------------right-hand-side
-        erhs[vi*numdofpernode_] -= fac_i0_funct_vi*expterm;
-      }
-#else
-      // Tafel kinetics
-      const double expterm = -exp((-alphac)*eta);
-      const double exptermderiv = alphac*expterm;
+        // Butler-Volmer kinetics
+        const double expterm = exp(alphaa*eta)-exp((-alphac)*eta);
+        const double exptermderiv = (((-alphaa)*exp(alphaa*eta))+((-alphac)*exp((-alphac)*eta)));
 
-      for (int vi=0; vi<iel; ++vi)
-      {
-        const double fac_i0_funct_vi = fac*i0*funct[vi];
-        // ---------------------matrix
-        for (int ui=0; ui<iel; ++ui)
+        for (int vi=0; vi<iel; ++vi)
         {
-          emat(vi*numdofpernode,ui*numdofpernode) += fac_i0_funct_vi*exptermderiv*funct[ui];
+          const double fac_i0_funct_vi = fac_*i0*funct_(vi);
+          // ---------------------matrix
+          for (int ui=0; ui<iel; ++ui)
+          {
+            emat(vi*numdofpernode_,ui*numdofpernode_) += fac_i0_funct_vi*exptermderiv*funct_(ui);
+          }
+          // ------------right-hand-side
+          erhs[vi*numdofpernode_] -= fac_i0_funct_vi*expterm;
         }
-        // ------------right-hand-side
-        erhs[vi*numdofpernode] -= fac_i0_funct_vi*expterm;
       }
-#endif
+      else if(kinetics == "Tafel") // Tafel kinetics
+      {
+        const double expterm = -exp((-alphac)*eta);
+        const double exptermderiv = alphac*expterm;
+
+        for (int vi=0; vi<iel; ++vi)
+        {
+          const double fac_i0_funct_vi = fac_*i0*funct_(vi);
+          // ---------------------matrix
+          for (int ui=0; ui<iel; ++ui)
+          {
+            emat(vi*numdofpernode_,ui*numdofpernode_) += fac_i0_funct_vi*exptermderiv*funct_(ui);
+          }
+          // ------------right-hand-side
+          erhs[vi*numdofpernode_] -= fac_i0_funct_vi*expterm;
+        }
+      }
+      else
+        dserror("Kinetic model not implemented: %s",kinetics.c_str());
     } // if iselch
 
   } // end of loop over integration points gpid
@@ -950,18 +985,30 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
     // surface overpotential eta at integration point
     const double eta = (pot0 - potint);
 
-    // Butler-Volmer
-    double expterm(0.0);
-    if (iselch)
-      expterm = pow(conint,gamma) * (exp(alphaa*frt*eta)-exp((-alphac)*frt*eta));
-    else
-      expterm = exp(alphaa*eta)-exp((-alphac)*eta);
+    if (kinetics=="Butler-Volmer")     // Butler-Volmer
+    {
+      double expterm(0.0);
+      if (iselch)
+        expterm = pow(conint,gamma) * (exp(alphaa*frt*eta)-exp((-alphac)*frt*eta));
+      else
+        expterm = exp(alphaa*eta)-exp((-alphac)*eta);
 
-    // compute integrals
-    overpotentialint += eta * fac_;
-    currentintegral += (-i0) * expterm * fac_; // the negative(!) normal flux density
-    boundaryint += fac_;
-    concentrationint += conint*fac_;
+      // compute integrals
+      overpotentialint += eta * fac_;
+      currentintegral += (-i0) * expterm * fac_; // the negative(!) normal flux density
+      boundaryint += fac_;
+      concentrationint += conint*fac_;
+    }
+    else if (iselch && (kinetics=="linear")) // linear: i_n = i_0*(alphaa*frt*eta + 1.0)
+    {
+      // compute integrals
+      overpotentialint += eta * fac_;
+      currentintegral += (-i0) * (alphaa*frt*eta + 0.0) * fac_; // the negative(!) normal flux density
+      boundaryint += fac_;
+      concentrationint += conint*fac_;
+    }
+    else
+      dserror("Kinetic model not implemented: %s",kinetics.c_str());
 
   } // loop over integration points
 
