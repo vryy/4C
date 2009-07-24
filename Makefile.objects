@@ -163,8 +163,9 @@ OBJS_DRT      = \
                 src/drt_lib/linalg_solver.o \
                 src/drt_lib/linalg_solver_spooles.o \
                 src/drt_lib/linalg_precond.o \
-                src/drt_lib/linalg_precond_operator.o \
+                src/drt_lib/linalg_projected_precond.o \
                 src/drt_lib/linalg_projected_operator.o \
+                src/drt_lib/linalg_krylov_projector.o \
                 src/drt_lib/linalg_mlapi_operator.o \
                 src/drt_lib/simpler_operator.o \
                 src/drt_lib/linalg_downwindmatrix.o
