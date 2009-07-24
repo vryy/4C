@@ -60,7 +60,7 @@ Maintainer: Michael Gee
 #include "drt_dserror.H"
 #include "../drt_inpar/inpar_solver.H"
 
-#include "linalg_precond_operator.H"
+#include "linalg_projected_precond.H"
 #include "linalg_projected_operator.H"
 
 using namespace std;
@@ -390,10 +390,9 @@ private:
 
   */
   virtual void Solve_aztec(
-    const bool                    reset                ,
-    const bool                    project              ,
-    const RCP<Epetra_MultiVector> weighted_basis_mean_w,
-    const RCP<Epetra_MultiVector> kernel_c
+    const bool                         reset    ,
+    const bool                         project  ,
+    const RCP<LINALG::KrylovProjector> projector
     );
 
   //! a communicator

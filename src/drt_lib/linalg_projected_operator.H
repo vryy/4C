@@ -26,6 +26,7 @@ Maintainer: Peter Gamnitzer
 #include "drt_dserror.H"
 
 #include "linalg_sparsematrix.H"
+#include "linalg_krylov_projector.H"
 
 namespace LINALG
 {
@@ -92,8 +93,11 @@ public:
   \brief Standard Constructor
 
   */
-  LinalgProjectedOperator(Teuchos::RCP<Epetra_Operator> A,bool project);
-
+  LinalgProjectedOperator(
+      Teuchos::RCP<Epetra_Operator> A,
+      bool project,
+      Teuchos::RCP<LINALG::KrylovProjector> projector
+      );
 
   /*!
   \brief Destructor
@@ -101,58 +105,6 @@ public:
   */
   ~LinalgProjectedOperator();
 
-  //! @name Special atribute set methods
-  /*!
-
-  \brief Set kernel space and weight vectors.
-
-  The projector P^T is completely defined by w and c.
-
-  \param w vector(s) of weights
-  \param c kernel basis vector(s)
-
-  */
-  void SetKernelSpace(
-    Teuchos::RCP<Epetra_MultiVector> w,
-    Teuchos::RCP<Epetra_MultiVector> c
-    )
-  {
-    w_=w;
-    c_=c;
-
-    if(project_)
-    {
-      if(w_==Teuchos::null || c_==Teuchos::null)
-      {
-        dserror("no kernel/weight supplied for projection (but projection flag was set)");
-      }
-
-      // resize
-      cTw_.Shape(c_->NumVectors(),w_->NumVectors());
-
-      for(int mm=0;mm<c_->NumVectors();++mm)
-      {
-        // loop all weight vectors
-        for(int rr=0;rr<w_->NumVectors();++rr)
-        {
-
-          /*
-                   T
-                  w * c
-          */
-          ((*c_)(mm))->Dot(*((*w_)(rr)),&(cTw_(mm,rr)));
-
-          if(fabs(cTw_(mm,rr))<1e-14)
-          {
-            dserror("weight vector must not be orthogonal to c");
-          }
-        }
-      }
-    }
-
-    return;
-  }
-  //! @}
 
   //! @name Atribute set methods required to support the Epetra_Operator interface
 
@@ -249,21 +201,15 @@ public:
   }
 
 private:
+
   //! flag whether to do a projection or just pass through
   bool                               project_;
 
   //! the actual unprojected operator
   Teuchos::RCP<Epetra_Operator>      A_;
 
-  //! a set of vectors defining weighted basis mean vector for the projector
-  Teuchos::RCP<Epetra_MultiVector>   w_;
-
-  //! a set of vectors defining the vectors of ones (in the respective components)
-  //! for the matrix kernel
-  Teuchos::RCP<Epetra_MultiVector>   c_;
-
-  //! values for scalar products c_i o w_j, computed once after setting c_ and w_
-  Epetra_SerialDenseMatrix           cTw_;
+  //! Krylov space projector
+  Teuchos::RCP<LINALG::KrylovProjector>   projector_;
 
 };
 

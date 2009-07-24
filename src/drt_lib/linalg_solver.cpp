@@ -25,6 +25,7 @@ Maintainer: Michael Gee
 #include "linalg_downwindmatrix.H"
 #include "linalg_sparsematrix.H"
 #include "standardtypes_cpp.H"
+#include "linalg_krylov_projector.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -277,10 +278,17 @@ void LINALG::Solver::Solve(
     refactor = true;
   }
 
+  // is projection desired?
+  RCP<LINALG::KrylovProjector> projector = Teuchos::null;
+  if(project)
+  {
+    projector = rcp(new LINALG::KrylovProjector(project,weighted_basis_mean,kernel_c));
+  }
+
   // set the data passed to the method
   if (refactor)
   {
-    A_ = rcp(new LINALG::LinalgProjectedOperator::LinalgProjectedOperator(matrix,project));
+    A_ = rcp(new LINALG::LinalgProjectedOperator::LinalgProjectedOperator(matrix,project,projector));
   }
 
   x_ = x;
@@ -310,7 +318,7 @@ void LINALG::Solver::Solve(
   }
 
   if ("aztec"  ==solvertype)
-  Solve_aztec(reset,project,weighted_basis_mean,kernel_c);
+  Solve_aztec(reset,project,projector);
   else if ("klu"    ==solvertype)
     Solve_klu(reset);
   else if ("umfpack"==solvertype)
@@ -340,10 +348,9 @@ void LINALG::Solver::Solve(
  |  solve (protected)                                        mwgee 02/07|
  *----------------------------------------------------------------------*/
 void LINALG::Solver::Solve_aztec(
-  const bool                    reset              ,
-  const bool                    project            ,
-  const RCP<Epetra_MultiVector> weighted_basis_mean,
-  const RCP<Epetra_MultiVector> kernel_c
+  const bool                                  reset    ,
+  const bool                                  project  ,
+  const Teuchos::RCP<LINALG::KrylovProjector> projector
   )
 {
   if (!Params().isSublist("Aztec Parameters"))
@@ -363,47 +370,8 @@ void LINALG::Solver::Solve_aztec(
   // must be orthogonal to matrix kernel. Make sure this is true.
   if(project)
   {
-    // loop all basis vectors of kernel
-    for(int mm=0;mm<kernel_c->NumVectors();++mm)
-    {
-
-      /*
-                   T
-                  c * b
-      */
-      double cTb=0.0;
-      ((*kernel_c)(mm))->Dot(*(b_),&cTb);
-
-      // loop all weight vectors
-      for(int rr=0;rr<weighted_basis_mean->NumVectors();++rr)
-      {
-        // -------------------------------------
-        // loop basis vector of matrix kernel and orthogonalize residual against it
-
-        /*
-                   T
-                  w * c
-        */
-        double wTc=0.0;
-
-        ((*kernel_c)(mm))->Dot(*((*weighted_basis_mean)(rr)),&wTc);
-
-        if(fabs(wTc)<1e-14)
-        {
-          dserror("weight vector must not be orthogonal to c");
-        }
-
-        /*
-                                  T
-                       T         c * b
-                      P b = b - ------- * w
-                                  T
-                                 w * c
-        */
-        (b_)->Update(-cTb/wTc,*((*weighted_basis_mean)(rr)),1.0);
-      }
-    }
-  } // if(project)
+    projector->ApplyPT(*b_);
+  }
 
   // decide whether we recreate preconditioners
   bool create = false;
@@ -558,7 +526,7 @@ void LINALG::Solver::Solve_aztec(
       prec->Initialize();
       prec->Compute();
 
-      P_ = rcp(new LINALG::LinalgPrecondOperator::LinalgPrecondOperator(rcp(prec),project));
+      P_ = rcp(new LINALG::LinalgPrecondOperator::LinalgPrecondOperator(rcp(prec),project,projector));
     }
 
     // do ml if desired
@@ -581,14 +549,14 @@ void LINALG::Solver::Solve_aztec(
         Teuchos::RCP<LINALG::AMG_Operator> linalgAMG
           = rcp(new LINALG::AMG_Operator(Pmatrix_,mllist,true));
 
-        P_ = rcp(new LINALG::LinalgPrecondOperator::LinalgPrecondOperator(linalgAMG,project));
+        P_ = rcp(new LINALG::LinalgPrecondOperator::LinalgPrecondOperator(linalgAMG,project,projector));
       }
       else
       {
         Teuchos::RCP<ML_Epetra::MultiLevelPreconditioner> linalgML
           = rcp(new ML_Epetra::MultiLevelPreconditioner(*Pmatrix_,mllist,true));
 
-        P_ = rcp(new LINALG::LinalgPrecondOperator::LinalgPrecondOperator(linalgML,project));
+        P_ = rcp(new LINALG::LinalgPrecondOperator::LinalgPrecondOperator(linalgML,project,projector));
         // for debugging ML
         //dynamic_cast<ML_Epetra::MultiLevelPreconditioner&>(*P_).PrintUnused(0);
       }
@@ -606,32 +574,15 @@ void LINALG::Solver::Solve_aztec(
                                              Params().sublist("SIMPLER"),
                                              outfile_));
 
-      P_ = rcp(new LINALG::LinalgPrecondOperator::LinalgPrecondOperator(SimplerOperator,project));
+      P_ = rcp(new LINALG::LinalgPrecondOperator::LinalgPrecondOperator(SimplerOperator,project,projector));
 
       Pmatrix_ = null;
     }
   }
 
-  // set preconditioner
+  // set the preconditioner
   if (doifpack || doml || dosimpler)
   {
-    // in case of singular matrices, the kernel has to be projected
-    // out of the krylov space
-    //
-    // -> has to be provided for the modified Preconditioner ApplyInverse
-    //    and the matrices Apply call
-    if(project)
-    {
-      if(P_==Teuchos::null)
-      {
-        dserror("Preconditioner not existent during projection\n");
-      }
-
-      P_->SetKernelSpace(weighted_basis_mean,kernel_c);
-      A_->SetKernelSpace(weighted_basis_mean,kernel_c);
-    } // if(project)
-
-    // finally set the preconditioner
     aztec_->SetPrecOperator(P_.get());
   }
 

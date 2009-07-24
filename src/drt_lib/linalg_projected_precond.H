@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file  linalg_precond_operator.H
+\file  linalg_projected_precond.H
 
 \brief A common interface for ifpack, ml and simpler preconditioners.
        This interface allows a modification of the vector returned
@@ -17,8 +17,8 @@ Maintainer: Peter Gamnitzer
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#ifndef LINALG_PRECOND_OPERATOR_H_
-#define LINALG_PRECOND_OPERATOR_H_
+#ifndef LINALG_PROJECTED_PRECOND_H_
+#define LINALG_PROJECTED_PRECOND_H_
 
 
 #include "Epetra_CrsMatrix.h"
@@ -29,6 +29,7 @@ Maintainer: Peter Gamnitzer
 #include "Teuchos_RefCountPtr.hpp"
 #include "Teuchos_ParameterList.hpp"
 #include "drt_dserror.H"
+#include "linalg_krylov_projector.H"
 
 
 namespace LINALG
@@ -46,7 +47,8 @@ namespace LINALG
   the Epetra_Operator interface just call the corresponding functions
   of the actual preconditioner.
 
-  Only the ApplyInverse method is modified.
+  Only the ApplyInverse method is modified and performs the
+  projection if desired.
 
   See linalg_projected_operator.H for related docu and code.
 
@@ -61,7 +63,10 @@ public:
   \brief Standard Constructor
 
   */
-  LinalgPrecondOperator(Teuchos::RCP<Epetra_Operator> precond,bool project);
+  LinalgPrecondOperator(
+      Teuchos::RCP<Epetra_Operator> precond,
+      bool project,
+      Teuchos::RCP<LINALG::KrylovProjector> projector);
 
 
   /*!
@@ -70,56 +75,6 @@ public:
   */
   ~LinalgPrecondOperator();
 
-  //! @name Special atribute set methods
-  /*!
-
-  \brief Set kernel space and weight vectors.
-
-  The projector P is completely defined by w and c.
-
-  \param w vector(s) of weights
-  \param c kernel basis vector(s)
-
-  */
-  void SetKernelSpace(
-    Teuchos::RCP<Epetra_MultiVector> w,
-    Teuchos::RCP<Epetra_MultiVector> c
-    )
-  {
-    w_=w;
-    c_=c;
-
-    if(project_)
-    {
-      if(w_==Teuchos::null || c_==Teuchos::null)
-      {
-        dserror("no kernel supplied for projection (but projection flag was set)");
-      }
-
-      cTw_.Shape(c_->NumVectors(),w_->NumVectors());
-
-      for(int mm=0;mm<c_->NumVectors();++mm)
-      {
-        // loop all weight vectors
-        for(int rr=0;rr<w_->NumVectors();++rr)
-        {
-
-          /*
-                   T
-                  w * c
-          */
-          ((*c_)(mm))->Dot(*((*w_)(rr)),&(cTw_(mm,rr)));
-
-          if(fabs(cTw_(mm,rr))<1e-14)
-          {
-            dserror("weight vector must not be orthogonal to c");
-          }
-        }
-      }
-    }
-    return;
-  }
-  //! @}
 
   //! @name Atribute set methods required to support the Epetra_Operator interface
 
@@ -267,26 +222,20 @@ public:
 
 
 private:
+
   //! flag whether to do a projection or just pass through
   bool                               project_;
 
   //! the actual preconditioner
   Teuchos::RCP<Epetra_Operator>      precond_;
 
-  //! a set of vectors defining weighted (basis integral) vector for the projector
-  Teuchos::RCP<Epetra_MultiVector>   w_;
-
-  //! a set of vectors defining the vectors of ones (in the respective components)
-  //! for the matrix kernel
-  Teuchos::RCP<Epetra_MultiVector>   c_;
-
-  //! values for scalar products c_i o w_j, computed once after setting c_ and w_
-  Epetra_SerialDenseMatrix           cTw_;
+  //! Krylov space projector
+  Teuchos::RCP<LINALG::KrylovProjector>   projector_;
 
 };
 
 } // namespace LINALG
 
-#endif // LINALG_PRECOND_OPERATOR_H_
+#endif // LINALG_PROJECTED_PRECOND_H_
 
 #endif // CCADISCRET

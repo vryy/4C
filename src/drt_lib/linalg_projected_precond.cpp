@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file  linalg_projected_operator.cpp
+\file  linalg_projected_precond.cpp
 
 <pre>
 Maintainer: Peter Gamnitzer
@@ -11,55 +11,57 @@ Maintainer: Peter Gamnitzer
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#include "linalg_projected_operator.H"
+#include "linalg_projected_precond.H"
 
 /* --------------------------------------------------------------------
                           Constructor
    -------------------------------------------------------------------- */
-LINALG::LinalgProjectedOperator::LinalgProjectedOperator(
-  Teuchos::RCP<Epetra_Operator>         A      ,
-  bool                                  project,
+LINALG::LinalgPrecondOperator::LinalgPrecondOperator(
+  Teuchos::RCP<Epetra_Operator> precond,
+  bool                          project,
   Teuchos::RCP<LINALG::KrylovProjector> projector
   ) :
   project_(project),
-  A_      (A)      ,
+  precond_(precond),
   projector_(projector)
 {
   if (project_ && (projector==Teuchos::null))
     dserror("Kernel projection enabled but got no projector object");
 
   return;
-} // LINALG::LinalgProjectedOperator::LinalgProjectedOperator
+} // LINALG::LinalgPrecondOperator::LinalgPrecondOperator
 
 /* --------------------------------------------------------------------
-                           Destructor
+                          Destructor
    -------------------------------------------------------------------- */
-LINALG::LinalgProjectedOperator::~LinalgProjectedOperator()
+LINALG::LinalgPrecondOperator::~LinalgPrecondOperator()
 {
   return;
-} // LINALG::LinalgProjectedOperator::~LinalgProjectedOperator
+} // LINALG::LinalgPrecondOperator::~KrylovProjector
 
 /* --------------------------------------------------------------------
-                      (Modified) Apply call
+                    (Modified) ApplyInverse call
    -------------------------------------------------------------------- */
-int LINALG::LinalgProjectedOperator::Apply(
+int LINALG::LinalgPrecondOperator::ApplyInverse(
   const Epetra_MultiVector &X,
   Epetra_MultiVector       &Y
   ) const
 {
   int ierr=0;
+  // Apply the inverse preconditioner to get new basis vector for the
+  // Krylov space
+  ierr=precond_->ApplyInverse(X,Y);
 
-  // Apply the operator
-  ierr=A_->Apply(X,Y);
-
-  // if necessary, project out matrix kernel
+  // if necessary, project out matrix kernel to maintain well-posedness
+  // of problem
   if(project_)
   {
     int ierr2=0;
-    ierr2 = projector_->ApplyPT(Y);
+    ierr2 = projector_->ApplyP(Y);
   }
 
   return(ierr);
-} // LINALG::LinalgProjectedOperator::Apply
+} // LINALG::LinalgPrecondOperator::ApplyInverse
+
 
 #endif // CCADISCRET
