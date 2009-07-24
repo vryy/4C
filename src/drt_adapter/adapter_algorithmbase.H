@@ -83,7 +83,7 @@ namespace ADAPTER
 
   private:
 
-    /// comunication (mainly for screen output)
+    /// communication (mainly for screen output)
     Epetra_Comm& comm_;
 
     /// method name prepared for output
