@@ -772,6 +772,12 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         params,
         elevec1_epetra);
   }
+  else if (action=="integrate_shape_functions")
+  {
+    // calculate integral of shape functions
+    const int dofid = params.get<int>("dofid");
+    IntegrateShapeFunctions(ele,elevec1_epetra,dofid);
+  }
   else
     dserror("Unknown type of action for Scatra Implementation: %s",action.c_str());
 
@@ -3287,6 +3293,43 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateDomainAndBodyforce(
 
   return;
 } // ScaTraImpl::CalculateDomain
+
+
+/*----------------------------------------------------------------------*
+ |  Integrate shape functions over domain (private)           gjb 07/09 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraImpl<distype>::IntegrateShapeFunctions(
+    const DRT::Element*        ele,
+    Epetra_SerialDenseVector&  elevec1,
+    const int                  dofid
+)
+{
+  // get node coordinates
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze_);
+
+  // in the ALE case add nodal displacements
+  if (isale_) xyze_ += edispnp_;
+
+  // integrations points and weights
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  // loop over integration points
+  for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
+  {
+    EvalShapeFuncAndDerivsAtIntPoint(intpoints,gpid,ele->Id());
+
+    // compute integral of shape functions (only for dofid)
+    for (int node=0;node<iel;++node)
+    {
+      elevec1[node*numdofpernode_+dofid] += funct_(node) * fac_;
+    }
+
+  } //loop over integration points
+
+  return;
+
+} //ScaTraImpl<distype>::IntegrateShapeFunction
 
 
 #endif // CCADISCRET

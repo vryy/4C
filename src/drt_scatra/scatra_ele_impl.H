@@ -307,6 +307,13 @@ public:
         const double               time     ///< current simulation time
         );
 
+   //! integral of shape functions over the element
+   void IntegrateShapeFunctions(
+       const DRT::Element*       ele,    ///< the actual boundary element
+       Epetra_SerialDenseVector& elevec1,///< result vector (to be assembled)
+       const int                 dofid    ///< for which dof we need to integrate?
+   );
+
     //! calculate the Laplacian for all shape functions(strong form)
     inline void GetLaplacianStrongForm
     (
