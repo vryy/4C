@@ -187,18 +187,29 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // sysmat might be singular (if we have a purely Dirichlet constrained
   // problem, the pressure mode is defined only up to a constant)
   // in this case, we need a basis vector for the nullspace/kernel
-  if (discret_->GetCondition("KrylovSpaceProjection")!=NULL)
+  vector<DRT::Condition*> KSPcond;
+  discret_->GetCondition("KrylovSpaceProjection",KSPcond);
+  int numcond = KSPcond.size();
+  int numfluid = 0;
+  for(int icond = 0; icond < numcond; icond++)
+  {
+    const std::string* name = KSPcond[icond]->Get<std::string>("discretization");
+    if (*name == "fluid") numfluid++;
+  }
+  if (numfluid == 1)
   {
     project_ = true;
     w_       = LINALG::CreateVector(*dofrowmap,true);
     c_       = LINALG::CreateVector(*dofrowmap,true);
   }
-  else
+  else if (numfluid == 0)
   {
     project_ = false;
     w_       = Teuchos::null;
     c_       = Teuchos::null;
   }
+  else
+    dserror("Received more than one KrylovSpaceCondition for fluid field");
 
   // -------------------------------------------------------------------
   // create empty vectors
@@ -1318,10 +1329,6 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       if (project_)
       {
         DRT::Condition* KSPcond=discret_->GetCondition("KrylovSpaceProjection");
-        const std::string* name = KSPcond->Get<std::string>("discretization");
-
-        if ((*name) != "fluid")
-          continue; // the KrylovSpaceCondition found is meant for another field
 
         // in this case, we want to project out some zero pressure modes
         const string* definition = KSPcond->Get<string>("weight vector definition");
