@@ -29,11 +29,6 @@ LOMA::Algorithm::Algorithm(
   ittol_    = prbdyn.get<double>("CONVTOL");
   itmaxpre_ = prbdyn.get<int>("ITEMAX");
 
-  // flag for printing out mean values of temperature and density
-  string outmeanstring = prbdyn.get<string>("OUTMEAN");
-  if (outmeanstring=="Yes") outmean_ = true;
-  else                      outmean_ = false;
-
   // flag for constant thermodynamic pressure
   consthermpress_ = prbdyn.get<string>("CONSTHERMPRESS");
 
@@ -551,8 +546,6 @@ void LOMA::Algorithm::Output()
   FluidField().StatisticsAndOutput();
 
   ScaTraField().Output();
-
-  if (outmean_) ScaTraField().OutputMeanTempAndDens();
 
   return;
 }

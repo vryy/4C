@@ -1248,6 +1248,14 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   std::vector<Teuchos::RCP<ConditionComponent> > rigidbodymodecomponents;
 
+  rigidbodymodecomponents.push_back(
+    Teuchos::rcp(
+      new StringConditionComponent(
+        "discretization",
+        "fluid",
+        Teuchos::tuple<std::string>("fluid","scatra"),
+        Teuchos::tuple<std::string>("fluid","scatra"))));
+
   rigidbodymodecomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("mode",6)));
 
   rigidbodymodecomponents.push_back(

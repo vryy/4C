@@ -37,6 +37,11 @@ Maintainer: Georg Bauer
 #include "../drt_io/io_control.H"
 #include "../drt_io/io.H"
 */
+/*
+// for output of intermediate states in Newton loop
+#include "../drt_io/io.H"
+#include "../drt_io/io_control.H"
+*/
 
 
 /*----------------------------------------------------------------------*
@@ -65,6 +70,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   upres_    (params_->get<int>("write solution every")),
   uprestart_(params_->get<int>("write restart every")),
   writeflux_(params_->get<string>("write flux")),
+  outmean_  (params_->get<bool>("write mean values")),
   dta_      (params_->get<double>("time step size")),
   dtp_      (params_->get<double>("time step size")),
   cdvel_    (params_->get<int>("velocity field")),
@@ -314,6 +320,31 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // - used as good initial guess for stationary temperature case
   // -------------------------------------------------------------------
   densnp_->PutScalar(1.0);
+
+  // initializes variables for natural convection (ELCH) if necessary
+  SetupElchNatConv();
+
+  // sysmat might be singular (some modes are defined only up to a constant)
+  // in this case, we need basis vectors for the nullspace/kernel
+  vector<DRT::Condition*> KSPCond;
+  discret_->GetCondition("KrylovSpaceProjection",KSPCond);
+  int nummodes = KSPCond.size();
+
+  if (nummodes > 0)
+  {
+    project_ = true;
+    w_       = rcp(new Epetra_MultiVector(*dofrowmap,nummodes,true));
+    c_       = rcp(new Epetra_MultiVector(*dofrowmap,nummodes,true));
+    if (myrank_ == 0)
+      cout<<"\nSetup of KrylovSpaceProjection:\n"<<
+      "    => number of kernel basis vectors: "<<nummodes<<endl<<endl;
+  }
+  else
+  {
+    project_ = false;
+    w_       = Teuchos::null;
+    c_       = Teuchos::null;
+  }
 
   return;
 
@@ -570,6 +601,22 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
   if (explpredictor)
     ExplicitPredictor();
 
+/*
+  const int numdim = 3;
+  //create output file name
+  stringstream temp;
+  temp<< DRT::Problem::Instance()->OutputControlFile()->FileName()<<".nonliniter_step"<<step_;
+  string outname = temp.str();
+  string probtype = DRT::Problem::Instance()->ProblemType(); // = "elch"
+
+  RCP<IO::OutputControl> myoutputcontrol = rcp(new IO::OutputControl(discret_->Comm(),probtype,"Polynomial","myinput",outname,numdim,0,1000));
+  // create discretization writer with my own control settings
+  RCP<IO::DiscretizationWriter> myoutput =
+    rcp(new IO::DiscretizationWriter(discret_,myoutputcontrol));
+  // write mesh at step 0
+  myoutput->WriteMesh(0,0.0);
+*/
+
   while (stopnonliniter==false)
   {
     itnum++;
@@ -717,7 +764,8 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
       }
       */
 
-      solver_->Solve(sysmat_->EpetraOperator(),increment_,residual_,true,itnum==1);
+      PrepareKrylovSpaceProjection();
+      solver_->Solve(sysmat_->EpetraOperator(),increment_,residual_,true,itnum==1,w_,c_,project_);
       solver_->ResetTolerance();
 
       // end time measurement for solver
@@ -726,6 +774,12 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
 
     //------------------------------------------------ update solution vector
     phinp_->Update(1.0,*increment_,1.0);
+
+    // iteration number (only after that data output is possible)
+  /*
+    myoutput->NewStep(itnum,itnum);
+    myoutput->WriteVector("phinp", phinp_);
+   */
 
   } // nonlinear iteration
   return;
@@ -1073,6 +1127,13 @@ void SCATRA::ScaTraTimIntImpl::Output()
 
     // write flux vector field
     if (writeflux_!="No") OutputFlux();
+
+    // write mean values of scalars and density
+    if (outmean_)
+    {
+      OutputMeanTempAndDens();
+      OutputElectrodeInfo();
+    }
   }
   else
   {
@@ -1409,6 +1470,117 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
 
   return;
 } // ScaTraTimIntImpl::SetInitialField
+
+
+/*----------------------------------------------------------------------*
+ | prepare Krylov space projection                            gjb 07/09 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::PrepareKrylovSpaceProjection()
+{
+  if (project_)
+  {
+    if (isale_ or (step_<=1)) // fixed grid: compute w_,c_ only once!
+    {
+      vector<DRT::Condition*> KSPcond;
+      discret_->GetCondition("KrylovSpaceProjection",KSPcond);
+      int nummodes = KSPcond.size();
+
+      for (int imode = 0; imode < nummodes; ++imode)
+      {
+        // zero w and c completely
+        if (imode == 0)
+        {
+          w_->PutScalar(0.0);
+          c_->PutScalar(0.0);
+        }
+
+        // in this case, we want to project out some zero pressure modes
+        const string* definition = KSPcond[imode]->Get<string>("weight vector definition");
+
+        if(*definition == "pointvalues")
+        {
+          dserror("option pointvalues not implemented");
+        }
+        else if(*definition == "integration")
+        {
+          // get rigid body modes
+          const vector<double>* mode = KSPcond[imode]->Get<vector<double> >("mode");
+
+          ParameterList mode_params;
+
+          // set parameters for elements
+          mode_params.set("action","integrate_shape_functions");
+
+          int numdof = 0;
+          int dofid = 0;
+          for(int rr=0;rr<6;rr++)
+          {
+            if(abs((*mode)[rr])>1e-14)
+            {
+              numdof++;
+              dofid = rr;
+            }
+          }
+          if (numdof > 1) dserror("only basis vectors with 1 dof active are allowed");
+          mode_params.set("dofid",dofid);
+
+          mode_params.set("isale",isale_);
+          if (isale_)
+            AddMultiVectorToParameterList(mode_params,"dispnp",dispnp_);
+
+          /* evaluate KrylovSpaceProjection condition in order to get
+    // integrated nodal basis functions w_
+    // Note that in the case of definition integration based,
+    // the average pressure will vanish in an integral sense
+    //
+    //                    /              /                      /
+    //   /    \          |              |  /          \        |  /    \
+    //  | w_*p | = p_i * | N_i(x) dx =  | | N_i(x)*p_i | dx =  | | p(x) | dx = 0
+    //   \    /          |              |  \          /        |  \    /
+    //                   /              /                      /
+           */
+
+          // get an RCP of the current column Epetra_Vectors of the MultiVector
+          RCP<Epetra_Vector> wi = rcp((*w_)(imode),false);
+
+          // compute integral of shape functions
+          discret_->EvaluateCondition
+              (mode_params           ,
+              Teuchos::null      ,
+              Teuchos::null      ,
+              wi                 ,
+              Teuchos::null      ,
+              Teuchos::null      ,
+              "KrylovSpaceProjection");
+
+          // set the current kernel basis vector
+          for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
+          {
+            DRT::Node* node = discret_->lRowNode(inode);
+            vector<int> gdof = discret_->Dof(node);
+            int numdof = gdof.size();
+            for(int rr=0;rr<numdof;++rr)
+            {
+              if(abs((*mode)[rr]) > 0.0)
+              {
+                //set 1.0 for the undetermined dof
+                c_->ReplaceGlobalValue(gdof[rr],imode,1.0);
+              }
+            }
+          }
+        }
+        else
+        {
+          dserror("unknown definition of weight vector w for restriction of Krylov space");
+        }
+
+      } // loop over nummodes
+    }
+  }
+
+  return;
+
+} // ScaTraTimIntImpl::PrepareKrylovSpaceProjection
 
 
 /*----------------------------------------------------------------------*

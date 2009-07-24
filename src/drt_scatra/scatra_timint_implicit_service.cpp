@@ -567,6 +567,110 @@ void SCATRA::ScaTraTimIntImpl::ComputeDensity(const double thermpress,
 
 
 /*----------------------------------------------------------------------*
+ | perform setup of natural convection applications (ELCH)    gjb 07/09 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::SetupElchNatConv()
+{
+  // loads densification coefficients and the initial mean concentration
+
+  // only required for ELCH with natural convection
+  if (prbtype_ == "elch" && params_->get<string>("Natural Convection") != "No")
+  {
+    // allocate denselch_ with *noderowmap instead of *dofrowmap and initialize it
+    const Epetra_Map* noderowmap = discret_->NodeRowMap();
+    elchdensnp_ = LINALG::CreateVector(*noderowmap,true);
+    elchdensnp_->PutScalar(1.0);
+
+    // Calculate the initial mean concentration value
+    c0_.resize(numscal_);
+
+    discret_->ClearState();
+    discret_->SetState("phinp",phinp_);
+    discret_->SetState("densnp",densnp_);
+    // set action for elements
+    ParameterList eleparams;
+    eleparams.set("action","calc_temp_and_dens");
+
+    //provide displacement field in case of ALE
+    eleparams.set("isale",isale_);
+    if (isale_)
+      AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+
+    // evaluate integrals of concentrations, density and domain
+    Teuchos::RCP<Epetra_SerialDenseVector> scalars
+    = Teuchos::rcp(new Epetra_SerialDenseVector(numscal_+2));
+    discret_->EvaluateScalars(eleparams, scalars);
+    discret_->ClearState();   // clean up
+
+    // calculate mean_concentration
+    const double domint  = (*scalars)[numscal_+1];
+    for(int k=0;k<numscal_;k++)
+    {
+        c0_[k] = (*scalars)[k]/domint;
+    }
+
+    //initialisation of the densification coefficient vector
+    densific_.resize(numscal_);
+    DRT::Element*   element = discret_->lRowElement(0);
+    RefCountPtr<MAT::Material>  mat = element->Material();
+
+    if (mat->MaterialType() == INPAR::MAT::m_matlist)
+    {
+      const MAT::MatList* actmat = static_cast<const MAT::MatList*>(mat.get());
+
+      for (int k = 0;k<numscal_;++k)
+      {
+        const int matid = actmat->MatID(k);
+        Teuchos::RCP<const MAT::Material> singlemat = actmat->MaterialById(matid);
+
+        if (singlemat->MaterialType() == INPAR::MAT::m_ion)
+        {
+          const MAT::Ion* actsinglemat = static_cast<const MAT::Ion*>(singlemat.get());
+          densific_[k] = actsinglemat->Densification();
+          if (densific_[k] < 0.0) dserror("received negative densification value");
+        }
+        else
+          dserror("material type is not allowed");
+      }
+    }
+  }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | compute density from ion concentrations                    gjb 07/09 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::ComputeDensity(double density)
+{
+  double densification;
+  for(int gnodeid=0; gnodeid<elchdensnp_->MyLength(); gnodeid++)
+  {
+    densification=0;
+    for(int k=0; k<numscal_; k++)
+    {
+        /*
+        //                  k=numscal_-1
+        //                  ----
+        //                  \
+        //   rho * ( 1 +    /       rho * alfa_k * (c_k - c_0)
+        //                  ----
+        //                  k=0
+        */
+
+        densification += densific_[k]*((*phinp_)[gnodeid*(numscal_+1)+k]-c0_[k]);
+    }
+    densification += 1;
+    densification *= density;
+    elchdensnp_->ReplaceMyValues(1,&densification,&gnodeid);
+  }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
  | convergence check for low-Mach-number flow                  vg 01/09 |
  *----------------------------------------------------------------------*/
 bool SCATRA::ScaTraTimIntImpl::LomaConvergenceCheck(int          itnum,
@@ -697,7 +801,7 @@ void SCATRA::ScaTraTimIntImpl::OutputMeanTempAndDens()
   // print out results to file as well
   if (myrank_ == 0)
   {
-    const std::string fname 
+    const std::string fname
     = DRT::Problem::Instance()->OutputControlFile()->FileName()+".meanvalues.txt";
 
     std::ofstream f;
@@ -1241,7 +1345,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       {
         ostringstream temp;
         temp << condid;
-        const std::string fname 
+        const std::string fname
         = DRT::Problem::Instance()->OutputControlFile()->FileName()+".boundaryflux_"+temp.str()+".txt";
 
         std::ofstream f;
@@ -1253,7 +1357,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
         else
           f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
 
-        f << condid << " " << Step() << " " << Time() << " " << parnormfluxintegral << " " << parboundaryint 
+        f << condid << " " << Step() << " " << Time() << " " << parnormfluxintegral << " " << parboundaryint
         << " " << parnormfluxintegral/parboundaryint << "\n";
         f.flush();
         f.close();

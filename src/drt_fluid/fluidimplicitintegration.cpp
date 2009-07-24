@@ -1318,6 +1318,10 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       if (project_)
       {
         DRT::Condition* KSPcond=discret_->GetCondition("KrylovSpaceProjection");
+        const std::string* name = KSPcond->Get<std::string>("discretization");
+
+        if ((*name) != "fluid")
+          continue; // the KrylovSpaceCondition found is meant for another field
 
         // in this case, we want to project out some zero pressure modes
         const string* definition = KSPcond->Get<string>("weight vector definition");
@@ -3237,7 +3241,7 @@ void FLD::FluidImplicitTimeInt::SetTimeLomaFields(
   // get factor for equation of state (i.e., therm. press. / gas constant)
   eosfac_ = eosfac;
 
-  // set number of degrees of freedom based on number orf spatial dimensions
+  // set number of degrees of freedom based on number of spatial dimensions
   int numdof = numdim_ + 1;
 
   // initialize vectors
@@ -3362,14 +3366,17 @@ void FLD::FluidImplicitTimeInt::SetTimeLomaFields(
   }
 
   // add scatraresidual to trueresidual at pre-dofs
-  for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+  if (scatraresidual != Teuchos::null)
   {
-    const int densloc = lnodeid*numscal + numscal - 1;
+    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+    {
+      const int densloc = lnodeid*numscal + numscal - 1;
 
-    Indices[numdim_] = lnodeid*numdof + numdim_;
+      Indices[numdim_] = lnodeid*numdof + numdim_;
 
-    Values[numdim_] = (*scatraresidual)[densloc];
-    trueresidual_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
+      Values[numdim_] = (*scatraresidual)[densloc];
+      trueresidual_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
+    }
   }
 
   return;
@@ -3817,7 +3824,7 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
   // repeatedly for different rhs. That is why we need the inrelaxation_ flag.
   //
   // Additionally we might want to include the mesh derivatives to get optimal
-  // convergance in the Newton loop.
+  // convergence in the Newton loop.
   //
   // This adds even more state to the fluid algorithm class, which is a bad
   // thing. And the explicit storage of the Dirichlet lines is

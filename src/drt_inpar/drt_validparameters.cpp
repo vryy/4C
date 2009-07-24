@@ -1620,6 +1620,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(0,1,2,3,4),
                                &scatradyn);
 
+  BoolParameter("OUTMEAN","No","Output of mean values for scalars and density",&scatradyn);
+
   setStringToIntegralParameter<int>("CONVFORM","convective","form of convective term",
                                tuple<std::string>(
                                  "convective",
@@ -1762,14 +1764,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  ),
                                tuple<int>(0,1,2),
                                &lomacontrol);
-  setStringToIntegralParameter<int>("OUTMEAN","No",
-                               "print out mean values of temperature/density",
-                               tuple<std::string>(
-                                 "No",
-                                 "Yes"
-                                 ),
-                               tuple<int>(0,1),
-                               &lomacontrol);
   setStringToIntegralParameter<int>(
     "CANONICAL_FLOW",
     "no",
@@ -1802,7 +1796,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("UPRES",1,"Increment for writing solution",&elchcontrol);
   DoubleParameter("CONVTOL",1e-6,"Convergence check tolerance for outer loop",&elchcontrol);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&elchcontrol);
-  BoolParameter("OUTMEAN","No","Output of total and mean values",&elchcontrol);
   DoubleParameter("TEMPERATURE",298.0,"Constant temperature (Kelvin)",&elchcontrol);
   BoolParameter("MOVINGBOUNDARY","No","ELCH algorithm for deforming meshes",&elchcontrol);
   DoubleParameter("MOLARVOLUME",0.0,"Molar volume for electrode shape change computations",&elchcontrol);

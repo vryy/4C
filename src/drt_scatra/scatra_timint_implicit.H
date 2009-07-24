@@ -39,7 +39,9 @@ Maintainer: Georg Bauer
 #include "../drt_io/io.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_inpar/inpar_scatra.H"
-
+#include "../drt_mat/material.H" //access to the material data
+#include "../drt_mat/ion.H"
+#include "../drt_mat/matlist.H"
 
 //forward declarations
 class PeriodicBoundaryConditions;
@@ -100,6 +102,9 @@ public:
 
   /// check convergence (or divergence) of nonlinear iteration
   bool AbortNonlinIter(const int itnum, const int itmax, const double ittol, double& actresidual);
+
+  /// prepare Krylov space projection
+  void PrepareKrylovSpaceProjection();
 
   /// solve linear system
   void Solve();
@@ -178,6 +183,9 @@ public:
   /// compute density field for low-Mach-number flow
   void ComputeDensity(const double thermpress, const double gasconstant);
 
+  /// compute density field from concentration(s) for ELCH natural convection
+  void ComputeDensity(const double density);
+
   /// compute time derivative of density field for low-Mach-number flow
   virtual void ComputeDensityDerivative() = 0;
 
@@ -190,6 +198,9 @@ public:
   /// update density field (and time derivative) for low-Mach-number flow
   virtual void UpdateDensity() = 0;
 
+  /// update density field for ELCH natural convection
+  virtual void UpdateDensityElch() = 0;
+
   /// output of mean temperature and density for low-Mach-number flow
   void OutputMeanTempAndDens();
 
@@ -200,7 +211,7 @@ public:
   Teuchos::RCP<Epetra_Vector> Phinp() { return phinp_; }
 
   /// routine to return scalar field convective velocity at time step n+1
-  Teuchos::RCP<Epetra_MultiVector> Convel() { return convel_; }
+  Teuchos::RCP<Epetra_MultiVector> ConVel() { return convel_; }
 
   /// output of electrode information to screen
   void OutputElectrodeInfo();
@@ -220,6 +231,15 @@ public:
   /// routine to return time deriv. of density at time step n+1 for low-Mach-number flow
   Teuchos::RCP<Epetra_Vector> DensDtNp() { return densdtnp_; }
 
+  /// routine to return density field at time n+1 for ELCH natural convection
+  Teuchos::RCP<Epetra_Vector> DensElchNp() { return elchdensnp_; }
+
+  /// routine to return density field at time n for ELCH natural convection
+  Teuchos::RCP<Epetra_Vector> DensElchN() { return elchdensn_; }
+
+  /// routine to return density field at time n-1 for ELCH natural convection
+  Teuchos::RCP<Epetra_Vector> DensElchNm() { return elchdensnm_; }
+
   /// routine to return trueresidual at time step n+1 for low-Mach-number flow
   Teuchos::RCP<Epetra_Vector> TrueResidual() { return trueresidual_; }
 
@@ -234,6 +254,9 @@ public:
 
   /// return current step number
   int Step() const { return step_; }
+
+  /// total number of time steps
+  int NStep() const { return stepmax_;}
 
   /// return number of transported scalars
   int NumScal() const { return numscal_; }
@@ -253,12 +276,18 @@ public:
   /// routine to calculate mass/heat normal flux at specified boundaries
   Teuchos::RCP<Epetra_MultiVector> CalcFluxAtBoundary(std::vector<string>& condnames);
 
+  /// returns map extractor used for convergence check either in ELCH or LOMA case
+  LINALG::MapExtractor& Splitter() { return splitter_; }
+
 protected:
 
   /// don't want = operator and cctor
   //ScaTraTimIntImpl operator = (const ScaTraTimIntImpl& old);
   /// copy constructor
   ScaTraTimIntImpl (const ScaTraTimIntImpl& old);
+
+  /// setup of natural convection (ELCH)
+  void SetupElchNatConv();
 
   /// helper function to get algorithm title
   std::string MapTimIntEnumToString
@@ -392,6 +421,9 @@ protected:
   /// flag for writing the flux vector fields
   string writeflux_;
 
+  /// flag for printing out mean values of scalars and density
+  const bool outmean_;
+
   /// time step size
   double dta_;
 
@@ -471,6 +503,11 @@ protected:
   RCP<Epetra_Vector>  densdtnp_;
   RCP<Epetra_Vector>  densdtn_;
 
+  /// density (nodebased!) at times n+1, n and n-1 for ELCH natural convection algorithm
+  RCP<Epetra_Vector>    elchdensnp_;
+  RCP<Epetra_Vector>    elchdensn_;
+  RCP<Epetra_Vector>    elchdensnm_;
+
   /// temperature and velocity increment at time n+1
   RCP<Epetra_Vector>       tempincnp_;
   //RCP<Epetra_MultiVector>  velincnp_;
@@ -533,6 +570,18 @@ protected:
 
   // unit outer normal vector field for flux output
   RCP<Epetra_MultiVector> normals_;
+
+  /// densification coefficients for ELCH natural convection
+  vector<double> densific_;
+
+  /// initial concentrations of the electrolyte solution (ELCH)
+  vector<double> c0_;
+
+  bool                             project_;
+  //! integrated basis vector (for each undetermined component)
+  Teuchos::RCP<Epetra_MultiVector> w_;
+  //! basis vector for nullspace (vector of ones for each undetermined component)
+  Teuchos::RCP<Epetra_MultiVector> c_;
 
 }; // class ScaTraTimIntImpl
 

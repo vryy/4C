@@ -51,6 +51,20 @@ SCATRA::TimIntBDF2::TimIntBDF2(
     thermpressdtnp_ = 0.0;
   }
 
+  // ELCH with natural convection
+  if (prbtype_ == "elch" && params_->get<string>("Natural Convection") != "No")
+  {
+    const Epetra_Map* noderowmap = discret_->NodeRowMap();
+
+    // density at time n
+    elchdensn_  = LINALG::CreateVector(*noderowmap,true);
+    elchdensn_->PutScalar(1.0);
+
+    // density at time n-1
+    elchdensnm_  = LINALG::CreateVector(*noderowmap,true);
+    elchdensnm_->PutScalar(1.0);
+  }
+
   // fine-scale vector at time n+1
   if (fssgd_ != "No") fsphinp_ = LINALG::CreateVector(*dofrowmap,true);
 
@@ -362,6 +376,18 @@ void SCATRA::TimIntBDF2::UpdateDensity()
 {
   densnm_->Update(1.0,*densn_ ,0.0);
   densn_->Update(1.0,*densnp_,0.0);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | update density at n-1 and n for ELCH natural convection    gjb 07/09 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntBDF2::UpdateDensityElch()
+{
+  elchdensnm_->Update(1.0,*elchdensn_ ,0.0);
+  elchdensn_->Update(1.0,*elchdensnp_,0.0);
 
   return;
 }

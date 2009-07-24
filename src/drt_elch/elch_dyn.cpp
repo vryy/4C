@@ -117,6 +117,8 @@ void elch_dyn(int disnumff,int disnumscatra,int disnumale,int restart)
       // when the fluid problem is periodic we also expect the mass transport to be so:
       conditions_to_copy.insert(pair<string,string>("LinePeriodic","LinePeriodic"));
       conditions_to_copy.insert(pair<string,string>("SurfacePeriodic","SurfacePeriodic"));
+      conditions_to_copy.insert(pair<string,string>("KrylovSpaceProjection","KrylovSpaceProjection"));
+
       // a hack:
       conditions_to_copy.insert(pair<string,string>("FluidStressCalc","FluxCalculation"));
 

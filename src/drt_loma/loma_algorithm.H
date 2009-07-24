@@ -97,9 +97,6 @@ namespace LOMA
     int     itmaxpre_;
     double  ittol_;
 
-    /// flag for printing out mean values of temperature and density
-    bool outmean_;
-
     /// flag for constant thermodynamic pressure
     string consthermpress_;
 

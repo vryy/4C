@@ -63,6 +63,9 @@ public:
   /// update density field (and time derivative) for low-Mach-number flow
   void UpdateDensity(){return;};
 
+  /// update density field for ELCH natural convection
+  void UpdateDensityElch(){return;};
+
   /// read restart data
   void ReadRestart(int step);
 

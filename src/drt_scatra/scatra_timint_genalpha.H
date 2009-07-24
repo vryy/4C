@@ -63,6 +63,9 @@ public:
   /// update density field and time derivative for low-Mach-number flow
   void UpdateDensity();
 
+  /// update density field for ELCH natural convection
+  void UpdateDensityElch(){dserror("not implemented"); return;};
+
   /// read restart data
   void ReadRestart(int step);
 

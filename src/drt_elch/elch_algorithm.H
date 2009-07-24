@@ -57,8 +57,20 @@ namespace ELCH
 
   protected:
 
+    /// time loop for elch algorithm without natural convection
+    void TimeLoopElch();
+
+    /// time loop for elch algorithm with natural convection
+    void TimeLoopConvection();
+
+    /// initial calculations
+    void InitialCalculations();
+
     /// start a new time step
     void PrepareTimeStep();
+
+    /// start a new time step
+    void PrepareTimeStepConvection();
 
     /// solve Navier-Stokes equations for current time step
     void DoFluidStep();
@@ -69,13 +81,40 @@ namespace ELCH
     /// take current results for converged and save for next time step
     void Update();
 
+    /// take current results for converged and save for next time step
+    void UpdateConvection();
+
     /// write output
     void Output();
 
+    /// Outer Iteration loop convection
+    void OuterIterationConvection();
+
+    /// convergence check for natural convection solver
+    bool ConvergenceCheck(int itnum, int itmax, double ittol);
+
+    /// get initial density
+    double GetDensity0();
+
   private:
 
-    /// flag for printing out mean values of concentrations and density
-    const bool outmean_;
+    /// flag for natural convection effects
+    const string natconv_;
+
+    /// maximum iteration steps
+    const int itmax_;
+
+    /// convection tolerance
+    const double ittol_;
+
+    /// velocity increment of the outer loop
+    Teuchos::RCP<Epetra_Vector> velincnp_;
+
+    /// concentration and potential increment of the outer loop
+    Teuchos::RCP<Epetra_Vector> conpotincnp_;
+
+    /// initial density
+    const double density0_;
 
   };
 
