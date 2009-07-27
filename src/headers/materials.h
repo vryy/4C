@@ -884,6 +884,8 @@ typedef struct _CNST_ART
      DOUBLE                    possionratio;   /* Possion ratio */
      DOUBLE                    diam;           /* initial diameter of an artery*/
      DOUBLE                    th;             /* artery thickness */
+     DOUBLE                    pext1;          /* artery fixed external pressure 1 */
+     DOUBLE                    pext2;          /* artery fixed external pressure 2 */
 
 } CNST_ART;
 

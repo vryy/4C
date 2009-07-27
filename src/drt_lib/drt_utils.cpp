@@ -139,10 +139,10 @@ extern "C"
 #include "../drt_contact/drt_cnode.H"
 #include "../drt_contact/drt_celement.H"
 #include "../drt_art_net/artery.H"
+#include "../drt_mat/cnst_1d_art.H"
 #include "drt_dserror.H"
 #include "standardtypes_cpp.H"
 #include "../drt_mat/itskov.H"
-
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -708,6 +708,13 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
       DRT::ELEMENTS::Artery* object = new DRT::ELEMENTS::Artery(-1,-1);
       object->Unpack(data);
       return object;
+    }
+    break;
+    case ParObject_Cnst_1d_art:
+    {
+      MAT::Cnst_1d_art* cnst_art = new MAT::Cnst_1d_art();
+      cnst_art->Unpack(data);
+      return cnst_art;
     }
     break;
     case ParObject_ArteryRegister:

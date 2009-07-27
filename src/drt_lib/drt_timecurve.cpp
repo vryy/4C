@@ -209,7 +209,7 @@ void DRT::UTILS::TimeCurveManager::ReadInput()
           curve.AddSlice(rcp(new LungTimeSlice(frequ, ppeep, phase)));
           continue;
         }
-        frchk("PhysiologicalWavefrom",&ierr);
+        frchk("PhysiologicalWaveform",&ierr);
         if (ierr==1)
         {
           double period;

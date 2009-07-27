@@ -2340,7 +2340,6 @@ std::vector<Teuchos::RCP<DRT::Discretization> > NodeReader::FindDisNode(int node
 /*----------------------------------------------------------------------*/
 void NodeReader::Read()
 {
-  //  cout<<"\n\nAm I even reaching here!!!!!!!!!\n\n";
   const int myrank  = comm_->MyPID();
   const int numproc = comm_->NumProc();
   string inputfile_name = reader_.MyInputfileName();

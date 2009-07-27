@@ -1375,10 +1375,12 @@ OBJS_DRT_COMBUST3_LIB = src/drt_combust/combust3.o \
                         src/drt_combust/combust3_sysmat4.o
 #------------------------------------------------ arterial network (drt version)
 OBJS_DRT_ARTNET =  src/drt_art_net/art_net_dyn_drt.o \
-                   src/drt_art_net/artery.o \
+                   src/drt_art_net/artnetexplicitintegration.o
+#------------------------------------------------ arterial network (drt version)
+OBJS_DRT_ARTNET_LIB =  src/drt_art_net/artery.o \
                    src/drt_art_net/artery_evaluate.o \
                    src/drt_art_net/artery_input.o \
-                   src/drt_art_net/artnetexplicitintegration.o
+                   src/drt_art_net/artery_lin_exp.o
 # boundary elements
 OBJS_DRT_BELE3_LIB = src/drt_bele3/bele3.o \
                   src/drt_bele3/bele3_line.o \

@@ -108,8 +108,36 @@ void dyn_art_net_drt()
   arterytimeparams.set                  ("write solution every"      ,artdyn.get<int>("UPRES"));
   // flag for writing the hemodynamic physiological results
   //arterytimeparams.set ("write stresses"  ,Teuchos::getIntegralValue<int>(ioflags,"HEMO_PHYS_RESULTS"));
+  //---------------------- A method to initialize the flow inside the 
+  //                       arteries.
+  //  int init = Teuchos::getIntegralValue<int> (artdyn,"INITIALFIELD");
 
+ //------------------------------------------------------------------
+ // create all vectors and variables associated with the time
+ // integration (call the constructor);
+ // the only parameter from the list required here is the number of
+ // velocity degrees of freedom
+ //------------------------------------------------------------------
+ ART::ArtNetExplicitTimeInt artnetexplicit(actdis,
+                                         solver,
+                                         arterytimeparams,
+                                         output);
 
+ // initial field from restart or calculated by given function
+ if (probtype.get<int>("RESTART"))
+ {
+   // read the restart information, set vectors and variables
+   artnetexplicit.ReadRestart(probtype.get<int>("RESTART"));
+ }
+ else
+ {
+   // artnetexplicit.SetInitialData(init,startfuncno);
+ }
+
+ arterytimeparams.set<FILE*>("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
+
+ // call time-integration (or stationary) scheme
+ artnetexplicit.Integrate();
 
 
 } // end of dyn_art_net_drt()

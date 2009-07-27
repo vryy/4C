@@ -21,7 +21,7 @@ Maintainer: Mahmoud Ismail
 #endif
 
 #include "artery.H"
-//#include "artery_expl.H"
+#include "artery_lin_exp.H"
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
@@ -39,25 +39,8 @@ using namespace DRT::UTILS;
 
 
 
-/* ----------------------------------------------------------------------
- |                                                           ismail 01/09|
-
-  Depending on the type of the algorithm (the implementation),
-  the elements allocate common static arrays.
-
-  That means that for example all quad4 fluid elements of the stationary
-  implementation have a pointer f4 to the same 'implementation class'
-  containing all the element arrays for eight noded elements, and all
-  tri3 fluid elements of the same problem have a pointer f3 to
-  the 'implementation class' containing all the element arrays for the
-  3 noded element.
-
-  */
-
-
-/*- * ---------------------------------------------------------------------*
-
- |  evaluate the element (public)                            gammi 04/07|
+/*---------------------------------------------------------------------*
+ //evaluate the element (public)                            ismail 06/09
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Artery::Evaluate(ParameterList& params,
                                     DRT::Discretization&      discretization,
@@ -73,10 +56,12 @@ int DRT::ELEMENTS::Artery::Evaluate(ParameterList& params,
   // get the action required
   string action = params.get<string>("action","none");
   if (action == "none") dserror("No action supplied");
+  else if (action == "calc_sys_matrix_rhs")
+    act = Artery::calc_sys_matrix_rhs;
   else if (action == "get_stiffness_matrix")
     act = Artery::get_stiffness_matrix;
-  else if (action == "calc_stifness_matrix")
-    act = Artery::calc_stifness_matrix;
+  else if (action == "calc_stiffness_matrix")
+    act = Artery::calc_stiffness_matrix;
   else if (action == "calc_charcteristic_variables")
     act = Artery::calc_charcteristic_variables;
   else if (action == "calc_mass_matrix")
@@ -91,6 +76,10 @@ int DRT::ELEMENTS::Artery::Evaluate(ParameterList& params,
     act = Artery::get_beta;
   else if (action == "get_sound_speed")
     act = Artery::get_sound_speed;
+  else if (action == "get_initail_artery_state")
+    act = Artery::get_initail_artery_state;
+  else if (action == "set_term_bc")
+    act = Artery::set_term_bc;
   else
   {
 
@@ -105,18 +94,29 @@ Here must add the steps for evaluating an element
 */
   RefCountPtr<MAT::Material> mat = Material();
 
-  //MATERIAL* actmat = NULL;
-
-
-
   switch(act)
   {
-    case calc_stifness_matrix:
+    case calc_sys_matrix_rhs:
+    {
+    return DRT::ELEMENTS::ArteryExpInterface::Expl(this)->Evaluate(this,
+                                                                      params,
+                                                                      discretization,
+                                                                      lm,
+                                                                      elemat1,
+                                                                      elemat2,
+                                                                      elevec1,
+                                                                      elevec2,
+                                                                      elevec3,
+                                                                      mat);
+    }
+    break;
+    case calc_stiffness_matrix:
     {
     }
     break;
     case get_stiffness_matrix:
     {
+      
     }
     break;
     case get_mass_matrix:
@@ -147,6 +147,29 @@ Here must add the steps for evaluating an element
     {
     }
     break;
+    case get_initail_artery_state:
+    {
+    DRT::ELEMENTS::ArteryExpInterface::Expl(this)->Initial(this,
+                                                           params,
+                                                           discretization,
+                                                           lm,
+                                                           mat);
+
+    }
+    break;
+    case set_term_bc:
+    {
+
+      DRT::ELEMENTS::ArteryExpInterface::Expl(this)->EvaluateTerminalBC(this,
+                                                                        params,
+                                                                        discretization,
+                                                                        lm,
+                                                                        elemat1,
+                                                                        elevec1,
+                                                                        mat);
+
+    }
+    break;
     default:
       dserror("Unkown type of action for Artery");
   }// end of switch(act)
@@ -163,7 +186,7 @@ Here must add the steps for evaluating an element
  |                                                                      |
  |  The function is just a dummy.                                       |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Artery::EvaluateNeumann(ParameterList& params,
+int DRT::ELEMENTS::Artery::EvaluateDirichlet(ParameterList& params,
                                            DRT::Discretization&      discretization,
                                            DRT::Condition&           condition,
                                            vector<int>&              lm,
@@ -219,7 +242,7 @@ bool DRT::ELEMENTS::Artery::isHigherOrderElement(
 
 
 /*----------------------------------------------------------------------*
- |  init the element (public)                                mwgee 12/06|
+ |  init the element (public)                               ismail 07/09|
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::ArteryRegister::Initialize(DRT::Discretization& dis)
 {

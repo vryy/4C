@@ -84,6 +84,7 @@ void DRT::ELEMENTS::Artery::Pack(vector<char>& data) const
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
+
   // add base class Element
   vector<char> basedata(0);
   Element::Pack(basedata);
@@ -113,6 +114,7 @@ void DRT::ELEMENTS::Artery::Unpack(const vector<char>& data)
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
+
   dsassert(type == UniqueParObjectId(), "wrong instance type data");
   // extract base class Element
   vector<char> basedata(0);
@@ -152,8 +154,7 @@ void DRT::ELEMENTS::Artery::Print(ostream& os) const
 {
   os << "Artery ";
   Element::Print(os);
-  cout << endl;
-  cout << data_;
+
   return;
 }
 
@@ -165,20 +166,7 @@ RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Artery::ElementRegister() const
   return rcp(new DRT::ELEMENTS::ArteryRegister(Type()));
 }
 
-/*----------------------------------------------------------------------*
- |  get vector of lines (public)                            ismail 01/09|
- *----------------------------------------------------------------------*/
 
-
-/*----------------------------------------------------------------------*
- |  get vector of Surfaces (length 1) (public)              ismail 01/09|
- *----------------------------------------------------------------------*/
-
-
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                           ismail 01/09|

@@ -4,7 +4,7 @@
 
 <pre>
 Maintainer: Mahmoud Ismail
-            gee@lnm.mw.tum.de
+            ismail@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15268
 </pre>

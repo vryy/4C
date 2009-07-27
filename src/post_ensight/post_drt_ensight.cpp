@@ -223,6 +223,13 @@ int main(
       writer.WriteFiles();
       break;
     }
+    case prb_art_net:
+    {
+      PostField* field = problem.get_discretization(0);
+      
+      cout<<"artery network post-processing will be implimented here!"<<endl;
+      break;
+    }
     default:
         dserror("problem type %d not yet supported", problem.Problemtype());
     }

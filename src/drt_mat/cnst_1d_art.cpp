@@ -28,7 +28,9 @@ MAT::PAR::Cnst_1d_art::Cnst_1d_art(
   young_(matdata->GetDouble("YOUNG")),
   nue_(matdata->GetDouble("NUE")),
   diam_(matdata->GetDouble("DIAM")),
-  th_(matdata->GetDouble("TH"))
+  th_(matdata->GetDouble("TH")),
+  pext1_(matdata->GetDouble("PEXT1")),
+  pext2_(matdata->GetDouble("PEXT2"))
 {
 }
 

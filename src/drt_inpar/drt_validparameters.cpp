@@ -1218,7 +1218,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
  /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& andyn = list->sublist("ARTERIAL DYNAMIC",false,"");
 
-  setStringToIntegralParameter<int>("ART_TYPE","ExpTaylorGalerkin",
+  setStringToIntegralParameter<int>("DYNAMICTYP","ExpTaylorGalerkin",
                                "Explicit Taylor Galerkin Scheme",
                                tuple<std::string>(
                                  "ExpTaylorGalerkin"
@@ -1230,8 +1230,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   DoubleParameter("TIMESTEP",0.01,"Time increment dt",&andyn);
   IntParameter("NUMSTEP",0,"Number of Time Steps",&andyn);
-  IntParameter("UPRES",1,"Increment for writing solution",&andyn);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&andyn);
+  IntParameter("UPRES",1,"Increment for writing solution",&andyn);
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn_stab = fdyn.sublist("STABILIZATION",false,"");
 

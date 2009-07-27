@@ -28,7 +28,7 @@ using namespace Teuchos;
 
 // forward declarations
 struct _MATERIAL;
-struct _FLUID_DATA;
+
 
 
 namespace DRT
@@ -39,8 +39,8 @@ class Discretization;
 namespace ELEMENTS
 {
 // forward declarations
-class LinearArtery;
-template <DRT::Element::DiscretizationType distype> class ArteryExp;
+class ArteryExpInterface;
+template <DRT::Element::DiscretizationType distype> class ArteryLinExp;
 class ArteryRegister;
 
 /*!
@@ -54,8 +54,8 @@ public:
 
   //! @name Friends
   friend class ArteryRegister;
-  friend class LinearArtery;
-  friend class ArteryExp<DRT::Element::line2>;
+  friend class ArteryExpInterface;
+  friend class ArteryLinExp<DRT::Element::line2>;
 
   //@}
   //! @name Constructors and destructors and related methods
@@ -237,11 +237,11 @@ public:
 
   \return 0 if successful, negative otherwise
   */
-  virtual int EvaluateNeumann(ParameterList& params,
-                              DRT::Discretization&      discretization,
-                              DRT::Condition&           condition,
-                              vector<int>&              lm,
-                              Epetra_SerialDenseVector& elevec1);
+  virtual int EvaluateDirichlet(ParameterList&            params,
+                                DRT::Discretization&      discretization,
+                                DRT::Condition&           condition,
+                                vector<int>&              lm,
+                                Epetra_SerialDenseVector& elevec1);
 
 
   //@}
@@ -259,7 +259,8 @@ private:
   enum ActionType
   {
     none,
-    calc_stifness_matrix,
+    calc_sys_matrix_rhs,
+    calc_stiffness_matrix,
     calc_mass_matrix,
     calc_charcteristic_variables,
     get_density,
@@ -267,7 +268,9 @@ private:
     get_stiffness_matrix,
     get_mass_matrix,
     get_beta,
-    get_sound_speed
+    get_sound_speed,
+    get_initail_artery_state,
+    set_term_bc
   };
 
 
@@ -388,8 +391,7 @@ public:
   /*!
   \brief Call Element init routines
 
-  The method performs all steps needed to init the artery elements. it e.g. calculates the
-  field of averaged directors at nodes.
+  The method performs all steps needed to init the artery elements. 
   */
   int Initialize(DRT::Discretization& dis);
 

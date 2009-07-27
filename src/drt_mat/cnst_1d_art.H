@@ -4,7 +4,7 @@
 
 <pre>
 Maintainer: Mahmoud Ismail
-			ismail@lnm.mw.tum.de
+            ismail@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15268
 </pre>
@@ -54,7 +54,10 @@ namespace MAT
       const double diam_;
       /// Artery wall thickness
       const double th_;
-
+      /// Fixed external pressure at node 1
+      const double pext1_;
+      /// Fixed external pressure at node 2
+      const double pext2_;
       //@}
 
     };  // class NewtonianFluid
@@ -134,6 +137,14 @@ namespace MAT
     /// return artery wall thickness
     double Th() const { return params_->th_; }
 
+    /// return artery external pressure
+    double pext(int i) const
+           {if(i==0)
+              return params_->pext1_;
+            else if(i==1)
+              return params_->pext2_;
+            else dserror("There is no pressure with id %d",i);
+           }
   private:
 
     /// my material parameters

@@ -244,7 +244,7 @@ struct IntegrationPoints1D
       const GaussRule1D gaussrule   ///< 1d rule
       );
 private:
-  static const int max_nquad = 5;     ///< size of c array
+  static const int max_nquad = 10;    ///< size of c array
 public:
   int           nquad;                ///< number of integration points
   double        qxg[max_nquad][1];    ///< coordinates
