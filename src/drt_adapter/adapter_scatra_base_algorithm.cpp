@@ -38,8 +38,8 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
     bool isale
 )
 {
-  /// setup scalar transport algorithm (overriding some dynamic parameters with
-  /// values specified in given problem-dependent ParameterList prbdyn)
+  // setup scalar transport algorithm (overriding some dynamic parameters
+  // with values specified in given problem-dependent ParameterList prbdyn)
 
   // -------------------------------------------------------------------
   // access the discretization
@@ -119,7 +119,9 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   scatratimeparams->set           ("write solution every"      ,prbdyn.get<int>("UPRES"));
   //scatratimeparams->set           ("write solution every"      ,prbdyn.get<int>("WRITESOLEVRY"));
   // write also flux vectors when solution is written out?
-  scatratimeparams->set<string>   ("write flux"   ,scatradyn.get<string>("WRITEFLUX"));
+  scatratimeparams->set<string>   ("write flux"   ,       scatradyn.get<string>("WRITEFLUX"));
+  // output of mean values of transported scalars/ density
+  scatratimeparams->set<bool>     ("write mean values"   ,Teuchos::getIntegralValue<int>(scatradyn,"OUTMEAN"));
   // pointer to the error file (for output)
   scatratimeparams->set<FILE*>    ("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
 
@@ -166,6 +168,9 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
     // Electrochemistry is always a nonlinear problem!
     if (scatratimeparams->get<string>("solver type") != "nonlinear")
       dserror("Set parameter SOLVERTYPE = nonlinear for electrochemistry!");
+
+    // Flag for natural convection: Must be awailable in each ScaTra problem
+    scatratimeparams->set<string>("Natural Convection",prbdyn.get<string>("NATURAL_CONVECTION"));
 
     scatratimeparams->set<double>("TEMPERATURE",prbdyn.get<double>("TEMPERATURE"));
 
