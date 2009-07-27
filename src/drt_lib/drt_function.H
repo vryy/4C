@@ -338,6 +338,51 @@ namespace UTILS {
     std::vector<double>  origin_;
   };
 
+  
+  /// special implementation for stationary 2d Jeffery-Hamel flow
+  class JefferyHamelFlowFunction : public Function
+  {
+  public:
+    /*!
+
+    \brief evaluate function at given position in space
+
+    \param index (i) index defines the function-component which will
+                     be evaluated
+    \param x     (i) The point in space in which the function will be
+                     evaluated
+
+    */
+    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+
+    /*!
+
+    \brief Return the number of components of this spatial function
+    (This is a vector-valued function)
+
+    \return number of components (u,v,w,p)
+
+    */
+    virtual int NumberComponents()
+      {
+        return(4);
+      };
+
+    /*!
+
+    compute radial flow u as a function of the angle alpha
+
+    \return radial velocity u
+
+    */
+    //! compute radial flow u as a function of the angle alpha
+    static double GefferyHamelFlow(
+        const double& alpha ///< angle between 0 and PI/4 (range is checked in debug mode)
+        );
+    
+  };
+  
+  
   /// special implementation for a level set test function
   class ZalesaksDiskFunction : public Function
   {
