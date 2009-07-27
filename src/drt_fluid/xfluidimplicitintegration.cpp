@@ -613,7 +613,7 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
     // switch state vectors to new dof distribution
     // --------------------------------------------
 
-    cout0_ << " ->   Initialize system vectors..." << endl;
+    cout0_ << " ->  Initialize system vectors..." << endl;
     // accelerations at time n and n-1
     dofswitch.mapVectorToNewDofDistribution(state_.accnp_);
     dofswitch.mapVectorToNewDofDistribution(state_.accn_);
@@ -927,16 +927,15 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
         sysmat_->Complete();
       }
 
-      L2 = sqrt(eleparams.get<double>("L2"));
-
-      cout << "L2 norm = " << scientific << L2 << endl;
       {
-        std::ofstream f;
-        const std::string fname = "L2.txt";
-        f.open(fname.c_str(),std::fstream::trunc);
+        const double L2_result = sqrt(eleparams.get<double>("L2"));
+        //cout << "L2 norm = " << scientific << L2_result << endl;
+        
+        const std::string fname("L2.txt");
+        std::ofstream f(fname.c_str(),std::fstream::trunc);
         f.setf(ios::scientific,ios::floatfield);
         f.precision(12);
-        f << L2;
+        f << L2_result;
         f.close();
       }
 
