@@ -16,7 +16,7 @@ ELEMENTS        3000
 NODES           3131
 DIM                2
 MATERIALS          1
-NUMDF        6
+NUMDF              6
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   Low_Mach_Number_Flow
 NUMFIELD     2
@@ -37,7 +37,7 @@ NUMTHERMDIS  0
 -------------------------------------------STRUCTURAL DYNAMIC/GEMM
 ---------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY
 ------------------------------------------------STRUCTURAL CONTACT
-------------------------------------------------STATISTICAL MECHANICS
+----------------------------------------------STATISTICAL MECHANICS
 -----------------------------------------------------FLUID DYNAMIC
 LOWMACH          Yes
 DYNAMICTYP       Nlin_Time_Int
@@ -109,6 +109,7 @@ WRITEFLUX        diffusiveflux_boundary
 UPRES            10
 CONVFORM         convective
 MATID            2
+OUTMEAN          Yes
 ----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE         residual_based_plus_sgvel
 DEFINITION_TAU   Bazilevs
@@ -123,7 +124,6 @@ RESTARTEVRY      2000
 THERMOPRESS      98100.0
 GASCONSTANT      287.0
 CONSTHERMPRESS   Yes
-OUTMEAN          Yes
 -------------------------------------------------------FSI DYNAMIC
 -------------------------------------------------------SSI DYNAMIC
 -------------------------------------------------------ALE DYNAMIC
