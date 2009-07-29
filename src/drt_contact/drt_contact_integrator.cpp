@@ -79,7 +79,7 @@ CONTACT::Integrator::Integrator(DRT::Element::DiscretizationType eletype)
   case DRT::Element::tri6:
   {
     dim_=3;
-    const DRT::UTILS::IntegrationPoints2D intpoints(DRT::UTILS::intrule_tri_6point);
+    const DRT::UTILS::IntegrationPoints2D intpoints(DRT::UTILS::intrule_tri_7point);
     ngp_ = intpoints.nquad;
     coords_.Reshape(nGP(),2);
     weights_.resize(nGP());
