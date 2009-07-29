@@ -125,6 +125,8 @@ void SCATRA::TimIntGenAlpha::ComputeInitialDensityDerivative()
   // -------------------------------------------------------------------
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
+  if (abs(thermpressn_)< 1E-14) dserror("thermpressn_ is zero");
+
   // for reactive systems, temperature is last dof, and all other dofs
   // need to get the same density derivative
   if (numscal_>1)
