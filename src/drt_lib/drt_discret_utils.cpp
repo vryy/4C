@@ -76,6 +76,9 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
       nv = 3;
       np = 1;
     break;
+    case DRT::Element::element_xdiff3:
+      nv = 1;
+    break;
     case DRT::Element::element_combust3:
       nv = 3;
       np = 1;
@@ -174,6 +177,10 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     case DRT::Element::element_combust3:
       numdf = 4;
       dimns = 4;
+    break;
+    case DRT::Element::element_xdiff3:
+      numdf = 1;
+      dimns = 1;
     break;
     case DRT::Element::element_fluid2:
       numdf = 3;
