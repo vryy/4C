@@ -90,8 +90,9 @@ public:
   /// Kind of stabilisation for mixed, equal-order displacement-pressure appraoch
   enum StabilisationType
   {
-    stab_affine,  ///< Bochev stabilisation for affine elements
-    stab_nonaffine,  ///< Bochev stabilisation for non-affine elements
+    stab_affine,  ///< Bochev stabilisation for affine elements in material element domain (default)
+    stab_nonaffine,  ///< Bochev stabilisation for non-affine elements in material element domain
+    stab_spatialaffine,  ///< Bochev stabilisation for affine elements in spatial element domain
     stab_spatial,  ///< Bochev stabilisation for non-affine elements in spatial element domain
     stab_puredisp  ///< DEBUG ONLY: recover pure displacement-based approach
   };
@@ -101,13 +102,13 @@ public:
   {
     ans_none = 0,  ///< DEBUG ONLY: ANS switched off
     ans_lateral,  ///< ANS active in t-/out-of-plane/thickness direction, ordinary solid-shell-like
-    ans_onspot  ///< ANS active in t-/out-of-plane/thickness direction, specially adjusted at 4 spots to get nearly on-spot result
+    ans_onspot  ///< ANS active in t-/out-of-plane/thickness direction, specially adjusted at 4 spots
   };
 
   /// way to obtain isochoric material stress response
   enum IsochoricType
   {
-    iso_material,  ///< done completely by material model
+    iso_material,  ///< done completely by material model, i.e. material model _is_ isochoric
     iso_enforced  ///< volumetric contribution is split of material stress reponse
   };
 
