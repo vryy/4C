@@ -564,7 +564,7 @@ namespace LINALG
     inline void update(const double outfac, double* out, const double leftfac, const double* left,
                           const double rightfac, const double* right);
 
-    /// Copy: \e out = \e in^T
+    /// Transposed copy: \e out = \e in^T
     /*!
       Copy transposed \e in to \e out. This function takes two template parameters \c i and
       \c j denoting the sizes of the matrices.
@@ -591,6 +591,23 @@ namespace LINALG
      */
     template <unsigned int i, unsigned int j>
     inline void updateT(double* out, const double infac, const double* in);
+
+    /// Transposed addition: \e out = \e outfac * \e out + \e infac * \e in^T
+    /*!
+      Scale \e out by \e outfac and add \e infac * \e in^T to it. This function
+      takes two template parameters \c i and \c j denoting the sizes of the matrices.
+
+      \param outfac
+        scalar to multiply with \e out
+      \param out
+        pointer to the result matrix, size (\c i)x(\c j)
+      \param infac
+        scalar to multiply with \e in
+      \param in
+        pointer to the matrix to be added, size (\c i)x(\c j)
+     */
+    template <unsigned int i, unsigned int j>
+    inline void updateT(const double outfac, double* out, const double infac, const double* in);
 
     /// Multiply element-wise, \e out(m,n) = \e out(m,n)*\e in(m,n)
     /*!
@@ -2266,6 +2283,24 @@ namespace LINALG
     }
 
     template <unsigned int i, unsigned int j>
+    inline void updateT(const double outfac, double* out, const double infac, const double* in)
+    {
+#ifdef DEBUG
+      if (out==in) dserror("'out' and 'in' point to same memory location");
+#endif
+      if (outfac == 0.0) { // cannot handle this case here, because 0*nan==nan
+        updateT<i,j>(out,infac,in);
+        return;
+      }
+      for (unsigned int c2=0; c2 < j; c2 += 1) {
+        for (unsigned int c1=0; c1 < i; c1 += 1) {
+          *(out) *= outfac;
+          *(out++) += infac*in[c2+c1*j];
+        }
+      }
+    }
+
+    template <unsigned int i, unsigned int j>
     inline void eMultiply(double* out, const double* in)
     {
 #ifdef DEBUG
@@ -3381,6 +3416,21 @@ public:
    */
   inline void UpdateT(const double scalarOther, const Matrix<cols, rows>& other)
     { DENSEFUNCTIONS::updateT<rows,cols>(data_,scalarOther,other.A()); }
+
+  /// Add: \e this = \e scalarThis * \e this + \e scalarOther * \e other
+  /*!
+    Scale by \e scalarThis and add \e scalarOther * \e other.
+
+    \param scalarOther
+      scaling factor for other
+    \param other
+      matrix to add
+    \param scalarThis
+      scaling factor for \e this
+   */
+  inline void UpdateT(const double scalarOther, const Matrix<cols, rows>& other,
+                      const double scalarThis)
+    { DENSEFUNCTIONS::updateT<rows, cols>(scalarThis, data_, scalarOther, other.A()); }
 
   /// Multiply element-wise: \e this(m,n) *= \e other(m,n)
   /*!
