@@ -114,6 +114,9 @@ void SCATRA::TimIntOneStepTheta::SetOldPartOfRighthandside()
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntOneStepTheta::ComputeInitialDensityDerivative()
 {
+  // check whether initial thermodynamic pressure is incorrectly set
+  if (thermpressn_< 1E-14) dserror("thermpressn_ is zero or negative");
+
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
   // vectors and matrices

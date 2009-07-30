@@ -118,14 +118,15 @@ void SCATRA::TimIntGenAlpha::SetOldPartOfRighthandside()
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntGenAlpha::ComputeInitialDensityDerivative()
 {
+  // check whether initial thermodynamic pressure is incorrectly set
+  if (thermpressn_< 1E-14) dserror("thermpressn_ is zero or negative");
+
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
   //                 local <-> global dof numbering
   // -------------------------------------------------------------------
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
-
-  if (abs(thermpressn_)< 1E-14) dserror("thermpressn_ is zero");
 
   // for reactive systems, temperature is last dof, and all other dofs
   // need to get the same density derivative

@@ -158,8 +158,11 @@ public:
   /// compute values at intermediate time steps (required for generalized-alpha)
   virtual void ComputeIntermediateValues()=0;
 
-  /// set initial thermodynamic pressure and time derivative for low-Mach-number flow
+  /// set initial thermodynamic pressure for low-Mach-number flow
   void SetInitialThermPressure(const double thermpress);
+
+  /// compute initial thermodynamic pressure time derivative for low-Mach-number flow
+  void ComputeInitialThermPressureDeriv();
 
   /// compute initial total mass in domain for low-Mach-number flow
   double ComputeInitialMass(const double thermpress);

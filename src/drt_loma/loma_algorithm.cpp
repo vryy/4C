@@ -184,16 +184,20 @@ void LOMA::Algorithm::InitialCalculations()
                                  FluidField().SgVelVisc(),
                                  FluidField().Discretization());
 
-  // (if not constant) set initial value of thermodynamic pressure in SCATRA
-  // and (if not based on mass conservation) compute also time derivative
+  // set initial value of thermodynamic pressure in SCATRA
+  ScaTraField().SetInitialThermPressure(thermpress_);
+
   if (consthermpress_=="No_energy")
   {
-    ScaTraField().SetInitialThermPressure(thermpress_);
+    // compute initial time derivative of thermodynamic pressure
+    ScaTraField().ComputeInitialThermPressureDeriv();
     eosfac_ = thermpress_/gasconstant_;
   }
   else if (consthermpress_=="No_mass")
   {
+    // compute initial mass in flow domain which is to be conserved
     initialmass_ = ScaTraField().ComputeInitialMass(thermpress_);
+    // compute intial thermodynamic pressure and time derivative
     thermpress_  = ScaTraField().ComputeThermPressureFromMassCons(initialmass_,gasconstant_);
     eosfac_ = thermpress_/gasconstant_;
   }

@@ -341,13 +341,21 @@ void SCATRA::ScaTraTimIntImpl::AVM3Scaling(ParameterList& eleparams)
 
 
 /*----------------------------------------------------------------------*
- | set initial thermodynamic pressure and time derivative      vg 12/08 |
+ | set initial thermodynamic pressure                          vg 07/09 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::SetInitialThermPressure(const double thermpress)
 {
-  // set initial thermodynamic pressure
   thermpressn_ = thermpress;
 
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | compute initial time derivative of thermodynamic pressure   vg 07/09 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::ComputeInitialThermPressureDeriv()
+{
   // set scalar and density vector values needed by elements
   discret_->ClearState();
   discret_->SetState("phinp",phin_);
