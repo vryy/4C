@@ -494,15 +494,6 @@ void LOMA::Algorithm::GenAlphaUpdate()
   // update density
   ScaTraField().UpdateDensity();
 
-  // set density at n+1 and n, density time derivative at n, SCATRA trueresidual
-  // and eos factor
-  FluidField().SetTimeLomaFields(ScaTraField().DensNp(),
-                                 ScaTraField().DensN(),
-                                 ScaTraField().DensDtN(),
-                                 ScaTraField().TrueResidual(),
-                                 ScaTraField().NumScal(),
-                                 eosfac_);
-
   // update fluid
   FluidField().Update();
 
@@ -514,6 +505,15 @@ void LOMA::Algorithm::GenAlphaUpdate()
 /*----------------------------------------------------------------------*/
 void LOMA::Algorithm::OSTBDF2Update()
 {
+  // set density at n+1, n and n-1, SCATRA trueresidual and eos factor
+  // -> required for computing acceleration of present time step in FLUID
+  FluidField().SetTimeLomaFields(ScaTraField().DensNp(),
+                                 ScaTraField().DensN(),
+                                 ScaTraField().DensNm(),
+                                 ScaTraField().TrueResidual(),
+                                 ScaTraField().NumScal(),
+                                 eosfac_);
+
   // update temperature
   ScaTraField().Update();
 
@@ -523,14 +523,6 @@ void LOMA::Algorithm::OSTBDF2Update()
 
   // update density
   ScaTraField().UpdateDensity();
-
-  // set density at n+1, n and n-1, SCATRA trueresidual and eos factor
-  FluidField().SetTimeLomaFields(ScaTraField().DensNp(),
-                                 ScaTraField().DensN(),
-                                 ScaTraField().DensNm(),
-                                 ScaTraField().TrueResidual(),
-                                 ScaTraField().NumScal(),
-                                 eosfac_);
 
   // update fluid
   FluidField().Update();
