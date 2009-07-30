@@ -100,7 +100,7 @@ void DRT::UTILS::FindInterfaceObjects(const DRT::Discretization& dis,
         // get all elements locally known, including ghost elements
         pos = elements.insert(pos, *iter);
         const int* n = ((*iter).second)->NodeIds();
-        for (unsigned j=0; j < ((*iter).second)->NumNode(); ++j)
+        for (int j=0; j < ((*iter).second)->NumNode(); ++j)
         {
           const int gid = n[j];
           if (dis.HaveGlobalNode(gid))

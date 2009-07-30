@@ -22,7 +22,6 @@
 #include "../drt_contact/drt_contact_manager.H"
 #include "../drt_contact/drt_contact_interface.H"
 #include "../drt_contact/contactdefines.H"
-//#include "../drt_lib/linalg_ana.H"
 #include "../drt_io/io.H"
 #include "../drt_lib/linalg_utils.H"
 
@@ -94,8 +93,6 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
   //feeding slave nodes to the interface
   vector<int> slavedofs;
   vector<int> slavemortardofs;
-  int dofoffset = masterdofmap_->MaxAllGID() + 1;
-
 
   for (nodeiter = slavegnodes.begin(); nodeiter != slavegnodes.end(); ++nodeiter)
   {
