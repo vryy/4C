@@ -373,10 +373,12 @@ namespace UTILS {
     compute radial flow u as a function of the angle alpha
 
     \return radial velocity u
+    
+    \note this function is static such that we can get the radial velocity
+          without creating the Function object 
 
     */
-    //! compute radial flow u as a function of the angle alpha
-    static double GefferyHamelFlow(
+    static double RadialVelocity(
         const double& alpha ///< angle between 0 and PI/4 (range is checked in debug mode)
         );
     
