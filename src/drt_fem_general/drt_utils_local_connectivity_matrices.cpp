@@ -899,7 +899,7 @@ int DRT::UTILS::getNode(
 
 /*----------------------------------------------------------------------*
  |  Returns a vector with coordinates in the reference       u.may 08/07|
- |  system of the cutter element                                        |
+ |  system of the element                                               |
  |  according to the node ID for each discretization type               |
  *----------------------------------------------------------------------*/
 LINALG::Matrix<3,1> DRT::UTILS::getNodeCoordinates(   const int                                   nodeId,
@@ -967,6 +967,70 @@ LINALG::Matrix<3,1> DRT::UTILS::getNodeCoordinates(   const int                 
                 dserror("node number not correct");
         }
         coord(2) = 0.0;
+    }
+    else if(distype == DRT::Element::hex8)
+    {
+        switch(nodeId)
+        {
+            case 0:
+            {
+                coord(0) = -1.0;
+                coord(1) = -1.0;
+                coord(2) = -1.0;
+                break;
+            }
+            case 1:
+            {
+                coord(0) = +1.0;
+                coord(1) = -1.0;
+                coord(2) = -1.0;
+                break;
+            }
+            case 2:
+            {
+                coord(0) = +1.0;
+                coord(1) = +1.0;
+                coord(2) = -1.0;
+                break;
+            }
+            case 3:
+            {
+                coord(0) = -1.0;
+                coord(1) = +1.0;
+                coord(2) = -1.0;
+                break;
+            }
+            case 4:
+            {
+                coord(0) = -1.0;
+                coord(1) = -1.0;
+                coord(2) = +1.0;
+                break;
+            }
+            case 5:
+            {
+                coord(0) = +1.0;
+                coord(1) = -1.0;
+                coord(2) = +1.0;
+                break;
+            }
+            case 6:
+            {
+                coord(0) = +1.0;
+                coord(1) = +1.0;
+                coord(2) = +1.0;
+                break;
+            }
+            case 7:
+            {
+                coord(0) = -1.0;
+                coord(1) = +1.0;
+                coord(2) = +1.0;
+                break;
+            }
+            default:
+                dserror("node number does not exist");
+        }
     }
     else
         dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
