@@ -282,7 +282,7 @@ void LINALG::Solver::Solve(
   RCP<LINALG::KrylovProjector> projector = Teuchos::null;
   if(project)
   {
-    projector = rcp(new LINALG::KrylovProjector(project,weighted_basis_mean,kernel_c));
+    projector = rcp(new LINALG::KrylovProjector(project,weighted_basis_mean,kernel_c,matrix));
   }
 
   // set the data passed to the method

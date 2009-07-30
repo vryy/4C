@@ -17,9 +17,10 @@ Maintainer: Peter Gamnitzer
                           Constructor
    -------------------------------------------------------------------- */
 LINALG::KrylovProjector::KrylovProjector(
-  const bool                       project,
-  Teuchos::RCP<Epetra_MultiVector> w,
-  Teuchos::RCP<Epetra_MultiVector> c
+  const bool                       project          ,
+  Teuchos::RCP<Epetra_MultiVector> w                ,
+  Teuchos::RCP<Epetra_MultiVector> c                ,
+  Teuchos::RCP<Epetra_Operator>    A
   ) :
   project_(project),
   nsdim_(0),
@@ -45,6 +46,24 @@ LINALG::KrylovProjector::KrylovProjector(
     // loop all kernel basis vectors
     for(int mm=0;mm<nsdim_;++mm)
     {
+
+      // for each kernel vector provided check A*c=0
+      if(A!=Teuchos::null)
+      {
+        Epetra_Vector result(((*c_)(mm))->Map(),false);
+
+        A->Apply(*((*c_)(mm)),result);
+
+        double norm=1e9;
+
+        result.Norm2(&norm);
+        
+        if(norm>1e-6)
+        {
+          dserror("krylov projection failed, Ac returned %12.5e for kernel basis vector %d",norm,mm);
+        }
+      }
+
       // loop all weight vectors
       for(int rr=0;rr<nsdim_;++rr)
       {

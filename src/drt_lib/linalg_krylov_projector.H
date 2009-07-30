@@ -23,6 +23,7 @@ Maintainer: Peter Gamnitzer
 #include "Epetra_MultiVector.h"
 #include "Epetra_Vector.h"
 #include "Epetra_SerialDenseVector.h"
+#include "Epetra_Operator.h"
 
 #include "Teuchos_RefCountPtr.hpp"
 #include "drt_dserror.H"
@@ -49,15 +50,20 @@ public:
   Scalar products c_i o w_i are computed once after setting c_ and w_
   and stored.
 
+  If A is provided, A*c_i=0 is checked for all kernel basis vectors.
+
   \param project explicit flag if projection is desired
   \param w vector(s) of weights
   \param c kernel basis vector(s)
+  \param A operator (optional) for checking Ac=0 (kernel OK)
 
   */
   KrylovProjector(
       const bool                       project,
       Teuchos::RCP<Epetra_MultiVector> w,
-      Teuchos::RCP<Epetra_MultiVector> c);
+      Teuchos::RCP<Epetra_MultiVector> c,
+      Teuchos::RCP<Epetra_Operator>    A = Teuchos::null
+    );
 
 
   /*!
