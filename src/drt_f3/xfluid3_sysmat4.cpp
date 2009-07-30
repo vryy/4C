@@ -30,6 +30,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_fluid/time_integration_element.H"
 #include "../drt_xfem/spacetime_boundary.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_function.H"
 #include "../drt_fem_general/drt_utils_gder2.H"
 
   using namespace XFEM::PHYSICS;
@@ -739,7 +740,8 @@ void SysmatDomain4(
     const bool                          supg,          ///< flag for stabilization
     const bool                          cstab,         ///< flag for stabilization
     const bool                          instationary,  ///< switch between stationary and instationary formulation
-    LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>&   assembler
+    LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>&   assembler,
+    double&                             L2
 )
 {
     // number of nodes for element
@@ -1204,7 +1206,29 @@ void SysmatDomain4(
               enr_viscs2.zz(iparam) = 0.5 * (shp.dxdx(iparam) + shp.dydy(iparam) + 2.0 * shp.dzdz(iparam));
             }
 
+#if 0
+            // for Jeffery-Hamel Flow
+            LINALG::Matrix<3,1> physpos(true);
+            GEO::elementToCurrentCoordinates(DISTYPE, xyze, posXiDomain, physpos);
+            
+            const double x = physpos(0);
+            const double y = physpos(1);
+            
+            const double alpha = atan(y/x);
+            const double u_alpha = DRT::UTILS::JefferyHamelFlowFunction::RadialVelocity(alpha);
+            
+            const double nu = 1;
+            const double u_exact_x = nu * (u_alpha/(x*x+y*y))*x;
+            const double u_exact_y = nu * (u_alpha/(x*x+y*y))*y;
 
+            if (1.0 < x and x < 2.0 and 0.0 < y and y < x)
+            {
+              const double epsilon_x = (gpvelnp(0) - u_exact_x);
+              const double epsilon_y = (gpvelnp(1) - u_exact_y);
+
+              L2 += (epsilon_x*epsilon_x + epsilon_y*epsilon_y)*fac;
+            }
+#endif
 
             //////////////////////////////////////
             // now build single stiffness terms //
@@ -1250,6 +1274,13 @@ void SysmatBoundary4(
     const size_t nsd = 3;
     const size_t numnodefix_boundary = 9;
 
+#if 0 
+    // get node coordinates of the current element
+    // number of nodes for element
+    const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+    static LINALG::Matrix<nsd,numnode> xyze;
+    GEO::fillInitialPositionArray<DISTYPE>(ele, xyze);
+#endif
     // time integration constant
     const double timefac = FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dt, theta);
 
@@ -1447,6 +1478,24 @@ void SysmatBoundary4(
                 for (std::size_t inode = 0; inode < numnode_boundary; ++inode)
                     for (std::size_t isd = 0; isd < nsd; ++isd)
                         interface_gpvelnp(isd) += vel_boundary(isd,inode)*funct_boundary(inode);
+            
+#if 0
+            // for Jeffery-Hamel Flow
+            LINALG::Matrix<3,1> physpos(true);
+            GEO::elementToCurrentCoordinates(DISTYPE, xyze, posXiDomain, physpos);
+            
+            const double x = physpos(0);
+            const double y = physpos(1);
+            
+            const double alpha = atan(y/x);
+            const double u_alpha = DRT::UTILS::JefferyHamelFlowFunction::RadialVelocity(alpha);
+            
+            const double nu = 1;
+            interface_gpvelnp(0) = nu * (u_alpha/(x*x+y*y))*x;
+            interface_gpvelnp(1) = nu * (u_alpha/(x*x+y*y))*y;
+            interface_gpvelnp(2) = 0.0;
+#endif
+            
 
             // get viscous stress unknowns
             static LINALG::Matrix<nsd,nsd> tau;
@@ -1576,7 +1625,8 @@ void Sysmat4(
         const bool                        supg,          ///< flag for stabilisation
         const bool                        cstab,         ///< flag for stabilisation
         const bool                        instationary,  ///< switch between stationary and instationary formulation
-        const bool                        ifaceForceContribution
+        const bool                        ifaceForceContribution,
+        double&                           L2
         )
 {
     // initialize arrays
@@ -1605,9 +1655,9 @@ void Sysmat4(
 
     SysmatDomain4<DISTYPE,ASSTYPE,NUMDOF>(
         ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, etau,
-        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, assembler);
+        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, assembler, L2);
 
-    if (ASSTYPE == XFEM::xfem_assembly)
+    if (ih->ElementIntersected(ele->Id()))
     {
       SysmatBoundary4<DISTYPE,ASSTYPE,NUMDOF>(
           ele, ih, dofman, evelnp, etau, ivelcol, iforcecol,
@@ -1637,7 +1687,8 @@ void XFLUID::callSysmat4(
         const bool                        supg   ,
         const bool                        cstab  ,
         const bool                        instationary,
-        const bool                        ifaceForceContribution
+        const bool                        ifaceForceContribution,
+        double&                           L2
         )
 {
     if (assembly_type == XFEM::standard_assembly)
@@ -1647,27 +1698,27 @@ void XFLUID::callSysmat4(
             case DRT::Element::hex8:
                 Sysmat4<DRT::Element::hex8,XFEM::standard_assembly>(
                         ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, L2);
                 break;
             case DRT::Element::hex20:
                 Sysmat4<DRT::Element::hex20,XFEM::standard_assembly>(
                         ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, L2);
                 break;
             case DRT::Element::hex27:
                 Sysmat4<DRT::Element::hex27,XFEM::standard_assembly>(
                         ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, L2);
                 break;
             case DRT::Element::tet4:
                 Sysmat4<DRT::Element::tet4,XFEM::standard_assembly>(
                         ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, L2);
                 break;
             case DRT::Element::tet10:
                 Sysmat4<DRT::Element::tet10,XFEM::standard_assembly>(
                         ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, L2);
                 break;
             default:
                 dserror("standard_assembly Sysmat not templated yet");
@@ -1680,27 +1731,26 @@ void XFLUID::callSysmat4(
             case DRT::Element::hex8:
                 Sysmat4<DRT::Element::hex8,XFEM::xfem_assembly>(
                         ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, L2);
                 break;
             case DRT::Element::hex20:
                 Sysmat4<DRT::Element::hex20,XFEM::xfem_assembly>(
                         ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, L2);
                 break;
             case DRT::Element::hex27:
                 Sysmat4<DRT::Element::hex27,XFEM::xfem_assembly>(
                         ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, L2);
                 break;
             case DRT::Element::tet4:
                 Sysmat4<DRT::Element::tet4,XFEM::xfem_assembly>(
                         ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
-                break;
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, L2);
             case DRT::Element::tet10:
                 Sysmat4<DRT::Element::tet10,XFEM::xfem_assembly>(
                         ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, L2);
                 break;
             default:
                 dserror("xfem_assembly Sysmat not templated yet");
