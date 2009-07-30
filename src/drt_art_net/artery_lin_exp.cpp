@@ -26,6 +26,7 @@ Maintainer: Mahmoud Ismail
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_gder2.H"
 #include <fstream.h>
+#include <iomanip.h>
 ofstream fout2("w2.txt");
 
 /*----------------------------------------------------------------------*
@@ -143,7 +144,6 @@ int DRT::ELEMENTS::ArteryLinExp<distype>::Evaluate(
     eareanp(i) = myqanp[0+(i*2)];
     an_(i)     = myqanp[0+(i*2)];
   }
-
   // ---------------------------------------------------------------------
   // call routine for calculating element matrix and right hand side
   // ---------------------------------------------------------------------
@@ -291,7 +291,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::Sysmat(
   LINALG::Matrix<2*iel,2> Nxi;   Nxi.Clear();
   LINALG::Matrix<2*iel,1> temp1;
   LINALG::Matrix<2,1>     temp2;
-  LINALG::Matrix<2*iel,1> rhs_temp;
+  LINALG::Matrix<2*iel,1> rhs_temp; rhs_temp.Clear();
 
   LINALG::Matrix<2,1> BLW;
   LINALG::Matrix<2,1> FLW;
@@ -684,7 +684,6 @@ bool  DRT::ELEMENTS::ArteryLinExp<distype>::SolveRiemann(
   Teuchos::RCP<const MAT::Material>   material,
   double                              dt)
 {
-
   DRT::Node** nodes = ele->Nodes();
   LINALG::Matrix<3,iel> xyze;
   for (int inode=0; inode<iel; inode++)
@@ -743,13 +742,11 @@ bool  DRT::ELEMENTS::ArteryLinExp<distype>::SolveRiemann(
     //defining W2n at dt*lambda2
     const double W2n_l2  =  Q_l2/A_l2 - 4.0*c_l2;
     const double W2on_l2 = -4.0*sqrt(beta_l2*sqrt(Ao_l2)/(2.0*Ao_l2*dens_));
-    const double co1     = -sqrt(sqrt(PI)*young_(0)*th_(0)/(1.0-pow(nue_,2))*sqrt(area0_(0))/(2.0*area0_(0)*dens_));
+    const double co1     = +sqrt(sqrt(PI)*young_(0)*th_(0)/(1.0-pow(nue_,2))*sqrt(area0_(0))/(2.0*area0_(0)*dens_));
 
-    Wb1np_  = W2n_l2 - W2on_l2 +4.0*co1;
+    Wb1np_  = W2n_l2 - W2on_l2 -4.0*co1;
     params.set("W2in",Wb1np_);
     
-    //    cout<<"Inlet NODE!!! "<<*(ele->Nodes()[0]->GetCondition("Dirichlet"))<<endl;
-    //    cout<<"W2 is: "<<Wb1np_<<endl;
     BCnodes = true;
     //    double Wb1o = -4.0*sqrt(sqrt(PI)*young_(0)*th_(0)/(1.0-pow(nue_,2))*sqrt(area0_(0))/(2.0*area0_(0)*dens_));
   }
@@ -757,15 +754,15 @@ bool  DRT::ELEMENTS::ArteryLinExp<distype>::SolveRiemann(
   // Check whether node 2 is an outlet node of the artery (i.e has a condition)
   if(ele->Nodes()[1]->GetCondition("Dirichlet"))
   {
-    // sound speed at node 1 = sqrt(beta/(2*Ao*rho)) and Lambda2 = Q/A - c
-    const double c2      = sqrt(sqrt(PI)*young_(1)*th_(1)/(1.0-pow(nue_,2))*sqrt(earean(1))/(2.0*area0_(1)*dens_));
-    const double lambda1 = eqn(1)/earean(1) + c2;
+    // sound speed at node 1 = sqrt(beta/(2*Ao*rho)) and Lambda1 = Q/A + c
+    const double c1      = sqrt(sqrt(PI)*young_(1)*th_(1)/(1.0-pow(nue_,2))*sqrt(earean(1))/(2.0*area0_(1)*dens_));
+    const double lambda1 = eqn(1)/earean(1) + c1;
     const double N1      = (    dt*lambda1)/L;
     const double N2      = (L - dt*lambda1)/L;
     const double A_l1    = N1*earean(0) + N2*earean(1);
     const double beta_l1 = sqrt(PI)*(young_(0)*N1 + young_(1)*N2)*(th_(0)*N1 + th_(1)*N2)/(1.0-pow(nue_,2));
-    const double Q_l1    = N1*eqn(1)    + N2*eqn(0);
-    const double Ao_l1   = N1*area0_(1) + N2*area0_(0);
+    const double Q_l1    = N1*eqn(0)    + N2*eqn(1);
+    const double Ao_l1   = N1*area0_(0) + N2*area0_(1);
     const double c_l1    = sqrt(beta_l1*sqrt(A_l1)/(2.0*Ao_l1*dens_));
 
     //defining W2n at dt*lambda2
@@ -776,10 +773,7 @@ bool  DRT::ELEMENTS::ArteryLinExp<distype>::SolveRiemann(
     Wf2np_  = W1n_l1 - W1on_l1 +4.0*co1;
     params.set("W1out",Wf2np_);
     
-    //    cout<<"Outlet NODE!!! "<<*(ele->Nodes()[1]->GetCondition("Dirichlet"))<<endl;
-    //    cout<<"W1 is: "<<Wf2np_<<endl;
     BCnodes = true;
-    //    double Wf2o = 4.0*sqrt(sqrt(PI)*young_(1)*th_(1)/(1.0-pow(nue_,2))*sqrt(area0_(1))/(2.0*area0_(1)*dens_));
   }
  
   return BCnodes;
@@ -1149,8 +1143,6 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
       // calculating Q at node 1
       (*bcval )[lm[3]] = ((*bcval )[lm[2]])*(Wf2np_ + Wb2np_)/2.0;
       (*dbctog)[lm[3]] = 1;
-      const double time = params.get("total time",-1.0);
-      fout2<<time<<"\t"<<Wf2np_<<"\t"<<Wb2np_<<endl;
 
     }
   }

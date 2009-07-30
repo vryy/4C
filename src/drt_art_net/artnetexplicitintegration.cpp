@@ -63,7 +63,6 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization> actdi
   uprestart_(params.get("write restart every", -1)),
   upres_(params.get("write solution every", -1))
 {
-
   // -------------------------------------------------------------------
   // get the processor ID from the communicator
   // -------------------------------------------------------------------
@@ -107,7 +106,7 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization> actdi
   // a 'good' estimate
 
   // initialize standard (stabilized) system matrix
-  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,6,false,true));
+  sysmat_  = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,6,false,true));
 
 
   // Vectors passed to the element
@@ -130,8 +129,8 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization> actdi
   // Vectors used for solution process
   // ---------------------------------
 
-  // right hand side vector
-  rhs_ = LINALG::CreateVector(*dofrowmap,true);
+  // right hand side vector and right hand side corrector
+  rhs_     = LINALG::CreateVector(*dofrowmap,true);
 
   // Initialize all the arteries' cross-sectional areas to the initial crossectional area Ao
   // and the volumetric flow rate to 0
@@ -157,7 +156,7 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization> actdi
     eleparams.set("action","get_initail_artery_state");
     discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   }
-#ifdef DEBUG
+#if 0
   cout<<"|**************************************************************************|"<<endl;
   cout<<"|******************** The Initialize Vector qanp is ***********************|"<<endl;
   cout<<"|**************************************************************************|"<<endl;
@@ -326,6 +325,8 @@ void ART::ArtNetExplicitTimeInt::Solve()
   // -------------------------------------------------------------------
   // call elements to calculate boundary conditions
   // -------------------------------------------------------------------
+  bcval_->PutScalar(0.0);
+  dbctog_->PutScalar(0.0);
   {
     // create the parameters for the discretization
     ParameterList eleparams;
@@ -350,6 +351,7 @@ void ART::ArtNetExplicitTimeInt::Solve()
     TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
 
     LINALG::ApplyDirichlettoSystem(sysmat_,qanp_,rhs_,bcval_,dbctog_);
+    
   }
 
   //-------solve for total new velocities and pressures
@@ -361,15 +363,24 @@ void ART::ArtNetExplicitTimeInt::Solve()
 
     // call solver
     solver_.Solve(sysmat_->EpetraOperator(),qanp_,rhs_,true,true);
+    // Add dirichlet values to qanp_
+    //    qanp_->Update(1.0,*bcval_,1.0);
   }
+
   // end time measurement for solver
   dtsolve_ = ds_cputime() - tcpusolve;
 
-#ifdef DEBUG
-  for(int index = 0; index<=discret_->NumMyColElements(); index++)
+#if 0
+    
+  for(int index = 0; index<=discret->NumMyColElements(); index++)
   {
-    fout<<time_<<"\t"<<index<<"\t"<<(*qanp_)[2*index]<<"\t"<<(*qanp_)[2*index+1]<<endl;
+    DRT::Element* ele = discret_->lColElement(index);
+    fout<<time_<<"\t"<<(ele->Nodes()[0]).X[0]<<"\t"<<(*qanp_)[2*index]<<"\t"<<(*qanp_)[2*index+1]<<endl;
   }
+  int index = discret->NumMyColElements()-1;
+  DRT::Element* ele = discret_->lColElement(index);
+  fout<<time_<<"\t"<<(ele->Nodes()[1]).X[0]<<"\t"<<(*qanp_)[2*index]<<"\t"<<(*qanp_)[2*index+1]<<endl;
+
   fout<<endl;
 #endif
 
@@ -477,6 +488,19 @@ void ART::ArtNetExplicitTimeInt::Output()
       // Note: this method acts only if there is an impedance BC
       // impedancebc_->WriteRestart(output_);
     }
+
+#ifdef DEBUG 
+  for(int index = 0; index<discret_->NumMyColElements(); index++)
+  {
+    DRT::Element* ele = discret_->lColElement(index);
+    fout<<time_<<"\t"<<(ele->Nodes()[0])->X()[0]<<"\t"<<(*qanp_)[2*index]<<"\t"<<(*qanp_)[2*index+1]<<endl;
+  }
+  int index = discret_->NumMyColElements()-1;
+  DRT::Element* ele = discret_->lColElement(index);
+  fout<<time_<<"\t"<<(ele->Nodes()[1])->X()[0]<<"\t"<<(*qanp_)[2*(index+1)]<<"\t"<<(*qanp_)[2*(index+1)+1]<<endl;
+
+  fout<<endl;
+#endif
   }
   // write restart also when uprestart_ is not a integer multiple of upres_
   else if (uprestart_ != 0 && step_%uprestart_ == 0)
@@ -490,6 +514,18 @@ void ART::ArtNetExplicitTimeInt::Output()
     // also write impedance bc information if required
     // Note: this method acts only if there is an impedance BC
     // impedancebc_->WriteRestart(output_);
+#ifdef DEBUG
+  for(int index = 0; index<discret_->NumMyColElements(); index++)
+  {
+    DRT::Element* ele = discret_->lColElement(index);
+    fout<<time_<<"\t"<<(ele->Nodes()[0])->X()[0]<<"\t"<<(*qanp_)[2*index]<<"\t"<<(*qanp_)[2*index+1]<<endl;
+  }
+  int index = discret_->NumMyColElements()-1;
+  DRT::Element* ele = discret_->lColElement(index);
+  fout<<time_<<"\t"<<(ele->Nodes()[1])->X()[0]<<"\t"<<(*qanp_)[2*index]<<"\t"<<(*qanp_)[2*index+1]<<endl;
+
+  fout<<endl;
+#endif
   }
 
   return;

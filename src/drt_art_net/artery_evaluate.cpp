@@ -159,7 +159,6 @@ Here must add the steps for evaluating an element
     break;
     case set_term_bc:
     {
-
       DRT::ELEMENTS::ArteryExpInterface::Expl(this)->EvaluateTerminalBC(this,
                                                                         params,
                                                                         discretization,
