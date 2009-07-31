@@ -263,15 +263,15 @@ FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION -x+1.0  //initial pot. field
 -----------------------------------------------------------LOCSYS5
 --------------------------------------------------------MONITORING
 ------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS 1 NODE 691 POSITION fluxx   NAME fluxx    VALUE -5.995760233e-01 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 691 POSITION fluxy   NAME fluxy    VALUE  0.000000000e+00 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 691 POSITION fluxx   NAME fluxx    VALUE -5.995760233e-01 TOLERANCE 1e-4
+SCATRA DIS 1 NODE 691 POSITION fluxy   NAME fluxy    VALUE  0.000000000e+00 TOLERANCE 1e-5
 SCATRA DIS 1 NODE 691 POSITION fluxz   NAME fluxz    VALUE  0.000000000e+00 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 695 POSITION phi1    NAME phi1     VALUE  9.988008500e-01 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 121 POSITION phi1    NAME phi1     VALUE  1.025182175e+00 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 1301 POSITION phi1   NAME phi1     VALUE  9.700212204e-01 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 695 POSITION phi3    NAME phi3     VALUE  5.104935580e-01 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 121 POSITION phi3    NAME phi3     VALUE  5.365637439e-01 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 1301 POSITION phi3   NAME phi3     VALUE  4.812561110e-01 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 695 POSITION phi1    NAME phi1     VALUE  9.988008500e-01 TOLERANCE 1e-4
+SCATRA DIS 1 NODE 121 POSITION phi1    NAME phi1     VALUE  1.025182175e+00 TOLERANCE 1e-4
+SCATRA DIS 1 NODE 1301 POSITION phi1   NAME phi1     VALUE  9.700212204e-01 TOLERANCE 1e-4
+SCATRA DIS 1 NODE 695 POSITION phi3    NAME phi3     VALUE  5.104935580e-01 TOLERANCE 1e-4
+SCATRA DIS 1 NODE 121 POSITION phi3    NAME phi3     VALUE  5.365637439e-01 TOLERANCE 1e-4
+SCATRA DIS 1 NODE 1301 POSITION phi3   NAME phi3     VALUE  4.812561110e-01 TOLERANCE 1e-4
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 1
 NDLINE  0
@@ -294,10 +294,10 @@ DPOINT 0
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF  0
+DSURF  1
 // inflow
 // was replaced by Krylov space projection ensuring that integral of c_2 in domain equals 1
-//E 1 - 0 1 0 0 0 0  0.0 1.0299788 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 1 - 0 1 0 0 0 0  0.0 1.0299788 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 // outflow
 //E 2 - 0 1 0 0 0 0  0.0 0.0 1.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 --------------------------------------DESIGN VOL DIRICH CONDITIONS
@@ -382,9 +382,9 @@ E 2 - Butler-Volmer matid 1 pot 0.0 curve none alpha_a 0.0 alpha_c 1.0 i0 -96485
 ----------------------DESIGN SURF MODE FOR KRYLOV SPACE PROJECTION
 DSURF  0
 -----------------------DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION
-DVOL 1
+DVOL 0
 // ensure that integral of c_2 in domain is 1
-E 1 - fluid 0.0 1.0 0.0 0.0 0.0 0.0 integration
+//E 1 - fluid 0.0 1.0 0.0 0.0 0.0 0.0 integration
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    1 DNODE 1
 -----------------------------------------------DLINE-NODE TOPOLOGY
