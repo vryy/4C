@@ -508,6 +508,7 @@ protected:
   RCP<LINALG::SparseMatrix>          linslipLM_;      // global matrix containing derivatives (LM) of slip condition
   RCP<LINALG::SparseMatrix>          linslipDIS_;     // global matrix containing derivatives (DIS) of slip condition
   RCP<Epetra_Vector>                 linslipRHS_;     // r.h.s vector for Tresca friction slip nodes
+  RCP<LINALG::SparseMatrix>          linstickLM_;     // global matrix containing derivatives (LM) of slip condition
   RCP<LINALG::SparseMatrix>          linstickDIS_;     // global matrix containing derivatives (DIS) of stick condition
   RCP<Epetra_Vector>                 linstickRHS_;    // r.h.s vector for stick condition
 

@@ -162,6 +162,7 @@ void CONTACT::ManagerBase::Initialize()
 
     // here the calculation of gstickt is necessary
     RCP<Epetra_Map> gstickt = LINALG::SplitMap(*gactivet_,*gslipt_);
+    linstickLM_ = rcp(new LINALG::SparseMatrix(*gstickt,3));
     linstickDIS_ = rcp(new LINALG::SparseMatrix(*gstickt,3));
     linstickRHS_ = LINALG::CreateVector(*gstickt,true);
 
@@ -428,7 +429,7 @@ void CONTACT::ManagerBase::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
     interface_[i]->AssembleNT(*nmatrix_,*tmatrix_);
     interface_[i]->AssembleS(*smatrix_);
     interface_[i]->AssembleLinDM(*lindmatrix_,*linmmatrix_);
-    interface_[i]->AssembleLinStick(*linstickDIS_,*linstickRHS_);
+    interface_[i]->AssembleLinStick(*linstickLM_,*linstickDIS_,*linstickRHS_);
     interface_[i]->AssembleLinSlip(*linslipLM_,*linslipDIS_,*linslipRHS_);
     interface_[i]->AssembleTresca(*lmatrix_,*r_,frbound,ct);
   }
@@ -451,6 +452,8 @@ void CONTACT::ManagerBase::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
 
   // FillComplete global Matrix LinStick
   RCP<Epetra_Map> gstickt = LINALG::SplitMap(*gactivet_,*gslipt_);
+  RCP<Epetra_Map> gstickdofs = LINALG::SplitMap(*gactivedofs_,*gslipdofs_);
+  linstickLM_->Complete(*gstickdofs,*gstickt);
   linstickDIS_->Complete(*gsmdofs,*gstickt);
 
   // FillComplete global Matrix linslipLM and linslipDIS
@@ -631,12 +634,13 @@ void CONTACT::ManagerBase::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
   LINALG::SplitMatrix2x2(mhatmatrix_,gslipdofs_,gstdofs,gmdofrowmap_,tempmap,mhatsl,tempmtx2,mhatst,tempmtx3);
 #endif
 
-  RCP<LINALG::SparseMatrix> invda, invdsl;
+  RCP<LINALG::SparseMatrix> invda, invdsl, invdst;
   LINALG::SplitMatrix2x2(invd_,gactivedofs_,gidofs,gactivedofs_,gidofs,invda,tempmtx1,tempmtx2,tempmtx3);
-  LINALG::SplitMatrix2x2(invd_,gslipdofs_,gstdofs,gslipdofs_,gstdofs,invdsl,tempmtx1,tempmtx2,tempmtx3);
+  LINALG::SplitMatrix2x2(invd_,gslipdofs_,gstdofs,gslipdofs_,gstdofs,invdsl,tempmtx1,tempmtx2,invdst);
   invda->Scale(1/(1-alphaf_));
   invdsl->Scale(1/(1-alphaf_));
-
+  invdst->Scale(1/(1-alphaf_));
+  
   RCP<LINALG::SparseMatrix> dolda, doldi;
   LINALG::SplitMatrix2x2(dold_,gactivedofs_,gidofs,gactivedofs_,gidofs,dolda,tempmtx1,tempmtx2,doldi);
 
@@ -711,28 +715,6 @@ void CONTACT::ManagerBase::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
 
   // t*mbarstick: do the multiplication
   RCP<LINALG::SparseMatrix> tmhatst = LINALG::Multiply(*tstmatrix,false,*mhatst,false,true);
-#else
-
-  // create a merged map of domain map of M and Mold
-  const Epetra_Map& mmatrixdofsst = mmatrixst->DomainMap();
-  const Epetra_Map& molddofsst = moldst->DomainMap();
-  RCP<Epetra_Map> mdiffdofsst = LINALG::MergeMap(mmatrixdofsst,molddofsst,true);
-
-  // Create a new Matrix, add M and -Mold
-  RCP<LINALG::SparseMatrix> diffMst = rcp(new LINALG::SparseMatrix(mmatrixst->RowMap(),81, true, false, mmatrixst->GetMatrixtype()));
-  //RCP<LINALG::SparseMatrix> diffMst = rcp(new LINALG::SparseMatrix(mmatrixst->RowMap(),81));
-  diffMst->Add(*mmatrixst,false,+1.0,0.0);
-  diffMst->Add(*moldst,false,-1.0,1.0);
-  diffMst->Complete(*mdiffdofsst,mmatrixst->RowMap());
-
-  // Tst.(Mn+1-Mn)
-  RCP<LINALG::SparseMatrix> tstdiffM = LINALG::Multiply(*tstmatrix,false,*diffMst,false,true);
-
-  RCP<LINALG::SparseMatrix> diffDst = dmatrixst;
-  diffDst->Add(*doldst,false,-1.0,1.0);
-
-  // Tst.(Dn+1-Dn)
-  RCP<LINALG::SparseMatrix> tstdiffD = LINALG::Multiply(*tstmatrix,false,*diffDst,false,true);
 #endif
 
  // nmatrix: nothing to do
@@ -755,20 +737,6 @@ void CONTACT::ManagerBase::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
   // subtract ltmatrixmb from kslmmod
   kslmmod->Add(*ltmatrixmb,false,-1.0,1.0);
   kslmmod->Complete(kslm->DomainMap(),kslm->RowMap());
-#else
-
-  // ksln: multiply with linslipLM
-  RCP<LINALG::SparseMatrix> kslnmod = LINALG::Multiply(*linslipLM_,false,*invdsl,false,true);
-  kslnmod = LINALG::Multiply(*kslnmod,false,*ksln,false,true);
-  kslnmod->Complete(ksln->DomainMap(),ksln->RowMap());
-
-  // kslm: multiply with linslipLM
-  RCP<LINALG::SparseMatrix> kslmmod = LINALG::Multiply(*linslipLM_,false,*invdsl,false,true);
-  kslmmod = LINALG::Multiply(*kslmmod,false,*kslm,false,false);
-  kslmmod->Complete(kslm->DomainMap(),kslm->RowMap());
-#endif
-
-#ifdef CONTACTRELVELMATERIAL
 
   // ksli: multiply with tslmatrix
   RCP<LINALG::SparseMatrix> kslimod = LINALG::Multiply(*tslmatrix,false,*invdsl,false,true);
@@ -781,7 +749,50 @@ void CONTACT::ManagerBase::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
   // add ltmatirx to kslslmod
   kslslmod->Add(*ltmatrix,false,1.0,1.0);
   kslslmod->Complete(kslsl->DomainMap(),kslsl->RowMap());
+  
+  // slstmod: multiply with tslmatrix
+  RCP<LINALG::SparseMatrix> kslstmod = LINALG::Multiply(*tslmatrix,false,*invdsl,false,true);
+  kslstmod = LINALG::Multiply(*kslstmod,false,*kslst,false,true);
 #else
+  
+  // blocks for complementary conditions (stick nodes) - from LM
+  
+  // kstn: multiply with linstickLM
+  RCP<LINALG::SparseMatrix> kstnmod = LINALG::Multiply(*linstickLM_,false,*invdst,false,true);
+  kstnmod = LINALG::Multiply(*kstnmod,false,*kstn,false,true);
+  kstnmod->Complete(kstn->DomainMap(),kstn->RowMap());
+  
+  // kstm: multiply with linstickLM
+  RCP<LINALG::SparseMatrix> kstmmod = LINALG::Multiply(*linstickLM_,false,*invdst,false,true);
+  kstmmod = LINALG::Multiply(*kstmmod,false,*kstm,false,false);
+  kstmmod->Complete(kstm->DomainMap(),kstm->RowMap());
+
+  // ksti: multiply with linstickLM
+  RCP<LINALG::SparseMatrix> kstimod = LINALG::Multiply(*linstickLM_,false,*invdst,false,true);
+  kstimod = LINALG::Multiply(*kstimod,false,*ksti,false,true);
+  kstimod->Complete(ksti->DomainMap(),ksti->RowMap());
+
+  // kstsl: multiply with linstickLM
+  RCP<LINALG::SparseMatrix> kstslmod = LINALG::Multiply(*linstickLM_,false,*invdst,false,true);
+  kstslmod = LINALG::Multiply(*kstslmod,false,*kstsl,false,true);
+  kstslmod->Complete(kstsl->DomainMap(),kstsl->RowMap());
+
+  // kststmod: multiply with linstickLM
+  RCP<LINALG::SparseMatrix> kststmod = LINALG::Multiply(*linstickLM_,false,*invdst,false,true);
+  kststmod = LINALG::Multiply(*kststmod,false,*kstst,false,true);
+  kststmod->Complete(kstst->DomainMap(),kstst->RowMap());
+
+  // blocks for complementary conditions (slip nodes) - from LM
+  
+  // ksln: multiply with linslipLM
+  RCP<LINALG::SparseMatrix> kslnmod = LINALG::Multiply(*linslipLM_,false,*invdsl,false,true);
+  kslnmod = LINALG::Multiply(*kslnmod,false,*ksln,false,true);
+  kslnmod->Complete(ksln->DomainMap(),ksln->RowMap());
+  
+  // kslm: multiply with linslipLM
+  RCP<LINALG::SparseMatrix> kslmmod = LINALG::Multiply(*linslipLM_,false,*invdsl,false,true);
+  kslmmod = LINALG::Multiply(*kslmmod,false,*kslm,false,false);
+  kslmmod->Complete(kslm->DomainMap(),kslm->RowMap());
 
   // ksli: multiply with linslipLM
   RCP<LINALG::SparseMatrix> kslimod = LINALG::Multiply(*linslipLM_,false,*invdsl,false,true);
@@ -792,14 +803,6 @@ void CONTACT::ManagerBase::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
   RCP<LINALG::SparseMatrix> kslslmod = LINALG::Multiply(*linslipLM_,false,*invdsl,false,true);
   kslslmod = LINALG::Multiply(*kslslmod,false,*kslsl,false,true);
   kslslmod->Complete(kslsl->DomainMap(),kslsl->RowMap());
-#endif
-
-#ifdef CONTACTCREATEINMANAGER
-
-  // slstmod: multiply with tslmatrix
-  RCP<LINALG::SparseMatrix> kslstmod = LINALG::Multiply(*tslmatrix,false,*invdsl,false,true);
-  kslstmod = LINALG::Multiply(*kslstmod,false,*kslst,false,true);
-#else
 
   // slstmod: multiply with linslipLM
   RCP<LINALG::SparseMatrix> kslstmod = LINALG::Multiply(*linslipLM_,false,*invdsl,false,true);
@@ -872,6 +875,16 @@ void CONTACT::ManagerBase::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
   }
 #else
 
+  // fst: mutliply with linstickLM
+  // (this had to wait as we had to modify fm first)
+  RCP<Epetra_Vector> fstmod = rcp(new Epetra_Vector(*gstickt));
+  RCP<LINALG::SparseMatrix> temp1 = LINALG::Multiply(*linstickLM_,false,*invdst,false,true);
+  
+  if(gstickdofs->NumGlobalElements())
+  {
+    temp1->Multiply(false,*fst,*fstmod);
+  }  
+  
   // fsl: mutliply with linslipLM
   // (this had to wait as we had to modify fm first)
   RCP<Epetra_Vector> fslmod = rcp(new Epetra_Vector(*gslipt_));
@@ -914,12 +927,17 @@ void CONTACT::ManagerBase::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
   // FD check of stick condition
     for (int i=0; i<(int)interface_.size(); ++i)
     {
-      RCP<LINALG::SparseMatrix> deriv = rcp(new LINALG::SparseMatrix(*gactivet_,81));
+      RCP<LINALG::SparseMatrix> deriv1 = rcp(new LINALG::SparseMatrix(*gactivet_,81));
+    	RCP<LINALG::SparseMatrix> deriv2 = rcp(new LINALG::SparseMatrix(*gactivet_,81));
+  
+     	deriv1->Add(*linstickLM_,false,1.0,1.0);
+      deriv1->Complete(*gsmdofs,*gactivet_);
+    	
+    	deriv2->Add(*linstickDIS_,false,1.0,1.0);
+      deriv2->Complete(*gsmdofs,*gactivet_);
 
-      deriv->Add(*linstickDIS_,false,1.0,1.0);
-      deriv->Complete(*gsmdofs,*gactivet_);
-
-      cout << *deriv << endl;
+      cout << *deriv1 << endl;
+      cout << *deriv2 << endl;
 
       interface_[i]->FDCheckStickDeriv();
     }
@@ -1001,7 +1019,7 @@ void CONTACT::ManagerBase::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
 #else
 
   // add terms of linearization of sick condition to kteffnew
-  if (gstickt->NumGlobalElements()) kteffnew->Add(*linstickDIS_,false,1.0,1.0);
+  if (gstickt->NumGlobalElements()) kteffnew->Add(*linstickDIS_,false,-1.0,1.0);
 
   // add terms of linearization of slip condition to kteffnew and feffnew
   if (gslipt_->NumGlobalElements())
@@ -1021,9 +1039,15 @@ void CONTACT::ManagerBase::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
    {
      	RCP<Epetra_Vector> linstickRHSexp = rcp(new Epetra_Vector(*problemrowmap_));
    	  LINALG::Export(*linstickRHS_,*linstickRHSexp);
-      feffnew->Update(+1.0,*linstickRHSexp,1.0);
+      feffnew->Update(-1.0,*linstickRHSexp,1.0);
    }
-
+   // add a submatrices to kteffnew
+   if (gstickt->NumGlobalElements()) kteffnew->Add(*kstnmod,false,1.0,1.0);
+   if (gstickt->NumGlobalElements()) kteffnew->Add(*kstmmod,false,1.0,1.0);
+   if (gstickt->NumGlobalElements()) kteffnew->Add(*kstimod,false,1.0,1.0);
+   if (gstickt->NumGlobalElements()) kteffnew->Add(*kstslmod,false,1.0,1.0);
+   if (gstickt->NumGlobalElements()) kteffnew->Add(*kststmod,false,1.0,1.0);
+   
   // add a submatrices to kteffnew
   if (gslipt_->NumGlobalElements()) kteffnew->Add(*kslnmod,false,1.0,1.0);
   if (gslipt_->NumGlobalElements()) kteffnew->Add(*kslmmod,false,1.0,1.0);
@@ -1049,6 +1073,11 @@ void CONTACT::ManagerBase::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
   LINALG::Export(*fi,*fiexp);
   if (gidofs->NumGlobalElements()) feffnew->Update(1.0,*fiexp,1.0);
 
+  // add a subvector to feffnew
+  RCP<Epetra_Vector> fstmodexp = rcp(new Epetra_Vector(*problemrowmap_));
+  LINALG::Export(*fstmod,*fstmodexp);
+  if (gstickdofs->NumGlobalElements())feffnew->Update(1.0,*fstmodexp,+1.0);
+  
   // add a subvector to feffnew
   RCP<Epetra_Vector> fslmodexp = rcp(new Epetra_Vector(*problemrowmap_));
   LINALG::Export(*fslmod,*fslmodexp);
@@ -1974,6 +2003,7 @@ void CONTACT::ManagerBase::UpdateActiveSetSemiSmooth()
         if (nz - cn*wgap > 0)
         {
           cnode->Active() = true;
+          cnode->Slip() = true;
           activesetconv_ = false;
 #ifdef CONTACTSLIPFIRST
         if (cnode->ActiveOld()==false) cnode->Slip() = true;
@@ -2063,7 +2093,11 @@ void CONTACT::ManagerBase::UpdateActiveSetSemiSmooth()
             if(cnode->Slip() == false)
             {
               // check (tz+ct*tjump)-frbound <= 0
-              if(abs(tz+ct*tjump)-frcoeff*nz <= 0) {}
+#ifdef CONTACTCOMPHUEBER
+           	if(abs(tz+ct*tjump)-frcoeff*(nz-cn*wgap) <= 0) {}
+#else
+            if(abs(tz+ct*tjump)-frcoeff*nz <= 0) {}
+#endif
                 // do nothing (stick was correct)
               else
               {
@@ -2074,8 +2108,12 @@ void CONTACT::ManagerBase::UpdateActiveSetSemiSmooth()
             else
             {
               // check (tz+ct*tjump)-frbound > 0
+#ifdef CONTACTCOMPHUEBER
+            	if(abs(tz+ct*tjump)-frcoeff*(nz-cn*wgap) > 0) {}
+#else            	
               if(abs(tz+ct*tjump)-frcoeff*nz > 0) {}
-                // do nothing (slip was correct)
+#endif
+              // do nothing (slip was correct)
               else
               {
 #ifdef CONTACTSLIPFIRST
@@ -2581,24 +2619,276 @@ void CONTACT::ManagerBase::CorrectSlip()
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
       CNode* cnode = static_cast<CNode*>(node);
 
-      if (cnode->ActiveOld() == false and cnode->Active() == true)
-      {
-    	  cnode->Slip() = false;
-      }
+// initialization for static analysis hertz finemesh  
+//       if(gid==43577 or 
+//      		gid==43829 or 
+//      		gid==44052 or 
+//      		gid==44304 or 
+//      		gid==44522 or 
+//      		gid==44771 or 
+//      		gid==45015 or 
+//      		gid==45247 or 
+//      		gid==45496 or  
+//      		gid==45737 or 
+//      		gid==45982 or 
+//      		gid==46228 or 
+//      		gid==46478 or 
+//      		gid==46728 or 
+//      		gid==46968 or 
+//      		gid==47223 or 
+//      		gid==47469 or 
+//      		gid==47731 or  
+//      		gid==47986 or  
+//      		gid==48250 or  
+//      		gid==48492 or  
+//      		gid==48756 or 
+//      		gid==49011 or 
+//      		gid==49269 or  
+//      		gid==49533 or 
+//      		gid==49799 or 
+//      		gid==50064 or 
+//      		gid==50331 or 
+//      		gid==50590 or 
+//      		gid==50860 or 
+//      		gid==51121 or 
+//      		gid==51401 or 
+//      		gid==51669 or 
+//      		gid==51939 or 
+//      		gid==52220 or 
+//      		gid==52498 or 
+//      		gid==52782 or 
+//      		gid==53054 or 
+//      		gid==53343 or 
+//      		gid==53631 or 
+//      		gid==53911 or 
+//      		gid==54201 or 
+//      		gid==54486 or 
+//      		gid==54772 or 
+//      		gid==55051 or 
+//      		gid==55339 or 
+//      		gid==55632 or 
+//      		gid==55900 or 
+//      		gid==56196 or 
+//      		gid==56472 or 
+//      		gid==56764 or 
+//      		gid==57042 or 
+//      		gid==57327 or 
+//      		gid==57612 or 
+//      		gid==57886 or 
+//      		gid==58168 or 
+//      		gid==58428 or 
+//      		gid==58708 or 
+//      		gid==58966 or 
+//      		gid==59237 or 
+//      		gid==59502 or 
+//      		gid==59764 or 
+//      		gid==60025 or 
+//      		gid==60279 or 
+//      		gid==60541 or 
+//      		gid==60801 or 
+//      		gid==61046 or 
+//      		gid==61305 or 
+//      		gid==61562 or 
+//      		gid==61808 or 
+//      		gid==62055 or 
+//      		gid==62307 or 
+//      		gid==62543 or 
+//      		gid==62795 or 
+//      		gid== 63038 or 
+//      		gid== 63276 or 
+//      		gid==63516 or 
+//      		gid==63751 or 
+//      		gid==63985 or 
+//      		gid==64222) 
+// initialization for static analysis hertz finemesh - rigid surface      
+//      if(	 gid == 43969 or 
+//      		 gid == 44170 or
+//      		 gid == 44352 or
+//      		 gid == 44547 or
+//      		 gid == 44730 or
+//      		 gid == 44920 or
+//      		 gid == 45109 or
+//      		 gid == 45291 or
+//      		 gid == 45484 or
+//      		 gid == 45671 or
+//      		 gid == 45857 or
+//      		 gid == 46042 or
+//      		 gid == 46229 or
+//      		 gid == 46417 or
+//      		 gid == 46594 or
+//      		 gid == 46795 or
+//      		 gid == 46972 or
+//      		 gid == 47164 or
+//      		 gid == 47350 or
+//      		 gid == 47538 or
+//      		 gid == 47716 or
+//      		 gid == 47911 or
+//      		 gid == 48091 or
+//      		 gid == 48282 or
+//      		 gid == 48462 or
+//      		 gid == 48651 or
+//      		 gid == 48835 or
+//      		 gid == 49025 or
+//      		 gid == 49206 or
+//      		 gid == 49396 or
+//      		 gid == 49577 or
+//      		 gid == 49770 or
+//      		 gid == 49957 or
+//      		 gid == 50138 or
+//      		 gid == 50335 or
+//      		 gid == 50526 or
+//      		 gid == 50720 or
+//      		 gid == 50902 or
+//      		 gid == 51101 or
+//      		 gid == 51293 or 
+//      		 gid == 51480 or
+//      		 gid == 51673 or
+//      		 gid == 51858 or
+//      		 gid == 52043 or
+//      		 gid == 52230 or
+//      		 gid == 52413 or
+//      		 gid == 52601 or
+//      		 gid == 52776 or
+//      		 gid == 52963 or
+//      		 gid == 53140 or
+//      		 gid == 53325 or
+//      		 gid == 53501 or
+//      		 gid == 53675 or
+//      		 gid == 53853 or
+//      		 gid == 54019 or
+//      		 gid == 54191 or
+//      		 gid == 54347 or
+//      		 gid == 54518 or
+//      		 gid == 54674 or
+//      		 gid == 54840 or
+//      		 gid == 54994 or
+//      		 gid == 55151 or
+//      		 gid == 55308 or
+//      		 gid == 55457 or
+//      		 gid == 55611 or
+//      		 gid == 55763 or
+//      		 gid == 55906 or
+//      		 gid == 56049 or
+//      		 gid == 56197 or
+//      		 gid == 56336 or
+//      		 gid == 56478 or
+//      		 gid == 56613 or
+//      		 gid == 56753 or
+//      		 gid == 56885 or
+//      		 gid == 57021 or
+//      		 gid == 57151 or
+//      		 gid == 57287 or
+//      		 gid == 57412 or
+//      		 gid == 57540) 
+// initialization for static analysis hertz finemesh - rigid surface with coarse mesh       
+//      if(	gid ==41993 or
+//      		gid ==42168 or
+//      		gid ==42326 or
+//      		gid ==42496 or
+//      		gid ==42660 or
+//      		gid ==42821 or
+//      		gid ==42991 or
+//      		gid ==43157 or
+//      		gid ==43320 or
+//      		gid ==43485 or
+//      		gid ==43648 or
+//      		gid ==43815 or
+//      		gid ==43969 or
+//      		gid ==44149 or
+//      		gid ==44304 or
+//      		gid ==44475 or
+//      		gid ==44638 or
+//      		gid ==44805 or
+//      		gid ==44961 or
+//      		gid ==45134 or
+//      		gid ==45294 or
+//      		gid ==45463 or
+//      		gid ==45625 or
+//      		gid ==45791 or
+//      		gid ==45955 or
+//      		gid ==46120 or
+//      		gid ==46283 or
+//      		gid ==46448 or
+//      		gid ==46610 or
+//      		gid ==46780 or
+//      		gid ==46948 or
+//      		gid ==47105 or
+//      		gid ==47282 or
+//      		gid ==47451 or
+//      		gid ==47625 or
+//      		gid ==47785 or
+//      		gid ==47964 or
+//      		gid ==48135 or
+//      		gid ==48302 or
+//      		gid ==48475 or
+//      		gid ==48638 or
+//      		gid ==48805 or
+//      		gid ==48969 or
+//      		gid ==49133 or
+//      		gid ==49299 or
+//      		gid ==49455 or
+//      		gid ==49621 or
+//      		gid ==49778 or
+//      		gid ==49941 or
+//      		gid ==50098 or
+//      		gid ==50251 or
+//      		gid ==50410 or
+//      		gid ==50556 or
+//      		gid ==50708 or
+//      		gid ==50846 or
+//      		gid ==50995 or
+//      		gid ==51131 or
+//      		gid ==51275 or
+//      		gid ==51411 or
+//      		gid ==51548 or
+//      		gid ==51686 or
+//      		gid ==51815 or
+//      		gid ==51949 or 
+//      		gid ==52082 or
+//      		gid ==52204 or 
+//      		gid ==52329 or 
+//      		gid ==52457 or
+//      		gid ==52577 or
+//      		gid ==52698 or
+//      		gid ==52815 or
+//      		gid ==52936 or
+//      		gid ==53048 or
+//      		gid ==53165 or
+//      		gid ==53276 or
+//      		gid ==53392)     
+//if 	(gid ==53631 or gid ==53343 or gid ==53911) 
+//     { 	
+//        cout << "Initialization of active nodes" << endl;
+//      	cnode->Active()=true;
+//      }  
+      	
+      	
+//      if (cnode->ActiveOld() == false and cnode->Active() == true)
+//      {
+//    	  cnode->Slip() = false;
+//      }
     }
   }
 
    // (re)setup active global Epetra_Maps
 
+  gactivenodes_= null;
+  gactivedofs_ = null;
+  gactiven_ = null;
+  gactivet_ = null;
   gslipnodes_ = null;
   gslipdofs_ = null;
-  gslipt_ = null;
+  gslipt_ = null; 
 
   // update active sets of all interfaces
   // (these maps are NOT allowed to be overlapping !!!)
   for (int i=0;i<(int)interface_.size();++i)
   {
     interface_[i]->BuildActiveSet();
+    gactivenodes_ = LINALG::MergeMap(gactivenodes_,interface_[i]->ActiveNodes(),false);
+    gactivedofs_ = LINALG::MergeMap(gactivedofs_,interface_[i]->ActiveDofs(),false);
+    gactiven_ = LINALG::MergeMap(gactiven_,interface_[i]->ActiveNDofs(),false);
+    gactivet_ = LINALG::MergeMap(gactivet_,interface_[i]->ActiveTDofs(),false);
     gslipnodes_ = LINALG::MergeMap(gslipnodes_,interface_[i]->SlipNodes(),false);
     gslipdofs_ = LINALG::MergeMap(gslipdofs_,interface_[i]->SlipDofs(),false);
     gslipt_ = LINALG::MergeMap(gslipt_,interface_[i]->SlipTDofs(),false);

@@ -51,6 +51,7 @@ Maintainer: Alexander Popp
 //#define CONTACTBOUNDMOD        /* flag for modification of boundary nodes */
 //#define CONTACTPETROVGALERKIN  /* flag for PetrovGalerkin approach for LM */
 //#define CONTACTPSEUDO2D        /* flag for pseudo-3D in 2D situations (u_z=0)*/
+#define CONTACTCOMPHUEBER       /* flag for enhanced complementarity function mu(zn-cn.g) */
 
 /************************************************************************/
 /* Debugging options                                                    */

@@ -3306,6 +3306,12 @@ void CONTACT::Interface::FDCheckStickDeriv()
   if (!lComm())
     return;
 
+  // information from interface contact parameter list
+  string ftype   = IParams().get<string>("friction type","none");  
+  double frcoeff = IParams().get<double>("friction coefficient",0.0);
+  double cn = IParams().get<double>("semismooth cn",0.0);
+  double ct = IParams().get<double>("semismooth ct",0.0);
+  
   // create storage for values of complementary function C
   int nrow = snoderowmap_->NumMyElements();
   vector<double> refC(nrow);
@@ -3321,7 +3327,8 @@ void CONTACT::Interface::FDCheckStickDeriv()
     CNode* cnode = static_cast<CNode*>(node);
 
     double jumptan = 0;
-
+    double nz = 0;
+    
     if (cnode->Active() and !(cnode->Slip()))
     {
     	// calculate value of C-function
@@ -3331,8 +3338,9 @@ void CONTACT::Interface::FDCheckStickDeriv()
       for (int dim=0;dim<cnode->NumDof();++dim)
       {
       	jumptan -= (cnode->txi()[dim])*(D-Dold)*(cnode->xspatial()[dim]);
-      }
-
+      	nz += (cnode->n()[dim])*(cnode->lm()[dim]); 
+      }      
+      
       vector<map<int,double> > mmap = cnode->GetM();
       vector<map<int,double> > mmapold = cnode->GetMOld();
 
@@ -3369,10 +3377,141 @@ void CONTACT::Interface::FDCheckStickDeriv()
     } // if cnode == Slip
 
   // store C in vector
-  refC[i] = jumptan;
+#ifdef CONTACTCOMPHUEBER  
+    refC[i] = -frcoeff*(nz-cn*cnode->Getg())*ct*jumptan;
+    cout << "Warning: CONTACTCOMPHUEBER similar in stick condition" << endl;
+    exit(0);
+#else    
+    refC[i] = jumptan;
+#endif  
 
   } // loop over procs slave nodes
 
+  // global loop to apply FD scheme for LM to all slave dofs (=3*nodes)
+  for (int fd=0; fd<3*snodefullmap_->NumMyElements();++fd)
+  {
+
+   // now get the node we want to apply the FD scheme to
+   int gid = snodefullmap_->GID(fd/3);
+   DRT::Node* node = idiscret_->gNode(gid);
+   if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
+   CNode* snode = static_cast<CNode*>(node);
+      
+   // apply finite difference scheme
+   if (Comm().MyPID()==snode->Owner())
+   {
+     cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof: " << fd%3
+          << " Dof: " << snode->Dofs()[fd%3] << endl;
+   }
+       
+   // do step forward (modify nodal lagrange multiplier)
+   double delta = 1e-8;
+   if (fd%3==0)
+   {
+     snode->lm()[0] += delta;
+   }
+   else if (fd%3==1)
+   {
+     snode->lm()[1] += delta;
+   }
+   else
+   {
+     snode->lm()[2] += delta;
+   }
+     
+   // compute finite difference derivative
+   for (int k=0; k<snoderowmap_->NumMyElements();++k)
+   {
+   	int kgid = snoderowmap_->GID(k);
+     DRT::Node* knode = idiscret_->gNode(kgid);
+     if (!node) dserror("ERROR: Cannot find node with gid %",kgid);
+     CNode* kcnode = static_cast<CNode*>(knode);
+     
+     double jumptan = 0;
+     double ztan = 0;
+     double znor = 0;
+     
+     if (kcnode->Active() and !(kcnode->Slip()))
+     {
+       // check two versions of weighted gap
+       double D = (kcnode->GetD()[0])[kcnode->Dofs()[0]];
+       double Dold = (kcnode->GetDOld()[0])[kcnode->Dofs()[0]];
+             
+       for (int dim=0;dim<kcnode->NumDof();++dim)
+       {
+       	jumptan -= (kcnode->txi()[dim])*(D-Dold)*(kcnode->xspatial()[dim]);
+        ztan += (kcnode->txi()[dim])*(kcnode->lm()[dim]); 
+        znor += (kcnode->n()[dim])*(kcnode->lm()[dim]); 
+       }           
+         
+       vector<map<int,double> > mmap = kcnode->GetM();
+       vector<map<int,double> > mmapold = kcnode->GetMOld();
+       
+       map<int,double>::iterator colcurr;
+       set <int> mnodes;
+               
+       for (colcurr=mmap[0].begin(); colcurr!=mmap[0].end(); colcurr++)
+         mnodes.insert((colcurr->first)/Dim());
+                
+       for (colcurr=mmapold[0].begin(); colcurr!=mmapold[0].end(); colcurr++)
+         mnodes.insert((colcurr->first)/Dim());
+         
+       set<int>::iterator mcurr;
+         
+       // loop over all master nodes (find adjacent ones to this stick node)
+       for (mcurr=mnodes.begin(); mcurr != mnodes.end(); mcurr++)
+       {
+         int gid = *mcurr;
+         DRT::Node* mnode = idiscret_->gNode(gid);
+         if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
+         CNode* cmnode = static_cast<CNode*>(mnode);
+         const int* mdofs = cmnode->Dofs();
+           
+         double mik = (mmap[0])[mdofs[0]];
+         double mikold = (mmapold[0])[mdofs[0]];
+         map<int,double>::iterator mcurr;
+         
+         for (int dim=0;dim<kcnode->NumDof();++dim)
+         {
+            jumptan+= (kcnode->txi()[dim])*(mik-mikold)*(cmnode->xspatial()[dim]);
+         }
+       } //  loop over master nodes
+     } // if cnode == Slip
+ 
+       // store C in vector
+#ifdef CONTACTCOMPHUEBER  
+         newC[k] = -frcoeff*(znor-cn*kcnode->Getg())*ct*jumptan;
+#else    
+         newC[k] = jumptan;
+#endif  
+     
+       // print results (derivatives) to screen
+       if (abs(newC[k]-refC[k]) > 1e-12)
+       {
+         cout << "SlipCon-FD-derivative for LM for node S " << kcnode->Id() << endl;
+         //cout << "Ref-G: " << refG[k] << endl;
+         //cout << "New-G: " << newG[k] << endl;
+         cout << "Deriv:      " << snode->Dofs()[fd%3] << " " << (newC[k]-refC[k])/delta << endl;
+         //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetDerivG()[snode->Dofs()[fd%3]] << endl;
+         //if (abs(kcnode->GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
+         //  cout << "***WARNING*****************************************************************************" << endl;
+       }
+     }
+     // undo finite difference modification
+     if (fd%3==0)
+     {
+       snode->lm()[0] -= delta;
+     }
+     else if (fd%3==1)
+     {
+       snode->lm()[1] -= delta;
+     }
+     else
+     {
+       snode->lm()[2] -= delta;
+     }   
+   } // loop over procs slave nodes
+  
 
   // global loop to apply FD scheme to all slave dofs (=3*nodes)
   for (int fd=0; fd<3*snodefullmap_->NumMyElements();++fd)
@@ -3556,7 +3695,8 @@ void CONTACT::Interface::FDCheckStickDeriv()
       CNode* kcnode = static_cast<CNode*>(knode);
 
       double jumptan = 0;
-
+      double nz= 0;
+      
       if (kcnode->Active() and !(kcnode->Slip()))
       {
         // check two versions of weighted gap
@@ -3566,8 +3706,9 @@ void CONTACT::Interface::FDCheckStickDeriv()
         for (int dim=0;dim<kcnode->NumDof();++dim)
         {
         	jumptan -= (kcnode->txi()[dim])*(D-Dold)*(kcnode->xspatial()[dim]);
-        }
-
+          nz += (kcnode->n()[dim])*(kcnode->lm()[dim]);
+        }           
+        
         vector<map<int,double> > mmap = kcnode->GetM();
         vector<map<int,double> > mmapold = kcnode->GetMOld();
 
@@ -3603,8 +3744,11 @@ void CONTACT::Interface::FDCheckStickDeriv()
         } //  loop over master nodes
       } // if cnode == Slip
 
-      // store C in vector
-      newC[k] = jumptan;
+#ifdef CONTACTCOMPHUEBER  
+    newC[k] = -frcoeff*(nz-cn*kcnode->Getg())*ct*jumptan;
+#else    
+    newC[k] = jumptan;
+#endif  
 
 
       // print results (derivatives) to screen
@@ -3819,7 +3963,8 @@ void CONTACT::Interface::FDCheckStickDeriv()
       CNode* kcnode = static_cast<CNode*>(knode);
 
       double jumptan = 0;
-
+      double nz = 0;
+      
       if (kcnode->Active() and !(kcnode->Slip()))
       {
         // check two versions of weighted gap
@@ -3829,8 +3974,10 @@ void CONTACT::Interface::FDCheckStickDeriv()
         for (int dim=0;dim<kcnode->NumDof();++dim)
         {
         	jumptan -= (kcnode->txi()[dim])*(D-Dold)*(kcnode->xspatial()[dim]);
-        }
+          nz += (kcnode->n()[dim])*(kcnode->lm()[dim]);
 
+        }           
+        
         vector<map<int,double> > mmap = kcnode->GetM();
         vector<map<int,double> > mmapold = kcnode->GetMOld();
 
@@ -3866,9 +4013,12 @@ void CONTACT::Interface::FDCheckStickDeriv()
         } //  loop over master nodes
       } // if cnode == Slip
 
-      // store C in vector
-      newC[k] = jumptan;
-
+#ifdef CONTACTCOMPHUEBER  
+    newC[k] = -frcoeff*(nz-cn*kcnode->Getg())*ct*jumptan;
+#else    
+    newC[k] = jumptan;
+#endif
+      
       // print results (derivatives) to screen
       if (abs(newC[k]-refC[k]) > 1e-12)
       {
@@ -4060,7 +4210,8 @@ void CONTACT::Interface::FDCheckSlipDeriv()
   double frbound = IParams().get<double>("friction bound",0.0);
   double frcoeff = IParams().get<double>("friction coefficient",0.0);
   double ct = IParams().get<double>("semismooth ct",0.0);
-
+  double cn = IParams().get<double>("semismooth cn",0.0);
+  
   // create storage for values of complementary function C
   int nrow = snoderowmap_->NumMyElements();
   vector<double> refC(nrow);
@@ -4132,6 +4283,9 @@ void CONTACT::Interface::FDCheckSlipDeriv()
     if (ftype=="tresca") refC[i] = (abs(ztan+ct*jumptan))*ztan-frbound*(ztan+ct*jumptan);
     else if (ftype=="coulomb") refC[i] = (abs(ztan+ct*jumptan))*ztan-(frcoeff*znor)*(ztan+ct*jumptan);
     else dserror ("ERROR: Friction law is neiter Tresca nor Coulomb");  	
+#ifdef CONTACTCOMPHUEBER  
+  refC[i] = (abs(ztan+ct*jumptan))*ztan-(frcoeff*(znor-cn*cnode->Getg()))*(ztan+ct*jumptan);
+#endif  
   } // loop over procs slave nodes
 
   // global loop to apply FD scheme for LM to all slave dofs (=3*nodes)
@@ -4229,8 +4383,11 @@ void CONTACT::Interface::FDCheckSlipDeriv()
        // store C in vector
        if (ftype=="tresca") newC[k] = (abs(ztan+ct*jumptan))*ztan-frbound*(ztan+ct*jumptan);
        else if (ftype=="coulomb") newC[k] = (abs(ztan+ct*jumptan))*ztan-(frcoeff*znor)*(ztan+ct*jumptan);
-       else dserror ("ERROR: Friction law is neiter Tresca nor Coulomb");  	
-
+       else dserror ("ERROR: Friction law is neiter Tresca nor Coulomb");  
+#ifdef CONTACTCOMPHUEBER  
+      newC[k] = (abs(ztan+ct*jumptan))*ztan-(frcoeff*(znor-cn*kcnode->Getg()))*(ztan+ct*jumptan);
+#endif  
+    
        // print results (derivatives) to screen
        if (abs(newC[k]-refC[k]) > 1e-12)
        {
@@ -4496,7 +4653,10 @@ void CONTACT::Interface::FDCheckSlipDeriv()
       if (ftype=="tresca") newC[k] = (abs(ztan+ct*jumptan))*ztan-frbound*(ztan+ct*jumptan);
       else if (ftype=="coulomb") newC[k] = (abs(ztan+ct*jumptan))*ztan-(frcoeff*znor)*(ztan+ct*jumptan);
       else dserror ("ERROR: Friction law is neiter Tresca nor Coulomb");  	
-
+#ifdef CONTACTCOMPHUEBER  
+      newC[k] = (abs(ztan+ct*jumptan))*ztan-(frcoeff*(znor-cn*kcnode->Getg()))*(ztan+ct*jumptan);
+#endif  
+    
       // print results (derivatives) to screen
       if (abs(newC[k]-refC[k]) > 1e-12)
       {
@@ -4764,7 +4924,10 @@ void CONTACT::Interface::FDCheckSlipDeriv()
       // store C in vector
       if (ftype=="tresca") newC[k] = (abs(ztan+ct*jumptan))*ztan-frbound*(ztan+ct*jumptan);
       else if (ftype=="coulomb") newC[k] = (abs(ztan+ct*jumptan))*ztan-(frcoeff*znor)*(ztan+ct*jumptan);
-      else dserror ("ERROR: Friction law is neiter Tresca nor Coulomb");  	
+      else dserror ("ERROR: Friction law is neiter Tresca nor Coulomb");
+#ifdef CONTACTCOMPHUEBER  
+      newC[k] = (abs(ztan+ct*jumptan))*ztan-(frcoeff*(znor-cn*kcnode->Getg()))*(ztan+ct*jumptan);
+#endif  
 
       // print results (derivatives) to screen
       if (abs(newC[k]-refC[k]) > 1e-12)

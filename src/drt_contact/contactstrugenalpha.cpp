@@ -397,11 +397,11 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
 //  z->Update(1.0,*zold,0.0);
 //  contactmanager_->StoreNodalQuantities(Manager::lmcurrent);
 
-  // friction
-  // reset displacement jumps (slave dofs)
-  RCP<Epetra_Vector> jump = contactmanager_->Jump();
-  jump->Scale(0.0);
-  contactmanager_->StoreNodalQuantities(Manager::jump);
+//  // friction
+//  // reset displacement jumps (slave dofs)
+//  RCP<Epetra_Vector> jump = contactmanager_->Jump();
+//  jump->Scale(0.0);
+//  contactmanager_->StoreNodalQuantities(Manager::jump);
 
   // keep a copy of fresm for contact forces / equilibrium check
   RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
@@ -690,11 +690,11 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
 //  z->Update(1.0,*zold,0.0);
 //  contactmanager_->StoreNodalQuantities(Manager::lmcurrent);
 
-  // friction
-  // reset displacement jumps (slave dofs)
-  RCP<Epetra_Vector> jump = contactmanager_->Jump();
-  jump->Scale(0.0);
-  contactmanager_->StoreNodalQuantities(Manager::jump);
+//  // friction
+//  // reset displacement jumps (slave dofs)
+//  RCP<Epetra_Vector> jump = contactmanager_->Jump();
+//  jump->Scale(0.0);
+//  contactmanager_->StoreNodalQuantities(Manager::jump);
 
   //-------------------------- make contact modifications to lhs and rhs
   contactmanager_->SetState("displacement",disn_);
@@ -1946,7 +1946,7 @@ void CONTACT::ContactStruGenAlpha::Update()
   {
   	
 #ifdef CONTACTSLIPFIRST  	
-  	contactmanager_->CorrectSlip();
+  	//contactmanager_->CorrectSlip();
 #endif
   	
   	// store contact state to contact nodes (active or inactive)
@@ -2227,6 +2227,40 @@ void CONTACT::ContactStruGenAlpha::Integrate()
       // LOOP2: nonlinear iteration (Newton)
       SemiSmoothNewton();
 
+//      // Calculating reaction forces
+//      
+//      double time1      = params_.get<double>("total time"             ,0.0);
+//      double dt        = params_.get<double>("delta time"             ,0.01);
+//      double timen     = time1 + dt;
+//      double alphaf    = params_.get<double>("alpha f"                ,0.459);
+//    
+//      stiff_->Zero();
+//
+//      ParameterList p;
+//      // action for elements
+//      p.set("action","calc_struct_nlnstiff");
+//      // other parameters that might be needed by the elements
+//      p.set("total time",timen);
+//      p.set("delta time",dt);
+//      p.set("alpha f",alphaf);
+//      
+//      discret_.ClearState();
+//      //disi_->Scale(1.-alphaf);
+//      discret_.SetState("residual displacement",disi_);
+//      discret_.SetState("displacement",dism_);
+//      fint_->PutScalar(0.0);  // initialise internal force vector
+//
+//     discret_.Evaluate(p,stiff_,null,fint_,null,null);
+//     cout << "FINT" << fint_->operator[](0) << endl;
+//     reactionforce_.push_back(fint_->operator[](0));
+//     time_.push_back(timen);
+//     discret_.ClearState();
+//
+//
+//	 for (int i=0;i<time_.size();++i)
+//	 {
+//		 cout << "time " << time_[i] << " reaction " << reactionforce_[i] << endl; 
+//	 }
       UpdateandOutput();
 
 #ifdef CONTACTTIME

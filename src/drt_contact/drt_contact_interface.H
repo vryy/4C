@@ -622,7 +622,8 @@ public:
   nodal tangents and of the Mortar matrices D  and M.
 
   */
-  virtual void AssembleLinStick(LINALG::SparseMatrix& linstickDISglobal,
+  virtual void AssembleLinStick(LINALG::SparseMatrix& linstickLMglobal,
+  		                          LINALG::SparseMatrix& linstickDISglobal,
                                 Epetra_Vector& linstickRHSglobal);
   /*!
   \brief Assemble matrix LinSlip containing linearizations
