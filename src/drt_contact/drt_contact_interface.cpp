@@ -1607,7 +1607,7 @@ void CONTACT::Interface::AssembleDMG(LINALG::SparseMatrix& dglobal,
 
           // check for diagonality
           if (row!=col && abs(val)>1.0e-12)
-            dserror("ERROR: AssembleDMG: D-Matrix is not diagonal!");
+            dserror("ERROR: AssembleDMG: D-Matrix is not diagonal! val=%10.5e",val);
 
           // create an explicitly diagonal d matrix
           if (row==col) dglobal.Assemble(val,row,col);

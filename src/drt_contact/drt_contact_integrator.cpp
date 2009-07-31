@@ -212,18 +212,29 @@ void CONTACT::Integrator::IntegrateDerivSlave2D3D(
       map<int,double>& nodemap = mycnode->GetDerivD();
 
       //******************************************************************
-      // standard case (no edge node modification)
+      // standard case (node i reqiures no edge node modification)
       //******************************************************************
       if (!bound)
       {
-        // contribution of current element / current GP
+        // derivative of Jacobian
         double fac = wgt*val[i]*dualval[i];
         for (CI p=testmap.begin();p!=testmap.end();++p)
           nodemap[p->first] += fac*(p->second);
+       
+        // derivative of dual shape function
+        if (duallin)
+        {
+          for (int j=0;j<nrow;++j)
+          {
+            double fac = wgt*val[i]*val[j]*dxdsxi;
+            for (CI p=dualmap[i][j].begin();p!=dualmap[i][j].end();++p)
+              nodemap[p->first] += fac*(p->second);
+          }
+        }
       }
 
       //******************************************************************
-      // edge node modification case
+      // edge node case (node i reqiures edge node modification)
       //******************************************************************
       else
       {
@@ -243,71 +254,29 @@ void CONTACT::Integrator::IntegrateDerivSlave2D3D(
           if (bound2) continue;
           map<int,double>& nodemmap = mycnode2->GetDerivM()[bgid];
 
-          // contribution to DerivM of current element / current GP
+          // derivative of Jacobian
           double fac = wgt*val[i]*dualval[k];
           for (CI p=testmap.begin();p!=testmap.end();++p)
             nodemmap[p->first] -= fac*(p->second);
-        }
-      }
-    }
-
-    // compute contribution of dual shape fct. to nodal D-derivative-maps
-    if (!duallin) continue;
-    for (int i=0;i<nrow;++i)
-    {
-      CONTACT::CNode* mycnode = static_cast<CONTACT::CNode*>(mynodes[i]);
-      if (!mycnode) dserror("ERROR: IntegrateAndDerivSlave: Null pointer!");
-      bool bound = mycnode->IsOnBound();
-      map<int,double>& nodemap = mycnode->GetDerivD();
-
-      //******************************************************************
-      // standard case (no edge node modification)
-      //******************************************************************
-      if (!bound)
-      {
-        // contribution of current element / current GP
-        for (int j=0;j<nrow;++j)
-        {
-          double fac = wgt*val[i]*val[j]*dxdsxi;
-          for (CI p=dualmap[i][j].begin();p!=dualmap[i][j].end();++p)
-            nodemap[p->first] += fac*(p->second);
-        }
-      }
-
-      //******************************************************************
-      // edge node modification case
-      //******************************************************************
-      else
-      {
-        //check for problem dimension
-        if (Dim()==3) dserror("ERROR: IntegrateAndDerivSlave: edge node mod. not yet implemented for 3D");
-
-        // get gid of current boundary node
-        int bgid = mycnode->Id();
-
-        // loop over other nodes (interior nodes)
-        for (int k=0;k<nrow;++k)
-        {
-          CONTACT::CNode* mycnode2 = static_cast<CONTACT::CNode*>(mynodes[k]);
-          if (!mycnode2) dserror("ERROR: IntegrateAndDerivSlave: Null pointer!");
-          bool bound2 = mycnode2->IsOnBound();
-          if (bound2) continue;
-          map<int,double>& nodemmap = mycnode2->GetDerivM()[bgid];
-
-          // contribution of current element / current GP
-          for (int j=0;j<nrow;++j)
+          
+          // derivative of dual shape functions
+          if (duallin)
           {
-            LINALG::SerialDenseVector vallin(nrow-1);
-            LINALG::SerialDenseMatrix derivlin(nrow-1,1);
-            if (i==0) sele.ShapeFunctions(CElement::dual1D_base_for_edge0,eta,vallin,derivlin);
-            else if (i==1) sele.ShapeFunctions(CElement::dual1D_base_for_edge1,eta,vallin,derivlin);
-            double fac = wgt*val[i]*vallin[j]*dxdsxi;
-            for (CI p=dualmap[k][j].begin();p!=dualmap[k][j].end();++p)
-              nodemmap[p->first] -= fac*(p->second);
+            for (int j=0;j<nrow;++j)
+            {
+              LINALG::SerialDenseVector vallin(nrow-1);
+              LINALG::SerialDenseMatrix derivlin(nrow-1,1);
+              if (i==0) sele.ShapeFunctions(CElement::dual1D_base_for_edge0,eta,vallin,derivlin);
+              else if (i==1) sele.ShapeFunctions(CElement::dual1D_base_for_edge1,eta,vallin,derivlin);
+              double fac = wgt*val[i]*vallin[j]*dxdsxi;
+              for (CI p=dualmap[k][j].begin();p!=dualmap[k][j].end();++p)
+                nodemmap[p->first] -= fac*(p->second);
+            }
           }
         }
       }
     }
+    // compute element D linearization ***********************************
   }
   //**********************************************************************
 
@@ -398,9 +367,13 @@ void CONTACT::Integrator::IntegrateDerivSegment2D(
 
   // prepare directional derivative of dual shape functions
   // this is only necessary for quadratic shape functions in 2D
+  bool duallin = false;
   vector<vector<map<int,double> > > dualmap(nrow,vector<map<int,double> >(nrow));
   if (sele.Shape()==CElement::line3)
+  {
+    duallin=true;
     sele.DerivShapeDual(dualmap);
+  }
 
   //**********************************************************************
   // loop over all Gauss points for integration
@@ -612,6 +585,18 @@ void CONTACT::Integrator::IntegrateDerivSegment2D(
 #ifdef CONTACTONEMORTARLOOP
     dod = true;
 #endif // #ifdef CONTACTONEMORTARLOOP
+    
+    // decide whether boundary modification has to be considered or not
+    // this is element-specific (is there a boundary node in this element?)
+    bool bound = false;
+#ifdef CONTACTBOUNDMOD
+    for (int k=0;k<nrow;++k)
+    {
+      CONTACT::CNode* mycnode = static_cast<CONTACT::CNode*>(mynodes[k]);
+      if (!mycnode) dserror("ERROR: IntegrateDerivSegment2D: Null pointer!");
+      bound += mycnode->IsOnBound();
+    }
+#endif // #ifdef CONTACTBOUNDMOD
 
     // compute segment D/M matrix ****************************************
     // loop over all mseg matrix entries
@@ -621,6 +606,38 @@ void CONTACT::Integrator::IntegrateDerivSegment2D(
     // sometimes be rectangular, not quadratic!)
     for (int j=0;j<nrow*ndof;++j)
     {
+      // evaluate dseg entries seperately
+      // (only for one mortar loop AND boundary modification)
+      if (dod && bound)
+      {
+        CONTACT::CNode* mycnode = static_cast<CONTACT::CNode*>(mynodes[(int)(j/ndof)]);
+        if (!mycnode) dserror("ERROR: IntegrateDerivSegment2D: Null pointer!");
+        bool j_boundnode = mycnode->IsOnBound();
+        
+        for (int k=0;k<nrow*ndof;++k)
+        {
+          CONTACT::CNode* mycnode2 = static_cast<CONTACT::CNode*>(mynodes[(int)(k/ndof)]);
+          if (!mycnode2) dserror("ERROR: IntegrateDerivSegment2D: Null pointer!");
+          bool k_boundnode = mycnode2->IsOnBound();
+          
+          int jindex = (int)(j/ndof);
+          int kindex = (int)(k/ndof);
+          
+          // do not assemble off-diagonal terms if j,k are both non-boundary nodes
+          if (!j_boundnode && !k_boundnode && (jindex!=kindex)) continue;
+            
+          // multiply the two shape functions 
+          double prod = dualval[jindex]*sval[kindex];
+  
+          // isolate the dseg entries to be filled and
+          // add current Gauss point's contribution to dseg
+          if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
+            (*dseg)(j,k) += prod*dxdsxi*dsxideta*wgt;
+        }
+      }
+      
+      // evaluate mseg entries
+      // (and dseg entries for one mortar loop and NO boundary modification)
       for (int k=0;k<ncol*ndof;++k)
       {
         int jindex = (int)(j/ndof);
@@ -634,9 +651,9 @@ void CONTACT::Integrator::IntegrateDerivSegment2D(
         if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
         {
           (*mseg)(j,k) += prod*dxdsxi*dsxideta*wgt;
-          if(dod) (*dseg)(j,j) += prod*dxdsxi*dsxideta*wgt;
+          if(dod && !bound) (*dseg)(j,j) += prod*dxdsxi*dsxideta*wgt;
         }
-      }
+      } 
     }
     // compute segment D/M matrix ****************************************
 
@@ -661,6 +678,123 @@ void CONTACT::Integrator::IntegrateDerivSegment2D(
     // method IntegrateDerivSlave2D3D(). But in the CONTACTONEMORTARLOOP
     // case we want to combine the linearization of D and M, just as we
     // combine the computation of D and M itself.
+    
+    // **************** edge modification ********************************
+    if (dod && bound)
+    {
+      for (int j=0;j<nrow;++j)
+      {
+        CONTACT::CNode* mycnode = static_cast<CONTACT::CNode*>(mynodes[j]);
+        if (!mycnode) dserror("ERROR: IntegrateDerivSegment2D: Null pointer!");
+        bool boundnode = mycnode->IsOnBound();
+        map<int,double>& nodemap = mycnode->GetDerivD();
+        double fac = 0.0;
+
+        //******************************************************************
+        // standard case (node j is NO boundary node)
+        //******************************************************************
+        // only process the entry D_jj, the entried D_jk will be moved to M_jk
+        if (!boundnode)
+        {
+          // (1) Lin(Phi) - dual shape functions
+          if (duallin)
+            for (int m=0;m<nrow;++m)
+            {
+              fac = wgt*sval[j]*sval[m]*dsxideta*dxdsxi;
+              for (CI p=dualmap[j][m].begin();p!=dualmap[j][m].end();++p)
+                nodemap[p->first] += fac*(p->second);
+            }
+  
+          // (2) Lin(Phi) - slave GP coordinates
+          fac = wgt*dualderiv(j,0)*sval[j]*dsxideta*dxdsxi;
+          for (CI p=dsxigp.begin();p!=dsxigp.end();++p)
+            nodemap[p->first] += fac*(p->second);
+  
+          // (3) Lin(NSlave) - slave GP coordinates
+          fac = wgt*dualval[j]*sderiv(j,0)*dsxideta*dxdsxi;
+          for (CI p=dsxigp.begin();p!=dsxigp.end();++p)
+            nodemap[p->first] += fac*(p->second);
+  
+          // (4) Lin(dsxideta) - segment end coordinates
+          fac = wgt*dualval[j]*sval[j]*dxdsxi;
+          for (CI p=ximaps[0].begin();p!=ximaps[0].end();++p)
+            nodemap[p->first] -= 0.5*fac*(p->second);   
+          for (CI p=ximaps[1].begin();p!=ximaps[1].end();++p)
+            nodemap[p->first] += 0.5*fac*(p->second);
+  
+          // (5) Lin(dxdsxi) - slave GP Jacobian
+          fac = wgt*dualval[j]*sval[j]*dsxideta;
+          for (CI p=testmap.begin();p!=testmap.end();++p)
+            nodemap[p->first] += fac*(p->second);
+  
+          // (6) Lin(dxdsxi) - slave GP coordinates
+          fac = wgt*dualval[j]*sval[j]*dsxideta*dxdsxidsxi;
+          for (CI p=dsxigp.begin();p!=dsxigp.end();++p)
+            nodemap[p->first] += fac*(p->second);
+        }
+
+        //******************************************************************
+        // edge case (node j is a boundary node)
+        //******************************************************************
+        else
+        {
+          // get gid of current boundary node
+          int bgid = mycnode->Id();
+
+          // loop over other nodes (interior nodes)
+          for (int k=0;k<nrow;++k)
+          {
+            CONTACT::CNode* mycnode2 = static_cast<CONTACT::CNode*>(mynodes[k]);
+            if (!mycnode2) dserror("ERROR: IntegrateDerivSegment2D: Null pointer!");
+            bool boundnode2 = mycnode2->IsOnBound();
+            if (boundnode2) continue;
+            map<int,double>& nodemmap = mycnode2->GetDerivM()[bgid];
+
+            // (1) Lin(Phi) - dual shape functions
+            if (duallin)
+              for (int m=0;m<nrow;++m)
+              {
+                LINALG::SerialDenseVector vallin(nrow-1);
+                LINALG::SerialDenseMatrix derivlin(nrow-1,1);
+                if (j==0) sele.ShapeFunctions(CElement::dual1D_base_for_edge0,sxi,vallin,derivlin);
+                else if (j==1) sele.ShapeFunctions(CElement::dual1D_base_for_edge1,sxi,vallin,derivlin);
+                double fac = wgt*sval[j]*vallin[m]*dsxideta*dxdsxi;
+                for (CI p=dualmap[k][m].begin();p!=dualmap[k][m].end();++p)
+                  nodemmap[p->first] -= fac*(p->second);
+              }
+    
+            // (2) Lin(Phi) - slave GP coordinates
+            fac = wgt*dualderiv(k,0)*sval[j]*dsxideta*dxdsxi;
+            for (CI p=dsxigp.begin();p!=dsxigp.end();++p)
+              nodemmap[p->first] -= fac*(p->second);
+    
+            // (3) Lin(NSlave) - slave GP coordinates
+            fac = wgt*dualval[k]*sderiv(j,0)*dsxideta*dxdsxi;
+            for (CI p=dsxigp.begin();p!=dsxigp.end();++p)
+              nodemmap[p->first] -= fac*(p->second);
+    
+            // (4) Lin(dsxideta) - segment end coordinates
+            fac = wgt*dualval[k]*sval[j]*dxdsxi;
+            for (CI p=ximaps[0].begin();p!=ximaps[0].end();++p)
+              nodemmap[p->first] += 0.5*fac*(p->second);   
+            for (CI p=ximaps[1].begin();p!=ximaps[1].end();++p)
+              nodemmap[p->first] -= 0.5*fac*(p->second);
+    
+            // (5) Lin(dxdsxi) - slave GP Jacobian
+            fac = wgt*dualval[k]*sval[j]*dsxideta;
+            for (CI p=testmap.begin();p!=testmap.end();++p)
+              nodemmap[p->first] -= fac*(p->second);
+    
+            // (6) Lin(dxdsxi) - slave GP coordinates
+            fac = wgt*dualval[k]*sval[j]*dsxideta*dxdsxidsxi;
+            for (CI p=dsxigp.begin();p!=dsxigp.end();++p)
+              nodemmap[p->first] -= fac*(p->second);
+          }
+        }
+      }
+    }
+    
+    // **************** no edge modification *****************************
     for (int j=0;j<nrow;++j)
     {
       CONTACT::CNode* mycnode = static_cast<CONTACT::CNode*>(mynodes[j]);
@@ -685,7 +819,7 @@ void CONTACT::Integrator::IntegrateDerivSegment2D(
           for (CI p=dualmap[j][m].begin();p!=dualmap[j][m].end();++p)
           {
             dmmap_jk[p->first] += fac*(p->second);
-            if(dod) ddmap_jj[p->first] += fac*(p->second);
+            if(dod && !bound) ddmap_jj[p->first] += fac*(p->second);
           }
         }
 
@@ -694,7 +828,7 @@ void CONTACT::Integrator::IntegrateDerivSegment2D(
         for (CI p=dsxigp.begin();p!=dsxigp.end();++p)
         {
           dmmap_jk[p->first] += fac*(p->second);
-          if(dod) ddmap_jj[p->first] += fac*(p->second);
+          if(dod && !bound) ddmap_jj[p->first] += fac*(p->second);
         }
 
         // (3) Lin(NMaster) - master GP coordinates
@@ -702,7 +836,7 @@ void CONTACT::Integrator::IntegrateDerivSegment2D(
         for (CI p=dmxigp.begin();p!=dmxigp.end();++p)
         {
           dmmap_jk[p->first] += fac*(p->second);
-          if(dod) ddmap_jj[p->first] += fac*(p->second);
+          if(dod && !bound) ddmap_jj[p->first] += fac*(p->second);
         }
 
         // (4) Lin(dsxideta) - segment end coordinates
@@ -710,12 +844,12 @@ void CONTACT::Integrator::IntegrateDerivSegment2D(
         for (CI p=ximaps[0].begin();p!=ximaps[0].end();++p)
         {
           dmmap_jk[p->first] -= 0.5*fac*(p->second);
-          if(dod) ddmap_jj[p->first] -= 0.5*fac*(p->second);
+          if(dod && !bound) ddmap_jj[p->first] -= 0.5*fac*(p->second);
         }
         for (CI p=ximaps[1].begin();p!=ximaps[1].end();++p)
         {
           dmmap_jk[p->first] += 0.5*fac*(p->second);
-          if(dod) ddmap_jj[p->first] += 0.5*fac*(p->second);
+          if(dod && !bound) ddmap_jj[p->first] += 0.5*fac*(p->second);
         }
 
         // (5) Lin(dxdsxi) - slave GP Jacobian
@@ -723,7 +857,7 @@ void CONTACT::Integrator::IntegrateDerivSegment2D(
         for (CI p=testmap.begin();p!=testmap.end();++p)
         {
           dmmap_jk[p->first] += fac*(p->second);
-          if(dod) ddmap_jj[p->first] += fac*(p->second);
+          if(dod && !bound) ddmap_jj[p->first] += fac*(p->second);
         }
 
         // (6) Lin(dxdsxi) - slave GP coordinates
@@ -731,7 +865,7 @@ void CONTACT::Integrator::IntegrateDerivSegment2D(
         for (CI p=dsxigp.begin();p!=dsxigp.end();++p)
         {
           dmmap_jk[p->first] += fac*(p->second);
-          if(dod) ddmap_jj[p->first] += fac*(p->second);
+          if(dod && !bound) ddmap_jj[p->first] += fac*(p->second);
         }
       }
     }
