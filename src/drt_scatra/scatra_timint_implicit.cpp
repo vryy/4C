@@ -137,12 +137,6 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     numscal_ -= 1;
     // set up the concentration-el.potential splitter
     FLD::UTILS::SetupFluidSplit(*discret_,numscal_,splitter_);
-    if (myrank_==0)
-    {
-      cout<<"\nSetup of splitter: numscal = "<<numscal_<<endl;
-      cout<<"Temperature value T (Kelvin)     = "<<params_->get<double>("TEMPERATURE",298.0)<<endl;
-      cout<<"Constant F/RT                    = "<<frt_<<endl;
-    }
   }
   else if (prbtype_ == "loma" and numscal_ > 1)
   {
@@ -324,6 +318,19 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // initializes variables for natural convection (ELCH) if necessary
   SetupElchNatConv();
 
+  // screen output (has to come after SetInitialField)
+  if (prbtype_ == "elch")
+  {
+    double sigma = ComputeConductivity(); // every processor has to do this call
+    if (myrank_==0)
+    {
+      cout<<"\nSetup of splitter: numscal = "<<numscal_<<endl;
+      cout<<"Temperature value T (Kelvin)     = "<<params_->get<double>("TEMPERATURE",298.0)<<endl;
+      cout<<"Constant F/RT                    = "<<frt_<<endl;
+      cout<<"Conductivity of electrolyte      = "<<sigma<<endl<<endl;
+    }
+  }
+
   // sysmat might be singular (some modes are defined only up to a constant)
   // in this case, we need basis vectors for the nullspace/kernel
   vector<DRT::Condition*> KSPCond;
@@ -496,7 +503,7 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::ApplyDirichletBC
 (
-  const double& time,
+  const double time,
   Teuchos::RCP<Epetra_Vector> phinp,
   Teuchos::RCP<Epetra_Vector> phidt
 )
@@ -523,9 +530,9 @@ void SCATRA::ScaTraTimIntImpl::ApplyDirichletBC
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::ApplyNeumannBC
 (
-  const double& time,
-  const Teuchos::RCP<Epetra_Vector>& phinp,
-  Teuchos::RCP<Epetra_Vector>& neumann_loads
+  const double time,
+  const Teuchos::RCP<Epetra_Vector> phinp,
+  Teuchos::RCP<Epetra_Vector> neumann_loads
 )
 {
   // prepare load vector
@@ -1512,17 +1519,20 @@ void SCATRA::ScaTraTimIntImpl::PrepareKrylovSpaceProjection()
           mode_params.set("action","integrate_shape_functions");
 
           int numdof = 0;
-          int dofid = 0;
+          Epetra_IntSerialDenseVector dofids(6);
           for(int rr=0;rr<6;rr++)
           {
             if(abs((*mode)[rr])>1e-14)
             {
               numdof++;
-              dofid = rr;
+              dofids(rr)=rr;
             }
+            else
+              dofids(rr)=-1;
           }
-          if (numdof > 1) dserror("only basis vectors with 1 dof active are allowed");
-          mode_params.set("dofid",dofid);
+
+        //  if (numdof > 1) dserror("only basis vectors with 1 dof active are allowed");
+          mode_params.set("dofids",dofids);
 
           mode_params.set("isale",isale_);
           if (isale_)
@@ -1540,12 +1550,12 @@ void SCATRA::ScaTraTimIntImpl::PrepareKrylovSpaceProjection()
     //                   /              /                      /
            */
 
-          // get an RCP of the current column Epetra_Vectors of the MultiVector
-          RCP<Epetra_Vector> wi = rcp((*w_)(imode),false);
+          // get an RCP of the current column Epetra_Vector of the MultiVector
+          Teuchos::RCP<Epetra_Vector> wi = rcp((*w_)(imode),false);
 
           // compute integral of shape functions
           discret_->EvaluateCondition
-              (mode_params           ,
+              (mode_params       ,
               Teuchos::null      ,
               Teuchos::null      ,
               wi                 ,
@@ -1559,13 +1569,12 @@ void SCATRA::ScaTraTimIntImpl::PrepareKrylovSpaceProjection()
             DRT::Node* node = discret_->lRowNode(inode);
             vector<int> gdof = discret_->Dof(node);
             int numdof = gdof.size();
+            if (numdof > 6) dserror("only up to 6 dof per node supported");
             for(int rr=0;rr<numdof;++rr)
             {
-              if(abs((*mode)[rr]) > 0.0)
-              {
-                //set 1.0 for the undetermined dof
-                c_->ReplaceGlobalValue(gdof[rr],imode,1.0);
-              }
+              const double val = (*mode)[rr];
+              int err = c_->ReplaceGlobalValue(gdof[rr],imode,val);
+              if (err != 0) dserror("error while inserting value into c_");
             }
           }
         }

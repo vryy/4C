@@ -775,8 +775,29 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
   else if (action=="integrate_shape_functions")
   {
     // calculate integral of shape functions
-    const int dofid = params.get<int>("dofid");
-    IntegrateShapeFunctions(ele,elevec1_epetra,dofid);
+    const Epetra_IntSerialDenseVector dofids = params.get<Epetra_IntSerialDenseVector>("dofids");
+    IntegrateShapeFunctions(ele,elevec1_epetra,dofids);
+  }
+  else if (action=="calc_elch_conductivity")
+  {
+    // calculate conductivity of electrolyte solution
+    const double frt = params.get<double>("frt");
+    // extract local values from the global vector
+    RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
+    vector<double> myphinp(lm.size());
+    DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
+
+    // fill element arrays
+    for (int i=0;i<iel;++i)
+    {
+      for (int k = 0; k< numscal_; ++k)
+      {
+        // split for each transported scalar, insert into element arrays
+        ephinp_[k](i,0) = myphinp[k+(i*numdofpernode_)];
+      }
+    } // for i
+
+    elevec1_epetra(0) += CalculateConductivity(ele,frt);
   }
   else
     dserror("Unknown type of action for Scatra Implementation: %s",action.c_str());
@@ -2609,7 +2630,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
   double timetaufac;
   double taufac;
 
-  for (int k = 0; k < numscal_;++k) // loop over all transported sclars
+  for (int k = 0; k < numscal_;++k) // loop over all transported scalars
   {
     // stabilization parameters
     taufac = tau_[k]*fac_;
@@ -3300,9 +3321,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateDomainAndBodyforce(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraImpl<distype>::IntegrateShapeFunctions(
-    const DRT::Element*        ele,
-    Epetra_SerialDenseVector&  elevec1,
-    const int                  dofid
+    const DRT::Element*             ele,
+    Epetra_SerialDenseVector&       elevec1,
+    const Epetra_IntSerialDenseVector& dofids
 )
 {
   // get node coordinates
@@ -3320,9 +3341,15 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::IntegrateShapeFunctions(
     EvalShapeFuncAndDerivsAtIntPoint(intpoints,gpid,ele->Id());
 
     // compute integral of shape functions (only for dofid)
-    for (int node=0;node<iel;++node)
+    for (int k=0;k<numdofpernode_;k++)
     {
-      elevec1[node*numdofpernode_+dofid] += funct_(node) * fac_;
+      if (dofids[k] >= 0)
+      {
+        for (int node=0;node<iel;node++)
+        {
+          elevec1[node*numdofpernode_+k] += funct_(node) * fac_;
+        }
+      }
     }
 
   } //loop over integration points
@@ -3330,6 +3357,44 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::IntegrateShapeFunctions(
   return;
 
 } //ScaTraImpl<distype>::IntegrateShapeFunction
+
+
+/*----------------------------------------------------------------------*
+ |  Calculate conductivity (ELCH) (private)                   gjb 07/09 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+double DRT::ELEMENTS::ScaTraImpl<distype>::CalculateConductivity(
+    const DRT::Element*  ele,
+    const double         frt
+)
+{
+  // get node coordinates
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze_);
+
+  // in the ALE case add nodal displacements
+  if (isale_) xyze_ += edispnp_;
+
+  GetMaterialParams(ele,false,false);
+
+  // use one-point Gauss rule to do calculations at the element center
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
+
+  // evaluate shape functions (and not needed derivatives) at element center
+  EvalShapeFuncAndDerivsAtIntPoint(intpoints_tau,0,ele->Id());
+
+  // compute the conductivity (1/(\Omega m))
+  double sigma(0.0);
+  for(int k=0; k < numscal_; k++)
+  {
+    // concentration of ionic species k at element center
+    double conint = funct_.Dot(ephinp_[k]);
+    sigma += valence_[k]*diffusvalence_[k]*conint;
+  }
+  sigma*= (frt*96485.34);
+
+  return sigma;
+
+} //ScaTraImpl<distype>::CalculateConductivity
 
 
 #endif // CCADISCRET

@@ -22,6 +22,7 @@ Maintainer: Georg Bauer
 
 #include "scatra_ele_impl_utils.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include <Epetra_IntSerialDenseVector.h>
 
 
 namespace DRT
@@ -309,10 +310,15 @@ public:
 
    //! integral of shape functions over the element
    void IntegrateShapeFunctions(
-       const DRT::Element*       ele,    ///< the actual boundary element
-       Epetra_SerialDenseVector& elevec1,///< result vector (to be assembled)
-       const int                 dofid    ///< for which dof we need to integrate?
+       const DRT::Element*                ele,    ///< the actual element
+       Epetra_SerialDenseVector&          elevec1,///< result vector (to be assembled)
+       const Epetra_IntSerialDenseVector& dofids    ///< for which dof we need to integrate?
    );
+
+   double CalculateConductivity(
+       const DRT::Element*             ele, ///< the actual element
+       const double                    frt  ///< factor F/RT needed for ELCH calculations
+       );
 
     //! calculate the Laplacian for all shape functions(strong form)
     inline void GetLaplacianStrongForm

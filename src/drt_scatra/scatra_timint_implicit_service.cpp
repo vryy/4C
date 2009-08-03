@@ -32,6 +32,10 @@ Maintainer: Georg Bauer
 // for printing electrode status to file
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
+//access to the material data (ELCH)
+#include "../drt_mat/material.H"
+#include "../drt_mat/ion.H"
+#include "../drt_mat/matlist.H"
 
 /*----------------------------------------------------------------------*
  | calculate initial time derivative of phi at t=t_0           gjb 08/08|
@@ -112,8 +116,8 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidt()
  | evaluate contribution of electrode kinetics to eq. system  gjb 02/09 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::EvaluateElectrodeKinetics(
-    RCP<LINALG::SparseOperator>& matrix,
-    RCP<Epetra_Vector>&          rhs
+    RCP<LINALG::SparseOperator> matrix,
+    RCP<Epetra_Vector>          rhs
 )
 {
   // time measurement: evaluate condition 'ElectrodeKinetics'
@@ -152,8 +156,8 @@ void SCATRA::ScaTraTimIntImpl::EvaluateElectrodeKinetics(
  | compute potential Neumann inflow                            vg 03/09 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::ComputeNeumannInflow(
-    RCP<LINALG::SparseOperator>& matrix,
-    RCP<Epetra_Vector>&          rhs)
+    RCP<LINALG::SparseOperator> matrix,
+    RCP<Epetra_Vector>          rhs)
 {
   // time measurement: evaluate condition 'Neumann inflow'
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'TransportNeumannInflow'");
@@ -1516,6 +1520,56 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
     dserror("Cannot calculate error. Unknown type of analytical test problem");
   }
   return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  calculate conductivity of electrolyte solution             gjb 07/09|
+ *----------------------------------------------------------------------*/
+double SCATRA::ScaTraTimIntImpl::ComputeConductivity()
+{
+  // we perform the calculation on element level hiding the material access!
+  // the initial concentration distribution has to be uniform to do so!!
+
+  // create the parameters for the elements
+  ParameterList p;
+  p.set("action","calc_elch_conductivity");
+  p.set("frt",frt_);
+
+  //provide displacement field in case of ALE
+  p.set("isale",isale_);
+  if (isale_)
+    AddMultiVectorToParameterList(p,"dispnp",dispnp_);
+
+  // set vector values needed by elements
+  discret_->ClearState();
+  discret_->SetState("phinp",phinp_);
+
+  // pointer to current element
+  DRT::Element* actele = discret_->lRowElement(0);
+
+  // get element location vector, dirichlet flags and ownerships
+  std::vector<int> lm;  // location vector
+  std::vector<int> lmowner;  // processor which owns DOFs
+
+  actele->LocationVector(*discret_,lm,lmowner);
+
+  // define element matrices and vectors
+  // -- which are empty and unused, just to satisfy element Evaluate()
+  Epetra_SerialDenseMatrix elematrix1;
+  Epetra_SerialDenseMatrix elematrix2;
+  Epetra_SerialDenseVector elevector2;
+  Epetra_SerialDenseVector elevector3;
+
+  // define element vector
+  Epetra_SerialDenseVector sigma(1);
+
+  // call the element evaluate method of the first row element
+  int err = actele->Evaluate(p,*discret_,lm,elematrix1,elematrix2,sigma,elevector2,elevector3);
+  if (err) dserror("error while computing conductivity");
+  discret_->ClearState();
+
+  return sigma(0);
 }
 
 

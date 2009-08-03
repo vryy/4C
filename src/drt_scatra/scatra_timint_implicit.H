@@ -39,9 +39,6 @@ Maintainer: Georg Bauer
 #include "../drt_io/io.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_inpar/inpar_scatra.H"
-#include "../drt_mat/material.H" //access to the material data
-#include "../drt_mat/ion.H"
-#include "../drt_mat/matlist.H"
 
 //forward declarations
 class PeriodicBoundaryConditions;
@@ -282,6 +279,9 @@ public:
   /// returns map extractor used for convergence check either in ELCH or LOMA case
   LINALG::MapExtractor& Splitter() { return splitter_; }
 
+  /// computes conductivity of an electrolyte solution (ELCH)
+  double ComputeConductivity();
+
 protected:
 
   /// don't want = operator and cctor
@@ -326,7 +326,7 @@ protected:
   /// Apply Dirichlet boundary conditions on provided state vector
   void ApplyDirichletBC
   (
-    const double& time,  ///< evaluation time
+    const double time,  ///< evaluation time
     Teuchos::RCP<Epetra_Vector> phinp, ///< transported scalar(s) (may be = null)
     Teuchos::RCP<Epetra_Vector> phidt  ///< first time derivative (may be = null)
   );
@@ -334,15 +334,15 @@ protected:
   /// Apply Neumann boundary conditions
   void ApplyNeumannBC
   (
-    const double& time,  ///< evaluation time
-    const Teuchos::RCP<Epetra_Vector>& phinp,   ///< transported scalar(s) state
-    Teuchos::RCP<Epetra_Vector>& neumann_loads ///< Neumann loads
+    const double time,  ///< evaluation time
+    const Teuchos::RCP<Epetra_Vector> phinp,   ///< transported scalar(s) state
+    Teuchos::RCP<Epetra_Vector> neumann_loads ///< Neumann loads
   );
 
   /// export node-based multivector to column map and add it to a parameter list
   void AddMultiVectorToParameterList(
       Teuchos::ParameterList& p,           ///< parameter list
-      const std::string    name,           ///< naming string for added vector
+      const std::string       name,        ///< naming string for added vector
       Teuchos::RCP<Epetra_MultiVector> vec ///< Epetra_MultiVector to be added
   );
 
@@ -357,13 +357,13 @@ protected:
 
   /// compute contribution of electrode kinetics to eq. system
   void EvaluateElectrodeKinetics(
-      RCP<LINALG::SparseOperator>& matrix,
-      RCP<Epetra_Vector>&          rhs);
+      RCP<LINALG::SparseOperator> matrix,
+      RCP<Epetra_Vector>          rhs);
 
   /// compute potential Neumann inflow
   void ComputeNeumannInflow(
-      RCP<LINALG::SparseOperator>& matrix,
-      RCP<Epetra_Vector>&          rhs);
+      RCP<LINALG::SparseOperator> matrix,
+      RCP<Epetra_Vector>          rhs);
 
   /// return the right time-scaling-factor for the true residual
   virtual double ResidualScaling() const = 0;
