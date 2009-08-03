@@ -2003,11 +2003,18 @@ void CONTACT::ManagerBase::UpdateActiveSetSemiSmooth()
         if (nz - cn*wgap > 0)
         {
           cnode->Active() = true;
-          cnode->Slip() = true;
-          activesetconv_ = false;
+          
+          //friction
+          if(ftype == INPAR::CONTACT::friction_tresca || ftype == INPAR::CONTACT::friction_coulomb)
+          {
+            cnode->Slip() = true;
+
 #ifdef CONTACTSLIPFIRST
         if (cnode->ActiveOld()==false) cnode->Slip() = true;
 #endif
+          }
+          
+          activesetconv_ = false;
         }
       }
 
