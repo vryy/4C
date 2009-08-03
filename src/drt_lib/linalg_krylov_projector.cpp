@@ -57,7 +57,7 @@ LINALG::KrylovProjector::KrylovProjector(
         double norm=1e9;
 
         result.Norm2(&norm);
-        
+
         if(norm>1e-6)
         {
           dserror("krylov projection failed, Ac returned %12.5e for kernel basis vector %d",norm,mm);
@@ -186,9 +186,8 @@ int LINALG::KrylovProjector::ApplyPT(Epetra_MultiVector& Y) const
 
     int sv=0;
 
-    // loop all basis vectors of kernel and orthogonalize
-    // against them
-    for(int mm=0;mm<c_->NumVectors();++mm)
+    // loop kernel basis/weight vector pairs and orthogonalize against them
+    for(int rr=0;rr<nsdim_;++rr)
     {
       /*
                    T
@@ -196,18 +195,13 @@ int LINALG::KrylovProjector::ApplyPT(Epetra_MultiVector& Y) const
       */
       double cTY=0.0;
 
-      ((*c_)(mm))->Dot(*(Y(sv)),&cTY);
+      ((*c_)(rr))->Dot(*(Y(sv)),&cTY);
 
-        // loop all weight vectors
-        for(int rr=0;rr<w_->NumVectors();++rr)
-        {
-          if (rr==mm)
-          {
           /*
                    T
                   w * c
           */
-          double cTw=cTw_(mm,rr);
+          double cTw=cTw_(rr);
 
           /*
                                   T
@@ -217,9 +211,8 @@ int LINALG::KrylovProjector::ApplyPT(Epetra_MultiVector& Y) const
                                  w * c
           */
           (Y(sv))->Update(-cTY/cTw,*((*w_)(rr)),1.0);
-          }
-        } // loop all weight vectors
-      } // loop kernel basis vectors
+
+      } // loop kernel basis/weight vector pairs
   }
 
   return(ierr);
