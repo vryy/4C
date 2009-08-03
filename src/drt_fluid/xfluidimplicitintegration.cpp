@@ -183,26 +183,30 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
     if (density_ <= 0.0) dserror("received negative or zero density value from elements");
   }
 
-  // print information about element shapes
-  // (to double-check for reading the correct input)
+  // print information about elements
+  // (to double-check and log that correct input has been read)
   std::set<DRT::Element::DiscretizationType> distypeset;
-  diffusion_problem_ = false;
+  std::set<DRT::Element::ElementType> etypeset;
   for (int i=0; i<discret_->NumMyColElements(); ++i)
   {
     distypeset.insert(discret_->lColElement(i)->Shape());
-    if (discret_->lColElement(i)->Type() == DRT::Element::element_xdiff3)
-      diffusion_problem_ = true;
+    etypeset.insert(discret_->lColElement(i)->Type());
   }
-
-  if (diffusion_problem_);
+  
+  if (etypeset.count(DRT::Element::element_xdiff3) > 0)
   {
-    cout0_ << endl<<endl << "Computing a diffusion problem!" << endl << endl;
+    diffusion_problem_ = true; 
   }
+  else
+  {
+    diffusion_problem_ = false;
+  }  
 
 
   physprob_.fieldset_.clear();
   if (diffusion_problem_)
   {
+    cout0_ << endl<<endl << "Computing a diffusion problem!" << endl << endl;
     physprob_.fieldset_.insert(XFEM::PHYSICS::Temp);
     physprob_.elementAnsatzp_ = rcp(new XDIFF::Diff3ElementAnsatz());
   }
@@ -215,21 +219,39 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
     physprob_.elementAnsatzp_ = rcp(new XFLUID::FluidElementAnsatz());
   }
 
-  cout0_ << "Element shapes in xfluid discretization: ";
-  discret_->Comm().Barrier();
-  bool moreThanOne = false;
-  for (std::set<DRT::Element::DiscretizationType>::const_iterator iter = distypeset.begin(); iter != distypeset.end(); ++iter)
   {
-    if (moreThanOne)
-      cout << ", ";
-    cout << DRT::DistypeToString(*iter);
-    moreThanOne = true;
+    cout0_ << "Element shapes in xfluid discretization: ";
+    discret_->Comm().Barrier();
+    bool moreThanOne = false;
+    for (std::set<DRT::Element::DiscretizationType>::const_iterator iter = distypeset.begin(); iter != distypeset.end(); ++iter)
+    {
+      if (moreThanOne)  cout << ", ";
+      cout << DRT::DistypeToString(*iter);
+      moreThanOne = true;
+    }
+    if (actdis->Comm().MyPID()==0)
+    {
+      cout << endl;
+    }
+    discret_->Comm().Barrier();
   }
-  if (actdis->Comm().MyPID()==0)
+  
   {
-    cout << endl;
+    cout0_ << "Element types in xfluid discretization: ";
+    discret_->Comm().Barrier();
+    bool moreThanOnee = false;
+    for (std::set<DRT::Element::ElementType>::const_iterator iter = etypeset.begin(); iter != etypeset.end(); ++iter)
+    {
+      if (moreThanOnee)  cout << ", ";
+      cout << (*iter);
+      moreThanOnee = true;
+    }
+    if (actdis->Comm().MyPID()==0)
+    {
+      cout << endl;
+    }
+    discret_->Comm().Barrier();
   }
-  discret_->Comm().Barrier();
 
 } // FluidImplicitTimeInt::FluidImplicitTimeInt
 
@@ -1088,6 +1110,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       stopnonliniter=true;
       if (myrank_ == 0)
       {
+        printf("\n");
         printf("+---------------------------------------------------------------+\n");
         printf("|            >>>>>> not converged in itemax steps!              |\n");
         printf("+---------------------------------------------------------------+\n");
