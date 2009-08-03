@@ -446,6 +446,11 @@ double SCATRA::ScaTraTimIntImpl::ComputeInitialMass(const double thermpress)
   ParameterList eleparams;
   eleparams.set("action","calc_temp_and_dens");
 
+  //provide displacement field in case of ALE
+  eleparams.set("isale",isale_);
+  if (isale_)
+    AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+
   // evaluate integral of inverse temperature
   Teuchos::RCP<Epetra_SerialDenseVector> scalars
     = Teuchos::rcp(new Epetra_SerialDenseVector(numscal_+2));
@@ -486,6 +491,11 @@ double SCATRA::ScaTraTimIntImpl::ComputeThermPressureFromMassCons(
   // set action for elements
   ParameterList eleparams;
   eleparams.set("action","calc_temp_and_dens");
+
+  //provide displacement field in case of ALE
+  eleparams.set("isale",isale_);
+  if (isale_)
+    AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
 
   // evaluate integral of inverse temperature
   Teuchos::RCP<Epetra_SerialDenseVector> scalars
