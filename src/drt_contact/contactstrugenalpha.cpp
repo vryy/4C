@@ -1945,10 +1945,6 @@ void CONTACT::ContactStruGenAlpha::Update()
   if(ctype != INPAR::CONTACT::contact_normal)
   {
   	
-#ifdef CONTACTSLIPFIRST  	
-  	//contactmanager_->CorrectSlip();
-#endif
-  	
   	// store contact state to contact nodes (active or inactive)
   	contactmanager_->StoreNodalQuantities(Manager::activeold);
   	  	

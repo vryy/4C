@@ -374,16 +374,6 @@ public:
   void StoreDirichletStatus(RCP<LINALG::MapExtractor> dbcmaps);
 
   /*!
-  \brief Correct slip status for nodes coming into contact
-
-  Nodes coming into contact get the normal, frictionless contact condition.
-  The step after (second step in contact) it is started with the stick conditon.
-  So these nodes have to be set to stick.
-
-  */
-  void CorrectSlip();
-
-  /*!
   \brief Store current (contact) nodal entries of D and M to old ones
 
   Contact nodes own their current entries and old ones (last converged
