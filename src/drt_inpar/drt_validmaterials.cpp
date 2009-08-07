@@ -231,13 +231,16 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"REFVISC","reference dynamic viscosity (kg/(m*s))");
     AddNamedReal(m,"REFTEMP","reference temperature (K)");
     AddNamedReal(m,"SUTHTEMP","Sutherland temperature (K)");
-    AddNamedReal(m,"SHC","specific heat capacity at constant pressure");
     AddNamedReal(m,"PRANUM","Prandtl number");
     AddNamedReal(m,"PREEXCON","pre-exponential constant");
     AddNamedReal(m,"TEMPEXP","exponent of temperature dependence");
     AddNamedReal(m,"ACTEMP","activation temperature (K)");
+    AddNamedReal(m,"UNBSHC","specific heat capacity of unburnt phase");
+    AddNamedReal(m,"BURSHC","specific heat capacity of burnt phase");
     AddNamedReal(m,"UNBTEMP","temperature of unburnt phase (K)");
     AddNamedReal(m,"BURTEMP","temperature of burnt phase (K)");
+    AddNamedReal(m,"UNBDENS","density of unburnt phase");
+    AddNamedReal(m,"BURDENS","density of burnt phase");
 
     AppendMaterialDefinition(matlist,m);
   }

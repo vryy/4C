@@ -309,11 +309,12 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   SetInitialField(params_->get<int>("scalar initial field"), params_->get<int>("scalar initial field func number"));
 
   // -------------------------------------------------------------------
-  // set initial density to 1.0:
+  // set initial density to prescribed value (default = 1.0):
   // - used throughout simulation for non-temperature case
   // - used as good initial guess for stationary temperature case
   // -------------------------------------------------------------------
-  densnp_->PutScalar(1.0);
+  const double initdens = params_->get<double>("initial density",1.0);
+  densnp_->PutScalar(initdens);
 
   // initializes variables for natural convection (ELCH) if necessary
   SetupElchNatConv();
@@ -1469,6 +1470,34 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
             phinp_->ReplaceMyValues(1,&phi0,&doflid);
           }
         }
+      }
+    }
+  }
+  else if (init == 4) // discontinuous 0-1 field for progress variable in 1-D
+  {
+    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+    // loop all nodes on the processor
+    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+    {
+      // get the processor local node
+      DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
+      // the set of degrees of freedom associated with the node
+      vector<int> nodedofset = discret_->Dof(lnode);
+
+      int numdofs = nodedofset.size();
+      for (int k=0;k< numdofs;++k)
+      {
+        const int dofgid = nodedofset[k];
+        int doflid = dofrowmap->LID(dofgid);
+
+        double initialval = 0.0;
+        if (lnode->X()[0] > -EPS10) initialval = 1.0;
+
+        phin_->ReplaceMyValues(1,&initialval,&doflid);
+        // initialize also the solution vector. These values are a pretty good guess for the
+        // solution after the first time step (much better than starting with a zero vector)
+        phinp_->ReplaceMyValues(1,&initialval,&doflid);
       }
     }
   }

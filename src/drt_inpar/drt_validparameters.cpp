@@ -1594,8 +1594,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "zero_field",
                                  "field_by_function",
                                  "field_by_condition",
-                                 "disturbed_field_by_function"),
-                               tuple<int>(0,1,2,3),
+                                 "disturbed_field_by_function",
+                                 "DISCONTINUOUS PV"),
+                               tuple<int>(0,1,2,3,4),
                                &scatradyn);
 
   IntParameter("INITFUNCNO",-1,"function number for scalar transport initial field",&scatradyn);
@@ -1657,6 +1658,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "Switch to block-preconditioned family of solvers, needs additional SCALAR TRANSPORT ELECTRIC POTENTIAL SOLVER block!",
                                yesnotuple,yesnovalue,&scatradyn);
 
+  DoubleParameter("INITIALDENS",1.0,"Initial value for density",&scatradyn);
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& scatra_nonlin = scatradyn.sublist(
       "NONLINEAR",
@@ -1677,23 +1680,47 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& scatradyn_stab = scatradyn.sublist("STABILIZATION",false,"");
 
-  // this parameter seperates stabilized from unstabilized methods
+  // this parameter governs type of stabilization
   setStringToIntegralParameter<int>("STABTYPE",
-                               "residual_based",
-                               "Apply (un)stabilized scalar transport formulation",
+                                    "SUPG",
+                                    "type of stabilization (if any)",
                                tuple<std::string>(
                                  "no_stabilization",
-                                 "residual_based",
-                                 "residual_based_plus_sgvel",
-                                 "residual_based_plus_dc",
-                                 "residual_based_plus_sgvel_and_dc"),
+                                 "SUPG",
+                                 "GLS",
+                                 "USFEM"),
                                tuple<std::string>(
                                  "Do not use any stabilization -> only reasonable for low-Peclet-number flows",
-                                 "Use a residual-based stabilization",
-                                 "Use a residual-based stabilization and add the subgrid-scale velocity",
-                                 "Use a residual-based stabilization and add an (all-scale) discontinuity-capturing term",
-                                 "Use a residual-based stabilization and add the subgrid-scale velocity as well as an (all-scale) discontinuity-capturing term")  ,
-                               tuple<int>(0,1,2,3,4),
+                                 "Use SUPG",
+                                 "Use GLS",
+                                 "Use USFEM")  ,
+                               tuple<int>(0,1,2,3),
+                               &scatradyn_stab);
+
+  // this parameter governs whether subgrid-scale velocity is included
+  setStringToIntegralParameter<int>("SUGRVEL",
+                                    "no",
+                                    "potential incorporation of subgrid-scale velocity",
+                               tuple<std::string>(
+                                 "no",
+                                 "yes"),
+                               tuple<std::string>(
+                                 "no incorporation of subgrid-scale velocity",
+                                 "incorporation of subgrid-scale velocity")  ,
+                               tuple<int>(0,1),
+                               &scatradyn_stab);
+
+  // this parameter governs whether subgrid-scale velocity is included
+  setStringToIntegralParameter<int>("DISCONCAP",
+                                    "no",
+                                    "potential incorporation of discontinuity-capturing term",
+                               tuple<std::string>(
+                                 "no",
+                                 "yes"),
+                               tuple<std::string>(
+                                 "no incorporation of discontinuity-capturing term",
+                                 "incorporation of discontinuity-capturing term")  ,
+                               tuple<int>(0,1),
                                &scatradyn_stab);
 
   // this parameter selects the tau definition applied

@@ -67,7 +67,7 @@ INITFUNCNO       -1
 FSSUGRVISC       No
 WRITEFLUX        No
 ----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
-STABTYPE         residual_based
+STABTYPE         SUPG
 DEFINITION_TAU   Franca_Valentin //Bazilevs
 ------------------------------------------------------ELCH CONTROL
 ITEMAX           12

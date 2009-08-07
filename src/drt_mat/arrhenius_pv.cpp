@@ -26,13 +26,16 @@ MAT::PAR::ArrheniusPV::ArrheniusPV(
   refvisc_(matdata->GetDouble("REFVISC")),
   reftemp_(matdata->GetDouble("REFTEMP")),
   suthtemp_(matdata->GetDouble("SUTHTEMP")),
-  shc_(matdata->GetDouble("SHC")),
   pranum_(matdata->GetDouble("PRANUM")),
   preexcon_(matdata->GetDouble("PREEXCON")),
   tempexp_(matdata->GetDouble("TEMPEXP")),
   actemp_(matdata->GetDouble("ACTEMP")),
+  unbshc_(matdata->GetDouble("UNBSHC")),
+  burshc_(matdata->GetDouble("BURSHC")),
   unbtemp_(matdata->GetDouble("UNBTEMP")),
-  burtemp_(matdata->GetDouble("BURTEMP"))
+  burtemp_(matdata->GetDouble("BURTEMP")),
+  unbdens_(matdata->GetDouble("UNBDENS")),
+  burdens_(matdata->GetDouble("BURDENS"))
 {
 }
 
@@ -103,11 +106,29 @@ void MAT::ArrheniusPV::Unpack(const vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+double MAT::ArrheniusPV::ComputeShc(const double provar) const
+{
+  const double shc = UnbShc() + provar * (BurShc() - UnbShc());
+
+  return shc;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 double MAT::ArrheniusPV::ComputeTemperature(const double provar) const
 {
   const double temperature = UnbTemp() + provar * (BurTemp() - UnbTemp());
 
   return temperature;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double MAT::ArrheniusPV::ComputeDensity(const double provar) const
+{
+  const double density = UnbDens() + provar * (BurDens() - UnbDens());
+
+  return density;
 }
 
 /*----------------------------------------------------------------------*/

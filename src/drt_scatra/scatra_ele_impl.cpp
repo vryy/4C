@@ -170,6 +170,7 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(int numdofpernode, int numscal)
     numscal_(numscal),
     iselch_((numdofpernode_ - numscal_) == 1),
     isale_(false),
+    diffreastafac_(0.0),
     evelnp_(true),   // initialize to zero
     esgvelnp_(true),
     ephinp_(numscal_),
@@ -317,6 +318,25 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       else if (taudef == "Exact_1D") whichtau = SCATRA::tau_exact_1d;
     }
 
+    // set (sign) factor for diffusive and reactive stabilization terms
+    // (factor is zero for SUPG) and overwrite tau definition when there
+    // is no stabilization
+    const string stabinp = stablist.get<string>("STABTYPE");
+    if (stabinp == "no stabilization") whichtau = SCATRA::tau_zero;
+    else if (stabinp == "GLS")   diffreastafac_ = 1.0;
+    else if (stabinp == "USFEM") diffreastafac_ = -1.0;
+
+    // set flags for subgrid-scale velocity and all-scale subgrid diffusivity,
+    // that is, discontinuity-capturing term (default: "false" for both flags)
+    bool sgvel = false; //default
+    bool assgd = false; //default
+    {
+      const string sgvelinp = stablist.get<string>("SUGRVEL");
+      if (sgvelinp == "yes") sgvel = true;
+      const string disconcapinp = stablist.get<string>("DISCONCAP");
+      if (disconcapinp == "yes") assgd = true;
+    }
+
     // set flags for potential evaluation of tau and material law at int. point
     bool tau_gp = false; //default
     bool mat_gp = false; //default
@@ -325,22 +345,6 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       if (tauloc == "integration_point") tau_gp = true;
       const string matloc = stablist.get<string>("EVALUATION_MAT");
       if (matloc == "integration_point") mat_gp = true;
-    }
-
-    // set flags for subgrid-scale velocity and all-scale subgrid diffusivity
-    bool sgvel = false; //default
-    bool assgd = false; //default
-    {
-      const string stabinp = stablist.get<string>("STABTYPE");
-      if (stabinp == "residual_based_plus_sgvel" and scaltypestr =="loma")
-        sgvel = true;
-      else if (stabinp == "residual_based_plus_dc")
-        assgd = true;
-      else if (stabinp == "residual_based_plus_sgvel_and_dc" and scaltypestr =="loma")
-      {
-        assgd = true;
-        sgvel = true;
-      }
     }
 
     // set flag for fine-scale subgrid diffusivity
@@ -1066,21 +1070,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
 
       for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
       {
-        // density-weighted shape functions at n+1/n+alpha_F
-        densfunct_.EMultiply(funct_,edensnp_[k]);
-
-        // density-weighted shape functions at n+alpha_M
-        densamfunct_.EMultiply(funct_,edensam_[k]);
-
-        // get (density-weighted) velocity at integration point
-        velint_.Multiply(evelnp_,densfunct_);
-
-        // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
-        conv_.MultiplyTN(derxy_,velint_);
-
-        // momentum divergence required for conservative form
-        if (conservative) GetMomentumDivergence(mdiv_,evelnp_,edensnp_,derxy_);
-
         //--------------------------------------------------------------------
         // calculation of stabilization parameter(s) tau at integration point
         //--------------------------------------------------------------------
@@ -1088,6 +1077,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
         {
           // get density at integration point
           const double dens = funct_.Dot(edensnp_[k]);
+
+          // get velocity at integration point
+          velint_.Multiply(evelnp_,funct_);
 
           // generating copy of diffusivity for use in CalTau routine
           double diffus = diffus_[k];
@@ -1107,7 +1099,25 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
                  is_stationary,
                  vol,
                  k);
+
+          // clear velocity vector at integration point
+          velint_.Clear();
         }
+
+        // density-weighted shape functions at n+1/n+alpha_F
+        densfunct_.EMultiply(funct_,edensnp_[k]);
+
+        // density-weighted shape functions at n+alpha_M
+        densamfunct_.EMultiply(funct_,edensam_[k]);
+
+        // get (density-weighted) velocity at integration point
+        velint_.Multiply(evelnp_,densfunct_);
+
+        // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
+        conv_.MultiplyTN(derxy_,velint_);
+
+        // momentum divergence required for conservative form
+        if (conservative) GetMomentumDivergence(mdiv_,evelnp_,edensnp_,derxy_);
 
         // computations when including subgrid-scale velocity
         if (sgvel)
@@ -1134,7 +1144,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
         //  equation system, a reaction-rate term is added.)
         rhs_[k] = bodyforce_[k].Dot(funct_) / shcacp_;
         rhs_[k] += thermpressdt / shcacp_;
-        rhs_[k] += reatemprhs_[k] / shcacp_;
+        rhs_[k] += reatemprhs_[k];
 
         // gradient of current scalar value
         gradphi_.Multiply(derxy_,ephinp_[k]);
@@ -1313,9 +1323,9 @@ if (material->MaterialType() == INPAR::MAT::m_matlist)
       // compute diffusivity according to Sutherland law
       diffus_[k] = actsinglemat->ComputeDiffusivity(temp);
 
-      // compute sum of reaction rates for temperature equation
-      // -> will be considered a right-hand side contribution
-      reatemprhs_[k] = actsinglemat->ComputeReactionRHS(spmf,temp,dens);
+      // compute sum of reaction rates for temperature equation divided by specific
+      // heat capacity -> will be considered a right-hand side contribution
+      reatemprhs_[k] = actsinglemat->ComputeReactionRHS(spmf,temp,dens)/shcacp_;
     }
     else if (singlemat->MaterialType() == INPAR::MAT::m_condif)
     {
@@ -1377,17 +1387,16 @@ else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
 {
   const MAT::ArrheniusPV* actmat = static_cast<const MAT::ArrheniusPV*>(material.get());
 
-  dsassert(numdofpernode_==1,"more than 1 dof per node for condif material");
-
-  // get specific heat capacity at constant pressure
-  shcacp_ = actmat->Shc();
+  dsassert(numdofpernode_==1,"more than 1 dof per node for progress-variable approach");
 
   // get progress variable and density
   const double provar = funct_.Dot(ephinp_[0]);
-  const double dens   = funct_.Dot(edensnp_[numscal_-1]);
 
-  // compute temperature based on progress variable
+  // compute specific heat capacity at constant pressure, temperature and density
+  // based on progress variable
+  shcacp_ = actmat->ComputeShc(provar);
   const double temp = actmat->ComputeTemperature(provar);
+  const double dens = actmat->ComputeDensity(provar);
 
   // compute diffusivity according to Sutherland law
   diffus_[0] = actmat->ComputeDiffusivity(temp);
@@ -1522,9 +1531,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
 
       // stabilization parameters for stationary and instationary case, respectively
       if (is_stationary == true)
-        tau_[k] = 1.0/(sqrt(reacoeff_[k]*reacoeff_[k]+Gnormu+CI*diffus*diffus*normG));
+        tau_[k] = 1.0/(sqrt(dens_sqr*reacoeff_[k]*reacoeff_[k]+Gnormu+CI*diffus*diffus*normG));
       else
-        tau_[k] = 1.0/(sqrt((4.0*dens_sqr)/(dt*dt)+reacoeff_[k]*reacoeff_[k]+Gnormu+CI*diffus*diffus*normG));
+        tau_[k] = 1.0/(sqrt(dens_sqr*(4.0/(dt*dt)+reacoeff_[k]*reacoeff_[k])+Gnormu+CI*diffus*diffus*normG));
     }
     break;
     case SCATRA::tau_franca_valentin:
@@ -1612,7 +1621,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
 
         const double xi1 = DMAX(epe1,1.0);
 
-        tau_[k] = DSQR(h)/(DSQR(h)*dens*reacoeff_[k]*xi1 + (2.0*diffus/mk)*xi);
+        tau_[k] = DSQR(h)/(DSQR(h)*dens*reacoeff_[k]*xi1 + 2.0*diffus*xi/mk);
       }
       else
       {
@@ -1625,7 +1634,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
 
         const double xi1 = DMAX(epe1,1.0);
 
-        tau_[k] = DSQR(h)/(DSQR(h)*dens*(reacoeff_[k]+1.0/timefac)*xi1 + (2.0*diffus/mk)*xi);
+        tau_[k] = DSQR(h)/(DSQR(h)*dens*(reacoeff_[k]+1.0/timefac)*xi1 + 2.0*diffus*xi/mk);
       }
 
 #ifdef VISUALIZE_ELEMENT_DATA
@@ -1927,32 +1936,30 @@ if (use2ndderiv_)
   }
 
   // diffusive stabilization of convective term (in convective form)
-  // (USFEM assumed here, sign change necessary for GLS)
   for (int vi=0; vi<iel; ++vi)
   {
-    const double v = timetaufac*diff_(vi);
+    const double v = diffreastafac_*timetaufac*diff_(vi);
     const int fvi = vi*numdofpernode_+dofindex;
 
     for (int ui=0; ui<iel; ++ui)
     {
       const int fui = ui*numdofpernode_+dofindex;
 
-      emat(fvi,fui) += v*conv_(ui);
+      emat(fvi,fui) -= v*conv_(ui);
     }
   }
 
   // diffusive stabilization of diffusive term
-  // (USFEM assumed here, sign change necessary for GLS)
   for (int vi=0; vi<iel; ++vi)
   {
-    const double v = timetaufac*diff_(vi);
+    const double v = diffreastafac_*timetaufac*diff_(vi);
     const int fvi = vi*numdofpernode_+dofindex;
 
     for (int ui=0; ui<iel; ++ui)
     {
       const int fui = ui*numdofpernode_+dofindex;
 
-      emat(fvi,fui) -= v*diff_(ui);
+      emat(fvi,fui) += v*diff_(ui);
     }
   }
 }
@@ -1999,17 +2006,16 @@ if (not is_stationary)
   if (use2ndderiv_)
   {
     // diffusive stabilization of transient term
-    // (USFEM assumed here, sign change necessary for GLS)
     for (int vi=0; vi<iel; ++vi)
     {
-      const double v = taufac*diff_(vi);
+      const double v = diffreastafac_*taufac*diff_(vi);
       const int fvi = vi*numdofpernode_+dofindex;
 
       for (int ui=0; ui<iel; ++ui)
       {
         const int fui = ui*numdofpernode_+dofindex;
 
-        emat(fvi,fui) += v*densamfunct_(ui);
+        emat(fvi,fui) -= v*densamfunct_(ui);
       }
     }
   }
@@ -2034,7 +2040,7 @@ if (reaction)
     {
       const int fui = ui*numdofpernode_+dofindex;
 
-      emat(fvi,fui) += v*densfunct_(ui);
+      emat(fvi,fui) += v*funct_(ui);
     }
   }
 
@@ -2051,24 +2057,23 @@ if (reaction)
     {
       const int fui = ui*numdofpernode_+dofindex;
 
-      emat(fvi,fui) += v*densfunct_(ui);
+      emat(fvi,fui) += v*funct_(ui);
     }
   }
 
   if (use2ndderiv_)
   {
     // diffusive stabilization of reactive term
-    // (USFEM assumed here, sign change necessary for GLS)
     for (int vi=0; vi<iel; ++vi)
     {
-      const double v = timetaufac_reac*diff_(vi);
+      const double v = diffreastafac_*timetaufac_reac*diff_(vi);
       const int fvi = vi*numdofpernode_+dofindex;
 
       for (int ui=0; ui<iel; ++ui)
       {
         const int fui = ui*numdofpernode_+dofindex;
 
-        emat(fvi,fui) += v*densfunct_(ui);
+        emat(fvi,fui) -= v*funct_(ui);
       }
     }
   }
@@ -2077,27 +2082,25 @@ if (reaction)
   // reactive stabilization
   //----------------------------------------------------------------
   // reactive stabilization of convective (in convective form) and reactive term
-  // (USFEM assumed here, sign change necessary for GLS)
   for (int vi=0; vi<iel; ++vi)
   {
-    const double v = -timetaufac_reac*funct_(vi);
+    const double v = diffreastafac_*timetaufac_reac*funct_(vi);
     const int fvi = vi*numdofpernode_+dofindex;
 
     for (int ui=0; ui<iel; ++ui)
     {
       const int fui = ui*numdofpernode_+dofindex;
 
-      emat(fvi,fui) += v*(conv_(ui)+densfunct_(ui));
+      emat(fvi,fui) += v*(conv_(ui)+reacoeff_[dofindex]*funct_(ui));
     }
   }
 
   if (use2ndderiv_)
   {
     // reactive stabilization of diffusive term
-    // (USFEM assumed here, sign change necessary for GLS)
     for (int vi=0; vi<iel; ++vi)
     {
-      const double v = -timetaufac_reac*funct_(vi);
+      const double v = diffreastafac_*timetaufac_reac*funct_(vi);
       const int fvi = vi*numdofpernode_+dofindex;
 
       for (int ui=0; ui<iel; ++ui)
@@ -2266,12 +2269,11 @@ for (int vi=0; vi<iel; ++vi)
 if (use2ndderiv_)
 {
   // diffusive stabilization of convective temporal rhs term (in convective form)
-  // (USFEM assumed here, sign change necessary for GLS)
   for (int vi=0; vi<iel; ++vi)
   {
     const int fvi = vi*numdofpernode_+dofindex;
 
-    erhs[fvi] -= vrhs*diff_(vi);
+    erhs[fvi] += diffreastafac_*vrhs*diff_(vi);
   }
 }
 
@@ -2290,13 +2292,12 @@ if (reaction)
   }
 
   // reactive rhs stabilization
-  // (USFEM assumed here, sign change necessary for GLS)
-  vrhs = rhstaufac*reacoeff_[dofindex]*residual;
+  vrhs = diffreastafac_*rhstaufac*reacoeff_[dofindex]*residual;
   for (int vi=0; vi<iel; ++vi)
   {
     const int fvi = vi*numdofpernode_+dofindex;
 
-    erhs[fvi] += vrhs*funct_(vi);
+    erhs[fvi] -= vrhs*funct_(vi);
   }
 }
 
@@ -2741,27 +2742,27 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
           // migration term (reactive part)
           emat(fvi, fui) += -timetaufac_conv_eff_vi*migrea_(ui) ;
 
-          /* 2) diffusive stabilization (USFEM assumed here, sign change necessary for GLS) */
+          /* 2) diffusive stabilization */
 
           // convective term
-          emat(fvi, fui) += timetaufac*diff_(vi)*(conv_(ui)+diffus_valence_k*migconv_(ui));
+          emat(fvi, fui) -= diffreastafac_*timetaufac*diff_(vi)*(conv_(ui)+diffus_valence_k*migconv_(ui));
 
           // diffusive term
-          emat(fvi, fui) -= timetaufac*diff_(vi)*diff_(ui) ;
+          emat(fvi, fui) += diffreastafac_*timetaufac*diff_(vi)*diff_(ui) ;
 
           // migration term (reactive part)
-          emat(fvi, fui) += timetaufac*diff_(vi)*migrea_(ui) ;
+          emat(fvi, fui) -= diffreastafac_*timetaufac*diff_(vi)*migrea_(ui) ;
 
           /* 3) reactive stabilization (reactive part of migration term) */
 
           // convective terms
-          //emat(fvi, ui*numdofpernode_+k) += timetaufac*migrea_(vi)*(conv_(ui)+diffus_valence_k*migconv_(ui));
+          //emat(fvi, ui*numdofpernode_+k) -= diffreastafac_*timetaufac*migrea_(vi)*(conv_(ui)+diffus_valence_k*migconv_(ui));
 
           // diffusive term
-          //emat(fvi, ui*numdofpernode_+k) -= timetaufac*migrea_(vi)*diff_(ui) ;
+          //emat(fvi, ui*numdofpernode_+k) += diffreastafac_*timetaufac*migrea_(vi)*diff_(ui) ;
 
           // migration term (reactive part)
-          //emat(fvi, ui*numdofpernode_+k) += timetaufac*migrea_(vi)*migrea_(ui) ;
+          //emat(fvi, ui*numdofpernode_+k) -= diffreastafac_*timetaufac*migrea_(vi)*migrea_(ui) ;
 
         } // for ui
       } // for vi
@@ -2841,8 +2842,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
       {
         const int fvi = vi*numdofpernode_+k;
 
-        // 2) diffusive stabilization (USFEM assumed here, sign change necessary for GLS)
-        erhs[fvi] += diff_(vi)*taufacresidual ;
+        // 2) diffusive stabilization
+        erhs[fvi] -= diffreastafac_*diff_(vi)*taufacresidual ;
 
         /* 3) reactive stabilization (reactive part of migration term) */
 
@@ -2873,9 +2874,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
 
           if (use2ndderiv_)
           {
-            /* 2) diffusive stabilization (USFEM assumed here, sign change necessary for GLS) */
+            /* 2) diffusive stabilization */
             /* transient term */
-            emat(fvi, fui) += taufac*diff_(vi)*funct_(ui);
+            emat(fvi, fui) -= diffreastafac_*taufac*diff_(vi)*funct_(ui);
           }
         } // for ui
 
@@ -3114,7 +3115,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
     // get specific heat capacity at constant pressure
     shcacp_ = actmat->Shc();
 
-    // compute diffusivity according to Sutherland law
+    // compute thermal conductivity according to Sutherland law
     double phi = 0.0;
     for (int i=0; i<iel; ++i)
     {
@@ -3126,16 +3127,20 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
   {
     const MAT::ArrheniusPV* actmat = static_cast<const MAT::ArrheniusPV*>(material.get());
 
-    // get specific heat capacity at constant pressure
-    shcacp_ = actmat->Shc();
-
-    // compute diffusivity according to Sutherland law
-    double phi = 0.0;
+    // compute progress variable
+    double provar = 0.0;
     for (int i=0; i<iel; ++i)
     {
-      phi += funct_(i)*ephinp[i];
+      provar += funct_(i)*ephinp[i];
     }
-    diffus = shcacp_*actmat->ComputeDiffusivity(phi);
+
+    // compute specific heat capacity at constant pressure and temperature
+    // based on progress variable
+    shcacp_ = actmat->ComputeShc(provar);
+    const double temp = actmat->ComputeTemperature(provar);
+
+    // compute thermal conductivity according to Sutherland law
+    diffus = shcacp_*actmat->ComputeDiffusivity(temp);
 }
   else
     dserror("Material type is not supported");

@@ -101,7 +101,7 @@ MATID            4
 CONVTOL          1e-9
 ITEMAX           10
 ----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
-STABTYPE         residual_based
+STABTYPE         SUPG
 DEFINITION_TAU   Bazilevs //Franca_Valentin
 ------------------------------------------------------ELCH CONTROL
 ITEMAX           12

@@ -456,6 +456,8 @@ public:
     const bool iselch_;
     //! flag for using ALE formulation
     bool isale_;
+    //! (sign) factor for diffusive and reactive stabilization terms
+    double diffreastafac_;
 
     //! nodal velocity values
     LINALG::Matrix<nsd_,iel> evelnp_;

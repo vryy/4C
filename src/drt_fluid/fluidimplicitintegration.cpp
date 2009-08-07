@@ -455,13 +455,11 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   sgvel_ = false;
   if (loma_ != "No")
   {
-    // get fluid turbulence sublist
+    // get sublist containing SCATRA stabilization parameters
     ParameterList * scatrastabparams =&(params_.sublist("SCATRA STABILIZATION"));
 
     // flag for evaluation of subgrid-scale velocity
-    if (scatrastabparams->get<string>("STABTYPE") == "residual_based_plus_sgvel" or
-        scatrastabparams->get<string>("STABTYPE") == "residual_based_plus_sgvel_and_dc")
-      sgvel_ = true;
+    if (scatrastabparams->get<string>("SUGRVEL") == "yes") sgvel_ = true;
   }
 
   // construct impedance bc wrapper

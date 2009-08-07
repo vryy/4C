@@ -111,7 +111,8 @@ CONVFORM         convective
 MATID            2
 OUTMEAN          Yes
 ----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
-STABTYPE         residual_based_plus_sgvel
+STABTYPE         SUPG
+SUGRVEL          yes
 DEFINITION_TAU   Bazilevs
 ------------------------------------------------------LOMA CONTROL
 NUMSTEP          20

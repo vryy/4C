@@ -148,6 +148,9 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   // -------------------- block preconditioning (only supported by ELCH)
   scatratimeparams->set<int>("BLOCKPRECOND",Teuchos::getIntegralValue<int>(scatradyn,"BLOCKPRECOND"));
 
+  // ----------------------------- prescribed initial value for density
+  scatratimeparams->set<double>("initial density",scatradyn.get<double>("INITIALDENS"));
+
   // -----------------------sublist containing stabilization parameters
   scatratimeparams->sublist("STABILIZATION")=scatradyn.sublist("STABILIZATION");
 

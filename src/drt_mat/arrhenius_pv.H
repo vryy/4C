@@ -49,8 +49,6 @@ namespace MAT
       const double reftemp_;
       /// Sutherland temperature (K)
       const double suthtemp_;
-      /// specific heat capacity
-      const double shc_;
       /// Prandtl number
       const double pranum_;
       /// pre-exponential constant
@@ -59,10 +57,18 @@ namespace MAT
       const double tempexp_;
       /// activation temperature
       const double actemp_;
+      /// specific heat capacity of unburnt phase
+      const double unbshc_;
+      /// specific heat capacity of burnt phase
+      const double burshc_;
       /// temperature of unburnt phase
       const double unbtemp_;
       /// temperature of burnt phase
       const double burtemp_;
+      /// density of unburnt phase
+      const double unbdens_;
+      /// density of burnt phase
+      const double burdens_;
 
       //@}
 
@@ -124,8 +130,14 @@ namespace MAT
     /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_arrhenius_pv; }
 
+    /// compute specific heat capacity at constant pressure
+    double ComputeShc(const double provar) const;
+
     /// compute temperature
     double ComputeTemperature(const double provar) const;
+
+    /// compute density
+    double ComputeDensity(const double provar) const;
 
     /// compute diffusivity
     double ComputeDiffusivity(const double temp) const;
@@ -143,8 +155,6 @@ namespace MAT
     double RefTemp() const { return params_->reftemp_; }
     /// Sutherland temperature (K)
     double SuthTemp() const { return params_->suthtemp_; }
-    /// specific heat capacity
-    double Shc() const { return params_->shc_; }
     /// Prandtl number
     double PraNum() const { return params_->pranum_; }
     /// pre-exponential constant
@@ -153,10 +163,18 @@ namespace MAT
     double TempExp() const { return params_->tempexp_; }
     /// activation temperature
     double AcTemp() const { return params_->actemp_; }
+    /// specific heat capacity of unburnt phase
+    double UnbShc() const { return params_->unbshc_; }
+    /// specific heat capacity of burnt phase
+    double BurShc() const { return params_->burshc_; }
     /// temperature of unburnt phase
     double UnbTemp() const { return params_->unbtemp_; }
     /// temperature of burnt phase
     double BurTemp() const { return params_->burtemp_; }
+    /// density of unburnt phase
+    double UnbDens() const { return params_->unbdens_; }
+    /// density of burnt phase
+    double BurDens() const { return params_->burdens_; }
 
     //@}
 
