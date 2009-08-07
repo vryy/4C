@@ -1304,8 +1304,8 @@ void DRT::ELEMENTS::Fluid3Surface::ElementNodeNormal(ParameterList& params,
   }
 
   /*----------------------------------------------------------------------*
-    |               start loop over integration points                     |
-    *----------------------------------------------------------------------*/
+   |               start loop over integration points                     |
+   *----------------------------------------------------------------------*/
   const IntegrationPoints2D  intpoints(gaussrule);
 
   for (int gpid=0; gpid<intpoints.nquad; gpid++)
