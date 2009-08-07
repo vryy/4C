@@ -255,7 +255,7 @@ public:
    */
   void SetFSISurface(const LINALG::MapExtractor* fsisurface) { fsisurface_ = fsisurface; }
 
-  /// calculate lift&drag forces and angular moments
+  /// calculate lift&drag forces and angular momenta
   void LiftDrag() const;
 
   /// integrate shape functions at nodes marked by condition
@@ -355,6 +355,12 @@ protected:
   const Teuchos::RCP<DRT::Discretization>      discret_;
   const ParameterList&                         fluidsolverparams_;
   Teuchos::RCP<LINALG::Solver>                 solver_;
+  //! project nullspace (useful for completely Dirichlet bounded problems)
+  bool                        project_;
+  //! integrated basis vector (pressure component)
+  Teuchos::RCP<Epetra_Vector> w_;
+  //! basis vector for nullspace (vector of ones in the pressure component)
+  Teuchos::RCP<Epetra_Vector> c_;
   const ParameterList&                         params_;
   const ParameterList&                         xparams_;
   const Teuchos::RCP<IO::DiscretizationWriter> output_;

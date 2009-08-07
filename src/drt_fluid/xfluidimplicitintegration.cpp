@@ -83,6 +83,8 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   // time measurement: initialization
   TEUCHOS_FUNC_TIME_MONITOR(" + initialization");
 
+  cout << "FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt()" << endl;
+
   // -------------------------------------------------------------------
   // get the basic parameters first
   // -------------------------------------------------------------------
@@ -611,6 +613,35 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   discret_->FillComplete();
   const Epetra_Map& newdofrowmap = *discret_->DofRowMap();
 
+  // sysmat might be singular (if we have a purely Dirichlet constrained
+  // problem, the pressure mode is defined only up to a constant)
+  // in this case, we need a basis vector for the nullspace/kernel
+  vector<DRT::Condition*> KSPcond;
+  discret_->GetCondition("KrylovSpaceProjection",KSPcond);
+  int numcond = KSPcond.size();
+  int numfluid = 0;
+  for(int icond = 0; icond < numcond; icond++)
+  {
+    const std::string* name = KSPcond[icond]->Get<std::string>("discretization");
+    if (*name == "fluid") numfluid++;
+  }
+  if (numfluid == 1)
+  {
+    project_ = true;
+    w_       = LINALG::CreateVector(newdofrowmap,true);
+    c_       = LINALG::CreateVector(newdofrowmap,true);
+  }
+  else if (numfluid == 0)
+  {
+    project_ = false;
+    w_       = Teuchos::null;
+    c_       = Teuchos::null;
+  }
+  else
+    dserror("Received more than one KrylovSpaceCondition for fluid field");
+
+
+
   solver_ = rcp(new LINALG::Solver(fluidsolverparams_,
                                    discret_->Comm(),
                                    DRT::Problem::Instance()->ErrorFile()->Handle()));
@@ -783,7 +814,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     const Teuchos::RCP<DRT::Discretization> cutterdiscret
     )
 {
-  cout << "nonlinear solve:" << endl;
+  cout << "FLD::XFluidImplicitTimeInt::NonlinearSolve()" << endl;
   // time measurement: nonlinear iteration
   TEUCHOS_FUNC_TIME_MONITOR("   + nonlin. iteration/lin. solve");
 
@@ -814,10 +845,6 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 
   double dtsolve = 0.0;
   double dtele   = 0.0;
-
-  // get interface velocity
-  const Teuchos::RCP<const Epetra_Vector> ivelcolnp = cutterdiscret->GetState("ivelcolnp");
-//  const Teuchos::RCP<const Epetra_Vector> ivelcoln  = cutterdiscret->GetState("ivelcoln");
 
   // action for elements
   if (timealgo_!=timeint_stationary and theta_ < 1.0)
@@ -857,8 +884,8 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 
   if (myrank_ == 0)
   {
-    printf("+------------+-------------------+--------------+--------------+--------------+--------------+--------------+--------------+\n");
-    printf("|- step/max -|- tol      [norm] -|-- vel-res ---|-- pre-res ---|-- fullres ---|-- vel-inc ---|-- pre-inc ---|-- fullinc ---|\n");
+    printf("+------------+------------------+-------------+-------------+-------------+-------------+-------------+-------------+\n");
+    printf("|- step/max -|- tol     [norm] -|-- vel-res --|-- pre-res --|-- fullres --|-- vel-inc --|-- pre-inc --|-- fullinc --|\n");
   }
 
   const Teuchos::RCP<Epetra_Vector> iforcecolnp = LINALG::CreateVector(*cutterdiscret->DofColMap(),true);
@@ -920,7 +947,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 
       discret_->SetState("nodal increment",oldinc);
 
-      eleparams.set("interface velocity",ivelcolnp);
+      eleparams.set("interface velocity",cutterdiscret->GetState("ivelcolnp"));
 
       // reset interface force and let the elements fill it
       iforcecolnp->PutScalar(0.0);
@@ -944,6 +971,26 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
         // call standard loop over elements
         discret_->Evaluate(eleparams,sysmat_,residual_);
         discret_->ClearState();
+
+        // account for potential Neumann inflow terms
+        if (params_.get<string>("Neumann inflow") == "yes")
+        {
+          // create parameter list
+          ParameterList condparams;
+
+          // action for elements
+          condparams.set("action","calc_Neumann_inflow");
+          condparams.set("thsl",theta_*dta_);
+
+          // set vector values needed by elements
+          discret_->ClearState();
+          condparams.set("using generalized-alpha time integration",false);
+          discret_->SetState("velnp",state_.velnp_);
+
+          std::string condstring("FluidNeumannInflow");
+          discret_->EvaluateCondition(condparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null,condstring);
+          discret_->ClearState();
+        }
 
         // finalize the complete matrix
         sysmat_->Complete();
@@ -1050,9 +1097,9 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     {
       if (myrank_ == 0)
       {
-        printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   |      --      |      --      |      --      |",
+        printf("|  %3d/%3d   | %9.2E[L_2 ]  | %9.2E   | %9.2E   | %9.2E   |      --     |      --     |      --     |",
                itnum,itemax,ittol,vresnorm,presnorm,fullresnorm);
-        printf(" (      --     ,te=%10.3E)",dtele);
+        printf(" (      --    ,te=%9.2E)",dtele);
       }
     }
     /* ordinary case later iteration steps:
@@ -1073,16 +1120,16 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
         stopnonliniter=true;
         if (myrank_ == 0)
         {
-          printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
+          printf("|  %3d/%3d   | %9.2E[L_2 ]  | %9.2E   | %9.2E   | %9.2E   | %9.2E   | %9.2E   | %9.2E   |",
                  itnum,itemax,ittol,vresnorm,presnorm,fullresnorm,
                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2,incfullnorm_L2/fullnorm_L2);
-          printf(" (ts=%10.3E,te=%10.3E)\n",dtsolve,dtele);
-          printf("+------------+-------------------+--------------+--------------+--------------+--------------+--------------+--------------+\n");
+          printf(" (ts=%9.2E,te=%9.2E)\n",dtsolve,dtele);
+          printf("+------------+------------------+-------------+-------------+-------------+-------------+-------------+-------------+\n");
 
           FILE* errfile = params_.get<FILE*>("err file");
           if (errfile!=NULL)
           {
-            fprintf(errfile,"fluid solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
+            fprintf(errfile,"fluid solve:   %3d/%3d  tol=%9.2E[L_2 ]  vres=%9.2E  pres=%9.2E  vinc=%9.2E  pinc=%9.2E\n",
                     itnum,itemax,ittol,vresnorm,presnorm,
                     incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
           }
@@ -1092,10 +1139,10 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       else // if not yet converged
         if (myrank_ == 0)
         {
-          printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
+          printf("|  %3d/%3d   | %9.2E[L_2 ]  | %9.2E   | %9.2E   | %9.2E   | %9.2E   | %9.2E   | %9.2E   |",
                  itnum,itemax,ittol,vresnorm,presnorm,fullresnorm,
                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2,incfullnorm_L2/fullnorm_L2);
-          printf(" (ts=%10.3E,te=%10.3E)",dtsolve,dtele);
+          printf(" (ts=%9.2E,te=%9.2E)",dtsolve,dtele);
         }
     }
 
@@ -1118,7 +1165,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
         FILE* errfile = params_.get<FILE*>("err file");
         if (errfile!=NULL)
         {
-          fprintf(errfile,"fluid unconverged solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
+          fprintf(errfile,"fluid unconverged solve:   %3d/%3d  tol=%9.2E[L_2 ]  vres=%9.2E  pres=%9.2E  vinc=%9.2E  pinc=%9.2E\n",
                   itnum,itemax,ittol,vresnorm,presnorm,
                   incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
         }
@@ -1167,7 +1214,118 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
         currresidual = max(currresidual,incprenorm_L2/prenorm_L2);
         solver_->AdaptTolerance(ittol,currresidual,adaptolbetter);
       }
-      solver_->Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,itnum==1);
+
+      const int numdim = 3;
+      if (project_)
+      {
+        DRT::Condition* KSPcond=discret_->GetCondition("KrylovSpaceProjection");
+
+        // in this case, we want to project out some zero pressure modes
+        const string* definition = KSPcond->Get<string>("weight vector definition");
+
+        if(*definition == "pointvalues")
+        {
+          // zero w and c
+          w_->PutScalar(0.0);
+          c_->PutScalar(0.0);
+
+          // get pressure
+          const vector<double>* mode = KSPcond->Get<vector<double> >("mode");
+          const int numdim = 3;
+          for(int rr=0;rr<numdim;++rr)
+          {
+            if(abs((*mode)[rr]>1e-14))
+            {
+              dserror("expecting only an undetermined pressure");
+            }
+          }
+
+          int predof = numdim;
+
+          Teuchos::RCP<Epetra_Vector> presmode = velpressplitter_.ExtractCondVector(*w_);
+
+          presmode->PutScalar((*mode)[predof]);
+
+          /* export to vector to normalize against
+                //
+                // Note that in the case of definition pointvalue based,
+                // the average pressure will vanish in a pointwise sense
+                //
+                //    +---+
+                //     \
+                //      +   p_i  = 0
+                //     /
+                //    +---+
+           */
+          LINALG::Export(*presmode,*w_);
+
+          // export to vector of ones
+          presmode->PutScalar(1.0);
+          LINALG::Export(*presmode,*c_);
+        }
+        else if(*definition == "integration")
+        {
+          dserror("noe!");
+          // zero w and c
+          w_->PutScalar(0.0);
+          c_->PutScalar(0.0);
+
+          ParameterList mode_params;
+
+          // set action for elements
+          mode_params.set("action","integrate_shape");
+
+          if (alefluid_)
+          {
+//            discret_->SetState("dispnp",dispnp_);
+          }
+
+          /* evaluate KrylovSpaceProjection condition in order to get
+                // integrated nodal basis functions w_
+                // Note that in the case of definition integration based,
+                // the average pressure will vanish in an integral sense
+                //
+                //                    /              /                      /
+                //   /    \          |              |  /          \        |  /    \
+                //  | w_*p | = p_i * | N_i(x) dx =  | | N_i(x)*p_i | dx =  | | p(x) | dx = 0
+                //   \    /          |              |  \          /        |  \    /
+                //                   /              /                      /
+           */
+
+
+          discret_->EvaluateCondition
+          (mode_params        ,
+              Teuchos::null      ,
+              Teuchos::null      ,
+              w_                 ,
+              Teuchos::null      ,
+              Teuchos::null      ,
+              "KrylovSpaceProjection");
+
+          // get pressure
+          const vector<double>* mode = KSPcond->Get<vector<double> >("mode");
+
+          for(int rr=0;rr<numdim;++rr)
+          {
+            if(abs((*mode)[rr]>1e-14))
+            {
+              dserror("expecting only an undetermined pressure");
+            }
+          }
+
+          Teuchos::RCP<Epetra_Vector> presmode = velpressplitter_.ExtractCondVector(*w_);
+
+          // export to vector of ones
+          presmode->PutScalar(1.0);
+          LINALG::Export(*presmode,*c_);
+        }
+        else
+        {
+          dserror("unknown definition of weight vector w for restriction of Krylov space");
+        }
+      }
+
+      solver_->Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,itnum==1, w_, c_, project_);
       solver_->ResetTolerance();
 
       // end time measurement for solver
@@ -2084,6 +2242,7 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
 
 //        }
         //if (dofmanagerForOutput_->getInterfaceHandle()->ElementIntersected(elegid) and not ele_to_textfile and ele_to_textfile2)
+//        if (elegid == 14 and elementvalues.N() > 0 and plot_to_gnuplot)
         if (elegid == 1 and elementvalues.N() > 0 and plot_to_gnuplot)
         {
           ele_to_textfile = true;
