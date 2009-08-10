@@ -1239,8 +1239,6 @@ void CONTACT::Integrator::DerivXiAB2D(CONTACT::CElement& sele,
                                     vector<map<int,double> >& derivxi,
                                     bool& startslave, bool& endslave)
 {
-  // TODO reflect shapefcn_ (?)
-  
   //check for problem dimension
   if (Dim()!=2) dserror("ERROR: 2D integration method called for non-2D problem");
 
@@ -1746,8 +1744,6 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateMmod2D(CONTACT::CEle
                                                                  CONTACT::CElement& mele,
                                                                  double& mxia, double& mxib)
 {
-  // TODO reflect shapefcn_ (?)
-  
   //check for problem dimension
   if (Dim()!=2) dserror("ERROR: 2D integration method called for non-2D problem");
 
@@ -4038,11 +4034,11 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneQuad(
           for (int k=0; k<nrow; ++k)
           {
             // global master node ID
-            int sgid = mele.Nodes()[k]->Id();
+            int sgid = sele.Nodes()[k]->Id();
             double fac = 0.0;
 
             // get the correct map as a reference
-            map<int,double>& ddmap_jk = mycnode->GetDerivM()[sgid];
+            map<int,double>& ddmap_jk = mycnode->GetDerivD()[sgid];
 
             // (1) Lin(Phi) - dual shape functions
             // this vanishes here since there are no deformation-dependent dual functions
