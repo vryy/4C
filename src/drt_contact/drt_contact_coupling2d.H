@@ -42,6 +42,7 @@ Maintainer: Alexander Popp
 #include "Epetra_Comm.h"
 #include "drt_celement.H"
 #include "../drt_lib/drt_discret.H"
+#include "drt_contact_interface.H"
 
 using namespace std;
 
@@ -72,9 +73,25 @@ public:
   Constructs an instance of this class.<br>
   Note that this is \b not a collective call as coupling is
   performed in parallel by individual processes.
+  
+  Note: This version of the constructor creates an Coupling2d instance with undefined type of shape functions.
+  As a result, no calls to functions relying on the evaluation of shape functions is allowed. 
+  To be able to evaluate them, the Coupling2d have to be created with the alternative constructor (see below).
 
   */
   explicit Coupling2d(DRT::Discretization& idiscret, int dim,
+                      CONTACT::CElement& sele, CONTACT::CElement& mele,
+                      Epetra_SerialDenseMatrix& csegs);
+  
+  /*!
+  \brief Constructor with shape function specification
+  
+  Constructs an instance of this class and enables custom shape function types.<br>
+  Note that this is \b not a collective call as coupling is
+  performed in parallel by individual processes.
+  
+  */  
+  explicit Coupling2d(const Interface::ShapeFcnType shapefcn, DRT::Discretization& idiscret, int dim,
                       CONTACT::CElement& sele, CONTACT::CElement& mele,
                       Epetra_SerialDenseMatrix& csegs);
 
@@ -174,6 +191,8 @@ protected:
     // don't want = operator and cctor
     Coupling2d operator = (const Coupling2d& old);
     Coupling2d(const Coupling2d& old);
+    
+    const Interface::ShapeFcnType shapefcn_; // employed type of shape function set
 
     DRT::Discretization&       idiscret_;    // discretization of the contact interface
     int                        dim_;         // problem dimension (here: 2D)

@@ -40,6 +40,7 @@ Maintainer: Alexander Popp
 #define DRT_CONTACT_MANAGER_BASE_H
 
 #include "Teuchos_RefCountPtr.hpp"
+#include "drt_contact_abstract_strategy.H"
 #include "drt_contact_interface.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_sparsematrix.H"
@@ -62,14 +63,6 @@ class ManagerBase
 public:
 
   //! @name Enums and Friends
-  enum QuantityType // types that can be called by StoreNodalQuantities()
-  {
-    lmcurrent,
-    lmold,
-    activeold,
-    lmupdate,
-    jump
-  };
   //@}
 
   /*!
@@ -84,12 +77,13 @@ public:
   two contact boundary conditions. It extracts all contact boundary conditions
   and constructs one or multiple contact interfaces from them and stores them.
 
+  It also builds the corresponding strategy solver object and stores a reference
+  in the strategy_ member variable.
+     
   It calls CONTACT::Interface::FillComplete() on all contact interfaces which
   makes the nodes and elements of a contact interfaces redundant on all
   processors that either own a node or an element on the interfaces in the
   input discretization.
-
-  \param alphaf (in): Generalized-alpha parameter (set to 0.0 by default)
 
   */
   explicit ManagerBase();
@@ -103,327 +97,19 @@ public:
   //! @name Access methods
 
   /*!
-  \brief Get contact parameter list
-
-  */
-  inline Teuchos::ParameterList Params() const { return scontact_;};
-
-  /*!
-  \brief Get problem dimension
-
-  */
-  inline const int& Dim() {return dim_;};
-
-  /*!
   \brief Get Epetra communicator
 
   */
-  inline const Epetra_Comm& Comm() const { return *comm_;};
-
+  inline const Epetra_Comm& Comm() const { return *comm_;}
+  
   /*!
-  \brief Return global slave dof row map
-
+  \brief Return the object for the solving strategy.
+ 
+  All necessary steps for the computation algorithm
+  have to be specialized in subclasses of AbstractStrategy
+ 
   */
-  inline const RCP<Epetra_Map> SlaveRowDofs() {return gsdofrowmap_; }
-
-  /*!
-  \brief Return global slave dof row map
-
-  */
-  inline const RCP<Epetra_Map> SlaveRowNodes() {return gsnoderowmap_; }
-
-  /*!
-  \brief Return convergence status of active set loop
-
-  */
-  inline bool& ActiveSetConverged() { return activesetconv_; }
-
-  /*!
-  \brief Return no. of active sets in this time/load step
-
-  */
-  inline int& ActiveSetSteps() { return activesetsteps_; }
-
-  /*!
-  \brief Return contact force vector
-
-  */
-  inline RCP<Epetra_Vector> GetContactForces() { return fc_; }
-
-  /*!
-  \brief Return Lagrange multiplier vector (t_n+1)
-
-  */
-  inline RCP<Epetra_Vector> LagrMult() { return z_; }
-
-  /*!
-  \brief Return old Lagrange multiplier vector (t_n)
-
-  */
-  inline RCP<Epetra_Vector> LagrMultOld() { return zold_; }
-
-  /*!
-  \brief Return jump vector (t_n+1)
-
-  */
-  inline RCP<Epetra_Vector> Jump() { return jump_; }
-
-  /*!
-  \brief Return current global contact status
-
-  */
-  inline bool& IsInContact() { return isincontact_; }
-
-  //@}
-
-  //! @name Evaluation methods
-
-  /*!
-  \brief Set current deformation state
-
-  All interfaces are called to set the current deformation state
-  (u, xspatial) in their nodes. Additionally, the new contact
-  element areas are computed.
-
-  \param statename (in): string defining which quantity to set (e.g. displacement)
-  \param vec (in): current global state of the quantity defined by statename
-
-  */
-  void SetState(const string& statename, const RCP<Epetra_Vector> vec);
-
-  /*!
-  \brief Initialize Mortar stuff for next Newton step
-
-  This method calls Initialize() on all contact interfaces, which
-  resets all kind of nodal quantities like normal vector, weighted
-  gap or Mortar and linearization maps. It also resets the global
-  Mortar matrices D and M and the global gap vector g.
-
-  */
-  void InitializeMortar();
-
-  /*!
-  \brief Initialize contact for next Newton step
-
-  This method initializes all global quantities that have to do with
-  contact directly, or to be more precise with the active set. This
-  includes the global normal / tangent matrices N and T, the global
-  derivative matrices S and P and Tresca friction matrix L + vector r.
-
-  */
-  void Initialize();
-
-  /*!
-  \brief Evaluate Mortar matrices D,M and weighted gap
-
-  This method does all the geometric contact stuff that has not
-  yet to do with the active / inactive node sets. Concretely it
-  calls Evaluate() on all interfaces, which does the nodal normal
-  calculations, contact search, projection and overlap detection,
-  integration of the Mortar terms D+M and of the weighted gap plus
-  the setup of all linearizations of geometrical quantities (delta_n,
-  delta_t, delta_D, delta_M). The nodal D, M and g values are then
-  assembled into global matrices and vectors respectively. No setup of
-  the global system is to be done here yet, so there is no need to pass
-  in the effective stiffness K or the effective load vector f.
-
-  */
-  void EvaluateMortar();
-
-  /*!
-  \brief Evaluate relative movement of contact bodies
-
-  This is for evaluating the relative movement of contact bodies. This
-  can either be done with regarding the different movement of material points
-  or regarding the change of mortar projection. The second possibility
-  is definitely objective wheras the first possibility is objective
-  only when the gap is zero.
-  */
-  void EvaluateRelMov(RCP<Epetra_Vector> disi);
-
-  /*!
-  \brief Evaluate contact
-
-  This is just a tiny control routine, deciding which Evaluate-routine
-  of those listed below is to be called (based on input-file information)
-
-  \param kteff (in/out): effective stiffness matrix (without -> with contact)
-  \param feff (in/out): effective residual / force vector (without -> with contact)
-
-  */
-  void Evaluate(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff);
-
-  /*!
-  \brief Evaluate frictional contact
-
-  Note that this includes Perfect Stick, Tresca friction and Coulomb
-  friction, of course! But it also includes the mesh tying case, as
-  this is very similar to Perfect Stick from a conceptual point of view.
-
-  \param kteff (in/out): effective stiffness matrix (without -> with contact)
-  \param feff (in/out): effective residual / force vector (without -> with contact)
-
-  */
-  void EvaluateFriction(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff);
-
-  /*!
-  \brief Evaluate contact
-
-  This is the main routine of our contact algorithms on a global level.
-  It contains the setup of the global linear system including contact.
-  This makes modifications to the effective stiffness K and the effective
-  load vector f necessary. As these modifications are usually applied
-  to groups of dofs (slave, master, active etc.) some matrix and vector
-  splitting and a lot of matrix-vector calculation is done!
-  No basis transformation is applied to the displacement variables:
-  delta_d_slave and delta_d_master are used directly as unknowns!
-
-  \param kteff (in/out): effective stiffness matrix (without -> with contact)
-  \param feff (in/out): effective residual / force vector (without -> with contact)
-
-  */
-  void EvaluateContact(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff);
-
-  /*!
-  \brief Recovery method
-
-  We only recover the Lagrange multipliers here, which had been
-  statically condensated during the setup of the global problem!
-  Optionally satisfaction or violation of the contact boundary
-  conditions can be checked, too.
-
-  \param disi (in): displacement increment of current Newton step solution
-
-  */
-  void Recover(RCP<Epetra_Vector> disi);
-
-  /*!
-  \brief Update active set and check for convergence
-
-  In this function we loop over all interfaces and then over all
-  slave nodes to check, whether the assumption of them being active
-  or inactive respectively has been correct. If a single node changes
-  state, the active set is adapted accordingly and the convegence
-  flag is kept on false. Here we have the "standard" case of two
-  nested iteration loops, and as a consequence this method is
-  called AFTER convergence of the inner Newton iteration. If there
-  is a change in the active set, another full Newton iteration has
-  to be performed for the current time / load step.
-
-  */
-  void UpdateActiveSet();
-
-  /*!
-  \brief Update active set and check for convergence
-
-  In this function we loop over all interfaces and then over all
-  slave nodes to check, whether the assumption of them being active
-  or inactive respectively has been correct. If a single node changes
-  state, the active set is adapted accordingly and the convegence
-  flag is kept on false. Here we have the semi-smooth Newton case
-  with one combined iteration loop for active set search and large
-  deformations. As a consequence this method is called AFTER each
-  (not yet converged) Newton step. If there is a change in the active
-  set or the residual and disp norm are still above their limits,
-  another Newton step has to be performed.
-
-  */
-  void UpdateActiveSetSemiSmooth();
-
-  /*!
-  \brief Compute contact force vector
-
-  Compute current contact forces at n+1-alphaf using current Lagrange
-  multiplier values and current Mortar matrices D and M at n+1. When
-  doing dynamics with alpha_f > 0, this also uses the old LM and Mortar
-  matrices of the last converged time / load step n (TR-like interpolation).
-
-  \param fresm (in): residual / force vector at state n+1 of current Newton step
-                     Note that we only pass in fresm for debugging purposes!
-
-  */
-  void ContactForces(RCP<Epetra_Vector> fresm);
-
-  /*!
-  \brief Get some nodal quantity globally and store into CNodes
-
-  The enum input parameter defines, which quantity is be updated.
-  Currently the possibilities "lmold", "lmcurrent", "lmupdate", "jump"
-  and "activeold" exist. Note that "lmold" means the converged value LM_n
-  of the last time / load step, whereas "lmcurrent" adresses the current
-  (not necessarily converged) value of the LM_n+1 and "jump" the current
-  (not necessarily converged) value of d_n+1-d_n. "lmupdate" is a special
-  option called only in Recover() after the update of the Lagr. multipliers.
-  It basically does the same as "lmcurrent", but also checks for D.B.C.
-  problems.
-
-  \param type (in): enum defining which quantity to store into CNodes
-
-  */
-  void StoreNodalQuantities(ManagerBase::QuantityType type);
-
-  /*!
-  \brief Get dirichlet B.C. status and store into CNodes
-
-  This is called once at the beginning of the simulation
-  to set the D.B.C. status in each CNode.
-
-  \param dbcmaps (in): MapExtractor carrying global dbc map
-
-  */
-  void StoreDirichletStatus(RCP<LINALG::MapExtractor> dbcmaps);
-
-  /*!
-  \brief Store current (contact) nodal entries of D and M to old ones
-
-  Contact nodes own their current entries and old ones (last converged
-  state) from the mortar matrices D and M. This function writes the
-  current ones to the old ones.
-
-  */
-  void StoreDMToNodes();
-
-  /*!
-  \brief Update Mortar matrices D and M
-
-  The string input parameter defines in which direction the conversion
-  is to be performed. Currently only the possibilities "old" and "current"
-  exist, with "old" meaning the Mortar matrices of the last time / load step
-  will be set to the current values D_n+1 and M_n+1 (this happens after
-  completion of a time / load step!). The string "current" adresses the
-  current Mortar matrices, which when called will be reset to the last
-  converged values D_n and M_n (this happens in the predictor step when
-  the active set has not yet converged!).
-
-  \param state (in): string defining in which direction to convert D and M
-
-  */
-  void StoreDM(const string& state);
-
-  /*!
-  \brief Update contact at end of time step
-
-  \param iter (in): step index for gmsh file creation
-
-  */
-  void Update(int istep);
-
-  /*!
-  \brief Print current active set to screen
-
-  */
-  void PrintActiveSet();
-
-  /*!
-  \brief Visualize contact stuff with gmsh
-
-  \param step (in): current time step index
-  \param iter (in): current iteration index
-
-  */
-  void VisualizeGmsh(const int step, const int iter = 0);
-
-  //@}
+  inline AbstractStrategy& GetStrategy() { return *strategy_;}
 
 
 protected:
@@ -432,76 +118,9 @@ protected:
   ManagerBase operator = (const ManagerBase& old);
   ManagerBase(const ManagerBase& old);
 
-  vector<RCP<CONTACT::Interface> >   interface_;       // contact interfaces
-  Teuchos::ParameterList             scontact_;        // containing contact input parameters
-  int                                dim_;             // dimension of problem (2D or 3D)
-  double                             alphaf_;          // Generalized-alpha parameter (0.0 for statics)
-  RCP<Epetra_Comm>                   comm_;            // communicator
-
-  RCP<Epetra_Map>                    problemrowmap_;   // global problem dof row map (not only interfaces)
-  RCP<Epetra_Map>                    gsnoderowmap_;    // global slave node row map (of all interfaces)
-  RCP<Epetra_Map>                    gsdofrowmap_;     // global slave dof row map (of all interfaces)
-  RCP<Epetra_Map>                    gmdofrowmap_;     // global master dof row map (of all interfaces)
-  RCP<Epetra_Map>                    gndofrowmap_;     // global internal dof row map
-
-  RCP<Epetra_Map>                    gactivenodes_;    // global active slave node row map (of all interfaces)
-  RCP<Epetra_Map>                    gactivedofs_;     // global active slave dof row map (of all interfaces)
-  RCP<Epetra_Map>                    gactiven_;        // global row map of matrix N (of all interfaces)
-  RCP<Epetra_Map>                    gactivet_;        // global row map of matrix T (of all interfaces)
-  RCP<Epetra_Map>                    gslipnodes_;      // global slip slave node row map (of all interfaces)
-  RCP<Epetra_Map>                    gslipdofs_;       // global slip slave dof row map (of all interfaces)
-  RCP<Epetra_Map>                    gslipt_;          // global row map of matrix T for slip dofs (of all interfaces)
-  bool                               activesetconv_;   // convergence flag for active set
-  int                                activesetsteps_;  // no. of active sets in this time/load step
-
-  RCP<LINALG::SparseMatrix>          dmatrix_;         // global Mortar matrix D
-  RCP<LINALG::SparseMatrix>          mmatrix_;         // global Mortar matrix M
-  RCP<LINALG::SparseMatrix>          mhatmatrix_;      // product of global Mortar matrices inv(D)*M
-  RCP<Epetra_Vector>                 g_;               // global weighted gap vector g
-
-  RCP<LINALG::SparseMatrix>          mhata_;           // active part of mhatmatrix_ (needed for HüeberCheck)
-
-  RCP<LINALG::SparseMatrix>          nmatrix_;         // global Matrix N containing active node normals
-  RCP<LINALG::SparseMatrix>          tmatrix_;         // global Matrix T containing active node tangents
-  RCP<LINALG::SparseMatrix>          smatrix_;         // global Matrix S containing normal+D+M derivatives
-  RCP<LINALG::SparseMatrix>          pmatrix_;         // global Matrix P containing tangent derivatives
-  RCP<LINALG::SparseMatrix>          lindmatrix_;      // global Matrix LinD containing slave fc derivatives
-  RCP<LINALG::SparseMatrix>          linmmatrix_;      // global Matrix LinM containing master fc derivatives
-
-  RCP<LINALG::SparseMatrix>          dold_;            // global Mortar matrix D (last end-point t_n)
-  RCP<LINALG::SparseMatrix>          mold_;            // global Mortar matrix D (last end-point t_n)
-
-  RCP<Epetra_Vector>                 z_;               // current vector of Lagrange multipliers at t_n+1
-  RCP<Epetra_Vector>                 zold_;            // old vector of Lagrange multipliers at t_n
-  RCP<Epetra_Vector>                 incrjump_;        // incremental displacement jump (slave dofs)
-  RCP<Epetra_Vector>                 jump_;            // displacement jump (slave dofs)
-  RCP<Epetra_Vector>                 fc_;              // vector of current contact forces
-  bool                               isincontact_;     // flag indicating global contact status
-
-  RCP<Epetra_Vector>                 fs_;              // slave side effective forces (needed for LM)
-  RCP<LINALG::SparseMatrix>          invd_;            // inverse of Mortar matrix D (needed for LM)
-  RCP<LINALG::SparseMatrix>          ksn_;             // stiffness block K_sn (needed for LM)
-  RCP<LINALG::SparseMatrix>          ksm_;             // stiffness block K_sm (needed for LM)
-  RCP<LINALG::SparseMatrix>          kss_;             // stiffness block K_ss (needed for LM)
-
-  RCP<Epetra_Map>                    zigzagone_;       // active node set of last active set try
-  RCP<Epetra_Map>                    zigzagtwo_;       // active node set of second-last active set try
-  RCP<Epetra_Map>                    zigzagthree_;     // active node set of third-last active set try
-
-  RCP<Epetra_Map>                    zigzagslipone_;   // slip node set of last slip set try
-  RCP<Epetra_Map>                    zigzagsliptwo_;   // slip node set of second-last slip set try
-  RCP<Epetra_Map>                    zigzagslipthree_; // slip node set of third-last slip set try
-
-  RCP<LINALG::SparseMatrix>          lmatrix_;        // global matrix L for Tresca friction slip nodes
-  RCP<Epetra_Vector>                 r_;              // r.h.s vector for Tresca friction slip nodes
-  RCP<Epetra_Vector>                 rstick_;         // r.h.s vector for fricton stick nodes
-  RCP<LINALG::SparseMatrix>          linslipLM_;      // global matrix containing derivatives (LM) of slip condition
-  RCP<LINALG::SparseMatrix>          linslipDIS_;     // global matrix containing derivatives (DIS) of slip condition
-  RCP<Epetra_Vector>                 linslipRHS_;     // r.h.s vector for Tresca friction slip nodes
-  RCP<LINALG::SparseMatrix>          linstickLM_;     // global matrix containing derivatives (LM) of slip condition
-  RCP<LINALG::SparseMatrix>          linstickDIS_;     // global matrix containing derivatives (DIS) of stick condition
-  RCP<Epetra_Vector>                 linstickRHS_;    // r.h.s vector for stick condition
-
+  
+  RCP<Epetra_Comm>               comm_;     // communicator
+  RCP<CONTACT::AbstractStrategy> strategy_; // strategy object
 
 }; // class ManagerBase
 } // namespace CONTACT

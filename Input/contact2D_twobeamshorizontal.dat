@@ -66,17 +66,18 @@ TOLRES       1.0E-10
 TOLDISP      1.0E-8
 MAXITER      50
 ------------------------------------------------STRUCTURAL CONTACT
-CONTACT              frictional
-FRICTION             coulomb
+CONTACT              Frictional
+STRATEGY             Lagrange
+SHAPEFCN             Dual
+FRICTION             Coulomb
 FRBOUND              100
 FRCOEFF              0.2
 FULL_LINEARIZATION   Yes
 SEMI_SMOOTH_NEWTON   Yes
 SEMI_SMOOTH_CN       100
 SEMI_SMOOTH_CT       100
-SEARCH_ALGORITHM    BinaryTree
-SEARCH_PARAM        0.5
-
+SEARCH_ALGORITHM     BinaryTree
+SEARCH_PARAM         0.5
 -----------------------------------------------------FLUID DYNAMIC
 -------------------------------------------------------FSI DYNAMIC
 -------------------------------------------------------ALE DYNAMIC

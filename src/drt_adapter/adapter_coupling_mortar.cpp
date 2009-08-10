@@ -58,11 +58,15 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
   //	parameter list for contact definition
   const Teuchos::ParameterList& input = DRT::Problem::Instance()->StructuralContactParams();
 
+  // check for invalid paramater values
+  if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") != INPAR::CONTACT::solution_lagmult)
+    dserror("Mortar coupling adapter only works for Lagrange multiplier strategy");
+  if (Teuchos::getIntegralValue<INPAR::CONTACT::ShapeFcn>(input,"SHAPEFCN") != INPAR::CONTACT::shape_dual)
+      dserror("Mortar coupling adapter only works for dual shape functions");
+  
   // get problem dimension (2D or 3D) and initialize (CONTACT::) interface
   const int dim = genprob.ndim;
-  RCP<CONTACT::Interface> interface = rcp(
-      new CONTACT::Interface(0, comm, dim, input));
-
+  RCP<CONTACT::Interface> interface = rcp(new CONTACT::Interface(0, comm, dim, input));
 
   //feeding master nodes to the interface
   vector<int> masterdofs;

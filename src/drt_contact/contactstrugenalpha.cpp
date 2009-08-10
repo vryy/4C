@@ -45,6 +45,9 @@ Maintainer: Alexander Popp
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_inpar/inpar_contact.H"
 
+#include "drt_contact_abstract_strategy.H"
+#include "drt_contact_penalty_strategy.H"
+
 #include <iostream>
 
 
@@ -82,7 +85,7 @@ StruGenAlpha(params,dis,solver,output)
 
   // save Dirichlet B.C. status in Contact Manager
   // all CNodes on all interfaces then know if D.B.C.s are applied on their dofs
-  contactmanager_->StoreDirichletStatus(dbcmaps);
+  contactmanager_->GetStrategy().StoreDirichletStatus(dbcmaps);
 
   return;
 } // ContactStruGenAlpha::ContactStruGenAlpha
@@ -124,23 +127,23 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   // the nodal entries of mortar matrices (reference configuration) before
   // first time step
   INPAR::CONTACT::ContactType ctype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(contactmanager_->Params(),"CONTACT");
+    Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(contactmanager_->GetStrategy().Params(),"CONTACT");
 
   if(params_.get<int>("step") == 0 && ctype == INPAR::CONTACT::contact_frictional)
   {
   	// set state and do mortar calculation
-  	contactmanager_->SetState("displacement",disn_);
-    contactmanager_->InitializeMortar();
-    contactmanager_->EvaluateMortar();
+    contactmanager_->GetStrategy().SetState("displacement",disn_);
+    contactmanager_->GetStrategy().InitializeMortar();
+    contactmanager_->GetStrategy().EvaluateMortar();
 
     // store contact state to contact nodes (active or inactive)
-  	contactmanager_->StoreNodalQuantities(Manager::activeold);
+    contactmanager_->GetStrategy().StoreNodalQuantities(AbstractStrategy::activeold);
   	
   	// store D and M to old ones
-  	contactmanager_->StoreDM("old");
+    contactmanager_->GetStrategy().StoreDM("old");
   	
    	// store nodal entries from D and M to old ones
-    contactmanager_->StoreDMToNodes();
+    contactmanager_->GetStrategy().StoreDMToNodes();
   }
 
   // increment time and step
@@ -407,21 +410,21 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
 
   //------------------------- make contact modifications to lhs and rhs
-  contactmanager_->SetState("displacement",disn_);
+  contactmanager_->GetStrategy().SetState("displacement",disn_);
 
-  contactmanager_->InitializeMortar();
-  contactmanager_->EvaluateMortar();
+  contactmanager_->GetStrategy().InitializeMortar();
+  contactmanager_->GetStrategy().EvaluateMortar();
 
-  contactmanager_->Initialize();
-  contactmanager_->Evaluate(stiff_,fresm_);
+  contactmanager_->GetStrategy().Initialize();
+  contactmanager_->GetStrategy().Evaluate(stiff_,fresm_);
 
   //---------------------------------------------------- contact forces
-  contactmanager_->ContactForces(fresmcopy);
+  contactmanager_->GetStrategy().ContactForces(fresmcopy);
 
 #ifdef CONTACTGMSH2
   int step  = params_.get<int>("step",0);
   int istep = step + 1;
-  contactmanager_->VisualizeGmsh(istep,0);
+  contactmanager_->GetStrategy().VisualizeGmsh(istep,0);
 #endif // #ifdef CONTACTGMSH2
 
   // blank residual DOFs that are on Dirichlet BC
@@ -493,23 +496,23 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   // the nodal entries of mortar matrices (reference configuration) before
   // first time step
   INPAR::CONTACT::ContactType ctype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(contactmanager_->Params(),"CONTACT");
+    Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(contactmanager_->GetStrategy().Params(),"CONTACT");
 
   if(params_.get<int>("step") == 0 && ctype == INPAR::CONTACT::contact_frictional)
   {
   	// set state and do mortar calculation
-  	contactmanager_->SetState("displacement",disn_);
-    contactmanager_->InitializeMortar();
-    contactmanager_->EvaluateMortar();
+    contactmanager_->GetStrategy().SetState("displacement",disn_);
+    contactmanager_->GetStrategy().InitializeMortar();
+    contactmanager_->GetStrategy().EvaluateMortar();
 
     // store contact state to contact nodes (active or inactive)
-  	contactmanager_->StoreNodalQuantities(Manager::activeold);
+    contactmanager_->GetStrategy().StoreNodalQuantities(AbstractStrategy::activeold);
   	
   	// store D and M to old ones
-  	contactmanager_->StoreDM("old");
+    contactmanager_->GetStrategy().StoreDM("old");
   	
   	// store nodal entries from D and M to old ones
-  	contactmanager_->StoreDMToNodes();
+    contactmanager_->GetStrategy().StoreDMToNodes();
   }
 
   // increment time and step
@@ -697,21 +700,21 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
 //  contactmanager_->StoreNodalQuantities(Manager::jump);
 
   //-------------------------- make contact modifications to lhs and rhs
-  contactmanager_->SetState("displacement",disn_);
+  contactmanager_->GetStrategy().SetState("displacement",disn_);
 
-  contactmanager_->InitializeMortar();
-  contactmanager_->EvaluateMortar();
+  contactmanager_->GetStrategy().InitializeMortar();
+  contactmanager_->GetStrategy().EvaluateMortar();
 
-  contactmanager_->Initialize();
-  contactmanager_->Evaluate(stiff_,fresm_);
+  contactmanager_->GetStrategy().Initialize();
+  contactmanager_->GetStrategy().Evaluate(stiff_,fresm_);
 
   //---------------------------------------------------- contact forces
-  contactmanager_->ContactForces(fresmcopy);
+  contactmanager_->GetStrategy().ContactForces(fresmcopy);
 
 #ifdef CONTACTGMSH2
   int step  = params_.get<int>("step",0);
   int istep = step + 1;
-  contactmanager_->VisualizeGmsh(istep,0);
+  contactmanager_->GetStrategy().VisualizeGmsh(istep,0);
 #endif // #ifdef CONTACTGMSH2
 
   // blank residual DOFs that are on Dirichlet BC
@@ -954,27 +957,27 @@ void CONTACT::ContactStruGenAlpha::ApplyExternalForce(  const LINALG::MapExtract
 //  z->Update(1.0,*zold,0.0);
 //  contactmanager_->StoreNodalQuantities(Manager::lmcurrent);
 
-  // friction
-  // reset displacement jumps (slave dofs)
-  RCP<Epetra_Vector> jump = contactmanager_->Jump();
-  jump->Scale(0.0);
-  contactmanager_->StoreNodalQuantities(Manager::jump);
+//  // friction
+//  // reset displacement jumps (slave dofs)
+//  RCP<Epetra_Vector> jump = contactmanager_->Jump();
+//  jump->Scale(0.0);
+//  contactmanager_->StoreNodalQuantities(Manager::jump);
 
   //-------------------------- make contact modifications to lhs and rhs
-  contactmanager_->SetState("displacement",disn_);
+  contactmanager_->GetStrategy().SetState("displacement",disn_);
 
-  contactmanager_->InitializeMortar();
-  contactmanager_->EvaluateMortar();
+  contactmanager_->GetStrategy().InitializeMortar();
+  contactmanager_->GetStrategy().EvaluateMortar();
 
-  contactmanager_->Initialize();
-  contactmanager_->Evaluate(stiff_,fresm_);
+  contactmanager_->GetStrategy().Initialize();
+  contactmanager_->GetStrategy().Evaluate(stiff_,fresm_);
 
   //---------------------------------------------------- contact forces
-  contactmanager_->ContactForces(fresmcopy);
+  contactmanager_->GetStrategy().ContactForces(fresmcopy);
 
 #ifdef CONTACTGMSH2
   int istep = step + 1;
-  contactmanager_->VisualizeGmsh(istep,0);
+  contactmanager_->GetStrategy().VisualizeGmsh(istep,0);
 #endif // #ifdef CONTACTGMSH2
 
   // blank residual DOFs that are on Dirichlet BC
@@ -1124,7 +1127,7 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
     if (locsysmanager_ != null) locsysmanager_->RotateLocalToGlobal(disi_);
 
     //--------------------------------------- recover disi and Lag. Mult.
-    contactmanager_->Recover(disi_);
+    contactmanager_->GetStrategy().Recover(disi_);
 
     //---------------------------------- update mid configuration values
     // displacements
@@ -1312,26 +1315,26 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
 
     //-------------------------make contact modifications to lhs and rhs
     {
-      contactmanager_->SetState("displacement",disn_);
+      contactmanager_->GetStrategy().SetState("displacement",disn_);
 
-      contactmanager_->InitializeMortar();
-      contactmanager_->EvaluateMortar();
+      contactmanager_->GetStrategy().InitializeMortar();
+      contactmanager_->GetStrategy().EvaluateMortar();
 
       // friction
       // here the relative movement of the contact bodies is evaluated
       // therefore the current configuration and the according mortar
       // matrices are needed
       INPAR::CONTACT::ContactType ctype =
-        Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(contactmanager_->Params(),"CONTACT");
+        Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(contactmanager_->GetStrategy().Params(),"CONTACT");
       if(ctype != INPAR::CONTACT::contact_normal)
-        contactmanager_->EvaluateRelMov(disi_);
+        contactmanager_->GetStrategy().EvaluateRelMov(disi_);
 
-      contactmanager_->Initialize();
-      contactmanager_->Evaluate(stiff_,fresm_);
+      contactmanager_->GetStrategy().Initialize();
+      contactmanager_->GetStrategy().Evaluate(stiff_,fresm_);
     }
 
     //--------------------------------------------------- contact forces
-    contactmanager_->ContactForces(fresmcopy);
+    contactmanager_->GetStrategy().ContactForces(fresmcopy);
 
 #ifdef CONTACTGMSH2
     dserror("Gmsh Output for every iteration only implemented for semi-smooth Newton");
@@ -1453,7 +1456,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
   // ONE Newton loop, thus we have to check for convergence of the
   // active set here, too!
   while ((!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) ||
-          !contactmanager_->ActiveSetConverged()) && numiter<maxiter)
+          !contactmanager_->GetStrategy().ActiveSetConverged()) && numiter<maxiter)
   {
 #ifdef CONTACTTIME
     const double t_start0 = ds_cputime();
@@ -1485,7 +1488,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
 #endif // #ifdef CONTACTTIME
 
     //--------------------------------------- recover disi and Lag. Mult.
-    contactmanager_->Recover(disi_);
+    contactmanager_->GetStrategy().Recover(disi_);
 
     //---------------------------------- update mid configuration values
     // displacements
@@ -1687,17 +1690,17 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
 #ifdef CONTACTTIME
       const double t_start31 = ds_cputime();
 #endif // #ifdef CONTACTTIME
-      contactmanager_->SetState("displacement",disn_);
+      contactmanager_->GetStrategy().SetState("displacement",disn_);
 #ifdef CONTACTTIME
       const double t_end31 = ds_cputime()-t_start31;
       cout << "\n***\nContact.SetState: " << t_end31 << " seconds";
       const double t_start32 = ds_cputime();
 #endif // #ifdef CONTACTTIME
-      contactmanager_->InitializeMortar();
+      contactmanager_->GetStrategy().InitializeMortar();
 #ifdef CONTACTTIME
       const double t_end321 = ds_cputime()-t_start32;
 #endif // #ifdef CONTACTTIME
-      contactmanager_->EvaluateMortar();
+      contactmanager_->GetStrategy().EvaluateMortar();
 #ifdef CONTACTTIME
       const double t_end322 = ds_cputime()-t_start32;
       cout << "\nContact.InitMortar: " << t_end321 << " seconds";
@@ -1709,9 +1712,9 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
       // therefore the current configuration and the according mortar
       // matrices are needed
       INPAR::CONTACT::ContactType ctype =
-        Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(contactmanager_->Params(),"CONTACT");
+        Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(contactmanager_->GetStrategy().Params(),"CONTACT");
       if(ctype != INPAR::CONTACT::contact_normal)
-        contactmanager_->EvaluateRelMov(disi_);
+        contactmanager_->GetStrategy().EvaluateRelMov(disi_);
 
       // this is the correct place to update the active set!!!
       // (on the one hand we need the new weighted gap vector g, which is
@@ -1720,14 +1723,14 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
 #ifdef CONTACTTIME
       const double t_start33 = ds_cputime();
 #endif // #ifdef CONTACTTIME
-      contactmanager_->UpdateActiveSetSemiSmooth();
+      contactmanager_->GetStrategy().UpdateActiveSetSemiSmooth();
 #ifdef CONTACTTIME
       const double t_end33 = ds_cputime()-t_start33;
       cout << "\nContact.UpdateActiveSet: " << t_end33 << " seconds";
       const double t_start34 = ds_cputime();
 #endif // #ifdef CONTACTTIME
-      contactmanager_->Initialize();
-      contactmanager_->Evaluate(stiff_,fresm_);
+      contactmanager_->GetStrategy().Initialize();
+      contactmanager_->GetStrategy().Evaluate(stiff_,fresm_);
 #ifdef CONTACTTIME
       const double t_end34 = ds_cputime()-t_start34;
       cout << "\nContact.StiffFresm: " << t_end34 << " seconds";
@@ -1735,7 +1738,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
     }
 
     //--------------------------------------------------- contact forces
-    contactmanager_->ContactForces(fresmcopy);
+    contactmanager_->GetStrategy().ContactForces(fresmcopy);
 #ifdef CONTACTTIME
     const double t_end3 = ds_cputime()-t_start3;
     cout << "\n->Contact.Evaluate: " << t_end3 << " seconds\n***\n";
@@ -1744,7 +1747,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
 #ifdef CONTACTGMSH2
     int step  = params_.get<int>("step",0);
     int istep = step + 1;
-    contactmanager_->VisualizeGmsh(istep,numiter+1);
+    contactmanager_->GetStrategy().VisualizeGmsh(istep,numiter+1);
 #endif // #ifdef CONTACTGMSH2
 
     // blank residual DOFs that are on Dirichlet BC
@@ -1879,13 +1882,13 @@ void CONTACT::ContactStruGenAlpha::Update()
 #endif
 
   // update contact
-  contactmanager_->Update(istep);
+  contactmanager_->GetStrategy().Update(istep);
 
   /*
   Teuchos::RCP<Epetra_Vector> linmom = LINALG::CreateVector(*(discret_.DofRowMap()), true);
   mass_->Multiply(false, *vel_, *linmom);
 
-  int dim = contactmanager_->Dim();
+  int dim = contactmanager_->GetStrategy().Dim();
   vector<double> sumlinmom(3);
   vector<double> sumangmom(3);
 
@@ -1941,18 +1944,18 @@ void CONTACT::ContactStruGenAlpha::Update()
   // state) which is needed in the next time step as history
   // information/quantities. These are:
   INPAR::CONTACT::ContactType ctype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(contactmanager_->Params(),"CONTACT");
+    Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(contactmanager_->GetStrategy().Params(),"CONTACT");
   if(ctype != INPAR::CONTACT::contact_normal)
   {
   	
   	// store contact state to contact nodes (active or inactive)
-  	contactmanager_->StoreNodalQuantities(Manager::activeold);
+    contactmanager_->GetStrategy().StoreNodalQuantities(AbstractStrategy::activeold);
   	  	
   	// store nodal entries of D and M to old ones
-    contactmanager_->StoreDMToNodes();
+    contactmanager_->GetStrategy().StoreDMToNodes();
 
     // store the displacements to contact nodes
-    contactmanager_->SetState("olddisplacement",dis_);
+    contactmanager_->GetStrategy().SetState("olddisplacement",dis_);
   }
 
 #ifdef PRESTRESS
@@ -2138,7 +2141,7 @@ void CONTACT::ContactStruGenAlpha::Output()
   }
 
   // print active set
-  contactmanager_->PrintActiveSet();
+  contactmanager_->GetStrategy().PrintActiveSet();
 
   //---------------------------------------------------------- print out
   if (!myrank_)
@@ -2180,26 +2183,38 @@ void CONTACT::ContactStruGenAlpha::Integrate()
   else if (pred=="consistent") predictor = 2;
   else dserror("Unknown type of predictor");
 
-  // Newton as nonlinear iteration scheme
-  if (equil=="full newton")
-  {
-    //********************************************************************
-    // OPTIONS FOR PRIMAL-DUAL ACTIVE SET STRATEGY (PDASS)
-    //********************************************************************
-    // SEMI-SMOOTH NEWTON
-    // The search for the correct active set (=contact nonlinearity) and
-    // the large deformstion linearization (=geometrical nonlinearity) are
-    // merged into one semi-smooth Newton method and solved within ONE
-    // iteration loop
-    //********************************************************************
-    // FIXED-POINT APPROACH
-    // The search for the correct active set (=contact nonlinearity) is
-    // represented by a fixed-point approach, whereas the large deformation
-    // linearization (=geimetrical nonlinearity) is treated by a standard
-    // Newton scheme. This yields TWO nested iteration loops
-    //********************************************************************
-    bool semismooth = Teuchos::getIntegralValue<int>(contactmanager_->Params(),"SEMI_SMOOTH_NEWTON");
+  // unknown types of nonlinear iteration schemes
+  if (equil != "full newton" && equil != "line search newton")  
+    dserror("Unknown type of equilibrium iteration");
+  
+  //********************************************************************
+  // OPTIONS FOR PRIMAL-DUAL ACTIVE SET STRATEGY (PDASS)
+  //********************************************************************
+  // SEMI-SMOOTH NEWTON
+  // The search for the correct active set (=contact nonlinearity) and
+  // the large deformstion linearization (=geometrical nonlinearity) are
+  // merged into one semi-smooth Newton method and solved within ONE
+  // iteration loop
+  //********************************************************************
+  // FIXED-POINT APPROACH
+  // The search for the correct active set (=contact nonlinearity) is
+  // represented by a fixed-point approach, whereas the large deformation
+  // linearization (=geimetrical nonlinearity) is treated by a standard
+  // Newton scheme. This yields TWO nested iteration loops
+  //********************************************************************
+  
+  INPAR::CONTACT::SolvingStrategy soltype =
+      Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(contactmanager_->GetStrategy().Params(),"STRATEGY");
+  bool semismooth = Teuchos::getIntegralValue<int>(contactmanager_->GetStrategy().Params(),"SEMI_SMOOTH_NEWTON");
 
+  // Solving Strategy using Lagrangian Multipliers
+  // here we can do sa SEMI-SMOOTH NEWTON  -or- a FIXED-POINT APPROACH
+  
+  if (soltype == INPAR::CONTACT::solution_lagmult)
+  {
+    if (discret_.Comm().MyPID() == 0)
+      cout << "===== Lagrange multiplier strategy =============================" << endl;
+    
     //********************************************************************
     // 1) SEMI-SMOOTH NEWTON
     // The search for the correct active set (=contact nonlinearity) and
@@ -2207,67 +2222,34 @@ void CONTACT::ContactStruGenAlpha::Integrate()
     // merged into one semi-smooth Newton method and solved within ONE
     // iteration loop
     //********************************************************************
-  if (semismooth)
-  {
-    // LOOP1: time steps
-    for (int i=step; i<nstep; ++i)
+    if (semismooth)
     {
-#ifdef CONTACTTIME
-      const double t_start = ds_cputime();
-#endif // #ifdef CONTACTTIME
-
-      // predictor step
-      if      (predictor==1) ConstantPredictor();
-      else if (predictor==2) ConsistentPredictor();
-
-      // LOOP2: nonlinear iteration (Newton)
-      SemiSmoothNewton();
-
-//      // Calculating reaction forces
-//      
-//      double time1      = params_.get<double>("total time"             ,0.0);
-//      double dt        = params_.get<double>("delta time"             ,0.01);
-//      double timen     = time1 + dt;
-//      double alphaf    = params_.get<double>("alpha f"                ,0.459);
-//    
-//      stiff_->Zero();
-//
-//      ParameterList p;
-//      // action for elements
-//      p.set("action","calc_struct_nlnstiff");
-//      // other parameters that might be needed by the elements
-//      p.set("total time",timen);
-//      p.set("delta time",dt);
-//      p.set("alpha f",alphaf);
-//      
-//      discret_.ClearState();
-//      //disi_->Scale(1.-alphaf);
-//      discret_.SetState("residual displacement",disi_);
-//      discret_.SetState("displacement",dism_);
-//      fint_->PutScalar(0.0);  // initialise internal force vector
-//
-//     discret_.Evaluate(p,stiff_,null,fint_,null,null);
-//     cout << "FINT" << fint_->operator[](0) << endl;
-//     reactionforce_.push_back(fint_->operator[](0));
-//     time_.push_back(timen);
-//     discret_.ClearState();
-//
-//
-//	 for (int i=0;i<time_.size();++i)
-//	 {
-//		 cout << "time " << time_[i] << " reaction " << reactionforce_[i] << endl; 
-//	 }
-      UpdateandOutput();
-
-#ifdef CONTACTTIME
-      const double t_end = ds_cputime()-t_start;
-      cout << "\n***\nTime Step (overall): " << t_end << " seconds\n***\n";
-#endif // #ifdef CONTACTTIME
-
-      double time = params_.get<double>("total time",0.0);
-      if (time>=maxtime) break;
+      // LOOP1: time steps
+      for (int i=step; i<nstep; ++i)
+      {
+  #ifdef CONTACTTIME
+        const double t_start = ds_cputime();
+  #endif // #ifdef CONTACTTIME
+  
+        // predictor step
+        if      (predictor==1) ConstantPredictor();
+        else if (predictor==2) ConsistentPredictor();
+  
+        // LOOP2: nonlinear iteration (Newton)
+        if (equil=="full newton") SemiSmoothNewton();
+        else if (equil=="line search newton") SemiSmoothNewtonLineSearch();
+  
+        UpdateandOutput();
+  
+  #ifdef CONTACTTIME
+        const double t_end = ds_cputime()-t_start;
+        cout << "\n***\nTime Step (overall): " << t_end << " seconds\n***\n";
+  #endif // #ifdef CONTACTTIME
+  
+        double time = params_.get<double>("total time",0.0);
+        if (time>=maxtime) break;
+      }
     }
-  }
 
     //********************************************************************
     // FIXED-POINT APPROACH
@@ -2276,107 +2258,72 @@ void CONTACT::ContactStruGenAlpha::Integrate()
     // linearization (=geimetrical nonlinearity) is treated by a standard
     // Newton scheme. This yields TWO nested iteration loops
     //********************************************************************
-  else
-  {
-    // LOOP1: time steps
-    for (int i=step; i<nstep; ++i)
+    else
     {
-
-      // LOOP2: active set strategy
-      while (contactmanager_->ActiveSetConverged()==false)
+      // LOOP1: time steps
+      for (int i=step; i<nstep; ++i)
       {
-        // predictor step
-        if      (predictor==1) ConstantPredictor();
-        else if (predictor==2) ConsistentPredictor();
-
-        // LOOP3: nonlinear iteration (Newton)
-        FullNewton();
-
-        // update of active set (fixed-point)
-        contactmanager_->UpdateActiveSet();
+  
+        // LOOP2: active set strategy
+        while (contactmanager_->GetStrategy().ActiveSetConverged()==false)
+        {
+          // predictor step
+          if      (predictor==1) ConstantPredictor();
+          else if (predictor==2) ConsistentPredictor();
+  
+          // LOOP3: nonlinear iteration (Newton)
+          if (equil=="full newton") FullNewton();
+          else if (equil=="line search newton") FullNewtonLineSearch();
+  
+          // update of active set (fixed-point)
+          contactmanager_->GetStrategy().UpdateActiveSet();
+        }
+  
+        UpdateandOutput();
+        double time = params_.get<double>("total time",0.0);
+        if (time>=maxtime) break;
       }
-
-      UpdateandOutput();
-      double time = params_.get<double>("total time",0.0);
-      if (time>=maxtime) break;
     }
-  }
     //********************************************************************
     // END: options for primal-dual active set strategy (PDASS)
     //********************************************************************
   }
-
-  // Line Search Newton as nonlinear iteration scheme
-  else if (equil=="line search newton")
+  
+  // Solving Strategy using Regularization Techniques (Penalty Method)
+  // here we have just one option: the ordinary NEWTON
+  else if (soltype == INPAR::CONTACT::solution_penalty)
   {
-    //********************************************************************
-    // OPTIONS FOR PRIMAL-DUAL ACTIVE SET STRATEGY (PDASS)
-    //********************************************************************
-    bool semismooth = Teuchos::getIntegralValue<int>(contactmanager_->Params(),"SEMI_SMOOTH_NEWTON");
+    if (discret_.Comm().MyPID() == 0)
+      cout << "===== Penalty strategy =========================================" << endl;
 
-    //********************************************************************
-    // 1) SEMI-SMOOTH NEWTON
-    //********************************************************************
-  if (semismooth)
-  {
-    // LOOP1: time steps
+    // explicitely store gap-scaling
+    PenaltyStrategy& strategy = dynamic_cast<PenaltyStrategy&> (contactmanager_->GetStrategy());
+    strategy.SaveReferenceState(disn_);
+
     for (int i=step; i<nstep; ++i)
     {
-      // initialize convergence status and step no. for active set
-      contactmanager_->ActiveSetConverged() = false;
-      contactmanager_->ActiveSetSteps() = 1;
 
       // predictor step
-      if      (predictor==1) ConstantPredictor();
-      else if (predictor==2) ConsistentPredictor();
+      if (predictor==1)
+        ConstantPredictor();
+      else if (predictor==2)
+        ConsistentPredictor();
 
-      // LOOP2: nonlinear iteration (Newton)
-      SemiSmoothNewtonLineSearch();
+      // nonlinear iteration (Newton)
+      if (equil=="full newton") FullNewton();
+      else if (equil=="line search newton") FullNewtonLineSearch();
 
-      UpdateandOutput();
-      double time = params_.get<double>("total time",0.0);
+      UpdateandOutput();       
+      double time = params_.get<double>("total time", 0.0);      
       if (time>=maxtime) break;
     }
+
   }
-
-    //********************************************************************
-    // FIXED-POINT APPROACH
-    //********************************************************************
-  else
-  {
-    // LOOP1: time steps
-    for (int i=step; i<nstep; ++i)
-    {
-      // initialize convergence status and step no. for active set
-      contactmanager_->ActiveSetConverged() = false;
-      contactmanager_->ActiveSetSteps() = 1;
-
-      // LOOP2: active set strategy
-      while (contactmanager_->ActiveSetConverged()==false)
-      {
-        // predictor step
-        if      (predictor==1) ConstantPredictor();
-        else if (predictor==2) ConsistentPredictor();
-
-        // LOOP3: nonlinear iteration (Newton)
-        FullNewtonLineSearch();
-
-        // update of active set (fixed-point)
-        contactmanager_->UpdateActiveSet();
-      }
-
-      UpdateandOutput();
-      double time = params_.get<double>("total time",0.0);
-      if (time>=maxtime) break;
-    }
-  }
-    //********************************************************************
-    // END: options for primal-dual active set strategy (PDASS)
-    //********************************************************************
-  }
-
-  // other types of nonlinear iteration schemes
-  else dserror("Unknown type of equilibrium iteration");
+  
+  // Solving Strategy using Augmented Lagrange Techniques (with Uzawa)
+  // here we have just one option: the ordinary NEWTON
+  else if (soltype == INPAR::CONTACT::solution_auglag)
+    dserror("Cannot cope with augmented lagrange strategy yet");
 
   return;
 } // void ContactStruGenAlpha::Integrate()

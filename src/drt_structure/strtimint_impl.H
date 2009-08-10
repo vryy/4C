@@ -397,7 +397,7 @@ namespace STR
     //! Update step for contact
     void UpdateStepContact()
     {
-      if (contactman_ != Teuchos::null) contactman_->Update(stepn_);
+      if (contactman_ != Teuchos::null) contactman_->GetStrategy().Update(stepn_);
     }
 
     //! @name Output

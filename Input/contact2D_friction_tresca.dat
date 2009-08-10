@@ -76,8 +76,10 @@ UZAWAPARAM   1.0
 UZAWAMAXITER 20
 UZAWAALGO    direct
 ------------------------------------------------STRUCTURAL CONTACT
-CONTACT              frictional
-FRICTION             tresca
+CONTACT              Frictional
+STRATEGY             Lagrange
+SHAPEFCN             Dual
+FRICTION             Tresca
 FRBOUND              1.0
 FRCOEFF              0.0
 FULL_LINEARIZATION   Yes

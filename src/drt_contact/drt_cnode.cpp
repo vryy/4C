@@ -76,6 +76,8 @@ grow_(1.0e12)
     lmold()[i]=0.0;
     jump()[i]=0.0;
   }
+  
+  Kappa() = 1.0;
 
   return;
 }
@@ -121,7 +123,7 @@ grow_(old.grow_)
 
 /*----------------------------------------------------------------------*
  |  Deep copy this instance of CNode and return pointer to it (public)  |
- |                                                            mwgee 10/07|
+ |                                                           mwgee 10/07|
  *----------------------------------------------------------------------*/
 CONTACT::CNode* CONTACT::CNode::Clone() const
 {
@@ -372,6 +374,32 @@ void CONTACT::CNode::AddgValue(double& val)
 
   // add given value to grow_
   grow_+=val;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Add a value to the 'DerivZ' map                           popp 06/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::CNode::AddDerivZValue(int& row, const int& col, double val)
+{
+  // check if this is a master node or slave boundary node
+  if (IsSlave()==false)
+    dserror("ERROR: AddZValue: function called for master node %i", Id());
+  if (IsOnBound()==true)
+    dserror("ERROR: AddZValue: function called for boundary node %i", Id());
+    
+  // check if this has been called before
+  if ((int)derivz_.size()==0)
+    derivz_.resize(NumDof());
+    
+  // check row index input
+  if ((int)derivz_.size() <= row)
+    dserror("ERROR: AddDerivZValue: tried to access invalid row index!");
+    
+  // add the pair (col,val) to the given row
+  map<int,double>& zmap = derivz_[row];
+  zmap[col] += val;
 
   return;
 }

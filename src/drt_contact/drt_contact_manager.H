@@ -75,6 +75,9 @@ public:
   makes the nodes and elements of a contact interfaces redundant on all
   processors that either own a node or an element on the interfaces in the
   input discretization.
+  
+  In addition, it creates the necessary solver strategy object which handles
+  the whole contact evaluation.
 
   \param discret (in): A discretization containing contact boundary conditions
   \param alphaf (in): Generalized-alpha parameter (set to 0.0 by default)
@@ -87,12 +90,6 @@ public:
 
   */
   virtual ~Manager() {};
-
-  /*!
-  \brief Print this Manager
-
-  */
-  virtual void Print(ostream& os) const;
 
   //! @name Access methods
 
@@ -110,12 +107,12 @@ public:
   \brief Read and check contact input parameters
 
   All specified contact-related input parameters are read from the
-  DRT::Problem::Instance() and stored into a class variable of
+  DRT::Problem::Instance() and stored into a local variable of
   type Teuchos::ParameterList. Invalid parameter combinations are
   sorted out and throw a dserror.
 
   */
-  bool ReadAndCheckInput();
+  bool ReadAndCheckInput(Teuchos::ParameterList& cparams);
 
   /*!
   \brief Write restart information for contact
@@ -125,6 +122,7 @@ public:
   active set status of each slave node.
 
   \param output (in): IO::Discretization writer for restart
+  
   */
   void WriteRestart(IO::DiscretizationWriter& output);
 
@@ -139,6 +137,7 @@ public:
 
   \param reader (in): IO::Discretization reader for restart
   \param dis (in)   : global dof displacement vector
+  
   */
   void ReadRestart(IO::DiscretizationReader& reader,
                    RCP<Epetra_Vector> dis);
@@ -152,15 +151,10 @@ protected:
   Manager operator = (const Manager& old);
   Manager(const Manager& old);
 
-  DRT::Discretization&               discret_;         // the underlying problem discretization
+  DRT::Discretization&  discret_; // the underlying problem discretization
 
 }; // class Manager
 } // namespace CONTACT
-
-
-// << operator
-ostream& operator << (ostream& os, const CONTACT::Manager& manager);
-
 
 #endif  // #ifndef DRT_CONTACT_MANAGER_H
 #endif  // #ifdef CCADISCRET

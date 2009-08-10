@@ -80,6 +80,8 @@ TOLDISP      1.0E-8
 MAXITER      1
 ------------------------------------------------STRUCTURAL CONTACT
 CONTACT              Normal
+STRATEGY             Lagrange
+SHAPEFCN             Dual
 FRICTION             None
 FRBOUND              0.0
 FRCOEFF              0.0

@@ -767,6 +767,23 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                            INPAR::CONTACT::friction_coulomb,INPAR::CONTACT::friction_coulomb),
                                 &scontact);
 
+  setStringToIntegralParameter<INPAR::CONTACT::SolvingStrategy>("STRATEGY","LagrangianMultipliers","Type of employed solving strategy",
+        tuple<std::string>("LagrangianMultipliers","lagrange", "Lagrange",
+            "PenaltyMethod","penalty", "Penalty",
+            "AugmentedLagrange","augmented", "Augmented"),
+            tuple<INPAR::CONTACT::SolvingStrategy>(INPAR::CONTACT::solution_lagmult, INPAR::CONTACT::solution_lagmult, INPAR::CONTACT::solution_lagmult,
+                INPAR::CONTACT::solution_penalty, INPAR::CONTACT::solution_penalty, INPAR::CONTACT::solution_penalty,
+                INPAR::CONTACT::solution_auglag, INPAR::CONTACT::solution_auglag, INPAR::CONTACT::solution_auglag),
+                &scontact);
+    
+  setStringToIntegralParameter<INPAR::CONTACT::ShapeFcn>("SHAPEFCN","Dual","Type of employed set of shape functions",
+        tuple<std::string>("Dual", "dual",
+            "Standard", "standard", "std"),
+            tuple<INPAR::CONTACT::ShapeFcn>(INPAR::CONTACT::shape_dual, INPAR::CONTACT::shape_dual, 
+                INPAR::CONTACT::shape_standard, INPAR::CONTACT::shape_standard, INPAR::CONTACT::shape_standard),
+                &scontact);
+    
+  DoubleParameter("PENALTYPARAM",0.0,"Penalty parameter for penalty / augmented solution strategy",&scontact);
   DoubleParameter("FRBOUND",0.0,"Friction bound for Tresca friction",&scontact);
   DoubleParameter("FRCOEFF",0.0,"Friction coefficient for Coulomb friction",&scontact);
 

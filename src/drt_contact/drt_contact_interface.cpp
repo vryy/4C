@@ -59,17 +59,24 @@ CONTACT::Interface::Interface(const int id, const Epetra_Comm& comm,
 id_(id),
 comm_(comm),
 dim_(dim),
-icontact_(icontact)
-{
+icontact_(icontact),
+shapefcn_(Interface::Undefined)
+{  
   RCP<Epetra_Comm> com = rcp(Comm().Clone());
   if (Dim()!=2 && Dim()!=3) dserror("ERROR: Contact problem must be 2D or 3D");
   procmap_.clear();
   idiscret_ = rcp(new DRT::Discretization((string)"Contact Interface",com));
-  contactsegs_.Reshape(0,0);
-
+  contactsegs_.Reshape(0, 0);
+  
+  // overwrite shape function type
+  INPAR::CONTACT::ShapeFcn shapefcn = Teuchos::getIntegralValue<INPAR::CONTACT::ShapeFcn>(IParams(),"SHAPEFCN");
+  if (shapefcn == INPAR::CONTACT::shape_dual)
+   shapefcn_ = Interface::DualFunctions;
+  else if (shapefcn == INPAR::CONTACT::shape_standard)
+    shapefcn_ = Interface::StandardFunctions;
+  
   return;
 }
-
 
 /*----------------------------------------------------------------------*
  |  << operator                                              mwgee 10/07|
@@ -517,6 +524,11 @@ void CONTACT::Interface::Initialize()
     (node->GetDerivD()).clear();
     (node->GetDerivM()).clear();
 
+    // reset derivative map of lagrange multipliers
+    for (int j=0; j<(int)((node->GetDerivZ()).size()); ++j)
+      (node->GetDerivZ())[j].clear();
+    (node->GetDerivZ()).resize(0);
+        
     // reset nodal weighted gap and derivative
     node->Getg() = 1.0e12;
     (node->GetDerivG()).clear();
@@ -755,17 +767,6 @@ void CONTACT::Interface::Evaluate()
 #endif // #ifdef CONTACTFDVERTEX3D
     }
   }
-
-#ifdef CONTACTFDMORTARD
-  // FD check of Mortar matrix D derivatives
-  FDCheckMortarDDeriv();
-#endif // #ifdef CONTACTFDMORTARD
-
-#ifdef CONTACTFDMORTARM
-  // FD check of Mortar matrix M derivatives
-  FDCheckMortarMDeriv();
-#endif // #ifdef CONTACTFDMORTARM
-
 #ifdef CONTACTFDVERTEX3D
   // FD check of coupling vertex derivatives (3D)
   FDCheckVertex3DDeriv(testv);
@@ -1153,7 +1154,7 @@ bool CONTACT::Interface::EvaluateContactSearchBinarytree()
 bool CONTACT::Interface::IntegrateSlave(CONTACT::CElement& sele)
 {
   // create an integrator instance with correct NumGP and Dim
-  CONTACT::Integrator integrator(sele.Shape());
+  CONTACT::Integrator integrator(shapefcn_,sele.Shape());
 
   // create correct integration limits
   double sxia[2] = {0.0, 0.0};
@@ -1193,7 +1194,7 @@ bool CONTACT::Interface::IntegrateCoupling(CONTACT::CElement& sele,
   // linearization of the Mortar matrix M)
   // ************************************************************** 2D ***
   if (Dim()==2)
-    CONTACT::Coupling2d coup(Discret(),Dim(),sele,mele,CSegs());
+    CONTACT::Coupling2d coup(shapefcn_,Discret(),Dim(),sele,mele,CSegs());
   // ************************************************************** 3D ***
   else if (Dim()==3)
   {
@@ -1217,7 +1218,7 @@ bool CONTACT::Interface::IntegrateCoupling(CONTACT::CElement& sele,
         for (int j=0;j<(int)mauxelements.size();++j)
         {
           // create instance of coupling class
-          CONTACT::Coupling3dQuad coup(Discret(),Dim(),true,auxplane,
+          CONTACT::Coupling3dQuad coup(shapefcn_,Discret(),Dim(),true,auxplane,
                         sele,mele,*sauxelements[i],*mauxelements[j]);
           // do coupling
           coup.EvaluateCoupling();
@@ -1229,7 +1230,7 @@ bool CONTACT::Interface::IntegrateCoupling(CONTACT::CElement& sele,
     else
     {
       // create instance of coupling class
-      CONTACT::Coupling3d coup(Discret(),Dim(),false,auxplane,sele,mele);
+      CONTACT::Coupling3d coup(shapefcn_,Discret(),Dim(),false,auxplane,sele,mele);
       // do coupling
       coup.EvaluateCoupling();
     }
@@ -1560,6 +1561,204 @@ bool CONTACT::Interface::SplitIntElements(CONTACT::CElement& ele,
 }
 
 /*----------------------------------------------------------------------*
+ |  Assemble gap-dependent lagrange multipliers (nodes)       popp 05/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::Interface::AssembleMacauley(bool& localisincontact,
+                                          bool& localactivesetchange)
+{
+  // get out of here if not participating in interface
+  if (!lComm())
+    return;
+  
+  // penalty parameter
+  double pp = IParams().get<double>("PENALTYPARAM");
+  
+  // loop over all slave row nodes on the current interface
+  for (int i=0; i<SlaveRowNodes()->NumMyElements(); ++i)
+  {
+    int gid = SlaveRowNodes()->GID(i);
+    DRT::Node* node = Discret().gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    CNode* cnode = static_cast<CNode*>(node);
+
+    int dim = cnode->NumDof();
+    double gap = cnode->Getg();
+    double kappa = cnode->Kappa();
+    
+#ifdef CONTACTFDPENALTYKC1
+    // set lagrangian multipliers explicitely to constant
+    // and corresponding derivatives to zero
+    
+    for( int j=0;j<dim;++j)
+      cnode->lm()[j] = i*j;
+    
+    cnode->GetDerivZ().clear();
+    
+    continue;
+#endif
+    
+    // Activate/Deactivate node and notice any change    
+    if( (cnode->Active() == false) && (gap <= 0) )
+    {
+        cnode->Active() = true;
+        localactivesetchange = true;
+        
+        cout << "node #" << gid << " is now active (";
+        for( int j=0; j<dim; j++)
+          cout << " " << cnode->Dofs()[j] << " ";
+        cout << ") gap=" << gap << endl;
+    }
+    
+    else if( (cnode->Active() == true) && (gap > 0) )
+    {
+        cnode->Active() = false;
+        localactivesetchange = true;
+        
+        cout << "node #" << gid << " is now inactive, gap=" << gap << endl;
+    }
+    
+    // Compute derivZ-entries with the Macauley-Bracket
+    if( gap <= 1e-12 )
+    {
+      localisincontact = true;
+      
+      double* normal = cnode->n();
+
+      // compute lagrange multipliers and store into node
+      for( int j=0;j<dim;++j)
+        cnode->lm()[j] = - kappa * pp * gap * normal[j];
+      
+      // compute derivatives of lagrange multipliers and store into node
+      
+      // contribution of derivative of weighted gap
+      map<int,double>& derivg = cnode->GetDerivG();
+      map<int,double>::iterator gcurr; 
+      
+      // contribution of derivative of normal 
+      vector<map<int,double> >& derivn = cnode->GetDerivN();
+      map<int,double>::iterator ncurr;
+      
+      for( int j=0;j<dim;++j)
+      {
+        for( gcurr = derivg.begin(); gcurr != derivg.end(); ++gcurr )
+          cnode->AddDerivZValue(j, gcurr->first, - kappa * pp * (gcurr->second) * normal[j]);
+        for( ncurr = (derivn[j]).begin(); ncurr != (derivn[j]).end(); ++ncurr )
+          cnode->AddDerivZValue(j, ncurr->first, - kappa * pp * gap * ncurr->second);
+      }
+    }
+    
+    else
+    {
+      // clear lagrange multipliers
+      for( int j=0;j<dim;++j) cnode->lm()[j] = 0;
+      
+      // clear derivz
+      cnode->GetDerivZ().clear();   
+      
+    } // Macauley-Bracket   
+  } // loop over slave nodes
+  
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Assemble gap-dependent lagrange multipliers (global)      popp 05/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::Interface::AssembleLM(Epetra_Vector& zglobal)
+{
+  // loop over all slave nodes
+  for (int j=0; j<snoderowmap_->NumMyElements(); ++j)
+  {
+    int gid = snoderowmap_->GID(j);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node)
+      dserror("ERROR: Cannot find node with gid %",gid);
+    CNode* cnode = static_cast<CNode*>(node);
+
+    int dim = cnode->NumDof();
+    
+    // TODO: Assembly is performed explicitely only on active nodes (?)
+    double* lm = cnode->lm();
+
+    Epetra_SerialDenseVector lmnode(dim);
+    vector<int> lmdof(dim);
+    vector<int> lmowner(dim);
+    
+    for( int k=0; k<dim; ++k )
+    {
+      lmnode(k) = lm[k];
+      lmdof[k] = cnode->Dofs()[k];
+      lmowner[k] = cnode->Owner();
+    }
+    
+    // do assembly
+    LINALG::Assemble(zglobal, lmnode, lmdof, lmowner);
+  }
+  
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Assemble derivatives of lagrange multipliers              popp 05/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::Interface::AssembleLinZ(LINALG::SparseMatrix& linzglobal)
+{
+  // get out of here if not participating in interface
+  if (!lComm())
+    return;
+  
+  // loop over all slave nodes (row map)
+  for (int i=0; i<snoderowmap_->NumMyElements(); ++i)
+  {
+    int gid = snoderowmap_->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node)
+      dserror("ERROR: Cannot find node with gid %",gid);
+    CNode* cnode = static_cast<CNode*>(node);
+
+    if (cnode->Owner() != Comm().MyPID())
+      dserror("ERROR: AssembleLinZ: Node ownership inconsistency!");
+    
+    // derivz is the vector<map> we want to assemble
+    vector<map<int,double> >& derivz = cnode->GetDerivZ();
+   
+    if ( (int) derivz.size()>0 )
+    {
+      int rowsize = cnode->NumDof();
+      int colsize = (int) derivz[0].size();
+  
+      // consistency check
+      for (int j=0; j<rowsize-1; ++j)
+        if ((int)derivz[j].size() != (int)derivz[j+1].size())
+          dserror("ERROR: AssembleLinZ: Column dim. of nodal derivz-map is inconsistent!");
+  
+      map<int,double>::iterator colcurr;
+      
+      // loop over dofs
+      for ( int k=0; k<rowsize; ++k )
+      {      
+        int row = cnode->Dofs()[k]; // row index equals global dof index of this #i node's dof k
+        int l = 0;
+        
+        // loop over all directional derivative entries using the map iterator
+        for( colcurr = derivz[k].begin(); colcurr != derivz[k].end(); ++colcurr )
+        {
+          int col = colcurr->first; // col index equals global id of directional derivative component ,l  
+          double val = colcurr->second;
+          linzglobal.Assemble(val, row, col);
+          l++;
+        }
+        
+        if( l != colsize )
+          dserror("ERROR: AssembleLinZ: l = %i but colsize = %i",k,colsize);
+      }
+    }
+  }
+  
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  Assemble Mortar matrices and weighted gap                 popp 01/08|
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::AssembleDMG(LINALG::SparseMatrix& dglobal,
@@ -1605,12 +1804,27 @@ void CONTACT::Interface::AssembleDMG(LINALG::SparseMatrix& dglobal,
           int col = colcurr->first;
           double val = colcurr->second;
 
-          // check for diagonality
-          if (row!=col && abs(val)>1.0e-12)
-            dserror("ERROR: AssembleDMG: D-Matrix is not diagonal! val=%10.5e",val);
-
-          // create an explicitly diagonal d matrix
-          if (row==col) dglobal.Assemble(val,row,col);
+          // do the assembly into global D matrix
+          if (shapefcn_ == Interface::DualFunctions)
+          {
+            // check for diagonality
+            if (row!=col && abs(val)>1.0e-12)
+              dserror("ERROR: AssembleDMG: D-Matrix is not diagonal!");
+  
+            // create an explicitly diagonal d matrix
+            if (row==col)
+              dglobal.Assemble(val, row, col);
+          }
+          else if (shapefcn_ == Interface::StandardFunctions)
+          {
+            // don't check for diagonality
+            // since for standard shape functions, as in general when using
+            // arbitrary shape function types, this is not the case
+            
+            // create the d matrix, do not assemble zeros
+            dglobal.Assemble(val, row, col);
+          }
+          
           ++k;
         }
 
@@ -2312,6 +2526,9 @@ void CONTACT::Interface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
   if (!lComm())
     return;
 
+  // TODO move to global initialize
+  //lindglobal.Zero();
+    
   /********************************************** LinDMatrix **********/
   // This is easy and can be done without communication, as the global
   // matrix lind has the same row map as the storage of the derivatives
@@ -2319,14 +2536,50 @@ void CONTACT::Interface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
   /**********************************************************************/
 
   // loop over all slave nodes (row map)
-  for (int i=0;i<snoderowmap_->NumMyElements();++i)
+  for (int i=0; i<snoderowmap_->NumMyElements(); ++i) // jtilde
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     CNode* cnode = static_cast<CNode*>(node);
-    int numdof = cnode->NumDof();
+    
+    int dim = cnode->NumDof();
+    
+    // Mortar matrix D derivatives
+    map<int,map<int,double> >& dderiv = cnode->GetDerivD();
+    
+    map<int,double>::iterator colcurr;
+    map<int,map<int,double> >::iterator dcurr;
+    
+    for( int j=0; j<dim; ++j ) // j
+    {
+      int row = cnode->Dofs()[j];
+    
+      // loop over all slave nodes dof again using the map iterator
+      for ( dcurr = dderiv.begin(); dcurr != dderiv.end(); ++dcurr  ) // ktilde
+      {
+        // get the corresponding node
+        DRT::Node* snode = idiscret_->gNode(dcurr->first);
+        if (!snode)
+          dserror("ERROR: Cannot find node with gid %",dcurr->first);
+        CNode* csnode = static_cast<CNode*>(snode);
+        
+        double* lm = csnode->lm();
 
+        // get dderiv row
+        map<int,double>& dderivrow = dderiv[dcurr->first];
+        
+        // loop over all directional derivative entries using the map iterator
+        for( colcurr = dderivrow.begin(); colcurr != dderivrow.end(); ++colcurr ) // l
+        { 
+          int col = colcurr->first;
+          double val = lm[j] * (colcurr->second);
+          lindglobal.Assemble(val, row, col);
+        }
+      }
+    }
+        
+    /** old version, using dual shape functions **
     // Mortar matrix D derivatives
     map<int,double>& dderiv = cnode->GetDerivD();
     map<int,double>::iterator colcurr;
@@ -2335,19 +2588,28 @@ void CONTACT::Interface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
     double* lm = cnode->lm();
 
     // loop over all slave node dofs for assembly
-    for (int j=0;j<numdof;++j)
-    {
-      int row = cnode->Dofs()[j];
+    for (int j=0; j<numdof; ++j)
+    {    
+      int row = cnode->Dofs()[j]; // row index equals global dof index of this #i slave node's dof j
 
+      cout << "  j=" << j  << " row=" << row ;
+      
       // loop over all directional derivative entries
-      for (colcurr=dderiv.begin();colcurr!=dderiv.end();++colcurr)
+      for (colcurr=dderiv.begin(); colcurr!=dderiv.end(); ++colcurr)
       {
-        int col = colcurr->first;
+        int col = colcurr->first; // col index equals global id of directional derivative component ,l
+        
         double val = lm[j] * (colcurr->second);
-        //cout << "Assemble LinD: " << row << " " << col << " " << val << endl;
-        if (abs(val)>1.0e-12) lindglobal.Assemble(val,row,col);
+        
+        cout << " | col=" << col << ", val=" << val << " | ";
+            
+        if (abs(val)>1.0e-12)
+          lindglobal.Assemble(val, row, col);
       }
+      
+      cout << " " << endl;
     }
+    */
   }
 
   /********************************************** LinMMatrix ************/
@@ -2470,10 +2732,10 @@ void CONTACT::Interface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
  |  Assemble matrix LinStick with tangential+D+M derivatives  mgit 02/09|
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglobal,
-		                                      LINALG::SparseMatrix& linstickDISglobal,
+                                          LINALG::SparseMatrix& linstickDISglobal,
                                           Epetra_Vector& linstickRHSglobal)
 {
-	// get out of here if not participating in interface
+  // get out of here if not participating in interface
   if (!lComm())
     return;
 
@@ -2486,20 +2748,20 @@ void CONTACT::Interface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglobal
     return;
 
   // not yet implemented for 3D
-	  if (Dim()==3)
-	    dserror("ERROR: AssembleLinStick: 3D not yet implemented");
+    if (Dim()==3)
+      dserror("ERROR: AssembleLinStick: 3D not yet implemented");
 
-	// loop over all stick nodes of the interface
-	for (int i=0;i<sticknodes->NumMyElements();++i)
-	{
-	  int gid = sticknodes->GID(i);
-	  DRT::Node* node = idiscret_->gNode(gid);
-	  if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-	  CNode* cnode = static_cast<CNode*>(node);
-	
-	  if (cnode->Owner() != Comm().MyPID())
-	    dserror("ERROR: AssembleLinStick: Node ownership inconsistency!");
-	
+  // loop over all stick nodes of the interface
+  for (int i=0;i<sticknodes->NumMyElements();++i)
+  {
+    int gid = sticknodes->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    CNode* cnode = static_cast<CNode*>(node);
+  
+    if (cnode->Owner() != Comm().MyPID())
+      dserror("ERROR: AssembleLinStick: Node ownership inconsistency!");
+  
     // prepare assembly
     vector<map<int,double> > dnmap = cnode->GetDerivN();
     map<int,double>::iterator colcurr;
@@ -2512,11 +2774,11 @@ void CONTACT::Interface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglobal
     vector <map<int,double> > dtmap(Dim());
 
     for (colcurr=dnmap[0].begin(); colcurr!=dnmap[0].end(); colcurr++)
-	    dtmap[1].insert(pair<int,double>(colcurr->first,colcurr->second));
-	
-	  for (colcurr=dnmap[1].begin(); colcurr!=dnmap[1].end(); colcurr++)
-	    dtmap[0].insert(pair<int,double>(colcurr->first,(-1)*colcurr->second));
-	
+      dtmap[1].insert(pair<int,double>(colcurr->first,colcurr->second));
+  
+    for (colcurr=dnmap[1].begin(); colcurr!=dnmap[1].end(); colcurr++)
+      dtmap[0].insert(pair<int,double>(colcurr->first,(-1)*colcurr->second));
+  
     int colsize = (int)dtmap[0].size();
     int mapsize = (int)dtmap.size();
     int row = stickt->GID(i);
@@ -2580,8 +2842,8 @@ void CONTACT::Interface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglobal
 
     if(mmapold.size()<1)
     {
-    	cout << "GID " << gid << endl;
-    	dserror("vector too small");
+      cout << "GID " << gid << endl;
+      dserror("vector too small");
     }    
     
     for (colcurr=mmapold[0].begin(); colcurr!=mmapold[0].end(); colcurr++)
@@ -2683,7 +2945,7 @@ void CONTACT::Interface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglobal
       tdotx += txi[dim]*xi[dim];
 
     // prepare assembly
-    map<int,double>& ddmap = cnode->GetDerivD();
+    map<int,double>& ddmap = cnode->GetDerivD()[gid];
 
     // loop over all entries of the current derivative map
     for (colcurr=ddmap.begin();colcurr!=ddmap.end();++colcurr)
@@ -2726,19 +2988,19 @@ void CONTACT::Interface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglobal
         if (abs(val)>1.0e-12) linstickDISglobal.Assemble(val,row,col);
       }
     }
-	}
-
-//	// only for coulomb friction
+  }
+  
+//  // only for coulomb friction
 //  string ftype   = IParams().get<string>("friction type","none");
 //  double frcoeff = IParams().get<double>("friction coefficient",0.0);
 //  double cn = IParams().get<double>("semismooth cn",0.0);
 //  double ct = IParams().get<double>("semismooth ct",0.0);
 //
-//	if (ftype == "tresca")
+//  if (ftype == "tresca")
 //    dserror ("Error: AssemblelinStick: complementary function according"
-//    		     " to Hueber only available for Coulomb friction");
-//	
-//	// get out of here if not participating in interface
+//             " to Hueber only available for Coulomb friction");
+//  
+//  // get out of here if not participating in interface
 //  if (!lComm())
 //    return;
 //   
@@ -2751,20 +3013,20 @@ void CONTACT::Interface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglobal
 //    return;
 //  
 //  // not yet implemented for 3D
-//	  if (Dim()==3)
-//	    dserror("ERROR: AssembleLinStick: 3D not yet implemented");
+//    if (Dim()==3)
+//      dserror("ERROR: AssembleLinStick: 3D not yet implemented");
 //
-//	// loop over all stick nodes of the interface
-//	for (int i=0;i<sticknodes->NumMyElements();++i)
-//	{
-//	  int gid = sticknodes->GID(i);
-//	  DRT::Node* node = idiscret_->gNode(gid);
-//	  if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-//	  CNode* cnode = static_cast<CNode*>(node);
-//	    
-//	  if (cnode->Owner() != Comm().MyPID())
-//	    dserror("ERROR: AssembleLinStick: Node ownership inconsistency!");
-//	
+//  // loop over all stick nodes of the interface
+//  for (int i=0;i<sticknodes->NumMyElements();++i)
+//  {
+//    int gid = sticknodes->GID(i);
+//    DRT::Node* node = idiscret_->gNode(gid);
+//    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+//    CNode* cnode = static_cast<CNode*>(node);
+//      
+//    if (cnode->Owner() != Comm().MyPID())
+//      dserror("ERROR: AssembleLinStick: Node ownership inconsistency!");
+//  
 //    // prepare assembly
 //    vector<map<int,double> > dnmap = cnode->GetDerivN();
 //    map<int,double>::iterator colcurr;
@@ -2777,11 +3039,11 @@ void CONTACT::Interface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglobal
 //    vector <map<int,double> > dtmap(Dim());
 //    
 //    for (colcurr=dnmap[0].begin(); colcurr!=dnmap[0].end(); colcurr++)
-//	    dtmap[1].insert(pair<int,double>(colcurr->first,colcurr->second));
-//	  
-//	  for (colcurr=dnmap[1].begin(); colcurr!=dnmap[1].end(); colcurr++)
-//	    dtmap[0].insert(pair<int,double>(colcurr->first,(-1)*colcurr->second));
-//	  
+//      dtmap[1].insert(pair<int,double>(colcurr->first,colcurr->second));
+//    
+//    for (colcurr=dnmap[1].begin(); colcurr!=dnmap[1].end(); colcurr++)
+//      dtmap[0].insert(pair<int,double>(colcurr->first,(-1)*colcurr->second));
+//    
 //    int colsize = (int)dtmap[0].size();
 //    int mapsize = (int)dtmap.size();
 //    int row = stickt->GID(i);
@@ -2795,16 +3057,16 @@ void CONTACT::Interface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglobal
 //    
 //    for (int dim = 0;dim < Dim();dim++)
 //    {
-//    	utan += txi[dim]*jump[dim];
+//      utan += txi[dim]*jump[dim];
 //      nz += cnode->n()[dim] * cnode->lm()[dim];
 //    }
 //    
 //    // initialization of nz if nz = wgap = 0
 //    if(nz==wgap and wgap==0)
 //    {
-//    	nz=1;
-//    	cout << "Warning: Initialization of nz to 1" << endl;
-//    }	
+//      nz=1;
+//      cout << "Warning: Initialization of nz to 1" << endl;
+//    } 
 //
 //    for (int j=0;j<mapsize-1;++j)
 //      if ((int)dtmap[j].size() != (int)dtmap[j+1].size())
@@ -2868,8 +3130,8 @@ void CONTACT::Interface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglobal
 //     
 //    if(mmapold.size()<1)
 //    {
-//    	cout << "GID " << gid << endl;
-//    	dserror("vector too small");
+//      cout << "GID " << gid << endl;
+//      dserror("vector too small");
 //    }    
 //    
 //    for (colcurr=mmapold[0].begin(); colcurr!=mmapold[0].end(); colcurr++)
@@ -3051,18 +3313,19 @@ void CONTACT::Interface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglobal
 //      if (k!=colsize)
 //        dserror("ERROR: AssembleLinStick: k = %i but colsize = %i",k,colsize);
 //    }
-//	}
-	return;
+//  }
+  
+  return;
 }
 
 /*----------------------------------------------------------------------*
 |  Assemble matrix LinSlip with tangential+D+M derivatives    mgit 02/09|
 *----------------------------------------------------------------------*/
 void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
-		  		                               LINALG::SparseMatrix& linslipDISglobal,
-		  		                               Epetra_Vector& linslipRHSglobal)
+                                         LINALG::SparseMatrix& linslipDISglobal,
+                                         Epetra_Vector& linslipRHSglobal)
 {
-	// get out of here if not participating in interface
+  // get out of here if not participating in interface
   if (!lComm())
     return;
 
@@ -3080,1034 +3343,1034 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
   bool fulllin = Teuchos::getIntegralValue<int>(IParams(),"FULL_LINEARIZATION");
 
   // not yet implemented for 3D
-	if (Dim()==3)
-	  dserror("ERROR: AssembleLinSlip: 3D not yet implemented");
+  if (Dim()==3)
+    dserror("ERROR: AssembleLinSlip: 3D not yet implemented");
 
-	// Tresca Friction
-	if (ftype == INPAR::CONTACT::friction_tresca)
-	{
-		// loop over all slip nodes of the interface
-		for (int i=0;i<slipnodes_->NumMyElements();++i)
-		{
-		  int gid = slipnodes_->GID(i);
-		  DRT::Node* node = idiscret_->gNode(gid);
-		  if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-		  CNode* cnode = static_cast<CNode*>(node);
-		
-		  if (cnode->Owner() != Comm().MyPID())
-		    dserror("ERROR: AssembleLinSlip: Node ownership inconsistency!");
-		
-	    // preparation of assembly
-		  // get Deriv N and calculate DerivD form DerivN
-	
-		  // only for 2D so far, in this case calculation is very easy
-		  // dty =  dnx
-		  // dtx = -dny
-		  // FIXGIT: in the future DerivD will be called directly form node
-		
-		  vector<map<int,double> > dnmap = cnode->GetDerivN();
-		
-		  // iterator
-	    map<int,double>::iterator colcurr;
-	
-	    vector <map<int,double> > dtmap(Dim());
-	
-	    for (colcurr=dnmap[0].begin(); colcurr!=dnmap[0].end(); colcurr++)
-		    dtmap[1].insert(pair<int,double>(colcurr->first,colcurr->second));
-		
-		  for (colcurr=dnmap[1].begin(); colcurr!=dnmap[1].end(); colcurr++)
-		    dtmap[0].insert(pair<int,double>(colcurr->first,(-1)*colcurr->second));
-		
-		  // get more information from node
-	    double* jump = cnode->jump();
-	    double* txi = cnode->txi();
-	    double* xi = cnode->xspatial();
-		  double* z = cnode->lm();
-		  int row = slipt_->GID(i);
-		
-	    int colsize = (int)dtmap[0].size();
-	    int mapsize = (int)dtmap.size();
-	
-	    for (int j=0;j<mapsize-1;++j)
-	      if ((int)dtmap[j].size() != (int)dtmap[j+1].size())
-	        dserror("ERROR: AssembleLinSlip: Column dim. of nodal DerivT-map is inconsistent!");
-		
-	    // calculation of parts of the complementary function
-	    double ztan    = txi[0]*z[0] + txi[1]*z[1];
-	    double jumptan = txi[0]*jump[0] + txi[1]*jump[1];
-	    //double temp = ztan + ct*jumptan;
-	    //double epk = frbound/abs(temp);
-	    //double Fpk = ztan*temp/(frbound*abs(temp));
-	    //double Mpk = epk*(1-Fpk);
-	    //double fac = 1/(abs(ztan+ct*jumptan))*1/(1-Mpk)*(-1);
-	
-	    // calculation of |ztan+ct*utan|
-	    double sum = 0;
-	    int prefactor = 1;
-	    for (int dim = 0;dim < Dim();dim++)
-	      sum += txi[dim]*z[dim]+ct*txi[dim]*jump[dim];
-	
-	    // calculate |sum| and prefactor
-	    if (sum < 0)
-	    {
-	      sum = -sum;
-	   	  prefactor = (-1);
-	    }
-	
-	    /******************************************************************/
-	    // calculation of matrix entries of the linearized slip condition
-	    /******************************************************************/
-	    // 1) Entries from differentiation with respect to lagrange multipliers
-	    // 2) Entries on right hand side
-	    // 3) Entries from differentiation with respect to displacements
-	
-	    // 1) Entries from differentiation with respect to lagrange multipliers
-	    /**************** (Deriv(abs)*ztan+|ztan+ct*jumptan|-frbound).tan ***/
-	
-	    // loop over the dimension
-	    for (int dim=0;dim<cnode->NumDof();++dim)
-	    {
-	      int col = cnode->Dofs()[dim];
-	      double val = (prefactor*ztan+sum-frbound)*txi[dim];
+  // Tresca Friction
+  if (ftype == INPAR::CONTACT::friction_tresca)
+  {
+    // loop over all slip nodes of the interface
+    for (int i=0;i<slipnodes_->NumMyElements();++i)
+    {
+      int gid = slipnodes_->GID(i);
+      DRT::Node* node = idiscret_->gNode(gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      CNode* cnode = static_cast<CNode*>(node);
+    
+      if (cnode->Owner() != Comm().MyPID())
+        dserror("ERROR: AssembleLinSlip: Node ownership inconsistency!");
+    
+      // preparation of assembly
+      // get Deriv N and calculate DerivD form DerivN
+  
+      // only for 2D so far, in this case calculation is very easy
+      // dty =  dnx
+      // dtx = -dny
+      // FIXGIT: in the future DerivD will be called directly form node
+    
+      vector<map<int,double> > dnmap = cnode->GetDerivN();
+    
+      // iterator
+      map<int,double>::iterator colcurr;
+  
+      vector <map<int,double> > dtmap(Dim());
+  
+      for (colcurr=dnmap[0].begin(); colcurr!=dnmap[0].end(); colcurr++)
+        dtmap[1].insert(pair<int,double>(colcurr->first,colcurr->second));
+    
+      for (colcurr=dnmap[1].begin(); colcurr!=dnmap[1].end(); colcurr++)
+        dtmap[0].insert(pair<int,double>(colcurr->first,(-1)*colcurr->second));
+    
+      // get more information from node
+      double* jump = cnode->jump();
+      double* txi = cnode->txi();
+      double* xi = cnode->xspatial();
+      double* z = cnode->lm();
+      int row = slipt_->GID(i);
+    
+      int colsize = (int)dtmap[0].size();
+      int mapsize = (int)dtmap.size();
+  
+      for (int j=0;j<mapsize-1;++j)
+        if ((int)dtmap[j].size() != (int)dtmap[j+1].size())
+          dserror("ERROR: AssembleLinSlip: Column dim. of nodal DerivT-map is inconsistent!");
+    
+      // calculation of parts of the complementary function
+      double ztan    = txi[0]*z[0] + txi[1]*z[1];
+      double jumptan = txi[0]*jump[0] + txi[1]*jump[1];
+      //double temp = ztan + ct*jumptan;
+      //double epk = frbound/abs(temp);
+      //double Fpk = ztan*temp/(frbound*abs(temp));
+      //double Mpk = epk*(1-Fpk);
+      //double fac = 1/(abs(ztan+ct*jumptan))*1/(1-Mpk)*(-1);
+  
+      // calculation of |ztan+ct*utan|
+      double sum = 0;
+      int prefactor = 1;
+      for (int dim = 0;dim < Dim();dim++)
+        sum += txi[dim]*z[dim]+ct*txi[dim]*jump[dim];
+  
+      // calculate |sum| and prefactor
+      if (sum < 0)
+      {
+        sum = -sum;
+        prefactor = (-1);
+      }
+  
+      /******************************************************************/
+      // calculation of matrix entries of the linearized slip condition
+      /******************************************************************/
+      // 1) Entries from differentiation with respect to lagrange multipliers
+      // 2) Entries on right hand side
+      // 3) Entries from differentiation with respect to displacements
+  
+      // 1) Entries from differentiation with respect to lagrange multipliers
+      /**************** (Deriv(abs)*ztan+|ztan+ct*jumptan|-frbound).tan ***/
+  
+      // loop over the dimension
+      for (int dim=0;dim<cnode->NumDof();++dim)
+      {
+        int col = cnode->Dofs()[dim];
+        double val = (prefactor*ztan+sum-frbound)*txi[dim];
 
 #ifdef CONTACTSLIPFIRST
         if (cnode->ActiveOld()==false) val = txi[dim];
 #endif
-	
-	      // do not assemble zeros into matrix
-	      if (abs(val)>1.0e-12) linslipLMglobal.Assemble(val,row,col);
-	    }
-	
-	    // 2) Entries on right hand side
-	    /************ -C + entries from writing Delta(z) as z(k+1)-z(k) ***/
-	
-	    // -C and remaining terms
-	    double value1= -(abs(ztan+ct*jumptan))*ztan+frbound*(ztan+ct*jumptan);
-	    double value2= -frbound*ztan+sum*ztan+prefactor*ztan*ztan;
-	 	
-	    Epetra_SerialDenseVector rhsnode(1);
-	    vector<int> lm(1);
-	    vector<int> lmowner(1);
-	    rhsnode(0) = (value1+value2);
-	
+  
+        // do not assemble zeros into matrix
+        if (abs(val)>1.0e-12) linslipLMglobal.Assemble(val,row,col);
+      }
+  
+      // 2) Entries on right hand side
+      /************ -C + entries from writing Delta(z) as z(k+1)-z(k) ***/
+  
+      // -C and remaining terms
+      double value1= -(abs(ztan+ct*jumptan))*ztan+frbound*(ztan+ct*jumptan);
+      double value2= -frbound*ztan+sum*ztan+prefactor*ztan*ztan;
+    
+      Epetra_SerialDenseVector rhsnode(1);
+      vector<int> lm(1);
+      vector<int> lmowner(1);
+      rhsnode(0) = (value1+value2);
+  
 #ifdef CONTACTSLIPFIRST
         if (cnode->ActiveOld()==false) rhsnode(0) = 0;
 #endif
 
-	    lm[0] = cnode->Dofs()[1];
-	    lmowner[0] = cnode->Owner();
-	
-	    LINALG::Assemble(linslipRHSglobal,rhsnode,lm,lmowner);
-	
-	    // 3) Entries from differentiation with respect to displacements
-	
-	    /***************************** -Deriv(abs)*ct*tan.(D-Dn-1)*ztan ***/
-	
-	    // we need the nodal entries of the D-matrix and the old one
-	    double D= (cnode->GetD()[0])[cnode->Dofs()[0]];
-	    double Dold= (cnode->GetDOld()[0])[cnode->Dofs()[0]];
-	    
-	    if (abs(Dold)<0.0001)
-	      dserror ("Error:No entry for Dold");
-	 
-	    // loop over all derivative maps (=dimensions)
-	    for (int dim=0;dim<cnode->NumDof();++dim)
-	    {
-	      int col = cnode->Dofs()[dim];
-	      double val = prefactor*(-1)*ct*txi[dim]*(D-Dold)*ztan;
-	     //cout << "01 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+      lm[0] = cnode->Dofs()[1];
+      lmowner[0] = cnode->Owner();
+  
+      LINALG::Assemble(linslipRHSglobal,rhsnode,lm,lmowner);
+  
+      // 3) Entries from differentiation with respect to displacements
+  
+      /***************************** -Deriv(abs)*ct*tan.(D-Dn-1)*ztan ***/
+  
+      // we need the nodal entries of the D-matrix and the old one
+      double D= (cnode->GetD()[0])[cnode->Dofs()[0]];
+      double Dold= (cnode->GetDOld()[0])[cnode->Dofs()[0]];
+      
+      if (abs(Dold)<0.0001)
+        dserror ("Error:No entry for Dold");
+   
+      // loop over all derivative maps (=dimensions)
+      for (int dim=0;dim<cnode->NumDof();++dim)
+      {
+        int col = cnode->Dofs()[dim];
+        double val = prefactor*(-1)*ct*txi[dim]*(D-Dold)*ztan;
+       //cout << "01 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 #ifdef CONTACTSLIPFIRST
         if (cnode->ActiveOld()==false) val = 0;
 #endif
-	
-	     // do not assemble zeros into matrix
-	     if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
-	    }
-	
-	    /***************************** -Deriv(abs)*ct*tan.(M-Mn-1)*ztan ***/
-	
-	    // we need the nodal entries of the M-matrix and the old one
-	    vector<map<int,double> > mmap = cnode->GetM();
-	    vector<map<int,double> > mmapold = cnode->GetMOld();
+  
+       // do not assemble zeros into matrix
+       if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
+      }
+  
+      /***************************** -Deriv(abs)*ct*tan.(M-Mn-1)*ztan ***/
+  
+      // we need the nodal entries of the M-matrix and the old one
+      vector<map<int,double> > mmap = cnode->GetM();
+      vector<map<int,double> > mmapold = cnode->GetMOld();
 
-	    // create a set of nodes including nodes according to M entries
-	    // from current and previous time step
-	    set <int> mnodes;
-	
-	    for (colcurr=mmap[0].begin(); colcurr!=mmap[0].end(); colcurr++)
-	      mnodes.insert((colcurr->first)/Dim());
-	
-	    for (colcurr=mmapold[0].begin(); colcurr!=mmapold[0].end(); colcurr++)
-	      mnodes.insert((colcurr->first)/Dim());
-	
-	    set<int>::iterator mcurr;
-	
-	    // loop over all master nodes (find adjacent ones to this stick node)
-	    for (mcurr=mnodes.begin(); mcurr != mnodes.end(); mcurr++)
-	    {
-	      int gid = *mcurr;
-	      DRT::Node* mnode = idiscret_->gNode(gid);
-	      if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
-	      CNode* cmnode = static_cast<CNode*>(mnode);
-	      const int* mdofs = cmnode->Dofs();
-	
-	      double mik = (mmap[0])[mdofs[0]];
-	      double mikold = (mmapold[0])[mdofs[0]];
-	
-	      // compute linstick-matrix entry of the current active node / master node pair
-	      // loop over all derivative maps (=dimensions)
-	      for (int dim=0;dim<cnode->NumDof();++dim)
-	      {
-	        int col = cmnode->Dofs()[dim];
-	        double val = prefactor*(+1)*ct*txi[dim]*(mik-mikold)*ztan;
-	        //cout << "02 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
-	
+      // create a set of nodes including nodes according to M entries
+      // from current and previous time step
+      set <int> mnodes;
+  
+      for (colcurr=mmap[0].begin(); colcurr!=mmap[0].end(); colcurr++)
+        mnodes.insert((colcurr->first)/Dim());
+  
+      for (colcurr=mmapold[0].begin(); colcurr!=mmapold[0].end(); colcurr++)
+        mnodes.insert((colcurr->first)/Dim());
+  
+      set<int>::iterator mcurr;
+  
+      // loop over all master nodes (find adjacent ones to this stick node)
+      for (mcurr=mnodes.begin(); mcurr != mnodes.end(); mcurr++)
+      {
+        int gid = *mcurr;
+        DRT::Node* mnode = idiscret_->gNode(gid);
+        if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
+        CNode* cmnode = static_cast<CNode*>(mnode);
+        const int* mdofs = cmnode->Dofs();
+  
+        double mik = (mmap[0])[mdofs[0]];
+        double mikold = (mmapold[0])[mdofs[0]];
+  
+        // compute linstick-matrix entry of the current active node / master node pair
+        // loop over all derivative maps (=dimensions)
+        for (int dim=0;dim<cnode->NumDof();++dim)
+        {
+          int col = cmnode->Dofs()[dim];
+          double val = prefactor*(+1)*ct*txi[dim]*(mik-mikold)*ztan;
+          //cout << "02 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+  
 #ifdef CONTACTSLIPFIRST
         if (cnode->ActiveOld()==false) val = 0;
 #endif
 
-	       // do not assemble zeros into matrix
-	       if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
-	      }
-	    }
-	
-	    /************************************** frbound*ct*tan.(D-Dn-1) ***/
-	
-	    // loop over all derivative maps (=dimensions)
-	    for (int dim=0;dim<cnode->NumDof();++dim)
-	    {
-	      int col = cnode->Dofs()[dim];
-	      double val = frbound*ct*txi[dim]*(D-Dold);
-	      //cout << "03 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+         // do not assemble zeros into matrix
+         if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
+        }
+      }
+  
+      /************************************** frbound*ct*tan.(D-Dn-1) ***/
+  
+      // loop over all derivative maps (=dimensions)
+      for (int dim=0;dim<cnode->NumDof();++dim)
+      {
+        int col = cnode->Dofs()[dim];
+        double val = frbound*ct*txi[dim]*(D-Dold);
+        //cout << "03 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTSLIPFIRST
         if (cnode->ActiveOld()==false) val = 0;
 #endif
 
         // do not assemble zeros into matrix
-	     if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
-	    }
-	
-	    /********************************** -frbound*ct*tan.(M-Mn-1).xm ***/
-	
-	    // loop over all master nodes
-	    for (mcurr=mnodes.begin(); mcurr != mnodes.end(); mcurr++)
-	    {
-	      int gid = *mcurr;
-	      DRT::Node* mnode = idiscret_->gNode(gid);
-	      if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
-	      CNode* cmnode = static_cast<CNode*>(mnode);
-	      const int* mdofs = cmnode->Dofs();
-	
-	      double mik = (mmap[0])[mdofs[0]];
-	      double mikold = (mmapold[0])[mdofs[0]];
-	
-	      // loop over all derivative maps (=dimensions)
-	      for (int dim=0;dim<cnode->NumDof();++dim)
-	      {
-	        int col = cmnode->Dofs()[dim];
-	        double val = frbound*(-1)*ct*txi[dim]*(mik-mikold);
-	        //cout << "04 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
-	
+       if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
+      }
+  
+      /********************************** -frbound*ct*tan.(M-Mn-1).xm ***/
+  
+      // loop over all master nodes
+      for (mcurr=mnodes.begin(); mcurr != mnodes.end(); mcurr++)
+      {
+        int gid = *mcurr;
+        DRT::Node* mnode = idiscret_->gNode(gid);
+        if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
+        CNode* cmnode = static_cast<CNode*>(mnode);
+        const int* mdofs = cmnode->Dofs();
+  
+        double mik = (mmap[0])[mdofs[0]];
+        double mikold = (mmapold[0])[mdofs[0]];
+  
+        // loop over all derivative maps (=dimensions)
+        for (int dim=0;dim<cnode->NumDof();++dim)
+        {
+          int col = cmnode->Dofs()[dim];
+          double val = frbound*(-1)*ct*txi[dim]*(mik-mikold);
+          //cout << "04 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+  
 #ifdef CONTACTSLIPFIRST
           if (cnode->ActiveOld()==false) val = 0;
 #endif
-	        // do not assemble zeros into matrix
-	        if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
-	      }
-	    }
-	
-	    // remaining terms only in case of full linearization
-	    if(fulllin)
-	    {
-	      /************************************ |ztan+ct*utan|.DerivT.z ***/
-	
-	      // loop over all derivative maps (=dimensions)
-	      for (int j=0;j<mapsize;++j)
-	      {
-	        int k=0;
-	
-	        // loop over all entries of the current derivative map
-	        for (colcurr=dtmap[j].begin();colcurr!=dtmap[j].end();++colcurr)
-	        {
-	          int col = colcurr->first;
-	          double val = sum*(colcurr->second)*z[j];
-	          //cout << "1 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
-	
+          // do not assemble zeros into matrix
+          if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
+        }
+      }
+  
+      // remaining terms only in case of full linearization
+      if(fulllin)
+      {
+        /************************************ |ztan+ct*utan|.DerivT.z ***/
+  
+        // loop over all derivative maps (=dimensions)
+        for (int j=0;j<mapsize;++j)
+        {
+          int k=0;
+  
+          // loop over all entries of the current derivative map
+          for (colcurr=dtmap[j].begin();colcurr!=dtmap[j].end();++colcurr)
+          {
+            int col = colcurr->first;
+            double val = sum*(colcurr->second)*z[j];
+            //cout << "1 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+  
 #ifdef CONTACTSLIPFIRST
             if (cnode->ActiveOld()==false) val = 0;
 #endif
 
-	          // do not assemble zeros into s matrix
-	          if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
-	          ++k;
-	        }
-	
-	        if (k!=colsize)
-	          dserror("ERROR: AssembleLinSlip: k = %i but colsize = %i",k,colsize);
-	      }
-	
-		    /*********************************** Deriv(abs)*DerivT.z*ztan ***/
-		
-		    // loop over all derivative maps (=dimensions)
-		    for (int j=0;j<mapsize;++j)
-		    {
-		      int k=0;
-		
-		      // loop over all entries of the current derivative map
-		      for (colcurr=dtmap[j].begin();colcurr!=dtmap[j].end();++colcurr)
-		      {
-		        int col = colcurr->first;
-		        double val = prefactor*(colcurr->second)*z[j]*ztan;
-		        //cout << "2 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
-		
+            // do not assemble zeros into s matrix
+            if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
+            ++k;
+          }
+  
+          if (k!=colsize)
+            dserror("ERROR: AssembleLinSlip: k = %i but colsize = %i",k,colsize);
+        }
+  
+        /*********************************** Deriv(abs)*DerivT.z*ztan ***/
+    
+        // loop over all derivative maps (=dimensions)
+        for (int j=0;j<mapsize;++j)
+        {
+          int k=0;
+    
+          // loop over all entries of the current derivative map
+          for (colcurr=dtmap[j].begin();colcurr!=dtmap[j].end();++colcurr)
+          {
+            int col = colcurr->first;
+            double val = prefactor*(colcurr->second)*z[j]*ztan;
+            //cout << "2 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+    
 #ifdef CONTACTSLIPFIRST
           if (cnode->ActiveOld()==false) val = (colcurr->second)*z[j];
 #endif
-		
-		        // do not assemble zeros into matrix
-		        if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
-		        ++k;
-		      }
-		
-		      if (k!=colsize)
-		        dserror("ERROR: AssembleLinSlip: k = %i but colsize = %i",k,colsize);
-		    }
-	
-		    /******************************* Deriv(abs)*DerivT.jump+*ztan ***/
-		
-		    // loop over all derivative maps (=dimensions)
-		    for (int j=0;j<mapsize;++j)
-		    {
-		      int k=0;
-		
-		      // loop over all entries of the current derivative map
-		      for (colcurr=dtmap[j].begin();colcurr!=dtmap[j].end();++colcurr)
-		      {
-		        int col = colcurr->first;
-		        double val = prefactor*ct*(colcurr->second)*jump[j]*ztan;
-		        //cout << "3 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
-		
+    
+            // do not assemble zeros into matrix
+            if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
+            ++k;
+          }
+    
+          if (k!=colsize)
+            dserror("ERROR: AssembleLinSlip: k = %i but colsize = %i",k,colsize);
+        }
+  
+        /******************************* Deriv(abs)*DerivT.jump+*ztan ***/
+    
+        // loop over all derivative maps (=dimensions)
+        for (int j=0;j<mapsize;++j)
+        {
+          int k=0;
+    
+          // loop over all entries of the current derivative map
+          for (colcurr=dtmap[j].begin();colcurr!=dtmap[j].end();++colcurr)
+          {
+            int col = colcurr->first;
+            double val = prefactor*ct*(colcurr->second)*jump[j]*ztan;
+            //cout << "3 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+    
 #ifdef CONTACTSLIPFIRST
         if (cnode->ActiveOld()==false) val = 0;
 #endif
-		
-		        // do not assemble zeros into s matrix
-		        if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
-		        ++k;
-		      }
-		
-		    if (k!=colsize)
-		      dserror("ERROR: AssembleLinSlip: k = %i but colsize = %i",k,colsize);
-		    }
-		
-		    /*************************** -Deriv(abs).ct.tan.DerivD.x*ztan ***/
-		
-		    // we need the dot product t*x of this node
-		    double tdotx = 0.0;
-		    for (int dim=0;dim<cnode->NumDof();++dim)
-		      tdotx += txi[dim]*xi[dim];
-		
-		    // prepare assembly
-		    map<int,double>& ddmap = cnode->GetDerivD();
-		
-		    // loop over all entries of the current derivative map
-		    for (colcurr=ddmap.begin();colcurr!=ddmap.end();++colcurr)
-		    {
-		      int col = colcurr->first;
-		      double val = (-1)*prefactor*ct*tdotx*colcurr->second*ztan;
-		      //cout << "4 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
-		
+    
+            // do not assemble zeros into s matrix
+            if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
+            ++k;
+          }
+    
+        if (k!=colsize)
+          dserror("ERROR: AssembleLinSlip: k = %i but colsize = %i",k,colsize);
+        }
+    
+        /*************************** -Deriv(abs).ct.tan.DerivD.x*ztan ***/
+    
+        // we need the dot product t*x of this node
+        double tdotx = 0.0;
+        for (int dim=0;dim<cnode->NumDof();++dim)
+          tdotx += txi[dim]*xi[dim];
+    
+        // prepare assembly
+        map<int,double>& ddmap = cnode->GetDerivD()[gid];
+    
+        // loop over all entries of the current derivative map
+        for (colcurr=ddmap.begin();colcurr!=ddmap.end();++colcurr)
+        {
+          int col = colcurr->first;
+          double val = (-1)*prefactor*ct*tdotx*colcurr->second*ztan;
+          //cout << "4 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+    
 #ifdef CONTACTSLIPFIRST
         if (cnode->ActiveOld()==false) val = 0;
 #endif
-		
-		      // do not assemble zeros into matrix
-		      if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
-		    }
-		
-		    /**************************** Deriv(abs).ct.tan.DerivM.x*ztan ***/
-		
-		    // we need the Lin(M-matrix) entries of this node
-		    map<int,map<int,double> >& dmmap = cnode->GetDerivM();
-		    map<int,map<int,double> >::iterator dmcurr;
-		
-		    // loop over all master nodes in the DerivM-map of the active slave node
-		    for (dmcurr=dmmap.begin();dmcurr!=dmmap.end();++dmcurr)
-		    {
-		      int gid = dmcurr->first;
-		      DRT::Node* mnode = idiscret_->gNode(gid);
-		      if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
-		      CNode* cmnode = static_cast<CNode*>(mnode);
-		      double* mxi = cmnode->xspatial();
-		
-		      // we need the dot product ns*xm of this node pair
-		      double tdotx = 0.0;
-		      for (int dim=0;dim<cnode->NumDof();++dim)
-		        tdotx += txi[dim]*mxi[dim];
-		
-		      // compute entry of the current active node / master node pair
-		      map<int,double>& thisdmmap = cnode->GetDerivM(gid);
-		
-		      // loop over all entries of the current derivative map
-		      for (colcurr=thisdmmap.begin();colcurr!=thisdmmap.end();++colcurr)
-		      {
-		        int col = colcurr->first;
-		        double val = prefactor*ct*tdotx*colcurr->second*ztan;
-		        //cout << "5 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
-		
+    
+          // do not assemble zeros into matrix
+          if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
+        }
+    
+        /**************************** Deriv(abs).ct.tan.DerivM.x*ztan ***/
+    
+        // we need the Lin(M-matrix) entries of this node
+        map<int,map<int,double> >& dmmap = cnode->GetDerivM();
+        map<int,map<int,double> >::iterator dmcurr;
+    
+        // loop over all master nodes in the DerivM-map of the active slave node
+        for (dmcurr=dmmap.begin();dmcurr!=dmmap.end();++dmcurr)
+        {
+          int gid = dmcurr->first;
+          DRT::Node* mnode = idiscret_->gNode(gid);
+          if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
+          CNode* cmnode = static_cast<CNode*>(mnode);
+          double* mxi = cmnode->xspatial();
+    
+          // we need the dot product ns*xm of this node pair
+          double tdotx = 0.0;
+          for (int dim=0;dim<cnode->NumDof();++dim)
+            tdotx += txi[dim]*mxi[dim];
+    
+          // compute entry of the current active node / master node pair
+          map<int,double>& thisdmmap = cnode->GetDerivM(gid);
+    
+          // loop over all entries of the current derivative map
+          for (colcurr=thisdmmap.begin();colcurr!=thisdmmap.end();++colcurr)
+          {
+            int col = colcurr->first;
+            double val = prefactor*ct*tdotx*colcurr->second*ztan;
+            //cout << "5 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+    
 #ifdef CONTACTSLIPFIRST
         if (cnode->ActiveOld()==false) val = 0;
 #endif
-		
-		        // do not assemble zeros into matrix
-		        if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
-		      }
-		    }
-		
-		    /****************************************** -frbound.DerivT.z ***/
-		
-		    // loop over all derivative maps (=dimensions)
-		    for (int j=0;j<mapsize;++j)
-		    {
-		      int k=0;
-		
-		      // loop over all entries of the current derivative map
-		      for (colcurr=dtmap[j].begin();colcurr!=dtmap[j].end();++colcurr)
-		      {
-		        int col = colcurr->first;
-		        double val = (-1)*frbound*(colcurr->second)*z[j];
-		        //cout << "6 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
-		
+    
+            // do not assemble zeros into matrix
+            if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
+          }
+        }
+    
+        /****************************************** -frbound.DerivT.z ***/
+    
+        // loop over all derivative maps (=dimensions)
+        for (int j=0;j<mapsize;++j)
+        {
+          int k=0;
+    
+          // loop over all entries of the current derivative map
+          for (colcurr=dtmap[j].begin();colcurr!=dtmap[j].end();++colcurr)
+          {
+            int col = colcurr->first;
+            double val = (-1)*frbound*(colcurr->second)*z[j];
+            //cout << "6 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+    
 #ifdef CONTACTSLIPFIRST
         if (cnode->ActiveOld()==false) val = 0;
 #endif
-		
-		        // do not assemble zeros into s matrix
-		        if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
-		        ++k;
-		      }
-		
-		      if (k!=colsize)
-		        dserror("ERROR: AssembleLinSlip: k = %i but colsize = %i",k,colsize);
-		    }
-		
-		    /************************************ -frbound.ct.DerivT.jump ***/
-		
-		    // loop over all derivative maps (=dimensions)
-		    for (int j=0;j<mapsize;++j)
-		    {
-		      int k=0;
-		
-		      // loop over all entries of the current derivative map
-		      for (colcurr=dtmap[j].begin();colcurr!=dtmap[j].end();++colcurr)
-		      {
-		        int col = colcurr->first;
-		        double val = (-1)*frbound*ct*(colcurr->second)*jump[j];
-		        //cout << "7 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
-		
+    
+            // do not assemble zeros into s matrix
+            if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
+            ++k;
+          }
+    
+          if (k!=colsize)
+            dserror("ERROR: AssembleLinSlip: k = %i but colsize = %i",k,colsize);
+        }
+    
+        /************************************ -frbound.ct.DerivT.jump ***/
+    
+        // loop over all derivative maps (=dimensions)
+        for (int j=0;j<mapsize;++j)
+        {
+          int k=0;
+    
+          // loop over all entries of the current derivative map
+          for (colcurr=dtmap[j].begin();colcurr!=dtmap[j].end();++colcurr)
+          {
+            int col = colcurr->first;
+            double val = (-1)*frbound*ct*(colcurr->second)*jump[j];
+            //cout << "7 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+    
 #ifdef CONTACTSLIPFIRST
         if (cnode->ActiveOld()==false) val = 0;
 #endif
-		
-		        // do not assemble zeros into s matrix
-		        if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
-		        ++k;
-		      }
-		
-		      if (k!=colsize)
-		        dserror("ERROR: AssembleLinSlip: k = %i but colsize = %i",k,colsize);
-		    }
-		
-		    /************************************* +frbound.ct.T.DerivD.x ***/
-		
-		    // we need the dot product t*x of this node
-		     tdotx = 0.0;
-		     for (int dim=0;dim<cnode->NumDof();++dim)
-		       tdotx += txi[dim]*xi[dim];
-		
-		     // loop over all entries of the current derivative map
-		     for (colcurr=ddmap.begin();colcurr!=ddmap.end();++colcurr)
-		     {
-		       int col = colcurr->first;
-		       double val = (-1)*(-1)*frbound*ct*tdotx*colcurr->second;
-		       //cout << "8 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
-		
+    
+            // do not assemble zeros into s matrix
+            if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
+            ++k;
+          }
+    
+          if (k!=colsize)
+            dserror("ERROR: AssembleLinSlip: k = %i but colsize = %i",k,colsize);
+        }
+    
+        /************************************* +frbound.ct.T.DerivD.x ***/
+    
+        // we need the dot product t*x of this node
+         tdotx = 0.0;
+         for (int dim=0;dim<cnode->NumDof();++dim)
+           tdotx += txi[dim]*xi[dim];
+    
+         // loop over all entries of the current derivative map
+         for (colcurr=ddmap.begin();colcurr!=ddmap.end();++colcurr)
+         {
+           int col = colcurr->first;
+           double val = (-1)*(-1)*frbound*ct*tdotx*colcurr->second;
+           //cout << "8 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+    
 #ifdef CONTACTSLIPFIRST
         if (cnode->ActiveOld()==false) val = 0;
 #endif
-		
-		       // do not assemble zeros into matrix
-		       if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
-		     }
-		
-		     /********************************  -frbound.ct.T.DerivM.x ******/
-		
-		      // loop over all master nodes in the DerivM-map of the active slave node
-		     for (dmcurr=dmmap.begin();dmcurr!=dmmap.end();++dmcurr)
-		     {
-		       int gid = dmcurr->first;
-		       DRT::Node* mnode = idiscret_->gNode(gid);
-		       if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
-		       CNode* cmnode = static_cast<CNode*>(mnode);
-		       double* mxi = cmnode->xspatial();
-		
-		       // we need the dot product ns*xm of this node pair
-		       double tdotx = 0.0;
-		       for (int dim=0;dim<cnode->NumDof();++dim)
-		         tdotx += txi[dim]*mxi[dim];
-		
-		       // compute entry of the current active node / master node pair
-		       map<int,double>& thisdmmap = cnode->GetDerivM(gid);
-		
-		       // loop over all entries of the current derivative map
-		       for (colcurr=thisdmmap.begin();colcurr!=thisdmmap.end();++colcurr)
-		       {
-		         int col = colcurr->first;
-		         double val = (-1)*frbound*ct*tdotx*colcurr->second;
-		        //cout << "9 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
-		
+    
+           // do not assemble zeros into matrix
+           if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
+         }
+    
+         /********************************  -frbound.ct.T.DerivM.x ******/
+    
+          // loop over all master nodes in the DerivM-map of the active slave node
+         for (dmcurr=dmmap.begin();dmcurr!=dmmap.end();++dmcurr)
+         {
+           int gid = dmcurr->first;
+           DRT::Node* mnode = idiscret_->gNode(gid);
+           if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
+           CNode* cmnode = static_cast<CNode*>(mnode);
+           double* mxi = cmnode->xspatial();
+    
+           // we need the dot product ns*xm of this node pair
+           double tdotx = 0.0;
+           for (int dim=0;dim<cnode->NumDof();++dim)
+             tdotx += txi[dim]*mxi[dim];
+    
+           // compute entry of the current active node / master node pair
+           map<int,double>& thisdmmap = cnode->GetDerivM(gid);
+    
+           // loop over all entries of the current derivative map
+           for (colcurr=thisdmmap.begin();colcurr!=thisdmmap.end();++colcurr)
+           {
+             int col = colcurr->first;
+             double val = (-1)*frbound*ct*tdotx*colcurr->second;
+            //cout << "9 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+    
 #ifdef CONTACTSLIPFIRST
         if (cnode->ActiveOld()==false) val = 0;
 #endif
-		
-		         // do not assemble zeros into matrix
-		         if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
-		      }
-		    }
-	    } // if fullin
-	  }
-	}// Tresca friction
-	
+    
+             // do not assemble zeros into matrix
+             if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
+          }
+        }
+      } // if fullin
+    }
+  }// Tresca friction
+  
   // Coulomb Friction
-	if (ftype == INPAR::CONTACT::friction_coulomb)
-	{
-#ifndef CONTACTCOMPHUEBER			
+  if (ftype == INPAR::CONTACT::friction_coulomb)
+  {
+#ifndef CONTACTCOMPHUEBER     
     // loop over all slip nodes of the interface
-		for (int i=0;i<slipnodes_->NumMyElements();++i)
-		{
-		  int gid = slipnodes_->GID(i);
-		  DRT::Node* node = idiscret_->gNode(gid);
-		  if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-		  CNode* cnode = static_cast<CNode*>(node);
-		
-		  if (cnode->Owner() != Comm().MyPID())
-		    dserror("ERROR: AssembleLinSlip: Node ownership inconsistency!");
-		
-	    // preparation of assembly
-		  // get Deriv N and calculate DerivD form DerivN
-	
-		  // only for 2D so far, in this case calculation is very easy
-		  // dty =  dnx
-		  // dtx = -dny
-		  // FIXGIT: in the future DerivD will be called directly form node
-		
-		  vector<map<int,double> > dnmap = cnode->GetDerivN();
-		
-		  // iterator
-	    map<int,double>::iterator colcurr;
-	
-	    vector <map<int,double> > dtmap(Dim());
-	
-	    for (colcurr=dnmap[0].begin(); colcurr!=dnmap[0].end(); colcurr++)
-		    dtmap[1].insert(pair<int,double>(colcurr->first,colcurr->second));
-		
-		  for (colcurr=dnmap[1].begin(); colcurr!=dnmap[1].end(); colcurr++)
-		    dtmap[0].insert(pair<int,double>(colcurr->first,(-1)*colcurr->second));
-		
-		  // get more information from node
-	    double* jump = cnode->jump();
-	    double* n = cnode->n();
-	    double* txi = cnode->txi();
-	    double* xi = cnode->xspatial();
-		  double* z = cnode->lm();
-		  int row = slipt_->GID(i);
-		
-	    int colsize = (int)dtmap[0].size();
-	    int mapsize = (int)dtmap.size();
-	
-	    for (int j=0;j<mapsize-1;++j)
-	      if ((int)dtmap[j].size() != (int)dtmap[j+1].size())
-	        dserror("ERROR: AssembleLinSlip: Column dim. of nodal DerivT-map is inconsistent!");
-		
-	    // calculation of parts of the complementary function
-	    double znor    = n[0]*z[0] + n[1]*z[1];
-	    double ztan    = txi[0]*z[0] + txi[1]*z[1];
-	    double jumptan = txi[0]*jump[0] + txi[1]*jump[1];
+    for (int i=0;i<slipnodes_->NumMyElements();++i)
+    {
+      int gid = slipnodes_->GID(i);
+      DRT::Node* node = idiscret_->gNode(gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      CNode* cnode = static_cast<CNode*>(node);
+    
+      if (cnode->Owner() != Comm().MyPID())
+        dserror("ERROR: AssembleLinSlip: Node ownership inconsistency!");
+    
+      // preparation of assembly
+      // get Deriv N and calculate DerivD form DerivN
+  
+      // only for 2D so far, in this case calculation is very easy
+      // dty =  dnx
+      // dtx = -dny
+      // FIXGIT: in the future DerivD will be called directly form node
+    
+      vector<map<int,double> > dnmap = cnode->GetDerivN();
+    
+      // iterator
+      map<int,double>::iterator colcurr;
+  
+      vector <map<int,double> > dtmap(Dim());
+  
+      for (colcurr=dnmap[0].begin(); colcurr!=dnmap[0].end(); colcurr++)
+        dtmap[1].insert(pair<int,double>(colcurr->first,colcurr->second));
+    
+      for (colcurr=dnmap[1].begin(); colcurr!=dnmap[1].end(); colcurr++)
+        dtmap[0].insert(pair<int,double>(colcurr->first,(-1)*colcurr->second));
+    
+      // get more information from node
+      double* jump = cnode->jump();
+      double* n = cnode->n();
+      double* txi = cnode->txi();
+      double* xi = cnode->xspatial();
+      double* z = cnode->lm();
+      int row = slipt_->GID(i);
+    
+      int colsize = (int)dtmap[0].size();
+      int mapsize = (int)dtmap.size();
+  
+      for (int j=0;j<mapsize-1;++j)
+        if ((int)dtmap[j].size() != (int)dtmap[j+1].size())
+          dserror("ERROR: AssembleLinSlip: Column dim. of nodal DerivT-map is inconsistent!");
+    
+      // calculation of parts of the complementary function
+      double znor    = n[0]*z[0] + n[1]*z[1];
+      double ztan    = txi[0]*z[0] + txi[1]*z[1];
+      double jumptan = txi[0]*jump[0] + txi[1]*jump[1];
       //double temp = ztan + ct*jumptan;
-	    //double epk = frbound/abs(temp);
-	    //double Fpk = ztan*temp/(frbound*abs(temp));
-	    //double Mpk = epk*(1-Fpk);
-	    //double fac = 1/(abs(ztan+ct*jumptan))*1/(1-Mpk)*(-1);
-	
-	    // calculation of |ztan+ct*utan|
-	    double sum = 0;
-	    int prefactor = 1;
-	    for (int dim = 0;dim < Dim();dim++)
-	      sum += txi[dim]*z[dim]+ct*txi[dim]*jump[dim];
-	
-	    // calculate |sum| and prefactor
-	    if (sum < 0)
-	    {
-	      sum = -sum;
-	   	  prefactor = (-1);
-	    }
-	
-	    /******************************************************************/
-	    // calculation of matrix entries of the linearized slip condition
-	    /******************************************************************/
-	    // 1) Entries from differentiation with respect to lagrange multipliers
-	    // 2) Entries on right hand side
-	    // 3) Entries from differentiation with respect to displacements
-	
-	    // 1) Entries from differentiation with respect to lagrange multipliers
-	    /**************** (Deriv(abs)*ztan+|ztan+ct*jumptan|-frcoff*znor).tan ***/
-	
-	    // loop over the dimension
-	    for (int dim=0;dim<cnode->NumDof();++dim)
-	    {
-	      int col = cnode->Dofs()[dim];
-	      double val = (prefactor*ztan+sum-frcoeff*znor)*txi[dim]-frcoeff*(ztan+ct*jumptan)*n[dim];
-	  	
+      //double epk = frbound/abs(temp);
+      //double Fpk = ztan*temp/(frbound*abs(temp));
+      //double Mpk = epk*(1-Fpk);
+      //double fac = 1/(abs(ztan+ct*jumptan))*1/(1-Mpk)*(-1);
+  
+      // calculation of |ztan+ct*utan|
+      double sum = 0;
+      int prefactor = 1;
+      for (int dim = 0;dim < Dim();dim++)
+        sum += txi[dim]*z[dim]+ct*txi[dim]*jump[dim];
+  
+      // calculate |sum| and prefactor
+      if (sum < 0)
+      {
+        sum = -sum;
+        prefactor = (-1);
+      }
+  
+      /******************************************************************/
+      // calculation of matrix entries of the linearized slip condition
+      /******************************************************************/
+      // 1) Entries from differentiation with respect to lagrange multipliers
+      // 2) Entries on right hand side
+      // 3) Entries from differentiation with respect to displacements
+  
+      // 1) Entries from differentiation with respect to lagrange multipliers
+      /**************** (Deriv(abs)*ztan+|ztan+ct*jumptan|-frcoff*znor).tan ***/
+  
+      // loop over the dimension
+      for (int dim=0;dim<cnode->NumDof();++dim)
+      {
+        int col = cnode->Dofs()[dim];
+        double val = (prefactor*ztan+sum-frcoeff*znor)*txi[dim]-frcoeff*(ztan+ct*jumptan)*n[dim];
+      
 #ifdef CONTACTSLIPFIRST
         if (cnode->ActiveOld()==false) val = txi[dim];
 #endif
-	
-	      // do not assemble zeros into matrix
-	      if (abs(val)>1.0e-12) linslipLMglobal.Assemble(val,row,col);
-	    }
-	
-	    // 2) Entries on right hand side
-	    /************ -C + entries from writing Delta(z) as z(k+1)-z(k) ***/
-	
-	    // -C and remaining terms
-	    double value1 = -(abs(ztan+ct*jumptan))*ztan+(frcoeff*znor)*(ztan+ct*jumptan);
-	    double value2 = -(frcoeff*znor)*ztan-(frcoeff*znor)*(ztan+ct*jumptan);
-	    double value3 = +sum*ztan+prefactor*ztan*ztan;
-	 	
-	    Epetra_SerialDenseVector rhsnode(1);
-	    vector<int> lm(1);
-	    vector<int> lmowner(1);
-	
-	    rhsnode(0) = (value1+value2+value3);
+  
+        // do not assemble zeros into matrix
+        if (abs(val)>1.0e-12) linslipLMglobal.Assemble(val,row,col);
+      }
+  
+      // 2) Entries on right hand side
+      /************ -C + entries from writing Delta(z) as z(k+1)-z(k) ***/
+  
+      // -C and remaining terms
+      double value1 = -(abs(ztan+ct*jumptan))*ztan+(frcoeff*znor)*(ztan+ct*jumptan);
+      double value2 = -(frcoeff*znor)*ztan-(frcoeff*znor)*(ztan+ct*jumptan);
+      double value3 = +sum*ztan+prefactor*ztan*ztan;
+    
+      Epetra_SerialDenseVector rhsnode(1);
+      vector<int> lm(1);
+      vector<int> lmowner(1);
+  
+      rhsnode(0) = (value1+value2+value3);
 
 #ifdef CONTACTSLIPFIRST
         if (cnode->ActiveOld()==false) rhsnode(0) = 0;
 #endif
-	
-	    lm[0] = cnode->Dofs()[1];
-	    lmowner[0] = cnode->Owner();
-	
-	    LINALG::Assemble(linslipRHSglobal,rhsnode,lm,lmowner);
-	
-	    // 3) Entries from differentiation with respect to displacements
-	
-	    /***************************** -Deriv(abs)*ct*tan.(D-Dn-1)*ztan ***/
-	
-	    // we need the nodal entries of the D-matrix and the old one
-	    double D= (cnode->GetD()[0])[cnode->Dofs()[0]];
-	    double Dold= (cnode->GetDOld()[0])[cnode->Dofs()[0]];
-	
-	    // loop over all derivative maps (=dimensions)
-	    for (int dim=0;dim<cnode->NumDof();++dim)
-	    {
-	      int col = cnode->Dofs()[dim];
-	      double val = prefactor*(-1)*ct*txi[dim]*(D-Dold)*ztan;
-	     //cout << "01 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
-	
+  
+      lm[0] = cnode->Dofs()[1];
+      lmowner[0] = cnode->Owner();
+  
+      LINALG::Assemble(linslipRHSglobal,rhsnode,lm,lmowner);
+  
+      // 3) Entries from differentiation with respect to displacements
+  
+      /***************************** -Deriv(abs)*ct*tan.(D-Dn-1)*ztan ***/
+  
+      // we need the nodal entries of the D-matrix and the old one
+      double D= (cnode->GetD()[0])[cnode->Dofs()[0]];
+      double Dold= (cnode->GetDOld()[0])[cnode->Dofs()[0]];
+  
+      // loop over all derivative maps (=dimensions)
+      for (int dim=0;dim<cnode->NumDof();++dim)
+      {
+        int col = cnode->Dofs()[dim];
+        double val = prefactor*(-1)*ct*txi[dim]*(D-Dold)*ztan;
+       //cout << "01 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+  
 #ifdef CONTACTSLIPFIRST
         if (cnode->ActiveOld()==false) val = 0;
 #endif
 
-	
-	     // do not assemble zeros into matrix
-	     if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
-	    }
-	
-	    /***************************** -Deriv(abs)*ct*tan.(M-Mn-1)*ztan ***/
-	
-	    // we need the nodal entries of the M-matrix and the old one
-	    vector<map<int,double> > mmap = cnode->GetM();
-	    vector<map<int,double> > mmapold = cnode->GetMOld();
-	
-	    // create a set of nodes including nodes according to M entries
-	    // from current and previous time step
-	    set <int> mnodes;
-	
-	    for (colcurr=mmap[0].begin(); colcurr!=mmap[0].end(); colcurr++)
-	      mnodes.insert((colcurr->first)/Dim());
-	
-	    for (colcurr=mmapold[0].begin(); colcurr!=mmapold[0].end(); colcurr++)
-	      mnodes.insert((colcurr->first)/Dim());
-	
-	    set<int>::iterator mcurr;
-	
-	    // loop over all master nodes (find adjacent ones to this stick node)
-	    for (mcurr=mnodes.begin(); mcurr != mnodes.end(); mcurr++)
-	    {
-	      int gid = *mcurr;
-	      DRT::Node* mnode = idiscret_->gNode(gid);
-	      if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
-	      CNode* cmnode = static_cast<CNode*>(mnode);
-	      const int* mdofs = cmnode->Dofs();
-	
-	      double mik = (mmap[0])[mdofs[0]];
-	      double mikold = (mmapold[0])[mdofs[0]];
-	
-	      // compute linstick-matrix entry of the current active node / master node pair
-	      // loop over all derivative maps (=dimensions)
-	      for (int dim=0;dim<cnode->NumDof();++dim)
-	      {
-	        int col = cmnode->Dofs()[dim];
-	        double val = prefactor*(+1)*ct*txi[dim]*(mik-mikold)*ztan;
-	        //cout << "02 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
-	
+  
+       // do not assemble zeros into matrix
+       if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
+      }
+  
+      /***************************** -Deriv(abs)*ct*tan.(M-Mn-1)*ztan ***/
+  
+      // we need the nodal entries of the M-matrix and the old one
+      vector<map<int,double> > mmap = cnode->GetM();
+      vector<map<int,double> > mmapold = cnode->GetMOld();
+  
+      // create a set of nodes including nodes according to M entries
+      // from current and previous time step
+      set <int> mnodes;
+  
+      for (colcurr=mmap[0].begin(); colcurr!=mmap[0].end(); colcurr++)
+        mnodes.insert((colcurr->first)/Dim());
+  
+      for (colcurr=mmapold[0].begin(); colcurr!=mmapold[0].end(); colcurr++)
+        mnodes.insert((colcurr->first)/Dim());
+  
+      set<int>::iterator mcurr;
+  
+      // loop over all master nodes (find adjacent ones to this stick node)
+      for (mcurr=mnodes.begin(); mcurr != mnodes.end(); mcurr++)
+      {
+        int gid = *mcurr;
+        DRT::Node* mnode = idiscret_->gNode(gid);
+        if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
+        CNode* cmnode = static_cast<CNode*>(mnode);
+        const int* mdofs = cmnode->Dofs();
+  
+        double mik = (mmap[0])[mdofs[0]];
+        double mikold = (mmapold[0])[mdofs[0]];
+  
+        // compute linstick-matrix entry of the current active node / master node pair
+        // loop over all derivative maps (=dimensions)
+        for (int dim=0;dim<cnode->NumDof();++dim)
+        {
+          int col = cmnode->Dofs()[dim];
+          double val = prefactor*(+1)*ct*txi[dim]*(mik-mikold)*ztan;
+          //cout << "02 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+  
 #ifdef CONTACTSLIPFIRST
         if (cnode->ActiveOld()==false) val =0;
 #endif
-	
-	       // do not assemble zeros into matrix
-	       if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
-	      }
-	    }
-	
-	    /********************************* frcoeff*znor*ct*tan.(D-Dn-1) ***/
-	
-	    // loop over all derivative maps (=dimensions)
-	    for (int dim=0;dim<cnode->NumDof();++dim)
-	    {
-	      int col = cnode->Dofs()[dim];
-	      double val = (frcoeff*znor)*ct*txi[dim]*(D-Dold);
-	      //cout << "03 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
-
-#ifdef CONTACTSLIPFIRST
-        if (cnode->ActiveOld()==false) val =0;
-#endif
-
-	     // do not assemble zeros into matrix
-	     if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
-	    }
-	
-	    /***************************** -frcoeff*znor*ct*tan.(M-Mn-1).xm ***/
-	
-	    // loop over all master nodes
-	    for (mcurr=mnodes.begin(); mcurr != mnodes.end(); mcurr++)
-	    {
-	      int gid = *mcurr;
-	      DRT::Node* mnode = idiscret_->gNode(gid);
-	      if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
-	      CNode* cmnode = static_cast<CNode*>(mnode);
-	      const int* mdofs = cmnode->Dofs();
-	
-	      double mik = (mmap[0])[mdofs[0]];
-	      double mikold = (mmapold[0])[mdofs[0]];
-	
-	      // loop over all derivative maps (=dimensions)
-	      for (int dim=0;dim<cnode->NumDof();++dim)
-	      {
-	        int col = cmnode->Dofs()[dim];
-	        double val = (frcoeff*znor)*(-1)*ct*txi[dim]*(mik-mikold);
-	        //cout << "04 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+  
+         // do not assemble zeros into matrix
+         if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
+        }
+      }
+  
+      /********************************* frcoeff*znor*ct*tan.(D-Dn-1) ***/
+  
+      // loop over all derivative maps (=dimensions)
+      for (int dim=0;dim<cnode->NumDof();++dim)
+      {
+        int col = cnode->Dofs()[dim];
+        double val = (frcoeff*znor)*ct*txi[dim]*(D-Dold);
+        //cout << "03 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTSLIPFIRST
         if (cnode->ActiveOld()==false) val =0;
 #endif
 
-	        // do not assemble zeros into matrix
-	        if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
-	      }
-	    }
-	
-	    // remaining terms only in case of full linearization
-	    if(fulllin)
-	    {
-	      /************************************ |ztan+ct*utan|.DerivT.z ***/
-	
-	      // loop over all derivative maps (=dimensions)
-	      for (int j=0;j<mapsize;++j)
-	      {
-	        int k=0;
-	
-	        // loop over all entries of the current derivative map
-	        for (colcurr=dtmap[j].begin();colcurr!=dtmap[j].end();++colcurr)
-	        {
-	          int col = colcurr->first;
-	          double val = sum*(colcurr->second)*z[j];
-	          //cout << "1 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+       // do not assemble zeros into matrix
+       if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
+      }
+  
+      /***************************** -frcoeff*znor*ct*tan.(M-Mn-1).xm ***/
+  
+      // loop over all master nodes
+      for (mcurr=mnodes.begin(); mcurr != mnodes.end(); mcurr++)
+      {
+        int gid = *mcurr;
+        DRT::Node* mnode = idiscret_->gNode(gid);
+        if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
+        CNode* cmnode = static_cast<CNode*>(mnode);
+        const int* mdofs = cmnode->Dofs();
+  
+        double mik = (mmap[0])[mdofs[0]];
+        double mikold = (mmapold[0])[mdofs[0]];
+  
+        // loop over all derivative maps (=dimensions)
+        for (int dim=0;dim<cnode->NumDof();++dim)
+        {
+          int col = cmnode->Dofs()[dim];
+          double val = (frcoeff*znor)*(-1)*ct*txi[dim]*(mik-mikold);
+          //cout << "04 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTSLIPFIRST
         if (cnode->ActiveOld()==false) val =0;
 #endif
-	
-	          // do not assemble zeros into s matrix
-	          if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
-	          ++k;
-	        }
-	
-	        if (k!=colsize)
-	          dserror("ERROR: AssembleLinSlip: k = %i but colsize = %i",k,colsize);
-	      }
-	
-		    /*********************************** Deriv(abs)*DerivT.z*ztan ***/
-		
-		    // loop over all derivative maps (=dimensions)
-		    for (int j=0;j<mapsize;++j)
-		    {
-		      int k=0;
-		
-		      // loop over all entries of the current derivative map
-		      for (colcurr=dtmap[j].begin();colcurr!=dtmap[j].end();++colcurr)
-		      {
-		        int col = colcurr->first;
-		        double val = prefactor*(colcurr->second)*z[j]*ztan;
-		        //cout << "2 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+
+          // do not assemble zeros into matrix
+          if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
+        }
+      }
+  
+      // remaining terms only in case of full linearization
+      if(fulllin)
+      {
+        /************************************ |ztan+ct*utan|.DerivT.z ***/
+  
+        // loop over all derivative maps (=dimensions)
+        for (int j=0;j<mapsize;++j)
+        {
+          int k=0;
+  
+          // loop over all entries of the current derivative map
+          for (colcurr=dtmap[j].begin();colcurr!=dtmap[j].end();++colcurr)
+          {
+            int col = colcurr->first;
+            double val = sum*(colcurr->second)*z[j];
+            //cout << "1 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+
+#ifdef CONTACTSLIPFIRST
+        if (cnode->ActiveOld()==false) val =0;
+#endif
+  
+            // do not assemble zeros into s matrix
+            if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
+            ++k;
+          }
+  
+          if (k!=colsize)
+            dserror("ERROR: AssembleLinSlip: k = %i but colsize = %i",k,colsize);
+        }
+  
+        /*********************************** Deriv(abs)*DerivT.z*ztan ***/
+    
+        // loop over all derivative maps (=dimensions)
+        for (int j=0;j<mapsize;++j)
+        {
+          int k=0;
+    
+          // loop over all entries of the current derivative map
+          for (colcurr=dtmap[j].begin();colcurr!=dtmap[j].end();++colcurr)
+          {
+            int col = colcurr->first;
+            double val = prefactor*(colcurr->second)*z[j]*ztan;
+            //cout << "2 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTSLIPFIRST
           if (cnode->ActiveOld()==false) val = (colcurr->second)*z[j];
 #endif
 
           // do not assemble zeros into matrix
-		        if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
-		        ++k;
-		      }
-		
-		      if (k!=colsize)
-		        dserror("ERROR: AssembleLinSlip: k = %i but colsize = %i",k,colsize);
-		    }
-	
-		    /******************************* Deriv(abs)*DerivT.jump+*ztan ***/
-		
-		    // loop over all derivative maps (=dimensions)
-		    for (int j=0;j<mapsize;++j)
-		    {
-		      int k=0;
-		
-		      // loop over all entries of the current derivative map
-		      for (colcurr=dtmap[j].begin();colcurr!=dtmap[j].end();++colcurr)
-		      {
-		        int col = colcurr->first;
-		        double val = prefactor*ct*(colcurr->second)*jump[j]*ztan;
-		        //cout << "3 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
-		
+            if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
+            ++k;
+          }
+    
+          if (k!=colsize)
+            dserror("ERROR: AssembleLinSlip: k = %i but colsize = %i",k,colsize);
+        }
+  
+        /******************************* Deriv(abs)*DerivT.jump+*ztan ***/
+    
+        // loop over all derivative maps (=dimensions)
+        for (int j=0;j<mapsize;++j)
+        {
+          int k=0;
+    
+          // loop over all entries of the current derivative map
+          for (colcurr=dtmap[j].begin();colcurr!=dtmap[j].end();++colcurr)
+          {
+            int col = colcurr->first;
+            double val = prefactor*ct*(colcurr->second)*jump[j]*ztan;
+            //cout << "3 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+    
 #ifdef CONTACTSLIPFIRST
         if (cnode->ActiveOld()==false) val =0;
 #endif
-		
-		        // do not assemble zeros into s matrix
-		        if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
-		        ++k;
-		      }
-		
-		    if (k!=colsize)
-		      dserror("ERROR: AssembleLinSlip: k = %i but colsize = %i",k,colsize);
-		    }
-		
-		    /*************************** -Deriv(abs).ct.tan.DerivD.x*ztan ***/
-		
-		    // we need the dot product t*x of this node
-		    double tdotx = 0.0;
-		    for (int dim=0;dim<cnode->NumDof();++dim)
-		      tdotx += txi[dim]*xi[dim];
-		
-		    // prepare assembly
-		    map<int,double>& ddmap = cnode->GetDerivD();
-		
-		    // loop over all entries of the current derivative map
-		    for (colcurr=ddmap.begin();colcurr!=ddmap.end();++colcurr)
-		    {
-		      int col = colcurr->first;
-		      double val = (-1)*prefactor*ct*tdotx*colcurr->second*ztan;
-		      //cout << "4 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+    
+            // do not assemble zeros into s matrix
+            if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
+            ++k;
+          }
+    
+        if (k!=colsize)
+          dserror("ERROR: AssembleLinSlip: k = %i but colsize = %i",k,colsize);
+        }
+    
+        /*************************** -Deriv(abs).ct.tan.DerivD.x*ztan ***/
+    
+        // we need the dot product t*x of this node
+        double tdotx = 0.0;
+        for (int dim=0;dim<cnode->NumDof();++dim)
+          tdotx += txi[dim]*xi[dim];
+    
+        // prepare assembly
+        map<int,double>& ddmap = cnode->GetDerivD()[gid];
+    
+        // loop over all entries of the current derivative map
+        for (colcurr=ddmap.begin();colcurr!=ddmap.end();++colcurr)
+        {
+          int col = colcurr->first;
+          double val = (-1)*prefactor*ct*tdotx*colcurr->second*ztan;
+          //cout << "4 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTSLIPFIRST
         if (cnode->ActiveOld()==false) val =0;
 #endif
-		
-		      // do not assemble zeros into matrix
-		      if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
-		    }
-		
-		    /**************************** Deriv(abs).ct.tan.DerivM.x*ztan ***/
-		
-		    // we need the Lin(M-matrix) entries of this node
-		    map<int,map<int,double> >& dmmap = cnode->GetDerivM();
-		    map<int,map<int,double> >::iterator dmcurr;
-		
-		    // loop over all master nodes in the DerivM-map of the active slave node
-		    for (dmcurr=dmmap.begin();dmcurr!=dmmap.end();++dmcurr)
-		    {
-		      int gid = dmcurr->first;
-		      DRT::Node* mnode = idiscret_->gNode(gid);
-		      if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
-		      CNode* cmnode = static_cast<CNode*>(mnode);
-		      double* mxi = cmnode->xspatial();
-		
-		      // we need the dot product ns*xm of this node pair
-		      double tdotx = 0.0;
-		      for (int dim=0;dim<cnode->NumDof();++dim)
-		        tdotx += txi[dim]*mxi[dim];
-		
-		      // compute entry of the current active node / master node pair
-		      map<int,double>& thisdmmap = cnode->GetDerivM(gid);
-		
-		      // loop over all entries of the current derivative map
-		      for (colcurr=thisdmmap.begin();colcurr!=thisdmmap.end();++colcurr)
-		      {
-		        int col = colcurr->first;
-		        double val = prefactor*ct*tdotx*colcurr->second*ztan;
-		        //cout << "5 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+    
+          // do not assemble zeros into matrix
+          if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
+        }
+    
+        /**************************** Deriv(abs).ct.tan.DerivM.x*ztan ***/
+    
+        // we need the Lin(M-matrix) entries of this node
+        map<int,map<int,double> >& dmmap = cnode->GetDerivM();
+        map<int,map<int,double> >::iterator dmcurr;
+    
+        // loop over all master nodes in the DerivM-map of the active slave node
+        for (dmcurr=dmmap.begin();dmcurr!=dmmap.end();++dmcurr)
+        {
+          int gid = dmcurr->first;
+          DRT::Node* mnode = idiscret_->gNode(gid);
+          if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
+          CNode* cmnode = static_cast<CNode*>(mnode);
+          double* mxi = cmnode->xspatial();
+    
+          // we need the dot product ns*xm of this node pair
+          double tdotx = 0.0;
+          for (int dim=0;dim<cnode->NumDof();++dim)
+            tdotx += txi[dim]*mxi[dim];
+    
+          // compute entry of the current active node / master node pair
+          map<int,double>& thisdmmap = cnode->GetDerivM(gid);
+    
+          // loop over all entries of the current derivative map
+          for (colcurr=thisdmmap.begin();colcurr!=thisdmmap.end();++colcurr)
+          {
+            int col = colcurr->first;
+            double val = prefactor*ct*tdotx*colcurr->second*ztan;
+            //cout << "5 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTSLIPFIRST
         if (cnode->ActiveOld()==false) val =0;
 #endif
-		
-		        // do not assemble zeros into matrix
-		        if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
-		      }
-		    }
-		
-		    /*********************************** -(frcoeff*znor).DerivT.z ***/
-		
-		    // loop over all derivative maps (=dimensions)
-		    for (int j=0;j<mapsize;++j)
-		    {
-		      int k=0;
-		
-		      // loop over all entries of the current derivative map
-		      for (colcurr=dtmap[j].begin();colcurr!=dtmap[j].end();++colcurr)
-		      {
-		        int col = colcurr->first;
-		        double val = (-1)*(frcoeff*znor)*(colcurr->second)*z[j];
-		        //cout << "6 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+    
+            // do not assemble zeros into matrix
+            if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
+          }
+        }
+    
+        /*********************************** -(frcoeff*znor).DerivT.z ***/
+    
+        // loop over all derivative maps (=dimensions)
+        for (int j=0;j<mapsize;++j)
+        {
+          int k=0;
+    
+          // loop over all entries of the current derivative map
+          for (colcurr=dtmap[j].begin();colcurr!=dtmap[j].end();++colcurr)
+          {
+            int col = colcurr->first;
+            double val = (-1)*(frcoeff*znor)*(colcurr->second)*z[j];
+            //cout << "6 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTSLIPFIRST
         if (cnode->ActiveOld()==false) val =0;
 #endif
-		
-		        // do not assemble zeros into s matrix
-		        if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
-		        ++k;
-		      }
-		
-		      if (k!=colsize)
-		        dserror("ERROR: AssembleLinSlip: k = %i but colsize = %i",k,colsize);
-		    }
-		
-		    /****************************** (frcoeff*znor).ct.DerivT.jump ***/
-		
-		    // loop over all derivative maps (=dimensions)
-		    for (int j=0;j<mapsize;++j)
-		    {
-		      int k=0;
-		
-		      // loop over all entries of the current derivative map
-		      for (colcurr=dtmap[j].begin();colcurr!=dtmap[j].end();++colcurr)
-		      {
-		        int col = colcurr->first;
-		        double val = (-1)*(frcoeff*znor)*ct*(colcurr->second)*jump[j];
-		        //cout << "7 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+    
+            // do not assemble zeros into s matrix
+            if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
+            ++k;
+          }
+    
+          if (k!=colsize)
+            dserror("ERROR: AssembleLinSlip: k = %i but colsize = %i",k,colsize);
+        }
+    
+        /****************************** (frcoeff*znor).ct.DerivT.jump ***/
+    
+        // loop over all derivative maps (=dimensions)
+        for (int j=0;j<mapsize;++j)
+        {
+          int k=0;
+    
+          // loop over all entries of the current derivative map
+          for (colcurr=dtmap[j].begin();colcurr!=dtmap[j].end();++colcurr)
+          {
+            int col = colcurr->first;
+            double val = (-1)*(frcoeff*znor)*ct*(colcurr->second)*jump[j];
+            //cout << "7 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTSLIPFIRST
         if (cnode->ActiveOld()==false) val =0;
 #endif
-		
-		        // do not assemble zeros into s matrix
-		        if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
-		        ++k;
-		      }
-		
-		      if (k!=colsize)
-		        dserror("ERROR: AssembleLinSlip: k = %i but colsize = %i",k,colsize);
-		    }
-		
-		    /****************************** +(frcoeff*znor).ct.T.DerivD.x ***/
-		
-		    // we need the dot product t*x of this node
-		     tdotx = 0.0;
-		     for (int dim=0;dim<cnode->NumDof();++dim)
-		       tdotx += txi[dim]*xi[dim];
-		
-		     // loop over all entries of the current derivative map
-		     for (colcurr=ddmap.begin();colcurr!=ddmap.end();++colcurr)
-		     {
-		       int col = colcurr->first;
-		       double val = (-1)*(-1)*(frcoeff*znor)*ct*tdotx*colcurr->second;
-		       //cout << "8 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+    
+            // do not assemble zeros into s matrix
+            if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
+            ++k;
+          }
+    
+          if (k!=colsize)
+            dserror("ERROR: AssembleLinSlip: k = %i but colsize = %i",k,colsize);
+        }
+    
+        /****************************** +(frcoeff*znor).ct.T.DerivD.x ***/
+    
+        // we need the dot product t*x of this node
+         tdotx = 0.0;
+         for (int dim=0;dim<cnode->NumDof();++dim)
+           tdotx += txi[dim]*xi[dim];
+    
+         // loop over all entries of the current derivative map
+         for (colcurr=ddmap.begin();colcurr!=ddmap.end();++colcurr)
+         {
+           int col = colcurr->first;
+           double val = (-1)*(-1)*(frcoeff*znor)*ct*tdotx*colcurr->second;
+           //cout << "8 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTSLIPFIRST
         if (cnode->ActiveOld()==false) val =0;
 #endif
-		
-		       // do not assemble zeros into matrix
-		       if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
-		     }
-		
-		     /***************************** -(frcoeff*znor).ct.T.DerivM.x ***/
-		
-		      // loop over all master nodes in the DerivM-map of the active slave node
-		     for (dmcurr=dmmap.begin();dmcurr!=dmmap.end();++dmcurr)
-		     {
-		       int gid = dmcurr->first;
-		       DRT::Node* mnode = idiscret_->gNode(gid);
-		       if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
-		       CNode* cmnode = static_cast<CNode*>(mnode);
-		       double* mxi = cmnode->xspatial();
-		
-		       // we need the dot product ns*xm of this node pair
-		       double tdotx = 0.0;
-		       for (int dim=0;dim<cnode->NumDof();++dim)
-		         tdotx += txi[dim]*mxi[dim];
-		
-		       // compute entry of the current active node / master node pair
-		       map<int,double>& thisdmmap = cnode->GetDerivM(gid);
-		
-		       // loop over all entries of the current derivative map
-		       for (colcurr=thisdmmap.begin();colcurr!=thisdmmap.end();++colcurr)
-		       {
-		         int col = colcurr->first;
-		         double val = (-1)*(frcoeff*znor)*ct*tdotx*colcurr->second;
-		        //cout << "9 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+    
+           // do not assemble zeros into matrix
+           if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
+         }
+    
+         /***************************** -(frcoeff*znor).ct.T.DerivM.x ***/
+    
+          // loop over all master nodes in the DerivM-map of the active slave node
+         for (dmcurr=dmmap.begin();dmcurr!=dmmap.end();++dmcurr)
+         {
+           int gid = dmcurr->first;
+           DRT::Node* mnode = idiscret_->gNode(gid);
+           if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
+           CNode* cmnode = static_cast<CNode*>(mnode);
+           double* mxi = cmnode->xspatial();
+    
+           // we need the dot product ns*xm of this node pair
+           double tdotx = 0.0;
+           for (int dim=0;dim<cnode->NumDof();++dim)
+             tdotx += txi[dim]*mxi[dim];
+    
+           // compute entry of the current active node / master node pair
+           map<int,double>& thisdmmap = cnode->GetDerivM(gid);
+    
+           // loop over all entries of the current derivative map
+           for (colcurr=thisdmmap.begin();colcurr!=thisdmmap.end();++colcurr)
+           {
+             int col = colcurr->first;
+             double val = (-1)*(frcoeff*znor)*ct*tdotx*colcurr->second;
+            //cout << "9 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTSLIPFIRST
         if (cnode->ActiveOld()==false) val =0;
 #endif
-		
-		         // do not assemble zeros into matrix
-		         if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
-		      }
-		    }
-		
+    
+             // do not assemble zeros into matrix
+             if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
+          }
+        }
+    
         /***************************** -frcoeff*DerivN.z(ztan+ct*utan) ***/
-		
-	     // loop over all derivative maps (=dimensions)
-	     for (int j=0;j<mapsize;++j)
-	     {
+    
+       // loop over all derivative maps (=dimensions)
+       for (int j=0;j<mapsize;++j)
+       {
          int k=0;
-	
-	       // loop over all entries of the current derivative map
-	       for (colcurr=dnmap[j].begin();colcurr!=dnmap[j].end();++colcurr)
-	       {
-	         int col = colcurr->first;
-	         double val = (-1)*(ztan+ct*jumptan)*frcoeff*(colcurr->second)*z[j];
-	         //cout << "10 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+  
+         // loop over all entries of the current derivative map
+         for (colcurr=dnmap[j].begin();colcurr!=dnmap[j].end();++colcurr)
+         {
+           int col = colcurr->first;
+           double val = (-1)*(ztan+ct*jumptan)*frcoeff*(colcurr->second)*z[j];
+           //cout << "10 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTSLIPFIRST
         if (cnode->ActiveOld()==false) val =0;
 #endif
 
-		       // do not assemble zeros into s matrix
-		       if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
-		       ++k;
-		     }
-		
-		     if (k!=colsize)
-		       dserror("ERROR: AssembleLinSlip: k = %i but colsize = %i",k,colsize);
-		    }
-	    } // if fullin
-	  }
+           // do not assemble zeros into s matrix
+           if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
+           ++k;
+         }
+    
+         if (k!=colsize)
+           dserror("ERROR: AssembleLinSlip: k = %i but colsize = %i",k,colsize);
+        }
+      } // if fullin
+    }
 #else
 
-	  // get out of here if not participating in interface
+    // get out of here if not participating in interface
     if (!lComm())
     return;
 
@@ -4116,242 +4379,242 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
       return;
     
     // not yet implemented for 3D
-		if (Dim()==3)
-		  dserror("ERROR: AssembleLinSlip: 3D not yet implemented");
-		
-		// only for Coulomb friction
-		if (ftype == INPAR::CONTACT::friction_tresca)
-	    dserror ("Error: AssemblelinStick: complementary function according"
-	    		     " to Hueber only available for Coulomb friction");
+    if (Dim()==3)
+      dserror("ERROR: AssembleLinSlip: 3D not yet implemented");
+    
+    // only for Coulomb friction
+    if (ftype == INPAR::CONTACT::friction_tresca)
+      dserror ("Error: AssemblelinStick: complementary function according"
+               " to Hueber only available for Coulomb friction");
 
-		// loop over all slip nodes of the interface
-		for (int i=0;i<slipnodes_->NumMyElements();++i)
-		{
-		  int gid = slipnodes_->GID(i);
-		  DRT::Node* node = idiscret_->gNode(gid);
-		  if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-		  CNode* cnode = static_cast<CNode*>(node);
-		    
-		  if (cnode->Owner() != Comm().MyPID())
-		    dserror("ERROR: AssembleLinSlip: Node ownership inconsistency!");
-		
-	    // preparation of assembly
-		  // get Deriv N and calculate DerivD form DerivN
-	    
-		  // only for 2D so far, in this case calculation is very easy
-		  // dty =  dnx
-		  // dtx = -dny
-		  // FIXGIT: in the future DerivD will be called directly form node
-		      
-		  vector<map<int,double> > dnmap = cnode->GetDerivN();
-		 
-		  // iterator
-	    map<int,double>::iterator colcurr;
-	      
-	    vector <map<int,double> > dtmap(Dim());
-	   
-	    for (colcurr=dnmap[0].begin(); colcurr!=dnmap[0].end(); colcurr++)
-		    dtmap[1].insert(pair<int,double>(colcurr->first,colcurr->second));
-		  
-		  for (colcurr=dnmap[1].begin(); colcurr!=dnmap[1].end(); colcurr++)
-		    dtmap[0].insert(pair<int,double>(colcurr->first,(-1)*colcurr->second));
-		  
-		  // get more information from node
-	    double* jump = cnode->jump();
-	    double* n = cnode->n();
-	    double* txi = cnode->txi();
-	    double* xi = cnode->xspatial();
-		  double* z = cnode->lm();  
-		  int row = slipt_->GID(i);
-		  double& wgap = cnode->Getg();
-		  
-	    int colsize = (int)dtmap[0].size();
-	    int mapsize = (int)dtmap.size();
-	   
-	    for (int j=0;j<mapsize-1;++j)
-	      if ((int)dtmap[j].size() != (int)dtmap[j+1].size())
-	        dserror("ERROR: AssembleLinSlip: Column dim. of nodal DerivT-map is inconsistent!");
-		
-	    // calculation of parts of the complementary function
-	    double znor    = n[0]*z[0] + n[1]*z[1];
-	    double ztan    = txi[0]*z[0] + txi[1]*z[1];
-	    double jumptan = txi[0]*jump[0] + txi[1]*jump[1];
-	    //double temp = ztan + ct*jumptan;
-	    //double epk = frbound/abs(temp);
-	    //double Fpk = ztan*temp/(frbound*abs(temp));
-	    //double Mpk = epk*(1-Fpk);
-	    //double fac = 1/(abs(ztan+ct*jumptan))*1/(1-Mpk)*(-1);
-	   
-	    // calculation of |ztan+ct*utan| 
-	    double sum = 0;
-	    int prefactor = 1;
-	    for (int dim = 0;dim < Dim();dim++)
-	      sum += txi[dim]*z[dim]+ct*txi[dim]*jump[dim];
-	   
-	    // calculate |sum| and prefactor 
-	    if (sum < 0)
-	    {
-	      sum = -sum;
-	   	  prefactor = (-1);
-	    }
-	    
-	    /******************************************************************/
-	    // calculation of matrix entries of the linearized slip condition
-	    /******************************************************************/
-	    // 1) Entries from differentiation with respect to lagrange multipliers
-	    // 2) Entries on right hand side
-	    // 3) Entries from differentiation with respect to displacements
-	    
-	    // 1) Entries from differentiation with respect to lagrange multipliers
-	    /**************** (Deriv(abs)*ztan+|ztan+ct*jumptan|-frcoff*znor).tan ***/
-	    
-	    // loop over the dimension 
-	    for (int dim=0;dim<cnode->NumDof();++dim)
-	    {
-	      int col = cnode->Dofs()[dim];
-	      double val1 = (prefactor*ztan+sum)*txi[dim];
-	      double val2 = -frcoeff*(znor-cn*wgap)*txi[dim]-frcoeff*(ztan+ct*jumptan)*n[dim];
-	      double val = val1 + val2; 
-	        	
+    // loop over all slip nodes of the interface
+    for (int i=0;i<slipnodes_->NumMyElements();++i)
+    {
+      int gid = slipnodes_->GID(i);
+      DRT::Node* node = idiscret_->gNode(gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      CNode* cnode = static_cast<CNode*>(node);
+        
+      if (cnode->Owner() != Comm().MyPID())
+        dserror("ERROR: AssembleLinSlip: Node ownership inconsistency!");
+    
+      // preparation of assembly
+      // get Deriv N and calculate DerivD form DerivN
+      
+      // only for 2D so far, in this case calculation is very easy
+      // dty =  dnx
+      // dtx = -dny
+      // FIXGIT: in the future DerivD will be called directly form node
+          
+      vector<map<int,double> > dnmap = cnode->GetDerivN();
+     
+      // iterator
+      map<int,double>::iterator colcurr;
+        
+      vector <map<int,double> > dtmap(Dim());
+     
+      for (colcurr=dnmap[0].begin(); colcurr!=dnmap[0].end(); colcurr++)
+        dtmap[1].insert(pair<int,double>(colcurr->first,colcurr->second));
+      
+      for (colcurr=dnmap[1].begin(); colcurr!=dnmap[1].end(); colcurr++)
+        dtmap[0].insert(pair<int,double>(colcurr->first,(-1)*colcurr->second));
+      
+      // get more information from node
+      double* jump = cnode->jump();
+      double* n = cnode->n();
+      double* txi = cnode->txi();
+      double* xi = cnode->xspatial();
+      double* z = cnode->lm();  
+      int row = slipt_->GID(i);
+      double& wgap = cnode->Getg();
+      
+      int colsize = (int)dtmap[0].size();
+      int mapsize = (int)dtmap.size();
+     
+      for (int j=0;j<mapsize-1;++j)
+        if ((int)dtmap[j].size() != (int)dtmap[j+1].size())
+          dserror("ERROR: AssembleLinSlip: Column dim. of nodal DerivT-map is inconsistent!");
+    
+      // calculation of parts of the complementary function
+      double znor    = n[0]*z[0] + n[1]*z[1];
+      double ztan    = txi[0]*z[0] + txi[1]*z[1];
+      double jumptan = txi[0]*jump[0] + txi[1]*jump[1];
+      //double temp = ztan + ct*jumptan;
+      //double epk = frbound/abs(temp);
+      //double Fpk = ztan*temp/(frbound*abs(temp));
+      //double Mpk = epk*(1-Fpk);
+      //double fac = 1/(abs(ztan+ct*jumptan))*1/(1-Mpk)*(-1);
+     
+      // calculation of |ztan+ct*utan| 
+      double sum = 0;
+      int prefactor = 1;
+      for (int dim = 0;dim < Dim();dim++)
+        sum += txi[dim]*z[dim]+ct*txi[dim]*jump[dim];
+     
+      // calculate |sum| and prefactor 
+      if (sum < 0)
+      {
+        sum = -sum;
+        prefactor = (-1);
+      }
+      
+      /******************************************************************/
+      // calculation of matrix entries of the linearized slip condition
+      /******************************************************************/
+      // 1) Entries from differentiation with respect to lagrange multipliers
+      // 2) Entries on right hand side
+      // 3) Entries from differentiation with respect to displacements
+      
+      // 1) Entries from differentiation with respect to lagrange multipliers
+      /**************** (Deriv(abs)*ztan+|ztan+ct*jumptan|-frcoff*znor).tan ***/
+      
+      // loop over the dimension 
+      for (int dim=0;dim<cnode->NumDof();++dim)
+      {
+        int col = cnode->Dofs()[dim];
+        double val1 = (prefactor*ztan+sum)*txi[dim];
+        double val2 = -frcoeff*(znor-cn*wgap)*txi[dim]-frcoeff*(ztan+ct*jumptan)*n[dim];
+        double val = val1 + val2; 
+            
 #ifdef CONTACTSLIPFIRST
-	      if (cnode->ActiveOld()==false) val = txi[dim];
+        if (cnode->ActiveOld()==false) val = txi[dim];
 #endif        
-	      
-	      // do not assemble zeros into matrix
-	      if (abs(val)>1.0e-12) linslipLMglobal.Assemble(val,row,col);
-	    }
+        
+        // do not assemble zeros into matrix
+        if (abs(val)>1.0e-12) linslipLMglobal.Assemble(val,row,col);
+      }
 
-	    // 2) Entries on right hand side
-	    /************ -C + entries from writing Delta(z) as z(k+1)-z(k) ***/
-	
-	    // -C and remaining terms
-	    double value1 = -(abs(ztan+ct*jumptan))*ztan+(frcoeff*(znor-cn*wgap))*(ztan+ct*jumptan);
-	    double value3 = +sum*ztan+prefactor*ztan*ztan;
-	    double value2 = -(frcoeff*(znor-cn*wgap))*ztan-(frcoeff*znor)*(ztan+ct*jumptan);
-	 	 
-	    Epetra_SerialDenseVector rhsnode(1);
-	    vector<int> lm(1);
-	    vector<int> lmowner(1);
-	
-	    rhsnode(0) = (value1+value2+value3);
+      // 2) Entries on right hand side
+      /************ -C + entries from writing Delta(z) as z(k+1)-z(k) ***/
+  
+      // -C and remaining terms
+      double value1 = -(abs(ztan+ct*jumptan))*ztan+(frcoeff*(znor-cn*wgap))*(ztan+ct*jumptan);
+      double value3 = +sum*ztan+prefactor*ztan*ztan;
+      double value2 = -(frcoeff*(znor-cn*wgap))*ztan-(frcoeff*znor)*(ztan+ct*jumptan);
+     
+      Epetra_SerialDenseVector rhsnode(1);
+      vector<int> lm(1);
+      vector<int> lmowner(1);
+  
+      rhsnode(0) = (value1+value2+value3);
 
 #ifdef CONTACTSLIPFIRST
       if (cnode->ActiveOld()==false) rhsnode(0) = 0;
 #endif        
     
-	    lm[0] = cnode->Dofs()[1];
-	    lmowner[0] = cnode->Owner();
-	
-	    LINALG::Assemble(linslipRHSglobal,rhsnode,lm,lmowner);
-	 
-	    // 3) Entries from differentiation with respect to displacements 
-	    
-	    /***************************** -Deriv(abs)*ct*tan.(D-Dn-1)*ztan ***/
-	   
-	    // we need the nodal entries of the D-matrix and the old one 
-	    double D= (cnode->GetD()[0])[cnode->Dofs()[0]];
-	    double Dold= (cnode->GetDOld()[0])[cnode->Dofs()[0]];
-	 
-	    // loop over all derivative maps (=dimensions)
-	    for (int dim=0;dim<cnode->NumDof();++dim)
-	    {
-	      int col = cnode->Dofs()[dim];
-	      double val = prefactor*(-1)*ct*txi[dim]*(D-Dold)*ztan;
-	     //cout << "01 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+      lm[0] = cnode->Dofs()[1];
+      lmowner[0] = cnode->Owner();
+  
+      LINALG::Assemble(linslipRHSglobal,rhsnode,lm,lmowner);
+   
+      // 3) Entries from differentiation with respect to displacements 
+      
+      /***************************** -Deriv(abs)*ct*tan.(D-Dn-1)*ztan ***/
+     
+      // we need the nodal entries of the D-matrix and the old one 
+      double D= (cnode->GetD()[0])[cnode->Dofs()[0]];
+      double Dold= (cnode->GetDOld()[0])[cnode->Dofs()[0]];
+   
+      // loop over all derivative maps (=dimensions)
+      for (int dim=0;dim<cnode->NumDof();++dim)
+      {
+        int col = cnode->Dofs()[dim];
+        double val = prefactor*(-1)*ct*txi[dim]*(D-Dold)*ztan;
+       //cout << "01 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
       
 #ifdef CONTACTSLIPFIRST
       if (cnode->ActiveOld()==false) val = 0;
 #endif        
 
      
-	     // do not assemble zeros into matrix
-	     if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
-	    }
-	 
-	    /***************************** -Deriv(abs)*ct*tan.(M-Mn-1)*ztan ***/
-	
-	    // we need the nodal entries of the M-matrix and the old one 
-	    vector<map<int,double> > mmap = cnode->GetM();
-	    vector<map<int,double> > mmapold = cnode->GetMOld();
-	 
-	    // create a set of nodes including nodes according to M entries
-	    // from current and previous time step 
-	    set <int> mnodes;
-	 
-	    for (colcurr=mmap[0].begin(); colcurr!=mmap[0].end(); colcurr++)
-	      mnodes.insert((colcurr->first)/Dim());
-	     
-	    for (colcurr=mmapold[0].begin(); colcurr!=mmapold[0].end(); colcurr++)
-	      mnodes.insert((colcurr->first)/Dim());
-	  
-	    set<int>::iterator mcurr;
-	 
-	    // loop over all master nodes (find adjacent ones to this stick node)
-	    for (mcurr=mnodes.begin(); mcurr != mnodes.end(); mcurr++)
-	    {
-	      int gid = *mcurr;
-	      DRT::Node* mnode = idiscret_->gNode(gid);
-	      if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
-	      CNode* cmnode = static_cast<CNode*>(mnode);
-	      const int* mdofs = cmnode->Dofs();
-	   
-	      double mik = (mmap[0])[mdofs[0]];
-	      double mikold = (mmapold[0])[mdofs[0]];
-	   
-	      // compute linstick-matrix entry of the current active node / master node pair
-	      // loop over all derivative maps (=dimensions)
-	      for (int dim=0;dim<cnode->NumDof();++dim)
-	      {
-	        int col = cmnode->Dofs()[dim];
-	        double val = prefactor*(+1)*ct*txi[dim]*(mik-mikold)*ztan;
-	        //cout << "02 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+       // do not assemble zeros into matrix
+       if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
+      }
+   
+      /***************************** -Deriv(abs)*ct*tan.(M-Mn-1)*ztan ***/
+  
+      // we need the nodal entries of the M-matrix and the old one 
+      vector<map<int,double> > mmap = cnode->GetM();
+      vector<map<int,double> > mmapold = cnode->GetMOld();
+   
+      // create a set of nodes including nodes according to M entries
+      // from current and previous time step 
+      set <int> mnodes;
+   
+      for (colcurr=mmap[0].begin(); colcurr!=mmap[0].end(); colcurr++)
+        mnodes.insert((colcurr->first)/Dim());
+       
+      for (colcurr=mmapold[0].begin(); colcurr!=mmapold[0].end(); colcurr++)
+        mnodes.insert((colcurr->first)/Dim());
+    
+      set<int>::iterator mcurr;
+   
+      // loop over all master nodes (find adjacent ones to this stick node)
+      for (mcurr=mnodes.begin(); mcurr != mnodes.end(); mcurr++)
+      {
+        int gid = *mcurr;
+        DRT::Node* mnode = idiscret_->gNode(gid);
+        if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
+        CNode* cmnode = static_cast<CNode*>(mnode);
+        const int* mdofs = cmnode->Dofs();
+     
+        double mik = (mmap[0])[mdofs[0]];
+        double mikold = (mmapold[0])[mdofs[0]];
+     
+        // compute linstick-matrix entry of the current active node / master node pair
+        // loop over all derivative maps (=dimensions)
+        for (int dim=0;dim<cnode->NumDof();++dim)
+        {
+          int col = cmnode->Dofs()[dim];
+          double val = prefactor*(+1)*ct*txi[dim]*(mik-mikold)*ztan;
+          //cout << "02 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
         
 #ifdef CONTACTSLIPFIRST
       if (cnode->ActiveOld()==false) val =0;
 #endif        
        
-	       // do not assemble zeros into matrix
-	       if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
-	      }  
-	    }
-	
-	    /********************************* frcoeff*znor*ct*tan.(D-Dn-1) ***/
-	 
-	    // loop over all derivative maps (=dimensions)
-	    for (int dim=0;dim<cnode->NumDof();++dim)
-	    {
-	      int col = cnode->Dofs()[dim];
-	      double val = (frcoeff*(znor-cn*wgap))*ct*txi[dim]*(D-Dold);
-	      //cout << "03 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+         // do not assemble zeros into matrix
+         if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
+        }  
+      }
+  
+      /********************************* frcoeff*znor*ct*tan.(D-Dn-1) ***/
+   
+      // loop over all derivative maps (=dimensions)
+      for (int dim=0;dim<cnode->NumDof();++dim)
+      {
+        int col = cnode->Dofs()[dim];
+        double val = (frcoeff*(znor-cn*wgap))*ct*txi[dim]*(D-Dold);
+        //cout << "03 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTSLIPFIRST
       if (cnode->ActiveOld()==false) val =0;
 #endif        
 
-	     // do not assemble zeros into matrix
-	     if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
-	    }
-	 
-	    /***************************** -frcoeff*znor*ct*tan.(M-Mn-1).xm ***/
-	 
-	    // loop over all master nodes 
-	    for (mcurr=mnodes.begin(); mcurr != mnodes.end(); mcurr++)
+       // do not assemble zeros into matrix
+       if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
+      }
+   
+      /***************************** -frcoeff*znor*ct*tan.(M-Mn-1).xm ***/
+   
+      // loop over all master nodes 
+      for (mcurr=mnodes.begin(); mcurr != mnodes.end(); mcurr++)
       {
-	      int gid = *mcurr;
-	      DRT::Node* mnode = idiscret_->gNode(gid);
-	      if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
-	      CNode* cmnode = static_cast<CNode*>(mnode);
-	      const int* mdofs = cmnode->Dofs();
-	   
-	      double mik = (mmap[0])[mdofs[0]];
-	      double mikold = (mmapold[0])[mdofs[0]];
-	   
-	      // loop over all derivative maps (=dimensions)
-	      for (int dim=0;dim<cnode->NumDof();++dim)
-	      {
-	        int col = cmnode->Dofs()[dim];
-	        double val = (frcoeff*(znor-cn*wgap))*(-1)*ct*txi[dim]*(mik-mikold);
-	        //cout << "04 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+        int gid = *mcurr;
+        DRT::Node* mnode = idiscret_->gNode(gid);
+        if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
+        CNode* cmnode = static_cast<CNode*>(mnode);
+        const int* mdofs = cmnode->Dofs();
+     
+        double mik = (mmap[0])[mdofs[0]];
+        double mikold = (mmapold[0])[mdofs[0]];
+     
+        // loop over all derivative maps (=dimensions)
+        for (int dim=0;dim<cnode->NumDof();++dim)
+        {
+          int col = cmnode->Dofs()[dim];
+          double val = (frcoeff*(znor-cn*wgap))*(-1)*ct*txi[dim]*(mik-mikold);
+          //cout << "04 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTSLIPFIRST
       if (cnode->ActiveOld()==false) val =0;
@@ -4364,293 +4627,293 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
 
       // remaining terms only in case of full linearization
       if(fulllin) 
-	    {
-	      /************************************ |ztan+ct*utan|.DerivT.z ***/
-	       
-	      // loop over all derivative maps (=dimensions)
-	      for (int j=0;j<mapsize;++j)
-	      {
-	        int k=0;
-	     
-	        // loop over all entries of the current derivative map
-	        for (colcurr=dtmap[j].begin();colcurr!=dtmap[j].end();++colcurr)
-	        {
-	          int col = colcurr->first;
-	          double val = sum*(colcurr->second)*z[j];
-	          //cout << "1 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+      {
+        /************************************ |ztan+ct*utan|.DerivT.z ***/
+         
+        // loop over all derivative maps (=dimensions)
+        for (int j=0;j<mapsize;++j)
+        {
+          int k=0;
+       
+          // loop over all entries of the current derivative map
+          for (colcurr=dtmap[j].begin();colcurr!=dtmap[j].end();++colcurr)
+          {
+            int col = colcurr->first;
+            double val = sum*(colcurr->second)*z[j];
+            //cout << "1 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTSLIPFIRST
       if (cnode->ActiveOld()==false) val =0;
 #endif        
           
-	          // do not assemble zeros into s matrix
-	          if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
-	          ++k;
-	        }
-	
-	        if (k!=colsize)
-	          dserror("ERROR: AssembleLinSlip: k = %i but colsize = %i",k,colsize);
-	      }
+            // do not assemble zeros into s matrix
+            if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
+            ++k;
+          }
+  
+          if (k!=colsize)
+            dserror("ERROR: AssembleLinSlip: k = %i but colsize = %i",k,colsize);
+        }
  
-		    /*********************************** Deriv(abs)*DerivT.z*ztan ***/
-		   
-		    // loop over all derivative maps (=dimensions)
-		    for (int j=0;j<mapsize;++j)
-		    {
-		      int k=0;
-		      
-		      // loop over all entries of the current derivative map
-		      for (colcurr=dtmap[j].begin();colcurr!=dtmap[j].end();++colcurr)
-		      {
-		        int col = colcurr->first;
-		        double val = prefactor*(colcurr->second)*z[j]*ztan;
-		        //cout << "2 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+        /*********************************** Deriv(abs)*DerivT.z*ztan ***/
+       
+        // loop over all derivative maps (=dimensions)
+        for (int j=0;j<mapsize;++j)
+        {
+          int k=0;
+          
+          // loop over all entries of the current derivative map
+          for (colcurr=dtmap[j].begin();colcurr!=dtmap[j].end();++colcurr)
+          {
+            int col = colcurr->first;
+            double val = prefactor*(colcurr->second)*z[j]*ztan;
+            //cout << "2 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTSLIPFIRST
         if (cnode->ActiveOld()==false) val = (colcurr->second)*z[j];
 #endif    
 
-	        // do not assemble zeros into matrix
-		        if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
-		        ++k;
-		      }
-		
-		      if (k!=colsize)
-		        dserror("ERROR: AssembleLinSlip: k = %i but colsize = %i",k,colsize);
-		    }
-	   
-		    /******************************* Deriv(abs)*DerivT.jump+*ztan ***/
-		   
-		    // loop over all derivative maps (=dimensions)
+          // do not assemble zeros into matrix
+            if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
+            ++k;
+          }
+    
+          if (k!=colsize)
+            dserror("ERROR: AssembleLinSlip: k = %i but colsize = %i",k,colsize);
+        }
+     
+        /******************************* Deriv(abs)*DerivT.jump+*ztan ***/
+       
+        // loop over all derivative maps (=dimensions)
         for (int j=0;j<mapsize;++j)
         {
-		      int k=0;
-		      
-		      // loop over all entries of the current derivative map
-		      for (colcurr=dtmap[j].begin();colcurr!=dtmap[j].end();++colcurr)
-		      {
-		        int col = colcurr->first;
-		        double val = prefactor*ct*(colcurr->second)*jump[j]*ztan;
-		        //cout << "3 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
-	        
+          int k=0;
+          
+          // loop over all entries of the current derivative map
+          for (colcurr=dtmap[j].begin();colcurr!=dtmap[j].end();++colcurr)
+          {
+            int col = colcurr->first;
+            double val = prefactor*ct*(colcurr->second)*jump[j]*ztan;
+            //cout << "3 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+          
 #ifdef CONTACTSLIPFIRST
       if (cnode->ActiveOld()==false) val =0;
 #endif        
-	        
-		        // do not assemble zeros into s matrix
-		        if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
-		        ++k;
-		      }
-		
+          
+            // do not assemble zeros into s matrix
+            if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
+            ++k;
+          }
+    
         if (k!=colsize)
-		      dserror("ERROR: AssembleLinSlip: k = %i but colsize = %i",k,colsize);
-		    }
-	   
-		    /*************************** -Deriv(abs).ct.tan.DerivD.x*ztan ***/
-		    
-		    // we need the dot product t*x of this node
-		    double tdotx = 0.0;
-		    for (int dim=0;dim<cnode->NumDof();++dim)
-		      tdotx += txi[dim]*xi[dim];
-		    
-		    // prepare assembly
-		    map<int,double>& ddmap = cnode->GetDerivD();
-		        
-		    // loop over all entries of the current derivative map
-		    for (colcurr=ddmap.begin();colcurr!=ddmap.end();++colcurr)
-		    {
-		      int col = colcurr->first;
-		      double val = (-1)*prefactor*ct*tdotx*colcurr->second*ztan;
-		      //cout << "4 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
-
-#ifdef CONTACTSLIPFIRST
-      if (cnode->ActiveOld()==false) val =0;
-#endif        
-	      
-	        // do not assemble zeros into matrix
-	        if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
+          dserror("ERROR: AssembleLinSlip: k = %i but colsize = %i",k,colsize);
         }
-	    
-	      /**************************** Deriv(abs).ct.tan.DerivM.x*ztan ***/
-	    
-		    // we need the Lin(M-matrix) entries of this node
-		    map<int,map<int,double> >& dmmap = cnode->GetDerivM();
-		    map<int,map<int,double> >::iterator dmcurr;
-		    
-		    // loop over all master nodes in the DerivM-map of the active slave node
-		    for (dmcurr=dmmap.begin();dmcurr!=dmmap.end();++dmcurr)
-		    {
-		      int gid = dmcurr->first;
-		      DRT::Node* mnode = idiscret_->gNode(gid);
-		      if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
-		      CNode* cmnode = static_cast<CNode*>(mnode);
-		      double* mxi = cmnode->xspatial();
-		      
-		      // we need the dot product ns*xm of this node pair
-		      double tdotx = 0.0;
-		      for (int dim=0;dim<cnode->NumDof();++dim)
-		        tdotx += txi[dim]*mxi[dim];
-		      
-		      // compute entry of the current active node / master node pair
-		      map<int,double>& thisdmmap = cnode->GetDerivM(gid);
-		      
-		      // loop over all entries of the current derivative map
-		      for (colcurr=thisdmmap.begin();colcurr!=thisdmmap.end();++colcurr)
-		      {
-		        int col = colcurr->first;
-		        double val = prefactor*ct*tdotx*colcurr->second*ztan;
-		        //cout << "5 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+     
+        /*************************** -Deriv(abs).ct.tan.DerivD.x*ztan ***/
+        
+        // we need the dot product t*x of this node
+        double tdotx = 0.0;
+        for (int dim=0;dim<cnode->NumDof();++dim)
+          tdotx += txi[dim]*xi[dim];
+        
+        // prepare assembly
+        map<int,double>& ddmap = cnode->GetDerivD()[gid];
+            
+        // loop over all entries of the current derivative map
+        for (colcurr=ddmap.begin();colcurr!=ddmap.end();++colcurr)
+        {
+          int col = colcurr->first;
+          double val = (-1)*prefactor*ct*tdotx*colcurr->second*ztan;
+          //cout << "4 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTSLIPFIRST
       if (cnode->ActiveOld()==false) val =0;
 #endif        
-	        
-		        // do not assemble zeros into matrix
-		        if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
-		      }
-	      }
-		    
-		    /*********************************** -(frcoeff*znor).DerivT.z ***/
-		 
-		    // loop over all derivative maps (=dimensions)
-		    for (int j=0;j<mapsize;++j)
-		    {
-		      int k=0;
-		      
-		      // loop over all entries of the current derivative map
-		      for (colcurr=dtmap[j].begin();colcurr!=dtmap[j].end();++colcurr)
-		      {
-		        int col = colcurr->first;
-		        double val = (-1)*(frcoeff*(znor-cn*wgap))*(colcurr->second)*z[j];
-		        //cout << "6 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+        
+          // do not assemble zeros into matrix
+          if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
+        }
+      
+        /**************************** Deriv(abs).ct.tan.DerivM.x*ztan ***/
+      
+        // we need the Lin(M-matrix) entries of this node
+        map<int,map<int,double> >& dmmap = cnode->GetDerivM();
+        map<int,map<int,double> >::iterator dmcurr;
+        
+        // loop over all master nodes in the DerivM-map of the active slave node
+        for (dmcurr=dmmap.begin();dmcurr!=dmmap.end();++dmcurr)
+        {
+          int gid = dmcurr->first;
+          DRT::Node* mnode = idiscret_->gNode(gid);
+          if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
+          CNode* cmnode = static_cast<CNode*>(mnode);
+          double* mxi = cmnode->xspatial();
+          
+          // we need the dot product ns*xm of this node pair
+          double tdotx = 0.0;
+          for (int dim=0;dim<cnode->NumDof();++dim)
+            tdotx += txi[dim]*mxi[dim];
+          
+          // compute entry of the current active node / master node pair
+          map<int,double>& thisdmmap = cnode->GetDerivM(gid);
+          
+          // loop over all entries of the current derivative map
+          for (colcurr=thisdmmap.begin();colcurr!=thisdmmap.end();++colcurr)
+          {
+            int col = colcurr->first;
+            double val = prefactor*ct*tdotx*colcurr->second*ztan;
+            //cout << "5 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTSLIPFIRST
       if (cnode->ActiveOld()==false) val =0;
 #endif        
-	        
-		        // do not assemble zeros into s matrix
-		        if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
-		        ++k;
-		      }
-		
-		      if (k!=colsize)
-		        dserror("ERROR: AssembleLinSlip: k = %i but colsize = %i",k,colsize);
-		    }
-	
-		    /******************************** (frcoeff*znor).ct.DerivT.jump ***/
-		 
-		    // loop over all derivative maps (=dimensions)
-		    for (int j=0;j<mapsize;++j)
-		    {
-		      int k=0;
-		      
-		      // loop over all entries of the current derivative map
-		      for (colcurr=dtmap[j].begin();colcurr!=dtmap[j].end();++colcurr)
-		      {
-		        int col = colcurr->first;
-		        double val = (-1)*(frcoeff*(znor-cn*wgap))*ct*(colcurr->second)*jump[j];
-		        //cout << "7 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+          
+            // do not assemble zeros into matrix
+            if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
+          }
+        }
+        
+        /*********************************** -(frcoeff*znor).DerivT.z ***/
+     
+        // loop over all derivative maps (=dimensions)
+        for (int j=0;j<mapsize;++j)
+        {
+          int k=0;
+          
+          // loop over all entries of the current derivative map
+          for (colcurr=dtmap[j].begin();colcurr!=dtmap[j].end();++colcurr)
+          {
+            int col = colcurr->first;
+            double val = (-1)*(frcoeff*(znor-cn*wgap))*(colcurr->second)*z[j];
+            //cout << "6 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTSLIPFIRST
       if (cnode->ActiveOld()==false) val =0;
 #endif        
-	        
-		        // do not assemble zeros into s matrix
-		        if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
-		        ++k;
-		      }
-		
-		      if (k!=colsize)
-		        dserror("ERROR: AssembleLinSlip: k = %i but colsize = %i",k,colsize);
-		    }
-	    
-		    /****************************** +(frcoeff*znor).ct.T.DerivD.x ***/
-		     
-		    // we need the dot product t*x of this node
-		     tdotx = 0.0;
-		     for (int dim=0;dim<cnode->NumDof();++dim)
-		       tdotx += txi[dim]*xi[dim];
-		     
-		     // loop over all entries of the current derivative map
-		     for (colcurr=ddmap.begin();colcurr!=ddmap.end();++colcurr)
-		     {
-		       int col = colcurr->first;
-		       double val = (-1)*(-1)*(frcoeff*(znor-cn*wgap))*ct*tdotx*colcurr->second;
-		       //cout << "8 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+          
+            // do not assemble zeros into s matrix
+            if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
+            ++k;
+          }
+    
+          if (k!=colsize)
+            dserror("ERROR: AssembleLinSlip: k = %i but colsize = %i",k,colsize);
+        }
+  
+        /******************************** (frcoeff*znor).ct.DerivT.jump ***/
+     
+        // loop over all derivative maps (=dimensions)
+        for (int j=0;j<mapsize;++j)
+        {
+          int k=0;
+          
+          // loop over all entries of the current derivative map
+          for (colcurr=dtmap[j].begin();colcurr!=dtmap[j].end();++colcurr)
+          {
+            int col = colcurr->first;
+            double val = (-1)*(frcoeff*(znor-cn*wgap))*ct*(colcurr->second)*jump[j];
+            //cout << "7 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTSLIPFIRST
       if (cnode->ActiveOld()==false) val =0;
 #endif        
-	       
-		       // do not assemble zeros into matrix
-		       if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
-		     }
-		     
-		     /***************************** -(frcoeff*znor).ct.T.DerivM.x ***/
-		     
-		      // loop over all master nodes in the DerivM-map of the active slave node
-		     for (dmcurr=dmmap.begin();dmcurr!=dmmap.end();++dmcurr)
-		     {
-		       int gid = dmcurr->first;
-		       DRT::Node* mnode = idiscret_->gNode(gid);
-		       if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
-		       CNode* cmnode = static_cast<CNode*>(mnode);
-		       double* mxi = cmnode->xspatial();
-		       
-		       // we need the dot product ns*xm of this node pair
-		       double tdotx = 0.0;
-		       for (int dim=0;dim<cnode->NumDof();++dim)
-		         tdotx += txi[dim]*mxi[dim];
-		           
-		       // compute entry of the current active node / master node pair
-		       map<int,double>& thisdmmap = cnode->GetDerivM(gid);
-		       
-		       // loop over all entries of the current derivative map
-		       for (colcurr=thisdmmap.begin();colcurr!=thisdmmap.end();++colcurr)
-		       {
-		         int col = colcurr->first;
-		         double val = (-1)*(frcoeff*(znor-cn*wgap))*ct*tdotx*colcurr->second;
-		        //cout << "9 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+          
+            // do not assemble zeros into s matrix
+            if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
+            ++k;
+          }
+    
+          if (k!=colsize)
+            dserror("ERROR: AssembleLinSlip: k = %i but colsize = %i",k,colsize);
+        }
+      
+        /****************************** +(frcoeff*znor).ct.T.DerivD.x ***/
+         
+        // we need the dot product t*x of this node
+         tdotx = 0.0;
+         for (int dim=0;dim<cnode->NumDof();++dim)
+           tdotx += txi[dim]*xi[dim];
+         
+         // loop over all entries of the current derivative map
+         for (colcurr=ddmap.begin();colcurr!=ddmap.end();++colcurr)
+         {
+           int col = colcurr->first;
+           double val = (-1)*(-1)*(frcoeff*(znor-cn*wgap))*ct*tdotx*colcurr->second;
+           //cout << "8 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTSLIPFIRST
       if (cnode->ActiveOld()==false) val =0;
 #endif        
-	         
-		         // do not assemble zeros into matrix
-		         if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col); 
-		      }
-		    }
-	     
-	      /***************************** -frcoeff*DerivN.z(ztan+ct*utan) ***/
-		       
-	     // loop over all derivative maps (=dimensions)
-	     for (int j=0;j<mapsize;++j)
-	     {
-	       int k=0;
-	    
-	       // loop over all entries of the current derivative map
-	       for (colcurr=dnmap[j].begin();colcurr!=dnmap[j].end();++colcurr)
-	       {
-	         int col = colcurr->first;
-	         double val = (-1)*(ztan+ct*jumptan)*frcoeff*(colcurr->second)*z[j];
-	         //cout << "10 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+         
+           // do not assemble zeros into matrix
+           if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
+         }
+         
+         /***************************** -(frcoeff*znor).ct.T.DerivM.x ***/
+         
+          // loop over all master nodes in the DerivM-map of the active slave node
+         for (dmcurr=dmmap.begin();dmcurr!=dmmap.end();++dmcurr)
+         {
+           int gid = dmcurr->first;
+           DRT::Node* mnode = idiscret_->gNode(gid);
+           if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
+           CNode* cmnode = static_cast<CNode*>(mnode);
+           double* mxi = cmnode->xspatial();
+           
+           // we need the dot product ns*xm of this node pair
+           double tdotx = 0.0;
+           for (int dim=0;dim<cnode->NumDof();++dim)
+             tdotx += txi[dim]*mxi[dim];
+               
+           // compute entry of the current active node / master node pair
+           map<int,double>& thisdmmap = cnode->GetDerivM(gid);
+           
+           // loop over all entries of the current derivative map
+           for (colcurr=thisdmmap.begin();colcurr!=thisdmmap.end();++colcurr)
+           {
+             int col = colcurr->first;
+             double val = (-1)*(frcoeff*(znor-cn*wgap))*ct*tdotx*colcurr->second;
+            //cout << "9 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+
+#ifdef CONTACTSLIPFIRST
+      if (cnode->ActiveOld()==false) val =0;
+#endif        
+           
+             // do not assemble zeros into matrix
+             if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col); 
+          }
+        }
+       
+        /***************************** -frcoeff*DerivN.z(ztan+ct*utan) ***/
+           
+       // loop over all derivative maps (=dimensions)
+       for (int j=0;j<mapsize;++j)
+       {
+         int k=0;
+      
+         // loop over all entries of the current derivative map
+         for (colcurr=dnmap[j].begin();colcurr!=dnmap[j].end();++colcurr)
+         {
+           int col = colcurr->first;
+           double val = (-1)*(ztan+ct*jumptan)*frcoeff*(colcurr->second)*z[j];
+           //cout << "10 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTSLIPFIRST
       if (cnode->ActiveOld()==false) val =0;
 #endif        
 
-		       // do not assemble zeros into s matrix
-		       if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
-		       ++k;
-		     }
-		
-		     if (k!=colsize)
-		       dserror("ERROR: AssembleLinSlip: k = %i but colsize = %i",k,colsize);
-		    }
-	    } // if fullin
+           // do not assemble zeros into s matrix
+           if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
+           ++k;
+         }
+    
+         if (k!=colsize)
+           dserror("ERROR: AssembleLinSlip: k = %i but colsize = %i",k,colsize);
+        }
+      } // if fullin
 
       /**************************** +frcoeff*cn*Derivg.(ztan+ct*utan) ***/
-	       
+         
       // prepare assembly
       map<int,double>& dgmap = cnode->GetDerivG();
     
@@ -4666,13 +4929,14 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
 #endif        
 
       // do not assemble zeros into matrix
-      if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);	       
+      if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);        
       }
     } // loop over all slip nodes of the interface
 #endif
   } // Coulomb friction
   return;
 }
+
 
 /*----------------------------------------------------------------------*
  |  initialize active set (nodes / dofs)                      popp 03/08|

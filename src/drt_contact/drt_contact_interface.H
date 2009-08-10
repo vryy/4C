@@ -43,7 +43,7 @@ Maintainer: Michael Gee
 #include "Epetra_Comm.h"
 #include "drt_cnode.H"
 #include "drt_celement.H"
-#include "drt_contact_coupling3d.H"
+#include "drt_contact_coupling3d_classes.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_sparsematrix.H"
 #include "../drt_contact/drt_contact_binarytree.H"
@@ -71,21 +71,35 @@ class Interface
 public:
 
   //! @name Enums and Friends
+  
+  /*!
+  \brief Enum for shape function used for lagrange multiplier discretization
+  
+  */
+  enum ShapeFcnType
+  {
+    StandardFunctions,
+    DualFunctions,
+    Undefined
+  };
+  
   //@}
 
   /*!
   \brief Standard constructor creating empty contact interface
+ 
+  This initializes the employed shape function set for lagrangian mutlipliers
+  to a specific setting. Throughout the evaluation process, this set will be employed
+  for the field of lagrangian multipliers.
 
   \param id (in): Unique interface id
   \param comm (in): A communicator object
   \param dim (in): Global problem dimension
-  \param stype (in): type of contact search algorithm
-  \param sp (in): contact search algorithm parameter
-
+ 
   */
   explicit Interface(const int id, const Epetra_Comm& comm, const int dim,
                      const Teuchos::ParameterList& icontact);
-
+    
   /*!
   \brief Destructor
 
@@ -189,6 +203,17 @@ public:
     exit(EXIT_FAILURE); // calm down the compiler
   }
 
+  /*!
+  \brief Get column map of slave nodes + boundary nodes (Filled()==true is prerequisite)
+
+  */
+  virtual const RCP<Epetra_Map> SlaveColNodesBound() const
+  {
+    if (Filled()) return snodecolmapbound_;
+    else dserror("CONTACT::Interface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
+  
   /*!
   \brief Get column map of master nodes (Filled()==true is prerequisite)
 
@@ -557,6 +582,39 @@ public:
                                 vector<RCP<CONTACT::IntElement> >& auxele);
 
   /*!
+  \brief Assemble gap-computed lagrange multipliers and nodal linlambda derivatives into nodal quantities
+  using the Macauley bracket
+  
+  When dealing with penalty methods, the lagrange multipliers are not independent variables anymore.
+  Instead, they can be computed in terms of the weighted gap and the penalty parameter.
+  This is done here so every node stores the correct lm and thus we integrate smoothly into the overlaying algorithm.
+  
+  Additionally, we use the performed loop over all nodes to store the nodal derivlambda_j matrix right there.
+  
+  As a result, the function notifies the calling routine if any negative gap was detected 
+  and thus wether the interface is in contact or not. In consequence, after calling this routine
+  from within the penalty strategy object, the contact status is known at a global level.
+  
+  Note: To be able to perform this computation, weighted gaps and normals have to be available within every node!
+  Since this computation is done via Interface::Evaluate() in the Integrator class,
+  these corresponding methods have to be called before AssembleMacauley()!
+  
+  */ 
+  virtual void AssembleMacauley(bool& localisincontact, bool& localactivesetchange);
+  
+  /*!
+  \brief Assemble lagrange multipliers into global z vector (penalty strategy)
+  
+  */
+  virtual void AssembleLM(Epetra_Vector& zglobal);
+  
+  /*
+  \brief Assemble LM derivatives into global matrix (penalty strategy)
+ 
+  */
+  virtual void AssembleLinZ(LINALG::SparseMatrix& lambdaglobal);
+  
+  /*!
   \brief Assemble Mortar matrices and weighted gap
 
   */
@@ -731,6 +789,23 @@ public:
                                 vector<vector<double> >& testjs,
                                 vector<vector<double> >& testjm);
 
+  /*!
+  \brief Check penalty approach with finite differences
+
+  */
+  virtual void FDCheckDerivZ();  
+  virtual void FDCheckPenaltyKTeff(RCP<LINALG::SparseMatrix> kc, RCP<Epetra_Vector> fc, RCP<LINALG::SparseMatrix> dold,
+                                   RCP<LINALG::SparseMatrix> mold, RCP<Epetra_Vector> zold,
+                                   RCP<Epetra_Map> problemrowmap, double alphaf);
+  virtual void FDCheckPenaltyLinD(RCP<LINALG::SparseMatrix> lindmatrix, RCP<Epetra_Vector> reffcd);
+  virtual void FDCheckPenaltyLinM(RCP<LINALG::SparseMatrix> linmmatrix, RCP<Epetra_Vector> reffcm);
+  
+  /*!
+  \brief Print shape function type (enum)
+
+  */
+  inline void PrintShapeFcn() { cout << shapefcn_ << endl; };
+  
   //@}
 
 protected:
@@ -748,7 +823,8 @@ protected:
   RCP<DRT::Discretization>    idiscret_;      // the discretization of the contact interface
   int                         dim_;           // dimension of problem (2D or 3D)
   Teuchos::ParameterList      icontact_;      // containing contact input parameters of interface
-
+  ShapeFcnType                shapefcn_;      // employed type of shape function set
+  
   RCP<Epetra_Map>             snoderowmap_;   // row map of all slave nodes
   RCP<Epetra_Map>             snodecolmap_;   // column map of all slave nodes
   RCP<Epetra_Map>             snodefullmap_;  // fully overlapping column map of all slave nodes
@@ -765,10 +841,10 @@ protected:
 
   RCP<Epetra_Map>             sdofrowmap_;    // row map of all slave dofs
   RCP<Epetra_Map>             sdofcolmap_;    // column map of all slave dofs
-  RCP<Epetra_Map>             sdoffullmap_;    // fully overlapping column map of all slave dofs
+  RCP<Epetra_Map>             sdoffullmap_;   // fully overlapping column map of all slave dofs
   RCP<Epetra_Map>             mdofrowmap_;    // row map of all master dofs
   RCP<Epetra_Map>             mdofcolmap_;    // column map of all master dofs
-  RCP<Epetra_Map>             mdoffullmap_;    // fully overlapping column map of all master dofs
+  RCP<Epetra_Map>             mdoffullmap_;   // fully overlapping column map of all master dofs
 
   RCP<Epetra_Map>             snodecolmapbound_;    // col map of slave nodes (+ boundary nodes)
   RCP<Epetra_Map>             snodefullmapbound_;   // full map of slave nodes (+ boundary nodes)

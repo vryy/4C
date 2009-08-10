@@ -40,6 +40,8 @@ Maintainer: Michael Gee
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "drt_contact_manager.H"
+#include "drt_contact_lagrange_strategy.H"
+#include "drt_contact_penalty_strategy.H"
 #include "drt_cnode.H"
 #include "drt_celement.H"
 #include "contactdefines.H"
@@ -54,18 +56,19 @@ CONTACT::Manager::Manager(DRT::Discretization& discret, double alphaf) :
 CONTACT::ManagerBase(),
 discret_(discret)
 {
-  // overwrite some base class variables
-  alphaf_ = alphaf;
+  // overwrite base class communicator
   comm_ = rcp(Discret().Comm().Clone());
-  problemrowmap_ = rcp(new Epetra_Map(*(Discret().DofRowMap())));
-
-  // get problem dimension (2D or 3D) and store into dim_
+  
+  // create some local variables (later to be stored in strategy)
+  RCP<Epetra_Map> problemrowmap = rcp(new Epetra_Map(*(Discret().DofRowMap())));
   const Teuchos::ParameterList& psize = DRT::Problem::Instance()->ProblemSizeParams();
-  dim_=psize.get<int>("DIM");
-  if (Dim()!= 2 && Dim()!=3) dserror("ERROR: Contact problem must be 2D or 3D");
+  int dim = psize.get<int>("DIM");
+  if (dim!= 2 && dim!=3) dserror("ERROR: Contact problem must be 2D or 3D");
+  vector<RCP<CONTACT::Interface> > interfaces;
+  Teuchos::ParameterList cparams;
 
   // read and check contact input parameters
-  ReadAndCheckInput();
+  ReadAndCheckInput(cparams);
 
   // check for FillComplete of discretization
   if (!Discret().Filled()) dserror("Discretization is not fillcomplete");
@@ -126,11 +129,11 @@ discret_(discret)
     foundgroups.push_back(groupid1);
     ++numgroupsfound;
 
-    // create an empty interface and store it in this Manager
-    interface_.push_back(rcp(new CONTACT::Interface(groupid1,Comm(),Dim(),Params())));
-
+    // create an empty interface and store it local vector
+    interfaces.push_back(rcp(new CONTACT::Interface(groupid1,Comm(),dim,cparams)));
+        
     // get it again
-    RCP<CONTACT::Interface> interface = interface_[(int)interface_.size()-1];
+    RCP<CONTACT::Interface> interface = interfaces[(int)interfaces.size()-1];
 
     // find out which sides are Master and Slave
     bool hasslave = false;
@@ -283,99 +286,51 @@ discret_(discret)
 
   } // for (int i=0; i<(int)contactconditions.size(); ++i)
 
-#ifdef DEBUG
-  //for (int i=0;i<(int)interface_.size();++i)
-  //  cout << *interface_[i];
-#endif // #ifdef DEBUG
-
-  // setup global slave / master Epetra_Maps
-  // (this is done by looping over all interfaces and merging)
-  for (int i=0;i<(int)interface_.size();++i)
-  {
-  	gsnoderowmap_ = LINALG::MergeMap(gsnoderowmap_,interface_[i]->SlaveRowNodes());
-  	gsdofrowmap_ = LINALG::MergeMap(gsdofrowmap_,interface_[i]->SlaveRowDofs());
-  	gmdofrowmap_ = LINALG::MergeMap(gmdofrowmap_,interface_[i]->MasterRowDofs());
-  }
-
-  // setup global dof map of non-slave-ormaster dofs
-  // (this is done by splitting from the dicretization dof map)
-  gndofrowmap_ = LINALG::SplitMap(*(discret_.DofRowMap()),*gsdofrowmap_);
-  gndofrowmap_ = LINALG::SplitMap(*gndofrowmap_,*gmdofrowmap_);
-
-  // initialize active sets and slip sets of all interfaces
-  // (these maps are NOT allowed to be overlapping !!!)
-  for (int i=0;i<(int)interface_.size();++i)
-  {
-    interface_[i]->InitializeActiveSet();
-    gactivenodes_ = LINALG::MergeMap(gactivenodes_,interface_[i]->ActiveNodes(),false);
-    gactivedofs_ = LINALG::MergeMap(gactivedofs_,interface_[i]->ActiveDofs(),false);
-    gactiven_ = LINALG::MergeMap(gactiven_,interface_[i]->ActiveNDofs(),false);
-    gactivet_ = LINALG::MergeMap(gactivet_,interface_[i]->ActiveTDofs(),false);
-    gslipnodes_ = LINALG::MergeMap(gslipnodes_,interface_[i]->SlipNodes(),false);
-    gslipdofs_ = LINALG::MergeMap(gslipdofs_,interface_[i]->SlipDofs(),false);
-    gslipt_ = LINALG::MergeMap(gslipt_,interface_[i]->SlipTDofs(),false);
-  }
-
-  // setup Lagrange muliplier vectors
-  z_          = rcp(new Epetra_Vector(*gsdofrowmap_));
-  zold_       = rcp(new Epetra_Vector(*gsdofrowmap_));
-
-  // setup global Mortar matrices Dold and Mold
-  dold_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_));
-  dold_->Zero();
-  dold_->Complete();
-  mold_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_));
-  mold_->Zero();
-  mold_->Complete(*gmdofrowmap_,*gsdofrowmap_);
-
-  // friction
-  // setup vector of displacement jumps (slave dof)
-  jump_       = rcp(new Epetra_Vector(*gsdofrowmap_));
+  // create the solver strategy object
+  // and pass all necessary data to it
+  INPAR::CONTACT::SolvingStrategy stype =
+      Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(cparams,"STRATEGY");
+  if (stype == INPAR::CONTACT::solution_lagmult)
+    strategy_ = rcp(new LagrangeStrategy(problemrowmap,cparams,interfaces,dim,comm_,alphaf)); 
+  else if (stype == INPAR::CONTACT::solution_penalty)
+    strategy_ = rcp(new PenaltyStrategy(problemrowmap,cparams,interfaces,dim,comm_,alphaf));
+  else if (stype == INPAR::CONTACT::solution_auglag)
+    dserror("Cannot cope with augmented lagrange strategy yet");
+  else
+    dserror("Unrecognized strategy");
+    
+  // **** initialization of row/column maps moved to AbstractStrategy **** //
+  // since the manager does not operate over nodes, elements, dofs anymore 
+  // ********************************************************************* //
 
   return;
 }
 
-
-/*----------------------------------------------------------------------*
- |  << operator                                              mwgee 10/07|
- *----------------------------------------------------------------------*/
-ostream& operator << (ostream& os, const CONTACT::Manager& manager)
-{
-  manager.Print(os);
-  return os;
-}
-
-
-/*----------------------------------------------------------------------*
- |  print manager (public)                                   mwgee 10/07|
- *----------------------------------------------------------------------*/
-void CONTACT::Manager::Print(ostream& os) const
-{
-  if (Comm().MyPID()==0)
-  {
-    os << "---------------------------------------------CONTACT::Manager\n"
-       << "Contact interfaces: " << (int)interface_.size() << endl
-       << "-------------------------------------------------------------\n";
-  }
-  Comm().Barrier();
-  for (int i=0; i<(int)interface_.size(); ++i)
-  {
-    cout << *(interface_[i]);
-  }
-  Comm().Barrier();
-
-  return;
-}
 
 /*----------------------------------------------------------------------*
  |  read and check input parameters (public)                  popp 04/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::Manager::ReadAndCheckInput()
+bool CONTACT::Manager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
 {
   // read parameter list from DRT::Problem
   const Teuchos::ParameterList& input = DRT::Problem::Instance()->StructuralContactParams();
 
   // invalid parameter combinations
+  if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_auglag)
+    dserror("Augmented Lagrange strategy not yet implemented");
+  
+  if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_lagmult &&
+      Teuchos::getIntegralValue<INPAR::CONTACT::ShapeFcn>(input,"SHAPEFCN") != INPAR::CONTACT::shape_dual )
+      dserror("Lagrange multiplier strategy only implemented for dual shape fct.");
+  
+  if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_penalty &&
+      Teuchos::getIntegralValue<INPAR::CONTACT::ShapeFcn>(input,"SHAPEFCN") != INPAR::CONTACT::shape_standard )
+      dserror("Penalty strategy only implemented for standard shape fct.");
+  
+  if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_penalty &&
+                                                 input.get<double>("PENALTYPARAM") <= 0.0)
+      dserror("Penalty parameter eps = 0, must be greater than 0");
+  
   if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(input,"CONTACT")   == INPAR::CONTACT::contact_normal &&
       Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(input,"FRICTION") != INPAR::CONTACT::friction_none)
     dserror("Friction law supplied for normal contact");
@@ -417,8 +372,8 @@ bool CONTACT::Manager::ReadAndCheckInput()
                                                                  input.get<double>("SEARCH_PARAM") == 0.0)
     cout << ("Warning: Ele-based / binary tree search called without inflation of bounding volumes\n") << endl;
 
-  // store ParameterList in contact manager
-  scontact_ = input;
+  // store ParameterList in local parameter list
+  cparams = input;
 
   return true;
 }
@@ -429,28 +384,14 @@ bool CONTACT::Manager::ReadAndCheckInput()
 void CONTACT::Manager::WriteRestart(IO::DiscretizationWriter& output)
 {
   // quantities to be written for restart
-  RCP<Epetra_Vector> activetoggle = rcp(new Epetra_Vector(*gsnoderowmap_));
-  RCP<Epetra_Vector> sliptoggle = rcp(new Epetra_Vector(*gsnoderowmap_));
+  RCP<Epetra_Vector> activetoggle;
+  RCP<Epetra_Vector> sliptoggle;
 
-  // loop over all interfaces
-  for (int i=0; i<(int)interface_.size(); ++i)
-  {
-    // loop over all slave nodes on the current interface
-    for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)
-    {
-      int gid = interface_[i]->SlaveRowNodes()->GID(j);
-      DRT::Node* node = interface_[i]->Discret().gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      CNode* cnode = static_cast<CNode*>(node);
-
-      // set value active / inactive in toggle vector
-      if (cnode->Active()) (*activetoggle)[j]=1;
-      if (cnode->Slip()) (*sliptoggle)[j]=1;
-    }
-  }
-
+  // quantities to be written for restart
+  GetStrategy().DoWriteRestart(activetoggle, sliptoggle);
+    
   // write restart information for contact
-  output.WriteVector("lagrmultold",LagrMultOld());
+  output.WriteVector("lagrmultold",GetStrategy().LagrMultOld());
   output.WriteVector("activetoggle",activetoggle);
   output.WriteVector("sliptoggle",sliptoggle);
 
@@ -464,66 +405,20 @@ void CONTACT::Manager::ReadRestart(IO::DiscretizationReader& reader,
                                    RCP<Epetra_Vector> dis)
 {
   // read restart information for contact
-  reader.ReadVector(LagrMultOld(),"lagrmultold");
-  reader.ReadVector(LagrMult(),"lagrmultold");
-  StoreNodalQuantities(Manager::lmold);
-  StoreNodalQuantities(Manager::lmcurrent);
+  reader.ReadVector(GetStrategy().LagrMultOld(),"lagrmultold");
+  reader.ReadVector(GetStrategy().LagrMult(),"lagrmultold");
+  
+  GetStrategy().StoreNodalQuantities(AbstractStrategy::lmold);
+  GetStrategy().StoreNodalQuantities(AbstractStrategy::lmcurrent);
 
-  RCP<Epetra_Vector> activetoggle =rcp(new Epetra_Vector(*(SlaveRowNodes())));
+  RCP<Epetra_Vector> activetoggle =rcp(new Epetra_Vector(*(GetStrategy().SlaveRowNodes())));
   reader.ReadVector(activetoggle,"activetoggle");
 
-  RCP<Epetra_Vector> sliptoggle =rcp(new Epetra_Vector(*(SlaveRowNodes())));
+  RCP<Epetra_Vector> sliptoggle =rcp(new Epetra_Vector(*(GetStrategy().SlaveRowNodes())));
   reader.ReadVector(sliptoggle,"sliptoggle");
 
-  // loop over all interfaces
-  for (int i=0; i<(int)interface_.size(); ++i)
-  {
-    // loop over all slave nodes on the current interface
-    for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)
-    {
-      if ((*activetoggle)[j]==1)
-      {
-        int gid = interface_[i]->SlaveRowNodes()->GID(j);
-        DRT::Node* node = interface_[i]->Discret().gNode(gid);
-        if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-        CNode* cnode = static_cast<CNode*>(node);
-
-        // set value active / inactive in cnode
-        cnode->Active()=true;
-
-        // set value stick / slip in cnode
-        if ((*sliptoggle)[j]==1)
-        cnode->Slip()=true;
-      }
-    }
-  }
-
-  // update active sets of all interfaces
-  // (these maps are NOT allowed to be overlapping !!!)
-  for (int i=0;i<(int)interface_.size();++i)
-  {
-    interface_[i]->BuildActiveSet();
-    gactivenodes_ = LINALG::MergeMap(gactivenodes_,interface_[i]->ActiveNodes(),false);
-    gactivedofs_ = LINALG::MergeMap(gactivedofs_,interface_[i]->ActiveDofs(),false);
-    gactiven_ = LINALG::MergeMap(gactiven_,interface_[i]->ActiveNDofs(),false);
-    gactivet_ = LINALG::MergeMap(gactivet_,interface_[i]->ActiveTDofs(),false);
-    gslipnodes_ = LINALG::MergeMap(gslipnodes_,interface_[i]->SlipNodes(),false);
-    gslipdofs_ = LINALG::MergeMap(gslipdofs_,interface_[i]->SlipDofs(),false);
-    gslipt_ = LINALG::MergeMap(gslipt_,interface_[i]->SlipTDofs(),false);
-  }
-
-  // update flag for global contact status
-  if (gactivenodes_->NumGlobalElements())
-    IsInContact()=true;
-
-  // build restart Mortar matrices D and M
-  SetState("displacement",dis);
-  InitializeMortar();
-  EvaluateMortar();
-  StoreDM("old");
-  StoreNodalQuantities(Manager::activeold);
-  StoreDMToNodes();
-
+  GetStrategy().DoReadRestart(activetoggle, sliptoggle, dis);
+  
   return;
 }
 

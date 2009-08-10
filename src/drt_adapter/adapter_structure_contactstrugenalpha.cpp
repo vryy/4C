@@ -275,13 +275,13 @@ void ADAPTER::ContactStructureGenAlpha::Solve()
   if (equil=="full newton")
   {
     RCP<CONTACT::Manager> contactmanager = structure_.getContactmanager();
-    bool semismooth = (contactmanager->Params()).get<bool>("semismooth newton",false);
+    bool semismooth = (contactmanager->GetStrategy().Params()).get<bool>("semismooth newton",false);
 
     if(semismooth)
     {
       // initialize convergence status and step no. for active set
-      contactmanager->ActiveSetConverged() = false;
-      contactmanager->ActiveSetSteps() = 1;
+      contactmanager->GetStrategy().ActiveSetConverged() = false;
+      contactmanager->GetStrategy().ActiveSetSteps() = 1;
       cout << "SEMISMOOTH" << endl;
       structure_.SemiSmoothNewton();
     }

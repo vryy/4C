@@ -45,32 +45,46 @@ Maintainer: Alexander Popp
 /* Contact algorithm options                                            */
 /************************************************************************/
 
-#define CONTACTONEMORTARLOOP   /* flag for computing D and M in one loop */
+#define CONTACTONEMORTARLOOP     /* flag for computing D and M in one loop */
 //#define CONTACTRELVELMATERIAL  /* rel. velocity with dif. of material vel */
 //#define CONTACTSLIPFIRST       /* flag for frictionless contact in first contact step */
 //#define CONTACTBOUNDMOD        /* flag for modification of boundary nodes */
 //#define CONTACTPETROVGALERKIN  /* flag for PetrovGalerkin approach for LM */
 //#define CONTACTPSEUDO2D        /* flag for pseudo-3D in 2D situations (u_z=0)*/
-#define CONTACTCOMPHUEBER       /* flag for enhanced complementarity function mu(zn-cn.g) */
+#define CONTACTCOMPHUEBER        /* flag for enhanced complementarity function mu(zn-cn.g) */
 
 /************************************************************************/
 /* Debugging options                                                    */
 /************************************************************************/
 
-//#define CONTACTFDNORMAL       /* flag for FD check of normal derivative */
-//#define CONTACTFDMORTARD      /* flag for FD check of mortar matrix D */
-//#define CONTACTFDMORTARM      /* flag for FD check of mortar matrix M */
-//#define CONTACTFDGAP          /* flag for FD check of weighted gap g */
-//#define CONTACTFDSTICK        /* flag for FD check of stick condition */
-//#define CONTACTFDSLIP         /* flag for FD check of slip condition */
-//#define CONTACTFDTANGLM       /* flag for FD check of tangential LM */
-//#define CONTACTFDVERTEX3D     /* flag for FD check of vertices in 3D */
-//#define CONTACTFDGP3D         /* flag for FD check of GP + Jacs in 3D */
-//#define CONTACTGMSH1          /* flag for gmsh output in each time step */
-//#define CONTACTGMSH2          /* flag for gmsh output in each iteration */
-//#define CONTACTGMSHTN         /* flag for gmsh output of all treenodes */
-//#define CONTACTGMSHCTN        /* flag for gmsh output of contact treenodes */
-//#define CONTACTTIME           /* flag for contact time measurement */
+// GENERAL DEBUGGING OPTIONS
+//#define CONTACTTIME               /* flag for contact time measurement */
+//#define CONTACTFDNORMAL           /* flag for FD check of normal derivative */
+//#define CONTACTFDMORTARD          /* flag for FD check of mortar matrix D */
+//#define CONTACTFDMORTARM          /* flag for FD check of mortar matrix M */
+
+// LAGRANGE DEBUGGING OPTIONS
+//#define CONTACTFDGAP              /* flag for FD check of weighted gap g */
+//#define CONTACTFDTANGLM           /* flag for FD check of tangential LM */
+
+// PENALTY DEBUGGING OPTIONS
+//#define CONTACTFDPENALTYKTEFF     /* flag for FD check of global assembled contact tangent stiffness matrix */
+//#define CONTACTFDPENALTYKC1       /* flag for FD check of global assembled LinD and LinM part of contact tangent stiffness matrix */
+//#define CONTACTFDPENALTYDERIVZ    /* flag for FD check of nodal derivatives of lagrange multipliers */
+
+// FRICTIONAL DEBUGGING OPTIONS
+//#define CONTACTFDSTICK            /* flag for FD check of stick condition */
+//#define CONTACTFDSLIP             /* flag for FD check of slip condition */
+
+// 3D DEBGUGGING OPTIONS
+//#define CONTACTFDVERTEX3D         /* flag for FD check of vertices in 3D */
+//#define CONTACTFDGP3D             /* flag for FD check of GP + Jacs in 3D */ 
+
+// GMSH DEBUGGING OPTIONS
+//#define CONTACTGMSH1              /* flag for gmsh output in each time step */
+//#define CONTACTGMSH2              /* flag for gmsh output in each iteration */
+//#define CONTACTGMSHTN             /* flag for gmsh output of all treenodes */
+//#define CONTACTGMSHCTN            /* flag for gmsh output of contact treenodes */
 
 /************************************************************************/
 /* Contact algorithm parameters                                         */

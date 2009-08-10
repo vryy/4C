@@ -1251,7 +1251,7 @@ void CONTACT::BinaryTree::SearchContactInit(RCP<BinaryTreeNode> streenode,RCP<Bi
 	    {
 	    	DRT::Node* node = element->Nodes()[i];
 	    	CONTACT::CNode* cnode = static_cast<CONTACT::CNode*>(node);
-	    	cnode->SetActive()=true;
+	    	cnode->SetInitActive()=true;
 	    	//cout << endl << "Setting node active: " << cnode->Id();
 	    }
     }

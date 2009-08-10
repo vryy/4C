@@ -52,6 +52,7 @@ CONTACT::Coupling3d::Coupling3d(DRT::Discretization& idiscret, int dim, bool qua
                                 CONTACT::CElement& sele, CONTACT::CElement& mele,
                                 vector<vector<double> >& testv,
                                 bool printderiv) :
+shapefcn_(Interface::Undefined),
 idiscret_(idiscret),
 dim_(dim),
 quad_(quad),
@@ -214,6 +215,7 @@ CONTACT::Coupling3d::Coupling3d(DRT::Discretization& idiscret, int dim, bool qua
                                 vector<vector<double> >& testjs,
                                 vector<vector<double> >& testji,
                                 bool printderiv) :
+shapefcn_(Interface::Undefined),
 idiscret_(idiscret),
 dim_(dim),
 quad_(quad),

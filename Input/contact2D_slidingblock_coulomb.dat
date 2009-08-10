@@ -76,15 +76,16 @@ MAXITER      50
 UZAWAPARAM   1.0
 UZAWAMAXITER 20
 ------------------------------------------------STRUCTURAL CONTACT
-CONTACT              frictional
-FRICTION             coulomb
+CONTACT              Frictional
+STRATEGY             Lagrange
+SHAPEFCN             Dual
+FRICTION             Coulomb
 FRBOUND              1.0
 FRCOEFF              0.1
 FULL_LINEARIZATION   Yes
 SEMI_SMOOTH_NEWTON   Yes
 SEMI_SMOOTH_CN       10
 SEMI_SMOOTH_CT       10
-
 -----------------------------------------------------FLUID DYNAMIC
 DYNAMICTYP       Nlin_Time_Int
 INITIALFIELD     zero_field

@@ -10,7 +10,7 @@
                         General Data File CCARAT
 ==================================================================
 -------------------------------------------------------------TITLE
-first 3D contact tester (linear elements)
+first 3D contact tester (linear elements, penalty approach)
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS     129
 NODES        251
@@ -65,8 +65,9 @@ TOLDISP      1.0E-8
 MAXITER      50
 ------------------------------------------------STRUCTURAL CONTACT
 CONTACT              Normal
-STRATEGY             Lagrange
-SHAPEFCN             Dual
+STRATEGY             Penalty
+SHAPEFCN             Standard
+PENALTYPARAM         20000
 FRICTION             None
 FRBOUND              0.0
 FRCOEFF              0.0
@@ -2042,8 +2043,8 @@ CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.5 0.6 FACTOR 1.0 1.0
 // STRUCTURE 2 - 0 0 0 0 0 0
 // ALE 3 - 0 0 0 0 0 0
 ------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 67 POSITION dispx NAME ux VALUE  2.015680346650614019e-01 TOLERANCE 1e-8
-STRUCTURE DIS 1 NODE 67 POSITION dispy NAME uy VALUE  1.970212048504374203e-01 TOLERANCE 1e-8
-STRUCTURE DIS 1 NODE 67 POSITION dispz NAME uz VALUE -9.765446777631318076e-01 TOLERANCE 1e-8
+STRUCTURE DIS 1 NODE 67 POSITION dispx NAME ux VALUE  2.0123737709779257e-01 TOLERANCE 1e-8
+STRUCTURE DIS 1 NODE 67 POSITION dispy NAME uy VALUE  1.9658627944370433e-01 TOLERANCE 1e-8
+STRUCTURE DIS 1 NODE 67 POSITION dispz NAME uz VALUE -9.7589169630010186e-01 TOLERANCE 1e-8
 ---------------------------------------------------------------END
 // END

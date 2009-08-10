@@ -43,6 +43,7 @@ Maintainer: Alexander Popp
 #include "drt_celement.H"
 #include "drt_contact_interface.H"
 #include "drt_contact_coupling3d.H"
+#include "drt_contact_interface.H"
 
 using namespace std;
 
@@ -77,9 +78,27 @@ public:
   Note also that this constructor relies heavily on the
   DRT::UTILS::IntegrationPoints structs to get Gauss points
   and corresponding weights.
+  
+  Note: This version of the constructor creates an Integrator instance with undefined type of shape functions.
+  As a result, no calls to functions relying on the evaluation of shape functions is allowed. 
+  To be able to evaluate them, the Integrator have to be created with the alternative constructor (see below). 
 
   */
   explicit Integrator(DRT::Element::DiscretizationType eletype);
+
+  /*!
+  \brief Constructor  with shape function specification
+  
+  Constructs an instance of this class using a specific type of shape functions.<br>
+  Note that this is \b not a collective call as overlaps are
+  integrated in parallel by individual processes.<br>
+  Note also that this constructor relies heavily on the
+  DRT::UTILS::IntegrationPoints structs to get Gauss points
+  and corresponding weights.
+  
+  */
+  explicit Integrator(const Interface::ShapeFcnType shapefcn,
+                      DRT::Element::DiscretizationType eletype);
 
   /*!
   \brief Destructor
@@ -294,16 +313,25 @@ public:
 
   //@}
 
+private:
+  
+  /*!
+  \brief Initialize Gauss rule (points, weights) for this Integrator
+
+  */
+  void InitializeGP(DRT::Element::DiscretizationType eletype);
+  
 protected:
 
     // don't want = operator and cctor
     Integrator operator = (const Integrator& old);
     Integrator(const Integrator& old);
 
-    int                        dim_;         // dimension of problem (2D or 3D)
-    int                        ngp_;         // number of Gauss points
-    Epetra_SerialDenseMatrix   coords_;      // Gauss point coordinates
-    vector<double>             weights_;     // Gauss point weights
+    const Interface::ShapeFcnType shapefcn_;    // employed type of shape function set    
+    int                           dim_;         // dimension of problem (2D or 3D)
+    int                           ngp_;         // number of Gauss points
+    Epetra_SerialDenseMatrix      coords_;      // Gauss point coordinates
+    vector<double>                weights_;     // Gauss point weights
 
 }; // class Integrator
 }  // namespace CONTACT

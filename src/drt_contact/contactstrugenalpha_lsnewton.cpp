@@ -132,7 +132,7 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
     solver_.ResetTolerance();
 
     //------------------------------------ -- recover disi and Lag. Mult.
-    contactmanager_->Recover(disi_);
+    contactmanager_->GetStrategy().Recover(disi_);
 
     //----------------------------------------- store the current values
     disno->Update(1.0,*disn_,0.0);
@@ -332,17 +332,17 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
 
     //-------------------------make contact modifications to lhs and rhs
     {
-      contactmanager_->SetState("displacement",disn_);
+      contactmanager_->GetStrategy().SetState("displacement",disn_);
 
-      contactmanager_->InitializeMortar();
-      contactmanager_->EvaluateMortar();
+      contactmanager_->GetStrategy().InitializeMortar();
+      contactmanager_->GetStrategy().EvaluateMortar();
 
-      contactmanager_->Initialize();
-      contactmanager_->Evaluate(stiff_,fresm_);
+      contactmanager_->GetStrategy().Initialize();
+      contactmanager_->GetStrategy().Evaluate(stiff_,fresm_);
     }
 
     //--------------------------------------------------- contact forces
-    contactmanager_->ContactForces(fresmcopy);
+    contactmanager_->GetStrategy().ContactForces(fresmcopy);
 
 #ifdef CONTACTGMSH2
     dserror("Gmsh Output for every iteration only implemented for semi-smooth Newton");
@@ -581,17 +581,17 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
 
       //-------------------------make contact modifications to lhs and rhs
       {
-        contactmanager_->SetState("displacement",disn_);
+        contactmanager_->GetStrategy().SetState("displacement",disn_);
 
-        contactmanager_->InitializeMortar();
-        contactmanager_->EvaluateMortar();
+        contactmanager_->GetStrategy().InitializeMortar();
+        contactmanager_->GetStrategy().EvaluateMortar();
 
-        contactmanager_->Initialize();
-        contactmanager_->Evaluate(stiff_,fresm_);
+        contactmanager_->GetStrategy().Initialize();
+        contactmanager_->GetStrategy().Evaluate(stiff_,fresm_);
       }
 
       //--------------------------------------------------- contact forces
-      contactmanager_->ContactForces(fresmcopy);
+      contactmanager_->GetStrategy().ContactForces(fresmcopy);
 
 #ifdef CONTACTGMSH2
       dserror("Gmsh Output for every iteration only implemented for semi-smooth Newton");
@@ -743,7 +743,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
   // ONE Newton loop, thus we have to check for convergence of the
   // active set here, too!
   while ((!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) ||
-          !contactmanager_->ActiveSetConverged()) && numiter<maxiter)
+      !contactmanager_->GetStrategy().ActiveSetConverged()) && numiter<maxiter)
   {
     //----------------------- apply dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
@@ -761,7 +761,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
     solver_.ResetTolerance();
 
     //------------------------------------ -- recover disi and Lag. Mult.
-    contactmanager_->Recover(disi_);
+    contactmanager_->GetStrategy().Recover(disi_);
 
     //----------------------------------------- store the current values
     disno->Update(1.0,*disn_,0.0);
@@ -961,28 +961,28 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
 
     //-------------------------make contact modifications to lhs and rhs
     {
-      contactmanager_->SetState("displacement",disn_);
+      contactmanager_->GetStrategy().SetState("displacement",disn_);
 
-      contactmanager_->InitializeMortar();
-      contactmanager_->EvaluateMortar();
+      contactmanager_->GetStrategy().InitializeMortar();
+      contactmanager_->GetStrategy().EvaluateMortar();
 
       // this is the correct place to update the active set!!!
       // (on the one hand we need the new weighted gap vector g, which is
       // computed in EvaluateMortar() above and on the other hand we want to
       // run the Evaluate()routine below with the NEW active set already)
-      contactmanager_->UpdateActiveSetSemiSmooth();
+      contactmanager_->GetStrategy().UpdateActiveSetSemiSmooth();
 
-      contactmanager_->Initialize();
-      contactmanager_->Evaluate(stiff_,fresm_);
+      contactmanager_->GetStrategy().Initialize();
+      contactmanager_->GetStrategy().Evaluate(stiff_,fresm_);
     }
 
     //--------------------------------------------------- contact forces
-    contactmanager_->ContactForces(fresmcopy);
+    contactmanager_->GetStrategy().ContactForces(fresmcopy);
 
     #ifdef CONTACTGMSH2
     int step  = params_.get<int>("step",0);
     int istep = step + 1;
-    contactmanager_->VisualizeGmsh(istep,numiter+1);
+    contactmanager_->GetStrategy().VisualizeGmsh(istep,numiter+1);
     #endif // #ifdef CONTACTGMSH2
 
     // blank residual DOFs that are on Dirichlet BC
@@ -1218,26 +1218,26 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
 
       //-------------------------make contact modifications to lhs and rhs
       {
-        contactmanager_->SetState("displacement",disn_);
+        contactmanager_->GetStrategy().SetState("displacement",disn_);
 
-        contactmanager_->InitializeMortar();
-        contactmanager_->EvaluateMortar();
+        contactmanager_->GetStrategy().InitializeMortar();
+        contactmanager_->GetStrategy().EvaluateMortar();
 
         // NO update of the active set here, as this would change the
         // system and thus the residual! During line search the active
         // set has to be kept constant!
 
-        contactmanager_->Initialize();
-        contactmanager_->Evaluate(stiff_,fresm_);
+        contactmanager_->GetStrategy().Initialize();
+        contactmanager_->GetStrategy().Evaluate(stiff_,fresm_);
       }
 
       //--------------------------------------------------- contact forces
-      contactmanager_->ContactForces(fresmcopy);
+      contactmanager_->GetStrategy().ContactForces(fresmcopy);
 
 #ifdef CONTACTGMSH2
       int step  = params_.get<int>("step",0);
       int istep = step + 1;
-      contactmanager_->VisualizeGmsh(istep,numiter+1);
+      contactmanager_->GetStrategy().VisualizeGmsh(istep,numiter+1);
 #endif // #ifdef CONTACTGMSH2
 
       // blank residual DOFs that are on Dirichlet BC

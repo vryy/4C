@@ -1,0 +1,184 @@
+/*!----------------------------------------------------------------------
+\file drt_contact_penalty_strategy.H
+
+<pre>
+-------------------------------------------------------------------------
+                        BACI Contact library
+            Copyright (2008) Technical University of Munich
+
+Under terms of contract T004.008.000 there is a non-exclusive license for use
+of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
+
+This library is proprietary software. It must not be published, distributed,
+copied or altered in any form or any media without written permission
+of the copyright holder. It may be used under terms and conditions of the
+above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
+
+This library contains and makes use of software copyrighted by Sandia Corporation
+and distributed under LGPL licence. Licensing does not apply to this or any
+other third party software used here.
+
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
+                   or
+                   Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
+
+http://www.lnm.mw.tum.de
+
+-------------------------------------------------------------------------
+</pre>
+
+<pre>
+Maintainer: Alexander Popp
+            popp@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15264
+</pre>
+
+*----------------------------------------------------------------------*/
+#ifdef CCADISCRET
+
+#ifndef DRT_CONTACT_PENALTY_STRATEGY_H
+#define DRT_CONTACT_PENALTY_STRATEGY_H
+
+#include "Teuchos_RefCountPtr.hpp"
+#include "drt_contact_abstract_strategy.H"
+#include "../drt_lib/drt_discret.H"
+
+using namespace std;
+using namespace Teuchos;
+
+namespace CONTACT
+{
+
+/*!
+ \brief Contact solving strategy with regularization of lagrangian multipliers,
+ also known as Penalty Method or Regularization.
+ 
+ This is a specialization of the abstract contact algorithm as defined in AbstractStrategy.
+ For a more general documentation of the involved functions refer to Abstract Strategy.
+
+ Refer also to the Semesterarbeit of Bernd Budich, 2009
+
+ \author popp (popp@lnm.mw.tum.de)
+ */
+class PenaltyStrategy : public AbstractStrategy
+{
+  public:
+
+  /*!
+  \brief Standard Constructor
+
+  */
+  explicit PenaltyStrategy(RCP<Epetra_Map> problemrowmap, Teuchos::ParameterList params,
+                           vector<RCP<CONTACT::Interface> > interface, int dim,
+                           RCP<Epetra_Comm> comm, double alphaf);
+
+  /*!
+  \brief Destructor
+
+  */
+  virtual ~PenaltyStrategy() {};
+  
+  /*!
+  \brief Save nodal kappa-coefficients
+   
+  Before starting with the time integration, we have to calculate a nodal scaling factor,
+  which will compensate the different integration area for computing the nodal weighted
+  gap. Omitting this scaling, nodes on edges or boundaries would have a smaller weighted
+  gap, even in case of a uniform physical gap. 
+  Hence, this scaling is of crucial importance for a penalty strategy since the weighted
+  gap determines the lagrangian multipliers.
+   
+  */
+  void SaveReferenceState(const RCP<Epetra_Vector> dis);
+  
+  /*!
+  \brief Initialize general Mortar stuff for the next Newton step
+   
+  */
+  void InitializeMortar();
+  
+  /*!
+  \brief Initialize general contact variables for next Newton step
+       
+  For a penalty strategy this involves the derivative matrix for the regularized lagrange multipliers.
+   
+  */
+  void Initialize();
+
+  /*
+  \brief Evaluate Mortar related quantities
+   
+  For a penalty strategy this includes the nodal normal calculations, 
+  contact search, projection and overlap detection, integration of the 
+  Mortar terms D, M and of the weighted gap. Additionally, the linearizations     
+  of geometrical quantities (delta_n, delta_t, delta_D, delta_M) are calculated.
+   
+  Plus, after the calculation of the weighted gap, the nodal values of the lagrangian multipliers
+  and their respective derivatives can be evaluated using the regularization approach.
+     
+  The nodal D, M and g values are then assembled into global matrices and vectors respectively.
+  
+  */ 
+  void EvaluateMortar();
+
+  /*!
+  \brief Evaluate relative movement of contact bodies
+   
+  Note: For a penalty strategy it is not possible to evaluate frictional contact yet.
+  This method is a stub and has no functionality.
+  
+  */
+  void EvaluateRelMov(RCP<Epetra_Vector> disi);
+  
+  /*!
+  \brief Evaluate contact
+   
+  For a penalty strategy this results in a simple addition of extra stiffness contributions
+  to kteff and extra contact forces to feff. 
+  
+  */
+  void EvaluateContact(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff);
+
+  /*!
+  \brief Evaluate frictional contact
+   
+  Note: For a penalty strategy it is not possible to evaluate frictional contact yet.
+  This method is a stub and has no functionality.
+  
+  */
+  void EvaluateFriction(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff);
+
+  /*!
+  \brief Recovery method
+   
+  For a penalty strategy this is a function without functionality. Call it whenever you like.
+  
+  */
+  void Recover(RCP<Epetra_Vector> disi) {}
+
+  /*!
+  \brief Update active set and check for convergence
+   
+  For a penalty strategy this is a function without functionality. Call it whenever you like.
+  
+  */
+  void UpdateActiveSet() {}
+
+  /*!
+  \brief Update active set and check for convergence
+   
+  For a penalty strategy this is a function without functionality. Call it whenever you like.
+  
+  */
+  void UpdateActiveSetSemiSmooth() {}
+  
+protected:
+    
+  RCP<LINALG::SparseMatrix> linzmatrix_;  // global matrix LinZ with derivatives of LM
+
+}; // class PenaltyStrategy
+}  // namespace CONTACT
+
+#endif  // #ifndef DRT_CONTACT_PENALTY_STRATEGY_H
+#endif  // #ifdef CCADISCRET

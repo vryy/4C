@@ -42,6 +42,23 @@ namespace INPAR
       friction_coulomb  ///< Coulomb friction law
     };
 
+    /// Type of employed solving strategy
+    /// (this enum represents the input file parameter STRATEGY)
+    enum SolvingStrategy
+    {
+      solution_lagmult,  ///< method of lagrange multipliers
+      solution_penalty,  ///< penalty approach
+      solution_auglag  ///< augmented lagrange approach
+    };
+    
+    /// Type of employed set of shape functions
+    /// (this enum represents the input file parameter SHAPEFCN)
+    enum ShapeFcn
+    {
+      shape_standard,  ///< standard shape functions
+      shape_dual  ///< dual shape functions
+    };
+    
     /// Type of contact search algorithm
     /// (this enum represents the input file parameter SEARCH_ALGORITHM)
     enum ContactSearchAlgorithm

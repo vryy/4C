@@ -228,10 +228,14 @@ OBJS_DRT_CONTACT_LIB = \
                 src/drt_contact/drt_contact_coupling2d.o \
                 src/drt_contact/drt_contact_coupling3d.o \
                 src/drt_contact/drt_contact_coupling3d_tools.o \
+                src/drt_contact/drt_contact_coupling3d_classes.o \
                 src/drt_contact/drt_contact_projector.o \
                 src/drt_contact/drt_contact_integrator.o \
                 src/drt_contact/drt_contact_integrator_tools.o \
-                src/drt_contact/drt_contact_binarytree.o
+                src/drt_contact/drt_contact_binarytree.o \
+                src/drt_contact/drt_contact_abstract_strategy.o \
+                src/drt_contact/drt_contact_penalty_strategy.o \
+                src/drt_contact/drt_contact_lagrange_strategy.o
 #----------------------------------------------------- drt version statmech
 OBJS_DRT_STATMECH = \
                 src/drt_statmech/statmech_time.o \

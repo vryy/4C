@@ -456,15 +456,15 @@ void STR::TimIntImpl::ApplyForceStiffContact
     Teuchos::RCP<Epetra_Vector> frescopy = Teuchos::rcp(new Epetra_Vector(*fres_));
 
     // make contact modifications to lhs and rhs
-    contactman_->SetState("displacement",disn_);
-    contactman_->InitializeMortar();
-    contactman_->EvaluateMortar();
-    contactman_->UpdateActiveSetSemiSmooth();
-    contactman_->Initialize();
-    contactman_->Evaluate(stiff_,fres_);
+    contactman_->GetStrategy().SetState("displacement",disn_);
+    contactman_->GetStrategy().InitializeMortar();
+    contactman_->GetStrategy().EvaluateMortar();
+    contactman_->GetStrategy().UpdateActiveSetSemiSmooth();
+    contactman_->GetStrategy().Initialize();
+    contactman_->GetStrategy().Evaluate(stiff_,fres_);
 
     // evaluate contact forces
-    contactman_->ContactForces(frescopy);
+    contactman_->GetStrategy().ContactForces(frescopy);
 
     // scaling back
     fres_->Scale(-1.0);
@@ -538,7 +538,11 @@ bool STR::TimIntImpl::Converged()
   bool ccontact = true;
   if (contactman_!=Teuchos::null)
   {
-    ccontact = contactman_->ActiveSetConverged();
+    // do this only for Lagrange multiplier strategy
+    INPAR::CONTACT::SolvingStrategy stype =
+      Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(contactman_->GetStrategy().Params(),"STRATEGY");
+    if (stype == INPAR::CONTACT::solution_lagmult)
+      ccontact = contactman_->GetStrategy().ActiveSetConverged();
   }
 
   //pressure related stuff
@@ -680,7 +684,7 @@ void STR::TimIntImpl::NewtonFull()
 
     // recover contact Lagrange multipliers
     if (contactman_ != Teuchos::null)
-      contactman_->Recover(disi_);
+      contactman_->GetStrategy().Recover(disi_);
 
     // update end-point displacements etc
     UpdateIter(iter_);
@@ -1302,7 +1306,7 @@ void STR::TimIntImpl::PrintStep()
 {
   // print active contact set
   if (contactman_ != Teuchos::null)
-    contactman_->PrintActiveSet();
+    contactman_->GetStrategy().PrintActiveSet();
 
   // print out (only on master CPU)
   if ( (myrank_ == 0) and printscreen_ )

@@ -90,6 +90,8 @@ ALPHA_F      0.5
 THETA        1.0
 ------------------------------------------------STRUCTURAL CONTACT
 CONTACT              Normal
+STRATEGY             Lagrange
+SHAPEFCN             Dual
 FRICTION             None
 FRBOUND              0.0
 FRCOEFF              0.0

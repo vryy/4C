@@ -82,8 +82,10 @@ UZAWAALGO    iterative
 ---------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY
 KIND                None  // None ZienkiewiczXie AdamsBashforth2
 ------------------------------------------------STRUCTURAL CONTACT
-CONTACT              frictional
-FRICTION             coulomb
+CONTACT              Frictional
+STRATEGY             Lagrange
+SHAPEFCN             Dual
+FRICTION             Coulomb
 FRBOUND              1000
 FRCOEFF              0.9
 FULL_LINEARIZATION   Yes

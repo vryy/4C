@@ -51,17 +51,15 @@ using namespace std;
 namespace CONTACT
 {
 
-
-
 // forward declarations
 
 /*!
-\brief A class for performing contact search in 2D / 3D based
-       on a binary search tree
+\brief A class for performing contact search in 2D/3D based on binary trees
+
+Refer also to the Semesterarbeit of Thomas Eberl, 2009
 
 \author popp (popp@lnm.mw.tum.de)
 */
-
 class BinaryTree
 {
 public:

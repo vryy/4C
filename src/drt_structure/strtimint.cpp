@@ -227,7 +227,7 @@ STR::TimInt::TimInt
       contactman_ = Teuchos::rcp(new CONTACT::Manager(*discret_,alphaf));
 
       // store DBC status in contact nodes
-      contactman_->StoreDirichletStatus(dbcmaps_);
+      contactman_->GetStrategy().StoreDirichletStatus(dbcmaps_);
     }
   }
 

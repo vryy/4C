@@ -177,7 +177,7 @@ public:
   information Active/Inactive)
 
   */
-  inline virtual bool& SetActive()
+  inline virtual bool& SetInitActive()
   { if (!IsSlave()) dserror("ERROR: InitActive requested for Master node");
     return initactive_; }
 
@@ -284,7 +284,12 @@ public:
   virtual inline bool& Slip() { return slip_; }
 
   /*!
-  brief Add a value to the 'D' map of this node
+  \brief Return scaling factor for weighted gap (penalty strategy)
+  */
+  virtual inline double& Kappa() { return kappa_; }
+    
+  /*!
+  \brief Add a value to the 'D' map of this node
 
   The 'D' map is later assembled to the D matrix.
   Note that drows_ here is a vector.
@@ -297,7 +302,7 @@ public:
   void AddDValue(int& row, int& col, double& val);
 
   /*!
-  brief Add a value to the 'M' map of this node
+  \brief Add a value to the 'M' map of this node
 
   The 'M' map is later assembled to the M matrix.
   Note that mrows_ here is a vector.
@@ -310,7 +315,7 @@ public:
   void AddMValue(int& row, int& col, double& val);
 
   /*!
-  brief Add a value to the 'Mmod' map of this node
+  \brief Add a value to the 'Mmod' map of this node
 
   The 'Mmod' map is later assembled to the M matrix.
   Note that mmodrows_ here is a vector.
@@ -323,7 +328,7 @@ public:
   void AddMmodValue(int& row, int& col, double& val);
 
   /*!
-  brief Add a value to the weighted gap of this node
+  \brief Add a value to the weighted gap of this node
 
   This value is later assembled to the weighted gap vec.
   Note that grow_ here is a scalar.
@@ -334,7 +339,22 @@ public:
   void AddgValue(double& val);
 
   /*!
-  brief Write nodal entries of D and M to Dold and Mold
+  \brief Add a value to the map of LM derivatives of this node
+     
+  The 'DerivZ' map is later assembled to the global DerivZ matrix.
+  Note that derivz_ here is a vector.
+  
+  Note: This is only calculated when performing a penalty strategy
+     
+  \param row : local dof row id to add to (rowwise)
+  \param val : value to be added
+  \param col : global dof column id of the value added
+  
+  */
+  void AddDerivZValue(int& row, const int& col, double val);
+    
+  /*!
+  \brief Write nodal entries of D and M to Dold and Mold
 
   At the end of a time step the nodal entries (vector) of the Mortar
   Matrices D and M are stored to the old ones.
@@ -405,17 +425,23 @@ public:
   /*!
   \brief Return the 'DerivD' map of this node
 
-  This map contains the directional derivatives of the node's
-  D-matrix diagonal entry with respect to the slave displacements.
+  D-matrix entries with respect to the slave/master displacements.
+  It is a "map of maps", with the outer map containing all master
+  node indices k adjacent to this node i and the inner map containing
+  all directional derivatives l existing for D_ik.
+  
+  Note: In earlier versions this was just a simple map accounting for the
+  diagonality of D when using dual shape functions. Due to the extension to
+  support arbitrary types of shape functions, this is not possible anymore.  
 
   */
-  virtual inline map<int,double>& GetDerivD() { return derivd_; }
+  virtual inline map<int,map<int,double> >& GetDerivD() { return derivd_; }
 
   /*!
   \brief Return the 'DerivM' map of maps of this node
 
   This map contains the directional derivatives of the node's
-  M-matrix diagonal entries with respect to the slave/master displacements.
+  M-matrix entries with respect to the slave/master displacements.
   It is a "map of maps", with the outer map containing all master
   node indices k adjacent to this node i and the inner map containing
   all directional derivatives l existing for M_ik.
@@ -448,6 +474,17 @@ public:
   */
   virtual inline map<int,double>& GetDerivG() { return derivg_; }
 
+  /*!
+  \brief Return the 'DerivZ map of this node
+  
+  This map contains the directional derivatives of the node's
+  lagrange multiplier entries with respect to the slave/master displacements.
+  
+  Note: This is only calculated when performing a penalty strategy 
+  
+   */ 
+  virtual inline vector<map<int,double> >& GetDerivZ() { return derivz_; }
+    
   //@}
 
   //! @name Construction methods
@@ -526,10 +563,13 @@ protected:
   vector<map<int,double> >      derivn_;     // directional derivative of nodal normal
   vector<map<int,double> >      derivtxi_;   // directional derivative of nodal tangent t_xi
   vector<map<int,double> >      derivteta_;  // directional derivative of nodal tangent t_eta
-  map<int,double>               derivd_;     // directional derivative of nodal D-matrix value
+  map<int,map<int,double> >     derivd_;     // directional derivative of nodal D-matrix value
   map<int,map<int,double> >     derivm_;     // directional derivative of nodal M-matrix values
   map<int,double>               derivg_;     // directional derivative of nodal weighted gap value
 
+  // Penalty-related quantities 
+  double                        kappa_;      // gap-scaling factor
+  vector<map<int,double> >      derivz_;     // direction derivative of nodal z-matrix value
 
 }; // class CNode
 } // namespace CONTACT

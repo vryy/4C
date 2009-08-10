@@ -989,80 +989,76 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
   /****************************************************/
   /* NOTE: This is a combined 2D / 3D method already! */
   /****************************************************/
+  // however, for 2D the output is mysteriously doubled ...
 
   // get out of here if not participating in interface
   if (!lComm())
     return;
 
   // create storage for D-Matrix entries
-  vector<double> refD(int(snoderowmap_->NumMyElements()));
-  vector<double> newD(int(snoderowmap_->NumMyElements()));
-
-  // print reference to screen (D-derivative-maps)
+  map<int, map<int,double> > refD; // stores dof-wise the entries of D
+  map<int, map<int,double> > newD; 
+  
+  map<int, map<int, map<int,double> > > refDerivD; // stores old derivm for every node
+  
+  // print reference to screen (D-derivative-maps) and store them for later comparison
   // loop over proc's slave nodes
-  for (int i=0; i<snoderowmap_->NumMyElements();++i)
+  for (int i=0; i<snoderowmap_->NumMyElements(); ++i)
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    if (!node)
+      dserror("ERROR: Cannot find node with gid %",gid);
     CNode* cnode = static_cast<CNode*>(node);
 
+    int dim = cnode->NumDof();
+    
+    typedef map<int,map<int,double> >::const_iterator CID;
     typedef map<int,double>::const_iterator CI;
-    map<int,double> derivdmap = cnode->GetDerivD();
-    map<int,double > dmap = cnode->GetD()[0];
 
-    cout << endl << "Node: " << cnode->Id() << "  Owner: " << cnode->Owner() << endl;
+    if ((int)(cnode->GetD().size())==0)
+      continue;
 
-    // store D-value into refD
-    refD[i]=dmap[cnode->Dofs()[0]];
-
-    cout << "D-derivative-map: " << endl;
-    for (CI p=derivdmap.begin();p!=derivdmap.end();++p)
-      cout << p->first << '\t' << p->second << endl;
-  }
-
-  // global loop to apply FD scheme to all slave dofs (=3*nodes)
-  for (int i=0; i<3*snodefullmap_->NumMyElements();++i)
-  {
-    // reset Mortar map D
-    // loop over all nodes (use fully overlapping column map)
-    for (int k=0;k<idiscret_->NumMyColNodes();++k)
+    for( int d=0; d<dim; d++ )
     {
-      CONTACT::CNode* node = static_cast<CONTACT::CNode*>(idiscret_->lColNode(k));
-
-      // reset nodal Mortar map D
-      for (int j=0;j<(int)((node->GetD()).size());++j)
-        (node->GetD())[j].clear();
-
-      (node->GetD()).resize(0);
+      int dof = cnode->Dofs()[d];
+      refD[dof] = cnode->GetD()[d];
     }
+    
+    refDerivD[gid] = cnode->GetDerivD();
+  }
+  
+  // global loop to apply FD scheme to all SLAVE dofs (=3*nodes)
+  for (int fd=0; fd<3*snodefullmap_->NumMyElements(); ++fd)
+  {
+    // store warnings for this finite difference
+    int w=0;
+    
+    // Initialize
+    Initialize();
 
     // now get the node we want to apply the FD scheme to
-    int gid = snodefullmap_->GID(i/3);
+    int gid = snodefullmap_->GID(fd/3);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
+    if (!node)
+      dserror("ERROR: Cannot find slave node with gid %",gid);
     CNode* snode = static_cast<CNode*>(node);
 
-    // apply finite difference scheme
-    if (Comm().MyPID()==snode->Owner())
-    {
-      cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof(l): " << i%3
-           << " Dof(g): " << snode->Dofs()[i%3] << endl;
-    }
+    int sdof = snode->Dofs()[fd%3];
+    
+    cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << endl;
 
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
-    if (i%3==0)
+    if (fd%3==0)
     {
       snode->xspatial()[0] += delta;
       snode->u()[0] += delta;
-    }
-    else if (i%3==1)
+    } else if (fd%3==1)
     {
       snode->xspatial()[1] += delta;
       snode->u()[1] += delta;
-    }
-    else
+    } else
     {
       snode->xspatial()[2] += delta;
       snode->u()[2] += delta;
@@ -1070,140 +1066,97 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
 
     // loop over all elements to set current element length / area
     // (use fully overlapping column map)
-    for (int j=0;j<idiscret_->NumMyColElements();++j)
+    for (int j=0; j<idiscret_->NumMyColElements(); ++j)
     {
       CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(j));
       element->Area()=element->ComputeArea();
     }
 
-    // compute new D-Matrix entries
-#ifndef CONTACTONEMORTARLOOP
-    // loop over proc's slave elements of the interface for integration
-    // use standard column map to include processor's ghosted elements
-    for (int j=0; j<selecolmap_->NumMyElements();++j)
-    {
-      int gid1 = selecolmap_->GID(j);
-      DRT::Element* ele1 = idiscret_->gElement(gid1);
-      if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
-      CElement* selement = static_cast<CElement*>(ele1);
-
-      // integrate Mortar matrix D (lives on slave side only!)
-      IntegrateSlave(*selement);
-    }
-#endif // #ifndef CONTACTONEMORTARLOOP
+    // *******************************************************************
+    // contents of Evaluate()
+    // *******************************************************************    
+    Evaluate();
 
     // compute finite difference derivative
-    for (int k=0;k<snoderowmap_->NumMyElements();++k)
+    for (int k=0; k<snoderowmap_->NumMyElements(); ++k)
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
+      if (!knode)
+        dserror("ERROR: Cannot find node with gid %",kgid);
       CNode* kcnode = static_cast<CNode*>(knode);
-      map<int,double > dmap = kcnode->GetD()[0];
+      
+      int dim = kcnode->NumDof();
+      
+      if ((int)(kcnode->GetD().size())==0)
+        continue;
 
-      newD[k]=dmap[kcnode->Dofs()[0]];
+      typedef map<int,double>::const_iterator CI;
 
-      // print results (derivatives) to screen
-      if (abs(newD[k]-refD[k])>1e-12)
+      for( int d=0; d<dim; d++ )
       {
-        cout << "Node: " << kcnode->Id() << "  Owner: " << kcnode->Owner() << endl;
-        //cout << "Ref-D: " << refD[k] << endl;
-        //cout << "New-D: " << newD[k] << endl;
-        cout << "Deriv: " << snode->Dofs()[i%3] << " " << (newD[k]-refD[k])/delta << endl;
+        int dof = kcnode->Dofs()[d];
+        
+        // store D-values into refD
+        newD[dof] = kcnode->GetD()[d];
+        
+        // print results (derivatives) to screen
+        for (CI p=newD[dof].begin(); p!=newD[dof].end(); ++p)
+        {
+          if (abs(newD[dof][p->first]-refD[dof][p->first]) > 1e-12)
+          {
+            double finit = (newD[dof][p->first]-refD[dof][p->first])/delta;
+            double analy = ((refDerivD[kgid])[(p->first)/Dim()])[sdof];
+            double dev = finit - analy;
+        
+            // kgid: currently tested dof of slave node kgid
+            // (p->first)/Dim(): paired master
+            // sdof: currently modified slave dof
+            cout << "(" << dof << "," << (p->first)/Dim() << "," << sdof << ") : fd=" << finit << " derivd=" << analy << " DEVIATION " << dev;
+            
+            if( abs(dev) > 1e-4 )
+            {
+              cout << " ***** WARNING ***** ";
+              w++;
+            }
+            else if( abs(dev) > 1e-5 )
+            {
+              cout << " ***** warning ***** ";
+              w++;
+            }
+            
+            cout << endl;
+          }
+        }
       }
     }
 
     // undo finite difference modification
-    if (i%3==0)
+    if (fd%3==0)
     {
       snode->xspatial()[0] -= delta;
       snode->u()[0] -= delta;
-    }
-    else if (i%3==1)
+    } else if (fd%3==1)
     {
       snode->xspatial()[1] -= delta;
       snode->u()[1] -= delta;
-    }
-    else
+    } else
     {
       snode->xspatial()[2] -= delta;
       snode->u()[2] -= delta;
     }
+    
+    cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << endl;
   }
-
+  
   // back to normal...
 
   // Initialize
-  // loop over all nodes to reset normals, closestnode and Mortar maps
-  // (use fully overlapping column map)
-  for (int i=0;i<idiscret_->NumMyColNodes();++i)
-  {
-    CONTACT::CNode* node = static_cast<CONTACT::CNode*>(idiscret_->lColNode(i));
-
-    //reset nodal normal vector
-    for (int j=0;j<3;++j)
-    {
-      node->n()[j]=0.0;
-      node->txi()[j]=0.0;
-      node->teta()[j]=0.0;
-    }
-
-    // reset derivative maps of normal vector
-    for (int j=0;j<(int)((node->GetDerivN()).size());++j)
-      (node->GetDerivN())[j].clear();
-    (node->GetDerivN()).resize(0);
-
-    // reset derivative maps of tangent vector
-    for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
-      (node->GetDerivTxi())[j].clear();
-    (node->GetDerivTxi()).resize(0);
-    for (int j=0;j<(int)((node->GetDerivTeta()).size());++j)
-      (node->GetDerivTeta())[j].clear();
-    (node->GetDerivTeta()).resize(0);
-
-    // reset closest node
-    // (FIXME: at the moment we do not need this info. in the next
-    // iteration, but it might be helpful for accelerated search!!!)
-    node->ClosestNode() = -1;
-
-    // reset nodal Mortar maps
-    for (int j=0;j<(int)((node->GetD()).size());++j)
-      (node->GetD())[j].clear();
-    for (int j=0;j<(int)((node->GetM()).size());++j)
-      (node->GetM())[j].clear();
-    for (int j=0;j<(int)((node->GetMmod()).size());++j)
-      (node->GetMmod())[j].clear();
-
-    (node->GetD()).resize(0);
-    (node->GetM()).resize(0);
-    (node->GetMmod()).resize(0);
-
-    // reset derivative map of Mortar matrices
-    (node->GetDerivD()).clear();
-    (node->GetDerivM()).clear();
-
-    // reset nodal weighted gap
-    node->Getg() = 1.0e12;
-    (node->GetDerivG()).clear();
-
-    // reset feasible projection status
-    node->HasProj() = false;
-  }
-
-  // loop over all elements to reset contact candidates / search lists
-  // (use fully overlapping column map)
-  for (int i=0;i<idiscret_->NumMyColElements();++i)
-  {
-    CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(i));
-    element->SearchElements().resize(0);
-  }
-
-  // reset matrix containing interface contact segments (gmsh)
-  CSegs().Shape(0,0);
+  Initialize();
 
   // loop over all elements to set current element length / area
   // (use fully overlapping column map)
-  for (int j=0;j<idiscret_->NumMyColElements();++j)
+  for (int j=0; j<idiscret_->NumMyColElements(); ++j)
   {
     CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(j));
     element->Area()=element->ComputeArea();
@@ -1211,66 +1164,8 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
 
   // *******************************************************************
   // contents of Evaluate()
-  // *******************************************************************
-  // loop over proc's slave nodes of the interface
-  // use standard column map to include processor's ghosted nodes
-  // use boundary map to include slave side boundary nodes
-  for(int i=0; i<snodecolmapbound_->NumMyElements();++i)
-  {
-    int gid1 = snodecolmapbound_->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid1);
-    if (!node) dserror("ERROR: Cannot find node with gid %",gid1);
-    CNode* cnode = static_cast<CNode*>(node);
-
-    // build averaged normal at each slave node
-    cnode->BuildAveragedNormal();
-  }
-
-  // contact search algorithm
-  EvaluateContactSearch();
-
-#ifndef CONTACTONEMORTARLOOP
-  // loop over proc's slave elements of the interface for integration
-  // use standard column map to include processor's ghosted elements
-  for (int j=0; j<selecolmap_->NumMyElements();++j)
-  {
-    int gid1 = selecolmap_->GID(j);
-    DRT::Element* ele1 = idiscret_->gElement(gid1);
-    if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
-    CElement* selement = static_cast<CElement*>(ele1);
-
-    // integrate Mortar matrix D (lives on slave side only!)
-    IntegrateSlave(*selement);
-  }
-#endif // #ifndef CONTACTONEMORTARLOOP
-
-  // loop over proc's slave elements of the interface for integration
-  // use standard column map to include processor's ghosted elements
-  for (int i=0; i<selecolmap_->NumMyElements();++i)
-  {
-    int gid1 = selecolmap_->GID(i);
-    DRT::Element* ele1 = idiscret_->gElement(gid1);
-    if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
-    CElement* selement = static_cast<CElement*>(ele1);
-
-    // loop over the contact candidate master elements of sele_
-    // use slave element's candidate list SearchElements !!!
-    for (int j=0;j<selement->NumSearchElements();++j)
-    {
-      int gid2 = selement->SearchElements()[j];
-      DRT::Element* ele2 = idiscret_->gElement(gid2);
-      if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
-      CElement* melement = static_cast<CElement*>(ele2);
-
-      //********************************************************************
-      // 1) perform coupling (projection + overlap detection for sl/m pair)
-      // 2) integrate Mortar matrix M and weighted gap g
-      // 3) compute directional derivative of M and g and store into nodes
-      //********************************************************************
-      IntegrateCoupling(*selement,*melement);
-    }
-  }
-  // *******************************************************************
+  // *******************************************************************    
+  Evaluate();
 
   return;
 }
@@ -1283,129 +1178,64 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
   /****************************************************/
   /* NOTE: This is a combined 2D / 3D method already! */
   /****************************************************/
+  // however, for 2D the output is mysteriously doubled ...
 
   // get out of here if not participating in interface
   if (!lComm())
     return;
 
   // create storage for M-Matrix entries
-  int nrow = snoderowmap_->NumMyElements();
-  vector<map<int,double> > refM(nrow);
-  vector<map<int,double> > newM(nrow);
-
-  // print reference to screen (M-derivative-maps)
+  map<int, map<int,double> > refM; // stores dof-wise the entries of M
+  map<int, map<int,double> > newM; 
+  
+  map<int, map<int, map<int,double> > > refDerivM; // stores old derivm for every node
+  
+  // print reference to screen (M-derivative-maps) and store them for later comparison
   // loop over proc's slave nodes
-  for (int i=0; i<snoderowmap_->NumMyElements();++i)
+  for (int i=0; i<snoderowmap_->NumMyElements(); ++i)
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    if (!node)
+      dserror("ERROR: Cannot find node with gid %",gid);
     CNode* cnode = static_cast<CNode*>(node);
 
+    int dim = cnode->NumDof();
+    
     typedef map<int,map<int,double> >::const_iterator CIM;
     typedef map<int,double>::const_iterator CI;
-    map<int,map<int,double> >& derivmmap = cnode->GetDerivM();
 
     if ((int)(cnode->GetM().size())==0)
-      break;
+      continue;
 
-    map<int,double > mmap = cnode->GetM()[0];
-
-    cout << endl << "Node: " << cnode->Id() << "  Owner: " << cnode->Owner() << endl;
-
-    // store M-values into refM
-    refM[i]=mmap;
-
-    // print to screen
-    for (CIM p=derivmmap.begin();p!=derivmmap.end();++p)
+    for( int d=0; d<dim; d++ )
     {
-      cout << "M-derivative-map for pair S" << cnode->Id() << " and M" << p->first << endl;
-      map<int,double>& currmap = derivmmap[p->first];
-      for (CI q=currmap.begin();q!=currmap.end();++q)
-        cout << q->first << "\t" << q->second << endl;
+      int dof = cnode->Dofs()[d];
+      refM[dof] = cnode->GetM()[d];
     }
+    
+    refDerivM[gid] = cnode->GetDerivM();
   }
-
+  
   // global loop to apply FD scheme to all slave dofs (=3*nodes)
-  for (int fd=0; fd<3*snodefullmap_->NumMyElements();++fd)
+  for (int fd=0; fd<3*snodefullmap_->NumMyElements(); ++fd)
   {
+    // store warnings for this finite difference
+    int w=0;
+    
     // Initialize
-    // loop over all nodes to reset normals, closestnode and Mortar maps
-    // (use fully overlapping column map)
-    for (int i=0;i<idiscret_->NumMyColNodes();++i)
-    {
-      CONTACT::CNode* node = static_cast<CONTACT::CNode*>(idiscret_->lColNode(i));
-
-      //reset nodal normal vector
-      for (int j=0;j<3;++j)
-      {
-        node->n()[j]=0.0;
-        node->txi()[j]=0.0;
-        node->teta()[j]=0.0;
-      }
-
-      // reset derivative maps of normal vector
-      for (int j=0;j<(int)((node->GetDerivN()).size());++j)
-        (node->GetDerivN())[j].clear();
-      (node->GetDerivN()).resize(0);
-
-      // reset derivative maps of tangent vector
-      for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
-        (node->GetDerivTxi())[j].clear();
-      (node->GetDerivTxi()).resize(0);
-
-      // reset closest node
-      // (FIXME: at the moment we do not need this info. in the next
-      // iteration, but it might be helpful for accelerated search!!!)
-      node->ClosestNode() = -1;
-
-      // reset nodal Mortar maps
-      for (int j=0;j<(int)((node->GetD()).size());++j)
-        (node->GetD())[j].clear();
-      for (int j=0;j<(int)((node->GetM()).size());++j)
-        (node->GetM())[j].clear();
-      for (int j=0;j<(int)((node->GetMmod()).size());++j)
-        (node->GetMmod())[j].clear();
-
-      (node->GetD()).resize(0);
-      (node->GetM()).resize(0);
-      (node->GetMmod()).resize(0);
-
-      // reset derivative map of Mortar matrices
-      (node->GetDerivD()).clear();
-      (node->GetDerivM()).clear();
-
-      // reset nodal weighted gap
-      node->Getg() = 1.0e12;
-      (node->GetDerivG()).clear();
-
-      // reset feasible projection status
-      node->HasProj() = false;
-    }
-
-    // loop over all elements to reset contact candidates / search lists
-    // (use fully overlapping column map)
-    for (int i=0;i<idiscret_->NumMyColElements();++i)
-    {
-      CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(i));
-      element->SearchElements().resize(0);
-    }
-
-    // reset matrix containing interface contact segments (gmsh)
-    CSegs().Shape(0,0);
+    Initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap_->GID(fd/3);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
+    if (!node)
+      dserror("ERROR: Cannot find slave node with gid %",gid);
     CNode* snode = static_cast<CNode*>(node);
 
-    // apply finite difference scheme
-    if (Comm().MyPID()==snode->Owner())
-    {
-      cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof(l): " << fd%3
-           << " Dof(g): " << snode->Dofs()[fd%3] << endl;
-    }
+    int sdof = snode->Dofs()[fd%3];
+    
+    cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << endl;
 
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
@@ -1413,13 +1243,11 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
     {
       snode->xspatial()[0] += delta;
       snode->u()[0] += delta;
-    }
-    else if (fd%3==1)
+    } else if (fd%3==1)
     {
       snode->xspatial()[1] += delta;
       snode->u()[1] += delta;
-    }
-    else
+    } else
     {
       snode->xspatial()[2] += delta;
       snode->u()[2] += delta;
@@ -1427,7 +1255,7 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
 
     // loop over all elements to set current element length / area
     // (use fully overlapping column map)
-    for (int j=0;j<idiscret_->NumMyColElements();++j)
+    for (int j=0; j<idiscret_->NumMyColElements(); ++j)
     {
       CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(j));
       element->Area()=element->ComputeArea();
@@ -1435,105 +1263,59 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
 
     // *******************************************************************
     // contents of Evaluate()
-    // *******************************************************************
-    // loop over proc's slave nodes of the interface
-    // use standard column map to include processor's ghosted nodes
-    // use boundary map to include slave side boundary nodes
-    for(int i=0; i<snodecolmapbound_->NumMyElements();++i)
-    {
-      int gid1 = snodecolmapbound_->GID(i);
-      DRT::Node* node = idiscret_->gNode(gid1);
-      if (!node) dserror("ERROR: Cannot find node with gid %",gid1);
-      CNode* cnode = static_cast<CNode*>(node);
-
-      // build averaged normal at each slave node
-      cnode->BuildAveragedNormal();
-    }
-
-    // contact search algorithm
-    EvaluateContactSearch();
-
-#ifndef CONTACTONEMORTARLOOP
-    // loop over proc's slave elements of the interface for integration
-    // use standard column map to include processor's ghosted elements
-    for (int j=0; j<selecolmap_->NumMyElements();++j)
-    {
-      int gid1 = selecolmap_->GID(j);
-      DRT::Element* ele1 = idiscret_->gElement(gid1);
-      if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
-      CElement* selement = static_cast<CElement*>(ele1);
-
-      // integrate Mortar matrix D (lives on slave side only!)
-      IntegrateSlave(*selement);
-    }
-#endif // #ifndef CONTACTONEMORTARLOOP
-
-    // loop over proc's slave elements of the interface for integration
-    // use standard column map to include processor's ghosted elements
-    for (int i=0; i<selecolmap_->NumMyElements();++i)
-    {
-      int gid1 = selecolmap_->GID(i);
-      DRT::Element* ele1 = idiscret_->gElement(gid1);
-      if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
-      CElement* selement = static_cast<CElement*>(ele1);
-
-      // loop over the contact candidate master elements of sele_
-      // use slave element's candidate list SearchElements !!!
-      for (int j=0;j<selement->NumSearchElements();++j)
-      {
-        int gid2 = selement->SearchElements()[j];
-        DRT::Element* ele2 = idiscret_->gElement(gid2);
-        if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
-        CElement* melement = static_cast<CElement*>(ele2);
-
-        //********************************************************************
-        // 1) perform coupling (projection + overlap detection for sl/m pair)
-        // 2) integrate Mortar matrix M and weighted gap g
-        // 3) compute directional derivative of M and g and store into nodes
-        //********************************************************************
-        IntegrateCoupling(*selement,*melement);
-      }
-    }
-    // *******************************************************************
+    // *******************************************************************    
+    Evaluate();
 
     // compute finite difference derivative
-    for (int k=0;k<snoderowmap_->NumMyElements();++k)
+    for (int k=0; k<snoderowmap_->NumMyElements(); ++k)
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
+      if (!knode)
+        dserror("ERROR: Cannot find node with gid %",kgid);
       CNode* kcnode = static_cast<CNode*>(knode);
-
+      
+      int dim = kcnode->NumDof();
+      
       if ((int)(kcnode->GetM().size())==0)
-        break;
-
-      map<int,double> mmap = kcnode->GetM()[0];
+        continue;
 
       typedef map<int,double>::const_iterator CI;
 
-      // store M-values into refM
-      newM[k]=mmap;
-
-      // print results (derivatives) to screen
-      for (CI p=newM[k].begin();p!=newM[k].end();++p)
+      for( int d=0; d<dim; d++ )
       {
-        if (abs(newM[k][p->first]-refM[k][p->first]) > 1e-12)
+        int dof = kcnode->Dofs()[d];
+        
+        // store M-values into refM
+        newM[dof] = kcnode->GetM()[d];
+        
+        // print results (derivatives) to screen
+        for (CI p=newM[dof].begin(); p!=newM[dof].end(); ++p)
         {
-          // if we want to use the FD for DerivM
-          //map<int,map<int,double> >& derivm = kcnode->GetDerivM();
-          //double val = (newM[k][p->first]-refM[k][p->first])/delta;
-          //int outercol = p->first;
-          //int innercol = snode->Dofs()[fd%2];
-          //(derivm[outercol/2])[innercol] += val;
-
-          cout << "M-FD-derivative for pair S" << kcnode->Id() << " and M" << (p->first)/Dim() << endl;
-          //cout << "Ref-M: " << refM[k][p->first] << endl;
-          //cout << "New-M: " << newM[k][p->first] << endl;
-          cout << "Deriv:      " << snode->Dofs()[fd%3] << " " << (newM[k][p->first]-refM[k][p->first])/delta << endl;
-          //map<int,map<int,double> >& derivmmap = kcnode->GetDerivM();
-          //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << derivmmap[(p->first)/Dim()][snode->Dofs()[fd%3]] << endl;
-          //if (abs(derivmmap[(p->first)/Dim()][snode->Dofs()[fd%3]]-(newM[k][p->first]-refM[k][p->first])/delta)>1.0e-5)
-          //  cout << "***WARNING*****************************************************************************" << endl;
+          if (abs(newM[dof][p->first]-refM[dof][p->first]) > 1e-12)
+          {
+            double finit = (newM[dof][p->first]-refM[dof][p->first])/delta;
+            double analy = ((refDerivM[kgid])[(p->first)/Dim()])[sdof];
+            double dev = finit - analy;
+        
+            // kgid: currently tested dof of slave node kgid
+            // (p->first)/Dim(): paired master
+            // sdof: currently modified slave dof
+            cout << "(" << dof << "," << (p->first)/Dim() << "," << sdof << ") : fd=" << finit << " derivm=" << analy << " DEVIATION " << dev;
+            
+            if( abs(dev) > 1e-4 )
+            {
+              cout << " ***** WARNING ***** ";
+              w++;
+            }
+            else if( abs(dev) > 1e-5 )
+            {
+              cout << " ***** warning ***** ";
+              w++;
+            }
+            
+            cout << endl;
+          }
         }
       }
     }
@@ -1543,98 +1325,38 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
     {
       snode->xspatial()[0] -= delta;
       snode->u()[0] -= delta;
-    }
-    else if (fd%3==1)
+    } else if (fd%3==1)
     {
       snode->xspatial()[1] -= delta;
       snode->u()[1] -= delta;
-    }
-    else
+    } else
     {
       snode->xspatial()[2] -= delta;
       snode->u()[2] -= delta;
     }
+    
+    cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << endl;
   }
 
-  // global loop to apply FD scheme to all master dofs (=3*nodes)
-  for (int fd=0; fd<3*mnodefullmap_->NumMyElements();++fd)
+  // global loop to apply FD scheme to all MASTER dofs (=3*nodes)
+  for (int fd=0; fd<3*mnodefullmap_->NumMyElements(); ++fd)
   {
+    // store warnings for this finite difference
+    int w=0;
+    
     // Initialize
-    // loop over all nodes to reset normals, closestnode and Mortar maps
-    // (use fully overlapping column map)
-    for (int i=0;i<idiscret_->NumMyColNodes();++i)
-    {
-      CONTACT::CNode* node = static_cast<CONTACT::CNode*>(idiscret_->lColNode(i));
-      //reset nodal normal vector
-      for (int j=0;j<3;++j)
-      {
-        node->n()[j]=0.0;
-        node->txi()[j]=0.0;
-        node->teta()[j]=0.0;
-      }
-
-      // reset derivative maps of normal vector
-      for (int j=0;j<(int)((node->GetDerivN()).size());++j)
-        (node->GetDerivN())[j].clear();
-      (node->GetDerivN()).resize(0);
-
-      // reset derivative maps of tangent vector
-      for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
-        (node->GetDerivTxi())[j].clear();
-      (node->GetDerivTxi()).resize(0);
-
-      // reset closest node
-      // (FIXME: at the moment we do not need this info. in the next
-      // iteration, but it might be helpful for accelerated search!!!)
-      node->ClosestNode() = -1;
-
-      // reset nodal Mortar maps
-      for (int j=0;j<(int)((node->GetD()).size());++j)
-        (node->GetD())[j].clear();
-      for (int j=0;j<(int)((node->GetM()).size());++j)
-        (node->GetM())[j].clear();
-      for (int j=0;j<(int)((node->GetMmod()).size());++j)
-        (node->GetMmod())[j].clear();
-
-      (node->GetD()).resize(0);
-      (node->GetM()).resize(0);
-      (node->GetMmod()).resize(0);
-
-      // reset derivative map of Mortar matrices
-      (node->GetDerivD()).clear();
-      (node->GetDerivM()).clear();
-
-      // reset nodal weighted gap
-      node->Getg() = 1.0e12;
-      (node->GetDerivG()).clear();
-
-      // reset feasible projection status
-      node->HasProj() = false;
-    }
-
-    // loop over all elements to reset contact candidates / search lists
-    // (use fully overlapping column map)
-    for (int i=0;i<idiscret_->NumMyColElements();++i)
-    {
-      CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(i));
-      element->SearchElements().resize(0);
-    }
-
-    // reset matrix containing interface contact segments (gmsh)
-    CSegs().Shape(0,0);
+    Initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap_->GID(fd/3);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find master node with gid %",gid);
+    if (!node)
+      dserror("ERROR: Cannot find slave node with gid %",gid);
     CNode* mnode = static_cast<CNode*>(node);
 
-    // apply finite difference scheme
-    if (Comm().MyPID()==mnode->Owner())
-    {
-      cout << "\nBuilding FD for Master Node: " << mnode->Id() << " Dof(l): " << fd%3
-           << " Dof(g): " << mnode->Dofs()[fd%3] << endl;
-    }
+    int mdof = mnode->Dofs()[fd%3];
+    
+    cout << "\nDEVIATION FOR M-NODE # " << gid << " DOF: " << mdof << endl;
 
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
@@ -1642,13 +1364,11 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
     {
       mnode->xspatial()[0] += delta;
       mnode->u()[0] += delta;
-    }
-    else if (fd%3==1)
+    } else if (fd%3==1)
     {
       mnode->xspatial()[1] += delta;
       mnode->u()[1] += delta;
-    }
-    else
+    } else
     {
       mnode->xspatial()[2] += delta;
       mnode->u()[2] += delta;
@@ -1656,7 +1376,7 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
 
     // loop over all elements to set current element length / area
     // (use fully overlapping column map)
-    for (int j=0;j<idiscret_->NumMyColElements();++j)
+    for (int j=0; j<idiscret_->NumMyColElements(); ++j)
     {
       CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(j));
       element->Area()=element->ComputeArea();
@@ -1664,104 +1384,59 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
 
     // *******************************************************************
     // contents of Evaluate()
-    // *******************************************************************
-    // loop over proc's slave nodes of the interface
-    // use standard column map to include processor's ghosted nodes
-    // use boundary map to include slave side boundary nodes
-    for(int i=0; i<snodecolmapbound_->NumMyElements();++i)
-    {
-      int gid1 = snodecolmapbound_->GID(i);
-      DRT::Node* node = idiscret_->gNode(gid1);
-      if (!node) dserror("ERROR: Cannot find node with gid %",gid1);
-      CNode* cnode = static_cast<CNode*>(node);
-
-      // build averaged normal at each slave node
-      cnode->BuildAveragedNormal();
-    }
-
-    // contact search algorithm
-    EvaluateContactSearch();
-
-#ifndef CONTACTONEMORTARLOOP
-    // loop over proc's slave elements of the interface for integration
-    // use standard column map to include processor's ghosted elements
-    for (int j=0; j<selecolmap_->NumMyElements();++j)
-    {
-      int gid1 = selecolmap_->GID(j);
-      DRT::Element* ele1 = idiscret_->gElement(gid1);
-      if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
-      CElement* selement = static_cast<CElement*>(ele1);
-
-      // integrate Mortar matrix D (lives on slave side only!)
-      IntegrateSlave(*selement);
-    }
-#endif // #ifndef CONTACTONEMORTARLOOP
-
-    // loop over proc's slave elements of the interface for integration
-    // use standard column map to include processor's ghosted elements
-    for (int i=0; i<selecolmap_->NumMyElements();++i)
-    {
-      int gid1 = selecolmap_->GID(i);
-      DRT::Element* ele1 = idiscret_->gElement(gid1);
-      if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
-      CElement* selement = static_cast<CElement*>(ele1);
-
-      // loop over the contact candidate master elements of sele_
-      // use slave element's candidate list SearchElements !!!
-      for (int j=0;j<selement->NumSearchElements();++j)
-      {
-        int gid2 = selement->SearchElements()[j];
-        DRT::Element* ele2 = idiscret_->gElement(gid2);
-        if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
-        CElement* melement = static_cast<CElement*>(ele2);
-
-        //********************************************************************
-        // 1) perform coupling (projection + overlap detection for sl/m pair)
-        // 2) integrate Mortar matrix M and weighted gap g
-        // 3) compute directional derivative of M and g and store into nodes
-        //********************************************************************
-        IntegrateCoupling(*selement,*melement);
-      }
-    }
-    // *******************************************************************
+    // *******************************************************************    
+    Evaluate();
 
     // compute finite difference derivative
-    for (int k=0;k<snoderowmap_->NumMyElements();++k)
+    for (int k=0; k<snoderowmap_->NumMyElements(); ++k)
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
+      if (!knode)
+        dserror("ERROR: Cannot find node with gid %",kgid);
       CNode* kcnode = static_cast<CNode*>(knode);
-
+      
+      int dim = kcnode->NumDof();
+      
       if ((int)(kcnode->GetM().size())==0)
-        break;
+        continue;
 
-      map<int,double> mmap = kcnode->GetM()[0];
       typedef map<int,double>::const_iterator CI;
 
-      // store M-values into refM
-      newM[k]=mmap;
-
-      // print results (derivatives) to screen
-      for (CI p=newM[k].begin();p!=newM[k].end();++p)
+      for( int d=0; d<dim; d++ )
       {
-        if (abs(newM[k][p->first]-refM[k][p->first]) > 1e-12)
+        int dof = kcnode->Dofs()[d];
+        
+        // store M-values into refM
+        newM[dof] = kcnode->GetM()[d];
+        
+        // print results (derivatives) to screen
+        for (CI p=newM[dof].begin(); p!=newM[dof].end(); ++p)
         {
-          // if we want to use the FD for DerivM
-          //map<int,map<int,double> >& derivm = kcnode->GetDerivM();
-          //double val = (newM[k][p->first]-refM[k][p->first])/delta;
-          //int outercol = p->first;
-          //int innercol = mnode->Dofs()[fd%2];
-          //(derivm[outercol/2])[innercol] += val;
-
-          cout << "M-FD-derivative for pair S" << kcnode->Id() << " and M" << (p->first)/Dim() << endl;
-          //cout << "Ref-M: " << refM[k][p->first] << endl;
-          //cout << "New-M: " << newM[k][p->first] << endl;
-          cout << "Deriv:      " << mnode->Dofs()[fd%3] << " " << (newM[k][p->first]-refM[k][p->first])/delta << endl;
-          //map<int,map<int,double> >& derivmmap = kcnode->GetDerivM();
-          //cout << "Analytical: " << mnode->Dofs()[fd%3] << " " << derivmmap[(p->first)/Dim()][mnode->Dofs()[fd%3]] << endl;
-          //if (abs(derivmmap[(p->first)/Dim()][mnode->Dofs()[fd%3]]-(newM[k][p->first]-refM[k][p->first])/delta)>1.0e-5)
-          //  cout << "***WARNING*****************************************************************************" << endl;
+          if (abs(newM[dof][p->first]-refM[dof][p->first]) > 1e-12)
+          {
+            double finit = (newM[dof][p->first]-refM[dof][p->first])/delta;
+            double analy = ((refDerivM[kgid])[(p->first)/Dim()])[mdof];
+            double dev = finit - analy;
+        
+            // dof: currently tested dof of slave node kgid
+            // (p->first)/Dim(): paired master
+            // mdof: currently modified master dof
+            cout << "(" << dof << "," << (p->first)/Dim() << "," << mdof << ") : fd=" << finit << " derivm=" << analy << " DEVIATION " << dev;
+            
+            if( abs(dev) > 1e-4 )
+            {
+              cout << " ***** WARNING ***** ";
+              w++;
+            }
+            else if( abs(dev) > 1e-5 )
+            {
+              cout << " ***** warning ***** ";
+              w++;
+            }
+            
+            cout << endl;
+          }
         }
       }
     }
@@ -1771,92 +1446,27 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
     {
       mnode->xspatial()[0] -= delta;
       mnode->u()[0] -= delta;
-    }
-    else if (fd%3==1)
+    } else if (fd%3==1)
     {
       mnode->xspatial()[1] -= delta;
       mnode->u()[1] -= delta;
-    }
-    else
+    } else
     {
       mnode->xspatial()[2] -= delta;
       mnode->u()[2] -= delta;
     }
+    
+    cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << endl;
   }
 
   // back to normal...
 
   // Initialize
-  // loop over all nodes to reset normals, closestnode and Mortar maps
-  // (use fully overlapping column map)
-  for (int i=0;i<idiscret_->NumMyColNodes();++i)
-  {
-    CONTACT::CNode* node = static_cast<CONTACT::CNode*>(idiscret_->lColNode(i));
-
-    //reset nodal normal vector
-    for (int j=0;j<3;++j)
-    {
-      node->n()[j]=0.0;
-      node->txi()[j]=0.0;
-      node->teta()[j]=0.0;
-    }
-
-    // reset derivative maps of normal vector
-    for (int j=0;j<(int)((node->GetDerivN()).size());++j)
-      (node->GetDerivN())[j].clear();
-    (node->GetDerivN()).resize(0);
-
-    // reset derivative maps of tangent vectors
-    for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
-      (node->GetDerivTxi())[j].clear();
-    (node->GetDerivTxi()).resize(0);
-    for (int j=0;j<(int)((node->GetDerivTeta()).size());++j)
-      (node->GetDerivTeta())[j].clear();
-    (node->GetDerivTeta()).resize(0);
-
-    // reset closest node
-    // (FIXME: at the moment we do not need this info. in the next
-    // iteration, but it might be helpful for accelerated search!!!)
-    node->ClosestNode() = -1;
-
-    // reset nodal Mortar maps
-    for (int j=0;j<(int)((node->GetD()).size());++j)
-      (node->GetD())[j].clear();
-    for (int j=0;j<(int)((node->GetM()).size());++j)
-      (node->GetM())[j].clear();
-    for (int j=0;j<(int)((node->GetMmod()).size());++j)
-      (node->GetMmod())[j].clear();
-
-    (node->GetD()).resize(0);
-    (node->GetM()).resize(0);
-    (node->GetMmod()).resize(0);
-
-    // reset derivative map of Mortar matrices
-    (node->GetDerivD()).clear();
-    (node->GetDerivM()).clear();
-
-    // reset nodal weighted gap
-    node->Getg() = 1.0e12;
-    (node->GetDerivG()).clear();
-
-    // reset feasible projection status
-    node->HasProj() = false;
-  }
-
-  // loop over all elements to reset contact candidates / search lists
-  // (use fully overlapping column map)
-  for (int i=0;i<idiscret_->NumMyColElements();++i)
-  {
-    CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(i));
-    element->SearchElements().resize(0);
-  }
-
-  // reset matrix containing interface contact segments (gmsh)
-  CSegs().Shape(0,0);
+  Initialize();
 
   // loop over all elements to set current element length / area
   // (use fully overlapping column map)
-  for (int j=0;j<idiscret_->NumMyColElements();++j)
+  for (int j=0; j<idiscret_->NumMyColElements(); ++j)
   {
     CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(j));
     element->Area()=element->ComputeArea();
@@ -1864,66 +1474,8 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
 
   // *******************************************************************
   // contents of Evaluate()
-  // *******************************************************************
-  // loop over proc's slave nodes of the interface
-  // use standard column map to include processor's ghosted nodes
-  // use boundary map to include slave side boundary nodes
-  for(int i=0; i<snodecolmapbound_->NumMyElements();++i)
-  {
-    int gid1 = snodecolmapbound_->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid1);
-    if (!node) dserror("ERROR: Cannot find node with gid %",gid1);
-    CNode* cnode = static_cast<CNode*>(node);
-
-    // build averaged normal at each slave node
-    cnode->BuildAveragedNormal();
-  }
-
-  // contact search algorithm
-  EvaluateContactSearch();
-
-#ifndef CONTACTONEMORTARLOOP
-  // loop over proc's slave elements of the interface for integration
-  // use standard column map to include processor's ghosted elements
-  for (int j=0; j<selecolmap_->NumMyElements();++j)
-  {
-    int gid1 = selecolmap_->GID(j);
-    DRT::Element* ele1 = idiscret_->gElement(gid1);
-    if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
-    CElement* selement = static_cast<CElement*>(ele1);
-
-    // integrate Mortar matrix D (lives on slave side only!)
-    IntegrateSlave(*selement);
-  }
-#endif // #ifndef CONTACTONEMORTARLOOP
-
-  // loop over proc's slave elements of the interface for integration
-  // use standard column map to include processor's ghosted elements
-  for (int i=0; i<selecolmap_->NumMyElements();++i)
-  {
-    int gid1 = selecolmap_->GID(i);
-    DRT::Element* ele1 = idiscret_->gElement(gid1);
-    if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
-    CElement* selement = static_cast<CElement*>(ele1);
-
-    // loop over the contact candidate master elements of sele_
-    // use slave element's candidate list SearchElements !!!
-    for (int j=0;j<selement->NumSearchElements();++j)
-    {
-      int gid2 = selement->SearchElements()[j];
-      DRT::Element* ele2 = idiscret_->gElement(gid2);
-      if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
-      CElement* melement = static_cast<CElement*>(ele2);
-
-      //********************************************************************
-      // 1) perform coupling (projection + overlap detection for sl/m pair)
-      // 2) integrate Mortar matrix M and weighted gap g
-      // 3) compute directional derivative of M and g and store into nodes
-      //********************************************************************
-      IntegrateCoupling(*selement,*melement);
-    }
-  }
-  // *******************************************************************
+  // *******************************************************************    
+  Evaluate();
 
   return;
 }
@@ -2002,72 +1554,7 @@ void CONTACT::Interface::FDCheckGapDeriv()
   for (int fd=0; fd<3*snodefullmap_->NumMyElements();++fd)
   {
     // Initialize
-    // loop over all nodes to reset normals, closestnode and Mortar maps
-    // (use fully overlapping column map)
-    for (int i=0;i<idiscret_->NumMyColNodes();++i)
-    {
-      CONTACT::CNode* node = static_cast<CONTACT::CNode*>(idiscret_->lColNode(i));
-
-      //reset nodal normal vector
-      for (int j=0;j<3;++j)
-      {
-        node->n()[j]=0.0;
-        node->txi()[j]=0.0;
-        node->teta()[j]=0.0;
-      }
-
-      // reset derivative maps of normal vector
-      for (int j=0;j<(int)((node->GetDerivN()).size());++j)
-        (node->GetDerivN())[j].clear();
-      (node->GetDerivN()).resize(0);
-
-      // reset derivative maps of tangent vectors
-      for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
-        (node->GetDerivTxi())[j].clear();
-      (node->GetDerivTxi()).resize(0);
-      for (int j=0;j<(int)((node->GetDerivTeta()).size());++j)
-       (node->GetDerivTeta())[j].clear();
-     (node->GetDerivTeta()).resize(0);
-
-      // reset closest node
-      // (FIXME: at the moment we do not need this info. in the next
-      // iteration, but it might be helpful for accelerated search!!!)
-      node->ClosestNode() = -1;
-
-      // reset nodal Mortar maps
-      for (int j=0;j<(int)((node->GetD()).size());++j)
-        (node->GetD())[j].clear();
-      for (int j=0;j<(int)((node->GetM()).size());++j)
-        (node->GetM())[j].clear();
-      for (int j=0;j<(int)((node->GetMmod()).size());++j)
-        (node->GetMmod())[j].clear();
-
-      (node->GetD()).resize(0);
-      (node->GetM()).resize(0);
-      (node->GetMmod()).resize(0);
-
-      // reset derivative map of Mortar matrices
-      (node->GetDerivD()).clear();
-      (node->GetDerivM()).clear();
-
-      // reset nodal weighted gap and derivative
-      node->Getg() = 1.0e12;
-      (node->GetDerivG()).clear();
-
-      // reset feasible projection status
-      node->HasProj() = false;
-    }
-
-    // loop over all elements to reset contact candidates / search lists
-    // (use fully overlapping column map)
-    for (int i=0;i<idiscret_->NumMyColElements();++i)
-    {
-      CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(i));
-      element->SearchElements().resize(0);
-    }
-
-    // reset matrix containing interface contact segments (gmsh)
-    CSegs().Shape(0,0);
+    Initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap_->GID(fd/3);
@@ -2111,65 +1598,7 @@ void CONTACT::Interface::FDCheckGapDeriv()
     // *******************************************************************
     // contents of Evaluate()
     // *******************************************************************
-    // loop over proc's slave nodes of the interface
-    // use standard column map to include processor's ghosted nodes
-    // use boundary map to include slave side boundary nodes
-    for(int i=0; i<snodecolmapbound_->NumMyElements();++i)
-    {
-      int gid1 = snodecolmapbound_->GID(i);
-      DRT::Node* node = idiscret_->gNode(gid1);
-      if (!node) dserror("ERROR: Cannot find node with gid %",gid1);
-      CNode* cnode = static_cast<CNode*>(node);
-
-      // build averaged normal at each slave node
-      cnode->BuildAveragedNormal();
-    }
-
-    // contact search algorithm
-    EvaluateContactSearch();
-
-#ifndef CONTACTONEMORTARLOOP
-    // loop over proc's slave elements of the interface for integration
-    // use standard column map to include processor's ghosted elements
-    for (int j=0; j<selecolmap_->NumMyElements();++j)
-    {
-      int gid1 = selecolmap_->GID(j);
-      DRT::Element* ele1 = idiscret_->gElement(gid1);
-      if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
-      CElement* selement = static_cast<CElement*>(ele1);
-
-      // integrate Mortar matrix D (lives on slave side only!)
-      IntegrateSlave(*selement);
-    }
-#endif // #ifndef CONTACTONEMORTARLOOP
-
-    // loop over proc's slave elements of the interface for integration
-    // use standard column map to include processor's ghosted elements
-    for (int i=0; i<selecolmap_->NumMyElements();++i)
-    {
-      int gid1 = selecolmap_->GID(i);
-      DRT::Element* ele1 = idiscret_->gElement(gid1);
-      if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
-      CElement* selement = static_cast<CElement*>(ele1);
-
-      // loop over the contact candidate master elements of sele_
-      // use slave element's candidate list SearchElements !!!
-      for (int j=0;j<selement->NumSearchElements();++j)
-      {
-        int gid2 = selement->SearchElements()[j];
-        DRT::Element* ele2 = idiscret_->gElement(gid2);
-        if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
-        CElement* melement = static_cast<CElement*>(ele2);
-
-        //********************************************************************
-        // 1) perform coupling (projection + overlap detection for sl/m pair)
-        // 2) integrate Mortar matrix M and weighted gap g
-        // 3) compute directional derivative of M and g and store into nodes
-        //********************************************************************
-        IntegrateCoupling(*selement,*melement);
-      }
-    }
-    // *******************************************************************
+    Evaluate();
 
     // compute finite difference derivative
     for (int k=0;k<snoderowmap_->NumMyElements();++k)
@@ -2261,70 +1690,7 @@ void CONTACT::Interface::FDCheckGapDeriv()
     // Initialize
     // loop over all nodes to reset normals, closestnode and Mortar maps
     // (use fully overlapping column map)
-    for (int i=0;i<idiscret_->NumMyColNodes();++i)
-    {
-      CONTACT::CNode* node = static_cast<CONTACT::CNode*>(idiscret_->lColNode(i));
-
-      //reset nodal normal vector
-      for (int j=0;j<3;++j)
-      {
-        node->n()[j]=0.0;
-        node->txi()[j]=0.0;
-        node->teta()[j]=0.0;
-      }
-
-      // reset derivative maps of normal vector
-      for (int j=0;j<(int)((node->GetDerivN()).size());++j)
-        (node->GetDerivN())[j].clear();
-      (node->GetDerivN()).resize(0);
-
-      // reset derivative maps of tangent vectors
-      for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
-        (node->GetDerivTxi())[j].clear();
-      (node->GetDerivTxi()).resize(0);
-      for (int j=0;j<(int)((node->GetDerivTeta()).size());++j)
-        (node->GetDerivTeta())[j].clear();
-      (node->GetDerivTeta()).resize(0);
-
-      // reset closest node
-      // (FIXME: at the moment we do not need this info. in the next
-      // iteration, but it might be helpful for accelerated search!!!)
-      node->ClosestNode() = -1;
-
-      // reset nodal Mortar maps
-      for (int j=0;j<(int)((node->GetD()).size());++j)
-        (node->GetD())[j].clear();
-      for (int j=0;j<(int)((node->GetM()).size());++j)
-        (node->GetM())[j].clear();
-      for (int j=0;j<(int)((node->GetMmod()).size());++j)
-        (node->GetMmod())[j].clear();
-
-      (node->GetD()).resize(0);
-      (node->GetM()).resize(0);
-      (node->GetMmod()).resize(0);
-
-      // reset derivative map of Mortar matrices
-      (node->GetDerivD()).clear();
-      (node->GetDerivM()).clear();
-
-      // reset nodal weighted gap and derivative
-      node->Getg() = 1.0e12;
-      (node->GetDerivG()).clear();
-
-      // reset feasible projection status
-      node->HasProj() = false;
-    }
-
-    // loop over all elements to reset contact candidates / search lists
-    // (use fully overlapping column map)
-    for (int i=0;i<idiscret_->NumMyColElements();++i)
-    {
-      CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(i));
-      element->SearchElements().resize(0);
-    }
-
-    // reset matrix containing interface contact segments (gmsh)
-    CSegs().Shape(0,0);
+    Initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap_->GID(fd/3);
@@ -2368,65 +1734,7 @@ void CONTACT::Interface::FDCheckGapDeriv()
     // *******************************************************************
     // contents of Evaluate()
     // *******************************************************************
-    // loop over proc's slave nodes of the interface
-    // use standard column map to include processor's ghosted nodes
-    // use boundary map to include slave side boundary nodes
-    for(int i=0; i<snodecolmapbound_->NumMyElements();++i)
-    {
-      int gid1 = snodecolmapbound_->GID(i);
-      DRT::Node* node = idiscret_->gNode(gid1);
-      if (!node) dserror("ERROR: Cannot find node with gid %",gid1);
-      CNode* cnode = static_cast<CNode*>(node);
-
-      // build averaged normal at each slave node
-      cnode->BuildAveragedNormal();
-    }
-
-    // contact search algorithm
-    EvaluateContactSearch();
-
-#ifndef CONTACTONEMORTARLOOP
-    // loop over proc's slave elements of the interface for integration
-    // use standard column map to include processor's ghosted elements
-    for (int j=0; j<selecolmap_->NumMyElements();++j)
-    {
-      int gid1 = selecolmap_->GID(j);
-      DRT::Element* ele1 = idiscret_->gElement(gid1);
-      if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
-      CElement* selement = static_cast<CElement*>(ele1);
-
-      // integrate Mortar matrix D (lives on slave side only!)
-      IntegrateSlave(*selement);
-    }
-#endif // #ifndef CONTACTONEMORTARLOOP
-
-    // loop over proc's slave elements of the interface for integration
-    // use standard column map to include processor's ghosted elements
-    for (int i=0; i<selecolmap_->NumMyElements();++i)
-    {
-      int gid1 = selecolmap_->GID(i);
-      DRT::Element* ele1 = idiscret_->gElement(gid1);
-      if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
-      CElement* selement = static_cast<CElement*>(ele1);
-
-      // loop over the contact candidate master elements of sele_
-      // use slave element's candidate list SearchElements !!!
-      for (int j=0;j<selement->NumSearchElements();++j)
-      {
-        int gid2 = selement->SearchElements()[j];
-        DRT::Element* ele2 = idiscret_->gElement(gid2);
-        if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
-        CElement* melement = static_cast<CElement*>(ele2);
-
-        //********************************************************************
-        // 1) perform coupling (projection + overlap detection for sl/m pair)
-        // 2) integrate Mortar matrix M and weighted gap g
-        // 3) compute directional derivative of M and g and store into nodes
-        //********************************************************************
-        IntegrateCoupling(*selement,*melement);
-      }
-    }
-    // *******************************************************************
+    Evaluate();
 
     // compute finite difference derivative
     for (int k=0;k<snoderowmap_->NumMyElements();++k)
@@ -2514,145 +1822,8 @@ void CONTACT::Interface::FDCheckGapDeriv()
   }
 
   // back to normal...
-
-  // Initialize
-  // loop over all nodes to reset normals, closestnode and Mortar maps
-  // (use fully overlapping column map)
-  for (int i=0;i<idiscret_->NumMyColNodes();++i)
-  {
-    CONTACT::CNode* node = static_cast<CONTACT::CNode*>(idiscret_->lColNode(i));
-
-    //reset nodal normal vector
-    for (int j=0;j<3;++j)
-    {
-      node->n()[j]=0.0;
-      node->txi()[j]=0.0;
-      node->teta()[j]=0.0;
-    }
-
-    // reset derivative maps of normal vector
-    for (int j=0;j<(int)((node->GetDerivN()).size());++j)
-      (node->GetDerivN())[j].clear();
-    (node->GetDerivN()).resize(0);
-
-    // reset derivative maps of tangent vectors
-    for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
-      (node->GetDerivTxi())[j].clear();
-    (node->GetDerivTxi()).resize(0);
-    for (int j=0;j<(int)((node->GetDerivTeta()).size());++j)
-      (node->GetDerivTeta())[j].clear();
-    (node->GetDerivTeta()).resize(0);
-
-    // reset closest node
-    // (FIXME: at the moment we do not need this info. in the next
-    // iteration, but it might be helpful for accelerated search!!!)
-    node->ClosestNode() = -1;
-
-    // reset nodal Mortar maps
-    for (int j=0;j<(int)((node->GetD()).size());++j)
-      (node->GetD())[j].clear();
-    for (int j=0;j<(int)((node->GetM()).size());++j)
-      (node->GetM())[j].clear();
-    for (int j=0;j<(int)((node->GetMmod()).size());++j)
-      (node->GetMmod())[j].clear();
-
-    (node->GetD()).resize(0);
-    (node->GetM()).resize(0);
-    (node->GetMmod()).resize(0);
-
-    // reset derivative map of Mortar matrices
-    (node->GetDerivD()).clear();
-    (node->GetDerivM()).clear();
-
-    // reset nodal weighted gap and derivative
-    node->Getg() = 1.0e12;
-    (node->GetDerivG()).clear();
-
-    // reset feasible projection status
-    node->HasProj() = false;
-  }
-
-  // loop over all elements to reset contact candidates / search lists
-  // (use fully overlapping column map)
-  for (int i=0;i<idiscret_->NumMyColElements();++i)
-  {
-    CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(i));
-    element->SearchElements().resize(0);
-  }
-
-  // reset matrix containing interface contact segments (gmsh)
-  CSegs().Shape(0,0);
-
-  // loop over all elements to set current element length / area
-  // (use fully overlapping column map)
-  for (int j=0;j<idiscret_->NumMyColElements();++j)
-  {
-    CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(j));
-    element->Area()=element->ComputeArea();
-  }
-
-  // *******************************************************************
-  // contents of Evaluate()
-  // *******************************************************************
-  // loop over proc's slave nodes of the interface
-  // use standard column map to include processor's ghosted nodes
-  // use boundary map to include slave side boundary nodes
-  for(int i=0; i<snodecolmapbound_->NumMyElements();++i)
-  {
-    int gid1 = snodecolmapbound_->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid1);
-    if (!node) dserror("ERROR: Cannot find node with gid %",gid1);
-    CNode* cnode = static_cast<CNode*>(node);
-
-    // build averaged normal at each slave node
-    cnode->BuildAveragedNormal();
-  }
-
-  // contact search algorithm
-  EvaluateContactSearch();
-
-#ifndef CONTACTONEMORTARLOOP
-  // loop over proc's slave elements of the interface for integration
-  // use standard column map to include processor's ghosted elements
-  for (int j=0; j<selecolmap_->NumMyElements();++j)
-  {
-    int gid1 = selecolmap_->GID(j);
-    DRT::Element* ele1 = idiscret_->gElement(gid1);
-    if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
-    CElement* selement = static_cast<CElement*>(ele1);
-
-    // integrate Mortar matrix D (lives on slave side only!)
-    IntegrateSlave(*selement);
-  }
-#endif // #ifndef CONTACTONEMORTARLOOP
-
-  // loop over proc's slave elements of the interface for integration
-  // use standard column map to include processor's ghosted elements
-  for (int i=0; i<selecolmap_->NumMyElements();++i)
-  {
-    int gid1 = selecolmap_->GID(i);
-    DRT::Element* ele1 = idiscret_->gElement(gid1);
-    if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
-    CElement* selement = static_cast<CElement*>(ele1);
-
-    // loop over the contact candidate master elements of sele_
-    // use slave element's candidate list SearchElements !!!
-    for (int j=0;j<selement->NumSearchElements();++j)
-    {
-      int gid2 = selement->SearchElements()[j];
-      DRT::Element* ele2 = idiscret_->gElement(gid2);
-      if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
-      CElement* melement = static_cast<CElement*>(ele2);
-
-      //********************************************************************
-      // 1) perform coupling (projection + overlap detection for sl/m pair)
-      // 2) integrate Mortar matrix M and weighted gap g
-      // 3) compute directional derivative of M and g and store into nodes
-      //********************************************************************
-      IntegrateCoupling(*selement,*melement);
-    }
-  }
-  // *******************************************************************
+  Initialize();
+  Evaluate();
 
   return;
 }
@@ -3519,70 +2690,7 @@ void CONTACT::Interface::FDCheckStickDeriv()
     // Initialize
     // loop over all nodes to reset normals, closestnode and Mortar maps
     // (use fully overlapping column map)
-    for (int i=0;i<idiscret_->NumMyColNodes();++i)
-    {
-      CONTACT::CNode* node = static_cast<CONTACT::CNode*>(idiscret_->lColNode(i));
-
-      //reset nodal normal vector
-      for (int j=0;j<3;++j)
-      {
-        node->n()[j]=0.0;
-        node->txi()[j]=0.0;
-        node->teta()[j]=0.0;
-      }
-
-      // reset derivative maps of normal vector
-      for (int j=0;j<(int)((node->GetDerivN()).size());++j)
-        (node->GetDerivN())[j].clear();
-        (node->GetDerivN()).resize(0);
-
-      // reset derivative maps of tangent vectors
-      for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
-        (node->GetDerivTxi())[j].clear();
-        (node->GetDerivTxi()).resize(0);
-      for (int j=0;j<(int)((node->GetDerivTeta()).size());++j)
-       (node->GetDerivTeta())[j].clear();
-       (node->GetDerivTeta()).resize(0);
-
-      // reset closest node
-      // (FIXME: at the moment we do not need this info. in the next
-      // iteration, but it might be helpful for accelerated search!!!)
-      node->ClosestNode() = -1;
-
-      // reset nodal Mortar maps
-      for (int j=0;j<(int)((node->GetD()).size());++j)
-        (node->GetD())[j].clear();
-      for (int j=0;j<(int)((node->GetM()).size());++j)
-        (node->GetM())[j].clear();
-      for (int j=0;j<(int)((node->GetMmod()).size());++j)
-        (node->GetMmod())[j].clear();
-
-      (node->GetD()).resize(0);
-      (node->GetM()).resize(0);
-      (node->GetMmod()).resize(0);
-
-      // reset derivative map of Mortar matrices
-      (node->GetDerivD()).clear();
-      (node->GetDerivM()).clear();
-
-      // reset nodal weighted gap and derivative
-      node->Getg() = 1.0e12;
-      (node->GetDerivG()).clear();
-
-      // reset feasible projection status
-      node->HasProj() = false;
-    }
-
-    // loop over all elements to reset contact candidates / search lists
-    // (use fully overlapping column map)
-    for (int i=0;i<idiscret_->NumMyColElements();++i)
-    {
-      CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(i));
-      element->SearchElements().resize(0);
-    }
-
-    // reset matrix containing interface contact segments (gmsh)
-    CSegs().Shape(0,0);
+    Initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap_->GID(fd/3);
@@ -3626,65 +2734,7 @@ void CONTACT::Interface::FDCheckStickDeriv()
     // *******************************************************************
     // contents of Evaluate()
     // *******************************************************************
-    // loop over proc's slave nodes of the interface
-    // use standard column map to include processor's ghosted nodes
-    // use boundary map to include slave side boundary nodes
-    for(int i=0; i<snodecolmapbound_->NumMyElements();++i)
-    {
-      int gid1 = snodecolmapbound_->GID(i);
-      DRT::Node* node = idiscret_->gNode(gid1);
-      if (!node) dserror("ERROR: Cannot find node with gid %",gid1);
-      CNode* cnode = static_cast<CNode*>(node);
-
-      // build averaged normal at each slave node
-      cnode->BuildAveragedNormal();
-    }
-
-    // contact search algorithm
-    EvaluateContactSearch();
-
-#ifndef CONTACTONEMORTARLOOP
-    // loop over proc's slave elements of the interface for integration
-    // use standard column map to include processor's ghosted elements
-    for (int j=0; j<selecolmap_->NumMyElements();++j)
-    {
-      int gid1 = selecolmap_->GID(j);
-      DRT::Element* ele1 = idiscret_->gElement(gid1);
-      if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
-      CElement* selement = static_cast<CElement*>(ele1);
-
-      // integrate Mortar matrix D (lives on slave side only!)
-      IntegrateSlave(*selement);
-    }
-#endif // #ifndef CONTACTONEMORTARLOOP
-
-    // loop over proc's slave elements of the interface for integration
-    // use standard column map to include processor's ghosted elements
-    for (int i=0; i<selecolmap_->NumMyElements();++i)
-    {
-      int gid1 = selecolmap_->GID(i);
-      DRT::Element* ele1 = idiscret_->gElement(gid1);
-      if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
-      CElement* selement = static_cast<CElement*>(ele1);
-
-      // loop over the contact candidate master elements of sele_
-      // use slave element's candidate list SearchElements !!!
-      for (int j=0;j<selement->NumSearchElements();++j)
-      {
-        int gid2 = selement->SearchElements()[j];
-        DRT::Element* ele2 = idiscret_->gElement(gid2);
-        if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
-        CElement* melement = static_cast<CElement*>(ele2);
-
-        //********************************************************************
-        // 1) perform coupling (projection + overlap detection for sl/m pair)
-        // 2) integrate Mortar matrix M and weighted gap g
-        // 3) compute directional derivative of M and g and store into nodes
-        //********************************************************************
-        IntegrateCoupling(*selement,*melement);
-      }
-    }
-    // *******************************************************************
+    Evaluate();
 
     // compute finite difference derivative
     for (int k=0; k<snoderowmap_->NumMyElements();++k)
@@ -3787,70 +2837,7 @@ void CONTACT::Interface::FDCheckStickDeriv()
     // Initialize
     // loop over all nodes to reset normals, closestnode and Mortar maps
     // (use fully overlapping column map)
-    for (int i=0;i<idiscret_->NumMyColNodes();++i)
-    {
-      CONTACT::CNode* node = static_cast<CONTACT::CNode*>(idiscret_->lColNode(i));
-
-      //reset nodal normal vector
-      for (int j=0;j<3;++j)
-      {
-        node->n()[j]=0.0;
-        node->txi()[j]=0.0;
-        node->teta()[j]=0.0;
-      }
-
-      // reset derivative maps of normal vector
-      for (int j=0;j<(int)((node->GetDerivN()).size());++j)
-        (node->GetDerivN())[j].clear();
-      (node->GetDerivN()).resize(0);
-
-      // reset derivative maps of tangent vectors
-      for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
-        (node->GetDerivTxi())[j].clear();
-      (node->GetDerivTxi()).resize(0);
-      for (int j=0;j<(int)((node->GetDerivTeta()).size());++j)
-        (node->GetDerivTeta())[j].clear();
-      (node->GetDerivTeta()).resize(0);
-
-      // reset closest node
-      // (FIXME: at the moment we do not need this info. in the next
-      // iteration, but it might be helpful for accelerated search!!!)
-      node->ClosestNode() = -1;
-
-      // reset nodal Mortar maps
-      for (int j=0;j<(int)((node->GetD()).size());++j)
-        (node->GetD())[j].clear();
-      for (int j=0;j<(int)((node->GetM()).size());++j)
-        (node->GetM())[j].clear();
-      for (int j=0;j<(int)((node->GetMmod()).size());++j)
-        (node->GetMmod())[j].clear();
-
-      (node->GetD()).resize(0);
-      (node->GetM()).resize(0);
-      (node->GetMmod()).resize(0);
-
-      // reset derivative map of Mortar matrices
-      (node->GetDerivD()).clear();
-      (node->GetDerivM()).clear();
-
-      // reset nodal weighted gap and derivative
-      node->Getg() = 1.0e12;
-      (node->GetDerivG()).clear();
-
-      // reset feasible projection status
-      node->HasProj() = false;
-    }
-
-    // loop over all elements to reset contact candidates / search lists
-    // (use fully overlapping column map)
-    for (int i=0;i<idiscret_->NumMyColElements();++i)
-    {
-      CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(i));
-      element->SearchElements().resize(0);
-    }
-
-    // reset matrix containing interface contact segments (gmsh)
-    CSegs().Shape(0,0);
+    Initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap_->GID(fd/3);
@@ -3894,65 +2881,7 @@ void CONTACT::Interface::FDCheckStickDeriv()
     // *******************************************************************
     // contents of Evaluate()
     // *******************************************************************
-    // loop over proc's slave nodes of the interface
-    // use standard column map to include processor's ghosted nodes
-    // use boundary map to include slave side boundary nodes
-    for(int i=0; i<snodecolmapbound_->NumMyElements();++i)
-    {
-      int gid1 = snodecolmapbound_->GID(i);
-      DRT::Node* node = idiscret_->gNode(gid1);
-      if (!node) dserror("ERROR: Cannot find node with gid %",gid1);
-      CNode* cnode = static_cast<CNode*>(node);
-
-      // build averaged normal at each slave node
-      cnode->BuildAveragedNormal();
-    }
-
-    // contact search algorithm
-    EvaluateContactSearch();
-
-#ifndef CONTACTONEMORTARLOOP
-    // loop over proc's slave elements of the interface for integration
-    // use standard column map to include processor's ghosted elements
-    for (int j=0; j<selecolmap_->NumMyElements();++j)
-    {
-      int gid1 = selecolmap_->GID(j);
-      DRT::Element* ele1 = idiscret_->gElement(gid1);
-      if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
-      CElement* selement = static_cast<CElement*>(ele1);
-
-      // integrate Mortar matrix D (lives on slave side only!)
-      IntegrateSlave(*selement);
-    }
-#endif // #ifndef CONTACTONEMORTARLOOP
-
-    // loop over proc's slave elements of the interface for integration
-    // use standard column map to include processor's ghosted elements
-    for (int i=0; i<selecolmap_->NumMyElements();++i)
-    {
-      int gid1 = selecolmap_->GID(i);
-      DRT::Element* ele1 = idiscret_->gElement(gid1);
-      if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
-      CElement* selement = static_cast<CElement*>(ele1);
-
-      // loop over the contact candidate master elements of sele_
-      // use slave element's candidate list SearchElements !!!
-      for (int j=0;j<selement->NumSearchElements();++j)
-      {
-        int gid2 = selement->SearchElements()[j];
-        DRT::Element* ele2 = idiscret_->gElement(gid2);
-        if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
-        CElement* melement = static_cast<CElement*>(ele2);
-
-        //********************************************************************
-        // 1) perform coupling (projection + overlap detection for sl/m pair)
-        // 2) integrate Mortar matrix M and weighted gap g
-        // 3) compute directional derivative of M and g and store into nodes
-        //********************************************************************
-        IntegrateCoupling(*selement,*melement);
-      }
-    }
-    // *******************************************************************
+    Evaluate();
 
     // compute finite difference derivative
     for (int k=0; k<snoderowmap_->NumMyElements();++k)
@@ -4051,143 +2980,8 @@ void CONTACT::Interface::FDCheckStickDeriv()
   }
 
   // back to normal...
-
-  // Initialize
-  // loop over all nodes to reset normals, closestnode and Mortar maps
-  // (use fully overlapping column map)
-  for (int i=0;i<idiscret_->NumMyColNodes();++i)
-  {
-    CONTACT::CNode* node = static_cast<CONTACT::CNode*>(idiscret_->lColNode(i));
-
-    //reset nodal normal vector
-    for (int j=0;j<3;++j)
-    {
-      node->n()[j]=0.0;
-      node->txi()[j]=0.0;
-      node->teta()[j]=0.0;
-    }
-
-    // reset derivative maps of normal vector
-    for (int j=0;j<(int)((node->GetDerivN()).size());++j)
-      (node->GetDerivN())[j].clear();
-    (node->GetDerivN()).resize(0);
-
-    // reset derivative maps of tangent vectors
-    for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
-      (node->GetDerivTxi())[j].clear();
-    (node->GetDerivTxi()).resize(0);
-    for (int j=0;j<(int)((node->GetDerivTeta()).size());++j)
-      (node->GetDerivTeta())[j].clear();
-    (node->GetDerivTeta()).resize(0);
-
-    // reset closest node
-    // (FIXME: at the moment we do not need this info. in the next
-    // iteration, but it might be helpful for accelerated search!!!)
-    node->ClosestNode() = -1;
-
-    // reset nodal Mortar maps
-    for (int j=0;j<(int)((node->GetD()).size());++j)
-      (node->GetD())[j].clear();
-    for (int j=0;j<(int)((node->GetM()).size());++j)
-      (node->GetM())[j].clear();
-    for (int j=0;j<(int)((node->GetMmod()).size());++j)
-      (node->GetMmod())[j].clear();
-
-    (node->GetD()).resize(0);
-    (node->GetM()).resize(0);
-    (node->GetMmod()).resize(0);
-
-    // reset derivative map of Mortar matrices
-    (node->GetDerivD()).clear();
-    (node->GetDerivM()).clear();
-
-    // reset nodal weighted gap and derivative
-    node->Getg() = 1.0e12;
-    (node->GetDerivG()).clear();
-
-    // reset feasible projection status
-    node->HasProj() = false;
-  }
-
-  // loop over all elements to reset contact candidates / search lists
-  // (use fully overlapping column map)
-  for (int i=0;i<idiscret_->NumMyColElements();++i)
-  {
-    CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(i));
-    element->SearchElements().resize(0);
-  }
-
-  // reset matrix containing interface contact segments (gmsh)
-  CSegs().Shape(0,0);
-
-  // loop over all elements to set current element length / area
-  // (use fully overlapping column map)
-  for (int j=0;j<idiscret_->NumMyColElements();++j)
-  {
-    CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(j));
-    element->Area()=element->ComputeArea();
-  }
-
-  // *******************************************************************
-  // contents of Evaluate()
-  // *******************************************************************
-  // loop over proc's slave nodes of the interface
-  // use standard column map to include processor's ghosted nodes
-  // use boundary map to include slave side boundary nodes
-  for(int i=0; i<snodecolmapbound_->NumMyElements();++i)
-  {
-    int gid1 = snodecolmapbound_->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid1);
-    if (!node) dserror("ERROR: Cannot find node with gid %",gid1);
-    CNode* cnode = static_cast<CNode*>(node);
-
-    cnode->BuildAveragedNormal();
-  }
-
-  // contact search algorithm
-  EvaluateContactSearch();
-
-#ifndef CONTACTONEMORTARLOOP
-    // loop over proc's slave elements of the interface for integration
-    // use standard column map to include processor's ghosted elements
-    for (int j=0; j<selecolmap_->NumMyElements();++j)
-    {
-      int gid1 = selecolmap_->GID(j);
-      DRT::Element* ele1 = idiscret_->gElement(gid1);
-      if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
-      CElement* selement = static_cast<CElement*>(ele1);
-
-      // integrate Mortar matrix D (lives on slave side only!)
-      IntegrateSlave(*selement);
-    }
-#endif // #ifndef CONTACTONEMORTARLOOP
-
-  // loop over proc's slave elements of the interface for integration
-  // use standard column map to include processor's ghosted elements
-  for (int i=0; i<selecolmap_->NumMyElements();++i)
-  {
-    int gid1 = selecolmap_->GID(i);
-    DRT::Element* ele1 = idiscret_->gElement(gid1);
-    if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
-    CElement* selement = static_cast<CElement*>(ele1);
-
-    // loop over the contact candidate master elements of sele_
-    // use slave element's candidate list SearchElements !!!
-    for (int j=0;j<selement->NumSearchElements();++j)
-    {
-      int gid2 = selement->SearchElements()[j];
-      DRT::Element* ele2 = idiscret_->gElement(gid2);
-      if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
-      CElement* melement = static_cast<CElement*>(ele2);
-
-      //********************************************************************
-      // 1) perform coupling (projection + overlap detection for sl/m pair)
-      // 2) integrate Mortar matrix M and weighted gap g
-      // 3) compute directional derivative of M and g and store into nodes
-      //********************************************************************
-      IntegrateCoupling(*selement,*melement);
-    }
-  }
+  Initialize();
+  Evaluate();
 
   return;
 
@@ -4216,7 +3010,6 @@ void CONTACT::Interface::FDCheckSlipDeriv()
   int nrow = snoderowmap_->NumMyElements();
   vector<double> refC(nrow);
   vector<double> newC(nrow);
-
 
   // store reference
   // loop over proc's slave nodes
@@ -4420,72 +3213,7 @@ void CONTACT::Interface::FDCheckSlipDeriv()
   for (int fd=0; fd<3*snodefullmap_->NumMyElements();++fd)
   {
     // Initialize
-    // loop over all nodes to reset normals, closestnode and Mortar maps
-    // (use fully overlapping column map)
-    for (int i=0;i<idiscret_->NumMyColNodes();++i)
-    {
-      CONTACT::CNode* node = static_cast<CONTACT::CNode*>(idiscret_->lColNode(i));
-
-      //reset nodal normal vector
-      for (int j=0;j<3;++j)
-      {
-        node->n()[j]=0.0;
-        node->txi()[j]=0.0;
-        node->teta()[j]=0.0;
-      }
-
-      // reset derivative maps of normal vector
-      for (int j=0;j<(int)((node->GetDerivN()).size());++j)
-        (node->GetDerivN())[j].clear();
-        (node->GetDerivN()).resize(0);
-
-      // reset derivative maps of tangent vectors
-      for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
-        (node->GetDerivTxi())[j].clear();
-        (node->GetDerivTxi()).resize(0);
-      for (int j=0;j<(int)((node->GetDerivTeta()).size());++j)
-       (node->GetDerivTeta())[j].clear();
-       (node->GetDerivTeta()).resize(0);
-
-      // reset closest node
-      // (FIXME: at the moment we do not need this info. in the next
-      // iteration, but it might be helpful for accelerated search!!!)
-      node->ClosestNode() = -1;
-
-      // reset nodal Mortar maps
-      for (int j=0;j<(int)((node->GetD()).size());++j)
-        (node->GetD())[j].clear();
-      for (int j=0;j<(int)((node->GetM()).size());++j)
-        (node->GetM())[j].clear();
-      for (int j=0;j<(int)((node->GetMmod()).size());++j)
-        (node->GetMmod())[j].clear();
-
-      (node->GetD()).resize(0);
-      (node->GetM()).resize(0);
-      (node->GetMmod()).resize(0);
-
-      // reset derivative map of Mortar matrices
-      (node->GetDerivD()).clear();
-      (node->GetDerivM()).clear();
-
-      // reset nodal weighted gap and derivative
-      node->Getg() = 1.0e12;
-      (node->GetDerivG()).clear();
-
-      // reset feasible projection status
-      node->HasProj() = false;
-    }
-
-    // loop over all elements to reset contact candidates / search lists
-    // (use fully overlapping column map)
-    for (int i=0;i<idiscret_->NumMyColElements();++i)
-    {
-      CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(i));
-      element->SearchElements().resize(0);
-    }
-
-    // reset matrix containing interface contact segments (gmsh)
-    CSegs().Shape(0,0);
+    Initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap_->GID(fd/3);
@@ -4529,65 +3257,7 @@ void CONTACT::Interface::FDCheckSlipDeriv()
     // *******************************************************************
     // contents of Evaluate()
     // *******************************************************************
-    // loop over proc's slave nodes of the interface
-    // use standard column map to include processor's ghosted nodes
-    // use boundary map to include slave side boundary nodes
-    for(int i=0; i<snodecolmapbound_->NumMyElements();++i)
-    {
-      int gid1 = snodecolmapbound_->GID(i);
-      DRT::Node* node = idiscret_->gNode(gid1);
-      if (!node) dserror("ERROR: Cannot find node with gid %",gid1);
-      CNode* cnode = static_cast<CNode*>(node);
-
-      // build averaged normal at each slave node
-      cnode->BuildAveragedNormal();
-    }
-
-    // contact search algorithm
-    EvaluateContactSearch();
-
-#ifndef CONTACTONEMORTARLOOP
-    // loop over proc's slave elements of the interface for integration
-    // use standard column map to include processor's ghosted elements
-    for (int j=0; j<selecolmap_->NumMyElements();++j)
-    {
-      int gid1 = selecolmap_->GID(j);
-      DRT::Element* ele1 = idiscret_->gElement(gid1);
-      if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
-      CElement* selement = static_cast<CElement*>(ele1);
-
-      // integrate Mortar matrix D (lives on slave side only!)
-      IntegrateSlave(*selement);
-    }
-#endif // #ifndef CONTACTONEMORTARLOOP
-
-    // loop over proc's slave elements of the interface for integration
-    // use standard column map to include processor's ghosted elements
-    for (int i=0; i<selecolmap_->NumMyElements();++i)
-    {
-      int gid1 = selecolmap_->GID(i);
-      DRT::Element* ele1 = idiscret_->gElement(gid1);
-      if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
-      CElement* selement = static_cast<CElement*>(ele1);
-
-      // loop over the contact candidate master elements of sele_
-      // use slave element's candidate list SearchElements !!!
-      for (int j=0;j<selement->NumSearchElements();++j)
-      {
-        int gid2 = selement->SearchElements()[j];
-        DRT::Element* ele2 = idiscret_->gElement(gid2);
-        if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
-        CElement* melement = static_cast<CElement*>(ele2);
-
-        //********************************************************************
-        // 1) perform coupling (projection + overlap detection for sl/m pair)
-        // 2) integrate Mortar matrix M and weighted gap g
-        // 3) compute directional derivative of M and g and store into nodes
-        //********************************************************************
-        IntegrateCoupling(*selement,*melement);
-      }
-    }
-    // *******************************************************************
+    Evaluate();
 
     // compute finite difference derivative
     for (int k=0; k<snoderowmap_->NumMyElements();++k)
@@ -4691,72 +3361,7 @@ void CONTACT::Interface::FDCheckSlipDeriv()
   for (int fd=0; fd<3*mnodefullmap_->NumMyElements();++fd)
   {
     // Initialize
-    // loop over all nodes to reset normals, closestnode and Mortar maps
-    // (use fully overlapping column map)
-    for (int i=0;i<idiscret_->NumMyColNodes();++i)
-    {
-      CONTACT::CNode* node = static_cast<CONTACT::CNode*>(idiscret_->lColNode(i));
-
-      //reset nodal normal vector
-      for (int j=0;j<3;++j)
-      {
-        node->n()[j]=0.0;
-        node->txi()[j]=0.0;
-        node->teta()[j]=0.0;
-      }
-
-      // reset derivative maps of normal vector
-      for (int j=0;j<(int)((node->GetDerivN()).size());++j)
-        (node->GetDerivN())[j].clear();
-      (node->GetDerivN()).resize(0);
-
-      // reset derivative maps of tangent vectors
-      for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
-        (node->GetDerivTxi())[j].clear();
-      (node->GetDerivTxi()).resize(0);
-      for (int j=0;j<(int)((node->GetDerivTeta()).size());++j)
-        (node->GetDerivTeta())[j].clear();
-      (node->GetDerivTeta()).resize(0);
-
-      // reset closest node
-      // (FIXME: at the moment we do not need this info. in the next
-      // iteration, but it might be helpful for accelerated search!!!)
-      node->ClosestNode() = -1;
-
-      // reset nodal Mortar maps
-      for (int j=0;j<(int)((node->GetD()).size());++j)
-        (node->GetD())[j].clear();
-      for (int j=0;j<(int)((node->GetM()).size());++j)
-        (node->GetM())[j].clear();
-      for (int j=0;j<(int)((node->GetMmod()).size());++j)
-        (node->GetMmod())[j].clear();
-
-      (node->GetD()).resize(0);
-      (node->GetM()).resize(0);
-      (node->GetMmod()).resize(0);
-
-      // reset derivative map of Mortar matrices
-      (node->GetDerivD()).clear();
-      (node->GetDerivM()).clear();
-
-      // reset nodal weighted gap and derivative
-      node->Getg() = 1.0e12;
-      (node->GetDerivG()).clear();
-
-      // reset feasible projection status
-      node->HasProj() = false;
-    }
-
-    // loop over all elements to reset contact candidates / search lists
-    // (use fully overlapping column map)
-    for (int i=0;i<idiscret_->NumMyColElements();++i)
-    {
-      CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(i));
-      element->SearchElements().resize(0);
-    }
-
-    // reset matrix containing interface contact segments (gmsh)
-    CSegs().Shape(0,0);
+    Initialize();
 
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap_->GID(fd/3);
@@ -4800,65 +3405,7 @@ void CONTACT::Interface::FDCheckSlipDeriv()
     // *******************************************************************
     // contents of Evaluate()
     // *******************************************************************
-    // loop over proc's slave nodes of the interface
-    // use standard column map to include processor's ghosted nodes
-    // use boundary map to include slave side boundary nodes
-    for(int i=0; i<snodecolmapbound_->NumMyElements();++i)
-    {
-      int gid1 = snodecolmapbound_->GID(i);
-      DRT::Node* node = idiscret_->gNode(gid1);
-      if (!node) dserror("ERROR: Cannot find node with gid %",gid1);
-      CNode* cnode = static_cast<CNode*>(node);
-
-      // build averaged normal at each slave node
-      cnode->BuildAveragedNormal();
-    }
-
-    // contact search algorithm
-    EvaluateContactSearch();
-
-#ifndef CONTACTONEMORTARLOOP
-    // loop over proc's slave elements of the interface for integration
-    // use standard column map to include processor's ghosted elements
-    for (int j=0; j<selecolmap_->NumMyElements();++j)
-    {
-      int gid1 = selecolmap_->GID(j);
-      DRT::Element* ele1 = idiscret_->gElement(gid1);
-      if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
-      CElement* selement = static_cast<CElement*>(ele1);
-
-      // integrate Mortar matrix D (lives on slave side only!)
-      IntegrateSlave(*selement);
-    }
-#endif // #ifndef CONTACTONEMORTARLOOP
-
-    // loop over proc's slave elements of the interface for integration
-    // use standard column map to include processor's ghosted elements
-    for (int i=0; i<selecolmap_->NumMyElements();++i)
-    {
-      int gid1 = selecolmap_->GID(i);
-      DRT::Element* ele1 = idiscret_->gElement(gid1);
-      if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
-      CElement* selement = static_cast<CElement*>(ele1);
-
-      // loop over the contact candidate master elements of sele_
-      // use slave element's candidate list SearchElements !!!
-      for (int j=0;j<selement->NumSearchElements();++j)
-      {
-        int gid2 = selement->SearchElements()[j];
-        DRT::Element* ele2 = idiscret_->gElement(gid2);
-        if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
-        CElement* melement = static_cast<CElement*>(ele2);
-
-        //********************************************************************
-        // 1) perform coupling (projection + overlap detection for sl/m pair)
-        // 2) integrate Mortar matrix M and weighted gap g
-        // 3) compute directional derivative of M and g and store into nodes
-        //********************************************************************
-        IntegrateCoupling(*selement,*melement);
-      }
-    }
-    // *******************************************************************
+    Evaluate();
 
     // compute finite difference derivative
     for (int k=0; k<snoderowmap_->NumMyElements();++k)
@@ -4961,143 +3508,8 @@ void CONTACT::Interface::FDCheckSlipDeriv()
   }
 
   // back to normal...
-
-  // Initialize
-  // loop over all nodes to reset normals, closestnode and Mortar maps
-  // (use fully overlapping column map)
-  for (int i=0;i<idiscret_->NumMyColNodes();++i)
-  {
-    CONTACT::CNode* node = static_cast<CONTACT::CNode*>(idiscret_->lColNode(i));
-
-    //reset nodal normal vector
-    for (int j=0;j<3;++j)
-    {
-      node->n()[j]=0.0;
-      node->txi()[j]=0.0;
-      node->teta()[j]=0.0;
-    }
-
-    // reset derivative maps of normal vector
-    for (int j=0;j<(int)((node->GetDerivN()).size());++j)
-      (node->GetDerivN())[j].clear();
-    (node->GetDerivN()).resize(0);
-
-    // reset derivative maps of tangent vectors
-    for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
-      (node->GetDerivTxi())[j].clear();
-    (node->GetDerivTxi()).resize(0);
-    for (int j=0;j<(int)((node->GetDerivTeta()).size());++j)
-      (node->GetDerivTeta())[j].clear();
-    (node->GetDerivTeta()).resize(0);
-
-    // reset closest node
-    // (FIXME: at the moment we do not need this info. in the next
-    // iteration, but it might be helpful for accelerated search!!!)
-    node->ClosestNode() = -1;
-
-    // reset nodal Mortar maps
-    for (int j=0;j<(int)((node->GetD()).size());++j)
-      (node->GetD())[j].clear();
-    for (int j=0;j<(int)((node->GetM()).size());++j)
-      (node->GetM())[j].clear();
-    for (int j=0;j<(int)((node->GetMmod()).size());++j)
-      (node->GetMmod())[j].clear();
-
-    (node->GetD()).resize(0);
-    (node->GetM()).resize(0);
-    (node->GetMmod()).resize(0);
-
-    // reset derivative map of Mortar matrices
-    (node->GetDerivD()).clear();
-    (node->GetDerivM()).clear();
-
-    // reset nodal weighted gap and derivative
-    node->Getg() = 1.0e12;
-    (node->GetDerivG()).clear();
-
-    // reset feasible projection status
-    node->HasProj() = false;
-  }
-
-  // loop over all elements to reset contact candidates / search lists
-  // (use fully overlapping column map)
-  for (int i=0;i<idiscret_->NumMyColElements();++i)
-  {
-    CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(i));
-    element->SearchElements().resize(0);
-  }
-
-  // reset matrix containing interface contact segments (gmsh)
-  CSegs().Shape(0,0);
-
-  // loop over all elements to set current element length / area
-  // (use fully overlapping column map)
-  for (int j=0;j<idiscret_->NumMyColElements();++j)
-  {
-    CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(j));
-    element->Area()=element->ComputeArea();
-  }
-
-  // *******************************************************************
-  // contents of Evaluate()
-  // *******************************************************************
-  // loop over proc's slave nodes of the interface
-  // use standard column map to include processor's ghosted nodes
-  // use boundary map to include slave side boundary nodes
-  for(int i=0; i<snodecolmapbound_->NumMyElements();++i)
-  {
-    int gid1 = snodecolmapbound_->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid1);
-    if (!node) dserror("ERROR: Cannot find node with gid %",gid1);
-    CNode* cnode = static_cast<CNode*>(node);
-
-    cnode->BuildAveragedNormal();
-  }
-
-  // contact search algorithm
-  EvaluateContactSearch();
-
-#ifndef CONTACTONEMORTARLOOP
-    // loop over proc's slave elements of the interface for integration
-    // use standard column map to include processor's ghosted elements
-    for (int j=0; j<selecolmap_->NumMyElements();++j)
-    {
-      int gid1 = selecolmap_->GID(j);
-      DRT::Element* ele1 = idiscret_->gElement(gid1);
-      if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
-      CElement* selement = static_cast<CElement*>(ele1);
-
-      // integrate Mortar matrix D (lives on slave side only!)
-      IntegrateSlave(*selement);
-    }
-#endif // #ifndef CONTACTONEMORTARLOOP
-
-  // loop over proc's slave elements of the interface for integration
-  // use standard column map to include processor's ghosted elements
-  for (int i=0; i<selecolmap_->NumMyElements();++i)
-  {
-    int gid1 = selecolmap_->GID(i);
-    DRT::Element* ele1 = idiscret_->gElement(gid1);
-    if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
-    CElement* selement = static_cast<CElement*>(ele1);
-
-    // loop over the contact candidate master elements of sele_
-    // use slave element's candidate list SearchElements !!!
-    for (int j=0;j<selement->NumSearchElements();++j)
-    {
-      int gid2 = selement->SearchElements()[j];
-      DRT::Element* ele2 = idiscret_->gElement(gid2);
-      if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
-      CElement* melement = static_cast<CElement*>(ele2);
-
-      //********************************************************************
-      // 1) perform coupling (projection + overlap detection for sl/m pair)
-      // 2) integrate Mortar matrix M and weighted gap g
-      // 3) compute directional derivative of M and g and store into nodes
-      //********************************************************************
-      IntegrateCoupling(*selement,*melement);
-    }
-  }
+  Initialize();
+  Evaluate();
 
   return;
 
@@ -6740,6 +5152,1275 @@ void CONTACT::Interface::FDCheckGP3DDeriv(vector<vector<double> >& testgps,
 
   exit(0);
   return;
+}
+
+/*----------------------------------------------------------------------*
+ | Finite difference check of lagr. mult. derivatives        popp 06/09 |
+ *----------------------------------------------------------------------*/
+void CONTACT::Interface::FDCheckDerivZ()
+{
+  // get out of here if not participating in interface
+  if (!lComm())
+    return;
+  
+  cout << setprecision(14);
+
+  // create storage for lm entries
+  map<int, double> reflm;
+  map<int, double> newlm;
+  
+  map<int, map<int,double> > deltastorage;
+
+  // loop over proc's slave nodes
+  for (int i=0; i<snoderowmap_->NumMyElements(); ++i)
+  {
+    int gid = snoderowmap_->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node)
+      dserror("ERROR: Cannot find node with gid %",gid);
+    CNode* cnode = static_cast<CNode*>(node);
+
+    int dim = cnode->NumDof();
+    
+    for( int d=0; d<dim; d++ )
+    {
+      int dof = cnode->Dofs()[d];
+    
+      if ((int)(cnode->GetDerivZ()).size()!=0)
+      {
+        typedef map<int,double>::const_iterator CI;
+        map<int,double>& derivzmap = cnode->GetDerivZ()[d];
+  
+        // print derivz-values to screen and store
+        for (CI p=derivzmap.begin(); p!=derivzmap.end(); ++p)
+        {
+          //cout << " (" << cnode->Dofs()[k] << ", " << p->first << ") : \t " << p->second << endl;
+          (deltastorage[cnode->Dofs()[d]])[p->first] = p->second;
+        }
+      }
+      
+      // store lm-values into refM
+      reflm[dof] = cnode->lm()[d];
+    }
+  }
+  
+  cout << "FINITE DIFFERENCE SOLUTION\n" << endl;
+  
+  int w = 0;
+  
+  // global loop to apply FD scheme to all SLAVE dofs (=3*nodes)
+  for (int fd=0; fd<3*snodefullmap_->NumMyElements(); ++fd)
+  {
+    
+    // Initialize
+    Initialize();
+
+    // now get the node we want to apply the FD scheme to
+    int gid = snodefullmap_->GID(fd/3);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node)
+      dserror("ERROR: Cannot find slave node with gid %",gid);
+    CNode* snode = static_cast<CNode*>(node);
+
+    int sdof = snode->Dofs()[fd%3];
+    
+    cout << "DEVIATION FOR S-NODE # " << gid << " DOF: " << sdof << endl;
+    
+    // do step forward (modify nodal displacement)
+    double delta = 1e-8;
+    if (fd%3==0)
+    {
+      snode->xspatial()[0] += delta;
+      snode->u()[0] += delta;
+    } else if (fd%3==1)
+    {
+      snode->xspatial()[1] += delta;
+      snode->u()[1] += delta;
+    } else
+    {
+      snode->xspatial()[2] += delta;
+      snode->u()[2] += delta;
+    }
+
+    // loop over all elements to set current element length / area
+    // (use fully overlapping column map)
+    for (int j=0; j<idiscret_->NumMyColElements(); ++j)
+    {
+      CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(j));
+      element->Area()=element->ComputeArea();
+    }
+
+    // Evaluate
+    Evaluate();
+    bool isincontact, activesetchange = false;
+    AssembleMacauley(isincontact, activesetchange);
+
+    // compute finite difference derivative
+    for (int k=0; k<snoderowmap_->NumMyElements(); ++k)
+    {
+      int kgid = snoderowmap_->GID(k);
+      DRT::Node* knode = idiscret_->gNode(kgid);
+      if (!knode)
+        dserror("ERROR: Cannot find node with gid %",kgid);
+      CNode* kcnode = static_cast<CNode*>(knode);
+
+      int dim = kcnode->NumDof();
+      
+      double fd;
+      double dev;
+      
+      for( int d=0; d<dim; d++ )
+      {
+        int dof = kcnode->Dofs()[d];
+        
+        newlm[dof] = kcnode->lm()[d];
+        
+        fd = (newlm[dof] - reflm[dof]) / delta;
+        
+        dev = deltastorage[dof][sdof] - fd;
+        
+        if( dev )
+        {
+          cout << " (" << dof << ", " << sdof << ") :\t fd=" <<  fd  
+                    << " derivz=" << deltastorage[dof][sdof] << " DEVIATION: " << dev;
+                  
+          if( abs(dev) > 1e-4 )
+          {
+            cout << " **** WARNING ****";
+            w++;
+          }
+          else if( abs(dev) > 1e-5 )
+          {
+            cout << " **** warning ****";
+            w++;
+          }
+          cout << endl;
+          
+          if( (abs(dev) > 1e-2) )
+          {
+             cout << " *************** ERROR *************** " << endl;
+             //dserror("un-tolerable deviation");
+          }
+        }
+      }
+    }
+
+    // undo finite difference modification
+    if (fd%3==0)
+    {
+      snode->xspatial()[0] -= delta;
+      snode->u()[0] -= delta;
+    } else if (fd%3==1)
+    {
+      snode->xspatial()[1] -= delta;
+      snode->u()[1] -= delta;
+    }
+    else
+    {
+      snode->xspatial()[2] -= delta;
+      snode->u()[2] -= delta;
+    }
+  }
+  cout << "\n ******************** GENERATED " << w << " WARNINGS ***************** \n" << endl;
+  
+  w = 0;
+  
+  // global loop to apply FD scheme to all MASTER dofs (=3*nodes)
+  for (int fd=0; fd<3*mnodefullmap_->NumMyElements(); ++fd)
+  {
+    
+    // Initialize
+    Initialize();
+
+    // now get the node we want to apply the FD scheme to
+    int gid = mnodefullmap_->GID(fd/3);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node)
+      dserror("ERROR: Cannot find slave node with gid %",gid);
+    CNode* mnode = static_cast<CNode*>(node);
+
+    int mdof = mnode->Dofs()[fd%3];
+    
+    cout << "DEVIATION FOR M-NODE # " << gid << " DOF: " << mdof << endl;
+    
+    // do step forward (modify nodal displacement)
+    double delta = 1e-8;
+    if (fd%3==0)
+    {
+      mnode->xspatial()[0] += delta;
+      mnode->u()[0] += delta;
+    } else if (fd%3==1)
+    {
+      mnode->xspatial()[1] += delta;
+      mnode->u()[1] += delta;
+    }
+    else
+     {
+       mnode->xspatial()[2] += delta;
+       mnode->u()[2] += delta;
+     }
+
+    // loop over all elements to set current element length / area
+    // (use fully overlapping column map)
+    for (int j=0; j<idiscret_->NumMyColElements(); ++j)
+    {
+      CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(j));
+      element->Area()=element->ComputeArea();
+    }
+
+    // Evaluate
+    Evaluate();
+    bool isincontact, activesetchange = false;
+    AssembleMacauley(isincontact, activesetchange);
+
+    // compute finite difference derivative
+    for (int k=0; k<snoderowmap_->NumMyElements(); ++k)
+    {
+      int kgid = snoderowmap_->GID(k);
+      DRT::Node* knode = idiscret_->gNode(kgid);
+      if (!knode)
+        dserror("ERROR: Cannot find node with gid %",kgid);
+      CNode* kcnode = static_cast<CNode*>(knode);
+
+      int dim = kcnode->NumDof();
+      
+      double fd;
+      double dev;
+      
+      // calculate derivative and deviation for every dof
+      for( int d=0; d<dim; d++ )
+      {
+        int dof = kcnode->Dofs()[d];
+        
+        newlm[dof] = kcnode->lm()[d];
+        
+        fd = (newlm[dof] - reflm[dof]) / delta;
+        
+        dev = deltastorage[dof][mdof] - fd;
+        
+        if( dev )
+        {
+          cout << " (" << dof << ", " << mdof << ") :\t fd=" <<  fd  
+                    << " derivz=" << deltastorage[dof][mdof] << " DEVIATION: " << dev;
+                  
+          if( abs(dev) > 1e-4 )
+          {
+            cout << " **** WARNING ****";
+            w++;
+          }
+          else if( abs(dev) > 1e-5 )
+          {
+            cout << " **** warning ****";
+            w++;
+          }
+          cout << endl;
+          
+          if( (abs(dev) > 1e-2) )
+          {
+             cout << " *************** ERROR *************** " << endl;
+             //dserror("un-tolerable deviation");
+          }
+        }
+      }
+    }
+
+    // undo finite difference modification
+    if (fd%3==0)
+    {
+      mnode->xspatial()[0] -= delta;
+      mnode->u()[0] -= delta;
+    } else if (fd%3==1)
+    {
+      mnode->xspatial()[1] -= delta;
+      mnode->u()[1] -= delta;
+    }
+    else
+    {
+      mnode->xspatial()[2] -= delta;
+      mnode->u()[2] -= delta;
+    }
+    
+  }
+  cout << "\n ******************** GENERATED " << w << " WARNINGS ***************** \n" << endl;
+  
+  // back to normal...
+
+  // Initialize
+  Initialize();
+
+  // loop over all elements to set current element length / area
+  // (use fully overlapping column map)
+  for (int j=0; j<idiscret_->NumMyColElements(); ++j)
+  {
+    CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(j));
+    element->Area()=element->ComputeArea();
+  }
+
+  // *******************************************************************
+  // contents of Evaluate()
+  // *******************************************************************    
+  Evaluate();
+  bool isincontact, activesetchange = false;
+  AssembleMacauley(isincontact, activesetchange);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | Finite difference check contact tangent stiffness         popp 06/09 |
+ *----------------------------------------------------------------------*/
+void CONTACT::Interface::FDCheckPenaltyKTeff(RCP<LINALG::SparseMatrix> kc, RCP<Epetra_Vector> reffc, RCP<LINALG::SparseMatrix> dold, RCP<LINALG::SparseMatrix> mold, RCP<Epetra_Vector> zold, RCP<Epetra_Map> problemrowmap, double alphaf)
+{
+  // get out of here if not participating in interface
+  if (!lComm())
+    return;
+  
+  cout << setprecision(14);
+  
+  cout << "FINITE DIFFERENCE SOLUTION" << endl;
+  
+  // global loop to apply FD scheme to all SLAVE dofs (=2*nodes)
+  for (int fd=0; fd<2*snodefullmap_->NumMyElements(); ++fd)
+  {
+    int w = 0;
+    
+    // create storage for contact forces in modified state
+    RCP<Epetra_Vector> newfc = rcp( new Epetra_Vector(*problemrowmap));
+    
+    // Initialize
+    Initialize();
+
+    // now get the node we want to apply the FD scheme to
+    int gid = snodefullmap_->GID(fd/2);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node)
+      dserror("ERROR: Cannot find slave node with gid %",gid);
+    CNode* snode = static_cast<CNode*>(node);
+    
+    cout << "\nBuilding FD for Slave Node: " << snode->Id() << " DOF: " << snode->Dofs()[fd%2] << endl;
+
+    int dof = snode->Dofs()[fd%2]; // current modified dof 
+    
+    // do step forward (modify nodal displacement)
+    double delta = 1e-8;
+    if (fd%2==0)
+    {
+      snode->xspatial()[0] += delta;
+      snode->u()[0] += delta;
+    } else if (fd%2==1)
+    {
+      snode->xspatial()[1] += delta;
+      snode->u()[1] += delta;
+    }
+
+    // loop over all elements to set current element length / area
+    // (use fully overlapping column map)
+    for (int j=0; j<idiscret_->NumMyColElements(); ++j)
+    {
+      CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(j));
+      element->Area()=element->ComputeArea();
+    }
+
+    // Evaluate
+    Evaluate();
+    bool isincontact, activesetchange = false;
+    AssembleMacauley(isincontact, activesetchange);
+    
+    RCP<LINALG::SparseMatrix> dmatrix = rcp( new LINALG::SparseMatrix(*sdofrowmap_,100));
+    RCP<LINALG::SparseMatrix> mmatrix = rcp( new LINALG::SparseMatrix(*sdofrowmap_,100));
+    RCP<Epetra_Vector> gvector = LINALG::CreateVector(*snoderowmap_, true);
+    RCP<Epetra_Vector> zvector = LINALG::CreateVector(*sdofrowmap_, true);
+
+    AssembleDMG(*dmatrix, *mmatrix, *gvector);
+    AssembleLM(*zvector);
+    
+    dmatrix->Complete();
+    mmatrix->Complete(*mdofrowmap_, *sdofrowmap_);
+    
+    // compute new fc vector
+    {
+      RCP<Epetra_Vector> fcmdold = rcp(new Epetra_Vector(*sdofrowmap_));
+      dold->Multiply(false, *zold, *fcmdold);
+      RCP<Epetra_Vector> fcmdoldtemp = rcp(new Epetra_Vector(*problemrowmap));
+      LINALG::Export(*fcmdold, *fcmdoldtemp);
+      newfc->Update(-alphaf, *fcmdoldtemp, 1.0);
+    }
+
+    {
+      RCP<Epetra_Vector> fcmmold = LINALG::CreateVector(*mdofrowmap_, true);
+      mold->Multiply(true, *zold, *fcmmold);
+      RCP<Epetra_Vector> fcmmoldtemp = rcp(new Epetra_Vector(*problemrowmap));
+      LINALG::Export(*fcmmold, *fcmmoldtemp);
+      newfc->Update(alphaf, *fcmmoldtemp, 1.0);
+    }
+
+    {
+      RCP<Epetra_Vector> fcmd = rcp(new Epetra_Vector(*sdofrowmap_));
+      dmatrix->Multiply(false, *zvector, *fcmd);
+      RCP<Epetra_Vector> fcmdtemp = rcp(new Epetra_Vector(*problemrowmap));
+      LINALG::Export(*fcmd, *fcmdtemp);
+      newfc->Update(-(1-alphaf), *fcmdtemp, 1.0);
+    }
+
+    {
+      RCP<Epetra_Vector> fcmm = LINALG::CreateVector(*mdofrowmap_, true);
+      mmatrix->Multiply(true, *zvector, *fcmm);
+      RCP<Epetra_Vector> fcmmtemp = rcp(new Epetra_Vector(*problemrowmap));
+      LINALG::Export(*fcmm, *fcmmtemp);
+      newfc->Update(1-alphaf, *fcmmtemp, 1.0);
+    }
+    
+    // compute deviation vector
+    cout << "DEVIATION for S-NODE #" << gid << " DOF " << dof << endl;
+     
+    // create storage for finite differences
+    RCP<Epetra_Vector> derivfc = rcp( new Epetra_Vector(*problemrowmap));
+    
+    derivfc->Update(1.0, *newfc, -1.0, *reffc, 1.0);
+    derivfc->Scale(-1.0/delta);
+    
+    // print deviation    
+    if( kc->NormOne() )
+    {
+      //cout << "derivfd" << endl;
+      //cout << *derivfc << endl;
+      
+      // loop over all dofs
+      for( int k=0; k<problemrowmap->NumMyElements(); ++k )
+      {       
+          int kdof = problemrowmap->GID(k);
+          
+          // print comparision
+          if( (*derivfc)[k] ) // only if derivativ present
+          {
+            cout << "(" << kdof << "," << dof << ") : derivfd=" << (*derivfc)[k];
+            
+            int length = problemrowmap->NumMyElements();
+            int numentries = 0;
+            vector<double> nodevalues(length,0);
+            double* nodevals = &(nodevalues)[0];
+            vector<int> nodeentries(length,0);
+            int* nodeids = &(nodeentries)[0];
+            kc->EpetraMatrix()->ExtractGlobalRowCopy(kdof, length, numentries, nodevals, nodeids);
+          
+            if( numentries )
+            { 
+              vector<int>::iterator result = find( nodeentries.begin(), nodeentries.end(), dof );
+
+              if( result != nodeentries.end() )
+              {                
+                // dirty hack
+                for( int m=0; m<(int)nodevalues.size(); m++)
+                {
+                  if( nodeentries[m] == *result )
+                  {
+                    double dev = (*derivfc)[k] - nodevalues[m];
+                  
+                    if( abs(dev) < 1e-10)
+                      cout << " PERFECT MATCH" << endl;
+                    else
+                      cout << " kc=" << nodevalues[m] << " DEVIATION: " << dev;
+                    if( abs(dev) > 1e-4 )
+                    {
+                      w++;
+                      // the entry is present but most likely inaccurate
+                      cout << " ****** WARNING ******"; 
+                    }
+                    else if( abs(dev) > 1e-5 )
+                    {
+                      w++;
+                      // the entry is present but inaccurate
+                      cout << " ****** warning ******";
+                    }
+                  }
+                }
+                
+              }
+              else
+              {
+                // the entry is not present
+                cout << "  NOT FOUND +++++ WARNING +++++";
+                w++;
+              }
+            }
+            else
+            {
+              // the complete row is not present
+              cout << "   NOT FOUND  ##### WARNING #####";
+              w++;
+            }
+            
+            cout << endl;
+          }
+      }
+    }
+
+    // undo finite difference modification
+    if (fd%2==0)
+    {
+      snode->xspatial()[0] -= delta;
+      snode->u()[0] -= delta;
+    } else if (fd%2==1)
+    {
+      snode->xspatial()[1] -= delta;
+      snode->u()[1] -= delta;
+    }
+    
+    cout << " **************** GENERATED " << w << " WARNINGS IN TOTAL ********************"<< endl;
+  }
+  
+  // global loop to apply FD scheme to all MASTER dofs (=2*nodes)
+  for (int fd=0; fd<2*mnodefullmap_->NumMyElements(); ++fd)
+  {
+    int w = 0;
+    
+    // create storage for contact forces in modified state
+    RCP<Epetra_Vector> newfc = rcp( new Epetra_Vector(*problemrowmap));
+    
+    // Initialize
+    //cout << "init" << endl;
+    Initialize();
+
+    // now get the node we want to apply the FD scheme to
+    int gid = mnodefullmap_->GID(fd/2);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node)
+      dserror("ERROR: Cannot find master node with gid %",gid);
+    CNode* mnode = static_cast<CNode*>(node);
+    
+    cout << "\nBuilding FD for Master Node: " << mnode->Id() << " DOF: " << mnode->Dofs()[fd%2] << endl;
+
+    int dof = -1; // current modified dof 
+    
+    // do step forward (modify nodal displacement)
+    //cout << "step" << endl;
+    double delta = 1e-8;
+    if (fd%2==0)
+    {
+      mnode->xspatial()[0] += delta;
+      mnode->u()[0] += delta;
+      dof = mnode->Dofs()[0];
+    } else if (fd%2==1)
+    {
+      mnode->xspatial()[1] += delta;
+      mnode->u()[1] += delta;
+      dof = mnode->Dofs()[1];
+    }
+
+    // loop over all elements to set current element length / area
+    // (use fully overlapping column map)
+    for (int j=0; j<idiscret_->NumMyColElements(); ++j)
+    {
+      CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(j));
+      element->Area()=element->ComputeArea();
+    }
+
+    // Evaluate
+    //cout << "eval" << endl;
+    Evaluate();
+    bool isincontact, activesetchange = false;
+    AssembleMacauley(isincontact, activesetchange);
+    
+    RCP<LINALG::SparseMatrix> dmatrix = rcp( new LINALG::SparseMatrix(*sdofrowmap_,100));
+    RCP<LINALG::SparseMatrix> mmatrix = rcp( new LINALG::SparseMatrix(*sdofrowmap_,100));
+    RCP<Epetra_Vector> gvector = LINALG::CreateVector(*snoderowmap_, true);
+    RCP<Epetra_Vector> zvector = LINALG::CreateVector(*sdofrowmap_, true);
+    
+    //cout << "assemble" << endl;
+    AssembleDMG(*dmatrix, *mmatrix, *gvector);
+    AssembleLM(*zvector);
+    
+    /*cout << "gap:" << endl;
+    cout << *gvector << endl;
+    
+    cout << "zvector:" << endl;
+    cout << *zvector << endl;*/
+    
+    dmatrix->Complete();
+    mmatrix->Complete(*mdofrowmap_, *sdofrowmap_);
+    
+    // compute new fc vector
+    //cout << "newfc" << endl;
+    {
+      RCP<Epetra_Vector> fcmdold = rcp(new Epetra_Vector(*sdofrowmap_));
+      dold->Multiply(false, *zold, *fcmdold);
+      RCP<Epetra_Vector> fcmdoldtemp = rcp(new Epetra_Vector(*problemrowmap));
+      LINALG::Export(*fcmdold, *fcmdoldtemp);
+      newfc->Update(-alphaf, *fcmdoldtemp, 1.0);
+    }
+
+    {
+      RCP<Epetra_Vector> fcmmold = LINALG::CreateVector(*mdofrowmap_, true);
+      mold->Multiply(true, *zold, *fcmmold);
+      RCP<Epetra_Vector> fcmmoldtemp = rcp(new Epetra_Vector(*problemrowmap));
+      LINALG::Export(*fcmmold, *fcmmoldtemp);
+      newfc->Update(alphaf, *fcmmoldtemp, 1.0);
+    }
+
+    {
+      RCP<Epetra_Vector> fcmd = rcp(new Epetra_Vector(*sdofrowmap_));
+      dmatrix->Multiply(false, *zvector, *fcmd);
+      RCP<Epetra_Vector> fcmdtemp = rcp(new Epetra_Vector(*problemrowmap));
+      LINALG::Export(*fcmd, *fcmdtemp);
+      newfc->Update(-(1-alphaf), *fcmdtemp, 1.0);
+    }
+
+    {
+      RCP<Epetra_Vector> fcmm = LINALG::CreateVector(*mdofrowmap_, true);
+      mmatrix->Multiply(true, *zvector, *fcmm);
+      RCP<Epetra_Vector> fcmmtemp = rcp(new Epetra_Vector(*problemrowmap));
+      LINALG::Export(*fcmm, *fcmmtemp);
+      newfc->Update(1-alphaf, *fcmmtemp, 1.0);
+    }
+    
+    // compute deviation vector
+    cout << "DEVIATION for M-NODE #" << gid << " DOF " << dof << endl;
+    
+    // create storage for finite differences
+    RCP<Epetra_Vector> derivfc = rcp( new Epetra_Vector(*problemrowmap));
+    
+    /*cout << "newfc:" << endl;
+    cout << *newfc << endl;*/
+    
+    derivfc->Update(1.0, *newfc, -1.0, *reffc, 1.0);
+    derivfc->Scale(-1.0/delta);
+    
+    /*cout << "derivfc:" << endl;
+    cout << *derivfc << endl;*/
+    
+    if( kc->NormOne() )
+    {
+      // loop over all dofs
+      for( int k=0; k<problemrowmap->NumMyElements(); ++k )
+      {       
+          int kdof = problemrowmap->GID(k);
+          
+          // print comparision
+          if( (*derivfc)[k] ) // only if derivative present
+          {
+            cout << "(" << kdof << "," << dof << ") : derivfd=" << (*derivfc)[k];
+            
+            int length = problemrowmap->NumMyElements();
+            int numentries = 0;
+            vector<double> nodevalues(length,0);
+            double* nodevals = &(nodevalues)[0];
+            vector<int> nodeentries(length,0);
+            int* nodeids = &(nodeentries)[0];
+            kc->EpetraMatrix()->ExtractGlobalRowCopy(kdof, length, numentries, nodevals, nodeids);
+          
+            if( numentries )
+            { 
+              vector<int>::iterator result = find( nodeentries.begin(), nodeentries.end(), dof );
+
+              if( result != nodeentries.end() )
+              {
+                // dirty hack
+                for( int m=0; m<(int)nodevalues.size(); m++)
+                {
+                  if( nodeentries[m] == *result )
+                  {
+                    double dev = (*derivfc)[k] - nodevalues[m];
+                  
+                    if( abs(dev) < 1e-12)
+                      cout << " PERFECT MATCH" << endl;
+                    else
+                      cout << " kc=" << nodevalues[m] << " DEVIATION: " << dev;
+                    
+                    if( abs(dev) > 1e-4 )
+                    {
+                      w++;
+                      // the entry is present but most likely inaccurate
+                      cout << " ****** WARNING ******"; 
+                    }
+                    else if( abs(dev) > 1e-5 )
+                    {
+                      w++;
+                      // the entry is present but inaccurate
+                      cout << " ****** warning ******";
+                    }
+                    
+                  }
+                }
+                
+              }
+              else
+              {
+                // the entry is not present
+                cout << "  NOT FOUND +++++ WARNING +++++";
+                w++;
+              }
+            }
+            else
+            {
+              // the complete row is not present
+              cout << "   NOT FOUND  ##### WARNING #####";
+              w++;
+            }
+            
+            cout << endl;
+          }
+      }
+    }
+
+    // undo finite difference modification
+    if (fd%2==0)
+    {
+      mnode->xspatial()[0] -= delta;
+      mnode->u()[0] -= delta;
+    } else if (fd%2==1)
+    {
+      mnode->xspatial()[1] -= delta;
+      mnode->u()[1] -= delta;
+    }
+    
+    cout << " **************** GENERATED " << w << " WARNINGS IN TOTAL ********************"<< endl;
+  }
+
+  // back to normal...
+
+  // Initialize
+  Initialize();
+
+  // loop over all elements to set current element length / area
+  // (use fully overlapping column map)
+  for (int j=0; j<idiscret_->NumMyColElements(); ++j)
+  {
+    CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(j));
+    element->Area()=element->ComputeArea();
+  }
+
+  // *******************************************************************
+  // contents of Evaluate()
+  // *******************************************************************    
+  Evaluate();
+  bool isincontact, activesetchange = false;
+  AssembleMacauley(isincontact, activesetchange);
+
+  return;  
+}
+
+/*----------------------------------------------------------------------*
+ | Finite difference check contact tangent stiffness #1.1    popp 06/09 |
+ *----------------------------------------------------------------------*/
+void CONTACT::Interface::FDCheckPenaltyLinD(RCP<LINALG::SparseMatrix> lindmatrix, RCP<Epetra_Vector> reffcd)
+{
+  // HERE WE ASSUME ALPHA_F == 0 (STATIC) !!! 
+  
+  // get out of here if not participating in interface
+  if (!lComm())
+    return;
+  
+  cout << setprecision(14);
+  
+  cout << "FINITE DIFFERENCE SOLUTION" << endl;
+  
+  // global loop to apply FD scheme to all SLAVE dofs (=2*nodes)
+  for (int fd=0; fd<2*snodefullmap_->NumMyElements(); ++fd)
+  {
+    int w = 0;
+    
+    // create storage
+    RCP<Epetra_Vector> newfcd = rcp( new Epetra_Vector(*sdofrowmap_));
+    
+    // Initialize
+    Initialize();
+
+    // now get the node we want to apply the FD scheme to
+    int gid = snodefullmap_->GID(fd/2);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node)
+      dserror("ERROR: Cannot find slave node with gid %",gid);
+    CNode* snode = static_cast<CNode*>(node);
+    
+    cout << "\nBuilding FD for Slave Node: " << snode->Id() << " DOF: " << snode->Dofs()[fd%2] << endl;
+
+    int dof = snode->Dofs()[fd%2]; // current modified dof 
+    
+    // do step forward (modify nodal displacement)
+    double delta = 1e-8;
+    if (fd%2==0)
+    {
+      snode->xspatial()[0] += delta;
+      snode->u()[0] += delta;
+    } else if (fd%2==1)
+    {
+      snode->xspatial()[1] += delta;
+      snode->u()[1] += delta;
+    }
+
+    // loop over all elements to set current element length / area
+    // (use fully overlapping column map)
+    for (int j=0; j<idiscret_->NumMyColElements(); ++j)
+    {
+      CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(j));
+      element->Area()=element->ComputeArea();
+    }
+
+    // Evaluate
+    Evaluate();
+    bool isincontact, activesetchange = false;
+    AssembleMacauley(isincontact, activesetchange);
+    
+    RCP<LINALG::SparseMatrix> dmatrix = rcp( new LINALG::SparseMatrix(*sdofrowmap_,100));
+    RCP<LINALG::SparseMatrix> mmatrix = rcp( new LINALG::SparseMatrix(*sdofrowmap_,100));
+    RCP<Epetra_Vector> gvector = LINALG::CreateVector(*snoderowmap_, true);
+    RCP<Epetra_Vector> zvector = LINALG::CreateVector(*sdofrowmap_, true);
+
+    AssembleDMG(*dmatrix, *mmatrix, *gvector);
+    AssembleLM(*zvector);
+    
+    dmatrix->Complete();
+    mmatrix->Complete(*mdofrowmap_, *sdofrowmap_);
+    
+    // compute new fcd vector
+    dmatrix->Multiply(false, *zvector, *newfcd);
+    
+    // compute deviation vector
+    cout << "DEVIATION for S-NODE #" << gid << " DOF " << dof << endl;
+    
+    cout << "newfcd: " << *newfcd << endl;
+    
+    newfcd->Update(-1.0, *reffcd, 1.0);
+    newfcd->Scale(1.0/delta);
+    
+    cout << "devfcd: " << *newfcd << endl;
+    
+    // print deviation
+    // loop over all slave dofs
+    for( int k=0; k<sdofrowmap_->NumMyElements(); ++k )
+    {       
+        int kdof = sdofrowmap_->GID(k);
+        
+        // print comparision
+        if( (*newfcd)[k] ) // only if deviation present
+        {
+          cout << "(" << kdof << "," << dof << ") : devfd=" << (*newfcd)[k];
+          
+          int length = sdofrowmap_->NumMyElements();
+          int numentries = 0;
+          vector<double> nodevalues(length,0);
+          double* nodevals = &(nodevalues)[0];
+          vector<int> nodeentries(length,0);
+          int* nodeids = &(nodeentries)[0];
+          lindmatrix->EpetraMatrix()->ExtractGlobalRowCopy(kdof, length, numentries, nodevals, nodeids);
+        
+          if( numentries )
+          { 
+            vector<int>::iterator result = find( nodeentries.begin(), nodeentries.end(), dof );
+
+            if( result != nodeentries.end() )
+            {                
+              // dirty hack
+              for( int m=0; m<(int)nodevalues.size(); m++)
+              {
+                if( nodeentries[m] == *result )
+                {
+                  double dev = (*newfcd)[k] - nodevalues[m];
+                
+                  cout << " lind=" << nodevalues[m] << " DEVIATION: " << dev;
+                  if( abs(dev) > 1e-5 )
+                  {
+                    w++;
+                    // the entry is present but inaccurate
+                    cout << " ****** WARNING ******";
+                  }
+                }
+              }
+              
+            }
+            else
+            {
+              // the entry is not present
+              cout << "  NOT FOUND +++++ WARNING +++++";
+              w++;
+            }
+          }
+          else
+          {
+            // the complete row is not present
+            cout << "   NOT FOUND  ##### WARNING #####";
+            w++;
+          }
+          
+          cout << endl;
+        }
+        else
+          cout << "(" << kdof << "," << dof << ") : perfect match" << endl;
+    }
+
+    // undo finite difference modification
+    if (fd%2==0)
+    {
+      snode->xspatial()[0] -= delta;
+      snode->u()[0] -= delta;
+    } else if (fd%2==1)
+    {
+      snode->xspatial()[1] -= delta;
+      snode->u()[1] -= delta;
+    }
+    
+    cout << " **************** GENERATED " << w << " WARNINGS IN TOTAL ********************"<< endl;
+  }
+  
+  // back to normal...
+
+  // Initialize
+  Initialize();
+
+  // loop over all elements to set current element length / area
+  // (use fully overlapping column map)
+  for (int j=0; j<idiscret_->NumMyColElements(); ++j)
+  {
+    CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(j));
+    element->Area()=element->ComputeArea();
+  }
+
+  // *******************************************************************
+  // contents of Evaluate()
+  // *******************************************************************    
+  Evaluate();
+  bool isincontact, activesetchange = false;
+  AssembleMacauley(isincontact, activesetchange);
+
+  return;  
+  
+}
+
+/*----------------------------------------------------------------------*
+ | Finite difference check contact tangent stiffness #1.2    popp 06/09 |
+ *----------------------------------------------------------------------*/
+void CONTACT::Interface::FDCheckPenaltyLinM(RCP<LINALG::SparseMatrix> linmmatrix, RCP<Epetra_Vector> reffcm)
+{
+  // HERE WE ASSUME ALPHA_F == 0 (STATIC) !!! 
+  
+  // get out of here if not participating in interface
+  if (!lComm())
+    return;
+  
+  cout << setprecision(14);
+  
+  cout << "FINITE DIFFERENCE SOLUTION" << endl;
+  
+  // global loop to apply FD scheme to all SLAVE dofs (=2*nodes)
+  for (int fd=0; fd<2*snodefullmap_->NumMyElements(); ++fd)
+  {
+    int w = 0;
+    
+    // create storage
+    RCP<Epetra_Vector> newfcm = rcp( new Epetra_Vector(*mdofrowmap_));
+    
+    // Initialize
+    Initialize();
+
+    // now get the node we want to apply the FD scheme to
+    int gid = snodefullmap_->GID(fd/2);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node)
+      dserror("ERROR: Cannot find slave node with gid %",gid);
+    CNode* snode = static_cast<CNode*>(node);
+    
+    cout << "\nBuilding FD for Slave Node: " << snode->Id() << " DOF: " << snode->Dofs()[fd%2] << endl;
+
+    int dof = snode->Dofs()[fd%2]; // current modified dof 
+    
+    // do step forward (modify nodal displacement)
+    double delta = 1e-8;
+    if (fd%2==0)
+    {
+      snode->xspatial()[0] += delta;
+      snode->u()[0] += delta;
+    } else if (fd%2==1)
+    {
+      snode->xspatial()[1] += delta;
+      snode->u()[1] += delta;
+    }
+
+    // loop over all elements to set current element length / area
+    // (use fully overlapping column map)
+    for (int j=0; j<idiscret_->NumMyColElements(); ++j)
+    {
+      CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(j));
+      element->Area()=element->ComputeArea();
+    }
+
+    // Evaluate
+    Evaluate();
+    bool isincontact, activesetchange = false;
+    AssembleMacauley(isincontact, activesetchange);
+    
+    RCP<LINALG::SparseMatrix> dmatrix = rcp( new LINALG::SparseMatrix(*sdofrowmap_,100));
+    RCP<LINALG::SparseMatrix> mmatrix = rcp( new LINALG::SparseMatrix(*sdofrowmap_,100));
+    RCP<Epetra_Vector> gvector = LINALG::CreateVector(*snoderowmap_, true);
+    RCP<Epetra_Vector> zvector = LINALG::CreateVector(*sdofrowmap_, true);
+
+    AssembleDMG(*dmatrix, *mmatrix, *gvector);
+    AssembleLM(*zvector);
+    
+    dmatrix->Complete();
+    mmatrix->Complete(*mdofrowmap_, *sdofrowmap_);
+    
+    // compute new fcm vector
+    mmatrix->Multiply(true, *zvector, *newfcm);
+    newfcm->Scale(-1.0);
+    
+    // compute deviation vector
+    cout << "DEVIATION for S-NODE #" << gid << " DOF " << dof << endl;
+    
+    cout << "newfcm: " << *newfcm << endl;
+    
+    newfcm->Update(-1.0, *reffcm, 1.0);
+    newfcm->Scale(1.0/delta);
+    
+    cout << "devfcm: " << *newfcm << endl;
+    
+    // print deviation
+    // loop over all slave dofs
+    for( int k=0; k<mdofrowmap_->NumMyElements(); ++k )
+    {       
+        int kdof = mdofrowmap_->GID(k);
+        
+        // print comparision
+        if( (*newfcm)[k] ) // only if deviation present
+        {
+          cout << "(" << kdof << "," << dof << ") : devfm=" << (*newfcm)[k];
+          
+          int length = mdofrowmap_->NumMyElements();
+          int numentries = 0;
+          vector<double> nodevalues(length,0);
+          double* nodevals = &(nodevalues)[0];
+          vector<int> nodeentries(length,0);
+          int* nodeids = &(nodeentries)[0];
+          linmmatrix->EpetraMatrix()->ExtractGlobalRowCopy(kdof, length, numentries, nodevals, nodeids);
+        
+          if( numentries )
+          { 
+            vector<int>::iterator result = find( nodeentries.begin(), nodeentries.end(), dof );
+
+            if( result != nodeentries.end() )
+            {                
+              // dirty hack
+              for( int m=0; m<(int)nodevalues.size(); m++)
+              {
+                if( nodeentries[m] == *result )
+                {
+                  double dev = (*newfcm)[k] - nodevalues[m];
+                
+                  cout << " linm=" << nodevalues[m] << " DEVIATION: " << dev;
+                  if( abs(dev) > 1e-5 )
+                  {
+                    w++;
+                    // the entry is present but inaccurate
+                    cout << " ****** WARNING ******";
+                  }
+                }
+              }
+              
+            }
+            else
+            {
+              // the entry is not present
+              cout << "  NOT FOUND +++++ WARNING +++++";
+              w++;
+            }
+          }
+          else
+          {
+            // the complete row is not present
+            cout << "   NOT FOUND  ##### WARNING #####";
+            w++;
+          }
+          
+          cout << endl;
+        }
+        else
+          cout << "(" << kdof << "," << dof << ") : perfect match" << endl;
+    }
+
+    // undo finite difference modification
+    if (fd%2==0)
+    {
+      snode->xspatial()[0] -= delta;
+      snode->u()[0] -= delta;
+    } else if (fd%2==1)
+    {
+      snode->xspatial()[1] -= delta;
+      snode->u()[1] -= delta;
+    }
+    
+    cout << " **************** GENERATED " << w << " WARNINGS IN TOTAL ********************"<< endl;
+  }
+  
+  // global loop to apply FD scheme to all MASTER dofs (=2*nodes)
+  for (int fd=0; fd<2*mnodefullmap_->NumMyElements(); ++fd)
+  {
+    int w = 0;
+    
+    // create storage
+    RCP<Epetra_Vector> newfcm = rcp( new Epetra_Vector(*mdofrowmap_));
+    
+    // Initialize
+    Initialize();
+
+    // now get the node we want to apply the FD scheme to
+    int gid = mnodefullmap_->GID(fd/2);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node)
+      dserror("ERROR: Cannot find master node with gid %",gid);
+    CNode* mnode = static_cast<CNode*>(node);
+    
+    cout << "\nBuilding FD for Master Node: " << mnode->Id() << " DOF: " << mnode->Dofs()[fd%2] << endl;
+
+    int dof = mnode->Dofs()[fd%2]; // current modified dof 
+    
+    // do step forward (modify nodal displacement)
+    double delta = 1e-8;
+    if (fd%2==0)
+    {
+      mnode->xspatial()[0] += delta;
+      mnode->u()[0] += delta;
+    } else if (fd%2==1)
+    {
+      mnode->xspatial()[1] += delta;
+      mnode->u()[1] += delta;
+    }
+
+    // loop over all elements to set current element length / area
+    // (use fully overlapping column map)
+    for (int j=0; j<idiscret_->NumMyColElements(); ++j)
+    {
+      CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(j));
+      element->Area()=element->ComputeArea();
+    }
+
+    // Evaluate
+    Evaluate();
+    bool isincontact, activesetchange = false;
+    AssembleMacauley(isincontact, activesetchange);
+    
+    RCP<LINALG::SparseMatrix> dmatrix = rcp( new LINALG::SparseMatrix(*sdofrowmap_,100));
+    RCP<LINALG::SparseMatrix> mmatrix = rcp( new LINALG::SparseMatrix(*sdofrowmap_,100));
+    RCP<Epetra_Vector> gvector = LINALG::CreateVector(*snoderowmap_, true);
+    RCP<Epetra_Vector> zvector = LINALG::CreateVector(*sdofrowmap_, true);
+
+    AssembleDMG(*dmatrix, *mmatrix, *gvector);
+    AssembleLM(*zvector);
+    
+    dmatrix->Complete();
+    mmatrix->Complete(*mdofrowmap_, *sdofrowmap_);
+    
+    // compute new fcm vector
+    mmatrix->Multiply(true, *zvector, *newfcm);
+    newfcm->Scale(1.0);
+    
+    // compute deviation vector
+    cout << "DEVIATION for M-NODE #" << gid << " DOF " << dof << endl;
+    
+    cout << "newfcm: " << *newfcm << endl;
+    
+    newfcm->Update(-1.0, *reffcm, 1.0);
+    newfcm->Scale(-1.0/delta);
+    
+    cout << "devfcm: " << *newfcm << endl;
+    
+    // print deviation
+    // loop over all slave dofs
+    for( int k=0; k<mdofrowmap_->NumMyElements(); ++k )
+    {       
+        int kdof = mdofrowmap_->GID(k);
+        
+        // print comparision
+        if( (*newfcm)[k] ) // only if deviation present
+        {
+          cout << "(" << kdof << "," << dof << ") : devfm=" << (*newfcm)[k];
+          
+          int length = mdofrowmap_->NumMyElements();
+          int numentries = 0;
+          vector<double> nodevalues(length,0);
+          double* nodevals = &(nodevalues)[0];
+          vector<int> nodeentries(length,0);
+          int* nodeids = &(nodeentries)[0];
+          linmmatrix->EpetraMatrix()->ExtractGlobalRowCopy(kdof, length, numentries, nodevals, nodeids);
+        
+          if( numentries )
+          { 
+            vector<int>::iterator result = find( nodeentries.begin(), nodeentries.end(), dof );
+
+            if( result != nodeentries.end() )
+            {                
+              // dirty hack
+              for( int m=0; m<(int)nodevalues.size(); m++)
+              {
+                if( nodeentries[m] == *result )
+                {
+                  double dev = (*newfcm)[k] - nodevalues[m];
+                
+                  cout << " linm=" << nodevalues[m] << " DEVIATION: " << dev;
+                  if( abs(dev) > 1e-5 )
+                  {
+                    w++;
+                    // the entry is present but inaccurate
+                    cout << " ****** WARNING ******";
+                  }
+                }
+              }
+              
+            }
+            else
+            {
+              // the entry is not present
+              cout << "  NOT FOUND +++++ WARNING +++++";
+              w++;
+            }
+          }
+          else
+          {
+            // the complete row is not present
+            cout << "   NOT FOUND  ##### WARNING #####";
+            w++;
+          }
+          
+          cout << endl;
+        }
+        else
+          cout << "(" << kdof << "," << dof << ") : perfect match" << endl;
+    }
+
+    // undo finite difference modification
+    if (fd%2==0)
+    {
+      mnode->xspatial()[0] -= delta;
+      mnode->u()[0] -= delta;
+    } else if (fd%2==1)
+    {
+      mnode->xspatial()[1] -= delta;
+      mnode->u()[1] -= delta;
+    }
+    
+    cout << " **************** GENERATED " << w << " WARNINGS IN TOTAL ********************"<< endl;
+  }
+  
+  // back to normal...
+
+  // Initialize
+  Initialize();
+
+  // loop over all elements to set current element length / area
+  // (use fully overlapping column map)
+  for (int j=0; j<idiscret_->NumMyColElements(); ++j)
+  {
+    CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(j));
+    element->Area()=element->ComputeArea();
+  }
+
+  // *******************************************************************
+  // contents of Evaluate()
+  // *******************************************************************    
+  Evaluate();
+  bool isincontact, activesetchange = false;
+  AssembleMacauley(isincontact, activesetchange);
+
+  return;  
+  
 }
 
 #endif  // #ifdef CCADISCRET

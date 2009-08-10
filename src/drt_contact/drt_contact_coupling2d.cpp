@@ -51,6 +51,7 @@ Maintainer: Alexander Popp
 CONTACT::Coupling2d::Coupling2d(DRT::Discretization& idiscret, int dim,
                             CONTACT::CElement& sele, CONTACT::CElement& mele,
                             Epetra_SerialDenseMatrix& csegs) :
+shapefcn_(Interface::Undefined),
 idiscret_(idiscret),
 dim_(dim),
 sele_(sele),
@@ -77,6 +78,39 @@ contactsegs_(csegs)
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  ctor (public)                                             popp 06/09|
+ *----------------------------------------------------------------------*/
+CONTACT::Coupling2d::Coupling2d(const Interface::ShapeFcnType shapefcn,
+                            DRT::Discretization& idiscret, int dim,
+                            CONTACT::CElement& sele, CONTACT::CElement& mele,
+                            Epetra_SerialDenseMatrix& csegs) :
+shapefcn_(shapefcn),
+idiscret_(idiscret),
+dim_(dim),
+sele_(sele),
+mele_(mele),
+contactsegs_(csegs)
+{
+  // *********************************************************************
+  // the two-dimensional case
+  // *********************************************************************
+  // prepare overlap integration
+  vector<bool> hasproj(4);
+  vector<double> xiproj(4);
+  bool overlap = false;
+
+  // project the element pair
+  Project(hasproj,xiproj);
+
+  // check for element overlap
+  overlap = DetectOverlap(hasproj,xiproj);
+
+  // integrate the element overlap
+  if (overlap) IntegrateOverlap(xiproj);
+  
+  return;
+}
 
 /*----------------------------------------------------------------------*
  |  Project slave / master element pair (public)              popp 04/08|
@@ -540,6 +574,10 @@ bool CONTACT::Coupling2d::DetectOverlap(vector<bool>& hasproj,
  *----------------------------------------------------------------------*/
 bool CONTACT::Coupling2d::IntegrateOverlap(vector<double>& xiproj)
 {
+  // explicitely defined shapefunction type needed
+  if( shapefcn_ == Interface::Undefined )
+    dserror("ERROR: IntegrateOverlap called without specific shape function defined!");
+  
   /**********************************************************************/
   /* INTEGRATION                                                        */
   /* Depending on overlap and the xiproj entries integrate the Mortar   */
@@ -554,7 +592,7 @@ bool CONTACT::Coupling2d::IntegrateOverlap(vector<double>& xiproj)
   double mxib = xiproj[3];
 
   // create an integrator instance with correct NumGP and Dim
-  CONTACT::Integrator integrator(sele_.Shape());
+  CONTACT::Integrator integrator(shapefcn_,sele_.Shape());
 
   // do the overlap integration (integrate and linearize both M and gap)
   int nrow = sele_.NumNode();
