@@ -70,7 +70,7 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
     if (screen_out) std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
     std::ofstream f_system(filename.str().c_str());
     f_system << IO::GMSH::disToString("Fluid", 0.0, xfemdis_);
-    f_system << IO::GMSH::disToString("Solid", 1.0, cutterdis_, cutterposnp_);
+    f_system << IO::GMSH::disToString("Boundary", 1.0, cutterdis_, cutterposnp_);
     f_system.close();
     if (screen_out) cout << " done" << endl;
   }
