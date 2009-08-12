@@ -384,7 +384,6 @@ void LINALG::Solver::Solve_aztec(
   // Allocate an aztec solver with default parameters
   // We do this every time because reusing the solver object
   // does lead to crashes that are not understood
-  //if (create)
   {
     // create an aztec solver
     aztec_ = Teuchos::null;
@@ -1002,17 +1001,31 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
       ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
       ifpacklist.set("amesos: solver type", "Amesos_Klu"); // can be "Amesos_Klu", "Amesos_Umfpack", "Amesos_Superlu"
       if (azprectyp == INPAR::SOLVER::azprec_SymmGaussSeidel)
+      {
         ifpacklist.set("relaxation: type","symmetric Gauss-Seidel");
+        ifpacklist.set("relaxation: sweeps",inparams.get<int>("AZGFILL"));
+        ifpacklist.set("relaxation: damping factor",inparams.get<double>("AZOMEGA"));
+      }
       if (azprectyp == INPAR::SOLVER::azprec_GaussSeidel)
+      {
         ifpacklist.set("relaxation: type","Gauss-Seidel");
+        ifpacklist.set("relaxation: sweeps",inparams.get<int>("AZGFILL"));
+        ifpacklist.set("relaxation: damping factor",inparams.get<double>("AZOMEGA"));
+      }
       if (azprectyp == INPAR::SOLVER::azprec_DownwindGaussSeidel)
       {
         // in case of downwinding prevent ifpack from again reordering
         ifpacklist.set("schwarz: reordering type","none");
         ifpacklist.set("relaxation: type","Gauss-Seidel");
+        ifpacklist.set("relaxation: sweeps",inparams.get<int>("AZGFILL"));
+        ifpacklist.set("relaxation: damping factor",inparams.get<double>("AZOMEGA"));
       }
       if (azprectyp == INPAR::SOLVER::azprec_Jacobi)
+      {
         ifpacklist.set("relaxation: type","Jacobi");
+        ifpacklist.set("relaxation: sweeps",inparams.get<int>("AZGFILL"));
+        ifpacklist.set("relaxation: damping factor",inparams.get<double>("AZOMEGA"));
+      }
     }
     //------------------------------------- set parameters for ML if used
     if (azprectyp == INPAR::SOLVER::azprec_ML       ||

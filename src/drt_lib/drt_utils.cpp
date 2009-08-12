@@ -116,6 +116,7 @@ extern "C"
 #include "../drt_mat/neohooke.H"
 #include "../drt_mat/logneohooke.H"
 #include "../drt_mat/aaaneohooke.H"
+#include "../drt_mat/aaaraghavanvorp_damage.H"
 #include "../drt_mat/lung_penalty.H"
 #include "../drt_mat/lung_ogden.H"
 #include "../drt_mat/anisotropic_balzani.H"
@@ -828,6 +829,12 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
       MAT::AAAneohooke* aaa = new MAT::AAAneohooke();
       aaa->Unpack(data);
       return aaa;
+    }
+    case ParObject_AAAraghavanvorp_damage:
+    {
+      MAT::AAAraghavanvorp_damage* aaadamage = new MAT::AAAraghavanvorp_damage();
+      aaadamage->Unpack(data);
+      return aaadamage; //aaadam;
     }
     case ParObject_ConvecDiffus:
     {

@@ -47,6 +47,7 @@ Maintainer: Ulrich Kuettler
 #include "drt_discret.H"
 #include "drt_function.H"
 #include "drt_globalproblem.H"
+#include "drt_timecurve.H"
 #include "../drt_mat/newtonianfluid.H"
 
 
@@ -233,11 +234,14 @@ void DRT::UTILS::FunctionManager::ReadInput()
         int mat = -1;
         frint("MAT",&mat,&ierr);
         if (!ierr) dserror("Word MAT missing in WOMERSLEY FUNCT");
-
-
+        int curve = -1;
+        frint("CURVE",&curve,&ierr);
+        if (!ierr) dserror("Word CURVE missing in WOMERSLEY FUNCT");
+        
+        
         // input other stuff here....
 
-        functions_.push_back(rcp(new WomersleyFunction(localcoordsystem,e-1,radius,mat)));
+        functions_.push_back(rcp(new WomersleyFunction(localcoordsystem,e-1,radius,mat,curve-1)));
       }
 
       frchk("CYLINDER_3D",&ierr);
@@ -531,13 +535,15 @@ double DRT::UTILS::JefferyHamelFlowFunction::Evaluate(int index, const double* x
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::UTILS::WomersleyFunction::WomersleyFunction(bool locsys, int e, double radius, int mat) :
+DRT::UTILS::WomersleyFunction::WomersleyFunction(bool locsys, int e, double radius, int mat, int curve) :
 Function(),
 isinit_(false),
 locsys_(locsys),
 locsysid_(e),
 radius_(radius),
+tc_(DRT::UTILS::TimeCurveManager::Instance().Curve(curve)),
 mat_(mat),
+curve_(curve),
 viscosity_(-999.0e99),
 density_(-999.0e99),
 locsyscond_(NULL)
@@ -581,10 +587,11 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
       tangent2_[0] = normal_[1]*tangent1_[2]-normal_[2]*tangent1_[1];
       tangent2_[1] = normal_[2]*tangent1_[0]-normal_[0]*tangent1_[2];
       tangent2_[2] = normal_[0]*tangent1_[1]-normal_[1]*tangent1_[0];
-      printf("---------------------\n");
-      printf("n %f %f %f \nt1 %f %f %f \nt2 %f %f %f \no %f %f %f\n",
-      normal_[0],normal_[1],normal_[2],tangent1_[0],tangent1_[1],tangent1_[2],
-      tangent2_[0],tangent2_[1],tangent2_[2],origin_[0],origin_[1],origin_[2]);
+      
+      //printf("---------------------\n");
+      //printf("n %f %f %f \nt1 %f %f %f \nt2 %f %f %f \no %f %f %f\n",
+      //normal_[0],normal_[1],normal_[2],tangent1_[0],tangent1_[1],tangent1_[2],
+      //tangent2_[0],tangent2_[1],tangent2_[2],origin_[0],origin_[1],origin_[2]);
     }
     isinit_ = true;
   }

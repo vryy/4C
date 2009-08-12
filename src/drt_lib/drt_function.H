@@ -67,7 +67,9 @@ namespace DRT {
 
 namespace UTILS {
 
-
+  class TimeCurve;
+  
+  
   /*!
 
   \brief abstract interface for spatial functions.
@@ -311,7 +313,7 @@ namespace UTILS {
   public:
 
     /// ctor
-    WomersleyFunction(bool locsys, int e, double radius, int mat);
+    WomersleyFunction(bool locsys, int e, double radius, int mat, int curve);
 
 
     /// evaluate function at given position in space
@@ -319,23 +321,25 @@ namespace UTILS {
 
   private:
 
-    bool                 isinit_;
-    bool                 locsys_;
-    int                  locsysid_;
-    double               radius_;
+    bool                   isinit_;
+    bool                   locsys_;
+    int                    locsysid_;
+    double                 radius_;
+    DRT::UTILS::TimeCurve& tc_;
     // exist after init phase:
-    int                  mat_;
-    double               viscosity_;
-    double               density_;
+    int                    mat_;
+    int                    curve_;
+    double                 viscosity_;
+    double                 density_;
 
     // exist after init phase if locsys_==true
     // to do: move this stuff to separate class in locsys.H/.cpp
     // with functionality to transform spatial vectors from/to local system
-    Condition*           locsyscond_;
-    std::vector<double>  normal_;
-    std::vector<double>  tangent1_;
-    std::vector<double>  tangent2_;
-    std::vector<double>  origin_;
+    Condition*             locsyscond_;
+    std::vector<double>    normal_;
+    std::vector<double>    tangent1_;
+    std::vector<double>    tangent2_;
+    std::vector<double>    origin_;
   };
 
   
