@@ -1167,12 +1167,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "field_from_file",
                                  "field_by_function",
                                  "disturbed_field_from_function",
+                                 "COUNTERVORT",
                                  "SOLWAVE",
                                  "WAVEBREAKING",
                                  "BELTRAMI-FLOW",
                                  "KIM-MOIN-FLOW",
                                  "BREAKING-DAM"),
-                               tuple<int>(0,1,2,3,6,7,8,9,10),
+                               tuple<int>(0,1,2,3,4,6,7,8,9,10),
                                &fdyn);
 
   setStringToIntegralParameter<int>("LIFTDRAG","No",

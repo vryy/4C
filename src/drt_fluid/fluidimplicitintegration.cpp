@@ -3034,86 +3034,9 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
   int startfuncno
   )
 {
-  //------------------------------------------------------- beltrami flow
-  if(whichinitialfield == 8)
-  {
-    const Epetra_Map* dofrowmap = discret_->DofRowMap();
-
-
-    int err =0;
-
-    const int npredof = numdim_;
-
-    double         p;
-    vector<double> u  (numdim_);
-    vector<double> xyz(numdim_);
-
-
-    if(numdim_!=3)
-    {
-      dserror("Beltrami flow is three dimensional flow!");
-    }
-
-    // set constants for analytical solution
-    const double a      = PI/4.0;
-    const double d      = PI/2.0;
-
-    // loop all nodes on the processor
-    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
-    {
-      // get the processor local node
-      DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
-
-      // the set of degrees of freedom associated with the node
-      vector<int> nodedofset = discret_->Dof(lnode);
-
-      // set node coordinates
-      for(int dim=0;dim<numdim_;dim++)
-      {
-        xyz[dim]=lnode->X()[dim];
-      }
-
-      // compute initial pressure
-      p = -a*a/2.0 *
-        ( exp(2.0*a*xyz[0])
-          + exp(2.0*a*xyz[1])
-          + exp(2.0*a*xyz[2])
-          + 2.0 * sin(a*xyz[0] + d*xyz[1]) * cos(a*xyz[2] + d*xyz[0]) * exp(a*(xyz[1]+xyz[2]))
-          + 2.0 * sin(a*xyz[1] + d*xyz[2]) * cos(a*xyz[0] + d*xyz[1]) * exp(a*(xyz[2]+xyz[0]))
-          + 2.0 * sin(a*xyz[2] + d*xyz[0]) * cos(a*xyz[1] + d*xyz[2]) * exp(a*(xyz[0]+xyz[1]))
-          );
-
-      // compute initial velocities
-      u[0] = -a * ( exp(a*xyz[0]) * sin(a*xyz[1] + d*xyz[2]) +
-                    exp(a*xyz[2]) * cos(a*xyz[0] + d*xyz[1]) );
-      u[1] = -a * ( exp(a*xyz[1]) * sin(a*xyz[2] + d*xyz[0]) +
-                    exp(a*xyz[0]) * cos(a*xyz[1] + d*xyz[2]) );
-      u[2] = -a * ( exp(a*xyz[2]) * sin(a*xyz[0] + d*xyz[1]) +
-                    exp(a*xyz[1]) * cos(a*xyz[2] + d*xyz[0]) );
-      // initial velocities
-      for(int nveldof=0;nveldof<numdim_;nveldof++)
-      {
-        const int gid = nodedofset[nveldof];
-        int lid = dofrowmap->LID(gid);
-        err += velnp_->ReplaceMyValues(1,&(u[nveldof]),&lid);
-        err += veln_ ->ReplaceMyValues(1,&(u[nveldof]),&lid);
-        err += velnm_->ReplaceMyValues(1,&(u[nveldof]),&lid);
-     }
-
-      // initial pressure
-      const int gid = nodedofset[npredof];
-      int lid = dofrowmap->LID(gid);
-      err += velnp_->ReplaceMyValues(1,&p,&lid);
-      err += veln_ ->ReplaceMyValues(1,&p,&lid);
-      err += velnm_->ReplaceMyValues(1,&p,&lid);
-
-    } // end loop nodes lnodeid
-    if(err!=0)
-    {
-      dserror("dof not on proc");
-    }
-  }
-  else if(whichinitialfield==2 || whichinitialfield==3)
+  // initial field by (undisturbed) function (whichinitialfield==2)
+  // or disturbed function (whichinitialfield==3)
+  if (whichinitialfield==2 || whichinitialfield==3)
   {
     // loop all nodes on the processor
     for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
@@ -3134,15 +3057,14 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
       }
     }
 
-    // add random perturbation
-    if(whichinitialfield==3)
+    // add random perturbation of certain percentage to function
+    if (whichinitialfield==3)
     {
       const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
       int err =0;
 
       // random noise is perc percent of the initial profile
-
       double perc = params_.sublist("TURBULENCE MODEL").get<double>("CHAN_AMPL_INIT_DIST",0.1);
 
       // out to screen
@@ -3223,9 +3145,151 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
       }
     }
   }
+  // special initial function: two counter-rotating vortices (2-D)
+  else if (whichinitialfield == 4)
+  {
+    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+    int err = 0;
+
+    // define vectors for velocity field, node coordinates and coordinates
+    // of left and right vortex
+    vector<double> u(numdim_);
+    vector<double> xy(numdim_);
+    vector<double> xy0_left(numdim_);
+    vector<double> xy0_right(numdim_);
+
+    // check whether present flow is indeed two-dimensional
+    if (numdim_!=2) dserror("Counter-rotating vortices are a two-dimensional flow!");
+
+    // set vortex strength C, (squared) vortex radius R and define variables
+    const double C = 70.0;
+    const double R_squared = 16.0;
+    double r_squared_left;
+    double r_squared_right;
+
+    // set initial locations of vortices
+    xy0_left[0] = 37.5;
+    xy0_left[1] = 75.0;
+    xy0_right[0] = 62.5;
+    xy0_right[1] = 75.0;
+
+    // loop all nodes on the processor
+    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+    {
+      // get the processor local node
+      DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
+
+      // the set of degrees of freedom associated with the node
+      vector<int> nodedofset = discret_->Dof(lnode);
+
+      // set node coordinates
+      for(int dim=0;dim<numdim_;dim++)
+      {
+        xy[dim]=lnode->X()[dim];
+      }
+
+      // compute preliminary values for both vortices
+      r_squared_left  = ((xy[0]-xy0_left[0])*(xy[0]-xy0_left[0])
+                        +(xy[1]-xy0_left[1])*(xy[1]-xy0_left[1]))/R_squared;
+      r_squared_right = ((xy[0]-xy0_right[0])*(xy[0]-xy0_right[0])
+                        +(xy[1]-xy0_right[1])*(xy[1]-xy0_right[1]))/R_squared;
+
+      // compute initial velocity components
+      u[0] = (C/R_squared)*((xy[1]-xy0_left[1])*exp(-r_squared_left/2.0)
+                           +(xy[1]-xy0_right[1])*exp(-r_squared_right/2.0));
+      u[1] = -(C/R_squared)*((xy[0]-xy0_left[0])*exp(-r_squared_left/2.0)
+                            +(xy[0]-xy0_right[0])*exp(-r_squared_right/2.0));
+
+      // set initial velocity components
+      for(int nveldof=0;nveldof<numdim_;nveldof++)
+      {
+        const int gid = nodedofset[nveldof];
+        int lid = dofrowmap->LID(gid);
+        err += velnp_->ReplaceMyValues(1,&(u[nveldof]),&lid);
+        err += veln_ ->ReplaceMyValues(1,&(u[nveldof]),&lid);
+        err += velnm_->ReplaceMyValues(1,&(u[nveldof]),&lid);
+      }
+    } // end loop nodes lnodeid
+
+    if (err!=0) dserror("dof not on proc");
+  }
+  // special initial function: Beltrami flow (3-D)
+  else if (whichinitialfield == 8)
+  {
+    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+    int err = 0;
+
+    const int npredof = numdim_;
+
+    double         p;
+    vector<double> u  (numdim_);
+    vector<double> xyz(numdim_);
+
+    // check whether present flow is indeed three-dimensional
+    if (numdim_!=3) dserror("Beltrami flow is a three-dimensional flow!");
+
+    // set constants for analytical solution
+    const double a = PI/4.0;
+    const double d = PI/2.0;
+
+    // loop all nodes on the processor
+    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+    {
+      // get the processor local node
+      DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
+
+      // the set of degrees of freedom associated with the node
+      vector<int> nodedofset = discret_->Dof(lnode);
+
+      // set node coordinates
+      for(int dim=0;dim<numdim_;dim++)
+      {
+        xyz[dim]=lnode->X()[dim];
+      }
+
+      // compute initial velocity components
+      u[0] = -a * ( exp(a*xyz[0]) * sin(a*xyz[1] + d*xyz[2]) +
+                    exp(a*xyz[2]) * cos(a*xyz[0] + d*xyz[1]) );
+      u[1] = -a * ( exp(a*xyz[1]) * sin(a*xyz[2] + d*xyz[0]) +
+                    exp(a*xyz[0]) * cos(a*xyz[1] + d*xyz[2]) );
+      u[2] = -a * ( exp(a*xyz[2]) * sin(a*xyz[0] + d*xyz[1]) +
+                    exp(a*xyz[1]) * cos(a*xyz[2] + d*xyz[0]) );
+
+      // compute initial pressure
+      p = -a*a/2.0 *
+        ( exp(2.0*a*xyz[0])
+          + exp(2.0*a*xyz[1])
+          + exp(2.0*a*xyz[2])
+          + 2.0 * sin(a*xyz[0] + d*xyz[1]) * cos(a*xyz[2] + d*xyz[0]) * exp(a*(xyz[1]+xyz[2]))
+          + 2.0 * sin(a*xyz[1] + d*xyz[2]) * cos(a*xyz[0] + d*xyz[1]) * exp(a*(xyz[2]+xyz[0]))
+          + 2.0 * sin(a*xyz[2] + d*xyz[0]) * cos(a*xyz[1] + d*xyz[2]) * exp(a*(xyz[0]+xyz[1]))
+          );
+
+      // set initial velocity components
+      for(int nveldof=0;nveldof<numdim_;nveldof++)
+      {
+        const int gid = nodedofset[nveldof];
+        int lid = dofrowmap->LID(gid);
+        err += velnp_->ReplaceMyValues(1,&(u[nveldof]),&lid);
+        err += veln_ ->ReplaceMyValues(1,&(u[nveldof]),&lid);
+        err += velnm_->ReplaceMyValues(1,&(u[nveldof]),&lid);
+      }
+
+      // set initial pressure
+      const int gid = nodedofset[npredof];
+      int lid = dofrowmap->LID(gid);
+      err += velnp_->ReplaceMyValues(1,&p,&lid);
+      err += veln_ ->ReplaceMyValues(1,&p,&lid);
+      err += velnm_->ReplaceMyValues(1,&p,&lid);
+    } // end loop nodes lnodeid
+
+    if (err!=0) dserror("dof not on proc");
+  }
   else
   {
-    dserror("no other initial fields than zero, function and beltrami are available up to now");
+    dserror("Only initial fields auch as a zero field, initial fields by (un-)disturbed functions and two special initial fields (counter-rotating vortices and Beltrami flow) are available up to now!");
   }
 
   return;
@@ -3514,6 +3578,9 @@ void FLD::FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
     // do nothing --- no analytical solution available
     break;
   case 3:
+    // do nothing --- no analytical solution available
+    break;
+  case 4:
     // do nothing --- no analytical solution available
     break;
   case 8:
