@@ -242,6 +242,14 @@ OBJS_DRT_STATMECH = \
                 src/drt_statmech/statmech_manager.o
 #----------------------------------------------------- drt version statmech
 OBJS_DRT_STATMECH_LIB = src/drt_statmech/bromotion_manager.o
+#----------------------------------------------------------thermal drivers
+OBJS_DRT_THERMO = \
+                src/drt_thermo/thr_aux.o \
+                src/drt_thermo/thr_resulttest.o \
+                src/drt_thermo/thrtimint.o \
+                src/drt_thermo/thrtimint_impl.o \
+                src/drt_thermo/thrtimint_statics.o \
+                src/drt_thermo/thrtimint_ost.o
 # --------------------------------------------------- drt version of fluid
 OBJS_DRT_FLUID= src/drt_fluid/fluid_utils.o \
                 src/drt_fluid/fluid_dyn_nln_drt.o \
@@ -327,6 +335,8 @@ OBJS_DRT_ADAPT= src/drt_adapter/ale_dyn.o \
                 src/drt_adapter/adapter_structure_contactstrugenalpha.o \
                 src/drt_adapter/adapter_structure_timint.o \
                 src/drt_adapter/adapter_structure_constrained.o \
+                src/drt_adapter/adapter_thermo.o \
+                src/drt_adapter/adapter_thermo_timint.o \
                 src/drt_adapter/adapter_fluid_base_algorithm.o \
                 src/drt_adapter/adapter_fluid_ale.o \
                 src/drt_adapter/adapter_fluid_xfem.o \

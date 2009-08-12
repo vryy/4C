@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_thermal.H
+\file inpar_thermo.H
 
 <pre>
 Maintainer: Caroline Danowski
@@ -12,8 +12,8 @@ Maintainer: Caroline Danowski
 /*----------------------------------------------------------------------*/
 /* defintions */
 #ifdef CCADISCRET
-#ifndef INPAR_THERMAL_H
-#define INPAR_THERMAL_H
+#ifndef INPAR_THERMO_H
+#define INPAR_THERMO_H
 
 #ifdef __cplusplus /* stuff which is c++ specific */
 
@@ -36,7 +36,8 @@ namespace INPAR
     enum DynamicType
     {
       dyna_statics,                    ///< static analysis
-      dyna_onesteptheta               ///< one-step-theta time integrator (implicit)
+      dyna_onesteptheta,               ///< one-step-theta time integrator (implicit)
+      dyna_gemm                        ///< generalised energy-momementum method
     };
 
     /// Map time integrator to string
@@ -50,8 +51,11 @@ namespace INPAR
       case dyna_statics :
         return "Statics";
         break;
-       case dyna_onesteptheta :
+      case dyna_onesteptheta :
         return "OneStepTheta";
+        break;
+      case dyna_gemm :
+        return "GEMM";
         break;
       default :
         dserror("Cannot make string for time integrator %d", name);
@@ -95,7 +99,8 @@ namespace INPAR
     enum PredEnum
     {
       pred_vague,  ///< undetermined
-      pred_consttemp,  ///< constant temperature
+      pred_consttemp,  ///< constant temperatures
+      pred_consttemprate, ///< constant temperatures and rates
       pred_tangtemp  ///< linearised solution obeying DBC temperature via tangent
                     ///< T_{n+1}^{<0>} = T_{n} + Ktang_{n,eff}^{-1} . (- Ktang_{n} . (T_{n+1}^{DBC} - T_{n}))
                     ///< This looks hilarious, but remember Ktan_{n,eff}^{-1} is not
@@ -117,6 +122,9 @@ namespace INPAR
       case pred_consttemp :
         return "ConstTemp";
         break;
+      case pred_consttemprate :
+              return "ConstTempRate";
+              break;
       case pred_tangtemp :
         return "TangTemp";
         break;
@@ -147,21 +155,21 @@ namespace INPAR
     //@{
 
     /// Type of thermal flux output
-    /// (this enum represents the input file parameter STRUCT_STRESS) CHECK IT!
+    /// (this enum represents the input file parameter THERM_HEATFLUX) CHECK IT!
     enum HeatFluxType
     {
-      hflux_none,    ///< no hflux output
-      hflux_current,  ///< output of hflux in current configuration
-      hflux_initial      ///< output of heat flux in initial configuration
+      heatflux_none,    ///< no heatflux output
+      heatflux_current,  ///< output of heatflux in current configuration
+      heatflux_initial      ///< output of heat flux in initial configuration
     };
 
     /// Type of thermal gradient output
-     /// (this enum represents the input file parameter STRUCT_STRAIN) CHECK IT!
-     enum ThermGradType
+     /// (this enum represents the input file parameter THERM_TEMPGRAD) CHECK IT!
+     enum TempGradType
      {
-       tgrad_none,    ///< no thermal gradient output
-       tgrad_current,  ///< output of thermal gradient in current configuration
-       tgrad_initial      ///< output of thermal gradient in initial configuration
+       tempgrad_none,    ///< no thermal gradient output
+       tempgrad_current,  ///< output of thermal gradient in current configuration
+       tempgrad_initial      ///< output of thermal gradient in initial configuration
      };
 
      //@}
@@ -216,5 +224,5 @@ namespace INPAR
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifdef __cplusplus
-#endif  // #ifndef INPAR_THERMAL_H
+#endif  // #ifndef INPAR_THERMO_H
 #endif  // #ifdef CCADISCRET

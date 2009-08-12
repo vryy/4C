@@ -33,7 +33,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/inpar_scatra.H"
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_inpar/inpar_potential.H"
-#include "../drt_inpar/inpar_thermal.H"
+#include "../drt_inpar/inpar_thermo.H"
 
 /*----------------------------------------------------------------------*/
 //! Print function to be called from C
@@ -379,6 +379,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   setStringToIntegralParameter<int>("THERM_TEMPERATURE","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter<int>("THERM_HEATFLUX","No","",yesnotuple,yesnovalue,&io);
+  setStringToIntegralParameter<int>("THERM_TEMPGRAD","No","",yesnotuple,yesnovalue,&io);
 
   IntParameter("FILESTEPS",1000,"",&io);
 
@@ -802,14 +803,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                 INPAR::CONTACT::solution_penalty, INPAR::CONTACT::solution_penalty, INPAR::CONTACT::solution_penalty,
                 INPAR::CONTACT::solution_auglag, INPAR::CONTACT::solution_auglag, INPAR::CONTACT::solution_auglag),
                 &scontact);
-    
+
   setStringToIntegralParameter<INPAR::CONTACT::ShapeFcn>("SHAPEFCN","Dual","Type of employed set of shape functions",
         tuple<std::string>("Dual", "dual",
             "Standard", "standard", "std"),
-            tuple<INPAR::CONTACT::ShapeFcn>(INPAR::CONTACT::shape_dual, INPAR::CONTACT::shape_dual, 
+            tuple<INPAR::CONTACT::ShapeFcn>(INPAR::CONTACT::shape_dual, INPAR::CONTACT::shape_dual,
                 INPAR::CONTACT::shape_standard, INPAR::CONTACT::shape_standard, INPAR::CONTACT::shape_standard),
                 &scontact);
-    
+
   DoubleParameter("PENALTYPARAM",0.0,"Penalty parameter for penalty / augmented solution strategy",&scontact);
   DoubleParameter("FRBOUND",0.0,"Friction bound for Tresca friction",&scontact);
   DoubleParameter("FRCOEFF",0.0,"Friction coefficient for Coulomb friction",&scontact);
@@ -937,11 +938,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                 "type of time integration control",
                                 tuple<std::string>(
                                   "Statics",
-                                  "OneStepTheta"
+                                  "OneStepTheta",
+                                  "GEMM"
                                   ),
                                 tuple<INPAR::THR::DynamicType>(
                                    INPAR::THR::dyna_statics,
-                                   INPAR::THR::dyna_onesteptheta),
+                                   INPAR::THR::dyna_onesteptheta,
+                                   INPAR::THR::dyna_gemm),
                                 &tdyn);
 
    // Output type
@@ -1026,10 +1029,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                 tuple<std::string>(
                                   "Vague",
                                   "ConstTemp",
+                                  "ConstTempRate"
                                   "TangTemp"),
                                 tuple<INPAR::THR::PredEnum>(
                                   INPAR::THR::pred_vague,
                                   INPAR::THR::pred_consttemp,
+                                  INPAR::THR::pred_consttemprate,
                                   INPAR::THR::pred_tangtemp),
                                 &tdyn);
 
