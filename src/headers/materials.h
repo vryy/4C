@@ -150,6 +150,20 @@ typedef struct _AAA_NEO_HOOKE
 } AAA_NEO_HOOKE;
 
 /*----------------------------------------------------------------------*
+ | AAA raghavan & vorp + ogden material with damage       chfoe 4/08    |
+ *----------------------------------------------------------------------*/
+typedef struct _AAA_RAG_DAMAGE
+{
+     DOUBLE 			bulk; 	      /* Bulk's modulus (Volumetric)*/
+     DOUBLE 			alpha;        /* 1st parameter, alpha (Isochoric)*/
+     DOUBLE 			beta;         /* 2nd parameter, beta (Isochoric)*/
+     DOUBLE 			eqstrmin;     /* equivalent strain initial damage*/
+     DOUBLE 			a;            /* 1st parameter, a*/
+     DOUBLE 			b;            /* 2nd parameter, b*/
+     DOUBLE 			density;      /* mass density*/
+} AAA_RAG_DAMAGE;
+
+/*----------------------------------------------------------------------*
  | compressible ogden material                            m.gee 6/03    |
  *----------------------------------------------------------------------*/
 typedef struct _COMPOGDEN
