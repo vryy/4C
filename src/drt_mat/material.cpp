@@ -24,6 +24,7 @@ Maintainer: Lena Wiechert
 #include "micromaterial.H"
 #include "neohooke.H"
 #include "aaaneohooke.H"
+#include "aaaraghavanvorp_damage.H"
 #include "logneohooke.H"
 #include "convecdiffus.H"
 #include "sutherland_condif.H"
@@ -168,6 +169,13 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
     MAT::PAR::AAAneohooke* params = static_cast<MAT::PAR::AAAneohooke*>(curmat->Parameter());
     return Teuchos::rcp(new AAAneohooke(params));
   }
+  case INPAR::MAT::m_aaaraghavanvorp_damage:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::AAAraghavanvorp_damage(curmat));
+    MAT::PAR::AAAraghavanvorp_damage* params = static_cast<MAT::PAR::AAAraghavanvorp_damage*>(curmat->Parameter());
+    return Teuchos::rcp(new AAAraghavanvorp_damage(params));
+  }  
   case INPAR::MAT::m_logneohooke:
   {
     if (curmat->Parameter() == NULL)

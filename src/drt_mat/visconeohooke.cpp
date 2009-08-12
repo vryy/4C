@@ -278,11 +278,6 @@ void MAT::ViscoNeoHooke::Evaluate(const LINALG::Matrix<NUM_STRESS_3D,1>* glstrai
   alpha0 = 1.;
   alpha1 = 1.;
 
-  // evaluate Lame constants, bulk modulus
-  lambda = nue*E_s / ((1.0+nue)*(1.0-2.0*nue));
-  mue = E_s / (2.0*(1.0+nue));
-  kappa = lambda + 2.0/3.0 * mue;
-
   // do we have to propagate in time?
   if (dt >0.0)
   {
