@@ -360,6 +360,25 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*--------------------------------------------------------------------*/
+  // aneurysm wall material according to Raghavan and Vorp [2000] with damage Simo
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_Raghavan_Damage",
+                                            "aneurysm wall material according to Raghavan and Vorp [2000] with damage",
+                                            INPAR::MAT::m_aaaraghavanvorp_damage));
+
+    AddNamedReal(m,"BULK","Bulk's modulus");
+    AddNamedReal(m,"ALPHA","1nd parameter,alpha");
+    AddNamedReal(m,"BETA","2nd parameter,beta");
+    AddNamedReal(m,"EQSTRMIN","equivalent strain initial damage");
+    AddNamedReal(m,"A","1st parameter, a");
+    AddNamedReal(m,"B","2nd parameter, b");
+    AddNamedReal(m,"DENS","mass density");
+    
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*--------------------------------------------------------------------*/
   // logarithmic neo-Hooke material acc. to Bonet and Wood
   {
     Teuchos::RCP<MaterialDefinition> m

@@ -580,9 +580,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   std::vector<Teuchos::RCP<ConditionComponent> > fsicomponents;
 
   fsicomponents.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
-  fsicomponents.push_back(
-    Teuchos::rcp(
-      new StringConditionComponent(
+  fsicomponents.push_back(Teuchos::rcp(new StringConditionComponent(
         "field","structure",
         Teuchos::tuple<std::string>("structure","fluid","ale"),
         Teuchos::tuple<std::string>("structure","fluid","ale"))));

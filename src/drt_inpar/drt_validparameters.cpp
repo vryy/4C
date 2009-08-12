@@ -644,7 +644,34 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::STR::soltech_noxgeneral),
                                &sdyn);
 
-  setStringToIntegralParameter<INPAR::STR::PredEnum>("PREDICT","ConstDis","predictor to evaluate initial guess for Newton-Raphson method",
+  setStringToIntegralParameter<INPAR::STR::ControlType>("CONTROLTYPE","load","load, disp, arc1, arc2 control",
+                               tuple<std::string>(
+                                 "load",
+                                 "Load",
+                                 "disp",
+                                 "Disp",
+                                 "Displacement",
+                                 "arc1",
+                                 "Arc1",
+                                 "arc2",
+                                 "Arc2"),
+                               tuple<INPAR::STR::ControlType>(
+                                 INPAR::STR::control_load,
+                                 INPAR::STR::control_load,
+                                 INPAR::STR::control_disp,
+                                 INPAR::STR::control_disp,
+                                 INPAR::STR::control_disp,
+                                 INPAR::STR::control_arc1,
+                                 INPAR::STR::control_arc1,
+                                 INPAR::STR::control_arc2,
+                                 INPAR::STR::control_arc2),
+                               &sdyn);
+
+  setNumericStringParameter("CONTROLNODE","-1 -1 -1",
+                            "for methods other than load control: [node(fortran numbering)] [dof(c-numbering)] [curve(fortran numbering)]",
+                            &sdyn);
+
+  setStringToIntegralParameter<INPAR::STR::PredEnum>("PREDICT","ConstDis","",
                                tuple<std::string>(
                                  "Vague",
                                  "ConstDis",

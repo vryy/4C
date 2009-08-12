@@ -39,17 +39,18 @@ namespace INPAR
       m_damage,      ///< 3D damage matieral
       m_pl_foam,     ///< foam material - large strains
       m_pl_mises_ls, ///< von Mises material - large strains
-      m_pl_dp,       ///< Drucker Prager material
-      m_pl_epc,      ///< elastoplastic concrete material
-      m_pl_epc3D,    ///< elastoplastic concrete material 3D formulation
-      m_stvenpor,    ///< porous St.Venant Kirchhoff material
-      m_pl_por_mises,///< porous von Mises material
-      m_neohooke,    ///< Neo-Hooke material
-      m_aaaneohooke, ///< quasi Neo-Hooke material for aneurysmatic artery wall
-      m_compogden,   ///< compressible Ogden material (with shell8)
-      m_viscohyper,  ///< compressible viscous Ogden material (with shell8)
-      m_fluid,       ///< fluid
-      m_sutherland_fluid,  ///< fluid material with temperature dependence according to Sutherland law
+      m_pl_dp,       ///< Drucker Prager material 
+      m_pl_epc,      ///< elastoplastic concrete material 
+      m_pl_epc3D,    ///< elastoplastic concrete material 3D formulation 
+      m_stvenpor,    ///< porous St.Venant Kirchhoff material 
+      m_pl_por_mises,///< porous von Mises material 
+      m_neohooke,    ///< Neo-Hooke material 
+      m_aaaneohooke, ///< quasi Neo-Hooke material for aneurysmatic artery wall 
+      m_aaaraghavanvorp_damage, ///< quasi Neo-Hooke material for aneurysmatic artery wall with damage
+      m_compogden,   ///< compressible Ogden material (with shell8) 
+      m_viscohyper,  ///< compressible viscous Ogden material (with shell8) 
+      m_fluid,       ///< fluid 
+      m_sutherland_fluid,  ///< fluid material with temperature dependence according to Sutherland law 
       m_carreauyasuda,///< fluid with nonlinear viscosity according to Carreau-Yasuda
       m_modpowerlaw,  ///< fluid with nonlinear viscosity according to a modified power law
       m_condif,      ///< convection-diffusion
