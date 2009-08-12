@@ -122,6 +122,12 @@ public:
   virtual void ConstantPredictor();
 
   /*!
+  \brief do constant predictor step with disp or arclength control
+
+  */
+  virtual void ControlledConstantPredictor();
+
+  /*!
   \brief do consistent constant predictor step
 
   */
@@ -141,6 +147,12 @@ public:
 
   */
   virtual void FullNewton();
+
+  /*!
+  \brief do full Newton iteration with disp or arclength control
+
+  */
+  virtual void ControlledFullNewton();
 
   /*!
   \brief do full Newton with parabolic line search
@@ -332,11 +344,29 @@ public:
                         int maxiter, double fresmnorm, double disinorm,
                         string convcheck,double dti);
 
+
+  /*!
+  \brief Print Newton output to screen and/or error file
+
+  */
+  virtual void PrintControlledNewton(double lambda, double dis,
+                           bool printscreen, bool printerr, bool print_unconv,
+                           FILE* errfile, Epetra_Time timer, int numiter,
+                           int maxiter, double fresmnorm, double disinorm,
+                           string convcheck);
+
    /*!
   \brief Print to screen and/or error file
 
   */
   virtual void PrintPredictor(string convcheck, double fresmnorm);
+
+   /*!
+  \brief Print to screen and/or error file
+
+  */
+  virtual void PrintControlledPredictor(string convcheck, double fresmnorm,
+                                        double lambda);
 
   /*!
   \brief Get last converged accelerations
@@ -474,13 +504,21 @@ protected:
 
   //@}
 
-  double                        ref_disnorm_;
-  double                        ref_fnorm_;
+  //! @name disp and arc length control
+  
+  double                lambda_;
+  double                dlambda_;
+  RCP<Epetra_Vector>    vp_;
 
-  double                        V0_;
+  //@}
+
+  double                       ref_disnorm_;
+  double                       ref_fnorm_;
+
+  double                       V0_;
 
   /// whatever constraints
-  RCP<UTILS::ConstrManager>   constrMan_;
+  RCP<UTILS::ConstrManager>    constrMan_;
   RCP<UTILS::ConstraintSolver> constrSolv_;
 
   /// surface stresses

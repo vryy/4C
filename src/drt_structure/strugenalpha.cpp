@@ -74,6 +74,56 @@ fsisurface_(NULL)
       dserror("It's static: alphas must be 0 (in words: zero).");
     if (damping)
       dserror("Sorry dude, no damping in statics.");
+    INPAR::STR::ControlType controltype = params_.get<INPAR::STR::ControlType>("CONTROLTYPE",INPAR::STR::control_load);
+    switch (controltype)
+    {
+      case INPAR::STR::control_load:
+      break;
+      case INPAR::STR::control_disp:
+      break;
+      case INPAR::STR::control_arc1:
+      break;
+      default: dserror("Unknown type of control method (load, disp or arc1 implemented)");
+      break;
+    }
+
+    // for any control other than load
+    // figure out the controlled dof and who owns it on all procs
+    // put this info in params_ as CONTROLDOF & CONTROLOWNER
+    if (controltype != INPAR::STR::control_load)
+    {
+      int controlnode = params_.get("CONTROLNODE",-1)-1;
+      int controldof = params_.get("CONTROLDOF",-1);
+      int controlcurve = params_.get("CONTROLCURVE",-1)-1;
+      if (controlnode<0 || controldof<0 || controlcurve<0)
+        dserror("Give proper values for CONTROLNODE in input file");
+      // convert to C-style numbering
+      params_.set("CONTROLNODE",controlnode);
+      params_.set("CONTROLCURVE",controlcurve);
+      // check for node and dof in dis
+      bool haveit  = dis.NodeRowMap()->MyGID(params_.get("CONTROLNODE",-1));
+      int mypid    = dis.Comm().MyPID();
+      int send     = 0;
+      int dof      = 0;
+      int owner    = -1;
+      if (haveit) 
+      {
+        DRT::Node* node = dis.gNode(controlnode);
+        if (!node) dserror("Do not have node");
+        send = dis.Dof(node,controldof);
+      }
+      dis.Comm().SumAll(&send,&dof,1);
+      if (haveit) send = mypid;
+      else        send = 0;
+      dis.Comm().SumAll(&send,&owner,1);
+      params_.set("CONTROLDOF",dof);
+      params_.set("CONTROLOWNER",owner);
+      lambda_ = 0.0;
+      dlambda_ = 0.0;
+      vp_ = LINALG::CreateVector(*(discret_.DofRowMap()),true);
+      if (controltype == INPAR::STR::control_arc1)
+        dserror("arclength control not implemented");
+    }
   }
 
   // -------------------------------------------------------------------
@@ -659,7 +709,7 @@ void StruGenAlpha::ConsistentPredictor()
   // external mid-forces F_{ext;n+1-alpha_f} (fextm)
   //    F_{ext;n+1-alpha_f} := (1.-alphaf) * F_{ext;n+1}
   //                         + alpha_f * F_{ext;n}
-  fextm_->Update(1.-alphaf,*fextn_,alphaf,*fext_,0.0);
+  fextm_->Update(1.-alphaf,*fextn_,alphaf,*fext_,0.0); 
 
   //------------- eval fint at interpolated state, eval stiffness matrix
   {
@@ -727,11 +777,11 @@ void StruGenAlpha::ConsistentPredictor()
   else
   {
     // dynamic residual
-    // Res = M . A_{n+1-alpha_m}
-    //     + C . V_{n+1-alpha_f}
-    //     + F_int(D_{n+1-alpha_f})
-    //     - F_{ext;n+1-alpha_f}
+
+    // Res = M . A_{n+1-alpha_m} + C . V_{n+1-alpha_f} + F_int(D_{n+1-alpha_f}) - F_{ext;n+1-alpha_f}
+
     // add mid-inertial force
+
     mass_->Multiply(false,*accm_,*finert_);
     fresm_->Update(1.0,*finert_,0.0);
     // add mid-viscous damping force
@@ -994,7 +1044,7 @@ void StruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
   double alpham    = params_.get<double>("alpha m"                ,0.378);
   double alphaf    = params_.get<double>("alpha f"                ,0.459);
   const bool   dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
-  if (dynkindstat) dserror("Static case not implemented");
+  //if (dynkindstat) dserror("Static case not implemented");
   // On the first call in a time step we have to have
   // disp==Teuchos::null. Then we just finished one of our predictors,
   // than contains the element loop, so we can fast forward and finish
@@ -1047,6 +1097,13 @@ void StruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
                   (1.-alpham)/((1.-alphaf)*beta*dt*dt));
 #endif
 #endif
+
+    // zerofy velocity and acceleration in case of statics
+    if (dynkindstat)
+    {
+      velm_->PutScalar(0.0);
+      accm_->PutScalar(0.0);
+    }
 
     //---------------------------- compute internal forces and stiffness
     {
@@ -1109,19 +1166,28 @@ void StruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
     }
 
     //------------------------------------------ compute residual forces
-    // Res = M . A_{n+1-alpha_m}
-    //     + C . V_{n+1-alpha_f}
-    //     + F_int(D_{n+1-alpha_f})
-    //     - F_{ext;n+1-alpha_f}
-    // add inertia mid-forces
-    mass_->Multiply(false,*accm_,*finert_);
-    fresm_->Update(1.0,*finert_,0.0);
-    // add viscous mid-forces
-    if (damping)
+    if (dynkindstat)
     {
-      //RCP<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,false);
-      damp_->Multiply(false,*velm_,*fvisc_);
-      fresm_->Update(1.0,*fvisc_,1.0);
+      // static residual
+      // Res = F_int - F_ext
+      fresm_->PutScalar(0.0);
+    }
+    else
+    {
+      // Res = M . A_{n+1-alpha_m}
+      //     + C . V_{n+1-alpha_f}
+      //     + F_int(D_{n+1-alpha_f})
+      //     - F_{ext;n+1-alpha_f}
+      // add inertia mid-forces
+      mass_->Multiply(false,*accm_,*finert_);
+      fresm_->Update(1.0,*finert_,0.0);
+      // add viscous mid-forces
+      if (damping)
+      {
+        //RCP<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,false);
+        damp_->Multiply(false,*velm_,*fvisc_);
+        fresm_->Update(1.0,*fvisc_,1.0);
+      }
     }
     // add static mid-balance
 #ifdef STRUGENALPHA_FINTLIKETR
@@ -1216,7 +1282,7 @@ void StruGenAlpha::FullNewton()
   timer.ResetStartTime();
   bool print_unconv = true;
 
-
+  
   while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) and numiter<=maxiter)
   {
     //------------------------------------------- effective rhs is fresm
@@ -2984,6 +3050,10 @@ void StruGenAlpha::Output()
   FILE*  errfile       = params_.get<FILE*> ("err file"               ,NULL);
   if (!errfile) printerr = false;
 
+  bool control = false;
+  INPAR::STR::ControlType controltype = params_.get<INPAR::STR::ControlType>("CONTROLTYPE",INPAR::STR::control_load);
+  if (controltype!=INPAR::STR::control_load) control=true;
+
   bool isdatawritten = false;
 
   //------------------------------------------------- write restart step
@@ -3002,6 +3072,12 @@ void StruGenAlpha::Output()
 #ifdef INVERSEDESIGNUSE // indicate that this restart is from INVERSEDESIGNUSE phase
     output_.WriteInt("InverseDesignRestartFlag",1);
 #endif
+
+    if (control) // disp or arclength control together with dynkindstat
+    {
+      output_.WriteDouble("ControlLambda",lambda_);
+      output_.WriteDouble("ControlDLambda",dlambda_);
+    }
 
     isdatawritten = true;
 
@@ -3167,9 +3243,16 @@ void StruGenAlpha::Integrate()
   int    step    = params_.get<int>   ("step" ,0);
   int    nstep   = params_.get<int>   ("nstep",5);
   double maxtime = params_.get<double>("max time",0.0);
-
+  bool dynkindstat = ( params_.get<string>("DYNAMICTYP") == "Static" );
+  // check for disp or arclength control
+  INPAR::STR::ControlType controltype = params_.get<INPAR::STR::ControlType>("CONTROLTYPE",INPAR::STR::control_load);
+  bool control = false;
+  if (dynkindstat)
+    control = (controltype != INPAR::STR::control_load);
+  
   // can have values "full newton" , "modified newton" , "nonlinear cg"
   string equil = params_.get<string>("equilibrium iteration","full newton");
+  if (control && equil != "full newton") dserror("All controls other than load only with full newton");
 
   // can have values takes values "constant" consistent"
   string pred  = params_.get<string>("predictor","constant");
@@ -3177,6 +3260,7 @@ void StruGenAlpha::Integrate()
   if      (pred=="constant")   predictor = 1;
   else if (pred=="consistent") predictor = 2;
   else dserror("Unknown type of predictor");
+  if (control && pred != "constant") dserror("All controls other than load only with ConstDisVelAcc predictor");
 
   //in case a constraint is defined, use defined algorithm
   if (constrMan_->HaveConstraint())
@@ -3211,15 +3295,27 @@ void StruGenAlpha::Integrate()
   }
   else if (equil=="full newton")
   {
-    for (int i=step; i<nstep; ++i)
-    {
-      if      (predictor==1) ConstantPredictor();
-      else if (predictor==2) ConsistentPredictor();
-      FullNewton();
-      UpdateandOutput();
-      double time = params_.get<double>("total time",0.0);
-      if (time>=maxtime) break;
-    }
+    // load controled Newton
+    if (!control)
+      for (int i=step; i<nstep; ++i)
+      {
+        if      (predictor==1) ConstantPredictor();
+        else if (predictor==2) ConsistentPredictor();
+        FullNewton();
+        UpdateandOutput();
+        double time = params_.get<double>("total time",0.0);
+        if (time>=maxtime) break;
+      }
+    // any other (currently only disp)
+    else // disp or arclength control
+      for (int i=step; i<nstep; ++i)
+      {
+        ControlledConstantPredictor();
+        ControlledFullNewton();
+        UpdateandOutput();
+        double time = params_.get<double>("total time",0.0);
+        if (time>=maxtime) break;
+      }
   }
   else if (equil=="line search newton")
   {
@@ -3390,12 +3486,15 @@ void StruGenAlpha::SetDefaults(ParameterList& params)
  *----------------------------------------------------------------------*/
 void StruGenAlpha::ReadRestart(int step)
 {
-  RefCountPtr<DRT::Discretization> rcpdiscret = rcp(&discret_);
-  rcpdiscret.release();
+  RCP<DRT::Discretization> rcpdiscret = rcp(&discret_,false);
   IO::DiscretizationReader reader(rcpdiscret,step);
   double time  = reader.ReadDouble("time");
   int    rstep = reader.ReadInt("step");
   if (rstep != step) dserror("Time step on file not equal to given step");
+  
+  bool control = false;
+  INPAR::STR::ControlType controltype = params_.get<INPAR::STR::ControlType>("CONTROLTYPE",INPAR::STR::control_load);
+  if (controltype!=INPAR::STR::control_load) control=true;
 
   reader.ReadVector(dis_, "displacement");
   reader.ReadVector(vel_, "velocity");
@@ -3417,6 +3516,12 @@ void StruGenAlpha::ReadRestart(int step)
     acc_->PutScalar(0.0);
   }
 #endif
+
+  if (control) // disp or arclength control together with dynkindstat
+  {
+    lambda_  = reader.ReadDouble("ControlLambda");
+    dlambda_ = reader.ReadDouble("ControlDLambda");
+  }
 
   // override current time and step with values from file
   params_.set<double>("total time",time);

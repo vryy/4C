@@ -15,6 +15,7 @@ Maintainer: Michael Gee
 #include <ctime>
 #include <cstdlib>
 #include <iostream>
+#include <vector>
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
@@ -152,7 +153,22 @@ void dyn_nlnstructural_drt()
       StruGenAlpha::SetDefaults(genalphaparams);
 
       genalphaparams.set<string>("DYNAMICTYP",sdyn.get<string>("DYNAMICTYP"));
+      
+      INPAR::STR::ControlType controltype = Teuchos::getIntegralValue<INPAR::STR::ControlType>(sdyn,"CONTROLTYPE");
+      genalphaparams.set<INPAR::STR::ControlType>("CONTROLTYPE",controltype);
 
+      {
+        vector<int> controlnode;
+        std::istringstream contnode(Teuchos::getNumericStringParameter(sdyn,"CONTROLNODE"));
+        std::string word;
+        while (contnode >> word)
+          controlnode.push_back(std::atoi(word.c_str()));
+        if ((int)controlnode.size() != 3) dserror("Give proper values for CONTROLNODE in input file");
+        genalphaparams.set("CONTROLNODE",controlnode[0]);
+        genalphaparams.set("CONTROLDOF",controlnode[1]);
+        genalphaparams.set("CONTROLCURVE",controlnode[2]);
+    }
+  
       // Rayleigh damping
       genalphaparams.set<bool>  ("damping",(not (sdyn.get<std::string>("DAMPING") == "no"
                                                  or sdyn.get<std::string>("DAMPING") == "No"
