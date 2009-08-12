@@ -209,7 +209,7 @@ void UTILS::ConstrManager::StiffnessAndInternalForces(
   addrefbase->Export(*refbaseredundant,*conimpo_,Add);
   refbasevalues_->Update(1.0,*addrefbase,1.0);
   fact_->PutScalar(0.0);
-  fact_->Export(*factredundant,*conimpo_,Insert);
+  fact_->Export(*factredundant,*conimpo_,AbsMax);
   // ----------------------------------------------------
   // -----------include possible further constraints here
   // ----------------------------------------------------
