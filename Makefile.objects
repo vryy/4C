@@ -1035,6 +1035,7 @@ OBJS_DRT_MAT_LIB = src/drt_mat/matpar_bundle.o \
                 src/drt_mat/visconeohooke.o \
                 src/drt_mat/viscoanisotropic.o \
                 src/drt_mat/aaaneohooke.o \
+                src/drt_mat/aaaraghavanvorp_damage.o \
                 src/drt_mat/logneohooke.o \
                 src/drt_mat/anisotropic_balzani.o \
                 src/drt_mat/mooneyrivlin.o \
