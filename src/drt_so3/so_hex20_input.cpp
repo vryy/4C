@@ -18,6 +18,7 @@ Maintainer: Thomas Kloeppel
 #include "../drt_mat/viscoanisotropic.H"
 #include "../drt_mat/visconeohooke.H"
 #include "../drt_mat/charmm.H"
+#include "../drt_mat/aaaraghavanvorp_damage.H"
 
 /*----------------------------------------------------------------------*
  |  read element input (public)                                maf 04/07|
@@ -62,6 +63,13 @@ bool DRT::ELEMENTS::So_hex20::ReadElement()
   } else if (Material()->MaterialType() == INPAR::MAT::m_charmm){
     MAT::CHARMM* charmm = static_cast <MAT::CHARMM*>(Material().get());
     charmm->Setup(data_);
+  } else if (Material()->MaterialType() == INPAR::MAT::m_aaaraghavanvorp_damage){
+    double strength = 0.0; // section for extracting the element strength 
+    frdouble("STRENGTH",&strength,&ierr);
+    if (ierr!=1) dserror("Reading of SO_SH8 element strength failed");
+    MAT::AAAraghavanvorp_damage* aaadamage = static_cast <MAT::AAAraghavanvorp_damage*>(Material().get());
+    aaadamage->Setup(NUMGPT_SOH8,strength);
+    //aaadamage->Setup(NUMGPT_SOH8);
   }
 
   // read possible gaussian points, obsolete for computation

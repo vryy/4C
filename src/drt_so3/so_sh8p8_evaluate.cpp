@@ -39,6 +39,7 @@ Maintainer: Burkhard Bornemann
 #include "../drt_mat/stvenantkirchhoff.H"
 #include "../drt_mat/neohooke.H"
 #include "../drt_mat/aaaneohooke.H"
+#include "../drt_mat/aaaraghavanvorp_damage.H"
 #include "../drt_mat/logneohooke.H"
 #include "../drt_mat/visconeohooke.H"
 #include "../drt_mat/viscoanisotropic.H"
@@ -404,6 +405,11 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
         MAT::ViscoAnisotropic* visco = static_cast<MAT::ViscoAnisotropic*>(mat.get());
         visco->Update();
       }
+      else if (mat->MaterialType() == INPAR::MAT::m_aaaraghavanvorp_damage)
+      {
+        MAT::AAAraghavanvorp_damage* aaadamage = static_cast<MAT::AAAraghavanvorp_damage*>(mat.get());
+        aaadamage->Update();
+      }
     }
     break;
 
@@ -440,6 +446,11 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
         MAT::ViscoAnisotropic* visco = static_cast<MAT::ViscoAnisotropic*>(mat.get());
         visco->Update();
       }
+      else if (mat->MaterialType() == INPAR::MAT::m_aaaraghavanvorp_damage)
+      {
+        MAT::AAAraghavanvorp_damage* aaadamage = static_cast<MAT::AAAraghavanvorp_damage*>(mat.get());
+        aaadamage->Update();
+      }
     }
     break;
 
@@ -470,6 +481,11 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
       {
         MAT::ViscoAnisotropic* visco = static_cast<MAT::ViscoAnisotropic*>(mat.get());
         visco->Reset();
+      }
+      else if (mat->MaterialType() == INPAR::MAT::m_aaaraghavanvorp_damage)
+      {
+        MAT::AAAraghavanvorp_damage* aaadamage = static_cast<MAT::AAAraghavanvorp_damage*>(mat.get());
+        aaadamage->Reset();
       }
     }
     break;
@@ -2165,6 +2181,12 @@ double DRT::ELEMENTS::So_sh8p8::ShearMod() const
   {
     MAT::AAAneohooke* aaaneo = static_cast<MAT::AAAneohooke*>(mat.get());
     return aaaneo->ShearMod();
+    break;
+  }
+  case INPAR::MAT::m_aaaraghavanvorp_damage: /*-AAA RaghavanVorp Material with damage*/
+  {
+    MAT::AAAraghavanvorp_damage* aaadam = static_cast<MAT::AAAraghavanvorp_damage*>(mat.get());
+    return aaadam->ShearMod();
     break;
   }
   case INPAR::MAT::m_viscoanisotropic: /*-----------Anisotropic Viscous Material */

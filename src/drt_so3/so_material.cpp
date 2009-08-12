@@ -40,6 +40,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/neohooke.H"
 #include "../drt_mat/anisotropic_balzani.H"
 #include "../drt_mat/aaaneohooke.H"
+#include "../drt_mat/aaaraghavanvorp_damage.H"
 #include "../drt_mat/logneohooke.H"
 #include "../drt_mat/mooneyrivlin.H"
 #include "../drt_mat/yeoh.H"
@@ -107,6 +108,17 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       MAT::AAAneohooke* aaa = static_cast <MAT::AAAneohooke*>(mat.get());
       aaa->Evaluate(*glstrain,*cmat,*stress);
       *density = aaa->Density();
+      return;
+      break;
+    }
+    case INPAR::MAT::m_aaaraghavanvorp_damage: /*-- special case of generalised NeoHookean material see Raghavan, Vorp, with damage */
+    {
+      MAT::AAAraghavanvorp_damage* aaadamage = static_cast <MAT::AAAraghavanvorp_damage*>(mat.get());
+      /* Initialization moved to element input. So we can be sure, that material is initialized. */
+      //if (!aaadamage->Initialized())
+      //  aaadamage->Setup(NUMGPT_SOH8);
+      aaadamage->Evaluate(glstrain,gp,params,cmat,stress);
+      *density = aaadamage->Density();
       return;
       break;
     }
@@ -405,6 +417,14 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
       return;
       break;
     }
+    case INPAR::MAT::m_aaaraghavanvorp_damage: /*-- special case of generalised NeoHookean material see Raghavan, Vorp, with damage */
+    {
+      MAT::AAAraghavanvorp_damage* aaadamage = static_cast <MAT::AAAraghavanvorp_damage*>(mat.get());
+      aaadamage->Evaluate(glstrain,gp,params,cmat,stress);
+      *density = aaadamage->Density();
+      return;
+      break;
+    }
     case INPAR::MAT::m_logneohooke: /*-- logarithmic neo-Hookean material */
     {
       MAT::LogNeoHooke* logneo = static_cast <MAT::LogNeoHooke*>(mat.get());
@@ -550,6 +570,14 @@ void DRT::ELEMENTS::So_hex27::soh27_mat_sel(
       MAT::AAAneohooke* aaa = static_cast <MAT::AAAneohooke*>(mat.get());
       aaa->Evaluate(*glstrain,*cmat,*stress);
       *density = aaa->Density();
+      return;
+      break;
+    }
+    case INPAR::MAT::m_aaaraghavanvorp_damage: /*-- special case of generalised NeoHookean material see Raghavan, Vorp, with damage */
+    {
+      MAT::AAAraghavanvorp_damage* aaadamage = static_cast <MAT::AAAraghavanvorp_damage*>(mat.get());
+      aaadamage->Evaluate(glstrain,gp,params,cmat,stress);
+      *density = aaadamage->Density();
       return;
       break;
     }
@@ -724,6 +752,14 @@ void DRT::ELEMENTS::So_hex20::soh20_mat_sel(
       MAT::NeoHooke* neo = static_cast <MAT::NeoHooke*>(mat.get());
       neo->Evaluate(*glstrain,*cmat,*stress);
       *density = neo->Density();
+      return;
+      break;
+    }
+    case INPAR::MAT::m_aaaraghavanvorp_damage: /*-- special case of generalised NeoHookean material see Raghavan, Vorp, with damage */
+    {
+      MAT::AAAraghavanvorp_damage* aaadamage = static_cast <MAT::AAAraghavanvorp_damage*>(mat.get());
+      aaadamage->Evaluate(glstrain,gp,params,cmat,stress);
+      *density = aaadamage->Density();
       return;
       break;
     }
@@ -992,7 +1028,9 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
                     double* density,
                     LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain,
                     LINALG::Matrix<3,3>* defgrd,
-                    const int gp)
+                    const int gp
+                    //ParameterList&          params
+                    )
 {
 #ifdef DEBUG
   // I'm not sure whether all of these are always supplied, we'll see....
@@ -1032,6 +1070,14 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
       return;
       break;
     }
+/*    case INPAR::MAT::m_aaaraghavanvorp_damage: //-- special case of generalised NeoHookean material see Raghavan, Vorp, with damage 
+    {
+      MAT::AAAraghavanvorp_damage* aaadamage = static_cast <MAT::AAAraghavanvorp_damage*>(mat.get());
+      aaadamage->Evaluate(glstrain,gp,params,cmat,stress);
+      *density = aaadamage->Density();
+      return;
+      break;
+  } */ 
     case INPAR::MAT::m_logneohooke: /*-- logarithmic neo-Hookean material */
     {
       MAT::LogNeoHooke* logneo = static_cast <MAT::LogNeoHooke*>(mat.get());
@@ -1080,7 +1126,9 @@ void DRT::ELEMENTS::So_tet10::so_tet10_mat_sel(
                     double* density,
                     LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain,
                     LINALG::Matrix<3,3>* defgrd,
-                    const int gp)
+                    const int gp
+                    // ParameterList& params
+                    )
 {
 #ifdef DEBUG
   // I'm not sure whether all of these are always supplied, we'll see....
@@ -1120,6 +1168,14 @@ void DRT::ELEMENTS::So_tet10::so_tet10_mat_sel(
       return;
       break;
     }
+/*    case INPAR::MAT::m_aaaraghavanvorp_damage: //-- special case of generalised NeoHookean material see Raghavan, Vorp, with damage
+    {
+      MAT::AAAraghavanvorp_damage* aaadamage = static_cast <MAT::AAAraghavanvorp_damage*>(mat.get());
+      aaadamage->Evaluate(glstrain,gp,params,cmat,stress);
+      *density = aaadamage->Density();
+      return;
+      break;
+    }*/
     case INPAR::MAT::m_logneohooke: /*-- logarithmic neo-Hookean material */
     {
       MAT::LogNeoHooke* logneo = static_cast <MAT::LogNeoHooke*>(mat.get());

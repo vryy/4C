@@ -23,6 +23,7 @@ Maintainer: Moritz Frenzel
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_mat/visconeohooke.H"
 #include "../drt_mat/viscoanisotropic.H"
+#include "../drt_mat/aaaraghavanvorp_damage.H"
 
 // inverse design object
 #if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
@@ -163,7 +164,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
       invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
                                     INPAR::STR::stress_none,INPAR::STR::strain_none);
 #endif
-      if (act==calc_struct_nlnstifflmass) soh8_lumpmass(&elemat2);
+      if (act==calc_struct_nlnstifflmass) soh8_lumpmass(&elemat2);      
     }
     break;
 
@@ -303,6 +304,11 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
         MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
         visco->Update();
       }
+      else if (mat->MaterialType() == INPAR::MAT::m_aaaraghavanvorp_damage)
+      {
+        MAT::AAAraghavanvorp_damage* aaadamage = static_cast <MAT::AAAraghavanvorp_damage*>(mat.get());
+        aaadamage->Update();
+      }
     }
     break;
 
@@ -348,6 +354,11 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
         MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
         visco->Update();
       }
+      else if (mat->MaterialType() == INPAR::MAT::m_aaaraghavanvorp_damage)
+      {
+        MAT::AAAraghavanvorp_damage* aaadamage = static_cast <MAT::AAAraghavanvorp_damage*>(mat.get());
+        aaadamage->Update();
+      }
     }
     break;
 
@@ -377,6 +388,11 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
       {
         MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
         visco->Reset();
+      }
+      else if (mat->MaterialType() == INPAR::MAT::m_aaaraghavanvorp_damage)
+      {
+        MAT::AAAraghavanvorp_damage* aaadamage = static_cast <MAT::AAAraghavanvorp_damage*>(mat.get());
+        aaadamage->Reset();
       }
     }
     break;
@@ -553,7 +569,7 @@ int DRT::ELEMENTS::So_hex8::EvaluateNeumann(ParameterList& params,
  |  init the element jacobian mapping (protected)              gee 04/08|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8::InitJacobianMapping()
-{
+{ 
   const static vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
   LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;
   for (int i=0; i<NUMNOD_SOH8; ++i)

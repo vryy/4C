@@ -17,6 +17,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_mat/viscoanisotropic.H"
 #include "../drt_mat/visconeohooke.H"
 #include "../drt_mat/charmm.H"
+#include "../drt_mat/aaaraghavanvorp_damage.H"
 
 /*----------------------------------------------------------------------*
  |  read element input (public)                                maf 04/07|

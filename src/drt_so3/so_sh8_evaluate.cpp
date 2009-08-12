@@ -33,6 +33,7 @@ Maintainer: Moritz Frenzel
 #include "Teuchos_TimeMonitor.hpp"
 #include "../drt_mat/visconeohooke.H"
 #include "../drt_mat/viscoanisotropic.H"
+#include "../drt_mat/aaaraghavanvorp_damage.H"
 
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
@@ -299,6 +300,11 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
         MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
         visco->Update();
       }
+      else if (mat->MaterialType()== INPAR::MAT::m_aaaraghavanvorp_damage)
+      {
+        MAT::AAAraghavanvorp_damage* aaadamage = static_cast <MAT::AAAraghavanvorp_damage*>(mat.get());
+        aaadamage->Update();
+      }
     }
     break;
 
@@ -326,6 +332,11 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
         MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
         visco->Update();
       }
+      else if (mat->MaterialType()== INPAR::MAT::m_aaaraghavanvorp_damage)
+      {
+        MAT::AAAraghavanvorp_damage* aaadamage = static_cast <MAT::AAAraghavanvorp_damage*>(mat.get());
+        aaadamage->Update();
+      }
     }
     break;
 
@@ -348,6 +359,11 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
       {
         MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
         visco->Reset();
+      }
+      else if (mat->MaterialType()== INPAR::MAT::m_aaaraghavanvorp_damage)
+      {
+        MAT::AAAraghavanvorp_damage* aaadamage = static_cast <MAT::AAAraghavanvorp_damage*>(mat.get());
+        aaadamage->Reset();
       }
     }
     break;
