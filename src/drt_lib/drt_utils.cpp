@@ -1852,26 +1852,19 @@ void DRT::UTILS::SetupExtractor(const DRT::Discretization& dis,
     }
 
     // put all conditioned dofs into conddofset
-    std::vector<int> dof = dis.Dof(node);
-    for (unsigned j=0; j<dof.size(); ++j)
+    if (conditioned)
     {
-      // test for condition coverage and dof position
-      if (conditioned and startdim<=j and j<enddim)
+      std::vector<int> dof = dis.Dof(node);
+      for (unsigned j=0; j<dof.size(); ++j)
       {
-        conddofset.insert(dof[j]);
+        // test for dof position
+        if (startdim<=j and j<enddim)
+        {
+          conddofset.insert(dof[j]);
+        }
       }
     }
   }
-
-  std::set<int> otherdofset(fullmap->MyGlobalElements(),
-                  fullmap->MyGlobalElements() + fullmap->NumMyElements());
-
-  std::set<int>::const_iterator conditer;
-  for (conditer = conddofset.begin(); conditer != conddofset.end(); ++conditer)
-  {
-    otherdofset.erase(*conditer);
-  }
-
 
   // if there is no such condition, do not waste any more time
   int conddofsetsize = static_cast<int>(conddofset.size());
@@ -1889,6 +1882,15 @@ void DRT::UTILS::SetupExtractor(const DRT::Discretization& dis,
   }
   else
   {
+    std::set<int> otherdofset(fullmap->MyGlobalElements(),
+                              fullmap->MyGlobalElements() + fullmap->NumMyElements());
+
+    std::set<int>::const_iterator conditer;
+    for (conditer = conddofset.begin(); conditer != conddofset.end(); ++conditer)
+    {
+      otherdofset.erase(*conditer);
+    }
+
     std::vector<int> conddofmapvec;
     conddofmapvec.reserve(conddofset.size());
     conddofmapvec.assign(conddofset.begin(), conddofset.end());
