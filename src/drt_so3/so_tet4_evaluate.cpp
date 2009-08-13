@@ -64,7 +64,7 @@ using namespace LINALG; // our linear algebra
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              vlf 06/07|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList& params,
+int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
                                     DRT::Discretization&      discretization,
                                     vector<int>&              lm,
                                     Epetra_SerialDenseMatrix& elemat1_epetra,
@@ -367,7 +367,8 @@ int DRT::ELEMENTS::So_tet4::EvaluateNeumann(ParameterList& params,
                                            DRT::Discretization&      discretization,
                                            DRT::Condition&           condition,
                                            vector<int>&              lm,
-                                           Epetra_SerialDenseVector& elevec1)
+                                           Epetra_SerialDenseVector& elevec1,
+                                           Epetra_SerialDenseMatrix* elemat1)
 {
   dserror("DRT::ELEMENTS::So_tet4::EvaluateNeumann not implemented");
   // get values and switches from the condition

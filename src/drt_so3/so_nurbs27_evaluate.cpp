@@ -170,7 +170,8 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::EvaluateNeumann(
   DRT::Discretization&      discretization,
   DRT::Condition&           condition     ,
   vector<int>&              lm            ,
-  Epetra_SerialDenseVector& elevec1       )
+  Epetra_SerialDenseVector& elevec1       ,
+  Epetra_SerialDenseMatrix* elemat1       )
 {
   // get values and switches from the condition
   const vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");

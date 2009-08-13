@@ -166,7 +166,8 @@ public:
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
                               vector<int>&              lm,
-                              Epetra_SerialDenseVector& elevec1);
+                              Epetra_SerialDenseVector& elevec1,
+                              Epetra_SerialDenseMatrix* elemat1 = NULL);
 
   //! Evaluate method for StructuralSurface-Elements
   virtual int Evaluate(ParameterList& params,
@@ -239,6 +240,21 @@ protected:
   void SurfaceIntegration(vector<double>& normal,
                           const Epetra_SerialDenseMatrix& x,
                           const Epetra_SerialDenseMatrix& deriv);
+
+  void FAD_DFAD_DSurfaceIntegration(Epetra_SerialDenseMatrix& d_normal,
+                                  const Epetra_SerialDenseMatrix& x,
+                                  const Epetra_SerialDenseMatrix& deriv);
+
+  void FAD_SFAD_DSurfaceIntegration(Epetra_SerialDenseMatrix& d_normal,
+                                  const Epetra_SerialDenseMatrix& x,
+                                  const Epetra_SerialDenseMatrix& deriv);
+
+  void analytical_DSurfaceIntegration(Epetra_SerialDenseMatrix& d_normal,
+                                             const Epetra_SerialDenseMatrix& x,
+                                             const Epetra_SerialDenseMatrix& deriv);
+ void FiniteDiff_DSurfaceIntegration(Epetra_SerialDenseMatrix& d_normal,
+                                             const Epetra_SerialDenseMatrix& x,
+                                             const Epetra_SerialDenseMatrix& deriv);
 
   /*!
   \brief Create matrix with material configuration

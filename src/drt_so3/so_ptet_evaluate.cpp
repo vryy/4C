@@ -660,7 +660,8 @@ int DRT::ELEMENTS::Ptet::EvaluateNeumann(ParameterList& params,
                                          DRT::Discretization&      discretization,
                                          DRT::Condition&           condition,
                                          vector<int>&              lm,
-                                         Epetra_SerialDenseVector& elevec1)
+                                         Epetra_SerialDenseVector& elevec1,
+                                         Epetra_SerialDenseMatrix* elemat1)
 {
   dserror("DRT::ELEMENTS::Ptet::EvaluateNeumann not implemented");
   return -1;
