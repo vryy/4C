@@ -248,9 +248,25 @@ void DRT::Discretization::Evaluate(
 
 
 /*----------------------------------------------------------------------*
+ |  evaluate Neumann conditions (public)                     mwgee 08/09|
+ *----------------------------------------------------------------------*/
+void DRT::Discretization::EvaluateNeumann(ParameterList&                       params, 
+                                          Teuchos::RCP<Epetra_Vector>          systemvector,
+                                          Teuchos::RCP<LINALG::SparseOperator> systemmatrix)
+{
+  if (systemmatrix==Teuchos::null)
+    EvaluateNeumann(params,*systemvector);
+  else
+    EvaluateNeumann(params,*systemvector,systemmatrix.get());
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  evaluate Neumann conditions (public)                     mwgee 12/06|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::EvaluateNeumann(ParameterList& params, Epetra_Vector& systemvector)
+void DRT::Discretization::EvaluateNeumann(ParameterList&          params, 
+                                          Epetra_Vector&          systemvector,
+                                          LINALG::SparseOperator* systemmatrix)
 {
   if (!Filled()) dserror("FillComplete() was not called");
   if (!HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");

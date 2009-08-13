@@ -1003,16 +1003,41 @@ public:
   in the parameters, no time curves are used.
   Parameters recognized by this method:
   \code
-  params.set("total time",acttime); // current total time
+    params.set("total time",acttime); // current total time
   \endcode
-
 
   \param params (in): List of parameters
   \param systemvector (out): Vector to assemble Neumann BCs to.
                              The vector is NOT initialized to zero by this method.
   */
-  virtual void EvaluateNeumann(ParameterList& params,
-                               Epetra_Vector& systemvector);
+  virtual void EvaluateNeumann(ParameterList&          params,
+                               Epetra_Vector&          systemvector,
+                               LINALG::SparseOperator* systemmatrix = NULL);
+
+  /*!
+  \brief Evaluate Neumann boundary conditions
+
+  Loop all Neumann conditions attached to the discretization and evaluate them.
+  This method considers all conditions in condition_ with the names
+  "PointNeumann", LineNeumann", "SurfaceNeumann" and "VolumeNeumann".
+  It takes a current time from the parameter list params named "total time"
+  and evaluates the appropiate time curves at that time for each
+  Neumann condition separately. If "total time" is not included
+  in the parameters, no time curves are used.
+  Parameters recognized by this method:
+  \code
+    params.set("total time",acttime); // current total time
+  \endcode
+
+  \param params (in): List of parameters
+  \param systemvector (out): Vector to assemble Neumann BCs to.
+                             The vector is NOT initialized to zero by this method.
+  \param systemvector (out): Optional matrix to assemble linearization of Neumann BCs to.
+  */
+  virtual void EvaluateNeumann(
+          Teuchos::ParameterList&              params,
+          Teuchos::RCP<Epetra_Vector>          systemvector,
+          Teuchos::RCP<LINALG::SparseOperator> systemmatrix = Teuchos::null);
 
   /*!
   \brief Evaluate Dirichlet boundary conditions
