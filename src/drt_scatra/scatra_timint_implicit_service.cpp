@@ -576,6 +576,13 @@ void SCATRA::ScaTraTimIntImpl::ComputeDensity(const double thermpress,
       }
     }
   }
+  else if (reaction_ == "Arrhenius_pv")
+  {
+    // compute density based on progress variable phi:
+    // rho = rho_u + phi*(rho_b-rho_u)
+    densnp_->PutScalar(unbdens_);
+    densnp_->Update(1.0,*phinp_,densdiff_);
+  }
   else
   {
     // compute density based on equation of state:

@@ -471,6 +471,10 @@ protected:
   double thermpressdtnp_;
   double thermpressdtn_;
 
+  /// reaction-pv-specific parameter: unburnt density and density difference
+  double unbdens_;
+  double densdiff_;
+
   /// system matrix (either sparse matrix or block sparse matrix)
   RCP<LINALG::SparseOperator> sysmat_;
 

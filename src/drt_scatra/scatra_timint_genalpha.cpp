@@ -171,6 +171,10 @@ void SCATRA::TimIntGenAlpha::ComputeInitialDensityDerivative()
       }
     }
   }
+  else if (reaction_ == "Arrhenius_pv")
+  {
+    densdtn_->PutScalar(0.0);
+  }
   else
   {
     // define auxiliary vectors

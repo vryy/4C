@@ -297,7 +297,9 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     // set flag for potential inclusion of reaction term
     string reactiontype=params.get<string>("reaction");
     bool reaction = false;
-    if (reactiontype == "constant_coefficient" or reactiontype == "Arrhenius_law")
+    if (reactiontype == "constant_coefficient" or
+        reactiontype == "Arrhenius_species" or
+        reactiontype == "Arrhenius_pv")
       reaction = true;
 
     // set flag for conservative form
@@ -558,7 +560,9 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     // set flag for potential inclusion of reaction term
     string reactiontype=params.get<string>("reaction");
     bool reaction = false;
-    if (reactiontype == "constant_coefficient" or reactiontype == "Arrhenius_law")
+    if (reactiontype == "constant_coefficient" or
+        reactiontype == "Arrhenius_species" or
+        reactiontype == "Arrhenius_pv")
       reaction = true;
 
     // get stabilization parameter sublist
@@ -802,6 +806,34 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     } // for i
 
     elevec1_epetra(0) += CalculateConductivity(ele,frt);
+  }
+  else if (action=="get_density_values")
+  {
+    // get the material
+    RefCountPtr<MAT::Material> material = ele->Material();
+
+    if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
+    {
+      const MAT::ArrheniusPV* actmat = static_cast<const MAT::ArrheniusPV*>(material.get());
+
+      params.set("unburnt density",actmat->UnbDens());
+      params.set("burnt density",  actmat->BurDens());
+    }
+    else dserror("This routine is only supposed to be called for reactive flow problems using the progress-variable approach!");
+  }
+  else if (action=="get_flame_parameters")
+  {
+    // get the material
+    RefCountPtr<MAT::Material> material = ele->Material();
+
+    if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
+    {
+      const MAT::ArrheniusPV* actmat = static_cast<const MAT::ArrheniusPV*>(material.get());
+
+      params.set("flame parameter beta",     actmat->ComputeBeta());
+      params.set("diffusive flame thickness",actmat->ComputeDiffFlameThickness());
+    }
+    else dserror("This routine is only supposed to be called for reactive flow problems using the progress-variable approach!");
   }
   else
     dserror("Unknown type of action for Scatra Implementation: %s",action.c_str());

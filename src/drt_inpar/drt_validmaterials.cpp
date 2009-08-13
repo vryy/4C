@@ -171,7 +171,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"REFVISC","reference dynamic viscosity (kg/(m*s))");
     AddNamedReal(m,"REFTEMP","reference temperature (K)");
     AddNamedReal(m,"SUTHTEMP","Sutherland temperature (K)");
-    AddNamedReal(m,"SHC","specific heat capacity at constant pressure");
+    AddNamedReal(m,"SHC","specific heat capacity at constant pressure (J/(kg*K))");
     AddNamedReal(m,"PRANUM","Prandtl number");
 
     AppendMaterialDefinition(matlist,m);
@@ -190,7 +190,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"REFTEMP","reference temperature (K)");
     AddNamedReal(m,"SUTHTEMP","Sutherland temperature (K)");
     AddNamedReal(m,"SCHNUM","Schmidt number");
-    AddNamedReal(m,"PREEXCON","pre-exponential constant");
+    AddNamedReal(m,"PREEXCON","pre-exponential constant (1/s)");
     AddNamedReal(m,"TEMPEXP","exponent of temperature dependence");
     AddNamedReal(m,"ACTEMP","activation temperature (K)");
 
@@ -209,10 +209,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"REFVISC","reference dynamic viscosity (kg/(m*s))");
     AddNamedReal(m,"REFTEMP","reference temperature (K)");
     AddNamedReal(m,"SUTHTEMP","Sutherland temperature (K)");
-    AddNamedReal(m,"SHC","specific heat capacity at constant pressure");
+    AddNamedReal(m,"SHC","specific heat capacity at constant pressure (J/(kg*K))");
     AddNamedReal(m,"PRANUM","Prandtl number");
-    AddNamedReal(m,"REAHEAT","heat of reaction per unit mass");
-    AddNamedReal(m,"PREEXCON","pre-exponential constant");
+    AddNamedReal(m,"REAHEAT","heat of reaction per unit mass (J/kg)");
+    AddNamedReal(m,"PREEXCON","pre-exponential constant (1/s)");
     AddNamedReal(m,"TEMPEXP","exponent of temperature dependence");
     AddNamedReal(m,"ACTEMP","activation temperature (K)");
 
@@ -232,15 +232,16 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"REFTEMP","reference temperature (K)");
     AddNamedReal(m,"SUTHTEMP","Sutherland temperature (K)");
     AddNamedReal(m,"PRANUM","Prandtl number");
-    AddNamedReal(m,"PREEXCON","pre-exponential constant");
+    AddNamedReal(m,"PREEXCON","pre-exponential constant (1/s)");
     AddNamedReal(m,"TEMPEXP","exponent of temperature dependence");
     AddNamedReal(m,"ACTEMP","activation temperature (K)");
-    AddNamedReal(m,"UNBSHC","specific heat capacity of unburnt phase");
-    AddNamedReal(m,"BURSHC","specific heat capacity of burnt phase");
+    AddNamedReal(m,"FLAMESPEED","flame speed (m/s)");
+    AddNamedReal(m,"UNBSHC","specific heat capacity of unburnt phase (J/(kg*K))");
+    AddNamedReal(m,"BURSHC","specific heat capacity of burnt phase (J/(kg*K))");
     AddNamedReal(m,"UNBTEMP","temperature of unburnt phase (K)");
     AddNamedReal(m,"BURTEMP","temperature of burnt phase (K)");
-    AddNamedReal(m,"UNBDENS","density of unburnt phase");
-    AddNamedReal(m,"BURDENS","density of burnt phase");
+    AddNamedReal(m,"UNBDENS","density of unburnt phase (kg/m³)");
+    AddNamedReal(m,"BURDENS","density of burnt phase (kg/m³)");
 
     AppendMaterialDefinition(matlist,m);
   }

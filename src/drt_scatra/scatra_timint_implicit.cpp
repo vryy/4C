@@ -354,6 +354,22 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     c_       = Teuchos::null;
   }
 
+  // -------------------------------------------------------------------
+  // preliminaries for reactive flow using progress-variable approach
+  // -------------------------------------------------------------------
+  if (reaction_ == "Arrhenius_pv")
+  {
+    ParameterList eleparams;
+    eleparams.set("action","get_density_values");
+    eleparams.set("isale",isale_);
+    discret_->Evaluate(eleparams,null,null,null,null,null);
+    unbdens_ = eleparams.get("unburnt density", 1.161);
+    const double burdens = eleparams.get("burnt density", 0.29);
+    if (burdens > unbdens_)
+      dserror("density in burnt phase larger than in unburnt phase!");
+    densdiff_ = burdens - unbdens_;
+  }
+
   return;
 
 } // ScaTraTimIntImpl::ScaTraTimIntImpl
@@ -1473,8 +1489,12 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
       }
     }
   }
-  else if (init == 4) // discontinuous 0-1 field for progress variable in 1-D
+  // discontinuous 0-1 field for progress variable in 1-D
+  else if (init == 4)
   {
+    // check whether it is indeed a progress-variable approach
+    if (reaction_ != "Arrhenius_pv") dserror("This initial field is supposed to be used only in the context of a reactive flow with progress-variable approach!");
+
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
     // loop all nodes on the processor
@@ -1485,6 +1505,9 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
       // the set of degrees of freedom associated with the node
       vector<int> nodedofset = discret_->Dof(lnode);
 
+      // get coordinate
+      const double x = lnode->X()[0];
+
       int numdofs = nodedofset.size();
       for (int k=0;k< numdofs;++k)
       {
@@ -1492,7 +1515,56 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
         int doflid = dofrowmap->LID(dofgid);
 
         double initialval = 0.0;
-        if (lnode->X()[0] > -EPS10) initialval = 1.0;
+        if (x > -EPS10) initialval = 1.0;
+
+        phin_->ReplaceMyValues(1,&initialval,&doflid);
+        // initialize also the solution vector. These values are a pretty good guess for the
+        // solution after the first time step (much better than starting with a zero vector)
+        phinp_->ReplaceMyValues(1,&initialval,&doflid);
+      }
+    }
+  }
+  // analytical reactive profile in x2-direction due to Ferziger and Echekki (1993)
+  // for two-dimensional flame-vortex interaction problem (x2=0-200)
+  else if (init == 5)
+  {
+    // check whether it is indeed a progress-variable approach
+    if (reaction_ != "Arrhenius_pv") dserror("This initial field is supposed to be used only in the context of a reactive flow with progress-variable approach!");
+
+    // get flame parameter beta and diffusive flame thickness
+    ParameterList eleparams;
+    eleparams.set("action","get_flame_parameters");
+    eleparams.set("isale",isale_);
+    discret_->Evaluate(eleparams,null,null,null,null,null);
+    const double beta  = eleparams.get("flame parameter beta", 1.0);
+    const double delta = eleparams.get("diffusive flame thickness", 0.0);
+    if (delta < EPS15) dserror("Diffusive flame thickness is zero or negative!");
+
+    // define flame location in x2-direction
+    const double floc = 100.0;
+
+    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+    // loop all nodes on the processor
+    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+    {
+      // get the processor local node
+      DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
+      // the set of degrees of freedom associated with the node
+      vector<int> nodedofset = discret_->Dof(lnode);
+
+      // get x2-coordinate
+      const double x2 = lnode->X()[1];
+
+      int numdofs = nodedofset.size();
+      for (int k=0;k< numdofs;++k)
+      {
+        const int dofgid = nodedofset[k];
+        int doflid = dofrowmap->LID(dofgid);
+
+        double initialval = 0.0;
+        if (x2 < floc-EPS10) initialval = (1.0-(1.0/beta))*exp((x2-floc)/delta);
+        else                 initialval = 1.0-(exp((1.0-beta)*(x2-floc)/delta)/beta);
 
         phin_->ReplaceMyValues(1,&initialval,&doflid);
         // initialize also the solution vector. These values are a pretty good guess for the

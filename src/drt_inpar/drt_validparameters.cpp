@@ -672,10 +672,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                             "for methods other than load control: [node(fortran numbering)] [dof(c-numbering)] [curve(fortran numbering)]",
                             &sdyn);
 
-  setStringToIntegralParameter<int>("LOADLIN","no",
-                                    "Use linearization of external follower load in Newton",
-                                    yesnotuple,yesnovalue,&sdyn);
-
   setStringToIntegralParameter<INPAR::STR::PredEnum>("PREDICT","ConstDis","",
                                tuple<std::string>(
                                  "Vague",
@@ -1596,9 +1592,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<std::string>(
                                  "no",
                                  "constant_coefficient",
-                                 "Arrhenius_law"
+                                 "Arrhenius_species",
+                                 "Arrhenius_pv"
                                  ),
-                               tuple<int>(0,1,2),
+                               tuple<int>(0,1,2,3),
                                &scatradyn);
 
   setStringToIntegralParameter<INPAR::SCATRA::TimeIntegrationScheme>("TIMEINTEGR","One_Step_Theta",
@@ -1649,8 +1646,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "field_by_function",
                                  "field_by_condition",
                                  "disturbed_field_by_function",
-                                 "DISCONTINUOUS PV"),
-                               tuple<int>(0,1,2,3,4),
+                                 "1D_DISCONTPV",
+                                 "FVI_FERECHPRO"),
+                               tuple<int>(0,1,2,3,4,5),
                                &scatradyn);
 
   IntParameter("INITFUNCNO",-1,"function number for scalar transport initial field",&scatradyn);

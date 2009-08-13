@@ -57,6 +57,8 @@ namespace MAT
       const double tempexp_;
       /// activation temperature
       const double actemp_;
+      /// flame speed
+      const double flamespeed_;
       /// specific heat capacity of unburnt phase
       const double unbshc_;
       /// specific heat capacity of burnt phase
@@ -130,6 +132,18 @@ namespace MAT
     /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_arrhenius_pv; }
 
+    /// compute rate parameter alpha
+    double ComputeAlpha() const;
+
+    /// compute rate parameter beta
+    double ComputeBeta() const;
+
+    /// compute diffusive flame thickness
+    double ComputeDiffFlameThickness() const;
+
+    /// compute flame thickness due to Blint (1986)
+    double ComputeBlintFlameThickness() const;
+
     /// compute specific heat capacity at constant pressure
     double ComputeShc(const double provar) const;
 
@@ -163,6 +177,8 @@ namespace MAT
     double TempExp() const { return params_->tempexp_; }
     /// activation temperature
     double AcTemp() const { return params_->actemp_; }
+    /// flame speed
+    double FlameSpeed() const { return params_->flamespeed_; }
     /// specific heat capacity of unburnt phase
     double UnbShc() const { return params_->unbshc_; }
     /// specific heat capacity of burnt phase

@@ -30,6 +30,7 @@ MAT::PAR::ArrheniusPV::ArrheniusPV(
   preexcon_(matdata->GetDouble("PREEXCON")),
   tempexp_(matdata->GetDouble("TEMPEXP")),
   actemp_(matdata->GetDouble("ACTEMP")),
+  flamespeed_(matdata->GetDouble("FLAMESPEED")),
   unbshc_(matdata->GetDouble("UNBSHC")),
   burshc_(matdata->GetDouble("BURSHC")),
   unbtemp_(matdata->GetDouble("UNBTEMP")),
@@ -102,6 +103,42 @@ void MAT::ArrheniusPV::Unpack(const vector<char>& data)
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double MAT::ArrheniusPV::ComputeAlpha() const
+{
+  const double alpha = (BurTemp()-UnbTemp())/BurTemp();
+
+  return alpha;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double MAT::ArrheniusPV::ComputeBeta() const
+{
+  const double beta = (BurTemp()-UnbTemp())*AcTemp()/(BurTemp()*BurTemp());
+
+  return beta;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double MAT::ArrheniusPV::ComputeDiffFlameThickness() const
+{
+  const double delta = RefVisc()/(PraNum()*UnbDens()*FlameSpeed());
+
+  return delta;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double MAT::ArrheniusPV::ComputeBlintFlameThickness() const
+{
+  const double delta_B = 2.0*pow((BurTemp()/RefTemp()),1.5)*((RefTemp()+SuthTemp())/(BurTemp()+SuthTemp()))*RefVisc()/(PraNum()*UnbDens()*FlameSpeed());
+
+  return delta_B;
 }
 
 /*----------------------------------------------------------------------*/
