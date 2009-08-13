@@ -33,7 +33,8 @@ int DRT::ELEMENTS::Shell8Line::EvaluateNeumann(
                                            DRT::Discretization&      discretization,
                                            DRT::Condition&           condition,
                                            vector<int>&              lm,
-                                           Epetra_SerialDenseVector& elevec1)
+                                           Epetra_SerialDenseVector& elevec1,
+                                           Epetra_SerialDenseMatrix* elemat1)
 {
   RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
   if (disp==null) dserror("Cannot get state vector 'displacement'");
