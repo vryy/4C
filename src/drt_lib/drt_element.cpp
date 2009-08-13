@@ -428,6 +428,9 @@ int DRT::Element::Evaluate(ParameterList& params,
   return -1;
 }
 
+#if 0 // this no longer is a dummy (but pure virtual) to check on the 
+      // parameter list. It can be a dummy again once everything with
+      // EvaluateNeumann is fixed
 /*----------------------------------------------------------------------*
  |  evaluate Neumann BC dummy (public)                       mwgee 01/07|
  *----------------------------------------------------------------------*/
@@ -442,7 +445,7 @@ int DRT::Element::EvaluateNeumann(ParameterList& params,
        << __FILE__ << ":" << __LINE__ << endl;
   return -1;
 }
-
+#endif
 
 
 
