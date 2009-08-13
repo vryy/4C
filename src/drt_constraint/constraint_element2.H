@@ -209,7 +209,8 @@ public:
     DRT::Discretization& discretization,  ///< discretization
     DRT::Condition& condition,  ///< Neumann condition to evaluate
     vector<int>& lm,  ///< location vector
-    Epetra_SerialDenseVector& elevec1   ///< vector to be filled by element
+    Epetra_SerialDenseVector& elevec1,   ///< vector to be filled by element
+    Epetra_SerialDenseMatrix* elemat1 = NULL
   );
 
 
