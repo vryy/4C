@@ -167,7 +167,13 @@ void dyn_nlnstructural_drt()
         genalphaparams.set("CONTROLNODE",controlnode[0]);
         genalphaparams.set("CONTROLDOF",controlnode[1]);
         genalphaparams.set("CONTROLCURVE",controlnode[2]);
-    }
+      }
+      
+      {
+        // use linearization of follower loads in Newton
+        int loadlin = Teuchos::getIntegralValue<int>(sdyn,"LOADLIN");
+        genalphaparams.set<bool>("LOADLIN",loadlin!=0);
+      }
   
       // Rayleigh damping
       genalphaparams.set<bool>  ("damping",(not (sdyn.get<std::string>("DAMPING") == "no"

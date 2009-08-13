@@ -344,6 +344,7 @@ void StruGenAlpha::ConstantPredictor()
   bool   printscreen = params_.get<bool>  ("print to screen",false);
   string convcheck   = params_.get<string>("convcheck"      ,"AbsRes_Or_AbsDis");
   bool   dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
+  bool   loadlin     = params_.get<bool>("LOADLIN",false);
 
   // store norms of old displacements and maximum of norms of
   // internal, external and inertial forces if a relative convergence
