@@ -197,7 +197,7 @@ namespace THR
     //! Update configuration after time step
     //!
     //! This means, the state set
-    //! \f$T_{n} := T_{n+1}\f$ and \f$T'_{n} := T'_{n+1}\f$
+    //! \f$T_{n} := T_{n+1}\f$ and \f$R_{n} := R_{n+1}\f$
     //! Thus the 'last' converged state is lost and a reset
     //! of the time step becomes impossible.
     //! We are ready and keen awating the next time step.
@@ -329,22 +329,12 @@ namespace THR
                           //!< even if Newton-Raphson iteration failed
     double toltempi_;  //!< tolerance residual temperatures
     double tolfres_;  //!< tolerance force residual
-//    double tolpfres_; //!< norm of residual pressure forces
-//    double tolpres_; //!< norm of residual pressures
-
-//    double uzawaparam_;  //!< Parameter for Uzawa algorithm dealing
-//                         //!< with Lagrange multipliers
-//     int uzawaitermax_;  //!< maximally permitted Uzawa iterations
-//    double tolcon_;  //!< tolerance constraint
     int iter_;  //!< iteration step
     double normcharforce_;  //!< characteristic norm for residual force
     double normchartemp_;  //!< characteristic norm for residual temperatures
     double normfres_;  //!< norm of residual forces
     double normtempi_;  //!< norm of residual temperatures
-//    double normcon_;  //!< norm of constraint
-//    double normpfres_; //!< norm of residual pressure forces
-//    double normpres_; //!< norm of residual pressures
-    Teuchos::RCP<Epetra_Vector> tempi_;  //!< residual temperatures (and pressure)
+    Teuchos::RCP<Epetra_Vector> tempi_;  //!< residual temperatures
                                         //!< \f$\Delta{T}^{<k>}_{n+1}\f$
     Epetra_Time timer_;  //!< timer for solution technique
     //@}

@@ -177,10 +177,10 @@ void THR::TimInt::DetermineCapaConsistTempRate()
     discret_->ClearState();
   }
 
-  // finish mass matrix
+  // finish capacity matrix
   capa_->Complete();
 
-  // close stiffness matrix
+  // close tangent matrix
   tang_->Complete();
 
   // calculate consistent initial temperature rates
@@ -242,7 +242,7 @@ void THR::TimInt::UpdateStepTime()
   // update time and step
   time_->UpdateSteps(timen_);  // t_{n} := t_{n+1}, etc
   step_ = stepn_;  // n := n+1
-  //
+
   timen_ += (*dt_)[0];
   stepn_ += 1;
 
@@ -479,7 +479,7 @@ void THR::TimInt::OutputHeatfluxTempgrad
                          *(discret_->ElementColMap()));
   }
 
-  // write tempgrad
+  // write temperature gradient
   if (writetempgrad_ != INPAR::THR::tempgrad_none)
   {
     std::string tempgradtext = "";

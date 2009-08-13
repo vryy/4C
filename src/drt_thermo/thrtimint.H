@@ -117,7 +117,7 @@ namespace THR
 
     //! Equilibrate the initial state by identifying the consistent
     //! initial accelerations and (if applicable) internal variables
-    //! Make damping and mass matrix
+    //! Make capacity matrix
     void DetermineCapaConsistTempRate();
 
     //! Apply Dirichlet boundary conditions on provided state vectors
@@ -167,7 +167,7 @@ namespace THR
 
     //! Output to file
     //! This routine always prints the last converged state, i.e.
-    //! \f$D_{n}, V_{n}, A_{n}\f$. So, #UpdateIncrement should be called
+    //! \f$T_{n}, R_{n}\f$. So, #UpdateIncrement should be called
     //! upon object prior to writing stuff here.
     //! \author mwgee (originally) \date 03/07
     void OutputStep();
@@ -187,7 +187,7 @@ namespace THR
                          //!< it was written at this time step
     );
 
-    //! Stress & strain output
+    //! Heatflux & temperature gradient output
     //! \author lw (originally)
     void OutputHeatfluxTempgrad(
       bool& datawritten  //!< (in/out) read and append if
@@ -257,7 +257,7 @@ namespace THR
     //! here, but they are applied in linearised manner. The linearised
     //! manner means the static condensation is applied once with
     //! residual temperatures replaced by the full-step temperature
-    //! increment \f$D_{n+1}-D_{n}\f$.
+    //! increment \f$T_{n+1}-T_{n}\f$.
     void ApplyForceInternal
     (
       const double time,  //!< evaluation time
@@ -349,7 +349,7 @@ namespace THR
     //! Return reaction forces
     virtual Teuchos::RCP<Epetra_Vector> Freact() = 0;
 
-    //! Return stiffness,
+    //! Return tangent,
     //! i.e. force residual differentiated by temperatures
     Teuchos::RCP<LINALG::SparseMatrix> Tang() { return tang_; }
 

@@ -275,9 +275,7 @@ namespace THR
     Teuchos::RCP<Epetra_Vector> tempt_;
     //! mid-temperature rates \f$R_m = R_{n+1-\theta}\f$
     Teuchos::RCP<Epetra_Vector> ratet_;
-    // --> delete: there is no A in TSI cd 05.08.09
-    //! mid-accelerations \f$A_m = A_{n+1-\theta}\f$
-    //Teuchos::RCP<Epetra_Vector> acct_;
+
     //@}
 
     //! @name Global force vectors
@@ -289,10 +287,6 @@ namespace THR
     Teuchos::RCP<Epetra_Vector> fext_;  //!< external force at \f$t_n\f$
     Teuchos::RCP<Epetra_Vector> fextn_;  //!< external force at \f$t_{n+1}\f$
 
-    //Teuchos::RCP<Epetra_Vector> finertt_;  //!< inertial force
-    //Teuchos::RCP<Epetra_Vector> fvisct_;  //!< viscous force
-
-    //Teuchos::RCP<Epetra_Vector> frobin_;  //!< Robin force due to FSI
     //@}
 
   };  // class TimIntOneStepTheta

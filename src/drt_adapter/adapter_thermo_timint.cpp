@@ -205,7 +205,7 @@ void ADAPTER::ThermoTimInt::PrepareTimeStep()
 /*----------------------------------------------------------------------*/
 /* build linear system tangent matrix and rhs/force residual
  *
- * Monolithic FSI accesses the linearised thermo problem. */
+ * Monolithic TSI accesses the linearised thermo problem. */
 void ADAPTER::ThermoTimInt::Evaluate(
   Teuchos::RCP<const Epetra_Vector> temp
 )
@@ -221,11 +221,11 @@ void ADAPTER::ThermoTimInt::Evaluate(
     Teuchos::RCP<Epetra_Vector> tempi = Teuchos::rcp(new Epetra_Vector(*temp));
     tempi->Update(-1.0, *tempinc_, 1.0);
 
-    // update incremental displacement member to provided step increments
-    // shortly: disinc_^<i> := temp^<i+1>
+    // update incremental temperature member to provided step increments
+    // shortly: tempinc_^<i> := temp^<i+1>
     tempinc_->Update(1.0, *temp, 0.0);
 
-    // do structural update with provided residual displacements
+    // do thermal update with provided residual temperatures
     thermo_->UpdateIterIncrementally(tempi);
   }
   else

@@ -40,13 +40,13 @@ public:
   //! \author bborn \date 06/08
   ResultTest(TimInt& tintegrator);
 
-  //! \brief structure version of nodal value tests
+  //! \brief thermo version of nodal value tests
   //!
   //! Possible position flags are "temp",
   //!                             "rate",
   virtual void TestNode(const _RESULTDESCR* res, int& nerr, int& test_count);
 
-  //! return true if this is a structure test
+  //! return true if this is a thermo test
   virtual bool Match(const _RESULTDESCR*);
 
   /* _RESULTDESCR has been found working, but its exact function is unknown due to
@@ -71,6 +71,6 @@ private:
 
 }  // namespace THR
 
-#endif /* #ifdef CCADISCRET        */
+#endif // #ifdef CCADISCRET
 
-#endif /* #ifndef THR_RESULTTEST_H */
+#endif // #ifndef THR_RESULTTEST_H

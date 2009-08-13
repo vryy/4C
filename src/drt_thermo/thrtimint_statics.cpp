@@ -43,7 +43,6 @@ THR::TimIntStatics::TimIntStatics
   fintn_(Teuchos::null),
   fext_(Teuchos::null),
   fextn_(Teuchos::null)
-  //frobin_(Teuchos::null)
 {
   // info to user
   if (myrank_ == 0)
@@ -68,11 +67,6 @@ THR::TimIntStatics::TimIntStatics
   // set initial external force vector
   ApplyForceExternal((*time_)[0], (*temp_)(0), fext_);
 
-//
-//  // external pseudo force due to RobinBC
-//  frobin_ = LINALG::CreateVector(*dofrowmap_, true);
-//
-
   // have a nice day
   return;
 }
@@ -87,9 +81,6 @@ void THR::TimIntStatics::PredictConstTempConsistRate()
 
   // new end-point temperature rates, these stay zero in static calculation
   raten_->PutScalar(0.0);
-
-//  // new end-point accelerations, these stay zero in static calculation
-//  accn_->PutScalar(0.0);
 
   // watch out
   return;
@@ -113,10 +104,6 @@ void THR::TimIntStatics::EvaluateRhsTangResidual()
   // ordinary internal force and tangent
   ApplyForceTangInternal(timen_, (*dt_)[0], tempn_, tempi_, fintn_, tang_);
 
-  // apply forces and tangent due to constraints
-  // Teuchos::ParameterList pcon; //apply empty parameterlist, no scaling necessary
-  //ApplyForceTangConstraint(timen_, (*temp_)(0), tempn_, fintn_, tang_, pcon);
-
   // potential forces
   //ApplyForceTangPotential(tempn_, fintn_, tang_);
 
@@ -130,9 +117,6 @@ void THR::TimIntStatics::EvaluateRhsTangResidual()
   //    K_{Teffdyn} = K_{T}
   // i.e. do nothing here
   tang_->Complete();  // close tangent matrix
-
-//  // apply forces and tangent due to contact
-//  ApplyForceTangContact(tang_,fres_);
 
   // hallelujah
   return;
@@ -150,12 +134,6 @@ double THR::TimIntStatics::CalcRefNormTemperature()
   // points within the timestep (end point, generalized midpoint).
 
   double charnormtemp = 0.0;
-  //if (pressure_ != Teuchos::null)
-  // {
-  //  Teuchos::RCP<Epetra_Vector> tempp = pressure_->ExtractOtherVector((*temp_)(0));
-  //  charnormtemp = THR::AUX::CalculateVectorNorm(iternorm_, tempp);
-  // }
-  // else
     charnormtemp = THR::AUX::CalculateVectorNorm(iternorm_, (*temp_)(0));
 
   // rise your hat
@@ -224,9 +202,6 @@ void THR::TimIntStatics::UpdateStepState()
   // new temperature rates at t_{n+1} -> t_n
   //    T'_{n} := T'_{n+1}
   rate_->UpdateSteps(*raten_);  // this simply copies zero vectors
-//  // new accelerations at t_{n+1} -> t_n
-//  //    A_{n} := A_{n+1}
-//  acc_->UpdateSteps(*accn_);  // this simply copies zero vectors
 
   // update new external force
   //    F_{ext;n} := F_{ext;n+1}
@@ -265,9 +240,6 @@ void THR::TimIntStatics::ReadRestartForce()
   // Set dt to 0, since we do not propagate in time.
   ApplyForceInternal((*time_)[0], 0.0, (*temp_)(0), zeros_, fint_);
 
-// no constraints cd 05.08.09
-  //ParameterList pcon; //no scaling necessary
-  //ApplyForceTangConstraint((*time_)[0], (*temp_)(0), (*temp_)(0), fint_, tang_, pcon);
   return;
 }
 

@@ -78,9 +78,6 @@ void ADAPTER::ThermoBaseAlgorithm::SetupThermo(const Teuchos::ParameterList& prb
 void ADAPTER::ThermoBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterList& prbdyn)
 {
   // this is not exactly a one hundred meter race, but we need timing
-//  Teuchos::RCP<Teuchos::Time> t
-//    = Teuchos::TimeMonitor::getNewTimer("ADAPTER::ThermoTimIntBaseAlgorithm::SetupThermo");
-//  Teuchos::TimeMonitor monitor(*t);
   Teuchos::RCP<Teuchos::Time> t
     = Teuchos::TimeMonitor::getNewTimer("ADAPTER::ThermoBaseAlgorithm::SetupThermo");
   Teuchos::TimeMonitor monitor(*t);

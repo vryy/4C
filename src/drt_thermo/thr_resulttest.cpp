@@ -41,7 +41,7 @@ void THR::ResultTest::TestNode(const _RESULTDESCR* res, int& nerr, int& test_cou
   if (res->dis != 0)
     dserror("fix me: only one structure discretization supported for testing");
 
-  // this implementation does not allow testing of stresses
+  // this implementation does not allow testing of heatfluxes
   if (thrdisc_->HaveGlobalNode(res->node))
   {
     const DRT::Node* actnode = thrdisc_->gNode(res->node);
@@ -53,13 +53,13 @@ void THR::ResultTest::TestNode(const _RESULTDESCR* res, int& nerr, int& test_cou
       return;
 
     // verbose output
-    //cout << "TESTING STRUCTURE RESULTS with StruResultTest::TestNode(..)" << endl;
+    //cout << "TESTING THERMAL RESULTS with THR::ResultTest::TestNode(..)" << endl;
 
     const std::string position = res->position;  // type of result value
     bool unknownpos = true;  // make sure the result value string can be handled
     double result = 0.0;  // will hold the actual result of run
 
-    // test displacements or pressure
+    // test temperature
     if (temp_ != Teuchos::null)
     {
       const Epetra_BlockMap& tempmap = temp_->Map();
@@ -71,7 +71,7 @@ void THR::ResultTest::TestNode(const _RESULTDESCR* res, int& nerr, int& test_cou
       }
     }
 
-    // test velocities
+    // test temperature rates
     if (rate_ != Teuchos::null)
     {
       const Epetra_BlockMap& ratemap = rate_->Map();
@@ -83,7 +83,7 @@ void THR::ResultTest::TestNode(const _RESULTDESCR* res, int& nerr, int& test_cou
       }
     }
 
-    // catch position strings, which are not handled by structure result test
+    // catch position strings, which are not handled by thermo result test
     if (unknownpos)
       dserror("position '%s' not supported in structure testing", position.c_str());
 

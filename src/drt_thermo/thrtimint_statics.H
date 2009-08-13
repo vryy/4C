@@ -32,7 +32,7 @@ namespace THR
    *
    * This static analysis inside the thermal dynamics methods appears
    * slightly displaced, however, it comes in handy in case of
-   * fluid-structure-interaction, which is built upon thermal
+   * thermo-structure-interaction, which is built upon thermal
    * dynamics.
    *
    * Regarding this matter, please direct any complaints to Axel Gerstenberger.
@@ -172,8 +172,6 @@ namespace THR
 
     Teuchos::RCP<Epetra_Vector> fext_;  //!< external force at \f$t_n\f$
     Teuchos::RCP<Epetra_Vector> fextn_;  //!< external force at \f$t_{n+1}\f$
-
-//    Teuchos::RCP<Epetra_Vector> frobin_;  //!< Robin force due to FSI
     //@}
 
   };  // class TimIntStatics
