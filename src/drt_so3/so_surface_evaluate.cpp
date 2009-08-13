@@ -182,7 +182,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
 	double ve = x(0,1)-x(3,1);
       x(0,1)-=0.25*(ve);
       
-      //SurfaceIntegration(normal, xc,deriv);
+      SurfaceIntegration(normal, xc,deriv);
       //analytical_DSurfaceIntegration(a_Dnormal, xc, deriv);
       //FAD_DFAD_DSurfaceIntegration(a_Dnormal, xc, deriv);
       //FAD_SFAD_DSurfaceIntegration(a_Dnormal, xc, deriv);
