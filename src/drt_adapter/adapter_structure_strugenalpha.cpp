@@ -17,6 +17,7 @@ Maintainer: Ulrich Kuettler
 #include "adapter_structure.H"
 #include "adapter_structure_strugenalpha.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_condition_utils.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

@@ -33,7 +33,7 @@ FSI::UTILS::DebugWriter::DebugWriter(Teuchos::RCP<DRT::Discretization> dis)
 
   coup_.SetupCoupling(*dis,
                       *dis_,
-                      *DRT::UTILS::ConditionNodeMap(*dis,"FSICoupling"),
+                      *DRT::UTILS::ConditionNodeRowMap(*dis,"FSICoupling"),
                       *dis_->NodeRowMap());
 }
 

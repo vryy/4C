@@ -34,6 +34,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/drt_nodematchingoctree.H"
 #include "drt_periodicbc.H"
 #include "../drt_lib/drt_function.H"
+#include "../drt_lib/drt_condition_utils.H"
 #include "fluid_utils.H"
 #include "fluidimpedancecondition.H"
 
@@ -3761,7 +3762,7 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::IntegrateInterfaceShape(s
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FLD::FluidImplicitTimeInt::UseBlockMatrix(Teuchos::RCP<std::set<int> > condelements,
+void FLD::FluidImplicitTimeInt::UseBlockMatrix(Teuchos::RCP<std::set<int> >     condelements,
                                                const LINALG::MultiMapExtractor& domainmaps,
                                                const LINALG::MultiMapExtractor& rangemaps,
                                                bool splitmatrix)

@@ -65,30 +65,154 @@ namespace DRT
         }
     };
 
-    /// collect all local nodes and elements in a condition, e.g. an interface
-    void FindInterfaceObjects(
-      const DRT::Discretization& dis,  ///< discretization
-      map<int, DRT::Node*>& nodes, ///< unique map of nodes
-      map< int, RefCountPtr<DRT::Element> >& elements, ///< unique map of elements
-      const string& condname ///< name of condition
-      );
+
+    /// find all local nodes from discretization marked with condition
+    /*!
+      Loop all conditions of the given discretization, find the ones with the
+      specified name and collect the locally owned node ids in the supplied
+      set. The nodes vector is unique and ordered on output.
+
+      \param dis : (in) Discretization
+      \param condname : (in) name of condition in question
+      \param nodes : (out) empty set on input, filled with nodal gids of local nodes
+
+      \author u.kue
+      \date 06/07
+    */
+    void FindConditionedNodes(const DRT::Discretization& dis,
+                              std::string condname,
+                              std::vector<int>& nodes);
+
+    /// find all local nodes from discretization marked with condition
+    /*!
+      Loop all conditions of the given discretization, find the ones with the
+      specified name and collect the locally owned node ids in the suppied
+      set. The nodes vector is unique and ordered on output.
+
+      \param dis : (in) Discretization
+      \param conds : (in) conditions in question
+      \param nodes : (out) empty set on input, filled with nodal gids of local nodes
+
+      \author u.kue
+      \date 06/07
+    */
+    void FindConditionedNodes(const DRT::Discretization& dis,
+                              const std::vector<DRT::Condition*>& conds,
+                              std::vector<int>& nodes);
+
+    /// find all local nodes from discretization marked with condition
+    void FindConditionedNodes(const DRT::Discretization& dis,
+                              const std::vector<DRT::Condition*>& conds,
+                              map<int, DRT::Node*>& nodes);
+
+    /// collect all local nodes and elements in a condition
+    /*!
+      \param dis discretization
+      \param nodes unique map of nodes
+      \param elements unique map of elements
+      \param condname name of condition
+     */
+    void FindConditionObjects(const DRT::Discretization& dis,
+                              map<int, DRT::Node*>& nodes,
+                              map<int, RCP<DRT::Element> >& elements,
+                              const string& condname);
 
     /// collect all nodes (in- and excluding 'ghosts') and
-    /// elements (including ghosts) in a condition, e.g. an interface
-    void FindInterfaceObjects(
-      const DRT::Discretization& dis, ///< discretization
-      map<int, DRT::Node*>& nodes,  ///< unique map of nodes
-      map<int, DRT::Node*>& ghostnodes,   ///< overlapping map of nodes
-      map< int, RefCountPtr<DRT::Element> >& elements,  ///< overlapping map of elements
-      const string& condname  ///< name of condition
-      );
+    /// elements (including ghosts) in a condition
+    /*!
+      \param dis discretization
+      \param nodes unique map of nodes
+      \param ghostnodes overlapping map of nodes
+      \param elements overlapping map of elements
+      \param condname name of condition
+     */
+    void FindConditionObjects(const DRT::Discretization& dis,
+                              map<int, DRT::Node*>& nodes,
+                              map<int, DRT::Node*>& ghostnodes,
+                              map< int, RCP<DRT::Element> >& elements,
+                              const string& condname);
 
     /// collect all elements in a condition including ghosts
-    void FindInterfaceObjects(
-        const DRT::Discretization& dis,  ///< discretization
-        map<int, RCP<DRT::Element> >& elements,  ///< overlapping map of elements
-        const string& condname  ///< name of condition
-    );
+    /*!
+      \param dis discretization
+      \param elements overlapping map of elements
+      \param condname name of condition
+     */
+    void FindConditionObjects(const DRT::Discretization& dis,
+                              map<int, RCP<DRT::Element> >& elements,
+                              const string& condname);
+
+
+    /// Create element map to given condition
+    /*!
+      \pre Geometry must be available in condition
+
+      \param dis : (in) Discretization
+      \param condname : (in) name of condition in question
+      \param colmap : (in) whether we want to create a (ghosted) column map
+    */
+    Teuchos::RCP<Epetra_Map> ConditionElementMap(const DRT::Discretization& dis, std::string condname, bool colmap);
+
+    /// Find all conditions with given name that all nodes of the element have in common
+    /*!
+      \param ele (in) the element
+      \param condname (in) name of the condition to look for
+      \param condition (out) all conditions that cover all element nodes
+    */
+    void FindElementConditions(const DRT::Element* ele, const std::string& condname, std::vector<DRT::Condition*>& condition);
+
+    /// row map with nodes from condition
+    Teuchos::RCP<Epetra_Map> ConditionNodeRowMap(const DRT::Discretization& dis,
+                                                 const std::string& condname);
+
+    /// col map with nodes from condition
+    Teuchos::RCP<Epetra_Map> ConditionNodeColMap(const DRT::Discretization& dis,
+                                                 const std::string& condname);
+
+    /// create the set of column element gids that have conditioned nodes
+    /*!
+      \note These are not elements from the condition geometry. Rather the
+      gids of actual discretization elements are listed.
+     */
+    Teuchos::RCP<std::set<int> > ConditionedElementMap(const DRT::Discretization& dis,
+                                                       const std::string& condname);
+
+
+    /// setup the extractor object to couple ndim dofs at the named condition
+    /*!
+
+      Partition the row dof map of the given discretization in two. Put this
+      first ndim dofs of the nodes covered by the given condition in slot
+      one. All the other dofs in slot zero.
+
+      \author u.kue
+      \date 01/08
+    */
+    void SetupNDimExtractor(const DRT::Discretization& dis,
+                            std::string condname,
+                            LINALG::MapExtractor& extractor);
+
+    /// setup the extractor object to couple ndim dofs at the named condition
+    void SetupNDimExtractor(const DRT::Discretization& dis,
+                            std::string condname,
+                            Teuchos::RCP<Epetra_Map> fullmap,
+                            LINALG::MapExtractor& extractor);
+
+    /// setup the extractor object to couple some dofs at the named condition
+    void SetupExtractor(const DRT::Discretization& dis,
+                        std::string condname,
+                        unsigned startdim,
+                        unsigned enddim,
+                        LINALG::MapExtractor& extractor);
+
+    /// setup the extractor object to couple some dofs at the named condition
+    void SetupExtractor(const DRT::Discretization& dis,
+                        std::string condname,
+                        unsigned startdim,
+                        unsigned enddim,
+                        Teuchos::RCP<Epetra_Map> fullmap,
+                        LINALG::MapExtractor& extractor);
+
 
     //! create discretization from a given condition
     /*
@@ -103,15 +227,8 @@ namespace DRT
       const std::vector<std::string>&   conditions_to_copy  ///< list of conditions that will be copied to the new discretization
       );
 
-    //! Given a nodal row and coloumn map, this routines creates the corresponding element maps and call FillComplete()
-    void RedistributeWithNewNodalDistribution(
-        DRT::Discretization&     dis,
-        const Epetra_Map&        noderowmap,
-        const Epetra_Map&        nodecolmap
-        );
 
-
-    //!collects elements by labels (have to be implemented in the corresponding condition                                          *
+    //!collects elements by labels (have to be implemented in the corresponding condition
     void CollectElementsByConditionLabel(
         const DRT::Discretization&           discret,               ///< discretization with condition
         std::map<int,std::set<int> >&        elementsByLabel,       ///< data structure label - set elements

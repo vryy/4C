@@ -8,6 +8,7 @@
 #ifdef CCADISCRET
 
 #include "adapter_fluid_projection.H"
+#include "../drt_lib/drt_condition_utils.H"
 
 ADAPTER::FluidProjection::FluidProjection(
         Teuchos::RCP<DRT::Discretization> dis,

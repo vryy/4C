@@ -21,6 +21,7 @@ Maintainer: Burkhard Bornemann
 #include "../drt_structure/strtimint_create.H"
 #include "adapter_structure_timint.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_condition_utils.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

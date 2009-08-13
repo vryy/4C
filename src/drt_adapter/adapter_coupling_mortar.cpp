@@ -49,10 +49,10 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
   map<int, RefCountPtr<DRT::Element> > slaveelements;
 
 
-  DRT::UTILS::FindInterfaceObjects(masterdis, masternodes, mastergnodes, masterelements,
+  DRT::UTILS::FindConditionObjects(masterdis, masternodes, mastergnodes, masterelements,
       "FSICoupling");
 
-  DRT::UTILS::FindInterfaceObjects(slavedis, slavenodes, slavegnodes, slaveelements,
+  DRT::UTILS::FindConditionObjects(slavedis, slavenodes, slavegnodes, slaveelements,
       "FSICoupling");
 
   //	parameter list for contact definition
@@ -63,7 +63,7 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
     dserror("Mortar coupling adapter only works for Lagrange multiplier strategy");
   if (Teuchos::getIntegralValue<INPAR::CONTACT::ShapeFcn>(input,"SHAPEFCN") != INPAR::CONTACT::shape_dual)
       dserror("Mortar coupling adapter only works for dual shape functions");
-  
+
   // get problem dimension (2D or 3D) and initialize (CONTACT::) interface
   const int dim = genprob.ndim;
   RCP<CONTACT::Interface> interface = rcp(new CONTACT::Interface(0, comm, dim, input));
@@ -158,7 +158,7 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
     interface->AddCElement(cele);
   }
 
-  //finalize the contact interface construction	
+  //finalize the contact interface construction
   interface->FillComplete();
 
   // all the following stuff has to be done once in setup
@@ -200,7 +200,7 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
 
   M_ = mmatrix->EpetraMatrix();
 
-  //Build Dinv 		
+  //Build Dinv
   Dinv_ = rcp(
       new Epetra_CrsMatrix(Copy, D_->DomainMap(), D_->RangeMap(), 1, true));
 
@@ -228,7 +228,7 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
   if ( Dinv_->FillComplete( D_->RangeMap(), D_->DomainMap() ) )
     dserror( "Filling failed" );
 
-  //store interface	
+  //store interface
   interface_ = interface;
 
 

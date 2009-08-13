@@ -61,8 +61,8 @@ UTILS::SurfStressManager::SurfStressManager(Teuchos::RCP<DRT::Discretization> di
     havesurfstress_ = true;
     timen_ = 0.;
 
-    surfrowmap_ = DRT::UTILS::GeometryElementMap(*discret, "SurfaceStress", false);
-    Teuchos::RCP<Epetra_Map> surfcolmap = DRT::UTILS::GeometryElementMap(*discret, "SurfaceStress", true);
+    surfrowmap_ = DRT::UTILS::ConditionElementMap(*discret, "SurfaceStress", false);
+    Teuchos::RCP<Epetra_Map> surfcolmap = DRT::UTILS::ConditionElementMap(*discret, "SurfaceStress", true);
 
     // We start with interfacial area and concentration = 0.
     // This is wrong but does not make a difference

@@ -15,6 +15,8 @@ Maintainer: Ulrich Kuettler
 #ifdef CCADISCRET
 
 #include "adapter_fluid_impl.H"
+#include "../drt_lib/drt_condition_utils.H"
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -536,8 +538,8 @@ void ADAPTER::FluidImpl::UseBlockMatrix(const LINALG::MultiMapExtractor& domainm
                                         std::string condname,
                                         bool splitmatrix)
 {
-  Teuchos::RCP<std::set<int> > condelements = DRT::UTILS::ConditionElementMap(*Discretization(),
-                                                                         condname);
+  Teuchos::RCP<std::set<int> > condelements = DRT::UTILS::ConditionedElementMap(*Discretization(),
+                                                                                condname);
   fluid_.UseBlockMatrix(condelements,domainmaps,rangemaps,splitmatrix);
 }
 

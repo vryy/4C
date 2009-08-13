@@ -15,6 +15,7 @@ Maintainer: Ulrich Kuettler
 #ifdef CCADISCRET
 
 #include "adapter_ale_springs_fixed_ref.H"
+#include "../drt_lib/drt_condition_utils.H"
 
 #define scaling_infnorm true
 

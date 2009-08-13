@@ -194,15 +194,15 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
     distypeset.insert(discret_->lColElement(i)->Shape());
     etypeset.insert(discret_->lColElement(i)->Type());
   }
-  
+
   if (etypeset.count(DRT::Element::element_xdiff3) > 0)
   {
-    diffusion_problem_ = true; 
+    diffusion_problem_ = true;
   }
   else
   {
     diffusion_problem_ = false;
-  }  
+  }
 
 
   physprob_.fieldset_.clear();
@@ -237,7 +237,7 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
     }
     discret_->Comm().Barrier();
   }
-  
+
   {
     cout0_ << "Element types in xfluid discretization: ";
     discret_->Comm().Barrier();
@@ -999,7 +999,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       {
         const double L2_result = sqrt(eleparams.get<double>("L2"));
         //cout << "L2 norm = " << scientific << L2_result << endl;
-        
+
         const std::string fname("L2.txt");
         std::ofstream f(fname.c_str(),std::fstream::trunc);
         f.setf(ios::scientific,ios::floatfield);
@@ -2843,9 +2843,9 @@ Teuchos::RCP<Epetra_Vector> FLD::XFluidImplicitTimeInt::IntegrateInterfaceShape(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void FLD::XFluidImplicitTimeInt::UseBlockMatrix(Teuchos::RCP<std::set<int> > condelements,
-                                               const LINALG::MultiMapExtractor& domainmaps,
-                                               const LINALG::MultiMapExtractor& rangemaps,
-                                               bool splitmatrix)
+                                                const LINALG::MultiMapExtractor& domainmaps,
+                                                const LINALG::MultiMapExtractor& rangemaps,
+                                                bool splitmatrix)
 {
   dserror("not tested");
   Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy> > mat;

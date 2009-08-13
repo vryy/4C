@@ -186,60 +186,6 @@ namespace UTILS
   }
 
 
-  /// find all local nodes from discretization marked with condition
-  /*!
-
-    Loop all conditions of the given discretization, find the ones with the
-    specified name and collect the locally owned node ids in the supplied
-    set. The nodes vector is unique and ordered on output.
-
-    \param dis : (in) Discretization
-    \param condname : (in) name of condition in question
-    \param nodes : (out) empty set on input, filled with nodal gids of local nodes
-
-    \author u.kue
-    \date 06/07
-   */
-  void FindConditionedNodes(const DRT::Discretization& dis,
-                            std::string condname,
-                            std::vector<int>& nodes);
-
-  /// find all local nodes from discretization marked with condition
-  /*!
-
-    Loop all conditions of the given discretization, find the ones with the
-    specified name and collect the locally owned node ids in the suppied
-    set. The nodes vector is unique and ordered on output.
-
-    \param dis : (in) Discretization
-    \param conds : (in) conditions in question
-    \param nodes : (out) empty set on input, filled with nodal gids of local nodes
-
-    \author u.kue
-    \date 06/07
-   */
-  void FindConditionedNodes(const DRT::Discretization& dis,
-                            const std::vector<DRT::Condition*>& conds,
-                            std::vector<int>& nodes);
-
-  /// Create element map to given condition
-  /*!
-    \pre Geometry must be available in condition
-
-    \param dis : (in) Discretization
-    \param condname : (in) name of condition in question
-    \param colmap : (in) whether we want to create a (ghosted) column map
-   */
-  Teuchos::RCP<Epetra_Map> GeometryElementMap(const DRT::Discretization& dis, std::string condname, bool colmap);
-
-  /// Find all conditions with given name that all nodes of the element have in common
-  /*!
-    \param ele (in) the element
-    \param condname (in) name of the condition to look for
-    \param condition (out) all conditions that cover all element nodes
-   */
-  void FindElementConditions(const DRT::Element* ele, const std::string& condname, std::vector<DRT::Condition*>& condition);
-
   //! flag, whether surfaces or lines have to be created in the ElementBoundaryFactory
   enum BoundaryBuildType
   {
@@ -327,48 +273,12 @@ namespace UTILS
     return boundaryeles;
   }
 
-  /// setup the extractor object to couple ndim dofs at the named condition
-  /*!
-
-    Partition the row dof map of the given discretization in two. Put this
-    first ndim dofs of the nodes covered by the given condition in slot
-    one. All the other dofs in slot zero.
-
-    \author u.kue
-    \date 01/08
-   */
-  void SetupNDimExtractor(const DRT::Discretization& dis,
-                          std::string condname,
-                          LINALG::MapExtractor& extractor);
-
-  void SetupNDimExtractor(const DRT::Discretization& dis,
-                            std::string condname,
-                            Teuchos::RCP<Epetra_Map> fullmap,
-                            LINALG::MapExtractor& extractor);
-
-
-  /// setup the extractor object to couple some dofs at the named condition
-  void SetupExtractor(const DRT::Discretization& dis,
-                      std::string condname,
-                      unsigned startdim,
-                      unsigned enddim,
-                      LINALG::MapExtractor& extractor);
-
-  /// setup the extractor object to couple some dofs at the named condition
-  void SetupExtractor(const DRT::Discretization& dis,
-                      std::string condname,
-                      unsigned startdim,
-                      unsigned enddim,
-                      Teuchos::RCP<Epetra_Map> fullmap,
-                      LINALG::MapExtractor& extractor);
-
-  /// row map with nodes from condition
-  Teuchos::RCP<Epetra_Map> ConditionNodeMap(const DRT::Discretization& dis,
-                                            const std::string& condname);
-
-  /// map with elements that contain nodes with condition
-  Teuchos::RCP<std::set<int> > ConditionElementMap(const DRT::Discretization& dis,
-                                                   const std::string& condname);
+  //! Given a nodal row and coloumn map, this routines creates the corresponding element maps and call FillComplete()
+  void RedistributeWithNewNodalDistribution(
+    DRT::Discretization&     dis,
+    const Epetra_Map&        noderowmap,
+    const Epetra_Map&        nodecolmap
+    );
 
   /// print information about parallel mesh distribution
   void PrintParallelDistribution(const DRT::Discretization& dis);

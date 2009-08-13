@@ -19,6 +19,7 @@ Maintainer: Ulrich Kuettler
 #include "adapter_coupling.H"
 #include "../drt_lib/drt_nodematchingoctree.H"
 #include "../drt_lib/linalg_utils.H"
+#include "../drt_lib/drt_condition_utils.H"
 
 
 /*----------------------------------------------------------------------*

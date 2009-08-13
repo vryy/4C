@@ -18,8 +18,9 @@ Maintainer: Axel Gerstenberger
 #include "standardtypes_cpp.H"
 //#include "adapter_coupling_mortar.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils.H"
+#include "drt_globalproblem.H"
+#include "drt_utils.H"
+#include "linalg_utils.H"
 
 #include <map>
 #include <set>
@@ -27,9 +28,76 @@ Maintainer: Axel Gerstenberger
 #include <vector>
 #include <algorithm>
 
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis,
+                                      std::string condname, std::vector<int>& nodes)
+{
+  std::vector<DRT::Condition*> conds;
+  dis.GetCondition(condname, conds);
+  FindConditionedNodes(dis,conds,nodes);
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis,
+                                      const std::vector<DRT::Condition*>& conds,
+                                      std::vector<int>& nodes)
+{
+  std::set<int> nodeset;
+  const int myrank = dis.Comm().MyPID();
+  for (unsigned i=0; i<conds.size(); ++i)
+  {
+    const std::vector<int>* n = conds[i]->Nodes();
+    for (unsigned j=0; j<n->size(); ++j)
+    {
+      const int gid = (*n)[j];
+      if (dis.HaveGlobalNode(gid) and dis.gNode(gid)->Owner()==myrank)
+      {
+        nodeset.insert(gid);
+      }
+    }
+  }
+
+  nodes.reserve(nodeset.size());
+  nodes.assign(nodeset.begin(),nodeset.end());
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis,
+                                      const std::vector<DRT::Condition*>& conds,
+                                      map<int, DRT::Node*>& nodes)
+{
+  const int myrank = dis.Comm().MyPID();
+  for (unsigned i=0; i<conds.size(); ++i)
+  {
+    const std::vector<int>* n = conds[i]->Nodes();
+    for (unsigned j=0; j<n->size(); ++j)
+    {
+      const int gid = (*n)[j];
+      if (dis.HaveGlobalNode(gid) and dis.gNode(gid)->Owner()==myrank)
+      {
+        nodes[gid] = dis.gNode(gid);
+      }
+    }
+  }
+}
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::FindInterfaceObjects(const DRT::Discretization& dis,
+void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
                                       map<int, DRT::Node*>& nodes,
                                       map<int, RCP<DRT::Element> >& elements,
                                       const string& condname)
@@ -37,19 +105,11 @@ void DRT::UTILS::FindInterfaceObjects(const DRT::Discretization& dis,
   int myrank = dis.Comm().MyPID();
   vector<DRT::Condition*> conds;
   dis.GetCondition(condname, conds);
+
+  FindConditionedNodes(dis, conds, nodes);
+
   for (unsigned i = 0; i < conds.size(); ++i)
   {
-    // get this condition's nodes
-    const vector<int>* n = conds[i]->Nodes();
-    for (unsigned j=0; j < n->size(); ++j)
-    {
-      const int gid = (*n)[j];
-      if (dis.HaveGlobalNode(gid) and dis.gNode(gid)->Owner() == myrank)
-      {
-        nodes[gid] = dis.gNode(gid);
-      }
-    }
-
     // get this condition's elements
     map< int, RCP< DRT::Element > >& geo = conds[i]->Geometry();
     map< int, RCP< DRT::Element > >::iterator iter, pos;
@@ -66,48 +126,37 @@ void DRT::UTILS::FindInterfaceObjects(const DRT::Discretization& dis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::FindInterfaceObjects(const DRT::Discretization& dis,
+void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
                                       map<int, DRT::Node*>& nodes,
                                       map<int, DRT::Node*>& gnodes,
                                       map<int, RCP<DRT::Element> >& elements,
                                       const string& condname)
 {
-  int myrank = dis.Comm().MyPID();
   vector<DRT::Condition*> conds;
   dis.GetCondition(condname, conds);
+
+  FindConditionedNodes(dis, conds, nodes);
+
   for (unsigned i = 0; i < conds.size(); ++i)
   {
-    // get this condition's nodes
-    const vector<int>* n = conds[i]->Nodes();
-    for (unsigned j=0; j < n->size(); ++j)
-    {
-      const int gid = (*n)[j];
-      if (dis.HaveGlobalNode(gid))
-      {
-        // nodes only gets locally owned, gnodes all locally known nodes
-        if(dis.gNode(gid)->Owner() == myrank)
-          nodes[gid] = dis.gNode(gid);
-      }
-    }
-
     // get this condition's elements
     map< int, RCP< DRT::Element > >& geo = conds[i]->Geometry();
     map< int, RCP< DRT::Element > >::iterator iter, pos;
     pos = elements.begin();
     for (iter = geo.begin(); iter != geo.end(); ++iter)
     {
+      // get all elements locally known, including ghost elements
+      pos = elements.insert(pos, *iter);
+      const int* n = iter->second->NodeIds();
+      for (int j=0; j < iter->second->NumNode(); ++j)
       {
-        // get all elements locally known, including ghost elements
-        pos = elements.insert(pos, *iter);
-        const int* n = ((*iter).second)->NodeIds();
-        for (int j=0; j < ((*iter).second)->NumNode(); ++j)
+        const int gid = n[j];
+        if (dis.HaveGlobalNode(gid))
         {
-          const int gid = n[j];
-          if (dis.HaveGlobalNode(gid))
-          {
-            gnodes[gid] = dis.gNode(gid);
-          }
+          gnodes[gid] = dis.gNode(gid);
         }
+        else
+          dserror("All nodes of known elements must be known. Panic.");
       }
     }
   }
@@ -116,7 +165,7 @@ void DRT::UTILS::FindInterfaceObjects(const DRT::Discretization& dis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::FindInterfaceObjects(const DRT::Discretization& dis,
+void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
                                       map<int, RCP<DRT::Element> >& elements,
                                       const string& condname)
 {
@@ -133,6 +182,330 @@ void DRT::UTILS::FindInterfaceObjects(const DRT::Discretization& dis,
       // get all elements locally known, including ghost elements
       pos = elements.insert(pos, *iter);
     }
+  }
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Map> DRT::UTILS::ConditionElementMap(const DRT::Discretization& dis,
+                                                         std::string condname,
+                                                         bool colmap)
+{
+  std::vector<DRT::Condition*> conds;
+  dis.GetCondition(condname, conds);
+  std::set<int> elementset;
+
+  if (colmap)
+  {
+    for (unsigned i=0; i<conds.size(); ++i)
+    {
+      std::map<int,RCP<DRT::Element> >& geometry = conds[i]->Geometry();
+      std::transform(geometry.begin(),
+                     geometry.end(),
+                     std::inserter(elementset,elementset.begin()),
+                     LINALG::select1st<std::pair<int,RCP<DRT::Element> > >());
+    }
+  }
+  else
+  {
+    int myrank = dis.Comm().MyPID();
+    for (unsigned i=0; i<conds.size(); ++i)
+    {
+      std::map<int,RCP<DRT::Element> >& geometry = conds[i]->Geometry();
+      for (std::map<int,RCP<DRT::Element> >::const_iterator iter=geometry.begin();
+           iter!=geometry.end();
+           ++iter)
+      {
+        if (iter->second->Owner()==myrank)
+        {
+          elementset.insert(iter->first);
+        }
+      }
+    }
+  }
+
+  return LINALG::CreateMap(elementset, dis.Comm());
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::UTILS::FindElementConditions(const DRT::Element* ele, const std::string& condname, std::vector<DRT::Condition*>& condition)
+{
+  const DRT::Node* const* nodes = ele->Nodes();
+
+  // We assume the conditions have unique ids. The framework has to provide
+  // those.
+
+  // we assume to always have at least one node
+  std::vector<DRT::Condition*> neumcond0;
+  nodes[0]->GetCondition(condname,neumcond0);
+
+  // the first set of conditions
+  std::set<DRT::Condition*> cond0;
+  std::copy(neumcond0.begin(),
+            neumcond0.end(),
+            std::inserter(cond0,cond0.begin()));
+
+  // the final set
+  std::set<DRT::Condition*> fcond;
+
+  // loop all remaining nodes
+
+  int iel = ele->NumNode();
+  for (int inode=1; inode<iel; ++inode)
+  {
+    std::vector<DRT::Condition*> neumcondn;
+    nodes[inode]->GetCondition(condname,neumcondn);
+
+    std::set<DRT::Condition*> condn;
+    std::copy(neumcondn.begin(),
+              neumcondn.end(),
+              std::inserter(condn,condn.begin()));
+
+    // intersect the first and the current conditions
+    std::set_intersection(cond0.begin(),cond0.end(),
+                          condn.begin(),condn.end(),
+                          inserter(fcond,fcond.begin()));
+
+    if (fcond.size()==0)
+      // No intersections. Done.
+      break;
+
+    // make intersection to new starting condition
+    cond0.clear();
+    std::swap(cond0,fcond);
+  }
+
+  condition.clear();
+  std::copy(cond0.begin(),cond0.end(),back_inserter(condition));
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Map> DRT::UTILS::ConditionNodeRowMap(const DRT::Discretization& dis,
+                                                         const std::string& condname)
+{
+  std::set<int> condnodeset;
+
+  std::vector<DRT::Condition*> conds;
+  dis.GetCondition(condname, conds);
+
+  const int numrownodes = dis.NumMyRowNodes();
+  for (int i=0; i<numrownodes; ++i)
+  {
+    const DRT::Node* node = dis.lRowNode(i);
+
+    // test if node is covered by condition
+    for (size_t j=0; j<conds.size(); ++j)
+    {
+      const vector<int>* n = conds[j]->Nodes();
+
+      // DRT::Condition nodes are ordered by design! So we can perform a
+      // binary search here.
+      if (std::binary_search(n->begin(), n->end(), node->Id()))
+      {
+        condnodeset.insert(node->Id());
+        break;
+      }
+    }
+  }
+
+  Teuchos::RCP<Epetra_Map> condnodemap =
+    LINALG::CreateMap(condnodeset, dis.Comm());
+  return condnodemap;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Map> DRT::UTILS::ConditionNodeColMap(const DRT::Discretization& dis,
+                                                         const std::string& condname)
+{
+  std::set<int> condnodeset;
+
+  std::vector<DRT::Condition*> conds;
+  dis.GetCondition(condname, conds);
+
+  const int numrownodes = dis.NumMyColNodes();
+  for (int i=0; i<numrownodes; ++i)
+  {
+    const DRT::Node* node = dis.lColNode(i);
+
+    // test if node is covered by condition
+    for (size_t j=0; j<conds.size(); ++j)
+    {
+      const vector<int>* n = conds[j]->Nodes();
+
+      // DRT::Condition nodes are ordered by design! So we can perform a
+      // binary search here.
+      if (std::binary_search(n->begin(), n->end(), node->Id()))
+      {
+        condnodeset.insert(node->Id());
+        break;
+      }
+    }
+  }
+
+  Teuchos::RCP<Epetra_Map> condnodemap =
+    LINALG::CreateMap(condnodeset, dis.Comm());
+  return condnodemap;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<std::set<int> > DRT::UTILS::ConditionedElementMap(const DRT::Discretization& dis,
+                                                               const std::string& condname)
+{
+  std::vector<DRT::Condition*> conds;
+  dis.GetCondition(condname, conds);
+
+  Teuchos::RCP<std::set<int> > condelementmap = Teuchos::rcp(new set<int>());
+  const int nummyelements = dis.NumMyColElements();
+  for (int i=0; i<nummyelements; ++i)
+  {
+    const DRT::Element* actele = dis.lColElement(i);
+    const size_t numnodes = actele->NumNode();
+    const DRT::Node*const* nodes = actele->Nodes();
+    for (size_t n=0; n<numnodes; ++n)
+    {
+      const DRT::Node* actnode = nodes[n];
+
+      // test if node is covered by condition
+      for (size_t j=0; j<conds.size(); ++j)
+      {
+        const vector<int>* nids = conds[j]->Nodes();
+
+        // DRT::Condition nodes are ordered by design! So we can perform a
+        // binary search here.
+        if (std::binary_search(nids->begin(), nids->end(), actnode->Id()))
+        {
+          condelementmap->insert(actele->Id());
+          break;
+        }
+      }
+    }
+  }
+
+  return condelementmap;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::UTILS::SetupNDimExtractor(const DRT::Discretization& dis,
+                                    std::string condname,
+                                    LINALG::MapExtractor& extractor)
+{
+  SetupExtractor(dis,condname,0,genprob.ndim,rcp(new Epetra_Map(*(dis.DofRowMap()))),extractor);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::UTILS::SetupNDimExtractor(const DRT::Discretization& dis,
+                                    std::string condname,
+                                    Teuchos::RCP<Epetra_Map> fullmap,
+                                    LINALG::MapExtractor& extractor)
+{
+  SetupExtractor(dis,condname,0,genprob.ndim,fullmap,extractor);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::UTILS::SetupExtractor(const DRT::Discretization& dis,
+                                std::string condname,
+                                unsigned startdim,
+                                unsigned enddim,
+                                LINALG::MapExtractor& extractor)
+{
+  SetupExtractor(dis,condname,0,genprob.ndim,rcp(new Epetra_Map(*(dis.DofRowMap()))),extractor);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::UTILS::SetupExtractor(const DRT::Discretization& dis,
+                                std::string condname,
+                                unsigned startdim,
+                                unsigned enddim,
+                                Teuchos::RCP<Epetra_Map> fullmap,
+                                LINALG::MapExtractor& extractor)
+{
+  std::set<int> conddofset;
+
+  std::vector<DRT::Condition*> conds;
+  dis.GetCondition(condname, conds);
+
+  int numrownodes = dis.NumMyRowNodes();
+  for (int i=0; i<numrownodes; ++i)
+  {
+    DRT::Node* node = dis.lRowNode(i);
+
+    // test if node is covered by condition
+    bool conditioned = false;
+    for (unsigned j=0; j<conds.size(); ++j)
+    {
+      const vector<int>* n = conds[j]->Nodes();
+
+      // DRT::Condition nodes are ordered by design! So we can perform a
+      // binary search here.
+      if (std::binary_search(n->begin(), n->end(), node->Id()))
+      {
+        conditioned = true;
+        break;
+      }
+    }
+
+    // put all conditioned dofs into conddofset
+    if (conditioned)
+    {
+      std::vector<int> dof = dis.Dof(node);
+      for (unsigned j=0; j<dof.size(); ++j)
+      {
+        // test for dof position
+        if (startdim<=j and j<enddim)
+        {
+          conddofset.insert(dof[j]);
+        }
+      }
+    }
+  }
+
+  // if there is no such condition, do not waste any more time
+  int conddofsetsize = static_cast<int>(conddofset.size());
+  int size;
+  dis.Comm().SumAll(&conddofsetsize,&size,1);
+  if (size==0)
+  {
+    Teuchos::RCP<Epetra_Map> emptymap =
+      Teuchos::rcp(new Epetra_Map(-1,
+                                  0,
+                                  NULL,
+                                  0,
+                                  dis.Comm()));
+    extractor.Setup(*fullmap,emptymap,Teuchos::rcp(dis.DofRowMap(),false));
+  }
+  else
+  {
+    std::set<int> otherdofset(fullmap->MyGlobalElements(),
+                              fullmap->MyGlobalElements() + fullmap->NumMyElements());
+
+    std::set<int>::const_iterator conditer;
+    for (conditer = conddofset.begin(); conditer != conddofset.end(); ++conditer)
+    {
+      otherdofset.erase(*conditer);
+    }
+
+    Teuchos::RCP<Epetra_Map> conddofmap =
+      LINALG::CreateMap(conddofset, dis.Comm());
+
+    Teuchos::RCP<Epetra_Map> otherdofmap =
+      LINALG::CreateMap(otherdofset, dis.Comm());
+
+    extractor.Setup(*fullmap,conddofmap,otherdofmap);
   }
 }
 
@@ -161,7 +534,7 @@ Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
   // We need to test for all elements (including ghosted ones) to
   // catch all nodes
   map<int, RCP<DRT::Element> >  sourceelements;
-  DRT::UTILS::FindInterfaceObjects(*sourcedis, sourceelements, condname);
+  DRT::UTILS::FindConditionObjects(*sourcedis, sourceelements, condname);
 
   set<int> rownodeset;
   set<int> colnodeset;
@@ -263,34 +636,6 @@ Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
   conditiondis->FillComplete();
 
   return conditiondis;
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void DRT::UTILS::RedistributeWithNewNodalDistribution(
-    DRT::Discretization&     dis,
-    const Epetra_Map&        noderowmap,
-    const Epetra_Map&        nodecolmap
-    )
-{
-  // redistribute nodes to column (ghost) map
-  dis.ExportColumnNodes(nodecolmap);
-
-  Teuchos::RCP< Epetra_Map > elerowmap;
-  Teuchos::RCP< Epetra_Map > elecolmap;
-
-  // now we have all elements in a linear map roweles
-  // build resonable maps for elements from the
-  // already valid and final node maps
-  dis.BuildElementRowColumn(noderowmap, nodecolmap, elerowmap, elecolmap);
-
-  // we can now export elements to resonable row element distribution
-  dis.ExportRowElements(*elerowmap);
-
-  // export to the column map / create ghosting of elements
-  dis.ExportColumnElements(*elecolmap);
-
 }
 
 

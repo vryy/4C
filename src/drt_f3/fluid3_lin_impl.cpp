@@ -25,6 +25,7 @@ Maintainer: Christiane Foerster
 #include "../drt_lib/drt_utils.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_gder2.H"
+#include "../drt_lib/drt_condition_utils.H"
 
 #include <Epetra_SerialDenseSolver.h>
 

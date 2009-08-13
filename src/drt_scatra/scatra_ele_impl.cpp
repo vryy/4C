@@ -31,6 +31,7 @@ Maintainer: Georg Bauer
 #include "../drt_fem_general/drt_utils_gder2.H"
 #include "../drt_geometry/position_array.H"
 #include "../drt_lib/linalg_serialdensematrix.H"
+#include "../drt_lib/drt_condition_utils.H"
 
 //#define VISUALIZE_ELEMENT_DATA
 #include "scatra_element.H" // only for visualization of element data

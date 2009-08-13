@@ -15,6 +15,7 @@ Maintainer: Ulrich Kuettler
 #ifdef CCADISCRET
 
 #include "adapter_fluid_genalpha.H"
+#include "../drt_lib/drt_condition_utils.H"
 
 ADAPTER::FluidGenAlpha::FluidGenAlpha(
   Teuchos::RCP<DRT::Discretization>      dis,
@@ -433,8 +434,8 @@ void ADAPTER::FluidGenAlpha::UseBlockMatrix(const LINALG::MultiMapExtractor& dom
                                             std::string condname,
                                             bool splitmatrix)
 {
-  Teuchos::RCP<std::set<int> > condelements = DRT::UTILS::ConditionElementMap(*Discretization(),
-                                                                              condname);
+  Teuchos::RCP<std::set<int> > condelements = DRT::UTILS::ConditionedElementMap(*Discretization(),
+                                                                                condname);
   fluid_.UseBlockMatrix(condelements,domainmaps,rangemaps,splitmatrix);
 }
 
