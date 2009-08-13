@@ -50,7 +50,7 @@ Maintainer: Michael Gee
 #include "Epetra_MpiComm.h"
 #endif
 #include "Epetra_SerialDenseMatrix.h"
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 
 #include "drt_node.H"
 #include "drt_utils.H"
@@ -151,7 +151,7 @@ public:
                               On output, the map has a distribution of
                               TargetMap().
   */
-  template<typename T> void Export(map<int,RefCountPtr<T> >& parobjects);
+  template<typename T> void Export(map<int,RCP<T> >& parobjects);
 
   /*!
   \brief Communicate a map of vectors of some basic data type T
@@ -521,13 +521,13 @@ private:
   {
   public:
 
-    explicit ParObjectExporterHelper(map<int,RefCountPtr<T> >& parobjects)
+    explicit ParObjectExporterHelper(map<int,RCP<T> >& parobjects)
       : parobjects_(parobjects) {}
 
     virtual void PreExportTest(Exporter* exporter)
     {
       // test whether type T implements ParObject
-      typename map<int,RefCountPtr<T> >::iterator curr = parobjects_.begin();
+      typename map<int,RCP<T> >::iterator curr = parobjects_.begin();
       if (curr != parobjects_.end())
       {
         T* ptr = curr->second.get();
@@ -538,7 +538,7 @@ private:
 
     virtual bool PackObject(int gid, vector<char>& sendblock)
     {
-      typename map<int,RefCountPtr<T> >::const_iterator curr = parobjects_.find(gid);
+      typename map<int,RCP<T> >::const_iterator curr = parobjects_.find(gid);
       if (curr!=parobjects_.end())
       {
         vector<char> data;
@@ -557,7 +557,7 @@ private:
       DRT::ParObject* o = DRT::UTILS::Factory(data);
       T* ptr = dynamic_cast<T*>(o);
       if (!ptr) dserror("typename T in template does not implement ParObject (dynamic_cast failed)");
-      RefCountPtr<T> refptr = rcp(ptr);
+      RCP<T> refptr = rcp(ptr);
       // add object to my map
       parobjects_[gid] = refptr;
     }
@@ -565,8 +565,8 @@ private:
     virtual void PostExportCleanup(Exporter* exporter)
     {
       // loop map and kick out everything that's not in TargetMap()
-      map<int,RefCountPtr<T> > newmap;
-      typename map<int,RefCountPtr<T> >::const_iterator fool;
+      map<int,RCP<T> > newmap;
+      typename map<int,RCP<T> >::const_iterator fool;
       for (fool=parobjects_.begin(); fool != parobjects_.end(); ++fool)
         if (exporter->TargetMap().MyGID(fool->first))
           newmap[fool->first] = fool->second;
@@ -574,7 +574,7 @@ private:
     }
 
   private:
-    map<int,RefCountPtr<T> >& parobjects_;
+    map<int,RCP<T> >& parobjects_;
   };
 
 
@@ -737,7 +737,7 @@ private:
  |  communicate objects (public)                             mwgee 11/06|
  *----------------------------------------------------------------------*/
 template<typename T> void DRT::Exporter::Export(
-                                     map<int,RefCountPtr<T> >& parobjects)
+                                     map<int,RCP<T> >& parobjects)
 {
   ParObjectExporterHelper<T> helper(parobjects);
   GenericExport(helper);
