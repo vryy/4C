@@ -465,7 +465,8 @@ int DRT::ELEMENTS::XFluid3::EvaluateNeumann(ParameterList& params,
                                             DRT::Discretization&      discretization,
                                             DRT::Condition&           condition,
                                             std::vector<int>&         lm,
-                                            Epetra_SerialDenseVector& elevec1)
+                                            Epetra_SerialDenseVector& elevec1,
+                                            Epetra_SerialDenseMatrix* elemat1)
 {
   return 0;
 }

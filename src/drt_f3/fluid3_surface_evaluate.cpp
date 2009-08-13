@@ -219,7 +219,8 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
                                            DRT::Discretization&      discretization,
                                            DRT::Condition&           condition,
                                            vector<int>&              lm,
-                                           Epetra_SerialDenseVector& elevec1)
+                                           Epetra_SerialDenseVector& elevec1,
+                                           Epetra_SerialDenseMatrix* elemat1)
 {
   // there are 3 velocities and 1 pressure
   const int numdf = 4;
