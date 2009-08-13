@@ -176,7 +176,8 @@ namespace DRT
             DRT::Discretization&      discretization,
             DRT::Condition&           condition,
             std::vector<int>&              lm,
-            Epetra_SerialDenseVector& elevec1);
+            Epetra_SerialDenseVector& elevec1,
+            Epetra_SerialDenseMatrix* elemat1 = NULL);
 
         //@}
 
@@ -467,7 +468,8 @@ namespace DRT
             DRT::Discretization&      discretization,
             DRT::Condition&           condition,
             std::vector<int>&         lm,
-            Epetra_SerialDenseVector& elevec1);
+            Epetra_SerialDenseVector& elevec1,
+            Epetra_SerialDenseMatrix* elemat1 = NULL);
 
         //@}
 
@@ -610,7 +612,8 @@ namespace DRT
             DRT::Discretization&       discretization,
             DRT::Condition&            condition,
             std::vector<int>&          lm,
-            Epetra_SerialDenseVector&  elevec1
+            Epetra_SerialDenseVector&  elevec1,
+            Epetra_SerialDenseMatrix* elemat1 = NULL
             );
 
         //@}
