@@ -57,7 +57,8 @@ int DRT::ELEMENTS::TransportBoundary::EvaluateNeumann(
     DRT::Discretization&      discretization,
     DRT::Condition&           condition,
     vector<int>&              lm,
-    Epetra_SerialDenseVector& elevec1)
+    Epetra_SerialDenseVector& elevec1,
+    Epetra_SerialDenseMatrix* elemat1)
 {
   // all physics-related stuff is included in the implementation class that can
   // be used in principle inside any element (at the moment: only Transport
