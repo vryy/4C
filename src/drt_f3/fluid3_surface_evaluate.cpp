@@ -185,18 +185,8 @@ int DRT::ELEMENTS::Fluid3Surface::Evaluate(     ParameterList&            params
     }
     case calc_surface_tension:
     {
-      // Two possibilities. FSTENS1 is a direct implementation of Wall et al.
-      // eq. (25) with node normals obtained acc. to Wall (7.13).  If no
-      // interpolation step is used with 1st order elements, the c0-field of
-      // the curvature is not good enough for the surface tension calculation.
-      // Even with interpolation, the surface tension simulation has problems
-      // (wiggles).
-      //
-      // FSTENS2 employs the divergence theorem acc. to Saksono eq. (24) and
-      // does not require second derivatives.
-
-#define FSTENS2
-#undef FSTENS1
+      // employs the divergence theorem acc. to Saksono eq. (24) and does not
+      // require second derivatives.
 
       RCP<const Epetra_Vector> dispnp;
       vector<double> mydispnp;
@@ -210,25 +200,6 @@ int DRT::ELEMENTS::Fluid3Surface::Evaluate(     ParameterList&            params
 
       vector<double> mynormals;
       vector<double> mycurvature;
-#ifdef FSTENS1
-      RCP<const Epetra_Vector> normals;
-
-      normals = discretization.GetState("normals");
-      if (normals!=null)
-      {
-        mynormals.resize(lm.size());
-        DRT::UTILS::ExtractMyValues(*normals,mynormals,lm);
-      }
-
-      RCP<const Epetra_Vector> curvature;
-
-      curvature = discretization.GetState("curvature");
-      if (curvature!=null)
-      {
-        mycurvature.resize(lm.size());
-        DRT::UTILS::ExtractMyValues(*curvature,mycurvature,lm);
-      }
-#endif
 
       ElementSurfaceTension(params,discretization,lm,elevec1,mydispnp,mynormals,mycurvature);
       break;
@@ -1720,28 +1691,6 @@ void DRT::ELEMENTS::Fluid3Surface::ElementSurfaceTension(ParameterList& params,
     }
   }
 
-#ifdef FSTENS1
-  // node normals
-  Epetra_SerialDenseMatrix 	norm_elem(3,iel);
-
-  //set normal vectors to length = 1.0
-  for (int node=0;node<iel;++node)
-  {
-    double length = 0.0;
-    for (int dim=0;dim<3;dim++)
-    {
-      norm_elem(dim,node) = enormals[numdf*node+dim];
-      length += norm_elem(dim,node)*norm_elem(dim,node);
-    }
-    length = sqrt(length);
-    for (int dim=0;dim<3;dim++)
-    {
-      norm_elem(dim,node) = (1.0/length) * norm_elem(dim,node);
-    }
-  }
-#endif
-
-
   // the metric tensor and its determinant
   Epetra_SerialDenseMatrix      metrictensor(2,2);
   double sqrtdetg;
@@ -1769,83 +1718,6 @@ void DRT::ELEMENTS::Fluid3Surface::ElementSurfaceTension(ParameterList& params,
 
     Epetra_SerialDenseMatrix dxyzdrs(2,3);
     dxyzdrs.Multiply('N','T',1.0,deriv,xyze,0.0);
-
-
-#ifdef FSTENS1
-
-    // calculate normal vector at integration point
-    Epetra_SerialDenseVector  norm(3);
-    for (int dim=0;dim<3;dim++)
-    {
-      for (int node=0;node<iel;++node)
-      {
-        norm[dim] += funct[node] * norm_elem(dim,node);
-      }
-    }
-    // set length to 1.0
-    double length = 0.0;
-    for (int dim=0;dim<3;dim++)
-    {
-      length += norm[dim] * norm[dim];
-    }
-    length = sqrt(length);
-    for (int dim=0;dim<3;dim++)
-    {
-      norm[dim] = (1.0/length) * norm[dim];
-    }
-
-//     // interpolated double mean curvature at integration point
-//     double twoH = 0.0;
-//     for (int node=0;node<iel;++node)
-//     {
-//       twoH = 2.0 * funct[node] * ecurvature[numdf*node+0];
-//     }
-
-
-    // ================= praticable only for high order finite elements:
-
-    // calculate double mean curvature 2*H at integration point.
-    // With 1st order elements this curvature is constant and does not give
-    // good results in surface tension evaluate (wiggles).
-    double twoH = 0.0;
-    Epetra_SerialDenseMatrix dn123drs(2,3);
-    for (int i=0;i<2;i++)
-    {
-      for (int dim=0;dim<3;dim++)
-      {
-        for (int node=0;node<iel;node++)
-        {
-          dn123drs(i,dim) += deriv(i,node) * norm_elem(dim,node);
-        }
-      }
-    }
-
-    // Acc. to Bronstein ..."mittlere Kruemmung":
-    // Node normal evaluation acc. to Wall (7.13)
-    double L = 0.0;
-    double twoM = 0.0;
-    double N = 0.0;
-    for (int i=0;i<3;i++)
-    {
-      L += (-1.0) * dxyzdrs(0,i) * dn123drs(0,i);
-      twoM += (-1.0) * dxyzdrs(0,i) * dn123drs(1,i) - dxyzdrs(1,i) * dn123drs(0,i);
-      N += (-1.0) * dxyzdrs(1,i) * dn123drs(1,i);
-    }
-    twoH = (metrictensor(0,0)*N - twoM*metrictensor(0,1) + metrictensor(1,1)*L)/(sqrtdetg*sqrtdetg);
-
-    // =================================================================
-
-     for (int node=0;node<iel;++node)
-     {
-       for(int dim=0;dim<3;dim++)
-       {
-        // according to Saksono (23) and Wall et al. (25)
-         elevec1[node*numdf+dim]+= SFgamma * twoH * norm[dim] * funct[node] * fac;
-       }
-       elevec1[node*numdf+3] = 0.0;
-     }
-
-#else  //----> FSTENS2
 
     double abs_dxyzdr = 0.0;
     double abs_dxyzds = 0.0;
@@ -1891,9 +1763,6 @@ void DRT::ELEMENTS::Fluid3Surface::ElementSurfaceTension(ParameterList& params,
       }
       elevec1[node*numdf+3] = 0.0;
     }
-
-#endif
-
   } /* end of loop over integration points gpid */
 
 } // DRT::ELEMENTS::Fluid3Surface::ElementSurfaceTension
