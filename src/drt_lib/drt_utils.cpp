@@ -1722,11 +1722,7 @@ Teuchos::RCP<Epetra_Map> DRT::UTILS::GeometryElementMap(const DRT::Discretizatio
     }
   }
 
-  std::vector<int> elements;
-  elements.reserve(elementset.size());
-  elements.assign(elementset.begin(),elementset.end());
-  elementset.clear();
-  return Teuchos::rcp(new Epetra_Map(-1,elements.size(),&elements[0],0,dis.Comm()));
+  return LINALG::CreateMap(elementset, dis.Comm());
 }
 
 
@@ -1891,29 +1887,11 @@ void DRT::UTILS::SetupExtractor(const DRT::Discretization& dis,
       otherdofset.erase(*conditer);
     }
 
-    std::vector<int> conddofmapvec;
-    conddofmapvec.reserve(conddofset.size());
-    conddofmapvec.assign(conddofset.begin(), conddofset.end());
-    conddofset.clear();
     Teuchos::RCP<Epetra_Map> conddofmap =
-      Teuchos::rcp(new Epetra_Map(-1,
-                                  conddofmapvec.size(),
-                                  &conddofmapvec[0],
-                                  0,
-                                  dis.Comm()));
-    conddofmapvec.clear();
+      LINALG::CreateMap(conddofset, dis.Comm());
 
-    std::vector<int> otherdofmapvec;
-    otherdofmapvec.reserve(otherdofset.size());
-    otherdofmapvec.assign(otherdofset.begin(), otherdofset.end());
-    otherdofset.clear();
     Teuchos::RCP<Epetra_Map> otherdofmap =
-      Teuchos::rcp(new Epetra_Map(-1,
-                                  otherdofmapvec.size(),
-                                  &otherdofmapvec[0],
-                                  0,
-                                  dis.Comm()));
-    otherdofmapvec.clear();
+      LINALG::CreateMap(otherdofset, dis.Comm());
 
     extractor.Setup(*fullmap,conddofmap,otherdofmap);
   }
@@ -1950,17 +1928,8 @@ Teuchos::RCP<Epetra_Map> DRT::UTILS::ConditionNodeMap(const DRT::Discretization&
     }
   }
 
-  std::vector<int> condnodemapvec;
-  condnodemapvec.reserve(condnodeset.size());
-  condnodemapvec.assign(condnodeset.begin(), condnodeset.end());
-  condnodeset.clear();
   Teuchos::RCP<Epetra_Map> condnodemap =
-    Teuchos::rcp(new Epetra_Map(-1,
-                                condnodemapvec.size(),
-                                &condnodemapvec[0],
-                                0,
-                                dis.Comm()));
-  condnodemapvec.clear();
+    LINALG::CreateMap(condnodeset, dis.Comm());
   return condnodemap;
 }
 

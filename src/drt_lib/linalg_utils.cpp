@@ -1466,10 +1466,10 @@ RCP<Epetra_Map> LINALG::MergeMap(const Epetra_Map& map1,
   }
   mygids.resize(count);
 
-	// sort merged map
-	sort(mygids.begin(),mygids.end());
+  // sort merged map
+  sort(mygids.begin(),mygids.end());
 
-	return rcp(new Epetra_Map(-1,(int)mygids.size(),&mygids[0],0,map1.Comm()));
+  return rcp(new Epetra_Map(-1,(int)mygids.size(),&mygids[0],0,map1.Comm()));
 }
 
 /*----------------------------------------------------------------------*
@@ -1490,6 +1490,25 @@ RCP<Epetra_Map> LINALG::MergeMap(const RCP<Epetra_Map>& map1,
   // wrapped call to non-RCP version of MergeMap
   return LINALG::MergeMap(*map1,*map2,overlap);
 }
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+RCP<Epetra_Map> LINALG::CreateMap(const std::set<int>& gids, const Epetra_Comm& comm)
+{
+  std::vector<int> mapvec;
+  mapvec.reserve(gids.size());
+  mapvec.assign(gids.begin(), gids.end());
+  Teuchos::RCP<Epetra_Map> map =
+    Teuchos::rcp(new Epetra_Map(-1,
+                                mapvec.size(),
+                                &mapvec[0],
+                                0,
+                                comm));
+  mapvec.clear();
+  return map;
+}
+
 
 /*----------------------------------------------------------------------*
  | split a vector into 2 pieces with given submaps            popp 02/08|

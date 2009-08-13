@@ -134,10 +134,7 @@ Teuchos::RCP<Epetra_Map> LINALG::MultiMapExtractor::MergeMaps(const std::vector<
               map.MyGlobalElements()+map.NumMyElements(),
               std::inserter(mapentries,mapentries.begin()));
   }
-  std::vector<int> mapvector;
-  mapvector.reserve(mapentries.size());
-  mapvector.assign(mapentries.begin(),mapentries.end());
-  return Teuchos::rcp(new Epetra_Map(-1,mapvector.size(),&mapvector[0],0,maps[0]->Comm()));
+  return LINALG::CreateMap(mapentries, maps[0]->Comm());
 }
 
 
@@ -171,10 +168,7 @@ Teuchos::RCP<Epetra_Map> LINALG::MultiMapExtractor::IntersectMaps(const std::vec
     }
     std::swap(mapentries,newset);
   }
-  std::vector<int> mapvector;
-  mapvector.reserve(mapentries.size());
-  mapvector.assign(mapentries.begin(),mapentries.end());
-  return Teuchos::rcp(new Epetra_Map(-1,mapvector.size(),&mapvector[0],0,maps[0]->Comm()));
+  return LINALG::CreateMap(mapentries, maps[0]->Comm());
 }
 
 
@@ -277,28 +271,21 @@ LINALG::MapExtractor::MapExtractor(const Epetra_Map& fullmap, Teuchos::RCP<const
   // initialise other DOFs by inserting all DOFs of full map
   std::set<int> othergids;
   const int* fullgids = fullmap.MyGlobalElements();
-  for (int lid=0; lid<fullmap.NumMyElements(); ++lid)
-    othergids.insert(fullgids[lid]);
+  copy(fullgids,fullgids+fullmap.NumMyElements(),
+       inserter(othergids,othergids.begin()));
+
   // throw away all DOFs which are in condmap
-  if ((*condmap).NumMyElements() > 0)
+  if (condmap->NumMyElements() > 0)
   {
-    const int* condgids = (*condmap).MyGlobalElements();
-    for (int lid=0; lid<(*condmap).NumMyElements(); ++lid)
+    const int* condgids = condmap->MyGlobalElements();
+    for (int lid=0; lid<condmap->NumMyElements(); ++lid)
       othergids.erase(condgids[lid]);
   }
+
   // create (non-overlapping) othermap for non-condmap DOFs
-  int nummyelements = 0;
-  int* myglobalelements = NULL;
-  std::vector<int> othergidsv;
-  if (othergids.size() > 0)
-  {
-    othergidsv.reserve(othergids.size());
-    othergidsv.assign(othergids.begin(), othergids.end());
-    nummyelements = othergidsv.size();
-    myglobalelements = &(othergidsv[0]);
-  }
   Teuchos::RCP<Epetra_Map> othermap
-    = Teuchos::rcp(new Epetra_Map(-1, nummyelements, myglobalelements, fullmap.IndexBase(), fullmap.Comm()));
+    = LINALG::CreateMap(othergids, fullmap.Comm());
+
   // create the extractor
   Setup(fullmap, condmap, othermap);
 }

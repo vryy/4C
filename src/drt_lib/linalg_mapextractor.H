@@ -93,6 +93,7 @@ namespace LINALG
      */
     void Setup(const Epetra_Map& fullmap, const std::vector<Teuchos::RCP<const Epetra_Map> >& maps);
 
+    /// debug helper
     /*!
       loop all maps in the list of nonoverlapping partial row maps unequal
       Teuchos::null and check whether they have a valid DataPtr() and are
@@ -100,7 +101,6 @@ namespace LINALG
 
       \note hidden calls to Redistribute may render maps in maps_ obsolete.
       This function is intendend to simplify debugging for these cases.
-
     */
     void CheckForValidMapExtractor() const;
 

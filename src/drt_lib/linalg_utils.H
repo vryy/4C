@@ -798,6 +798,15 @@ namespace LINALG
                            const RCP<Epetra_Map>& map2,
                            bool overlap = true);
 
+  /// create an Epetra_Map from a set of gids
+  /*!
+    This is one of the basic operations that is needed every so often.
+
+    \param gids The local gids of this map
+    \param comm The map's communicator
+   */
+  RCP<Epetra_Map> CreateMap(const std::set<int>& gids, const Epetra_Comm& comm);
+
   /*!
   \brief split a vector into 2 non-overlapping pieces (RCP version)
   */
