@@ -284,7 +284,8 @@ public:
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
                               vector<int>&              lm,
-                              Epetra_SerialDenseVector& elevec1);
+                              Epetra_SerialDenseVector& elevec1,
+                              Epetra_SerialDenseMatrix* elemat1 = NULL);
 
 
   //@}
@@ -698,7 +699,8 @@ public:
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
                               vector<int>&              lm,
-                              Epetra_SerialDenseVector& elevec1);
+                              Epetra_SerialDenseVector& elevec1,
+                              Epetra_SerialDenseMatrix* elemat1 = NULL);
 
   //@}
 
