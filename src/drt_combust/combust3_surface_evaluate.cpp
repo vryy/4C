@@ -84,7 +84,8 @@ int DRT::ELEMENTS::Combust3Surface::EvaluateNeumann(
     DRT::Discretization&      discretization,
     DRT::Condition&           condition,
     std::vector<int>&         lm,
-    Epetra_SerialDenseVector& elevec1)
+    Epetra_SerialDenseVector& elevec1,
+    Epetra_SerialDenseMatrix* elemat1)
 {
   // there are 3 velocities and 1 pressure
   return 0;
