@@ -175,7 +175,7 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
       curmat->SetParameter(new MAT::PAR::AAAraghavanvorp_damage(curmat));
     MAT::PAR::AAAraghavanvorp_damage* params = static_cast<MAT::PAR::AAAraghavanvorp_damage*>(curmat->Parameter());
     return Teuchos::rcp(new AAAraghavanvorp_damage(params));
-  }  
+  }
   case INPAR::MAT::m_logneohooke:
   {
     if (curmat->Parameter() == NULL)
@@ -301,6 +301,7 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
   case INPAR::MAT::mes_isoyeoh:
   case INPAR::MAT::mes_isomooneyrivlin:
   case INPAR::MAT::mes_volsussmanbathe:
+  case INPAR::MAT::mes_volpenalty:
   case INPAR::MAT::mes_vologden:
   case INPAR::MAT::mes_coupanisoexpotwo:
   case INPAR::MAT::mes_coupanisoneohooketwo:

@@ -25,6 +25,7 @@ Maintainer: Burkhard Bornemann
 #include "elast_isoyeoh.H"
 #include "elast_isomooneyrivlin.H"
 #include "elast_volsussmanbathe.H"
+#include "elast_volpenalty.H"
 #include "elast_vologden.H"
 #include "elast_coupanisoexpotwo.H"
 #include "elast_coupanisoneohooketwo.H"
@@ -90,6 +91,13 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
       curmat->SetParameter(new MAT::ELASTIC::PAR::VolSussmanBathe(curmat));
     MAT::ELASTIC::PAR::VolSussmanBathe* params = static_cast<MAT::ELASTIC::PAR::VolSussmanBathe*>(curmat->Parameter());
     return Teuchos::rcp(new VolSussmanBathe(params));
+  }
+  case INPAR::MAT::mes_volpenalty:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::ELASTIC::PAR::VolPenalty(curmat));
+    MAT::ELASTIC::PAR::VolPenalty* params = static_cast<MAT::ELASTIC::PAR::VolPenalty*>(curmat->Parameter());
+    return Teuchos::rcp(new VolPenalty(params));
   }
   case INPAR::MAT::mes_vologden:
   {

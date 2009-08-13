@@ -374,7 +374,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"A","1st parameter, a");
     AddNamedReal(m,"B","2nd parameter, b");
     AddNamedReal(m,"DENS","mass density");
-    
+
     AppendMaterialDefinition(matlist,m);
   }
 
@@ -984,6 +984,20 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AppendMaterialDefinition(matlist,m);
   }
 
+
+  /*--------------------------------------------------------------------*/
+  // volumetric penalty contribution
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("ELAST_VolPenalty",
+                                            "Penalty formulation for the volumetric part",
+                                            INPAR::MAT::mes_volpenalty));
+
+    AddNamedReal(m,"EPSILON","penalty parameter");
+    AddNamedReal(m,"GAMMA","penalty parameter");
+
+    AppendMaterialDefinition(matlist,m);
+  }
 
   /*--------------------------------------------------------------------*/
   // volumetric contribution of Ogden
