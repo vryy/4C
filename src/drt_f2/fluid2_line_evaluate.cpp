@@ -169,7 +169,8 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
     DRT::Discretization&      discretization,
     DRT::Condition&           condition,
     vector<int>&              lm,
-    Epetra_SerialDenseVector& elevec1)
+    Epetra_SerialDenseVector& elevec1,
+    Epetra_SerialDenseMatrix* elemat1)
 {
 
   // there are 2 velocities and 1 pressure
