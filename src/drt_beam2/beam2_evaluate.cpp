@@ -280,7 +280,8 @@ int DRT::ELEMENTS::Beam2::EvaluateNeumann(ParameterList& params,
                                            DRT::Discretization&      discretization,
                                            DRT::Condition&           condition,
                                            vector<int>&              lm,
-                                           Epetra_SerialDenseVector& elevec1)
+                                           Epetra_SerialDenseVector& elevec1,
+                                           Epetra_SerialDenseMatrix* elemat1)
 {
   // element displacements
   RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
