@@ -299,6 +299,7 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
   case INPAR::MAT::mes_coupblatzko:
   case INPAR::MAT::mes_isoneohooke:
   case INPAR::MAT::mes_isoyeoh:
+  case INPAR::MAT::mes_isoexpo:
   case INPAR::MAT::mes_isomooneyrivlin:
   case INPAR::MAT::mes_volsussmanbathe:
   case INPAR::MAT::mes_volpenalty:

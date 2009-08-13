@@ -23,6 +23,7 @@ Maintainer: Burkhard Bornemann
 #include "elast_coupblatzko.H"
 #include "elast_isoneohooke.H"
 #include "elast_isoyeoh.H"
+#include "elast_isoexpo.H"
 #include "elast_isomooneyrivlin.H"
 #include "elast_volsussmanbathe.H"
 #include "elast_volpenalty.H"
@@ -77,6 +78,13 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
       curmat->SetParameter(new MAT::ELASTIC::PAR::IsoYeoh(curmat));
     MAT::ELASTIC::PAR::IsoYeoh* params = static_cast<MAT::ELASTIC::PAR::IsoYeoh*>(curmat->Parameter());
     return Teuchos::rcp(new IsoYeoh(params));
+  }
+  case INPAR::MAT::mes_isoexpo:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::ELASTIC::PAR::IsoExpo(curmat));
+    MAT::ELASTIC::PAR::IsoExpo* params = static_cast<MAT::ELASTIC::PAR::IsoExpo*>(curmat->Parameter());
+    return Teuchos::rcp(new IsoExpo(params));
   }
   case INPAR::MAT::mes_isomooneyrivlin:
   {

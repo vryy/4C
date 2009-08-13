@@ -958,7 +958,20 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*--------------------------------------------------------------------*/
-  // isochoric contribution of neohooke
+  // isochoric contribution of expo
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("ELAST_IsoExpo",
+                                            "isochoric part of  exponential material acc. to Holzapfel",
+                                            INPAR::MAT::mes_isoexpo));
+
+    AddNamedReal(m,"K1","material parameter");
+    AddNamedReal(m,"K2","material parameter");
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*--------------------------------------------------------------------*/
+  // isochoric contribution of mooney rivlin
   {
     Teuchos::RCP<MaterialDefinition> m
       = Teuchos::rcp(new MaterialDefinition("ELAST_IsoMooneyRivlin",
