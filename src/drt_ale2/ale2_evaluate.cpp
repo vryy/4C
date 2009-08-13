@@ -126,7 +126,8 @@ int DRT::ELEMENTS::Ale2::EvaluateNeumann(ParameterList& params,
                                            DRT::Discretization&      discretization,
                                            DRT::Condition&           condition,
                                            vector<int>&              lm,
-                                           Epetra_SerialDenseVector& elevec1)
+                                           Epetra_SerialDenseVector& elevec1,
+                                           Epetra_SerialDenseMatrix* elemat1)
 {
   return 0;
 }
