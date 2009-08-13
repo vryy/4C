@@ -244,8 +244,8 @@ public:
     DRT::Discretization& discretization,  ///< A reference to the underlying discretization
     DRT::Condition& condition,  ///<  The condition to be evaluated
     std::vector<int>& lm,  ///< location vector of this element
-    Epetra_SerialDenseVector& elevec1  ///< vector to be filled by element. If NULL on input
-  );
+    Epetra_SerialDenseVector& elevec1,  ///< vector to be filled by element. If NULL on input
+    Epetra_SerialDenseMatrix* elemat1 = NULL);
 
   /// Extrapolate Gauss-point values (e.g. stresses) to nodes and store them in elevecs
   void w1_expol(
@@ -927,7 +927,8 @@ public:
     DRT::Discretization& discretization,  ///< (in) A reference to the underlying discretization
     DRT::Condition& condition,  ///< (in) The condition to be evaluated
     std::vector<int>& lm,  ///< (in) location vector of this element
-    Epetra_SerialDenseVector& elevec1  ///< (out) vector to be filled by element. If NULL on input
+    Epetra_SerialDenseVector& elevec1,  ///< (out) vector to be filled by element. If NULL on input
+    Epetra_SerialDenseMatrix* elemat1 = NULL
   );
 
   /// Evaluate a boundary condition

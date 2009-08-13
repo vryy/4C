@@ -33,7 +33,8 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(ParameterList& params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
                               vector<int>&              lm,
-                              Epetra_SerialDenseVector& elevec1)
+                              Epetra_SerialDenseVector& elevec1,
+                              Epetra_SerialDenseMatrix* elemat1)
 {
   // get type of condition
   enum LoadType
