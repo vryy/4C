@@ -1149,6 +1149,127 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
     cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << endl;
   }
   
+  // global loop to apply FD scheme to all MASTER dofs (=3*nodes)
+  for (int fd=0; fd<3*mnodefullmap_->NumMyElements(); ++fd)
+  {
+    // store warnings for this finite difference
+    int w=0;
+    
+    // Initialize
+    Initialize();
+
+    // now get the node we want to apply the FD scheme to
+    int gid = mnodefullmap_->GID(fd/3);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node)
+      dserror("ERROR: Cannot find slave node with gid %",gid);
+    CNode* mnode = static_cast<CNode*>(node);
+
+    int mdof = mnode->Dofs()[fd%3];
+    
+    cout << "\nDERIVATIVE FOR M-NODE # " << gid << " DOF: " << mdof << endl;
+
+    // do step forward (modify nodal displacement)
+    double delta = 1e-8;
+    if (fd%3==0)
+    {
+      mnode->xspatial()[0] += delta;
+      mnode->u()[0] += delta;
+    } else if (fd%3==1)
+    {
+      mnode->xspatial()[1] += delta;
+      mnode->u()[1] += delta;
+    } else
+    {
+      mnode->xspatial()[2] += delta;
+      mnode->u()[2] += delta;
+    }
+
+    // loop over all elements to set current element length / area
+    // (use fully overlapping column map)
+    for (int j=0; j<idiscret_->NumMyColElements(); ++j)
+    {
+      CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(j));
+      element->Area()=element->ComputeArea();
+    }
+
+    // *******************************************************************
+    // contents of Evaluate()
+    // *******************************************************************    
+    Evaluate();
+
+    // compute finite difference derivative
+    for (int k=0; k<snoderowmap_->NumMyElements(); ++k)
+    {
+      int kgid = snoderowmap_->GID(k);
+      DRT::Node* knode = idiscret_->gNode(kgid);
+      if (!knode)
+        dserror("ERROR: Cannot find node with gid %",kgid);
+      CNode* kcnode = static_cast<CNode*>(knode);
+      
+      int dim = kcnode->NumDof();
+      
+      if ((int)(kcnode->GetD().size())==0)
+        continue;
+
+      typedef map<int,double>::const_iterator CI;
+
+      for( int d=0; d<dim; d++ )
+      {
+        int dof = kcnode->Dofs()[d];
+        
+        // store D-values into refD
+        newD[dof] = kcnode->GetD()[d];
+        
+        // print results (derivatives) to screen
+        for (CI p=newD[dof].begin(); p!=newD[dof].end(); ++p)
+        {
+          if (abs(newD[dof][p->first]-refD[dof][p->first]) > 1e-12)
+          {
+            double finit = (newD[dof][p->first]-refD[dof][p->first])/delta;
+            double analy = ((refDerivD[kgid])[(p->first)/Dim()])[mdof];
+            double dev = finit - analy;
+        
+            // kgid: currently tested dof of slave node kgid
+            // (p->first)/Dim(): paired master
+            // sdof: currently modified slave dof
+            cout << "(" << dof << "," << (p->first)/Dim() << "," << mdof << ") : fd=" << finit << " derivd=" << analy << " DEVIATION " << dev;
+            
+            if( abs(dev) > 1e-4 )
+            {
+              cout << " ***** WARNING ***** ";
+              w++;
+            }
+            else if( abs(dev) > 1e-5 )
+            {
+              cout << " ***** warning ***** ";
+              w++;
+            }
+            
+            cout << endl;
+          }
+        }
+      }
+    }
+
+    // undo finite difference modification
+    if (fd%3==0)
+    {
+      mnode->xspatial()[0] -= delta;
+      mnode->u()[0] -= delta;
+    } else if (fd%3==1)
+    {
+      mnode->xspatial()[1] -= delta;
+      mnode->u()[1] -= delta;
+    } else
+    {
+      mnode->xspatial()[2] -= delta;
+      mnode->u()[2] -= delta;
+    }
+    
+    cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << endl;
+  }
+  
   // back to normal...
 
   // Initialize
