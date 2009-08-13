@@ -182,8 +182,8 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
 	double ve = x(0,1)-x(3,1);
       x(0,1)-=0.25*(ve);
       
-      SurfaceIntegration(normal, xc,deriv);
-      analytical_DSurfaceIntegration(a_Dnormal, xc, deriv);
+      //SurfaceIntegration(normal, xc,deriv);
+      //analytical_DSurfaceIntegration(a_Dnormal, xc, deriv);
       //FAD_DFAD_DSurfaceIntegration(a_Dnormal, xc, deriv);
       //FAD_SFAD_DSurfaceIntegration(a_Dnormal, xc, deriv);
       //FiniteDiff_DSurfaceIntegration(a_Dnormal, xc, deriv);
@@ -193,7 +193,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
         for(int dim=0 ; dim<3; dim++)
 		elevec1[node*numdf+dim] += funct[node] * normal[dim] * fac;
 
-
+#if 0
       for (int node=0; node < numnode; ++node)
         for (int dim=0 ; dim<3; dim++)
 	  for (int dof=0; dof<elevec1.M(); dof++)
@@ -201,7 +201,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
 
       //cout<<"D-Elevec" << endl;
       //cout<< Delevec1 << endl; fflush(stdout);
-	
+#endif	
 }
     break;
     default:
