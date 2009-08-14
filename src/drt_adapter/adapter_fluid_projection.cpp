@@ -121,6 +121,23 @@ output_(output)
             return Teuchos::rcp(dofrowmap, false);
         }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidProjection::ConvectiveVel()
+{
+  if (fluid_.GridVel() == Teuchos::null)
+    return fluid_.Velnp(); // no moving mesh present
+  else
+  {
+    // make an intermediate copy of velnp
+    Teuchos::RCP<Epetra_Vector> convel = rcp(new Epetra_Vector(*(fluid_.Velnp())));
+    // now subtract the grid velocity
+    convel->Update(-1.0,*(fluid_.GridVel()),1.0);
+
+    return convel;
+  }
+}
+
         Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::FluidProjection::SystemMatrix()
         {
             dserror("not implemented");

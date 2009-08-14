@@ -156,6 +156,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<const Epetra_Vector> Veln();
     virtual Teuchos::RCP<const Epetra_Vector> Velnp();
     virtual Teuchos::RCP<const Epetra_Vector> SgVelVisc();
+    virtual Teuchos::RCP<const Epetra_Vector> ConvectiveVel(){ dserror("not implemented"); return null; };
 
     /// set initial flow field
     virtual void SetInitialFlowField(int whichinitialfield, int startfuncno);
