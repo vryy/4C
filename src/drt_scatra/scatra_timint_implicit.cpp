@@ -645,87 +645,15 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
   {
     itnum++;
 
-    double tcpu;
+    // -------------------------------------------------------------------
+    // call elements to calculate system matrix and rhs and assemble
+    // -------------------------------------------------------------------
+    AssembleMatAndRHS();
 
     // -------------------------------------------------------------------
-    // call elements to calculate system matrix
+    // potential residual scaling and potential addition of Neumann terms
     // -------------------------------------------------------------------
-    {
-      // get cpu time
-      tcpu=ds_cputime();
-
-      // zero out matrix entries
-      sysmat_->Zero();
-
-      // reset the residual vector
-      residual_->PutScalar(0.0);
-
-      {
-      // time measurement: element calls
-      TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + element calls");
-
-      // create the parameters for the discretization
-      ParameterList eleparams;
-
-      // action for elements
-      eleparams.set("action","calc_condif_systemmat_and_residual");
-
-      // other parameters that might be needed by the elements
-      eleparams.set("time-step length",dta_);
-      eleparams.set("problem type",prbtype_);
-      eleparams.set("incremental solver",incremental_);
-      eleparams.set("reaction",reaction_);
-      eleparams.set("form of convective term",convform_);
-      eleparams.set("fs subgrid diffusivity",fssgd_);
-      eleparams.set("turbulence model",turbmodel_);
-      eleparams.set("frt",frt_);// ELCH specific factor F/RT
-
-      //provide velocity field (export to column map necessary for parallel evaluation)
-      AddMultiVectorToParameterList(eleparams,"velocity field",convel_);
-      AddMultiVectorToParameterList(eleparams,"subgrid-scale velocity field",sgvel_);
-
-      //provide displacement field in case of ALE
-      eleparams.set("isale",isale_);
-      if (isale_)
-        AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
-
-      // parameters for stabilization
-      eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
-
-      // set vector values needed by elements
-      discret_->ClearState();
-      discret_->SetState("hist" ,hist_);
-
-      // add element parameters and density state according to time-int. scheme
-      AddSpecificTimeIntegrationParameters(eleparams);
-
-      {
-        // call standard loop over elements
-        discret_->Evaluate(eleparams,sysmat_,residual_);
-        discret_->ClearState();
-      }
-
-      // finalize the complete matrix
-      sysmat_->Complete();
-
-      // end time measurement for element
-      dtele_=ds_cputime()-tcpu;
-
-      } // time measurement for element
-    }
-
-
-    // scaling to get true residual vector for all time integration schemes
-    // we store this vector BEFORE contributions due to further b.c. are added
-    // to the residual. This way, at Dirichlet-, Neumann- and ElektrodeKinetics
-    // boundaries the boundary flux values can be computed form the trueresidual
-    trueresidual_->Update(ResidualScaling(),*residual_,0.0);
-
-    // add Neumann b.c. scaled with a factor due to time discretization
-    AddNeumannToResidual();
-
-    // add potential Neumann inflow
-    if (neumanninflow_) ComputeNeumannInflow(sysmat_,residual_);
+    ScalingAndNeumann();
 
     // add contributions due to electrode kinetics conditions
     EvaluateElectrodeKinetics(sysmat_,residual_);
@@ -756,7 +684,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
     //------------------------------------------------solve
     {
       // get cpu time
-      tcpu=ds_cputime();
+      const double tcpusolve=ds_cputime();
 
       // time measurement: call linear solver
       TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + call linear solver");
@@ -793,7 +721,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
       solver_->ResetTolerance();
 
       // end time measurement for solver
-      dtsolve_=ds_cputime()-tcpu;
+      dtsolve_=ds_cputime()-tcpusolve;
     }
 
     //------------------------------------------------ update solution vector
@@ -962,96 +890,29 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
 
 
 /*----------------------------------------------------------------------*
- | contains the solver                                          vg 05/07|
+ | contains the linear solver                                  vg 08/09 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::Solve()
 {
   // -------------------------------------------------------------------
-  //                         out to screen
+  //                        output to screen
   // -------------------------------------------------------------------
   PrintTimeStepInfo();
 
-  double tcpu;
+  // -------------------------------------------------------------------
+  // call elements to calculate system matrix and rhs and assemble
+  // -------------------------------------------------------------------
+  AssembleMatAndRHS();
 
   // -------------------------------------------------------------------
-  // call elements to calculate system matrix
+  // potential residual scaling and potential addition of Neumann terms
   // -------------------------------------------------------------------
-  {
-    // time measurement: element calls
-    TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + element calls");
-    // get cpu time
-    tcpu=ds_cputime();
+  ScalingAndNeumann();
 
-    // zero out matrix entries
-    sysmat_->Zero();
-
-    // reset the residual vector
-    residual_->PutScalar(0.0);
-
-    // create the parameters for the discretization
-    ParameterList eleparams;
-
-    // action for elements
-    eleparams.set("action","calc_condif_systemmat_and_residual");
-
-    // other parameters that might be needed by the elements
-    eleparams.set("time-step length",dta_);
-    eleparams.set("problem type",prbtype_);
-    eleparams.set("incremental solver",incremental_);
-    eleparams.set("reaction",reaction_);
-    eleparams.set("form of convective term",convform_);
-    eleparams.set("fs subgrid diffusivity",fssgd_);
-    eleparams.set("turbulence model",turbmodel_);
-
-    //provide velocity field (export to column map necessary for parallel evaluation)
-    AddMultiVectorToParameterList(eleparams,"velocity field",convel_);
-    AddMultiVectorToParameterList(eleparams,"subgrid-scale velocity field",sgvel_);
-
-    //provide displacement field in case of ALE
-    eleparams.set("isale",isale_);
-    if (isale_)
-      AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
-
-    // parameters for stabilization
-    eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
-
-    // set vector values needed by elements
-    discret_->ClearState();
-    discret_->SetState("hist",hist_);
-    if (turbmodel_) discret_->SetState("subgrid diffusivity",subgrdiff_);
-
-    // AVM3 separation
-    if (incremental_ and fssgd_ != "No") AVM3Separation();
-
-    // add element parameters and density state according to time-int. scheme
-    AddSpecificTimeIntegrationParameters(eleparams);
-
-    // call loop over elements with subgrid-diffusivity(-scaling) vector
-    discret_->Evaluate(eleparams,sysmat_,null,residual_,subgrdiff_,null);
-    discret_->ClearState();
-
-    // AVM3 scaling
-    if (not incremental_ and fssgd_ != "No") AVM3Scaling(eleparams);
-
-    // finalize the complete matrix
-    sysmat_->Complete();
-
-    // end time measurement for element
-    dtele_=ds_cputime()-tcpu;
-  }
-
-  // scaling to get true residual vector for all time integration schemes
-  // in incremental case: boundary flux values can be computed from trueresidual
-  if (incremental_) trueresidual_->Update(ResidualScaling(),*residual_,0.0);
-
-  // add Neumann b.c. scaled with a factor due to time discretization
-  AddNeumannToResidual();
-
-  // add potential Neumann inflow
-  if (neumanninflow_) ComputeNeumannInflow(sysmat_,residual_);
-
-  // Apply Dirichlet boundary conditions to system matrix and solve system in
-  // incremental or non-incremental case
+  // -------------------------------------------------------------------
+  // Apply Dirichlet boundary conditions to system matrix and solve
+  // system in incremental or non-incremental case
+  // -------------------------------------------------------------------
   if (incremental_)
   {
     // blank residual DOFs which are on Dirichlet BC
@@ -1075,13 +936,14 @@ void SCATRA::ScaTraTimIntImpl::Solve()
     //-------solve
     {
       TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + solver calls");
+
       // get cpu time
-      tcpu=ds_cputime();
+      const double tcpusolve=ds_cputime();
 
       solver_->Solve(sysmat_->EpetraOperator(),increment_,residual_,true,true);
 
       // end time measurement for solver
-      dtsolve_=ds_cputime()-tcpu;
+      dtsolve_=ds_cputime()-tcpusolve;
     }
 
     //------------------------------------------------ update solution vector
@@ -1112,18 +974,110 @@ void SCATRA::ScaTraTimIntImpl::Solve()
     //-------solve
     {
       TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + solver calls");
+
       // get cpu time
-      tcpu=ds_cputime();
+      const double tcpusolve=ds_cputime();
 
       solver_->Solve(sysmat_->EpetraOperator(),phinp_,residual_,true,true);
 
       // end time measurement for solver
-      dtsolve_=ds_cputime()-tcpu;
+      dtsolve_=ds_cputime()-tcpusolve;
     }
   }
 
   return;
 } // ScaTraTimIntImpl::Solve
+
+
+/*----------------------------------------------------------------------*
+ | contains the assembly process for matrix and rhs            vg 08/09 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
+{
+  // time measurement: element calls
+  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + element calls");
+
+  // get cpu time
+  const double tcpuele = ds_cputime();
+
+  // zero out matrix entries
+  sysmat_->Zero();
+
+  // reset the residual vector
+  residual_->PutScalar(0.0);
+
+  // create the parameters for the discretization
+  ParameterList eleparams;
+
+  // action for elements
+  eleparams.set("action","calc_condif_systemmat_and_residual");
+
+  // other parameters that might be needed by the elements
+  eleparams.set("time-step length",dta_);
+  eleparams.set("problem type",prbtype_);
+  eleparams.set("incremental solver",incremental_);
+  eleparams.set("reaction",reaction_);
+  eleparams.set("form of convective term",convform_);
+  eleparams.set("fs subgrid diffusivity",fssgd_);
+  eleparams.set("turbulence model",turbmodel_);
+  eleparams.set("frt",frt_);// ELCH specific factor F/RT
+
+  // provide velocity field (export to column map necessary for parallel evaluation)
+  AddMultiVectorToParameterList(eleparams,"velocity field",convel_);
+  AddMultiVectorToParameterList(eleparams,"subgrid-scale velocity field",sgvel_);
+
+  // provide displacement field in case of ALE
+  eleparams.set("isale",isale_);
+  if (isale_) AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+
+  // parameters for stabilization
+  eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
+
+  // set vector values needed by elements
+  discret_->ClearState();
+  discret_->SetState("hist",hist_);
+  if (turbmodel_) discret_->SetState("subgrid diffusivity",subgrdiff_);
+
+  // AVM3 separation
+  if (incremental_ and fssgd_ != "No") AVM3Separation();
+
+  // add element parameters and density state according to time-int. scheme
+  AddSpecificTimeIntegrationParameters(eleparams);
+
+  // call loop over elements with subgrid-diffusivity(-scaling) vector
+  discret_->Evaluate(eleparams,sysmat_,null,residual_,subgrdiff_,null);
+  discret_->ClearState();
+
+  // AVM3 scaling
+  if (not incremental_ and fssgd_ != "No") AVM3Scaling(eleparams);
+
+  // finalize the complete matrix
+  sysmat_->Complete();
+
+  // end time measurement for element
+  dtele_=ds_cputime()-tcpuele;
+
+  return;
+} // ScaTraTimIntImpl::AssembleMatAndRHS
+
+
+/*----------------------------------------------------------------------*
+ | contains the residual scaling and addition of Neumann terms vg 08/09 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::ScalingAndNeumann()
+{
+  // scaling to get true residual vector for all time integration schemes
+  // in incremental case: boundary flux values can be computed from trueresidual
+  if (incremental_) trueresidual_->Update(ResidualScaling(),*residual_,0.0);
+
+  // add Neumann b.c. scaled with a factor due to time discretization
+  AddNeumannToResidual();
+
+  // add potential Neumann inflow
+  if (neumanninflow_) ComputeNeumannInflow(sysmat_,residual_);
+
+  return;
+} // ScaTraTimIntImpl::ScalingAndNeumann
 
 
 /*----------------------------------------------------------------------*

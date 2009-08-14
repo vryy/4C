@@ -106,6 +106,12 @@ public:
   /// solve linear system
   void Solve();
 
+  /// call elements to calculate system matrix and rhs and assemble
+  void AssembleMatAndRHS();
+
+  /// potential residual scaling and potential addition of Neumann terms
+  void ScalingAndNeumann();
+
   /// update the solution after convergence of the nonlinear iteration.
   virtual void Update() = 0;
 
