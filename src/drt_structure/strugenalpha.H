@@ -472,6 +472,8 @@ protected:
   RCP<LINALG::SparseMatrix> stiff_;
   RCP<LINALG::SparseMatrix> mass_;
   RCP<LINALG::SparseMatrix> damp_;
+  RCP<LINALG::SparseMatrix> fextlin_;     /// tangent at time n+1
+  RCP<LINALG::SparseMatrix> fextlinold_;  /// tangent at time n
 
   //@}
 

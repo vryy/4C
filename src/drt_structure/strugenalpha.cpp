@@ -54,15 +54,16 @@ fsisurface_(NULL)
   // -------------------------------------------------------------------
   double time    = params_.get<double>("total time"      ,0.0);
   double dt      = params_.get<double>("delta time"      ,0.01);
-  bool damping   = params_.get<bool>  ("damping"         ,false);
+  bool   damping = params_.get<bool>  ("damping"         ,false);
   double kdamp   = params_.get<double>("damping factor K",0.0);
   double mdamp   = params_.get<double>("damping factor M",0.0);
   double alphaf  = params_.get<double>("alpha f"         ,0.459);
   double alpham  = params_.get<double>("alpha m");
-  int step       = params_.get<int>   ("step"            ,0);
-  bool outerr    = params_.get<bool>  ("print to err"    ,false);
-  FILE* errfile  = params_.get<FILE*> ("err file"        ,NULL);
+  int    step    = params_.get<int>   ("step"            ,0);
+  bool   outerr  = params_.get<bool>  ("print to err"    ,false);
+  FILE*  errfile = params_.get<FILE*> ("err file"        ,NULL);
   if (!errfile) outerr = false;
+  bool   loadlin = params_.get<bool>("LOADLIN",false);
 
   // -------------------------------------------------------------------
   // check sanity of static analysis set-up
@@ -138,7 +139,12 @@ fsisurface_(NULL)
   // -------------------------------------------------------------------
   stiff_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,81,true,true));
   mass_  = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,81,true,true));
-  if (damping) damp_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,81,true,true));
+  if (damping) damp_    = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,81,true,true));
+  if (loadlin) 
+  {
+    fextlin_    = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,81,true,true));
+    fextlinold_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,81,true,true));
+  }
 
   // -------------------------------------------------------------------
   // create empty vectors
@@ -358,6 +364,9 @@ void StruGenAlpha::ConstantPredictor()
   double timen = time + dt;
   //int istep = step + 1;
 
+  //-------------------------------- zero out effective stiffness matrix
+  stiff_->Zero();
+
   //--------------------------------------------------- predicting state
   // constant predictor : displacement in domain
   disn_->Update(1.0,*dis_,0.0);
@@ -388,7 +397,15 @@ void StruGenAlpha::ConstantPredictor()
     discret_.SetState("displacement",disn_);
     discret_.SetState("velocity",veln_);
     fextn_->PutScalar(0.0);  // initialize external force vector (load vect)
-    discret_.EvaluateNeumann(p,*fextn_);
+    if (!loadlin) discret_.EvaluateNeumann(p,fextn_);
+    else
+    {
+      *fextlinold_ = *fextlin_;
+      if (!fextlinold_->Filled()) fextlinold_->Complete();
+      fextlin_->Zero();
+      discret_.EvaluateNeumann(p,fextn_,fextlin_);
+      fextlin_->Complete();
+    }
     discret_.ClearState();
   }
 
@@ -423,8 +440,6 @@ void StruGenAlpha::ConstantPredictor()
 
   //------------- eval fint at interpolated state, eval stiffness matrix
   {
-    // zero out stiffness
-    stiff_->Zero();
     // create the parameters for the discretization
     ParameterList p;
     // action for elements
@@ -567,7 +582,9 @@ void StruGenAlpha::ConsistentPredictor()
   bool   printscreen = params_.get<bool>  ("print to screen",false);
   string convcheck   = params_.get<string>("convcheck"      ,"AbsRes_Or_AbsDis");
   bool   dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
-
+  bool   loadlin     = params_.get<bool>("LOADLIN",false);
+  if (loadlin) dserror("Pressure load linearization currently only with ConstantPredictor and FullNewton");
+  
   // store norms of old displacements and maximum of norms of
   // internal, external and inertial forces if a relative convergence
   // check is desired
@@ -1264,6 +1281,7 @@ void StruGenAlpha::FullNewton()
   bool structrobin = params_.get<bool>  ("structrobin"            ,false);
   if (!errfile) printerr = false;
   bool dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
+  bool  loadlin    = params_.get<bool>("LOADLIN",false);
   //------------------------------ turn adaptive solver tolerance on/off
   const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
   const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
@@ -1289,7 +1307,10 @@ void StruGenAlpha::FullNewton()
     //------------------------------------------- effective rhs is fresm
     //---------------------------------------------- build effective lhs
     // (using matrix stiff_ as effective matrix)
-    if (dynkindstat); // do nothing, we have the ordinary stiffness matrix ready
+    if (dynkindstat) // do nothing, we have the ordinary stiffness matrix ready
+    {
+      if (loadlin);
+    }
     else
     {
 #ifdef STRUGENALPHA_BE
@@ -1305,6 +1326,15 @@ void StruGenAlpha::FullNewton()
         stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
 #endif
       }
+      
+#if 1
+      if (loadlin)
+      {
+//        stiff_->Add(*fextlin_,false,-1.0,1.0); // mid point
+        stiff_->Add(*fextlin_,false,-(1.-alphaf),1.0); // TR
+        stiff_->Add(*fextlinold_,false,-alphaf,1.0);
+      }
+#endif
     }
 
     stiff_->Complete();
@@ -1386,6 +1416,34 @@ void StruGenAlpha::FullNewton()
       accm_->PutScalar(0.0);
     }
 
+    //--------------------------- recompute external forces if nonlinear
+    // at state n, the external forces and linearization are interpolated at 
+    // time 1-alphaf in a TR fashion
+    if (loadlin)
+    {
+      ParameterList p;
+      // action for elements
+      p.set("action","calc_struct_eleload");
+      // other parameters needed by the elements
+      p.set("total time",timen);
+      p.set("delta time",dt);
+      p.set("alpha f",alphaf);
+      // set vector values needed by elements
+      discret_.ClearState();
+      discret_.SetState("displacement",disn_);
+      discret_.SetState("velocity",veln_);    
+//      discret_.SetState("displacement",dism_); // mid point
+//      discret_.SetState("velocity",velm_);    
+      fextn_->PutScalar(0.0); // TR
+//      fextm_->PutScalar(0.0);
+      fextlin_->Zero();
+//      discret_.EvaluateNeumann(p,fextm_,fextlin_);
+      discret_.EvaluateNeumann(p,fextn_,fextlin_);
+      fextlin_->Complete();
+      discret_.ClearState();
+      fextm_->Update(1.-alphaf,*fextn_,alphaf,*fext_,0.0);
+    }
+    
     //---------------------------- compute internal forces and stiffness
     {
       // zero out stiffness
