@@ -195,16 +195,15 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
       {
         Epetra_SerialDenseMatrix a_Dnormal(3,12);
 
-        //analytical_DSurfaceIntegration(a_Dnormal, xc, deriv);
-        FAD_DFAD_DSurfaceIntegration(a_Dnormal, xc, deriv);
-        //FAD_SFAD_DSurfaceIntegration(a_Dnormal, xc, deriv);
-        //FiniteDiff_DSurfaceIntegration(a_Dnormal, xc, deriv);
+        //analytical_DSurfaceIntegration(a_Dnormal, xc, deriv); // this one quad4 only!
+        FAD_DFAD_DSurfaceIntegration(a_Dnormal, xc, deriv);     // this one for arbitrary surface elements
+        //FAD_SFAD_DSurfaceIntegration(a_Dnormal, xc, deriv);   // this one quad4 only!
+        //FiniteDiff_DSurfaceIntegration(a_Dnormal, xc, deriv); // this one for arbitrary surface elements
 
         for (int node=0; node < numnode; ++node)
           for (int dim=0 ; dim<3; dim++)
             for (int dof=0; dof<elevec1.M(); dof++)
-              (*elemat1)(node*numdf+dim, dof) += funct[node] * a_Dnormal(dim, dof) * fac;
-        //cout << "\n\n" << *elemat1 << "\n\n";
+              (*elemat1)(node*numdf+dim,dof) += funct[node] * a_Dnormal(dim, dof) * fac;
       }
 
 
