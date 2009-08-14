@@ -595,10 +595,10 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
     }
     isinit_ = true;
   }
-
-
-  //dserror("WomersleyFunction Evaluate not yet implemented");
-  return 0.0;
+  
+  
+  dserror("WomersleyFunction Evaluate not yet implemented");
+  return -999.0;
 }
 
 /*----------------------------------------------------------------------*
