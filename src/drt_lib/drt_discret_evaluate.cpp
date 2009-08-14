@@ -270,19 +270,23 @@ void DRT::Discretization::EvaluateNeumann(ParameterList&          params,
 {
   if (!Filled()) dserror("FillComplete() was not called");
   if (!HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
-
+  
+  bool assemblemat = (systemmatrix != NULL);
+  
   // get the current time
   bool usetime = true;
   const double time = params.get("total time",-1.0);
   if (time<0.0) usetime = false;
 
-  multimap<string,RefCountPtr<Condition> >::iterator fool;
+  multimap<string,RCP<Condition> >::iterator fool;
   //--------------------------------------------------------
   // loop through Point Neumann conditions and evaluate them
   //--------------------------------------------------------
   for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
   {
     if (fool->first != (string)"PointNeumann") continue;
+    if (assemblemat && !systemvector.Comm().MyPID())
+      cout << "WARNING: No linearization of PointNeumann conditions" << endl;
     DRT::Condition& cond = *(fool->second);
     const vector<int>* nodeids = cond.Nodes();
     if (!nodeids) dserror("PointNeumann condition does not have nodal cloud");
@@ -296,7 +300,6 @@ void DRT::Discretization::EvaluateNeumann(ParameterList&          params,
     double curvefac = 1.0;
     if (curvenum>=0 && usetime)
       curvefac = UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
-    //cout << "Neumann load curve factor on point " << curvefac << endl;
     for (int i=0; i<nnode; ++i)
     {
       // do only nodes in my row map
@@ -317,6 +320,7 @@ void DRT::Discretization::EvaluateNeumann(ParameterList&          params,
       }
     }
   }
+  
   //--------------------------------------------------------
   // loop through line/surface/volume Neumann BCs and evaluate them
   //--------------------------------------------------------
@@ -327,9 +331,10 @@ void DRT::Discretization::EvaluateNeumann(ParameterList&          params,
        )
     {
       DRT::Condition& cond = *(fool->second);
-      map<int,RefCountPtr<DRT::Element> >& geom = cond.Geometry();
-      map<int,RefCountPtr<DRT::Element> >::iterator curr;
+      map<int,RCP<DRT::Element> >& geom = cond.Geometry();
+      map<int,RCP<DRT::Element> >::iterator curr;
       Epetra_SerialDenseVector elevector;
+      Epetra_SerialDenseMatrix elematrix;
       for (curr=geom.begin(); curr!=geom.end(); ++curr)
       {
         // get element location vector, dirichlet flags and ownerships
@@ -337,8 +342,20 @@ void DRT::Discretization::EvaluateNeumann(ParameterList&          params,
         vector<int> lmowner;
         curr->second->LocationVector(*this,lm,lmowner);
         elevector.Size((int)lm.size());
-        curr->second->EvaluateNeumann(params,*this,cond,lm,elevector);
-        LINALG::Assemble(systemvector,elevector,lm,lmowner);
+        if (!assemblemat)
+        {
+          curr->second->EvaluateNeumann(params,*this,cond,lm,elevector);
+          LINALG::Assemble(systemvector,elevector,lm,lmowner);
+        }
+        else
+        {
+          const int size = (int)lm.size();
+          if (elematrix.M() != size) elematrix.Shape(size,size);
+          else memset(elematrix.A(),0,size*size*sizeof(double));
+          curr->second->EvaluateNeumann(params,*this,cond,lm,elevector,&elematrix);
+          LINALG::Assemble(systemvector,elevector,lm,lmowner);
+          systemmatrix->Assemble(curr->second->Id(),elematrix,lm,lmowner);
+        }
       }
     }
   return;
