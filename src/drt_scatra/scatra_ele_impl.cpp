@@ -1705,7 +1705,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
       const double pp = exp(epe);
       const double pm = exp(-epe);
       double xi = 0.0;
-      if (epe > EPS15)
+      if (epe >= 700.0) tau_[k] = 0.5*h/vel_norm;
+      else if (epe < 700.0 and epe > EPS15)
       {
         xi = (((pp+pm)/(pp-pm))-(1.0/epe)); // xi = coth(epe) - 1/epe
         // compute optimal stabilization parameter
@@ -1717,8 +1718,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
         cout<<"tau_opt = "<<0.5*h*xi/vel_norm<<endl<<endl;
 #endif
       }
-      else
-        tau_[k] = 0.0;
+      else tau_[k] = 0.0;
     }
     break;
     case SCATRA::tau_zero:
