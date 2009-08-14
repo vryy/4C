@@ -57,6 +57,10 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
     config_both
   };
 
+  bool loadlin = (elemat1!=NULL);
+  if (NumNode()!=4) loadlin = false; // implemented for 4 node quads only
+  if (loadlin && elemat1->M() != 12) dserror("Mismatch in matrix size");
+  
   Configuration config = config_none;
   LoadType ltype       = neum_none;
   const string* type = condition.Get<string>("type");
@@ -64,6 +68,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
   {
     ltype = neum_live;
     config = config_material;
+    loadlin = false; // no linearization as load applies to reference config
   }
   else if (*type == "neum_orthopressure")
   {
@@ -118,6 +123,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
 #else
     // in inverse design analysis, the current configuration is the reference
     MaterialConfiguration(xc);
+    loadlin = false; // follower load is with respect to known current config in inverse design
 #endif
   }
   break;
@@ -176,33 +182,33 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
         if ((*onoff)[checkdof] != 0) dserror("orthopressure on 1st dof only!");
       double ortho_value = (*val)[0];
       if (!ortho_value) dserror("no orthopressure value given!");
-      vector<double> normal(3);
-      Epetra_SerialDenseMatrix a_Dnormal(3,12);
-      Epetra_SerialDenseMatrix Delevec1(12,12);
-	double ve = x(0,1)-x(3,1);
-      x(0,1)-=0.25*(ve);
       
+      vector<double> normal(3);
       SurfaceIntegration(normal, xc,deriv);
-      //analytical_DSurfaceIntegration(a_Dnormal, xc, deriv);
-      //FAD_DFAD_DSurfaceIntegration(a_Dnormal, xc, deriv);
-      //FAD_SFAD_DSurfaceIntegration(a_Dnormal, xc, deriv);
-      //FiniteDiff_DSurfaceIntegration(a_Dnormal, xc, deriv);
 
       const double fac = intpoints.qwgt[gp] * curvefac * ortho_value;
       for (int node=0; node < numnode; ++node)
         for(int dim=0 ; dim<3; dim++)
 		elevec1[node*numdf+dim] += funct[node] * normal[dim] * fac;
 
-#if 0
-      for (int node=0; node < numnode; ++node)
-        for (int dim=0 ; dim<3; dim++)
-	  for (int dof=0; dof<elevec1.M(); dof++)
-      		Delevec1(node*numdf+dim, dof) += funct[node] * a_Dnormal(dim, dof) * fac;
+      if (loadlin)
+      {
+        Epetra_SerialDenseMatrix a_Dnormal(3,12);
 
-      //cout<<"D-Elevec" << endl;
-      //cout<< Delevec1 << endl; fflush(stdout);
-#endif	
-}
+        //analytical_DSurfaceIntegration(a_Dnormal, xc, deriv);
+        FAD_DFAD_DSurfaceIntegration(a_Dnormal, xc, deriv);
+        //FAD_SFAD_DSurfaceIntegration(a_Dnormal, xc, deriv);
+        //FiniteDiff_DSurfaceIntegration(a_Dnormal, xc, deriv);
+
+        for (int node=0; node < numnode; ++node)
+          for (int dim=0 ; dim<3; dim++)
+            for (int dof=0; dof<elevec1.M(); dof++)
+              (*elemat1)(node*numdf+dim, dof) += funct[node] * a_Dnormal(dim, dof) * fac;
+        //cout << "\n\n" << *elemat1 << "\n\n";
+      }
+
+
+    }
     break;
     default:
       dserror("Unknown type of SurfaceNeumann load");
@@ -221,9 +227,6 @@ void DRT::ELEMENTS::StructuralSurface::SurfaceIntegration(vector<double>& normal
                                                           const Epetra_SerialDenseMatrix& x,
                                                           const Epetra_SerialDenseMatrix& deriv)
 {
-  // note that the length of this normal is the area dA
-
-  //Teuchos::SerialDenseMatirx<int SacadoT> dxyzdrs(2,3);
   // note that the length of this normal is the area dA
   	
   // compute dXYZ / drs
@@ -246,7 +249,9 @@ void DRT::ELEMENTS::StructuralSurface::FAD_DFAD_DSurfaceIntegration(Epetra_Seria
                                                           const Epetra_SerialDenseMatrix& x,
                                                           const Epetra_SerialDenseMatrix& deriv)
 {
-  //Erstellen eines Vektor des Typs Saccado für x und deriv
+  // this routine holds for all element shapes
+
+  //Erstellen eines Vektor des Typs Saccado fuer x und deriv
   vector<Sacado::Fad::DFad<double> > saccado_x(x.N()*x.M());
   vector<Sacado::Fad::DFad<double> > saccado_deriv(deriv.N()*deriv.M());
   vector<Sacado::Fad::DFad<double> > saccado_g1(3);
@@ -261,7 +266,7 @@ void DRT::ELEMENTS::StructuralSurface::FAD_DFAD_DSurfaceIntegration(Epetra_Seria
 		saccado_x[x.N()*row+column].diff(x.N()*row+column,x.N()*x.M()); 
 	}
   }
-  //Kopieren der Daten des der deriv Matrix
+  //Kopieren der Daten der deriv Matrix
   for(int row=0; row < deriv.M(); row++){
   	for(int column = 0; column < deriv.N(); column++){
   		saccado_deriv[deriv.N()*row+column]= deriv(row,column);
@@ -281,15 +286,14 @@ void DRT::ELEMENTS::StructuralSurface::FAD_DFAD_DSurfaceIntegration(Epetra_Seria
   saccado_normal[0] = saccado_g1[1]*saccado_g2[2]-saccado_g1[2]*saccado_g2[1];
   saccado_normal[1] = saccado_g1[2]*saccado_g2[0]-saccado_g1[0]*saccado_g2[2];
   saccado_normal[2] = saccado_g1[0]*saccado_g2[1]-saccado_g1[1]*saccado_g2[0];
-  //Direktzurgriff auf der Ableitungen
 
+  //Direktzugriff auf die Ableitungen
   for(int dim = 0; dim <3; dim++){
 	for(int dxyz = 0; dxyz<12; dxyz++){
-			d_normal(dim, dxyz) = saccado_normal[dim].fastAccessDx(dxyz);
+		d_normal(dim, dxyz) = saccado_normal[dim].fastAccessDx(dxyz);
 	}
   }
-cout<<"DFAD"<<endl;
- cout<<d_normal<<endl;
+
   return;
 }
 
@@ -302,7 +306,9 @@ void DRT::ELEMENTS::StructuralSurface::FAD_SFAD_DSurfaceIntegration(Epetra_Seria
                                                           const Epetra_SerialDenseMatrix& x,
                                                           const Epetra_SerialDenseMatrix& deriv)
 {
-  //Erstellen eines Vektor des Typs Saccado für x und deriv
+  // this routine holds for quad4 element only
+
+  //Erstellen eines Vektor des Typs Saccado fuer x und deriv
   vector<Sacado::Fad::SFad<double, 12> > saccado_x(x.N()*x.M());
   vector<Sacado::Fad::SFad<double, 12> > saccado_deriv(deriv.N()*deriv.M());
   vector<Sacado::Fad::SFad<double, 12> > saccado_g1(3);
@@ -317,7 +323,7 @@ void DRT::ELEMENTS::StructuralSurface::FAD_SFAD_DSurfaceIntegration(Epetra_Seria
 		saccado_x[x.N()*row+column].diff(x.N()*row+column,x.N()*x.M()); 
 	}
   }
-  //Kopieren der Daten des der deriv Matrix
+  //Kopieren der Daten der deriv Matrix
   for(int row=0; row < deriv.M(); row++){
   	for(int column = 0; column < deriv.N(); column++){
   		saccado_deriv[deriv.N()*row+column]= deriv(row,column);
@@ -337,15 +343,14 @@ void DRT::ELEMENTS::StructuralSurface::FAD_SFAD_DSurfaceIntegration(Epetra_Seria
   saccado_normal[0] = saccado_g1[1]*saccado_g2[2]-saccado_g1[2]*saccado_g2[1];
   saccado_normal[1] = saccado_g1[2]*saccado_g2[0]-saccado_g1[0]*saccado_g2[2];
   saccado_normal[2] = saccado_g1[0]*saccado_g2[1]-saccado_g1[1]*saccado_g2[0];
-  //Direktzurgriff auf der Ableitungen
 
+  //Direktzugriff auf die Ableitungen
   for(int dim = 0; dim <3; dim++){
 	for(int dxyz = 0; dxyz<12; dxyz++){
 			d_normal(dim, dxyz) = saccado_normal[dim].fastAccessDx(dxyz);
 	}
   }
- cout<<"SFAD"<<endl;
- cout<<d_normal<<endl;
+
   return;
 }
 
@@ -354,10 +359,13 @@ void DRT::ELEMENTS::StructuralSurface::FAD_SFAD_DSurfaceIntegration(Epetra_Seria
  * Calculates dnormal/dx_j analytically                  holfelder 04/09|
  * ---------------------------------------------------------------------*/
 
-void DRT::ELEMENTS::StructuralSurface::	analytical_DSurfaceIntegration(Epetra_SerialDenseMatrix& d_normal,
+void DRT::ELEMENTS::StructuralSurface::	analytical_DSurfaceIntegration(
+                                                          Epetra_SerialDenseMatrix& d_normal,
                                                           const Epetra_SerialDenseMatrix& x,
                                                           const Epetra_SerialDenseMatrix& deriv)
 {
+  // this routine holds for quad4 element only
+  
   // compute dXYZ / drs
   LINALG::SerialDenseMatrix dxyzdrs(2,3);
   dxyzdrs.Multiply('N','N',1.0,deriv, x, 0.0);
@@ -405,8 +413,6 @@ void DRT::ELEMENTS::StructuralSurface::	analytical_DSurfaceIntegration(Epetra_Se
   g_dx.Scale(0);
   g_dx.Multiply('N','N',1.0, g_dg2, g2_dx, 0.0);
   d_normal+=g_dx;
- cout<<"Anal"<<endl;
-  cout<<d_normal<<endl;
   return;
 }
 
@@ -418,30 +424,30 @@ void DRT::ELEMENTS::StructuralSurface::	FiniteDiff_DSurfaceIntegration(Epetra_Se
                                                           const Epetra_SerialDenseMatrix& x,
                                                           const Epetra_SerialDenseMatrix& deriv)
 {
+  // this routine holds for all element shapes
+  
+  vector<double> Dnormal(3);
+  vector<double> normal(3);
+  Epetra_SerialDenseMatrix dxc(x);
 
-       vector<double> Dnormal(3);
-       vector<double> normal(3);
-       Epetra_SerialDenseMatrix dxc(x);
+  double delta = 1e-6;
 
-       double delta = 1e-6;
-
-	//Zeile der Jacobimatrix
-	for(int dx=0;dx<3;dx++){
-		//Lauf über die Freiheistgarde der Funktion
-		for (int node=0; node < x.M(); ++node){
-			for(int dim=0 ; dim<3; dim++){
-				//Gleichsetzen der Matrizen
-				dxc=x;	
-				//Variation um dern Wert delta
-				dxc(node, dim) += delta;
-				SurfaceIntegration(Dnormal, dxc, deriv);
-				SurfaceIntegration(normal, x, deriv),
-				d_normal(dx,node*3+dim) = (Dnormal[dx] - normal[dx])/delta;
-			}
-		}
-	}	
-	cout<<"Finite"<<endl;
-	cout<<d_normal<<endl;
+  //Zeile der Jacobimatrix
+  for(int dx=0;dx<3;dx++){
+    //Lauf ueber die Freiheitsgrade der Funktion
+    for (int node=0; node < x.M(); ++node){
+      for(int dim=0 ; dim<3; dim++){
+        //Gleichsetzen der Matrizen
+        dxc=x;  
+        //Variation um den Wert delta
+        dxc(node, dim) += delta;
+        SurfaceIntegration(Dnormal, dxc, deriv);
+        SurfaceIntegration(normal, x, deriv),
+        d_normal(dx,node*3+dim) = (Dnormal[dx] - normal[dx])/delta;
+      }
+    }
+  }
+         
   return;
 }
 /*----------------------------------------------------------------------*
