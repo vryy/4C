@@ -777,9 +777,15 @@ void DRT::UTILS::LocsysManager::RotateGlobalToLocal(RCP<LINALG::SparseMatrix> sy
   else
   {
     RCP<LINALG::SparseMatrix> temp;
-    temp = LINALG::Multiply(*trafo_,false,*sysmat,false,true);  // multiply from left
     RCP<LINALG::SparseMatrix> temp2;
-    temp2 = LINALG::Multiply(*temp,false,*trafo_,true,true);  // multiply from right
+    
+    // We want to keep the SaveGraph() value of sysmat also after transformation.
+    // It is not possible to keep ExplicitDirichlet()==true after transformation,
+    // so we explicitly set this to false.
+    temp = LINALG::Multiply(*trafo_,false,*sysmat,false,false,sysmat->SaveGraph(),true);  // multiply from left
+    temp2 = LINALG::Multiply(*temp,false,*trafo_,true,false,sysmat->SaveGraph(),true);  // multiply from right
+    
+    // this is a deep copy (expensive!)
     *sysmat = *temp2;
   }
 
@@ -814,8 +820,14 @@ void DRT::UTILS::LocsysManager::RotateLocalToGlobal(RCP<Epetra_Vector> result,
   // transform system matrix
   RCP<LINALG::SparseMatrix> temp;
   RCP<LINALG::SparseMatrix> temp2;
-  temp = LINALG::Multiply(*sysmat,false,*trafo_,false,true);
-  temp2 = LINALG::Multiply(*trafo_,true,*temp,false,true);
+  
+  // We want to keep the SaveGraph() value of sysmat also after transformation.
+  // It is not possible to keep ExplicitDirichlet()==true after transformation,
+  // so we explicitly set this to false.
+  temp = LINALG::Multiply(*sysmat,false,*trafo_,false,false,sysmat->SaveGraph(),true);
+  temp2 = LINALG::Multiply(*trafo_,true,*temp,false,false,sysmat->SaveGraph(),true);
+  
+  // this is a deep copy (expensive!)
   *sysmat = *temp2;
 
   return;
