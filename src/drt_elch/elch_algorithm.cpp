@@ -16,8 +16,6 @@ Maintainer: Georg Bauer
 #ifdef CCADISCRET
 
 #include "elch_algorithm.H"
-#include "../drt_mat/material.H"
-#include "../drt_mat/newtonianfluid.H"
 // Output after each Outer Iteration step
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
@@ -37,7 +35,7 @@ ELCH::Algorithm::Algorithm(
    ittol_ (prbdyn.get<double>("CONVTOL")),
    velincnp_ (rcp(new Epetra_Vector(*(FluidField().ExtractVelocityPart(FluidField().Velnp()))))),
    conpotincnp_ (rcp(new Epetra_Vector(*(ScaTraField().Phinp())))),
-   density0_ (GetDensity0())
+   density0_ (GetInitialFluidDensity())
 {
   return;
 }
@@ -508,9 +506,9 @@ bool ELCH::Algorithm::ConvergenceCheck( int itnum,
       if (Comm().MyPID() == 0)
       {
       cout<<"\n";
-      cout<<"******************************************************************************\n";
+      cout<<"*****************************************************************************\n";
       cout<<"                          OUTER ITERATION STEP\n";
-      cout<<"******************************************************************************\n";
+      cout<<"*****************************************************************************\n";
       printf("+------------+-------------------+--------------+-------------+-------------+\n");
       printf("|- step/max -|- tol      [norm] -|-- con-inc ---|-- pot-inc --|-- vel-inc --|\n");
       printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E  | %10.3E  |",
@@ -528,8 +526,8 @@ bool ELCH::Algorithm::ConvergenceCheck( int itnum,
         stopnonliniter=true;
         if (Comm().MyPID() == 0)
         {
-        printf("| Outer Iteration loop converged after iteration %3d/%3d                      |\n", itnum,itmax);
-        printf("+-----------------------------------------------------------------------------+");
+        printf("| Outer Iteration loop converged after iteration %3d/%3d                    |\n", itnum,itmax);
+        printf("+---------------------------------------------------------------------------+");
         printf("\n");
         printf("\n");
         }
@@ -538,8 +536,8 @@ bool ELCH::Algorithm::ConvergenceCheck( int itnum,
       {
         if (Comm().MyPID() == 0)
         {
-        printf("| Outer Iteration loop is not converged after iteration %3d/%3d               |\n", itnum,itmax);
-        printf("+----------------------------------------------------------------------------+");
+        printf("| Outer Iteration loop is not converged after iteration %3d/%3d             |\n", itnum,itmax);
+        printf("+---------------------------------------------------------------------- ----+");
         printf("\n");
         printf("\n");
         }
@@ -571,12 +569,12 @@ bool ELCH::Algorithm::ConvergenceCheck( int itnum,
       if (Comm().MyPID() == 0)
       {
       cout<<"\n";
-      cout<<"******************************************************************************\n";
+      cout<<"*****************************************************************************\n";
       cout<<"                          OUTER ITERATION STEP\n";
-      cout<<"******************************************************************************\n";
+      cout<<"*****************************************************************************\n";
       printf("+------------+-------------------+--------------+-------------+-------------+\n");
       printf("|- step/max -|- tol      [norm] -|-- con-inc ---|-- pot-inc --|-- vel-inc --|\n");
-      printf("|  %3d/%3d   | %10.3E[L_2 ]  |       -       |      -      |      -      |",
+      printf("|  %3d/%3d   | %10.3E[L_2 ]  |       -      |      -      |      -      |",
           itnum, itmax, ittol);
       printf("\n");
       printf("+------------+-------------------+-------------+--------------+-------------+\n");
@@ -589,7 +587,7 @@ bool ELCH::Algorithm::ConvergenceCheck( int itnum,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double ELCH::Algorithm::GetDensity0()
+double ELCH::Algorithm::GetInitialFluidDensity()
 {
   // initialization of the initial density
   double density = 0.0;
@@ -597,16 +595,12 @@ double ELCH::Algorithm::GetDensity0()
   // initialization only for convection, otherwise the density0 is set to zero
   if (natconv_ != "No")
   {
-    DRT::Element* element = FluidField().Discretization()->lRowElement(0);
-    RefCountPtr<MAT::Material>  mat = element->Material();
-
-    if (mat->MaterialType() == INPAR::MAT::m_fluid)
-    {
-      const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
-      density  = actmat->Density();
-    }
-    else
-      dserror("material type is not allowed");
+    // we ask the elements for the density (works for all fluid materials)
+    ParameterList eleparams;
+    eleparams.set("action","get_density");
+    FluidField().Discretization()->Evaluate(eleparams,null,null,null,null,null);
+    density = eleparams.get<double>("density");
+    if (density <= 0.0) dserror("received illegal density value");
   }
 
   return density;

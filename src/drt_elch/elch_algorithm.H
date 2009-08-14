@@ -93,8 +93,8 @@ namespace ELCH
     /// convergence check for natural convection solver
     bool ConvergenceCheck(int itnum, int itmax, double ittol);
 
-    /// get initial density
-    double GetDensity0();
+    /// get initial fluid density
+    double GetInitialFluidDensity();
 
   private:
 
@@ -113,7 +113,7 @@ namespace ELCH
     /// concentration and potential increment of the outer loop
     Teuchos::RCP<Epetra_Vector> conpotincnp_;
 
-    /// initial density
+    /// initial fluid density
     const double density0_;
 
   };
