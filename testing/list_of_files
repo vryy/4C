@@ -17,6 +17,7 @@ Input/strufem_tet4_disp_cantilever.dat                  x        x        x     
 Input/strufem_tet10_disp_cantilever.dat                 x        x        x        -        -        -
 Input/strufem_wedge6_disp_cantilever.dat                x        x        x        -        -        -
 Input/disp_control.dat                                  x        x        x        -        -        -
+Input/loadlin.dat                                       x        x        x        -        -        -
 Input/ale2_nln.dat                                      x        x        x        x        -        -
 Input/ale2_nln_sub4.dat                                 x        x        x        x        -        -
 Input/ale_3d_hourg.dat                                  x        x        x        x        -        -
