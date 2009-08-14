@@ -116,7 +116,7 @@ int ELEMENTS::Shell8::Evaluate(ParameterList&,
   return 0;
 }
 
-int ELEMENTS::Shell8::EvaluateNeumann(ParameterList&, Discretization&, Condition&, vector<int>&, Epetra_SerialDenseVector&)
+int ELEMENTS::Shell8::EvaluateNeumann(ParameterList&, Discretization&, Condition&, vector<int>&, Epetra_SerialDenseVector&, Epetra_SerialDenseMatrix*)
 {
   dserror("ELEMENTS::Shell8::EvaluateNeumann undefined");
   return 0;
@@ -126,7 +126,8 @@ int ELEMENTS::Shell8Line::EvaluateNeumann(ParameterList& params,
                                           Discretization&      discretization,
                                           Condition&           condition,
                                           vector<int>&              lm,
-                                          Epetra_SerialDenseVector& elevec1)
+                                          Epetra_SerialDenseVector& elevec1,
+                                          Epetra_SerialDenseMatrix* elemat1)
 {
   dserror("ELEMENTS::Shell8Line::EvaluateNeumann undefined");
   return 0;
