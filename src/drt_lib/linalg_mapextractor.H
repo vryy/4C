@@ -316,6 +316,34 @@ namespace LINALG
   };
 
 
+/// Add all kinds of support methods to derived classes of MultiMapExtractor.
+#define MAP_EXTRACTOR_VECTOR_METHODS(name,pos)                          \
+  Teuchos::RCP<Epetra_Vector> Extract ## name ## Vector(const Epetra_Vector& full) const \
+  { return MultiMapExtractor::ExtractVector(full,pos); }                \
+                                                                        \
+  Teuchos::RCP<Epetra_Vector> Extract ## name ## Vector(Teuchos::RCP<const Epetra_Vector> full) const \
+  { return MultiMapExtractor::ExtractVector(full,pos); }                \
+                                                                        \
+  void Extract ## name ## Vector(Teuchos::RCP<const Epetra_Vector> full, Teuchos::RCP<Epetra_Vector> cond) const \
+  { ExtractVector(full,pos,cond); }                                     \
+                                                                        \
+  Teuchos::RCP<Epetra_Vector> Insert ## name ## Vector(Teuchos::RCP<const Epetra_Vector> cond) const \
+  { return InsertVector(cond,pos); }                                    \
+                                                                        \
+  void Insert ## name ## Vector(Teuchos::RCP<const Epetra_Vector> cond, Teuchos::RCP<Epetra_Vector> full) const \
+  { InsertVector(cond,pos,full); }                                      \
+                                                                        \
+  void Add ## name ## Vector(Teuchos::RCP<const Epetra_Vector> cond, Teuchos::RCP<Epetra_Vector> full) const \
+  { AddVector(cond,pos,full); }                                         \
+                                                                        \
+  void Add ## name ## Vector(double scale, Teuchos::RCP<const Epetra_Vector> cond, Teuchos::RCP<Epetra_Vector> full) const \
+  { AddVector(cond,pos,full,scale); }                                   \
+                                                                        \
+  const Teuchos::RCP<const Epetra_Map>& name ## Map() const { return Map(pos); } \
+                                                                        \
+  bool name ## Relevant() const { return name ## Map()->NumGlobalElements()!=0; }
+
+
   /// Split a dof row map in two and establish the communication pattern between those maps
   /*!
 
@@ -366,83 +394,16 @@ namespace LINALG
 
     //@}
 
-    /** \name Maps */
-    //@{
-
-    /// get the condition dof map
-    const Teuchos::RCP<const Epetra_Map>& CondMap() const { return Map(1); }
-
-    /// get the other dof map
-    const Teuchos::RCP<const Epetra_Map>& OtherMap() const { return Map(0); }
-
-    //@}
-
     /// tell if this extractor has any meaning
     /*!
       We tend to setup extractors even if there is no condition at all. In
       such a case we will end up with an empty condition map and there is no
       point to the extractor all together.
      */
-    bool Relevant() const { return CondMap()->NumGlobalElements()!=0; }
+    bool Relevant() const { return CondRelevant(); }
 
-    /** \name Extract from full dof vector */
-    //@{
-
-    /// extract a condition dof vector from a full row (or column) vector
-    Teuchos::RCP<Epetra_Vector> ExtractCondVector(const Epetra_Vector& full) const
-    { return MultiMapExtractor::ExtractVector(full,1); }
-
-    /// extract an other dof vector from a full row (or column) vector
-    Teuchos::RCP<Epetra_Vector> ExtractOtherVector(const Epetra_Vector& full) const
-    { return MultiMapExtractor::ExtractVector(full,0); }
-
-    /// extract a condition dof vector from a full row (or column) vector
-    Teuchos::RCP<Epetra_Vector> ExtractCondVector(Teuchos::RCP<const Epetra_Vector> full) const;
-
-    /// extract an other dof vector from a full row (or column) vector
-    Teuchos::RCP<Epetra_Vector> ExtractOtherVector(Teuchos::RCP<const Epetra_Vector> full) const;
-
-    /// extract a condition dof vector from a full row (or column) vector
-    void ExtractCondVector(Teuchos::RCP<const Epetra_Vector> full, Teuchos::RCP<Epetra_Vector> cond) const;
-
-    /// extract an other dof vector from a full row (or column) vector
-    void ExtractOtherVector(Teuchos::RCP<const Epetra_Vector> full, Teuchos::RCP<Epetra_Vector> other) const;
-
-    //@}
-
-    /** \name Insert from full dof vector */
-    //@{
-
-    /// Put a condition dof vector into a full row vector
-    Teuchos::RCP<Epetra_Vector> InsertCondVector(Teuchos::RCP<const Epetra_Vector> cond) const;
-
-    /// Put an other dof vector into a full row vector
-    Teuchos::RCP<Epetra_Vector> InsertOtherVector(Teuchos::RCP<const Epetra_Vector> other) const;
-
-    /// Put a condition dof vector into a full row vector
-    void InsertCondVector(Teuchos::RCP<const Epetra_Vector> cond, Teuchos::RCP<Epetra_Vector> full) const;
-
-    /// Put an other dof vector into a full row vector
-    void InsertOtherVector(Teuchos::RCP<const Epetra_Vector> other, Teuchos::RCP<Epetra_Vector> full) const;
-
-    //@}
-
-    /** \name Add from full dof vector */
-    /// These are convenience methods that create a temporary vector internally.
-
-    /// Put a condition dof vector into a full row vector
-    void AddCondVector(Teuchos::RCP<const Epetra_Vector> cond, Teuchos::RCP<Epetra_Vector> full) const;
-
-    /// Put a scaled condition dof vector into a full row vector
-    void AddCondVector(double scale, Teuchos::RCP<const Epetra_Vector> cond, Teuchos::RCP<Epetra_Vector> full) const;
-
-    /// Put an other dof vector into a full row vector
-    void AddOtherVector(Teuchos::RCP<const Epetra_Vector> other, Teuchos::RCP<Epetra_Vector> full) const;
-
-    /// Put a scaled other dof vector into a full row vector
-    void AddOtherVector(double scale,Teuchos::RCP<const Epetra_Vector> other, Teuchos::RCP<Epetra_Vector> full) const;
-
-    //@}
+    MAP_EXTRACTOR_VECTOR_METHODS(Cond, 1)
+    MAP_EXTRACTOR_VECTOR_METHODS(Other,0)
 
   private:
 
