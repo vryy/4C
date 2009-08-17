@@ -1,0 +1,28 @@
+
+#ifdef CCADISCRET
+
+#include "fluid_utils_mapextractor.H"
+
+#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_condition_selector.H"
+#include "../drt_lib/standardtypes_cpp.H"
+
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FLD::UTILS::MapExtractor::Setup(const DRT::Discretization& dis)
+{
+  DRT::UTILS::MultiConditionSelector mcs;
+  mcs.AddSelector(rcp(new DRT::UTILS::NDimConditionSelector(dis,"FSICoupling",0,genprob.ndim)));
+  mcs.AddSelector(rcp(new DRT::UTILS::NDimConditionSelector(dis,"FREESURFCoupling",0,genprob.ndim)));
+  mcs.SetupExtractor(dis,*dis.DofRowMap(),*this);
+}
+
+#endif

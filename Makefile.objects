@@ -253,6 +253,7 @@ OBJS_DRT_THERMO = \
                 src/drt_thermo/thrtimint_ost.o
 # --------------------------------------------------- drt version of fluid
 OBJS_DRT_FLUID= src/drt_fluid/fluid_utils.o \
+                src/drt_fluid/fluid_utils_mapextractor.o \
                 src/drt_fluid/fluid_dyn_nln_drt.o \
                 src/drt_fluid/time_integration_scheme.o \
                 src/drt_fluid/fluidimplicitintegration.o \
