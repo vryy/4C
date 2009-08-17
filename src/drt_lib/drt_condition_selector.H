@@ -108,7 +108,7 @@ namespace UTILS
 
     /// Do the setup
     void SetupExtractor(const DRT::Discretization& dis,
-                        Teuchos::RCP<Epetra_Map> fullmap,
+                        Epetra_Map fullmap,
                         LINALG::MultiMapExtractor& extractor);
 
   private:

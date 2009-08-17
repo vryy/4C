@@ -8,7 +8,7 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::UTILS::MultiConditionSelector::SetupExtractor(const DRT::Discretization& dis,
-                                                        Teuchos::RCP<Epetra_Map> fullmap,
+                                                        Epetra_Map fullmap,
                                                         LINALG::MultiMapExtractor& extractor)
 {
   SetupCondDofSets(dis);
@@ -16,8 +16,8 @@ void DRT::UTILS::MultiConditionSelector::SetupExtractor(const DRT::Discretizatio
   // find all non-conditioned dofs. It is much more clean to do that
   // afterwards.
 
-  std::set<int> otherdofset(fullmap->MyGlobalElements(),
-                            fullmap->MyGlobalElements() + fullmap->NumMyElements());
+  std::set<int> otherdofset(fullmap.MyGlobalElements(),
+                            fullmap.MyGlobalElements() + fullmap.NumMyElements());
 
   for (unsigned j=0; j<conddofset_.size(); ++j)
   {
@@ -45,7 +45,7 @@ void DRT::UTILS::MultiConditionSelector::SetupExtractor(const DRT::Discretizatio
 
   // MultiMapExtractor setup
 
-  extractor.Setup(*fullmap,maps);
+  extractor.Setup(fullmap,maps);
 }
 
 

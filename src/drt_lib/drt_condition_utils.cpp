@@ -403,7 +403,7 @@ void DRT::UTILS::SetupExtractor(const DRT::Discretization& dis,
 {
   MultiConditionSelector mcs;
   mcs.AddSelector(rcp(new NDimConditionSelector(dis,condname,startdim,enddim)));
-  mcs.SetupExtractor(dis,fullmap,extractor);
+  mcs.SetupExtractor(dis,*fullmap,extractor);
 }
 
 
