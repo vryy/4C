@@ -133,7 +133,7 @@ void DRT::UTILS::TimeCurveManager::ReadInput()
         frchk("Explicit",&ierr);
         if (ierr==1)
         {
-          char buffer[50];
+          char buffer[100];
           frchar("FUNC",buffer,&ierr);
           if (ierr!=1) dserror("cannot read CURVE%d",i);
 
@@ -177,7 +177,7 @@ void DRT::UTILS::TimeCurveManager::ReadInput()
         frchk("EXPR",&ierr);
         if (ierr==1)
         {
-          char buffer[250];
+          char buffer[500];
           frchar("FUNC",buffer,&ierr);
           if (ierr!=1) dserror("cannot read CURVE%d",i);
 
@@ -711,6 +711,12 @@ std::vector<double> DRT::UTILS::ExprTimeSlice::FctDer(const double t,
 
   // function
   res[0] = f(t);
+  if (std::isnan(res[0]))
+  {
+    cout << (*this) << endl;
+    cout << "0. derivative at t = "<< t <<": " << res[0] << endl;
+    dserror("");
+  }
 
   // derivatives
   if (deg >= 1)
@@ -731,12 +737,24 @@ std::vector<double> DRT::UTILS::ExprTimeSlice::FctDer(const double t,
 
     // return 1st derivative value at time t
     res[1] = fdfad.dx(ivar).val();
+    if (std::isnan(res[1]))
+    {
+      cout << (*this) << endl;
+      cout << "1. derivative at t = "<< t <<": " << res[1] << endl;
+      dserror("");
+    }
 
     // 2nd derivative requested
     if (deg >= 2)
     {
       // set 2nd derivative at time t
       res[2] = fdfad.dx(ivar).dx(ivar);
+      if (std::isnan(res[2]))
+      {
+        cout << (*this) << endl;
+        cout << "2. derivative at t = "<< t <<": " << res[2] << endl;
+        dserror("");
+      }
     }
   }
 
