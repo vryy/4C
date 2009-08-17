@@ -15,6 +15,7 @@ Maintainer: Axel Gerstenberger
 #ifdef CCADISCRET
 
 #include "drt_condition_utils.H"
+#include "drt_condition_selector.H"
 #include "standardtypes_cpp.H"
 //#include "adapter_coupling_mortar.H"
 
@@ -288,34 +289,8 @@ void DRT::UTILS::FindElementConditions(const DRT::Element* ele, const std::strin
 Teuchos::RCP<Epetra_Map> DRT::UTILS::ConditionNodeRowMap(const DRT::Discretization& dis,
                                                          const std::string& condname)
 {
-  std::set<int> condnodeset;
-
-  std::vector<DRT::Condition*> conds;
-  dis.GetCondition(condname, conds);
-
-  const int numrownodes = dis.NumMyRowNodes();
-  for (int i=0; i<numrownodes; ++i)
-  {
-    const DRT::Node* node = dis.lRowNode(i);
-
-    // test if node is covered by condition
-    for (size_t j=0; j<conds.size(); ++j)
-    {
-      const vector<int>* n = conds[j]->Nodes();
-
-      // DRT::Condition nodes are ordered by design! So we can perform a
-      // binary search here.
-      if (std::binary_search(n->begin(), n->end(), node->Id()))
-      {
-        condnodeset.insert(node->Id());
-        break;
-      }
-    }
-  }
-
-  Teuchos::RCP<Epetra_Map> condnodemap =
-    LINALG::CreateMap(condnodeset, dis.Comm());
-  return condnodemap;
+  RowNodeIterator iter(dis);
+  return ConditionMap(dis,iter,condname);
 }
 
 
@@ -324,28 +299,28 @@ Teuchos::RCP<Epetra_Map> DRT::UTILS::ConditionNodeRowMap(const DRT::Discretizati
 Teuchos::RCP<Epetra_Map> DRT::UTILS::ConditionNodeColMap(const DRT::Discretization& dis,
                                                          const std::string& condname)
 {
+  ColNodeIterator iter(dis);
+  return ConditionMap(dis,iter,condname);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Map> DRT::UTILS::ConditionMap(const DRT::Discretization& dis,
+                                                  const DiscretizationNodeIterator& iter,
+                                                  const std::string& condname)
+{
   std::set<int> condnodeset;
 
-  std::vector<DRT::Condition*> conds;
-  dis.GetCondition(condname, conds);
+  ConditionSelector conds(dis, condname);
 
-  const int numrownodes = dis.NumMyColNodes();
-  for (int i=0; i<numrownodes; ++i)
+  const int numnodes = iter.NumEntries();
+  for (int i=0; i<numnodes; ++i)
   {
-    const DRT::Node* node = dis.lColNode(i);
-
-    // test if node is covered by condition
-    for (size_t j=0; j<conds.size(); ++j)
+    const DRT::Node* node = iter.Entry(i);
+    if (conds.ContainsNode(node->Id()))
     {
-      const vector<int>* n = conds[j]->Nodes();
-
-      // DRT::Condition nodes are ordered by design! So we can perform a
-      // binary search here.
-      if (std::binary_search(n->begin(), n->end(), node->Id()))
-      {
-        condnodeset.insert(node->Id());
-        break;
-      }
+      condnodeset.insert(node->Id());
     }
   }
 
@@ -360,14 +335,14 @@ Teuchos::RCP<Epetra_Map> DRT::UTILS::ConditionNodeColMap(const DRT::Discretizati
 Teuchos::RCP<std::set<int> > DRT::UTILS::ConditionedElementMap(const DRT::Discretization& dis,
                                                                const std::string& condname)
 {
-  std::vector<DRT::Condition*> conds;
-  dis.GetCondition(condname, conds);
+  ConditionSelector conds(dis, condname);
 
   Teuchos::RCP<std::set<int> > condelementmap = Teuchos::rcp(new set<int>());
   const int nummyelements = dis.NumMyColElements();
   for (int i=0; i<nummyelements; ++i)
   {
     const DRT::Element* actele = dis.lColElement(i);
+
     const size_t numnodes = actele->NumNode();
     const DRT::Node*const* nodes = actele->Nodes();
     for (size_t n=0; n<numnodes; ++n)
@@ -375,17 +350,9 @@ Teuchos::RCP<std::set<int> > DRT::UTILS::ConditionedElementMap(const DRT::Discre
       const DRT::Node* actnode = nodes[n];
 
       // test if node is covered by condition
-      for (size_t j=0; j<conds.size(); ++j)
+      if (conds.ContainsNode(actnode->Id()))
       {
-        const vector<int>* nids = conds[j]->Nodes();
-
-        // DRT::Condition nodes are ordered by design! So we can perform a
-        // binary search here.
-        if (std::binary_search(nids->begin(), nids->end(), actnode->Id()))
-        {
-          condelementmap->insert(actele->Id());
-          break;
-        }
+        condelementmap->insert(actele->Id());
       }
     }
   }
@@ -434,79 +401,9 @@ void DRT::UTILS::SetupExtractor(const DRT::Discretization& dis,
                                 Teuchos::RCP<Epetra_Map> fullmap,
                                 LINALG::MapExtractor& extractor)
 {
-  std::set<int> conddofset;
-
-  std::vector<DRT::Condition*> conds;
-  dis.GetCondition(condname, conds);
-
-  int numrownodes = dis.NumMyRowNodes();
-  for (int i=0; i<numrownodes; ++i)
-  {
-    DRT::Node* node = dis.lRowNode(i);
-
-    // test if node is covered by condition
-    bool conditioned = false;
-    for (unsigned j=0; j<conds.size(); ++j)
-    {
-      const vector<int>* n = conds[j]->Nodes();
-
-      // DRT::Condition nodes are ordered by design! So we can perform a
-      // binary search here.
-      if (std::binary_search(n->begin(), n->end(), node->Id()))
-      {
-        conditioned = true;
-        break;
-      }
-    }
-
-    // put all conditioned dofs into conddofset
-    if (conditioned)
-    {
-      std::vector<int> dof = dis.Dof(node);
-      for (unsigned j=0; j<dof.size(); ++j)
-      {
-        // test for dof position
-        if (startdim<=j and j<enddim)
-        {
-          conddofset.insert(dof[j]);
-        }
-      }
-    }
-  }
-
-  // if there is no such condition, do not waste any more time
-  int conddofsetsize = static_cast<int>(conddofset.size());
-  int size;
-  dis.Comm().SumAll(&conddofsetsize,&size,1);
-  if (size==0)
-  {
-    Teuchos::RCP<Epetra_Map> emptymap =
-      Teuchos::rcp(new Epetra_Map(-1,
-                                  0,
-                                  NULL,
-                                  0,
-                                  dis.Comm()));
-    extractor.Setup(*fullmap,emptymap,Teuchos::rcp(dis.DofRowMap(),false));
-  }
-  else
-  {
-    std::set<int> otherdofset(fullmap->MyGlobalElements(),
-                              fullmap->MyGlobalElements() + fullmap->NumMyElements());
-
-    std::set<int>::const_iterator conditer;
-    for (conditer = conddofset.begin(); conditer != conddofset.end(); ++conditer)
-    {
-      otherdofset.erase(*conditer);
-    }
-
-    Teuchos::RCP<Epetra_Map> conddofmap =
-      LINALG::CreateMap(conddofset, dis.Comm());
-
-    Teuchos::RCP<Epetra_Map> otherdofmap =
-      LINALG::CreateMap(otherdofset, dis.Comm());
-
-    extractor.Setup(*fullmap,conddofmap,otherdofmap);
-  }
+  MultiConditionSelector mcs;
+  mcs.AddSelector(rcp(new NDimConditionSelector(dis,condname,startdim,enddim)));
+  mcs.SetupExtractor(dis,fullmap,extractor);
 }
 
 

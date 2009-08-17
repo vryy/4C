@@ -102,6 +102,7 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
                 src/drt_lib/drt_container.o \
                 src/drt_lib/drt_condition.o \
                 src/drt_lib/drt_condition_utils.o \
+                src/drt_lib/drt_condition_selector.o \
                 src/drt_lib/drt_conditiondefinition.o \
                 src/drt_lib/drt_materialdefinition.o \
                 src/drt_lib/drt_dofset.o \

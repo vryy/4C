@@ -47,12 +47,16 @@ Maintainer: Axel Gerstenberger
 #define DRT_CONDITION_UTILS_H
 
 #include "drt_discret.H"
+#include "drt_discret_iterator.H"
 #include "linalg_mapextractor.H"
 
 namespace DRT
 {
   namespace UTILS
   {
+
+    // forward declaration
+    class ConditionSelector;
 
     /// std unary function version of Epetra_Map::MyGID()
     struct MyGID : public std::unary_function<int, bool>
@@ -168,6 +172,11 @@ namespace DRT
     Teuchos::RCP<Epetra_Map> ConditionNodeColMap(const DRT::Discretization& dis,
                                                  const std::string& condname);
 
+    /// generic condition node map creation
+    Teuchos::RCP<Epetra_Map> ConditionMap(const DRT::Discretization& dis,
+                                          const DiscretizationNodeIterator& iter,
+                                          const std::string& condname);
+
     /// create the set of column element gids that have conditioned nodes
     /*!
       \note These are not elements from the condition geometry. Rather the
@@ -211,7 +220,6 @@ namespace DRT
                         unsigned enddim,
                         Teuchos::RCP<Epetra_Map> fullmap,
                         LINALG::MapExtractor& extractor);
-
 
     //! create discretization from a given condition
     /*

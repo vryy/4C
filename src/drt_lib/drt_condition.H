@@ -246,6 +246,17 @@ public:
   const vector<int>* Nodes() const { return Get<vector<int> >("Node Ids"); }
 
   /*!
+    \brief Return if a node gid is contained in this condition
+   */
+  bool ContainsNode(int ngid) const
+  {
+    const vector<int>* n = Nodes();
+    // DRT::Condition nodes are ordered by design! So we can perform a binary
+    // search here.
+    return std::binary_search(n->begin(), n->end(), ngid);
+  }
+
+  /*!
   \brief Return flag indicating whether this condition needs to build a geometry
          description
 
