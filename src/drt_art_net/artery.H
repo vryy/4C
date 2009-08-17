@@ -229,6 +229,31 @@ public:
                Epetra_SerialDenseVector& elevec2,
                Epetra_SerialDenseVector& elevec3);
 
+  /*!
+  \brief Evaluate a Neumann boundary condition
+
+  An element derived from this class uses the EvaluateNeumann method to receive commands
+  and parameters from some control routine in params and evaluates a Neumann boundary condition
+  given in condition
+
+  \note This class implements a dummy of this method that prints a warning and
+        returns false.
+
+  \param params (in/out)    : ParameterList for communication between control routine
+                              and elements
+  \param discretization (in): A reference to the underlying discretization
+  \param condition (in)     : The condition to be evaluated
+  \param lm (in)            : location vector of this element
+  \param elevec1 (out)      : Force vector to be filled by element
+
+  \return 0 if successful, negative otherwise
+  */
+  virtual int EvaluateNeumann(ParameterList& params,
+                              DRT::Discretization&      discretization,
+                              DRT::Condition&           condition,
+                              vector<int>&              lm,
+                              Epetra_SerialDenseVector& elevec1,
+                              Epetra_SerialDenseMatrix* elemat1 = NULL);
 
   /*!
   \brief Evaluate a Neumann boundary condition

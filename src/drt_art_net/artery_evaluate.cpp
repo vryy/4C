@@ -180,6 +180,16 @@ Here must add the steps for evaluating an element
 } // end of DRT::ELEMENTS::Artery::Evaluate
 
 
+int DRT::ELEMENTS::Artery::EvaluateNeumann(ParameterList& params,
+    DRT::Discretization& discretization,
+    DRT::Condition& condition,
+    vector<int>& lm,
+    Epetra_SerialDenseVector& elevec1,
+    Epetra_SerialDenseMatrix* elemat1)
+{
+  return 0;
+}
+
 /*----------------------------------------------------------------------*
  |  do nothing (public)                                     ismail 01/09|
  |                                                                      |

@@ -226,7 +226,8 @@ int DRT::ELEMENTS::Truss3::EvaluateNeumann(ParameterList& params,
     DRT::Discretization& discretization,
     DRT::Condition& condition,
     vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1)
+    Epetra_SerialDenseVector& elevec1,
+    Epetra_SerialDenseMatrix* elemat1)
 {
   //first the actual number of DOF of each node is detected
   int ActNumDof0 = discretization.NumDof(Nodes()[0]);
