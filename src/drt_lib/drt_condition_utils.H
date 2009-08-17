@@ -65,7 +65,6 @@ namespace DRT
         }
     };
 
-
     /// find all local nodes from discretization marked with condition
     /*!
       Loop all conditions of the given discretization, find the ones with the
@@ -234,6 +233,7 @@ namespace DRT
         std::map<int,std::set<int> >&        elementsByLabel,       ///< data structure label - set elements
         const string&                        name                   ///< name of the condition
         );
+
   }
 }
 

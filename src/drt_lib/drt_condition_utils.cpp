@@ -269,13 +269,13 @@ void DRT::UTILS::FindElementConditions(const DRT::Element* ele, const std::strin
                           condn.begin(),condn.end(),
                           inserter(fcond,fcond.begin()));
 
-    if (fcond.size()==0)
-      // No intersections. Done.
-      break;
-
     // make intersection to new starting condition
     cond0.clear();
     std::swap(cond0,fcond);
+
+    if (fcond.size()==0)
+      // No intersections. Done.
+      break;
   }
 
   condition.clear();
