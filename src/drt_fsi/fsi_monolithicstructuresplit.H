@@ -119,6 +119,9 @@ namespace FSI
     UTILS::MatrixColTransform fmiitransform_;
     UTILS::MatrixColTransform fmgitransform_;
 
+    UTILS::MatrixColTransform fsaigtransform_;
+    UTILS::MatrixColTransform fsmgitransform_;
+
     ///@}
 
     /// @name infnorm scaling

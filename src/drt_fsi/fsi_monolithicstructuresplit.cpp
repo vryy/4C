@@ -242,8 +242,43 @@ void FSI::MonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
       Extractor().AddVector(*veln,1,f);
     }
 
+    // if there is a free surface
     if (FluidField().Interface().FSCondRelevant())
     {
+      // here we extract the free surface submatrices from position 2
+      LINALG::SparseMatrix& aig = a->Matrix(0,2);
+
+      // extract fluid free surface velocities.
+      Teuchos::RCP<Epetra_Vector> fveln = FluidField().ExtractFreeSurfaceVeln();
+      Teuchos::RCP<Epetra_Vector> aveln = icoupfa_.MasterToSlave(fveln);
+
+      Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(aig.RowMap()));
+      aig.Apply(*aveln,*rhs);
+
+      rhs->Scale(-1.*Dt());
+
+      Extractor().AddVector(*rhs,1,f);
+
+      // shape derivatives
+      Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField().ShapeDerivatives();
+      if (mmm!=Teuchos::null)
+      {
+        // here we extract the free surface submatrices from position 2
+        LINALG::SparseMatrix& fmig = mmm->Matrix(0,2);
+        LINALG::SparseMatrix& fmgg = mmm->Matrix(2,2);
+
+        rhs = Teuchos::rcp(new Epetra_Vector(fmig.RowMap()));
+        fmig.Apply(*fveln,*rhs);
+        Teuchos::RCP<Epetra_Vector> veln = FluidField().Interface().InsertOtherVector(rhs);
+
+        rhs = Teuchos::rcp(new Epetra_Vector(fmgg.RowMap()));
+        fmgg.Apply(*fveln,*rhs);
+        FluidField().Interface().InsertFSCondVector(rhs,veln);
+
+        veln->Scale(-1.*Dt());
+
+        Extractor().AddVector(*veln,0,f);
+      }
     }
   }
 
@@ -360,6 +395,44 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
                    mat.Matrix(1,2),
                    false,
                    true);
+  }
+
+  // if there is a free surface
+  if (FluidField().Interface().FSCondRelevant())
+  {
+    // here we extract the free surface submatrices from position 2
+    LINALG::SparseMatrix& aig = a->Matrix(0,2);
+
+    fsaigtransform_(*a,
+                    aig,
+                    1./timescale,
+                    ADAPTER::Coupling::SlaveConverter(fscoupfa_),
+                    mat.Matrix(2,1));
+
+    if (mmm!=Teuchos::null)
+    {
+      // We assume there is some space between fsi interface and free
+      // surface. Thus the matrices mmm->Matrix(1,2) and mmm->Matrix(2,1) are
+      // zero.
+
+      // here we extract the free surface submatrices from position 2
+      LINALG::SparseMatrix& fmig = mmm->Matrix(0,2);
+      LINALG::SparseMatrix& fmgi = mmm->Matrix(2,0);
+      LINALG::SparseMatrix& fmgg = mmm->Matrix(2,2);
+
+      mat.Matrix(1,1).Add(fmgg,false,1./timescale,1.0);
+      mat.Matrix(1,1).Add(fmig,false,1./timescale,1.0);
+
+      const ADAPTER::Coupling& coupfa = FluidAleCoupling();
+
+      fsmgitransform_(*mmm,
+                      fmgi,
+                      1.,
+                      ADAPTER::Coupling::MasterConverter(coupfa),
+                      mat.Matrix(1,2),
+                      false,
+                      false);
+    }
   }
 
   // done. make sure all blocks are filled.
@@ -742,6 +815,17 @@ void FSI::MonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const Epetr
 
   Teuchos::RCP<Epetra_Vector> a = AleField().Interface().InsertOtherVector(aox);
   AleField().Interface().InsertFSICondVector(acx, a);
+
+  // if there is a free surface
+  if (FluidField().Interface().FSCondRelevant())
+  {
+    Teuchos::RCP<Epetra_Vector> fcx = FluidField().Interface().ExtractFSCondVector(fx);
+    FluidField().FreeSurfVelocityToDisplacement(fcx);
+
+    Teuchos::RCP<Epetra_Vector> acx = fscoupfa_.MasterToSlave(fcx);
+    AleField().Interface().InsertFSCondVector(acx, a);
+  }
+
   ax = a;
 }
 
