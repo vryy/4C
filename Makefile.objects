@@ -330,6 +330,7 @@ OBJS_DRT_ALEALG= src/drt_ale/ale_dyn.o \
                 src/drt_ale/ale_laplace.o \
                 src/drt_ale/ale_springs.o \
                 src/drt_ale/ale_springs_fixed_ref.o \
+                src/drt_ale/ale_utils_mapextractor.o \
                 src/drt_ale/ale_resulttest.o
 OBJS_DRT_ADAPT= src/drt_adapter/adapter_algorithmbase.o \
                 src/drt_adapter/adapter_fluid.o \
