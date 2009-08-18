@@ -314,6 +314,9 @@ bool CONTACT::Manager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
 {
   // read parameter list from DRT::Problem
   const Teuchos::ParameterList& input = DRT::Problem::Instance()->StructuralContactParams();
+  
+  const Teuchos::ParameterList& psize = DRT::Problem::Instance()->ProblemSizeParams();
+  int dim = psize.get<int>("DIM");
 
   // invalid parameter combinations
   if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_auglag)
@@ -358,7 +361,28 @@ bool CONTACT::Manager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactSearchAlgorithm>(input,"SEARCH_ALGORITHM") == INPAR::CONTACT::search_bfnode &&
                                                                 input.get<double>("SEARCH_PARAM") == 0.0)
     dserror("Search radius sp = 0, must be greater than 0 for node-based search");
-
+  
+  if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(input,"FRICTION") == INPAR::CONTACT::friction_tresca &&
+                                                   dim==3)
+    dserror("3D frictional contact after Tresca's law not yet implemented");
+  
+  if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(input,"CONTACT") == INPAR::CONTACT::contact_frictional &&
+  		                                              Teuchos::getIntegralValue<int>(input,"SEMI_SMOOTH_NEWTON")!=1 &&
+  	                                                dim==3) 
+  	dserror("3D frictional contact only applied for Semi-smooth Newton");
+ 
+#ifndef CONTACTCOMPHUEBER
+  if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(input,"CONTACT") == INPAR::CONTACT::contact_frictional &&
+                                                   dim==3)  
+  	dserror("3D frictional contact without flag CONTACTCOMPHUEBER not yet implemented");
+#endif
+   
+#ifdef CONTACTSLIPFIRST
+  if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(input,"CONTACT") == INPAR::CONTACT::contact_frictional &&
+  		                                             dim==3)  
+    dserror("3D frictional contact with flag CONTACTSLIPFIRST not yet implemented");
+#endif  
+  
 #ifdef CONTACTRELVELMATERIAL
   // check full linearization
   bool fulllin   = Teuchos::getIntegralValue<int>(input,"FULL_LINEARIZATION");

@@ -894,10 +894,10 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff
     RCP<LINALG::SparseMatrix> deriv2 = rcp(new LINALG::SparseMatrix(*gactivet_,81));
 
     deriv1->Add(*linslipLM_,false,1.0,1.0);
-    deriv1->Complete(*gsmdofs,*gactivet_);
+    deriv1->Complete(*gsmdofs,*gslipt_);
 
     deriv2->Add(*linslipDIS_,false,1.0,1.0);
-    deriv2->Complete(*gsmdofs,*gactivet_);
+    deriv2->Complete(*gsmdofs,*gslipt_);
 
     cout << *deriv1 << endl;
     cout << *deriv2 << endl;
@@ -905,7 +905,7 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff
     interface_[i]->FDCheckSlipDeriv();
   }
 }
-#endif // #ifdef CONTACTFDSLIPTRESCA
+#endif // #ifdef CONTACTFDSLIP
 
   /**********************************************************************/
   /* Global setup of kteffnew, feffnew (including contact)              */
@@ -1918,18 +1918,31 @@ void CONTACT::LagrangeStrategy::UpdateActiveSetSemiSmooth()
       }
 
       // friction
-      double tz = 0.0;
-      double tjump = 0.0;
-
+      double ct = Params().get<double>("SEMI_SMOOTH_CT");
+      vector<double> tz (Dim()-1,0);
+      vector<double> tjump (Dim()-1,0);
+      double euclidean;
+      
       if(ftype == INPAR::CONTACT::friction_tresca || ftype == INPAR::CONTACT::friction_coulomb)
-      {
-        // compute tangential part of Lagrange multiplier
-        tz = cnode->txi()[0]*cnode->lm()[0] + cnode->txi()[1]*cnode->lm()[1];
-
-        // compute tangential part of Lagrange multiplier
-        tjump = cnode->txi()[0]*cnode->jump()[0] + cnode->txi()[1]*cnode->jump()[1];
-      }
-
+       {
+       	// compute tangential parts and of Lagrange multiplier and incremental jumps
+       	for (int i=0;i<Dim();++i)
+       	{	
+       		tz[0] += cnode->txi()[i]*cnode->lm()[i];
+           if(Dim()==3) tz[1] += cnode->teta()[i]*cnode->lm()[i];
+           
+           tjump[0] += cnode->txi()[i]*cnode->jump()[i];
+           if(Dim()==3) tjump[1] += cnode->teta()[i]*cnode->jump()[i];
+       	} 
+       	
+       	// evaluate euclidean norm |tz+ct.tjump|
+       	vector<double> sum (Dim()-1,0); 
+       	sum[0] = tz[0]+ct*tjump[0];
+       	if (Dim()==3) sum[1] = tz[1]+ct*tjump[1];
+       	if (Dim()==2) euclidean = abs(sum[0]);
+       	if (Dim()==3) euclidean = sqrt(sum[0]*sum[0]+sum[1]*sum[1]);
+       }
+      
       // check nodes of inactive set *************************************
       if (cnode->Active()==false)
       {
@@ -1946,6 +1959,7 @@ void CONTACT::LagrangeStrategy::UpdateActiveSetSemiSmooth()
           //friction
           if(ftype == INPAR::CONTACT::friction_tresca || ftype == INPAR::CONTACT::friction_coulomb)
           {
+          	// nodes coming into contact
             cnode->Slip() = true;
 
 #ifdef CONTACTSLIPFIRST
@@ -1994,12 +2008,11 @@ void CONTACT::LagrangeStrategy::UpdateActiveSetSemiSmooth()
           if(ftype == INPAR::CONTACT::friction_tresca)
           {
             double frbound = Params().get<double>("FRBOUND");
-            double ct = Params().get<double>("SEMI_SMOOTH_CT");
 
             if(cnode->Slip() == false)
             {
-              // check (tz+ct*tjump)-frbound <= 0
-              if(abs(tz+ct*tjump)-frbound <= 0) {}
+              // check (euclidean)-frbound <= 0
+              if(euclidean-frbound <= 0) {}
                 // do nothing (stick was correct)
               else
               {
@@ -2009,8 +2022,8 @@ void CONTACT::LagrangeStrategy::UpdateActiveSetSemiSmooth()
             }
             else
             {
-              // check (tz+ct*tjump)-frbound > 0
-              if(abs(tz+ct*tjump)-frbound > 0) {}
+              // check (euclidean)-frbound > 0
+              if(euclidean-frbound > 0) {}
                // do nothing (slip was correct)
               else
               {
@@ -2034,15 +2047,13 @@ void CONTACT::LagrangeStrategy::UpdateActiveSetSemiSmooth()
           if(ftype == INPAR::CONTACT::friction_coulomb)
           {
             double frcoeff = Params().get<double>("FRCOEFF");
-            double ct = Params().get<double>("SEMI_SMOOTH_CT");
-
             if(cnode->Slip() == false)
             {
-              // check (tz+ct*tjump)-frbound <= 0
+              // check (euclidean)-frbound <= 0
 #ifdef CONTACTCOMPHUEBER
-            if(abs(tz+ct*tjump)-frcoeff*(nz-cn*wgap) <= 0) {}
+            if(euclidean-frcoeff*(nz-cn*wgap) <= 0) {}
 #else
-            if(abs(tz+ct*tjump)-frcoeff*nz <= 0) {}
+            if(euclidean-frcoeff*nz <= 0) {}
 #endif
                 // do nothing (stick was correct)
               else
@@ -2053,11 +2064,11 @@ void CONTACT::LagrangeStrategy::UpdateActiveSetSemiSmooth()
             }
             else
             {
-              // check (tz+ct*tjump)-frbound > 0
+              // check (euclidean)-frbound > 0
 #ifdef CONTACTCOMPHUEBER
-              if(abs(tz+ct*tjump)-frcoeff*(nz-cn*wgap) > 0) {}
+              if(euclidean-frcoeff*(nz-cn*wgap) > 0) {}
 #else             
-              if(abs(tz+ct*tjump)-frcoeff*nz > 0) {}
+              if(euclidean-frcoeff*nz > 0) {}
 #endif
               // do nothing (slip was correct)
               else

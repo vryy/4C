@@ -853,52 +853,55 @@ void CONTACT::AbstractStrategy::PrintActiveSet()
       }
 
       // friction
-      double tz = 0.0;
-      double tjump = 0.0;
+      double zt = 0.0;
+      double ztxi = 0.0;
+      double zteta = 0.0;
+      double jumptxi = 0.0;
+      double jumpteta = 0.0;
 
       if(ftype == INPAR::CONTACT::friction_tresca ||
          ftype == INPAR::CONTACT::friction_coulomb ||
          ftype == INPAR::CONTACT::friction_stick)
       {
-        // compute tangential part of Lagrange multiplier
-        tz = cnode->txi()[0]*cnode->lm()[0] + cnode->txi()[1]*cnode->lm()[1];
-
-        // compute tangential part of Lagrange multiplier
-        tjump = cnode->txi()[0]*cnode->jump()[0] + cnode->txi()[1]*cnode->jump()[1];
-      }
-
-      // get D.B.C. status of current node
-      bool dbc = cnode->IsDbc();
-
-      // print nodes of inactive set *************************************
-      if (cnode->Active()==false)
-        cout << "INACTIVE: " << dbc << " " << gid << " " << wgap << " " << nz << endl;
-
-      // print nodes of active set ***************************************
-      else
-      {
-        if (ctype == INPAR::CONTACT::contact_normal)
-          cout << "ACTIVE:   " << dbc << " " << gid << " " << nz <<  " " << wgap << endl;
-
-        else
+        // compute tangential parts of Lagrange multiplier and jumps
+        for (int k=0;k<Dim();++k)
         {
-          if (cnode->Slip() == false)
-            cout << "ACTIVE:   " << dbc << " " << gid << " " << nz <<  " " << wgap << " STICK" << " " << tz << " " << tjump << endl;
-          else
-            cout << "ACTIVE:   " << dbc << " " << gid << " " << nz << " " << wgap << " SLIP" << " " << tz << " " << tjump << endl;
+          ztxi += cnode->txi()[k] * cnode->lm()[k];
+          zteta += cnode->teta()[k] * cnode->lm()[k];
+          jumptxi += cnode->txi()[k] * cnode->jump()[k];
+          jumpteta += cnode->teta()[k] * cnode->jump()[k];
+        }
+      
+        zt = sqrt(ztxi*ztxi+zteta*zteta);
+        
+        // check for dimensions        
+        if (Dim()==2 and abs(jumpteta)>0.0001)
+        {
+        	dserror("Error: Jumpteta should be zero for 2D");
         }
       }
-//     if(cnode->Active())
-//     {
-//       if(cnode->Slip())
-//       {
-//          cout << "SLIP " << gid << " Normal " << nz << " Tangential " << tz << " X " << cnode->X()[0] << " x " << cnode->xspatial()[0] << endl;
-//       }
-//       else
-//       {
-//        cout << "STICK " << gid << " Normal " << nz << " Tangential " << tz << " X " << cnode->X()[0] << " x " << cnode->xspatial()[0] << endl;
-//        }
-//     }
+
+      if (ctype == INPAR::CONTACT::contact_normal)
+      {
+        // get D.B.C. status of current node
+        bool dbc = cnode->IsDbc();
+
+        // print nodes of inactive set *************************************
+        if (cnode->Active()==false)
+          cout << "INACTIVE: " << dbc << " " << gid << " " << wgap << " " << nz << endl;
+
+        // print nodes of active set ***************************************
+        else
+          cout << "ACTIVE:   " << dbc << " " << gid << " " << nz <<  " " << wgap << endl;
+      }
+      else
+      if(cnode->Active())
+      {
+        if(cnode->Slip())
+          cout << "SLIP " << gid << " Normal " << nz << " Tangential " << zt << " DISPX " << cnode->xspatial()[0]-cnode->X()[0] << " DISPY " << cnode->xspatial()[1]-cnode->X()[1] << " LMX " << cnode->lm()[0] << " LMY"  << cnode->lm()[1] << endl;
+        else
+         cout << "STICK " << gid << " Normal " << nz << " Tangential " << zt << " DISPX " << cnode->xspatial()[0]-cnode->X()[0] << " DISPY " << cnode->xspatial()[1]-cnode->X()[1]  << endl;
+      }
     }
   }
 
