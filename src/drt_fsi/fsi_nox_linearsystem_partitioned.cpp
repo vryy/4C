@@ -156,7 +156,7 @@ NOX::FSI::LinearPartitioned::AleOp(Teuchos::RCP<const Epetra_Vector> idisp)
 
   // set just those Dirichlet conditions at the interface
   // The matrix has already been modified.
-  LINALG::ApplyDirichlettoSystem(ax_,atmp_,algorithm_.StructToAle(idisp),*alefield_.Interface().CondMap());
+  LINALG::ApplyDirichlettoSystem(ax_,atmp_,algorithm_.StructToAle(idisp),*alefield_.Interface().FSICondMap());
 
   alin_->Solve(a_->EpetraOperator(),ax_,atmp_,true,true);
 }

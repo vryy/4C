@@ -45,8 +45,7 @@ ALE::AleSprings::AleSprings(RCP<DRT::Discretization> actdis,
   residual_       = LINALG::CreateVector(*dofrowmap,true);
   incr_           = LINALG::CreateVector(*dofrowmap,true);
 
-  DRT::UTILS::SetupNDimExtractor(*actdis,"FSICoupling",interface_);
-  DRT::UTILS::SetupNDimExtractor(*actdis,"FREESURFCoupling",freesurface_);
+  interface_.Setup(*actdis);
 
   // set fixed nodes (conditions != 0 are not supported right now)
   ParameterList eleparams;
@@ -59,17 +58,17 @@ ALE::AleSprings::AleSprings(RCP<DRT::Discretization> actdis,
   {
     // for partitioned FSI the interface becomes a Dirichlet boundary
     std::vector<Teuchos::RCP<const Epetra_Map> > condmaps;
-    condmaps.push_back(interface_.CondMap());
+    condmaps.push_back(interface_.FSICondMap());
     condmaps.push_back(dbcmaps_->CondMap());
     Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
     *dbcmaps_ = LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged);
   }
 
-  if (dirichletcond and freesurface_.Relevant())
+  if (dirichletcond and interface_.FSCondRelevant())
   {
     // for partitioned solves the free surface becomes a Dirichlet boundary
     std::vector<Teuchos::RCP<const Epetra_Map> > condmaps;
-    condmaps.push_back(freesurface_.CondMap());
+    condmaps.push_back(interface_.FSCondMap());
     condmaps.push_back(dbcmaps_->CondMap());
     Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
     *dbcmaps_ = LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged);
@@ -88,14 +87,7 @@ void ALE::AleSprings::BuildSystemMatrix(bool full)
   }
   else
   {
-    if (freesurface_.Relevant())
-    {
-      sysmat_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(freesurface_,freesurface_,81,false,true));
-    }
-    else
-    {
-      sysmat_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(interface_,interface_,81,false,true));
-    }
+    sysmat_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(interface_,interface_,81,false,true));
   }
 }
 
@@ -203,7 +195,7 @@ void ALE::AleSprings::EvaluateElements()
 
   //find out if we have free surface nodes with heightfunction coupling
   std::vector<DRT::Condition*> hfconds;
-  if (freesurface_.Relevant())
+  if (interface_.FSCondRelevant())
   {
     // select free surface nodes
     std::string condname = "FREESURFCoupling";
@@ -221,7 +213,7 @@ void ALE::AleSprings::EvaluateElements()
   }
 
   // Are there free surface conditions with heightfunction coupling?
-  if (freesurface_.Relevant() and hfconds.size()>0)
+  if (interface_.FSCondRelevant() and hfconds.size()>0)
   {
     // ====================================================================================
     // ====================================================================================
@@ -473,7 +465,7 @@ void ALE::AleSprings::EvaluateElements()
     // This is the multiplier that projects the delta_u_gamma of the fluid on
     // the free direction (here: z) in a mass-consistent way acc. to heightfunction.
     Teuchos::RCP<LINALG::SparseMatrix> H  =
-      Teuchos::rcp(new LINALG::SparseMatrix(*(freesurface_.CondMap()),3,false,false,LINALG::SparseMatrix::CRS_MATRIX));
+      Teuchos::rcp(new LINALG::SparseMatrix(*(interface_.FSCondMap()),3,false,false,LINALG::SparseMatrix::CRS_MATRIX));
     Teuchos::RCP<Epetra_CrsMatrix> ep_H = H->EpetraMatrix();
 
     for (unsigned int node=0; node<(myGIDnodes.size()); node++)
@@ -567,7 +559,7 @@ void ALE::AleSprings::EvaluateElements()
  *----------------------------------------------------------------------*/
 void ALE::AleSprings::ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp)
 {
-  interface_.InsertCondVector(idisp,dispnp_);
+  interface_.InsertFSICondVector(idisp,dispnp_);
 }
 
 
@@ -575,7 +567,7 @@ void ALE::AleSprings::ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> id
  *----------------------------------------------------------------------*/
 void ALE::AleSprings::ApplyFreeSurfaceDisplacements(Teuchos::RCP<Epetra_Vector> fsdisp)
 {
-  freesurface_.InsertCondVector(fsdisp,dispnp_);
+  interface_.InsertFSCondVector(fsdisp,dispnp_);
 }
 
 

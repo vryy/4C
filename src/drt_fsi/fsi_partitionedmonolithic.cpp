@@ -41,7 +41,7 @@ void FSI::PartitionedMonolithic::SetupSystem()
   coupsa.SetupConditionCoupling(*StructureField().Discretization(),
                                  StructureField().Interface().CondMap(),
                                 *AleField().Discretization(),
-                                 AleField().Interface().CondMap(),
+                                 AleField().Interface().FSICondMap(),
                                  "FSICoupling");
 
   // fluid to ale at the interface
@@ -49,7 +49,7 @@ void FSI::PartitionedMonolithic::SetupSystem()
   icoupfa_.SetupConditionCoupling(*FluidField().Discretization(),
                                    FluidField().Interface().FSICondMap(),
                                   *AleField().Discretization(),
-                                   AleField().Interface().CondMap(),
+                                   AleField().Interface().FSICondMap(),
                                    "FSICoupling");
 
   // In the following we assume that both couplings find the same dof
@@ -312,7 +312,7 @@ void FSI::PartitionedMonolithic::ExtractFieldVectors(Teuchos::RCP<const Epetra_V
   Teuchos::RCP<Epetra_Vector> acx = StructToAle(scx);
 
   Teuchos::RCP<Epetra_Vector> a = AleField().Interface().InsertOtherVector(aox);
-  AleField().Interface().InsertCondVector(acx, a);
+  AleField().Interface().InsertFSICondVector(acx, a);
   ax = a;
 }
 

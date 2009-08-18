@@ -48,7 +48,7 @@ void FSI::MonolithicStructureSplit::SetupSystem()
   coupsa.SetupConditionCoupling(*StructureField().Discretization(),
                                  StructureField().Interface().CondMap(),
                                 *AleField().Discretization(),
-                                 AleField().Interface().CondMap(),
+                                 AleField().Interface().FSICondMap(),
                                  "FSICoupling");
 
   // fluid to ale at the interface
@@ -56,7 +56,7 @@ void FSI::MonolithicStructureSplit::SetupSystem()
   icoupfa_.SetupConditionCoupling(*FluidField().Discretization(),
                                    FluidField().Interface().FSICondMap(),
                                   *AleField().Discretization(),
-                                   AleField().Interface().CondMap(),
+                                   AleField().Interface().FSICondMap(),
                                    "FSICoupling");
 
   // we might have a free surface
@@ -65,7 +65,7 @@ void FSI::MonolithicStructureSplit::SetupSystem()
     fscoupfa_.SetupConditionCoupling(*FluidField().Discretization(),
                                       FluidField().Interface().FSCondMap(),
                                      *AleField().Discretization(),
-                                      AleField().FreeSurface().CondMap(),
+                                      AleField().Interface().FSCondMap(),
                                       "FREESURFCoupling");
   }
 
@@ -741,7 +741,7 @@ void FSI::MonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const Epetr
   Teuchos::RCP<Epetra_Vector> acx = StructToAle(scx);
 
   Teuchos::RCP<Epetra_Vector> a = AleField().Interface().InsertOtherVector(aox);
-  AleField().Interface().InsertCondVector(acx, a);
+  AleField().Interface().InsertFSICondVector(acx, a);
   ax = a;
 }
 

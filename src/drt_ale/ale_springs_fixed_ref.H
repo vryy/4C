@@ -101,16 +101,12 @@ public:
   virtual void ReadRestart(int step);
 
   /// communication object at the interface
-  const LINALG::MapExtractor& Interface() const { return interface_; }
-
-  const LINALG::MapExtractor& FreeSurface() const { return freesurface_; }
+  const ALE::UTILS::MapExtractor& Interface() const { return interface_; }
 
 private:
 
   /// the interface map setup for interface <-> full translation
-  LINALG::MapExtractor interface_;
-
-  LINALG::MapExtractor freesurface_;
+  ALE::UTILS::MapExtractor interface_;
 
   //! @name local copies of input parameters
   Teuchos::RCP<DRT::Discretization> discret_;

@@ -48,8 +48,7 @@ ALE::AleSpringsFixedRef::AleSpringsFixedRef(RCP<DRT::Discretization> actdis,
   dispnp_         = LINALG::CreateVector(*dofrowmap,true);
   residual_       = LINALG::CreateVector(*dofrowmap,true);
 
-  DRT::UTILS::SetupNDimExtractor(*actdis,"FSICoupling",interface_);
-  DRT::UTILS::SetupNDimExtractor(*actdis,"FREESURFCoupling",freesurface_);
+  interface_.Setup(*actdis);
 
   // set fixed nodes (conditions != 0 are not supported right now)
   ParameterList eleparams;
@@ -62,17 +61,17 @@ ALE::AleSpringsFixedRef::AleSpringsFixedRef(RCP<DRT::Discretization> actdis,
   {
     // for partitioned FSI the interface becomes a Dirichlet boundary
     std::vector<Teuchos::RCP<const Epetra_Map> > condmaps;
-    condmaps.push_back(interface_.CondMap());
+    condmaps.push_back(interface_.FSICondMap());
     condmaps.push_back(dbcmaps_->CondMap());
     Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
     *dbcmaps_ = LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged);
   }
 
-  if (dirichletcond and freesurface_.Relevant())
+  if (dirichletcond and interface_.FSCondRelevant())
   {
     // for partitioned solves the free surface becomes a Dirichlet boundary
     std::vector<Teuchos::RCP<const Epetra_Map> > condmaps;
-    condmaps.push_back(freesurface_.CondMap());
+    condmaps.push_back(interface_.FSCondMap());
     condmaps.push_back(dbcmaps_->CondMap());
     Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
     *dbcmaps_ = LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged);
@@ -92,14 +91,7 @@ void ALE::AleSpringsFixedRef::BuildSystemMatrix(bool full)
   }
   else
   {
-    if (freesurface_.Relevant())
-    {
-      sysmat_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(freesurface_,freesurface_,81,false,true));
-    }
-    else
-    {
-      sysmat_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(interface_,interface_,81,false,true));
-    }
+    sysmat_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(interface_,interface_,81,false,true));
   }
 
   if (not incremental_)
@@ -271,7 +263,7 @@ void ALE::AleSpringsFixedRef::EvaluateElements()
  *----------------------------------------------------------------------*/
 void ALE::AleSpringsFixedRef::ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp)
 {
-  interface_.InsertCondVector(idisp,dispnp_);
+  interface_.InsertFSICondVector(idisp,dispnp_);
 }
 
 
@@ -279,7 +271,7 @@ void ALE::AleSpringsFixedRef::ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Ve
  *----------------------------------------------------------------------*/
 void ALE::AleSpringsFixedRef::ApplyFreeSurfaceDisplacements(Teuchos::RCP<Epetra_Vector> fsdisp)
 {
-  freesurface_.InsertCondVector(fsdisp,dispnp_);
+  interface_.InsertFSCondVector(fsdisp,dispnp_);
 }
 
 

@@ -32,13 +32,13 @@ ADAPTER::ScaTraFluidAleCouplingAlgorithm::ScaTraFluidAleCouplingAlgorithm(
    icoupfa_.SetupConditionCoupling(*FluidField().Discretization(),
                                     FluidField().Interface().FSICondMap(),
                                    *AleField().Discretization(),
-                                    AleField().Interface().CondMap(),
+                                    AleField().Interface().FSICondMap(),
                                     condname);
 
    fscoupfa_.SetupConditionCoupling(*FluidField().Discretization(),
                                      FluidField().Interface().FSCondMap(),
                                     *AleField().Discretization(),
-                                     AleField().FreeSurface().CondMap(),
+                                     AleField().Interface().FSCondMap(),
                                      "FREESURFCoupling");
 
    // the fluid-ale coupling always matches

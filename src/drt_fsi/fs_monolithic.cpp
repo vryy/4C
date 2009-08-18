@@ -551,7 +551,7 @@ FSI::MonolithicFS::MonolithicFS(Epetra_Comm& comm)
   icoupfa_.SetupConditionCoupling(*FluidField().Discretization(),
                                    FluidField().Interface().FSCondMap(),
                                   *AleField().Discretization(),
-                                   AleField().FreeSurface().CondMap(),
+                                   AleField().Interface().FSCondMap(),
                                    "FREESURFCoupling");
 
   // the fluid-ale coupling always matches
@@ -569,7 +569,7 @@ FSI::MonolithicFS::MonolithicFS(Epetra_Comm& comm)
 
   std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
   vecSpaces.push_back(FluidField()    .DofRowMap());
-  vecSpaces.push_back(AleField()      .FreeSurface().OtherMap());
+  vecSpaces.push_back(AleField()      .Interface().OtherMap());
 
   SetDofRowMaps(vecSpaces);
 
@@ -646,7 +646,8 @@ void FSI::MonolithicFS::SetupRHS(Epetra_Vector& f, bool firstcall)
     if (a==Teuchos::null)
       dserror("expect ale block matrix");
 
-    LINALG::SparseMatrix& aig = a->Matrix(0,1);
+    // here we extract the free surface submatrices from position 2
+    LINALG::SparseMatrix& aig = a->Matrix(0,2);
 
     // extract fluid free surface velocities.
     Teuchos::RCP<Epetra_Vector> fveln = FluidField().ExtractFreeSurfaceVeln();
@@ -707,8 +708,9 @@ void FSI::MonolithicFS::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat)
   if (a==Teuchos::null)
     dserror("expect ale block matrix");
 
+  // here we extract the free surface submatrices from position 2
   LINALG::SparseMatrix& aii = a->Matrix(0,0);
-  LINALG::SparseMatrix& aig = a->Matrix(0,1);
+  LINALG::SparseMatrix& aig = a->Matrix(0,2);
 
   /*----------------------------------------------------------------------*/
 
@@ -860,7 +862,7 @@ void FSI::MonolithicFS::SetupVector(Epetra_Vector &f,
 {
 
   // extract the inner dofs of the ale field
-  Teuchos::RCP<Epetra_Vector> aov = AleField()      .FreeSurface().ExtractOtherVector(av);
+  Teuchos::RCP<Epetra_Vector> aov = AleField()      .Interface().ExtractOtherVector(av);
 
   Extractor().InsertVector(*fv,0,f);
 
@@ -1040,8 +1042,8 @@ void FSI::MonolithicFS::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
   Teuchos::RCP<const Epetra_Vector> aox = Extractor().ExtractVector(x,1);
   Teuchos::RCP<Epetra_Vector> acx = icoupfa_.MasterToSlave(fcx);
 
-  Teuchos::RCP<Epetra_Vector> a = AleField().FreeSurface().InsertOtherVector(aox);
-  AleField().FreeSurface().InsertCondVector(acx, a);
+  Teuchos::RCP<Epetra_Vector> a = AleField().Interface().InsertOtherVector(aox);
+  AleField().Interface().InsertFSCondVector(acx, a);
   ax = a;
 }
 

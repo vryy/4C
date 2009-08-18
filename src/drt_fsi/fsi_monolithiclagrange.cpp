@@ -41,7 +41,7 @@ void FSI::MonolithicLagrange::SetupSystem()
   coupsa.SetupConditionCoupling(*StructureField().Discretization(),
                                  StructureField().Interface().CondMap(),
                                 *AleField().Discretization(),
-                                 AleField().Interface().CondMap(),
+                                 AleField().Interface().FSICondMap(),
                                  "FSICoupling");
 
   // assure that both coupling objects use the same map
@@ -72,7 +72,7 @@ void FSI::MonolithicLagrange::SetupSystem()
   icoupfa_.SetupConditionCoupling(*FluidField().Discretization(),
                                    FluidField().Interface().FSICondMap(),
                                   *AleField().Discretization(),
-                                   AleField().Interface().CondMap(),
+                                   AleField().Interface().FSICondMap(),
                                    "FSICoupling");
 
   // create combined map
@@ -676,7 +676,7 @@ void FSI::MonolithicLagrange::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vect
   Teuchos::RCP<Epetra_Vector> acx = StructToAle(scx);
 
   Teuchos::RCP<Epetra_Vector> a = AleField().Interface().InsertOtherVector(aox);
-  AleField().Interface().InsertCondVector(acx, a);
+  AleField().Interface().InsertFSICondVector(acx, a);
   ax = a;
 }
 

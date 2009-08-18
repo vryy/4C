@@ -39,6 +39,7 @@ Maintainer: Ulrich Kuettler
 
 #include <set>
 
+#include "ale_utils_mapextractor.H"
 
 
 namespace ALE {
@@ -142,10 +143,7 @@ public:
   //virtual Teuchos::RCP<Epetra_Vector> StructCondRHS() const = 0;
 
   /// communication object at the interface
-  virtual const LINALG::MapExtractor& Interface() const = 0;
-
-  /// communication object at the free surface
-  virtual const LINALG::MapExtractor& FreeSurface() const = 0;
+  virtual const ALE::UTILS::MapExtractor& Interface() const = 0;
 
   /// build system matrix
   virtual void BuildSystemMatrix(bool full=true) = 0;

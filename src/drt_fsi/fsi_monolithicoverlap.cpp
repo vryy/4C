@@ -46,7 +46,7 @@ void FSI::MonolithicOverlap::SetupSystem()
   coupsa.SetupConditionCoupling(*StructureField().Discretization(),
                                  StructureField().Interface().CondMap(),
                                 *AleField().Discretization(),
-                                 AleField().Interface().CondMap(),
+                                 AleField().Interface().FSICondMap(),
                                  "FSICoupling");
 
   // In the following we assume that both couplings find the same dof
@@ -619,7 +619,7 @@ void FSI::MonolithicOverlap::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vecto
   Teuchos::RCP<Epetra_Vector> acx = StructToAle(scx);
 
   Teuchos::RCP<Epetra_Vector> a = AleField().Interface().InsertOtherVector(aox);
-  AleField().Interface().InsertCondVector(acx, a);
+  AleField().Interface().InsertFSICondVector(acx, a);
   ax = a;
 }
 
