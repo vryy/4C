@@ -672,10 +672,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                             "for methods other than load control: [node(fortran numbering)] [dof(c-numbering)] [curve(fortran numbering)]",
                             &sdyn);
 
-  setStringToIntegralParameter<int>("LOADLIN","no",
-                                    "Use linearization of external follower load in Newton",
-                                    yesnotuple,yesnovalue,&sdyn);
-
   setStringToIntegralParameter<INPAR::STR::PredEnum>("PREDICT","ConstDis","",
                                tuple<std::string>(
                                  "Vague",
@@ -1699,15 +1695,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(0,1),
                                &scatradyn);
 
-  setStringToIntegralParameter<int>("FSSUGRVISC","No","fine-scale subgrid diffusivity",
+  setStringToIntegralParameter<int>("FSSUGRDIFF","No","fine-scale subgrid diffusivity",
                                tuple<std::string>(
                                  "No",
-                                 "artificial_all",
-                                 "artificial_small",
-                                 "Smagorinsky_all",
-                                 "Smagorinsky_small"
+                                 "artificial",
+                                 "transfer_from_fluid"
                                  ),
-                               tuple<int>(0,1,2,3),
+                               tuple<int>(0,1,2),
                                &scatradyn);
 
   setStringToIntegralParameter<int>("BLOCKPRECOND","no",
@@ -1767,15 +1761,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &scatradyn_stab);
 
   // this parameter governs whether subgrid-scale velocity is included
-  setStringToIntegralParameter<int>("DISCONCAP",
+  setStringToIntegralParameter<int>("ASSUGRDIFF",
                                     "no",
-                                    "potential incorporation of discontinuity-capturing term",
+                                    "potential incorporation of all-scale subgrid diffusivity (a.k.a. discontinuity-capturing) term",
                                tuple<std::string>(
                                  "no",
                                  "yes"),
                                tuple<std::string>(
-                                 "no incorporation of discontinuity-capturing term",
-                                 "incorporation of discontinuity-capturing term")  ,
+                                 "no incorporation of all-scale subgrid diffusivity term",
+                                 "incorporation of all-scale subgrid diffusivity term")  ,
                                tuple<int>(0,1),
                                &scatradyn_stab);
 
@@ -1794,6 +1788,25 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "exact tau for stationary 1d problems and linear shape functions",
                                  "zero tau (no stabilizing effect)")  ,
                                 tuple<int>(0,1,2,3),
+                               &scatradyn_stab);
+
+  // this parameter selects the subgrid-diffusivity definition applied
+  setStringToIntegralParameter<int>("DEFINITION_KART",
+                               "artificial_linear",
+                               "Definition of (all-scale) artificial diffusivity",
+                               tuple<std::string>(
+                                 "artificial_linear",
+                                 "Hughes_etal_86_nonlinear",
+                                 "Tezduyar_Park_86_nonlinear",
+                                 "doCarmo_Galeao_91_nonlinear",
+                                 "Almeida_Silva_97_nonlinear"),
+                               tuple<std::string>(
+                                 "classical linear artificial subgrid-diffusivity",
+                                 "nonlinear isotropic according to Hughes et al. (1986)",
+                                 "nonlinear isotropic according to Tezduyar and Park (1986)",
+                                 "nonlinear isotropic according to doCarmo and Galeao (1991)",
+                                 "nonlinear isotropic according to Almeida and Silva (1997)")  ,
+                                tuple<int>(0,1,2),
                                &scatradyn_stab);
 
   // this parameter selects the location where tau is evaluated

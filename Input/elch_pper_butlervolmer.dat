@@ -103,7 +103,7 @@ SAMPLING_STOP         0
 DUMPING_PERIOD        0
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
 SOLVERTYPE                      nonlinear
-FSSUGRVISC                      No
+FSSUGRDIFF                      No
 INITFUNCNO                      3
 INITIALFIELD                    field_by_function
 ITEMAX                          10

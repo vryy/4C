@@ -68,7 +68,7 @@ VELOCITYFIELD    function
 VELFUNCNO        1
 INITIALFIELD     zero_field
 INITFUNCNO       -1
-FSSUGRVISC       No
+FSSUGRDIFF       No
 WRITEFLUX        No
 ---------------------------------------FLUID DYNAMIC/STABILIZATION
 STABTYPE              residual_based

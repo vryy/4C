@@ -143,7 +143,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   scatratimeparams->set<string>("Neumann inflow",scatradyn.get<string>("NEUMANNINFLOW"));
 
   // -------------------------------- (fine-scale) subgrid diffusivity?
-  scatratimeparams->set<string>("fs subgrid diffusivity",scatradyn.get<string>("FSSUGRVISC"));
+  scatratimeparams->set<string>("fs subgrid diffusivity",scatradyn.get<string>("FSSUGRDIFF"));
 
   // -------------------- block preconditioning (only supported by ELCH)
   scatratimeparams->set<int>("BLOCKPRECOND",Teuchos::getIntegralValue<int>(scatradyn,"BLOCKPRECOND"));

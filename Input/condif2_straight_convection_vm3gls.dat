@@ -42,7 +42,7 @@ NUMSTEP      1
 TIMESTEP     0.1
 THETA        0.5
 INITIALFIELD zero_field
-FSSUGRVISC   artificial_all
+FSSUGRDIFF   artificial
 VELOCITYFIELD  function
 VELFUNCNO    1
 WRITEFLUX    No

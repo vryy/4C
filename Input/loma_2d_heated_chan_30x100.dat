@@ -90,7 +90,7 @@ CANONICAL_FLOW        no
 CHAN_AMPL_INIT_DIST   0.0
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
 SOLVERTYPE       linear_full
-FSSUGRVISC       No
+FSSUGRDIFF       No
 INITFUNCNO       3
 INITIALFIELD     field_by_function
 ITEMAX           1

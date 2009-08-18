@@ -71,7 +71,7 @@ VELOCITYFIELD    function
 VELFUNCNO        1
 INITIALFIELD     field_by_function
 INITFUNCNO       2
-FSSUGRVISC       No
+FSSUGRDIFF       No
 WRITEFLUX        No
 MATID            4
 ---------------------------------------FLUID DYNAMIC/STABILIZATION

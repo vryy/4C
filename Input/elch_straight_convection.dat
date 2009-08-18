@@ -94,7 +94,7 @@ VELOCITYFIELD    Navier_Stokes //function
 VELFUNCNO        1
 INITIALFIELD     field_by_function
 INITFUNCNO       2
-FSSUGRVISC       No
+FSSUGRDIFF       No
 WRITEFLUX        totalflux_domain
 MATID            4
 --------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR

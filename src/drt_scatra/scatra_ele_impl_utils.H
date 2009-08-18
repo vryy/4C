@@ -30,6 +30,16 @@ namespace SCATRA
     tau_zero
   };
 
+  //! possible options for all-scale subgrid diffusivity
+  enum KartType
+  {
+    kart_artificial,
+    kart_hughes,
+    kart_tezduyar,
+    kart_docarmo,
+    kart_almeida
+  };
+
   //! flux parameters recognized by scalar transport implementation class
   enum FluxType
   {

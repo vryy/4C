@@ -1039,7 +1039,11 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   if (turbmodel_) discret_->SetState("subgrid diffusivity",subgrdiff_);
 
   // AVM3 separation
-  if (incremental_ and fssgd_ != "No") AVM3Separation();
+  if (incremental_ and fssgd_ != "No")
+  {
+    discret_->SetState("subgrid diffusivity",subgrdiff_);
+    AVM3Separation();
+  }
 
   // add element parameters and density state according to time-int. scheme
   AddSpecificTimeIntegrationParameters(eleparams);

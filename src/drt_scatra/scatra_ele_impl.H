@@ -175,7 +175,8 @@ public:
         const bool                            temperature, ///< temperature flag
         const bool                            reaction, ///< flag for reaction term
         const bool                            conservative, ///< flag for conservative form
-        const enum SCATRA::TauType            whichtau, ///< flag for stabilization parameter definition
+        const enum SCATRA::TauType            whichtau, ///< stabilization parameter definition
+        const enum SCATRA::KartType           whichkart, ///< all-scale artificial subgrid-diffusivity definition
         const bool                            tau_gp, ///< tau-evaluation flag
         const bool                            mat_gp, ///< material-evaluation flag
         const bool                            sgvel, ///< subgrid-scale velocity flag
@@ -226,19 +227,36 @@ public:
     //! calculate stabilization parameter
     virtual void CalTau(
         DRT::Element*                         ele,
-        Epetra_SerialDenseVector&             subgrdiff,
         double                                diffus,
         const double                          dens,
         const double                          dt,
         const double                          timefac,
         const enum SCATRA::TauType            whichtau,
-        const bool                            assgd,
-        const bool                            fssgd,
         const bool                            turbmodel,
         const bool                            reaction,
-        const bool                            is_incremental,
         const bool                            is_stationary,
         const double                          vol,
+        const int                             k
+    );
+
+    //! calculate all-scale or fine-scale subgrid diffusivity
+    virtual void CalKart(
+        DRT::Element*                         ele,
+        Epetra_SerialDenseVector&             subgrdiff,
+        double                                diffus,
+        const double                          dens,
+        const double                          dt,
+        const double                          timefac,
+        const enum SCATRA::KartType           whichkart,
+        const bool                            assgd,
+        const bool                            fssgd,
+        const bool                            reaction,
+        const bool                            conservative,
+        const bool                            is_incremental,
+        const bool                            is_stationary,
+        const bool                            is_genalpha,
+        const double                          vol,
+        const double                          thermpressdt,
         const int                             k
     );
 

@@ -121,7 +121,7 @@ VELOCITYFIELD    zero
 VELFUNCNO        -1
 INITIALFIELD     zero_field
 INITFUNCNO       -1
-FSSUGRVISC       No
+FSSUGRDIFF       No
 -------------------------------------------------------FSI DYNAMIC
 -------------------------------------------------------SSI DYNAMIC
 -------------------------------------------------------ALE DYNAMIC

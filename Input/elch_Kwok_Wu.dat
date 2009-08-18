@@ -89,7 +89,7 @@ SIMPLER          No
 ------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
 SOLVERTYPE                      nonlinear
-FSSUGRVISC                      No
+FSSUGRDIFF                      No
 INITFUNCNO                      2
 INITIALFIELD                    field_by_function
 ITEMAX                          10
