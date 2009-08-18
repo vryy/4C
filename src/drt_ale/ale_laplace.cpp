@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file adapter_ale_laplace.cpp
+\file ale_laplace.cpp
 
 \brief ALE implementation
 
@@ -14,7 +14,7 @@ Maintainer: Ulrich Kuettler
 /*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#include "adapter_ale_laplace.H"
+#include "ale_laplace.H"
 #include "../drt_lib/drt_condition_utils.H"
 
 #define scaling_infnorm true
@@ -29,7 +29,7 @@ extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-ADAPTER::AleLaplace::AleLaplace(RCP<DRT::Discretization> actdis,
+ALE::AleLaplace::AleLaplace(RCP<DRT::Discretization> actdis,
                               Teuchos::RCP<LINALG::Solver> solver,
                               Teuchos::RCP<ParameterList> params,
                               Teuchos::RCP<IO::DiscretizationWriter> output,
@@ -89,7 +89,7 @@ ADAPTER::AleLaplace::AleLaplace(RCP<DRT::Discretization> actdis,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::AleLaplace::BuildSystemMatrix(bool full)
+void ALE::AleLaplace::BuildSystemMatrix(bool full)
 {
   // build linear matrix once and for all
   if (full)
@@ -158,7 +158,7 @@ void ADAPTER::AleLaplace::BuildSystemMatrix(bool full)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::AleLaplace::PrepareTimeStep()
+void ALE::AleLaplace::PrepareTimeStep()
 {
   step_ += 1;
   time_ += dt_;
@@ -167,7 +167,7 @@ void ADAPTER::AleLaplace::PrepareTimeStep()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::AleLaplace::Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp)
+void ALE::AleLaplace::Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp)
 {
   // We save the current solution here. This will not change the
   // result of our element call, but the next time somebody asks us we
@@ -194,7 +194,7 @@ void ADAPTER::AleLaplace::Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::AleLaplace::Solve()
+void ALE::AleLaplace::Solve()
 {
   // set fixed nodes
   ParameterList eleparams;
@@ -211,7 +211,7 @@ void ADAPTER::AleLaplace::Solve()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::AleLaplace::Update()
+void ALE::AleLaplace::Update()
 {
   dispn_->Update(1.0,*dispnp_,0.0);
 }
@@ -219,7 +219,7 @@ void ADAPTER::AleLaplace::Update()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::AleLaplace::Output()
+void ALE::AleLaplace::Output()
 {
   // We do not need any output -- the fluid writes its
   // displacements itself. But we need restart.
@@ -237,7 +237,7 @@ void ADAPTER::AleLaplace::Output()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::AleLaplace::Integrate()
+void ALE::AleLaplace::Integrate()
 {
   while (step_ < numstep_-1 and time_ <= maxtime_)
   {
@@ -251,7 +251,7 @@ void ADAPTER::AleLaplace::Integrate()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::AleLaplace::EvaluateElements()
+void ALE::AleLaplace::EvaluateElements()
 {
   sysmat_->Zero();
 
@@ -279,7 +279,7 @@ void ADAPTER::AleLaplace::EvaluateElements()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::AleLaplace::ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp)
+void ALE::AleLaplace::ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp)
 {
   interface_.InsertCondVector(idisp,dispnp_);
 }
@@ -287,7 +287,7 @@ void ADAPTER::AleLaplace::ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::AleLaplace::ApplyFreeSurfaceDisplacements(Teuchos::RCP<Epetra_Vector> fsdisp)
+void ALE::AleLaplace::ApplyFreeSurfaceDisplacements(Teuchos::RCP<Epetra_Vector> fsdisp)
 {
   freesurface_.InsertCondVector(fsdisp,dispnp_);
 }
@@ -295,7 +295,7 @@ void ADAPTER::AleLaplace::ApplyFreeSurfaceDisplacements(Teuchos::RCP<Epetra_Vect
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::AleLaplace::ExtractDisplacement() const
+Teuchos::RCP<Epetra_Vector> ALE::AleLaplace::ExtractDisplacement() const
 {
   // We know that the ale dofs are coupled with their original map. So
   // we just return them here.
@@ -305,7 +305,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::AleLaplace::ExtractDisplacement() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::AleLaplace::ReadRestart(int step)
+void ALE::AleLaplace::ReadRestart(int step)
 {
   IO::DiscretizationReader reader(discret_,step);
   time_ = reader.ReadDouble("time");

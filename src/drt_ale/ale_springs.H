@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file adapter_ale_springs_fixed_ref.H
+\file ale_springs.H
 
 \brief
 
@@ -14,41 +14,28 @@ Maintainer: Ulrich Kuettler
 /*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#ifndef ADAPTER_ALE_SPRINGS_FIXED_REF_H
-#define ADAPTER_ALE_SPRINGS_FIXED_REF_H
+#ifndef ALE_SPRINGS_H
+#define ALE_SPRINGS_H
 
-#include "adapter_ale.H"
+#include "ale.H"
 
-namespace ADAPTER {
+namespace ALE {
 
 
 /// springs ALE algorithm
 /*!
-  Incremental springs algorithm with fixed initial reference and constant stiffness.
-
-  When compared to the original springs, this algorithm shines, when periodic
-  mesh deformation is expected. It does not "forget" its initial configuration,
-  hence it can not degrade over time as the original springs algorithm.
-  On the downside, the maximal mesh deformation that can be achieved is less than
-  the original springs algorithm. If one time, large mesh deformation is expected,
-  use the original springs.
-
-  The implementation is copied from the classic_lin ALE implementation.
-  Only the element call was modified to the springs_fixed_ref calculation.
-
-  \author axel gerstenberger
+  Incremental springs based implementation.
  */
-class AleSpringsFixedRef : public Ale
+class AleSprings : public Ale
 {
   friend class AleResultTest;
 
 public:
 
-  AleSpringsFixedRef(Teuchos::RCP<DRT::Discretization> actdis,
+  AleSprings(Teuchos::RCP<DRT::Discretization> actdis,
              Teuchos::RCP<LINALG::Solver> solver,
              Teuchos::RCP<ParameterList> params,
              Teuchos::RCP<IO::DiscretizationWriter> output,
-             bool incremental,
              bool dirichletcond=true);
 
   /// build system matrix
@@ -68,7 +55,7 @@ public:
   /// get the linear solver object used for this field
   Teuchos::RCP<LINALG::Solver> LinearSolver() { return solver_; }
 
-  Teuchos::RCP<LINALG::Preconditioner> ConstPreconditioner() { return precond_; }
+  Teuchos::RCP<LINALG::Preconditioner> ConstPreconditioner() { return Teuchos::null; }
 
   void SetInterfaceMap(Teuchos::RCP<Epetra_Map> im);
 
@@ -119,17 +106,12 @@ private:
   Teuchos::RCP<IO::DiscretizationWriter> output_;
   //@}
 
-  /// cached preconditioner on constant system matrix
-  Teuchos::RCP<LINALG::Preconditioner> precond_;
-
   //! @name Algorithm core variables
   int step_;
   int numstep_;
   double time_;
   double maxtime_;
   double dt_;
-
-  bool incremental_;
 
   Teuchos::RCP<LINALG::SparseOperator> sysmat_;
 
@@ -141,6 +123,7 @@ private:
   Teuchos::RCP<Epetra_Vector>    dispnp_;
   Teuchos::RCP<Epetra_Vector>    dispn_;
   //Teuchos::RCP<Epetra_Vector>    dispnm_;
+  Teuchos::RCP<Epetra_Vector>    incr_;
 
   Teuchos::RCP<Epetra_Vector>    residual_;
   //@}

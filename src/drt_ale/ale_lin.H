@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file adapter_ale_springs.H
+\file ale_lin.H
 
 \brief
 
@@ -14,29 +14,30 @@ Maintainer: Ulrich Kuettler
 /*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#ifndef ADAPTER_ALE_SPRINGS_H
-#define ADAPTER_ALE_SPRINGS_H
+#ifndef ALE_LIN_H
+#define ALE_LIN_H
 
-#include "adapter_ale.H"
+#include "ale.H"
 
-namespace ADAPTER {
+namespace ALE {
 
 
-/// springs ALE algorithm
+/// linear ALE algorithm
 /*!
-  Incremental springs based implementation.
+  The most basic, most simple implementation.
  */
-class AleSprings : public Ale
+class AleLinear : public Ale
 {
   friend class AleResultTest;
 
 public:
 
-  AleSprings(Teuchos::RCP<DRT::Discretization> actdis,
-             Teuchos::RCP<LINALG::Solver> solver,
-             Teuchos::RCP<ParameterList> params,
-             Teuchos::RCP<IO::DiscretizationWriter> output,
-             bool dirichletcond=true);
+  AleLinear(Teuchos::RCP<DRT::Discretization> actdis,
+            Teuchos::RCP<LINALG::Solver> solver,
+            Teuchos::RCP<ParameterList> params,
+            Teuchos::RCP<IO::DiscretizationWriter> output,
+            bool incremental,
+            bool dirichletcond);
 
   /// build system matrix
   virtual void BuildSystemMatrix(bool full=true);
@@ -55,7 +56,7 @@ public:
   /// get the linear solver object used for this field
   Teuchos::RCP<LINALG::Solver> LinearSolver() { return solver_; }
 
-  Teuchos::RCP<LINALG::Preconditioner> ConstPreconditioner() { return Teuchos::null; }
+  Teuchos::RCP<LINALG::Preconditioner> ConstPreconditioner() { return precond_; }
 
   void SetInterfaceMap(Teuchos::RCP<Epetra_Map> im);
 
@@ -106,12 +107,17 @@ private:
   Teuchos::RCP<IO::DiscretizationWriter> output_;
   //@}
 
+  /// cached preconditioner on constant system matrix
+  Teuchos::RCP<LINALG::Preconditioner> precond_;
+
   //! @name Algorithm core variables
   int step_;
   int numstep_;
   double time_;
   double maxtime_;
   double dt_;
+
+  bool incremental_;
 
   Teuchos::RCP<LINALG::SparseOperator> sysmat_;
 
@@ -123,7 +129,6 @@ private:
   Teuchos::RCP<Epetra_Vector>    dispnp_;
   Teuchos::RCP<Epetra_Vector>    dispn_;
   //Teuchos::RCP<Epetra_Vector>    dispnm_;
-  Teuchos::RCP<Epetra_Vector>    incr_;
 
   Teuchos::RCP<Epetra_Vector>    residual_;
   //@}

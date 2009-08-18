@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file adapter_ale.H
+\file ale.H
 
 \brief
 
@@ -15,8 +15,8 @@ Maintainer: Ulrich Kuettler
 
 #ifdef CCADISCRET
 
-#ifndef ADAPTER_ALE_H
-#define ADAPTER_ALE_H
+#ifndef ALE_H
+#define ALE_H
 
 #include <Teuchos_RefCountPtr.hpp>
 #include <Teuchos_ParameterList.hpp>
@@ -41,7 +41,7 @@ Maintainer: Ulrich Kuettler
 
 
 
-namespace ADAPTER {
+namespace ALE {
 
 
 /// General ALE interface

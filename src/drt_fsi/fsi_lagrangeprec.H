@@ -21,7 +21,7 @@ namespace FSI
     LagrangianBlockMatrix(const LINALG::MultiMapExtractor& maps,
                           ADAPTER::Structure& structure,
                           ADAPTER::Fluid& fluid,
-                          ADAPTER::Ale& ale,
+                          ALE::Ale& ale,
                           int symmetric,
                           double omega=1.0,
                           int iterations=1,

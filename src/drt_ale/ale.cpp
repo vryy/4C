@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
- * \file adapter_ale.cpp
+ * \file ale.cpp
  *
 \brief ALE base implementation
 
@@ -15,11 +15,11 @@ Maintainer: Ulrich Kuettler
 
 #ifdef CCADISCRET
 
-#include "adapter_ale.H"
-#include "adapter_ale_lin.H"
-#include "adapter_ale_laplace.H"
-#include "adapter_ale_springs.H"
-#include "adapter_ale_springs_fixed_ref.H"
+#include "ale.H"
+#include "ale_lin.H"
+#include "ale_laplace.H"
+#include "ale_springs.H"
+#include "ale_springs_fixed_ref.H"
 
 // further includes for AleBaseAlgorithm:
 #include "../drt_lib/drt_globalproblem.H"
@@ -45,7 +45,7 @@ extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::AleBaseAlgorithm::AleBaseAlgorithm(const Teuchos::ParameterList& prbdyn)
+ALE::AleBaseAlgorithm::AleBaseAlgorithm(const Teuchos::ParameterList& prbdyn)
 {
   SetupAle(prbdyn);
 }
@@ -53,16 +53,16 @@ ADAPTER::AleBaseAlgorithm::AleBaseAlgorithm(const Teuchos::ParameterList& prbdyn
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::AleBaseAlgorithm::~AleBaseAlgorithm()
+ALE::AleBaseAlgorithm::~AleBaseAlgorithm()
 {
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn)
+void ALE::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn)
 {
-  Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("ADAPTER::AleBaseAlgorithm::SetupAle");
+  Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("ALE::AleBaseAlgorithm::SetupAle");
   Teuchos::TimeMonitor monitor(*t);
 
   // -------------------------------------------------------------------

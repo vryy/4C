@@ -15,7 +15,7 @@
 NOX::FSI::LinearPartitioned::LinearPartitioned(::FSI::PartitionedMonolithic& algorithm,
                                                ADAPTER::Structure& structurefield,
                                                ADAPTER::Fluid& fluidfield,
-                                               ADAPTER::Ale& alefield)
+                                               ALE::Ale& alefield)
   : callcount_(0),
     algorithm_(algorithm),
     structurefield_(structurefield),
@@ -204,7 +204,7 @@ NOX::FSI::LinearPartitionedSolver::LinearPartitionedSolver(Teuchos::ParameterLis
                                                            ::FSI::PartitionedMonolithic& algorithm,
                                                            ADAPTER::Structure& structurefield,
                                                            ADAPTER::Fluid& fluidfield,
-                                                           ADAPTER::Ale& alefield,
+                                                           ALE::Ale& alefield,
                                                            INPAR::FSI::LinearBlockSolver linearsolverstrategy)
   : utils_(printParams),
     extractor_(extractor),

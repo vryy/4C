@@ -17,7 +17,7 @@ FSI::OverlappingBlockMatrixFSIAMG::OverlappingBlockMatrixFSIAMG(
                                                     const LINALG::MultiMapExtractor& maps,
                                                     ADAPTER::Structure& structure,
                                                     ADAPTER::Fluid& fluid,
-                                                    ADAPTER::Ale& ale,
+                                                    ALE::Ale& ale,
                                                     bool structuresplit,
                                                     int symmetric,
                                                     vector<double>& omega,

@@ -18,7 +18,7 @@ post_drt_s8convert: $(OBJS_POST_DRT_S8CONVERT) $(FILTER_OBJECTS)
 
 post_drt_q9neconvert: $(OBJS_POST_DRT_Q9NECONVERT) $(FILTER_OBJECTS)
 	$(LD) $(LDFLAGS) $(OBJS_POST_DRT_Q9NECONVERT) $(FILTER_OBJECTS) $(FILTER_LIBS) -o post_drt_q9neconvert
-	
+
 post_out: $(OBJS_POST_OUT) $(OBJS_POST_COMMON)
 	$(PLAIN_LD) $(LDFLAGS) $(PLAIN_LIBS) $(OBJS_POST_OUT) $(OBJS_POST_COMMON) -o post_out
 
@@ -139,6 +139,11 @@ $(OBJS_DRT_STATMECH_LIB):
 	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@ > /dev/stderr
 
 $(OBJS_DRT_THERMO):
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@"
+	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@ > /dev/stderr
+
+$(OBJS_DRT_ALEALG):
 	@mkdir -p ${DEST}/${@D}
 	@echo "$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@"
 	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@ > /dev/stderr
@@ -267,32 +272,32 @@ $(OBJS_DRT_T3):
 	@mkdir -p ${DEST}/${@D}
 	@echo "$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@"
 	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@ > /dev/stderr	
-	
+
 $(OBJS_DRT_T2_LIB):
 	@mkdir -p ${DEST}/${@D}
 	@echo "$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@"
 	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@ > /dev/stderr
-	
+
 $(OBJS_DRT_T2):
 	@mkdir -p ${DEST}/${@D}
 	@echo "$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@"
 	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@ > /dev/stderr
-	
+
 $(OBJS_DRT_TO3_LIB):
 	@mkdir -p ${DEST}/${@D}
 	@echo "$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@"
 	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@ > /dev/stderr
-	
+
 $(OBJS_DRT_TO3):
 	@mkdir -p ${DEST}/${@D}
 	@echo "$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@"
 	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@ > /dev/stderr	
-	
+
 $(OBJS_DRT_TO2_LIB):
 	@mkdir -p ${DEST}/${@D}
 	@echo "$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@"
 	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@ > /dev/stderr
-	
+
 $(OBJS_DRT_TO2):
 	@mkdir -p ${DEST}/${@D}
 	@echo "$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@"
@@ -557,7 +562,7 @@ $(OBJS_POST_DRT_Q9NECONVERT):
 	@mkdir -p ${DEST}/${@D}
 	@echo "$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@"
 	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@ > /dev/stderr
-	
+
 $(OBJS_POST_COMMON):
 	@mkdir -p ${DEST}/${@D}
 	@echo "$(PLAIN_CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
@@ -686,5 +691,6 @@ $(OBJS_DRT_ARTNET_LIB):
 	@mkdir -p ${DEST}/${@D}
 	@echo "$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@"
 	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@ > /dev/stderr
+
 clean:
 	rm -f	src/*/*.o

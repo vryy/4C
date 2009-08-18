@@ -9,7 +9,7 @@
 
 #include "../drt_adapter/adapter_structure.H"
 #include "../drt_adapter/adapter_fluid.H"
-#include "../drt_adapter/adapter_ale.H"
+#include "../drt_ale/ale.H"
 
 // debug flag to merge the MFSI block matrix to one sparse matrix
 // and use the fluid solver to solve for it
@@ -27,7 +27,7 @@ namespace FSI
     BlockPreconditioningMatrix(const LINALG::MultiMapExtractor& maps,
                                ADAPTER::Structure& structure,
                                ADAPTER::Fluid& fluid,
-                               ADAPTER::Ale& ale,
+                               ALE::Ale& ale,
                                int symmetric,
                                double omega=1.0,
                                int iterations=1,
@@ -116,7 +116,7 @@ namespace FSI
     OverlappingBlockMatrix(const LINALG::MultiMapExtractor& maps,
                            ADAPTER::Structure& structure,
                            ADAPTER::Fluid& fluid,
-                           ADAPTER::Ale& ale,
+                           ALE::Ale& ale,
                            bool structuresplit,
                            int symmetric,
                            double omega=1.0,
@@ -148,7 +148,7 @@ namespace FSI
 
     ADAPTER::Structure& structure_;
     ADAPTER::Fluid&     fluid_;
-    ADAPTER::Ale&       ale_;
+    ALE::Ale&       ale_;
 
   };
 

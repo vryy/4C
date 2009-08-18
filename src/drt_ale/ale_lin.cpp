@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file adapter_ale_springs_fixed_ref.cpp
+\file adapter_ale_lin.cpp
 
 \brief ALE implementation
 
@@ -14,20 +14,27 @@ Maintainer: Ulrich Kuettler
 /*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#include "adapter_ale_springs_fixed_ref.H"
+#include "ale_lin.H"
 #include "../drt_lib/drt_condition_utils.H"
 
 #define scaling_infnorm true
 
 
 /*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
  *----------------------------------------------------------------------*/
-ADAPTER::AleSpringsFixedRef::AleSpringsFixedRef(RCP<DRT::Discretization> actdis,
-                                Teuchos::RCP<LINALG::Solver> solver,
-                                Teuchos::RCP<ParameterList> params,
-                                Teuchos::RCP<IO::DiscretizationWriter> output,
-                                bool incremental,
-                                bool dirichletcond)
+extern struct _GENPROB     genprob;
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+ALE::AleLinear::AleLinear(RCP<DRT::Discretization> actdis,
+                              Teuchos::RCP<LINALG::Solver> solver,
+                              Teuchos::RCP<ParameterList> params,
+                              Teuchos::RCP<IO::DiscretizationWriter> output,
+                              bool incremental,
+                              bool dirichletcond)
   : discret_(actdis),
     solver_ (solver),
     params_ (params),
@@ -82,7 +89,7 @@ ADAPTER::AleSpringsFixedRef::AleSpringsFixedRef(RCP<DRT::Discretization> actdis,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::AleSpringsFixedRef::BuildSystemMatrix(bool full)
+void ALE::AleLinear::BuildSystemMatrix(bool full)
 {
   // build linear matrix once and for all
   if (full)
@@ -151,7 +158,7 @@ void ADAPTER::AleSpringsFixedRef::BuildSystemMatrix(bool full)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::AleSpringsFixedRef::PrepareTimeStep()
+void ALE::AleLinear::PrepareTimeStep()
 {
   step_ += 1;
   time_ += dt_;
@@ -160,7 +167,7 @@ void ADAPTER::AleSpringsFixedRef::PrepareTimeStep()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::AleSpringsFixedRef::Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp)
+void ALE::AleLinear::Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp)
 {
   // We save the current solution here. This will not change the
   // result of our element call, but the next time somebody asks us we
@@ -187,7 +194,7 @@ void ADAPTER::AleSpringsFixedRef::Evaluate(Teuchos::RCP<const Epetra_Vector> ddi
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::AleSpringsFixedRef::Solve()
+void ALE::AleLinear::Solve()
 {
   // set fixed nodes
   ParameterList eleparams;
@@ -204,7 +211,7 @@ void ADAPTER::AleSpringsFixedRef::Solve()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::AleSpringsFixedRef::Update()
+void ALE::AleLinear::Update()
 {
   dispn_->Update(1.0,*dispnp_,0.0);
 }
@@ -212,7 +219,7 @@ void ADAPTER::AleSpringsFixedRef::Update()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::AleSpringsFixedRef::Output()
+void ALE::AleLinear::Output()
 {
   // We do not need any output -- the fluid writes its
   // displacements itself. But we need restart.
@@ -230,7 +237,7 @@ void ADAPTER::AleSpringsFixedRef::Output()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::AleSpringsFixedRef::Integrate()
+void ALE::AleLinear::Integrate()
 {
   while (step_ < numstep_-1 and time_ <= maxtime_)
   {
@@ -244,7 +251,7 @@ void ADAPTER::AleSpringsFixedRef::Integrate()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::AleSpringsFixedRef::EvaluateElements()
+void ALE::AleLinear::EvaluateElements()
 {
   sysmat_->Zero();
 
@@ -258,7 +265,10 @@ void ADAPTER::AleSpringsFixedRef::EvaluateElements()
   discret_->ClearState();
 
   // action for elements
-  eleparams.set("action", "calc_ale_spring_fixed_ref");
+  eleparams.set("action", "calc_ale_lin_stiff");
+  eleparams.set("incremental", incremental_);
+
+  discret_->SetState("dispnp", dispnp_);
 
   discret_->Evaluate(eleparams,sysmat_,residual_);
   discret_->ClearState();
@@ -269,7 +279,7 @@ void ADAPTER::AleSpringsFixedRef::EvaluateElements()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::AleSpringsFixedRef::ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp)
+void ALE::AleLinear::ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp)
 {
   interface_.InsertCondVector(idisp,dispnp_);
 }
@@ -277,7 +287,7 @@ void ADAPTER::AleSpringsFixedRef::ApplyInterfaceDisplacements(Teuchos::RCP<Epetr
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::AleSpringsFixedRef::ApplyFreeSurfaceDisplacements(Teuchos::RCP<Epetra_Vector> fsdisp)
+void ALE::AleLinear::ApplyFreeSurfaceDisplacements(Teuchos::RCP<Epetra_Vector> fsdisp)
 {
   freesurface_.InsertCondVector(fsdisp,dispnp_);
 }
@@ -285,7 +295,7 @@ void ADAPTER::AleSpringsFixedRef::ApplyFreeSurfaceDisplacements(Teuchos::RCP<Epe
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::AleSpringsFixedRef::ExtractDisplacement() const
+Teuchos::RCP<Epetra_Vector> ALE::AleLinear::ExtractDisplacement() const
 {
   // We know that the ale dofs are coupled with their original map. So
   // we just return them here.
@@ -295,7 +305,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::AleSpringsFixedRef::ExtractDisplacement() c
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::AleSpringsFixedRef::ReadRestart(int step)
+void ALE::AleLinear::ReadRestart(int step)
 {
   IO::DiscretizationReader reader(discret_,step);
   time_ = reader.ReadDouble("time");

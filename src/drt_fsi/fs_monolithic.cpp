@@ -1125,7 +1125,7 @@ NOX::Abstract::Group::ReturnType NOX::FSI::GroupFS::computeNewton(Teuchos::Param
  *----------------------------------------------------------------------*/
 FSI::BlockPreconditioningMatrixFS::BlockPreconditioningMatrixFS(const LINALG::MultiMapExtractor& maps,
                                                                 ADAPTER::Fluid& fluid,
-                                                                ADAPTER::Ale& ale,
+                                                                ALE::Ale& ale,
                                                                 int symmetric,
                                                                 double omega,
                                                                 int iterations,
@@ -1251,7 +1251,7 @@ void FSI::BlockPreconditioningMatrixFS::LocalBlockRichardson(Teuchos::RCP<LINALG
  *----------------------------------------------------------------------*/
 FSI::OverlappingBlockMatrixFS::OverlappingBlockMatrixFS(const LINALG::MultiMapExtractor& maps,
                                                         ADAPTER::Fluid& fluid,
-                                                        ADAPTER::Ale& ale,
+                                                        ALE::Ale& ale,
                                                         bool structuresplit,
                                                         int symmetric,
                                                         double omega,

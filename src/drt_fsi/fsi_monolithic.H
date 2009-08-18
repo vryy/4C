@@ -5,7 +5,7 @@
 
 #include "../drt_adapter/adapter_structure.H"
 #include "../drt_adapter/adapter_fluid_base_algorithm.H"
-#include "../drt_adapter/adapter_ale.H"
+#include "../drt_ale/ale.H"
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/adapter_algorithmbase.H"
 
@@ -59,7 +59,7 @@ namespace UTILS
   class MonolithicBase : public ADAPTER::AlgorithmBase,
                          public ADAPTER::StructureBaseAlgorithm,
                          public ADAPTER::FluidBaseAlgorithm,
-                         public ADAPTER::AleBaseAlgorithm
+                         public ALE::AleBaseAlgorithm
   {
   public:
 

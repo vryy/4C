@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file adapter_ale_resulttest.cpp
+\file ale_resulttest.cpp
 
 \brief
 
@@ -14,19 +14,19 @@ Maintainer: Ulrich Kuettler
 /*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#include "adapter_ale_resulttest.H"
+#include "ale_resulttest.H"
 
 #ifdef PARALLEL
 #include <mpi.h>
 #endif
 
 
-ADAPTER::AleResultTest::AleResultTest(ADAPTER::AleLinear& ale)
+ALE::AleResultTest::AleResultTest(ALE::AleLinear& ale)
   : ale_(ale)
 {
 }
 
-void ADAPTER::AleResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& test_count)
+void ALE::AleResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& test_count)
 {
   if (res->dis != 0)
     dserror("fix me: only one ale discretization supported for testing");
@@ -68,7 +68,7 @@ void ADAPTER::AleResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& te
   }
 }
 
-bool ADAPTER::AleResultTest::Match(const RESULTDESCR* res)
+bool ALE::AleResultTest::Match(const RESULTDESCR* res)
 {
   return res->field==ale;
 }

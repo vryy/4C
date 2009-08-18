@@ -19,7 +19,7 @@ Maintainer: Georg Bauer
 #ifndef ADAPTER_SCATRA_FLUID_ALE_COUPLING_ALGO_H
 #define ADAPTER_SCATRA_FLUID_ALE_COUPLING_ALGO_H
 
-#include "../drt_adapter/adapter_ale.H"
+#include "../drt_ale/ale.H"
 #include "../drt_adapter/adapter_scatra_fluid_coupling_algorithm.H"
 #include "adapter_coupling.H"
 
@@ -40,7 +40,7 @@ namespace ADAPTER
    */
   class ScaTraFluidAleCouplingAlgorithm :
         public ADAPTER::ScaTraFluidCouplingAlgorithm,
-        public ADAPTER::AleBaseAlgorithm
+        public ALE::AleBaseAlgorithm
   {
   public:
 

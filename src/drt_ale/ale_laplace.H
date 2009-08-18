@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file adapter_ale_lin.H
+\file ale_laplace.H
 
 \brief
 
@@ -14,25 +14,25 @@ Maintainer: Ulrich Kuettler
 /*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#ifndef ADAPTER_ALE_LIN_H
-#define ADAPTER_ALE_LIN_H
+#ifndef ALE_LAPLACE_H
+#define ALE_LAPLACE_H
 
-#include "adapter_ale.H"
+#include "ale.H"
 
-namespace ADAPTER {
+namespace ALE {
 
 
 /// linear ALE algorithm
 /*!
   The most basic, most simple implementation.
  */
-class AleLinear : public Ale
+class AleLaplace : public Ale
 {
   friend class AleResultTest;
 
 public:
 
-  AleLinear(Teuchos::RCP<DRT::Discretization> actdis,
+  AleLaplace(Teuchos::RCP<DRT::Discretization> actdis,
             Teuchos::RCP<LINALG::Solver> solver,
             Teuchos::RCP<ParameterList> params,
             Teuchos::RCP<IO::DiscretizationWriter> output,

@@ -9,7 +9,7 @@
 FSI::LagrangianBlockMatrix::LagrangianBlockMatrix(const LINALG::MultiMapExtractor& maps,
                                                   ADAPTER::Structure& structure,
                                                   ADAPTER::Fluid& fluid,
-                                                  ADAPTER::Ale& ale,
+                                                  ALE::Ale& ale,
                                                   int symmetric,
                                                   double omega,
                                                   int iterations,

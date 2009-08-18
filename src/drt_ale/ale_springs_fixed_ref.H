@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file adapter_ale_laplace.H
+\file ale_springs_fixed_ref.H
 
 \brief
 
@@ -14,30 +14,42 @@ Maintainer: Ulrich Kuettler
 /*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#ifndef ADAPTER_ALE_LAPLACE_H
-#define ADAPTER_ALE_LAPLACE_H
+#ifndef ALE_SPRINGS_FIXED_REF_H
+#define ALE_SPRINGS_FIXED_REF_H
 
-#include "adapter_ale.H"
+#include "ale.H"
 
-namespace ADAPTER {
+namespace ALE {
 
 
-/// linear ALE algorithm
+/// springs ALE algorithm
 /*!
-  The most basic, most simple implementation.
+  Incremental springs algorithm with fixed initial reference and constant stiffness.
+
+  When compared to the original springs, this algorithm shines, when periodic
+  mesh deformation is expected. It does not "forget" its initial configuration,
+  hence it can not degrade over time as the original springs algorithm.
+  On the downside, the maximal mesh deformation that can be achieved is less than
+  the original springs algorithm. If one time, large mesh deformation is expected,
+  use the original springs.
+
+  The implementation is copied from the classic_lin ALE implementation.
+  Only the element call was modified to the springs_fixed_ref calculation.
+
+  \author axel gerstenberger
  */
-class AleLaplace : public Ale
+class AleSpringsFixedRef : public Ale
 {
   friend class AleResultTest;
 
 public:
 
-  AleLaplace(Teuchos::RCP<DRT::Discretization> actdis,
-            Teuchos::RCP<LINALG::Solver> solver,
-            Teuchos::RCP<ParameterList> params,
-            Teuchos::RCP<IO::DiscretizationWriter> output,
-            bool incremental,
-            bool dirichletcond);
+  AleSpringsFixedRef(Teuchos::RCP<DRT::Discretization> actdis,
+             Teuchos::RCP<LINALG::Solver> solver,
+             Teuchos::RCP<ParameterList> params,
+             Teuchos::RCP<IO::DiscretizationWriter> output,
+             bool incremental,
+             bool dirichletcond=true);
 
   /// build system matrix
   virtual void BuildSystemMatrix(bool full=true);

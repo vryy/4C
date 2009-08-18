@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file adapter_ale_springs.cpp
+\file ale_springs.cpp
 
 \brief
 
@@ -14,13 +14,13 @@ Maintainer: Ulrich Kuettler
 /*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#include "adapter_ale_springs.H"
+#include "ale_springs.H"
 #include "../drt_lib/drt_condition_utils.H"
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-ADAPTER::AleSprings::AleSprings(RCP<DRT::Discretization> actdis,
+ALE::AleSprings::AleSprings(RCP<DRT::Discretization> actdis,
                                 Teuchos::RCP<LINALG::Solver> solver,
                                 Teuchos::RCP<ParameterList> params,
                                 Teuchos::RCP<IO::DiscretizationWriter> output,
@@ -79,7 +79,7 @@ ADAPTER::AleSprings::AleSprings(RCP<DRT::Discretization> actdis,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::AleSprings::BuildSystemMatrix(bool full)
+void ALE::AleSprings::BuildSystemMatrix(bool full)
 {
   if (full)
   {
@@ -102,7 +102,7 @@ void ADAPTER::AleSprings::BuildSystemMatrix(bool full)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::AleSprings::PrepareTimeStep()
+void ALE::AleSprings::PrepareTimeStep()
 {
   step_ += 1;
   time_ += dt_;
@@ -111,7 +111,7 @@ void ADAPTER::AleSprings::PrepareTimeStep()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::AleSprings::Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp)
+void ALE::AleSprings::Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp)
 {
   // We save the current solution here. This will not change the
   // result of our element call, but the next time somebody asks us we
@@ -134,7 +134,7 @@ void ADAPTER::AleSprings::Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::AleSprings::Solve()
+void ALE::AleSprings::Solve()
 {
   EvaluateElements();
 
@@ -157,7 +157,7 @@ void ADAPTER::AleSprings::Solve()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::AleSprings::Update()
+void ALE::AleSprings::Update()
 {
   dispn_-> Update(1.0,*incr_,0.0);
   dispnp_->Update(1.0,*incr_,0.0);
@@ -166,7 +166,7 @@ void ADAPTER::AleSprings::Update()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::AleSprings::Output()
+void ALE::AleSprings::Output()
 {
   // We do not need any output -- the fluid writes its
   // displacements itself. But we need restart.
@@ -184,7 +184,7 @@ void ADAPTER::AleSprings::Output()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::AleSprings::Integrate()
+void ALE::AleSprings::Integrate()
 {
   while (step_ < numstep_-1 and time_ <= maxtime_)
   {
@@ -198,7 +198,7 @@ void ADAPTER::AleSprings::Integrate()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::AleSprings::EvaluateElements()
+void ALE::AleSprings::EvaluateElements()
 {
 
   //find out if we have free surface nodes with heightfunction coupling
@@ -462,7 +462,7 @@ void ADAPTER::AleSprings::EvaluateElements()
 
     // THIS IS FOR AN ALE BLOCK MATRIX ONLY (as in the monolithic freesurface algorithm)
     // our sysmat_ is Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(freesurface_,freesurface_,81,false,true));
-    // see ADAPTER::AleSprings::BuildSystemMatrix
+    // see ALE::AleSprings::BuildSystemMatrix
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockmat =
       Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_);
 
@@ -565,7 +565,7 @@ void ADAPTER::AleSprings::EvaluateElements()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::AleSprings::ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp)
+void ALE::AleSprings::ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp)
 {
   interface_.InsertCondVector(idisp,dispnp_);
 }
@@ -573,7 +573,7 @@ void ADAPTER::AleSprings::ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::AleSprings::ApplyFreeSurfaceDisplacements(Teuchos::RCP<Epetra_Vector> fsdisp)
+void ALE::AleSprings::ApplyFreeSurfaceDisplacements(Teuchos::RCP<Epetra_Vector> fsdisp)
 {
   freesurface_.InsertCondVector(fsdisp,dispnp_);
 }
@@ -581,7 +581,7 @@ void ADAPTER::AleSprings::ApplyFreeSurfaceDisplacements(Teuchos::RCP<Epetra_Vect
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::AleSprings::ExtractDisplacement() const
+Teuchos::RCP<Epetra_Vector> ALE::AleSprings::ExtractDisplacement() const
 {
   return incr_;
 }
@@ -589,7 +589,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::AleSprings::ExtractDisplacement() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::AleSprings::ReadRestart(int step)
+void ALE::AleSprings::ReadRestart(int step)
 {
   IO::DiscretizationReader reader(discret_,step);
   time_ = reader.ReadDouble("time");

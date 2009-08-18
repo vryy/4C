@@ -16,9 +16,9 @@ Maintainer: Ulrich Kuettler
 
 #include "../drt_io/io_control.H"
 #include "ale_dyn.H"
-#include "../drt_adapter/adapter_ale.H"
-#include "../drt_adapter/adapter_ale_lin.H"
-#include "adapter_ale_resulttest.H"
+#include "ale.H"
+#include "ale_lin.H"
+#include "ale_resulttest.H"
 
 #ifdef PARALLEL
 #include <Epetra_MpiComm.h>
@@ -94,7 +94,7 @@ void dyn_ale_drt()
   params->set<double>("dt", adyn.get<double>("TIMESTEP"));
 
   //int aletype = Teuchos::getIntegralValue<int>(adyn,"ALE_TYPE");
-  ADAPTER::AleLinear ale(actdis, solver, params, output, false, true);
+  ALE::AleLinear ale(actdis, solver, params, output, false, true);
 
   if (probtype.get<int>("RESTART"))
   {
@@ -107,7 +107,7 @@ void dyn_ale_drt()
 
   // do the result test
   DRT::ResultTestManager testmanager(actdis->Comm());
-  testmanager.AddFieldTest(rcp(new ADAPTER::AleResultTest(ale)));
+  testmanager.AddFieldTest(rcp(new ALE::AleResultTest(ale)));
   testmanager.TestAll();
 }
 

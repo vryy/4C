@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file adapter_ale_resulttest.H
+\file ale_resulttest.H
 
 \brief
 
@@ -14,16 +14,16 @@ Maintainer: Ulrich Kuettler
 /*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#ifndef ADAPTER_ALE_RESULTTEST_H
-#define ADAPTER_ALE_RESULTTEST_H
+#ifndef ALE_RESULTTEST_H
+#define ALE_RESULTTEST_H
 
 #include "../drt_lib/drt_resulttest.H"
-#include "../drt_adapter/adapter_ale.H"
-#include "../drt_adapter/adapter_ale_lin.H"
-#include "../drt_adapter/adapter_ale_springs.H"
+#include "ale.H"
+#include "ale_lin.H"
+#include "ale_springs.H"
 
 
-namespace ADAPTER {
+namespace ALE {
 
 class AleLinear;
 
@@ -31,7 +31,7 @@ class AleLinear;
 class AleResultTest : public DRT::ResultTest
 {
 public:
-  AleResultTest(ADAPTER::AleLinear& ale);
+  AleResultTest(AleLinear& ale);
 
   /// our version of nodal value tests
   /*!

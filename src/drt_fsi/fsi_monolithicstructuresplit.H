@@ -105,6 +105,9 @@ namespace FSI
     /// coupling of fluid and ale (interface only)
     ADAPTER::Coupling icoupfa_;
 
+    /// coupling of fluid and ale at the free surface
+    ADAPTER::Coupling fscoupfa_;
+
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks
 

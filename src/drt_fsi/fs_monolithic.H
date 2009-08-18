@@ -10,7 +10,7 @@
 
 #include "../drt_adapter/adapter_structure.H"
 #include "../drt_adapter/adapter_fluid.H"
-#include "../drt_adapter/adapter_ale.H"
+#include "../drt_ale/ale.H"
 #include "../drt_adapter/adapter_fluid_base_algorithm.H"
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/adapter_algorithmbase.H"
@@ -56,7 +56,7 @@ namespace UTILS
 
     BlockPreconditioningMatrixFS(const LINALG::MultiMapExtractor& maps,
                                  ADAPTER::Fluid& fluid,
-                                 ADAPTER::Ale& ale,
+                                 ALE::Ale& ale,
                                  int symmetric,
                                  double omega=1.0,
                                  int iterations=1,
@@ -139,7 +139,7 @@ namespace UTILS
     /// construction
     OverlappingBlockMatrixFS(const LINALG::MultiMapExtractor& maps,
                              ADAPTER::Fluid& fluid,
-                             ADAPTER::Ale& ale,
+                             ALE::Ale& ale,
                              bool structuresplit,
                              int symmetric,
                              double omega=1.0,
@@ -168,7 +168,7 @@ namespace UTILS
     bool structuresplit_;
 
     ADAPTER::Fluid&     fluid_;
-    ADAPTER::Ale&       ale_;
+    ALE::Ale&       ale_;
 
   };
 
@@ -185,7 +185,7 @@ namespace UTILS
    */
   class MonolithicBaseFS : public ADAPTER::AlgorithmBase,
                            public ADAPTER::FluidBaseAlgorithm,
-                           public ADAPTER::AleBaseAlgorithm
+                           public ALE::AleBaseAlgorithm
   {
   public:
 

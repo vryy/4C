@@ -71,7 +71,7 @@ extern struct _FIELD      *sm_field;
 #include "../drt_lib/global_inp_control2.H"
 #include "../drt_fluid/fluid_dyn_nln_drt.H"
 #include "../drt_scatra/scatra_dyn.H"
-#include "../drt_adapter/ale_dyn.H"
+#include "../drt_ale/ale_dyn.H"
 #include "../drt_fsi/fsi_dyn.H"
 #include "../drt_loma/loma_dyn.H"
 #include "../drt_elch/elch_dyn.H"

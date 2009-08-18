@@ -24,7 +24,7 @@ Maintainer: Ulrich Kuettler
 
 #include "adapter_fluid_moving_boundary.H"
 #include "adapter_fluid_base_algorithm.H"
-#include "adapter_ale.H"
+#include "../drt_ale/ale.H"
 #include "adapter_coupling.H"
 
 namespace ADAPTER
@@ -43,8 +43,8 @@ namespace ADAPTER
     const Fluid& FluidField() const { return fluid_.FluidField(); }
 
     /// ale field
-    Ale& AleField() { return ale_.AleField(); }
-    const Ale& AleField() const { return ale_.AleField(); }
+    ALE::Ale& AleField() { return ale_.AleField(); }
+    const ALE::Ale& AleField() const { return ale_.AleField(); }
 
     virtual Teuchos::RCP<DRT::Discretization> Discretization();
     virtual const FLD::UTILS::MapExtractor& Interface() const;
@@ -97,7 +97,7 @@ namespace ADAPTER
   private:
 
     FluidBaseAlgorithm fluid_;
-    AleBaseAlgorithm ale_;
+    ALE::AleBaseAlgorithm ale_;
 
     /// coupling of fluid and ale (whole field)
     Coupling               coupfa_;

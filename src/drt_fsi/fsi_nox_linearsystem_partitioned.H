@@ -24,7 +24,7 @@
 
 #include "../drt_adapter/adapter_structure.H"
 #include "../drt_adapter/adapter_fluid.H"
-#include "../drt_adapter/adapter_ale.H"
+#include "../drt_ale/ale.H"
 
 #include "../drt_inpar/inpar_fsi.H"
 
@@ -44,7 +44,7 @@ namespace FSI {
     LinearPartitioned(::FSI::PartitionedMonolithic& algorithm,
                       ADAPTER::Structure& structurefield,
                       ADAPTER::Fluid& fluidfield,
-                      ADAPTER::Ale& alefield);
+                      ALE::Ale& alefield);
 
     /// compute (full) FSI residual
     bool computeF(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag);
@@ -68,7 +68,7 @@ namespace FSI {
 
     ADAPTER::Structure& structurefield_;
     ADAPTER::Fluid& fluidfield_;
-    ADAPTER::Ale& alefield_;
+    ALE::Ale& alefield_;
 
     Teuchos::RCP<const Epetra_Vector> srhs_;
     Teuchos::RCP<const Epetra_Vector> frhs_;
@@ -108,7 +108,7 @@ namespace FSI {
       ::FSI::PartitionedMonolithic& algorithm,
       ADAPTER::Structure& structurefield,
       ADAPTER::Fluid& fluidfield,
-      ADAPTER::Ale& alefield,
+      ALE::Ale& alefield,
       INPAR::FSI::LinearBlockSolver linearsolverstrategy);
 
     ~LinearPartitionedSolver();
@@ -196,7 +196,7 @@ namespace FSI {
 
     ADAPTER::Structure& structurefield_;
     ADAPTER::Fluid& fluidfield_;
-    ADAPTER::Ale& alefield_;
+    ALE::Ale& alefield_;
 
     INPAR::FSI::LinearBlockSolver linearsolverstrategy_;
   };

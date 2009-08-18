@@ -59,6 +59,16 @@ void FSI::MonolithicStructureSplit::SetupSystem()
                                    AleField().Interface().CondMap(),
                                    "FSICoupling");
 
+  // we might have a free surface
+  if (FluidField().Interface().FSCondRelevant())
+  {
+    fscoupfa_.SetupConditionCoupling(*FluidField().Discretization(),
+                                      FluidField().Interface().FSCondMap(),
+                                     *AleField().Discretization(),
+                                      AleField().FreeSurface().CondMap(),
+                                      "FREESURFCoupling");
+  }
+
   // In the following we assume that both couplings find the same dof
   // map at the structural side. This enables us to use just one
   // interface dof map for all fields and have just one transfer
@@ -230,6 +240,10 @@ void FSI::MonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
       veln->Scale(-1.*Dt());
 
       Extractor().AddVector(*veln,1,f);
+    }
+
+    if (FluidField().Interface().FSCondRelevant())
+    {
     }
   }
 
