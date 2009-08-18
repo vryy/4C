@@ -317,7 +317,7 @@ void ADAPTER::FluidCombust::LiftDrag()
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidCombust::ExtractInterfaceForces()
 {
   dserror("Don't use this function, I don't know what it does!");
-  return interface_.ExtractCondVector(itrueresnp_);
+  return interface_.ExtractFSICondVector(itrueresnp_);
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -326,7 +326,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidCombust::ExtractInterfaceForces()
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidCombust::ExtractInterfaceVeln()
 {
   dserror("Don't use this function, I don't know what it does!");
-  return interface_.ExtractCondVector(iveln_);
+  return interface_.ExtractFSICondVector(iveln_);
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -335,7 +335,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidCombust::ExtractInterfaceVeln()
 void ADAPTER::FluidCombust::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel)
 {
   dserror("Don't use this function, I don't know what it does!");
-  interface_.InsertCondVector(ivel,ivelnp_);
+  interface_.InsertFSICondVector(ivel,ivelnp_);
 }
 
 /*------------------------------------------------------------------------------------------------*

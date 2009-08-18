@@ -30,16 +30,16 @@ ADAPTER::ScaTraFluidAleCouplingAlgorithm::ScaTraFluidAleCouplingAlgorithm(
 {
    // set up couplings
    icoupfa_.SetupConditionCoupling(*FluidField().Discretization(),
-       FluidField().Interface(),
-       *AleField().Discretization(),
-       AleField().Interface(),
-       condname);
+                                    FluidField().Interface().FSICondMap(),
+                                   *AleField().Discretization(),
+                                    AleField().Interface().CondMap(),
+                                    condname);
 
    fscoupfa_.SetupConditionCoupling(*FluidField().Discretization(),
-       FluidField().FreeSurface(),
-       *AleField().Discretization(),
-       AleField().FreeSurface(),
-       "FREESURFCoupling");
+                                     FluidField().Interface().FSCondMap(),
+                                    *AleField().Discretization(),
+                                     AleField().FreeSurface().CondMap(),
+                                     "FREESURFCoupling");
 
    // the fluid-ale coupling always matches
    const Epetra_Map* fluidnodemap = FluidField().Discretization()->NodeRowMap();
@@ -91,10 +91,10 @@ void ADAPTER::ScaTraFluidAleCouplingAlgorithm::FluidAleNonlinearSolve(
     FluidField().ApplyInterfaceVelocities(ivel);
   }
 
-  if (FluidField().FreeSurface().Relevant())
+  if (FluidField().Interface().FSCondRelevant())
   {
     Teuchos::RCP<const Epetra_Vector> dispnp = FluidField().Dispnp();
-    Teuchos::RCP<Epetra_Vector> fsdispnp = FluidField().FreeSurface().ExtractCondVector(dispnp);
+    Teuchos::RCP<Epetra_Vector> fsdispnp = FluidField().Interface().ExtractFSCondVector(dispnp);
     AleField().ApplyFreeSurfaceDisplacements(fscoupfa_.MasterToSlave(fsdispnp));
   }
 

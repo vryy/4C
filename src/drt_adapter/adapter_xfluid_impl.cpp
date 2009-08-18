@@ -96,8 +96,8 @@ ADAPTER::XFluidImpl::XFluidImpl(
 //  if (boundarydis_->NumMyRowElements() > 0)
 //    boundaryoutput_->WriteMesh(0,0.0);
 
-  DRT::UTILS::SetupNDimExtractor(*boundarydis_,"FSICoupling",interface_);
-  DRT::UTILS::SetupNDimExtractor(*boundarydis_,"FREESURFCoupling",freesurface_);
+  interface_.Setup(*boundarydis_);
+  fluid_.SetSurfaceSplitter(&interface_);
 
   // create interface DOF vectors using the solid parallel distribution
   idispnp_    = LINALG::CreateVector(*boundarydis_->DofRowMap(),true);
@@ -108,8 +108,6 @@ ADAPTER::XFluidImpl::XFluidImpl(
   iveln_    = LINALG::CreateVector(*boundarydis_->DofRowMap(),true);
   ivelnm_   = LINALG::CreateVector(*boundarydis_->DofRowMap(),true);
   iaccn_    = LINALG::CreateVector(*boundarydis_->DofRowMap(),true);
-
-  fluid_.SetFreeSurface(&freesurface_);
 }
 
 
@@ -738,7 +736,7 @@ void ADAPTER::XFluidImpl::RemoveInternalSurfElements(
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidImpl::ExtractInterfaceForces()
 {
-  return interface_.ExtractCondVector(itrueresnp_);
+  return interface_.ExtractFSICondVector(itrueresnp_);
 }
 
 
@@ -764,7 +762,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidImpl::ExtractInterfaceFluidVelocity()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidImpl::ExtractInterfaceVeln()
 {
-  return interface_.ExtractCondVector(iveln_);
+  return interface_.ExtractFSICondVector(iveln_);
 }
 
 
@@ -772,7 +770,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidImpl::ExtractInterfaceVeln()
 /*----------------------------------------------------------------------*/
 void ADAPTER::XFluidImpl::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel)
 {
-  interface_.InsertCondVector(ivel,ivelnp_);
+  interface_.InsertFSICondVector(ivel,ivelnp_);
 }
 
 
@@ -788,7 +786,7 @@ void ADAPTER::XFluidImpl::ApplyInterfaceRobinValue(Teuchos::RCP<Epetra_Vector> i
 /*----------------------------------------------------------------------*/
 void ADAPTER::XFluidImpl::ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> idisp)
 {
-  interface_.InsertCondVector(idisp,idispnp_);
+  interface_.InsertFSICondVector(idisp,idispnp_);
 }
 
 
@@ -806,7 +804,7 @@ void ADAPTER::XFluidImpl::DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx
 {
   dserror("not implemented!");
   // get interface velocity at t(n)
-  const Teuchos::RCP<Epetra_Vector> veln = Interface().ExtractCondVector(Veln());
+  const Teuchos::RCP<Epetra_Vector> veln = Interface().ExtractFSICondVector(Veln());
 
   // We convert Delta d(n+1,i+1) to Delta u(n+1,i+1) here.
   //
@@ -846,7 +844,7 @@ void ADAPTER::XFluidImpl::SetItemax(int itemax)
 Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidImpl::IntegrateInterfaceShape()
 {
   dserror("not implemented!");
-  return interface_.ExtractCondVector(fluid_.IntegrateInterfaceShape("FSICoupling"));
+  return interface_.ExtractFSICondVector(fluid_.IntegrateInterfaceShape("FSICoupling"));
 }
 
 
@@ -857,7 +855,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidImpl::RelaxationSolve(Teuchos::RCP<Ep
   dserror("not implemented!");
   const Epetra_Map* dofrowmap = Discretization()->DofRowMap();
   Teuchos::RCP<Epetra_Vector> relax = LINALG::CreateVector(*dofrowmap,true);
-  interface_.InsertCondVector(ivel,relax);
+  interface_.InsertFSICondVector(ivel,relax);
   //fluid_.LinearRelaxationSolve(relax);
   return ExtractInterfaceForces();
 }

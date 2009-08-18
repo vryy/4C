@@ -47,7 +47,8 @@ FLD::FluidProjectionMethod::FluidProjectionMethod(RefCountPtr<DRT::Discretizatio
     step_(0),
     extrapolationpredictor_(params.get("do explicit predictor",true)),
     uprestart_(params.get("write restart every", -1)),
-    upres_(params.get("write solution every", -1)) // TODO: weitere Variablen
+    upres_(params.get("write solution every", -1)),
+    surfacesplitter_(NULL)
     {
     // get processor ID from the communicator
     myrank_ = discret_->Comm().MyPID();

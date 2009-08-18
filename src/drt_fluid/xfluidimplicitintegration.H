@@ -30,6 +30,8 @@ Maintainer: Axel Gerstenberger
 #include "../drt_io/io_ostream0.H"
 #include "../drt_xfem/dof_management.H"
 
+#include "fluid_utils_mapextractor.H"
+
 /// fluid algorithms
 namespace FLD
 {
@@ -241,19 +243,12 @@ public:
   */
   const FLUID_TIMEINTTYPE TimIntScheme() const {return timealgo_;}
 
-  /// introduce free surface extractor object
+  /// introduce surface split extractor object
   /*!
     This method must (and will) be called during setup with a properly
     initialized extractor object iff we are on an ale mesh.
    */
-  void SetFreeSurface(const LINALG::MapExtractor* freesurface) { freesurface_ = freesurface; }
-
-  /// introduce (robin) fsi surface extractor object
-  /*!
-    Introduce the FSI surface to the fluid algorithm. This way special case
-    algorithms (robin coupling) can work on the surface.
-   */
-  void SetFSISurface(const LINALG::MapExtractor* fsisurface) { fsisurface_ = fsisurface; }
+  void SetSurfaceSplitter(const UTILS::MapExtractor* surfacesplitter) { surfacesplitter_ = surfacesplitter; }
 
   /// calculate lift&drag forces and angular momenta
   void LiftDrag() const;
@@ -501,11 +496,8 @@ protected:
   //! Extractor used for output
   LINALG::MapExtractor      velpressplitterForOutput_;
 
-  /// free surface row dof map extractor
-  const LINALG::MapExtractor* freesurface_;
-
-  /// (robin) fsi coupling row dof map extractor
-  const LINALG::MapExtractor* fsisurface_;
+  /// coupling row dof map extractor
+  const FLD::UTILS::MapExtractor* surfacesplitter_;
 
 }; // class FluidImplicitTimeInt
 

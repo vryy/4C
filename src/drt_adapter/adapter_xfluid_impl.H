@@ -111,9 +111,7 @@ namespace ADAPTER {
     virtual double TimeScaling() const;
 
     /// communication object at the interface
-    virtual const LINALG::MapExtractor&  Interface() const { return interface_; }
-
-    virtual const LINALG::MapExtractor& FreeSurface() const { return freesurface_; }
+    virtual const FLD::UTILS::MapExtractor&  Interface() const { return interface_; }
 
     virtual void ReadRestart(int step);
     virtual double Time() const;
@@ -206,9 +204,7 @@ namespace ADAPTER {
     FLD::XFluidImplicitTimeInt             fluid_;
 
     /// the interface map setup for interface <-> full translation
-    LINALG::MapExtractor                   interface_;
-
-    LINALG::MapExtractor                   freesurface_;
+    FLD::UTILS::MapExtractor               interface_;
 
     /// ALE dof map
     //LINALG::MapExtractor                   meshmap_;

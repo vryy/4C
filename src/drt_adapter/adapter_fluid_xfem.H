@@ -37,7 +37,7 @@ namespace ADAPTER
     const Fluid& FluidField() const { return fluid_.FluidField(); }
 
     virtual Teuchos::RCP<DRT::Discretization> Discretization();
-    virtual const LINALG::MapExtractor& Interface() const;
+    virtual const FLD::UTILS::MapExtractor& Interface() const;
 
     virtual void PrepareTimeStep();
     virtual void Update();

@@ -98,7 +98,7 @@ namespace ADAPTER
 
     virtual Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape(){
             dserror("not implemented!");
-            return interface_.ExtractCondVector(fluid_.IntegrateInterfaceShape("FSICoupling")); };
+            return interface_.ExtractFSICondVector(fluid_.IntegrateInterfaceShape("FSICoupling")); };
 
     virtual void UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
                                 const LINALG::MultiMapExtractor& rangemaps,
@@ -122,7 +122,7 @@ namespace ADAPTER
             dserror("not implemented!");
             const Epetra_Map* dofrowmap = Discretization()->DofRowMap();
             Teuchos::RCP<Epetra_Vector> relax = LINALG::CreateVector(*dofrowmap,true);
-            interface_.InsertCondVector(ivel,relax);
+            interface_.InsertFSICondVector(ivel,relax);
             //fluid_.LinearRelaxationSolve(relax);
             return ExtractInterfaceForces(); };
 
@@ -182,7 +182,7 @@ namespace ADAPTER
     virtual double TimeScaling() const;
 
     /// communication object at the interface
-    virtual const LINALG::MapExtractor& Interface() const { return interface_; }
+    virtual const FLD::UTILS::MapExtractor& Interface() const { return interface_; }
 
     virtual void ReadRestart(int step);
     virtual double Time() const;
@@ -226,7 +226,7 @@ namespace ADAPTER
     FLD::CombustFluidImplicitTimeInt             fluid_;
 
     /// the interface map setup for interface <-> full translation
-    LINALG::MapExtractor                   interface_;
+    FLD::UTILS::MapExtractor               interface_;
 
     //! @name local copies of input parameters
     Teuchos::RCP<DRT::Discretization>      fluiddis_;

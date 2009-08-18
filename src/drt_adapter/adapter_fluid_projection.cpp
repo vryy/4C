@@ -25,11 +25,8 @@ solverp_(solverp),
 params_(params),
 output_(output)
 {
-            DRT::UTILS::SetupNDimExtractor(*dis,"FSICoupling",interface_);
-            DRT::UTILS::SetupNDimExtractor(*dis,"FREESURFCoupling",freesurface_);
-
-            fluid_.SetFSISurface(&interface_);
-            fluid_.SetFreeSurface(&freesurface_);
+  interface_.Setup(*dis);
+  fluid_.SetSurfaceSplitter(&interface_);
 
             // build inner velocity map
             // dofs at the interface are excluded
@@ -43,7 +40,7 @@ output_(output)
             if (dirichletcond)
             {
                 // mark all interface velocities as dirichlet values
-                fluid_.AddDirichCond(interface_.CondMap());
+                fluid_.AddDirichCond(interface_.FSICondMap());
             }
 }
 
@@ -268,7 +265,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidProjection::ConvectiveVel()
 
         Teuchos::RCP<Epetra_Vector> ADAPTER::FluidProjection::ExtractInterfaceForces()
         {
-            return interface_.ExtractCondVector(fluid_.TrueResidual());
+            return interface_.ExtractFSICondVector(fluid_.TrueResidual());
         }
 
         Teuchos::RCP<Epetra_Vector> ADAPTER::FluidProjection::ExtractInterfaceForcesRobin()
@@ -296,12 +293,12 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidProjection::ConvectiveVel()
 
         Teuchos::RCP<Epetra_Vector> ADAPTER::FluidProjection::ExtractInterfaceFluidVelocity()
         {
-            return interface_.ExtractCondVector(fluid_.Velnp());
+            return interface_.ExtractFSICondVector(fluid_.Velnp());
         }
 
         Teuchos::RCP<Epetra_Vector> ADAPTER::FluidProjection::ExtractInterfaceVeln()
         {
-            return interface_.ExtractCondVector(fluid_.Veln());
+            return interface_.ExtractFSICondVector(fluid_.Veln());
         }
 
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidProjection::ExtractFreeSurfaceVeln()
@@ -312,7 +309,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidProjection::ExtractFreeSurfaceVeln()
 
         void ADAPTER::FluidProjection::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel)
         {
-            interface_.InsertCondVector(ivel,fluid_.Velnp());
+            interface_.InsertFSICondVector(ivel,fluid_.Velnp());
         }
 
         void ADAPTER::FluidProjection::ApplyInterfaceRobinValue(Teuchos::RCP<Epetra_Vector> ivel, Teuchos::RCP<Epetra_Vector> iforce)
@@ -337,7 +334,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidProjection::ExtractFreeSurfaceVeln()
 	robinboundaryvalue->Update(-1.,*iforce,alphaf);
 
 	// apply robin values to fluid equations RobinRHS vector
-	interface_.InsertCondVector(robinboundaryvalue,fluid_.RobinRHS());
+	interface_.InsertFSICondVector(robinboundaryvalue,fluid_.RobinRHS());
              */
 
             // at this point we have to omit the setting of dirichlet values at
@@ -362,7 +359,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidProjection::ExtractFreeSurfaceVeln()
         void ADAPTER::FluidProjection::DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx)
         {
             // get interface velocity at t(n)
-            const Teuchos::RCP<Epetra_Vector> veln = Interface().ExtractCondVector(Veln());
+            const Teuchos::RCP<Epetra_Vector> veln = Interface().ExtractFSICondVector(Veln());
 
             // We convert Delta d(n+1,i+1) to Delta u(n+1,i+1) here.
             //
@@ -375,7 +372,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidProjection::ExtractFreeSurfaceVeln()
         void ADAPTER::FluidProjection::VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx)
         {
             // get interface velocity at t(n)
-            const Teuchos::RCP<Epetra_Vector> veln = Interface().ExtractCondVector(Veln());
+            const Teuchos::RCP<Epetra_Vector> veln = Interface().ExtractFSICondVector(Veln());
 
             // We convert Delta u(n+1,i+1) to Delta d(n+1,i+1) here.
             //

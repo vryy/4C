@@ -77,9 +77,7 @@ public:
 
     virtual double TimeScaling() const;
 
-    virtual const LINALG::MapExtractor&  Interface() const { return interface_; }
-
-    virtual const LINALG::MapExtractor& FreeSurface() const { return freesurface_; }
+    virtual const FLD::UTILS::MapExtractor&  Interface() const { return interface_; }
 
     virtual void ReadRestart(int step);
     virtual double Time() const;
@@ -133,9 +131,7 @@ private:
     FLD::FluidProjectionMethod			fluid_;
 
     /// the interface map setup for interface <-> full translation
-    LINALG::MapExtractor                   interface_;
-
-    LINALG::MapExtractor                   freesurface_;
+    FLD::UTILS::MapExtractor                   interface_;
 
     LINALG::MapExtractor                   	meshmap_;
 

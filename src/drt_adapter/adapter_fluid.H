@@ -29,6 +29,8 @@ Maintainer: Ulrich Kuettler
 #include "../drt_lib/drt_resulttest.H"
 #include "../drt_lib/drt_discret.H"
 
+#include "../drt_fluid/fluid_utils_mapextractor.H"
+
 #include "../drt_lib/standardtypes_cpp.H"
 
 // This should be generalized     henke
@@ -220,10 +222,7 @@ namespace ADAPTER {
     virtual double TimeScaling() const = 0;
 
     /// communication object at the interface
-    virtual const LINALG::MapExtractor& Interface() const = 0;
-
-    /// communication object at the free surface
-    virtual const LINALG::MapExtractor& FreeSurface() const = 0;
+    virtual const FLD::UTILS::MapExtractor& Interface() const = 0;
 
     /// return type of time integration scheme
     virtual const FLUID_TIMEINTTYPE TimIntScheme() const = 0;

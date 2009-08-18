@@ -33,11 +33,8 @@ ADAPTER::FluidImpl::FluidImpl(
     params_(params),
     output_(output)
 {
-  DRT::UTILS::SetupNDimExtractor(*dis,"FSICoupling",interface_);
-  DRT::UTILS::SetupNDimExtractor(*dis,"FREESURFCoupling",freesurface_);
-
-  fluid_.SetFSISurface(&interface_);
-  fluid_.SetFreeSurface(&freesurface_);
+  interface_.Setup(*dis);
+  fluid_.SetSurfaceSplitter(&interface_);
 
   // build inner velocity map
   // dofs at the interface are excluded
@@ -51,7 +48,7 @@ ADAPTER::FluidImpl::FluidImpl(
   if (dirichletcond)
   {
     // mark all interface velocities as dirichlet values
-    fluid_.AddDirichCond(interface_.CondMap());
+    fluid_.AddDirichCond(interface_.FSICondMap());
   }
 }
 
@@ -350,7 +347,7 @@ void ADAPTER::FluidImpl::LiftDrag()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImpl::ExtractInterfaceForces()
 {
-  return interface_.ExtractCondVector(fluid_.TrueResidual());
+  return interface_.ExtractFSICondVector(fluid_.TrueResidual());
 }
 
 
@@ -368,9 +365,9 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImpl::ExtractInterfaceForcesRobin()
   // displacements in the force vector, so that a testing of interface forces
   // is sufficient as convergence check.
 
-  Teuchos::RCP<Epetra_Vector> robinforce = interface_.ExtractCondVector(fluid_.RobinRHS());
+  Teuchos::RCP<Epetra_Vector> robinforce = interface_.ExtractFSICondVector(fluid_.RobinRHS());
   double alphaf = params_->get<double>("alpharobinf",-1.);
-  Teuchos::RCP<Epetra_Vector> ivelnp = interface_.ExtractCondVector(fluid_.Velnp());
+  Teuchos::RCP<Epetra_Vector> ivelnp = interface_.ExtractFSICondVector(fluid_.Velnp());
 
   robinforce->Update(alphaf,*ivelnp,-1.0);
 
@@ -382,7 +379,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImpl::ExtractInterfaceForcesRobin()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImpl::ExtractInterfaceFluidVelocity()
 {
-  return interface_.ExtractCondVector(fluid_.Velnp());
+  return interface_.ExtractFSICondVector(fluid_.Velnp());
 }
 
 
@@ -390,7 +387,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImpl::ExtractInterfaceFluidVelocity()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImpl::ExtractInterfaceVeln()
 {
-  return interface_.ExtractCondVector(fluid_.Veln());
+  return interface_.ExtractFSICondVector(fluid_.Veln());
 }
 
 
@@ -398,7 +395,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImpl::ExtractInterfaceVeln()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImpl::ExtractFreeSurfaceVeln()
 {
-  return freesurface_.ExtractCondVector(fluid_.Veln());
+  return Interface().ExtractFSCondVector(fluid_.Veln());
 }
 
 
@@ -406,7 +403,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImpl::ExtractFreeSurfaceVeln()
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidImpl::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel)
 {
-  interface_.InsertCondVector(ivel,fluid_.Velnp());
+  interface_.InsertFSICondVector(ivel,fluid_.Velnp());
 }
 
 
@@ -435,7 +432,7 @@ void ADAPTER::FluidImpl::ApplyInterfaceRobinValue(Teuchos::RCP<Epetra_Vector> iv
   robinboundaryvalue->Update(-1.,*iforce,alphaf);
 
   // apply robin values to fluid equations RobinRHS vector
-  interface_.InsertCondVector(robinboundaryvalue,fluid_.RobinRHS());
+  interface_.InsertFSICondVector(robinboundaryvalue,fluid_.RobinRHS());
 
   // at this point we have to omit the setting of dirichlet values at
   // the interface
@@ -466,7 +463,7 @@ void ADAPTER::FluidImpl::ApplyMeshVelocity(Teuchos::RCP<Epetra_Vector> gridvel)
 void ADAPTER::FluidImpl::DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx)
 {
   // get interface velocity at t(n)
-  const Teuchos::RCP<Epetra_Vector> veln = Interface().ExtractCondVector(Veln());
+  const Teuchos::RCP<Epetra_Vector> veln = Interface().ExtractFSICondVector(Veln());
 
   // We convert Delta d(n+1,i+1) to Delta u(n+1,i+1) here.
   //
@@ -482,7 +479,7 @@ void ADAPTER::FluidImpl::DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx)
 void ADAPTER::FluidImpl::VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx)
 {
   // get interface velocity at t(n)
-  const Teuchos::RCP<Epetra_Vector> veln = Interface().ExtractCondVector(Veln());
+  const Teuchos::RCP<Epetra_Vector> veln = Interface().ExtractFSICondVector(Veln());
 
   // We convert Delta u(n+1,i+1) to Delta d(n+1,i+1) here.
   //
@@ -498,7 +495,7 @@ void ADAPTER::FluidImpl::VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx)
 void ADAPTER::FluidImpl::FreeSurfDisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx)
 {
   // get interface velocity at t(n)
-  const Teuchos::RCP<Epetra_Vector> veln = FreeSurface().ExtractCondVector(Veln());
+  const Teuchos::RCP<Epetra_Vector> veln = Interface().ExtractFSCondVector(Veln());
 
   // We convert Delta d(n+1,i+1) to Delta u(n+1,i+1) here.
   //
@@ -514,7 +511,7 @@ void ADAPTER::FluidImpl::FreeSurfDisplacementToVelocity(Teuchos::RCP<Epetra_Vect
 void ADAPTER::FluidImpl::FreeSurfVelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx)
 {
   // get interface velocity at t(n)
-  const Teuchos::RCP<Epetra_Vector> veln = FreeSurface().ExtractCondVector(Veln());
+  const Teuchos::RCP<Epetra_Vector> veln = Interface().ExtractFSCondVector(Veln());
 
   // We convert Delta u(n+1,i+1) to Delta d(n+1,i+1) here.
   //
@@ -545,7 +542,7 @@ void ADAPTER::FluidImpl::SetItemax(int itemax)
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImpl::IntegrateInterfaceShape()
 {
-  return interface_.ExtractCondVector(fluid_.IntegrateInterfaceShape("FSICoupling"));
+  return interface_.ExtractFSICondVector(fluid_.IntegrateInterfaceShape("FSICoupling"));
 }
 
 
@@ -568,7 +565,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImpl::RelaxationSolve(Teuchos::RCP<Epe
 {
   const Epetra_Map* dofrowmap = Discretization()->DofRowMap();
   Teuchos::RCP<Epetra_Vector> relax = LINALG::CreateVector(*dofrowmap,true);
-  interface_.InsertCondVector(ivel,relax);
+  interface_.InsertFSICondVector(ivel,relax);
   fluid_.LinearRelaxationSolve(relax);
   return ExtractInterfaceForces();
 }

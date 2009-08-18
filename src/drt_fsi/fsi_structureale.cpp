@@ -41,9 +41,9 @@ FSI::StructureALE::StructureALE(Epetra_Comm& comm)
   {
     matchingnodes_ = true;
     coupsf.SetupConditionCoupling(*StructureField().Discretization(),
-                                   StructureField().Interface(),
+                                   StructureField().Interface().CondMap(),
                                   *MBFluidField().Discretization(),
-                                   MBFluidField().Interface(),
+                                   MBFluidField().Interface().FSICondMap(),
                                   "FSICoupling");
 
     // In the following we assume that both couplings find the same dof

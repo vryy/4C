@@ -32,8 +32,8 @@ NOX::FSI::LinearPartitioned::LinearPartitioned(::FSI::PartitionedMonolithic& alg
 
   // extract interface Dirichlet lines from fluid matrix and remove them
   // afterwards
-  fluiddirichlet_ = f_->ExtractDirichletRows(*fluidfield_.Interface().CondMap());
-  f_->ApplyDirichlet(*fluidfield_.Interface().CondMap(),true);
+  fluiddirichlet_ = f_->ExtractDirichletRows(*fluidfield_.Interface().FSICondMap());
+  f_->ApplyDirichlet(*fluidfield_.Interface().FSICondMap(),true);
 
   // get an idea of interface displacement
   idispn_ = structurefield_.ExtractInterfaceDispn();
@@ -123,7 +123,7 @@ NOX::FSI::LinearPartitioned::FluidOp(Teuchos::RCP<const Epetra_Vector> idisp, co
     ftmp_->Update(1.0,*frhs_,0.0);
   }
 
-  LINALG::ApplyDirichlettoSystem(fx_,ftmp_,ivel,*fluidfield_.Interface().CondMap());
+  LINALG::ApplyDirichlettoSystem(fx_,ftmp_,ivel,*fluidfield_.Interface().FSICondMap());
 
   // solve
 
@@ -138,7 +138,7 @@ NOX::FSI::LinearPartitioned::FluidOp(Teuchos::RCP<const Epetra_Vector> idisp, co
   force->Update(-1.0,*frhs_,1.0);
 
   Teuchos::RCP<Epetra_Vector> iforce =
-    fluidfield_.Interface().ExtractCondVector(force);
+    fluidfield_.Interface().ExtractFSICondVector(force);
 
   // make the interface forces a true force
   iforce->Scale(-fluidfield_.ResidualScaling());

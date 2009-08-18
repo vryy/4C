@@ -408,7 +408,7 @@ void FSI::Monolithic::SetDefaultParameters(const Teuchos::ParameterList& fsidyn,
   Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
   Teuchos::ParameterList& solverOptions = nlParams.sublist("Solver Options");
   Teuchos::ParameterList& newtonParams = dirParams.sublist("Newton");
-  Teuchos::ParameterList& lineSearchParams = nlParams.sublist("Line Search");
+  //Teuchos::ParameterList& lineSearchParams = nlParams.sublist("Line Search");
 
 
 

@@ -91,9 +91,9 @@ namespace ADAPTER
 
      */
     void SetupConditionCoupling(const DRT::Discretization& masterdis,
-                                const LINALG::MapExtractor& master,
+                                Teuchos::RCP<const Epetra_Map> mastercondmap,
                                 const DRT::Discretization& slavedis,
-                                const LINALG::MapExtractor& slave,
+                                Teuchos::RCP<const Epetra_Map> slavecondmap,
                                 const std::string& condname);
 
     /// setup coupling of given nodes

@@ -32,17 +32,17 @@ void FSI::MonolithicLagrange::SetupSystem()
 
   // structure (master) to fluid (slave)
   coupsf.SetupConditionCoupling(*StructureField().Discretization(),
-                                StructureField().Interface(),
+                                 StructureField().Interface().CondMap(),
                                 *FluidField().Discretization(),
-                                FluidField().Interface(),
-                                "FSICoupling");
+                                 FluidField().Interface().FSICondMap(),
+                                 "FSICoupling");
 
   // structure (master) to ale (slave)
   coupsa.SetupConditionCoupling(*StructureField().Discretization(),
-                                StructureField().Interface(),
+                                 StructureField().Interface().CondMap(),
                                 *AleField().Discretization(),
-                                AleField().Interface(),
-                                "FSICoupling");
+                                 AleField().Interface().CondMap(),
+                                 "FSICoupling");
 
   // assure that both coupling objects use the same map
   // at their common master side (i.e. the structure)
@@ -70,10 +70,10 @@ void FSI::MonolithicLagrange::SetupSystem()
 
   // fluid (master) to ale (slave) only at the interface
   icoupfa_.SetupConditionCoupling(*FluidField().Discretization(),
-                                  FluidField().Interface(),
+                                   FluidField().Interface().FSICondMap(),
                                   *AleField().Discretization(),
-                                  AleField().Interface(),
-                                  "FSICoupling");
+                                   AleField().Interface().CondMap(),
+                                   "FSICoupling");
 
   // create combined map
   std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
@@ -183,7 +183,7 @@ void FSI::MonolithicLagrange::SetupRHS(Epetra_Vector& f, bool firstcall)
 
       rhs = Teuchos::rcp(new Epetra_Vector(fmgg.RowMap()));
       fmgg.Apply(*fveln,*rhs);
-      FluidField().Interface().InsertCondVector(rhs,veln);
+      FluidField().Interface().InsertFSICondVector(rhs,veln);
 
       veln->Scale(-1.*Dt());
       Extractor().AddVector(*veln,1,f);
@@ -564,7 +564,7 @@ FSI::MonolithicLagrange::CreateStatusTest(Teuchos::ParameterList& nlParams,
                                                                     Teuchos::null),
                                                1.0,
                                                LINALG::MapExtractor(*DofRowMap(),
-                                                                    FluidField().Interface().CondMap(),
+                                                                    FluidField().Interface().FSICondMap(),
                                                                     Teuchos::null),
                                                FluidField().ResidualScaling(),
                                                converter,
@@ -666,7 +666,7 @@ void FSI::MonolithicLagrange::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vect
   sx = Extractor().ExtractVector(x,0);
   fx = Extractor().ExtractVector(x,1);
 
-  Teuchos::RCP<Epetra_Vector> fcx = FluidField().Interface().ExtractCondVector(fx);
+  Teuchos::RCP<Epetra_Vector> fcx = FluidField().Interface().ExtractFSICondVector(fx);
   FluidField().VelocityToDisplacement(fcx);
   Teuchos::RCP<Epetra_Vector> scx = FluidToStruct(fcx);
 

@@ -43,9 +43,9 @@ ADAPTER::Coupling::Coupling()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::Coupling::SetupConditionCoupling(const DRT::Discretization& masterdis,
-                                               const LINALG::MapExtractor& master,
+                                               Teuchos::RCP<const Epetra_Map> mastercondmap,
                                                const DRT::Discretization& slavedis,
-                                               const LINALG::MapExtractor& slave,
+                                               Teuchos::RCP<const Epetra_Map> slavecondmap,
                                                const std::string& condname)
 {
   std::vector<int> masternodes;
@@ -81,16 +81,16 @@ void ADAPTER::Coupling::SetupConditionCoupling(const DRT::Discretization& master
   // The point is to make sure there is only one map for each
   // interface.
 
-  if (not masterdofmap_->SameAs(*master.CondMap()))
+  if (not masterdofmap_->SameAs(*mastercondmap))
     dserror("master dof map mismatch");
 
-  if (not slavedofmap_->SameAs(*slave.CondMap()))
+  if (not slavedofmap_->SameAs(*slavecondmap))
     dserror("slave dof map mismatch");
 
-  masterdofmap_ = master.CondMap();
+  masterdofmap_ = mastercondmap;
   masterexport_ = rcp(new Epetra_Export(*permmasterdofmap_, *masterdofmap_));
 
-  slavedofmap_ = slave.CondMap();
+  slavedofmap_ = slavecondmap;
   slaveexport_ = rcp(new Epetra_Export(*permslavedofmap_, *slavedofmap_));
 }
 

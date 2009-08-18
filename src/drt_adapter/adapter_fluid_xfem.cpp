@@ -42,7 +42,7 @@ Teuchos::RCP<DRT::Discretization> ADAPTER::FluidXFEM::Discretization()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const LINALG::MapExtractor& ADAPTER::FluidXFEM::Interface() const
+const FLD::UTILS::MapExtractor& ADAPTER::FluidXFEM::Interface() const
 {
   return FluidField().Interface();
 }

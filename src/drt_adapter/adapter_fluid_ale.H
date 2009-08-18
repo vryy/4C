@@ -47,7 +47,7 @@ namespace ADAPTER
     const Ale& AleField() const { return ale_.AleField(); }
 
     virtual Teuchos::RCP<DRT::Discretization> Discretization();
-    virtual const LINALG::MapExtractor& Interface() const;
+    virtual const FLD::UTILS::MapExtractor& Interface() const;
 
     virtual void PrepareTimeStep();
     virtual void Update();

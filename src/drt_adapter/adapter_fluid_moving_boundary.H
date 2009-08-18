@@ -21,6 +21,8 @@ Maintainer: Ulrich Kuettler
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_mapextractor.H"
 
+#include "../drt_fluid/fluid_utils_mapextractor.H"
+
 namespace ADAPTER
 {
 
@@ -47,7 +49,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;
 
     /// communication object at the interface
-    virtual const LINALG::MapExtractor& Interface() const = 0;
+    virtual const FLD::UTILS::MapExtractor& Interface() const = 0;
 
     //@}
 

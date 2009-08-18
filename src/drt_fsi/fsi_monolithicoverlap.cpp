@@ -36,18 +36,18 @@ void FSI::MonolithicOverlap::SetupSystem()
   // structure to fluid
 
   coupsf.SetupConditionCoupling(*StructureField().Discretization(),
-                                StructureField().Interface(),
+                                 StructureField().Interface().CondMap(),
                                 *FluidField().Discretization(),
-                                FluidField().Interface(),
-                                "FSICoupling");
+                                 FluidField().Interface().FSICondMap(),
+                                 "FSICoupling");
 
   // structure to ale
 
   coupsa.SetupConditionCoupling(*StructureField().Discretization(),
-                                StructureField().Interface(),
+                                 StructureField().Interface().CondMap(),
                                 *AleField().Discretization(),
-                                AleField().Interface(),
-                                "FSICoupling");
+                                 AleField().Interface().CondMap(),
+                                 "FSICoupling");
 
   // In the following we assume that both couplings find the same dof
   // map at the structural side. This enables us to use just one
@@ -419,7 +419,7 @@ void FSI::MonolithicOverlap::SetupVector(Epetra_Vector &f,
   if (fluidscale!=0)
   {
     // add fluid interface values to structure vector
-    Teuchos::RCP<Epetra_Vector> fcv = FluidField().Interface().ExtractCondVector(fv);
+    Teuchos::RCP<Epetra_Vector> fcv = FluidField().Interface().ExtractFSICondVector(fv);
     Teuchos::RCP<Epetra_Vector> modsv = StructureField().Interface().InsertCondVector(FluidToStruct(fcv));
     modsv->Update(1.0, *sv, fluidscale);
 
@@ -613,7 +613,7 @@ void FSI::MonolithicOverlap::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vecto
   FluidField().DisplacementToVelocity(fcx);
 
   Teuchos::RCP<Epetra_Vector> f = FluidField().Interface().InsertOtherVector(fox);
-  FluidField().Interface().InsertCondVector(fcx, f);
+  FluidField().Interface().InsertFSICondVector(fcx, f);
   fx = f;
 
   // process ale unknowns

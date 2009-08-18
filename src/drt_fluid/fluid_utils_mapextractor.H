@@ -16,13 +16,13 @@ namespace UTILS
   /// specific MultiMapExtractor to handle the fluid field
   class MapExtractor : public LINALG::MultiMapExtractor
   {
+  public:
+
     enum {
       cond_other = 0,
       cond_fsi   = 1,
       cond_fs    = 2
     };
-
-  public:
 
     void Setup(const DRT::Discretization& dis);
 

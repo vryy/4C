@@ -29,15 +29,15 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn,
     ale_(prbdyn)
 {
   icoupfa_.SetupConditionCoupling(*FluidField().Discretization(),
-                                   FluidField().Interface(),
+                                   FluidField().Interface().FSICondMap(),
                                   *AleField().Discretization(),
-                                   AleField().Interface(),
+                                   AleField().Interface().CondMap(),
                                    condname);
 
   fscoupfa_.SetupConditionCoupling(*FluidField().Discretization(),
-                                    FluidField().FreeSurface(),
+                                    FluidField().Interface().FSCondMap(),
                                    *AleField().Discretization(),
-                                    AleField().FreeSurface(),
+                                    AleField().FreeSurface().CondMap(),
                                     "FREESURFCoupling");
 
   // the fluid-ale coupling always matches
@@ -66,7 +66,7 @@ Teuchos::RCP<DRT::Discretization> ADAPTER::FluidAle::Discretization()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const LINALG::MapExtractor& ADAPTER::FluidAle::Interface() const
+const FLD::UTILS::MapExtractor& ADAPTER::FluidAle::Interface() const
 {
   return FluidField().Interface();
 }
@@ -126,10 +126,10 @@ void ADAPTER::FluidAle::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
     }
   }
 
-  if (FluidField().FreeSurface().Relevant())
+  if (FluidField().Interface().FSCondRelevant())
   {
     Teuchos::RCP<const Epetra_Vector> dispnp = FluidField().Dispnp();
-    Teuchos::RCP<Epetra_Vector> fsdispnp = FluidField().FreeSurface().ExtractCondVector(dispnp);
+    Teuchos::RCP<Epetra_Vector> fsdispnp = FluidField().Interface().ExtractFSCondVector(dispnp);
     AleField().ApplyFreeSurfaceDisplacements(fscoupfa_.MasterToSlave(fsdispnp));
   }
 

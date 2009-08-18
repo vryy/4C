@@ -549,10 +549,10 @@ FSI::MonolithicFS::MonolithicFS(Epetra_Comm& comm)
   // fluid to ale at the free surface
 
   icoupfa_.SetupConditionCoupling(*FluidField().Discretization(),
-                                  FluidField().FreeSurface(),
+                                   FluidField().Interface().FSCondMap(),
                                   *AleField().Discretization(),
-                                  AleField().FreeSurface(),
-                                  "FREESURFCoupling");
+                                   AleField().FreeSurface().CondMap(),
+                                   "FREESURFCoupling");
 
   // the fluid-ale coupling always matches
   const Epetra_Map* fluidnodemap = FluidField().Discretization()->NodeRowMap();
@@ -575,8 +575,8 @@ FSI::MonolithicFS::MonolithicFS(Epetra_Comm& comm)
 
   // Use normal matrix for fluid equations but build (splitted) mesh movement
   // linearization (if requested in the input file)
-  FluidField().UseBlockMatrix(FluidField().FreeSurface(),
-                              FluidField().FreeSurface(),
+  FluidField().UseBlockMatrix(FluidField().Interface(),
+                              FluidField().Interface(),
                               "FREESURFCoupling",
                               false);
 
@@ -667,16 +667,17 @@ void FSI::MonolithicFS::SetupRHS(Epetra_Vector& f, bool firstcall)
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField().ShapeDerivatives();
     if (mmm!=Teuchos::null)
     {
-      LINALG::SparseMatrix& fmig = mmm->Matrix(0,1);
-      LINALG::SparseMatrix& fmgg = mmm->Matrix(1,1);
+      // here we extract the free surface submatrices from position 2
+      LINALG::SparseMatrix& fmig = mmm->Matrix(0,2);
+      LINALG::SparseMatrix& fmgg = mmm->Matrix(2,2);
 
       rhs = Teuchos::rcp(new Epetra_Vector(fmig.RowMap()));
       fmig.Apply(*fveln,*rhs);
-      Teuchos::RCP<Epetra_Vector> veln = FluidField().FreeSurface().InsertOtherVector(rhs);
+      Teuchos::RCP<Epetra_Vector> veln = FluidField().Interface().InsertOtherVector(rhs);
 
       rhs = Teuchos::rcp(new Epetra_Vector(fmgg.RowMap()));
       fmgg.Apply(*fveln,*rhs);
-      FluidField().FreeSurface().InsertCondVector(rhs,veln);
+      FluidField().Interface().InsertFSCondVector(rhs,veln);
 
       veln->Scale(-1.*Dt());
 
@@ -740,10 +741,11 @@ void FSI::MonolithicFS::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat)
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField().ShapeDerivatives();
   if (mmm!=Teuchos::null)
   {
+    // here we extract the free surface submatrices from position 2
     LINALG::SparseMatrix& fmii = mmm->Matrix(0,0);
-    LINALG::SparseMatrix& fmig = mmm->Matrix(0,1);
-    LINALG::SparseMatrix& fmgi = mmm->Matrix(1,0);
-    LINALG::SparseMatrix& fmgg = mmm->Matrix(1,1);
+    LINALG::SparseMatrix& fmig = mmm->Matrix(0,2);
+    LINALG::SparseMatrix& fmgi = mmm->Matrix(2,0);
+    LINALG::SparseMatrix& fmgg = mmm->Matrix(2,2);
 
     mat.Matrix(0,0).Add(fmgg,false,1./timescale,1.0);
     mat.Matrix(0,0).Add(fmig,false,1./timescale,1.0);
@@ -938,7 +940,7 @@ FSI::MonolithicFS::CreateStatusTest(Teuchos::ParameterList& nlParams,
   // setup tests for interface
 
   std::vector<Teuchos::RCP<const Epetra_Map> > interface;
-  interface.push_back(FluidField().FreeSurface().CondMap());
+  interface.push_back(FluidField().Interface().FSCondMap());
   interface.push_back(Teuchos::null);
   LINALG::MultiMapExtractor interfaceextract(*DofRowMap(),interface);
 
@@ -1033,7 +1035,7 @@ void FSI::MonolithicFS::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
 
   fx = Extractor().ExtractVector(x,0);
 
-  Teuchos::RCP<Epetra_Vector> fcx = FluidField().FreeSurface().ExtractCondVector(fx);
+  Teuchos::RCP<Epetra_Vector> fcx = FluidField().Interface().ExtractFSCondVector(fx);
   FluidField().FreeSurfVelocityToDisplacement(fcx);
 
   // process ale unknowns

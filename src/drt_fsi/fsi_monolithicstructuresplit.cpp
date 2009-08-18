@@ -38,26 +38,26 @@ void FSI::MonolithicStructureSplit::SetupSystem()
   // structure to fluid
 
   coupsf.SetupConditionCoupling(*StructureField().Discretization(),
-                                StructureField().Interface(),
+                                 StructureField().Interface().CondMap(),
                                 *FluidField().Discretization(),
-                                FluidField().Interface(),
-                                "FSICoupling");
+                                 FluidField().Interface().FSICondMap(),
+                                 "FSICoupling");
 
   // structure to ale
 
   coupsa.SetupConditionCoupling(*StructureField().Discretization(),
-                                StructureField().Interface(),
+                                 StructureField().Interface().CondMap(),
                                 *AleField().Discretization(),
-                                AleField().Interface(),
-                                "FSICoupling");
+                                 AleField().Interface().CondMap(),
+                                 "FSICoupling");
 
   // fluid to ale at the interface
 
   icoupfa_.SetupConditionCoupling(*FluidField().Discretization(),
-                                  FluidField().Interface(),
+                                   FluidField().Interface().FSICondMap(),
                                   *AleField().Discretization(),
-                                  AleField().Interface(),
-                                  "FSICoupling");
+                                   AleField().Interface().CondMap(),
+                                   "FSICoupling");
 
   // In the following we assume that both couplings find the same dof
   // map at the structural side. This enables us to use just one
@@ -207,7 +207,7 @@ void FSI::MonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
     Extractor().AddVector(*veln,0,f);
 
     veln = StructureField().Interface().ExtractCondVector(rhs);
-    veln = FluidField().Interface().InsertCondVector(StructToFluid(veln));
+    veln = FluidField().Interface().InsertFSICondVector(StructToFluid(veln));
 
     double scale     = FluidField().ResidualScaling();
 
@@ -228,7 +228,7 @@ void FSI::MonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
 
       rhs = Teuchos::rcp(new Epetra_Vector(fmgg.RowMap()));
       fmgg.Apply(*fveln,*rhs);
-      FluidField().Interface().InsertCondVector(rhs,veln);
+      FluidField().Interface().InsertFSICondVector(rhs,veln);
 
       veln->Scale(-1.*Dt());
 
@@ -496,7 +496,7 @@ void FSI::MonolithicStructureSplit::SetupVector(Epetra_Vector &f,
   {
     // add fluid interface values to structure vector
     Teuchos::RCP<Epetra_Vector> scv = StructureField().Interface().ExtractCondVector(sv);
-    Teuchos::RCP<Epetra_Vector> modfv = FluidField().Interface().InsertCondVector(StructToFluid(scv));
+    Teuchos::RCP<Epetra_Vector> modfv = FluidField().Interface().InsertFSICondVector(StructToFluid(scv));
     modfv->Update(1.0, *fv, 1./fluidscale);
 
     Extractor().InsertVector(*modfv,1,f);
@@ -617,7 +617,7 @@ FSI::MonolithicStructureSplit::CreateStatusTest(Teuchos::ParameterList& nlParams
   // setup tests for interface
 
   std::vector<Teuchos::RCP<const Epetra_Map> > interface;
-  interface.push_back(FluidField().Interface().CondMap());
+  interface.push_back(FluidField().Interface().FSICondMap());
   interface.push_back(Teuchos::null);
   LINALG::MultiMapExtractor interfaceextract(*DofRowMap(),interface);
 
@@ -715,7 +715,7 @@ void FSI::MonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const Epetr
 
   // process structure unknowns
 
-  Teuchos::RCP<Epetra_Vector> fcx = FluidField().Interface().ExtractCondVector(fx);
+  Teuchos::RCP<Epetra_Vector> fcx = FluidField().Interface().ExtractFSICondVector(fx);
   FluidField().VelocityToDisplacement(fcx);
   Teuchos::RCP<const Epetra_Vector> sox = Extractor().ExtractVector(x,0);
   Teuchos::RCP<Epetra_Vector> scx = FluidToStruct(fcx);

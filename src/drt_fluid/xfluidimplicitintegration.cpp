@@ -77,7 +77,8 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   extrapolationpredictor_(params.get<bool>("do explicit predictor")),
   uprestart_(params.get<int>("write restart every")),
   upres_(params.get<int>("write solution every")),
-  writestresses_(params.get<int>("write stresses"))
+  writestresses_(params.get<int>("write stresses")),
+  surfacesplitter_(NULL)
 {
 
   // time measurement: initialization

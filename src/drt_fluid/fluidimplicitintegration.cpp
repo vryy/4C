@@ -66,8 +66,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   uprestart_(params.get("write restart every", -1)),
   upres_(params.get("write solution every", -1)),
   writestresses_(params.get<int>("write stresses", 0)),
-  freesurface_(NULL),
-  fsisurface_(NULL),
+  surfacesplitter_(NULL),
   inrelaxation_(false)
 {
   // -------------------------------------------------------------------
@@ -1001,7 +1000,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
 
 
         //---------------------------surface tension update
-        if (alefluid_ and freesurface_->Relevant())
+        if (alefluid_ and surfacesplitter_->FSCondRelevant())
         {
           // employs the divergence theorem acc. to Saksono eq. (24) and does
           // not require second derivatives.
@@ -1082,9 +1081,9 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
 
           // Add fluid part of Robin force
           // (scaled fluid velocity)
-          fsisurface_->AddCondVector(-1.*scale,
-                                     fsisurface_->ExtractCondVector(velnp_),
-                                     residual_);
+          surfacesplitter_->AddFSICondVector(-1.*scale,
+                                             surfacesplitter_->ExtractFSICondVector(velnp_),
+                                             residual_);
 
           // Note: It is the right thing to test the robin enhanced residual_
           // for convergence, since the velocity terms are to vanish and the
@@ -1094,7 +1093,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           // trueresidual_. This way we get the unbalanced forces at the
           // interface, which can be applied to the structure later on.
 
-          const Epetra_Map& robinmap = *fsisurface_->CondMap();
+          const Epetra_Map& robinmap = *surfacesplitter_->FSICondMap();
           int numrdofs = robinmap.NumMyElements();
           int* rdofs = robinmap.MyGlobalElements();
           for (int lid=0; lid<numrdofs; ++lid)
@@ -1416,11 +1415,11 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
     }
 
     //------------------------------------------------ free surface update
-    if (alefluid_ and freesurface_->Relevant())
+    if (alefluid_ and surfacesplitter_->FSCondRelevant())
     {
-      Teuchos::RefCountPtr<Epetra_Vector> fsvelnp = freesurface_->ExtractCondVector(velnp_);
-      Teuchos::RefCountPtr<Epetra_Vector> fsdisp = freesurface_->ExtractCondVector(dispn_);
-      Teuchos::RefCountPtr<Epetra_Vector> fsdispnp = Teuchos::rcp(new Epetra_Vector(*freesurface_->CondMap()));
+      Teuchos::RefCountPtr<Epetra_Vector> fsvelnp = surfacesplitter_->ExtractFSCondVector(velnp_);
+      Teuchos::RefCountPtr<Epetra_Vector> fsdisp = surfacesplitter_->ExtractFSCondVector(dispn_);
+      Teuchos::RefCountPtr<Epetra_Vector> fsdispnp = Teuchos::rcp(new Epetra_Vector(*surfacesplitter_->FSCondMap()));
 
       // select free surface elements
       std::string condname = "FREESURFCoupling";
@@ -1467,7 +1466,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
         discret_->ClearState();
 
         //ndnorm contains fsnodes' normal vectors (with arbitrary length). no pressure-entries
-        Teuchos::RefCountPtr<Epetra_Vector> ndnorm = freesurface_->ExtractCondVector(ndnorm0);
+        Teuchos::RefCountPtr<Epetra_Vector> ndnorm = surfacesplitter_->ExtractFSCondVector(ndnorm0);
 
         std::vector< int > GIDfsnodes;  //GIDs of free surface nodes
         std::vector< int > GIDdof;      //GIDs of current fsnode's dofs
@@ -1529,8 +1528,8 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
 
       fsdispnp->Update(1.0,*fsdisp,dta_,*fsvelnp,0.0);
 
-      freesurface_->InsertCondVector(fsdispnp,dispnp_);
-      freesurface_->InsertCondVector(fsvelnp,gridv_);
+      surfacesplitter_->InsertFSCondVector(fsdispnp,dispnp_);
+      surfacesplitter_->InsertFSCondVector(fsvelnp,gridv_);
     }
   }
 } // FluidImplicitTimeInt::NonlinearSolve
@@ -2397,7 +2396,7 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   discret_->ClearState();
 
   //---------------------------surface tension update
-  if (alefluid_ and freesurface_->Relevant())
+  if (alefluid_ and surfacesplitter_->FSCondRelevant())
   {
     // employs the divergence theorem acc. to Saksono eq. (24) and does not
     // require second derivatives.

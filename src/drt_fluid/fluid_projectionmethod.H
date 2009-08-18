@@ -21,8 +21,9 @@ wiesner@lnm.mw.tum.de
 #include "Epetra_SerialComm.h"
 #endif
 
-#include "Teuchos_RefCountPtr.hpp"
-#include "Teuchos_ParameterList.hpp"
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_ParameterList.hpp>
+
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_solver.H"
 #include "../drt_lib/linalg_utils.H"
@@ -42,6 +43,8 @@ wiesner@lnm.mw.tum.de
 #include <cstdlib>
 #include <iostream>
 #include <Teuchos_TimeMonitor.hpp>
+
+#include "fluid_utils_mapextractor.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -77,19 +80,12 @@ public:
     Teuchos::RCP<const Epetra_Map> VelocityRowMap() { return velpressplitter_.OtherMap(); }
     Teuchos::RCP<const Epetra_Map> PressureRowMap() { return velpressplitter_.CondMap(); }
 
-    /// introduce free surface extractor object
-    /*!
+  /// introduce surface split extractor object
+  /*!
     This method must (and will) be called during setup with a properly
     initialized extractor object iff we are on an ale mesh.
-    */
-    void SetFreeSurface(const LINALG::MapExtractor* freesurface) { freesurface_ = freesurface; }
-
-    /// introduce fsi surface extractor object
-    /*!
-    Introduce the FSI surface to the fluid algorithm. This way special case
-    algorithms can work on the surface.
-    */
-    void SetFSISurface(const LINALG::MapExtractor* fsisurface) { fsisurface_ = fsisurface; }
+   */
+  void SetSurfaceSplitter(const UTILS::MapExtractor* surfacesplitter) { surfacesplitter_ = surfacesplitter; }
 
 
     double ResidualScaling() const { return density_/dta_/theta_; }
@@ -228,11 +224,8 @@ protected:
 
     RCP<LINALG::MapExtractor> dbcmaps_;
 
-    /// free surface row dof map extractor
-    const LINALG::MapExtractor* freesurface_;
-
-    /// (robin) fsi coupling row dof map extractor
-    const LINALG::MapExtractor* fsisurface_;
+  /// row dof map extractor
+  const UTILS::MapExtractor* surfacesplitter_;
 };
 
 } // end namespace FLD
