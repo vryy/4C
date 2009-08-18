@@ -156,10 +156,7 @@ namespace ADAPTER {
 
     virtual Teuchos::RCP<Epetra_Vector>   IntegrateInterfaceShape();
 
-    virtual void UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
-                                const LINALG::MultiMapExtractor& rangemaps,
-                                std::string condname,
-                                bool splitmatrix);
+    virtual void UseBlockMatrix(bool splitmatrix);
 
     /// linear fluid solve with just a interface load
     /*!

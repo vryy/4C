@@ -94,10 +94,7 @@ void FSI::MonolithicStructureSplit::SetupSystem()
 
   // Use normal matrix for fluid equations but build (splitted) mesh movement
   // linearization (if requested in the input file)
-  FluidField().UseBlockMatrix(FluidField().Interface(),
-                              FluidField().Interface(),
-                              "FSICoupling",
-                              false);
+  FluidField().UseBlockMatrix(false);
 
   // build ale system matrix in splitted system
   AleField().BuildSystemMatrix(false);

@@ -121,10 +121,7 @@ public:
     virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel);
     virtual Teuchos::RCP<const Epetra_Vector> ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres);
     virtual Teuchos::RCP<Epetra_Vector>   IntegrateInterfaceShape();
-    virtual void UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
-                                const LINALG::MultiMapExtractor& rangemaps,
-                                std::string condname,
-                                bool splitmatrix);
+    virtual void UseBlockMatrix(bool splitmatrix);
     virtual Teuchos::RCP<DRT::ResultTest>  CreateFieldTest();
 private:
     /// the actual fluid algorithm

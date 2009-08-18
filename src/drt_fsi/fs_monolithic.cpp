@@ -575,10 +575,7 @@ FSI::MonolithicFS::MonolithicFS(Epetra_Comm& comm)
 
   // Use normal matrix for fluid equations but build (splitted) mesh movement
   // linearization (if requested in the input file)
-  FluidField().UseBlockMatrix(FluidField().Interface(),
-                              FluidField().Interface(),
-                              "FREESURFCoupling",
-                              false);
+  FluidField().UseBlockMatrix(false);
 
   // build ale system matrix in splitted (at the free surface) system
   AleField().BuildSystemMatrix(false);

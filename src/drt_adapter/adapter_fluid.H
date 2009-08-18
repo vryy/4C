@@ -330,10 +330,7 @@ namespace ADAPTER {
     virtual Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape() = 0;
 
     /// switch fluid field to block matrix
-    virtual void UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
-                                const LINALG::MultiMapExtractor& rangemaps,
-                                std::string condname,
-                                bool splitmatrix) = 0;
+    virtual void UseBlockMatrix(bool splitmatrix) = 0;
 
     /// create result test for encapulated fluid algorithm
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest() = 0;

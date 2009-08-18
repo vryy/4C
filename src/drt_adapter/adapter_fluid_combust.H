@@ -100,10 +100,7 @@ namespace ADAPTER
             dserror("not implemented!");
             return interface_.ExtractFSICondVector(fluid_.IntegrateInterfaceShape("FSICoupling")); };
 
-    virtual void UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
-                                const LINALG::MultiMapExtractor& rangemaps,
-                                std::string condname,
-                                bool splitmatrix)  { dserror("not implemented!"); return; };
+    virtual void UseBlockMatrix(bool splitmatrix)  { dserror("not implemented!"); return; };
 
     /// predictor
     virtual void Predictor(){ dserror("not implemented!"); return; };

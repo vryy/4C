@@ -445,14 +445,10 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidGenAlpha::IntegrateInterfaceShape()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::FluidGenAlpha::UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
-                                            const LINALG::MultiMapExtractor& rangemaps,
-                                            std::string condname,
-                                            bool splitmatrix)
+void ADAPTER::FluidGenAlpha::UseBlockMatrix(bool splitmatrix)
 {
-  Teuchos::RCP<std::set<int> > condelements = DRT::UTILS::ConditionedElementMap(*Discretization(),
-                                                                                condname);
-  fluid_.UseBlockMatrix(condelements,domainmaps,rangemaps,splitmatrix);
+  Teuchos::RCP<std::set<int> > condelements = Interface().ConditionedElementMap(*Discretization());
+  fluid_.UseBlockMatrix(condelements,Interface(),Interface(),splitmatrix);
 }
 
 

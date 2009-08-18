@@ -5,6 +5,7 @@
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_condition_selector.H"
+#include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/standardtypes_cpp.H"
 
 /*----------------------------------------------------------------------*
@@ -23,6 +24,18 @@ void FLD::UTILS::MapExtractor::Setup(const DRT::Discretization& dis)
   mcs.AddSelector(rcp(new DRT::UTILS::NDimConditionSelector(dis,"FSICoupling",0,genprob.ndim)));
   mcs.AddSelector(rcp(new DRT::UTILS::NDimConditionSelector(dis,"FREESURFCoupling",0,genprob.ndim)));
   mcs.SetupExtractor(dis,*dis.DofRowMap(),*this);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<std::set<int> > FLD::UTILS::MapExtractor::ConditionedElementMap(const DRT::Discretization& dis) const
+{
+  Teuchos::RCP<std::set<int> > condelements = DRT::UTILS::ConditionedElementMap(dis,"FSICoupling");
+  Teuchos::RCP<std::set<int> > condelements2 = DRT::UTILS::ConditionedElementMap(dis,"FREESURFCoupling");
+  std::copy(condelements2->begin(),condelements2->end(),
+            std::inserter(*condelements,condelements->begin()));
+  return condelements;
 }
 
 #endif

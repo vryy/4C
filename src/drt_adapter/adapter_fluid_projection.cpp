@@ -420,10 +420,7 @@ void ADAPTER::FluidProjection::FreeSurfVelocityToDisplacement(Teuchos::RCP<Epetr
             return Teuchos::null;
         }
 
-        void ADAPTER::FluidProjection::UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
-                                                      const LINALG::MultiMapExtractor& rangemaps,
-                                                      std::string condname,
-                                                      bool splitmatrix)
+        void ADAPTER::FluidProjection::UseBlockMatrix(bool splitmatrix)
         {
             dserror("not implemented");
             return;
