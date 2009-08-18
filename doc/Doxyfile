@@ -478,6 +478,7 @@ INPUT                  = index.doc \
                          ../src/drt_torsion3 \
                          ../src/drt_torsion2 \
                          ../src/io \
+                         ../src/drt_ale \
                          ../src/drt_adapter \
                          ../src/drt_fsi \
                          ../src/drt_ale2 \
