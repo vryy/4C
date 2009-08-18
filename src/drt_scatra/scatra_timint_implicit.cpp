@@ -167,9 +167,10 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   {
     // initialize standard (stabilized) system matrix (and save its graph!)
     // in standard case, but do not save the graph if fine-scale subgrid
-    // diffusivity is used
-    if (fssgd_ == "No") sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27,false,true));
-    else sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27));
+    // diffusivity is used in non-incremental case
+    if (fssgd_ != "No" and not incremental_)
+         sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27));
+    else sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27,false,true));
   }
 
   // -------------------------------------------------------------------
