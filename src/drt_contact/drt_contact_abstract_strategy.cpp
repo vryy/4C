@@ -894,16 +894,20 @@ void CONTACT::AbstractStrategy::PrintActiveSet()
 
       if (ctype == INPAR::CONTACT::contact_normal)
       {
-        // get D.B.C. status of current node
-        bool dbc = cnode->IsDbc();
-
         // print nodes of inactive set *************************************
         if (cnode->Active()==false)
-          cout << "INACTIVE: " << dbc << " " << gid << " " << wgap << " " << nz << endl;
+        {
+          printf("INACTIVE: %d \t wgap: %e \t lm: %e \n",gid,wgap,nz);
+          fflush(stdout);
+        }
 
         // print nodes of active set ***************************************
         else
-          cout << "ACTIVE:   " << dbc << " " << gid << " " << nz <<  " " << wgap << endl;
+        {
+          printf("ACTIVE:   %d \t wgap: %e \t lm: %e \n",gid,wgap,nz);
+          fflush(stdout);
+        }
+        
       }
       else
       if(cnode->Active())
