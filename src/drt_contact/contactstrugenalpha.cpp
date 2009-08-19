@@ -2300,20 +2300,21 @@ void CONTACT::ContactStruGenAlpha::Integrate()
     PenaltyStrategy& strategy = dynamic_cast<PenaltyStrategy&> (contactmanager_->GetStrategy());
     strategy.SaveReferenceState(disn_);
 
+    // LOOP1: time steps
     for (int i=step; i<nstep; ++i)
     {
-
       // predictor step
       if (predictor==1)
         ConstantPredictor();
       else if (predictor==2)
         ConsistentPredictor();
 
-      // nonlinear iteration (Newton)
+      // LOOP2: nonlinear iteration (Newton)
       if (equil=="full newton") FullNewton();
       else if (equil=="line search newton") FullNewtonLineSearch();
 
-      UpdateandOutput();       
+      strategy.UpdateConstraintNorm();
+      UpdateandOutput();  
       double time = params_.get<double>("total time", 0.0);      
       if (time>=maxtime) break;
     }
@@ -2323,7 +2324,60 @@ void CONTACT::ContactStruGenAlpha::Integrate()
   // Solving Strategy using Augmented Lagrange Techniques (with Uzawa)
   // here we have just one option: the ordinary NEWTON
   else if (soltype == INPAR::CONTACT::solution_auglag)
-    dserror("Cannot cope with augmented lagrange strategy yet");
+  {
+    if (discret_.Comm().MyPID() == 0)
+      cout << "===== Augmented Lagrange strategy ================================" << endl;
+
+    // explicitely store gap-scaling
+    PenaltyStrategy& strategy = dynamic_cast<PenaltyStrategy&> (contactmanager_->GetStrategy());
+    strategy.SaveReferenceState(disn_);
+
+    // LOOP1: time steps
+    for (int i=step; i<nstep; ++i)
+    {
+      // reset penalty parameter
+      strategy.ResetPenalty();
+      
+      // predictor step
+       if (predictor==1)
+         ConstantPredictor();
+       else if (predictor==2)
+         ConsistentPredictor();
+              
+      // get tolerance and maximum Uzawa steps
+      double eps = contactmanager_->GetStrategy().Params().get<double>("UZAWACONSTRTOL");
+      int maxuzawaiter = contactmanager_->GetStrategy().Params().get<int>("UZAWAMAXSTEPS");
+      
+      // LOOP2: augmented Lagrangian (Uzawa)
+      int uzawaiter=0;
+      do
+      { 
+        // increase iteration index
+        ++uzawaiter;
+        if (uzawaiter > maxuzawaiter)
+          dserror("Uzawa unconverged in %d iterations",maxuzawaiter);
+        
+        if (discret_.Comm().MyPID() == 0)
+          cout << "Starting Uzawa step No. " << uzawaiter << endl;
+        
+        // LOOP3: nonlinear iteration (Newton)
+        if (equil=="full newton") FullNewton();
+        else if (equil=="line search newton") FullNewtonLineSearch();
+        
+        // update constraint norm and penalty parameter
+        strategy.UpdateConstraintNorm(uzawaiter);
+        
+        // store Lagrange multipliers for next Uzawa step
+        strategy.UpdateAugmentedLagrange();
+        strategy.StoreNodalQuantities(AbstractStrategy::lmuzawa);
+        
+      } while (strategy.ConstraintNorm() >= eps);
+      
+      UpdateandOutput();       
+      double time = params_.get<double>("total time", 0.0);      
+      if (time>=maxtime) break;
+    }
+  }
 
   return;
 } // void ContactStruGenAlpha::Integrate()

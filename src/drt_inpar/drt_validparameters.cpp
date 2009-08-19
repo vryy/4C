@@ -816,6 +816,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                 &scontact);
 
   DoubleParameter("PENALTYPARAM",0.0,"Penalty parameter for penalty / augmented solution strategy",&scontact);
+  IntParameter("UZAWAMAXSTEPS",10,"Maximum no. of Uzawa steps for augmented / Uzawa solution strategy",&scontact);
+  DoubleParameter("UZAWACONSTRTOL",1.0e-8,"Tolerance of constraint norm for augmented / Uzawa solution strategy",&scontact);
   DoubleParameter("FRBOUND",0.0,"Friction bound for Tresca friction",&scontact);
   DoubleParameter("FRCOEFF",0.0,"Friction coefficient for Coulomb friction",&scontact);
 

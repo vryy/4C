@@ -295,7 +295,7 @@ discret_(discret)
   else if (stype == INPAR::CONTACT::solution_penalty)
     strategy_ = rcp(new PenaltyStrategy(problemrowmap,cparams,interfaces,dim,comm_,alphaf));
   else if (stype == INPAR::CONTACT::solution_auglag)
-    dserror("Cannot cope with augmented lagrange strategy yet");
+    strategy_ = rcp(new PenaltyStrategy(problemrowmap,cparams,interfaces,dim,comm_,alphaf));
   else
     dserror("Unrecognized strategy");
     
@@ -319,9 +319,6 @@ bool CONTACT::Manager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   int dim = psize.get<int>("DIM");
 
   // invalid parameter combinations
-  if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_auglag)
-    dserror("Augmented Lagrange strategy not yet implemented");
-  
   if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_lagmult &&
       Teuchos::getIntegralValue<INPAR::CONTACT::ShapeFcn>(input,"SHAPEFCN") != INPAR::CONTACT::shape_dual )
       dserror("Lagrange multiplier strategy only implemented for dual shape fct.");
@@ -333,6 +330,14 @@ bool CONTACT::Manager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_penalty &&
                                                  input.get<double>("PENALTYPARAM") <= 0.0)
       dserror("Penalty parameter eps = 0, must be greater than 0");
+  
+  if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_auglag &&
+                                                 input.get<int>("UZAWAMAXSTEPS") < 2)
+      dserror("Maximum number of Uzawa / Augmentation steps must be at least 2");
+  
+  if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_auglag &&
+                                                 input.get<double>("UZAWACONSTRTOL") <= 0.0)
+      dserror("Constraint tolerance for Uzawa / Augmentation scheme must be greater than 0");
   
   if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(input,"CONTACT")   == INPAR::CONTACT::contact_normal &&
       Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(input,"FRICTION") != INPAR::CONTACT::friction_none)

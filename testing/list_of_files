@@ -211,6 +211,7 @@ Input/contact2D_hertz_linstatic.dat                     x        x        x     
 Input/contact2D_quad.dat                                x        x        x        -        -        -
 Input/contact2D_lin.dat                                 x        x        x        -        -        -
 Input/contact2D_lin_penalty.dat                         x        x        x        -        -        -
+Input/contact2D_lin_augmented.dat                       x        x        x        -        -        -
 Input/contact2D_lin_sti.dat                             x        x        x        -        -        -
 Input/contact2D_slidingblock_tresca.dat                 x        x        x        -        -        -
 Input/contact2D_slidingblock_coulomb.dat                x        x        x        -        -        -
@@ -218,6 +219,7 @@ Input/contact2D_twobeamsvertical.dat                    x        x        x     
 Input/contact2D_twobeamshorizontal.dat                  x        x        x        -        -        -
 Input/contact3D_lin.dat                                 x        x        x        -        -        -
 Input/contact3D_lin_penalty.dat                         x        x        x        -        -        -
+Input/contact3D_lin_augmented.dat                       x        x        x        -        -        -
 Input/contact3D_patch_linstatic.dat                     x        x        x        -        -        -
 Input/locsys2D.dat                                      x        x        x        -        -        -
 Input/locsys3D.dat                                      x        x        x        -        -        -

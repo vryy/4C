@@ -51,8 +51,9 @@ namespace CONTACT
 {
 
 /*!
- \brief Contact solving strategy with regularization of lagrangian multipliers,
- also known as Penalty Method or Regularization.
+ \brief Contact solving strategy with regularization of Lagrangian multipliers,
+ also known as Penalty Method or Regularization. An Augmented Lagrangian version
+ based on the Uzawa algorithm is included, too.
  
  This is a specialization of the abstract contact algorithm as defined in AbstractStrategy.
  For a more general documentation of the involved functions refer to Abstract Strategy.
@@ -78,6 +79,24 @@ class PenaltyStrategy : public AbstractStrategy
 
   */
   virtual ~PenaltyStrategy() {};
+  
+  //! @name Access methods
+  
+  /*!
+  \brief Return L2-norm of active constraints
+  
+  */
+  double& ConstraintNorm() { return constrnorm_;}
+  
+  /*!
+  \brief Return initial penalty parameter
+  
+  */
+  double& InitialPenalty() { return initialpenalty_;}
+    
+  //@}
+
+  //! @name Evaluation methods
   
   /*!
   \brief Save nodal kappa-coefficients
@@ -173,9 +192,50 @@ class PenaltyStrategy : public AbstractStrategy
   */
   void UpdateActiveSetSemiSmooth() {}
   
+  /*!
+  \brief Reset penalty parameter to intial value
+  
+  When applying an Augmented Lagrangian version of the penalty approach,
+  the penalty parameter is sometimes updated during the Uzawa steps in
+  order to accelerate convergence of the constraint norm. This increase
+  in penalty stiffness can be dealt with, because at the time it is applied
+  the constraint norm is already quite low. Yet, for a new time step, we have
+  to come back to the initial penalty parameter. Thus, this method is called
+  at the beginning of each time step and resets the penalty parameter to its initial value.
+  
+  */
+  void ResetPenalty();
+    
+  /*!
+  \brief Compute L2-norm of active constraints
+  
+  In a classical penalty approach, the constraint norm is only monitored.
+  When applying an Augmented Lagrangian version, the constraint norm is the
+  relevant stopping criterion of the Uzawa iteration. In order to accelerate
+  convergence, a heuristic update formula for the penalty parameter is applied
+  in this method, too.
+  
+  */
+  void UpdateConstraintNorm(int uzawaiter = 0);
+  
+  /*!
+  \brief Store Lagrange multipliers for next Uzawa step
+  
+  A method ONLY called for the Augmented Lagrangian version of the penalty method.
+  At the end of an Uzawa step, the converged Lagrange multiplier value is stored
+  in the variable zuzawa_, which is then used in the next Uzawa step.
+  
+  */
+  void UpdateAugmentedLagrange();
+  
+  //@}
+  
 protected:
     
-  RCP<LINALG::SparseMatrix> linzmatrix_;  // global matrix LinZ with derivatives of LM
+  RCP<LINALG::SparseMatrix> linzmatrix_;     // global matrix LinZ with derivatives of LM
+  double                    constrnorm_;     // L2-norm of contact constraints
+  double                    initialpenalty_; // initial penalty parameter
+  
 
 }; // class PenaltyStrategy
 }  // namespace CONTACT

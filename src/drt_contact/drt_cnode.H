@@ -244,14 +244,19 @@ public:
   virtual inline double* teta() { return teta_; }
 
   /*!
-  \brief Return current Lagrange mutliplier (only for slave side!) (length 3)
+  \brief Return current Lagrange mutliplier in step n+1 (only for slave side!) (length 3)
   */
   virtual inline double* lm() { return lm_; }
 
   /*!
-  \brief Return old Lagrange mutliplier (only for slave side!) (length 3)
+  \brief Return old Lagrange mutliplier from step n (only for slave side!) (length 3)
   */
   virtual inline double* lmold() { return lmold_; }
+  
+  /*!
+  \brief Return Lagrange mutliplier from last Uzawa step (only for slave side!) (length 3)
+  */
+  virtual inline double* lmuzawa() { return lmuzawa_; }
 
   /*!
   \brief Return summation of incremental jumps per time step (only for slave side!) (length 3)
@@ -546,6 +551,7 @@ protected:
   double          uold_[3];        // old displacement (last converged state)
   double          lm_[3];          // current Lagrange multiplier value (n+1)
   double          lmold_[3];       // old Lagrange multiplier value (last converged state n)
+  double          lmuzawa_[3];     // Uzawa Lagrange multiplier value (last Uzawa step k)
   double          jump_[3];        // summation of incremental jumps per time step
   int             closestnode_;    // closest node id on the other side of interface
   bool            hasproj_;        // true if feasible projection within search set (slave nodes only)

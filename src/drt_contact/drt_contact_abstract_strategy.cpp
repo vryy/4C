@@ -109,6 +109,7 @@ isincontact_(false)
   // setup Lagrange muliplier vectors
   z_ = rcp(new Epetra_Vector(*gsdofrowmap_));
   zold_ = rcp(new Epetra_Vector(*gsdofrowmap_));
+  zuzawa_ = rcp(new Epetra_Vector(*gsdofrowmap_));
 
   // setup global Mortar matrices Dold and Mold
   dold_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_));
@@ -238,6 +239,11 @@ void CONTACT::AbstractStrategy::StoreNodalQuantities(AbstractStrategy::QuantityT
         vectorglobal = LagrMult();
         break;
       }
+      case AbstractStrategy::lmuzawa:
+      {
+        vectorglobal = LagrMultUzawa();
+        break;
+      }
       case AbstractStrategy::jump:
       {
         vectorglobal = Jump();
@@ -286,6 +292,11 @@ void CONTACT::AbstractStrategy::StoreNodalQuantities(AbstractStrategy::QuantityT
         case AbstractStrategy::lmold:
         {
           cnode->lmold()[dof] = (*vectorinterface)[locindex[dof]];
+          break;
+        }
+        case AbstractStrategy::lmuzawa:
+        {
+          cnode->lmuzawa()[dof] = (*vectorinterface)[locindex[dof]];
           break;
         }
         case AbstractStrategy::activeold:

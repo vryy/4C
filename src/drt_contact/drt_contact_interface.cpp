@@ -1585,6 +1585,10 @@ void CONTACT::Interface::AssembleMacauley(bool& localisincontact,
     double gap = cnode->Getg();
     double kappa = cnode->Kappa();
     
+    double lmuzawan = 0.0;
+    for (int k=0;k<dim;++k)
+      lmuzawan += cnode->lmuzawa()[k]*cnode->n()[k];
+    
 #ifdef CONTACTFDPENALTYKC1
     // set lagrangian multipliers explicitely to constant
     // and corresponding derivatives to zero
@@ -1597,8 +1601,28 @@ void CONTACT::Interface::AssembleMacauley(bool& localisincontact,
     continue;
 #endif
     
+    //********************************************************************
+    // Decision on active /  inactive nodes (regularization)
+    //
+    // CASE 1: Penalty approach
+    // A node is activated if its weighted gap is negative or deactivated
+    // if its gap is equal zero or positive.
+    // -> the regularization reads: lambda_n = kappa * pp * < -gap >
+    //
+    // CASE 2: Augmented Lagrange approach
+    // A node is activated if its Lagrange multiplier, stemming from the
+    // last Uzawa Lagrange multiplier AND the current regularization is
+    // negative or deactivated if its LM is equal zero or positive.
+    // -> the regularization reads: lambda_n = < lmuzawa_n - kappa * pp * gap > 
+    //
+    // As the Uzawa Lagrange multipliers are zero in the penalty approach,
+    // the two cases can formally be treted identically, see below.
+    // We do not need an explicit separation of cases!
+    //
+    //********************************************************************
+    
     // Activate/Deactivate node and notice any change    
-    if( (cnode->Active() == false) && (gap <= 0) )
+    if( (cnode->Active() == false) && (lmuzawan - kappa * pp * gap > 0) )
     {
         cnode->Active() = true;
         localactivesetchange = true;
@@ -1609,16 +1633,19 @@ void CONTACT::Interface::AssembleMacauley(bool& localisincontact,
         cout << ") gap=" << gap << endl;
     }
     
-    else if( (cnode->Active() == true) && (gap > 0) )
+    else if( (cnode->Active() == true) && (lmuzawan - kappa * pp * gap <= 0) )
     {
         cnode->Active() = false;
         localactivesetchange = true;
         
         cout << "node #" << gid << " is now inactive, gap=" << gap << endl;
     }
+    //********************************************************************
     
     // Compute derivZ-entries with the Macauley-Bracket
-    if( gap <= 1e-12 )
+    // of course, this is only done for active constraints in order
+    // for linearization and r.h.s to match!
+    if( cnode->Active()==true )
     {
       localisincontact = true;
       
@@ -1626,7 +1653,7 @@ void CONTACT::Interface::AssembleMacauley(bool& localisincontact,
 
       // compute lagrange multipliers and store into node
       for( int j=0;j<dim;++j)
-        cnode->lm()[j] = - kappa * pp * gap * normal[j];
+        cnode->lm()[j] = (lmuzawan - kappa * pp * gap) * normal[j];
       
       // compute derivatives of lagrange multipliers and store into node
       
@@ -1644,9 +1671,12 @@ void CONTACT::Interface::AssembleMacauley(bool& localisincontact,
           cnode->AddDerivZValue(j, gcurr->first, - kappa * pp * (gcurr->second) * normal[j]);
         for( ncurr = (derivn[j]).begin(); ncurr != (derivn[j]).end(); ++ncurr )
           cnode->AddDerivZValue(j, ncurr->first, - kappa * pp * gap * ncurr->second);
+        for( ncurr = (derivn[j]).begin(); ncurr != (derivn[j]).end(); ++ncurr )
+          cnode->AddDerivZValue(j, ncurr->first, + lmuzawan * ncurr->second);
       }
     }
     
+    // be sure to remove all LM-related stuff from inactive nodes
     else
     {
       // clear lagrange multipliers

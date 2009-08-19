@@ -74,6 +74,7 @@ class AbstractStrategy
       lmold,
       activeold,
       lmupdate,
+      lmuzawa,
       jump
     };
     //@}
@@ -101,7 +102,7 @@ class AbstractStrategy
     \brief Get contact parameter list
 
     */
-    inline Teuchos::ParameterList Params() const { return scontact_; }
+    inline Teuchos::ParameterList& Params() { return scontact_; }
     
     /*!
     \brief Get problem dimension
@@ -156,6 +157,17 @@ class AbstractStrategy
      
     */
     inline RCP<Epetra_Vector> LagrMultOld() { return zold_; }
+    
+    /*!
+    \brief Return Lagrange multiplier vector from last Uzawa step
+     
+    */
+    inline RCP<Epetra_Vector> LagrMultUzawa()
+    {
+      INPAR::CONTACT::SolvingStrategy soltype = Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(),"STRATEGY");
+      if (soltype != INPAR::CONTACT::solution_auglag) dserror("LagrMultUzawa() only defined for augmented strategy");
+      return zuzawa_;
+    }
 
     /*!
     \brief Return jump vector (t_n+1)
@@ -476,6 +488,7 @@ class AbstractStrategy
 
     RCP<Epetra_Vector> z_;        // current vector of Lagrange multipliers at t_n+1
     RCP<Epetra_Vector> zold_;     // old vector of Lagrange multipliers at t_n
+    RCP<Epetra_Vector> zuzawa_;   // vector of Lagrange multipliers from last Uzawa step
     RCP<Epetra_Vector> incrjump_; // incremental displacement jump (slave dofs)
     RCP<Epetra_Vector> jump_;     // displacement jump (slave dofs)
     RCP<Epetra_Vector> fc_;       // vector of current contact forces

@@ -65,6 +65,10 @@ AbstractStrategy(problemrowmap, params, interface, dim, comm, alphaf)
   
   if (ftype != INPAR::CONTACT::friction_none)
     dserror("Frictional Contact not implemented as Penalty Strategy yet.");
+  
+  // initialize constraint norm and initial penalty
+  constrnorm_ = 0.0;
+  initialpenalty_ = Params().get<double>("PENALTYPARAM");
 }
 
 #define CONTACTPENALTYGAPSCALING
@@ -261,6 +265,20 @@ void CONTACT::PenaltyStrategy::EvaluateMortar()
   
   if( (Comm().MyPID()==0) && (globalchange>=1) )
     cout << "ACTIVE SET HAS CHANGED..." << endl;
+  
+  // (re)setup active global Epetra_Maps
+  // the map of global active nodes is needed for the penalty case, too.
+  // this is due to the fact that we want to monitor the constraint norm
+  // of the active nodes
+  gactivenodes_ = null;
+  
+  // update active sets of all interfaces
+  // (these maps are NOT allowed to be overlapping !!!)
+  for (int i=0;i<(int)interface_.size();++i)
+  {
+    interface_[i]->BuildActiveSet();
+    gactivenodes_ = LINALG::MergeMap(gactivenodes_,interface_[i]->ActiveNodes(),false);
+  }
   
   return;
 }
@@ -522,6 +540,111 @@ void CONTACT::PenaltyStrategy::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
                                                 RCP<Epetra_Vector> feff)
 {
   dserror("Frictional Contact not implemented as Penalty Strategy yet.");
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | reset penalty parameter to intial value                    popp 08/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::PenaltyStrategy::ResetPenalty()
+{
+  // reset penalty parameter in strategy
+  Params().set<double>("PENALTYPARAM",InitialPenalty());
+  
+  // reset penalty parameter in all interfaces
+  for (int i=0; i<(int)interface_.size(); ++i)
+    interface_[i]->IParams().set<double>("PENALTYPARAM",InitialPenalty());
+        
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | evaluate L2-norm of active constraints                     popp 08/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::PenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
+{
+  // initialize parameters
+  double cnorm = 0.0;
+  bool updatepenalty = false;
+  double ppcurr = Params().get<double>("PENALTYPARAM");
+      
+  // gactivenodes_ is undefined
+  if (gactivenodes_==Teuchos::null)
+  {
+    ConstraintNorm()=0;
+  }
+  
+  // gactivenodes_ has no elements
+  else if (gactivenodes_->NumGlobalElements()==0)
+  {
+    ConstraintNorm()=0;
+  }
+  
+  // gactivenodes_ has at least one element
+  else
+  {
+    // export weighted gap vector to gactiveN-map
+    RCP<Epetra_Vector> gact = LINALG::CreateVector(*gactivenodes_,true);
+    if (gact->GlobalLength()) LINALG::Export(*g_,*gact);
+    
+    // compute constraint norm
+    gact->Norm2(&cnorm);
+    
+    //********************************************************************
+    // adaptive update of penalty parameter
+    // (only for Augmented Lagrange strategy)
+    //********************************************************************
+    INPAR::CONTACT::SolvingStrategy soltype =
+      Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(),"STRATEGY");
+    
+    if (soltype==INPAR::CONTACT::solution_auglag)
+    {
+      // check convergence of cnorm and update penalty parameter
+      // only do this for second, third, ... Uzawa iteration
+      // cf. Wriggers, Computational Contact Mechanics, 2nd edition (2006), p. 340
+      if ((uzawaiter >= 2) && (cnorm > 0.25 * ConstraintNorm()))
+      {
+        updatepenalty = true;
+        
+        // update penalty parameter in strategy
+        Params().set<double>("PENALTYPARAM",10*ppcurr);
+        
+        // update penalty parameter in all interfaces
+        for (int i=0; i<(int)interface_.size(); ++i)
+        {
+          double ippcurr = interface_[i]->IParams().get<double>("PENALTYPARAM");
+          if (ippcurr != ppcurr) dserror("Something wrong with penalty parameter");
+          interface_[i]->IParams().set<double>("PENALTYPARAM",10*ippcurr);
+        }
+      }
+    }
+    //********************************************************************
+    
+    // update constraint norm
+    ConstraintNorm() = cnorm;
+  }
+  
+  // output to screen
+  if (Comm().MyPID()==0)
+  {
+    cout << "********************************************\n";
+    cout << "Constraint Norm: " << cnorm << "\n";
+    if (updatepenalty)
+      cout << "Updated penalty parameter: " << ppcurr << " -> " << Params().get<double>("PENALTYPARAM") << "\n";
+    cout << "********************************************\n\n";
+  }
+    
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | store Lagrange multipliers for next Uzawa step             popp 08/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::PenaltyStrategy::UpdateAugmentedLagrange()
+{
+  // store current LM into Uzawa LM
+  zuzawa_ = rcp(new Epetra_Vector(*z_));
+  
   return;
 }
 
