@@ -48,16 +48,10 @@ Maintainer: Ulrich Kuettler
 
 #include <iostream>
 #include <vector>
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 
 #include "drt_dserror.H"
-#ifdef PARALLEL
-#include "mpi.h"
-#endif
-extern "C"
-{
-#include "../pss_full/pss_parser.h"
-}
+#include "drt_parser.H"
 
 
 namespace DRT {
@@ -68,8 +62,8 @@ namespace DRT {
 namespace UTILS {
 
   class TimeCurve;
-  
-  
+
+
   /*!
 
   \brief abstract interface for spatial functions.
@@ -239,7 +233,7 @@ namespace UTILS {
     std::vector<double> y_; //! origin(s) of spatial function, y-component
     std::vector<double> z_; //! origin(s) of spatial function, z-component
 
-    std::vector<_ST_NODE*> expr_; //! expression syntax tree(s)
+    std::vector<Teuchos::RCP<DRT::PARSER::Parser<double> > > expr_; //! expression syntax tree(s)
   };
 
 
@@ -342,7 +336,7 @@ namespace UTILS {
     std::vector<double>    origin_;
   };
 
-  
+
   /// special implementation for stationary 2d Jeffery-Hamel flow
   class JefferyHamelFlowFunction : public Function
   {
@@ -377,18 +371,18 @@ namespace UTILS {
     compute radial flow u as a function of the angle alpha
 
     \return radial velocity u
-    
+
     \note this function is static such that we can get the radial velocity
-          without creating the Function object 
+          without creating the Function object
 
     */
     static double RadialVelocity(
         const double& alpha ///< angle between 0 and PI/4 (range is checked in debug mode)
         );
-    
+
   };
-  
-  
+
+
   /// special implementation for a level set test function
   class ZalesaksDiskFunction : public Function
   {
@@ -429,7 +423,7 @@ namespace UTILS {
     FunctionManager& operator=(const FunctionManager&);
 
     /// all functions defined. The functions may be vector valued!
-    std::vector<Teuchos::RefCountPtr<Function> > functions_;
+    std::vector<Teuchos::RCP<Function> > functions_;
 
     /// the single instance
     static FunctionManager instance_;

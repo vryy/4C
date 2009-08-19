@@ -303,10 +303,10 @@ namespace UTILS {
   private:
 
     /// parsed expression as syntax tree
-    DRT::Parser<double> parsexpr_;
+    DRT::PARSER::Parser<double> parsexpr_;
 
     /// parsed expression twice automatically differentiated
-    DRT::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double> > > parsexprdd_;
+    DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double> > > parsexprdd_;
   };
 
 

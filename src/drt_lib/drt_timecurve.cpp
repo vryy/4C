@@ -681,8 +681,8 @@ std::vector<double> DRT::UTILS::BloodTimeSlice::FctDer(const double t,
 /*----------------------------------------------------------------------*/
 DRT::UTILS::ExprTimeSlice::ExprTimeSlice(double begin, double end, char* buf)
   : TimeSlice(begin,end),
-    parsexpr_(DRT::Parser<double>(string(buf))),
-    parsexprdd_(DRT::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double> > >(string(buf)))
+    parsexpr_(DRT::PARSER::Parser<double>(string(buf))),
+    parsexprdd_(DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double> > >(string(buf)))
 {
 }
 

@@ -63,7 +63,7 @@ Maintainer: Burkhard Bornemann
 \author u.kue
 \date 10/07
 */
-int DRT::Lexer::GetNext()
+int DRT::PARSER::Lexer::GetNext()
 {
   if (pos_ < funct_.length())
   {
@@ -84,7 +84,7 @@ int DRT::Lexer::GetNext()
 \author u.kue
 \date 10/07
 */
-void DRT::Lexer::Lexan()
+void DRT::PARSER::Lexer::Lexan()
 {
   for (;;)
   {

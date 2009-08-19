@@ -43,6 +43,8 @@ Maintainer: Ulrich Kuettler
 #ifndef PSS_PARSER_H
 #define PSS_PARSER_H
 
+#ifndef CCADISCRET
+
 #include "../headers/standardtypes.h"
 
 struct _ST_NODE;
@@ -62,4 +64,5 @@ void pss_parser_print(FILE* out, struct _ST_NODE* node);
 /* a Heaviside function */
 double heaviside();
 
+#endif
 #endif

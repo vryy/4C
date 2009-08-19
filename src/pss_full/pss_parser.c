@@ -51,6 +51,8 @@ There is a lot of internal stuff here that is only used within this
 file.
 */
 
+#ifndef CCADISCRET
+
 #include "pss_parser.h"
 
 /*----------------------------------------------------------------------*/
@@ -960,3 +962,5 @@ void pss_parser_print(FILE* out, struct _ST_NODE* node)
     dserror("unknown syntax tree node type");
   }
 }
+
+#endif

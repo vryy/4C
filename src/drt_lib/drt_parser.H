@@ -61,6 +61,14 @@ Maintainer: Burkhard Bornemann
 
 namespace DRT {
 
+/// all parser related classes
+/*!
+  We have a simple top-down expression parser. One peculiarity is, however,
+  that the expression type is templated. This way we can use the Sacado
+  library to calculate derivatives along with the actual value.
+ */
+namespace PARSER {
+
 /*----------------------------------------------------------------------*/
 /*!
 \brief Syntax tree node holding binary, unary operator or literals
@@ -606,7 +614,7 @@ T Parser<T>::Interpret(SyntaxTreeNode<T>* node)
   return res;
 }
 
-
+}
 }  // end namespace DRT
 
 #endif // DRT_PARSER_H
