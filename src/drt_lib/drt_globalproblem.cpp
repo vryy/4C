@@ -656,6 +656,17 @@ void DRT::Problem::OpenErrorFile(const Epetra_Comm& comm, std::string prefix)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void DRT::Problem::WriteInputParameters()
+{
+  std::string s = OutputControlFile()->FileName();
+  s.append(".parameter");
+  std::ofstream stream(s.c_str());
+  DRT::INPUT::PrintDatHeader(stream,*getParameterList(),"",false,false);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
 {
   genprob.create_dis = 0;

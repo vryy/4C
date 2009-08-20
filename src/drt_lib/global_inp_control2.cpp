@@ -115,6 +115,9 @@ void ntainp_ccadiscret()
                            allfiles.inputfile_name,
                            allfiles.outputfile_kenner);
 
+  if (comm->MyPID()==0)
+    problem->WriteInputParameters();
+
   return;
 } // end of ntainp_ccadiscret()
 

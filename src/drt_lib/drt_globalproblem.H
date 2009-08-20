@@ -209,6 +209,9 @@ public:
   /// control error files
   Teuchos::RCP<IO::ErrorFileControl> ErrorFile() { return errorfilecontrol_; }
 
+  /// write parameters read from dat file for documentation
+  void WriteInputParameters();
+
   //@}
 
   /// @name Parameters read from file

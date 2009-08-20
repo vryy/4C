@@ -56,7 +56,8 @@ void PrintValidParameters()
 void DRT::INPUT::PrintDatHeader(std::ostream& stream,
                                 const Teuchos::ParameterList& list,
                                 std::string parentname,
-                                bool color)
+                                bool color,
+                                bool comment)
 {
   std::string blue2light = "";
   std::string bluelight = "";
@@ -91,13 +92,17 @@ void DRT::INPUT::PrintDatHeader(std::ostream& stream,
       const std::string &name = list.name(i);
       if (name == PrintEqualSign()) continue;
       Teuchos::RCP<const Teuchos::ParameterEntryValidator> validator = entry.validator();
-      stream << blue2light << "//" << endcolor << '\n';
 
-      std::string doc = entry.docString();
-      if (doc!="")
+      if (comment)
       {
-        Teuchos::StrUtils::printLines(stream,blue2light + "// ",doc);
-        stream << endcolor;
+        stream << blue2light << "//" << endcolor << '\n';
+
+        std::string doc = entry.docString();
+        if (doc!="")
+        {
+          Teuchos::StrUtils::printLines(stream,blue2light + "// ",doc);
+          stream << endcolor;
+        }
       }
 
       if (entry.isList())
@@ -110,10 +115,11 @@ void DRT::INPUT::PrintDatHeader(std::ostream& stream,
         stream << redlight << "--";
         for (int i=0; i<std::max<int>(65-l,0); ++i) stream << '-';
         stream << greenlight << secname << endcolor << '\n';
-        PrintDatHeader(stream,list.sublist(name),secname,color);
+        PrintDatHeader(stream,list.sublist(name),secname,color,comment);
       }
       else
       {
+        if (comment)
         if (validator!=Teuchos::null)
         {
           Teuchos::RCP<const Teuchos::Array<std::string> > values = validator->validStringValues();
