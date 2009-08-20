@@ -262,7 +262,7 @@ RESTART                         0
 SHAPEFCT                        Polynomial
 TIMETYP                         Dynamic
 -------------------------------------------SCALAR TRANSPORT DYNAMIC
-FSSUGRVISC                      No
+FSSUGRDIFF                      No
 INITFUNCNO                      -1
 INITIALFIELD                    zero_field
 ITEMAX                          10
