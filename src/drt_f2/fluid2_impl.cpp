@@ -2102,6 +2102,11 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Caltau(
     CalVisc(material,visc,rateofstrain,dens,eosfac);
 
   // ---------------------------------------------------------------
+  // check whether there is zero or negative (physical) viscosity
+  // ---------------------------------------------------------------
+  if (visc < EPS15) dserror("zero or negative (physical) viscosity");
+
+  // ---------------------------------------------------------------
   // computation of subgrid viscosity
   // ---------------------------------------------------------------
   // define variable for subgrid viscosity

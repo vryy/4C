@@ -1394,6 +1394,9 @@ if (material->MaterialType() == INPAR::MAT::m_matlist)
     reacoeff_[k]   = 0.0;
     reatemprhs_[k] = 0.0;
 
+    // set specific heat capacity at constant pressure to 1.0
+    shcacp_ = 1.0;
+
     const int matid = actmat->MatID(k);
     Teuchos::RCP<const MAT::Material> singlemat = actmat->MaterialById(matid);
 
@@ -1446,9 +1449,10 @@ if (material->MaterialType() == INPAR::MAT::m_matlist)
     }
     else
       dserror("material type is not allowed");
+
+    // check whether there is zero or negative (physical) diffusivity
+    if (diffus_[k] < EPS15) dserror("zero or negative (physical) diffusivity");
   }
-  // set specific heat capacity at constant pressure to 1.0
-  shcacp_ = 1.0;
 }
 else if (material->MaterialType() == INPAR::MAT::m_condif)
 {
@@ -1522,6 +1526,9 @@ else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
 }
 else
   dserror("Material type is not supported");
+
+// check whether there is zero or negative (physical) diffusivity
+if (diffus_[0] < EPS15) dserror("zero or negative (physical) diffusivity");
 
 return;
 } //ScaTraImpl::GetMaterialParams
@@ -1712,9 +1719,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
 #endif
         vel_norm = velint_.Norm2();
 
-      // check whether there is zero diffusivity
-      if (diffus == 0.0) dserror("diffusivity is zero: Preventing division by zero at evaluation of stabilization parameter");
-
       // parameter relating convective and diffusive forces + respective switch
       double epe = mk * dens * vel_norm * h / diffus;
       const double xi = DMAX(epe,1.0);
@@ -1771,9 +1775,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
 
       // get Euclidean norm of (weighted) velocity at element center
       double vel_norm = velint_.Norm2();
-
-      // check whether there is zero diffusivity
-      if (diffus == 0.0) dserror("diffusivity is zero: Preventing division by zero at evaluation of stabilization parameter");
 
       // element Peclet number relating convective and diffusive forces
       double epe = 0.5 * dens * vel_norm * h / diffus;
