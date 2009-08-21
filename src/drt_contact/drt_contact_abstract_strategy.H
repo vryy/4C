@@ -129,6 +129,12 @@ class AbstractStrategy
     inline const RCP<Epetra_Map> SlaveRowNodes() { return gsnoderowmap_; }
 
     /*!
+    \brief Return row map of global problem
+     
+    */
+    inline const RCP<Epetra_Map> ProblemRowMap() { return problemrowmap_; }
+  
+    /*!
     \brief Return convergence status of active set loop
      
     */
@@ -175,6 +181,18 @@ class AbstractStrategy
     */
     inline RCP<Epetra_Vector> Jump() { return jump_; }
 
+    /*!
+    \brief Return vector of normal contact stresses (t_n+1)
+     
+    */
+    inline RCP<Epetra_Vector> ContactNorStress() { return stressnormal_; }
+
+    /*!
+    \brief Return vector of tangential contact stresses (t_n+1)
+     
+    */
+    inline RCP<Epetra_Vector> ContactTanStress() { return stresstangential_; }
+    
     /*!
     \brief Return current global contact status
      
@@ -347,6 +365,16 @@ class AbstractStrategy
     void StoreNodalQuantities(AbstractStrategy::QuantityType type);
 
     /*!
+    \brief Evaluate contact stresses in normal direction and tangential plane
+
+    This is called at the end of each time or load step. It calculates 
+    the stress vector in normal direction and the stress vector in the 
+    tangential plane.
+
+    */
+    void OutputStresses ();
+    
+    /*!
     \brief Get dirichlet B.C. status and store into CNodes
 
     This is called once at the beginning of the simulation
@@ -486,12 +514,14 @@ class AbstractStrategy
     RCP<LINALG::SparseMatrix> dold_; // global Mortar matrix D (last end-point t_n)
     RCP<LINALG::SparseMatrix> mold_; // global Mortar matrix D (last end-point t_n)
 
-    RCP<Epetra_Vector> z_;        // current vector of Lagrange multipliers at t_n+1
-    RCP<Epetra_Vector> zold_;     // old vector of Lagrange multipliers at t_n
-    RCP<Epetra_Vector> zuzawa_;   // vector of Lagrange multipliers from last Uzawa step
-    RCP<Epetra_Vector> incrjump_; // incremental displacement jump (slave dofs)
-    RCP<Epetra_Vector> jump_;     // displacement jump (slave dofs)
-    RCP<Epetra_Vector> fc_;       // vector of current contact forces
+    RCP<Epetra_Vector> z_;                 // current vector of Lagrange multipliers at t_n+1
+    RCP<Epetra_Vector> zold_;              // old vector of Lagrange multipliers at t_n
+    RCP<Epetra_Vector> zuzawa_;            // vector of Lagrange multipliers from last Uzawa step
+    RCP<Epetra_Vector> incrjump_;          // incremental displacement jump (slave dofs)
+    RCP<Epetra_Vector> jump_;              // displacement jump (slave dofs)
+    RCP<Epetra_Vector> fc_;                // vector of current contact forces
+    RCP<Epetra_Vector> stressnormal_;      // vector of normal contact forces at t_n+1
+    RCP<Epetra_Vector> stresstangential_;  // vector of tangentail contact forces at t_n+1
 
     // global storage fields
     bool activesetconv_; // convergence flag for active set

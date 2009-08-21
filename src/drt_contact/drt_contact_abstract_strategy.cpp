@@ -121,6 +121,10 @@ isincontact_(false)
 
   // friction: setup vector of displacement jumps (slave dof) 
   jump_ = rcp(new Epetra_Vector(*gsdofrowmap_));
+  
+  // output contact stress vectors 
+  stressnormal_ = rcp(new Epetra_Vector(*gsdofrowmap_));
+  stresstangential_ = rcp(new Epetra_Vector(*gsdofrowmap_));
 }
 
 /*----------------------------------------------------------------------*
@@ -337,6 +341,78 @@ void CONTACT::AbstractStrategy::StoreNodalQuantities(AbstractStrategy::QuantityT
         } // switch
       }
     }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Output vector for normal and tangential contact stresses gitterle 08/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::AbstractStrategy::OutputStresses ()
+{
+  // loop over all interfaces
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    // currently this only works safely for 1 interface
+    if (i>0) dserror("ERROR: OutputStresses: Double active node check needed for n interfaces!");
+
+    RCP<Epetra_Vector> contactnormalstresses = rcp(new Epetra_Vector(*gsdofrowmap_));
+    RCP<Epetra_Vector> contacttangentialstresses = rcp(new Epetra_Vector(*gsdofrowmap_));
+    
+    // loop over all slave row nodes on the current interface
+    for (int j=0; j<interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
+    {
+      int gid = interface_[i]->SlaveRowNodes()->GID(j);
+      DRT::Node* node = interface_[i]->Discret().gNode(gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      CNode* cnode = static_cast<CNode*>(node);
+
+      // be aware of problem dimension
+      int dim = Dim();
+      int numdof = cnode->NumDof();
+      if (dim!=numdof) dserror("ERROR: Inconsisteny Dim <-> NumDof");
+
+      double nn[3];
+      double nt1[3];
+      double nt2[3];
+      double lmn = 0.0;
+      double lmt1 = 0.0;
+      double lmt2 = 0.0;
+
+      for (int j=0;j<3;++j)
+      {
+        nn[j]=cnode->n()[j];
+        nt1[j]=cnode->txi()[j];
+        nt2[j]=cnode->teta()[j];
+        lmn +=  nn[j]* cnode->lm()[j];
+        lmt1 += nt1[j]* cnode->lm()[j];
+        lmt2 += nt2[j]* cnode->lm()[j];
+      }
+      
+      // find indices for DOFs of current node in Epetra_Vector
+      // and put node values (normal and tangential stress components) at these DOFs
+      
+      vector<int> locindex(dim);
+      
+      // normal stress components     
+      for (int dof=0;dof<dim;++dof)
+      {
+        locindex[dof] = (contactnormalstresses->Map()).LID(cnode->Dofs()[dof]);
+        (*contactnormalstresses)[locindex[dof]] = lmn*nn[dof];
+      }
+      
+      // tangential stress components
+      for (int dof=0;dof<dim;++dof)
+      {
+        locindex[dof] = (contacttangentialstresses->Map()).LID(cnode->Dofs()[dof]);
+        (*contacttangentialstresses)[locindex[dof]] = lmt1*nt1[dof]+lmt2*nt2[dof];
+      }
+    }
+    
+    // store it vectors
+    stressnormal_->Update(-1.0,*contactnormalstresses,0.0);
+    stresstangential_->Update(-1.0,*contacttangentialstresses,0.0);
   }
 
   return;

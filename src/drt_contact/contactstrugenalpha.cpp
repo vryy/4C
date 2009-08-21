@@ -2046,13 +2046,29 @@ void CONTACT::ContactStruGenAlpha::Output()
   if (!errfile) printerr = false;
 
   bool isdatawritten = false;
+  
+  //------------------------------- evaluate contact stresses for output
+  contactmanager_->GetStrategy().OutputStresses();
+	RCP<Epetra_Map> problem = (contactmanager_->GetStrategy().ProblemRowMap());
 
+	// normal direction
+  RCP<Epetra_Vector> normalstresses = contactmanager_->GetStrategy().ContactNorStress();
+	RCP<Epetra_Vector> normalstressesexp = rcp(new Epetra_Vector(*problem));
+	LINALG::Export(*normalstresses, *normalstressesexp);
+	
+  // tangential plane
+	RCP<Epetra_Vector> tangentialstresses = contactmanager_->GetStrategy().ContactTanStress();
+	RCP<Epetra_Vector> tangentialstressesexp = rcp(new Epetra_Vector(*problem));
+	LINALG::Export(*tangentialstresses, *tangentialstressesexp);
+	
   //------------------------------------------------- write restart step
   if (writeresevry and istep%writeresevry==0)
   {
     output_.WriteMesh(istep,timen);
     output_.NewStep(istep, timen);
     output_.WriteVector("displacement",dis_);
+    output_.WriteVector("norcontactstress",normalstressesexp);
+    output_.WriteVector("tancontactstress",tangentialstressesexp);
     output_.WriteVector("velocity",vel_);
     output_.WriteVector("acceleration",acc_);
     output_.WriteVector("fexternal",fext_);
@@ -2078,6 +2094,8 @@ void CONTACT::ContactStruGenAlpha::Output()
   {
     output_.NewStep(istep, timen);
     output_.WriteVector("displacement",dis_);
+    output_.WriteVector("norcontactstress",normalstressesexp);
+    output_.WriteVector("tancontactstress",tangentialstressesexp);
     output_.WriteVector("velocity",vel_);
     output_.WriteVector("acceleration",acc_);
     output_.WriteVector("fexternal",fext_);

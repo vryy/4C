@@ -329,9 +329,7 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
         if (fric)
         {
           gmshfilecontent << "VP(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << ")";
-          gmshfilecontent << "{" << scientific << lmt1*nn[0] << "," << lmt1*nn[1] << "," << lmt1*nn[2] << "};" << endl;
-          gmshfilecontent << "VP(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << ")";
-          gmshfilecontent << "{" << scientific << lmt2*nn[0] << "," << lmt2*nn[1] << "," << lmt2*nn[2] << "};" << endl;
+          gmshfilecontent << "{" << scientific << lmt1*nt1[0]+lmt2*nt2[0] << "," << lmt1*nt1[1]+lmt2*nt2[1] << "," << lmt1*nt1[2]+lmt2*nt2[2] << "};" << endl;
         }
       }
 
