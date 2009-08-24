@@ -159,11 +159,11 @@ void XFEM::InterfaceHandleXFSI::ClassifyIntegrationCells()
   // clean up double counted intersections
   std::set<int> ele_to_delete;
 
-  // find unintersected elements and put their Id them in aboves set
-  std::map<int,GEO::DomainIntCells >::const_iterator entry;
+  // find uncut elements and put their Id them in aboves set
+  std::map<int,GEO::DomainIntCells >::iterator entry;
   for (entry = elementalDomainIntCells_.begin(); entry != elementalDomainIntCells_.end(); ++entry)
   {
-    GEO::DomainIntCells cells = entry->second;
+    GEO::DomainIntCells& cells = entry->second;
     const DRT::Element* xfemele = xfemdis_->gElement(entry->first);
     std::set<int> labelset;
     bool one_cell_is_fluid = false;
