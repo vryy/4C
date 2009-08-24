@@ -46,12 +46,15 @@ Maintainer: Ulrich Kuettler
 #ifndef DRT_FUNCTION_H
 #define DRT_FUNCTION_H
 
+#ifdef __cplusplus
+
 #include <iostream>
 #include <vector>
 #include <Teuchos_RCP.hpp>
 
 #include "drt_dserror.H"
 #include "drt_parser.H"
+#include "drt_inputreader.H"
 
 
 namespace DRT {
@@ -59,6 +62,12 @@ namespace DRT {
   class Discretization;
   class Condition;
   class Problem;
+
+namespace INPUT {
+
+  class Lines;
+
+}
 
 namespace UTILS {
 
@@ -121,8 +130,10 @@ namespace UTILS {
 
     FunctionManager() {}
 
+    Teuchos::RCP<DRT::INPUT::Lines> ValidFunctionLines();
+
     /// read the baci input file and set up all functions
-    void ReadInput();
+    void ReadInput(const DRT::INPUT::DatFileReader& reader);
 
     /// return a specified function
     Function& Funct(int num);
@@ -140,6 +151,19 @@ namespace UTILS {
   };
 }
 }
+
+#endif
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+  void PrintFunctionDatHeader();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

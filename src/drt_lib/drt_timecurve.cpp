@@ -54,6 +54,7 @@ Maintainer: Ulrich Kuettler
 #include "drt_parser.H"
 #include "drt_timecurve.H"
 #include "drt_dserror.H"
+#include "drt_linedefinition.H"
 
 #include "drt_globalproblem.H"
 #include "../drt_mat/newtonianfluid.H"
@@ -292,7 +293,7 @@ namespace UTILS {
   {
   public:
     /// construct syntax tree from string buffer
-    ExprTimeSlice(double begin, double end, char* buf);
+    ExprTimeSlice(double begin, double end, std::string buf);
 
     /// explicit destructor that frees the syntax tree
     ~ExprTimeSlice();
@@ -320,168 +321,195 @@ namespace UTILS {
 
 
 /*----------------------------------------------------------------------*/
+//! Print function to be called from C
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::TimeCurveManager::ReadInput()
+extern "C"
+void PrintTimeCurveDatHeader()
+{
+  DRT::UTILS::TimeCurveManager timecurvemanager;
+  Teuchos::RCP<DRT::INPUT::Lines> lines = timecurvemanager.ValidTimeCurveLines();
+
+  lines->Print(std::cout);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::TimeCurveManager::ValidTimeCurveLines()
+{
+  DRT::INPUT::LineDefinition polygonal;
+  polygonal
+    .AddNamedInt("CURVE")
+
+    // This is a really stupid definition. Once upon a time there were
+    // different options, but since those are no longer supported, we do not
+    // care.
+    .AddTag("on")
+    .AddTag("Polygonal")
+    .AddNamedDouble("T")
+    .AddTag("BYABSTIME")
+    .AddNamedDoubleVector("Yes",2)
+    .AddNamedDoubleVector("FACTOR",2)
+    ;
+
+  DRT::INPUT::LineDefinition expl;
+  expl
+    .AddNamedInt("CURVE")
+    .AddNamedString("Explicit")
+    .AddNamedDouble("c1")
+    .AddNamedDouble("c2")
+    ;
+
+  DRT::INPUT::LineDefinition func;
+  func
+    .AddNamedInt("CURVE")
+    .AddNamedString("FUNC")
+    .AddNamedDouble("t1")
+    .AddNamedDouble("t2")
+    ;
+
+  DRT::INPUT::LineDefinition lungsinus;
+  lungsinus
+    .AddNamedInt("CURVE")
+    .AddTag("LungSinus")
+    .AddNamedDouble("Frequ")
+    .AddNamedDouble("pPEEP")
+    .AddNamedDouble("Phase")
+    ;
+
+  DRT::INPUT::LineDefinition physiologicalwaveform;
+  physiologicalwaveform
+    .AddNamedInt("CURVE")
+    .AddTag("PhysiologicalWaveform")
+    .AddNamedDouble("Period")
+    .AddNamedDouble("Flowrate")
+    .AddNamedInt("Samplingpoints")
+    .AddNamedDoubleVector("Arrayread","Samplingpoints")
+    ;
+
+  Teuchos::RCP<DRT::INPUT::Lines> lines = Teuchos::rcp(new DRT::INPUT::Lines("CURVE"));
+  lines->Add(polygonal);
+  lines->Add(expl);
+  lines->Add(func);
+  lines->Add(lungsinus);
+  lines->Add(physiologicalwaveform);
+  return lines;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::UTILS::TimeCurveManager::ReadInput(const DRT::INPUT::DatFileReader& reader)
 {
   curves_.clear();
+
+  Teuchos::RCP<DRT::INPUT::Lines> lines = ValidTimeCurveLines();
 
   // test for as many curves as there are
   for (int i = 1;; ++i)
   {
-    ostringstream curve;
-    curve << "--CURVE" << i;
-    if (frfind(curve.str().c_str())==1)
+    std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition> > curves = lines->Read(reader, i);
+    if (curves.size()==0)
+      break;
+
+    // so we have a new time curve
+    curves_.push_back(TimeCurve());
+    TimeCurve& curve = curves_.back();
+
+    for (unsigned j=0; j<curves.size(); ++j)
     {
-      frread();
-      int ierr;
-
-      // stop if there is no content to this curve
-      // no further curves are read
-      frchk("---",&ierr);
-      if (ierr==1)
-      {
-        break;
-      }
-
       int id;
-      frint("CURVE",&id,&ierr);
-      if (ierr!=1) dserror("cannot read CURVE%d", i);
+      curves[j]->ExtractNamedInt("CURVE",id);
       if (id!=i) dserror("expected CURVE%d but got CURVE%d", i, id);
 
-      // so we have a new time curve
-      curves_.push_back(TimeCurve());
-      TimeCurve& curve = curves_.back();
-
-      for (;; frread())
+      if (curves[j]->HaveNamed("Polygonal"))
       {
-        // we are done once we hit the border
-        frchk("---",&ierr);
-        if (ierr==1)
-        {
-          break;
-        }
-
-        frchk("Polygonal",&ierr);
-        if (ierr==1)
-        {
-          char* colpointer = strstr(fractplace(),"BYABSTIME");
-          colpointer += 13;
-          double begin = strtod(colpointer,&colpointer);
-          double end = strtod(colpointer,&colpointer);
-          colpointer = strstr(fractplace(),"FACTOR");
-          colpointer += 6;
-          double vbegin = strtod(colpointer,&colpointer);
-          double vend = strtod(colpointer,&colpointer);
-          curve.AddSlice(rcp(new PolygonalTimeSlice(begin,end,vbegin,vend)));
-          continue;
-        }
-        frchk("Explicit",&ierr);
-        if (ierr==1)
-        {
-          char buffer[100];
-          frchar("FUNC",buffer,&ierr);
-          if (ierr!=1) dserror("cannot read CURVE%d",i);
-
-          int numex = 0;
-          if (string(buffer)=="f(t)=sin(t:C1*PI:2)_for_t<_C1_else_f(t)=1")
-            numex=-1;
-          else if (string(buffer)=="f(t)=exp(1-1:t)_for_t<C1_else_const.")
-            numex=-2;
-          else if (string(buffer)=="f(t)=1-cos(2*PI*C1*t)")
-            numex=-3;
-          else if (string(buffer)=="f(t)=C2*sin(2PI*C1*t)")
-            numex=-4;
-          else if (string(buffer)=="f(t)=(sin(PI(t:C1-0.5))+1)*0.5")
-            numex=-5;
-          else if (string(buffer)=="BELTRAMI")
-            numex=-6;
-          else if (string(buffer)=="KIM-MOIN")
-            numex=-7;
-          else if (string(buffer)=="f(t)=(C2:2PI*C1)*cos(2PI*C1*t)")
-            numex=-8;
-          else if (string(buffer)=="f(t)=t:2-C1:(2PI)*cos(PI*t:C1-PI:2)")
-            numex=-9; /* time integral of numex -5 */
-          else if (string(buffer)=="f(t)=-0.5*cos(PI*(T-C1)/C2)+0.5")
-            numex=-11; /* ramp function with horizontal slopes */
-          else if (string(buffer)=="f(t)=(1-C2/C1)*T+C2")
-            numex=-12; /* linearly increasing function with non-zero initial value */
-          else
-            dserror("Cannot read function of CURVE%d: %s",i,string(buffer).c_str());
-
-          double c1;
-          double c2;
-
-          frdouble("c1",&c1,&ierr);
-          if (ierr!=1) dserror("cannot read CURVE%d",i);
-          frdouble("c2",&c2,&ierr);
-          if (ierr!=1) dserror("cannot read CURVE%d",i);
-
-          curve.AddSlice(rcp(new ExplicitTimeSlice(numex,c1,c2)));
-          continue;
-        }
-        frchk("EXPR",&ierr);
-        if (ierr==1)
-        {
-          char buffer[500];
-          frchar("FUNC",buffer,&ierr);
-          if (ierr!=1) dserror("cannot read CURVE%d",i);
-
-          double begin;
-          double end;
-
-          frdouble("t1",&begin,&ierr);
-          if (ierr!=1) dserror("cannot read CURVE%d",i);
-          frdouble("t2",&end,&ierr);
-          if (ierr!=1) dserror("cannot read CURVE%d",i);
-
-          curve.AddSlice(rcp(new ExprTimeSlice(begin, end, buffer)));
-          continue;
-        }
-        frchk("LungSinus",&ierr);
-        if (ierr==1)
-        {
-          double frequ;
-          double ppeep;
-          double phase;
-
-          frdouble("Frequ",&frequ,&ierr);
-          if (ierr!=1) dserror("cannot read CURVE%d",i);
-          frdouble("pPEEP",&ppeep,&ierr);
-          if (ierr!=1) dserror("cannot read CURVE%d",i);
-          frdouble("Phase",&phase,&ierr);
-          if (ierr!=1) dserror("cannot read CURVE%d",i);
-
-          curve.AddSlice(rcp(new LungTimeSlice(frequ, ppeep, phase)));
-          continue;
-        }
-        frchk("PhysiologicalWaveform",&ierr);
-        if (ierr==1)
-        {
-          double period;
-          double flowrate;
-          int points;
-          std::vector<double> ArrayLength(60);
-
-          frdouble("Period",&period,&ierr);
-          if (ierr!=1) dserror("cannot read CURVE%d",i);
-          frdouble("Flowrate",&flowrate,&ierr);
-          if (ierr!=1) dserror("cannot read CURVE%d",i);
-          frint("Samplingpoints",&points,&ierr);
-          if (ierr!=1) dserror("cannot read CURVE%d",i);
-          frdouble_n("Arrayread",&(ArrayLength[0]),points,&ierr);
-          if (ierr!=1) dserror("cannot read CURVE%d",i);
-
-
-          curve.AddSlice(rcp(new BloodTimeSlice(period, flowrate, points, ArrayLength)));
-          continue;
-        }
-        dserror("unknown type of time curve in CURVE%d", i);
+        std::vector<double> byabstime;
+        curves[j]->ExtractNamedDoubleVector("Yes",byabstime);
+        std::vector<double> factor;
+        curves[j]->ExtractNamedDoubleVector("FACTOR",factor);
+        curve.AddSlice(rcp(new PolygonalTimeSlice(byabstime[0],byabstime[1],
+                                                  factor[0],factor[1])));
       }
-    }
-    else
-    {
-      // there is no such curve, stop reading
-      break;
+      else if (curves[j]->HaveNamed("Explicit"))
+      {
+        std::string buffer;
+        curves[j]->ExtractNamedString("FUNC",buffer);
+
+        int numex = 0;
+        if (string(buffer)=="f(t)=sin(t:C1*PI:2)_for_t<_C1_else_f(t)=1")
+          numex=-1;
+        else if (string(buffer)=="f(t)=exp(1-1:t)_for_t<C1_else_const.")
+          numex=-2;
+        else if (string(buffer)=="f(t)=1-cos(2*PI*C1*t)")
+          numex=-3;
+        else if (string(buffer)=="f(t)=C2*sin(2PI*C1*t)")
+          numex=-4;
+        else if (string(buffer)=="f(t)=(sin(PI(t:C1-0.5))+1)*0.5")
+          numex=-5;
+        else if (string(buffer)=="BELTRAMI")
+          numex=-6;
+        else if (string(buffer)=="KIM-MOIN")
+          numex=-7;
+        else if (string(buffer)=="f(t)=(C2:2PI*C1)*cos(2PI*C1*t)")
+          numex=-8;
+        else if (string(buffer)=="f(t)=t:2-C1:(2PI)*cos(PI*t:C1-PI:2)")
+          numex=-9; /* time integral of numex -5 */
+        else if (string(buffer)=="f(t)=-0.5*cos(PI*(T-C1)/C2)+0.5")
+          numex=-11; /* ramp function with horizontal slopes */
+        else if (string(buffer)=="f(t)=(1-C2/C1)*T+C2")
+          numex=-12; /* linearly increasing function with non-zero initial value */
+        else
+          dserror("Cannot read function of CURVE%d: %s",i,string(buffer).c_str());
+
+        double c1;
+        double c2;
+        curves[j]->ExtractNamedDouble("c1",c1);
+        curves[j]->ExtractNamedDouble("c2",c2);
+
+        curve.AddSlice(rcp(new ExplicitTimeSlice(numex,c1,c2)));
+      }
+      else if (curves[j]->HaveNamed("EXPR"))
+      {
+        std::string buffer;
+        curves[j]->ExtractNamedString("FUNC",buffer);
+
+        double begin;
+        double end;
+
+        curves[j]->ExtractNamedDouble("t1",begin);
+        curves[j]->ExtractNamedDouble("t2",end);
+
+        curve.AddSlice(rcp(new ExprTimeSlice(begin, end, buffer)));
+      }
+      else if (curves[j]->HaveNamed("LungSinus"))
+      {
+        double frequ;
+        double ppeep;
+        double phase;
+
+        curves[j]->ExtractNamedDouble("Frequ",frequ);
+        curves[j]->ExtractNamedDouble("pPEEP",ppeep);
+        curves[j]->ExtractNamedDouble("Phase",phase);
+
+        curve.AddSlice(rcp(new LungTimeSlice(frequ, ppeep, phase)));
+      }
+      else if (curves[j]->HaveNamed("PhysiologicalWaveform"))
+      {
+        double period;
+        double flowrate;
+        int points;
+        std::vector<double> ArrayLength;
+
+        curves[j]->ExtractNamedDouble("Period",period);
+        curves[j]->ExtractNamedDouble("Flowrate",flowrate);
+        curves[j]->ExtractNamedInt("Samplingpoints",points);
+        curves[j]->ExtractNamedDoubleVector("ArrayLength",ArrayLength);
+
+        curve.AddSlice(rcp(new BloodTimeSlice(period, flowrate, points, ArrayLength)));
+      }
+      else
+        dserror("unknown type of time curve in CURVE%d", i);
     }
   }
 }
@@ -924,10 +952,10 @@ std::vector<double> DRT::UTILS::BloodTimeSlice::FctDer(const double t,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::UTILS::ExprTimeSlice::ExprTimeSlice(double begin, double end, char* buf)
+DRT::UTILS::ExprTimeSlice::ExprTimeSlice(double begin, double end, std::string buf)
   : TimeSlice(begin,end),
-    parsexpr_(DRT::PARSER::Parser<double>(string(buf))),
-    parsexprdd_(DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double> > >(string(buf)))
+    parsexpr_(DRT::PARSER::Parser<double>(buf)),
+    parsexprdd_(DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double> > >(buf))
 {
 }
 

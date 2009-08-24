@@ -48,6 +48,7 @@ Maintainer: Ulrich Kuettler
 #include "drt_function.H"
 #include "drt_globalproblem.H"
 #include "drt_timecurve.H"
+#include "drt_linedefinition.H"
 #include "../drt_mat/newtonianfluid.H"
 
 
@@ -120,7 +121,7 @@ namespace UTILS {
     \param z   (i) z-coordinate of the origin of the coordinate system of this component
 
     */
-    void AddExpr(char* buf, double x, double y, double z);
+    void AddExpr(std::string buf, double x, double y, double z);
     /*!
 
     \brief Return the number of components of this spatial function
@@ -338,42 +339,155 @@ namespace UTILS {
 
 
 /*----------------------------------------------------------------------*/
+//! Print function to be called from C
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::FunctionManager::ReadInput()
+extern "C"
+void PrintFunctionDatHeader()
+{
+  DRT::UTILS::FunctionManager functionmanager;
+  Teuchos::RCP<DRT::INPUT::Lines> lines = functionmanager.ValidFunctionLines();
+
+  lines->Print(std::cout);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines()
+{
+  DRT::INPUT::LineDefinition linelin;
+  linelin
+    .AddNamedInt("FUNCT")
+    .AddNamedDoubleVector("LINE_LIN",8)
+    ;
+
+  DRT::INPUT::LineDefinition linequad;
+  linequad
+    .AddNamedInt("FUNCT")
+    .AddNamedDoubleVector("LINE_QUAD",6)
+    ;
+
+  DRT::INPUT::LineDefinition radiuslin;
+  radiuslin
+    .AddNamedInt("FUNCT")
+    .AddNamedDoubleVector("RADIUS_LIN",8)
+    ;
+
+  DRT::INPUT::LineDefinition radiusquad;
+  radiusquad
+    .AddNamedInt("FUNCT")
+    .AddNamedDoubleVector("RADIUS_QUAD",6)
+    ;
+
+  DRT::INPUT::LineDefinition beltrami;
+  beltrami
+    .AddNamedInt("FUNCT")
+    .AddTag("BELTRAMI")
+    ;
+
+  DRT::INPUT::LineDefinition kimmoin;
+  kimmoin
+    .AddNamedInt("FUNCT")
+    .AddTag("KIM-MOIN")
+    ;
+
+  DRT::INPUT::LineDefinition jefferyhamel;
+  jefferyhamel
+    .AddNamedInt("FUNCT")
+    .AddTag("JEFFERY-HAMEL")
+    ;
+
+  DRT::INPUT::LineDefinition womersley;
+  womersley
+    .AddNamedInt("FUNCT")
+    .AddTag("WOMERSLEY")
+    .AddNamedDouble("Radius")
+    .AddNamedInt("MAT")
+    .AddNamedInt("CURVE")
+    ;
+
+  DRT::INPUT::LineDefinition localwomersley;
+  localwomersley
+    .AddNamedInt("FUNCT")
+    .AddTag("WOMERSLEY")
+    .AddNamedInt("Local")
+    .AddNamedDouble("Radius")
+    .AddNamedInt("MAT")
+    .AddNamedInt("CURVE")
+    ;
+
+  DRT::INPUT::LineDefinition cylinder3d;
+  cylinder3d
+    .AddNamedInt("FUNCT")
+    .AddNamedDouble("CYLINDER_3D")
+    ;
+
+  DRT::INPUT::LineDefinition zalesaksdisk;
+  zalesaksdisk
+    .AddNamedInt("FUNCT")
+    .AddTag("ZALESAKSDISK")
+    ;
+
+  DRT::INPUT::LineDefinition componentexpr;
+  componentexpr
+    .AddNamedInt("FUNCT")
+    .AddNamedInt("COMPONENT")
+    .AddNamedDoubleVector("EXPR",3)
+    .AddNamedString("FUNCTION")
+    ;
+
+  DRT::INPUT::LineDefinition expr;
+  expr
+    .AddNamedInt("FUNCT")
+    .AddNamedDoubleVector("EXPR",3)
+    .AddNamedString("FUNCTION")
+    ;
+
+  Teuchos::RCP<DRT::INPUT::Lines> lines = Teuchos::rcp(new DRT::INPUT::Lines("FUNCT"));
+  lines->Add(linelin);
+  lines->Add(linequad);
+  lines->Add(radiuslin);
+  lines->Add(radiusquad);
+  lines->Add(beltrami);
+  lines->Add(kimmoin);
+  lines->Add(jefferyhamel);
+  lines->Add(womersley);
+  lines->Add(localwomersley);
+  lines->Add(cylinder3d);
+  lines->Add(zalesaksdisk);
+  lines->Add(componentexpr);
+  lines->Add(expr);
+  return lines;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::UTILS::FunctionManager::ReadInput(const DRT::INPUT::DatFileReader& reader)
 {
   functions_.clear();
+
+  Teuchos::RCP<DRT::INPUT::Lines> lines = ValidFunctionLines();
 
   // test for as many functions as there are
   for (int i = 1;; ++i)
   {
-    ostringstream curve;
-    curve << "--FUNCT" << i;
-    if (frfind(curve.str().c_str())==1)
-    {
-      frread();
-      int ierr;
+    std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition> > functions = lines->Read(reader, i);
+    if (functions.size()==0)
+      break;
 
-      // stop if there is no content to this curve
-      // no further curves are read
-      frchk("---",&ierr);
-      if (ierr==1)
-      {
-        break;
-      }
+    if (functions.size()==1)
+    {
+      Teuchos::RCP<DRT::INPUT::LineDefinition> function = functions[0];
 
       int id;
-      frint("FUNCT",&id,&ierr);
-      if (ierr!=1) dserror("cannot read FUNCT%d", i);
+      function->ExtractNamedInt("FUNCT",id);
       if (id!=i) dserror("expected FUNCT%d but got FUNCT%d", i, id);
 
-      /* read typ of funct */
-      frchk("LINE_LIN",&ierr);
-      if (ierr==1)
+      if (function->HaveNamed("LINE_LIN"))
       {
-        double tmp[8];
-        frdouble_n("LINE_LIN",&(tmp[0]),8,&ierr);
-        if (ierr!=1)
-          dserror("failed to read function %d", i);
+        std::vector<double> tmp;
+        function->ExtractNamedDoubleVector("LINE_LIN",tmp);
 
         double x1[3];
         double x2[3];
@@ -400,12 +514,10 @@ void DRT::UTILS::FunctionManager::ReadInput()
 
         functions_.push_back(rcp(new ExprFunction(const_cast<char*>(expr.str().c_str()), x1[0], x1[1], x1[2])));
       }
-
-      frchk("LINE_QUAD",&ierr);
-      if (ierr==1)
+      else if (function->HaveNamed("LINE_QUAD"))
       {
-        double tmp[6];
-        frdouble_n("LINE_QUAD",&(tmp[0]),6,&ierr);
+        std::vector<double> tmp;
+        function->ExtractNamedDoubleVector("LINE_QUAD",tmp);
 
         double x1[3];
         double x2[3];
@@ -426,12 +538,10 @@ void DRT::UTILS::FunctionManager::ReadInput()
         expr << "1.0 - 4 * (((" << x2[0]-x1[0] << ")*x + (" << x2[1]-x1[1] << ")*y + (" << x2[2]-x1[2] << ")*z)/(" << length << ")/(" << length << ") - 1.0/2.0)^2.0";
         functions_.push_back(rcp(new ExprFunction(const_cast<char*>(expr.str().c_str()), x1[0], x1[1], x1[2])));
       }
-
-      frchk("RADIUS_LIN",&ierr);
-      if (ierr==1)
+      else if (function->HaveNamed("RADIUS_LIN"))
       {
-        double tmp[8];
-        frdouble_n("RADIUS_LIN",&(tmp[0]),8,&ierr);
+        std::vector<double> tmp;
+        function->ExtractNamedDoubleVector("RADIUS_LIN",tmp);
 
         double x1[3];
         double x2[3];
@@ -456,12 +566,10 @@ void DRT::UTILS::FunctionManager::ReadInput()
         expr << "(" << b << ") + sqrt(x*x + y*y + z*z)/(" << length << ")*(" << m << ")";
         functions_.push_back(rcp(new ExprFunction(const_cast<char*>(expr.str().c_str()), x1[0], x1[1], x1[2])));
       }
-
-      frchk("RADIUS_QUAD",&ierr);
-      if (ierr==1)
+      else if (function->HaveNamed("RADIUS_QUAD"))
       {
-        double tmp[6];
-        frdouble_n("RADIUS_QUAD",&(tmp[0]),6,&ierr);
+        std::vector<double> tmp;
+        function->ExtractNamedDoubleVector("RADIUS_QUAD",tmp);
 
         double x1[3];
         double x2[3];
@@ -483,52 +591,41 @@ void DRT::UTILS::FunctionManager::ReadInput()
         expr << "1.0 - (x*x + y*y + z*z)/(" << length << ")/(" << length << ")";
         functions_.push_back(rcp(new ExprFunction(const_cast<char*>(expr.str().c_str()), x1[0], x1[1], x1[2])));
       }
-
-      frchk("BELTRAMI",&ierr);
-      if (ierr==1)
+      else if (function->HaveNamed("BELTRAMI"))
       {
         functions_.push_back(rcp(new BeltramiFunction()));
       }
-
-      frchk("KIM-MOIN",&ierr);
-      if (ierr==1)
+      else if (function->HaveNamed("KIM-MOIN"))
       {
         functions_.push_back(rcp(new KimMoinFunction()));
       }
-
-      frchk("JEFFERY-HAMEL",&ierr);
-      if (ierr==1)
+      else if (function->HaveNamed("JEFFERY-HAMEL"))
       {
         functions_.push_back(rcp(new JefferyHamelFlowFunction()));
       }
-
-      frchk("WOMERSLEY",&ierr);
-      if (ierr==1)
+      else if (function->HaveNamed("WOMERSLEY"))
       {
         int e = -1;
         bool localcoordsystem = false;
-        frint("Local",&e,&ierr);
-        if (ierr) localcoordsystem = true;
+        if (function->HaveNamed("Local"))
+        {
+          localcoordsystem = true;
+          function->ExtractNamedInt("Local",e);
+        }
+
         double radius = -1.0;
-        frdouble("Radius",&radius,&ierr);
+        function->ExtractNamedDouble("Radius", radius);
         int mat = -1;
-        frint("MAT",&mat,&ierr);
-        if (!ierr) dserror("Word MAT missing in WOMERSLEY FUNCT");
+        function->ExtractNamedInt("MAT",mat);
         int curve = -1;
-        frint("CURVE",&curve,&ierr);
-        if (!ierr) dserror("Word CURVE missing in WOMERSLEY FUNCT");
-
-
-        // input other stuff here....
+        function->ExtractNamedInt("CURVE",curve);
 
         functions_.push_back(rcp(new WomersleyFunction(localcoordsystem,e-1,radius,mat,curve-1)));
       }
-
-      frchk("CYLINDER_3D",&ierr);
-      if (ierr==1)
+      else if (function->HaveNamed("CYLINDER_3D"))
       {
         double um;
-        frdouble_n("CYLINDER_3D",&um,1,&ierr);
+        function->ExtractNamedDouble("CYLINDER_3D", um);
         double h = 0.41;
 
         // Keep it simple.
@@ -537,71 +634,56 @@ void DRT::UTILS::FunctionManager::ReadInput()
         expr << "16*(" << um << ")*y*z*((" << h << ")-y)*((" << h << ")-z) / ((" << h << ")^4)";
         functions_.push_back(rcp(new ExprFunction(const_cast<char*>(expr.str().c_str()), 0, 0, 0)));
       }
-
-      frchk("ZALESAKSDISK",&ierr);
-      if (ierr==1)
+      else if (function->HaveNamed("ZALESAKSDISK"))
       {
         functions_.push_back(rcp(new ZalesaksDiskFunction()));
       }
-
-      frchk("EXPR",&ierr);
-      if (ierr==1)
+      else if (function->HaveNamed("EXPR"))
       {
         Teuchos::RCP<ExprFunction> vecfunc = rcp(new ExprFunction());
 
-        for (int j=0;;++j)
-        {
-          char   component[255];
-          double origin   [3];
+        std::vector<double> origin;
+        function->ExtractNamedDoubleVector("EXPR",origin);
+        std::string component;
+        function->ExtractNamedString("FUNCTION",component);
 
-          int    dim;
-          frint("COMPONENT",&dim,&ierr);
-          /* plausibility check */
-          if (ierr == 1)
-          {
-            if(dim!=j)
-            {
-              dserror("For vector valued functions the components have to be \nspecified succesively, e.g. 0,1,..,ndof");
-            }
-          }
-
-          /* read the position of the function's origin */
-          frdouble_n("EXPR",origin,3,&ierr);
-          if (!ierr) dserror("failed to read coordinates");
-
-          /* read the expression */
-          frchar("FUNCTION", component , &ierr);
-
-          if (!ierr) dserror("failed to read expression string");
-
-          (*vecfunc).AddExpr(component,origin[0],origin[1],origin[2]);
-
-          frread();
-          // stop if there is no content to this curve
-          // no further curves are read
-          frchk("---",&ierr);
-          if (ierr==1)
-          {
-            break;
-          }
-        }
-
+        vecfunc->AddExpr(component,origin[0],origin[1],origin[2]);
         functions_.push_back(vecfunc);
-
       }
-
-
-#if 0
-      frread();
-      frchk("---",&ierr);
-      if (ierr!=1)
-        dserror("end of function definition expected");
-#endif
+      else
+        dserror("unrecognized function");
     }
+
     else
     {
-      // there is no such function, stop reading
-      break;
+      Teuchos::RCP<ExprFunction> vecfunc = rcp(new ExprFunction());
+
+      for (unsigned j=0; j<functions.size(); ++j)
+      {
+        int id;
+        functions[j]->ExtractNamedInt("FUNCT",id);
+        if (id!=i) dserror("expected FUNCT%d but got FUNCT%d", i, id);
+
+        if (not functions[j]->HaveNamed("COMPONENT"))
+          dserror("component based expression function expected");
+
+        int dim;
+        functions[j]->ExtractNamedInt("COMPONENT", dim);
+
+        if (dim!=static_cast<int>(j))
+        {
+          dserror("For vector valued functions the components have to be\n"
+                  "specified succesively, e.g. 0,1,..,ndof");
+        }
+
+        std::vector<double> origin;
+        functions[j]->ExtractNamedDoubleVector("EXPR",origin);
+        std::string component;
+        functions[j]->ExtractNamedString("FUNCTION",component);
+
+        vecfunc->AddExpr(component,origin[0],origin[1],origin[2]);
+      }
+      functions_.push_back(vecfunc);
     }
   }
 }
@@ -660,7 +742,7 @@ DRT::UTILS::ExprFunction::~ExprFunction()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::ExprFunction::AddExpr(char* buf,
+void DRT::UTILS::ExprFunction::AddExpr(std::string buf,
                                        double x,
                                        double y,
                                        double z

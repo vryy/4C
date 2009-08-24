@@ -46,22 +46,25 @@ Maintainer: Ulrich Kuettler
 #ifndef DRT_TIMECURVE_H
 #define DRT_TIMECURVE_H
 
+#ifdef __cplusplus
+
 #include <iostream>
 #include <vector>
 #include <Teuchos_RCP.hpp>
 
 #include "drt_dserror.H"
 #include "drt_parser.H"
+#include "drt_inputreader.H"
 
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
-extern "C"
-{
-#include "../pss_full/pss_parser.h"
-}
 
 namespace DRT {
+
+namespace INPUT {
+
+  class Lines;
+
+}
+
 namespace UTILS {
 
   class TimeSlice;
@@ -115,8 +118,10 @@ namespace UTILS {
 
     TimeCurveManager() {}
 
+    Teuchos::RCP<DRT::INPUT::Lines> ValidTimeCurveLines();
+
     /// read the baci input file and set up all curves
-    void ReadInput();
+    void ReadInput(const DRT::INPUT::DatFileReader& reader);
 
     /// return a specified time curve
     TimeCurve& Curve(int num);
@@ -136,5 +141,18 @@ namespace UTILS {
 }  // end namespace UTILS
 }  // end namespace DRT
 
-#endif  // DRT_TIMECURVE_H
-#endif  // CCADISCRET
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+  void PrintTimeCurveDatHeader();
+
+#ifdef __cplusplus
+}
+#endif
+
+
+#endif
+#endif

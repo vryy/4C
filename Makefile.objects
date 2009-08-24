@@ -107,6 +107,7 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
                 src/drt_lib/drt_materialdefinition.o \
                 src/drt_lib/drt_dofset.o \
                 src/drt_lib/drt_dofset_base.o \
+                src/drt_lib/drt_linedefinition.o \
                 src/drt_fem_general/drt_utils_integration.o \
                 src/drt_fem_general/drt_utils_dgfem_basisfunctions.o \
                 src/drt_fem_general/drt_utils_fem_shapefunctions.o \
