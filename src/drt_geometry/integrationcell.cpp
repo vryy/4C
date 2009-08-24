@@ -152,6 +152,7 @@ GEO::DomainIntCell& GEO::DomainIntCell::operator=(
   nodalpos_xyz_domain_ = domainintcell.nodalpos_xyz_domain_;
   phys_center_ = domainintcell.phys_center_;
   label_ = domainintcell.label_;
+  indomainplus_ = domainintcell.indomainplus_;
   return *this;
 }
 
