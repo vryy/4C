@@ -494,12 +494,12 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
 /*----------------------------------------------------------------------*
  |  Integrate a Volume Neumann boundary condition (public)     maf 04/07|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::So_hex8::EvaluateNeumann(ParameterList& params,
-                                           DRT::Discretization&      discretization,
-                                           DRT::Condition&           condition,
-                                           vector<int>&              lm,
-                                           Epetra_SerialDenseVector& elevec1,
-                                           Epetra_SerialDenseMatrix* elemat1)
+int DRT::ELEMENTS::So_hex8::EvaluateNeumann(ParameterList&            params,
+                                            DRT::Discretization&      discretization,
+                                            DRT::Condition&           condition,
+                                            vector<int>&              lm,
+                                            Epetra_SerialDenseVector& elevec1,
+                                            Epetra_SerialDenseMatrix* elemat1)
 {
   // get values and switches from the condition
   const vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");
@@ -514,7 +514,7 @@ int DRT::ELEMENTS::So_hex8::EvaluateNeumann(ParameterList& params,
   if (time<0.0) usetime = false;
 
   // find out whether we will use a time curve and get the factor
-  const vector<int>* curve  = condition.Get<vector<int> >("curve");
+  const vector<int>* curve = condition.Get<vector<int> >("curve");
   int curvenum = -1;
   if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
@@ -522,16 +522,26 @@ int DRT::ELEMENTS::So_hex8::EvaluateNeumann(ParameterList& params,
     curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
   // **
 
-/* ============================================================================*
-** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
-** ============================================================================*/
+  // (SPATIAL) FUNCTION BUSINESS
+  const std::vector<int>* funct = condition.Get<std::vector<int> >("funct");
+  LINALG::Matrix<NUMDIM_SOH8,1> xrefegp(false);
+  bool havefunct = false;
+  if (funct)
+    for (int dim=0; dim<NUMDIM_SOH8; dim++)
+      if ((*funct)[dim] > 0)
+        havefunct = havefunct or true;
+  
+
+  /* ============================================================================*
+  ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
+  ** ============================================================================*/
   const static vector<LINALG::Matrix<NUMNOD_SOH8,1> > shapefcts = soh8_shapefcts();
   const static vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
   const static vector<double> gpweights = soh8_weights();
-/* ============================================================================*/
+  /* ============================================================================*/
 
   // update element geometry
-   LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;  // material coord. of element
+  LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;  // material coord. of element
   DRT::Node** nodes = Nodes();
   for (int i=0; i<NUMNOD_SOH8; ++i){
     const double* x = nodes[i]->X();
@@ -551,10 +561,26 @@ int DRT::ELEMENTS::So_hex8::EvaluateNeumann(ParameterList& params,
     if (detJ == 0.0) dserror("ZERO JACOBIAN DETERMINANT");
     else if (detJ < 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
 
-    double fac = gpweights[gp] * curvefac * detJ;          // integration factor
+    // material/reference co-ordinates of Gauss point
+    if (havefunct) {
+      for (int dim=0; dim<NUMDIM_SOH8; dim++) {
+        xrefegp(dim) = 0.0;
+        for (int nodid=0; nodid<NUMNOD_SOH8; ++nodid)
+          xrefegp(dim) += shapefcts[gp](nodid) * xrefe(nodid,dim);
+      }
+    }
+
+    // integration factor
+    const double fac = gpweights[gp] * curvefac * detJ;
     // distribute/add over element load vector
-      for(int dim=0; dim<NUMDIM_SOH8; dim++) {
-      double dim_fac = (*onoff)[dim] * (*val)[dim] * fac;
+    for(int dim=0; dim<NUMDIM_SOH8; dim++) {
+      // function evaluation
+      const int functnum = (funct) ? (*funct)[dim] : -1;
+      const double functfac
+        = (functnum>0)
+        ? DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dim,xrefegp.A(),0.0,NULL)
+        : 1.0;
+      const double dim_fac = (*onoff)[dim] * (*val)[dim] * fac * functfac;
       for (int nodid=0; nodid<NUMNOD_SOH8; ++nodid) {
         elevec1[nodid*NUMDIM_SOH8+dim] += shapefcts[gp](nodid) * dim_fac;
       }
