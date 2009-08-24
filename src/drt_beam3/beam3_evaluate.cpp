@@ -149,8 +149,8 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
       {
     	  switch(nnode)
     	  {
-  	  		case 2:  		
-  	  		{	
+  	  		case 2:
+  	  		{
   	  			b3_nlnstiffmass<2>(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
   	  			break;
   	  		}
@@ -163,12 +163,12 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
   	  		{
   	  			b3_nlnstiffmass<4>(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
   	  			break;
-  	  		}  		
+  	  		}
   	  		case 5:
   	  		{
   	  			b3_nlnstiffmass<5>(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
   	  			break;
-  	  		}  		
+  	  		}
   	  		default:
   	  			dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
     	  }
@@ -177,8 +177,8 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
       {
     	  switch(nnode)
     	  {
-  	  		case 2:  		
-  	  		{	
+  	  		case 2:
+  	  		{
   	  			b3_nlnstiffmass<2>(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
   	  			lumpmass<2>(&elemat2);
   	  			break;
@@ -194,13 +194,13 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
   	  			b3_nlnstiffmass<4>(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
   	  			lumpmass<4>(&elemat2);
   	  			break;
-  	  		}  		
+  	  		}
   	  		case 5:
   	  		{
   	  			b3_nlnstiffmass<5>(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
   	  			lumpmass<5>(&elemat2);
   	  			break;
-  	  		}  		
+  	  		}
   	  		default:
   	  			dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
     	  }
@@ -209,8 +209,8 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
       {
     	  switch(nnode)
     	  {
-  	  		case 2:  		
-  	  		{	
+  	  		case 2:
+  	  		{
   	  			b3_nlnstiffmass<2>(params,myvel,mydisp,&elemat1,NULL,&elevec1);
   	  			break;
   	  		}
@@ -223,12 +223,12 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
   	  		{
   	  			b3_nlnstiffmass<4>(params,myvel,mydisp,&elemat1,NULL,&elevec1);
   	  			break;
-  	  		}  		
+  	  		}
   	  		case 5:
   	  		{
   	  			b3_nlnstiffmass<5>(params,myvel,mydisp,&elemat1,NULL,&elevec1);
   	  			break;
-  	  		}  		
+  	  		}
   	  		default:
   	  			dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
     	  }
@@ -238,8 +238,8 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
       {
     	  switch(nnode)
     	  {
-  	  		case 2:  		
-  	  		{	
+  	  		case 2:
+  	  		{
   	  			b3_nlnstiffmass<2>(params,myvel,mydisp,NULL,NULL,&elevec1);
   	  			break;
   	  		}
@@ -252,15 +252,15 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
   	  		{
   	  			b3_nlnstiffmass<4>(params,myvel,mydisp,NULL,NULL,&elevec1);
   	  			break;
-  	  		}  	
+  	  		}
   	  		case 5:
   	  		{
   	  			b3_nlnstiffmass<5>(params,myvel,mydisp,NULL,NULL,&elevec1);
   	  			break;
-  	  		}  		
+  	  		}
   	  		default:
   	  			dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
-    	  }       	
+    	  }
       }
 
   /*at the end of an iteration step the geometric configuration has to be updated: the starting point for the
@@ -296,7 +296,7 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
       {
       	for(int k=0; k<nnode; k++)//for all nodes
       	{
-      	
+
       		Epetra_SerialDenseVector force_aux;
       		force_aux.Size(6*nnode);
 
@@ -306,15 +306,15 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
 
       			DRT::UTILS::ExtractMyValues(*disp,disp_aux,lm);
       			DRT::UTILS::ExtractMyValues(*vel,vel_aux,lm);
-      	
+
       		//modifying displacement artificially (for numerical derivative of internal forces):
       		disp_aux[6*k + i] += h_rel;
       		vel_aux[6*k + i] += h_rel * params.get<double>("gamma",0.581) / ( params.get<double>("delta time",0.01)*params.get<double>("beta",0.292) );
 		  //b3_nlnstiffmass is a templated function. therefore we need to point out the number of nodes in advance
         	  switch(nnode)
         	  {
-        	  		case 2:  		
-        	  		{	
+        	  		case 2:
+        	  		{
         	  			b3_nlnstiffmass<2>(params,vel_aux,disp_aux,NULL,NULL,&force_aux);
         	  			break;
         	  		}
@@ -327,12 +327,12 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
         	  		{
         	  			b3_nlnstiffmass<4>(params,vel_aux,disp_aux,NULL,NULL,&force_aux);
         	  			break;
-        	  		}  		
+        	  		}
         	  		case 5:
         	  		{
         	  			b3_nlnstiffmass<5>(params,vel_aux,disp_aux,NULL,NULL,&force_aux);
         	  			break;
-        	  		}  		
+        	  		}
         	  		default:
         	  			dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
         	  }
@@ -360,7 +360,7 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
       		//if ( stiff_relerr(line,col) > 0)
       			outputflag = 1;
       	} //for(int col=0; col<3*nnode; col++)
-      	
+
       } //for(int line=0; line<3*nnode; line++)
 
       if(outputflag ==1)
@@ -448,7 +448,7 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(ParameterList& params,
   // amplitude of load curve at current time called
   double curvefac = 1.0;
   if (curvenum>=0 && usetime)//notation for this function similar to Crisfield, Volume 1;
-  curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
+  curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
 
   // no. of nodes on this element; the following line is only valid for elements with constant number of
   // degrees of freedom per node
@@ -660,7 +660,7 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
  //simple isotropic model of Brownian motion with uncorrelated nodal forces
  case -1:
  {
- 	
+
 	//calc brownian damp matrix
 	if (stiffmatrix != NULL) // necessary to run stiffmatrix control routine
 	{
@@ -671,7 +671,7 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
 		(*stiffmatrix)(7,7) += zeta/(2.0*dt);
 		(*stiffmatrix)(8,8) += zeta/(2.0*dt);
 	}
-	
+
 	if (force != NULL)
 	{
 	 //calc int brownian forces
@@ -689,7 +689,7 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
    (*force)(2) -=floc_(2,0);
    (*force)(6) -=floc_(3,0);
    (*force)(7) -=floc_(4,0);
-   (*force)(8) -=floc_(5,0);	
+   (*force)(8) -=floc_(5,0);
 	}
 
  }
@@ -746,15 +746,15 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
   	 dampbasis(0,0)=zeta/2.0;
   	 dampbasis(1,1)=zeta;
   	 dampbasis(2,2)=zeta;
-  	
+
   	 LINALG::Matrix<3,3> Tnew;//Rotation matrix in current iteration step
   	 quaterniontotriad(Qnew_[0],Tnew);
-  	
+
   	 //rotate C to global
   	 LINALG::Matrix<3,3> aux1(true);
   	 aux1.Multiply(Tnew,dampbasis);
   	 dampbasis.MultiplyNT(aux1,Tnew);
-  	
+
   	 //calc internal stiffness
   	 if (stiffmatrix !=NULL)
   	 {
@@ -769,7 +769,7 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
 					(*stiffmatrix)(i+6,j+6) += dampbasis(i,j)/(3.0*dt);
 				 }
 			 }
-  	
+
 			 /* für rotatorische freiheitsgrade noch multiplizieren (hering)
 		//to calc the derivation of rot dof, in the 3D case there have to be multiplied Hinv(rotdof)
 		//because of the non additivity of rot increments
@@ -780,7 +780,7 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
 				 theta1(i,0)=disp[3+i];
 				 theta2(i,0)=disp[9+i];
 			 }
-			
+
 			 LINALG::Matrix<3,3>H1;
 			 LINALG::Matrix<3,3>H2;
 			 H1=Hinv(theta1);
@@ -788,31 +788,31 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
 
 			//end Hinv
 			 */
-			
-		
-			
-			
+
+
+
+
   	 //define seperate spin matrix for each rot dof
-			
+
 		 LINALG::Matrix<3,3> S1(true);//delta alpha1
 		 S1(1,2)=-1.0;
 		 S1(2,1)=1.0;
-		
+
 		 LINALG::Matrix<3,3> S2(true);//delta alpha2
 		 S2(0,2)=1.0;
 		 S2(2,0)=-1.0;
-		
+
 		 LINALG::Matrix<3,3> S3(true);//delta alpha3
 		 S3(0,1)=-1.0;
 		 S3(1,0)=1.0;
-	
+
 		 LINALG::Matrix<3,3> aux2(true);
-		
+
 		 //values due to alpha 1
 		 aux1.Multiply(S1,dampbasis);//multiply S1 from left
 		 aux2.Multiply(dampbasis,S1);//multiply S1 from right
-		
-		
+
+
 		 for(int i=0; i<3; i++)//calc difference
    	 {
    		 for (int j=0; j<3; j++)
@@ -820,9 +820,9 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
    			aux1(i,j)=aux1(i,j)-aux2(i,j);
    		 }
    	 }
-	
+
 		 LINALG::Matrix<6,6> aux3(true); //to store result for two nodes multiply velcoef
-		
+
 		 for(int i=0; i<3; i++)//now two nodes
    	 {
    		 for (int j=0; j<3; j++)
@@ -833,9 +833,9 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
    			 aux3(i+3,j+3)=aux1(i,j)/3.0;
    		 }
    	 }
-	
+
 		 LINALG::Matrix<6,1> aux4(true);
-		
+
 		 for(int i=0; i<6; i++)//multiply velocity
    	 {
    		 for (int j=0; j<3; j++)
@@ -844,7 +844,7 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
    			 aux4(i,0)+=aux3(i,j+3)*vel[j+6];
    		 }
    	 }
-	
+
 		 for (int i=0; i<3; i++)//fill stiffness values due to delta alpha1 in stiffmatrix
 		 {
 			 (*stiffmatrix)(i,3)+=aux4(i,0)*0.5;
@@ -852,18 +852,18 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
 			 (*stiffmatrix)(i,9)+=aux4(i,0)*0.5;
 			 (*stiffmatrix)(i+6,9)+=aux4(i+3,0)*0.5;
 		 } 		 //end delta alpha1
-	
+
 		 //values due to alpha 2
 		 aux1.Multiply(S2,dampbasis);//multiply S2 from left
 		 aux2.Multiply(dampbasis,S2);//multiply S2 from right
-		
-		
+
+
 		 for(int i=0; i<3; i++)//calc difference
 	   		 for (int j=0; j<3; j++)
 	   			aux1(i,j)=aux1(i,j)-aux2(i,j);
 
- 	
-		
+
+
 		 for(int i=0; i<3; i++)//now two nodes
    	 {
    		 for (int j=0; j<3; j++)
@@ -874,11 +874,11 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
    			 aux3(i+3,j+3)=aux1(i,j)/3.0;
    		 }
    	 }
- 	
-		
+
+
 		 for (int i=0; i<6; i++)//set aux4 to zero
 			 aux4(i,0)=0.0;
-		
+
 		 for(int i=0; i<6; i++)//multiply velocity
    	 {
    		 for (int j=0; j<3; j++)
@@ -887,22 +887,22 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
    			 aux4(i,0)+=aux3(i,j+3)*vel[j+6];
    		 }
    	 }
- 	
+
 		for (int i=0; i<3; i++)//fill stiffness values due to delta alpha2 in stiffmatrix
  		{
  			(*stiffmatrix)(i,4)+=aux4(i,0)*0.5;
  			(*stiffmatrix)(i+6,4)+=aux4(i+3,0)*0.5;
  			(*stiffmatrix)(i,10)+=aux4(i,0)*0.5;
  			(*stiffmatrix)(i+6,10)+=aux4(i+3,0)*0.5;
- 			
+
  		}//end delta alpha2
-		
-		
+
+
  		//values due to alpha 3
 		aux1.Multiply(S3,dampbasis);//multiply S3 from left
 		aux2.Multiply(dampbasis,S3);//multiply S3 from right
-		
-		
+
+
 		 for(int i=0; i<3; i++)//calc difference
 	   	 {
 	   		 for (int j=0; j<3; j++)
@@ -910,8 +910,8 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
 	   			aux1(i,j)=aux1(i,j)-aux2(i,j);
 	   		 }
 	   	 }
- 	
-		
+
+
 		 for(int i=0; i<3; i++)//now two nodes
 	   	 {
 	   		 for (int j=0; j<3; j++)
@@ -922,11 +922,11 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
 	   			 aux3(i+3,j+3)=aux1(i,j)/3.0;
 	   		 }
 	   	 }
- 	
-		
+
+
 		 for (int i=0; i<6; i++)//set aux4 to zero
 		 				 aux4(i,0)=0.0;
-		
+
 		 for(int i=0; i<6; i++)//multiply velocity
 	   	 {
 	   		 for (int j=0; j<3; j++)
@@ -935,7 +935,7 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
 	   			 aux4(i,0)+=aux3(i,j+3)*vel[j+6];
 	   		 }
 	   	 }
- 	
+
 		 for (int i=0; i<3; i++)//fill stiffness values due to delta alpha3 in stiffmatrix
  		 {
  			 (*stiffmatrix)(i,5)+=aux4(i,0)*0.5;
@@ -943,15 +943,15 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
  			 (*stiffmatrix)(i,11)+=aux4(i,0)*0.5;
  			 (*stiffmatrix)(i+6,11)+=aux4(i+3,0)*0.5;
  		 } //end delta alpha3
-		
+
 		//end internal stiffness
-		
+
 		//calc ext stiffness
 
    		 //begin delta alpha1
  		 aux1.Multiply(S1,Tnew);
-		
-		
+
+
 		 for (int i=0; i<3; i++)
 		 {
 			 for (int j=0; j<3; j++)
@@ -960,7 +960,7 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
 				 aux4(i+3,0) = aux1(i,j)*floc_(j+3,0);
 			 }
 		 }
-		
+
 		 for (int i=0; i<3; i++)//fill ext stiffness values due to delta alpha1 in stiffmatrix
  		 {
  			 (*stiffmatrix)(i,3)-=aux4(i,0)*0.5;
@@ -968,15 +968,15 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
  			 (*stiffmatrix)(i,9)-=aux4(i,0)*0.5;
  			 (*stiffmatrix)(i+6,9)-=aux4(i+3,0)*0.5;
  		 }//end delta alpha 1
- 		
- 		
+
+
  		 //begin delta alpha2
  		 aux1.Multiply(S2,Tnew);
- 		
+
  		 for (int i=0; i<6; i++)//set aux4 to zero
  			 aux4(i,0)=0.0;
- 		  		
- 		  		
+
+
 		 for (int i=0; i<3; i++)
 		 {
 			 for (int j=0; j<3; j++)
@@ -985,7 +985,7 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
 				 aux4(i+3,0) += aux1(i,j)*floc_(j+3,0);
 			 }
 		 }
-		
+
 		 for (int i=0; i<3; i++)//fill extstiffness values due to delta alpha2 in stiffmatrix
 		 {
 			 (*stiffmatrix)(i,4)-=aux4(i,0)*0.5;
@@ -993,13 +993,13 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
 			 (*stiffmatrix)(i,10)-=aux4(i,0)*0.5;
 			 (*stiffmatrix)(i+6,10)-=aux4(i+3,0)*0.5;
 		 }//end delta alpha2
-		
+
 		 //begin delta alpha3
 		 aux1.Multiply(S3,Tnew);
-  		  		
+
 		 for (int i=0; i<6; i++)//set aux4 to zero
   			 aux4(i,0)=0.0;
-  		
+
  			 for (int i=0; i<3; i++)
  			 {
  				 for (int j=0; j<3; j++)
@@ -1016,17 +1016,17 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
  			 (*stiffmatrix)(i,11)-=aux4(i,0)*0.5;
  			 (*stiffmatrix)(i+6,11)-=aux4(i+3,0)*0.5;
  		 } //end delta alpha3
-		
-		//end calc ext stiffness
-	
-	 }//end stiffmatrix calc
-	
-	
 
-	
+		//end calc ext stiffness
+
+	 }//end stiffmatrix calc
+
+
+
+
 	 if (force != NULL)
 	 {
-		
+
 		 //calc internal forces
 		 LINALG::Matrix<6,6> aux5(true);
 		 for (int i=0; i<3; i++)
@@ -1039,7 +1039,7 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
 				 aux5(i+3,j+3)=dampbasis(i,j)/3.0;
 			 }
 		 }
-		
+
 
 		 for (int i=0; i<3; i++)
 		 {
@@ -1049,9 +1049,9 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
 				 (*force)(i) +=aux5(i,j+3)*vel[j+6];
 				 (*force)(i+6) +=aux5(i+3,j)*vel[j];
 				 (*force)(i+6) +=aux5(i+3,j+3)*vel[j+6];
-			 }			
+			 }
 		 }
-		
+
 		 //calc external forces
 		 for (int i=0; i<3; i++)
 		 {
@@ -1060,11 +1060,11 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
 				 (*force)(i) -= Tnew(i,j)*floc_(j,0);
 				 (*force)(i+6) -= Tnew(i,j)*floc_(j+3,0);
 			 }
-		 } 			
-		
+		 }
+
 	 }//end calc forces
 
-  	
+
    } //end case 1
    break;
   }
@@ -1078,16 +1078,16 @@ return;
  *----------------------------------------------------------------------------------------------------------*/
 int DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
                                       Epetra_SerialDenseMatrix& elemat1)
-{  
+{
   /*comment on the calculation of a proper PTC parameter: it is not a priori clear which phyiscal parameters
    * should be incalculated when computing a proper PTC parameter; the reason for instability without PTC is
    * seemingly the vast difference in stiffness of different eigenmodes (namely those related to bending and
    * stretching, respectively). To understand the influence of different parameters to the numerical stability
    * we study a simple model problem: we consider a clamped beam of length L with horizontal and vertical tip
    * loads F_h and F_v, respectively. These tip loads go along horizontal and vertical displacements u and w of
-   * the tip point, respectively. Let the beam be undeformed at the beginning of a time step and let the 
-   * displacements u and w arise at the end of a time step of lenght dt. Then simple calculus shows that with a 
-   * damping constat gamma ~ eta*L there holds true F_h = EIw/L^3 + gamma*w/dt and F_v = EAu/L + gamma*u/dt. 
+   * the tip point, respectively. Let the beam be undeformed at the beginning of a time step and let the
+   * displacements u and w arise at the end of a time step of lenght dt. Then simple calculus shows that with a
+   * damping constat gamma ~ eta*L there holds true F_h = EIw/L^3 + gamma*w/dt and F_v = EAu/L + gamma*u/dt.
    * Stability is assumed to be preserved if the ratio between beding u and w is close to one for F_h = F_v.
    * Thus we expect stability if either EI/L^3 ~ EA/L or EI/L^3, EA/L << gamma/dt. In the first case the
    * elastic resistence against bending and streching is comparable, in the second case the problem is dominated
@@ -1095,42 +1095,42 @@ int DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
    * stretching time constants tau of the system with dt ~ const1*tau and typically const1 ~ 1e-3. The bending time
    * constants are given by tau_EI = const2*eta*L^4 / EI and the stretching time constants by tau_EA = const3*eta*L^4 / EA,
    * with constant expressions const2, const3 < 1. If dt is chosen according to tau_EI we get gamma /dt ~ const1*const2*EI / L^3,
-   * which is always much smaller than the stiffness expression EI/L^3 related to bending and if dt is chosen 
+   * which is always much smaller than the stiffness expression EI/L^3 related to bending and if dt is chosen
    * according to tau_EA the same rationale applies. Therefore EI/L^3, EA/L << gamma/dt never arises in practice
-   * and stability depends on the requirement EI/L^3 ~ EA/L. If this requirement is naturally violated an 
+   * and stability depends on the requirement EI/L^3 ~ EA/L. If this requirement is naturally violated an
    * artificial PTC damping has to be employed, which increases the damping stiffness that far that the ratio
    * EI/L^3 ~ EA/L can no longer destabilize the system.
-   * 
+   *
    * The crucial question is obviously how the PTC damping parameter scales with different simulation parameters.
    * In the following we discuss the effect of variations of different parameters:
-   * 
-   * Young's modulus E: As both bending and axial stiffness scale linearly with the Young's modulus E  one may assume 
+   *
+   * Young's modulus E: As both bending and axial stiffness scale linearly with the Young's modulus E  one may assume
    * that the PTC parameter may be calculated independently on this parameter; this was indeed found in practice:
    * varying E over 3 orders of magnitude upwards and downwards (and scaling time step size by the same factor
    * as all eigenfrequencies depend linearly on Young's modulus) did not affect the PTC parameter required for
    * stabilization.For too small values of E instability was found due to too large curvature in the beam elements,
-   * however, this is expected as the beam formulation is valid for moderate curvature only and small values 
+   * however, this is expected as the beam formulation is valid for moderate curvature only and small values
    * of E naturally admit increasing curvature.
-   * 
+   *
    * Viscosity eta: a similar rationale as for Young's modulus E applies. All the system time constants depend
    * linearly on eta. On the other hand the critical ratio between bending and axial stiffness does not depend
    * on eta. Thus scaling eta and time step size dt by the same factor does not change the PTC factor required
    * for stabilization.
-   * 
+   *
    * Numerical tests revealed that refining the discretization by factor const and at the same time the time
-   * step size by a factor const^2 (because the critical axial eigenfrequencies scale with L^2 for element 
+   * step size by a factor const^2 (because the critical axial eigenfrequencies scale with L^2 for element
    * length L) did not change the required PTC parameter. One and the same parameter could be used for a wide
    * range of element lengths up to a scale where the element length became comparable with the persistnece
-   * length l_p. For L >= l_p / 2 the simulation became unstable, however, this is supposed to happen not due 
-   * to an improper PTC parameter, but rather due to the large deformations arsing then, which violated the 
+   * length l_p. For L >= l_p / 2 the simulation became unstable, however, this is supposed to happen not due
+   * to an improper PTC parameter, but rather due to the large deformations arsing then, which violated the
    * small strain assumption of this Reissner element. Thus the PTC parameter depends rather on physical parameters
    * than on the choice of the discretization.
-   * 
+   *
    * The above parameter discussion reveals how to adapt the PTC factor in case of changes of the environment of
    * a structure with fixed cross section A, moment of inertia I and length L. However, how to choose the PTC
    * factor and time step size dt for a first discretization and parameter set up has not been discussed so far.
    * Indeed the latter step can be done heuristically once for
-   * 
+   *
    * Cross section A, moment of inertia I: from the above discussed physics one might assume a dependence of the
    * PTC parameter on the ratio of bending and strechting stiffness, i.e. on EI / EA. Such a dependence might
    * considerably exacerbate the application of the PTC algorithm. However, by means of numerical experiments a
@@ -1139,10 +1139,10 @@ int DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
    * over a large range of ratios EI / EA, if the time step size was adopted accordingly. The time step size
    * has to be determined both with respect to bending and stretching time constants. When scaling I by a factor
    * const_I and A by a factor const_A, one first has to decide which of both types of time constants may become
-   * critical by the parameter change. Subsequently one has to scale the time step size either by 1/const_A if 
+   * critical by the parameter change. Subsequently one has to scale the time step size either by 1/const_A if
    * the stretching time constants are the critical ones or by 1/const_I otherwise.
-   * 
-   * 
+   *
+   *
    * Length L: reduing
    */
 
@@ -1150,7 +1150,7 @@ int DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
 
   double basisdamp   = (20e-2)*PI; //2 for network0_5.dat
   double anisofactor = 10;
-  
+
 
 
   //computing angle increment from current position in comparison with last converged position for damping
@@ -1581,7 +1581,7 @@ inline LINALG::Matrix<4,1> DRT::ELEMENTS::Beam3::inversequaternion(const LINALG:
   //inverse quaternion q^(-1) = [-q0, -q1, -q2, q3] / ||q||^2;
   for(int i = 0; i<3; i++)
     qinv(i) = -q(i) / qnormsq;
-  
+
   qinv(3) = q(3) / qnormsq;
 
   return qinv;
@@ -1801,7 +1801,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
   LINALG::Matrix<3,1> Cb;
 
   //normal/shear strain and bending strain(curvature)
-  LINALG::Matrix<3,1> epsilonn;	
+  LINALG::Matrix<3,1> epsilonn;
   LINALG::Matrix<3,1> epsilonm;
 
   //stress values n and m, Crisfield, Vol. 2, equation (17.78)
@@ -1865,14 +1865,14 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
   //Loop through all GP and calculate their contribution to the forcevector and stiffnessmatrix
   for(int numgp=0; numgp < gausspoints.nquad; numgp++)
   {
-  	//Get location and weight of GP in parameter space	
+  	//Get location and weight of GP in parameter space
   	const double xi = gausspoints.qxg[numgp][0];
   	const double wgt = gausspoints.qwgt[numgp];
-  
+
   	//Get h and h,xi
   	DRT::UTILS::shape_function_1D(funct,xi,distype);
   	DRT::UTILS::shape_function_1D_deriv1(deriv,xi,distype);
-  	
+
   	dxdxi_gp.Clear();
   	thetanew_gp.Clear();
   	thetaprimenew_gp.Clear();
@@ -1881,69 +1881,69 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
 		for (int dof=0; dof<3; ++dof)//j
 		{
 			for (int node=0; node<nnode; ++node)
-			{			
+			{
 				dxdxi_gp(dof)              += (Nodes()[node]->X()[dof]+disp[6*node+dof])*deriv(node);
-				
+
 				/*compute interpolated angle displacemnt at specific Gauss point; angle displacement is
 				 * taken from discretization and interpolated with the according shapefunctions*/
 				thetanew_gp(dof)          += disp[6*node+3+dof]*funct(node);
-				
+
 				/*compute derivative of interpolated angle displacement with respect to curve parameter at specific Gauss point; angle displacement is
 				 * taken from discretization and interpolated with the according shapefunctions*/
 				thetaprimenew_gp(dof)     += disp[6*node+3+dof]*deriv(node)/alpha_[numgp];
-				
-			}//for (int node=0; node<nnode; ++node)		
+
+			}//for (int node=0; node<nnode; ++node)
 		}//for (int dof=0; dof<3; ++dof)
-		
+
 		//update theta and thetaprime
 		thetanew_[numgp]= thetanew_gp;
 		thetaprimenew_[numgp]= thetaprimenew_gp;
-		
+
 		/*to perform a curvature update at a specific Gauss point we need to know the angle deltatheta by which the triad at that
 		 * Gauss point is rotated and furthermore the derivative of this rotation angle along the curve. The latter one is
 		 * denoted as d(delta theta)/ds in Crisfield, Vol. 2, page 209, and can be computed according to the comments in the bottom
 		 * of this page*/
-		
+
 		//compute delta theta for (16.146) at the Gauss point only according to remark in the bottom of page 209
 		LINALG::Matrix<3,1> deltatheta_gp = thetanew_[numgp];
 		deltatheta_gp -= thetaold_[numgp];
-		
+
 		//compute d(delta theta)/ds for (16.147) at the Gauss point only according to remark in the bottom of page 209
 		LINALG::Matrix<3,1> deltathetaprime_gp = thetaprimenew_[numgp];
 		deltathetaprime_gp -= thetaprimeold_[numgp];
 
 		/*update triad at Gauss point as shown in Crisfield, Vol. 2, equation (17.65) Note: instead of the matrix multiplication of (17.65) we use
-		 *a quaternion product*/	
+		 *a quaternion product*/
 		updatetriad(deltatheta_gp,Tnew,numgp);
-		
+
 		//updating local curvature according to Crisfield, Vol. 2, pages 209 - 210
 		updatecurvature(Tnew,deltatheta_gp,deltathetaprime_gp,numgp);
-		  	
+
 		epsilonn.Clear();
-		
+
 		//computing current axial and shear strain epsilon, Crisfield, Vol. 2, equation (17.97)
 		epsilonn.MultiplyTN(Tnew,dxdxi_gp);
 		epsilonn.Scale(1/alpha_[numgp]);
 		epsilonn(0) -=  1.0;
-		
+
 		epsilonm.Clear();
-		
+
 		//computing spin matrix S(dxdxi_gp) according to Crisfield, Vol. 2, equation (17.100)
 		LINALG::Matrix<3,3> S_gp;
-		
+
 		S_gp.Clear();
-		
+
 		computespin(S_gp,dxdxi_gp,1.0);
-		
+
 		//stress values n and m, Crisfield, Vol. 2, equation (17.76) and (17.78)
 		epsilonn(0) *= ym*crosssec_;
 		epsilonn(1) *= sm*crosssecshear_;
 		epsilonn(2) *= sm*crosssecshear_;
-		
+
 		stressn.Clear();
-		
+
 		stressn.Multiply(Tnew,epsilonn);
-		
+
 		//turning bending strain epsilonm into bending stress stressm
 		epsilonm = curvnew_[numgp];
 		epsilonm(0) *= sm*Irr_;
@@ -1951,9 +1951,9 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
 		epsilonm(2) *= ym*Izz_;
 
 		stressm.Clear();
-		
+
 		stressm.Multiply(Tnew,epsilonm);
-		
+
 		//computing global internal forces, Crisfield Vol. 2, equation (17.102)
 		//note: X = [h,xi(1)*I 0; h(1)S h,xi(1)I;h,xi(2)*I 0; h(2)S h,xi(2)I......] with S = S(dxdx_gp);
 		if (force != NULL)
@@ -1964,14 +1964,14 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
 				{
 					(*force)(6*node+j) += wgt * deriv(node) * stressn(j);
 					(*force)(6*node+3+j) += wgt * deriv(node) * stressm(j);
-					
+
 					for (int i=0; i<3; ++i)
 						(*force)(6*node+3+j) += wgt * funct(node) * S_gp(i,j) * stressn(i);
 				}
 			}
 		}//if (force != NULL)
-		
-		
+
+
 		//computing nonlinear stiffness matrix
 		if (stiffmatrix != NULL)
 		{
@@ -1979,7 +1979,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
 			Kstiff_gp.Clear();
 			Ksig1_gp.Clear();
 			Ksig2_gp.Clear();
-			
+
 			//setting constitutive parameters , Crisfield, Vol. 2, equation (17.76)
 	    Cm(0) = ym*crosssec_;
 	    Cm(1) = sm*crosssecshear_;
@@ -1990,16 +1990,16 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
 
 			//setting up basis of stiffness matrix according to Crisfield, Vol. 2, equation (17.105)
 	    computestiffbasis<nnode>(Tnew,Cm,Cb,S_gp,Kstiff_gp,funct,deriv);
-	
+
 	    Kstiff_gp.Scale(wgt/alpha_[numgp]);
-	
+
 	    //adding nonlinear (stress dependent) parts to tangent stiffness matrix, Crisfield, Vol. 2 equs. (17.106), (17.107) and (17.107b)
 	    computeKsig1<nnode>(Ksig1_gp,stressn,stressm,funct,deriv);
-	    computeKsig2<nnode>(Ksig2_gp,stressn,S_gp,funct,deriv);	
+	    computeKsig2<nnode>(Ksig2_gp,stressn,S_gp,funct,deriv);
 
 	    Ksig1_gp.Scale(wgt);
 	    Ksig2_gp.Scale(wgt);
-	
+
 	    //shifting values from fixed size matrix to epetra matrix *stiffmatrix
      	for(int i = 0; i < 6*nnode; i++)
      	{
@@ -2020,36 +2020,36 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
   {
 	  //The mass matrix has to be integrated completely. Therefore we use more gausspoints
 	  gaussrule_ = static_cast<enum DRT::UTILS::GaussRule1D>(nnode);
-	
+
 	  //Get the applied integrationpoints for complete integration
-	  DRT::UTILS::IntegrationPoints1D gausspointsmass(gaussrule_);	
-	
+	  DRT::UTILS::IntegrationPoints1D gausspointsmass(gaussrule_);
+
 	  //Matrix to store Shape functions as defined throughout the FE lecture
 	  LINALG::Matrix<6,6*nnode> N;
-	
+
 	  //Matrix to store mass matrix at each GP in
 	  LINALG::Matrix<6*nnode,6*nnode> massmatrixgp;
-	
+
 	  for(int numgp=0; numgp < gausspointsmass.nquad; numgp++)
 	  {
-		  //Get location and weight of GP in parameter space	
+		  //Get location and weight of GP in parameter space
 		  const double xi = gausspointsmass.qxg[numgp][0];
 		  const double wgt = gausspointsmass.qwgt[numgp];
-		 		 	  	
+
 		  //Get h
 		  DRT::UTILS::shape_function_1D(funct,xi,distype);
 
 		  //Set N to zeros
 		  N.Clear();
-		
+
 		  //Fill up N as defined in the FE lecture
 		  for (int node=0; node<nnode; node++)
 			  for (int dof=0; dof<6; dof++)
 				  N(dof,6*node+dof)=funct(node);
-		
+
 		  //m= density*crosssec* integraloverxi [N_t*N]
      	massmatrixgp.MultiplyTN(density*crosssec_,N,N);
-		 	
+
    	  for (int i=0; i<6*nnode; i++)
    	  {
    		  for (int j=0; j<nnode; j++)
@@ -2063,16 +2063,16 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
    			  //Note: This is an approximation for the rotational values around t2 and t3. For exact
    			  //one would have to differntiate again.
    		  }
-   	  } 		
-		
+   	  }
+
    	  //Sum up the massmatrices calculated at each gp using the lengthfactor and the weight
    	  for (int i=0; i<6*nnode; i++)
    		  for (int j=0; j<6*nnode; j++)
    			  (*massmatrix)(i,j)+= alphamass_[numgp]*wgt*massmatrixgp(i,j);
-      	
-	
+
+
 	  }//for(int numgp=0; numgp < gausspointsmass.nquad; numgp++)
-	  	
+
 	  //reset gaussrule
 	  gaussrule_ = static_cast<enum DRT::UTILS::GaussRule1D>(nnode-1);
 
@@ -2108,7 +2108,7 @@ void DRT::ELEMENTS::Beam3::lumpmass(Epetra_SerialDenseMatrix* emass)
 			  d += (*emass)(r,c); // accumulate row entries
 			  (*emass)(r,c) = 0.0;
 		  }
-		
+
 		  (*emass)(c,c) = d; // apply sum of row entries on diagonal
 	  }
   }

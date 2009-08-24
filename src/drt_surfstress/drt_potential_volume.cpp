@@ -17,7 +17,7 @@ Maintainer: Ursula Mayer
 #include "drt_potential_volume.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/linalg_utils.H"
-#include "../drt_lib/drt_timecurve.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_geometry/element_normals.H"
 #include <cstdlib>
 
@@ -169,11 +169,11 @@ void POTENTIAL::VolumePotential::StiffnessAndInternalForcesPotential(
   const int    curvenum = cond->GetInt("curve");
   const double time     = params.get<double>("total time",-1.0);
   //const double dt     = params.get<double>("delta time",0.0);
-  const double t_end    = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).end();
+  const double t_end    = DRT::Problem::Instance()->Curve(curvenum).end();
   double curvefac       = 1.0;
   // apply potential forces gradually
   if (time <= t_end)
-    curvefac      = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
+    curvefac      = DRT::Problem::Instance()->Curve(curvenum).f(time);
 
   // compute internal force and stiffness matrix
   // TODO if poteles empty don t do assembly
@@ -219,11 +219,11 @@ void POTENTIAL::VolumePotential::StiffnessAndInternalForcesPotential(
   const int    curvenum = cond->GetInt("curve");
   const double time     = params.get<double>("total time",-1.0);
   //const double dt     = params.get<double>("delta time",0.0);
-  const double t_end    = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).end();
+  const double t_end    = DRT::Problem::Instance()->Curve(curvenum).end();
   double curvefac       = 1.0;
   // apply potential forces gradually
   if (time <= t_end)
-    curvefac      = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
+    curvefac      = DRT::Problem::Instance()->Curve(curvenum).f(time);
 
   // compute internal force and stiffness matrix
   // TODO if poteles empty don t do assembly

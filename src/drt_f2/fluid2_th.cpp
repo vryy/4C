@@ -3058,7 +3058,7 @@ void DRT::ELEMENTS::Fluid2TH<distype>::BodyForce(Fluid2*      ele,
             // time factor for the intermediate step
             if(time >= 0.0)
             {
-                curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
+                curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
             }
             else
             {
@@ -3095,7 +3095,7 @@ void DRT::ELEMENTS::Fluid2TH<distype>::BodyForce(Fluid2*      ele,
                 if (functnum>0)
                 {
                     // evaluate function at the position of the current node
-                    functionfac = DRT::UTILS::FunctionManager::Instance().Funct(functnum-1).Evaluate(isd,x,time,NULL);
+                    functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(isd,x,time,NULL);
                 }
                 else
                     functionfac = 1.0;

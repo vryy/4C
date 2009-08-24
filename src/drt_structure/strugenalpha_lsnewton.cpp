@@ -519,7 +519,7 @@ void StruGenAlpha::ControlledConstantPredictor()
 
   // increment time and step
   double timen = time + dt;
-  //int istep = step + 1; 
+  //int istep = step + 1;
 
   //--------------------------------------------------- predicting state
   // constant predictor : displacement in domain
@@ -711,7 +711,7 @@ void StruGenAlpha::ControlledFullNewton()
   Epetra_Time timer(discret_.Comm());
   timer.ResetStartTime();
   bool print_unconv = true;
-  
+
   while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) and numiter<=maxiter)
   {
     //------------------------------------------- effective rhs is fresm
@@ -720,7 +720,7 @@ void StruGenAlpha::ControlledFullNewton()
     stiff_->Complete();
 
     //-----------------------------transform to local coordinate systems
-    if (locsysmanager_ != null) 
+    if (locsysmanager_ != null)
     {
       locsysmanager_->RotateGlobalToLocal(stiff_,fresm_);
       locsysmanager_->RotateGlobalToLocal(vp_);
@@ -745,26 +745,26 @@ void StruGenAlpha::ControlledFullNewton()
     solver_.ResetTolerance();
 
     //----------------------- transform back to global coordinate system
-    if (locsysmanager_ != null) 
+    if (locsysmanager_ != null)
     {
       locsysmanager_->RotateLocalToGlobal(disi_);
       locsysmanager_->RotateLocalToGlobal(vp_);
     }
-    
-    //---------------------------------------------------------- control 
+
+    //---------------------------------------------------------- control
     double vbar;
     if (controltype==INPAR::STR::control_disp)
     {
       // see Wriggers: Nichtlinear Finite-Elemente Methoden, p. 156ff.
-      
+
       // get curve value at time timen which is prescribed value vbar_i+1
-      vbar = DRT::UTILS::TimeCurveManager::Instance().Curve(controlcurve).f(timen);
-      
+      vbar = DRT::Problem::Instance()->Curve(controlcurve).f(timen);
+
       // get current increment for v_a from disi_
       double va = 0.0;
       double vp = 0.0;
       double vg = 0.0;
-      if (myrank_==controlowner) 
+      if (myrank_==controlowner)
       {
         va = (*disn_)[disn_->Map().LID(controldof)];
         vp = (*vp_)[vp_->Map().LID(controldof)];
@@ -773,7 +773,7 @@ void StruGenAlpha::ControlledFullNewton()
       disn_->Comm().Broadcast(&va,1,controlowner);
       vp_->Comm().Broadcast(&vp,1,controlowner);
       disi_->Comm().Broadcast(&vg,1,controlowner);
-      
+
       // constraint f = va - vbar
       double fi  = va-vbar;
       //cout << "fi      " << fi << endl;
@@ -783,7 +783,7 @@ void StruGenAlpha::ControlledFullNewton()
       double flambda = 0.0;
       // increment of lambda
       dlambda_ = -(fi+ft*vg)/(flambda+ft*vp);
-      
+
       // do appropriate scaling of increment
       disi_->Update(dlambda_,*vp_,1.0);
       lambda_ += dlambda_;
@@ -791,7 +791,7 @@ void StruGenAlpha::ControlledFullNewton()
     else if (controltype==INPAR::STR::control_arc1)
     {
       dserror("arclength control not implemented");
-    } 
+    }
     else dserror("Currently, only disp/arc1 control implemented");
 
     //---------------------------------- update mid configuration values
@@ -800,7 +800,7 @@ void StruGenAlpha::ControlledFullNewton()
     dism_->Update(1.0,*disi_,1.0);
     disn_->Update(1.0,*disi_,1.0);
     double dis;
-    if (myrank_==controlowner) 
+    if (myrank_==controlowner)
       dis = (*disn_)[disn_->Map().LID(controldof)];
     disn_->Comm().Broadcast(&dis,1,controlowner);
 

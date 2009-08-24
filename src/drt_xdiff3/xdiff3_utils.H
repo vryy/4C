@@ -131,14 +131,14 @@ LINALG::SerialDenseMatrix BodyForce(DRT::Node** nodes, const double pseudotime)
       // factor for the intermediate step
       if(pseudotime >= 0.0)
       {
-        curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(pseudotime);
+        curvefac = DRT::Problem::Instance()->Curve(curvenum).f(pseudotime);
       }
       else
       {
     // do not compute an "alternative" curvefac here since a negative pseudotime value
     // indicates an error.
         dserror("Negative pseudotime value in body force calculation: time = %f",pseudotime);
-        //curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(0.0);
+        //curvefac = DRT::Problem::Instance()->Curve(curvenum).f(0.0);
       }
     }
     else // we do not have a (pseudo-)timecurve --- timefactors are constant equal 1

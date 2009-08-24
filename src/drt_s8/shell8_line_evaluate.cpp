@@ -17,7 +17,7 @@ Maintainer: Michael Gee
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_timecurve.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 extern "C"
 {
@@ -52,7 +52,7 @@ int DRT::ELEMENTS::Shell8Line::EvaluateNeumann(
   if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
   if (curvenum>=0 && usetime)
-    curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
+    curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
 
   // init gaussian points of parent element
   S8_DATA s8data;

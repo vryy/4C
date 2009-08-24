@@ -16,7 +16,7 @@ Maintainer: Ursula Mayer
 
 #include "drt_potential.H"
 #include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/drt_timecurve.H"
+#include "../drt_lib/drt_globalproblem.H"
 //#include <cstdlib>
 
 
@@ -174,7 +174,7 @@ void POTENTIAL::Potential::EvaluatePotentialCondition(
     if (curve) curvenum = (*curve)[0];
     double                curvefac = 1.0;
     if (curvenum>=0 && usetime)
-      curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
+      curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
 
     params.set("LoadCurveFactor",curvefac);
 

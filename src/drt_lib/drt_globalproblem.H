@@ -26,6 +26,8 @@ Maintainer: Ulrich Kuettler
 #include "drt_discret.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "drt_inputreader.H"
+#include "drt_function.H"
+#include "drt_timecurve.H"
 
 #include "standardtypes_cpp.H"
 
@@ -283,10 +285,23 @@ public:
   //@}
 
   /// @name Materials
-  //@{
 
   /// return pointer to materials bundled to the problem
   Teuchos::RCP<MAT::PAR::Bundle> Materials() { return materials_; }
+
+  //@}
+
+  /// @name Spatial Functions
+
+  /// return a specified function
+  DRT::UTILS::Function& Funct(int num);
+
+  //@}
+
+  /// @name Spatial Functions
+
+  /// return a specified time curve
+  DRT::UTILS::TimeCurve& Curve(int num);
 
   //@}
 
@@ -310,9 +325,19 @@ private:
   /// material bundle
   Teuchos::RCP<MAT::PAR::Bundle> materials_;
 
+  /// basket of spatial function
+  DRT::UTILS::FunctionManager functionmanager_;
+
+  /// basket of time curves
+  DRT::UTILS::TimeCurveManager timecurvemanager_;
+
+  /// @name File IO
+
   Teuchos::RCP<IO::InputControl>  inputcontrol_;
   Teuchos::RCP<IO::OutputControl> outputcontrol_;
   Teuchos::RCP<IO::ErrorFileControl> errorfilecontrol_;  ///< error file handles
+
+  //@}
 };
 
 }

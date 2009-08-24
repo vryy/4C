@@ -20,10 +20,10 @@ Maintainer: Thomas Kloeppel
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/linalg_sparsematrix.H"
-#include "iostream"
+#include <iostream>
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_timecurve.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 
 
@@ -404,7 +404,7 @@ void UTILS::MPConstraint2::EvaluateConstraint(RCP<DRT::Discretization> disc,
       bool usetime = true;
       if (time<0.0) usetime = false;
       if (curvenum>=0 && usetime)
-        curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
+        curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
       RCP<Epetra_Vector> timefact = params.get<RCP<Epetra_Vector> >("vector curve factors");
       timefact->ReplaceGlobalValues(1,&curvefac,&gindex);
     }

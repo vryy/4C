@@ -11101,14 +11101,14 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::GetNodalBodyForce(
       // time factor for the intermediate step
       if(time >= 0.0)
       {
-        curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
+        curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
       }
       else
       {
 	// do not compute an "alternative" curvefac here since a negative time value
 	// indicates an error.
         dserror("Negative time value in body force calculation: time = %f",time);
-        //curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(0.0);
+        //curvefac = DRT::Problem::Instance()->Curve(curvenum).f(0.0);
       }
     }
     else // we do not have a timecurve --- timefactors are constant equal 1

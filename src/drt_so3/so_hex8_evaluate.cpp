@@ -164,7 +164,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
                                     INPAR::STR::stress_none,INPAR::STR::strain_none);
 #endif
-      if (act==calc_struct_nlnstifflmass) soh8_lumpmass(&elemat2);      
+      if (act==calc_struct_nlnstifflmass) soh8_lumpmass(&elemat2);
     }
     break;
 
@@ -519,7 +519,7 @@ int DRT::ELEMENTS::So_hex8::EvaluateNeumann(ParameterList& params,
   if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
   if (curvenum>=0 && usetime)
-    curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
+    curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
   // **
 
 /* ============================================================================*
@@ -570,7 +570,7 @@ int DRT::ELEMENTS::So_hex8::EvaluateNeumann(ParameterList& params,
  |  init the element jacobian mapping (protected)              gee 04/08|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8::InitJacobianMapping()
-{ 
+{
   const static vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
   LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;
   for (int i=0; i<NUMNOD_SOH8; ++i)

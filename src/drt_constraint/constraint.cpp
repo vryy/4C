@@ -16,7 +16,7 @@ Maintainer: Thomas Kloeppel
 #include "iostream"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_timecurve.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 
 /*----------------------------------------------------------------------*
@@ -267,7 +267,7 @@ void UTILS::Constraint::EvaluateConstraint(
       if (curve) curvenum = (*curve)[0];
       double curvefac = 1.0;
       if (curvenum>=0 )
-        curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
+        curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
 
       // global and local ID of this bc in the redundant vectors
       const int offsetID = params.get<int>("OffsetID");

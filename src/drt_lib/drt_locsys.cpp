@@ -564,13 +564,13 @@ void DRT::UTILS::LocsysManager::Setup()
         if((*funct)[0]>0 && (*funct)[1]>0)
         {
           // check number of components in both spatial functions
-          if((DRT::UTILS::FunctionManager::Instance().Funct((*funct)[0]-1)).NumberComponents()!=3)
+          if((DRT::Problem::Instance()->Funct((*funct)[0]-1)).NumberComponents()!=3)
           {
-            dserror("expecting vector-valued function for rotation axis of local coordinate system, but got %d components\n",(DRT::UTILS::FunctionManager::Instance().Funct((*funct)[0]-1)).NumberComponents());
+            dserror("expecting vector-valued function for rotation axis of local coordinate system, but got %d components\n",(DRT::Problem::Instance()->Funct((*funct)[0]-1)).NumberComponents());
           }
-          if((DRT::UTILS::FunctionManager::Instance().Funct((*funct)[1]-1)).NumberComponents()!=1)
+          if((DRT::Problem::Instance()->Funct((*funct)[1]-1)).NumberComponents()!=1)
           {
-            dserror("expecting scalar function for rotation angle of local coordinate system, got %d components\n",(DRT::UTILS::FunctionManager::Instance().Funct((*funct)[1]-1)).NumberComponents());
+            dserror("expecting scalar function for rotation angle of local coordinate system, got %d components\n",(DRT::Problem::Instance()->Funct((*funct)[1]-1)).NumberComponents());
           }
 
           // if necessary, the local coordinate system is rotated according to
@@ -578,22 +578,22 @@ void DRT::UTILS::LocsysManager::Setup()
           const double time =0.0;
 
 
-          const double angle=(DRT::UTILS::FunctionManager::Instance().Funct((*funct)[1]-1)).Evaluate(
+          const double angle=(DRT::Problem::Instance()->Funct((*funct)[1]-1)).Evaluate(
             0        ,
             node->X(),
             time     ,
             &discret_);
-          const double x=(DRT::UTILS::FunctionManager::Instance().Funct((*funct)[0]-1)).Evaluate(
+          const double x=(DRT::Problem::Instance()->Funct((*funct)[0]-1)).Evaluate(
             0        ,
             node->X(),
             time     ,
             &discret_);
-          const double y=(DRT::UTILS::FunctionManager::Instance().Funct((*funct)[0]-1)).Evaluate(
+          const double y=(DRT::Problem::Instance()->Funct((*funct)[0]-1)).Evaluate(
             1        ,
             node->X(),
             time     ,
             &discret_);
-          const double z=(DRT::UTILS::FunctionManager::Instance().Funct((*funct)[0]-1)).Evaluate(
+          const double z=(DRT::Problem::Instance()->Funct((*funct)[0]-1)).Evaluate(
             2        ,
             node->X(),
             time     ,
@@ -778,13 +778,13 @@ void DRT::UTILS::LocsysManager::RotateGlobalToLocal(RCP<LINALG::SparseMatrix> sy
   {
     RCP<LINALG::SparseMatrix> temp;
     RCP<LINALG::SparseMatrix> temp2;
-    
+
     // We want to keep the SaveGraph() value of sysmat also after transformation.
     // It is not possible to keep ExplicitDirichlet()==true after transformation,
     // so we explicitly set this to false.
     temp = LINALG::Multiply(*trafo_,false,*sysmat,false,false,sysmat->SaveGraph(),true);  // multiply from left
     temp2 = LINALG::Multiply(*temp,false,*trafo_,true,false,sysmat->SaveGraph(),true);  // multiply from right
-    
+
     // this is a deep copy (expensive!)
     *sysmat = *temp2;
   }
@@ -820,13 +820,13 @@ void DRT::UTILS::LocsysManager::RotateLocalToGlobal(RCP<Epetra_Vector> result,
   // transform system matrix
   RCP<LINALG::SparseMatrix> temp;
   RCP<LINALG::SparseMatrix> temp2;
-  
+
   // We want to keep the SaveGraph() value of sysmat also after transformation.
   // It is not possible to keep ExplicitDirichlet()==true after transformation,
   // so we explicitly set this to false.
   temp = LINALG::Multiply(*sysmat,false,*trafo_,false,false,sysmat->SaveGraph(),true);
   temp2 = LINALG::Multiply(*trafo_,true,*temp,false,false,sysmat->SaveGraph(),true);
-  
+
   // this is a deep copy (expensive!)
   *sysmat = *temp2;
 

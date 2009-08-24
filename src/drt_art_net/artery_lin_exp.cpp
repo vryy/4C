@@ -286,7 +286,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::Sysmat(
           + pow(xyze(2,0) - xyze(2,1),2));
 
   // defining some redundantly used matrices
-  
+
   LINALG::Matrix<2*iel,2> dNdxi; dNdxi.Clear();
   LINALG::Matrix<2*iel,2> Nxi;   Nxi.Clear();
   LINALG::Matrix<2*iel,1> temp1;
@@ -322,7 +322,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::Sysmat(
   //
   /*
     In the case of the linear elastic material behavior of arteries,
-    the system matrix is the same as the mass matrix, and thus it 
+    the system matrix is the same as the mass matrix, and thus it
     could be derived analytically.
 
                     +-    .      .      .     -+
@@ -351,9 +351,9 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::Sysmat(
                     |..........................|
                     |     .  2   .      .  1   |
                     |  0  . ---  .   0  . ---  |
-                    |     .  3   .      .  3   |    L 
-    MassMat =       |..........................| * --- 
-                    |  1  .      .   2  .      |    2 
+                    |     .  3   .      .  3   |    L
+    MassMat =       |..........................| * ---
+                    |  1  .      .   2  .      |    2
                     | --- .   0  .  --- .  0   |
                     |  3  .      .   3  .      |
                     |..........................|
@@ -388,9 +388,9 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::Sysmat(
     // actually compute its transpose....
     /*
                              _____________________________________
-        ds     L            /         2            2            2    
-        --- = ---   ;  L = / ( x - x )  + ( y - y )  + ( z - z )     
-        dxi    2          v     1   2        2    2       1   2      
+        ds     L            /         2            2            2
+        --- = ---   ;  L = / ( x - x )  + ( y - y )  + ( z - z )
+        dxi    2          v     1   2        2    2       1   2
 
     */
 
@@ -434,148 +434,148 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::Sysmat(
     //                   compute the rhs vector
     //--------------------------------------------------------------
     //
-    // Compute the rhs of the linear elastic artery with a 
+    // Compute the rhs of the linear elastic artery with a
     // Taylor-Galerkin skeme for the nonlinear diff. equation
     //
-    //   1- Since this element is explicitly solved in time domain 
-    //      the results from time step "n" will only be used to compute 
+    //   1- Since this element is explicitly solved in time domain
+    //      the results from time step "n" will only be used to compute
     //      the results from time step "n+1"
     //
-    //      /   \                                                      
-    //   2- |.,.| is the Lebesgue inner product                        
-    //      \   /                                                       
-    //                                                                  
-    //   3- Psi is the weight function for the Galerkin approximation
-    //                                                                 
+    //      /   \
+    //   2- |.,.| is the Lebesgue inner product
+    //      \   /
     //
-    /*      
-                                                                          
-                        n                     n                         n 
-            /          \        /            \      2 /                \  
-        n   |          |        |       dPsi |    Dt  |    par F       |  
-  o  rhs =  | U  , Psi |   + Dt | F   , ---- |  - --- | B  ----- , Psi |  
-            |          |        |  LW    ds  |     2  |  U par s       |  
-            \          /        \            /        \                /  
-           +------------+    +----------------+ +-----------------------+ 
-              (Term 1)            (Term 2)             (Term 3)           
-                                                                          
-                                   n                    n                 
-               2 /                \        /           \                  
-             Dt  |   par F   dPsi |        |           |                  
-           - --- | H ----- , ---- |   + Dt | B   , Psi |                  
-              2  |   par s    ds  |        |  LW       |                  
-                 \                /        \           /                  
-          +-------------------------+   +----------------+                
-                  (Term 4)                  (Term 5)                      
-                                                                          
-                                                                          
-                                                                          
-                                +-     -+                                 
-          +- -+                 | psi   |                                 
-          | A |                 |    a  |                                 
-  o U   = |   |     ;     Psi = |       |                                 
-          | Q |                 | psi   |                                 
-          +- -+                 |    q  |                                 
-                                +-     -+                                 
-                                                                          
-                                                                          
-               Dt                                                         
-  o F   = F + --- H B                                                     
-     LW        2                                                          
-                                                                          
-               Dt                                                         
-  o B   = B + --- B  B                                                    
-     LW        2   U                                                      
-                                                                          
-                                                                          
-        +-                  -+                                            
-        |                    |                                            
-        |         Q          |                                            
-        |                    |                                            
-  o F = |....................|                                            
-        |  2                 |                                            
-        | Q      beta    3/2 |                                            
-        |--- + -------- A    |                                            
-        | A    3 rho Ao      |                                            
-        +-                  -+                                            
-                                                                          
-                                                                          
-        +-                                                -+              
-        |                                                  |              
-        |                         0                        |              
-    dF  |                                                  |              
-  o -- =|..................................................|              
-    ds  |             /      2                  \          |              
-        |   Q   dQ    |  / Q \      beta    1/2 | dA       |              
-        | 2---.---  + | -|---|  + -------- A    | --- +    |              
-        |   A   ds    \  \ A /    2.rho.Ao      / ds       |              
-        |                                                  |              
-        |                  3/2  /                     \    |              
-        |                 A     | d beta    beta  dAo |    |              
-        |           +  -------- | ------ - -----  --- |    |              
-        |              3.rho.Ao \ d x        Ao   ds  /    |              
-        +-                                                -+              
-                                                                          
-                                                                          
-        +-                                                          -+    
-        |                                                            |    
-        |                            0                               |    
-        |                                                            |    
-  o B = |............................................................|    
-        |                                                            |    
-        |     Q        A    / 2   1/2    1/2 \ par beta              |    
-        |- Kr---  -  ------ |--- A    - Ao   | --------              |    
-        |     A      Ao rho \ 3              /  par s                |    
-        |                                                            |    
-        |                                                            |    
-        |             beta   A  / 2  1/2     1  1/2 \ par Ao         |    
-        |         +  ------ --- |---A     - ---Ao   | ------         |     
-        |            Ao rho  Ao \ 3          2      /  par s         |    
-        |                                                            |    
-        |                                                            |    
-        |              A    par Pext                                 |    
-        |         -  -----.---------                                 |    
-        |             rho    par s                                   |    
-        |                                                            |    
-        +-                                                          -+    
-                                                                          
-                                                                          
-        +-                                                   .      -+    
-        |                                                    .       |    
-        |                            0                       .   0   |    
-    dB  |                                                    .       |    
-  o -- =|............................................................|    
-    dU  |                                                    .       |    
-        |     Q        1    /  1/2    1/2 \ par beta         .   Kr  |    
-        |- Kr---  -  ------ | A    - Ao   | --------         . - --- |    
-        |     A^2    Ao rho \             /  par s           .    A  |    
-        |                                                    .       |    
-        |                                                    .       |    
-        |             beta   1  /  1/2    1  1/2 \ par Ao    .       |    
-        |         +  ------ --- | A    - -- Ao   | ------    .       |    
-        |            Ao rho  Ao \         2      /  par s    .       |    
-        |                                                    .       |    
-        |                                                    .       |    
-        |              1     par Pext                        .       |    
-        |         -  -----. ---------                        .       |    
-        |             rho     par s                          .       |    
-        |                                                    .       |    
-        +-                                                          -+    
-                                                                          
-                                                                          
-        +-                           .        -+                          
-        |                            .         |                          
-        |             0              .   1     |                          
-  o H = |......................................|                          
-        |                            .         |                          
-        |        2                   .         |                          
-        |   / Q \       beta    1/2  .     Q   |                          
-        | - |---|  +  -------- A     .  2 ---  |                          
-        |   \ A /     2 rho Ao       .     A   |                          
-        |                            .         |                          
-        +-                           .        -+                          
-                                                                          
-                                                                          
+    //   3- Psi is the weight function for the Galerkin approximation
+    //
+    //
+    /*
+
+                        n                     n                         n
+            /          \        /            \      2 /                \
+        n   |          |        |       dPsi |    Dt  |    par F       |
+  o  rhs =  | U  , Psi |   + Dt | F   , ---- |  - --- | B  ----- , Psi |
+            |          |        |  LW    ds  |     2  |  U par s       |
+            \          /        \            /        \                /
+           +------------+    +----------------+ +-----------------------+
+              (Term 1)            (Term 2)             (Term 3)
+
+                                   n                    n
+               2 /                \        /           \
+             Dt  |   par F   dPsi |        |           |
+           - --- | H ----- , ---- |   + Dt | B   , Psi |
+              2  |   par s    ds  |        |  LW       |
+                 \                /        \           /
+          +-------------------------+   +----------------+
+                  (Term 4)                  (Term 5)
+
+
+
+                                +-     -+
+          +- -+                 | psi   |
+          | A |                 |    a  |
+  o U   = |   |     ;     Psi = |       |
+          | Q |                 | psi   |
+          +- -+                 |    q  |
+                                +-     -+
+
+
+               Dt
+  o F   = F + --- H B
+     LW        2
+
+               Dt
+  o B   = B + --- B  B
+     LW        2   U
+
+
+        +-                  -+
+        |                    |
+        |         Q          |
+        |                    |
+  o F = |....................|
+        |  2                 |
+        | Q      beta    3/2 |
+        |--- + -------- A    |
+        | A    3 rho Ao      |
+        +-                  -+
+
+
+        +-                                                -+
+        |                                                  |
+        |                         0                        |
+    dF  |                                                  |
+  o -- =|..................................................|
+    ds  |             /      2                  \          |
+        |   Q   dQ    |  / Q \      beta    1/2 | dA       |
+        | 2---.---  + | -|---|  + -------- A    | --- +    |
+        |   A   ds    \  \ A /    2.rho.Ao      / ds       |
+        |                                                  |
+        |                  3/2  /                     \    |
+        |                 A     | d beta    beta  dAo |    |
+        |           +  -------- | ------ - -----  --- |    |
+        |              3.rho.Ao \ d x        Ao   ds  /    |
+        +-                                                -+
+
+
+        +-                                                          -+
+        |                                                            |
+        |                            0                               |
+        |                                                            |
+  o B = |............................................................|
+        |                                                            |
+        |     Q        A    / 2   1/2    1/2 \ par beta              |
+        |- Kr---  -  ------ |--- A    - Ao   | --------              |
+        |     A      Ao rho \ 3              /  par s                |
+        |                                                            |
+        |                                                            |
+        |             beta   A  / 2  1/2     1  1/2 \ par Ao         |
+        |         +  ------ --- |---A     - ---Ao   | ------         |
+        |            Ao rho  Ao \ 3          2      /  par s         |
+        |                                                            |
+        |                                                            |
+        |              A    par Pext                                 |
+        |         -  -----.---------                                 |
+        |             rho    par s                                   |
+        |                                                            |
+        +-                                                          -+
+
+
+        +-                                                   .      -+
+        |                                                    .       |
+        |                            0                       .   0   |
+    dB  |                                                    .       |
+  o -- =|............................................................|
+    dU  |                                                    .       |
+        |     Q        1    /  1/2    1/2 \ par beta         .   Kr  |
+        |- Kr---  -  ------ | A    - Ao   | --------         . - --- |
+        |     A^2    Ao rho \             /  par s           .    A  |
+        |                                                    .       |
+        |                                                    .       |
+        |             beta   1  /  1/2    1  1/2 \ par Ao    .       |
+        |         +  ------ --- | A    - -- Ao   | ------    .       |
+        |            Ao rho  Ao \         2      /  par s    .       |
+        |                                                    .       |
+        |                                                    .       |
+        |              1     par Pext                        .       |
+        |         -  -----. ---------                        .       |
+        |             rho     par s                          .       |
+        |                                                    .       |
+        +-                                                          -+
+
+
+        +-                           .        -+
+        |                            .         |
+        |             0              .   1     |
+  o H = |......................................|
+        |                            .         |
+        |        2                   .         |
+        |   / Q \       beta    1/2  .     Q   |
+        | - |---|  +  -------- A     .  2 ---  |
+        |   \ A /     2 rho Ao       .     A   |
+        |                            .         |
+        +-                           .        -+
+
+
     */
 
     //Calculate H
@@ -737,7 +737,7 @@ bool  DRT::ELEMENTS::ArteryLinExp<distype>::SolveRiemann(
     const double Q_l2    = N1*eqn(0)    + N2*eqn(1);
     const double Ao_l2   = N1*area0_(0) + N2*area0_(1);
     const double c_l2    = sqrt(beta_l2*sqrt(A_l2)/(2.0*Ao_l2*dens_));
-    
+
 
     //defining W2n at dt*lambda2
     const double W2n_l2  =  Q_l2/A_l2 - 4.0*c_l2;
@@ -746,7 +746,7 @@ bool  DRT::ELEMENTS::ArteryLinExp<distype>::SolveRiemann(
 
     Wb1np_  = W2n_l2 - W2on_l2 -4.0*co1;
     params.set("W2in",Wb1np_);
-    
+
     BCnodes = true;
     //    double Wb1o = -4.0*sqrt(sqrt(PI)*young_(0)*th_(0)/(1.0-pow(nue_,2))*sqrt(area0_(0))/(2.0*area0_(0)*dens_));
   }
@@ -772,12 +772,12 @@ bool  DRT::ELEMENTS::ArteryLinExp<distype>::SolveRiemann(
 
     Wf2np_  = W1n_l1 - W1on_l1 +4.0*co1;
     params.set("W1out",Wf2np_);
-    
+
     BCnodes = true;
   }
- 
+
   return BCnodes;
- 
+
 }
 
 
@@ -890,7 +890,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
       if (curve) curvenum = (*curve)[condnum];
       double curvefac = 1.0;
       if (curvenum>=0)
-        curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
+        curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
 
       const vector<double>* vals   = condition->Get<vector<double> >("val");
       const double val = (*flags)[condnum]*(*vals)[condnum]*curvefac;
@@ -899,7 +899,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
       const double beta =  sqrt(PI)*young1_*th1_/(1.0-pow(nue_,2));
       // Initial backward characteristic speed at terminal 1
       const double Wb1o = -4.0*sqrt(beta/(2.0*dens_*sqrt(area1_0_)));
-      // backward characteristic wave, 
+      // backward characteristic wave,
       // Wb1 = Wb1np_   if  b.c is forced
       // Wb1 = Wb1o     if  b.c is absorbing
       double Wb1 = (Rf*Wb1np_ + (1.0-Rf)*Wb1o);
@@ -909,22 +909,22 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
         case 0:
           /*
            Prescribed Volumetric flow rate:
-                                                                                   
-                  /2.rho.Ao\2  /Wf - Wb\4  /Wf - Wb\                                
-           Q    = |--------| . |-------| . |-------|                            
-                  \ beta   /   \   8   /   \   2   /                            
-                                                                       
-                  /2.rho.Ao\2  /Wf - Wb\4  /Wf - Wb\                       
-           f    = |--------| . |-------| . |-------|  - Q = 0               
-                  \ beta   /   \   8   /   \   2   /                        
-                                                                          
-            df    /2.rho.Ao\2   /Wf - Wb\3  /5*Wf - 3*Wb\                 
-           ---- = |--------| .  |-------| . |-----------|                 
-           dWf    \ beta   /    \   8   /   \     16    /              
-             
+
+                  /2.rho.Ao\2  /Wf - Wb\4  /Wf - Wb\
+           Q    = |--------| . |-------| . |-------|
+                  \ beta   /   \   8   /   \   2   /
+
+                  /2.rho.Ao\2  /Wf - Wb\4  /Wf - Wb\
+           f    = |--------| . |-------| . |-------|  - Q = 0
+                  \ beta   /   \   8   /   \   2   /
+
+            df    /2.rho.Ao\2   /Wf - Wb\3  /5*Wf - 3*Wb\
+           ---- = |--------| .  |-------| . |-----------|
+           dWf    \ beta   /    \   8   /   \     16    /
+
            The nonlinear equation: f could be solve using Newton-Raphson
            method as following:
-                                                                                   
+
              1- U(first guess) = Q*(Ao) => W1(first guess) = 2Q/Ao - W2
              2- Calculate df/dWf
              3- Find Wf,i+1 = Wf,i - f,i/(df/dWf),i
@@ -1028,7 +1028,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
         if (curve) curvenum = (*curve)[5];
         double Rf = 1.0;
         if (curvenum>=0)
-          Rf = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
+          Rf = DRT::Problem::Instance()->Curve(curvenum).f(time);
 
         //for physiological reasons Rf should be between 0.0 and 1.0
         if(Rf<0.0 || Rf>1.0)
@@ -1047,9 +1047,9 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
         if (curve) curvenum = (*curve)[0];
         double curvefac = 1.0;
         if (curvenum>=0)
-          curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
+          curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
 
-        // forward characteristic wave, 
+        // forward characteristic wave,
         // Wf2 = Wf2np_   if  b.c is forced
         // Wf2 = Wf2o     if  b.c is absorbing
         double Wf2 = (Rf*Wf2np_ + (1.0-Rf)*Wf2o);
@@ -1059,22 +1059,22 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
           case 0:
             /*
              Prescribed Volumetric flow rate:
-                                                                                     
-                      /2.rho.Ao\2  /Wf - Wb\4  /Wf + Wb\                                
-             Q    =   |--------| . |-------| . |-------|                            
-                      \ beta   /   \   8   /   \   2   /                            
-                                                                       
-                      /2.rho.Ao\2  /Wf - Wb\4  /Wf + Wb\                       
-             f    =   |--------| . |-------| . |-------|  - Q = 0               
-                      \ beta   /   \   8   /   \   2   /                        
-                                                                          
-             df      /2.rho.Ao\2  /Wf - Wb\3  /3*Wf + 5*Wb\                 
-            ---- = - |--------| . |-------| . |-----------|                 
-            dWb      \ beta   /   \   8   /   \     16    /              
-             
+
+                      /2.rho.Ao\2  /Wf - Wb\4  /Wf + Wb\
+             Q    =   |--------| . |-------| . |-------|
+                      \ beta   /   \   8   /   \   2   /
+
+                      /2.rho.Ao\2  /Wf - Wb\4  /Wf + Wb\
+             f    =   |--------| . |-------| . |-------|  - Q = 0
+                      \ beta   /   \   8   /   \   2   /
+
+             df      /2.rho.Ao\2  /Wf - Wb\3  /3*Wf + 5*Wb\
+            ---- = - |--------| . |-------| . |-----------|
+            dWb      \ beta   /   \   8   /   \     16    /
+
             The nonlinear equation: f could be solve using Newton-Raphson
             method as following:
-                                                                                    
+
               1- U(first guess) = Q*(Ao) => W2(first guess) = 2Q/Ao - W1
               2- Calculate df/dWb
               3- Find Wb,i+1 = Wb,i - f,i/(df/dWb),i
@@ -1101,7 +1101,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
               f      =  pow(2.0*dens_*area1_0_/beta,2)
                       * pow((Wf2 - Wb2np_)/8.0,4)*( Wf2 +   Wb2np_)/2.0
                       - curvefac;
-  
+
               // a small routine to prevent infinit loop
               itrs++;
               if(itrs>=30)

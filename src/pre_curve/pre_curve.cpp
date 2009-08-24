@@ -78,11 +78,12 @@ int main(int argc, char** argv)
   reader.Activate();
 
   /*---------------------------------------------- input of time curves */
-  DRT::UTILS::TimeCurveManager::Instance().ReadInput();
+  DRT::UTILS::TimeCurveManager manager;
+  manager.ReadInput();
 
   if (myrank==0)
   {
-    DRT::UTILS::TimeCurve& c = DRT::UTILS::TimeCurveManager::Instance().Curve(curve-1);
+    DRT::UTILS::TimeCurve& c = manager.Curve(curve-1);
 
     std::ofstream f(file.c_str());
     f << "# count   time   f(t)   f'(t)   f''(t)\n";

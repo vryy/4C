@@ -19,6 +19,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/drt_function.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 
 
@@ -104,7 +105,7 @@ int DRT::ELEMENTS::Bele3Line::EvaluateNeumann(
   if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
   if (curvenum>=0 && usetime)
-    curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
+    curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
 
   // get values and switches from the condition
   // (assumed to be constant on element boundary)
@@ -179,7 +180,7 @@ int DRT::ELEMENTS::Bele3Line::EvaluateNeumann(
          {
             if (functnum>0)
               // evaluate function at current gauss point
-              functionfac = DRT::UTILS::FunctionManager::Instance().Funct(functnum-1).Evaluate(dim,coordgpref,time,NULL);
+              functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dim,coordgpref,time,NULL);
             else
               functionfac = 1.0;
          }

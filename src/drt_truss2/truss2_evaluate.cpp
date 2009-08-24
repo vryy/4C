@@ -253,7 +253,7 @@ int DRT::ELEMENTS::Truss2::EvaluateNeumann(ParameterList& params,
   // amplitude of load curve at current time called
   double curvefac = 1.0;
   if (curvenum>=0 && usetime)//notation for this function similar to Crisfield, Volume 1;
-  curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
+  curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
 
   //jacobian determinant
   double det = lrefe_/2;
@@ -275,7 +275,7 @@ int DRT::ELEMENTS::Truss2::EvaluateNeumann(ParameterList& params,
   // in the input file; val gives the values of the force as a multiple of the prescribed load curve
   const vector<double>* val = condition.Get<vector<double> >("val");
 
-  //integration loops	
+  //integration loops
   for (int ip=0; ip<intpoints.nquad; ++ip)
   {
     //integration points in parameter space and weights

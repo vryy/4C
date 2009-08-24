@@ -187,7 +187,7 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
   if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
   if (curvenum>=0 && usetime)
-    curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
+    curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
 
   // get values, switches and spatial functions from the condition
   // (assumed to be constant on element boundary)
@@ -382,7 +382,7 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
           if (functnum>0)
           {
             // evaluate function at current gauss point
-            functfac = DRT::UTILS::FunctionManager::Instance().Funct(functnum-1).Evaluate(dim,coordgpref,0.0,NULL);
+            functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dim,coordgpref,0.0,NULL);
           }
           else
             functfac = 1.0;

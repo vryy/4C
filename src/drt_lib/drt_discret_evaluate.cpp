@@ -41,6 +41,7 @@ Maintainer: Michael Gee
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+#include "drt_globalproblem.H"
 #include "drt_discret.H"
 #include "drt_dserror.H"
 #include "drt_timecurve.H"
@@ -250,7 +251,7 @@ void DRT::Discretization::Evaluate(
 /*----------------------------------------------------------------------*
  |  evaluate Neumann conditions (public)                     mwgee 08/09|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::EvaluateNeumann(ParameterList&                       params, 
+void DRT::Discretization::EvaluateNeumann(ParameterList&                       params,
                                           Teuchos::RCP<Epetra_Vector>          systemvector,
                                           Teuchos::RCP<LINALG::SparseOperator> systemmatrix)
 {
@@ -264,15 +265,15 @@ void DRT::Discretization::EvaluateNeumann(ParameterList&                       p
 /*----------------------------------------------------------------------*
  |  evaluate Neumann conditions (public)                     mwgee 12/06|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::EvaluateNeumann(ParameterList&          params, 
+void DRT::Discretization::EvaluateNeumann(ParameterList&          params,
                                           Epetra_Vector&          systemvector,
                                           LINALG::SparseOperator* systemmatrix)
 {
   if (!Filled()) dserror("FillComplete() was not called");
   if (!HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
-  
+
   bool assemblemat = (systemmatrix != NULL);
-  
+
   // get the current time
   bool usetime = true;
   const double time = params.get("total time",-1.0);
@@ -299,7 +300,7 @@ void DRT::Discretization::EvaluateNeumann(ParameterList&          params,
     if (curve) curvenum = (*curve)[0];
     double curvefac = 1.0;
     if (curvenum>=0 && usetime)
-      curvefac = UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
+      curvefac = Problem::Instance()->Curve(curvenum).f(time);
     for (int i=0; i<nnode; ++i)
     {
       // do only nodes in my row map
@@ -320,7 +321,7 @@ void DRT::Discretization::EvaluateNeumann(ParameterList&          params,
       }
     }
   }
-  
+
   //--------------------------------------------------------
   // loop through line/surface/volume Neumann BCs and evaluate them
   //--------------------------------------------------------
@@ -562,7 +563,7 @@ void DoDirichletCondition(DRT::Condition&             cond,
       int curvenum = -1;
       if (curve) curvenum = (*curve)[j];
       if (curvenum>=0 && usetime)
-        curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).FctDer(time,deg);
+        curvefac = DRT::Problem::Instance()->Curve(curvenum).FctDer(time,deg);
       else
         for (unsigned i=1; i<(deg+1); ++i) curvefac[i] = 0.0;
 
@@ -573,10 +574,10 @@ void DoDirichletCondition(DRT::Condition&             cond,
       {
          if (funct_num>0)
            functfac =
-             DRT::UTILS::FunctionManager::Instance().Funct(funct_num-1).Evaluate(j,
-                                                                                 actnode->X(),
-                                                                                 time,
-                                                                                 &dis);
+             DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(j,
+                                                                  actnode->X(),
+                                                                  time,
+                                                                  &dis);
       }
 
       // apply factors to Dirichlet value
@@ -692,7 +693,7 @@ void DRT::Discretization::EvaluateCondition
         if (curve) curvenum = (*curve)[0];
         double curvefac = 1.0;
         if (curvenum>=0 && usetime)
-          curvefac = UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
+          curvefac = Problem::Instance()->Curve(curvenum).f(time);
 
         // Get ConditionID of current condition if defined and write value in parameterlist
         const vector<int>*    CondIDVec  = cond.Get<vector<int> >("ConditionID");

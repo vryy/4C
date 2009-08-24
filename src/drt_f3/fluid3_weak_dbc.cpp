@@ -172,7 +172,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
   if (curvenum>=0 && usetime)
-  curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
+  curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
 
   // get values and switches from the condition
   // (assumed to be constant on element boundary)
@@ -719,7 +719,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 	  if (functnum>0)
 	  {
 	    // evaluate function at current gauss point
-	    functionfac(dim) = DRT::UTILS::FunctionManager::Instance().Funct(functnum-1).Evaluate(dim,coordgp.A(),0.0,NULL);
+	    functionfac(dim) = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dim,coordgp.A(),0.0,NULL);
 	  }
 	  else
 	  {

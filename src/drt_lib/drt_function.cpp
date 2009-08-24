@@ -51,10 +51,290 @@ Maintainer: Ulrich Kuettler
 #include "../drt_mat/newtonianfluid.H"
 
 
-/*----------------------------------------------------------------------*/
-// the static instance
-/*----------------------------------------------------------------------*/
-DRT::UTILS::FunctionManager DRT::UTILS::FunctionManager::instance_;
+namespace DRT {
+namespace UTILS {
+
+  /// spatial function based on parsed expression
+  class ExprFunction : public Function
+  {
+  public:
+    /*!
+
+    \brief construct spatial function from expression with given origin
+
+    \note  Upon construction, the object defines a spatial function
+           returning the same function value for every spatial dimension.
+           If a vector-valued spatial function is required, further
+           expressions can be added via the AddExpr function. In this
+           case, the spatial function defined upon construction will be
+           the first component of the vector-valued spatial function.
+
+    \param buf (i) (c-string) expression to be parsed during evaluation
+    \param x   (i) x-coordinate of the origin of the coordinate system
+    \param y   (i) y-coordinate of the origin of the coordinate system
+    \param z   (i) z-coordinate of the origin of the coordinate system
+
+    */
+    ExprFunction(char* buf, double x, double y, double z);
+
+    /*!
+
+    \brief Default constructor creating empty object. Expressions are
+           added with add function
+
+    */
+    ExprFunction();
+
+    /*!
+
+    \brief clean up parse tree
+
+    */
+    ~ExprFunction();
+
+
+    /*!
+
+    \brief evaluate function at given position in space
+
+    \param index (i) For vector-valued functions, index defines the
+                     function-component which should be evaluated
+                     For scalar functionsb, index is always set to 0
+    \param x     (i) The point in 3-dimensional space in which the
+                     function will be evaluated
+
+    */
+    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+
+    /*!
+
+    \brief add expression to an existing ExprFunction in order to extend
+           it to a vector-valued spatial function.
+
+           Every call to AddExpr adds one more component to the
+           vector-valued function.
+
+    \param buf (i) (c-string) expression to be parsed during evaluation of this component
+    \param x   (i) x-coordinate of the origin of the coordinate system of this component
+    \param y   (i) y-coordinate of the origin of the coordinate system of this component
+    \param z   (i) z-coordinate of the origin of the coordinate system of this component
+
+    */
+    void AddExpr(char* buf, double x, double y, double z);
+    /*!
+
+    \brief Return the number of components of this spatial function
+    (1 for scalar functions, dim for vector-valued functions)
+
+    \return number of components
+
+    */
+    virtual int NumberComponents()
+      {
+        return(expr_.size());
+      };
+
+  private:
+
+    /*
+      for scalar spatial functions returning the same value for all
+      dimensions:
+
+     -----------------------------------------+-------+-------+-------
+      spatial function for dimension          |   0   |   1   |   2
+     -----------------------------------------+-------+-------+-------
+      origin of spatial function, x-component |         x_[0]
+     -----------------------------------------+-----------------------
+      origin of spatial function, y-component |         y_[0]
+     -----------------------------------------+-------+-------+-------
+      origin of spatial function, x-component |         z_[0]
+     -----------------------------------------+-------+-------+-------
+
+
+      for vector-valued spatial functions, returning seperate values
+      for all dimensions:
+
+     -----------------------------------------+-------+-------+-------
+      spatial function for dimension          |   0   |   1   |   2
+     -----------------------------------------+-------+-------+-------
+      origin of spatial function, x-component | x_[0] | x_[1] | x_[2]
+     -----------------------------------------+-------+-------+-------
+      origin of spatial function, y-component | y_[0] | y_[1] | y_[2]
+     -----------------------------------------+-------+-------+-------
+      origin of spatial function, x-component | z_[0] | z_[1] | z_[2]
+     -----------------------------------------+-------+-------+-------
+
+    */
+
+
+    std::vector<double> x_; //! origin(s) of spatial function, x-component
+    std::vector<double> y_; //! origin(s) of spatial function, y-component
+    std::vector<double> z_; //! origin(s) of spatial function, z-component
+
+    std::vector<Teuchos::RCP<DRT::PARSER::Parser<double> > > expr_; //! expression syntax tree(s)
+  };
+
+
+  /// special implementation for 3d Beltrami flow
+  class BeltramiFunction : public Function
+  {
+  public:
+    /*!
+
+    \brief evaluate function at given position in space
+
+    \param index (i) index defines the function-component which will
+                     be evaluated
+    \param x     (i) The point in space in which the function will be
+                     evaluated
+
+    */
+    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+
+    /*!
+
+    \brief Return the number of components of this spatial function
+    (This is a vector-valued function)
+
+    \return number of components (u,v,w,p)
+
+    */
+    virtual int NumberComponents()
+      {
+        return(4);
+      };
+
+  };
+
+
+  /// special implementation for 2d Kim-Moin flow
+  class KimMoinFunction : public Function
+  {
+  public:
+    /*!
+
+    \brief evaluate function at given position in space
+
+    \param index (i) index defines the function-component which will
+                     be evaluated
+    \param x     (i) The point in space in which the function will be
+                     evaluated
+
+    */
+    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+
+    /*!
+
+    \brief Return the number of components of this spatial function
+    (this is a vector-valued functions)
+
+    \return number of components (u,v,p)
+
+    */
+    virtual int NumberComponents()
+      {
+        return(3);
+      };
+
+  };
+
+
+  /// special implementation for Womersley blood flow
+  class WomersleyFunction : public Function
+  {
+  public:
+
+    /// ctor
+    WomersleyFunction(bool locsys, int e, double radius, int mat, int curve);
+
+
+    /// evaluate function at given position in space
+    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+
+  private:
+
+    bool                   isinit_;
+    bool                   locsys_;
+    int                    locsysid_;
+    double                 radius_;
+    DRT::UTILS::TimeCurve& tc_;
+    // exist after init phase:
+    int                    mat_;
+    int                    curve_;
+    double                 viscosity_;
+    double                 density_;
+
+    // exist after init phase if locsys_==true
+    // to do: move this stuff to separate class in locsys.H/.cpp
+    // with functionality to transform spatial vectors from/to local system
+    Condition*             locsyscond_;
+    std::vector<double>    normal_;
+    std::vector<double>    tangent1_;
+    std::vector<double>    tangent2_;
+    std::vector<double>    origin_;
+  };
+
+
+  /// special implementation for stationary 2d Jeffery-Hamel flow
+  class JefferyHamelFlowFunction : public Function
+  {
+  public:
+    /*!
+
+    \brief evaluate function at given position in space
+
+    \param index (i) index defines the function-component which will
+                     be evaluated
+    \param x     (i) The point in space in which the function will be
+                     evaluated
+
+    */
+    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+
+    /*!
+
+    \brief Return the number of components of this spatial function
+    (This is a vector-valued function)
+
+    \return number of components (u,v,w,p)
+
+    */
+    virtual int NumberComponents()
+      {
+        return(4);
+      };
+
+    /*!
+
+    compute radial flow u as a function of the angle alpha
+
+    \return radial velocity u
+
+    \note this function is static such that we can get the radial velocity
+          without creating the Function object
+
+    */
+    static double RadialVelocity(
+        const double& alpha ///< angle between 0 and PI/4 (range is checked in debug mode)
+        );
+
+  };
+
+
+  /// special implementation for a level set test function
+  class ZalesaksDiskFunction : public Function
+  {
+  public:
+
+    /// ctor
+    ZalesaksDiskFunction();
+
+    /// evaluate function at given position in space
+    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+  };
+
+}
+}
 
 
 /*----------------------------------------------------------------------*/
@@ -537,7 +817,7 @@ isinit_(false),
 locsys_(locsys),
 locsysid_(e),
 radius_(radius),
-tc_(DRT::UTILS::TimeCurveManager::Instance().Curve(curve)),
+tc_(DRT::Problem::Instance()->Curve(curve)),
 mat_(mat),
 curve_(curve),
 viscosity_(-999.0e99),
@@ -687,17 +967,5 @@ std::ostream& DRT::UTILS::operator<<(std::ostream& out, const DRT::UTILS::Functi
   return out;
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-std::ostream& DRT::UTILS::operator<<(std::ostream& out, const DRT::UTILS::FunctionManager& manager)
-{
-  out << "Function Manager:\n";
-  for (unsigned i=0; i<manager.functions_.size(); ++i)
-  {
-    out << manager.functions_[i];
-  }
-  return out;
-}
 
 #endif

@@ -970,7 +970,7 @@ void SCATRA::ScaTraTimIntImpl::OutputElectrodeInfo()
     const int curvenum = cond[condid]->GetInt("curve");
     if (curvenum>=0)
     {
-      const double curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time_);
+      const double curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time_);
       // adjust potential at metal side accordingly
       pot *= curvefac;
     }
