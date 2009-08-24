@@ -111,6 +111,14 @@ namespace GEO
   }
 
 
+  //! get determinant between eta and xi space
+  template<XFEM::AssemblyType ASSTYPE>
+    inline double detXiD_over_EtaD(
+        const GEO::DomainIntCell&   cell,
+        const LINALG::Matrix<3,1>&  pos_eta_domain)
+  {
+    return GEO::detEtaToXi3D<ASSTYPE>(cell, pos_eta_domain);
+  }
 
   /////////////////////  Boundary Integration Cell ////////////////////////////////
 
@@ -220,6 +228,14 @@ namespace GEO
         dserror("add your 2D distype to this switch!");
     }
     return -1.0;
+  }
+
+  //! get determinant: det( xi^boundary / eta^boundary)
+  inline double detXiB_over_EtaB(
+      const GEO::BoundaryIntCell&   cell,
+      const LINALG::Matrix<2,1>&    pos_eta_boundary)
+  {
+    return detEtaBToXiB(cell, pos_eta_boundary);
   }
 
 } // namespace GEO
