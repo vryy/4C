@@ -179,7 +179,7 @@ std::set<int> XFEM::InterfaceHandle::GetAvailableBoundaryLabels() const
 bool XFEM::InterfaceHandle::ElementIntersected(
     const int element_gid) const
 {
-  if (elementalDomainIntCells_.find(element_gid) == elementalDomainIntCells_.end())
+  if (elementalBoundaryIntCells_.find(element_gid) == elementalBoundaryIntCells_.end())
     return false;
   else
     return true;
