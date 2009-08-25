@@ -650,13 +650,13 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         case DRT::Element::hex27:
         {
           this->ElementNodeNormal<27>(params,discretization,lm,elevec1);
-	  break;
-	}
+          break;
+        }
         case DRT::Element::hex20:
         {
           this->ElementNodeNormal<20>(params,discretization,lm,elevec1);
-	  break;
-	}
+          break;
+        }
         case DRT::Element::hex8:
         {
           this->ElementNodeNormal<8>(params,discretization,lm,elevec1);
@@ -691,35 +691,23 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         case DRT::Element::hex27:
         case DRT::Element::nurbs27:
         {
-          this->integrateShapefunction<27>(
-	    discretization,
-	    lm            ,
-	    elevec1       );
-	  break;
-	}
+          this->integrateShapefunction<27>(discretization, lm, elevec1);
+          break;
+        }
         case DRT::Element::hex20:
         {
-          this->integrateShapefunction<20>(
-	    discretization,
-	    lm            ,
-	    elevec1       );
-	  break;
-	}
+          this->integrateShapefunction<20>(discretization, lm, elevec1);
+          break;
+        }
         case DRT::Element::hex8:
         case DRT::Element::nurbs8:
         {
-          this->integrateShapefunction<8>(
-	    discretization,
-	    lm            ,
-	    elevec1       );
+          this->integrateShapefunction<8>(discretization, lm, elevec1);
           break;
         }
         case DRT::Element::tet4:
         {
-          this->integrateShapefunction<4>(
-	    discretization,
-	    lm            ,
-	    elevec1       );
+          this->integrateShapefunction<4>(discretization, lm, elevec1);
           break;
         }
         default:
@@ -727,7 +715,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           dserror("Unknown element type for shape function integration\n");
         }
         }
-	break;
+        break;
       }
       default:
         dserror("Unknown type of action for Fluid3");
