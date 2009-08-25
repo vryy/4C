@@ -5,7 +5,7 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::FSI::Group::Group(::FSI::Monolithic& mfsi,
+NOX::FSI::Group::Group(::FSI::MonolithicInterface& mfsi,
                        Teuchos::ParameterList& printParams,
                        const Teuchos::RCP<NOX::Epetra::Interface::Required>& i,
                        const NOX::Epetra::Vector& x,

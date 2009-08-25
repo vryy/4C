@@ -302,6 +302,7 @@ OBJS_DRT_FSI  = src/drt_fsi/fsi_dyn.o \
                 src/drt_fsi/fsi_monolithicoverlap.o \
                 src/drt_fsi/fsi_monolithiclagrange.o \
                 src/drt_fsi/fsi_monolithicstructuresplit.o \
+                src/drt_fsi/fsi_monolithicxfem.o \
                 src/drt_fsi/fs_monolithic.o \
                 src/drt_fsi/fsi_monolithic_linearsystem.o \
                 src/drt_fsi/fsi_partitionedmonolithic.o \

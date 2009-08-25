@@ -644,6 +644,7 @@ typedef enum _FSI_COUPLING
   fsi_iter_monolithicfluidsplit=13,
   fsi_iter_monolithiclagrange,
   fsi_iter_monolithicstructuresplit,
+  fsi_iter_monolithicxfem,
   fsi_iter_stagg_NLCG,
   fsi_iter_stagg_MFNK_FD,
   fsi_iter_stagg_MFNK_FSI,

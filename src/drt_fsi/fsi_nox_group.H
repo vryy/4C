@@ -4,7 +4,7 @@
 #define FSI_NOX_GROUP_H
 
 #include <NOX_Epetra_Group.H>
-#include "fsi_monolithic.H"
+#include "fsi_monolithicinterface.H"
 
 namespace NOX
 {
@@ -16,7 +16,7 @@ namespace FSI
   {
   public:
 
-    Group(::FSI::Monolithic& mfsi,
+    Group(::FSI::MonolithicInterface& mfsi,
           Teuchos::ParameterList& printParams,
           const Teuchos::RCP<NOX::Epetra::Interface::Required>& i,
           const NOX::Epetra::Vector& x,
@@ -33,7 +33,7 @@ namespace FSI
 
   private:
 
-    ::FSI::Monolithic& mfsi_;
+    ::FSI::MonolithicInterface& mfsi_;
   };
 }
 }

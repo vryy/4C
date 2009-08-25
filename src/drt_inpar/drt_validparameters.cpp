@@ -1997,6 +1997,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "iter_monolithicfluidsplit",
                                  "iter_monolithiclagrange",
                                  "iter_monolithicstructuresplit",
+                                 "iter_monolithicxfem",
                                  "pseudo_structure"),
                                tuple<int>(
                                  fsi_basic_sequ_stagg,
@@ -2013,6 +2014,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  fsi_iter_monolithicfluidsplit,
                                  fsi_iter_monolithiclagrange,
                                  fsi_iter_monolithicstructuresplit,
+                                 fsi_iter_monolithicxfem,
                                  fsi_pseudo_structureale),
                                  &fsidyn);
 

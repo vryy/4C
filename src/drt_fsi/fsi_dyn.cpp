@@ -15,6 +15,7 @@
 #include "fsi_monolithicoverlap.H"
 #include "fsi_monolithiclagrange.H"
 #include "fsi_monolithicstructuresplit.H"
+#include "fsi_monolithicxfem.H"
 #include "fsi_partitionedmonolithic.H"
 #include "fsi_structureale.H"
 #include "fsi_fluid_ale.H"
@@ -369,20 +370,74 @@ void xfsi_drt()
     cout <<  endl << endl;
   }
 
-  Teuchos::RCP<FSI::DirichletNeumann> fsi = rcp(new FSI::DirichletNeumann(comm));
+  RCP<DRT::Problem> problem = DRT::Problem::Instance();
+  const Teuchos::ParameterList& fsidyn   = problem->FSIDynamicParams();
 
-  if (genprob.restart)
+  int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
+  switch (coupling)
   {
-    // read the restart information, set vectors and variables
-    fsi->ReadRestart(genprob.restart);
+  case fsi_iter_monolithicxfem:
+  {
+    INPAR::FSI::LinearBlockSolver linearsolverstrategy = Teuchos::getIntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
+
+    if (linearsolverstrategy!=INPAR::FSI::PreconditionedKrylov)
+      dserror("Only Newton-Krylov scheme with XFEM fluid");
+
+    Teuchos::RCP<FSI::MonolithicXFEM> fsi;
+    fsi = Teuchos::rcp(new FSI::MonolithicXFEM(comm));
+
+    // read the restart information, set vectors and variables ---
+    // be careful, dofmaps might be changed here in a Redistribute call
+    if (genprob.restart)
+    {
+      fsi->ReadRestart(genprob.restart);
+    }
+
+    // here we go...
+    fsi->Timeloop();
+
+    DRT::ResultTestManager testmanager(comm);
+    testmanager.AddFieldTest(fsi->FluidField().CreateFieldTest());
+    testmanager.AddFieldTest(fsi->StructureField().CreateFieldTest());
+    testmanager.TestAll();
+
+    break;
   }
+  case fsi_pseudo_structureale:
+  case fsi_iter_monolithicfluidsplit:
+  case fsi_iter_monolithicstructuresplit:
+  case fsi_iter_monolithiclagrange:
+    dserror("Unreasonable choice");
+  default:
+  {
+    // Any partitioned algorithm. Stable of working horses.
 
-  fsi->Timeloop(fsi);
+    Teuchos::RCP<FSI::Partitioned> fsi;
 
-  DRT::ResultTestManager testmanager(comm);
-  testmanager.AddFieldTest(fsi->MBFluidField().CreateFieldTest());
-  testmanager.AddFieldTest(fsi->StructureField().CreateFieldTest());
-  testmanager.TestAll();
+    INPAR::FSI::PartitionedCouplingMethod method =
+      Teuchos::getIntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn,"PARTITIONED");
+
+    if (method==INPAR::FSI::DirichletNeumann)
+    {
+      fsi = rcp(new FSI::DirichletNeumann(comm));
+    }
+    else
+      dserror("only Dirichlet-Neumann partitioned schemes with XFEM");
+
+    if (genprob.restart)
+    {
+      // read the restart information, set vectors and variables
+      fsi->ReadRestart(genprob.restart);
+    }
+
+    fsi->Timeloop(fsi);
+
+    DRT::ResultTestManager testmanager(comm);
+    testmanager.AddFieldTest(fsi->MBFluidField().CreateFieldTest());
+    testmanager.AddFieldTest(fsi->StructureField().CreateFieldTest());
+    testmanager.TestAll();
+  }
+  }
 
   Teuchos::TimeMonitor::summarize();
 }

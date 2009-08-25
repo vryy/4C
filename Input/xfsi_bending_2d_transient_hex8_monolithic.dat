@@ -18,7 +18,6 @@ NUMDF    	6
 PROBLEMTYP   Fluid_Structure_Interaction_XFEM
 NUMFIELD     2
 TIMETYP      Dynamic
-ALGEBRA      Trilinos           // ccarat/Trilinos
 RESTART      0
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS  1
@@ -102,7 +101,7 @@ NUMSTEP      3
 UPRES        1
 RESTARTEVRY  5
 IALE         Pseudo_Structure
-COUPALGO     iter_stagg_AITKEN_rel_param
+COUPALGO     iter_monolithicxfem
 PREDICTOR    d(n)
 RELAX        1.0
 ITEMAX       20

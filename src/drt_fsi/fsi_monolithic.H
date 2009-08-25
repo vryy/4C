@@ -19,6 +19,8 @@
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
 
+#include "fsi_monolithicinterface.H"
+
 namespace NOX
 {
   namespace FSI
@@ -133,6 +135,7 @@ namespace UTILS
     \date 02/08
    */
   class Monolithic : public MonolithicBase,
+                     public MonolithicInterface,
                      public NOX::Epetra::Interface::Required,
                      public NOX::Epetra::Interface::Jacobian,
                      public NOX::Epetra::Interface::Preconditioner,
