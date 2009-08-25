@@ -616,16 +616,16 @@ template <DRT::Element::DiscretizationType DISTYPE>
 
       // compute covariant metric tensor G for surface element (2x2)
       // metric = dxyzdrs(k,i)*dxyzdrs(k,j);
-      LINALG::Matrix<2,2> metric;
-      metric.MultiplyTN(dxyzdrs,dxyzdrs);
+      LINALG::Matrix<2,2> metric_XiDToEtaB;
+      metric_XiDToEtaB.MultiplyTN(dxyzdrs,dxyzdrs);
 
-      const double detmetric = sqrt(metric.Determinant());
+      const double detmetric_XiDToEtaB = sqrt(metric_XiDToEtaB.Determinant());
 
-      const double fac = intpoints.qwgt[iquad]*detmetric;//*detcell;
+      const double fac = intpoints.qwgt[iquad]*detmetric_XiDToEtaB;
       if (fac < 0.0)
       {
         cout << endl;
-        cout << "detmetric = " << detmetric << endl;
+        cout << "detmetric = " << detmetric_XiDToEtaB << endl;
         cout << "fac       = " << fac << endl;
         dserror("negative fac! should be a bug!");
       }
