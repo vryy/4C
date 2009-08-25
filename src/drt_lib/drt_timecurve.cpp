@@ -347,6 +347,23 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::TimeCurveManager::ValidTimeCurveLine
     .AddTag("on")
     .AddTag("Polygonal")
     .AddNamedDouble("T")
+    .AddTag("BYSTEP")
+    .AddNamedDoubleVector("No",2)
+    .AddTag("BYABSTIME")
+    .AddNamedDoubleVector("Yes",2)
+    .AddNamedDoubleVector("FACTOR",2)
+    ;
+
+  DRT::INPUT::LineDefinition smallpolygonal;
+  smallpolygonal
+    .AddNamedInt("CURVE")
+
+    // This is a really stupid definition. Once upon a time there were
+    // different options, but since those are no longer supported, we do not
+    // care.
+    .AddTag("on")
+    .AddTag("Polygonal")
+    .AddNamedDouble("T")
     .AddTag("BYABSTIME")
     .AddNamedDoubleVector("Yes",2)
     .AddNamedDoubleVector("FACTOR",2)
@@ -355,7 +372,9 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::TimeCurveManager::ValidTimeCurveLine
   DRT::INPUT::LineDefinition expl;
   expl
     .AddNamedInt("CURVE")
-    .AddNamedString("Explicit")
+    .AddTag("on")
+    .AddTag("Explicit")
+    .AddNamedString("FUNC")
     .AddNamedDouble("c1")
     .AddNamedDouble("c2")
     ;
@@ -363,6 +382,8 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::TimeCurveManager::ValidTimeCurveLine
   DRT::INPUT::LineDefinition func;
   func
     .AddNamedInt("CURVE")
+    .AddTag("on")
+    .AddTag("EXPR")
     .AddNamedString("FUNC")
     .AddNamedDouble("t1")
     .AddNamedDouble("t2")
@@ -371,6 +392,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::TimeCurveManager::ValidTimeCurveLine
   DRT::INPUT::LineDefinition lungsinus;
   lungsinus
     .AddNamedInt("CURVE")
+    .AddTag("on")
     .AddTag("LungSinus")
     .AddNamedDouble("Frequ")
     .AddNamedDouble("pPEEP")
@@ -380,6 +402,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::TimeCurveManager::ValidTimeCurveLine
   DRT::INPUT::LineDefinition physiologicalwaveform;
   physiologicalwaveform
     .AddNamedInt("CURVE")
+    .AddTag("on")
     .AddTag("PhysiologicalWaveform")
     .AddNamedDouble("Period")
     .AddNamedDouble("Flowrate")
@@ -389,6 +412,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::TimeCurveManager::ValidTimeCurveLine
 
   Teuchos::RCP<DRT::INPUT::Lines> lines = Teuchos::rcp(new DRT::INPUT::Lines("CURVE"));
   lines->Add(polygonal);
+  lines->Add(smallpolygonal);
   lines->Add(expl);
   lines->Add(func);
   lines->Add(lungsinus);
