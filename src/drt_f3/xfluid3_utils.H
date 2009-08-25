@@ -196,27 +196,27 @@ LINALG::SerialDenseMatrix BodyForce(DRT::Node** nodes, const double pseudotime)
 /*!
  \brief get optimal gaussrule for given discretization type
         template version
- \return enum with optimal gausrule for this element
+ \return enum with optimal gaussrule for this element
  */
 inline DRT::UTILS::GaussRule3D getOptimalVelocityGaussrule(DRT::Element::DiscretizationType  distype)
 {
-    DRT::UTILS::GaussRule3D rule = DRT::UTILS::intrule3D_undefined;
-    switch (distype)
-    {
-    case DRT::Element::hex8:
-        rule = DRT::UTILS::intrule_hex_8point;
-        break;
-    case DRT::Element::hex20: case DRT::Element::hex27:
-        rule = DRT::UTILS::intrule_hex_27point;
-        break;
-    case DRT::Element::tet4:
-        rule = DRT::UTILS::intrule_tet_4point;
-        break;
-    case DRT::Element::tet10:
-        rule = DRT::UTILS::intrule_tet_24point;
-        break;
-    default:
-        dserror("unknown distype for gaussrule initialization");
+  DRT::UTILS::GaussRule3D rule = DRT::UTILS::intrule3D_undefined;
+  switch (distype)
+  {
+  case DRT::Element::hex8:
+    rule = DRT::UTILS::intrule_hex_8point;
+    break;
+  case DRT::Element::hex20: case DRT::Element::hex27:
+    rule = DRT::UTILS::intrule_hex_27point;
+    break;
+  case DRT::Element::tet4:
+    rule = DRT::UTILS::intrule_tet_4point;
+    break;
+  case DRT::Element::tet10:
+    rule = DRT::UTILS::intrule_tet_24point;
+    break;
+  default:
+    dserror("unknown distype for gaussrule initialization");
   }
   return rule;
 }
@@ -242,6 +242,7 @@ DRT::UTILS::GaussRule3D getXFEMGaussrule(
   else
   {
     const GEO::EleGeoType xeleGeoType = GEO::checkGeoTypeT<XELEDISTYPE>(xele,xyze_element);
+    const bool fast_integration = false;
 
     if (celldistype == DRT::Element::tet4 or celldistype == DRT::Element::tet10)
     {
@@ -249,26 +250,44 @@ DRT::UTILS::GaussRule3D getXFEMGaussrule(
       {
         case DRT::Element::hex8:
         {
-          if (xeleGeoType == GEO::CARTESIAN) // constant jacobian
-            rule = DRT::UTILS::intrule_tet_15point;
+          if (fast_integration)
+          {
+            if (xeleGeoType == GEO::CARTESIAN) rule = DRT::UTILS::intrule_tet_5point;
+            else                               rule = DRT::UTILS::intrule_tet_5point;
+          }
           else
-            rule = DRT::UTILS::intrule_tet_24point;
+          {
+            if (xeleGeoType == GEO::CARTESIAN) rule = DRT::UTILS::intrule_tet_15point;
+            else                               rule = DRT::UTILS::intrule_tet_24point;
+          }
           break;
         }
         case DRT::Element::hex20:
         {
-          if (xeleGeoType == GEO::CARTESIAN) // constant jacobian
-            rule = DRT::UTILS::intrule_tet_24point;
+          if (fast_integration)
+          {
+            if (xeleGeoType == GEO::CARTESIAN) rule = DRT::UTILS::intrule_tet_11point;
+            else                               rule = DRT::UTILS::intrule_tet_11point;
+          }
           else
-            rule = DRT::UTILS::intrule_tet_45point;
+          {
+            if (xeleGeoType == GEO::CARTESIAN) rule = DRT::UTILS::intrule_tet_24point;
+            else                               rule = DRT::UTILS::intrule_tet_45point;
+          }
           break;
         }
         case DRT::Element::hex27:
         {
-          if (xeleGeoType == GEO::CARTESIAN) // constant jacobian
-            rule = DRT::UTILS::intrule_tet_45point;
+          if (fast_integration)
+          {
+            if (xeleGeoType == GEO::CARTESIAN) rule = DRT::UTILS::intrule_tet_45point;
+            else                               rule = DRT::UTILS::intrule_tet_45point;
+          }
           else
-            rule = DRT::UTILS::intrule_tet_45point;
+          {
+            if (xeleGeoType == GEO::CARTESIAN) rule = DRT::UTILS::intrule_tet_343point_peano;
+            else                               rule = DRT::UTILS::intrule_tet_343point_peano;
+          }
           break;
         }
         case DRT::Element::tet4:
