@@ -57,8 +57,11 @@ XFEM::DofManager::DofManager(
   //if (ih_->xfemdis()->Comm().MyPID() == 0)
   //  std::cout << "Constructing DofManager for combustion problem" << std::endl;
 
+  std::map<int, std::set<XFEM::FieldEnr> >    nodeDofMap;
+  std::map<int, std::set<XFEM::FieldEnr> >    elementDofMap;
+
   // build a DofMap holding dofs for all nodes including additional dofs of enriched nodes
-  XFEM::createDofMapCombust(*interfacehandle, nodeDofMap_, elementDofMap_, fieldset, params);
+  XFEM::createDofMapCombust(*interfacehandle, nodeDofMap, elementDofMap, fieldset, params);
 
   //------------------------------------------------------------------------------------------------
   // copy non-const dof maps to const dof maps
@@ -66,14 +69,14 @@ XFEM::DofManager::DofManager(
   // remark 2: here, we need the general XFEM dof maps to be filled with the combustion dof maps,
   //           because member functions like "toGmsh" and "GatherUniqueEnrichments" rely on them
   //
-  // what the following code does, is basically:   nodalDofSet_ = nodeDofMap_
-  //                                             elementalDofs_ = elementDofMap_
+  // what the following code does, is basically:   nodalDofSet_ = nodeDofMap
+  //                                             elementalDofs_ = elementDofMap
   //------------------------------------------------------------------------------------------------
-  for ( std::map<int, std::set<XFEM::FieldEnr> >::const_iterator oneset = nodeDofMap_.begin(); oneset != nodeDofMap_.end(); ++oneset )
+  for ( std::map<int, std::set<XFEM::FieldEnr> >::const_iterator oneset = nodeDofMap.begin(); oneset != nodeDofMap.end(); ++oneset )
   {
     nodalDofSet_.insert( make_pair(oneset->first, oneset->second));
   };
-  for ( std::map<int, std::set<XFEM::FieldEnr> >::const_iterator oneset = elementDofMap_.begin(); oneset != elementDofMap_.end(); ++oneset )
+  for ( std::map<int, std::set<XFEM::FieldEnr> >::const_iterator oneset = elementDofMap.begin(); oneset != elementDofMap.end(); ++oneset )
   {
     elementalDofs_.insert( make_pair(oneset->first, oneset->second));
   };

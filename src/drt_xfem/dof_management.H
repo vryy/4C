@@ -166,12 +166,6 @@ namespace XFEM
        */
       std::map<int, const std::set<XFEM::FieldEnr> >    elementalDofs_;
 
-      //! only used for combustion! henke 03/09
-      std::map<int, std::set<XFEM::FieldEnr> >    nodeDofMap_;
-
-      //! only used for combustion! henke 03/09
-      std::map<int, std::set<XFEM::FieldEnr> >    elementDofMap_;
-
       /// when returning a reference to a set, this set can be used when an empty set is needed
       /// avoids creating a lot of empty sets -> speed
       const std::set<XFEM::FieldEnr>                    emptyset_;
