@@ -16,7 +16,7 @@ Maintainer: Axel Gerstenberger
 
 
 /*----------------------------------------------------------------------*
- |  assignment operatur                                      u.may 04/09|
+ |  assignment operator                                      u.may 04/09|
  *----------------------------------------------------------------------*/
 XFEM::FieldEnr& XFEM::FieldEnr::operator = (const XFEM::FieldEnr& old)
 {

@@ -26,7 +26,7 @@ Maintainer: Axel Gerstenberger
 
 
 /*----------------------------------------------------------------------*
- | ASSIGNMENT OPERATOR                                       u.may 04/09|
+ | assignment operator                                       u.may 04/09|
  *----------------------------------------------------------------------*/
 XFEM::Enrichment& XFEM::Enrichment::operator = (const XFEM::Enrichment& old)
 {

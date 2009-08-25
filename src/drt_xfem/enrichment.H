@@ -61,8 +61,8 @@ namespace XFEM
         xfemconditionlabel_(-1), // means undefined
         type_(typeUndefined)
       {
-      //dserror("Enrichment() -> please don't call me!");
-      return;
+        //dserror("Enrichment() -> please don't call me!");
+        return;
       }
 
       //! constructor
