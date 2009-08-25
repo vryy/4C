@@ -186,6 +186,8 @@ namespace ADAPTER {
 
   private:
 
+    virtual void ComputeInterfaceAccelerationsAndVelocities();
+
     void PrintInterfaceVectorField(
         const Teuchos::RCP<Epetra_Vector>   displacementfield,
         const Teuchos::RCP<Epetra_Vector>   vectorfield,
@@ -220,6 +222,7 @@ namespace ADAPTER {
     Teuchos::RCP<Epetra_Vector>            idispn_;    ///< interface displacement  n
     Teuchos::RCP<Epetra_Vector>            iveln_;     ///< interface velocity      n
     Teuchos::RCP<Epetra_Vector>            ivelnm_;    ///< interface velocity      n-1
+    Teuchos::RCP<Epetra_Vector>            iaccnp_;    ///< interface acceleration  n+1
     Teuchos::RCP<Epetra_Vector>            iaccn_;     ///< interface acceleration  n
     //@}
 
