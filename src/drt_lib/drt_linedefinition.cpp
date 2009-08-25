@@ -10,6 +10,7 @@ namespace DRT
 namespace INPUT
 {
 
+  /// line component to describe a single string
   class TagComponent : public LineComponent
   {
   public:
@@ -27,6 +28,7 @@ namespace INPUT
     std::string name_;
   };
 
+  /// line component to describe a string followed by some value
   template <class type>
   class NamedComponent : public LineComponent
   {
@@ -49,6 +51,7 @@ namespace INPUT
     type value_;
   };
 
+  /// line component to describe a string followed by a vector of values
   template <class type>
   class NamedVectorComponent : public LineComponent
   {
@@ -77,6 +80,8 @@ namespace INPUT
     std::vector<type> values_;
   };
 
+  /// line component to describe a string followed by a vector of values with
+  /// arbitrary length
   template <class type>
   class NamedVariableVectorComponent : public NamedVectorComponent<type>
   {

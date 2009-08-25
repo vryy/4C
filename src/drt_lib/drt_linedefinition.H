@@ -71,11 +71,27 @@ namespace INPUT
 
     /// @name Add new line components
 
+    /// add a single string definition
     LineDefinition& AddTag(std::string name);
+
+    /// add a name followed by a variable string
     LineDefinition& AddNamedString(std::string name);
+
+    /// add a name followed by an integer variable
     LineDefinition& AddNamedInt(std::string name);
+
+    /// add a name followed by a double variable
     LineDefinition& AddNamedDouble(std::string name);
+
+    /// add a name followed by a vector of double variables
     LineDefinition& AddNamedDoubleVector(std::string name, int length);
+
+    /// add a name followed by a vector of double variables
+    /*!
+      The parameter \p lengthdef specifies the name of an integer component
+      that gives the length of the vector. The integer component has to
+      precede the vector definition on the input line.
+     */
     LineDefinition& AddNamedDoubleVector(std::string name, std::string lengthdef);
 
     //@}
@@ -95,7 +111,8 @@ namespace INPUT
     /// tell if there is a named component with the given name
     bool HaveNamed(std::string name);
 
-    /// @name extract values from read LineDefinition
+    /// @name Extract values from read LineDefinition
+    /// There has to be a named component of the given type
 
     void ExtractNamedString(std::string name, std::string& value);
     void ExtractNamedInt(std::string name, int& value);
