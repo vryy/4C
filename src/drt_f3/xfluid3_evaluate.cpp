@@ -19,6 +19,11 @@ Maintainer: Axel Gerstenberger
 #include "xfluid3_sysmat.H"
 #include "xfluid3_interpolation.H"
 
+#include "xfluid3_local_assembler.H"
+#include "xfluid3_interpolation.H"
+#include "xfluid3_utils.H"
+#include "../drt_geometry/integrationcell_coordtrafo.H"
+#include "../drt_xfem/physics.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_mat/newtonianfluid.H"
@@ -50,6 +55,8 @@ DRT::ELEMENTS::XFluid3::ActionType DRT::ELEMENTS::XFluid3::convertStringToAction
     act = XFluid3::reset;
   else if (action == "set_output_mode")
     act = XFluid3::set_output_mode;
+  else if (action == "integrate_shape")
+    act = XFluid3::integrate_shape;
   else
     dserror("Unknown type of action for XFluid3");
   return act;
@@ -91,7 +98,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
                                      Epetra_SerialDenseVector&)
 {
   // get the action required
-  const std::string action(params.get<std::string>("action","none"));
+  const std::string action(params.get<std::string>("action"));
   const DRT::ELEMENTS::XFluid3::ActionType act = convertStringToActionType(action);
 
   // get the material
@@ -143,16 +150,13 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       // get access to global dofman
       const Teuchos::RCP<XFEM::DofManager> globaldofman = params.get< Teuchos::RCP< XFEM::DofManager > >("dofmanager");
 
-      const bool DLM_condensation = params.get<bool>("DLM_condensation");
-      const double boundaryRatioLimit = params.get<double>("boundaryRatioLimit");
-
       const XFLUID::FluidElementAnsatz elementAnsatz;
       const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz_empty;
       const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz_filled(elementAnsatz.getElementAnsatz(this->Shape()));
 
       // always build the eledofman that fits to the global dofs
       // problem: tight connectivity to xdofmapcreation
-      if (not DLM_condensation)
+      if (not params.get<bool>("DLM_condensation"))
       {
         // assume stress unknowns for the element
         eleDofManager_ = rcp(new XFEM::ElementDofManager(*this, element_ansatz_filled, *globaldofman));
@@ -180,7 +184,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
             const bool anothervoidenrichment_in_set = XFEM::EnrichmentInDofSet(XFEM::Enrichment::typeVoid, enrfieldset);
             if (not anothervoidenrichment_in_set)
             {
-              XFEM::ApplyElementEnrichments(this, element_ansatz_filled, *ih_, label, XFEM::Enrichment::typeVoid, boundaryRatioLimit, enrfieldset);
+              XFEM::ApplyElementEnrichments(this, element_ansatz_filled, *ih_, label, XFEM::Enrichment::typeVoid, params.get<double>("boundaryRatioLimit"), enrfieldset);
             }
           }
         };
@@ -444,6 +448,20 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           }
           else
 #endif
+      break;
+    }
+    case integrate_shape:
+    {
+      // do no calculation, if not needed
+      if (lm.empty())
+        break;
+
+      const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
+          *eleDofManager_, NumNode(), NodeIds());
+
+      // calculate element coefficient matrix and rhs
+      integrateShapefunction(assembly_type, this, ih_, *eleDofManager_, elemat1, elevec1);
+
       break;
     }
     default:
@@ -810,6 +828,228 @@ void DRT::ELEMENTS::XFluid3::CondenseDLMAndStoreOldIterationStep(
     blas.COPY(DLM_info_->oldKad_.M()*DLM_info_->oldKad_.N(), Kad.A(), DLM_info_->oldKad_.A());
     //DLM_info_->oldfa_.Update(1.0,fa,0.0);
     blas.COPY(DLM_info_->oldfa_.M()*DLM_info_->oldfa_.N(), fa.A(), DLM_info_->oldfa_.A());
+  }
+}
+
+
+//! size factor to allow fixed size arrays
+///
+/// to allow fixed size arrays for a unknown number of unknowns, we make them bigger than necessary
+/// this factor is multiplied times numnode(distype) to get the size of many arrays
+template<XFEM::AssemblyType ASSTYPE>
+struct SizeFac {};
+/// specialization of SizeFac for XFEM::standard_assembly
+template<> struct SizeFac<XFEM::standard_assembly> {static const std::size_t fac = 1;};
+/// specialization of SizeFac for XFEM::xfem_assembly
+template<> struct SizeFac<XFEM::xfem_assembly>     {static const std::size_t fac = 3;};
+
+/*!
+  Calculate matrix and rhs for stationary problem formulation
+  */
+template <DRT::Element::DiscretizationType DISTYPE,
+          XFEM::AssemblyType ASSTYPE>
+void integrateShapefunctionT(
+        const DRT::Element*                             ele,     ///< the element those matrix is calculated
+        const Teuchos::RCP<XFEM::InterfaceHandleXFSI>&  ih,      ///< connection to the interface handler
+        const XFEM::ElementDofManager&                  dofman,  ///< dofmanager of the current element
+        Epetra_SerialDenseMatrix&                       estif,   ///< element matrix to calculate
+        Epetra_SerialDenseVector&                       eforce   ///< element rhs to calculate
+        )
+{
+  // initialize arrays
+  estif.Scale(0.0);
+  eforce.Scale(0.0);
+
+  const int NUMDOF = 4;
+
+  LocalAssembler<DISTYPE, ASSTYPE, NUMDOF> assembler(dofman, estif, eforce);
+
+  // number of nodes for element
+  const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+
+  // space dimension for 3d fluid element
+  const size_t nsd = 3;
+
+  // get node coordinates of the current element
+  static LINALG::Matrix<nsd,numnode> xyze;
+  GEO::fillInitialPositionArray<DISTYPE>(ele, xyze);
+
+  // flag for higher order elements
+  const bool higher_order_ele = XFLUID::secondDerivativesAvailable<DISTYPE>();
+
+  // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
+  const size_t numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
+
+  // information about domain integration cells
+  const GEO::DomainIntCells&  domainIntCells(ih->GetDomainIntCells(ele));
+
+  // loop over integration cells
+  for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
+  {
+    const LINALG::Matrix<nsd,1> cellcenter_xyz(cell->GetPhysicalCenterPosition());
+
+    int labelnp = 0;
+
+    if (ASSTYPE == XFEM::xfem_assembly)
+    {
+      // integrate only in fluid integration cells (works well only with void enrichments!!!)
+      labelnp = ih->PositionWithinConditionNP(cellcenter_xyz);
+      const std::set<int> xlabelset(dofman.getUniqueEnrichmentLabels());
+      bool compute = false;
+      if (labelnp == 0) // fluid
+      {
+        compute = true;
+      }
+      if (not compute)
+      {
+        continue; // next integration cell
+      }
+    }
+
+    const XFEM::ElementEnrichmentValues enrvals(
+        *ele,
+        ih,
+        dofman,
+        cellcenter_xyz,
+        XFEM::Enrichment::approachUnknown);
+
+    const DRT::UTILS::GaussRule3D gaussrule = XFLUID::getXFEMGaussrule<DISTYPE>(ele, xyze, ih->ElementIntersected(ele->Id()),cell->Shape());
+
+    // gaussian points
+    const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
+
+    // integration loop
+    for (int iquad=0; iquad<intpoints.nquad; ++iquad)
+    {
+      // coordinates of the current integration point in cell coordinates \eta
+      LINALG::Matrix<nsd,1> pos_eta_domain;
+      pos_eta_domain(0) = intpoints.qxg[iquad][0];
+      pos_eta_domain(1) = intpoints.qxg[iquad][1];
+      pos_eta_domain(2) = intpoints.qxg[iquad][2];
+
+      // coordinates of the current integration point in element coordinates \xi
+      LINALG::Matrix<nsd,1> posXiDomain;
+      GEO::mapEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain, posXiDomain);
+
+      const double detcell = GEO::detEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain);
+
+      // shape functions and their first derivatives
+      static LINALG::Matrix<numnode,1> funct;
+      static LINALG::Matrix<nsd,numnode> deriv;
+      DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
+      DRT::UTILS::shape_function_3D_deriv1(deriv,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
+
+      // get transposed of the jacobian matrix d x / d \xi
+      // xjm(i,j) = deriv(i,k)*xyze(j,k)
+      static LINALG::Matrix<nsd,nsd> xjm;
+      xjm.MultiplyNT(deriv,xyze);
+
+      const double det = xjm.Determinant();
+      const double fac = intpoints.qwgt[iquad]*det*detcell;
+
+      if (det < 0.0)
+      {
+        dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
+      }
+
+      // inverse of jacobian
+      static LINALG::Matrix<nsd,nsd> xji;
+      xji.Invert(xjm);
+
+      // compute global derivates: derxy(i,j) = xji(i,k) * deriv(k,j)
+      static LINALG::Matrix<3,numnode> derxy;
+      derxy.Multiply(xji,deriv);
+
+      const size_t shpVecSize       = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+
+      static XFLUID::ApproxFunc<shpVecSize> shp;
+
+      if (ASSTYPE == XFEM::xfem_assembly)
+      {
+        // temporary arrays
+        static LINALG::Matrix<shpVecSize,1> enr_funct;
+        static LINALG::Matrix<3,shpVecSize> enr_derxy;
+
+        // shape function for nodal dofs
+        enrvals.ComputeEnrichedNodalShapefunction(
+            XFEM::PHYSICS::Velx,
+            funct,
+            derxy,
+            enr_funct,
+            enr_derxy);
+
+        for (size_t iparam = 0; iparam != numparampres; ++iparam)
+        {
+          shp.d0(iparam) = enr_funct(iparam);
+          shp.dx(iparam) = enr_derxy(0,iparam);
+          shp.dy(iparam) = enr_derxy(1,iparam);
+          shp.dz(iparam) = enr_derxy(2,iparam);
+        }
+      }
+      else // standard assembly
+      {
+        // -> numparamvelx == numnode
+        for (size_t iparam = 0; iparam < numnode; ++iparam)
+        {
+          shp.d0(iparam) = funct(iparam);
+          shp.dx(iparam) = derxy(0,iparam);
+          shp.dy(iparam) = derxy(1,iparam);
+          shp.dz(iparam) = derxy(2,iparam);
+        }
+      }
+
+      //////////////////////////////////////
+      // now build single stiffness terms //
+      //////////////////////////////////////
+
+      assembler.template Vector<XFEM::PHYSICS::Pres>(shp.d0, fac);
+      assembler.template Vector<XFEM::PHYSICS::Pres>(shp.d0, fac);
+      assembler.template Vector<XFEM::PHYSICS::Pres>(shp.d0, fac);
+
+    } // end loop over gauss points
+  } // end loop over integration cells
+
+  return;
+}
+
+
+void DRT::ELEMENTS::XFluid3::integrateShapefunction(
+        const XFEM::AssemblyType&                       assembly_type,
+        const DRT::Element*                             ele,     ///< the element those matrix is calculated
+        const Teuchos::RCP<XFEM::InterfaceHandleXFSI>&  ih,      ///< connection to the interface handler
+        const XFEM::ElementDofManager&                  dofman,  ///< dofmanager of the current element
+        Epetra_SerialDenseMatrix&                       estif,   ///< element matrix to calculate
+        Epetra_SerialDenseVector&                       eforce   ///< element rhs to calculate
+        )
+{
+// avoid repeating the same thing again and again
+#define M_UNROLL_INTEGRATESHAPEFUNCTION_CASE(distype,asstype) {case distype : integrateShapefunctionT<distype, asstype>(ele, ih, dofman, estif, eforce); break;}
+
+  if (assembly_type == XFEM::standard_assembly)
+  {
+    switch (ele->Shape())
+    {
+      M_UNROLL_INTEGRATESHAPEFUNCTION_CASE(DRT::Element::hex8 ,XFEM::standard_assembly)
+      M_UNROLL_INTEGRATESHAPEFUNCTION_CASE(DRT::Element::hex20,XFEM::standard_assembly)
+      M_UNROLL_INTEGRATESHAPEFUNCTION_CASE(DRT::Element::hex27,XFEM::standard_assembly)
+      M_UNROLL_INTEGRATESHAPEFUNCTION_CASE(DRT::Element::tet4 ,XFEM::standard_assembly)
+      M_UNROLL_INTEGRATESHAPEFUNCTION_CASE(DRT::Element::tet10,XFEM::standard_assembly)
+      default:
+        dserror("standard_assembly integrateShapefunctionT not templated yet");
+    };
+  }
+  else
+  {
+    switch (ele->Shape())
+    {
+      M_UNROLL_INTEGRATESHAPEFUNCTION_CASE(DRT::Element::hex8 ,XFEM::xfem_assembly)
+      M_UNROLL_INTEGRATESHAPEFUNCTION_CASE(DRT::Element::hex20,XFEM::xfem_assembly)
+      M_UNROLL_INTEGRATESHAPEFUNCTION_CASE(DRT::Element::hex27,XFEM::xfem_assembly)
+      M_UNROLL_INTEGRATESHAPEFUNCTION_CASE(DRT::Element::tet4 ,XFEM::xfem_assembly)
+      M_UNROLL_INTEGRATESHAPEFUNCTION_CASE(DRT::Element::tet10,XFEM::xfem_assembly)
+      default:
+        dserror("xfem_assembly integrateShapefunctionT not templated yet");
+    };
   }
 }
 

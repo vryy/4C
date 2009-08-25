@@ -24,6 +24,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_xfem/dof_management_element.H"
+#include "../drt_xfem/xfem_enums.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/linalg_serialdensematrix.H"
 #include "../drt_lib/linalg_serialdensevector.H"
@@ -194,7 +195,8 @@ namespace DRT
           store_xfem_info,
           get_density,
           reset,
-          set_output_mode
+          set_output_mode,
+          integrate_shape
         };
 
         //! stabilization actions recognized by fluid3 (genalpha implementation)
@@ -325,6 +327,18 @@ namespace DRT
         DRT::UTILS::GaussRule3D getOptimalGaussrule(
             const DiscretizationType&  distype  ///< switch gausrule based on this discretization type
         );
+
+        /*!
+          Calculate matrix and rhs for stationary problem formulation
+          */
+        void integrateShapefunction(
+                const XFEM::AssemblyType&                       assembly_type,
+                const DRT::Element*                             ele,     ///< the element those matrix is calculated
+                const Teuchos::RCP<XFEM::InterfaceHandleXFSI>&  ih,      ///< connection to the interface handler
+                const XFEM::ElementDofManager&                  dofman,  ///< dofmanager of the current element
+                Epetra_SerialDenseMatrix&                       estif,   ///< element matrix to calculate
+                Epetra_SerialDenseVector&                       eforce   ///< element rhs to calculate
+                );
 
         ActionType convertStringToActionType(const string& action) const;
 
@@ -481,7 +495,8 @@ namespace DRT
           none,
           integrate_Shapefunction,
           calc_flow_rate,
-          calc_impuls_rate
+          calc_impuls_rate,
+          calc_Neumann_inflow
         };
 
         //! don't want = operator
@@ -527,6 +542,43 @@ namespace DRT
             Epetra_SerialDenseVector&        elevec1,         ///< vector to be filled by element
             const std::vector<double>&       edispnp          ///< current displacement of fluid mesh
             );
+
+        /*!
+        \brief apply outflow boundary condition which is necessary for the conservative
+        element formulation (since the convective term was partially integrated)
+
+        \param params (in)        : ParameterList for communication between control routine
+        \param discretization (in): A reference to the underlying discretization
+        \param lm (in)            : location vector of this element
+        \param elemat1 (out)      : matrix to be filled by element.
+        \param elevec1 (out)      : vector to be filled by element.
+
+        */
+        void SurfaceConservativeOutflowConsistency(
+          ParameterList&             params,
+          DRT::Discretization&       discretization,
+          vector<int>&               lm,
+          Epetra_SerialDenseMatrix&  elemat1,
+          Epetra_SerialDenseVector&  elevec1);
+
+        /*!
+        \brief compute potential Neumann inflow
+
+        \param params (in)        : ParameterList for communication between control routine
+        \param discretization (in): A reference to the underlying discretization
+        \param lm (in)            : location vector of this element
+        \param elemat1 (out)      : matrix to be filled by element. If NULL on input,
+                                    the controling method does not epxect the element to fill
+                                    this matrix.                          and elements
+        \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+
+        */
+        void NeumannInflow(
+          ParameterList&             params,
+          DRT::Discretization&       discretization,
+          vector<int>&               lm,
+          Epetra_SerialDenseMatrix&  elemat1,
+          Epetra_SerialDenseVector&  elevec1);
 
     }; // class Fluid3Surface
 

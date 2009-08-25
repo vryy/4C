@@ -21,6 +21,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_geometry/element_normals.H"
+#include "../drt_fem_general/drt_utils_boundary_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
 
@@ -46,6 +47,8 @@ int DRT::ELEMENTS::XFluid3Surface::Evaluate(
         act = XFluid3Surface::calc_flow_rate;
     else if (action == "calc_impuls_rate")
         act = XFluid3Surface::calc_impuls_rate;
+    else if (action == "calc_Neumann_inflow")
+        act = XFluid3Surface::calc_Neumann_inflow;
     else dserror("Unknown type of action for Fluid3_Surface");
 
     switch(act)
@@ -81,6 +84,16 @@ int DRT::ELEMENTS::XFluid3Surface::Evaluate(
         IntegrateSurfaceImpulsRate(params,discretization,lm,elevec1,myvelnp);
         break;
       }
+      case calc_Neumann_inflow:
+      {
+        NeumannInflow(
+          params,
+          discretization,
+          lm,
+          elemat1,
+          elevec1);
+        break;
+      }
       default:
         dserror("Unknown type of action for Fluid3_Surface");
     } // end of switch(act)
@@ -104,16 +117,12 @@ int DRT::ELEMENTS::XFluid3Surface::EvaluateNeumann(
 #if 0
   const int numdf = 4;
 
-  const double thsl = params.get("thsl",0.0);
-
-  const DiscretizationType distype = this->Shape();
-
   // find out whether we will use a time curve
   bool usetime = true;
   const double time = params.get("total time",-1.0);
   if (time<0.0) usetime = false;
 
-  // find out whether we will use a time curve and get the factor
+  // get time-curve factor
   const vector<int>* curve  = condition.Get<vector<int> >("curve");
   int curvenum = -1;
   if (curve) curvenum = (*curve)[0];
@@ -131,10 +140,10 @@ int DRT::ELEMENTS::XFluid3Surface::EvaluateNeumann(
   GaussRule2D  gaussrule = intrule2D_undefined;
   switch(distype)
   {
-  case quad4:
+  case quad4: case nurbs4:
       gaussrule = intrule_quad_4point;
       break;
-  case quad8: case quad9:
+  case quad8: case quad9: case nurbs9:
       gaussrule = intrule_quad_9point;
       break;
   case tri3 :
@@ -146,17 +155,18 @@ int DRT::ELEMENTS::XFluid3Surface::EvaluateNeumann(
   default:
       dserror("shape type unknown!\n");
   }
+  const IntegrationPoints2D  intpoints(gaussrule);
 
   // allocate vector for shape functions and matrix for derivatives
-  Epetra_SerialDenseVector  funct       (iel);
-  Epetra_SerialDenseMatrix  deriv       (2,iel);
+  Epetra_SerialDenseVector  funct(iel);
+  Epetra_SerialDenseMatrix  deriv(2,iel);
 
   // node coordinates
-  Epetra_SerialDenseMatrix      xyze        (3,iel);
+  Epetra_SerialDenseMatrix  xyze(3,iel);
 
   // the metric tensor and the area of an infintesimal surface element
   Epetra_SerialDenseMatrix  metrictensor(2,2);
-  double                        drs;
+  double                    drs;
 
   // get node coordinates
   for(int i=0;i<iel;i++)
@@ -169,7 +179,6 @@ int DRT::ELEMENTS::XFluid3Surface::EvaluateNeumann(
   /*----------------------------------------------------------------------*
   |               start loop over integration points                     |
   *----------------------------------------------------------------------*/
-  const IntegrationPoints2D  intpoints(gaussrule);
   for (int gpid=0; gpid<intpoints.nquad; gpid++)
   {
     const double e0 = intpoints.qxg[gpid][0];
@@ -181,24 +190,51 @@ int DRT::ELEMENTS::XFluid3Surface::EvaluateNeumann(
 
     // compute measure tensor for surface element and the infinitesimal
     // area element drs for the integration
-    f3_metric_tensor_for_surface(xyze,deriv,metrictensor,&drs);
+    DRT::UTILS::ComputeMetricTensorForSurface(xyze,deriv,metrictensor,&drs);
 
     // values are multiplied by the product from inf. area element,
     // the gauss weight, the timecurve factor and the constant
     // belonging to the time integration algorithm (theta*dt for
     // one step theta, 2/3 for bdf with dt const.)
+    // Furthermore, there may be a divison by the constant scalar density,
+    // only relevant (i.e., it may be unequal 1.0) in incompressible flow case
     const double fac = intpoints.qwgt[gpid] * drs * curvefac * thsl;
+
+    // factor given by spatial function
+    double functfac = 1.0;
+    // determine coordinates of current Gauss point
+    double coordgp[3];
+    coordgp[0]=0.0;
+    coordgp[1]=0.0;
+    coordgp[2]=0.0;
+    for (int i = 0; i< iel; i++)
+    {
+      coordgp[0] += xyze(0,i) * funct[i];
+      coordgp[1] += xyze(1,i) * funct[i];
+      coordgp[2] += xyze(2,i) * funct[i];
+    }
+
+    int functnum = -1;
+    const double* coordgpref = &coordgp[0]; // needed for function evaluation
 
     for (int node=0;node<iel;++node)
     {
       for(int dim=0;dim<3;dim++)
       {
-        elevec1[node*numdf+dim]+=
-          funct[node] * (*onoff)[dim] * (*val)[dim] * fac;
+        if (func) functnum = (*func)[dim];
+        {
+          if (functnum>0)
+          {
+            // evaluate function at current gauss point
+            functfac = DRT::UTILS::FunctionManager::Instance().Funct(functnum-1).Evaluate(dim,coordgpref,time,NULL);
+          }
+          else
+            functfac = 1.0;
+        }
+        elevec1[node*numdf+dim]+= edensnp(node)*funct[node]*(*onoff)[dim]*(*val)[dim]*fac*functfac;
       }
     }
-
-  } /* end of loop over integration points gpid */
+  }
 
   return 0;
 #endif
@@ -263,7 +299,196 @@ void  DRT::ELEMENTS::XFluid3Surface::ComputeMetricTensorForSurface(
 }
 
 /*----------------------------------------------------------------------*
- |  Integrate shapefunctions over surface (private)          g.bau 07/07|
+ | compute potential Neumann inflow                            vg 03/09 |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::XFluid3Surface::NeumannInflow(
+    ParameterList&             params,
+    DRT::Discretization&       discretization,
+    vector<int>&               lm,
+    Epetra_SerialDenseMatrix&  elemat1,
+    Epetra_SerialDenseVector&  elevec1)
+{
+  //----------------------------------------------------------------------
+  // get control parameters for time integration
+  //----------------------------------------------------------------------
+  // check whether we have a generalized-alpha time-integration scheme
+  const bool is_genalpha = false;//params.get<bool>("using generalized-alpha time integration");
+
+  // get timefactor for left hand side
+  // One-step-Theta:    timefac = theta*dt
+  // BDF2:              timefac = 2/3 * dt
+  // generalized-alpha: timefac = (alpha_F/alpha_M) * gamma * dt
+  const double timefac = params.get<double>("thsl");
+//  if (timefac < 0.0) dserror("No thsl supplied");
+
+  // get discretization type
+  const DiscretizationType distype = this->Shape();
+
+  // set number of nodes
+  const int iel = this->NumNode();
+
+  // Gaussian points
+  DRT::UTILS::GaussRule2D  gaussrule = DRT::UTILS::intrule2D_undefined;
+  switch(distype)
+  {
+  case quad4:
+      gaussrule = DRT::UTILS::intrule_quad_4point;
+      break;
+  case quad8: case quad9:
+      gaussrule = DRT::UTILS::intrule_quad_9point;
+      break;
+  case tri3 :
+      gaussrule = DRT::UTILS::intrule_tri_3point;
+      break;
+  case tri6:
+      gaussrule = DRT::UTILS::intrule_tri_6point;
+      break;
+  default:
+      dserror("shape type unknown!\n");
+  }
+  const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule);
+
+  // (density-weighted) shape functions and first derivatives
+  Epetra_SerialDenseVector funct(iel);
+  Epetra_SerialDenseMatrix deriv(2,iel);
+
+  // node coordinates
+  Epetra_SerialDenseMatrix xyze(3,iel);
+
+  // the element's normal vector
+  Epetra_SerialDenseVector normal(3);
+
+  // velocity and momentum at gausspoint
+  Epetra_SerialDenseVector velint(3);
+
+  // metric tensor and area of infinitesimal surface element
+  Epetra_SerialDenseMatrix  metrictensor(2,2);
+  double                    drs;
+
+  // get node coordinates
+  for(int i=0;i<iel;++i)
+  {
+    xyze(0,i)=this->Nodes()[i]->X()[0];
+    xyze(1,i)=this->Nodes()[i]->X()[1];
+    xyze(2,i)=this->Nodes()[i]->X()[2];
+  }
+
+  // determine outward-pointing normal to this element
+  normal(0) = (xyze(1,1)-xyze(1,0))*(xyze(2,2)-xyze(2,0))-(xyze(2,1)-xyze(2,0))*(xyze(1,2)-xyze(1,0));
+  normal(1) = (xyze(2,1)-xyze(2,0))*(xyze(0,2)-xyze(0,0))-(xyze(0,1)-xyze(0,0))*(xyze(2,2)-xyze(2,0));
+  normal(2) = (xyze(0,1)-xyze(0,0))*(xyze(1,2)-xyze(1,0))-(xyze(1,1)-xyze(1,0))*(xyze(0,2)-xyze(0,0));
+
+  // length of normal
+  const double length = sqrt(normal(0)*normal(0)+normal(1)*normal(1)+normal(2)*normal(2));
+
+  // outward-pointing normal of unit length
+  for(int inode=0;inode<3;inode++)
+  {
+    normal(inode) = normal(inode)/length;
+  }
+
+  // get velocity and density vector
+  RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
+  if (velnp==null)
+    dserror("Cannot get state vector 'velnp' and/or 'vedenp'");
+
+  // extract local values from global vector
+  vector<double> myvelnp(lm.size());
+  DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
+
+  // create Epetra objects for velocities
+  Epetra_SerialDenseMatrix evelnp(3,iel);
+
+  // insert velocity and density into element array
+  for (int i=0;i<iel;++i)
+  {
+    evelnp(0,i) = myvelnp[0+(i*4)];
+    evelnp(1,i) = myvelnp[1+(i*4)];
+    evelnp(2,i) = myvelnp[2+(i*4)];
+  }
+
+  /*----------------------------------------------------------------------*
+   |               start loop over integration points                     |
+   *----------------------------------------------------------------------*/
+  for (int gpid=0; gpid<intpoints.nquad; gpid++)
+  {
+    const double e0 = intpoints.qxg[gpid][0];
+    const double e1 = intpoints.qxg[gpid][1];
+
+    // get shape functions and derivatives in the plane of the element
+    DRT::UTILS::shape_function_2D(funct,e0,e1,distype);
+
+    // compute momentum (i.e., density times velocity) and normal momentum
+    // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+    double normmom = 0.0;
+    for (int j=0;j<3;++j)
+    {
+      velint(j) = 0.0;
+      for (int i=0;i<iel;++i)
+      {
+        velint(j) += funct(i)*evelnp(j,i);
+      }
+      normmom += velint(j)*normal(j);
+    }
+
+    // computation only required for negative normal momentum
+    if (normmom<-0.0001)
+    {
+      // compute measure tensor for surface element, infinitesimal area
+      // element drs for the integration and integration factor
+      DRT::UTILS::shape_function_2D_deriv1(deriv,e0,e1,distype);
+      DRT::UTILS::ComputeMetricTensorForSurface(xyze,deriv,metrictensor,&drs);
+      const double fac = intpoints.qwgt[gpid] * drs;
+
+      // integration factor for left- and right-hand side
+      const double lhsfac = normmom*timefac*fac;
+      double rhsfac = normmom*fac;
+      if (not is_genalpha) rhsfac *= timefac;
+
+      // matrix
+      for (int vi=0; vi<iel; ++vi)
+      {
+        const double vlhs = lhsfac*funct(vi);
+
+        const int fvi   = 4*vi;
+        const int fvip  = fvi+1;
+        const int fvipp = fvi+2;
+
+        for (int ui=0; ui<iel; ++ui)
+        {
+          const int fui   = 4*ui;
+          const int fuip  = fui+1;
+          const int fuipp = fui+2;
+
+          elemat1(fvi  ,fui  ) -= vlhs*funct(ui);
+          elemat1(fvip ,fuip ) -= vlhs*funct(ui);
+          elemat1(fvipp,fuipp) -= vlhs*funct(ui);
+        }
+      }
+
+      // rhs
+      const double vrhs0 = rhsfac*velint(0);
+      const double vrhs1 = rhsfac*velint(1);
+      const double vrhs2 = rhsfac*velint(2);
+      for (int vi=0; vi<iel; ++vi)
+      {
+        const int fvi   =4*vi;
+        const int fvip  =fvi+1;
+        const int fvipp =fvi+2;
+
+        elevec1(fvi  ) += funct(vi)*vrhs0;
+        elevec1(fvip ) += funct(vi)*vrhs1;
+        elevec1(fvipp) += funct(vi)*vrhs2;
+      }
+    }
+  }
+
+  return;
+}// DRT::ELEMENTS::Fluid3Surface::NeumannInflow
+
+
+/*----------------------------------------------------------------------*
+ |  Integrate shapefunctions over surface (private)            gjb 07/07|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::XFluid3Surface::IntegrateShapeFunction(
     ParameterList&                   params,
@@ -279,12 +504,6 @@ void DRT::ELEMENTS::XFluid3Surface::IntegrateShapeFunction(
 //  const double thsl = params.get("thsl",1.0);
 
   const DiscretizationType distype = this->Shape();
-
-/*  // find out whether we will use a time curve
-  bool usetime = true;
-  const double time = params.get("total time",-1.0);
-  if (time<0.0) usetime = false;
-*/
 
   // set number of nodes
   const std::size_t iel   = this->NumNode();
@@ -445,8 +664,8 @@ void DRT::ELEMENTS::XFluid3Surface::IntegrateSurfaceFlowRate(
   }
 
   /*----------------------------------------------------------------------*
-  |               start loop over integration points                     |
-  *----------------------------------------------------------------------*/
+   |               start loop over integration points                     |
+   *----------------------------------------------------------------------*/
   const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule);
 
   for (int gpid=0; gpid<intpoints.nquad; gpid++)
