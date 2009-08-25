@@ -1921,7 +1921,7 @@ void CONTACT::LagrangeStrategy::UpdateActiveSetSemiSmooth()
       double ct = Params().get<double>("SEMI_SMOOTH_CT");
       vector<double> tz (Dim()-1,0);
       vector<double> tjump (Dim()-1,0);
-      double euclidean;
+      double euclidean = 0.0;
       
       if(ftype == INPAR::CONTACT::friction_tresca || ftype == INPAR::CONTACT::friction_coulomb)
        {
