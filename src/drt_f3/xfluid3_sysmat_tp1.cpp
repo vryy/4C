@@ -841,6 +841,7 @@ void SysmatDomainTP1(
     GEO::fillInitialPositionArray<DISTYPE>(ele, xyze);
 
     // get older interface velocities and accelerations
+    const Epetra_Vector& ivelcolnp = *ih->cutterdis()->GetState("ivelcolnp");
     const Epetra_Vector& ivelcoln  = *ih->cutterdis()->GetState("ivelcoln");
     const Epetra_Vector& ivelcolnm = *ih->cutterdis()->GetState("ivelcolnm");
     const Epetra_Vector& iacccoln  = *ih->cutterdis()->GetState("iacccoln");
@@ -1147,10 +1148,10 @@ void SysmatDomainTP1(
             LINALG::Matrix<3,1> gpvelnm = XFLUID::interpolateVectorFieldToIntPoint(evelnm, shp.d0, numparamvelx);
             LINALG::Matrix<3,1> gpaccn  = XFLUID::interpolateVectorFieldToIntPoint(eaccn , shp.d0, numparamvelx);
 
-
-            if (ASSTYPE == XFEM::xfem_assembly and timealgo != timeint_stationary)
+            double dtstar = -10000.0;
+            if (timealgo != timeint_stationary)
             {
-              const bool valid_spacetime_cell_found = XFLUID::modifyOldTimeStepsValues<DISTYPE>(ele, ih, xyze, posXiDomain, labelnp, ivelcoln, ivelcolnm, iacccoln, gpveln, gpvelnm, gpaccn);
+              const bool valid_spacetime_cell_found = XFLUID::modifyOldTimeStepsValues<DISTYPE>(ele, ih, xyze, posXiDomain, labelnp, dt, ivelcolnp, ivelcoln, ivelcolnm, iacccoln, gpveln, gpvelnm, gpaccn, dtstar);
               if (not valid_spacetime_cell_found)
                 continue;
             }

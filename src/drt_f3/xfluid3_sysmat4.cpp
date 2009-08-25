@@ -750,14 +750,12 @@ void SysmatDomain4(
     // space dimension for 3d fluid element
     const size_t nsd = 3;
 
-    // time integration constant
-    const double timefac = FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dt, theta);
-
     // get node coordinates of the current element
     static LINALG::Matrix<nsd,numnode> xyze;
     GEO::fillInitialPositionArray<DISTYPE>(ele, xyze);
 
     // get older interface velocities and accelerations
+    const Epetra_Vector& ivelcolnp = *ih->cutterdis()->GetState("ivelcolnp");
     const Epetra_Vector& ivelcoln  = *ih->cutterdis()->GetState("ivelcoln");
     const Epetra_Vector& ivelcolnm = *ih->cutterdis()->GetState("ivelcolnm");
     const Epetra_Vector& iacccoln  = *ih->cutterdis()->GetState("iacccoln");
@@ -853,6 +851,11 @@ void SysmatDomain4(
             // coordinates of the current integration point in element coordinates \xi
             LINALG::Matrix<nsd,1> posXiDomain;
             GEO::mapEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain, posXiDomain);
+
+            // coordinates of the current integration point in physical coordinates \xi
+            LINALG::Matrix<nsd,1> posx_gp;
+            GEO::elementToCurrentCoordinatesT<DISTYPE>(xyze, posXiDomain, posx_gp);
+
             const double detcell = GEO::detEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain);
 
             // shape functions and their first derivatives
@@ -1012,12 +1015,41 @@ void SysmatDomain4(
             LINALG::Matrix<nsd,1> gpaccn  = XFLUID::interpolateVectorFieldToIntPoint(eaccn , shp.d0, numparamvelx);
 
 
-            if (ASSTYPE == XFEM::xfem_assembly and timealgo != timeint_stationary)
+            const bool was_in_fluid = (ih->PositionWithinConditionN(posx_gp) == 0);
+
+            XFLUID::TimeFormulation timeformulation = XFLUID::Eulerian;
+            double dtstar = -10000.0;
+//            double dtstar = dt;
+            if (timealgo != timeint_stationary)
             {
-              const bool valid_spacetime_cell_found = XFLUID::modifyOldTimeStepsValues<DISTYPE>(ele, ih, xyze, posXiDomain, labelnp, ivelcoln, ivelcolnm, iacccoln, gpveln, gpvelnm, gpaccn);
-              if (not valid_spacetime_cell_found)
-                continue;
+              if (not was_in_fluid)
+              {
+                timeformulation = XFLUID::ReducedTimeStepSize;
+                const bool valid_spacetime_cell_found = XFLUID::modifyOldTimeStepsValues<DISTYPE>(ele, ih, xyze, posXiDomain, labelnp, dt, ivelcolnp, ivelcoln, ivelcolnm, iacccoln, gpveln, gpvelnm, gpaccn, dtstar);
+                if (not valid_spacetime_cell_found)
+                {
+                  cout << "not valid_spacetime_cell_found" << endl;
+                  continue;
+                }
+              }
+              else
+              {
+                timeformulation = XFLUID::Eulerian;
+                dtstar = dt;
+              }
             }
+            else
+            {
+              dtstar = dt;
+            }
+
+            if (dtstar == -10000.0)
+              dserror("something went wrong!");
+
+            // time integration constant
+            const double timefac = FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dtstar, theta);
+
+
 //            cout << gpvelnp << endl;
 //            cout << evelnp << endl;
 //            cout << shp << endl;
@@ -1032,7 +1064,7 @@ void SysmatDomain4(
 //                    histvec(isd) += evelnp_hist(isd,iparam)*shp.d0(iparam);
 //            }
             const LINALG::Matrix<nsd,1> histvec = FLD::TIMEINT_THETA_BDF2::GetOldPartOfRighthandside(
-                gpveln, gpvelnm, gpaccn, timealgo, dt, theta);
+                gpveln, gpvelnm, gpaccn, timealgo, dtstar, theta);
 
             // get velocity (np,i) derivatives at integration point
             // vderxy = enr_derxy(j,k)*evelnp(i,k);
@@ -1121,7 +1153,7 @@ void SysmatDomain4(
             double tau_stab_M  = 0.0;
             double tau_stab_Mp = 0.0;
             double tau_stab_C  = 0.0;
-            XFLUID::computeStabilization(derxy, gpvelnp, numparamvelx, instationary, visc, hk, mk, timefac,
+            XFLUID::computeStabilization(derxy, gpvelnp, numparamvelx, instationary, visc, hk, mk, FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dtstar, theta),
                 tau_stab_M, tau_stab_Mp, tau_stab_C);
 
 

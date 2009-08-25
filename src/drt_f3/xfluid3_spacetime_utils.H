@@ -20,6 +20,14 @@ Maintainer: Axel Gerstenberger
 namespace XFLUID
 {
 
+  enum TimeFormulation
+  {
+    Lagrangean,      ///< material time derivative -> partial time derivative
+    Eulerian,        ///< material time derivative -> partial time derivative plus convective term
+    ReducedTimeStepSize
+  };
+
+
   /// generate old velocity/acceleration values, if integration point was in a void during the last time step
   inline LINALG::Matrix<3,1> getIntegrationPointValueFromBoundary(
       const Teuchos::RCP<DRT::Discretization>&   boundarydis,   ///< connection to the boundary dis
@@ -65,12 +73,15 @@ namespace XFLUID
       const M&                                   xyze,
       const LINALG::Matrix<3,1>&                 posXiDomain,
       const int                                  labelnp,
+      double                                     dt,
+      const Epetra_Vector&                       ivelcolnp,
       const Epetra_Vector&                       ivelcoln,
       const Epetra_Vector&                       ivelcolnm,
       const Epetra_Vector&                       iacccoln,
       LINALG::Matrix<3,1>&                       gpveln,
       LINALG::Matrix<3,1>&                       gpvelnm,
-      LINALG::Matrix<3,1>&                       gpaccn
+      LINALG::Matrix<3,1>&                       gpaccn,
+      double&                                    dtstar
   )
   {
     const std::size_t nsd = 3;
@@ -83,8 +94,9 @@ namespace XFLUID
 
     if (not is_in_fluid)
     {
-      //std::cout << "should I arrive here?" << std::endl;
-      return false;
+      std::cout << "should I arrive here?" << std::endl;
+      exit(1);
+//      return false;
     }
 
     const bool was_in_fluid = (ih->PositionWithinConditionN(posx_gp) == 0);
@@ -107,13 +119,14 @@ namespace XFLUID
 
         const double delta_slab = -(rst(2)-1.0)*0.5;
 
-        if (delta_slab > (1.0+1.0e-7) or -1.0e-7 > delta_slab)
+        if (not ((-1.0e-7) < delta_slab and delta_slab < (1.0+1.0e-7)))
         {
           cout << rst(2) <<  "  " << delta_slab << endl;
           cout << slab.toString() << endl << endl;
           dserror("wrong value of delta_slab");
         }
-        //              theta_dt = theta_dt_pure;// * delta_slab;
+        dtstar = dt;// * (delta_slab);
+//        cout << rst(2) <<  "  " << delta_slab << " " << dtstar << endl;
 
         const DRT::Element* boundaryele = ih->cutterdis()->gElement(slab.getBeleId());
         const size_t numnode_boundary = boundaryele->NumNode();
@@ -129,6 +142,33 @@ namespace XFLUID
           gpvelnm = getIntegrationPointValueFromBoundary(ih->cutterdis(), ivelcolnm, boundaryele, funct_ST, numnode_slab);
           gpaccn  = getIntegrationPointValueFromBoundary(ih->cutterdis(), iacccoln,  boundaryele, funct_ST, numnode_slab);
 
+//          const std::size_t nsd = 3;
+//          const std::size_t numnodefix_slab = 8;
+//
+//          const std::size_t numnode_boundary = boundaryele->NumNode();
+//
+//          // get interface velocities at the boundary element nodes
+//          LINALG::Matrix<nsd,numnodefix_slab> val_boundary;
+//
+//          const DRT::Node*const* nodes = boundaryele->Nodes();
+//
+//          std::vector<double> myval(nsd);
+//          for (std::size_t inode = 0; inode < numnode_boundary; ++inode)
+//          {
+//            const DRT::Node* node = nodes[inode];
+//            const std::vector<int> lm = ih->cutterdis()->Dof(node);
+//
+//            DRT::UTILS::ExtractMyValues(ivelcoln,myval,lm);
+//            for (std::size_t isd = 0; isd < nsd; ++isd)
+//              val_boundary(isd,inode  ) = myval[isd];
+//
+//            DRT::UTILS::ExtractMyValues(ivelcoln,myval,lm);
+//            for (std::size_t isd = 0; isd < nsd; ++isd)
+//              val_boundary(isd,inode+numnode_boundary) = myval[isd];
+//          }
+//
+//          gpveln = XFLUID::interpolateVectorFieldToIntPoint(val_boundary , funct_ST, numnode_slab);
+
         }
         else
         {
@@ -137,6 +177,15 @@ namespace XFLUID
           gpaccn.Clear();
         }
       }
+      else
+      {
+//        cout << "did not find cell" << endl;
+        dtstar = dt;
+      }
+    }
+    else
+    {
+      dtstar = dt;
     }
     return true;
   }
