@@ -245,6 +245,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   {
     const Teuchos::ParameterList& xdyn = DRT::Problem::Instance()->XFEMGeneralParams();
     fluidtimeparams->sublist("XFEM").set<bool>("DLM_condensation", getIntegralValue<int>(xdyn,"DLM_CONDENSATION")==1 );
+    fluidtimeparams->sublist("XFEM").set<bool>("FAST_INTEGRATION", getIntegralValue<int>(xdyn,"FAST_INTEGRATION")==1 );
     fluidtimeparams->sublist("XFEM").set<bool>("CONDEST", getIntegralValue<int>(xdyn,"CONDEST")==1 );
     fluidtimeparams->sublist("XFEM").set<double>("volumeRatioLimit", xdyn.get<double>("volumeRatioLimit"));
     fluidtimeparams->sublist("XFEM").set<double>("boundaryRatioLimit", xdyn.get<double>("boundaryRatioLimit"));

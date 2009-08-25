@@ -345,6 +345,8 @@ protected:
       const double time
       ) const;
 
+  void KrylovSpaceProjection(const int & numdim);
+
   //! @name general algorithm parameters
   //! fluid discretization
   const Teuchos::RCP<DRT::Discretization>      discret_;

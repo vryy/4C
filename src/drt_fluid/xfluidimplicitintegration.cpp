@@ -447,6 +447,18 @@ void FLD::XFluidImplicitTimeInt::TimeLoop(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::XFluidImplicitTimeInt::PrepareTimeStep()
 {
+
+  // update old acceleration
+  if (state_.accn_ != Teuchos::null)
+    state_.accn_->Update(1.0,*state_.accnp_,0.0);
+
+  // velocities/pressures of this step become most recent
+  // velocities/pressures of the last step
+  if (state_.velnm_ != Teuchos::null)
+    state_.velnm_->Update(1.0,*state_.veln_ ,0.0);
+  if (state_.veln_ != Teuchos::null)
+    state_.veln_ ->Update(1.0,*state_.velnp_,0.0);
+
   // -------------------------------------------------------------------
   //              set time dependent parameters
   // -------------------------------------------------------------------
@@ -584,8 +596,8 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
     ParameterList eleparams;
     eleparams.set("action","reset");
     discret_->Evaluate(eleparams);
-    dofmanagerForOutput_ = Teuchos::null;
   }
+  dofmanagerForOutput_ = Teuchos::null;
 
   // within this routine, no parallel re-distribution is allowed to take place
   // before and after this function, it's ok to do that
@@ -611,7 +623,7 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
 
   // get old dofmap, compute new one and get the new one, too
   const Epetra_Map olddofrowmap = *discret_->DofRowMap();
-  discret_->FillComplete();
+  discret_->FillComplete(true,false,false);
   const Epetra_Map& newdofrowmap = *discret_->DofRowMap();
 
   // sysmat might be singular (if we have a purely Dirichlet constrained
@@ -628,6 +640,7 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   }
   if (numfluid == 1)
   {
+    cout0_ << "Krylov projection active..." << endl;
     project_ = true;
     w_       = LINALG::CreateVector(newdofrowmap,true);
     c_       = LINALG::CreateVector(newdofrowmap,true);
@@ -668,15 +681,43 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
     // --------------------------------------------
 
     cout0_ << " ->  Initialize system vectors..." << endl;
-    // accelerations at time n and n-1
+    // accelerations
     dofswitch.mapVectorToNewDofDistribution(state_.accnp_);
     dofswitch.mapVectorToNewDofDistribution(state_.accn_);
 
-    // velocities and pressures at time n+1, n and n-1
-    dofswitch.mapVectorToNewDofDistribution(state_.velnp_); // use old velocity as start value
+    // velocities and pressures
+    dofswitch.mapVectorToNewDofDistribution(state_.velnp_);
     dofswitch.mapVectorToNewDofDistribution(state_.veln_);
     dofswitch.mapVectorToNewDofDistribution(state_.velnm_);
   }
+
+//  // fix ghost fluid values
+//  const int standard_label = 0;
+//  const XFEM::Enrichment enr_std(standard_label, XFEM::Enrichment::typeStandard);
+//  for (int i=0; i<discret_->NumMyColNodes(); ++i)
+//  {
+//    const DRT::Node* node = discret_->lColNode(i);
+//    const LINALG::Matrix<3,1> nodalpos(node->X());
+//    const bool is_in_fluid = (ih->PositionWithinConditionNP(nodalpos) == 0);
+//    const bool was_in_fluid = (ih->PositionWithinConditionN(nodalpos) == 0);
+//
+//    const bool voidenrichment_in_set = EnrichmentInNodalDofSet(node->Id(), XFEM::Enrichment::typeVoid, nodalDofSet);
+//
+//    if (not voidenrichment_in_set)
+//    {
+//      const int label = ih.PositionWithinConditionNP(nodalpos);
+//      const bool in_fluid = (0 == label);
+//
+//      if (in_fluid)
+//      {
+//        for (std::set<XFEM::PHYSICS::Field>::const_iterator field = fieldset.begin();field != fieldset.end();++field)
+//        {
+//          nodalDofSet[node->Id()].insert(XFEM::FieldEnr(*field, enr_std));
+//        }
+//      }
+//    }
+//  };
+
   // --------------------------------------------------
   // create remaining vectors with new dof distribution
   // --------------------------------------------------
@@ -806,6 +847,117 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
+ | contains Krylov Projection                                gammi 04/07|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FLD::XFluidImplicitTimeInt::KrylovSpaceProjection(const int & numdim)
+{
+  if (project_)
+  {
+    DRT::Condition* KSPcond=discret_->GetCondition("KrylovSpaceProjection");
+
+    // in this case, we want to project out some zero pressure modes
+    const string* definition = KSPcond->Get<string>("weight vector definition");
+
+    // zero w and c
+    w_->PutScalar(0.0);
+    c_->PutScalar(0.0);
+
+    if(*definition == "pointvalues")
+    {
+      // get pressure
+      const vector<double>* mode = KSPcond->Get<vector<double> >("mode");
+
+      for(int rr=0;rr<numdim;++rr)
+      {
+        if(abs((*mode)[rr]>1e-14))
+        {
+          dserror("expecting only an undetermined pressure");
+        }
+      }
+
+      int predof = numdim;
+
+      Teuchos::RCP<Epetra_Vector> presmode = velpressplitter_.ExtractCondVector(*w_);
+
+      presmode->PutScalar((*mode)[predof]);
+
+      /* export to vector to normalize against
+                //
+                // Note that in the case of definition pointvalue based,
+                // the average pressure will vanish in a pointwise sense
+                //
+                //    +---+
+                //     \
+                //      +   p_i  = 0
+                //     /
+                //    +---+
+       */
+      LINALG::Export(*presmode,*w_);
+
+      // export to vector of ones
+      presmode->PutScalar(1.0);
+      LINALG::Export(*presmode,*c_);
+    }
+    else if(*definition == "integration")
+    {
+      ParameterList mode_params;
+
+      // set action for elements
+      mode_params.set("action","integrate_shape");
+
+      /* evaluate KrylovSpaceProjection condition in order to get
+                // integrated nodal basis functions w_
+                // Note that in the case of definition integration based,
+                // the average pressure will vanish in an integral sense
+                //
+                //                    /              /                      /
+                //   /    \          |              |  /          \        |  /    \
+                //  | w_*p | = p_i * | N_i(x) dx =  | | N_i(x)*p_i | dx =  | | p(x) | dx = 0
+                //   \    /          |              |  \          /        |  \    /
+                //                   /              /                      /
+       */
+
+
+      discret_->EvaluateCondition
+         (mode_params        ,
+          Teuchos::null      ,
+          Teuchos::null      ,
+          w_                 ,
+          Teuchos::null      ,
+          Teuchos::null      ,
+          "KrylovSpaceProjection");
+
+      // get pressure
+      const vector<double>* mode = KSPcond->Get<vector<double> >("mode");
+
+      for(int rr=0;rr<numdim;++rr)
+      {
+        if(abs((*mode)[rr]>1e-14))
+        {
+          dserror("expecting only an undetermined pressure");
+        }
+      }
+
+      Teuchos::RCP<Epetra_Vector> presmode = velpressplitter_.ExtractCondVector(*w_);
+
+      // export to vector of ones
+      presmode->PutScalar(1.0);
+      LINALG::Export(*presmode,*c_);
+    }
+    else
+    {
+      dserror("unknown definition of weight vector w for restriction of Krylov space");
+    }
+  }
+}
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
  | contains the nonlinear iteration loop                     gammi 04/07|
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -885,8 +1037,8 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 
   if (myrank_ == 0)
   {
-    printf("+------------+------------------+-------------+-------------+-------------+-------------+-------------+-------------+\n");
-    printf("|- step/max -|- tol     [norm] -|-- vel-res --|-- pre-res --|-- fullres --|-- vel-inc --|-- pre-inc --|-- fullinc --|\n");
+    printf("+------------+------------------+---------+---------+---------+---------+---------+---------+\n");
+    printf("|  step/max  |  tol     [norm]  | vel-res | pre-res | fullres | vel-inc | pre-inc | fullinc |\n");
   }
 
   const Teuchos::RCP<Epetra_Vector> iforcecolnp = LINALG::CreateVector(*cutterdiscret->DofColMap(),true);
@@ -958,6 +1110,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       eleparams.set("L2",L2);
 
       eleparams.set("DLM_condensation",xparams_.get<bool>("DLM_condensation"));
+      eleparams.set("FAST_INTEGRATION",xparams_.get<bool>("FAST_INTEGRATION"));
       eleparams.set("boundaryRatioLimit",xparams_.get<double>("boundaryRatioLimit"));
 
       // convergence check at itemax is skipped for speedup if
@@ -1098,9 +1251,9 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     {
       if (myrank_ == 0)
       {
-        printf("|  %3d/%3d   | %9.2E[L_2 ]  | %9.2E   | %9.2E   | %9.2E   |      --     |      --     |      --     |",
+        printf("|  %3d/%3d   | %9.2E[L_2 ]  | %7.1e | %7.1e | %7.1e |    --   |    --   |    --   |",
                itnum,itemax,ittol,vresnorm,presnorm,fullresnorm);
-        printf(" (      --    ,te=%9.2E)",dtele);
+        printf(" (      --    , te=%9.2E)",dtele);
       }
     }
     /* ordinary case later iteration steps:
@@ -1121,11 +1274,11 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
         stopnonliniter=true;
         if (myrank_ == 0)
         {
-          printf("|  %3d/%3d   | %9.2E[L_2 ]  | %9.2E   | %9.2E   | %9.2E   | %9.2E   | %9.2E   | %9.2E   |",
+          printf("|  %3d/%3d   | %9.2e[L_2 ]  | %7.1e | %7.1e | %7.1e | %7.1e | %7.1e | %7.1e |",
                  itnum,itemax,ittol,vresnorm,presnorm,fullresnorm,
                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2,incfullnorm_L2/fullnorm_L2);
-          printf(" (ts=%9.2E,te=%9.2E)\n",dtsolve,dtele);
-          printf("+------------+------------------+-------------+-------------+-------------+-------------+-------------+-------------+\n");
+          printf(" (ts=%9.2e, te=%9.2e)\n",dtsolve,dtele);
+          printf("+------------+------------------+---------+---------+---------+---------+---------+---------+\n");
 
           FILE* errfile = params_.get<FILE*>("err file");
           if (errfile!=NULL)
@@ -1140,10 +1293,10 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       else // if not yet converged
         if (myrank_ == 0)
         {
-          printf("|  %3d/%3d   | %9.2E[L_2 ]  | %9.2E   | %9.2E   | %9.2E   | %9.2E   | %9.2E   | %9.2E   |",
+          printf("|  %3d/%3d   | %9.2E[L_2 ]  | %7.1e | %7.1e | %7.1e | %7.1e | %7.1e | %7.1e |",
                  itnum,itemax,ittol,vresnorm,presnorm,fullresnorm,
                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2,incfullnorm_L2/fullnorm_L2);
-          printf(" (ts=%9.2E,te=%9.2E)",dtsolve,dtele);
+          printf(" (ts=%9.2e, te=%9.2e)",dtsolve,dtele);
         }
     }
 
@@ -1217,116 +1370,8 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       }
 
       const int numdim = 3;
-      if (project_)
-      {
-        DRT::Condition* KSPcond=discret_->GetCondition("KrylovSpaceProjection");
-
-        // in this case, we want to project out some zero pressure modes
-        const string* definition = KSPcond->Get<string>("weight vector definition");
-
-        if(*definition == "pointvalues")
-        {
-          // zero w and c
-          w_->PutScalar(0.0);
-          c_->PutScalar(0.0);
-
-          // get pressure
-          const vector<double>* mode = KSPcond->Get<vector<double> >("mode");
-          const int numdim = 3;
-          for(int rr=0;rr<numdim;++rr)
-          {
-            if(abs((*mode)[rr]>1e-14))
-            {
-              dserror("expecting only an undetermined pressure");
-            }
-          }
-
-          int predof = numdim;
-
-          Teuchos::RCP<Epetra_Vector> presmode = velpressplitter_.ExtractCondVector(*w_);
-
-          presmode->PutScalar((*mode)[predof]);
-
-          /* export to vector to normalize against
-                //
-                // Note that in the case of definition pointvalue based,
-                // the average pressure will vanish in a pointwise sense
-                //
-                //    +---+
-                //     \
-                //      +   p_i  = 0
-                //     /
-                //    +---+
-           */
-          LINALG::Export(*presmode,*w_);
-
-          // export to vector of ones
-          presmode->PutScalar(1.0);
-          LINALG::Export(*presmode,*c_);
-        }
-        else if(*definition == "integration")
-        {
-          dserror("noe!");
-          // zero w and c
-          w_->PutScalar(0.0);
-          c_->PutScalar(0.0);
-
-          ParameterList mode_params;
-
-          // set action for elements
-          mode_params.set("action","integrate_shape");
-
-          if (alefluid_)
-          {
-//            discret_->SetState("dispnp",dispnp_);
-          }
-
-          /* evaluate KrylovSpaceProjection condition in order to get
-                // integrated nodal basis functions w_
-                // Note that in the case of definition integration based,
-                // the average pressure will vanish in an integral sense
-                //
-                //                    /              /                      /
-                //   /    \          |              |  /          \        |  /    \
-                //  | w_*p | = p_i * | N_i(x) dx =  | | N_i(x)*p_i | dx =  | | p(x) | dx = 0
-                //   \    /          |              |  \          /        |  \    /
-                //                   /              /                      /
-           */
-
-
-          discret_->EvaluateCondition
-          (mode_params        ,
-              Teuchos::null      ,
-              Teuchos::null      ,
-              w_                 ,
-              Teuchos::null      ,
-              Teuchos::null      ,
-              "KrylovSpaceProjection");
-
-          // get pressure
-          const vector<double>* mode = KSPcond->Get<vector<double> >("mode");
-
-          for(int rr=0;rr<numdim;++rr)
-          {
-            if(abs((*mode)[rr]>1e-14))
-            {
-              dserror("expecting only an undetermined pressure");
-            }
-          }
-
-          Teuchos::RCP<Epetra_Vector> presmode = velpressplitter_.ExtractCondVector(*w_);
-
-          // export to vector of ones
-          presmode->PutScalar(1.0);
-          LINALG::Export(*presmode,*c_);
-        }
-        else
-        {
-          dserror("unknown definition of weight vector w for restriction of Krylov space");
-        }
-      }
-
-      solver_->Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,itnum==1, w_, c_, project_);
+      KrylovSpaceProjection(numdim);
+      solver_->Solve(sysmat_->EpetraOperator(), incvel_, residual_, true, itnum == 1, w_, c_, project_);
       solver_->ResetTolerance();
 
       // end time measurement for solver
@@ -1471,14 +1516,6 @@ void FLD::XFluidImplicitTimeInt::TimeUpdate()
       state_.velnp_, state_.veln_, state_.velnm_, state_.accn_,
           timealgo_, step_, theta_, dta_, dtp_,
           state_.accnp_);
-
-  // update old acceleration
-  state_.accn_->Update(1.0,*state_.accnp_,0.0);
-
-  // velocities/pressures of this step become most recent
-  // velocities/pressures of the last step
-  state_.velnm_->Update(1.0,*state_.veln_ ,0.0);
-  state_.veln_ ->Update(1.0,*state_.velnp_,0.0);
 
   return;
 }// FluidImplicitTimeInt::TimeUpdate
@@ -1726,8 +1763,8 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
 
     std::stringstream filename;
     std::stringstream filenamedel;
-    filename    << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".solution_pressure_" << std::setw(5) << setfill('0') << step   << ".pos";
-    filenamedel << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".solution_pressure_" << std::setw(5) << setfill('0') << step-5 << ".pos";
+    filename    << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".solution_field_pressure_" << std::setw(5) << setfill('0') << step   << ".pos";
+    filenamedel << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".solution_field_pressure_" << std::setw(5) << setfill('0') << step-5 << ".pos";
     std::remove(filenamedel.str().c_str());
     if (screen_out) std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
     std::ofstream f_system(filename.str().c_str());
@@ -1805,8 +1842,8 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
   {
     std::stringstream filename;
     std::stringstream filenamedel;
-    filename    << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".solution_temperature_" << std::setw(5) << setfill('0') << step   << ".pos";
-    filenamedel << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".solution_temperature_" << std::setw(5) << setfill('0') << step-5 << ".pos";
+    filename    << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".solution_field_temperature_" << std::setw(5) << setfill('0') << step   << ".pos";
+    filenamedel << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".solution_field_temperature_" << std::setw(5) << setfill('0') << step-5 << ".pos";
     std::remove(filenamedel.str().c_str());
     if (screen_out) std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
     std::ofstream f_system(filename.str().c_str());
@@ -1868,8 +1905,8 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
     std::stringstream filename;
     std::stringstream filenamedel;
     const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
-    filename    << filebase << ".solution_pressure_disc_" << std::setw(5) << setfill('0') << step   << ".pos";
-    filenamedel << filebase << ".solution_pressure_disc_" << std::setw(5) << setfill('0') << step-5 << ".pos";
+    filename    << filebase << ".solution_field_pressure_disc_" << std::setw(5) << setfill('0') << step   << ".pos";
+    filenamedel << filebase << ".solution_field_pressure_disc_" << std::setw(5) << setfill('0') << step-5 << ".pos";
     std::remove(filenamedel.str().c_str());
     if (screen_out) std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"...";
     std::ofstream f_system(filename.str().c_str());
@@ -1949,20 +1986,20 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
     std::stringstream filenameyzdel;
     //filename   << "solution_tau_disc_"   << std::setw(5) << setfill('0') << step_ << ".pos";
     const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
-    filename   << filebase << ".solution_sigma_disc_"   << std::setw(5) << setfill('0') << step << ".pos";
-    filenamexx << filebase << ".solution_sigmaxx_disc_" << std::setw(5) << setfill('0') << step << ".pos";
-    filenameyy << filebase << ".solution_sigmayy_disc_" << std::setw(5) << setfill('0') << step << ".pos";
-    filenamezz << filebase << ".solution_sigmazz_disc_" << std::setw(5) << setfill('0') << step << ".pos";
-    filenamexy << filebase << ".solution_sigmaxy_disc_" << std::setw(5) << setfill('0') << step << ".pos";
-    filenamexz << filebase << ".solution_sigmaxz_disc_" << std::setw(5) << setfill('0') << step << ".pos";
-    filenameyz << filebase << ".solution_sigmayz_disc_" << std::setw(5) << setfill('0') << step << ".pos";
-    filenamedel   << filebase << ".solution_sigma_disc_"   << std::setw(5) << setfill('0') << step-5 << ".pos";
-    filenamexxdel << filebase << ".solution_sigmaxx_disc_" << std::setw(5) << setfill('0') << step-5 << ".pos";
-    filenameyydel << filebase << ".solution_sigmayy_disc_" << std::setw(5) << setfill('0') << step-5 << ".pos";
-    filenamezzdel << filebase << ".solution_sigmazz_disc_" << std::setw(5) << setfill('0') << step-5 << ".pos";
-    filenamexydel << filebase << ".solution_sigmaxy_disc_" << std::setw(5) << setfill('0') << step-5 << ".pos";
-    filenamexzdel << filebase << ".solution_sigmaxz_disc_" << std::setw(5) << setfill('0') << step-5 << ".pos";
-    filenameyzdel << filebase << ".solution_sigmayz_disc_" << std::setw(5) << setfill('0') << step-5 << ".pos";
+    filename   << filebase << ".solution_field_sigma_disc_"   << std::setw(5) << setfill('0') << step << ".pos";
+    filenamexx << filebase << ".solution_field_sigmaxx_disc_" << std::setw(5) << setfill('0') << step << ".pos";
+    filenameyy << filebase << ".solution_field_sigmayy_disc_" << std::setw(5) << setfill('0') << step << ".pos";
+    filenamezz << filebase << ".solution_field_sigmazz_disc_" << std::setw(5) << setfill('0') << step << ".pos";
+    filenamexy << filebase << ".solution_field_sigmaxy_disc_" << std::setw(5) << setfill('0') << step << ".pos";
+    filenamexz << filebase << ".solution_field_sigmaxz_disc_" << std::setw(5) << setfill('0') << step << ".pos";
+    filenameyz << filebase << ".solution_field_sigmayz_disc_" << std::setw(5) << setfill('0') << step << ".pos";
+    filenamedel   << filebase << ".solution_field_sigma_disc_"   << std::setw(5) << setfill('0') << step-5 << ".pos";
+    filenamexxdel << filebase << ".solution_field_sigmaxx_disc_" << std::setw(5) << setfill('0') << step-5 << ".pos";
+    filenameyydel << filebase << ".solution_field_sigmayy_disc_" << std::setw(5) << setfill('0') << step-5 << ".pos";
+    filenamezzdel << filebase << ".solution_field_sigmazz_disc_" << std::setw(5) << setfill('0') << step-5 << ".pos";
+    filenamexydel << filebase << ".solution_field_sigmaxy_disc_" << std::setw(5) << setfill('0') << step-5 << ".pos";
+    filenamexzdel << filebase << ".solution_field_sigmaxz_disc_" << std::setw(5) << setfill('0') << step-5 << ".pos";
+    filenameyzdel << filebase << ".solution_field_sigmayz_disc_" << std::setw(5) << setfill('0') << step-5 << ".pos";
     std::remove(filenamedel.str().c_str());
     std::remove(filenamexxdel.str().c_str());
     std::remove(filenameyydel.str().c_str());
@@ -2114,10 +2151,11 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
 
   if (this->physprob_.fieldset_.find(XFEM::PHYSICS::Velx) != this->physprob_.fieldset_.end())
   {
-    PlotVectorFieldToGmsh(state_.velnp_, ".solution_velocity_","Velocity Solution (Physical) n+1",true, step, time);
-//    PlotVectorFieldToGmsh(state_.veln_,  ".solution_velocity_old_step_","Velocity Solution (Physical) n",false);
-//    PlotVectorFieldToGmsh(state_.velnm_, ".solution_velocity_old2_step_","Velocity Solution (Physical) n-1",false);
-//    PlotVectorFieldToGmsh(state_.accn_,  ".solution_acceleration_old_step_","Acceleration Solution (Physical) n",false);
+    PlotVectorFieldToGmsh(state_.velnp_, ".solution_field_velocity_np_","Velocity Solution (Physical) n+1",true, step, time);
+    PlotVectorFieldToGmsh(state_.veln_,  ".solution_field_velocity_n_","Velocity Solution (Physical) n",false, step, time);
+//    PlotVectorFieldToGmsh(state_.velnm_, ".solution_field_velocity_nm_","Velocity Solution (Physical) n-1",false, step, time);
+    PlotVectorFieldToGmsh(state_.accnp_, ".solution_field_acceleration_np_","Acceleration Solution (Physical) n+1",false, step, time);
+    PlotVectorFieldToGmsh(state_.accn_,  ".solution_field_acceleration_n_","Acceleration Solution (Physical) n",false, step, time);
   }
 }
 

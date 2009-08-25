@@ -2216,6 +2216,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                yesnotuple,yesnovalue,&xfem_general);
   setStringToIntegralParameter<int>("DLM_CONDENSATION","Yes","Do you want to condense the distributed Lagrange multiplier?",
                                  yesnotuple,yesnovalue,&xfem_general);
+  setStringToIntegralParameter<int>("FAST_INTEGRATION","No","Do you want to save gausspoints to speed up computation?",
+                                   yesnotuple,yesnovalue,&xfem_general);
   setStringToIntegralParameter<int>("CONDEST","No","Do you want to estimate the condition number? It is somewhat costly.",
                                    yesnotuple,yesnovalue,&xfem_general);
   DoubleParameter("volumeRatioLimit",1.0e-2,"don't enrich nodes of elements, when less than this fraction of the element is on one side of the interface",&xfem_general);
