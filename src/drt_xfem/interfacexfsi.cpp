@@ -37,8 +37,8 @@ Maintainer: Axel Gerstenberger
  * standard constructor
  *----------------------------------------------------------------------*/
 XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
-    const Teuchos::RCP<DRT::Discretization>&  xfemdis,
-    const Teuchos::RCP<DRT::Discretization>&  cutterdis
+    const Teuchos::RCP<DRT::Discretization>  xfemdis,
+    const Teuchos::RCP<DRT::Discretization>  cutterdis
     ) : InterfaceHandle(xfemdis),
         cutterdis_(cutterdis)
 {

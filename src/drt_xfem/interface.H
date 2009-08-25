@@ -43,7 +43,7 @@ namespace XFEM
     //! return string representation of the interface handle
     virtual std::string toString() const;
 
-    //! comment missing! henke 10/08
+    //! output interface handle to Gmsh postprocesing
     virtual void toGmsh(const int step) const;
 
     //! return pointer to the intersected discretization
