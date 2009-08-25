@@ -114,6 +114,8 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
                 src/drt_fem_general/drt_utils_boundary_integration.o \
                 src/drt_fem_general/drt_utils_local_connectivity_matrices.o \
                 src/drt_lib/drt_utils.o \
+                src/drt_lib/drt_utils_parmetis.o \
+                src/drt_lib/drt_utils_metis.o \
                 src/drt_lib/drt_parobject.o \
                 src/drt_lib/drt_exporter.o \
                 src/drt_lib/drt_dserror.o \

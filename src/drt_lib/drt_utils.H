@@ -111,6 +111,36 @@ namespace UTILS
   RefCountPtr<Epetra_CrsGraph> PartGraphUsingMetis(const Epetra_CrsGraph& graph,
                                                    const Epetra_Vector& weights);
 
+
+#ifdef PARMETIS
+
+  /// redistribute a discretization using ParMetis
+  /*!
+    Actually, only the \p rownodes and \p colnodes maps are created.
+   */
+  void PartUsingParMetis(RCP<DRT::Discretization> dis,
+                         RCP<Epetra_Map> roweles,
+                         RCP<Epetra_Map>& rownodes,
+                         RCP<Epetra_Map>& colnodes,
+                         vector<int>& nids,
+                         int nblock,
+                         RCP<Epetra_Comm> comm,
+                         Epetra_Time& time,
+                         bool outflag);
+#else
+
+  /// redistribute a discretization using metis
+  /*!
+    Actually, only the \p rownodes and \p colnodes maps are created.
+   */
+  void PartUsingMetis(RCP<Epetra_Map>& rownodes,
+                      RCP<Epetra_Map>& colnodes,
+                      list<vector<int> >& elementnodes,
+                      RCP<Epetra_Comm> comm);
+
+#endif
+
+
   /*!
   \brief Locally extract a subset of values from an Epetra_Vector
 

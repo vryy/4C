@@ -253,15 +253,6 @@ private:
   /// initialize elements. This is done later after reading boundary conditions.
   void Complete();
 
-#ifdef PARMETIS
-  /// pack local connectivity array for communication
-  void PackLocalConnectivity  (map<int,set<int> > & lcon,vector<char> & sblock);
-
-  /// unpack local connectivity array from communication
-  void UnpackLocalConnectivity(map<int,set<int> > & lcon,vector<char> & rblock);
-
-#endif
-
   /// discretization name
   string name_;
 
