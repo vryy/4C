@@ -303,6 +303,26 @@ public:
     );
 
 
+  /// \brief Evaluate a Neumann boundary condition
+  ///
+  /// this method evaluates a surface Neumann condition on the solid3 element
+  /// 
+  /// \param params (in/out)    : ParameterList for communication between control routine
+  ///                             and elements
+  /// \param discretization (in): A reference to the underlying discretization
+  /// \param condition (in)     : The condition to be evaluated
+  /// \param lm (in)            : location vector of this element
+  /// \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+  ///
+  /// \return 0 if successful, negative otherwise
+  virtual int EvaluateNeumann(
+    Teuchos::ParameterList& params,
+    DRT::Discretization& discretization,
+    DRT::Condition& condition,
+    std::vector<int>& lm,
+    Epetra_SerialDenseVector& elevec1,
+    Epetra_SerialDenseMatrix* elemat1 = NULL
+    );
 
 private:
 

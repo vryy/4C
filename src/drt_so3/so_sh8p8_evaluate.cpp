@@ -541,6 +541,50 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
 }
 
 
+/*----------------------------------------------------------------------*/
+int DRT::ELEMENTS::So_sh8p8::EvaluateNeumann(
+  Teuchos::ParameterList& params,
+  DRT::Discretization& discretization,
+  DRT::Condition& condition,
+  std::vector<int>& lm,
+  Epetra_SerialDenseVector& elevec1,
+  Epetra_SerialDenseMatrix* elemat1
+  )
+{
+  // build 24x1 location vector
+  std::vector<int> lm_d(NUMDISP_);
+  for (int inode=0; inode<NUMNOD_; ++inode)
+    for (int idof=0; idof<NODDISP_; ++idof)
+      lm_d[inode*NODDISP_+idof] = lm[inode*NODDOF_+idof];
+
+  // 24x1 load vector
+  Epetra_SerialDenseVector elevec1_d(NUMDISP_);
+  // 24x24 tangent
+  Epetra_SerialDenseMatrix* elemat1_dd = NULL;
+  if (elemat1 != NULL)
+    elemat1_dd = new Epetra_SerialDenseMatrix(NUMDISP_,NUMDISP_);
+  // build load vector (and tangent)
+  const int rv = So_hex8::EvaluateNeumann(params,
+                                          discretization,
+                                          condition,
+                                          lm_d,
+                                          elevec1_d,
+                                          elemat1_dd);
+  // copy vector
+  LINALG::Matrix<NUMDOF_,1> ev1(elevec1, true);  // only view
+  LINALG::Matrix<NUMDISP_,1> ev1_d(elevec1_d, true);  // only view
+  BuildElementVector(&ev1, &ev1_d, NULL);
+  // copy matrix
+  if ( (elemat1_dd != NULL) and (elemat1 != NULL) ) {
+    LINALG::Matrix<NUMDOF_,NUMDOF_> em1(*elemat1, true);  // only view
+    LINALG::Matrix<NUMDISP_,NUMDISP_> em1_dd(*elemat1_dd, true);  // only view
+    BuildElementMatrix(&em1, &em1_dd, NULL, NULL, NULL);
+    delete elemat1_dd;
+  }
+
+  return rv;
+}
+
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                             maf 04/07|
  *----------------------------------------------------------------------*/
@@ -675,6 +719,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
     AxialMetricsAtOrigin(xrefe,*jac0,*axmetr0);
     hths = Teuchos::rcp(new double((*axmetr0)(2)/(*axmetr0)(1)));
     hthr = Teuchos::rcp(new double((*axmetr0)(2)/(*axmetr0)(0)));
+//    cout << "hths=" << *hths << ", hthr=" << *hthr << endl;
 #if 0
     metr_sps.resize(NUMSP_);
     for (int sp=0; sp<NUMSP_; ++sp)
@@ -912,22 +957,22 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
         dYdt_D += jac_sps[3](1,dim)     * jac_sps[3](2,dim);      // G_23^D
 
         if (ans_ == ans_onspot) {
-          dxdt_E += jac_cur_sps[4](0,dim) * jac_cur_sps[4](2,dim);  // g_13^A
-          dXdt_E += jac_sps[4](0,dim)     * jac_sps[4](2,dim);      // G_13^A
-          dydt_E += jac_cur_sps[4](1,dim) * jac_cur_sps[4](2,dim);  // g_23^B
-          dYdt_E += jac_sps[4](1,dim)     * jac_sps[4](2,dim);      // G_23^B
-          dxdt_F += jac_cur_sps[5](0,dim) * jac_cur_sps[5](2,dim);  // g_13^A
-          dXdt_F += jac_sps[5](0,dim)     * jac_sps[5](2,dim);      // G_13^A
-          dydt_F += jac_cur_sps[5](1,dim) * jac_cur_sps[5](2,dim);  // g_23^B
-          dYdt_F += jac_sps[5](1,dim)     * jac_sps[5](2,dim);      // G_23^B
-          dxdt_G += jac_cur_sps[6](0,dim) * jac_cur_sps[6](2,dim);  // g_13^A
-          dXdt_G += jac_sps[6](0,dim)     * jac_sps[6](2,dim);      // G_13^A
-          dydt_G += jac_cur_sps[6](1,dim) * jac_cur_sps[6](2,dim);  // g_23^B
-          dYdt_G += jac_sps[6](1,dim)     * jac_sps[6](2,dim);      // G_23^B
-          dxdt_H += jac_cur_sps[7](0,dim) * jac_cur_sps[7](2,dim);  // g_13^A
-          dXdt_H += jac_sps[7](0,dim)     * jac_sps[7](2,dim);      // G_13^A
-          dydt_H += jac_cur_sps[7](1,dim) * jac_cur_sps[7](2,dim);  // g_23^B
-          dYdt_H += jac_sps[7](1,dim)     * jac_sps[7](2,dim);      // G_23^B
+          dxdt_E += jac_cur_sps[4](0,dim) * jac_cur_sps[4](2,dim);  // g_13^E
+          dXdt_E += jac_sps[4](0,dim)     * jac_sps[4](2,dim);      // G_13^E
+          dydt_E += jac_cur_sps[4](1,dim) * jac_cur_sps[4](2,dim);  // g_23^E
+          dYdt_E += jac_sps[4](1,dim)     * jac_sps[4](2,dim);      // G_23^E
+          dxdt_F += jac_cur_sps[5](0,dim) * jac_cur_sps[5](2,dim);  // g_13^F
+          dXdt_F += jac_sps[5](0,dim)     * jac_sps[5](2,dim);      // G_13^F
+          dydt_F += jac_cur_sps[5](1,dim) * jac_cur_sps[5](2,dim);  // g_23^F
+          dYdt_F += jac_sps[5](1,dim)     * jac_sps[5](2,dim);      // G_23^F
+          dxdt_G += jac_cur_sps[6](0,dim) * jac_cur_sps[6](2,dim);  // g_13^G
+          dXdt_G += jac_sps[6](0,dim)     * jac_sps[6](2,dim);      // G_13^G
+          dydt_G += jac_cur_sps[6](1,dim) * jac_cur_sps[6](2,dim);  // g_23^G
+          dYdt_G += jac_sps[6](1,dim)     * jac_sps[6](2,dim);      // G_23^G
+          dxdt_H += jac_cur_sps[7](0,dim) * jac_cur_sps[7](2,dim);  // g_13^H
+          dXdt_H += jac_sps[7](0,dim)     * jac_sps[7](2,dim);      // G_13^H
+          dydt_H += jac_cur_sps[7](1,dim) * jac_cur_sps[7](2,dim);  // g_23^H
+          dYdt_H += jac_sps[7](1,dim)     * jac_sps[7](2,dim);      // G_23^H
         }
 
         dzdt_E += jac_cur_sps[4](2,dim) * jac_cur_sps[4](2,dim);
