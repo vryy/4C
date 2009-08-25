@@ -15,21 +15,47 @@ namespace INPUT
   class LineDefinition;
   class Lines;
 
+  /// base class of line components
+  /*!
+    There are internal subclasses to this class that do the actual work.
+
+    \author u.kue
+    \date 08/09
+   */
   class LineComponent
   {
   public:
     virtual ~LineComponent() {}
 
+    /// creat an exact copy of this component
     virtual LineComponent* Clone() = 0;
 
+    /// print to a dat file comment
     virtual void Print(std::ostream& stream) = 0;
 
+    /// try to read component from input line
     virtual bool Read(LineDefinition& definition, std::istream& stream) = 0;
 
-    virtual bool IsNamed(std::string name) { return false; }
+    /// tell if the component has the specified name tag
+    virtual bool IsNamed(std::string name) = 0;
   };
 
 
+  /// definition of one (possible) line in a dat file
+  /*!
+    LineDefinition defines how one specific line in a dat file looks like. The
+    idea is, that each line consists of a list of components.
+
+    Reading a LineDefinition means filling the components with those values
+    found at the input line.
+
+    \note This is a low level class. Therefore, we do not use RCP much but
+    instead deallocate the internal objects by hand. For this reason there are
+    also proper (not exception save) copy operators provided.
+
+    \author u.kue
+    \date 08/09
+   */
   class LineDefinition
   {
   public:
@@ -40,7 +66,10 @@ namespace INPUT
 
     LineDefinition& operator=(const LineDefinition& other);
 
+    /// create an exact copy of this LineDefinition
     Teuchos::RCP<DRT::INPUT::LineDefinition> Clone();
+
+    /// @name Add new line components
 
     LineDefinition& AddTag(std::string name);
     LineDefinition& AddNamedString(std::string name);
@@ -49,45 +78,90 @@ namespace INPUT
     LineDefinition& AddNamedDoubleVector(std::string name, int length);
     LineDefinition& AddNamedDoubleVector(std::string name, std::string lengthdef);
 
+    //@}
+
+    /// print to dat file comment
     void Print(std::ostream& stream);
 
+    /// try to read this line from the stream
+    /*!
+      If reading succeeds, the LineDefinition contains the values of the
+      line. Otherwise, the values are undefined and should not be used.
+
+      @return true on success
+     */
     bool Read(std::istream& stream);
 
+    /// tell if there is a named component with the given name
     bool HaveNamed(std::string name);
+
+    /// @name extract values from read LineDefinition
 
     void ExtractNamedString(std::string name, std::string& value);
     void ExtractNamedInt(std::string name, int& value);
     void ExtractNamedDouble(std::string name, double& value);
     void ExtractNamedDoubleVector(std::string name, std::vector<double>& v);
 
+    //@}
+
   private:
 
+    /// find named component with given name
     LineComponent* FindNamed(std::string name);
 
+    /// remove all components
     void Clear();
 
+    /// list of components
     std::vector<LineComponent*> components_;
   };
 
 
+  /// a collection of LineDefinitions
+  /*!
+    The Lines class is used to describe and read input lines from the dat
+    file. The point is, the description of the line is used for the actual
+    reading. This way the description is never out of sync with the reading
+    routines. Furthermore, the reading code and the line definition code are
+    separated. All the user needs to do is add a new definition.
+
+    Lines describes a dat file section that consists of any number of specific
+    lines. At the time being Lines is used for curves and functions
+    sections. Here, each line can be of one of a list of given formats.
+
+    Reading means finding the LineDefinition that matches the input line
+    exactly and filling its internal values. After reading the user has to
+    extract the values from the LineDefinition.
+
+    \author u.kue
+    \date 08/09
+   */
   class Lines
   {
   public:
 
+    /// construct to read a given section
     explicit Lines(std::string sectionname) : sectionname_(sectionname) {}
 
+    /// add a new LineDefinition
     void Add(const LineDefinition& ld) { definitions_.push_back(ld); }
 
+    /// print all LineDefinitions as dat file comment
     void Print(std::ostream& stream);
 
+    /// read section and return one LineDefinition per line read
     std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition> >
     Read(const DatFileReader& reader, int suffix);
 
   private:
 
+    /// read given line and return LineDefinition
     Teuchos::RCP<DRT::INPUT::LineDefinition> Read(const char* line);
 
+    /// name of the section we read
     std::string sectionname_;
+
+    /// all possible LineDefinitions
     std::vector<LineDefinition> definitions_;
   };
 
