@@ -294,6 +294,7 @@ DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddNamedDoubleVector(std
 /*----------------------------------------------------------------------*/
 DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddNamedDoubleVector(std::string name, std::string lengthdef)
 {
+  components_.push_back(new NamedVariableVectorComponent<double>(name,lengthdef));
   return *this;
 }
 
