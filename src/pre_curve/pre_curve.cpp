@@ -79,7 +79,7 @@ int main(int argc, char** argv)
 
   /*---------------------------------------------- input of time curves */
   DRT::UTILS::TimeCurveManager manager;
-  manager.ReadInput();
+  manager.ReadInput(reader);
 
   if (myrank==0)
   {
