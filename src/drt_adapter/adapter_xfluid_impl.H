@@ -186,6 +186,8 @@ namespace ADAPTER {
 
   private:
 
+    void PrepareBoundaryDis();
+
     virtual void ComputeInterfaceAccelerationsAndVelocities();
 
     void PrintInterfaceVectorField(

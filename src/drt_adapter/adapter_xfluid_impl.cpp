@@ -235,14 +235,26 @@ void ADAPTER::XFluidImpl::PrepareTimeStep()
 /*----------------------------------------------------------------------*/
 void ADAPTER::XFluidImpl::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
 {
-  if (vel!=Teuchos::null)
-  {
-    fluid_.Evaluate(vel);
-  }
-  else
-  {
-    fluid_.Evaluate(Teuchos::null);
-  }
+  cout << "ADAPTER::XFluidImpl::Evaluate()" << endl;
+
+  ComputeInterfaceAccelerationsAndVelocities();
+
+  PrepareBoundaryDis();
+
+  // evaluate
+  fluid_.Evaluate(boundarydis_, vel);
+
+  // get surface force
+  Teuchos::RCP<const Epetra_Vector> itruerescol = boundarydis_->GetState("iforcenp");
+
+  // dump all vectors in the boundary discretization
+  boundarydis_->ClearState();
+
+  // map back to solid parallel distribution
+  Teuchos::RCP<Epetra_Export> conimpo = Teuchos::rcp (new Epetra_Export(itruerescol->Map(),itrueresnp_->Map()));
+  itrueresnp_->PutScalar(0.0);
+  itrueresnp_->Export(*itruerescol,*conimpo,Add);
+
 }
 
 
@@ -263,7 +275,7 @@ void ADAPTER::XFluidImpl::ComputeInterfaceAccelerationsAndVelocities()
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
   const double dt = fsidyn.get<double>("TIMESTEP");
 
-#if 1
+#if 0
   double theta = 1.0;
   if (Step() == 1)
     theta = 1.0;
@@ -273,12 +285,12 @@ void ADAPTER::XFluidImpl::ComputeInterfaceAccelerationsAndVelocities()
 #else
   double beta;
   double gamma;
-//  if (Teuchos::getIntegralValue<int>(fsidyn,"SECONDORDER") == 1 and not Step()==1)
-//  {
-//    gamma = 0.5;
-//    beta = gamma/2.0;
-//  }
-//  else
+  if (Teuchos::getIntegralValue<int>(fsidyn,"SECONDORDER") == 1 )
+  {
+    gamma = 0.5;
+    beta = gamma/2.0;
+  }
+  else
   {
     gamma = 0.5;
     beta = 1.0/6.0;
@@ -368,6 +380,36 @@ void ADAPTER::XFluidImpl::Output()
 
     f.close();
   }
+
+  if (boundarydis_->Comm().MyPID() == 0 && idispnpcol->MyLength() >= 3)
+  {
+    std::ofstream f;
+    const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
+                            + ".outifacedispnp.txt";
+    if (Step() <= 1)
+      f.open(fname.c_str(),std::fstream::trunc);
+    else
+      f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+
+    f << Time() << " " << (*idispnpcol)[0] << "  " << "\n";
+
+    f.close();
+  }
+
+  if (boundarydis_->Comm().MyPID() == 0 && ivelnpcol->MyLength() >= 3)
+  {
+    std::ofstream f;
+    const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
+                            + ".outifacevelnp.txt";
+    if (Step() <= 1)
+      f.open(fname.c_str(),std::fstream::trunc);
+    else
+      f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+
+    f << Time() << " " << (*ivelnpcol)[0] << "  " << "\n";
+
+    f.close();
+  }
 }
 
 
@@ -440,12 +482,8 @@ void ADAPTER::XFluidImpl::PrintInterfaceVectorField(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::XFluidImpl::NonlinearSolve()
+void ADAPTER::XFluidImpl::PrepareBoundaryDis()
 {
-  cout << "ADAPTER::XFluidImpl::NonlinearSolve()" << endl;
-
-  ComputeInterfaceAccelerationsAndVelocities();
-
   // create interface DOF vectors using the fluid parallel distribution
   Teuchos::RCP<Epetra_Vector> idispcolnp = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
   Teuchos::RCP<Epetra_Vector> idispcoln  = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
@@ -469,6 +507,18 @@ void ADAPTER::XFluidImpl::NonlinearSolve()
   boundarydis_->SetState("ivelcoln"  ,ivelcoln);
   boundarydis_->SetState("ivelcolnm" ,ivelcolnm);
   boundarydis_->SetState("iacccoln"  ,iacccoln);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::XFluidImpl::NonlinearSolve()
+{
+  cout << "ADAPTER::XFluidImpl::NonlinearSolve()" << endl;
+
+  ComputeInterfaceAccelerationsAndVelocities();
+
+  PrepareBoundaryDis();
 
   // solve
   fluid_.NonlinearSolve(boundarydis_);
