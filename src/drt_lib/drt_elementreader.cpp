@@ -215,12 +215,19 @@ void ElementReader::Partition()
           string distype;
           // read element id type and distype
           t >> elenumber >> eletype >> distype;
-          elenumber -= 1;
 
-          Teuchos::RCP<DRT::INPUT::Lines> lines = ed.ElementLines(eletype);
-          if (lines!=Teuchos::null)
+#if 0
+          DRT::INPUT::LineDefinition* linedef = ed.ElementLines(eletype,distype);
+          if (linedef!=NULL)
           {
+            if (not linedef->Read(t))
+              dserror("failed to read element %d %s %s",elenumber,eletype.c_str(),distype.c_str());
+            linedef->Print(std::cout);
+            std::cout << "\n";
           }
+#endif
+
+          elenumber -= 1;
 
           // Set the current row to the empty slot after the file rows
           // and store the current line. This way the elements can use

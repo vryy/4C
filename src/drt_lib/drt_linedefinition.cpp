@@ -95,6 +95,27 @@ namespace INPUT
     std::vector<type> values_;
   };
 
+  /// line component to describe a vector of values without a (visible) string
+  template <class type>
+  class UnnamedVectorComponent : public NamedVectorComponent<type>
+  {
+  public:
+    UnnamedVectorComponent(std::string name, int length)
+      : NamedVectorComponent<type>(name, length) {}
+
+    UnnamedVectorComponent(std::string name, const std::vector<type>& values)
+      : NamedVectorComponent<type>(name, values) {}
+
+    virtual LineComponent* Clone() { return new UnnamedVectorComponent<type>(this->name_,this->values_); }
+
+    virtual void Print(std::ostream& stream)
+    {
+      std::copy(this->values_.begin(), this->values_.end(), std::ostream_iterator<type>(stream, " "));
+    }
+
+    virtual bool Read(LineDefinition& definition, std::istream& stream);
+  };
+
   /// line component to describe a string followed by a vector of values with
   /// arbitrary length
   template <class type>
@@ -199,6 +220,20 @@ bool DRT::INPUT::NamedVectorComponent<type>::Read(DRT::INPUT::LineDefinition& de
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <class type>
+bool DRT::INPUT::UnnamedVectorComponent<type>::Read(DRT::INPUT::LineDefinition& definition, std::istream& stream)
+{
+  for (unsigned i=0; i<this->values_.size(); ++i)
+  {
+    stream >> this->values_[i];
+  }
+
+  return stream;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+template <class type>
 bool DRT::INPUT::NamedVariableVectorComponent<type>::Read(DRT::INPUT::LineDefinition& definition, std::istream& stream)
 {
   // Find expexted vector on line. It has to be read already!
@@ -290,6 +325,15 @@ DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddInt(std::string name)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddDoubleVector(std::string name, int length)
+{
+  components_.push_back(new UnnamedVectorComponent<double>(name,length));
+  return *this;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddNamedString(std::string name)
 {
   components_.push_back(new NamedComponent<std::string>(name,"''"));
@@ -346,7 +390,6 @@ DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddNamedDoubleVector(std
 /*----------------------------------------------------------------------*/
 void DRT::INPUT::LineDefinition::Print(std::ostream& stream)
 {
-  stream << "// ";
   for (unsigned i=0; i<components_.size(); ++i)
   {
     components_[i]->Print(stream);
@@ -464,7 +507,7 @@ DRT::INPUT::LineComponent* DRT::INPUT::LineDefinition::FindNamed(std::string nam
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::INPUT::Lines::Print(std::ostream& stream, bool sectionhead)
+void DRT::INPUT::Lines::Print(std::ostream& stream)
 {
   std::string blue2light = "";
   std::string bluelight = "";
@@ -474,16 +517,14 @@ void DRT::INPUT::Lines::Print(std::ostream& stream, bool sectionhead)
   std::string magentalight = "";
   std::string endcolor = "";
 
-  if (sectionhead)
-  {
-    unsigned l = sectionname_.length();
-    stream << redlight << "--";
-    for (int i=0; i<std::max<int>(65-l,0); ++i) stream << '-';
-    stream << greenlight << sectionname_ << endcolor << '\n';
-  }
+  unsigned l = sectionname_.length();
+  stream << redlight << "--";
+  for (int i=0; i<std::max<int>(65-l,0); ++i) stream << '-';
+  stream << greenlight << sectionname_ << endcolor << '\n';
 
   for (unsigned i=0; i<definitions_.size(); ++i)
   {
+    stream << "// ";
     definitions_[i].Print(stream);
     stream << '\n';
   }

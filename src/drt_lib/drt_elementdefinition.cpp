@@ -1,7 +1,6 @@
 #ifdef CCADISCRET
 
 #include "drt_elementdefinition.H"
-#include "drt_linedefinition.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -89,7 +88,15 @@ void DRT::INPUT::ElementDefinition::PrintSectionHeader(std::ostream& stream, std
 void DRT::INPUT::ElementDefinition::PrintElementLines(std::ostream& stream, std::string name)
 {
   if (definitions_.find(name)!=definitions_.end())
-    definitions_[name]->Print(stream,false);
+  {
+    std::map<std::string,LineDefinition>& defs = definitions_[name];
+    for (std::map<std::string,LineDefinition>::iterator i=defs.begin(); i!=defs.end(); ++i)
+    {
+      stream << "// 0 " << name << " " << i->first << " ";
+      i->second.Print(stream);
+      stream << '\n';
+    }
+  }
   else
     stream << "no element type '" << name << "' defined\n";
 }
@@ -106,11 +113,20 @@ void DRT::INPUT::ElementDefinition::SetupValidElementLines()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::INPUT::Lines> DRT::INPUT::ElementDefinition::ElementLines(std::string name)
+DRT::INPUT::LineDefinition* DRT::INPUT::ElementDefinition::ElementLines(std::string name, std::string distype)
 {
-  if (definitions_.find(name)!=definitions_.end())
-    return definitions_[name];
-  return Teuchos::null;
+  // This is ugly. But we want to access both maps just once.
+  std::map<std::string,std::map<std::string,LineDefinition> >::iterator j = definitions_.find(name);
+  if (j!=definitions_.end())
+  {
+    std::map<std::string,LineDefinition>& defs = j->second;
+    std::map<std::string,LineDefinition>::iterator i = defs.find(distype);
+    if (i!=defs.end())
+    {
+      return &i->second;
+    }
+  }
+  return NULL;
 }
 
 
@@ -118,118 +134,97 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::INPUT::ElementDefinition::ElementLines(std:
 /*----------------------------------------------------------------------*/
 void DRT::INPUT::ElementDefinition::SetupFluid3Lines()
 {
-  DRT::INPUT::LineDefinition fluid3_hex8;
-  fluid3_hex8
-    .AddInt("ID")
-    .AddTag("FLUID3")
-    .AddNamedDoubleVector("HEX8",8)
+  std::map<std::string,LineDefinition>& defs = definitions_["FLUID3"];
+
+  defs["HEX8"]
+//     .AddInt("ID")
+//     .AddTag("FLUID3")
+    .AddDoubleVector("HEX8",8)
     .AddNamedInt("MAT")
     .AddNamedString("NA")
     .AddNamedIntVector("GP",3)
     .AddNamedString("CA")
     ;
 
-  DRT::INPUT::LineDefinition fluid3_hex20;
-  fluid3_hex20
-    .AddInt("ID")
-    .AddTag("FLUID3")
-    .AddNamedDoubleVector("HEX20",20)
+  defs["HEX20"]
+//     .AddInt("ID")
+//     .AddTag("FLUID3")
+    .AddDoubleVector("HEX20",20)
     .AddNamedInt("MAT")
     .AddNamedString("NA")
     .AddNamedIntVector("GP",3)
     .AddNamedString("CA")
     ;
 
-  DRT::INPUT::LineDefinition fluid3_hex27;
-  fluid3_hex27
-    .AddInt("ID")
-    .AddTag("FLUID3")
-    .AddNamedDoubleVector("HEX27",27)
+  defs["HEX27"]
+//     .AddInt("ID")
+//     .AddTag("FLUID3")
+    .AddDoubleVector("HEX27",27)
     .AddNamedInt("MAT")
     .AddNamedString("NA")
     .AddNamedIntVector("GP",3)
     .AddNamedString("CA")
     ;
 
-  DRT::INPUT::LineDefinition fluid3_tet4;
-  fluid3_tet4
-    .AddInt("ID")
-    .AddTag("FLUID3")
-    .AddNamedDoubleVector("TET4",4)
+  defs["TET4"]
+//     .AddInt("ID")
+//     .AddTag("FLUID3")
+    .AddDoubleVector("TET4",4)
     .AddNamedInt("MAT")
     .AddNamedString("NA")
     .AddNamedInt("GP_TET")
     .AddNamedString("GP_ALT")
     ;
 
-  DRT::INPUT::LineDefinition fluid3_tet10;
-  fluid3_tet10
-    .AddInt("ID")
-    .AddTag("FLUID3")
-    .AddNamedDoubleVector("TET10",10)
+  defs["TET10"]
+//     .AddInt("ID")
+//     .AddTag("FLUID3")
+    .AddDoubleVector("TET10",10)
     .AddNamedInt("MAT")
     .AddNamedString("NA")
     .AddNamedInt("GP_TET")
     .AddNamedString("GP_ALT")
     ;
 
-  DRT::INPUT::LineDefinition fluid3_wedge6;
-  fluid3_wedge6
-    .AddInt("ID")
-    .AddTag("FLUID3")
-    .AddNamedDoubleVector("WEDGE6",6)
+  defs["WEDGE6"]
+//     .AddInt("ID")
+//     .AddTag("FLUID3")
+    .AddDoubleVector("WEDGE6",6)
     .AddNamedInt("MAT")
     .AddNamedString("NA")
     ;
 
-  DRT::INPUT::LineDefinition fluid3_wedge15;
-  fluid3_wedge15
-    .AddInt("ID")
-    .AddTag("FLUID3")
-    .AddNamedDoubleVector("WEDGE15",15)
+  defs["WEDGE15"]
+//     .AddInt("ID")
+//     .AddTag("FLUID3")
+    .AddDoubleVector("WEDGE15",15)
     .AddNamedInt("MAT")
     .AddNamedString("NA")
     ;
 
-  DRT::INPUT::LineDefinition fluid3_pyramid5;
-  fluid3_pyramid5
-    .AddInt("ID")
-    .AddTag("FLUID3")
-    .AddNamedDoubleVector("PYRAMID5",5)
+  defs["PYRAMID5"]
+//     .AddInt("ID")
+//     .AddTag("FLUID3")
+    .AddDoubleVector("PYRAMID5",5)
     .AddNamedInt("MAT")
     .AddNamedString("NA")
     ;
 
-  DRT::INPUT::LineDefinition fluid3_nurbs8;
-  fluid3_nurbs8
-    .AddInt("ID")
-    .AddTag("FLUID3")
-    .AddNamedDoubleVector("NURBS8",8)
+  defs["NURBS8"]
+//     .AddInt("ID")
+//     .AddTag("FLUID3")
+    .AddDoubleVector("NURBS8",8)
     .AddNamedInt("MAT")
     .AddNamedString("NA")
     ;
 
-  DRT::INPUT::LineDefinition fluid3_nurbs27;
-  fluid3_nurbs27
-    .AddInt("ID")
-    .AddTag("FLUID3")
-    .AddNamedDoubleVector("NURBS27",27)
+  defs["NURBS27"]
+//     .AddInt("ID")
+//     .AddTag("FLUID3")
+    .AddDoubleVector("NURBS27",27)
     .AddNamedInt("MAT")
     .AddNamedString("NA")
     ;
-
-  Teuchos::RCP<DRT::INPUT::Lines> lines = Teuchos::rcp(new DRT::INPUT::Lines("FLUID3"));
-  lines->Add(fluid3_hex8);
-  lines->Add(fluid3_hex20);
-  lines->Add(fluid3_hex27);
-  lines->Add(fluid3_tet4);
-  lines->Add(fluid3_tet10);
-  lines->Add(fluid3_wedge6);
-  lines->Add(fluid3_wedge15);
-  lines->Add(fluid3_pyramid5);
-  lines->Add(fluid3_nurbs8);
-  lines->Add(fluid3_nurbs27);
-  definitions_["FLUID3"] = lines;
 }
 
 
@@ -237,11 +232,13 @@ void DRT::INPUT::ElementDefinition::SetupFluid3Lines()
 /*----------------------------------------------------------------------*/
 void DRT::INPUT::ElementDefinition::SetupSolidH8Lines()
 {
-  DRT::INPUT::LineDefinition solid8_a;
-  solid8_a
-    .AddInt("ID")
-    .AddTag("SOLIDH8")
-    .AddNamedDoubleVector("HEX8",8)
+  std::map<std::string,LineDefinition>& defs = definitions_["SOLIDH8"];
+
+#if 0
+  defs["HEX8"]
+//     .AddInt("ID")
+//     .AddTag("SOLIDH8")
+    .AddDoubleVector("HEX8",8)
     .AddNamedInt("MAT")
     .AddNamedIntVector("GP",3)
     .AddNamedInt("GP_TET")
@@ -250,20 +247,16 @@ void DRT::INPUT::ElementDefinition::SetupSolidH8Lines()
     .AddNamedString("STRESSES")
     .AddNamedString("TSI_COUPTYP")
     ;
+#endif
 
-  DRT::INPUT::LineDefinition solid8_b;
-  solid8_b
-    .AddInt("ID")
-    .AddTag("SOLIDH8")
-    .AddNamedDoubleVector("HEX8",8)
+  defs["HEX8"]
+//     .AddInt("ID")
+//     .AddTag("SOLIDH8")
+    .AddDoubleVector("HEX8",8)
     .AddNamedInt("MAT")
     .AddNamedString("EAS")
     ;
 
-  Teuchos::RCP<DRT::INPUT::Lines> lines = Teuchos::rcp(new DRT::INPUT::Lines("SOLIDH8"));
-  lines->Add(solid8_a);
-  lines->Add(solid8_b);
-  definitions_["SOLIDH8"] = lines;
 }
 
 

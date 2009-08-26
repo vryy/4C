@@ -12,6 +12,8 @@
 
 #include <Teuchos_RCP.hpp>
 
+#include "drt_linedefinition.H"
+
 namespace DRT
 {
 namespace INPUT
@@ -34,7 +36,7 @@ namespace INPUT
     void PrintElementLines(std::ostream& stream, std::string name);
 
     /// return line definitions for given element type
-    Teuchos::RCP<Lines> ElementLines(std::string name);
+    DRT::INPUT::LineDefinition* ElementLines(std::string name, std::string distype);
 
   private:
 
@@ -46,7 +48,7 @@ namespace INPUT
     //@}
 
     /// input line definitions per element type
-    std::map<std::string,Teuchos::RCP<Lines> > definitions_;
+    std::map<std::string,std::map<std::string,LineDefinition> > definitions_;
   };
 
 }

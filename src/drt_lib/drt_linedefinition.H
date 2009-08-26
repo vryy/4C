@@ -77,6 +77,9 @@ namespace INPUT
     /// add a single integer variable
     LineDefinition& AddInt(std::string name);
 
+    /// add a vector of double variables
+    LineDefinition& AddDoubleVector(std::string name, int length);
+
     /// add a name followed by a variable string
     LineDefinition& AddNamedString(std::string name);
 
@@ -171,7 +174,7 @@ namespace INPUT
     void Add(const LineDefinition& ld) { definitions_.push_back(ld); }
 
     /// print all LineDefinitions as dat file comment
-    void Print(std::ostream& stream, bool sectionhead=true);
+    void Print(std::ostream& stream);
 
     /// read section and return one LineDefinition per line read
     std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition> >
