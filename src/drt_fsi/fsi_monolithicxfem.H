@@ -26,6 +26,15 @@
 namespace FSI
 {
 
+  class MonolithicXFEMExtractor : public LINALG::MultiMapExtractor
+  {
+  public:
+
+    MAP_EXTRACTOR_VECTOR_METHODS(Structure,0)
+    MAP_EXTRACTOR_VECTOR_METHODS(Fluid,    1)
+
+  };
+
   /// base class for monolithic FSI with xfem
   class MonolithicBaseXFEM : public ADAPTER::AlgorithmBase,
                              public ADAPTER::StructureBaseAlgorithm
@@ -78,11 +87,13 @@ namespace FSI
   private:
 
     void Newton();
-    void Evaluate(Teuchos::RCP<const Epetra_Map> fullmap);
+    void Evaluate();
     void SetupRHS();
     bool ConverganceTest();
     void SetupSystemMatrix();
     void LinearSolve();
+
+    Teuchos::RCP<MonolithicXFEMExtractor> extractor_;
 
     Teuchos::RCP<Epetra_Vector> rhs_;
     Teuchos::RCP<Epetra_Vector> x_;

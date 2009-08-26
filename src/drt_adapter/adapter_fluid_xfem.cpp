@@ -101,7 +101,7 @@ Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::FluidXFEM::SystemMatrix()
 /*----------------------------------------------------------------------*/
 std::map<std::string,Teuchos::RCP<LINALG::SparseMatrix> > ADAPTER::FluidXFEM::CouplingMatrices()
 {
-  return FluidField().CouplingMatrices();
+  return XFluidField().CouplingMatrices();
 }
 
 

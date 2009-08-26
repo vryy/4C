@@ -119,9 +119,6 @@ namespace ADAPTER {
     virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() = 0;
 
     /// direct access to system matrix
-    virtual map<std::string, Teuchos::RCP<LINALG::SparseMatrix> > CouplingMatrices() = 0;
-
-    /// direct access to system matrix
     virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() = 0;
 
     /// linearization of Navier-Stokes with respect to mesh movement

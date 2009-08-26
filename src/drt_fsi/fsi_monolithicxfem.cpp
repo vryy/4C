@@ -143,16 +143,12 @@ void FSI::MonolithicXFEM::Newton()
 {
   cout << "FSI::MonolithicXFEM::Newton()" << endl;
 
-  Teuchos::RCP<const Epetra_Map> structuremap = StructureField().DofRowMap();
-  vector<Teuchos::RCP<const Epetra_Map> > maps;
-  maps.push_back(structuremap);
-
-
-  Teuchos::RCP<const Epetra_Map> fullmap = LINALG::MultiMapExtractor::MergeMaps(maps);
+  x_ = Teuchos::null;
+  matrix_ = Teuchos::null;
 
   for (;;)
   {
-    Evaluate(fullmap);
+    Evaluate();
 
     SetupRHS();
 
@@ -172,26 +168,40 @@ void FSI::MonolithicXFEM::Newton()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicXFEM::Evaluate(Teuchos::RCP<const Epetra_Map> fullmapold)
+void FSI::MonolithicXFEM::Evaluate()
 {
   // take current increment and setup linear system
   cout << "FSI::MonolithicXFEM::Evaluate" << endl;
 
-  // extract structure displacement
-//  Teuchos::RCP<Epetra_Vector> sx = Extract...
-//  StructureField().Evaluate(sx);
+  if (x_!=Teuchos::null)
+  {
+    // extract structure displacement
+    //Teuchos::RCP<Epetra_Vector> sx = extractor_->ExtractVector(x_,0);
+    Teuchos::RCP<Epetra_Vector> sx = extractor_->ExtractStructureVector(x_);
 
-//  Teuchos::RCP<Epetra_Vector> fx = Extract...
-  FluidField().Evaluate(null);
+    // expects x^{n+1}_{i+1}
+    StructureField().Evaluate(sx);
+
+    Teuchos::RCP<Epetra_Vector> fx = extractor_->ExtractFluidVector(x_);
+
+    // expects \Delta x^{n+1}_{i+1} ???
+    FluidField().Evaluate(fx);
+  }
+  else
+  {
+    StructureField().Evaluate(Teuchos::null);
+    FluidField().Evaluate(Teuchos::null);
+  }
 
 
-
+  // setup global (full monolithic) map
   std::vector<Teuchos::RCP<const Epetra_Map> > maps;
   maps.push_back(StructureField().DofRowMap());
   maps.push_back(FluidField().DofRowMap());
   Teuchos::RCP<Epetra_Map> fullmapnew = LINALG::MultiMapExtractor::MergeMaps(maps);
 
-
+  extractor_ = rcp(new MonolithicXFEMExtractor);
+  extractor_->Setup(*fullmapnew,maps);
 }
 
 
@@ -200,17 +210,13 @@ void FSI::MonolithicXFEM::Evaluate(Teuchos::RCP<const Epetra_Map> fullmapold)
 void FSI::MonolithicXFEM::SetupRHS()
 {
   // get rhs from fields
-  // setup global (full monolithic) map
-  std::vector<Teuchos::RCP<const Epetra_Map> > maps;
-  maps.push_back(StructureField().DofRowMap());
-  maps.push_back(FluidField().DofRowMap());
-  Teuchos::RCP<Epetra_Map> fullmap = LINALG::MultiMapExtractor::MergeMaps(maps);
 
   // create full monolithic rhs vector
-  rhs_ = rcp(new Epetra_Vector(*fullmap, false));
-
   Teuchos::RCP<const Epetra_Vector> srhs = StructureField().RHS();
   Teuchos::RCP<const Epetra_Vector> frhs = FluidField().RHS();
+
+  rhs_ = extractor_->InsertStructureVector(srhs);
+  extractor_->InsertFluidVector(frhs,rhs_);
 }
 
 
@@ -245,6 +251,21 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
 
   cout << *Cdd << endl;
 
+  matrix_ = rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(*extractor_,*extractor_));
+
+  matrix_->Assign(0,0,View,*s);
+  matrix_->Assign(1,1,View,*f);
+
+  //matrix_->Assign(0,1,View,*Mud);
+  //matrix_->Assign(1,0,View,*Mdu);
+
+  matrix_->Matrix(0,1).Add(*Mud,false,1.0,0.0);
+  matrix_->Matrix(1,0).Add(*Mdu,false,1.0,0.0);
+
+  matrix_->Matrix(0,0).Add(*Cdd,false,1.0,1.0);
+
+  matrix_->Complete();
+
   exit(0);
 
 }
@@ -257,8 +278,20 @@ void FSI::MonolithicXFEM::LinearSolve()
   // get initial guess from fields
   // solve linear system
 
-  Teuchos::RCP<const Epetra_Vector> sx = StructureField().InitialGuess();
+  // x^{n+1}_{0} = x^{n}
+  //
+  // Newton increment \Delta x^{n+1}_{i+1} = x^{n+1}_{i+1} - x^{n+1}_{i}
+
+  //Teuchos::RCP<const Epetra_Vector> sx = StructureField().InitialGuess();
   //Teuchos::RCP<const Epetra_Vector> fx = FluidField().InitialGuess();
+
+  //x_ = rcp(new Epetra_Vector(*extractor_->FullMap()));
+
+  x_ = extractor_->InsertStructureVector(StructureField().InitialGuess());
+
+  Teuchos::RCP<LINALG::SparseMatrix> m = matrix_->Merge();
+
+  // get UMFPACK...
 }
 
 
