@@ -4,6 +4,7 @@
 #include "drt_elementreader.H"
 #include "standardtypes_cpp.H"
 #include "drt_utils.H"
+#include "drt_elementdefinition.H"
 
 #include <Epetra_Time.h>
 
@@ -185,6 +186,9 @@ void ElementReader::Partition()
   int filecount=0;
   bool endofsection = false;
 
+  DRT::INPUT::ElementDefinition ed;
+  ed.SetupValidElementLines();
+
   // note that the last block is special....
   for (int block=0; block<nblock; ++block)
   {
@@ -212,6 +216,11 @@ void ElementReader::Partition()
           // read element id type and distype
           t >> elenumber >> eletype >> distype;
           elenumber -= 1;
+
+          Teuchos::RCP<DRT::INPUT::Lines> lines = ed.ElementLines(eletype);
+          if (lines!=Teuchos::null)
+          {
+          }
 
           // Set the current row to the empty slot after the file rows
           // and store the current line. This way the elements can use

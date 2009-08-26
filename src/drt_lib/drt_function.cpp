@@ -481,13 +481,13 @@ void DRT::UTILS::FunctionManager::ReadInput(const DRT::INPUT::DatFileReader& rea
       Teuchos::RCP<DRT::INPUT::LineDefinition> function = functions[0];
 
       int id;
-      function->ExtractNamedInt("FUNCT",id);
+      function->ExtractInt("FUNCT",id);
       if (id!=i) dserror("expected FUNCT%d but got FUNCT%d", i, id);
 
       if (function->HaveNamed("LINE_LIN"))
       {
         std::vector<double> tmp;
-        function->ExtractNamedDoubleVector("LINE_LIN",tmp);
+        function->ExtractDoubleVector("LINE_LIN",tmp);
 
         double x1[3];
         double x2[3];
@@ -517,7 +517,7 @@ void DRT::UTILS::FunctionManager::ReadInput(const DRT::INPUT::DatFileReader& rea
       else if (function->HaveNamed("LINE_QUAD"))
       {
         std::vector<double> tmp;
-        function->ExtractNamedDoubleVector("LINE_QUAD",tmp);
+        function->ExtractDoubleVector("LINE_QUAD",tmp);
 
         double x1[3];
         double x2[3];
@@ -541,7 +541,7 @@ void DRT::UTILS::FunctionManager::ReadInput(const DRT::INPUT::DatFileReader& rea
       else if (function->HaveNamed("RADIUS_LIN"))
       {
         std::vector<double> tmp;
-        function->ExtractNamedDoubleVector("RADIUS_LIN",tmp);
+        function->ExtractDoubleVector("RADIUS_LIN",tmp);
 
         double x1[3];
         double x2[3];
@@ -569,7 +569,7 @@ void DRT::UTILS::FunctionManager::ReadInput(const DRT::INPUT::DatFileReader& rea
       else if (function->HaveNamed("RADIUS_QUAD"))
       {
         std::vector<double> tmp;
-        function->ExtractNamedDoubleVector("RADIUS_QUAD",tmp);
+        function->ExtractDoubleVector("RADIUS_QUAD",tmp);
 
         double x1[3];
         double x2[3];
@@ -610,22 +610,22 @@ void DRT::UTILS::FunctionManager::ReadInput(const DRT::INPUT::DatFileReader& rea
         if (function->HaveNamed("Local"))
         {
           localcoordsystem = true;
-          function->ExtractNamedInt("Local",e);
+          function->ExtractInt("Local",e);
         }
 
         double radius = -1.0;
-        function->ExtractNamedDouble("Radius", radius);
+        function->ExtractDouble("Radius", radius);
         int mat = -1;
-        function->ExtractNamedInt("MAT",mat);
+        function->ExtractInt("MAT",mat);
         int curve = -1;
-        function->ExtractNamedInt("CURVE",curve);
+        function->ExtractInt("CURVE",curve);
 
         functions_.push_back(rcp(new WomersleyFunction(localcoordsystem,e-1,radius,mat,curve-1)));
       }
       else if (function->HaveNamed("CYLINDER_3D"))
       {
         double um;
-        function->ExtractNamedDouble("CYLINDER_3D", um);
+        function->ExtractDouble("CYLINDER_3D", um);
         double h = 0.41;
 
         // Keep it simple.
@@ -643,9 +643,9 @@ void DRT::UTILS::FunctionManager::ReadInput(const DRT::INPUT::DatFileReader& rea
         Teuchos::RCP<ExprFunction> vecfunc = rcp(new ExprFunction());
 
         std::vector<double> origin;
-        function->ExtractNamedDoubleVector("EXPR",origin);
+        function->ExtractDoubleVector("EXPR",origin);
         std::string component;
-        function->ExtractNamedString("FUNCTION",component);
+        function->ExtractString("FUNCTION",component);
 
         vecfunc->AddExpr(component,origin[0],origin[1],origin[2]);
         functions_.push_back(vecfunc);
@@ -661,14 +661,14 @@ void DRT::UTILS::FunctionManager::ReadInput(const DRT::INPUT::DatFileReader& rea
       for (unsigned j=0; j<functions.size(); ++j)
       {
         int id;
-        functions[j]->ExtractNamedInt("FUNCT",id);
+        functions[j]->ExtractInt("FUNCT",id);
         if (id!=i) dserror("expected FUNCT%d but got FUNCT%d", i, id);
 
         if (not functions[j]->HaveNamed("COMPONENT"))
           dserror("component based expression function expected");
 
         int dim;
-        functions[j]->ExtractNamedInt("COMPONENT", dim);
+        functions[j]->ExtractInt("COMPONENT", dim);
 
         if (dim!=static_cast<int>(j))
         {
@@ -677,9 +677,9 @@ void DRT::UTILS::FunctionManager::ReadInput(const DRT::INPUT::DatFileReader& rea
         }
 
         std::vector<double> origin;
-        functions[j]->ExtractNamedDoubleVector("EXPR",origin);
+        functions[j]->ExtractDoubleVector("EXPR",origin);
         std::string component;
-        functions[j]->ExtractNamedString("FUNCTION",component);
+        functions[j]->ExtractString("FUNCTION",component);
 
         vecfunc->AddExpr(component,origin[0],origin[1],origin[2]);
       }

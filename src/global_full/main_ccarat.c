@@ -17,6 +17,7 @@ Maintainer: Malte Neumann
 #include "../drt_inpar/drt_validmaterials.H"
 #include "../drt_lib/drt_function.H"
 #include "../drt_lib/drt_timecurve.H"
+#include "../drt_lib/drt_elementdefinition.H"
 
 #ifdef TRAP_FE
 
@@ -191,6 +192,7 @@ else if ((argc == 2) &&
     PrintDefaultDatHeader();
     PrintConditionDatHeader();
     PrintMaterialDatHeader();
+    PrintElementDatHeader();
     PrintFunctionDatHeader();
     PrintTimeCurveDatHeader();
     printf("\n\n");

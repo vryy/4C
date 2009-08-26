@@ -46,9 +46,24 @@ namespace INPUT
 
     type Value() const { return value_; }
 
-  private:
+  protected:
     std::string name_;
     type value_;
+  };
+
+  /// line component to describe some value without a (visible) string
+  template <class type>
+  class UnnamedComponent : public NamedComponent<type>
+  {
+  public:
+    UnnamedComponent(std::string name, type value)
+      : NamedComponent<type>(name,value) {}
+
+    virtual LineComponent* Clone() { return new UnnamedComponent(this->name_,this->value_); }
+
+    virtual void Print(std::ostream& stream) { stream << this->value_; }
+
+    virtual bool Read(LineDefinition& definition, std::istream& stream);
   };
 
   /// line component to describe a string followed by a vector of values
@@ -152,6 +167,16 @@ bool DRT::INPUT::NamedComponent<type>::Read(DRT::INPUT::LineDefinition& definiti
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <class type>
+bool DRT::INPUT::UnnamedComponent<type>::Read(DRT::INPUT::LineDefinition& definition, std::istream& stream)
+{
+  stream >> this->value_;
+  return stream;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+template <class type>
 bool DRT::INPUT::NamedVectorComponent<type>::Read(DRT::INPUT::LineDefinition& definition, std::istream& stream)
 {
   std::string name;
@@ -179,7 +204,7 @@ bool DRT::INPUT::NamedVariableVectorComponent<type>::Read(DRT::INPUT::LineDefini
   // Find expexted vector on line. It has to be read already!
 
   int length;
-  definition.ExtractNamedInt(lengthdef_,length);
+  definition.ExtractInt(lengthdef_,length);
   this->values_.resize(length);
 
   return NamedVectorComponent<type>::Read(definition,stream);
@@ -256,6 +281,15 @@ DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddTag(std::string name)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddInt(std::string name)
+{
+  components_.push_back(new UnnamedComponent<int>(name,0));
+  return *this;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddNamedString(std::string name)
 {
   components_.push_back(new NamedComponent<std::string>(name,"''"));
@@ -268,6 +302,15 @@ DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddNamedString(std::stri
 DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddNamedInt(std::string name)
 {
   components_.push_back(new NamedComponent<int>(name,0));
+  return *this;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddNamedIntVector(std::string name, int length)
+{
+  components_.push_back(new NamedVectorComponent<int>(name,length));
   return *this;
 }
 
@@ -337,7 +380,7 @@ bool DRT::INPUT::LineDefinition::HaveNamed(std::string name)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::INPUT::LineDefinition::ExtractNamedString(std::string name, std::string& value)
+void DRT::INPUT::LineDefinition::ExtractString(std::string name, std::string& value)
 {
   NamedComponent<std::string>* c = dynamic_cast<NamedComponent<std::string>*>(FindNamed(name));
   if (c!=NULL)
@@ -351,7 +394,7 @@ void DRT::INPUT::LineDefinition::ExtractNamedString(std::string name, std::strin
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::INPUT::LineDefinition::ExtractNamedInt(std::string name, int& value)
+void DRT::INPUT::LineDefinition::ExtractInt(std::string name, int& value)
 {
   NamedComponent<int>* c = dynamic_cast<NamedComponent<int>*>(FindNamed(name));
   if (c!=NULL)
@@ -365,7 +408,21 @@ void DRT::INPUT::LineDefinition::ExtractNamedInt(std::string name, int& value)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::INPUT::LineDefinition::ExtractNamedDouble(std::string name, double& value)
+void DRT::INPUT::LineDefinition::ExtractIntVector(std::string name, std::vector<int>& v)
+{
+  NamedVectorComponent<int>* c = dynamic_cast<NamedVectorComponent<int>*>(FindNamed(name));
+  if (c!=NULL)
+  {
+    v = c->Value();
+    return;
+  }
+  dserror("double vector '%s' not found", name.c_str());
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::INPUT::LineDefinition::ExtractDouble(std::string name, double& value)
 {
   NamedComponent<double>* c = dynamic_cast<NamedComponent<double>*>(FindNamed(name));
   if (c!=NULL)
@@ -379,7 +436,7 @@ void DRT::INPUT::LineDefinition::ExtractNamedDouble(std::string name, double& va
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::INPUT::LineDefinition::ExtractNamedDoubleVector(std::string name, std::vector<double>& v)
+void DRT::INPUT::LineDefinition::ExtractDoubleVector(std::string name, std::vector<double>& v)
 {
   NamedVectorComponent<double>* c = dynamic_cast<NamedVectorComponent<double>*>(FindNamed(name));
   if (c!=NULL)
@@ -407,7 +464,7 @@ DRT::INPUT::LineComponent* DRT::INPUT::LineDefinition::FindNamed(std::string nam
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::INPUT::Lines::Print(std::ostream& stream)
+void DRT::INPUT::Lines::Print(std::ostream& stream, bool sectionhead)
 {
   std::string blue2light = "";
   std::string bluelight = "";
@@ -417,10 +474,13 @@ void DRT::INPUT::Lines::Print(std::ostream& stream)
   std::string magentalight = "";
   std::string endcolor = "";
 
-  unsigned l = sectionname_.length();
-  stream << redlight << "--";
-  for (int i=0; i<std::max<int>(65-l,0); ++i) stream << '-';
-  stream << greenlight << sectionname_ << endcolor << '\n';
+  if (sectionhead)
+  {
+    unsigned l = sectionname_.length();
+    stream << redlight << "--";
+    for (int i=0; i<std::max<int>(65-l,0); ++i) stream << '-';
+    stream << greenlight << sectionname_ << endcolor << '\n';
+  }
 
   for (unsigned i=0; i<definitions_.size(); ++i)
   {

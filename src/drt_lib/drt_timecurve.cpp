@@ -443,22 +443,22 @@ void DRT::UTILS::TimeCurveManager::ReadInput(const DRT::INPUT::DatFileReader& re
     for (unsigned j=0; j<curves.size(); ++j)
     {
       int id;
-      curves[j]->ExtractNamedInt("CURVE",id);
+      curves[j]->ExtractInt("CURVE",id);
       if (id!=i) dserror("expected CURVE%d but got CURVE%d", i, id);
 
       if (curves[j]->HaveNamed("Polygonal"))
       {
         std::vector<double> byabstime;
-        curves[j]->ExtractNamedDoubleVector("Yes",byabstime);
+        curves[j]->ExtractDoubleVector("Yes",byabstime);
         std::vector<double> factor;
-        curves[j]->ExtractNamedDoubleVector("FACTOR",factor);
+        curves[j]->ExtractDoubleVector("FACTOR",factor);
         curve.AddSlice(rcp(new PolygonalTimeSlice(byabstime[0],byabstime[1],
                                                   factor[0],factor[1])));
       }
       else if (curves[j]->HaveNamed("Explicit"))
       {
         std::string buffer;
-        curves[j]->ExtractNamedString("FUNC",buffer);
+        curves[j]->ExtractString("FUNC",buffer);
 
         int numex = 0;
         if (string(buffer)=="f(t)=sin(t:C1*PI:2)_for_t<_C1_else_f(t)=1")
@@ -488,21 +488,21 @@ void DRT::UTILS::TimeCurveManager::ReadInput(const DRT::INPUT::DatFileReader& re
 
         double c1;
         double c2;
-        curves[j]->ExtractNamedDouble("c1",c1);
-        curves[j]->ExtractNamedDouble("c2",c2);
+        curves[j]->ExtractDouble("c1",c1);
+        curves[j]->ExtractDouble("c2",c2);
 
         curve.AddSlice(rcp(new ExplicitTimeSlice(numex,c1,c2)));
       }
       else if (curves[j]->HaveNamed("EXPR"))
       {
         std::string buffer;
-        curves[j]->ExtractNamedString("FUNC",buffer);
+        curves[j]->ExtractString("FUNC",buffer);
 
         double begin;
         double end;
 
-        curves[j]->ExtractNamedDouble("t1",begin);
-        curves[j]->ExtractNamedDouble("t2",end);
+        curves[j]->ExtractDouble("t1",begin);
+        curves[j]->ExtractDouble("t2",end);
 
         curve.AddSlice(rcp(new ExprTimeSlice(begin, end, buffer)));
       }
@@ -512,9 +512,9 @@ void DRT::UTILS::TimeCurveManager::ReadInput(const DRT::INPUT::DatFileReader& re
         double ppeep;
         double phase;
 
-        curves[j]->ExtractNamedDouble("Frequ",frequ);
-        curves[j]->ExtractNamedDouble("pPEEP",ppeep);
-        curves[j]->ExtractNamedDouble("Phase",phase);
+        curves[j]->ExtractDouble("Frequ",frequ);
+        curves[j]->ExtractDouble("pPEEP",ppeep);
+        curves[j]->ExtractDouble("Phase",phase);
 
         curve.AddSlice(rcp(new LungTimeSlice(frequ, ppeep, phase)));
       }
@@ -525,10 +525,10 @@ void DRT::UTILS::TimeCurveManager::ReadInput(const DRT::INPUT::DatFileReader& re
         int points;
         std::vector<double> ArrayLength;
 
-        curves[j]->ExtractNamedDouble("Period",period);
-        curves[j]->ExtractNamedDouble("Flowrate",flowrate);
-        curves[j]->ExtractNamedInt("Samplingpoints",points);
-        curves[j]->ExtractNamedDoubleVector("ArrayLength",ArrayLength);
+        curves[j]->ExtractDouble("Period",period);
+        curves[j]->ExtractDouble("Flowrate",flowrate);
+        curves[j]->ExtractInt("Samplingpoints",points);
+        curves[j]->ExtractDoubleVector("ArrayLength",ArrayLength);
 
         curve.AddSlice(rcp(new BloodTimeSlice(period, flowrate, points, ArrayLength)));
       }

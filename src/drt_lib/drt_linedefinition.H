@@ -74,11 +74,17 @@ namespace INPUT
     /// add a single string definition
     LineDefinition& AddTag(std::string name);
 
+    /// add a single integer variable
+    LineDefinition& AddInt(std::string name);
+
     /// add a name followed by a variable string
     LineDefinition& AddNamedString(std::string name);
 
     /// add a name followed by an integer variable
     LineDefinition& AddNamedInt(std::string name);
+
+    /// add a name followed by a vector of integer variables
+    LineDefinition& AddNamedIntVector(std::string name, int length);
 
     /// add a name followed by a double variable
     LineDefinition& AddNamedDouble(std::string name);
@@ -114,10 +120,11 @@ namespace INPUT
     /// @name Extract values from read LineDefinition
     /// There has to be a named component of the given type
 
-    void ExtractNamedString(std::string name, std::string& value);
-    void ExtractNamedInt(std::string name, int& value);
-    void ExtractNamedDouble(std::string name, double& value);
-    void ExtractNamedDoubleVector(std::string name, std::vector<double>& v);
+    void ExtractString(std::string name, std::string& value);
+    void ExtractInt(std::string name, int& value);
+    void ExtractIntVector(std::string name, std::vector<int>& v);
+    void ExtractDouble(std::string name, double& value);
+    void ExtractDoubleVector(std::string name, std::vector<double>& v);
 
     //@}
 
@@ -164,7 +171,7 @@ namespace INPUT
     void Add(const LineDefinition& ld) { definitions_.push_back(ld); }
 
     /// print all LineDefinitions as dat file comment
-    void Print(std::ostream& stream);
+    void Print(std::ostream& stream, bool sectionhead=true);
 
     /// read section and return one LineDefinition per line read
     std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition> >
