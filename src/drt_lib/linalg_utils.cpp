@@ -1653,11 +1653,6 @@ int LINALG::FindMyPos(int nummyelements, const Epetra_Comm& comm)
 /*----------------------------------------------------------------------*/
 void LINALG::AllreduceEMap(vector<int>& rredundant, const Epetra_Map& emap)
 {
-#ifdef DEBUG
-  if (not emap.UniqueGIDs())
-    dserror("works only for unique Epetra_Maps");
-#endif
-
   const int mynodepos = FindMyPos(emap.NumMyElements(), emap.Comm());
 
   std::vector<int> sredundant(emap.NumGlobalElements(),0);
@@ -1695,6 +1690,10 @@ void LINALG::AllreduceEMap(map<int,int>& idxmap, const Epetra_Map& emap)
  *----------------------------------------------------------------------*/
 RCP<Epetra_Map> LINALG::AllreduceEMap(const Epetra_Map& emap, const int pid)
 {
+#ifdef DEBUG
+  if (not emap.UniqueGIDs())
+    dserror("works only for unique Epetra_Maps");
+#endif
   vector<int> rv;
   AllreduceEMap(rv,emap);
   RefCountPtr<Epetra_Map> rmap;
@@ -1722,6 +1721,10 @@ RCP<Epetra_Map> LINALG::AllreduceEMap(const Epetra_Map& emap, const int pid)
  *----------------------------------------------------------------------*/
 RCP<Epetra_Map> LINALG::AllreduceEMap(const Epetra_Map& emap)
 {
+#ifdef DEBUG
+  if (not emap.UniqueGIDs())
+    dserror("works only for unique Epetra_Maps");
+#endif
   vector<int> rv;
   AllreduceEMap(rv,emap);
   RefCountPtr<Epetra_Map> rmap;
@@ -1731,6 +1734,22 @@ RCP<Epetra_Map> LINALG::AllreduceEMap(const Epetra_Map& emap)
 
   return rmap;
 }
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+RCP<Epetra_Map> LINALG::AllreduceOverlappingEMap(const Epetra_Map& emap)
+{
+  std::vector<int> rv;
+  AllreduceEMap(rv,emap);
+
+  // remove duplicates
+  std::set<int> rs(rv.begin(),rv.end());
+  rv.assign(rs.begin(),rs.end());
+
+  return rcp(new Epetra_Map(-1,rv.size(),&rv[0],0,emap.Comm()));
+}
+
 
 /*----------------------------------------------------------------------*
  |  Send and receive lists of ints.  (heiner 09/07)                     |

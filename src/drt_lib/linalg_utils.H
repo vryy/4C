@@ -932,8 +932,7 @@ namespace LINALG
 
   /// Create an allreduced vector of gids from the given Epetra_Map
   /*!
-    We have nodes and elements with unique (tested in DEBUG mode)
-    but otherwise arbitrary global ids. On rare occasions, however,
+    We have nodes and elements arbitrary global ids. On rare occasions, however,
     we need to allreduce a particular map to one or more processors.
     This is a building block for such occasions. We allreduce the gids
     of the given Epetra_Map into a vector ordered by processor number.
@@ -1005,6 +1004,17 @@ namespace LINALG
     \date 04/08
    */
   RCP<Epetra_Map> AllreduceEMap(const Epetra_Map& emap);
+
+  /// Create an allreduced Epetra_Map from the given Epetra_Map
+  /// and give it to all processors.
+  /*!
+    Here, we have a overlapping source map and still want to have a fully
+    redundant map on all processors without duplicated entries.
+
+    \author u.kue
+    \date 08/09
+   */
+  RCP<Epetra_Map> AllreduceOverlappingEMap(const Epetra_Map& emap);
 
   /// find position of my map elements in a consecutive vector
   /*!

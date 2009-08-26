@@ -44,6 +44,7 @@ Maintainer: Michael Gee
 #include "drt_discret.H"
 #include "drt_exporter.H"
 #include "drt_dserror.H"
+#include "linalg_utils.H"
 
 
 
@@ -156,7 +157,6 @@ void DRT::Discretization::InitializeElements()
 void DRT::Discretization::BuildElementRegister()
 {
   const int myrank = Comm().MyPID();
-  const int numproc = Comm().NumProc();
 
   // clear any existing data in register
   elementregister_.clear();
@@ -166,10 +166,9 @@ void DRT::Discretization::BuildElementRegister()
   map<int,RefCountPtr<DRT::ParObject> > tmpmap;
 
   // loop my row elements and build local register
-  vector<int> mygid(500);
+  vector<int> mygid;
   map<int,RefCountPtr<DRT::Element> >::iterator fool;
   map<int,RefCountPtr<DRT::ParObject> >::iterator rcurr;
-  int nummygid=0;
   for (fool=element_.begin(); fool!=element_.end(); ++fool)
   {
     if (fool->second->Owner()!=myrank) continue;
@@ -178,32 +177,14 @@ void DRT::Discretization::BuildElementRegister()
     if (rcurr != tmpmap.end()) continue;
     RefCountPtr<DRT::ElementRegister> tmp = actele->ElementRegister();
     tmpmap[actele->Type()] = tmp;
-    if ((int)mygid.size()<=nummygid) mygid.resize(nummygid+100);
-    mygid[nummygid] = actele->Type();
-    ++nummygid;
+    mygid.push_back(actele->Type());
   }
 
   // build the source map
-  Epetra_Map sourcemap(-1,nummygid,&mygid[0],0,Comm());
+  Epetra_Map sourcemap(-1,mygid.size(),&mygid[0],0,Comm());
 
   // build redundant target map
-  int numglobalgid = sourcemap.NumGlobalElements();
-  vector<int> redgid(numglobalgid);
-  for (int i=0; i<numglobalgid; ++i) redgid[i] = 0;
-  int position=0;
-  for (int proc=0; proc<numproc; ++proc)
-  {
-    if (proc==myrank)
-    {
-      for (int i=0; i<nummygid; ++i)
-        redgid[position+i] = mygid[i];
-      position += nummygid;
-    }
-    Comm().Broadcast(&position,1,proc);
-  }
-  vector<int> recvredgid(numglobalgid);
-  Comm().SumAll(&redgid[0],&recvredgid[0],numglobalgid);
-  Epetra_Map targetmap(-1,numglobalgid,&recvredgid[0],0,Comm());
+  Epetra_Map targetmap = *LINALG::AllreduceOverlappingEMap(sourcemap);
 
   // create an exporter and export the tmpmap
   DRT::Exporter exporter(sourcemap,targetmap,Comm());
