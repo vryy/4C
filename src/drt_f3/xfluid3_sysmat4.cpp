@@ -754,7 +754,7 @@ void SysmatDomain4(
     static LINALG::Matrix<nsd,numnode> xyze;
     GEO::fillInitialPositionArray<DISTYPE>(ele, xyze);
 
-    // get older interface velocities and accelerations
+    // get interface velocities and accelerations
     const Epetra_Vector& ivelcolnp = *ih->cutterdis()->GetState("ivelcolnp");
     const Epetra_Vector& ivelcoln  = *ih->cutterdis()->GetState("ivelcoln");
     const Epetra_Vector& ivelcolnm = *ih->cutterdis()->GetState("ivelcolnm");
@@ -1292,7 +1292,6 @@ void SysmatBoundary4(
     const XFEM::ElementDofManager&    dofman,        ///< dofmanager of the current element
     const M1&                         evelnp,
     const M2&                         etau,
-    const Teuchos::RCP<const Epetra_Vector>& ivelcol,       ///< velocity for interface nodes
     const Teuchos::RCP<Epetra_Vector>& iforcecol,     ///< reaction force due to given interface velocity
     const FLUID_TIMEINTTYPE           timealgo,      ///< time discretization type
     const double&                     dt,            ///< delta t (time step size)
@@ -1315,6 +1314,9 @@ void SysmatBoundary4(
 #endif
     // time integration constant
     const double timefac = FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dt, theta);
+
+    // get interface velocities
+    Teuchos::RCP<const Epetra_Vector> ivelcolnp = ih->cutterdis()->GetState("ivelcolnp");
 
     // number of nodes for element
     const size_t numnode_xele = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
@@ -1363,7 +1365,7 @@ void SysmatBoundary4(
           for (std::size_t inode = 0; inode < numnode_boundary; ++inode)
           {
             ih->cutterdis()->Dof(nodes[inode],0,gdofs);
-            DRT::UTILS::ExtractMyValues(*ivelcol,myvel,gdofs);
+            DRT::UTILS::ExtractMyValues(*ivelcolnp,myvel,gdofs);
             vel_boundary(0,inode) = myvel[0];
             vel_boundary(1,inode) = myvel[1];
             vel_boundary(2,inode) = myvel[2];
@@ -1644,7 +1646,6 @@ void Sysmat4(
         const Teuchos::RCP<XFEM::InterfaceHandleXFSI>&  ih,   ///< connection to the interface handler
         const XFEM::ElementDofManager&    dofman,        ///< dofmanager of the current element
         const DRT::ELEMENTS::XFluid3::MyState&  mystate,  ///< element state variables
-        const Teuchos::RCP<const Epetra_Vector>& ivelcol,       ///< velocity for interface nodes
         const Teuchos::RCP<Epetra_Vector>& iforcecol,     ///< reaction force due to given interface velocity
         Epetra_SerialDenseMatrix&         estif,         ///< element matrix to calculate
         Epetra_SerialDenseVector&         eforce,        ///< element rhs to calculate
@@ -1692,7 +1693,7 @@ void Sysmat4(
     if (ih->ElementIntersected(ele->Id()))
     {
       SysmatBoundary4<DISTYPE,ASSTYPE,NUMDOF>(
-          ele, ih, dofman, evelnp, etau, ivelcol, iforcecol,
+          ele, ih, dofman, evelnp, etau, iforcecol,
           timealgo, dt, theta, assembler, ifaceForceContribution);
     }
 }
@@ -1706,7 +1707,6 @@ void XFLUID::callSysmat4(
         const Teuchos::RCP<XFEM::InterfaceHandleXFSI>&  ih,
         const XFEM::ElementDofManager&    eleDofManager,
         const DRT::ELEMENTS::XFluid3::MyState&  mystate,   ///< element state variables
-        const Teuchos::RCP<const Epetra_Vector>& ivelcol,
         const Teuchos::RCP<Epetra_Vector>&  iforcecol,     ///< reaction force due to given interface velocity
         Epetra_SerialDenseMatrix&         estif,
         Epetra_SerialDenseVector&         eforce,
@@ -1729,27 +1729,27 @@ void XFLUID::callSysmat4(
         {
             case DRT::Element::hex8:
                 Sysmat4<DRT::Element::hex8,XFEM::standard_assembly>(
-                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
+                        ele, ih, eleDofManager, mystate, iforcecol, estif, eforce,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, L2);
                 break;
             case DRT::Element::hex20:
                 Sysmat4<DRT::Element::hex20,XFEM::standard_assembly>(
-                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
+                        ele, ih, eleDofManager, mystate, iforcecol, estif, eforce,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, L2);
                 break;
             case DRT::Element::hex27:
                 Sysmat4<DRT::Element::hex27,XFEM::standard_assembly>(
-                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
+                        ele, ih, eleDofManager, mystate, iforcecol, estif, eforce,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, L2);
                 break;
             case DRT::Element::tet4:
                 Sysmat4<DRT::Element::tet4,XFEM::standard_assembly>(
-                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
+                        ele, ih, eleDofManager, mystate, iforcecol, estif, eforce,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, L2);
                 break;
             case DRT::Element::tet10:
                 Sysmat4<DRT::Element::tet10,XFEM::standard_assembly>(
-                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
+                        ele, ih, eleDofManager, mystate, iforcecol, estif, eforce,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, L2);
                 break;
             default:
@@ -1762,26 +1762,26 @@ void XFLUID::callSysmat4(
         {
             case DRT::Element::hex8:
                 Sysmat4<DRT::Element::hex8,XFEM::xfem_assembly>(
-                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
+                        ele, ih, eleDofManager, mystate, iforcecol, estif, eforce,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, L2);
                 break;
             case DRT::Element::hex20:
                 Sysmat4<DRT::Element::hex20,XFEM::xfem_assembly>(
-                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
+                        ele, ih, eleDofManager, mystate, iforcecol, estif, eforce,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, L2);
                 break;
             case DRT::Element::hex27:
                 Sysmat4<DRT::Element::hex27,XFEM::xfem_assembly>(
-                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
+                        ele, ih, eleDofManager, mystate, iforcecol, estif, eforce,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, L2);
                 break;
             case DRT::Element::tet4:
                 Sysmat4<DRT::Element::tet4,XFEM::xfem_assembly>(
-                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
+                        ele, ih, eleDofManager, mystate, iforcecol, estif, eforce,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, L2);
             case DRT::Element::tet10:
                 Sysmat4<DRT::Element::tet10,XFEM::xfem_assembly>(
-                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
+                        ele, ih, eleDofManager, mystate, iforcecol, estif, eforce,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, L2);
                 break;
             default:

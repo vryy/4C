@@ -62,7 +62,6 @@ namespace XFLUID
           const Teuchos::RCP<XFEM::InterfaceHandleXFSI>&  ih,
           const XFEM::ElementDofManager&    eleDofManager,
           const DRT::ELEMENTS::XFluid3::MyState&  mystate,   ///< element state variables
-          const Teuchos::RCP<const Epetra_Vector>& ivelcol,
           const Teuchos::RCP<Epetra_Vector>& iforcecol,     ///< reaction force due to given interface velocity
           Epetra_SerialDenseMatrix&         estif,
           Epetra_SerialDenseVector&         eforce,

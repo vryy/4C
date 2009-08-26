@@ -84,6 +84,18 @@ DRT::ELEMENTS::XFluid3::StabilisationAction DRT::ELEMENTS::XFluid3::ConvertStrin
   return act;
 }
 
+static void SanityChecks(
+    Teuchos::RCP<XFEM::ElementDofManager> eleDofManager,
+    Teuchos::RCP<XFEM::ElementDofManager> eleDofManager_uncondensed
+    )
+{
+  // sanity checks
+  if (eleDofManager->NumNodeDof() != eleDofManager_uncondensed->NumNodeDof())
+    dserror("NumNodeDof mismatch");
+  if (eleDofManager->NumElemDof() != 0)
+    dserror("NumElemDof not 0");
+}
+
 
  /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            g.bau 03/07|
@@ -98,8 +110,8 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
                                      Epetra_SerialDenseVector&)
 {
   // get the action required
-  const std::string action(params.get<std::string>("action"));
-  const DRT::ELEMENTS::XFluid3::ActionType act = convertStringToActionType(action);
+  const DRT::ELEMENTS::XFluid3::ActionType act =
+      convertStringToActionType(params.get<std::string>("action"));
 
   // get the material
   const Teuchos::RCP<MAT::Material> mat = Material();
@@ -110,13 +122,6 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 
   switch(act)
   {
-    case get_density:
-    {
-      // This is a very poor way to transport the density to the
-      // outside world. Is there a better one?
-      params.set("density", actmat->Density());
-      break;
-    }
     case reset:
     {
       // reset all information and make element unusable (e.g. it can't answer the numdof question anymore)
@@ -141,7 +146,6 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
     case store_xfem_info:
     {
       // after this part the element can answer, how many DOFs it has
-
       output_mode_ = false;
 
       // store pointer to interface handle
@@ -156,15 +160,15 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 
       // always build the eledofman that fits to the global dofs
       // problem: tight connectivity to xdofmapcreation
-      if (not params.get<bool>("DLM_condensation"))
-      {
-        // assume stress unknowns for the element
-        eleDofManager_ = rcp(new XFEM::ElementDofManager(*this, element_ansatz_filled, *globaldofman));
-      }
-      else
+      if (params.get<bool>("DLM_condensation"))
       {
         // assume no stress unknowns for the element
         eleDofManager_ = rcp(new XFEM::ElementDofManager(*this, element_ansatz_empty, *globaldofman));
+      }
+      else
+      {
+        // assume stress unknowns for the element
+        eleDofManager_ = rcp(new XFEM::ElementDofManager(*this, element_ansatz_filled, *globaldofman));
       }
 
       // create an eledofman that has stress unknowns only for intersected elements
@@ -239,23 +243,14 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 
         // calculate element coefficient matrix and rhs
         XFLUID::callSysmat4(assembly_type,
-                this, ih_, *eleDofManager_, mystate, ivelcol, iforcecol, elemat1, elevec1,
+                this, ih_, *eleDofManager_, mystate, iforcecol, elemat1, elevec1,
                 mat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution, L2);
 
       }
       else // create bigger element matrix and vector, assemble, condense and copy to small matrix provided by discretization
       {
         // sanity checks
-        if (eleDofManager_->NumNodeDof() != eleDofManager_uncondensed_->NumNodeDof())
-          dserror("NumNodeDof mismatch");
-        if (eleDofManager_->NumElemDof() != 0)
-          dserror("NumElemDof not 0");
-//            if (eleDofManager_uncondensed_->NumElemDof() == 0)
-//            {
-//              const double boundarysize = XFEM::BoundaryCoverageRatio(*this,*ih_);
-//              cout << "boundarysize = " << boundarysize << endl;
-////              dserror("NumElemDof uncondensed == 0");
-//            }
+        SanityChecks(eleDofManager_, eleDofManager_uncondensed_);
 
         // stress update
         UpdateOldDLMAndDLMRHS(discretization, lm, mystate);
@@ -270,46 +265,13 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 
         // calculate element coefficient matrix and rhs
         XFLUID::callSysmat4(assembly_type,
-                this, ih_, *eleDofManager_uncondensed_, mystate, ivelcol, iforcecol, elemat1_uncond, elevec1_uncond,
+                this, ih_, *eleDofManager_uncondensed_, mystate, iforcecol, elemat1_uncond, elevec1_uncond,
                 mat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution, L2);
 
         // condensation
         CondenseDLMAndStoreOldIterationStep(elemat1_uncond, elevec1_uncond, elemat1, elevec1);
       }
       params.set<double>("L2",L2);
-      break;
-    }
-    case calc_fluid_beltrami_error:
-    {
-      // add error only for elements which are not ghosted
-      if(this->Owner() == discretization.Comm().MyPID())
-      {
-        // need current velocity and history vector
-        RefCountPtr<const Epetra_Vector> vel_pre_np = discretization.GetState("u and p at time n+1 (converged)");
-        if (vel_pre_np==null)
-          dserror("Cannot get state vectors 'velnp'");
-
-        // extract local values from the global vectors
-        std::vector<double> my_vel_pre_np(lm.size());
-        DRT::UTILS::ExtractMyValues(*vel_pre_np,my_vel_pre_np,lm);
-
-        // split "my_vel_pre_np" into velocity part "myvelnp" and pressure part "myprenp"
-        const int numnode = NumNode();
-        vector<double> myprenp(numnode);
-        vector<double> myvelnp(3*numnode);
-
-        for (int i=0;i<numnode;++i)
-        {
-          myvelnp[0+(i*3)]=my_vel_pre_np[0+(i*4)];
-          myvelnp[1+(i*3)]=my_vel_pre_np[1+(i*4)];
-          myvelnp[2+(i*3)]=my_vel_pre_np[2+(i*4)];
-
-          myprenp[i]=my_vel_pre_np[3+(i*4)];
-        }
-
-        // integrate beltrami error
-        f3_int_beltrami_err(myvelnp,myprenp,mat,params);
-      }
       break;
     }
     case calc_fluid_stationary_systemmat_and_residual:
@@ -345,23 +307,14 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 
         // calculate element coefficient matrix and rhs
         XFLUID::callSysmat4(assembly_type,
-                this, ih_, *eleDofManager_, mystate, ivelcol, iforcecol, elemat1, elevec1,
+                this, ih_, *eleDofManager_, mystate, iforcecol, elemat1, elevec1,
                 mat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution, L2);
 
       }
       else // create bigger element matrix and vector, assemble, condense and copy to small matrix provided by discretization
       {
         // sanity checks
-        if (eleDofManager_->NumNodeDof() != eleDofManager_uncondensed_->NumNodeDof())
-          dserror("NumNodeDof mismatch");
-        if (eleDofManager_->NumElemDof() != 0)
-          dserror("NumElemDof not 0");
-//            if (eleDofManager_uncondensed_->NumElemDof() == 0)
-//            {
-//              const double boundarysize = XFEM::BoundaryCoverageRatio(*this,*ih_);
-//              cout << "boundarysize = " << boundarysize << endl;
-////              dserror("NumElemDof uncondensed == 0");
-//            }
+        SanityChecks(eleDofManager_, eleDofManager_uncondensed_);
 
         // stress update
         UpdateOldDLMAndDLMRHS(discretization, lm, mystate);
@@ -376,7 +329,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 
         // calculate element coefficient matrix and rhs
         XFLUID::callSysmat4(assembly_type,
-                this, ih_, *eleDofManager_uncondensed_, mystate, ivelcol, iforcecol, elemat1_uncond, elevec1_uncond,
+                this, ih_, *eleDofManager_uncondensed_, mystate, iforcecol, elemat1_uncond, elevec1_uncond,
                 mat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution, L2);
 
         // condensation
@@ -450,6 +403,13 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 #endif
       break;
     }
+    case get_density:
+    {
+      // This is a very poor way to transport the density to the
+      // outside world. Is there a better one?
+      params.set("density", actmat->Density());
+      break;
+    }
     case integrate_shape:
     {
       // do no calculation, if not needed
@@ -462,6 +422,39 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       // calculate element coefficient matrix and rhs
       integrateShapefunction(assembly_type, this, ih_, *eleDofManager_, elemat1, elevec1);
 
+      break;
+    }
+    case calc_fluid_beltrami_error:
+    {
+      // add error only for elements which are not ghosted
+      if(this->Owner() == discretization.Comm().MyPID())
+      {
+        // need current velocity and history vector
+        RefCountPtr<const Epetra_Vector> vel_pre_np = discretization.GetState("u and p at time n+1 (converged)");
+        if (vel_pre_np==null)
+          dserror("Cannot get state vectors 'velnp'");
+
+        // extract local values from the global vectors
+        std::vector<double> my_vel_pre_np(lm.size());
+        DRT::UTILS::ExtractMyValues(*vel_pre_np,my_vel_pre_np,lm);
+
+        // split "my_vel_pre_np" into velocity part "myvelnp" and pressure part "myprenp"
+        const int numnode = NumNode();
+        vector<double> myprenp(numnode);
+        vector<double> myvelnp(3*numnode);
+
+        for (int i=0;i<numnode;++i)
+        {
+          myvelnp[0+(i*3)]=my_vel_pre_np[0+(i*4)];
+          myvelnp[1+(i*3)]=my_vel_pre_np[1+(i*4)];
+          myvelnp[2+(i*3)]=my_vel_pre_np[2+(i*4)];
+
+          myprenp[i]=my_vel_pre_np[3+(i*4)];
+        }
+
+        // integrate beltrami error
+        f3_int_beltrami_err(myvelnp,myprenp,mat,params);
+      }
       break;
     }
     default:
@@ -873,9 +866,6 @@ void integrateShapefunctionT(
   // get node coordinates of the current element
   static LINALG::Matrix<nsd,numnode> xyze;
   GEO::fillInitialPositionArray<DISTYPE>(ele, xyze);
-
-  // flag for higher order elements
-  const bool higher_order_ele = XFLUID::secondDerivativesAvailable<DISTYPE>();
 
   // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
   const size_t numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
