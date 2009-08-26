@@ -25,6 +25,8 @@ Maintainer: Ulrich Kuettler
 #include "drt_function.H"
 #include "drt_globalproblem.H"
 #include "drt_inputreader.H"
+#include "drt_elementreader.H"
+#include "drt_nodereader.H"
 #include "drt_timecurve.H"
 #include "drt_utils.H"
 #include "../drt_mat/material.H"
