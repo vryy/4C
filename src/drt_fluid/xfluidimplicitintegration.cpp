@@ -584,7 +584,7 @@ void FLD::XFluidImplicitTimeInt::TransferDofInformationToElements(
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
+Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
     const Teuchos::RCP<DRT::Discretization>  cutterdiscret
     )
 {
@@ -742,7 +742,7 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   // Vectors used for solution process
   // ---------------------------------
   residual_     = LINALG::CreateVector(newdofrowmap,true);
-  trueresidual_ = Teuchos::null;
+  trueresidual_ = LINALG::CreateVector(newdofrowmap,true);
   incvel_       = LINALG::CreateVector(newdofrowmap,true);
 
 
@@ -840,6 +840,7 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
 
   cout0_ << "Setup phase done!" << endl;
 
+  return ih;
 }
 
 
@@ -1112,6 +1113,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       eleparams.set("DLM_condensation",xparams_.get<bool>("DLM_condensation"));
       eleparams.set("FAST_INTEGRATION",xparams_.get<bool>("FAST_INTEGRATION"));
       eleparams.set("boundaryRatioLimit",xparams_.get<double>("boundaryRatioLimit"));
+      eleparams.set("monolithic_FSI",false);
 
       // convergence check at itemax is skipped for speedup if
       // CONVCHECK is set to L_2_norm_without_residual_at_itemax
@@ -1411,20 +1413,37 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::XFluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
+void FLD::XFluidImplicitTimeInt::Evaluate(
+    const Teuchos::RCP<DRT::Discretization> cutterdiscret,
+    Teuchos::RCP<const Epetra_Vector> fluidvel)
 {
-  sysmat_->Zero();
-  dserror("no monolithic FSI tested, check first!");
+  cout << "FLD::XFluidImplicitTimeInt::Evaluate()" << endl;
 
-  // set the new solution we just got
-  if (vel!=Teuchos::null)
+  Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih = ComputeInterfaceAndSetDOFs(cutterdiscret);
+
+  PrepareNonlinearSolve();
+
+  const Epetra_Map& fluiddofrowmap = *discret_->DofRowMap();
+  const Epetra_Map& ifacedofrowmap = *cutterdiscret->DofRowMap();
+
+  Cuu_ = Teuchos::rcp(new LINALG::SparseMatrix(fluiddofrowmap,0,false,false));
+  Mud_ = Teuchos::rcp(new LINALG::SparseMatrix(fluiddofrowmap,0,false,false));
+  Mdu_ = Teuchos::rcp(new LINALG::SparseMatrix(ifacedofrowmap,0,false,false));
+  Cdd_ = Teuchos::rcp(new LINALG::SparseMatrix(ifacedofrowmap,0,false,false));
+
+  // action for elements
+  if (timealgo_!=timeint_stationary and theta_ < 1.0)
   {
-    // Take Dirichlet values from velnp and add vel to veln for non-Dirichlet
-    // values.
-    Teuchos::RCP<Epetra_Vector> aux = LINALG::CreateVector(*(discret_->DofRowMap()),true);
-    aux->Update(1.0, *state_.veln_, 1.0, *vel, 0.0);
-    dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(aux), state_.velnp_);
+    cout0_ << "* Warning! Works reliable only for Backward Euler time discretization! *" << endl;
   }
+
+  const Teuchos::RCP<Epetra_Vector> iforcecolnp = LINALG::CreateVector(*cutterdiscret->DofColMap(),true);
+
+  incvel_->PutScalar(0.0);
+
+  // increment of the old iteration step - used for update of condensed element stresses
+  const Teuchos::RCP<Epetra_Vector> oldinc = LINALG::CreateVector(*discret_->DofRowMap(),true);
+
 
   // add Neumann loads
   residual_->Update(1.0,*neumann_loads_,0.0);
@@ -1432,9 +1451,19 @@ void FLD::XFluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   // create the parameters for the discretization
   ParameterList eleparams;
 
+  // action for elements
+  if (timealgo_==timeint_stationary)
+    eleparams.set("action","calc_fluid_stationary_systemmat_and_residual");
+  else
+    eleparams.set("action","calc_fluid_systemmat_and_residual");
+
   // set general element parameters
-  eleparams.set("thsl",theta_*dta_);
+  //eleparams.set("total time",time_);
+  //eleparams.set("thsl",theta_*dta_);
+  eleparams.set("timealgo",timealgo_);
   eleparams.set("dt",dta_);
+  eleparams.set("theta",theta_);
+  eleparams.set("include reactive terms for linearisation",params_.get<bool>("Use reaction terms for linearisation"));
 
   // parameters for stabilization
   eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
@@ -1449,13 +1478,40 @@ void FLD::XFluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   discret_->SetState("velnm",state_.velnm_);
   discret_->SetState("accn" ,state_.accn_);
 
+  discret_->SetState("nodal increment",oldinc);
+
+  // reset interface force and let the elements fill it
+  eleparams.set("interface force",iforcecolnp);
+
+  double L2 = 0.0;
+  eleparams.set("L2",L2);
+
+  eleparams.set("DLM_condensation",xparams_.get<bool>("DLM_condensation"));
+  eleparams.set("FAST_INTEGRATION",xparams_.get<bool>("FAST_INTEGRATION"));
+  eleparams.set("boundaryRatioLimit",xparams_.get<double>("boundaryRatioLimit"));
+  eleparams.set<bool>("monolithic_FSI",true);
+
   // call loop over elements
-  discret_->Evaluate(eleparams,sysmat_,residual_);
+  //discret_->Evaluate(eleparams,sysmat_,residual_);
+  MonolithicMultiDisEvaluate(ih, discret_,cutterdiscret, eleparams,
+      Cuu_, Mud_, Mdu_, Cdd_, sysmat_, residual_);
   discret_->ClearState();
 
   // finalize the system matrix
   sysmat_->Complete();
+  cout << "doing Cuu_" << endl;
+  Cuu_->Complete(fluiddofrowmap, fluiddofrowmap);
+  cout << "doing Mud_" << endl;
+  Mud_->Complete(ifacedofrowmap, fluiddofrowmap);
+  cout << "doing Mdu_" << endl;
+  Mdu_->Complete(fluiddofrowmap, ifacedofrowmap);
+  cout << "doing Cdd_" << endl;
+  Cdd_->Complete(ifacedofrowmap, ifacedofrowmap);
 
+  // blank residual DOFs which are on Dirichlet BC
+  dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), residual_);
+  cout << *trueresidual_ << endl;
+  cout << *residual_ << endl;
   trueresidual_->Update(ResidualScaling(),*residual_,0.0);
 
   // Apply dirichlet boundary conditions to system of equations
@@ -1463,6 +1519,18 @@ void FLD::XFluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   // conditions
   incvel_->PutScalar(0.0);
   LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(dbcmaps_->CondMap()));
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+std::map<std::string, Teuchos::RCP<LINALG::SparseMatrix> > FLD::XFluidImplicitTimeInt::CouplingMatrices()
+{
+  std::map<std::string, Teuchos::RCP<LINALG::SparseMatrix> > matrices;
+  matrices.insert(make_pair("Mud",Mud_));
+  matrices.insert(make_pair("Mdu",Mdu_));
+  matrices.insert(make_pair("Cdd",Cdd_));
+  return matrices;
 }
 
 
@@ -2905,6 +2973,156 @@ void FLD::XFluidImplicitTimeInt::UseBlockMatrix(Teuchos::RCP<std::set<int> > con
     mat->SetCondElements(condelements);
     //shapederivatives_ = mat;
   }
+}
+
+static void AdaptElementMatrix(
+    const int&                dim1,
+    const int&                dim2,
+    Epetra_SerialDenseMatrix& elematrix
+    )
+{
+  if (elematrix.M()!=dim1 or elematrix.N()!=dim2)
+  {
+    elematrix.Shape(dim1,dim2);
+  }
+  else
+    memset(elematrix.A(),0,dim1*dim2*sizeof(double));
+}
+
+void FLD::XFluidImplicitTimeInt::MonolithicMultiDisEvaluate(
+    Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih,
+    const Teuchos::RCP<DRT::Discretization> fluiddis,
+    const Teuchos::RCP<DRT::Discretization> ifacedis,
+    Teuchos::ParameterList&                 params,
+    Teuchos::RCP<LINALG::SparseOperator>    Cuu,
+    Teuchos::RCP<LINALG::SparseOperator>    Mud,
+    Teuchos::RCP<LINALG::SparseOperator>    Mdu,
+    Teuchos::RCP<LINALG::SparseOperator>    Cdd,
+    Teuchos::RCP<LINALG::SparseOperator>    systemmatrix1,
+    Teuchos::RCP<Epetra_Vector>             systemvector1)
+{
+  TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluidImplicitTimeInt::MonolithicMultiDisEvaluate");
+
+  if (!fluiddis->Filled()) dserror("fluiddis->FillComplete() was not called");
+  if (!fluiddis->HaveDofs()) dserror("fluiddis->AssignDegreesOfFreedom() was not called");
+
+  if (!fluiddis->Filled()) dserror("fluiddis->FillComplete() was not called");
+  if (!fluiddis->HaveDofs()) dserror("fluiddis->AssignDegreesOfFreedom() was not called");
+
+  // define element matrices and vectors
+  RCP<Epetra_SerialDenseMatrix> elematrixCuu = rcp(new Epetra_SerialDenseMatrix());
+  RCP<Epetra_SerialDenseMatrix> elematrixMud = rcp(new Epetra_SerialDenseMatrix());
+  RCP<Epetra_SerialDenseMatrix> elematrixMdu = rcp(new Epetra_SerialDenseMatrix());
+  RCP<Epetra_SerialDenseMatrix> elematrixCdd = rcp(new Epetra_SerialDenseMatrix());
+  Epetra_SerialDenseMatrix elematrix1;
+  Epetra_SerialDenseMatrix elematrix2;
+  Epetra_SerialDenseVector elevector1;
+  Epetra_SerialDenseVector elevector2;
+  Epetra_SerialDenseVector elevector3;
+
+
+
+  // loop over column elements
+  const int numcolele = fluiddis->NumMyColElements();
+  for (int i=0; i<numcolele; ++i)
+  {
+    DRT::Element* actele = fluiddis->lColElement(i);
+
+    const bool intersected = ih->ElementIntersected(actele->Id());
+
+    vector<int> fluidlm;
+    vector<int> fluidlmowner;
+    actele->LocationVector(*fluiddis, fluidlm, fluidlmowner);
+
+    vector<int> ifacepatchlm;
+    vector<int> ifacepatchlmowner;
+    std::set<int> begids;
+
+    if (intersected)
+    {
+      begids = ih->GetIntersectingBoundaryElementsGID(actele->Id());
+      for (std::set<int>::const_iterator begid = begids.begin(); begid != begids.end(); ++begid)
+      {
+        DRT::Element* bele = ifacedis->gElement(*begid);
+
+        vector<int> ifacelm;
+        vector<int> ifacelmowner;
+        bele->LocationVector(*ifacedis,ifacelm,ifacelmowner);
+
+        ifacepatchlm.reserve( ifacepatchlm.size() + ifacelm.size());
+        ifacepatchlm.insert( ifacepatchlm.end(), ifacelm.begin(), ifacelm.end());
+
+        ifacepatchlmowner.reserve( ifacepatchlmowner.size() + ifacelmowner.size());
+        ifacepatchlmowner.insert( ifacepatchlmowner.end(), ifacelmowner.begin(), ifacelmowner.end());
+      }
+    }
+
+    // get dimension of element matrices and vectors
+    // Reshape element matrices and vectors and init to zero
+    const std::size_t fluideledim = fluidlm.size();
+    const std::size_t ifacepatchdim = ifacepatchlm.size();
+
+    if (intersected)
+    {
+      AdaptElementMatrix(fluideledim,   fluideledim,   *elematrixCuu);
+      AdaptElementMatrix(fluideledim,   ifacepatchdim, *elematrixMud);
+      AdaptElementMatrix(ifacepatchdim, fluideledim,   *elematrixMdu);
+      AdaptElementMatrix(ifacepatchdim, ifacepatchdim, *elematrixCdd);
+    }
+
+    AdaptElementMatrix(fluideledim,   fluideledim,   elematrix1);
+
+    if (elevector1.Length()!=(int)fluideledim)
+      elevector1.Size(fluideledim);
+    else
+      memset(elevector1.Values(),0,fluideledim*sizeof(double));
+
+
+
+    {
+      TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate elements");
+
+      if (intersected)
+      {
+        params.set("Cuu",elematrixCuu);
+        params.set("Mud",elematrixMud);
+        params.set("Mdu",elematrixMdu);
+        params.set("Cdd",elematrixCdd);
+        params.set("ifacepatchlm",&ifacepatchlm);
+      }
+
+      // call the element evaluate method
+      const int err = actele->Evaluate(params,*fluiddis,fluidlm,elematrix1,elematrix2,
+                                       elevector1,elevector2,elevector3);
+      if (err) dserror("Proc %d: Element %d returned err=%d",fluiddis->Comm().MyPID(),actele->Id(),err);
+    }
+
+//    if (intersected)
+//    {
+//      cout << elematrixCuu << endl;
+//    }
+
+    {
+      TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate assemble");
+
+      if (intersected)
+      {
+        elematrixCuu->Scale(5.0);
+        Cuu->Assemble(-1, *elematrixCuu, fluidlm     , fluidlmowner     , fluidlm);
+        elematrixMud->Scale(1.0);
+        Mud->Assemble(-1, *elematrixMud, fluidlm     , fluidlmowner     , ifacepatchlm);
+        elematrixMdu->Scale(-1.0);
+        Mdu->Assemble(-1, *elematrixMdu, ifacepatchlm, ifacepatchlmowner, fluidlm);
+        elematrixCdd->Scale(7.0);
+        Cdd->Assemble(-1, *elematrixCdd, ifacepatchlm, ifacepatchlmowner, ifacepatchlm);
+      }
+      systemmatrix1->Assemble(-1,elematrix1,fluidlm,fluidlmowner);
+      LINALG::Assemble(*systemvector1,elevector1,fluidlm,fluidlmowner);
+    }
+
+  } // for (int i=0; i<numcolele; ++i)
+
+  return;
 }
 
 

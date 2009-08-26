@@ -74,6 +74,11 @@ namespace XFEM
         const int label
     ) const;
 
+    //! get set of boundary element GIDs that intersect an element
+    std::set<int> GetIntersectingBoundaryElementsGID(
+        const int element_gid  ///< element GID of intersected element
+        ) const;
+
     //! get labels for each element
     std::set<int> LabelsPerElement( const int element_gid) const;
 

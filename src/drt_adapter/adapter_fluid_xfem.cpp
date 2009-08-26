@@ -58,9 +58,50 @@ void ADAPTER::FluidXFEM::PrepareTimeStep()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void ADAPTER::FluidXFEM::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
+{
+  std::cout << "ADAPTER::FluidXFEM::Evaluate()" << endl;
+  FluidField().Evaluate(vel);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void ADAPTER::FluidXFEM::Update()
 {
+  std::cout << "ADAPTER::FluidXFEM::Update()" << endl;
   FluidField().Update();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> ADAPTER::FluidXFEM::DofRowMap()
+{
+  return FluidField().DofRowMap();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidXFEM::RHS()
+{
+  return FluidField().RHS();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::FluidXFEM::SystemMatrix()
+{
+  return FluidField().SystemMatrix();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::map<std::string,Teuchos::RCP<LINALG::SparseMatrix> > ADAPTER::FluidXFEM::CouplingMatrices()
+{
+  return FluidField().CouplingMatrices();
 }
 
 

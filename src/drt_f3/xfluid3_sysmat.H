@@ -65,6 +65,10 @@ namespace XFLUID
           const Teuchos::RCP<Epetra_Vector>& iforcecol,     ///< reaction force due to given interface velocity
           Epetra_SerialDenseMatrix&         estif,
           Epetra_SerialDenseVector&         eforce,
+          Epetra_SerialDenseMatrix& Cuu,
+          Epetra_SerialDenseMatrix& Mud,
+          Epetra_SerialDenseMatrix& Mdu,
+          Epetra_SerialDenseMatrix& Cdd,
           Teuchos::RCP<const MAT::Material> material,
           const FLUID_TIMEINTTYPE           timealgo,      ///< time discretization type
           const double                      dt,            ///< delta t (time step size)

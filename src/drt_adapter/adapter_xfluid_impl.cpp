@@ -126,7 +126,6 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::InitialGuess()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::RHS()
 {
-  dserror("not implemented");
   return fluid_.Residual();
 }
 
@@ -162,9 +161,8 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::Dispnp()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> ADAPTER::XFluidImpl::DofRowMap()
 {
-  dserror("not implemented");
-//  const Epetra_Map* dofrowmap = dis_->DofRowMap();
-  return Teuchos::null;
+  Teuchos::RCP<const Epetra_Map> dofrowmap = rcp(fluid_.Discretization()->DofRowMap(),false);
+  return dofrowmap;
 }
 
 
@@ -172,8 +170,15 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::XFluidImpl::DofRowMap()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::XFluidImpl::SystemMatrix()
 {
-  dserror("not implemented");
   return fluid_.SystemMatrix();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::map<std::string, Teuchos::RCP<LINALG::SparseMatrix> > ADAPTER::XFluidImpl::CouplingMatrices()
+{
+  return fluid_.CouplingMatrices();
 }
 
 
@@ -245,15 +250,15 @@ void ADAPTER::XFluidImpl::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   fluid_.Evaluate(boundarydis_, vel);
 
   // get surface force
-  Teuchos::RCP<const Epetra_Vector> itruerescol = boundarydis_->GetState("iforcenp");
+//  Teuchos::RCP<const Epetra_Vector> itruerescol = boundarydis_->GetState("iforcenp");
 
   // dump all vectors in the boundary discretization
   boundarydis_->ClearState();
 
   // map back to solid parallel distribution
-  Teuchos::RCP<Epetra_Export> conimpo = Teuchos::rcp (new Epetra_Export(itruerescol->Map(),itrueresnp_->Map()));
-  itrueresnp_->PutScalar(0.0);
-  itrueresnp_->Export(*itruerescol,*conimpo,Add);
+//  Teuchos::RCP<Epetra_Export> conimpo = Teuchos::rcp (new Epetra_Export(itruerescol->Map(),itrueresnp_->Map()));
+//  itrueresnp_->PutScalar(0.0);
+//  itrueresnp_->Export(*itruerescol,*conimpo,Add);
 
 }
 

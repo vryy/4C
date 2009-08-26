@@ -219,7 +219,6 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       // extract local values from the global vectors
       DRT::ELEMENTS::XFluid3::MyState mystate(discretization,lm,true);
 
-      const Teuchos::RCP<const Epetra_Vector> ivelcol = params.get<Teuchos::RCP<const Epetra_Vector> >("interface velocity");
       const Teuchos::RCP<Epetra_Vector> iforcecol = params.get<Teuchos::RCP<Epetra_Vector> >("interface force");
 
       double L2 = params.get<double>("L2");
@@ -236,6 +235,11 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 
       const bool ifaceForceContribution = discretization.ElementRowMap()->MyGID(this->Id());
 
+      RCP<Epetra_SerialDenseMatrix> Cuu;
+      RCP<Epetra_SerialDenseMatrix> Mud;
+      RCP<Epetra_SerialDenseMatrix> Mdu;
+      RCP<Epetra_SerialDenseMatrix> Cdd;
+
       if (not params.get<bool>("DLM_condensation") or not ih_->ElementIntersected(Id())) // integrate and assemble all unknowns
       {
         const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
@@ -243,9 +247,8 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 
         // calculate element coefficient matrix and rhs
         XFLUID::callSysmat4(assembly_type,
-                this, ih_, *eleDofManager_, mystate, iforcecol, elemat1, elevec1,
+                this, ih_, *eleDofManager_, mystate, iforcecol, elemat1, elevec1, *Cuu, *Mud, *Mdu, *Cdd,
                 mat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution, L2);
-
       }
       else // create bigger element matrix and vector, assemble, condense and copy to small matrix provided by discretization
       {
@@ -263,9 +266,17 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
                 *eleDofManager_uncondensed_, NumNode(), NodeIds());
 
+        if (ih_->ElementIntersected(Id()) and params.get<bool>("monolithic_FSI"))
+        {
+          Cuu = params.get<RCP<Epetra_SerialDenseMatrix> >("Cuu");
+          Mud = params.get<RCP<Epetra_SerialDenseMatrix> >("Mud");
+          Mdu = params.get<RCP<Epetra_SerialDenseMatrix> >("Mdu");
+          Cdd = params.get<RCP<Epetra_SerialDenseMatrix> >("Cdd");
+        }
+
         // calculate element coefficient matrix and rhs
         XFLUID::callSysmat4(assembly_type,
-                this, ih_, *eleDofManager_uncondensed_, mystate, iforcecol, elemat1_uncond, elevec1_uncond,
+                this, ih_, *eleDofManager_uncondensed_, mystate, iforcecol, elemat1_uncond, elevec1_uncond, *Cuu, *Mud, *Mdu, *Cdd,
                 mat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution, L2);
 
         // condensation
@@ -283,7 +294,6 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       // extract local values from the global vector
       DRT::ELEMENTS::XFluid3::MyState mystate(discretization,lm,false);
 
-      const Teuchos::RCP<const Epetra_Vector> ivelcol = params.get<Teuchos::RCP<const Epetra_Vector> >("interface velocity");
       const Teuchos::RCP<Epetra_Vector> iforcecol = params.get<Teuchos::RCP<Epetra_Vector> >("interface force");
 
       double L2 = params.get<double>("L2");
@@ -300,6 +310,11 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 
       const bool ifaceForceContribution = discretization.ElementRowMap()->MyGID(this->Id());
 
+      RCP<Epetra_SerialDenseMatrix> Cuu;
+      RCP<Epetra_SerialDenseMatrix> Mud;
+      RCP<Epetra_SerialDenseMatrix> Mdu;
+      RCP<Epetra_SerialDenseMatrix> Cdd;
+
       if (not params.get<bool>("DLM_condensation") or not ih_->ElementIntersected(Id())) // integrate and assemble all unknowns
       {
         const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
@@ -307,9 +322,8 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 
         // calculate element coefficient matrix and rhs
         XFLUID::callSysmat4(assembly_type,
-                this, ih_, *eleDofManager_, mystate, iforcecol, elemat1, elevec1,
+                this, ih_, *eleDofManager_, mystate, iforcecol, elemat1, elevec1, *Cuu, *Mud, *Mdu, *Cdd,
                 mat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution, L2);
-
       }
       else // create bigger element matrix and vector, assemble, condense and copy to small matrix provided by discretization
       {
@@ -327,9 +341,17 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
                 *eleDofManager_uncondensed_, NumNode(), NodeIds());
 
+        if (ih_->ElementIntersected(Id()) and params.get<bool>("monolithic_FSI"))
+        {
+          Cuu = params.get<RCP<Epetra_SerialDenseMatrix> >("Cuu");
+          Mud = params.get<RCP<Epetra_SerialDenseMatrix> >("Mud");
+          Mdu = params.get<RCP<Epetra_SerialDenseMatrix> >("Mdu");
+          Cdd = params.get<RCP<Epetra_SerialDenseMatrix> >("Cdd");
+        }
+
         // calculate element coefficient matrix and rhs
         XFLUID::callSysmat4(assembly_type,
-                this, ih_, *eleDofManager_uncondensed_, mystate, iforcecol, elemat1_uncond, elevec1_uncond,
+                this, ih_, *eleDofManager_uncondensed_, mystate, iforcecol, elemat1_uncond, elevec1_uncond, *Cuu, *Mud, *Mdu, *Cdd,
                 mat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution, L2);
 
         // condensation

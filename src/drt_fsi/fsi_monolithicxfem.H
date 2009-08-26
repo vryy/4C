@@ -78,7 +78,7 @@ namespace FSI
   private:
 
     void Newton();
-    void Evaluate();
+    void Evaluate(Teuchos::RCP<const Epetra_Map> fullmap);
     void SetupRHS();
     bool ConverganceTest();
     void SetupSystemMatrix();

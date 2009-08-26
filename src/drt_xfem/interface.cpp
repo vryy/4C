@@ -213,6 +213,26 @@ bool XFEM::InterfaceHandle::ElementHasLabel(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+std::set<int> XFEM::InterfaceHandle::GetIntersectingBoundaryElementsGID(
+    const int element_gid
+    ) const
+{
+  std::set<int> begids;
+
+  if(elementalBoundaryIntCells_.empty())
+    dserror("boundary intcells are empty");
+
+  const GEO::BoundaryIntCells& bcells = elementalBoundaryIntCells_.find(element_gid)->second;
+  for (GEO::BoundaryIntCells::const_iterator bcell = bcells.begin(); bcell != bcells.end(); ++bcell)
+  {
+    begids.insert(bcell->GetSurfaceEleGid());
+  }
+  return begids;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 std::set<int> XFEM::InterfaceHandle::LabelsPerElement(
     const int element_gid) const
 {

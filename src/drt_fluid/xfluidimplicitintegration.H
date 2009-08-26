@@ -111,9 +111,12 @@ public:
 
     Monolithic FSI needs to access the linear fluid problem.
 
+    \param cutterdiscret new guess at interface
     \param vel new guess at velocity and pressure
   */
-  void Evaluate(Teuchos::RCP<const Epetra_Vector> vel);
+  void Evaluate(
+      const Teuchos::RCP<DRT::Discretization> cutterdiscret,
+      Teuchos::RCP<const Epetra_Vector> fluidvel);
 
   /*!
   \brief Update the solution after convergence of the nonlinear
@@ -219,6 +222,7 @@ public:
   const Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
 
   Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_); }
+  std::map<std::string, Teuchos::RCP<LINALG::SparseMatrix> > CouplingMatrices();
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_); }
   Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
   Teuchos::RCP<Epetra_Vector> RobinRHS() { return robinrhs_; }
@@ -316,7 +320,7 @@ protected:
     // calling this function multiple times should always result
     // in the same solution vectors and system matrix
   */
-  void ComputeInterfaceAndSetDOFs(
+  Teuchos::RCP<XFEM::InterfaceHandleXFSI> ComputeInterfaceAndSetDOFs(
       const Teuchos::RCP<DRT::Discretization>  cutterdiscret
       );
 
@@ -346,6 +350,19 @@ protected:
       ) const;
 
   void KrylovSpaceProjection(const int & numdim);
+
+  void MonolithicMultiDisEvaluate(
+      Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih,
+      const Teuchos::RCP<DRT::Discretization> fluiddis,
+      const Teuchos::RCP<DRT::Discretization> ifacedis,
+      Teuchos::ParameterList&                 params,
+      Teuchos::RCP<LINALG::SparseOperator>    Cuu,
+      Teuchos::RCP<LINALG::SparseOperator>    Mud,
+      Teuchos::RCP<LINALG::SparseOperator>    Mdu,
+      Teuchos::RCP<LINALG::SparseOperator>    Cdd,
+      Teuchos::RCP<LINALG::SparseOperator>    systemmatrix1,
+      Teuchos::RCP<Epetra_Vector>             systemvector1
+      );
 
   //! @name general algorithm parameters
   //! fluid discretization
@@ -420,6 +437,12 @@ protected:
 
   /// (standard) system matrix
   Teuchos::RCP<LINALG::SparseOperator> sysmat_;
+
+  Teuchos::RCP<LINALG::SparseMatrix> Cuu_;
+  Teuchos::RCP<LINALG::SparseMatrix> Mud_;
+  Teuchos::RCP<LINALG::SparseMatrix> Mdu_;
+  Teuchos::RCP<LINALG::SparseMatrix> Cdd_;
+
 //
 //  /// (standard) system matrix
 //  Teuchos::RCP<LINALG::SparseOperator> enrichsysmat_;
@@ -438,6 +461,9 @@ protected:
 
   /// (standard) residual vector (rhs for the incremental form),
   Teuchos::RCP<Epetra_Vector>    residual_;
+
+  /// rhs: right hand side vector for linearised flow solution
+  Teuchos::RCP<Epetra_Vector>    rhs_;
 
   /// robinrhs_: additional rhs when using robin-BC
   Teuchos::RCP<Epetra_Vector>    robinrhs_;

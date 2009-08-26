@@ -67,6 +67,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix(){ dserror("not implemented");
     // if anything (e.g. monolithic FSI) we give fluid coupling and interface DOF combined back
                                                                return fluid_.SystemMatrix(); };
+    virtual map<std::string, Teuchos::RCP<LINALG::SparseMatrix> > CouplingMatrices(){ dserror("not implemented");}
     virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix(){ dserror("not implemented");
                                                                              return Teuchos::null; };
     virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> ShapeDerivatives(){ dserror("not implemented");
