@@ -22,6 +22,7 @@ void PrintElementDatHeader()
   ed.PrintElementLines(std::cout,"CONSTRELE2");
   ed.PrintElementLines(std::cout,"CONSTRELE3");
   ed.PrintElementLines(std::cout,"PTET4");
+  ed.PrintElementLines(std::cout,"SHELL8");
   ed.PrintElementLines(std::cout,"SOLID3");
   ed.PrintElementLines(std::cout,"SOLIDH20");
   ed.PrintElementLines(std::cout,"SOLIDH27");
@@ -106,8 +107,45 @@ void DRT::INPUT::ElementDefinition::PrintElementLines(std::ostream& stream, std:
 /*----------------------------------------------------------------------*/
 void DRT::INPUT::ElementDefinition::SetupValidElementLines()
 {
+  SetupArtLines();
+  SetupBeam2Lines();
+  SetupBeam2rLines();
+  SetupBeam3Lines();
+  SetupConstrele2Lines();
+  SetupConstrele3Lines();
+  SetupPtet4Lines();
+  SetupShell8Lines();
+  SetupSolid3Lines();
+  SetupSolidh20Lines();
+  SetupSolidh27Lines();
+  SetupSolidh8Lines();
+  SetupSolidh8p1j1Lines();
+  SetupSolidsh8Lines();
+  SetupSolidsh8p8Lines();
+  SetupSolidshw6Lines();
+  SetupSolidt10Lines();
+  SetupSolidt4Lines();
+  SetupSolidw6Lines();
+  SetupTorsion2Lines();
+  SetupTorsion3Lines();
+  SetupTruss2Lines();
+  SetupTruss3Lines();
+  SetupWallLines();
+
+  SetupCombust3Lines();
+  SetupFluid2Lines();
   SetupFluid3Lines();
-  //SetupSolidH8Lines();
+  SetupTranspLines();
+  SetupXdiff3Lines();
+  SetupXfluid3Lines();
+
+  SetupAle2Lines();
+  SetupAle3Lines();
+
+  // backward compatibility
+  // still needed?
+  //SetupCondif2Lines();
+  //SetupCondif3Lines();
 }
 
 
@@ -130,98 +168,781 @@ DRT::INPUT::LineDefinition* DRT::INPUT::ElementDefinition::ElementLines(std::str
 }
 
 
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::INPUT::ElementDefinition::SetupFluid3Lines()
+void DRT::INPUT::ElementDefinition::SetupArtLines()
 {
-  std::map<std::string,LineDefinition>& defs = definitions_["FLUID3"];
+  std::map<std::string,LineDefinition>& defs = definitions_["ART"];
+
+  defs["LINE2"]
+    .AddDoubleVector("LINE2",2)
+    .AddNamedInt("MAT")
+    ;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::INPUT::ElementDefinition::SetupBeam2Lines()
+{
+  std::map<std::string,LineDefinition>& defs = definitions_["BEAM2"];
+
+  defs["LINE2"]
+    .AddDoubleVector("LINE2",2)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedDouble("SHEARCORR")
+    .AddNamedDouble("INERMOM")
+    ;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::INPUT::ElementDefinition::SetupBeam2rLines()
+{
+  std::map<std::string,LineDefinition>& defs = definitions_["BEAM2R"];
+
+  defs["LINE2"]
+    .AddDoubleVector("LINE2",2)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedDouble("SHEARCORR")
+    .AddNamedDouble("INERMOM")
+    ;
+
+  defs["LIN2"]
+    .AddDoubleVector("LIN2",2)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedDouble("SHEARCORR")
+    .AddNamedDouble("INERMOM")
+    ;
+
+  defs["LINE3"]
+    .AddDoubleVector("LINE3",3)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedDouble("SHEARCORR")
+    .AddNamedDouble("INERMOM")
+    ;
+
+  defs["LIN3"]
+    .AddDoubleVector("LIN3",3)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedDouble("SHEARCORR")
+    .AddNamedDouble("INERMOM")
+    ;
+
+  defs["LINE4"]
+    .AddDoubleVector("LINE4",4)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedDouble("SHEARCORR")
+    .AddNamedDouble("INERMOM")
+    ;
+
+  defs["LIN4"]
+    .AddDoubleVector("LIN4",4)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedDouble("SHEARCORR")
+    .AddNamedDouble("INERMOM")
+    ;
+
+  defs["LINE5"]
+    .AddDoubleVector("LINE5",5)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedDouble("SHEARCORR")
+    .AddNamedDouble("INERMOM")
+    ;
+
+  defs["LIN5"]
+    .AddDoubleVector("LIN5",5)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedDouble("SHEARCORR")
+    .AddNamedDouble("INERMOM")
+    ;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::INPUT::ElementDefinition::SetupBeam3Lines()
+{
+  std::map<std::string,LineDefinition>& defs = definitions_["BEAM3"];
+
+  defs["LINE2"]
+    .AddDoubleVector("LINE2",2)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedDouble("SHEARCORR")
+    .AddNamedDouble("MOMIN")
+    //.AddNamedDouble("MOMIN")
+    .AddNamedDouble("MOMINPOL")
+    ;
+
+  defs["LIN2"]
+    .AddDoubleVector("LIN2",2)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedDouble("SHEARCORR")
+    .AddNamedDouble("MOMIN")
+    //.AddNamedDouble("MOMIN")
+    .AddNamedDouble("MOMINPOL")
+    ;
+
+  defs["LINE3"]
+    .AddDoubleVector("LINE3",3)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedDouble("SHEARCORR")
+    .AddNamedDouble("MOMIN")
+    //.AddNamedDouble("MOMIN")
+    .AddNamedDouble("MOMINPOL")
+    ;
+
+  defs["LIN3"]
+    .AddDoubleVector("LIN3",3)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedDouble("SHEARCORR")
+    .AddNamedDouble("MOMIN")
+    //.AddNamedDouble("MOMIN")
+    .AddNamedDouble("MOMINPOL")
+    ;
+
+  defs["LINE4"]
+    .AddDoubleVector("LINE4",4)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedDouble("SHEARCORR")
+    .AddNamedDouble("MOMIN")
+    //.AddNamedDouble("MOMIN")
+    .AddNamedDouble("MOMINPOL")
+    ;
+
+  defs["LIN4"]
+    .AddDoubleVector("LIN4",4)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedDouble("SHEARCORR")
+    .AddNamedDouble("MOMIN")
+    //.AddNamedDouble("MOMIN")
+    .AddNamedDouble("MOMINPOL")
+    ;
+
+  defs["LINE5"]
+    .AddDoubleVector("LINE5",5)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedDouble("SHEARCORR")
+    .AddNamedDouble("MOMIN")
+    //.AddNamedDouble("MOMIN")
+    .AddNamedDouble("MOMINPOL")
+    ;
+
+  defs["LIN5"]
+    .AddDoubleVector("LIN5",5)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedDouble("SHEARCORR")
+    .AddNamedDouble("MOMIN")
+    //.AddNamedDouble("MOMIN")
+    .AddNamedDouble("MOMINPOL")
+    ;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::INPUT::ElementDefinition::SetupConstrele2Lines()
+{
+  // No reading for this element! Will be created on the fly, not from a .dat file.
+  //std::map<std::string,LineDefinition>& defs = definitions_["CONSTRELE2"];
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::INPUT::ElementDefinition::SetupConstrele3Lines()
+{
+  // No reading for this element! Will be created on the fly, not from a .dat file.
+  //std::map<std::string,LineDefinition>& defs = definitions_["CONSTRELE3"];
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::INPUT::ElementDefinition::SetupPtet4Lines()
+{
+  std::map<std::string,LineDefinition>& defs = definitions_["PTET4"];
+
+  defs["TET4"]
+    .AddDoubleVector("TET4",4)
+    .AddNamedInt("MAT")
+    ;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::INPUT::ElementDefinition::SetupShell8Lines()
+{
+  std::map<std::string,LineDefinition>& defs = definitions_["SHELL8"];
+
+  defs["QUAD4"]
+    .AddDoubleVector("QUAD4",4)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("THICK")
+    .AddNamedIntVector("GP",3)
+    .AddNamedInt("GP_TRI")
+    .AddNamedString("FORCES")
+    .AddNamedString("EAS")
+    .AddString("EAS2")
+    .AddString("EAS3")
+    .AddString("EAS4")
+    .AddString("EAS5")
+    .AddNamedString("ANS")
+    .AddNamedString("SDC")
+    ;
+
+  defs["QUAD8"]
+    .AddDoubleVector("QUAD8",8)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("THICK")
+    .AddNamedIntVector("GP",3)
+    .AddNamedInt("GP_TRI")
+    .AddNamedString("FORCES")
+    .AddNamedString("EAS")
+    .AddString("EAS2")
+    .AddString("EAS3")
+    .AddString("EAS4")
+    .AddString("EAS5")
+    .AddNamedString("ANS")
+    .AddNamedString("SDC")
+    ;
+
+  defs["QUAD9"]
+    .AddDoubleVector("QUAD9",9)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("THICK")
+    .AddNamedIntVector("GP",3)
+    .AddNamedInt("GP_TRI")
+    .AddNamedString("FORCES")
+    .AddNamedString("EAS")
+    .AddString("EAS2")
+    .AddString("EAS3")
+    .AddString("EAS4")
+    .AddString("EAS5")
+    .AddNamedString("ANS")
+    .AddNamedString("SDC")
+    ;
+
+  defs["TRI3"]
+    .AddDoubleVector("TRI3",3)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("THICK")
+    .AddNamedIntVector("GP",3)
+    .AddNamedInt("GP_TRI")
+    .AddNamedString("FORCES")
+    .AddNamedString("EAS")
+    .AddString("EAS2")
+    .AddString("EAS3")
+    .AddString("EAS4")
+    .AddString("EAS5")
+    .AddNamedString("ANS")
+    .AddNamedString("SDC")
+    ;
+
+  defs["TRI6"]
+    .AddDoubleVector("TRI6",6)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("THICK")
+    .AddNamedIntVector("GP",3)
+    .AddNamedInt("GP_TRI")
+    .AddNamedString("FORCES")
+    .AddNamedString("EAS")
+    .AddString("EAS2")
+    .AddString("EAS3")
+    .AddString("EAS4")
+    .AddString("EAS5")
+    .AddNamedString("ANS")
+    .AddNamedString("SDC")
+    ;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::INPUT::ElementDefinition::SetupSolid3Lines()
+{
+  std::map<std::string,LineDefinition>& defs = definitions_["SOLID3"];
 
   defs["HEX8"]
-//     .AddInt("ID")
-//     .AddTag("FLUID3")
     .AddDoubleVector("HEX8",8)
     .AddNamedInt("MAT")
-    .AddNamedString("NA")
     .AddNamedIntVector("GP",3)
-    .AddNamedString("CA")
+    .AddNamedInt("GP_PYRAMID")
+    .AddNamedInt("GP_TET")
+    .AddNamedString("GP_ALT")
+    .AddNamedString("KINEM")
     ;
 
   defs["HEX20"]
-//     .AddInt("ID")
-//     .AddTag("FLUID3")
     .AddDoubleVector("HEX20",20)
     .AddNamedInt("MAT")
-    .AddNamedString("NA")
     .AddNamedIntVector("GP",3)
-    .AddNamedString("CA")
+    .AddNamedInt("GP_PYRAMID")
+    .AddNamedInt("GP_TET")
+    .AddNamedString("GP_ALT")
+    .AddNamedString("KINEM")
     ;
 
   defs["HEX27"]
-//     .AddInt("ID")
-//     .AddTag("FLUID3")
     .AddDoubleVector("HEX27",27)
     .AddNamedInt("MAT")
-    .AddNamedString("NA")
     .AddNamedIntVector("GP",3)
-    .AddNamedString("CA")
+    .AddNamedInt("GP_PYRAMID")
+    .AddNamedInt("GP_TET")
+    .AddNamedString("GP_ALT")
+    .AddNamedString("KINEM")
     ;
 
   defs["TET4"]
-//     .AddInt("ID")
-//     .AddTag("FLUID3")
     .AddDoubleVector("TET4",4)
     .AddNamedInt("MAT")
-    .AddNamedString("NA")
+    .AddNamedIntVector("GP",3)
+    .AddNamedInt("GP_PYRAMID")
     .AddNamedInt("GP_TET")
     .AddNamedString("GP_ALT")
+    .AddNamedString("KINEM")
     ;
 
   defs["TET10"]
-//     .AddInt("ID")
-//     .AddTag("FLUID3")
     .AddDoubleVector("TET10",10)
     .AddNamedInt("MAT")
-    .AddNamedString("NA")
+    .AddNamedIntVector("GP",3)
+    .AddNamedInt("GP_PYRAMID")
     .AddNamedInt("GP_TET")
     .AddNamedString("GP_ALT")
+    .AddNamedString("KINEM")
     ;
 
   defs["WEDGE6"]
-//     .AddInt("ID")
-//     .AddTag("FLUID3")
+    .AddDoubleVector("WEDGE6",6)
+    .AddNamedInt("MAT")
+    .AddNamedIntVector("GP",3)
+    .AddNamedInt("GP_PYRAMID")
+    .AddNamedInt("GP_TET")
+    .AddNamedString("GP_ALT")
+    .AddNamedString("KINEM")
+    ;
+
+  defs["WEDGE15"]
+    .AddDoubleVector("WEDGE15",15)
+    .AddNamedInt("MAT")
+    .AddNamedIntVector("GP",3)
+    .AddNamedInt("GP_PYRAMID")
+    .AddNamedInt("GP_TET")
+    .AddNamedString("GP_ALT")
+    .AddNamedString("KINEM")
+    ;
+
+  defs["PYRAMID5"]
+    .AddDoubleVector("PYRAMID5",5)
+    .AddNamedInt("MAT")
+    .AddNamedIntVector("GP",3)
+    .AddNamedInt("GP_PYRAMID")
+    .AddNamedInt("GP_TET")
+    .AddNamedString("GP_ALT")
+    .AddNamedString("KINEM")
+    ;
+
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::INPUT::ElementDefinition::SetupSolidh20Lines()
+{
+  std::map<std::string,LineDefinition>& defs = definitions_["SOLIDH20"];
+
+  defs["HEX20"]
+    .AddDoubleVector("HEX20",20)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("STRENGTH")
+    .AddNamedIntVector("GP",3)
+    .AddNamedString("KINEM")
+    ;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::INPUT::ElementDefinition::SetupSolidh27Lines()
+{
+  std::map<std::string,LineDefinition>& defs = definitions_["SOLIDH27"];
+
+  defs["HEX27"]
+    .AddDoubleVector("HEX27",27)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("STRENGTH")
+    .AddNamedIntVector("GP",3)
+    .AddNamedString("KINEM")
+    ;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::INPUT::ElementDefinition::SetupSolidh8Lines()
+{
+  std::map<std::string,LineDefinition>& defs = definitions_["SOLIDH8"];
+
+  defs["HEX8"]
+    .AddDoubleVector("HEX8",8)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("STRENGTH")
+    .AddNamedIntVector("GP",3)
+    .AddNamedString("KINEM")
+    .AddNamedString("EAS")
+    ;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::INPUT::ElementDefinition::SetupSolidh8p1j1Lines()
+{
+  std::map<std::string,LineDefinition>& defs = definitions_["SOLIDH8P1J1"];
+
+  defs["HEX8"]
+    .AddDoubleVector("HEX8",8)
+    .AddNamedInt("MAT")
+    ;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::INPUT::ElementDefinition::SetupSolidsh8Lines()
+{
+  std::map<std::string,LineDefinition>& defs = definitions_["SOLIDSH8"];
+
+  defs["HEX8"]
+    .AddDoubleVector("HEX8",8)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("STRENGTH")
+    .AddNamedIntVector("GP",3)
+    .AddNamedString("KINEM")
+    .AddNamedString("EAS")
+    .AddNamedString("THICKDIR")
+    ;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::INPUT::ElementDefinition::SetupSolidsh8p8Lines()
+{
+  std::map<std::string,LineDefinition>& defs = definitions_["SOLIDSH8P8"];
+
+  defs["HEX8"]
+    .AddDoubleVector("HEX8",8)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("STRENGTH")
+    .AddNamedIntVector("GP",3)
+    .AddNamedString("KINEM")
+    .AddNamedString("THICKDIR")
+    .AddNamedString("STAB")
+    .AddNamedString("ANS")
+    .AddNamedString("EAS")
+    .AddNamedString("LIN")
+    .AddNamedString("ISO")
+    ;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::INPUT::ElementDefinition::SetupSolidshw6Lines()
+{
+  std::map<std::string,LineDefinition>& defs = definitions_["SOLIDSHW6"];
+
+  defs["WEDGE6"]
+    .AddDoubleVector("WEDGE6",6)
+    .AddNamedInt("MAT")
+    .AddNamedString("KINEM")
+    .AddNamedString("EAS")
+    .AddNamedString("OPTORDER")
+    ;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::INPUT::ElementDefinition::SetupSolidt10Lines()
+{
+  std::map<std::string,LineDefinition>& defs = definitions_["SOLIDT10"];
+
+  defs["TET10"]
+    .AddDoubleVector("TET10",10)
+    .AddNamedInt("MAT")
+    .AddNamedString("KINEM")
+    ;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::INPUT::ElementDefinition::SetupSolidt4Lines()
+{
+  std::map<std::string,LineDefinition>& defs = definitions_["SOLIDT4"];
+
+  defs["TET4"]
+    .AddDoubleVector("TET4",4)
+    .AddNamedInt("MAT")
+    .AddNamedString("KINEM")
+    ;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::INPUT::ElementDefinition::SetupSolidw6Lines()
+{
+  std::map<std::string,LineDefinition>& defs = definitions_["SOLIDW6"];
+
+  defs["WEDGE6"]
+    .AddDoubleVector("WEDGE6",6)
+    .AddNamedInt("MAT")
+    .AddNamedString("KINEM")
+    ;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::INPUT::ElementDefinition::SetupTorsion2Lines()
+{
+  std::map<std::string,LineDefinition>& defs = definitions_["TORSION2"];
+
+  defs["LINE2"]
+    .AddDoubleVector("LINE2",2)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedString("KINEM")
+    ;
+
+  defs["LIN2"]
+    .AddDoubleVector("LIN2",2)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedString("KINEM")
+    ;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::INPUT::ElementDefinition::SetupTorsion3Lines()
+{
+  std::map<std::string,LineDefinition>& defs = definitions_["TORSION3"];
+
+  defs["LINE2"]
+    .AddDoubleVector("LINE2",2)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedString("KINEM")
+    ;
+
+  defs["LIN2"]
+    .AddDoubleVector("LIN2",2)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedString("KINEM")
+    ;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::INPUT::ElementDefinition::SetupTruss2Lines()
+{
+  std::map<std::string,LineDefinition>& defs = definitions_["TRUSS2"];
+
+  defs["LINE2"]
+    .AddDoubleVector("LINE2",2)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedString("KINEM")
+    ;
+
+  defs["LIN2"]
+    .AddDoubleVector("LIN2",2)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedString("KINEM")
+    ;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::INPUT::ElementDefinition::SetupTruss3Lines()
+{
+  std::map<std::string,LineDefinition>& defs = definitions_["TRUSS3"];
+
+  defs["LINE2"]
+    .AddDoubleVector("LINE2",2)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedString("KINEM")
+    ;
+
+  defs["LIN2"]
+    .AddDoubleVector("LIN2",2)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedString("KINEM")
+    ;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::INPUT::ElementDefinition::SetupWallLines()
+{
+  std::map<std::string,LineDefinition>& defs = definitions_["WALL"];
+
+  defs["QUAD4"]
+    .AddDoubleVector("QUAD4",4)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("THICK")
+    .AddNamedIntVector("GP",2)
+    .AddString("STRESS_STRAIN")
+    .AddNamedString("EAS")
+    .AddNamedString("STRESSES")
+    ;
+
+  defs["QUAD8"]
+    .AddDoubleVector("QUAD8",8)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("THICK")
+    .AddNamedIntVector("GP",2)
+    .AddString("STRESS_STRAIN")
+    .AddNamedString("EAS")
+    .AddNamedString("STRESSES")
+    ;
+
+  defs["QUAD9"]
+    .AddDoubleVector("QUAD9",9)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("THICK")
+    .AddNamedIntVector("GP",2)
+    .AddString("STRESS_STRAIN")
+    .AddNamedString("EAS")
+    .AddNamedString("STRESSES")
+    ;
+
+  defs["TRI3"]
+    .AddDoubleVector("TRI3",3)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("THICK")
+    .AddNamedIntVector("GP",2)
+    .AddString("STRESS_STRAIN")
+    .AddNamedString("EAS")
+    .AddNamedString("STRESSES")
+    ;
+
+  defs["TRI6"]
+    .AddDoubleVector("TRI6",6)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("THICK")
+    .AddNamedIntVector("GP",2)
+    .AddString("STRESS_STRAIN")
+    .AddNamedString("EAS")
+    .AddNamedString("STRESSES")
+    ;
+
+  defs["NURBS4"]
+    .AddDoubleVector("NURBS4",4)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("THICK")
+    .AddNamedIntVector("GP",2)
+    .AddString("STRESS_STRAIN")
+    .AddNamedString("EAS")
+    .AddNamedString("STRESSES")
+    ;
+
+  defs["NURBS9"]
+    .AddDoubleVector("NURBS9",9)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("THICK")
+    .AddNamedIntVector("GP",2)
+    .AddString("STRESS_STRAIN")
+    .AddNamedString("EAS")
+    .AddNamedString("STRESSES")
+    ;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::INPUT::ElementDefinition::SetupCombust3Lines()
+{
+  std::map<std::string,LineDefinition>& defs = definitions_["COMBUST3"];
+
+  defs["HEX8"]
+    .AddDoubleVector("HEX8",8)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    ;
+
+  defs["HEX20"]
+    .AddDoubleVector("HEX20",20)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    ;
+
+  defs["HEX27"]
+    .AddDoubleVector("HEX27",27)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    ;
+
+  defs["TET4"]
+    .AddDoubleVector("TET4",4)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    ;
+
+  defs["TET10"]
+    .AddDoubleVector("TET10",10)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    ;
+
+  defs["WEDGE6"]
     .AddDoubleVector("WEDGE6",6)
     .AddNamedInt("MAT")
     .AddNamedString("NA")
     ;
 
   defs["WEDGE15"]
-//     .AddInt("ID")
-//     .AddTag("FLUID3")
     .AddDoubleVector("WEDGE15",15)
     .AddNamedInt("MAT")
     .AddNamedString("NA")
     ;
 
   defs["PYRAMID5"]
-//     .AddInt("ID")
-//     .AddTag("FLUID3")
     .AddDoubleVector("PYRAMID5",5)
-    .AddNamedInt("MAT")
-    .AddNamedString("NA")
-    ;
-
-  defs["NURBS8"]
-//     .AddInt("ID")
-//     .AddTag("FLUID3")
-    .AddDoubleVector("NURBS8",8)
-    .AddNamedInt("MAT")
-    .AddNamedString("NA")
-    ;
-
-  defs["NURBS27"]
-//     .AddInt("ID")
-//     .AddTag("FLUID3")
-    .AddDoubleVector("NURBS27",27)
     .AddNamedInt("MAT")
     .AddNamedString("NA")
     ;
@@ -230,33 +951,511 @@ void DRT::INPUT::ElementDefinition::SetupFluid3Lines()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::INPUT::ElementDefinition::SetupSolidH8Lines()
+void DRT::INPUT::ElementDefinition::SetupCondif2Lines()
 {
-  std::map<std::string,LineDefinition>& defs = definitions_["SOLIDH8"];
+  std::map<std::string,LineDefinition>& defs = definitions_["CONDIF2"];
 
-#if 0
+  // backward compatibility
+  defs = definitions_["TRANSP"];
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::INPUT::ElementDefinition::SetupCondif3Lines()
+{
+  std::map<std::string,LineDefinition>& defs = definitions_["CONDIF3"];
+
+  // backward compatibility
+  defs = definitions_["TRANSP"];
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::INPUT::ElementDefinition::SetupFluid2Lines()
+{
+  std::map<std::string,LineDefinition>& defs = definitions_["FLUID2"];
+
+  defs["QUAD4"]
+    .AddDoubleVector("QUAD4",4)
+    .AddNamedInt("MAT")
+    .AddNamedIntVector("GP",2)
+    .AddNamedInt("GP_TRI")
+    .AddNamedString("GP_ALT")
+    .AddNamedString("NA")
+    ;
+
+  defs["QUAD8"]
+    .AddDoubleVector("QUAD8",8)
+    .AddNamedInt("MAT")
+    .AddNamedIntVector("GP",2)
+    .AddNamedInt("GP_TRI")
+    .AddNamedString("GP_ALT")
+    .AddNamedString("NA")
+    ;
+
+  defs["QUAD9"]
+    .AddDoubleVector("QUAD9",9)
+    .AddNamedInt("MAT")
+    .AddNamedIntVector("GP",2)
+    .AddNamedInt("GP_TRI")
+    .AddNamedString("GP_ALT")
+    .AddNamedString("NA")
+    ;
+
+  defs["TRI3"]
+    .AddDoubleVector("TRI3",3)
+    .AddNamedInt("MAT")
+    .AddNamedIntVector("GP",2)
+    .AddNamedInt("GP_TRI")
+    .AddNamedString("GP_ALT")
+    .AddNamedString("NA")
+    ;
+
+  defs["TRI6"]
+    .AddDoubleVector("TRI6",6)
+    .AddNamedInt("MAT")
+    .AddNamedIntVector("GP",2)
+    .AddNamedInt("GP_TRI")
+    .AddNamedString("GP_ALT")
+    .AddNamedString("NA")
+    ;
+
+  defs["NURBS4"]
+    .AddDoubleVector("NURBS4",4)
+    .AddNamedInt("MAT")
+    .AddNamedIntVector("GP",2)
+    .AddNamedInt("GP_TRI")
+    .AddNamedString("GP_ALT")
+    .AddNamedString("NA")
+    ;
+
+  defs["NURBS9"]
+    .AddDoubleVector("NURBS9",9)
+    .AddNamedInt("MAT")
+    .AddNamedIntVector("GP",2)
+    .AddNamedInt("GP_TRI")
+    .AddNamedString("GP_ALT")
+    .AddNamedString("NA")
+    ;
+
+  defs["THQ9"]
+    .AddDoubleVector("THQ9",9)
+    .AddNamedInt("MAT")
+    .AddNamedIntVector("GP",2)
+    .AddNamedInt("GP_TRI")
+    .AddNamedString("GP_ALT")
+    .AddNamedString("NA")
+    ;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::INPUT::ElementDefinition::SetupFluid3Lines()
+{
+  std::map<std::string,LineDefinition>& defs = definitions_["FLUID3"];
+
   defs["HEX8"]
-//     .AddInt("ID")
-//     .AddTag("SOLIDH8")
     .AddDoubleVector("HEX8",8)
     .AddNamedInt("MAT")
+    .AddNamedString("NA")
     .AddNamedIntVector("GP",3)
-    .AddNamedInt("GP_TET")
-    .AddNamedInt("HYB")
-    .AddNamedInt("FORM")
-    .AddNamedString("STRESSES")
-    .AddNamedString("TSI_COUPTYP")
+    .AddNamedInt("GP_TRI")
+    .AddNamedString("GP_ALT")
+    .AddNamedInt("GP_WEDGE")
+    .AddNamedInt("GP_PYRAMID")
     ;
-#endif
+
+  defs["HEX20"]
+    .AddDoubleVector("HEX20",20)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    .AddNamedIntVector("GP",3)
+    .AddNamedInt("GP_TRI")
+    .AddNamedString("GP_ALT")
+    .AddNamedInt("GP_WEDGE")
+    .AddNamedInt("GP_PYRAMID")
+    ;
+
+  defs["HEX27"]
+    .AddDoubleVector("HEX27",27)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    .AddNamedIntVector("GP",3)
+    .AddNamedInt("GP_TRI")
+    .AddNamedString("GP_ALT")
+    .AddNamedInt("GP_WEDGE")
+    .AddNamedInt("GP_PYRAMID")
+    ;
+
+  defs["TET4"]
+    .AddDoubleVector("TET4",4)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    .AddNamedIntVector("GP",3)
+    .AddNamedInt("GP_TRI")
+    .AddNamedString("GP_ALT")
+    .AddNamedInt("GP_WEDGE")
+    .AddNamedInt("GP_PYRAMID")
+    ;
+
+  defs["TET10"]
+    .AddDoubleVector("TET10",10)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    .AddNamedIntVector("GP",3)
+    .AddNamedInt("GP_TRI")
+    .AddNamedString("GP_ALT")
+    .AddNamedInt("GP_WEDGE")
+    .AddNamedInt("GP_PYRAMID")
+    ;
+
+  defs["WEDGE6"]
+    .AddDoubleVector("WEDGE6",6)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    .AddNamedIntVector("GP",3)
+    .AddNamedInt("GP_TRI")
+    .AddNamedString("GP_ALT")
+    .AddNamedInt("GP_WEDGE")
+    .AddNamedInt("GP_PYRAMID")
+    ;
+
+  defs["WEDGE15"]
+    .AddDoubleVector("WEDGE15",15)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    .AddNamedIntVector("GP",3)
+    .AddNamedInt("GP_TRI")
+    .AddNamedString("GP_ALT")
+    .AddNamedInt("GP_WEDGE")
+    .AddNamedInt("GP_PYRAMID")
+    ;
+
+  defs["PYRAMID5"]
+    .AddDoubleVector("PYRAMID5",5)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    .AddNamedIntVector("GP",3)
+    .AddNamedInt("GP_TRI")
+    .AddNamedString("GP_ALT")
+    .AddNamedInt("GP_WEDGE")
+    .AddNamedInt("GP_PYRAMID")
+    ;
+
+  defs["NURBS8"]
+    .AddDoubleVector("NURBS8",8)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    .AddNamedIntVector("GP",3)
+    .AddNamedInt("GP_TRI")
+    .AddNamedString("GP_ALT")
+    .AddNamedInt("GP_WEDGE")
+    .AddNamedInt("GP_PYRAMID")
+    ;
+
+  defs["NURBS27"]
+    .AddDoubleVector("NURBS27",27)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    .AddNamedIntVector("GP",3)
+    .AddNamedInt("GP_TRI")
+    .AddNamedString("GP_ALT")
+    .AddNamedInt("GP_WEDGE")
+    .AddNamedInt("GP_PYRAMID")
+    ;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::INPUT::ElementDefinition::SetupTranspLines()
+{
+  std::map<std::string,LineDefinition>& defs = definitions_["TRANSP"];
 
   defs["HEX8"]
-//     .AddInt("ID")
-//     .AddTag("SOLIDH8")
     .AddDoubleVector("HEX8",8)
     .AddNamedInt("MAT")
-    .AddNamedString("EAS")
     ;
 
+  defs["HEX20"]
+    .AddDoubleVector("HEX20",20)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["HEX27"]
+    .AddDoubleVector("HEX27",27)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["TET4"]
+    .AddDoubleVector("TET4",4)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["TET10"]
+    .AddDoubleVector("TET10",10)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["WEDGE6"]
+    .AddDoubleVector("WEDGE6",6)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["WEDGE15"]
+    .AddDoubleVector("WEDGE15",15)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["PYRAMID5"]
+    .AddDoubleVector("PYRAMID5",5)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["QUAD4"]
+    .AddDoubleVector("QUAD4",4)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["QUAD8"]
+    .AddDoubleVector("QUAD8",8)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["QUAD9"]
+    .AddDoubleVector("QUAD9",9)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["TRI3"]
+    .AddDoubleVector("TRI3",3)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["TRI6"]
+    .AddDoubleVector("TRI6",6)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["NURBS4"]
+    .AddDoubleVector("NURBS4",4)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["NURBS9"]
+    .AddDoubleVector("NURBS9",9)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["LINE2"]
+    .AddDoubleVector("LINE2",2)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["LINE3"]
+    .AddDoubleVector("LINE3",3)
+    .AddNamedInt("MAT")
+    ;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::INPUT::ElementDefinition::SetupXdiff3Lines()
+{
+  std::map<std::string,LineDefinition>& defs = definitions_["XDIFF3"];
+
+  defs["HEX8"]
+    .AddDoubleVector("HEX8",8)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["HEX20"]
+    .AddDoubleVector("HEX20",20)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["HEX27"]
+    .AddDoubleVector("HEX27",27)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["TET4"]
+    .AddDoubleVector("TET4",4)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["TET10"]
+    .AddDoubleVector("TET10",10)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["WEDGE6"]
+    .AddDoubleVector("WEDGE6",6)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["WEDGE15"]
+    .AddDoubleVector("WEDGE15",15)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["PYRAMID5"]
+    .AddDoubleVector("PYRAMID5",5)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["NURBS8"]
+    .AddDoubleVector("NURBS8",8)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["NURBS27"]
+    .AddDoubleVector("NURBS27",27)
+    .AddNamedInt("MAT")
+    ;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::INPUT::ElementDefinition::SetupXfluid3Lines()
+{
+  std::map<std::string,LineDefinition>& defs = definitions_["XFLUID3"];
+
+  defs["HEX8"]
+    .AddDoubleVector("HEX8",8)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["HEX20"]
+    .AddDoubleVector("HEX20",20)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["HEX27"]
+    .AddDoubleVector("HEX27",27)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["TET4"]
+    .AddDoubleVector("TET4",4)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["TET10"]
+    .AddDoubleVector("TET10",10)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["WEDGE6"]
+    .AddDoubleVector("WEDGE6",6)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["WEDGE15"]
+    .AddDoubleVector("WEDGE15",15)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["PYRAMID5"]
+    .AddDoubleVector("PYRAMID5",5)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["NURBS8"]
+    .AddDoubleVector("NURBS8",8)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["NURBS27"]
+    .AddDoubleVector("NURBS27",27)
+    .AddNamedInt("MAT")
+    ;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::INPUT::ElementDefinition::SetupAle2Lines()
+{
+  std::map<std::string,LineDefinition>& defs = definitions_["ALE2"];
+
+  defs["QUAD4"]
+    .AddDoubleVector("QUAD4",4)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["QUAD8"]
+    .AddDoubleVector("QUAD8",8)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["QUAD9"]
+    .AddDoubleVector("QUAD9",9)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["TRI3"]
+    .AddDoubleVector("TRI3",3)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["TRI6"]
+    .AddDoubleVector("TRI6",6)
+    .AddNamedInt("MAT")
+    ;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::INPUT::ElementDefinition::SetupAle3Lines()
+{
+  std::map<std::string,LineDefinition>& defs = definitions_["ALE3"];
+
+  defs["HEX8"]
+    .AddDoubleVector("HEX8",8)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["HEX20"]
+    .AddDoubleVector("HEX20",20)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["HEX27"]
+    .AddDoubleVector("HEX27",27)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["TET4"]
+    .AddDoubleVector("TET4",4)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["TET10"]
+    .AddDoubleVector("TET10",10)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["WEDGE6"]
+    .AddDoubleVector("WEDGE6",6)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["WEDGE15"]
+    .AddDoubleVector("WEDGE15",15)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["PYRAMID5"]
+    .AddDoubleVector("PYRAMID5",5)
+    .AddNamedInt("MAT")
+    ;
 }
 
 

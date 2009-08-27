@@ -74,6 +74,9 @@ namespace INPUT
     /// add a single string definition
     LineDefinition& AddTag(std::string name);
 
+    /// add a single string variable
+    LineDefinition& AddString(std::string name);
+
     /// add a single integer variable
     LineDefinition& AddInt(std::string name);
 

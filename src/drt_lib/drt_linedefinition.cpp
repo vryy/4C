@@ -316,6 +316,15 @@ DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddTag(std::string name)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddString(std::string name)
+{
+  components_.push_back(new UnnamedComponent<std::string>(name,"''"));
+  return *this;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddInt(std::string name)
 {
   components_.push_back(new UnnamedComponent<int>(name,0));

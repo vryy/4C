@@ -42,8 +42,42 @@ namespace INPUT
 
     /// @name Elementspecific element lines
 
+    void SetupArtLines();
+    void SetupBeam2Lines();
+    void SetupBeam2rLines();
+    void SetupBeam3Lines();
+    void SetupConstrele2Lines();
+    void SetupConstrele3Lines();
+    void SetupPtet4Lines();
+    void SetupShell8Lines();
+    void SetupSolid3Lines();
+    void SetupSolidh20Lines();
+    void SetupSolidh27Lines();
+    void SetupSolidh8Lines();
+    void SetupSolidh8p1j1Lines();
+    void SetupSolidsh8Lines();
+    void SetupSolidsh8p8Lines();
+    void SetupSolidshw6Lines();
+    void SetupSolidt10Lines();
+    void SetupSolidt4Lines();
+    void SetupSolidw6Lines();
+    void SetupTorsion2Lines();
+    void SetupTorsion3Lines();
+    void SetupTruss2Lines();
+    void SetupTruss3Lines();
+    void SetupWallLines();
+
+    void SetupCombust3Lines();
+    void SetupCondif2Lines();
+    void SetupCondif3Lines();
+    void SetupFluid2Lines();
     void SetupFluid3Lines();
-    void SetupSolidH8Lines();
+    void SetupTranspLines();
+    void SetupXdiff3Lines();
+    void SetupXfluid3Lines();
+
+    void SetupAle2Lines();
+    void SetupAle3Lines();
 
     //@}
 
