@@ -1652,14 +1652,14 @@ void FLD::XFluidImplicitTimeInt::Output()
 
   //-------------------------------------------- output of solution
 
-  if (step_%upres_ == 0)  //write solution
+  if (step_%upres_ == 0)  //write solution for visualization
   {
     output_->NewStep    (step_,time_);
-    //output_->WriteVector("velnp", state_.velnp_);
 
     Teuchos::RCP<Epetra_Vector> velnp_out = dofmanagerForOutput_->fillPhysicalOutputVector(
         *state_.velnp_, dofset_out_, state_.nodalDofDistributionMap_, physprob_.fieldset_);
 
+    // write physical fields on full domain including voids etc.
     if (physprob_.fieldset_.find(XFEM::PHYSICS::Velx) != physprob_.fieldset_.end())
     {
       // output velocity field for visualization
@@ -1678,38 +1678,20 @@ void FLD::XFluidImplicitTimeInt::Output()
         Teuchos::RCP<Epetra_Vector> traction = CalcStresses();
         output_->WriteVector("traction",traction);
       }
-
-      // write domain decomposition for visualization (only once!)
-      if (step_==upres_)
-       output_->WriteElementData();
-
-      if (uprestart_ != 0 and step_%uprestart_ == 0) //add restart data
-      {
-        output_->WriteVector("velnp", state_.velnp_);
-        output_->WriteVector("veln", state_.veln_);
-        output_->WriteVector("velnm", state_.velnm_);
-        output_->WriteVector("accnp", state_.accnp_);
-        output_->WriteVector("accn", state_.accn_);
-      }
     }
     else if (physprob_.fieldset_.find(XFEM::PHYSICS::Temp) != physprob_.fieldset_.end())
     {
       output_->WriteVector("temperature", velnp_out);
     }
+
+    // write domain decomposition for visualization
+    output_->WriteElementData();
   }
 
-  // write restart also when uprestart_ is not a integer multiple of upres_
-  else if (uprestart_ != 0 and step_%uprestart_ == 0)
+  // write restart
+  if (uprestart_ != 0 and step_%uprestart_ == 0)
   {
     output_->NewStep    (step_,time_);
-    //output_->WriteVector("residual", trueresidual_);
-
-    //only perform stress calculation when output is needed
-    if (writestresses_)
-    {
-      Teuchos::RCP<Epetra_Vector> traction = CalcStresses();
-      output_->WriteVector("traction",traction);
-    }
 
     output_->WriteVector("velnp", state_.velnp_);
     output_->WriteVector("veln", state_.veln_);
