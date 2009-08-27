@@ -32304,326 +32304,326 @@ NODE          125     COORD 1.000000000000000e+00     1.000000000000000e+00     
 ----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
 ----------------------------------------------------FLUID ELEMENTS
-      1 FLUID3 TET4      70     99     47     65 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-      2 FLUID3 TET4      82     47     99     74 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-      3 FLUID3 TET4      47     40     65     74 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-      4 FLUID3 TET4      91     99     65     74 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-      5 FLUID3 TET4      65     99     47     74 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-      6 FLUID3 TET4      99     70     47     85 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-      7 FLUID3 TET4      47     82     99     89 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-      8 FLUID3 TET4      57     47     85     89 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-      9 FLUID3 TET4      99    105     85     89 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     10 FLUID3 TET4      99     85     47     89 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     11 FLUID3 TET4     109     87    116     89 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     12 FLUID3 TET4     103    116     87     85 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     13 FLUID3 TET4     116    105     89     85 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     14 FLUID3 TET4      57     87     89     85 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     15 FLUID3 TET4      89     87    116     85 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     16 FLUID3 TET4     116    103     87    117 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     17 FLUID3 TET4      87    109    116    120 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     18 FLUID3 TET4     106     87    117    120 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     19 FLUID3 TET4     116    122    117    120 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     20 FLUID3 TET4     116    117     87    120 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     21 FLUID3 TET4      99     70    100     65 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     22 FLUID3 TET4     100    115     99    110 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     23 FLUID3 TET4      92    100     65    110 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     24 FLUID3 TET4      99     91     65    110 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     25 FLUID3 TET4      99     65    100    110 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     26 FLUID3 TET4      70     99    100     85 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     27 FLUID3 TET4     115    100     99    121 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     28 FLUID3 TET4     100    107     85    121 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     29 FLUID3 TET4     105     99     85    121 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     30 FLUID3 TET4      85     99    100    121 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     31 FLUID3 TET4     118    123    116    121 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     32 FLUID3 TET4     116    103    118     85 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     33 FLUID3 TET4     105    116    121     85 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     34 FLUID3 TET4     118    107    121     85 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     35 FLUID3 TET4     118    121    116     85 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     36 FLUID3 TET4     103    116    118    117 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     37 FLUID3 TET4     123    118    116    125 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     38 FLUID3 TET4     118    124    117    125 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     39 FLUID3 TET4     122    116    117    125 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     40 FLUID3 TET4     117    116    118    125 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     41 FLUID3 TET4      66     36     47     31 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     42 FLUID3 TET4      47     82     66     74 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     43 FLUID3 TET4      40     47     31     74 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     44 FLUID3 TET4      66     58     31     74 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     45 FLUID3 TET4      66     31     47     74 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     46 FLUID3 TET4      36     46     66     47 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     47 FLUID3 TET4      82     47     66     89 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     48 FLUID3 TET4      47     57     46     89 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     49 FLUID3 TET4      81     66     46     89 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     50 FLUID3 TET4      46     66     47     89 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     51 FLUID3 TET4      87    109    102     89 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     52 FLUID3 TET4     102     71     87     46 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     53 FLUID3 TET4     102     81     46     89 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     54 FLUID3 TET4      87     57     89     46 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     55 FLUID3 TET4      87     89    102     46 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     56 FLUID3 TET4      71     98    102     87 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     57 FLUID3 TET4      87    109    120    102 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     58 FLUID3 TET4     106     87    120     98 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     59 FLUID3 TET4     114    102     98    120 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     60 FLUID3 TET4      98    102     87    120 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     61 FLUID3 TET4      36     66     32     31 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     62 FLUID3 TET4      59     32     66     53 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     63 FLUID3 TET4      26     32     53     31 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     64 FLUID3 TET4      58     66     31     53 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     65 FLUID3 TET4      31     32     53     66 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     66 FLUID3 TET4      36     46     32     66 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     67 FLUID3 TET4      32     59     66     75 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     68 FLUID3 TET4      41     32     46     75 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     69 FLUID3 TET4      81     66     75     46 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     70 FLUID3 TET4      66     46     32     75 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     71 FLUID3 TET4      93     75     67    102 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     72 FLUID3 TET4     102     71     46     67 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     73 FLUID3 TET4     102     81     75     46 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     74 FLUID3 TET4      41     67     75     46 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     75 FLUID3 TET4      67     75     46    102 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     76 FLUID3 TET4     102     71     67     98 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     77 FLUID3 TET4      67     93    102    111 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     78 FLUID3 TET4      67     94    111     98 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     79 FLUID3 TET4     102    114     98    111 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     80 FLUID3 TET4      98    102    111     67 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     81 FLUID3 TET4      48     70     47     65 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     82 FLUID3 TET4      47     27     48     21 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     83 FLUID3 TET4      40     47     65     21 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     84 FLUID3 TET4      48     42     65     21 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     85 FLUID3 TET4      48     65     47     21 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     86 FLUID3 TET4      70     48     47     85 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     87 FLUID3 TET4      27     47     48     39 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     88 FLUID3 TET4      47     57     85     39 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     89 FLUID3 TET4      60     48     85     39 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     90 FLUID3 TET4      85     47     39     48 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     91 FLUID3 TET4      39     63     87     86 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     92 FLUID3 TET4      87    103     85     86 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     93 FLUID3 TET4      85     60     39     86 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     94 FLUID3 TET4      87     57     39     85 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     95 FLUID3 TET4      87     39     86     85 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     96 FLUID3 TET4     117    103     87     86 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     97 FLUID3 TET4      63     86     88     87 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     98 FLUID3 TET4      87    106    117     88 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-     99 FLUID3 TET4      86    104     88    117 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    100 FLUID3 TET4     117     87     88     86 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    101 FLUID3 TET4      70     48    100     65 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    102 FLUID3 TET4      83    100     48     76 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    103 FLUID3 TET4     100     92     65     76 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    104 FLUID3 TET4      42     48     65     76 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    105 FLUID3 TET4      65     48    100     76 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    106 FLUID3 TET4      48     70    100     85 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    107 FLUID3 TET4     100     83     48     90 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    108 FLUID3 TET4     107    100     85     90 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    109 FLUID3 TET4      60     48     90     85 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    110 FLUID3 TET4      85     48     90    100 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    111 FLUID3 TET4      90    108     86    118 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    112 FLUID3 TET4     103    118     85     86 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    113 FLUID3 TET4      86     60     90     85 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    114 FLUID3 TET4     118    107     85     90 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    115 FLUID3 TET4      90    118     86     85 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    116 FLUID3 TET4     103    117    118     86 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    117 FLUID3 TET4      86    108    119    118 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    118 FLUID3 TET4     124    118    117    119 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    119 FLUID3 TET4     104     86    119    117 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    120 FLUID3 TET4      86    117    118    119 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    121 FLUID3 TET4      36     19     47     31 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    122 FLUID3 TET4      27     47     19     21 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    123 FLUID3 TET4      47     40     31     21 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    124 FLUID3 TET4      13     19     31     21 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    125 FLUID3 TET4      31     19     47     21 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    126 FLUID3 TET4      19     36     47     46 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    127 FLUID3 TET4      47     27     19     39 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    128 FLUID3 TET4      57     47     46     39 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    129 FLUID3 TET4      19     25     46     39 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    130 FLUID3 TET4      19     47     39     46 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    131 FLUID3 TET4      63     87     49     39 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    132 FLUID3 TET4      71     49     87     46 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    133 FLUID3 TET4      25     49     46     39 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    134 FLUID3 TET4      57     87     39     46 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    135 FLUID3 TET4      87     39     46     49 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    136 FLUID3 TET4      98     71     49     87 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    137 FLUID3 TET4      49     63     88     87 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    138 FLUID3 TET4     106     87     98     88 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    139 FLUID3 TET4      49     79     98     88 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    140 FLUID3 TET4      49     98     87     88 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    141 FLUID3 TET4      19     36     32     31 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    142 FLUID3 TET4      32     14     19      9 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    143 FLUID3 TET4      26     32     31      9 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    144 FLUID3 TET4      19     13     31      9 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    145 FLUID3 TET4      19     31     32      9 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    146 FLUID3 TET4      36     19     32     46 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    147 FLUID3 TET4      14     32     19     22 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    148 FLUID3 TET4      32     41     46     22 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    149 FLUID3 TET4      19     25     22     46 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    150 FLUID3 TET4      19     46     22     32 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    151 FLUID3 TET4      22     43     67     49 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    152 FLUID3 TET4      67     71     46     49 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    153 FLUID3 TET4      46     25     22     49 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    154 FLUID3 TET4      67     41     22     46 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    155 FLUID3 TET4      22     67     46     49 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    156 FLUID3 TET4      71     49     67     98 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    157 FLUID3 TET4      43     49     73     67 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    158 FLUID3 TET4      67     94     98     73 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    159 FLUID3 TET4      49     79     73     98 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    160 FLUID3 TET4      49     98     73     67 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    161 FLUID3 TET4      33     37     20     34 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    162 FLUID3 TET4      20     15     33     10 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    163 FLUID3 TET4      16     20     34     10 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    164 FLUID3 TET4      28     33     10     34 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    165 FLUID3 TET4      33     34     20     10 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    166 FLUID3 TET4      37     33     20     50 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    167 FLUID3 TET4      15     20     33     23 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    168 FLUID3 TET4      29     20     23     50 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    169 FLUID3 TET4      44     33     50     23 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    170 FLUID3 TET4      50     20     23     33 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    171 FLUID3 TET4      45     23     68     51 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    172 FLUID3 TET4      68     72     51     50 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    173 FLUID3 TET4      44     68     23     50 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    174 FLUID3 TET4      51     29     23     50 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    175 FLUID3 TET4      51     23     68     50 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    176 FLUID3 TET4      72     68     51     97 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    177 FLUID3 TET4      45     51     68     77 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    178 FLUID3 TET4      80     51     77     97 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    179 FLUID3 TET4      95     68     97     77 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    180 FLUID3 TET4      68     97     77     51 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    181 FLUID3 TET4      37     33     69     34 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    182 FLUID3 TET4      61     69     33     54 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    183 FLUID3 TET4      69     62     34     54 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    184 FLUID3 TET4      28     33     34     54 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    185 FLUID3 TET4      34     33     69     54 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    186 FLUID3 TET4      37     50     69     33 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    187 FLUID3 TET4      69     61     33     78 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    188 FLUID3 TET4      84     69     50     78 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    189 FLUID3 TET4      33     44     50     78 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    190 FLUID3 TET4      33     50     69     78 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    191 FLUID3 TET4      96    101     68     78 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    192 FLUID3 TET4      72     68    101     50 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    193 FLUID3 TET4      44     68     50     78 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    194 FLUID3 TET4     101     84     50     78 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    195 FLUID3 TET4      78     68     50    101 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    196 FLUID3 TET4      68     72    101     97 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    197 FLUID3 TET4     101     96     68    112 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    198 FLUID3 TET4     101    113    112     97 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    199 FLUID3 TET4      97     95    112     68 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    200 FLUID3 TET4      97     68    112    101 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    201 FLUID3 TET4       8      6      5     20 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    202 FLUID3 TET4      15     20      5     10 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    203 FLUID3 TET4      20     16      6     10 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    204 FLUID3 TET4       2      5      6     10 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    205 FLUID3 TET4       6      5     20     10 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    206 FLUID3 TET4       8     18     20      5 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    207 FLUID3 TET4      20     15      5     23 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    208 FLUID3 TET4      29     20     18     23 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    209 FLUID3 TET4       5     12     18     23 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    210 FLUID3 TET4       5     18     20     23 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    211 FLUID3 TET4      45     23     51     30 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    212 FLUID3 TET4      30     38     18     51 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    213 FLUID3 TET4      30     12     23     18 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    214 FLUID3 TET4      29     51     23     18 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    215 FLUID3 TET4      23     51     30     18 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    216 FLUID3 TET4      30     38     51     64 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    217 FLUID3 TET4      51     45     30     77 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    218 FLUID3 TET4      51     80     77     64 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    219 FLUID3 TET4      30     56     64     77 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    220 FLUID3 TET4      51     64     77     30 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    221 FLUID3 TET4       6      8      5      7 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    222 FLUID3 TET4       7      3      5      1 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    223 FLUID3 TET4       4      7      6      1 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    224 FLUID3 TET4       5      2      6      1 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    225 FLUID3 TET4       5      6      7      1 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    226 FLUID3 TET4       8      5      7     18 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    227 FLUID3 TET4       3      7      5     11 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    228 FLUID3 TET4       7     17     18     11 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    229 FLUID3 TET4      12      5     18     11 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    230 FLUID3 TET4       5     18     11      7 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    231 FLUID3 TET4      35     24     30     11 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    232 FLUID3 TET4      30     38     35     18 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    233 FLUID3 TET4      12     30     11     18 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    234 FLUID3 TET4      35     17     11     18 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    235 FLUID3 TET4      35     11     30     18 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    236 FLUID3 TET4      38     64     30     35 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    237 FLUID3 TET4      35     24     52     30 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    238 FLUID3 TET4      55     35     52     64 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    239 FLUID3 TET4      56     30     64     52 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    240 FLUID3 TET4      30     64     52     35 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    241 FLUID3 TET4      37     48     20     34 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    242 FLUID3 TET4      27     20     48     21 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    243 FLUID3 TET4      20     16     34     21 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    244 FLUID3 TET4      42     48     34     21 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    245 FLUID3 TET4      34     48     20     21 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    246 FLUID3 TET4      37     50     20     48 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    247 FLUID3 TET4      20     27     48     39 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    248 FLUID3 TET4      29     20     50     39 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    249 FLUID3 TET4      60     48     39     50 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    250 FLUID3 TET4      48     50     20     39 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    251 FLUID3 TET4      63     51     86     39 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    252 FLUID3 TET4      72     86     51     50 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    253 FLUID3 TET4      86     60     39     50 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    254 FLUID3 TET4      51     29     50     39 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    255 FLUID3 TET4      39     51     86     50 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    256 FLUID3 TET4      86     72     51     97 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    257 FLUID3 TET4      51     63     86     88 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    258 FLUID3 TET4      80     51     97     88 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    259 FLUID3 TET4      86    104     97     88 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    260 FLUID3 TET4      86     97     51     88 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    261 FLUID3 TET4      48     37     69     34 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    262 FLUID3 TET4      69     83     48     76 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    263 FLUID3 TET4      62     69     34     76 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    264 FLUID3 TET4      48     42     34     76 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    265 FLUID3 TET4      48     34     69     76 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    266 FLUID3 TET4      37     50     48     69 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    267 FLUID3 TET4      83     69     48     90 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    268 FLUID3 TET4      84     69     90     50 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    269 FLUID3 TET4      60     48     50     90 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    270 FLUID3 TET4      50     48     69     90 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    271 FLUID3 TET4     101    108     86     90 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    272 FLUID3 TET4      86     72    101     50 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    273 FLUID3 TET4      86     60     50     90 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    274 FLUID3 TET4     101     84     90     50 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    275 FLUID3 TET4     101     90     86     50 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    276 FLUID3 TET4      72     86    101     97 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    277 FLUID3 TET4     108    101     86    119 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    278 FLUID3 TET4     101    113     97    119 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    279 FLUID3 TET4     104     86     97    119 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    280 FLUID3 TET4      97     86    101    119 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    281 FLUID3 TET4      19      8     20      6 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    282 FLUID3 TET4      20     27     19     21 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    283 FLUID3 TET4      16     20      6     21 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    284 FLUID3 TET4      13     19     21      6 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    285 FLUID3 TET4      19      6     20     21 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    286 FLUID3 TET4       8     18     19     20 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    287 FLUID3 TET4      27     20     19     39 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    288 FLUID3 TET4      29     20     39     18 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    289 FLUID3 TET4      25     19     18     39 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    290 FLUID3 TET4      18     19     20     39 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    291 FLUID3 TET4      51     63     49     39 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    292 FLUID3 TET4      49     38     51     18 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    293 FLUID3 TET4      18     25     39     49 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    294 FLUID3 TET4      51     29     39     18 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    295 FLUID3 TET4      51     39     49     18 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    296 FLUID3 TET4      38     64     49     51 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    297 FLUID3 TET4      63     51     49     88 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    298 FLUID3 TET4      80     51     88     64 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    299 FLUID3 TET4      79     49     64     88 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    300 FLUID3 TET4      51     49     88     64 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    301 FLUID3 TET4       8      6     19      7 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    302 FLUID3 TET4      14      7     19      9 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    303 FLUID3 TET4       7      4      6      9 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    304 FLUID3 TET4      13     19      6      9 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    305 FLUID3 TET4       6     19      7      9 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    306 FLUID3 TET4       8     18      7     19 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    307 FLUID3 TET4       7     14     19     22 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    308 FLUID3 TET4      17      7     18     22 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    309 FLUID3 TET4      25     19     22     18 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    310 FLUID3 TET4      19     18      7     22 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    311 FLUID3 TET4      43     35     49     22 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    312 FLUID3 TET4      38     49     35     18 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    313 FLUID3 TET4      49     25     22     18 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    314 FLUID3 TET4      17     35     22     18 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    315 FLUID3 TET4      22     35     49     18 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    316 FLUID3 TET4      49     38     35     64 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    317 FLUID3 TET4      35     43     49     73 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    318 FLUID3 TET4      35     55     73     64 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    319 FLUID3 TET4      49     79     64     73 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
-    320 FLUID3 TET4      64     49     73     35 MAT       1 NA Euler GP_TET 4 GP_ALT standard 
+      1 FLUID3 TET4      70     99     47     65 MAT       1 NA Euler
+      2 FLUID3 TET4      82     47     99     74 MAT       1 NA Euler
+      3 FLUID3 TET4      47     40     65     74 MAT       1 NA Euler
+      4 FLUID3 TET4      91     99     65     74 MAT       1 NA Euler
+      5 FLUID3 TET4      65     99     47     74 MAT       1 NA Euler
+      6 FLUID3 TET4      99     70     47     85 MAT       1 NA Euler
+      7 FLUID3 TET4      47     82     99     89 MAT       1 NA Euler
+      8 FLUID3 TET4      57     47     85     89 MAT       1 NA Euler
+      9 FLUID3 TET4      99    105     85     89 MAT       1 NA Euler
+     10 FLUID3 TET4      99     85     47     89 MAT       1 NA Euler
+     11 FLUID3 TET4     109     87    116     89 MAT       1 NA Euler
+     12 FLUID3 TET4     103    116     87     85 MAT       1 NA Euler
+     13 FLUID3 TET4     116    105     89     85 MAT       1 NA Euler
+     14 FLUID3 TET4      57     87     89     85 MAT       1 NA Euler
+     15 FLUID3 TET4      89     87    116     85 MAT       1 NA Euler
+     16 FLUID3 TET4     116    103     87    117 MAT       1 NA Euler
+     17 FLUID3 TET4      87    109    116    120 MAT       1 NA Euler
+     18 FLUID3 TET4     106     87    117    120 MAT       1 NA Euler
+     19 FLUID3 TET4     116    122    117    120 MAT       1 NA Euler
+     20 FLUID3 TET4     116    117     87    120 MAT       1 NA Euler
+     21 FLUID3 TET4      99     70    100     65 MAT       1 NA Euler
+     22 FLUID3 TET4     100    115     99    110 MAT       1 NA Euler
+     23 FLUID3 TET4      92    100     65    110 MAT       1 NA Euler
+     24 FLUID3 TET4      99     91     65    110 MAT       1 NA Euler
+     25 FLUID3 TET4      99     65    100    110 MAT       1 NA Euler
+     26 FLUID3 TET4      70     99    100     85 MAT       1 NA Euler
+     27 FLUID3 TET4     115    100     99    121 MAT       1 NA Euler
+     28 FLUID3 TET4     100    107     85    121 MAT       1 NA Euler
+     29 FLUID3 TET4     105     99     85    121 MAT       1 NA Euler
+     30 FLUID3 TET4      85     99    100    121 MAT       1 NA Euler
+     31 FLUID3 TET4     118    123    116    121 MAT       1 NA Euler
+     32 FLUID3 TET4     116    103    118     85 MAT       1 NA Euler
+     33 FLUID3 TET4     105    116    121     85 MAT       1 NA Euler
+     34 FLUID3 TET4     118    107    121     85 MAT       1 NA Euler
+     35 FLUID3 TET4     118    121    116     85 MAT       1 NA Euler
+     36 FLUID3 TET4     103    116    118    117 MAT       1 NA Euler
+     37 FLUID3 TET4     123    118    116    125 MAT       1 NA Euler
+     38 FLUID3 TET4     118    124    117    125 MAT       1 NA Euler
+     39 FLUID3 TET4     122    116    117    125 MAT       1 NA Euler
+     40 FLUID3 TET4     117    116    118    125 MAT       1 NA Euler
+     41 FLUID3 TET4      66     36     47     31 MAT       1 NA Euler
+     42 FLUID3 TET4      47     82     66     74 MAT       1 NA Euler
+     43 FLUID3 TET4      40     47     31     74 MAT       1 NA Euler
+     44 FLUID3 TET4      66     58     31     74 MAT       1 NA Euler
+     45 FLUID3 TET4      66     31     47     74 MAT       1 NA Euler
+     46 FLUID3 TET4      36     46     66     47 MAT       1 NA Euler
+     47 FLUID3 TET4      82     47     66     89 MAT       1 NA Euler
+     48 FLUID3 TET4      47     57     46     89 MAT       1 NA Euler
+     49 FLUID3 TET4      81     66     46     89 MAT       1 NA Euler
+     50 FLUID3 TET4      46     66     47     89 MAT       1 NA Euler
+     51 FLUID3 TET4      87    109    102     89 MAT       1 NA Euler
+     52 FLUID3 TET4     102     71     87     46 MAT       1 NA Euler
+     53 FLUID3 TET4     102     81     46     89 MAT       1 NA Euler
+     54 FLUID3 TET4      87     57     89     46 MAT       1 NA Euler
+     55 FLUID3 TET4      87     89    102     46 MAT       1 NA Euler
+     56 FLUID3 TET4      71     98    102     87 MAT       1 NA Euler
+     57 FLUID3 TET4      87    109    120    102 MAT       1 NA Euler
+     58 FLUID3 TET4     106     87    120     98 MAT       1 NA Euler
+     59 FLUID3 TET4     114    102     98    120 MAT       1 NA Euler
+     60 FLUID3 TET4      98    102     87    120 MAT       1 NA Euler
+     61 FLUID3 TET4      36     66     32     31 MAT       1 NA Euler
+     62 FLUID3 TET4      59     32     66     53 MAT       1 NA Euler
+     63 FLUID3 TET4      26     32     53     31 MAT       1 NA Euler
+     64 FLUID3 TET4      58     66     31     53 MAT       1 NA Euler
+     65 FLUID3 TET4      31     32     53     66 MAT       1 NA Euler
+     66 FLUID3 TET4      36     46     32     66 MAT       1 NA Euler
+     67 FLUID3 TET4      32     59     66     75 MAT       1 NA Euler
+     68 FLUID3 TET4      41     32     46     75 MAT       1 NA Euler
+     69 FLUID3 TET4      81     66     75     46 MAT       1 NA Euler
+     70 FLUID3 TET4      66     46     32     75 MAT       1 NA Euler
+     71 FLUID3 TET4      93     75     67    102 MAT       1 NA Euler
+     72 FLUID3 TET4     102     71     46     67 MAT       1 NA Euler
+     73 FLUID3 TET4     102     81     75     46 MAT       1 NA Euler
+     74 FLUID3 TET4      41     67     75     46 MAT       1 NA Euler
+     75 FLUID3 TET4      67     75     46    102 MAT       1 NA Euler
+     76 FLUID3 TET4     102     71     67     98 MAT       1 NA Euler
+     77 FLUID3 TET4      67     93    102    111 MAT       1 NA Euler
+     78 FLUID3 TET4      67     94    111     98 MAT       1 NA Euler
+     79 FLUID3 TET4     102    114     98    111 MAT       1 NA Euler
+     80 FLUID3 TET4      98    102    111     67 MAT       1 NA Euler
+     81 FLUID3 TET4      48     70     47     65 MAT       1 NA Euler
+     82 FLUID3 TET4      47     27     48     21 MAT       1 NA Euler
+     83 FLUID3 TET4      40     47     65     21 MAT       1 NA Euler
+     84 FLUID3 TET4      48     42     65     21 MAT       1 NA Euler
+     85 FLUID3 TET4      48     65     47     21 MAT       1 NA Euler
+     86 FLUID3 TET4      70     48     47     85 MAT       1 NA Euler
+     87 FLUID3 TET4      27     47     48     39 MAT       1 NA Euler
+     88 FLUID3 TET4      47     57     85     39 MAT       1 NA Euler
+     89 FLUID3 TET4      60     48     85     39 MAT       1 NA Euler
+     90 FLUID3 TET4      85     47     39     48 MAT       1 NA Euler
+     91 FLUID3 TET4      39     63     87     86 MAT       1 NA Euler
+     92 FLUID3 TET4      87    103     85     86 MAT       1 NA Euler
+     93 FLUID3 TET4      85     60     39     86 MAT       1 NA Euler
+     94 FLUID3 TET4      87     57     39     85 MAT       1 NA Euler
+     95 FLUID3 TET4      87     39     86     85 MAT       1 NA Euler
+     96 FLUID3 TET4     117    103     87     86 MAT       1 NA Euler
+     97 FLUID3 TET4      63     86     88     87 MAT       1 NA Euler
+     98 FLUID3 TET4      87    106    117     88 MAT       1 NA Euler
+     99 FLUID3 TET4      86    104     88    117 MAT       1 NA Euler
+    100 FLUID3 TET4     117     87     88     86 MAT       1 NA Euler
+    101 FLUID3 TET4      70     48    100     65 MAT       1 NA Euler
+    102 FLUID3 TET4      83    100     48     76 MAT       1 NA Euler
+    103 FLUID3 TET4     100     92     65     76 MAT       1 NA Euler
+    104 FLUID3 TET4      42     48     65     76 MAT       1 NA Euler
+    105 FLUID3 TET4      65     48    100     76 MAT       1 NA Euler
+    106 FLUID3 TET4      48     70    100     85 MAT       1 NA Euler
+    107 FLUID3 TET4     100     83     48     90 MAT       1 NA Euler
+    108 FLUID3 TET4     107    100     85     90 MAT       1 NA Euler
+    109 FLUID3 TET4      60     48     90     85 MAT       1 NA Euler
+    110 FLUID3 TET4      85     48     90    100 MAT       1 NA Euler
+    111 FLUID3 TET4      90    108     86    118 MAT       1 NA Euler
+    112 FLUID3 TET4     103    118     85     86 MAT       1 NA Euler
+    113 FLUID3 TET4      86     60     90     85 MAT       1 NA Euler
+    114 FLUID3 TET4     118    107     85     90 MAT       1 NA Euler
+    115 FLUID3 TET4      90    118     86     85 MAT       1 NA Euler
+    116 FLUID3 TET4     103    117    118     86 MAT       1 NA Euler
+    117 FLUID3 TET4      86    108    119    118 MAT       1 NA Euler
+    118 FLUID3 TET4     124    118    117    119 MAT       1 NA Euler
+    119 FLUID3 TET4     104     86    119    117 MAT       1 NA Euler
+    120 FLUID3 TET4      86    117    118    119 MAT       1 NA Euler
+    121 FLUID3 TET4      36     19     47     31 MAT       1 NA Euler
+    122 FLUID3 TET4      27     47     19     21 MAT       1 NA Euler
+    123 FLUID3 TET4      47     40     31     21 MAT       1 NA Euler
+    124 FLUID3 TET4      13     19     31     21 MAT       1 NA Euler
+    125 FLUID3 TET4      31     19     47     21 MAT       1 NA Euler
+    126 FLUID3 TET4      19     36     47     46 MAT       1 NA Euler
+    127 FLUID3 TET4      47     27     19     39 MAT       1 NA Euler
+    128 FLUID3 TET4      57     47     46     39 MAT       1 NA Euler
+    129 FLUID3 TET4      19     25     46     39 MAT       1 NA Euler
+    130 FLUID3 TET4      19     47     39     46 MAT       1 NA Euler
+    131 FLUID3 TET4      63     87     49     39 MAT       1 NA Euler
+    132 FLUID3 TET4      71     49     87     46 MAT       1 NA Euler
+    133 FLUID3 TET4      25     49     46     39 MAT       1 NA Euler
+    134 FLUID3 TET4      57     87     39     46 MAT       1 NA Euler
+    135 FLUID3 TET4      87     39     46     49 MAT       1 NA Euler
+    136 FLUID3 TET4      98     71     49     87 MAT       1 NA Euler
+    137 FLUID3 TET4      49     63     88     87 MAT       1 NA Euler
+    138 FLUID3 TET4     106     87     98     88 MAT       1 NA Euler
+    139 FLUID3 TET4      49     79     98     88 MAT       1 NA Euler
+    140 FLUID3 TET4      49     98     87     88 MAT       1 NA Euler
+    141 FLUID3 TET4      19     36     32     31 MAT       1 NA Euler
+    142 FLUID3 TET4      32     14     19      9 MAT       1 NA Euler
+    143 FLUID3 TET4      26     32     31      9 MAT       1 NA Euler
+    144 FLUID3 TET4      19     13     31      9 MAT       1 NA Euler
+    145 FLUID3 TET4      19     31     32      9 MAT       1 NA Euler
+    146 FLUID3 TET4      36     19     32     46 MAT       1 NA Euler
+    147 FLUID3 TET4      14     32     19     22 MAT       1 NA Euler
+    148 FLUID3 TET4      32     41     46     22 MAT       1 NA Euler
+    149 FLUID3 TET4      19     25     22     46 MAT       1 NA Euler
+    150 FLUID3 TET4      19     46     22     32 MAT       1 NA Euler
+    151 FLUID3 TET4      22     43     67     49 MAT       1 NA Euler
+    152 FLUID3 TET4      67     71     46     49 MAT       1 NA Euler
+    153 FLUID3 TET4      46     25     22     49 MAT       1 NA Euler
+    154 FLUID3 TET4      67     41     22     46 MAT       1 NA Euler
+    155 FLUID3 TET4      22     67     46     49 MAT       1 NA Euler
+    156 FLUID3 TET4      71     49     67     98 MAT       1 NA Euler
+    157 FLUID3 TET4      43     49     73     67 MAT       1 NA Euler
+    158 FLUID3 TET4      67     94     98     73 MAT       1 NA Euler
+    159 FLUID3 TET4      49     79     73     98 MAT       1 NA Euler
+    160 FLUID3 TET4      49     98     73     67 MAT       1 NA Euler
+    161 FLUID3 TET4      33     37     20     34 MAT       1 NA Euler
+    162 FLUID3 TET4      20     15     33     10 MAT       1 NA Euler
+    163 FLUID3 TET4      16     20     34     10 MAT       1 NA Euler
+    164 FLUID3 TET4      28     33     10     34 MAT       1 NA Euler
+    165 FLUID3 TET4      33     34     20     10 MAT       1 NA Euler
+    166 FLUID3 TET4      37     33     20     50 MAT       1 NA Euler
+    167 FLUID3 TET4      15     20     33     23 MAT       1 NA Euler
+    168 FLUID3 TET4      29     20     23     50 MAT       1 NA Euler
+    169 FLUID3 TET4      44     33     50     23 MAT       1 NA Euler
+    170 FLUID3 TET4      50     20     23     33 MAT       1 NA Euler
+    171 FLUID3 TET4      45     23     68     51 MAT       1 NA Euler
+    172 FLUID3 TET4      68     72     51     50 MAT       1 NA Euler
+    173 FLUID3 TET4      44     68     23     50 MAT       1 NA Euler
+    174 FLUID3 TET4      51     29     23     50 MAT       1 NA Euler
+    175 FLUID3 TET4      51     23     68     50 MAT       1 NA Euler
+    176 FLUID3 TET4      72     68     51     97 MAT       1 NA Euler
+    177 FLUID3 TET4      45     51     68     77 MAT       1 NA Euler
+    178 FLUID3 TET4      80     51     77     97 MAT       1 NA Euler
+    179 FLUID3 TET4      95     68     97     77 MAT       1 NA Euler
+    180 FLUID3 TET4      68     97     77     51 MAT       1 NA Euler
+    181 FLUID3 TET4      37     33     69     34 MAT       1 NA Euler
+    182 FLUID3 TET4      61     69     33     54 MAT       1 NA Euler
+    183 FLUID3 TET4      69     62     34     54 MAT       1 NA Euler
+    184 FLUID3 TET4      28     33     34     54 MAT       1 NA Euler
+    185 FLUID3 TET4      34     33     69     54 MAT       1 NA Euler
+    186 FLUID3 TET4      37     50     69     33 MAT       1 NA Euler
+    187 FLUID3 TET4      69     61     33     78 MAT       1 NA Euler
+    188 FLUID3 TET4      84     69     50     78 MAT       1 NA Euler
+    189 FLUID3 TET4      33     44     50     78 MAT       1 NA Euler
+    190 FLUID3 TET4      33     50     69     78 MAT       1 NA Euler
+    191 FLUID3 TET4      96    101     68     78 MAT       1 NA Euler
+    192 FLUID3 TET4      72     68    101     50 MAT       1 NA Euler
+    193 FLUID3 TET4      44     68     50     78 MAT       1 NA Euler
+    194 FLUID3 TET4     101     84     50     78 MAT       1 NA Euler
+    195 FLUID3 TET4      78     68     50    101 MAT       1 NA Euler
+    196 FLUID3 TET4      68     72    101     97 MAT       1 NA Euler
+    197 FLUID3 TET4     101     96     68    112 MAT       1 NA Euler
+    198 FLUID3 TET4     101    113    112     97 MAT       1 NA Euler
+    199 FLUID3 TET4      97     95    112     68 MAT       1 NA Euler
+    200 FLUID3 TET4      97     68    112    101 MAT       1 NA Euler
+    201 FLUID3 TET4       8      6      5     20 MAT       1 NA Euler
+    202 FLUID3 TET4      15     20      5     10 MAT       1 NA Euler
+    203 FLUID3 TET4      20     16      6     10 MAT       1 NA Euler
+    204 FLUID3 TET4       2      5      6     10 MAT       1 NA Euler
+    205 FLUID3 TET4       6      5     20     10 MAT       1 NA Euler
+    206 FLUID3 TET4       8     18     20      5 MAT       1 NA Euler
+    207 FLUID3 TET4      20     15      5     23 MAT       1 NA Euler
+    208 FLUID3 TET4      29     20     18     23 MAT       1 NA Euler
+    209 FLUID3 TET4       5     12     18     23 MAT       1 NA Euler
+    210 FLUID3 TET4       5     18     20     23 MAT       1 NA Euler
+    211 FLUID3 TET4      45     23     51     30 MAT       1 NA Euler
+    212 FLUID3 TET4      30     38     18     51 MAT       1 NA Euler
+    213 FLUID3 TET4      30     12     23     18 MAT       1 NA Euler
+    214 FLUID3 TET4      29     51     23     18 MAT       1 NA Euler
+    215 FLUID3 TET4      23     51     30     18 MAT       1 NA Euler
+    216 FLUID3 TET4      30     38     51     64 MAT       1 NA Euler
+    217 FLUID3 TET4      51     45     30     77 MAT       1 NA Euler
+    218 FLUID3 TET4      51     80     77     64 MAT       1 NA Euler
+    219 FLUID3 TET4      30     56     64     77 MAT       1 NA Euler
+    220 FLUID3 TET4      51     64     77     30 MAT       1 NA Euler
+    221 FLUID3 TET4       6      8      5      7 MAT       1 NA Euler
+    222 FLUID3 TET4       7      3      5      1 MAT       1 NA Euler
+    223 FLUID3 TET4       4      7      6      1 MAT       1 NA Euler
+    224 FLUID3 TET4       5      2      6      1 MAT       1 NA Euler
+    225 FLUID3 TET4       5      6      7      1 MAT       1 NA Euler
+    226 FLUID3 TET4       8      5      7     18 MAT       1 NA Euler
+    227 FLUID3 TET4       3      7      5     11 MAT       1 NA Euler
+    228 FLUID3 TET4       7     17     18     11 MAT       1 NA Euler
+    229 FLUID3 TET4      12      5     18     11 MAT       1 NA Euler
+    230 FLUID3 TET4       5     18     11      7 MAT       1 NA Euler
+    231 FLUID3 TET4      35     24     30     11 MAT       1 NA Euler
+    232 FLUID3 TET4      30     38     35     18 MAT       1 NA Euler
+    233 FLUID3 TET4      12     30     11     18 MAT       1 NA Euler
+    234 FLUID3 TET4      35     17     11     18 MAT       1 NA Euler
+    235 FLUID3 TET4      35     11     30     18 MAT       1 NA Euler
+    236 FLUID3 TET4      38     64     30     35 MAT       1 NA Euler
+    237 FLUID3 TET4      35     24     52     30 MAT       1 NA Euler
+    238 FLUID3 TET4      55     35     52     64 MAT       1 NA Euler
+    239 FLUID3 TET4      56     30     64     52 MAT       1 NA Euler
+    240 FLUID3 TET4      30     64     52     35 MAT       1 NA Euler
+    241 FLUID3 TET4      37     48     20     34 MAT       1 NA Euler
+    242 FLUID3 TET4      27     20     48     21 MAT       1 NA Euler
+    243 FLUID3 TET4      20     16     34     21 MAT       1 NA Euler
+    244 FLUID3 TET4      42     48     34     21 MAT       1 NA Euler
+    245 FLUID3 TET4      34     48     20     21 MAT       1 NA Euler
+    246 FLUID3 TET4      37     50     20     48 MAT       1 NA Euler
+    247 FLUID3 TET4      20     27     48     39 MAT       1 NA Euler
+    248 FLUID3 TET4      29     20     50     39 MAT       1 NA Euler
+    249 FLUID3 TET4      60     48     39     50 MAT       1 NA Euler
+    250 FLUID3 TET4      48     50     20     39 MAT       1 NA Euler
+    251 FLUID3 TET4      63     51     86     39 MAT       1 NA Euler
+    252 FLUID3 TET4      72     86     51     50 MAT       1 NA Euler
+    253 FLUID3 TET4      86     60     39     50 MAT       1 NA Euler
+    254 FLUID3 TET4      51     29     50     39 MAT       1 NA Euler
+    255 FLUID3 TET4      39     51     86     50 MAT       1 NA Euler
+    256 FLUID3 TET4      86     72     51     97 MAT       1 NA Euler
+    257 FLUID3 TET4      51     63     86     88 MAT       1 NA Euler
+    258 FLUID3 TET4      80     51     97     88 MAT       1 NA Euler
+    259 FLUID3 TET4      86    104     97     88 MAT       1 NA Euler
+    260 FLUID3 TET4      86     97     51     88 MAT       1 NA Euler
+    261 FLUID3 TET4      48     37     69     34 MAT       1 NA Euler
+    262 FLUID3 TET4      69     83     48     76 MAT       1 NA Euler
+    263 FLUID3 TET4      62     69     34     76 MAT       1 NA Euler
+    264 FLUID3 TET4      48     42     34     76 MAT       1 NA Euler
+    265 FLUID3 TET4      48     34     69     76 MAT       1 NA Euler
+    266 FLUID3 TET4      37     50     48     69 MAT       1 NA Euler
+    267 FLUID3 TET4      83     69     48     90 MAT       1 NA Euler
+    268 FLUID3 TET4      84     69     90     50 MAT       1 NA Euler
+    269 FLUID3 TET4      60     48     50     90 MAT       1 NA Euler
+    270 FLUID3 TET4      50     48     69     90 MAT       1 NA Euler
+    271 FLUID3 TET4     101    108     86     90 MAT       1 NA Euler
+    272 FLUID3 TET4      86     72    101     50 MAT       1 NA Euler
+    273 FLUID3 TET4      86     60     50     90 MAT       1 NA Euler
+    274 FLUID3 TET4     101     84     90     50 MAT       1 NA Euler
+    275 FLUID3 TET4     101     90     86     50 MAT       1 NA Euler
+    276 FLUID3 TET4      72     86    101     97 MAT       1 NA Euler
+    277 FLUID3 TET4     108    101     86    119 MAT       1 NA Euler
+    278 FLUID3 TET4     101    113     97    119 MAT       1 NA Euler
+    279 FLUID3 TET4     104     86     97    119 MAT       1 NA Euler
+    280 FLUID3 TET4      97     86    101    119 MAT       1 NA Euler
+    281 FLUID3 TET4      19      8     20      6 MAT       1 NA Euler
+    282 FLUID3 TET4      20     27     19     21 MAT       1 NA Euler
+    283 FLUID3 TET4      16     20      6     21 MAT       1 NA Euler
+    284 FLUID3 TET4      13     19     21      6 MAT       1 NA Euler
+    285 FLUID3 TET4      19      6     20     21 MAT       1 NA Euler
+    286 FLUID3 TET4       8     18     19     20 MAT       1 NA Euler
+    287 FLUID3 TET4      27     20     19     39 MAT       1 NA Euler
+    288 FLUID3 TET4      29     20     39     18 MAT       1 NA Euler
+    289 FLUID3 TET4      25     19     18     39 MAT       1 NA Euler
+    290 FLUID3 TET4      18     19     20     39 MAT       1 NA Euler
+    291 FLUID3 TET4      51     63     49     39 MAT       1 NA Euler
+    292 FLUID3 TET4      49     38     51     18 MAT       1 NA Euler
+    293 FLUID3 TET4      18     25     39     49 MAT       1 NA Euler
+    294 FLUID3 TET4      51     29     39     18 MAT       1 NA Euler
+    295 FLUID3 TET4      51     39     49     18 MAT       1 NA Euler
+    296 FLUID3 TET4      38     64     49     51 MAT       1 NA Euler
+    297 FLUID3 TET4      63     51     49     88 MAT       1 NA Euler
+    298 FLUID3 TET4      80     51     88     64 MAT       1 NA Euler
+    299 FLUID3 TET4      79     49     64     88 MAT       1 NA Euler
+    300 FLUID3 TET4      51     49     88     64 MAT       1 NA Euler
+    301 FLUID3 TET4       8      6     19      7 MAT       1 NA Euler
+    302 FLUID3 TET4      14      7     19      9 MAT       1 NA Euler
+    303 FLUID3 TET4       7      4      6      9 MAT       1 NA Euler
+    304 FLUID3 TET4      13     19      6      9 MAT       1 NA Euler
+    305 FLUID3 TET4       6     19      7      9 MAT       1 NA Euler
+    306 FLUID3 TET4       8     18      7     19 MAT       1 NA Euler
+    307 FLUID3 TET4       7     14     19     22 MAT       1 NA Euler
+    308 FLUID3 TET4      17      7     18     22 MAT       1 NA Euler
+    309 FLUID3 TET4      25     19     22     18 MAT       1 NA Euler
+    310 FLUID3 TET4      19     18      7     22 MAT       1 NA Euler
+    311 FLUID3 TET4      43     35     49     22 MAT       1 NA Euler
+    312 FLUID3 TET4      38     49     35     18 MAT       1 NA Euler
+    313 FLUID3 TET4      49     25     22     18 MAT       1 NA Euler
+    314 FLUID3 TET4      17     35     22     18 MAT       1 NA Euler
+    315 FLUID3 TET4      22     35     49     18 MAT       1 NA Euler
+    316 FLUID3 TET4      49     38     35     64 MAT       1 NA Euler
+    317 FLUID3 TET4      35     43     49     73 MAT       1 NA Euler
+    318 FLUID3 TET4      35     55     73     64 MAT       1 NA Euler
+    319 FLUID3 TET4      49     79     64     73 MAT       1 NA Euler
+    320 FLUID3 TET4      64     49     73     35 MAT       1 NA Euler
 ------------------------------------------------------ALE ELEMENTS
 --------------------------------------------------THERMAL ELEMENTS
 ---------------------------------------------------------MATERIALS
