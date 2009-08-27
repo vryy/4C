@@ -230,6 +230,8 @@ void ElementReader::Partition()
               dserror("failed to read element %d %s %s",elenumber,eletype.c_str(),distype.c_str());
             //linedef->Print(std::cout);
             //std::cout << "\n";
+
+            ele->SetNodeIds(distype,linedef);
             ele->ReadElement(eletype,distype,linedef);
           }
           else

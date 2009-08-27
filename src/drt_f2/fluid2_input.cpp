@@ -16,9 +16,49 @@ Maintainer: Michael Gee
 #include "fluid2.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/standardtypes_cpp.H"
+#include "../drt_lib/drt_linedefinition.H"
 
 using namespace DRT::UTILS;
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool DRT::ELEMENTS::Fluid2::ReadElement(const std::string& eletype,
+                                        const std::string& distype,
+                                        DRT::INPUT::LineDefinition* linedef)
+{
+  // read number of material model
+  int material = 0;
+  linedef->ExtractInt("MAT",material);
+  SetMaterial(material);
+
+  if (distype=="THQ9")
+    dismode_ = dismod_taylorhood;
+  else
+    dismode_ = dismod_equalorder;
+
+  // The distype is determined by the number of node. This is the wrong way
+  // around, but we do not need to switch on the distype string.
+  DiscretizationType shape = Shape();
+
+  gaussrule_ = getOptimalGaussrule(shape);
+
+  std::string na;
+  linedef->ExtractString("NA",na);
+  if (na=="ale" or na=="ALE" or na=="Ale")
+  {
+    is_ale_ = true;
+  }
+  else if (na=="euler" or na=="EULER" or na=="Euler")
+    is_ale_ = false;
+  else
+    dserror("Reading of FLUID3 element failed: Euler/Ale");
+
+  return true;
+}
+
+
+#if 0
 /*----------------------------------------------------------------------*
  |  read element input (public)                              g.bau 03/07|
  *----------------------------------------------------------------------*/
@@ -190,7 +230,7 @@ bool DRT::ELEMENTS::Fluid2::ReadElement()
   return true;
 
 } // Fluid2::ReadElement()
-
+#endif
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_FLUID2

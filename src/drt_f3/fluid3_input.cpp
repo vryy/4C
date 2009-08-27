@@ -32,8 +32,6 @@ bool DRT::ELEMENTS::Fluid3::ReadElement(const std::string& eletype,
   if (genprob.ndim!=3)
     dserror("Not a 3d problem. Panic.");
 
-  SetNodeIds(distype,linedef);
-
   // read number of material model
   int material = 0;
   linedef->ExtractInt("MAT",material);

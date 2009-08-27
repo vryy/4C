@@ -133,7 +133,7 @@ void DRT::INPUT::ElementDefinition::SetupValidElementLines()
 //   SetupWallLines();
 
 //   SetupCombust3Lines();
-//   SetupFluid2Lines();
+  SetupFluid2Lines();
   SetupFluid3Lines();
 //   SetupTranspLines();
 //   SetupXdiff3Lines();
@@ -995,72 +995,48 @@ void DRT::INPUT::ElementDefinition::SetupFluid2Lines()
   defs["QUAD4"]
     .AddIntVector("QUAD4",4)
     .AddNamedInt("MAT")
-    .AddNamedIntVector("GP",2)
-    .AddNamedInt("GP_TRI")
-    .AddNamedString("GP_ALT")
     .AddNamedString("NA")
     ;
 
   defs["QUAD8"]
     .AddIntVector("QUAD8",8)
     .AddNamedInt("MAT")
-    .AddNamedIntVector("GP",2)
-    .AddNamedInt("GP_TRI")
-    .AddNamedString("GP_ALT")
     .AddNamedString("NA")
     ;
 
   defs["QUAD9"]
     .AddIntVector("QUAD9",9)
     .AddNamedInt("MAT")
-    .AddNamedIntVector("GP",2)
-    .AddNamedInt("GP_TRI")
-    .AddNamedString("GP_ALT")
     .AddNamedString("NA")
     ;
 
   defs["TRI3"]
     .AddIntVector("TRI3",3)
     .AddNamedInt("MAT")
-    .AddNamedIntVector("GP",2)
-    .AddNamedInt("GP_TRI")
-    .AddNamedString("GP_ALT")
     .AddNamedString("NA")
     ;
 
   defs["TRI6"]
     .AddIntVector("TRI6",6)
     .AddNamedInt("MAT")
-    .AddNamedIntVector("GP",2)
-    .AddNamedInt("GP_TRI")
-    .AddNamedString("GP_ALT")
     .AddNamedString("NA")
     ;
 
   defs["NURBS4"]
     .AddIntVector("NURBS4",4)
     .AddNamedInt("MAT")
-    .AddNamedIntVector("GP",2)
-    .AddNamedInt("GP_TRI")
-    .AddNamedString("GP_ALT")
     .AddNamedString("NA")
     ;
 
   defs["NURBS9"]
     .AddIntVector("NURBS9",9)
     .AddNamedInt("MAT")
-    .AddNamedIntVector("GP",2)
-    .AddNamedInt("GP_TRI")
-    .AddNamedString("GP_ALT")
     .AddNamedString("NA")
     ;
 
   defs["THQ9"]
-    .AddDoubleVector("THQ9",9)
+    .AddIntVector("THQ9",9)
     .AddNamedInt("MAT")
-    .AddNamedIntVector("GP",2)
-    .AddNamedInt("GP_TRI")
-    .AddNamedString("GP_ALT")
     .AddNamedString("NA")
     ;
 }
