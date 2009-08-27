@@ -1527,6 +1527,7 @@ void FLD::XFluidImplicitTimeInt::Evaluate(
 std::map<std::string, Teuchos::RCP<LINALG::SparseMatrix> > FLD::XFluidImplicitTimeInt::CouplingMatrices()
 {
   std::map<std::string, Teuchos::RCP<LINALG::SparseMatrix> > matrices;
+  matrices.insert(make_pair("Cuu",Cuu_));
   matrices.insert(make_pair("Mud",Mud_));
   matrices.insert(make_pair("Mdu",Mdu_));
   matrices.insert(make_pair("Cdd",Cdd_));
@@ -1661,12 +1662,10 @@ void FLD::XFluidImplicitTimeInt::Output()
 
     if (physprob_.fieldset_.find(XFEM::PHYSICS::Velx) != physprob_.fieldset_.end())
     {
-      output_->WriteVector("velnp", velnp_out);
-  //    Teuchos::RCP<Epetra_Vector> accn_out = dofmanagerForOutput_->fillPhysicalOutputVector(
-  //        *state_.accn_, dofset_out_, nodalDofDistributionMap_, fields_out);
-  //    output_->WriteVector("accn", accn_out);
+      // output velocity field for visualization
+      output_->WriteVector("velocity", velnp_out);
 
-      // output (hydrodynamic) pressure
+      // output (hydrodynamic) pressure for visualization
       Teuchos::RCP<Epetra_Vector> pressure = velpressplitterForOutput_.ExtractCondVector(velnp_out);
       pressure->Scale(density_);
       output_->WriteVector("pressure", pressure);
@@ -1676,7 +1675,6 @@ void FLD::XFluidImplicitTimeInt::Output()
       //only perform stress calculation when output is needed
       if (writestresses_)
       {
-        dserror("not supported, yet");
         Teuchos::RCP<Epetra_Vector> traction = CalcStresses();
         output_->WriteVector("traction",traction);
       }
@@ -1687,9 +1685,11 @@ void FLD::XFluidImplicitTimeInt::Output()
 
       if (uprestart_ != 0 and step_%uprestart_ == 0) //add restart data
       {
-        output_->WriteVector("accn", state_.accn_);
+        output_->WriteVector("velnp", state_.velnp_);
         output_->WriteVector("veln", state_.veln_);
         output_->WriteVector("velnm", state_.velnm_);
+        output_->WriteVector("accnp", state_.accnp_);
+        output_->WriteVector("accn", state_.accn_);
       }
     }
     else if (physprob_.fieldset_.find(XFEM::PHYSICS::Temp) != physprob_.fieldset_.end())
@@ -1702,7 +1702,6 @@ void FLD::XFluidImplicitTimeInt::Output()
   else if (uprestart_ != 0 and step_%uprestart_ == 0)
   {
     output_->NewStep    (step_,time_);
-    output_->WriteVector("velnp", state_.velnp_);
     //output_->WriteVector("residual", trueresidual_);
 
     //only perform stress calculation when output is needed
@@ -1712,9 +1711,11 @@ void FLD::XFluidImplicitTimeInt::Output()
       output_->WriteVector("traction",traction);
     }
 
-    output_->WriteVector("accn", state_.accn_);
+    output_->WriteVector("velnp", state_.velnp_);
     output_->WriteVector("veln", state_.veln_);
     output_->WriteVector("velnm", state_.velnm_);
+    output_->WriteVector("accnp", state_.accnp_);
+    output_->WriteVector("accn", state_.accn_);
   }
 
   if (discret_->Comm().NumProc() == 1)
@@ -1796,6 +1797,7 @@ void FLD::XFluidImplicitTimeInt::ReadRestart(
   reader.ReadVector(state_.velnp_,"velnp");
   reader.ReadVector(state_.veln_, "veln");
   reader.ReadVector(state_.velnm_,"velnm");
+  reader.ReadVector(state_.accnp_ ,"accnp");
   reader.ReadVector(state_.accn_ ,"accn");
 
   if (discret_->Comm().NumProc() == 1)
@@ -3107,14 +3109,10 @@ void FLD::XFluidImplicitTimeInt::MonolithicMultiDisEvaluate(
 
       if (intersected)
       {
-        elematrixCuu->Scale(5.0);
-        Cuu->Assemble(-1, *elematrixCuu, fluidlm     , fluidlmowner     , fluidlm);
-        elematrixMud->Scale(1.0);
-        Mud->Assemble(-1, *elematrixMud, fluidlm     , fluidlmowner     , ifacepatchlm);
-        elematrixMdu->Scale(-1.0);
-        Mdu->Assemble(-1, *elematrixMdu, ifacepatchlm, ifacepatchlmowner, fluidlm);
-        elematrixCdd->Scale(7.0);
         Cdd->Assemble(-1, *elematrixCdd, ifacepatchlm, ifacepatchlmowner, ifacepatchlm);
+        Mdu->Assemble(-1, *elematrixMdu, ifacepatchlm, ifacepatchlmowner, fluidlm);
+        Mud->Assemble(-1, *elematrixMud, fluidlm     , fluidlmowner     , ifacepatchlm);
+        Cuu->Assemble(-1, *elematrixCuu, fluidlm     , fluidlmowner     , fluidlm);
       }
       systemmatrix1->Assemble(-1,elematrix1,fluidlm,fluidlmowner);
       LINALG::Assemble(*systemvector1,elevector1,fluidlm,fluidlmowner);
