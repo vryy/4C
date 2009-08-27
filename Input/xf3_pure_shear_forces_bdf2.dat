@@ -1862,87 +1862,87 @@ NODE          227     COORD 0.000000000000000e+00     1.000000000000000e+00     
      88 SOLIDH8 HEX8      94    219    220     97     55    202    203     60 MAT       2 EAS mild 
      89 SOLIDH8 HEX8      37     94     97     44      6     55     60      7 MAT       2 EAS mild 
 ----------------------------------------------------FLUID ELEMENTS
-      1 XFLUID3 HEX8     131    160    164    133    124    150    154    127 MAT       1 NA Euler GP 2 2 2 CA No 
-      2 XFLUID3 HEX8     106    131    133    111     98    124    127    102 MAT       1 NA Euler GP 2 2 2 CA No 
-      3 XFLUID3 HEX8      82    106    111     86     76     98    102     78 MAT       1 NA Euler GP 2 2 2 CA No 
-      4 XFLUID3 HEX8      64     82     86     66     57     76     78     62 MAT       1 NA Euler GP 2 2 2 CA No 
-      5 XFLUID3 HEX8      45     64     66     47     34     57     62     40 MAT       1 NA Euler GP 2 2 2 CA No 
-      6 XFLUID3 HEX8      29     45     47     31     24     34     40     26 MAT       1 NA Euler GP 2 2 2 CA No 
-      7 XFLUID3 HEX8      19     29     31     21     14     24     26     17 MAT       1 NA Euler GP 2 2 2 CA No 
-      8 XFLUID3 HEX8      12     19     21     16      9     14     17     11 MAT       1 NA Euler GP 2 2 2 CA No 
-      9 XFLUID3 HEX8       8     12     16     10      3      9     11      5 MAT       1 NA Euler GP 2 2 2 CA No 
-     10 XFLUID3 HEX8     140    167    171    143    131    160    164    133 MAT       1 NA Euler GP 2 2 2 CA No 
-     11 XFLUID3 HEX8     113    140    143    116    106    131    133    111 MAT       1 NA Euler GP 2 2 2 CA No 
-     12 XFLUID3 HEX8      91    113    116     92     82    106    111     86 MAT       1 NA Euler GP 2 2 2 CA No 
-     13 XFLUID3 HEX8      73     91     92     75     64     82     86     66 MAT       1 NA Euler GP 2 2 2 CA No 
-     14 XFLUID3 HEX8      53     73     75     58     45     64     66     47 MAT       1 NA Euler GP 2 2 2 CA No 
-     15 XFLUID3 HEX8      36     53     58     42     29     45     47     31 MAT       1 NA Euler GP 2 2 2 CA No 
-     16 XFLUID3 HEX8      27     36     42     30     19     29     31     21 MAT       1 NA Euler GP 2 2 2 CA No 
-     17 XFLUID3 HEX8      20     27     30     22     12     19     21     16 MAT       1 NA Euler GP 2 2 2 CA No 
-     18 XFLUID3 HEX8      15     20     22     18      8     12     16     10 MAT       1 NA Euler GP 2 2 2 CA No 
-     19 XFLUID3 HEX8     147    176    180    152    140    167    171    143 MAT       1 NA Euler GP 2 2 2 CA No 
-     20 XFLUID3 HEX8     126    147    152    130    113    140    143    116 MAT       1 NA Euler GP 2 2 2 CA No 
-     21 XFLUID3 HEX8     105    126    130    110     91    113    116     92 MAT       1 NA Euler GP 2 2 2 CA No 
-     22 XFLUID3 HEX8      84    105    110     89     73     91     92     75 MAT       1 NA Euler GP 2 2 2 CA No 
-     23 XFLUID3 HEX8      69     84     89     71     53     73     75     58 MAT       1 NA Euler GP 2 2 2 CA No 
-     24 XFLUID3 HEX8      49     69     71     54     36     53     58     42 MAT       1 NA Euler GP 2 2 2 CA No 
-     25 XFLUID3 HEX8      35     49     54     41     27     36     42     30 MAT       1 NA Euler GP 2 2 2 CA No 
-     26 XFLUID3 HEX8      28     35     41     32     20     27     30     22 MAT       1 NA Euler GP 2 2 2 CA No 
-     27 XFLUID3 HEX8      23     28     32     25     15     20     22     18 MAT       1 NA Euler GP 2 2 2 CA No 
-     28 XFLUID3 HEX8     165    186    187    170    147    176    180    152 MAT       1 NA Euler GP 2 2 2 CA No 
-     29 XFLUID3 HEX8     141    165    170    146    126    147    152    130 MAT       1 NA Euler GP 2 2 2 CA No 
-     30 XFLUID3 HEX8     119    141    146    121    105    126    130    110 MAT       1 NA Euler GP 2 2 2 CA No 
-     31 XFLUID3 HEX8      96    119    121    100     84    105    110     89 MAT       1 NA Euler GP 2 2 2 CA No 
-     32 XFLUID3 HEX8      80     96    100     85     69     84     89     71 MAT       1 NA Euler GP 2 2 2 CA No 
-     33 XFLUID3 HEX8      68     80     85     70     49     69     71     54 MAT       1 NA Euler GP 2 2 2 CA No 
-     34 XFLUID3 HEX8      52     68     70     59     35     49     54     41 MAT       1 NA Euler GP 2 2 2 CA No 
-     35 XFLUID3 HEX8      46     52     59     48     28     35     41     32 MAT       1 NA Euler GP 2 2 2 CA No 
-     36 XFLUID3 HEX8      33     46     48     39     23     28     32     25 MAT       1 NA Euler GP 2 2 2 CA No 
-     37 XFLUID3 HEX8     181    197    201    184    165    186    187    170 MAT       1 NA Euler GP 2 2 2 CA No 
-     38 XFLUID3 HEX8     156    181    184    161    141    165    170    146 MAT       1 NA Euler GP 2 2 2 CA No 
-     39 XFLUID3 HEX8     135    156    161    137    119    141    146    121 MAT       1 NA Euler GP 2 2 2 CA No 
-     40 XFLUID3 HEX8     115    135    137    120     96    119    121    100 MAT       1 NA Euler GP 2 2 2 CA No 
-     41 XFLUID3 HEX8      95    115    120    101     80     96    100     85 MAT       1 NA Euler GP 2 2 2 CA No 
-     42 XFLUID3 HEX8      83     95    101     88     68     80     85     70 MAT       1 NA Euler GP 2 2 2 CA No 
-     43 XFLUID3 HEX8      72     83     88     74     52     68     70     59 MAT       1 NA Euler GP 2 2 2 CA No 
-     44 XFLUID3 HEX8      63     72     74     67     46     52     59     48 MAT       1 NA Euler GP 2 2 2 CA No 
-     45 XFLUID3 HEX8      56     63     67     61     33     46     48     39 MAT       1 NA Euler GP 2 2 2 CA No 
-     46 XFLUID3 HEX8     190    210    212    195    181    197    201    184 MAT       1 NA Euler GP 2 2 2 CA No 
-     47 XFLUID3 HEX8     174    190    195    178    156    181    184    161 MAT       1 NA Euler GP 2 2 2 CA No 
-     48 XFLUID3 HEX8     153    174    178    158    135    156    161    137 MAT       1 NA Euler GP 2 2 2 CA No 
-     49 XFLUID3 HEX8     136    153    158    138    115    135    137    120 MAT       1 NA Euler GP 2 2 2 CA No 
-     50 XFLUID3 HEX8     118    136    138    122     95    115    120    101 MAT       1 NA Euler GP 2 2 2 CA No 
-     51 XFLUID3 HEX8     104    118    122    109     83     95    101     88 MAT       1 NA Euler GP 2 2 2 CA No 
-     52 XFLUID3 HEX8      90    104    109     93     72     83     88     74 MAT       1 NA Euler GP 2 2 2 CA No 
-     53 XFLUID3 HEX8      81     90     93     87     63     72     74     67 MAT       1 NA Euler GP 2 2 2 CA No 
-     54 XFLUID3 HEX8      77     81     87     79     56     63     67     61 MAT       1 NA Euler GP 2 2 2 CA No 
-     55 XFLUID3 HEX8     205    215    218    208    190    210    212    195 MAT       1 NA Euler GP 2 2 2 CA No 
-     56 XFLUID3 HEX8     189    205    208    192    174    190    195    178 MAT       1 NA Euler GP 2 2 2 CA No 
-     57 XFLUID3 HEX8     173    189    192    177    153    174    178    158 MAT       1 NA Euler GP 2 2 2 CA No 
-     58 XFLUID3 HEX8     157    173    177    162    136    153    158    138 MAT       1 NA Euler GP 2 2 2 CA No 
-     59 XFLUID3 HEX8     142    157    162    145    118    136    138    122 MAT       1 NA Euler GP 2 2 2 CA No 
-     60 XFLUID3 HEX8     125    142    145    129    104    118    122    109 MAT       1 NA Euler GP 2 2 2 CA No 
-     61 XFLUID3 HEX8     114    125    129    117     90    104    109     93 MAT       1 NA Euler GP 2 2 2 CA No 
-     62 XFLUID3 HEX8     107    114    117    112     81     90     93     87 MAT       1 NA Euler GP 2 2 2 CA No 
-     63 XFLUID3 HEX8      99    107    112    103     77     81     87     79 MAT       1 NA Euler GP 2 2 2 CA No 
-     64 XFLUID3 HEX8     213    222    225    216    205    215    218    208 MAT       1 NA Euler GP 2 2 2 CA No 
-     65 XFLUID3 HEX8     204    213    216    207    189    205    208    192 MAT       1 NA Euler GP 2 2 2 CA No 
-     66 XFLUID3 HEX8     191    204    207    194    173    189    192    177 MAT       1 NA Euler GP 2 2 2 CA No 
-     67 XFLUID3 HEX8     182    191    194    183    157    173    177    162 MAT       1 NA Euler GP 2 2 2 CA No 
-     68 XFLUID3 HEX8     166    182    183    169    142    157    162    145 MAT       1 NA Euler GP 2 2 2 CA No 
-     69 XFLUID3 HEX8     148    166    169    151    125    142    145    129 MAT       1 NA Euler GP 2 2 2 CA No 
-     70 XFLUID3 HEX8     139    148    151    144    114    125    129    117 MAT       1 NA Euler GP 2 2 2 CA No 
-     71 XFLUID3 HEX8     132    139    144    134    107    114    117    112 MAT       1 NA Euler GP 2 2 2 CA No 
-     72 XFLUID3 HEX8     123    132    134    128     99    107    112    103 MAT       1 NA Euler GP 2 2 2 CA No 
-     73 XFLUID3 HEX8     223    226    227    224    213    222    225    216 MAT       1 NA Euler GP 2 2 2 CA No 
-     74 XFLUID3 HEX8     214    223    224    217    204    213    216    207 MAT       1 NA Euler GP 2 2 2 CA No 
-     75 XFLUID3 HEX8     209    214    217    211    191    204    207    194 MAT       1 NA Euler GP 2 2 2 CA No 
-     76 XFLUID3 HEX8     198    209    211    200    182    191    194    183 MAT       1 NA Euler GP 2 2 2 CA No 
-     77 XFLUID3 HEX8     185    198    200    188    166    182    183    169 MAT       1 NA Euler GP 2 2 2 CA No 
-     78 XFLUID3 HEX8     175    185    188    179    148    166    169    151 MAT       1 NA Euler GP 2 2 2 CA No 
-     79 XFLUID3 HEX8     168    175    179    172    139    148    151    144 MAT       1 NA Euler GP 2 2 2 CA No 
-     80 XFLUID3 HEX8     159    168    172    163    132    139    144    134 MAT       1 NA Euler GP 2 2 2 CA No 
-     81 XFLUID3 HEX8     149    159    163    155    123    132    134    128 MAT       1 NA Euler GP 2 2 2 CA No 
+      1 XFLUID3 HEX8     131    160    164    133    124    150    154    127 MAT       1 NA Euler 
+      2 XFLUID3 HEX8     106    131    133    111     98    124    127    102 MAT       1 NA Euler 
+      3 XFLUID3 HEX8      82    106    111     86     76     98    102     78 MAT       1 NA Euler 
+      4 XFLUID3 HEX8      64     82     86     66     57     76     78     62 MAT       1 NA Euler 
+      5 XFLUID3 HEX8      45     64     66     47     34     57     62     40 MAT       1 NA Euler 
+      6 XFLUID3 HEX8      29     45     47     31     24     34     40     26 MAT       1 NA Euler 
+      7 XFLUID3 HEX8      19     29     31     21     14     24     26     17 MAT       1 NA Euler 
+      8 XFLUID3 HEX8      12     19     21     16      9     14     17     11 MAT       1 NA Euler 
+      9 XFLUID3 HEX8       8     12     16     10      3      9     11      5 MAT       1 NA Euler 
+     10 XFLUID3 HEX8     140    167    171    143    131    160    164    133 MAT       1 NA Euler 
+     11 XFLUID3 HEX8     113    140    143    116    106    131    133    111 MAT       1 NA Euler 
+     12 XFLUID3 HEX8      91    113    116     92     82    106    111     86 MAT       1 NA Euler 
+     13 XFLUID3 HEX8      73     91     92     75     64     82     86     66 MAT       1 NA Euler 
+     14 XFLUID3 HEX8      53     73     75     58     45     64     66     47 MAT       1 NA Euler 
+     15 XFLUID3 HEX8      36     53     58     42     29     45     47     31 MAT       1 NA Euler 
+     16 XFLUID3 HEX8      27     36     42     30     19     29     31     21 MAT       1 NA Euler 
+     17 XFLUID3 HEX8      20     27     30     22     12     19     21     16 MAT       1 NA Euler 
+     18 XFLUID3 HEX8      15     20     22     18      8     12     16     10 MAT       1 NA Euler 
+     19 XFLUID3 HEX8     147    176    180    152    140    167    171    143 MAT       1 NA Euler 
+     20 XFLUID3 HEX8     126    147    152    130    113    140    143    116 MAT       1 NA Euler 
+     21 XFLUID3 HEX8     105    126    130    110     91    113    116     92 MAT       1 NA Euler 
+     22 XFLUID3 HEX8      84    105    110     89     73     91     92     75 MAT       1 NA Euler 
+     23 XFLUID3 HEX8      69     84     89     71     53     73     75     58 MAT       1 NA Euler 
+     24 XFLUID3 HEX8      49     69     71     54     36     53     58     42 MAT       1 NA Euler 
+     25 XFLUID3 HEX8      35     49     54     41     27     36     42     30 MAT       1 NA Euler 
+     26 XFLUID3 HEX8      28     35     41     32     20     27     30     22 MAT       1 NA Euler 
+     27 XFLUID3 HEX8      23     28     32     25     15     20     22     18 MAT       1 NA Euler 
+     28 XFLUID3 HEX8     165    186    187    170    147    176    180    152 MAT       1 NA Euler 
+     29 XFLUID3 HEX8     141    165    170    146    126    147    152    130 MAT       1 NA Euler 
+     30 XFLUID3 HEX8     119    141    146    121    105    126    130    110 MAT       1 NA Euler 
+     31 XFLUID3 HEX8      96    119    121    100     84    105    110     89 MAT       1 NA Euler 
+     32 XFLUID3 HEX8      80     96    100     85     69     84     89     71 MAT       1 NA Euler 
+     33 XFLUID3 HEX8      68     80     85     70     49     69     71     54 MAT       1 NA Euler 
+     34 XFLUID3 HEX8      52     68     70     59     35     49     54     41 MAT       1 NA Euler 
+     35 XFLUID3 HEX8      46     52     59     48     28     35     41     32 MAT       1 NA Euler 
+     36 XFLUID3 HEX8      33     46     48     39     23     28     32     25 MAT       1 NA Euler 
+     37 XFLUID3 HEX8     181    197    201    184    165    186    187    170 MAT       1 NA Euler 
+     38 XFLUID3 HEX8     156    181    184    161    141    165    170    146 MAT       1 NA Euler 
+     39 XFLUID3 HEX8     135    156    161    137    119    141    146    121 MAT       1 NA Euler 
+     40 XFLUID3 HEX8     115    135    137    120     96    119    121    100 MAT       1 NA Euler 
+     41 XFLUID3 HEX8      95    115    120    101     80     96    100     85 MAT       1 NA Euler 
+     42 XFLUID3 HEX8      83     95    101     88     68     80     85     70 MAT       1 NA Euler 
+     43 XFLUID3 HEX8      72     83     88     74     52     68     70     59 MAT       1 NA Euler 
+     44 XFLUID3 HEX8      63     72     74     67     46     52     59     48 MAT       1 NA Euler 
+     45 XFLUID3 HEX8      56     63     67     61     33     46     48     39 MAT       1 NA Euler 
+     46 XFLUID3 HEX8     190    210    212    195    181    197    201    184 MAT       1 NA Euler 
+     47 XFLUID3 HEX8     174    190    195    178    156    181    184    161 MAT       1 NA Euler 
+     48 XFLUID3 HEX8     153    174    178    158    135    156    161    137 MAT       1 NA Euler 
+     49 XFLUID3 HEX8     136    153    158    138    115    135    137    120 MAT       1 NA Euler 
+     50 XFLUID3 HEX8     118    136    138    122     95    115    120    101 MAT       1 NA Euler 
+     51 XFLUID3 HEX8     104    118    122    109     83     95    101     88 MAT       1 NA Euler 
+     52 XFLUID3 HEX8      90    104    109     93     72     83     88     74 MAT       1 NA Euler 
+     53 XFLUID3 HEX8      81     90     93     87     63     72     74     67 MAT       1 NA Euler 
+     54 XFLUID3 HEX8      77     81     87     79     56     63     67     61 MAT       1 NA Euler 
+     55 XFLUID3 HEX8     205    215    218    208    190    210    212    195 MAT       1 NA Euler 
+     56 XFLUID3 HEX8     189    205    208    192    174    190    195    178 MAT       1 NA Euler 
+     57 XFLUID3 HEX8     173    189    192    177    153    174    178    158 MAT       1 NA Euler 
+     58 XFLUID3 HEX8     157    173    177    162    136    153    158    138 MAT       1 NA Euler 
+     59 XFLUID3 HEX8     142    157    162    145    118    136    138    122 MAT       1 NA Euler 
+     60 XFLUID3 HEX8     125    142    145    129    104    118    122    109 MAT       1 NA Euler 
+     61 XFLUID3 HEX8     114    125    129    117     90    104    109     93 MAT       1 NA Euler 
+     62 XFLUID3 HEX8     107    114    117    112     81     90     93     87 MAT       1 NA Euler 
+     63 XFLUID3 HEX8      99    107    112    103     77     81     87     79 MAT       1 NA Euler 
+     64 XFLUID3 HEX8     213    222    225    216    205    215    218    208 MAT       1 NA Euler 
+     65 XFLUID3 HEX8     204    213    216    207    189    205    208    192 MAT       1 NA Euler 
+     66 XFLUID3 HEX8     191    204    207    194    173    189    192    177 MAT       1 NA Euler 
+     67 XFLUID3 HEX8     182    191    194    183    157    173    177    162 MAT       1 NA Euler 
+     68 XFLUID3 HEX8     166    182    183    169    142    157    162    145 MAT       1 NA Euler 
+     69 XFLUID3 HEX8     148    166    169    151    125    142    145    129 MAT       1 NA Euler 
+     70 XFLUID3 HEX8     139    148    151    144    114    125    129    117 MAT       1 NA Euler 
+     71 XFLUID3 HEX8     132    139    144    134    107    114    117    112 MAT       1 NA Euler 
+     72 XFLUID3 HEX8     123    132    134    128     99    107    112    103 MAT       1 NA Euler 
+     73 XFLUID3 HEX8     223    226    227    224    213    222    225    216 MAT       1 NA Euler 
+     74 XFLUID3 HEX8     214    223    224    217    204    213    216    207 MAT       1 NA Euler 
+     75 XFLUID3 HEX8     209    214    217    211    191    204    207    194 MAT       1 NA Euler 
+     76 XFLUID3 HEX8     198    209    211    200    182    191    194    183 MAT       1 NA Euler 
+     77 XFLUID3 HEX8     185    198    200    188    166    182    183    169 MAT       1 NA Euler 
+     78 XFLUID3 HEX8     175    185    188    179    148    166    169    151 MAT       1 NA Euler 
+     79 XFLUID3 HEX8     168    175    179    172    139    148    151    144 MAT       1 NA Euler 
+     80 XFLUID3 HEX8     159    168    172    163    132    139    144    134 MAT       1 NA Euler 
+     81 XFLUID3 HEX8     149    159    163    155    123    132    134    128 MAT       1 NA Euler 
 ------------------------------------------------------ALE ELEMENTS
 --------------------------------------------------THERMAL ELEMENTS
 ------------------------------------------------TRANSPORT ELEMENTS
