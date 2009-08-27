@@ -60,6 +60,11 @@ namespace MAT
 namespace DRT
 {
 
+namespace INPUT
+{
+class LineDefinition;
+}
+
 // forward declarations
 class Discretization;
 class Node;
@@ -538,6 +543,13 @@ public:
   virtual bool ReadElement();
 
   /*!
+  \brief Read input for this element
+  */
+  virtual bool ReadElement(const std::string& eletype,
+                           const std::string& distype,
+                           DRT::INPUT::LineDefinition* linedef);
+
+  /*!
     \brief Set processor local col id
 
     \param lid: processor local col id
@@ -583,6 +595,13 @@ public:
 
   */
   void SetNodeIds(const int nnode, const int* nodes);
+
+  /*!
+  \brief Set a list of node ids this element is connected to
+
+  Here the node ids are directly taken from an input line.
+  */
+  void SetNodeIds(const std::string& distype, DRT::INPUT::LineDefinition* linedef);
 
   /// Set element material
   /*!

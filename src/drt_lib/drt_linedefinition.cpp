@@ -334,6 +334,15 @@ DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddInt(std::string name)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddIntVector(std::string name, int length)
+{
+  components_.push_back(new UnnamedVectorComponent<int>(name,length));
+  return *this;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddDoubleVector(std::string name, int length)
 {
   components_.push_back(new UnnamedVectorComponent<double>(name,length));

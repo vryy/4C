@@ -107,40 +107,40 @@ void DRT::INPUT::ElementDefinition::PrintElementLines(std::ostream& stream, std:
 /*----------------------------------------------------------------------*/
 void DRT::INPUT::ElementDefinition::SetupValidElementLines()
 {
-  SetupArtLines();
-  SetupBeam2Lines();
-  SetupBeam2rLines();
-  SetupBeam3Lines();
-  SetupConstrele2Lines();
-  SetupConstrele3Lines();
-  SetupPtet4Lines();
-  SetupShell8Lines();
-  SetupSolid3Lines();
-  SetupSolidh20Lines();
-  SetupSolidh27Lines();
-  SetupSolidh8Lines();
-  SetupSolidh8p1j1Lines();
-  SetupSolidsh8Lines();
-  SetupSolidsh8p8Lines();
-  SetupSolidshw6Lines();
-  SetupSolidt10Lines();
-  SetupSolidt4Lines();
-  SetupSolidw6Lines();
-  SetupTorsion2Lines();
-  SetupTorsion3Lines();
-  SetupTruss2Lines();
-  SetupTruss3Lines();
-  SetupWallLines();
+//   SetupArtLines();
+//   SetupBeam2Lines();
+//   SetupBeam2rLines();
+//   SetupBeam3Lines();
+//   SetupConstrele2Lines();
+//   SetupConstrele3Lines();
+//   SetupPtet4Lines();
+//   SetupShell8Lines();
+//   SetupSolid3Lines();
+//   SetupSolidh20Lines();
+//   SetupSolidh27Lines();
+//   SetupSolidh8Lines();
+//   SetupSolidh8p1j1Lines();
+//   SetupSolidsh8Lines();
+//   SetupSolidsh8p8Lines();
+//   SetupSolidshw6Lines();
+//   SetupSolidt10Lines();
+//   SetupSolidt4Lines();
+//   SetupSolidw6Lines();
+//   SetupTorsion2Lines();
+//   SetupTorsion3Lines();
+//   SetupTruss2Lines();
+//   SetupTruss3Lines();
+//   SetupWallLines();
 
-  SetupCombust3Lines();
-  SetupFluid2Lines();
+//   SetupCombust3Lines();
+//   SetupFluid2Lines();
   SetupFluid3Lines();
-  SetupTranspLines();
-  SetupXdiff3Lines();
-  SetupXfluid3Lines();
+//   SetupTranspLines();
+//   SetupXdiff3Lines();
+//   SetupXfluid3Lines();
 
-  SetupAle2Lines();
-  SetupAle3Lines();
+//   SetupAle2Lines();
+//   SetupAle3Lines();
 
   // backward compatibility
   // still needed?
@@ -384,7 +384,7 @@ void DRT::INPUT::ElementDefinition::SetupPtet4Lines()
   std::map<std::string,LineDefinition>& defs = definitions_["PTET4"];
 
   defs["TET4"]
-    .AddDoubleVector("TET4",4)
+    .AddIntVector("TET4",4)
     .AddNamedInt("MAT")
     ;
 }
@@ -397,7 +397,7 @@ void DRT::INPUT::ElementDefinition::SetupShell8Lines()
   std::map<std::string,LineDefinition>& defs = definitions_["SHELL8"];
 
   defs["QUAD4"]
-    .AddDoubleVector("QUAD4",4)
+    .AddIntVector("QUAD4",4)
     .AddNamedInt("MAT")
     .AddNamedDouble("THICK")
     .AddNamedIntVector("GP",3)
@@ -413,7 +413,7 @@ void DRT::INPUT::ElementDefinition::SetupShell8Lines()
     ;
 
   defs["QUAD8"]
-    .AddDoubleVector("QUAD8",8)
+    .AddIntVector("QUAD8",8)
     .AddNamedInt("MAT")
     .AddNamedDouble("THICK")
     .AddNamedIntVector("GP",3)
@@ -429,7 +429,7 @@ void DRT::INPUT::ElementDefinition::SetupShell8Lines()
     ;
 
   defs["QUAD9"]
-    .AddDoubleVector("QUAD9",9)
+    .AddIntVector("QUAD9",9)
     .AddNamedInt("MAT")
     .AddNamedDouble("THICK")
     .AddNamedIntVector("GP",3)
@@ -445,7 +445,7 @@ void DRT::INPUT::ElementDefinition::SetupShell8Lines()
     ;
 
   defs["TRI3"]
-    .AddDoubleVector("TRI3",3)
+    .AddIntVector("TRI3",3)
     .AddNamedInt("MAT")
     .AddNamedDouble("THICK")
     .AddNamedIntVector("GP",3)
@@ -461,7 +461,7 @@ void DRT::INPUT::ElementDefinition::SetupShell8Lines()
     ;
 
   defs["TRI6"]
-    .AddDoubleVector("TRI6",6)
+    .AddIntVector("TRI6",6)
     .AddNamedInt("MAT")
     .AddNamedDouble("THICK")
     .AddNamedIntVector("GP",3)
@@ -485,7 +485,7 @@ void DRT::INPUT::ElementDefinition::SetupSolid3Lines()
   std::map<std::string,LineDefinition>& defs = definitions_["SOLID3"];
 
   defs["HEX8"]
-    .AddDoubleVector("HEX8",8)
+    .AddIntVector("HEX8",8)
     .AddNamedInt("MAT")
     .AddNamedIntVector("GP",3)
     .AddNamedInt("GP_PYRAMID")
@@ -495,7 +495,7 @@ void DRT::INPUT::ElementDefinition::SetupSolid3Lines()
     ;
 
   defs["HEX20"]
-    .AddDoubleVector("HEX20",20)
+    .AddIntVector("HEX20",20)
     .AddNamedInt("MAT")
     .AddNamedIntVector("GP",3)
     .AddNamedInt("GP_PYRAMID")
@@ -505,7 +505,7 @@ void DRT::INPUT::ElementDefinition::SetupSolid3Lines()
     ;
 
   defs["HEX27"]
-    .AddDoubleVector("HEX27",27)
+    .AddIntVector("HEX27",27)
     .AddNamedInt("MAT")
     .AddNamedIntVector("GP",3)
     .AddNamedInt("GP_PYRAMID")
@@ -515,7 +515,7 @@ void DRT::INPUT::ElementDefinition::SetupSolid3Lines()
     ;
 
   defs["TET4"]
-    .AddDoubleVector("TET4",4)
+    .AddIntVector("TET4",4)
     .AddNamedInt("MAT")
     .AddNamedIntVector("GP",3)
     .AddNamedInt("GP_PYRAMID")
@@ -525,7 +525,7 @@ void DRT::INPUT::ElementDefinition::SetupSolid3Lines()
     ;
 
   defs["TET10"]
-    .AddDoubleVector("TET10",10)
+    .AddIntVector("TET10",10)
     .AddNamedInt("MAT")
     .AddNamedIntVector("GP",3)
     .AddNamedInt("GP_PYRAMID")
@@ -535,7 +535,7 @@ void DRT::INPUT::ElementDefinition::SetupSolid3Lines()
     ;
 
   defs["WEDGE6"]
-    .AddDoubleVector("WEDGE6",6)
+    .AddIntVector("WEDGE6",6)
     .AddNamedInt("MAT")
     .AddNamedIntVector("GP",3)
     .AddNamedInt("GP_PYRAMID")
@@ -545,7 +545,7 @@ void DRT::INPUT::ElementDefinition::SetupSolid3Lines()
     ;
 
   defs["WEDGE15"]
-    .AddDoubleVector("WEDGE15",15)
+    .AddIntVector("WEDGE15",15)
     .AddNamedInt("MAT")
     .AddNamedIntVector("GP",3)
     .AddNamedInt("GP_PYRAMID")
@@ -555,7 +555,7 @@ void DRT::INPUT::ElementDefinition::SetupSolid3Lines()
     ;
 
   defs["PYRAMID5"]
-    .AddDoubleVector("PYRAMID5",5)
+    .AddIntVector("PYRAMID5",5)
     .AddNamedInt("MAT")
     .AddNamedIntVector("GP",3)
     .AddNamedInt("GP_PYRAMID")
@@ -574,7 +574,7 @@ void DRT::INPUT::ElementDefinition::SetupSolidh20Lines()
   std::map<std::string,LineDefinition>& defs = definitions_["SOLIDH20"];
 
   defs["HEX20"]
-    .AddDoubleVector("HEX20",20)
+    .AddIntVector("HEX20",20)
     .AddNamedInt("MAT")
     .AddNamedDouble("STRENGTH")
     .AddNamedIntVector("GP",3)
@@ -590,7 +590,7 @@ void DRT::INPUT::ElementDefinition::SetupSolidh27Lines()
   std::map<std::string,LineDefinition>& defs = definitions_["SOLIDH27"];
 
   defs["HEX27"]
-    .AddDoubleVector("HEX27",27)
+    .AddIntVector("HEX27",27)
     .AddNamedInt("MAT")
     .AddNamedDouble("STRENGTH")
     .AddNamedIntVector("GP",3)
@@ -606,12 +606,15 @@ void DRT::INPUT::ElementDefinition::SetupSolidh8Lines()
   std::map<std::string,LineDefinition>& defs = definitions_["SOLIDH8"];
 
   defs["HEX8"]
-    .AddDoubleVector("HEX8",8)
+    .AddIntVector("HEX8",8)
     .AddNamedInt("MAT")
-    .AddNamedDouble("STRENGTH")
     .AddNamedIntVector("GP",3)
     .AddNamedString("KINEM")
     .AddNamedString("EAS")
+    .AddNamedDoubleVector("RAD",3)
+    .AddNamedDoubleVector("AXI",3)
+    .AddNamedDoubleVector("CIR",3)
+    .AddNamedDouble("STRENGTH")
     ;
 }
 
@@ -623,7 +626,7 @@ void DRT::INPUT::ElementDefinition::SetupSolidh8p1j1Lines()
   std::map<std::string,LineDefinition>& defs = definitions_["SOLIDH8P1J1"];
 
   defs["HEX8"]
-    .AddDoubleVector("HEX8",8)
+    .AddIntVector("HEX8",8)
     .AddNamedInt("MAT")
     ;
 }
@@ -636,13 +639,16 @@ void DRT::INPUT::ElementDefinition::SetupSolidsh8Lines()
   std::map<std::string,LineDefinition>& defs = definitions_["SOLIDSH8"];
 
   defs["HEX8"]
-    .AddDoubleVector("HEX8",8)
+    .AddIntVector("HEX8",8)
     .AddNamedInt("MAT")
-    .AddNamedDouble("STRENGTH")
     .AddNamedIntVector("GP",3)
     .AddNamedString("KINEM")
     .AddNamedString("EAS")
     .AddNamedString("THICKDIR")
+    .AddNamedDoubleVector("RAD",3)
+    .AddNamedDoubleVector("AXI",3)
+    .AddNamedDoubleVector("CIR",3)
+    .AddNamedDouble("STRENGTH")
     ;
 }
 
@@ -654,9 +660,8 @@ void DRT::INPUT::ElementDefinition::SetupSolidsh8p8Lines()
   std::map<std::string,LineDefinition>& defs = definitions_["SOLIDSH8P8"];
 
   defs["HEX8"]
-    .AddDoubleVector("HEX8",8)
+    .AddIntVector("HEX8",8)
     .AddNamedInt("MAT")
-    .AddNamedDouble("STRENGTH")
     .AddNamedIntVector("GP",3)
     .AddNamedString("KINEM")
     .AddNamedString("THICKDIR")
@@ -665,6 +670,10 @@ void DRT::INPUT::ElementDefinition::SetupSolidsh8p8Lines()
     .AddNamedString("EAS")
     .AddNamedString("LIN")
     .AddNamedString("ISO")
+    .AddNamedDoubleVector("RAD",3)
+    .AddNamedDoubleVector("AXI",3)
+    .AddNamedDoubleVector("CIR",3)
+    .AddNamedDouble("STRENGTH")
     ;
 }
 
@@ -676,11 +685,14 @@ void DRT::INPUT::ElementDefinition::SetupSolidshw6Lines()
   std::map<std::string,LineDefinition>& defs = definitions_["SOLIDSHW6"];
 
   defs["WEDGE6"]
-    .AddDoubleVector("WEDGE6",6)
+    .AddIntVector("WEDGE6",6)
     .AddNamedInt("MAT")
     .AddNamedString("KINEM")
     .AddNamedString("EAS")
     .AddNamedString("OPTORDER")
+    .AddNamedDoubleVector("RAD",3)
+    .AddNamedDoubleVector("AXI",3)
+    .AddNamedDoubleVector("CIR",3)
     ;
 }
 
@@ -692,7 +704,7 @@ void DRT::INPUT::ElementDefinition::SetupSolidt10Lines()
   std::map<std::string,LineDefinition>& defs = definitions_["SOLIDT10"];
 
   defs["TET10"]
-    .AddDoubleVector("TET10",10)
+    .AddIntVector("TET10",10)
     .AddNamedInt("MAT")
     .AddNamedString("KINEM")
     ;
@@ -706,7 +718,7 @@ void DRT::INPUT::ElementDefinition::SetupSolidt4Lines()
   std::map<std::string,LineDefinition>& defs = definitions_["SOLIDT4"];
 
   defs["TET4"]
-    .AddDoubleVector("TET4",4)
+    .AddIntVector("TET4",4)
     .AddNamedInt("MAT")
     .AddNamedString("KINEM")
     ;
@@ -720,9 +732,12 @@ void DRT::INPUT::ElementDefinition::SetupSolidw6Lines()
   std::map<std::string,LineDefinition>& defs = definitions_["SOLIDW6"];
 
   defs["WEDGE6"]
-    .AddDoubleVector("WEDGE6",6)
+    .AddIntVector("WEDGE6",6)
     .AddNamedInt("MAT")
     .AddNamedString("KINEM")
+    .AddNamedDoubleVector("RAD",3)
+    .AddNamedDoubleVector("AXI",3)
+    .AddNamedDoubleVector("CIR",3)
     ;
 }
 
@@ -822,7 +837,7 @@ void DRT::INPUT::ElementDefinition::SetupWallLines()
   std::map<std::string,LineDefinition>& defs = definitions_["WALL"];
 
   defs["QUAD4"]
-    .AddDoubleVector("QUAD4",4)
+    .AddIntVector("QUAD4",4)
     .AddNamedInt("MAT")
     .AddNamedDouble("THICK")
     .AddNamedIntVector("GP",2)
@@ -832,7 +847,7 @@ void DRT::INPUT::ElementDefinition::SetupWallLines()
     ;
 
   defs["QUAD8"]
-    .AddDoubleVector("QUAD8",8)
+    .AddIntVector("QUAD8",8)
     .AddNamedInt("MAT")
     .AddNamedDouble("THICK")
     .AddNamedIntVector("GP",2)
@@ -842,7 +857,7 @@ void DRT::INPUT::ElementDefinition::SetupWallLines()
     ;
 
   defs["QUAD9"]
-    .AddDoubleVector("QUAD9",9)
+    .AddIntVector("QUAD9",9)
     .AddNamedInt("MAT")
     .AddNamedDouble("THICK")
     .AddNamedIntVector("GP",2)
@@ -852,7 +867,7 @@ void DRT::INPUT::ElementDefinition::SetupWallLines()
     ;
 
   defs["TRI3"]
-    .AddDoubleVector("TRI3",3)
+    .AddIntVector("TRI3",3)
     .AddNamedInt("MAT")
     .AddNamedDouble("THICK")
     .AddNamedIntVector("GP",2)
@@ -862,7 +877,7 @@ void DRT::INPUT::ElementDefinition::SetupWallLines()
     ;
 
   defs["TRI6"]
-    .AddDoubleVector("TRI6",6)
+    .AddIntVector("TRI6",6)
     .AddNamedInt("MAT")
     .AddNamedDouble("THICK")
     .AddNamedIntVector("GP",2)
@@ -872,7 +887,7 @@ void DRT::INPUT::ElementDefinition::SetupWallLines()
     ;
 
   defs["NURBS4"]
-    .AddDoubleVector("NURBS4",4)
+    .AddIntVector("NURBS4",4)
     .AddNamedInt("MAT")
     .AddNamedDouble("THICK")
     .AddNamedIntVector("GP",2)
@@ -882,7 +897,7 @@ void DRT::INPUT::ElementDefinition::SetupWallLines()
     ;
 
   defs["NURBS9"]
-    .AddDoubleVector("NURBS9",9)
+    .AddIntVector("NURBS9",9)
     .AddNamedInt("MAT")
     .AddNamedDouble("THICK")
     .AddNamedIntVector("GP",2)
@@ -900,49 +915,49 @@ void DRT::INPUT::ElementDefinition::SetupCombust3Lines()
   std::map<std::string,LineDefinition>& defs = definitions_["COMBUST3"];
 
   defs["HEX8"]
-    .AddDoubleVector("HEX8",8)
+    .AddIntVector("HEX8",8)
     .AddNamedInt("MAT")
     .AddNamedString("NA")
     ;
 
   defs["HEX20"]
-    .AddDoubleVector("HEX20",20)
+    .AddIntVector("HEX20",20)
     .AddNamedInt("MAT")
     .AddNamedString("NA")
     ;
 
   defs["HEX27"]
-    .AddDoubleVector("HEX27",27)
+    .AddIntVector("HEX27",27)
     .AddNamedInt("MAT")
     .AddNamedString("NA")
     ;
 
   defs["TET4"]
-    .AddDoubleVector("TET4",4)
+    .AddIntVector("TET4",4)
     .AddNamedInt("MAT")
     .AddNamedString("NA")
     ;
 
   defs["TET10"]
-    .AddDoubleVector("TET10",10)
+    .AddIntVector("TET10",10)
     .AddNamedInt("MAT")
     .AddNamedString("NA")
     ;
 
   defs["WEDGE6"]
-    .AddDoubleVector("WEDGE6",6)
+    .AddIntVector("WEDGE6",6)
     .AddNamedInt("MAT")
     .AddNamedString("NA")
     ;
 
   defs["WEDGE15"]
-    .AddDoubleVector("WEDGE15",15)
+    .AddIntVector("WEDGE15",15)
     .AddNamedInt("MAT")
     .AddNamedString("NA")
     ;
 
   defs["PYRAMID5"]
-    .AddDoubleVector("PYRAMID5",5)
+    .AddIntVector("PYRAMID5",5)
     .AddNamedInt("MAT")
     .AddNamedString("NA")
     ;
@@ -978,7 +993,7 @@ void DRT::INPUT::ElementDefinition::SetupFluid2Lines()
   std::map<std::string,LineDefinition>& defs = definitions_["FLUID2"];
 
   defs["QUAD4"]
-    .AddDoubleVector("QUAD4",4)
+    .AddIntVector("QUAD4",4)
     .AddNamedInt("MAT")
     .AddNamedIntVector("GP",2)
     .AddNamedInt("GP_TRI")
@@ -987,7 +1002,7 @@ void DRT::INPUT::ElementDefinition::SetupFluid2Lines()
     ;
 
   defs["QUAD8"]
-    .AddDoubleVector("QUAD8",8)
+    .AddIntVector("QUAD8",8)
     .AddNamedInt("MAT")
     .AddNamedIntVector("GP",2)
     .AddNamedInt("GP_TRI")
@@ -996,7 +1011,7 @@ void DRT::INPUT::ElementDefinition::SetupFluid2Lines()
     ;
 
   defs["QUAD9"]
-    .AddDoubleVector("QUAD9",9)
+    .AddIntVector("QUAD9",9)
     .AddNamedInt("MAT")
     .AddNamedIntVector("GP",2)
     .AddNamedInt("GP_TRI")
@@ -1005,7 +1020,7 @@ void DRT::INPUT::ElementDefinition::SetupFluid2Lines()
     ;
 
   defs["TRI3"]
-    .AddDoubleVector("TRI3",3)
+    .AddIntVector("TRI3",3)
     .AddNamedInt("MAT")
     .AddNamedIntVector("GP",2)
     .AddNamedInt("GP_TRI")
@@ -1014,7 +1029,7 @@ void DRT::INPUT::ElementDefinition::SetupFluid2Lines()
     ;
 
   defs["TRI6"]
-    .AddDoubleVector("TRI6",6)
+    .AddIntVector("TRI6",6)
     .AddNamedInt("MAT")
     .AddNamedIntVector("GP",2)
     .AddNamedInt("GP_TRI")
@@ -1023,7 +1038,7 @@ void DRT::INPUT::ElementDefinition::SetupFluid2Lines()
     ;
 
   defs["NURBS4"]
-    .AddDoubleVector("NURBS4",4)
+    .AddIntVector("NURBS4",4)
     .AddNamedInt("MAT")
     .AddNamedIntVector("GP",2)
     .AddNamedInt("GP_TRI")
@@ -1032,7 +1047,7 @@ void DRT::INPUT::ElementDefinition::SetupFluid2Lines()
     ;
 
   defs["NURBS9"]
-    .AddDoubleVector("NURBS9",9)
+    .AddIntVector("NURBS9",9)
     .AddNamedInt("MAT")
     .AddNamedIntVector("GP",2)
     .AddNamedInt("GP_TRI")
@@ -1058,113 +1073,63 @@ void DRT::INPUT::ElementDefinition::SetupFluid3Lines()
   std::map<std::string,LineDefinition>& defs = definitions_["FLUID3"];
 
   defs["HEX8"]
-    .AddDoubleVector("HEX8",8)
+    .AddIntVector("HEX8",8)
     .AddNamedInt("MAT")
     .AddNamedString("NA")
-    .AddNamedIntVector("GP",3)
-    .AddNamedInt("GP_TRI")
-    .AddNamedString("GP_ALT")
-    .AddNamedInt("GP_WEDGE")
-    .AddNamedInt("GP_PYRAMID")
     ;
 
   defs["HEX20"]
-    .AddDoubleVector("HEX20",20)
+    .AddIntVector("HEX20",20)
     .AddNamedInt("MAT")
     .AddNamedString("NA")
-    .AddNamedIntVector("GP",3)
-    .AddNamedInt("GP_TRI")
-    .AddNamedString("GP_ALT")
-    .AddNamedInt("GP_WEDGE")
-    .AddNamedInt("GP_PYRAMID")
     ;
 
   defs["HEX27"]
-    .AddDoubleVector("HEX27",27)
+    .AddIntVector("HEX27",27)
     .AddNamedInt("MAT")
     .AddNamedString("NA")
-    .AddNamedIntVector("GP",3)
-    .AddNamedInt("GP_TRI")
-    .AddNamedString("GP_ALT")
-    .AddNamedInt("GP_WEDGE")
-    .AddNamedInt("GP_PYRAMID")
     ;
 
   defs["TET4"]
-    .AddDoubleVector("TET4",4)
+    .AddIntVector("TET4",4)
     .AddNamedInt("MAT")
     .AddNamedString("NA")
-    .AddNamedIntVector("GP",3)
-    .AddNamedInt("GP_TRI")
-    .AddNamedString("GP_ALT")
-    .AddNamedInt("GP_WEDGE")
-    .AddNamedInt("GP_PYRAMID")
     ;
 
   defs["TET10"]
-    .AddDoubleVector("TET10",10)
+    .AddIntVector("TET10",10)
     .AddNamedInt("MAT")
     .AddNamedString("NA")
-    .AddNamedIntVector("GP",3)
-    .AddNamedInt("GP_TRI")
-    .AddNamedString("GP_ALT")
-    .AddNamedInt("GP_WEDGE")
-    .AddNamedInt("GP_PYRAMID")
     ;
 
   defs["WEDGE6"]
-    .AddDoubleVector("WEDGE6",6)
+    .AddIntVector("WEDGE6",6)
     .AddNamedInt("MAT")
     .AddNamedString("NA")
-    .AddNamedIntVector("GP",3)
-    .AddNamedInt("GP_TRI")
-    .AddNamedString("GP_ALT")
-    .AddNamedInt("GP_WEDGE")
-    .AddNamedInt("GP_PYRAMID")
     ;
 
   defs["WEDGE15"]
-    .AddDoubleVector("WEDGE15",15)
+    .AddIntVector("WEDGE15",15)
     .AddNamedInt("MAT")
     .AddNamedString("NA")
-    .AddNamedIntVector("GP",3)
-    .AddNamedInt("GP_TRI")
-    .AddNamedString("GP_ALT")
-    .AddNamedInt("GP_WEDGE")
-    .AddNamedInt("GP_PYRAMID")
     ;
 
   defs["PYRAMID5"]
-    .AddDoubleVector("PYRAMID5",5)
+    .AddIntVector("PYRAMID5",5)
     .AddNamedInt("MAT")
     .AddNamedString("NA")
-    .AddNamedIntVector("GP",3)
-    .AddNamedInt("GP_TRI")
-    .AddNamedString("GP_ALT")
-    .AddNamedInt("GP_WEDGE")
-    .AddNamedInt("GP_PYRAMID")
     ;
 
   defs["NURBS8"]
-    .AddDoubleVector("NURBS8",8)
+    .AddIntVector("NURBS8",8)
     .AddNamedInt("MAT")
     .AddNamedString("NA")
-    .AddNamedIntVector("GP",3)
-    .AddNamedInt("GP_TRI")
-    .AddNamedString("GP_ALT")
-    .AddNamedInt("GP_WEDGE")
-    .AddNamedInt("GP_PYRAMID")
     ;
 
   defs["NURBS27"]
-    .AddDoubleVector("NURBS27",27)
+    .AddIntVector("NURBS27",27)
     .AddNamedInt("MAT")
     .AddNamedString("NA")
-    .AddNamedIntVector("GP",3)
-    .AddNamedInt("GP_TRI")
-    .AddNamedString("GP_ALT")
-    .AddNamedInt("GP_WEDGE")
-    .AddNamedInt("GP_PYRAMID")
     ;
 }
 
@@ -1176,77 +1141,77 @@ void DRT::INPUT::ElementDefinition::SetupTranspLines()
   std::map<std::string,LineDefinition>& defs = definitions_["TRANSP"];
 
   defs["HEX8"]
-    .AddDoubleVector("HEX8",8)
+    .AddIntVector("HEX8",8)
     .AddNamedInt("MAT")
     ;
 
   defs["HEX20"]
-    .AddDoubleVector("HEX20",20)
+    .AddIntVector("HEX20",20)
     .AddNamedInt("MAT")
     ;
 
   defs["HEX27"]
-    .AddDoubleVector("HEX27",27)
+    .AddIntVector("HEX27",27)
     .AddNamedInt("MAT")
     ;
 
   defs["TET4"]
-    .AddDoubleVector("TET4",4)
+    .AddIntVector("TET4",4)
     .AddNamedInt("MAT")
     ;
 
   defs["TET10"]
-    .AddDoubleVector("TET10",10)
+    .AddIntVector("TET10",10)
     .AddNamedInt("MAT")
     ;
 
   defs["WEDGE6"]
-    .AddDoubleVector("WEDGE6",6)
+    .AddIntVector("WEDGE6",6)
     .AddNamedInt("MAT")
     ;
 
   defs["WEDGE15"]
-    .AddDoubleVector("WEDGE15",15)
+    .AddIntVector("WEDGE15",15)
     .AddNamedInt("MAT")
     ;
 
   defs["PYRAMID5"]
-    .AddDoubleVector("PYRAMID5",5)
+    .AddIntVector("PYRAMID5",5)
     .AddNamedInt("MAT")
     ;
 
   defs["QUAD4"]
-    .AddDoubleVector("QUAD4",4)
+    .AddIntVector("QUAD4",4)
     .AddNamedInt("MAT")
     ;
 
   defs["QUAD8"]
-    .AddDoubleVector("QUAD8",8)
+    .AddIntVector("QUAD8",8)
     .AddNamedInt("MAT")
     ;
 
   defs["QUAD9"]
-    .AddDoubleVector("QUAD9",9)
+    .AddIntVector("QUAD9",9)
     .AddNamedInt("MAT")
     ;
 
   defs["TRI3"]
-    .AddDoubleVector("TRI3",3)
+    .AddIntVector("TRI3",3)
     .AddNamedInt("MAT")
     ;
 
   defs["TRI6"]
-    .AddDoubleVector("TRI6",6)
+    .AddIntVector("TRI6",6)
     .AddNamedInt("MAT")
     ;
 
   defs["NURBS4"]
-    .AddDoubleVector("NURBS4",4)
+    .AddIntVector("NURBS4",4)
     .AddNamedInt("MAT")
     ;
 
   defs["NURBS9"]
-    .AddDoubleVector("NURBS9",9)
+    .AddIntVector("NURBS9",9)
     .AddNamedInt("MAT")
     ;
 
@@ -1269,52 +1234,52 @@ void DRT::INPUT::ElementDefinition::SetupXdiff3Lines()
   std::map<std::string,LineDefinition>& defs = definitions_["XDIFF3"];
 
   defs["HEX8"]
-    .AddDoubleVector("HEX8",8)
+    .AddIntVector("HEX8",8)
     .AddNamedInt("MAT")
     ;
 
   defs["HEX20"]
-    .AddDoubleVector("HEX20",20)
+    .AddIntVector("HEX20",20)
     .AddNamedInt("MAT")
     ;
 
   defs["HEX27"]
-    .AddDoubleVector("HEX27",27)
+    .AddIntVector("HEX27",27)
     .AddNamedInt("MAT")
     ;
 
   defs["TET4"]
-    .AddDoubleVector("TET4",4)
+    .AddIntVector("TET4",4)
     .AddNamedInt("MAT")
     ;
 
   defs["TET10"]
-    .AddDoubleVector("TET10",10)
+    .AddIntVector("TET10",10)
     .AddNamedInt("MAT")
     ;
 
   defs["WEDGE6"]
-    .AddDoubleVector("WEDGE6",6)
+    .AddIntVector("WEDGE6",6)
     .AddNamedInt("MAT")
     ;
 
   defs["WEDGE15"]
-    .AddDoubleVector("WEDGE15",15)
+    .AddIntVector("WEDGE15",15)
     .AddNamedInt("MAT")
     ;
 
   defs["PYRAMID5"]
-    .AddDoubleVector("PYRAMID5",5)
+    .AddIntVector("PYRAMID5",5)
     .AddNamedInt("MAT")
     ;
 
   defs["NURBS8"]
-    .AddDoubleVector("NURBS8",8)
+    .AddIntVector("NURBS8",8)
     .AddNamedInt("MAT")
     ;
 
   defs["NURBS27"]
-    .AddDoubleVector("NURBS27",27)
+    .AddIntVector("NURBS27",27)
     .AddNamedInt("MAT")
     ;
 }
@@ -1327,52 +1292,52 @@ void DRT::INPUT::ElementDefinition::SetupXfluid3Lines()
   std::map<std::string,LineDefinition>& defs = definitions_["XFLUID3"];
 
   defs["HEX8"]
-    .AddDoubleVector("HEX8",8)
+    .AddIntVector("HEX8",8)
     .AddNamedInt("MAT")
     ;
 
   defs["HEX20"]
-    .AddDoubleVector("HEX20",20)
+    .AddIntVector("HEX20",20)
     .AddNamedInt("MAT")
     ;
 
   defs["HEX27"]
-    .AddDoubleVector("HEX27",27)
+    .AddIntVector("HEX27",27)
     .AddNamedInt("MAT")
     ;
 
   defs["TET4"]
-    .AddDoubleVector("TET4",4)
+    .AddIntVector("TET4",4)
     .AddNamedInt("MAT")
     ;
 
   defs["TET10"]
-    .AddDoubleVector("TET10",10)
+    .AddIntVector("TET10",10)
     .AddNamedInt("MAT")
     ;
 
   defs["WEDGE6"]
-    .AddDoubleVector("WEDGE6",6)
+    .AddIntVector("WEDGE6",6)
     .AddNamedInt("MAT")
     ;
 
   defs["WEDGE15"]
-    .AddDoubleVector("WEDGE15",15)
+    .AddIntVector("WEDGE15",15)
     .AddNamedInt("MAT")
     ;
 
   defs["PYRAMID5"]
-    .AddDoubleVector("PYRAMID5",5)
+    .AddIntVector("PYRAMID5",5)
     .AddNamedInt("MAT")
     ;
 
   defs["NURBS8"]
-    .AddDoubleVector("NURBS8",8)
+    .AddIntVector("NURBS8",8)
     .AddNamedInt("MAT")
     ;
 
   defs["NURBS27"]
-    .AddDoubleVector("NURBS27",27)
+    .AddIntVector("NURBS27",27)
     .AddNamedInt("MAT")
     ;
 }
@@ -1385,27 +1350,27 @@ void DRT::INPUT::ElementDefinition::SetupAle2Lines()
   std::map<std::string,LineDefinition>& defs = definitions_["ALE2"];
 
   defs["QUAD4"]
-    .AddDoubleVector("QUAD4",4)
+    .AddIntVector("QUAD4",4)
     .AddNamedInt("MAT")
     ;
 
   defs["QUAD8"]
-    .AddDoubleVector("QUAD8",8)
+    .AddIntVector("QUAD8",8)
     .AddNamedInt("MAT")
     ;
 
   defs["QUAD9"]
-    .AddDoubleVector("QUAD9",9)
+    .AddIntVector("QUAD9",9)
     .AddNamedInt("MAT")
     ;
 
   defs["TRI3"]
-    .AddDoubleVector("TRI3",3)
+    .AddIntVector("TRI3",3)
     .AddNamedInt("MAT")
     ;
 
   defs["TRI6"]
-    .AddDoubleVector("TRI6",6)
+    .AddIntVector("TRI6",6)
     .AddNamedInt("MAT")
     ;
 }
@@ -1418,42 +1383,42 @@ void DRT::INPUT::ElementDefinition::SetupAle3Lines()
   std::map<std::string,LineDefinition>& defs = definitions_["ALE3"];
 
   defs["HEX8"]
-    .AddDoubleVector("HEX8",8)
+    .AddIntVector("HEX8",8)
     .AddNamedInt("MAT")
     ;
 
   defs["HEX20"]
-    .AddDoubleVector("HEX20",20)
+    .AddIntVector("HEX20",20)
     .AddNamedInt("MAT")
     ;
 
   defs["HEX27"]
-    .AddDoubleVector("HEX27",27)
+    .AddIntVector("HEX27",27)
     .AddNamedInt("MAT")
     ;
 
   defs["TET4"]
-    .AddDoubleVector("TET4",4)
+    .AddIntVector("TET4",4)
     .AddNamedInt("MAT")
     ;
 
   defs["TET10"]
-    .AddDoubleVector("TET10",10)
+    .AddIntVector("TET10",10)
     .AddNamedInt("MAT")
     ;
 
   defs["WEDGE6"]
-    .AddDoubleVector("WEDGE6",6)
+    .AddIntVector("WEDGE6",6)
     .AddNamedInt("MAT")
     ;
 
   defs["WEDGE15"]
-    .AddDoubleVector("WEDGE15",15)
+    .AddIntVector("WEDGE15",15)
     .AddNamedInt("MAT")
     ;
 
   defs["PYRAMID5"]
-    .AddDoubleVector("PYRAMID5",5)
+    .AddIntVector("PYRAMID5",5)
     .AddNamedInt("MAT")
     ;
 }

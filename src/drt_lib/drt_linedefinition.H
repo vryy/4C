@@ -80,6 +80,9 @@ namespace INPUT
     /// add a single integer variable
     LineDefinition& AddInt(std::string name);
 
+    /// add a vector of integer variables
+    LineDefinition& AddIntVector(std::string name, int length);
+
     /// add a vector of double variables
     LineDefinition& AddDoubleVector(std::string name, int length);
 

@@ -215,30 +215,35 @@ void ElementReader::Partition()
           string distype;
           // read element id type and distype
           t >> elenumber >> eletype >> distype;
+          elenumber -= 1;
 
-#if 0
+          // let the factory create a matching empty element
+          Teuchos::RCP<DRT::Element> ele = DRT::UTILS::Factory(eletype,distype,elenumber,0);
+
+          // For the time being we support old and new input facilities. To
+          // smooth transition.
+
           DRT::INPUT::LineDefinition* linedef = ed.ElementLines(eletype,distype);
           if (linedef!=NULL)
           {
             if (not linedef->Read(t))
               dserror("failed to read element %d %s %s",elenumber,eletype.c_str(),distype.c_str());
-            linedef->Print(std::cout);
-            std::cout << "\n";
+            //linedef->Print(std::cout);
+            //std::cout << "\n";
+            ele->ReadElement(eletype,distype,linedef);
           }
-#endif
+          else
+          {
+            // Set the current row to the empty slot after the file rows
+            // and store the current line. This way the elements can use
+            // the normal fr* functions to read the line.
+            // Of course this is a hack.
+            allfiles.actrow = allfiles.numrows;
+            allfiles.actplace = allfiles.input_file[allfiles.actrow] = const_cast<char*>(line.c_str());
+            // let this element read its input line
+            ele->ReadElement();
+          }
 
-          elenumber -= 1;
-
-          // Set the current row to the empty slot after the file rows
-          // and store the current line. This way the elements can use
-          // the normal fr* functions to read the line.
-          // Of course this is a hack.
-          allfiles.actrow = allfiles.numrows;
-          allfiles.actplace = allfiles.input_file[allfiles.actrow] = const_cast<char*>(line.c_str());
-          // let the factory create a matching empty element
-          Teuchos::RCP<DRT::Element> ele = DRT::UTILS::Factory(eletype,distype,elenumber,0);
-          // let this element read its input line
-          ele->ReadElement();
           // add element to discretization
           dis_->AddElement(ele);
 

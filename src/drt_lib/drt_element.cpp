@@ -46,6 +46,7 @@ Maintainer: Michael Gee
 #include "drt_discret.H"
 #include "drt_dserror.H"
 #include "drt_utils.H"
+#include "drt_linedefinition.H"
 
 #include "../drt_mat/material.H"
 
@@ -147,6 +148,18 @@ bool DRT::Element::ReadElement()
   return false;
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool DRT::Element::ReadElement(const std::string& eletype,
+                               const std::string& distype,
+                               DRT::INPUT::LineDefinition* linedef)
+{
+  dserror("subclass implementations missing");
+  return false;
+}
+
+
 /*----------------------------------------------------------------------*
  |  set node numbers to element (public)                     mwgee 11/06|
  *----------------------------------------------------------------------*/
@@ -156,6 +169,17 @@ void DRT::Element::SetNodeIds(const int nnode, const int* nodes)
   for (int i=0; i<nnode; ++i) nodeid_[i] = nodes[i];
   node_.resize(0);
   return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::Element::SetNodeIds(const std::string& distype, DRT::INPUT::LineDefinition* linedef)
+{
+  linedef->ExtractIntVector(distype,nodeid_);
+  for (unsigned i=0; i<nodeid_.size(); ++i)
+    nodeid_[i] -= 1;
+  node_.resize(0);
 }
 
 
@@ -428,7 +452,7 @@ int DRT::Element::Evaluate(ParameterList& params,
   return -1;
 }
 
-#if 0 // this no longer is a dummy (but pure virtual) to check on the 
+#if 0 // this no longer is a dummy (but pure virtual) to check on the
       // parameter list. It can be a dummy again once everything with
       // EvaluateNeumann is fixed
 /*----------------------------------------------------------------------*
