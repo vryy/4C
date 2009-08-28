@@ -360,6 +360,7 @@ protected:
       Teuchos::RCP<LINALG::SparseOperator>    Mud,
       Teuchos::RCP<LINALG::SparseOperator>    Mdu,
       Teuchos::RCP<LINALG::SparseOperator>    Cdd,
+      Teuchos::RCP<Epetra_Vector>             RHSd,
       Teuchos::RCP<LINALG::SparseOperator>    systemmatrix1,
       Teuchos::RCP<Epetra_Vector>             systemvector1
       );
@@ -442,6 +443,7 @@ protected:
   Teuchos::RCP<LINALG::SparseMatrix> Mud_;
   Teuchos::RCP<LINALG::SparseMatrix> Mdu_;
   Teuchos::RCP<LINALG::SparseMatrix> Cdd_;
+  Teuchos::RCP<Epetra_Vector>        RHSd_;
 
 //
 //  /// (standard) system matrix

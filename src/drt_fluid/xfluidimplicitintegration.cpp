@@ -590,13 +590,12 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInter
 {
   // dump old matrix to save memory while we construct a new matrix
   sysmat_ = Teuchos::null;
-  // since number of dofs can change, we don't allow reuse of preconditioners over timestep borders
-  solver_ = Teuchos::null;
-  {
-    ParameterList eleparams;
-    eleparams.set("action","reset");
-    discret_->Evaluate(eleparams);
-  }
+
+//  {
+//    ParameterList eleparams;
+//    eleparams.set("action","reset");
+//    discret_->Evaluate(eleparams);
+//  }
   dofmanagerForOutput_ = Teuchos::null;
 
   // within this routine, no parallel re-distribution is allowed to take place
@@ -625,41 +624,6 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInter
   const Epetra_Map olddofrowmap = *discret_->DofRowMap();
   discret_->FillComplete(true,false,false);
   const Epetra_Map& newdofrowmap = *discret_->DofRowMap();
-
-  // sysmat might be singular (if we have a purely Dirichlet constrained
-  // problem, the pressure mode is defined only up to a constant)
-  // in this case, we need a basis vector for the nullspace/kernel
-  vector<DRT::Condition*> KSPcond;
-  discret_->GetCondition("KrylovSpaceProjection",KSPcond);
-  int numcond = KSPcond.size();
-  int numfluid = 0;
-  for(int icond = 0; icond < numcond; icond++)
-  {
-    const std::string* name = KSPcond[icond]->Get<std::string>("discretization");
-    if (*name == "fluid") numfluid++;
-  }
-  if (numfluid == 1)
-  {
-    cout0_ << "Krylov projection active..." << endl;
-    project_ = true;
-    w_       = LINALG::CreateVector(newdofrowmap,true);
-    c_       = LINALG::CreateVector(newdofrowmap,true);
-  }
-  else if (numfluid == 0)
-  {
-    project_ = false;
-    w_       = Teuchos::null;
-    c_       = Teuchos::null;
-  }
-  else
-    dserror("Received more than one KrylovSpaceCondition for fluid field");
-
-
-
-  solver_ = rcp(new LINALG::Solver(fluidsolverparams_,
-                                   discret_->Comm(),
-                                   DRT::Problem::Instance()->ErrorFile()->Handle()));
-  discret_->ComputeNullSpaceIfNecessary(solver_->Params());
 
   {
     const std::map<XFEM::DofKey<XFEM::onNode>, XFEM::DofGID> oldNodalDofDistributionMap(state_.nodalDofDistributionMap_);
@@ -972,7 +936,51 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
   // time measurement: nonlinear iteration
   TEUCHOS_FUNC_TIME_MONITOR("   + nonlin. iteration/lin. solve");
 
+  {
+    ParameterList eleparams;
+    eleparams.set("action","reset");
+    discret_->Evaluate(eleparams);
+  }
+
+  // since number of dofs can change, we don't allow reuse of preconditioners over timestep borders
+  solver_ = Teuchos::null;
+
   ComputeInterfaceAndSetDOFs(cutterdiscret);
+
+  // sysmat might be singular (if we have a purely Dirichlet constrained
+  // problem, the pressure mode is defined only up to a constant)
+  // in this case, we need a basis vector for the nullspace/kernel
+  vector<DRT::Condition*> KSPcond;
+  discret_->GetCondition("KrylovSpaceProjection",KSPcond);
+  int numcond = KSPcond.size();
+  int numfluid = 0;
+  for(int icond = 0; icond < numcond; icond++)
+  {
+    const std::string* name = KSPcond[icond]->Get<std::string>("discretization");
+    if (*name == "fluid") numfluid++;
+  }
+  if (numfluid == 1)
+  {
+    cout0_ << "Krylov projection active..." << endl;
+    project_ = true;
+    w_       = LINALG::CreateVector(*discret_->DofRowMap(),true);
+    c_       = LINALG::CreateVector(*discret_->DofRowMap(),true);
+  }
+  else if (numfluid == 0)
+  {
+    project_ = false;
+    w_       = Teuchos::null;
+    c_       = Teuchos::null;
+  }
+  else
+    dserror("Received more than one KrylovSpaceCondition for fluid field");
+
+
+
+  solver_ = rcp(new LINALG::Solver(fluidsolverparams_,
+                                   discret_->Comm(),
+                                   DRT::Problem::Instance()->ErrorFile()->Handle()));
+  discret_->ComputeNullSpaceIfNecessary(solver_->Params());
 
 //  DRT::PAR::LoadBalancer balancer(discret_);
 //  balancer.Partition();
@@ -1419,6 +1427,19 @@ void FLD::XFluidImplicitTimeInt::Evaluate(
 {
   cout << "FLD::XFluidImplicitTimeInt::Evaluate()" << endl;
 
+  const bool firstcall = state_.velnp_ == Teuchos::null;
+
+  if (state_.velnp_ != Teuchos::null)
+    state_.velnp_->Update(1.0,*fluidvel,1.0);
+
+  if (firstcall)
+  {
+    cout << "Resetting!!!!!!!!!!!!!!!!!!!" << endl;
+    ParameterList eleparams;
+    eleparams.set("action","reset");
+    discret_->Evaluate(eleparams);
+  }
+
   Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih = ComputeInterfaceAndSetDOFs(cutterdiscret);
 
   PrepareNonlinearSolve();
@@ -1430,6 +1451,7 @@ void FLD::XFluidImplicitTimeInt::Evaluate(
   Mud_ = Teuchos::rcp(new LINALG::SparseMatrix(fluiddofrowmap,0,false,false));
   Mdu_ = Teuchos::rcp(new LINALG::SparseMatrix(ifacedofrowmap,0,false,false));
   Cdd_ = Teuchos::rcp(new LINALG::SparseMatrix(ifacedofrowmap,0,false,false));
+  RHSd_ = LINALG::CreateVector(ifacedofrowmap,true);
 
   // action for elements
   if (timealgo_!=timeint_stationary and theta_ < 1.0)
@@ -1494,7 +1516,7 @@ void FLD::XFluidImplicitTimeInt::Evaluate(
   // call loop over elements
   //discret_->Evaluate(eleparams,sysmat_,residual_);
   MonolithicMultiDisEvaluate(ih, discret_,cutterdiscret, eleparams,
-      Cuu_, Mud_, Mdu_, Cdd_, sysmat_, residual_);
+      Cuu_, Mud_, Mdu_, Cdd_, RHSd_, sysmat_, residual_);
   discret_->ClearState();
 
   // finalize the system matrix
@@ -1510,8 +1532,6 @@ void FLD::XFluidImplicitTimeInt::Evaluate(
 
   // blank residual DOFs which are on Dirichlet BC
   dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), residual_);
-  cout << *trueresidual_ << endl;
-  cout << *residual_ << endl;
   trueresidual_->Update(ResidualScaling(),*residual_,0.0);
 
   // Apply dirichlet boundary conditions to system of equations
@@ -1650,12 +1670,18 @@ void FLD::XFluidImplicitTimeInt::StatisticsAndOutput()
 void FLD::XFluidImplicitTimeInt::Output()
 {
 
+  const bool write_visualization_data = step_%upres_ == 0;
+  const bool write_restart_data       = uprestart_ != 0 and step_%uprestart_ == 0;
+
   //-------------------------------------------- output of solution
 
-  if (step_%upres_ == 0)  //write solution for visualization
+  if (write_visualization_data or write_restart_data)
   {
-    output_->NewStep    (step_,time_);
+    output_->NewStep(step_,time_);
+  }
 
+  if (write_visualization_data)  //write solution for visualization
+  {
     Teuchos::RCP<Epetra_Vector> velnp_out = dofmanagerForOutput_->fillPhysicalOutputVector(
         *state_.velnp_, dofset_out_, state_.nodalDofDistributionMap_, physprob_.fieldset_);
 
@@ -1689,15 +1715,13 @@ void FLD::XFluidImplicitTimeInt::Output()
   }
 
   // write restart
-  if (uprestart_ != 0 and step_%uprestart_ == 0)
+  if (write_restart_data)
   {
-    output_->NewStep    (step_,time_);
-
     output_->WriteVector("velnp", state_.velnp_);
-    output_->WriteVector("veln", state_.veln_);
+    output_->WriteVector("veln" , state_.veln_);
     output_->WriteVector("velnm", state_.velnm_);
     output_->WriteVector("accnp", state_.accnp_);
-    output_->WriteVector("accn", state_.accn_);
+    output_->WriteVector("accn" , state_.accn_);
   }
 
   if (discret_->Comm().NumProc() == 1)
@@ -2982,6 +3006,7 @@ void FLD::XFluidImplicitTimeInt::MonolithicMultiDisEvaluate(
     Teuchos::RCP<LINALG::SparseOperator>    Mud,
     Teuchos::RCP<LINALG::SparseOperator>    Mdu,
     Teuchos::RCP<LINALG::SparseOperator>    Cdd,
+    Teuchos::RCP<Epetra_Vector>             RHSd,
     Teuchos::RCP<LINALG::SparseOperator>    systemmatrix1,
     Teuchos::RCP<Epetra_Vector>             systemvector1)
 {
@@ -2998,6 +3023,7 @@ void FLD::XFluidImplicitTimeInt::MonolithicMultiDisEvaluate(
   RCP<Epetra_SerialDenseMatrix> elematrixMud = rcp(new Epetra_SerialDenseMatrix());
   RCP<Epetra_SerialDenseMatrix> elematrixMdu = rcp(new Epetra_SerialDenseMatrix());
   RCP<Epetra_SerialDenseMatrix> elematrixCdd = rcp(new Epetra_SerialDenseMatrix());
+  RCP<Epetra_SerialDenseVector> elevectorRHSd = rcp(new Epetra_SerialDenseVector());
   Epetra_SerialDenseMatrix elematrix1;
   Epetra_SerialDenseMatrix elematrix2;
   Epetra_SerialDenseVector elevector1;
@@ -3052,6 +3078,10 @@ void FLD::XFluidImplicitTimeInt::MonolithicMultiDisEvaluate(
       AdaptElementMatrix(fluideledim,   ifacepatchdim, *elematrixMud);
       AdaptElementMatrix(ifacepatchdim, fluideledim,   *elematrixMdu);
       AdaptElementMatrix(ifacepatchdim, ifacepatchdim, *elematrixCdd);
+      if (elevectorRHSd->Length()!=(int)ifacepatchdim)
+        elevectorRHSd->Size(ifacepatchdim);
+      else
+        memset(elevectorRHSd->Values(),0,ifacepatchdim*sizeof(double));
     }
 
     AdaptElementMatrix(fluideledim,   fluideledim,   elematrix1);
@@ -3072,6 +3102,7 @@ void FLD::XFluidImplicitTimeInt::MonolithicMultiDisEvaluate(
         params.set("Mud",elematrixMud);
         params.set("Mdu",elematrixMdu);
         params.set("Cdd",elematrixCdd);
+        params.set("rhsd",elevectorRHSd);
         params.set("ifacepatchlm",&ifacepatchlm);
       }
 
@@ -3080,11 +3111,6 @@ void FLD::XFluidImplicitTimeInt::MonolithicMultiDisEvaluate(
                                        elevector1,elevector2,elevector3);
       if (err) dserror("Proc %d: Element %d returned err=%d",fluiddis->Comm().MyPID(),actele->Id(),err);
     }
-
-//    if (intersected)
-//    {
-//      cout << elematrixCuu << endl;
-//    }
 
     {
       TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate assemble");
@@ -3095,6 +3121,7 @@ void FLD::XFluidImplicitTimeInt::MonolithicMultiDisEvaluate(
         Mdu->Assemble(-1, *elematrixMdu, ifacepatchlm, ifacepatchlmowner, fluidlm);
         Mud->Assemble(-1, *elematrixMud, fluidlm     , fluidlmowner     , ifacepatchlm);
         Cuu->Assemble(-1, *elematrixCuu, fluidlm     , fluidlmowner     , fluidlm);
+        LINALG::Assemble(*RHSd,*elevectorRHSd,ifacepatchlm,ifacepatchlmowner);
       }
       systemmatrix1->Assemble(-1,elematrix1,fluidlm,fluidlmowner);
       LINALG::Assemble(*systemvector1,elevector1,fluidlm,fluidlmowner);

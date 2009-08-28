@@ -58,9 +58,18 @@ void ADAPTER::FluidXFEM::PrepareTimeStep()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidXFEM::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
+void ADAPTER::FluidXFEM::Evaluate(
+    Teuchos::RCP<Epetra_Vector> idisp,
+    Teuchos::RCP<const Epetra_Vector> vel)
 {
   std::cout << "ADAPTER::FluidXFEM::Evaluate()" << endl;
+  if (idisp!=Teuchos::null)
+  {
+    // if we have values at the interface we need to apply them
+    FluidField().ApplyMeshDisplacement(idisp);
+//    FluidField().ApplyInterfaceVelocities(null);
+  }
+
   FluidField().Evaluate(vel);
 }
 

@@ -28,6 +28,16 @@ FSI::MonolithicBaseXFEM::MonolithicBaseXFEM(Epetra_Comm& comm)
     StructureBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams()),
     fluidfield_(DRT::Problem::Instance()->FSIDynamicParams(),"FSICoupling")
 {
+  ADAPTER::Coupling& coupsf = StructureFluidCoupling();
+
+  // structure to fluid
+
+  coupsf.SetupConditionCoupling(*StructureField().Discretization(),
+                                 StructureField().Interface().CondMap(),
+                                *FluidField().Discretization(),
+                                 FluidField().Interface().FSICondMap(),
+                                 "FSICoupling");
+
 }
 
 
@@ -67,6 +77,7 @@ void FSI::MonolithicBaseXFEM::PrepareTimeStep()
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicBaseXFEM::Update()
 {
+  cout << "FSI::MonolithicBaseXFEM::Update()" << endl;
   StructureField().Update();
   FluidField().    Update();
 }
@@ -80,6 +91,7 @@ void FSI::MonolithicBaseXFEM::Output()
   // written. And these entries define the order in which the filters handle
   // the Discretizations, which in turn defines the dof number ordering of the
   // Discretizations.
+  cout << "FSI::MonolithicBaseXFEM::Output()" << endl;
   StructureField().Output();
   FluidField().    Output();
 }
@@ -98,6 +110,8 @@ FSI::MonolithicXFEM::MonolithicXFEM(Epetra_Comm& comm)
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicXFEM::Timeloop()
 {
+  cout << "FSI::MonolithicXFEM::Timeloop()" << endl;
+
   Teuchos::RCP<std::ofstream> log;
   if (Comm().MyPID()==0)
   {
@@ -143,10 +157,11 @@ void FSI::MonolithicXFEM::Newton()
 {
   cout << "FSI::MonolithicXFEM::Newton()" << endl;
 
+  dispincsum_ = Teuchos::null;
   x_ = Teuchos::null;
   matrix_ = Teuchos::null;
 
-  for (;;)
+  for (int i =0;i<2;++i)
   {
     Evaluate();
 
@@ -154,7 +169,7 @@ void FSI::MonolithicXFEM::Newton()
 
     if (ConverganceTest())
     {
-//      break;
+      break;
     }
 
 
@@ -171,26 +186,41 @@ void FSI::MonolithicXFEM::Newton()
 void FSI::MonolithicXFEM::Evaluate()
 {
   // take current increment and setup linear system
-  cout << "FSI::MonolithicXFEM::Evaluate" << endl;
+  cout << "FSI::MonolithicXFEM::Evaluate()" << endl;
 
   if (x_!=Teuchos::null)
   {
+    cout << "later step" << endl;
+
     // extract structure displacement
-    //Teuchos::RCP<Epetra_Vector> sx = extractor_->ExtractVector(x_,0);
     Teuchos::RCP<Epetra_Vector> sx = extractor_->ExtractStructureVector(x_);
 
+    // residual displacements (or iteration increments or iteratively incremental displacements)
+    Teuchos::RCP<Epetra_Vector> disp = Teuchos::rcp(new Epetra_Vector(*sx));
+
+    // update incremental displacement member to provided step increments
+    // shortly: disp^<i+1> := disinc_^<i>
+    dispincsum_->Update(1.0, *disp, 1.0);
+
     // expects x^{n+1}_{i+1}
-    StructureField().Evaluate(sx);
+    StructureField().Evaluate(dispincsum_);
+
+
 
     Teuchos::RCP<Epetra_Vector> fx = extractor_->ExtractFluidVector(x_);
 
     // expects \Delta x^{n+1}_{i+1} ???
-    FluidField().Evaluate(fx);
+    Teuchos::RCP<Epetra_Vector> idisp = StructureField().Interface().ExtractCondVector(sx);
+
+    FluidField().Evaluate(StructToFluid(idisp), fx);
   }
   else
   {
+    cout << "first step" << endl;
     StructureField().Evaluate(Teuchos::null);
-    FluidField().Evaluate(Teuchos::null);
+    FluidField().Evaluate(Teuchos::null, Teuchos::null);
+
+    dispincsum_ = LINALG::CreateVector(*StructureField().DofRowMap(), true);
   }
 
 
@@ -224,8 +254,43 @@ void FSI::MonolithicXFEM::SetupRHS()
 /*----------------------------------------------------------------------*/
 bool FSI::MonolithicXFEM::ConverganceTest()
 {
+  cout << "FSI::MonolithicXFEM::ConverganceTest()" << endl;
+
+
+  const double ittol = 1.0e-8;
+
+  const RCP<const Epetra_Map> dofrowmap = extractor_->FullMap();
+  Epetra_Vector full(*dofrowmap);
+  Epetra_Import importer(*dofrowmap,rhs_->Map());
+
+//  double incfullnorm_L2;
+//  double fullnorm_L2;
+  double fullresnorm;
+
+  int err = full.Import(*rhs_,importer,Insert);
+  if (err) dserror("Import using importer returned err=%d",err);
+  full.Norm2(&fullresnorm);
+
+//  err = full.Import(*x_,importer,Insert);
+//  if (err) dserror("Import using importer returned err=%d",err);
+//  full.Norm2(&incfullnorm_L2);
+//
+//  err = full.Import(*state_.velnp_,importer,Insert);
+//  if (err) dserror("Import using importer returned err=%d",err);
+//  full.Norm2(&fullnorm_L2);
+
+
   // test if rhs is zero (equilibrium)
-  return false;
+  bool converged = false;
+  cout << "fullresnorm = " << fullresnorm << endl;
+  if (fullresnorm <= ittol
+//      and incfullnorm_L2/fullnorm_L2 <= ittol
+      )
+  {
+    converged = true;
+  }
+
+  return converged;
 }
 
 
@@ -233,40 +298,66 @@ bool FSI::MonolithicXFEM::ConverganceTest()
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicXFEM::SetupSystemMatrix()
 {
+  cout << "FSI::MonolithicXFEM::SetupSystemMatrix()" << endl;
   // build global block matrix
 
+  const ADAPTER::Coupling& coupsf = StructureFluidCoupling();
+
   Teuchos::RCP<LINALG::SparseMatrix> s = StructureField().SystemMatrix();
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocks =
+    s->Split<LINALG::DefaultBlockMatrixStrategy>(StructureField().Interface(),
+                                                 StructureField().Interface());
+  blocks->Complete();
+
   Teuchos::RCP<LINALG::SparseMatrix> f = FluidField().SystemMatrix();
-  cout << *s << endl;
-  cout << *f << endl;
 
   /// direct access to system matrix
-  map<std::string, Teuchos::RCP<LINALG::SparseMatrix> > cmats = FluidField().CouplingMatrices();
+  const map<std::string, Teuchos::RCP<LINALG::SparseMatrix> > cmats = FluidField().CouplingMatrices();
 
+  Teuchos::RCP<LINALG::SparseMatrix> Cuu = cmats.find("Cuu")->second;
   Teuchos::RCP<LINALG::SparseMatrix> Mud = cmats.find("Mud")->second;
   Teuchos::RCP<LINALG::SparseMatrix> Mdu = cmats.find("Mdu")->second;
   Teuchos::RCP<LINALG::SparseMatrix> Cdd = cmats.find("Cdd")->second;
 
-  cout << *Mud << endl;
 
-  cout << *Cdd << endl;
+  /*----------------------------------------------------------------------*/
+
+  double scale     = FluidField().ResidualScaling();
+  double timescale = FluidField().TimeScaling();
 
   matrix_ = rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(*extractor_,*extractor_));
 
   matrix_->Assign(0,0,View,*s);
   matrix_->Assign(1,1,View,*f);
 
-  //matrix_->Assign(0,1,View,*Mud);
-  //matrix_->Assign(1,0,View,*Mdu);
+//  matrix_->Matrix(1,0).Add(*Mud,false,1.0,0.0);
+  sigtransform_(*blocks,
+                *Mud,
+                1./timescale,
+                ADAPTER::Coupling::SlaveConverter(coupsf),
+                matrix_->Matrix(1,0),
+                true,
+                false);
 
-  matrix_->Matrix(0,1).Add(*Mud,false,1.0,0.0);
-  matrix_->Matrix(1,0).Add(*Mdu,false,1.0,0.0);
+  //  matrix_->Matrix(0,0).Add(*Cdd,false,1.0,1.0);
+  sggtransform_(*Cdd,
+                1./(scale*timescale),
+                ADAPTER::Coupling::SlaveConverter(coupsf),
+                ADAPTER::Coupling::SlaveConverter(coupsf),
+                matrix_->Matrix(0,0),
+                true,
+                true);
 
-  matrix_->Matrix(0,0).Add(*Cdd,false,1.0,1.0);
+  //  matrix_->Matrix(0,1).Add(*Mdu,false,1.0,0.0);
+  sgitransform_(*Mdu,
+                1./scale,
+                ADAPTER::Coupling::SlaveConverter(coupsf),
+                matrix_->Matrix(0,1));
 
+
+//  matrix_->Matrix(1,1).Add(*Cuu,false,1.0,1.0);
   matrix_->Complete();
 
-  exit(0);
 
 }
 
@@ -275,6 +366,8 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicXFEM::LinearSolve()
 {
+  cout << "FSI::MonolithicXFEM::LinearSolve()" << endl;
+
   // get initial guess from fields
   // solve linear system
 
@@ -285,14 +378,43 @@ void FSI::MonolithicXFEM::LinearSolve()
   //Teuchos::RCP<const Epetra_Vector> sx = StructureField().InitialGuess();
   //Teuchos::RCP<const Epetra_Vector> fx = FluidField().InitialGuess();
 
-  //x_ = rcp(new Epetra_Vector(*extractor_->FullMap()));
+  x_ = LINALG::CreateVector(*extractor_->FullMap(),true);
 
   x_ = extractor_->InsertStructureVector(StructureField().InitialGuess());
 
   Teuchos::RCP<LINALG::SparseMatrix> m = matrix_->Merge();
 
+  LINALG::PrintMatrixInMatlabFormat("monomatrix.txt", *m->EpetraMatrix(), true);
+
   // get UMFPACK...
+  Teuchos::ParameterList solverparams = DRT::Problem::Instance()->FluidSolverParams();
+
+
+  Teuchos::RCP<LINALG::Solver> solver =
+      rcp(new LINALG::Solver(solverparams,
+                             Comm(),
+                             DRT::Problem::Instance()->ErrorFile()->Handle()));
+
+  solver->Solve(m->EpetraOperator(), x_, rhs_, true, true);
+
+  cout << x_ << endl;
+
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::MonolithicXFEM::StructToFluid(Teuchos::RCP<Epetra_Vector> iv)
+{
+  const ADAPTER::Coupling& coupsf = StructureFluidCoupling();
+  return coupsf.MasterToSlave(iv);
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::MonolithicXFEM::FluidToStruct(Teuchos::RCP<Epetra_Vector> iv)
+{
+  const ADAPTER::Coupling& coupsf = StructureFluidCoupling();
+  return coupsf.SlaveToMaster(iv);
+}
 #endif

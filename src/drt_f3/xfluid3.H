@@ -320,8 +320,16 @@ namespace DRT
         void CondenseDLMAndStoreOldIterationStep(
             const Epetra_SerialDenseMatrix& elemat1_uncond,
             const Epetra_SerialDenseVector& elevec1_uncond,
-            Epetra_SerialDenseMatrix& elemat1,
-            Epetra_SerialDenseVector& elevec1
+            const Epetra_SerialDenseMatrix& Gds_uncond,
+            const Epetra_SerialDenseVector& rhsd_uncond,
+            Epetra_SerialDenseMatrix&       elemat1,
+            Epetra_SerialDenseVector&       elevec1,
+            Epetra_SerialDenseMatrix&       Cuu,
+            Epetra_SerialDenseMatrix&       Mud,
+            Epetra_SerialDenseMatrix&       Mdu,
+            Epetra_SerialDenseMatrix&       Cdd,
+            Epetra_SerialDenseVector&       rhsd,
+            const bool                      monolithic_FSI
             ) const;
 
         /*!

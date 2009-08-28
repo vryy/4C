@@ -55,6 +55,8 @@ namespace FSI
     /// return instance of fluid time integration class
     const ADAPTER::FluidXFEM& FluidField() const { return fluidfield_; }
 
+    ADAPTER::Coupling& StructureFluidCoupling() { return coupsf_; }
+
   protected:
 
     //! @name Time loop building blocks
@@ -68,7 +70,17 @@ namespace FSI
     /// write output
     virtual void Output();
 
-  private:
+  protected:
+
+    /// coupling of structure and fluid at the interface
+    ADAPTER::Coupling               coupsf_;
+
+    /// @name Matrix block transform objects
+    /// Handle row and column map exchange for matrix blocks
+    UTILS::MatrixRowColTransform sggtransform_;
+    UTILS::MatrixRowTransform    sgitransform_;
+    UTILS::MatrixColTransform    sigtransform_;
+    ///@}
 
     /// the very xfem fluid
     ADAPTER::FluidXFEM              fluidfield_;
@@ -93,8 +105,12 @@ namespace FSI
     void SetupSystemMatrix();
     void LinearSolve();
 
+    Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<Epetra_Vector> iv);
+    Teuchos::RCP<Epetra_Vector> FluidToStruct(Teuchos::RCP<Epetra_Vector> iv);
+
     Teuchos::RCP<MonolithicXFEMExtractor> extractor_;
 
+    Teuchos::RCP<Epetra_Vector> dispincsum_;
     Teuchos::RCP<Epetra_Vector> rhs_;
     Teuchos::RCP<Epetra_Vector> x_;
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> matrix_;

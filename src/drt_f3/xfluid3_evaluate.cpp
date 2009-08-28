@@ -193,15 +193,30 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           }
         };
 
+        int nd_old = -1;
+        int na_old = -1;
+        if (eleDofManager_uncondensed_ != Teuchos::null)
+        {
+          nd_old = eleDofManager_uncondensed_->NumNodeDof();
+          na_old = eleDofManager_uncondensed_->NumElemDof();
+        }
+
         // nodal dofs for ele
         eleDofManager_uncondensed_ =
           rcp(new XFEM::ElementDofManager(*this, eleDofManager_->getNodalDofSet(), enrfieldset, element_ansatz_filled));
 
         const int nd = eleDofManager_uncondensed_->NumNodeDof();
         const int na = eleDofManager_uncondensed_->NumElemDof();
-//        if (na == 0)
-//          dserror("this happens, when element is intersected, but we skip the stress unknown due to small surface integral");
-        DLM_info_ = Teuchos::rcp(new DLMInfo(nd,na));
+
+        if (nd != nd_old or na != na_old)
+        {
+
+          DLM_info_ = Teuchos::rcp(new DLMInfo(nd,na));
+        }
+        else
+        {
+          cout << "saved steps" << endl;
+        }
       }
       else
       {
@@ -234,11 +249,16 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       const bool cstab  = true;
 
       const bool ifaceForceContribution = discretization.ElementRowMap()->MyGID(this->Id());
+      const bool monolithic_FSI = params.get<bool>("monolithic_FSI");
 
       RCP<Epetra_SerialDenseMatrix> Cuu;
       RCP<Epetra_SerialDenseMatrix> Mud;
       RCP<Epetra_SerialDenseMatrix> Mdu;
       RCP<Epetra_SerialDenseMatrix> Cdd;
+      RCP<Epetra_SerialDenseVector> rhsd;
+
+      RCP<Epetra_SerialDenseMatrix> Gds_uncond;
+      RCP<Epetra_SerialDenseVector> rhsd_uncond;
 
       if (not params.get<bool>("DLM_condensation") or not ih_->ElementIntersected(Id())) // integrate and assemble all unknowns
       {
@@ -247,8 +267,8 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 
         // calculate element coefficient matrix and rhs
         XFLUID::callSysmat4(assembly_type,
-                this, ih_, *eleDofManager_, mystate, iforcecol, elemat1, elevec1, *Cuu, *Mud, *Mdu, *Cdd,
-                mat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution, L2);
+                this, ih_, *eleDofManager_, mystate, iforcecol, elemat1, elevec1, *Gds_uncond, *rhsd_uncond,
+                mat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution, monolithic_FSI, L2);
       }
       else // create bigger element matrix and vector, assemble, condense and copy to small matrix provided by discretization
       {
@@ -266,21 +286,34 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
                 *eleDofManager_uncondensed_, NumNode(), NodeIds());
 
-        if (ih_->ElementIntersected(Id()) and params.get<bool>("monolithic_FSI"))
+        if (ih_->ElementIntersected(Id()) and monolithic_FSI)
         {
-          Cuu = params.get<RCP<Epetra_SerialDenseMatrix> >("Cuu");
-          Mud = params.get<RCP<Epetra_SerialDenseMatrix> >("Mud");
-          Mdu = params.get<RCP<Epetra_SerialDenseMatrix> >("Mdu");
-          Cdd = params.get<RCP<Epetra_SerialDenseMatrix> >("Cdd");
+          Cuu  = params.get<RCP<Epetra_SerialDenseMatrix> >("Cuu");
+          Mud  = params.get<RCP<Epetra_SerialDenseMatrix> >("Mud");
+          Mdu  = params.get<RCP<Epetra_SerialDenseMatrix> >("Mdu");
+          Cdd  = params.get<RCP<Epetra_SerialDenseMatrix> >("Cdd");
+          rhsd = params.get<RCP<Epetra_SerialDenseVector> >("rhsd");
+
+          const std::set<int> begids = ih_->GetIntersectingBoundaryElementsGID(this->Id());
+          const int numnode_b = 4;
+          const size_t numpatchdof = 3*numnode_b*begids.size();
+          Gds_uncond  = rcp(new Epetra_SerialDenseMatrix(numpatchdof, eleDofManager_uncondensed_->NumDofElemAndNode()));
+          rhsd_uncond = rcp(new Epetra_SerialDenseVector(numpatchdof));
         }
 
         // calculate element coefficient matrix and rhs
         XFLUID::callSysmat4(assembly_type,
-                this, ih_, *eleDofManager_uncondensed_, mystate, iforcecol, elemat1_uncond, elevec1_uncond, *Cuu, *Mud, *Mdu, *Cdd,
-                mat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution, L2);
+                this, ih_, *eleDofManager_uncondensed_, mystate, iforcecol, elemat1_uncond, elevec1_uncond, *Gds_uncond, *rhsd_uncond,
+                mat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution, monolithic_FSI, L2);
 
         // condensation
-        CondenseDLMAndStoreOldIterationStep(elemat1_uncond, elevec1_uncond, elemat1, elevec1);
+        CondenseDLMAndStoreOldIterationStep(
+            elemat1_uncond, elevec1_uncond,
+            *Gds_uncond, *rhsd_uncond,
+            elemat1, elevec1,
+            *Cuu, *Mud, *Mdu, *Cdd, *rhsd,
+            monolithic_FSI
+            );
       }
       params.set<double>("L2",L2);
       break;
@@ -309,11 +342,16 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       const bool cstab  = true;
 
       const bool ifaceForceContribution = discretization.ElementRowMap()->MyGID(this->Id());
+      const bool monolithic_FSI = params.get<bool>("monolithic_FSI");
 
       RCP<Epetra_SerialDenseMatrix> Cuu;
       RCP<Epetra_SerialDenseMatrix> Mud;
       RCP<Epetra_SerialDenseMatrix> Mdu;
       RCP<Epetra_SerialDenseMatrix> Cdd;
+      RCP<Epetra_SerialDenseVector> rhsd;
+
+      RCP<Epetra_SerialDenseMatrix> Gds_uncond;
+      RCP<Epetra_SerialDenseVector> rhsd_uncond;
 
       if (not params.get<bool>("DLM_condensation") or not ih_->ElementIntersected(Id())) // integrate and assemble all unknowns
       {
@@ -322,8 +360,8 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 
         // calculate element coefficient matrix and rhs
         XFLUID::callSysmat4(assembly_type,
-                this, ih_, *eleDofManager_, mystate, iforcecol, elemat1, elevec1, *Cuu, *Mud, *Mdu, *Cdd,
-                mat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution, L2);
+                this, ih_, *eleDofManager_, mystate, iforcecol, elemat1, elevec1, *Gds_uncond, *rhsd_uncond,
+                mat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution, monolithic_FSI, L2);
       }
       else // create bigger element matrix and vector, assemble, condense and copy to small matrix provided by discretization
       {
@@ -341,21 +379,34 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
                 *eleDofManager_uncondensed_, NumNode(), NodeIds());
 
-        if (ih_->ElementIntersected(Id()) and params.get<bool>("monolithic_FSI"))
+        if (ih_->ElementIntersected(Id()) and monolithic_FSI)
         {
-          Cuu = params.get<RCP<Epetra_SerialDenseMatrix> >("Cuu");
-          Mud = params.get<RCP<Epetra_SerialDenseMatrix> >("Mud");
-          Mdu = params.get<RCP<Epetra_SerialDenseMatrix> >("Mdu");
-          Cdd = params.get<RCP<Epetra_SerialDenseMatrix> >("Cdd");
+          Cuu  = params.get<RCP<Epetra_SerialDenseMatrix> >("Cuu");
+          Mud  = params.get<RCP<Epetra_SerialDenseMatrix> >("Mud");
+          Mdu  = params.get<RCP<Epetra_SerialDenseMatrix> >("Mdu");
+          Cdd  = params.get<RCP<Epetra_SerialDenseMatrix> >("Cdd");
+          rhsd = params.get<RCP<Epetra_SerialDenseVector> >("rhsd");
+
+          const std::set<int> begids = ih_->GetIntersectingBoundaryElementsGID(this->Id());
+          const int numnode_b = 4;
+          const size_t numpatchdof = 3*numnode_b*begids.size();
+          Gds_uncond  = rcp(new Epetra_SerialDenseMatrix(numpatchdof, eleDofManager_uncondensed_->NumDofElemAndNode()));
+          rhsd_uncond = rcp(new Epetra_SerialDenseVector(numpatchdof));
         }
 
         // calculate element coefficient matrix and rhs
         XFLUID::callSysmat4(assembly_type,
-                this, ih_, *eleDofManager_uncondensed_, mystate, iforcecol, elemat1_uncond, elevec1_uncond, *Cuu, *Mud, *Mdu, *Cdd,
-                mat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution, L2);
+                this, ih_, *eleDofManager_uncondensed_, mystate, iforcecol, elemat1_uncond, elevec1_uncond, *Gds_uncond, *rhsd_uncond,
+                mat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution, monolithic_FSI, L2);
 
         // condensation
-        CondenseDLMAndStoreOldIterationStep(elemat1_uncond, elevec1_uncond, elemat1, elevec1);
+        CondenseDLMAndStoreOldIterationStep(
+            elemat1_uncond, elevec1_uncond,
+            *Gds_uncond, *rhsd_uncond,
+            elemat1, elevec1,
+            *Cuu, *Mud, *Mdu, *Cdd, *rhsd,
+            monolithic_FSI
+            );
       }
 
       params.set<double>("L2",L2);
@@ -767,82 +818,148 @@ void DRT::ELEMENTS::XFluid3::UpdateOldDLMAndDLMRHS(
 void DRT::ELEMENTS::XFluid3::CondenseDLMAndStoreOldIterationStep(
     const Epetra_SerialDenseMatrix& elemat1_uncond,
     const Epetra_SerialDenseVector& elevec1_uncond,
+    const Epetra_SerialDenseMatrix& Gds_uncond,
+    const Epetra_SerialDenseVector& rhsd_uncond,
     Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseVector& elevec1
+    Epetra_SerialDenseVector& elevec1,
+    Epetra_SerialDenseMatrix& Cuu,
+    Epetra_SerialDenseMatrix& Mud,
+    Epetra_SerialDenseMatrix& Mdu,
+    Epetra_SerialDenseMatrix& Cdd,
+    Epetra_SerialDenseVector& rhsd,
+    const bool monolithic_FSI
 ) const
 {
 
-  const int nd = eleDofManager_uncondensed_->NumNodeDof();
-  const int na = eleDofManager_uncondensed_->NumElemDof();
+  const size_t nu = eleDofManager_uncondensed_->NumNodeDof();
+  const size_t ns = eleDofManager_uncondensed_->NumElemDof();
+  const std::set<int> begids = ih_->GetIntersectingBoundaryElementsGID(this->Id());
+  const int numnode_b = 4;
+  const size_t nd = 3*numnode_b*begids.size();
 
   // copy nodal dof entries
-  for (int i = 0; i < nd; ++i)
+  for (size_t i = 0; i < nu; ++i)
   {
     elevec1(i) = elevec1_uncond(i);
-    for (int j = 0; j < nd; ++j)
+    for (size_t j = 0; j < nu; ++j)
     {
       elemat1(i,j) = elemat1_uncond(i,j);
     }
   }
 
-  if (na > 0)
+  if (ns > 0)
   {
     // note: the full (u,p,sigma) matrix is asymmetric,
     // hence we need both rectangular matrices Kda and Kad
-    LINALG::SerialDenseMatrix Kda(nd,na);
-    LINALG::SerialDenseMatrix Kaa(na,na);
-    LINALG::SerialDenseMatrix Kad(na,nd);
-    LINALG::SerialDenseVector fa(na);
+    LINALG::SerialDenseMatrix Kus(nu,ns);
+    LINALG::SerialDenseMatrix Kssinv(ns,ns);
+    LINALG::SerialDenseMatrix Ksu(ns,nu);
+    LINALG::SerialDenseVector fs(ns);
 
 //    cout << elemat1_uncond << endl;
 
     // copy data of uncondensed matrix into submatrices
-    for (int i=0;i<nd;i++)
-      for (int j=0;j<na;j++)
-        Kda(i,j) = elemat1_uncond(   i,nd+j);
+    for (size_t i=0;i<nu;i++)
+      for (size_t j=0;j<ns;j++)
+        Kus(i,j) = elemat1_uncond(   i,nu+j);
 
-    for (int i=0;i<na;i++)
-      for (int j=0;j<na;j++)
-        Kaa(i,j) = elemat1_uncond(nd+i,nd+j);
+    for (size_t i=0;i<ns;i++)
+      for (size_t j=0;j<ns;j++)
+        Kssinv(i,j) = elemat1_uncond(nu+i,nu+j);
 
-    for (int i=0;i<na;i++)
-      for (int j=0;j<nd;j++)
-        Kad(i,j) = elemat1_uncond(nd+i,   j);
+    for (size_t i=0;i<ns;i++)
+      for (size_t j=0;j<nu;j++)
+        Ksu(i,j) = elemat1_uncond(nu+i,   j);
 
-    for (int i=0;i<na;i++)
-      fa(i) = elevec1_uncond(nd+i);
+    for (size_t i=0;i<ns;i++)
+      fs(i) = elevec1_uncond(nu+i);
 
+
+    Epetra_SerialDenseMatrix Gds(nd, ns);
+    Epetra_SerialDenseMatrix Gsd(ns, nd);
+//      RCP<Epetra_SerialDenseVector> rhsd = rcp(new Epetra_SerialDenseVector(numpatchdof));
+
+    if (monolithic_FSI)
+    {
+      for (size_t i=0;i<nd;i++)
+      {
+        rhsd(i) = rhsd_uncond(i);
+        for (size_t j=0;j<ns;j++)
+        {
+          Gds(i,j) = Gds_uncond(i, nu+j);
+          Gsd(j,i) = Gds_uncond(i, nu+j);
+        }
+      }
+    }
 
     // DLM-stiffness matrix is: Kdd - Kda . Kaa^-1 . Kad
     // DLM-internal force is: fint - Kda . Kaa^-1 . feas
 
     // we need the inverse of Kaa
     Epetra_SerialDenseSolver solve_for_inverseKaa;
-    solve_for_inverseKaa.SetMatrix(Kaa);
+    solve_for_inverseKaa.SetMatrix(Kssinv);
     solve_for_inverseKaa.Invert();
-    // from here on, Kaa -> Kaainv
 
     static const Epetra_BLAS blas;
     {
-      LINALG::SerialDenseMatrix KdaKaainv(nd,na); // temporary Kda.Kaa^{-1}
+      LINALG::SerialDenseMatrix KusKssinv(nu,ns); // temporary Kus.Kss^{-1}
+      LINALG::SerialDenseMatrix KdsKssinv(nu,ns); // temporary Kds.Kss^{-1}
 
-      // KdaKaainv(i,j) = Kda(i,k)*Kaainv(k,j);
-      blas.GEMM('N','N',nd,na,na,1.0,Kda.A(),Kda.LDA(),Kaa.A(),Kaa.LDA(),0.0,KdaKaainv.A(),KdaKaainv.LDA());
+      // KusKssinv(i,j) = Kus(i,k)*Kssinv(k,j);
+      blas.GEMM('N','N',nu,ns,ns,1.0,Kus.A(),Kus.LDA(),Kssinv.A(),Kssinv.LDA(),0.0,KusKssinv.A(),KusKssinv.LDA());
 
-      // elemat1(i,j) += - KdaKaainv(i,k)*Kad(k,j);
-      blas.GEMM('N','N',nd,nd,na,-1.0,KdaKaainv.A(),KdaKaainv.LDA(),Kad.A(),Kad.LDA(),1.0,elemat1.A(),elemat1.LDA());
+      // KdsKssinv(i,j) = Kds(i,k)*Kssinv(k,j);
+      blas.GEMM('N','N',nd,ns,ns,1.0,Gds.A(),Gds.LDA(),Kssinv.A(),Kssinv.LDA(),0.0,KdsKssinv.A(),KdsKssinv.LDA());
 
-      // elevec1(i) += - KdaKaainv(i,j)*fa(j);
-      blas.GEMV('N', nd, na,-1.0, KdaKaainv.A(), KdaKaainv.LDA(), fa.A(), 1.0, elevec1.A());
+      // elemat1(i,j) += - KusKssinv(i,k)*Ksu(k,j);
+      blas.GEMM('N','N',nu,nu,ns,-1.0,KusKssinv.A(),KusKssinv.LDA(),Ksu.A(),Ksu.LDA(),1.0,elemat1.A(),elemat1.LDA());
+
+      // elevec1(i) += - KusKssinv(i,j)*fs(j);
+      blas.GEMV('N', nu, ns,-1.0, KusKssinv.A(), KusKssinv.LDA(), fs.A(), 1.0, elevec1.A());
+
+      if (monolithic_FSI)
+      {
+        Epetra_SerialDenseMatrix Gds(nd, ns);
+        Epetra_SerialDenseMatrix Gsd(ns, nd);
+  //      RCP<Epetra_SerialDenseVector> rhsd = rcp(new Epetra_SerialDenseVector(numpatchdof));
+
+        for (size_t i=0;i<nd;i++)
+        {
+          rhsd(i) = rhsd_uncond(i);
+          for (size_t j=0;j<ns;j++)
+          {
+            Gds(i,j) = Gds_uncond(i, nu+j);
+            Gsd(j,i) = Gds_uncond(i, nu+j);
+          }
+        }
+        for (size_t i=0;i<nu;i++)
+          for (size_t j=0;j<nu;j++)
+            for (size_t k=0;k<ns;k++)
+              Cuu(i,j) += KusKssinv(i,k)*Ksu(k,j);
+        for (size_t i=0;i<nu;i++)
+          for (size_t j=0;j<nd;j++)
+            for (size_t k=0;k<ns;k++)
+              Mud(i,j) += KusKssinv(i,k)*Gsd(k,j);
+        for (size_t i=0;i<nd;i++)
+          for (size_t j=0;j<nu;j++)
+            for (size_t k=0;k<ns;k++)
+              Mdu(i,j) += KdsKssinv(i,k)*Ksu(k,j);
+        for (size_t i=0;i<nd;i++)
+          for (size_t j=0;j<nd;j++)
+            for (size_t k=0;k<ns;k++)
+              Cdd(i,j) += KdsKssinv(i,k)*Gsd(k,j);
+      }
+
+
     }
 
     // store current DLM data in iteration history
     //DLM_info_->oldKaainv_.Update(1.0,Kaa,0.0);
-    blas.COPY(DLM_info_->oldKaainv_.M()*DLM_info_->oldKaainv_.N(), Kaa.A(), DLM_info_->oldKaainv_.A());
+    blas.COPY(DLM_info_->oldKaainv_.M()*DLM_info_->oldKaainv_.N(), Kssinv.A(), DLM_info_->oldKaainv_.A());
     //DLM_info_->oldKad_.Update(1.0,Kad,0.0);
-    blas.COPY(DLM_info_->oldKad_.M()*DLM_info_->oldKad_.N(), Kad.A(), DLM_info_->oldKad_.A());
+    blas.COPY(DLM_info_->oldKad_.M()*DLM_info_->oldKad_.N(), Ksu.A(), DLM_info_->oldKad_.A());
     //DLM_info_->oldfa_.Update(1.0,fa,0.0);
-    blas.COPY(DLM_info_->oldfa_.M()*DLM_info_->oldfa_.N(), fa.A(), DLM_info_->oldfa_.A());
+    blas.COPY(DLM_info_->oldfa_.M()*DLM_info_->oldfa_.N(), fs.A(), DLM_info_->oldfa_.A());
   }
 }
 

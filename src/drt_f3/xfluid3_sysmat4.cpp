@@ -23,6 +23,7 @@ Maintainer: Axel Gerstenberger
 #include "xfluid3_spacetime_utils.H"
 #include "fluid3_stabilization.H"
 #include "xfluid3_local_assembler.H"
+#include "xfluid3_local_assembler_ifacepatch.H"
 #include "xfluid3_interpolation.H"
 #include "../drt_geometry/integrationcell_coordtrafo.H"
 #include "../drt_mat/newtonianfluid.H"
@@ -1293,15 +1294,14 @@ void SysmatBoundary4(
     const M1&                         evelnp,
     const M2&                         etau,
     const Teuchos::RCP<Epetra_Vector>& iforcecol,     ///< reaction force due to given interface velocity
-    Epetra_SerialDenseMatrix& Cuu,
-    Epetra_SerialDenseMatrix& Mud,
-    Epetra_SerialDenseMatrix& Mdu,
-    Epetra_SerialDenseMatrix& Cdd,
+    Epetra_SerialDenseMatrix&         Gds,
+    Epetra_SerialDenseVector&         rhsd,
     const FLUID_TIMEINTTYPE           timealgo,      ///< time discretization type
     const double&                     dt,            ///< delta t (time step size)
     const double&                     theta,         ///< factor for one step theta scheme
     LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>& assembler,
-    const bool                        ifaceForceContribution
+    const bool                        ifaceForceContribution,
+    const bool                        monolithic_FSI
 )
 {
     if (ASSTYPE != XFEM::xfem_assembly) dserror("works only with xfem assembly");
@@ -1333,6 +1333,8 @@ void SysmatBoundary4(
     //const int numparamtauxx = getNumParam<ASSTYPE>(dofman, Sigmaxx, 1);
     const size_t numparamtauxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Sigmaxx);
 
+    IFacePatchLocalAssembler<DISTYPE, NUMDOF> patchassembler(dofman);
+    const std::set<int> begids = ih->GetIntersectingBoundaryElementsGID(ele->Id());
 
     const bool tauele_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, Sigmaxx, 0) > 0);
     // for now, I don't try to compare to elements without stress unknowns, since they lock anyway
@@ -1495,6 +1497,22 @@ void SysmatBoundary4(
               shp_tau(iparam) = enr_funct_stress(iparam);
             }
 
+
+            Epetra_SerialDenseVector shp_iface(numnode_boundary*begids.size());
+            int pos = 0;
+            for (std::set<int>::const_iterator begid = begids.begin(); begid != begids.end();++begid)
+            {
+              if (*begid == boundaryele->Id())
+              {
+                for (std::size_t inode=0; inode < numnode_boundary; ++inode)
+                {
+                  shp_iface(pos+inode) = funct_boundary(inode);
+                }
+                break;
+              }
+              pos += numnode_boundary;
+            }
+
             // get normal vector (in physical coordinates) to surface element at integration point
             LINALG::Matrix<nsd,1> normalvec_solid;
             GEO::computeNormalToSurfaceElement(boundaryele->Shape(), xyze_boundary, posXiBoundary, normalvec_solid);
@@ -1606,6 +1624,28 @@ void SysmatBoundary4(
             assembler.template Vector<Vely>(shp, timefacfac*disctau_times_n(1));
             assembler.template Vector<Velz>(shp, timefacfac*disctau_times_n(2));
 
+
+            if (monolithic_FSI)
+            {
+                  /*                 \
+               - |  v^i , Dtau * n^f  |
+                  \                 */
+              patchassembler.template Matrix<Dispx,Sigmaxx>(Gds, shp_iface, timefacfac*normalvec_fluid(0), shp_tau);
+              patchassembler.template Matrix<Dispx,Sigmaxy>(Gds, shp_iface, timefacfac*normalvec_fluid(1), shp_tau);
+              patchassembler.template Matrix<Dispx,Sigmaxz>(Gds, shp_iface, timefacfac*normalvec_fluid(2), shp_tau);
+              patchassembler.template Matrix<Dispy,Sigmayx>(Gds, shp_iface, timefacfac*normalvec_fluid(0), shp_tau);
+              patchassembler.template Matrix<Dispy,Sigmayy>(Gds, shp_iface, timefacfac*normalvec_fluid(1), shp_tau);
+              patchassembler.template Matrix<Dispy,Sigmayz>(Gds, shp_iface, timefacfac*normalvec_fluid(2), shp_tau);
+              patchassembler.template Matrix<Dispz,Sigmazx>(Gds, shp_iface, timefacfac*normalvec_fluid(0), shp_tau);
+              patchassembler.template Matrix<Dispz,Sigmazy>(Gds, shp_iface, timefacfac*normalvec_fluid(1), shp_tau);
+              patchassembler.template Matrix<Dispz,Sigmazz>(Gds, shp_iface, timefacfac*normalvec_fluid(2), shp_tau);
+
+              //cout << "sigmaijnj : " << disctau_times_n << endl;
+              patchassembler.template Vector<Dispx>(rhsd, shp_iface, -timefacfac*disctau_times_n(0));
+              patchassembler.template Vector<Dispy>(rhsd, shp_iface, -timefacfac*disctau_times_n(1));
+              patchassembler.template Vector<Dispz>(rhsd, shp_iface, -timefacfac*disctau_times_n(2));
+            }
+
             // here the interface force is integrated
             // this is done using test shape functions of the boundary mesh
             // hence, we can't use the local assembler here
@@ -1653,10 +1693,8 @@ void Sysmat4(
         const Teuchos::RCP<Epetra_Vector>& iforcecol,     ///< reaction force due to given interface velocity
         Epetra_SerialDenseMatrix&         estif,         ///< element matrix to calculate
         Epetra_SerialDenseVector&         eforce,        ///< element rhs to calculate
-        Epetra_SerialDenseMatrix& Cuu,
-        Epetra_SerialDenseMatrix& Mud,
-        Epetra_SerialDenseMatrix& Mdu,
-        Epetra_SerialDenseMatrix& Cdd,
+        Epetra_SerialDenseMatrix&         Gds,
+        Epetra_SerialDenseVector&         rhsd,
         Teuchos::RCP<const MAT::Material> material,      ///< fluid material
         const FLUID_TIMEINTTYPE           timealgo,      ///< time discretization type
         const double                      dt,            ///< delta t (time step size)
@@ -1667,6 +1705,7 @@ void Sysmat4(
         const bool                        cstab,         ///< flag for stabilisation
         const bool                        instationary,  ///< switch between stationary and instationary formulation
         const bool                        ifaceForceContribution,
+        const bool                        monolithic_FSI,
         double&                           L2
         )
 {
@@ -1701,9 +1740,8 @@ void Sysmat4(
     if (ih->ElementIntersected(ele->Id()))
     {
       SysmatBoundary4<DISTYPE,ASSTYPE,NUMDOF>(
-          ele, ih, dofman, evelnp, etau, iforcecol,
-          Cuu,Mud,Mdu,Cdd,
-          timealgo, dt, theta, assembler, ifaceForceContribution);
+          ele, ih, dofman, evelnp, etau, iforcecol, Gds, rhsd,
+          timealgo, dt, theta, assembler, ifaceForceContribution, monolithic_FSI);
     }
 }
 
@@ -1719,10 +1757,8 @@ void XFLUID::callSysmat4(
         const Teuchos::RCP<Epetra_Vector>&  iforcecol,     ///< reaction force due to given interface velocity
         Epetra_SerialDenseMatrix&         estif,
         Epetra_SerialDenseVector&         eforce,
-        Epetra_SerialDenseMatrix& Cuu,
-        Epetra_SerialDenseMatrix& Mud,
-        Epetra_SerialDenseMatrix& Mdu,
-        Epetra_SerialDenseMatrix& Cdd,
+        Epetra_SerialDenseMatrix&         Gds,
+        Epetra_SerialDenseVector&         rhsd,
         Teuchos::RCP<const MAT::Material> material,
         const FLUID_TIMEINTTYPE           timealgo,      ///< time discretization type
         const double                      dt,            ///< delta t (time step size)
@@ -1733,6 +1769,7 @@ void XFLUID::callSysmat4(
         const bool                        cstab  ,
         const bool                        instationary,
         const bool                        ifaceForceContribution,
+        const bool                        monolithic_FSI,
         double&                           L2
         )
 {
@@ -1742,28 +1779,28 @@ void XFLUID::callSysmat4(
         {
             case DRT::Element::hex8:
                 Sysmat4<DRT::Element::hex8,XFEM::standard_assembly>(
-                        ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Cuu, Mud, Mdu, Cdd,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, L2);
+                        ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
                 break;
             case DRT::Element::hex20:
                 Sysmat4<DRT::Element::hex20,XFEM::standard_assembly>(
-                        ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Cuu, Mud, Mdu, Cdd,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, L2);
+                        ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
                 break;
             case DRT::Element::hex27:
                 Sysmat4<DRT::Element::hex27,XFEM::standard_assembly>(
-                        ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Cuu, Mud, Mdu, Cdd,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, L2);
+                        ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
                 break;
             case DRT::Element::tet4:
                 Sysmat4<DRT::Element::tet4,XFEM::standard_assembly>(
-                        ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Cuu, Mud, Mdu, Cdd,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, L2);
+                        ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
                 break;
             case DRT::Element::tet10:
                 Sysmat4<DRT::Element::tet10,XFEM::standard_assembly>(
-                        ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Cuu, Mud, Mdu, Cdd,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, L2);
+                        ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
                 break;
             default:
                 dserror("standard_assembly Sysmat not templated yet");
@@ -1775,27 +1812,27 @@ void XFLUID::callSysmat4(
         {
             case DRT::Element::hex8:
                 Sysmat4<DRT::Element::hex8,XFEM::xfem_assembly>(
-                        ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Cuu, Mud, Mdu, Cdd,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, L2);
+                        ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
                 break;
             case DRT::Element::hex20:
                 Sysmat4<DRT::Element::hex20,XFEM::xfem_assembly>(
-                        ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Cuu, Mud, Mdu, Cdd,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, L2);
+                        ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
                 break;
             case DRT::Element::hex27:
                 Sysmat4<DRT::Element::hex27,XFEM::xfem_assembly>(
-                        ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Cuu, Mud, Mdu, Cdd,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, L2);
+                        ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
                 break;
             case DRT::Element::tet4:
                 Sysmat4<DRT::Element::tet4,XFEM::xfem_assembly>(
-                        ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Cuu, Mud, Mdu, Cdd,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, L2);
+                        ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
             case DRT::Element::tet10:
                 Sysmat4<DRT::Element::tet10,XFEM::xfem_assembly>(
-                        ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Cuu, Mud, Mdu, Cdd,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, L2);
+                        ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
                 break;
             default:
                 dserror("xfem_assembly Sysmat not templated yet");
