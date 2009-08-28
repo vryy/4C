@@ -59,6 +59,7 @@ Maintainer: Alexander Popp
 
 // GENERAL DEBUGGING OPTIONS
 //#define CONTACTTIME               /* flag for contact time measurement */
+//#define CONTACTEIG                /* flag for eigenvalue+condition analysis */
 //#define CONTACTFDNORMAL           /* flag for FD check of normal derivative */
 //#define CONTACTFDMORTARD          /* flag for FD check of mortar matrix D */
 //#define CONTACTFDMORTARM          /* flag for FD check of mortar matrix M */

@@ -3501,7 +3501,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
 	    double zteta = 0;   
 	    double jumptxi = 0;
 	    double jumpteta = 0;
-	    double euclidean;
+	    double euclidean = 0;
 	    for (int i=0;i<Dim();i++)
 	    {
 	    	znor += n[i]*z[i];

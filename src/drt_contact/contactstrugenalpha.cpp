@@ -1102,6 +1102,10 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
   Epetra_Time timer(discret_.Comm());
   timer.ResetStartTime();
   bool print_unconv = true;
+#ifdef CONTACTEIG
+  static int globindex = 0;
+  ++globindex;
+#endif // #ifdef CONTACTEIG
 
   while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) && numiter<maxiter)
   {
@@ -1112,6 +1116,17 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
     LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
 
+#ifdef CONTACTEIG
+    // print to file in matlab format
+    std::ostringstream filename;
+    const std::string filebase = "sparsematrix";
+    filename << "o/matlab_output/" << filebase << "_" << globindex << "_" << numiter+1 << ".mtl";
+    LINALG::PrintMatrixInMatlabFormat(filename.str().c_str(),*(stiff_->EpetraMatrix()));
+    
+    // print sparsity pattern to file
+    LINALG::PrintSparsityToPostscript( *(stiff_->EpetraMatrix()) );
+#endif // #ifdef CONTACTEIG
+    
     //--------------------------------------------------- solve for disi
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
     if (isadapttol && numiter)
@@ -1451,7 +1466,11 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
   Epetra_Time timer(discret_.Comm());
   timer.ResetStartTime();
   bool print_unconv = true;
-
+#ifdef CONTACTEIG
+  static int globindex = 0;
+  ++globindex;
+#endif // #ifdef CONTACTEIG
+  
   // active set search and geometrical nonlinearity are merged into
   // ONE Newton loop, thus we have to check for convergence of the
   // active set here, too!
@@ -1469,6 +1488,17 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
     LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
 
+#ifdef CONTACTEIG
+    // print to file in matlab format
+    std::ostringstream filename;
+    const std::string filebase = "sparsematrix";  
+    filename << "o/matlab_output/" << filebase << "_" << globindex << "_" << numiter+1 << ".mtl";
+    LINALG::PrintMatrixInMatlabFormat(filename.str().c_str(),*(stiff_->EpetraMatrix()));
+    
+    // print sparsity pattern to file
+    LINALG::PrintSparsityToPostscript( *(stiff_->EpetraMatrix()) );
+#endif // #ifdef CONTACTEIG
+    
     //--------------------------------------------------- solve for disi
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
     if (isadapttol && numiter)
