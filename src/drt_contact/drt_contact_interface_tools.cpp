@@ -2165,12 +2165,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
       for (int j=0;j<(int)((node->GetDerivTeta()).size());++j)
         (node->GetDerivTeta())[j].clear();
       (node->GetDerivTeta()).resize(0);
-
-      // reset closest node
-      // (FIXME: at the moment we do not need this info. in the next
-      // iteration, but it might be helpful for accelerated search!!!)
-      node->ClosestNode() = -1;
-
+      
       // reset nodal Mortar maps
       for (int j=0;j<(int)((node->GetD()).size());++j)
         (node->GetD())[j].clear();
@@ -2394,12 +2389,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
       for (int j=0;j<(int)((node->GetDerivTeta()).size());++j)
         (node->GetDerivTeta())[j].clear();
       (node->GetDerivTeta()).resize(0);
-
-      // reset closest node
-      // (FIXME: at the moment we do not need this info. in the next
-      // iteration, but it might be helpful for accelerated search!!!)
-      node->ClosestNode() = -1;
-
+      
       // reset nodal Mortar maps
       for (int j=0;j<(int)((node->GetD()).size());++j)
         (node->GetD())[j].clear();
@@ -3979,12 +3969,7 @@ void CONTACT::Interface::FDCheckVertex3DDeriv(vector<vector<double> >& testv)
       for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
         (node->GetDerivTxi())[j].clear();
       (node->GetDerivTxi()).resize(0);
-
-      // reset closest node
-      // (FIXME: at the moment we do not need this info. in the next
-      // iteration, but it might be helpful for accelerated search!!!)
-      node->ClosestNode() = -1;
-
+      
       // reset nodal Mortar maps
       for (int j=0;j<(int)((node->GetD()).size());++j)
         (node->GetD())[j].clear();
@@ -4415,12 +4400,7 @@ void CONTACT::Interface::FDCheckVertex3DDeriv(vector<vector<double> >& testv)
     for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
       (node->GetDerivTxi())[j].clear();
     (node->GetDerivTxi()).resize(0);
-
-    // reset closest node
-    // (FIXME: at the moment we do not need this info. in the next
-    // iteration, but it might be helpful for accelerated search!!!)
-    node->ClosestNode() = -1;
-
+    
     // reset nodal Mortar maps
     for (int j=0;j<(int)((node->GetD()).size());++j)
       (node->GetD())[j].clear();
@@ -4609,12 +4589,7 @@ void CONTACT::Interface::FDCheckGP3DDeriv(vector<vector<double> >& testgps,
       for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
         (node->GetDerivTxi())[j].clear();
       (node->GetDerivTxi()).resize(0);
-
-      // reset closest node
-      // (FIXME: at the moment we do not need this info. in the next
-      // iteration, but it might be helpful for accelerated search!!!)
-      node->ClosestNode() = -1;
-
+      
       // reset nodal Mortar maps
       for (int j=0;j<(int)((node->GetD()).size());++j)
         (node->GetD())[j].clear();
@@ -5003,12 +4978,7 @@ void CONTACT::Interface::FDCheckGP3DDeriv(vector<vector<double> >& testgps,
       for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
         (node->GetDerivTxi())[j].clear();
       (node->GetDerivTxi()).resize(0);
-
-      // reset closest node
-      // (FIXME: at the moment we do not need this info. in the next
-      // iteration, but it might be helpful for accelerated search!!!)
-      node->ClosestNode() = -1;
-
+      
       // reset nodal Mortar maps
       for (int j=0;j<(int)((node->GetD()).size());++j)
         (node->GetD())[j].clear();
@@ -5397,12 +5367,7 @@ void CONTACT::Interface::FDCheckGP3DDeriv(vector<vector<double> >& testgps,
     for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
       (node->GetDerivTxi())[j].clear();
     (node->GetDerivTxi()).resize(0);
-
-    // reset closest node
-    // (FIXME: at the moment we do not need this info. in the next
-    // iteration, but it might be helpful for accelerated search!!!)
-    node->ClosestNode() = -1;
-
+    
     // reset nodal Mortar maps
     for (int j=0;j<(int)((node->GetD()).size());++j)
       (node->GetD())[j].clear();

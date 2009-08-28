@@ -502,12 +502,7 @@ void CONTACT::Interface::Initialize()
     for (int j=0;j<(int)((node->GetDerivTeta()).size());++j)
       (node->GetDerivTeta())[j].clear();
     (node->GetDerivTeta()).resize(0);
-
-    // reset closest node
-    // (FIXME: at the moment we do not need this info. in the next
-    // iteration, but it might be helpful for accelerated search!!!)
-    node->ClosestNode() = -1;
-
+    
     // reset nodal Mortar maps
     for (int j=0;j<(int)((node->GetD()).size());++j)
       (node->GetD())[j].clear();
@@ -790,9 +785,9 @@ bool CONTACT::Interface::EvaluateContactSearch()
   /* The idea of the search is to reduce the number of master / slave   */
   /* element pairs that are checked for overlap and contact by intro-   */
   /* ducing information about proximity and maybe history!              */
-  /* At the moment this is still brute force for finding the closest    */
-  /* CNode to each CNode, so it will have to replaced by a more         */
-  /* sophisticated approach in the future (bounding vol. hierarchies?)  */
+  /* This old version is still brute force for finding the closest      */
+  /* CNode to each CNode, so it has been replaced by a more             */
+  /* sophisticated approach (bounding vol. hierarchies /  binary tree). */
   /**********************************************************************/
 
   // loop over proc's slave nodes for closest node detection
@@ -1706,8 +1701,6 @@ void CONTACT::Interface::AssembleLM(Epetra_Vector& zglobal)
     CNode* cnode = static_cast<CNode*>(node);
 
     int dim = cnode->NumDof();
-    
-    // TODO: Assembly is performed explicitely only on active nodes (?)
     double* lm = cnode->lm();
 
     Epetra_SerialDenseVector lmnode(dim);
@@ -2555,10 +2548,7 @@ void CONTACT::Interface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
   // get out of here if not participating in interface
   if (!lComm())
     return;
-
-  // TODO move to global initialize
-  //lindglobal.Zero();
-    
+  
   /********************************************** LinDMatrix **********/
   // This is easy and can be done without communication, as the global
   // matrix lind has the same row map as the storage of the derivatives
