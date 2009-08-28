@@ -42,13 +42,15 @@ void PrintElementDatHeader()
 
   ed.PrintSectionHeader(std::cout,"FLUID ELEMENTS");
   ed.PrintElementLines(std::cout,"COMBUST3");
-  ed.PrintElementLines(std::cout,"CONDIF2");
-  ed.PrintElementLines(std::cout,"CONDIF3");
   ed.PrintElementLines(std::cout,"FLUID2");
   ed.PrintElementLines(std::cout,"FLUID3");
-  ed.PrintElementLines(std::cout,"TRANSP");
   ed.PrintElementLines(std::cout,"XDIFF3");
   ed.PrintElementLines(std::cout,"XFLUID3");
+
+  ed.PrintSectionHeader(std::cout,"TRANSPORT ELEMENTS");
+  //ed.PrintElementLines(std::cout,"CONDIF2");
+  //ed.PrintElementLines(std::cout,"CONDIF3");
+  ed.PrintElementLines(std::cout,"TRANSP");
 
   ed.PrintSectionHeader(std::cout,"ALE ELEMENTS");
   ed.PrintElementLines(std::cout,"ALE2");
@@ -135,7 +137,7 @@ void DRT::INPUT::ElementDefinition::SetupValidElementLines()
 //   SetupCombust3Lines();
   SetupFluid2Lines();
   SetupFluid3Lines();
-//   SetupTranspLines();
+  SetupTranspLines();
 //   SetupXdiff3Lines();
   SetupXfluid3Lines();
 

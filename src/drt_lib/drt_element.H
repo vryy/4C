@@ -910,6 +910,9 @@ inline std::string DistypeToString(const DRT::Element::DiscretizationType distyp
     return s;
 }
 
+  /// translate distype string to enum
+  DRT::Element::DiscretizationType StringToDistype(std::string name);
+
 
 } // namespace DRT
 

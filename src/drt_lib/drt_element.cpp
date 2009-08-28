@@ -50,6 +50,48 @@ Maintainer: Michael Gee
 
 #include "../drt_mat/material.H"
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+DRT::Element::DiscretizationType DRT::StringToDistype(std::string name)
+{
+  static std::map<std::string,DRT::Element::DiscretizationType> gid2distype;
+  if (gid2distype.size()==0)
+  {
+    gid2distype["HEX8"]     = DRT::Element::hex8;
+    gid2distype["HEX20"]    = DRT::Element::hex20;
+    gid2distype["HEX27"]    = DRT::Element::hex27;
+    gid2distype["TET4"]     = DRT::Element::tet4;
+    gid2distype["TET10"]    = DRT::Element::tet10;
+    gid2distype["WEDGE6"]   = DRT::Element::wedge6;
+    gid2distype["WEDGE15"]  = DRT::Element::wedge15;
+    gid2distype["PYRAMID5"] = DRT::Element::pyramid5;
+    gid2distype["QUAD4"]    = DRT::Element::quad4;
+    gid2distype["QUAD8"]    = DRT::Element::quad8;
+    gid2distype["QUAD9"]    = DRT::Element::quad9;
+    gid2distype["TRI3"]     = DRT::Element::tri3;
+    gid2distype["TRI6"]     = DRT::Element::tri6;
+    gid2distype["NURBS2"]   = DRT::Element::nurbs2;
+    gid2distype["NURBS3"]   = DRT::Element::nurbs3;
+    gid2distype["NURBS4"]   = DRT::Element::nurbs4;
+    gid2distype["NURBS8"]   = DRT::Element::nurbs8;
+    gid2distype["NURBS9"]   = DRT::Element::nurbs9;
+    gid2distype["NURBS27"]  = DRT::Element::nurbs27;
+    gid2distype["LINE2"]    = DRT::Element::line2;
+    gid2distype["LINE3"]    = DRT::Element::line3;
+    gid2distype["POINT1"]   = DRT::Element::point1;
+    gid2distype["DIS_NONE"] = DRT::Element::dis_none;
+    gid2distype["MAX_DISTYPE"] = DRT::Element::max_distype;
+  }
+
+  std::map<std::string,DRT::Element::DiscretizationType>::iterator i;
+  i = gid2distype.find(name);
+  if (i!=gid2distype.end())
+    return i->second;
+  dserror("unsupported distype '%s'",name.c_str());
+  return DRT::Element::dis_none;
+}
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
