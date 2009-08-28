@@ -1091,6 +1091,8 @@ OBJS_DRT_MAT_LIB = src/drt_mat/matpar_bundle.o \
                 src/drt_matelast/elast_volsussmanbathe.o \
                 src/drt_matelast/elast_volpenalty.o \
                 src/drt_matelast/elast_vologden.o \
+                src/drt_matelast/elast_coupvarga.o \
+                src/drt_matelast/elast_isovarga.o \
                 src/drt_mat/cnst_1d_art.o
 #
 OBJS_DRT_MAT  = src/drt_mat/micromaterialgp_static.o \

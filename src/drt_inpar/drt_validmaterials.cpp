@@ -1058,6 +1058,32 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AppendMaterialDefinition(matlist,m);
   }
 
+  /*--------------------------------------------------------------------*/
+  // coupled Varga material acc. to Holzapfel
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("ELAST_CoupVarga",
+                                            "Varga material acc. to Holzapfel",
+                                            INPAR::MAT::mes_coupvarga));
+
+    AddNamedReal(m,"MUE","Shear modulus");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*--------------------------------------------------------------------*/
+  // isochoric Varga material acc. to Holzapfel
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("ELAST_IsoVarga",
+                                            "Isochoric Varga material acc. to Holzapfel",
+                                            INPAR::MAT::mes_isovarga));
+
+    AddNamedReal(m,"MUE","Shear modulus");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
   /*----------------------------------------------------------------------*/
   /*--------------------------------------------------------------------*/
   // 1D Artery material with constant properties

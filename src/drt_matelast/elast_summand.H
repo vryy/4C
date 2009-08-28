@@ -289,6 +289,61 @@ namespace MAT
         const LINALG::Matrix<6,1>& inv  ///< modified invariants of right Cauchy-Green tensor
       ) = 0;
 
+      /// Answer if coefficients with respect to principal stretches are provided
+      virtual bool HaveCoefficientsOfStretchesPrincipal()
+      {
+        return false;
+      }
+
+      /// Add coefficients with respect to principal stretches (or zeros)
+      ///
+      /// The coefficients \f$\gamma_\alpha\f$ are based on  \f$\alpha=1,2,3\f$
+      ///\f[
+      /// \gamma_\alpha = \frac{\partial \Psi}{\partial \lambda_\alpha}
+      ///\f]
+      ///
+      /// The coefficients \f$\delta_{\alpha\beta}\f$ are based on \f$\alpha,\beta=1,2,3\f$
+      ///\f[
+      /// \delta_{\alpha\beta} = \frac{\partial^2\Psi}{\partial\lambda_\alpha \partial\lambda_\beta}
+      ///\f]
+      virtual void AddCoefficientsOfStretchesPrincipal(
+        LINALG::Matrix<3,1>& gamma,  ///< see above, [gamma_1, gamma_2, gamma_3]
+        LINALG::Matrix<6,1>& delta,  ///< see above, [delta_11, delta_22, delta_33, delta_12, delta_23, delta_31]
+        const LINALG::Matrix<3,1>& prstr  ///< principal stretches, [lambda_1, lambda_2, lambda_3]
+      )
+      {
+        return;  // do nothing
+      }
+
+      /// Answer if coefficients with respect to modified principal stretches are provided
+      virtual bool HaveCoefficientsOfStretchesModified()
+      {
+        return false;
+      }
+
+      /// Add coefficients with respect to modified principal stretches (or zeros)
+      ///
+      /// The coefficients \f$\gamma_\alpha\f$ are based on \f$\alpha=1,2,3\f$
+      ///\f[
+      /// \gamma_\alpha 
+      /// = \frac{\partial \Psi}{\partial \bar{\lambda}_\alpha}
+      ///\f]
+      /// and \f$\bar{\lambda}_\alpha = J^{-1/3} \lambda_\alpha\f$.
+      ///
+      /// The coefficients \f$\delta_{\alpha\beta}\f$ are based on \f$\alpha,\beta=1,2,3\f$
+      ///\f[
+      /// \delta_{\alpha\beta}
+      /// = \frac{\partial^2\Psi}{\partial\bar{\lambda}_\alpha \partial\bar{\lambda}_\beta}
+      ///\f]
+      virtual void AddCoefficientsOfStretchesModified(
+        LINALG::Matrix<3,1>& gamma,  ///< see above, [gamma_1, gamma_2, gamma_3]
+        LINALG::Matrix<6,1>& delta,  ///< see above, [delta_11, delta_22, delta_33, delta_12, delta_23, delta_31]
+        const LINALG::Matrix<3,1>& modstr  ///< modified principal stretches, [lambda_1, lambda_2, lambda_3]
+      )
+      {
+        return;  // do nothing
+      }
+
     private:
 
 

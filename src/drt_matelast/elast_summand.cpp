@@ -30,6 +30,8 @@ Maintainer: Burkhard Bornemann
 #include "elast_vologden.H"
 #include "elast_coupanisoexpotwo.H"
 #include "elast_coupanisoneohooketwo.H"
+#include "elast_coupvarga.H"
+#include "elast_isovarga.H"
 
 
 /*----------------------------------------------------------------------*
@@ -127,6 +129,20 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
       curmat->SetParameter(new MAT::ELASTIC::PAR::CoupAnisoNeoHookeTwo(curmat));
     MAT::ELASTIC::PAR::CoupAnisoNeoHookeTwo* params = static_cast<MAT::ELASTIC::PAR::CoupAnisoNeoHookeTwo*>(curmat->Parameter());
     return Teuchos::rcp(new CoupAnisoNeoHookeTwo(params));
+  }
+  case INPAR::MAT::mes_coupvarga:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::ELASTIC::PAR::CoupVarga(curmat));
+    MAT::ELASTIC::PAR::CoupVarga* params = static_cast<MAT::ELASTIC::PAR::CoupVarga*>(curmat->Parameter());
+    return Teuchos::rcp(new CoupVarga(params));
+  }
+  case INPAR::MAT::mes_isovarga:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::ELASTIC::PAR::IsoVarga(curmat));
+    MAT::ELASTIC::PAR::IsoVarga* params = static_cast<MAT::ELASTIC::PAR::IsoVarga*>(curmat->Parameter());
+    return Teuchos::rcp(new IsoVarga(params));
   }
   default:
     dserror("cannot deal with type %d", curmat->Type());

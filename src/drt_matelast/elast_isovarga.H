@@ -1,20 +1,20 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_isoneohooke.H
+\file elast_isovarga.H
 \brief
-This file contains the routines required for logarithmic neo-Hooke material
-according to Bonet and Wood, "Nonlinear continuum mechanics for finite
-element analysis", Cambridge, 1997.
+This file contains the routines required for Varga's material
 
 <pre>
-Maintainer: Sophie Rausch & Thomas Kloeppel
-            rausch,kloeppel@lnm.mw.tum.de
-            089/289 15255
+Maintainer: Burkhard Bornemann
+            bornemann@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15237
 </pre>
+*/
 
-*----------------------------------------------------------------------*/
-#ifndef ELAST_ISONEOHOOKE_H_
-#define ELAST_ISONEOHOOKE_H_
+/*----------------------------------------------------------------------*/
+#ifndef ELAST_ISOVARGA_H_
+#define ELAST_ISOVARGA_H_
 #ifdef CCADISCRET
 
 #include "../drt_inpar/inpar_material.H"
@@ -33,21 +33,21 @@ namespace ELASTIC
   {
 
     /*----------------------------------------------------------------------*/
-    /// material parameters for isochoric contribution of a neo-Hooke material
+    /// material parameters of Varga's material
     ///
     /// <h3>Input line</h3>
-    /// MAT 1 ELAST_IsoNeoHooke MUE 100
-    class IsoNeoHooke : public MAT::PAR::Parameter
+    /// MAT 1 ELAST_IsoVarga MUE 1.0
+    class IsoVarga : public MAT::PAR::Parameter
     {
     public:
 
       /// standard constructor
-      IsoNeoHooke(
+     IsoVarga(
         Teuchos::RCP<MAT::PAR::Material> matdata
         );
 
       /// destructor
-      virtual ~IsoNeoHooke() { ; }
+      virtual ~IsoVarga() { ; }
 
       /// @name material parameters
       //@{
@@ -57,46 +57,45 @@ namespace ELASTIC
 
       //@}
 
-    };  // class IsoNeoHooke
+    };  // class IsoVarga
 
   }  // namespace PAR
 
   /*----------------------------------------------------------------------*/
-  /// Isochoric neo-Hooke material according to [1]
+  /// Varga's material according to [1]
   ///
-  /// This is a hyperelastic, isotropic material
+  /// This is a compressible, hyperelastic, isotropic material
   /// of the most simple kind.
   ///
-  /// Strain energy function is given by
+  /// The material strain energy density function is
   ///\f[
-  ///   \Psi = \frac \mu 2 (\overline{I}_{\boldsymbol{C}}-3).
-  //         = \frac{\mu}{2} (J^{-2/3}{I}_{\boldsymbol{C}} - 3)
+  /// \Psi = 2 \mu (\bar{\lambda}_1 + \bar{\lambda}_2 + \bar{\lambda}_3 - 3)
   ///\f]
+  /// which was taken from [1] Eq (6.129).
   ///
   /// <h3>References</h3>
   /// <ul>
   /// <li> [1] GA Holzapfel, "Nonlinear solid mechanics", Wiley, 2000.
   /// </ul>
   ///
-  /// \author rausch,tk
+  /// \author bborn
   /// \date 04/09
-  class IsoNeoHooke : public Summand
+  class IsoVarga : public Summand
   {
 
   public:
 
     /// empty constructor
-    IsoNeoHooke();
+    IsoVarga();
 
     /// constructor with given material parameters
-    IsoNeoHooke(MAT::ELASTIC::PAR::IsoNeoHooke* params);
-
+    IsoVarga(MAT::ELASTIC::PAR::IsoVarga* params);
 
     /// @name Access material constants
     //@{
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_isoneohooke; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_isovarga; }
 
     /// add shear modulus equivalent
     virtual void AddShearMod(
@@ -106,8 +105,7 @@ namespace ELASTIC
 
     //@}
 
-    /// Add principal coeffiencts.
-    /// Nothing to do for this (decoupled) material!
+    /// Main material call to determine  2nd PK stress and material constitutive tensor
     void AddCoefficientsPrincipal(
         bool& havecoefficients,  ///< non-zero coefficients of this type are provided
         LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
@@ -116,17 +114,19 @@ namespace ELASTIC
     )
     {
       havecoefficients = havecoefficients or false;
-
-      return;
     };
 
     /// Add modified coeffiencts.
+    /// Nothing to do for this (coupled) material!
     void AddCoefficientsModified(
         bool& havecoefficients,  ///< non-zero coefficients of this type are provided
         LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
         LINALG::Matrix<5,1>& delta,  ///< necessary coefficients for second derivative
         const LINALG::Matrix<3,1>& modinv  ///< modified invariants of right Cauchy-Green tensor
-    );
+    )
+    {
+      havecoefficients = havecoefficients or false;
+    };
 
     /// Add anisotropic principal coeffiencts.
     /// Nothing to do for this (isotropic) material!
@@ -152,21 +152,34 @@ namespace ELASTIC
       havecoefficients = havecoefficients or false;
     };
 
+    /// Answer if coefficients with respect to principal stretches are provided
+    virtual bool HaveCoefficientsOfStretchesModified()
+    {
+      return true;
+    }
+
+    /// Add coefficients with respect to principal stretches (or zeros)
+    virtual void AddCoefficientsOfStretchesModified(
+      LINALG::Matrix<3,1>& gamma,  ///< see above, [gamma_1, gamma_2, gamma_3]
+      LINALG::Matrix<6,1>& delta,  ///< see above, [delta_11, delta_22, delta_33, delta_12, delta_23, delta_31]
+      const LINALG::Matrix<3,1>& modstr  ///< modified principal stretches, [lambda_1, lambda_2, lambda_3]
+      );
 
     /// @name Access methods
     //@{
     double Mue() const { return params_->mue_; }
-
     //@}
 
     /// @name Write methods
     //@{
-    void SetMue(const double mue) { params_->mue_ = mue; }
+    void SetMue(const double& mue) { params_->mue_ = mue; }
     //@}
+
+
   private:
 
     /// my material parameters
-    MAT::ELASTIC::PAR::IsoNeoHooke* params_;
+    MAT::ELASTIC::PAR::IsoVarga* params_;
 
   };
 
@@ -174,4 +187,4 @@ namespace ELASTIC
 }  // namespace MAT
 
 #endif  // CCADISCRET
-#endif  // ISONEOHOOKE_H_
+#endif  // ELAST_ISOVARGA_H_

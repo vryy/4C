@@ -101,6 +101,8 @@ namespace INPAR
       mes_vologden,  ///< Ogden volumetric part of the  hyperelastic potential summand
       mes_coupanisoexpotwo,  ///< anisotropic potential summand
       mes_coupanisoneohooketwo,  ///< anisotropic potential summand
+      mes_coupvarga,  ///< isotropic Varga material
+      mes_isovarga,  ///< isotropic isochoric Varga material
       m_cnst_art,            ///< 1D_Artery constant material properties
       m_none          ///< undefined
     };

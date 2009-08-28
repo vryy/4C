@@ -214,6 +214,25 @@ namespace MAT
       const LINALG::Matrix<3,1>& prinv  ///< principal invariants
       );
 
+    /// calculate principal stretches \f$\lambda_\alpha\f$ and material principal directions
+    void StretchesPrincipal(
+      LINALG::Matrix<3,1>& prstr,  ///< principal stretches
+      LINALG::Matrix<3,3>& prdir,  ///< principal directions, stored col-by-col
+      const LINALG::Matrix<6,1>& rcg  ///< symmetric Cartesian 2-tensor in strain-like 6-Voigt notation
+      );
+
+    /// calculate modified principal stretches \f$\bar{\lambda}_\alpha\f$
+    void StretchesModified(
+      LINALG::Matrix<3,1>& modstr,  ///< modified principal stretches
+      const LINALG::Matrix<3,1>& prstr  ///< principal stretches
+      );
+
+    /// determine if at least one summand uses principal stretches
+    bool HaveCoefficientsOfStretchesPrincipal();
+
+    /// determine if at least one summand uses modified principal stretches
+    bool HaveCoefficientsOfStretchesModified();
+
     /// my material parameters
     MAT::PAR::ElastHyper* params_;
 
@@ -228,6 +247,15 @@ namespace MAT
     LINALG::Matrix<3,1>  a2_;
     /// mixed structural tensor (asymmetric) \f$a1 \otimes a2\f$
     LINALG::Matrix<3,3>  A1A2_;
+
+    /// @name Voigt index arrays
+    //@{
+    static const int VOIGT6ROW_[];  ///< 6-Voigt row index of corresponding 2-tensor
+    static const int VOIGT6COL_[];  ///< 6-Voigt column index of corresponding 2-tensor
+    static const int VOIGT3X3SYM_[]; ///< go from symmtric 2-tensor index pair to 6-Voigt index
+                                     ///< by [3*i+j] for any i,j=0,1,2
+    //@}
+
   };
 
 }
