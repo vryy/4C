@@ -157,7 +157,6 @@ void FSI::MonolithicXFEM::Newton()
 {
   cout << "FSI::MonolithicXFEM::Newton()" << endl;
 
-  dispincsum_ = Teuchos::null;
   x_ = Teuchos::null;
   matrix_ = Teuchos::null;
 
@@ -195,16 +194,7 @@ void FSI::MonolithicXFEM::Evaluate()
     // extract structure displacement
     Teuchos::RCP<Epetra_Vector> sx = extractor_->ExtractStructureVector(x_);
 
-    // residual displacements (or iteration increments or iteratively incremental displacements)
-    Teuchos::RCP<Epetra_Vector> disp = Teuchos::rcp(new Epetra_Vector(*sx));
-
-    // update incremental displacement member to provided step increments
-    // shortly: disp^<i+1> := disinc_^<i>
-    dispincsum_->Update(1.0, *disp, 1.0);
-
-    // expects x^{n+1}_{i+1}
-    StructureField().Evaluate(dispincsum_);
-
+    StructureField().Evaluate(sx);
 
 
     Teuchos::RCP<Epetra_Vector> fx = extractor_->ExtractFluidVector(x_);
@@ -219,8 +209,6 @@ void FSI::MonolithicXFEM::Evaluate()
     cout << "first step" << endl;
     StructureField().Evaluate(Teuchos::null);
     FluidField().Evaluate(Teuchos::null, Teuchos::null);
-
-    dispincsum_ = LINALG::CreateVector(*StructureField().DofRowMap(), true);
   }
 
 

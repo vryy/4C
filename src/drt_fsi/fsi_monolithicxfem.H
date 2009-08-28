@@ -110,7 +110,6 @@ namespace FSI
 
     Teuchos::RCP<MonolithicXFEMExtractor> extractor_;
 
-    Teuchos::RCP<Epetra_Vector> dispincsum_;
     Teuchos::RCP<Epetra_Vector> rhs_;
     Teuchos::RCP<Epetra_Vector> x_;
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> matrix_;

@@ -275,7 +275,16 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
                        rcp(new StructureConstrained(tmpstr))));
   }
   else
-    structure_ = rcp(new StructureNOXCorrectionWrapper(tmpstr));
+  {
+    const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+    if (Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO")==fsi_iter_monolithicxfem)
+    {
+      // no NOX correction required
+      structure_ = tmpstr;
+    }
+    else
+      structure_ = rcp(new StructureNOXCorrectionWrapper(tmpstr));
+  }
 
   // invoke contact strugen alpha
   bool contact = false;
@@ -303,8 +312,6 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
     structure_ = rcp(new StructureNOXCorrectionWrapper(
                        Teuchos::rcp(new ContactStructureGenAlpha(genalphaparams,actdis,solver,output))));
   }
-  else
-    structure_ = rcp(new StructureNOXCorrectionWrapper(tmpstr));
 }
 
 /*----------------------------------------------------------------------*/
@@ -403,7 +410,16 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
   if (tmpstr->HaveConstraint())
     structure_ = rcp(new StructureNOXCorrectionWrapper(rcp(new StructureConstrained(tmpstr))));
   else
-    structure_ = rcp(new StructureNOXCorrectionWrapper(tmpstr));
+  {
+    const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+    if (Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO")==fsi_iter_monolithicxfem)
+    {
+      // no NOX correction required
+      structure_ = tmpstr;
+    }
+    else
+      structure_ = rcp(new StructureNOXCorrectionWrapper(tmpstr));
+  }
 
   // see you
   return;
