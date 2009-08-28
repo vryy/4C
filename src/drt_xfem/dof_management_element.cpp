@@ -47,6 +47,30 @@ XFEM::ElementDofManager::ElementDofManager(
 }
 
 
+/*----------------------------------------------------------------------*
+ |  construct element dof manager                               ag 11/07|
+ *----------------------------------------------------------------------*/
+XFEM::ElementDofManager::ElementDofManager(
+    const DRT::Element&  ele,
+    const std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>& element_ansatz,
+    const XFEM::DofManager& dofman
+) :
+  DisTypePerElementField_(element_ansatz)
+{
+  // nodal dofs for ele
+  nodalDofSet_.clear();
+  for (std::size_t inode = 0; inode < (size_t)ele.NumNode(); ++inode)
+  {
+    const int gid = ele.NodeIds()[inode];
+    nodalDofSet_.insert(make_pair(gid,dofman.getNodeDofSet(gid)));
+  }
+
+  // element dofs for ele
+  const std::set<XFEM::FieldEnr>& enrfieldset(dofman.getElementDofSet(ele.Id()));
+
+  ComputeDependentInfo(ele, nodalDofSet_, enrfieldset, element_ansatz);
+}
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -149,32 +173,6 @@ void XFEM::ElementDofManager::ComputeDependentInfo(
     dserror("dof number mismatch! -> bug!");
 
   return;
-}
-
-
-
-/*----------------------------------------------------------------------*
- |  construct element dof manager                               ag 11/07|
- *----------------------------------------------------------------------*/
-XFEM::ElementDofManager::ElementDofManager(
-    const DRT::Element&  ele,
-    const std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>& element_ansatz,
-    const XFEM::DofManager& dofman
-) :
-  DisTypePerElementField_(element_ansatz)
-{
-  // nodal dofs for ele
-  nodalDofSet_.clear();
-  for (std::size_t inode = 0; inode < (size_t)ele.NumNode(); ++inode)
-  {
-    const int gid = ele.NodeIds()[inode];
-    nodalDofSet_.insert(make_pair(gid,dofman.getNodeDofSet(gid)));
-  }
-
-  // element dofs for ele
-  const std::set<XFEM::FieldEnr>& enrfieldset(dofman.getElementDofSet(ele.Id()));
-
-  ComputeDependentInfo(ele, nodalDofSet_, enrfieldset, element_ansatz);
 }
 
 
