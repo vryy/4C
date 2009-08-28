@@ -34,6 +34,8 @@ Maintainer: Thomas Kloeppel
 #include "../drt_structure/strtimint_impl.H"
 #include "adapter_structure.H"
 
+#include "adapter_structure_wrapper.H"
+
 using namespace Teuchos;
 /*----------------------------------------------------------------------*/
 /* adapting adapter */
@@ -48,7 +50,7 @@ namespace ADAPTER {
    *
    * \date 11/08
    */
-  class StructureConstrained : public Structure
+  class StructureConstrained : public StructureWrapper
   {
   public:
 
@@ -76,43 +78,16 @@ namespace ADAPTER {
     /// direct access to system matrix
     RCP<LINALG::SparseMatrix> SystemMatrix();
 
-    /// direct access to discretization
-    RCP<DRT::Discretization> Discretization();
-
     /// External force at t_{n+1}
     RCP<const Epetra_Vector> FExtn();
 
     /// IT'S ACTUALLY ALWAYS ZERO AND RATHER POINTLESS, OR?
     RCP<const Epetra_Vector> FRobin();
 
-    /// Get the current time
-    virtual double GetTime() const { return structure_->GetTime(); }
-
-    /// Get upper limit of time range of interest
-    virtual double GetTimeEnd() const { return structure_->GetTimeEnd(); }
-
-    /// Get time step size \f$\Delta t_n\f$
-    virtual double GetTimeStepSize() const { return structure_->GetTimeStepSize(); }
-
-    /// Get current time step \f$n\f$ (sometimes called \f$k\f$ [but not in Baci])
-    virtual int GetTimeStep() const { return structure_->GetTimeStep(); }
-
-    /// Get number of time steps
-    virtual int GetTimeNumStep() const { return structure_->GetTimeNumStep(); }
-
-    /// start new time step
-    void PrepareTimeStep();
-
     /// evaluate elements with given displacement
     void Evaluate(
       RCP<const Epetra_Vector> disp  ///< current state
     );
-
-    /// update at time step end
-    void Update();
-
-    /// output results
-    void Output();
 
     /// communication object at the interface
     virtual const LINALG::MapExtractor& Interface() const
@@ -128,12 +103,6 @@ namespace ADAPTER {
 
     /// domain map of system matrix (do we really need this?)
     virtual const Epetra_Map& DomainMap();
-
-    /// read restart information for given time step
-    virtual void ReadRestart
-    (
-      int step  ///< given time step
-    );
 
     /// are there any algebraic constraints?
      virtual bool HaveConstraint()
@@ -157,57 +126,7 @@ namespace ADAPTER {
       structure_->UpdateIterIncrConstr(lagrincr);
     }
 
-    /// @name Solver calls
-    //@{
-
-    /// non-linear solve
-    ///
-    /// Do the nonlinear solve for the time step. All boundary conditions have
-    /// been set.
-    virtual void Solve();
-
-    /// get the linear solver object used for this field
-    virtual RCP<LINALG::Solver> LinearSolver() { return structure_->LinearSolver(); }
-
-    /// linear structure solve with just a interface load
-    ///
-    ///  The very special solve done in steepest descent relaxation
-    ///  calculation (and matrix free Newton Krylov).
-    ///
-    ///  \note Can only be called after a valid structural solve.
-    virtual RCP<Epetra_Vector> RelaxationSolve(
-      RCP<Epetra_Vector> iforce
-    );
-
-    //@}
-
-    /// @name Extract interface values
-
-    /// extract displacements
-    virtual RCP<Epetra_Vector> ExtractInterfaceDispn();
-
-    /// extract displacements
-    virtual RCP<Epetra_Vector> ExtractInterfaceDispnp();
-
-    /// extract interface forces (necessary for robin-BC)
-    virtual RCP<Epetra_Vector> ExtractInterfaceForces();
-
-    /// Predictor for interface displacements
-    virtual RCP<Epetra_Vector> PredictInterfaceDispnp();
-
-    //@}
-
     /// @name Apply interface forces
-
-    /// apply interface forces to structural solver
-    ///
-    ///  This prepares a new solve of the structural field within one time
-    ///  step. The middle values are newly created.
-    ///
-    ///  \note This is not yet the most efficient implementation.
-    virtual void ApplyInterfaceForces(
-      RCP<Epetra_Vector> iforce
-    );
 
     virtual void ApplyInterfaceRobinValue(
       RCP<Epetra_Vector> iforce,
@@ -215,9 +134,6 @@ namespace ADAPTER {
     );
 
     //@}
-
-    /// create result test for encapsulated structure algorithm
-    virtual RCP<DRT::ResultTest> CreateFieldTest();
 
   private:
 
@@ -232,10 +148,6 @@ namespace ADAPTER {
 
     /// the complete non-overlapping degree of freedom row map for structure and lagrange multipliers
     RCP<Epetra_Map> dofrowmap_;
-
-    /// sum of displacement vectors already applied,
-    /// i.e. the incremental displacements
-    RCP<Epetra_Vector> disinc_;
 
     /// @name local copies of input parameters
     //{@

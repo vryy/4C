@@ -36,7 +36,7 @@ ADAPTER::StructureConstrained::StructureConstrained
 (
   RCP<Structure> stru
 )
-: structure_(stru)
+: StructureWrapper(stru)
 {
   // make sure
   if (structure_ == null)
@@ -51,10 +51,6 @@ ADAPTER::StructureConstrained::StructureConstrained
   conmerger_.Setup(*dofrowmap_,
                     structure_->DofRowMap(),
                     structure_->GetConstraintManager()->GetConstraintMap());
-
-  // initialise displacement increments to 0 (in words zero)
-  // this variable in only used in monolithic FSI
-  disinc_ = Teuchos::rcp(new Epetra_Vector(*dofrowmap_,true));
 
   //setup fsi-Interface
   DRT::UTILS::SetupNDimExtractor(*(structure_->Discretization()),"FSICoupling",dofrowmap_,interface_);
@@ -159,36 +155,11 @@ RCP<LINALG::SparseMatrix> ADAPTER::StructureConstrained::SystemMatrix()
 
 
 /*----------------------------------------------------------------------*/
-/* get discretisation */
-RCP<DRT::Discretization> ADAPTER::StructureConstrained::Discretization()
-{
-  return structure_->Discretization();
-}
-
-
-/*----------------------------------------------------------------------*/
 /* */
 RCP<const Epetra_Vector> ADAPTER::StructureConstrained::FRobin()
 {
   //return structure_->GetForceRobinFSI();
   return LINALG::CreateVector(*dofrowmap_, true);
-}
-
-
-/*----------------------------------------------------------------------*/
-/* prepare time step */
-void ADAPTER::StructureConstrained::PrepareTimeStep()
-{
-  // Note: MFSI requires a constant predictor. Otherwise the fields will get
-  // out of sync.
-
-  // predict
-  structure_->PrepareTimeStep();
-
-  // initialise incremental displacements
-  if (disinc_ != null)
-    disinc_->PutScalar(0.0);
-
 }
 
 
@@ -206,16 +177,8 @@ void ADAPTER::StructureConstrained::Evaluate(
   // Compute residual increments, update total increments and update lagrange multipliers
   if (disp != Teuchos::null)
   {
-    // residual displacements (or iteration increments or iteratively incremental displacements)
-    Teuchos::RCP<Epetra_Vector> disi = Teuchos::rcp(new Epetra_Vector(*disp));
-    disi->Update(-1.0, *disinc_, 1.0);
-
-    // update incremental displacement member to provided step increments
-    // shortly: disinc_^<i> := disp^<i+1>
-    disinc_->Update(1.0, *disp, 0.0);
-
     // Extract increments for lagr multipliers and do update
-    RCP<Epetra_Vector> lagrincr = conmerger_.ExtractOtherVector(disi);
+    RCP<Epetra_Vector> lagrincr = conmerger_.ExtractOtherVector(disp);
     structure_->UpdateIterIncrConstr(lagrincr);
     dispstruct = conmerger_.ExtractCondVector(disp);
   }
@@ -223,21 +186,6 @@ void ADAPTER::StructureConstrained::Evaluate(
   // structure_ will compute the residual increments on its own
   structure_->Evaluate(dispstruct);
 
-}
-
-/*----------------------------------------------------------------------*/
-/* update time step */
-void ADAPTER::StructureConstrained::Update()
-{
-  structure_->Update();
-}
-
-
-/*----------------------------------------------------------------------*/
-/* output */
-void ADAPTER::StructureConstrained::Output()
-{
-  structure_->Output();
 }
 
 
@@ -252,81 +200,6 @@ const Epetra_Map& ADAPTER::StructureConstrained::DomainMap()
 
 
 /*----------------------------------------------------------------------*/
-/* read restart */
-void ADAPTER::StructureConstrained::ReadRestart(int step)
-{
-  structure_->ReadRestart(step);
-}
-
-
-/*----------------------------------------------------------------------*/
-/* find iteratively solution */
-void ADAPTER::StructureConstrained::Solve()
-{
-  structure_->Solve();
-}
-
-
-/*----------------------------------------------------------------------*/
-/* */
-RCP<Epetra_Vector> ADAPTER::StructureConstrained::RelaxationSolve(
-  RCP<Epetra_Vector> iforce
-)
-{
-  return structure_->RelaxationSolve(iforce);
-}
-
-/*----------------------------------------------------------------------*/
-/* extract interface displacements D_{n} */
-RCP<Epetra_Vector> ADAPTER::StructureConstrained::ExtractInterfaceDispn()
-{
-  return structure_->ExtractInterfaceDispn();
-}
-
-/*----------------------------------------------------------------------*/
-/* extract interface displacements D_{n+1} */
-RCP<Epetra_Vector> ADAPTER::StructureConstrained::ExtractInterfaceDispnp()
-{
-  return structure_->ExtractInterfaceDispnp();
-}
-
-/*----------------------------------------------------------------------*/
-/* extract external forces at interface F_{ext,n+1} */
-RCP<Epetra_Vector> ADAPTER::StructureConstrained::ExtractInterfaceForces()
-{
-  return structure_->ExtractInterfaceForces();
-}
-
-/*----------------------------------------------------------------------*/
-/* */
-RCP<Epetra_Vector> ADAPTER::StructureConstrained::PredictInterfaceDispnp()
-{
-   return structure_->PredictInterfaceDispnp();
-}
-
-
-/*----------------------------------------------------------------------*/
-/* */
-void ADAPTER::StructureConstrained::ApplyInterfaceForces(
-  RCP<Epetra_Vector> iforce
-)
-{
-/*
-  // Play it save. In the first iteration everything is already set up
-  // properly. However, all following iterations need to calculate the
-  // stiffness matrix here. Furthermore we are bound to reset fextm_
-  // before we add our special contribution.
-  // So we calculate the stiffness anyway (and waste the available
-  // stiffness in the first iteration).
-  structure_->ApplyExternalForce(interface_,iforce);
-*/
-  // This will add the provided interface force onto the residual forces
-  // The sign convention of the interface force is external-force-like.
-  structure_->ApplyInterfaceForces(iforce);
-}
-
-
-/*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::StructureConstrained::ApplyInterfaceRobinValue(
   RCP<Epetra_Vector> iforce,
@@ -334,14 +207,6 @@ void ADAPTER::StructureConstrained::ApplyInterfaceRobinValue(
 )
 {
   dserror("Not implemented!");
-}
-
-
-/*----------------------------------------------------------------------*/
-/* structural result test */
-RCP<DRT::ResultTest> ADAPTER::StructureConstrained::CreateFieldTest()
-{
-  return structure_->CreateFieldTest();
 }
 
 

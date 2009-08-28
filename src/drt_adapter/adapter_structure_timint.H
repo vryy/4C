@@ -233,10 +233,6 @@ namespace ADAPTER {
     /// the interface map setup for interface <-> full translation
     LINALG::MapExtractor interface_;
 
-    /// sum of displacement vectors already applied,
-    /// i.e. the incremental displacements
-    Teuchos::RCP<Epetra_Vector> disinc_;
-
     /// @name local copies of input parameters
     //{@
     Teuchos::RCP<DRT::Discretization> discret_;  ///< the discretisation

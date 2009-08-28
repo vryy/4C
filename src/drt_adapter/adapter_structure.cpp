@@ -19,6 +19,8 @@ Maintainer: Ulrich Kuettler
 #include "adapter_structure_contactstrugenalpha.H"
 #include "adapter_structure_timint.H"
 #include "adapter_structure_constrained.H"
+#include "adapter_structure_wrapper.H"
+
 #include "../drt_lib/drt_globalproblem.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -269,10 +271,11 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
 
   if (tmpstr->HaveConstraint())
   {
-    structure_ = rcp(new StructureConstrained(tmpstr));
+    structure_ = rcp(new StructureNOXCorrectionWrapper(
+                       rcp(new StructureConstrained(tmpstr))));
   }
   else
-    structure_ = tmpstr;
+    structure_ = rcp(new StructureNOXCorrectionWrapper(tmpstr));
 
   // invoke contact strugen alpha
   bool contact = false;
@@ -297,11 +300,11 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
 
   if(contact)
   {
-    structure_ = Teuchos::rcp(new ContactStructureGenAlpha(genalphaparams,actdis,solver,output));
+    structure_ = rcp(new StructureNOXCorrectionWrapper(
+                       Teuchos::rcp(new ContactStructureGenAlpha(genalphaparams,actdis,solver,output))));
   }
   else
-    structure_ = tmpstr;
-
+    structure_ = rcp(new StructureNOXCorrectionWrapper(tmpstr));
 }
 
 /*----------------------------------------------------------------------*/
@@ -398,9 +401,9 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
                                                 actdis, solver, output));
 
   if (tmpstr->HaveConstraint())
-    structure_ = rcp(new StructureConstrained(tmpstr));
+    structure_ = rcp(new StructureNOXCorrectionWrapper(rcp(new StructureConstrained(tmpstr))));
   else
-    structure_ = tmpstr;
+    structure_ = rcp(new StructureNOXCorrectionWrapper(tmpstr));
 
   // see you
   return;

@@ -199,9 +199,6 @@ void ADAPTER::ContactStructureGenAlpha::PrepareTimeStep()
   }
   else
     dserror("predictor %s unknown", pred.c_str());
-
-  if (sumdisi_!=Teuchos::null)
-    sumdisi_->PutScalar(0.);
 }
 
 
@@ -209,29 +206,7 @@ void ADAPTER::ContactStructureGenAlpha::PrepareTimeStep()
 /*----------------------------------------------------------------------*/
 void ADAPTER::ContactStructureGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
 {
-  // Yes, this is complicated. But we have to be very careful
-  // here. The field solver always expects an increment only. And
-  // there are Dirichlet conditions that need to be preserved. So take
-  // the sum of increments we get from NOX and apply the latest
-  // increment only.
-  if (disp!=Teuchos::null)
-  {
-    Teuchos::RCP<Epetra_Vector> disi = Teuchos::rcp(new Epetra_Vector(*disp));
-    if (sumdisi_!=Teuchos::null)
-    {
-      disi->Update(-1.0,*sumdisi_,1.0);
-      sumdisi_->Update(1.0,*disp,0.0);
-    }
-    else
-    {
-      sumdisi_ = Teuchos::rcp(new Epetra_Vector(*disp));
-    }
-    structure_.Evaluate(disi);
-  }
-  else
-  {
-    structure_.Evaluate(Teuchos::null);
-  }
+  structure_.Evaluate(disp);
 }
 
 
