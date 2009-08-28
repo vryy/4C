@@ -11,11 +11,26 @@
 #ifdef CCADISCRET
 
 #include "ale3.H"
-#include "../drt_lib/standardtypes_cpp.H"
-
-using namespace DRT::UTILS;
+#include "../drt_lib/drt_linedefinition.H"
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool DRT::ELEMENTS::Ale3::ReadElement(const std::string& eletype,
+                                      const std::string& distype,
+                                      DRT::INPUT::LineDefinition* linedef)
+{
+  // read number of material model
+  int material = 0;
+  linedef->ExtractInt("MAT",material);
+  SetMaterial(material);
+
+  return true;
+}
+
+#if 0
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::Ale3::ReadElement()
 {
   typedef map<string, DiscretizationType> Gid2DisType;
@@ -169,7 +184,7 @@ bool DRT::ELEMENTS::Ale3::ReadElement()
 
   return true;
 }
-
+#endif
 
 #endif
 #endif

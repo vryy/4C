@@ -11,9 +11,26 @@
 #ifdef CCADISCRET
 
 #include "ale2.H"
-#include "../drt_lib/standardtypes_cpp.H"
+#include "../drt_lib/drt_linedefinition.H"
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool DRT::ELEMENTS::Ale2::ReadElement(const std::string& eletype,
+                                      const std::string& distype,
+                                      DRT::INPUT::LineDefinition* linedef)
+{
+  // read number of material model
+  int material = 0;
+  linedef->ExtractInt("MAT",material);
+  SetMaterial(material);
+
+  return true;
+}
+
+#if 0
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::Ale2::ReadElement()
 {
   // read element's nodes
@@ -75,7 +92,7 @@ bool DRT::ELEMENTS::Ale2::ReadElement()
 
   return true;
 }
-
+#endif
 
 #endif
 #endif

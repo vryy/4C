@@ -139,8 +139,8 @@ void DRT::INPUT::ElementDefinition::SetupValidElementLines()
 //   SetupXdiff3Lines();
 //   SetupXfluid3Lines();
 
-//   SetupAle2Lines();
-//   SetupAle3Lines();
+  SetupAle2Lines();
+  SetupAle3Lines();
 
   // backward compatibility
   // still needed?
