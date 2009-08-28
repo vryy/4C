@@ -291,8 +291,9 @@ void CONTACT::PenaltyStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
 {
 
   // uncomment this if you want to do finite difference checks
-  // when enabled, kc1 and kc2 as part of kteff and fc as part of feff is stored separately
-  // so they can be checked on their own
+  // when enabled, kc1 and kc2 as part of kteff and fc as part of
+  // feff is stored separately so they can be checked on their own
+  
 //#define FDCHECKS
   
   // FIXME: Currently only the old LINALG::Multiply method is used,
@@ -390,7 +391,6 @@ void CONTACT::PenaltyStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
   // feff += -alphaf * fc,n - (1-alphaf) * fc,n+1,k
   
 #ifndef FDCHECKS
-  
   {
     RCP<Epetra_Vector> fcmdold = rcp(new Epetra_Vector(*gsdofrowmap_));
     dold_->Multiply(false, *zold_, *fcmdold);
@@ -473,6 +473,7 @@ void CONTACT::PenaltyStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
   cout << "-- CONTACTFDGAP -----------------------------" << endl;
 
 #endif // #ifdef CONTACTFDGAP
+  
 #ifdef CONTACTFDPENALTYKTEFF
   // check assembled contact tangent stiffness matrix
   
@@ -488,6 +489,7 @@ void CONTACT::PenaltyStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
   cout << "-- CONTACTFDPENALTYKTEFF --------------------" << endl;
   
 #endif
+  
 #ifdef CONTACTFDPENALTYKC1
   // check assembled contact tangent stiffness matrix, 1st part (LinD, LinM)
   
