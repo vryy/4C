@@ -3,7 +3,7 @@
 //             genk@statik.uni-stuttgart.de
 //             http://www.uni-stuttgart.de/ibs/members/genkinger/
 //             0711 - 685-6127
-// 
+//
 // necessary defines: RESULTTEST D_SSI D_MORTAR D_WALL1 CHECK_MAX
 //
 // #define MAXNOD           (4)
@@ -18,7 +18,7 @@
 -------------------------------------------------------------TITLE
 Default_title
 ------------------------------------------------------PROBLEM SIZE
-ELEMENTS           7 
+ELEMENTS           7
 NODES             18
 DIM                2
 MATERIALS          1
@@ -50,18 +50,18 @@ EIGEN        0
 RESEVRYDISP  1
 RESEVRYSTRS  1
 RESTARTEVRY  20
-TIMESTEP     0.05 
-NUMSTEP      200 
+TIMESTEP     0.05
+NUMSTEP      200
 MAXTIME      5.0
-BETA         0.25 
-GAMMA        0.5 
-ALPHA_M      0.5 
+BETA         0.25
+GAMMA        0.5
+ALPHA_M      0.5
 ALPHA_F      0.5
 XSI          0.0
-DAMPING      No 
-M_DAMP       0.5 
+DAMPING      No
+M_DAMP       0.5
 K_DAMP       0.5
-ITERATION    full 
+ITERATION    full
 TOLDISP      1.0E-10
 MAXITER      100
 CONTACT      0
@@ -258,33 +258,33 @@ Center: 1.550000 0.500000 0.000000
 Normal: -0.000000 0.000000 1.000000
 END NURBSURFACE
 ----------------------------------------------------DESIGN VOLUMES
-------------------------------------DESIGN POINT DIRICH CONDITIONS 
+------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT 0
--------------------------------------DESIGN LINE DIRICH CONDITIONS 
+-------------------------------------DESIGN LINE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE 1
  E 6 -   1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
--------------------------------------DESIGN SURF DIRICH CONDITIONS 
+-------------------------------------DESIGN SURF DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF 0
---------------------------------------DESIGN VOL DIRICH CONDITIONS 
+--------------------------------------DESIGN VOL DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DVOL 0
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL  NSURF
 DPOINT 2
- E 1 -   1 1 0 0 0 0 0 -1.0 0.0 0.0 0.0 0.0 0.0 Mid 
- E 4 -   1 1 0 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 Mid 
+ E 1 -   1 1 0 0 0 0 0 -1.0 0.0 0.0 0.0 0.0 0.0 Mid
+ E 4 -   1 1 0 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 Mid
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL  NSURF
 DLINE 0
-// E 1 -   1 1 0 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 Mid 
+// E 1 -   1 1 0 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 Mid
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL  TYPE  NSURF
 DSURF 0
 -------------------------------------DESIGN VOL NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL   
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DVOL 0
 ----------------------------------DESIGN COUPLING POINT CONDITIONS
 // DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
@@ -304,8 +304,8 @@ DLINE 0
 -------------------------------DESIGN SSI COUPLING LINE CONDITIONS
 // DOBJECT SSI_TYPE
 DLINE 2
- E 3 -   1 Slave non_conforming 
- E 8 -   1 Master non_conforming 
+ E 3 -   1 Slave non_conforming
+ E 8 -   1 Master non_conforming
 -------------------------DESIGN FLUID FREE SURFACE POINT CONDITIONS
 // DOBJECT FIELD FIXED FIXED FIXED FIXED FIXED FIXED
 DPOINT 0
@@ -378,33 +378,33 @@ NODE       8 DSURFACE 2
 NODE       5 DSURFACE 2
 -----------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
-NODE            1     COORD 2.000000000000000e+00     0.000000000000000e+00     0.000000000000000e+00   
-NODE            2     COORD 2.000000000000000e+00     3.333333333333333e-01     0.000000000000000e+00   
-NODE            3     COORD 2.000000000000000e+00     6.666666666666666e-01     0.000000000000000e+00   
-NODE            4     COORD 1.000000000000000e+00     0.000000000000000e+00     0.000000000000000e+00   
-NODE            5     COORD 1.000000000000000e+00     3.333333333333334e-01     0.000000000000000e+00   
-NODE            6     COORD 2.000000000000000e+00     1.000000000000000e+00     0.000000000000000e+00   
-NODE            7     COORD 1.000000000000000e+00     0.000000000000000e+00     0.000000000000000e+00   
-NODE            8     COORD 1.000000000000000e+00     6.666666666666667e-01     0.000000000000000e+00   
-NODE            9     COORD 1.000000000000000e+00     2.500000000000000e-01     0.000000000000000e+00   
-NODE           10     COORD 1.000000000000000e+00     5.000000000000000e-01     0.000000000000000e+00   
-NODE           11     COORD 1.000000000000000e+00     7.500000000000000e-01     0.000000000000000e+00   
-NODE           12     COORD 1.000000000000000e+00     1.000000000000000e+00     0.000000000000000e+00   
-NODE           13     COORD 1.000000000000000e+00     1.000000000000000e+00     0.000000000000000e+00   
-NODE           14     COORD 0.000000000000000e+00     0.000000000000000e+00     0.000000000000000e+00   
-NODE           15     COORD 0.000000000000000e+00     2.500000000000000e-01     0.000000000000000e+00   
-NODE           16     COORD 0.000000000000000e+00     5.000000000000000e-01     0.000000000000000e+00   
-NODE           17     COORD 0.000000000000000e+00     7.500000000000000e-01     0.000000000000000e+00   
-NODE           18     COORD 0.000000000000000e+00     1.000000000000000e+00     0.000000000000000e+00   
+NODE            1     COORD 2.000000000000000e+00     0.000000000000000e+00     0.000000000000000e+00
+NODE            2     COORD 2.000000000000000e+00     3.333333333333333e-01     0.000000000000000e+00
+NODE            3     COORD 2.000000000000000e+00     6.666666666666666e-01     0.000000000000000e+00
+NODE            4     COORD 1.000000000000000e+00     0.000000000000000e+00     0.000000000000000e+00
+NODE            5     COORD 1.000000000000000e+00     3.333333333333334e-01     0.000000000000000e+00
+NODE            6     COORD 2.000000000000000e+00     1.000000000000000e+00     0.000000000000000e+00
+NODE            7     COORD 1.000000000000000e+00     0.000000000000000e+00     0.000000000000000e+00
+NODE            8     COORD 1.000000000000000e+00     6.666666666666667e-01     0.000000000000000e+00
+NODE            9     COORD 1.000000000000000e+00     2.500000000000000e-01     0.000000000000000e+00
+NODE           10     COORD 1.000000000000000e+00     5.000000000000000e-01     0.000000000000000e+00
+NODE           11     COORD 1.000000000000000e+00     7.500000000000000e-01     0.000000000000000e+00
+NODE           12     COORD 1.000000000000000e+00     1.000000000000000e+00     0.000000000000000e+00
+NODE           13     COORD 1.000000000000000e+00     1.000000000000000e+00     0.000000000000000e+00
+NODE           14     COORD 0.000000000000000e+00     0.000000000000000e+00     0.000000000000000e+00
+NODE           15     COORD 0.000000000000000e+00     2.500000000000000e-01     0.000000000000000e+00
+NODE           16     COORD 0.000000000000000e+00     5.000000000000000e-01     0.000000000000000e+00
+NODE           17     COORD 0.000000000000000e+00     7.500000000000000e-01     0.000000000000000e+00
+NODE           18     COORD 0.000000000000000e+00     1.000000000000000e+00     0.000000000000000e+00
 ----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
-      1 WALL QUAD4      18     17     11     13 MAT       1 THICK 1.0 GP 2 2 PLANE_STRESS W_TotalLagr Displ_Model SSI_COUPTYP Slave 
-      2 WALL QUAD4      17     16     10     11 MAT       1 THICK 1.0 GP 2 2 PLANE_STRESS W_TotalLagr Displ_Model SSI_COUPTYP Slave 
-      3 WALL QUAD4      16     15      9     10 MAT       1 THICK 1.0 GP 2 2 PLANE_STRESS W_TotalLagr Displ_Model SSI_COUPTYP Slave 
-      4 WALL QUAD4      15     14      7      9 MAT       1 THICK 1.0 GP 2 2 PLANE_STRESS W_TotalLagr Displ_Model SSI_COUPTYP Slave 
-      5 WALL QUAD4       8      3      6     12 MAT       1 THICK 1.0 GP 2 2 PLANE_STRESS W_TotalLagr Displ_Model SSI_COUPTYP Master 
-      6 WALL QUAD4       5      2      3      8 MAT       1 THICK 1.0 GP 2 2 PLANE_STRESS W_TotalLagr Displ_Model SSI_COUPTYP Master 
-      7 WALL QUAD4       4      1      2      5 MAT       1 THICK 1.0 GP 2 2 PLANE_STRESS W_TotalLagr Displ_Model SSI_COUPTYP Master 
+      1 WALL QUAD4      18     17     11     13 MAT       1 THICK 1.0 GP 2 2 PLANE_STRESS W_TotalLagr Displ_Model SSI_COUPTYP Slave
+      2 WALL QUAD4      17     16     10     11 MAT       1 THICK 1.0 GP 2 2 PLANE_STRESS W_TotalLagr Displ_Model SSI_COUPTYP Slave
+      3 WALL QUAD4      16     15      9     10 MAT       1 THICK 1.0 GP 2 2 PLANE_STRESS W_TotalLagr Displ_Model SSI_COUPTYP Slave
+      4 WALL QUAD4      15     14      7      9 MAT       1 THICK 1.0 GP 2 2 PLANE_STRESS W_TotalLagr Displ_Model SSI_COUPTYP Slave
+      5 WALL QUAD4       8      3      6     12 MAT       1 THICK 1.0 GP 2 2 PLANE_STRESS W_TotalLagr Displ_Model SSI_COUPTYP Master
+      6 WALL QUAD4       5      2      3      8 MAT       1 THICK 1.0 GP 2 2 PLANE_STRESS W_TotalLagr Displ_Model SSI_COUPTYP Master
+      7 WALL QUAD4       4      1      2      5 MAT       1 THICK 1.0 GP 2 2 PLANE_STRESS W_TotalLagr Displ_Model SSI_COUPTYP Master
 ----------------------------------------------------FLUID ELEMENTS
 ------------------------------------------------------ALE ELEMENTS
 ---------------------------------------------------------MATERIALS
@@ -413,7 +413,7 @@ MAT       1 MAT_Struct_StVenantKirchhoff YOUNG 2.1e+05 NUE 0.0 DENS 8.71e-09
 ------------------------------------------------------CONTROL NODE
 -------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 10000.0 
+CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 10000.0
 ------------------------------------------------------------CURVE2
 ------------------------------------------------------------CURVE3
 ------------------------------------------------------------CURVE4

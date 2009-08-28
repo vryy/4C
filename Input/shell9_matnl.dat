@@ -3,7 +3,7 @@
 //             hartmann@statik.uni-stuttgart.de
 //             http://www.uni-stuttgart.de/ibs/members/hartmann/index.html
 //             0711 - 685-6120
-// 
+//
 // necessary defines: D_SHELL9 D_MAT RESULTTEST CHECK_MAX DEBUG
 //
 // #define MAXNOD                (4)
@@ -24,7 +24,7 @@
 -------------------------------------------------------------TITLE
 SHELL9_scordelis_matNL
 ------------------------------------------------------PROBLEM SIZE
-ELEMENTS          16 
+ELEMENTS          16
 NODES             25
 DIM                3
 MATERIALS          1
@@ -65,17 +65,17 @@ EIGEN        0
 RESEVRYDISP  10
 RESEVRYSTRS  20
 RESTARTEVRY  20
-TIMESTEP     0.05 
-NUMSTEP      200 
+TIMESTEP     0.05
+NUMSTEP      200
 MAXTIME      5.0
-BETA         0.25 
-GAMMA        0.5 
-ALPHA_M      0.5 
+BETA         0.25
+GAMMA        0.5
+ALPHA_M      0.5
 ALPHA_F      0.5
-DAMPING      Yes 
-M_DAMP       0.5 
+DAMPING      Yes
+M_DAMP       0.5
 K_DAMP       0.5
-ITERATION    full 
+ITERATION    full
 TOLDISP      1.0E-08
 MAXITER      50
 CONTACT      0
@@ -94,7 +94,7 @@ NUMCONT      1
 UPPSS        1
 UPOUT        1
 MAXTIME      1000.0
-NUMSTEP      200  
+NUMSTEP      200
 TIMESTEP     0.05
 ALPHA        1.00
 THETA        0.50
@@ -149,13 +149,13 @@ OPT_NUMITER   10 total number of iteration steps
 OPT_TYPE      Topo type of optimization
 OPT_STRATEGY  FSD type of optimization strategy
 //
-FSD_GRAD      Explicit gradientenbestimmung  
+FSD_GRAD      Explicit gradientenbestimmung
 FSD_NUMITER   10 number of iteration steps with fsd
-FSD_ACC       1.0E-07 erforderliche genauigkeit                  
+FSD_ACC       1.0E-07 erforderliche genauigkeit
 FSD_ALPHA     1.0E-05 genauigkeit fuer die gleichheitsrestriktion
-FSD_BETA      0.55 schreitweitenfaktor                        
-FSD_DELTA     0.25 schrittweitenbegrenzung                    
-FSD_GAMMA     0.0 gleichheitsrestriktionswert                
+FSD_BETA      0.55 schreitweitenfaktor
+FSD_DELTA     0.25 schrittweitenbegrenzung
+FSD_GAMMA     0.0 gleichheitsrestriktionswert
 //
 OPT_SMO       ON smooth gradients or other values
 SMO_TYPE      gradient
@@ -171,21 +171,21 @@ OV_END
 OC_ICO 0 global inequality constraints
 //
 OC_ECO 1 global   equality constraints
-      DVOLU 1 TYP WEIGHT  SCL 1. 
+      DVOLU 1 TYP WEIGHT  SCL 1.
 ------------------------------------------------------FLUID SOLVER
 SOLVER         Aztec_MSR
 AZSOLVE        BiCGSTAB
 AZPREC         ILU
-AZREUSE        0  
-AZDROP         0.0  
-AZFILL         1.0  
-AZGFILL        0  
-AZTOL          1.0E-08  
-AZITER         2500  
-AZSUB          50  
-AZOMEGA        1.0  
-AZGRAPH        1  
-AZPOLY         5  
+AZREUSE        0
+AZDROP         0.0
+AZFILL         1.0
+AZGFILL        0
+AZTOL          1.0E-08
+AZITER         2500
+AZSUB          50
+AZOMEGA        1.0
+AZGRAPH        1
+AZPOLY         5
 PARTITION      Cut_Elements
 -----------------------------------------------------STRUCT SOLVER
 //SOLVER         SPOOLES_nonsym
@@ -195,16 +195,16 @@ PARTITION      Cut_Elements
 SOLVER         Aztec_MSR
 AZSOLVE        CG
 AZPREC         ILU
-AZREUSE        0  
-AZDROP         0.0  
-AZFILL         2.0  
-AZGFILL        0  
-AZTOL          1.0E-08  
-AZITER         2500  
-AZSUB          50  
-AZOMEGA        1.0  
-AZGRAPH        1  
-AZPOLY         5  
+AZREUSE        0
+AZDROP         0.0
+AZFILL         2.0
+AZGFILL        0
+AZTOL          1.0E-08
+AZITER         2500
+AZSUB          50
+AZOMEGA        1.0
+AZGRAPH        1
+AZPOLY         5
 PARTITION      Cut_Elements
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 4
@@ -240,10 +240,10 @@ Meshing Info: (num=2,NOE=1) Elemtype=1 IsStructured=1 size=4 Meshing=Default
 Points: 1 2
 2D center=-2.494846,6.854533 radius=7.599998 initang=4.712389 endang=5.410521
 Transformation Matrix:
-m[1,1]=1.000000  m[1,2]=0.000000  m[1,3]=0.000000  m[1,4]=0.000000  
-m[2,1]=0.000000  m[2,2]=0.000000  m[2,3]=-1.000000  m[2,4]=0.000000  
-m[3,1]=0.000000  m[3,2]=1.000000  m[3,3]=0.000000  m[3,4]=0.000000  
-m[4,1]=2.494846  m[4,2]=0.000000  m[4,3]=6.854534  m[4,4]=1.000000  
+m[1,1]=1.000000  m[1,2]=0.000000  m[1,3]=0.000000  m[1,4]=0.000000
+m[2,1]=0.000000  m[2,2]=0.000000  m[2,3]=-1.000000  m[2,4]=0.000000
+m[3,1]=0.000000  m[3,2]=1.000000  m[3,3]=0.000000  m[3,4]=0.000000
+m[4,1]=2.494846  m[4,2]=0.000000  m[4,3]=6.854534  m[4,4]=1.000000
 TotalLength= 5.300493
 END ARCLINE
 ARCLINE
@@ -253,10 +253,10 @@ Meshing Info: (num=4,NOE=1) Elemtype=1 IsStructured=1 size=4 Meshing=Default
 Points: 3 4
 2D center=-2.494846,6.854533 radius=7.599998 initang=4.712389 endang=5.410521
 Transformation Matrix:
-m[1,1]=1.000000  m[1,2]=0.000000  m[1,3]=0.000000  m[1,4]=0.000000  
-m[2,1]=0.000000  m[2,2]=0.000000  m[2,3]=-1.000000  m[2,4]=0.000000  
-m[3,1]=0.000000  m[3,2]=1.000000  m[3,3]=0.000000  m[3,4]=0.000000  
-m[4,1]=2.494846  m[4,2]=7.600000  m[4,3]=6.854534  m[4,4]=1.000000  
+m[1,1]=1.000000  m[1,2]=0.000000  m[1,3]=0.000000  m[1,4]=0.000000
+m[2,1]=0.000000  m[2,2]=0.000000  m[2,3]=-1.000000  m[2,4]=0.000000
+m[3,1]=0.000000  m[3,2]=1.000000  m[3,3]=0.000000  m[3,4]=0.000000
+m[4,1]=2.494846  m[4,2]=7.600000  m[4,3]=6.854534  m[4,4]=1.000000
 TotalLength= 5.300493
 END ARCLINE
 STLINE
@@ -301,30 +301,30 @@ knot 4 value=1.000000
 knot 5 value=1.000000
 knot 6 value=1.000000
 Rational weights:
-1.000000 
-1.000000 
-0.939692 
-0.939692 
-1.000000 
-1.000000 
+1.000000
+1.000000
+0.939692
+0.939692
+1.000000
+1.000000
 IsTrimmed: 0
 Center: 2.599354 3.800000 7.141665
 Normal: -0.342020 0.000000 -0.939693
 END NURBSURFACE
 ----------------------------------------------------DESIGN VOLUMES
-------------------------------------DESIGN POINT DIRICH CONDITIONS 
+------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT 0
--------------------------------------DESIGN LINE DIRICH CONDITIONS 
+-------------------------------------DESIGN LINE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE 3
- E 1 -   1 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 2 -   0 1 0 0 1 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 3 -   1 0 0 1 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
--------------------------------------DESIGN SURF DIRICH CONDITIONS 
+ E 1 -   1 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 2 -   0 1 0 0 1 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 3 -   1 0 0 1 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+-------------------------------------DESIGN SURF DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF 0
---------------------------------------DESIGN VOL DIRICH CONDITIONS 
+--------------------------------------DESIGN VOL DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DVOL 0
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
@@ -336,9 +336,9 @@ DLINE 0
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL  TYPE  NSURF
 DSURF 1
- E 1 -   none 0 0 1 0 0 0 0.0 0.0 -1.0 0.0 0.0 0.0 Live Mid 
+ E 1 -   none 0 0 1 0 0 0 0.0 0.0 -1.0 0.0 0.0 0.0 Live Mid
 -------------------------------------DESIGN VOL NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL   
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DVOL 0
 ----------------------------------DESIGN COUPLING POINT CONDITIONS
 // DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
@@ -423,31 +423,31 @@ NODE       9 DSURFACE 1
 NODE       4 DSURFACE 1
 -----------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
-NODE            1     COORD 4.885185633620000e+00     7.600000000000000e+00     5.821937767700000e+00   
-NODE            2     COORD 3.799999237060547e+00     7.599999904632568e+00     6.581792831420898e+00   
-NODE            3     COORD 4.885185633620000e+00     5.699999999999999e+00     5.821937767700000e+00   
-NODE            4     COORD 3.800000151686061e+00     5.699999920648419e+00     6.581794423659698e+00   
-NODE            5     COORD 2.599352836608887e+00     7.599999904632568e+00     7.141663551330566e+00   
-NODE            6     COORD 2.599353529619937e+00     5.699999918765733e+00     7.141665492649569e+00   
-NODE            7     COORD 4.885185633620000e+00     3.800000000000000e+00     5.821937767700000e+00   
-NODE            8     COORD 1.319726347923279e+00     7.599999904632568e+00     7.484538078308105e+00   
-NODE            9     COORD 3.800000144005056e+00     3.799999954372902e+00     6.581794428094335e+00   
-NODE           10     COORD 1.319726663681043e+00     5.699999917725703e+00     7.484539991057913e+00   
-NODE           11     COORD 2.599353503256033e+00     3.799999947839694e+00     7.141665502245243e+00   
-NODE           12     COORD 0.000000000000000e+00     7.600000000000000e+00     7.600000000000000e+00   
-NODE           13     COORD 1.319726617481064e+00     3.799999945020206e+00     7.484539999204187e+00   
-NODE           14     COORD 0.000000000000000e+00     5.699999999999999e+00     7.600000000000000e+00   
-NODE           15     COORD 4.885185633620000e+00     1.900000000000000e+00     5.821937767700000e+00   
-NODE           16     COORD 3.800000136324051e+00     1.899999988097383e+00     6.581794432528969e+00   
-NODE           17     COORD 2.599353476892129e+00     1.899999976913654e+00     7.141665511840917e+00   
-NODE           18     COORD 0.000000000000000e+00     3.800000000000000e+00     7.600000000000000e+00   
-NODE           19     COORD 1.319726571281085e+00     1.899999972314712e+00     7.484540007350461e+00   
-NODE           20     COORD 4.885185633620000e+00     0.000000000000000e+00     5.821937767700000e+00   
-NODE           21     COORD 3.799999237060547e+00     1.913497627015204e-08     6.581792831420898e+00   
-NODE           22     COORD 0.000000000000000e+00     1.900000000000000e+00     7.600000000000000e+00   
-NODE           23     COORD 2.599352836608887e+00     -2.857218107943371e-11     7.141663551330566e+00   
-NODE           24     COORD 1.319726347923279e+00     -1.176467723240648e-08     7.484538078308105e+00   
-NODE           25     COORD 0.000000000000000e+00     0.000000000000000e+00     7.600000000000000e+00   
+NODE            1     COORD 4.885185633620000e+00     7.600000000000000e+00     5.821937767700000e+00
+NODE            2     COORD 3.799999237060547e+00     7.599999904632568e+00     6.581792831420898e+00
+NODE            3     COORD 4.885185633620000e+00     5.699999999999999e+00     5.821937767700000e+00
+NODE            4     COORD 3.800000151686061e+00     5.699999920648419e+00     6.581794423659698e+00
+NODE            5     COORD 2.599352836608887e+00     7.599999904632568e+00     7.141663551330566e+00
+NODE            6     COORD 2.599353529619937e+00     5.699999918765733e+00     7.141665492649569e+00
+NODE            7     COORD 4.885185633620000e+00     3.800000000000000e+00     5.821937767700000e+00
+NODE            8     COORD 1.319726347923279e+00     7.599999904632568e+00     7.484538078308105e+00
+NODE            9     COORD 3.800000144005056e+00     3.799999954372902e+00     6.581794428094335e+00
+NODE           10     COORD 1.319726663681043e+00     5.699999917725703e+00     7.484539991057913e+00
+NODE           11     COORD 2.599353503256033e+00     3.799999947839694e+00     7.141665502245243e+00
+NODE           12     COORD 0.000000000000000e+00     7.600000000000000e+00     7.600000000000000e+00
+NODE           13     COORD 1.319726617481064e+00     3.799999945020206e+00     7.484539999204187e+00
+NODE           14     COORD 0.000000000000000e+00     5.699999999999999e+00     7.600000000000000e+00
+NODE           15     COORD 4.885185633620000e+00     1.900000000000000e+00     5.821937767700000e+00
+NODE           16     COORD 3.800000136324051e+00     1.899999988097383e+00     6.581794432528969e+00
+NODE           17     COORD 2.599353476892129e+00     1.899999976913654e+00     7.141665511840917e+00
+NODE           18     COORD 0.000000000000000e+00     3.800000000000000e+00     7.600000000000000e+00
+NODE           19     COORD 1.319726571281085e+00     1.899999972314712e+00     7.484540007350461e+00
+NODE           20     COORD 4.885185633620000e+00     0.000000000000000e+00     5.821937767700000e+00
+NODE           21     COORD 3.799999237060547e+00     1.913497627015204e-08     6.581792831420898e+00
+NODE           22     COORD 0.000000000000000e+00     1.900000000000000e+00     7.600000000000000e+00
+NODE           23     COORD 2.599352836608887e+00     -2.857218107943371e-11     7.141663551330566e+00
+NODE           24     COORD 1.319726347923279e+00     -1.176467723240648e-08     7.484538078308105e+00
+NODE           25     COORD 0.000000000000000e+00     0.000000000000000e+00     7.600000000000000e+00
 ----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
       1 SHELL9 QUAD4      22     19     24     25 MAT       1 THICK 0.076 GP 2 2 2 GP_TRI 1 FORCES XYZ EAS  N4_4 none N_4 N4_4 none ANS none SDC  1.0
@@ -468,8 +468,8 @@ NODE           25     COORD 0.000000000000000e+00     0.000000000000000e+00     
      16 SHELL9 QUAD4       2      1      3      4 MAT       1 THICK 0.076 GP 2 2 2 GP_TRI 1 FORCES XYZ EAS  N4_4 none N_4 N4_4 none ANS none SDC  1.0
 ----------------------------------------------------FLUID ELEMENTS
 ------------------------------------------------------ALE ELEMENTS
----------------------------------------------------------MATERIALS 
-MAT       1 MAT_Multilayer  NUM_KLAY 2 SEC_KLAY 50,50 
+---------------------------------------------------------MATERIALS
+MAT       1 MAT_Multilayer  NUM_KLAY 2 SEC_KLAY 50,50
      KINLAY 1 NUM_MLAY 1  SEC_MLAY  100    SEC_MAT  1    SEC_PHI  0.0      SEC_ROT  3
      KINLAY 2 NUM_MLAY 2  SEC_MLAY  50,50  SEC_MAT  2,3  SEC_PHI  0.0,0.0  SEC_ROT  3,3
 ----------------------------------------------MULTILAYER MATERIALS
@@ -477,40 +477,40 @@ MAT       1 MAT_Multilayer  NUM_KLAY 2 SEC_KLAY 50,50
 //  11=22  &  22=11 -> passt bis auf Fall1 sehr gut
 //
 // FALL 1
-//MULTIMAT 1  MAT_HoffPlastic  EMOD1 21e3 EMOD2 21e3 EMOD3 21e3  GMOD12 10.5e3 GMOD23 10.5e3 GMOD13 10.5e3  XNUE12 0.0 XNUE23 0.0 XNUE13 0.0  UNIAX 4.2 
-// S11T   4.2   S11C  4.2   S22T   4.2   S22C  4.2   S33T   4.2   S33C  4.2   S12  2.4   S23  2.4   S13  2.4 
-// SH11T  12.6  SH11C 4.2   SH22T  12.6  SH22C 4.2   SH33T  4.2   SH33C 4.2   SH12 2.4   SH23 2.4   SH13 2.4 
-// HA11T  0.01  HA11C 0.01  HA22T  0.01  HA22C 0.01  HA33T  0.01  HA33C 0.01  HA12 0.01  HA23 0.01  HA13 0.01 
+//MULTIMAT 1  MAT_HoffPlastic  EMOD1 21e3 EMOD2 21e3 EMOD3 21e3  GMOD12 10.5e3 GMOD23 10.5e3 GMOD13 10.5e3  XNUE12 0.0 XNUE23 0.0 XNUE13 0.0  UNIAX 4.2
+// S11T   4.2   S11C  4.2   S22T   4.2   S22C  4.2   S33T   4.2   S33C  4.2   S12  2.4   S23  2.4   S13  2.4
+// SH11T  12.6  SH11C 4.2   SH22T  12.6  SH22C 4.2   SH33T  4.2   SH33C 4.2   SH12 2.4   SH23 2.4   SH13 2.4
+// HA11T  0.01  HA11C 0.01  HA22T  0.01  HA22C 0.01  HA33T  0.01  HA33C 0.01  HA12 0.01  HA23 0.01  HA13 0.01
 //
 // FALL 2
-//MULTIMAT 1  MAT_HoffPlastic  EMOD1 21e3 EMOD2 21e3 EMOD3 21e3  GMOD12 10.5e3 GMOD23 10.5e3 GMOD13 10.5e3  XNUE12 0.0 XNUE23 0.0 XNUE13 0.0  UNIAX 4.2 
-// S11T   4.2   S11C  4.2   S22T   4.2   S22C  4.2   S33T   4.2   S33C  4.2   S12  2.4   S23  2.4   S13  2.4 
-// SH11T  4.2   SH11C 12.6  SH22T  4.2   SH22C 12.6  SH33T  4.2   SH33C 4.2  SH12 2.4   SH23 2.4   SH13 2.4 
-// HA11T  0.01  HA11C 0.01  HA22T  0.01  HA22C 0.01  HA33T  0.01  HA33C 0.01  HA12 0.01  HA23 0.01  HA13 0.01 
+//MULTIMAT 1  MAT_HoffPlastic  EMOD1 21e3 EMOD2 21e3 EMOD3 21e3  GMOD12 10.5e3 GMOD23 10.5e3 GMOD13 10.5e3  XNUE12 0.0 XNUE23 0.0 XNUE13 0.0  UNIAX 4.2
+// S11T   4.2   S11C  4.2   S22T   4.2   S22C  4.2   S33T   4.2   S33C  4.2   S12  2.4   S23  2.4   S13  2.4
+// SH11T  4.2   SH11C 12.6  SH22T  4.2   SH22C 12.6  SH33T  4.2   SH33C 4.2  SH12 2.4   SH23 2.4   SH13 2.4
+// HA11T  0.01  HA11C 0.01  HA22T  0.01  HA22C 0.01  HA33T  0.01  HA33C 0.01  HA12 0.01  HA23 0.01  HA13 0.01
 //
 // FALL 3
-//MULTIMAT 1  MAT_HoffPlastic  EMOD1 21e3 EMOD2 21e3 EMOD3 21e3  GMOD12 10.5e3 GMOD23 10.5e3 GMOD13 10.5e3  XNUE12 0.0 XNUE23 0.0 XNUE13 0.0  UNIAX 4.2 
-// S11T   4.2   S11C  4.2   S22T   4.2   S22C  4.2   S33T   4.2   S33C  4.2   S12  2.4   S23  2.4   S13  2.4 
-// SH11T  4.2   SH11C 4.2   SH22T  12.6  SH22C 12.6  SH33T  4.2   SH33C 4.2   SH12 2.4   SH23 2.4   SH13 2.4 
-// HA11T  0.01  HA11C 0.01  HA22T  0.01  HA22C 0.01  HA33T  0.01  HA33C 0.01  HA12 0.01  HA23 0.01  HA13 0.01 
+//MULTIMAT 1  MAT_HoffPlastic  EMOD1 21e3 EMOD2 21e3 EMOD3 21e3  GMOD12 10.5e3 GMOD23 10.5e3 GMOD13 10.5e3  XNUE12 0.0 XNUE23 0.0 XNUE13 0.0  UNIAX 4.2
+// S11T   4.2   S11C  4.2   S22T   4.2   S22C  4.2   S33T   4.2   S33C  4.2   S12  2.4   S23  2.4   S13  2.4
+// SH11T  4.2   SH11C 4.2   SH22T  12.6  SH22C 12.6  SH33T  4.2   SH33C 4.2   SH12 2.4   SH23 2.4   SH13 2.4
+// HA11T  0.01  HA11C 0.01  HA22T  0.01  HA22C 0.01  HA33T  0.01  HA33C 0.01  HA12 0.01  HA23 0.01  HA13 0.01
 //
 // FALL 4
-//MULTIMAT 1  MAT_HoffPlastic  EMOD1 21e3 EMOD2 21e3 EMOD3 21e3  GMOD12 10.5e3 GMOD23 10.5e3 GMOD13 10.5e3  XNUE12 0.0 XNUE23 0.0 XNUE13 0.0  UNIAX 4.2 
-// S11T   4.2   S11C  4.2   S22T   4.2   S22C  4.2   S33T   4.2   S33C  4.2   S12  2.4   S23  2.4   S13  2.4 
-// SH11T  12.6  SH11C 12.6  SH22T  4.2   SH22C 4.2   SH33T  4.2   SH33C 4.2   SH12 2.4   SH23 2.4   SH13 2.4 
-// HA11T  0.01  HA11C 0.01  HA22T  0.01  HA22C 0.01  HA33T  0.01  HA33C 0.01  HA12 0.01  HA23 0.01  HA13 0.01 
+//MULTIMAT 1  MAT_HoffPlastic  EMOD1 21e3 EMOD2 21e3 EMOD3 21e3  GMOD12 10.5e3 GMOD23 10.5e3 GMOD13 10.5e3  XNUE12 0.0 XNUE23 0.0 XNUE13 0.0  UNIAX 4.2
+// S11T   4.2   S11C  4.2   S22T   4.2   S22C  4.2   S33T   4.2   S33C  4.2   S12  2.4   S23  2.4   S13  2.4
+// SH11T  12.6  SH11C 12.6  SH22T  4.2   SH22C 4.2   SH33T  4.2   SH33C 4.2   SH12 2.4   SH23 2.4   SH13 2.4
+// HA11T  0.01  HA11C 0.01  HA22T  0.01  HA22C 0.01  HA33T  0.01  HA33C 0.01  HA12 0.01  HA23 0.01  HA13 0.01
 //
 // FALL 5
 MULTIMAT 1  MAT_HoffPlastic  EMOD1 21e3 EMOD2 21e3 EMOD3 21e3  GMOD12 10.5e3 GMOD23 10.5e3 GMOD13 10.5e3  XNUE12 0.0 XNUE23 0.0 XNUE13 0.0  UNIAX 4.2
- S11T   4.2   S11C  4.2   S22T   4.2   S22C  4.2   S33T   4.2   S33C  4.2   S12  2.4   S23  2.4   S13  2.4 
- SH11T  4.2   SH11C 4.2   SH22T  4.2   SH22C 4.2   SH33T  4.2   SH33C 4.2   SH12 2.4   SH23 2.4   SH13 2.4 
- HA11T  0.01  HA11C 0.01  HA22T  0.01  HA22C 0.01  HA33T  0.01  HA33C 0.01  HA12 0.01  HA23 0.01  HA13 0.01 
+ S11T   4.2   S11C  4.2   S22T   4.2   S22C  4.2   S33T   4.2   S33C  4.2   S12  2.4   S23  2.4   S13  2.4
+ SH11T  4.2   SH11C 4.2   SH22T  4.2   SH22C 4.2   SH33T  4.2   SH33C 4.2   SH12 2.4   SH23 2.4   SH13 2.4
+ HA11T  0.01  HA11C 0.01  HA22T  0.01  HA22C 0.01  HA33T  0.01  HA33C 0.01  HA12 0.01  HA23 0.01  HA13 0.01
 //
 //MULTIMAT 1  MAT_Struct_StVenantKirchhoff  YOUNG 21e3 NUE 0.0 DENS 0.0
 MULTIMAT    2 MAT_MisesPlastic  YOUNG 21e3  NUE  0.0  Sigy 4.2  BETAH  0.5 Hard  0.1
-MULTIMAT    3 MAT_DP_Plastic    YOUNG 30e3  NUE  0.0  Sigy 2.0  BETAH  0.0 Hard -0.3  PHI 40.0  
+MULTIMAT    3 MAT_DP_Plastic    YOUNG 30e3  NUE  0.0  Sigy 2.0  BETAH  0.0 Hard -0.3  PHI 40.0
 ------------------------------------------------------CONTROL NODE
-NODE       1 DOF 3 
+NODE       1 DOF 3
 -------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 ------------------------------------------------------------CURVE2

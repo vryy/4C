@@ -3,7 +3,7 @@
 //             bornemann@lnm.mw.tum.de
 //             http://www.lnm.mw.tum.de/Members/bonemann
 //             089-289-15237
-// 
+//
 // necessary defines: D_SOLID3 AZTEC_PACKAGE RESULTTEST CHECK_MAX SOLVE_DIRICH
 //
 // #define MAXNOD           (20)
@@ -20,7 +20,7 @@ displacement controlled
 faces are prescribed (Dirichlet BC)
 this file was inherited of c1_elast_geonln_sd.dat
 ------------------------------------------------------PROBLEM SIZE
-ELEMENTS           8 
+ELEMENTS           8
 NODES            104
 DIM                3
 MATERIALS          1
@@ -49,17 +49,17 @@ ARCSCL       1.0
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Nlin_Time_Int
-TIMESTEP     0.05 
-NUMSTEP      200 
+TIMESTEP     0.05
+NUMSTEP      200
 MAXTIME      5.0
-BETA         0.25 
-GAMMA        0.5 
-ALPHA_M      0.5 
+BETA         0.25
+GAMMA        0.5
+ALPHA_M      0.5
 ALPHA_F      0.5
-DAMPING      Yes 
-M_DAMP       0.5 
+DAMPING      Yes
+M_DAMP       0.5
 K_DAMP       0.5
-ITERATION    full 
+ITERATION    full
 TOLDISP      1.0E-08
 MAXITER      50
 -----------------------------------------------------FLUID DYNAMIC
@@ -72,7 +72,7 @@ NUMCONT      1
 UPPSS        100
 SAVESTEP     100
 MAXTIME      5.0
-NUMSTEP      200  
+NUMSTEP      200
 TIMESTEP     0.05
 ALPHA        1.00
 THETA        1.00
@@ -125,16 +125,16 @@ PARTITION      Cut_Elements
 SOLVER         Aztec_MSR
 AZSOLVE        CG
 AZPREC         ILU
-AZREUSE        0  
-AZDROP         0.0  
-AZFILL         2.0  
-AZGFILL        0  
-AZTOL          1.0E-12  
-AZITER         2500  
-AZSUB          50  
-AZOMEGA        1.0  
-AZGRAPH        1  
-AZPOLY         5  
+AZREUSE        0
+AZDROP         0.0
+AZFILL         2.0
+AZGFILL        0
+AZTOL          1.0E-12
+AZITER         2500
+AZSUB          50
+AZOMEGA        1.0
+AZGRAPH        1
+AZPOLY         5
 MATRIXTYP      OLL
 PARTITION      Cut_Elements
 --------------------------------------------------------ALE SOLVER
@@ -422,38 +422,38 @@ Surface: 4 Orientation: SAME1ST
 Surface: 6 Orientation: SAME1ST
 Center: 0.500000 4.000000 0.050000
 END VOLUME
-------------------------------------DESIGN POINT DIRICH CONDITIONS 
+------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT 2
- E 2 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 6 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
--------------------------------------DESIGN LINE DIRICH CONDITIONS 
+ E 2 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 6 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+-------------------------------------DESIGN LINE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE 4
- E 1 -   0 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 5 -   0 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 9 -   0 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 10 -   0 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
--------------------------------------DESIGN SURF DIRICH CONDITIONS 
+ E 1 -   0 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 5 -   0 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 9 -   0 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 10 -   0 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+-------------------------------------DESIGN SURF DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF 1
- E 2 -   0 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
---------------------------------------DESIGN VOL DIRICH CONDITIONS 
+ E 2 -   0 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+--------------------------------------DESIGN VOL DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DVOL 0
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL 
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DPOINT 2
- E 4 -   none 1 1 0 0 0 0 10.0 -100.0 0.0 0.0 0.0 0.0 
- E 8 -   none 1 1 0 0 0 0 10.0 -100.0 0.0 0.0 0.0 0.0 
+ E 4 -   none 1 1 0 0 0 0 10.0 -100.0 0.0 0.0 0.0 0.0
+ E 8 -   none 1 1 0 0 0 0 10.0 -100.0 0.0 0.0 0.0 0.0
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL 
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DLINE 0
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
-// DOBJECT CURVE TYPE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL 
+// DOBJECT CURVE TYPE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DSURF 0
 -------------------------------------DESIGN VOL NEUMANN CONDITIONS
-// DOBJECT CURVE TYPE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL 
+// DOBJECT CURVE TYPE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DVOL 0
 ----------------------------------DESIGN COUPLING POINT CONDITIONS
 // DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
@@ -983,7 +983,7 @@ NODE 104  COORD 1.000000  8.000000  0.100000
 ---------------------------------------------------------MATERIALS
 MAT       1 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 0.0
 ------------------------------------------------------CONTROL NODE
-NODE    97 DOF 2 
+NODE    97 DOF 2
 -------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 ------------------------------------------------------------CURVE2

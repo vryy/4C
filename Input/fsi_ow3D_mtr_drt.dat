@@ -1,4 +1,4 @@
-// 
+//
 //Maintainer: Thomas Kloeppel
 //             kloeppel@lnm.mw.tum.de
 //             http://www.lnm.mw.tum.de
@@ -533,7 +533,7 @@ MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.3 DENS 500
 
 -------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC (1-cos(2*t*pi/5)) t1 0.0 t2 5.0 
+CURVE1 on EXPR FUNC (1-cos(2*t*pi/5)) t1 0.0 t2 5.0
 ------------------------------------------------------------CURVE2
 ------------------------------------------------------------CURVE3
 ------------------------------------------------------------CURVE4

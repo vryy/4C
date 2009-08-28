@@ -213,7 +213,7 @@ FUNCT1 EXPR 0 0.0 0 FUNCTION 0.75*64*(0.125-y)*(0.125+y)
 //inflow velocity profile with U_max = 0.75
 ------------------------------------------------------------FUNCT2
 FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.75*64.0*(0.125-y)*(0.125+y)
-FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0 
+FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
 FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
 FUNCT2 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0
 ------------------------------------------------------------FUNCT3

@@ -3,15 +3,15 @@
 //             mayer@lnm.mw.tum.de
 //             http://www.lnm.mw.tum.de
 //             089 - 289-15257
-// 
-// necessary defines: D_FLUID3 CCADISCRET BINIO 
+//
+// necessary defines: D_FLUID3 CCADISCRET BINIO
 //
 
 ==================================================================
         General Data File CCARAT
 ==================================================================
 -------------------------------------------------------------TITLE
-created by pre_exodus 
+created by pre_exodus
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS 	400
 NODES    	882

@@ -56,15 +56,15 @@ BETA         0.25
 GAMMA        0.5
 ALPHA_M      0.0
 ALPHA_F      0.0
-DAMPING      No 
-M_DAMP       0.00001 
+DAMPING      No
+M_DAMP       0.00001
 K_DAMP       0.00001
 CONV_CHECK   AbsRes_And_AbsDis
 TOLRES       1.0E-7
 TOLDISP      1.0E-7
 MAXITER      50
 ------------------------------------------------STRUCTURAL CONTACT
-CONTACT              frictional 
+CONTACT              frictional
 FRICTION             coulomb
 FRBOUND              0.1
 FRCOEFF              0.1
@@ -106,7 +106,7 @@ ML_AGG_SIZE       27              // objective size of an aggregate with METIS/V
 ML_PROLONG_SMO    1.33      // damping factor for prolongator smoother (usually 0.0 or 1.33)
 ML_PROLONG_THRES  0.0       // threshold for prolongator smoother/aggregation
 ML_SMOOTHERFINE   Chebychev // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED    Chebychev // SGS Jacobi Chebychev MLS ILU KLU 
+ML_SMOOTHERMED    Chebychev // SGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERCOARSE KLU       // SGS Jacobi Chebychev MLS KLU Superlu
 ML_SMOTIMES       3 3 1     // no. smoothing steps or polynomial order on each level (at lEASt ML_MAXLEVEL numbers)
 ML_DAMPFINE       1.0       // damping fine grid

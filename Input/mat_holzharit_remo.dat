@@ -12,7 +12,7 @@
 -------------------------------------------------------------TITLE
 Remodelling of a quarter of a pipe with internal pressure and axial
 strain. Example is based on remodelling strategy by Hariton & Holzapfel
-with the anisotropic Holzapfel Material Model.  
+with the anisotropic Holzapfel Material Model.
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS 	1200
 NODES    	1594

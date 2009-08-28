@@ -3,7 +3,7 @@
 //             bornemann@lnm.mw.tum.de
 //             http://www.lnm.mw.tum.de/Members/bornemann
 //             089-289-15237
-// 
+//
 // necessary defines: D_SOLID3 RESULTTEST CHECK_MAX
 //
 // #define MAXNOD           (20)
@@ -50,17 +50,17 @@ GEOLINEAR
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Nlin_Time_Int
-TIMESTEP     0.05 
-NUMSTEP      200 
+TIMESTEP     0.05
+NUMSTEP      200
 MAXTIME      5.0
-BETA         0.25 
-GAMMA        0.5 
-ALPHA_M      0.5 
+BETA         0.25
+GAMMA        0.5
+ALPHA_M      0.5
 ALPHA_F      0.5
-DAMPING      Yes 
-M_DAMP       0.5 
+DAMPING      Yes
+M_DAMP       0.5
 K_DAMP       0.5
-ITERATION    full 
+ITERATION    full
 TOLDISP      1.0E-08
 MAXITER      50
 -----------------------------------------------------FLUID DYNAMIC
@@ -73,7 +73,7 @@ NUMCONT      1
 UPPSS        100
 SAVESTEP     100
 MAXTIME      5.0
-NUMSTEP      200  
+NUMSTEP      200
 TIMESTEP     0.05
 ALPHA        1.00
 THETA        1.00
@@ -411,38 +411,38 @@ Surface: 4 Orientation: SAME1ST
 Surface: 6 Orientation: SAME1ST
 Center: 0.500000 4.000000 0.050000
 END VOLUME
-------------------------------------DESIGN POINT DIRICH CONDITIONS 
+------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT 2
- E 2 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 6 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
--------------------------------------DESIGN LINE DIRICH CONDITIONS 
+ E 2 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 6 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+-------------------------------------DESIGN LINE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE 4
- E 1 -   0 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 5 -   0 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 9 -   0 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 10 -   0 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
--------------------------------------DESIGN SURF DIRICH CONDITIONS 
+ E 1 -   0 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 5 -   0 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 9 -   0 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 10 -   0 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+-------------------------------------DESIGN SURF DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF 1
- E 2 -   0 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
---------------------------------------DESIGN VOL DIRICH CONDITIONS 
+ E 2 -   0 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+--------------------------------------DESIGN VOL DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DVOL 0
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL 
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DPOINT 2
- E 4 -   none 1 1 0 0 0 0 10.0 -100.0 0.0 0.0 0.0 0.0 
- E 8 -   none 1 1 0 0 0 0 10.0 -100.0 0.0 0.0 0.0 0.0 
+ E 4 -   none 1 1 0 0 0 0 10.0 -100.0 0.0 0.0 0.0 0.0
+ E 8 -   none 1 1 0 0 0 0 10.0 -100.0 0.0 0.0 0.0 0.0
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL 
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DLINE 0
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
-// DOBJECT CURVE TYPE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL 
+// DOBJECT CURVE TYPE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DSURF 0
 -------------------------------------DESIGN VOL NEUMANN CONDITIONS
-// DOBJECT CURVE TYPE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL 
+// DOBJECT CURVE TYPE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DVOL 0
 ----------------------------------DESIGN COUPLING POINT CONDITIONS
 // DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
@@ -959,14 +959,14 @@ NODE 103  COORD 1.000000  8.000000  0.050000
 NODE 104  COORD 1.000000  8.000000  0.100000
 ----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
-      1 SOLID3 HEX20      92    104    102     90     87     99     97     85     96    103     95     91     89    101    100     88     94     98     93     86 MAT       1 GP 3 3 3 KINEM Geolin STRESS Gpxyz 
-      2 SOLID3 HEX20      80     92     90     78     75     87     85     73     84     91     83     79     77     89     88     76     82     86     81     74 MAT       1 GP 3 3 3 KINEM Geolin STRESS Gpxyz 
-      3 SOLID3 HEX20      68     80     78     66     63     75     73     61     72     79     71     67     65     77     76     64     70     74     69     62 MAT       1 GP 3 3 3 KINEM Geolin STRESS Gpxyz 
-      4 SOLID3 HEX20      56     68     66     54     51     63     61     49     60     67     59     55     53     65     64     52     58     62     57     50 MAT       1 GP 3 3 3 KINEM Geolin STRESS Gpxyz 
-      5 SOLID3 HEX20      44     56     54     42     39     51     49     37     48     55     47     43     41     53     52     40     46     50     45     38 MAT       1 GP 3 3 3 KINEM Geolin STRESS Gpxyz 
-      6 SOLID3 HEX20      32     44     42     30     27     39     37     25     36     43     35     31     29     41     40     28     34     38     33     26 MAT       1 GP 3 3 3 KINEM Geolin STRESS Gpxyz 
-      7 SOLID3 HEX20      20     32     30     18     13     27     25      9     24     31     23     19     16     29     28     15     22     26     21     11 MAT       1 GP 3 3 3 KINEM Geolin STRESS Gpxyz 
-      8 SOLID3 HEX20      12     20     18      8      3     13      9      1     17     19     14     10      6     16     15      5      7     11      4      2 MAT       1 GP 3 3 3 KINEM Geolin STRESS Gpxyz 
+      1 SOLID3 HEX20      92    104    102     90     87     99     97     85     96    103     95     91     89    101    100     88     94     98     93     86 MAT       1 GP 3 3 3 KINEM Geolin STRESS Gpxyz
+      2 SOLID3 HEX20      80     92     90     78     75     87     85     73     84     91     83     79     77     89     88     76     82     86     81     74 MAT       1 GP 3 3 3 KINEM Geolin STRESS Gpxyz
+      3 SOLID3 HEX20      68     80     78     66     63     75     73     61     72     79     71     67     65     77     76     64     70     74     69     62 MAT       1 GP 3 3 3 KINEM Geolin STRESS Gpxyz
+      4 SOLID3 HEX20      56     68     66     54     51     63     61     49     60     67     59     55     53     65     64     52     58     62     57     50 MAT       1 GP 3 3 3 KINEM Geolin STRESS Gpxyz
+      5 SOLID3 HEX20      44     56     54     42     39     51     49     37     48     55     47     43     41     53     52     40     46     50     45     38 MAT       1 GP 3 3 3 KINEM Geolin STRESS Gpxyz
+      6 SOLID3 HEX20      32     44     42     30     27     39     37     25     36     43     35     31     29     41     40     28     34     38     33     26 MAT       1 GP 3 3 3 KINEM Geolin STRESS Gpxyz
+      7 SOLID3 HEX20      20     32     30     18     13     27     25      9     24     31     23     19     16     29     28     15     22     26     21     11 MAT       1 GP 3 3 3 KINEM Geolin STRESS Gpxyz
+      8 SOLID3 HEX20      12     20     18      8      3     13      9      1     17     19     14     10      6     16     15      5      7     11      4      2 MAT       1 GP 3 3 3 KINEM Geolin STRESS Gpxyz
 ----------------------------------------------------FLUID ELEMENTS
 ------------------------------------------------------ALE ELEMENTS
 ---------------------------------------------------------MATERIALS

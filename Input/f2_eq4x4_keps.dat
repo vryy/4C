@@ -3,7 +3,7 @@
 //             hettich@statik.uni-stuttgart.de
 //             http://www.uni-stuttgart.de/ibs/members/hettich/
 //             0711 - 685-6575
-// 
+//
 // necessary defines: D_FLUID D_FLUID2 D_FLUID2TU AZTEC_PACKAGE UMFPACK  CHECK_MAX
 //
 // #define MAXNOD           (4)
@@ -18,7 +18,7 @@
 -------------------------------------------------------------TITLE
 Einheitsquadrat
 ------------------------------------------------------PROBLEM SIZE
-ELEMENTS          16 
+ELEMENTS          16
 NODES             25
 DIM                2
 MATERIALS          1
@@ -31,7 +31,7 @@ TIMETYP      Dynamic
 RESTART      0
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS  2
-NUMSTRUCDIS  1 
+NUMSTRUCDIS  1
 NUMALEDIS    1
 ----------------------------------------------------------------IO
 STRUCT_DISP_FILE   No
@@ -49,17 +49,17 @@ GEOLINEAR
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Nlin_Time_Int
-TIMESTEP     0.05 
-NUMSTEP      100 
+TIMESTEP     0.05
+NUMSTEP      100
 MAXTIME      5.0
-BETA         0.25 
-GAMMA        0.5 
-ALPHA_M      0.5 
+BETA         0.25
+GAMMA        0.5
+ALPHA_M      0.5
 ALPHA_F      0.5
-DAMPING      Yes 
-M_DAMP       0.5 
+DAMPING      Yes
+M_DAMP       0.5
 K_DAMP       0.5
-ITERATION    full 
+ITERATION    full
 TOLDISP      1.0E-08
 MAXITER      50
 -----------------------------------------------------FLUID DYNAMIC
@@ -73,7 +73,7 @@ NUMCONT      1
 UPPSS        1
 SAVESTEP     1
 MAXTIME      10.0
-NUMSTEP      60 
+NUMSTEP      60
 TIMESTEP     0.01
 ALPHA        1.00
 THETA        1.00
@@ -99,46 +99,46 @@ SC_COORD_Y   -0.5
 SOLVER         Aztec_MSR
 AZSOLVE        BiCGSTAB
 AZPREC         ILU
-AZREUSE        0  
-AZDROP         0.0  
-AZFILL         1.0  
-AZGFILL        1  
-AZTOL          1.0E-12  
-AZITER         2500  
-AZSUB          50  
-AZOMEGA        1.0  
-AZGRAPH        1  
-AZPOLY         5  
+AZREUSE        0
+AZDROP         0.0
+AZFILL         1.0
+AZGFILL        1
+AZTOL          1.0E-12
+AZITER         2500
+AZSUB          50
+AZOMEGA        1.0
+AZGRAPH        1
+AZPOLY         5
 PARTITION      Cut_Elements
 -----------------------------------------------------STRUCT SOLVER
 SOLVER         Aztec_MSR
 AZSOLVE        CG
 AZPREC         ILU
-AZREUSE        0  
-AZDROP         0.0  
-AZFILL         2.0  
-AZGFILL        0  
-AZTOL          1.0E-08  
-AZITER         2500  
-AZSUB          50  
-AZOMEGA        1.0  
-AZGRAPH        1  
-AZPOLY         5  
+AZREUSE        0
+AZDROP         0.0
+AZFILL         2.0
+AZGFILL        0
+AZTOL          1.0E-08
+AZITER         2500
+AZSUB          50
+AZOMEGA        1.0
+AZGRAPH        1
+AZPOLY         5
 PARTITION      Cut_Elements
 --------------------------------------------------------ALE SOLVER
 SOLVER         Aztec_MSR
 AZSOLVE        CG
 AZPREC         ILU
-AZREUSE        0  
-AZDROP         0.0  
-AZFILL         2.0  
-AZGFILL        0  
-AZTOL          1.0E-08  
-AZITER         2500  
-AZSUB          50  
-AZOMEGA        1.0  
-AZGRAPH        1  
-AZPOLY         5  
+AZREUSE        0
+AZDROP         0.0
+AZFILL         2.0
+AZGFILL        0
+AZTOL          1.0E-08
+AZITER         2500
+AZSUB          50
+AZOMEGA        1.0
+AZGRAPH        1
+AZPOLY         5
 PARTITION      Cut_Elements
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 4
@@ -222,36 +222,36 @@ Center: -0.000000 0.000000 0.000000
 Normal: 0.000000 0.000000 1.000000
 END NURBSURFACE
 ----------------------------------------------------DESIGN VOLUMES
-------------------------------------DESIGN POINT DIRICH CONDITIONS 
+------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT 4
- E 1 -   1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 2 -   1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 3 -   1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 4 -   1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
--------------------------------------DESIGN LINE DIRICH CONDITIONS 
+ E 1 -   1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 2 -   1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 3 -   1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 4 -   1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+-------------------------------------DESIGN LINE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE 3
- E 1 -   1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 3 -   1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 4 -   1 1 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 1 none none none none none 
--------------------------------------DESIGN SURF DIRICH CONDITIONS 
+ E 1 -   1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 3 -   1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 4 -   1 1 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 1 none none none none none
+-------------------------------------DESIGN SURF DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF 0
---------------------------------------DESIGN VOL DIRICH CONDITIONS 
+--------------------------------------DESIGN VOL DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DVOL 0
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL 
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DPOINT 0
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL 
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DLINE 0
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
-// DOBJECT CURVE TYPE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL 
+// DOBJECT CURVE TYPE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DSURF 0
 -------------------------------------DESIGN VOL NEUMANN CONDITIONS
-// DOBJECT CURVE TYPE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL 
+// DOBJECT CURVE TYPE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DVOL 0
 ----------------------------------DESIGN COUPLING POINT CONDITIONS
 // DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
@@ -360,7 +360,7 @@ NODE 25  COORD 0.500000  0.500000  0.000000
 ----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
 ----------------------------------------------------FLUID ELEMENTS
-      1 FLUID2 QUAD4      11     12     19     17 MAT       1 NA Euler GP 2 2  TURBULENCE kappa-eps                    
+      1 FLUID2 QUAD4      11     12     19     17 MAT       1 NA Euler GP 2 2  TURBULENCE kappa-eps
       2 FLUID2 QUAD4       6      8     12     11 MAT       1 NA Euler GP 2 2  TURBULENCE kappa-eps
       3 FLUID2 QUAD4       3      4      8      6 MAT       1 NA Euler GP 2 2  TURBULENCE kappa-eps
       4 FLUID2 QUAD4       1      2      4      3 MAT       1 NA Euler GP 2 2  TURBULENCE kappa-eps
@@ -378,11 +378,11 @@ NODE 25  COORD 0.500000  0.500000  0.000000
      16 FLUID2 QUAD4      10     16     18     13 MAT       1 NA Euler GP 2 2  TURBULENCE kappa-eps
 ------------------------------------------------------ALE ELEMENTS
 ---------------------------------------------------------MATERIALS
-MAT       1 MAT_fluid  VISCOSITY 0.000003 DENSITY 1.0  
+MAT       1 MAT_fluid  VISCOSITY 0.000003 DENSITY 1.0
 ------------------------------------------------------CONTROL NODE
 -------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 1000.0 FACTOR 1.0 1.0 
+CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 1000.0 FACTOR 1.0 1.0
 ------------------------------------------------------------CURVE2
 ------------------------------------------------------------CURVE3
 ------------------------------------------------------------CURVE4

@@ -7,7 +7,7 @@
 // necessary defines: CCADISCRET D_WALL1 BINIO
 //
 -------------------------------------------------------------TITLE
-Move node relative to a fixed line controlling the dist 
+Move node relative to a fixed line controlling the dist
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS 	80
 NODES    	123

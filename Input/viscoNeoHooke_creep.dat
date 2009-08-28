@@ -91,19 +91,19 @@ PARTITION                       Cut_Elements
 SOLVER                          UMFPACK
 -------------------------------------------------STRUCTURAL CONTACT
 -------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP   GenAlpha 
+DYNAMICTYP   GenAlpha
 EIGEN        0
 RESEVRYDISP  1
 RESEVRYSTRS  20
 RESTARTEVRY  20
-TIMESTEP     0.1 
-NUMSTEP      100 
+TIMESTEP     0.1
+NUMSTEP      100
 MAXTIME      10000
 BETA         0.44444444444//0.308641975
 GAMMA        0.83333333333//0.611111111
 ALPHA_M      0.//0.333333333
 ALPHA_F      0.3333333333333//0.444444444
-DAMPING      No 
+DAMPING      No
 M_DAMP       100.0
 K_DAMP       0.0
 ITERATION    full
@@ -157,7 +157,7 @@ DLINE  0
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF  1
 // neum surface x
-E 4 - none 1 0 0 0 0 0  .1 0.0 0.0 0.0 0.0 0.0  Live Mid 0 0 0 0 0 0 
+E 4 - none 1 0 0 0 0 0  .1 0.0 0.0 0.0 0.0 0.0  Live Mid 0 0 0 0 0 0
 -------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL   0
 ------------------------------------DESIGN POINT DIRICH CONDITIONS

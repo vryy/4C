@@ -12,7 +12,7 @@
 -------------------------------------------------------------TITLE
 Remodelling of a quarter of a pipe with internal pressure and axial
 strain. Example is based on remodelling strategy by Kuhl & Holzapfel
-with the Continuum Chain Material Model. 
+with the Continuum Chain Material Model.
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS 	32
 NODES    	90

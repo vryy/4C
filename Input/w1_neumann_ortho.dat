@@ -19,7 +19,7 @@
 -------------------------------------------------------------TITLE
 Default_title
 ------------------------------------------------------PROBLEM SIZE
-ELEMENTS          20 
+ELEMENTS          20
 NODES             33
 DIM                2
 MATERIALS          1
@@ -59,18 +59,18 @@ EIGEN        0
 RESEVRYDISP  1
 RESEVRYSTRS  1
 RESTARTEVRY  20
-TIMESTEP     0.05 
-NUMSTEP      5 
+TIMESTEP     0.05
+NUMSTEP      5
 MAXTIME      5.0
-BETA         0.25 
-GAMMA        0.5 
-ALPHA_M      0.5 
+BETA         0.25
+GAMMA        0.5
+ALPHA_M      0.5
 ALPHA_F      0.5
 XSI          0.0
-DAMPING      No 
-M_DAMP       0.5 
+DAMPING      No
+M_DAMP       0.5
 K_DAMP       0.5
-ITERATION    full 
+ITERATION    full
 TOLDISP      1.0E-08
 MAXITER      50
 CONTACT      0
@@ -101,12 +101,12 @@ UPOUT        1
 UPPSS        1
 UPRES        1
 RESTARTEVRY  20
-NUMSTEP      200  
+NUMSTEP      200
 NUMSTASTEPS  0
 MAXTIME      1000.0
-TIMESTEP     0.05  
-MAX_DT       0.5   
-MIN_DT       0.0001  
+TIMESTEP     0.05
+MAX_DT       0.5
+MIN_DT       0.0001
 THETA        0.66
 START_THETA  0.67
 ALPHA_F      1.00
@@ -171,13 +171,13 @@ OPT_NUMITER   10 total number of iteration steps
 OPT_TYPE      Topo type of optimization
 OPT_STRATEGY  FSD type of optimization strategy
 //
-FSD_GRAD      Explicit gradientenbestimmung  
+FSD_GRAD      Explicit gradientenbestimmung
 FSD_NUMITER   10 number of iteration steps with fsd
-FSD_ACC       1.0E-07 erforderliche genauigkeit                  
+FSD_ACC       1.0E-07 erforderliche genauigkeit
 FSD_ALPHA     1.0E-05 genauigkeit fuer die gleichheitsrestriktion
-FSD_BETA      0.55 schreitweitenfaktor                        
-FSD_DELTA     0.25 schrittweitenbegrenzung                    
-FSD_GAMMA     0.0 gleichheitsrestriktionswert                
+FSD_BETA      0.55 schreitweitenfaktor
+FSD_DELTA     0.25 schrittweitenbegrenzung
+FSD_GAMMA     0.0 gleichheitsrestriktionswert
 //
 OPT_SMO       ON smooth gradients or other values
 SMO_TYPE      gradient
@@ -193,21 +193,21 @@ OV_END
 OC_ICO 0 global inequality constraints
 //
 OC_ECO 1 global   equality constraints
-      DVOLU 1 TYP WEIGHT  SCL 1. 
+      DVOLU 1 TYP WEIGHT  SCL 1.
 ------------------------------------------------------FLUID SOLVER
 SOLVER         Aztec_MSR
 AZSOLVE        BiCGSTAB
 AZPREC         ILU
-AZREUSE        0  
-AZDROP         0.0  
-AZFILL         1.0  
-AZGFILL        0  
-AZTOL          1.0E-08  
-AZITER         2500  
-AZSUB          50  
-AZOMEGA        1.0  
-AZGRAPH        1  
-AZPOLY         5  
+AZREUSE        0
+AZDROP         0.0
+AZFILL         1.0
+AZGFILL        0
+AZTOL          1.0E-08
+AZITER         2500
+AZSUB          50
+AZOMEGA        1.0
+AZGRAPH        1
+AZPOLY         5
 PARTITION      Cut_Elements
 -----------------------------------------------------STRUCT SOLVER
 SOLVER         UMFPACK
@@ -216,16 +216,16 @@ PARTITION      Cut_Elements
 SOLVER         Aztec_MSR
 AZSOLVE        CG
 AZPREC         ILU
-AZREUSE        0  
-AZDROP         0.0  
-AZFILL         2.0  
-AZGFILL        0  
-AZTOL          1.0E-08  
-AZITER         2500  
-AZSUB          50  
-AZOMEGA        1.0  
-AZGRAPH        1  
-AZPOLY         5  
+AZREUSE        0
+AZDROP         0.0
+AZFILL         2.0
+AZGFILL        0
+AZTOL          1.0E-08
+AZITER         2500
+AZSUB          50
+AZOMEGA        1.0
+AZGRAPH        1
+AZPOLY         5
 PARTITION      Cut_Elements
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 4
@@ -358,33 +358,33 @@ knot 2 value=0.000000
 knot 3 value=1.000000
 knot 4 value=1.000000
 Rational weights:
-1.000000 
-0.707107 
-1.000000 
-0.707107 
-1.000000 
-1.000000 
-0.707107 
-1.000000 
-0.707107 
-1.000000 
+1.000000
+0.707107
+1.000000
+0.707107
+1.000000
+1.000000
+0.707107
+1.000000
+0.707107
+1.000000
 IsTrimmed: 0
 Center: 10.000000 9.500000 0.000000
 Normal: 0.000000 0.000000 1.000000
 END NURBSURFACE
 ----------------------------------------------------DESIGN VOLUMES
-------------------------------------DESIGN POINT DIRICH CONDITIONS 
+------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT 0
--------------------------------------DESIGN LINE DIRICH CONDITIONS 
+-------------------------------------DESIGN LINE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE 2
 E 1 - 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 E 2 - 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
--------------------------------------DESIGN SURF DIRICH CONDITIONS 
+-------------------------------------DESIGN SURF DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF 0
---------------------------------------DESIGN VOL DIRICH CONDITIONS 
+--------------------------------------DESIGN VOL DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DVOL 0
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
@@ -398,7 +398,7 @@ E 4 - none 1 1 0 0 0 0 100.0 0.0 0.0 0.0 0.0 0.0 orthopressure Mid
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL  TYPE  NSURF
 DSURF 0
 -------------------------------------DESIGN VOL NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL   
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DVOL 0
 ----------------------------------DESIGN COUPLING POINT CONDITIONS
 // DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
@@ -529,61 +529,61 @@ NODE      26 DSURFACE 1
 NODE      30 DSURFACE 1
 -----------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
-NODE            1     COORD 0.000000000000000e+00     0.000000000000000e+00     0.000000000000000e+00   
-NODE            2     COORD 5.000000000000000e-01     6.123031769111886e-17     0.000000000000000e+00   
-NODE            3     COORD 1.000000000000000e+00     1.224606353822377e-16     0.000000000000000e+00   
-NODE            4     COORD 9.649630955017690e-01     2.935661447502754e+00     0.000000000000000e+00   
-NODE            5     COORD 4.894348374033721e-01     3.090169944841770e+00     0.000000000000000e+00   
-NODE            6     COORD 1.440491353663035e+00     2.781152950357593e+00     0.000000000000000e+00   
-NODE            7     COORD 2.718847050596140e+00     5.290067270591886e+00     0.000000000000000e+00   
-NODE            8     COORD 2.314338550270277e+00     5.583959893180136e+00     0.000000000000000e+00   
-NODE            9     COORD 1.909830056217934e+00     5.877852522879874e+00     0.000000000000000e+00   
-NODE           10     COORD 4.709932729301712e+00     7.281152949326555e+00     0.000000000000000e+00   
-NODE           11     COORD 4.416040099405422e+00     7.685661443792204e+00     0.000000000000000e+00   
-NODE           12     COORD 4.122147477001902e+00     8.090169943696171e+00     0.000000000000000e+00   
-NODE           13     COORD 7.218847049517796e+00     8.559508646296479e+00     0.000000000000000e+00   
-NODE           14     COORD 7.064338550266243e+00     9.035036903773394e+00     0.000000000000000e+00   
-NODE           15     COORD 6.909830055019778e+00     9.510565162551645e+00     0.000000000000000e+00   
-NODE           16     COORD 9.999999999999998e+00     9.000000000000002e+00     0.000000000000000e+00   
-NODE           17     COORD 1.000000002140970e+01     9.500000000000195e+00     0.000000000000000e+00   
-NODE           18     COORD 9.999999999999998e+00     1.000000000000000e+01     0.000000000000000e+00   
-NODE           19     COORD 1.278115295035759e+01     8.559508646336965e+00     0.000000000000000e+00   
-NODE           20     COORD 1.293566146792426e+01     9.035036910061494e+00     0.000000000000000e+00   
-NODE           21     COORD 1.309016994484176e+01     9.510565162596629e+00     0.000000000000000e+00   
-NODE           22     COORD 1.529006727059189e+01     7.281152949403861e+00     0.000000000000000e+00   
-NODE           23     COORD 1.558395990099625e+01     7.685661444051107e+00     0.000000000000000e+00   
-NODE           24     COORD 1.587785252287986e+01     8.090169943782072e+00     0.000000000000000e+00   
-NODE           25     COORD 1.728115294932655e+01     5.290067270698290e+00     0.000000000000000e+00   
-NODE           26     COORD 1.768566144947097e+01     5.583959892778584e+00     0.000000000000000e+00   
-NODE           27     COORD 1.855950864629648e+01     2.781152950482201e+00     0.000000000000000e+00   
-NODE           28     COORD 1.900000000000000e+01     3.428897790702656e-15     0.000000000000000e+00   
-NODE           29     COORD 1.809016994369617e+01     5.877852522998102e+00     0.000000000000000e+00   
-NODE           30     COORD 1.903503690637917e+01     2.935661441714311e+00     0.000000000000000e+00   
-NODE           31     COORD 1.950000000000000e+01     3.551358426084894e-15     0.000000000000000e+00   
-NODE           32     COORD 1.951056516255164e+01     3.090169944980230e+00     0.000000000000000e+00   
-NODE           33     COORD 2.000000000000000e+01     3.673819061467132e-15     0.000000000000000e+00   
+NODE            1     COORD 0.000000000000000e+00     0.000000000000000e+00     0.000000000000000e+00
+NODE            2     COORD 5.000000000000000e-01     6.123031769111886e-17     0.000000000000000e+00
+NODE            3     COORD 1.000000000000000e+00     1.224606353822377e-16     0.000000000000000e+00
+NODE            4     COORD 9.649630955017690e-01     2.935661447502754e+00     0.000000000000000e+00
+NODE            5     COORD 4.894348374033721e-01     3.090169944841770e+00     0.000000000000000e+00
+NODE            6     COORD 1.440491353663035e+00     2.781152950357593e+00     0.000000000000000e+00
+NODE            7     COORD 2.718847050596140e+00     5.290067270591886e+00     0.000000000000000e+00
+NODE            8     COORD 2.314338550270277e+00     5.583959893180136e+00     0.000000000000000e+00
+NODE            9     COORD 1.909830056217934e+00     5.877852522879874e+00     0.000000000000000e+00
+NODE           10     COORD 4.709932729301712e+00     7.281152949326555e+00     0.000000000000000e+00
+NODE           11     COORD 4.416040099405422e+00     7.685661443792204e+00     0.000000000000000e+00
+NODE           12     COORD 4.122147477001902e+00     8.090169943696171e+00     0.000000000000000e+00
+NODE           13     COORD 7.218847049517796e+00     8.559508646296479e+00     0.000000000000000e+00
+NODE           14     COORD 7.064338550266243e+00     9.035036903773394e+00     0.000000000000000e+00
+NODE           15     COORD 6.909830055019778e+00     9.510565162551645e+00     0.000000000000000e+00
+NODE           16     COORD 9.999999999999998e+00     9.000000000000002e+00     0.000000000000000e+00
+NODE           17     COORD 1.000000002140970e+01     9.500000000000195e+00     0.000000000000000e+00
+NODE           18     COORD 9.999999999999998e+00     1.000000000000000e+01     0.000000000000000e+00
+NODE           19     COORD 1.278115295035759e+01     8.559508646336965e+00     0.000000000000000e+00
+NODE           20     COORD 1.293566146792426e+01     9.035036910061494e+00     0.000000000000000e+00
+NODE           21     COORD 1.309016994484176e+01     9.510565162596629e+00     0.000000000000000e+00
+NODE           22     COORD 1.529006727059189e+01     7.281152949403861e+00     0.000000000000000e+00
+NODE           23     COORD 1.558395990099625e+01     7.685661444051107e+00     0.000000000000000e+00
+NODE           24     COORD 1.587785252287986e+01     8.090169943782072e+00     0.000000000000000e+00
+NODE           25     COORD 1.728115294932655e+01     5.290067270698290e+00     0.000000000000000e+00
+NODE           26     COORD 1.768566144947097e+01     5.583959892778584e+00     0.000000000000000e+00
+NODE           27     COORD 1.855950864629648e+01     2.781152950482201e+00     0.000000000000000e+00
+NODE           28     COORD 1.900000000000000e+01     3.428897790702656e-15     0.000000000000000e+00
+NODE           29     COORD 1.809016994369617e+01     5.877852522998102e+00     0.000000000000000e+00
+NODE           30     COORD 1.903503690637917e+01     2.935661441714311e+00     0.000000000000000e+00
+NODE           31     COORD 1.950000000000000e+01     3.551358426084894e-15     0.000000000000000e+00
+NODE           32     COORD 1.951056516255164e+01     3.090169944980230e+00     0.000000000000000e+00
+NODE           33     COORD 2.000000000000000e+01     3.673819061467132e-15     0.000000000000000e+00
 ----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
-      1 WALL QUAD4       2      4      5      1 MAT       1 THICK 1.0 GP 2 2 PLANE_STRAIN W_TotalLagr Displ_Model SSI_COUPTYP none 
-      2 WALL QUAD4       3      6      4      2 MAT       1 THICK 1.0 GP 2 2 PLANE_STRAIN W_TotalLagr Displ_Model SSI_COUPTYP none 
-      3 WALL QUAD4       4      8      9      5 MAT       1 THICK 1.0 GP 2 2 PLANE_STRAIN W_TotalLagr Displ_Model SSI_COUPTYP none 
-      4 WALL QUAD4       6      7      8      4 MAT       1 THICK 1.0 GP 2 2 PLANE_STRAIN W_TotalLagr Displ_Model SSI_COUPTYP none 
-      5 WALL QUAD4       8     11     12      9 MAT       1 THICK 1.0 GP 2 2 PLANE_STRAIN W_TotalLagr Displ_Model SSI_COUPTYP none 
-      6 WALL QUAD4       7     10     11      8 MAT       1 THICK 1.0 GP 2 2 PLANE_STRAIN W_TotalLagr Displ_Model SSI_COUPTYP none 
-      7 WALL QUAD4      11     14     15     12 MAT       1 THICK 1.0 GP 2 2 PLANE_STRAIN W_TotalLagr Displ_Model SSI_COUPTYP none 
-      8 WALL QUAD4      10     13     14     11 MAT       1 THICK 1.0 GP 2 2 PLANE_STRAIN W_TotalLagr Displ_Model SSI_COUPTYP none 
-      9 WALL QUAD4      14     17     18     15 MAT       1 THICK 1.0 GP 2 2 PLANE_STRAIN W_TotalLagr Displ_Model SSI_COUPTYP none 
-     10 WALL QUAD4      13     16     17     14 MAT       1 THICK 1.0 GP 2 2 PLANE_STRAIN W_TotalLagr Displ_Model SSI_COUPTYP none 
-     11 WALL QUAD4      17     20     21     18 MAT       1 THICK 1.0 GP 2 2 PLANE_STRAIN W_TotalLagr Displ_Model SSI_COUPTYP none 
-     12 WALL QUAD4      16     19     20     17 MAT       1 THICK 1.0 GP 2 2 PLANE_STRAIN W_TotalLagr Displ_Model SSI_COUPTYP none 
-     13 WALL QUAD4      20     23     24     21 MAT       1 THICK 1.0 GP 2 2 PLANE_STRAIN W_TotalLagr Displ_Model SSI_COUPTYP none 
-     14 WALL QUAD4      19     22     23     20 MAT       1 THICK 1.0 GP 2 2 PLANE_STRAIN W_TotalLagr Displ_Model SSI_COUPTYP none 
-     15 WALL QUAD4      23     26     29     24 MAT       1 THICK 1.0 GP 2 2 PLANE_STRAIN W_TotalLagr Displ_Model SSI_COUPTYP none 
-     16 WALL QUAD4      22     25     26     23 MAT       1 THICK 1.0 GP 2 2 PLANE_STRAIN W_TotalLagr Displ_Model SSI_COUPTYP none 
-     17 WALL QUAD4      26     30     32     29 MAT       1 THICK 1.0 GP 2 2 PLANE_STRAIN W_TotalLagr Displ_Model SSI_COUPTYP none 
-     18 WALL QUAD4      25     27     30     26 MAT       1 THICK 1.0 GP 2 2 PLANE_STRAIN W_TotalLagr Displ_Model SSI_COUPTYP none 
-     19 WALL QUAD4      30     31     33     32 MAT       1 THICK 1.0 GP 2 2 PLANE_STRAIN W_TotalLagr Displ_Model SSI_COUPTYP none 
-     20 WALL QUAD4      27     28     31     30 MAT       1 THICK 1.0 GP 2 2 PLANE_STRAIN W_TotalLagr Displ_Model SSI_COUPTYP none 
+      1 WALL QUAD4       2      4      5      1 MAT       1 THICK 1.0 GP 2 2 PLANE_STRAIN W_TotalLagr Displ_Model SSI_COUPTYP none
+      2 WALL QUAD4       3      6      4      2 MAT       1 THICK 1.0 GP 2 2 PLANE_STRAIN W_TotalLagr Displ_Model SSI_COUPTYP none
+      3 WALL QUAD4       4      8      9      5 MAT       1 THICK 1.0 GP 2 2 PLANE_STRAIN W_TotalLagr Displ_Model SSI_COUPTYP none
+      4 WALL QUAD4       6      7      8      4 MAT       1 THICK 1.0 GP 2 2 PLANE_STRAIN W_TotalLagr Displ_Model SSI_COUPTYP none
+      5 WALL QUAD4       8     11     12      9 MAT       1 THICK 1.0 GP 2 2 PLANE_STRAIN W_TotalLagr Displ_Model SSI_COUPTYP none
+      6 WALL QUAD4       7     10     11      8 MAT       1 THICK 1.0 GP 2 2 PLANE_STRAIN W_TotalLagr Displ_Model SSI_COUPTYP none
+      7 WALL QUAD4      11     14     15     12 MAT       1 THICK 1.0 GP 2 2 PLANE_STRAIN W_TotalLagr Displ_Model SSI_COUPTYP none
+      8 WALL QUAD4      10     13     14     11 MAT       1 THICK 1.0 GP 2 2 PLANE_STRAIN W_TotalLagr Displ_Model SSI_COUPTYP none
+      9 WALL QUAD4      14     17     18     15 MAT       1 THICK 1.0 GP 2 2 PLANE_STRAIN W_TotalLagr Displ_Model SSI_COUPTYP none
+     10 WALL QUAD4      13     16     17     14 MAT       1 THICK 1.0 GP 2 2 PLANE_STRAIN W_TotalLagr Displ_Model SSI_COUPTYP none
+     11 WALL QUAD4      17     20     21     18 MAT       1 THICK 1.0 GP 2 2 PLANE_STRAIN W_TotalLagr Displ_Model SSI_COUPTYP none
+     12 WALL QUAD4      16     19     20     17 MAT       1 THICK 1.0 GP 2 2 PLANE_STRAIN W_TotalLagr Displ_Model SSI_COUPTYP none
+     13 WALL QUAD4      20     23     24     21 MAT       1 THICK 1.0 GP 2 2 PLANE_STRAIN W_TotalLagr Displ_Model SSI_COUPTYP none
+     14 WALL QUAD4      19     22     23     20 MAT       1 THICK 1.0 GP 2 2 PLANE_STRAIN W_TotalLagr Displ_Model SSI_COUPTYP none
+     15 WALL QUAD4      23     26     29     24 MAT       1 THICK 1.0 GP 2 2 PLANE_STRAIN W_TotalLagr Displ_Model SSI_COUPTYP none
+     16 WALL QUAD4      22     25     26     23 MAT       1 THICK 1.0 GP 2 2 PLANE_STRAIN W_TotalLagr Displ_Model SSI_COUPTYP none
+     17 WALL QUAD4      26     30     32     29 MAT       1 THICK 1.0 GP 2 2 PLANE_STRAIN W_TotalLagr Displ_Model SSI_COUPTYP none
+     18 WALL QUAD4      25     27     30     26 MAT       1 THICK 1.0 GP 2 2 PLANE_STRAIN W_TotalLagr Displ_Model SSI_COUPTYP none
+     19 WALL QUAD4      30     31     33     32 MAT       1 THICK 1.0 GP 2 2 PLANE_STRAIN W_TotalLagr Displ_Model SSI_COUPTYP none
+     20 WALL QUAD4      27     28     31     30 MAT       1 THICK 1.0 GP 2 2 PLANE_STRAIN W_TotalLagr Displ_Model SSI_COUPTYP none
 ----------------------------------------------------FLUID ELEMENTS
 ------------------------------------------------------ALE ELEMENTS
 ---------------------------------------------------------MATERIALS
@@ -592,7 +592,7 @@ MAT       1 MAT_Struct_StVenantKirchhoff  YOUNG 10000.0 NUE 0.0 DENS 7.5
 ------------------------------------------------------CONTROL NODE
 -------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
-CURVE1 on Explicit FUNC f(t)=sin(t:C1*PI:2)_for_t<_C1_else_f(t)=1 c1 1.0 c2 1.0 
+CURVE1 on Explicit FUNC f(t)=sin(t:C1*PI:2)_for_t<_C1_else_f(t)=1 c1 1.0 c2 1.0
 ------------------------------------------------------------CURVE2
 ------------------------------------------------------------CURVE3
 ------------------------------------------------------------CURVE4
@@ -610,9 +610,9 @@ CURVE1 on Explicit FUNC f(t)=sin(t:C1*PI:2)_for_t<_C1_else_f(t)=1 c1 1.0 c2 1.0
 -----------------------------------------------------------LOCSYS5
 --------------------------------------------------------MONITORING
 // FIELD globalId FLAG FLAG FLAG FLAG FLAG FLAG
-// FLUID 1 - 0 0 0 0 0 0 
-// STRUCTURE 2 - 0 0 0 0 0 0 
-// ALE 3 - 0 0 0 0 0 0 
+// FLUID 1 - 0 0 0 0 0 0
+// STRUCTURE 2 - 0 0 0 0 0 0
+// ALE 3 - 0 0 0 0 0 0
 ------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS 1 NODE 18 POSITION sol(1,1) NAME dx VALUE 0.0 TOLERANCE 1e-9
 STRUCTURE DIS 1 NODE 18 POSITION sol(1,2) NAME dy VALUE 0.0500996682237376 TOLERANCE 1e-9

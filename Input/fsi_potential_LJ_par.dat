@@ -3,7 +3,7 @@
 //             mayer@lnm.mw.tum.de
 //             http://www.lnm.mw.tum.de
 //             089 - 289-15257
-// 
+//
 // necessary defines: CCADISCRET D_SOLID3 BINIO D_FLUID D_FLUID3 UMFPACK AZTEC_PACKAGE RESULTTEST D_FSI D_ALE
 //		
 
@@ -472,7 +472,7 @@ CURVE1 on EXPR FUNC 1.0 t1 1.0 t2 10000.0
 ------------------------------------------------------------CURVE3
 ------------------------------------------------------------CURVE4
 ------------------------------------------------------------FUNCT1
-FUNCT1 EXPR 0 0 0 FUNCTION 0.00005*(150-x)*x 
+FUNCT1 EXPR 0 0 0 FUNCTION 0.00005*(150-x)*x
 ------------------------------------------------------------FUNCT2
 FUNCT2 EXPR 0 0 0 FUNCTION -0.00005*(150-x)*x
 ------------------------------------------------------------FUNCT3

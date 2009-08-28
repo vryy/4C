@@ -126,7 +126,7 @@ ML_AGG_SIZE       27              // objective size of an aggregate with METIS/V
 ML_PROLONG_SMO    1.33            // damping factor for prolongator smoother (usually 1.33 or 0.0)
 ML_PROLONG_THRES  0.0             // threshold for prolongator smoother/aggregation
 ML_SMOOTHERFINE   SGS             // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED    SGS             // SGS Jacobi Chebychev MLS ILU KLU 
+ML_SMOOTHERMED    SGS             // SGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERCOARSE KLU             // SGS Jacobi Chebychev MLS KLU Superlu
 ML_SMOTIMES       2 3 1           // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
 ML_DAMPFINE       0.89             // damping fine grid
@@ -159,7 +159,7 @@ ML_AGG_SIZE       27              // objective size of an aggregate with METIS/V
 ML_PROLONG_SMO    1.33            // damping factor for prolongator smoother (usually 1.33 or 0.0)
 ML_PROLONG_THRES  0.0             // threshold for prolongator smoother/aggregation
 ML_SMOOTHERFINE   SGS             // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED    SGS             // SGS Jacobi Chebychev MLS ILU KLU 
+ML_SMOOTHERMED    SGS             // SGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERCOARSE KLU             // SGS Jacobi Chebychev MLS KLU Superlu
 ML_SMOTIMES       2 3 1           // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
 ML_DAMPFINE       1.0             // damping fine grid

@@ -3,7 +3,7 @@
 //             hartmann@statik.uni-stuttgart.de
 //             http://www.uni-stuttgart.de/ibs/members/hartmann/index.html
 //             0711 - 685-6120
-// 
+//
 // necessary defines: D_SHELL9 D_MAT RESULTTEST CHECK_MAX
 //
 // #define MAXNOD                (4)
@@ -24,7 +24,7 @@
 -------------------------------------------------------------TITLE
 SHELL9_7P_el_lay
 ------------------------------------------------------PROBLEM SIZE
-ELEMENTS           4 
+ELEMENTS           4
 NODES              9
 DIM                2
 MATERIALS          1
@@ -52,17 +52,17 @@ EIGEN        0
 RESEVRYDISP  10
 RESEVRYSTRS  20
 RESTARTEVRY  20
-TIMESTEP     0.05 
-NUMSTEP      200 
+TIMESTEP     0.05
+NUMSTEP      200
 MAXTIME      5.0
-BETA         0.25 
-GAMMA        0.5 
-ALPHA_M      0.5 
+BETA         0.25
+GAMMA        0.5
+ALPHA_M      0.5
 ALPHA_F      0.5
-DAMPING      Yes 
-M_DAMP       0.5 
+DAMPING      Yes
+M_DAMP       0.5
 K_DAMP       0.5
-ITERATION    full 
+ITERATION    full
 TOLDISP      1.0E-08
 MAXITER      50
 -----------------------------------------------------FLUID DYNAMIC
@@ -75,7 +75,7 @@ NUMCONT      1
 UPPSS        1
 SAVESTEP     1
 MAXTIME      1000.0
-NUMSTEP      200  
+NUMSTEP      200
 TIMESTEP     0.05
 ALPHA        1.00
 THETA        1.00
@@ -96,16 +96,16 @@ STARTFUNCNO  2
 SOLVER         Aztec_MSR
 AZSOLVE        BiCGSTAB
 AZPREC         ILU
-AZREUSE        0  
-AZDROP         0.0  
-AZFILL         1.0  
-AZGFILL        1  
-AZTOL          1.0E-08  
-AZITER         2500  
-AZSUB          50  
-AZOMEGA        1.0  
-AZGRAPH        1  
-AZPOLY         5  
+AZREUSE        0
+AZDROP         0.0
+AZFILL         1.0
+AZGFILL        1
+AZTOL          1.0E-08
+AZITER         2500
+AZSUB          50
+AZOMEGA        1.0
+AZGRAPH        1
+AZPOLY         5
 //MATRIXTYP      OLL
 PARTITION      Cut_Elements
 -----------------------------------------------------STRUCT SOLVER
@@ -116,16 +116,16 @@ PARTITION      Cut_Elements
 SOLVER         Aztec_MSR
 AZSOLVE        CG
 AZPREC         ILU
-AZREUSE        0  
-AZDROP         0.0  
-AZFILL         2.0  
-AZGFILL        0  
-AZTOL          1.0E-08  
-AZITER         2500  
-AZSUB          50  
-AZOMEGA        1.0  
-AZGRAPH        1  
-AZPOLY         5  
+AZREUSE        0
+AZDROP         0.0
+AZFILL         2.0
+AZGFILL        0
+AZTOL          1.0E-08
+AZITER         2500
+AZSUB          50
+AZOMEGA        1.0
+AZGRAPH        1
+AZPOLY         5
 //MATRIXTYP      OLL
 PARTITION      Cut_Elements
 ------------------------------------------------DESIGN DESCRIPTION
@@ -214,25 +214,25 @@ Center: 3.000000 1.500000 0.000000
 Normal: -0.000000 0.000000 1.000000
 END NURBSURFACE
 ----------------------------------------------------DESIGN VOLUMES
-------------------------------------DESIGN POINT DIRICH CONDITIONS 
+------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT 2
- E 1 -   1 1 1 1 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 4 -   1 1 1 1 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
--------------------------------------DESIGN LINE DIRICH CONDITIONS 
+ E 1 -   1 1 1 1 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 4 -   1 1 1 1 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+-------------------------------------DESIGN LINE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE 0
--------------------------------------DESIGN SURF DIRICH CONDITIONS 
+-------------------------------------DESIGN SURF DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF 0
---------------------------------------DESIGN VOL DIRICH CONDITIONS 
+--------------------------------------DESIGN VOL DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DVOL 0
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL  NSURF
 DPOINT 2
- E 2 -   none 1 0 0 0 0 0 1 0.0 0.0 0.0 0.0 0.0 Mid 
- E 3 -   none 1 0 0 0 0 0 1 0.0 0.0 0.0 0.0 0.0 Mid 
+ E 2 -   none 1 0 0 0 0 0 1 0.0 0.0 0.0 0.0 0.0 Mid
+ E 3 -   none 1 0 0 0 0 0 1 0.0 0.0 0.0 0.0 0.0 Mid
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL  NSURF
 DLINE 0
@@ -240,7 +240,7 @@ DLINE 0
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL  TYPE  NSURF
 DSURF 0
 -------------------------------------DESIGN VOL NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL   
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DVOL 0
 ----------------------------------DESIGN COUPLING POINT CONDITIONS
 // DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
@@ -284,21 +284,21 @@ NODE       2 DSURFACE 1
 NODE       4 DSURFACE 1
 -----------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
-NODE            1     COORD 1.000000000000000e+00     1.000000000000000e+00     0.000000000000000e+00   
-NODE            2     COORD 1.500000000000000e+00     2.000000000000000e+00     0.000000000000000e+00   
-NODE            3     COORD 2.500000000000000e+00     5.000000000000000e-01     0.000000000000000e+00   
-NODE            4     COORD 3.000000000000000e+00     1.500000000000000e+00     0.000000000000000e+00   
-NODE            5     COORD 2.000000000000000e+00     3.000000000000000e+00     0.000000000000000e+00   
-NODE            6     COORD 3.500000000000000e+00     2.500000000000000e+00     0.000000000000000e+00   
-NODE            7     COORD 4.000000000000000e+00     0.000000000000000e+00     0.000000000000000e+00   
-NODE            8     COORD 4.500000000000000e+00     1.000000000000000e+00     0.000000000000000e+00   
-NODE            9     COORD 5.000000000000000e+00     2.000000000000000e+00     0.000000000000000e+00   
+NODE            1     COORD 1.000000000000000e+00     1.000000000000000e+00     0.000000000000000e+00
+NODE            2     COORD 1.500000000000000e+00     2.000000000000000e+00     0.000000000000000e+00
+NODE            3     COORD 2.500000000000000e+00     5.000000000000000e-01     0.000000000000000e+00
+NODE            4     COORD 3.000000000000000e+00     1.500000000000000e+00     0.000000000000000e+00
+NODE            5     COORD 2.000000000000000e+00     3.000000000000000e+00     0.000000000000000e+00
+NODE            6     COORD 3.500000000000000e+00     2.500000000000000e+00     0.000000000000000e+00
+NODE            7     COORD 4.000000000000000e+00     0.000000000000000e+00     0.000000000000000e+00
+NODE            8     COORD 4.500000000000000e+00     1.000000000000000e+00     0.000000000000000e+00
+NODE            9     COORD 5.000000000000000e+00     2.000000000000000e+00     0.000000000000000e+00
 ----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
-      1 SHELL9 QUAD4       2      4      6      5 MAT       1 THICK 0.1 GP 2 2 2 GP_TRI 1 FORCES XYZ EAS  none none N_4 none none ANS Q SDC  1.0 
-      2 SHELL9 QUAD4       1      3      4      2 MAT       1 THICK 0.1 GP 2 2 2 GP_TRI 1 FORCES XYZ EAS  none none N_4 none none ANS Q SDC  1.0 
-      3 SHELL9 QUAD4       4      8      9      6 MAT       1 THICK 0.1 GP 2 2 2 GP_TRI 1 FORCES XYZ EAS  none none N_4 none none ANS Q SDC  1.0 
-      4 SHELL9 QUAD4       3      7      8      4 MAT       1 THICK 0.1 GP 2 2 2 GP_TRI 1 FORCES XYZ EAS  none none N_4 none none ANS Q SDC  1.0 
+      1 SHELL9 QUAD4       2      4      6      5 MAT       1 THICK 0.1 GP 2 2 2 GP_TRI 1 FORCES XYZ EAS  none none N_4 none none ANS Q SDC  1.0
+      2 SHELL9 QUAD4       1      3      4      2 MAT       1 THICK 0.1 GP 2 2 2 GP_TRI 1 FORCES XYZ EAS  none none N_4 none none ANS Q SDC  1.0
+      3 SHELL9 QUAD4       4      8      9      6 MAT       1 THICK 0.1 GP 2 2 2 GP_TRI 1 FORCES XYZ EAS  none none N_4 none none ANS Q SDC  1.0
+      4 SHELL9 QUAD4       3      7      8      4 MAT       1 THICK 0.1 GP 2 2 2 GP_TRI 1 FORCES XYZ EAS  none none N_4 none none ANS Q SDC  1.0
 ----------------------------------------------------FLUID ELEMENTS
 ------------------------------------------------------ALE ELEMENTS
 ---------------------------------------------------------MATERIALS

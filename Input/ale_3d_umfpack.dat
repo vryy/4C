@@ -3,7 +3,7 @@
 //             neumann@statik.uni-stuttgart.de
 //             http://www.uni-stuttgart.de/ibs/members/neumann/
 //             0711 - 685-6121
-// 
+//
 // necessary defines: D_ALE RESULTTEST CHECK_MAX UMFPACK
 //
 // #define MAXNOD           (8)
@@ -17,7 +17,7 @@
 -------------------------------------------------------------TITLE
 PURE_ALE_TEST_EXAMPLE
 ------------------------------------------------------PROBLEM SIZE
-ELEMENTS         374 
+ELEMENTS         374
 NODES            840
 DIM                3
 MATERIALS          1
@@ -43,17 +43,17 @@ DYNAMICTYP   Gen_Alfa
 RESEVRYDISP  10
 RESEVRYSTRS  20
 RESTARTEVRY  20
-TIMESTEP     0.1 
-NUMSTEP      30 
+TIMESTEP     0.1
+NUMSTEP      30
 MAXTIME      3
-BETA         0.25 
-GAMMA        0.5 
-ALPHA_M      0.5 
+BETA         0.25
+GAMMA        0.5
+ALPHA_M      0.5
 ALPHA_F      0.5
-DAMPING      Yes 
-M_DAMP       0.5 
+DAMPING      Yes
+M_DAMP       0.5
 K_DAMP       0.5
-ITERATION    full 
+ITERATION    full
 TOLDISP      1.0E-08
 MAXITER      50
 -----------------------------------------------------FLUID DYNAMIC
@@ -66,7 +66,7 @@ NUMCONT      1
 UPPSS        100
 SAVESTEP     100
 MAXTIME      5.0
-NUMSTEP      200  
+NUMSTEP      200
 TIMESTEP     0.05
 ALPHA        1.00
 THETA        1.00
@@ -85,7 +85,7 @@ INITIALFIELD zero_field
 STARTFUNCNO  2
 -------------------------------------------------------ALE DYNAMIC
 TIMESTEP     0.1
-NUMSTEP      31 
+NUMSTEP      31
 MAXTIME      3.0
 ALE_TYPE     classic_lin
 NUM_INITSTEP 0
@@ -95,32 +95,32 @@ QUALITY      none
 SOLVER         Aztec_MSR
 AZSOLVE        CG
 AZPREC         ILU
-AZREUSE        0  
-AZDROP         0.0  
-AZFILL         2.0  
-AZGFILL        0  
-AZTOL          1.0E-08  
-AZITER         2500  
-AZSUB          50  
-AZOMEGA        1.0  
-AZGRAPH        1  
-AZPOLY         5  
+AZREUSE        0
+AZDROP         0.0
+AZFILL         2.0
+AZGFILL        0
+AZTOL          1.0E-08
+AZITER         2500
+AZSUB          50
+AZOMEGA        1.0
+AZGRAPH        1
+AZPOLY         5
 //MATRIXTYP      OLL
 PARTITION      Cut_Elements
 -----------------------------------------------------STRUCT SOLVER
 SOLVER         Aztec_MSR
 AZSOLVE        CG
 AZPREC         ILU
-AZREUSE        0  
-AZDROP         0.0  
-AZFILL         2.0  
-AZGFILL        0  
-AZTOL          1.0E-08  
-AZITER         2500  
-AZSUB          50  
-AZOMEGA        1.0  
-AZGRAPH        1  
-AZPOLY         5  
+AZREUSE        0
+AZDROP         0.0
+AZFILL         2.0
+AZGFILL        0
+AZTOL          1.0E-08
+AZITER         2500
+AZSUB          50
+AZOMEGA        1.0
+AZGRAPH        1
+AZPOLY         5
 //MATRIXTYP      OLL
 PARTITION      Cut_Elements
 --------------------------------------------------------ALE SOLVER
@@ -1944,71 +1944,71 @@ Surface: 38 Orientation: SAME1ST
 Surface: 40 Orientation: SAME1ST
 Center: 6.500000 -5.250000 0.500000
 END VOLUME
-------------------------------------DESIGN POINT DIRICH CONDITIONS 
+------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT 0
--------------------------------------DESIGN LINE DIRICH CONDITIONS 
+-------------------------------------DESIGN LINE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE 26
- E 1 -   1 1 1 0 0 0 0.0 1.0 0.0 0.0 0.0 0.0 none 1 none none none none 
- E 2 -   1 1 1 0 0 0 0.0 1.0 0.0 0.0 0.0 0.0 none 1 none none none none 
- E 3 -   1 1 1 0 0 0 0.0 1.0 0.0 0.0 0.0 0.0 none 1 none none none none 
- E 4 -   1 1 1 0 0 0 0.0 1.0 0.0 0.0 0.0 0.0 none 1 none none none none 
- E 5 -   1 1 1 0 0 0 0.0 1.0 0.0 0.0 0.0 0.0 none 1 none none none none 
- E 6 -   1 1 1 0 0 0 0.0 1.0 0.0 0.0 0.0 0.0 none 1 none none none none 
- E 7 -   1 1 1 0 0 0 0.0 1.0 0.0 0.0 0.0 0.0 none 1 none none none none 
- E 8 -   1 1 1 0 0 0 0.0 1.0 0.0 0.0 0.0 0.0 none 1 none none none none 
- E 13 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 14 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 21 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 22 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 37 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 38 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 46 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 47 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 49 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 50 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 53 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 54 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 56 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 57 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 59 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 60 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 63 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 64 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
--------------------------------------DESIGN SURF DIRICH CONDITIONS 
+ E 1 -   1 1 1 0 0 0 0.0 1.0 0.0 0.0 0.0 0.0 none 1 none none none none
+ E 2 -   1 1 1 0 0 0 0.0 1.0 0.0 0.0 0.0 0.0 none 1 none none none none
+ E 3 -   1 1 1 0 0 0 0.0 1.0 0.0 0.0 0.0 0.0 none 1 none none none none
+ E 4 -   1 1 1 0 0 0 0.0 1.0 0.0 0.0 0.0 0.0 none 1 none none none none
+ E 5 -   1 1 1 0 0 0 0.0 1.0 0.0 0.0 0.0 0.0 none 1 none none none none
+ E 6 -   1 1 1 0 0 0 0.0 1.0 0.0 0.0 0.0 0.0 none 1 none none none none
+ E 7 -   1 1 1 0 0 0 0.0 1.0 0.0 0.0 0.0 0.0 none 1 none none none none
+ E 8 -   1 1 1 0 0 0 0.0 1.0 0.0 0.0 0.0 0.0 none 1 none none none none
+ E 13 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 14 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 21 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 22 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 37 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 38 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 46 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 47 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 49 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 50 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 53 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 54 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 56 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 57 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 59 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 60 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 63 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 64 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+-------------------------------------DESIGN SURF DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF 16
- E 5 -   0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 6 -   0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 10 -   0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 11 -   0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 15 -   0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 16 -   0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 20 -   0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 21 -   0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 26 -   0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 27 -   0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 29 -   0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 30 -   0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 34 -   0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 35 -   0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 37 -   0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 38 -   0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
---------------------------------------DESIGN VOL DIRICH CONDITIONS 
+ E 5 -   0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 6 -   0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 10 -   0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 11 -   0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 15 -   0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 16 -   0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 20 -   0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 21 -   0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 26 -   0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 27 -   0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 29 -   0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 30 -   0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 34 -   0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 35 -   0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 37 -   0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 38 -   0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+--------------------------------------DESIGN VOL DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DVOL 0
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL 
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DPOINT 0
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL 
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DLINE 0
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
-// DOBJECT CURVE TYPE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL 
+// DOBJECT CURVE TYPE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DSURF 0
 -------------------------------------DESIGN VOL NEUMANN CONDITIONS
-// DOBJECT CURVE TYPE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL 
+// DOBJECT CURVE TYPE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DVOL 0
 ----------------------------------DESIGN COUPLING POINT CONDITIONS
 // DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
@@ -6002,9 +6002,9 @@ MAT       1 MAT_Struct_StVenantKirchhoff YOUNG 1000 NUE 0.0 DENS 20
 ------------------------------------------------------CONTROL NODE
 -------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 1 FACTOR 0.0 6 
-CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 1 2 FACTOR 6 0 
-CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 2 3 FACTOR 0.0 -6 
+CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 1 FACTOR 0.0 6
+CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 1 2 FACTOR 6 0
+CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 2 3 FACTOR 0.0 -6
 ------------------------------------------------------------CURVE2
 ------------------------------------------------------------CURVE3
 ------------------------------------------------------------CURVE4

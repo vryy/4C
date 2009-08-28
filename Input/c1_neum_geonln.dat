@@ -3,7 +3,7 @@
 //             lipka@statik.uni-stuttgart.de
 //             http://www.uni-stuttgart.de/ibs/members/lipka/index.html
 //             0711 - 685-6575
-// 
+//
 // necessary defines: D_BRICK1 RESULTTEST CHECK_MAX
 //
 // #define MAXNOD           (8)
@@ -18,7 +18,7 @@
 -------------------------------------------------------------TITLE
 Default_title
 ------------------------------------------------------PROBLEM SIZE
-ELEMENTS           7 
+ELEMENTS           7
 NODES             32
 DIM                3
 MATERIALS          1
@@ -50,17 +50,17 @@ DYNAMICTYP   Nlin_Time_Int
 RESEVRYDISP  10
 RESEVRYSTRS  20
 RESTARTEVRY  20
-TIMESTEP     0.05 
-NUMSTEP      200 
+TIMESTEP     0.05
+NUMSTEP      200
 MAXTIME      5.0
-BETA         0.25 
-GAMMA        0.5 
-ALPHA_M      0.5 
+BETA         0.25
+GAMMA        0.5
+ALPHA_M      0.5
 ALPHA_F      0.5
-DAMPING      Yes 
-M_DAMP       0.5 
+DAMPING      Yes
+M_DAMP       0.5
 K_DAMP       0.5
-ITERATION    full 
+ITERATION    full
 TOLDISP      1.0E-08
 MAXITER      50
 -----------------------------------------------------FLUID DYNAMIC
@@ -73,7 +73,7 @@ NUMCONT      1
 UPPSS        100
 SAVESTEP     100
 MAXTIME      5.0
-NUMSTEP      200  
+NUMSTEP      200
 TIMESTEP     0.05
 ALPHA        1.00
 THETA        1.00
@@ -130,16 +130,16 @@ PARTITION      Cut_Elements
 SOLVER         Aztec_MSR
 AZSOLVE        CG
 AZPREC         ILU
-AZREUSE        0  
-AZDROP         0.0  
-AZFILL         2.0  
-AZGFILL        0  
-AZTOL          1.0E-08  
-AZITER         2500  
-AZSUB          50  
-AZOMEGA        1.0  
-AZGRAPH        1  
-AZPOLY         5  
+AZREUSE        0
+AZDROP         0.0
+AZFILL         2.0
+AZGFILL        0
+AZTOL          1.0E-08
+AZITER         2500
+AZSUB          50
+AZOMEGA        1.0
+AZGRAPH        1
+AZPOLY         5
 //MATRIXTYP      OLL
 PARTITION      Cut_Elements
 ------------------------------------------------DESIGN DESCRIPTION
@@ -1671,46 +1671,46 @@ Surface: 35 Orientation: SAME1ST
 Surface: 36 Orientation: SAME1ST
 Center: 1.000000 1.000000 -1.000000
 END VOLUME
-------------------------------------DESIGN POINT DIRICH CONDITIONS 
+------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT 4
- E 21 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 22 -   1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 23 -   0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 24 -   0 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
--------------------------------------DESIGN LINE DIRICH CONDITIONS 
+ E 21 -   1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 22 -   1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 23 -   0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 24 -   0 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+-------------------------------------DESIGN LINE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE 0
--------------------------------------DESIGN SURF DIRICH CONDITIONS 
+-------------------------------------DESIGN SURF DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF 0
---------------------------------------DESIGN VOL DIRICH CONDITIONS 
+--------------------------------------DESIGN VOL DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DVOL 0
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL 
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DPOINT 4
- E 17 -   none 0 1 0 0 0 0 0.0 10.0 0.0 0.0 0.0 0.0 
- E 18 -   none 0 1 0 0 0 0 0.0 10.0 0.0 0.0 0.0 0.0 
- E 19 -   none 0 1 0 0 0 0 0.0 10.0 0.0 0.0 0.0 0.0 
- E 20 -   none 0 1 0 0 0 0 0.0 10.0 0.0 0.0 0.0 0.0 
+ E 17 -   none 0 1 0 0 0 0 0.0 10.0 0.0 0.0 0.0 0.0
+ E 18 -   none 0 1 0 0 0 0 0.0 10.0 0.0 0.0 0.0 0.0
+ E 19 -   none 0 1 0 0 0 0 0.0 10.0 0.0 0.0 0.0 0.0
+ E 20 -   none 0 1 0 0 0 0 0.0 10.0 0.0 0.0 0.0 0.0
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL 
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DLINE 6
- E 3 -   none 0 1 0 0 0 0 0.0 10.0 0.0 0.0 0.0 0.0 
- E 7 -   none 0 1 0 0 0 0 0.0 10.0 0.0 0.0 0.0 0.0 
- E 50 -   none 0 1 0 0 0 0 0.0 10.0 0.0 0.0 0.0 0.0 
- E 52 -   none 0 1 0 0 0 0 0.0 10.0 0.0 0.0 0.0 0.0 
- E 58 -   none 0 1 0 0 0 0 0.0 10.0 0.0 0.0 0.0 0.0 
- E 60 -   none 0 1 0 0 0 0 0.0 10.0 0.0 0.0 0.0 0.0 
+ E 3 -   none 0 1 0 0 0 0 0.0 10.0 0.0 0.0 0.0 0.0
+ E 7 -   none 0 1 0 0 0 0 0.0 10.0 0.0 0.0 0.0 0.0
+ E 50 -   none 0 1 0 0 0 0 0.0 10.0 0.0 0.0 0.0 0.0
+ E 52 -   none 0 1 0 0 0 0 0.0 10.0 0.0 0.0 0.0 0.0
+ E 58 -   none 0 1 0 0 0 0 0.0 10.0 0.0 0.0 0.0 0.0
+ E 60 -   none 0 1 0 0 0 0 0.0 10.0 0.0 0.0 0.0 0.0
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
-// DOBJECT CURVE TYPE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL 
+// DOBJECT CURVE TYPE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DSURF 3
- E 9 -   none 0 1 0 0 0 0 0.0 1.0 0.0 0.0 0.0 0.0 Live 
- E 14 -   none 0 1 0 0 0 0 0.0 1.0 0.0 0.0 0.0 0.0 Live 
- E 21 -   none 0 1 0 0 0 0 0.0 1.0 0.0 0.0 0.0 0.0 Live 
+ E 9 -   none 0 1 0 0 0 0 0.0 1.0 0.0 0.0 0.0 0.0 Live
+ E 14 -   none 0 1 0 0 0 0 0.0 1.0 0.0 0.0 0.0 0.0 Live
+ E 21 -   none 0 1 0 0 0 0 0.0 1.0 0.0 0.0 0.0 0.0 Live
 -------------------------------------DESIGN VOL NEUMANN CONDITIONS
-// DOBJECT CURVE TYPE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL 
+// DOBJECT CURVE TYPE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DVOL 0
 ----------------------------------DESIGN COUPLING POINT CONDITIONS
 // DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
@@ -2115,19 +2115,19 @@ NODE 31  COORD -2.000000  2.000000  2.000000
 NODE 32  COORD -2.000000  2.000000  0.000000
 ----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
-      1 BRICK1 HEX8       6     12     22     16      4      8     14     13 MAT       1 GP 2 2 2 GP_TET 2 HYB  0 FORM  2 
-      2 BRICK1 HEX8       3      9     12      6      1      2      8      4 MAT       1 GP 2 2 2 GP_TET 2 HYB  0 FORM  2 
-      3 BRICK1 HEX8      32     30     16     22     31     27     13     14 MAT       1 GP 2 2 2 GP_TET 2 HYB  0 FORM  2 
-      4 BRICK1 HEX8      18     20     12      8     26     28     22     14 MAT       1 GP 2 2 2 GP_TET 2 HYB  0 FORM  2 
-      5 BRICK1 HEX8      11      7      4      6     21     19     13     16 MAT       1 GP 2 2 2 GP_TET 2 HYB  0 FORM  2 
-      6 BRICK1 HEX8       5     10      8      4     15     24     14     13 MAT       1 GP 2 2 2 GP_TET 2 HYB  0 FORM  2 
-      7 BRICK1 HEX8      23     17      6     12     29     25     16     22 MAT       1 GP 2 2 2 GP_TET 2 HYB  0 FORM  2 
+      1 BRICK1 HEX8       6     12     22     16      4      8     14     13 MAT       1 GP 2 2 2 GP_TET 2 HYB  0 FORM  2
+      2 BRICK1 HEX8       3      9     12      6      1      2      8      4 MAT       1 GP 2 2 2 GP_TET 2 HYB  0 FORM  2
+      3 BRICK1 HEX8      32     30     16     22     31     27     13     14 MAT       1 GP 2 2 2 GP_TET 2 HYB  0 FORM  2
+      4 BRICK1 HEX8      18     20     12      8     26     28     22     14 MAT       1 GP 2 2 2 GP_TET 2 HYB  0 FORM  2
+      5 BRICK1 HEX8      11      7      4      6     21     19     13     16 MAT       1 GP 2 2 2 GP_TET 2 HYB  0 FORM  2
+      6 BRICK1 HEX8       5     10      8      4     15     24     14     13 MAT       1 GP 2 2 2 GP_TET 2 HYB  0 FORM  2
+      7 BRICK1 HEX8      23     17      6     12     29     25     16     22 MAT       1 GP 2 2 2 GP_TET 2 HYB  0 FORM  2
 ----------------------------------------------------FLUID ELEMENTS
 ------------------------------------------------------ALE ELEMENTS
 ---------------------------------------------------------MATERIALS
 MAT       1 MAT_Struct_StVenantKirchhoff YOUNG 100.0 NUE 0.0 DENS 0.0
 ------------------------------------------------------CONTROL NODE
-NODE      28 DOF 2 
+NODE      28 DOF 2
 -------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 ------------------------------------------------------------CURVE2

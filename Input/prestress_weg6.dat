@@ -50,7 +50,7 @@ RESEVRYSTRS  1
 RESTARTEVRY  1
 NLNSOL       fullnewton // fullnewton lsnewton modnewton matfreenewton nlncg ptc
 TIMESTEP     0.0025
-NUMSTEP      30  
+NUMSTEP      30
 MAXTIME      0.75   // prestress bis 0.3
 //MAXTIME      0.5   // poststress 0.3 bis 1.05
 BETA         0.25

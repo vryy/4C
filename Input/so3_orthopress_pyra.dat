@@ -3,7 +3,7 @@
 //             bornemann@lnm.mw.tum.de
 //             http://www.lnm.mw.tum.de/Members/bonemann
 //             089-289-15237
-// 
+//
 // necessary defines: D_SOLID3 UMFPACK RESULTTEST CHECK_MAX
 //
 // #define MAXNOD            (8)
@@ -18,7 +18,7 @@
 A pyramid (actually a tetrahedron) is subjected to normal pressure on its free
 surfaces. It is supported on its bottom xy-surface in the such that it can
 contract on all side (only z-direction is fixed).
-The stress state in the body is hydrostatic, i.e. all stress components 
+The stress state in the body is hydrostatic, i.e. all stress components
 are -1.0 according to the prescibed orthopressure 1.0.
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS           4
@@ -78,18 +78,18 @@ EIGEN        0
 RESEVRYDISP  1
 RESEVRYSTRS  1
 RESTARTEVRY  20
-TIMESTEP     0.05 
-NUMSTEP      200 
+TIMESTEP     0.05
+NUMSTEP      200
 MAXTIME      5.0
-BETA         0.25 
-GAMMA        0.5 
-ALPHA_M      0.5 
+BETA         0.25
+GAMMA        0.5
+ALPHA_M      0.5
 ALPHA_F      0.5
 XSI          0.0
-DAMPING      No 
-M_DAMP       0.5 
+DAMPING      No
+M_DAMP       0.5
 K_DAMP       0.5
-ITERATION    full 
+ITERATION    full
 TOLDISP      1.0E-08
 MAXITER      50
 CONTACT      0
@@ -120,12 +120,12 @@ UPOUT        1
 UPPSS        1
 UPRES        1
 RESTARTEVRY  20
-NUMSTEP      200  
+NUMSTEP      200
 NUMSTASTEPS  0
 MAXTIME      1000.0
-TIMESTEP     0.05  
-MAX_DT       0.5   
-MIN_DT       0.0001  
+TIMESTEP     0.05
+MAX_DT       0.5
+MIN_DT       0.0001
 THETA        0.66
 START_THETA  0.67
 ALPHA_F      1.00
@@ -197,13 +197,13 @@ OPT_NUMITER   10 total number of iteration steps
 OPT_TYPE      Topo type of optimization
 OPT_STRATEGY  FSD type of optimization strategy
 //
-FSD_GRAD      Explicit gradientenbestimmung  
+FSD_GRAD      Explicit gradientenbestimmung
 FSD_NUMITER   10 number of iteration steps with fsd
-FSD_ACC       1.0E-07 erforderliche genauigkeit                  
+FSD_ACC       1.0E-07 erforderliche genauigkeit
 FSD_ALPHA     1.0E-05 genauigkeit fuer die gleichheitsrestriktion
-FSD_BETA      0.55 schreitweitenfaktor                        
-FSD_DELTA     0.25 schrittweitenbegrenzung                    
-FSD_GAMMA     0.0 gleichheitsrestriktionswert                
+FSD_BETA      0.55 schreitweitenfaktor
+FSD_DELTA     0.25 schrittweitenbegrenzung
+FSD_GAMMA     0.0 gleichheitsrestriktionswert
 //
 OPT_SMO       ON smooth gradients or other values
 SMO_TYPE      gradient
@@ -219,7 +219,7 @@ OV_END
 OC_ICO 0 global inequality constraints
 //
 OC_ECO 1 global   equality constraints
-      DVOLU 1 TYP WEIGHT  SCL 1. 
+      DVOLU 1 TYP WEIGHT  SCL 1.
 ------------------------------------------------------FLUID SOLVER
 SOLVER         Aztec_MSR          // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT       0                  // output every so often, 0 no output
@@ -246,7 +246,7 @@ ML_AGG_SIZE       27              // objective size of an aggregate with METIS/V
 ML_PROLONG_SMO    1.33            // damping factor for prolongator smoother (usually 1.33 or 0.0)
 ML_PROLONG_THRES  0.0             // threshold for prolongator smoother/aggregation
 ML_SMOOTHERFINE   SGS             // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED    ILU             // SGS Jacobi Chebychev MLS ILU KLU 
+ML_SMOOTHERMED    ILU             // SGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERCOARSE KLU             // SGS Jacobi Chebychev MLS KLU Superlu
 ML_SMOTIMES       1 0 1           // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
 ML_DAMPFINE       1.0             // damping fine grid
@@ -282,7 +282,7 @@ ML_AGG_SIZE       27              // objective size of an aggregate with METIS/V
 ML_PROLONG_SMO    1.33      // damping factor for prolongator smoother (usually 0.0 or 1.33)
 ML_PROLONG_THRES  0.0       // threshold for prolongator smoother/aggregation
 ML_SMOOTHERFINE   Chebychev // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED    Chebychev // SGS Jacobi Chebychev MLS ILU KLU 
+ML_SMOOTHERMED    Chebychev // SGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERCOARSE KLU       // SGS Jacobi Chebychev MLS KLU Superlu
 ML_SMOTIMES       3 3 1     // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
 ML_DAMPFINE       1.0       // damping fine grid
@@ -1118,7 +1118,7 @@ Surface: 6 Orientation: SAME1ST
 Surface: 7 Orientation: SAME1ST
 Center: 0.252591 -0.145833 0.250434
 END VOLUME
-------------------------------------DESIGN POINT DIRICH CONDITIONS 
+------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT 1
 E 7 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
@@ -1399,27 +1399,27 @@ NODE       7 DVOLUME 4
 NODE      11 DVOLUME 4
 NODE       9 DVOLUME 4
 -------------------------------------------------------NODE COORDS
-NODE            1     COORD 0.000000000000000e+00     1.000000000000000e+00     0.000000000000000e+00   
-NODE            2     COORD -4.330127018922192e-01     2.500000000000002e-01     0.000000000000000e+00   
-NODE            3     COORD 8.754932542820448e-17     4.999999999999998e-01     7.071067811865472e-01   
-NODE            4     COORD 4.330127018922192e-01     2.499999999999998e-01     0.000000000000000e+00   
-NODE            5     COORD 0.000000000000000e+00     0.000000000000000e+00     0.000000000000000e+00   
-NODE            6     COORD -2.886751345948130e-01     1.666666666666667e-01     4.714045207910318e-01   
-NODE            7     COORD 2.886751345948129e-01     1.666666666666664e-01     4.714045207910315e-01   
-NODE            8     COORD 0.000000000000000e+00     -2.220446049250313e-16     3.535533905932737e-01   
-NODE            9     COORD -1.110223024625157e-16     -3.333333333333334e-01     4.714045207910317e-01   
-NODE           10     COORD 0.000000000000000e+00     -5.000000000000000e-01     0.000000000000000e+00   
-NODE           11     COORD 4.330127018922192e-01     -2.500000000000003e-01     7.071067811865472e-01   
-NODE           12     COORD -4.330127018922195e-01     -2.499999999999999e-01     7.071067811865477e-01   
-NODE           13     COORD 1.715749937958311e-17     -1.855747543480502e-16     1.414213562373095e+00   
-NODE           14     COORD -8.660254037844387e-01     -4.999999999999998e-01     0.000000000000000e+00   
-NODE           15     COORD 8.660254037844384e-01     -5.000000000000003e-01     0.000000000000000e+00   
+NODE            1     COORD 0.000000000000000e+00     1.000000000000000e+00     0.000000000000000e+00
+NODE            2     COORD -4.330127018922192e-01     2.500000000000002e-01     0.000000000000000e+00
+NODE            3     COORD 8.754932542820448e-17     4.999999999999998e-01     7.071067811865472e-01
+NODE            4     COORD 4.330127018922192e-01     2.499999999999998e-01     0.000000000000000e+00
+NODE            5     COORD 0.000000000000000e+00     0.000000000000000e+00     0.000000000000000e+00
+NODE            6     COORD -2.886751345948130e-01     1.666666666666667e-01     4.714045207910318e-01
+NODE            7     COORD 2.886751345948129e-01     1.666666666666664e-01     4.714045207910315e-01
+NODE            8     COORD 0.000000000000000e+00     -2.220446049250313e-16     3.535533905932737e-01
+NODE            9     COORD -1.110223024625157e-16     -3.333333333333334e-01     4.714045207910317e-01
+NODE           10     COORD 0.000000000000000e+00     -5.000000000000000e-01     0.000000000000000e+00
+NODE           11     COORD 4.330127018922192e-01     -2.500000000000003e-01     7.071067811865472e-01
+NODE           12     COORD -4.330127018922195e-01     -2.499999999999999e-01     7.071067811865477e-01
+NODE           13     COORD 1.715749937958311e-17     -1.855747543480502e-16     1.414213562373095e+00
+NODE           14     COORD -8.660254037844387e-01     -4.999999999999998e-01     0.000000000000000e+00
+NODE           15     COORD 8.660254037844384e-01     -5.000000000000003e-01     0.000000000000000e+00
 ----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
-      1 SOLID3 HEX8       6      2      5      8     12     14     10      9 MAT       1 GP 2 0 0 KINEM Totlag STRESS Gpxyz TSI_COUPTYP None 
-      2 SOLID3 HEX8       3      6      8      7     13     12      9     11 MAT       1 GP 2 0 0 KINEM Totlag STRESS Gpxyz TSI_COUPTYP None 
-      3 SOLID3 HEX8       6      3      7      8      2      1      4      5 MAT       1 GP 2 0 0 KINEM Totlag STRESS Gpxyz TSI_COUPTYP None 
-      4 SOLID3 HEX8       4      7      8      5     15     11      9     10 MAT       1 GP 2 0 0 KINEM Totlag STRESS Gpxyz TSI_COUPTYP None 
+      1 SOLID3 HEX8       6      2      5      8     12     14     10      9 MAT       1 GP 2 0 0 KINEM Totlag STRESS Gpxyz TSI_COUPTYP None
+      2 SOLID3 HEX8       3      6      8      7     13     12      9     11 MAT       1 GP 2 0 0 KINEM Totlag STRESS Gpxyz TSI_COUPTYP None
+      3 SOLID3 HEX8       6      3      7      8      2      1      4      5 MAT       1 GP 2 0 0 KINEM Totlag STRESS Gpxyz TSI_COUPTYP None
+      4 SOLID3 HEX8       4      7      8      5     15     11      9     10 MAT       1 GP 2 0 0 KINEM Totlag STRESS Gpxyz TSI_COUPTYP None
 ----------------------------------------------------FLUID ELEMENTS
 ------------------------------------------------------ALE ELEMENTS
 --------------------------------------------------THERMAL ELEMENTS
@@ -1448,9 +1448,9 @@ NODE      13 DOF 3
 -----------------------------------------------------------LOCSYS5
 --------------------------------------------------------MONITORING
 // FIELD globalId FLAG FLAG FLAG FLAG FLAG FLAG
-// FLUID 1 - 0 0 0 0 0 0 
-// STRUCTURE 2 - 0 0 0 0 0 0 
-// ALE 3 - 0 0 0 0 0 0 
+// FLUID 1 - 0 0 0 0 0 0
+// STRUCTURE 2 - 0 0 0 0 0 0
+// ALE 3 - 0 0 0 0 0 0
 ------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS 1 NODE 13 POSITION sol(1,1) NAME ux VALUE 0.0000000000000000 TOLERANCE 1e-9
 STRUCTURE DIS 1 NODE 13 POSITION sol(1,2) NAME uy VALUE -0.0000500075020007 TOLERANCE 1e-9

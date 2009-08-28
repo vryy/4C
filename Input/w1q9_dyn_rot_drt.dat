@@ -53,15 +53,15 @@ RESEVRYDISP  1
 RESEVRYSTRS  1
 RESTARTEVRY  10
 NLNSOL       fullnewton // fullnewton modnewton matfreenewton nlncg ptc
-TIMESTEP     0.01 
+TIMESTEP     0.01
 NUMSTEP      100
 MAXTIME      1.0
-BETA         0.25 
-GAMMA        0.5 
-ALPHA_M      0.5 
+BETA         0.25
+GAMMA        0.5
+ALPHA_M      0.5
 ALPHA_F      0.5
-DAMPING      Yes 
-M_DAMP       0.00001 
+DAMPING      Yes
+M_DAMP       0.00001
 K_DAMP       0.00001
 CONV_CHECK   AbsRes_And_AbsDis
 TOLRES       1.0E-06
@@ -97,7 +97,7 @@ ML_AGG_SIZE       27              // objective size of an aggregate with METIS/V
 ML_PROLONG_SMO    1.33            // damping factor for prolongator smoother (usually 1.33 or 0.0)
 ML_PROLONG_THRES  0.0             // threshold for prolongator smoother/aggregation
 ML_SMOOTHERFINE   SGS             // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED    ILU             // SGS Jacobi Chebychev MLS ILU KLU 
+ML_SMOOTHERMED    ILU             // SGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERCOARSE KLU             // SGS Jacobi Chebychev MLS KLU Superlu
 ML_SMOTIMES       1 0 1           // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
 ML_DAMPFINE       1.0             // damping fine grid
@@ -130,7 +130,7 @@ ML_AGG_SIZE       27              // objective size of an aggregate with METIS/V
 ML_PROLONG_SMO    1.33      // damping factor for prolongator smoother (usually 0.0 or 1.33)
 ML_PROLONG_THRES  0.0       // threshold for prolongator smoother/aggregation
 ML_SMOOTHERFINE   Chebychev // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED    Chebychev // SGS Jacobi Chebychev MLS ILU KLU 
+ML_SMOOTHERMED    Chebychev // SGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERCOARSE KLU       // SGS Jacobi Chebychev MLS KLU Superlu
 ML_SMOTIMES       3 3 1     // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
 ML_DAMPFINE       1.0       // damping fine grid
@@ -162,7 +162,7 @@ ML_AGG_SIZE       27              // objective size of an aggregate with METIS/V
 ML_PROLONG_SMO    1.33      // damping factor for prolongator smoother (usually 0.0 or 1.33)
 ML_PROLONG_THRES  0.0       // threshold for prolongator smoother/aggregation
 ML_SMOOTHERFINE   Chebychev // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED    Chebychev // SGS Jacobi Chebychev MLS ILU KLU 
+ML_SMOOTHERMED    Chebychev // SGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERCOARSE KLU       // SGS Jacobi Chebychev MLS KLU Superlu
 ML_SMOTIMES       3 3 1     // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
 ML_DAMPFINE       1.0       // damping fine grid
@@ -406,18 +406,18 @@ NODE       3 DSURFACE 1
 NODE       4 DSURFACE 1
 -----------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
-NODE            1     COORD 0.000000000000000e+00     0.000000000000000e+00     0.000000000000000e+00   
-NODE            2     COORD 5.000000000000000e-01     5.000000000000000e-01     0.000000000000000e+00   
-NODE            3     COORD -5.000000000000000e-01     5.000000000000000e-01     0.000000000000000e+00   
-NODE            4     COORD 0.000000000000000e+00     1.000000000000000e+00     0.000000000000000e+00   
-NODE            5     COORD 1.000000000000000e+00     1.000000000000000e+00     0.000000000000000e+00   
-NODE            6     COORD -1.000000000000000e+00     1.000000000000000e+00     0.000000000000000e+00   
-NODE            7     COORD -5.000000000000000e-01     1.500000000000000e+00     0.000000000000000e+00   
-NODE            8     COORD 5.000000000000000e-01     1.500000000000000e+00     0.000000000000000e+00   
-NODE            9     COORD 0.000000000000000e+00     2.000000000000000e+00     0.000000000000000e+00   
+NODE            1     COORD 0.000000000000000e+00     0.000000000000000e+00     0.000000000000000e+00
+NODE            2     COORD 5.000000000000000e-01     5.000000000000000e-01     0.000000000000000e+00
+NODE            3     COORD -5.000000000000000e-01     5.000000000000000e-01     0.000000000000000e+00
+NODE            4     COORD 0.000000000000000e+00     1.000000000000000e+00     0.000000000000000e+00
+NODE            5     COORD 1.000000000000000e+00     1.000000000000000e+00     0.000000000000000e+00
+NODE            6     COORD -1.000000000000000e+00     1.000000000000000e+00     0.000000000000000e+00
+NODE            7     COORD -5.000000000000000e-01     1.500000000000000e+00     0.000000000000000e+00
+NODE            8     COORD 5.000000000000000e-01     1.500000000000000e+00     0.000000000000000e+00
+NODE            9     COORD 0.000000000000000e+00     2.000000000000000e+00     0.000000000000000e+00
 ----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
-      1 WALL QUAD9       6      1      5      9      3      2      8      7      4 MAT       1 THICK 1.0 GP 3 3 PLANE_STRESS W_TotalLagr Displ_Model STRESSES XY SSI_COUPTYP none TSI_COUPTYP none 
+      1 WALL QUAD9       6      1      5      9      3      2      8      7      4 MAT       1 THICK 1.0 GP 3 3 PLANE_STRESS W_TotalLagr Displ_Model STRESSES XY SSI_COUPTYP none TSI_COUPTYP none
 ----------------------------------------------------FLUID ELEMENTS
 ------------------------------------------------------ALE ELEMENTS
 --------------------------------------------------THERMAL ELEMENTS

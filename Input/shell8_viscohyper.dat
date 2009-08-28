@@ -3,8 +3,8 @@
 //             gee@statik.uni-stuttgart.de
 //             http://www.uni-stuttgart.de/ibs/members/gee/
 //             0711 - 685-6572
-// 
-// necessary defines: D_SHELL8 D_MAT 
+//
+// necessary defines: D_SHELL8 D_MAT
 //
 // #define MAXNOD           (4)
 // #define MAXELE           (8)
@@ -17,7 +17,7 @@
 -------------------------------------------------------------TITLE
 visco-hyperelastic material with shell8 element
 ------------------------------------------------------PROBLEM SIZE
-ELEMENTS           1 
+ELEMENTS           1
 NODES              4
 DIM                3
 MATERIALS          1
@@ -49,18 +49,18 @@ EIGEN        -1
 RESEVRYDISP  4
 RESEVRYSTRS  200000
 RESTARTEVRY  500
-TIMESTEP     0.05 
-NUMSTEP      1500 
+TIMESTEP     0.05
+NUMSTEP      1500
 MAXTIME      400.0
-BETA         0.263 
-GAMMA        0.526 
-ALPHA_M      0.461 
+BETA         0.263
+GAMMA        0.526
+ALPHA_M      0.461
 ALPHA_F      0.487
 XSI          0.0
-DAMPING      Yes 
-M_DAMP       0.000001 
+DAMPING      Yes
+M_DAMP       0.000001
 K_DAMP       0.000001
-ITERATION    full 
+ITERATION    full
 TOLDISP      1.0E-09
 MAXITER      50
 CONTACT      0
@@ -84,7 +84,7 @@ NUMCONT      1
 UPPSS        1
 UPOUT        1
 MAXTIME      1000.0
-NUMSTEP      200  
+NUMSTEP      200
 TIMESTEP     0.05
 ALPHA        1.00
 THETA        0.50
@@ -139,13 +139,13 @@ OPT_NUMITER   10 total number of iteration steps
 OPT_TYPE      Topo type of optimization
 OPT_STRATEGY  FSD type of optimization strategy
 //
-FSD_GRAD      Explicit gradientenbestimmung  
+FSD_GRAD      Explicit gradientenbestimmung
 FSD_NUMITER   10 number of iteration steps with fsd
-FSD_ACC       1.0E-07 erforderliche genauigkeit                  
+FSD_ACC       1.0E-07 erforderliche genauigkeit
 FSD_ALPHA     1.0E-05 genauigkeit fuer die gleichheitsrestriktion
-FSD_BETA      0.55 schreitweitenfaktor                        
-FSD_DELTA     0.25 schrittweitenbegrenzung                    
-FSD_GAMMA     0.0 gleichheitsrestriktionswert                
+FSD_BETA      0.55 schreitweitenfaktor
+FSD_DELTA     0.25 schrittweitenbegrenzung
+FSD_GAMMA     0.0 gleichheitsrestriktionswert
 //
 OPT_SMO       ON smooth gradients or other values
 SMO_TYPE      gradient
@@ -161,21 +161,21 @@ OV_END
 OC_ICO 0 global inequality constraints
 //
 OC_ECO 1 global   equality constraints
-      DVOLU 1 TYP WEIGHT  SCL 1. 
+      DVOLU 1 TYP WEIGHT  SCL 1.
 ------------------------------------------------------FLUID SOLVER
 SOLVER         Aztec_MSR
 AZSOLVE        BiCGSTAB
 AZPREC         ILU
-AZREUSE        0  
-AZDROP         0.0  
-AZFILL         1.0  
-AZGFILL        0  
-AZTOL          1.0E-08  
-AZITER         2500  
-AZSUB          50  
-AZOMEGA        1.0  
-AZGRAPH        1  
-AZPOLY         5  
+AZREUSE        0
+AZDROP         0.0
+AZFILL         1.0
+AZGFILL        0
+AZTOL          1.0E-08
+AZITER         2500
+AZSUB          50
+AZOMEGA        1.0
+AZGRAPH        1
+AZPOLY         5
 PARTITION      Cut_Elements
 -----------------------------------------------------STRUCT SOLVER
 SOLVER         Colsol
@@ -184,16 +184,16 @@ PARTITION      Cut_Elements
 SOLVER         Aztec_MSR
 AZSOLVE        CG
 AZPREC         ILU
-AZREUSE        0  
-AZDROP         0.0  
-AZFILL         2.0  
-AZGFILL        0  
-AZTOL          1.0E-08  
-AZITER         2500  
-AZSUB          50  
-AZOMEGA        1.0  
-AZGRAPH        1  
-AZPOLY         5  
+AZREUSE        0
+AZDROP         0.0
+AZFILL         2.0
+AZGFILL        0
+AZTOL          1.0E-08
+AZITER         2500
+AZSUB          50
+AZOMEGA        1.0
+AZGRAPH        1
+AZPOLY         5
 PARTITION      Cut_Elements
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 4
@@ -277,24 +277,24 @@ Center: 0.050000 0.000000 0.050000
 Normal: 0.000000 -1.000000 0.000000
 END NURBSURFACE
 ----------------------------------------------------DESIGN VOLUMES
-------------------------------------DESIGN POINT DIRICH CONDITIONS 
+------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT 2
- E 3 -   0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
- E 4 -   0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 
--------------------------------------DESIGN LINE DIRICH CONDITIONS 
+ E 3 -   0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+ E 4 -   0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+-------------------------------------DESIGN LINE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE 0
--------------------------------------DESIGN SURF DIRICH CONDITIONS 
+-------------------------------------DESIGN SURF DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF 0
---------------------------------------DESIGN VOL DIRICH CONDITIONS 
+--------------------------------------DESIGN VOL DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DVOL 0
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL  NSURF
 DPOINT 1
- E 1 -   1 0 0 1 0 0 0 0.0 0.0 -17370.0 0.0 0.0 0.0 Mid 
+ E 1 -   1 0 0 1 0 0 0 0.0 0.0 -17370.0 0.0 0.0 0.0 Mid
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL  NSURF
 DLINE 0
@@ -302,13 +302,13 @@ DLINE 0
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL  TYPE  NSURF
 DSURF 0
 -------------------------------------DESIGN VOL NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL   
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DVOL 0
 ----------------------------------DESIGN COUPLING POINT CONDITIONS
 // DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
 DPOINT 2
- E 1 -   1 structure 1 0 0 1 0 0 0 0 0 0 0 0 0 0 
- E 2 -   1 structure 1 0 0 1 0 0 0 0 0 0 0 0 0 0 
+ E 1 -   1 structure 1 0 0 1 0 0 0 0 0 0 0 0 0 0
+ E 2 -   1 structure 1 0 0 1 0 0 0 0 0 0 0 0 0 0
 -----------------------------------DESIGN COUPLING LINE CONDITIONS
 // DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
 DLINE 0
@@ -356,34 +356,34 @@ NODE       2 DSURFACE 1
 NODE       4 DSURFACE 1
 -----------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
-NODE            1     COORD 0.000000000000000e+00     0.000000000000000e+00     0.000000000000000e+00   
-NODE            2     COORD 0.000000000000000e+00     0.000000000000000e+00     1.000000000000000e-01   
-NODE            3     COORD 1.000000000000000e-01     0.000000000000000e+00     0.000000000000000e+00   
-NODE            4     COORD 1.000000000000000e-01     0.000000000000000e+00     1.000000000000000e-01   
+NODE            1     COORD 0.000000000000000e+00     0.000000000000000e+00     0.000000000000000e+00
+NODE            2     COORD 0.000000000000000e+00     0.000000000000000e+00     1.000000000000000e-01
+NODE            3     COORD 1.000000000000000e-01     0.000000000000000e+00     0.000000000000000e+00
+NODE            4     COORD 1.000000000000000e-01     0.000000000000000e+00     1.000000000000000e-01
 ----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
-      1 SHELL8 QUAD4       1      3      4      2 MAT       1 THICK 0.1 GP 2 2 2 GP_TRI 1 FORCES XYZ EAS  none none none none none ANS  none SDC  1.0 
+      1 SHELL8 QUAD4       1      3      4      2 MAT       1 THICK 0.1 GP 2 2 2 GP_TRI 1 FORCES XYZ EAS  none none none none none ANS  none SDC  1.0
 ----------------------------------------------------FLUID ELEMENTS
 ------------------------------------------------------ALE ELEMENTS
 ---------------------------------------------------------MATERIALS
 MAT       1 MAT_Struct_Viscohyper  NUE 0.485 BETA -2.0 ALFA1 1.3 ALFA2 5.0 ALFA3 -2.0  NU1 6.3E+05 NU2 0.012E+05 NU3 -0.1E+05 DENS 10.0  NMAXW 2 TAU1 30.0 BETA1 1.0 TAU2 20.0 BETA2 1.0  TAU3 10.0 BETA3 0.0 TAU4 10.0 BETA4 0.0
-//MAT       1 MAT_Struct_Ogden       NUE 0.485 BETA -2.0 ALFA1 1.3 ALFA2 5.0 ALFA3 -2.0  NU1 6.3E+05 NU2 0.012E+05 NU3 -0.1E+05 DENS 10.0 
+//MAT       1 MAT_Struct_Ogden       NUE 0.485 BETA -2.0 ALFA1 1.3 ALFA2 5.0 ALFA3 -2.0  NU1 6.3E+05 NU2 0.012E+05 NU3 -0.1E+05 DENS 10.0
 ----------------------------------------------MULTILAYER MATERIALS
 ------------------------------------------------------CONTROL NODE
 -------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 0.5 FACTOR 0.0 1.0 
-CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.5 100.0 FACTOR 1.0 1.0 
-CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 100.0 100.5 FACTOR 1.0 0.0 
-CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 100.5 1000.0 FACTOR 0.0 0.0 
+CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 0.5 FACTOR 0.0 1.0
+CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.5 100.0 FACTOR 1.0 1.0
+CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 100.0 100.5 FACTOR 1.0 0.0
+CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 100.5 1000.0 FACTOR 0.0 0.0
 ------------------------------------------------------------CURVE2
 ------------------------------------------------------------CURVE3
 ------------------------------------------------------------CURVE4
 ------------------------------------------------------------CURVE5
 --------------------------------------------------------MONITORING
 // FIELD globalId FLAG FLAG FLAG FLAG FLAG FLAG
-// FLUID 1 - 0 0 0 0 0 0 
-// STRUCTURE 2 - 0 0 0 0 0 0 
-// ALE 3 - 0 0 0 0 0 0 
+// FLUID 1 - 0 0 0 0 0 0
+// STRUCTURE 2 - 0 0 0 0 0 0
+// ALE 3 - 0 0 0 0 0 0
 ---------------------------------------------------------------END
 // END

@@ -5,7 +5,7 @@
 //             089 - 289-15264
 //
 // necessary defines: CCADISCRET D_BEAM3 BINIO
-// 
+//
 ==================================================================
                         General Data File CCARAT
 ==================================================================
@@ -102,8 +102,8 @@ ML_SMOTIMES       3 3 3 3 1 // no. smoothing steps or polynomial order on each l
 ML_DAMPFINE       1.0       // damping fine grid
 ML_DAMPMED        1.0       // damping med grids
 ML_DAMPCOARSE     1.0       // damping coarse grid
-PARTITION         Cut_Elements 
-PARTITION         Cut_Elements 
+PARTITION         Cut_Elements
+PARTITION         Cut_Elements
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 2
 NDLINE  1
