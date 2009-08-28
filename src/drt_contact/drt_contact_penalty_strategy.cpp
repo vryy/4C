@@ -217,14 +217,6 @@ void CONTACT::PenaltyStrategy::EvaluateMortar()
       cout << " -- CONTACTFDMORTARM -----------------------------------" << endl;
   }
 #endif // #ifdef CONTACTFDMORTARM
-#ifdef CONTACTFDVERTEX3D
-  // FD check of coupling vertex derivatives (3D)
-  interface_[i]->FDCheckVertex3DDeriv(testv);
-#endif // #ifdef CONTACTFDVERTEX3D
-#ifdef CONTACTFDGP3D
-  // FD check of Gauss points (3D)
-  interface_[i]->FDCheckGP3DDeriv(testgps,testgpm,testjs,testji);
-#endif // #ifdef CONTACTFDGP3D
   
     // evaluate lagrange multipliers and nodal derivz matrix values, store them in nodes
     interface_[i]->AssembleMacauley(localisincontact, localactivesetchange);

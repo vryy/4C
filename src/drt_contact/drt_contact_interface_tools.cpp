@@ -3924,6 +3924,9 @@ void CONTACT::Interface::FDCheckSlipDeriv()
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::FDCheckVertex3DDeriv(vector<vector<double> >& testv)
 {
+  // this method is outdated
+  dserror("ERROR: FDCheckVertex3DDeriv is outdated and needs to be updated!");
+    
   /*************************************/
   /* NOTE: This is a 3D method only !!!*/
   /*************************************/
@@ -4550,6 +4553,9 @@ void CONTACT::Interface::FDCheckGP3DDeriv(vector<vector<double> >& testgps,
                                           vector<vector<double> >& testjs,
                                           vector<vector<double> >& testji)
 {
+  // this method is outdated
+  dserror("ERROR: FDCheckGP3DDeriv is outdated and needs to be updated!");
+  
   /*************************************/
   /* NOTE: This is a 3D method only !!!*/
   /*************************************/
