@@ -742,33 +742,33 @@ NODE 64  COORD 0.500000  0.500000  -0.500000
 ----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
 ----------------------------------------------------FLUID ELEMENTS
-      1 XFLUID3 HEX8      26     50     59     51     21     43     55     42 MAT       1 NA Euler GP 2 2 2
-      2 XFLUID3 HEX8      20     26     51     38     16     21     42     33 MAT       1 NA Euler GP 2 2 2
-      3 XFLUID3 HEX8      17     20     38     34     10     16     33     28 MAT       1 NA Euler GP 2 2 2
-      4 XFLUID3 HEX8      18     37     50     26     13     31     43     21 MAT       1 NA Euler GP 2 2 2
-      5 XFLUID3 HEX8       8     18     26     20      6     13     21     16 MAT       1 NA Euler GP 2 2 2
-      6 XFLUID3 HEX8       5      8     20     17      3      6     16     10 MAT       1 NA Euler GP 2 2 2
-      7 XFLUID3 HEX8      12     32     37     18     11     25     31     13 MAT       1 NA Euler GP 2 2 2
-      8 XFLUID3 HEX8       7     12     18      8      4     11     13      6 MAT       1 NA Euler GP 2 2 2
-      9 XFLUID3 HEX8       2      7      8      5      1      4      6      3 MAT       1 NA Euler GP 2 2 2
-     10 XFLUID3 HEX8      39     53     63     54     26     50     59     51 MAT       1 NA Euler GP 2 2 2
-     11 XFLUID3 HEX8      29     39     54     49     20     26     51     38 MAT       1 NA Euler GP 2 2 2
-     12 XFLUID3 HEX8      22     29     49     41     17     20     38     34 MAT       1 NA Euler GP 2 2 2
-     13 XFLUID3 HEX8      24     47     53     39     18     37     50     26 MAT       1 NA Euler GP 2 2 2
-     14 XFLUID3 HEX8      19     24     39     29      8     18     26     20 MAT       1 NA Euler GP 2 2 2
-     15 XFLUID3 HEX8      14     19     29     22      5      8     20     17 MAT       1 NA Euler GP 2 2 2
-     16 XFLUID3 HEX8      23     44     47     24     12     32     37     18 MAT       1 NA Euler GP 2 2 2
-     17 XFLUID3 HEX8      15     23     24     19      7     12     18      8 MAT       1 NA Euler GP 2 2 2
-     18 XFLUID3 HEX8       9     15     19     14      2      7      8      5 MAT       1 NA Euler GP 2 2 2
-     19 XFLUID3 HEX8      52     61     64     62     39     53     63     54 MAT       1 NA Euler GP 2 2 2
-     20 XFLUID3 HEX8      48     52     62     60     29     39     54     49 MAT       1 NA Euler GP 2 2 2
-     21 XFLUID3 HEX8      45     48     60     56     22     29     49     41 MAT       1 NA Euler GP 2 2 2
-     22 XFLUID3 HEX8      46     58     61     52     24     47     53     39 MAT       1 NA Euler GP 2 2 2
-     23 XFLUID3 HEX8      36     46     52     48     19     24     39     29 MAT       1 NA Euler GP 2 2 2
-     24 XFLUID3 HEX8      35     36     48     45     14     19     29     22 MAT       1 NA Euler GP 2 2 2
-     25 XFLUID3 HEX8      40     57     58     46     23     44     47     24 MAT       1 NA Euler GP 2 2 2
-     26 XFLUID3 HEX8      30     40     46     36     15     23     24     19 MAT       1 NA Euler GP 2 2 2
-     27 XFLUID3 HEX8      27     30     36     35      9     15     19     14 MAT       1 NA Euler GP 2 2 2
+      1 XFLUID3 HEX8      26     50     59     51     21     43     55     42 MAT       1
+      2 XFLUID3 HEX8      20     26     51     38     16     21     42     33 MAT       1
+      3 XFLUID3 HEX8      17     20     38     34     10     16     33     28 MAT       1
+      4 XFLUID3 HEX8      18     37     50     26     13     31     43     21 MAT       1
+      5 XFLUID3 HEX8       8     18     26     20      6     13     21     16 MAT       1
+      6 XFLUID3 HEX8       5      8     20     17      3      6     16     10 MAT       1
+      7 XFLUID3 HEX8      12     32     37     18     11     25     31     13 MAT       1
+      8 XFLUID3 HEX8       7     12     18      8      4     11     13      6 MAT       1
+      9 XFLUID3 HEX8       2      7      8      5      1      4      6      3 MAT       1
+     10 XFLUID3 HEX8      39     53     63     54     26     50     59     51 MAT       1
+     11 XFLUID3 HEX8      29     39     54     49     20     26     51     38 MAT       1
+     12 XFLUID3 HEX8      22     29     49     41     17     20     38     34 MAT       1
+     13 XFLUID3 HEX8      24     47     53     39     18     37     50     26 MAT       1
+     14 XFLUID3 HEX8      19     24     39     29      8     18     26     20 MAT       1
+     15 XFLUID3 HEX8      14     19     29     22      5      8     20     17 MAT       1
+     16 XFLUID3 HEX8      23     44     47     24     12     32     37     18 MAT       1
+     17 XFLUID3 HEX8      15     23     24     19      7     12     18      8 MAT       1
+     18 XFLUID3 HEX8       9     15     19     14      2      7      8      5 MAT       1
+     19 XFLUID3 HEX8      52     61     64     62     39     53     63     54 MAT       1
+     20 XFLUID3 HEX8      48     52     62     60     29     39     54     49 MAT       1
+     21 XFLUID3 HEX8      45     48     60     56     22     29     49     41 MAT       1
+     22 XFLUID3 HEX8      46     58     61     52     24     47     53     39 MAT       1
+     23 XFLUID3 HEX8      36     46     52     48     19     24     39     29 MAT       1
+     24 XFLUID3 HEX8      35     36     48     45     14     19     29     22 MAT       1
+     25 XFLUID3 HEX8      40     57     58     46     23     44     47     24 MAT       1
+     26 XFLUID3 HEX8      30     40     46     36     15     23     24     19 MAT       1
+     27 XFLUID3 HEX8      27     30     36     35      9     15     19     14 MAT       1
 ------------------------------------------------------ALE ELEMENTS
 ---------------------------------------------------------MATERIALS
 MAT       1 MAT_fluid  VISCOSITY 1.0 DENSITY 1.0
