@@ -70,7 +70,6 @@ Input/f2_channel_neumann.dat                            x        x        x     
 Input/f2_channel_modpowerlaw_impl_drt.dat               x        x        x        -        -        -
 Input/f2_channel_carreauyasuda_genalpha_drt.dat         x        x        x        -        -        -
 Input/f2_dc2D_usfem_ld.dat                              x        x        x        x        -        -
-Input/f2_drivencavity20x20.dat                          x        x        x        x        -        -
 Input/f2_dc20x20_drt_afgenalpha.dat                     x        x        x        -        -        -
 Input/f2_dc20x20_drt_afg_cons.dat                       x        x        x        -        -        -
 Input/f2_drivencavity20x20_drt.dat                      x        x        x        -        x        x
@@ -78,7 +77,6 @@ Input/f2_nurbs9_dc_drt.dat                              x        x        x     
 Input/f2_channel_q2q1_drt.dat                           x        -        -        -        -        -
 Input/f2_drivencavity20x20_is.dat                       x        x        x        x        -        -
 Input/f2_drivencavity20x20_q.dat                        x        x        x        x        -        -
-Input/f2_drivencavity20x20_sd.dat                       x        x        x        x        -        -
 Input/f2_drivencavity32x32_Re1000_stat.dat              x        x        x        -        -        -
 Input/f2_eq4x4_algebraic.dat                            x        x        x        x        -        -
 Input/f2_eq4x4_keps.dat                                 x        -        x        -        -        -
