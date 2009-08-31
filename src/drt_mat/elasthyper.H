@@ -251,7 +251,7 @@ namespace MAT
     /// coefficients are transformed to unmodified coefficients and than added
     /// onto the respective quantities. The transformation goes along the following
     /// lines. The first derivatives or \f$\gamma_\alpha\f$ coefficients are related
-    /// to the modified coefficients \f$\bar{\gamma}_\alpha\f$ via
+    /// to the modified coefficients \f$\bar{\gamma}_\alpha\f$ via the chain rule
     ///\f[
     ///   \gamma_\alpha 
     ///   = \frac{\partial \Psi(\boldsymbol{\lambda})}{\partial\lambda_\alpha}
@@ -266,7 +266,7 @@ namespace MAT
     ///\f]
     /// in which Kronecker's delta is denoted \f$1_{\alpha\beta}\f$.
     /// Likewise (and once without Holzapfel), the second derivatives \f$\delta_{\alpha\beta}\f$ can
-    /// be recovered by knowledge of the modified coefficients 
+    /// be recovered directly by knowledge of the modified coefficients 
     /// \f$\bar{\gamma}_\alpha\f$ and \f$\bar{\delta}_{\alpha\beta}\f$, i.e.
     ///\f[
     ///   \delta_{\alpha\beta}
@@ -287,9 +287,8 @@ namespace MAT
     ///   \frac{\partial^2 \bar{\lambda}_\alpha}{\partial\lambda_\beta\partial\lambda_\eta}
     ///   = -\frac{1}{3} J^{-1/3} \Big(
     ///     1_{\alpha\beta} \lambda_\eta^{-1}
-    ///     - \frac{1}{3} \lambda_\alpha \lambda_\beta^{-1} \lambda_\eta^{-1}
     ///     + 1_{\alpha\eta}\lambda_\beta^{-1}
-    ///     - \lambda_\alpha \lambda_\beta^{-2} 1_{\beta\eta}
+    ///     - \big( 1_{\beta\eta} + \frac{1}{3} \big) \lambda_\alpha \lambda_\beta^{-1} \lambda_\eta^{-1}
     ///   \Big)
     ///\f]
     ///
