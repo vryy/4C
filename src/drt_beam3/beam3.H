@@ -195,8 +195,14 @@ public:
   store all necessary information.
 
   */
-  virtual bool ReadElement();
+  //virtual bool ReadElement();
 
+  /*!
+  \brief Read input for this element
+  */
+  bool ReadElement(const std::string& eletype,
+                   const std::string& distype,
+                   DRT::INPUT::LineDefinition* linedef);
 
   //@}
 
@@ -472,7 +478,7 @@ private:
                      Epetra_SerialDenseVector* force);//!< element internal force vector
 
 
-			
+
   // don't want = operator
   Beam3& operator = (const Beam3& old);
 
@@ -495,7 +501,7 @@ ostream& operator << (ostream& os, const DRT::Element& ele);
 class Beam3Register : public DRT::ElementRegister
 {
 public:
-	
+
   //! @name Friends
   friend class Beam3;
 

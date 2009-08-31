@@ -14,8 +14,44 @@ Maintainer: Christian Cyron
 #ifdef CCADISCRET
 
 #include "beam3.H"
-#include "../drt_lib/standardtypes_cpp.H"
+#include "../drt_lib/drt_linedefinition.H"
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool DRT::ELEMENTS::Beam3::ReadElement(const std::string& eletype,
+                                       const std::string& distype,
+                                       DRT::INPUT::LineDefinition* linedef)
+{
+  // read number of material model
+  int material = 0;
+  linedef->ExtractInt("MAT",material);
+  SetMaterial(material);
+
+  linedef->ExtractDouble("CROSS",crosssec_);
+
+  double shear_correction = 0.0;
+  linedef->ExtractDouble("SHEARCORR",shear_correction);
+  crosssecshear_ = crosssec_ * shear_correction;
+
+  /*read beam moments of inertia of area; currently the beam3 element works only with rotationally symmetric
+   * crosssection so that the moment of inertia of area around both principal can be expressed by one input
+   * number I_; however, the implementation itself is a general one and works also for other cases; the only
+   * point which has to be made sure is that the nodal triad T_ is initialized in the registration process
+   * (->beam3.cpp) in such a way that t1 is the unit vector along the beam axis and t2 and t3 are the principal
+   * axes with moment of inertia of area Iyy_ and Izz_, respectively; so a modification to more general kinds of
+   * cross sections can be done easily by allowing for more complex input right here and by calculating an approxipate
+   * initial nodal triad in the frame of the registration; */
+
+  linedef->ExtractDouble("MOMIN",Iyy_);
+  linedef->ExtractDouble("MOMIN",Izz_);
+  linedef->ExtractDouble("MOMINPOL",Irr_);
+
+  return true;
+}
+
+
+#if 0
 /*----------------------------------------------------------------------*
  |  read element input (public)                              cyron 03/08|
  *----------------------------------------------------------------------*/
@@ -29,7 +65,7 @@ bool DRT::ELEMENTS::Beam3::ReadElement()
   \LIN4  1---4---2---3
   \LIN5	 1---5---2---3---4
   */
-	
+
   // read element's nodes; in case of a beam element always line2 shape
   int ierr=0;
 
@@ -112,7 +148,7 @@ bool DRT::ELEMENTS::Beam3::ReadElement()
 
   return true;
 } // Beam3::ReadElement()
-
+#endif
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_BEAM3

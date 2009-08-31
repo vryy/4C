@@ -14,8 +14,32 @@ Maintainer: Christian Cyron
 #ifdef CCADISCRET
 
 #include "beam2.H"
-#include "../drt_lib/standardtypes_cpp.H"
+#include "../drt_lib/drt_linedefinition.H"
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool DRT::ELEMENTS::Beam2::ReadElement(const std::string& eletype,
+                                       const std::string& distype,
+                                       DRT::INPUT::LineDefinition* linedef)
+{
+  // read number of material model
+  int material = 0;
+  linedef->ExtractInt("MAT",material);
+  SetMaterial(material);
+
+  linedef->ExtractDouble("CROSS",crosssec_);
+
+  double shear_correction = 0.0;
+  linedef->ExtractDouble("SHEARCORR",shear_correction);
+  crosssecshear_ = crosssec_ * shear_correction;
+
+  linedef->ExtractDouble("INERMOM",mominer_);
+  return true;
+}
+
+
+#if 0
 /*----------------------------------------------------------------------*
  |  read element input (public)                              cyron 01/08|
  *----------------------------------------------------------------------*/
@@ -31,7 +55,7 @@ bool DRT::ELEMENTS::Beam2::ReadElement()
   // provide an array of length two in order to store the two figures read
   int nodes[2];
   frint_n("LIN2",nodes,nnode,&ierr);
-  
+
   // if that does not work try LINE2, in case .dat file was created with pre_exodus
   if (ierr != 1)
   {
@@ -39,7 +63,7 @@ bool DRT::ELEMENTS::Beam2::ReadElement()
     frchk("LINE2",&ierr);
     frint_n("LINE2",nodes,nnode,&ierr);
   }
-  
+
   if (ierr != 1) dserror("Reading of ELEMENT Topology failed");
 
   // reduce node numbers by one
@@ -69,11 +93,11 @@ bool DRT::ELEMENTS::Beam2::ReadElement()
   mominer_ = 1.0;
   frdouble("INERMOM",&mominer_,&ierr);
   if (ierr!=1) dserror("Reading of Beam2 element failed");
-  
-   
+
+
   return true;
 } // Beam2::ReadElement()
-
+#endif
 
 
 
