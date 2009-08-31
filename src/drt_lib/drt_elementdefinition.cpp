@@ -116,7 +116,7 @@ void DRT::INPUT::ElementDefinition::SetupValidElementLines()
 //   SetupConstrele2Lines();
 //   SetupConstrele3Lines();
   SetupPtet4Lines();
-//   SetupShell8Lines();
+  SetupShell8Lines();
 //   SetupSolid3Lines();
 //   SetupSolidh20Lines();
 //   SetupSolidh27Lines();
@@ -419,7 +419,7 @@ void DRT::INPUT::ElementDefinition::SetupShell8Lines()
     .AddString("EAS4")
     .AddString("EAS5")
     .AddNamedString("ANS")
-    .AddNamedString("SDC")
+    .AddNamedDouble("SDC")
     ;
 
   defs["QUAD8"]
@@ -435,7 +435,7 @@ void DRT::INPUT::ElementDefinition::SetupShell8Lines()
     .AddString("EAS4")
     .AddString("EAS5")
     .AddNamedString("ANS")
-    .AddNamedString("SDC")
+    .AddNamedDouble("SDC")
     ;
 
   defs["QUAD9"]
@@ -451,7 +451,7 @@ void DRT::INPUT::ElementDefinition::SetupShell8Lines()
     .AddString("EAS4")
     .AddString("EAS5")
     .AddNamedString("ANS")
-    .AddNamedString("SDC")
+    .AddNamedDouble("SDC")
     ;
 
   defs["TRI3"]
@@ -467,7 +467,7 @@ void DRT::INPUT::ElementDefinition::SetupShell8Lines()
     .AddString("EAS4")
     .AddString("EAS5")
     .AddNamedString("ANS")
-    .AddNamedString("SDC")
+    .AddNamedDouble("SDC")
     ;
 
   defs["TRI6"]
@@ -483,7 +483,7 @@ void DRT::INPUT::ElementDefinition::SetupShell8Lines()
     .AddString("EAS4")
     .AddString("EAS5")
     .AddNamedString("ANS")
-    .AddNamedString("SDC")
+    .AddNamedDouble("SDC")
     ;
 }
 
