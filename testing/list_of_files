@@ -14,6 +14,7 @@ Input/strufem_shell8_eas_cantilever.dat                 x        x        x     
 Input/strufem_hex8_eas_cantilever.dat                   x        x        x        -        -        -
 Input/strufem_sosh8_eas_cantilever.dat                  x        x        x        -        -        -
 Input/strufem_tet4_disp_cantilever.dat                  x        x        x        -        -        -
+Input/strufem_ptet_disp_cantilever.dat                  x        x        x        -        -        -
 Input/strufem_tet10_disp_cantilever.dat                 x        x        x        -        -        -
 Input/strufem_wedge6_disp_cantilever.dat                x        x        x        -        -        -
 Input/disp_control.dat                                  x        x        x        -        -        -
@@ -236,6 +237,7 @@ Input/sohex8_multiscale_macro.dat                       x        x        x     
 Input/sohex8_surfactant.dat                             x        x        x        -        x        x
 Input/soweg6_disp_patchtest.dat                         x        x        x        -        -        -
 Input/sotet4_patchtest.dat                              x        x        x        -        -        -
+Input/ptet_patchtest.dat                                x        x        x        -        -        -
 Input/sotet10_patchtest.dat                             x        x        x        -        -        -
 Input/loma_2d_heated_chan_30x100.dat                    x        x        x        x        -        -
 Input/scatra_graetz_problem_system.dat                  x        x        x        -        -        -
