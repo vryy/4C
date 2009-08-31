@@ -521,29 +521,34 @@ bool DRT::INPUT::LineDefinition::Read(std::istream& stream)
   }
 
   // Optional elements cause pain!
-  while (stream)
+  if (optionaltail_.size()>0)
   {
-    std::string name;
-    stream >> name;
-    if (readtailcomponents_.find(name)!=readtailcomponents_.end())
+    while (stream)
     {
-      // duplicated optional component
-      return false;
-    }
-    bool found = false;
-    for (unsigned i=0; i<optionaltail_.size(); ++i)
-    {
-      if (optionaltail_[i]->IsNamed(name))
-      {
-        if (not optionaltail_[i]->Read(stream))
-          return false;
-        readtailcomponents_.insert(name);
-        found = true;
+      std::string name;
+      stream >> name;
+      if (not stream)
         break;
+      if (readtailcomponents_.find(name)!=readtailcomponents_.end())
+      {
+        // duplicated optional component
+        return false;
       }
+      bool found = false;
+      for (unsigned i=0; i<optionaltail_.size(); ++i)
+      {
+        if (optionaltail_[i]->IsNamed(name))
+        {
+          if (not optionaltail_[i]->Read(stream))
+            return false;
+          readtailcomponents_.insert(name);
+          found = true;
+          break;
+        }
+      }
+      if (not found)
+        return false;
     }
-    if (not found)
-      return false;
   }
   return true;
 }
