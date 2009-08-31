@@ -199,7 +199,12 @@ public:
   //@{
 
   /// Read input for this element
-  bool ReadElement();
+  //bool ReadElement();
+
+  /// Read input for this element
+  bool ReadElement(const std::string& eletype,
+                   const std::string& distype,
+                   DRT::INPUT::LineDefinition* linedef);
 
   //@}
 

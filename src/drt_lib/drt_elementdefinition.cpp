@@ -132,7 +132,7 @@ void DRT::INPUT::ElementDefinition::SetupValidElementLines()
   SetupTorsion3Lines();
   SetupTruss2Lines();
   SetupTruss3Lines();
-//   SetupWallLines();
+  SetupWallLines();
 
 //   SetupCombust3Lines();
   SetupFluid2Lines();
@@ -852,7 +852,8 @@ void DRT::INPUT::ElementDefinition::SetupWallLines()
     .AddNamedDouble("THICK")
     .AddNamedIntVector("GP",2)
     .AddString("STRESS_STRAIN")
-    .AddNamedString("EAS")
+    .AddString("LAGRANGE")
+    .AddString("EAS")
     .AddNamedString("STRESSES")
     ;
 
@@ -862,7 +863,8 @@ void DRT::INPUT::ElementDefinition::SetupWallLines()
     .AddNamedDouble("THICK")
     .AddNamedIntVector("GP",2)
     .AddString("STRESS_STRAIN")
-    .AddNamedString("EAS")
+    .AddString("LAGRANGE")
+    .AddString("EAS")
     .AddNamedString("STRESSES")
     ;
 
@@ -872,7 +874,8 @@ void DRT::INPUT::ElementDefinition::SetupWallLines()
     .AddNamedDouble("THICK")
     .AddNamedIntVector("GP",2)
     .AddString("STRESS_STRAIN")
-    .AddNamedString("EAS")
+    .AddString("LAGRANGE")
+    .AddString("EAS")
     .AddNamedString("STRESSES")
     ;
 
@@ -882,7 +885,8 @@ void DRT::INPUT::ElementDefinition::SetupWallLines()
     .AddNamedDouble("THICK")
     .AddNamedIntVector("GP",2)
     .AddString("STRESS_STRAIN")
-    .AddNamedString("EAS")
+    .AddString("LAGRANGE")
+    .AddString("EAS")
     .AddNamedString("STRESSES")
     ;
 
@@ -892,7 +896,8 @@ void DRT::INPUT::ElementDefinition::SetupWallLines()
     .AddNamedDouble("THICK")
     .AddNamedIntVector("GP",2)
     .AddString("STRESS_STRAIN")
-    .AddNamedString("EAS")
+    .AddString("LAGRANGE")
+    .AddString("EAS")
     .AddNamedString("STRESSES")
     ;
 
@@ -902,7 +907,8 @@ void DRT::INPUT::ElementDefinition::SetupWallLines()
     .AddNamedDouble("THICK")
     .AddNamedIntVector("GP",2)
     .AddString("STRESS_STRAIN")
-    .AddNamedString("EAS")
+    .AddString("LAGRANGE")
+    .AddString("EAS")
     .AddNamedString("STRESSES")
     ;
 
@@ -912,7 +918,8 @@ void DRT::INPUT::ElementDefinition::SetupWallLines()
     .AddNamedDouble("THICK")
     .AddNamedIntVector("GP",2)
     .AddString("STRESS_STRAIN")
-    .AddNamedString("EAS")
+    .AddString("LAGRANGE")
+    .AddString("EAS")
     .AddNamedString("STRESSES")
     ;
 }
