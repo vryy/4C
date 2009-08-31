@@ -14,11 +14,25 @@ Maintainer: Axel Gerstenberger
 #ifdef CCADISCRET
 
 #include "xdiff3.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/standardtypes_cpp.H"
+#include "../drt_lib/drt_linedefinition.H"
 
-extern struct _GENPROB     genprob;
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool DRT::ELEMENTS::XDiff3::ReadElement(const std::string& eletype,
+                                        const std::string& distype,
+                                        DRT::INPUT::LineDefinition* linedef)
+{
+  // read number of material model
+  int material = 0;
+  linedef->ExtractInt("MAT",material);
+  SetMaterial(material);
+
+  return true;
+}
+
+
+#if 0
 /*----------------------------------------------------------------------*
  |  read element input (public)                              g.bau 03/07|
  *----------------------------------------------------------------------*/
@@ -76,7 +90,7 @@ bool DRT::ELEMENTS::XDiff3::ReadElement()
   return true;
 
 } // XDiff3::ReadElement()
-
+#endif
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_FLUID3

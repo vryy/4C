@@ -138,7 +138,7 @@ void DRT::INPUT::ElementDefinition::SetupValidElementLines()
   SetupFluid2Lines();
   SetupFluid3Lines();
   SetupTranspLines();
-//   SetupXdiff3Lines();
+  SetupXdiff3Lines();
   SetupXfluid3Lines();
 
   SetupAle2Lines();
