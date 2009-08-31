@@ -187,8 +187,14 @@ public:
   store all necessary information.
 
   */
-  virtual bool ReadElement();
+  //virtual bool ReadElement();
 
+  /*!
+  \brief Read input for this element
+  */
+  bool ReadElement(const std::string& eletype,
+                   const std::string& distype,
+                   DRT::INPUT::LineDefinition* linedef);
 
   //@}
 
@@ -392,7 +398,7 @@ private:
   void t2_lumpmass(Epetra_SerialDenseMatrix* emass);
 
   //@}
-			
+
   // don't want = operator
   Truss2& operator = (const Truss2& old);
 
@@ -415,7 +421,7 @@ ostream& operator << (ostream& os, const DRT::Element& ele);
 class Truss2Register : public DRT::ElementRegister
 {
 public:
-	
+
   //! @name Friends
   friend class Truss2;
 

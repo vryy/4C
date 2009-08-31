@@ -128,10 +128,10 @@ void DRT::INPUT::ElementDefinition::SetupValidElementLines()
 //   SetupSolidt10Lines();
 //   SetupSolidt4Lines();
 //   SetupSolidw6Lines();
-//   SetupTorsion2Lines();
-//   SetupTorsion3Lines();
-//   SetupTruss2Lines();
-//   SetupTruss3Lines();
+  SetupTorsion2Lines();
+  SetupTorsion3Lines();
+  SetupTruss2Lines();
+  SetupTruss3Lines();
 //   SetupWallLines();
 
 //   SetupCombust3Lines();

@@ -14,9 +14,40 @@ Maintainer: Christian Cyron
 #ifdef CCADISCRET
 
 #include "torsion3.H"
-#include "../drt_lib/standardtypes_cpp.H"
-#include "../drt_lib/linalg_fixedsizematrix.H"
+#include "../drt_lib/drt_linedefinition.H"
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool DRT::ELEMENTS::Torsion3::ReadElement(const std::string& eletype,
+                                          const std::string& distype,
+                                          DRT::INPUT::LineDefinition* linedef)
+{
+  // read number of material model
+  int material = 0;
+  linedef->ExtractInt("MAT",material);
+  SetMaterial(material);
+
+  linedef->ExtractDouble("CROSS",crosssec_);
+
+  std::string buffer;
+  linedef->ExtractString("KINEM",buffer);
+
+  if (buffer=="totlag")
+    kintype_ = tr3_totlag;
+
+  // geometrically non-linear approach with engineering strains
+  else if (buffer=="engstr")
+    kintype_ = tr3_engstrain;
+
+  else
+    dserror("Reading of Torsion2 element failed because of unknown kinematic type!");
+
+  return true;
+}
+
+
+#if 0
 /*----------------------------------------------------------------------*
  |  read element input (public)                              cyron 08/08|
  *----------------------------------------------------------------------*/
@@ -77,7 +108,7 @@ bool DRT::ELEMENTS::Torsion3::ReadElement()
   }
   return true;
 } // Torsion3::ReadElement()
-
+#endif
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_TORSION3
