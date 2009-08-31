@@ -234,12 +234,12 @@ namespace MAT
     bool HaveCoefficientsStretchesModified();
 
     /// determine PK2 stress response and material elasticity tensor
-    /// due to energy densities (MAT::ELAST::Summand) described
+    /// due to energy densities (MAT::ELASTIC::Summand) described
     /// in (modified) principal stretches
     ///
     /// \author bborn
     /// \date 08/09
-    void EvaluateStressElasticityDueToStretches(
+    void ResponseStretches(
       LINALG::Matrix<6,6>& cmat,  ///< material elasticty matrix
       LINALG::Matrix<6,1>& stress,  ///< 2nd Piola-Kirchhoff stress vector
       const LINALG::Matrix<6,1>& rcg,  ///< right Cauchy-Green strain vector

@@ -610,7 +610,7 @@ void MAT::ElastHyper::Evaluate(
   const bool havecoeffstrpr = HaveCoefficientsStretchesPrincipal();
   const bool havecoeffstrmod = HaveCoefficientsStretchesModified();
   if (havecoeffstrpr or havecoeffstrmod) {
-    EvaluateStressElasticityDueToStretches(cmat,stress,rcg,havecoeffstrpr,havecoeffstrmod);
+    ResponseStretches(cmat,stress,rcg,havecoeffstrpr,havecoeffstrmod);
   }
 
   /*----------------------------------------------------------------------*/
@@ -707,7 +707,7 @@ void MAT::ElastHyper::Evaluate(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::EvaluateStressElasticityDueToStretches(
+void MAT::ElastHyper::ResponseStretches(
   LINALG::Matrix<6,6>& cmat,
   LINALG::Matrix<6,1>& stress,
   const LINALG::Matrix<6,1>& rcg,
