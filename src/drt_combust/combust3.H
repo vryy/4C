@@ -5,7 +5,7 @@
 
 	This file contains the element specific service routines like
 	Pack, Unpack, NumDofPerNode etc.
-	
+
 <pre>
 Maintainer: Florian Henke
             henke@lnm.mw.tum.de
@@ -170,7 +170,11 @@ namespace DRT
 
         //! @name Input and Creation
 
-        bool ReadElement();
+        //bool ReadElement();
+
+        bool ReadElement(const std::string& eletype,
+                         const std::string& distype,
+                         DRT::INPUT::LineDefinition* linedef);
 
         //@}
 

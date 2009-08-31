@@ -19,8 +19,8 @@ void PrintElementDatHeader()
   ed.PrintElementLines(std::cout,"BEAM2");
   ed.PrintElementLines(std::cout,"BEAM2R");
   ed.PrintElementLines(std::cout,"BEAM3");
-  ed.PrintElementLines(std::cout,"CONSTRELE2");
-  ed.PrintElementLines(std::cout,"CONSTRELE3");
+  //ed.PrintElementLines(std::cout,"CONSTRELE2");
+  //ed.PrintElementLines(std::cout,"CONSTRELE3");
   ed.PrintElementLines(std::cout,"PTET4");
   ed.PrintElementLines(std::cout,"SHELL8");
   ed.PrintElementLines(std::cout,"SOLID3");
@@ -134,7 +134,7 @@ void DRT::INPUT::ElementDefinition::SetupValidElementLines()
   SetupTruss3Lines();
   SetupWallLines();
 
-//   SetupCombust3Lines();
+  SetupCombust3Lines();
   SetupFluid2Lines();
   SetupFluid3Lines();
   SetupTranspLines();
@@ -934,49 +934,41 @@ void DRT::INPUT::ElementDefinition::SetupCombust3Lines()
   defs["HEX8"]
     .AddIntVector("HEX8",8)
     .AddNamedInt("MAT")
-    .AddNamedString("NA")
     ;
 
   defs["HEX20"]
     .AddIntVector("HEX20",20)
     .AddNamedInt("MAT")
-    .AddNamedString("NA")
     ;
 
   defs["HEX27"]
     .AddIntVector("HEX27",27)
     .AddNamedInt("MAT")
-    .AddNamedString("NA")
     ;
 
   defs["TET4"]
     .AddIntVector("TET4",4)
     .AddNamedInt("MAT")
-    .AddNamedString("NA")
     ;
 
   defs["TET10"]
     .AddIntVector("TET10",10)
     .AddNamedInt("MAT")
-    .AddNamedString("NA")
     ;
 
   defs["WEDGE6"]
     .AddIntVector("WEDGE6",6)
     .AddNamedInt("MAT")
-    .AddNamedString("NA")
     ;
 
   defs["WEDGE15"]
     .AddIntVector("WEDGE15",15)
     .AddNamedInt("MAT")
-    .AddNamedString("NA")
     ;
 
   defs["PYRAMID5"]
     .AddIntVector("PYRAMID5",5)
     .AddNamedInt("MAT")
-    .AddNamedString("NA")
     ;
 }
 
