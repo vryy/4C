@@ -179,7 +179,7 @@ void DRT::INPUT::ElementDefinition::SetupArtLines()
   std::map<std::string,LineDefinition>& defs = definitions_["ART"];
 
   defs["LINE2"]
-    .AddDoubleVector("LINE2",2)
+    .AddIntVector("LINE2",2)
     .AddNamedInt("MAT")
     ;
 }
@@ -192,7 +192,7 @@ void DRT::INPUT::ElementDefinition::SetupBeam2Lines()
   std::map<std::string,LineDefinition>& defs = definitions_["BEAM2"];
 
   defs["LINE2"]
-    .AddDoubleVector("LINE2",2)
+    .AddIntVector("LINE2",2)
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedDouble("SHEARCORR")
@@ -208,7 +208,7 @@ void DRT::INPUT::ElementDefinition::SetupBeam2rLines()
   std::map<std::string,LineDefinition>& defs = definitions_["BEAM2R"];
 
   defs["LINE2"]
-    .AddDoubleVector("LINE2",2)
+    .AddIntVector("LINE2",2)
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedDouble("SHEARCORR")
@@ -224,7 +224,7 @@ void DRT::INPUT::ElementDefinition::SetupBeam2rLines()
     ;
 
   defs["LINE3"]
-    .AddDoubleVector("LINE3",3)
+    .AddIntVector("LINE3",3)
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedDouble("SHEARCORR")
@@ -240,7 +240,7 @@ void DRT::INPUT::ElementDefinition::SetupBeam2rLines()
     ;
 
   defs["LINE4"]
-    .AddDoubleVector("LINE4",4)
+    .AddIntVector("LINE4",4)
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedDouble("SHEARCORR")
@@ -248,7 +248,7 @@ void DRT::INPUT::ElementDefinition::SetupBeam2rLines()
     ;
 
   defs["LIN4"]
-    .AddDoubleVector("LIN4",4)
+    .AddIntVector("LIN4",4)
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedDouble("SHEARCORR")
@@ -256,7 +256,7 @@ void DRT::INPUT::ElementDefinition::SetupBeam2rLines()
     ;
 
   defs["LINE5"]
-    .AddDoubleVector("LINE5",5)
+    .AddIntVector("LINE5",5)
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedDouble("SHEARCORR")
@@ -264,7 +264,7 @@ void DRT::INPUT::ElementDefinition::SetupBeam2rLines()
     ;
 
   defs["LIN5"]
-    .AddDoubleVector("LIN5",5)
+    .AddIntVector("LIN5",5)
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedDouble("SHEARCORR")
@@ -280,7 +280,7 @@ void DRT::INPUT::ElementDefinition::SetupBeam3Lines()
   std::map<std::string,LineDefinition>& defs = definitions_["BEAM3"];
 
   defs["LINE2"]
-    .AddDoubleVector("LINE2",2)
+    .AddIntVector("LINE2",2)
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedDouble("SHEARCORR")
@@ -300,7 +300,7 @@ void DRT::INPUT::ElementDefinition::SetupBeam3Lines()
     ;
 
   defs["LINE3"]
-    .AddDoubleVector("LINE3",3)
+    .AddIntVector("LINE3",3)
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedDouble("SHEARCORR")
@@ -320,7 +320,7 @@ void DRT::INPUT::ElementDefinition::SetupBeam3Lines()
     ;
 
   defs["LINE4"]
-    .AddDoubleVector("LINE4",4)
+    .AddIntVector("LINE4",4)
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedDouble("SHEARCORR")
@@ -330,7 +330,7 @@ void DRT::INPUT::ElementDefinition::SetupBeam3Lines()
     ;
 
   defs["LIN4"]
-    .AddDoubleVector("LIN4",4)
+    .AddIntVector("LIN4",4)
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedDouble("SHEARCORR")
@@ -340,7 +340,7 @@ void DRT::INPUT::ElementDefinition::SetupBeam3Lines()
     ;
 
   defs["LINE5"]
-    .AddDoubleVector("LINE5",5)
+    .AddIntVector("LINE5",5)
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedDouble("SHEARCORR")
@@ -350,7 +350,7 @@ void DRT::INPUT::ElementDefinition::SetupBeam3Lines()
     ;
 
   defs["LIN5"]
-    .AddDoubleVector("LIN5",5)
+    .AddIntVector("LIN5",5)
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedDouble("SHEARCORR")
@@ -751,7 +751,7 @@ void DRT::INPUT::ElementDefinition::SetupTorsion2Lines()
   std::map<std::string,LineDefinition>& defs = definitions_["TORSION2"];
 
   defs["LINE2"]
-    .AddDoubleVector("LINE2",2)
+    .AddIntVector("LINE2",2)
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedString("KINEM")
@@ -773,7 +773,7 @@ void DRT::INPUT::ElementDefinition::SetupTorsion3Lines()
   std::map<std::string,LineDefinition>& defs = definitions_["TORSION3"];
 
   defs["LINE2"]
-    .AddDoubleVector("LINE2",2)
+    .AddIntVector("LINE2",2)
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedString("KINEM")
@@ -795,7 +795,7 @@ void DRT::INPUT::ElementDefinition::SetupTruss2Lines()
   std::map<std::string,LineDefinition>& defs = definitions_["TRUSS2"];
 
   defs["LINE2"]
-    .AddDoubleVector("LINE2",2)
+    .AddIntVector("LINE2",2)
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedString("KINEM")
@@ -817,7 +817,7 @@ void DRT::INPUT::ElementDefinition::SetupTruss3Lines()
   std::map<std::string,LineDefinition>& defs = definitions_["TRUSS3"];
 
   defs["LINE2"]
-    .AddDoubleVector("LINE2",2)
+    .AddIntVector("LINE2",2)
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedString("KINEM")
@@ -1194,12 +1194,12 @@ void DRT::INPUT::ElementDefinition::SetupTranspLines()
     ;
 
   defs["LINE2"]
-    .AddDoubleVector("LINE2",2)
+    .AddIntVector("LINE2",2)
     .AddNamedInt("MAT")
     ;
 
   defs["LINE3"]
-    .AddDoubleVector("LINE3",3)
+    .AddIntVector("LINE3",3)
     .AddNamedInt("MAT")
     ;
 }
