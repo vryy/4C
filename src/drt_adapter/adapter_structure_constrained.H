@@ -137,9 +137,6 @@ namespace ADAPTER {
 
   private:
 
-    /// the underlying structural adapter containing the actual structural algorithm
-    RCP<ADAPTER::Structure> structure_;
-
     /// the interface map setup for interface <-> full translation
     LINALG::MapExtractor interface_;
 
