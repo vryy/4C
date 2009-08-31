@@ -22,6 +22,8 @@ namespace INPUT
 
     virtual bool Read(LineDefinition& definition, std::istream& stream);
 
+    virtual bool Read(std::istream& stream);
+
     virtual bool IsNamed(std::string name) { return name==name_; }
 
   private:
@@ -41,6 +43,8 @@ namespace INPUT
     virtual void Print(std::ostream& stream) { stream << name_ << " " << value_; }
 
     virtual bool Read(LineDefinition& definition, std::istream& stream);
+
+    virtual bool Read(std::istream& stream);
 
     virtual bool IsNamed(std::string name) { return name==name_; }
 
@@ -63,7 +67,10 @@ namespace INPUT
 
     virtual void Print(std::ostream& stream) { stream << this->value_; }
 
-    virtual bool Read(LineDefinition& definition, std::istream& stream);
+    virtual bool Read(LineDefinition& definition, std::istream& stream)
+    {
+      return NamedComponent<type>::Read(stream);
+    }
   };
 
   /// line component to describe a string followed by a vector of values
@@ -85,6 +92,8 @@ namespace INPUT
     }
 
     virtual bool Read(LineDefinition& definition, std::istream& stream);
+
+    virtual bool Read(std::istream& stream);
 
     virtual bool IsNamed(std::string name) { return name==name_; }
 
@@ -113,7 +122,10 @@ namespace INPUT
       std::copy(this->values_.begin(), this->values_.end(), std::ostream_iterator<type>(stream, " "));
     }
 
-    virtual bool Read(LineDefinition& definition, std::istream& stream);
+    virtual bool Read(LineDefinition& definition, std::istream& stream)
+    {
+      return NamedVectorComponent<type>::Read(stream);
+    }
   };
 
   /// line component to describe a string followed by a vector of values with
@@ -141,7 +153,6 @@ namespace INPUT
   private:
     std::string lengthdef_;
   };
-
 }
 }
 
@@ -149,6 +160,16 @@ namespace INPUT
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool DRT::INPUT::TagComponent::Read(DRT::INPUT::LineDefinition& definition, std::istream& stream)
+{
+  std::string tag;
+  stream >> tag;
+  return tag==name_ and stream;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool DRT::INPUT::TagComponent::Read(std::istream& stream)
 {
   std::string tag;
   stream >> tag;
@@ -172,25 +193,23 @@ bool DRT::INPUT::NamedComponent<type>::Read(DRT::INPUT::LineDefinition& definiti
     if (name.substr(0,name_.length()) != name_)
       return false;
     std::stringstream vstream(name.substr(name_.length()));
-    vstream >> value_;
+    return Read(vstream);
   }
   else
   {
     if (name != name_)
       return false;
-    stream >> value_;
+    return Read(stream);
   }
-
-  return stream;
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <class type>
-bool DRT::INPUT::UnnamedComponent<type>::Read(DRT::INPUT::LineDefinition& definition, std::istream& stream)
+bool DRT::INPUT::NamedComponent<type>::Read(std::istream& stream)
 {
-  stream >> this->value_;
+  stream >> value_;
   return stream;
 }
 
@@ -208,23 +227,18 @@ bool DRT::INPUT::NamedVectorComponent<type>::Read(DRT::INPUT::LineDefinition& de
   if (name != name_)
     return false;
 
-  for (unsigned i=0; i<values_.size(); ++i)
-  {
-    stream >> values_[i];
-  }
-
-  return stream;
+  return Read(stream);
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <class type>
-bool DRT::INPUT::UnnamedVectorComponent<type>::Read(DRT::INPUT::LineDefinition& definition, std::istream& stream)
+bool DRT::INPUT::NamedVectorComponent<type>::Read(std::istream& stream)
 {
-  for (unsigned i=0; i<this->values_.size(); ++i)
+  for (unsigned i=0; i<values_.size(); ++i)
   {
-    stream >> this->values_[i];
+    stream >> values_[i];
   }
 
   return stream;
@@ -269,6 +283,14 @@ DRT::INPUT::LineDefinition::LineDefinition(const DRT::INPUT::LineDefinition& oth
   {
     components_.push_back(other.components_[i]->Clone());
   }
+  for (unsigned i=0; i<other.optionaltail_.size(); ++i)
+  {
+    optionaltail_.push_back(other.optionaltail_[i]->Clone());
+  }
+  std::copy(other.readtailcomponents_.begin(),
+            other.readtailcomponents_.end(),
+            std::inserter(readtailcomponents_,
+                          readtailcomponents_.begin()));
 }
 
 
@@ -281,6 +303,14 @@ DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::operator=(const DRT::INP
   {
     components_.push_back(other.components_[i]->Clone());
   }
+  for (unsigned i=0; i<other.optionaltail_.size(); ++i)
+  {
+    optionaltail_.push_back(other.optionaltail_[i]->Clone());
+  }
+  std::copy(other.readtailcomponents_.begin(),
+            other.readtailcomponents_.end(),
+            std::inserter(readtailcomponents_,
+                          readtailcomponents_.begin()));
   return *this;
 }
 
@@ -302,6 +332,12 @@ void DRT::INPUT::LineDefinition::Clear()
     delete components_[i];
   }
   components_.resize(0);
+  for (unsigned i=0; i<optionaltail_.size(); ++i)
+  {
+    delete optionaltail_[i];
+  }
+  optionaltail_.resize(0);
+  readtailcomponents_.clear();
 }
 
 
@@ -406,12 +442,67 @@ DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddNamedDoubleVector(std
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedString(std::string name)
+{
+  optionaltail_.push_back(new NamedComponent<std::string>(name,"''"));
+  return *this;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedInt(std::string name)
+{
+  optionaltail_.push_back(new NamedComponent<int>(name,0));
+  return *this;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedIntVector(std::string name, int length)
+{
+  optionaltail_.push_back(new NamedVectorComponent<int>(name,length));
+  return *this;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedDouble(std::string name)
+{
+  optionaltail_.push_back(new NamedComponent<double>(name,0));
+  return *this;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedDoubleVector(std::string name, int length)
+{
+  optionaltail_.push_back(new NamedVectorComponent<int>(name,length));
+  return *this;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void DRT::INPUT::LineDefinition::Print(std::ostream& stream)
 {
   for (unsigned i=0; i<components_.size(); ++i)
   {
     components_[i]->Print(stream);
     stream << ' ';
+  }
+  if (optionaltail_.size()>0)
+  {
+    stream << "[ ";
+    for (unsigned i=0; i<optionaltail_.size(); ++i)
+    {
+      optionaltail_[i]->Print(stream);
+      stream << ' ';
+    }
+    stream << "] ";
   }
 }
 
@@ -420,12 +511,39 @@ void DRT::INPUT::LineDefinition::Print(std::ostream& stream)
 /*----------------------------------------------------------------------*/
 bool DRT::INPUT::LineDefinition::Read(std::istream& stream)
 {
+  readtailcomponents_.clear();
   for (unsigned i=0; i<components_.size(); ++i)
   {
     if (not components_[i]->Read(*this,stream))
     {
       return false;
     }
+  }
+
+  // Optional elements cause pain!
+  while (stream)
+  {
+    std::string name;
+    stream >> name;
+    if (readtailcomponents_.find(name)!=readtailcomponents_.end())
+    {
+      // duplicated optional component
+      return false;
+    }
+    bool found = false;
+    for (unsigned i=0; i<optionaltail_.size(); ++i)
+    {
+      if (optionaltail_[i]->IsNamed(name))
+      {
+        if (not optionaltail_[i]->Read(stream))
+          return false;
+        readtailcomponents_.insert(name);
+        found = true;
+        break;
+      }
+    }
+    if (not found)
+      return false;
   }
   return true;
 }
@@ -513,11 +631,24 @@ void DRT::INPUT::LineDefinition::ExtractDoubleVector(std::string name, std::vect
 /*----------------------------------------------------------------------*/
 DRT::INPUT::LineComponent* DRT::INPUT::LineDefinition::FindNamed(std::string name)
 {
-  for (unsigned i=0; i<components_.size(); ++i)
+  if (readtailcomponents_.find(name)!=readtailcomponents_.end())
   {
-    if (components_[i]->IsNamed(name))
+    for (unsigned i=0; i<optionaltail_.size(); ++i)
     {
-      return components_[i];
+      if (optionaltail_[i]->IsNamed(name))
+      {
+        return optionaltail_[i];
+      }
+    }
+  }
+  else
+  {
+    for (unsigned i=0; i<components_.size(); ++i)
+    {
+      if (components_[i]->IsNamed(name))
+      {
+        return components_[i];
+      }
     }
   }
   return NULL;

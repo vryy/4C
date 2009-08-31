@@ -36,6 +36,9 @@ namespace INPUT
     /// try to read component from input line
     virtual bool Read(LineDefinition& definition, std::istream& stream) = 0;
 
+    /// try to read component from input line
+    virtual bool Read(std::istream& stream) = 0;
+
     /// tell if the component has the specified name tag
     virtual bool IsNamed(std::string name) = 0;
   };
@@ -109,6 +112,21 @@ namespace INPUT
      */
     LineDefinition& AddNamedDoubleVector(std::string name, std::string lengthdef);
 
+    /// add a name followed by a variable string
+    LineDefinition& AddOptionalNamedString(std::string name);
+
+    /// add a name followed by an integer variable
+    LineDefinition& AddOptionalNamedInt(std::string name);
+
+    /// add a name followed by a vector of integer variables
+    LineDefinition& AddOptionalNamedIntVector(std::string name, int length);
+
+    /// add a name followed by a double variable
+    LineDefinition& AddOptionalNamedDouble(std::string name);
+
+    /// add a name followed by a vector of double variables
+    LineDefinition& AddOptionalNamedDoubleVector(std::string name, int length);
+
     //@}
 
     /// print to dat file comment
@@ -147,6 +165,12 @@ namespace INPUT
 
     /// list of components
     std::vector<LineComponent*> components_;
+
+    /// optional tail, only named components here
+    std::vector<LineComponent*> optionaltail_;
+
+    /// components from tail read in last line
+    std::set<std::string> readtailcomponents_;
   };
 
 
