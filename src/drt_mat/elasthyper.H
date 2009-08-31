@@ -233,14 +233,73 @@ namespace MAT
     /// determine if at least one summand uses modified principal stretches
     bool HaveCoefficientsStretchesModified();
 
-    /// determine PK2 stress response and material elasticity tensor
+    /// Determine PK2 stress response and material elasticity tensor
     /// due to energy densities (MAT::ELASTIC::Summand) described
-    /// in (modified) principal stretches
+    /// in (modified) principal stretches.
     ///
+    /// The stress response is achieved by collecting the coefficients 
+    /// \f$\gamma_\alpha\f$ and \f$\delta_{\alpha\beta}\f$ due to
+    /// MAT::ELASTIC::Summand::AddCoefficientsStretchesPrincipal()
+    /// (and/or \f$\bar{\gamma}_\alpha\f$ and \f$\bar{\delta}_{\alpha\beta}\f$
+    /// due to MAT::ELASTIC::Summand::AddCoefficientsStretchesModified()).
+    /// The collected coefficients build the principal 2nd Piola--Kirchhoff
+    /// stresses which are transformed into ordinary Cartesian co-ordinates
+    /// applying the principal directions. Similarly, the elasticity
+    /// 4-tensor is obtained.
+    ///
+    /// Please note, unlike suggested by Holzapfel, p 263-264, the modified
+    /// coefficients are transformed to unmodified coefficients and than added
+    /// onto the respective quantities. The transformation goes along the following
+    /// lines. The first derivatives or \f$\gamma_\alpha\f$ coefficients are related
+    /// to the modified coefficients \f$\bar{\gamma}_\alpha\f$ via
+    ///\f[
+    ///   \gamma_\alpha 
+    ///   = \frac{\partial \Psi(\boldsymbol{\lambda})}{\partial\lambda_\alpha}
+    ///   = \frac{\partial \Psi(\bar{\boldsymbol{\lambda}})}{\partial \bar{\lambda}_\eta}
+    ///   \, \frac{\partial \bar{\lambda}_\eta}{\partial\lambda_\alpha}
+    ///   = \bar{\gamma}_\eta \, \frac{\partial \bar{\lambda}_\eta}{\partial\lambda_\alpha}
+    ///\f]
+    /// utilising Holzapfel Eq (6.142):
+    ///\f[
+    ///   \frac{\partial\bar{\lambda}_\alpha}{\partial\lambda_\beta}
+    ///   = J^{-1/3} \Big( 1_{\alpha\beta} - \frac{1}{3} \lambda_\alpha \lambda_\beta^{-1} \Big)
+    ///\f]
+    /// in which Kronecker's delta is denoted \f$1_{\alpha\beta}\f$.
+    /// Likewise (and once without Holzapfel), the second derivatives \f$\delta_{\alpha\beta}\f$ can
+    /// be recovered by knowledge of the modified coefficients 
+    /// \f$\bar{\gamma}_\alpha\f$ and \f$\bar{\delta}_{\alpha\beta}\f$, i.e.
+    ///\f[
+    ///   \delta_{\alpha\beta}
+    ///   = \frac{\partial^2\Psi(\boldsymbol{\lambda})}{\partial\lambda_\alpha \partial\lambda_\beta}
+    ///   = \frac{\partial^2\Psi(\bar{\boldsymbol{\lambda}})}{\partial\bar{\lambda}_\eta\partial\bar{\lambda}_\epsilon}
+    ///     \, \frac{\partial \bar{\lambda}_\eta}{\partial\lambda_\alpha}
+    ///     \, \frac{\partial \bar{\lambda}_\epsilon}{\partial\lambda_\beta} 
+    ///   + \frac{\partial \Psi(\bar{\boldsymbol{\lambda}})}{\partial \bar{\lambda}_\eta}
+    ///     \, \frac{\partial^2 \bar{\lambda}_\eta}{\partial\lambda_\alpha\partial\lambda_\beta}
+    ///   = \bar{\delta}_{\eta\epsilon}
+    ///     \, \frac{\partial \bar{\lambda}_\eta}{\partial\lambda_\alpha}
+    ///     \, \frac{\partial \bar{\lambda}_\epsilon}{\partial\lambda_\beta} 
+    ///   + \bar{\gamma}_\eta 
+    ///     \, \frac{\partial^2 \bar{\lambda}_\eta}{\partial\lambda_\alpha\partial\lambda_\beta}
+    ///\f]
+    /// with
+    ///\f[
+    ///   \frac{\partial^2 \bar{\lambda}_\alpha}{\partial\lambda_\beta\partial\lambda_\eta}
+    ///   = -\frac{1}{3} J^{-1/3} \Big(
+    ///     1_{\alpha\beta} \lambda_\eta^{-1}
+    ///     - \frac{1}{3} \lambda_\alpha \lambda_\beta^{-1} \lambda_\eta^{-1}
+    ///     + 1_{\alpha\eta}\lambda_\beta^{-1}
+    ///     - \lambda_\alpha \lambda_\beta^{-2} 1_{\beta\eta}
+    ///   \Big)
+    ///\f]
+    ///
+    /// <h3>References</h3>
+    /// See Holzapfel, p 245-246, p 257-259, p 263-264
+    /// 
     /// \author bborn
     /// \date 08/09
     void ResponseStretches(
-      LINALG::Matrix<6,6>& cmat,  ///< material elasticty matrix
+      LINALG::Matrix<6,6>& cmat,  ///< material elasticity matrix
       LINALG::Matrix<6,1>& stress,  ///< 2nd Piola-Kirchhoff stress vector
       const LINALG::Matrix<6,1>& rcg,  ///< right Cauchy-Green strain vector
       const bool& havecoeffstrpr,  ///< true, if at least one summand is based on pr.stretches
