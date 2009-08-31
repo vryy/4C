@@ -115,7 +115,7 @@ void DRT::INPUT::ElementDefinition::SetupValidElementLines()
 //   SetupBeam3Lines();
 //   SetupConstrele2Lines();
 //   SetupConstrele3Lines();
-//   SetupPtet4Lines();
+  SetupPtet4Lines();
 //   SetupShell8Lines();
 //   SetupSolid3Lines();
 //   SetupSolidh20Lines();
