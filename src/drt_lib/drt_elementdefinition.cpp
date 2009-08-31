@@ -109,7 +109,7 @@ void DRT::INPUT::ElementDefinition::PrintElementLines(std::ostream& stream, std:
 /*----------------------------------------------------------------------*/
 void DRT::INPUT::ElementDefinition::SetupValidElementLines()
 {
-//   SetupArtLines();
+  SetupArtLines();
   SetupBeam2Lines();
   SetupBeam2rLines();
   SetupBeam3Lines();
@@ -181,6 +181,13 @@ void DRT::INPUT::ElementDefinition::SetupArtLines()
   defs["LINE2"]
     .AddIntVector("LINE2",2)
     .AddNamedInt("MAT")
+    .AddNamedInt("GP")
+    ;
+
+  defs["LIN2"]
+    .AddIntVector("LIN2",2)
+    .AddNamedInt("MAT")
+    .AddNamedInt("GP")
     ;
 }
 

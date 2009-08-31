@@ -190,7 +190,14 @@ public:
   /*!
   \brief Read input for this element
   */
-  bool ReadElement();
+  //bool ReadElement();
+
+  /*!
+  \brief Read input for this element
+  */
+  bool ReadElement(const std::string& eletype,
+                   const std::string& distype,
+                   DRT::INPUT::LineDefinition* linedef);
 
   //@}
 
@@ -416,7 +423,7 @@ public:
   /*!
   \brief Call Element init routines
 
-  The method performs all steps needed to init the artery elements. 
+  The method performs all steps needed to init the artery elements.
   */
   int Initialize(DRT::Discretization& dis);
 
