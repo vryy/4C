@@ -153,13 +153,13 @@ namespace ELASTIC
     };
 
     /// Answer if coefficients with respect to principal stretches are provided
-    virtual bool HaveCoefficientsOfStretchesModified()
+    virtual bool HaveCoefficientsStretchesModified()
     {
       return true;
     }
 
     /// Add coefficients with respect to principal stretches (or zeros)
-    virtual void AddCoefficientsOfStretchesModified(
+    virtual void AddCoefficientsStretchesModified(
       LINALG::Matrix<3,1>& gamma,  ///< see above, [gamma_1, gamma_2, gamma_3]
       LINALG::Matrix<6,1>& delta,  ///< see above, [delta_11, delta_22, delta_33, delta_12, delta_23, delta_31]
       const LINALG::Matrix<3,1>& modstr  ///< modified principal stretches, [lambda_1, lambda_2, lambda_3]

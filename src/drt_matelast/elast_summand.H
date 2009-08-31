@@ -236,10 +236,12 @@ namespace MAT
       /// \delta^{aniso}_2 = 4\frac {\partial^2\Psi}{\partial VI_{\boldsymbol C}^2}
       ///\f]
       ///\f[
-      /// \delta^{aniso}_3 = 4\frac {\partial^2\Psi}{\partial I_{\boldsymbol C}\partial IV_{\boldsymbol C}} + 4\frac {\partial^2\Psi}{\partial II_{\boldsymbol C}\partial IV_{\boldsymbol C}}I_{\boldsymbol C}
+      /// \delta^{aniso}_3 = 4\frac {\partial^2\Psi}{\partial I_{\boldsymbol C}\partial IV_{\boldsymbol C}}
+      ///                  + 4\frac {\partial^2\Psi}{\partial II_{\boldsymbol C}\partial IV_{\boldsymbol C}}I_{\boldsymbol C}
       ///\f]
       ///\f[
-      /// \delta^{aniso}_4 = 4\frac {\partial^2\Psi}{\partial I_{\boldsymbol C}\partial VI_{\boldsymbol C}} + 4\frac {\partial^2\Psi}{\partial II_{\boldsymbol C}\partial VI_{\boldsymbol C}}I_{\boldsymbol C}
+      /// \delta^{aniso}_4 = 4\frac {\partial^2\Psi}{\partial I_{\boldsymbol C}\partial VI_{\boldsymbol C}}
+      ///                  + 4\frac {\partial^2\Psi}{\partial II_{\boldsymbol C}\partial VI_{\boldsymbol C}}I_{\boldsymbol C}
       ///\f]
       ///\f[
       /// \delta^{aniso}_5 = -4\frac {\partial^2\Psi}{\partial II_{\boldsymbol C}\partial IV_{\boldsymbol C}}
@@ -257,7 +259,8 @@ namespace MAT
       /// \delta^{aniso}_9 = 4\frac {\partial^2\Psi}{\partial IV_{\boldsymbol C}\partial VI_{\boldsymbol C}}
       ///\f]
       ///\f[
-      /// \delta^{aniso}_{10} = 2\frac {\partial^2\Psi}{\partial I_{\boldsymbol C}\partial VIII_{\boldsymbol C}} + 2\frac {\partial^2\Psi}{\partial II_{\boldsymbol C}\partial VIII_{\boldsymbol C}}I_{\boldsymbol C}
+      /// \delta^{aniso}_{10} = 2\frac {\partial^2\Psi}{\partial I_{\boldsymbol C}\partial VIII_{\boldsymbol C}}
+      ///                     + 2\frac {\partial^2\Psi}{\partial II_{\boldsymbol C}\partial VIII_{\boldsymbol C}}I_{\boldsymbol C}
       ///\f]
       ///\f[
       /// \delta^{aniso}_{11} = -2\frac {\partial^2\Psi}{\partial II_{\boldsymbol C}\partial VIII_{\boldsymbol C}}
@@ -290,7 +293,7 @@ namespace MAT
       ) = 0;
 
       /// Answer if coefficients with respect to principal stretches are provided
-      virtual bool HaveCoefficientsOfStretchesPrincipal()
+      virtual bool HaveCoefficientsStretchesPrincipal()
       {
         return false;
       }
@@ -306,7 +309,11 @@ namespace MAT
       ///\f[
       /// \delta_{\alpha\beta} = \frac{\partial^2\Psi}{\partial\lambda_\alpha \partial\lambda_\beta}
       ///\f]
-      virtual void AddCoefficientsOfStretchesPrincipal(
+      /// <i>Note:</i> These parameters have \e nothing in common with Kronecker's delta.
+      ///
+      /// \date 08/09
+      /// \author bborn
+      virtual void AddCoefficientsStretchesPrincipal(
         LINALG::Matrix<3,1>& gamma,  ///< see above, [gamma_1, gamma_2, gamma_3]
         LINALG::Matrix<6,1>& delta,  ///< see above, [delta_11, delta_22, delta_33, delta_12, delta_23, delta_31]
         const LINALG::Matrix<3,1>& prstr  ///< principal stretches, [lambda_1, lambda_2, lambda_3]
@@ -316,26 +323,29 @@ namespace MAT
       }
 
       /// Answer if coefficients with respect to modified principal stretches are provided
-      virtual bool HaveCoefficientsOfStretchesModified()
+      virtual bool HaveCoefficientsStretchesModified()
       {
         return false;
       }
 
       /// Add coefficients with respect to modified principal stretches (or zeros)
       ///
-      /// The coefficients \f$\gamma_\alpha\f$ are based on \f$\alpha=1,2,3\f$
+      /// The coefficients \f$\bar{\gamma}_\alpha\f$ are based on \f$\alpha=1,2,3\f$
       ///\f[
-      /// \gamma_\alpha 
+      /// \bar{\gamma}_\alpha 
       /// = \frac{\partial \Psi}{\partial \bar{\lambda}_\alpha}
       ///\f]
       /// and \f$\bar{\lambda}_\alpha = J^{-1/3} \lambda_\alpha\f$.
       ///
-      /// The coefficients \f$\delta_{\alpha\beta}\f$ are based on \f$\alpha,\beta=1,2,3\f$
+      /// The coefficients \f$\bar{\delta}_{\alpha\beta}\f$ are based on \f$\alpha,\beta=1,2,3\f$
       ///\f[
-      /// \delta_{\alpha\beta}
+      /// \bar{\delta}_{\alpha\beta}
       /// = \frac{\partial^2\Psi}{\partial\bar{\lambda}_\alpha \partial\bar{\lambda}_\beta}
       ///\f]
-      virtual void AddCoefficientsOfStretchesModified(
+      ///
+      /// \date 08/09
+      /// \author bborn
+      virtual void AddCoefficientsStretchesModified(
         LINALG::Matrix<3,1>& gamma,  ///< see above, [gamma_1, gamma_2, gamma_3]
         LINALG::Matrix<6,1>& delta,  ///< see above, [delta_11, delta_22, delta_33, delta_12, delta_23, delta_31]
         const LINALG::Matrix<3,1>& modstr  ///< modified principal stretches, [lambda_1, lambda_2, lambda_3]

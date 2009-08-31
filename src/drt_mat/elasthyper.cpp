@@ -372,7 +372,7 @@ void MAT::ElastHyper::StretchesModified(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool MAT::ElastHyper::HaveCoefficientsOfStretchesPrincipal()
+bool MAT::ElastHyper::HaveCoefficientsStretchesPrincipal()
 {
   // set default
   bool havecoeff = false;
@@ -383,7 +383,7 @@ bool MAT::ElastHyper::HaveCoefficientsOfStretchesPrincipal()
     std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >::iterator p;
     for (p=pot.begin(); p!=pot.end(); ++p)
     {
-      havecoeff = havecoeff or p->second->HaveCoefficientsOfStretchesPrincipal();
+      havecoeff = havecoeff or p->second->HaveCoefficientsStretchesPrincipal();
     }
   }
 
@@ -393,7 +393,7 @@ bool MAT::ElastHyper::HaveCoefficientsOfStretchesPrincipal()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool MAT::ElastHyper::HaveCoefficientsOfStretchesModified()
+bool MAT::ElastHyper::HaveCoefficientsStretchesModified()
 {
   // set default
   bool havecoeff = false;
@@ -404,7 +404,7 @@ bool MAT::ElastHyper::HaveCoefficientsOfStretchesModified()
     std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >::iterator p;
     for (p=pot.begin(); p!=pot.end(); ++p)
     {
-      havecoeff = havecoeff or p->second->HaveCoefficientsOfStretchesModified();
+      havecoeff = havecoeff or p->second->HaveCoefficientsStretchesModified();
     }
   }
 
@@ -607,183 +607,11 @@ void MAT::ElastHyper::Evaluate(
 
   /*----------------------------------------------------------------------*/
   // coefficients in principal stretches
-  const bool havecoeffstrpr = HaveCoefficientsOfStretchesPrincipal();
-  const bool havecoeffstrmod = HaveCoefficientsOfStretchesModified();
-  if (havecoeffstrpr or havecoeffstrmod)
-  {
-    // get principal stretches and directions 
-    LINALG::Matrix<3,1> prstr;
-    LINALG::Matrix<3,3> prdir;
-    StretchesPrincipal(prstr,prdir,rcg);
-    // modified stretches
-    LINALG::Matrix<3,1> modstr;
-    StretchesModified(modstr,prstr);
-    // determinant of deformation gradient
-    const double detdefgrad = std::sqrt(prinv(2));
-
-    // get coefficients
-    LINALG::Matrix<3,1> gamma(true);
-    LINALG::Matrix<6,1> delta(true);
-    if (havecoeffstrpr) {
-      // loop map of associated potential summands
-      std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >& pot = params_->potsum_;
-      std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >::iterator p;
-      for (p=pot.begin(); p!=pot.end(); ++p)
-      {
-        p->second->AddCoefficientsOfStretchesPrincipal(gamma,delta,prstr);
-      } 
-    }
-
-    // get coefficients
-    LINALG::Matrix<3,1> modgamma(true);
-    LINALG::Matrix<6,1> moddelta(true);
-    if (havecoeffstrmod) {
-      // loop map of associated potential summands
-      std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >& pot = params_->potsum_;
-      std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >::iterator p;
-      for (p=pot.begin(); p!=pot.end(); ++p)
-      {
-        p->second->AddCoefficientsOfStretchesModified(modgamma,moddelta,modstr);
-      } 
-    }
-
-    // principal 2nd Piola--Kirchhoff stress tensor, cf [1] Eq (6.47)
-    LINALG::Matrix<3,1> prsts(true);
-    if (havecoeffstrpr) {
-      for (int al=0; al<3; ++al)
-        prsts(al) = gamma(al)/prstr(al);
-    }
-
-    // principal isochoric 2nd Piola--Kirchhoff stress tensor, cf [1] Eq (6.144)
-    LINALG::Matrix<3,1> modsts(true);
-    double modpre = 0.0;
-    if (havecoeffstrmod) {
-      for (int be=0; be<3; ++be)
-        modpre += modstr(be)*modgamma(be);
-      for (int al=0; al<3; ++al)
-        modsts(al) = (modstr(al)*modgamma(al)-modpre/3.0)/(prstr(al)*prstr(al));
-    }
-
-    // add 2nd Piola--Kirchhoff stress tensor, Holzapfel [1] Eq (6.50)
-    for (int al=0; al<3; ++al)
-    {
-      // PK2 principal stresses
-      const double sts_al = prsts(al) + modsts(al);
-      // PK2 tensor in Voigt notation
-      stress(0) += sts_al*prdir(0,al)*prdir(0,al);  // S^11
-      stress(1) += sts_al*prdir(1,al)*prdir(1,al);  // S^22
-      stress(2) += sts_al*prdir(2,al)*prdir(2,al);  // S^33
-      stress(3) += sts_al*prdir(0,al)*prdir(1,al);  // S^12
-      stress(4) += sts_al*prdir(1,al)*prdir(2,al);  // S^23
-      stress(5) += sts_al*prdir(2,al)*prdir(0,al);  // S^31
-    }
-
-    // integration factor prfact_{al be}
-    LINALG::Matrix<6,1> prfact1(true);
-    LINALG::Matrix<6,1> prfact2(true);
-    if (havecoeffstrpr) {
-      for (int albe=0; albe<6; ++albe) {
-        const int al = VOIGT6ROW_[albe];
-        const int be = VOIGT6COL_[albe];
-        double prfact1_albe = delta(albe)/(prstr(al)*prstr(be));
-        if (albe<3) prfact1_albe -= gamma(al)/(prstr(be)*prstr(al)*prstr(al));
-        prfact1(albe) = prfact1_albe;
-        if (al != be) {
-          if (fabs(prstr(al)-prstr(be)) < EPS6) 
-            prfact2(albe) = (prfact1(be) - prfact1(albe))/2.0;
-          else
-            prfact2(albe) = (prsts(be)-prsts(al))/(prstr(be)*prstr(be)-prstr(al)*prstr(al));
-        }
-      }
-    }
-
-    // integration factor modfact1_{al be} [1] Eq (6.197)
-    LINALG::Matrix<6,1> modfact1(true);
-    LINALG::Matrix<6,1> modfact2(true);
-    if (havecoeffstrmod) {
-      LINALG::Matrix<6,1> modbypr(false);
-      for (int albe=0; albe<6; ++albe) {
-        const int al = VOIGT6ROW_[albe];
-        const int be = VOIGT6COL_[albe];
-        modbypr(albe) = -std::pow(detdefgrad,-1.0/3.0)*modstr(al)/modstr(be);
-        if (al==be) modbypr(albe) += std::pow(detdefgrad,-1.0/3.0);
-      }
-      LINALG::Matrix<6,1> prbymod(false);
-      {
-        const double det 
-          = -modbypr(3)*(modbypr(2)*modbypr(3)-modbypr(4)*modbypr(5))
-          + modbypr(5)*(modbypr(3)*modbypr(4)-modbypr(1)*modbypr(5))
-          + modbypr(0)*(modbypr(1)*modbypr(2)-modbypr(4)*modbypr(4));
-        prbymod(0) = modbypr(1)*modbypr(2)-modbypr(4)*modbypr(4);
-        prbymod(1) = modbypr(0)*modbypr(2)-modbypr(5)*modbypr(5);
-        prbymod(2) = modbypr(0)*modbypr(1)-modbypr(3)*modbypr(3);
-        prbymod(3) = modbypr(4)*modbypr(5)-modbypr(2)*modbypr(3);
-        prbymod(4) = modbypr(3)*modbypr(5)-modbypr(0)*modbypr(4);
-        prbymod(5) = modbypr(3)*modbypr(4)-modbypr(1)*modbypr(5);
-        prbymod.Scale(1.0/det);
-      }
-      LINALG::Matrix<6,1> modfact3(true);
-      for (int albe=0; albe<6; ++albe) {
-        const int al = VOIGT6ROW_[albe];
-        const int be = VOIGT6COL_[albe];
-        modfact3(albe)
-          = (modstr(al)*modgamma(al) - modpre/3.0)*(-2.0/std::pow(modstr(al),3.0))*prbymod(albe)
-          + modstr(al)*moddelta(albe)/(prstr(al)*prstr(al));
-        if (al==be) modfact3(albe) += modgamma(al)/(prstr(al)*prstr(al));
-        double term_bega = 0.0;
-        for (int ga=0; ga<3; ++ga) {
-          const int bega = VOIGT3X3SYM_[3*be+ga];
-          term_bega += modstr(ga)*moddelta(bega);
-          if (ga==be) term_bega += modgamma(ga);
-        }
-        modfact3(albe) -= term_bega/(3.0*prstr(al)*prstr(al));
-      }
-      for (int albe=0; albe<6; ++albe) {
-        const int al = VOIGT6ROW_[albe];
-        const int be = VOIGT6COL_[albe];
-        double modfact1_albe = 0.0;
-        for (int ga=0; ga<3; ++ga) {
-          const int alga = VOIGT3X3SYM_[3*al+ga];
-          if (ga==be) modfact1_albe += modfact3(alga);
-          modfact1_albe -= modfact3(alga)*modstr(ga)/(3.0*modstr(be));
-        }
-        modfact1(albe) = modfact1_albe*std::pow(detdefgrad,-1.0/3.0)/prstr(be);
-        if (al != be) {
-          if (fabs(prstr(al)-prstr(be)) < EPS6) 
-            modfact2(albe) = (modfact1(be) - modfact1(albe))/2.0;
-          else
-            modfact2(albe) = (modsts(be)-modsts(al))/(prstr(be)*prstr(be)-prstr(al)*prstr(al));
-        }
-      }
-    }
-
-    // add elasticity 4-tensor, cf Holzapfel [1] Eq (6.180),(6.196)
-    for (int kl=0; kl<6; ++kl) {
-      const int k = VOIGT6ROW_[kl];
-      const int l = VOIGT6COL_[kl];
-      for (int ij=0; ij<6; ++ij) {
-        const int i = VOIGT6ROW_[ij];
-        const int j = VOIGT6COL_[ij];
-        double c_ijkl = 0.0;
-        for (int albe=0; albe<6; ++albe) {
-          const int al = VOIGT6ROW_[albe];
-          const int be = VOIGT6COL_[albe];
-          const double fact1 = prfact1(albe)+modfact1(albe);
-          c_ijkl += fact1*prdir(i,al)*prdir(j,al)*prdir(k,be)*prdir(l,be);
-          if (albe>=3) { // al!=be
-            c_ijkl += fact1*prdir(i,be)*prdir(j,be)*prdir(k,al)*prdir(l,al);
-            const double fact2 = prfact2(albe)+modfact2(albe);
-            c_ijkl += fact2*prdir(i,al)*prdir(j,be)*prdir(k,al)*prdir(l,be)
-                    + fact2*prdir(i,al)*prdir(j,be)*prdir(k,be)*prdir(l,al)
-                    + fact2*prdir(i,be)*prdir(j,al)*prdir(k,be)*prdir(l,al)
-                    + fact2*prdir(i,be)*prdir(j,al)*prdir(k,al)*prdir(l,be);
-          }
-        }
-        cmat(ij,kl) += c_ijkl;
-      }
-    }
-
-  }  //if (havecoeffstrpr or havecoeffstrmod)
+  const bool havecoeffstrpr = HaveCoefficientsStretchesPrincipal();
+  const bool havecoeffstrmod = HaveCoefficientsStretchesModified();
+  if (havecoeffstrpr or havecoeffstrmod) {
+    EvaluateStressElasticityDueToStretches(cmat,stress,rcg,havecoeffstrpr,havecoeffstrmod);
+  }
 
   /*----------------------------------------------------------------------*/
   //Do all the anisotropic stuff!
@@ -875,6 +703,165 @@ void MAT::ElastHyper::Evaluate(
 
   }
 
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ElastHyper::EvaluateStressElasticityDueToStretches(
+  LINALG::Matrix<6,6>& cmat,
+  LINALG::Matrix<6,1>& stress,
+  const LINALG::Matrix<6,1>& rcg,
+  const bool& havecoeffstrpr,
+  const bool& havecoeffstrmod
+  )
+{
+  // get principal stretches and directions 
+  LINALG::Matrix<3,1> prstr;
+  LINALG::Matrix<3,3> prdir;
+  StretchesPrincipal(prstr,prdir,rcg);
+  // modified stretches
+  LINALG::Matrix<3,1> modstr;
+  StretchesModified(modstr,prstr);
+  // determinant of deformation gradient
+  const double detdefgrad = prstr(0)*prstr(1)*prstr(2);
+
+  // get coefficients
+  LINALG::Matrix<3,1> gamma(true);
+  LINALG::Matrix<6,1> delta(true);
+  if (havecoeffstrpr) {
+    // loop map of associated potential summands
+    std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >& pot = params_->potsum_;
+    std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >::iterator p;
+    for (p=pot.begin(); p!=pot.end(); ++p) {
+      p->second->AddCoefficientsStretchesPrincipal(gamma,delta,prstr);
+    }
+  }
+  if (havecoeffstrmod) {
+    // reciprocal of cubic root of determinant of deformation gradient (convenience)
+    const double detdefgrad13 = std::pow(detdefgrad,-1.0/3.0);
+    // retrieve coefficients with respect to modified principal stretches
+    LINALG::Matrix<3,1> modgamma(true);
+    LINALG::Matrix<6,1> moddelta(true);
+    {
+      // loop map of associated potential summands
+      std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >& pot = params_->potsum_;
+      std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >::iterator p;
+      for (p=pot.begin(); p!=pot.end(); ++p) {
+        p->second->AddCoefficientsStretchesModified(modgamma,moddelta,modstr);
+      }
+    }
+    // convert modified coefficients to oridinary counterparts
+    //
+    // derivatives of modified pr. stretches WRT pr. stretches
+    LINALG::Matrix<3,3> modbypr(false);
+    for (int al=0; al<3; ++al) {
+      for (int be=0; be<3; ++be) {
+        modbypr(al,be) = -modstr(al)/modstr(be);
+      }
+      modbypr(al,al) += 3.0;
+    }
+    modbypr.Scale(detdefgrad13/3.0);
+    // determine unmodified coefficients gamma and add them
+    gamma.MultiplyTN(1.0,modbypr,modgamma,1.0);
+    // determine unmodified coefficients delta and add them
+    // 
+    // rewrite mod.coeff. as 2-tensor
+    LINALG::Matrix<3,3> moddeltat(false);
+    moddeltat(0,0) = moddelta(0);
+    moddeltat(1,1) = moddelta(1);
+    moddeltat(2,2) = moddelta(2);
+    moddeltat(0,1) = moddeltat(1,0) = moddelta(3);
+    moddeltat(1,2) = moddeltat(2,1) = moddelta(4);
+    moddeltat(2,0) = moddeltat(0,2) = moddelta(5);
+    // Psi_{,barlam barlam} barlam_{,lam} barlam_{,lam}
+    LINALG::Matrix<3,3> aux(false);
+    aux.MultiplyTN(modbypr,moddeltat);
+    LINALG::Matrix<3,3> deltat(false);
+    deltat.MultiplyNN(aux,modbypr);
+    // Psi_{,barlam} barlam_{,lam lam}
+    for (int be=0; be<3; ++be) {
+      for (int ga=0; ga<3; ++ga) {
+        double deltat_bega = 0.0;
+        for (int al=0; al<3; ++al) {
+          deltat_bega += -modgamma(al)*modbypr(al,be)/(3.0*prstr(ga));
+          if (ga==al)
+            deltat_bega += -modgamma(al)*detdefgrad13/(3.0*prstr(be));
+          if (be==ga)
+            deltat_bega += modgamma(al)*detdefgrad13*prstr(al)/(3.0*prstr(be)*prstr(be));
+        }
+        deltat(be,ga) += deltat_bega;
+      }
+    }
+    // add to delta
+    // Psi_{lam lam} = Psi_{,barlam barlam} barlam_{,lam} barlam_{,lam}
+    //               + Psi_{,barlam} barlam_{,lam lam}
+    delta(0) += deltat(0,0);
+    delta(1) += deltat(1,1);
+    delta(2) += deltat(2,2);
+    delta(3) += deltat(0,1);
+    delta(4) += deltat(1,2);
+    delta(5) += deltat(2,0);
+  }
+
+  // principal 2nd Piola--Kirchhoff stress tensor, cf [1] Eq (6.47)
+  LINALG::Matrix<3,1> prsts(true);
+  for (int al=0; al<3; ++al) {
+    // PK2 principal stresses
+    prsts(al) = gamma(al)/prstr(al);  
+    // PK2 tensor in Voigt notation
+    stress(0) += prsts(al)*prdir(0,al)*prdir(0,al);  // S^11
+    stress(1) += prsts(al)*prdir(1,al)*prdir(1,al);  // S^22
+    stress(2) += prsts(al)*prdir(2,al)*prdir(2,al);  // S^33
+    stress(3) += prsts(al)*prdir(0,al)*prdir(1,al);  // S^12
+    stress(4) += prsts(al)*prdir(1,al)*prdir(2,al);  // S^23
+    stress(5) += prsts(al)*prdir(2,al)*prdir(0,al);  // S^31
+  }
+
+  // integration factor prfact_{al be}
+  LINALG::Matrix<6,1> prfact1(true);
+  LINALG::Matrix<6,1> prfact2(true);
+  for (int albe=0; albe<6; ++albe) {
+    const int al = VOIGT6ROW_[albe];
+    const int be = VOIGT6COL_[albe];
+    double prfact1_albe = delta(albe)/(prstr(al)*prstr(be));
+    if (albe<3) prfact1_albe -= gamma(al)/(prstr(be)*prstr(al)*prstr(al));
+    prfact1(albe) = prfact1_albe;
+    if (al != be) {
+      if (fabs(prstr(al)-prstr(be)) < EPS6) 
+        prfact2(albe) = (prfact1(be) - prfact1(albe))/2.0;
+      else
+        prfact2(albe) = (prsts(be)-prsts(al))/(prstr(be)*prstr(be)-prstr(al)*prstr(al));
+    }
+  }
+
+  // add elasticity 4-tensor, cf Holzapfel [1] Eq (6.180),(6.196)
+  for (int kl=0; kl<6; ++kl) {
+    const int k = VOIGT6ROW_[kl];
+    const int l = VOIGT6COL_[kl];
+    for (int ij=0; ij<6; ++ij) {
+      const int i = VOIGT6ROW_[ij];
+      const int j = VOIGT6COL_[ij];
+      double c_ijkl = 0.0;
+      for (int albe=0; albe<6; ++albe) {
+        const int al = VOIGT6ROW_[albe];
+        const int be = VOIGT6COL_[albe];
+        const double fact1 = prfact1(albe);
+        c_ijkl += fact1*prdir(i,al)*prdir(j,al)*prdir(k,be)*prdir(l,be);
+        if (albe>=3) { // al!=be
+          c_ijkl += fact1*prdir(i,be)*prdir(j,be)*prdir(k,al)*prdir(l,al);
+          const double fact2 = prfact2(albe);
+          c_ijkl += fact2*prdir(i,al)*prdir(j,be)*prdir(k,al)*prdir(l,be)
+                  + fact2*prdir(i,al)*prdir(j,be)*prdir(k,be)*prdir(l,al)
+                  + fact2*prdir(i,be)*prdir(j,al)*prdir(k,be)*prdir(l,al)
+                  + fact2*prdir(i,be)*prdir(j,al)*prdir(k,al)*prdir(l,be);
+        }
+      }
+      cmat(ij,kl) += c_ijkl;
+    }
+  }
+
+  // ready
+  return;
 }
 
 #endif

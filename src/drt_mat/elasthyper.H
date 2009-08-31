@@ -228,10 +228,24 @@ namespace MAT
       );
 
     /// determine if at least one summand uses principal stretches
-    bool HaveCoefficientsOfStretchesPrincipal();
+    bool HaveCoefficientsStretchesPrincipal();
 
     /// determine if at least one summand uses modified principal stretches
-    bool HaveCoefficientsOfStretchesModified();
+    bool HaveCoefficientsStretchesModified();
+
+    /// determine PK2 stress response and material elasticity tensor
+    /// due to energy densities (MAT::ELAST::Summand) described
+    /// in (modified) principal stretches
+    ///
+    /// \author bborn
+    /// \date 08/09
+    void EvaluateStressElasticityDueToStretches(
+      LINALG::Matrix<6,6>& cmat,  ///< material elasticty matrix
+      LINALG::Matrix<6,1>& stress,  ///< 2nd Piola-Kirchhoff stress vector
+      const LINALG::Matrix<6,1>& rcg,  ///< right Cauchy-Green strain vector
+      const bool& havecoeffstrpr,  ///< true, if at least one summand is based on pr.stretches
+      const bool& havecoeffstrmod  ///< true, if at least one summand is based on mod.pr.stretches
+      );
 
     /// my material parameters
     MAT::PAR::ElastHyper* params_;
