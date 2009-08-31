@@ -20,8 +20,24 @@ Maintainer: Lena Wiechert
 #endif
 
 #include "so_hex8p1j1.H"
+#include "../drt_lib/drt_linedefinition.H"
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool DRT::ELEMENTS::So_Hex8P1J1::ReadElement(const std::string& eletype,
+                                             const std::string& distype,
+                                             DRT::INPUT::LineDefinition* linedef)
+{
+  // read number of material model
+  int material = 0;
+  linedef->ExtractInt("MAT",material);
+  SetMaterial(material);
+
+  return true;
+}
+
+#if 0
 /*----------------------------------------------------------------------*
  |  read element input (public)                                 lw 12/08|
  *----------------------------------------------------------------------*/
@@ -58,7 +74,7 @@ bool DRT::ELEMENTS::So_Hex8P1J1::ReadElement()
 
   return true;
 } // So_Hex8P1J1::ReadElement()
-
+#endif
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOLID3

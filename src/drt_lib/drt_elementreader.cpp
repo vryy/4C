@@ -227,15 +227,24 @@ void ElementReader::Partition()
           if (linedef!=NULL)
           {
             if (not linedef->Read(t))
+            {
+              std::cout << "\n"
+                        << elenumber << " "
+                        << eletype << " "
+                        << distype << " ";
+              linedef->Print(std::cout);
+              std::cout << "\n";
+              std::cout << line << "\n";
               dserror("failed to read element %d %s %s",elenumber,eletype.c_str(),distype.c_str());
-            //linedef->Print(std::cout);
-            //std::cout << "\n";
+            }
 
             ele->SetNodeIds(distype,linedef);
             ele->ReadElement(eletype,distype,linedef);
           }
           else
           {
+            dserror("old element input system should not be used anymore");
+
             // Set the current row to the empty slot after the file rows
             // and store the current line. This way the elements can use
             // the normal fr* functions to read the line.

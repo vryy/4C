@@ -18,6 +18,7 @@ Maintainer: Burkhard Bornemann
 #include "../drt_matelast/elast_summand.H"
 
 #include "../drt_lib/linalg_utils.H"
+#include "../drt_lib/drt_linedefinition.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -197,24 +198,25 @@ double MAT::ElastHyper::ShearMod() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::Setup()
+void MAT::ElastHyper::Setup(DRT::INPUT::LineDefinition* linedef)
 {
   anisotropic_ = true;
   // fibers aligned in local element cosy with gamma_i around circumferential direction
-  vector<double> rad(3);
-  vector<double> axi(3);
-  vector<double> cir(3);
-  int ierr=0;
-  // read local (cylindrical) cosy-directions at current element
-  frdouble_n("RAD",&rad[0],3,&ierr);
-  frdouble_n("AXI",&axi[0],3,&ierr);
-  frdouble_n("CIR",&cir[0],3,&ierr);
-  if (ierr!=1)
+  vector<double> rad;
+  vector<double> axi;
+  vector<double> cir;
+  if (not linedef->HaveNamed("RAD") or
+      not linedef->HaveNamed("AXI") or
+      not linedef->HaveNamed("CIR"))
   {
     //dserror("Reading of element local cosy failed");
     anisotropic_=false;
     return;
   }
+  // read local (cylindrical) cosy-directions at current element
+  linedef->ExtractDoubleVector("RAD",rad);
+  linedef->ExtractDoubleVector("AXI",axi);
+  linedef->ExtractDoubleVector("CIR",cir);
   Epetra_SerialDenseMatrix locsys(3,3);
   // basis is local cosy with third vec e3 = circumferential dir and e2 = axial dir
   double radnorm=0.; double axinorm=0.; double cirnorm=0.;
@@ -346,7 +348,7 @@ void MAT::ElastHyper::StretchesPrincipal(
   // eigenvalue decomposition
   LINALG::Matrix<3,3> prstr2;  // squared principal stretches
   LINALG::SYEV(rcgt,prstr2,prdir);
-  
+
   // THE principal stretches
   for (int al=0; al<3; ++al) prstr(al) = std::sqrt(prstr2(al,al));
 
@@ -715,7 +717,7 @@ void MAT::ElastHyper::ResponseStretches(
   const bool& havecoeffstrmod
   )
 {
-  // get principal stretches and directions 
+  // get principal stretches and directions
   LINALG::Matrix<3,1> prstr;
   LINALG::Matrix<3,3> prdir;
   StretchesPrincipal(prstr,prdir,rcg);
@@ -764,7 +766,7 @@ void MAT::ElastHyper::ResponseStretches(
     // determine unmodified coefficients gamma and add them
     gamma.MultiplyTN(1.0,modbypr,modgamma,1.0);
     // determine unmodified coefficients delta and add them
-    // 
+    //
     // rewrite mod.coeff. as 2-tensor
     LINALG::Matrix<3,3> moddeltat(false);
     moddeltat(0,0) = moddelta(0);
@@ -807,7 +809,7 @@ void MAT::ElastHyper::ResponseStretches(
   LINALG::Matrix<3,1> prsts(true);
   for (int al=0; al<3; ++al) {
     // PK2 principal stresses
-    prsts(al) = gamma(al)/prstr(al);  
+    prsts(al) = gamma(al)/prstr(al);
     // PK2 tensor in Voigt notation
     stress(0) += prsts(al)*prdir(0,al)*prdir(0,al);  // S^11
     stress(1) += prsts(al)*prdir(1,al)*prdir(1,al);  // S^22
@@ -827,7 +829,7 @@ void MAT::ElastHyper::ResponseStretches(
     if (albe<3) prfact1_albe -= gamma(al)/(prstr(be)*prstr(al)*prstr(al));
     prfact1(albe) = prfact1_albe;
     if (al != be) {
-      if (fabs(prstr(al)-prstr(be)) < EPS6) 
+      if (fabs(prstr(al)-prstr(be)) < EPS6)
         prfact2(albe) = (prfact1(be) - prfact1(albe))/2.0;
       else
         prfact2(albe) = (prsts(be)-prsts(al))/(prstr(be)*prstr(be)-prstr(al)*prstr(al));

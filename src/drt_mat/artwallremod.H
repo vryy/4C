@@ -163,7 +163,7 @@ namespace MAT
       \param eleid (in) : current eleid, used to init random variables
     */
 
-    void Setup(const int numgp, const int eleid);
+    void Setup(const int numgp, const int eleid, DRT::INPUT::LineDefinition* linedef);
 
     /*!
       \brief Remodeling driver

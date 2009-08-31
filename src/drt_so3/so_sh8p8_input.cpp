@@ -31,7 +31,187 @@ Maintainer: Burkhard Bornemann
 #include "../drt_mat/visconeohooke.H"
 #include "../drt_mat/elasthyper.H"
 #include "../drt_mat/aaaraghavanvorp_damage.H"
+#include "../drt_lib/drt_linedefinition.H"
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool DRT::ELEMENTS::So_sh8p8::ReadElement(const std::string& eletype,
+                                          const std::string& distype,
+                                          DRT::INPUT::LineDefinition* linedef)
+{
+  // read number of material model
+  int material = 0;
+  linedef->ExtractInt("MAT",material);
+  SetMaterial(material);
+
+  // special element-dependent input of material parameters
+  switch (Material()->MaterialType())
+  {
+  case INPAR::MAT::m_artwallremod:
+  {
+    MAT::ArtWallRemod* remo = static_cast <MAT::ArtWallRemod*>(Material().get());
+    remo->Setup(NUMGPT_SOH8, this->Id(), linedef);
+    break;
+  }
+  case INPAR::MAT::m_anisotropic_balzani:
+  {
+    MAT::AnisotropicBalzani* balz = static_cast <MAT::AnisotropicBalzani*>(Material().get());
+    balz->Setup(linedef);
+    break;
+  }
+  case INPAR::MAT::m_viscoanisotropic:
+  {
+    MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(Material().get());
+    visco->Setup(NUMGPT_SOH8, linedef);
+    break;
+  }
+  case INPAR::MAT::m_visconeohooke:
+  {
+    MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(Material().get());
+    visco->Setup(NUMGPT_SOH8);
+    break;
+  }
+  case INPAR::MAT::m_elasthyper:
+  {
+    MAT::ElastHyper* elahy = static_cast <MAT::ElastHyper*>(Material().get());
+    elahy->Setup(linedef);
+    break;
+  }
+  case INPAR::MAT::m_aaaraghavanvorp_damage:
+  {
+    double strength = 0.0; // section for extracting the element strength
+    linedef->ExtractDouble("STRENGTH",strength);
+    MAT::AAAraghavanvorp_damage* aaadamage = static_cast <MAT::AAAraghavanvorp_damage*>(Material().get());
+    aaadamage->Setup(NUMGPT_SOH8,strength);
+    //aaadamage->Setup(NUMGPT_SOH8);
+  }
+  default:
+    // Do nothing. Simple material.
+    break;
+  }
+
+  // read possible gaussian points, obsolete for computation
+  std::vector<int> ngp;
+  linedef->ExtractIntVector("GP",ngp);
+  for (int i=0; i<3; ++i)
+    if (ngp[i]!=2)
+      dserror("Only 2 GP for So_SH8P8");
+
+  std::string buffer;
+  linedef->ExtractString("KINEM",buffer);
+
+  // geometrically linear
+  if      (buffer=="Geolin")    kintype_ = soh8_geolin;
+  // geometrically non-linear with Total Lagrangean approach
+  else if (buffer=="Totlag")    kintype_ = soh8_totlag;
+  // geometrically non-linear with Updated Lagrangean approach
+  else if (buffer=="Updlag")
+  {
+    kintype_ = soh8_updlag;
+    dserror("Updated Lagrange for SO_SH8P8 is not implemented!");
+  }
+  else dserror("Reading of SO_SH8P8 element failed");
+
+  // read EAS technology flag
+  linedef->ExtractString("EAS",buffer);
+
+  if (buffer=="sosh8")
+  {
+    eastype_ = soh8_eassosh8;
+    neas_ = NUMEAS_SOSH8_;
+  }
+  else if (buffer=="atype")
+  {
+    eastype_ = soh8_easa;
+    neas_ = NUMEAS_A_;
+  }
+  else if (buffer=="None")
+    eastype_ = soh8_easnone;
+  else if (buffer=="none")
+    eastype_ = soh8_easnone;
+  else
+    dserror("Reading of SO_SH8P8 EAS type failed");
+
+  if (eastype_ != soh8_easnone)
+  {
+    EasInit();
+  }
+
+  linedef->ExtractString("THICKDIR",buffer);
+  nodes_rearranged_ = false;
+
+  // global X
+  if      (buffer=="xdir")    thickdir_ = globx;
+  // global Y
+  else if (buffer=="ydir")    thickdir_ = globy;
+  // global Z
+  else if (buffer=="zdir")    thickdir_ = globz;
+  // find automatically through Jacobian of Xrefe
+  else if (buffer=="auto")    thickdir_ = autoj;
+  // local r
+  else if (buffer=="rdir")    thickdir_ = enfor;
+  // local s
+  else if (buffer=="sdir")    thickdir_ = enfos;
+  // local t
+  else if (buffer=="tdir")    thickdir_ = enfot;
+  // no noderearrangement
+  else if (buffer=="none")
+  {
+    thickdir_ = none;
+    nodes_rearranged_ = true;
+  }
+  else dserror("Reading of SO_SH8P8 thickness direction failed");
+
+  linedef->ExtractString("STAB",buffer);
+  if (buffer=="Aff")
+    stab_ = stab_affine;
+  else if (buffer=="NonAff")
+    stab_ = stab_nonaffine;
+  else if (buffer=="SpatAff")
+    stab_ = stab_spatialaffine;
+  else if (buffer=="Spat")
+    stab_ = stab_spatial;
+  else if (buffer=="PureDisp")
+    stab_ = stab_puredisp;
+  else
+    dserror("Reading of SO_SH8P8 stabilisation failed");
+
+  linedef->ExtractString("ANS",buffer);
+  if (buffer=="Later")
+    ans_ = ans_lateral;
+  else if (buffer=="OnSpot")
+    ans_ = ans_onspot;
+  else if (buffer=="None")
+    ans_ = ans_none;
+  else
+    dserror("Reading of SO_SH8P8 ANS type failed");
+
+  // Linearization
+  linedef->ExtractString("LIN",buffer);
+  if (buffer=="One")
+    lin_ = lin_one;
+  else if (buffer=="Half")
+    lin_ = lin_half;
+  else if (buffer=="Sixth")
+    lin_ = lin_sixth;
+  else
+    dserror("Reading of SO_SH8P8 LIN type failed");
+
+  // Isochoric way
+  linedef->ExtractString("ISO",buffer);
+  if (buffer=="Mat")
+    iso_ = iso_material;
+  else if (buffer=="Enf")
+    iso_ = iso_enforced;
+  else
+    dserror("Reading of SO_SH8P8 ISO type failed");
+
+  return true;
+}
+
+
+#if 0
 /*----------------------------------------------------------------------*
  |  read element input (public)                                         |
  *----------------------------------------------------------------------*/
@@ -83,7 +263,7 @@ bool DRT::ELEMENTS::So_sh8p8::ReadElement()
     elahy->Setup();
   }
   else if (Material()->MaterialType() == INPAR::MAT::m_aaaraghavanvorp_damage){
-    double strength = 0.0; // section for extracting the element strength 
+    double strength = 0.0; // section for extracting the element strength
     frdouble("STRENGTH",&strength,&ierr);
     if (ierr!=1) dserror("Reading of SO_SH8 element strength failed");
     MAT::AAAraghavanvorp_damage* aaadamage = static_cast <MAT::AAAraghavanvorp_damage*>(Material().get());
@@ -241,7 +421,7 @@ bool DRT::ELEMENTS::So_sh8p8::ReadElement()
 
   return true;
 } // So_sh8p8::ReadElement()
-
+#endif
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOLID3

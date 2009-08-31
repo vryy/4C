@@ -115,7 +115,8 @@ namespace MAT
     /// Setup and Initialize internal stress variables
     void Setup
     (
-      const int numgp  ///< number of Gauss points
+      const int numgp,  ///< number of Gauss points
+      DRT::INPUT::LineDefinition* linedef
     );
 
     /// Setup and Initialize internal stress variables and align fibers based on a given vector

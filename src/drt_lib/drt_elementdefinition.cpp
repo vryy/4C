@@ -117,17 +117,17 @@ void DRT::INPUT::ElementDefinition::SetupValidElementLines()
 //   SetupConstrele3Lines();
   SetupPtet4Lines();
   SetupShell8Lines();
-//   SetupSolid3Lines();
-//   SetupSolidh20Lines();
-//   SetupSolidh27Lines();
-//   SetupSolidh8Lines();
-//   SetupSolidh8p1j1Lines();
-//   SetupSolidsh8Lines();
-//   SetupSolidsh8p8Lines();
-//   SetupSolidshw6Lines();
-//   SetupSolidt10Lines();
-//   SetupSolidt4Lines();
-//   SetupSolidw6Lines();
+  SetupSolid3Lines();
+  SetupSolidh20Lines();
+  SetupSolidh27Lines();
+  SetupSolidh8Lines();
+  SetupSolidh8p1j1Lines();
+  SetupSolidsh8Lines();
+  SetupSolidsh8p8Lines();
+  SetupSolidshw6Lines();
+  SetupSolidt10Lines();
+  SetupSolidt4Lines();
+  SetupSolidw6Lines();
   SetupTorsion2Lines();
   SetupTorsion3Lines();
   SetupTruss2Lines();
@@ -593,9 +593,12 @@ void DRT::INPUT::ElementDefinition::SetupSolidh20Lines()
   defs["HEX20"]
     .AddIntVector("HEX20",20)
     .AddNamedInt("MAT")
-    .AddNamedDouble("STRENGTH")
     .AddNamedIntVector("GP",3)
     .AddNamedString("KINEM")
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
+    .AddOptionalNamedDouble("STRENGTH")
     ;
 }
 
@@ -609,9 +612,12 @@ void DRT::INPUT::ElementDefinition::SetupSolidh27Lines()
   defs["HEX27"]
     .AddIntVector("HEX27",27)
     .AddNamedInt("MAT")
-    .AddNamedDouble("STRENGTH")
     .AddNamedIntVector("GP",3)
     .AddNamedString("KINEM")
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
+    .AddOptionalNamedDouble("STRENGTH")
     ;
 }
 
@@ -628,10 +634,10 @@ void DRT::INPUT::ElementDefinition::SetupSolidh8Lines()
     .AddNamedIntVector("GP",3)
     .AddNamedString("KINEM")
     .AddNamedString("EAS")
-    .AddNamedDoubleVector("RAD",3)
-    .AddNamedDoubleVector("AXI",3)
-    .AddNamedDoubleVector("CIR",3)
-    .AddNamedDouble("STRENGTH")
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
+    .AddOptionalNamedDouble("STRENGTH")
     ;
 }
 
@@ -662,10 +668,10 @@ void DRT::INPUT::ElementDefinition::SetupSolidsh8Lines()
     .AddNamedString("KINEM")
     .AddNamedString("EAS")
     .AddNamedString("THICKDIR")
-    .AddNamedDoubleVector("RAD",3)
-    .AddNamedDoubleVector("AXI",3)
-    .AddNamedDoubleVector("CIR",3)
-    .AddNamedDouble("STRENGTH")
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
+    .AddOptionalNamedDouble("STRENGTH")
     ;
 }
 
@@ -681,16 +687,16 @@ void DRT::INPUT::ElementDefinition::SetupSolidsh8p8Lines()
     .AddNamedInt("MAT")
     .AddNamedIntVector("GP",3)
     .AddNamedString("KINEM")
-    .AddNamedString("THICKDIR")
     .AddNamedString("STAB")
     .AddNamedString("ANS")
-    .AddNamedString("EAS")
     .AddNamedString("LIN")
+    .AddNamedString("THICKDIR")
+    .AddNamedString("EAS")
     .AddNamedString("ISO")
-    .AddNamedDoubleVector("RAD",3)
-    .AddNamedDoubleVector("AXI",3)
-    .AddNamedDoubleVector("CIR",3)
-    .AddNamedDouble("STRENGTH")
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
+    .AddOptionalNamedDouble("STRENGTH")
     ;
 }
 
@@ -706,10 +712,10 @@ void DRT::INPUT::ElementDefinition::SetupSolidshw6Lines()
     .AddNamedInt("MAT")
     .AddNamedString("KINEM")
     .AddNamedString("EAS")
-    .AddNamedString("OPTORDER")
-    .AddNamedDoubleVector("RAD",3)
-    .AddNamedDoubleVector("AXI",3)
-    .AddNamedDoubleVector("CIR",3)
+    .AddOptionalTag("OPTORDER")
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
     ;
 }
 
@@ -752,9 +758,9 @@ void DRT::INPUT::ElementDefinition::SetupSolidw6Lines()
     .AddIntVector("WEDGE6",6)
     .AddNamedInt("MAT")
     .AddNamedString("KINEM")
-    .AddNamedDoubleVector("RAD",3)
-    .AddNamedDoubleVector("AXI",3)
-    .AddNamedDoubleVector("CIR",3)
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
     ;
 }
 

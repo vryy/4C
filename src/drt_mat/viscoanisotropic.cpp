@@ -13,6 +13,7 @@ Maintainer: Moritz Frenzel & Thomas Kloeppel
 
 #include <vector>
 #include "viscoanisotropic.H"
+#include "../drt_lib/drt_linedefinition.H"
 
 
 /*----------------------------------------------------------------------*
@@ -181,7 +182,7 @@ void MAT::ViscoAnisotropic::Unpack(const vector<char>& data)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::ViscoAnisotropic::Setup(const int numgp)
+void MAT::ViscoAnisotropic::Setup(const int numgp, DRT::INPUT::LineDefinition* linedef)
 {
 
   /*fiber directions can be defined in the element line
@@ -194,16 +195,13 @@ void MAT::ViscoAnisotropic::Setup(const int numgp)
   if ((params_->gamma_<0) || (params_->gamma_ >90)) dserror("Fiber angle not in [0,90]");
   const double gamma = (params_->gamma_*PI)/180.; //convert
 
-  int ierr=0;
-  int error = 1;
   // read local (cylindrical) cosy-directions at current element
-  vector<double> rad(3);
-  vector<double> axi(3);
-  vector<double> cir(3);
-  frdouble_n("RAD",&rad[0],3,&ierr); error*=ierr;
-  frdouble_n("AXI",&axi[0],3,&ierr); error*=ierr;
-  frdouble_n("CIR",&cir[0],3,&ierr); error*=ierr;
-  if (error == 0) dserror("Problems with reading element local cosy, check RAD,AXI,CIR!");
+  vector<double> rad;
+  vector<double> axi;
+  vector<double> cir;
+  linedef->ExtractDoubleVector("RAD",rad);
+  linedef->ExtractDoubleVector("AXI",axi);
+  linedef->ExtractDoubleVector("CIR",cir);
 
   LINALG::Matrix<3,3> locsys;
   // basis is local cosy with third vec e3 = circumferential dir and e2 = axial dir

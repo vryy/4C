@@ -442,6 +442,15 @@ DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddNamedDoubleVector(std
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalTag(std::string name)
+{
+  optionaltail_.push_back(new TagComponent(name));
+  return *this;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedString(std::string name)
 {
   optionaltail_.push_back(new NamedComponent<std::string>(name,"''"));
@@ -480,7 +489,7 @@ DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedDouble(s
 /*----------------------------------------------------------------------*/
 DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedDoubleVector(std::string name, int length)
 {
-  optionaltail_.push_back(new NamedVectorComponent<int>(name,length));
+  optionaltail_.push_back(new NamedVectorComponent<double>(name,length));
   return *this;
 }
 
@@ -645,6 +654,7 @@ DRT::INPUT::LineComponent* DRT::INPUT::LineDefinition::FindNamed(std::string nam
         return optionaltail_[i];
       }
     }
+    dserror("Ups! Not supposed to get here.");
   }
   else
   {

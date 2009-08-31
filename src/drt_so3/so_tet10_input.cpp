@@ -16,7 +16,40 @@ writen by : Alexander Volf
 #ifdef CCADISCRET
 
 #include "so_tet10.H"
+#include "../drt_lib/drt_linedefinition.H"
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool DRT::ELEMENTS::So_tet10::ReadElement(const std::string& eletype,
+                                          const std::string& distype,
+                                          DRT::INPUT::LineDefinition* linedef)
+{
+  // read number of material model
+  int material = 0;
+  linedef->ExtractInt("MAT",material);
+  SetMaterial(material);
+
+  std::string buffer;
+  linedef->ExtractString("KINEM",buffer);
+
+  // geometrically linear
+  if      (buffer=="Geolin")    kintype_ = so_tet10_geolin;
+  // geometrically non-linear with Total Lagrangean approach
+  else if (buffer=="Totlag")    kintype_ = so_tet10_totlag;
+  // geometrically non-linear with Updated Lagrangean approach
+  else if (buffer=="Updlag")
+  {
+    kintype_ = so_tet10_updlag;
+    dserror("Updated Lagrange for SO_TET10 is not implemented!");
+  }
+  else dserror("Reading of SO_TET10 element failed");
+
+  return true;
+}
+
+
+#if 0
 /*----------------------------------------------------------------------*
  |  read element input (public)                                maf 04/07|
  *----------------------------------------------------------------------*/
@@ -69,7 +102,7 @@ bool DRT::ELEMENTS::So_tet10::ReadElement()
 
   return true;
 } // So_tet10::ReadElement()
-
+#endif
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOLID3

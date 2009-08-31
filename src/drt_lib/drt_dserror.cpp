@@ -158,7 +158,7 @@ void cpp_dserror_func(const std::string text, ...)
     fflush(stdout);
 
 #ifdef DSERROR_DUMP
-    *((int*)0x0)=0;
+    abort();
 #endif
 
 #ifdef PARALLEL

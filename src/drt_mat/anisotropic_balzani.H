@@ -132,7 +132,7 @@ namespace MAT
       of corresponding variables and reads e.g. fiber directions into its history
       variables.
     */
-    void Setup();
+    void Setup(DRT::INPUT::LineDefinition* linedef);
 
     /// return fiber directions
     vector<double> ReturnGlobalFiberDirection() {

@@ -22,7 +22,72 @@ Maintainer: Moritz Frenzel
 #include "so_shw6.H" //**
 #include "../drt_mat/artwallremod.H"
 #include "../drt_mat/viscoanisotropic.H"
+#include "../drt_lib/drt_linedefinition.H"
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool DRT::ELEMENTS::So_shw6::ReadElement(const std::string& eletype,
+                                         const std::string& distype,
+                                         DRT::INPUT::LineDefinition* linedef)
+{
+  // read number of material model
+  int material = 0;
+  linedef->ExtractInt("MAT",material);
+  SetMaterial(material);
+
+  // special element-dependent input of material parameters
+  if (Material()->MaterialType() == INPAR::MAT::m_artwallremod){
+    MAT::ArtWallRemod* remo = static_cast <MAT::ArtWallRemod*>(Material().get());
+    remo->Setup(NUMGPT_WEG6, this->Id(), linedef);
+  } else if (Material()->MaterialType() == INPAR::MAT::m_viscoanisotropic){
+    MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(Material().get());
+    visco->Setup(NUMGPT_WEG6, linedef);
+  }
+
+  std::string buffer;
+  linedef->ExtractString("KINEM",buffer);
+
+  // geometrically linear
+  if      (buffer=="Geolin")    kintype_ = sow6_geolin;
+  // geometrically non-linear with Total Lagrangean approach
+  else if (buffer=="Totlag")    kintype_ = sow6_totlag;
+  // geometrically non-linear with Updated Lagrangean approach
+  else if (buffer=="Updlag")
+  {
+    kintype_ = sow6_updlag;
+    dserror("Updated Lagrange for SOLIDSHW6 is not implemented!");
+  }
+  else dserror("Reading of SOLIDSHW6 element failed");
+
+  linedef->ExtractString("EAS",buffer);
+
+  // full sohw6 EAS technology
+  if      (buffer=="soshw6")
+  {
+    eastype_ = soshw6_easpoisthick; // EAS to allow linear thickness strain
+    neas_ = soshw6_easpoisthick;    // number of eas parameters
+    soshw6_easinit();
+  }
+  // no EAS technology
+  else if (buffer=="none")
+  {
+    eastype_ = soshw6_easnone;
+    cout << "Warning: Solid-Shell Wegde6 without EAS" << endl;
+  }
+  else dserror("Reading of SOLIDSHW6 EAS technology failed");
+
+  // check for automatically align material space optimally with parameter space
+  optimal_parameterspace_map_ = false;
+  nodes_rearranged_ = false;
+  if (linedef->HaveNamed("OPTORDER"))
+    optimal_parameterspace_map_ = true;
+
+  return true;
+}
+
+
+#if 0
 /*----------------------------------------------------------------------*
  |  read element input (public)                                maf 04/07|
  *----------------------------------------------------------------------*/
@@ -120,7 +185,7 @@ bool DRT::ELEMENTS::So_shw6::ReadElement()
 
   return true;
 } // So_weg6::ReadElement()
-
+#endif
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOLID3

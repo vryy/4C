@@ -20,8 +20,6 @@ Maintainer: Burkhard Bornemann
 #include "material.H"
 #include "../drt_matelast/elast_summand.H"
 
-
-
 namespace MAT
 {
 
@@ -183,7 +181,7 @@ namespace MAT
       LINALG::Matrix<6,1>& stress  ///< 2nd Piola--Kirchhoff stress
       );
 
-    void Setup();
+    void Setup(DRT::INPUT::LineDefinition* linedef);
 
     /// return if anisotropic
     bool Anisotropic() const { return anisotropic_;}
@@ -237,7 +235,7 @@ namespace MAT
     /// due to energy densities (MAT::ELASTIC::Summand) described
     /// in (modified) principal stretches.
     ///
-    /// The stress response is achieved by collecting the coefficients 
+    /// The stress response is achieved by collecting the coefficients
     /// \f$\gamma_\alpha\f$ and \f$\delta_{\alpha\beta}\f$ due to
     /// MAT::ELASTIC::Summand::AddCoefficientsStretchesPrincipal()
     /// (and/or \f$\bar{\gamma}_\alpha\f$ and \f$\bar{\delta}_{\alpha\beta}\f$
@@ -253,7 +251,7 @@ namespace MAT
     /// lines. The first derivatives or \f$\gamma_\alpha\f$ coefficients are related
     /// to the modified coefficients \f$\bar{\gamma}_\alpha\f$ via the chain rule
     ///\f[
-    ///   \gamma_\alpha 
+    ///   \gamma_\alpha
     ///   = \frac{\partial \Psi(\boldsymbol{\lambda})}{\partial\lambda_\alpha}
     ///   = \frac{\partial \Psi(\bar{\boldsymbol{\lambda}})}{\partial \bar{\lambda}_\eta}
     ///   \, \frac{\partial \bar{\lambda}_\eta}{\partial\lambda_\alpha}
@@ -266,20 +264,20 @@ namespace MAT
     ///\f]
     /// in which Kronecker's delta is denoted \f$1_{\alpha\beta}\f$.
     /// Likewise (and once without Holzapfel), the second derivatives \f$\delta_{\alpha\beta}\f$ can
-    /// be recovered directly by knowledge of the modified coefficients 
+    /// be recovered directly by knowledge of the modified coefficients
     /// \f$\bar{\gamma}_\alpha\f$ and \f$\bar{\delta}_{\alpha\beta}\f$, i.e.
     ///\f[
     ///   \delta_{\alpha\beta}
     ///   = \frac{\partial^2\Psi(\boldsymbol{\lambda})}{\partial\lambda_\alpha \partial\lambda_\beta}
     ///   = \frac{\partial^2\Psi(\bar{\boldsymbol{\lambda}})}{\partial\bar{\lambda}_\eta\partial\bar{\lambda}_\epsilon}
     ///     \, \frac{\partial \bar{\lambda}_\eta}{\partial\lambda_\alpha}
-    ///     \, \frac{\partial \bar{\lambda}_\epsilon}{\partial\lambda_\beta} 
+    ///     \, \frac{\partial \bar{\lambda}_\epsilon}{\partial\lambda_\beta}
     ///   + \frac{\partial \Psi(\bar{\boldsymbol{\lambda}})}{\partial \bar{\lambda}_\eta}
     ///     \, \frac{\partial^2 \bar{\lambda}_\eta}{\partial\lambda_\alpha\partial\lambda_\beta}
     ///   = \bar{\delta}_{\eta\epsilon}
     ///     \, \frac{\partial \bar{\lambda}_\eta}{\partial\lambda_\alpha}
-    ///     \, \frac{\partial \bar{\lambda}_\epsilon}{\partial\lambda_\beta} 
-    ///   + \bar{\gamma}_\eta 
+    ///     \, \frac{\partial \bar{\lambda}_\epsilon}{\partial\lambda_\beta}
+    ///   + \bar{\gamma}_\eta
     ///     \, \frac{\partial^2 \bar{\lambda}_\eta}{\partial\lambda_\alpha\partial\lambda_\beta}
     ///\f]
     /// with
@@ -294,7 +292,7 @@ namespace MAT
     ///
     /// <h3>References</h3>
     /// See Holzapfel, p 245-246, p 257-259, p 263-264
-    /// 
+    ///
     /// \author bborn
     /// \date 08/09
     void ResponseStretches(

@@ -19,7 +19,90 @@ Maintainer: Thomas Kloeppel
 #include "../drt_mat/visconeohooke.H"
 #include "../drt_mat/charmm.H"
 #include "../drt_mat/aaaraghavanvorp_damage.H"
+#include "../drt_lib/drt_linedefinition.H"
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool DRT::ELEMENTS::So_hex27::ReadElement(const std::string& eletype,
+                                          const std::string& distype,
+                                          DRT::INPUT::LineDefinition* linedef)
+{
+  // read number of material model
+  int material = 0;
+  linedef->ExtractInt("MAT",material);
+  SetMaterial(material);
+
+  // special element-dependent input of material parameters
+  switch (Material()->MaterialType())
+  {
+  case INPAR::MAT::m_artwallremod:
+  {
+    MAT::ArtWallRemod* remo = static_cast <MAT::ArtWallRemod*>(Material().get());
+    remo->Setup(NUMGPT_SOH8, this->Id(), linedef);
+    break;
+  }
+  case INPAR::MAT::m_viscoanisotropic:
+  {
+    MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(Material().get());
+    visco->Setup(NUMGPT_SOH8, linedef);
+    break;
+  }
+  case INPAR::MAT::m_visconeohooke:
+  {
+    MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(Material().get());
+    visco->Setup(NUMGPT_SOH8);
+    break;
+  }
+  case INPAR::MAT::m_charmm:
+  {
+    MAT::CHARMM* charmm = static_cast <MAT::CHARMM*>(Material().get());
+    charmm->Setup(data_);
+    break;
+  }
+  case INPAR::MAT::m_aaaraghavanvorp_damage:
+  {
+    double strength = 0.0; // section for extracting the element strength
+    linedef->ExtractDouble("STRENGTH",strength);
+    MAT::AAAraghavanvorp_damage* aaadamage = static_cast <MAT::AAAraghavanvorp_damage*>(Material().get());
+    aaadamage->Setup(NUMGPT_SOH8,strength);
+    //aaadamage->Setup(NUMGPT_SOH8);
+  }
+  default:
+    // Do nothing. Simple material.
+    break;
+  }
+
+  // read possible gaussian points, obsolete for computation
+  std::vector<int> ngp;
+  linedef->ExtractIntVector("GP",ngp);
+  for (int i=0; i<3; ++i)
+    if (ngp[i]!=3)
+      dserror("Only 3 GP for So_H27");
+
+  std::string buffer;
+  linedef->ExtractString("KINEM",buffer);
+
+  // geometrically linear
+  if      (buffer=="Geolin")
+  {
+    kintype_ = soh27_geolin;
+    dserror("Only Total Lagrange for SO_HEX27 implemented!");
+  }
+  // geometrically non-linear with Total Lagrangean approach
+  else if (buffer=="Totlag")    kintype_ = soh27_totlag;
+  // geometrically non-linear with Updated Lagrangean approach
+  else if (buffer=="Updlag")
+  {
+    kintype_ = soh27_updlag;
+    dserror("Only Total Lagrange for SO_HEX27 implemented!");
+  }
+  else dserror("Reading of SO_HEX27 element failed");
+
+  return true;
+}
+
+#if 0
 /*----------------------------------------------------------------------*
  |  read element input (public)                                maf 04/07|
  *----------------------------------------------------------------------*/
@@ -64,7 +147,7 @@ bool DRT::ELEMENTS::So_hex27::ReadElement()
     MAT::CHARMM* charmm = static_cast <MAT::CHARMM*>(Material().get());
     charmm->Setup(data_);
   } else if (Material()->MaterialType() == INPAR::MAT::m_aaaraghavanvorp_damage){
-    double strength = 0.0; // section for extracting the element strength 
+    double strength = 0.0; // section for extracting the element strength
     frdouble("STRENGTH",&strength,&ierr);
     if (ierr!=1) dserror("Reading of SO_SH8 element strength failed");
     MAT::AAAraghavanvorp_damage* aaadamage = static_cast <MAT::AAAraghavanvorp_damage*>(Material().get());
@@ -105,7 +188,7 @@ bool DRT::ELEMENTS::So_hex27::ReadElement()
 
   return true;
 } // So_hex27::ReadElement()
-
+#endif
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOLID3

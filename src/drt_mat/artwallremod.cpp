@@ -22,6 +22,7 @@ Maintainer: Moritz Frenzel
 #include "contchainnetw.H" // for debug plotting
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
+#include "../drt_lib/drt_linedefinition.H"
 
 //#define PI        (asin(1.0)*2.0)
 
@@ -247,7 +248,7 @@ void MAT::ArtWallRemod::Unpack(const vector<char>& data)
   return;
 }
 
-void MAT::ArtWallRemod::Setup(const int numgp, const int eleid)
+void MAT::ArtWallRemod::Setup(const int numgp, const int eleid, DRT::INPUT::LineDefinition* linedef)
 {
   a1_ = rcp(new vector<vector<double> > (numgp));
   a2_ = rcp(new vector<vector<double> > (numgp));
@@ -268,15 +269,13 @@ void MAT::ArtWallRemod::Setup(const int numgp, const int eleid)
     }
   } else if (initflag==1){
   // fibers aligned in local element cosy with gamma around circumferential direction
-    vector<double> rad(3);
-    vector<double> axi(3);
-    vector<double> cir(3);
-    int ierr=0;
+    vector<double> rad;
+    vector<double> axi;
+    vector<double> cir;
     // read local (cylindrical) cosy-directions at current element
-    frdouble_n("RAD",&rad[0],3,&ierr);
-    frdouble_n("AXI",&axi[0],3,&ierr);
-    frdouble_n("CIR",&cir[0],3,&ierr);
-    if (ierr!=1) dserror("Reading of element local cosy failed");
+    linedef->ExtractDoubleVector("RAD",rad);
+    linedef->ExtractDoubleVector("AXI",axi);
+    linedef->ExtractDoubleVector("CIR",cir);
     Epetra_SerialDenseMatrix locsys(3,3);
     // basis is local cosy with third vec e3 = circumferential dir and e2 = axial dir
     double radnorm=0.; double axinorm=0.; double cirnorm=0.;

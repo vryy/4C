@@ -112,6 +112,9 @@ namespace INPUT
      */
     LineDefinition& AddNamedDoubleVector(std::string name, std::string lengthdef);
 
+    /// add a single string definition
+    LineDefinition& AddOptionalTag(std::string name);
+
     /// add a name followed by a variable string
     LineDefinition& AddOptionalNamedString(std::string name);
 

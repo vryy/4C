@@ -232,7 +232,13 @@ public:
   //@{
 
   /// Read input for this element
-  bool ReadElement();
+  //bool ReadElement();
+
+  /// Read input for this element
+  bool ReadElement(const std::string& eletype,
+                   const std::string& distype,
+                   DRT::INPUT::LineDefinition* linedef);
+
 
   /// Destructor
   virtual ~So_sh8p8();
@@ -306,7 +312,7 @@ public:
   /// \brief Evaluate a Neumann boundary condition
   ///
   /// this method evaluates a surface Neumann condition on the solid3 element
-  /// 
+  ///
   /// \param params (in/out)    : ParameterList for communication between control routine
   ///                             and elements
   /// \param discretization (in): A reference to the underlying discretization

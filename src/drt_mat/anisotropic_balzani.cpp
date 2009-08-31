@@ -16,6 +16,7 @@ Maintainer: Moritz Frenzel
 #include <Epetra_SerialDenseVector.h>
 #include "Epetra_SerialDenseSolver.h"
 #include "anisotropic_balzani.H"
+#include "../drt_lib/drt_linedefinition.H"
 
 
 /*----------------------------------------------------------------------*
@@ -122,20 +123,18 @@ void MAT::AnisotropicBalzani::Unpack(const vector<char>& data)
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
 }
 
-void MAT::AnisotropicBalzani::Setup()
+void MAT::AnisotropicBalzani::Setup(DRT::INPUT::LineDefinition* linedef)
 {
   // check whether fiber are based on local cosy
   if (params_->aloc_ == 1){
     // fibers aligned in local element cosy with gamma_i around circumferential direction
-    vector<double> rad(3);
-    vector<double> axi(3);
-    vector<double> cir(3);
-    int ierr=0;
+    vector<double> rad;
+    vector<double> axi;
+    vector<double> cir;
     // read local (cylindrical) cosy-directions at current element
-    frdouble_n("RAD",&rad[0],3,&ierr);
-    frdouble_n("AXI",&axi[0],3,&ierr);
-    frdouble_n("CIR",&cir[0],3,&ierr);
-    if (ierr!=1) dserror("Reading of element local cosy failed");
+    linedef->ExtractDoubleVector("RAD",rad);
+    linedef->ExtractDoubleVector("AXI",axi);
+    linedef->ExtractDoubleVector("CIR",cir);
     Epetra_SerialDenseMatrix locsys(3,3);
     // basis is local cosy with third vec e3 = circumferential dir and e2 = axial dir
     for (int i=0; i<3; ++i){
