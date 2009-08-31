@@ -1422,680 +1422,680 @@ NODE         1109     COORD 1.0005000114441e+01     0.0000000000000e+00     0.00
 NODE         1110     COORD 1.0014980316162e+01     4.9029890215024e-04     3.9212280535139e-04
 ----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
-      1 SOLIDSHW6 WEDGE6     371    373    375    372    374    376 MAT       1 EAS soshw6
-      2 SOLIDSHW6 WEDGE6     375    373    377    376    374    378 MAT       1 EAS soshw6
-      3 SOLIDSHW6 WEDGE6     371    375    379    372    376    380 MAT       1 EAS soshw6
-      4 SOLIDSHW6 WEDGE6     375    377    381    376    378    382 MAT       1 EAS soshw6
-      5 SOLIDSHW6 WEDGE6     379    375    383    380    376    384 MAT       1 EAS soshw6
-      6 SOLIDSHW6 WEDGE6     381    377    385    382    378    386 MAT       1 EAS soshw6
-      7 SOLIDSHW6 WEDGE6     375    381    383    376    382    384 MAT       1 EAS soshw6
-      8 SOLIDSHW6 WEDGE6     379    383    387    380    384    388 MAT       1 EAS soshw6
-      9 SOLIDSHW6 WEDGE6     381    385    389    382    386    390 MAT       1 EAS soshw6
-     10 SOLIDSHW6 WEDGE6     383    381    391    384    382    392 MAT       1 EAS soshw6
-     11 SOLIDSHW6 WEDGE6     387    383    393    388    384    394 MAT       1 EAS soshw6
-     12 SOLIDSHW6 WEDGE6     379    387    395    380    388    396 MAT       1 EAS soshw6
-     13 SOLIDSHW6 WEDGE6     381    389    397    382    390    398 MAT       1 EAS soshw6
-     14 SOLIDSHW6 WEDGE6     391    381    397    392    382    398 MAT       1 EAS soshw6
-     15 SOLIDSHW6 WEDGE6     383    391    393    384    392    394 MAT       1 EAS soshw6
-     16 SOLIDSHW6 WEDGE6     387    393    399    388    394    400 MAT       1 EAS soshw6
-     17 SOLIDSHW6 WEDGE6     395    387    399    396    388    400 MAT       1 EAS soshw6
-     18 SOLIDSHW6 WEDGE6     397    389    401    398    390    402 MAT       1 EAS soshw6
-     19 SOLIDSHW6 WEDGE6     391    397    403    392    398    404 MAT       1 EAS soshw6
-     20 SOLIDSHW6 WEDGE6     393    391    405    394    392    406 MAT       1 EAS soshw6
-     21 SOLIDSHW6 WEDGE6     399    393    407    400    394    408 MAT       1 EAS soshw6
-     22 SOLIDSHW6 WEDGE6     395    399    409    396    400    410 MAT       1 EAS soshw6
-     23 SOLIDSHW6 WEDGE6     397    401    411    398    402    412 MAT       1 EAS soshw6
-     24 SOLIDSHW6 WEDGE6     391    403    405    392    404    406 MAT       1 EAS soshw6
-     25 SOLIDSHW6 WEDGE6     403    397    413    404    398    414 MAT       1 EAS soshw6
-     26 SOLIDSHW6 WEDGE6     393    405    407    394    406    408 MAT       1 EAS soshw6
-     27 SOLIDSHW6 WEDGE6     399    407    415    400    408    416 MAT       1 EAS soshw6
-     28 SOLIDSHW6 WEDGE6     409    399    415    410    400    416 MAT       1 EAS soshw6
-     29 SOLIDSHW6 WEDGE6     397    411    413    398    412    414 MAT       1 EAS soshw6
-     30 SOLIDSHW6 WEDGE6     405    403    417    406    404    418 MAT       1 EAS soshw6
-     31 SOLIDSHW6 WEDGE6     403    413    419    404    414    420 MAT       1 EAS soshw6
-     32 SOLIDSHW6 WEDGE6     407    405    421    408    406    422 MAT       1 EAS soshw6
-     33 SOLIDSHW6 WEDGE6     415    407    423    416    408    424 MAT       1 EAS soshw6
-     34 SOLIDSHW6 WEDGE6     409    415    425    410    416    426 MAT       1 EAS soshw6
-     35 SOLIDSHW6 WEDGE6     413    411    427    414    412    428 MAT       1 EAS soshw6
-     36 SOLIDSHW6 WEDGE6     417    403    419    418    404    420 MAT       1 EAS soshw6
-     37 SOLIDSHW6 WEDGE6     405    417    421    406    418    422 MAT       1 EAS soshw6
-     38 SOLIDSHW6 WEDGE6     419    413    429    420    414    430 MAT       1 EAS soshw6
-     39 SOLIDSHW6 WEDGE6     407    421    423    408    422    424 MAT       1 EAS soshw6
-     40 SOLIDSHW6 WEDGE6     415    423    431    416    424    432 MAT       1 EAS soshw6
-     41 SOLIDSHW6 WEDGE6     425    415    431    426    416    432 MAT       1 EAS soshw6
-     42 SOLIDSHW6 WEDGE6     409    425    433    410    426    434 MAT       1 EAS soshw6
-     43 SOLIDSHW6 WEDGE6     413    427    435    414    428    436 MAT       1 EAS soshw6
-     44 SOLIDSHW6 WEDGE6     417    419    437    418    420    438 MAT       1 EAS soshw6
-     45 SOLIDSHW6 WEDGE6     421    417    439    422    418    440 MAT       1 EAS soshw6
-     46 SOLIDSHW6 WEDGE6     419    429    441    420    430    442 MAT       1 EAS soshw6
-     47 SOLIDSHW6 WEDGE6     429    413    443    430    414    444 MAT       1 EAS soshw6
-     48 SOLIDSHW6 WEDGE6     423    421    445    424    422    446 MAT       1 EAS soshw6
-     49 SOLIDSHW6 WEDGE6     431    423    447    432    424    448 MAT       1 EAS soshw6
-     50 SOLIDSHW6 WEDGE6     425    431    449    426    432    450 MAT       1 EAS soshw6
-     51 SOLIDSHW6 WEDGE6     433    425    449    434    426    450 MAT       1 EAS soshw6
-     52 SOLIDSHW6 WEDGE6     413    435    443    414    436    444 MAT       1 EAS soshw6
-     53 SOLIDSHW6 WEDGE6     437    419    441    438    420    442 MAT       1 EAS soshw6
-     54 SOLIDSHW6 WEDGE6     417    437    439    418    438    440 MAT       1 EAS soshw6
-     55 SOLIDSHW6 WEDGE6     421    439    445    422    440    446 MAT       1 EAS soshw6
-     56 SOLIDSHW6 WEDGE6     441    429    451    442    430    452 MAT       1 EAS soshw6
-     57 SOLIDSHW6 WEDGE6     429    443    451    430    444    452 MAT       1 EAS soshw6
-     58 SOLIDSHW6 WEDGE6     423    445    447    424    446    448 MAT       1 EAS soshw6
-     59 SOLIDSHW6 WEDGE6     431    447    453    432    448    454 MAT       1 EAS soshw6
-     60 SOLIDSHW6 WEDGE6     449    431    453    450    432    454 MAT       1 EAS soshw6
-     61 SOLIDSHW6 WEDGE6     433    449    455    434    450    456 MAT       1 EAS soshw6
-     62 SOLIDSHW6 WEDGE6     443    435    457    444    436    458 MAT       1 EAS soshw6
-     63 SOLIDSHW6 WEDGE6     437    441    459    438    442    460 MAT       1 EAS soshw6
-     64 SOLIDSHW6 WEDGE6     439    437    461    440    438    462 MAT       1 EAS soshw6
-     65 SOLIDSHW6 WEDGE6     445    439    463    446    440    464 MAT       1 EAS soshw6
-     66 SOLIDSHW6 WEDGE6     441    451    465    442    452    466 MAT       1 EAS soshw6
-     67 SOLIDSHW6 WEDGE6     451    443    467    452    444    468 MAT       1 EAS soshw6
-     68 SOLIDSHW6 WEDGE6     447    445    469    448    446    470 MAT       1 EAS soshw6
-     69 SOLIDSHW6 WEDGE6     453    447    471    454    448    472 MAT       1 EAS soshw6
-     70 SOLIDSHW6 WEDGE6     449    453    473    450    454    474 MAT       1 EAS soshw6
-     71 SOLIDSHW6 WEDGE6     455    449    473    456    450    474 MAT       1 EAS soshw6
-     72 SOLIDSHW6 WEDGE6     433    455    475    434    456    476 MAT       1 EAS soshw6
-     73 SOLIDSHW6 WEDGE6     443    457    477    444    458    478 MAT       1 EAS soshw6
-     74 SOLIDSHW6 WEDGE6     459    441    465    460    442    466 MAT       1 EAS soshw6
-     75 SOLIDSHW6 WEDGE6     437    459    461    438    460    462 MAT       1 EAS soshw6
-     76 SOLIDSHW6 WEDGE6     439    461    463    440    462    464 MAT       1 EAS soshw6
-     77 SOLIDSHW6 WEDGE6     445    463    469    446    464    470 MAT       1 EAS soshw6
-     78 SOLIDSHW6 WEDGE6     465    451    479    466    452    480 MAT       1 EAS soshw6
-     79 SOLIDSHW6 WEDGE6     451    467    479    452    468    480 MAT       1 EAS soshw6
-     80 SOLIDSHW6 WEDGE6     467    443    481    468    444    482 MAT       1 EAS soshw6
-     81 SOLIDSHW6 WEDGE6     447    469    471    448    470    472 MAT       1 EAS soshw6
-     82 SOLIDSHW6 WEDGE6     453    471    483    454    472    484 MAT       1 EAS soshw6
-     83 SOLIDSHW6 WEDGE6     473    453    483    474    454    484 MAT       1 EAS soshw6
-     84 SOLIDSHW6 WEDGE6     455    473    485    456    474    486 MAT       1 EAS soshw6
-     85 SOLIDSHW6 WEDGE6     475    455    487    476    456    488 MAT       1 EAS soshw6
-     86 SOLIDSHW6 WEDGE6     443    477    481    444    478    482 MAT       1 EAS soshw6
-     87 SOLIDSHW6 WEDGE6     459    465    489    460    466    490 MAT       1 EAS soshw6
-     88 SOLIDSHW6 WEDGE6     461    459    491    462    460    492 MAT       1 EAS soshw6
-     89 SOLIDSHW6 WEDGE6     463    461    493    464    462    494 MAT       1 EAS soshw6
-     90 SOLIDSHW6 WEDGE6     469    463    495    470    464    496 MAT       1 EAS soshw6
-     91 SOLIDSHW6 WEDGE6     465    479    497    466    480    498 MAT       1 EAS soshw6
-     92 SOLIDSHW6 WEDGE6     479    467    499    480    468    500 MAT       1 EAS soshw6
-     93 SOLIDSHW6 WEDGE6     467    481    499    468    482    500 MAT       1 EAS soshw6
-     94 SOLIDSHW6 WEDGE6     471    469    501    472    470    502 MAT       1 EAS soshw6
-     95 SOLIDSHW6 WEDGE6     483    471    503    484    472    504 MAT       1 EAS soshw6
-     96 SOLIDSHW6 WEDGE6     473    483    505    474    484    506 MAT       1 EAS soshw6
-     97 SOLIDSHW6 WEDGE6     485    473    505    486    474    506 MAT       1 EAS soshw6
-     98 SOLIDSHW6 WEDGE6     455    485    487    456    486    488 MAT       1 EAS soshw6
-     99 SOLIDSHW6 WEDGE6     475    487    507    476    488    508 MAT       1 EAS soshw6
-    100 SOLIDSHW6 WEDGE6     481    477    509    482    478    510 MAT       1 EAS soshw6
-    101 SOLIDSHW6 WEDGE6     489    465    497    490    466    498 MAT       1 EAS soshw6
-    102 SOLIDSHW6 WEDGE6     459    489    491    460    490    492 MAT       1 EAS soshw6
-    103 SOLIDSHW6 WEDGE6     461    491    493    462    492    494 MAT       1 EAS soshw6
-    104 SOLIDSHW6 WEDGE6     463    493    495    464    494    496 MAT       1 EAS soshw6
-    105 SOLIDSHW6 WEDGE6     469    495    501    470    496    502 MAT       1 EAS soshw6
-    106 SOLIDSHW6 WEDGE6     497    479    511    498    480    512 MAT       1 EAS soshw6
-    107 SOLIDSHW6 WEDGE6     479    499    511    480    500    512 MAT       1 EAS soshw6
-    108 SOLIDSHW6 WEDGE6     499    481    513    500    482    514 MAT       1 EAS soshw6
-    109 SOLIDSHW6 WEDGE6     471    501    503    472    502    504 MAT       1 EAS soshw6
-    110 SOLIDSHW6 WEDGE6     483    503    515    484    504    516 MAT       1 EAS soshw6
-    111 SOLIDSHW6 WEDGE6     505    483    515    506    484    516 MAT       1 EAS soshw6
-    112 SOLIDSHW6 WEDGE6     485    505    517    486    506    518 MAT       1 EAS soshw6
-    113 SOLIDSHW6 WEDGE6     487    485    519    488    486    520 MAT       1 EAS soshw6
-    114 SOLIDSHW6 WEDGE6     507    487    519    508    488    520 MAT       1 EAS soshw6
-    115 SOLIDSHW6 WEDGE6     481    509    521    482    510    522 MAT       1 EAS soshw6
-    116 SOLIDSHW6 WEDGE6     489    497    523    490    498    524 MAT       1 EAS soshw6
-    117 SOLIDSHW6 WEDGE6     491    489    525    492    490    526 MAT       1 EAS soshw6
-    118 SOLIDSHW6 WEDGE6     493    491    527    494    492    528 MAT       1 EAS soshw6
-    119 SOLIDSHW6 WEDGE6     495    493    529    496    494    530 MAT       1 EAS soshw6
-    120 SOLIDSHW6 WEDGE6     501    495    531    502    496    532 MAT       1 EAS soshw6
-    121 SOLIDSHW6 WEDGE6     497    511    533    498    512    534 MAT       1 EAS soshw6
-    122 SOLIDSHW6 WEDGE6     511    499    535    512    500    536 MAT       1 EAS soshw6
-    123 SOLIDSHW6 WEDGE6     499    513    535    500    514    536 MAT       1 EAS soshw6
-    124 SOLIDSHW6 WEDGE6     513    481    537    514    482    538 MAT       1 EAS soshw6
-    125 SOLIDSHW6 WEDGE6     503    501    539    504    502    540 MAT       1 EAS soshw6
-    126 SOLIDSHW6 WEDGE6     515    503    539    516    504    540 MAT       1 EAS soshw6
-    127 SOLIDSHW6 WEDGE6     505    515    541    506    516    542 MAT       1 EAS soshw6
-    128 SOLIDSHW6 WEDGE6     517    505    541    518    506    542 MAT       1 EAS soshw6
-    129 SOLIDSHW6 WEDGE6     485    517    519    486    518    520 MAT       1 EAS soshw6
-    130 SOLIDSHW6 WEDGE6     507    519    543    508    520    544 MAT       1 EAS soshw6
-    131 SOLIDSHW6 WEDGE6     481    521    537    482    522    538 MAT       1 EAS soshw6
-    132 SOLIDSHW6 WEDGE6     523    497    533    524    498    534 MAT       1 EAS soshw6
-    133 SOLIDSHW6 WEDGE6     489    523    525    490    524    526 MAT       1 EAS soshw6
-    134 SOLIDSHW6 WEDGE6     491    525    527    492    526    528 MAT       1 EAS soshw6
-    135 SOLIDSHW6 WEDGE6     493    527    529    494    528    530 MAT       1 EAS soshw6
-    136 SOLIDSHW6 WEDGE6     495    529    531    496    530    532 MAT       1 EAS soshw6
-    137 SOLIDSHW6 WEDGE6     501    531    539    502    532    540 MAT       1 EAS soshw6
-    138 SOLIDSHW6 WEDGE6     533    511    545    534    512    546 MAT       1 EAS soshw6
-    139 SOLIDSHW6 WEDGE6     511    535    545    512    536    546 MAT       1 EAS soshw6
-    140 SOLIDSHW6 WEDGE6     535    513    547    536    514    548 MAT       1 EAS soshw6
-    141 SOLIDSHW6 WEDGE6     513    537    549    514    538    550 MAT       1 EAS soshw6
-    142 SOLIDSHW6 WEDGE6     515    539    551    516    540    552 MAT       1 EAS soshw6
-    143 SOLIDSHW6 WEDGE6     541    515    553    542    516    554 MAT       1 EAS soshw6
-    144 SOLIDSHW6 WEDGE6     517    541    555    518    542    556 MAT       1 EAS soshw6
-    145 SOLIDSHW6 WEDGE6     519    517    557    520    518    558 MAT       1 EAS soshw6
-    146 SOLIDSHW6 WEDGE6     543    519    557    544    520    558 MAT       1 EAS soshw6
-    147 SOLIDSHW6 WEDGE6     537    521    559    538    522    560 MAT       1 EAS soshw6
-    148 SOLIDSHW6 WEDGE6     523    533    561    524    534    562 MAT       1 EAS soshw6
-    149 SOLIDSHW6 WEDGE6     525    523    563    526    524    564 MAT       1 EAS soshw6
-    150 SOLIDSHW6 WEDGE6     527    525    565    528    526    566 MAT       1 EAS soshw6
-    151 SOLIDSHW6 WEDGE6     529    527    567    530    528    568 MAT       1 EAS soshw6
-    152 SOLIDSHW6 WEDGE6     531    529    569    532    530    570 MAT       1 EAS soshw6
-    153 SOLIDSHW6 WEDGE6     539    531    571    540    532    572 MAT       1 EAS soshw6
-    154 SOLIDSHW6 WEDGE6     533    545    573    534    546    574 MAT       1 EAS soshw6
-    155 SOLIDSHW6 WEDGE6     545    535    575    546    536    576 MAT       1 EAS soshw6
-    156 SOLIDSHW6 WEDGE6     547    513    549    548    514    550 MAT       1 EAS soshw6
-    157 SOLIDSHW6 WEDGE6     535    547    575    536    548    576 MAT       1 EAS soshw6
-    158 SOLIDSHW6 WEDGE6     549    537    577    550    538    578 MAT       1 EAS soshw6
-    159 SOLIDSHW6 WEDGE6     551    539    571    552    540    572 MAT       1 EAS soshw6
-    160 SOLIDSHW6 WEDGE6     515    551    553    516    552    554 MAT       1 EAS soshw6
-    161 SOLIDSHW6 WEDGE6     541    553    579    542    554    580 MAT       1 EAS soshw6
-    162 SOLIDSHW6 WEDGE6     555    541    579    556    542    580 MAT       1 EAS soshw6
-    163 SOLIDSHW6 WEDGE6     517    555    557    518    556    558 MAT       1 EAS soshw6
-    164 SOLIDSHW6 WEDGE6     543    557    581    544    558    582 MAT       1 EAS soshw6
-    165 SOLIDSHW6 WEDGE6     537    559    583    538    560    584 MAT       1 EAS soshw6
-    166 SOLIDSHW6 WEDGE6     561    533    573    562    534    574 MAT       1 EAS soshw6
-    167 SOLIDSHW6 WEDGE6     523    561    563    524    562    564 MAT       1 EAS soshw6
-    168 SOLIDSHW6 WEDGE6     525    563    565    526    564    566 MAT       1 EAS soshw6
-    169 SOLIDSHW6 WEDGE6     527    565    567    528    566    568 MAT       1 EAS soshw6
-    170 SOLIDSHW6 WEDGE6     529    567    569    530    568    570 MAT       1 EAS soshw6
-    171 SOLIDSHW6 WEDGE6     531    569    571    532    570    572 MAT       1 EAS soshw6
-    172 SOLIDSHW6 WEDGE6     573    545    585    574    546    586 MAT       1 EAS soshw6
-    173 SOLIDSHW6 WEDGE6     545    575    585    546    576    586 MAT       1 EAS soshw6
-    174 SOLIDSHW6 WEDGE6     547    549    587    548    550    588 MAT       1 EAS soshw6
-    175 SOLIDSHW6 WEDGE6     575    547    589    576    548    590 MAT       1 EAS soshw6
-    176 SOLIDSHW6 WEDGE6     577    537    583    578    538    584 MAT       1 EAS soshw6
-    177 SOLIDSHW6 WEDGE6     549    577    591    550    578    592 MAT       1 EAS soshw6
-    178 SOLIDSHW6 WEDGE6     551    571    593    552    572    594 MAT       1 EAS soshw6
-    179 SOLIDSHW6 WEDGE6     553    551    595    554    552    596 MAT       1 EAS soshw6
-    180 SOLIDSHW6 WEDGE6     579    553    597    580    554    598 MAT       1 EAS soshw6
-    181 SOLIDSHW6 WEDGE6     555    579    599    556    580    600 MAT       1 EAS soshw6
-    182 SOLIDSHW6 WEDGE6     557    555    601    558    556    602 MAT       1 EAS soshw6
-    183 SOLIDSHW6 WEDGE6     581    557    601    582    558    602 MAT       1 EAS soshw6
-    184 SOLIDSHW6 WEDGE6     543    581    603    544    582    604 MAT       1 EAS soshw6
-    185 SOLIDSHW6 WEDGE6     561    573    605    562    574    606 MAT       1 EAS soshw6
-    186 SOLIDSHW6 WEDGE6     563    561    607    564    562    608 MAT       1 EAS soshw6
-    187 SOLIDSHW6 WEDGE6     565    563    609    566    564    610 MAT       1 EAS soshw6
-    188 SOLIDSHW6 WEDGE6     567    565    611    568    566    612 MAT       1 EAS soshw6
-    189 SOLIDSHW6 WEDGE6     569    567    613    570    568    614 MAT       1 EAS soshw6
-    190 SOLIDSHW6 WEDGE6     571    569    615    572    570    616 MAT       1 EAS soshw6
-    191 SOLIDSHW6 WEDGE6     573    585    617    574    586    618 MAT       1 EAS soshw6
-    192 SOLIDSHW6 WEDGE6     585    575    619    586    576    620 MAT       1 EAS soshw6
-    193 SOLIDSHW6 WEDGE6     587    549    591    588    550    592 MAT       1 EAS soshw6
-    194 SOLIDSHW6 WEDGE6     547    587    589    548    588    590 MAT       1 EAS soshw6
-    195 SOLIDSHW6 WEDGE6     575    589    619    576    590    620 MAT       1 EAS soshw6
-    196 SOLIDSHW6 WEDGE6     577    583    621    578    584    622 MAT       1 EAS soshw6
-    197 SOLIDSHW6 WEDGE6     591    577    623    592    578    624 MAT       1 EAS soshw6
-    198 SOLIDSHW6 WEDGE6     593    571    615    594    572    616 MAT       1 EAS soshw6
-    199 SOLIDSHW6 WEDGE6     551    593    595    552    594    596 MAT       1 EAS soshw6
-    200 SOLIDSHW6 WEDGE6     553    595    597    554    596    598 MAT       1 EAS soshw6
-    201 SOLIDSHW6 WEDGE6     579    597    625    580    598    626 MAT       1 EAS soshw6
-    202 SOLIDSHW6 WEDGE6     555    599    601    556    600    602 MAT       1 EAS soshw6
-    203 SOLIDSHW6 WEDGE6     599    579    625    600    580    626 MAT       1 EAS soshw6
-    204 SOLIDSHW6 WEDGE6     581    601    627    582    602    628 MAT       1 EAS soshw6
-    205 SOLIDSHW6 WEDGE6     603    581    629    604    582    630 MAT       1 EAS soshw6
-    206 SOLIDSHW6 WEDGE6     605    573    617    606    574    618 MAT       1 EAS soshw6
-    207 SOLIDSHW6 WEDGE6     561    605    607    562    606    608 MAT       1 EAS soshw6
-    208 SOLIDSHW6 WEDGE6     563    607    609    564    608    610 MAT       1 EAS soshw6
-    209 SOLIDSHW6 WEDGE6     565    609    611    566    610    612 MAT       1 EAS soshw6
-    210 SOLIDSHW6 WEDGE6     567    611    613    568    612    614 MAT       1 EAS soshw6
-    211 SOLIDSHW6 WEDGE6     569    613    615    570    614    616 MAT       1 EAS soshw6
-    212 SOLIDSHW6 WEDGE6     617    585    631    618    586    632 MAT       1 EAS soshw6
-    213 SOLIDSHW6 WEDGE6     585    619    631    586    620    632 MAT       1 EAS soshw6
-    214 SOLIDSHW6 WEDGE6     587    591    633    588    592    634 MAT       1 EAS soshw6
-    215 SOLIDSHW6 WEDGE6     589    587    635    590    588    636 MAT       1 EAS soshw6
-    216 SOLIDSHW6 WEDGE6     619    589    637    620    590    638 MAT       1 EAS soshw6
-    217 SOLIDSHW6 WEDGE6     577    621    639    578    622    640 MAT       1 EAS soshw6
-    218 SOLIDSHW6 WEDGE6     623    577    639    624    578    640 MAT       1 EAS soshw6
-    219 SOLIDSHW6 WEDGE6     591    623    633    592    624    634 MAT       1 EAS soshw6
-    220 SOLIDSHW6 WEDGE6     593    615    641    594    616    642 MAT       1 EAS soshw6
-    221 SOLIDSHW6 WEDGE6     595    593    643    596    594    644 MAT       1 EAS soshw6
-    222 SOLIDSHW6 WEDGE6     597    595    645    598    596    646 MAT       1 EAS soshw6
-    223 SOLIDSHW6 WEDGE6     625    597    647    626    598    648 MAT       1 EAS soshw6
-    224 SOLIDSHW6 WEDGE6     601    599    649    602    600    650 MAT       1 EAS soshw6
-    225 SOLIDSHW6 WEDGE6     599    625    651    600    626    652 MAT       1 EAS soshw6
-    226 SOLIDSHW6 WEDGE6     627    601    649    628    602    650 MAT       1 EAS soshw6
-    227 SOLIDSHW6 WEDGE6     581    627    629    582    628    630 MAT       1 EAS soshw6
-    228 SOLIDSHW6 WEDGE6     605    617    653    606    618    654 MAT       1 EAS soshw6
-    229 SOLIDSHW6 WEDGE6     607    605    653    608    606    654 MAT       1 EAS soshw6
-    230 SOLIDSHW6 WEDGE6     609    607    655    610    608    656 MAT       1 EAS soshw6
-    231 SOLIDSHW6 WEDGE6     611    609    657    612    610    658 MAT       1 EAS soshw6
-    232 SOLIDSHW6 WEDGE6     613    611    659    614    612    660 MAT       1 EAS soshw6
-    233 SOLIDSHW6 WEDGE6     615    613    661    616    614    662 MAT       1 EAS soshw6
-    234 SOLIDSHW6 WEDGE6     617    631    663    618    632    664 MAT       1 EAS soshw6
-    235 SOLIDSHW6 WEDGE6     631    619    665    632    620    666 MAT       1 EAS soshw6
-    236 SOLIDSHW6 WEDGE6     587    633    635    588    634    636 MAT       1 EAS soshw6
-    237 SOLIDSHW6 WEDGE6     589    635    637    590    636    638 MAT       1 EAS soshw6
-    238 SOLIDSHW6 WEDGE6     619    637    665    620    638    666 MAT       1 EAS soshw6
-    239 SOLIDSHW6 WEDGE6     641    615    661    642    616    662 MAT       1 EAS soshw6
-    240 SOLIDSHW6 WEDGE6     593    641    643    594    642    644 MAT       1 EAS soshw6
-    241 SOLIDSHW6 WEDGE6     595    643    645    596    644    646 MAT       1 EAS soshw6
-    242 SOLIDSHW6 WEDGE6     597    645    647    598    646    648 MAT       1 EAS soshw6
-    243 SOLIDSHW6 WEDGE6     625    647    667    626    648    668 MAT       1 EAS soshw6
-    244 SOLIDSHW6 WEDGE6     649    599    651    650    600    652 MAT       1 EAS soshw6
-    245 SOLIDSHW6 WEDGE6     651    625    667    652    626    668 MAT       1 EAS soshw6
-    246 SOLIDSHW6 WEDGE6     627    649    669    628    650    670 MAT       1 EAS soshw6
-    247 SOLIDSHW6 WEDGE6     629    627    671    630    628    672 MAT       1 EAS soshw6
-    248 SOLIDSHW6 WEDGE6     653    617    663    654    618    664 MAT       1 EAS soshw6
-    249 SOLIDSHW6 WEDGE6     607    653    655    608    654    656 MAT       1 EAS soshw6
-    250 SOLIDSHW6 WEDGE6     609    655    657    610    656    658 MAT       1 EAS soshw6
-    251 SOLIDSHW6 WEDGE6     611    657    659    612    658    660 MAT       1 EAS soshw6
-    252 SOLIDSHW6 WEDGE6     613    659    661    614    660    662 MAT       1 EAS soshw6
-    253 SOLIDSHW6 WEDGE6     663    631    665    664    632    666 MAT       1 EAS soshw6
-    254 SOLIDSHW6 WEDGE6     635    633    673    636    634    674 MAT       1 EAS soshw6
-    255 SOLIDSHW6 WEDGE6     637    635    673    638    636    674 MAT       1 EAS soshw6
-    256 SOLIDSHW6 WEDGE6     665    637    675    666    638    676 MAT       1 EAS soshw6
-    257 SOLIDSHW6 WEDGE6     641    661    677    642    662    678 MAT       1 EAS soshw6
-    258 SOLIDSHW6 WEDGE6     643    641    679    644    642    680 MAT       1 EAS soshw6
-    259 SOLIDSHW6 WEDGE6     645    643    681    646    644    682 MAT       1 EAS soshw6
-    260 SOLIDSHW6 WEDGE6     647    645    683    648    646    684 MAT       1 EAS soshw6
-    261 SOLIDSHW6 WEDGE6     667    647    685    668    648    686 MAT       1 EAS soshw6
-    262 SOLIDSHW6 WEDGE6     649    651    687    650    652    688 MAT       1 EAS soshw6
-    263 SOLIDSHW6 WEDGE6     651    667    689    652    668    690 MAT       1 EAS soshw6
-    264 SOLIDSHW6 WEDGE6     669    649    687    670    650    688 MAT       1 EAS soshw6
-    265 SOLIDSHW6 WEDGE6     627    669    671    628    670    672 MAT       1 EAS soshw6
-    266 SOLIDSHW6 WEDGE6     629    671    691    630    672    692 MAT       1 EAS soshw6
-    267 SOLIDSHW6 WEDGE6     653    663    693    654    664    694 MAT       1 EAS soshw6
-    268 SOLIDSHW6 WEDGE6     655    653    695    656    654    696 MAT       1 EAS soshw6
-    269 SOLIDSHW6 WEDGE6     657    655    697    658    656    698 MAT       1 EAS soshw6
-    270 SOLIDSHW6 WEDGE6     659    657    699    660    658    700 MAT       1 EAS soshw6
-    271 SOLIDSHW6 WEDGE6     661    659    701    662    660    702 MAT       1 EAS soshw6
-    272 SOLIDSHW6 WEDGE6     663    665    703    664    666    704 MAT       1 EAS soshw6
-    273 SOLIDSHW6 WEDGE6     637    673    675    638    674    676 MAT       1 EAS soshw6
-    274 SOLIDSHW6 WEDGE6     665    675    703    666    676    704 MAT       1 EAS soshw6
-    275 SOLIDSHW6 WEDGE6     677    661    701    678    662    702 MAT       1 EAS soshw6
-    276 SOLIDSHW6 WEDGE6     641    677    679    642    678    680 MAT       1 EAS soshw6
-    277 SOLIDSHW6 WEDGE6     643    679    681    644    680    682 MAT       1 EAS soshw6
-    278 SOLIDSHW6 WEDGE6     645    681    683    646    682    684 MAT       1 EAS soshw6
-    279 SOLIDSHW6 WEDGE6     647    683    685    648    684    686 MAT       1 EAS soshw6
-    280 SOLIDSHW6 WEDGE6     667    685    689    668    686    690 MAT       1 EAS soshw6
-    281 SOLIDSHW6 WEDGE6     687    651    689    688    652    690 MAT       1 EAS soshw6
-    282 SOLIDSHW6 WEDGE6     669    687    705    670    688    706 MAT       1 EAS soshw6
-    283 SOLIDSHW6 WEDGE6     671    669    707    672    670    708 MAT       1 EAS soshw6
-    284 SOLIDSHW6 WEDGE6     691    671    709    692    672    710 MAT       1 EAS soshw6
-    285 SOLIDSHW6 WEDGE6     693    663    711    694    664    712 MAT       1 EAS soshw6
-    286 SOLIDSHW6 WEDGE6     653    693    713    654    694    714 MAT       1 EAS soshw6
-    287 SOLIDSHW6 WEDGE6     655    695    697    656    696    698 MAT       1 EAS soshw6
-    288 SOLIDSHW6 WEDGE6     695    653    713    696    654    714 MAT       1 EAS soshw6
-    289 SOLIDSHW6 WEDGE6     657    697    699    658    698    700 MAT       1 EAS soshw6
-    290 SOLIDSHW6 WEDGE6     659    699    701    660    700    702 MAT       1 EAS soshw6
-    291 SOLIDSHW6 WEDGE6     663    703    711    664    704    712 MAT       1 EAS soshw6
-    292 SOLIDSHW6 WEDGE6     675    673    715    676    674    716 MAT       1 EAS soshw6
-    293 SOLIDSHW6 WEDGE6     703    675    715    704    676    716 MAT       1 EAS soshw6
-    294 SOLIDSHW6 WEDGE6     677    701    717    678    702    718 MAT       1 EAS soshw6
-    295 SOLIDSHW6 WEDGE6     679    677    719    680    678    720 MAT       1 EAS soshw6
-    296 SOLIDSHW6 WEDGE6     681    679    721    682    680    722 MAT       1 EAS soshw6
-    297 SOLIDSHW6 WEDGE6     683    681    723    684    682    724 MAT       1 EAS soshw6
-    298 SOLIDSHW6 WEDGE6     685    683    725    686    684    726 MAT       1 EAS soshw6
-    299 SOLIDSHW6 WEDGE6     689    685    727    690    686    728 MAT       1 EAS soshw6
-    300 SOLIDSHW6 WEDGE6     687    689    729    688    690    730 MAT       1 EAS soshw6
-    301 SOLIDSHW6 WEDGE6     705    687    729    706    688    730 MAT       1 EAS soshw6
-    302 SOLIDSHW6 WEDGE6     669    705    707    670    706    708 MAT       1 EAS soshw6
-    303 SOLIDSHW6 WEDGE6     671    707    709    672    708    710 MAT       1 EAS soshw6
-    304 SOLIDSHW6 WEDGE6     691    709    731    692    710    732 MAT       1 EAS soshw6
-    305 SOLIDSHW6 WEDGE6     693    711    733    694    712    734 MAT       1 EAS soshw6
-    306 SOLIDSHW6 WEDGE6     713    693    735    714    694    736 MAT       1 EAS soshw6
-    307 SOLIDSHW6 WEDGE6     697    695    737    698    696    738 MAT       1 EAS soshw6
-    308 SOLIDSHW6 WEDGE6     695    713    739    696    714    740 MAT       1 EAS soshw6
-    309 SOLIDSHW6 WEDGE6     699    697    741    700    698    742 MAT       1 EAS soshw6
-    310 SOLIDSHW6 WEDGE6     701    699    743    702    700    744 MAT       1 EAS soshw6
-    311 SOLIDSHW6 WEDGE6     711    703    745    712    704    746 MAT       1 EAS soshw6
-    312 SOLIDSHW6 WEDGE6     703    715    745    704    716    746 MAT       1 EAS soshw6
-    313 SOLIDSHW6 WEDGE6     717    701    743    718    702    744 MAT       1 EAS soshw6
-    314 SOLIDSHW6 WEDGE6     677    717    719    678    718    720 MAT       1 EAS soshw6
-    315 SOLIDSHW6 WEDGE6     679    719    721    680    720    722 MAT       1 EAS soshw6
-    316 SOLIDSHW6 WEDGE6     681    721    723    682    722    724 MAT       1 EAS soshw6
-    317 SOLIDSHW6 WEDGE6     683    723    725    684    724    726 MAT       1 EAS soshw6
-    318 SOLIDSHW6 WEDGE6     685    725    727    686    726    728 MAT       1 EAS soshw6
-    319 SOLIDSHW6 WEDGE6     689    727    747    690    728    748 MAT       1 EAS soshw6
-    320 SOLIDSHW6 WEDGE6     729    689    747    730    690    748 MAT       1 EAS soshw6
-    321 SOLIDSHW6 WEDGE6     705    729    749    706    730    750 MAT       1 EAS soshw6
-    322 SOLIDSHW6 WEDGE6     707    705    751    708    706    752 MAT       1 EAS soshw6
-    323 SOLIDSHW6 WEDGE6     709    707    753    710    708    754 MAT       1 EAS soshw6
-    324 SOLIDSHW6 WEDGE6     731    709    753    732    710    754 MAT       1 EAS soshw6
-    325 SOLIDSHW6 WEDGE6     733    711    755    734    712    756 MAT       1 EAS soshw6
-    326 SOLIDSHW6 WEDGE6     693    733    735    694    734    736 MAT       1 EAS soshw6
-    327 SOLIDSHW6 WEDGE6     713    735    739    714    736    740 MAT       1 EAS soshw6
-    328 SOLIDSHW6 WEDGE6     737    695    739    738    696    740 MAT       1 EAS soshw6
-    329 SOLIDSHW6 WEDGE6     697    737    741    698    738    742 MAT       1 EAS soshw6
-    330 SOLIDSHW6 WEDGE6     699    741    743    700    742    744 MAT       1 EAS soshw6
-    331 SOLIDSHW6 WEDGE6     711    745    755    712    746    756 MAT       1 EAS soshw6
-    332 SOLIDSHW6 WEDGE6     745    715    757    746    716    758 MAT       1 EAS soshw6
-    333 SOLIDSHW6 WEDGE6     717    743    759    718    744    760 MAT       1 EAS soshw6
-    334 SOLIDSHW6 WEDGE6     719    717    761    720    718    762 MAT       1 EAS soshw6
-    335 SOLIDSHW6 WEDGE6     721    719    763    722    720    764 MAT       1 EAS soshw6
-    336 SOLIDSHW6 WEDGE6     723    721    765    724    722    766 MAT       1 EAS soshw6
-    337 SOLIDSHW6 WEDGE6     725    723    767    726    724    768 MAT       1 EAS soshw6
-    338 SOLIDSHW6 WEDGE6     727    725    769    728    726    770 MAT       1 EAS soshw6
-    339 SOLIDSHW6 WEDGE6     747    727    771    748    728    772 MAT       1 EAS soshw6
-    340 SOLIDSHW6 WEDGE6     729    747    773    730    748    774 MAT       1 EAS soshw6
-    341 SOLIDSHW6 WEDGE6     749    729    773    750    730    774 MAT       1 EAS soshw6
-    342 SOLIDSHW6 WEDGE6     705    749    751    706    750    752 MAT       1 EAS soshw6
-    343 SOLIDSHW6 WEDGE6     707    751    753    708    752    754 MAT       1 EAS soshw6
-    344 SOLIDSHW6 WEDGE6     731    753    775    732    754    776 MAT       1 EAS soshw6
-    345 SOLIDSHW6 WEDGE6     733    755    777    734    756    778 MAT       1 EAS soshw6
-    346 SOLIDSHW6 WEDGE6     735    733    779    736    734    780 MAT       1 EAS soshw6
-    347 SOLIDSHW6 WEDGE6     739    735    781    740    736    782 MAT       1 EAS soshw6
-    348 SOLIDSHW6 WEDGE6     737    739    783    738    740    784 MAT       1 EAS soshw6
-    349 SOLIDSHW6 WEDGE6     741    737    785    742    738    786 MAT       1 EAS soshw6
-    350 SOLIDSHW6 WEDGE6     743    741    787    744    742    788 MAT       1 EAS soshw6
-    351 SOLIDSHW6 WEDGE6     755    745    789    756    746    790 MAT       1 EAS soshw6
-    352 SOLIDSHW6 WEDGE6     745    757    789    746    758    790 MAT       1 EAS soshw6
-    353 SOLIDSHW6 WEDGE6     759    743    787    760    744    788 MAT       1 EAS soshw6
-    354 SOLIDSHW6 WEDGE6     717    759    761    718    760    762 MAT       1 EAS soshw6
-    355 SOLIDSHW6 WEDGE6     719    761    763    720    762    764 MAT       1 EAS soshw6
-    356 SOLIDSHW6 WEDGE6     721    763    765    722    764    766 MAT       1 EAS soshw6
-    357 SOLIDSHW6 WEDGE6     723    765    767    724    766    768 MAT       1 EAS soshw6
-    358 SOLIDSHW6 WEDGE6     725    767    769    726    768    770 MAT       1 EAS soshw6
-    359 SOLIDSHW6 WEDGE6     727    769    771    728    770    772 MAT       1 EAS soshw6
-    360 SOLIDSHW6 WEDGE6     747    771    791    748    772    792 MAT       1 EAS soshw6
-    361 SOLIDSHW6 WEDGE6     773    747    791    774    748    792 MAT       1 EAS soshw6
-    362 SOLIDSHW6 WEDGE6     749    773    793    750    774    794 MAT       1 EAS soshw6
-    363 SOLIDSHW6 WEDGE6     751    749    795    752    750    796 MAT       1 EAS soshw6
-    364 SOLIDSHW6 WEDGE6     753    751    797    754    752    798 MAT       1 EAS soshw6
-    365 SOLIDSHW6 WEDGE6     775    753    797    776    754    798 MAT       1 EAS soshw6
-    366 SOLIDSHW6 WEDGE6     731    775    799    732    776    800 MAT       1 EAS soshw6
-    367 SOLIDSHW6 WEDGE6     777    755    801    778    756    802 MAT       1 EAS soshw6
-    368 SOLIDSHW6 WEDGE6     733    777    779    734    778    780 MAT       1 EAS soshw6
-    369 SOLIDSHW6 WEDGE6     735    779    781    736    780    782 MAT       1 EAS soshw6
-    370 SOLIDSHW6 WEDGE6     739    781    783    740    782    784 MAT       1 EAS soshw6
-    371 SOLIDSHW6 WEDGE6     737    783    785    738    784    786 MAT       1 EAS soshw6
-    372 SOLIDSHW6 WEDGE6     741    785    787    742    786    788 MAT       1 EAS soshw6
-    373 SOLIDSHW6 WEDGE6     755    789    801    756    790    802 MAT       1 EAS soshw6
-    374 SOLIDSHW6 WEDGE6     789    757    803    790    758    804 MAT       1 EAS soshw6
-    375 SOLIDSHW6 WEDGE6     759    787    805    760    788    806 MAT       1 EAS soshw6
-    376 SOLIDSHW6 WEDGE6     761    759    805    762    760    806 MAT       1 EAS soshw6
-    377 SOLIDSHW6 WEDGE6     763    761    807    764    762    808 MAT       1 EAS soshw6
-    378 SOLIDSHW6 WEDGE6     765    763    809    766    764    810 MAT       1 EAS soshw6
-    379 SOLIDSHW6 WEDGE6     767    765    811    768    766    812 MAT       1 EAS soshw6
-    380 SOLIDSHW6 WEDGE6     769    767    813    770    768    814 MAT       1 EAS soshw6
-    381 SOLIDSHW6 WEDGE6     771    769    815    772    770    816 MAT       1 EAS soshw6
-    382 SOLIDSHW6 WEDGE6     791    771    817    792    772    818 MAT       1 EAS soshw6
-    383 SOLIDSHW6 WEDGE6     773    791    819    774    792    820 MAT       1 EAS soshw6
-    384 SOLIDSHW6 WEDGE6     793    773    819    794    774    820 MAT       1 EAS soshw6
-    385 SOLIDSHW6 WEDGE6     749    793    795    750    794    796 MAT       1 EAS soshw6
-    386 SOLIDSHW6 WEDGE6     751    795    797    752    796    798 MAT       1 EAS soshw6
-    387 SOLIDSHW6 WEDGE6     775    797    821    776    798    822 MAT       1 EAS soshw6
-    388 SOLIDSHW6 WEDGE6     799    775    823    800    776    824 MAT       1 EAS soshw6
-    389 SOLIDSHW6 WEDGE6     777    801    825    778    802    826 MAT       1 EAS soshw6
-    390 SOLIDSHW6 WEDGE6     779    777    827    780    778    828 MAT       1 EAS soshw6
-    391 SOLIDSHW6 WEDGE6     781    779    829    782    780    830 MAT       1 EAS soshw6
-    392 SOLIDSHW6 WEDGE6     783    781    829    784    782    830 MAT       1 EAS soshw6
-    393 SOLIDSHW6 WEDGE6     785    783    831    786    784    832 MAT       1 EAS soshw6
-    394 SOLIDSHW6 WEDGE6     787    785    833    788    786    834 MAT       1 EAS soshw6
-    395 SOLIDSHW6 WEDGE6     801    789    835    802    790    836 MAT       1 EAS soshw6
-    396 SOLIDSHW6 WEDGE6     789    803    835    790    804    836 MAT       1 EAS soshw6
-    397 SOLIDSHW6 WEDGE6     805    787    833    806    788    834 MAT       1 EAS soshw6
-    398 SOLIDSHW6 WEDGE6     761    805    807    762    806    808 MAT       1 EAS soshw6
-    399 SOLIDSHW6 WEDGE6     763    807    809    764    808    810 MAT       1 EAS soshw6
-    400 SOLIDSHW6 WEDGE6     765    809    811    766    810    812 MAT       1 EAS soshw6
-    401 SOLIDSHW6 WEDGE6     767    811    813    768    812    814 MAT       1 EAS soshw6
-    402 SOLIDSHW6 WEDGE6     769    813    815    770    814    816 MAT       1 EAS soshw6
-    403 SOLIDSHW6 WEDGE6     771    815    817    772    816    818 MAT       1 EAS soshw6
-    404 SOLIDSHW6 WEDGE6     791    817    837    792    818    838 MAT       1 EAS soshw6
-    405 SOLIDSHW6 WEDGE6     819    791    837    820    792    838 MAT       1 EAS soshw6
-    406 SOLIDSHW6 WEDGE6     793    819    839    794    820    840 MAT       1 EAS soshw6
-    407 SOLIDSHW6 WEDGE6     795    793    839    796    794    840 MAT       1 EAS soshw6
-    408 SOLIDSHW6 WEDGE6     797    795    841    798    796    842 MAT       1 EAS soshw6
-    409 SOLIDSHW6 WEDGE6     821    797    841    822    798    842 MAT       1 EAS soshw6
-    410 SOLIDSHW6 WEDGE6     775    821    823    776    822    824 MAT       1 EAS soshw6
-    411 SOLIDSHW6 WEDGE6     825    801    843    826    802    844 MAT       1 EAS soshw6
-    412 SOLIDSHW6 WEDGE6     777    825    827    778    826    828 MAT       1 EAS soshw6
-    413 SOLIDSHW6 WEDGE6     779    827    829    780    828    830 MAT       1 EAS soshw6
-    414 SOLIDSHW6 WEDGE6     783    829    831    784    830    832 MAT       1 EAS soshw6
-    415 SOLIDSHW6 WEDGE6     785    831    833    786    832    834 MAT       1 EAS soshw6
-    416 SOLIDSHW6 WEDGE6     801    835    843    802    836    844 MAT       1 EAS soshw6
-    417 SOLIDSHW6 WEDGE6     805    833    845    806    834    846 MAT       1 EAS soshw6
-    418 SOLIDSHW6 WEDGE6     807    805    847    808    806    848 MAT       1 EAS soshw6
-    419 SOLIDSHW6 WEDGE6     809    807    849    810    808    850 MAT       1 EAS soshw6
-    420 SOLIDSHW6 WEDGE6     811    809    851    812    810    852 MAT       1 EAS soshw6
-    421 SOLIDSHW6 WEDGE6     813    811    853    814    812    854 MAT       1 EAS soshw6
-    422 SOLIDSHW6 WEDGE6     815    813    855    816    814    856 MAT       1 EAS soshw6
-    423 SOLIDSHW6 WEDGE6     817    815    857    818    816    858 MAT       1 EAS soshw6
-    424 SOLIDSHW6 WEDGE6     837    817    859    838    818    860 MAT       1 EAS soshw6
-    425 SOLIDSHW6 WEDGE6     819    837    861    820    838    862 MAT       1 EAS soshw6
-    426 SOLIDSHW6 WEDGE6     839    819    861    840    820    862 MAT       1 EAS soshw6
-    427 SOLIDSHW6 WEDGE6     795    839    841    796    840    842 MAT       1 EAS soshw6
-    428 SOLIDSHW6 WEDGE6     821    841    863    822    842    864 MAT       1 EAS soshw6
-    429 SOLIDSHW6 WEDGE6     823    821    865    824    822    866 MAT       1 EAS soshw6
-    430 SOLIDSHW6 WEDGE6     825    843    867    826    844    868 MAT       1 EAS soshw6
-    431 SOLIDSHW6 WEDGE6     827    825    869    828    826    870 MAT       1 EAS soshw6
-    432 SOLIDSHW6 WEDGE6     829    827    871    830    828    872 MAT       1 EAS soshw6
-    433 SOLIDSHW6 WEDGE6     831    829    873    832    830    874 MAT       1 EAS soshw6
-    434 SOLIDSHW6 WEDGE6     833    831    875    834    832    876 MAT       1 EAS soshw6
-    435 SOLIDSHW6 WEDGE6     843    835    877    844    836    878 MAT       1 EAS soshw6
-    436 SOLIDSHW6 WEDGE6     845    833    875    846    834    876 MAT       1 EAS soshw6
-    437 SOLIDSHW6 WEDGE6     805    845    847    806    846    848 MAT       1 EAS soshw6
-    438 SOLIDSHW6 WEDGE6     807    847    849    808    848    850 MAT       1 EAS soshw6
-    439 SOLIDSHW6 WEDGE6     809    849    851    810    850    852 MAT       1 EAS soshw6
-    440 SOLIDSHW6 WEDGE6     811    851    853    812    852    854 MAT       1 EAS soshw6
-    441 SOLIDSHW6 WEDGE6     813    853    855    814    854    856 MAT       1 EAS soshw6
-    442 SOLIDSHW6 WEDGE6     815    855    857    816    856    858 MAT       1 EAS soshw6
-    443 SOLIDSHW6 WEDGE6     817    857    859    818    858    860 MAT       1 EAS soshw6
-    444 SOLIDSHW6 WEDGE6     837    859    879    838    860    880 MAT       1 EAS soshw6
-    445 SOLIDSHW6 WEDGE6     861    837    879    862    838    880 MAT       1 EAS soshw6
-    446 SOLIDSHW6 WEDGE6     839    861    881    840    862    882 MAT       1 EAS soshw6
-    447 SOLIDSHW6 WEDGE6     841    839    883    842    840    884 MAT       1 EAS soshw6
-    448 SOLIDSHW6 WEDGE6     863    841    883    864    842    884 MAT       1 EAS soshw6
-    449 SOLIDSHW6 WEDGE6     821    863    865    822    864    866 MAT       1 EAS soshw6
-    450 SOLIDSHW6 WEDGE6     823    865    885    824    866    886 MAT       1 EAS soshw6
-    451 SOLIDSHW6 WEDGE6     867    843    877    868    844    878 MAT       1 EAS soshw6
-    452 SOLIDSHW6 WEDGE6     825    867    869    826    868    870 MAT       1 EAS soshw6
-    453 SOLIDSHW6 WEDGE6     827    869    871    828    870    872 MAT       1 EAS soshw6
-    454 SOLIDSHW6 WEDGE6     829    871    873    830    872    874 MAT       1 EAS soshw6
-    455 SOLIDSHW6 WEDGE6     831    873    875    832    874    876 MAT       1 EAS soshw6
-    456 SOLIDSHW6 WEDGE6     845    875    887    846    876    888 MAT       1 EAS soshw6
-    457 SOLIDSHW6 WEDGE6     847    845    889    848    846    890 MAT       1 EAS soshw6
-    458 SOLIDSHW6 WEDGE6     849    847    891    850    848    892 MAT       1 EAS soshw6
-    459 SOLIDSHW6 WEDGE6     851    849    893    852    850    894 MAT       1 EAS soshw6
-    460 SOLIDSHW6 WEDGE6     853    851    895    854    852    896 MAT       1 EAS soshw6
-    461 SOLIDSHW6 WEDGE6     855    853    897    856    854    898 MAT       1 EAS soshw6
-    462 SOLIDSHW6 WEDGE6     857    855    899    858    856    900 MAT       1 EAS soshw6
-    463 SOLIDSHW6 WEDGE6     859    857    901    860    858    902 MAT       1 EAS soshw6
-    464 SOLIDSHW6 WEDGE6     879    859    903    880    860    904 MAT       1 EAS soshw6
-    465 SOLIDSHW6 WEDGE6     861    879    905    862    880    906 MAT       1 EAS soshw6
-    466 SOLIDSHW6 WEDGE6     881    861    905    882    862    906 MAT       1 EAS soshw6
-    467 SOLIDSHW6 WEDGE6     839    881    883    840    882    884 MAT       1 EAS soshw6
-    468 SOLIDSHW6 WEDGE6     863    883    907    864    884    908 MAT       1 EAS soshw6
-    469 SOLIDSHW6 WEDGE6     865    863    909    866    864    910 MAT       1 EAS soshw6
-    470 SOLIDSHW6 WEDGE6     885    865    909    886    866    910 MAT       1 EAS soshw6
-    471 SOLIDSHW6 WEDGE6     867    877    911    868    878    912 MAT       1 EAS soshw6
-    472 SOLIDSHW6 WEDGE6     869    867    913    870    868    914 MAT       1 EAS soshw6
-    473 SOLIDSHW6 WEDGE6     871    869    915    872    870    916 MAT       1 EAS soshw6
-    474 SOLIDSHW6 WEDGE6     873    871    917    874    872    918 MAT       1 EAS soshw6
-    475 SOLIDSHW6 WEDGE6     875    873    919    876    874    920 MAT       1 EAS soshw6
-    476 SOLIDSHW6 WEDGE6     887    875    919    888    876    920 MAT       1 EAS soshw6
-    477 SOLIDSHW6 WEDGE6     845    887    889    846    888    890 MAT       1 EAS soshw6
-    478 SOLIDSHW6 WEDGE6     847    889    891    848    890    892 MAT       1 EAS soshw6
-    479 SOLIDSHW6 WEDGE6     849    891    893    850    892    894 MAT       1 EAS soshw6
-    480 SOLIDSHW6 WEDGE6     851    893    895    852    894    896 MAT       1 EAS soshw6
-    481 SOLIDSHW6 WEDGE6     853    895    897    854    896    898 MAT       1 EAS soshw6
-    482 SOLIDSHW6 WEDGE6     855    897    899    856    898    900 MAT       1 EAS soshw6
-    483 SOLIDSHW6 WEDGE6     857    899    901    858    900    902 MAT       1 EAS soshw6
-    484 SOLIDSHW6 WEDGE6     859    901    903    860    902    904 MAT       1 EAS soshw6
-    485 SOLIDSHW6 WEDGE6     879    903    921    880    904    922 MAT       1 EAS soshw6
-    486 SOLIDSHW6 WEDGE6     905    879    921    906    880    922 MAT       1 EAS soshw6
-    487 SOLIDSHW6 WEDGE6     881    905    923    882    906    924 MAT       1 EAS soshw6
-    488 SOLIDSHW6 WEDGE6     883    881    925    884    882    926 MAT       1 EAS soshw6
-    489 SOLIDSHW6 WEDGE6     907    883    925    908    884    926 MAT       1 EAS soshw6
-    490 SOLIDSHW6 WEDGE6     863    907    909    864    908    910 MAT       1 EAS soshw6
-    491 SOLIDSHW6 WEDGE6     885    909    927    886    910    928 MAT       1 EAS soshw6
-    492 SOLIDSHW6 WEDGE6     867    911    913    868    912    914 MAT       1 EAS soshw6
-    493 SOLIDSHW6 WEDGE6     911    877    929    912    878    930 MAT       1 EAS soshw6
-    494 SOLIDSHW6 WEDGE6     869    913    915    870    914    916 MAT       1 EAS soshw6
-    495 SOLIDSHW6 WEDGE6     871    915    917    872    916    918 MAT       1 EAS soshw6
-    496 SOLIDSHW6 WEDGE6     873    917    919    874    918    920 MAT       1 EAS soshw6
-    497 SOLIDSHW6 WEDGE6     887    919    931    888    920    932 MAT       1 EAS soshw6
-    498 SOLIDSHW6 WEDGE6     889    887    933    890    888    934 MAT       1 EAS soshw6
-    499 SOLIDSHW6 WEDGE6     891    889    935    892    890    936 MAT       1 EAS soshw6
-    500 SOLIDSHW6 WEDGE6     893    891    937    894    892    938 MAT       1 EAS soshw6
-    501 SOLIDSHW6 WEDGE6     895    893    939    896    894    940 MAT       1 EAS soshw6
-    502 SOLIDSHW6 WEDGE6     897    895    941    898    896    942 MAT       1 EAS soshw6
-    503 SOLIDSHW6 WEDGE6     899    897    943    900    898    944 MAT       1 EAS soshw6
-    504 SOLIDSHW6 WEDGE6     901    899    945    902    900    946 MAT       1 EAS soshw6
-    505 SOLIDSHW6 WEDGE6     903    901    947    904    902    948 MAT       1 EAS soshw6
-    506 SOLIDSHW6 WEDGE6     921    903    949    922    904    950 MAT       1 EAS soshw6
-    507 SOLIDSHW6 WEDGE6     905    921    951    906    922    952 MAT       1 EAS soshw6
-    508 SOLIDSHW6 WEDGE6     923    905    951    924    906    952 MAT       1 EAS soshw6
-    509 SOLIDSHW6 WEDGE6     881    923    925    882    924    926 MAT       1 EAS soshw6
-    510 SOLIDSHW6 WEDGE6     907    925    953    908    926    954 MAT       1 EAS soshw6
-    511 SOLIDSHW6 WEDGE6     909    907    955    910    908    956 MAT       1 EAS soshw6
-    512 SOLIDSHW6 WEDGE6     927    909    955    928    910    956 MAT       1 EAS soshw6
-    513 SOLIDSHW6 WEDGE6     913    911    957    914    912    958 MAT       1 EAS soshw6
-    514 SOLIDSHW6 WEDGE6     911    929    959    912    930    960 MAT       1 EAS soshw6
-    515 SOLIDSHW6 WEDGE6     915    913    961    916    914    962 MAT       1 EAS soshw6
-    516 SOLIDSHW6 WEDGE6     917    915    961    918    916    962 MAT       1 EAS soshw6
-    517 SOLIDSHW6 WEDGE6     919    917    963    920    918    964 MAT       1 EAS soshw6
-    518 SOLIDSHW6 WEDGE6     931    919    963    932    920    964 MAT       1 EAS soshw6
-    519 SOLIDSHW6 WEDGE6     887    931    933    888    932    934 MAT       1 EAS soshw6
-    520 SOLIDSHW6 WEDGE6     889    933    935    890    934    936 MAT       1 EAS soshw6
-    521 SOLIDSHW6 WEDGE6     891    935    937    892    936    938 MAT       1 EAS soshw6
-    522 SOLIDSHW6 WEDGE6     893    937    939    894    938    940 MAT       1 EAS soshw6
-    523 SOLIDSHW6 WEDGE6     895    939    941    896    940    942 MAT       1 EAS soshw6
-    524 SOLIDSHW6 WEDGE6     897    941    943    898    942    944 MAT       1 EAS soshw6
-    525 SOLIDSHW6 WEDGE6     899    943    945    900    944    946 MAT       1 EAS soshw6
-    526 SOLIDSHW6 WEDGE6     901    945    947    902    946    948 MAT       1 EAS soshw6
-    527 SOLIDSHW6 WEDGE6     903    947    949    904    948    950 MAT       1 EAS soshw6
-    528 SOLIDSHW6 WEDGE6     921    949    965    922    950    966 MAT       1 EAS soshw6
-    529 SOLIDSHW6 WEDGE6     951    921    965    952    922    966 MAT       1 EAS soshw6
-    530 SOLIDSHW6 WEDGE6     923    951    967    924    952    968 MAT       1 EAS soshw6
-    531 SOLIDSHW6 WEDGE6     925    923    969    926    924    970 MAT       1 EAS soshw6
-    532 SOLIDSHW6 WEDGE6     953    925    969    954    926    970 MAT       1 EAS soshw6
-    533 SOLIDSHW6 WEDGE6     907    953    955    908    954    956 MAT       1 EAS soshw6
-    534 SOLIDSHW6 WEDGE6     927    955    971    928    956    972 MAT       1 EAS soshw6
-    535 SOLIDSHW6 WEDGE6     957    911    959    958    912    960 MAT       1 EAS soshw6
-    536 SOLIDSHW6 WEDGE6     913    957    973    914    958    974 MAT       1 EAS soshw6
-    537 SOLIDSHW6 WEDGE6     961    913    973    962    914    974 MAT       1 EAS soshw6
-    538 SOLIDSHW6 WEDGE6     917    961    963    918    962    964 MAT       1 EAS soshw6
-    539 SOLIDSHW6 WEDGE6     931    963    975    932    964    976 MAT       1 EAS soshw6
-    540 SOLIDSHW6 WEDGE6     933    931    977    934    932    978 MAT       1 EAS soshw6
-    541 SOLIDSHW6 WEDGE6     935    933    979    936    934    980 MAT       1 EAS soshw6
-    542 SOLIDSHW6 WEDGE6     937    935    981    938    936    982 MAT       1 EAS soshw6
-    543 SOLIDSHW6 WEDGE6     939    937    981    940    938    982 MAT       1 EAS soshw6
-    544 SOLIDSHW6 WEDGE6     941    939    983    942    940    984 MAT       1 EAS soshw6
-    545 SOLIDSHW6 WEDGE6     943    941    985    944    942    986 MAT       1 EAS soshw6
-    546 SOLIDSHW6 WEDGE6     945    943    987    946    944    988 MAT       1 EAS soshw6
-    547 SOLIDSHW6 WEDGE6     947    945    989    948    946    990 MAT       1 EAS soshw6
-    548 SOLIDSHW6 WEDGE6     949    947    991    950    948    992 MAT       1 EAS soshw6
-    549 SOLIDSHW6 WEDGE6     965    949    991    966    950    992 MAT       1 EAS soshw6
-    550 SOLIDSHW6 WEDGE6     951    965    967    952    966    968 MAT       1 EAS soshw6
-    551 SOLIDSHW6 WEDGE6     923    967    969    924    968    970 MAT       1 EAS soshw6
-    552 SOLIDSHW6 WEDGE6     957    959    993    958    960    994 MAT       1 EAS soshw6
-    553 SOLIDSHW6 WEDGE6     973    957    995    974    958    996 MAT       1 EAS soshw6
-    554 SOLIDSHW6 WEDGE6     961    973    997    962    974    998 MAT       1 EAS soshw6
-    555 SOLIDSHW6 WEDGE6     963    961    997    964    962    998 MAT       1 EAS soshw6
-    556 SOLIDSHW6 WEDGE6     975    963    997    976    964    998 MAT       1 EAS soshw6
-    557 SOLIDSHW6 WEDGE6     931    975    977    932    976    978 MAT       1 EAS soshw6
-    558 SOLIDSHW6 WEDGE6     933    977    979    934    978    980 MAT       1 EAS soshw6
-    559 SOLIDSHW6 WEDGE6     935    979    981    936    980    982 MAT       1 EAS soshw6
-    560 SOLIDSHW6 WEDGE6     939    981    999    940    982   1000 MAT       1 EAS soshw6
-    561 SOLIDSHW6 WEDGE6     983    939    999    984    940   1000 MAT       1 EAS soshw6
-    562 SOLIDSHW6 WEDGE6     941    983    985    942    984    986 MAT       1 EAS soshw6
-    563 SOLIDSHW6 WEDGE6     943    985    987    944    986    988 MAT       1 EAS soshw6
-    564 SOLIDSHW6 WEDGE6     945    987    989    946    988    990 MAT       1 EAS soshw6
-    565 SOLIDSHW6 WEDGE6     947    989    991    948    990    992 MAT       1 EAS soshw6
-    566 SOLIDSHW6 WEDGE6     965    991   1001    966    992   1002 MAT       1 EAS soshw6
-    567 SOLIDSHW6 WEDGE6     957    993    995    958    994    996 MAT       1 EAS soshw6
-    568 SOLIDSHW6 WEDGE6     993    959   1003    994    960   1004 MAT       1 EAS soshw6
-    569 SOLIDSHW6 WEDGE6     973    995   1005    974    996   1006 MAT       1 EAS soshw6
-    570 SOLIDSHW6 WEDGE6     997    973   1005    998    974   1006 MAT       1 EAS soshw6
-    571 SOLIDSHW6 WEDGE6     975    997   1007    976    998   1008 MAT       1 EAS soshw6
-    572 SOLIDSHW6 WEDGE6     977    975   1009    978    976   1010 MAT       1 EAS soshw6
-    573 SOLIDSHW6 WEDGE6     979    977   1011    980    978   1012 MAT       1 EAS soshw6
-    574 SOLIDSHW6 WEDGE6     981    979   1013    982    980   1014 MAT       1 EAS soshw6
-    575 SOLIDSHW6 WEDGE6     999    981   1013   1000    982   1014 MAT       1 EAS soshw6
-    576 SOLIDSHW6 WEDGE6     983    999   1015    984   1000   1016 MAT       1 EAS soshw6
-    577 SOLIDSHW6 WEDGE6     985    983   1017    986    984   1018 MAT       1 EAS soshw6
-    578 SOLIDSHW6 WEDGE6     987    985   1019    988    986   1020 MAT       1 EAS soshw6
-    579 SOLIDSHW6 WEDGE6     989    987   1021    990    988   1022 MAT       1 EAS soshw6
-    580 SOLIDSHW6 WEDGE6     991    989   1023    992    990   1024 MAT       1 EAS soshw6
-    581 SOLIDSHW6 WEDGE6    1001    991   1023   1002    992   1024 MAT       1 EAS soshw6
-    582 SOLIDSHW6 WEDGE6     995    993   1025    996    994   1026 MAT       1 EAS soshw6
-    583 SOLIDSHW6 WEDGE6     993   1003   1025    994   1004   1026 MAT       1 EAS soshw6
-    584 SOLIDSHW6 WEDGE6    1005    995   1027   1006    996   1028 MAT       1 EAS soshw6
-    585 SOLIDSHW6 WEDGE6     997   1005   1007    998   1006   1008 MAT       1 EAS soshw6
-    586 SOLIDSHW6 WEDGE6     975   1007   1009    976   1008   1010 MAT       1 EAS soshw6
-    587 SOLIDSHW6 WEDGE6     977   1009   1011    978   1010   1012 MAT       1 EAS soshw6
-    588 SOLIDSHW6 WEDGE6     979   1011   1013    980   1012   1014 MAT       1 EAS soshw6
-    589 SOLIDSHW6 WEDGE6     999   1013   1029   1000   1014   1030 MAT       1 EAS soshw6
-    590 SOLIDSHW6 WEDGE6    1015    999   1029   1016   1000   1030 MAT       1 EAS soshw6
-    591 SOLIDSHW6 WEDGE6     983   1015   1017    984   1016   1018 MAT       1 EAS soshw6
-    592 SOLIDSHW6 WEDGE6     985   1017   1019    986   1018   1020 MAT       1 EAS soshw6
-    593 SOLIDSHW6 WEDGE6     987   1019   1021    988   1020   1022 MAT       1 EAS soshw6
-    594 SOLIDSHW6 WEDGE6     989   1021   1023    990   1022   1024 MAT       1 EAS soshw6
-    595 SOLIDSHW6 WEDGE6     995   1025   1027    996   1026   1028 MAT       1 EAS soshw6
-    596 SOLIDSHW6 WEDGE6    1025   1003   1031   1026   1004   1032 MAT       1 EAS soshw6
-    597 SOLIDSHW6 WEDGE6    1005   1027   1033   1006   1028   1034 MAT       1 EAS soshw6
-    598 SOLIDSHW6 WEDGE6    1007   1005   1033   1008   1006   1034 MAT       1 EAS soshw6
-    599 SOLIDSHW6 WEDGE6    1009   1007   1035   1010   1008   1036 MAT       1 EAS soshw6
-    600 SOLIDSHW6 WEDGE6    1011   1009   1037   1012   1010   1038 MAT       1 EAS soshw6
-    601 SOLIDSHW6 WEDGE6    1013   1011   1039   1014   1012   1040 MAT       1 EAS soshw6
-    602 SOLIDSHW6 WEDGE6    1029   1013   1039   1030   1014   1040 MAT       1 EAS soshw6
-    603 SOLIDSHW6 WEDGE6    1015   1029   1041   1016   1030   1042 MAT       1 EAS soshw6
-    604 SOLIDSHW6 WEDGE6    1017   1015   1043   1018   1016   1044 MAT       1 EAS soshw6
-    605 SOLIDSHW6 WEDGE6    1019   1017   1045   1020   1018   1046 MAT       1 EAS soshw6
-    606 SOLIDSHW6 WEDGE6    1021   1019   1047   1022   1020   1048 MAT       1 EAS soshw6
-    607 SOLIDSHW6 WEDGE6    1023   1021   1047   1024   1022   1048 MAT       1 EAS soshw6
-    608 SOLIDSHW6 WEDGE6    1027   1025   1049   1028   1026   1050 MAT       1 EAS soshw6
-    609 SOLIDSHW6 WEDGE6    1025   1031   1049   1026   1032   1050 MAT       1 EAS soshw6
-    610 SOLIDSHW6 WEDGE6    1033   1027   1051   1034   1028   1052 MAT       1 EAS soshw6
-    611 SOLIDSHW6 WEDGE6    1007   1033   1035   1008   1034   1036 MAT       1 EAS soshw6
-    612 SOLIDSHW6 WEDGE6    1009   1035   1037   1010   1036   1038 MAT       1 EAS soshw6
-    613 SOLIDSHW6 WEDGE6    1011   1037   1039   1012   1038   1040 MAT       1 EAS soshw6
-    614 SOLIDSHW6 WEDGE6    1029   1039   1053   1030   1040   1054 MAT       1 EAS soshw6
-    615 SOLIDSHW6 WEDGE6    1041   1029   1053   1042   1030   1054 MAT       1 EAS soshw6
-    616 SOLIDSHW6 WEDGE6    1015   1041   1043   1016   1042   1044 MAT       1 EAS soshw6
-    617 SOLIDSHW6 WEDGE6    1017   1043   1045   1018   1044   1046 MAT       1 EAS soshw6
-    618 SOLIDSHW6 WEDGE6    1019   1045   1047   1020   1046   1048 MAT       1 EAS soshw6
-    619 SOLIDSHW6 WEDGE6    1027   1049   1051   1028   1050   1052 MAT       1 EAS soshw6
-    620 SOLIDSHW6 WEDGE6    1049   1031   1055   1050   1032   1056 MAT       1 EAS soshw6
-    621 SOLIDSHW6 WEDGE6    1033   1051   1057   1034   1052   1058 MAT       1 EAS soshw6
-    622 SOLIDSHW6 WEDGE6    1035   1033   1057   1036   1034   1058 MAT       1 EAS soshw6
-    623 SOLIDSHW6 WEDGE6    1037   1035   1059   1038   1036   1060 MAT       1 EAS soshw6
-    624 SOLIDSHW6 WEDGE6    1039   1037   1061   1040   1038   1062 MAT       1 EAS soshw6
-    625 SOLIDSHW6 WEDGE6    1053   1039   1061   1054   1040   1062 MAT       1 EAS soshw6
-    626 SOLIDSHW6 WEDGE6    1041   1053   1063   1042   1054   1064 MAT       1 EAS soshw6
-    627 SOLIDSHW6 WEDGE6    1043   1041   1065   1044   1042   1066 MAT       1 EAS soshw6
-    628 SOLIDSHW6 WEDGE6    1045   1043   1067   1046   1044   1068 MAT       1 EAS soshw6
-    629 SOLIDSHW6 WEDGE6    1047   1045   1067   1048   1046   1068 MAT       1 EAS soshw6
-    630 SOLIDSHW6 WEDGE6    1051   1049   1069   1052   1050   1070 MAT       1 EAS soshw6
-    631 SOLIDSHW6 WEDGE6    1049   1055   1071   1050   1056   1072 MAT       1 EAS soshw6
-    632 SOLIDSHW6 WEDGE6    1057   1051   1073   1058   1052   1074 MAT       1 EAS soshw6
-    633 SOLIDSHW6 WEDGE6    1035   1057   1059   1036   1058   1060 MAT       1 EAS soshw6
-    634 SOLIDSHW6 WEDGE6    1037   1059   1061   1038   1060   1062 MAT       1 EAS soshw6
-    635 SOLIDSHW6 WEDGE6    1053   1061   1075   1054   1062   1076 MAT       1 EAS soshw6
-    636 SOLIDSHW6 WEDGE6    1063   1053   1075   1064   1054   1076 MAT       1 EAS soshw6
-    637 SOLIDSHW6 WEDGE6    1041   1063   1065   1042   1064   1066 MAT       1 EAS soshw6
-    638 SOLIDSHW6 WEDGE6    1043   1065   1067   1044   1066   1068 MAT       1 EAS soshw6
-    639 SOLIDSHW6 WEDGE6    1069   1049   1071   1070   1050   1072 MAT       1 EAS soshw6
-    640 SOLIDSHW6 WEDGE6    1051   1069   1073   1052   1070   1074 MAT       1 EAS soshw6
-    641 SOLIDSHW6 WEDGE6    1071   1055   1077   1072   1056   1078 MAT       1 EAS soshw6
-    642 SOLIDSHW6 WEDGE6    1057   1073   1079   1058   1074   1080 MAT       1 EAS soshw6
-    643 SOLIDSHW6 WEDGE6    1059   1057   1079   1060   1058   1080 MAT       1 EAS soshw6
-    644 SOLIDSHW6 WEDGE6    1061   1059   1081   1062   1060   1082 MAT       1 EAS soshw6
-    645 SOLIDSHW6 WEDGE6    1075   1061   1081   1076   1062   1082 MAT       1 EAS soshw6
-    646 SOLIDSHW6 WEDGE6    1063   1075   1083   1064   1076   1084 MAT       1 EAS soshw6
-    647 SOLIDSHW6 WEDGE6    1065   1063   1083   1066   1064   1084 MAT       1 EAS soshw6
-    648 SOLIDSHW6 WEDGE6    1067   1065   1085   1068   1066   1086 MAT       1 EAS soshw6
-    649 SOLIDSHW6 WEDGE6    1069   1071   1087   1070   1072   1088 MAT       1 EAS soshw6
-    650 SOLIDSHW6 WEDGE6    1073   1069   1089   1074   1070   1090 MAT       1 EAS soshw6
-    651 SOLIDSHW6 WEDGE6    1071   1077   1087   1072   1078   1088 MAT       1 EAS soshw6
-    652 SOLIDSHW6 WEDGE6    1079   1073   1091   1080   1074   1092 MAT       1 EAS soshw6
-    653 SOLIDSHW6 WEDGE6    1059   1079   1081   1060   1080   1082 MAT       1 EAS soshw6
-    654 SOLIDSHW6 WEDGE6    1075   1081   1093   1076   1082   1094 MAT       1 EAS soshw6
-    655 SOLIDSHW6 WEDGE6    1083   1075   1093   1084   1076   1094 MAT       1 EAS soshw6
-    656 SOLIDSHW6 WEDGE6    1065   1083   1085   1066   1084   1086 MAT       1 EAS soshw6
-    657 SOLIDSHW6 WEDGE6    1069   1087   1089   1070   1088   1090 MAT       1 EAS soshw6
-    658 SOLIDSHW6 WEDGE6    1073   1089   1091   1074   1090   1092 MAT       1 EAS soshw6
-    659 SOLIDSHW6 WEDGE6    1087   1077   1095   1088   1078   1096 MAT       1 EAS soshw6
-    660 SOLIDSHW6 WEDGE6    1079   1091   1097   1080   1092   1098 MAT       1 EAS soshw6
-    661 SOLIDSHW6 WEDGE6    1081   1079   1097   1082   1080   1098 MAT       1 EAS soshw6
-    662 SOLIDSHW6 WEDGE6    1093   1081   1097   1094   1082   1098 MAT       1 EAS soshw6
-    663 SOLIDSHW6 WEDGE6    1083   1093   1099   1084   1094   1100 MAT       1 EAS soshw6
-    664 SOLIDSHW6 WEDGE6    1089   1087   1101   1090   1088   1102 MAT       1 EAS soshw6
-    665 SOLIDSHW6 WEDGE6    1091   1089   1101   1092   1090   1102 MAT       1 EAS soshw6
-    666 SOLIDSHW6 WEDGE6    1087   1095   1103   1088   1096   1104 MAT       1 EAS soshw6
-    667 SOLIDSHW6 WEDGE6    1097   1091   1105   1098   1092   1106 MAT       1 EAS soshw6
-    668 SOLIDSHW6 WEDGE6    1093   1097   1105   1094   1098   1106 MAT       1 EAS soshw6
-    669 SOLIDSHW6 WEDGE6    1099   1093   1105   1100   1094   1106 MAT       1 EAS soshw6
-    670 SOLIDSHW6 WEDGE6    1101   1087   1103   1102   1088   1104 MAT       1 EAS soshw6
-    671 SOLIDSHW6 WEDGE6    1091   1101   1107   1092   1102   1108 MAT       1 EAS soshw6
-    672 SOLIDSHW6 WEDGE6    1103   1095   1109   1104   1096   1110 MAT       1 EAS soshw6
-    673 SOLIDSHW6 WEDGE6    1105   1091   1107   1106   1092   1108 MAT       1 EAS soshw6
-    674 SOLIDSHW6 WEDGE6    1101   1103   1107   1102   1104   1108 MAT       1 EAS soshw6
+      1 SOLIDSHW6 WEDGE6     371    373    375    372    374    376 MAT       1 KINEM Totlag EAS soshw6
+      2 SOLIDSHW6 WEDGE6     375    373    377    376    374    378 MAT       1 KINEM Totlag EAS soshw6
+      3 SOLIDSHW6 WEDGE6     371    375    379    372    376    380 MAT       1 KINEM Totlag EAS soshw6
+      4 SOLIDSHW6 WEDGE6     375    377    381    376    378    382 MAT       1 KINEM Totlag EAS soshw6
+      5 SOLIDSHW6 WEDGE6     379    375    383    380    376    384 MAT       1 KINEM Totlag EAS soshw6
+      6 SOLIDSHW6 WEDGE6     381    377    385    382    378    386 MAT       1 KINEM Totlag EAS soshw6
+      7 SOLIDSHW6 WEDGE6     375    381    383    376    382    384 MAT       1 KINEM Totlag EAS soshw6
+      8 SOLIDSHW6 WEDGE6     379    383    387    380    384    388 MAT       1 KINEM Totlag EAS soshw6
+      9 SOLIDSHW6 WEDGE6     381    385    389    382    386    390 MAT       1 KINEM Totlag EAS soshw6
+     10 SOLIDSHW6 WEDGE6     383    381    391    384    382    392 MAT       1 KINEM Totlag EAS soshw6
+     11 SOLIDSHW6 WEDGE6     387    383    393    388    384    394 MAT       1 KINEM Totlag EAS soshw6
+     12 SOLIDSHW6 WEDGE6     379    387    395    380    388    396 MAT       1 KINEM Totlag EAS soshw6
+     13 SOLIDSHW6 WEDGE6     381    389    397    382    390    398 MAT       1 KINEM Totlag EAS soshw6
+     14 SOLIDSHW6 WEDGE6     391    381    397    392    382    398 MAT       1 KINEM Totlag EAS soshw6
+     15 SOLIDSHW6 WEDGE6     383    391    393    384    392    394 MAT       1 KINEM Totlag EAS soshw6
+     16 SOLIDSHW6 WEDGE6     387    393    399    388    394    400 MAT       1 KINEM Totlag EAS soshw6
+     17 SOLIDSHW6 WEDGE6     395    387    399    396    388    400 MAT       1 KINEM Totlag EAS soshw6
+     18 SOLIDSHW6 WEDGE6     397    389    401    398    390    402 MAT       1 KINEM Totlag EAS soshw6
+     19 SOLIDSHW6 WEDGE6     391    397    403    392    398    404 MAT       1 KINEM Totlag EAS soshw6
+     20 SOLIDSHW6 WEDGE6     393    391    405    394    392    406 MAT       1 KINEM Totlag EAS soshw6
+     21 SOLIDSHW6 WEDGE6     399    393    407    400    394    408 MAT       1 KINEM Totlag EAS soshw6
+     22 SOLIDSHW6 WEDGE6     395    399    409    396    400    410 MAT       1 KINEM Totlag EAS soshw6
+     23 SOLIDSHW6 WEDGE6     397    401    411    398    402    412 MAT       1 KINEM Totlag EAS soshw6
+     24 SOLIDSHW6 WEDGE6     391    403    405    392    404    406 MAT       1 KINEM Totlag EAS soshw6
+     25 SOLIDSHW6 WEDGE6     403    397    413    404    398    414 MAT       1 KINEM Totlag EAS soshw6
+     26 SOLIDSHW6 WEDGE6     393    405    407    394    406    408 MAT       1 KINEM Totlag EAS soshw6
+     27 SOLIDSHW6 WEDGE6     399    407    415    400    408    416 MAT       1 KINEM Totlag EAS soshw6
+     28 SOLIDSHW6 WEDGE6     409    399    415    410    400    416 MAT       1 KINEM Totlag EAS soshw6
+     29 SOLIDSHW6 WEDGE6     397    411    413    398    412    414 MAT       1 KINEM Totlag EAS soshw6
+     30 SOLIDSHW6 WEDGE6     405    403    417    406    404    418 MAT       1 KINEM Totlag EAS soshw6
+     31 SOLIDSHW6 WEDGE6     403    413    419    404    414    420 MAT       1 KINEM Totlag EAS soshw6
+     32 SOLIDSHW6 WEDGE6     407    405    421    408    406    422 MAT       1 KINEM Totlag EAS soshw6
+     33 SOLIDSHW6 WEDGE6     415    407    423    416    408    424 MAT       1 KINEM Totlag EAS soshw6
+     34 SOLIDSHW6 WEDGE6     409    415    425    410    416    426 MAT       1 KINEM Totlag EAS soshw6
+     35 SOLIDSHW6 WEDGE6     413    411    427    414    412    428 MAT       1 KINEM Totlag EAS soshw6
+     36 SOLIDSHW6 WEDGE6     417    403    419    418    404    420 MAT       1 KINEM Totlag EAS soshw6
+     37 SOLIDSHW6 WEDGE6     405    417    421    406    418    422 MAT       1 KINEM Totlag EAS soshw6
+     38 SOLIDSHW6 WEDGE6     419    413    429    420    414    430 MAT       1 KINEM Totlag EAS soshw6
+     39 SOLIDSHW6 WEDGE6     407    421    423    408    422    424 MAT       1 KINEM Totlag EAS soshw6
+     40 SOLIDSHW6 WEDGE6     415    423    431    416    424    432 MAT       1 KINEM Totlag EAS soshw6
+     41 SOLIDSHW6 WEDGE6     425    415    431    426    416    432 MAT       1 KINEM Totlag EAS soshw6
+     42 SOLIDSHW6 WEDGE6     409    425    433    410    426    434 MAT       1 KINEM Totlag EAS soshw6
+     43 SOLIDSHW6 WEDGE6     413    427    435    414    428    436 MAT       1 KINEM Totlag EAS soshw6
+     44 SOLIDSHW6 WEDGE6     417    419    437    418    420    438 MAT       1 KINEM Totlag EAS soshw6
+     45 SOLIDSHW6 WEDGE6     421    417    439    422    418    440 MAT       1 KINEM Totlag EAS soshw6
+     46 SOLIDSHW6 WEDGE6     419    429    441    420    430    442 MAT       1 KINEM Totlag EAS soshw6
+     47 SOLIDSHW6 WEDGE6     429    413    443    430    414    444 MAT       1 KINEM Totlag EAS soshw6
+     48 SOLIDSHW6 WEDGE6     423    421    445    424    422    446 MAT       1 KINEM Totlag EAS soshw6
+     49 SOLIDSHW6 WEDGE6     431    423    447    432    424    448 MAT       1 KINEM Totlag EAS soshw6
+     50 SOLIDSHW6 WEDGE6     425    431    449    426    432    450 MAT       1 KINEM Totlag EAS soshw6
+     51 SOLIDSHW6 WEDGE6     433    425    449    434    426    450 MAT       1 KINEM Totlag EAS soshw6
+     52 SOLIDSHW6 WEDGE6     413    435    443    414    436    444 MAT       1 KINEM Totlag EAS soshw6
+     53 SOLIDSHW6 WEDGE6     437    419    441    438    420    442 MAT       1 KINEM Totlag EAS soshw6
+     54 SOLIDSHW6 WEDGE6     417    437    439    418    438    440 MAT       1 KINEM Totlag EAS soshw6
+     55 SOLIDSHW6 WEDGE6     421    439    445    422    440    446 MAT       1 KINEM Totlag EAS soshw6
+     56 SOLIDSHW6 WEDGE6     441    429    451    442    430    452 MAT       1 KINEM Totlag EAS soshw6
+     57 SOLIDSHW6 WEDGE6     429    443    451    430    444    452 MAT       1 KINEM Totlag EAS soshw6
+     58 SOLIDSHW6 WEDGE6     423    445    447    424    446    448 MAT       1 KINEM Totlag EAS soshw6
+     59 SOLIDSHW6 WEDGE6     431    447    453    432    448    454 MAT       1 KINEM Totlag EAS soshw6
+     60 SOLIDSHW6 WEDGE6     449    431    453    450    432    454 MAT       1 KINEM Totlag EAS soshw6
+     61 SOLIDSHW6 WEDGE6     433    449    455    434    450    456 MAT       1 KINEM Totlag EAS soshw6
+     62 SOLIDSHW6 WEDGE6     443    435    457    444    436    458 MAT       1 KINEM Totlag EAS soshw6
+     63 SOLIDSHW6 WEDGE6     437    441    459    438    442    460 MAT       1 KINEM Totlag EAS soshw6
+     64 SOLIDSHW6 WEDGE6     439    437    461    440    438    462 MAT       1 KINEM Totlag EAS soshw6
+     65 SOLIDSHW6 WEDGE6     445    439    463    446    440    464 MAT       1 KINEM Totlag EAS soshw6
+     66 SOLIDSHW6 WEDGE6     441    451    465    442    452    466 MAT       1 KINEM Totlag EAS soshw6
+     67 SOLIDSHW6 WEDGE6     451    443    467    452    444    468 MAT       1 KINEM Totlag EAS soshw6
+     68 SOLIDSHW6 WEDGE6     447    445    469    448    446    470 MAT       1 KINEM Totlag EAS soshw6
+     69 SOLIDSHW6 WEDGE6     453    447    471    454    448    472 MAT       1 KINEM Totlag EAS soshw6
+     70 SOLIDSHW6 WEDGE6     449    453    473    450    454    474 MAT       1 KINEM Totlag EAS soshw6
+     71 SOLIDSHW6 WEDGE6     455    449    473    456    450    474 MAT       1 KINEM Totlag EAS soshw6
+     72 SOLIDSHW6 WEDGE6     433    455    475    434    456    476 MAT       1 KINEM Totlag EAS soshw6
+     73 SOLIDSHW6 WEDGE6     443    457    477    444    458    478 MAT       1 KINEM Totlag EAS soshw6
+     74 SOLIDSHW6 WEDGE6     459    441    465    460    442    466 MAT       1 KINEM Totlag EAS soshw6
+     75 SOLIDSHW6 WEDGE6     437    459    461    438    460    462 MAT       1 KINEM Totlag EAS soshw6
+     76 SOLIDSHW6 WEDGE6     439    461    463    440    462    464 MAT       1 KINEM Totlag EAS soshw6
+     77 SOLIDSHW6 WEDGE6     445    463    469    446    464    470 MAT       1 KINEM Totlag EAS soshw6
+     78 SOLIDSHW6 WEDGE6     465    451    479    466    452    480 MAT       1 KINEM Totlag EAS soshw6
+     79 SOLIDSHW6 WEDGE6     451    467    479    452    468    480 MAT       1 KINEM Totlag EAS soshw6
+     80 SOLIDSHW6 WEDGE6     467    443    481    468    444    482 MAT       1 KINEM Totlag EAS soshw6
+     81 SOLIDSHW6 WEDGE6     447    469    471    448    470    472 MAT       1 KINEM Totlag EAS soshw6
+     82 SOLIDSHW6 WEDGE6     453    471    483    454    472    484 MAT       1 KINEM Totlag EAS soshw6
+     83 SOLIDSHW6 WEDGE6     473    453    483    474    454    484 MAT       1 KINEM Totlag EAS soshw6
+     84 SOLIDSHW6 WEDGE6     455    473    485    456    474    486 MAT       1 KINEM Totlag EAS soshw6
+     85 SOLIDSHW6 WEDGE6     475    455    487    476    456    488 MAT       1 KINEM Totlag EAS soshw6
+     86 SOLIDSHW6 WEDGE6     443    477    481    444    478    482 MAT       1 KINEM Totlag EAS soshw6
+     87 SOLIDSHW6 WEDGE6     459    465    489    460    466    490 MAT       1 KINEM Totlag EAS soshw6
+     88 SOLIDSHW6 WEDGE6     461    459    491    462    460    492 MAT       1 KINEM Totlag EAS soshw6
+     89 SOLIDSHW6 WEDGE6     463    461    493    464    462    494 MAT       1 KINEM Totlag EAS soshw6
+     90 SOLIDSHW6 WEDGE6     469    463    495    470    464    496 MAT       1 KINEM Totlag EAS soshw6
+     91 SOLIDSHW6 WEDGE6     465    479    497    466    480    498 MAT       1 KINEM Totlag EAS soshw6
+     92 SOLIDSHW6 WEDGE6     479    467    499    480    468    500 MAT       1 KINEM Totlag EAS soshw6
+     93 SOLIDSHW6 WEDGE6     467    481    499    468    482    500 MAT       1 KINEM Totlag EAS soshw6
+     94 SOLIDSHW6 WEDGE6     471    469    501    472    470    502 MAT       1 KINEM Totlag EAS soshw6
+     95 SOLIDSHW6 WEDGE6     483    471    503    484    472    504 MAT       1 KINEM Totlag EAS soshw6
+     96 SOLIDSHW6 WEDGE6     473    483    505    474    484    506 MAT       1 KINEM Totlag EAS soshw6
+     97 SOLIDSHW6 WEDGE6     485    473    505    486    474    506 MAT       1 KINEM Totlag EAS soshw6
+     98 SOLIDSHW6 WEDGE6     455    485    487    456    486    488 MAT       1 KINEM Totlag EAS soshw6
+     99 SOLIDSHW6 WEDGE6     475    487    507    476    488    508 MAT       1 KINEM Totlag EAS soshw6
+    100 SOLIDSHW6 WEDGE6     481    477    509    482    478    510 MAT       1 KINEM Totlag EAS soshw6
+    101 SOLIDSHW6 WEDGE6     489    465    497    490    466    498 MAT       1 KINEM Totlag EAS soshw6
+    102 SOLIDSHW6 WEDGE6     459    489    491    460    490    492 MAT       1 KINEM Totlag EAS soshw6
+    103 SOLIDSHW6 WEDGE6     461    491    493    462    492    494 MAT       1 KINEM Totlag EAS soshw6
+    104 SOLIDSHW6 WEDGE6     463    493    495    464    494    496 MAT       1 KINEM Totlag EAS soshw6
+    105 SOLIDSHW6 WEDGE6     469    495    501    470    496    502 MAT       1 KINEM Totlag EAS soshw6
+    106 SOLIDSHW6 WEDGE6     497    479    511    498    480    512 MAT       1 KINEM Totlag EAS soshw6
+    107 SOLIDSHW6 WEDGE6     479    499    511    480    500    512 MAT       1 KINEM Totlag EAS soshw6
+    108 SOLIDSHW6 WEDGE6     499    481    513    500    482    514 MAT       1 KINEM Totlag EAS soshw6
+    109 SOLIDSHW6 WEDGE6     471    501    503    472    502    504 MAT       1 KINEM Totlag EAS soshw6
+    110 SOLIDSHW6 WEDGE6     483    503    515    484    504    516 MAT       1 KINEM Totlag EAS soshw6
+    111 SOLIDSHW6 WEDGE6     505    483    515    506    484    516 MAT       1 KINEM Totlag EAS soshw6
+    112 SOLIDSHW6 WEDGE6     485    505    517    486    506    518 MAT       1 KINEM Totlag EAS soshw6
+    113 SOLIDSHW6 WEDGE6     487    485    519    488    486    520 MAT       1 KINEM Totlag EAS soshw6
+    114 SOLIDSHW6 WEDGE6     507    487    519    508    488    520 MAT       1 KINEM Totlag EAS soshw6
+    115 SOLIDSHW6 WEDGE6     481    509    521    482    510    522 MAT       1 KINEM Totlag EAS soshw6
+    116 SOLIDSHW6 WEDGE6     489    497    523    490    498    524 MAT       1 KINEM Totlag EAS soshw6
+    117 SOLIDSHW6 WEDGE6     491    489    525    492    490    526 MAT       1 KINEM Totlag EAS soshw6
+    118 SOLIDSHW6 WEDGE6     493    491    527    494    492    528 MAT       1 KINEM Totlag EAS soshw6
+    119 SOLIDSHW6 WEDGE6     495    493    529    496    494    530 MAT       1 KINEM Totlag EAS soshw6
+    120 SOLIDSHW6 WEDGE6     501    495    531    502    496    532 MAT       1 KINEM Totlag EAS soshw6
+    121 SOLIDSHW6 WEDGE6     497    511    533    498    512    534 MAT       1 KINEM Totlag EAS soshw6
+    122 SOLIDSHW6 WEDGE6     511    499    535    512    500    536 MAT       1 KINEM Totlag EAS soshw6
+    123 SOLIDSHW6 WEDGE6     499    513    535    500    514    536 MAT       1 KINEM Totlag EAS soshw6
+    124 SOLIDSHW6 WEDGE6     513    481    537    514    482    538 MAT       1 KINEM Totlag EAS soshw6
+    125 SOLIDSHW6 WEDGE6     503    501    539    504    502    540 MAT       1 KINEM Totlag EAS soshw6
+    126 SOLIDSHW6 WEDGE6     515    503    539    516    504    540 MAT       1 KINEM Totlag EAS soshw6
+    127 SOLIDSHW6 WEDGE6     505    515    541    506    516    542 MAT       1 KINEM Totlag EAS soshw6
+    128 SOLIDSHW6 WEDGE6     517    505    541    518    506    542 MAT       1 KINEM Totlag EAS soshw6
+    129 SOLIDSHW6 WEDGE6     485    517    519    486    518    520 MAT       1 KINEM Totlag EAS soshw6
+    130 SOLIDSHW6 WEDGE6     507    519    543    508    520    544 MAT       1 KINEM Totlag EAS soshw6
+    131 SOLIDSHW6 WEDGE6     481    521    537    482    522    538 MAT       1 KINEM Totlag EAS soshw6
+    132 SOLIDSHW6 WEDGE6     523    497    533    524    498    534 MAT       1 KINEM Totlag EAS soshw6
+    133 SOLIDSHW6 WEDGE6     489    523    525    490    524    526 MAT       1 KINEM Totlag EAS soshw6
+    134 SOLIDSHW6 WEDGE6     491    525    527    492    526    528 MAT       1 KINEM Totlag EAS soshw6
+    135 SOLIDSHW6 WEDGE6     493    527    529    494    528    530 MAT       1 KINEM Totlag EAS soshw6
+    136 SOLIDSHW6 WEDGE6     495    529    531    496    530    532 MAT       1 KINEM Totlag EAS soshw6
+    137 SOLIDSHW6 WEDGE6     501    531    539    502    532    540 MAT       1 KINEM Totlag EAS soshw6
+    138 SOLIDSHW6 WEDGE6     533    511    545    534    512    546 MAT       1 KINEM Totlag EAS soshw6
+    139 SOLIDSHW6 WEDGE6     511    535    545    512    536    546 MAT       1 KINEM Totlag EAS soshw6
+    140 SOLIDSHW6 WEDGE6     535    513    547    536    514    548 MAT       1 KINEM Totlag EAS soshw6
+    141 SOLIDSHW6 WEDGE6     513    537    549    514    538    550 MAT       1 KINEM Totlag EAS soshw6
+    142 SOLIDSHW6 WEDGE6     515    539    551    516    540    552 MAT       1 KINEM Totlag EAS soshw6
+    143 SOLIDSHW6 WEDGE6     541    515    553    542    516    554 MAT       1 KINEM Totlag EAS soshw6
+    144 SOLIDSHW6 WEDGE6     517    541    555    518    542    556 MAT       1 KINEM Totlag EAS soshw6
+    145 SOLIDSHW6 WEDGE6     519    517    557    520    518    558 MAT       1 KINEM Totlag EAS soshw6
+    146 SOLIDSHW6 WEDGE6     543    519    557    544    520    558 MAT       1 KINEM Totlag EAS soshw6
+    147 SOLIDSHW6 WEDGE6     537    521    559    538    522    560 MAT       1 KINEM Totlag EAS soshw6
+    148 SOLIDSHW6 WEDGE6     523    533    561    524    534    562 MAT       1 KINEM Totlag EAS soshw6
+    149 SOLIDSHW6 WEDGE6     525    523    563    526    524    564 MAT       1 KINEM Totlag EAS soshw6
+    150 SOLIDSHW6 WEDGE6     527    525    565    528    526    566 MAT       1 KINEM Totlag EAS soshw6
+    151 SOLIDSHW6 WEDGE6     529    527    567    530    528    568 MAT       1 KINEM Totlag EAS soshw6
+    152 SOLIDSHW6 WEDGE6     531    529    569    532    530    570 MAT       1 KINEM Totlag EAS soshw6
+    153 SOLIDSHW6 WEDGE6     539    531    571    540    532    572 MAT       1 KINEM Totlag EAS soshw6
+    154 SOLIDSHW6 WEDGE6     533    545    573    534    546    574 MAT       1 KINEM Totlag EAS soshw6
+    155 SOLIDSHW6 WEDGE6     545    535    575    546    536    576 MAT       1 KINEM Totlag EAS soshw6
+    156 SOLIDSHW6 WEDGE6     547    513    549    548    514    550 MAT       1 KINEM Totlag EAS soshw6
+    157 SOLIDSHW6 WEDGE6     535    547    575    536    548    576 MAT       1 KINEM Totlag EAS soshw6
+    158 SOLIDSHW6 WEDGE6     549    537    577    550    538    578 MAT       1 KINEM Totlag EAS soshw6
+    159 SOLIDSHW6 WEDGE6     551    539    571    552    540    572 MAT       1 KINEM Totlag EAS soshw6
+    160 SOLIDSHW6 WEDGE6     515    551    553    516    552    554 MAT       1 KINEM Totlag EAS soshw6
+    161 SOLIDSHW6 WEDGE6     541    553    579    542    554    580 MAT       1 KINEM Totlag EAS soshw6
+    162 SOLIDSHW6 WEDGE6     555    541    579    556    542    580 MAT       1 KINEM Totlag EAS soshw6
+    163 SOLIDSHW6 WEDGE6     517    555    557    518    556    558 MAT       1 KINEM Totlag EAS soshw6
+    164 SOLIDSHW6 WEDGE6     543    557    581    544    558    582 MAT       1 KINEM Totlag EAS soshw6
+    165 SOLIDSHW6 WEDGE6     537    559    583    538    560    584 MAT       1 KINEM Totlag EAS soshw6
+    166 SOLIDSHW6 WEDGE6     561    533    573    562    534    574 MAT       1 KINEM Totlag EAS soshw6
+    167 SOLIDSHW6 WEDGE6     523    561    563    524    562    564 MAT       1 KINEM Totlag EAS soshw6
+    168 SOLIDSHW6 WEDGE6     525    563    565    526    564    566 MAT       1 KINEM Totlag EAS soshw6
+    169 SOLIDSHW6 WEDGE6     527    565    567    528    566    568 MAT       1 KINEM Totlag EAS soshw6
+    170 SOLIDSHW6 WEDGE6     529    567    569    530    568    570 MAT       1 KINEM Totlag EAS soshw6
+    171 SOLIDSHW6 WEDGE6     531    569    571    532    570    572 MAT       1 KINEM Totlag EAS soshw6
+    172 SOLIDSHW6 WEDGE6     573    545    585    574    546    586 MAT       1 KINEM Totlag EAS soshw6
+    173 SOLIDSHW6 WEDGE6     545    575    585    546    576    586 MAT       1 KINEM Totlag EAS soshw6
+    174 SOLIDSHW6 WEDGE6     547    549    587    548    550    588 MAT       1 KINEM Totlag EAS soshw6
+    175 SOLIDSHW6 WEDGE6     575    547    589    576    548    590 MAT       1 KINEM Totlag EAS soshw6
+    176 SOLIDSHW6 WEDGE6     577    537    583    578    538    584 MAT       1 KINEM Totlag EAS soshw6
+    177 SOLIDSHW6 WEDGE6     549    577    591    550    578    592 MAT       1 KINEM Totlag EAS soshw6
+    178 SOLIDSHW6 WEDGE6     551    571    593    552    572    594 MAT       1 KINEM Totlag EAS soshw6
+    179 SOLIDSHW6 WEDGE6     553    551    595    554    552    596 MAT       1 KINEM Totlag EAS soshw6
+    180 SOLIDSHW6 WEDGE6     579    553    597    580    554    598 MAT       1 KINEM Totlag EAS soshw6
+    181 SOLIDSHW6 WEDGE6     555    579    599    556    580    600 MAT       1 KINEM Totlag EAS soshw6
+    182 SOLIDSHW6 WEDGE6     557    555    601    558    556    602 MAT       1 KINEM Totlag EAS soshw6
+    183 SOLIDSHW6 WEDGE6     581    557    601    582    558    602 MAT       1 KINEM Totlag EAS soshw6
+    184 SOLIDSHW6 WEDGE6     543    581    603    544    582    604 MAT       1 KINEM Totlag EAS soshw6
+    185 SOLIDSHW6 WEDGE6     561    573    605    562    574    606 MAT       1 KINEM Totlag EAS soshw6
+    186 SOLIDSHW6 WEDGE6     563    561    607    564    562    608 MAT       1 KINEM Totlag EAS soshw6
+    187 SOLIDSHW6 WEDGE6     565    563    609    566    564    610 MAT       1 KINEM Totlag EAS soshw6
+    188 SOLIDSHW6 WEDGE6     567    565    611    568    566    612 MAT       1 KINEM Totlag EAS soshw6
+    189 SOLIDSHW6 WEDGE6     569    567    613    570    568    614 MAT       1 KINEM Totlag EAS soshw6
+    190 SOLIDSHW6 WEDGE6     571    569    615    572    570    616 MAT       1 KINEM Totlag EAS soshw6
+    191 SOLIDSHW6 WEDGE6     573    585    617    574    586    618 MAT       1 KINEM Totlag EAS soshw6
+    192 SOLIDSHW6 WEDGE6     585    575    619    586    576    620 MAT       1 KINEM Totlag EAS soshw6
+    193 SOLIDSHW6 WEDGE6     587    549    591    588    550    592 MAT       1 KINEM Totlag EAS soshw6
+    194 SOLIDSHW6 WEDGE6     547    587    589    548    588    590 MAT       1 KINEM Totlag EAS soshw6
+    195 SOLIDSHW6 WEDGE6     575    589    619    576    590    620 MAT       1 KINEM Totlag EAS soshw6
+    196 SOLIDSHW6 WEDGE6     577    583    621    578    584    622 MAT       1 KINEM Totlag EAS soshw6
+    197 SOLIDSHW6 WEDGE6     591    577    623    592    578    624 MAT       1 KINEM Totlag EAS soshw6
+    198 SOLIDSHW6 WEDGE6     593    571    615    594    572    616 MAT       1 KINEM Totlag EAS soshw6
+    199 SOLIDSHW6 WEDGE6     551    593    595    552    594    596 MAT       1 KINEM Totlag EAS soshw6
+    200 SOLIDSHW6 WEDGE6     553    595    597    554    596    598 MAT       1 KINEM Totlag EAS soshw6
+    201 SOLIDSHW6 WEDGE6     579    597    625    580    598    626 MAT       1 KINEM Totlag EAS soshw6
+    202 SOLIDSHW6 WEDGE6     555    599    601    556    600    602 MAT       1 KINEM Totlag EAS soshw6
+    203 SOLIDSHW6 WEDGE6     599    579    625    600    580    626 MAT       1 KINEM Totlag EAS soshw6
+    204 SOLIDSHW6 WEDGE6     581    601    627    582    602    628 MAT       1 KINEM Totlag EAS soshw6
+    205 SOLIDSHW6 WEDGE6     603    581    629    604    582    630 MAT       1 KINEM Totlag EAS soshw6
+    206 SOLIDSHW6 WEDGE6     605    573    617    606    574    618 MAT       1 KINEM Totlag EAS soshw6
+    207 SOLIDSHW6 WEDGE6     561    605    607    562    606    608 MAT       1 KINEM Totlag EAS soshw6
+    208 SOLIDSHW6 WEDGE6     563    607    609    564    608    610 MAT       1 KINEM Totlag EAS soshw6
+    209 SOLIDSHW6 WEDGE6     565    609    611    566    610    612 MAT       1 KINEM Totlag EAS soshw6
+    210 SOLIDSHW6 WEDGE6     567    611    613    568    612    614 MAT       1 KINEM Totlag EAS soshw6
+    211 SOLIDSHW6 WEDGE6     569    613    615    570    614    616 MAT       1 KINEM Totlag EAS soshw6
+    212 SOLIDSHW6 WEDGE6     617    585    631    618    586    632 MAT       1 KINEM Totlag EAS soshw6
+    213 SOLIDSHW6 WEDGE6     585    619    631    586    620    632 MAT       1 KINEM Totlag EAS soshw6
+    214 SOLIDSHW6 WEDGE6     587    591    633    588    592    634 MAT       1 KINEM Totlag EAS soshw6
+    215 SOLIDSHW6 WEDGE6     589    587    635    590    588    636 MAT       1 KINEM Totlag EAS soshw6
+    216 SOLIDSHW6 WEDGE6     619    589    637    620    590    638 MAT       1 KINEM Totlag EAS soshw6
+    217 SOLIDSHW6 WEDGE6     577    621    639    578    622    640 MAT       1 KINEM Totlag EAS soshw6
+    218 SOLIDSHW6 WEDGE6     623    577    639    624    578    640 MAT       1 KINEM Totlag EAS soshw6
+    219 SOLIDSHW6 WEDGE6     591    623    633    592    624    634 MAT       1 KINEM Totlag EAS soshw6
+    220 SOLIDSHW6 WEDGE6     593    615    641    594    616    642 MAT       1 KINEM Totlag EAS soshw6
+    221 SOLIDSHW6 WEDGE6     595    593    643    596    594    644 MAT       1 KINEM Totlag EAS soshw6
+    222 SOLIDSHW6 WEDGE6     597    595    645    598    596    646 MAT       1 KINEM Totlag EAS soshw6
+    223 SOLIDSHW6 WEDGE6     625    597    647    626    598    648 MAT       1 KINEM Totlag EAS soshw6
+    224 SOLIDSHW6 WEDGE6     601    599    649    602    600    650 MAT       1 KINEM Totlag EAS soshw6
+    225 SOLIDSHW6 WEDGE6     599    625    651    600    626    652 MAT       1 KINEM Totlag EAS soshw6
+    226 SOLIDSHW6 WEDGE6     627    601    649    628    602    650 MAT       1 KINEM Totlag EAS soshw6
+    227 SOLIDSHW6 WEDGE6     581    627    629    582    628    630 MAT       1 KINEM Totlag EAS soshw6
+    228 SOLIDSHW6 WEDGE6     605    617    653    606    618    654 MAT       1 KINEM Totlag EAS soshw6
+    229 SOLIDSHW6 WEDGE6     607    605    653    608    606    654 MAT       1 KINEM Totlag EAS soshw6
+    230 SOLIDSHW6 WEDGE6     609    607    655    610    608    656 MAT       1 KINEM Totlag EAS soshw6
+    231 SOLIDSHW6 WEDGE6     611    609    657    612    610    658 MAT       1 KINEM Totlag EAS soshw6
+    232 SOLIDSHW6 WEDGE6     613    611    659    614    612    660 MAT       1 KINEM Totlag EAS soshw6
+    233 SOLIDSHW6 WEDGE6     615    613    661    616    614    662 MAT       1 KINEM Totlag EAS soshw6
+    234 SOLIDSHW6 WEDGE6     617    631    663    618    632    664 MAT       1 KINEM Totlag EAS soshw6
+    235 SOLIDSHW6 WEDGE6     631    619    665    632    620    666 MAT       1 KINEM Totlag EAS soshw6
+    236 SOLIDSHW6 WEDGE6     587    633    635    588    634    636 MAT       1 KINEM Totlag EAS soshw6
+    237 SOLIDSHW6 WEDGE6     589    635    637    590    636    638 MAT       1 KINEM Totlag EAS soshw6
+    238 SOLIDSHW6 WEDGE6     619    637    665    620    638    666 MAT       1 KINEM Totlag EAS soshw6
+    239 SOLIDSHW6 WEDGE6     641    615    661    642    616    662 MAT       1 KINEM Totlag EAS soshw6
+    240 SOLIDSHW6 WEDGE6     593    641    643    594    642    644 MAT       1 KINEM Totlag EAS soshw6
+    241 SOLIDSHW6 WEDGE6     595    643    645    596    644    646 MAT       1 KINEM Totlag EAS soshw6
+    242 SOLIDSHW6 WEDGE6     597    645    647    598    646    648 MAT       1 KINEM Totlag EAS soshw6
+    243 SOLIDSHW6 WEDGE6     625    647    667    626    648    668 MAT       1 KINEM Totlag EAS soshw6
+    244 SOLIDSHW6 WEDGE6     649    599    651    650    600    652 MAT       1 KINEM Totlag EAS soshw6
+    245 SOLIDSHW6 WEDGE6     651    625    667    652    626    668 MAT       1 KINEM Totlag EAS soshw6
+    246 SOLIDSHW6 WEDGE6     627    649    669    628    650    670 MAT       1 KINEM Totlag EAS soshw6
+    247 SOLIDSHW6 WEDGE6     629    627    671    630    628    672 MAT       1 KINEM Totlag EAS soshw6
+    248 SOLIDSHW6 WEDGE6     653    617    663    654    618    664 MAT       1 KINEM Totlag EAS soshw6
+    249 SOLIDSHW6 WEDGE6     607    653    655    608    654    656 MAT       1 KINEM Totlag EAS soshw6
+    250 SOLIDSHW6 WEDGE6     609    655    657    610    656    658 MAT       1 KINEM Totlag EAS soshw6
+    251 SOLIDSHW6 WEDGE6     611    657    659    612    658    660 MAT       1 KINEM Totlag EAS soshw6
+    252 SOLIDSHW6 WEDGE6     613    659    661    614    660    662 MAT       1 KINEM Totlag EAS soshw6
+    253 SOLIDSHW6 WEDGE6     663    631    665    664    632    666 MAT       1 KINEM Totlag EAS soshw6
+    254 SOLIDSHW6 WEDGE6     635    633    673    636    634    674 MAT       1 KINEM Totlag EAS soshw6
+    255 SOLIDSHW6 WEDGE6     637    635    673    638    636    674 MAT       1 KINEM Totlag EAS soshw6
+    256 SOLIDSHW6 WEDGE6     665    637    675    666    638    676 MAT       1 KINEM Totlag EAS soshw6
+    257 SOLIDSHW6 WEDGE6     641    661    677    642    662    678 MAT       1 KINEM Totlag EAS soshw6
+    258 SOLIDSHW6 WEDGE6     643    641    679    644    642    680 MAT       1 KINEM Totlag EAS soshw6
+    259 SOLIDSHW6 WEDGE6     645    643    681    646    644    682 MAT       1 KINEM Totlag EAS soshw6
+    260 SOLIDSHW6 WEDGE6     647    645    683    648    646    684 MAT       1 KINEM Totlag EAS soshw6
+    261 SOLIDSHW6 WEDGE6     667    647    685    668    648    686 MAT       1 KINEM Totlag EAS soshw6
+    262 SOLIDSHW6 WEDGE6     649    651    687    650    652    688 MAT       1 KINEM Totlag EAS soshw6
+    263 SOLIDSHW6 WEDGE6     651    667    689    652    668    690 MAT       1 KINEM Totlag EAS soshw6
+    264 SOLIDSHW6 WEDGE6     669    649    687    670    650    688 MAT       1 KINEM Totlag EAS soshw6
+    265 SOLIDSHW6 WEDGE6     627    669    671    628    670    672 MAT       1 KINEM Totlag EAS soshw6
+    266 SOLIDSHW6 WEDGE6     629    671    691    630    672    692 MAT       1 KINEM Totlag EAS soshw6
+    267 SOLIDSHW6 WEDGE6     653    663    693    654    664    694 MAT       1 KINEM Totlag EAS soshw6
+    268 SOLIDSHW6 WEDGE6     655    653    695    656    654    696 MAT       1 KINEM Totlag EAS soshw6
+    269 SOLIDSHW6 WEDGE6     657    655    697    658    656    698 MAT       1 KINEM Totlag EAS soshw6
+    270 SOLIDSHW6 WEDGE6     659    657    699    660    658    700 MAT       1 KINEM Totlag EAS soshw6
+    271 SOLIDSHW6 WEDGE6     661    659    701    662    660    702 MAT       1 KINEM Totlag EAS soshw6
+    272 SOLIDSHW6 WEDGE6     663    665    703    664    666    704 MAT       1 KINEM Totlag EAS soshw6
+    273 SOLIDSHW6 WEDGE6     637    673    675    638    674    676 MAT       1 KINEM Totlag EAS soshw6
+    274 SOLIDSHW6 WEDGE6     665    675    703    666    676    704 MAT       1 KINEM Totlag EAS soshw6
+    275 SOLIDSHW6 WEDGE6     677    661    701    678    662    702 MAT       1 KINEM Totlag EAS soshw6
+    276 SOLIDSHW6 WEDGE6     641    677    679    642    678    680 MAT       1 KINEM Totlag EAS soshw6
+    277 SOLIDSHW6 WEDGE6     643    679    681    644    680    682 MAT       1 KINEM Totlag EAS soshw6
+    278 SOLIDSHW6 WEDGE6     645    681    683    646    682    684 MAT       1 KINEM Totlag EAS soshw6
+    279 SOLIDSHW6 WEDGE6     647    683    685    648    684    686 MAT       1 KINEM Totlag EAS soshw6
+    280 SOLIDSHW6 WEDGE6     667    685    689    668    686    690 MAT       1 KINEM Totlag EAS soshw6
+    281 SOLIDSHW6 WEDGE6     687    651    689    688    652    690 MAT       1 KINEM Totlag EAS soshw6
+    282 SOLIDSHW6 WEDGE6     669    687    705    670    688    706 MAT       1 KINEM Totlag EAS soshw6
+    283 SOLIDSHW6 WEDGE6     671    669    707    672    670    708 MAT       1 KINEM Totlag EAS soshw6
+    284 SOLIDSHW6 WEDGE6     691    671    709    692    672    710 MAT       1 KINEM Totlag EAS soshw6
+    285 SOLIDSHW6 WEDGE6     693    663    711    694    664    712 MAT       1 KINEM Totlag EAS soshw6
+    286 SOLIDSHW6 WEDGE6     653    693    713    654    694    714 MAT       1 KINEM Totlag EAS soshw6
+    287 SOLIDSHW6 WEDGE6     655    695    697    656    696    698 MAT       1 KINEM Totlag EAS soshw6
+    288 SOLIDSHW6 WEDGE6     695    653    713    696    654    714 MAT       1 KINEM Totlag EAS soshw6
+    289 SOLIDSHW6 WEDGE6     657    697    699    658    698    700 MAT       1 KINEM Totlag EAS soshw6
+    290 SOLIDSHW6 WEDGE6     659    699    701    660    700    702 MAT       1 KINEM Totlag EAS soshw6
+    291 SOLIDSHW6 WEDGE6     663    703    711    664    704    712 MAT       1 KINEM Totlag EAS soshw6
+    292 SOLIDSHW6 WEDGE6     675    673    715    676    674    716 MAT       1 KINEM Totlag EAS soshw6
+    293 SOLIDSHW6 WEDGE6     703    675    715    704    676    716 MAT       1 KINEM Totlag EAS soshw6
+    294 SOLIDSHW6 WEDGE6     677    701    717    678    702    718 MAT       1 KINEM Totlag EAS soshw6
+    295 SOLIDSHW6 WEDGE6     679    677    719    680    678    720 MAT       1 KINEM Totlag EAS soshw6
+    296 SOLIDSHW6 WEDGE6     681    679    721    682    680    722 MAT       1 KINEM Totlag EAS soshw6
+    297 SOLIDSHW6 WEDGE6     683    681    723    684    682    724 MAT       1 KINEM Totlag EAS soshw6
+    298 SOLIDSHW6 WEDGE6     685    683    725    686    684    726 MAT       1 KINEM Totlag EAS soshw6
+    299 SOLIDSHW6 WEDGE6     689    685    727    690    686    728 MAT       1 KINEM Totlag EAS soshw6
+    300 SOLIDSHW6 WEDGE6     687    689    729    688    690    730 MAT       1 KINEM Totlag EAS soshw6
+    301 SOLIDSHW6 WEDGE6     705    687    729    706    688    730 MAT       1 KINEM Totlag EAS soshw6
+    302 SOLIDSHW6 WEDGE6     669    705    707    670    706    708 MAT       1 KINEM Totlag EAS soshw6
+    303 SOLIDSHW6 WEDGE6     671    707    709    672    708    710 MAT       1 KINEM Totlag EAS soshw6
+    304 SOLIDSHW6 WEDGE6     691    709    731    692    710    732 MAT       1 KINEM Totlag EAS soshw6
+    305 SOLIDSHW6 WEDGE6     693    711    733    694    712    734 MAT       1 KINEM Totlag EAS soshw6
+    306 SOLIDSHW6 WEDGE6     713    693    735    714    694    736 MAT       1 KINEM Totlag EAS soshw6
+    307 SOLIDSHW6 WEDGE6     697    695    737    698    696    738 MAT       1 KINEM Totlag EAS soshw6
+    308 SOLIDSHW6 WEDGE6     695    713    739    696    714    740 MAT       1 KINEM Totlag EAS soshw6
+    309 SOLIDSHW6 WEDGE6     699    697    741    700    698    742 MAT       1 KINEM Totlag EAS soshw6
+    310 SOLIDSHW6 WEDGE6     701    699    743    702    700    744 MAT       1 KINEM Totlag EAS soshw6
+    311 SOLIDSHW6 WEDGE6     711    703    745    712    704    746 MAT       1 KINEM Totlag EAS soshw6
+    312 SOLIDSHW6 WEDGE6     703    715    745    704    716    746 MAT       1 KINEM Totlag EAS soshw6
+    313 SOLIDSHW6 WEDGE6     717    701    743    718    702    744 MAT       1 KINEM Totlag EAS soshw6
+    314 SOLIDSHW6 WEDGE6     677    717    719    678    718    720 MAT       1 KINEM Totlag EAS soshw6
+    315 SOLIDSHW6 WEDGE6     679    719    721    680    720    722 MAT       1 KINEM Totlag EAS soshw6
+    316 SOLIDSHW6 WEDGE6     681    721    723    682    722    724 MAT       1 KINEM Totlag EAS soshw6
+    317 SOLIDSHW6 WEDGE6     683    723    725    684    724    726 MAT       1 KINEM Totlag EAS soshw6
+    318 SOLIDSHW6 WEDGE6     685    725    727    686    726    728 MAT       1 KINEM Totlag EAS soshw6
+    319 SOLIDSHW6 WEDGE6     689    727    747    690    728    748 MAT       1 KINEM Totlag EAS soshw6
+    320 SOLIDSHW6 WEDGE6     729    689    747    730    690    748 MAT       1 KINEM Totlag EAS soshw6
+    321 SOLIDSHW6 WEDGE6     705    729    749    706    730    750 MAT       1 KINEM Totlag EAS soshw6
+    322 SOLIDSHW6 WEDGE6     707    705    751    708    706    752 MAT       1 KINEM Totlag EAS soshw6
+    323 SOLIDSHW6 WEDGE6     709    707    753    710    708    754 MAT       1 KINEM Totlag EAS soshw6
+    324 SOLIDSHW6 WEDGE6     731    709    753    732    710    754 MAT       1 KINEM Totlag EAS soshw6
+    325 SOLIDSHW6 WEDGE6     733    711    755    734    712    756 MAT       1 KINEM Totlag EAS soshw6
+    326 SOLIDSHW6 WEDGE6     693    733    735    694    734    736 MAT       1 KINEM Totlag EAS soshw6
+    327 SOLIDSHW6 WEDGE6     713    735    739    714    736    740 MAT       1 KINEM Totlag EAS soshw6
+    328 SOLIDSHW6 WEDGE6     737    695    739    738    696    740 MAT       1 KINEM Totlag EAS soshw6
+    329 SOLIDSHW6 WEDGE6     697    737    741    698    738    742 MAT       1 KINEM Totlag EAS soshw6
+    330 SOLIDSHW6 WEDGE6     699    741    743    700    742    744 MAT       1 KINEM Totlag EAS soshw6
+    331 SOLIDSHW6 WEDGE6     711    745    755    712    746    756 MAT       1 KINEM Totlag EAS soshw6
+    332 SOLIDSHW6 WEDGE6     745    715    757    746    716    758 MAT       1 KINEM Totlag EAS soshw6
+    333 SOLIDSHW6 WEDGE6     717    743    759    718    744    760 MAT       1 KINEM Totlag EAS soshw6
+    334 SOLIDSHW6 WEDGE6     719    717    761    720    718    762 MAT       1 KINEM Totlag EAS soshw6
+    335 SOLIDSHW6 WEDGE6     721    719    763    722    720    764 MAT       1 KINEM Totlag EAS soshw6
+    336 SOLIDSHW6 WEDGE6     723    721    765    724    722    766 MAT       1 KINEM Totlag EAS soshw6
+    337 SOLIDSHW6 WEDGE6     725    723    767    726    724    768 MAT       1 KINEM Totlag EAS soshw6
+    338 SOLIDSHW6 WEDGE6     727    725    769    728    726    770 MAT       1 KINEM Totlag EAS soshw6
+    339 SOLIDSHW6 WEDGE6     747    727    771    748    728    772 MAT       1 KINEM Totlag EAS soshw6
+    340 SOLIDSHW6 WEDGE6     729    747    773    730    748    774 MAT       1 KINEM Totlag EAS soshw6
+    341 SOLIDSHW6 WEDGE6     749    729    773    750    730    774 MAT       1 KINEM Totlag EAS soshw6
+    342 SOLIDSHW6 WEDGE6     705    749    751    706    750    752 MAT       1 KINEM Totlag EAS soshw6
+    343 SOLIDSHW6 WEDGE6     707    751    753    708    752    754 MAT       1 KINEM Totlag EAS soshw6
+    344 SOLIDSHW6 WEDGE6     731    753    775    732    754    776 MAT       1 KINEM Totlag EAS soshw6
+    345 SOLIDSHW6 WEDGE6     733    755    777    734    756    778 MAT       1 KINEM Totlag EAS soshw6
+    346 SOLIDSHW6 WEDGE6     735    733    779    736    734    780 MAT       1 KINEM Totlag EAS soshw6
+    347 SOLIDSHW6 WEDGE6     739    735    781    740    736    782 MAT       1 KINEM Totlag EAS soshw6
+    348 SOLIDSHW6 WEDGE6     737    739    783    738    740    784 MAT       1 KINEM Totlag EAS soshw6
+    349 SOLIDSHW6 WEDGE6     741    737    785    742    738    786 MAT       1 KINEM Totlag EAS soshw6
+    350 SOLIDSHW6 WEDGE6     743    741    787    744    742    788 MAT       1 KINEM Totlag EAS soshw6
+    351 SOLIDSHW6 WEDGE6     755    745    789    756    746    790 MAT       1 KINEM Totlag EAS soshw6
+    352 SOLIDSHW6 WEDGE6     745    757    789    746    758    790 MAT       1 KINEM Totlag EAS soshw6
+    353 SOLIDSHW6 WEDGE6     759    743    787    760    744    788 MAT       1 KINEM Totlag EAS soshw6
+    354 SOLIDSHW6 WEDGE6     717    759    761    718    760    762 MAT       1 KINEM Totlag EAS soshw6
+    355 SOLIDSHW6 WEDGE6     719    761    763    720    762    764 MAT       1 KINEM Totlag EAS soshw6
+    356 SOLIDSHW6 WEDGE6     721    763    765    722    764    766 MAT       1 KINEM Totlag EAS soshw6
+    357 SOLIDSHW6 WEDGE6     723    765    767    724    766    768 MAT       1 KINEM Totlag EAS soshw6
+    358 SOLIDSHW6 WEDGE6     725    767    769    726    768    770 MAT       1 KINEM Totlag EAS soshw6
+    359 SOLIDSHW6 WEDGE6     727    769    771    728    770    772 MAT       1 KINEM Totlag EAS soshw6
+    360 SOLIDSHW6 WEDGE6     747    771    791    748    772    792 MAT       1 KINEM Totlag EAS soshw6
+    361 SOLIDSHW6 WEDGE6     773    747    791    774    748    792 MAT       1 KINEM Totlag EAS soshw6
+    362 SOLIDSHW6 WEDGE6     749    773    793    750    774    794 MAT       1 KINEM Totlag EAS soshw6
+    363 SOLIDSHW6 WEDGE6     751    749    795    752    750    796 MAT       1 KINEM Totlag EAS soshw6
+    364 SOLIDSHW6 WEDGE6     753    751    797    754    752    798 MAT       1 KINEM Totlag EAS soshw6
+    365 SOLIDSHW6 WEDGE6     775    753    797    776    754    798 MAT       1 KINEM Totlag EAS soshw6
+    366 SOLIDSHW6 WEDGE6     731    775    799    732    776    800 MAT       1 KINEM Totlag EAS soshw6
+    367 SOLIDSHW6 WEDGE6     777    755    801    778    756    802 MAT       1 KINEM Totlag EAS soshw6
+    368 SOLIDSHW6 WEDGE6     733    777    779    734    778    780 MAT       1 KINEM Totlag EAS soshw6
+    369 SOLIDSHW6 WEDGE6     735    779    781    736    780    782 MAT       1 KINEM Totlag EAS soshw6
+    370 SOLIDSHW6 WEDGE6     739    781    783    740    782    784 MAT       1 KINEM Totlag EAS soshw6
+    371 SOLIDSHW6 WEDGE6     737    783    785    738    784    786 MAT       1 KINEM Totlag EAS soshw6
+    372 SOLIDSHW6 WEDGE6     741    785    787    742    786    788 MAT       1 KINEM Totlag EAS soshw6
+    373 SOLIDSHW6 WEDGE6     755    789    801    756    790    802 MAT       1 KINEM Totlag EAS soshw6
+    374 SOLIDSHW6 WEDGE6     789    757    803    790    758    804 MAT       1 KINEM Totlag EAS soshw6
+    375 SOLIDSHW6 WEDGE6     759    787    805    760    788    806 MAT       1 KINEM Totlag EAS soshw6
+    376 SOLIDSHW6 WEDGE6     761    759    805    762    760    806 MAT       1 KINEM Totlag EAS soshw6
+    377 SOLIDSHW6 WEDGE6     763    761    807    764    762    808 MAT       1 KINEM Totlag EAS soshw6
+    378 SOLIDSHW6 WEDGE6     765    763    809    766    764    810 MAT       1 KINEM Totlag EAS soshw6
+    379 SOLIDSHW6 WEDGE6     767    765    811    768    766    812 MAT       1 KINEM Totlag EAS soshw6
+    380 SOLIDSHW6 WEDGE6     769    767    813    770    768    814 MAT       1 KINEM Totlag EAS soshw6
+    381 SOLIDSHW6 WEDGE6     771    769    815    772    770    816 MAT       1 KINEM Totlag EAS soshw6
+    382 SOLIDSHW6 WEDGE6     791    771    817    792    772    818 MAT       1 KINEM Totlag EAS soshw6
+    383 SOLIDSHW6 WEDGE6     773    791    819    774    792    820 MAT       1 KINEM Totlag EAS soshw6
+    384 SOLIDSHW6 WEDGE6     793    773    819    794    774    820 MAT       1 KINEM Totlag EAS soshw6
+    385 SOLIDSHW6 WEDGE6     749    793    795    750    794    796 MAT       1 KINEM Totlag EAS soshw6
+    386 SOLIDSHW6 WEDGE6     751    795    797    752    796    798 MAT       1 KINEM Totlag EAS soshw6
+    387 SOLIDSHW6 WEDGE6     775    797    821    776    798    822 MAT       1 KINEM Totlag EAS soshw6
+    388 SOLIDSHW6 WEDGE6     799    775    823    800    776    824 MAT       1 KINEM Totlag EAS soshw6
+    389 SOLIDSHW6 WEDGE6     777    801    825    778    802    826 MAT       1 KINEM Totlag EAS soshw6
+    390 SOLIDSHW6 WEDGE6     779    777    827    780    778    828 MAT       1 KINEM Totlag EAS soshw6
+    391 SOLIDSHW6 WEDGE6     781    779    829    782    780    830 MAT       1 KINEM Totlag EAS soshw6
+    392 SOLIDSHW6 WEDGE6     783    781    829    784    782    830 MAT       1 KINEM Totlag EAS soshw6
+    393 SOLIDSHW6 WEDGE6     785    783    831    786    784    832 MAT       1 KINEM Totlag EAS soshw6
+    394 SOLIDSHW6 WEDGE6     787    785    833    788    786    834 MAT       1 KINEM Totlag EAS soshw6
+    395 SOLIDSHW6 WEDGE6     801    789    835    802    790    836 MAT       1 KINEM Totlag EAS soshw6
+    396 SOLIDSHW6 WEDGE6     789    803    835    790    804    836 MAT       1 KINEM Totlag EAS soshw6
+    397 SOLIDSHW6 WEDGE6     805    787    833    806    788    834 MAT       1 KINEM Totlag EAS soshw6
+    398 SOLIDSHW6 WEDGE6     761    805    807    762    806    808 MAT       1 KINEM Totlag EAS soshw6
+    399 SOLIDSHW6 WEDGE6     763    807    809    764    808    810 MAT       1 KINEM Totlag EAS soshw6
+    400 SOLIDSHW6 WEDGE6     765    809    811    766    810    812 MAT       1 KINEM Totlag EAS soshw6
+    401 SOLIDSHW6 WEDGE6     767    811    813    768    812    814 MAT       1 KINEM Totlag EAS soshw6
+    402 SOLIDSHW6 WEDGE6     769    813    815    770    814    816 MAT       1 KINEM Totlag EAS soshw6
+    403 SOLIDSHW6 WEDGE6     771    815    817    772    816    818 MAT       1 KINEM Totlag EAS soshw6
+    404 SOLIDSHW6 WEDGE6     791    817    837    792    818    838 MAT       1 KINEM Totlag EAS soshw6
+    405 SOLIDSHW6 WEDGE6     819    791    837    820    792    838 MAT       1 KINEM Totlag EAS soshw6
+    406 SOLIDSHW6 WEDGE6     793    819    839    794    820    840 MAT       1 KINEM Totlag EAS soshw6
+    407 SOLIDSHW6 WEDGE6     795    793    839    796    794    840 MAT       1 KINEM Totlag EAS soshw6
+    408 SOLIDSHW6 WEDGE6     797    795    841    798    796    842 MAT       1 KINEM Totlag EAS soshw6
+    409 SOLIDSHW6 WEDGE6     821    797    841    822    798    842 MAT       1 KINEM Totlag EAS soshw6
+    410 SOLIDSHW6 WEDGE6     775    821    823    776    822    824 MAT       1 KINEM Totlag EAS soshw6
+    411 SOLIDSHW6 WEDGE6     825    801    843    826    802    844 MAT       1 KINEM Totlag EAS soshw6
+    412 SOLIDSHW6 WEDGE6     777    825    827    778    826    828 MAT       1 KINEM Totlag EAS soshw6
+    413 SOLIDSHW6 WEDGE6     779    827    829    780    828    830 MAT       1 KINEM Totlag EAS soshw6
+    414 SOLIDSHW6 WEDGE6     783    829    831    784    830    832 MAT       1 KINEM Totlag EAS soshw6
+    415 SOLIDSHW6 WEDGE6     785    831    833    786    832    834 MAT       1 KINEM Totlag EAS soshw6
+    416 SOLIDSHW6 WEDGE6     801    835    843    802    836    844 MAT       1 KINEM Totlag EAS soshw6
+    417 SOLIDSHW6 WEDGE6     805    833    845    806    834    846 MAT       1 KINEM Totlag EAS soshw6
+    418 SOLIDSHW6 WEDGE6     807    805    847    808    806    848 MAT       1 KINEM Totlag EAS soshw6
+    419 SOLIDSHW6 WEDGE6     809    807    849    810    808    850 MAT       1 KINEM Totlag EAS soshw6
+    420 SOLIDSHW6 WEDGE6     811    809    851    812    810    852 MAT       1 KINEM Totlag EAS soshw6
+    421 SOLIDSHW6 WEDGE6     813    811    853    814    812    854 MAT       1 KINEM Totlag EAS soshw6
+    422 SOLIDSHW6 WEDGE6     815    813    855    816    814    856 MAT       1 KINEM Totlag EAS soshw6
+    423 SOLIDSHW6 WEDGE6     817    815    857    818    816    858 MAT       1 KINEM Totlag EAS soshw6
+    424 SOLIDSHW6 WEDGE6     837    817    859    838    818    860 MAT       1 KINEM Totlag EAS soshw6
+    425 SOLIDSHW6 WEDGE6     819    837    861    820    838    862 MAT       1 KINEM Totlag EAS soshw6
+    426 SOLIDSHW6 WEDGE6     839    819    861    840    820    862 MAT       1 KINEM Totlag EAS soshw6
+    427 SOLIDSHW6 WEDGE6     795    839    841    796    840    842 MAT       1 KINEM Totlag EAS soshw6
+    428 SOLIDSHW6 WEDGE6     821    841    863    822    842    864 MAT       1 KINEM Totlag EAS soshw6
+    429 SOLIDSHW6 WEDGE6     823    821    865    824    822    866 MAT       1 KINEM Totlag EAS soshw6
+    430 SOLIDSHW6 WEDGE6     825    843    867    826    844    868 MAT       1 KINEM Totlag EAS soshw6
+    431 SOLIDSHW6 WEDGE6     827    825    869    828    826    870 MAT       1 KINEM Totlag EAS soshw6
+    432 SOLIDSHW6 WEDGE6     829    827    871    830    828    872 MAT       1 KINEM Totlag EAS soshw6
+    433 SOLIDSHW6 WEDGE6     831    829    873    832    830    874 MAT       1 KINEM Totlag EAS soshw6
+    434 SOLIDSHW6 WEDGE6     833    831    875    834    832    876 MAT       1 KINEM Totlag EAS soshw6
+    435 SOLIDSHW6 WEDGE6     843    835    877    844    836    878 MAT       1 KINEM Totlag EAS soshw6
+    436 SOLIDSHW6 WEDGE6     845    833    875    846    834    876 MAT       1 KINEM Totlag EAS soshw6
+    437 SOLIDSHW6 WEDGE6     805    845    847    806    846    848 MAT       1 KINEM Totlag EAS soshw6
+    438 SOLIDSHW6 WEDGE6     807    847    849    808    848    850 MAT       1 KINEM Totlag EAS soshw6
+    439 SOLIDSHW6 WEDGE6     809    849    851    810    850    852 MAT       1 KINEM Totlag EAS soshw6
+    440 SOLIDSHW6 WEDGE6     811    851    853    812    852    854 MAT       1 KINEM Totlag EAS soshw6
+    441 SOLIDSHW6 WEDGE6     813    853    855    814    854    856 MAT       1 KINEM Totlag EAS soshw6
+    442 SOLIDSHW6 WEDGE6     815    855    857    816    856    858 MAT       1 KINEM Totlag EAS soshw6
+    443 SOLIDSHW6 WEDGE6     817    857    859    818    858    860 MAT       1 KINEM Totlag EAS soshw6
+    444 SOLIDSHW6 WEDGE6     837    859    879    838    860    880 MAT       1 KINEM Totlag EAS soshw6
+    445 SOLIDSHW6 WEDGE6     861    837    879    862    838    880 MAT       1 KINEM Totlag EAS soshw6
+    446 SOLIDSHW6 WEDGE6     839    861    881    840    862    882 MAT       1 KINEM Totlag EAS soshw6
+    447 SOLIDSHW6 WEDGE6     841    839    883    842    840    884 MAT       1 KINEM Totlag EAS soshw6
+    448 SOLIDSHW6 WEDGE6     863    841    883    864    842    884 MAT       1 KINEM Totlag EAS soshw6
+    449 SOLIDSHW6 WEDGE6     821    863    865    822    864    866 MAT       1 KINEM Totlag EAS soshw6
+    450 SOLIDSHW6 WEDGE6     823    865    885    824    866    886 MAT       1 KINEM Totlag EAS soshw6
+    451 SOLIDSHW6 WEDGE6     867    843    877    868    844    878 MAT       1 KINEM Totlag EAS soshw6
+    452 SOLIDSHW6 WEDGE6     825    867    869    826    868    870 MAT       1 KINEM Totlag EAS soshw6
+    453 SOLIDSHW6 WEDGE6     827    869    871    828    870    872 MAT       1 KINEM Totlag EAS soshw6
+    454 SOLIDSHW6 WEDGE6     829    871    873    830    872    874 MAT       1 KINEM Totlag EAS soshw6
+    455 SOLIDSHW6 WEDGE6     831    873    875    832    874    876 MAT       1 KINEM Totlag EAS soshw6
+    456 SOLIDSHW6 WEDGE6     845    875    887    846    876    888 MAT       1 KINEM Totlag EAS soshw6
+    457 SOLIDSHW6 WEDGE6     847    845    889    848    846    890 MAT       1 KINEM Totlag EAS soshw6
+    458 SOLIDSHW6 WEDGE6     849    847    891    850    848    892 MAT       1 KINEM Totlag EAS soshw6
+    459 SOLIDSHW6 WEDGE6     851    849    893    852    850    894 MAT       1 KINEM Totlag EAS soshw6
+    460 SOLIDSHW6 WEDGE6     853    851    895    854    852    896 MAT       1 KINEM Totlag EAS soshw6
+    461 SOLIDSHW6 WEDGE6     855    853    897    856    854    898 MAT       1 KINEM Totlag EAS soshw6
+    462 SOLIDSHW6 WEDGE6     857    855    899    858    856    900 MAT       1 KINEM Totlag EAS soshw6
+    463 SOLIDSHW6 WEDGE6     859    857    901    860    858    902 MAT       1 KINEM Totlag EAS soshw6
+    464 SOLIDSHW6 WEDGE6     879    859    903    880    860    904 MAT       1 KINEM Totlag EAS soshw6
+    465 SOLIDSHW6 WEDGE6     861    879    905    862    880    906 MAT       1 KINEM Totlag EAS soshw6
+    466 SOLIDSHW6 WEDGE6     881    861    905    882    862    906 MAT       1 KINEM Totlag EAS soshw6
+    467 SOLIDSHW6 WEDGE6     839    881    883    840    882    884 MAT       1 KINEM Totlag EAS soshw6
+    468 SOLIDSHW6 WEDGE6     863    883    907    864    884    908 MAT       1 KINEM Totlag EAS soshw6
+    469 SOLIDSHW6 WEDGE6     865    863    909    866    864    910 MAT       1 KINEM Totlag EAS soshw6
+    470 SOLIDSHW6 WEDGE6     885    865    909    886    866    910 MAT       1 KINEM Totlag EAS soshw6
+    471 SOLIDSHW6 WEDGE6     867    877    911    868    878    912 MAT       1 KINEM Totlag EAS soshw6
+    472 SOLIDSHW6 WEDGE6     869    867    913    870    868    914 MAT       1 KINEM Totlag EAS soshw6
+    473 SOLIDSHW6 WEDGE6     871    869    915    872    870    916 MAT       1 KINEM Totlag EAS soshw6
+    474 SOLIDSHW6 WEDGE6     873    871    917    874    872    918 MAT       1 KINEM Totlag EAS soshw6
+    475 SOLIDSHW6 WEDGE6     875    873    919    876    874    920 MAT       1 KINEM Totlag EAS soshw6
+    476 SOLIDSHW6 WEDGE6     887    875    919    888    876    920 MAT       1 KINEM Totlag EAS soshw6
+    477 SOLIDSHW6 WEDGE6     845    887    889    846    888    890 MAT       1 KINEM Totlag EAS soshw6
+    478 SOLIDSHW6 WEDGE6     847    889    891    848    890    892 MAT       1 KINEM Totlag EAS soshw6
+    479 SOLIDSHW6 WEDGE6     849    891    893    850    892    894 MAT       1 KINEM Totlag EAS soshw6
+    480 SOLIDSHW6 WEDGE6     851    893    895    852    894    896 MAT       1 KINEM Totlag EAS soshw6
+    481 SOLIDSHW6 WEDGE6     853    895    897    854    896    898 MAT       1 KINEM Totlag EAS soshw6
+    482 SOLIDSHW6 WEDGE6     855    897    899    856    898    900 MAT       1 KINEM Totlag EAS soshw6
+    483 SOLIDSHW6 WEDGE6     857    899    901    858    900    902 MAT       1 KINEM Totlag EAS soshw6
+    484 SOLIDSHW6 WEDGE6     859    901    903    860    902    904 MAT       1 KINEM Totlag EAS soshw6
+    485 SOLIDSHW6 WEDGE6     879    903    921    880    904    922 MAT       1 KINEM Totlag EAS soshw6
+    486 SOLIDSHW6 WEDGE6     905    879    921    906    880    922 MAT       1 KINEM Totlag EAS soshw6
+    487 SOLIDSHW6 WEDGE6     881    905    923    882    906    924 MAT       1 KINEM Totlag EAS soshw6
+    488 SOLIDSHW6 WEDGE6     883    881    925    884    882    926 MAT       1 KINEM Totlag EAS soshw6
+    489 SOLIDSHW6 WEDGE6     907    883    925    908    884    926 MAT       1 KINEM Totlag EAS soshw6
+    490 SOLIDSHW6 WEDGE6     863    907    909    864    908    910 MAT       1 KINEM Totlag EAS soshw6
+    491 SOLIDSHW6 WEDGE6     885    909    927    886    910    928 MAT       1 KINEM Totlag EAS soshw6
+    492 SOLIDSHW6 WEDGE6     867    911    913    868    912    914 MAT       1 KINEM Totlag EAS soshw6
+    493 SOLIDSHW6 WEDGE6     911    877    929    912    878    930 MAT       1 KINEM Totlag EAS soshw6
+    494 SOLIDSHW6 WEDGE6     869    913    915    870    914    916 MAT       1 KINEM Totlag EAS soshw6
+    495 SOLIDSHW6 WEDGE6     871    915    917    872    916    918 MAT       1 KINEM Totlag EAS soshw6
+    496 SOLIDSHW6 WEDGE6     873    917    919    874    918    920 MAT       1 KINEM Totlag EAS soshw6
+    497 SOLIDSHW6 WEDGE6     887    919    931    888    920    932 MAT       1 KINEM Totlag EAS soshw6
+    498 SOLIDSHW6 WEDGE6     889    887    933    890    888    934 MAT       1 KINEM Totlag EAS soshw6
+    499 SOLIDSHW6 WEDGE6     891    889    935    892    890    936 MAT       1 KINEM Totlag EAS soshw6
+    500 SOLIDSHW6 WEDGE6     893    891    937    894    892    938 MAT       1 KINEM Totlag EAS soshw6
+    501 SOLIDSHW6 WEDGE6     895    893    939    896    894    940 MAT       1 KINEM Totlag EAS soshw6
+    502 SOLIDSHW6 WEDGE6     897    895    941    898    896    942 MAT       1 KINEM Totlag EAS soshw6
+    503 SOLIDSHW6 WEDGE6     899    897    943    900    898    944 MAT       1 KINEM Totlag EAS soshw6
+    504 SOLIDSHW6 WEDGE6     901    899    945    902    900    946 MAT       1 KINEM Totlag EAS soshw6
+    505 SOLIDSHW6 WEDGE6     903    901    947    904    902    948 MAT       1 KINEM Totlag EAS soshw6
+    506 SOLIDSHW6 WEDGE6     921    903    949    922    904    950 MAT       1 KINEM Totlag EAS soshw6
+    507 SOLIDSHW6 WEDGE6     905    921    951    906    922    952 MAT       1 KINEM Totlag EAS soshw6
+    508 SOLIDSHW6 WEDGE6     923    905    951    924    906    952 MAT       1 KINEM Totlag EAS soshw6
+    509 SOLIDSHW6 WEDGE6     881    923    925    882    924    926 MAT       1 KINEM Totlag EAS soshw6
+    510 SOLIDSHW6 WEDGE6     907    925    953    908    926    954 MAT       1 KINEM Totlag EAS soshw6
+    511 SOLIDSHW6 WEDGE6     909    907    955    910    908    956 MAT       1 KINEM Totlag EAS soshw6
+    512 SOLIDSHW6 WEDGE6     927    909    955    928    910    956 MAT       1 KINEM Totlag EAS soshw6
+    513 SOLIDSHW6 WEDGE6     913    911    957    914    912    958 MAT       1 KINEM Totlag EAS soshw6
+    514 SOLIDSHW6 WEDGE6     911    929    959    912    930    960 MAT       1 KINEM Totlag EAS soshw6
+    515 SOLIDSHW6 WEDGE6     915    913    961    916    914    962 MAT       1 KINEM Totlag EAS soshw6
+    516 SOLIDSHW6 WEDGE6     917    915    961    918    916    962 MAT       1 KINEM Totlag EAS soshw6
+    517 SOLIDSHW6 WEDGE6     919    917    963    920    918    964 MAT       1 KINEM Totlag EAS soshw6
+    518 SOLIDSHW6 WEDGE6     931    919    963    932    920    964 MAT       1 KINEM Totlag EAS soshw6
+    519 SOLIDSHW6 WEDGE6     887    931    933    888    932    934 MAT       1 KINEM Totlag EAS soshw6
+    520 SOLIDSHW6 WEDGE6     889    933    935    890    934    936 MAT       1 KINEM Totlag EAS soshw6
+    521 SOLIDSHW6 WEDGE6     891    935    937    892    936    938 MAT       1 KINEM Totlag EAS soshw6
+    522 SOLIDSHW6 WEDGE6     893    937    939    894    938    940 MAT       1 KINEM Totlag EAS soshw6
+    523 SOLIDSHW6 WEDGE6     895    939    941    896    940    942 MAT       1 KINEM Totlag EAS soshw6
+    524 SOLIDSHW6 WEDGE6     897    941    943    898    942    944 MAT       1 KINEM Totlag EAS soshw6
+    525 SOLIDSHW6 WEDGE6     899    943    945    900    944    946 MAT       1 KINEM Totlag EAS soshw6
+    526 SOLIDSHW6 WEDGE6     901    945    947    902    946    948 MAT       1 KINEM Totlag EAS soshw6
+    527 SOLIDSHW6 WEDGE6     903    947    949    904    948    950 MAT       1 KINEM Totlag EAS soshw6
+    528 SOLIDSHW6 WEDGE6     921    949    965    922    950    966 MAT       1 KINEM Totlag EAS soshw6
+    529 SOLIDSHW6 WEDGE6     951    921    965    952    922    966 MAT       1 KINEM Totlag EAS soshw6
+    530 SOLIDSHW6 WEDGE6     923    951    967    924    952    968 MAT       1 KINEM Totlag EAS soshw6
+    531 SOLIDSHW6 WEDGE6     925    923    969    926    924    970 MAT       1 KINEM Totlag EAS soshw6
+    532 SOLIDSHW6 WEDGE6     953    925    969    954    926    970 MAT       1 KINEM Totlag EAS soshw6
+    533 SOLIDSHW6 WEDGE6     907    953    955    908    954    956 MAT       1 KINEM Totlag EAS soshw6
+    534 SOLIDSHW6 WEDGE6     927    955    971    928    956    972 MAT       1 KINEM Totlag EAS soshw6
+    535 SOLIDSHW6 WEDGE6     957    911    959    958    912    960 MAT       1 KINEM Totlag EAS soshw6
+    536 SOLIDSHW6 WEDGE6     913    957    973    914    958    974 MAT       1 KINEM Totlag EAS soshw6
+    537 SOLIDSHW6 WEDGE6     961    913    973    962    914    974 MAT       1 KINEM Totlag EAS soshw6
+    538 SOLIDSHW6 WEDGE6     917    961    963    918    962    964 MAT       1 KINEM Totlag EAS soshw6
+    539 SOLIDSHW6 WEDGE6     931    963    975    932    964    976 MAT       1 KINEM Totlag EAS soshw6
+    540 SOLIDSHW6 WEDGE6     933    931    977    934    932    978 MAT       1 KINEM Totlag EAS soshw6
+    541 SOLIDSHW6 WEDGE6     935    933    979    936    934    980 MAT       1 KINEM Totlag EAS soshw6
+    542 SOLIDSHW6 WEDGE6     937    935    981    938    936    982 MAT       1 KINEM Totlag EAS soshw6
+    543 SOLIDSHW6 WEDGE6     939    937    981    940    938    982 MAT       1 KINEM Totlag EAS soshw6
+    544 SOLIDSHW6 WEDGE6     941    939    983    942    940    984 MAT       1 KINEM Totlag EAS soshw6
+    545 SOLIDSHW6 WEDGE6     943    941    985    944    942    986 MAT       1 KINEM Totlag EAS soshw6
+    546 SOLIDSHW6 WEDGE6     945    943    987    946    944    988 MAT       1 KINEM Totlag EAS soshw6
+    547 SOLIDSHW6 WEDGE6     947    945    989    948    946    990 MAT       1 KINEM Totlag EAS soshw6
+    548 SOLIDSHW6 WEDGE6     949    947    991    950    948    992 MAT       1 KINEM Totlag EAS soshw6
+    549 SOLIDSHW6 WEDGE6     965    949    991    966    950    992 MAT       1 KINEM Totlag EAS soshw6
+    550 SOLIDSHW6 WEDGE6     951    965    967    952    966    968 MAT       1 KINEM Totlag EAS soshw6
+    551 SOLIDSHW6 WEDGE6     923    967    969    924    968    970 MAT       1 KINEM Totlag EAS soshw6
+    552 SOLIDSHW6 WEDGE6     957    959    993    958    960    994 MAT       1 KINEM Totlag EAS soshw6
+    553 SOLIDSHW6 WEDGE6     973    957    995    974    958    996 MAT       1 KINEM Totlag EAS soshw6
+    554 SOLIDSHW6 WEDGE6     961    973    997    962    974    998 MAT       1 KINEM Totlag EAS soshw6
+    555 SOLIDSHW6 WEDGE6     963    961    997    964    962    998 MAT       1 KINEM Totlag EAS soshw6
+    556 SOLIDSHW6 WEDGE6     975    963    997    976    964    998 MAT       1 KINEM Totlag EAS soshw6
+    557 SOLIDSHW6 WEDGE6     931    975    977    932    976    978 MAT       1 KINEM Totlag EAS soshw6
+    558 SOLIDSHW6 WEDGE6     933    977    979    934    978    980 MAT       1 KINEM Totlag EAS soshw6
+    559 SOLIDSHW6 WEDGE6     935    979    981    936    980    982 MAT       1 KINEM Totlag EAS soshw6
+    560 SOLIDSHW6 WEDGE6     939    981    999    940    982   1000 MAT       1 KINEM Totlag EAS soshw6
+    561 SOLIDSHW6 WEDGE6     983    939    999    984    940   1000 MAT       1 KINEM Totlag EAS soshw6
+    562 SOLIDSHW6 WEDGE6     941    983    985    942    984    986 MAT       1 KINEM Totlag EAS soshw6
+    563 SOLIDSHW6 WEDGE6     943    985    987    944    986    988 MAT       1 KINEM Totlag EAS soshw6
+    564 SOLIDSHW6 WEDGE6     945    987    989    946    988    990 MAT       1 KINEM Totlag EAS soshw6
+    565 SOLIDSHW6 WEDGE6     947    989    991    948    990    992 MAT       1 KINEM Totlag EAS soshw6
+    566 SOLIDSHW6 WEDGE6     965    991   1001    966    992   1002 MAT       1 KINEM Totlag EAS soshw6
+    567 SOLIDSHW6 WEDGE6     957    993    995    958    994    996 MAT       1 KINEM Totlag EAS soshw6
+    568 SOLIDSHW6 WEDGE6     993    959   1003    994    960   1004 MAT       1 KINEM Totlag EAS soshw6
+    569 SOLIDSHW6 WEDGE6     973    995   1005    974    996   1006 MAT       1 KINEM Totlag EAS soshw6
+    570 SOLIDSHW6 WEDGE6     997    973   1005    998    974   1006 MAT       1 KINEM Totlag EAS soshw6
+    571 SOLIDSHW6 WEDGE6     975    997   1007    976    998   1008 MAT       1 KINEM Totlag EAS soshw6
+    572 SOLIDSHW6 WEDGE6     977    975   1009    978    976   1010 MAT       1 KINEM Totlag EAS soshw6
+    573 SOLIDSHW6 WEDGE6     979    977   1011    980    978   1012 MAT       1 KINEM Totlag EAS soshw6
+    574 SOLIDSHW6 WEDGE6     981    979   1013    982    980   1014 MAT       1 KINEM Totlag EAS soshw6
+    575 SOLIDSHW6 WEDGE6     999    981   1013   1000    982   1014 MAT       1 KINEM Totlag EAS soshw6
+    576 SOLIDSHW6 WEDGE6     983    999   1015    984   1000   1016 MAT       1 KINEM Totlag EAS soshw6
+    577 SOLIDSHW6 WEDGE6     985    983   1017    986    984   1018 MAT       1 KINEM Totlag EAS soshw6
+    578 SOLIDSHW6 WEDGE6     987    985   1019    988    986   1020 MAT       1 KINEM Totlag EAS soshw6
+    579 SOLIDSHW6 WEDGE6     989    987   1021    990    988   1022 MAT       1 KINEM Totlag EAS soshw6
+    580 SOLIDSHW6 WEDGE6     991    989   1023    992    990   1024 MAT       1 KINEM Totlag EAS soshw6
+    581 SOLIDSHW6 WEDGE6    1001    991   1023   1002    992   1024 MAT       1 KINEM Totlag EAS soshw6
+    582 SOLIDSHW6 WEDGE6     995    993   1025    996    994   1026 MAT       1 KINEM Totlag EAS soshw6
+    583 SOLIDSHW6 WEDGE6     993   1003   1025    994   1004   1026 MAT       1 KINEM Totlag EAS soshw6
+    584 SOLIDSHW6 WEDGE6    1005    995   1027   1006    996   1028 MAT       1 KINEM Totlag EAS soshw6
+    585 SOLIDSHW6 WEDGE6     997   1005   1007    998   1006   1008 MAT       1 KINEM Totlag EAS soshw6
+    586 SOLIDSHW6 WEDGE6     975   1007   1009    976   1008   1010 MAT       1 KINEM Totlag EAS soshw6
+    587 SOLIDSHW6 WEDGE6     977   1009   1011    978   1010   1012 MAT       1 KINEM Totlag EAS soshw6
+    588 SOLIDSHW6 WEDGE6     979   1011   1013    980   1012   1014 MAT       1 KINEM Totlag EAS soshw6
+    589 SOLIDSHW6 WEDGE6     999   1013   1029   1000   1014   1030 MAT       1 KINEM Totlag EAS soshw6
+    590 SOLIDSHW6 WEDGE6    1015    999   1029   1016   1000   1030 MAT       1 KINEM Totlag EAS soshw6
+    591 SOLIDSHW6 WEDGE6     983   1015   1017    984   1016   1018 MAT       1 KINEM Totlag EAS soshw6
+    592 SOLIDSHW6 WEDGE6     985   1017   1019    986   1018   1020 MAT       1 KINEM Totlag EAS soshw6
+    593 SOLIDSHW6 WEDGE6     987   1019   1021    988   1020   1022 MAT       1 KINEM Totlag EAS soshw6
+    594 SOLIDSHW6 WEDGE6     989   1021   1023    990   1022   1024 MAT       1 KINEM Totlag EAS soshw6
+    595 SOLIDSHW6 WEDGE6     995   1025   1027    996   1026   1028 MAT       1 KINEM Totlag EAS soshw6
+    596 SOLIDSHW6 WEDGE6    1025   1003   1031   1026   1004   1032 MAT       1 KINEM Totlag EAS soshw6
+    597 SOLIDSHW6 WEDGE6    1005   1027   1033   1006   1028   1034 MAT       1 KINEM Totlag EAS soshw6
+    598 SOLIDSHW6 WEDGE6    1007   1005   1033   1008   1006   1034 MAT       1 KINEM Totlag EAS soshw6
+    599 SOLIDSHW6 WEDGE6    1009   1007   1035   1010   1008   1036 MAT       1 KINEM Totlag EAS soshw6
+    600 SOLIDSHW6 WEDGE6    1011   1009   1037   1012   1010   1038 MAT       1 KINEM Totlag EAS soshw6
+    601 SOLIDSHW6 WEDGE6    1013   1011   1039   1014   1012   1040 MAT       1 KINEM Totlag EAS soshw6
+    602 SOLIDSHW6 WEDGE6    1029   1013   1039   1030   1014   1040 MAT       1 KINEM Totlag EAS soshw6
+    603 SOLIDSHW6 WEDGE6    1015   1029   1041   1016   1030   1042 MAT       1 KINEM Totlag EAS soshw6
+    604 SOLIDSHW6 WEDGE6    1017   1015   1043   1018   1016   1044 MAT       1 KINEM Totlag EAS soshw6
+    605 SOLIDSHW6 WEDGE6    1019   1017   1045   1020   1018   1046 MAT       1 KINEM Totlag EAS soshw6
+    606 SOLIDSHW6 WEDGE6    1021   1019   1047   1022   1020   1048 MAT       1 KINEM Totlag EAS soshw6
+    607 SOLIDSHW6 WEDGE6    1023   1021   1047   1024   1022   1048 MAT       1 KINEM Totlag EAS soshw6
+    608 SOLIDSHW6 WEDGE6    1027   1025   1049   1028   1026   1050 MAT       1 KINEM Totlag EAS soshw6
+    609 SOLIDSHW6 WEDGE6    1025   1031   1049   1026   1032   1050 MAT       1 KINEM Totlag EAS soshw6
+    610 SOLIDSHW6 WEDGE6    1033   1027   1051   1034   1028   1052 MAT       1 KINEM Totlag EAS soshw6
+    611 SOLIDSHW6 WEDGE6    1007   1033   1035   1008   1034   1036 MAT       1 KINEM Totlag EAS soshw6
+    612 SOLIDSHW6 WEDGE6    1009   1035   1037   1010   1036   1038 MAT       1 KINEM Totlag EAS soshw6
+    613 SOLIDSHW6 WEDGE6    1011   1037   1039   1012   1038   1040 MAT       1 KINEM Totlag EAS soshw6
+    614 SOLIDSHW6 WEDGE6    1029   1039   1053   1030   1040   1054 MAT       1 KINEM Totlag EAS soshw6
+    615 SOLIDSHW6 WEDGE6    1041   1029   1053   1042   1030   1054 MAT       1 KINEM Totlag EAS soshw6
+    616 SOLIDSHW6 WEDGE6    1015   1041   1043   1016   1042   1044 MAT       1 KINEM Totlag EAS soshw6
+    617 SOLIDSHW6 WEDGE6    1017   1043   1045   1018   1044   1046 MAT       1 KINEM Totlag EAS soshw6
+    618 SOLIDSHW6 WEDGE6    1019   1045   1047   1020   1046   1048 MAT       1 KINEM Totlag EAS soshw6
+    619 SOLIDSHW6 WEDGE6    1027   1049   1051   1028   1050   1052 MAT       1 KINEM Totlag EAS soshw6
+    620 SOLIDSHW6 WEDGE6    1049   1031   1055   1050   1032   1056 MAT       1 KINEM Totlag EAS soshw6
+    621 SOLIDSHW6 WEDGE6    1033   1051   1057   1034   1052   1058 MAT       1 KINEM Totlag EAS soshw6
+    622 SOLIDSHW6 WEDGE6    1035   1033   1057   1036   1034   1058 MAT       1 KINEM Totlag EAS soshw6
+    623 SOLIDSHW6 WEDGE6    1037   1035   1059   1038   1036   1060 MAT       1 KINEM Totlag EAS soshw6
+    624 SOLIDSHW6 WEDGE6    1039   1037   1061   1040   1038   1062 MAT       1 KINEM Totlag EAS soshw6
+    625 SOLIDSHW6 WEDGE6    1053   1039   1061   1054   1040   1062 MAT       1 KINEM Totlag EAS soshw6
+    626 SOLIDSHW6 WEDGE6    1041   1053   1063   1042   1054   1064 MAT       1 KINEM Totlag EAS soshw6
+    627 SOLIDSHW6 WEDGE6    1043   1041   1065   1044   1042   1066 MAT       1 KINEM Totlag EAS soshw6
+    628 SOLIDSHW6 WEDGE6    1045   1043   1067   1046   1044   1068 MAT       1 KINEM Totlag EAS soshw6
+    629 SOLIDSHW6 WEDGE6    1047   1045   1067   1048   1046   1068 MAT       1 KINEM Totlag EAS soshw6
+    630 SOLIDSHW6 WEDGE6    1051   1049   1069   1052   1050   1070 MAT       1 KINEM Totlag EAS soshw6
+    631 SOLIDSHW6 WEDGE6    1049   1055   1071   1050   1056   1072 MAT       1 KINEM Totlag EAS soshw6
+    632 SOLIDSHW6 WEDGE6    1057   1051   1073   1058   1052   1074 MAT       1 KINEM Totlag EAS soshw6
+    633 SOLIDSHW6 WEDGE6    1035   1057   1059   1036   1058   1060 MAT       1 KINEM Totlag EAS soshw6
+    634 SOLIDSHW6 WEDGE6    1037   1059   1061   1038   1060   1062 MAT       1 KINEM Totlag EAS soshw6
+    635 SOLIDSHW6 WEDGE6    1053   1061   1075   1054   1062   1076 MAT       1 KINEM Totlag EAS soshw6
+    636 SOLIDSHW6 WEDGE6    1063   1053   1075   1064   1054   1076 MAT       1 KINEM Totlag EAS soshw6
+    637 SOLIDSHW6 WEDGE6    1041   1063   1065   1042   1064   1066 MAT       1 KINEM Totlag EAS soshw6
+    638 SOLIDSHW6 WEDGE6    1043   1065   1067   1044   1066   1068 MAT       1 KINEM Totlag EAS soshw6
+    639 SOLIDSHW6 WEDGE6    1069   1049   1071   1070   1050   1072 MAT       1 KINEM Totlag EAS soshw6
+    640 SOLIDSHW6 WEDGE6    1051   1069   1073   1052   1070   1074 MAT       1 KINEM Totlag EAS soshw6
+    641 SOLIDSHW6 WEDGE6    1071   1055   1077   1072   1056   1078 MAT       1 KINEM Totlag EAS soshw6
+    642 SOLIDSHW6 WEDGE6    1057   1073   1079   1058   1074   1080 MAT       1 KINEM Totlag EAS soshw6
+    643 SOLIDSHW6 WEDGE6    1059   1057   1079   1060   1058   1080 MAT       1 KINEM Totlag EAS soshw6
+    644 SOLIDSHW6 WEDGE6    1061   1059   1081   1062   1060   1082 MAT       1 KINEM Totlag EAS soshw6
+    645 SOLIDSHW6 WEDGE6    1075   1061   1081   1076   1062   1082 MAT       1 KINEM Totlag EAS soshw6
+    646 SOLIDSHW6 WEDGE6    1063   1075   1083   1064   1076   1084 MAT       1 KINEM Totlag EAS soshw6
+    647 SOLIDSHW6 WEDGE6    1065   1063   1083   1066   1064   1084 MAT       1 KINEM Totlag EAS soshw6
+    648 SOLIDSHW6 WEDGE6    1067   1065   1085   1068   1066   1086 MAT       1 KINEM Totlag EAS soshw6
+    649 SOLIDSHW6 WEDGE6    1069   1071   1087   1070   1072   1088 MAT       1 KINEM Totlag EAS soshw6
+    650 SOLIDSHW6 WEDGE6    1073   1069   1089   1074   1070   1090 MAT       1 KINEM Totlag EAS soshw6
+    651 SOLIDSHW6 WEDGE6    1071   1077   1087   1072   1078   1088 MAT       1 KINEM Totlag EAS soshw6
+    652 SOLIDSHW6 WEDGE6    1079   1073   1091   1080   1074   1092 MAT       1 KINEM Totlag EAS soshw6
+    653 SOLIDSHW6 WEDGE6    1059   1079   1081   1060   1080   1082 MAT       1 KINEM Totlag EAS soshw6
+    654 SOLIDSHW6 WEDGE6    1075   1081   1093   1076   1082   1094 MAT       1 KINEM Totlag EAS soshw6
+    655 SOLIDSHW6 WEDGE6    1083   1075   1093   1084   1076   1094 MAT       1 KINEM Totlag EAS soshw6
+    656 SOLIDSHW6 WEDGE6    1065   1083   1085   1066   1084   1086 MAT       1 KINEM Totlag EAS soshw6
+    657 SOLIDSHW6 WEDGE6    1069   1087   1089   1070   1088   1090 MAT       1 KINEM Totlag EAS soshw6
+    658 SOLIDSHW6 WEDGE6    1073   1089   1091   1074   1090   1092 MAT       1 KINEM Totlag EAS soshw6
+    659 SOLIDSHW6 WEDGE6    1087   1077   1095   1088   1078   1096 MAT       1 KINEM Totlag EAS soshw6
+    660 SOLIDSHW6 WEDGE6    1079   1091   1097   1080   1092   1098 MAT       1 KINEM Totlag EAS soshw6
+    661 SOLIDSHW6 WEDGE6    1081   1079   1097   1082   1080   1098 MAT       1 KINEM Totlag EAS soshw6
+    662 SOLIDSHW6 WEDGE6    1093   1081   1097   1094   1082   1098 MAT       1 KINEM Totlag EAS soshw6
+    663 SOLIDSHW6 WEDGE6    1083   1093   1099   1084   1094   1100 MAT       1 KINEM Totlag EAS soshw6
+    664 SOLIDSHW6 WEDGE6    1089   1087   1101   1090   1088   1102 MAT       1 KINEM Totlag EAS soshw6
+    665 SOLIDSHW6 WEDGE6    1091   1089   1101   1092   1090   1102 MAT       1 KINEM Totlag EAS soshw6
+    666 SOLIDSHW6 WEDGE6    1087   1095   1103   1088   1096   1104 MAT       1 KINEM Totlag EAS soshw6
+    667 SOLIDSHW6 WEDGE6    1097   1091   1105   1098   1092   1106 MAT       1 KINEM Totlag EAS soshw6
+    668 SOLIDSHW6 WEDGE6    1093   1097   1105   1094   1098   1106 MAT       1 KINEM Totlag EAS soshw6
+    669 SOLIDSHW6 WEDGE6    1099   1093   1105   1100   1094   1106 MAT       1 KINEM Totlag EAS soshw6
+    670 SOLIDSHW6 WEDGE6    1101   1087   1103   1102   1088   1104 MAT       1 KINEM Totlag EAS soshw6
+    671 SOLIDSHW6 WEDGE6    1091   1101   1107   1092   1102   1108 MAT       1 KINEM Totlag EAS soshw6
+    672 SOLIDSHW6 WEDGE6    1103   1095   1109   1104   1096   1110 MAT       1 KINEM Totlag EAS soshw6
+    673 SOLIDSHW6 WEDGE6    1105   1091   1107   1106   1092   1108 MAT       1 KINEM Totlag EAS soshw6
+    674 SOLIDSHW6 WEDGE6    1101   1103   1107   1102   1104   1108 MAT       1 KINEM Totlag EAS soshw6
 ----------------------------------------------------FLUID ELEMENTS
 ------------------------------------------------------ALE ELEMENTS
 -------------------------------------------------LEVELSET ELEMENTS

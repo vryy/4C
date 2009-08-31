@@ -464,11 +464,11 @@ NODE 15  	COORD	0.00000000e+00	1.19999997e-01	5.00000024e-04
 NODE 16  	COORD	0.00000000e+00	1.19999997e-01	-5.00000024e-04	
 ----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
-   1 SOLIDSH8 HEX8  1 2 3 4 5 6 7 8    MAT 1 EAS sosh8 THICKDIR auto
-   2 SOLIDSH8 HEX8  1 9 10 2 5 11 12 6    MAT 1 EAS sosh8 THICKDIR auto
-   3 SOLIDSH8 HEX8  13 9 1 4 14 11 5 8    MAT 1 EAS sosh8 THICKDIR auto
-   4 SOLIDSH8 HEX8  3 15 13 4 7 16 14 8    MAT 1 EAS sosh8 THICKDIR auto
-   5 SOLIDSH8 HEX8  2 10 15 3 6 12 16 7    MAT 1 EAS sosh8 THICKDIR auto
+   1 SOLIDSH8 HEX8  1 2 3 4 5 6 7 8    MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
+   2 SOLIDSH8 HEX8  1 9 10 2 5 11 12 6    MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
+   3 SOLIDSH8 HEX8  13 9 1 4 14 11 5 8    MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
+   4 SOLIDSH8 HEX8  3 15 13 4 7 16 14 8    MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
+   5 SOLIDSH8 HEX8  2 10 15 3 6 12 16 7    MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
 ----------------------------------------------------FLUID ELEMENTS
 ------------------------------------------------------ALE ELEMENTS
 ------------------------------------------------TRANSPORT ELEMENTS

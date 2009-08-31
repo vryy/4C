@@ -1734,534 +1734,534 @@ NODE          176     COORD 1.600000000000000e+01     0.000000000000000e+00     
 NODE          177     COORD 1.600000000000000e+01     0.000000000000000e+00     0.000000000000000e+00
 ----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
-      1 SOLIDT4 TET4      29     35     25     24 MAT       1
-      2 SOLIDT4 TET4     110    101    104    105 MAT       1
-      3 SOLIDT4 TET4     119    128    122    124 MAT       1
-      4 SOLIDT4 TET4     145    142    134    137 MAT       1
-      5 SOLIDT4 TET4     145    142    137    152 MAT       1
-      6 SOLIDT4 TET4     142    134    137    129 MAT       1
-      7 SOLIDT4 TET4     134    145    137    139 MAT       1
-      8 SOLIDT4 TET4     145    137    139    148 MAT       1
-      9 SOLIDT4 TET4     137    139    148    140 MAT       1
-     10 SOLIDT4 TET4     139    148    140    144 MAT       1
-     11 SOLIDT4 TET4     137    139    140    127 MAT       1
-     12 SOLIDT4 TET4     139    140    127    133 MAT       1
-     13 SOLIDT4 TET4     140    137    127    136 MAT       1
-     14 SOLIDT4 TET4     137    139    127    134 MAT       1
-     15 SOLIDT4 TET4     148    137    140    147 MAT       1
-     16 SOLIDT4 TET4     139    145    148    149 MAT       1
-     17 SOLIDT4 TET4     145    137    148    152 MAT       1
-     18 SOLIDT4 TET4     140    139    144    133 MAT       1
-     19 SOLIDT4 TET4     127    139    133    126 MAT       1
-     20 SOLIDT4 TET4     139    127    134    126 MAT       1
-     21 SOLIDT4 TET4     127    137    134    131 MAT       1
-     22 SOLIDT4 TET4     127    137    131    136 MAT       1
-     23 SOLIDT4 TET4     137    131    136    142 MAT       1
-     24 SOLIDT4 TET4     131    127    136    125 MAT       1
-     25 SOLIDT4 TET4     136    131    125    129 MAT       1
-     26 SOLIDT4 TET4     136    131    129    142 MAT       1
-     27 SOLIDT4 TET4     131    129    142    137 MAT       1
-     28 SOLIDT4 TET4     131    125    129    123 MAT       1
-     29 SOLIDT4 TET4     129    131    123    134 MAT       1
-     30 SOLIDT4 TET4     129    131    134    137 MAT       1
-     31 SOLIDT4 TET4     134    127    131    123 MAT       1
-     32 SOLIDT4 TET4     140    127    133    135 MAT       1
-     33 SOLIDT4 TET4     148    140    144    146 MAT       1
-     34 SOLIDT4 TET4     139    148    144    149 MAT       1
-     35 SOLIDT4 TET4     134    145    139    138 MAT       1
-     36 SOLIDT4 TET4     139    144    133    138 MAT       1
-     37 SOLIDT4 TET4     145    139    138    149 MAT       1
-     38 SOLIDT4 TET4     139    134    138    126 MAT       1
-     39 SOLIDT4 TET4     140    127    135    136 MAT       1
-     40 SOLIDT4 TET4     144    140    133    141 MAT       1
-     41 SOLIDT4 TET4     144    140    141    146 MAT       1
-     42 SOLIDT4 TET4     148    137    147    152 MAT       1
-     43 SOLIDT4 TET4     139    144    138    149 MAT       1
-     44 SOLIDT4 TET4     133    139    138    126 MAT       1
-     45 SOLIDT4 TET4     148    140    146    147 MAT       1
-     46 SOLIDT4 TET4     140    133    141    135 MAT       1
-     47 SOLIDT4 TET4      44     51     54     46 MAT       1
-     48 SOLIDT4 TET4      44     51     46     43 MAT       1
-     49 SOLIDT4 TET4      51     46     43     53 MAT       1
-     50 SOLIDT4 TET4      46     43     53     48 MAT       1
-     51 SOLIDT4 TET4      51     46     53     54 MAT       1
-     52 SOLIDT4 TET4      54     44     46     45 MAT       1
-     53 SOLIDT4 TET4      44     46     45     31 MAT       1
-     54 SOLIDT4 TET4      46     45     31     41 MAT       1
-     55 SOLIDT4 TET4      45     31     41     38 MAT       1
-     56 SOLIDT4 TET4      45     31     38     36 MAT       1
-     57 SOLIDT4 TET4      46     45     41     55 MAT       1
-     58 SOLIDT4 TET4      45     41     55     50 MAT       1
-     59 SOLIDT4 TET4      55     45     50     57 MAT       1
-     60 SOLIDT4 TET4      41     46     55     49 MAT       1
-     61 SOLIDT4 TET4      46     45     55     54 MAT       1
-     62 SOLIDT4 TET4      31     46     41     39 MAT       1
-     63 SOLIDT4 TET4      41     45     38     50 MAT       1
-     64 SOLIDT4 TET4      45     38     50     47 MAT       1
-     65 SOLIDT4 TET4      45     38     47     36 MAT       1
-     66 SOLIDT4 TET4      50     45     47     57 MAT       1
-     67 SOLIDT4 TET4      45     44     31     36 MAT       1
-     68 SOLIDT4 TET4      44     46     31     43 MAT       1
-     69 SOLIDT4 TET4      46     31     43     39 MAT       1
-     70 SOLIDT4 TET4      45     55     54     57 MAT       1
-     71 SOLIDT4 TET4      55     46     54     53 MAT       1
-     72 SOLIDT4 TET4      55     46     53     49 MAT       1
-     73 SOLIDT4 TET4      54     44     45     47 MAT       1
-     74 SOLIDT4 TET4      44     45     47     36 MAT       1
-     75 SOLIDT4 TET4      45     54     47     57 MAT       1
-     76 SOLIDT4 TET4      55     41     49     52 MAT       1
-     77 SOLIDT4 TET4      31     41     38     30 MAT       1
-     78 SOLIDT4 TET4      41     55     50     52 MAT       1
-     79 SOLIDT4 TET4      41     31     39     30 MAT       1
-     80 SOLIDT4 TET4      84     80     73     77 MAT       1
-     81 SOLIDT4 TET4      84     80     77     83 MAT       1
-     82 SOLIDT4 TET4      80     77     83     72 MAT       1
-     83 SOLIDT4 TET4      77     83     72     78 MAT       1
-     84 SOLIDT4 TET4      80     77     72     73 MAT       1
-     85 SOLIDT4 TET4      73     84     77     76 MAT       1
-     86 SOLIDT4 TET4      84     77     76     86 MAT       1
-     87 SOLIDT4 TET4      77     76     86     75 MAT       1
-     88 SOLIDT4 TET4      76     86     75     82 MAT       1
-     89 SOLIDT4 TET4      76     86     82     88 MAT       1
-     90 SOLIDT4 TET4      77     76     75     66 MAT       1
-     91 SOLIDT4 TET4      76     75     66     70 MAT       1
-     92 SOLIDT4 TET4      66     76     70     68 MAT       1
-     93 SOLIDT4 TET4      75     77     66     69 MAT       1
-     94 SOLIDT4 TET4      77     76     66     73 MAT       1
-     95 SOLIDT4 TET4      86     77     75     81 MAT       1
-     96 SOLIDT4 TET4      75     76     82     70 MAT       1
-     97 SOLIDT4 TET4      76     82     70     79 MAT       1
-     98 SOLIDT4 TET4      76     82     79     88 MAT       1
-     99 SOLIDT4 TET4      70     76     79     68 MAT       1
-    100 SOLIDT4 TET4      76     84     86     88 MAT       1
-    101 SOLIDT4 TET4      84     77     86     83 MAT       1
-    102 SOLIDT4 TET4      77     86     83     81 MAT       1
-    103 SOLIDT4 TET4      76     66     73     68 MAT       1
-    104 SOLIDT4 TET4      66     77     73     72 MAT       1
-    105 SOLIDT4 TET4      66     77     72     69 MAT       1
-    106 SOLIDT4 TET4      73     84     76     79 MAT       1
-    107 SOLIDT4 TET4      84     76     79     88 MAT       1
-    108 SOLIDT4 TET4      76     73     79     68 MAT       1
-    109 SOLIDT4 TET4      66     75     69     64 MAT       1
-    110 SOLIDT4 TET4      86     75     82     85 MAT       1
-    111 SOLIDT4 TET4      75     66     70     64 MAT       1
-    112 SOLIDT4 TET4      75     86     81     85 MAT       1
-    113 SOLIDT4 TET4     144    151    156    148 MAT       1
-    114 SOLIDT4 TET4      60     67     69     65 MAT       1
-    115 SOLIDT4 TET4      60     67     65     57 MAT       1
-    116 SOLIDT4 TET4      67     69     65     72 MAT       1
-    117 SOLIDT4 TET4      69     60     65     66 MAT       1
-    118 SOLIDT4 TET4      65     69     66     72 MAT       1
-    119 SOLIDT4 TET4      66     65     72     62 MAT       1
-    120 SOLIDT4 TET4      65     72     62     67 MAT       1
-    121 SOLIDT4 TET4      66     65     62     55 MAT       1
-    122 SOLIDT4 TET4      60     65     66     55 MAT       1
-    123 SOLIDT4 TET4      59     58     49     56 MAT       1
-    124 SOLIDT4 TET4      59     58     56     68 MAT       1
-    125 SOLIDT4 TET4      58     49     56     53 MAT       1
-    126 SOLIDT4 TET4      49     59     56     55 MAT       1
-    127 SOLIDT4 TET4      56     49     55     53 MAT       1
-    128 SOLIDT4 TET4      55     56     53     63 MAT       1
-    129 SOLIDT4 TET4      56     53     63     58 MAT       1
-    130 SOLIDT4 TET4      55     56     63     66 MAT       1
-    131 SOLIDT4 TET4      59     56     55     66 MAT       1
-    132 SOLIDT4 TET4     124    132    135    130 MAT       1
-    133 SOLIDT4 TET4     124    132    130    125 MAT       1
-    134 SOLIDT4 TET4     132    130    125    136 MAT       1
-    135 SOLIDT4 TET4     130    125    136    127 MAT       1
-    136 SOLIDT4 TET4     136    130    127    135 MAT       1
-    137 SOLIDT4 TET4     132    130    136    135 MAT       1
-    138 SOLIDT4 TET4     130    127    135    124 MAT       1
-    139 SOLIDT4 TET4     130    125    127    124 MAT       1
-    140 SOLIDT4 TET4      61     71     62     63 MAT       1
-    141 SOLIDT4 TET4      10     27     23     21 MAT       1
-    142 SOLIDT4 TET4      10     27     21     16 MAT       1
-    143 SOLIDT4 TET4      27     23     21     36 MAT       1
-    144 SOLIDT4 TET4      23     10     21     15 MAT       1
-    145 SOLIDT4 TET4      10     21     15      8 MAT       1
-    146 SOLIDT4 TET4      21     15      8     20 MAT       1
-    147 SOLIDT4 TET4      15      8     20      9 MAT       1
-    148 SOLIDT4 TET4      21     15     20     31 MAT       1
-    149 SOLIDT4 TET4       8     21     20     25 MAT       1
-    150 SOLIDT4 TET4      15     10      8      2 MAT       1
-    151 SOLIDT4 TET4      10     21      8     16 MAT       1
-    152 SOLIDT4 TET4      21     23     15     31 MAT       1
-    153 SOLIDT4 TET4      20     15      9     22 MAT       1
-    154 SOLIDT4 TET4      20     15     22     31 MAT       1
-    155 SOLIDT4 TET4       8     20      9     24 MAT       1
-    156 SOLIDT4 TET4      15      8      9      2 MAT       1
-    157 SOLIDT4 TET4      23     10     15     14 MAT       1
-    158 SOLIDT4 TET4      15      9     22     14 MAT       1
-    159 SOLIDT4 TET4      10     15     14      2 MAT       1
-    160 SOLIDT4 TET4      15     23     14     30 MAT       1
-    161 SOLIDT4 TET4       9     20     22     28 MAT       1
-    162 SOLIDT4 TET4       9     20     28     24 MAT       1
-    163 SOLIDT4 TET4       8     21     25     16 MAT       1
-    164 SOLIDT4 TET4      15      9     14      2 MAT       1
-    165 SOLIDT4 TET4      22     15     14     30 MAT       1
-    166 SOLIDT4 TET4       8     20     24     25 MAT       1
-    167 SOLIDT4 TET4      20     22     28     37 MAT       1
-    168 SOLIDT4 TET4     102    100     91     98 MAT       1
-    169 SOLIDT4 TET4     102    100     98    109 MAT       1
-    170 SOLIDT4 TET4     100     91     98     88 MAT       1
-    171 SOLIDT4 TET4      91    102     98     96 MAT       1
-    172 SOLIDT4 TET4     102     98     96    106 MAT       1
-    173 SOLIDT4 TET4      98     96    106     97 MAT       1
-    174 SOLIDT4 TET4      96    106     97    103 MAT       1
-    175 SOLIDT4 TET4      98     96     97     86 MAT       1
-    176 SOLIDT4 TET4     106     98     97    104 MAT       1
-    177 SOLIDT4 TET4      96    102    106    107 MAT       1
-    178 SOLIDT4 TET4     102     98    106    109 MAT       1
-    179 SOLIDT4 TET4      98     91     96     86 MAT       1
-    180 SOLIDT4 TET4      97     96    103     92 MAT       1
-    181 SOLIDT4 TET4      97     96     92     86 MAT       1
-    182 SOLIDT4 TET4     106     97    103    105 MAT       1
-    183 SOLIDT4 TET4      96    106    103    107 MAT       1
-    184 SOLIDT4 TET4      91    102     96     95 MAT       1
-    185 SOLIDT4 TET4      96    103     92     95 MAT       1
-    186 SOLIDT4 TET4     102     96     95    107 MAT       1
-    187 SOLIDT4 TET4      96     91     95     85 MAT       1
-    188 SOLIDT4 TET4     103     97     92     99 MAT       1
-    189 SOLIDT4 TET4     103     97     99    105 MAT       1
-    190 SOLIDT4 TET4     106     98    104    109 MAT       1
-    191 SOLIDT4 TET4      96    103     95    107 MAT       1
-    192 SOLIDT4 TET4      92     96     95     85 MAT       1
-    193 SOLIDT4 TET4     106     97    105    104 MAT       1
-    194 SOLIDT4 TET4      97     92     99     87 MAT       1
-    195 SOLIDT4 TET4      83     90     94     86 MAT       1
-    196 SOLIDT4 TET4      43     42     33     31 MAT       1
-    197 SOLIDT4 TET4     129    120    123    125 MAT       1
-    198 SOLIDT4 TET4     143    153    146    147 MAT       1
-    199 SOLIDT4 TET4     125    121    113    118 MAT       1
-    200 SOLIDT4 TET4     125    121    118    124 MAT       1
-    201 SOLIDT4 TET4     121    118    124    114 MAT       1
-    202 SOLIDT4 TET4     118    124    114    119 MAT       1
-    203 SOLIDT4 TET4     121    118    114    113 MAT       1
-    204 SOLIDT4 TET4     113    125    118    117 MAT       1
-    205 SOLIDT4 TET4     125    118    117    127 MAT       1
-    206 SOLIDT4 TET4     118    113    117    106 MAT       1
-    207 SOLIDT4 TET4     113    125    117    120 MAT       1
-    208 SOLIDT4 TET4     125    117    120    123 MAT       1
-    209 SOLIDT4 TET4     117    120    123    111 MAT       1
-    210 SOLIDT4 TET4     117    120    111    109 MAT       1
-    211 SOLIDT4 TET4     123    117    111    116 MAT       1
-    212 SOLIDT4 TET4     123    117    116    127 MAT       1
-    213 SOLIDT4 TET4     117    111    116    106 MAT       1
-    214 SOLIDT4 TET4     111    123    116    115 MAT       1
-    215 SOLIDT4 TET4     117    113    120    109 MAT       1
-    216 SOLIDT4 TET4     118    114    113    106 MAT       1
-    217 SOLIDT4 TET4     118    125    124    127 MAT       1
-    218 SOLIDT4 TET4     103    108    112    106 MAT       1
-    219 SOLIDT4 TET4      78     87     81     83 MAT       1
-    220 SOLIDT4 TET4      48     37     39     43 MAT       1
-    221 SOLIDT4 TET4      42     51     44     43 MAT       1
-    222 SOLIDT4 TET4      90     80     84     83 MAT       1
-    223 SOLIDT4 TET4     141    151    144    146 MAT       1
-    224 SOLIDT4 TET4      62     71     72     66 MAT       1
-    225 SOLIDT4 TET4      63     61     53     55 MAT       1
-    226 SOLIDT4 TET4     121    132    124    125 MAT       1
-    227 SOLIDT4 TET4     147    143    136    140 MAT       1
-    228 SOLIDT4 TET4      81     87     92     89 MAT       1
-    229 SOLIDT4 TET4      81     87     89     83 MAT       1
-    230 SOLIDT4 TET4      87     92     89     97 MAT       1
-    231 SOLIDT4 TET4      92     81     89     86 MAT       1
-    232 SOLIDT4 TET4      81     89     86     83 MAT       1
-    233 SOLIDT4 TET4      89     86     83     94 MAT       1
-    234 SOLIDT4 TET4      83     89     94     87 MAT       1
-    235 SOLIDT4 TET4      89     86     94     97 MAT       1
-    236 SOLIDT4 TET4      94     89     97     87 MAT       1
-    237 SOLIDT4 TET4      92     89     97     86 MAT       1
-    238 SOLIDT4 TET4      39     37     22     34 MAT       1
-    239 SOLIDT4 TET4      39     37     34     43 MAT       1
-    240 SOLIDT4 TET4      37     22     34     20 MAT       1
-    241 SOLIDT4 TET4      22     39     34     31 MAT       1
-    242 SOLIDT4 TET4      39     34     31     43 MAT       1
-    243 SOLIDT4 TET4      34     31     43     33 MAT       1
-    244 SOLIDT4 TET4      43     34     33     37 MAT       1
-    245 SOLIDT4 TET4      34     31     33     20 MAT       1
-    246 SOLIDT4 TET4      33     34     20     37 MAT       1
-    247 SOLIDT4 TET4      22     34     20     31 MAT       1
-    248 SOLIDT4 TET4     146    153    158    150 MAT       1
-    249 SOLIDT4 TET4     146    153    150    147 MAT       1
-    250 SOLIDT4 TET4     153    150    147    159 MAT       1
-    251 SOLIDT4 TET4     150    147    159    152 MAT       1
-    252 SOLIDT4 TET4     153    150    159    158 MAT       1
-    253 SOLIDT4 TET4     158    146    150    148 MAT       1
-    254 SOLIDT4 TET4     146    150    148    147 MAT       1
-    255 SOLIDT4 TET4     150    148    147    152 MAT       1
-    256 SOLIDT4 TET4     150    159    158    160 MAT       1
-    257 SOLIDT4 TET4     150    159    160    154 MAT       1
-    258 SOLIDT4 TET4     150    159    154    152 MAT       1
-    259 SOLIDT4 TET4     160    150    154    148 MAT       1
-    260 SOLIDT4 TET4     150    154    148    152 MAT       1
-    261 SOLIDT4 TET4     160    150    148    158 MAT       1
-    262 SOLIDT4 TET4     159    160    154    163 MAT       1
-    263 SOLIDT4 TET4     159    154    152    163 MAT       1
-    264 SOLIDT4 TET4     154    152    163    157 MAT       1
-    265 SOLIDT4 TET4     154    152    157    145 MAT       1
-    266 SOLIDT4 TET4     157    154    145    148 MAT       1
-    267 SOLIDT4 TET4     154    152    145    148 MAT       1
-    268 SOLIDT4 TET4     163    154    157    160 MAT       1
-    269 SOLIDT4 TET4     154    157    160    148 MAT       1
-    270 SOLIDT4 TET4     105    110    114    106 MAT       1
-    271 SOLIDT4 TET4      25     35     32     20 MAT       1
-    272 SOLIDT4 TET4     104    101     93     97 MAT       1
-    273 SOLIDT4 TET4     122    128    133    127 MAT       1
-    274 SOLIDT4 TET4      99    108    103    105 MAT       1
-    275 SOLIDT4 TET4      28     18      9     24 MAT       1
-    276 SOLIDT4 TET4      35     42     32     33 MAT       1
-    277 SOLIDT4 TET4     101     90     93     94 MAT       1
-    278 SOLIDT4 TET4     128    141    133    135 MAT       1
-    279 SOLIDT4 TET4      54     61     62     55 MAT       1
-    280 SOLIDT4 TET4      73     71     63     66 MAT       1
-    281 SOLIDT4 TET4     110    121    114    113 MAT       1
-    282 SOLIDT4 TET4      69     78     81     75 MAT       1
-    283 SOLIDT4 TET4      81     69     75     74 MAT       1
-    284 SOLIDT4 TET4      49     48     39     41 MAT       1
-    285 SOLIDT4 TET4      39     49     41     40 MAT       1
-    286 SOLIDT4 TET4     135    143    146    140 MAT       1
-    287 SOLIDT4 TET4     146    135    140    141 MAT       1
-    288 SOLIDT4 TET4      71     80     72     73 MAT       1
-    289 SOLIDT4 TET4      61     51     53     54 MAT       1
-    290 SOLIDT4 TET4      23     36     38     31 MAT       1
-    291 SOLIDT4 TET4      91     88     82     86 MAT       1
-    292 SOLIDT4 TET4      94    101    105     97 MAT       1
-    293 SOLIDT4 TET4     105     94     97     99 MAT       1
-    294 SOLIDT4 TET4      33     35     24     20 MAT       1
-    295 SOLIDT4 TET4      24     33     20     28 MAT       1
-    296 SOLIDT4 TET4     153    164    158    159 MAT       1
-    297 SOLIDT4 TET4     113    110    104    106 MAT       1
-    298 SOLIDT4 TET4     112    119    122    118 MAT       1
-    299 SOLIDT4 TET4     143    132    136    135 MAT       1
-    300 SOLIDT4 TET4     151    162    156    158 MAT       1
-    301 SOLIDT4 TET4     111    109    102    106 MAT       1
-    302 SOLIDT4 TET4      67     78     69     72 MAT       1
-    303 SOLIDT4 TET4      58     48     49     53 MAT       1
-    304 SOLIDT4 TET4      50     57     60     55 MAT       1
-    305 SOLIDT4 TET4      70     68     59     66 MAT       1
-    306 SOLIDT4 TET4      32     42     44     31 MAT       1
-    307 SOLIDT4 TET4      93     90     84     86 MAT       1
-    308 SOLIDT4 TET4     108    119    112    114 MAT       1
-    309 SOLIDT4 TET4     123    116    115    126 MAT       1
-    310 SOLIDT4 TET4     116    111    115    107 MAT       1
-    311 SOLIDT4 TET4     136    137    142    147 MAT       1
-    312 SOLIDT4 TET4     136    137    147    140 MAT       1
-    313 SOLIDT4 TET4     137    142    147    152 MAT       1
-    314 SOLIDT4 TET4      62     65     67     57 MAT       1
-    315 SOLIDT4 TET4      63     56     58     68 MAT       1
-    316 SOLIDT4 TET4     111    117    109    106 MAT       1
-    317 SOLIDT4 TET4      41     39     40     30 MAT       1
-    318 SOLIDT4 TET4      75     81     74     85 MAT       1
-    319 SOLIDT4 TET4      44     32     31     36 MAT       1
-    320 SOLIDT4 TET4      84     93     86     88 MAT       1
-    321 SOLIDT4 TET4     145    157    148    149 MAT       1
-    322 SOLIDT4 TET4     102    111    106    107 MAT       1
-    323 SOLIDT4 TET4      49     41     40     52 MAT       1
-    324 SOLIDT4 TET4      94     97     99     87 MAT       1
-    325 SOLIDT4 TET4      33     20     28     37 MAT       1
-    326 SOLIDT4 TET4      69     75     74     64 MAT       1
-    327 SOLIDT4 TET4      21     20     25     32 MAT       1
-    328 SOLIDT4 TET4      25     21     32     27 MAT       1
-    329 SOLIDT4 TET4      25     21     27     16 MAT       1
-    330 SOLIDT4 TET4      21     32     27     36 MAT       1
-    331 SOLIDT4 TET4      98     97    104     93 MAT       1
-    332 SOLIDT4 TET4     104     98     93    100 MAT       1
-    333 SOLIDT4 TET4     104     98    100    109 MAT       1
-    334 SOLIDT4 TET4      98     93    100     88 MAT       1
-    335 SOLIDT4 TET4      60     50     55     52 MAT       1
-    336 SOLIDT4 TET4      59     70     66     64 MAT       1
-    337 SOLIDT4 TET4      82     91     86     85 MAT       1
-    338 SOLIDT4 TET4      38     23     31     30 MAT       1
-    339 SOLIDT4 TET4      46     41     39     48 MAT       1
-    340 SOLIDT4 TET4      77     75     81     78 MAT       1
-    341 SOLIDT4 TET4      21     20     32     31 MAT       1
-    342 SOLIDT4 TET4      98     97     93     86 MAT       1
-    343 SOLIDT4 TET4      38     41     50     40 MAT       1
-    344 SOLIDT4 TET4      82     75     70     74 MAT       1
-    345 SOLIDT4 TET4     133    122    127    126 MAT       1
-    346 SOLIDT4 TET4     131    127    125    123 MAT       1
-    347 SOLIDT4 TET4     116    115    126    122 MAT       1
-    348 SOLIDT4 TET4     116    115    122    112 MAT       1
-    349 SOLIDT4 TET4     122    116    112    118 MAT       1
-    350 SOLIDT4 TET4     116    115    112    107 MAT       1
-    351 SOLIDT4 TET4      41     46     49     48 MAT       1
-    352 SOLIDT4 TET4      75     77     69     78 MAT       1
-    353 SOLIDT4 TET4     125    117    123    127 MAT       1
-    354 SOLIDT4 TET4      62     54     55     57 MAT       1
-    355 SOLIDT4 TET4     134    127    123    126 MAT       1
-    356 SOLIDT4 TET4      63     73     66     68 MAT       1
-    357 SOLIDT4 TET4     156    144    148    149 MAT       1
-    358 SOLIDT4 TET4     112    103    106    107 MAT       1
-    359 SOLIDT4 TET4     143    146    140    147 MAT       1
-    360 SOLIDT4 TET4      35     24     20     25 MAT       1
-    361 SOLIDT4 TET4     101    105     97    104 MAT       1
-    362 SOLIDT4 TET4     159    158    160    164 MAT       1
-    363 SOLIDT4 TET4     172    176    170    165 MAT       1
-    364 SOLIDT4 TET4     170    172    165    167 MAT       1
-    365 SOLIDT4 TET4     172    165    167    160 MAT       1
-    366 SOLIDT4 TET4     165    167    160    157 MAT       1
-    367 SOLIDT4 TET4     170    172    167    171 MAT       1
-    368 SOLIDT4 TET4     160    165    157    163 MAT       1
-    369 SOLIDT4 TET4     172    176    165    168 MAT       1
-    370 SOLIDT4 TET4     165    172    168    160 MAT       1
-    371 SOLIDT4 TET4     168    165    160    159 MAT       1
-    372 SOLIDT4 TET4     172    176    168    175 MAT       1
-    373 SOLIDT4 TET4     165    160    159    163 MAT       1
-    374 SOLIDT4 TET4     172    167    171    166 MAT       1
-    375 SOLIDT4 TET4     167    171    166    156 MAT       1
-    376 SOLIDT4 TET4     172    167    166    160 MAT       1
-    377 SOLIDT4 TET4     168    172    175    166 MAT       1
-    378 SOLIDT4 TET4     175    168    166    158 MAT       1
-    379 SOLIDT4 TET4     168    172    166    160 MAT       1
-    380 SOLIDT4 TET4     166    168    160    158 MAT       1
-    381 SOLIDT4 TET4     167    166    160    156 MAT       1
-    382 SOLIDT4 TET4     165    157    163    170 MAT       1
-    383 SOLIDT4 TET4     165    170    167    157 MAT       1
-    384 SOLIDT4 TET4     176    165    168    159 MAT       1
-    385 SOLIDT4 TET4     172    175    166    171 MAT       1
-    386 SOLIDT4 TET4     168    160    158    164 MAT       1
-    387 SOLIDT4 TET4     158    168    164    175 MAT       1
-    388 SOLIDT4 TET4     168    164    175    177 MAT       1
-    389 SOLIDT4 TET4     175    168    177    176 MAT       1
-    390 SOLIDT4 TET4     168    164    177    176 MAT       1
-    391 SOLIDT4 TET4     160    166    158    156 MAT       1
-    392 SOLIDT4 TET4     160    168    159    164 MAT       1
-    393 SOLIDT4 TET4     168    159    164    176 MAT       1
-    394 SOLIDT4 TET4     167    170    171    169 MAT       1
-    395 SOLIDT4 TET4     171    167    169    161 MAT       1
-    396 SOLIDT4 TET4     167    169    161    170 MAT       1
-    397 SOLIDT4 TET4     171    167    161    156 MAT       1
-    398 SOLIDT4 TET4       6      4      3      5 MAT       1
-    399 SOLIDT4 TET4       6      4      5      7 MAT       1
-    400 SOLIDT4 TET4       5      6      7     11 MAT       1
-    401 SOLIDT4 TET4       5      6     11      3 MAT       1
-    402 SOLIDT4 TET4       6      7     11     17 MAT       1
-    403 SOLIDT4 TET4       6      4      7     17 MAT       1
-    404 SOLIDT4 TET4       7      5     11      8 MAT       1
-    405 SOLIDT4 TET4       5     11      8      9 MAT       1
-    406 SOLIDT4 TET4       7      5      8     16 MAT       1
-    407 SOLIDT4 TET4      11      7      8     25 MAT       1
-    408 SOLIDT4 TET4       8      5      9      2 MAT       1
-    409 SOLIDT4 TET4       8      5      2     10 MAT       1
-    410 SOLIDT4 TET4       8      5     10     16 MAT       1
-    411 SOLIDT4 TET4       7     11     17     25 MAT       1
-    412 SOLIDT4 TET4       4      5      7     16 MAT       1
-    413 SOLIDT4 TET4       6     11      3     19 MAT       1
-    414 SOLIDT4 TET4       6     11     19     17 MAT       1
-    415 SOLIDT4 TET4       8     11     25     24 MAT       1
-    416 SOLIDT4 TET4       8     11     24      9 MAT       1
-    417 SOLIDT4 TET4       4      7     17     12 MAT       1
-    418 SOLIDT4 TET4       7     17     12     16 MAT       1
-    419 SOLIDT4 TET4      12      7     16      4 MAT       1
-    420 SOLIDT4 TET4       7     17     16     25 MAT       1
-    421 SOLIDT4 TET4     157    160    148    155 MAT       1
-    422 SOLIDT4 TET4     160    148    155    156 MAT       1
-    423 SOLIDT4 TET4     155    160    156    167 MAT       1
-    424 SOLIDT4 TET4     148    155    156    149 MAT       1
-    425 SOLIDT4 TET4     155    156    149    161 MAT       1
-    426 SOLIDT4 TET4     149    155    161    157 MAT       1
-    427 SOLIDT4 TET4     155    156    161    167 MAT       1
-    428 SOLIDT4 TET4     161    155    167    157 MAT       1
-    429 SOLIDT4 TET4     157    160    155    167 MAT       1
-    430 SOLIDT4 TET4     149    155    157    148 MAT       1
-    431 SOLIDT4 TET4      90     93     94     86 MAT       1
-    432 SOLIDT4 TET4      44     42     43     31 MAT       1
-    433 SOLIDT4 TET4      42     32     33     31 MAT       1
-    434 SOLIDT4 TET4      84     90     83     86 MAT       1
-    435 SOLIDT4 TET4      71     62     63     66 MAT       1
-    436 SOLIDT4 TET4      32     35     33     20 MAT       1
-    437 SOLIDT4 TET4      25     29     24     11 MAT       1
-    438 SOLIDT4 TET4      29     24     11     19 MAT       1
-    439 SOLIDT4 TET4      93    101     94     97 MAT       1
-    440 SOLIDT4 TET4     136    143    135    140 MAT       1
-    441 SOLIDT4 TET4      53     61     54     55 MAT       1
-    442 SOLIDT4 TET4     104    110    105    106 MAT       1
-    443 SOLIDT4 TET4      62     61     63     55 MAT       1
-    444 SOLIDT4 TET4     114    110    113    106 MAT       1
-    445 SOLIDT4 TET4      72     71     73     66 MAT       1
-    446 SOLIDT4 TET4     161    167    170    157 MAT       1
-    447 SOLIDT4 TET4     159    165    163    176 MAT       1
-    448 SOLIDT4 TET4       5      9      2      3 MAT       1
-    449 SOLIDT4 TET4       5      2     10      4 MAT       1
-    450 SOLIDT4 TET4      82     75     74     85 MAT       1
-    451 SOLIDT4 TET4      38     41     40     30 MAT       1
-    452 SOLIDT4 TET4     175    166    171    173 MAT       1
-    453 SOLIDT4 TET4     175    166    173    162 MAT       1
-    454 SOLIDT4 TET4     166    173    162    171 MAT       1
-    455 SOLIDT4 TET4     175    166    162    158 MAT       1
-    456 SOLIDT4 TET4     162    166    171    156 MAT       1
-    457 SOLIDT4 TET4     162    166    156    158 MAT       1
-    458 SOLIDT4 TET4       8      7     16     25 MAT       1
-    459 SOLIDT4 TET4      93     98     86     88 MAT       1
-    460 SOLIDT4 TET4      32     21     31     36 MAT       1
-    461 SOLIDT4 TET4      75     70     74     64 MAT       1
-    462 SOLIDT4 TET4      41     50     40     52 MAT       1
-    463 SOLIDT4 TET4     160    148    156    158 MAT       1
-    464 SOLIDT4 TET4      56     59     68     66 MAT       1
-    465 SOLIDT4 TET4      65     60     57     55 MAT       1
-    466 SOLIDT4 TET4      91     98     88     86 MAT       1
-    467 SOLIDT4 TET4      23     21     36     31 MAT       1
-    468 SOLIDT4 TET4      11      5      3      9 MAT       1
-    469 SOLIDT4 TET4      25     29     11     17 MAT       1
-    470 SOLIDT4 TET4     111    116    106    107 MAT       1
-    471 SOLIDT4 TET4     163    165    170    174 MAT       1
-    472 SOLIDT4 TET4     163    165    174    176 MAT       1
-    473 SOLIDT4 TET4     165    170    174    176 MAT       1
-    474 SOLIDT4 TET4       2      5      3      1 MAT       1
-    475 SOLIDT4 TET4       2      5      1      4 MAT       1
-    476 SOLIDT4 TET4       5      1      4      3 MAT       1
-    477 SOLIDT4 TET4      65     62     55     57 MAT       1
-    478 SOLIDT4 TET4      56     63     66     68 MAT       1
-    479 SOLIDT4 TET4      46     43     48     39 MAT       1
-    480 SOLIDT4 TET4      77     83     78     81 MAT       1
-    481 SOLIDT4 TET4     118    124    119    122 MAT       1
-    482 SOLIDT4 TET4      53     46     48     49 MAT       1
-    483 SOLIDT4 TET4      72     77     78     69 MAT       1
-    484 SOLIDT4 TET4     114    118    119    112 MAT       1
-    485 SOLIDT4 TET4     122    116    118    127 MAT       1
-    486 SOLIDT4 TET4     116    112    118    106 MAT       1
-    487 SOLIDT4 TET4     128    133    127    135 MAT       1
-    488 SOLIDT4 TET4      26     29     17     11 MAT       1
-    489 SOLIDT4 TET4      26     29     11     19 MAT       1
-    490 SOLIDT4 TET4      11     26     19     17 MAT       1
-    491 SOLIDT4 TET4      19     13     18      3 MAT       1
-    492 SOLIDT4 TET4      15     23     30     31 MAT       1
-    493 SOLIDT4 TET4      96     91     85     86 MAT       1
-    494 SOLIDT4 TET4     117    113    109    106 MAT       1
-    495 SOLIDT4 TET4      22     15     30     31 MAT       1
-    496 SOLIDT4 TET4      92     96     85     86 MAT       1
-    497 SOLIDT4 TET4      24     11     19     18 MAT       1
-    498 SOLIDT4 TET4      33     32     20     31 MAT       1
-    499 SOLIDT4 TET4      94     93     97     86 MAT       1
-    500 SOLIDT4 TET4     144    151    148    146 MAT       1
-    501 SOLIDT4 TET4     103    108    106    105 MAT       1
-    502 SOLIDT4 TET4     127    135    124    128 MAT       1
-    503 SOLIDT4 TET4      69     60     66     64 MAT       1
-    504 SOLIDT4 TET4      49     59     55     52 MAT       1
-    505 SOLIDT4 TET4     116    112    106    107 MAT       1
-    506 SOLIDT4 TET4     116    123    127    126 MAT       1
-    507 SOLIDT4 TET4      81     92     85     86 MAT       1
-    508 SOLIDT4 TET4      39     22     30     31 MAT       1
-    509 SOLIDT4 TET4     146    158    151    148 MAT       1
-    510 SOLIDT4 TET4     105    114    108    106 MAT       1
-    511 SOLIDT4 TET4      52     64     59     60 MAT       1
-    512 SOLIDT4 TET4     113    104    109    106 MAT       1
-    513 SOLIDT4 TET4     122    116    127    126 MAT       1
-    514 SOLIDT4 TET4     124    118    127    122 MAT       1
-    515 SOLIDT4 TET4     118    114    106    112 MAT       1
-    516 SOLIDT4 TET4      24     11     18      9 MAT       1
-    517 SOLIDT4 TET4     116    117    106    118 MAT       1
-    518 SOLIDT4 TET4     116    117    118    127 MAT       1
-    519 SOLIDT4 TET4       5     10     16      4 MAT       1
-    520 SOLIDT4 TET4     122    128    127    124 MAT       1
-    521 SOLIDT4 TET4      11     19     18      3 MAT       1
-    522 SOLIDT4 TET4     112    108    114    106 MAT       1
-    523 SOLIDT4 TET4     156    151    158    148 MAT       1
-    524 SOLIDT4 TET4      11     18      9      3 MAT       1
-    525 SOLIDT4 TET4      63     62     55     66 MAT       1
-    526 SOLIDT4 TET4      55     60     52     59 MAT       1
-    527 SOLIDT4 TET4      66     59     64     60 MAT       1
-    528 SOLIDT4 TET4      66     60     55     59 MAT       1
+      1 SOLIDT4 TET4      29     35     25     24 MAT       1 KINEM Totlag
+      2 SOLIDT4 TET4     110    101    104    105 MAT       1 KINEM Totlag
+      3 SOLIDT4 TET4     119    128    122    124 MAT       1 KINEM Totlag
+      4 SOLIDT4 TET4     145    142    134    137 MAT       1 KINEM Totlag
+      5 SOLIDT4 TET4     145    142    137    152 MAT       1 KINEM Totlag
+      6 SOLIDT4 TET4     142    134    137    129 MAT       1 KINEM Totlag
+      7 SOLIDT4 TET4     134    145    137    139 MAT       1 KINEM Totlag
+      8 SOLIDT4 TET4     145    137    139    148 MAT       1 KINEM Totlag
+      9 SOLIDT4 TET4     137    139    148    140 MAT       1 KINEM Totlag
+     10 SOLIDT4 TET4     139    148    140    144 MAT       1 KINEM Totlag
+     11 SOLIDT4 TET4     137    139    140    127 MAT       1 KINEM Totlag
+     12 SOLIDT4 TET4     139    140    127    133 MAT       1 KINEM Totlag
+     13 SOLIDT4 TET4     140    137    127    136 MAT       1 KINEM Totlag
+     14 SOLIDT4 TET4     137    139    127    134 MAT       1 KINEM Totlag
+     15 SOLIDT4 TET4     148    137    140    147 MAT       1 KINEM Totlag
+     16 SOLIDT4 TET4     139    145    148    149 MAT       1 KINEM Totlag
+     17 SOLIDT4 TET4     145    137    148    152 MAT       1 KINEM Totlag
+     18 SOLIDT4 TET4     140    139    144    133 MAT       1 KINEM Totlag
+     19 SOLIDT4 TET4     127    139    133    126 MAT       1 KINEM Totlag
+     20 SOLIDT4 TET4     139    127    134    126 MAT       1 KINEM Totlag
+     21 SOLIDT4 TET4     127    137    134    131 MAT       1 KINEM Totlag
+     22 SOLIDT4 TET4     127    137    131    136 MAT       1 KINEM Totlag
+     23 SOLIDT4 TET4     137    131    136    142 MAT       1 KINEM Totlag
+     24 SOLIDT4 TET4     131    127    136    125 MAT       1 KINEM Totlag
+     25 SOLIDT4 TET4     136    131    125    129 MAT       1 KINEM Totlag
+     26 SOLIDT4 TET4     136    131    129    142 MAT       1 KINEM Totlag
+     27 SOLIDT4 TET4     131    129    142    137 MAT       1 KINEM Totlag
+     28 SOLIDT4 TET4     131    125    129    123 MAT       1 KINEM Totlag
+     29 SOLIDT4 TET4     129    131    123    134 MAT       1 KINEM Totlag
+     30 SOLIDT4 TET4     129    131    134    137 MAT       1 KINEM Totlag
+     31 SOLIDT4 TET4     134    127    131    123 MAT       1 KINEM Totlag
+     32 SOLIDT4 TET4     140    127    133    135 MAT       1 KINEM Totlag
+     33 SOLIDT4 TET4     148    140    144    146 MAT       1 KINEM Totlag
+     34 SOLIDT4 TET4     139    148    144    149 MAT       1 KINEM Totlag
+     35 SOLIDT4 TET4     134    145    139    138 MAT       1 KINEM Totlag
+     36 SOLIDT4 TET4     139    144    133    138 MAT       1 KINEM Totlag
+     37 SOLIDT4 TET4     145    139    138    149 MAT       1 KINEM Totlag
+     38 SOLIDT4 TET4     139    134    138    126 MAT       1 KINEM Totlag
+     39 SOLIDT4 TET4     140    127    135    136 MAT       1 KINEM Totlag
+     40 SOLIDT4 TET4     144    140    133    141 MAT       1 KINEM Totlag
+     41 SOLIDT4 TET4     144    140    141    146 MAT       1 KINEM Totlag
+     42 SOLIDT4 TET4     148    137    147    152 MAT       1 KINEM Totlag
+     43 SOLIDT4 TET4     139    144    138    149 MAT       1 KINEM Totlag
+     44 SOLIDT4 TET4     133    139    138    126 MAT       1 KINEM Totlag
+     45 SOLIDT4 TET4     148    140    146    147 MAT       1 KINEM Totlag
+     46 SOLIDT4 TET4     140    133    141    135 MAT       1 KINEM Totlag
+     47 SOLIDT4 TET4      44     51     54     46 MAT       1 KINEM Totlag
+     48 SOLIDT4 TET4      44     51     46     43 MAT       1 KINEM Totlag
+     49 SOLIDT4 TET4      51     46     43     53 MAT       1 KINEM Totlag
+     50 SOLIDT4 TET4      46     43     53     48 MAT       1 KINEM Totlag
+     51 SOLIDT4 TET4      51     46     53     54 MAT       1 KINEM Totlag
+     52 SOLIDT4 TET4      54     44     46     45 MAT       1 KINEM Totlag
+     53 SOLIDT4 TET4      44     46     45     31 MAT       1 KINEM Totlag
+     54 SOLIDT4 TET4      46     45     31     41 MAT       1 KINEM Totlag
+     55 SOLIDT4 TET4      45     31     41     38 MAT       1 KINEM Totlag
+     56 SOLIDT4 TET4      45     31     38     36 MAT       1 KINEM Totlag
+     57 SOLIDT4 TET4      46     45     41     55 MAT       1 KINEM Totlag
+     58 SOLIDT4 TET4      45     41     55     50 MAT       1 KINEM Totlag
+     59 SOLIDT4 TET4      55     45     50     57 MAT       1 KINEM Totlag
+     60 SOLIDT4 TET4      41     46     55     49 MAT       1 KINEM Totlag
+     61 SOLIDT4 TET4      46     45     55     54 MAT       1 KINEM Totlag
+     62 SOLIDT4 TET4      31     46     41     39 MAT       1 KINEM Totlag
+     63 SOLIDT4 TET4      41     45     38     50 MAT       1 KINEM Totlag
+     64 SOLIDT4 TET4      45     38     50     47 MAT       1 KINEM Totlag
+     65 SOLIDT4 TET4      45     38     47     36 MAT       1 KINEM Totlag
+     66 SOLIDT4 TET4      50     45     47     57 MAT       1 KINEM Totlag
+     67 SOLIDT4 TET4      45     44     31     36 MAT       1 KINEM Totlag
+     68 SOLIDT4 TET4      44     46     31     43 MAT       1 KINEM Totlag
+     69 SOLIDT4 TET4      46     31     43     39 MAT       1 KINEM Totlag
+     70 SOLIDT4 TET4      45     55     54     57 MAT       1 KINEM Totlag
+     71 SOLIDT4 TET4      55     46     54     53 MAT       1 KINEM Totlag
+     72 SOLIDT4 TET4      55     46     53     49 MAT       1 KINEM Totlag
+     73 SOLIDT4 TET4      54     44     45     47 MAT       1 KINEM Totlag
+     74 SOLIDT4 TET4      44     45     47     36 MAT       1 KINEM Totlag
+     75 SOLIDT4 TET4      45     54     47     57 MAT       1 KINEM Totlag
+     76 SOLIDT4 TET4      55     41     49     52 MAT       1 KINEM Totlag
+     77 SOLIDT4 TET4      31     41     38     30 MAT       1 KINEM Totlag
+     78 SOLIDT4 TET4      41     55     50     52 MAT       1 KINEM Totlag
+     79 SOLIDT4 TET4      41     31     39     30 MAT       1 KINEM Totlag
+     80 SOLIDT4 TET4      84     80     73     77 MAT       1 KINEM Totlag
+     81 SOLIDT4 TET4      84     80     77     83 MAT       1 KINEM Totlag
+     82 SOLIDT4 TET4      80     77     83     72 MAT       1 KINEM Totlag
+     83 SOLIDT4 TET4      77     83     72     78 MAT       1 KINEM Totlag
+     84 SOLIDT4 TET4      80     77     72     73 MAT       1 KINEM Totlag
+     85 SOLIDT4 TET4      73     84     77     76 MAT       1 KINEM Totlag
+     86 SOLIDT4 TET4      84     77     76     86 MAT       1 KINEM Totlag
+     87 SOLIDT4 TET4      77     76     86     75 MAT       1 KINEM Totlag
+     88 SOLIDT4 TET4      76     86     75     82 MAT       1 KINEM Totlag
+     89 SOLIDT4 TET4      76     86     82     88 MAT       1 KINEM Totlag
+     90 SOLIDT4 TET4      77     76     75     66 MAT       1 KINEM Totlag
+     91 SOLIDT4 TET4      76     75     66     70 MAT       1 KINEM Totlag
+     92 SOLIDT4 TET4      66     76     70     68 MAT       1 KINEM Totlag
+     93 SOLIDT4 TET4      75     77     66     69 MAT       1 KINEM Totlag
+     94 SOLIDT4 TET4      77     76     66     73 MAT       1 KINEM Totlag
+     95 SOLIDT4 TET4      86     77     75     81 MAT       1 KINEM Totlag
+     96 SOLIDT4 TET4      75     76     82     70 MAT       1 KINEM Totlag
+     97 SOLIDT4 TET4      76     82     70     79 MAT       1 KINEM Totlag
+     98 SOLIDT4 TET4      76     82     79     88 MAT       1 KINEM Totlag
+     99 SOLIDT4 TET4      70     76     79     68 MAT       1 KINEM Totlag
+    100 SOLIDT4 TET4      76     84     86     88 MAT       1 KINEM Totlag
+    101 SOLIDT4 TET4      84     77     86     83 MAT       1 KINEM Totlag
+    102 SOLIDT4 TET4      77     86     83     81 MAT       1 KINEM Totlag
+    103 SOLIDT4 TET4      76     66     73     68 MAT       1 KINEM Totlag
+    104 SOLIDT4 TET4      66     77     73     72 MAT       1 KINEM Totlag
+    105 SOLIDT4 TET4      66     77     72     69 MAT       1 KINEM Totlag
+    106 SOLIDT4 TET4      73     84     76     79 MAT       1 KINEM Totlag
+    107 SOLIDT4 TET4      84     76     79     88 MAT       1 KINEM Totlag
+    108 SOLIDT4 TET4      76     73     79     68 MAT       1 KINEM Totlag
+    109 SOLIDT4 TET4      66     75     69     64 MAT       1 KINEM Totlag
+    110 SOLIDT4 TET4      86     75     82     85 MAT       1 KINEM Totlag
+    111 SOLIDT4 TET4      75     66     70     64 MAT       1 KINEM Totlag
+    112 SOLIDT4 TET4      75     86     81     85 MAT       1 KINEM Totlag
+    113 SOLIDT4 TET4     144    151    156    148 MAT       1 KINEM Totlag
+    114 SOLIDT4 TET4      60     67     69     65 MAT       1 KINEM Totlag
+    115 SOLIDT4 TET4      60     67     65     57 MAT       1 KINEM Totlag
+    116 SOLIDT4 TET4      67     69     65     72 MAT       1 KINEM Totlag
+    117 SOLIDT4 TET4      69     60     65     66 MAT       1 KINEM Totlag
+    118 SOLIDT4 TET4      65     69     66     72 MAT       1 KINEM Totlag
+    119 SOLIDT4 TET4      66     65     72     62 MAT       1 KINEM Totlag
+    120 SOLIDT4 TET4      65     72     62     67 MAT       1 KINEM Totlag
+    121 SOLIDT4 TET4      66     65     62     55 MAT       1 KINEM Totlag
+    122 SOLIDT4 TET4      60     65     66     55 MAT       1 KINEM Totlag
+    123 SOLIDT4 TET4      59     58     49     56 MAT       1 KINEM Totlag
+    124 SOLIDT4 TET4      59     58     56     68 MAT       1 KINEM Totlag
+    125 SOLIDT4 TET4      58     49     56     53 MAT       1 KINEM Totlag
+    126 SOLIDT4 TET4      49     59     56     55 MAT       1 KINEM Totlag
+    127 SOLIDT4 TET4      56     49     55     53 MAT       1 KINEM Totlag
+    128 SOLIDT4 TET4      55     56     53     63 MAT       1 KINEM Totlag
+    129 SOLIDT4 TET4      56     53     63     58 MAT       1 KINEM Totlag
+    130 SOLIDT4 TET4      55     56     63     66 MAT       1 KINEM Totlag
+    131 SOLIDT4 TET4      59     56     55     66 MAT       1 KINEM Totlag
+    132 SOLIDT4 TET4     124    132    135    130 MAT       1 KINEM Totlag
+    133 SOLIDT4 TET4     124    132    130    125 MAT       1 KINEM Totlag
+    134 SOLIDT4 TET4     132    130    125    136 MAT       1 KINEM Totlag
+    135 SOLIDT4 TET4     130    125    136    127 MAT       1 KINEM Totlag
+    136 SOLIDT4 TET4     136    130    127    135 MAT       1 KINEM Totlag
+    137 SOLIDT4 TET4     132    130    136    135 MAT       1 KINEM Totlag
+    138 SOLIDT4 TET4     130    127    135    124 MAT       1 KINEM Totlag
+    139 SOLIDT4 TET4     130    125    127    124 MAT       1 KINEM Totlag
+    140 SOLIDT4 TET4      61     71     62     63 MAT       1 KINEM Totlag
+    141 SOLIDT4 TET4      10     27     23     21 MAT       1 KINEM Totlag
+    142 SOLIDT4 TET4      10     27     21     16 MAT       1 KINEM Totlag
+    143 SOLIDT4 TET4      27     23     21     36 MAT       1 KINEM Totlag
+    144 SOLIDT4 TET4      23     10     21     15 MAT       1 KINEM Totlag
+    145 SOLIDT4 TET4      10     21     15      8 MAT       1 KINEM Totlag
+    146 SOLIDT4 TET4      21     15      8     20 MAT       1 KINEM Totlag
+    147 SOLIDT4 TET4      15      8     20      9 MAT       1 KINEM Totlag
+    148 SOLIDT4 TET4      21     15     20     31 MAT       1 KINEM Totlag
+    149 SOLIDT4 TET4       8     21     20     25 MAT       1 KINEM Totlag
+    150 SOLIDT4 TET4      15     10      8      2 MAT       1 KINEM Totlag
+    151 SOLIDT4 TET4      10     21      8     16 MAT       1 KINEM Totlag
+    152 SOLIDT4 TET4      21     23     15     31 MAT       1 KINEM Totlag
+    153 SOLIDT4 TET4      20     15      9     22 MAT       1 KINEM Totlag
+    154 SOLIDT4 TET4      20     15     22     31 MAT       1 KINEM Totlag
+    155 SOLIDT4 TET4       8     20      9     24 MAT       1 KINEM Totlag
+    156 SOLIDT4 TET4      15      8      9      2 MAT       1 KINEM Totlag
+    157 SOLIDT4 TET4      23     10     15     14 MAT       1 KINEM Totlag
+    158 SOLIDT4 TET4      15      9     22     14 MAT       1 KINEM Totlag
+    159 SOLIDT4 TET4      10     15     14      2 MAT       1 KINEM Totlag
+    160 SOLIDT4 TET4      15     23     14     30 MAT       1 KINEM Totlag
+    161 SOLIDT4 TET4       9     20     22     28 MAT       1 KINEM Totlag
+    162 SOLIDT4 TET4       9     20     28     24 MAT       1 KINEM Totlag
+    163 SOLIDT4 TET4       8     21     25     16 MAT       1 KINEM Totlag
+    164 SOLIDT4 TET4      15      9     14      2 MAT       1 KINEM Totlag
+    165 SOLIDT4 TET4      22     15     14     30 MAT       1 KINEM Totlag
+    166 SOLIDT4 TET4       8     20     24     25 MAT       1 KINEM Totlag
+    167 SOLIDT4 TET4      20     22     28     37 MAT       1 KINEM Totlag
+    168 SOLIDT4 TET4     102    100     91     98 MAT       1 KINEM Totlag
+    169 SOLIDT4 TET4     102    100     98    109 MAT       1 KINEM Totlag
+    170 SOLIDT4 TET4     100     91     98     88 MAT       1 KINEM Totlag
+    171 SOLIDT4 TET4      91    102     98     96 MAT       1 KINEM Totlag
+    172 SOLIDT4 TET4     102     98     96    106 MAT       1 KINEM Totlag
+    173 SOLIDT4 TET4      98     96    106     97 MAT       1 KINEM Totlag
+    174 SOLIDT4 TET4      96    106     97    103 MAT       1 KINEM Totlag
+    175 SOLIDT4 TET4      98     96     97     86 MAT       1 KINEM Totlag
+    176 SOLIDT4 TET4     106     98     97    104 MAT       1 KINEM Totlag
+    177 SOLIDT4 TET4      96    102    106    107 MAT       1 KINEM Totlag
+    178 SOLIDT4 TET4     102     98    106    109 MAT       1 KINEM Totlag
+    179 SOLIDT4 TET4      98     91     96     86 MAT       1 KINEM Totlag
+    180 SOLIDT4 TET4      97     96    103     92 MAT       1 KINEM Totlag
+    181 SOLIDT4 TET4      97     96     92     86 MAT       1 KINEM Totlag
+    182 SOLIDT4 TET4     106     97    103    105 MAT       1 KINEM Totlag
+    183 SOLIDT4 TET4      96    106    103    107 MAT       1 KINEM Totlag
+    184 SOLIDT4 TET4      91    102     96     95 MAT       1 KINEM Totlag
+    185 SOLIDT4 TET4      96    103     92     95 MAT       1 KINEM Totlag
+    186 SOLIDT4 TET4     102     96     95    107 MAT       1 KINEM Totlag
+    187 SOLIDT4 TET4      96     91     95     85 MAT       1 KINEM Totlag
+    188 SOLIDT4 TET4     103     97     92     99 MAT       1 KINEM Totlag
+    189 SOLIDT4 TET4     103     97     99    105 MAT       1 KINEM Totlag
+    190 SOLIDT4 TET4     106     98    104    109 MAT       1 KINEM Totlag
+    191 SOLIDT4 TET4      96    103     95    107 MAT       1 KINEM Totlag
+    192 SOLIDT4 TET4      92     96     95     85 MAT       1 KINEM Totlag
+    193 SOLIDT4 TET4     106     97    105    104 MAT       1 KINEM Totlag
+    194 SOLIDT4 TET4      97     92     99     87 MAT       1 KINEM Totlag
+    195 SOLIDT4 TET4      83     90     94     86 MAT       1 KINEM Totlag
+    196 SOLIDT4 TET4      43     42     33     31 MAT       1 KINEM Totlag
+    197 SOLIDT4 TET4     129    120    123    125 MAT       1 KINEM Totlag
+    198 SOLIDT4 TET4     143    153    146    147 MAT       1 KINEM Totlag
+    199 SOLIDT4 TET4     125    121    113    118 MAT       1 KINEM Totlag
+    200 SOLIDT4 TET4     125    121    118    124 MAT       1 KINEM Totlag
+    201 SOLIDT4 TET4     121    118    124    114 MAT       1 KINEM Totlag
+    202 SOLIDT4 TET4     118    124    114    119 MAT       1 KINEM Totlag
+    203 SOLIDT4 TET4     121    118    114    113 MAT       1 KINEM Totlag
+    204 SOLIDT4 TET4     113    125    118    117 MAT       1 KINEM Totlag
+    205 SOLIDT4 TET4     125    118    117    127 MAT       1 KINEM Totlag
+    206 SOLIDT4 TET4     118    113    117    106 MAT       1 KINEM Totlag
+    207 SOLIDT4 TET4     113    125    117    120 MAT       1 KINEM Totlag
+    208 SOLIDT4 TET4     125    117    120    123 MAT       1 KINEM Totlag
+    209 SOLIDT4 TET4     117    120    123    111 MAT       1 KINEM Totlag
+    210 SOLIDT4 TET4     117    120    111    109 MAT       1 KINEM Totlag
+    211 SOLIDT4 TET4     123    117    111    116 MAT       1 KINEM Totlag
+    212 SOLIDT4 TET4     123    117    116    127 MAT       1 KINEM Totlag
+    213 SOLIDT4 TET4     117    111    116    106 MAT       1 KINEM Totlag
+    214 SOLIDT4 TET4     111    123    116    115 MAT       1 KINEM Totlag
+    215 SOLIDT4 TET4     117    113    120    109 MAT       1 KINEM Totlag
+    216 SOLIDT4 TET4     118    114    113    106 MAT       1 KINEM Totlag
+    217 SOLIDT4 TET4     118    125    124    127 MAT       1 KINEM Totlag
+    218 SOLIDT4 TET4     103    108    112    106 MAT       1 KINEM Totlag
+    219 SOLIDT4 TET4      78     87     81     83 MAT       1 KINEM Totlag
+    220 SOLIDT4 TET4      48     37     39     43 MAT       1 KINEM Totlag
+    221 SOLIDT4 TET4      42     51     44     43 MAT       1 KINEM Totlag
+    222 SOLIDT4 TET4      90     80     84     83 MAT       1 KINEM Totlag
+    223 SOLIDT4 TET4     141    151    144    146 MAT       1 KINEM Totlag
+    224 SOLIDT4 TET4      62     71     72     66 MAT       1 KINEM Totlag
+    225 SOLIDT4 TET4      63     61     53     55 MAT       1 KINEM Totlag
+    226 SOLIDT4 TET4     121    132    124    125 MAT       1 KINEM Totlag
+    227 SOLIDT4 TET4     147    143    136    140 MAT       1 KINEM Totlag
+    228 SOLIDT4 TET4      81     87     92     89 MAT       1 KINEM Totlag
+    229 SOLIDT4 TET4      81     87     89     83 MAT       1 KINEM Totlag
+    230 SOLIDT4 TET4      87     92     89     97 MAT       1 KINEM Totlag
+    231 SOLIDT4 TET4      92     81     89     86 MAT       1 KINEM Totlag
+    232 SOLIDT4 TET4      81     89     86     83 MAT       1 KINEM Totlag
+    233 SOLIDT4 TET4      89     86     83     94 MAT       1 KINEM Totlag
+    234 SOLIDT4 TET4      83     89     94     87 MAT       1 KINEM Totlag
+    235 SOLIDT4 TET4      89     86     94     97 MAT       1 KINEM Totlag
+    236 SOLIDT4 TET4      94     89     97     87 MAT       1 KINEM Totlag
+    237 SOLIDT4 TET4      92     89     97     86 MAT       1 KINEM Totlag
+    238 SOLIDT4 TET4      39     37     22     34 MAT       1 KINEM Totlag
+    239 SOLIDT4 TET4      39     37     34     43 MAT       1 KINEM Totlag
+    240 SOLIDT4 TET4      37     22     34     20 MAT       1 KINEM Totlag
+    241 SOLIDT4 TET4      22     39     34     31 MAT       1 KINEM Totlag
+    242 SOLIDT4 TET4      39     34     31     43 MAT       1 KINEM Totlag
+    243 SOLIDT4 TET4      34     31     43     33 MAT       1 KINEM Totlag
+    244 SOLIDT4 TET4      43     34     33     37 MAT       1 KINEM Totlag
+    245 SOLIDT4 TET4      34     31     33     20 MAT       1 KINEM Totlag
+    246 SOLIDT4 TET4      33     34     20     37 MAT       1 KINEM Totlag
+    247 SOLIDT4 TET4      22     34     20     31 MAT       1 KINEM Totlag
+    248 SOLIDT4 TET4     146    153    158    150 MAT       1 KINEM Totlag
+    249 SOLIDT4 TET4     146    153    150    147 MAT       1 KINEM Totlag
+    250 SOLIDT4 TET4     153    150    147    159 MAT       1 KINEM Totlag
+    251 SOLIDT4 TET4     150    147    159    152 MAT       1 KINEM Totlag
+    252 SOLIDT4 TET4     153    150    159    158 MAT       1 KINEM Totlag
+    253 SOLIDT4 TET4     158    146    150    148 MAT       1 KINEM Totlag
+    254 SOLIDT4 TET4     146    150    148    147 MAT       1 KINEM Totlag
+    255 SOLIDT4 TET4     150    148    147    152 MAT       1 KINEM Totlag
+    256 SOLIDT4 TET4     150    159    158    160 MAT       1 KINEM Totlag
+    257 SOLIDT4 TET4     150    159    160    154 MAT       1 KINEM Totlag
+    258 SOLIDT4 TET4     150    159    154    152 MAT       1 KINEM Totlag
+    259 SOLIDT4 TET4     160    150    154    148 MAT       1 KINEM Totlag
+    260 SOLIDT4 TET4     150    154    148    152 MAT       1 KINEM Totlag
+    261 SOLIDT4 TET4     160    150    148    158 MAT       1 KINEM Totlag
+    262 SOLIDT4 TET4     159    160    154    163 MAT       1 KINEM Totlag
+    263 SOLIDT4 TET4     159    154    152    163 MAT       1 KINEM Totlag
+    264 SOLIDT4 TET4     154    152    163    157 MAT       1 KINEM Totlag
+    265 SOLIDT4 TET4     154    152    157    145 MAT       1 KINEM Totlag
+    266 SOLIDT4 TET4     157    154    145    148 MAT       1 KINEM Totlag
+    267 SOLIDT4 TET4     154    152    145    148 MAT       1 KINEM Totlag
+    268 SOLIDT4 TET4     163    154    157    160 MAT       1 KINEM Totlag
+    269 SOLIDT4 TET4     154    157    160    148 MAT       1 KINEM Totlag
+    270 SOLIDT4 TET4     105    110    114    106 MAT       1 KINEM Totlag
+    271 SOLIDT4 TET4      25     35     32     20 MAT       1 KINEM Totlag
+    272 SOLIDT4 TET4     104    101     93     97 MAT       1 KINEM Totlag
+    273 SOLIDT4 TET4     122    128    133    127 MAT       1 KINEM Totlag
+    274 SOLIDT4 TET4      99    108    103    105 MAT       1 KINEM Totlag
+    275 SOLIDT4 TET4      28     18      9     24 MAT       1 KINEM Totlag
+    276 SOLIDT4 TET4      35     42     32     33 MAT       1 KINEM Totlag
+    277 SOLIDT4 TET4     101     90     93     94 MAT       1 KINEM Totlag
+    278 SOLIDT4 TET4     128    141    133    135 MAT       1 KINEM Totlag
+    279 SOLIDT4 TET4      54     61     62     55 MAT       1 KINEM Totlag
+    280 SOLIDT4 TET4      73     71     63     66 MAT       1 KINEM Totlag
+    281 SOLIDT4 TET4     110    121    114    113 MAT       1 KINEM Totlag
+    282 SOLIDT4 TET4      69     78     81     75 MAT       1 KINEM Totlag
+    283 SOLIDT4 TET4      81     69     75     74 MAT       1 KINEM Totlag
+    284 SOLIDT4 TET4      49     48     39     41 MAT       1 KINEM Totlag
+    285 SOLIDT4 TET4      39     49     41     40 MAT       1 KINEM Totlag
+    286 SOLIDT4 TET4     135    143    146    140 MAT       1 KINEM Totlag
+    287 SOLIDT4 TET4     146    135    140    141 MAT       1 KINEM Totlag
+    288 SOLIDT4 TET4      71     80     72     73 MAT       1 KINEM Totlag
+    289 SOLIDT4 TET4      61     51     53     54 MAT       1 KINEM Totlag
+    290 SOLIDT4 TET4      23     36     38     31 MAT       1 KINEM Totlag
+    291 SOLIDT4 TET4      91     88     82     86 MAT       1 KINEM Totlag
+    292 SOLIDT4 TET4      94    101    105     97 MAT       1 KINEM Totlag
+    293 SOLIDT4 TET4     105     94     97     99 MAT       1 KINEM Totlag
+    294 SOLIDT4 TET4      33     35     24     20 MAT       1 KINEM Totlag
+    295 SOLIDT4 TET4      24     33     20     28 MAT       1 KINEM Totlag
+    296 SOLIDT4 TET4     153    164    158    159 MAT       1 KINEM Totlag
+    297 SOLIDT4 TET4     113    110    104    106 MAT       1 KINEM Totlag
+    298 SOLIDT4 TET4     112    119    122    118 MAT       1 KINEM Totlag
+    299 SOLIDT4 TET4     143    132    136    135 MAT       1 KINEM Totlag
+    300 SOLIDT4 TET4     151    162    156    158 MAT       1 KINEM Totlag
+    301 SOLIDT4 TET4     111    109    102    106 MAT       1 KINEM Totlag
+    302 SOLIDT4 TET4      67     78     69     72 MAT       1 KINEM Totlag
+    303 SOLIDT4 TET4      58     48     49     53 MAT       1 KINEM Totlag
+    304 SOLIDT4 TET4      50     57     60     55 MAT       1 KINEM Totlag
+    305 SOLIDT4 TET4      70     68     59     66 MAT       1 KINEM Totlag
+    306 SOLIDT4 TET4      32     42     44     31 MAT       1 KINEM Totlag
+    307 SOLIDT4 TET4      93     90     84     86 MAT       1 KINEM Totlag
+    308 SOLIDT4 TET4     108    119    112    114 MAT       1 KINEM Totlag
+    309 SOLIDT4 TET4     123    116    115    126 MAT       1 KINEM Totlag
+    310 SOLIDT4 TET4     116    111    115    107 MAT       1 KINEM Totlag
+    311 SOLIDT4 TET4     136    137    142    147 MAT       1 KINEM Totlag
+    312 SOLIDT4 TET4     136    137    147    140 MAT       1 KINEM Totlag
+    313 SOLIDT4 TET4     137    142    147    152 MAT       1 KINEM Totlag
+    314 SOLIDT4 TET4      62     65     67     57 MAT       1 KINEM Totlag
+    315 SOLIDT4 TET4      63     56     58     68 MAT       1 KINEM Totlag
+    316 SOLIDT4 TET4     111    117    109    106 MAT       1 KINEM Totlag
+    317 SOLIDT4 TET4      41     39     40     30 MAT       1 KINEM Totlag
+    318 SOLIDT4 TET4      75     81     74     85 MAT       1 KINEM Totlag
+    319 SOLIDT4 TET4      44     32     31     36 MAT       1 KINEM Totlag
+    320 SOLIDT4 TET4      84     93     86     88 MAT       1 KINEM Totlag
+    321 SOLIDT4 TET4     145    157    148    149 MAT       1 KINEM Totlag
+    322 SOLIDT4 TET4     102    111    106    107 MAT       1 KINEM Totlag
+    323 SOLIDT4 TET4      49     41     40     52 MAT       1 KINEM Totlag
+    324 SOLIDT4 TET4      94     97     99     87 MAT       1 KINEM Totlag
+    325 SOLIDT4 TET4      33     20     28     37 MAT       1 KINEM Totlag
+    326 SOLIDT4 TET4      69     75     74     64 MAT       1 KINEM Totlag
+    327 SOLIDT4 TET4      21     20     25     32 MAT       1 KINEM Totlag
+    328 SOLIDT4 TET4      25     21     32     27 MAT       1 KINEM Totlag
+    329 SOLIDT4 TET4      25     21     27     16 MAT       1 KINEM Totlag
+    330 SOLIDT4 TET4      21     32     27     36 MAT       1 KINEM Totlag
+    331 SOLIDT4 TET4      98     97    104     93 MAT       1 KINEM Totlag
+    332 SOLIDT4 TET4     104     98     93    100 MAT       1 KINEM Totlag
+    333 SOLIDT4 TET4     104     98    100    109 MAT       1 KINEM Totlag
+    334 SOLIDT4 TET4      98     93    100     88 MAT       1 KINEM Totlag
+    335 SOLIDT4 TET4      60     50     55     52 MAT       1 KINEM Totlag
+    336 SOLIDT4 TET4      59     70     66     64 MAT       1 KINEM Totlag
+    337 SOLIDT4 TET4      82     91     86     85 MAT       1 KINEM Totlag
+    338 SOLIDT4 TET4      38     23     31     30 MAT       1 KINEM Totlag
+    339 SOLIDT4 TET4      46     41     39     48 MAT       1 KINEM Totlag
+    340 SOLIDT4 TET4      77     75     81     78 MAT       1 KINEM Totlag
+    341 SOLIDT4 TET4      21     20     32     31 MAT       1 KINEM Totlag
+    342 SOLIDT4 TET4      98     97     93     86 MAT       1 KINEM Totlag
+    343 SOLIDT4 TET4      38     41     50     40 MAT       1 KINEM Totlag
+    344 SOLIDT4 TET4      82     75     70     74 MAT       1 KINEM Totlag
+    345 SOLIDT4 TET4     133    122    127    126 MAT       1 KINEM Totlag
+    346 SOLIDT4 TET4     131    127    125    123 MAT       1 KINEM Totlag
+    347 SOLIDT4 TET4     116    115    126    122 MAT       1 KINEM Totlag
+    348 SOLIDT4 TET4     116    115    122    112 MAT       1 KINEM Totlag
+    349 SOLIDT4 TET4     122    116    112    118 MAT       1 KINEM Totlag
+    350 SOLIDT4 TET4     116    115    112    107 MAT       1 KINEM Totlag
+    351 SOLIDT4 TET4      41     46     49     48 MAT       1 KINEM Totlag
+    352 SOLIDT4 TET4      75     77     69     78 MAT       1 KINEM Totlag
+    353 SOLIDT4 TET4     125    117    123    127 MAT       1 KINEM Totlag
+    354 SOLIDT4 TET4      62     54     55     57 MAT       1 KINEM Totlag
+    355 SOLIDT4 TET4     134    127    123    126 MAT       1 KINEM Totlag
+    356 SOLIDT4 TET4      63     73     66     68 MAT       1 KINEM Totlag
+    357 SOLIDT4 TET4     156    144    148    149 MAT       1 KINEM Totlag
+    358 SOLIDT4 TET4     112    103    106    107 MAT       1 KINEM Totlag
+    359 SOLIDT4 TET4     143    146    140    147 MAT       1 KINEM Totlag
+    360 SOLIDT4 TET4      35     24     20     25 MAT       1 KINEM Totlag
+    361 SOLIDT4 TET4     101    105     97    104 MAT       1 KINEM Totlag
+    362 SOLIDT4 TET4     159    158    160    164 MAT       1 KINEM Totlag
+    363 SOLIDT4 TET4     172    176    170    165 MAT       1 KINEM Totlag
+    364 SOLIDT4 TET4     170    172    165    167 MAT       1 KINEM Totlag
+    365 SOLIDT4 TET4     172    165    167    160 MAT       1 KINEM Totlag
+    366 SOLIDT4 TET4     165    167    160    157 MAT       1 KINEM Totlag
+    367 SOLIDT4 TET4     170    172    167    171 MAT       1 KINEM Totlag
+    368 SOLIDT4 TET4     160    165    157    163 MAT       1 KINEM Totlag
+    369 SOLIDT4 TET4     172    176    165    168 MAT       1 KINEM Totlag
+    370 SOLIDT4 TET4     165    172    168    160 MAT       1 KINEM Totlag
+    371 SOLIDT4 TET4     168    165    160    159 MAT       1 KINEM Totlag
+    372 SOLIDT4 TET4     172    176    168    175 MAT       1 KINEM Totlag
+    373 SOLIDT4 TET4     165    160    159    163 MAT       1 KINEM Totlag
+    374 SOLIDT4 TET4     172    167    171    166 MAT       1 KINEM Totlag
+    375 SOLIDT4 TET4     167    171    166    156 MAT       1 KINEM Totlag
+    376 SOLIDT4 TET4     172    167    166    160 MAT       1 KINEM Totlag
+    377 SOLIDT4 TET4     168    172    175    166 MAT       1 KINEM Totlag
+    378 SOLIDT4 TET4     175    168    166    158 MAT       1 KINEM Totlag
+    379 SOLIDT4 TET4     168    172    166    160 MAT       1 KINEM Totlag
+    380 SOLIDT4 TET4     166    168    160    158 MAT       1 KINEM Totlag
+    381 SOLIDT4 TET4     167    166    160    156 MAT       1 KINEM Totlag
+    382 SOLIDT4 TET4     165    157    163    170 MAT       1 KINEM Totlag
+    383 SOLIDT4 TET4     165    170    167    157 MAT       1 KINEM Totlag
+    384 SOLIDT4 TET4     176    165    168    159 MAT       1 KINEM Totlag
+    385 SOLIDT4 TET4     172    175    166    171 MAT       1 KINEM Totlag
+    386 SOLIDT4 TET4     168    160    158    164 MAT       1 KINEM Totlag
+    387 SOLIDT4 TET4     158    168    164    175 MAT       1 KINEM Totlag
+    388 SOLIDT4 TET4     168    164    175    177 MAT       1 KINEM Totlag
+    389 SOLIDT4 TET4     175    168    177    176 MAT       1 KINEM Totlag
+    390 SOLIDT4 TET4     168    164    177    176 MAT       1 KINEM Totlag
+    391 SOLIDT4 TET4     160    166    158    156 MAT       1 KINEM Totlag
+    392 SOLIDT4 TET4     160    168    159    164 MAT       1 KINEM Totlag
+    393 SOLIDT4 TET4     168    159    164    176 MAT       1 KINEM Totlag
+    394 SOLIDT4 TET4     167    170    171    169 MAT       1 KINEM Totlag
+    395 SOLIDT4 TET4     171    167    169    161 MAT       1 KINEM Totlag
+    396 SOLIDT4 TET4     167    169    161    170 MAT       1 KINEM Totlag
+    397 SOLIDT4 TET4     171    167    161    156 MAT       1 KINEM Totlag
+    398 SOLIDT4 TET4       6      4      3      5 MAT       1 KINEM Totlag
+    399 SOLIDT4 TET4       6      4      5      7 MAT       1 KINEM Totlag
+    400 SOLIDT4 TET4       5      6      7     11 MAT       1 KINEM Totlag
+    401 SOLIDT4 TET4       5      6     11      3 MAT       1 KINEM Totlag
+    402 SOLIDT4 TET4       6      7     11     17 MAT       1 KINEM Totlag
+    403 SOLIDT4 TET4       6      4      7     17 MAT       1 KINEM Totlag
+    404 SOLIDT4 TET4       7      5     11      8 MAT       1 KINEM Totlag
+    405 SOLIDT4 TET4       5     11      8      9 MAT       1 KINEM Totlag
+    406 SOLIDT4 TET4       7      5      8     16 MAT       1 KINEM Totlag
+    407 SOLIDT4 TET4      11      7      8     25 MAT       1 KINEM Totlag
+    408 SOLIDT4 TET4       8      5      9      2 MAT       1 KINEM Totlag
+    409 SOLIDT4 TET4       8      5      2     10 MAT       1 KINEM Totlag
+    410 SOLIDT4 TET4       8      5     10     16 MAT       1 KINEM Totlag
+    411 SOLIDT4 TET4       7     11     17     25 MAT       1 KINEM Totlag
+    412 SOLIDT4 TET4       4      5      7     16 MAT       1 KINEM Totlag
+    413 SOLIDT4 TET4       6     11      3     19 MAT       1 KINEM Totlag
+    414 SOLIDT4 TET4       6     11     19     17 MAT       1 KINEM Totlag
+    415 SOLIDT4 TET4       8     11     25     24 MAT       1 KINEM Totlag
+    416 SOLIDT4 TET4       8     11     24      9 MAT       1 KINEM Totlag
+    417 SOLIDT4 TET4       4      7     17     12 MAT       1 KINEM Totlag
+    418 SOLIDT4 TET4       7     17     12     16 MAT       1 KINEM Totlag
+    419 SOLIDT4 TET4      12      7     16      4 MAT       1 KINEM Totlag
+    420 SOLIDT4 TET4       7     17     16     25 MAT       1 KINEM Totlag
+    421 SOLIDT4 TET4     157    160    148    155 MAT       1 KINEM Totlag
+    422 SOLIDT4 TET4     160    148    155    156 MAT       1 KINEM Totlag
+    423 SOLIDT4 TET4     155    160    156    167 MAT       1 KINEM Totlag
+    424 SOLIDT4 TET4     148    155    156    149 MAT       1 KINEM Totlag
+    425 SOLIDT4 TET4     155    156    149    161 MAT       1 KINEM Totlag
+    426 SOLIDT4 TET4     149    155    161    157 MAT       1 KINEM Totlag
+    427 SOLIDT4 TET4     155    156    161    167 MAT       1 KINEM Totlag
+    428 SOLIDT4 TET4     161    155    167    157 MAT       1 KINEM Totlag
+    429 SOLIDT4 TET4     157    160    155    167 MAT       1 KINEM Totlag
+    430 SOLIDT4 TET4     149    155    157    148 MAT       1 KINEM Totlag
+    431 SOLIDT4 TET4      90     93     94     86 MAT       1 KINEM Totlag
+    432 SOLIDT4 TET4      44     42     43     31 MAT       1 KINEM Totlag
+    433 SOLIDT4 TET4      42     32     33     31 MAT       1 KINEM Totlag
+    434 SOLIDT4 TET4      84     90     83     86 MAT       1 KINEM Totlag
+    435 SOLIDT4 TET4      71     62     63     66 MAT       1 KINEM Totlag
+    436 SOLIDT4 TET4      32     35     33     20 MAT       1 KINEM Totlag
+    437 SOLIDT4 TET4      25     29     24     11 MAT       1 KINEM Totlag
+    438 SOLIDT4 TET4      29     24     11     19 MAT       1 KINEM Totlag
+    439 SOLIDT4 TET4      93    101     94     97 MAT       1 KINEM Totlag
+    440 SOLIDT4 TET4     136    143    135    140 MAT       1 KINEM Totlag
+    441 SOLIDT4 TET4      53     61     54     55 MAT       1 KINEM Totlag
+    442 SOLIDT4 TET4     104    110    105    106 MAT       1 KINEM Totlag
+    443 SOLIDT4 TET4      62     61     63     55 MAT       1 KINEM Totlag
+    444 SOLIDT4 TET4     114    110    113    106 MAT       1 KINEM Totlag
+    445 SOLIDT4 TET4      72     71     73     66 MAT       1 KINEM Totlag
+    446 SOLIDT4 TET4     161    167    170    157 MAT       1 KINEM Totlag
+    447 SOLIDT4 TET4     159    165    163    176 MAT       1 KINEM Totlag
+    448 SOLIDT4 TET4       5      9      2      3 MAT       1 KINEM Totlag
+    449 SOLIDT4 TET4       5      2     10      4 MAT       1 KINEM Totlag
+    450 SOLIDT4 TET4      82     75     74     85 MAT       1 KINEM Totlag
+    451 SOLIDT4 TET4      38     41     40     30 MAT       1 KINEM Totlag
+    452 SOLIDT4 TET4     175    166    171    173 MAT       1 KINEM Totlag
+    453 SOLIDT4 TET4     175    166    173    162 MAT       1 KINEM Totlag
+    454 SOLIDT4 TET4     166    173    162    171 MAT       1 KINEM Totlag
+    455 SOLIDT4 TET4     175    166    162    158 MAT       1 KINEM Totlag
+    456 SOLIDT4 TET4     162    166    171    156 MAT       1 KINEM Totlag
+    457 SOLIDT4 TET4     162    166    156    158 MAT       1 KINEM Totlag
+    458 SOLIDT4 TET4       8      7     16     25 MAT       1 KINEM Totlag
+    459 SOLIDT4 TET4      93     98     86     88 MAT       1 KINEM Totlag
+    460 SOLIDT4 TET4      32     21     31     36 MAT       1 KINEM Totlag
+    461 SOLIDT4 TET4      75     70     74     64 MAT       1 KINEM Totlag
+    462 SOLIDT4 TET4      41     50     40     52 MAT       1 KINEM Totlag
+    463 SOLIDT4 TET4     160    148    156    158 MAT       1 KINEM Totlag
+    464 SOLIDT4 TET4      56     59     68     66 MAT       1 KINEM Totlag
+    465 SOLIDT4 TET4      65     60     57     55 MAT       1 KINEM Totlag
+    466 SOLIDT4 TET4      91     98     88     86 MAT       1 KINEM Totlag
+    467 SOLIDT4 TET4      23     21     36     31 MAT       1 KINEM Totlag
+    468 SOLIDT4 TET4      11      5      3      9 MAT       1 KINEM Totlag
+    469 SOLIDT4 TET4      25     29     11     17 MAT       1 KINEM Totlag
+    470 SOLIDT4 TET4     111    116    106    107 MAT       1 KINEM Totlag
+    471 SOLIDT4 TET4     163    165    170    174 MAT       1 KINEM Totlag
+    472 SOLIDT4 TET4     163    165    174    176 MAT       1 KINEM Totlag
+    473 SOLIDT4 TET4     165    170    174    176 MAT       1 KINEM Totlag
+    474 SOLIDT4 TET4       2      5      3      1 MAT       1 KINEM Totlag
+    475 SOLIDT4 TET4       2      5      1      4 MAT       1 KINEM Totlag
+    476 SOLIDT4 TET4       5      1      4      3 MAT       1 KINEM Totlag
+    477 SOLIDT4 TET4      65     62     55     57 MAT       1 KINEM Totlag
+    478 SOLIDT4 TET4      56     63     66     68 MAT       1 KINEM Totlag
+    479 SOLIDT4 TET4      46     43     48     39 MAT       1 KINEM Totlag
+    480 SOLIDT4 TET4      77     83     78     81 MAT       1 KINEM Totlag
+    481 SOLIDT4 TET4     118    124    119    122 MAT       1 KINEM Totlag
+    482 SOLIDT4 TET4      53     46     48     49 MAT       1 KINEM Totlag
+    483 SOLIDT4 TET4      72     77     78     69 MAT       1 KINEM Totlag
+    484 SOLIDT4 TET4     114    118    119    112 MAT       1 KINEM Totlag
+    485 SOLIDT4 TET4     122    116    118    127 MAT       1 KINEM Totlag
+    486 SOLIDT4 TET4     116    112    118    106 MAT       1 KINEM Totlag
+    487 SOLIDT4 TET4     128    133    127    135 MAT       1 KINEM Totlag
+    488 SOLIDT4 TET4      26     29     17     11 MAT       1 KINEM Totlag
+    489 SOLIDT4 TET4      26     29     11     19 MAT       1 KINEM Totlag
+    490 SOLIDT4 TET4      11     26     19     17 MAT       1 KINEM Totlag
+    491 SOLIDT4 TET4      19     13     18      3 MAT       1 KINEM Totlag
+    492 SOLIDT4 TET4      15     23     30     31 MAT       1 KINEM Totlag
+    493 SOLIDT4 TET4      96     91     85     86 MAT       1 KINEM Totlag
+    494 SOLIDT4 TET4     117    113    109    106 MAT       1 KINEM Totlag
+    495 SOLIDT4 TET4      22     15     30     31 MAT       1 KINEM Totlag
+    496 SOLIDT4 TET4      92     96     85     86 MAT       1 KINEM Totlag
+    497 SOLIDT4 TET4      24     11     19     18 MAT       1 KINEM Totlag
+    498 SOLIDT4 TET4      33     32     20     31 MAT       1 KINEM Totlag
+    499 SOLIDT4 TET4      94     93     97     86 MAT       1 KINEM Totlag
+    500 SOLIDT4 TET4     144    151    148    146 MAT       1 KINEM Totlag
+    501 SOLIDT4 TET4     103    108    106    105 MAT       1 KINEM Totlag
+    502 SOLIDT4 TET4     127    135    124    128 MAT       1 KINEM Totlag
+    503 SOLIDT4 TET4      69     60     66     64 MAT       1 KINEM Totlag
+    504 SOLIDT4 TET4      49     59     55     52 MAT       1 KINEM Totlag
+    505 SOLIDT4 TET4     116    112    106    107 MAT       1 KINEM Totlag
+    506 SOLIDT4 TET4     116    123    127    126 MAT       1 KINEM Totlag
+    507 SOLIDT4 TET4      81     92     85     86 MAT       1 KINEM Totlag
+    508 SOLIDT4 TET4      39     22     30     31 MAT       1 KINEM Totlag
+    509 SOLIDT4 TET4     146    158    151    148 MAT       1 KINEM Totlag
+    510 SOLIDT4 TET4     105    114    108    106 MAT       1 KINEM Totlag
+    511 SOLIDT4 TET4      52     64     59     60 MAT       1 KINEM Totlag
+    512 SOLIDT4 TET4     113    104    109    106 MAT       1 KINEM Totlag
+    513 SOLIDT4 TET4     122    116    127    126 MAT       1 KINEM Totlag
+    514 SOLIDT4 TET4     124    118    127    122 MAT       1 KINEM Totlag
+    515 SOLIDT4 TET4     118    114    106    112 MAT       1 KINEM Totlag
+    516 SOLIDT4 TET4      24     11     18      9 MAT       1 KINEM Totlag
+    517 SOLIDT4 TET4     116    117    106    118 MAT       1 KINEM Totlag
+    518 SOLIDT4 TET4     116    117    118    127 MAT       1 KINEM Totlag
+    519 SOLIDT4 TET4       5     10     16      4 MAT       1 KINEM Totlag
+    520 SOLIDT4 TET4     122    128    127    124 MAT       1 KINEM Totlag
+    521 SOLIDT4 TET4      11     19     18      3 MAT       1 KINEM Totlag
+    522 SOLIDT4 TET4     112    108    114    106 MAT       1 KINEM Totlag
+    523 SOLIDT4 TET4     156    151    158    148 MAT       1 KINEM Totlag
+    524 SOLIDT4 TET4      11     18      9      3 MAT       1 KINEM Totlag
+    525 SOLIDT4 TET4      63     62     55     66 MAT       1 KINEM Totlag
+    526 SOLIDT4 TET4      55     60     52     59 MAT       1 KINEM Totlag
+    527 SOLIDT4 TET4      66     59     64     60 MAT       1 KINEM Totlag
+    528 SOLIDT4 TET4      66     60     55     59 MAT       1 KINEM Totlag
 ----------------------------------------------------FLUID ELEMENTS
 ------------------------------------------------------ALE ELEMENTS
 --------------------------------------------------THERMAL ELEMENTS
