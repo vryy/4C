@@ -445,6 +445,8 @@ protected:
   Teuchos::RCP<LINALG::SparseMatrix> Cdd_;
   Teuchos::RCP<Epetra_Vector>        RHSd_;
 
+  Teuchos::RCP<Epetra_Vector> oldinc_;
+
 //
 //  /// (standard) system matrix
 //  Teuchos::RCP<LINALG::SparseOperator> enrichsysmat_;

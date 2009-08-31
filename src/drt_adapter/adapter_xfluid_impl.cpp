@@ -117,7 +117,6 @@ ADAPTER::XFluidImpl::XFluidImpl(
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::InitialGuess()
 {
-  dserror("not implemented");
   return fluid_.InitialGuess();
 }
 
@@ -250,15 +249,15 @@ void ADAPTER::XFluidImpl::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   fluid_.Evaluate(boundarydis_, vel);
 
   // get surface force
-//  Teuchos::RCP<const Epetra_Vector> itruerescol = boundarydis_->GetState("iforcenp");
+  Teuchos::RCP<const Epetra_Vector> itruerescol = boundarydis_->GetState("iforcenp");
 
   // dump all vectors in the boundary discretization
   boundarydis_->ClearState();
 
   // map back to solid parallel distribution
-//  Teuchos::RCP<Epetra_Export> conimpo = Teuchos::rcp (new Epetra_Export(itruerescol->Map(),itrueresnp_->Map()));
-//  itrueresnp_->PutScalar(0.0);
-//  itrueresnp_->Export(*itruerescol,*conimpo,Add);
+  Teuchos::RCP<Epetra_Export> conimpo = Teuchos::rcp (new Epetra_Export(itruerescol->Map(),itrueresnp_->Map()));
+  itrueresnp_->PutScalar(0.0);
+  itrueresnp_->Export(*itruerescol,*conimpo,Add);
 
 }
 
@@ -870,7 +869,6 @@ void ADAPTER::XFluidImpl::ApplyMeshVelocity(Teuchos::RCP<Epetra_Vector> gridvel)
 /*----------------------------------------------------------------------*/
 void ADAPTER::XFluidImpl::DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx)
 {
-  dserror("not implemented!");
   // get interface velocity at t(n)
   const Teuchos::RCP<Epetra_Vector> veln = Interface().ExtractFSICondVector(Veln());
 
@@ -887,7 +885,15 @@ void ADAPTER::XFluidImpl::DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx
 /*----------------------------------------------------------------------*/
 void ADAPTER::XFluidImpl::VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx)
 {
-  dserror("not implemented!");
+  // get interface velocity at t(n)
+  const Teuchos::RCP<Epetra_Vector> veln = Interface().ExtractFSICondVector(Veln());
+
+  // We convert Delta u(n+1,i+1) to Delta d(n+1,i+1) here.
+  //
+  // Delta d(n+1,i+1) = ( theta Delta u(n+1,i+1) + u(n) ) * dt
+  //
+  double timescale = 1./TimeScaling();
+  fcx->Update(fluid_.Dt(),*veln,timescale);
 }
 
 

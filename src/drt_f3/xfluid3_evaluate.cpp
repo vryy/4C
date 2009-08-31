@@ -779,10 +779,10 @@ void DRT::ELEMENTS::XFluid3::UpdateOldDLMAndDLMRHS(
     MyState&                        mystate
     ) const
 {
-  const int nd = eleDofManager_uncondensed_->NumNodeDof();
-  const int na = eleDofManager_uncondensed_->NumElemDof();
+  const int nu = eleDofManager_uncondensed_->NumNodeDof();
+  const int ns = eleDofManager_uncondensed_->NumElemDof();
 
-  if (na > 0)
+  if (ns > 0)
   {
     // add Kda . inc_velnp to feas
     // new alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
@@ -794,11 +794,11 @@ void DRT::ELEMENTS::XFluid3::UpdateOldDLMAndDLMRHS(
 
     // update old iteration residual of the stresses
     // DLM_info_->oldfa_(i) += DLM_info_->oldKad_(i,j)*inc_velnp[j];
-    blas.GEMV('N', na, nd,-1.0, DLM_info_->oldKad_.A(), DLM_info_->oldKad_.LDA(), &inc_velnp[0], 1.0, DLM_info_->oldfa_.A());
+    blas.GEMV('N', ns, nu,-1.0, DLM_info_->oldKad_.A(), DLM_info_->oldKad_.LDA(), &inc_velnp[0], 1.0, DLM_info_->oldfa_.A());
 
     // compute element stresses
     // DLM_info_->stressdofs_(i) -= DLM_info_->oldKaainv_(i,j)*DLM_info_->oldfa_(j);
-    blas.GEMV('N', na, na,1.0, DLM_info_->oldKaainv_.A(), DLM_info_->oldKaainv_.LDA(), DLM_info_->oldfa_.A(), 1.0, DLM_info_->stressdofs_.A());
+    blas.GEMV('N', ns, ns,1.0, DLM_info_->oldKaainv_.A(), DLM_info_->oldKaainv_.LDA(), DLM_info_->oldfa_.A(), 1.0, DLM_info_->stressdofs_.A());
 
     // increase size of element vector (old values stay and zeros are added)
     const int numdof_uncond = eleDofManager_uncondensed_->NumDofElemAndNode();
@@ -806,9 +806,9 @@ void DRT::ELEMENTS::XFluid3::UpdateOldDLMAndDLMRHS(
     mystate.veln .resize(numdof_uncond,0.0);
     mystate.velnm.resize(numdof_uncond,0.0);
     mystate.accn .resize(numdof_uncond,0.0);
-    for (int i=0;i<na;i++)
+    for (int i=0;i<ns;i++)
     {
-      mystate.velnp[nd+i] = DLM_info_->stressdofs_(i);
+      mystate.velnp[nu+i] = DLM_info_->stressdofs_(i);
     }
   }
 }
@@ -833,9 +833,6 @@ void DRT::ELEMENTS::XFluid3::CondenseDLMAndStoreOldIterationStep(
 
   const size_t nu = eleDofManager_uncondensed_->NumNodeDof();
   const size_t ns = eleDofManager_uncondensed_->NumElemDof();
-  const std::set<int> begids = ih_->GetIntersectingBoundaryElementsGID(this->Id());
-  const int numnode_b = 4;
-  const size_t nd = 3*numnode_b*begids.size();
 
   // copy nodal dof entries
   for (size_t i = 0; i < nu; ++i)
@@ -874,24 +871,6 @@ void DRT::ELEMENTS::XFluid3::CondenseDLMAndStoreOldIterationStep(
     for (size_t i=0;i<ns;i++)
       fs(i) = elevec1_uncond(nu+i);
 
-
-    Epetra_SerialDenseMatrix Gds(nd, ns);
-    Epetra_SerialDenseMatrix Gsd(ns, nd);
-//      RCP<Epetra_SerialDenseVector> rhsd = rcp(new Epetra_SerialDenseVector(numpatchdof));
-
-    if (monolithic_FSI)
-    {
-      for (size_t i=0;i<nd;i++)
-      {
-        rhsd(i) = rhsd_uncond(i);
-        for (size_t j=0;j<ns;j++)
-        {
-          Gds(i,j) = Gds_uncond(i, nu+j);
-          Gsd(j,i) = Gds_uncond(i, nu+j);
-        }
-      }
-    }
-
     // DLM-stiffness matrix is: Kdd - Kda . Kaa^-1 . Kad
     // DLM-internal force is: fint - Kda . Kaa^-1 . feas
 
@@ -903,13 +882,9 @@ void DRT::ELEMENTS::XFluid3::CondenseDLMAndStoreOldIterationStep(
     static const Epetra_BLAS blas;
     {
       LINALG::SerialDenseMatrix KusKssinv(nu,ns); // temporary Kus.Kss^{-1}
-      LINALG::SerialDenseMatrix KdsKssinv(nu,ns); // temporary Kds.Kss^{-1}
 
       // KusKssinv(i,j) = Kus(i,k)*Kssinv(k,j);
       blas.GEMM('N','N',nu,ns,ns,1.0,Kus.A(),Kus.LDA(),Kssinv.A(),Kssinv.LDA(),0.0,KusKssinv.A(),KusKssinv.LDA());
-
-      // KdsKssinv(i,j) = Kds(i,k)*Kssinv(k,j);
-      blas.GEMM('N','N',nd,ns,ns,1.0,Gds.A(),Gds.LDA(),Kssinv.A(),Kssinv.LDA(),0.0,KdsKssinv.A(),KdsKssinv.LDA());
 
       // elemat1(i,j) += - KusKssinv(i,k)*Ksu(k,j);
       blas.GEMM('N','N',nu,nu,ns,-1.0,KusKssinv.A(),KusKssinv.LDA(),Ksu.A(),Ksu.LDA(),1.0,elemat1.A(),elemat1.LDA());
@@ -919,9 +894,12 @@ void DRT::ELEMENTS::XFluid3::CondenseDLMAndStoreOldIterationStep(
 
       if (monolithic_FSI)
       {
+        const std::set<int> begids = ih_->GetIntersectingBoundaryElementsGID(this->Id());
+        const int numnode_b = 4;
+        const size_t nd = 3*numnode_b*begids.size();
+
         Epetra_SerialDenseMatrix Gds(nd, ns);
         Epetra_SerialDenseMatrix Gsd(ns, nd);
-  //      RCP<Epetra_SerialDenseVector> rhsd = rcp(new Epetra_SerialDenseVector(numpatchdof));
 
         for (size_t i=0;i<nd;i++)
         {
@@ -932,22 +910,31 @@ void DRT::ELEMENTS::XFluid3::CondenseDLMAndStoreOldIterationStep(
             Gsd(j,i) = Gds_uncond(i, nu+j);
           }
         }
-        for (size_t i=0;i<nu;i++)
-          for (size_t j=0;j<nu;j++)
-            for (size_t k=0;k<ns;k++)
-              Cuu(i,j) += KusKssinv(i,k)*Ksu(k,j);
+
+        LINALG::SerialDenseMatrix GdsKssinv(nd,ns); // temporary Kds.Kss^{-1}
+
+        // KdsKssinv(i,j) = Kds(i,k)*Kssinv(k,j);
+        blas.GEMM('N','N',nd,ns,ns,1.0,Gds.A(),Gds.LDA(),Kssinv.A(),Kssinv.LDA(),0.0,GdsKssinv.A(),GdsKssinv.LDA());
+
+//        for (size_t i=0;i<nu;i++)
+//          for (size_t j=0;j<nu;j++)
+//            for (size_t k=0;k<ns;k++)
+//              Cuu(i,j) += KusKssinv(i,k)*Ksu(k,j);
         for (size_t i=0;i<nu;i++)
           for (size_t j=0;j<nd;j++)
             for (size_t k=0;k<ns;k++)
-              Mud(i,j) += KusKssinv(i,k)*Gsd(k,j);
+              Mud(i,j) += -KusKssinv(i,k)*Gsd(k,j);
         for (size_t i=0;i<nd;i++)
           for (size_t j=0;j<nu;j++)
             for (size_t k=0;k<ns;k++)
-              Mdu(i,j) += KdsKssinv(i,k)*Ksu(k,j);
+              Mdu(i,j) += -GdsKssinv(i,k)*Ksu(k,j);
         for (size_t i=0;i<nd;i++)
           for (size_t j=0;j<nd;j++)
             for (size_t k=0;k<ns;k++)
-              Cdd(i,j) += KdsKssinv(i,k)*Gsd(k,j);
+              Cdd(i,j) += -GdsKssinv(i,k)*Gsd(k,j);
+        for (size_t i=0;i<nd;i++)
+          for (size_t j=0;j<ns;j++)
+            rhsd(i) += - GdsKssinv(i,j)*fs(j);
       }
 
 

@@ -1166,7 +1166,7 @@ void SysmatDomain4(
             LINALG::Matrix<nsd,1> rhsint;
             LINALG::Matrix<nsd,1> bodyforce;
             bodyforce.Clear();
-            //bodyforce(0) = 1.0;
+            bodyforce(0) = 1.0;
             for (size_t isd = 0; isd < nsd; ++isd)
                 rhsint(isd) = histvec(isd) + bodyforce(isd)*timefac;
 
@@ -1617,12 +1617,12 @@ void SysmatBoundary4(
             assembler.template Matrix<Velz,Sigmazy>(shp, -timefacfac*normalvec_fluid(1), shp_tau);
             assembler.template Matrix<Velz,Sigmazz>(shp, -timefacfac*normalvec_fluid(2), shp_tau);
 
-            LINALG::Matrix<nsd,1> disctau_times_n;
-            disctau_times_n.Multiply(tau,normalvec_fluid);
+            LINALG::Matrix<nsd,1> disctau_times_nf;
+            disctau_times_nf.Multiply(tau,normalvec_fluid);
             //cout << "sigmaijnj : " << disctau_times_n << endl;
-            assembler.template Vector<Velx>(shp, timefacfac*disctau_times_n(0));
-            assembler.template Vector<Vely>(shp, timefacfac*disctau_times_n(1));
-            assembler.template Vector<Velz>(shp, timefacfac*disctau_times_n(2));
+            assembler.template Vector<Velx>(shp, timefacfac*disctau_times_nf(0));
+            assembler.template Vector<Vely>(shp, timefacfac*disctau_times_nf(1));
+            assembler.template Vector<Velz>(shp, timefacfac*disctau_times_nf(2));
 
 
             if (monolithic_FSI)
@@ -1630,20 +1630,22 @@ void SysmatBoundary4(
                   /*                 \
                - |  v^i , Dtau * n^f  |
                   \                 */
-              patchassembler.template Matrix<Dispx,Sigmaxx>(Gds, shp_iface, timefacfac*normalvec_fluid(0), shp_tau);
-              patchassembler.template Matrix<Dispx,Sigmaxy>(Gds, shp_iface, timefacfac*normalvec_fluid(1), shp_tau);
-              patchassembler.template Matrix<Dispx,Sigmaxz>(Gds, shp_iface, timefacfac*normalvec_fluid(2), shp_tau);
-              patchassembler.template Matrix<Dispy,Sigmayx>(Gds, shp_iface, timefacfac*normalvec_fluid(0), shp_tau);
-              patchassembler.template Matrix<Dispy,Sigmayy>(Gds, shp_iface, timefacfac*normalvec_fluid(1), shp_tau);
-              patchassembler.template Matrix<Dispy,Sigmayz>(Gds, shp_iface, timefacfac*normalvec_fluid(2), shp_tau);
-              patchassembler.template Matrix<Dispz,Sigmazx>(Gds, shp_iface, timefacfac*normalvec_fluid(0), shp_tau);
-              patchassembler.template Matrix<Dispz,Sigmazy>(Gds, shp_iface, timefacfac*normalvec_fluid(1), shp_tau);
-              patchassembler.template Matrix<Dispz,Sigmazz>(Gds, shp_iface, timefacfac*normalvec_fluid(2), shp_tau);
+              patchassembler.template Matrix<Dispx,Sigmaxx>(Gds, shp_iface, -timefacfac*normalvec_solid(0), shp_tau);
+              patchassembler.template Matrix<Dispx,Sigmaxy>(Gds, shp_iface, -timefacfac*normalvec_solid(1), shp_tau);
+              patchassembler.template Matrix<Dispx,Sigmaxz>(Gds, shp_iface, -timefacfac*normalvec_solid(2), shp_tau);
+              patchassembler.template Matrix<Dispy,Sigmayx>(Gds, shp_iface, -timefacfac*normalvec_solid(0), shp_tau);
+              patchassembler.template Matrix<Dispy,Sigmayy>(Gds, shp_iface, -timefacfac*normalvec_solid(1), shp_tau);
+              patchassembler.template Matrix<Dispy,Sigmayz>(Gds, shp_iface, -timefacfac*normalvec_solid(2), shp_tau);
+              patchassembler.template Matrix<Dispz,Sigmazx>(Gds, shp_iface, -timefacfac*normalvec_solid(0), shp_tau);
+              patchassembler.template Matrix<Dispz,Sigmazy>(Gds, shp_iface, -timefacfac*normalvec_solid(1), shp_tau);
+              patchassembler.template Matrix<Dispz,Sigmazz>(Gds, shp_iface, -timefacfac*normalvec_solid(2), shp_tau);
 
+              LINALG::Matrix<nsd,1> disctau_times_ns;
+              disctau_times_ns.Multiply(tau,normalvec_solid);
               //cout << "sigmaijnj : " << disctau_times_n << endl;
-              patchassembler.template Vector<Dispx>(rhsd, shp_iface, -timefacfac*disctau_times_n(0));
-              patchassembler.template Vector<Dispy>(rhsd, shp_iface, -timefacfac*disctau_times_n(1));
-              patchassembler.template Vector<Dispz>(rhsd, shp_iface, -timefacfac*disctau_times_n(2));
+              patchassembler.template Vector<Dispx>(rhsd, shp_iface, timefacfac*disctau_times_ns(0));
+              patchassembler.template Vector<Dispy>(rhsd, shp_iface, timefacfac*disctau_times_ns(1));
+              patchassembler.template Vector<Dispz>(rhsd, shp_iface, timefacfac*disctau_times_ns(2));
             }
 
             // here the interface force is integrated
@@ -1651,9 +1653,9 @@ void SysmatBoundary4(
             // hence, we can't use the local assembler here
             for (size_t inode = 0; inode < numnode_boundary; ++inode)
             {
-              force_boundary(0,inode) += funct_boundary(inode) * (disctau_times_n(0) * timefacfac);
-              force_boundary(1,inode) += funct_boundary(inode) * (disctau_times_n(1) * timefacfac);
-              force_boundary(2,inode) += funct_boundary(inode) * (disctau_times_n(2) * timefacfac);
+              force_boundary(0,inode) += funct_boundary(inode) * (disctau_times_nf(0) * timefacfac);
+              force_boundary(1,inode) += funct_boundary(inode) * (disctau_times_nf(1) * timefacfac);
+              force_boundary(2,inode) += funct_boundary(inode) * (disctau_times_nf(2) * timefacfac);
             }
 
         } // end loop over gauss points

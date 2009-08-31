@@ -1056,7 +1056,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
   residual_->PutScalar(0.0);
 
   // increment of the old iteration step - used for update of condensed element stresses
-  const Teuchos::RCP<Epetra_Vector> oldinc = LINALG::CreateVector(*discret_->DofRowMap(),true);
+  oldinc_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
 
 
   while (stopnonliniter==false)
@@ -1107,7 +1107,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       discret_->SetState("velnm",state_.velnm_);
       discret_->SetState("accn" ,state_.accn_);
 
-      discret_->SetState("nodal increment",oldinc);
+      discret_->SetState("nodal increment",oldinc_);
 
       eleparams.set("interface velocity",cutterdiscret->GetState("ivelcolnp"));
 
@@ -1397,7 +1397,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     state_.velnp_->Update(1.0,*incvel_,1.0);
 
     //------------------- store nodal increment for element stress update
-    oldinc->Update(1.0,*incvel_,0.0);
+    oldinc_->Update(1.0,*incvel_,0.0);
   }
 
   // macht der FSI algorithmus
@@ -1405,6 +1405,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 
   cutterdiscret->SetState("iforcenp", iforcecolnp);
 
+  oldinc_ = Teuchos::null;
   incvel_ = Teuchos::null;
   sysmat_ = Teuchos::null;
 
@@ -1464,7 +1465,13 @@ void FLD::XFluidImplicitTimeInt::Evaluate(
   incvel_->PutScalar(0.0);
 
   // increment of the old iteration step - used for update of condensed element stresses
-  const Teuchos::RCP<Epetra_Vector> oldinc = LINALG::CreateVector(*discret_->DofRowMap(),true);
+  if (oldinc_ == Teuchos::null)
+    oldinc_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
+  else
+  {
+    if (oldinc_->MyLength() != incvel_->MyLength())
+      oldinc_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
+  }
 
 
   // add Neumann loads
@@ -1500,7 +1507,7 @@ void FLD::XFluidImplicitTimeInt::Evaluate(
   discret_->SetState("velnm",state_.velnm_);
   discret_->SetState("accn" ,state_.accn_);
 
-  discret_->SetState("nodal increment",oldinc);
+  discret_->SetState("nodal increment",oldinc_);
 
   // reset interface force and let the elements fill it
   eleparams.set("interface force",iforcecolnp);
@@ -1539,6 +1546,14 @@ void FLD::XFluidImplicitTimeInt::Evaluate(
   // conditions
   incvel_->PutScalar(0.0);
   LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(dbcmaps_->CondMap()));
+
+  //------------------- store nodal increment for element stress update
+  oldinc_->Update(1.0,*incvel_,0.0);
+
+  // macht der FSI algorithmus
+  iforcecolnp->Scale(-ResidualScaling());
+
+  cutterdiscret->SetState("iforcenp", iforcecolnp);
 }
 
 
@@ -1605,6 +1620,8 @@ void FLD::XFluidImplicitTimeInt::TimeUpdate()
       state_.velnp_, state_.veln_, state_.velnm_, state_.accn_,
           timealgo_, step_, theta_, dta_, dtp_,
           state_.accnp_);
+
+  oldinc_= Teuchos::null;
 
   return;
 }// FluidImplicitTimeInt::TimeUpdate

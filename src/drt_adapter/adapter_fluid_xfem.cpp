@@ -92,6 +92,13 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::FluidXFEM::DofRowMap()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidXFEM::InitialGuess()
+{
+  return FluidField().InitialGuess();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidXFEM::RHS()
 {
   return FluidField().RHS();
@@ -254,6 +261,21 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::FluidXFEM::CreateFieldTest()
 {
   //dserror("not implemented yet!");
   return FluidField().CreateFieldTest();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FluidXFEM::DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx)
+{
+  FluidField().DisplacementToVelocity(fcx);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FluidXFEM::VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx)
+{
+  FluidField().VelocityToDisplacement(fcx);
 }
 
 

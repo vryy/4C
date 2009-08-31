@@ -96,13 +96,47 @@ namespace FSI
     /// outer level FSI time loop
     void Timeloop();
 
+
+    /// Extract initial guess from fields
+    virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> ig);
+
+    /// the composed system matrix
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const { return systemmatrix_; }
+
+    /// extract the two field vectors from a given composed vector
+    /*!
+      We are dealing with NOX here, so we get absolute values. x is the sum of
+      all increments up to this point.
+
+      \param x  (i) composed vector that contains all field vectors
+      \param sx (o) structural displacements
+      \param fx (o) fluid velocities and pressure
+     */
+    void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
+                             Teuchos::RCP<const Epetra_Vector>& sx,
+                             Teuchos::RCP<const Epetra_Vector>& fx);
+
+
   private:
+
+    void SetupVector(
+        Epetra_Vector &f,
+        Teuchos::RCP<const Epetra_Vector> sv,
+        Teuchos::RCP<const Epetra_Vector> fv,
+        double fluidscale);
+
+    const MonolithicXFEMExtractor& Extractor(){return *extractor_;};
 
     void Newton();
     void Evaluate();
-    void SetupRHS();
-    bool ConverganceTest();
+    /// setup composed right hand side from field solvers
+    void SetupRHS(bool firstcall=false);
+
+    /// setup composed system matrix from field solvers
     void SetupSystemMatrix();
+
+    bool ConverganceTest();
+
     void LinearSolve();
 
     Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<Epetra_Vector> iv);
@@ -112,7 +146,7 @@ namespace FSI
 
     Teuchos::RCP<Epetra_Vector> rhs_;
     Teuchos::RCP<Epetra_Vector> x_;
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> matrix_;
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_;
   };
 
 }

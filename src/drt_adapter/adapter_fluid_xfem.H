@@ -45,6 +45,7 @@ namespace ADAPTER
 
     virtual void PrepareTimeStep();
     void Evaluate(Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<const Epetra_Vector> vel);
+    Teuchos::RCP<const Epetra_Vector> InitialGuess();
     Teuchos::RCP<const Epetra_Vector> RHS();
     Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
     std::map<std::string,Teuchos::RCP<LINALG::SparseMatrix> > CouplingMatrices();
@@ -66,6 +67,9 @@ namespace ADAPTER
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln();
 
     Teuchos::RCP<const Epetra_Map> DofRowMap();
+
+    void DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx);
+    void VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx);
 
     double ResidualScaling() { return FluidField().ResidualScaling(); }
     double TimeScaling() { return FluidField().TimeScaling(); }
