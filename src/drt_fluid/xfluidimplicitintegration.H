@@ -223,6 +223,7 @@ public:
 
   Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_); }
   std::map<std::string, Teuchos::RCP<LINALG::SparseMatrix> > CouplingMatrices();
+  std::map<std::string, Teuchos::RCP<Epetra_Vector> > CouplingVectors();
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_); }
   Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
   Teuchos::RCP<Epetra_Vector> RobinRHS() { return robinrhs_; }
@@ -477,6 +478,10 @@ protected:
 
   /// Nonlinear iteration increment vector
   Teuchos::RCP<Epetra_Vector>    incvel_;
+
+  Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih_n_;
+
+  Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih_np_;
 
   /// this struct holds all state vectors needed for time integration
   ///

@@ -448,6 +448,9 @@ void FLD::XFluidImplicitTimeInt::TimeLoop(
 void FLD::XFluidImplicitTimeInt::PrepareTimeStep()
 {
 
+  // update interface handle
+  ih_n_ = ih_np_;
+
   // update old acceleration
   if (state_.accn_ != Teuchos::null)
     state_.accn_->Update(1.0,*state_.accnp_,0.0);
@@ -602,19 +605,18 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInter
   // before and after this function, it's ok to do that
 
   // compute Intersection
-  const Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih =
-    rcp(new XFEM::InterfaceHandleXFSI(discret_, cutterdiscret));
-  ih->toGmsh(step_);
+  ih_np_ = rcp(new XFEM::InterfaceHandleXFSI(discret_, cutterdiscret));
+  ih_np_->toGmsh(step_);
 
   // apply enrichments
   const Teuchos::RCP<XFEM::DofManager> dofmanager =
-      rcp(new XFEM::DofManager(ih, physprob_.fieldset_, *physprob_.elementAnsatzp_, xparams_));
+      rcp(new XFEM::DofManager(ih_np_, physprob_.fieldset_, *physprob_.elementAnsatzp_, xparams_));
 
   // save dofmanager to be able to plot Gmsh stuff in Output()
   dofmanagerForOutput_ = dofmanager;
 
   // tell elements about the dofs and the integration
-  TransferDofInformationToElements(ih, dofmanager);
+  TransferDofInformationToElements(ih_np_, dofmanager);
 
   // print global and element dofmanager to Gmsh
   dofmanager->toGmsh(step_);
@@ -634,7 +636,7 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInter
 
     // create switcher
     const XFEM::DofDistributionSwitcher dofswitch(
-            ih, dofmanager,
+            ih_np_, dofmanager,
             olddofrowmap, newdofrowmap,
             oldNodalDofDistributionMap, state_.nodalDofDistributionMap_,
             oldElementalDofDistributionMap, state_.elementalDofDistributionMap_
@@ -804,7 +806,7 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInter
 
   cout0_ << "Setup phase done!" << endl;
 
-  return ih;
+  return ih_np_;
 }
 
 
@@ -1567,6 +1569,16 @@ std::map<std::string, Teuchos::RCP<LINALG::SparseMatrix> > FLD::XFluidImplicitTi
   matrices.insert(make_pair("Mdu",Mdu_));
   matrices.insert(make_pair("Cdd",Cdd_));
   return matrices;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+std::map<std::string, Teuchos::RCP<Epetra_Vector> > FLD::XFluidImplicitTimeInt::CouplingVectors()
+{
+  std::map<std::string, Teuchos::RCP<Epetra_Vector> > vectors;
+  vectors.insert(make_pair("rhsd",RHSd_));
+  return vectors;
 }
 
 
