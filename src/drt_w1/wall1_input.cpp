@@ -118,10 +118,11 @@ bool DRT::ELEMENTS::Wall1::ReadElement(const std::string& eletype,
     eastype_ = eas_vague;
   }
 
-  linedef->ExtractString("STRESSES",buffer);
-  if      (buffer=="XY")       stresstype_ = w1_xy;
-  else if (buffer=="RS")       stresstype_ = w1_rs;
-  else dserror("Reading of WALL1 element failed");
+  stresstype_ = w1_xy;
+//   linedef->ExtractString("STRESSES",buffer);
+//   if      (buffer=="XY")       stresstype_ = w1_xy;
+//   else if (buffer=="RS")       stresstype_ = w1_rs;
+//   else dserror("Reading of WALL1 element failed");
 
   return true;
 }

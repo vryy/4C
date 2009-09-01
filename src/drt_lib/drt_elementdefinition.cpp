@@ -867,7 +867,7 @@ void DRT::INPUT::ElementDefinition::SetupWallLines()
     .AddString("STRESS_STRAIN")
     .AddString("LAGRANGE")
     .AddString("EAS")
-    .AddNamedString("STRESSES")
+    //.AddNamedString("STRESSES")
     ;
 
   defs["QUAD8"]
@@ -878,7 +878,7 @@ void DRT::INPUT::ElementDefinition::SetupWallLines()
     .AddString("STRESS_STRAIN")
     .AddString("LAGRANGE")
     .AddString("EAS")
-    .AddNamedString("STRESSES")
+    //.AddNamedString("STRESSES")
     ;
 
   defs["QUAD9"]
@@ -889,7 +889,7 @@ void DRT::INPUT::ElementDefinition::SetupWallLines()
     .AddString("STRESS_STRAIN")
     .AddString("LAGRANGE")
     .AddString("EAS")
-    .AddNamedString("STRESSES")
+    //.AddNamedString("STRESSES")
     ;
 
   defs["TRI3"]
@@ -900,7 +900,7 @@ void DRT::INPUT::ElementDefinition::SetupWallLines()
     .AddString("STRESS_STRAIN")
     .AddString("LAGRANGE")
     .AddString("EAS")
-    .AddNamedString("STRESSES")
+    //.AddNamedString("STRESSES")
     ;
 
   defs["TRI6"]
@@ -911,7 +911,7 @@ void DRT::INPUT::ElementDefinition::SetupWallLines()
     .AddString("STRESS_STRAIN")
     .AddString("LAGRANGE")
     .AddString("EAS")
-    .AddNamedString("STRESSES")
+    //.AddNamedString("STRESSES")
     ;
 
   defs["NURBS4"]
@@ -922,7 +922,7 @@ void DRT::INPUT::ElementDefinition::SetupWallLines()
     .AddString("STRESS_STRAIN")
     .AddString("LAGRANGE")
     .AddString("EAS")
-    .AddNamedString("STRESSES")
+    //.AddNamedString("STRESSES")
     ;
 
   defs["NURBS9"]
@@ -933,7 +933,7 @@ void DRT::INPUT::ElementDefinition::SetupWallLines()
     .AddString("STRESS_STRAIN")
     .AddString("LAGRANGE")
     .AddString("EAS")
-    .AddNamedString("STRESSES")
+    //.AddNamedString("STRESSES")
     ;
 }
 
