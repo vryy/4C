@@ -14,7 +14,7 @@ Input/strufem_shell8_eas_cantilever.dat                 x        x        x     
 Input/strufem_hex8_eas_cantilever.dat                   x        x        x        -        -        -
 Input/strufem_sosh8_eas_cantilever.dat                  x        x        x        -        -        -
 Input/strufem_tet4_disp_cantilever.dat                  x        x        x        -        -        -
-Input/strufem_ptet_disp_cantilever.dat                  x        x        x        -        -        -
+Input/strufem_ptet4_disp_cantilever.dat                 x        x        x        -        -        -
 Input/strufem_tet10_disp_cantilever.dat                 x        x        x        -        -        -
 Input/strufem_wedge6_disp_cantilever.dat                x        x        x        -        -        -
 Input/disp_control.dat                                  x        x        x        -        -        -
