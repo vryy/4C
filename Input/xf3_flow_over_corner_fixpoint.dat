@@ -9919,7 +9919,7 @@ NODE         1882     COORD 0.000000000000000e+00     1.000000000000000e+00     
 NODE         1883     COORD 0.000000000000000e+00     1.000000000000000e+00     0.000000000000000e+00
 ----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
-   1153 SOLID3 HEX8     426   1119   1206    524      1    427    525      2 MAT       2 GP 3 0 0 KINEM Totlag STRESS None TSI_COUPTYP None
+   1153 SOLID3 HEX8     426   1119   1206    524      1    427    525      2 MAT       2 GP 3 0 0 GP_PYRAMID 0 GP_TET 0 GP_ALT standard KINEM Totlag STRESS None TSI_COUPTYP None
 ----------------------------------------------------FLUID ELEMENTS
       1 XFLUID3 HEX8    1870   1879   1882   1876   1871   1880   1883   1877 MAT       1
       2 XFLUID3 HEX8    1858   1870   1876   1867   1859   1871   1877   1868 MAT       1
