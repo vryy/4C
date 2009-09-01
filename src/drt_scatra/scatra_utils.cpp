@@ -138,6 +138,7 @@ void SCATRA::CreateScaTraDiscretization(
   INPAR::MAT::MaterialType mtype = DRT::Problem::Instance()->Materials()->ById(matid)->Type();
   if ((mtype != INPAR::MAT::m_condif) &&
       (mtype != INPAR::MAT::m_sutherland_condif) &&
+      (mtype != INPAR::MAT::m_arrhenius_pv) &&
       (mtype != INPAR::MAT::m_matlist))
     dserror("Material with ID %d is not admissible for scalar transport elements",matid);
 
