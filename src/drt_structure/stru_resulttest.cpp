@@ -26,10 +26,10 @@ Maintainer: Moritz Frenzel
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-StruResultTest::StruResultTest(RefCountPtr<DRT::Discretization> strudis_in,
-                               RefCountPtr<Epetra_Vector> dis,
-                               RefCountPtr<Epetra_Vector> vel,
-                               RefCountPtr<Epetra_Vector> acc)
+StruResultTest::StruResultTest(RCP<DRT::Discretization> strudis_in,
+                               RCP<Epetra_Vector> dis,
+                               RCP<Epetra_Vector> vel,
+                               RCP<Epetra_Vector> acc)
 {
   strudisc_ = strudis_in;
   dis_ = dis;
@@ -59,16 +59,21 @@ StruResultTest::StruResultTest(STR::TimInt& tintegrator)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void StruResultTest::TestNode(const _RESULTDESCR* res, int& nerr, int& test_count)
+void StruResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
-  if (res->dis != 0)
+  int dis;
+  res.ExtractInt("DIS",dis);
+  if (dis != 1)
     dserror("fix me: only one structure discretization supported for testing");
 
   /* this implementation does not allow testing of stresses
    */
-  if (strudisc_->HaveGlobalNode(res->node))
+  int node;
+  res.ExtractInt("NODE",node);
+  node -= 1;
+  if (strudisc_->HaveGlobalNode(node))
   {
-    const DRT::Node* actnode = strudisc_->gNode(res->node);
+    const DRT::Node* actnode = strudisc_->gNode(node);
 
     // Strange! It seems we might actually have a global node around
     // even if it does not belong to us. But here we are just
@@ -79,7 +84,8 @@ void StruResultTest::TestNode(const _RESULTDESCR* res, int& nerr, int& test_coun
     // verbose output
     //cout << "TESTING STRUCTURE RESULTS with StruResultTest::TestNode(..)" << endl;
 
-    const string position = res->position;  // type of result value
+    string position;
+    res.ExtractString("POSITION",position);
     bool unknownpos = true;  // make sure the result value string can be handled
     double result = 0.0;  // will hold the actual result of run
 
@@ -175,11 +181,9 @@ void StruResultTest::TestNode(const _RESULTDESCR* res, int& nerr, int& test_coun
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool StruResultTest::Match(const _RESULTDESCR* res)
+bool StruResultTest::Match(DRT::INPUT::LineDefinition& res)
 {
-  /* res.field is a enum of type _FIELDTYP and can be found in headers/enums.h
-   */
-  return res->field==structure;
+  return res.HaveNamed("STRUCTURE");
 }
 
 

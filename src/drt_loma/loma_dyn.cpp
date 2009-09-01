@@ -87,9 +87,8 @@ void loma_dyn(int disnumff,int disnumscatra, int restart)
     (scatraonly->ScaTraField()).TimeLoop();
 
     // perform the result test if required
-    DRT::ResultTestManager testmanager(comm);
-    testmanager.AddFieldTest(scatraonly->CreateScaTraFieldTest());
-    testmanager.TestAll();
+    DRT::Problem::Instance()->AddFieldTest(scatraonly->CreateScaTraFieldTest());
+    DRT::Problem::Instance()->TestAll(comm);
 
     break;
   }
@@ -137,10 +136,9 @@ void loma_dyn(int disnumff,int disnumscatra, int restart)
     Teuchos::TimeMonitor::summarize();
 
     // perform the result test
-    DRT::ResultTestManager testmanager(comm);
-    testmanager.AddFieldTest(loma->FluidField().CreateFieldTest());
-    testmanager.AddFieldTest(loma->CreateScaTraFieldTest());
-    testmanager.TestAll();
+    DRT::Problem::Instance()->AddFieldTest(loma->FluidField().CreateFieldTest());
+    DRT::Problem::Instance()->AddFieldTest(loma->CreateScaTraFieldTest());
+    DRT::Problem::Instance()->TestAll(comm);
 
     break;
   } // case 2

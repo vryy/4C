@@ -106,9 +106,8 @@ void dyn_ale_drt()
   ale.Integrate();
 
   // do the result test
-  DRT::ResultTestManager testmanager(actdis->Comm());
-  testmanager.AddFieldTest(rcp(new ALE::AleResultTest(ale)));
-  testmanager.TestAll();
+  DRT::Problem::Instance()->AddFieldTest(rcp(new ALE::AleResultTest(ale)));
+  DRT::Problem::Instance()->TestAll(actdis->Comm());
 }
 
 

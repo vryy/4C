@@ -105,9 +105,6 @@ void ntainp_ccadiscret()
 
   // the one and only Fillcomplete should be here (reader.Complete()) gee 09/08
 
-  /*---------------------------------------- input of result descriptions */
-  inp_resultdescr();
-
   // all reading is done at this point!
 
   // create control file for output and read restart data if required

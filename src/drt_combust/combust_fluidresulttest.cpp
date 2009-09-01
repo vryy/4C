@@ -37,14 +37,20 @@ FLD::CombustFluidResultTest::CombustFluidResultTest(CombustFluidImplicitTimeInt&
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FLD::CombustFluidResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& test_count)
+void FLD::CombustFluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
-  if (res->dis != 0)
+  int dis;
+  res.ExtractInt("DIS",dis);
+  if (dis != 1)
     dserror("fix me: only one fluid discretization supported for testing");
 
-  if (fluiddis_->HaveGlobalNode(res->node))
+  int node;
+  res.ExtractInt("NODE",node);
+  node -= 1;
+
+  if (fluiddis_->HaveGlobalNode(node))
   {
-    DRT::Node* actnode = fluiddis_->gNode(res->node);
+    DRT::Node* actnode = fluiddis_->gNode(node);
 
     // Strange! It seems we might actually have a global node around
     // even if it does not belong to us. But here we are just
@@ -59,7 +65,8 @@ void FLD::CombustFluidResultTest::TestNode(const RESULTDESCR* res, int& nerr, in
     const int numdim = DRT::Problem::Instance()->ProblemSizeParams().get<int>("DIM");
 
     // TODO: use the Dofmanager here
-    const string position = res->position;
+    std::string position;
+    res.ExtractString("POSITION",position);
     if (position=="velx")
     {
       result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(actnode,0))];
@@ -100,9 +107,9 @@ void FLD::CombustFluidResultTest::TestNode(const RESULTDESCR* res, int& nerr, in
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool FLD::CombustFluidResultTest::Match(const RESULTDESCR* res)
+bool FLD::CombustFluidResultTest::Match(DRT::INPUT::LineDefinition& res)
 {
-  return res->field==fluid;
+  return res.HaveNamed("FLUID");
 }
 
 

@@ -82,9 +82,8 @@ void scatra_dyn(int disnumff, int disnumscatra, int restart)
       (scatraonly->ScaTraField()).TimeLoop();
 
       // perform the result test if required
-      DRT::ResultTestManager testmanager(comm);
-      testmanager.AddFieldTest(scatraonly->CreateScaTraFieldTest());
-      testmanager.TestAll();
+      DRT::Problem::Instance()->AddFieldTest(scatraonly->CreateScaTraFieldTest());
+      DRT::Problem::Instance()->TestAll(comm);
 
       break;
     }
@@ -137,10 +136,9 @@ void scatra_dyn(int disnumff, int disnumscatra, int restart)
       Teuchos::TimeMonitor::summarize();
 
       // perform the result test
-      DRT::ResultTestManager testmanager(comm);
-      testmanager.AddFieldTest(algo->FluidField().CreateFieldTest());
-      testmanager.AddFieldTest(algo->CreateScaTraFieldTest());
-      testmanager.TestAll();
+      DRT::Problem::Instance()->AddFieldTest(algo->FluidField().CreateFieldTest());
+      DRT::Problem::Instance()->AddFieldTest(algo->CreateScaTraFieldTest());
+      DRT::Problem::Instance()->TestAll(comm);
 
       break;
     } // case 2

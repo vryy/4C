@@ -44,16 +44,10 @@ public:
   //!
   //! Possible position flags are "temp",
   //!                             "rate",
-  virtual void TestNode(const _RESULTDESCR* res, int& nerr, int& test_count);
+  virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
   //! return true if this is a thermo test
-  virtual bool Match(const _RESULTDESCR*);
-
-  /* _RESULTDESCR has been found working, but its exact function is unknown due to
-   * missing documentation
-   * REMARK: _RESULTDESCR is documented in headers/standardtypes.h ,  but should be changed to OO
-   * and moved to a propper place :)
-   */
+  virtual bool Match(DRT::INPUT::LineDefinition& res);
 
 private:
 

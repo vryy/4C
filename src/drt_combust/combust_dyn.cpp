@@ -144,10 +144,9 @@ void combust_dyn()
   Teuchos::TimeMonitor::summarize();
 
   // perform the result test
-  DRT::ResultTestManager testmanager(comm);
-  testmanager.AddFieldTest(combust_->FluidField().CreateFieldTest());
-  testmanager.AddFieldTest(combust_->CreateScaTraFieldTest());
-  testmanager.TestAll();
+  DRT::Problem::Instance()->AddFieldTest(combust_->FluidField().CreateFieldTest());
+  DRT::Problem::Instance()->AddFieldTest(combust_->CreateScaTraFieldTest());
+  DRT::Problem::Instance()->TestAll(comm);
 
   return;
 

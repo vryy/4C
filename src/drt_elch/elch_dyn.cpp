@@ -92,9 +92,8 @@ void elch_dyn(int disnumff,int disnumscatra,int disnumale,int restart)
     (scatraonly->ScaTraField()).TimeLoop();
 
     // perform the result test if required
-    DRT::ResultTestManager testmanager(comm);
-    testmanager.AddFieldTest(scatraonly->CreateScaTraFieldTest());
-    testmanager.TestAll();
+    DRT::Problem::Instance()->AddFieldTest(scatraonly->CreateScaTraFieldTest());
+    DRT::Problem::Instance()->TestAll(comm);
 
     break;
   }
@@ -171,10 +170,9 @@ void elch_dyn(int disnumff,int disnumscatra,int disnumale,int restart)
       Teuchos::TimeMonitor::summarize();
 
       // perform the result test
-      DRT::ResultTestManager testmanager(comm);
-      testmanager.AddFieldTest(elch->FluidField().CreateFieldTest());
-      testmanager.AddFieldTest(elch->CreateScaTraFieldTest());
-      testmanager.TestAll();
+      DRT::Problem::Instance()->AddFieldTest(elch->FluidField().CreateFieldTest());
+      DRT::Problem::Instance()->AddFieldTest(elch->CreateScaTraFieldTest());
+      DRT::Problem::Instance()->TestAll(comm);
     }
     else
     {
@@ -191,10 +189,9 @@ void elch_dyn(int disnumff,int disnumscatra,int disnumale,int restart)
       Teuchos::TimeMonitor::summarize();
 
       // perform the result test
-      DRT::ResultTestManager testmanager(comm);
-      testmanager.AddFieldTest(elch->FluidField().CreateFieldTest());
-      testmanager.AddFieldTest(elch->CreateScaTraFieldTest());
-      testmanager.TestAll();
+      DRT::Problem::Instance()->AddFieldTest(elch->FluidField().CreateFieldTest());
+      DRT::Problem::Instance()->AddFieldTest(elch->CreateScaTraFieldTest());
+      DRT::Problem::Instance()->TestAll(comm);
     }
 
     break;

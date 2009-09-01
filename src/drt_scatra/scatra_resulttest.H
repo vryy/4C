@@ -44,10 +44,10 @@ public:
   /*!
     Possible position flags is only "phi"
    */
-  virtual void TestNode(const RESULTDESCR* res, int& nerr, int& test_count);
+  virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
   /// return true if this is a scalar transport test
-  virtual bool Match(const RESULTDESCR* res);
+  virtual bool Match(DRT::INPUT::LineDefinition& res);
 
 private:
 

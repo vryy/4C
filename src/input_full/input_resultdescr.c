@@ -14,6 +14,8 @@ Maintainer: Ulrich Kuettler
 
 */
 
+#ifndef CCADISCRET
+
 #include "../headers/standardtypes.h"
 
 extern struct _FILES allfiles;
@@ -171,3 +173,4 @@ end:
 #endif
   return;
 }
+#endif

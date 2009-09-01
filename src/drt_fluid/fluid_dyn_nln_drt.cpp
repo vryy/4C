@@ -276,9 +276,8 @@ void dyn_fluid_drt()
 			fluidimplicit.Integrate();
 
 			// do result test if required
-			DRT::ResultTestManager testmanager(actdis->Comm());
-			testmanager.AddFieldTest(rcp(new FLD::FluidResultTest(fluidimplicit)));
-			testmanager.TestAll();
+			DRT::Problem::Instance()->AddFieldTest(rcp(new FLD::FluidResultTest(fluidimplicit)));
+			DRT::Problem::Instance()->TestAll(actdis->Comm());
 		}
 		break;
 		case fluid_solver_pressurecorrection:
@@ -330,9 +329,8 @@ void dyn_fluid_drt()
 			fluidprojectionmethod.Integrate();
 
 			// do result test if required
-			DRT::ResultTestManager testmanager(actdis->Comm());
-			testmanager.AddFieldTest(rcp(new FLD::FluidResultTest(fluidprojectionmethod)));
-			testmanager.TestAll();
+			DRT::Problem::Instance()->AddFieldTest(rcp(new FLD::FluidResultTest(fluidprojectionmethod)));
+			DRT::Problem::Instance()->TestAll(actdis->Comm());
 		}
 		break;
 		default:
@@ -380,9 +378,8 @@ void dyn_fluid_drt()
 		genalphaint.GenAlphaTimeloop();
 
 		// do result test if required
-		DRT::ResultTestManager testmanager(actdis->Comm());
-		testmanager.AddFieldTest(rcp(new FLD::FluidResultTest(genalphaint)));
-		testmanager.TestAll();
+		DRT::Problem::Instance()->AddFieldTest(rcp(new FLD::FluidResultTest(genalphaint)));
+		DRT::Problem::Instance()->TestAll(actdis->Comm());
 
 	}
 	else

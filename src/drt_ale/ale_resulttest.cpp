@@ -26,14 +26,20 @@ ALE::AleResultTest::AleResultTest(ALE::AleLinear& ale)
 {
 }
 
-void ALE::AleResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& test_count)
+void ALE::AleResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
-  if (res->dis != 0)
+  int dis;
+  res.ExtractInt("DIS",dis);
+  if (dis != 1)
     dserror("fix me: only one ale discretization supported for testing");
 
-  if (ale_.discret_->HaveGlobalNode(res->node))
+  int node;
+  res.ExtractInt("NODE",node);
+  node -= 1;
+
+  if (ale_.discret_->HaveGlobalNode(node))
   {
-    DRT::Node* actnode = ale_.discret_->gNode(res->node);
+    DRT::Node* actnode = ale_.discret_->gNode(node);
 
     // Strange! It seems we might actually have a global node around
     // even if it does not belong to us. But here we are just
@@ -45,7 +51,8 @@ void ALE::AleResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& test_c
 
     const Epetra_BlockMap& dispnpmap = ale_.dispnp_->Map();
 
-    string position = res->position;
+    std::string position;
+    res.ExtractString("POSITION",position);
     if (position=="dispx")
     {
       result = (*ale_.dispnp_)[dispnpmap.LID(ale_.discret_->Dof(actnode,0))];
@@ -68,9 +75,9 @@ void ALE::AleResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& test_c
   }
 }
 
-bool ALE::AleResultTest::Match(const RESULTDESCR* res)
+bool ALE::AleResultTest::Match(DRT::INPUT::LineDefinition& res)
 {
-  return res->field==ale;
+  return res.HaveNamed("ALE");
 }
 
 #endif

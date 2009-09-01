@@ -153,7 +153,7 @@ void dyn_nlnstructural_drt()
       StruGenAlpha::SetDefaults(genalphaparams);
 
       genalphaparams.set<string>("DYNAMICTYP",sdyn.get<string>("DYNAMICTYP"));
-      
+
       INPAR::STR::ControlType controltype = Teuchos::getIntegralValue<INPAR::STR::ControlType>(sdyn,"CONTROLTYPE");
       genalphaparams.set<INPAR::STR::ControlType>("CONTROLTYPE",controltype);
 
@@ -168,13 +168,13 @@ void dyn_nlnstructural_drt()
         genalphaparams.set("CONTROLDOF",controlnode[1]);
         genalphaparams.set("CONTROLCURVE",controlnode[2]);
       }
-      
+
       {
         // use linearization of follower loads in Newton
         int loadlin = Teuchos::getIntegralValue<int>(sdyn,"LOADLIN");
         genalphaparams.set<bool>("LOADLIN",loadlin!=0);
       }
-  
+
       // Rayleigh damping
       genalphaparams.set<bool>  ("damping",(not (sdyn.get<std::string>("DAMPING") == "no"
                                                  or sdyn.get<std::string>("DAMPING") == "No"
@@ -401,9 +401,8 @@ void dyn_nlnstructural_drt()
 
       // test results
       {
-        DRT::ResultTestManager testmanager(actdis->Comm());
-        testmanager.AddFieldTest(rcp(new StruResultTest(*tintegrator)));
-        testmanager.TestAll();
+        DRT::Problem::Instance()->AddFieldTest(rcp(new StruResultTest(*tintegrator)));
+        DRT::Problem::Instance()->TestAll(actdis->Comm());
       }
 
     }

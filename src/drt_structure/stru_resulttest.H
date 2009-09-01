@@ -36,10 +36,10 @@ class StruResultTest : public DRT::ResultTest
 public:
   //! constructor
   StruResultTest(
-    RefCountPtr<DRT::Discretization> strudis_in,  //!< structure discretisation
-    RefCountPtr<Epetra_Vector> dis,  //!< displacements to test
-    RefCountPtr<Epetra_Vector> vel,  //!< velocities to test
-    RefCountPtr<Epetra_Vector> acc  //!< accelerations to test
+    RCP<DRT::Discretization> strudis_in,  //!< structure discretisation
+    RCP<Epetra_Vector> dis,  //!< displacements to test
+    RCP<Epetra_Vector> vel,  //!< velocities to test
+    RCP<Epetra_Vector> acc  //!< accelerations to test
   );
 
   //! constructor to use when timeintegrator is generalized alpha!
@@ -54,28 +54,22 @@ public:
   //! Possible position flags are "dispx", "dispy", "dispz",
   //!                             "velx", "vely", "velz",
   //!                             "accx", "accy", "accz"
-  virtual void TestNode(const _RESULTDESCR* res, int& nerr, int& test_count);
+  virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
   //! return true if this is a structure test
-  virtual bool Match(const _RESULTDESCR*);
-
-  /* _RESULTDESCR has been found working, but its exact function is unknown due to
-   * missing documentation
-   * REMARK: _RESULTDESCR is documented in headers/standardtypes.h ,  but should be changed to OO
-   * and moved to a propper place :)
-   */
+  virtual bool Match(DRT::INPUT::LineDefinition& res);
 
 private:
 
   //! our discretisation
-  RefCountPtr<DRT::Discretization> strudisc_;
+  RCP<DRT::Discretization> strudisc_;
   // our solution
   //! global displacement DOFs
-  RefCountPtr<Epetra_Vector> dis_;
+  RCP<Epetra_Vector> dis_;
   //! global velocity DOFs
-  RefCountPtr<Epetra_Vector> vel_;
+  RCP<Epetra_Vector> vel_;
   //! global acceleration DOFs
-  RefCountPtr<Epetra_Vector> acc_;
+  RCP<Epetra_Vector> acc_;
   /* NOTE: these have to be present explicitly
    * as they are not part of the problem instance like in fluid3
    */

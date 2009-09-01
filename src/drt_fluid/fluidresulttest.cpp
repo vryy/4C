@@ -53,14 +53,20 @@ FLD::FluidResultTest::FluidResultTest(FluidGenAlphaIntegration& fluid)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FLD::FluidResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& test_count)
+void FLD::FluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
-    if (res->dis != 0)
+  int dis;
+  res.ExtractInt("DIS",dis);
+  if (dis != 1)
         dserror("fix me: only one fluid discretization supported for testing");
 
-    if (fluiddis_->HaveGlobalNode(res->node))
+  int node;
+  res.ExtractInt("NODE",node);
+  node -= 1;
+
+    if (fluiddis_->HaveGlobalNode(node))
     {
-        const DRT::Node* actnode = fluiddis_->gNode(res->node);
+        const DRT::Node* actnode = fluiddis_->gNode(node);
 
         // Test only, if actnode is a row node
         if (actnode->Owner() != fluiddis_->Comm().MyPID())
@@ -72,7 +78,8 @@ void FLD::FluidResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& test
 
         const int numdim = DRT::Problem::Instance()->ProblemSizeParams().get<int>("DIM");
 
-        const string position = res->position;
+    std::string position;
+    res.ExtractString("POSITION",position);
         if (position=="velx")
         {
             result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(actnode,0))];
@@ -125,9 +132,9 @@ void FLD::FluidResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& test
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool FLD::FluidResultTest::Match(const RESULTDESCR* res)
+bool FLD::FluidResultTest::Match(DRT::INPUT::LineDefinition& res)
 {
-    return res->field==fluid;
+  return res.HaveNamed("FLUID");
 }
 
 

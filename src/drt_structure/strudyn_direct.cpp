@@ -181,12 +181,11 @@ void STR::strudyn_direct()
 
   // test results
   {
-    DRT::ResultTestManager testmanager(actdis->Comm());
     if (sti != Teuchos::null)
-      testmanager.AddFieldTest(Teuchos::rcp(new StruResultTest(*sti)));
+      DRT::Problem::Instance()->AddFieldTest(Teuchos::rcp(new StruResultTest(*sti)));
     else if (asti != Teuchos::null)
-      testmanager.AddFieldTest(asti->CreateFieldTest());
-    testmanager.TestAll();
+      DRT::Problem::Instance()->AddFieldTest(asti->CreateFieldTest());
+    DRT::Problem::Instance()->TestAll(actdis->Comm());
   }
 
   // done

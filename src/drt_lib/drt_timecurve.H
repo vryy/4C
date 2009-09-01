@@ -118,6 +118,7 @@ namespace UTILS {
 
     TimeCurveManager() {}
 
+    /// Definition of valid input section
     Teuchos::RCP<DRT::INPUT::Lines> ValidTimeCurveLines();
 
     /// read the baci input file and set up all curves

@@ -36,15 +36,21 @@ THR::ResultTest::ResultTest(TimInt& tintegrator)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void THR::ResultTest::TestNode(const _RESULTDESCR* res, int& nerr, int& test_count)
+void THR::ResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
-  if (res->dis != 0)
+  int dis;
+  res.ExtractInt("DIS",dis);
+  if (dis != 1)
     dserror("fix me: only one structure discretization supported for testing");
 
+  int node;
+  res.ExtractInt("NODE",node);
+  node -= 1;
+
   // this implementation does not allow testing of heatfluxes
-  if (thrdisc_->HaveGlobalNode(res->node))
+  if (thrdisc_->HaveGlobalNode(node))
   {
-    const DRT::Node* actnode = thrdisc_->gNode(res->node);
+    const DRT::Node* actnode = thrdisc_->gNode(node);
 
     // Strange! It seems we might actually have a global node around
     // even if it does not belong to us. But here we are just
@@ -55,7 +61,8 @@ void THR::ResultTest::TestNode(const _RESULTDESCR* res, int& nerr, int& test_cou
     // verbose output
     //cout << "TESTING THERMAL RESULTS with THR::ResultTest::TestNode(..)" << endl;
 
-    const std::string position = res->position;  // type of result value
+    std::string position;
+    res.ExtractString("POSITION",position);
     bool unknownpos = true;  // make sure the result value string can be handled
     double result = 0.0;  // will hold the actual result of run
 
@@ -104,11 +111,11 @@ void THR::ResultTest::TestNode(const _RESULTDESCR* res, int& nerr, int& test_cou
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool THR::ResultTest::Match(const _RESULTDESCR* res)
+bool THR::ResultTest::Match(DRT::INPUT::LineDefinition& res)
 {
   /* res.field is a enum of type _FIELDTYP and can be found in headers/enums.h
    */
-  return (res->field == thermal);
+  return (res.HaveNamed("THERMAL"));
 }
 
 

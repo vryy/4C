@@ -18,12 +18,16 @@ Maintainer: Ulrich Kuettler
 
 #ifdef CCADISCRET
 
+#ifdef __cplusplus
+
 #include <Epetra_Comm.h>
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 
 #include <vector>
 
-struct _RESULTDESCR;
+#include "drt_inputreader.H"
+#include "drt_linedefinition.H"
+
 
 namespace DRT
 {
@@ -39,13 +43,6 @@ namespace DRT
     flow). These methods provide dummy (dserror) implementations and
     have to be redefined in subclasses to actually do the testing.
 
-    The basis of the testing mechanism is the old C RESULTDESCR
-    structure that contains one line of the RESULT DESCRIPTION section
-    of our input files. Such a line states which internal baci
-    variable is to be checked against what value with which
-    tolerance. Pretty simple actually. But the meaning of such a line
-    is algorithm specific. That's why there are subclasses needed.
-
     \author u.kue
   */
   class ResultTest
@@ -59,21 +56,21 @@ namespace DRT
     virtual ~ResultTest();
 
     /// perform element value test
-    virtual void TestElement(const _RESULTDESCR* res, int& nerr, int& test_count);
+    virtual void TestElement(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
     /// perform nodal value test
-    virtual void TestNode(const _RESULTDESCR* res, int& nerr, int& test_count);
+    virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
     /// perform special case test
-    virtual void TestSpecial(const _RESULTDESCR* res, int& nerr, int& test_count);
+    virtual void TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
     /// tell whether this field test matches to a given line
-    virtual bool Match(const _RESULTDESCR* res) = 0;
+    virtual bool Match(DRT::INPUT::LineDefinition& res) = 0;
 
   protected:
 
     /// compare a calculated value with the expected one
-    virtual int CompareValues(double actresult, const _RESULTDESCR *res);
+    virtual int CompareValues(double actresult, DRT::INPUT::LineDefinition& res);
   };
 
   /*!
@@ -90,28 +87,40 @@ namespace DRT
   {
   public:
 
-    /// not yet doxumented
-    ResultTestManager(const Epetra_Comm& comm);
-
-    /// not yet doxumented
-    virtual ~ResultTestManager();
-
     /// add field specific result test object
-    void AddFieldTest(Teuchos::RefCountPtr<ResultTest> test);
+    void AddFieldTest(Teuchos::RCP<ResultTest> test);
 
     /// do all tests of all fields including appropiate output
-    void TestAll();
+    void TestAll(const Epetra_Comm& comm);
+
+    /// Definition of valid input section
+    Teuchos::RCP<DRT::INPUT::Lines> ValidResultLines();
+
+    /// read the baci input file and set up all curves
+    void ReadInput(const DRT::INPUT::DatFileReader& reader);
 
   private:
 
-    /// our communicator
-    const Epetra_Comm& comm_;
-
     /// set of field specific result test objects
-    std::vector<Teuchos::RefCountPtr<ResultTest> > fieldtest_;
+    std::vector<Teuchos::RCP<ResultTest> > fieldtest_;
+
+    /// expected results
+    std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition> > results_;
   };
 
 }
+
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+  void PrintResultDescrDatHeader();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* CCADISCRET       */
 

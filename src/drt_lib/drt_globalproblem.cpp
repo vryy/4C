@@ -427,6 +427,8 @@ void DRT::Problem::ReadConditions(const DRT::INPUT::DatFileReader& reader)
   timecurvemanager_.ReadInput(reader);
   /*---------------------------------------- input of spatial functions */
   functionmanager_.ReadInput(reader);
+  /*-------------------------------------- input of result descriptions */
+  resulttest_.ReadInput(reader);
   //------------------------------- read number of design objects we have
   // this currently serves to determine how many node sets we might have
   const Teuchos::ParameterList& design = DesignDescriptionParams();

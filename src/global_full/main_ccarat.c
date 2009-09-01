@@ -18,6 +18,7 @@ Maintainer: Malte Neumann
 #include "../drt_lib/drt_function.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/drt_elementdefinition.H"
+#include "../drt_lib/drt_resulttest.H"
 
 #ifdef TRAP_FE
 
@@ -195,6 +196,7 @@ else if ((argc == 2) &&
     PrintElementDatHeader();
     PrintFunctionDatHeader();
     PrintTimeCurveDatHeader();
+    PrintResultDescrDatHeader();
     printf("\n\n");
   }
 }

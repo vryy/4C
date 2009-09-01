@@ -83,9 +83,8 @@ void fluid_ale_drt()
   }
   fluid->Timeloop();
 
-  DRT::ResultTestManager testmanager(comm);
-  testmanager.AddFieldTest(fluid->MBFluidField().CreateFieldTest());
-  testmanager.TestAll();
+  DRT::Problem::Instance()->AddFieldTest(fluid->MBFluidField().CreateFieldTest());
+  DRT::Problem::Instance()->TestAll(comm);
 }
 
 
@@ -113,9 +112,8 @@ void fluid_xfem_drt()
   }
   xfluid->Timeloop();
 
-  DRT::ResultTestManager testmanager(comm);
-  testmanager.AddFieldTest(xfluid->MBFluidField().CreateFieldTest());
-  testmanager.TestAll();
+  DRT::Problem::Instance()->AddFieldTest(xfluid->MBFluidField().CreateFieldTest());
+  DRT::Problem::Instance()->TestAll(comm);
 }
 
 
@@ -180,9 +178,8 @@ void fluid_freesurf_drt()
 
     fsi->Timeloop(fsi);
 
-    DRT::ResultTestManager testmanager(comm);
-    testmanager.AddFieldTest(fsi->FluidField().CreateFieldTest());
-    testmanager.TestAll();
+    DRT::Problem::Instance()->AddFieldTest(fsi->FluidField().CreateFieldTest());
+    DRT::Problem::Instance()->TestAll(comm);
     break;
   }
   default:
@@ -194,9 +191,8 @@ void fluid_freesurf_drt()
 
     fluid->Timeloop();
 
-    DRT::ResultTestManager testmanager(comm);
-    testmanager.AddFieldTest(fluid->MBFluidField().CreateFieldTest());
-    testmanager.TestAll();
+    DRT::Problem::Instance()->AddFieldTest(fluid->MBFluidField().CreateFieldTest());
+    DRT::Problem::Instance()->TestAll(comm);
     break;
   }
   }
@@ -251,9 +247,8 @@ void fsi_ale_drt()
 
     fsi->Timeloop();
 
-    DRT::ResultTestManager testmanager(comm);
-    testmanager.AddFieldTest(fsi->StructureField().CreateFieldTest());
-    testmanager.TestAll();
+    DRT::Problem::Instance()->AddFieldTest(fsi->StructureField().CreateFieldTest());
+    DRT::Problem::Instance()->TestAll(comm);
     break;
   }
   case fsi_iter_monolithicfluidsplit:
@@ -301,10 +296,9 @@ void fsi_ale_drt()
     // here we go...
     fsi->Timeloop(fsi);
 
-    DRT::ResultTestManager testmanager(comm);
-    testmanager.AddFieldTest(fsi->FluidField().CreateFieldTest());
-    testmanager.AddFieldTest(fsi->StructureField().CreateFieldTest());
-    testmanager.TestAll();
+    DRT::Problem::Instance()->AddFieldTest(fsi->FluidField().CreateFieldTest());
+    DRT::Problem::Instance()->AddFieldTest(fsi->StructureField().CreateFieldTest());
+    DRT::Problem::Instance()->TestAll(comm);
     break;
   }
   default:
@@ -336,10 +330,9 @@ void fsi_ale_drt()
     }
 
     fsi->Timeloop(fsi);
-    DRT::ResultTestManager testmanager(comm);
-    testmanager.AddFieldTest(fsi->MBFluidField().CreateFieldTest());
-    testmanager.AddFieldTest(fsi->StructureField().CreateFieldTest());
-    testmanager.TestAll();
+    DRT::Problem::Instance()->AddFieldTest(fsi->MBFluidField().CreateFieldTest());
+    DRT::Problem::Instance()->AddFieldTest(fsi->StructureField().CreateFieldTest());
+    DRT::Problem::Instance()->TestAll(comm);
   }
   }
 
@@ -396,10 +389,9 @@ void xfsi_drt()
     // here we go...
     fsi->Timeloop();
 
-    DRT::ResultTestManager testmanager(comm);
-    testmanager.AddFieldTest(fsi->FluidField().CreateFieldTest());
-    testmanager.AddFieldTest(fsi->StructureField().CreateFieldTest());
-    testmanager.TestAll();
+    DRT::Problem::Instance()->AddFieldTest(fsi->FluidField().CreateFieldTest());
+    DRT::Problem::Instance()->AddFieldTest(fsi->StructureField().CreateFieldTest());
+    DRT::Problem::Instance()->TestAll(comm);
 
     break;
   }
@@ -432,10 +424,9 @@ void xfsi_drt()
 
     fsi->Timeloop(fsi);
 
-    DRT::ResultTestManager testmanager(comm);
-    testmanager.AddFieldTest(fsi->MBFluidField().CreateFieldTest());
-    testmanager.AddFieldTest(fsi->StructureField().CreateFieldTest());
-    testmanager.TestAll();
+    DRT::Problem::Instance()->AddFieldTest(fsi->MBFluidField().CreateFieldTest());
+    DRT::Problem::Instance()->AddFieldTest(fsi->StructureField().CreateFieldTest());
+    DRT::Problem::Instance()->TestAll(comm);
   }
   }
 

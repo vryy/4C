@@ -543,9 +543,8 @@ void stru_static_drt()
   }  //=============================================end time/loadstep loop
 
   // Structure Resulttests
-  DRT::ResultTestManager testmanager(actdis->Comm());
-  testmanager.AddFieldTest(rcp(new StruResultTest(actdis,dis,null,null)));
-  testmanager.TestAll();
+  DRT::Problem::Instance()->AddFieldTest(rcp(new StruResultTest(actdis,dis,null,null)));
+  DRT::Problem::Instance()->TestAll(actdis->Comm());
 
   TimeMonitor::summarize();
 

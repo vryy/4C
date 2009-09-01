@@ -19,6 +19,7 @@ Maintainer: Ulrich Kuettler
 
 #include <vector>
 
+#include <Epetra_Comm.h>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterListAcceptorDefaultBase.hpp>
 
@@ -28,6 +29,7 @@ Maintainer: Ulrich Kuettler
 #include "drt_inputreader.H"
 #include "drt_function.H"
 #include "drt_timecurve.H"
+#include "drt_resulttest.H"
 
 #include "standardtypes_cpp.H"
 
@@ -305,6 +307,16 @@ public:
 
   //@}
 
+  /// @name Result Tests
+
+  /// Do the testing
+  void TestAll(const Epetra_Comm& comm) { resulttest_.TestAll(comm); }
+
+  /// add field specific result test object
+  void AddFieldTest(Teuchos::RCP<ResultTest> test) { resulttest_.AddFieldTest(test); }
+
+  //@}
+
 private:
 
   /// private default constructor to disallow creation of instances
@@ -330,6 +342,9 @@ private:
 
   /// basket of time curves
   DRT::UTILS::TimeCurveManager timecurvemanager_;
+
+  /// all test values we might have
+  DRT::ResultTestManager resulttest_;
 
   /// @name File IO
 

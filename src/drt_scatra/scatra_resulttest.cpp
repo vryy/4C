@@ -34,16 +34,20 @@ SCATRA::ScaTraResultTest::ScaTraResultTest(ScaTraTimIntImpl& scatra)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SCATRA::ScaTraResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& test_count)
+void SCATRA::ScaTraResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
-  if (res->dis != 0)
+  int dis;
+  res.ExtractInt("DIS",dis);
+  if (dis != 1)
     dserror("fix me: only one scalar transport discretization supported for testing");
 
+  int node;
+  res.ExtractInt("NODE",node);
+  node -= 1;
 
-
-  if (dis_->HaveGlobalNode(res->node))
+  if (dis_->HaveGlobalNode(node))
   {
-    DRT::Node* actnode = dis_->gNode(res->node);
+    DRT::Node* actnode = dis_->gNode(node);
 
     // Strange! It seems we might actually have a global node around
     // even if it does not belong to us. But here we are just
@@ -53,7 +57,8 @@ void SCATRA::ScaTraResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& 
 
     double result = 0.;
     const Epetra_BlockMap& phinpmap = mysol_->Map();
-    string position = res->position;
+    std::string position;
+    res.ExtractString("POSITION",position);
 
     // test result value of single scalar field
     if (position=="phi")
@@ -91,9 +96,9 @@ void SCATRA::ScaTraResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool SCATRA::ScaTraResultTest::Match(const RESULTDESCR* res)
+bool SCATRA::ScaTraResultTest::Match(DRT::INPUT::LineDefinition& res)
 {
-  return res->field==scatra;
+  return res.HaveNamed("SCATRA");
 }
 
 
