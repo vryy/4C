@@ -111,6 +111,7 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
                 src/drt_lib/drt_dofset_base.o \
                 src/drt_lib/drt_linedefinition.o \
                 src/drt_lib/drt_elementdefinition.o \
+                src/drt_lib/drt_resulttest.o \
                 src/drt_fem_general/drt_utils_integration.o \
                 src/drt_fem_general/drt_utils_dgfem_basisfunctions.o \
                 src/drt_fem_general/drt_utils_fem_shapefunctions.o \
@@ -162,7 +163,6 @@ OBJS_DRT_NURBS_DISCRET_LIB = \
 OBJS_DRT_NURBS_DISCRET = \
                 src/drt_nurbs_discret/drt_apply_nurbs_initial_condition.o
 OBJS_DRT      = \
-                src/drt_lib/drt_resulttest.o \
                 src/drt_lib/drt_init_control.o \
                 src/drt_lib/global_inp_control2.o \
                 src/drt_lib/linalg_ana.o \

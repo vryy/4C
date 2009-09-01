@@ -97,7 +97,9 @@ int ELEMENTS::Shell8Register::Initialize(Discretization&)
   return 0;
 }
 
-bool ELEMENTS::Shell8::ReadElement()
+bool DRT::ELEMENTS::Shell8::ReadElement(const std::string& eletype,
+                                        const std::string& distype,
+                                        DRT::INPUT::LineDefinition* linedef)
 {
   dserror("ELEMENTS::Shell8::ReadElement undefined");
   return false;
@@ -139,6 +141,7 @@ void DRT::ELEMENTS::Shell8::VisNames(map<string,int>& names)
 
 bool DRT::ELEMENTS::Shell8::VisData(const string& name, vector<double>& data)
 {
+  return false;
 }
 
 #endif
