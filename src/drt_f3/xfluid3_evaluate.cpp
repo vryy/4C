@@ -848,9 +848,9 @@ void DRT::ELEMENTS::XFluid3::CondenseDLMAndStoreOldIterationStep(
   {
     // note: the full (u,p,sigma) matrix is asymmetric,
     // hence we need both rectangular matrices Kda and Kad
-    LINALG::SerialDenseMatrix Kus(nu,ns);
+    LINALG::SerialDenseMatrix Gus(nu,ns);
     LINALG::SerialDenseMatrix Kssinv(ns,ns);
-    LINALG::SerialDenseMatrix Ksu(ns,nu);
+    LINALG::SerialDenseMatrix KGsu(ns,nu);
     LINALG::SerialDenseVector fs(ns);
 
 //    cout << elemat1_uncond << endl;
@@ -858,7 +858,7 @@ void DRT::ELEMENTS::XFluid3::CondenseDLMAndStoreOldIterationStep(
     // copy data of uncondensed matrix into submatrices
     for (size_t i=0;i<nu;i++)
       for (size_t j=0;j<ns;j++)
-        Kus(i,j) = elemat1_uncond(   i,nu+j);
+        Gus(i,j) = elemat1_uncond(   i,nu+j);
 
     for (size_t i=0;i<ns;i++)
       for (size_t j=0;j<ns;j++)
@@ -866,7 +866,7 @@ void DRT::ELEMENTS::XFluid3::CondenseDLMAndStoreOldIterationStep(
 
     for (size_t i=0;i<ns;i++)
       for (size_t j=0;j<nu;j++)
-        Ksu(i,j) = elemat1_uncond(nu+i,   j);
+        KGsu(i,j) = elemat1_uncond(nu+i,   j);
 
     for (size_t i=0;i<ns;i++)
       fs(i) = elevec1_uncond(nu+i);
@@ -881,16 +881,16 @@ void DRT::ELEMENTS::XFluid3::CondenseDLMAndStoreOldIterationStep(
 
     static const Epetra_BLAS blas;
     {
-      LINALG::SerialDenseMatrix KusKssinv(nu,ns); // temporary Kus.Kss^{-1}
+      LINALG::SerialDenseMatrix GusKssinv(nu,ns); // temporary Gus.Kss^{-1}
 
       // KusKssinv(i,j) = Kus(i,k)*Kssinv(k,j);
-      blas.GEMM('N','N',nu,ns,ns,1.0,Kus.A(),Kus.LDA(),Kssinv.A(),Kssinv.LDA(),0.0,KusKssinv.A(),KusKssinv.LDA());
+      blas.GEMM('N','N',nu,ns,ns,1.0,Gus.A(),Gus.LDA(),Kssinv.A(),Kssinv.LDA(),0.0,GusKssinv.A(),GusKssinv.LDA());
 
       // elemat1(i,j) += - KusKssinv(i,k)*Ksu(k,j);
-      blas.GEMM('N','N',nu,nu,ns,-1.0,KusKssinv.A(),KusKssinv.LDA(),Ksu.A(),Ksu.LDA(),1.0,elemat1.A(),elemat1.LDA());
+      blas.GEMM('N','N',nu,nu,ns,-1.0,GusKssinv.A(),GusKssinv.LDA(),KGsu.A(),KGsu.LDA(),1.0,elemat1.A(),elemat1.LDA());
 
       // elevec1(i) += - KusKssinv(i,j)*fs(j);
-      blas.GEMV('N', nu, ns,-1.0, KusKssinv.A(), KusKssinv.LDA(), fs.A(), 1.0, elevec1.A());
+      blas.GEMV('N', nu, ns,-1.0, GusKssinv.A(), GusKssinv.LDA(), fs.A(), 1.0, elevec1.A());
 
       if (monolithic_FSI)
       {
@@ -907,7 +907,7 @@ void DRT::ELEMENTS::XFluid3::CondenseDLMAndStoreOldIterationStep(
           for (size_t j=0;j<ns;j++)
           {
             Gds(i,j) = Gds_uncond(i, nu+j);
-            Gsd(j,i) = Gds_uncond(i, nu+j);
+            Gsd(j,i) = Gds_uncond(i, nu+j); //only for transient
           }
         }
 
@@ -923,11 +923,11 @@ void DRT::ELEMENTS::XFluid3::CondenseDLMAndStoreOldIterationStep(
         for (size_t i=0;i<nu;i++)
           for (size_t j=0;j<nd;j++)
             for (size_t k=0;k<ns;k++)
-              Mud(i,j) += -KusKssinv(i,k)*Gsd(k,j);
+              Mud(i,j) += -GusKssinv(i,k)*Gsd(k,j);
         for (size_t i=0;i<nd;i++)
           for (size_t j=0;j<nu;j++)
             for (size_t k=0;k<ns;k++)
-              Mdu(i,j) += -GdsKssinv(i,k)*Ksu(k,j);
+              Mdu(i,j) += -GdsKssinv(i,k)*KGsu(k,j);
         for (size_t i=0;i<nd;i++)
           for (size_t j=0;j<nd;j++)
             for (size_t k=0;k<ns;k++)
@@ -944,7 +944,7 @@ void DRT::ELEMENTS::XFluid3::CondenseDLMAndStoreOldIterationStep(
     //DLM_info_->oldKaainv_.Update(1.0,Kaa,0.0);
     blas.COPY(DLM_info_->oldKaainv_.M()*DLM_info_->oldKaainv_.N(), Kssinv.A(), DLM_info_->oldKaainv_.A());
     //DLM_info_->oldKad_.Update(1.0,Kad,0.0);
-    blas.COPY(DLM_info_->oldKad_.M()*DLM_info_->oldKad_.N(), Ksu.A(), DLM_info_->oldKad_.A());
+    blas.COPY(DLM_info_->oldKad_.M()*DLM_info_->oldKad_.N(), KGsu.A(), DLM_info_->oldKad_.A());
     //DLM_info_->oldfa_.Update(1.0,fa,0.0);
     blas.COPY(DLM_info_->oldfa_.M()*DLM_info_->oldfa_.N(), fs.A(), DLM_info_->oldfa_.A());
   }

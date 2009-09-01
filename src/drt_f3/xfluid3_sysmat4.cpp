@@ -1166,7 +1166,7 @@ void SysmatDomain4(
             LINALG::Matrix<nsd,1> rhsint;
             LINALG::Matrix<nsd,1> bodyforce;
             bodyforce.Clear();
-//            bodyforce(0) = 1.0;
+//            bodyforce(0) = 1.0; //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             for (size_t isd = 0; isd < nsd; ++isd)
                 rhsint(isd) = histvec(isd) + bodyforce(isd)*timefac;
 
