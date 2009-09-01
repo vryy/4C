@@ -581,7 +581,7 @@ void SCATRA::ScaTraTimIntImpl::ComputeDensity(const double thermpress,
     // compute density based on progress variable phi:
     // rho = rho_u + phi*(rho_b-rho_u)
     densnp_->PutScalar(unbdens_);
-    densnp_->Update(1.0,*phinp_,densdiff_);
+    densnp_->Update(densdiff_,*phinp_,1.0);
   }
   else
   {
