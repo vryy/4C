@@ -3307,8 +3307,6 @@ void FLD::XFluidImplicitTimeInt::ProjectOldTimeStepValues(
 
       //-------solve for residual displacements to correct incremental displacements
       {
-        cout << DRT::Problem::Instance()->XFluidProjectionSolverParams() << endl;
-        // time measurement: solver
         Teuchos::RCP<LINALG::Solver> solver = rcp(new LINALG::Solver(DRT::Problem::Instance()->XFluidProjectionSolverParams(),
             discret_->Comm(),
             DRT::Problem::Instance()->ErrorFile()->Handle()));
