@@ -160,11 +160,12 @@ void FSI::MonolithicXFEM::Newton()
   x_ = Teuchos::null;
   systemmatrix_ = Teuchos::null;
 
-  for (int i =0;i<200;++i)
+  for (int i =0;i<3;++i)
   {
     Evaluate();
 
-    SetupRHS();
+    const bool firstcall = i==0;
+    SetupRHS(firstcall);
 
     if (ConverganceTest())
     {
@@ -227,6 +228,8 @@ void FSI::MonolithicXFEM::Evaluate()
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicXFEM::SetupRHS(bool firstcall)
 {
+  cout << "FSI::MonolithicXFEM::SetupRHS" << endl;
+
   // get rhs from fields
 
   // create full monolithic rhs vector
@@ -243,6 +246,10 @@ void FSI::MonolithicXFEM::SetupRHS(bool firstcall)
 //              FluidField().RHS(),
 //              FluidField().ResidualScaling());
 //
+  const map<std::string, Teuchos::RCP<Epetra_Vector> > cvecs = FluidField().CouplingVectors();
+  Teuchos::RCP<Epetra_Vector> rhsd = cvecs.find("rhsd")->second;
+  cout << *rhsd << endl;
+
   if (firstcall)
   {
 //    Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockf = FluidField().BlockSystemMatrix();
@@ -252,10 +259,12 @@ void FSI::MonolithicXFEM::SetupRHS(bool firstcall)
     /// direct access to system matrix
     const map<std::string, Teuchos::RCP<LINALG::SparseMatrix> > cmats = FluidField().CouplingMatrices();
 
+
   //  Teuchos::RCP<LINALG::SparseMatrix> Cuu = cmats.find("Cuu")->second; // schon erledigt im Fluid
     Teuchos::RCP<LINALG::SparseMatrix> Mud = cmats.find("Mud")->second;
     Teuchos::RCP<LINALG::SparseMatrix> Mdu = cmats.find("Mdu")->second;
     Teuchos::RCP<LINALG::SparseMatrix> Cdd = cmats.find("Cdd")->second;
+
 
     LINALG::SparseMatrix& fig = *cmats.find("Mdu")->second;
     LINALG::SparseMatrix& fgg = *FluidField().SystemMatrix();
@@ -264,21 +273,19 @@ void FSI::MonolithicXFEM::SetupRHS(bool firstcall)
     double timescale = FluidField().TimeScaling();
     double scale     = FluidField().ResidualScaling();
 
-    Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(fig.RowMap()));
+//    Teuchos::RCP<Epetra_Vector> rhs_fig = Teuchos::rcp(new Epetra_Vector(fig.RowMap()));
+//    fig.Apply(*fveln,*rhs_fig);
+//    rhs_fig->Scale(timescale*Dt());
+//    Extractor().AddVector(*rhs_fig,1,*rhs_);
+//
+//    Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(fgg.RowMap()));
+//    fgg.Apply(*fveln,*rhs);
+//    rhs->Scale(scale*timescale*Dt());
+//    Extractor().AddVector(*StructureField().Interface().InsertCondVector(FluidToStruct(rhs)),0,*rhs_);
 
-    fig.Apply(*fveln,*rhs);
-    rhs->Scale(timescale*Dt());
-
-    Extractor().AddVector(*rhs,1,*rhs_);
-
-    rhs = Teuchos::rcp(new Epetra_Vector(fgg.RowMap()));
-
-    fgg.Apply(*fveln,*rhs);
-    rhs->Scale(scale*timescale*Dt());
-
-    rhs = StructureField().Interface().InsertCondVector(FluidToStruct(rhs));
-    Extractor().AddVector(*rhs,0,*rhs_);
   }
+
+  Extractor().AddVector(*StructureField().Interface().InsertCondVector(FluidToStruct(rhsd)),0,*rhs_);
 
   // NOX expects a different sign here.
 //  f.Scale(-1.);
@@ -458,8 +465,10 @@ void FSI::MonolithicXFEM::LinearSolve()
                              Comm(),
                              DRT::Problem::Instance()->ErrorFile()->Handle()));
 
+//  incvel_->PutScalar(0.0);
+//  solver->Solve(m->EpetraOperator(), incvel_, rhs_, true, true);
   solver->Solve(m->EpetraOperator(), x_, rhs_, true, true);
-
+//  state_.velnp_->Update(1.0,*incvel_,1.0);
   cout << *x_ << endl;
 
 }

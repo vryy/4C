@@ -190,6 +190,93 @@ namespace XFLUID
     return true;
   }
 
+
+  /// generate old velocity/acceleration values, if integration point was in a void during the last time step
+    template<DRT::Element::DiscretizationType DISTYPE, class M>
+    bool ProjectSpaceTimeValuesToNewMesh(
+        const DRT::Element*                        ele,       ///< the element of which element tangent stiffness matrix is calculated
+        const Teuchos::RCP<XFEM::InterfaceHandleXFSI>&  ih,   ///< connection to the interface handler
+        const M&                                   xyze,
+        const LINALG::Matrix<3,1>&                 posXiDomain,
+        const int                                  labelnp,
+        const Epetra_Vector&                       ivelcoln,
+        const Epetra_Vector&                       iacccoln,
+        LINALG::Matrix<3,1>&                       gpveln,
+        LINALG::Matrix<3,1>&                       gpaccn
+    )
+    {
+      const std::size_t nsd = 3;
+      const std::size_t numnodefix_slab = 8;
+
+      LINALG::Matrix<nsd,1> posx_gp;
+      GEO::elementToCurrentCoordinatesT<DISTYPE>(xyze, posXiDomain, posx_gp);
+
+      const bool is_in_fluid = (0 == labelnp);
+
+      if (not is_in_fluid)
+      {
+        std::cout << "should I arrive here?" << std::endl;
+        exit(1);
+  //      return false;
+      }
+
+      const bool was_in_fluid = (ih->PositionWithinConditionN(posx_gp) == 0);
+
+      const bool in_space_time_slab_area = (is_in_fluid and (not was_in_fluid));
+
+      if (in_space_time_slab_area)
+      {
+        XFEM::SpaceTimeBoundaryCell slab;
+        LINALG::Matrix<nsd,1> rst(true);
+
+        const bool found_cell = ih->FindSpaceTimeLayerCell(posx_gp,slab,rst);
+
+        if (found_cell)
+        {
+          const std::size_t numnode_slab = DRT::UTILS::getNumberOfElementNodes(slab.Shape());
+
+          if (numnode_slab > numnodefix_slab)
+            dserror("increase numnodefix_slab!");
+
+          const double delta_slab = -(rst(2)-1.0)*0.5;
+
+          if (not ((-1.0e-7) < delta_slab and delta_slab < (1.0+1.0e-7)))
+          {
+            cout << rst(2) <<  "  " << delta_slab << endl;
+            cout << slab.toString() << endl << endl;
+            dserror("wrong value of delta_slab");
+          }
+  //        cout << rst(2) <<  "  " << delta_slab << " " << dtstar << endl;
+
+          const DRT::Element* boundaryele = ih->cutterdis()->gElement(slab.getBeleId());
+          const size_t numnode_boundary = boundaryele->NumNode();
+          if (numnode_boundary != 4)
+            dserror("needs more generalizashun!");
+          if (ivelcoln.GlobalLength() > (int)nsd)
+          {
+            //LINALG::SerialDenseVector funct_ST(numnode_boundary*2);
+            LINALG::Matrix<numnodefix_slab,1> funct_ST;
+            DRT::UTILS::shape_function_3D(funct_ST,rst(0),rst(1),rst(2),slab.Shape());
+
+            gpveln  = getIntegrationPointValueFromBoundary(ih->cutterdis(), ivelcoln,  boundaryele, funct_ST, numnode_slab);
+            gpaccn  = getIntegrationPointValueFromBoundary(ih->cutterdis(), iacccoln,  boundaryele, funct_ST, numnode_slab);
+
+          }
+          else
+          {
+            gpveln.Clear();
+            gpaccn.Clear();
+          }
+        }
+        else
+        {
+  //        cout << "did not find cell" << endl;
+        }
+      }
+
+      return true;
+    }
+
 } // namespace XFLUID
 
 #endif

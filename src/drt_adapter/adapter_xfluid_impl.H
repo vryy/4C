@@ -81,6 +81,7 @@ namespace ADAPTER {
     virtual Teuchos::RCP<const Epetra_Map>    DofRowMap();
     virtual Teuchos::RCP<LINALG::SparseMatrix>SystemMatrix();
     virtual map<std::string, Teuchos::RCP<LINALG::SparseMatrix> > CouplingMatrices();
+    virtual map<std::string, Teuchos::RCP<Epetra_Vector> > CouplingVectors();
     virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
     virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> ShapeDerivatives();
     virtual Teuchos::RCP<DRT::Discretization> Discretization();

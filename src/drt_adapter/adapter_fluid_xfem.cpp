@@ -123,6 +123,14 @@ std::map<std::string,Teuchos::RCP<LINALG::SparseMatrix> > ADAPTER::FluidXFEM::Co
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+std::map<std::string,Teuchos::RCP<Epetra_Vector> > ADAPTER::FluidXFEM::CouplingVectors()
+{
+  return XFluidField().CouplingVectors();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void ADAPTER::FluidXFEM::Output()
 {
   FluidField().Output();

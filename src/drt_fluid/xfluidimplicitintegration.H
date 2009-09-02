@@ -352,6 +352,8 @@ protected:
 
   void KrylovSpaceProjection(const int & numdim);
 
+  void ProjectOldTimeStepValues();
+
   void MonolithicMultiDisEvaluate(
       Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih,
       const Teuchos::RCP<DRT::Discretization> fluiddis,

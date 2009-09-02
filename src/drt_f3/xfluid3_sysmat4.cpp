@@ -1015,7 +1015,9 @@ void SysmatDomain4(
             LINALG::Matrix<nsd,1> gpvelnm = XFLUID::interpolateVectorFieldToIntPoint(evelnm, shp.d0, numparamvelx);
             LINALG::Matrix<nsd,1> gpaccn  = XFLUID::interpolateVectorFieldToIntPoint(eaccn , shp.d0, numparamvelx);
 
-
+#if 0
+            double dtstar = dt;
+#else
             const bool was_in_fluid = (ih->PositionWithinConditionN(posx_gp) == 0);
 
             XFLUID::TimeFormulation timeformulation = XFLUID::Eulerian;
@@ -1046,7 +1048,7 @@ void SysmatDomain4(
 
             if (dtstar == -10000.0)
               dserror("something went wrong!");
-
+#endif
             // time integration constant
             const double timefac = FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dtstar, theta);
 

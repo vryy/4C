@@ -183,6 +183,14 @@ std::map<std::string, Teuchos::RCP<LINALG::SparseMatrix> > ADAPTER::XFluidImpl::
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+std::map<std::string, Teuchos::RCP<Epetra_Vector> > ADAPTER::XFluidImpl::CouplingVectors()
+{
+  return fluid_.CouplingVectors();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::BlockSparseMatrixBase> ADAPTER::XFluidImpl::BlockSystemMatrix()
 {
   dserror("no block matrix here");
