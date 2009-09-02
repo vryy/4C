@@ -45,6 +45,8 @@ DRT::ELEMENTS::XFluid3::ActionType DRT::ELEMENTS::XFluid3::convertStringToAction
     act = XFluid3::calc_linear_fluid;
   else if (action == "calc_fluid_stationary_systemmat_and_residual")
     act = XFluid3::calc_fluid_stationary_systemmat_and_residual;
+  else if (action == "calc_fluid_projection_systemmat_and_residual")
+    act = XFluid3::calc_fluid_projection_systemmat_and_residual;
   else if (action == "calc_fluid_beltrami_error")
     act = XFluid3::calc_fluid_beltrami_error;
   else if (action == "store_xfem_info")
@@ -104,9 +106,9 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
                                      DRT::Discretization&      discretization,
                                      std::vector<int>&         lm,
                                      Epetra_SerialDenseMatrix& elemat1,
-                                     Epetra_SerialDenseMatrix&,
+                                     Epetra_SerialDenseMatrix& elemat2,
                                      Epetra_SerialDenseVector& elevec1,
-                                     Epetra_SerialDenseVector&,
+                                     Epetra_SerialDenseVector& elevec2,
                                      Epetra_SerialDenseVector&)
 {
   // get the action required
@@ -474,6 +476,31 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           }
           else
 #endif
+      break;
+    }
+    case calc_fluid_projection_systemmat_and_residual:
+    {
+      // do no calculation, if not needed
+      if (lm.empty())
+        break;
+
+      // extract local values from the global vector
+      DRT::ELEMENTS::XFluid3::MyState mystate(discretization,lm,true);
+
+      const bool pstab  = true;
+
+
+      const bool ifaceForceContribution = discretization.ElementRowMap()->MyGID(this->Id());
+
+      const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
+              *eleDofManager_, NumNode(), NodeIds());
+
+      // calculate element coefficient matrix and rhs
+      XFLUID::callSysmatProjection(assembly_type,
+              this, ih_, *eleDofManager_, mystate, elemat1, elemat2, elevec1, elevec2,
+              pstab, ifaceForceContribution);
+
+
       break;
     }
     case get_density:
