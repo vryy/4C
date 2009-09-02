@@ -723,6 +723,7 @@ template <DRT::Element::DiscretizationType DISTYPE,
           int NUMDOF,
           class M1, class V1, class M2>
 void SysmatDomain4(
+    ParameterList&                      params,        ///< parameter list
     const DRT::Element*                 ele,           ///< the element those matrix is calculated
     const Teuchos::RCP<XFEM::InterfaceHandleXFSI>&  ih,   ///< connection to the interface handler
     const XFEM::ElementDofManager&      dofman,        ///< dofmanager of the current element
@@ -750,6 +751,8 @@ void SysmatDomain4(
 
     // space dimension for 3d fluid element
     const size_t nsd = 3;
+
+    const bool incomp_projection = params.get<bool>("INCOMP_PROJECTION");
 
     // get node coordinates of the current element
     static LINALG::Matrix<nsd,numnode> xyze;
@@ -1015,40 +1018,45 @@ void SysmatDomain4(
             LINALG::Matrix<nsd,1> gpvelnm = XFLUID::interpolateVectorFieldToIntPoint(evelnm, shp.d0, numparamvelx);
             LINALG::Matrix<nsd,1> gpaccn  = XFLUID::interpolateVectorFieldToIntPoint(eaccn , shp.d0, numparamvelx);
 
-#if 0
-            double dtstar = dt;
-#else
-            const bool was_in_fluid = (ih->PositionWithinConditionN(posx_gp) == 0);
-
-            XFLUID::TimeFormulation timeformulation = XFLUID::Eulerian;
             double dtstar = -10000.0;
-//            double dtstar = dt;
-            if (timealgo != timeint_stationary)
+            if (incomp_projection)
             {
-              if (not was_in_fluid)
+              dtstar = dt;
+            }
+            else
+            {
+
+              const bool was_in_fluid = (ih->PositionWithinConditionN(posx_gp) == 0);
+
+              XFLUID::TimeFormulation timeformulation = XFLUID::Eulerian;
+//            double dtstar = dt;
+              if (timealgo != timeint_stationary)
               {
-                timeformulation = XFLUID::ReducedTimeStepSize;
-                const bool valid_spacetime_cell_found = XFLUID::modifyOldTimeStepsValues<DISTYPE>(ele, ih, xyze, posXiDomain, labelnp, dt, ivelcolnp, ivelcoln, ivelcolnm, iacccoln, gpveln, gpvelnm, gpaccn, dtstar);
-                if (not valid_spacetime_cell_found)
+                cout << "Project from space time cell" << endl;
+                if (not was_in_fluid)
                 {
-                  cout << "not valid_spacetime_cell_found" << endl;
-                  continue;
+                  timeformulation = XFLUID::ReducedTimeStepSize;
+                  const bool valid_spacetime_cell_found = XFLUID::modifyOldTimeStepsValues<DISTYPE>(ele, ih, xyze, posXiDomain, labelnp, dt, ivelcolnp, ivelcoln, ivelcolnm, iacccoln, gpveln, gpvelnm, gpaccn, dtstar);
+                  if (not valid_spacetime_cell_found)
+                  {
+                    cout << "not valid_spacetime_cell_found" << endl;
+                    continue;
+                  }
+                }
+                else
+                {
+                  timeformulation = XFLUID::Eulerian;
+                  dtstar = dt;
                 }
               }
               else
               {
-                timeformulation = XFLUID::Eulerian;
                 dtstar = dt;
               }
             }
-            else
-            {
-              dtstar = dt;
-            }
-
             if (dtstar == -10000.0)
               dserror("something went wrong!");
-#endif
+
             // time integration constant
             const double timefac = FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dtstar, theta);
 
@@ -1690,6 +1698,7 @@ void SysmatBoundary4(
 template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSTYPE>
 void Sysmat4(
+        ParameterList&                    params,
         const DRT::Element*               ele,           ///< the element those matrix is calculated
         const Teuchos::RCP<XFEM::InterfaceHandleXFSI>&  ih,   ///< connection to the interface handler
         const XFEM::ElementDofManager&    dofman,        ///< dofmanager of the current element
@@ -1738,7 +1747,7 @@ void Sysmat4(
     fillElementUnknownsArrays4<DISTYPE,ASSTYPE>(dofman, mystate, evelnp, eveln, evelnm, eaccn, eprenp, etau);
 
     SysmatDomain4<DISTYPE,ASSTYPE,NUMDOF>(
-        ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, etau,
+        params, ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, etau,
         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, assembler, L2);
 
     if (ih->ElementIntersected(ele->Id()))
@@ -1753,6 +1762,7 @@ void Sysmat4(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void XFLUID::callSysmat4(
+        ParameterList&                    params,
         const XFEM::AssemblyType          assembly_type,
         const DRT::ELEMENTS::XFluid3*     ele,
         const Teuchos::RCP<XFEM::InterfaceHandleXFSI>&  ih,
@@ -1783,27 +1793,27 @@ void XFLUID::callSysmat4(
         {
             case DRT::Element::hex8:
                 Sysmat4<DRT::Element::hex8,XFEM::standard_assembly>(
-                        ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
+                        params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
                 break;
             case DRT::Element::hex20:
                 Sysmat4<DRT::Element::hex20,XFEM::standard_assembly>(
-                        ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
+                        params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
                 break;
             case DRT::Element::hex27:
                 Sysmat4<DRT::Element::hex27,XFEM::standard_assembly>(
-                        ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
+                        params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
                 break;
             case DRT::Element::tet4:
                 Sysmat4<DRT::Element::tet4,XFEM::standard_assembly>(
-                        ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
+                        params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
                 break;
             case DRT::Element::tet10:
                 Sysmat4<DRT::Element::tet10,XFEM::standard_assembly>(
-                        ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
+                        params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
                 break;
             default:
@@ -1816,26 +1826,26 @@ void XFLUID::callSysmat4(
         {
             case DRT::Element::hex8:
                 Sysmat4<DRT::Element::hex8,XFEM::xfem_assembly>(
-                        ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
+                        params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
                 break;
             case DRT::Element::hex20:
                 Sysmat4<DRT::Element::hex20,XFEM::xfem_assembly>(
-                        ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
+                        params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
                 break;
             case DRT::Element::hex27:
                 Sysmat4<DRT::Element::hex27,XFEM::xfem_assembly>(
-                        ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
+                        params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
                 break;
             case DRT::Element::tet4:
                 Sysmat4<DRT::Element::tet4,XFEM::xfem_assembly>(
-                        ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
+                        params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
             case DRT::Element::tet10:
                 Sysmat4<DRT::Element::tet10,XFEM::xfem_assembly>(
-                        ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
+                        params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
                 break;
             default:

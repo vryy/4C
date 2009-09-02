@@ -268,7 +268,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
                 *eleDofManager_, NumNode(), NodeIds());
 
         // calculate element coefficient matrix and rhs
-        XFLUID::callSysmat4(assembly_type,
+        XFLUID::callSysmat4(params, assembly_type,
                 this, ih_, *eleDofManager_, mystate, iforcecol, elemat1, elevec1, *Gds_uncond, *rhsd_uncond,
                 mat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution, monolithic_FSI, L2);
       }
@@ -304,7 +304,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         }
 
         // calculate element coefficient matrix and rhs
-        XFLUID::callSysmat4(assembly_type,
+        XFLUID::callSysmat4(params, assembly_type,
                 this, ih_, *eleDofManager_uncondensed_, mystate, iforcecol, elemat1_uncond, elevec1_uncond, *Gds_uncond, *rhsd_uncond,
                 mat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution, monolithic_FSI, L2);
 
@@ -361,7 +361,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
                 *eleDofManager_, NumNode(), NodeIds());
 
         // calculate element coefficient matrix and rhs
-        XFLUID::callSysmat4(assembly_type,
+        XFLUID::callSysmat4(params, assembly_type,
                 this, ih_, *eleDofManager_, mystate, iforcecol, elemat1, elevec1, *Gds_uncond, *rhsd_uncond,
                 mat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution, monolithic_FSI, L2);
       }
@@ -397,7 +397,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         }
 
         // calculate element coefficient matrix and rhs
-        XFLUID::callSysmat4(assembly_type,
+        XFLUID::callSysmat4(params, assembly_type,
                 this, ih_, *eleDofManager_uncondensed_, mystate, iforcecol, elemat1_uncond, elevec1_uncond, *Gds_uncond, *rhsd_uncond,
                 mat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution, monolithic_FSI, L2);
 

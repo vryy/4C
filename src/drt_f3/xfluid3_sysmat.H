@@ -57,6 +57,7 @@ namespace XFLUID
    * This is the point.
    */
   void callSysmat4(
+          ParameterList&                    params,
           const XFEM::AssemblyType          assembly_type,
           const DRT::ELEMENTS::XFluid3*     ele,
           const Teuchos::RCP<XFEM::InterfaceHandleXFSI>&  ih,

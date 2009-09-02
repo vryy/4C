@@ -782,7 +782,9 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInter
   enrichsysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*enrichmap,108,false,true));
 #endif
 
-//  ProjectOldTimeStepValues();
+  if (xparams_.get<bool>("INCOMP_PROJECTION"))
+    if (timealgo_ != timeint_stationary)
+      ProjectOldTimeStepValues();
 
   // print information about dofs
   if (discret_->Comm().NumProc() == 1)
@@ -1123,6 +1125,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       eleparams.set("L2",L2);
 
       eleparams.set("DLM_condensation",xparams_.get<bool>("DLM_condensation"));
+      eleparams.set("INCOMP_PROJECTION",xparams_.get<bool>("INCOMP_PROJECTION"));
       eleparams.set("FAST_INTEGRATION",xparams_.get<bool>("FAST_INTEGRATION"));
       eleparams.set("boundaryRatioLimit",xparams_.get<double>("boundaryRatioLimit"));
       eleparams.set("monolithic_FSI",false);
@@ -1520,6 +1523,7 @@ void FLD::XFluidImplicitTimeInt::Evaluate(
   eleparams.set("L2",L2);
 
   eleparams.set("DLM_condensation",xparams_.get<bool>("DLM_condensation"));
+  eleparams.set("INCOMP_PROJECTION",xparams_.get<bool>("INCOMP_PROJECTION"));
   eleparams.set("FAST_INTEGRATION",xparams_.get<bool>("FAST_INTEGRATION"));
   eleparams.set("boundaryRatioLimit",xparams_.get<double>("boundaryRatioLimit"));
   eleparams.set<bool>("monolithic_FSI",true);
@@ -3172,30 +3176,14 @@ static void DoDirichletCondition(
                           Teuchos::RCP<Epetra_Vector> systemvector,
                           Teuchos::RCP<std::set<int> > dbcgids)
 {
-//  const vector<int>*    onoff  ;//= cond.Get<vector<int> >("onoff");
-//  const vector<double>* val    ;//= cond.Get<vector<double> >("val");
-
   dsassert(systemvector!=Teuchos::null, "systemvector must be unequal to null");
   dsassert(dbcgids!=Teuchos::null, "dbcgids must be unequal to null");
 
-
-  // loop nodes to identify and evaluate load curves and spatial distributions
-  // of Dirichlet boundary conditions
-
-  const unsigned nsd = 3;
-
+  // loop row nodes to identify Dirichlet boundary conditions
   for (int inode=0; inode<dis.NumMyRowNodes(); ++inode)
   {
-    // do only nodes in my row map
     const DRT::Node* actnode = dis.lRowNode(inode);
-    if (actnode == NULL)
-      dserror("Cannot find global node %d",inode);
-
-    // is node within old structure domain
-    const LINALG::Matrix<3,1> x_pos(actnode->X());
-
-    const int label = ih.PositionWithinConditionN(x_pos);
-    const bool was_in_fluid = (label==0);
+    if (actnode == NULL) dserror("Cannot find global node %d",inode);
 
     const vector<int> dofs = dis.Dof(actnode);
     const unsigned numdf = dofs.size();
@@ -3203,24 +3191,27 @@ static void DoDirichletCondition(
       continue;
     if (numdf != 4)
       dserror("not implemented");
-    for (unsigned isd=0; isd<nsd; ++isd)
-    {
-      if (was_in_fluid)
-      {
-        const int dofgid = dofs[isd];
 
-        // assign value
-        const int doflid = (*systemvector).Map().LID(dofgid);
+    // is node within old structure domain
+    const int label = ih.PositionWithinConditionN(LINALG::Matrix<3,1>(actnode->X()));
+    const bool was_in_fluid = (label==0);
+    if (was_in_fluid)
+    {
+      for (unsigned idf=0; idf<numdf; ++idf)
+      {
+        const int dofgid = dofs[idf];
+
+        const int doflid = systemvector->Map().LID(dofgid);
         if (doflid<0)
-          dserror("Global id %d not on this proc in system vector",dofgid);
+          dserror("Global dofgid %d not on this proc in system vector",dofgid);
 
         // amend vector of DOF-IDs which are Dirichlet BCs
-        (*dbcgids).insert(dofgid);
-      }
-    }  // loop over nodal DOFs
+        dbcgids->insert(dofgid);
+      }  // loop over nodal DOFs
+    }
   }  // loop over nodes
 
-  cout << "Number of unknowns: " << (dis.DofRowMap()->NumMyElements() - dbcgids->size()) << endl;
+  cout << "  -> Number of unknowns for projection: " << (dis.DofRowMap()->NumMyElements() - dbcgids->size()) << endl;
 
   return;
 }
@@ -3281,6 +3272,21 @@ static void EvaluateDirichletProjection(
 void FLD::XFluidImplicitTimeInt::ProjectOldTimeStepValues(
     )
 {
+  if (discret_->Comm().MyPID()==0)
+  {
+    if (not xparams_.get<bool>("DLM_condensation"))
+    {
+      std::cout << RED_LIGHT << "DLM_condensation turned off!" << END_COLOR << endl;
+      dserror("projection only works with condensation!");
+    }
+  }
+
+  cout << " Project old velocity values" << endl;
+
+  // get cpu time
+  discret_->Comm().Barrier();
+  const double tcpu=ds_cputime();
+
       Teuchos::RCP<LINALG::SparseOperator> sysmat_projection_veln = Teuchos::rcp(new LINALG::SparseMatrix(*discret_->DofRowMap(),0,false,true));
       Teuchos::RCP<LINALG::SparseOperator> sysmat_projection_accn = Teuchos::rcp(new LINALG::SparseMatrix(*discret_->DofRowMap(),0,false,true));
       Teuchos::RCP<Epetra_Vector>    residual_veln = LINALG::CreateVector(*discret_->DofRowMap(),true);
@@ -3296,6 +3302,11 @@ void FLD::XFluidImplicitTimeInt::ProjectOldTimeStepValues(
 
         // action for elements
         eleparams.set("action","calc_fluid_projection_systemmat_and_residual");
+
+        // reset old pressure to zero
+        Teuchos::RCP<Epetra_Vector> onlypre = velpressplitter_.ExtractCondVector(state_.veln_);
+        onlypre->PutScalar(0.0);
+        velpressplitter_.InsertCondVector(onlypre,state_.veln_);
 
         // set general vector values needed by elements
         discret_->ClearState();
@@ -3375,8 +3386,6 @@ void FLD::XFluidImplicitTimeInt::ProjectOldTimeStepValues(
 
       if ((this->physprob_.fieldset_.find(XFEM::PHYSICS::Pres) != this->physprob_.fieldset_.end()))
       {
-        cout << "XFluidImplicitTimeInt::OutputToGmsh()" << endl;
-
         std::stringstream filename;
         std::stringstream filenamedel;
         filename    << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".solution_field_pressure_projected_" << std::setw(5) << setfill('0') << Step()   << ".pos";
@@ -3439,6 +3448,9 @@ void FLD::XFluidImplicitTimeInt::ProjectOldTimeStepValues(
       PlotVectorFieldToGmsh(state_.veln_,  ".solution_field_velocity_projected_n_","Velocity Solution (Physical) n",false, Step(), Time());
       PlotVectorFieldToGmsh(state_.accn_,  ".solution_field_acceleration_projected_n_","Velocity Solution (Physical) n",false, Step(), Time());
 
+      discret_->Comm().Barrier();
+      const double dtsolve = ds_cputime()-tcpu;
+      cout << " Time needed for projection: " << dtsolve << " s." << endl;
 }
 
 

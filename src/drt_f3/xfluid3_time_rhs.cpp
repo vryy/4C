@@ -203,9 +203,9 @@ void SysmatDomain4(
 
     // get viscosity
     // check here, if we really have a fluid !!
-    dsassert(material->MaterialType() == INPAR::MAT::m_fluid, "Material law is not of type m_fluid.");
-    const MAT::NewtonianFluid* actmat = dynamic_cast<const MAT::NewtonianFluid*>(material.get());
-    const double visc = actmat->Viscosity();
+//    dsassert(material->MaterialType() == INPAR::MAT::m_fluid, "Material law is not of type m_fluid.");
+//    const MAT::NewtonianFluid* actmat = dynamic_cast<const MAT::NewtonianFluid*>(material.get());
+//    const double visc = actmat->Viscosity();
 
     // flag for higher order elements
     const bool higher_order_ele = XFLUID::secondDerivativesAvailable<DISTYPE>();
@@ -480,7 +480,7 @@ void SysmatDomain4(
               dserror("something went wrong!");
 
             // time integration constant
-            const double timefac = FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dtstar, theta);
+//            const double timefac = FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dtstar, theta);
 
 
 //            cout << gpvelnp << endl;
