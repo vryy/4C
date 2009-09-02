@@ -170,7 +170,7 @@ namespace INPUT
     std::vector<LineComponent*> components_;
 
     /// optional tail, only named components here
-    std::vector<LineComponent*> optionaltail_;
+    std::map<std::string,LineComponent*> optionaltail_;
 
     /// components from tail read in last line
     std::set<std::string> readtailcomponents_;

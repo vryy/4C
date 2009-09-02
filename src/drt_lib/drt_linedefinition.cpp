@@ -283,9 +283,11 @@ DRT::INPUT::LineDefinition::LineDefinition(const DRT::INPUT::LineDefinition& oth
   {
     components_.push_back(other.components_[i]->Clone());
   }
-  for (unsigned i=0; i<other.optionaltail_.size(); ++i)
+  for (std::map<std::string,LineComponent*>::const_iterator i=other.optionaltail_.begin();
+       i!=other.optionaltail_.end();
+       ++i)
   {
-    optionaltail_.push_back(other.optionaltail_[i]->Clone());
+    optionaltail_[i->first] = i->second->Clone();
   }
   std::copy(other.readtailcomponents_.begin(),
             other.readtailcomponents_.end(),
@@ -303,9 +305,11 @@ DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::operator=(const DRT::INP
   {
     components_.push_back(other.components_[i]->Clone());
   }
-  for (unsigned i=0; i<other.optionaltail_.size(); ++i)
+  for (std::map<std::string,LineComponent*>::const_iterator i=other.optionaltail_.begin();
+       i!=other.optionaltail_.end();
+       ++i)
   {
-    optionaltail_.push_back(other.optionaltail_[i]->Clone());
+    optionaltail_[i->first] = i->second->Clone();
   }
   std::copy(other.readtailcomponents_.begin(),
             other.readtailcomponents_.end(),
@@ -332,11 +336,13 @@ void DRT::INPUT::LineDefinition::Clear()
     delete components_[i];
   }
   components_.resize(0);
-  for (unsigned i=0; i<optionaltail_.size(); ++i)
+  for (std::map<std::string,LineComponent*>::iterator i=optionaltail_.begin();
+       i!=optionaltail_.end();
+       ++i)
   {
-    delete optionaltail_[i];
+    delete i->second;
   }
-  optionaltail_.resize(0);
+  optionaltail_.clear();
   readtailcomponents_.clear();
 }
 
@@ -444,7 +450,9 @@ DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddNamedDoubleVector(std
 /*----------------------------------------------------------------------*/
 DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalTag(std::string name)
 {
-  optionaltail_.push_back(new TagComponent(name));
+  if (optionaltail_.find(name)!=optionaltail_.end())
+    dserror("optional component '%s' already defined",name.c_str());
+  optionaltail_[name] = new TagComponent(name);
   return *this;
 }
 
@@ -453,7 +461,9 @@ DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalTag(std::stri
 /*----------------------------------------------------------------------*/
 DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedString(std::string name)
 {
-  optionaltail_.push_back(new NamedComponent<std::string>(name,"''"));
+  if (optionaltail_.find(name)!=optionaltail_.end())
+    dserror("optional component '%s' already defined",name.c_str());
+  optionaltail_[name] = new NamedComponent<std::string>(name,"''");
   return *this;
 }
 
@@ -462,7 +472,9 @@ DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedString(s
 /*----------------------------------------------------------------------*/
 DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedInt(std::string name)
 {
-  optionaltail_.push_back(new NamedComponent<int>(name,0));
+  if (optionaltail_.find(name)!=optionaltail_.end())
+    dserror("optional component '%s' already defined",name.c_str());
+  optionaltail_[name] = new NamedComponent<int>(name,0);
   return *this;
 }
 
@@ -471,7 +483,9 @@ DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedInt(std:
 /*----------------------------------------------------------------------*/
 DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedIntVector(std::string name, int length)
 {
-  optionaltail_.push_back(new NamedVectorComponent<int>(name,length));
+  if (optionaltail_.find(name)!=optionaltail_.end())
+    dserror("optional component '%s' already defined",name.c_str());
+  optionaltail_[name] = new NamedVectorComponent<int>(name,length);
   return *this;
 }
 
@@ -480,7 +494,9 @@ DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedIntVecto
 /*----------------------------------------------------------------------*/
 DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedDouble(std::string name)
 {
-  optionaltail_.push_back(new NamedComponent<double>(name,0));
+  if (optionaltail_.find(name)!=optionaltail_.end())
+    dserror("optional component '%s' already defined",name.c_str());
+  optionaltail_[name] = new NamedComponent<double>(name,0);
   return *this;
 }
 
@@ -489,7 +505,9 @@ DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedDouble(s
 /*----------------------------------------------------------------------*/
 DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedDoubleVector(std::string name, int length)
 {
-  optionaltail_.push_back(new NamedVectorComponent<double>(name,length));
+  if (optionaltail_.find(name)!=optionaltail_.end())
+    dserror("optional component '%s' already defined",name.c_str());
+  optionaltail_[name] = new NamedVectorComponent<double>(name,length);
   return *this;
 }
 
@@ -506,9 +524,11 @@ void DRT::INPUT::LineDefinition::Print(std::ostream& stream)
   if (optionaltail_.size()>0)
   {
     stream << "[ ";
-    for (unsigned i=0; i<optionaltail_.size(); ++i)
+    for (std::map<std::string,LineComponent*>::iterator i=optionaltail_.begin();
+         i!=optionaltail_.end();
+         ++i)
     {
-      optionaltail_[i]->Print(stream);
+      i->second->Print(stream);
       stream << ' ';
     }
     stream << "] ";
@@ -529,35 +549,24 @@ bool DRT::INPUT::LineDefinition::Read(std::istream& stream)
     }
   }
 
-  // Optional elements cause pain!
-  if (optionaltail_.size()>0)
+  // we expect as much optional components as are defined (or less)
+  for (unsigned a=0; a<optionaltail_.size(); ++a)
   {
-    while (stream)
+    std::string name;
+    stream >> name;
+    if (not stream)
+      break;
+    if (readtailcomponents_.find(name)!=readtailcomponents_.end())
     {
-      std::string name;
-      stream >> name;
-      if (not stream)
-        break;
-      if (readtailcomponents_.find(name)!=readtailcomponents_.end())
-      {
-        // duplicated optional component
-        return false;
-      }
-      bool found = false;
-      for (unsigned i=0; i<optionaltail_.size(); ++i)
-      {
-        if (optionaltail_[i]->IsNamed(name))
-        {
-          if (not optionaltail_[i]->Read(stream))
-            return false;
-          readtailcomponents_.insert(name);
-          found = true;
-          break;
-        }
-      }
-      if (not found)
-        return false;
+      // duplicated optional component
+      return false;
     }
+    std::map<std::string,LineComponent*>::iterator i = optionaltail_.find(name);
+    if (i==optionaltail_.end())
+      return false;
+    if (not i->second->Read(stream))
+      return false;
+    readtailcomponents_.insert(name);
   }
   return true;
 }
@@ -647,14 +656,9 @@ DRT::INPUT::LineComponent* DRT::INPUT::LineDefinition::FindNamed(std::string nam
 {
   if (readtailcomponents_.find(name)!=readtailcomponents_.end())
   {
-    for (unsigned i=0; i<optionaltail_.size(); ++i)
-    {
-      if (optionaltail_[i]->IsNamed(name))
-      {
-        return optionaltail_[i];
-      }
-    }
-    dserror("Ups! Not supposed to get here.");
+    std::map<std::string,LineComponent*>::iterator i = optionaltail_.find(name);
+    if (i!=optionaltail_.end())
+      return i->second;
   }
   else
   {
