@@ -1032,7 +1032,6 @@ void SysmatDomain4(
 //            double dtstar = dt;
               if (timealgo != timeint_stationary)
               {
-                cout << "Project from space time cell" << endl;
                 if (not was_in_fluid)
                 {
                   timeformulation = XFLUID::ReducedTimeStepSize;
@@ -1737,12 +1736,12 @@ void Sysmat4(
     const int shpVecSize       = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     const DRT::Element::DiscretizationType stressdistype = XFLUID::StressInterpolation3D<DISTYPE>::distype;
     const int shpVecSizeStress = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
-    LINALG::Matrix<shpVecSize,1> eprenp;
-    LINALG::Matrix<3,shpVecSize> evelnp;
-    LINALG::Matrix<3,shpVecSize> eveln;
-    LINALG::Matrix<3,shpVecSize> evelnm;
-    LINALG::Matrix<3,shpVecSize> eaccn;
-    LINALG::Matrix<6,shpVecSizeStress> etau;
+    static LINALG::Matrix<shpVecSize,1> eprenp;
+    static LINALG::Matrix<3,shpVecSize> evelnp;
+    static LINALG::Matrix<3,shpVecSize> eveln;
+    static LINALG::Matrix<3,shpVecSize> evelnm;
+    static LINALG::Matrix<3,shpVecSize> eaccn;
+    static LINALG::Matrix<6,shpVecSizeStress> etau;
 
     fillElementUnknownsArrays4<DISTYPE,ASSTYPE>(dofman, mystate, evelnp, eveln, evelnm, eaccn, eprenp, etau);
 

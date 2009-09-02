@@ -258,6 +258,7 @@ public:
   const Teuchos::ParameterList& StructSolverParams() const { return getParameterList()->sublist("STRUCT SOLVER"); }
   const Teuchos::ParameterList& FluidSolverParams() const { return getParameterList()->sublist("FLUID SOLVER"); }
   const Teuchos::ParameterList& FluidPressureSolverParams() const { return getParameterList()->sublist("FLUID PRESSURE SOLVER"); }
+  const Teuchos::ParameterList& XFluidProjectionSolverParams() const { return getParameterList()->sublist("XFLUID PROJECTION SOLVER"); }
   const Teuchos::ParameterList& AleSolverParams() const { return getParameterList()->sublist("ALE SOLVER"); }
   const Teuchos::ParameterList& ThermalSolverParams() const { return getParameterList()->sublist("THERMAL SOLVER"); }
   const Teuchos::ParameterList& ScalarTransportSolverParams() const { return getParameterList()->sublist("SCALAR TRANSPORT SOLVER"); }

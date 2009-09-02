@@ -657,33 +657,6 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInter
     dofswitch.mapVectorToNewDofDistribution(state_.velnm_);
   }
 
-//  // fix ghost fluid values
-//  const int standard_label = 0;
-//  const XFEM::Enrichment enr_std(standard_label, XFEM::Enrichment::typeStandard);
-//  for (int i=0; i<discret_->NumMyColNodes(); ++i)
-//  {
-//    const DRT::Node* node = discret_->lColNode(i);
-//    const LINALG::Matrix<3,1> nodalpos(node->X());
-//    const bool is_in_fluid = (ih->PositionWithinConditionNP(nodalpos) == 0);
-//    const bool was_in_fluid = (ih->PositionWithinConditionN(nodalpos) == 0);
-//
-//    const bool voidenrichment_in_set = EnrichmentInNodalDofSet(node->Id(), XFEM::Enrichment::typeVoid, nodalDofSet);
-//
-//    if (not voidenrichment_in_set)
-//    {
-//      const int label = ih.PositionWithinConditionNP(nodalpos);
-//      const bool in_fluid = (0 == label);
-//
-//      if (in_fluid)
-//      {
-//        for (std::set<XFEM::PHYSICS::Field>::const_iterator field = fieldset.begin();field != fieldset.end();++field)
-//        {
-//          nodalDofSet[node->Id()].insert(XFEM::FieldEnr(*field, enr_std));
-//        }
-//      }
-//    }
-//  };
-
   // --------------------------------------------------
   // create remaining vectors with new dof distribution
   // --------------------------------------------------
@@ -702,6 +675,18 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInter
     zeros_->PutScalar(0.0); // just in case of change
   }
 
+  // -------------------------------------------------------------------
+  // get a vector layout from the discretization for a vector which only
+  // contains the velocity dofs and for one vector which only contains
+  // pressure degrees of freedom.
+  // -------------------------------------------------------------------
+  FLD::UTILS::SetupXFluidSplit(*discret_,dofmanager,velpressplitter_);
+
+  // project old interpolated velocity vector onto divergence free space
+  if (xparams_.get<bool>("INCOMP_PROJECTION"))
+    if (timealgo_ != timeint_stationary)
+      ProjectOldTimeStepValues();
+
   neumann_loads_= LINALG::CreateVector(newdofrowmap,true);
 
   // ---------------------------------
@@ -710,14 +695,6 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInter
   residual_     = LINALG::CreateVector(newdofrowmap,true);
   trueresidual_ = LINALG::CreateVector(newdofrowmap,true);
   incvel_       = LINALG::CreateVector(newdofrowmap,true);
-
-
-  // -------------------------------------------------------------------
-  // get a vector layout from the discretization for a vector which only
-  // contains the velocity dofs and for one vector which only contains
-  // pressure degrees of freedom.
-  // -------------------------------------------------------------------
-  FLD::UTILS::SetupXFluidSplit(*discret_,dofmanager,velpressplitter_);
 
   // -------------------------------------------------------------------
   // create empty system matrix --- stiffness and mass are assembled in
@@ -782,9 +759,6 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInter
   enrichsysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*enrichmap,108,false,true));
 #endif
 
-  if (xparams_.get<bool>("INCOMP_PROJECTION"))
-    if (timealgo_ != timeint_stationary)
-      ProjectOldTimeStepValues();
 
   // print information about dofs
   if (discret_->Comm().NumProc() == 1)
@@ -3173,19 +3147,20 @@ void FLD::XFluidImplicitTimeInt::MonolithicMultiDisEvaluate(
 static void DoDirichletCondition(
                           DRT::Discretization&        dis,
                           XFEM::InterfaceHandleXFSI&  ih,
-                          Teuchos::RCP<Epetra_Vector> systemvector,
-                          Teuchos::RCP<std::set<int> > dbcgids)
+                          std::vector<int>&           dbcgids)
 {
-  dsassert(systemvector!=Teuchos::null, "systemvector must be unequal to null");
-  dsassert(dbcgids!=Teuchos::null, "dbcgids must be unequal to null");
+  dbcgids.reserve(dis.DofRowMap()->NumMyElements());
 
   // loop row nodes to identify Dirichlet boundary conditions
   for (int inode=0; inode<dis.NumMyRowNodes(); ++inode)
   {
     const DRT::Node* actnode = dis.lRowNode(inode);
+#ifdef DEBUG
     if (actnode == NULL) dserror("Cannot find global node %d",inode);
-
-    const vector<int> dofs = dis.Dof(actnode);
+#endif
+    vector<int> dofs;
+    dofs.reserve(4);
+    dis.Dof(actnode,dofs);
     const unsigned numdf = dofs.size();
     if (numdf == 0)
       continue;
@@ -3200,18 +3175,13 @@ static void DoDirichletCondition(
       for (unsigned idf=0; idf<numdf; ++idf)
       {
         const int dofgid = dofs[idf];
-
-        const int doflid = systemvector->Map().LID(dofgid);
-        if (doflid<0)
-          dserror("Global dofgid %d not on this proc in system vector",dofgid);
-
         // amend vector of DOF-IDs which are Dirichlet BCs
-        dbcgids->insert(dofgid);
+        dbcgids.push_back(dofgid);
       }  // loop over nodal DOFs
     }
   }  // loop over nodes
 
-  cout << "  -> Number of unknowns for projection: " << (dis.DofRowMap()->NumMyElements() - dbcgids->size()) << endl;
+  cout << "  -> Number of unknowns for projection: " << (dis.DofRowMap()->NumMyElements() - dbcgids.size()) << endl;
 
   return;
 }
@@ -3222,9 +3192,6 @@ static void DoDirichletCondition(
 static void EvaluateDirichletProjection(
     Teuchos::RCP<DRT::Discretization> discret,
     XFEM::InterfaceHandleXFSI&  ih,
-    ParameterList& params,
-    Teuchos::RCP<Epetra_Vector> systemvector,
-
     Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor
     )
 {
@@ -3232,8 +3199,7 @@ static void EvaluateDirichletProjection(
   if (!discret->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
 
   // vector of DOF-IDs which are Dirichlet BCs
-  Teuchos::RCP<std::set<int> > dbcgids = Teuchos::null;
-  if (dbcmapextractor != Teuchos::null) dbcgids = Teuchos::rcp(new std::set<int>());
+  std::vector<int> dbcgids;
 
   //--------------------------------------------------------
   // loop through Dirichlet conditions and evaluate them
@@ -3241,22 +3207,17 @@ static void EvaluateDirichletProjection(
   DoDirichletCondition(
       *discret,
       ih,
-      systemvector,
       dbcgids);
 
   // create DBC and free map and build their common extractor
   if (dbcmapextractor != Teuchos::null)
   {
     // build map of Dirichlet DOFs
-    int nummyelements = 0;
+    int nummyelements = dbcgids.size();
     int* myglobalelements = NULL;
-    std::vector<int> dbcgidsv;
-    if (dbcgids->size() > 0)
+    if (nummyelements > 0)
     {
-      dbcgidsv.reserve(dbcgids->size());
-      dbcgidsv.assign(dbcgids->begin(),dbcgids->end());
-      nummyelements = dbcgidsv.size();
-      myglobalelements = &(dbcgidsv[0]);
+      myglobalelements = &(dbcgids[0]);
     }
     Teuchos::RCP<Epetra_Map> dbcmap
       = Teuchos::rcp(new Epetra_Map(-1, nummyelements, myglobalelements, discret->DofRowMap()->IndexBase(), discret->DofRowMap()->Comm()));
@@ -3288,9 +3249,9 @@ void FLD::XFluidImplicitTimeInt::ProjectOldTimeStepValues(
   const double tcpu=ds_cputime();
 
       Teuchos::RCP<LINALG::SparseOperator> sysmat_projection_veln = Teuchos::rcp(new LINALG::SparseMatrix(*discret_->DofRowMap(),0,false,true));
-      Teuchos::RCP<LINALG::SparseOperator> sysmat_projection_accn = Teuchos::rcp(new LINALG::SparseMatrix(*discret_->DofRowMap(),0,false,true));
+      Teuchos::RCP<LINALG::SparseOperator> sysmat_projection_accn = Teuchos::null;//Teuchos::rcp(new LINALG::SparseMatrix(*discret_->DofRowMap(),0,false,true));
       Teuchos::RCP<Epetra_Vector>    residual_veln = LINALG::CreateVector(*discret_->DofRowMap(),true);
-      Teuchos::RCP<Epetra_Vector>    residual_accn = LINALG::CreateVector(*discret_->DofRowMap(),true);
+      Teuchos::RCP<Epetra_Vector>    residual_accn = Teuchos::null;//LINALG::CreateVector(*discret_->DofRowMap(),true);
       {
         ////////////////////////
         // make a better veln //
@@ -3321,69 +3282,49 @@ void FLD::XFluidImplicitTimeInt::ProjectOldTimeStepValues(
 
 
         sysmat_projection_veln->Zero();
-        sysmat_projection_accn->Zero();
-        // call standard loop over elements
+//        sysmat_projection_accn->Zero();
+        // call standard loop over elements (don't forget to build element stiffness matrix on the element level)
         discret_->Evaluate(eleparams,sysmat_projection_veln,sysmat_projection_accn,residual_veln,residual_accn,Teuchos::null);
         discret_->ClearState();
         // finalize the complete matrix
         sysmat_projection_veln->Complete();
-        sysmat_projection_accn->Complete();
+//        sysmat_projection_accn->Complete();
       }
 
       // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
       Teuchos::RCP<LINALG::MapExtractor> dbcmaps_projection = Teuchos::rcp(new LINALG::MapExtractor());
-      {
-        ParameterList eleparams;
-        // other parameters needed by the elements
-        EvaluateDirichletProjection(discret_, *ih_np_, eleparams, zeros_, dbcmaps_projection);
+      EvaluateDirichletProjection(discret_, *ih_np_, dbcmaps_projection);
 
-        zeros_->PutScalar(0.0); // just in case of change
-      }
       Teuchos::RCP<Epetra_Map> combimap = LINALG::MergeMap(*dbcmaps_projection->CondMap(), *dbcmaps_->CondMap());
       *dbcmaps_projection = LINALG::MapExtractor(*(discret_->DofRowMap()), combimap);
 
       // blank residual DOFs which are on Dirichlet BC
       dbcmaps_projection->InsertCondVector(dbcmaps_projection->ExtractCondVector(state_.veln_), residual_veln);
-      dbcmaps_projection->InsertCondVector(dbcmaps_projection->ExtractCondVector(state_.accn_), residual_accn);
+//      dbcmaps_projection->InsertCondVector(dbcmaps_projection->ExtractCondVector(state_.accn_), residual_accn);
 
-      //  cout << *state_.veln_ << endl;
-      //  cout << *residual_ << endl;
-
-      //--------- Apply Dirichlet boundary conditions to system of equations
-      //          residual displacements are supposed to be zero at
-      //          boundary conditions
-      {
-        // time measurement: application of dbc
-        TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
-        LINALG::ApplyDirichlettoSystem(sysmat_projection_veln,state_.veln_,residual_veln,state_.veln_,*(dbcmaps_projection->CondMap()));
-        LINALG::ApplyDirichlettoSystem(sysmat_projection_accn,state_.accn_,residual_accn,state_.accn_,*(dbcmaps_projection->CondMap()));
-      }
-
-      //  cout << *state_.veln_ << endl;
-      //  cout << *residual_ << endl;
-
-      //  cout << *sysmat_projection->EpetraOperator() << endl;
+      LINALG::ApplyDirichlettoSystem(sysmat_projection_veln,state_.veln_,residual_veln,state_.veln_,*(dbcmaps_projection->CondMap()));
+//      LINALG::ApplyDirichlettoSystem(sysmat_projection_accn,state_.accn_,residual_accn,state_.accn_,*(dbcmaps_projection->CondMap()));
 
       //-------solve for residual displacements to correct incremental displacements
       {
+        cout << DRT::Problem::Instance()->XFluidProjectionSolverParams() << endl;
         // time measurement: solver
-        TEUCHOS_FUNC_TIME_MONITOR("      + solver calls");
-        Teuchos::RCP<LINALG::Solver> solver = rcp(new LINALG::Solver(fluidsolverparams_,
+        Teuchos::RCP<LINALG::Solver> solver = rcp(new LINALG::Solver(DRT::Problem::Instance()->XFluidProjectionSolverParams(),
             discret_->Comm(),
             DRT::Problem::Instance()->ErrorFile()->Handle()));
-        discret_->ComputeNullSpaceIfNecessary(solver->Params());
+        discret_->ComputeNullSpaceIfNecessary(solver->Params(),true);
         solver->Solve(sysmat_projection_veln->EpetraOperator(), state_.veln_, residual_veln, true, true);
         solver->ResetTolerance();
 
-        solver = rcp(new LINALG::Solver(fluidsolverparams_,
-            discret_->Comm(),
-            DRT::Problem::Instance()->ErrorFile()->Handle()));
-        discret_->ComputeNullSpaceIfNecessary(solver->Params());
-        solver->Solve(sysmat_projection_accn->EpetraOperator(), state_.accn_, residual_accn, true, true);
-        solver->ResetTolerance();
+//        solver = rcp(new LINALG::Solver(fluidsolverparams_,
+//            discret_->Comm(),
+//            DRT::Problem::Instance()->ErrorFile()->Handle()));
+//        discret_->ComputeNullSpaceIfNecessary(solver->Params());
+//        solver->Solve(sysmat_projection_accn->EpetraOperator(), state_.accn_, residual_accn, true, true);
+//        solver->ResetTolerance();
       }
 
-
+#if 0
       if ((this->physprob_.fieldset_.find(XFEM::PHYSICS::Pres) != this->physprob_.fieldset_.end()))
       {
         std::stringstream filename;
@@ -3446,8 +3387,8 @@ void FLD::XFluidImplicitTimeInt::ProjectOldTimeStepValues(
         f_system.close();
       }
       PlotVectorFieldToGmsh(state_.veln_,  ".solution_field_velocity_projected_n_","Velocity Solution (Physical) n",false, Step(), Time());
-      PlotVectorFieldToGmsh(state_.accn_,  ".solution_field_acceleration_projected_n_","Velocity Solution (Physical) n",false, Step(), Time());
-
+//      PlotVectorFieldToGmsh(state_.accn_,  ".solution_field_acceleration_projected_n_","Velocity Solution (Physical) n",false, Step(), Time());
+#endif
       discret_->Comm().Barrier();
       const double dtsolve = ds_cputime()-tcpu;
       cout << " Time needed for projection: " << dtsolve << " s." << endl;

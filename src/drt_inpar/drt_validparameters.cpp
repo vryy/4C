@@ -2236,6 +2236,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   SetValidSolverParameters(fluidpsolver);
 
   /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& xfluidprojsolver = list->sublist("XFLUID PROJECTION SOLVER",false,"");
+  SetValidSolverParameters(xfluidprojsolver);
+
+  /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& structsolver = list->sublist("STRUCT SOLVER",false,"");
   SetValidSolverParameters(structsolver);
 

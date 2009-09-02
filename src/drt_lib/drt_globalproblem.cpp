@@ -192,6 +192,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
 
   reader.ReadGidSection("--FLUID SOLVER", *list);
   reader.ReadGidSection("--FLUID PRESSURE SOLVER", *list);
+  reader.ReadGidSection("--XFLUID PROJECTION SOLVER", *list);
   reader.ReadGidSection("--STRUCT SOLVER", *list);
   reader.ReadGidSection("--ALE SOLVER", *list);
   reader.ReadGidSection("--THERMAL SOLVER", *list);
