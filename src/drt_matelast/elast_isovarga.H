@@ -36,7 +36,7 @@ namespace ELASTIC
     /// material parameters of Varga's material
     ///
     /// <h3>Input line</h3>
-    /// MAT 1 ELAST_IsoVarga MUE 1.0
+    /// MAT 1 ELAST_IsoVarga MUE 1.0 BETA 1.0
     class IsoVarga : public MAT::PAR::Parameter
     {
     public:
@@ -54,6 +54,8 @@ namespace ELASTIC
 
       /// Shear modulus
       double mue_;
+      /// 'Anti-modulus'
+      double beta_;
 
       //@}
 
@@ -62,24 +64,28 @@ namespace ELASTIC
   }  // namespace PAR
 
   /*----------------------------------------------------------------------*/
-  /// Varga's material according to [1]
+  /// Isochoric Varga's material according to [1], [2]
   ///
   /// This is a compressible, hyperelastic, isotropic material
   /// of the most simple kind.
   ///
   /// The material strain energy density function is
   ///\f[
-  /// \Psi = 2 \mu (\bar{\lambda}_1 + \bar{\lambda}_2 + \bar{\lambda}_3 - 3)
+  /// \Psi = \underbrace{(2\mu-\beta)}_{\displaystyle\alpha} \Big(\bar{\lambda}_1 + \bar{\lambda}_2 + \bar{\lambda}_3 - 3\Big)
+  ///      + \beta \Big(\frac{1}{\bar{\lambda}_1} + \frac{1}{\bar{\lambda}_2} + \frac{1}{\bar{\lambda}_3} - 3\Big)
   ///\f]
-  /// which was taken from [1] Eq (6.129).
+  /// which was taken from [1] Eq (6.129) and [2] Eq (1.3).
   ///
   /// <h3>References</h3>
   /// <ul>
   /// <li> [1] GA Holzapfel, "Nonlinear solid mechanics", Wiley, 2000.
+  /// <li> [2] JM Hill and DJ Arrigo, "New families of exact solutions for 
+  ///          finitely deformed incompressible elastic materials",
+  ///          IMA J Appl Math, 54:109-123, 1995.
   /// </ul>
   ///
   /// \author bborn
-  /// \date 04/09
+  /// \date 08/09
   class IsoVarga : public Summand
   {
 
@@ -168,11 +174,13 @@ namespace ELASTIC
     /// @name Access methods
     //@{
     double Mue() const { return params_->mue_; }
+    double Beta() const { return params_->beta_; }
     //@}
 
     /// @name Write methods
     //@{
     void SetMue(const double& mue) { params_->mue_ = mue; }
+    void SetBeta(const double& beta) { params_->beta_ = beta; }
     //@}
 
 

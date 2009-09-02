@@ -862,6 +862,12 @@ void MAT::ElastHyper::ResponseStretches(
     }
   }
 
+//  cout << "rcg=" << rcg << endl;
+//  cout << "stress=" << stress << endl;
+//  cout << "cmat=" << cmat << endl;
+//  exit(0);
+
+
   // ready
   return;
 }

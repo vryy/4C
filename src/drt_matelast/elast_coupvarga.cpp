@@ -30,7 +30,8 @@ MAT::ELASTIC::PAR::CoupVarga::CoupVarga(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : Parameter(matdata),
-  mue_(matdata->GetDouble("MUE"))
+  mue_(matdata->GetDouble("MUE")),
+  beta_(matdata->GetDouble("BETA"))
 {
 }
 
@@ -147,18 +148,31 @@ void MAT::ELASTIC::CoupVarga::AddCoefficientsStretchesPrincipal(
     + (-1.0/3.0)*mue*fst*jac53*prstr(1);
 
 #else
+  // parameters
+  const double alpha = 2.0*params_->mue_ - params_->beta_;
+  const double beta = params_->beta_;
+
   // first derivatives
-  gamma(0) += 2.0*params_->mue_;  // \frac{\partial Psi}{\partial \lambda_1}
-  gamma(1) += 2.0*params_->mue_;  // \frac{\partial Psi}{\partial \lambda_2}
-  gamma(2) += 2.0*params_->mue_;  // \frac{\partial Psi}{\partial \lambda_3}
+  // \frac{\partial Psi}{\partial \lambda_1}
+  gamma(0) += alpha - beta/(prstr(0)*prstr(0));
+  // \frac{\partial Psi}{\partial \lambda_2}
+  gamma(1) += alpha - beta/(prstr(1)*prstr(1));
+  // \frac{\partial Psi}{\partial \lambda_3}
+  gamma(2) += alpha - beta/(prstr(2)*prstr(2));
 
   // second derivatives
-  delta(0) += 0.0;  // \frac{\partial^2 Psi}{\partial\lambda_1^2}
-  delta(1) += 0.0;  // \frac{\partial^2 Psi}{\partial\lambda_2^2}
-  delta(2) += 0.0;  // \frac{\partial^2 Psi}{\partial\lambda_3^2}
-  delta(3) += 0.0;  // \frac{\partial^2 Psi}{\partial\lambda_1 \partial\lambda_2}
-  delta(4) += 0.0;  // \frac{\partial^2 Psi}{\partial\lambda_2 \partial\lambda_3}
-  delta(5) += 0.0;  // \frac{\partial^2 Psi}{\partial\lambda_3 \partial\lambda_1}
+  // \frac{\partial^2 Psi}{\partial\lambda_1^2}
+  delta(0) += 2.0*beta/(prstr(0)*prstr(0)*prstr(0));
+  // \frac{\partial^2 Psi}{\partial\lambda_2^2}
+  delta(1) += 2.0*beta/(prstr(1)*prstr(1)*prstr(1));
+  // \frac{\partial^2 Psi}{\partial\lambda_3^2}
+  delta(2) += 2.0*beta/(prstr(2)*prstr(2)*prstr(2));
+  // \frac{\partial^2 Psi}{\partial\lambda_1 \partial\lambda_2}
+  delta(3) += 0.0;
+  // \frac{\partial^2 Psi}{\partial\lambda_2 \partial\lambda_3}
+  delta(4) += 0.0;
+  // \frac{\partial^2 Psi}{\partial\lambda_3 \partial\lambda_1}
+  delta(5) += 0.0;
 #endif
 
   // done

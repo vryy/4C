@@ -1067,6 +1067,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             INPAR::MAT::mes_coupvarga));
 
     AddNamedReal(m,"MUE","Shear modulus");
+    AddNamedReal(m,"BETA","'Anti-modulus'");
 
     AppendMaterialDefinition(matlist,m);
   }
@@ -1080,6 +1081,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             INPAR::MAT::mes_isovarga));
 
     AddNamedReal(m,"MUE","Shear modulus");
+    AddNamedReal(m,"BETA","'Anti-modulus'");
 
     AppendMaterialDefinition(matlist,m);
   }
