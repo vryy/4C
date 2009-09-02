@@ -240,21 +240,9 @@ void DatFileReader::ReadDesign(const std::string& name, std::vector<std::vector<
   std::string sectionname = name + "-NODE TOPOLOGY";
   std::string marker = std::string("--") + sectionname;
 
-  std::string nname = name;
-  if (nname=="DSURF")
-    nname = "DSURFACE";
-  else if (nname=="DVOL")
-    nname = "DVOLUME";
-
   map<string,unsigned>::const_iterator i = positions_.find(marker);
   if (i!=positions_.end())
   {
-    LineDefinition line;
-    line
-      .AddNamedInt("NODE")
-      .AddNamedInt(nname)
-      ;
-
     for (unsigned pos = i->second+1; pos < lines_.size(); ++pos)
     {
       const char* l = lines_[pos];
@@ -263,15 +251,15 @@ void DatFileReader::ReadDesign(const std::string& name, std::vector<std::vector<
         break;
       }
 
-      std::istringstream stream(l);
-      if (not line.Read(stream))
-        dserror("Illegal line in section '%s': '%s'",marker.c_str(),l);
-
       int dobj;
       int nodeid;
+      std::string nname;
+      std::string dname;
 
-      line.ExtractInt(nname,dobj);
-      line.ExtractInt("NODE",nodeid);
+      std::istringstream stream(l);
+      stream >> nname >> nodeid >> dname >> dobj;
+      if (not stream or nname!="NODE" or dname.substr(0,name.length())!=name)
+        dserror("Illegal line in section '%s': '%s'",marker.c_str(),l);
 
       topology[dobj-1].insert(nodeid-1);
     }
