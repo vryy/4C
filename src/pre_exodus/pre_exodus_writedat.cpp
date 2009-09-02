@@ -125,6 +125,15 @@ void EXODUS::WriteDatHead(const string& headfile, ostream& dat)
   }
   headstring.erase(headstring.end()-1);
 
+  // delete section "DESIGN DESCRIPTION" as it is written in WriteDatDesign
+  const size_t size_sectiondes = headstring.find("-------------------------------------------------DESIGN DESCRIPTION");
+  if(size_sectiondes!=string::npos)
+  {
+      const size_t typ_sectiondes = headstring.find("-----------------------------------------------------DISCRETISATION");
+      headstring.erase(size_sectiondes,typ_sectiondes-size_sectiondes);
+  }
+  headstring.erase(headstring.end()-1);
+
   // delete very first line with comment "//"
   if (headstring.find("//")== 0)
     headstring.erase(headstring.find("//"),headstring.find("\n")+1);//-headstring.find("//"));
