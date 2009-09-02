@@ -17,6 +17,7 @@ Maintainer: Ulrich Kuettler
 
 
 #include "drt_inputreader.H"
+#include "drt_linedefinition.H"
 #include "linalg_utils.H"
 #include "standardtypes_cpp.H"
 
@@ -239,25 +240,40 @@ void DatFileReader::ReadDesign(const std::string& name, std::vector<std::vector<
   std::string sectionname = name + "-NODE TOPOLOGY";
   std::string marker = std::string("--") + sectionname;
 
-  // this is still the old fr* stuff
-  if (frfind(marker.c_str()))
-  {
-    frread();
+  std::string nname = name;
+  if (nname=="DSURF")
+    nname = "DSURFACE";
+  else if (nname=="DVOL")
+    nname = "DVOLUME";
 
-    // read the whole thing
-    while (strncmp(allfiles.actplace,"------",6)!=0)
+  map<string,unsigned>::const_iterator i = positions_.find(marker);
+  if (i!=positions_.end())
+  {
+    LineDefinition line;
+    line
+      .AddNamedInt("NODE")
+      .AddNamedInt(nname)
+      ;
+
+    for (unsigned pos = i->second+1; pos < lines_.size(); ++pos)
     {
+      const char* l = lines_[pos];
+      if (l[0]=='-' and l[1]=='-')
+      {
+        break;
+      }
+
+      std::istringstream stream(l);
+      if (not line.Read(stream))
+        dserror("Illegal line in section '%s': '%s'",marker.c_str(),l);
+
       int dobj;
-      int ierr;
       int nodeid;
-      frint(name.c_str(),&dobj,&ierr);
-      if (ierr!=1)
-        dserror("Cannot read %s", sectionname.c_str());
-      frint("NODE",&nodeid,&ierr);
-      if (ierr!=1)
-        dserror("Cannot read %s", sectionname.c_str());
+
+      line.ExtractInt(nname,dobj);
+      line.ExtractInt("NODE",nodeid);
+
       topology[dobj-1].insert(nodeid-1);
-      frread();
     }
 
     // copy all design object entries
@@ -275,7 +291,10 @@ void DatFileReader::ReadDesign(const std::string& name, std::vector<std::vector<
       dobj_fenode[i->first].assign(i->second.begin(),i->second.end());
     }
   }
+  else
+    dserror("section '%s' not found",marker.c_str());
 }
+
 
 //----------------------------------------------------------------------
 /// read a knotvector section (for isogeometric analysis)
