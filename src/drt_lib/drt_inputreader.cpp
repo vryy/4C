@@ -279,8 +279,6 @@ void DatFileReader::ReadDesign(const std::string& name, std::vector<std::vector<
       dobj_fenode[i->first].assign(i->second.begin(),i->second.end());
     }
   }
-  else
-    dserror("section '%s' not found",marker.c_str());
 }
 
 
