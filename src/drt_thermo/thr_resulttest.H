@@ -2,7 +2,7 @@
 /*!
 \file thr_resulttest.H
 
-\brief testing of structure calculation results
+\brief testing of thermo calculation results
 
 <pre>
 Maintainer: Moritz Frenzel

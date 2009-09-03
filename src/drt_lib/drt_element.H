@@ -151,6 +151,8 @@ public:
     element_constraintelement3,
     element_transport,
     element_transportboundary,
+    element_thermo,
+    element_thermoboundary,
     element_artery,             //_1D_ARTERY_
     element_so_hex8p1j1
   };

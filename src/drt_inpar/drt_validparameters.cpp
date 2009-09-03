@@ -292,43 +292,33 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& type = list->sublist("PROBLEM TYP",false,"");
 
+  {
+  Teuchos::Tuple<std::string,16> name;
+  Teuchos::Tuple<PROBLEM_TYP,16> label;
+  name[ 0] = "Structure";                                   label[ 0] = prb_structure;
+  name[ 1] = "Fluid";                                       label[ 1] = prb_fluid;
+  name[ 2] = "Fluid_XFEM";                                  label[ 2] = prb_fluid_xfem;
+  name[ 3] = "Fluid_Ale";                                   label[ 3] = prb_fluid_ale;
+  name[ 4] = "Fluid_Freesurface";                           label[ 4] = prb_freesurf;
+  name[ 5] = "Scalar_Transport";                            label[ 5] = prb_scatra;
+  name[ 6] = "Fluid_Structure_Interaction";                 label[ 6] = prb_fsi;
+  name[ 7] = "Fluid_Structure_Interaction_XFEM";            label[ 7] = prb_fsi_xfem;
+  name[ 8] = "Ale";                                         label[ 8] = prb_ale;
+  name[ 9] = "Thermal_Structure_Interaction";               label[ 9] = prb_tsi;
+  name[10] = "Thermo";                                      label[10] = prb_thermo;
+  name[11] = "Structure_Multiscale";                        label[11] = prb_struct_multi;
+  name[12] = "Low_Mach_Number_Flow";                        label[12] = prb_loma;
+  name[13] = "Electrochemistry";                            label[13] = prb_elch;
+  name[14] = "Combustion";                                  label[14] = prb_combust;
+  name[15] = "ArterialNetwork";                             label[15] = prb_art_net;
   setStringToIntegralParameter<PROBLEM_TYP>(
                                "PROBLEMTYP",
                                "Fluid_Structure_Interaction",
                                "",
-                               tuple<std::string>(
-                                 "Structure",
-                                 "Fluid",
-                                 "Fluid_XFEM",
-                                 "Fluid_Ale",
-                                 "Fluid_Freesurface",
-                                 "Scalar_Transport",
-                                 "Fluid_Structure_Interaction",
-                                 "Fluid_Structure_Interaction_XFEM",
-                                 "Ale",
-                                 "Thermal_Structure_Interaction",
-                                 "Structure_Multiscale",
-                                 "Low_Mach_Number_Flow",
-                                 "Electrochemistry",
-                                 "Combustion",
-                                 "ArterialNetwork"),
-                               tuple<PROBLEM_TYP>(
-                                 prb_structure,
-                                 prb_fluid,
-                                 prb_fluid_xfem,
-                                 prb_fluid_ale,
-                                 prb_freesurf,
-                                 prb_scatra,
-                                 prb_fsi,
-                                 prb_fsi_xfem,
-                                 prb_ale,
-                                 prb_tsi,
-                                 prb_struct_multi,
-                                 prb_loma,
-                                 prb_elch,
-                                 prb_combust,
-                                 prb_art_net),
-                                 &type);
+                               name,
+                               label,
+                               &type);
+  }
 
   IntParameter("NUMFIELD",1,"",&type);
   setStringToIntegralParameter<TIME_TYP>("TIMETYP","Dynamic","",

@@ -28,6 +28,7 @@ typedef enum _PROBLEM_TYP
                        prb_opt,          /*  structural optimization  problem */
                        prb_ale,          /*  pure ale problem */
                        prb_tsi,          /*  thermal structure interaction */
+                       prb_thermo,       /*  thermal problem */
                        prb_fluid_pm,     /*  fluid with (any) projection method */
                        prb_scatra,       /*  scalar transport problem (e.g. convection-diffusion) */
                        prb_pfsi,         /*  projection fsi */
@@ -41,7 +42,7 @@ typedef enum _PROBLEM_TYP
  * initialize static variables. Keep in sync!
  * The trailing NULL is essential for the filters to read the problem
  * type! */
-#define PROBLEMNAMES { "none","fsi","fsi_xfem","ssi","structure","fluid","fluid_xfem","fluid_dgfem","fluid_ale","freesurf","opt","ale","tsi","fluid_pm","scatra","pfsi","struct_multi","loma","elch","combustion","art_net",NULL }
+#define PROBLEMNAMES { "none","fsi","fsi_xfem","ssi","structure", "fluid","fluid_xfem","fluid_dgfem","fluid_ale","freesurf","opt","ale","tsi","thermo","fluid_pm","scatra","pfsi","struct_multi","loma","elch","combustion","art_net",NULL }
 /*----------------------------------------------------------------------*
  | TIME TYPES                                             m.gee 7/01    |
  *----------------------------------------------------------------------*/

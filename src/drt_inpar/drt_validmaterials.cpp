@@ -240,8 +240,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"BURSHC","specific heat capacity of burnt phase (J/(kg*K))");
     AddNamedReal(m,"UNBTEMP","temperature of unburnt phase (K)");
     AddNamedReal(m,"BURTEMP","temperature of burnt phase (K)");
-    AddNamedReal(m,"UNBDENS","density of unburnt phase (kg/m³)");
-    AddNamedReal(m,"BURDENS","density of burnt phase (kg/m³)");
+    AddNamedReal(m,"UNBDENS","density of unburnt phase (kg/mï¿½)");
+    AddNamedReal(m,"BURDENS","density of burnt phase (kg/mï¿½)");
 
     AppendMaterialDefinition(matlist,m);
   }
@@ -1107,6 +1107,20 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AppendMaterialDefinition(matlist,m);
   }
 
+  /*----------------------------------------------------------------------*/
+  /*--------------------------------------------------------------------*/
+  // Fourier's law
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("THERM_FourierIso",
+                                            "isotropic (linear) Fourier's law of heat conduction",
+                                            INPAR::MAT::m_th_fourier_iso));
+
+    AddNamedReal(m,"CAPA","capacity");
+    AddNamedReal(m,"CONDUCT","conductivity");
+
+    AppendMaterialDefinition(matlist,m);
+  }
   /*----------------------------------------------------------------------*/
   // deliver
   return vm;

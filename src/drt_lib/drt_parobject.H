@@ -182,6 +182,7 @@ using namespace std;
 #define ParObject_XDiff3Surface         (int)168
 #define ParObject_XDiff3Line            (int)169
 #define ParObject_ArrheniusPV           (int)170
+#define ParObject_FourierIso            (int)171
 
 namespace DRT
 {

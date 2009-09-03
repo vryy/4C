@@ -51,6 +51,7 @@ Maintainer: Lena Wiechert
 #include "protein.H"
 #include "elasthyper.H"
 #include "cnst_1d_art.H"
+#include "fourieriso.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -318,6 +319,13 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
     MAT::PAR::Cnst_1d_art* params = static_cast<MAT::PAR::Cnst_1d_art*>(curmat->Parameter());
     return Teuchos::rcp(new Cnst_1d_art(params));
   }
+  case INPAR::MAT::m_th_fourier_iso:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::FourierIso(curmat));
+    MAT::PAR::FourierIso* params = static_cast<MAT::PAR::FourierIso*>(curmat->Parameter());
+    return Teuchos::rcp(new FourierIso(params));
+  }
   case INPAR::MAT::m_pl_mises_3D:
   case INPAR::MAT::m_pl_mises:
   case INPAR::MAT::m_pl_hoff:
@@ -340,7 +348,6 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
   case INPAR::MAT::m_interf_therm:
   case INPAR::MAT::m_dam_mp:
   case INPAR::MAT::m_damage_ge:
-  case INPAR::MAT::m_th_fourier_iso:
   case INPAR::MAT::m_th_fourier_gen:
   case INPAR::MAT::m_vp_robinson:
   default:

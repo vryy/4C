@@ -293,6 +293,11 @@ void DRT::Problem::InputControl()
     genprob.numtf = 1;  /* thermal field index */
     break;
   }
+  case prb_thermo:
+  {
+    genprob.numtf = 0;  /* thermal field index */
+    break;
+  }
   case prb_loma:
   {
     genprob.numff = 0;  /* fluid field index */
@@ -693,6 +698,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
   RCP<DRT::Discretization> fluiddis        = null;
   RCP<DRT::Discretization> aledis          = null;
   RCP<DRT::Discretization> boundarydis     = null;
+  RCP<DRT::Discretization> thermdis        = null;
   RCP<DRT::Discretization> scatradis       = null;
   RCP<DRT::Discretization> structdis_macro = null;
   RCP<DRT::Discretization> structdis_micro = null;
@@ -858,7 +864,25 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     dserror("prb_tsi not yet impl.");
     break;
   }
-  case prb_structure:
+  case prb_thermo:
+  {
+    {
+       // allocate and input general old stuff....
+       if (genprob.numfld!=1) dserror("numfld != 1 for thermal problem");
+
+       std::string distype = ptype.get<std::string>("SHAPEFCT");
+
+       thermdis = rcp(new DRT::Discretization("thermo",reader.Comm()));
+       AddDis(genprob.numtf, thermdis);
+
+       DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
+       nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(thermdis, reader, "--THERMO ELEMENTS")));
+       nodereader.Read();
+       break;
+     } // end of else if (genprob.probtyp==prb_thermo)
+  }
+
+ case prb_structure:
   {
     // allocate and input general old stuff....
     if (genprob.numfld!=1) dserror("numfld != 1 for structural problem");

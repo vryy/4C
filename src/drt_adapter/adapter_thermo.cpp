@@ -106,7 +106,7 @@ void ADAPTER::ThermoBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterList&
 //  //const Teuchos::ParameterList& size
 //  //  = DRT::Problem::Instance()->ProblemSizeParams();
 
-  // show default parameters
+  // show default parameters of thermo parameter list
   if ((actdis->Comm()).MyPID()==0)
     DRT::INPUT::PrintDefaultParameters(std::cout, *tdyn);
 
