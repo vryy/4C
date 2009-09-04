@@ -1634,6 +1634,96 @@ void LINALG::PrintBlockMatrixInMatlabFormat(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void LINALG::PrintVectorInMatlabFormat(std::string fname,
+    const Epetra_Vector& V,
+    const bool newfile)
+{
+  // The following source code has been adapted from the Print() method
+  // of the Epetra_CrsMatrix class (see "Epetra_CrsMatrix.cpp").
+
+  int MyPID = V.Map().Comm().MyPID();
+  int NumProc = V.Map().Comm().NumProc();
+
+  std::ofstream os;
+
+  for (int iproc=0; iproc <NumProc; iproc++)    // loop over all processors
+  {
+    if(MyPID==iproc)
+    {
+      // open file for writing
+      if ((iproc == 0) && (newfile))
+        os.open(fname.c_str(),std::fstream::trunc);
+      else
+        os.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+
+      int NumVectors1 = 1;  // we don't support MultiVector objects
+      int NumMyElements1 = V.Map().NumMyElements();
+      int MaxElementSize1 = V.Map().MaxElementSize();
+      int* MyGlobalElements1 = V.Map().MyGlobalElements();
+      int* FirstPointInElementList1;
+      if (MaxElementSize1!=1) FirstPointInElementList1 = V.Map().FirstPointInElementList();
+      double ** A_Pointers = V.Pointers();
+
+      /*if (MyPID==0)
+          {
+              os.width(8);
+              os <<  "     MyPID"; os << "    ";
+              os.width(12);
+              if (MaxElementSize1==1)
+                  os <<  "GID  ";
+              else
+                  os <<  "     GID/Point";
+              for (int j = 0; j < NumVectors1 ; j++)
+              {
+                  os.width(20);
+                  os <<  "Value  ";
+              }
+              os << endl;
+          }*/
+      for (int i=0; i<NumMyElements1; i++)
+      {
+        for(int ii=0; ii< V.Map().ElementSize(i); ii++)
+        {
+          int iii;
+          os.width(10);
+          os << MyPID; os << "    ";
+          os.width(10);
+          if(MaxElementSize1==1)
+          {
+            os << MyGlobalElements1[i] << "    ";
+            iii = i;
+          }
+          else
+          {
+            os << MyGlobalElements1[i]<< "/" << ii << "    ";
+            iii = FirstPointInElementList1[i]+ii;
+          }
+
+          os.width(20);
+          os <<  A_Pointers[0][iii];    // print out values of 1. vector (only Epetra_Vector supported, no Multi_Vector)
+          os << endl;
+        }
+      }
+      os << flush;
+    }
+    // close file
+    os.close();
+
+    // Do a few global ops to give I/O a chance to complete
+    V.Map().Comm().Barrier();
+    V.Map().Comm().Barrier();
+    V.Map().Comm().Barrier();
+  }
+
+  // just to be sure
+  if (os.is_open()) os.close();
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 int LINALG::FindMyPos(int nummyelements, const Epetra_Comm& comm)
 {
   const int myrank  = comm.MyPID();

@@ -853,6 +853,18 @@ namespace LINALG
       );
 
   /*!
+  \brief Print content of a vector in Matlab format
+
+  The Vector V is printed in Matlab sparse format to
+  a file with specified file name.
+
+   */
+  void PrintVectorInMatlabFormat(std::string fname,
+      const Epetra_Vector& V,
+      const bool newfile = true
+      );
+
+  /*!
   \brief Gather information of type vector<T> on a subset of processors
 
   This template gathers information provided in sdata on a subset of
