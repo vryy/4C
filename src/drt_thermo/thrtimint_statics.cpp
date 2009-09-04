@@ -220,7 +220,7 @@ void THR::TimIntStatics::UpdateStepState()
     p.set("delta time", (*dt_)[0]);
     //   //p.set("alpha f", theta_);
     // action for elements
-    p.set("action", "thermo_update_istep");
+    p.set("action", "calc_thermo_update_istep");
     // go to elements
     discret_->Evaluate(p, null, null, null, null, null);
   }

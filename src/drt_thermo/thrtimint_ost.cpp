@@ -295,7 +295,7 @@ void THR::TimIntOneStepTheta::UpdateStepState()
     p.set("delta time", (*dt_)[0]);
     //p.set("alpha f", theta_);
     // action for elements
-    p.set("action", "calc_struct_update_istep");
+    p.set("action", "calc_thermo_update_istep");
     // go to elements
     discret_->Evaluate(p, Teuchos::null, Teuchos::null,
                        Teuchos::null, Teuchos::null, Teuchos::null);

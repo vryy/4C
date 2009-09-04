@@ -240,7 +240,7 @@ void THR::TimIntImpl::PredictTangTempConsistRate()
   {
     // create the parameters for the discretization
     ParameterList p;
-    p.set("action", "thermo_reset_istep");
+    p.set("action", "calc_thermo_reset_istep");
     // go to elements
     discret_->Evaluate(p, Teuchos::null, Teuchos::null,
                        Teuchos::null, Teuchos::null, Teuchos::null);

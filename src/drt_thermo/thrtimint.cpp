@@ -165,7 +165,7 @@ void THR::TimInt::DetermineCapaConsistTempRate()
     // create the parameters for the discretization
     ParameterList p;
     // action for elements
-    p.set("action", "therm_finttangcapa");
+    p.set("action", "calc_thermo_finttangcapa");
     // other parameters that might be needed by the elements
     p.set("total time", (*time_)[0]);
     p.set("delta time", (*dt_)[0]);
@@ -262,7 +262,7 @@ void THR::TimInt::ResetStep()
   {
     // create the parameters for the discretization
     ParameterList p;
-    p.set("action", "thermo_reset_istep");
+    p.set("action", "calc_thermo_reset_istep");
     // go to elements
     discret_->Evaluate(p, Teuchos::null, Teuchos::null,
                        Teuchos::null, Teuchos::null, Teuchos::null);
@@ -429,7 +429,7 @@ void THR::TimInt::OutputHeatfluxTempgrad
   // create the parameters for the discretization
   ParameterList p;
   // action for elements
-  p.set("action", "thermo_heatflux");
+  p.set("action", "calc_thermo_heatflux");
   // other parameters that might be needed by the elements
   p.set("total time", (*time_)[0]);
   p.set("delta time", (*dt_)[0]);
@@ -513,7 +513,7 @@ void THR::TimInt::OutputEnergy()
   {
     ParameterList p;
     // other parameters needed by the elements
-    p.set("action", "thermo_energy");
+    p.set("action", "calc_thermo_energy");
 
     // set vector values needed by elements
     discret_->ClearState();
@@ -603,7 +603,7 @@ void THR::TimInt::ApplyForceTangInternal
   // create the parameters for the discretization
   Teuchos::ParameterList p;
   // action for elements
-  const std::string action = "thermo_finttang";
+  const std::string action = "calc_thermo_finttang";
   p.set("action", action);
   // other parameters that might be needed by the elements
   p.set("total time", time);
@@ -633,7 +633,7 @@ void THR::TimInt::ApplyForceInternal
   // create the parameters for the discretization
   ParameterList p;
   // action for elements
-  const std::string action = "thermo_fint";
+  const std::string action = "calc_thermo_fint";
   p.set("action", action);
   // other parameters that might be needed by the elements
   p.set("total time", time);
