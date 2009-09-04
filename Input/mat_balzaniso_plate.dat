@@ -2827,406 +2827,406 @@ NODE          881     COORD 5.0000000000000e+01     5.0000000000000e+01     -1.0
 NODE          882     COORD 5.0000000000000e+01     5.0000000000000e+01     1.0000000149012e-01
 ----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
-      1 SOLIDSH8 HEX8       1      2      3      4      5      6      7      8 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-      2 SOLIDSH8 HEX8       4      3      9     10      8      7     11     12 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-      3 SOLIDSH8 HEX8      10      9     13     14     12     11     15     16 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-      4 SOLIDSH8 HEX8      14     13     17     18     16     15     19     20 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-      5 SOLIDSH8 HEX8      18     17     21     22     20     19     23     24 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-      6 SOLIDSH8 HEX8      22     21     25     26     24     23     27     28 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-      7 SOLIDSH8 HEX8      26     25     29     30     28     27     31     32 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-      8 SOLIDSH8 HEX8      30     29     33     34     32     31     35     36 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-      9 SOLIDSH8 HEX8      34     33     37     38     36     35     39     40 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     10 SOLIDSH8 HEX8      38     37     41     42     40     39     43     44 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     11 SOLIDSH8 HEX8      42     41     45     46     44     43     47     48 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     12 SOLIDSH8 HEX8      46     45     49     50     48     47     51     52 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     13 SOLIDSH8 HEX8      50     49     53     54     52     51     55     56 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     14 SOLIDSH8 HEX8      54     53     57     58     56     55     59     60 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     15 SOLIDSH8 HEX8      58     57     61     62     60     59     63     64 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     16 SOLIDSH8 HEX8      62     61     65     66     64     63     67     68 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     17 SOLIDSH8 HEX8      66     65     69     70     68     67     71     72 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     18 SOLIDSH8 HEX8      70     69     73     74     72     71     75     76 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     19 SOLIDSH8 HEX8      74     73     77     78     76     75     79     80 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     20 SOLIDSH8 HEX8      78     77     81     82     80     79     83     84 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     21 SOLIDSH8 HEX8       5      6      7      8     85     86     87     88 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     22 SOLIDSH8 HEX8       8      7     11     12     88     87     89     90 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     23 SOLIDSH8 HEX8      12     11     15     16     90     89     91     92 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     24 SOLIDSH8 HEX8      16     15     19     20     92     91     93     94 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     25 SOLIDSH8 HEX8      20     19     23     24     94     93     95     96 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     26 SOLIDSH8 HEX8      24     23     27     28     96     95     97     98 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     27 SOLIDSH8 HEX8      28     27     31     32     98     97     99    100 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     28 SOLIDSH8 HEX8      32     31     35     36    100     99    101    102 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     29 SOLIDSH8 HEX8      36     35     39     40    102    101    103    104 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     30 SOLIDSH8 HEX8      40     39     43     44    104    103    105    106 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     31 SOLIDSH8 HEX8      44     43     47     48    106    105    107    108 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     32 SOLIDSH8 HEX8      48     47     51     52    108    107    109    110 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     33 SOLIDSH8 HEX8      52     51     55     56    110    109    111    112 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     34 SOLIDSH8 HEX8      56     55     59     60    112    111    113    114 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     35 SOLIDSH8 HEX8      60     59     63     64    114    113    115    116 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     36 SOLIDSH8 HEX8      64     63     67     68    116    115    117    118 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     37 SOLIDSH8 HEX8      68     67     71     72    118    117    119    120 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     38 SOLIDSH8 HEX8      72     71     75     76    120    119    121    122 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     39 SOLIDSH8 HEX8      76     75     79     80    122    121    123    124 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     40 SOLIDSH8 HEX8      80     79     83     84    124    123    125    126 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     41 SOLIDSH8 HEX8      85     86     87     88    127    128    129    130 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     42 SOLIDSH8 HEX8      88     87     89     90    130    129    131    132 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     43 SOLIDSH8 HEX8      90     89     91     92    132    131    133    134 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     44 SOLIDSH8 HEX8      92     91     93     94    134    133    135    136 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     45 SOLIDSH8 HEX8      94     93     95     96    136    135    137    138 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     46 SOLIDSH8 HEX8      96     95     97     98    138    137    139    140 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     47 SOLIDSH8 HEX8      98     97     99    100    140    139    141    142 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     48 SOLIDSH8 HEX8     100     99    101    102    142    141    143    144 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     49 SOLIDSH8 HEX8     102    101    103    104    144    143    145    146 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     50 SOLIDSH8 HEX8     104    103    105    106    146    145    147    148 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     51 SOLIDSH8 HEX8     106    105    107    108    148    147    149    150 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     52 SOLIDSH8 HEX8     108    107    109    110    150    149    151    152 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     53 SOLIDSH8 HEX8     110    109    111    112    152    151    153    154 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     54 SOLIDSH8 HEX8     112    111    113    114    154    153    155    156 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     55 SOLIDSH8 HEX8     114    113    115    116    156    155    157    158 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     56 SOLIDSH8 HEX8     116    115    117    118    158    157    159    160 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     57 SOLIDSH8 HEX8     118    117    119    120    160    159    161    162 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     58 SOLIDSH8 HEX8     120    119    121    122    162    161    163    164 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     59 SOLIDSH8 HEX8     122    121    123    124    164    163    165    166 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     60 SOLIDSH8 HEX8     124    123    125    126    166    165    167    168 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     61 SOLIDSH8 HEX8     127    128    129    130    169    170    171    172 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     62 SOLIDSH8 HEX8     130    129    131    132    172    171    173    174 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     63 SOLIDSH8 HEX8     132    131    133    134    174    173    175    176 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     64 SOLIDSH8 HEX8     134    133    135    136    176    175    177    178 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     65 SOLIDSH8 HEX8     136    135    137    138    178    177    179    180 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     66 SOLIDSH8 HEX8     138    137    139    140    180    179    181    182 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     67 SOLIDSH8 HEX8     140    139    141    142    182    181    183    184 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     68 SOLIDSH8 HEX8     142    141    143    144    184    183    185    186 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     69 SOLIDSH8 HEX8     144    143    145    146    186    185    187    188 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     70 SOLIDSH8 HEX8     146    145    147    148    188    187    189    190 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     71 SOLIDSH8 HEX8     148    147    149    150    190    189    191    192 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     72 SOLIDSH8 HEX8     150    149    151    152    192    191    193    194 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     73 SOLIDSH8 HEX8     152    151    153    154    194    193    195    196 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     74 SOLIDSH8 HEX8     154    153    155    156    196    195    197    198 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     75 SOLIDSH8 HEX8     156    155    157    158    198    197    199    200 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     76 SOLIDSH8 HEX8     158    157    159    160    200    199    201    202 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     77 SOLIDSH8 HEX8     160    159    161    162    202    201    203    204 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     78 SOLIDSH8 HEX8     162    161    163    164    204    203    205    206 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     79 SOLIDSH8 HEX8     164    163    165    166    206    205    207    208 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     80 SOLIDSH8 HEX8     166    165    167    168    208    207    209    210 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     81 SOLIDSH8 HEX8     169    170    171    172    211    212    213    214 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     82 SOLIDSH8 HEX8     172    171    173    174    214    213    215    216 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     83 SOLIDSH8 HEX8     174    173    175    176    216    215    217    218 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     84 SOLIDSH8 HEX8     176    175    177    178    218    217    219    220 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     85 SOLIDSH8 HEX8     178    177    179    180    220    219    221    222 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     86 SOLIDSH8 HEX8     180    179    181    182    222    221    223    224 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     87 SOLIDSH8 HEX8     182    181    183    184    224    223    225    226 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     88 SOLIDSH8 HEX8     184    183    185    186    226    225    227    228 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     89 SOLIDSH8 HEX8     186    185    187    188    228    227    229    230 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     90 SOLIDSH8 HEX8     188    187    189    190    230    229    231    232 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     91 SOLIDSH8 HEX8     190    189    191    192    232    231    233    234 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     92 SOLIDSH8 HEX8     192    191    193    194    234    233    235    236 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     93 SOLIDSH8 HEX8     194    193    195    196    236    235    237    238 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     94 SOLIDSH8 HEX8     196    195    197    198    238    237    239    240 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     95 SOLIDSH8 HEX8     198    197    199    200    240    239    241    242 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     96 SOLIDSH8 HEX8     200    199    201    202    242    241    243    244 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     97 SOLIDSH8 HEX8     202    201    203    204    244    243    245    246 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     98 SOLIDSH8 HEX8     204    203    205    206    246    245    247    248 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-     99 SOLIDSH8 HEX8     206    205    207    208    248    247    249    250 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    100 SOLIDSH8 HEX8     208    207    209    210    250    249    251    252 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    101 SOLIDSH8 HEX8     211    212    213    214    253    254    255    256 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    102 SOLIDSH8 HEX8     214    213    215    216    256    255    257    258 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    103 SOLIDSH8 HEX8     216    215    217    218    258    257    259    260 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    104 SOLIDSH8 HEX8     218    217    219    220    260    259    261    262 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    105 SOLIDSH8 HEX8     220    219    221    222    262    261    263    264 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    106 SOLIDSH8 HEX8     222    221    223    224    264    263    265    266 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    107 SOLIDSH8 HEX8     224    223    225    226    266    265    267    268 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    108 SOLIDSH8 HEX8     226    225    227    228    268    267    269    270 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    109 SOLIDSH8 HEX8     228    227    229    230    270    269    271    272 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    110 SOLIDSH8 HEX8     230    229    231    232    272    271    273    274 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    111 SOLIDSH8 HEX8     232    231    233    234    274    273    275    276 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    112 SOLIDSH8 HEX8     234    233    235    236    276    275    277    278 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    113 SOLIDSH8 HEX8     236    235    237    238    278    277    279    280 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    114 SOLIDSH8 HEX8     238    237    239    240    280    279    281    282 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    115 SOLIDSH8 HEX8     240    239    241    242    282    281    283    284 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    116 SOLIDSH8 HEX8     242    241    243    244    284    283    285    286 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    117 SOLIDSH8 HEX8     244    243    245    246    286    285    287    288 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    118 SOLIDSH8 HEX8     246    245    247    248    288    287    289    290 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    119 SOLIDSH8 HEX8     248    247    249    250    290    289    291    292 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    120 SOLIDSH8 HEX8     250    249    251    252    292    291    293    294 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    121 SOLIDSH8 HEX8     253    254    255    256    295    296    297    298 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    122 SOLIDSH8 HEX8     256    255    257    258    298    297    299    300 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    123 SOLIDSH8 HEX8     258    257    259    260    300    299    301    302 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    124 SOLIDSH8 HEX8     260    259    261    262    302    301    303    304 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    125 SOLIDSH8 HEX8     262    261    263    264    304    303    305    306 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    126 SOLIDSH8 HEX8     264    263    265    266    306    305    307    308 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    127 SOLIDSH8 HEX8     266    265    267    268    308    307    309    310 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    128 SOLIDSH8 HEX8     268    267    269    270    310    309    311    312 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    129 SOLIDSH8 HEX8     270    269    271    272    312    311    313    314 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    130 SOLIDSH8 HEX8     272    271    273    274    314    313    315    316 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    131 SOLIDSH8 HEX8     274    273    275    276    316    315    317    318 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    132 SOLIDSH8 HEX8     276    275    277    278    318    317    319    320 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    133 SOLIDSH8 HEX8     278    277    279    280    320    319    321    322 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    134 SOLIDSH8 HEX8     280    279    281    282    322    321    323    324 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    135 SOLIDSH8 HEX8     282    281    283    284    324    323    325    326 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    136 SOLIDSH8 HEX8     284    283    285    286    326    325    327    328 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    137 SOLIDSH8 HEX8     286    285    287    288    328    327    329    330 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    138 SOLIDSH8 HEX8     288    287    289    290    330    329    331    332 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    139 SOLIDSH8 HEX8     290    289    291    292    332    331    333    334 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    140 SOLIDSH8 HEX8     292    291    293    294    334    333    335    336 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    141 SOLIDSH8 HEX8     295    296    297    298    337    338    339    340 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    142 SOLIDSH8 HEX8     298    297    299    300    340    339    341    342 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    143 SOLIDSH8 HEX8     300    299    301    302    342    341    343    344 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    144 SOLIDSH8 HEX8     302    301    303    304    344    343    345    346 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    145 SOLIDSH8 HEX8     304    303    305    306    346    345    347    348 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    146 SOLIDSH8 HEX8     306    305    307    308    348    347    349    350 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    147 SOLIDSH8 HEX8     308    307    309    310    350    349    351    352 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    148 SOLIDSH8 HEX8     310    309    311    312    352    351    353    354 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    149 SOLIDSH8 HEX8     312    311    313    314    354    353    355    356 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    150 SOLIDSH8 HEX8     314    313    315    316    356    355    357    358 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    151 SOLIDSH8 HEX8     316    315    317    318    358    357    359    360 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    152 SOLIDSH8 HEX8     318    317    319    320    360    359    361    362 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    153 SOLIDSH8 HEX8     320    319    321    322    362    361    363    364 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    154 SOLIDSH8 HEX8     322    321    323    324    364    363    365    366 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    155 SOLIDSH8 HEX8     324    323    325    326    366    365    367    368 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    156 SOLIDSH8 HEX8     326    325    327    328    368    367    369    370 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    157 SOLIDSH8 HEX8     328    327    329    330    370    369    371    372 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    158 SOLIDSH8 HEX8     330    329    331    332    372    371    373    374 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    159 SOLIDSH8 HEX8     332    331    333    334    374    373    375    376 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    160 SOLIDSH8 HEX8     334    333    335    336    376    375    377    378 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    161 SOLIDSH8 HEX8     337    338    339    340    379    380    381    382 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    162 SOLIDSH8 HEX8     340    339    341    342    382    381    383    384 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    163 SOLIDSH8 HEX8     342    341    343    344    384    383    385    386 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    164 SOLIDSH8 HEX8     344    343    345    346    386    385    387    388 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    165 SOLIDSH8 HEX8     346    345    347    348    388    387    389    390 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    166 SOLIDSH8 HEX8     348    347    349    350    390    389    391    392 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    167 SOLIDSH8 HEX8     350    349    351    352    392    391    393    394 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    168 SOLIDSH8 HEX8     352    351    353    354    394    393    395    396 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    169 SOLIDSH8 HEX8     354    353    355    356    396    395    397    398 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    170 SOLIDSH8 HEX8     356    355    357    358    398    397    399    400 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    171 SOLIDSH8 HEX8     358    357    359    360    400    399    401    402 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    172 SOLIDSH8 HEX8     360    359    361    362    402    401    403    404 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    173 SOLIDSH8 HEX8     362    361    363    364    404    403    405    406 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    174 SOLIDSH8 HEX8     364    363    365    366    406    405    407    408 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    175 SOLIDSH8 HEX8     366    365    367    368    408    407    409    410 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    176 SOLIDSH8 HEX8     368    367    369    370    410    409    411    412 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    177 SOLIDSH8 HEX8     370    369    371    372    412    411    413    414 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    178 SOLIDSH8 HEX8     372    371    373    374    414    413    415    416 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    179 SOLIDSH8 HEX8     374    373    375    376    416    415    417    418 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    180 SOLIDSH8 HEX8     376    375    377    378    418    417    419    420 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    181 SOLIDSH8 HEX8     379    380    381    382    421    422    423    424 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    182 SOLIDSH8 HEX8     382    381    383    384    424    423    425    426 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    183 SOLIDSH8 HEX8     384    383    385    386    426    425    427    428 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    184 SOLIDSH8 HEX8     386    385    387    388    428    427    429    430 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    185 SOLIDSH8 HEX8     388    387    389    390    430    429    431    432 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    186 SOLIDSH8 HEX8     390    389    391    392    432    431    433    434 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    187 SOLIDSH8 HEX8     392    391    393    394    434    433    435    436 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    188 SOLIDSH8 HEX8     394    393    395    396    436    435    437    438 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    189 SOLIDSH8 HEX8     396    395    397    398    438    437    439    440 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    190 SOLIDSH8 HEX8     398    397    399    400    440    439    441    442 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    191 SOLIDSH8 HEX8     400    399    401    402    442    441    443    444 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    192 SOLIDSH8 HEX8     402    401    403    404    444    443    445    446 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    193 SOLIDSH8 HEX8     404    403    405    406    446    445    447    448 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    194 SOLIDSH8 HEX8     406    405    407    408    448    447    449    450 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    195 SOLIDSH8 HEX8     408    407    409    410    450    449    451    452 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    196 SOLIDSH8 HEX8     410    409    411    412    452    451    453    454 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    197 SOLIDSH8 HEX8     412    411    413    414    454    453    455    456 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    198 SOLIDSH8 HEX8     414    413    415    416    456    455    457    458 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    199 SOLIDSH8 HEX8     416    415    417    418    458    457    459    460 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    200 SOLIDSH8 HEX8     418    417    419    420    460    459    461    462 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    201 SOLIDSH8 HEX8     421    422    423    424    463    464    465    466 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    202 SOLIDSH8 HEX8     424    423    425    426    466    465    467    468 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    203 SOLIDSH8 HEX8     426    425    427    428    468    467    469    470 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    204 SOLIDSH8 HEX8     428    427    429    430    470    469    471    472 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    205 SOLIDSH8 HEX8     430    429    431    432    472    471    473    474 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    206 SOLIDSH8 HEX8     432    431    433    434    474    473    475    476 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    207 SOLIDSH8 HEX8     434    433    435    436    476    475    477    478 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    208 SOLIDSH8 HEX8     436    435    437    438    478    477    479    480 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    209 SOLIDSH8 HEX8     438    437    439    440    480    479    481    482 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    210 SOLIDSH8 HEX8     440    439    441    442    482    481    483    484 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    211 SOLIDSH8 HEX8     442    441    443    444    484    483    485    486 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    212 SOLIDSH8 HEX8     444    443    445    446    486    485    487    488 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    213 SOLIDSH8 HEX8     446    445    447    448    488    487    489    490 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    214 SOLIDSH8 HEX8     448    447    449    450    490    489    491    492 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    215 SOLIDSH8 HEX8     450    449    451    452    492    491    493    494 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    216 SOLIDSH8 HEX8     452    451    453    454    494    493    495    496 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    217 SOLIDSH8 HEX8     454    453    455    456    496    495    497    498 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    218 SOLIDSH8 HEX8     456    455    457    458    498    497    499    500 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    219 SOLIDSH8 HEX8     458    457    459    460    500    499    501    502 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    220 SOLIDSH8 HEX8     460    459    461    462    502    501    503    504 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    221 SOLIDSH8 HEX8     463    464    465    466    505    506    507    508 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    222 SOLIDSH8 HEX8     466    465    467    468    508    507    509    510 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    223 SOLIDSH8 HEX8     468    467    469    470    510    509    511    512 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    224 SOLIDSH8 HEX8     470    469    471    472    512    511    513    514 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    225 SOLIDSH8 HEX8     472    471    473    474    514    513    515    516 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    226 SOLIDSH8 HEX8     474    473    475    476    516    515    517    518 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    227 SOLIDSH8 HEX8     476    475    477    478    518    517    519    520 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    228 SOLIDSH8 HEX8     478    477    479    480    520    519    521    522 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    229 SOLIDSH8 HEX8     480    479    481    482    522    521    523    524 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    230 SOLIDSH8 HEX8     482    481    483    484    524    523    525    526 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    231 SOLIDSH8 HEX8     484    483    485    486    526    525    527    528 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    232 SOLIDSH8 HEX8     486    485    487    488    528    527    529    530 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    233 SOLIDSH8 HEX8     488    487    489    490    530    529    531    532 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    234 SOLIDSH8 HEX8     490    489    491    492    532    531    533    534 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    235 SOLIDSH8 HEX8     492    491    493    494    534    533    535    536 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    236 SOLIDSH8 HEX8     494    493    495    496    536    535    537    538 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    237 SOLIDSH8 HEX8     496    495    497    498    538    537    539    540 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    238 SOLIDSH8 HEX8     498    497    499    500    540    539    541    542 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    239 SOLIDSH8 HEX8     500    499    501    502    542    541    543    544 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    240 SOLIDSH8 HEX8     502    501    503    504    544    543    545    546 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    241 SOLIDSH8 HEX8     505    506    507    508    547    548    549    550 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    242 SOLIDSH8 HEX8     508    507    509    510    550    549    551    552 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    243 SOLIDSH8 HEX8     510    509    511    512    552    551    553    554 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    244 SOLIDSH8 HEX8     512    511    513    514    554    553    555    556 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    245 SOLIDSH8 HEX8     514    513    515    516    556    555    557    558 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    246 SOLIDSH8 HEX8     516    515    517    518    558    557    559    560 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    247 SOLIDSH8 HEX8     518    517    519    520    560    559    561    562 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    248 SOLIDSH8 HEX8     520    519    521    522    562    561    563    564 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    249 SOLIDSH8 HEX8     522    521    523    524    564    563    565    566 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    250 SOLIDSH8 HEX8     524    523    525    526    566    565    567    568 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    251 SOLIDSH8 HEX8     526    525    527    528    568    567    569    570 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    252 SOLIDSH8 HEX8     528    527    529    530    570    569    571    572 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    253 SOLIDSH8 HEX8     530    529    531    532    572    571    573    574 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    254 SOLIDSH8 HEX8     532    531    533    534    574    573    575    576 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    255 SOLIDSH8 HEX8     534    533    535    536    576    575    577    578 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    256 SOLIDSH8 HEX8     536    535    537    538    578    577    579    580 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    257 SOLIDSH8 HEX8     538    537    539    540    580    579    581    582 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    258 SOLIDSH8 HEX8     540    539    541    542    582    581    583    584 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    259 SOLIDSH8 HEX8     542    541    543    544    584    583    585    586 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    260 SOLIDSH8 HEX8     544    543    545    546    586    585    587    588 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    261 SOLIDSH8 HEX8     547    548    549    550    589    590    591    592 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    262 SOLIDSH8 HEX8     550    549    551    552    592    591    593    594 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    263 SOLIDSH8 HEX8     552    551    553    554    594    593    595    596 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    264 SOLIDSH8 HEX8     554    553    555    556    596    595    597    598 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    265 SOLIDSH8 HEX8     556    555    557    558    598    597    599    600 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    266 SOLIDSH8 HEX8     558    557    559    560    600    599    601    602 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    267 SOLIDSH8 HEX8     560    559    561    562    602    601    603    604 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    268 SOLIDSH8 HEX8     562    561    563    564    604    603    605    606 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    269 SOLIDSH8 HEX8     564    563    565    566    606    605    607    608 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    270 SOLIDSH8 HEX8     566    565    567    568    608    607    609    610 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    271 SOLIDSH8 HEX8     568    567    569    570    610    609    611    612 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    272 SOLIDSH8 HEX8     570    569    571    572    612    611    613    614 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    273 SOLIDSH8 HEX8     572    571    573    574    614    613    615    616 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    274 SOLIDSH8 HEX8     574    573    575    576    616    615    617    618 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    275 SOLIDSH8 HEX8     576    575    577    578    618    617    619    620 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    276 SOLIDSH8 HEX8     578    577    579    580    620    619    621    622 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    277 SOLIDSH8 HEX8     580    579    581    582    622    621    623    624 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    278 SOLIDSH8 HEX8     582    581    583    584    624    623    625    626 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    279 SOLIDSH8 HEX8     584    583    585    586    626    625    627    628 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    280 SOLIDSH8 HEX8     586    585    587    588    628    627    629    630 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    281 SOLIDSH8 HEX8     589    590    591    592    631    632    633    634 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    282 SOLIDSH8 HEX8     592    591    593    594    634    633    635    636 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    283 SOLIDSH8 HEX8     594    593    595    596    636    635    637    638 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    284 SOLIDSH8 HEX8     596    595    597    598    638    637    639    640 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    285 SOLIDSH8 HEX8     598    597    599    600    640    639    641    642 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    286 SOLIDSH8 HEX8     600    599    601    602    642    641    643    644 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    287 SOLIDSH8 HEX8     602    601    603    604    644    643    645    646 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    288 SOLIDSH8 HEX8     604    603    605    606    646    645    647    648 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    289 SOLIDSH8 HEX8     606    605    607    608    648    647    649    650 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    290 SOLIDSH8 HEX8     608    607    609    610    650    649    651    652 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    291 SOLIDSH8 HEX8     610    609    611    612    652    651    653    654 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    292 SOLIDSH8 HEX8     612    611    613    614    654    653    655    656 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    293 SOLIDSH8 HEX8     614    613    615    616    656    655    657    658 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    294 SOLIDSH8 HEX8     616    615    617    618    658    657    659    660 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    295 SOLIDSH8 HEX8     618    617    619    620    660    659    661    662 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    296 SOLIDSH8 HEX8     620    619    621    622    662    661    663    664 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    297 SOLIDSH8 HEX8     622    621    623    624    664    663    665    666 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    298 SOLIDSH8 HEX8     624    623    625    626    666    665    667    668 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    299 SOLIDSH8 HEX8     626    625    627    628    668    667    669    670 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    300 SOLIDSH8 HEX8     628    627    629    630    670    669    671    672 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    301 SOLIDSH8 HEX8     631    632    633    634    673    674    675    676 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    302 SOLIDSH8 HEX8     634    633    635    636    676    675    677    678 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    303 SOLIDSH8 HEX8     636    635    637    638    678    677    679    680 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    304 SOLIDSH8 HEX8     638    637    639    640    680    679    681    682 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    305 SOLIDSH8 HEX8     640    639    641    642    682    681    683    684 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    306 SOLIDSH8 HEX8     642    641    643    644    684    683    685    686 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    307 SOLIDSH8 HEX8     644    643    645    646    686    685    687    688 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    308 SOLIDSH8 HEX8     646    645    647    648    688    687    689    690 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    309 SOLIDSH8 HEX8     648    647    649    650    690    689    691    692 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    310 SOLIDSH8 HEX8     650    649    651    652    692    691    693    694 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    311 SOLIDSH8 HEX8     652    651    653    654    694    693    695    696 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    312 SOLIDSH8 HEX8     654    653    655    656    696    695    697    698 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    313 SOLIDSH8 HEX8     656    655    657    658    698    697    699    700 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    314 SOLIDSH8 HEX8     658    657    659    660    700    699    701    702 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    315 SOLIDSH8 HEX8     660    659    661    662    702    701    703    704 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    316 SOLIDSH8 HEX8     662    661    663    664    704    703    705    706 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    317 SOLIDSH8 HEX8     664    663    665    666    706    705    707    708 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    318 SOLIDSH8 HEX8     666    665    667    668    708    707    709    710 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    319 SOLIDSH8 HEX8     668    667    669    670    710    709    711    712 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    320 SOLIDSH8 HEX8     670    669    671    672    712    711    713    714 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    321 SOLIDSH8 HEX8     673    674    675    676    715    716    717    718 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    322 SOLIDSH8 HEX8     676    675    677    678    718    717    719    720 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    323 SOLIDSH8 HEX8     678    677    679    680    720    719    721    722 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    324 SOLIDSH8 HEX8     680    679    681    682    722    721    723    724 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    325 SOLIDSH8 HEX8     682    681    683    684    724    723    725    726 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    326 SOLIDSH8 HEX8     684    683    685    686    726    725    727    728 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    327 SOLIDSH8 HEX8     686    685    687    688    728    727    729    730 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    328 SOLIDSH8 HEX8     688    687    689    690    730    729    731    732 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    329 SOLIDSH8 HEX8     690    689    691    692    732    731    733    734 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    330 SOLIDSH8 HEX8     692    691    693    694    734    733    735    736 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    331 SOLIDSH8 HEX8     694    693    695    696    736    735    737    738 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    332 SOLIDSH8 HEX8     696    695    697    698    738    737    739    740 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    333 SOLIDSH8 HEX8     698    697    699    700    740    739    741    742 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    334 SOLIDSH8 HEX8     700    699    701    702    742    741    743    744 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    335 SOLIDSH8 HEX8     702    701    703    704    744    743    745    746 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    336 SOLIDSH8 HEX8     704    703    705    706    746    745    747    748 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    337 SOLIDSH8 HEX8     706    705    707    708    748    747    749    750 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    338 SOLIDSH8 HEX8     708    707    709    710    750    749    751    752 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    339 SOLIDSH8 HEX8     710    709    711    712    752    751    753    754 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    340 SOLIDSH8 HEX8     712    711    713    714    754    753    755    756 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    341 SOLIDSH8 HEX8     715    716    717    718    757    758    759    760 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    342 SOLIDSH8 HEX8     718    717    719    720    760    759    761    762 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    343 SOLIDSH8 HEX8     720    719    721    722    762    761    763    764 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    344 SOLIDSH8 HEX8     722    721    723    724    764    763    765    766 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    345 SOLIDSH8 HEX8     724    723    725    726    766    765    767    768 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    346 SOLIDSH8 HEX8     726    725    727    728    768    767    769    770 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    347 SOLIDSH8 HEX8     728    727    729    730    770    769    771    772 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    348 SOLIDSH8 HEX8     730    729    731    732    772    771    773    774 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    349 SOLIDSH8 HEX8     732    731    733    734    774    773    775    776 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    350 SOLIDSH8 HEX8     734    733    735    736    776    775    777    778 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    351 SOLIDSH8 HEX8     736    735    737    738    778    777    779    780 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    352 SOLIDSH8 HEX8     738    737    739    740    780    779    781    782 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    353 SOLIDSH8 HEX8     740    739    741    742    782    781    783    784 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    354 SOLIDSH8 HEX8     742    741    743    744    784    783    785    786 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    355 SOLIDSH8 HEX8     744    743    745    746    786    785    787    788 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    356 SOLIDSH8 HEX8     746    745    747    748    788    787    789    790 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    357 SOLIDSH8 HEX8     748    747    749    750    790    789    791    792 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    358 SOLIDSH8 HEX8     750    749    751    752    792    791    793    794 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    359 SOLIDSH8 HEX8     752    751    753    754    794    793    795    796 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    360 SOLIDSH8 HEX8     754    753    755    756    796    795    797    798 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    361 SOLIDSH8 HEX8     757    758    759    760    799    800    801    802 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    362 SOLIDSH8 HEX8     760    759    761    762    802    801    803    804 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    363 SOLIDSH8 HEX8     762    761    763    764    804    803    805    806 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    364 SOLIDSH8 HEX8     764    763    765    766    806    805    807    808 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    365 SOLIDSH8 HEX8     766    765    767    768    808    807    809    810 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    366 SOLIDSH8 HEX8     768    767    769    770    810    809    811    812 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    367 SOLIDSH8 HEX8     770    769    771    772    812    811    813    814 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    368 SOLIDSH8 HEX8     772    771    773    774    814    813    815    816 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    369 SOLIDSH8 HEX8     774    773    775    776    816    815    817    818 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    370 SOLIDSH8 HEX8     776    775    777    778    818    817    819    820 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    371 SOLIDSH8 HEX8     778    777    779    780    820    819    821    822 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    372 SOLIDSH8 HEX8     780    779    781    782    822    821    823    824 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    373 SOLIDSH8 HEX8     782    781    783    784    824    823    825    826 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    374 SOLIDSH8 HEX8     784    783    785    786    826    825    827    828 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    375 SOLIDSH8 HEX8     786    785    787    788    828    827    829    830 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    376 SOLIDSH8 HEX8     788    787    789    790    830    829    831    832 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    377 SOLIDSH8 HEX8     790    789    791    792    832    831    833    834 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    378 SOLIDSH8 HEX8     792    791    793    794    834    833    835    836 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    379 SOLIDSH8 HEX8     794    793    795    796    836    835    837    838 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    380 SOLIDSH8 HEX8     796    795    797    798    838    837    839    840 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    381 SOLIDSH8 HEX8     799    800    801    802    841    842    843    844 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    382 SOLIDSH8 HEX8     802    801    803    804    844    843    845    846 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    383 SOLIDSH8 HEX8     804    803    805    806    846    845    847    848 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    384 SOLIDSH8 HEX8     806    805    807    808    848    847    849    850 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    385 SOLIDSH8 HEX8     808    807    809    810    850    849    851    852 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    386 SOLIDSH8 HEX8     810    809    811    812    852    851    853    854 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    387 SOLIDSH8 HEX8     812    811    813    814    854    853    855    856 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    388 SOLIDSH8 HEX8     814    813    815    816    856    855    857    858 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    389 SOLIDSH8 HEX8     816    815    817    818    858    857    859    860 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    390 SOLIDSH8 HEX8     818    817    819    820    860    859    861    862 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    391 SOLIDSH8 HEX8     820    819    821    822    862    861    863    864 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    392 SOLIDSH8 HEX8     822    821    823    824    864    863    865    866 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    393 SOLIDSH8 HEX8     824    823    825    826    866    865    867    868 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    394 SOLIDSH8 HEX8     826    825    827    828    868    867    869    870 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    395 SOLIDSH8 HEX8     828    827    829    830    870    869    871    872 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    396 SOLIDSH8 HEX8     830    829    831    832    872    871    873    874 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    397 SOLIDSH8 HEX8     832    831    833    834    874    873    875    876 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    398 SOLIDSH8 HEX8     834    833    835    836    876    875    877    878 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    399 SOLIDSH8 HEX8     836    835    837    838    878    877    879    880 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
-    400 SOLIDSH8 HEX8     838    837    839    840    880    879    881    882 MAT 1 GP 2 2 2 KINEM Totlag EAS sosh8 THICKDIR auto
+      1 SOLIDSH8 HEX8       1      2      3      4      5      6      7      8 MAT 1 EAS sosh8 THICKDIR auto
+      2 SOLIDSH8 HEX8       4      3      9     10      8      7     11     12 MAT 1 EAS sosh8 THICKDIR auto
+      3 SOLIDSH8 HEX8      10      9     13     14     12     11     15     16 MAT 1 EAS sosh8 THICKDIR auto
+      4 SOLIDSH8 HEX8      14     13     17     18     16     15     19     20 MAT 1 EAS sosh8 THICKDIR auto
+      5 SOLIDSH8 HEX8      18     17     21     22     20     19     23     24 MAT 1 EAS sosh8 THICKDIR auto
+      6 SOLIDSH8 HEX8      22     21     25     26     24     23     27     28 MAT 1 EAS sosh8 THICKDIR auto
+      7 SOLIDSH8 HEX8      26     25     29     30     28     27     31     32 MAT 1 EAS sosh8 THICKDIR auto
+      8 SOLIDSH8 HEX8      30     29     33     34     32     31     35     36 MAT 1 EAS sosh8 THICKDIR auto
+      9 SOLIDSH8 HEX8      34     33     37     38     36     35     39     40 MAT 1 EAS sosh8 THICKDIR auto
+     10 SOLIDSH8 HEX8      38     37     41     42     40     39     43     44 MAT 1 EAS sosh8 THICKDIR auto
+     11 SOLIDSH8 HEX8      42     41     45     46     44     43     47     48 MAT 1 EAS sosh8 THICKDIR auto
+     12 SOLIDSH8 HEX8      46     45     49     50     48     47     51     52 MAT 1 EAS sosh8 THICKDIR auto
+     13 SOLIDSH8 HEX8      50     49     53     54     52     51     55     56 MAT 1 EAS sosh8 THICKDIR auto
+     14 SOLIDSH8 HEX8      54     53     57     58     56     55     59     60 MAT 1 EAS sosh8 THICKDIR auto
+     15 SOLIDSH8 HEX8      58     57     61     62     60     59     63     64 MAT 1 EAS sosh8 THICKDIR auto
+     16 SOLIDSH8 HEX8      62     61     65     66     64     63     67     68 MAT 1 EAS sosh8 THICKDIR auto
+     17 SOLIDSH8 HEX8      66     65     69     70     68     67     71     72 MAT 1 EAS sosh8 THICKDIR auto
+     18 SOLIDSH8 HEX8      70     69     73     74     72     71     75     76 MAT 1 EAS sosh8 THICKDIR auto
+     19 SOLIDSH8 HEX8      74     73     77     78     76     75     79     80 MAT 1 EAS sosh8 THICKDIR auto
+     20 SOLIDSH8 HEX8      78     77     81     82     80     79     83     84 MAT 1 EAS sosh8 THICKDIR auto
+     21 SOLIDSH8 HEX8       5      6      7      8     85     86     87     88 MAT 1 EAS sosh8 THICKDIR auto
+     22 SOLIDSH8 HEX8       8      7     11     12     88     87     89     90 MAT 1 EAS sosh8 THICKDIR auto
+     23 SOLIDSH8 HEX8      12     11     15     16     90     89     91     92 MAT 1 EAS sosh8 THICKDIR auto
+     24 SOLIDSH8 HEX8      16     15     19     20     92     91     93     94 MAT 1 EAS sosh8 THICKDIR auto
+     25 SOLIDSH8 HEX8      20     19     23     24     94     93     95     96 MAT 1 EAS sosh8 THICKDIR auto
+     26 SOLIDSH8 HEX8      24     23     27     28     96     95     97     98 MAT 1 EAS sosh8 THICKDIR auto
+     27 SOLIDSH8 HEX8      28     27     31     32     98     97     99    100 MAT 1 EAS sosh8 THICKDIR auto
+     28 SOLIDSH8 HEX8      32     31     35     36    100     99    101    102 MAT 1 EAS sosh8 THICKDIR auto
+     29 SOLIDSH8 HEX8      36     35     39     40    102    101    103    104 MAT 1 EAS sosh8 THICKDIR auto
+     30 SOLIDSH8 HEX8      40     39     43     44    104    103    105    106 MAT 1 EAS sosh8 THICKDIR auto
+     31 SOLIDSH8 HEX8      44     43     47     48    106    105    107    108 MAT 1 EAS sosh8 THICKDIR auto
+     32 SOLIDSH8 HEX8      48     47     51     52    108    107    109    110 MAT 1 EAS sosh8 THICKDIR auto
+     33 SOLIDSH8 HEX8      52     51     55     56    110    109    111    112 MAT 1 EAS sosh8 THICKDIR auto
+     34 SOLIDSH8 HEX8      56     55     59     60    112    111    113    114 MAT 1 EAS sosh8 THICKDIR auto
+     35 SOLIDSH8 HEX8      60     59     63     64    114    113    115    116 MAT 1 EAS sosh8 THICKDIR auto
+     36 SOLIDSH8 HEX8      64     63     67     68    116    115    117    118 MAT 1 EAS sosh8 THICKDIR auto
+     37 SOLIDSH8 HEX8      68     67     71     72    118    117    119    120 MAT 1 EAS sosh8 THICKDIR auto
+     38 SOLIDSH8 HEX8      72     71     75     76    120    119    121    122 MAT 1 EAS sosh8 THICKDIR auto
+     39 SOLIDSH8 HEX8      76     75     79     80    122    121    123    124 MAT 1 EAS sosh8 THICKDIR auto
+     40 SOLIDSH8 HEX8      80     79     83     84    124    123    125    126 MAT 1 EAS sosh8 THICKDIR auto
+     41 SOLIDSH8 HEX8      85     86     87     88    127    128    129    130 MAT 1 EAS sosh8 THICKDIR auto
+     42 SOLIDSH8 HEX8      88     87     89     90    130    129    131    132 MAT 1 EAS sosh8 THICKDIR auto
+     43 SOLIDSH8 HEX8      90     89     91     92    132    131    133    134 MAT 1 EAS sosh8 THICKDIR auto
+     44 SOLIDSH8 HEX8      92     91     93     94    134    133    135    136 MAT 1 EAS sosh8 THICKDIR auto
+     45 SOLIDSH8 HEX8      94     93     95     96    136    135    137    138 MAT 1 EAS sosh8 THICKDIR auto
+     46 SOLIDSH8 HEX8      96     95     97     98    138    137    139    140 MAT 1 EAS sosh8 THICKDIR auto
+     47 SOLIDSH8 HEX8      98     97     99    100    140    139    141    142 MAT 1 EAS sosh8 THICKDIR auto
+     48 SOLIDSH8 HEX8     100     99    101    102    142    141    143    144 MAT 1 EAS sosh8 THICKDIR auto
+     49 SOLIDSH8 HEX8     102    101    103    104    144    143    145    146 MAT 1 EAS sosh8 THICKDIR auto
+     50 SOLIDSH8 HEX8     104    103    105    106    146    145    147    148 MAT 1 EAS sosh8 THICKDIR auto
+     51 SOLIDSH8 HEX8     106    105    107    108    148    147    149    150 MAT 1 EAS sosh8 THICKDIR auto
+     52 SOLIDSH8 HEX8     108    107    109    110    150    149    151    152 MAT 1 EAS sosh8 THICKDIR auto
+     53 SOLIDSH8 HEX8     110    109    111    112    152    151    153    154 MAT 1 EAS sosh8 THICKDIR auto
+     54 SOLIDSH8 HEX8     112    111    113    114    154    153    155    156 MAT 1 EAS sosh8 THICKDIR auto
+     55 SOLIDSH8 HEX8     114    113    115    116    156    155    157    158 MAT 1 EAS sosh8 THICKDIR auto
+     56 SOLIDSH8 HEX8     116    115    117    118    158    157    159    160 MAT 1 EAS sosh8 THICKDIR auto
+     57 SOLIDSH8 HEX8     118    117    119    120    160    159    161    162 MAT 1 EAS sosh8 THICKDIR auto
+     58 SOLIDSH8 HEX8     120    119    121    122    162    161    163    164 MAT 1 EAS sosh8 THICKDIR auto
+     59 SOLIDSH8 HEX8     122    121    123    124    164    163    165    166 MAT 1 EAS sosh8 THICKDIR auto
+     60 SOLIDSH8 HEX8     124    123    125    126    166    165    167    168 MAT 1 EAS sosh8 THICKDIR auto
+     61 SOLIDSH8 HEX8     127    128    129    130    169    170    171    172 MAT 1 EAS sosh8 THICKDIR auto
+     62 SOLIDSH8 HEX8     130    129    131    132    172    171    173    174 MAT 1 EAS sosh8 THICKDIR auto
+     63 SOLIDSH8 HEX8     132    131    133    134    174    173    175    176 MAT 1 EAS sosh8 THICKDIR auto
+     64 SOLIDSH8 HEX8     134    133    135    136    176    175    177    178 MAT 1 EAS sosh8 THICKDIR auto
+     65 SOLIDSH8 HEX8     136    135    137    138    178    177    179    180 MAT 1 EAS sosh8 THICKDIR auto
+     66 SOLIDSH8 HEX8     138    137    139    140    180    179    181    182 MAT 1 EAS sosh8 THICKDIR auto
+     67 SOLIDSH8 HEX8     140    139    141    142    182    181    183    184 MAT 1 EAS sosh8 THICKDIR auto
+     68 SOLIDSH8 HEX8     142    141    143    144    184    183    185    186 MAT 1 EAS sosh8 THICKDIR auto
+     69 SOLIDSH8 HEX8     144    143    145    146    186    185    187    188 MAT 1 EAS sosh8 THICKDIR auto
+     70 SOLIDSH8 HEX8     146    145    147    148    188    187    189    190 MAT 1 EAS sosh8 THICKDIR auto
+     71 SOLIDSH8 HEX8     148    147    149    150    190    189    191    192 MAT 1 EAS sosh8 THICKDIR auto
+     72 SOLIDSH8 HEX8     150    149    151    152    192    191    193    194 MAT 1 EAS sosh8 THICKDIR auto
+     73 SOLIDSH8 HEX8     152    151    153    154    194    193    195    196 MAT 1 EAS sosh8 THICKDIR auto
+     74 SOLIDSH8 HEX8     154    153    155    156    196    195    197    198 MAT 1 EAS sosh8 THICKDIR auto
+     75 SOLIDSH8 HEX8     156    155    157    158    198    197    199    200 MAT 1 EAS sosh8 THICKDIR auto
+     76 SOLIDSH8 HEX8     158    157    159    160    200    199    201    202 MAT 1 EAS sosh8 THICKDIR auto
+     77 SOLIDSH8 HEX8     160    159    161    162    202    201    203    204 MAT 1 EAS sosh8 THICKDIR auto
+     78 SOLIDSH8 HEX8     162    161    163    164    204    203    205    206 MAT 1 EAS sosh8 THICKDIR auto
+     79 SOLIDSH8 HEX8     164    163    165    166    206    205    207    208 MAT 1 EAS sosh8 THICKDIR auto
+     80 SOLIDSH8 HEX8     166    165    167    168    208    207    209    210 MAT 1 EAS sosh8 THICKDIR auto
+     81 SOLIDSH8 HEX8     169    170    171    172    211    212    213    214 MAT 1 EAS sosh8 THICKDIR auto
+     82 SOLIDSH8 HEX8     172    171    173    174    214    213    215    216 MAT 1 EAS sosh8 THICKDIR auto
+     83 SOLIDSH8 HEX8     174    173    175    176    216    215    217    218 MAT 1 EAS sosh8 THICKDIR auto
+     84 SOLIDSH8 HEX8     176    175    177    178    218    217    219    220 MAT 1 EAS sosh8 THICKDIR auto
+     85 SOLIDSH8 HEX8     178    177    179    180    220    219    221    222 MAT 1 EAS sosh8 THICKDIR auto
+     86 SOLIDSH8 HEX8     180    179    181    182    222    221    223    224 MAT 1 EAS sosh8 THICKDIR auto
+     87 SOLIDSH8 HEX8     182    181    183    184    224    223    225    226 MAT 1 EAS sosh8 THICKDIR auto
+     88 SOLIDSH8 HEX8     184    183    185    186    226    225    227    228 MAT 1 EAS sosh8 THICKDIR auto
+     89 SOLIDSH8 HEX8     186    185    187    188    228    227    229    230 MAT 1 EAS sosh8 THICKDIR auto
+     90 SOLIDSH8 HEX8     188    187    189    190    230    229    231    232 MAT 1 EAS sosh8 THICKDIR auto
+     91 SOLIDSH8 HEX8     190    189    191    192    232    231    233    234 MAT 1 EAS sosh8 THICKDIR auto
+     92 SOLIDSH8 HEX8     192    191    193    194    234    233    235    236 MAT 1 EAS sosh8 THICKDIR auto
+     93 SOLIDSH8 HEX8     194    193    195    196    236    235    237    238 MAT 1 EAS sosh8 THICKDIR auto
+     94 SOLIDSH8 HEX8     196    195    197    198    238    237    239    240 MAT 1 EAS sosh8 THICKDIR auto
+     95 SOLIDSH8 HEX8     198    197    199    200    240    239    241    242 MAT 1 EAS sosh8 THICKDIR auto
+     96 SOLIDSH8 HEX8     200    199    201    202    242    241    243    244 MAT 1 EAS sosh8 THICKDIR auto
+     97 SOLIDSH8 HEX8     202    201    203    204    244    243    245    246 MAT 1 EAS sosh8 THICKDIR auto
+     98 SOLIDSH8 HEX8     204    203    205    206    246    245    247    248 MAT 1 EAS sosh8 THICKDIR auto
+     99 SOLIDSH8 HEX8     206    205    207    208    248    247    249    250 MAT 1 EAS sosh8 THICKDIR auto
+    100 SOLIDSH8 HEX8     208    207    209    210    250    249    251    252 MAT 1 EAS sosh8 THICKDIR auto
+    101 SOLIDSH8 HEX8     211    212    213    214    253    254    255    256 MAT 1 EAS sosh8 THICKDIR auto
+    102 SOLIDSH8 HEX8     214    213    215    216    256    255    257    258 MAT 1 EAS sosh8 THICKDIR auto
+    103 SOLIDSH8 HEX8     216    215    217    218    258    257    259    260 MAT 1 EAS sosh8 THICKDIR auto
+    104 SOLIDSH8 HEX8     218    217    219    220    260    259    261    262 MAT 1 EAS sosh8 THICKDIR auto
+    105 SOLIDSH8 HEX8     220    219    221    222    262    261    263    264 MAT 1 EAS sosh8 THICKDIR auto
+    106 SOLIDSH8 HEX8     222    221    223    224    264    263    265    266 MAT 1 EAS sosh8 THICKDIR auto
+    107 SOLIDSH8 HEX8     224    223    225    226    266    265    267    268 MAT 1 EAS sosh8 THICKDIR auto
+    108 SOLIDSH8 HEX8     226    225    227    228    268    267    269    270 MAT 1 EAS sosh8 THICKDIR auto
+    109 SOLIDSH8 HEX8     228    227    229    230    270    269    271    272 MAT 1 EAS sosh8 THICKDIR auto
+    110 SOLIDSH8 HEX8     230    229    231    232    272    271    273    274 MAT 1 EAS sosh8 THICKDIR auto
+    111 SOLIDSH8 HEX8     232    231    233    234    274    273    275    276 MAT 1 EAS sosh8 THICKDIR auto
+    112 SOLIDSH8 HEX8     234    233    235    236    276    275    277    278 MAT 1 EAS sosh8 THICKDIR auto
+    113 SOLIDSH8 HEX8     236    235    237    238    278    277    279    280 MAT 1 EAS sosh8 THICKDIR auto
+    114 SOLIDSH8 HEX8     238    237    239    240    280    279    281    282 MAT 1 EAS sosh8 THICKDIR auto
+    115 SOLIDSH8 HEX8     240    239    241    242    282    281    283    284 MAT 1 EAS sosh8 THICKDIR auto
+    116 SOLIDSH8 HEX8     242    241    243    244    284    283    285    286 MAT 1 EAS sosh8 THICKDIR auto
+    117 SOLIDSH8 HEX8     244    243    245    246    286    285    287    288 MAT 1 EAS sosh8 THICKDIR auto
+    118 SOLIDSH8 HEX8     246    245    247    248    288    287    289    290 MAT 1 EAS sosh8 THICKDIR auto
+    119 SOLIDSH8 HEX8     248    247    249    250    290    289    291    292 MAT 1 EAS sosh8 THICKDIR auto
+    120 SOLIDSH8 HEX8     250    249    251    252    292    291    293    294 MAT 1 EAS sosh8 THICKDIR auto
+    121 SOLIDSH8 HEX8     253    254    255    256    295    296    297    298 MAT 1 EAS sosh8 THICKDIR auto
+    122 SOLIDSH8 HEX8     256    255    257    258    298    297    299    300 MAT 1 EAS sosh8 THICKDIR auto
+    123 SOLIDSH8 HEX8     258    257    259    260    300    299    301    302 MAT 1 EAS sosh8 THICKDIR auto
+    124 SOLIDSH8 HEX8     260    259    261    262    302    301    303    304 MAT 1 EAS sosh8 THICKDIR auto
+    125 SOLIDSH8 HEX8     262    261    263    264    304    303    305    306 MAT 1 EAS sosh8 THICKDIR auto
+    126 SOLIDSH8 HEX8     264    263    265    266    306    305    307    308 MAT 1 EAS sosh8 THICKDIR auto
+    127 SOLIDSH8 HEX8     266    265    267    268    308    307    309    310 MAT 1 EAS sosh8 THICKDIR auto
+    128 SOLIDSH8 HEX8     268    267    269    270    310    309    311    312 MAT 1 EAS sosh8 THICKDIR auto
+    129 SOLIDSH8 HEX8     270    269    271    272    312    311    313    314 MAT 1 EAS sosh8 THICKDIR auto
+    130 SOLIDSH8 HEX8     272    271    273    274    314    313    315    316 MAT 1 EAS sosh8 THICKDIR auto
+    131 SOLIDSH8 HEX8     274    273    275    276    316    315    317    318 MAT 1 EAS sosh8 THICKDIR auto
+    132 SOLIDSH8 HEX8     276    275    277    278    318    317    319    320 MAT 1 EAS sosh8 THICKDIR auto
+    133 SOLIDSH8 HEX8     278    277    279    280    320    319    321    322 MAT 1 EAS sosh8 THICKDIR auto
+    134 SOLIDSH8 HEX8     280    279    281    282    322    321    323    324 MAT 1 EAS sosh8 THICKDIR auto
+    135 SOLIDSH8 HEX8     282    281    283    284    324    323    325    326 MAT 1 EAS sosh8 THICKDIR auto
+    136 SOLIDSH8 HEX8     284    283    285    286    326    325    327    328 MAT 1 EAS sosh8 THICKDIR auto
+    137 SOLIDSH8 HEX8     286    285    287    288    328    327    329    330 MAT 1 EAS sosh8 THICKDIR auto
+    138 SOLIDSH8 HEX8     288    287    289    290    330    329    331    332 MAT 1 EAS sosh8 THICKDIR auto
+    139 SOLIDSH8 HEX8     290    289    291    292    332    331    333    334 MAT 1 EAS sosh8 THICKDIR auto
+    140 SOLIDSH8 HEX8     292    291    293    294    334    333    335    336 MAT 1 EAS sosh8 THICKDIR auto
+    141 SOLIDSH8 HEX8     295    296    297    298    337    338    339    340 MAT 1 EAS sosh8 THICKDIR auto
+    142 SOLIDSH8 HEX8     298    297    299    300    340    339    341    342 MAT 1 EAS sosh8 THICKDIR auto
+    143 SOLIDSH8 HEX8     300    299    301    302    342    341    343    344 MAT 1 EAS sosh8 THICKDIR auto
+    144 SOLIDSH8 HEX8     302    301    303    304    344    343    345    346 MAT 1 EAS sosh8 THICKDIR auto
+    145 SOLIDSH8 HEX8     304    303    305    306    346    345    347    348 MAT 1 EAS sosh8 THICKDIR auto
+    146 SOLIDSH8 HEX8     306    305    307    308    348    347    349    350 MAT 1 EAS sosh8 THICKDIR auto
+    147 SOLIDSH8 HEX8     308    307    309    310    350    349    351    352 MAT 1 EAS sosh8 THICKDIR auto
+    148 SOLIDSH8 HEX8     310    309    311    312    352    351    353    354 MAT 1 EAS sosh8 THICKDIR auto
+    149 SOLIDSH8 HEX8     312    311    313    314    354    353    355    356 MAT 1 EAS sosh8 THICKDIR auto
+    150 SOLIDSH8 HEX8     314    313    315    316    356    355    357    358 MAT 1 EAS sosh8 THICKDIR auto
+    151 SOLIDSH8 HEX8     316    315    317    318    358    357    359    360 MAT 1 EAS sosh8 THICKDIR auto
+    152 SOLIDSH8 HEX8     318    317    319    320    360    359    361    362 MAT 1 EAS sosh8 THICKDIR auto
+    153 SOLIDSH8 HEX8     320    319    321    322    362    361    363    364 MAT 1 EAS sosh8 THICKDIR auto
+    154 SOLIDSH8 HEX8     322    321    323    324    364    363    365    366 MAT 1 EAS sosh8 THICKDIR auto
+    155 SOLIDSH8 HEX8     324    323    325    326    366    365    367    368 MAT 1 EAS sosh8 THICKDIR auto
+    156 SOLIDSH8 HEX8     326    325    327    328    368    367    369    370 MAT 1 EAS sosh8 THICKDIR auto
+    157 SOLIDSH8 HEX8     328    327    329    330    370    369    371    372 MAT 1 EAS sosh8 THICKDIR auto
+    158 SOLIDSH8 HEX8     330    329    331    332    372    371    373    374 MAT 1 EAS sosh8 THICKDIR auto
+    159 SOLIDSH8 HEX8     332    331    333    334    374    373    375    376 MAT 1 EAS sosh8 THICKDIR auto
+    160 SOLIDSH8 HEX8     334    333    335    336    376    375    377    378 MAT 1 EAS sosh8 THICKDIR auto
+    161 SOLIDSH8 HEX8     337    338    339    340    379    380    381    382 MAT 1 EAS sosh8 THICKDIR auto
+    162 SOLIDSH8 HEX8     340    339    341    342    382    381    383    384 MAT 1 EAS sosh8 THICKDIR auto
+    163 SOLIDSH8 HEX8     342    341    343    344    384    383    385    386 MAT 1 EAS sosh8 THICKDIR auto
+    164 SOLIDSH8 HEX8     344    343    345    346    386    385    387    388 MAT 1 EAS sosh8 THICKDIR auto
+    165 SOLIDSH8 HEX8     346    345    347    348    388    387    389    390 MAT 1 EAS sosh8 THICKDIR auto
+    166 SOLIDSH8 HEX8     348    347    349    350    390    389    391    392 MAT 1 EAS sosh8 THICKDIR auto
+    167 SOLIDSH8 HEX8     350    349    351    352    392    391    393    394 MAT 1 EAS sosh8 THICKDIR auto
+    168 SOLIDSH8 HEX8     352    351    353    354    394    393    395    396 MAT 1 EAS sosh8 THICKDIR auto
+    169 SOLIDSH8 HEX8     354    353    355    356    396    395    397    398 MAT 1 EAS sosh8 THICKDIR auto
+    170 SOLIDSH8 HEX8     356    355    357    358    398    397    399    400 MAT 1 EAS sosh8 THICKDIR auto
+    171 SOLIDSH8 HEX8     358    357    359    360    400    399    401    402 MAT 1 EAS sosh8 THICKDIR auto
+    172 SOLIDSH8 HEX8     360    359    361    362    402    401    403    404 MAT 1 EAS sosh8 THICKDIR auto
+    173 SOLIDSH8 HEX8     362    361    363    364    404    403    405    406 MAT 1 EAS sosh8 THICKDIR auto
+    174 SOLIDSH8 HEX8     364    363    365    366    406    405    407    408 MAT 1 EAS sosh8 THICKDIR auto
+    175 SOLIDSH8 HEX8     366    365    367    368    408    407    409    410 MAT 1 EAS sosh8 THICKDIR auto
+    176 SOLIDSH8 HEX8     368    367    369    370    410    409    411    412 MAT 1 EAS sosh8 THICKDIR auto
+    177 SOLIDSH8 HEX8     370    369    371    372    412    411    413    414 MAT 1 EAS sosh8 THICKDIR auto
+    178 SOLIDSH8 HEX8     372    371    373    374    414    413    415    416 MAT 1 EAS sosh8 THICKDIR auto
+    179 SOLIDSH8 HEX8     374    373    375    376    416    415    417    418 MAT 1 EAS sosh8 THICKDIR auto
+    180 SOLIDSH8 HEX8     376    375    377    378    418    417    419    420 MAT 1 EAS sosh8 THICKDIR auto
+    181 SOLIDSH8 HEX8     379    380    381    382    421    422    423    424 MAT 1 EAS sosh8 THICKDIR auto
+    182 SOLIDSH8 HEX8     382    381    383    384    424    423    425    426 MAT 1 EAS sosh8 THICKDIR auto
+    183 SOLIDSH8 HEX8     384    383    385    386    426    425    427    428 MAT 1 EAS sosh8 THICKDIR auto
+    184 SOLIDSH8 HEX8     386    385    387    388    428    427    429    430 MAT 1 EAS sosh8 THICKDIR auto
+    185 SOLIDSH8 HEX8     388    387    389    390    430    429    431    432 MAT 1 EAS sosh8 THICKDIR auto
+    186 SOLIDSH8 HEX8     390    389    391    392    432    431    433    434 MAT 1 EAS sosh8 THICKDIR auto
+    187 SOLIDSH8 HEX8     392    391    393    394    434    433    435    436 MAT 1 EAS sosh8 THICKDIR auto
+    188 SOLIDSH8 HEX8     394    393    395    396    436    435    437    438 MAT 1 EAS sosh8 THICKDIR auto
+    189 SOLIDSH8 HEX8     396    395    397    398    438    437    439    440 MAT 1 EAS sosh8 THICKDIR auto
+    190 SOLIDSH8 HEX8     398    397    399    400    440    439    441    442 MAT 1 EAS sosh8 THICKDIR auto
+    191 SOLIDSH8 HEX8     400    399    401    402    442    441    443    444 MAT 1 EAS sosh8 THICKDIR auto
+    192 SOLIDSH8 HEX8     402    401    403    404    444    443    445    446 MAT 1 EAS sosh8 THICKDIR auto
+    193 SOLIDSH8 HEX8     404    403    405    406    446    445    447    448 MAT 1 EAS sosh8 THICKDIR auto
+    194 SOLIDSH8 HEX8     406    405    407    408    448    447    449    450 MAT 1 EAS sosh8 THICKDIR auto
+    195 SOLIDSH8 HEX8     408    407    409    410    450    449    451    452 MAT 1 EAS sosh8 THICKDIR auto
+    196 SOLIDSH8 HEX8     410    409    411    412    452    451    453    454 MAT 1 EAS sosh8 THICKDIR auto
+    197 SOLIDSH8 HEX8     412    411    413    414    454    453    455    456 MAT 1 EAS sosh8 THICKDIR auto
+    198 SOLIDSH8 HEX8     414    413    415    416    456    455    457    458 MAT 1 EAS sosh8 THICKDIR auto
+    199 SOLIDSH8 HEX8     416    415    417    418    458    457    459    460 MAT 1 EAS sosh8 THICKDIR auto
+    200 SOLIDSH8 HEX8     418    417    419    420    460    459    461    462 MAT 1 EAS sosh8 THICKDIR auto
+    201 SOLIDSH8 HEX8     421    422    423    424    463    464    465    466 MAT 1 EAS sosh8 THICKDIR auto
+    202 SOLIDSH8 HEX8     424    423    425    426    466    465    467    468 MAT 1 EAS sosh8 THICKDIR auto
+    203 SOLIDSH8 HEX8     426    425    427    428    468    467    469    470 MAT 1 EAS sosh8 THICKDIR auto
+    204 SOLIDSH8 HEX8     428    427    429    430    470    469    471    472 MAT 1 EAS sosh8 THICKDIR auto
+    205 SOLIDSH8 HEX8     430    429    431    432    472    471    473    474 MAT 1 EAS sosh8 THICKDIR auto
+    206 SOLIDSH8 HEX8     432    431    433    434    474    473    475    476 MAT 1 EAS sosh8 THICKDIR auto
+    207 SOLIDSH8 HEX8     434    433    435    436    476    475    477    478 MAT 1 EAS sosh8 THICKDIR auto
+    208 SOLIDSH8 HEX8     436    435    437    438    478    477    479    480 MAT 1 EAS sosh8 THICKDIR auto
+    209 SOLIDSH8 HEX8     438    437    439    440    480    479    481    482 MAT 1 EAS sosh8 THICKDIR auto
+    210 SOLIDSH8 HEX8     440    439    441    442    482    481    483    484 MAT 1 EAS sosh8 THICKDIR auto
+    211 SOLIDSH8 HEX8     442    441    443    444    484    483    485    486 MAT 1 EAS sosh8 THICKDIR auto
+    212 SOLIDSH8 HEX8     444    443    445    446    486    485    487    488 MAT 1 EAS sosh8 THICKDIR auto
+    213 SOLIDSH8 HEX8     446    445    447    448    488    487    489    490 MAT 1 EAS sosh8 THICKDIR auto
+    214 SOLIDSH8 HEX8     448    447    449    450    490    489    491    492 MAT 1 EAS sosh8 THICKDIR auto
+    215 SOLIDSH8 HEX8     450    449    451    452    492    491    493    494 MAT 1 EAS sosh8 THICKDIR auto
+    216 SOLIDSH8 HEX8     452    451    453    454    494    493    495    496 MAT 1 EAS sosh8 THICKDIR auto
+    217 SOLIDSH8 HEX8     454    453    455    456    496    495    497    498 MAT 1 EAS sosh8 THICKDIR auto
+    218 SOLIDSH8 HEX8     456    455    457    458    498    497    499    500 MAT 1 EAS sosh8 THICKDIR auto
+    219 SOLIDSH8 HEX8     458    457    459    460    500    499    501    502 MAT 1 EAS sosh8 THICKDIR auto
+    220 SOLIDSH8 HEX8     460    459    461    462    502    501    503    504 MAT 1 EAS sosh8 THICKDIR auto
+    221 SOLIDSH8 HEX8     463    464    465    466    505    506    507    508 MAT 1 EAS sosh8 THICKDIR auto
+    222 SOLIDSH8 HEX8     466    465    467    468    508    507    509    510 MAT 1 EAS sosh8 THICKDIR auto
+    223 SOLIDSH8 HEX8     468    467    469    470    510    509    511    512 MAT 1 EAS sosh8 THICKDIR auto
+    224 SOLIDSH8 HEX8     470    469    471    472    512    511    513    514 MAT 1 EAS sosh8 THICKDIR auto
+    225 SOLIDSH8 HEX8     472    471    473    474    514    513    515    516 MAT 1 EAS sosh8 THICKDIR auto
+    226 SOLIDSH8 HEX8     474    473    475    476    516    515    517    518 MAT 1 EAS sosh8 THICKDIR auto
+    227 SOLIDSH8 HEX8     476    475    477    478    518    517    519    520 MAT 1 EAS sosh8 THICKDIR auto
+    228 SOLIDSH8 HEX8     478    477    479    480    520    519    521    522 MAT 1 EAS sosh8 THICKDIR auto
+    229 SOLIDSH8 HEX8     480    479    481    482    522    521    523    524 MAT 1 EAS sosh8 THICKDIR auto
+    230 SOLIDSH8 HEX8     482    481    483    484    524    523    525    526 MAT 1 EAS sosh8 THICKDIR auto
+    231 SOLIDSH8 HEX8     484    483    485    486    526    525    527    528 MAT 1 EAS sosh8 THICKDIR auto
+    232 SOLIDSH8 HEX8     486    485    487    488    528    527    529    530 MAT 1 EAS sosh8 THICKDIR auto
+    233 SOLIDSH8 HEX8     488    487    489    490    530    529    531    532 MAT 1 EAS sosh8 THICKDIR auto
+    234 SOLIDSH8 HEX8     490    489    491    492    532    531    533    534 MAT 1 EAS sosh8 THICKDIR auto
+    235 SOLIDSH8 HEX8     492    491    493    494    534    533    535    536 MAT 1 EAS sosh8 THICKDIR auto
+    236 SOLIDSH8 HEX8     494    493    495    496    536    535    537    538 MAT 1 EAS sosh8 THICKDIR auto
+    237 SOLIDSH8 HEX8     496    495    497    498    538    537    539    540 MAT 1 EAS sosh8 THICKDIR auto
+    238 SOLIDSH8 HEX8     498    497    499    500    540    539    541    542 MAT 1 EAS sosh8 THICKDIR auto
+    239 SOLIDSH8 HEX8     500    499    501    502    542    541    543    544 MAT 1 EAS sosh8 THICKDIR auto
+    240 SOLIDSH8 HEX8     502    501    503    504    544    543    545    546 MAT 1 EAS sosh8 THICKDIR auto
+    241 SOLIDSH8 HEX8     505    506    507    508    547    548    549    550 MAT 1 EAS sosh8 THICKDIR auto
+    242 SOLIDSH8 HEX8     508    507    509    510    550    549    551    552 MAT 1 EAS sosh8 THICKDIR auto
+    243 SOLIDSH8 HEX8     510    509    511    512    552    551    553    554 MAT 1 EAS sosh8 THICKDIR auto
+    244 SOLIDSH8 HEX8     512    511    513    514    554    553    555    556 MAT 1 EAS sosh8 THICKDIR auto
+    245 SOLIDSH8 HEX8     514    513    515    516    556    555    557    558 MAT 1 EAS sosh8 THICKDIR auto
+    246 SOLIDSH8 HEX8     516    515    517    518    558    557    559    560 MAT 1 EAS sosh8 THICKDIR auto
+    247 SOLIDSH8 HEX8     518    517    519    520    560    559    561    562 MAT 1 EAS sosh8 THICKDIR auto
+    248 SOLIDSH8 HEX8     520    519    521    522    562    561    563    564 MAT 1 EAS sosh8 THICKDIR auto
+    249 SOLIDSH8 HEX8     522    521    523    524    564    563    565    566 MAT 1 EAS sosh8 THICKDIR auto
+    250 SOLIDSH8 HEX8     524    523    525    526    566    565    567    568 MAT 1 EAS sosh8 THICKDIR auto
+    251 SOLIDSH8 HEX8     526    525    527    528    568    567    569    570 MAT 1 EAS sosh8 THICKDIR auto
+    252 SOLIDSH8 HEX8     528    527    529    530    570    569    571    572 MAT 1 EAS sosh8 THICKDIR auto
+    253 SOLIDSH8 HEX8     530    529    531    532    572    571    573    574 MAT 1 EAS sosh8 THICKDIR auto
+    254 SOLIDSH8 HEX8     532    531    533    534    574    573    575    576 MAT 1 EAS sosh8 THICKDIR auto
+    255 SOLIDSH8 HEX8     534    533    535    536    576    575    577    578 MAT 1 EAS sosh8 THICKDIR auto
+    256 SOLIDSH8 HEX8     536    535    537    538    578    577    579    580 MAT 1 EAS sosh8 THICKDIR auto
+    257 SOLIDSH8 HEX8     538    537    539    540    580    579    581    582 MAT 1 EAS sosh8 THICKDIR auto
+    258 SOLIDSH8 HEX8     540    539    541    542    582    581    583    584 MAT 1 EAS sosh8 THICKDIR auto
+    259 SOLIDSH8 HEX8     542    541    543    544    584    583    585    586 MAT 1 EAS sosh8 THICKDIR auto
+    260 SOLIDSH8 HEX8     544    543    545    546    586    585    587    588 MAT 1 EAS sosh8 THICKDIR auto
+    261 SOLIDSH8 HEX8     547    548    549    550    589    590    591    592 MAT 1 EAS sosh8 THICKDIR auto
+    262 SOLIDSH8 HEX8     550    549    551    552    592    591    593    594 MAT 1 EAS sosh8 THICKDIR auto
+    263 SOLIDSH8 HEX8     552    551    553    554    594    593    595    596 MAT 1 EAS sosh8 THICKDIR auto
+    264 SOLIDSH8 HEX8     554    553    555    556    596    595    597    598 MAT 1 EAS sosh8 THICKDIR auto
+    265 SOLIDSH8 HEX8     556    555    557    558    598    597    599    600 MAT 1 EAS sosh8 THICKDIR auto
+    266 SOLIDSH8 HEX8     558    557    559    560    600    599    601    602 MAT 1 EAS sosh8 THICKDIR auto
+    267 SOLIDSH8 HEX8     560    559    561    562    602    601    603    604 MAT 1 EAS sosh8 THICKDIR auto
+    268 SOLIDSH8 HEX8     562    561    563    564    604    603    605    606 MAT 1 EAS sosh8 THICKDIR auto
+    269 SOLIDSH8 HEX8     564    563    565    566    606    605    607    608 MAT 1 EAS sosh8 THICKDIR auto
+    270 SOLIDSH8 HEX8     566    565    567    568    608    607    609    610 MAT 1 EAS sosh8 THICKDIR auto
+    271 SOLIDSH8 HEX8     568    567    569    570    610    609    611    612 MAT 1 EAS sosh8 THICKDIR auto
+    272 SOLIDSH8 HEX8     570    569    571    572    612    611    613    614 MAT 1 EAS sosh8 THICKDIR auto
+    273 SOLIDSH8 HEX8     572    571    573    574    614    613    615    616 MAT 1 EAS sosh8 THICKDIR auto
+    274 SOLIDSH8 HEX8     574    573    575    576    616    615    617    618 MAT 1 EAS sosh8 THICKDIR auto
+    275 SOLIDSH8 HEX8     576    575    577    578    618    617    619    620 MAT 1 EAS sosh8 THICKDIR auto
+    276 SOLIDSH8 HEX8     578    577    579    580    620    619    621    622 MAT 1 EAS sosh8 THICKDIR auto
+    277 SOLIDSH8 HEX8     580    579    581    582    622    621    623    624 MAT 1 EAS sosh8 THICKDIR auto
+    278 SOLIDSH8 HEX8     582    581    583    584    624    623    625    626 MAT 1 EAS sosh8 THICKDIR auto
+    279 SOLIDSH8 HEX8     584    583    585    586    626    625    627    628 MAT 1 EAS sosh8 THICKDIR auto
+    280 SOLIDSH8 HEX8     586    585    587    588    628    627    629    630 MAT 1 EAS sosh8 THICKDIR auto
+    281 SOLIDSH8 HEX8     589    590    591    592    631    632    633    634 MAT 1 EAS sosh8 THICKDIR auto
+    282 SOLIDSH8 HEX8     592    591    593    594    634    633    635    636 MAT 1 EAS sosh8 THICKDIR auto
+    283 SOLIDSH8 HEX8     594    593    595    596    636    635    637    638 MAT 1 EAS sosh8 THICKDIR auto
+    284 SOLIDSH8 HEX8     596    595    597    598    638    637    639    640 MAT 1 EAS sosh8 THICKDIR auto
+    285 SOLIDSH8 HEX8     598    597    599    600    640    639    641    642 MAT 1 EAS sosh8 THICKDIR auto
+    286 SOLIDSH8 HEX8     600    599    601    602    642    641    643    644 MAT 1 EAS sosh8 THICKDIR auto
+    287 SOLIDSH8 HEX8     602    601    603    604    644    643    645    646 MAT 1 EAS sosh8 THICKDIR auto
+    288 SOLIDSH8 HEX8     604    603    605    606    646    645    647    648 MAT 1 EAS sosh8 THICKDIR auto
+    289 SOLIDSH8 HEX8     606    605    607    608    648    647    649    650 MAT 1 EAS sosh8 THICKDIR auto
+    290 SOLIDSH8 HEX8     608    607    609    610    650    649    651    652 MAT 1 EAS sosh8 THICKDIR auto
+    291 SOLIDSH8 HEX8     610    609    611    612    652    651    653    654 MAT 1 EAS sosh8 THICKDIR auto
+    292 SOLIDSH8 HEX8     612    611    613    614    654    653    655    656 MAT 1 EAS sosh8 THICKDIR auto
+    293 SOLIDSH8 HEX8     614    613    615    616    656    655    657    658 MAT 1 EAS sosh8 THICKDIR auto
+    294 SOLIDSH8 HEX8     616    615    617    618    658    657    659    660 MAT 1 EAS sosh8 THICKDIR auto
+    295 SOLIDSH8 HEX8     618    617    619    620    660    659    661    662 MAT 1 EAS sosh8 THICKDIR auto
+    296 SOLIDSH8 HEX8     620    619    621    622    662    661    663    664 MAT 1 EAS sosh8 THICKDIR auto
+    297 SOLIDSH8 HEX8     622    621    623    624    664    663    665    666 MAT 1 EAS sosh8 THICKDIR auto
+    298 SOLIDSH8 HEX8     624    623    625    626    666    665    667    668 MAT 1 EAS sosh8 THICKDIR auto
+    299 SOLIDSH8 HEX8     626    625    627    628    668    667    669    670 MAT 1 EAS sosh8 THICKDIR auto
+    300 SOLIDSH8 HEX8     628    627    629    630    670    669    671    672 MAT 1 EAS sosh8 THICKDIR auto
+    301 SOLIDSH8 HEX8     631    632    633    634    673    674    675    676 MAT 1 EAS sosh8 THICKDIR auto
+    302 SOLIDSH8 HEX8     634    633    635    636    676    675    677    678 MAT 1 EAS sosh8 THICKDIR auto
+    303 SOLIDSH8 HEX8     636    635    637    638    678    677    679    680 MAT 1 EAS sosh8 THICKDIR auto
+    304 SOLIDSH8 HEX8     638    637    639    640    680    679    681    682 MAT 1 EAS sosh8 THICKDIR auto
+    305 SOLIDSH8 HEX8     640    639    641    642    682    681    683    684 MAT 1 EAS sosh8 THICKDIR auto
+    306 SOLIDSH8 HEX8     642    641    643    644    684    683    685    686 MAT 1 EAS sosh8 THICKDIR auto
+    307 SOLIDSH8 HEX8     644    643    645    646    686    685    687    688 MAT 1 EAS sosh8 THICKDIR auto
+    308 SOLIDSH8 HEX8     646    645    647    648    688    687    689    690 MAT 1 EAS sosh8 THICKDIR auto
+    309 SOLIDSH8 HEX8     648    647    649    650    690    689    691    692 MAT 1 EAS sosh8 THICKDIR auto
+    310 SOLIDSH8 HEX8     650    649    651    652    692    691    693    694 MAT 1 EAS sosh8 THICKDIR auto
+    311 SOLIDSH8 HEX8     652    651    653    654    694    693    695    696 MAT 1 EAS sosh8 THICKDIR auto
+    312 SOLIDSH8 HEX8     654    653    655    656    696    695    697    698 MAT 1 EAS sosh8 THICKDIR auto
+    313 SOLIDSH8 HEX8     656    655    657    658    698    697    699    700 MAT 1 EAS sosh8 THICKDIR auto
+    314 SOLIDSH8 HEX8     658    657    659    660    700    699    701    702 MAT 1 EAS sosh8 THICKDIR auto
+    315 SOLIDSH8 HEX8     660    659    661    662    702    701    703    704 MAT 1 EAS sosh8 THICKDIR auto
+    316 SOLIDSH8 HEX8     662    661    663    664    704    703    705    706 MAT 1 EAS sosh8 THICKDIR auto
+    317 SOLIDSH8 HEX8     664    663    665    666    706    705    707    708 MAT 1 EAS sosh8 THICKDIR auto
+    318 SOLIDSH8 HEX8     666    665    667    668    708    707    709    710 MAT 1 EAS sosh8 THICKDIR auto
+    319 SOLIDSH8 HEX8     668    667    669    670    710    709    711    712 MAT 1 EAS sosh8 THICKDIR auto
+    320 SOLIDSH8 HEX8     670    669    671    672    712    711    713    714 MAT 1 EAS sosh8 THICKDIR auto
+    321 SOLIDSH8 HEX8     673    674    675    676    715    716    717    718 MAT 1 EAS sosh8 THICKDIR auto
+    322 SOLIDSH8 HEX8     676    675    677    678    718    717    719    720 MAT 1 EAS sosh8 THICKDIR auto
+    323 SOLIDSH8 HEX8     678    677    679    680    720    719    721    722 MAT 1 EAS sosh8 THICKDIR auto
+    324 SOLIDSH8 HEX8     680    679    681    682    722    721    723    724 MAT 1 EAS sosh8 THICKDIR auto
+    325 SOLIDSH8 HEX8     682    681    683    684    724    723    725    726 MAT 1 EAS sosh8 THICKDIR auto
+    326 SOLIDSH8 HEX8     684    683    685    686    726    725    727    728 MAT 1 EAS sosh8 THICKDIR auto
+    327 SOLIDSH8 HEX8     686    685    687    688    728    727    729    730 MAT 1 EAS sosh8 THICKDIR auto
+    328 SOLIDSH8 HEX8     688    687    689    690    730    729    731    732 MAT 1 EAS sosh8 THICKDIR auto
+    329 SOLIDSH8 HEX8     690    689    691    692    732    731    733    734 MAT 1 EAS sosh8 THICKDIR auto
+    330 SOLIDSH8 HEX8     692    691    693    694    734    733    735    736 MAT 1 EAS sosh8 THICKDIR auto
+    331 SOLIDSH8 HEX8     694    693    695    696    736    735    737    738 MAT 1 EAS sosh8 THICKDIR auto
+    332 SOLIDSH8 HEX8     696    695    697    698    738    737    739    740 MAT 1 EAS sosh8 THICKDIR auto
+    333 SOLIDSH8 HEX8     698    697    699    700    740    739    741    742 MAT 1 EAS sosh8 THICKDIR auto
+    334 SOLIDSH8 HEX8     700    699    701    702    742    741    743    744 MAT 1 EAS sosh8 THICKDIR auto
+    335 SOLIDSH8 HEX8     702    701    703    704    744    743    745    746 MAT 1 EAS sosh8 THICKDIR auto
+    336 SOLIDSH8 HEX8     704    703    705    706    746    745    747    748 MAT 1 EAS sosh8 THICKDIR auto
+    337 SOLIDSH8 HEX8     706    705    707    708    748    747    749    750 MAT 1 EAS sosh8 THICKDIR auto
+    338 SOLIDSH8 HEX8     708    707    709    710    750    749    751    752 MAT 1 EAS sosh8 THICKDIR auto
+    339 SOLIDSH8 HEX8     710    709    711    712    752    751    753    754 MAT 1 EAS sosh8 THICKDIR auto
+    340 SOLIDSH8 HEX8     712    711    713    714    754    753    755    756 MAT 1 EAS sosh8 THICKDIR auto
+    341 SOLIDSH8 HEX8     715    716    717    718    757    758    759    760 MAT 1 EAS sosh8 THICKDIR auto
+    342 SOLIDSH8 HEX8     718    717    719    720    760    759    761    762 MAT 1 EAS sosh8 THICKDIR auto
+    343 SOLIDSH8 HEX8     720    719    721    722    762    761    763    764 MAT 1 EAS sosh8 THICKDIR auto
+    344 SOLIDSH8 HEX8     722    721    723    724    764    763    765    766 MAT 1 EAS sosh8 THICKDIR auto
+    345 SOLIDSH8 HEX8     724    723    725    726    766    765    767    768 MAT 1 EAS sosh8 THICKDIR auto
+    346 SOLIDSH8 HEX8     726    725    727    728    768    767    769    770 MAT 1 EAS sosh8 THICKDIR auto
+    347 SOLIDSH8 HEX8     728    727    729    730    770    769    771    772 MAT 1 EAS sosh8 THICKDIR auto
+    348 SOLIDSH8 HEX8     730    729    731    732    772    771    773    774 MAT 1 EAS sosh8 THICKDIR auto
+    349 SOLIDSH8 HEX8     732    731    733    734    774    773    775    776 MAT 1 EAS sosh8 THICKDIR auto
+    350 SOLIDSH8 HEX8     734    733    735    736    776    775    777    778 MAT 1 EAS sosh8 THICKDIR auto
+    351 SOLIDSH8 HEX8     736    735    737    738    778    777    779    780 MAT 1 EAS sosh8 THICKDIR auto
+    352 SOLIDSH8 HEX8     738    737    739    740    780    779    781    782 MAT 1 EAS sosh8 THICKDIR auto
+    353 SOLIDSH8 HEX8     740    739    741    742    782    781    783    784 MAT 1 EAS sosh8 THICKDIR auto
+    354 SOLIDSH8 HEX8     742    741    743    744    784    783    785    786 MAT 1 EAS sosh8 THICKDIR auto
+    355 SOLIDSH8 HEX8     744    743    745    746    786    785    787    788 MAT 1 EAS sosh8 THICKDIR auto
+    356 SOLIDSH8 HEX8     746    745    747    748    788    787    789    790 MAT 1 EAS sosh8 THICKDIR auto
+    357 SOLIDSH8 HEX8     748    747    749    750    790    789    791    792 MAT 1 EAS sosh8 THICKDIR auto
+    358 SOLIDSH8 HEX8     750    749    751    752    792    791    793    794 MAT 1 EAS sosh8 THICKDIR auto
+    359 SOLIDSH8 HEX8     752    751    753    754    794    793    795    796 MAT 1 EAS sosh8 THICKDIR auto
+    360 SOLIDSH8 HEX8     754    753    755    756    796    795    797    798 MAT 1 EAS sosh8 THICKDIR auto
+    361 SOLIDSH8 HEX8     757    758    759    760    799    800    801    802 MAT 1 EAS sosh8 THICKDIR auto
+    362 SOLIDSH8 HEX8     760    759    761    762    802    801    803    804 MAT 1 EAS sosh8 THICKDIR auto
+    363 SOLIDSH8 HEX8     762    761    763    764    804    803    805    806 MAT 1 EAS sosh8 THICKDIR auto
+    364 SOLIDSH8 HEX8     764    763    765    766    806    805    807    808 MAT 1 EAS sosh8 THICKDIR auto
+    365 SOLIDSH8 HEX8     766    765    767    768    808    807    809    810 MAT 1 EAS sosh8 THICKDIR auto
+    366 SOLIDSH8 HEX8     768    767    769    770    810    809    811    812 MAT 1 EAS sosh8 THICKDIR auto
+    367 SOLIDSH8 HEX8     770    769    771    772    812    811    813    814 MAT 1 EAS sosh8 THICKDIR auto
+    368 SOLIDSH8 HEX8     772    771    773    774    814    813    815    816 MAT 1 EAS sosh8 THICKDIR auto
+    369 SOLIDSH8 HEX8     774    773    775    776    816    815    817    818 MAT 1 EAS sosh8 THICKDIR auto
+    370 SOLIDSH8 HEX8     776    775    777    778    818    817    819    820 MAT 1 EAS sosh8 THICKDIR auto
+    371 SOLIDSH8 HEX8     778    777    779    780    820    819    821    822 MAT 1 EAS sosh8 THICKDIR auto
+    372 SOLIDSH8 HEX8     780    779    781    782    822    821    823    824 MAT 1 EAS sosh8 THICKDIR auto
+    373 SOLIDSH8 HEX8     782    781    783    784    824    823    825    826 MAT 1 EAS sosh8 THICKDIR auto
+    374 SOLIDSH8 HEX8     784    783    785    786    826    825    827    828 MAT 1 EAS sosh8 THICKDIR auto
+    375 SOLIDSH8 HEX8     786    785    787    788    828    827    829    830 MAT 1 EAS sosh8 THICKDIR auto
+    376 SOLIDSH8 HEX8     788    787    789    790    830    829    831    832 MAT 1 EAS sosh8 THICKDIR auto
+    377 SOLIDSH8 HEX8     790    789    791    792    832    831    833    834 MAT 1 EAS sosh8 THICKDIR auto
+    378 SOLIDSH8 HEX8     792    791    793    794    834    833    835    836 MAT 1 EAS sosh8 THICKDIR auto
+    379 SOLIDSH8 HEX8     794    793    795    796    836    835    837    838 MAT 1 EAS sosh8 THICKDIR auto
+    380 SOLIDSH8 HEX8     796    795    797    798    838    837    839    840 MAT 1 EAS sosh8 THICKDIR auto
+    381 SOLIDSH8 HEX8     799    800    801    802    841    842    843    844 MAT 1 EAS sosh8 THICKDIR auto
+    382 SOLIDSH8 HEX8     802    801    803    804    844    843    845    846 MAT 1 EAS sosh8 THICKDIR auto
+    383 SOLIDSH8 HEX8     804    803    805    806    846    845    847    848 MAT 1 EAS sosh8 THICKDIR auto
+    384 SOLIDSH8 HEX8     806    805    807    808    848    847    849    850 MAT 1 EAS sosh8 THICKDIR auto
+    385 SOLIDSH8 HEX8     808    807    809    810    850    849    851    852 MAT 1 EAS sosh8 THICKDIR auto
+    386 SOLIDSH8 HEX8     810    809    811    812    852    851    853    854 MAT 1 EAS sosh8 THICKDIR auto
+    387 SOLIDSH8 HEX8     812    811    813    814    854    853    855    856 MAT 1 EAS sosh8 THICKDIR auto
+    388 SOLIDSH8 HEX8     814    813    815    816    856    855    857    858 MAT 1 EAS sosh8 THICKDIR auto
+    389 SOLIDSH8 HEX8     816    815    817    818    858    857    859    860 MAT 1 EAS sosh8 THICKDIR auto
+    390 SOLIDSH8 HEX8     818    817    819    820    860    859    861    862 MAT 1 EAS sosh8 THICKDIR auto
+    391 SOLIDSH8 HEX8     820    819    821    822    862    861    863    864 MAT 1 EAS sosh8 THICKDIR auto
+    392 SOLIDSH8 HEX8     822    821    823    824    864    863    865    866 MAT 1 EAS sosh8 THICKDIR auto
+    393 SOLIDSH8 HEX8     824    823    825    826    866    865    867    868 MAT 1 EAS sosh8 THICKDIR auto
+    394 SOLIDSH8 HEX8     826    825    827    828    868    867    869    870 MAT 1 EAS sosh8 THICKDIR auto
+    395 SOLIDSH8 HEX8     828    827    829    830    870    869    871    872 MAT 1 EAS sosh8 THICKDIR auto
+    396 SOLIDSH8 HEX8     830    829    831    832    872    871    873    874 MAT 1 EAS sosh8 THICKDIR auto
+    397 SOLIDSH8 HEX8     832    831    833    834    874    873    875    876 MAT 1 EAS sosh8 THICKDIR auto
+    398 SOLIDSH8 HEX8     834    833    835    836    876    875    877    878 MAT 1 EAS sosh8 THICKDIR auto
+    399 SOLIDSH8 HEX8     836    835    837    838    878    877    879    880 MAT 1 EAS sosh8 THICKDIR auto
+    400 SOLIDSH8 HEX8     838    837    839    840    880    879    881    882 MAT 1 EAS sosh8 THICKDIR auto
 ----------------------------------------------------FLUID ELEMENTS
 ------------------------------------------------------ALE ELEMENTS
 -------------------------------------------------LEVELSET ELEMENTS
