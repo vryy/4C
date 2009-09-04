@@ -583,6 +583,16 @@ void SCATRA::ScaTraTimIntImpl::ComputeDensity(const double thermpress,
     densnp_->PutScalar(unbdens_);
     densnp_->Update(densdiff_,*phinp_,1.0);
   }
+  else if (reaction_ == "mixture_fraction")
+  {
+    // compute density based on mixture fraction phi:
+    // rho = 1/(a*phi+b) with a=9 and b=1
+    const double a = 9.0;
+    const double b = 1.0;
+    densnp_->PutScalar(b);
+    densnp_->Update(a,*phinp_,1.0);
+    densnp_->Reciprocal(*densnp_);
+  }
   else
   {
     // compute density based on equation of state:

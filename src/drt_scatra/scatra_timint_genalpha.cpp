@@ -171,7 +171,7 @@ void SCATRA::TimIntGenAlpha::ComputeInitialDensityDerivative()
       }
     }
   }
-  else if (reaction_ == "Arrhenius_pv")
+  else if (reaction_ == "Arrhenius_pv" or reaction_ == "mixture_fraction")
   {
     densdtn_->PutScalar(0.0);
   }

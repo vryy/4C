@@ -1532,6 +1532,68 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
       }
     }
   }
+  // initial mixture-fraction profile for Rayleigh-Taylor instability
+  else if (init == 6)
+  {
+    // check whether it is indeed a mixture-fraction approach
+    if (reaction_ != "mixture_fraction") dserror("This initial field is supposed to be used only in the context of a flow with mixture-fraction approach!");
+
+    // define interface thickness, sinusoidal disturbance wave amplitude and pi
+    const double delta = 0.002;
+    const double alpha = 0.001;
+    const double pi = 3.141592654;
+
+    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+    // loop all nodes on the processor
+    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+    {
+      // get the processor local node
+      DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
+      // the set of degrees of freedom associated with the node
+      vector<int> nodedofset = discret_->Dof(lnode);
+
+      // get x1- and x2-coordinate
+      const double x1 = lnode->X()[0];
+      const double x2 = lnode->X()[1];
+
+      // interface disturbance
+      //double x2_int = 0.05*cos(pi*(x1+0.5));
+      //double x2_int = 0.05*cos(2.0*pi*x1);
+      double x2_int = 0.0;
+      x2_int -= cos(4*pi*x1);
+      x2_int -= cos(14*pi*x1);
+      x2_int -= cos(23*pi*x1);
+      x2_int -= cos(28*pi*x1);
+      x2_int -= cos(33*pi*x1);
+      x2_int -= cos(42*pi*x1);
+      x2_int -= cos(51*pi*x1);
+      x2_int -= cos(59*pi*x1);
+      x2_int *= alpha;
+
+      const double value = (x2_int-x2)/(2.0*delta);
+
+      // values required for tanh-distribution
+      const double vp = exp(value);
+      const double vm = exp(-value);
+
+      int numdofs = nodedofset.size();
+      for (int k=0;k< numdofs;++k)
+      {
+        const int dofgid = nodedofset[k];
+        int doflid = dofrowmap->LID(dofgid);
+
+        // compute tanh-distribution
+        double initialval = 0.0;
+        initialval = 0.5*(1.0+(vp-vm)/(vp+vm));
+
+        phin_->ReplaceMyValues(1,&initialval,&doflid);
+        // initialize also the solution vector. These values are a pretty good guess for the
+        // solution after the first time step (much better than starting with a zero vector)
+        phinp_->ReplaceMyValues(1,&initialval,&doflid);
+      }
+    }
+  }
   else
     dserror("Unknown option for initial field: %d", init);
 

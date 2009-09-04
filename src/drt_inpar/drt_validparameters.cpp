@@ -1595,9 +1595,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "no",
                                  "constant_coefficient",
                                  "Arrhenius_species",
-                                 "Arrhenius_pv"
+                                 "Arrhenius_pv",
+                                 "mixture_fraction"
                                  ),
-                               tuple<int>(0,1,2,3),
+                               tuple<int>(0,1,2,3,4),
                                &scatradyn);
 
   setStringToIntegralParameter<INPAR::SCATRA::TimeIntegrationScheme>("TIMEINTEGR","One_Step_Theta",
@@ -1649,8 +1650,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "field_by_condition",
                                  "disturbed_field_by_function",
                                  "1D_DISCONTPV",
-                                 "FVI_FERECHPRO"),
-                               tuple<int>(0,1,2,3,4,5),
+                                 "FVI_FERECHPRO",
+                                 "RAYTAYMIXFRAC"),
+                               tuple<int>(0,1,2,3,4,5,6),
                                &scatradyn);
 
   IntParameter("INITFUNCNO",-1,"function number for scalar transport initial field",&scatradyn);
