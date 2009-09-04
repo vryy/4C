@@ -762,9 +762,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                yesnotuple,yesnovalue,
                                &iap);
   // Measured displacement/load curve during the experiments  a1*(1-exp(-pow((a2*t), a3)))
-  DoubleParameter("MEASURED_CURVE0",0.0,"measured displacment of the tension testing",&iap);
-  DoubleParameter("MEASURED_CURVE1",0.0,"measured displacment of the tension testing",&iap);
-  DoubleParameter("MEASURED_CURVE2",0.0,"measured displacment of the tension testing",&iap);
+  DoubleParameter("MEASURED_CURVE0",0.0,"measured displacement of the tension testing",&iap);
+  DoubleParameter("MEASURED_CURVE1",0.0,"measured displacement of the tension testing",&iap);
+  DoubleParameter("MEASURED_CURVE2",0.0,"measured displacement of the tension testing",&iap);
 
   // tolerance for inv_analysis
   DoubleParameter("INV_ANA_TOL",1.0,"tolerance for inverse analysis",&iap);
@@ -1060,7 +1060,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &fdyn);
 
   setStringToIntegralParameter<int>("DYNAMICTYP","Nlin_Time_Int",
-                               "Nonlinear Time Integraton Scheme",
+                               "Nonlinear Time Integration Scheme",
                                tuple<std::string>(
                                  "Nlin_Time_Int",
                                  "Lin_Time_Int"
@@ -1141,7 +1141,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "do not check for convergence (ccarat)",
                                  "use max norm (ccarat)",
                                  "use abs. norm (ccarat)",
-                                 "compute L2 errors of increments (reltive) and residuals (absolute)",
+                                 "compute L2 errors of increments (relative) and residuals (absolute)",
                                  "same as L_2_norm, only no residual norm is computed if itemax is reached (speedup for turbulence calculations, startup phase)"
                                  ),
                                tuple<int>(
@@ -1246,9 +1246,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("ADAPTCONV_BETTER",0.1,"The linear solver shall be this much better than the current nonlinear residual in the nonlinear convergence limit",&fdyn);
 
   IntParameter("UPPSS",1,"Increment for visualisation (unused)",&fdyn);
-  IntParameter("UPOUT",1,"Increment for writing solution to output file",&fdyn);
+  IntParameter("UPOUT",1,"Increment for writing solution to output file (unused)",&fdyn);
   IntParameter("UPRES",1,"Increment for writing solution",&fdyn);
-  IntParameter("RESSTEP",0,"Restart Step",&fdyn);
+  IntParameter("RESSTEP",0,"Restart Step (unused)",&fdyn);
   IntParameter("RESTARTEVRY",20,"Increment for writing restart",&fdyn);
   IntParameter("NUMSTEP",1,"Total number of Timesteps",&fdyn);
   IntParameter("STEADYSTEP",-1,"steady state check every step",&fdyn);
@@ -1266,7 +1266,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   DoubleParameter("CONVTOL",1e-6,"Tolerance for convergence check",&fdyn);
   DoubleParameter("STEADYTOL",1e-6,"Tolerance for steady state check",&fdyn);
-  DoubleParameter("START_THETA",1.0,"Time integraton factor for starting scheme",&fdyn);
+  DoubleParameter("START_THETA",1.0,"Time integration factor for starting scheme",&fdyn);
  /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& andyn = list->sublist("ARTERIAL DYNAMIC",false,"");
 
@@ -2142,7 +2142,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("ISDMAX",1,"not used up to now",&fsidyn);
   IntParameter("NUMSTEP",200,"Total number of Timesteps",&fsidyn);
   IntParameter("ITEMAX",100,"Maximum number of iterations over fields",&fsidyn);
-  IntParameter("UPPSS",1,"Increment for visualisation",&fsidyn);
+  IntParameter("UPPSS",1,"Increment for visualization (unused)",&fsidyn);
   IntParameter("UPRES",1,"Increment for writing solution",&fsidyn);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&fsidyn);
 
@@ -2158,7 +2158,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                   "This tolerance will be used for the linear solve of the FSI block system.\n"
                   "The linear convergence test will always use the relative residual norm (AZ_r0).\n"
                   "Not to be confused with the Newton tolerance (CONVTOL) that applies\n"
-                  "to the nonlinear convergance test.",
+                  "to the nonlinear convergence test.",
                   &fsidyn);
 
   DoubleParameter("ADAPTIVEDIST",0.0,
