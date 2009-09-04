@@ -1853,14 +1853,14 @@ NODE          226     COORD 0.000000000000000e+00     1.000000000000000e+00     
 NODE          227     COORD 0.000000000000000e+00     1.000000000000000e+00     0.000000000000000e+00
 ----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
-     82 SOLIDH8 HEX8      60    203    206     65     43    196    199     50 MAT 2 GP 2 2 2 KINEM Totlag EAS mild
-     83 SOLIDH8 HEX8       7     60     65     13      2     43     50      4 MAT 2 GP 2 2 2 KINEM Totlag EAS mild
-     84 SOLIDH8 HEX8      55    202    203     60     38    193    196     43 MAT 2 GP 2 2 2 KINEM Totlag EAS mild
-     85 SOLIDH8 HEX8       6     55     60      7      1     38     43      2 MAT 2 GP 2 2 2 KINEM Totlag EAS mild
-     86 SOLIDH8 HEX8      97    220    221    108     60    203    206     65 MAT 2 GP 2 2 2 KINEM Totlag EAS mild
-     87 SOLIDH8 HEX8      44     97    108     51      7     60     65     13 MAT 2 GP 2 2 2 KINEM Totlag EAS mild
-     88 SOLIDH8 HEX8      94    219    220     97     55    202    203     60 MAT 2 GP 2 2 2 KINEM Totlag EAS mild
-     89 SOLIDH8 HEX8      37     94     97     44      6     55     60      7 MAT 2 GP 2 2 2 KINEM Totlag EAS mild
+     82 SOLIDH8 HEX8      60    203    206     65     43    196    199     50 MAT 2 EAS mild
+     83 SOLIDH8 HEX8       7     60     65     13      2     43     50      4 MAT 2 EAS mild
+     84 SOLIDH8 HEX8      55    202    203     60     38    193    196     43 MAT 2 EAS mild
+     85 SOLIDH8 HEX8       6     55     60      7      1     38     43      2 MAT 2 EAS mild
+     86 SOLIDH8 HEX8      97    220    221    108     60    203    206     65 MAT 2 EAS mild
+     87 SOLIDH8 HEX8      44     97    108     51      7     60     65     13 MAT 2 EAS mild
+     88 SOLIDH8 HEX8      94    219    220     97     55    202    203     60 MAT 2 EAS mild
+     89 SOLIDH8 HEX8      37     94     97     44      6     55     60      7 MAT 2 EAS mild
 ----------------------------------------------------FLUID ELEMENTS
       1 XFLUID3 HEX8     131    160    164    133    124    150    154    127 MAT       1
       2 XFLUID3 HEX8     106    131    133    111     98    124    127    102 MAT       1

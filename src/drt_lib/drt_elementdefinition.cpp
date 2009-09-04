@@ -632,8 +632,6 @@ void DRT::INPUT::ElementDefinition::SetupSolidh8Lines()
   defs["HEX8"]
     .AddIntVector("HEX8",8)
     .AddNamedInt("MAT")
-    .AddNamedIntVector("GP",3)
-    .AddNamedString("KINEM")
     .AddNamedString("EAS")
     .AddOptionalNamedDoubleVector("RAD",3)
     .AddOptionalNamedDoubleVector("AXI",3)
