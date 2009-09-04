@@ -124,10 +124,10 @@ void write_scalar_result(string result_name, PostField* field, PostResult* resul
 void write_serialdensematrix_result(string result_name, PostField* field,
                                     PostResult* result)
 {
-  CHAR* gaussname;
+  CHAR* gaussname = "";
   CHAR* componentnames[] = { "xx", "yy", "zz", "xy", "yz", "xz"};
-  int numdim;
-  int numstress;
+  int numdim = 0;
+  int numstress = 0;
 
   // This implementation depends (like the rest of this GiD-filter) on
   // the assumption that there are only elements of one type in the mesh
