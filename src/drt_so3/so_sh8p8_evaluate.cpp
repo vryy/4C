@@ -542,6 +542,7 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
 
 
 /*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_sh8p8::EvaluateNeumann(
   Teuchos::ParameterList& params,
   DRT::Discretization& discretization,
@@ -563,7 +564,7 @@ int DRT::ELEMENTS::So_sh8p8::EvaluateNeumann(
   Epetra_SerialDenseMatrix* elemat1_dd = NULL;
   if (elemat1 != NULL)
     elemat1_dd = new Epetra_SerialDenseMatrix(NUMDISP_,NUMDISP_);
-  // build load vector (and tangent)
+  // determine (displacement) load vector (and tangent)
   const int rv = So_hex8::EvaluateNeumann(params,
                                           discretization,
                                           condition,
