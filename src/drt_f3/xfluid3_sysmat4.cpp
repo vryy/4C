@@ -313,12 +313,12 @@ Maintainer: Axel Gerstenberger
                 |                |
                  \              /
   */
-  assembler.template Matrix<Pres,Velx>(shp.d0, timefacfac, shp.dx);
-  assembler.template Matrix<Pres,Vely>(shp.d0, timefacfac, shp.dy);
-  assembler.template Matrix<Pres,Velz>(shp.d0, timefacfac, shp.dz);
+  assembler.template Matrix<Pres,Velx>(shp.d0, -timefacfac, shp.dx);
+  assembler.template Matrix<Pres,Vely>(shp.d0, -timefacfac, shp.dy);
+  assembler.template Matrix<Pres,Velz>(shp.d0, -timefacfac, shp.dz);
 
   const double trace_gamma = (vderxy(0, 0) + vderxy(1, 1) + vderxy(2, 2));
-  assembler.template Vector<Pres>(shp.d0, -timefacfac*trace_gamma);
+  assembler.template Vector<Pres>(shp.d0, timefacfac*trace_gamma);
 
   // source term of the right hand side
   assembler.template Vector<Velx>(shp.d0, fac*rhsint(0));
@@ -404,9 +404,9 @@ Maintainer: Axel Gerstenberger
                      |                |
                       \              /
           */
-          assembler.template Matrix<Pres,Velx>(shp.dx, timetauMp, shp.d0);
-          assembler.template Matrix<Pres,Vely>(shp.dy, timetauMp, shp.d0);
-          assembler.template Matrix<Pres,Velz>(shp.dz, timetauMp, shp.d0);
+          assembler.template Matrix<Pres,Velx>(shp.dx, -timetauMp, shp.d0);
+          assembler.template Matrix<Pres,Vely>(shp.dy, -timetauMp, shp.d0);
+          assembler.template Matrix<Pres,Velz>(shp.dz, -timetauMp, shp.d0);
       }
       const double ttimetauMp = timefac * timefac * tau_stab_Mp * fac;
       /* pressure stabilisation: convection, convective part */
@@ -417,9 +417,9 @@ Maintainer: Axel Gerstenberger
                |             \ i         /     |
                 \                             /
       */
-      assembler.template Matrix<Pres,Velx>(shp.dx, ttimetauMp, enr_conv_c_);
-      assembler.template Matrix<Pres,Vely>(shp.dy, ttimetauMp, enr_conv_c_);
-      assembler.template Matrix<Pres,Velz>(shp.dz, ttimetauMp, enr_conv_c_);
+      assembler.template Matrix<Pres,Velx>(shp.dx, -ttimetauMp, enr_conv_c_);
+      assembler.template Matrix<Pres,Vely>(shp.dy, -ttimetauMp, enr_conv_c_);
+      assembler.template Matrix<Pres,Velz>(shp.dz, -ttimetauMp, enr_conv_c_);
 
       if (newton)
       {
@@ -430,17 +430,17 @@ Maintainer: Axel Gerstenberger
                |           \          /   (i)  |
                 \                             /
           */
-          assembler.template Matrix<Pres,Velx>(shp.dx, ttimetauMp*vderxy(0,0), shp.d0);
-          assembler.template Matrix<Pres,Velx>(shp.dy, ttimetauMp*vderxy(1,0), shp.d0);
-          assembler.template Matrix<Pres,Velx>(shp.dz, ttimetauMp*vderxy(2,0), shp.d0);
+          assembler.template Matrix<Pres,Velx>(shp.dx, -ttimetauMp*vderxy(0,0), shp.d0);
+          assembler.template Matrix<Pres,Velx>(shp.dy, -ttimetauMp*vderxy(1,0), shp.d0);
+          assembler.template Matrix<Pres,Velx>(shp.dz, -ttimetauMp*vderxy(2,0), shp.d0);
 
-          assembler.template Matrix<Pres,Vely>(shp.dx, ttimetauMp*vderxy(0,1), shp.d0);
-          assembler.template Matrix<Pres,Vely>(shp.dy, ttimetauMp*vderxy(1,1), shp.d0);
-          assembler.template Matrix<Pres,Vely>(shp.dz, ttimetauMp*vderxy(2,1), shp.d0);
+          assembler.template Matrix<Pres,Vely>(shp.dx, -ttimetauMp*vderxy(0,1), shp.d0);
+          assembler.template Matrix<Pres,Vely>(shp.dy, -ttimetauMp*vderxy(1,1), shp.d0);
+          assembler.template Matrix<Pres,Vely>(shp.dz, -ttimetauMp*vderxy(2,1), shp.d0);
 
-          assembler.template Matrix<Pres,Velz>(shp.dx, ttimetauMp*vderxy(0,2), shp.d0);
-          assembler.template Matrix<Pres,Velz>(shp.dy, ttimetauMp*vderxy(1,2), shp.d0);
-          assembler.template Matrix<Pres,Velz>(shp.dz, ttimetauMp*vderxy(2,2), shp.d0);
+          assembler.template Matrix<Pres,Velz>(shp.dx, -ttimetauMp*vderxy(0,2), shp.d0);
+          assembler.template Matrix<Pres,Velz>(shp.dy, -ttimetauMp*vderxy(1,2), shp.d0);
+          assembler.template Matrix<Pres,Velz>(shp.dz, -ttimetauMp*vderxy(2,2), shp.d0);
       }
 
       /* pressure stabilisation: viscosity (-L_visc_u) */
@@ -451,17 +451,17 @@ Maintainer: Axel Gerstenberger
                 |                         \  /  |
                  \                             /
       */
-      assembler.template Matrix<Pres,Velx>(shp.dx, -2.0*visc*ttimetauMp, enr_viscs2.xx);
-      assembler.template Matrix<Pres,Vely>(shp.dx, -2.0*visc*ttimetauMp, enr_viscs2.xy);
-      assembler.template Matrix<Pres,Velz>(shp.dx, -2.0*visc*ttimetauMp, enr_viscs2.xz);
+      assembler.template Matrix<Pres,Velx>(shp.dx, 2.0*visc*ttimetauMp, enr_viscs2.xx);
+      assembler.template Matrix<Pres,Vely>(shp.dx, 2.0*visc*ttimetauMp, enr_viscs2.xy);
+      assembler.template Matrix<Pres,Velz>(shp.dx, 2.0*visc*ttimetauMp, enr_viscs2.xz);
 
-      assembler.template Matrix<Pres,Velx>(shp.dy, -2.0*visc*ttimetauMp, enr_viscs2.xy);
-      assembler.template Matrix<Pres,Vely>(shp.dy, -2.0*visc*ttimetauMp, enr_viscs2.yy);
-      assembler.template Matrix<Pres,Velz>(shp.dy, -2.0*visc*ttimetauMp, enr_viscs2.yz);
+      assembler.template Matrix<Pres,Velx>(shp.dy, 2.0*visc*ttimetauMp, enr_viscs2.xy);
+      assembler.template Matrix<Pres,Vely>(shp.dy, 2.0*visc*ttimetauMp, enr_viscs2.yy);
+      assembler.template Matrix<Pres,Velz>(shp.dy, 2.0*visc*ttimetauMp, enr_viscs2.yz);
 
-      assembler.template Matrix<Pres,Velx>(shp.dz, -2.0*visc*ttimetauMp, enr_viscs2.xz);
-      assembler.template Matrix<Pres,Vely>(shp.dz, -2.0*visc*ttimetauMp, enr_viscs2.yz);
-      assembler.template Matrix<Pres,Velz>(shp.dz, -2.0*visc*ttimetauMp, enr_viscs2.zz);
+      assembler.template Matrix<Pres,Velx>(shp.dz, 2.0*visc*ttimetauMp, enr_viscs2.xz);
+      assembler.template Matrix<Pres,Vely>(shp.dz, 2.0*visc*ttimetauMp, enr_viscs2.yz);
+      assembler.template Matrix<Pres,Velz>(shp.dz, 2.0*visc*ttimetauMp, enr_viscs2.zz);
 
       /* pressure stabilisation: pressure( L_pres_p) */
       /*
@@ -471,14 +471,14 @@ Maintainer: Axel Gerstenberger
                |                      |
                 \                    /
       */
-      assembler.template Matrix<Pres,Pres>(shp.dx, ttimetauMp, shp.dx);
-      assembler.template Matrix<Pres,Pres>(shp.dy, ttimetauMp, shp.dy);
-      assembler.template Matrix<Pres,Pres>(shp.dz, ttimetauMp, shp.dz);
+      assembler.template Matrix<Pres,Pres>(shp.dx, -ttimetauMp, shp.dx);
+      assembler.template Matrix<Pres,Pres>(shp.dy, -ttimetauMp, shp.dy);
+      assembler.template Matrix<Pres,Pres>(shp.dz, -ttimetauMp, shp.dz);
 
       // pressure stabilization
-      assembler.template Vector<Pres>(shp.dx, -timetauMp*res_old(0));
-      assembler.template Vector<Pres>(shp.dy, -timetauMp*res_old(1));
-      assembler.template Vector<Pres>(shp.dz, -timetauMp*res_old(2));
+      assembler.template Vector<Pres>(shp.dx, timetauMp*res_old(0));
+      assembler.template Vector<Pres>(shp.dy, timetauMp*res_old(1));
+      assembler.template Vector<Pres>(shp.dz, timetauMp*res_old(2));
 
   }
 
@@ -836,7 +836,7 @@ void SysmatDomain4(
               ih,
               dofman,
               cellcenter_xyz,
-              XFEM::Enrichment::approachUnknown);
+              XFEM::Enrichment::approachFromPlus);
 
         const DRT::UTILS::GaussRule3D gaussrule = XFLUID::getXFEMGaussrule<DISTYPE>(ele, xyze, ih->ElementIntersected(ele->Id()),cell->Shape());
 
@@ -846,18 +846,15 @@ void SysmatDomain4(
         // integration loop
         for (int iquad=0; iquad<intpoints.nquad; ++iquad)
         {
-            // coordinates of the current integration point in cell coordinates \eta
-            LINALG::Matrix<nsd,1> pos_eta_domain;
-            pos_eta_domain(0) = intpoints.qxg[iquad][0];
-            pos_eta_domain(1) = intpoints.qxg[iquad][1];
-            pos_eta_domain(2) = intpoints.qxg[iquad][2];
+            // coordinates of the current integration point in cell coordinates \eta^domain
+            const LINALG::Matrix<nsd,1> pos_eta_domain(intpoints.qxg[iquad]);
 
-            // coordinates of the current integration point in element coordinates \xi
-            LINALG::Matrix<nsd,1> posXiDomain;
+            // coordinates of the current integration point in element coordinates \xi^domain
+            static LINALG::Matrix<nsd,1> posXiDomain;
             GEO::mapEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain, posXiDomain);
 
-            // coordinates of the current integration point in physical coordinates \xi
-            LINALG::Matrix<nsd,1> posx_gp;
+            // coordinates of the current integration point in physical coordinates xyz
+            static LINALG::Matrix<nsd,1> posx_gp;
             GEO::elementToCurrentCoordinatesT<DISTYPE>(xyze, posXiDomain, posx_gp);
 
             const double detcell = GEO::detEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain);
