@@ -86,27 +86,12 @@ bool DRT::ELEMENTS::So_sh8::ReadElement(const std::string& eletype,
     break;
   }
 
-  // read possible gaussian points, obsolete for computation
-  std::vector<int> ngp;
-  linedef->ExtractIntVector("GP",ngp);
-  for (int i=0; i<3; ++i)
-    if (ngp[i]!=2)
-      dserror("Only 2 GP for So_SH8");
 
+  // temporary variable for read-in
   std::string buffer;
-  linedef->ExtractString("KINEM",buffer);
 
-  // geometrically linear
-  if      (buffer=="Geolin")    kintype_ = soh8_geolin;
-  // geometrically non-linear with Total Lagrangean approach
-  else if (buffer=="Totlag")    kintype_ = soh8_totlag;
-  // geometrically non-linear with Updated Lagrangean approach
-  else if (buffer=="Updlag")
-  {
-    kintype_ = soh8_updlag;
-    dserror("Updated Lagrange for SO_SH8 is not implemented!");
-  }
-  else dserror("Reading of SO_SH8 element failed");
+  // we expect kintype to be total lagrangian
+  kintype_ = soh8_totlag;
 
   // read EAS technology flag
   linedef->ExtractString("EAS",buffer);
