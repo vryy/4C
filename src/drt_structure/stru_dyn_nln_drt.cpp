@@ -34,7 +34,6 @@ Maintainer: Michael Gee
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_statmech.H"
 #include "../drt_inpar/inpar_structure.H"
-#include "../drt_inpar/inpar_potential.H"
 #include "stru_resulttest.H"
 
 #include "str_invanalysis.H"
