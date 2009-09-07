@@ -98,6 +98,23 @@ void GEO::SearchTree::initializePointTree(
 }
 
 
+/*----------------------------------------------------------------------*
+ |                                                          u.may 09/09 |
+ *----------------------------------------------------------------------*/
+void GEO::SearchTree::initializeTreeSlidingALE(
+    const LINALG::Matrix<3,2>&                  nodeBox,
+    const std::map<int,LINALG::Matrix<3,1> >&   currentpositions, // MASTER ELEMENTE
+    const TreeType                              treetype)
+{
+
+  treeRoot_ = Teuchos::null;
+  treeRoot_ = rcp( new TreeNode(NULL, max_depth_, nodeBox, treetype));
+
+  for(std::map<int,LINALG::Matrix<3,1> >::const_iterator mapit = currentpositions.begin(); mapit != currentpositions.end(); mapit++)
+    treeRoot_->insertElement(-1,mapit->first);
+
+}
+
 
 /*----------------------------------------------------------------------*
  | update tree                                               u.may 08/08|
@@ -301,6 +318,28 @@ std::vector<int> GEO::SearchTree::searchPointsInRadius(
     dserror("tree element list is empty");
 
   return nodes;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |    commetn                                                u.may 09/09|
+ *----------------------------------------------------------------------*/
+void GEO::SearchTree::searchElementsSlidingALE(
+    const std::map<int,LINALG::Matrix<3,1> >&     currentpositions, // Masterelemente
+    const LINALG::Matrix<3,1>&                    querypoint)
+{
+  TEUCHOS_FUNC_TIME_MONITOR("SearchTree - queryTime");
+
+  if(treeRoot_ == Teuchos::null)
+    dserror("tree is not yet initialized !!!");
+
+  /*if(!treeRoot_->getElementList().empty())
+    treeRoot_->searchMultibodyContactElements(currentKDOPs, queryKDOP, label, contactEleIds);
+  else
+    dserror("element list is empty");
+ */
+  return; // list of close elements
 }
 
 
@@ -1832,34 +1871,6 @@ std::map<int,std::set<int> > GEO::SearchTree::TreeNode::searchElementsInRadius(
 
 
 
-/*-----------------------------------------------------------------------*
- |                                                            cyron 04/09|
- *-----------------------------------------------------------------------*/
-/*
-std::vector<int> GEO::SearchTree::searchPointsInRadius(
-    const std::map<int,LINALG::Matrix<3,1> >&     currentpositions,
-    const LINALG::Matrix<3,1>&                    querypoint,
-    const double                                  radius)
-{
-  TEUCHOS_FUNC_TIME_MONITOR("SearchTree - queryTime");
-
-  std::vector<int> nodes;
-
-
-  if(treeRoot_ == Teuchos::null)
-    dserror("tree is not yet initialized !!!");
-
-  if(!(treeRoot_->getElementList().empty()))
-    nodes = treeRoot_->searchPointsInRadius(currentpositions,querypoint,radius);
-  else
-    dserror("tree element list is empty");
-
-  return nodes;
-}
-
-*/
-
-
 /*------------------------------------------------------------------------------*
  |                                                                   cyron 04/09|
  *------------------------------------------------------------------------------*/
@@ -2036,6 +2047,57 @@ void GEO::SearchTree::TreeNode::searchMultibodyContactElements(
       dserror("should not get here\n");
   }
   return;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |    commetn                                                u.may 09/09|
+ *----------------------------------------------------------------------*/
+void GEO::SearchTree::TreeNode::searchElementsSlidingALE(
+    const std::map<int,LINALG::Matrix<3,1> >&     currentpositions, // Masterelemente
+    const LINALG::Matrix<3,1>&                    querypoint)
+{
+  /*
+  std::map<int,std::set<int> > eleMap;
+
+  switch (treeNodeType_)
+  {
+    case INNER_NODE:
+    {
+      const int childindex = classifyPoint(point);
+      if(childindex.size() < 1)
+        dserror("no child found\n");
+      else //child node found which encloses AABB so step down
+        return children_[childindex]->searchElementsSlidingALE();
+      break;
+    }
+    case LEAF_NODE:
+    {
+      if(elementList_.empty())
+        return eleMap;
+
+      // max depth reached, counts reverse
+      if (treedepth_ <= 0 || (elementList_.size()==1 && (elementList_.begin()->second).size() == 10) )
+        return GEO::getSlidingALElements();
+
+      // dynamically grow tree otherwise, create children and set label for empty children
+      // search in apropriate child node
+      const int childindex = classifyPoint(point);
+      if(childindex.size() < 1)
+        dserror("no child found\n");
+      else // child node found which encloses AABB so refine further
+      {
+        createChildren(dis, currentpositions); // für datenstruktur anpassen
+        return children_[childindex]->searchElementsSlidingALE();
+      }
+      break;
+    }
+    default:
+      dserror("should not get here\n");
+  }
+  return eleMap;
+  */
 }
 
 

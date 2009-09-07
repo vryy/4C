@@ -574,6 +574,13 @@ public:
     const int                                   label,
     std::set<int>&                              contactEleIds
     );
+  
+  
+  //! comment
+  void searchElementsSlidingALE(
+      const std::map<int,LINALG::Matrix<3,1> >&     currentpositions, // Masterelemente
+      const LINALG::Matrix<3,1>&                    querypoint
+      );
 
 
   /*!
@@ -668,6 +675,14 @@ public:
       const LINALG::Matrix<3,2>&  nodeBox,
       const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
       const TreeType              treetype
+      );
+  
+  
+  //! cOMMENT
+  void initializeTreeSlidingALE(
+      const LINALG::Matrix<3,2>&                  nodeBox,
+      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions, // MASTER ELEMENTE
+      const TreeType                              treetype
       );
 
 
@@ -794,6 +809,13 @@ public:
     const int                                   label,
     std::set<int>&                              contactEleIds
     );
+  
+  
+  //! comment
+  void searchElementsSlidingALE(
+      const std::map<int,LINALG::Matrix<3,1> >&     currentpositions, // Masterelemente
+      const LINALG::Matrix<3,1>&                    querypoint
+      );
 
 
   /*!
