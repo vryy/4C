@@ -133,6 +133,7 @@ public:
     MPC_NodeOnPlane_3D,
     MPC_NormalComponent_3D,
     MPC_NodeOnLine_2D,
+    LJ_Potential_Volume_3D,
     LJ_Potential_3D,
     Zeta_Potential_3D,
     LJ_Potential_2D,

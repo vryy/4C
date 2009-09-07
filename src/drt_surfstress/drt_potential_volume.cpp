@@ -29,10 +29,11 @@ Maintainer: Ursula Mayer
 POTENTIAL::VolumePotential::VolumePotential(
     Teuchos::RCP<DRT::Discretization> discretRCP,
     DRT::Discretization& discret):
-      Potential(discretRCP, discret)
+    Potential(discretRCP, discret)
 {
   // create discretization from potential boundary elements and distribute them
   // on every processor
+/*  
   vector<string> conditions_to_copy;
   conditions_to_copy.push_back("Potential");
 
@@ -105,6 +106,7 @@ POTENTIAL::VolumePotential::VolumePotential(
 
 
   // std::cout << "Potential manager constructor done" << endl;
+   */
 }
 
 
@@ -125,6 +127,8 @@ void POTENTIAL::VolumePotential::EvaluatePotential(  ParameterList& p,
 
   discret_.ClearState();
   discret_.SetState("displacement",disp);
+  
+  // update displacement for volume discretization discretRCP
   UpdateDisplacementsOfPotentialDiscretization(disp);
 
   EvaluatePotentialCondition(p,stiff,null,fint,null,null,"Potential");
@@ -154,15 +158,17 @@ void POTENTIAL::VolumePotential::StiffnessAndInternalForcesPotential(
   // find nodal ids influencing a given element
   const int     label     = cond->GetInt("label");
   const double  cutOff    = cond->GetDouble("cutOff");
+  
   std::map<int,std::set<int> > potentialElementIds;
   for(int i = 0; i < DRT::UTILS::getNumberOfElementCornerNodes(element->Shape()); i++)
   {
     const DRT::Node* node = element->Nodes()[i];
-    const LINALG::Matrix<3,1> x_node = currentpositions_.find(node->Id())->second;
+    //const LINALG::Matrix<3,1> x_node = currentpositions_.find(node->Id())->second;
     // octtree search
-    treeSearchElementsInCutOffRadius(potentialdis_, currentpositions_, x_node, potentialElementIds, cutOff, label);
-    // serial search
-    // searchElementsInCutOffRadius(eleId, potentialElementIds, cutOff);
+    //treeSearchElementsInCutOffRadius(potentialdis_, currentpositions_, x_node, potentialElementIds, cutOff, label);
+    
+    // serial search neu für volume enlemente
+    //searchElementsInCutOffRadius(eleId, potentialElementIds, cutOff);
   }
 
   // initialize time variables
@@ -188,7 +194,7 @@ void POTENTIAL::VolumePotential::StiffnessAndInternalForcesPotential(
 | (public)                                                umay  06/08|
 |                                                                    |
 | Calculate additional internal forces and corresponding stiffness   |
-| for line elements                                                  |
+| for line elements                  (nicht beachten)                |
 *--------------------------------------------------------------------*/
 void POTENTIAL::VolumePotential::StiffnessAndInternalForcesPotential(
     const DRT::Element*             element,
@@ -245,14 +251,16 @@ void POTENTIAL::VolumePotential::UpdateDisplacementsOfPotentialDiscretization(
     )
 {
   // extract displacements associated with potential elements from solid discretization
-  idisp_onproc_ = potboundary_.ExtractCondVector(idisp_solid);
-  idisp_total_->Scale(0.0);
+  //idisp_onproc_ = potboundary_.ExtractCondVector(idisp_solid);
+  //idisp_total_->Scale(0.0);
 
   // import
-  int err = idisp_total_->Import((*idisp_onproc_), (*importer_),Insert);
-  if(err) dserror("Import using importer returned err=%d",err);
+  // int err = idisp_total_->Import((*idisp_onproc_), (*importer_),Insert);
+  // if(err) dserror("Import using importer returned err=%d",err);
 
   currentpositions_.clear();
+  
+  // run over volume discretization
   {
     for (int lid = 0; lid < potentialdis_->NumMyColNodes(); ++lid)
     {
@@ -272,13 +280,14 @@ void POTENTIAL::VolumePotential::UpdateDisplacementsOfPotentialDiscretization(
   }
 
   // reinitialize search tree
-  const LINALG::Matrix<3,2> rootBox = GEO::getXAABBofDis(*potentialdis_, currentpositions_);
+  /*const LINALG::Matrix<3,2> rootBox = GEO::getXAABBofDis(*potentialdis_, currentpositions_);
   if(prob_dim_ == 2)
     searchTree_->initializeTree(rootBox, elementsByLabel_, GEO::TreeType(GEO::QUADTREE));
   else if(prob_dim_ == 3)
     searchTree_->initializeTree(rootBox, elementsByLabel_, GEO::TreeType(GEO::OCTTREE));
   else
     dserror("problem dimension not correct");
+    */
 }
 
 

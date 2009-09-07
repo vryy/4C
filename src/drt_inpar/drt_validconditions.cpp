@@ -722,9 +722,28 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   condlist.push_back(surfactant);
 
-
   /*--------------------------------------------------------------------*/
-  // Lennard Jones potential
+  // Lennard Jones potential volume
+  Teuchos::RCP<ConditionDefinition> lj_potential_volume_3D =
+    Teuchos::rcp(new ConditionDefinition("DESIGN VOL LJ_POTENTIAL CONDITIONS",
+                                         "Potential",
+                                         "LJ_Potential_Vol_3D",
+                                         DRT::Condition::LJ_Potential_Volume_3D,
+                                         true,
+                                         DRT::Condition::Volume));
+
+  lj_potential_volume_3D->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
+  AddNamedInt(lj_potential_volume_3D,"label");
+  AddNamedReal(lj_potential_volume_3D,"depth");
+  AddNamedReal(lj_potential_volume_3D,"rootDist");
+  AddNamedReal(lj_potential_volume_3D,"cutOff");
+  AddNamedReal(lj_potential_volume_3D,"exvollength");
+  AddNamedReal(lj_potential_volume_3D,"beta");
+
+  condlist.push_back(lj_potential_volume_3D);
+  
+  /*--------------------------------------------------------------------*/
+  // Lennard Jones potential surface
 
   Teuchos::RCP<ConditionDefinition> lj_potential_3D =
     Teuchos::rcp(new ConditionDefinition("DESIGN SURF LJ_POTENTIAL CONDITIONS",

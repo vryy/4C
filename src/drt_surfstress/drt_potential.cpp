@@ -269,6 +269,10 @@ void POTENTIAL::Potential::EvaluatePotentialfromCondition(
 
     EvaluateZetaPotential(zeta_param_1, zeta_param_2, x, y, potderiv1, potderiv2);
   }
+  else if (cond->Type()==DRT::Condition::LJ_Potential_Volume_3D)
+  {
+    // Felix
+  }
   else
   {
     dserror("cannot evaluate potential - condition unknown");
