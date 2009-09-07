@@ -228,7 +228,7 @@ fsisurface_(NULL)
   discret_.GetCondition("Potential",potentialcond);
   if (potentialcond.size())
   {
-    pot_man_=rcp(new POTENTIAL::PotentialManager(Discretization(),discret_, params));
+    pot_man_=rcp(new POTENTIAL::PotentialManager(Discretization(),discret_));
     // if potential conditions exist, the stiffness matrix has to be based on an Epetra_FECrsMatrix
     // and savegraph_ has to be set false
     stiff_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,81,true,false, LINALG::SparseMatrix::FE_MATRIX));

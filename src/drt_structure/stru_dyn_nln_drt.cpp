@@ -239,7 +239,7 @@ void dyn_nlnstructural_drt()
       genalphaparams.set<double>("inv_ana_tol",iap.get<double>("INV_ANA_TOL"));
 
       // parameters for interaction potential
-      switch (Teuchos::getIntegralValue<INPAR::POTENTIAL::PotentialType>(intpot,"POTENTIAL_TYPE"))
+/*      switch (Teuchos::getIntegralValue<INPAR::POTENTIAL::PotentialType>(intpot,"POTENTIAL_TYPE"))
       {
         case INPAR::POTENTIAL::potential_surface:
           genalphaparams.set<string>("potential type","surface");
@@ -280,7 +280,8 @@ void dyn_nlnstructural_drt()
           genalphaparams.set<string>("approximation type","none");
         break;
       }
-
+*/
+      
       // non-linear solution technique
       switch (Teuchos::getIntegralValue<INPAR::STR::NonlinSolTech>(sdyn,"NLNSOL"))
       {

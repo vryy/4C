@@ -751,7 +751,16 @@ void LINALG::SparseMatrix::ApplyDirichlet(const Epetra_Map& dbctoggle,
     const int nummyrows      = sysmat_->NumMyRows();
     const int maxnumentries  = sysmat_->MaxNumEntries();
 
-    Teuchos::RCP<Epetra_CrsMatrix> Anew = Teuchos::rcp(new Epetra_CrsMatrix(Copy,rowmap,maxnumentries,false));
+    //Teuchos::RCP<Epetra_CrsMatrix> Anew = Teuchos::rcp(new Epetra_CrsMatrix(Copy,rowmap,maxnumentries,false));
+    
+    Teuchos::RCP<Epetra_CrsMatrix> Anew = Teuchos::null;
+    if(matrixtype_ == CRS_MATRIX)
+      Anew = Teuchos::rcp(new Epetra_CrsMatrix(Copy,rowmap,maxnumentries,false));
+    else if(matrixtype_ == FE_MATRIX)
+      Anew = Teuchos::rcp(new Epetra_FECrsMatrix(Copy,rowmap,maxnumentries,false));
+    else
+      dserror("matrix type is not correct");
+    
     vector<int> indices(maxnumentries,0);
     vector<double> values(maxnumentries,0.0);
     for (int i=0; i<nummyrows; ++i)
@@ -764,6 +773,8 @@ void LINALG::SparseMatrix::ApplyDirichlet(const Epetra_Map& dbctoggle,
 #ifdef DEBUG
         if (err) dserror("Epetra_CrsMatrix::ExtractGlobalRowCopy returned err=%d",err);
 #endif
+        // this is also ok for FE matrices, because fill complete was called on sysmat and the globalAssemble
+        // method was called already
         err = Anew->InsertGlobalValues(row,numentries,&values[0],&indices[0]);
 #ifdef DEBUG
         if (err<0) dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d",err);

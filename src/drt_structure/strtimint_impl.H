@@ -147,6 +147,7 @@ namespace STR
     //! at DRT::PotentialManager
     void ApplyForceStiffPotential
     (
+      const double time, //!< total time
       const Teuchos::RCP<Epetra_Vector> dis,  //!< displacement state
       Teuchos::RCP<Epetra_Vector>& fint,  //!< internal force vector
       Teuchos::RCP<LINALG::SparseMatrix>& stiff  //!< stiffness

@@ -15,8 +15,8 @@ Maintainer: Ursula Mayer
 #ifdef CCADISCRET
 
 #include "drt_potential_manager.H"
-//#include "../drt_lib/drt_condition_utils.H"
-//#include "../drt_lib/linalg_utils.H"
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_potential.H"
 #include <cstdlib>
 
@@ -26,18 +26,16 @@ Maintainer: Ursula Mayer
  *-------------------------------------------------------------------*/
 POTENTIAL::PotentialManager::PotentialManager(
     const Teuchos::RCP<DRT::Discretization>   discretRCP,
-    DRT::Discretization&                      discret,
-    const Teuchos::ParameterList&             params):
+    DRT::Discretization&                      discret):
     discretRCP_(discretRCP),
     discret_(discret),
-    params_(params),
     surfacePotential_(Teuchos::null),
     volumePotential_(Teuchos::null),
     surface_(false),
     volume_(false)
-
 {
 
+  ReadParameter();
   string pot_type = params_.get<string>("potential type");
   // construct surface and contact potential
   if( pot_type =="surface" ||
@@ -67,6 +65,59 @@ POTENTIAL::PotentialManager::PotentialManager(
   {}
 */
   cout << "Potential manager constructed" << endl;
+  return;
+}
+
+
+
+/*-------------------------------------------------------------------*
+ |  ReadParameter (private)                                umay 06/09|
+ *-------------------------------------------------------------------*/
+void POTENTIAL::PotentialManager::ReadParameter()
+{
+  const Teuchos::ParameterList& intpot   = DRT::Problem::Instance()->InteractionPotentialParams();
+  // parameters for interaction potential
+  switch(Teuchos::getIntegralValue<INPAR::POTENTIAL::PotentialType>(intpot,"POTENTIAL_TYPE"))
+  {
+    case INPAR::POTENTIAL::potential_surface:
+      params_.set<string>("potential type","surface");
+    break;
+    case INPAR::POTENTIAL::potential_volume:
+      params_.set<string>("potential type","volume");
+    break;
+    case INPAR::POTENTIAL::potential_surfacevolume:
+      params_.set<string>("potential type","surfacevolume");
+    break;
+    case INPAR::POTENTIAL::potential_surface_fsi:
+      params_.set<string>("potential type","surface_fsi");
+    break;
+    case INPAR::POTENTIAL::potential_volume_fsi:
+      params_.set<string>("potential type","volume_fsi");
+    break;
+    case INPAR::POTENTIAL::potential_surfacevolume_fsi:
+      params_.set<string>("potential type","surfacevolume_fsi");
+    break;
+    default:
+      params_.set<string>("potential type","surface");
+    break;
+  }
+  
+  // set approximation method for volume potentials
+  switch(Teuchos::getIntegralValue<INPAR::POTENTIAL::ApproximationType>(intpot,"APPROXIMATION_TYPE"))
+  {
+    case INPAR::POTENTIAL::approximation_none:
+      params_.set<string>("approximation type","none");
+    break;
+    case INPAR::POTENTIAL::approximation_surface:
+      params_.set<string>("approximation type","surface_approx");
+    break;
+    case INPAR::POTENTIAL::approximation_point:
+      params_.set<string>("approximation type","point_approx");
+    break;
+    default:
+      params_.set<string>("approximation type","none");
+    break;
+  }
   return;
 }
 

@@ -164,7 +164,7 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual()
   ApplyForceStiffConstraint(timen_, (*dis_)(0), disn_, fintn_, stiff_, pcon);
 
   // potential forces
-  ApplyForceStiffPotential(disn_, fintn_, stiff_);
+  ApplyForceStiffPotential(timen_, disn_, fintn_, stiff_);
 
   // inertial forces #finertt_
   mass_->Multiply(false, *acct_, *finertt_);

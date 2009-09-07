@@ -122,7 +122,7 @@ void STR::TimIntStatics::EvaluateForceStiffResidual()
   ApplyForceStiffConstraint(timen_, (*dis_)(0), disn_, fintn_, stiff_, pcon);
 
   // potential forces
-  ApplyForceStiffPotential(disn_, fintn_, stiff_);
+  ApplyForceStiffPotential(timen_, disn_, fintn_, stiff_);
 
   // build residual  Res = F_{int;n+1}
   //                     - F_{ext;n+1}

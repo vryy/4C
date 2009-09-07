@@ -17,7 +17,6 @@ Maintainer: Ursula Mayer
 #include "drt_potential.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
-//#include <cstdlib>
 
 
 /*----------------------------------------------------------------------*
@@ -147,6 +146,9 @@ void POTENTIAL::Potential::EvaluatePotentialCondition(
   bool usetime = true;
   const double time = params.get("total time",-1.0);
   if (time < 0.0) usetime = false;
+  
+  if(time < 0.0)
+    cout <<  "no time curve set " << endl;
 
   const bool assemblemat1 = systemmatrix1!=Teuchos::null;
   const bool assemblemat2 = systemmatrix2!=Teuchos::null;

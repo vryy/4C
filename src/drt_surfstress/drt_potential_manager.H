@@ -42,8 +42,7 @@ public:
    */
   PotentialManager(
       const Teuchos::RCP<DRT::Discretization>     discretRCP,
-      DRT::Discretization&                        discret,
-      const ParameterList&                        params
+      DRT::Discretization&                        discret
       );
 
   /*!
@@ -51,6 +50,13 @@ public:
    */
   ~PotentialManager() {};
 
+  
+  /*!
+    \brief Read parameter
+   */
+  void ReadParameter();
+  
+  
   /*!
     \brief Call discretization to calculate additional contributions
     due to interfacial energy
@@ -122,7 +128,7 @@ private:
   DRT::Discretization&                          discret_;
 
   //!  parameter list
-  const Teuchos::ParameterList&                 params_;
+  Teuchos::ParameterList                        params_;
 
   //! surface potential
   Teuchos::RCP<POTENTIAL::SurfacePotential>     surfacePotential_;

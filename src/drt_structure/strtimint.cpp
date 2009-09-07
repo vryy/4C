@@ -200,7 +200,7 @@ STR::TimInt::TimInt
     discret_->GetCondition("Potential", potentialcond);
     if (potentialcond.size())
     {
-      potman_ = Teuchos::rcp(new POTENTIAL::PotentialManager(Discretization(), *discret_, xparams));
+      potman_ = Teuchos::rcp(new POTENTIAL::PotentialManager(Discretization(), *discret_)); 
       stiff_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_,81,true,false, LINALG::SparseMatrix::FE_MATRIX));
     }
   }

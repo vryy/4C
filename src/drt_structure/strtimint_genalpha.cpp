@@ -251,11 +251,11 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual()
   // potential forces
   if (midavg_ == INPAR::STR::midavg_trlike)
   {
-    ApplyForceStiffPotential(disn_, fintn_, stiff_);
+    ApplyForceStiffPotential(timen_, disn_, fintn_, stiff_);
   }
   else if (midavg_ == INPAR::STR::midavg_imrlike)
   {
-    ApplyForceStiffPotential(dism_, fintm_, stiff_);
+    ApplyForceStiffPotential(timen_, dism_, fintm_, stiff_);
   }
 
   // inertial forces #finertm_

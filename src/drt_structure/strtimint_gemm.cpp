@@ -172,7 +172,7 @@ void STR::TimIntGEMM::EvaluateForceStiffResidual()
   ApplyForceStiffConstraint(timen_, (*dis_)(0), disn_, fintm_, stiff_, pcon);
 
   // potential forces
-  ApplyForceStiffPotential(dism_, fintm_, stiff_);
+  ApplyForceStiffPotential(timen_, dism_, fintm_, stiff_);
 
   // inertial forces #finertm_
   mass_->Multiply(false, *accm_, *finertm_);

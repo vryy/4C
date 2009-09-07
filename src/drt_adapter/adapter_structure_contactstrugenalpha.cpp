@@ -258,7 +258,6 @@ void ADAPTER::ContactStructureGenAlpha::Solve()
       // initialize convergence status and step no. for active set
       contactmanager->GetStrategy().ActiveSetConverged() = false;
       contactmanager->GetStrategy().ActiveSetSteps() = 1;
-      cout << "SEMISMOOTH" << endl;
       structure_.SemiSmoothNewton();
     }
     else

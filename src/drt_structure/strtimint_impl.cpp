@@ -401,6 +401,7 @@ void STR::TimIntImpl::ApplyForceStiffSurfstress
  * evaluation happens internal-force like */
 void STR::TimIntImpl::ApplyForceStiffPotential
 (
+  const double time,
   const Teuchos::RCP<Epetra_Vector> dis,
   Teuchos::RCP<Epetra_Vector>& fint,
   Teuchos::RCP<LINALG::SparseMatrix>& stiff
@@ -411,9 +412,10 @@ void STR::TimIntImpl::ApplyForceStiffPotential
   {
     ParameterList p; // create the parameters for manager
     p.set("pot_man", potman_);
+    p.set("total time", time);
     potman_->EvaluatePotential(p, dis, fint, stiff);
   }
-
+ 
   // wooop
   return;
 }
