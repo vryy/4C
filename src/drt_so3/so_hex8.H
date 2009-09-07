@@ -373,7 +373,8 @@ protected:
     postprocess_stress,       //!< postprocess stresses
     prestress_update,
     inversedesign_update,
-    multi_readrestart         //!< multi-scale: read restart on microscale
+    multi_readrestart,         //!< multi-scale: read restart on microscale
+    calc_potential_stiff       //!< volume interaction potential
   };
 
   //! kinematic types of so_hex8, but yet only total-lagrangian is implemented

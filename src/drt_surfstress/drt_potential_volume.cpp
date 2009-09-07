@@ -150,7 +150,7 @@ void POTENTIAL::VolumePotential::StiffnessAndInternalForcesPotential(
 {
   // initialize Lennard Jones potential constant variables
   RefCountPtr<DRT::Condition> cond = params.get<RefCountPtr<DRT::Condition> >("condition",null);
-
+    
   // find nodal ids influencing a given element
   const int     label     = cond->GetInt("label");
   const double  cutOff    = cond->GetDouble("cutOff");

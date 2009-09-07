@@ -24,6 +24,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/visconeohooke.H"
 #include "../drt_mat/viscoanisotropic.H"
 #include "../drt_mat/aaaraghavanvorp_damage.H"
+#include "../drt_surfstress/drt_potential_manager.H"
 
 // inverse design object
 #if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
@@ -32,6 +33,7 @@ Maintainer: Moritz Frenzel
 
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
+using POTENTIAL::PotentialManager; // potential manager
 
 
 /*----------------------------------------------------------------------*
@@ -75,6 +77,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
   else if (action=="calc_homog_dens")                             act = So_hex8::calc_homog_dens;
   else if (action=="postprocess_stress")                          act = So_hex8::postprocess_stress;
   else if (action=="multi_readrestart")                           act = So_hex8::multi_readrestart;
+  else if (action=="calc_potential_stiff")                        act = So_hex8::calc_potential_stiff;
 #ifdef PRESTRESS
   else if (action=="calc_struct_prestress_update")                act = So_hex8::prestress_update;
 #endif
@@ -436,6 +439,31 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
 
       if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
         soh8_read_restart_multi(params);
+    }
+    break;
+    
+    // compute additional stresses due to intermolecular potential forces
+    case calc_potential_stiff:
+    {
+      RefCountPtr<PotentialManager> potentialmanager =
+        params.get<RefCountPtr<PotentialManager> >("pot_man", null);
+      if (potentialmanager==null)
+        dserror("No PotentialManager in Solid3 Surface available");
+
+      RefCountPtr<DRT::Condition> cond = params.get<RefCountPtr<DRT::Condition> >("condition",null);
+      if (cond==null)
+        dserror("Condition not available in Solid3 Surface");
+
+      if (cond->Type()==DRT::Condition::LJ_Potential_3D) // Lennard-Jones potential
+      {
+        //potentialmanager->StiffnessAndInternalForcesPotential(this, gaussrule_, params,lm, elematrix1, elevector1, true);
+      }
+      else if (cond->Type()==DRT::Condition::Zeta_Potential_3D) // Zeta potential
+      {
+        //potentialmanager->StiffnessAndInternalForcesPotential(this, gaussrule_, params,lm, elematrix1, elevector1, true);
+      }
+      else
+        dserror("Unknown condition type %d",cond->Type());
     }
     break;
 
