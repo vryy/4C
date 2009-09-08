@@ -321,9 +321,9 @@ private:
   /*calculation of Brownian forces and damping is based on drag coefficient; this coefficient per unit
   * length is approximated by the one of an infinitely long staff for friciton orthogonal to staff axis*/
   double lrefe_;
-
+  
   //! store stochastic forces of element in local frame
-  LINALG::Matrix<4,1> floc_;
+  vector<LINALG::Matrix<2,1> > floc_;
 
   //! gaussrule_ will be initialized automatically to an underintegration rule in input.cpp
   DRT::UTILS::GaussRule1D gaussrule_;
@@ -375,9 +375,11 @@ private:
 
   \return 0 if successful, negative otherwise
   */
-  virtual int ComputeLocalBrownianForces(ParameterList& params);
-
+  template<int nnode>
+  void ComputeLocalBrownianForces(ParameterList& params);
+  
   //!coputed damping matrix and statistical forces according to fluctuation dissipation theorem
+  template<int nnode>
   void CalcBrownian(ParameterList& params,
                     vector<double>&           vel,  //!< element velocity vector
                     vector<double>&           disp, //!< element displacement vector

@@ -156,6 +156,9 @@ void DRT::ELEMENTS::Beam2r::Pack(vector<char>& data) const
   // length factor in reference configuration at gausspoints for complete integration of massmatrix
   AddtoPack(data,alphamass_);
   // gaussrule_
+  for(int i=0; i<NumNode();i++)
+  AddtoPack(data,floc_[i]);
+  // random stochastic forces in element frame
   AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
   vector<char> tmp(0);
   data_.Pack(tmp);
@@ -195,6 +198,10 @@ void DRT::ELEMENTS::Beam2r::Unpack(const vector<char>& data)
   // length factor in reference configuration at gausspoints for complete integration of massmatrix
   ExtractfromPack(position,data,alphamass_);
   // gaussrule_
+  floc_.resize(NumNode());
+  for (int i=0;i<NumNode();i++)
+  ExtractfromPack(position,data,floc_[i]);
+    // random stochastic forces in element frame
   int gausrule_integer;
   ExtractfromPack(position,data,gausrule_integer);
   gaussrule_ = DRT::UTILS::GaussRule1D(gausrule_integer); //explicit conversion from integer to enum
@@ -232,7 +239,12 @@ void DRT::ELEMENTS::Beam2r::SetUpReferenceGeometry(const vector<double>& xrefe)
   if(!isinit_)
   {
 
-	  isinit_ = true;
+  	floc_.resize(nnode);//set vector size for local stochastic forces
+	  
+  	
+
+  	
+  	isinit_ = true;
     
 	  //create Matrix for the derivates of the shapefunctions at the GP
 	  LINALG::Matrix<1,nnode> shapefuncderiv;
@@ -470,6 +482,7 @@ int DRT::ELEMENTS::Beam2rRegister::Initialize(DRT::Discretization& dis)
     currele->alpha_.resize(nnode-1);
     currele->alphamass_.resize(nnode);
     currele->theta0_.resize(nnode-1);
+    currele->floc_.resize(nnode);
     
     //SetUpReferenceGeometry is a templated function
     switch(nnode)
