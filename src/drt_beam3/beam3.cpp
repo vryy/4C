@@ -163,18 +163,26 @@ void DRT::ELEMENTS::Beam3::Pack(vector<char>& data) const
   //reference length
   AddtoPack(data,lrefe_);
   //central coordinate triad and related data
-  AddtoPack(data,Qconv_);
-  AddtoPack(data,Qold_);
-  AddtoPack(data,Qnew_);
-  AddtoPack(data,curvconv_);
-  AddtoPack(data,curvold_);
-  AddtoPack(data,curvnew_);
-  AddtoPack(data,thetaconv_);
-  AddtoPack(data,thetaold_);
-  AddtoPack(data,thetanew_);
-  AddtoPack(data,thetaprimeconv_);
-  AddtoPack(data,thetaprimeold_);
-  AddtoPack(data,thetaprimenew_);
+  for(int i=0; i<NumNode()-1; i++) //pack and unpack are presently not able to handle vectors of LINALG::Matices
+  	//hence the present implementation uses loops through all matrices stored in vectors
+  {
+  AddtoPack(data,Qconv_[i]);
+  AddtoPack(data,Qold_[i]);
+  AddtoPack(data,Qnew_[i]);
+  AddtoPack(data,curvconv_[i]);
+  AddtoPack(data,curvold_[i]);
+  AddtoPack(data,curvnew_[i]);
+  AddtoPack(data,thetaconv_[i]);
+  AddtoPack(data,thetaold_[i]);
+  AddtoPack(data,thetanew_[i]);
+  AddtoPack(data,thetaprimeconv_[i]);
+  AddtoPack(data,thetaprimeold_[i]);
+  AddtoPack(data,thetaprimenew_[i]);
+    //alpha for underintegration
+  AddtoPack(data,alpha_[i]);
+  //alpha for complete integration
+  AddtoPack(data,alphamass_[i]);
+  }
   //cross section
   AddtoPack(data,crosssec_);
    //cross section with shear correction
@@ -183,12 +191,10 @@ void DRT::ELEMENTS::Beam3::Pack(vector<char>& data) const
   AddtoPack(data,Iyy_);
   AddtoPack(data,Izz_);
   AddtoPack(data,Irr_);
-  //alpha for underintegration
-  AddtoPack(data,alpha_);
-  //alpha for complete integration
-  AddtoPack(data,alphamass_);
+
   //stochastic forces
-  AddtoPack(data,floc_);
+  for (int i=0; i<NumNode(); i++)
+  AddtoPack(data,floc_[i]);
   // gaussrule_
   AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
   vector<char> tmp(0);
@@ -219,18 +225,44 @@ void DRT::ELEMENTS::Beam3::Unpack(const vector<char>& data)
   //reference length
   ExtractfromPack(position,data,lrefe_);
   //central coordinate triad and related data
-  ExtractfromPack(position,data,Qconv_);
-  ExtractfromPack(position,data,Qold_);
-  ExtractfromPack(position,data,Qnew_);
-  ExtractfromPack(position,data,curvconv_);
-  ExtractfromPack(position,data,curvold_);
-  ExtractfromPack(position,data,curvnew_);
-  ExtractfromPack(position,data,thetaconv_);
-  ExtractfromPack(position,data,thetaold_);
-  ExtractfromPack(position,data,thetanew_);
-  ExtractfromPack(position,data,thetaprimeconv_);
-  ExtractfromPack(position,data,thetaprimeold_);
-  ExtractfromPack(position,data,thetaprimenew_);
+  //every matrix is packed seperately, here it is assumed that info that is required for NumNode is already unpacked in basedata
+  Qconv_.resize(NumNode()-1);//in order to fill vectors of LINALG::Matrix in the loop further down,
+  //all vectors have to be resized to avoid segmentation faults
+  Qold_.resize(NumNode()-1);
+  Qnew_.resize(NumNode()-1);
+  curvconv_.resize(NumNode()-1);
+  curvold_.resize(NumNode()-1);
+  curvnew_.resize(NumNode()-1);
+  thetaconv_.resize(NumNode()-1);
+  thetaold_.resize(NumNode()-1);
+  thetanew_.resize(NumNode()-1);
+  thetaprimeconv_.resize(NumNode()-1);
+  thetaprimeold_.resize(NumNode()-1);
+  thetaprimenew_.resize(NumNode()-1);
+  alpha_.resize(NumNode()-1);
+  alphamass_.resize(NumNode()-1);
+  for(int i=0; i<NumNode()-1; i++) //pack and unpack are presently not able to handle vectors of LINALG::Matices
+  	//hence the present implementation uses loops through all matrices stored in vectors
+  {
+  	ExtractfromPack(position,data,Qconv_[i]);
+	  ExtractfromPack(position,data,Qold_[i]);
+	  ExtractfromPack(position,data,Qnew_[i]);
+	  ExtractfromPack(position,data,curvconv_[i]);
+	  ExtractfromPack(position,data,curvold_[i]);
+	  ExtractfromPack(position,data,curvnew_[i]);
+	  ExtractfromPack(position,data,thetaconv_[i]);
+	  ExtractfromPack(position,data,thetaold_[i]);
+	  ExtractfromPack(position,data,thetanew_[i]);
+	  ExtractfromPack(position,data,thetaprimeconv_[i]);
+	  ExtractfromPack(position,data,thetaprimeold_[i]);
+	  ExtractfromPack(position,data,thetaprimenew_[i]);
+	  //alpha for underintegration
+	  ExtractfromPack(position,data,alpha_[i]);
+	  //alpha for complete integration
+	  ExtractfromPack(position,data,alphamass_[i]);
+	  //stochastic forces	  
+  }
+ 
   //cross section
   ExtractfromPack(position,data,crosssec_);
   //cross section with shear correction
@@ -239,12 +271,10 @@ void DRT::ELEMENTS::Beam3::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,Iyy_);
   ExtractfromPack(position,data,Izz_);
   ExtractfromPack(position,data,Irr_);
-  //alpha for underintegration
-  ExtractfromPack(position,data,alpha_);
-  //alpha for complete integration
-  ExtractfromPack(position,data,alphamass_);
-  //stochastic forces
-  ExtractfromPack(position,data,floc_);
+  
+  floc_.resize(NumNode());//resize floc to allocate storage/avoid segmentation faults
+  for(int i=0; i<NumNode(); i++) //every matrix is packed seperately, here it is assumed that info that is required for NumNode is already unpacked in basedata
+  ExtractfromPack(position,data,floc_[i]);
   // gaussrule_
   int gausrule_integer;
   ExtractfromPack(position,data,gausrule_integer);
@@ -288,6 +318,8 @@ void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const vector<double>& xrefe,co
   {
     isinit_ = true;
     
+  
+    
   //Set the applied Gaussrule ( It can be proven that we need 1 GP less than nodes to integrate exact )
   //note: we use a static cast for the enumeration here cf. Practical C++ Programming p.185
   gaussrule_ = static_cast<enum DRT::UTILS::GaussRule1D>(nnode-1);
@@ -307,7 +339,8 @@ void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const vector<double>& xrefe,co
   thetaprimeconv_.resize((nnode-1));
   thetaprimeold_.resize((nnode-1));
   thetaprimenew_.resize((nnode-1));
-
+  floc_.resize(nnode);
+  
   //create Matrix for the derivates of the shapefunctions at the GP
 	LINALG::Matrix<1,nnode> shapefuncderiv;
 	
@@ -320,7 +353,13 @@ void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const vector<double>& xrefe,co
 	//Get the applied integrationpoints
 	DRT::UTILS::IntegrationPoints1D gausspoints(gaussrule_);
 	
-	//Loop through all GPs and calculate alpha the triads at the GPs
+
+	//length in reference configuration
+    lrefe_ = pow( pow(xrefe[0]-xrefe[3],2) + pow(xrefe[1]-xrefe[4],2) + pow(xrefe[2]-xrefe[5],2) ,0.5 );
+    //attention, the nodal positions are stored in xrefe as in the input file, therefore the position of the "last" element
+    //node is the second vector
+	
+    //Loop through all GPs and calculate alpha the triads at the GPs
 	for(int numgp=0; numgp < gausspoints.nquad; numgp++)
 	{
 	  	
@@ -336,9 +375,8 @@ void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const vector<double>& xrefe,co
 		//triad in reference configuration at GP
 		LINALG::Matrix<3,3> Tref;
 	
-    //length in reference configuration
-    lrefe_ = pow( pow(xrefe[0]-xrefe[3*nnode-3],2) + pow(xrefe[1]-xrefe[3*nnode-2],2) + pow(xrefe[2]-xrefe[3*nnode-1],2) ,0.5 );
-
+      
+    
     /*initial triad Tref = [t1,t2,t3] is set in a way for which we don`t have strains in reference configuration*/
     LINALG::Matrix<3,1> dxdxi;
 
@@ -356,6 +394,8 @@ void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const vector<double>& xrefe,co
 		    thetaprimeconv_[numgp](dof) += shapefuncderiv(node) * rotrefe[3*node+dof]; 		
     	}//for(int dof=0; dof<3 ; dof++)
     }//for(int node=0; node<nnode; node++)
+    
+
 
     //Store length factor for every GP
     //note: the length factor alpha replaces the determinant and refers to the reference configuration by definition

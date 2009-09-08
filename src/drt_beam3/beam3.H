@@ -285,7 +285,8 @@ public:
 
   \return 0 if successful, negative otherwise
   */
-  virtual int EvaluatePTC(ParameterList& params,
+  template<int nnode>
+  void EvaluatePTC(ParameterList& params,
                           Epetra_SerialDenseMatrix& elemat1);
 
   //@}
@@ -369,8 +370,8 @@ private:
   //! Vector holding alpha for each gausspoint for complete integration of massmatrix
   vector<double> alphamass_;
 
-  //! store stochastic forces of the element
-  LINALG::Matrix<6,1> floc_;
+  //! store stochastic forces for each node
+  vector<LINALG::Matrix<3,1> > floc_;
 
   //! gaussrule_ will be initialized automatically for underintegration in order to get rid of Locking
   DRT::UTILS::GaussRule1D gaussrule_;
@@ -468,9 +469,11 @@ private:
 
    \return 0 if successful, negative otherwise
    */
-   virtual int ComputeLocalBrownianForces(ParameterList& params);
+   template<int nnode>
+   void ComputeLocalBrownianForces(ParameterList& params);
 
    //!compute damping matrix and statistical forces according to fluctuation dissipation theorem
+   template<int nnode>
    void CalcBrownian(ParameterList& params,  //!<parameter list
                      vector<double>&           vel,  //!< element velocity vector
                      vector<double>&           disp, //!<element disp vector
