@@ -67,6 +67,9 @@ protected:
   //! \brief manager for administration of statistical mechanics stuff
   RCP<StatMechManager>         statmechmanager_;
 
+  //! \brief class variable to make statistical forces globally accessible in time integration
+  RCP<Epetra_Vector>    browniancol_;
+
 
 }; // class StatMechTime
 

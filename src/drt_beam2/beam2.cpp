@@ -155,6 +155,7 @@ void DRT::ELEMENTS::Beam2::Pack(vector<char>& data) const
   AddtoPack(data,alphaconv_);
   //angle relative to x-axis in reference configuration
   AddtoPack(data,alpha0_);
+  AddtoPack(data,floc_);
   // gaussrule_
   AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
   vector<char> tmp(0);
@@ -200,6 +201,7 @@ void DRT::ELEMENTS::Beam2::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,alphaconv_);
   //angle relative to x-axis in reference configuration
   ExtractfromPack(position,data,alpha0_);
+  ExtractfromPack(position,data,floc_);
   // gaussrule_
   int gausrule_integer;
   ExtractfromPack(position,data,gausrule_integer);

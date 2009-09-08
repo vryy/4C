@@ -60,7 +60,7 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
   //random generator for seeding only
   ranlib::UniformClosed<double> seedgenerator;
   //seeding random generator independently on each processor
-  int seedvariable = time(0)*discret_.Comm().MyPID();
+  int seedvariable = time(0)*(discret_.Comm().MyPID() + 1);
   //seedvariable = 1;
   seedgenerator.seed((unsigned int)seedvariable);
 
@@ -74,73 +74,60 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
    * column map is turned into a fully overlapping one even in case that dynamic crosslinkers are deactivated;
    * the reason is that also the method for Gmsh output currently relies on a fully overlapping column map
    * in case of parallel computing (otherwise the output is not written correctly*/
-  
-  /*
-  const Epetra_Map noderowmap = *(discret_.NodeRowMap());
-
-  // put all boundary nodes and elements onto all processors
-  const Epetra_Map nodecolmap = *LINALG::AllreduceEMap(noderowmap);
-
-  // redistribute nodes and elements to column (ghost) map
-  discret_.ExportColumnNodes(nodecolmap);
-  */
     
-  
-  const Epetra_Map noderowmap = *(discret_.NodeRowMap());
+    const Epetra_Map noderowmap = *(discret_.NodeRowMap());
 
-  // fill my own row node ids into vector sdata
-  vector<int> sdata(noderowmap.NumMyElements());
-  for (int i=0; i<noderowmap.NumMyElements(); ++i)
-    sdata[i] = noderowmap.GID(i);
-  
-  //if current processor has elements it writes its number into stproc
-  vector<int> stproc(0); 
-  
-  
-  if (noderowmap.NumMyElements())
-    stproc.push_back(discret_.Comm().MyPID());
-  
-  
-  //information how many processor work at all
-  vector<int> allproc(discret_.Comm().NumProc());
-  
-  //in case of n processors allproc becomes a vector with entries (0,1,...,n-1)
-  for (int i=0; i<discret_.Comm().NumProc(); ++i) allproc[i] = i;
-  
-  //declaring new variable into which the information of stproc on all processors is gathered
-  vector<int> rtproc(0);
-  
-  //gathers information of stproc and writes it into rtproc; in the end rtproc is a vector which 
-  // contains the numbers of all processors which have elements
-  LINALG::Gather<int>(stproc,rtproc,discret_.Comm().NumProc(),&allproc[0],discret_.Comm());
+    // fill my own row node ids into vector sdata
+    vector<int> sdata(noderowmap.NumMyElements());
+    for (int i=0; i<noderowmap.NumMyElements(); ++i)
+      sdata[i] = noderowmap.GID(i);
     
-  //in analogy to stproc and rtproc the variable rdata gathers all the element numbers which are 
-  // stored on different processors in their own variables sdata; thereby each processor gets
-  // the information about all the nodes numbers existing in this problem
-  vector<int> rdata;
+    //if current processor has elements it writes its number into stproc
+    vector<int> stproc(0); 
+    
+    
+    if (noderowmap.NumMyElements())
+      stproc.push_back(discret_.Comm().MyPID());
+    
+    
+    //information how many processor work at all
+    vector<int> allproc(discret_.Comm().NumProc());
+    
+    //in case of n processors allproc becomes a vector with entries (0,1,...,n-1)
+    for (int i=0; i<discret_.Comm().NumProc(); ++i) allproc[i] = i;
+    
+    //declaring new variable into which the information of stproc on all processors is gathered
+    vector<int> rtproc(0);
+    
+    /*gathers information of stproc and writes it into rtproc; in the end rtproc is a vector which 
+     * contains the numbers of all processors which have elements*/
+    LINALG::Gather<int>(stproc,rtproc,discret_.Comm().NumProc(),&allproc[0],discret_.Comm());
+      
+    /*in analogy to stproc and rtproc the variable rdata gathers all the element numbers which are 
+     * stored on different processors in their own variables sdata; thereby each processor gets
+     * the information about all the nodes numbers existing in this problem*/
+    vector<int> rdata;
 
-  // gather all gids of nodes redundantly from sdata into rdata
-  LINALG::Gather<int>(sdata,rdata,(int)rtproc.size(),&rtproc[0],discret_.Comm());
+    // gather all gids of nodes redundantly from sdata into rdata
+    LINALG::Gather<int>(sdata,rdata,(int)rtproc.size(),&rtproc[0],discret_.Comm());
 
-  // build completely overlapping map (on participating processors)
-  RCP<Epetra_Map> newnodecolmap = rcp(new Epetra_Map(-1,(int)rdata.size(),&rdata[0],0,discret_.Comm()));
-  sdata.clear();
-  stproc.clear();
-  rdata.clear();
-  allproc.clear();
-  // rtproc still in use
-  
-  //pass new fully overlapping column map to discretization
-  discret_.ExportColumnNodes(*newnodecolmap);
-  
-  
+    // build completely overlapping map (on participating processors)
+    RCP<Epetra_Map> newnodecolmap = rcp(new Epetra_Map(-1,(int)rdata.size(),&rdata[0],0,discret_.Comm()));
+    sdata.clear();
+    stproc.clear();
+    rdata.clear();
+    allproc.clear();
+    // rtproc still in use
+    
+    //pass new fully overlapping column map to discretization
+    discret_.ExportColumnNodes(*newnodecolmap);
 
-  /*rebuild discretization based on the new column map so that each processor creates new ghost elements
-   * if necessary; after the following line we have a discretization, where each processor has a fully
-   * overlapping column map regardlesse of how overlapping was managed when starting BACI; having ensured
-   * this allows convenient and correct (albeit not necessarily efficient) use of search algorithms and
-   * crosslinkers in parallel computing*/     
-  discret_.FillComplete(true,false,false);
+    /*rebuild discretization based on the new column map so that each processor creates new ghost elements
+     * if necessary; after the following line we have a discretization, where each processor has a fully
+     * overlapping column map regardlesse of how overlapping was managed when starting BACI; having ensured
+     * this allows convenient and correct (albeit not necessarily efficient) use of search algorithms and
+     * crosslinkers in parallel computing*/     
+    discret_.FillComplete(true,false,false);
   
   
   //if dynamic crosslinkers are used additional variables are initialized
@@ -425,8 +412,10 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
       //positions of first and last node in current time step (note: always 3D variables used; in case of 2D third compoenent just constantly zero)   
       LINALG::Matrix<3,1> beginnew;
       LINALG::Matrix<3,1> endnew;
+      
       beginnew.PutScalar(0);
       endnew.PutScalar(0);
+      std::cout << "ndim: " << ndim << "\n";
       
       for(int i = 0; i<ndim; i++)
       {
@@ -440,12 +429,13 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
       axisold  = endold_;
       axisold -= beginold_;
       axisold.Scale(1/axisold.Norm2());
-     
+      
       //unit direction vector for filament axis in actual time step
       LINALG::Matrix<3,1> axisnew;
       axisnew = endnew;
-      axisnew -= beginnew;
+      axisnew -= beginnew;      
       axisnew.Scale(1/axisnew.Norm2());
+
       
       //displacement of first and last node between last time step and current time step
       LINALG::Matrix<3,1> dispbegin;
@@ -454,36 +444,67 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
       dispbegin -= beginold_;
       dispend  = endnew;
       dispend -= endold_;
+
+      
       
       //displacement of middle point
       LINALG::Matrix<3,1> dispmiddle;
       dispmiddle  = dispbegin;
       dispmiddle += dispend;
       dispmiddle.Scale(0.5);
+
      
-      //displacement of middle point parallel to old filament axis (computed by scalar product)
-      double disppar_square = pow(axisold(0)*dispmiddle(0) + axisold(1)*dispmiddle(1) + axisold(2)*dispmiddle(2), 2);
-  
-      //displacement of middle point orthogonal to old filament axis (computed by crossproduct)
-      LINALG::Matrix<3,1> aux;
-      aux(0) = dispmiddle(1)*axisold(2) - dispmiddle(2)*axisold(1);
-      aux(1) = dispmiddle(2)*axisold(0) - dispmiddle(0)*axisold(2);
-      aux(2) = dispmiddle(0)*axisold(1) - dispmiddle(1)*axisold(0);
-      double disport_square = aux.Norm2()*aux.Norm2();
+      double incdispmiddle = dispmiddle.Norm2()*dispmiddle.Norm2();      
+      sumincdispmiddle_+=incdispmiddle;
+
+      sumdispmiddle_+=dispmiddle;
+      double dispmiddle_square=0.0;
+      dispmiddle_square=sumdispmiddle_.Norm2()*sumdispmiddle_.Norm2();
+      /*note: to compare this values with the par/orth displacements calulated further down,
+       * it hast to be divided by two in the 2D case and by three in the 3D case*/
+    
       
-      //
+      //displacement of middle point parallel to new filament axis (computed by scalar product)     
+      double disppar_square = pow(axisnew(0)*dispmiddle(0) + axisnew(1)*dispmiddle(1) + axisnew(2)*dispmiddle(2), 2);       
+      accumdispar_+=disppar_square;
+      
+      //std::cout << "parallel increment: " << disppar_square << " accumulated: " << accumdispar_ << "\n";
+      
+      //displacement of middle point orthogonal to new filament axis (computed by crossproduct)
+      LINALG::Matrix<3,1> aux;
+      aux(0) = dispmiddle(1)*axisnew(2) - dispmiddle(2)*axisnew(1);
+      aux(1) = dispmiddle(2)*axisnew(0) - dispmiddle(0)*axisnew(2);
+      aux(2) = dispmiddle(0)*axisnew(1) - dispmiddle(1)*axisnew(0);
+      double disport_square = aux.Norm2()*aux.Norm2();
+      accumdisorth_+=disport_square;
+      
+      /*Important note for 3D case: the orthogonal displacement calculated by above equations
+       * is the sum of squares of both independet orthogonal displacements. To get a values that
+       * is qualitatively representative to compare with the parallel displacement, disport_square
+       * hast to be multiplied with 0.5*/
+      
+      
+      
+     
+      /*
+      //this section is for the rotational diffusioncoefficient
       // angle of rotation around normal of filament axis relative to previous time step
       double cosangle=0.0;
       double angle=0.0;
-      double dispangle_square=0;
-      
-      std::cout<<"\nangle = "<< angle;
-      
+      double dispangle_square=0.0;
+
       cosangle = axisold(0)*axisnew(0)+axisold(1)*axisnew(1)+axisold(2)*axisnew(2);
       angle = acos(cosangle);
       dispangle_square=angle*angle;
+      dispangle_+=angle*angle;
       
-      std::cout<<"\nangle = "<< angle;
+      if(axisnew(1)<0.0)  // changes sign if slope of axisnew is negative
+                  {
+                    angle = (-1)*angle;
+                  }
+      
+      angabs_ +=angle;
+      */
       
       // absolute angle of rotation around normal of filament axis  (0 degree ~ horizontal)
       // only for 2D
@@ -491,39 +512,36 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
       double angleAbs=0.0;
       LINALG::Matrix<3,1> horizont;
       
-      horizont(0)=1;
-      horizont(1)=0;
-      horizont(2)=0;
+      horizont(0)=1.0;
+      horizont(1)=0.0;
+      horizont(2)=0.0;
       
       cosangleAbs = horizont(0)*axisnew(0)+horizont(1)*axisnew(1)+horizont(2)*axisnew(2);
-      std::cout<<"\ncosangle = "<< cosangleAbs;
-      
-      
       angleAbs=acos(cosangleAbs);
-      
-      std::cout<<"\naxisnew0 = "<< axisnew(0);
       
       if(axisnew(1)<0.0)  // changes sign if slope of axisnew is negative
             {
               angleAbs = (-1)*angleAbs;
             }
-      // write when system is equilibrated
-      if(time >= maxtime_ * statmechparams_.get<double>("START_FACTOR",0.0))
+          
+
+      
+      
       {
-        // open file and append new data line
-        fp = fopen(outputfilename.str().c_str(), "a");
-      
-      
-        std::cout<<"\nangle = "<< angle;
-      
-        //defining temporary stringstream variable
-        std::stringstream filecontent;
-        filecontent << scientific << setprecision(15) << dt << "  " << disppar_square << "  " << disport_square<< " " << dispangle_square <<" "<< angleAbs << endl;
-      
-        // move temporary stringstream to file and close it
-        fprintf(fp,filecontent.str().c_str());
-        fclose(fp);
+	      // open file and append new data line
+	      fp = fopen(outputfilename.str().c_str(), "a");
+	    
+	    
+	      //defining temporary stringstream variable
+	      std::stringstream filecontent;
+	      filecontent << scientific << setprecision(15) << dt << " " << dispmiddle_square << " " << sumincdispmiddle_ << " " << accumdispar_ << " " << accumdisorth_ << " " << incdispmiddle << " " << angleAbs << endl;//" " << dispangle_ << " " << angabs_ << endl;
+	    
+	      // move temporary stringstream to file and close it
+	      fprintf(fp,filecontent.str().c_str());
+	      fclose(fp);
       }
+      
+
       
       //new positions in this time step become old positions in last time step     
       beginold_ = beginnew;
@@ -634,9 +652,6 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
     
     //open file to write output data into
     fp = fopen(filename.str().c_str(), "w");
-    
-    if(fp == NULL)
-      dserror("cannot open Gmsh output file - make sure that subdirectory ./GmshOutput exists in working directory");
   
     // write output to temporary stringstream; 
     std::stringstream gmshfilecontent;
@@ -647,7 +662,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
     gmshfilecontent << "View \" Step " << step << " \" {" << endl;
   
     //looping through all elements on the processor
-    for (int i=0; i < discret_.NumMyColElements(); ++i)
+    for (int i=0; i<discret_.NumMyColElements(); ++i)
     {
       //getting pointer to current element
       DRT::Element* element = discret_.lColElement(i);
@@ -668,8 +683,6 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
          double displacement = discol[discret_.DofColMap()->LID( dofnode[id] )];
          coord(id,jd) =  referenceposition + displacement;
        }
-      
-
       
             
       //declaring variable for color of elements
@@ -699,8 +712,6 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
     fclose(fp);
     
   }//if(discret_.Comm().MyPID() == 0)
-  
-  
  
   return;
 } // StatMechManager::GmshOutput()
@@ -940,8 +951,18 @@ void StatMechManager::StatMechInitOutput(const int ndim,const double& dt)
          beginold_(i) = ( discret_.gNode(0)                            )->X()[i];
          endold_(i)   = ( discret_.gNode(discret_.NumMyRowNodes() - 1) )->X()[i];
        }  
-        
-      }
+      
+      for (int i=0; i<3; i++)
+       sumdispmiddle_(i,0)=0.0;
+      
+      accumdispar_=0.0;
+      accumdisorth_=0.0;
+      dispangle_=0.0;
+      angabs_=0.0;
+      sumincdispmiddle_=0.0;
+
+      
+    }
     break;
     //measurement of viscoelastic properties should be carried out by means of force sensors
     case INPAR::STATMECH::statout_viscoelasticity:
@@ -1040,19 +1061,19 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& disro
 #endif // #ifdef MEASURETIME 
     
     //setting the crosslinkers for neighbours in crosslinkerneighbours_ after probability check
-    SetCrosslinkers(dt,noderowmap,nodecolmap,currentpositions,currentrotations);
+    //SetCrosslinkers(dt,noderowmap,nodecolmap,currentpositions,currentrotations);
         
     //deleting the crosslinkers in crosslinkerpartner_ after probability check
-    DelCrosslinkers(dt,noderowmap,nodecolmap);
+    //DelCrosslinkers(dt,noderowmap,nodecolmap);
      
     /*settling administrative stuff in order to make the discretization ready for the next time step: the following
      * commmand generates or deletes ghost elements if necessary and calls FillCompete() method of discretization; 
      * this is enough as long as only elements, but no nodes are added in a time step; finally Crs matrices stiff_ has
      * to be deleted completely and made ready for new assembly since their graph was changed*/     
-    DRT::UTILS::RedistributeWithNewNodalDistribution(discret_,noderowmap,nodecolmap);      
-    discret_.FillComplete(true,false,false);
-    stiff_->Reset();
-    
+    //DRT::UTILS::RedistributeWithNewNodalDistribution(discret_,noderowmap,nodecolmap);      
+    //discret_.FillComplete(true,false,false);
+    //stiff_->Reset();
+
 
     
 #ifdef MEASURETIME
@@ -1291,14 +1312,12 @@ void StatMechManager::DelCrosslinkers(const double& dt, const Epetra_Map& nodero
  | displacement vector according to influence of thermal bath (public)  |
  |                                                           cyron 10/08|
  *----------------------------------------------------------------------*/
-void StatMechManager::StatMechBrownian(ParameterList& params, RCP<Epetra_Vector> dis)
+void StatMechManager::StatMechBrownian(ParameterList& params, RCP<Epetra_Vector> dis, RCP<Epetra_Vector> browniancol)
 {   
   /*declaration of a column and row map Epetra_Vector for evaluation of statistical forces or Brownian stets in space;
    *  note: zero initilization mandatory for correct computations later on*/
   RCP<Epetra_Vector>    brownianrow;
-  RCP<Epetra_Vector>    browniancol;
   brownianrow = LINALG::CreateVector(*discret_.DofRowMap(),true);
-  browniancol = LINALG::CreateVector(*discret_.DofColMap(),true);
   
   //defining parameter list passed down to the elements in order to evalute statistical forces down there
   ParameterList pstat;

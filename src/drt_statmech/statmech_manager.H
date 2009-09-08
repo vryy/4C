@@ -49,7 +49,7 @@ public:
   void StatMechUpdate(const double dt, const Epetra_Vector& disrow);
 
   //! \brief updates system damping matrix and external force vector according to influence of thermal bath
-  void StatMechBrownian(ParameterList& params, RCP<Epetra_Vector> dis);
+  void StatMechBrownian(ParameterList& params, RCP<Epetra_Vector> dis, RCP<Epetra_Vector> browniancol);
 
   //! \brief initializing special output for statistical mechanics by looking for a suitable name of the outputfile and setting up an empty file with this name
   void StatMechInitOutput(const int ndim, const double& dt);
@@ -119,6 +119,16 @@ protected:
 
   //! \brief storing for degree of freedom whether force has to be measured
   RCP<Epetra_Vector> forcesensor_;
+  
+  //! \store accumulated disp
+  double accumdispar_;
+  double accumdisorth_;
+  double dispangle_;
+  double angabs_;
+  double sumincdispmiddle_;
+  
+  //store displacement of midpoint
+  LINALG::Matrix<3,1>sumdispmiddle_;
 
   //! SearchTree which allows accelerated search for neighbouring nodes in case of dynamic crosslinkers
   Teuchos::RCP<GEO::SearchTree>  octTree_;
