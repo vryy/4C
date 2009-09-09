@@ -71,6 +71,18 @@ public:
       RefCountPtr<Epetra_Vector>          fint,
       RefCountPtr<LINALG::SparseMatrix>   stiff);
 
+  
+  
+  void StiffnessAndInternalForcesPotential(
+      const DRT::Element*             element,
+      const DRT::UTILS::GaussRule3D&  gaussrule,
+      ParameterList&                  eleparams,
+      vector<int>&                    lm,
+      Epetra_SerialDenseMatrix&       K_stiff,
+      Epetra_SerialDenseVector&       F_int,
+      const bool                      surfaceElement);
+  
+  
 
   /*!
     \brief Routine to calculate additional internal forces and

@@ -79,6 +79,14 @@ public:
       vector<int>&                      lm,
       Epetra_SerialDenseMatrix&         K_surf,
       Epetra_SerialDenseVector&         fint);
+  
+  void StiffnessAndInternalForcesPotentialApprox(
+        const DRT::Element*               element,
+        const DRT::UTILS::GaussRule2D&    gaussrule,
+        ParameterList&                    params,
+        vector<int>&                      lm,
+        Epetra_SerialDenseMatrix&         K_surf,
+        Epetra_SerialDenseVector&         fint);
 
 
   /*!
@@ -130,6 +138,18 @@ private:
       const int                        label,
       const double                     curvefac
       );
+  
+  void computeFandK_Approx(
+        const DRT::Element*              actEle,
+        const DRT::UTILS::GaussRule2D&   gaussrule,
+        std::map<int,std::set<int> >&    potElements,
+        vector<int>&                     lm,
+        Epetra_SerialDenseMatrix&        K_surf,
+        Epetra_SerialDenseVector&        F_int,
+        RefCountPtr<DRT::Condition>      cond,
+        const int                        label,
+        const double                     curvefac
+        );
 
 
   /*!
@@ -156,9 +176,21 @@ private:
       LINALG::SerialDenseMatrix&              deriv,
       const DRT::UTILS::IntegrationPoints2D&  intpoints,
       const int                               gp,
-      LINALG::Matrix<3,1>&                    x_gp,
+      LINALG::Matrix<3,1>&                    x_gp,     
       const double                            curve_fac
       );
+  
+  double ComputeFactorApprox(
+        const DRT::Element*                     element,
+        LINALG::SerialDenseVector&              funct,
+        LINALG::SerialDenseMatrix&              deriv,
+        LINALG::SerialDenseMatrix& 				FInvers,
+        const DRT::UTILS::IntegrationPoints2D&  intpoints,
+        const int                               gp,
+        LINALG::Matrix<3,1>&                    x_gp,
+        LINALG::Matrix<3,1>&                    X_gp,
+        const double                            curve_fac
+        );
 
 
   //! compute integration factors for line elements

@@ -163,11 +163,47 @@ void POTENTIAL::PotentialManager::StiffnessAndInternalForcesPotential(
   {
     if( params_.get<string>("approximation type")== "none" )
       volumePotential_->StiffnessAndInternalForcesPotential(element, gaussrule, eleparams, lm, K_stiff, F_int);
-    //if( params_.get<string>("approximation type")== "surface_approx" )
+    if( params_.get<string>("approximation type")== "surface_approx" )
+      surfacePotential_->StiffnessAndInternalForcesPotentialApprox(element, gaussrule, eleparams, lm, K_stiff, F_int);
     //if( params_.get<string>("approximation type")== "point_approx" )
   }
   return;
 }
+
+
+
+
+/*-------------------------------------------------------------------*
+| (public)                                                umay  09/09|
+|                                                                    |
+| Calculate additional internal forces and corresponding stiffness   |
+| on element level for Lennard-Jones potential interaction forces    |
+*--------------------------------------------------------------------*/
+void POTENTIAL::PotentialManager::StiffnessAndInternalForcesPotential(
+    const DRT::Element*             element,
+    const DRT::UTILS::GaussRule3D&  gaussrule,
+    ParameterList&                  eleparams,
+    vector<int>&                    lm,
+    Epetra_SerialDenseMatrix&       K_stiff,
+    Epetra_SerialDenseVector&       F_int,
+    const bool                      surfaceElement)
+{
+  //if(surfaceElement)
+    //surfacePotential_->StiffnessAndInternalForcesPotential(element, gaussrule, eleparams, lm, K_stiff, F_int);
+  //else
+  //{
+  
+  //TODO
+  // check in solid hex 8 if elemat and elevec are properly filed !!!
+    if( params_.get<string>("approximation type")== "none" )
+      volumePotential_->StiffnessAndInternalForcesPotential(element, gaussrule, eleparams, lm, K_stiff, F_int);
+    // if( params_.get<string>("approximation type")== "surface_approx" )
+       // surfacePotential_->StiffnessAndInternalForcesPotentialApprox(element, gaussrule, eleparams, lm, K_stiff, F_int);
+    //if( params_.get<string>("approximation type")== "point_approx" )
+  //}
+  return;
+}
+
 
 
 

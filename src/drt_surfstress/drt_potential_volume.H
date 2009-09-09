@@ -63,6 +63,18 @@ public:
       RefCountPtr<Epetra_Vector> fint,
       RefCountPtr<LINALG::SparseMatrix> stiff);
 
+  
+  
+  void StiffnessAndInternalForcesPotential(
+      const DRT::Element*             element,
+      const DRT::UTILS::GaussRule3D&  gaussrule,
+      ParameterList&                  params,
+      vector<int>&                    lm,
+      Epetra_SerialDenseMatrix&       K_surf,
+      Epetra_SerialDenseVector&       F_int
+      );
+  
+  
 
   /*!
     \brief Routine to calculate additional internal forces and
@@ -123,6 +135,23 @@ private:
    */
   void computeFandK(
       const DRT::Element*              actEle,
+      const DRT::UTILS::GaussRule3D&   gaussrule,
+      std::map<int,std::set<int> >&    potElements,
+      vector<int>&                     lm,
+      Epetra_SerialDenseMatrix&        K_surf,
+      Epetra_SerialDenseVector&        F_int,
+      RefCountPtr<DRT::Condition>      cond,
+      const int                        label,
+      const double                     curvefac
+      );
+  
+  
+  /*!
+  \brief  compute internal force and stiffness matrix
+          for surface elements
+   */
+  void computeFandK(
+      const DRT::Element*              actEle,
       const DRT::UTILS::GaussRule2D&   gaussrule,
       std::map<int,std::set<int> >&    potElements,
       vector<int>&                     lm,
@@ -150,6 +179,16 @@ private:
       const double                     curvefac
       );
 
+  
+  double ComputeFactor(
+      const DRT::Element*                     element,
+      LINALG::SerialDenseVector&              funct,
+      LINALG::SerialDenseMatrix&              deriv,
+      const DRT::UTILS::IntegrationPoints3D&  intpoints,
+      const int                               gp,
+      LINALG::Matrix<3,1>&                    x_gp,
+      const double                            curve_fac
+      );
 
 
   //! compute integration factors for surface elements
@@ -175,7 +214,14 @@ private:
       const double                            curve_fac
       );
 
-
+  
+  //! returns gauss rule for given distype
+  void GetGaussRule3D(
+      const DRT::Element::DiscretizationType& distype,
+      DRT::UTILS::GaussRule3D&                rule_pot
+      );
+  
+  
   //! returns gauss rule for given distype
   void GetGaussRule2D(
       const DRT::Element::DiscretizationType& distype,

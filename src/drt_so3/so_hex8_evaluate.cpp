@@ -454,13 +454,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       if (cond==null)
         dserror("Condition not available in Solid3 Surface");
 
-      if (cond->Type()==DRT::Condition::LJ_Potential_3D) // Lennard-Jones potential
+      if (cond->Type()==DRT::Condition::LJ_Potential_Volume_3D) // Lennard-Jones potential
       {
-        //potentialmanager->StiffnessAndInternalForcesPotential(this, gaussrule_, params,lm, elematrix1, elevector1, true);
-      }
-      else if (cond->Type()==DRT::Condition::Zeta_Potential_3D) // Zeta potential
-      {
-        //potentialmanager->StiffnessAndInternalForcesPotential(this, gaussrule_, params,lm, elematrix1, elevector1, true);
+        potentialmanager->StiffnessAndInternalForcesPotential(this, DRT::UTILS::intrule_hex_8point, params, lm, elemat1_epetra, elevec1_epetra, true);
       }
       else
         dserror("Unknown condition type %d",cond->Type());
