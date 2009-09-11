@@ -572,15 +572,33 @@ void FSI::MonolithicStructureSplit::UnscaleSolution(LINALG::BlockSparseMatrixBas
   Teuchos::RCP<Epetra_Vector> fr = Extractor().ExtractVector(r,1);
   Teuchos::RCP<Epetra_Vector> ar = Extractor().ExtractVector(r,2);
 
-  double ns,nf,na;
+  ios_base::fmtflags flags = Utils()->out().flags();
+
+  double n,ns,nf,na;
+  r.Norm2(&n);
   sr->Norm2(&ns);
   fr->Norm2(&nf);
   ar->Norm2(&na);
-  Utils()->out() << "\nlinear solver quality:\n"
+  Utils()->out() << std::scientific
+                 << "\nlinear solver quality:\n"
+                 << "L_2-norms:\n"
+                 << END_COLOR "   |r|=" YELLOW << n
                  << END_COLOR "   |rs|=" YELLOW << ns
                  << END_COLOR "   |rf|=" YELLOW << nf
                  << END_COLOR "   |ra|=" YELLOW << na
                  << END_COLOR "\n";
+  r.NormInf(&n);
+  sr->NormInf(&ns);
+  fr->NormInf(&nf);
+  ar->NormInf(&na);
+  Utils()->out() << "L_inf-norms:\n"
+                 << END_COLOR "   |r|=" YELLOW << n
+                 << END_COLOR "   |rs|=" YELLOW << ns
+                 << END_COLOR "   |rf|=" YELLOW << nf
+                 << END_COLOR "   |ra|=" YELLOW << na
+                 << END_COLOR "\n";
+
+  Utils()->out().flags(flags);
 #endif
 }
 
@@ -647,7 +665,11 @@ FSI::MonolithicStructureSplit::CreateLinearSystem(ParameterList& nlParams,
   {
   case INPAR::FSI::PreconditionedKrylov:
   case INPAR::FSI::FSIAMG:
+#if 1
     linSys = Teuchos::rcp(new FSI::MonolithicLinearSystem::MonolithicLinearSystem(
+#else
+    linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(
+#endif
                                                                printParams,
                                                                *lsParams,
                                                                Teuchos::rcp(iJac,false),
