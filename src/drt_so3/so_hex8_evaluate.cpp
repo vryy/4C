@@ -456,7 +456,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
 
       if (cond->Type()==DRT::Condition::LJ_Potential_Volume) // Lennard-Jones potential
       {
-        potentialmanager->StiffnessAndInternalForcesPotential(this, DRT::UTILS::intrule_hex_8point, params, lm, elemat1_epetra, elevec1_epetra, true);
+        potentialmanager->StiffnessAndInternalForcesPotential(this, DRT::UTILS::intrule_hex_8point, params, lm, elemat1_epetra, elevec1_epetra);
       }
       else
         dserror("Unknown condition type %d",cond->Type());

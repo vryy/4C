@@ -38,12 +38,12 @@ POTENTIAL::PotentialManager::PotentialManager(
   ReadParameter();
   string pot_type = params_.get<string>("potential type");
   // construct surface and contact potential
-  if( pot_type =="surface" ||
-      pot_type =="surfacevolume")
+  if( pot_type =="Surface" ||
+      pot_type =="Surfacevolume")
       surface_ = true;
 
-  if( pot_type =="volume" ||
-      pot_type =="surfacevolume")
+  if( pot_type =="Volume" ||
+      pot_type =="Surfacevolume")
       volume_ = true;
 
   if(surface_)
@@ -80,44 +80,47 @@ void POTENTIAL::PotentialManager::ReadParameter()
   switch(Teuchos::getIntegralValue<INPAR::POTENTIAL::PotentialType>(intpot,"POTENTIAL_TYPE"))
   {
     case INPAR::POTENTIAL::potential_surface:
-      params_.set<string>("potential type","surface");
+      params_.set<string>("potential type","Surface");
     break;
     case INPAR::POTENTIAL::potential_volume:
-      params_.set<string>("potential type","volume");
+      params_.set<string>("potential type","Volume");
     break;
     case INPAR::POTENTIAL::potential_surfacevolume:
-      params_.set<string>("potential type","surfacevolume");
+      params_.set<string>("potential type","Surfacevolume");
     break;
     case INPAR::POTENTIAL::potential_surface_fsi:
-      params_.set<string>("potential type","surface_fsi");
+      params_.set<string>("potential type","Surface_fsi");
     break;
     case INPAR::POTENTIAL::potential_volume_fsi:
-      params_.set<string>("potential type","volume_fsi");
+      params_.set<string>("potential type","Volume_fsi");
     break;
     case INPAR::POTENTIAL::potential_surfacevolume_fsi:
-      params_.set<string>("potential type","surfacevolume_fsi");
+      params_.set<string>("potential type","Surfacevolume_fsi");
     break;
     default:
-      params_.set<string>("potential type","surface");
+      params_.set<string>("potential type","Surface");
     break;
   }
   
+  cout << params_.get<string>("potential type")<< endl;
   // set approximation method for volume potentials
   switch(Teuchos::getIntegralValue<INPAR::POTENTIAL::ApproximationType>(intpot,"APPROXIMATION_TYPE"))
   {
     case INPAR::POTENTIAL::approximation_none:
-      params_.set<string>("approximation type","none");
+      params_.set<string>("approximation type","None");
     break;
     case INPAR::POTENTIAL::approximation_surface:
-      params_.set<string>("approximation type","surface_approx");
+      params_.set<string>("approximation type","Surface_approx");
     break;
     case INPAR::POTENTIAL::approximation_point:
-      params_.set<string>("approximation type","point_approx");
+      params_.set<string>("approximation type","Point_approx");
     break;
     default:
-      params_.set<string>("approximation type","none");
+      params_.set<string>("approximation type","None");
     break;
   }
+  
+  cout << params_.get<string>("approximation type")<< endl;
   return;
 }
 
@@ -154,23 +157,18 @@ void POTENTIAL::PotentialManager::StiffnessAndInternalForcesPotential(
     ParameterList&                  eleparams,
     vector<int>&                    lm,
     Epetra_SerialDenseMatrix&       K_stiff,
-    Epetra_SerialDenseVector&       F_int,
-    const bool                      surfaceElement)
+    Epetra_SerialDenseVector&       F_int)
 {
-  if(surfaceElement)
+  if( params_.get<string>("approximation type") == "None" )
     surfacePotential_->StiffnessAndInternalForcesPotential(element, gaussrule, eleparams, lm, K_stiff, F_int);
+  else if( params_.get<string>("approximation type")== "Surface_approx" )
+    surfacePotential_->StiffnessAndInternalForcesPotentialApprox(element, gaussrule, eleparams, lm, K_stiff, F_int);
+  //else if( params_.get<string>("approximation type")== "point_approx" )
   else
-  {
-    if( params_.get<string>("approximation type")== "none" )
-      volumePotential_->StiffnessAndInternalForcesPotential(element, gaussrule, eleparams, lm, K_stiff, F_int);
-    if( params_.get<string>("approximation type")== "surface_approx" )
-      surfacePotential_->StiffnessAndInternalForcesPotentialApprox(element, gaussrule, eleparams, lm, K_stiff, F_int);
-    //if( params_.get<string>("approximation type")== "point_approx" )
-  }
+    dserror("no approximation type specified");
+      
   return;
 }
-
-
 
 
 /*-------------------------------------------------------------------*
@@ -185,26 +183,16 @@ void POTENTIAL::PotentialManager::StiffnessAndInternalForcesPotential(
     ParameterList&                  eleparams,
     vector<int>&                    lm,
     Epetra_SerialDenseMatrix&       K_stiff,
-    Epetra_SerialDenseVector&       F_int,
-    const bool                      surfaceElement)
-{
-  //if(surfaceElement)
-    //surfacePotential_->StiffnessAndInternalForcesPotential(element, gaussrule, eleparams, lm, K_stiff, F_int);
-  //else
-  //{
-  
+    Epetra_SerialDenseVector&       F_int)
+{ 
   //TODO
   // check in solid hex 8 if elemat and elevec are properly filed !!!
-    if( params_.get<string>("approximation type")== "none" )
-      volumePotential_->StiffnessAndInternalForcesPotential(element, gaussrule, eleparams, lm, K_stiff, F_int);
-    // if( params_.get<string>("approximation type")== "surface_approx" )
-       // surfacePotential_->StiffnessAndInternalForcesPotentialApprox(element, gaussrule, eleparams, lm, K_stiff, F_int);
-    //if( params_.get<string>("approximation type")== "point_approx" )
-  //}
+  if( params_.get<string>("approximation type")== "None" )
+    volumePotential_->StiffnessAndInternalForcesPotential(element, gaussrule, eleparams, lm, K_stiff, F_int);
+  else
+    dserror("no approximation allowed");
   return;
 }
-
-
 
 
 /*-------------------------------------------------------------------*
@@ -219,13 +207,11 @@ void POTENTIAL::PotentialManager::StiffnessAndInternalForcesPotential(
     ParameterList&                  eleparams,
     vector<int>&                    lm,
     Epetra_SerialDenseMatrix&       K_stiff,
-    Epetra_SerialDenseVector&       F_int,
-    const bool                      lineElement)
+    Epetra_SerialDenseVector&       F_int)
 {
-  if(lineElement)
-    surfacePotential_->StiffnessAndInternalForcesPotential(element, gaussrule, eleparams, lm, K_stiff, F_int);
-  else
-    volumePotential_->StiffnessAndInternalForcesPotential(element, gaussrule, eleparams, lm, K_stiff, F_int);
+  //if( params_.get<string>("approximation type")== "none" )
+  //  surfacePotential_->StiffnessAndInternalForcesPotential(element, gaussrule, eleparams, lm, K_stiff, F_int);
+    
   return;
 }
 

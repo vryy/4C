@@ -340,11 +340,11 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(ParameterList& params,
 
       if (cond->Type()==DRT::Condition::LJ_Potential_Line) // Lennard-Jones potential
       {
-        potentialmanager->StiffnessAndInternalForcesPotential(this, gaussrule, params,lm, elematrix1, elevector1, true);
+        potentialmanager->StiffnessAndInternalForcesPotential(this, gaussrule, params,lm, elematrix1, elevector1);
       }
       else if (cond->Type()==DRT::Condition::ElectroRepulsion_Potential_Line) // electro static repulsion potential
       {
-     	  potentialmanager->StiffnessAndInternalForcesPotential(this, gaussrule, params,lm, elematrix1, elevector1, true);
+     	  potentialmanager->StiffnessAndInternalForcesPotential(this, gaussrule, params,lm, elematrix1, elevector1);
       }
       else
         dserror("Unknown condition type %d",cond->Type());

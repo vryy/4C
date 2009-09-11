@@ -22,7 +22,7 @@ namespace INPAR
   namespace POTENTIAL
   {
     /// Type of effects which should be considered
-    /// (this enum represents the input file parameter POTENTIAL)
+    /// (this enum represents the input file parameter POTENTIAL_TYPE)
     enum PotentialType
     {
       potential_surface,          ///< only surface effects are considered
@@ -34,7 +34,7 @@ namespace INPAR
     };
 
     /// Type of approximation
-    /// (this enum represents the input file parameter POTENTIAL)
+    /// (this enum represents the input file parameter APPROXIMATION_TYPE)
     enum ApproximationType
     {
       approximation_none,       ///< no approximation

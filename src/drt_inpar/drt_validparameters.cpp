@@ -842,16 +842,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                yesnotuple,yesnovalue,&scontact);
 
   /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& interaction_potential = list->sublist("INTERACTION POTENTIALS",false,"");
+  Teuchos::ParameterList& interaction_potential = list->sublist("INTERACTION POTENTIAL",false,"");
 
   // read if surfaces , volumes or both including fluid should be considered
-  setStringToIntegralParameter<INPAR::POTENTIAL::PotentialType>("POTENTIAL_TYPE","surface","Type of interaction potential",
-                                tuple<std::string>("surface",
-                                                   "volume",
-                                                   "surfacevolume",
-                                                   "surface_fsi",
-                                                   "volume_fsi",
-                                                   "surfacevolume_fsi"),
+  setStringToIntegralParameter<INPAR::POTENTIAL::PotentialType>("POTENTIAL_TYPE","Surface","Type of interaction potential",
+                                tuple<std::string>("Surface",
+                                                   "Volume",
+                                                   "Surfacevolume",
+                                                   "Surface_fsi",
+                                                   "Volume_fsi",
+                                                   "Surfacevolume_fsi"),
                                 tuple<INPAR::POTENTIAL::PotentialType>(
                                    INPAR::POTENTIAL::potential_surface,
                                    INPAR::POTENTIAL::potential_volume,
@@ -862,10 +862,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                 &interaction_potential);
 
   // approximation method
-  setStringToIntegralParameter<INPAR::POTENTIAL::ApproximationType>("APPROXIMATION_TYPE","none","Type of approximation",
-                                tuple<std::string>("none",
-                                                   "surface_approx",
-                                                   "point_approx"),
+  setStringToIntegralParameter<INPAR::POTENTIAL::ApproximationType>("APPROXIMATION_TYPE","None","Type of approximation",
+                                tuple<std::string>("None",
+                                                   "Surface_approx",
+                                                   "Point_approx"),
                                 tuple<INPAR::POTENTIAL::ApproximationType>(
                                            INPAR::POTENTIAL::approximation_none,
                                            INPAR::POTENTIAL::approximation_surface,

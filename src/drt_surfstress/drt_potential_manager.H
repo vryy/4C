@@ -79,8 +79,7 @@ public:
       ParameterList&                  eleparams,
       vector<int>&                    lm,
       Epetra_SerialDenseMatrix&       K_stiff,
-      Epetra_SerialDenseVector&       F_int,
-      const bool                      surfaceElement);
+      Epetra_SerialDenseVector&       F_int);
   
   
 
@@ -100,8 +99,7 @@ public:
       ParameterList&                    eleparams,
       vector<int>&                      lm,
       Epetra_SerialDenseMatrix&         K_stiff,
-      Epetra_SerialDenseVector&         fint,
-      const bool                        surfaceElement
+      Epetra_SerialDenseVector&         fint
       );
 
 
@@ -121,8 +119,7 @@ public:
       ParameterList&                    eleparams,
       vector<int>&                      lm,
       Epetra_SerialDenseMatrix&         K_stiff,
-      Epetra_SerialDenseVector&         fint,
-      const bool                        lineElement
+      Epetra_SerialDenseVector&         fint
       );
 
 private:
