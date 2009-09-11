@@ -665,7 +665,7 @@ FSI::MonolithicStructureSplit::CreateLinearSystem(ParameterList& nlParams,
   {
   case INPAR::FSI::PreconditionedKrylov:
   case INPAR::FSI::FSIAMG:
-#if 1
+#if 0
     linSys = Teuchos::rcp(new FSI::MonolithicLinearSystem::MonolithicLinearSystem(
 #else
     linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(
