@@ -66,7 +66,6 @@ alphaold_(old.alphaold_),
 alphaconv_(old.alphaconv_),
 alpha0_(old.alpha0_),
 gaussrule_(old.gaussrule_)
-
 {
   return;
 }

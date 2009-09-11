@@ -23,7 +23,7 @@ Maintainer: Christian Cyron
 bool DRT::ELEMENTS::Beam2r::ReadElement(const std::string& eletype,
                                         const std::string& distype,
                                         DRT::INPUT::LineDefinition* linedef)
-{
+{  
   // read number of material model
   int material = 0;
   linedef->ExtractInt("MAT",material);
@@ -33,13 +33,14 @@ bool DRT::ELEMENTS::Beam2r::ReadElement(const std::string& eletype,
   //note: we use a static cast for the enumeration here cf. Practical C++ Programming p.185
   gaussrule_ = static_cast<enum DRT::UTILS::GaussRule1D>(NumNode()-1);
 
-  linedef->ExtractDouble("CROSS",crosssec_);
-
+  linedef->ExtractDouble("CROSS",crosssec_); 
+  
   double shear_correction = 0.0;
   linedef->ExtractDouble("SHEARCORR",shear_correction);
   crosssecshear_ = crosssec_ * shear_correction;
 
   linedef->ExtractDouble("INERMOM",mominer_);
+   
   return true;
 }
 

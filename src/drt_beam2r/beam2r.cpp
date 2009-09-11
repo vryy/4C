@@ -29,12 +29,12 @@ Maintainer: Christian Cyron
 DRT::ELEMENTS::Beam2r::Beam2r(int id, int owner) :
 DRT::Element(id,element_beam2r,owner),
 data_(),
-isinit_(false),
 crosssec_(0),
 crosssecshear_(0),
-mominer_(0),
-//note: intrule is set in beam2r_input
-gaussrule_(DRT::UTILS::intrule1D_undefined)
+gaussrule_(DRT::UTILS::intrule1D_undefined),
+isinit_(false),
+lrefe_(0),
+mominer_(0)
 {
   return;
 }
@@ -44,15 +44,16 @@ gaussrule_(DRT::UTILS::intrule1D_undefined)
 DRT::ELEMENTS::Beam2r::Beam2r(const DRT::ELEMENTS::Beam2r& old) :
 DRT::Element(old),
 data_(old.data_),
-isinit_(old.isinit_),
 crosssec_(old.crosssec_),
 crosssecshear_(old.crosssecshear_),
+gaussrule_(old.gaussrule_),
+isinit_(old.isinit_),
+lrefe_(old.lrefe_),
 mominer_(old.mominer_),
 alpha_(old.alpha_),
 alphamass_(old.alphamass_),
-theta0_(old.theta0_),
-gaussrule_(old.gaussrule_)
-
+floc_(old.floc_),
+theta0_(old.theta0_)
 {
   return;
 }
@@ -141,25 +142,27 @@ void DRT::ELEMENTS::Beam2r::Pack(vector<char>& data) const
   vector<char> basedata(0);
   Element::Pack(basedata);
   AddtoPack(data,basedata);
-  //whether element has already been initialized
-  AddtoPack(data,isinit_);
-  //cross section
+  
+  //add all class variables of beam2r element
   AddtoPack(data,crosssec_);
-   //cross section with shear correction
   AddtoPack(data,crosssecshear_);
-  //moment of inertia of area
+  AddtoPack(data,gaussrule_);
+  AddtoPack(data,isinit_);
+  AddtoPack(data,lrefe_);
   AddtoPack(data,mominer_);
-  // absolute angle in reference configuration at gausspoints
-  AddtoPack(data,theta0_);
-  // length factor in reference configuration at gausspoints
-  AddtoPack(data,alpha_);
-  // length factor in reference configuration at gausspoints for complete integration of massmatrix
-  AddtoPack(data,alphamass_);
-  // gaussrule_
+   
+  for(int i=0; i<NumNode()-1;i++)
+    AddtoPack(data,alpha_[i]);
+  
+  for(int i=0; i<NumNode()-1;i++)
+    AddtoPack(data,alphamass_[i]);
+  
   for(int i=0; i<NumNode();i++)
-  AddtoPack(data,floc_[i]);
-  // random stochastic forces in element frame
-  AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
+    AddtoPack(data,floc_[i]);
+  
+  for(int i=0; i<NumNode()-1;i++)
+    AddtoPack(data,theta0_[i]);
+   
   vector<char> tmp(0);
   data_.Pack(tmp);
   AddtoPack(data,tmp);
@@ -183,28 +186,35 @@ void DRT::ELEMENTS::Beam2r::Unpack(const vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
-  //whether element has already been initialized
-  ExtractfromPack(position,data,isinit_);
-  //cross section
+ 
+  //extract all class variables of beam2r element
   ExtractfromPack(position,data,crosssec_);
-   //cross section with shear correction
   ExtractfromPack(position,data,crosssecshear_);
-  //moment of inertia of area
-  ExtractfromPack(position,data,mominer_);
-  // absolute angle in reference configuration at gausspoints
-  ExtractfromPack(position,data,theta0_);
-  // length factor in reference configuration at gausspoints
-  ExtractfromPack(position,data,alpha_);
-  // length factor in reference configuration at gausspoints for complete integration of massmatrix
-  ExtractfromPack(position,data,alphamass_);
-  // gaussrule_
-  floc_.resize(NumNode());
-  for (int i=0;i<NumNode();i++)
-  ExtractfromPack(position,data,floc_[i]);
-    // random stochastic forces in element frame
+  
   int gausrule_integer;
   ExtractfromPack(position,data,gausrule_integer);
   gaussrule_ = DRT::UTILS::GaussRule1D(gausrule_integer); //explicit conversion from integer to enum
+  
+  ExtractfromPack(position,data,isinit_);
+  ExtractfromPack(position,data,lrefe_);
+  ExtractfromPack(position,data,mominer_);
+ 
+  alpha_.resize(NumNode()-1);
+  for (int i=0;i<NumNode()-1;i++)
+    ExtractfromPack(position,data,alpha_[i]);
+  
+  alphamass_.resize(NumNode()-1);
+  for (int i=0;i<NumNode()-1;i++)
+    ExtractfromPack(position,data,alphamass_[i]);
+  
+  floc_.resize(NumNode());
+  for (int i=0;i<NumNode();i++)
+    ExtractfromPack(position,data,floc_[i]);
+  
+  theta0_.resize(NumNode()-1);
+  for (int i=0;i<NumNode()-1;i++)
+    ExtractfromPack(position,data,theta0_[i]);
+ 
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
@@ -240,9 +250,6 @@ void DRT::ELEMENTS::Beam2r::SetUpReferenceGeometry(const vector<double>& xrefe)
   {
 
   	floc_.resize(nnode);//set vector size for local stochastic forces
-	  
-  	
-
   	
   	isinit_ = true;
     

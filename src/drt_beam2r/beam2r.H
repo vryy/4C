@@ -292,42 +292,42 @@ private:
   //! container containing all kind of beam2r thisandthat
   DRT::Container data_;
 
-  //! variable saving whether element has already been initialized (then isinit_ == true)
-  bool isinit_;
-
   //! cross section area
   double crosssec_;
 
    //! cross section area including shear correction factor
   double crosssecshear_;
+  
+  //! gaussrule_ will be initialized automatically to an underintegration rule in input.cpp
+  DRT::UTILS::GaussRule1D gaussrule_;
+  
+  //! variable saving whether element has already been initialized (then isinit_ == true)
+  bool isinit_;
+  
+  /*calculation of Brownian forces and damping is based on drag coefficient; this coefficient per unit
+  * length is approximated by the one of an infinitely long staff for friciton orthogonal to staff axis*/
+  double lrefe_;
 
   //! moment of inertia of area
   double mominer_;
-
+  
   //! Vector holding alpha for each gausspoint
   vector<double> alpha_;
 
   //! Vector holding alpha for each gausspoint for complete integration of massmatrix
   vector<double> alphamass_;
+  
+  //! store stochastic forces of element in local frame
+  vector<LINALG::Matrix<2,1> > floc_;
 
   //! Vector holding theta0 for each gausspoint. The current
   //implementation sets the initial director angles to zero, which can be done without loss
   //of generality since any initial rotation cancels out in the equations (7.131). As a consequence
   //the current nodal directors do not appear in the element, but only the values of the current director
   //at the GP
-
   vector<double> theta0_;
-
-  /*calculation of Brownian forces and damping is based on drag coefficient; this coefficient per unit
-  * length is approximated by the one of an infinitely long staff for friciton orthogonal to staff axis*/
-  double lrefe_;
   
-  //! store stochastic forces of element in local frame
-  vector<LINALG::Matrix<2,1> > floc_;
-
-  //! gaussrule_ will be initialized automatically to an underintegration rule in input.cpp
-  DRT::UTILS::GaussRule1D gaussrule_;
-
+  
   //!internal geometric calculations according to Crisfield Vol.1 (7.118)-(7.121)
   //note: this and a few more functions are templated so we can use the same element as a
   //	  higher order element. For templating cf. Practical C++ Programming p.419++
