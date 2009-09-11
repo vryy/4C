@@ -566,7 +566,7 @@ void FSI::MonolithicStructureSplit::UnscaleSolution(LINALG::BlockSparseMatrixBas
 
   Epetra_Vector r(b.Map());
   mat.Apply(x,r);
-  r.Update(1.,b,-1.);
+  r.Update(1.,b,1.);
 
   Teuchos::RCP<Epetra_Vector> sr = Extractor().ExtractVector(r,0);
   Teuchos::RCP<Epetra_Vector> fr = Extractor().ExtractVector(r,1);
