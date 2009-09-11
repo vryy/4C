@@ -59,6 +59,46 @@ LINALG::Matrix<3,2> GEO::getXAABBofDis(
 
 
 /*----------------------------------------------------------------------*
+ | delivers a slightly enlarged axis-aligned bounding box foru.may 09/09|
+ | given elements with their current postions for SlipALE               |
+ *----------------------------------------------------------------------*/
+LINALG::Matrix<3,2> GEO::getXAABBofEles(
+    map<int, RCP<DRT::Element> >& 		elements,
+    const std::map<int,LINALG::Matrix<3,1> >& 	currentpositions)
+{
+  LINALG::Matrix<3,2> XAABB(true);
+  if (elements.begin() == elements.end())
+    return XAABB;
+
+  map<int, RefCountPtr<DRT::Element> >::const_iterator elemiter;
+  for (elemiter = elements.begin(); elemiter != elements.end(); ++elemiter)
+  {
+    RefCountPtr<DRT::Element> currelement = elemiter->second;
+    const LINALG::SerialDenseMatrix xyze_element(GEO::getCurrentNodalPositions(currelement,currentpositions));
+    GEO::EleGeoType eleGeoType(GEO::HIGHERORDER);
+    GEO::checkRoughGeoType(currelement, xyze_element, eleGeoType);
+    const LINALG::Matrix<3,2> xaabbEle = GEO::computeFastXAABB(currelement->Shape(), xyze_element, eleGeoType);
+    XAABB = mergeAABB(XAABB, xaabbEle);
+  }
+  //query points can be outside this box -->enlarge the box a little bit (~10%)
+  LINALG::Matrix<3,1> midpoint(true);
+  midpoint(0) = 0.5*(XAABB(0,0)+XAABB(0,1));
+  midpoint(1) = 0.5*(XAABB(1,0)+XAABB(1,1));
+  midpoint(2) = 0.5*(XAABB(2,0)+XAABB(2,1));
+  
+  XAABB(0,0) = midpoint(0) + 1.1*(XAABB(0,0)-midpoint(0));
+  XAABB(1,0) = midpoint(1) + 1.1*(XAABB(1,0)-midpoint(1));
+  XAABB(2,0) = midpoint(2) + 1.1*(XAABB(2,0)-midpoint(2));
+  XAABB(0,1) = midpoint(0) + 1.1*(XAABB(0,1)-midpoint(0));
+  XAABB(1,1) = midpoint(1) + 1.1*(XAABB(1,1)-midpoint(1));
+  XAABB(2,1) = midpoint(2) + 1.1*(XAABB(2,1)-midpoint(2));
+  
+  return XAABB;
+}
+  			
+
+
+/*----------------------------------------------------------------------*
  | delivers a axis-aligned bounding box for a given          peder 07/08|
  | discretization in reference configuration                            |
  *----------------------------------------------------------------------*/
@@ -1204,6 +1244,30 @@ bool GEO::inSameNodeBox(
  *----------------------------------------------------------------------*/
 void GEO::checkRoughGeoType(
     const DRT::Element*               element,
+    const LINALG::SerialDenseMatrix   xyze_element,
+    GEO::EleGeoType&                  eleGeoType)
+{
+  const int order = DRT::UTILS::getOrder(element->Shape());
+
+  if(order ==1)
+    eleGeoType = GEO::LINEAR;  //TODO check for bilinear elements in the tree they count as higerorder fix it
+  else if(order==2)
+    eleGeoType = GEO::HIGHERORDER;
+  else
+    dserror("order of element is not correct");
+
+  // TODO check if a higher order element is linear
+  // by checking if the higher order node is on the line
+}
+
+
+
+/*----------------------------------------------------------------------*
+ | determines the geometry type of an element          	     u.may 09/09|
+ |  -->needed for RCP on element					                              | 
+ *----------------------------------------------------------------------*/
+void GEO::checkRoughGeoType(
+    const RCP<DRT::Element>           element,
     const LINALG::SerialDenseMatrix   xyze_element,
     GEO::EleGeoType&                  eleGeoType)
 {

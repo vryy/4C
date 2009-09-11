@@ -226,6 +226,18 @@ private:
       const DRT::Element*                 element,
       const LINALG::SerialDenseMatrix&    xyze_element
       ) const;
+    
+  
+  /*!
+   \brief return child(ren) of this tree node in which the ele has to be inserted
+   \param element              element
+   \param xyze_element         coordinates of element
+   \return vector of children ids
+   */
+  std::vector<int> classifyElement(
+      const RCP<DRT::Element>       		       	  element,
+      const std::map<int,LINALG::Matrix<3,1> >& 	currentpositions
+  ) const;
 
 
   /*!
@@ -250,6 +262,18 @@ private:
       const std::map<int, LINALG::Matrix<3,1> >&    currentpositions
       );
 
+    
+  /*!
+   \brief create children of a treenode and insert elements
+   \param masterelements		  all given masterelements				
+   \param currentpositions		current nodal positions of masterelements
+   */
+  void createChildren(
+      map<int, RCP<DRT::Element> >& 				      masterelements,
+      const std::map<int,LINALG::Matrix<3,1> >& 	currentpositions
+  );
+
+    
   /*!
    \brief create children of a treenode and insert tree elements
    \param currentpositions     current nodal positions in discretization
@@ -576,11 +600,19 @@ public:
     );
   
   
-  //! comment
-  void searchElementsSlidingALE(
-      const std::map<int,LINALG::Matrix<3,1> >&     currentpositions, // Masterelemente
-      const LINALG::Matrix<3,1>&                    querypoint
-      );
+  /*!
+  \brief insert Ids of close elements into closeeles
+  \param masterelement			all given elements
+  \closeeles					filled at the end of iteration with close elements
+  \param currentpositions		current nodal positions in discretization
+  \param querypoint				point around which should be searched 
+   */
+  void searchElementsSlipALE(
+      map<int, RCP<DRT::Element> >&               masterelements,	 
+      std::map<int,std::set<int> >&               closeeles,
+      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
+      const LINALG::Matrix<3,1>&                  querypoint
+  );
 
 
   /*!
@@ -662,6 +694,7 @@ public:
       const TreeType              treetype
       );
 
+  
   /*!
   \brief destroys the old tree if its exists and builds the root node of a
          new tree with a possibly different discretization;no label sorting;
@@ -678,12 +711,19 @@ public:
       );
   
   
-  //! cOMMENT
-  void initializeTreeSlidingALE(
-      const LINALG::Matrix<3,2>&                  nodeBox,
-      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions, // MASTER ELEMENTE
-      const TreeType                              treetype
-      );
+  /*!
+  \brief destroys the old tree if its exists and builds the root node of a
+         new tree with elements; implemented for SlipALE problems where
+         boundary elements are known
+  \param nodebox              nodeBox
+  \param elements      		  elements
+  \param treetype             quadtree
+   */
+  void initializeTreeSlipALE(
+      const LINALG::Matrix<3,2>&        nodeBox,
+      map<int, RCP<DRT::Element> >&     elements,
+      const TreeType                    treetype
+  );
 
 
   /*!
@@ -811,11 +851,18 @@ public:
     );
   
   
-  //! comment
-  void searchElementsSlidingALE(
-      const std::map<int,LINALG::Matrix<3,1> >&     currentpositions, // Masterelemente
-      const LINALG::Matrix<3,1>&                    querypoint
-      );
+  /*!
+  \brief return map of elements close to the querypoint
+  \param masterelement			all given elements
+  \param currentpositions		current nodal positions in discretization
+  \param querypoint				point around which should be searched 
+  \return vector of close elements
+   */
+  std::map<int,std::set<int> > searchElementsSlipALE(
+      map<int, RCP<DRT::Element> >&               masterelements,
+      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
+      const LINALG::Matrix<3,1>&                  querypoint
+  );
 
 
   /*!

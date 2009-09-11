@@ -74,8 +74,20 @@ namespace GEO
   LINALG::Matrix<3,2> getXAABBofDis(
       const DRT::Discretization& dis
       );
-
-
+  
+  
+  /*!
+  \brief Returns the eXtendedAxisAlignedBoundingBox of given elements
+  \param elements 		  	  elements the box is around, enlarged a little bit for enclosing all slave nodes 
+  \param currentpositions     current nodal positions of elements
+  \return  XAxisAlignedBoundingBox
+   */
+  LINALG::Matrix<3,2> getXAABBofEles(
+      map<int, RCP<DRT::Element> >&			          elements,
+      const std::map<int,LINALG::Matrix<3,1> >& 	currentpositions
+  );
+  
+  
   /*!
   \brief Returns a vector of eXtendedAxisAlignedBoundingBox for labeled structures
   \param dis                  discretization
@@ -425,7 +437,7 @@ namespace GEO
   \return true, if a point lies with in a node box, false otherwise
    */
   bool  pointInTreeNode(
-      const LINALG::Matrix<3,1>&              point,
+      const LINALG::Matrix<3,1>&            point,
       const LINALG::Matrix<3,2>&            nodeBox
       );
 
@@ -486,7 +498,21 @@ namespace GEO
       GEO::EleGeoType&                        eleGeoType
       );
 
+  
+  /*!
+  \brief Check the type of geometry of an element,
+         rough because only linear or nonlinear is checked
+  \param element              element
+  \param xyze_element         nodal coordinates
+  \param eleGeoType           geometry type
+   */
+  void checkRoughGeoType(
+      RCP<DRT::Element>   		    element,
+      LINALG::SerialDenseMatrix  	xyze_element,
+      GEO::EleGeoType&           	eleGeoType
+  );
 
+  
   /*!
   \brief Returns a vector of intersection candidate ids
   \param dis                  discretization

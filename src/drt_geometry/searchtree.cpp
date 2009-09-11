@@ -98,22 +98,26 @@ void GEO::SearchTree::initializePointTree(
 }
 
 
+
 /*----------------------------------------------------------------------*
- |                                                          u.may 09/09 |
+ | initialization of searchtree for SlipAle                 u.may 09/09 |
+ | pay attention to the Ids, no global Ids of the discretization	      |
  *----------------------------------------------------------------------*/
-void GEO::SearchTree::initializeTreeSlidingALE(
-    const LINALG::Matrix<3,2>&                  nodeBox,
-    const std::map<int,LINALG::Matrix<3,1> >&   currentpositions, // MASTER ELEMENTE
-    const TreeType                              treetype)
+void GEO::SearchTree::initializeTreeSlipALE(
+    const LINALG::Matrix<3,2>&          nodeBox,
+    map<int, RCP<DRT::Element> >&       elements,
+    const TreeType                      treetype)
 {
 
   treeRoot_ = Teuchos::null;
   treeRoot_ = rcp( new TreeNode(NULL, max_depth_, nodeBox, treetype));
 
-  for(std::map<int,LINALG::Matrix<3,1> >::const_iterator mapit = currentpositions.begin(); mapit != currentpositions.end(); mapit++)
-    treeRoot_->insertElement(-1,mapit->first);
+  map<int, RefCountPtr<DRT::Element> >::const_iterator elemiter;
+  for (elemiter = elements.begin(); elemiter != elements.end(); ++elemiter)
+    treeRoot_->insertElement(-1,elemiter->first);
 
 }
+
 
 
 /*----------------------------------------------------------------------*
@@ -298,7 +302,7 @@ void GEO::SearchTree::searchMultibodyContactElements(
 
 
 /*-----------------------------------------------------------------------*
- |                                                            cyron 04/09|
+ |															                              cyron 04/09|
  *-----------------------------------------------------------------------*/
 std::vector<int> GEO::SearchTree::searchPointsInRadius(
     const std::map<int,LINALG::Matrix<3,1> >&     currentpositions,
@@ -323,23 +327,26 @@ std::vector<int> GEO::SearchTree::searchPointsInRadius(
 
 
 /*----------------------------------------------------------------------*
- |    commetn                                                u.may 09/09|
+ | return map of elements close to the querypoint, 			     u.may 09/09|
  *----------------------------------------------------------------------*/
-void GEO::SearchTree::searchElementsSlidingALE(
-    const std::map<int,LINALG::Matrix<3,1> >&     currentpositions, // Masterelemente
-    const LINALG::Matrix<3,1>&                    querypoint)
+std::map<int,std::set<int> > GEO::SearchTree::searchElementsSlipALE(
+    map<int, RCP<DRT::Element> >&               masterelements,
+    const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
+    const LINALG::Matrix<3,1>&                  querypoint)
 {
   TEUCHOS_FUNC_TIME_MONITOR("SearchTree - queryTime");
+
+  std::map<int,std::set<int> >		closeeles;
 
   if(treeRoot_ == Teuchos::null)
     dserror("tree is not yet initialized !!!");
 
-  /*if(!treeRoot_->getElementList().empty())
-    treeRoot_->searchMultibodyContactElements(currentKDOPs, queryKDOP, label, contactEleIds);
+  if(!treeRoot_->getElementList().empty())
+    treeRoot_->searchElementsSlipALE(masterelements, closeeles, currentpositions, querypoint);
   else
     dserror("element list is empty");
- */
-  return; // list of close elements
+
+  return closeeles;
 }
 
 
@@ -691,7 +698,6 @@ void GEO::SearchTree::TreeNode::getChildNodeBox(
 
 
 
-
 /*----------------------------------------------------------------------*
  | insert element in tree node                              u.may  07/08|
  *----------------------------------------------------------------------*/
@@ -708,8 +714,8 @@ void GEO::SearchTree::TreeNode::insertElement(
  | create children                                         u.may   08/08|
  *----------------------------------------------------------------------*/
 void GEO::SearchTree::TreeNode::createChildren(
-    const DRT::Discretization&      	             dis,
-    const std::map<int,LINALG::Matrix<3,1> >& 	   currentpositions)
+    const DRT::Discretization&						dis,
+    const std::map<int,LINALG::Matrix<3,1> >&		currentpositions)
 {
   // create empty children
   for(int index = 0; index < getNumChildren(); index++)
@@ -726,6 +732,35 @@ void GEO::SearchTree::TreeNode::createChildren(
       }
     }
 
+  // this node becomes an inner tree node
+  treeNodeType_ = INNER_NODE;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ | create children; pay attention to the type		             u.may 09/09| 
+ | of masterelements (Ids)						                                  |
+ *----------------------------------------------------------------------*/
+void GEO::SearchTree::TreeNode::createChildren(
+	map<int, RCP<DRT::Element> >&		masterelements,
+    	const std::map<int,LINALG::Matrix<3,1> >&	currentpositions)
+{
+  // create empty children
+  for(int index = 0; index < getNumChildren(); index++)
+    children_[index] = rcp(new TreeNode(this, (treedepth_-1), getChildNodeBox(index), treeType_));
+
+  // insert elements into child node
+  for (std::map<int, std::set<int> >::const_iterator labelIter = elementList_.begin(); labelIter != elementList_.end(); labelIter++)
+    for (std::set<int>::const_iterator eleIter = (labelIter->second).begin(); eleIter != (labelIter->second).end(); eleIter++)
+    {
+      std::vector<int> elementClassification = classifyElement(masterelements[*eleIter],currentpositions);
+      for(unsigned int count = 0; count < elementClassification.size(); count++)
+      {
+        children_[elementClassification[count]]->insertElement(labelIter->first,*eleIter);
+      }
+    }
+  
   // this node becomes an inner tree node
   treeNodeType_ = INNER_NODE;
 }
@@ -1524,9 +1559,28 @@ bool GEO::SearchTree::TreeNode::classifyKDOP(
  | classifiy element in node                               peder   07/08|
  *----------------------------------------------------------------------*/
 std::vector<int> GEO::SearchTree::TreeNode::classifyElement(
-    const DRT::Element*       		              element,
+    const DRT::Element*							element,
     const std::map<int,LINALG::Matrix<3,1> >& 	currentpositions
     ) const
+{
+  const LINALG::SerialDenseMatrix xyze(GEO::getCurrentNodalPositions(element,currentpositions));
+  GEO::EleGeoType eleGeoType(GEO::HIGHERORDER);
+  GEO::checkRoughGeoType(element, xyze, eleGeoType);
+  const LINALG::Matrix<3,2> elemXAABB(GEO::computeFastXAABB(element->Shape(), xyze, eleGeoType));
+  std::vector<int> test = classifyXAABB(elemXAABB);
+    
+  return classifyXAABB(elemXAABB);
+}
+
+
+
+/*----------------------------------------------------------------------*
+ | classifiy element in tree node			                      u.may  09/09|
+ *----------------------------------------------------------------------*/
+std::vector<int> GEO::SearchTree::TreeNode::classifyElement(
+    const RCP<DRT::Element>                     element,
+    const std::map<int,LINALG::Matrix<3,1> >&   currentpositions
+) const
 {
   const LINALG::SerialDenseMatrix xyze(GEO::getCurrentNodalPositions(element,currentpositions));
   GEO::EleGeoType eleGeoType(GEO::HIGHERORDER);
@@ -2052,52 +2106,57 @@ void GEO::SearchTree::TreeNode::searchMultibodyContactElements(
 
 
 /*----------------------------------------------------------------------*
- |    commetn                                                u.may 09/09|
+ | search elements close to the query point		               u.may 09/09|
+ | less than 10 close elements stop the iteration			                  |
  *----------------------------------------------------------------------*/
-void GEO::SearchTree::TreeNode::searchElementsSlidingALE(
-    const std::map<int,LINALG::Matrix<3,1> >&     currentpositions, // Masterelemente
+void GEO::SearchTree::TreeNode::searchElementsSlipALE(
+    map<int, RCP<DRT::Element> >&			            masterelements,	
+    std::map<int,std::set<int> >&			            closeeles,
+    const std::map<int,LINALG::Matrix<3,1> >&	    currentpositions,
     const LINALG::Matrix<3,1>&                    querypoint)
 {
-  /*
-  std::map<int,std::set<int> > eleMap;
-
   switch (treeNodeType_)
   {
-    case INNER_NODE:
+  case INNER_NODE:
+  {
+    const int childindex = classifyPoint(querypoint);
+    if(childindex < 0)
+      dserror("no child found\n");
+    else //child node found which encloses AABB so step down
     {
-      const int childindex = classifyPoint(point);
-      if(childindex.size() < 1)
-        dserror("no child found\n");
-      else //child node found which encloses AABB so step down
-        return children_[childindex]->searchElementsSlidingALE();
-      break;
+      children_[childindex]->searchElementsSlipALE(masterelements, closeeles, currentpositions, querypoint);
+      return;
     }
-    case LEAF_NODE:
-    {
-      if(elementList_.empty())
-        return eleMap;
-
-      // max depth reached, counts reverse
-      if (treedepth_ <= 0 || (elementList_.size()==1 && (elementList_.begin()->second).size() == 10) )
-        return GEO::getSlidingALElements();
-
-      // dynamically grow tree otherwise, create children and set label for empty children
-      // search in apropriate child node
-      const int childindex = classifyPoint(point);
-      if(childindex.size() < 1)
-        dserror("no child found\n");
-      else // child node found which encloses AABB so refine further
-      {
-        createChildren(dis, currentpositions); // für datenstruktur anpassen
-        return children_[childindex]->searchElementsSlidingALE();
-      }
-      break;
-    }
-    default:
-      dserror("should not get here\n");
+    break;
   }
-  return eleMap;
-  */
+  case LEAF_NODE:
+  {
+    if(elementList_.empty())
+      return;
+
+    // max depth reached, counts reverse, current elementList includes all close elements
+    if (treedepth_ <= 0 || (elementList_.size()==1 && (elementList_.begin()->second).size() < 10) )
+    {
+      closeeles = getElementList();
+      return;
+    }
+    // dynamically grow tree otherwise, create children and set label for empty children
+    // search in apropriate child node
+    const int childindex = classifyPoint(querypoint);
+    if(childindex < 0)
+      dserror("no child found\n");
+    else // child node found which encloses AABB so refine further
+    {
+      createChildren(masterelements, currentpositions); 
+      children_[childindex]->searchElementsSlipALE(masterelements, closeeles, currentpositions, querypoint);
+      return;
+    }
+    break;
+  }
+  default:
+    dserror("should not get here\n");
+  }
+  return;
 }
 
 

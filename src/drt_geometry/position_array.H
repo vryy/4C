@@ -184,8 +184,24 @@ namespace GEO
       const DRT::Element*                     ele,                   ///< element with nodal pointers
       const map<int,LINALG::Matrix<3,1> >&    currentcutterpositions ///< current positions of all cutter nodes
       );
-
-
+  
+  
+  /*!
+   * fill array with current nodal positions
+   *
+   * \note array is defined as (3,numnode)
+   *
+   * \return Array with 3 dimensional position of all element nodes in the coordinate system of the nodes
+   *
+   * \author u.may
+   * \date 09/09
+   */
+  LINALG::SerialDenseMatrix getCurrentNodalPositions(
+	  const RCP<DRT::Element>               ele,					      ///< pointer on element
+	  const map<int,LINALG::Matrix<3,1> >&  currentpositions		///< current positions of all cutter nodes
+      );
+  
+  
   /*!
    * fill array with current nodal positions
    *

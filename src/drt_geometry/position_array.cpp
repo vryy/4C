@@ -53,18 +53,44 @@ LINALG::SerialDenseMatrix GEO::getCurrentNodalPositions(
     const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions    ///< current positions of all cutter nodes
     )
 {
-    const int numnode = ele->NumNode();
+	const int numnode = ele->NumNode();
     LINALG::SerialDenseMatrix xyze(3,numnode);
     const int* nodeids = ele->NodeIds();
     for (int inode = 0; inode < numnode; ++inode)
     {
       const LINALG::Matrix<3,1>& x = currentcutterpositions.find(nodeids[inode])->second;
-      xyze(0,inode) = x(0);
-      xyze(1,inode) = x(1);
+      xyze(0,inode) = x(0);		
+      xyze(1,inode) = x(1);		
       xyze(2,inode) = x(2);
     }
     return xyze;
 }
+
+
+
+/*!
+\brief  fill array with current nodal positions
+
+\return array with element nodal positions (3,numnode)
+*/
+LINALG::SerialDenseMatrix GEO::getCurrentNodalPositions(
+    const RCP<DRT::Element>                   ele,			         ///< pointer on element
+    const map<int,LINALG::Matrix<3,1> >&      currentpositions	 ///< current positions of all cutter nodes
+    )
+{
+  const int numnode = ele->NumNode();
+  LINALG::SerialDenseMatrix xyze(3,numnode);
+  const int* nodeids = ele->NodeIds();
+  for (int inode = 0; inode < numnode; ++inode)
+  {
+    const LINALG::Matrix<3,1>& x = currentpositions.find(nodeids[inode])->second;
+    xyze(0,inode) = x(0);		
+    xyze(1,inode) = x(1);		
+    xyze(2,inode) = x(2);		
+  }
+  return xyze;
+}
+
 
 
 #endif
