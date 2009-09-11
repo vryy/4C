@@ -254,7 +254,8 @@ void POTENTIAL::Potential::EvaluatePotentialfromCondition(
     LINALG::Matrix<3,3>&          potderiv2)
 {
 
-  if (cond->Type()==DRT::Condition::LJ_Potential_3D || cond->Type()==DRT::Condition::LJ_Potential_2D)
+  if (cond->Type()==DRT::Condition::LJ_Potential_Volume || 
+      cond->Type()==DRT::Condition::LJ_Potential_Surface)
   {
     const double depth    = cond->GetDouble("depth");
     const double rootDist = cond->GetDouble("rootDist");
@@ -262,16 +263,13 @@ void POTENTIAL::Potential::EvaluatePotentialfromCondition(
     EvaluateLennardJonesPotential(depth, rootDist, x, y, potderiv1, potderiv2);
 
   }
-  else if (cond->Type()==DRT::Condition::Zeta_Potential_3D || cond->Type()==DRT::Condition::Zeta_Potential_2D)
+  else if (cond->Type()==DRT::Condition::ElectroRepulsion_Potential_Surface || 
+           cond->Type()==DRT::Condition::ElectroRepulsion_Potential_Line)
   {
     const double zeta_param_1 = cond->GetDouble("zeta_param_1");
     const double zeta_param_2 = cond->GetDouble("zeta_param_2");
 
     EvaluateZetaPotential(zeta_param_1, zeta_param_2, x, y, potderiv1, potderiv2);
-  }
-  else if (cond->Type()==DRT::Condition::LJ_Potential_Volume_3D)
-  {
-    // Felix
   }
   else
   {

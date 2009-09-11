@@ -338,11 +338,11 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(ParameterList& params,
 
       const DRT::UTILS::GaussRule1D gaussrule = getOptimalGaussrule(distype);
 
-      if (cond->Type()==DRT::Condition::LJ_Potential_2D) // Lennard-Jones potential
+      if (cond->Type()==DRT::Condition::LJ_Potential_Line) // Lennard-Jones potential
       {
         potentialmanager->StiffnessAndInternalForcesPotential(this, gaussrule, params,lm, elematrix1, elevector1, true);
       }
-      else if (cond->Type()==DRT::Condition::Zeta_Potential_2D) // Zeta potential
+      else if (cond->Type()==DRT::Condition::ElectroRepulsion_Potential_Line) // electro static repulsion potential
       {
      	  potentialmanager->StiffnessAndInternalForcesPotential(this, gaussrule, params,lm, elematrix1, elevector1, true);
       }

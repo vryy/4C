@@ -724,108 +724,168 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   /*--------------------------------------------------------------------*/
   // Lennard Jones potential volume
-  Teuchos::RCP<ConditionDefinition> lj_potential_volume_3D =
+  Teuchos::RCP<ConditionDefinition> lj_potential_volume =
     Teuchos::rcp(new ConditionDefinition("DESIGN VOL LJ_POTENTIAL CONDITIONS",
                                          "Potential",
-                                         "LJ_Potential_Vol_3D",
-                                         DRT::Condition::LJ_Potential_Volume_3D,
+                                         "LJ_Potential_Volume",
+                                         DRT::Condition::LJ_Potential_Volume,
                                          true,
                                          DRT::Condition::Volume));
 
-  lj_potential_volume_3D->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
-  AddNamedInt(lj_potential_volume_3D,"label");
-  AddNamedReal(lj_potential_volume_3D,"depth");
-  AddNamedReal(lj_potential_volume_3D,"rootDist");
-  AddNamedReal(lj_potential_volume_3D,"cutOff");
-  AddNamedReal(lj_potential_volume_3D,"exvollength");
-  AddNamedReal(lj_potential_volume_3D,"beta");
+  lj_potential_volume->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
+  AddNamedInt(lj_potential_volume,"label");
+  AddNamedReal(lj_potential_volume,"depth");
+  AddNamedReal(lj_potential_volume,"rootDist");
+  AddNamedReal(lj_potential_volume,"cutOff");
+  AddNamedReal(lj_potential_volume,"exvollength");
+  AddNamedReal(lj_potential_volume,"beta");
 
-  condlist.push_back(lj_potential_volume_3D);
+  condlist.push_back(lj_potential_volume);
   
   /*--------------------------------------------------------------------*/
   // Lennard Jones potential surface
 
-  Teuchos::RCP<ConditionDefinition> lj_potential_3D =
+  Teuchos::RCP<ConditionDefinition> lj_potential_surface =
     Teuchos::rcp(new ConditionDefinition("DESIGN SURF LJ_POTENTIAL CONDITIONS",
                                          "Potential",
-                                         "LJ_Potential_3D",
-                                         DRT::Condition::LJ_Potential_3D,
+                                         "LJ_Potential_Surface",
+                                         DRT::Condition::LJ_Potential_Surface,
                                          true,
                                          DRT::Condition::Surface));
 
-  lj_potential_3D->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
-  AddNamedInt(lj_potential_3D,"label");
-  AddNamedReal(lj_potential_3D,"depth");
-  AddNamedReal(lj_potential_3D,"rootDist");
-  AddNamedReal(lj_potential_3D,"cutOff");
-  AddNamedReal(lj_potential_3D,"exvollength");
-  AddNamedReal(lj_potential_3D,"beta");
+  lj_potential_surface->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
+  AddNamedInt(lj_potential_surface,"label");
+  AddNamedReal(lj_potential_surface,"depth");
+  AddNamedReal(lj_potential_surface,"rootDist");
+  AddNamedReal(lj_potential_surface,"cutOff");
+  AddNamedReal(lj_potential_surface,"exvollength");
+  AddNamedReal(lj_potential_surface,"beta");
 
-  condlist.push_back(lj_potential_3D);
+  condlist.push_back(lj_potential_surface);
+  
+  
+  /*--------------------------------------------------------------------*/
+  // Lennard Jones potential line
+  
+  Teuchos::RCP<ConditionDefinition> lj_potential_line =
+    Teuchos::rcp(new ConditionDefinition("DESIGN LINE LJ_POTENTIAL CONDITIONS",
+                                         "Potential",
+                                         "LJ_Potential_Line",
+                                         DRT::Condition::LJ_Potential_Line,
+                                         true,
+                                         DRT::Condition::Line));
 
+  lj_potential_line->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
+  AddNamedInt(lj_potential_line,"label");
+  AddNamedReal(lj_potential_line,"depth");
+  AddNamedReal(lj_potential_line,"rootDist");
+  AddNamedReal(lj_potential_line,"cutOff");
+  AddNamedReal(lj_potential_line,"exvollength");
+  AddNamedReal(lj_potential_line,"beta");
 
-  /*-------------------------------------------------------------------*/
-  // Zeta Potential
-  Teuchos::RCP<ConditionDefinition> zeta_potential_3D =
-    Teuchos::rcp(new ConditionDefinition("DESIGN SURF ZETA_POTENTIAL CONDITIONS",
-                                       "Potential",
-                                       "Zeta_Potential_3D",
-                                       DRT::Condition::Zeta_Potential_3D,
-                                       true,
-                                       DRT::Condition::Surface));
-
-  zeta_potential_3D->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
-  AddNamedInt(zeta_potential_3D,"label");
-  AddNamedReal(zeta_potential_3D,"zeta_param_1");
-  AddNamedReal(zeta_potential_3D,"zeta_param_2");
-  AddNamedReal(zeta_potential_3D,"cutOff");
-  AddNamedReal(zeta_potential_3D,"exvollength");
-  AddNamedReal(zeta_potential_3D,"beta");
-
-  condlist.push_back(zeta_potential_3D);
+  condlist.push_back(lj_potential_line);
 
 
   /*--------------------------------------------------------------------*/
-  // Lennard Jones potential 2D
-  Teuchos::RCP<ConditionDefinition> lj_potential_2D =
-    Teuchos::rcp(new ConditionDefinition("DESIGN LINE LJ_POTENTIAL CONDITIONS",
+  // Van der Waals potential volume
+  Teuchos::RCP<ConditionDefinition> vanderwaals_potential_volume =
+    Teuchos::rcp(new ConditionDefinition("DESIGN VOL VAN DER WAALS POTENTIAL CONDITIONS",
                                          "Potential",
-                                         "LJ_Potential_2D",
-                                         DRT::Condition::LJ_Potential_2D,
+                                         "VanDerWaals_Potential_Volume",
+                                         DRT::Condition::VanDerWaals_Potential_Volume,
+                                         true,
+                                         DRT::Condition::Volume));
+
+  vanderwaals_potential_volume->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
+  AddNamedInt(vanderwaals_potential_volume,"label");
+  AddNamedReal(vanderwaals_potential_volume,"depth");
+  AddNamedReal(vanderwaals_potential_volume,"rootDist");
+  AddNamedReal(vanderwaals_potential_volume,"cutOff");
+  AddNamedReal(vanderwaals_potential_volume,"beta");
+
+  condlist.push_back(vanderwaals_potential_volume);
+  
+  /*--------------------------------------------------------------------*/
+  // Van der Waals potential surface
+
+  Teuchos::RCP<ConditionDefinition> vanderwaals_potential_surface =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURF VAN DER WAALS POTENTIAL CONDITIONS",
+                                         "Potential",
+                                         "VanDerWaals_Potential_Surface",
+                                         DRT::Condition::VanDerWaals_Potential_Surface,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  vanderwaals_potential_surface->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
+  AddNamedInt(vanderwaals_potential_surface,"label");
+  AddNamedReal(vanderwaals_potential_surface,"depth");
+  AddNamedReal(vanderwaals_potential_surface,"rootDist");
+  AddNamedReal(vanderwaals_potential_surface,"cutOff");
+  AddNamedReal(vanderwaals_potential_surface,"beta");
+
+  condlist.push_back(vanderwaals_potential_surface);
+  
+  
+  /*--------------------------------------------------------------------*/
+  // Van der Waals line
+  
+  Teuchos::RCP<ConditionDefinition> vanderwaals_potential_line =
+    Teuchos::rcp(new ConditionDefinition("DESIGN LINE VAN DER WAALS POTENTIAL CONDITIONS",
+                                         "Potential",
+                                         "VanDerWaals_Potential_Line",
+                                         DRT::Condition::VanDerWaals_Potential_Line,
                                          true,
                                          DRT::Condition::Line));
 
-  lj_potential_2D->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
-  AddNamedInt(lj_potential_2D,"label");
-  AddNamedReal(lj_potential_2D,"depth");
-  AddNamedReal(lj_potential_2D,"rootDist");
-  AddNamedReal(lj_potential_2D,"cutOff");
-  AddNamedReal(lj_potential_2D,"exvollength");
-  AddNamedReal(lj_potential_2D,"beta");
+  vanderwaals_potential_line->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
+  AddNamedInt(vanderwaals_potential_line,"label");
+  AddNamedReal(vanderwaals_potential_line,"depth");
+  AddNamedReal(vanderwaals_potential_line,"rootDist");
+  AddNamedReal(vanderwaals_potential_line,"cutOff");
+  AddNamedReal(vanderwaals_potential_line,"beta");
 
-  condlist.push_back(lj_potential_2D);
-
-
+  condlist.push_back(vanderwaals_potential_line);
+  
+  
+  
   /*-------------------------------------------------------------------*/
-  // Zeta Potential 2D
+  // Electrostatic Repulsion Surface
+  Teuchos::RCP<ConditionDefinition> electro_repulsion_potential_surface =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURF ELECTRO REPULSION CONDITIONS",
+                                       "Potential",
+                                       "ElectroRepulsion_Potential_Surface",
+                                       DRT::Condition::ElectroRepulsion_Potential_Surface,
+                                       true,
+                                       DRT::Condition::Surface));
 
-  Teuchos::RCP<ConditionDefinition> zeta_potential_2D =
-    Teuchos::rcp(new ConditionDefinition("DESIGN LINE ZETA_POTENTIAL CONDITIONS",
-                                         "Potential",
-                                         "Zeta_Potential_2D",
-                                         DRT::Condition::Zeta_Potential_2D,
-                                         true,
-                                         DRT::Condition::Line));
+  electro_repulsion_potential_surface->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
+  AddNamedInt(electro_repulsion_potential_surface,"label");
+  AddNamedReal(electro_repulsion_potential_surface,"zeta_param_1");
+  AddNamedReal(electro_repulsion_potential_surface,"zeta_param_2");
+  AddNamedReal(electro_repulsion_potential_surface,"cutOff");
+  AddNamedReal(electro_repulsion_potential_surface,"beta");
 
-  zeta_potential_2D->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
-  AddNamedInt(zeta_potential_2D,"label");
-  AddNamedReal(zeta_potential_2D,"zeta_param_1");
-  AddNamedReal(zeta_potential_2D,"zeta_param_2");
-  AddNamedReal(zeta_potential_2D,"cutOff");
-  AddNamedReal(zeta_potential_2D,"exvollength");
-  AddNamedReal(zeta_potential_2D,"beta");
+  condlist.push_back(electro_repulsion_potential_surface);
+  
+  
+  /*-------------------------------------------------------------------*/
+  // Electrostatic Repulsion Line
+  Teuchos::RCP<ConditionDefinition> electro_repulsion_potential_line =
+    Teuchos::rcp(new ConditionDefinition("DESIGN LINE ELECTRO REPULSION CONDITIONS",
+                                       "Potential",
+                                       "ElectroRepulsion_Potential_Line",
+                                       DRT::Condition::ElectroRepulsion_Potential_Line,
+                                       true,
+                                       DRT::Condition::Line));
 
-  condlist.push_back(zeta_potential_2D);
+  electro_repulsion_potential_line->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
+  AddNamedInt(electro_repulsion_potential_line,"label");
+  AddNamedReal(electro_repulsion_potential_line,"zeta_param_1");
+  AddNamedReal(electro_repulsion_potential_line,"zeta_param_2");
+  AddNamedReal(electro_repulsion_potential_line,"cutOff");
+  AddNamedReal(electro_repulsion_potential_line,"beta");
+
+  condlist.push_back(electro_repulsion_potential_line);
 
 
   /*--------------------------------------------------------------------*/

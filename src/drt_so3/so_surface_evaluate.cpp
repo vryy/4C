@@ -767,11 +767,11 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
         if (cond==null)
           dserror("Condition not available in Solid3 Surface");
 
-        if (cond->Type()==DRT::Condition::LJ_Potential_3D) // Lennard-Jones potential
+        if (cond->Type()==DRT::Condition::LJ_Potential_Surface) // Lennard-Jones potential
         {
           potentialmanager->StiffnessAndInternalForcesPotential(this, gaussrule_, params,lm, elematrix1, elevector1, true);
         }
-        else if (cond->Type()==DRT::Condition::Zeta_Potential_3D) // Zeta potential
+        else if (cond->Type()==DRT::Condition::ElectroRepulsion_Potential_Surface) // Electrostatic potential
         {
         	potentialmanager->StiffnessAndInternalForcesPotential(this, gaussrule_, params,lm, elematrix1, elevector1, true);
         }
