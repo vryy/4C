@@ -560,6 +560,28 @@ void FSI::MonolithicStructureSplit::UnscaleSolution(LINALG::BlockSparseMatrixBas
       dserror("ale scaling failed");
 
   }
+
+#if 1
+  // very simple hack just to see the linear solution
+
+  Epetra_Vector r(b.Map());
+  mat.Apply(x,r);
+  r.Update(1.,b,-1.);
+
+  Teuchos::RCP<Epetra_Vector> sr = Extractor().ExtractVector(r,0);
+  Teuchos::RCP<Epetra_Vector> fr = Extractor().ExtractVector(r,1);
+  Teuchos::RCP<Epetra_Vector> ar = Extractor().ExtractVector(r,2);
+
+  double ns,nf,na;
+  sr->Norm2(&ns);
+  fr->Norm2(&nf);
+  ar->Norm2(&na);
+  Utils()->out() << "\nlinear solver quality:\n"
+                 << END_COLOR "   |rs|=" YELLOW << ns
+                 << END_COLOR "   |rf|=" YELLOW << nf
+                 << END_COLOR "   |ra|=" YELLOW << na
+                 << END_COLOR "\n";
+#endif
 }
 
 
