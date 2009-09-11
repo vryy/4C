@@ -216,8 +216,40 @@ void FSI::Monolithic::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requir
   Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
   printParams.set("MyPID", Comm().MyPID());
 
-  // turn on output
-  printParams.set("Output Information", 0xffff);
+#if 0
+  // there is a strange NOX bug...
+  Teuchos::ParameterList& oo = printParams.sublist("Output Information");
+
+  oo.set<bool>("Error",false);
+  oo.set<bool>("Warning",false);
+  oo.set<bool>("Outer Iteration",false);
+  oo.set<bool>("Inner Iteration",false);
+  oo.set<bool>("Parameters",false);
+  oo.set<bool>("Details",false);
+  oo.set<bool>("Outer Iteration StatusTest",false);
+  oo.set<bool>("Linear Solver Details",false);
+  oo.set<bool>("Test Details",false);
+  oo.set<bool>("Stepper Iteration",false);
+  oo.set<bool>("Stepper Details",false);
+  oo.set<bool>("Stepper Parameters",false);
+  oo.set<bool>("Debug",false);
+#else
+  printParams.set("Output Information",
+                  NOX::Utils::Error |
+                  NOX::Utils::Warning |
+                  NOX::Utils::OuterIteration |
+                  NOX::Utils::InnerIteration |
+                  //NOX::Utils::Parameters |
+                  NOX::Utils::Details |
+                  NOX::Utils::OuterIterationStatusTest |
+                  NOX::Utils::LinearSolverDetails |
+                  NOX::Utils::TestDetails |
+                  NOX::Utils::StepperIteration |
+                  NOX::Utils::StepperDetails |
+                  NOX::Utils::StepperParameters |
+                  NOX::Utils::Debug |
+                  0);
+#endif
 
   // Create printing utilities
   utils_ = Teuchos::rcp(new NOX::Utils(printParams));
