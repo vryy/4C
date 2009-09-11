@@ -50,9 +50,9 @@ namespace ELEMENTS
 \The element is capable of using higher order functions from linear to quartic. Please make sure you put the nodes in the right order
 \in the input file.
 \LIN2    1---2
-\LIN3	 1---3---2
-\LIN4 	 1---4---2---3
-\LIN5	 1---5---2---3---4
+\LIN3  1---3---2
+\LIN4    1---4---2---3
+\LIN5  1---5---2---3---4
 \author cyron (cyron @lnm.mw.tum.de)
 */
 class Beam2r : public DRT::Element
@@ -310,7 +310,7 @@ private:
 
   //! moment of inertia of area
   double mominer_;
-  
+
   //! Vector holding alpha for each gausspoint
   vector<double> alpha_;
 
@@ -320,17 +320,16 @@ private:
   //! store stochastic forces of element in local frame
   vector<LINALG::Matrix<2,1> > floc_;
 
-  //! Vector holding theta0 for each gausspoint. The current
-  //implementation sets the initial director angles to zero, which can be done without loss
-  //of generality since any initial rotation cancels out in the equations (7.131). As a consequence
-  //the current nodal directors do not appear in the element, but only the values of the current director
-  //at the GP
+  /*! Vector holding theta0 for each gausspoint. The current implementation sets the initial 
+  director angles to zero, which can be done without loss of generality since any initial rotation
+  cancels out in the equations (7.131). As a consequence the current nodal directors do not appear
+  in the element, but only the values of the current directorat the GP*/
   vector<double> theta0_;
   
   
   //!internal geometric calculations according to Crisfield Vol.1 (7.118)-(7.121)
   //note: this and a few more functions are templated so we can use the same element as a
-  //	  higher order element. For templating cf. Practical C++ Programming p.419++
+  //    higher order element. For templating cf. Practical C++ Programming p.419++
   template<int nnode>
   void local_aux(LINALG::Matrix<3,3*nnode>& Bcurr_gp,//rotation matrix
           LINALG::Matrix<3*nnode,1>& rcurr_gp,//local vector

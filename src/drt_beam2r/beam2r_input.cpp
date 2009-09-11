@@ -23,7 +23,7 @@ Maintainer: Christian Cyron
 bool DRT::ELEMENTS::Beam2r::ReadElement(const std::string& eletype,
                                         const std::string& distype,
                                         DRT::INPUT::LineDefinition* linedef)
-{  
+{
   // read number of material model
   int material = 0;
   linedef->ExtractInt("MAT",material);

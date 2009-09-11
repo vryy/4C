@@ -37,7 +37,6 @@ Izz_(0),
 Irr_(0),
 alpha_(0),
 alphamass_(0),
-floc_(true),
 gaussrule_(DRT::UTILS::intrule1D_undefined)
 {
   return;
@@ -158,45 +157,47 @@ void DRT::ELEMENTS::Beam3::Pack(vector<char>& data) const
   vector<char> basedata(0);
   Element::Pack(basedata);
   AddtoPack(data,basedata);
-  //whether element has already been initialized
-  AddtoPack(data,isinit_);
-  //reference length
-  AddtoPack(data,lrefe_);
-  //central coordinate triad and related data
-  for(int i=0; i<NumNode()-1; i++) //pack and unpack are presently not able to handle vectors of LINALG::Matices
-  	//hence the present implementation uses loops through all matrices stored in vectors
-  {
-  AddtoPack(data,Qconv_[i]);
-  AddtoPack(data,Qold_[i]);
-  AddtoPack(data,Qnew_[i]);
-  AddtoPack(data,curvconv_[i]);
-  AddtoPack(data,curvold_[i]);
-  AddtoPack(data,curvnew_[i]);
-  AddtoPack(data,thetaconv_[i]);
-  AddtoPack(data,thetaold_[i]);
-  AddtoPack(data,thetanew_[i]);
-  AddtoPack(data,thetaprimeconv_[i]);
-  AddtoPack(data,thetaprimeold_[i]);
-  AddtoPack(data,thetaprimenew_[i]);
-    //alpha for underintegration
-  AddtoPack(data,alpha_[i]);
-  //alpha for complete integration
-  AddtoPack(data,alphamass_[i]);
-  }
-  //cross section
+  
+  //add all class variables of beam2r element
+  for (int i=0; i<(int)alpha_.size(); i++)
+    AddtoPack(data,alpha_[i]); 
+  for (int i=0; i<(int)alphamass_.size(); i++)
+    AddtoPack(data,alphamass_[i]);
   AddtoPack(data,crosssec_);
-   //cross section with shear correction
   AddtoPack(data,crosssecshear_);
-  //moments of inertia of area
+  for (int i=0; i<(int)curvnew_.size(); i++)
+    AddtoPack(data,curvnew_[i]);
+  for (int i=0; i<(int)curvconv_.size(); i++)
+    AddtoPack(data,curvconv_[i]);
+  for (int i=0; i<(int)curvold_.size(); i++)
+    AddtoPack(data,curvold_[i]);
+  for (int i=0; i<(int)floc_.size(); i++)
+    AddtoPack(data,floc_[i]);
+  AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
+  AddtoPack(data,isinit_);
+  AddtoPack(data,Irr_);
   AddtoPack(data,Iyy_);
   AddtoPack(data,Izz_);
-  AddtoPack(data,Irr_);
+  AddtoPack(data,lrefe_);
+  for (int i=0; i<(int)Qconv_.size(); i++)
+    AddtoPack(data,Qconv_[i]);
+  for (int i=0; i<(int)Qnew_.size(); i++)
+    AddtoPack(data,Qnew_[i]);
+  for (int i=0; i<(int)Qold_.size(); i++)
+    AddtoPack(data,Qold_[i]); 
+  for (int i=0; i<(int)thetanew_.size(); i++)
+    AddtoPack(data,thetanew_[i]); 
+  for (int i=0; i<(int)thetaconv_.size(); i++)
+    AddtoPack(data,thetaconv_[i]); 
+  for (int i=0; i<(int)thetaold_.size(); i++)
+    AddtoPack(data,thetaold_[i]);
+  for (int i=0; i<(int)thetaprimenew_.size(); i++)
+    AddtoPack(data,thetaprimenew_[i]);
+  for (int i=0; i<(int)thetaprimeconv_.size(); i++)
+    AddtoPack(data,thetaprimeconv_[i]); 
+  for (int i=0; i<(int)thetaprimeold_.size(); i++)
+    AddtoPack(data,thetaprimeold_[i]);
 
-  //stochastic forces
-  for (int i=0; i<NumNode(); i++)
-  AddtoPack(data,floc_[i]);
-  // gaussrule_
-  AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
   vector<char> tmp(0);
   data_.Pack(tmp);
   AddtoPack(data,tmp);
@@ -220,65 +221,50 @@ void DRT::ELEMENTS::Beam3::Unpack(const vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
-  //whether element has already been initialized
-  ExtractfromPack(position,data,isinit_);
-  //reference length
-  ExtractfromPack(position,data,lrefe_);
-  //central coordinate triad and related data
-  //every matrix is packed seperately, here it is assumed that info that is required for NumNode is already unpacked in basedata
-  Qconv_.resize(NumNode()-1);//in order to fill vectors of LINALG::Matrix in the loop further down,
-  //all vectors have to be resized to avoid segmentation faults
-  Qold_.resize(NumNode()-1);
-  Qnew_.resize(NumNode()-1);
-  curvconv_.resize(NumNode()-1);
-  curvold_.resize(NumNode()-1);
-  curvnew_.resize(NumNode()-1);
-  thetaconv_.resize(NumNode()-1);
-  thetaold_.resize(NumNode()-1);
-  thetanew_.resize(NumNode()-1);
-  thetaprimeconv_.resize(NumNode()-1);
-  thetaprimeold_.resize(NumNode()-1);
-  thetaprimenew_.resize(NumNode()-1);
-  alpha_.resize(NumNode()-1);
-  alphamass_.resize(NumNode()-1);
-  for(int i=0; i<NumNode()-1; i++) //pack and unpack are presently not able to handle vectors of LINALG::Matices
-  	//hence the present implementation uses loops through all matrices stored in vectors
-  {
-  	ExtractfromPack(position,data,Qconv_[i]);
-	  ExtractfromPack(position,data,Qold_[i]);
-	  ExtractfromPack(position,data,Qnew_[i]);
-	  ExtractfromPack(position,data,curvconv_[i]);
-	  ExtractfromPack(position,data,curvold_[i]);
-	  ExtractfromPack(position,data,curvnew_[i]);
-	  ExtractfromPack(position,data,thetaconv_[i]);
-	  ExtractfromPack(position,data,thetaold_[i]);
-	  ExtractfromPack(position,data,thetanew_[i]);
-	  ExtractfromPack(position,data,thetaprimeconv_[i]);
-	  ExtractfromPack(position,data,thetaprimeold_[i]);
-	  ExtractfromPack(position,data,thetaprimenew_[i]);
-	  //alpha for underintegration
-	  ExtractfromPack(position,data,alpha_[i]);
-	  //alpha for complete integration
-	  ExtractfromPack(position,data,alphamass_[i]);
-	  //stochastic forces	  
-  }
- 
-  //cross section
-  ExtractfromPack(position,data,crosssec_);
-  //cross section with shear correction
-  ExtractfromPack(position,data,crosssecshear_);
-  //moments of inertia of area
-  ExtractfromPack(position,data,Iyy_);
-  ExtractfromPack(position,data,Izz_);
-  ExtractfromPack(position,data,Irr_);
   
-  floc_.resize(NumNode());//resize floc to allocate storage/avoid segmentation faults
-  for(int i=0; i<NumNode(); i++) //every matrix is packed seperately, here it is assumed that info that is required for NumNode is already unpacked in basedata
-  ExtractfromPack(position,data,floc_[i]);
-  // gaussrule_
+  
+  //extract all class variables of beam2r element
+  for (int i=0; i<(int)alpha_.size(); i++)
+    ExtractfromPack(position,data,alpha_[i]); 
+  for (int i=0; i<(int)alphamass_.size(); i++)
+    ExtractfromPack(position,data,alphamass_[i]);
+  ExtractfromPack(position,data,crosssec_);
+  ExtractfromPack(position,data,crosssecshear_);
+  for (int i=0; i<(int)curvnew_.size(); i++)
+    ExtractfromPack(position,data,curvnew_[i]);
+  for (int i=0; i<(int)curvconv_.size(); i++)
+    ExtractfromPack(position,data,curvconv_[i]);
+  for (int i=0; i<(int)curvold_.size(); i++)
+    ExtractfromPack(position,data,curvold_[i]);
+  for (int i=0; i<(int)floc_.size(); i++)
+    ExtractfromPack(position,data,floc_[i]); 
   int gausrule_integer;
   ExtractfromPack(position,data,gausrule_integer);
   gaussrule_ = DRT::UTILS::GaussRule1D(gausrule_integer); //explicit conversion from integer to enum
+  ExtractfromPack(position,data,isinit_);
+  ExtractfromPack(position,data,Irr_);
+  ExtractfromPack(position,data,Iyy_);
+  ExtractfromPack(position,data,Izz_);
+  ExtractfromPack(position,data,lrefe_);
+  for (int i=0; i<(int)Qconv_.size(); i++)
+    ExtractfromPack(position,data,Qconv_[i]);
+  for (int i=0; i<(int)Qnew_.size(); i++)
+    ExtractfromPack(position,data,Qnew_[i]);
+  for (int i=0; i<(int)Qold_.size(); i++)
+    ExtractfromPack(position,data,Qold_[i]); 
+  for (int i=0; i<(int)thetanew_.size(); i++)
+    ExtractfromPack(position,data,thetanew_[i]); 
+  for (int i=0; i<(int)thetaconv_.size(); i++)
+    ExtractfromPack(position,data,thetaconv_[i]); 
+  for (int i=0; i<(int)thetaold_.size(); i++)
+    ExtractfromPack(position,data,thetaold_[i]);
+  for (int i=0; i<(int)thetaprimenew_.size(); i++)
+    ExtractfromPack(position,data,thetaprimenew_[i]);
+  for (int i=0; i<(int)thetaprimeconv_.size(); i++)
+    ExtractfromPack(position,data,thetaprimeconv_[i]); 
+  for (int i=0; i<(int)thetaprimeold_.size(); i++)
+    ExtractfromPack(position,data,thetaprimeold_[i]);
+  
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
