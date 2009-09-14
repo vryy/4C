@@ -25,7 +25,9 @@ MAT::PAR::SutherlandFluid::SutherlandFluid(
 : Parameter(matdata),
   refvisc_(matdata->GetDouble("REFVISC")),
   reftemp_(matdata->GetDouble("REFTEMP")),
-  suthtemp_(matdata->GetDouble("SUTHTEMP"))
+  suthtemp_(matdata->GetDouble("SUTHTEMP")),
+  thermpress_(matdata->GetDouble("THERMPRESS")),
+  gasconst_(matdata->GetDouble("GASCON"))
 {
 }
 
@@ -103,6 +105,16 @@ double MAT::SutherlandFluid::ComputeViscosity(const double temp) const
   const double diffus = pow((temp/RefTemp()),1.5)*((RefTemp()+SuthTemp())/(temp+SuthTemp()))*RefVisc();
 
   return diffus;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double MAT::SutherlandFluid::ComputeDensity(const double temp,
+                                            const double thermpress) const
+{
+  const double density = thermpress/(GasConst()*temp);
+
+  return density;
 }
 
 

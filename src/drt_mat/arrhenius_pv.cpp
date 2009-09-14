@@ -179,10 +179,9 @@ double MAT::ArrheniusPV::ComputeDiffusivity(const double temp) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::ArrheniusPV::ComputeReactionCoeff(const double temp,
-                                              const double dens) const
+double MAT::ArrheniusPV::ComputeReactionCoeff(const double temp) const
 {
-  const double reacoeff = -PreExCon()*pow(temp,TempExp())*dens*exp(-AcTemp()/temp);
+  const double reacoeff = -PreExCon()*pow(temp,TempExp())*exp(-AcTemp()/temp);
 
   return reacoeff;
 }

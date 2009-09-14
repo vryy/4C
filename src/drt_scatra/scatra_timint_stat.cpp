@@ -112,9 +112,7 @@ void SCATRA::TimIntStationary::AddSpecificTimeIntegrationParameters(
   params.set("using generalized-alpha time integration",false);
   params.set("total time",time_);
 
-  discret_->SetState("phinp", phinp_);
-  discret_->SetState("densnp",densnp_);
-  discret_->SetState("densam",densnp_);
+  discret_->SetState("phinp",phinp_);
 
   return;
 }
@@ -131,10 +129,6 @@ void SCATRA::TimIntStationary::ReadRestart(int step)
 
   // read state vectors that are needed for restart
   reader.ReadVector(phinp_, "phinp");
-
-  // read state vectors that are needed for restart
-  // in low-Mach-number case
-  if (prbtype_ == "loma") reader.ReadVector(densnp_,"densnp");
 
   return;
 }

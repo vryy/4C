@@ -322,9 +322,9 @@ private:
   //! and averaging methods
   ParameterList                    eleparams_;
 
-  //! pointer to mean vel/pres and vel/dens field
+  //! pointer to mean vel/pres and vel/sca field
   RefCountPtr<Epetra_Vector>       meanvelnp_;
-  RefCountPtr<Epetra_Vector>       meanvedenp_;
+  RefCountPtr<Epetra_Vector>       meanvescnp_;
 
   //! pointer to mean subgrid viscosity
   RefCountPtr<Epetra_Vector>       meansubgrvisc_;

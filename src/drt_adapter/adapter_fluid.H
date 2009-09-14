@@ -133,18 +133,21 @@ namespace ADAPTER {
     virtual void SetInitialFlowField(int whichinitialfield,int startfuncno) = 0;
 
     ///  set time-step-related fields for low-Mach-number flow
-    virtual void SetTimeLomaFields(RCP<const Epetra_Vector> densnp,
-                                   RCP<const Epetra_Vector> densn,
-                                   RCP<const Epetra_Vector> densnm,
-                                   RCP<const Epetra_Vector> scatraresidual,
-                                   const int                numscal,
-                                   const double             eosfac) = 0;
+    virtual void SetTimeLomaFields(RCP<const Epetra_Vector> scalarnp,
+                         RCP<const Epetra_Vector> scalarn,
+                         RCP<const Epetra_Vector> scalardtn,
+                         const double             thermpressnp,
+                         const double             thermpressn,
+                         const double             thermpressdtn,
+                         RCP<const Epetra_Vector> scatraresidual,
+                         const int                numscal) = 0;
 
     /// set outer-iteration-related fields for low-Mach-number flow
-    virtual void SetIterLomaFields(RCP<const Epetra_Vector> densnp,
-                                   RCP<const Epetra_Vector> densdtnp,
-                                   const int                numscal,
-                                   const double             eosfac) = 0;
+    virtual void SetIterLomaFields(RCP<const Epetra_Vector> scalarnp,
+                         RCP<const Epetra_Vector> scalardtnp,
+                         const double             thermpressnp,
+                         const double             thermpressdtnp,
+                         const int                numscal) = 0;
 
     //@}
 

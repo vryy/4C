@@ -58,7 +58,7 @@ void ELCH::Algorithm::TimeLoop()
 
   // provide information about initial state
   ScaTraField().OutputElectrodeInfo();
-  ScaTraField().OutputMeanTempAndDens();
+  ScaTraField().OutputMeanScalars();
 
   // ELCH algorithm without natural convection
   if (natconv_ == "No")
@@ -178,34 +178,26 @@ void ELCH::Algorithm::PrepareTimeStepConvection()
   /// LOMA functions are used for ELCH algorithm
   // only OST time integration scheme implemented:
   // pass density to fluid discretization at time steps n+1 and n
-  // the density at the step n-1 and density time derivative are not used
-  // for OST (pass zero vectors)
-  // eos factor is set to 1 since it is not used in the SetTimeLomaFields function
+  // density time derivative is not used for OST (pass zero vector)
+  // thermodynamic pressure values are set to 1.0 and its derivative to
+  // 0.0
   int numscal = 1;
 
   switch((FluidField().TimIntScheme()))
   {
   case timeint_stationary:
   case timeint_one_step_theta:
-  {
-    FluidField().SetTimeLomaFields(
-        ScaTraField().DensElchNp(),
-        ScaTraField().DensElchN(),
-        null,
-        null,
-        numscal,
-        1.0);
-    break;
-  }
   case timeint_bdf2:
   {
     FluidField().SetTimeLomaFields(
         ScaTraField().DensElchNp(),
         ScaTraField().DensElchN(),
-        ScaTraField().DensElchNm(),
+        ScaTraField().DensElchN(),
+        1.0,
+        1.0,
+        0.0,
         null,
-        numscal,
-        1.0);
+        numscal);
     break;
   }
   default: dserror("Selected time integration scheme is not available");
@@ -296,9 +288,10 @@ void ELCH::Algorithm::UpdateConvection()
 
   // LOMA functions are used for ELCH algorithm
   // only OST time integration scheme implemented:
-  // pass density to fluid discretisation at time steps n+1 and n
-  // the density at the step n-1 and density time derivat are not used for OST (pass zero vectors)
-  // eos factor is set to 1 since it is not used in the SetTimeLomaFields function
+  // pass density to fluid discretization at time steps n+1 and n
+  // density time derivative is not used for OST (pass zero vector)
+  // thermodynamic pressure values are set to 1.0 and its derivative to
+  // 0.0
 
   // Fluid field is solved once more to synchronizes the density and velocity field
   // Not a large influence since solution should be converged: Delta v in the range of 10E-6
@@ -310,25 +303,17 @@ void ELCH::Algorithm::UpdateConvection()
   {
   case timeint_stationary:
   case timeint_one_step_theta:
-  {
-    FluidField().SetTimeLomaFields(
-        ScaTraField().DensElchNp(),
-        ScaTraField().DensElchN(),
-        null,
-        null,
-        numscal,
-        1.0);
-    break;
-  }
   case timeint_bdf2:
   {
     FluidField().SetTimeLomaFields(
         ScaTraField().DensElchNp(),
         ScaTraField().DensElchN(),
-        ScaTraField().DensElchNm(),
+        ScaTraField().DensElchN(),
+        1.0,
+        1.0,
+        0.0,
         null,
-        numscal,
-        1.0);
+        numscal);
     break;
   }
   default: dserror("Selected time integration scheme is not available");
@@ -403,7 +388,7 @@ void ELCH::Algorithm::OuterIterationConvection()
     // Density derivative is not used for OST, BDF2 and convective formulation
     int numscal = 1;
     if (itnum != 1)
-    FluidField().SetIterLomaFields(ScaTraField().DensElchNp(),null,numscal,1.0);
+    FluidField().SetIterLomaFields(ScaTraField().DensElchNp(),ScaTraField().DensElchNp(),1.0,0.0,numscal);
 
     // solve nonlinear Navier-Stokes system with body forces
     DoFluidStep();
@@ -429,7 +414,7 @@ void ELCH::Algorithm::OuterIterationConvection()
     printf("\n");
     printf("Flux: Outer Iterations step: %3d \n", itnum);
     ScaTraField().OutputElectrodeInfo();
-    ScaTraField().OutputMeanTempAndDens();
+    ScaTraField().OutputMeanScalars();
     printf("\n");
     }
 

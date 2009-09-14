@@ -39,17 +39,10 @@ SCATRA::TimIntBDF2::TimIntBDF2(
   // state vector for solution at time t_{n-1}
   phinm_ = LINALG::CreateVector(*dofrowmap,true);
 
-  // only required for low-Mach-number flow
-  if (prbtype_ == "loma")
-  {
-    // density at times n and n-1
-    densn_  = LINALG::CreateVector(*dofrowmap,true);
-    densnm_ = LINALG::CreateVector(*dofrowmap,true);
-
-    // time derivative of thermodynamic pressure at n+1
-    // (computed if not constant, otherwise remaining zero)
-    thermpressdtnp_ = 0.0;
-  }
+  // only required for low-Mach-number flow:
+  // time derivative of thermodynamic pressure at n+1
+  // (computed if not constant, otherwise remaining zero)
+  if (prbtype_ == "loma") thermpressdtnp_ = 0.0;
 
   // ELCH with natural convection
   if (prbtype_ == "elch" && params_->get<string>("Natural Convection") != "No")
@@ -96,32 +89,21 @@ void SCATRA::TimIntBDF2::SetOldPartOfRighthandside()
   BDF2: for constant time step:
 
                  hist_ = 4/3 phin_ - 1/3 phinm_
-
-  For low-Mach-number flow, densn_*phin_ and densnm_*phinm_ are
-  used instead of phin_ and phinm_, respectively.
   */
   if (step_>1)
   {
     double omega = dta_/dtp_;
     double fact1 = (1.0 + omega)*(1.0 + omega)/(1.0 + (2.0*omega));
     double fact2 = -(omega*omega)/(1+ (2.0*omega));
-
-    // low-Mach-number flow: multiply by density
-    if (prbtype_ == "loma")
-    {
-      hist_->Multiply(fact1, *phin_, *densn_, 0.0);
-      hist_->Multiply(fact2, *phinm_, *densnm_, 1.0);
-    }
-    else hist_->Update(fact1, *phin_, fact2, *phinm_, 0.0);
+    hist_->Update(fact1, *phin_, fact2, *phinm_, 0.0);
 
     // for BDF2 theta is set by the timestepsizes, 2/3 for const. dt
     theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
   }
-  else   // for start-up of BDF2 we do one step with backward Euler
+  else
   {
-    // low-Mach-number flow: multiply by density
-    if (prbtype_ == "loma") hist_->Multiply(1.0, *phin_, *densn_, 0.0);
-    else                    hist_->Update(1.0, *phin_, 0.0);
+    // for start-up of BDF2 we do one step with backward Euler
+    hist_->Update(1.0, *phin_, 0.0);
 
     // backward Euler => use theta=1.0
     theta_=1.0;
@@ -139,21 +121,6 @@ void SCATRA::TimIntBDF2::ExplicitPredictor()
   if (step_>1) phinp_->Update(-1.0, *phinm_,2.0);
   // for step == 1 phinp_ is already correctly initialized with the
   // initial field phin_
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- | predict density for next time step for low-Mach-number flow vg 11/08 |
- *----------------------------------------------------------------------*/
-void SCATRA::TimIntBDF2::PredictDensity()
-{
-  // same-density predictor (not required to be performed, since we just
-  // updated the density field, and thus, densnp_ = densn_)
-
-  // same-density-increment predictor (currently not used)
-  //if (step_>1) densnp_->Update(-1.0,*densnm_,2.0);
 
   return;
 }
@@ -228,11 +195,12 @@ void SCATRA::TimIntBDF2::AddSpecificTimeIntegrationParameters(
   params.set("alpha_F",1.0);
 
   if (prbtype_ == "loma")
+  {
+    params.set("thermodynamic pressure",thermpressnp_);
     params.set("time derivative of thermodynamic pressure",thermpressdtnp_);
+  }
 
-  discret_->SetState("phinp", phinp_);
-  discret_->SetState("densnp",densnp_);
-  discret_->SetState("densam",densnp_);
+  discret_->SetState("phinp",phinp_);
 
   return;
 }
@@ -241,7 +209,7 @@ void SCATRA::TimIntBDF2::AddSpecificTimeIntegrationParameters(
 /*----------------------------------------------------------------------*
  | compute thermodynamic pressure for low-Mach-number flow     vg 12/08 |
  *----------------------------------------------------------------------*/
-double SCATRA::TimIntBDF2::ComputeThermPressure()
+void SCATRA::TimIntBDF2::ComputeThermPressure()
 {
   // compute "history" part (start-up of BDF2: one step backward Euler)
   double hist = 0.0;
@@ -255,10 +223,9 @@ double SCATRA::TimIntBDF2::ComputeThermPressure()
   }
   else hist = thermpressn_;
 
-  // set scalar and density vector values needed by elements
+  // set scalar values needed by elements
   discret_->ClearState();
   discret_->SetState("phinp",phinp_);
-  discret_->SetState("densnp",densnp_);
 
   // define element parameter list
   ParameterList eleparams;
@@ -339,7 +306,7 @@ double SCATRA::TimIntBDF2::ComputeThermPressure()
   // compute time derivative of thermodynamic pressure at n+1
   thermpressdtnp_ = (thermpressnp_-thermpressn_)/dta_;
 
-  return thermpressnp_;
+  return;
 }
 
 
@@ -370,18 +337,6 @@ void SCATRA::TimIntBDF2::UpdateThermPressure()
 
 
 /*----------------------------------------------------------------------*
- | update density at n-1 and n for low-Mach-number flow        vg 11/08 |
- *----------------------------------------------------------------------*/
-void SCATRA::TimIntBDF2::UpdateDensity()
-{
-  densnm_->Update(1.0,*densn_ ,0.0);
-  densn_->Update(1.0,*densnp_,0.0);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
  | update density at n-1 and n for ELCH natural convection    gjb 07/09 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntBDF2::UpdateDensityElch()
@@ -402,14 +357,6 @@ void SCATRA::TimIntBDF2::OutputRestart()
   output_->WriteVector("phin", phin_);
   output_->WriteVector("phinm", phinm_);
 
-  // additional state vectors that are needed for BDF2 restart
-  // in low-Mach-number case
-  if (prbtype_ == "loma")
-  {
-    output_->WriteVector("densn", densn_);
-    output_->WriteVector("densnm",densnm_);
-  }
-
   return;
 }
 
@@ -427,15 +374,6 @@ void SCATRA::TimIntBDF2::ReadRestart(int step)
   reader.ReadVector(phinp_,"phinp");
   reader.ReadVector(phin_, "phin");
   reader.ReadVector(phinm_,"phinm");
-
-  // read state vectors that are needed for BDF2 restart
-  // in low-Mach-number case
-  if (prbtype_ == "loma")
-  {
-    reader.ReadVector(densnp_,"densnp");
-    reader.ReadVector(densn_, "densn");
-    reader.ReadVector(densnm_,"densnm");
-  }
 
   return;
 }

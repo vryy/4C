@@ -53,41 +53,22 @@ namespace LOMA
     /// virtual destructor to support polymorph destruction
     virtual ~Algorithm();
 
-    /// just the general entry to LOMA algorithm where particular algorithm
-    /// will be decided on
+    /// time loop
     void TimeLoop();
 
   protected:
 
-    /// LOMA stationary algorithm
-    void SolveStationaryProblem();
-
-    /// LOMA generalized-alpha time loop
-    void GenAlphaTimeLoop();
-
-    /// LOMA one-step-theta/BDF2 time loop
-    void OSTBDF2TimeLoop();
-
-    /// prepare time step
+    /// initial calculations
     void InitialCalculations();
 
-    /// prepare generalized-alpha time step
-    void GenAlphaPrepareTimeStep();
+    /// prepare time step
+    void PrepareTimeStep();
 
-    /// prepare one-step-theta/BDF2 time step
-    void OSTBDF2PrepareTimeStep();
+    /// outer iteration loop
+    void OuterLoop();
 
-    /// do generalized-alpha outer iteration loop
-    void GenAlphaOuterLoop();
-
-    /// do one-step-theta/BDF2 outer iteration loop
-    void OSTBDF2OuterLoop();
-
-    /// do generalized-alpha update for next time step
-    void GenAlphaUpdate();
-
-    /// do one-step-theta/BDF2 update for next time step
-    void OSTBDF2Update();
+    /// update for next time step
+    void Update();
 
     /// write output
     void Output();
@@ -99,19 +80,6 @@ namespace LOMA
 
     /// flag for constant thermodynamic pressure
     string consthermpress_;
-
-    /// thermodynamic pressure (default: 98100.0)
-    double thermpress_;
-
-    /// gas constant (default: 287.0)
-    double gasconstant_;
-
-    /// factor for equation of state (i.e., therm. press. / gas constant)
-    double eosfac_;
-
-    /// initial total mass (required if thermodynamic pressure is
-    /// calculated from mass conservation)
-    double initialmass_;
 
     /// flag for special flow
     string special_flow_;

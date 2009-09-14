@@ -250,6 +250,9 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
   // get constant density (only relevant for incompressible flow)
   //const double inc_dens = params.get("inc_density",0.0);
 
+  // get flag for low-Mach-number solver
+  const bool loma  = params.get<bool>("low-Mach-number solver");
+
   // get discretization type
   const DiscretizationType distype = this->Shape();
 
@@ -344,22 +347,28 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
     }
   }
 
-  // get velocity/density vector
-  RCP<const Epetra_Vector> vedenp = discretization.GetState("vedenp");
-  if (vedenp==null) dserror("Cannot get state vector 'vedenp'");
+  // get velocity/scalar vector
+  RCP<const Epetra_Vector> vescnp = discretization.GetState("vescnp");
+  if (vescnp==null) dserror("Cannot get state vector 'vescnp'");
 
   // extract local values from global vector
-  vector<double> myvedenp(lm.size());
-  DRT::UTILS::ExtractMyValues(*vedenp,myvedenp,lm);
+  vector<double> myvescnp(lm.size());
+  DRT::UTILS::ExtractMyValues(*vescnp,myvescnp,lm);
 
-  // create vector for density array
-  Epetra_SerialDenseVector edensnp(iel);
+  // create vector for scalar array
+  Epetra_SerialDenseVector escanp(iel);
 
-  // insert density into element array
+  // insert scalar into element array
   for (int i=0;i<iel;++i)
   {
-    edensnp(i) = myvedenp[3+(i*4)];
+    escanp(i) = myvescnp[3+(i*4)];
   }
+
+  // This is a hack for low-Mach-number flow with temperature
+  // equation until material data will be available here
+  // get thermodynamic pressure and its time derivative or history
+  double thermpress = params.get<double>("thermodynamic pressure");
+  double gasconstant = 287.0;
 
   /*----------------------------------------------------------------------*
   |               start loop over integration points                     |
@@ -397,13 +406,23 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
     // area element drs for the integration
     DRT::UTILS::ComputeMetricTensorForSurface(xyze,deriv,metrictensor,&drs);
 
+    // compute temperature and density for low-Mach-number flow
+    double dens = 1.0;
+    if (loma)
+    {
+      double temp = 0.0;
+      for (int i=0;i<3;++i)
+      {
+        temp += funct(i)*escanp(i);
+      }
+      dens = thermpress/(gasconstant*temp);
+    }
+
     // values are multiplied by the product from inf. area element,
-    // the gauss weight, the timecurve factor and the constant
+    // the gauss weight, the timecurve factor, the constant
     // belonging to the time integration algorithm (theta*dt for
-    // one step theta, 2/3 for bdf with dt const.)
-    // Furthermore, there may be a divison by the constant scalar density,
-    // only relevant (i.e., it may be unequal 1.0) in incompressible flow case
-    const double fac = intpoints.qwgt[gpid] * drs * curvefac * thsl;
+    // one step theta, 2/3 for bdf with dt const.) and density
+    const double fac = intpoints.qwgt[gpid] * drs * curvefac * thsl * dens;
 
     // factor given by spatial function
     double functfac = 1.0;
@@ -436,7 +455,7 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
           else
             functfac = 1.0;
         }
-        elevec1[node*numdf+dim]+= edensnp(node)*funct[node]*(*onoff)[dim]*(*val)[dim]*fac*functfac;
+        elevec1[node*numdf+dim]+= funct[node]*(*onoff)[dim]*(*val)[dim]*fac*functfac;
       }
     }
   }
@@ -926,6 +945,9 @@ void DRT::ELEMENTS::Fluid3Surface::NeumannInflow(
   const double timefac = params.get<double>("thsl",-1.0);
   if (timefac < 0.0) dserror("No thsl supplied");
 
+  // get flag for low-Mach-number solver
+  const bool loma  = params.get<bool>("low-Mach-number solver");
+
   // get discretization type
   const DiscretizationType distype = this->Shape();
 
@@ -995,21 +1017,21 @@ void DRT::ELEMENTS::Fluid3Surface::NeumannInflow(
     normal(inode) = normal(inode)/length;
   }
 
-  // get velocity and density vector
+  // get velocity and velocity/scalar vector
   RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
-  RCP<const Epetra_Vector> vedenp = discretization.GetState("vedenp");
-  if (velnp==null or vedenp==null)
-    dserror("Cannot get state vector 'velnp' and/or 'vedenp'");
+  RCP<const Epetra_Vector> vescnp = discretization.GetState("vescnp");
+  if (velnp==null or vescnp==null)
+    dserror("Cannot get state vector 'velnp' and/or 'vescnp'");
 
   // extract local values from global vector
   vector<double> myvelnp(lm.size());
-  vector<double> myvedenp(lm.size());
+  vector<double> myvescnp(lm.size());
   DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
-  DRT::UTILS::ExtractMyValues(*vedenp,myvedenp,lm);
+  DRT::UTILS::ExtractMyValues(*vescnp,myvescnp,lm);
 
-  // create Epetra objects for density array and velocities
+  // create Epetra objects for scalar array and velocities
   Epetra_SerialDenseMatrix evelnp(3,iel);
-  Epetra_SerialDenseVector edensnp(iel);
+  Epetra_SerialDenseVector escanp(iel);
 
   // insert velocity and density into element array
   for (int i=0;i<iel;++i)
@@ -1018,8 +1040,14 @@ void DRT::ELEMENTS::Fluid3Surface::NeumannInflow(
     evelnp(1,i) = myvelnp[1+(i*4)];
     evelnp(2,i) = myvelnp[2+(i*4)];
 
-    edensnp(i) = myvedenp[3+(i*4)];
+    escanp(i) = myvescnp[3+(i*4)];
   }
+
+  // This is a hack for low-Mach-number flow with temperature
+  // equation until material data will be available here
+  // get thermodynamic pressure and its time derivative or history
+  double thermpress = params.get<double>("thermodynamic pressure");
+  double gasconstant = 287.0;
 
   /*----------------------------------------------------------------------*
    |               start loop over integration points                     |
@@ -1032,23 +1060,21 @@ void DRT::ELEMENTS::Fluid3Surface::NeumannInflow(
     // get shape functions and derivatives in the plane of the element
     shape_function_2D(funct,e0,e1,distype);
 
-    // compute momentum (i.e., density times velocity) and normal momentum
+    // compute velocity and normal velocity
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-    double normmom = 0.0;
+    double normvel = 0.0;
     for (int j=0;j<3;++j)
     {
       velint(j) = 0.0;
-      momint(j) = 0.0;
       for (int i=0;i<iel;++i)
       {
         velint(j) += funct(i)*evelnp(j,i);
-        momint(j) += edensnp(i)*velint(j);
       }
-      normmom += momint(j)*normal(j);
+      normvel += velint(j)*normal(j);
     }
 
-    // computation only required for negative normal momentum
-    if (normmom<-0.0001)
+    // computation only required for negative normal velocity
+    if (normvel<-0.0001)
     {
       // compute measure tensor for surface element, infinitesimal area
       // element drs for the integration and integration factor
@@ -1056,9 +1082,21 @@ void DRT::ELEMENTS::Fluid3Surface::NeumannInflow(
       DRT::UTILS::ComputeMetricTensorForSurface(xyze,deriv,metrictensor,&drs);
       const double fac = intpoints.qwgt[gpid] * drs;
 
+      // compute temperature and density for low-Mach-number flow
+      double dens = 1.0;
+      if (loma)
+      {
+        double temp = 0.0;
+        for (int i=0;i<3;++i)
+        {
+          temp += funct(i)*escanp(i);
+        }
+        dens = thermpress/(gasconstant*temp);
+      }
+
       // integration factor for left- and right-hand side
-      const double lhsfac = normmom*timefac*fac;
-      double rhsfac = normmom*fac;
+      const double lhsfac = dens*normvel*timefac*fac;
+      double rhsfac = dens*normvel*fac;
       if (not is_genalpha) rhsfac *= timefac;
 
       // matrix

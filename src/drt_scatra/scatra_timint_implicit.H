@@ -162,38 +162,25 @@ public:
   virtual void ComputeIntermediateValues()=0;
 
   /// set initial thermodynamic pressure for low-Mach-number flow
-  void SetInitialThermPressure(const double thermpress);
+  void SetInitialThermPressure();
 
-  /// compute initial thermodynamic pressure time derivative for low-Mach-number flow
+  /// compute initial thermodyn. pressure time derivative for low-Mach-number flow
   void ComputeInitialThermPressureDeriv();
 
   /// compute initial total mass in domain for low-Mach-number flow
-  double ComputeInitialMass(const double thermpress);
-
-  /// compute initial time derivative of density field for low-Mach-number flow
-  virtual void ComputeInitialDensityDerivative() = 0;
+  void ComputeInitialMass();
 
   /// predict thermodynamic pressure and time derivative for low-Mach-number flow
   virtual void PredictThermPressure() = 0;
 
-  /// predict density field (and time derivative) for low-Mach-number flow
-  virtual void PredictDensity() = 0;
-
   /// compute thermodynamic pressure and time derivative for low-Mach-number flow
-  virtual double ComputeThermPressure()=0;
+  virtual void ComputeThermPressure()=0;
 
-  /// compute thermodyn. pressure from mass cons. in domain for low-Mach-number flow
-  double ComputeThermPressureFromMassCons(const double initialmass,
-                                          const double gasconstant);
-
-  /// compute density field for low-Mach-number flow
-  void ComputeDensity(const double thermpress, const double gasconstant);
+  /// compute thermodyn. press. from mass cons. in domain for low-Mach-number flow
+  void ComputeThermPressureFromMassCons();
 
   /// compute density field from concentration(s) for ELCH natural convection
   void ComputeDensity(const double density);
-
-  /// compute time derivative of density field for low-Mach-number flow
-  virtual void ComputeDensityDerivative() = 0;
 
   /// check convergence for low-Mach-number flow
   bool LomaConvergenceCheck(int itnum, int itmax, const double ittol);
@@ -201,41 +188,29 @@ public:
   /// update thermodynamic pressure and time derivative for low-Mach-number flow
   virtual void UpdateThermPressure() = 0;
 
-  /// update density field (and time derivative) for low-Mach-number flow
-  virtual void UpdateDensity() = 0;
-
   /// update density field for ELCH natural convection
   virtual void UpdateDensityElch() = 0;
 
-  /// output of mean temperature and density for low-Mach-number flow
-  void OutputMeanTempAndDens();
+  /// output of mean values of scalar(s)
+  void OutputMeanScalars();
+
+  /// routine to return scalar field phi at time step n+1
+  Teuchos::RCP<Epetra_Vector> Phinp() { return phinp_; }
 
   /// routine to return scalar field phi at time step n
   Teuchos::RCP<Epetra_Vector> Phin() { return phin_; }
 
-  /// routine to return scalar field phi at time step n+1
-  Teuchos::RCP<Epetra_Vector> Phinp() { return phinp_; }
+  /// routine to return time derivative of scalar field phi at time step n+1
+  Teuchos::RCP<Epetra_Vector> PhiDtnp() { return phidtnp_; }
+
+  /// routine to return time derivative of scalar field phi at time step n
+  Teuchos::RCP<Epetra_Vector> PhiDtn() { return phidtn_; }
 
   /// routine to return scalar field convective velocity at time step n+1
   Teuchos::RCP<Epetra_MultiVector> ConVel() { return convel_; }
 
   /// output of electrode information to screen
   void OutputElectrodeInfo();
-
-  /// routine to return density field at time step n+1 for low-Mach-number flow
-  Teuchos::RCP<Epetra_Vector> DensNp() { return densnp_; }
-
-  /// routine to return density field at time step n for low-Mach-number flow
-  Teuchos::RCP<Epetra_Vector> DensN() { return densn_; }
-
-  /// routine to return density field at time step n-1 for low-Mach-number flow
-  Teuchos::RCP<Epetra_Vector> DensNm() { return densnm_; }
-
-  /// routine to return time deriv. of density at time step n for low-Mach-number flow
-  Teuchos::RCP<Epetra_Vector> DensDtN() { return densdtn_; }
-
-  /// routine to return time deriv. of density at time step n+1 for low-Mach-number flow
-  Teuchos::RCP<Epetra_Vector> DensDtNp() { return densdtnp_; }
 
   /// routine to return density field at time n+1 for ELCH natural convection
   Teuchos::RCP<Epetra_Vector> DensElchNp() { return elchdensnp_; }
@@ -249,11 +224,23 @@ public:
   /// routine to return trueresidual at time step n+1 for low-Mach-number flow
   Teuchos::RCP<Epetra_Vector> TrueResidual() { return trueresidual_; }
 
-  /// routine to return temperature increment at time step n+1 for low-Mach-number flow
-  Teuchos::RCP<Epetra_Vector> TempIncNp() { return tempincnp_; }
+  /// routine to return scalar increment at time step n+1 for low-Mach-number flow
+  Teuchos::RCP<Epetra_Vector> ScalIncNp() { return phiincnp_; }
 
   /// routine to return discretization
   Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
+
+  /// routine to return thermo. press. at time step n+1 for low-Mach-number flow
+  double ThermPressNp() { return thermpressnp_; }
+
+  /// routine to return thermo. press. at time step n for low-Mach-number flow
+  double ThermPressN() { return thermpressn_; }
+
+  /// routine to return time der. of thermo. press. at time step n+1 for low-Mach-number flow
+  double ThermPressDtNp() { return thermpressdtnp_; }
+
+  /// routine to return time der. of thermo. press. at time step n for low-Mach-number flow
+  double ThermPressDtN() { return thermpressdtn_; }
 
   /// return current time value
   double Time() const { return time_; }
@@ -430,7 +417,7 @@ protected:
   /// flag for writing the flux vector fields
   string writeflux_;
 
-  /// flag for printing out mean values of scalars and density
+  /// flag for printing out mean values of scalars
   const bool outmean_;
 
   /// time step size
@@ -477,9 +464,11 @@ protected:
   double thermpressdtnp_;
   double thermpressdtn_;
 
-  /// reaction-pv-specific parameter: unburnt density and density difference
-  double unbdens_;
-  double densdiff_;
+  /// LOMA-specific parameter: gas constant
+  double gasconstant_;
+
+  /// LOMA-specific parameter: initial mass in domain
+  double initialmass_;
 
   /// system matrix (either sparse matrix or block sparse matrix)
   RCP<LINALG::SparseOperator> sysmat_;
@@ -507,22 +496,13 @@ protected:
   /// true (rescaled) residual vector without zeros at Dirichlet conditions
   RCP<Epetra_Vector>    trueresidual_;
 
-  /// density at times n+1, n and n-1
-  RCP<Epetra_Vector>    densnp_;
-  RCP<Epetra_Vector>    densn_;
-  RCP<Epetra_Vector>    densnm_;
-
-  /// time derivative of density at times n+1 and n
-  RCP<Epetra_Vector>  densdtnp_;
-  RCP<Epetra_Vector>  densdtn_;
-
   /// density (nodebased!) at times n+1, n and n-1 for ELCH natural convection algorithm
   RCP<Epetra_Vector>    elchdensnp_;
   RCP<Epetra_Vector>    elchdensn_;
   RCP<Epetra_Vector>    elchdensnm_;
 
-  /// temperature and velocity increment at time n+1
-  RCP<Epetra_Vector>       tempincnp_;
+  /// scalar and velocity increment at time n+1
+  RCP<Epetra_Vector>       phiincnp_;
   //RCP<Epetra_MultiVector>  velincnp_;
 
   /// histvector --- a linear combination of phinm, phin (BDF)

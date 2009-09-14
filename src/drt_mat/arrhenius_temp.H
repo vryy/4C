@@ -61,6 +61,10 @@ namespace MAT
       const double tempexp_;
       /// activation temperature
       const double actemp_;
+      /// (initial) thermodynamic pressure
+      const double thermpress_;
+      /// specific gas constant R
+      const double gasconst_;
 
       //@}
 
@@ -125,10 +129,12 @@ namespace MAT
     /// compute diffusivity
     double ComputeDiffusivity(const double temp) const;
 
+    /// compute density
+    double ComputeDensity(const double temp, const double thermpress) const;
+
     /// compute reaction coefficient
     double ComputeReactionRHS(const double spmf,
-                              const double temp,
-                              const double dens) const;
+                              const double temp) const;
 
     /// return material parameters for element calculation
     //@{
@@ -151,6 +157,10 @@ namespace MAT
     double TempExp() const { return params_->tempexp_; }
     /// activation temperature
     double AcTemp() const { return params_->actemp_; }
+    /// (initial) thermodynamic pressure
+    double ThermPress() const { return params_->thermpress_; }
+    /// specific gas constant R
+    double GasConst() const { return params_->gasconst_; }
 
     //@}
 

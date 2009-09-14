@@ -98,6 +98,8 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
     act = Fluid2::calc_fluid_genalpha_average_for_subscales_and_residual;
   else if (action == "get_density")
     act = Fluid2::get_density;
+  else if (action == "get_gas_constant")
+    act = Fluid2::get_gas_constant;
   else if (action == "integrate_shape")
     act = Fluid2::integrate_shape;
   else if (action == "calc_gradop_and_massmatrix")
@@ -415,8 +417,16 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
         MAT::ModPowerLaw* actmat = static_cast<MAT::ModPowerLaw*>(mat.get());
         params.set("density", actmat->Density());
       }
-      else
-        dserror("no fluid material found");
+      else dserror("no constant density, material appears to be incorrect");
+    }
+    break;
+    case get_gas_constant:
+    {
+      if (mat->MaterialType()== INPAR::MAT::m_sutherland_fluid)
+      {
+        MAT::SutherlandFluid* actmat = static_cast<MAT::SutherlandFluid*>(mat.get());
+        params.set("gas constant", actmat->GasConst());
+      }
     }
     break;
     case integrate_shape:

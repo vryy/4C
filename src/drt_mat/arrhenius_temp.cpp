@@ -31,7 +31,9 @@ MAT::PAR::ArrheniusTemp::ArrheniusTemp(
   reaheat_(matdata->GetDouble("REAHEAT")),
   preexcon_(matdata->GetDouble("PREEXCON")),
   tempexp_(matdata->GetDouble("TEMPEXP")),
-  actemp_(matdata->GetDouble("ACTEMP"))
+  actemp_(matdata->GetDouble("ACTEMP")),
+  thermpress_(matdata->GetDouble("THERMPRESS")),
+  gasconst_(matdata->GetDouble("GASCON"))
 {
 }
 
@@ -110,14 +112,23 @@ double MAT::ArrheniusTemp::ComputeDiffusivity(const double temp) const
   return diffus;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double MAT::ArrheniusTemp::ComputeDensity(const double temp,
+                                          const double thermpress) const
+{
+  const double density = thermpress/(GasConst()*temp);
+
+  return density;
+}
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double MAT::ArrheniusTemp::ComputeReactionRHS(const double spmf,
-                                              const double temp,
-                                              const double dens) const
+                                              const double temp) const
 {
-  const double rearhs = -ReaHeat()*PreExCon()*pow(temp,TempExp())*dens*spmf*exp(-AcTemp()/temp);
+  const double rearhs = -ReaHeat()*PreExCon()*pow(temp,TempExp())*spmf*exp(-AcTemp()/temp);
 
   return rearhs;
 }

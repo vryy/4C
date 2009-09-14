@@ -67,12 +67,14 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidt()
     // other parameters that are needed by the elements
     eleparams.set("problem type",prbtype_);
     eleparams.set("incremental solver",incremental_);
-    eleparams.set("reaction",reaction_);
     eleparams.set("form of convective term",convform_);
     if (prbtype_=="elch")
       eleparams.set("frt",frt_); // factor F/RT
     else if (prbtype_ == "loma")
+    {
+      eleparams.set("thermodynamic pressure",thermpressn_);
       eleparams.set("time derivative of thermodynamic pressure",thermpressdtn_);
+    }
 
     //provide velocity field (export to column map necessary for parallel evaluation)
     AddMultiVectorToParameterList(eleparams,"velocity field",convel_);
@@ -89,7 +91,7 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidt()
     // set vector values needed by elements
     discret_->ClearState();
     discret_->SetState("phi0",phin_);
-    discret_->SetState("dens0",densnp_);
+
     // call loop over elements
     discret_->Evaluate(eleparams,sysmat_,residual_);
     discret_->ClearState();
@@ -141,7 +143,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateElectrodeKinetics(
   discret_->ClearState();
   discret_->SetState("phinp",phinp_);
 
-  // add element parameters and density state according to time-int. scheme
+  // add element parameters according to time-integration scheme
   AddSpecificTimeIntegrationParameters(condparams);
 
   std::string condstring("ElectrodeKinetics");
@@ -167,6 +169,7 @@ void SCATRA::ScaTraTimIntImpl::ComputeNeumannInflow(
 
   // action for elements
   condparams.set("action","calc_Neumann_inflow");
+  condparams.set("problem type",prbtype_);
   condparams.set("incremental solver",incremental_);
 
   //provide velocity field (export to column map necessary for parallel evaluation)
@@ -175,13 +178,12 @@ void SCATRA::ScaTraTimIntImpl::ComputeNeumannInflow(
 
   //provide displacement field in case of ALE
   condparams.set("isale",isale_);
-  if (isale_)
-    AddMultiVectorToParameterList(condparams,"dispnp",dispnp_);
+  if (isale_) AddMultiVectorToParameterList(condparams,"dispnp",dispnp_);
 
   // set vector values needed by elements
   discret_->ClearState();
 
-  // add element parameters and density state according to time-int. scheme
+  // add element parameters according to time-integtration scheme
   AddSpecificTimeIntegrationParameters(condparams);
 
   std::string condstring("TransportNeumannInflow");
@@ -230,7 +232,7 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
   if (isale_)
     AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
 
-  // add element parameters and density state according to time-int. scheme
+  // add element parameters according to time-integration scheme
   AddSpecificTimeIntegrationParameters(eleparams);
 
   // call loop over elements
@@ -347,9 +349,19 @@ void SCATRA::ScaTraTimIntImpl::AVM3Scaling(ParameterList& eleparams)
 /*----------------------------------------------------------------------*
  | set initial thermodynamic pressure                          vg 07/09 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::SetInitialThermPressure(const double thermpress)
+void SCATRA::ScaTraTimIntImpl::SetInitialThermPressure()
 {
-  thermpressn_ = thermpress;
+  // get thermodynamic pressure and gas constant from material parameters
+  // (if no temperature equation, zero values are returned)
+  ParameterList eleparams;
+  eleparams.set("action","get_material_parameters");
+  eleparams.set("isale",isale_);
+  discret_->Evaluate(eleparams,null,null,null,null,null);
+  thermpressn_ = eleparams.get("thermodynamic pressure", 98100.0);
+  gasconstant_ = eleparams.get("gas constant", 287.0);
+
+  // initialize also value at n+1
+  thermpressnp_ = thermpressn_;
 
   return;
 }
@@ -360,10 +372,9 @@ void SCATRA::ScaTraTimIntImpl::SetInitialThermPressure(const double thermpress)
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::ComputeInitialThermPressureDeriv()
 {
-  // set scalar and density vector values needed by elements
+  // set scalar vector values needed by elements
   discret_->ClearState();
   discret_->SetState("phinp",phin_);
-  discret_->SetState("densnp",densn_);
 
   // define element parameter list
   ParameterList eleparams;
@@ -437,18 +448,14 @@ void SCATRA::ScaTraTimIntImpl::ComputeInitialThermPressureDeriv()
 /*----------------------------------------------------------------------*
  | compute initial total mass in domain                        vg 01/09 |
  *----------------------------------------------------------------------*/
-double SCATRA::ScaTraTimIntImpl::ComputeInitialMass(const double thermpress)
+void SCATRA::ScaTraTimIntImpl::ComputeInitialMass()
 {
-  // set initial thermodynamic pressure
-  thermpressn_ = thermpress;
-
-  // set scalar and density vector values needed by elements
+  // set scalar (i.e., temperature) values needed by elements
   discret_->ClearState();
   discret_->SetState("phinp",phinp_);
-  discret_->SetState("densnp",densnp_);
   // set action for elements
   ParameterList eleparams;
-  eleparams.set("action","calc_temp_and_dens");
+  eleparams.set("action","calc_mean_scalars");
 
   //provide displacement field in case of ALE
   eleparams.set("isale",isale_);
@@ -461,40 +468,37 @@ double SCATRA::ScaTraTimIntImpl::ComputeInitialMass(const double thermpress)
   discret_->EvaluateScalars(eleparams, scalars);
   discret_->ClearState();   // clean up
 
-  double initialmass = (*scalars)[numscal_];
+  initialmass_ = (*scalars)[numscal_];
 
   // print out initial total mass
   if (myrank_ == 0)
   {
     cout << endl;
     cout << "+--------------------------------------------------------------------------------------------+" << endl;
-    cout << "Initial total mass in domain: " << initialmass << endl;
+    cout << "Initial total mass in domain: " << initialmass_ << endl;
     cout << "+--------------------------------------------------------------------------------------------+" << endl;
   }
 
-  return initialmass;
+  return;
 }
 
 
 /*----------------------------------------------------------------------*
  | compute thermodynamic pressure from mass conservation       vg 01/09 |
  *----------------------------------------------------------------------*/
-double SCATRA::ScaTraTimIntImpl::ComputeThermPressureFromMassCons(
-      const double initialmass,
-      const double gasconstant)
+void SCATRA::ScaTraTimIntImpl::ComputeThermPressureFromMassCons()
 {
   // provide storage space for inverse temperature and compute
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
   RCP<Epetra_Vector> invphinp = LINALG::CreateVector(*dofrowmap,true);
   invphinp->Reciprocal(*phinp_);
 
-  // set scalar and inverse-scalar (on density state) values needed by elements
+  // set inverse-scalar values needed by elements
   discret_->ClearState();
-  discret_->SetState("phinp",phinp_);
-  discret_->SetState("densnp",invphinp);
+  discret_->SetState("phinp",invphinp);
   // set action for elements
   ParameterList eleparams;
-  eleparams.set("action","calc_temp_and_dens");
+  eleparams.set("action","calc_mean_scalars");
 
   //provide displacement field in case of ALE
   eleparams.set("isale",isale_);
@@ -503,12 +507,12 @@ double SCATRA::ScaTraTimIntImpl::ComputeThermPressureFromMassCons(
 
   // evaluate integral of inverse temperature
   Teuchos::RCP<Epetra_SerialDenseVector> scalars
-    = Teuchos::rcp(new Epetra_SerialDenseVector(numscal_+2));
+    = Teuchos::rcp(new Epetra_SerialDenseVector(numscal_+1));
   discret_->EvaluateScalars(eleparams, scalars);
   discret_->ClearState();   // clean up
 
   // compute thermodynamic pressure: tp = R*M_0/int(1/T)
-  thermpressnp_ = gasconstant*initialmass/(*scalars)[numscal_];
+  thermpressnp_ = gasconstant_*initialmass_/(*scalars)[0];
 
   // compute time derivative of thermodynamic pressure: tpdt = (tp(n+1)-tp(n))/dt
   thermpressdtnp_ = (thermpressnp_-thermpressn_)/dta_;
@@ -521,84 +525,6 @@ double SCATRA::ScaTraTimIntImpl::ComputeThermPressureFromMassCons(
     cout << "Thermodynamic pressure from mass conservation: " << thermpressnp_ << endl;
     cout << "Time derivative of thermodynamic pressure: " << thermpressdtnp_ << endl;
     cout << "+--------------------------------------------------------------------------------------------+" << endl;
-  }
-
-  return thermpressnp_;
-}
-
-
-/*----------------------------------------------------------------------*
- | compute density for low-Mach-number flow                    vg 08/08 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::ComputeDensity(const double thermpress,
-                                              const double gasconstant)
-{
-  // factor for equation of state
-  const double eosfac = thermpress/gasconstant;
-
-  // for reactive systems, temperature is last dof, and all other dofs
-  // need to get the same density
-  if (numscal_>1)
-  {
-    const Epetra_Map* dofrowmap = discret_->DofRowMap();
-
-    // initialize vectors
-    vector<int>    Indices(numscal_);
-    vector<double> Values(numscal_);
-
-    // loop all nodes on the processor
-    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
-    {
-      // get the processor local node
-      DRT::Node* lnode = discret_->lRowNode(lnodeid);
-      // the set of degrees of freedom associated with the node
-      vector<int> nodedofset = discret_->Dof(lnode);
-
-      // the number of degrees of freedom associated with the node
-      int numdofs = nodedofset.size();
-
-      // temperature is located on the last degree of freedom
-      const int dofgid = nodedofset[numdofs-1];
-      int doflid = dofrowmap->LID(dofgid);
-
-      // compute density based on equation of state:
-      // rho = p_therm/(R*T) = thermpress/(gasconstant*T)
-      double density = eosfac/(*phinp_)[doflid];
-
-      // substitute all degrees of freedom with correct density
-      for (int index=0;index<numdofs;++index)
-      {
-        Indices[index] = lnodeid*numdofs + index;
-
-        Values[index] = density;
-
-        densnp_->ReplaceMyValues(1,&Values[index],&Indices[index]);
-      }
-    }
-  }
-  else if (reaction_ == "Arrhenius_pv")
-  {
-    // compute density based on progress variable phi:
-    // rho = rho_u + phi*(rho_b-rho_u)
-    densnp_->PutScalar(unbdens_);
-    densnp_->Update(densdiff_,*phinp_,1.0);
-  }
-  else if (reaction_ == "mixture_fraction")
-  {
-    // compute density based on mixture fraction phi:
-    // rho = 1/(a*phi+b) with a=9 and b=1
-    const double a = 9.0;
-    const double b = 1.0;
-    densnp_->PutScalar(b);
-    densnp_->Update(a,*phinp_,1.0);
-    densnp_->Reciprocal(*densnp_);
-  }
-  else
-  {
-    // compute density based on equation of state:
-    // rho = (p_therm/R)*(1/T) = (thermpress/gasconstant)*(1/T)
-    densnp_->Reciprocal(*phinp_);
-    densnp_->Scale(eosfac);
   }
 
   return;
@@ -625,24 +551,23 @@ void SCATRA::ScaTraTimIntImpl::SetupElchNatConv()
 
     discret_->ClearState();
     discret_->SetState("phinp",phinp_);
-    discret_->SetState("densnp",densnp_);
     // set action for elements
     ParameterList eleparams;
-    eleparams.set("action","calc_temp_and_dens");
+    eleparams.set("action","calc_mean_scalars");
 
     //provide displacement field in case of ALE
     eleparams.set("isale",isale_);
     if (isale_)
       AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
 
-    // evaluate integrals of concentrations, density and domain
+    // evaluate integrals of concentrations and domain
     Teuchos::RCP<Epetra_SerialDenseVector> scalars
-    = Teuchos::rcp(new Epetra_SerialDenseVector(numscal_+2));
+    = Teuchos::rcp(new Epetra_SerialDenseVector(numscal_+1));
     discret_->EvaluateScalars(eleparams, scalars);
     discret_->ClearState();   // clean up
 
     // calculate mean_concentration
-    const double domint  = (*scalars)[numscal_+1];
+    const double domint  = (*scalars)[numscal_];
     for(int k=0;k<numscal_;k++)
     {
         c0_[k] = (*scalars)[k]/domint;
@@ -718,26 +643,26 @@ bool SCATRA::ScaTraTimIntImpl::LomaConvergenceCheck(int          itnum,
 {
   bool stopnonliniter = false;
 
-  // define L2-norm of incremental temperature and temperature
-  double tempincnorm_L2;
-  double tempnorm_L2;
+  // define L2-norm of incremental scalar and scalar
+  double phiincnorm_L2;
+  double phinorm_L2;
 
   // get increment of (species and) temperature
-  tempincnp_->Update(1.0,*phinp_,-1.0);
+  phiincnp_->Update(1.0,*phinp_,-1.0);
 
   // for reactive systems, extract temperature and use as convergence criterion
   if (numscal_>1)
   {
-    Teuchos::RCP<Epetra_Vector> onlytemp = splitter_.ExtractCondVector(tempincnp_);
-    onlytemp->Norm2(&tempincnorm_L2);
+    Teuchos::RCP<Epetra_Vector> onlyphi = splitter_.ExtractCondVector(phiincnp_);
+    onlyphi->Norm2(&phiincnorm_L2);
 
-    splitter_.ExtractCondVector(phinp_,onlytemp);
-    onlytemp->Norm2(&tempnorm_L2);
+    splitter_.ExtractCondVector(phinp_,onlyphi);
+    onlyphi->Norm2(&phinorm_L2);
   }
   else
   {
-    tempincnp_->Norm2(&tempincnorm_L2);
-    phinp_->Norm2(&tempnorm_L2);
+    phiincnp_->Norm2(&phiincnorm_L2);
+    phinp_->Norm2(&phinorm_L2);
   }
 
   /*double velincnorm_L2;
@@ -746,37 +671,37 @@ bool SCATRA::ScaTraTimIntImpl::LomaConvergenceCheck(int          itnum,
   velincnp_->Norm2(&velincnorm_L2);
   convel_->Norm2(&velnorm_L2);*/
 
-  // care for the case that there is (almost) zero temperature or velocity
+  // care for the case that there is (almost) zero scalar or velocity
   // (usually not required for temperature)
   //if (velnorm_L2 < 1e-6) velnorm_L2 = 1.0;
-  //if (tempnorm_L2 < 1e-6) tempnorm_L2 = 1.0;
+  //if (phinorm_L2 < 1e-6) phinorm_L2 = 1.0;
 
   if (myrank_==0)
   {
     cout<<"\n******************************************\n           OUTER ITERATION STEP\n******************************************\n";
     printf("+------------+-------------------+--------------+\n");
-    printf("|- step/max -|- tol      [norm] -|-- temp-inc --|\n");
+    printf("|- step/max -|- tol      [norm] -|- scalar-inc -|\n");
     printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   |",
-         itnum,itmax,ittol,tempincnorm_L2/tempnorm_L2);
+         itnum,itmax,ittol,phiincnorm_L2/phinorm_L2);
     printf("\n");
     printf("+------------+-------------------+--------------+\n");
 
     /*printf("+------------+-------------------+--------------+--------------+\n");
-    printf("|- step/max -|- tol      [norm] -|-- temp-inc --|-- vel-inc --|\n");
+    printf("|- step/max -|- tol      [norm] -|- scalar-inc -|-- vel-inc --|\n");
     printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |",
-         itnum,itmax,ittol,tempincnorm_L2/tempnorm_L2,velincnorm_L2/velnorm_L2);
+         itnum,itmax,ittol,phiincnorm_L2/phinorm_L2,velincnorm_L2/velnorm_L2);
     printf("\n");
     printf("+------------+-------------------+--------------+--------------+\n");*/
   }
 
-  /*if ((tempincnorm_L2/tempnorm_L2 <= ittol) and (velincnorm_L2/velnorm_L2 <= ittol))
+  /*if ((phiincnorm_L2/phinorm_L2 <= ittol) and (velincnorm_L2/velnorm_L2 <= ittol))
     stopnonliniter=true;*/
-  if ((tempincnorm_L2/tempnorm_L2 <= ittol)) stopnonliniter=true;
+  if ((phiincnorm_L2/phinorm_L2 <= ittol)) stopnonliniter=true;
 
   // warn if itemax is reached without convergence, but proceed to next timestep
   /*if ((itnum == itmax) and
-      ((tempincnorm_L2/tempnorm_L2 > ittol) or (velincnorm_L2/velnorm_L2 > ittol)))*/
-  if ((itnum == itmax) and (tempincnorm_L2/tempnorm_L2 > ittol))
+      ((phiincnorm_L2/phinorm_L2 > ittol) or (velincnorm_L2/velnorm_L2 > ittol)))*/
+  if ((itnum == itmax) and (phiincnorm_L2/phinorm_L2 > ittol))
   {
     stopnonliniter=true;
     if (myrank_==0)
@@ -793,38 +718,32 @@ bool SCATRA::ScaTraTimIntImpl::LomaConvergenceCheck(int          itnum,
 /*----------------------------------------------------------------------*
  |  output of some mean values                               gjb   01/09|
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::OutputMeanTempAndDens()
+void SCATRA::ScaTraTimIntImpl::OutputMeanScalars()
 {
-  // set scalar and density vector values needed by elements
+  // set scalar values needed by elements
   discret_->ClearState();
   discret_->SetState("phinp",phinp_);
-  discret_->SetState("densnp",densnp_);
   // set action for elements
   ParameterList eleparams;
-  eleparams.set("action","calc_temp_and_dens");
+  eleparams.set("action","calc_mean_scalars");
 
   //provide displacement field in case of ALE
   eleparams.set("isale",isale_);
   if (isale_)
     AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
 
-  // evaluate integrals of temperature/concentrations, density and domain
+  // evaluate integrals of scalar(s) and domain
   Teuchos::RCP<Epetra_SerialDenseVector> scalars
-    = Teuchos::rcp(new Epetra_SerialDenseVector(numscal_+2));
+    = Teuchos::rcp(new Epetra_SerialDenseVector(numscal_+1));
   discret_->EvaluateScalars(eleparams, scalars);
   discret_->ClearState();   // clean up
 
-  const double densint = (*scalars)[numscal_];
-  const double domint  = (*scalars)[numscal_+1];
+  const double domint = (*scalars)[numscal_];
 
   // print out values
   if (myrank_ == 0)
   {
-    if (prbtype_=="loma")
-    {
-      cout << "Mean temperature: " << (*scalars)[0]/domint << endl;
-      cout << "Mean density:     " << densint/domint << endl;
-    }
+    if (prbtype_=="loma") cout << "Mean scalar: " << (*scalars)[0]/domint << endl;
     else
     {
       cout << "Domain integral:          " << domint << endl;
@@ -833,7 +752,6 @@ void SCATRA::ScaTraTimIntImpl::OutputMeanTempAndDens()
         //cout << "Total concentration (c_"<<k+1<<"): "<< (*scalars)[k] << endl;
         cout << "Mean concentration (c_"<<k+1<<"): "<< (*scalars)[k]/domint << endl;
       }
-      cout << "Mean density:             " << densint/domint << endl;
     }
   }
 
@@ -847,10 +765,7 @@ void SCATRA::ScaTraTimIntImpl::OutputMeanTempAndDens()
     if (Step() <= 1)
     {
       f.open(fname.c_str(),std::fstream::trunc);
-      if (prbtype_=="loma")
-      {
-        f << "#| Step | Time | Mean temperature | Mean density |\n";
-      }
+      if (prbtype_=="loma") f << "#| Step | Time | Mean scalar |\n";
       else
       {
         f << "#| Step | Time | Domain integral ";
@@ -858,17 +773,13 @@ void SCATRA::ScaTraTimIntImpl::OutputMeanTempAndDens()
         {
           f << "| Mean concentration (c_"<<k+1<<") ";
         }
-        f << "| Mean density |\n";
       }
     }
     else
       f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
 
     f << Step() << " " << Time() << " ";
-    if (prbtype_=="loma")
-    {
-      f<< (*scalars)[0]/domint << " " << densint/domint << "\n";
-    }
+    if (prbtype_=="loma") f << (*scalars)[0]/domint << "\n";
     else
     {
       f << domint << " ";
@@ -876,7 +787,6 @@ void SCATRA::ScaTraTimIntImpl::OutputMeanTempAndDens()
       {
         f << (*scalars)[k]/domint << " ";
       }
-      f << densint/domint << "\n";
     }
     f.flush();
     f.close();
@@ -907,7 +817,7 @@ void SCATRA::ScaTraTimIntImpl::OutputElectrodeInfo()
   if (isale_)
     AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
 
-  // add element parameters and density state according to time-int. scheme
+  // add element parameters according to time-integration scheme
   AddSpecificTimeIntegrationParameters(eleparams);
 
   // calculate normal flux vector field only for these boundary conditions:
@@ -1147,7 +1057,6 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain
   // set vector values needed by elements
   discret_->ClearState();
   discret_->SetState("phinp",phinp_);
-  discret_->SetState("densnp",densnp_);
 
   // evaluate fluxes in the whole computational domain (e.g., for visualization of particle path-lines)
   discret_->Evaluate(params,Teuchos::null,Teuchos::null,fluxx,fluxy,fluxz);
@@ -1219,7 +1128,6 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
     eleparams.set("time-step length",dta_);
     eleparams.set("problem type",prbtype_);
     eleparams.set("incremental solver",true); // say yes and you get the residual!!
-    eleparams.set("reaction",reaction_);
     eleparams.set("form of convective term",convform_);
     eleparams.set("fs subgrid diffusivity",fssgd_);
     eleparams.set("turbulence model",turbmodel_);
@@ -1242,7 +1150,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
     discret_->SetState("hist",hist_);
     if (turbmodel_) discret_->SetState("subgrid diffusivity",subgrdiff_);
 
-    // add element parameters and density state according to time-int. scheme
+    // add element parameters according to time-integration scheme
     AddSpecificTimeIntegrationParameters(eleparams);
 
     {

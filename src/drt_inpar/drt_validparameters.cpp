@@ -1442,6 +1442,33 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                     tuple<int>(0,1,2,3,4,5,6),
                                &fdyn_stab);
 
+  // this parameter selects the location where tau is evaluated
+  setStringToIntegralParameter<int>("EVALUATION_TAU",
+                               "element_center",
+                               "Location where tau is evaluated",
+                               tuple<std::string>(
+                                 "element_center",
+                                 "integration_point"),
+                               tuple<std::string>(
+                                 "evaluate tau at element center",
+                                 "evaluate tau at integration point")  ,
+                                tuple<int>(0,1),
+                               &fdyn_stab);
+
+  // this parameter selects the location where the material law is evaluated
+  // (does not fit here very well, but parameter transfer is easier)
+  setStringToIntegralParameter<int>("EVALUATION_MAT",
+                               "element_center",
+                               "Location where material law is evaluated",
+                               tuple<std::string>(
+                                 "element_center",
+                                 "integration_point"),
+                               tuple<std::string>(
+                                 "evaluate material law at element center",
+                                 "evaluate material law at integration point")  ,
+                                tuple<int>(0,1),
+                               &fdyn_stab);
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn_turbu = fdyn.sublist("TURBULENCE MODEL",false,"");
 
@@ -1589,18 +1616,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(0,1,2),
                                &scatradyn);
 
-  setStringToIntegralParameter<int>("REACTION","no",
-                               "potential inclusion of reaction term",
-                               tuple<std::string>(
-                                 "no",
-                                 "constant_coefficient",
-                                 "Arrhenius_species",
-                                 "Arrhenius_pv",
-                                 "mixture_fraction"
-                                 ),
-                               tuple<int>(0,1,2,3,4),
-                               &scatradyn);
-
   setStringToIntegralParameter<INPAR::SCATRA::TimeIntegrationScheme>("TIMEINTEGR","One_Step_Theta",
                                "Time Integration Scheme",
                                tuple<std::string>(
@@ -1711,8 +1726,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("BLOCKPRECOND","no",
                                "Switch to block-preconditioned family of solvers, needs additional SCALAR TRANSPORT ELECTRIC POTENTIAL SOLVER block!",
                                yesnotuple,yesnovalue,&scatradyn);
-
-  DoubleParameter("INITIALDENS",1.0,"Initial value for density",&scatradyn);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& scatra_nonlin = scatradyn.sublist(
@@ -1853,8 +1866,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("CONVTOL",1e-6,"Tolerance for convergence check",&lomacontrol);
   IntParameter("UPRES",1,"Increment for writing solution",&lomacontrol);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&lomacontrol);
-  DoubleParameter("THERMOPRESS",98100.0,"(initial) thermodynamic pressure",&lomacontrol);
-  DoubleParameter("GASCONSTANT",287.0,"specific gas constant R (in J/(kg*K))",&lomacontrol);
   setStringToIntegralParameter<int>("CONSTHERMPRESS","Yes",
                                "treatment of thermodynamic pressure in time",
                                tuple<std::string>(

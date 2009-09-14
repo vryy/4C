@@ -53,6 +53,10 @@ namespace MAT
       const double shc_;
       /// Prandtl number
       const double pranum_;
+      /// (initial) thermodynamic pressure
+      const double thermpress_;
+      /// specific gas constant R
+      const double gasconst_;
 
       //@}
 
@@ -117,6 +121,9 @@ namespace MAT
     /// compute diffusivity
     double ComputeDiffusivity(const double temp) const;
 
+    /// compute density
+    double ComputeDensity(const double temp, const double thermpress) const;
+
     /// return material parameters for element calculation
     //@{
 
@@ -130,6 +137,10 @@ namespace MAT
     double Shc() const { return params_->shc_; }
     /// Prandtl number
     double PraNum() const { return params_->pranum_; }
+    /// (initial) thermodynamic pressure
+    double ThermPress() const { return params_->thermpress_; }
+    /// specific gas constant R
+    double GasConst() const { return params_->gasconst_; }
 
     //@}
 

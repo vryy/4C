@@ -155,9 +155,7 @@ private:
   RCP<Epetra_Vector>                   myveln_     ;
   RCP<Epetra_Vector>                   myvelaf_    ;
 
-  RCP<Epetra_Vector>                   myvedeam_   ;
-  RCP<Epetra_Vector>                   myvedenp_   ;
-  RCP<Epetra_Vector>                   myveden_    ;
+  RCP<Epetra_Vector>                   myvescnp_   ;
 
   RCP<Epetra_Vector>                   mydispnp_   ;
   RCP<Epetra_Vector>                   mydispn_    ;

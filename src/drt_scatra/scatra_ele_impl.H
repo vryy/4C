@@ -66,8 +66,6 @@ public:
       LINALG::SerialDenseMatrix&      flux,
       DRT::Element*&            ele,
       vector<double>&           ephinp,
-      vector<double>&           edensnp,
-      bool                      temperature,
       double                    frt,
       Epetra_SerialDenseVector& evel,
       std::string&              fluxtypestring,
@@ -152,8 +150,6 @@ public:
       LINALG::SerialDenseMatrix&      flux,
       DRT::Element*&                  ele,
       vector<double>&                 ephinp,
-      vector<double>&                 edensnp,
-      bool                            temperature,
       double                          frt,
       Epetra_SerialDenseVector&       evel,
       std::string&                    fluxtypestring,
@@ -172,22 +168,13 @@ public:
         const double                          dt, ///< current time-step length
         const double                          timefac, ///< time discretization factor
         const double                          alphaF, ///< factor for generalized-alpha time integration
-        const bool                            temperature, ///< temperature flag
-        const bool                            reaction, ///< flag for reaction term
-        const bool                            conservative, ///< flag for conservative form
         const enum SCATRA::TauType            whichtau, ///< stabilization parameter definition
         const enum SCATRA::KartType           whichkart, ///< all-scale artificial subgrid-diffusivity definition
-        const bool                            tau_gp, ///< tau-evaluation flag
-        const bool                            mat_gp, ///< material-evaluation flag
         const bool                            sgvel, ///< subgrid-scale velocity flag
         const bool                            assgd, ///< all-scale subgrid-diff. flag
         const bool                            fssgd, ///< fine-scale subgrid-diff. flag
         const bool                            turbmodel, ///< flag for turbulence model
-        const bool                            is_stationary, ///< flag indicating stationary formulation
-        const bool                            is_genalpha, ///< generalized-alpha flag
-        const bool                            is_incremental, ///< flag for incremental/non-incemental linear solver
-        const double                          frt, ///< factor F/RT needed for ELCH calculations
-        const double                          thermpressdt ///< time deriv. of therm. press. (for temp. eq.)
+        const double                          frt ///< factor F/RT needed for ELCH calculations
     );
 
     //! calculate mass matrix and rhs for determining initial time derivative
@@ -195,20 +182,14 @@ public:
         DRT::Element*                         ele,  ///< the element
         Epetra_SerialDenseMatrix&             emat, ///< element matrix to calculate
         Epetra_SerialDenseVector&             erhs, ///< element rhs to calculate
-        const bool                            temperature, ///< temperature flag
-        const bool                            reaction, ///< flag for reaction term
-        const bool                            conservative, ///< flag for conservative form
-        const bool                            mat_gp, ///< material-evaluation flag
-        const double                          frt, ///< factor F/RT needed for ELCH calculations
-        const double                          thermpressdt ///< time deriv. of therm. press. (for temp. eq.)
+        const double                          frt ///< factor F/RT needed for ELCH calculations
     );
 
     //! calculate normalized subgrid-diffusivity matrix
     virtual void CalcSubgridDiffMatrix(
         const DRT::Element*           ele,
         Epetra_SerialDenseMatrix&     sys_mat_sd,
-        const double                  timefac,
-        const bool                    is_stationary
+        const double                  timefac
     );
 
     //! get the body force
@@ -218,23 +199,16 @@ public:
     );
 
     //! get the material parameters
-    virtual void GetMaterialParams(
-        const DRT::Element*  ele,
-        const bool           temperature,  ///< temperature flag
-        const bool           reaction  ///< flag for reaction term
-    );
+    virtual void GetMaterialParams(const DRT::Element* ele);
 
     //! calculate stabilization parameter
     virtual void CalTau(
         DRT::Element*                         ele,
         double                                diffus,
-        const double                          dens,
         const double                          dt,
         const double                          timefac,
         const enum SCATRA::TauType            whichtau,
         const bool                            turbmodel,
-        const bool                            reaction,
-        const bool                            is_stationary,
         const double                          vol,
         const int                             k
     );
@@ -244,19 +218,12 @@ public:
         DRT::Element*                         ele,
         Epetra_SerialDenseVector&             subgrdiff,
         double                                diffus,
-        const double                          dens,
         const double                          dt,
         const double                          timefac,
         const enum SCATRA::KartType           whichkart,
         const bool                            assgd,
         const bool                            fssgd,
-        const bool                            reaction,
-        const bool                            conservative,
-        const bool                            is_incremental,
-        const bool                            is_stationary,
-        const bool                            is_genalpha,
         const double                          vol,
-        const double                          thermpressdt,
         const int                             k
     );
 
@@ -271,12 +238,7 @@ public:
     virtual void CalMatAndRHS(
         Epetra_SerialDenseMatrix&             emat,
         Epetra_SerialDenseVector&             erhs,
-        const bool                            conservative,
         const bool                            fssgd,
-        const bool                            reaction,
-        const bool                            is_stationary,
-        const bool                            is_genalpha,
-        const bool                            is_incremental,
         const double                          timefac,
         const double                          alphaF,
         const int                             dofindex
@@ -287,7 +249,6 @@ public:
         Epetra_SerialDenseMatrix&             emat,   ///< element matrix
         Epetra_SerialDenseVector&             erhs,   ///< element rhs
         const double                          frt,    ///< factor F/RT
-        const bool                            is_stationary, ///< flag indicating stationary formulation
         const double                          timefac ///< time discretization factor
     );
 
@@ -303,19 +264,16 @@ public:
         LINALG::Matrix<3,iel>&          flux,
         const DRT::Element*             ele,
         const vector<double>&           ephinp,
-        const vector<double>&           edensnp,
-        const bool                      temperature,
         const double                    frt,
         const Epetra_SerialDenseVector& evel,
         const SCATRA::FluxType          fluxtype,
         const int                       dofindex
     );
 
-    //! calculate integrals of temperature/concentrations, density and domain
-   virtual void CalculateTempAndDens(
+    //! calculate scalars and domain integral
+   virtual void CalculateScalars(
         const DRT::Element*       ele,     ///< pointer to the element
         const vector<double>&     ephinp,  ///< current scalar field
-        const vector<double>&     edensnp, ///< current density field
         Epetra_SerialDenseVector& scalars  ///< vector for the computed integrals
         );
 
@@ -387,30 +345,19 @@ public:
       return;
     };
 
-    //! calculate momentum divergence
-    inline void GetMomentumDivergence(double&                               mdiv,
+    //! calculate velocity divergence
+    inline void GetVelocityDivergence(double&                               vdiv,
                                       const LINALG::Matrix<nsd_,iel>&       evel,
-                                      const vector<LINALG::Matrix<iel,1> >& edens,
                                       const LINALG::Matrix<nsd_,iel>&       derxy)
     {
-      LINALG::Matrix<nsd_,iel> densderxy;
-      LINALG::Matrix<nsd_,nsd_> mderxy;
+      LINALG::Matrix<nsd_,nsd_> vderxy;
+      vderxy.MultiplyNT(evel,derxy);
 
-      for (int i=0; i<iel; ++i)
-      {
-        for (int j = 0; j<nsd_; ++j)
-        {
-          densderxy(j,i) = edens[0](i)*derxy(j,i);
-        }
-      }
-
-      mderxy.MultiplyNT(evel,densderxy);
-
-      mdiv = 0.0;
-      // compute (rho*vel),x  + (rho*vel),y +  (rho*vel),z at integration point
+      vdiv = 0.0;
+      // compute vel,x  + vel,y +  vel,z at integration point
       for (int j = 0; j<nsd_; ++j)
       {
-        mdiv += mderxy(j,j);
+        vdiv += vderxy(j,j);
       }
       return;
     };
@@ -470,25 +417,40 @@ public:
     const int numdofpernode_;
     //! number of transported scalars (numscal_ <= numdofpernode_)
     const int numscal_;
+
     //! flag for electrochemistry problems (ELCH)
     const bool iselch_;
     //! flag for using ALE formulation
     bool isale_;
+    //! flag for inclusion of reactive terms
+    bool reaction_;
     //! (sign) factor for diffusive and reactive stabilization terms
     double diffreastafac_;
+    //! flag for stationary algorithm
+    bool is_stationary_;
+    //! flag for generalized-alpha time integration
+    bool is_genalpha_;
+    //! flag for incremental solver
+    bool is_incremental_;
+    //! flag for conservative form of convective term
+    bool conservative_;
+    //! flag for material evaluation at Gaussian integration points
+    bool mat_gp_;
+    //! flag for stabilization parameter evaluation at Gaussian integration points
+    bool tau_gp_;
 
     //! nodal velocity values
     LINALG::Matrix<nsd_,iel> evelnp_;
     //! nodal subgrid-scale velocity values
     LINALG::Matrix<nsd_,iel> esgvelnp_;
-    //! actual values of transported scalars
+    //! scalar at t_(n)
+    vector<LINALG::Matrix<iel,1> > ephin_;
+    //! scalar at t_(n+1) or t_(n+alpha_F)
     vector<LINALG::Matrix<iel,1> > ephinp_;
+    //! scalar at t_(n+alpha_M)
+    vector<LINALG::Matrix<iel,1> > ephiam_;
     //! history vector of transported scalars
     vector<LINALG::Matrix<iel,1> > ehist_;
-    //! density values at t_(n+1) (LOMA)
-    vector<LINALG::Matrix<iel,1> > edensnp_;
-    //! density values at t_(n+alpham) (LOMA)
-    vector<LINALG::Matrix<iel,1> > edensam_;
     //! actual electric potential (ELCH)
     LINALG::Matrix<iel,1> epotnp_;
     //! subgrid diffusivity
@@ -502,6 +464,14 @@ public:
     LINALG::Matrix<nsd_,iel> xyze_;
     //! bodyforce in element nodes
     vector<LINALG::Matrix<iel,1> > bodyforce_;
+    //! density at t_(n)
+    vector<double> densn_;
+    //! density at t_(n+1) or t_(n+alpha_F)
+    vector<double> densnp_;
+    //! density at t_(n+alpha_M)
+    vector<double> densam_;
+    //! factor for density derivative (at t_(n+1) or t_(n+alpha_F))
+    vector<double> densgradfac_;
     //! diffusivity / diffusivities (in case of systems) / thermal conductivity
     vector<double> diffus_;
     //! reaction coefficient
@@ -516,10 +486,6 @@ public:
     LINALG::Matrix<nsd_,1> xsi_;
     //! array for shape functions
     LINALG::Matrix<iel,1> funct_;
-    //! array for density-weighted shape functions at n+1/n+alpha_F
-    LINALG::Matrix<iel,1> densfunct_;
-    //! array for density-weighted shape functions at n+alpha_M
-    LINALG::Matrix<iel,1> densamfunct_;
     //! array for shape function derivatives w.r.t r,s,t
     LINALG::Matrix<nsd_,iel> deriv_;
     //! array for second derivatives of shape function w.r.t r,s,t
@@ -546,8 +512,8 @@ public:
     LINALG::Matrix<nsd_,1> sgvelint_;
     //! migration velocity vector (divided by D_k*z_k) in gausspoint (ELCH)
     LINALG::Matrix<nsd_,1> migvelint_;
-    //! momentum divergence
-    double mdiv_;
+    //! velocity divergence
+    double vdiv_;
     //! the stabilisation parameters (one per transported scalar)
     vector<double> tau_;
     //! artificial diffusivities (one per transported scalar)
@@ -576,6 +542,13 @@ public:
     LINALG::Matrix<nsd_,1> fsgradphi_;
     //! (global) Laplacian of shape functions at integration point
     LINALG::Matrix<iel,1> laplace_;
+
+    //! thermodynamic pressure at t_(n+1) or t_(n+alpha_F) (LOMA specific)
+    double thermpressnp_;
+    //! thermodynamic pressure at t_(n+alpha_M) (LOMA specific)
+    double thermpressam_;
+    //! time derivative of thermodynamic pressure (LOMA specific)
+    double thermpressdt_;
 
   };
 

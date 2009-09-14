@@ -800,7 +800,7 @@ Teuchos::RefCountPtr<Epetra_Vector> velnp
  *----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsLdc::DoLomaTimeSample(
 Teuchos::RefCountPtr<Epetra_Vector> velnp,
-Teuchos::RefCountPtr<Epetra_Vector> vedenp,
+Teuchos::RefCountPtr<Epetra_Vector> vescnp,
 Teuchos::RefCountPtr<Epetra_Vector> subgrvisc,
 Epetra_Vector &                     force,
 const double                        eosfac)
@@ -870,8 +870,8 @@ const double                        eosfac)
       velnp->Dot(*togglew_,&w);
       velnp->Dot(*togglep_,&p);
 
-      double rho;
-      vedenp->Dot(*togglep_,&rho);
+      double T;
+      vescnp->Dot(*togglep_,&T);
 
       double sv;
       subgrvisc->Dot(*togglep_,&sv);
@@ -886,9 +886,9 @@ const double                        eosfac)
       double wsm=w/countnodesonallprocs;
       double psm=p/countnodesonallprocs;
       double svsm=sv/countnodesonallprocs;
-      double rsm=rho/countnodesonallprocs;
-      // compute temperature: T = eosfac/rho
-      double Tsm = eosfac/rsm;
+      double Tsm=T/countnodesonallprocs;
+      // compute density: rho = eosfac/T
+      double rsm = eosfac/Tsm;
 
       //----------------------------------------------------------------------
       // add spatial mean values to statistical sample
@@ -980,8 +980,8 @@ const double                        eosfac)
       velnp->Dot(*togglew_,&w);
       velnp->Dot(*togglep_,&p);
 
-      double rho;
-      vedenp->Dot(*togglep_,&rho);
+      double T;
+      vescnp->Dot(*togglep_,&T);
 
       double sv;
       subgrvisc->Dot(*togglep_,&sv);
@@ -996,9 +996,9 @@ const double                        eosfac)
       double wsm=w/countnodesonallprocs;
       double psm=p/countnodesonallprocs;
       double svsm=sv/countnodesonallprocs;
-      double rsm=rho/countnodesonallprocs;
-      // compute temperature: T = eosfac/rho
-      double Tsm = eosfac/rsm;
+      double Tsm=T/countnodesonallprocs;
+      // compute density: rho = eosfac/T
+      double rsm = eosfac/Tsm;
 
       //----------------------------------------------------------------------
       // add spatial mean values to statistical sample
@@ -1089,8 +1089,8 @@ const double                        eosfac)
       velnp->Dot(*togglew_,&w);
       velnp->Dot(*togglep_,&p);
 
-      double rho;
-      vedenp->Dot(*togglep_,&rho);
+      double T;
+      vescnp->Dot(*togglep_,&T);
 
       double sv;
       subgrvisc->Dot(*togglep_,&sv);
@@ -1105,9 +1105,9 @@ const double                        eosfac)
       double wsm=w/countnodesonallprocs;
       double psm=p/countnodesonallprocs;
       double svsm=sv/countnodesonallprocs;
-      double rsm=rho/countnodesonallprocs;
-      // compute temperature: T = eosfac/rho
-      double Tsm = eosfac/rsm;
+      double Tsm=T/countnodesonallprocs;
+      // compute density: rho = eosfac/T
+      double rsm = eosfac/Tsm;
 
       //----------------------------------------------------------------------
       // add spatial mean values to statistical sample

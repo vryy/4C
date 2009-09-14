@@ -27,7 +27,9 @@ MAT::PAR::SutherlandCondif::SutherlandCondif(
   reftemp_(matdata->GetDouble("REFTEMP")),
   suthtemp_(matdata->GetDouble("SUTHTEMP")),
   shc_(matdata->GetDouble("SHC")),
-  pranum_(matdata->GetDouble("PRANUM"))
+  pranum_(matdata->GetDouble("PRANUM")),
+  thermpress_(matdata->GetDouble("THERMPRESS")),
+  gasconst_(matdata->GetDouble("GASCON"))
 {
 }
 
@@ -104,6 +106,16 @@ double MAT::SutherlandCondif::ComputeDiffusivity(const double temp) const
   const double diffus = pow((temp/RefTemp()),1.5)*((RefTemp()+SuthTemp())/(temp+SuthTemp()))*RefVisc()/PraNum();
 
   return diffus;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double MAT::SutherlandCondif::ComputeDensity(const double temp,
+                                             const double thermpress) const
+{
+  const double density = thermpress/(GasConst()*temp);
+
+  return density;
 }
 
 

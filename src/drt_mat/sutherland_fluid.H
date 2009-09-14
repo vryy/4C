@@ -48,6 +48,10 @@ namespace MAT
       const double reftemp_;
       /// Sutherland temperature (K)
       const double suthtemp_;
+      /// (initial) thermodynamic pressure
+      const double thermpress_;
+      /// specific gas constant R
+      const double gasconst_;
 
       //@}
 
@@ -113,6 +117,9 @@ namespace MAT
     /// compute diffusivity
     double ComputeViscosity(const double temp) const;
 
+    /// compute density
+    double ComputeDensity(const double temp, const double thermpress) const;
+
     /// return material parameters for element calculation
     //@{
 
@@ -122,6 +129,10 @@ namespace MAT
     double RefTemp() const { return params_->reftemp_; }
     /// Sutherland temperature (K)
     double SuthTemp() const { return params_->suthtemp_; }
+    /// (initial) thermodynamic pressure
+    double ThermPress() const { return params_->thermpress_; }
+    /// specific gas constant R
+    double GasConst() const { return params_->gasconst_; }
 
     //@}
 

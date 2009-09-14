@@ -398,6 +398,7 @@ private:
     calc_fluid_box_filter,
     calc_smagorinsky_const,
     get_density,
+    get_gas_constant,
     integrate_shape,
     calc_node_normal
   };
@@ -607,7 +608,7 @@ private:
   void f3_calc_loma_means(
     DRT::Discretization&      discretization,
     vector<double>&           velocitypressure ,
-    vector<double>&           density  ,
+    vector<double>&           temperature  ,
     vector<double>&           subgrvisc  ,
     ParameterList&            params,
     const double              eosfac

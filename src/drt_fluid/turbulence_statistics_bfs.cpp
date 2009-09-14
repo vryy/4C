@@ -677,7 +677,7 @@ Teuchos::RefCountPtr<Epetra_Vector> subgrvisc
 //----------------------------------------------------------------------
 void FLD::TurbulenceStatisticsBfs::DoLomaTimeSample(
 Teuchos::RefCountPtr<Epetra_Vector> velnp,
-Teuchos::RefCountPtr<Epetra_Vector> vedenp,
+Teuchos::RefCountPtr<Epetra_Vector> vescnp,
 Teuchos::RefCountPtr<Epetra_Vector> subgrvisc,
 const double                        eosfac)
 {
@@ -754,17 +754,17 @@ const double                        eosfac)
         velnp->Dot(*toggleu_,&u);
         double p;
         velnp->Dot(*togglep_,&p);
-        double rho;
-        vedenp->Dot(*togglep_,&rho);
+        double T;
+        vescnp->Dot(*togglep_,&T);
 
         //----------------------------------------------------------------------
         // calculate spatial means
         //----------------------------------------------------------------------
         double usm=u/countnodesonallprocs;
         double psm=p/countnodesonallprocs;
-        double rhosm=rho/countnodesonallprocs;
-        // compute temperature: T = eosfac/rho
-        double Tsm=eosfac/rhosm;
+        double Tsm=T/countnodesonallprocs;
+        // compute density: rho = eosfac/T
+        double rhosm=eosfac/Tsm;
 
         //----------------------------------------------------------------------
         // add spatial mean values to statistical sample
@@ -850,8 +850,8 @@ const double                        eosfac)
         double sv;
         subgrvisc->Dot(*togglep_,&sv);
 
-        double rho;
-        vedenp->Dot(*togglep_,&rho);
+        double T;
+        vescnp->Dot(*togglep_,&T);
 
         //----------------------------------------------------------------------
         // calculate spatial means on this line
@@ -861,9 +861,9 @@ const double                        eosfac)
         double wsm=w/countnodesonallprocs;
         double psm=p/countnodesonallprocs;
         double svsm=sv/countnodesonallprocs;
-        double rhosm=rho/countnodesonallprocs;
-        // compute temperature: T = eosfac/rho
-        double Tsm=eosfac/rhosm;
+        double Tsm=T/countnodesonallprocs;
+        // compute density: rho = eosfac/T
+        double rhosm=eosfac/Tsm;
 
         //----------------------------------------------------------------------
         // add spatial mean values to statistical sample

@@ -81,7 +81,9 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // get the basic parameters first
   // -------------------------------------------------------------------
   // type of solver: low-Mach-number or incompressible solver
-  loma_ = params_.get<string>("low-Mach-number solver","No");
+  loma_ = false;
+  string lomayesno = params_.get<string>("low-Mach-number solver","No");
+  if (lomayesno =="Yes") loma_ = true;
   // type of time-integration
   timealgo_ = params_.get<FLUID_TIMEINTTYPE>("time int algo");
   // time-step size
@@ -121,6 +123,11 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
 
   // form of convective term
   convform_ = params_.get<string>("form of convective term","convective");
+
+  // conservative formulation currently not supported in low-Mach-number case
+  // when using generalized-alpha time-integration scheme
+  if (loma_ and timealgo_==timeint_afgenalpha and convform_ == "conservative")
+     dserror("conservative formulation currently not supported for low-Mach-number flow within generalized-alpha time-integration scheme");
 
   // fine-scale subgrid viscosity?
   fssgv_ = params_.get<string>("fs subgrid viscosity","No");
@@ -220,48 +227,49 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // Vectors passed to the element
   // -----------------------------
   // velocity/pressure at time n+1, n and n-1
-  velnp_        = LINALG::CreateVector(*dofrowmap,true);
-  veln_         = LINALG::CreateVector(*dofrowmap,true);
-  velnm_        = LINALG::CreateVector(*dofrowmap,true);
+  velnp_ = LINALG::CreateVector(*dofrowmap,true);
+  veln_  = LINALG::CreateVector(*dofrowmap,true);
+  velnm_ = LINALG::CreateVector(*dofrowmap,true);
 
-  // acceleration at time n+1 and n
-  accnp_        = LINALG::CreateVector(*dofrowmap,true);
-  accn_         = LINALG::CreateVector(*dofrowmap,true);
+  // acceleration/(scalar time derivative) at time n+1 and n
+  accnp_ = LINALG::CreateVector(*dofrowmap,true);
+  accn_  = LINALG::CreateVector(*dofrowmap,true);
 
-  // velocity/density at time n+1
-  vedenp_       = LINALG::CreateVector(*dofrowmap,true);
+  // velocity/scalar at time n+1
+  // (only required for low-Mach-number case)
+  vescnp_ = LINALG::CreateVector(*dofrowmap,true);
 
   // vectors only required for af-generalized-alpha scheme
   if (timealgo_==timeint_afgenalpha)
   {
     // velocity/pressure at time n+alpha_F
-    velaf_        = LINALG::CreateVector(*dofrowmap,true);
+    velaf_ = LINALG::CreateVector(*dofrowmap,true);
 
-    // acceleration/(density time derivative) at time n+alpha_M
-    accam_        = LINALG::CreateVector(*dofrowmap,true);
+    // velocity/scalar at time n+alpha_M and n+alpha_F
+    vescam_ = LINALG::CreateVector(*dofrowmap,true);
+    vescaf_ = LINALG::CreateVector(*dofrowmap,true);
 
-    // velocity/density at time n+alpha_M and n+alpha_F
-    vedeam_       = LINALG::CreateVector(*dofrowmap,true);
-    vedeaf_       = LINALG::CreateVector(*dofrowmap,true);
+    // acceleration/(scalar time derivative) at time n+alpha_M
+    accam_ = LINALG::CreateVector(*dofrowmap,true);
   }
 
   // vectors only required for low-Mach-number flow
-  if (loma_ != "No")
+  if (loma_)
   {
-    // velocity/density at time n and n-1
-    veden_        = LINALG::CreateVector(*dofrowmap,true);
-    vedenm_       = LINALG::CreateVector(*dofrowmap,true);
+    // velocity/scalar at time n and n-1
+    vescn_  = LINALG::CreateVector(*dofrowmap,true);
+    vescnm_ = LINALG::CreateVector(*dofrowmap,true);
   }
 
   // history vector
-  hist_           = LINALG::CreateVector(*dofrowmap,true);
+  hist_ = LINALG::CreateVector(*dofrowmap,true);
 
   if (alefluid_)
   {
-    dispnp_       = LINALG::CreateVector(*dofrowmap,true);
-    dispn_        = LINALG::CreateVector(*dofrowmap,true);
-    dispnm_       = LINALG::CreateVector(*dofrowmap,true);
-    gridv_        = LINALG::CreateVector(*dofrowmap,true);
+    dispnp_ = LINALG::CreateVector(*dofrowmap,true);
+    dispn_  = LINALG::CreateVector(*dofrowmap,true);
+    dispnm_ = LINALG::CreateVector(*dofrowmap,true);
+    gridv_  = LINALG::CreateVector(*dofrowmap,true);
   }
 
   // Vectors associated to boundary conditions
@@ -451,38 +459,50 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // ---------------------------------------------------------------------
   // set subgrid-scale velocity if required by a coupled scalar transport
   // problem (currently only for low-Mach-number flow)
+  // set density variable to 1.0 for low-Mach-number flow and get
+  // constant density variable for incompressible flow
   // ---------------------------------------------------------------------
   sgvel_ = false;
-  if (loma_ != "No")
+  if (loma_)
   {
     // get sublist containing SCATRA stabilization parameters
     ParameterList * scatrastabparams =&(params_.sublist("SCATRA STABILIZATION"));
 
     // flag for evaluation of subgrid-scale velocity
     if (scatrastabparams->get<string>("SUGRVEL") == "yes") sgvel_ = true;
+
+    // set density variable to 1.0 for low-Mach-number flow
+    density_ = 1.0;
+
+    // get gas constant
+    ParameterList eleparams;
+    eleparams.set("action","get_gas_constant");
+    discret_->Evaluate(eleparams,null,null,null,null,null);
+    gasconstant_ = eleparams.get("gas constant", 1.0);
+    // potential check here -> currently not executed
+    //if (gasconstant_ < EPS15) dserror("received zero or negative gas constant");
   }
-
-  // construct impedance bc wrapper
-  impedancebc_ = rcp(new UTILS::FluidImpedanceWrapper(discret_, output_, dta_) );
-
-  // get constant density variable for incompressible flow
-  // set vedenp/af/am-vector values to 1.0 for incompressible flow
-  // set density variable to 1.0 for low-Mach-number flow
-  if (loma_ == "No")
+  else
   {
+    // get constant density variable for incompressible flow
     ParameterList eleparams;
     eleparams.set("action","get_density");
     discret_->Evaluate(eleparams,null,null,null,null,null);
     density_ = eleparams.get("density", 1.0);
-    if (density_ <= 0.0) dserror("received illegal density value");
-    vedenp_->PutScalar(1.0);
-    if (timealgo_==timeint_afgenalpha)
-    {
-      vedeam_->PutScalar(1.0);
-      vedeaf_->PutScalar(1.0);
-    }
+    if (density_ < EPS15) dserror("received zero or negative density value");
   }
-  else density_ = 1.0;
+
+  // initialize all thermodynamic pressure values to one or zero, respectively
+  // -> they are kept this way for incompressible flow
+  thermpressnp_   = 1.0;
+  thermpressn_    = 1.0;
+  thermpressaf_   = 1.0;
+  thermpressam_   = 1.0;
+  thermpressdtnp_ = 0.0;
+  thermpressdtam_ = 0.0;
+
+  // construct impedance bc wrapper
+  impedancebc_ = rcp(new UTILS::FluidImpedanceWrapper(discret_, output_, dta_) );
 
 } // FluidImplicitTimeInt::FluidImplicitTimeInt
 
@@ -664,42 +684,17 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
 
   // -------------------------------------------------------------------
   // set part(s) of the rhs vector(s) belonging to the old timestep
-  // for low-Mach-number flow: distinguish momentum and continuity part
-  // (continuity part only meaningful for low-Mach-number flow)
-  // For low-Mach-number flow, all velocity values are multiplied by the
-  // respective density values.
+  // (only meaningful for momentum part)
   //
-  // Stationary/af-generalized-alpha:
+  // stationary/af-generalized-alpha: hist_ = 0.0
   //
-  //               mom: hist_ = 0.0
-  //              (con: hist_ = 0.0)
+  // one-step-Theta:                  hist_ = veln_  + dt*(1-Theta)*accn_
   //
-  // One-step-Theta:
-  //
-  //               mom: hist_ = veln_  + dt*(1-Theta)*accn_
-  //              (con: hist_ = densn_ + dt*(1-Theta)*densdtn_)
-  //
-  //
-  // BDF2: for constant time step:
-  //
-  //               mom: hist_ = 4/3 veln_  - 1/3 velnm_
-  //              (con: hist_ = 4/3 densn_ - 1/3 densnm_)
+  // BDF2: for constant time step:    hist_ = 4/3 veln_  - 1/3 velnm_
   //
   // -------------------------------------------------------------------
-  if (loma_ != "No")
-  {
-    TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(
-      veden_, vedenm_, accn_,
-      timealgo_, dta_, theta_,
-      hist_);
-  }
-  else
-  {
-    TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(
-      veln_, velnm_, accn_,
-      timealgo_, dta_, theta_,
-      hist_);
-  }
+  TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(veln_,velnm_, accn_,
+                                        timealgo_, dta_, theta_, hist_);
 
   // -------------------------------------------------------------------
   //                     do explicit predictor step
@@ -745,6 +740,8 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
     discret_->ClearState();
 
     // set all parameters and states required for Neumann conditions
+    eleparams.set("low-Mach-number solver",loma_);
+    eleparams.set("thermodynamic pressure",thermpressnp_);
     if (timealgo_==timeint_afgenalpha)
     {
       eleparams.set("total time",time_-(1-alphaF_)*dta_);
@@ -755,13 +752,10 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
       eleparams.set("total time",time_);
       eleparams.set("thsl",theta_*dta_);
     }
-    // For generalized-alpha, the following is an approximation,
-    // since actually vedeaf would be required, which is not yet
-    // available, though.
-    discret_->SetState("vedenp",vedenp_);
-    neumann_loads_->PutScalar(0.0);
 
     // evaluate Neumann conditions
+    neumann_loads_->PutScalar(0.0);
+    discret_->SetState("vescnp",vescnp_);
     discret_->EvaluateNeumann(eleparams,*neumann_loads_);
     discret_->ClearState();
   }
@@ -771,6 +765,8 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
   //  set "pseudo-theta", calculate initial accelerations according to
   //  prescribed Dirichlet values for generalized-alpha time
   //  integration.
+  //  For one-step-theta/BDF2 time-integration scheme:
+  //  calculate initial time derivatives of scalar
   // -------------------------------------------------------------------
   if (timealgo_==timeint_afgenalpha)
   {
@@ -805,13 +801,7 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
     //    acc    = acc * --------- + ------------
     //       (0)           gamma      gamma * dt
     //
-    // in case of conservative form: velocity*density
-    if (loma_ != "No" and convform_ == "conservative")
-    {
-      accnp_->Multiply(1.0,*velnp_,*vedenp_,0.0);
-      accnp_->Multiply(-1.0,*veln_,*veden_,1.0);
-    }
-    else accnp_->Update(1.0,*velnp_,-1.0,*veln_,0.0);
+    accnp_->Update(1.0,*velnp_,-1.0,*veln_,0.0);
     accnp_->Update((gamma_-1.0)/gamma_,*accn_,1.0/(gamma_*dta_));
 
     // -------------------------------------------------------------------
@@ -883,6 +873,15 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
     itnum++;
 
     // -------------------------------------------------------------------
+    // compute time derivative of scalar for low-Mach-number flow
+    // -------------------------------------------------------------------
+    if (loma_)
+      TIMEINT_THETA_BDF2::CalculateAcceleration(vescnp_,vescn_, vescnm_,
+                                                accn_, timealgo_,
+                                                step_, theta_, dta_, dtp_,
+                                                accnp_);
+
+    // -------------------------------------------------------------------
     // call elements to calculate system matrix and RHS
     // -------------------------------------------------------------------
     {
@@ -930,7 +929,6 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       eleparams.set("fs subgrid viscosity",fssgv_);
       eleparams.set("Linearisation",newton_);
       eleparams.set("low-Mach-number solver",loma_);
-      eleparams.set("eos factor",eosfac_);
       eleparams.set("subgrid-scale velocity",sgvel_);
 
       // parameters for stabilization
@@ -955,8 +953,12 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
         eleparams.set("using generalized-alpha time integration",false);
         eleparams.set("total time",time_);
 
+        eleparams.set("thermodynamic pressure",thermpressnp_);
+        eleparams.set("thermodynamic pressure derivative",thermpressdtnp_);
+
         discret_->SetState("velnp",velnp_);
-        discret_->SetState("vedenp",vedenp_);
+        discret_->SetState("vescnp",vescnp_);
+        discret_->SetState("acc", accnp_ );
       }
       else if (timealgo_==timeint_afgenalpha)
       {
@@ -964,11 +966,14 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
         eleparams.set("using generalized-alpha time integration",true);
         eleparams.set("total time",time_-(1-alphaF_)*dta_);
 
+        eleparams.set("thermodynamic pressure",thermpressaf_);
+        eleparams.set("thermodynamic pressure at n+alpha_M",thermpressam_);
+        eleparams.set("thermodynamic pressure derivative",thermpressdtam_);
+
         discret_->SetState("velnp", velaf_ );
-        discret_->SetState("vedenp",vedeaf_);
-        discret_->SetState("accam", accam_ );
-        if (convform_ == "conservative") discret_->SetState("vedeam",vedenp_);
-        else                             discret_->SetState("vedeam",vedeam_);
+        discret_->SetState("vescnp",vescaf_);
+        discret_->SetState("vescam",vescam_);
+        discret_->SetState("acc", accam_ );
       }
       else
       {
@@ -976,8 +981,12 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
         eleparams.set("using generalized-alpha time integration",false);
         eleparams.set("total time",time_);
 
+        eleparams.set("thermodynamic pressure",thermpressnp_);
+        eleparams.set("thermodynamic pressure derivative",thermpressdtnp_);
+
         discret_->SetState("velnp",velnp_);
-        discret_->SetState("vedenp",vedenp_);
+        discret_->SetState("vescnp",vescnp_);
+        discret_->SetState("acc", accnp_ );
       }
 
       //----------------------------------------------------------------------
@@ -1030,20 +1039,23 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           // action for elements
           condparams.set("action","calc_Neumann_inflow");
           condparams.set("thsl",theta_*dta_);
+          condparams.set("low-Mach-number solver",loma_);
 
           // set vector values needed by elements
           discret_->ClearState();
           if (timealgo_==timeint_afgenalpha)
           {
             condparams.set("using generalized-alpha time integration",true);
+            condparams.set("thermodynamic pressure",thermpressaf_);
             discret_->SetState("velnp",velaf_);
-            discret_->SetState("vedenp",vedeaf_);
+            discret_->SetState("vescnp",vescaf_);
           }
           else
           {
             condparams.set("using generalized-alpha time integration",false);
+            condparams.set("thermodynamic pressure",thermpressnp_);
             discret_->SetState("velnp",velnp_);
-            discret_->SetState("vedenp",vedenp_);
+            discret_->SetState("vescnp",vescnp_);
           }
 
           std::string condstring("FluidNeumannInflow");
@@ -1398,14 +1410,15 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
     velnp_->Update(1.0,*incvel_,1.0);
 
     // -------------------------------------------------------------------
-    // For af-generalized-alpha, also update accelerations, but do not
-    // update time derivatives of density for low-Mach-number flow.
-    // Furthermore, calculate velocities, pressures, densities,
-    // accelerations and density time derivatives at intermediate time
+    // For af-generalized-alpha: update accelerations, but do not
+    // update time derivatives of scalar for low-Mach-number flow
+    // Furthermore, calculate velocities, pressures, scalars,
+    // accelerations and scalar time derivatives at intermediate time
     // steps n+alpha_F and n+alpha_M, respectively, for next iteration.
     // This has to be done at the end of the iteration, since we might
     // need the velocities at n+alpha_F in a potential coupling
     // algorithm, for instance.
+    // For one-step-theta/BDF2: compute scalar time derivatives
     // -------------------------------------------------------------------
     if (timealgo_==timeint_afgenalpha)
     {
@@ -1585,13 +1598,16 @@ void FLD::FluidImplicitTimeInt::LinearSolve()
     eleparams.set("total time",time_);
     eleparams.set("thsl",theta_*dta_);
     eleparams.set("low-Mach-number solver",loma_);
-    eleparams.set("eos factor",eosfac_);
     eleparams.set("subgrid-scale velocity",sgvel_);
+
+    eleparams.set("thermodynamic pressure",thermpressnp_);
+    eleparams.set("thermodynamic pressure derivative",thermpressdtnp_);
 
     // set vector values needed by elements
     discret_->ClearState();
-    discret_->SetState("velnp",velnp_);
-    discret_->SetState("vedenp",vedenp_);
+    discret_->SetState("velnp" ,velnp_);
+    discret_->SetState("vescnp",vescnp_);
+    discret_->SetState("acc",   accnp_ );
     discret_->SetState("hist"  ,hist_ );
 
     // call standard loop over linear elements
@@ -1754,6 +1770,15 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
     itnum++;
 
     // -------------------------------------------------------------------
+    // compute time derivative of scalar for low-Mach-number flow
+    // -------------------------------------------------------------------
+    if (loma_)
+      TIMEINT_THETA_BDF2::CalculateAcceleration(vescnp_,vescn_, vescnm_,
+                                                accn_, timealgo_,
+                                                step_, theta_, dta_, dtp_,
+                                                accnp_);
+
+    // -------------------------------------------------------------------
     // call elements to calculate system matrix and rhs and assemble
     // -------------------------------------------------------------------
     AssembleMatAndRHS();
@@ -1909,14 +1934,15 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
     velnp_->Update(1.0,*incvel_,1.0);
 
     // -------------------------------------------------------------------
-    // For af-generalized-alpha, also update accelerations, but do not
-    // update time derivatives of density for low-Mach-number flow.
-    // Furthermore, calculate velocities, pressures, densities,
-    // accelerations and density time derivatives at intermediate time
+    // For af-generalized-alpha: update accelerations, but do not
+    // update time derivatives of scalar for low-Mach-number flow
+    // Furthermore, calculate velocities, pressures, scalars,
+    // accelerations and scalar time derivatives at intermediate time
     // steps n+alpha_F and n+alpha_M, respectively, for next iteration.
     // This has to be done at the end of the iteration, since we might
     // need the velocities at n+alpha_F in a potential coupling
     // algorithm, for instance.
+    // For one-step-theta/BDF2: compute scalar time derivatives
     // -------------------------------------------------------------------
     if (timealgo_==timeint_afgenalpha)
     {
@@ -2043,10 +2069,14 @@ void FLD::FluidImplicitTimeInt::GenAlphaIntermediateValues()
   velaf_->Update((alphaF_),*velnp_,(1.0-alphaF_),*veln_,0.0);
 
   // values only required for low-Mach-number flow
-  if (loma_ != "No")
+  if (loma_)
   {
-    vedeaf_->Update((alphaF_),*vedenp_,(1.0-alphaF_),*veden_,0.0);
-    vedeam_->Update((alphaM_),*vedenp_,(1.0-alphaM_),*veden_,0.0);
+    vescaf_->Update((alphaF_),*vescnp_,(1.0-alphaF_),*vescn_,0.0);
+    vescam_->Update((alphaM_),*vescnp_,(1.0-alphaM_),*vescn_,0.0);
+
+    thermpressaf_   = alphaF_*thermpressnp_   + (1.0-alphaF_)*thermpressn_;
+    thermpressam_   = alphaM_*thermpressnp_   + (1.0-alphaM_)*thermpressn_;
+    thermpressdtam_ = alphaM_*thermpressdtnp_ + (1.0-alphaM_)*thermpressdtn_;
   }
 
 } // FluidImplicitTimeInt::GenAlphaIntermediateValues
@@ -2101,7 +2131,6 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   eleparams.set("fs subgrid viscosity",fssgv_);
   eleparams.set("Linearisation",newton_);
   eleparams.set("low-Mach-number solver",loma_);
-  eleparams.set("eos factor",eosfac_);
   eleparams.set("subgrid-scale velocity",sgvel_);
 
   // parameters for stabilization
@@ -2126,8 +2155,12 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
     eleparams.set("using generalized-alpha time integration",false);
     eleparams.set("total time",time_);
 
-    discret_->SetState("velnp",velnp_);
-    discret_->SetState("vedenp",vedenp_);
+    eleparams.set("thermodynamic pressure",thermpressnp_);
+    eleparams.set("thermodynamic pressure derivative",thermpressdtnp_);
+
+    discret_->SetState("velnp", velnp_ );
+    discret_->SetState("vescnp",vescnp_);
+    discret_->SetState("acc",   accnp_ );
   }
   else if (timealgo_==timeint_afgenalpha)
   {
@@ -2135,11 +2168,14 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
     eleparams.set("using generalized-alpha time integration",true);
     eleparams.set("total time",time_-(1-alphaF_)*dta_);
 
+    eleparams.set("thermodynamic pressure",thermpressaf_);
+    eleparams.set("thermodynamic pressure at n+alpha_M",thermpressam_);
+    eleparams.set("thermodynamic pressure derivative",thermpressdtam_);
+
     discret_->SetState("velnp", velaf_ );
-    discret_->SetState("vedenp",vedeaf_);
-    discret_->SetState("accam", accam_ );
-    if (convform_ == "conservative") discret_->SetState("vedeam",vedenp_);
-    else                             discret_->SetState("vedeam",vedeam_);
+    discret_->SetState("vescnp",vescaf_);
+    discret_->SetState("vescam",vescam_);
+    discret_->SetState("acc",   accam_ );
   }
   else
   {
@@ -2147,8 +2183,12 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
     eleparams.set("using generalized-alpha time integration",false);
     eleparams.set("total time",time_);
 
+    eleparams.set("thermodynamic pressure",thermpressnp_);
+    eleparams.set("thermodynamic pressure derivative",thermpressdtnp_);
+
     discret_->SetState("velnp",velnp_);
-    discret_->SetState("vedenp",vedenp_);
+    discret_->SetState("vescnp",vescnp_);
+    discret_->SetState("acc", accnp_ );
   }
 
   //----------------------------------------------------------------------
@@ -2169,20 +2209,23 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
     // action for elements
     condparams.set("action","calc_Neumann_inflow");
     condparams.set("thsl",theta_*dta_);
+    condparams.set("low-Mach-number solver",loma_);
 
     // set vector values needed by elements
     discret_->ClearState();
     if (timealgo_==timeint_afgenalpha)
     {
       condparams.set("using generalized-alpha time integration",true);
+      condparams.set("thermodynamic pressure",thermpressaf_);
       discret_->SetState("velnp",velaf_);
-      discret_->SetState("vedenp",vedeaf_);
+      discret_->SetState("vescnp",vescaf_);
     }
     else
     {
       condparams.set("using generalized-alpha time integration",false);
+      condparams.set("thermodynamic pressure",thermpressnp_);
       discret_->SetState("velnp",velnp_);
-      discret_->SetState("vedenp",vedenp_);
+      discret_->SetState("vescnp",vescnp_);
     }
 
     std::string condstring("FluidNeumannInflow");
@@ -2229,54 +2272,24 @@ void FLD::FluidImplicitTimeInt::GenAlphaUpdateAcceleration()
   Teuchos::RCP<Epetra_Vector> onlyvel  = velpressplitter_.ExtractOtherVector(velnp_);
   Teuchos::RCP<Epetra_Vector> onlyveln = velpressplitter_.ExtractOtherVector(veln_);
 
-  // in case of conservative form: velocity*density
-  if (loma_ != "No" and convform_ == "conservative")
-  {
-    // -------------------------------------------------------------------
-    // separate current density at n+1 and at n, get result vector
-    Teuchos::RCP<Epetra_Vector> onlydens = velpressplitter_.ExtractOtherVector(vedenp_);
-    Teuchos::RCP<Epetra_Vector> onlydensn = velpressplitter_.ExtractOtherVector(veden_);
-    Teuchos::RCP<Epetra_Vector> denstimesvel = velpressplitter_.ExtractOtherVector(vedenp_);
+  // -------------------------------------------------------------------
+  // compute vel_n+1 - vel_n / (gamma*dt)
+  const double fact1 = 1.0/(gamma_*dta_);
+  onlyvel->Update(-fact1,*onlyveln,fact1);
 
-    // -------------------------------------------------------------------
-    // compute dens_n+1*vel_n+1 - dens_n*vel_n / (gamma*dt)
-    const double fact1 = 1.0/(gamma_*dta_);
-    denstimesvel->Multiply( fact1,*onlyvel ,*onlydens ,0.0);
-    denstimesvel->Multiply(-fact1,*onlyveln,*onlydensn,1.0);
+  // -------------------------------------------------------------------
+  // separate acceleration at n from potential density time derivative
+  velpressplitter_.ExtractOtherVector(accn_,onlyveln);
 
-    // -------------------------------------------------------------------
-    // separate density-weighted acceleration at n
-    velpressplitter_.ExtractOtherVector(accn_,onlyveln);
+  // -------------------------------------------------------------------
+  // compute ((gamma-1)/gamma)*acc_n and add to previous result
+  const double fact2 = (gamma_-1.0)/gamma_;
+  onlyvel->Update(fact2,*onlyveln,1.0);
 
-    // -------------------------------------------------------------------
-    // compute ((gamma-1)/gamma)*dens_n*acc_n and add to previous result
-    const double fact2 = (gamma_-1.0)/gamma_;
-    denstimesvel->Update(fact2,*onlyveln,1.0);
+  // -------------------------------------------------------------------
+  // insert result into accnp-vector
+  velpressplitter_.InsertOtherVector(onlyvel,accnp_);
 
-    // -------------------------------------------------------------------
-    // insert result into accnp-vector
-    velpressplitter_.InsertOtherVector(denstimesvel,accnp_);
-  }
-  else
-  {
-    // -------------------------------------------------------------------
-    // compute vel_n+1 - vel_n / (gamma*dt)
-    const double fact1 = 1.0/(gamma_*dta_);
-    onlyvel->Update(-fact1,*onlyveln,fact1);
-
-    // -------------------------------------------------------------------
-    // separate acceleration at n from potential density time derivative
-    velpressplitter_.ExtractOtherVector(accn_,onlyveln);
-
-    // -------------------------------------------------------------------
-    // compute ((gamma-1)/gamma)*acc_n and add to previous result
-    const double fact2 = (gamma_-1.0)/gamma_;
-    onlyvel->Update(fact2,*onlyveln,1.0);
-
-    // -------------------------------------------------------------------
-    // insert result into accnp-vector
-    velpressplitter_.InsertOtherVector(onlyvel,accnp_);
-  }
 } // FluidImplicitTimeInt::GenAlphaUpdateAcceleration
 
 
@@ -2350,7 +2363,6 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   eleparams.set("fs subgrid viscosity",fssgv_);
   eleparams.set("Linearisation",newton_);
   eleparams.set("low-Mach-number solver",loma_);
-  eleparams.set("eos factor",eosfac_);
   eleparams.set("subgrid-scale velocity",sgvel_);
 
   // parameters for stabilization
@@ -2375,11 +2387,14 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
     eleparams.set("using generalized-alpha time integration",true);
     eleparams.set("total time",time_-(1-alphaF_)*dta_);
 
+    eleparams.set("thermodynamic pressure",thermpressaf_);
+    eleparams.set("thermodynamic pressure at n+alpha_M",thermpressam_);
+    eleparams.set("thermodynamic pressure derivative",thermpressdtam_);
+
     discret_->SetState("velnp", velaf_ );
-    discret_->SetState("vedenp",vedeaf_);
-    discret_->SetState("accam", accam_ );
-    if (convform_ == "conservative") discret_->SetState("vedeam",vedenp_);
-    else                             discret_->SetState("vedeam",vedeam_);
+    discret_->SetState("vescnp",vescaf_);
+    discret_->SetState("vescam",vescam_);
+    discret_->SetState("acc",   accam_ );
   }
   else
   {
@@ -2387,8 +2402,12 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
     eleparams.set("using generalized-alpha time integration",false);
     eleparams.set("total time",time_);
 
+    eleparams.set("thermodynamic pressure",thermpressnp_);
+    eleparams.set("thermodynamic pressure derivative",thermpressdtnp_);
+
     discret_->SetState("velnp",velnp_);
-    discret_->SetState("vedenp",vedenp_);
+    discret_->SetState("vescnp",vescnp_);
+    discret_->SetState("acc", accnp_ );
   }
 
   // call loop over elements
@@ -2471,10 +2490,6 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
  |                                                                      |
  |  accn_  = (velnp_-veln_) / (dt)                                      |
  |                                                                      |
- |  For low-Mach-number flow, the same is done for density values,      |
- |  which are located at the "pressure dofs" of "vede"-vectors and all  |
- |  velocity values are multiplied by the respective density values.    |
- |                                                                      |
  |                                                           gammi 04/07|
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -2482,22 +2497,9 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::FluidImplicitTimeInt::TimeUpdate()
 {
-  if (loma_ != "No")
-  {
-    // compute accelerations and density time derivatives
-    TIMEINT_THETA_BDF2::CalculateAcceleration(
-        vedenp_, veden_, vedenm_, accn_,
-        timealgo_, step_, theta_, dta_, dtp_,
-        accnp_);
-  }
-  else
-  {
-    // compute accelerations
-    TIMEINT_THETA_BDF2::CalculateAcceleration(
-        velnp_, veln_, velnm_, accn_,
-        timealgo_, step_, theta_, dta_, dtp_,
-        accnp_);
-  }
+  // compute accelerations
+  TIMEINT_THETA_BDF2::CalculateAcceleration(velnp_, veln_, velnm_, accn_,
+                            timealgo_, step_, theta_, dta_, dtp_, accnp_);
 
   // update old acceleration
   accn_->Update(1.0,*accnp_,0.0);
@@ -2548,10 +2550,12 @@ void FLD::FluidImplicitTimeInt::StatisticsAndOutput()
   // -------------------------------------------------------------------
   LiftDrag();
 
+  // compute equation-of-state factor
+  const double eosfac = thermpressnp_/gasconstant_;
   // -------------------------------------------------------------------
   //   add calculated velocity to mean value calculation (statistics)
   // -------------------------------------------------------------------
-  statisticsmanager_->DoTimeSample(step_,time_,eosfac_);
+  statisticsmanager_->DoTimeSample(step_,time_,eosfac);
 
   // -------------------------------------------------------------------
   //                         output of solution
@@ -2561,7 +2565,7 @@ void FLD::FluidImplicitTimeInt::StatisticsAndOutput()
   // -------------------------------------------------------------------
   //          dumping of turbulence statistics if required
   // -------------------------------------------------------------------
-  statisticsmanager_->DoOutput(output_,step_,eosfac_);
+  statisticsmanager_->DoOutput(output_,step_,eosfac);
 
   return;
 } // FluidImplicitTimeInt::StatisticsAndOutput
@@ -2614,12 +2618,12 @@ void FLD::FluidImplicitTimeInt::Output()
       output_.WriteVector("velnm",velnm_);
 
       // vectors only required for low-Mach-number flow
-      if (loma_ != "No")
+      if (loma_)
       {
-        // velocity/density vector at time n+1, n and n-1
-        output_.WriteVector("vedenp",vedenp_);
-        output_.WriteVector("veden", veden_);
-        output_.WriteVector("vedenm",vedenm_);
+        // velocity/scalar vector at time n+1, n and n-1
+        output_.WriteVector("vescnp",vescnp_);
+        output_.WriteVector("vescn", vescn_);
+        output_.WriteVector("vescnm",vescnm_);
       }
 
       if (alefluid_)
@@ -2664,12 +2668,12 @@ void FLD::FluidImplicitTimeInt::Output()
     output_.WriteVector("velnm",velnm_);
 
     // vectors only required for low-Mach-number flow
-    if (loma_ != "No")
+    if (loma_)
     {
-      // velocity/density vector at time n+1, n and n-1
-      output_.WriteVector("vedenp",vedenp_);
-      output_.WriteVector("veden", veden_);
-      output_.WriteVector("vedenm",vedenm_);
+      // velocity/scalar vector at time n+1, n and n-1
+      output_.WriteVector("vescnp",vescnp_);
+      output_.WriteVector("vescn", vescn_);
+      output_.WriteVector("vescnm",vescnm_);
     }
 
     // also write impedance bc information if required
@@ -2703,11 +2707,11 @@ void FLD::FluidImplicitTimeInt::ReadRestart(int step)
   reader.ReadVector(accn_ ,"accn");
 
   // vectors only required for low-Mach-number flow
-  if (loma_ != "No")
+  if (loma_)
   {
-    reader.ReadVector(vedenp_,"vedenp");
-    reader.ReadVector(veden_, "veden");
-    reader.ReadVector(vedenm_,"vedenm");
+    reader.ReadVector(vescnp_,"vescnp");
+    reader.ReadVector(vescn_, "vescn");
+    reader.ReadVector(vescnm_,"vescnm");
   }
 
   if (alefluid_)
@@ -2792,7 +2796,6 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
   eleparams.set("fs subgrid viscosity","No");
   eleparams.set("Linearisation",newton_);
   eleparams.set("low-Mach-number solver",loma_);
-  eleparams.set("eos factor",eosfac_);
   eleparams.set("subgrid-scale velocity",sgvel_);
 
   // parameters for stabilization
@@ -2812,8 +2815,12 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
     eleparams.set("using generalized-alpha time integration",false);
     eleparams.set("total time",time_);
 
+    eleparams.set("thermodynamic pressure",thermpressnp_);
+    eleparams.set("thermodynamic pressure derivative",thermpressdtnp_);
+
     discret_->SetState("velnp",velnp_);
-    discret_->SetState("vedenp",vedenp_);
+    discret_->SetState("vescnp",vescnp_);
+    discret_->SetState("acc", accnp_ );
   }
   else if (timealgo_==timeint_afgenalpha)
   {
@@ -2821,11 +2828,14 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
     eleparams.set("using generalized-alpha time integration",true);
     eleparams.set("total time",time_-(1-alphaF_)*dta_);
 
+    eleparams.set("thermodynamic pressure",thermpressaf_);
+    eleparams.set("thermodynamic pressure at n+alpha_M",thermpressam_);
+    eleparams.set("thermodynamic pressure derivative",thermpressdtam_);
+
     discret_->SetState("velnp", velaf_ );
-    discret_->SetState("vedenp",vedeaf_);
-    discret_->SetState("accam", accam_ );
-    if (convform_ == "conservative") discret_->SetState("vedeam",vedenp_);
-    else                             discret_->SetState("vedeam",vedeam_);
+    discret_->SetState("vescnp",vescaf_);
+    discret_->SetState("vescam",vescam_);
+    discret_->SetState("acc",   accam_ );
   }
   else
   {
@@ -2833,8 +2843,12 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
     eleparams.set("using generalized-alpha time integration",false);
     eleparams.set("total time",time_);
 
+    eleparams.set("thermodynamic pressure",thermpressnp_);
+    eleparams.set("thermodynamic pressure derivative",thermpressdtnp_);
+
     discret_->SetState("velnp",velnp_);
-    discret_->SetState("vedenp",vedenp_);
+    discret_->SetState("vescnp",vescnp_);
+    discret_->SetState("acc", accnp_ );
   }
 
   // element evaluation for getting system matrix
@@ -3204,16 +3218,15 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
  | set time-step-related fields for low-Mach-number flow       vg 08/08 |
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::SetTimeLomaFields(
-   RCP<const Epetra_Vector> densnp,
-   RCP<const Epetra_Vector> densn,
-   RCP<const Epetra_Vector> densnm,
+   RCP<const Epetra_Vector> scalarnp,
+   RCP<const Epetra_Vector> scalarn,
+   RCP<const Epetra_Vector> scalardtn,
+   const double             thermpressnp,
+   const double             thermpressn,
+   const double             thermpressdtn,
    RCP<const Epetra_Vector> scatraresidual,
-   const int                numscal,
-   const double             eosfac)
+   const int                numscal)
 {
-  // get factor for equation of state (i.e., therm. press. / gas constant)
-  eosfac_ = eosfac;
-
   // set number of degrees of freedom based on number of spatial dimensions
   int numdof = numdim_ + 1;
 
@@ -3221,122 +3234,35 @@ void FLD::FluidImplicitTimeInt::SetTimeLomaFields(
   vector<int>    Indices(numdof);
   vector<double> Values(numdof);
 
-  // There are three different ways for filling the vedenp/veden-vectors:
-  // 1) generalized-alpha/conservative: vel-dofs: density,  pre-dofs: density
-  // 2) generalized-alpha/convective:   vel-dofs: velocity, pre-dofs: density
-  // 3) one-step-theta/BDF2:    vel-dofs: velocity*density, pre-dofs: density
-  // Furthermore, the accn-vector is filled with time derivatives of density
-  // at pre-dof locations for generalized-alpha time integration (contained in
-  // densnm-vector here).
-  // Moreover, for BDF2, the same mentioned above for the vedenp/veden-vectors
-  // is done for the vedenm-vector.
-  if (timealgo_==timeint_afgenalpha)
+  //--------------------------------------------------------------------------
+  // Filling the vescn(p)-vector: vel-dofs: velocity, pre-dofs: scalar
+  // Filling the accn-vector: pre-dofs: time derivative of scalar
+  //--------------------------------------------------------------------------
+  // get velocity dofs for vesc-vectors as copies from vel-vectors
+  vescnp_->Update(1.0,*velnp_,0.0);
+  vescn_->Update(1.0,*veln_,0.0);
+
+  // loop all nodes on the processor
+  for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
   {
-    if (convform_ == "conservative")
-    {
-      // loop all nodes on the processor
-      for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
-      {
-        const int densloc = lnodeid*numscal + numscal - 1;
+    const int scalarloc = lnodeid*numscal + numscal - 1;
 
-        for(int index=0;index<numdim_;++index)
-        {
-          Indices[index] = lnodeid*numdof + index;
+    Indices[numdim_] = lnodeid*numdof + numdim_;
 
-          Values[index] = (*densnp)[densloc];
-          vedenp_->ReplaceMyValues(1,&Values[index],&Indices[index]);
+    Values[numdim_] = (*scalarnp)[scalarloc];
+    vescnp_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
 
-          Values[index] = (*densn)[densloc];
-          veden_->ReplaceMyValues(1,&Values[index],&Indices[index]);
-        }
+    Values[numdim_] = (*scalarn)[scalarloc];
+    vescn_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
 
-        Indices[numdim_] = lnodeid*numdof + numdim_;
-
-        Values[numdim_] = (*densnp)[densloc];
-        vedenp_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
-
-        Values[numdim_] = (*densn)[densloc];
-        veden_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
-
-        Values[numdim_] = (*densnm)[densloc];
-        accn_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
-      }
-    }
-    else
-    {
-      // get velocity dofs for vede-vectors as copies from vel-vectors
-      vedenp_->Update(1.0,*velnp_,0.0);
-      veden_->Update(1.0,*veln_,0.0);
-
-      // loop all nodes on the processor
-      for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
-      {
-        const int densloc = lnodeid*numscal + numscal - 1;
-
-        Indices[numdim_] = lnodeid*numdof + numdim_;
-
-        Values[numdim_] = (*densnp)[densloc];
-        vedenp_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
-
-        Values[numdim_] = (*densn)[densloc];
-        veden_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
-
-        Values[numdim_] = (*densnm)[densloc];
-        accn_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
-      }
-    }
+    Values[numdim_] = (*scalardtn)[scalarloc];
+    accn_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
   }
-  else
-  {
-    // insert density values in vedenp- and veden-vectors
-    // loop all nodes on the processor
-    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
-    {
-      const int densloc = lnodeid*numscal + numscal - 1;
 
-      for(int index=0;index<numdim_;++index)
-      {
-        Indices[index] = lnodeid*numdof + index;
-
-        Values[index] = (*densnp)[densloc]*(*velnp_)[Indices[index]];
-        vedenp_->ReplaceMyValues(1,&Values[index],&Indices[index]);
-
-        Values[index] = (*densn)[densloc]*(*veln_)[Indices[index]];
-        veden_->ReplaceMyValues(1,&Values[index],&Indices[index]);
-      }
-
-      Indices[numdim_] = lnodeid*numdof + numdim_;
-
-      Values[numdim_] = (*densnp)[densloc];
-      vedenp_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
-
-      Values[numdim_] = (*densn)[densloc];
-      veden_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
-    }
-
-    if (timealgo_==timeint_bdf2)
-    {
-      // insert density values in vedenm-vector
-      // loop all nodes on the processor
-      for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
-      {
-        const int densloc = lnodeid*numscal + numscal - 1;
-
-        for(int index=0;index<numdim_;++index)
-        {
-          Indices[index] = lnodeid*numdof + index;
-
-          Values[index] = (*densnm)[densloc]*(*velnm_)[Indices[index]];
-          vedenm_->ReplaceMyValues(1,&Values[index],&Indices[index]);
-        }
-
-        Indices[numdim_] = lnodeid*numdof + numdim_;
-
-        Values[numdim_] = (*densnm)[densloc];
-        vedenm_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
-      }
-    }
-  }
+  // get thermodynamic pressure at n+1
+  thermpressnp_  = thermpressnp;
+  thermpressn_   = thermpressn;
+  thermpressdtn_ = thermpressdtn;
 
   // add scatraresidual to trueresidual at pre-dofs
   if (scatraresidual != Teuchos::null)
@@ -3361,14 +3287,12 @@ void FLD::FluidImplicitTimeInt::SetTimeLomaFields(
  | set outer-iteration-related fields for low-Mach-number flow vg 08/08 |
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::SetIterLomaFields(
-   RCP<const Epetra_Vector> densnp,
-   RCP<const Epetra_Vector> densdtnp,
-   const int                numscal,
-   const double             eosfac)
+   RCP<const Epetra_Vector> scalarnp,
+   RCP<const Epetra_Vector> scalardtnp,
+   const double             thermpressnp,
+   const double             thermpressdtnp,
+   const int                numscal)
 {
-  // get factor for equation of state (i.e., therm. press. / gas constant)
-  eosfac_ = eosfac;
-
   // set number of degrees of freedom based on number orf spatial dimensions
   int numdof = numdim_ + 1;
 
@@ -3376,82 +3300,31 @@ void FLD::FluidImplicitTimeInt::SetIterLomaFields(
   vector<int>    Indices(numdof);
   vector<double> Values(numdof);
 
-  // There are three different ways for filling the vedenp-vector:
-  // 1) generalized-alpha/conservative: vel-dofs: density,  pre-dofs: density
-  // 2) generalized-alpha/convective:   vel-dofs: velocity, pre-dofs: density
-  // 3) one-step-theta/BDF2:    vel-dofs: velocity*density, pre-dofs: density
-  // Furthermore, the accnp-vector is filled with time derivatives of density
-  // at pre-dof locations for generalized-alpha time integration
-  if (timealgo_==timeint_afgenalpha)
+  //--------------------------------------------------------------------------
+  // Filling the vescnp-vector: vel-dofs: velocity, pre-dofs: scalar
+  // Filling the accnp-vector: pre-dofs: time derivative of scalar
+  // (time derivative of scalar actually only required for generalized-alpha)
+  //--------------------------------------------------------------------------
+  // get velocity dofs for vescnp-vector as copies from velnp-vector
+  vescnp_->Update(1.0,*velnp_,0.0);
+
+  // loop all nodes on the processor
+  for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
   {
-    if (convform_ == "conservative")
-    {
-      // insert density values in vedenp-vector
-      // loop all nodes on the processor
-      for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
-      {
-        const int densloc = lnodeid*numscal + numscal - 1;
+    const int scalarloc = lnodeid*numscal + numscal - 1;
 
-        for(int index=0;index<numdim_;++index)
-        {
-          Indices[index] = lnodeid*numdof + index;
+    Indices[numdim_] = lnodeid*numdof + numdim_;
 
-          Values[index] = (*densnp)[densloc];
-          vedenp_->ReplaceMyValues(1,&Values[index],&Indices[index]);
-        }
+    Values[numdim_] = (*scalarnp)[scalarloc];
+    vescnp_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
 
-        Indices[numdim_] = lnodeid*numdof + numdim_;
-
-        Values[numdim_] = (*densnp)[densloc];
-        vedenp_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
-
-        Values[numdim_] = (*densdtnp)[densloc];
-        accnp_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
-      }
-    }
-    else
-    {
-      // get velocity dofs for vedenp-vector as copies from velnp-vector
-      vedenp_->Update(1.0,*velnp_,0.0);
-
-      // insert density time derivative values in accn-vector
-      // loop all nodes on the processor
-      for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
-      {
-        const int densloc = lnodeid*numscal + numscal - 1;
-
-        Indices[numdim_] = lnodeid*numdof + numdim_;
-
-        Values[numdim_] = (*densnp)[densloc];
-        vedenp_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
-
-        Values[numdim_] = (*densdtnp)[densloc];
-        accnp_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
-      }
-    }
+    Values[numdim_] = (*scalardtnp)[scalarloc];
+    accnp_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
   }
-  else
-  {
-    // insert density values in vedenp-vector
-    // loop all nodes on the processor
-    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
-    {
-      const int densloc = lnodeid*numscal + numscal - 1;
 
-      for(int index=0;index<numdim_;++index)
-      {
-        Indices[index] = lnodeid*numdof + index;
-
-        Values[index] = (*densnp)[densloc]*(*velnp_)[Indices[index]];
-        vedenp_->ReplaceMyValues(1,&Values[index],&Indices[index]);
-      }
-
-      Indices[numdim_] = lnodeid*numdof + numdim_;
-
-      Values[numdim_] = (*densnp)[densloc];
-      vedenp_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
-    }
-  }
+  // get thermodynamic pressure and its time derivative at n+1
+  thermpressnp_   = thermpressnp;
+  thermpressdtnp_ = thermpressdtnp;
 
   return;
 
@@ -3592,6 +3465,9 @@ void FLD::FluidImplicitTimeInt::SolveStationaryProblem()
       eleparams.set("thsl",1.0); // no timefac in stationary case
       eleparams.set("form of convective term",convform_);
       eleparams.set("fs subgrid viscosity",fssgv_);
+      eleparams.set("low-Mach-number solver",loma_);
+
+      eleparams.set("thermodynamic pressure",thermpressnp_);
 
       // set vector values needed by elements
       discret_->ClearState();
@@ -3604,8 +3480,8 @@ void FLD::FluidImplicitTimeInt::SolveStationaryProblem()
       // evaluate Neumann b.c.
       //eleparams.set("inc_density",density_);
 
-      discret_->SetState("vedenp",vedenp_);
       neumann_loads_->PutScalar(0.0);
+      discret_->SetState("vescnp",vescnp_);
       discret_->EvaluateNeumann(eleparams,*neumann_loads_);
       discret_->ClearState();
     }
@@ -3852,7 +3728,6 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
     eleparams.set("Linearisation",newton_);
     eleparams.set("form of convective term",convform_);
     eleparams.set("low-Mach-number solver",loma_);
-    eleparams.set("eos factor",eosfac_);
     eleparams.set("subgrid-scale velocity",sgvel_);
 
     // parameters for stabilization
@@ -3874,11 +3749,14 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
       eleparams.set("using generalized-alpha time integration",true);
       eleparams.set("total time",time_-(1-alphaF_)*dta_);
 
+      eleparams.set("thermodynamic pressure",thermpressaf_);
+      eleparams.set("thermodynamic pressure at n+alpha_M",thermpressam_);
+      eleparams.set("thermodynamic pressure derivative",thermpressdtam_);
+
       discret_->SetState("velnp", velaf_ );
-      discret_->SetState("vedenp",vedeaf_);
-      discret_->SetState("accam", accam_ );
-      if (convform_ == "conservative") discret_->SetState("vedeam",vedenp_);
-      else                             discret_->SetState("vedeam",vedeam_);
+      discret_->SetState("vescnp",vescaf_);
+      discret_->SetState("vescam",vescam_);
+      discret_->SetState("acc",   accam_ );
     }
     else
     {
@@ -3886,8 +3764,12 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
       eleparams.set("using generalized-alpha time integration",false);
       eleparams.set("total time",time_);
 
-      discret_->SetState("velnp",velnp_);
-      discret_->SetState("vedenp",vedenp_);
+      eleparams.set("thermodynamic pressure",thermpressnp_);
+      eleparams.set("thermodynamic pressure derivative",thermpressdtnp_);
+
+      discret_->SetState("velnp", velnp_);
+      discret_->SetState("vescnp",vescnp_);
+      discret_->SetState("acc",   accnp_ );
     }
 
     // call loop over elements

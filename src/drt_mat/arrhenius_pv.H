@@ -157,8 +157,7 @@ namespace MAT
     double ComputeDiffusivity(const double temp) const;
 
     /// compute reaction coefficient
-    double ComputeReactionCoeff(const double temp,
-                                const double dens) const;
+    double ComputeReactionCoeff(const double temp) const;
 
     /// return material parameters for element calculation
     //@{

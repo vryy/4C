@@ -122,7 +122,6 @@ DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ScaTraBoundaryImpl
     shcacp_(0.0),
     xsi_(true),
     funct_(true),
-    densfunct_(true),
     deriv_(true),
     derxy_(true),
     normal_(true),
@@ -162,8 +161,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     if (dispnp==null) dserror("Cannot get state vector 'dispnp'");
     DRT::UTILS::ExtractMyNodeBasedValues(ele,edispnp_,dispnp,nsd_);
   }
-  else
-    edispnp_.Clear();
+  else edispnp_.Clear();
 
   // Now, check for the action parameter
   const string action = params.get<string>("action","none");
@@ -322,20 +320,13 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     Epetra_SerialDenseVector evel((nsd_+1)*ielparent);
     DRT::UTILS::ExtractMyNodeBasedValues(parentele,evel,velocity,nsd_+1);
 
-    // get values of density and solution
-    RefCountPtr<const Epetra_Vector> densnp = discretization.GetState("densnp");
+    // get values of scalar
     RefCountPtr<const Epetra_Vector> phinp  = discretization.GetState("phinp");
-    if (densnp==null || phinp==null)
-      dserror("Cannot get state vector 'densnp' and/or 'phinp'");
+    if (phinp==null) dserror("Cannot get state vector 'phinp'");
 
     // extract local values from the global vectors for the parent(!) element
-    vector<double> mydensnp(lmparent.size());
     vector<double> myphinp(lmparent.size());
-    DRT::UTILS::ExtractMyValues(*densnp,mydensnp,lmparent);
     DRT::UTILS::ExtractMyValues(*phinp,myphinp,lmparent);
-
-    // this routine is only for low-Mach-number flow
-    bool temperature = true;
 
     // define vector for normal fluxes
     vector<double> mydiffflux(lm.size());
@@ -364,8 +355,6 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
         eflux,
         peleptr,
         myphinp,
-        mydensnp,
-        temperature,
         frt,
         evel,
         fluxtypestring,
@@ -381,7 +370,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
         for (int l=0; l<nsd_+1; l++)
         {
           mydiffflux[i] += eflux(l,k)*normal_(l);
-          mydivu[i]     += (evel[i*(nsd_+1)+l]/mydensnp[i])*normal_(l);
+          mydivu[i]     += evel[i*(nsd_+1)+l]*normal_(l);
         }
       }
     }
@@ -402,9 +391,9 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
   else if (action =="calc_Neumann_inflow")
   {
     // get control parameters
-    const bool is_stationary  = params.get<bool>("using stationary formulation");
-    const bool is_genalpha    = params.get<bool>("using generalized-alpha time integration");
-    const bool is_incremental = params.get<bool>("incremental solver");
+    is_stationary_  = params.get<bool>("using stationary formulation");
+    is_genalpha_    = params.get<bool>("using generalized-alpha time integration");
+    is_incremental_ = params.get<bool>("incremental solver");
 
     // get time factor and alpha_F if required
     // one-step-Theta:    timefac = theta*dt
@@ -412,16 +401,23 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     // generalized-alpha: timefac = alphaF * (gamma*/alpha_M) * dt
     double timefac = 1.0;
     double alphaF  = 1.0;
-    if (not is_stationary)
+    if (not is_stationary_)
     {
       timefac = params.get<double>("time factor");
-      if (is_genalpha)
+      if (is_genalpha_)
       {
         alphaF = params.get<double>("alpha_F");
         timefac *= alphaF;
       }
       if (timefac < 0.0) dserror("time factor is negative.");
     }
+
+    // set thermodynamic pressure and its time derivative as well as
+    // flag for turbulence model if required
+    string scaltypestr=params.get<string>("problem type");
+    thermpress_ = 0.0;
+    if (scaltypestr =="loma")
+      thermpress_ = params.get<double>("thermodynamic pressure");
 
     // we dont know the parent element's lm vector; so we have to build it here
     const int ielparent = parentele->NumNode();
@@ -435,20 +431,15 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     Epetra_SerialDenseVector evel((nsd_+1)*ielparent);
     DRT::UTILS::ExtractMyNodeBasedValues(parentele,evel,velocity,nsd_+1);
 
-    // get values of density and solution
-    RefCountPtr<const Epetra_Vector> densnp = discretization.GetState("densnp");
+    // get values of scalar
     RefCountPtr<const Epetra_Vector> phinp  = discretization.GetState("phinp");
-    if (densnp==null || phinp==null)
-      dserror("Cannot get state vector 'densnp' and/or 'phinp'");
+    if (phinp==null) dserror("Cannot get state vector 'phinp'");
 
     // extract local values from the global vectors for the parent(!) element
-    vector<double> mydensnp(lmparent.size());
     vector<double> myphinp(lmparent.size());
-    DRT::UTILS::ExtractMyValues(*densnp,mydensnp,lmparent);
     DRT::UTILS::ExtractMyValues(*phinp,myphinp,lmparent);
 
     // create object for density and solution array
-    vector<LINALG::Matrix<iel,1> > edensnp(numscal_);
     vector<LINALG::Matrix<iel,1> > ephinp(numscal_);
     LINALG::Matrix<nsd_+1,iel>     evelnp;
 
@@ -459,7 +450,6 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
       {
         // split for each tranported scalar, insert into element arrays
         ephinp[k](i,0) = myphinp[k+(i*numdofpernode_)];
-        edensnp[k](i,0) = mydensnp[k+(i*numdofpernode_)];
       }
 
       // insert velocity field into element array
@@ -471,13 +461,9 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
 
     NeumannInflow(ele,
                   ephinp,
-                  edensnp,
                   evelnp,
                   elemat1_epetra,
                   elevec1_epetra,
-                  is_stationary,
-                  is_genalpha,
-                  is_incremental,
                   timefac,
                   alphaF);
   }
@@ -590,13 +576,9 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
     const DRT::Element*                   ele,
     const vector<LINALG::Matrix<iel,1> >& ephinp,
-    const vector<LINALG::Matrix<iel,1> >& edensnp,
     const LINALG::Matrix<nsd_+1,iel>&     evelnp,
     Epetra_SerialDenseMatrix&             emat,
     Epetra_SerialDenseVector&             erhs,
-    const bool                            is_stationary,
-    const bool                            is_genalpha,
-    const bool                            is_incremental,
     const double                          timefac,
     const double                          alphaF)
 {
@@ -612,6 +594,9 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
   // determine constant normal to this element
   GetConstNormal(normal_,xyze_);
 
+  // get the material
+  RefCountPtr<MAT::Material> material = ele->Material();
+
   // integration loop
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
@@ -619,30 +604,72 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
 
     for(int k=0;k<numdofpernode_;++k)
     {
-      // density-weighted shape functions at n+1/n+alpha_F
-      densfunct_.EMultiply(funct_,edensnp[k]);
+      // get velocity at integration point
+      velint_.Multiply(evelnp,funct_);
 
-      // get (density-weighted) velocity at integration point
-      velint_.Multiply(evelnp,densfunct_);
-
-      // normal (density-weighted) velocity
+      // normal velocity
       const double normvel = velint_.Dot(normal_);
 
       if (normvel<-0.0001)
       {
+        // set density to 1.0
+        double dens = 1.0;
+
+        // get density if not constant
+        if (material->MaterialType() == INPAR::MAT::m_matlist)
+        {
+          const MAT::MatList* actmat = static_cast<const MAT::MatList*>(material.get());
+
+          const int matid = actmat->MatID(0);
+          Teuchos::RCP<const MAT::Material> singlemat = actmat->MaterialById(matid);
+
+          if (singlemat->MaterialType() == INPAR::MAT::m_arrhenius_temp)
+          {
+            const MAT::ArrheniusTemp* actsinglemat = static_cast<const MAT::ArrheniusTemp*>(singlemat.get());
+
+            // compute temperature
+            const double temp = funct_.Dot(ephinp[k]);
+
+            // compute density based on temperature and thermodynamic pressure
+            dens = actsinglemat->ComputeDensity(temp,thermpress_);
+          }
+          else dserror("type of material found in material list is not supported");
+        }
+        else if (material->MaterialType() == INPAR::MAT::m_sutherland_condif)
+        {
+          const MAT::SutherlandCondif* actmat = static_cast<const MAT::SutherlandCondif*>(material.get());
+
+          // compute temperature
+          const double temp = funct_.Dot(ephinp[k]);
+
+          // compute density based on temperature and thermodynamic pressure
+          dens = actmat->ComputeDensity(temp,thermpress_);
+        }
+        else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
+        {
+          const MAT::ArrheniusPV* actmat = static_cast<const MAT::ArrheniusPV*>(material.get());
+
+          // compute progress variable
+          const double provar = funct_.Dot(ephinp[k]);
+
+          // compute density
+          dens = actmat->ComputeDensity(provar);
+        }
+        else dserror("Material type is not supported");
+
         // integration factor for left-hand side
-        const double lhsfac = normvel*timefac*fac_;
+        const double lhsfac = dens*normvel*timefac*fac_;
 
         // integration factor for right-hand side
         double rhsfac    = 0.0;
-        if (is_incremental and is_genalpha)
+        if (is_incremental_ and is_genalpha_)
           rhsfac = lhsfac/alphaF;
-        else if (not is_incremental and is_genalpha)
+        else if (not is_incremental_ and is_genalpha_)
           rhsfac = lhsfac*(1.0-alphaF)/alphaF;
-        else if (is_incremental and not is_genalpha)
+        else if (is_incremental_ and not is_genalpha_)
         {
-          if (not is_stationary) rhsfac = lhsfac;
-          else                   rhsfac = normvel*fac_;
+          if (not is_stationary_) rhsfac = lhsfac;
+          else                    rhsfac = dens*normvel*fac_;
         }
 
         // matrix

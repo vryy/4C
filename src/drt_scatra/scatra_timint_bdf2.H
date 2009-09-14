@@ -34,9 +34,6 @@ public:
   /// Destructor
   virtual ~TimIntBDF2();
 
-  /// compute initial time derivative of density field for low-Mach-number flow
-  void ComputeInitialDensityDerivative(){return;};
-
   /// predict thermodynamic pressure for low-Mach-number flow
   void PredictThermPressure();
 
@@ -47,10 +44,7 @@ public:
   void ComputeIntermediateValues(){return;};
 
   /// compute thermodynamic pressure and time derivative for low-Mach-number flow
-  double ComputeThermPressure();
-
-  /// compute time derivative of density field for low-Mach-number flow
-  void ComputeDensityDerivative(){return;};
+  void ComputeThermPressure();
 
   /// Update the solution after convergence of the nonlinear iteration.
   /// Current solution becomes old solution of next timestep.
@@ -58,9 +52,6 @@ public:
 
   /// update thermodynamic pressure for low-Mach-number flow
   void UpdateThermPressure();
-
-  /// update density field for low-Mach-number flow
-  void UpdateDensity();
 
   /// update density field for ELCH natural convection
   void UpdateDensityElch();

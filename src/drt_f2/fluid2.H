@@ -332,6 +332,7 @@ private:
     calc_fluid_genalpha_update_for_subscales,
     calc_fluid_genalpha_average_for_subscales_and_residual,
     get_density,
+    get_gas_constant,
     integrate_shape,
     calc_gradop_and_massmatrix,
     calc_impulseeqn_implicit,

@@ -80,6 +80,8 @@ VSTAB            no_vstab
 CSTAB            cstab_qs
 CROSS-STRESS     yes_cross
 REYNOLDS-STRESS  yes_reynolds
+EVALUATION_TAU   integration_point
+EVALUATION_MAT   integration_point
 ------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 TURBULENCE_APPROACH   DNS_OR_RESVMM_LES
 PHYSICAL_MODEL        no_model
@@ -114,6 +116,8 @@ OUTMEAN          Yes
 STABTYPE         SUPG
 SUGRVEL          yes
 DEFINITION_TAU   Bazilevs
+EVALUATION_TAU   integration_point
+EVALUATION_MAT   integration_point
 ------------------------------------------------------LOMA CONTROL
 NUMSTEP          20
 TIMESTEP         1.0
@@ -122,8 +126,6 @@ ITEMAX           1
 CONVTOL          1.0E-4
 UPRES            1
 RESTARTEVRY      2000
-THERMOPRESS      98100.0
-GASCONSTANT      287.0
 CONSTHERMPRESS   Yes
 -------------------------------------------------------FSI DYNAMIC
 -------------------------------------------------------SSI DYNAMIC
@@ -10017,8 +10019,8 @@ NODE         3131     COORD 0.000000000000000e+00     0.000000000000000e+00     
 --------------------------------------------------THERMAL ELEMENTS
 ------------------------------------------------TRANSPORT ELEMENTS
 ---------------------------------------------------------MATERIALS
-MAT       1 MAT_sutherland_fluid  REFVISC 0.01178 REFTEMP 293.0 SUTHTEMP 110.4
-MAT       2 MAT_sutherland_condif REFVISC 0.01178 REFTEMP 293.0 SUTHTEMP 110.4 SHC 1004.5 PRANUM 1.0
+MAT       1 MAT_sutherland_fluid  REFVISC 0.01178 REFTEMP 293.0 SUTHTEMP 110.4 THERMPRESS 98100.0 GASCON 287.0
+MAT       2 MAT_sutherland_condif REFVISC 0.01178 REFTEMP 293.0 SUTHTEMP 110.4 SHC 1004.5 PRANUM 1.0 THERMPRESS 98100.0 GASCON 287.0
 //MAT       1 MAT_fluid  VISCOSITY 0.01178 DENSITY 1.0
 //MAT       2 MAT_condif DIFFUSIVITY 11.83137 SHC 1004.5
 ----------------------------------------------MULTILAYER MATERIALS
@@ -10058,9 +10060,9 @@ FUNCT4 EXPR 0 0.0 0 FUNCTION 1.0-y
 // STRUCTURE 2 - 0 0 0 0 0 0
 // ALE 3 - 0 0 0 0 0 0
 ------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 3026 POSITION velx     NAME velx     VALUE 1.652893315e-01 TOLERANCE 1e-4
-FLUID DIS 1 NODE 3026 POSITION vely     NAME vely     VALUE -1.195423318e-01 TOLERANCE 1e-4
-FLUID DIS 1 NODE 3026 POSITION pressure NAME pressure VALUE 7.651708237e+00 TOLERANCE 1e-4
-SCATRA DIS 1 NODE 3026 POSITION phi     NAME phi      VALUE 2.933333354e+02 TOLERANCE 1e-3
+FLUID DIS 1 NODE 3026 POSITION velx     NAME velx     VALUE 1.659369533e-01 TOLERANCE 1e-4
+FLUID DIS 1 NODE 3026 POSITION vely     NAME vely     VALUE -1.220185791e-01 TOLERANCE 1e-4
+FLUID DIS 1 NODE 3026 POSITION pressure NAME pressure VALUE 7.641881501e+00 TOLERANCE 1e-4
+SCATRA DIS 1 NODE 3026 POSITION phi     NAME phi      VALUE 2.933541710e+02 TOLERANCE 1e-3
 ---------------------------------------------------------------END
 // END

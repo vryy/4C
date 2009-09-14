@@ -41,8 +41,9 @@ SCATRA::TimIntGenAlpha::TimIntGenAlpha(
   // Vectors passed to the element
   // -----------------------------
 
-  // scalar at time n+alpha_F
+  // scalar at times n+alpha_F and n+alpha_M
   phiaf_ = LINALG::CreateVector(*dofrowmap,true);
+  phiam_ = LINALG::CreateVector(*dofrowmap,true);
 
   // temporal solution derivative at times n+1 and n
   phidtnp_ = LINALG::CreateVector(*dofrowmap,true);
@@ -51,17 +52,9 @@ SCATRA::TimIntGenAlpha::TimIntGenAlpha(
   // only required for low-Mach-number flow
   if (prbtype_ == "loma")
   {
-   // density at times n, n+alpha_M and n+alpha_F
-    densn_  = LINALG::CreateVector(*dofrowmap,true);
-    densam_ = LINALG::CreateVector(*dofrowmap,true);
-    densaf_ = LINALG::CreateVector(*dofrowmap,true);
-
-    // time derivative of density at times n+1 and n
-    densdtnp_ = LINALG::CreateVector(*dofrowmap,true);
-    densdtn_  = LINALG::CreateVector(*dofrowmap,true);
-
-    // time derivative of thermodynamic pressure at n+alpha_F and n
+    // time derivative of thermodynamic pressure at n+1, n+alpha_F and n
     // (computed if not constant, otherwise remaining zero)
+    thermpressdtnp_ = 0.0;
     thermpressdtaf_ = 0.0;
     thermpressdtn_  = 0.0;
   }
@@ -94,99 +87,11 @@ SCATRA::TimIntGenAlpha::~TimIntGenAlpha()
 void SCATRA::TimIntGenAlpha::SetOldPartOfRighthandside()
 {
   // calculation of history vector only for non-incremental formulation:
-  // (History vector is used in bot cases, but in incremental case, it
-  // contains time derivatives of (density times) scalar, see below.)
+  // (History vector is used in both cases, but in incremental case, it
+  // contains time derivatives of scalar, see below.)
+  // hist_ = phin_ + dt*(1-(gamma/alpha_M))*phidtn_
   if (not incremental_)
-  {
-    // For conservative formulation of low-Mach-number flow:
-    // hist_ = densn_*phin_ + dt*(1-(gamma/alpha_M))*phidtn_
-    if (prbtype_ == "loma" and convform_ =="conservative")
-    {
-      hist_->Multiply(1.0, *phin_, *densn_, 0.0);
-      hist_->Update(dta_*(1.0-genalphafac_),*phidtn_,1.0);
-    }
-    // hist_ = phin_ + dt*(1-(gamma/alpha_M))*phidtn_
-    else hist_->Update(1.0, *phin_, dta_*(1.0-genalphafac_), *phidtn_, 0.0);
-  }
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- | compute initial time derivative of density field            vg 12/08 |
- *----------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::ComputeInitialDensityDerivative()
-{
-  // check whether initial thermodynamic pressure is incorrectly set
-  if (thermpressn_< 1E-14) dserror("thermpressn_ is zero or negative");
-
-  // -------------------------------------------------------------------
-  // get a vector layout from the discretization to construct matching
-  // vectors and matrices
-  //                 local <-> global dof numbering
-  // -------------------------------------------------------------------
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
-
-  // for reactive systems, temperature is last dof, and all other dofs
-  // need to get the same density derivative
-  if (numscal_>1)
-  {
-    // ratio of thermodynamic pressures
-    const double thermpressratio = thermpressdtn_/thermpressn_;
-
-    // initialize vectors
-    vector<int>    Indices(numscal_);
-    vector<double> Values(numscal_);
-
-    // loop all nodes on the processor
-    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
-    {
-      // get the processor local node
-      DRT::Node* lnode = discret_->lRowNode(lnodeid);
-      // the set of degrees of freedom associated with the node
-      vector<int> nodedofset = discret_->Dof(lnode);
-
-      // the number of degrees of freedom associated with the node
-      int numdofs = nodedofset.size();
-
-      // temperature is located on the last degree of freedom
-      const int dofgid = nodedofset[numdofs-1];
-      int doflid = dofrowmap->LID(dofgid);
-      double tempn   = (*phin_)[doflid];
-      double tempdtn = (*phidtn_)[doflid];
-      double densn   = (*densn_)[doflid];
-
-      // densdtn_ = densn_*((thermpressdtn_/thermpressn_) - (tempdtn_/tempn_))
-      double densitydtn = densn * (thermpressratio - (tempdtn/tempn));
-
-      // substitute all degrees of freedom with correct density derivative
-      for (int index=0;index<numdofs;++index)
-      {
-        Indices[index] = lnodeid*numdofs + index;
-
-        Values[index] = densitydtn;
-
-        densdtn_->ReplaceMyValues(1,&Values[index],&Indices[index]);
-      }
-    }
-  }
-  else if (reaction_ == "Arrhenius_pv" or reaction_ == "mixture_fraction")
-  {
-    densdtn_->PutScalar(0.0);
-  }
-  else
-  {
-    // define auxiliary vectors
-    Teuchos::RCP<Epetra_Vector> invphi = LINALG::CreateVector(*dofrowmap,true);
-    Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*dofrowmap,true);
-
-    // densdtn_ = densn_*thermpressdtn_/thermpressn_ - densn_*phidtn_/phin_
-    invphi->Reciprocal(*phin_);
-    tmp->Multiply(1.0, *invphi, *densn_, 0.0);
-    densdtn_->Multiply(-1.0, *tmp, *phidtn_, 0.0);
-    densdtn_->Update((thermpressdtn_/thermpressn_), *densn_, 1.0);
-  }
+    hist_->Update(1.0, *phin_, dta_*(1.0-genalphafac_), *phidtn_, 0.0);
 
   return;
 }
@@ -226,29 +131,6 @@ void SCATRA::TimIntGenAlpha::PredictThermPressure()
 
 
 /*----------------------------------------------------------------------*
- | predict density for next time step for low-Mach-number flow vg 11/08 |
- *----------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::PredictDensity()
-{
-  // same-density predictor (not required to be performed, since we just
-  // updated the density field, and thus, densnp_ = densn_)
-  // consistent prediction of time derivative
-  // (not required here, for the time being, since it will be calculated
-  //  before being required by FLUID solver)
-  //double fact = (gamma_-1.0)/gamma_;
-  //densdtnp_->Update(fact,*densdtn_,0.0);
-
-  // same-density-derivative predictor
-  //densnp_->Update(dta_,*densdtn_,1.0);
-  // prediction of time derivative not required (would also not be required
-  // to be performed, since we just updated the time derivatives of density,
-  // and thus, densdtnp_ = densdtn_)
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
  | compute values at intermediate time steps                   vg 02/09 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntGenAlpha::ComputeIntermediateValues()
@@ -258,35 +140,33 @@ void SCATRA::TimIntGenAlpha::ComputeIntermediateValues()
   {
     // computation of time derivative of phi:
     // phidt(n+1) = (phi(n+1)-phi(n)) / (gamma*dt) - (1/gamma -1)*phidt(n)
-    // in conservative low-Mach-number case: density times phi instead of phi
     const double fact1 = 1.0/(gamma_*dta_);
     const double fact2 = (-1.0/gamma_) +1.0;
     phidtnp_->Update(fact2,*phidtn_,0.0);
-    if (prbtype_ == "loma" and convform_ =="conservative")
-    {
-      phidtnp_->Multiply( fact1,*phinp_,*densnp_,1.0);
-      phidtnp_->Multiply(-fact1,*phin_,*densn_,1.0);
-    }
-    else phidtnp_->Update(fact1,*phinp_,-fact1,*phin_,1.0);
+    phidtnp_->Update(fact1,*phinp_,-fact1,*phin_,1.0);
 
     // calculation of time derivative of phi at n+alpha_M, stored on
     // history vector for comfortable later transport to element routine
     hist_->Update(alphaM_,*phidtnp_,(1.0-alphaM_),*phidtn_,0.0);
-
-    // compute phi at n+alpha_F
-    phiaf_->Update(alphaF_,*phinp_,(1.0-alphaF_),*phin_,0.0);
   }
+
+  // compute phi at n+alpha_F
+  phiaf_->Update(alphaF_,*phinp_,(1.0-alphaF_),*phin_,0.0);
 
   if (prbtype_ == "loma")
   {
-    // calculation of density fields at intermediate time steps
-    densam_->Update(alphaM_,*densnp_,(1.0-alphaM_),*densn_,0.0);
-    densaf_->Update(alphaF_,*densnp_,(1.0-alphaF_),*densn_,0.0);
+    // thermodynamic pressure at n+alpha_F and n+alpha_M for low-Mach-number case
+    // -> required for evaluation of equation of state
+    thermpressaf_ = alphaF_*thermpressnp_ + (1.0-alphaF_)*thermpressn_;
+    thermpressam_ = alphaM_*thermpressnp_ + (1.0-alphaM_)*thermpressn_;
 
-    // time derivative of thermodynamic pressure at n+alpha_F
+    // time derivative of thermodyn. press. at n+alpha_F for low-Mach-number case
     // -> required as right-hand-side contribution to temperature equation,
     // hence, evaluated at n+alpha_F
     thermpressdtaf_ = alphaF_*thermpressdtnp_ + (1.0-alphaF_)*thermpressdtn_;
+
+    // compute phi at n+alpha_M
+    phiam_->Update(alphaM_,*phinp_,(1.0-alphaM_),*phin_,0.0);
   }
 
   return;
@@ -347,21 +227,14 @@ void SCATRA::TimIntGenAlpha::AddSpecificTimeIntegrationParameters(
 
   if (prbtype_ == "loma")
   {
+    params.set("thermodynamic pressure",thermpressaf_);
+    params.set("thermodynamic pressure at n+alpha_M",thermpressam_);
     params.set("time derivative of thermodynamic pressure",thermpressdtaf_);
-
-    discret_->SetState("densnp",densaf_);
-
-    if (convform_ == "conservative") discret_->SetState("densam",densnp_);
-    else                             discret_->SetState("densam",densam_);
-  }
-  else
-  {
-    discret_->SetState("densnp",densnp_);
-    discret_->SetState("densam",densnp_);
+    discret_->SetState("phiam",phiam_);
   }
 
-  if (incremental_) discret_->SetState("phinp",phiaf_);
-  else              discret_->SetState("phinp",phin_);
+  discret_->SetState("phinp",phiaf_);
+  if (not incremental_) discret_->SetState("phin",phin_);
 
   return;
 }
@@ -370,15 +243,14 @@ void SCATRA::TimIntGenAlpha::AddSpecificTimeIntegrationParameters(
 /*----------------------------------------------------------------------*
  | compute thermodynamic pressure for low-Mach-number flow     vg 12/08 |
  *----------------------------------------------------------------------*/
-double SCATRA::TimIntGenAlpha::ComputeThermPressure()
+void SCATRA::TimIntGenAlpha::ComputeThermPressure()
 {
   // compute temperature at n+alpha_F
   phiaf_->Update(alphaF_,*phinp_,(1.0-alphaF_),*phin_,0.0);
 
-  // set scalar and density vector values needed by elements
+  // set scalar values needed by elements
   discret_->ClearState();
   discret_->SetState("phinp",phiaf_);
-  discret_->SetState("densnp",densaf_);
 
   // define element parameter list
   ParameterList eleparams;
@@ -483,21 +355,6 @@ double SCATRA::TimIntGenAlpha::ComputeThermPressure()
     cout << "+--------------------------------------------------------------------------------------------+" << endl;
   }
 
-  return thermpressnp_;
-}
-
-
-/*----------------------------------------------------------------------*
- | compute time derivative of density for low-Mach-number flow vg 11/08 |
- *----------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::ComputeDensityDerivative()
-{
-  // densdt(n+1) = (dens(n+1)-dens(n))/(gamma*dt)+((gamma-1)/gamma)*densdt(n)
-  const double fact1 = 1.0/(gamma_*dta_);
-  const double fact2 = (gamma_-1.0)/gamma_;
-  densdtnp_->Update(fact1,*densnp_,-fact1,*densn_ ,0.0);
-  densdtnp_->Update(fact2,*densdtn_,1.0);
-
   return;
 }
 
@@ -514,13 +371,7 @@ void SCATRA::TimIntGenAlpha::Update()
   {
     const double fact1 = 1.0/(gamma_*dta_);
     const double fact2 = (-1.0/gamma_) +1.0;
-    // For conservative formulation of low-Mach-number flow:
-    if (prbtype_ == "loma" and convform_ =="conservative")
-    {
-      phidtn_->Multiply(fact1, *phinp_, *densnp_, fact2);
-      phidtn_->Multiply(-fact1, *phin_, *densn_, 1.0);
-    }
-    else phidtn_->Update( fact1,*phinp_,-fact1,*phin_ ,fact2);
+    phidtn_->Update(fact1,*phinp_,-fact1,*phin_,fact2);
 
     // set history variable to zero for not spoiling flux calculation
     hist_->PutScalar(0.0);
@@ -549,18 +400,6 @@ void SCATRA::TimIntGenAlpha::UpdateThermPressure()
 
 
 /*----------------------------------------------------------------------*
- | update density at n for low-Mach-number flow                vg 11/08 |
- *----------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::UpdateDensity()
-{
-  densn_->Update(1.0,*densnp_,0.0);
-  densdtn_->Update(1.0,*densdtnp_,0.0);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
  | write additional data required for restart                  vg 11/08 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntGenAlpha::OutputRestart()
@@ -569,15 +408,6 @@ void SCATRA::TimIntGenAlpha::OutputRestart()
   output_->WriteVector("phidtnp",phidtnp_);
   output_->WriteVector("phidtn", phidtn_);
   output_->WriteVector("phin",   phin_);
-
-  // additional state vectors that are needed for generalized-alpha restart
-  // in low-Mach-number case
-  if (prbtype_ == "loma")
-  {
-    output_->WriteVector("densdtnp",densdtnp_);
-    output_->WriteVector("densdtn", densdtn_);
-    output_->WriteVector("densn",   densn_);
-  }
 
   return;
 }
@@ -597,16 +427,6 @@ void SCATRA::TimIntGenAlpha::ReadRestart(int step)
   reader.ReadVector(phin_,   "phin");
   reader.ReadVector(phidtnp_,"phidtnp");
   reader.ReadVector(phidtn_, "phidtn");
-
-  // read state vectors that are needed for generalized-alpha restart
-  // in low-Mach-number case
-  if (prbtype_ == "loma")
-  {
-    reader.ReadVector(densnp_,  "densnp");
-    reader.ReadVector(densn_,   "densn");
-    reader.ReadVector(densdtnp_,"densdtnp");
-    reader.ReadVector(densdtn_, "densdtn");
-  }
 
   return;
 }

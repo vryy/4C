@@ -291,21 +291,24 @@ public:
   \brief set time-step-related fields for low-Mach-number flow
 
   */
-  void SetTimeLomaFields(RCP<const Epetra_Vector> densnp,
-                         RCP<const Epetra_Vector> densn,
-                         RCP<const Epetra_Vector> densnm,
+  void SetTimeLomaFields(RCP<const Epetra_Vector> scalarnp,
+                         RCP<const Epetra_Vector> scalarn,
+                         RCP<const Epetra_Vector> scalardtn,
+                         const double             thermpressnp,
+                         const double             thermpressn,
+                         const double             thermpressdtn,
                          RCP<const Epetra_Vector> scatraresidual,
-                         const int                numscal,
-                         const double             eosfac);
+                         const int                numscal);
 
   /*!
   \brief set outer-iteration-related fields for low-Mach-number flow
 
   */
-  void SetIterLomaFields(RCP<const Epetra_Vector> densnp,
-                         RCP<const Epetra_Vector> densdtnp,
-                         const int                numscal,
-                         const double             eosfac);
+  void SetIterLomaFields(RCP<const Epetra_Vector> scalarnp,
+                         RCP<const Epetra_Vector> scalardtnp,
+                         const double             thermpressnp,
+                         const double             thermpressdtnp,
+                         const int                numscal);
 
   /// introduce surface split extractor object
   /*!
@@ -415,11 +418,21 @@ protected:
   FLUID_TIMEINTTYPE timealgo_;
 
   /// constant density extracted from element material for incompressible flow
+  /// (set to 1.0 for low-Mach-number flow)
   double density_;
 
-  /// factor for equation of state (i.e., therm. press. / gas constant) for
-  /// low-Mach-number flow solver
-  double eosfac_;
+  /// for low-Mach-number flow solver: thermodynamic pressure and its time
+  /// derivative at various time steps
+  double thermpressnp_;
+  double thermpressn_;
+  double thermpressaf_;
+  double thermpressam_;
+  double thermpressdtnp_;
+  double thermpressdtn_;
+  double thermpressdtam_;
+
+  /// gas constant (only for low-Mach-number flow)
+  double gasconstant_;
 
   //! use (or not) linearisation of reactive terms on the element
   string newton_;
@@ -455,7 +468,7 @@ protected:
   //@}
 
   /// flag for low-Mach-number solver (no: standard incompressible solver)
-  string loma_;
+  bool loma_;
 
   /// flag for special flow: currently channel flow or flow in a lid-driven cavity
   string special_flow_;
@@ -510,25 +523,25 @@ protected:
   /// Nonlinear iteration increment vector
   RCP<Epetra_Vector>    incvel_;
 
-  //! @name accelerations and density derivatives at time n+1, n and n+alpha_M
+  //! @name acceleration (and scalar time derivative) at time n+1, n and n+alpha_M
   RCP<Epetra_Vector>    accnp_;
   RCP<Epetra_Vector>    accn_;
   RCP<Epetra_Vector>    accam_;
   //@}
 
-  //! @name velocities and pressures at time n+1, n, n-1 and n+alpha_F
+  //! @name velocity and pressure at time n+1, n, n-1 and n+alpha_F
   RCP<Epetra_Vector>    velnp_;
   RCP<Epetra_Vector>    veln_;
   RCP<Epetra_Vector>    velnm_;
   RCP<Epetra_Vector>    velaf_;
   //@}
 
-  //! @name velocities and densities at time n+1, n, n-1, n+alpha_M and n+alpha_F
-  RCP<Epetra_Vector>    vedenp_;
-  RCP<Epetra_Vector>    veden_;
-  RCP<Epetra_Vector>    vedenm_;
-  RCP<Epetra_Vector>    vedeam_;
-  RCP<Epetra_Vector>    vedeaf_;
+  //! @name velocity and scalar at time n+1, n, n-1, n+alpha_M and n+alpha_F
+  RCP<Epetra_Vector>    vescnp_;
+  RCP<Epetra_Vector>    vescn_;
+  RCP<Epetra_Vector>    vescnm_;
+  RCP<Epetra_Vector>    vescam_;
+  RCP<Epetra_Vector>    vescaf_;
   //@}
 
   //! @name displacemets at time n+1, n and n-1

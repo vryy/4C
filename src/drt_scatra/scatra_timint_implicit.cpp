@@ -62,7 +62,6 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   step_   (0),
   prbtype_  (params_->get<string>("problem type")),
   solvtype_ (params_->get<string>("solver type")),
-  reaction_ (params_->get<string>("reaction")),
   isale_    (params_->get<bool>("isale")),
   stepmax_  (params_->get<int>("max number timesteps")),
   maxtime_  (params_->get<double>("total time")),
@@ -140,7 +139,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   }
   else if (prbtype_ == "loma" and numscal_ > 1)
   {
-    // set up a species-temperature splitter
+    // set up a species-temperature splitter (if more than one scalar)
     FLD::UTILS::SetupFluidSplit(*discret_,numscal_-1,splitter_);
   }
 
@@ -179,9 +178,6 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // solutions at time n+1 and n
   phinp_ = LINALG::CreateVector(*dofrowmap,true);
   phin_  = LINALG::CreateVector(*dofrowmap,true);
-
-  // density at time n+1
-  densnp_ = LINALG::CreateVector(*dofrowmap,true);
 
   // history vector (a linear combination of phinm, phin (BDF)
   // or phin, phidtn (One-Step-Theta, Generalized-alpha))
@@ -279,8 +275,8 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   turbmodel_ = false;
   if (prbtype_ == "loma")
   {
-    // temperature and velocity increment at time n+1
-    tempincnp_ = LINALG::CreateVector(*dofrowmap,true);
+    // scalar and velocity increment at time n+1
+    phiincnp_ = LINALG::CreateVector(*dofrowmap,true);
     //velincnp_  = rcp(new Epetra_MultiVector(*noderowmap,3,true));
 
     // potential turbulence model
@@ -308,14 +304,6 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // set initial field
   // -------------------------------------------------------------------
   SetInitialField(params_->get<int>("scalar initial field"), params_->get<int>("scalar initial field func number"));
-
-  // -------------------------------------------------------------------
-  // set initial density to prescribed value (default = 1.0):
-  // - used throughout simulation for non-temperature case
-  // - used as good initial guess for stationary temperature case
-  // -------------------------------------------------------------------
-  const double initdens = params_->get<double>("initial density",1.0);
-  densnp_->PutScalar(initdens);
 
   // initializes variables for natural convection (ELCH) if necessary
   SetupElchNatConv();
@@ -353,22 +341,6 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     project_ = false;
     w_       = Teuchos::null;
     c_       = Teuchos::null;
-  }
-
-  // -------------------------------------------------------------------
-  // preliminaries for reactive flow using progress-variable approach
-  // -------------------------------------------------------------------
-  if (reaction_ == "Arrhenius_pv")
-  {
-    ParameterList eleparams;
-    eleparams.set("action","get_density_values");
-    eleparams.set("isale",isale_);
-    discret_->Evaluate(eleparams,null,null,null,null,null);
-    unbdens_ = eleparams.get("unburnt density", 1.161);
-    const double burdens = eleparams.get("burnt density", 0.29);
-    if (burdens > unbdens_)
-      dserror("density in burnt phase larger than in unburnt phase!");
-    densdiff_ = burdens - unbdens_;
   }
 
   return;
@@ -484,10 +456,8 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
   {
     // if initial velocity field has not been set here, the initial time derivative of phi will be
     // calculated wrongly for some time integration schemes
-    if (initialvelset_)
-      PrepareFirstTimeStep();
-    else
-      dserror("Initial velocity field has not been set");
+    if (initialvelset_) PrepareFirstTimeStep();
+    else dserror("Initial velocity field has not been set");
   }
 
   // -------------------------------------------------------------------
@@ -1017,7 +987,6 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   eleparams.set("time-step length",dta_);
   eleparams.set("problem type",prbtype_);
   eleparams.set("incremental solver",incremental_);
-  eleparams.set("reaction",reaction_);
   eleparams.set("form of convective term",convform_);
   eleparams.set("fs subgrid diffusivity",fssgd_);
   eleparams.set("turbulence model",turbmodel_);
@@ -1046,7 +1015,7 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
     AVM3Separation();
   }
 
-  // add element parameters and density state according to time-int. scheme
+  // add element parameters according to time-integration scheme
   AddSpecificTimeIntegrationParameters(eleparams);
 
   // call loop over elements with subgrid-diffusivity(-scaling) vector
@@ -1111,10 +1080,10 @@ void SCATRA::ScaTraTimIntImpl::Output()
     // write flux vector field
     if (writeflux_!="No") OutputFlux();
 
-    // write mean values of scalars and density
+    // write mean values of scalar(s)
     if (outmean_)
     {
-      OutputMeanTempAndDens();
+      OutputMeanScalars();
       OutputElectrodeInfo();
     }
   }
@@ -1135,9 +1104,6 @@ void SCATRA::ScaTraTimIntImpl::OutputState()
 {
   // solution
   output_->WriteVector("phinp", phinp_);
-
-  // density (only required in low-Mach-number case)
-  if (prbtype_ == "loma") output_->WriteVector("densnp", densnp_);
 
   // velocity
   output_->WriteVector("convec_velocity", convel_,IO::DiscretizationWriter::nodevector);
@@ -1451,9 +1417,6 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
   // discontinuous 0-1 field for progress variable in 1-D
   else if (init == 4)
   {
-    // check whether it is indeed a progress-variable approach
-    if (reaction_ != "Arrhenius_pv") dserror("This initial field is supposed to be used only in the context of a reactive flow with progress-variable approach!");
-
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
     // loop all nodes on the processor
@@ -1487,9 +1450,6 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
   // for two-dimensional flame-vortex interaction problem (x2=0-200)
   else if (init == 5)
   {
-    // check whether it is indeed a progress-variable approach
-    if (reaction_ != "Arrhenius_pv") dserror("This initial field is supposed to be used only in the context of a reactive flow with progress-variable approach!");
-
     // get flame parameter beta and diffusive flame thickness
     ParameterList eleparams;
     eleparams.set("action","get_flame_parameters");
@@ -1535,9 +1495,6 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
   // initial mixture-fraction profile for Rayleigh-Taylor instability
   else if (init == 6)
   {
-    // check whether it is indeed a mixture-fraction approach
-    if (reaction_ != "mixture_fraction") dserror("This initial field is supposed to be used only in the context of a flow with mixture-fraction approach!");
-
     // define interface thickness, sinusoidal disturbance wave amplitude and pi
     const double delta = 0.002;
     const double alpha = 0.001;

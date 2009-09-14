@@ -986,7 +986,7 @@ void ADAPTER::XFluidImpl::SetInitialFlowField(int whichinitialfield,int startfun
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::XFluidImpl::SetTimeLomaFields(RCP<const Epetra_Vector> densnp,RCP<const Epetra_Vector> densn,RCP<const Epetra_Vector> densnm,RCP<const Epetra_Vector> scatraresidual,const int numscal,const double eosfac)
+void ADAPTER::XFluidImpl::SetTimeLomaFields(RCP<const Epetra_Vector> scalarnp,RCP<const Epetra_Vector> scalarn,RCP<const Epetra_Vector> scalardtn,const double thermpressnp,const double thermpressn,const double thermpressdtn,RCP<const Epetra_Vector> scatraresidual,const int numscal)
 {
    dserror("not implemented!");
    return;
@@ -994,7 +994,7 @@ void ADAPTER::XFluidImpl::SetTimeLomaFields(RCP<const Epetra_Vector> densnp,RCP<
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::XFluidImpl::SetIterLomaFields(RCP<const Epetra_Vector> densnp,RCP<const Epetra_Vector> densdtnp,const int numscal,const double eosfac)
+void ADAPTER::XFluidImpl::SetIterLomaFields(RCP<const Epetra_Vector> scalarnp,RCP<const Epetra_Vector> scalardtnp,const double thermpressnp,const double thermpressdtnp,const int numscal)
 {
    dserror("not implemented!");
    return;

@@ -869,9 +869,6 @@ private:
   //! required only for the constant increment predictor
   RCP<Epetra_Vector>          velnm_;
 
-  //! velocities and densities at times n+1
-  RCP<Epetra_Vector>          vedenp_;
-
   //! ALE related stuff: grid displacements, time n+1
   RCP<Epetra_Vector>          dispnp_   ;
   //! ALE related stuff: most recent grid displacements, time n

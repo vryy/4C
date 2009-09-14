@@ -90,6 +90,8 @@ DRT::ELEMENTS::Fluid3::ActionType DRT::ELEMENTS::Fluid3::convertStringToActionTy
     act = Fluid3::calc_smagorinsky_const;
   else if (action == "get_density")
     act = Fluid3::get_density;
+  else if (action == "get_gas_constant")
+    act = Fluid3::get_gas_constant;
   else if (action == "calc_node_normal")
     act = Fluid3::calc_node_normal;
   else if (action == "integrate_shape")
@@ -638,8 +640,16 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           const MAT::ModPowerLaw* actmat = static_cast<const MAT::ModPowerLaw*>(mat.get());
           params.set("density", actmat->Density());
         }
-        else
-          dserror("no fluid material found");
+      else dserror("no constant density, material appears to be incorrect");
+      }
+      break;
+      case get_gas_constant:
+      {
+        if (mat->MaterialType()== INPAR::MAT::m_sutherland_fluid)
+        {
+          MAT::SutherlandFluid* actmat = static_cast<MAT::SutherlandFluid*>(mat.get());
+          params.set("gas constant", actmat->GasConst());
+        }
       }
       break;
       case calc_node_normal:
@@ -1637,7 +1647,7 @@ template<int iel>
 void DRT::ELEMENTS::Fluid3::f3_calc_loma_means(
   DRT::Discretization&      discretization,
   vector<double>&           velocitypressure ,
-  vector<double>&           density  ,
+  vector<double>&           temperature  ,
   vector<double>&           subgrvisc  ,
   ParameterList&            params,
   const double              eosfac
@@ -1645,7 +1655,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_loma_means(
 {
   // get view of solution vector
   LINALG::Matrix<4*iel,1> velpre(&(velocitypressure[0]),true);
-  LINALG::Matrix<4*iel,1> dens(&(density[0]),true);
+  LINALG::Matrix<4*iel,1> temp(&(temperature[0]),true);
   LINALG::Matrix<4*iel,1> sv(&(subgrvisc[0]),true);
 
   // set element data
@@ -1954,16 +1964,16 @@ void DRT::ELEMENTS::Fluid3::f3_calc_loma_means(
           int finode=inode*4;
 
           usave  = velpre(finode);
-          ugp    += funct(inode)*velpre(finode++);
-          vgp    += funct(inode)*velpre(finode++);
-          wgp    += funct(inode)*velpre(finode++);
-          pgp    += funct(inode)*velpre(finode  );
-          svgp   += funct(inode)*sv(finode  );
-          rhogp  += funct(inode)*dens(finode  );
-          rhougp += funct(inode)*dens(finode  )*usave;
+          ugp   += funct(inode)*velpre(finode++);
+          vgp   += funct(inode)*velpre(finode++);
+          wgp   += funct(inode)*velpre(finode++);
+          pgp   += funct(inode)*velpre(finode  );
+          svgp  += funct(inode)*sv(finode  );
+          Tgp   += funct(inode)*temp(finode  );
         }
-        Tgp     = eosfac/rhogp;
+        rhogp   = eosfac/Tgp;
         rhouTgp = eosfac*ugp;
+        rhougp  = rhouTgp/Tgp;
 
         // add contribution to integral
         double dubar   = ugp*fac;

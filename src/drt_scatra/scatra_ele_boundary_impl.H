@@ -218,13 +218,9 @@ public:
     void NeumannInflow(
         const DRT::Element*                   ele,
         const vector<LINALG::Matrix<iel,1> >& ephinp,
-        const vector<LINALG::Matrix<iel,1> >& edensnp,
         const LINALG::Matrix<nsd_+1,iel>&     evelnp,
         Epetra_SerialDenseMatrix&             emat,
         Epetra_SerialDenseVector&             erhs,
-        const bool                            is_stationary,
-        const bool                            is_genalpha,
-        const bool                            is_incremental,
         const double                          timefac,
         const double                          alphaF);
 
@@ -232,8 +228,16 @@ public:
     const int numdofpernode_;
     //! number of transported scalars (numscal_ <= numdofpernode_)
     const int numscal_;
+
     //! flag for using ALE formulation
     bool isale_;
+    //! flag for stationary algorithm
+    bool is_stationary_;
+    //! flag for generalized-alpha time integration
+    bool is_genalpha_;
+    //! flag for incremental solver
+    bool is_incremental_;
+
     //! node coordinates
     LINALG::Matrix<nsd_+1,iel> xyze_;
     //! nodal displacement values for ALE
@@ -248,8 +252,6 @@ public:
     LINALG::Matrix<nsd_,1> xsi_;
     //! array for shape functions
     LINALG::Matrix<iel,1> funct_;
-    //! array for density-weighted shape functions at n+1/n+alpha_F
-    LINALG::Matrix<iel,1> densfunct_;
     //! array for shape function derivatives w.r.t r,s,t
     LINALG::Matrix<nsd_,iel> deriv_;
     //! global derivatives of shape functions w.r.t x,y,z
@@ -262,6 +264,9 @@ public:
     LINALG::Matrix<nsd_,nsd_>  metrictensor_;
     //! integration factor for current GP: fac = GaussWeight * drs
     double fac_;
+
+    //! thermodynamic pressure (LOMA specific)
+    double thermpress_;
 
   };
 

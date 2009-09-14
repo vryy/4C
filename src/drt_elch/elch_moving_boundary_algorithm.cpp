@@ -177,7 +177,7 @@ void ELCH::MovingBoundaryAlgorithm::Output()
   if (outmean_)
   {
     ScaTraField().OutputElectrodeInfo();
-    ScaTraField().OutputMeanTempAndDens();
+    ScaTraField().OutputMeanScalars();
   }
   AleField().Output();
 

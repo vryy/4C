@@ -201,6 +201,9 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
   // get constant density (only relevant for incompressible flow)
   //const double inc_dens = params.get("inc_density",0.0);
 
+  // get flag for low-Mach-number solver
+  const bool loma  = params.get<bool>("low-Mach-number solver");
+
   // get discretization type
   const DiscretizationType distype = this->Shape();
 
@@ -266,23 +269,32 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
     xye(1,i)=this->Nodes()[i]->X()[1];
   }
 
-  // get velocity/density vector
-  RCP<const Epetra_Vector> vedenp = discretization.GetState("vedenp");
-  if (vedenp==null) dserror("Cannot get state vector 'vedenp'");
+  // get velocity/scalar vector
+  RCP<const Epetra_Vector> vescnp = discretization.GetState("vescnp");
+  if (vescnp==null) dserror("Cannot get state vector 'vescnp'");
 
   // extract local values from global vector
-  vector<double> myvedenp(lm.size());
-  DRT::UTILS::ExtractMyValues(*vedenp,myvedenp,lm);
+  vector<double> myvescnp(lm.size());
+  DRT::UTILS::ExtractMyValues(*vescnp,myvescnp,lm);
 
-  // create object for density array
-  Epetra_SerialDenseVector edensnp(iel);
+  // create vector for scalar array
+  Epetra_SerialDenseVector escanp(iel);
 
-  // insert density into element array
+  // insert scalar into element array
   for (int i=0;i<iel;++i)
   {
-    edensnp(i) = myvedenp[2+(i*3)];
+    escanp(i) = myvescnp[2+(i*3)];
   }
 
+  // This is a hack for low-Mach-number flow with temperature
+  // equation until material data will be available here
+  // get thermodynamic pressure and its time derivative or history
+  double thermpress = params.get<double>("thermodynamic pressure");
+  double gasconstant = 287.0;
+
+  /*----------------------------------------------------------------------*
+  |               start loop over integration points                     |
+  *----------------------------------------------------------------------*/
   // loop over integration points
   for (int gpid=0;gpid<intpoints.nquad;gpid++)
   {
@@ -349,13 +361,23 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
     // compute infinitesimal line element dr for integration along the line
     const double dr = sqrt(der_par(0)*der_par(0)+der_par(1)*der_par(1));
 
+    // compute temperature and density for low-Mach-number flow
+    double dens = 1.0;
+    if (loma)
+    {
+      double temp = 0.0;
+      for (int i=0;i<2;++i)
+      {
+        temp += funct(i)*escanp(i);
+      }
+      dens = thermpress/(gasconstant*temp);
+    }
+
     // values are multiplied by the product from inf. area element,
     // the gauss weight, the timecurve factor and the constant
     // belonging to the time integration algorithm (theta*dt for
-    // one step theta, 2/3 for bdf with dt const.)
-    // Furthermore, there may be a divison by the constant scalar density,
-    // only relevant (i.e., it may be unequal 1.0) in incompressible flow case
-    const double fac = intpoints.qwgt[gpid] *dr* curvefac * thsl;
+    // one step theta, 2/3 for bdf with dt const.) and density
+    const double fac = intpoints.qwgt[gpid] *dr* curvefac * thsl * dens;
 
     // factor given by spatial function
     double functfac = 1.0;
@@ -388,7 +410,7 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
             functfac = 1.0;
         }
 
-        elevec1[node*numdf+dim]+= edensnp(node)*funct(node)*(*onoff)[dim]*(*val)[dim]*fac*functfac;
+        elevec1[node*numdf+dim]+= funct(node)*(*onoff)[dim]*(*val)[dim]*fac*functfac;
       }
     }
   }
@@ -419,6 +441,9 @@ void DRT::ELEMENTS::Fluid2Line::NeumannInflow(
   // generalized-alpha: timefac = (alpha_F/alpha_M) * gamma * dt
   const double timefac = params.get<double>("thsl",-1.0);
   if (timefac < 0.0) dserror("No thsl supplied");
+
+  // get flag for low-Mach-number solver
+  const bool loma  = params.get<bool>("low-Mach-number solver");
 
   // get discretization type
   const DiscretizationType distype = this->Shape();
@@ -469,21 +494,21 @@ void DRT::ELEMENTS::Fluid2Line::NeumannInflow(
     normal(inode) = normal(inode)/length;
   }
 
-  // get velocity and density vector
+  // get velocity and velocity/scalar vector
   RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
-  RCP<const Epetra_Vector> vedenp = discretization.GetState("vedenp");
-  if (velnp==null or vedenp==null)
-    dserror("Cannot get state vector 'velnp' and/or 'vedenp'");
+  RCP<const Epetra_Vector> vescnp = discretization.GetState("vescnp");
+  if (velnp==null or vescnp==null)
+    dserror("Cannot get state vector 'velnp' and/or 'vescnp'");
 
   // extract local values from global vector
   vector<double> myvelnp(lm.size());
-  vector<double> myvedenp(lm.size());
+  vector<double> myvescnp(lm.size());
   DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
-  DRT::UTILS::ExtractMyValues(*vedenp,myvedenp,lm);
+  DRT::UTILS::ExtractMyValues(*vescnp,myvescnp,lm);
 
-  // create epetra object for density array
+  // create Epetra objects for scalar array and velocities
   Epetra_SerialDenseMatrix evelnp(2,iel);
-  Epetra_SerialDenseVector edensnp(iel);
+  Epetra_SerialDenseVector escanp(iel);
 
   // insert velocity and density into element array
   for (int i=0;i<iel;++i)
@@ -491,8 +516,14 @@ void DRT::ELEMENTS::Fluid2Line::NeumannInflow(
     evelnp(0,i) = myvelnp[0+(i*3)];
     evelnp(1,i) = myvelnp[1+(i*3)];
 
-    edensnp(i) = myvedenp[2+(i*3)];
+    escanp(i) = myvescnp[2+(i*3)];
   }
+
+  // This is a hack for low-Mach-number flow with temperature
+  // equation until material data will be available here
+  // get thermodynamic pressure and its time derivative or history
+  double thermpress = params.get<double>("thermodynamic pressure");
+  double gasconstant = 287.0;
 
   /*----------------------------------------------------------------------*
    |               start loop over integration points                     |
@@ -504,23 +535,21 @@ void DRT::ELEMENTS::Fluid2Line::NeumannInflow(
     // get shape functions
     DRT::UTILS::shape_function_1D(funct,e,distype);
 
-    // compute momentum (i.e., density times velocity) and normal momentum
+    // compute velocity and normal velocity
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-    double normmom = 0.0;
+    double normvel = 0.0;
     for (int j=0;j<2;++j)
     {
       velint(j) = 0.0;
-      momint(j) = 0.0;
       for (int i=0;i<iel;++i)
       {
         velint(j) += funct(i)*evelnp(j,i);
-        momint(j) += edensnp(i)*velint(j);
       }
-      normmom += momint(j)*normal(j);
+      normvel += velint(j)*normal(j);
     }
 
-    // computation only required for negative normal momentum
-    if (normmom<-0.0001)
+    // computation only required for negative normal velocity
+    if (normvel<-0.0001)
     {
       // first derivatives
       switch (distype)
@@ -576,9 +605,21 @@ void DRT::ELEMENTS::Fluid2Line::NeumannInflow(
       // integration factor
       const double fac = intpoints.qwgt[gpid] * dr;
 
+      // compute temperature and density for low-Mach-number flow
+      double dens = 1.0;
+      if (loma)
+      {
+        double temp = 0.0;
+        for (int i=0;i<2;++i)
+        {
+          temp += funct(i)*escanp(i);
+        }
+        dens = thermpress/(gasconstant*temp);
+      }
+
       // integration factor for left- and right-hand side
-      const double lhsfac = normmom*timefac*fac;
-      double rhsfac = normmom*fac;
+      const double lhsfac = dens*normvel*timefac*fac;
+      double rhsfac = dens*normvel*fac;
       if (not is_genalpha) rhsfac *= timefac;
 
       // matrix

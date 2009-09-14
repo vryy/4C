@@ -35,23 +35,14 @@ public:
   /// Destructor
   virtual ~TimIntGenAlpha();
 
-  /// compute initial time derivative of density field for low-Mach-number flow
-  void ComputeInitialDensityDerivative();
-
   /// predict thermodynamic pressure and time derivative for low-Mach-number flow
   void PredictThermPressure();
-
-  /// predict density field and time derivative for low-Mach-number flow
-  void PredictDensity();
 
   /// compute values at intermediate time steps
   void ComputeIntermediateValues();
 
   /// compute thermodynamic pressure and time derivative for low-Mach-number flow
-  double ComputeThermPressure();
-
-  /// compute time derivative of density field for low-Mach-number flow
-  void ComputeDensityDerivative();
+  void ComputeThermPressure();
 
   /// Update the solution after convergence of the nonlinear iteration.
   /// Current solution becomes old solution of next timestep.
@@ -59,9 +50,6 @@ public:
 
   /// update thermodynamic pressure and time derivative for low-Mach-number flow
   void UpdateThermPressure();
-
-  /// update density field and time derivative for low-Mach-number flow
-  void UpdateDensity();
 
   /// update density field for ELCH natural convection
   void UpdateDensityElch(){dserror("not implemented"); return;};
@@ -108,15 +96,12 @@ protected:
 
 private:
 
-  /// solution vector at time n+alpha_F
+  /// solution vectors at time n+alpha_F and n+alpha_M
   RCP<Epetra_Vector>  phiaf_;
+  RCP<Epetra_Vector>  phiam_;
 
   /// fine-scale solution vector at time n+alpha_F
   RCP<Epetra_Vector>  fsphiaf_;
-
-  /// density at times n+alpha_M and n+alpha_F
-  RCP<Epetra_Vector>  densam_;
-  RCP<Epetra_Vector>  densaf_;
 
   /// time factors for generalized-alpha time integration
   double alphaM_;
@@ -124,8 +109,10 @@ private:
   double gamma_;
   double genalphafac_;
 
-  /// LOMA-specific parameter: time derivative of thermodynamic pressure
-  /// at n+alpha_F
+  /// LOMA-specific parameter: thermodynamic pressure at n+alpha_F and n+alpha_M
+  /// and its time derivative at n+alpha_F
+  double thermpressaf_;
+  double thermpressam_;
   double thermpressdtaf_;
 
 }; // class TimIntGenAlpha

@@ -152,13 +152,11 @@ namespace ELEMENTS
                 const LINALG::Matrix<3,iel>& evelnp,
                 const LINALG::Matrix<3,iel>& fsevelnp,
                 const LINALG::Matrix<iel,1>& eprenp,
-                const LINALG::Matrix<iel,1>& edensnp,
                 LINALG::Matrix<4*iel,4*iel>& estif,
                 LINALG::Matrix<4*iel,1>&     eforce,
                 Teuchos::RCP<const MAT::Material>                material,
                 double                                           pseudotime,
                 const bool                                       newton,
-                const bool                                       loma,
                 const bool                                       conservative,
                 const bool                                       higher_order_ele,
                 const enum Fluid3::FineSubgridVisc               fssgv,
@@ -179,7 +177,6 @@ namespace ELEMENTS
       Fluid3*                             ele,
       const LINALG::Matrix<3,iel>&        evelnp,
       const LINALG::Matrix<3,iel>&        fsevelnp,
-      const LINALG::Matrix<iel,1>&        edensnp,
       const double                        visc,
       const enum Fluid3::FineSubgridVisc  fssgv,
       const double                        Cs);
@@ -196,29 +193,22 @@ namespace ELEMENTS
     LINALG::Matrix<3,iel> xyze_;      /// nodal position array
     LINALG::Matrix<3,iel> edeadng_;   /// nodal dead load
     LINALG::Matrix<iel,1> funct_;     /// nodal shape functions
-    LINALG::Matrix<iel,1> densfunct_; /// density-weighted nodal shape functions
-    LINALG::Matrix<iel,1> functdens_; /// nodal shape functions divided by density
     LINALG::Matrix<3,iel> deriv_;     /// shape derivatives with respect to \xi
     LINALG::Matrix<6,iel> deriv2_;    /// second shape derivatives with respect to \xi
     LINALG::Matrix<3,3> xjm_;       /// transposed of the jacobian matrix d x / d \xi
     LINALG::Matrix<3,3> xji_;       /// inverse of the jacobian matrix
     LINALG::Matrix<3,3> vderxy_;    /// velocity vector derivative
-    LINALG::Matrix<3,3> mderxy_;    /// momentum vector derivative
     LINALG::Matrix<3,3> fsvderxy_;  /// fine-scale velocity vector derivative
     LINALG::Matrix<3,iel> derxy_;     /// shape derivative with respect to x
-    LINALG::Matrix<3,iel> densderxy_; /// density-weighted shape derivative w.r.t. x
     LINALG::Matrix<6,iel> derxy2_;    /// second shape derivative with respect to x
     LINALG::Matrix<3,1> bodyforce_; /// volumetric load at gausspoint
     LINALG::Matrix<3,1> velino_;
     LINALG::Matrix<3,1> velint_;    /// density-weighted velocity
-    LINALG::Matrix<3,1> ndwvelint_; /// non-density-weighted velocity
     LINALG::Matrix<3,1> fsvelint_;  /// fine-scale velocity
     LINALG::Matrix<3,1> gradp_;     /// pressure gradient
     LINALG::Matrix<3,1> tau_;       /// tau_Mu, tau_Mp, tau_C
     LINALG::Matrix<3*3,iel> viscs2_;    /// viscous term including 2nd derivatives
     LINALG::Matrix<iel,1> conv_c_;    /// linearisation of convect, convective part
-    LINALG::Matrix<iel,1> ndwconv_c_; /// non-density-weighted linearisation of conv.
-    double mdiv_;                      /// momentum divergence
     double vdiv_;                      /// velocity divergence
     LINALG::Matrix<3,1> rhsmom_;    /// momentum equation right hand side
     LINALG::Matrix<3,1> conv_old_;
