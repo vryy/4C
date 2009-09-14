@@ -109,6 +109,8 @@ void FSI::MonolithicStructureSplit::SetupSystem()
   // build ale system matrix in splitted system
   AleField().BuildSystemMatrix(false);
 
+  aleresidual_ = Teuchos::rcp(new Epetra_Vector(*AleField().Interface().OtherMap()));
+
   // get the PCITER from inputfile
   vector<int> pciter;
   vector<double> pcomega;
@@ -175,6 +177,9 @@ void FSI::MonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
               FluidField().RHS(),
               AleField().RHS(),
               FluidField().ResidualScaling());
+
+  // add additional ale residual
+  Extractor().AddVector(*aleresidual_,2,f);
 
   if (firstcall)
   {
@@ -571,6 +576,9 @@ void FSI::MonolithicStructureSplit::UnscaleSolution(LINALG::BlockSparseMatrixBas
   Teuchos::RCP<Epetra_Vector> sr = Extractor().ExtractVector(r,0);
   Teuchos::RCP<Epetra_Vector> fr = Extractor().ExtractVector(r,1);
   Teuchos::RCP<Epetra_Vector> ar = Extractor().ExtractVector(r,2);
+
+  // increment additional ale residual
+  aleresidual_->Update(-1.,*ar,0.);
 
   ios_base::fmtflags flags = Utils()->out().flags();
 

@@ -133,6 +133,9 @@ namespace FSI
 
     //@}
 
+    /// additional ale residual to avoid incremental ale errors
+    Teuchos::RCP<Epetra_Vector> aleresidual_;
+
     /// preconditioned block Krylov or block Gauss-Seidel linear solver
     INPAR::FSI::LinearBlockSolver linearsolverstrategy_;
   };
