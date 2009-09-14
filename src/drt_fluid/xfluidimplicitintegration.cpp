@@ -1698,12 +1698,12 @@ void FLD::XFluidImplicitTimeInt::Output()
     if (physprob_.fieldset_.find(XFEM::PHYSICS::Velx) != physprob_.fieldset_.end())
     {
       // output velocity field for visualization
-      output_->WriteVector("velocity", velnp_out);
+      output_->WriteVector("velocity_smoothed", velnp_out);
 
       // output (hydrodynamic) pressure for visualization
       Teuchos::RCP<Epetra_Vector> pressure = velpressplitterForOutput_.ExtractCondVector(velnp_out);
       pressure->Scale(density_);
-      output_->WriteVector("pressure", pressure);
+      output_->WriteVector("pressure_smoothed", pressure);
 
       //output_->WriteVector("residual", trueresidual_);
 
@@ -1716,7 +1716,7 @@ void FLD::XFluidImplicitTimeInt::Output()
     }
     else if (physprob_.fieldset_.find(XFEM::PHYSICS::Temp) != physprob_.fieldset_.end())
     {
-      output_->WriteVector("temperature", velnp_out);
+      output_->WriteVector("temperature_smoothed", velnp_out);
     }
 
     // write domain decomposition for visualization
@@ -1900,22 +1900,6 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
           gmshfilecontent << IO::GMSH::cellWithScalarFieldToString(
               cell->Shape(), cellvalues, xyze_cell) << "\n";
         }
-//        if (actele->Id() == 1 and elementvalues.Length() > 0)
-//        {
-//          //std::cout << elementvalues << "\n";
-//          std::ofstream f;
-//          const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
-//                                  + ".outflowpres.txt";
-//          if (step <= 1)
-//            f.open(fname.c_str(),std::fstream::trunc);
-//          else
-//            f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
-//
-//          //f << time_ << " " << (-1.5*std::sin(0.1*2.0*time_* PI) * PI*0.1) << "  " << elementvalues(0,0) << endl;
-//          f << time << "  " << elementvalues(0) << "\n";
-//
-//          f.close();
-//        }
       }
       gmshfilecontent << "};\n";
       f_system << gmshfilecontent.str();
@@ -3322,7 +3306,7 @@ void FLD::XFluidImplicitTimeInt::ProjectOldTimeStepValues(
 //        solver->ResetTolerance();
       }
 
-#if 0
+#if 1
       if ((this->physprob_.fieldset_.find(XFEM::PHYSICS::Pres) != this->physprob_.fieldset_.end()))
       {
         std::stringstream filename;

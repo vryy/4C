@@ -100,6 +100,25 @@ protected:
 };
 
 /*!
+ \brief Writer for xfluid problems
+ */
+class XFluidEnsightWriter : public EnsightWriter
+{
+public:
+    XFluidEnsightWriter(
+            PostField* field,
+            string filename) :
+        EnsightWriter(field, filename)
+    {
+    }
+
+protected:
+
+    virtual void WriteAllResults(
+            PostField* field);
+};
+
+/*!
  \brief Writer for fluid problems using DG-FEM
  */
 class DGFEMFluidEnsightWriter : public EnsightWriter

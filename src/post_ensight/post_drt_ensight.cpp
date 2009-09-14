@@ -134,8 +134,8 @@ int main(
 
         cout << "  Fluid Field" << endl;
         PostField* fluidfield = problem.get_discretization(1);
-        FluidEnsightWriter fluidwriter(fluidfield, basename);
-        fluidwriter.WriteFiles();
+        XFluidEnsightWriter xfluidwriter(fluidfield, basename);
+        xfluidwriter.WriteFiles();
 
         // in the future, we might also write the interface
         // but at the moment, some procs might have no row elements

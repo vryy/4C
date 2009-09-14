@@ -65,6 +65,42 @@ void FluidEnsightWriter::WriteAllResults(PostField* field)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void XFluidEnsightWriter::WriteAllResults(PostField* field)
+{
+  // XFEM has changing number of degrees of freedoms
+  // - restart vectors are of changing size
+  // - output vectors (e.g. Paraview) have fixed size with 4 DOF per node)
+  //   and are named "*_smoothed" for this reason (no integration cells)
+  // calling both at the same time will crash, since restart vectors do not fit
+  // the 4 DOF per node pattern. BACI will produce consistent naming now, but for old
+  // data you can switch the naming convention here (old naming will be removed soon)
+
+  const bool consistent_naming = true;
+
+  if (consistent_naming)
+  {
+    EnsightWriter::WriteResult("velocity_smoothed", "velocity_smoothed", dofbased, field->problem()->num_dim());
+    EnsightWriter::WriteResult("pressure_smoothed", "pressure_smoothed", dofbased, 1);
+
+    // for diffusion problem, if ever needed
+    EnsightWriter::WriteResult("temperature_smoothed", "temperature_smoothed", dofbased, 1);
+
+  }
+  else
+  {
+    cout << "Depreciated naming convention!!!" << endl;
+    // note old output files might still use the name names velnp and pressure
+    // just turn the following lines on
+    EnsightWriter::WriteResult("velnp", "velocity", dofbased, field->problem()->num_dim());
+    EnsightWriter::WriteResult("pressure", "pressure", dofbased, 1);
+  }
+
+  WriteElementResults(field);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void InterfaceEnsightWriter::WriteAllResults(PostField* field)
 {
   EnsightWriter::WriteResult("idispnp", "idispnp", dofbased, field->problem()->num_dim());
