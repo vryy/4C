@@ -779,7 +779,7 @@ std::vector<double> XFEM::DomainIntCellCoverageRatio(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-XFEM::AssemblyType XFEM::CheckForStandardEnrichmentsOnly(
+XFEM::AssemblyType XFEM::ComputeAssemblyType(
     const ElementDofManager&   eleDofManager,
     const std::size_t          numnode,
     const int*                 nodeids)

@@ -201,7 +201,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 
       const bool ifaceForceContribution = discretization.ElementRowMap()->MyGID(this->Id());
 
-      const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
+      const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
               *eleDofManager_, NumNode(), NodeIds());
 
       // calculate element coefficient matrix and rhs
@@ -276,7 +276,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 
       const bool ifaceForceContribution = discretization.ElementRowMap()->MyGID(this->Id());
 
-      const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
+      const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
               *eleDofManager_, NumNode(), NodeIds());
 
 #if 0

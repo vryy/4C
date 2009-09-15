@@ -264,7 +264,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 
       if (not params.get<bool>("DLM_condensation") or not ih_->ElementIntersected(Id())) // integrate and assemble all unknowns
       {
-        const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
+        const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
                 *eleDofManager_, NumNode(), NodeIds());
 
         // calculate element coefficient matrix and rhs
@@ -285,7 +285,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         Epetra_SerialDenseMatrix elemat1_uncond(numdof_uncond,numdof_uncond);
         Epetra_SerialDenseVector elevec1_uncond(numdof_uncond);
 
-        const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
+        const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
                 *eleDofManager_uncondensed_, NumNode(), NodeIds());
 
         if (ih_->ElementIntersected(Id()) and monolithic_FSI)
@@ -357,7 +357,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 
       if (not params.get<bool>("DLM_condensation") or not ih_->ElementIntersected(Id())) // integrate and assemble all unknowns
       {
-        const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
+        const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
                 *eleDofManager_, NumNode(), NodeIds());
 
         // calculate element coefficient matrix and rhs
@@ -378,7 +378,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         Epetra_SerialDenseMatrix elemat1_uncond(numdof_uncond,numdof_uncond);
         Epetra_SerialDenseVector elevec1_uncond(numdof_uncond);
 
-        const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
+        const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
                 *eleDofManager_uncondensed_, NumNode(), NodeIds());
 
         if (ih_->ElementIntersected(Id()) and monolithic_FSI)
@@ -492,7 +492,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 
       const bool ifaceForceContribution = discretization.ElementRowMap()->MyGID(this->Id());
 
-      const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
+      const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
               *eleDofManager_, NumNode(), NodeIds());
 
       // calculate element coefficient matrix and rhs
@@ -516,7 +516,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       if (lm.empty())
         break;
 
-      const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
+      const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
           *eleDofManager_, NumNode(), NodeIds());
 
       // calculate element coefficient matrix and rhs

@@ -230,7 +230,7 @@ int DRT::ELEMENTS::XDiff3::Evaluate(ParameterList& params,
 
       if (not params.get<bool>("DLM_condensation") or not ih_->ElementIntersected(Id())) // integrate and assemble all unknowns
       {
-        const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
+        const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
                 *eleDofManager_, NumNode(), NodeIds());
 
         // calculate element coefficient matrix and rhs
@@ -261,7 +261,7 @@ int DRT::ELEMENTS::XDiff3::Evaluate(ParameterList& params,
         Epetra_SerialDenseMatrix elemat1_uncond(numdof_uncond,numdof_uncond);
         Epetra_SerialDenseVector elevec1_uncond(numdof_uncond);
 
-        const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
+        const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
                 *eleDofManager_uncondensed_, NumNode(), NodeIds());
 
         // calculate element coefficient matrix and rhs
@@ -336,7 +336,7 @@ int DRT::ELEMENTS::XDiff3::Evaluate(ParameterList& params,
 
       if (not params.get<bool>("DLM_condensation") or not ih_->ElementIntersected(Id())) // integrate and assemble all unknowns
       {
-        const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
+        const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
                 *eleDofManager_, NumNode(), NodeIds());
 
         // calculate element coefficient matrix and rhs
@@ -367,7 +367,7 @@ int DRT::ELEMENTS::XDiff3::Evaluate(ParameterList& params,
         Epetra_SerialDenseMatrix elemat1_uncond(numdof_uncond,numdof_uncond);
         Epetra_SerialDenseVector elevec1_uncond(numdof_uncond);
 
-        const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
+        const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
                 *eleDofManager_uncondensed_, NumNode(), NodeIds());
 
         // calculate element coefficient matrix and rhs

@@ -568,8 +568,8 @@ std::vector<double> DomainIntCellCoverageRatio(
         const XFEM::InterfaceHandle&  ih
         );
 
-//! return assembly type depending on the DOF distribution
-XFEM::AssemblyType CheckForStandardEnrichmentsOnly(
+//! return assembly type depending on the DOF information
+XFEM::AssemblyType ComputeAssemblyType(
     const ElementDofManager&   eleDofManager,
     const std::size_t          numnode,
     const int*                 nodeids
