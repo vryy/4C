@@ -22,10 +22,12 @@ FSI::OverlappingBlockMatrixFSIAMG::OverlappingBlockMatrixFSIAMG(
                                                     int symmetric,
                                                     vector<double>& omega,
                                                     vector<int>& iterations,
-                                                    double somega,
-                                                    int siterations,
-                                                    double fomega,
-                                                    int fiterations,
+                                                    vector<double>& somega,
+                                                    vector<int>& siterations,
+                                                    vector<double>& fomega,
+                                                    vector<int>& fiterations,
+                                                    vector<double>& aomega,
+                                                    vector<int>& aiterations,
                                                     FILE* err)
   : OverlappingBlockMatrix(maps,
                            structure,
@@ -35,13 +37,21 @@ FSI::OverlappingBlockMatrixFSIAMG::OverlappingBlockMatrixFSIAMG(
                            symmetric,
                            omega[0],
                            iterations[0],
-                           somega,
-                           siterations,
-                           fomega,
-                           fiterations,
+                           somega[0],
+                           siterations[0],
+                           fomega[0],
+                           fiterations[0],
+                           aomega[0],
+                           aiterations[0],
                            err),
+pcomega_(omega),
 pciter_(iterations),
-pcomega_(omega)
+somega_(somega),
+siterations_(siterations),
+fomega_(fomega),
+fiterations_(fiterations),
+aomega_(aomega),
+aiterations_(aiterations)
 {
 }
 
@@ -111,16 +121,28 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   minnlevel_ = min(snlevel_,fnlevel_);
   minnlevel_ = min(minnlevel_,anlevel_);
 
-  // check whether we have enough iteration and damping factors
-  if ((int)pciter_.size() < minnlevel_ ||
-      (int)pcomega_.size() < minnlevel_)
-    dserror("You need at least %d values of PCITER and PCOMEGA in input file",minnlevel_);
-
   if (!myrank)
   {
     printf("Setting up FSIAMG: snlevel %d fnlevel %d anlevel %d minnlevel %d\n",
            snlevel_,fnlevel_,anlevel_,minnlevel_);
+    fflush(stdout);
   }
+
+  // check whether we have enough iteration and damping factors
+  if ((int)pciter_.size() < minnlevel_ ||
+      (int)pcomega_.size() < minnlevel_)
+    dserror("You need at least %d values of PCITER and PCOMEGA in input file",minnlevel_);
+  if ((int)siterations_.size() < snlevel_ ||
+      (int)somega_.size() < snlevel_)
+    dserror("You need at least %d values of STRUCTPCITER and STRUCTPCOMEGA in input file",snlevel_);
+  if ((int)fiterations_.size() < fnlevel_ ||
+      (int)fomega_.size() < fnlevel_)
+    dserror("You need at least %d values of FLUIDPCITER and FLUIDPCOMEGA in input file",fnlevel_);
+  if ((int)aiterations_.size() < anlevel_ ||
+      (int)aomega_.size() < anlevel_)
+    dserror("You need at least %d values of ALEPCITER and ALEPCOMEGA in input file",anlevel_);
+  
+
 
   Ass_.resize(snlevel_);
   Pss_.resize(snlevel_-1);
@@ -811,8 +833,10 @@ void FSI::OverlappingBlockMatrixFSIAMG::ExplicitBlockGaussSeidelSmoother(
       sx = sx - ASF_[level] * mlfy;
       // zero initial guess
       sz = 0.0;
-      if (!amgsolve) Sss_[level].Apply(sx,sz);
-      else           Vcycle(level,snlevel_,sz,sx,Ass_,Sss_,Pss_,Rss_);
+      LocalBlockRichardson(siterations_[level],somega_[level],level,amgsolve,snlevel_,
+                           sz,sx,Ass_,Sss_,Pss_,Rss_);
+      //if (!amgsolve) Sss_[level].Apply(sx,sz);
+      //else           Vcycle(level,snlevel_,sz,sx,Ass_,Sss_,Pss_,Rss_);
       mlsy.Update(pcomega_[level],sz,1.0);
     }
 
@@ -823,8 +847,10 @@ void FSI::OverlappingBlockMatrixFSIAMG::ExplicitBlockGaussSeidelSmoother(
       ax = ax - AAF_[level] * mlfy;
       // zero initial guess
       az = 0.0;
-      if (!amgsolve) Saa_[level].Apply(ax,az);
-      else           Vcycle(level,anlevel_,az,ax,Aaa_,Saa_,Paa_,Raa_);
+      LocalBlockRichardson(aiterations_[level],aomega_[level],level,amgsolve,anlevel_,
+                           az,ax,Aaa_,Saa_,Paa_,Raa_);
+      //if (!amgsolve) Saa_[level].Apply(ax,az);
+      //else           Vcycle(level,anlevel_,az,ax,Aaa_,Saa_,Paa_,Raa_);
       mlay.Update(pcomega_[level],az,1.0);
     }
 
@@ -836,12 +862,52 @@ void FSI::OverlappingBlockMatrixFSIAMG::ExplicitBlockGaussSeidelSmoother(
       fx = fx - AFA_[level] * mlay;
       // zero initial guess
       fz = 0.0;
-      if (!amgsolve) Sff_[level].Apply(fx,fz);
-      else           Vcycle(level,fnlevel_,fz,fx,Aff_,Sff_,Pff_,Rff_);
+      LocalBlockRichardson(fiterations_[level],fomega_[level],level,amgsolve,fnlevel_,
+                           fz,fx,Aff_,Sff_,Pff_,Rff_);
+      //if (!amgsolve) Sff_[level].Apply(fx,fz);
+      //else           Vcycle(level,fnlevel_,fz,fx,Aff_,Sff_,Pff_,Rff_);
       mlfy.Update(pcomega_[level],fz,1.0);
     }
 
   } // for (int run=0; run<pciter_[level]; ++run)
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void FSI::OverlappingBlockMatrixFSIAMG::LocalBlockRichardson(
+                     const int iterations,
+                     const double omega,
+                     const int level,
+                     const bool amgsolve,
+                     const int nlevel,
+                     MLAPI::MultiVector& z,
+                     const MLAPI::MultiVector& b,
+                     const vector<MLAPI::Operator>& A,
+                     const vector<MLAPI::InverseOperator>& S,
+                     const vector<MLAPI::Operator>& P,
+                     const vector<MLAPI::Operator>& R
+                     ) const
+{
+  // do one iteration in any case (start counting iterations from zero)
+  if (!amgsolve) S[level].Apply(b,z);
+  else           Vcycle(level,nlevel,z,b,A,S,P,R);
+
+  if (iterations>0)
+  {
+    MLAPI::MultiVector tmpz(z.GetVectorSpace(),1,false);
+    MLAPI::MultiVector tmpb(b.GetVectorSpace(),1,false);
+    z.Scale(omega); 
+    for (int i=0; i<iterations; ++i)
+    {
+      tmpb = b - A[level] * z;
+      tmpz = 0.0;
+      if (!amgsolve) S[level].Apply(tmpb,tmpz);
+      else           Vcycle(level,nlevel,tmpz,tmpb,A,S,P,R);
+      z = z + omega * tmpz;
+    }
+  }
 
   return;
 }

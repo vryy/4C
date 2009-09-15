@@ -35,6 +35,8 @@ namespace FSI
                                int siterations=0,
                                double fomega=1.0,
                                int fiterations=0,
+                               double aomega=1.0,
+                               int aiterations=0,
                                FILE* err=NULL);
 
     /** \name Mathematical functions */
@@ -90,6 +92,8 @@ namespace FSI
     int siterations_;
     double fomega_;
     int fiterations_;
+    double aomega_;
+    int aiterations_;
 
     //@}
 
@@ -125,6 +129,8 @@ namespace FSI
                            int siterations=0,
                            double fomega=1.0,
                            int fiterations=0,
+                           double aomega=1.0,
+                           int aiterations=0,
                            FILE* err=NULL);
 
     /** \name Attribute access functions */

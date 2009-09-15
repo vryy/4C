@@ -29,6 +29,8 @@ namespace FSI
                           int siterations=0,
                           double fomega=1.0,
                           int fiterations=0,
+                          double aomega=1.0,
+                          int aiterations=0,
                           FILE* err=NULL);
 
     /** \name Attribute access functions */

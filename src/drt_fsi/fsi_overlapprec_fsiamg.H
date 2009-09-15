@@ -29,10 +29,12 @@ namespace FSI
                                  int symmetric,
                                  vector<double>& omega,
                                  vector<int>& iterations,
-                                 double somega,
-                                 int siterations,
-                                 double fomega,
-                                 int fiterations,
+                                 vector<double>& somega,
+                                 vector<int>& siterations,
+                                 vector<double>& fomega,
+                                 vector<int>& fiterations,
+                                 vector<double>& aomega,
+                                 vector<int>& aiterations,
                                  FILE* err=NULL);
 
     /** \name Attribute access functions */
@@ -117,6 +119,21 @@ namespace FSI
                      const MLAPI::MultiVector& mlax,
                      const bool amgsolve) const;
 
+    /// iterate on the field individual blocks within the block Gauss Seidel smoother
+    virtual void LocalBlockRichardson(
+                     const int iterations,
+                     const double omega,
+                     const int level,
+                     const bool amgsolve,
+                     const int nlevel,
+                     MLAPI::MultiVector& z,
+                     const MLAPI::MultiVector& b,
+                     const vector<MLAPI::Operator>& A,
+                     const vector<MLAPI::InverseOperator>& S,
+                     const vector<MLAPI::Operator>& P,
+                     const vector<MLAPI::Operator>& R
+                     ) const;
+
     /// prolongate to fine grid, multiply and restrict solution back
     virtual MLAPI::MultiVector ProlongateMultiplyRestrict(
                      const int                      level,
@@ -141,8 +158,14 @@ namespace FSI
 
 
     int                             minnlevel_; /// min of the below nlevel_
-    vector<int>                     pciter_;
     vector<double>                  pcomega_;
+    vector<int>                     pciter_;
+    vector<double>                  somega_;
+    vector<int>                     siterations_;
+    vector<double>                  fomega_;
+    vector<int>                     fiterations_;
+    vector<double>                  aomega_;
+    vector<int>                     aiterations_;
 
     int                             snlevel_;   /// num level in structure AMG
     Teuchos::ParameterList          sparams_;

@@ -3,6 +3,7 @@
 #include "fsi_monolithicoverlap.H"
 #include "fsi_statustest.H"
 #include "fsi_nox_linearsystem_bgs.H"
+#include "fsi_monolithic_linearsystem.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
@@ -96,15 +97,47 @@ void FSI::MonolithicOverlap::SetupSystem()
 
   vector<int> pciter;
   vector<double> pcomega;
+  vector<int> spciter;
+  vector<double> spcomega;
+  vector<int> fpciter;
+  vector<double> fpcomega;
+  vector<int> apciter;
+  vector<double> apcomega;
   {
-    std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsidyn,"PCITER"));
-    std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsidyn,"PCOMEGA"));
-    std::string word1;
-    std::string word2;
-    while (pciterstream >> word1)
-      pciter.push_back(std::atoi(word1.c_str()));
-    while (pcomegastream >> word2)
-      pcomega.push_back(std::atof(word2.c_str()));
+    int    word1;
+    double word2;
+    {
+      std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsidyn,"PCITER"));
+      std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsidyn,"PCOMEGA"));
+      while (pciterstream >> word1)
+        pciter.push_back(word1);
+      while (pcomegastream >> word2)
+        pcomega.push_back(word2);
+    }
+    {
+      std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsidyn,"STRUCTPCITER"));
+      std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsidyn,"STRUCTPCOMEGA"));
+      while (pciterstream >> word1)
+        spciter.push_back(word1);
+      while (pcomegastream >> word2)
+        spcomega.push_back(word2);
+    }
+    {
+      std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsidyn,"FLUIDPCITER"));
+      std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsidyn,"FLUIDPCOMEGA"));
+      while (pciterstream >> word1)
+        fpciter.push_back(word1);
+      while (pcomegastream >> word2)
+        fpcomega.push_back(word2);
+    }
+    {
+      std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsidyn,"ALEPCITER"));
+      std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsidyn,"ALEPCOMEGA"));
+      while (pciterstream >> word1)
+        apciter.push_back(word1);
+      while (pcomegastream >> word2)
+        apcomega.push_back(word2);
+    }
   }
 
   // create block system matrix
@@ -117,10 +150,12 @@ void FSI::MonolithicOverlap::SetupSystem()
                                                           Teuchos::getIntegralValue<int>(fsidyn,"SYMMETRICPRECOND"),
                                                           pcomega[0],
                                                           pciter[0],
-                                                          fsidyn.get<double>("STRUCTPCOMEGA"),
-                                                          fsidyn.get<int>("STRUCTPCITER"),
-                                                          fsidyn.get<double>("FLUIDPCOMEGA"),
-                                                          fsidyn.get<int>("FLUIDPCITER"),
+                                                          spcomega[0],
+                                                          spciter[0],
+                                                          fpcomega[0],
+                                                          fpciter[0],
+                                                          apcomega[0],
+                                                          apciter[0],
                                                           DRT::Problem::Instance()->ErrorFile()->Handle()));
 }
 
@@ -531,7 +566,12 @@ FSI::MonolithicOverlap::CreateLinearSystem(ParameterList& nlParams,
   switch (linearsolverstrategy_)
   {
   case INPAR::FSI::PreconditionedKrylov:
-    linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams,
+#if 1
+    linSys = Teuchos::rcp(new FSI::MonolithicLinearSystem::MonolithicLinearSystem(
+#else
+    linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(
+#endif
+                                                               printParams,
                                                                lsParams,
                                                                Teuchos::rcp(iJac,false),
                                                                J,

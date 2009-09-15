@@ -17,6 +17,8 @@ FSI::BlockPreconditioningMatrix::BlockPreconditioningMatrix(const LINALG::MultiM
                                                             int siterations,
                                                             double fomega,
                                                             int fiterations,
+                                                            double aomega,
+                                                            int aiterations,
                                                             FILE* err)
   : LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(maps,maps,81,false,true),
     symmetric_(symmetric),
@@ -26,6 +28,8 @@ FSI::BlockPreconditioningMatrix::BlockPreconditioningMatrix(const LINALG::MultiM
     siterations_(siterations),
     fomega_(fomega),
     fiterations_(fiterations),
+    aomega_(aomega),
+    aiterations_(aiterations),
     err_(err)
 {
   fluidsolver_ = Teuchos::rcp(new LINALG::Preconditioner(fluid.LinearSolver()));
@@ -171,6 +175,8 @@ FSI::OverlappingBlockMatrix::OverlappingBlockMatrix(const LINALG::MultiMapExtrac
                                                     int siterations,
                                                     double fomega,
                                                     int fiterations,
+                                                    double aomega,
+                                                    int aiterations,
                                                     FILE* err)
   : BlockPreconditioningMatrix(maps,
                                structure,
@@ -183,6 +189,8 @@ FSI::OverlappingBlockMatrix::OverlappingBlockMatrix(const LINALG::MultiMapExtrac
                                siterations,
                                fomega,
                                fiterations,
+                               aomega,
+                               aiterations,
                                err),
     structuresplit_(structuresplit),
     structure_(structure),
@@ -317,7 +325,6 @@ void FSI::OverlappingBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_MultiV
 
       // Solve structure equations for sy with the rhs sx
       structuresolver_->Solve(structInnerOp.EpetraMatrix(),sz,sx,true);
-
       // do Richardson iteration
       LocalBlockRichardson(structuresolver_,structInnerOp,sx,sz,tmpsx,siterations_,somega_,err_,Comm());
 
@@ -357,6 +364,8 @@ void FSI::OverlappingBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_MultiV
       }
 
       alesolver_->Solve(aleInnerOp.EpetraMatrix(),az,ax,true);
+      // do Richardson iteration
+      //LocalBlockRichardson(alesolver_,aleInnerOp,ax,az,tmpax,aiterations_,aomega_,err_,Comm());
 
       if (run>0)
       {

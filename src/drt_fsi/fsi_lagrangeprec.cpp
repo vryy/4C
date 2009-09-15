@@ -17,6 +17,8 @@ FSI::LagrangianBlockMatrix::LagrangianBlockMatrix(const LINALG::MultiMapExtracto
                                                   int siterations,
                                                   double fomega,
                                                   int fiterations,
+                                                  double aomega,
+                                                  int aiterations,
                                                   FILE* err)
   : BlockPreconditioningMatrix(maps,
                                structure,
@@ -29,6 +31,8 @@ FSI::LagrangianBlockMatrix::LagrangianBlockMatrix(const LINALG::MultiMapExtracto
                                siterations,
                                fomega,
                                fiterations,
+                               aomega,
+                               aiterations,
                                err),
     maps_(maps),
     structure_(structure)
