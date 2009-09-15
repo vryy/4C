@@ -169,8 +169,7 @@ void LOMA::Algorithm::OuterLoop()
   int  itnum = 0;
   bool stopnonliniter = false;
 
-  if (Comm().MyPID()==0)
-    cout<<"\n******************************************\n  OUTER ITERATION LOOP\n******************************************\n";
+  if (Comm().MyPID()==0) cout<<"\n************************\n  OUTER ITERATION LOOP\n************************\n";
 
   // maximum number of iterations tolerance for outer iteration
   // currently default for turbulent channel flow: only one iteration before sampling
@@ -206,7 +205,7 @@ void LOMA::Algorithm::OuterLoop()
                                      FluidField().Discretization());
 
     // solve transport equation for temperature
-    if (Comm().MyPID()==0) cout<<"\n******************************************\n   TEMPERATURE SOLVER\n******************************************\n";
+    if (Comm().MyPID()==0) cout<<"\n************************\n   TEMPERATURE SOLVER\n************************\n";
     ScaTraField().Solve();
 
     // in case of non-constant thermodynamic pressure: compute
@@ -224,7 +223,7 @@ void LOMA::Algorithm::OuterLoop()
                                    ScaTraField().NumScal());
 
     // solve low-Mach-number flow equations
-    if (Comm().MyPID()==0) cout<<"\n******************************************\n      FLOW SOLVER\n******************************************\n";
+    if (Comm().MyPID()==0) cout<<"\n************************\n      FLOW SOLVER\n************************\n";
     FluidField().MultiCorrector();
 
     // check convergence of temperature field
@@ -248,7 +247,7 @@ void LOMA::Algorithm::OuterLoop()
                                    FluidField().Discretization());
 
   // solve transport equation for temperature
-  if (Comm().MyPID()==0) cout<<"\n******************************************\n   TEMPERATURE SOLVER\n******************************************\n";
+  if (Comm().MyPID()==0) cout<<"\n************************\n   TEMPERATURE SOLVER\n************************\n";
   ScaTraField().Solve();
 
   // in case of non-constant thermodynamic pressure: compute

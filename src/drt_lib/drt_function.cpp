@@ -240,6 +240,41 @@ namespace UTILS {
   };
 
 
+  /// special implementation for (randomly) disturbed 3d turbulent
+  /// boundary-layer profile
+  /// (currently fixed for low-Mach-number flow through a backward-facing step,
+  ///  but may be easily manipulated to fit other profiles in other geometries)
+  class TurbBouLayerFunction : public Function
+  {
+  public:
+    /*!
+
+    \brief evaluate function at given position in space
+
+    \param index (i) index defines the function-component which will
+                     be evaluated
+    \param x     (i) The point in space in which the function will be
+                     evaluated
+
+    */
+    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+
+    /*!
+
+    \brief Return the number of components of this spatial function
+    (This is a vector-valued function)
+
+    \return number of components (u,v,w,p)
+
+    */
+    virtual int NumberComponents()
+      {
+        return(4);
+      };
+
+  };
+
+
   /// special implementation for Womersley blood flow
   class WomersleyFunction : public Function
   {
@@ -391,6 +426,12 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
     .AddTag("KIM-MOIN")
     ;
 
+  DRT::INPUT::LineDefinition turbboulayer;
+  turbboulayer
+    .AddNamedInt("FUNCT")
+    .AddTag("TURBBOULAYER")
+    ;
+
   DRT::INPUT::LineDefinition jefferyhamel;
   jefferyhamel
     .AddNamedInt("FUNCT")
@@ -450,6 +491,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   lines->Add(radiusquad);
   lines->Add(beltrami);
   lines->Add(kimmoin);
+  lines->Add(turbboulayer);
   lines->Add(jefferyhamel);
   lines->Add(womersley);
   lines->Add(localwomersley);
@@ -598,6 +640,10 @@ void DRT::UTILS::FunctionManager::ReadInput(const DRT::INPUT::DatFileReader& rea
       else if (function->HaveNamed("KIM-MOIN"))
       {
         functions_.push_back(rcp(new KimMoinFunction()));
+      }
+      else if (function->HaveNamed("TURBBOULAYER"))
+      {
+        functions_.push_back(rcp(new TurbBouLayerFunction()));
       }
       else if (function->HaveNamed("JEFFERY-HAMEL"))
       {
@@ -820,6 +866,79 @@ double DRT::UTILS::KimMoinFunction::Evaluate(int index, const double* xp, double
     return -1.0/4.0 * ( cos(2.0*a*PI*xp[0]) + cos(2.0*a*PI*xp[1]) );
   default:
     return 1.0;
+  }
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double DRT::UTILS::TurbBouLayerFunction::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+{
+  switch (index)
+  {
+    double randomnumber;
+    double noise;
+
+    case 0:
+    {
+      // set u_tau und nu (fixed for low-Mach-number flow through
+      // backward-facing step, for the time being) and compute l_tau
+      double utau = 0.106;
+      double nu   = 0.00001527;
+      double ltau = nu/utau;
+
+      // compute y+ (upper wall of backward-facing step fixed, for the time being)
+      double yplus = xp[1]/ltau;
+      double myplus = (0.082-xp[1])/ltau;
+
+      // generate noise via random number
+      randomnumber = 2*((double)rand()-((double) RAND_MAX)/2.)/((double) RAND_MAX);
+      noise = 0.1778 * randomnumber;
+
+      // return velocity value in x-direction
+      if      (yplus <= 5.0)
+        return utau * yplus + noise;
+      else if ((yplus > 5.0)   and (yplus <= 30.0))
+        return utau * ( 5.0 * log(yplus) - 3.05 ) + noise;
+      else if ((yplus > 30.0)  and (yplus <= 285.0))
+      {
+        double upre = utau * ( 2.5 * log(yplus) + 5.5 );
+        if (upre > 2.063) return 2.063 + noise;
+        else             return upre + noise;
+      }
+      else if ((myplus > 30.0) and (myplus <= 284.0))
+      {
+        double upre = utau * ( 2.5 * log(myplus) + 5.5 );
+        if (upre > 2.063) return 2.063 + noise;
+        else              return upre + noise;
+      }
+      else if ((myplus > 5.0)  and (myplus <= 30.0))
+        return utau * ( 5.0 * log(myplus) - 3.05 ) + noise;
+      else if (myplus <= 5.0)
+        return utau * myplus + noise;
+    }
+    case 1:
+    {
+      // generate noise via random number
+      randomnumber = 2*((double)rand()-((double) RAND_MAX)/2.)/((double) RAND_MAX);
+      noise = 0.1778 * randomnumber;
+
+      // return velocity value in y-direction
+      return noise;
+    }
+    case 2:
+    {
+      // generate noise via random number
+      randomnumber = 2*((double)rand()-((double) RAND_MAX)/2.)/((double) RAND_MAX);
+      noise = 0.1778 * randomnumber;
+
+      // return velocity value in z-direction
+      return noise;
+    }
+    // nothing to be done for hydrodynamic pressure values
+    case 3:
+  default:
+    return 0.0;
   }
 }
 
