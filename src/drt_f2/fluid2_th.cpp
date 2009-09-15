@@ -855,7 +855,8 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcImpulseEqnSemiImplicit(Fluid2* ele,
 
     RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
     RCP<const Epetra_Vector> veln = discretization.GetState("veln");
-    RCP<const Epetra_Vector> vedenp = discretization.GetState("vedenp");
+    //RCP<const Epetra_Vector> vedenp = discretization.GetState("vedenp");
+    RCP<const Epetra_Vector> vedenp = discretization.GetState("vescnp");
     RCP<const Epetra_Vector> hist = discretization.GetState("hist");
     RCP<const Epetra_Vector> dispnp;
     RCP<const Epetra_Vector> gridv;
@@ -1411,18 +1412,19 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcSysmatAndResidual(Fluid2* ele,
     }
 
     RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
-    RCP<const Epetra_Vector> vedenp = discretization.GetState("vedenp");
+    //RCP<const Epetra_Vector> vedenp = discretization.GetState("vedenp");
+    RCP<const Epetra_Vector> vescnp = discretization.GetState("vescnp");
     RCP<const Epetra_Vector> hist = discretization.GetState("hist");
     RCP<const Epetra_Vector> dispnp;
     RCP<const Epetra_Vector> gridv;
 
     vector<double> myvelnp(lm.size());
-    vector<double> myvedenp(lm.size());
+    vector<double> myvescnp(lm.size());
     vector<double> myhist(lm.size());
     vector<double> mydispnp;
     vector<double> mygridv;
     DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
-    DRT::UTILS::ExtractMyValues(*vedenp,myvedenp,lm);
+    DRT::UTILS::ExtractMyValues(*vescnp,myvescnp,lm);
     DRT::UTILS::ExtractMyValues(*hist,myhist,lm);
 
     // ALE case
@@ -1468,7 +1470,7 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcSysmatAndResidual(Fluid2* ele,
             if(i<4)
             {
                 eprenp(i) 	  = myvelnp[ndofs[i]+2];
-                edensnp(i)  = myvedenp[ndofs[i]+2];
+                edensnp(i)  = myvescnp[ndofs[i]+2];
 
                 echist(i) = myhist[ndofs[i]+2];
             }
@@ -1480,7 +1482,7 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcSysmatAndResidual(Fluid2* ele,
             if(i<3)
             {
                 eprenp(i)	= myvelnp[ndofs[i]+2];
-                edensnp(i)  = myvedenp[ndofs[i]+2];
+                edensnp(i)  = myvescnp[ndofs[i]+2];
             }
         }
         break;
@@ -1515,9 +1517,10 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcSysmatAndResidual(Fluid2* ele,
     bool newton = false;
     bool loma = false;
     string newtonstr = params.get<string>("Linearisation");
-    string lomastr = params.get<string>("low-Mach-number solver");
     if(newtonstr=="Newton") newton = true;
-    if(lomastr=="Yes") loma = true;
+    //string lomastr = params.get<string>("low-Mach-number solver");  // isn't supported anymore
+    //if(lomastr=="Yes") loma = true;
+    loma = false;
 
     ParameterList& stablist = params.sublist("STABILIZATION");
 
@@ -1952,7 +1955,7 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcSysmatAndResidual(Fluid2* ele,
         } // end of rhs
     } // <- end loop over all gauss points
     return 0;
-	    							}
+}
 
 /*!
 * basic element call for
@@ -2000,7 +2003,8 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcResidual(Fluid2* ele,
     }
 
     RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
-    RCP<const Epetra_Vector> vedenp = discretization.GetState("vedenp");
+    //RCP<const Epetra_Vector> vedenp = discretization.GetState("vedenp");
+    RCP<const Epetra_Vector> vedenp = discretization.GetState("vescnp");
     RCP<const Epetra_Vector> hist = discretization.GetState("hist");
     RCP<const Epetra_Vector> dispnp;
     RCP<const Epetra_Vector> gridv;
