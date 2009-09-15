@@ -94,6 +94,7 @@ RELAX                           1.0
 ITEMAX                          100
 CONVTOL                         1.0E-6
 BASETOL                         1.0E-3
+SHAPEDERIVATIVES                No
 -----------------------------------------------------------------ALE DYNAMIC
 TIMESTEP                        0.1
 NUMSTEP                         200
