@@ -752,7 +752,7 @@ void LINALG::SparseMatrix::ApplyDirichlet(const Epetra_Map& dbctoggle,
     const int maxnumentries  = sysmat_->MaxNumEntries();
 
     //Teuchos::RCP<Epetra_CrsMatrix> Anew = Teuchos::rcp(new Epetra_CrsMatrix(Copy,rowmap,maxnumentries,false));
-    
+
     Teuchos::RCP<Epetra_CrsMatrix> Anew = Teuchos::null;
     if(matrixtype_ == CRS_MATRIX)
       Anew = Teuchos::rcp(new Epetra_CrsMatrix(Copy,rowmap,maxnumentries,false));
@@ -760,7 +760,7 @@ void LINALG::SparseMatrix::ApplyDirichlet(const Epetra_Map& dbctoggle,
       Anew = Teuchos::rcp(new Epetra_FECrsMatrix(Copy,rowmap,maxnumentries,false));
     else
       dserror("matrix type is not correct");
-    
+
     vector<int> indices(maxnumentries,0);
     vector<double> values(maxnumentries,0.0);
     for (int i=0; i<nummyrows; ++i)
@@ -1630,6 +1630,22 @@ LINALG::Merge(const LINALG::SparseMatrix& Aii,
   return mat;
 }
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::SparseMatrix> LINALG::Eye(const Epetra_Map& map)
+{
+  Teuchos::RCP<LINALG::SparseMatrix> eye = Teuchos::rcp(new SparseMatrix(map,1));
+  int numelements = map.NumMyElements();
+  int* gids = map.MyGlobalElements();
+  for (int i=0; i<numelements; ++i)
+  {
+    int gid = gids[i];
+    eye->Assemble(1.,gid,gid);
+  }
+  eye->Complete();
+  return eye;
+}
 
 
 #endif
