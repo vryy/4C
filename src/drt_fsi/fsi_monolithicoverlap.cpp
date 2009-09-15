@@ -3,6 +3,7 @@
 #include "fsi_monolithicoverlap.H"
 #include "fsi_statustest.H"
 #include "fsi_nox_linearsystem_bgs.H"
+#include "fsi_overlapprec_fsiamg.H"
 #include "fsi_monolithic_linearsystem.H"
 
 #include "../drt_lib/drt_globalproblem.H"
@@ -141,22 +142,48 @@ void FSI::MonolithicOverlap::SetupSystem()
   }
 
   // create block system matrix
-
-  systemmatrix_ = Teuchos::rcp(new OverlappingBlockMatrix(Extractor(),
-                                                          StructureField(),
-                                                          FluidField(),
-                                                          AleField(),
-                                                          false,
-                                                          Teuchos::getIntegralValue<int>(fsidyn,"SYMMETRICPRECOND"),
-                                                          pcomega[0],
-                                                          pciter[0],
-                                                          spcomega[0],
-                                                          spciter[0],
-                                                          fpcomega[0],
-                                                          fpciter[0],
-                                                          apcomega[0],
-                                                          apciter[0],
-                                                          DRT::Problem::Instance()->ErrorFile()->Handle()));
+  switch(linearsolverstrategy_)
+  {
+  case INPAR::FSI::FSIAMG:
+    systemmatrix_ = Teuchos::rcp(new OverlappingBlockMatrixFSIAMG(
+                                   Extractor(),
+                                   StructureField(),
+                                   FluidField(),
+                                   AleField(),
+                                   true,
+                                   Teuchos::getIntegralValue<int>(fsidyn,"SYMMETRICPRECOND"),
+                                   pcomega,
+                                   pciter,
+                                   spcomega,
+                                   spciter,
+                                   fpcomega,
+                                   fpciter,
+                                   apcomega,
+                                   apciter,
+                                   DRT::Problem::Instance()->ErrorFile()->Handle()));
+    break;
+  case INPAR::FSI::PreconditionedKrylov:
+    systemmatrix_ = Teuchos::rcp(new OverlappingBlockMatrix(
+                                   Extractor(),
+                                   StructureField(),
+                                   FluidField(),
+                                   AleField(),
+                                   true,
+                                   Teuchos::getIntegralValue<int>(fsidyn,"SYMMETRICPRECOND"),
+                                   pcomega[0],
+                                   pciter[0],
+                                   spcomega[0],
+                                   spciter[0],
+                                   fpcomega[0],
+                                   fpciter[0],
+                                   apcomega[0],
+                                   apciter[0],
+                                   DRT::Problem::Instance()->ErrorFile()->Handle()));
+    break;
+  default:
+    dserror("Unsupported type of monolithic solver");
+    break;
+  }
 }
 
 
@@ -566,7 +593,8 @@ FSI::MonolithicOverlap::CreateLinearSystem(ParameterList& nlParams,
   switch (linearsolverstrategy_)
   {
   case INPAR::FSI::PreconditionedKrylov:
-#if 1
+  case INPAR::FSI::FSIAMG:
+#if 0
     linSys = Teuchos::rcp(new FSI::MonolithicLinearSystem::MonolithicLinearSystem(
 #else
     linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(

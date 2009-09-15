@@ -308,10 +308,19 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
     Afa_.Reshape(dspace,rspace,Matrix(1,2).EpetraMatrix().get(),false);
     AFA_[0] = Afa_;
   }
+
+  if (structuresplit_)
   {
     MLAPI::Space dspace(Matrix(2,1).EpetraMatrix()->DomainMap());
     MLAPI::Space rspace(Matrix(2,1).EpetraMatrix()->RangeMap());
     Aaf_.Reshape(dspace,rspace,Matrix(2,1).EpetraMatrix().get(),false);
+    AAF_[0] = Aaf_;
+  }
+  else
+  {
+    MLAPI::Space dspace(Matrix(2,0).EpetraMatrix()->DomainMap());
+    MLAPI::Space rspace(Matrix(2,0).EpetraMatrix()->RangeMap());
+    Aaf_.Reshape(dspace,rspace,Matrix(2,0).EpetraMatrix().get(),false);
     AAF_[0] = Aaf_;
   }
 
@@ -394,8 +403,16 @@ void FSI::OverlappingBlockMatrixFSIAMG::RAPoffdiagonals()
     if (!i) RAPfine(AFA_[i+1],Rff_[i],Matrix(1,2).EpetraMatrix(),Paa_[i]);
     else    RAPcoarse(AFA_[i+1],Rff_[i],AFA_[i],Paa_[i]);
     //------ Aaf
-    if (!i) RAPfine(AAF_[i+1],Raa_[i],Matrix(2,1).EpetraMatrix(),Pff_[i]);
-    else    RAPcoarse(AAF_[i+1],Raa_[i],AAF_[i],Pff_[i]);
+    if (structuresplit_)
+    {
+      if (!i) RAPfine(AAF_[i+1],Raa_[i],Matrix(2,1).EpetraMatrix(),Pff_[i]);
+      else    RAPcoarse(AAF_[i+1],Raa_[i],AAF_[i],Pff_[i]);
+    }
+    else
+    {
+      if (!i) RAPfine(AAF_[i+1],Raa_[i],Matrix(2,0).EpetraMatrix(),Pff_[i]);
+      else    RAPcoarse(AAF_[i+1],Raa_[i],AAF_[i],Pff_[i]);
+    }
   }
   return;
 }
@@ -953,10 +970,18 @@ void FSI::OverlappingBlockMatrixFSIAMG::SGS(
     Afa_.Reshape(dspace,rspace,Matrix(1,2).EpetraMatrix().get(),false);
     AFA_[0] = Afa_;
   }
+  if (structuresplit_)
   {
     MLAPI::Space dspace(Matrix(2,1).EpetraMatrix()->DomainMap());
     MLAPI::Space rspace(Matrix(2,1).EpetraMatrix()->RangeMap());
     Aaf_.Reshape(dspace,rspace,Matrix(2,1).EpetraMatrix().get(),false);
+    AAF_[0] = Aaf_;
+  }
+  else
+  {
+    MLAPI::Space dspace(Matrix(2,0).EpetraMatrix()->DomainMap());
+    MLAPI::Space rspace(Matrix(2,0).EpetraMatrix()->RangeMap());
+    Aaf_.Reshape(dspace,rspace,Matrix(2,0).EpetraMatrix().get(),false);
     AAF_[0] = Aaf_;
   }
   {
@@ -1027,7 +1052,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SGS(
   // Matrix(1,0); // Afs
   // Matrix(1,1); // Aff
   // Matrix(1,2); // Afa
-  // Matrix(2,1); // Aaf
+  // Matrix(2,1) or Matrix(2,1); // Aaf
   // Matrix(2,2); // Aaa
   // rewrap the matrix every time as Uli shoots them irrespective
   // of whether the precond is reused or not.
@@ -1056,10 +1081,17 @@ void FSI::OverlappingBlockMatrixFSIAMG::SGS(
     MLAPI::Space rspace(Matrix(1,2).EpetraMatrix()->RangeMap());
     Afa_.Reshape(dspace,rspace,Matrix(1,2).EpetraMatrix().get(),false);
   }
+  if (structuresplit_)
   {
     MLAPI::Space dspace(Matrix(2,1).EpetraMatrix()->DomainMap());
     MLAPI::Space rspace(Matrix(2,1).EpetraMatrix()->RangeMap());
     Aaf_.Reshape(dspace,rspace,Matrix(2,1).EpetraMatrix().get(),false);
+  }
+  else
+  {
+    MLAPI::Space dspace(Matrix(2,0).EpetraMatrix()->DomainMap());
+    MLAPI::Space rspace(Matrix(2,0).EpetraMatrix()->RangeMap());
+    Aaf_.Reshape(dspace,rspace,Matrix(2,0).EpetraMatrix().get(),false);
   }
   {
     MLAPI::Space dspace(Matrix(2,2).EpetraMatrix()->DomainMap());
@@ -1197,7 +1229,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SGS(
   const LINALG::SparseMatrix& fluidBoundOp  = Matrix(1,0); // Afs
   const LINALG::SparseMatrix& fluidInnerOp  = Matrix(1,1); // Aff
   const LINALG::SparseMatrix& fluidMeshOp   = Matrix(1,2); // Afa
-  const LINALG::SparseMatrix& aleBoundOp    = Matrix(2,1); // Aaf
+  //const LINALG::SparseMatrix& aleBoundOp    = Matrix(2,1); // Aaf
   const LINALG::SparseMatrix& aleInnerOp    = Matrix(2,2); // Aaa
 
 
