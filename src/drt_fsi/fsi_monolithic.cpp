@@ -429,7 +429,9 @@ void FSI::Monolithic::SetDefaultParameters(const Teuchos::ParameterList& fsidyn,
   nlParams.set<std::string>("Nonlinear Solver", "Line Search Based");
   //nlParams.set("Preconditioner", "None");
   //nlParams.set("Norm abs F", fsidyn.get<double>("CONVTOL"));
+
   nlParams.set("Max Iterations", fsidyn.get<int>("ITEMAX"));
+  //nlParams.set("Max Iterations", 1);
 
   nlParams.set("Norm abs pres", fsidyn.get<double>("CONVTOL"));
   nlParams.set("Norm abs vel",  fsidyn.get<double>("CONVTOL"));
@@ -548,8 +550,14 @@ void FSI::Monolithic::SetDefaultParameters(const Teuchos::ParameterList& fsidyn,
 
   // be explicit about linear solver parameters
   lsParams.set<std::string>("Aztec Solver","GMRES");
+  //lsParams.set<std::string>("BiCGStab","GMRES");
+  lsParams.set<std::string>("Orthogonalization","Modified");
+
+  // "r0", "rhs", "norm", "no scaling", "sol"
+  lsParams.set<std::string>("Convergence Test","r0");
+
   lsParams.set<int>("Size of Krylov Subspace",50);
-  lsParams.set<int>("Max Iterations",400);
+  lsParams.set<int>("Max Iterations",2500);
   lsParams.set<std::string>("Preconditioner","User Defined");
   lsParams.set<int>("Output Frequency",10);
   lsParams.set<bool>("Output Solver Details",true);
