@@ -231,7 +231,8 @@ DRT::UTILS::GaussRule3D getXFEMGaussrule(
     const DRT::Element*                     xele,
     const M&                                xyze_element,
     const bool                              intersected,
-    const DRT::Element::DiscretizationType  celldistype
+    const DRT::Element::DiscretizationType  celldistype,
+    const bool                              fast_integration
     )
 {
   DRT::UTILS::GaussRule3D rule = DRT::UTILS::intrule3D_undefined;
@@ -242,7 +243,6 @@ DRT::UTILS::GaussRule3D getXFEMGaussrule(
   else
   {
     const GEO::EleGeoType xeleGeoType = GEO::checkGeoTypeT<XELEDISTYPE>(xele,xyze_element);
-    const bool fast_integration = false;
 
     if (celldistype == DRT::Element::tet4 or celldistype == DRT::Element::tet10)
     {

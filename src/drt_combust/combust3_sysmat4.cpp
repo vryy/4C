@@ -897,7 +897,7 @@ void SysmatTwoPhase(
         //das in der FlameFront für alles, da dort Phi vorliegt
         //daher stecken jetzt in ih->elementintcell auch die nicht geschnittenen Element
         //ih->Intersected prüft aber, ob eine Zelle in elementintcell steckt oder nicht
-        const DRT::UTILS::GaussRule3D gaussrule = XFLUID::getXFEMGaussrule<DISTYPE>(ele, xyze, ih->ElementIntersected(ele->Id()),cell->Shape());
+        const DRT::UTILS::GaussRule3D gaussrule = XFLUID::getXFEMGaussrule<DISTYPE>(ele, xyze, ih->ElementIntersected(ele->Id()),cell->Shape(),false);
 
         // gaussian points
         const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
@@ -1982,7 +1982,7 @@ void SysmatDomain4(
         // evaluate the enrichment function for this integration cell
         const XFEM::ElementEnrichmentValues enrvals(*ele,dofman,*cell,ephi);
 
-        const DRT::UTILS::GaussRule3D gaussrule = XFLUID::getXFEMGaussrule<DISTYPE>(ele, xyze, ih->ElementIntersected(ele->Id()),cell->Shape());
+        const DRT::UTILS::GaussRule3D gaussrule = XFLUID::getXFEMGaussrule<DISTYPE>(ele, xyze, ih->ElementIntersected(ele->Id()),cell->Shape(),false);
 
         // gaussian points
         const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
