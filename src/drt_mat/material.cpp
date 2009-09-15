@@ -208,6 +208,13 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
     MAT::PAR::ScatraMat* params = static_cast<MAT::PAR::ScatraMat*>(curmat->Parameter());
     return Teuchos::rcp(new ScatraMat(params));
   }
+  case INPAR::MAT::m_mixfrac_scatra:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::MixFracScatra(curmat));
+    MAT::PAR::MixFracScatra* params = static_cast<MAT::PAR::MixFracScatra*>(curmat->Parameter());
+    return Teuchos::rcp(new MixFracScatra(params));
+  }
   case INPAR::MAT::m_sutherland_scatra:
   {
     if (curmat->Parameter() == NULL)
