@@ -59,8 +59,6 @@ aiterations_(aiterations)
  *----------------------------------------------------------------------*/
 void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
 {
-  if (!structuresplit_) dserror("FSIAMG only with structuresplit monoFSI");
-
   MLAPI::Init();
   const int myrank = Matrix(0,0).Comm().MyPID();
 
@@ -410,8 +408,8 @@ void FSI::OverlappingBlockMatrixFSIAMG::RAPoffdiagonals()
     }
     else
     {
-      if (!i) RAPfine(AAF_[i+1],Raa_[i],Matrix(2,0).EpetraMatrix(),Pff_[i]);
-      else    RAPcoarse(AAF_[i+1],Raa_[i],AAF_[i],Pff_[i]);
+      if (!i) RAPfine(AAF_[i+1],Raa_[i],Matrix(2,0).EpetraMatrix(),Pss_[i]);
+      else    RAPcoarse(AAF_[i+1],Raa_[i],AAF_[i],Pss_[i]);
     }
   }
   return;
@@ -590,7 +588,8 @@ void FSI::OverlappingBlockMatrixFSIAMG::ExplicitBlockVcycle(
   // axc = Raa_[level] * ( mlax - Aaa_[level] * mlay - Aaf[level] * mlfy)
   MLAPI::MultiVector axc;
   axc = mlax - Aaa_[level] * mlay;
-  axc = axc - AAF_[level] * mlfy;
+  if (structuresplit_) axc = axc - AAF_[level] * mlfy;
+  else                 axc = axc - AAF_[level] * mlsy;
   axc = Raa_[level] * axc;
 
   // fluid
@@ -861,7 +860,8 @@ void FSI::OverlappingBlockMatrixFSIAMG::ExplicitBlockGaussSeidelSmoother(
     {
       // compute ( r - A y ) for ale row
       ax = mlax - Aaa_[level] * mlay;
-      ax = ax - AAF_[level] * mlfy;
+      if (structuresplit_) ax = ax - AAF_[level] * mlfy;
+      else                 ax = ax - AAF_[level] * mlsy;
       // zero initial guess
       az = 0.0;
       LocalBlockRichardson(aiterations_[level],aomega_[level],level,amgsolve,anlevel_,
@@ -937,7 +937,6 @@ strongly coupled AMG-Block-Gauss-Seidel
 void FSI::OverlappingBlockMatrixFSIAMG::SGS(
                  const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
 {
-  if (!structuresplit_) dserror("FSIAMG for structuresplit monoFSI only");
   if (symmetric_)       dserror("FSIAMG symmetric Block Gauss-Seidel not impl.");
 
   // rewrap the matrix every time as Uli shoots them irrespective
