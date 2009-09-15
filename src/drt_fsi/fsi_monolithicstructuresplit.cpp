@@ -720,8 +720,13 @@ FSI::MonolithicStructureSplit::CreateStatusTest(Teuchos::ParameterList& nlParams
   Teuchos::RCP<NOX::StatusTest::MaxIters> maxiters = Teuchos::rcp(new NOX::StatusTest::MaxIters(nlParams.get("Max Iterations", 100)));
   Teuchos::RCP<NOX::StatusTest::FiniteValue> fv    = Teuchos::rcp(new NOX::StatusTest::FiniteValue);
 
+  Teuchos::RCP<NOX::StatusTest::NormUpdate> update =
+  Teuchos::rcp(new NOX::StatusTest::NormUpdate(nlParams.get("Norm Update", 1.0e-5)));
+  combo->addStatusTest(update);
+
   combo->addStatusTest(fv);
   combo->addStatusTest(converged);
+  combo->addStatusTest(update);
   combo->addStatusTest(maxiters);
 
   // require one solve
