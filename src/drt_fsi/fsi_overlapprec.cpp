@@ -365,7 +365,7 @@ void FSI::OverlappingBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_MultiV
 
       alesolver_->Solve(aleInnerOp.EpetraMatrix(),az,ax,true);
       // do Richardson iteration
-      //LocalBlockRichardson(alesolver_,aleInnerOp,ax,az,tmpax,aiterations_,aomega_,err_,Comm());
+      LocalBlockRichardson(alesolver_,aleInnerOp,ax,az,tmpax,aiterations_,aomega_,err_,Comm());
 
       if (run>0)
       {
@@ -447,6 +447,8 @@ void FSI::OverlappingBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_MultiV
           ax->Update(-1.0,*tmpax,1.0);
         }
         alesolver_->Solve(aleInnerOp.EpetraMatrix(),az,ax,true);
+
+        LocalBlockRichardson(alesolver_,aleInnerOp,ax,az,tmpax,aiterations_,aomega_,err_,Comm());
         ay->Update(omega_,*az,1.0);
       }
 
