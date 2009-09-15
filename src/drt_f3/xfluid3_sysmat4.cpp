@@ -313,12 +313,12 @@ Maintainer: Axel Gerstenberger
                 |                |
                  \              /
   */
-  assembler.template Matrix<Pres,Velx>(shp.d0, -timefacfac, shp.dx);
-  assembler.template Matrix<Pres,Vely>(shp.d0, -timefacfac, shp.dy);
-  assembler.template Matrix<Pres,Velz>(shp.d0, -timefacfac, shp.dz);
+  assembler.template Matrix<Pres,Velx>(shp.d0, timefacfac, shp.dx);
+  assembler.template Matrix<Pres,Vely>(shp.d0, timefacfac, shp.dy);
+  assembler.template Matrix<Pres,Velz>(shp.d0, timefacfac, shp.dz);
 
   const double trace_gamma = (vderxy(0, 0) + vderxy(1, 1) + vderxy(2, 2));
-  assembler.template Vector<Pres>(shp.d0, timefacfac*trace_gamma);
+  assembler.template Vector<Pres>(shp.d0, -timefacfac*trace_gamma);
 
   // source term of the right hand side
   assembler.template Vector<Velx>(shp.d0, fac*rhsint(0));
@@ -404,9 +404,9 @@ Maintainer: Axel Gerstenberger
                      |                |
                       \              /
           */
-          assembler.template Matrix<Pres,Velx>(shp.dx, -timetauMp, shp.d0);
-          assembler.template Matrix<Pres,Vely>(shp.dy, -timetauMp, shp.d0);
-          assembler.template Matrix<Pres,Velz>(shp.dz, -timetauMp, shp.d0);
+          assembler.template Matrix<Pres,Velx>(shp.dx, timetauMp, shp.d0);
+          assembler.template Matrix<Pres,Vely>(shp.dy, timetauMp, shp.d0);
+          assembler.template Matrix<Pres,Velz>(shp.dz, timetauMp, shp.d0);
       }
       const double ttimetauMp = timefac * timefac * tau_stab_Mp * fac;
       /* pressure stabilisation: convection, convective part */
@@ -417,9 +417,9 @@ Maintainer: Axel Gerstenberger
                |             \ i         /     |
                 \                             /
       */
-      assembler.template Matrix<Pres,Velx>(shp.dx, -ttimetauMp, enr_conv_c_);
-      assembler.template Matrix<Pres,Vely>(shp.dy, -ttimetauMp, enr_conv_c_);
-      assembler.template Matrix<Pres,Velz>(shp.dz, -ttimetauMp, enr_conv_c_);
+      assembler.template Matrix<Pres,Velx>(shp.dx, ttimetauMp, enr_conv_c_);
+      assembler.template Matrix<Pres,Vely>(shp.dy, ttimetauMp, enr_conv_c_);
+      assembler.template Matrix<Pres,Velz>(shp.dz, ttimetauMp, enr_conv_c_);
 
       if (newton)
       {
@@ -430,17 +430,17 @@ Maintainer: Axel Gerstenberger
                |           \          /   (i)  |
                 \                             /
           */
-          assembler.template Matrix<Pres,Velx>(shp.dx, -ttimetauMp*vderxy(0,0), shp.d0);
-          assembler.template Matrix<Pres,Velx>(shp.dy, -ttimetauMp*vderxy(1,0), shp.d0);
-          assembler.template Matrix<Pres,Velx>(shp.dz, -ttimetauMp*vderxy(2,0), shp.d0);
+          assembler.template Matrix<Pres,Velx>(shp.dx, ttimetauMp*vderxy(0,0), shp.d0);
+          assembler.template Matrix<Pres,Velx>(shp.dy, ttimetauMp*vderxy(1,0), shp.d0);
+          assembler.template Matrix<Pres,Velx>(shp.dz, ttimetauMp*vderxy(2,0), shp.d0);
 
-          assembler.template Matrix<Pres,Vely>(shp.dx, -ttimetauMp*vderxy(0,1), shp.d0);
-          assembler.template Matrix<Pres,Vely>(shp.dy, -ttimetauMp*vderxy(1,1), shp.d0);
-          assembler.template Matrix<Pres,Vely>(shp.dz, -ttimetauMp*vderxy(2,1), shp.d0);
+          assembler.template Matrix<Pres,Vely>(shp.dx, ttimetauMp*vderxy(0,1), shp.d0);
+          assembler.template Matrix<Pres,Vely>(shp.dy, ttimetauMp*vderxy(1,1), shp.d0);
+          assembler.template Matrix<Pres,Vely>(shp.dz, ttimetauMp*vderxy(2,1), shp.d0);
 
-          assembler.template Matrix<Pres,Velz>(shp.dx, -ttimetauMp*vderxy(0,2), shp.d0);
-          assembler.template Matrix<Pres,Velz>(shp.dy, -ttimetauMp*vderxy(1,2), shp.d0);
-          assembler.template Matrix<Pres,Velz>(shp.dz, -ttimetauMp*vderxy(2,2), shp.d0);
+          assembler.template Matrix<Pres,Velz>(shp.dx, ttimetauMp*vderxy(0,2), shp.d0);
+          assembler.template Matrix<Pres,Velz>(shp.dy, ttimetauMp*vderxy(1,2), shp.d0);
+          assembler.template Matrix<Pres,Velz>(shp.dz, ttimetauMp*vderxy(2,2), shp.d0);
       }
 
       /* pressure stabilisation: viscosity (-L_visc_u) */
@@ -451,17 +451,17 @@ Maintainer: Axel Gerstenberger
                 |                         \  /  |
                  \                             /
       */
-      assembler.template Matrix<Pres,Velx>(shp.dx, 2.0*visc*ttimetauMp, enr_viscs2.xx);
-      assembler.template Matrix<Pres,Vely>(shp.dx, 2.0*visc*ttimetauMp, enr_viscs2.xy);
-      assembler.template Matrix<Pres,Velz>(shp.dx, 2.0*visc*ttimetauMp, enr_viscs2.xz);
+      assembler.template Matrix<Pres,Velx>(shp.dx, -2.0*visc*ttimetauMp, enr_viscs2.xx);
+      assembler.template Matrix<Pres,Vely>(shp.dx, -2.0*visc*ttimetauMp, enr_viscs2.xy);
+      assembler.template Matrix<Pres,Velz>(shp.dx, -2.0*visc*ttimetauMp, enr_viscs2.xz);
 
-      assembler.template Matrix<Pres,Velx>(shp.dy, 2.0*visc*ttimetauMp, enr_viscs2.xy);
-      assembler.template Matrix<Pres,Vely>(shp.dy, 2.0*visc*ttimetauMp, enr_viscs2.yy);
-      assembler.template Matrix<Pres,Velz>(shp.dy, 2.0*visc*ttimetauMp, enr_viscs2.yz);
+      assembler.template Matrix<Pres,Velx>(shp.dy, -2.0*visc*ttimetauMp, enr_viscs2.xy);
+      assembler.template Matrix<Pres,Vely>(shp.dy, -2.0*visc*ttimetauMp, enr_viscs2.yy);
+      assembler.template Matrix<Pres,Velz>(shp.dy, -2.0*visc*ttimetauMp, enr_viscs2.yz);
 
-      assembler.template Matrix<Pres,Velx>(shp.dz, 2.0*visc*ttimetauMp, enr_viscs2.xz);
-      assembler.template Matrix<Pres,Vely>(shp.dz, 2.0*visc*ttimetauMp, enr_viscs2.yz);
-      assembler.template Matrix<Pres,Velz>(shp.dz, 2.0*visc*ttimetauMp, enr_viscs2.zz);
+      assembler.template Matrix<Pres,Velx>(shp.dz, -2.0*visc*ttimetauMp, enr_viscs2.xz);
+      assembler.template Matrix<Pres,Vely>(shp.dz, -2.0*visc*ttimetauMp, enr_viscs2.yz);
+      assembler.template Matrix<Pres,Velz>(shp.dz, -2.0*visc*ttimetauMp, enr_viscs2.zz);
 
       /* pressure stabilisation: pressure( L_pres_p) */
       /*
@@ -471,14 +471,14 @@ Maintainer: Axel Gerstenberger
                |                      |
                 \                    /
       */
-      assembler.template Matrix<Pres,Pres>(shp.dx, -ttimetauMp, shp.dx);
-      assembler.template Matrix<Pres,Pres>(shp.dy, -ttimetauMp, shp.dy);
-      assembler.template Matrix<Pres,Pres>(shp.dz, -ttimetauMp, shp.dz);
+      assembler.template Matrix<Pres,Pres>(shp.dx, ttimetauMp, shp.dx);
+      assembler.template Matrix<Pres,Pres>(shp.dy, ttimetauMp, shp.dy);
+      assembler.template Matrix<Pres,Pres>(shp.dz, ttimetauMp, shp.dz);
 
       // pressure stabilization
-      assembler.template Vector<Pres>(shp.dx, timetauMp*res_old(0));
-      assembler.template Vector<Pres>(shp.dy, timetauMp*res_old(1));
-      assembler.template Vector<Pres>(shp.dz, timetauMp*res_old(2));
+      assembler.template Vector<Pres>(shp.dx, -timetauMp*res_old(0));
+      assembler.template Vector<Pres>(shp.dy, -timetauMp*res_old(1));
+      assembler.template Vector<Pres>(shp.dz, -timetauMp*res_old(2));
 
   }
 
@@ -895,7 +895,7 @@ void SysmatDomain4(
             static LINALG::Matrix<nsd,nsd> xji;
             xji.Invert(xjm);
 
-            // compute global derivates
+            // compute global derivatives
             static LINALG::Matrix<3,numnode> derxy;
 
             // derxy(i,j) = xji(i,k) * deriv(k,j)
