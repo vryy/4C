@@ -96,6 +96,8 @@ void FSI::MonolithicOverlap::SetupSystem()
   // build ale system matrix in splitted system
   AleField().BuildSystemMatrix(false);
 
+  aleresidual_ = Teuchos::rcp(new Epetra_Vector(*AleField().Interface().OtherMap()));
+
   vector<int> pciter;
   vector<double> pcomega;
   vector<int> spciter;
@@ -198,6 +200,9 @@ void FSI::MonolithicOverlap::SetupRHS(Epetra_Vector& f, bool firstcall)
               FluidField().RHS(),
               AleField().RHS(),
               FluidField().ResidualScaling());
+
+  // add additional ale residual
+  Extractor().AddVector(*aleresidual_,2,f);
 
   if (firstcall)
   {
@@ -504,7 +509,7 @@ void FSI::MonolithicOverlap::UnscaleSolution(LINALG::BlockSparseMatrixBase& mat,
   Teuchos::RCP<Epetra_Vector> ar = Extractor().ExtractVector(r,2);
 
   // increment additional ale residual
-  //aleresidual_->Update(-1.,*ar,0.);
+  aleresidual_->Update(-1.,*ar,0.);
 
   ios_base::fmtflags flags = Utils()->out().flags();
 
