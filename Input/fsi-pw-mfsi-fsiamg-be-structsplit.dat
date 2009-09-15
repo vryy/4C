@@ -85,17 +85,20 @@ NUMSTEP                         5
 UPPSS                           1
 UPRES                           1
 RESTARTEVRY                     1
-COUPALGO                        iter_monolithicstructuresplit
+COUPALGO                        iter_monolithicstructuresplit // iter_monolithicstructuresplit iter_monolithicfluidsplit iter_stagg_AITKEN_rel_param
 COUPMETHOD                      conforming       // MTR,Mtr,mtr,conforming
 COUPVARIABLE                    Displacement     // Displacement,Force
 LINEARBLOCKSOLVER               FSIAMG           // FSIAMG PreconditionedKrylov
-FLUIDPCITER                     0                // Number of Richardson iterations on fluid block in MFSI block preconditioner
-FLUIDPCOMEGA                    1.0              // Relaxation factor for Richardson iteration on fluid block in MFSI block preconditioner
-STRUCTPCITER                    0                // Number of Richardson iterations on structural block in MFSI block preconditioner
-STRUCTPCOMEGA                   1.0              // Relaxation factor for Richardson iteration on structural block in MFSI block preconditioner
+FLUIDPCITER                     0 1 0            // Number of Richardson iterations on fluid block in MFSI block preconditioner
+FLUIDPCOMEGA                    1.0 0.89 1.0      // Relaxation factor for Richardson iteration on fluid block in MFSI block preconditioner
+STRUCTPCITER                    0 1 0            // Number of Richardson iterations on structural block in MFSI block preconditioner
+STRUCTPCOMEGA                   1.0 0.89 1.0      // Relaxation factor for Richardson iteration on structural block in MFSI block preconditioner
+ALEPCITER                       0 1 0            // Number of Richardson iterations on structural block in MFSI block preconditioner
+ALEPCOMEGA                      1.0 0.89 1.0     // Relaxation factor for Richardson iteration on structural block in MFSI block preconditioner
 PCITER                          1 2 4            // Number of Richardson iterations on whole MFSI block preconditioner
-PCOMEGA                         0.89 0.99 0.99   // Relaxation factor for Richardson iteration on whole MFSI block preconditioner
+PCOMEGA                         0.89 0.95 0.95   // Relaxation factor for Richardson iteration on whole MFSI block preconditioner
 SYMMETRICPRECOND                no               // SGS on monlithic
+SHAPEDERIVATIVES                Yes
 PRECONDREUSE                    5                // Number of preconditioner reused in monolithic FSI
 INFNORMSCALING                  yes
 PREDICTOR                       d(n)
@@ -105,8 +108,8 @@ TOLENCHECK                      1.0E-6
 RELAX                           1.0
 ITEMAX                          100
 CONVTOL                         1.0E-6
-BASETOL                         1.0E-3
-SHAPEDERIVATIVES                Yes
+BASETOL                         1.0E-6
+ADAPTIVEDIST                    0.01
 -----------------------------------------------------------------ALE DYNAMIC
 TIMESTEP                        0.1
 NUMSTEP                         200
@@ -119,7 +122,7 @@ QUALITY                         none
 SOLVER                          Aztec_MSR                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        0                               // output every so often, 0 no output
 AZSOLVE                         GMRES                              // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          MLFLUID2                              // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
+AZPREC                          ML                              // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
 AZREUSE                         10                               // how often to recompute some preconditioners
 AZDROP                          0.0                             // drop tolerance for ILUT
 AZFILL                          1.0                             // fill-in for ILUT
