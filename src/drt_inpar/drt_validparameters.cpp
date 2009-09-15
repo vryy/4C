@@ -2182,29 +2182,35 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   // monolithic preconditioner parameter
 
-  DoubleParameter("STRUCTPCOMEGA",1.,
+  setNumericStringParameter("STRUCTPCOMEGA","1.0 1.0 1.0 1.0",
                   "Relaxation factor for Richardson iteration on structural block in MFSI block preconditioner",
                   &fsidyn);
-  IntParameter("STRUCTPCITER",0,
+  setNumericStringParameter("STRUCTPCITER","0 0 0 0",
                "Number of Richardson iterations on structural block in MFSI block preconditioner",
                &fsidyn);
-  DoubleParameter("FLUIDPCOMEGA",1.,
+  setNumericStringParameter("FLUIDPCOMEGA","1.0 1.0 1.0 1.0",
                   "Relaxation factor for Richardson iteration on fluid block in MFSI block preconditioner",
                   &fsidyn);
-  IntParameter("FLUIDPCITER",0,
+  setNumericStringParameter("FLUIDPCITER","0 0 0 0",
                "Number of Richardson iterations on fluid block in MFSI block preconditioner",
                &fsidyn);
-  //DoubleParameter("PCOMEGA",1.,
-  //                "Relaxation factor for Richardson iteration on whole MFSI block preconditioner",
-  //                &fsidyn);
+  setNumericStringParameter("ALEPCOMEGA","1.0 1.0 1.0 1.0",
+                  "Relaxation factor for Richardson iteration on ale block in MFSI block preconditioner",
+                  &fsidyn);
+  setNumericStringParameter("ALEPCITER","0 0 0 0",
+               "Number of Richardson iterations on ale block in MFSI block preconditioner",
+               &fsidyn);
 
   setNumericStringParameter("PCOMEGA","1.0 1.0 1.0",
                             "Relaxation factor for Richardson iteration on whole MFSI block preconditioner",
                             &fsidyn);
-
   setNumericStringParameter("PCITER","1 1 3",
                             "Number of Richardson iterations on whole MFSI block preconditioner",
                             &fsidyn);
+
+  //DoubleParameter("PCOMEGA",1.,
+  //                "Relaxation factor for Richardson iteration on whole MFSI block preconditioner",
+  //                &fsidyn);
   //IntParameter("PCITER",1,
   //             "Number of Richardson iterations on whole MFSI block preconditioner",
   //             &fsidyn);
