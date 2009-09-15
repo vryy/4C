@@ -265,7 +265,7 @@ void FSI::MonolithicOverlap::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
     LINALG::SparseMatrix& fmii = mmm->Matrix(0,0);
     LINALG::SparseMatrix& fmgi = mmm->Matrix(1,0);
 
-#if 0
+#if 1
     LINALG::SparseMatrix& fmig = mmm->Matrix(0,1);
     LINALG::SparseMatrix& fmgg = mmm->Matrix(1,1);
 
