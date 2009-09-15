@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file arrhenius_pv.cpp
+\file arrhenius_pv_scatra.cpp
 
 <pre>
 Maintainer: Volker Gravemeier
@@ -14,12 +14,12 @@ Maintainer: Volker Gravemeier
 
 #include <vector>
 
-#include "arrhenius_pv.H"
+#include "arrhenius_pv_scatra.H"
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::ArrheniusPV::ArrheniusPV(
+MAT::PAR::ArrheniusPVScatra::ArrheniusPVScatra(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : Parameter(matdata),
@@ -43,7 +43,7 @@ MAT::PAR::ArrheniusPV::ArrheniusPV(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::ArrheniusPV::ArrheniusPV()
+MAT::ArrheniusPVScatra::ArrheniusPVScatra()
   : params_(NULL)
 {
 }
@@ -51,7 +51,7 @@ MAT::ArrheniusPV::ArrheniusPV()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::ArrheniusPV::ArrheniusPV(MAT::PAR::ArrheniusPV* params)
+MAT::ArrheniusPVScatra::ArrheniusPVScatra(MAT::PAR::ArrheniusPVScatra* params)
   : params_(params)
 {
 }
@@ -59,7 +59,7 @@ MAT::ArrheniusPV::ArrheniusPV(MAT::PAR::ArrheniusPV* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ArrheniusPV::Pack(vector<char>& data) const
+void MAT::ArrheniusPVScatra::Pack(vector<char>& data) const
 {
   data.resize(0);
 
@@ -75,7 +75,7 @@ void MAT::ArrheniusPV::Pack(vector<char>& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ArrheniusPV::Unpack(const vector<char>& data)
+void MAT::ArrheniusPVScatra::Unpack(const vector<char>& data)
 {
   int position = 0;
   // extract type
@@ -92,7 +92,7 @@ void MAT::ArrheniusPV::Unpack(const vector<char>& data)
     const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
   MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
   if (mat->Type() == MaterialType())
-    params_ = static_cast<MAT::PAR::ArrheniusPV*>(mat);
+    params_ = static_cast<MAT::PAR::ArrheniusPVScatra*>(mat);
   else
       dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
   }
@@ -107,7 +107,7 @@ void MAT::ArrheniusPV::Unpack(const vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::ArrheniusPV::ComputeAlpha() const
+double MAT::ArrheniusPVScatra::ComputeAlpha() const
 {
   const double alpha = (BurTemp()-UnbTemp())/BurTemp();
 
@@ -116,7 +116,7 @@ double MAT::ArrheniusPV::ComputeAlpha() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::ArrheniusPV::ComputeBeta() const
+double MAT::ArrheniusPVScatra::ComputeBeta() const
 {
   const double beta = (BurTemp()-UnbTemp())*AcTemp()/(BurTemp()*BurTemp());
 
@@ -125,7 +125,7 @@ double MAT::ArrheniusPV::ComputeBeta() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::ArrheniusPV::ComputeDiffFlameThickness() const
+double MAT::ArrheniusPVScatra::ComputeDiffFlameThickness() const
 {
   const double delta = RefVisc()/(PraNum()*UnbDens()*FlameSpeed());
 
@@ -134,7 +134,7 @@ double MAT::ArrheniusPV::ComputeDiffFlameThickness() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::ArrheniusPV::ComputeBlintFlameThickness() const
+double MAT::ArrheniusPVScatra::ComputeBlintFlameThickness() const
 {
   const double delta_B = 2.0*pow((BurTemp()/RefTemp()),1.5)*((RefTemp()+SuthTemp())/(BurTemp()+SuthTemp()))*RefVisc()/(PraNum()*UnbDens()*FlameSpeed());
 
@@ -143,7 +143,7 @@ double MAT::ArrheniusPV::ComputeBlintFlameThickness() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::ArrheniusPV::ComputeShc(const double provar) const
+double MAT::ArrheniusPVScatra::ComputeShc(const double provar) const
 {
   const double shc = UnbShc() + provar * (BurShc() - UnbShc());
 
@@ -152,7 +152,7 @@ double MAT::ArrheniusPV::ComputeShc(const double provar) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::ArrheniusPV::ComputeTemperature(const double provar) const
+double MAT::ArrheniusPVScatra::ComputeTemperature(const double provar) const
 {
   const double temperature = UnbTemp() + provar * (BurTemp() - UnbTemp());
 
@@ -161,7 +161,7 @@ double MAT::ArrheniusPV::ComputeTemperature(const double provar) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::ArrheniusPV::ComputeDensity(const double provar) const
+double MAT::ArrheniusPVScatra::ComputeDensity(const double provar) const
 {
   const double density = UnbDens() + provar * (BurDens() - UnbDens());
 
@@ -170,7 +170,7 @@ double MAT::ArrheniusPV::ComputeDensity(const double provar) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::ArrheniusPV::ComputeDiffusivity(const double temp) const
+double MAT::ArrheniusPVScatra::ComputeDiffusivity(const double temp) const
 {
   const double diffus = pow((temp/RefTemp()),1.5)*((RefTemp()+SuthTemp())/(temp+SuthTemp()))*RefVisc()/PraNum();
 
@@ -179,7 +179,7 @@ double MAT::ArrheniusPV::ComputeDiffusivity(const double temp) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::ArrheniusPV::ComputeReactionCoeff(const double temp) const
+double MAT::ArrheniusPVScatra::ComputeReactionCoeff(const double temp) const
 {
   const double reacoeff = -PreExCon()*pow(temp,TempExp())*exp(-AcTemp()/temp);
 

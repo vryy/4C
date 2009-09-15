@@ -25,9 +25,7 @@ namespace MAT
   {
 
     /*----------------------------------------------------------------------*/
-    /// material parameters for convection-diffusion material according to Sutherland law with Arrhenius-type chemical kinetics (temperature)
-    ///
-    /// This object exists only once
+    /// parameters for scalar transport material according to Sutherland law with Arrhenius-type chemical kinetics (temperature)
     class ArrheniusTemp : public Parameter
     {
     public:
@@ -73,7 +71,7 @@ namespace MAT
   }  // namespace PAR
 
   /*----------------------------------------------------------------------*/
-  /// convection-diffusion material according to Sutherland law with Arrhenius-type chemical kinetics (temperature)
+  /// wrapper for scalar transport material according to Sutherland law with Arrhenius-type chemical kinetics (temperature)
   class ArrheniusTemp : public Material
   {
   public:

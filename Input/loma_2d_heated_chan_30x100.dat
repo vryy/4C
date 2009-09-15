@@ -10020,9 +10020,7 @@ NODE         3131     COORD 0.000000000000000e+00     0.000000000000000e+00     
 ------------------------------------------------TRANSPORT ELEMENTS
 ---------------------------------------------------------MATERIALS
 MAT       1 MAT_sutherland_fluid  REFVISC 0.01178 REFTEMP 293.0 SUTHTEMP 110.4 THERMPRESS 98100.0 GASCON 287.0
-MAT       2 MAT_sutherland_condif REFVISC 0.01178 REFTEMP 293.0 SUTHTEMP 110.4 SHC 1004.5 PRANUM 1.0 THERMPRESS 98100.0 GASCON 287.0
-//MAT       1 MAT_fluid  VISCOSITY 0.01178 DENSITY 1.0
-//MAT       2 MAT_condif DIFFUSIVITY 11.83137 SHC 1004.5
+MAT       2 MAT_sutherland_scatra REFVISC 0.01178 REFTEMP 293.0 SUTHTEMP 110.4 SHC 1004.5 PRANUM 1.0 THERMPRESS 98100.0 GASCON 287.0
 ----------------------------------------------MULTILAYER MATERIALS
 ------------------------------------------------------CONTROL NODE
 -------------------------------------------------------LOAD CURVES

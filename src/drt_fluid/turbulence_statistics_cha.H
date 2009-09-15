@@ -133,7 +133,7 @@ public:
   average of the nodal values after a certain amount of timesteps.
   */
   void DoLomaTimeSample(Teuchos::RefCountPtr<Epetra_Vector> velnp,
-                        Teuchos::RefCountPtr<Epetra_Vector> vedenp,
+                        Teuchos::RefCountPtr<Epetra_Vector> vescnp,
                         Teuchos::RefCountPtr<Epetra_Vector> subgrvisc,
                         Epetra_Vector &                     force,
                         const double                        eosfac);
@@ -407,9 +407,8 @@ private:
   //!       the pointwise averaged stuff
   //!--------------------------------------------------
   //
-  //! vector of squared velocities, pressures and densities (pointwise)
+  //! vector of squared velocities and pressures
   RefCountPtr<Epetra_Vector>       pointsquaredvelnp_;
-  RefCountPtr<Epetra_Vector>       pointsquaredvedenp_;
 
   //! sum over u (over one plane in each component)
   RefCountPtr<vector<double> >     pointsumu_;

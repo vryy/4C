@@ -1,12 +1,15 @@
 /*!----------------------------------------------------------------------
-\file convecdiffus.H
+\file scatra.H
 
 <pre>
-Maintainer: ???
+Maintainer: Volker Gravemeier
+            vgravem@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15245
 </pre>
 *----------------------------------------------------------------------*/
-#ifndef CONVECDIFFUS_H
-#define CONVECDIFFUS_H
+#ifndef SCATRA_MAT_H
+#define SCATRA_MAT_H
 
 #ifdef CCADISCRET
 
@@ -20,18 +23,18 @@ namespace MAT
   {
 
     /*----------------------------------------------------------------------*/
-    /// material parameters for convection-diffusion
-    class ConvecDiffus : public Parameter
+    /// parameters for scalar transport material
+    class ScatraMat : public Parameter
     {
     public:
 
       /// standard constructor
-      ConvecDiffus(
+      ScatraMat(
         Teuchos::RCP<MAT::PAR::Material> matdata
         );
 
       /// destructor
-      virtual ~ConvecDiffus() { ; }
+      virtual ~ScatraMat() { ; }
 
       /// @name material parameters
       //@{
@@ -40,27 +43,25 @@ namespace MAT
       const double diffusivity_;
       /// reaction coefficient
       const double reacoeff_;
-      /// specific heat capacity
-      const double shc_;
 
       //@}
 
-    };  // class ConvecDiffus
+    };  // class Scatra
 
   } // namespace PAR
 
 
   /*----------------------------------------------------------------------*/
-  /// Wrapper for Newtonian fluid material
-  class ConvecDiffus : public Material
+  /// wrapper for scalar transport material
+  class ScatraMat : public Material
   {
   public:
 
     /// construct empty material object
-    ConvecDiffus();
+    ScatraMat();
 
     /// construct the material object given material parameters
-    explicit ConvecDiffus(MAT::PAR::ConvecDiffus* params);
+    explicit ScatraMat(MAT::PAR::ScatraMat* params);
 
     //! @name Packing and Unpacking
 
@@ -70,7 +71,7 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return ParObject_ConvecDiffus; }
+    virtual int UniqueParObjectId() const { return ParObject_ScatraMat; }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -101,19 +102,17 @@ namespace MAT
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_condif; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_scatra; }
 
     /// diffusivity
     double Diffusivity() const { return params_->diffusivity_; }
     /// reaction coefficient
     double ReaCoeff() const { return params_->reacoeff_; }
-    /// specific heat capacity
-    double Shc() const { return params_->shc_; }
 
   private:
 
     /// my material parameters
-    MAT::PAR::ConvecDiffus* params_;
+    MAT::PAR::ScatraMat* params_;
 
   };
 

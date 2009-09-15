@@ -110,7 +110,9 @@ extern "C"
 #include "../drt_so3/so_disp.H"
 #include "../drt_so3/so_hex8p1j1.H"
 #include "../drt_mat/newtonianfluid.H"
+#include "../drt_mat/mixfrac_fluid.H"
 #include "../drt_mat/sutherland_fluid.H"
+#include "../drt_mat/arrhenius_pv_fluid.H"
 #include "../drt_mat/stvenantkirchhoff.H"
 #include "../drt_mat/micromaterial.H"
 #include "../drt_mat/neohooke.H"
@@ -126,11 +128,12 @@ extern "C"
 #include "../drt_mat/viscoanisotropic.H"
 #include "../drt_mat/contchainnetw.H"
 #include "../drt_mat/artwallremod.H"
-#include "../drt_mat/convecdiffus.H"
-#include "../drt_mat/sutherland_condif.H"
+#include "../drt_mat/scatra_mat.H"
+#include "../drt_mat/mixfrac_scatra.H"
+#include "../drt_mat/sutherland_scatra.H"
 #include "../drt_mat/arrhenius_spec.H"
 #include "../drt_mat/arrhenius_temp.H"
-#include "../drt_mat/arrhenius_pv.H"
+#include "../drt_mat/arrhenius_pv_scatra.H"
 #include "../drt_mat/carreauyasuda.H"
 #include "../drt_mat/modpowerlaw.H"
 #include "../drt_mat/biocell.H"
@@ -740,11 +743,23 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
       fluid->Unpack(data);
       return fluid;
     }
+    case ParObject_MixFracFluid:
+    {
+      MAT::MixFracFluid* mixfrac_fluid = new MAT::MixFracFluid();
+      mixfrac_fluid->Unpack(data);
+      return mixfrac_fluid;
+    }
     case ParObject_SutherlandFluid:
     {
       MAT::SutherlandFluid* sutherland_fluid = new MAT::SutherlandFluid();
       sutherland_fluid->Unpack(data);
       return sutherland_fluid;
+    }
+    case ParObject_ArrheniusPVFluid:
+    {
+      MAT::ArrheniusPVFluid* arrhenius_pv_fluid = new MAT::ArrheniusPVFluid();
+      arrhenius_pv_fluid->Unpack(data);
+      return arrhenius_pv_fluid;
     }
     case ParObject_StVenantKirchhoff:
     {
@@ -836,17 +851,23 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
       aaadamage->Unpack(data);
       return aaadamage; //aaadam;
     }
-    case ParObject_ConvecDiffus:
+    case ParObject_ScatraMat:
     {
-      MAT::ConvecDiffus* condif = new MAT::ConvecDiffus();
-      condif->Unpack(data);
-      return condif;
+      MAT::ScatraMat* scatra_mat = new MAT::ScatraMat();
+      scatra_mat->Unpack(data);
+      return scatra_mat;
     }
-    case ParObject_SutherlandCondif:
+    case ParObject_MixFracScatra:
     {
-      MAT::SutherlandCondif* sutherland_condif = new MAT::SutherlandCondif();
-      sutherland_condif->Unpack(data);
-      return sutherland_condif;
+      MAT::MixFracScatra* mixfrac_scatra = new MAT::MixFracScatra();
+      mixfrac_scatra->Unpack(data);
+      return mixfrac_scatra;
+    }
+    case ParObject_SutherlandScatra:
+    {
+      MAT::SutherlandScatra* sutherland_scatra = new MAT::SutherlandScatra();
+      sutherland_scatra->Unpack(data);
+      return sutherland_scatra;
     }
     case ParObject_ArrheniusSpec:
     {
@@ -860,11 +881,11 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
       arrhenius_temp->Unpack(data);
       return arrhenius_temp;
     }
-    case ParObject_ArrheniusPV:
+    case ParObject_ArrheniusPVScatra:
     {
-      MAT::ArrheniusPV* arrhenius_pv = new MAT::ArrheniusPV();
-      arrhenius_pv->Unpack(data);
-      return arrhenius_pv;
+      MAT::ArrheniusPVScatra* arrhenius_pv_scatra = new MAT::ArrheniusPVScatra();
+      arrhenius_pv_scatra->Unpack(data);
+      return arrhenius_pv_scatra;
     }
     case ParObject_CarreauYasuda:
     {

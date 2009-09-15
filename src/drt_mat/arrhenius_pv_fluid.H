@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file arrhenius_pv.H
+\file arrhenius_pv_fluid.H
 
 <pre>
 Maintainer: Volker Gravemeier
@@ -10,8 +10,8 @@ Maintainer: Volker Gravemeier
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifndef ARRHENIUS_PV_H
-#define ARRHENIUS_PV_H
+#ifndef ARRHENIUS_PV_FLUID_H
+#define ARRHENIUS_PV_FLUID_H
 
 #ifdef CCADISCRET
 
@@ -25,20 +25,18 @@ namespace MAT
   {
 
     /*----------------------------------------------------------------------*/
-    /// material parameters for convection-diffusion material according to Sutherland law with Arrhenius-type chemical kinetics (progress variable)
-    ///
-    /// This object exists only once
-    class ArrheniusPV : public Parameter
+    /// parameters for fluid material coupled to Arrhenius-type chemical kinetics (progress variable)
+    class ArrheniusPVFluid : public Parameter
     {
     public:
 
       /// standard constructor
-      ArrheniusPV(
+      ArrheniusPVFluid(
         Teuchos::RCP<MAT::PAR::Material> matdata
         );
 
       /// destructor
-      virtual ~ArrheniusPV() { ; }
+      virtual ~ArrheniusPVFluid() { ; }
 
       /// @name material parameters
       //@{
@@ -49,20 +47,6 @@ namespace MAT
       const double reftemp_;
       /// Sutherland temperature (K)
       const double suthtemp_;
-      /// Prandtl number
-      const double pranum_;
-      /// pre-exponential constant
-      const double preexcon_;
-      /// exponent of temperature dependence
-      const double tempexp_;
-      /// activation temperature
-      const double actemp_;
-      /// flame speed
-      const double flamespeed_;
-      /// specific heat capacity of unburnt phase
-      const double unbshc_;
-      /// specific heat capacity of burnt phase
-      const double burshc_;
       /// temperature of unburnt phase
       const double unbtemp_;
       /// temperature of burnt phase
@@ -74,21 +58,21 @@ namespace MAT
 
       //@}
 
-    };  // class ArrheniusPV
+    };  // class ArrheniusPVFluid
 
   }  // namespace PAR
 
   /*----------------------------------------------------------------------*/
-  /// convection-diffusion material according to Sutherland law with Arrhenius-type chemical kinetics (progress variable)
-  class ArrheniusPV : public Material
+  /// wrapper for fluid material coupled to Arrhenius-type chemical kinetics (progress variable)
+  class ArrheniusPVFluid : public Material
   {
   public:
 
     /// construct empty material object
-    ArrheniusPV();
+    ArrheniusPVFluid();
 
     /// construct the material object given material parameters
-    explicit ArrheniusPV(MAT::PAR::ArrheniusPV* params);
+    explicit ArrheniusPVFluid(MAT::PAR::ArrheniusPVFluid* params);
 
     //! @name Packing and Unpacking
 
@@ -99,7 +83,7 @@ namespace MAT
       top of drt_parobject.H (this file) and should return it in this method.
     */
 
-    virtual int UniqueParObjectId() const { return ParObject_ArrheniusPV; }
+    virtual int UniqueParObjectId() const { return ParObject_ArrheniusPVFluid; }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -130,22 +114,7 @@ namespace MAT
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_arrhenius_pv; }
-
-    /// compute rate parameter alpha
-    double ComputeAlpha() const;
-
-    /// compute rate parameter beta
-    double ComputeBeta() const;
-
-    /// compute diffusive flame thickness
-    double ComputeDiffFlameThickness() const;
-
-    /// compute flame thickness due to Blint (1986)
-    double ComputeBlintFlameThickness() const;
-
-    /// compute specific heat capacity at constant pressure
-    double ComputeShc(const double provar) const;
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_arrhenius_pv_fluid; }
 
     /// compute temperature
     double ComputeTemperature(const double provar) const;
@@ -153,11 +122,8 @@ namespace MAT
     /// compute density
     double ComputeDensity(const double provar) const;
 
-    /// compute diffusivity
-    double ComputeDiffusivity(const double temp) const;
-
-    /// compute reaction coefficient
-    double ComputeReactionCoeff(const double temp) const;
+    /// compute viscosity
+    double ComputeViscosity(const double temp) const;
 
     /// return material parameters for element calculation
     //@{
@@ -168,20 +134,6 @@ namespace MAT
     double RefTemp() const { return params_->reftemp_; }
     /// Sutherland temperature (K)
     double SuthTemp() const { return params_->suthtemp_; }
-    /// Prandtl number
-    double PraNum() const { return params_->pranum_; }
-    /// pre-exponential constant
-    double PreExCon() const { return params_->preexcon_; }
-    /// exponent of temperature dependence
-    double TempExp() const { return params_->tempexp_; }
-    /// activation temperature
-    double AcTemp() const { return params_->actemp_; }
-    /// flame speed
-    double FlameSpeed() const { return params_->flamespeed_; }
-    /// specific heat capacity of unburnt phase
-    double UnbShc() const { return params_->unbshc_; }
-    /// specific heat capacity of burnt phase
-    double BurShc() const { return params_->burshc_; }
     /// temperature of unburnt phase
     double UnbTemp() const { return params_->unbtemp_; }
     /// temperature of burnt phase
@@ -196,7 +148,7 @@ namespace MAT
   private:
 
     /// my material parameters
-    MAT::PAR::ArrheniusPV* params_;
+    MAT::PAR::ArrheniusPVFluid* params_;
   };
 
 }

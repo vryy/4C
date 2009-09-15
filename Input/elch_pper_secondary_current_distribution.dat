@@ -186,7 +186,7 @@ ML_DAMPMED        1.0             // damping med grids
 ML_DAMPCOARSE     1.0             // damping coarse grid
 PARTITION         Cut_Elements
 ---------------------------------------------------------MATERIALS
-MAT       1 MAT_condif DIFFUSIVITY 1.0
+MAT       1 MAT_scatra DIFFUSIVITY 1.0
 ----------------------------------------------MULTILAYER MATERIALS
 ------------------------------------------------------CONTROL NODE
 -------------------------------------------------------LOAD CURVES

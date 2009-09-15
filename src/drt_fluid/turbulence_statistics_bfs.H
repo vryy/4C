@@ -103,7 +103,7 @@ public:
   average of the nodal values after a certain amount of timesteps.
   */
   void DoLomaTimeSample(Teuchos::RCP<Epetra_Vector> velnp,
-                        Teuchos::RCP<Epetra_Vector> vedenp,
+                        Teuchos::RCP<Epetra_Vector> vescnp,
                         Teuchos::RCP<Epetra_Vector> subgrvisc,
                         const double                eosfac);
 

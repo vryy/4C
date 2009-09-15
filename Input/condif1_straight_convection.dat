@@ -332,7 +332,7 @@ NODE           11     COORD 1.000000000000000e+00     0.000000000000000e+00     
 9 TRANSP LINE2      9     10       MAT 1
 10 TRANSP LINE2    10     11       MAT 1
 ---------------------------------------------------------MATERIALS
-MAT       1 MAT_condif  DIFFUSIVITY 0.01
+MAT       1 MAT_scatra  DIFFUSIVITY 0.01
 ----------------------------------------------MULTILAYER MATERIALS
 ------------------------------------------------------CONTROL NODE
 -------------------------------------------------------LOAD CURVES

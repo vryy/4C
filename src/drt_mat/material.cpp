@@ -19,18 +19,21 @@ Maintainer: Lena Wiechert
 
 #include "material.H"
 #include "newtonianfluid.H"
+#include "mixfrac_fluid.H"
 #include "sutherland_fluid.H"
+#include "arrhenius_pv_fluid.H"
 #include "stvenantkirchhoff.H"
 #include "micromaterial.H"
 #include "neohooke.H"
 #include "aaaneohooke.H"
 #include "aaaraghavanvorp_damage.H"
 #include "logneohooke.H"
-#include "convecdiffus.H"
-#include "sutherland_condif.H"
+#include "scatra_mat.H"
+#include "mixfrac_scatra.H"
+#include "sutherland_scatra.H"
 #include "arrhenius_spec.H"
 #include "arrhenius_temp.H"
-#include "arrhenius_pv.H"
+#include "arrhenius_pv_scatra.H"
 #include "anisotropic_balzani.H"
 #include "mooneyrivlin.H"
 #include "yeoh.H"
@@ -79,12 +82,26 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
     MAT::PAR::NewtonianFluid* params = static_cast<MAT::PAR::NewtonianFluid*>(curmat->Parameter());
     return Teuchos::rcp(new NewtonianFluid(params));
   }
+  case INPAR::MAT::m_mixfrac_fluid:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::MixFracFluid(curmat));
+    MAT::PAR::MixFracFluid* params = static_cast<MAT::PAR::MixFracFluid*>(curmat->Parameter());
+    return Teuchos::rcp(new MixFracFluid(params));
+  }
   case INPAR::MAT::m_sutherland_fluid:
   {
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::SutherlandFluid(curmat));
     MAT::PAR::SutherlandFluid* params = static_cast<MAT::PAR::SutherlandFluid*>(curmat->Parameter());
     return Teuchos::rcp(new SutherlandFluid(params));
+  }
+  case INPAR::MAT::m_arrhenius_pv_fluid:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::ArrheniusPVFluid(curmat));
+    MAT::PAR::ArrheniusPVFluid* params = static_cast<MAT::PAR::ArrheniusPVFluid*>(curmat->Parameter());
+    return Teuchos::rcp(new ArrheniusPVFluid(params));
   }
   case INPAR::MAT::m_stvenant:
   {
@@ -184,19 +201,19 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
     MAT::PAR::LogNeoHooke* params = static_cast<MAT::PAR::LogNeoHooke*>(curmat->Parameter());
     return Teuchos::rcp(new LogNeoHooke(params));
   }
-  case INPAR::MAT::m_condif:
+  case INPAR::MAT::m_scatra:
   {
     if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::ConvecDiffus(curmat));
-    MAT::PAR::ConvecDiffus* params = static_cast<MAT::PAR::ConvecDiffus*>(curmat->Parameter());
-    return Teuchos::rcp(new ConvecDiffus(params));
+      curmat->SetParameter(new MAT::PAR::ScatraMat(curmat));
+    MAT::PAR::ScatraMat* params = static_cast<MAT::PAR::ScatraMat*>(curmat->Parameter());
+    return Teuchos::rcp(new ScatraMat(params));
   }
-  case INPAR::MAT::m_sutherland_condif:
+  case INPAR::MAT::m_sutherland_scatra:
   {
     if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::SutherlandCondif(curmat));
-    MAT::PAR::SutherlandCondif* params = static_cast<MAT::PAR::SutherlandCondif*>(curmat->Parameter());
-    return Teuchos::rcp(new SutherlandCondif(params));
+      curmat->SetParameter(new MAT::PAR::SutherlandScatra(curmat));
+    MAT::PAR::SutherlandScatra* params = static_cast<MAT::PAR::SutherlandScatra*>(curmat->Parameter());
+    return Teuchos::rcp(new SutherlandScatra(params));
   }
   case INPAR::MAT::m_arrhenius_spec:
   {
@@ -212,12 +229,12 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
     MAT::PAR::ArrheniusTemp* params = static_cast<MAT::PAR::ArrheniusTemp*>(curmat->Parameter());
     return Teuchos::rcp(new ArrheniusTemp(params));
   }
-  case INPAR::MAT::m_arrhenius_pv:
+  case INPAR::MAT::m_arrhenius_pv_scatra:
   {
     if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::ArrheniusPV(curmat));
-    MAT::PAR::ArrheniusPV* params = static_cast<MAT::PAR::ArrheniusPV*>(curmat->Parameter());
-    return Teuchos::rcp(new ArrheniusPV(params));
+      curmat->SetParameter(new MAT::PAR::ArrheniusPVScatra(curmat));
+    MAT::PAR::ArrheniusPVScatra* params = static_cast<MAT::PAR::ArrheniusPVScatra*>(curmat->Parameter());
+    return Teuchos::rcp(new ArrheniusPVScatra(params));
   }
   case INPAR::MAT::m_carreauyasuda:
   {

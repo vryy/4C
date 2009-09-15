@@ -19,7 +19,9 @@ Maintainer: Volker Gravemeier
 #include "fluid2_impl.H"
 
 #include "../drt_mat/newtonianfluid.H"
+#include "../drt_mat/mixfrac_fluid.H"
 #include "../drt_mat/sutherland_fluid.H"
+#include "../drt_mat/arrhenius_pv_fluid.H"
 #include "../drt_mat/carreauyasuda.H"
 #include "../drt_mat/modpowerlaw.H"
 #include "../drt_lib/drt_timecurve.H"
@@ -2169,6 +2171,33 @@ else if (material->MaterialType() == INPAR::MAT::m_modpowerlaw)
   // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
   visc_ = m * pow((delta + rateofstrain), (-1)*a);
 }
+else if (material->MaterialType() == INPAR::MAT::m_mixfrac_fluid)
+{
+  const MAT::MixFracFluid* actmat = static_cast<const MAT::MixFracFluid*>(material.get());
+
+  // get constant viscosity
+  visc_ = actmat->Viscosity();
+
+  // compute mixture fraction at n+1 or n+alpha_F
+  const double mixfracnp = funct_.Dot(escanp);
+
+  // compute density at n+1 or n+alpha_F based on mixture fraction
+  densnp_ = actmat->ComputeDensity(mixfracnp);
+
+  // compute density at n+alpha_M
+  if (is_genalpha)
+  {
+    const double mixfracam = funct_.Dot(escaam);
+    densam_ = actmat->ComputeDensity(mixfracam);
+  }
+  else densam_ = densnp_;
+
+  // factor for density derivative:
+  densdtfac_ = densam_*actmat->EosFacA();
+
+  // no addition to density derivative
+  densdtadd_ = 0.0;
+}
 else if (material->MaterialType() == INPAR::MAT::m_sutherland_fluid)
 {
   const MAT::SutherlandFluid* actmat = static_cast<const MAT::SutherlandFluid*>(material.get());
@@ -2179,7 +2208,7 @@ else if (material->MaterialType() == INPAR::MAT::m_sutherland_fluid)
   // compute viscosity according to Sutherland law
   visc_ = actmat->ComputeViscosity(tempnp);
 
-  // compute density at various time steps based on temperature
+  // compute density at n+1 or n+alpha_F based on temperature
   // and thermodynamic pressure
   densnp_ = actmat->ComputeDensity(tempnp,thermpressnp_);
 
@@ -2206,6 +2235,36 @@ else if (material->MaterialType() == INPAR::MAT::m_sutherland_fluid)
     // addition to density derivative: -(1/p_the)*dp_the/dt
     densdtadd_ = -thermpressdt_/thermpressnp_;
   }
+}
+else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv_fluid)
+{
+  const MAT::ArrheniusPVFluid* actmat = static_cast<const MAT::ArrheniusPVFluid*>(material.get());
+
+  // get progress variable at n+1 or n+alpha_F
+  const double provarnp = funct_.Dot(escanp);
+
+  // compute temperature based on progress variable
+  const double tempnp = actmat->ComputeTemperature(provarnp);
+
+  // compute viscosity according to Sutherland law
+  visc_ = actmat->ComputeViscosity(provarnp);
+
+  // compute density at n+1 or n+alpha_F based on progress variable
+  densnp_ = actmat->ComputeDensity(provarnp);
+
+  // compute density at n+alpha_M
+  if (is_genalpha)
+  {
+    const double provaram = funct_.Dot(escaam);
+    densam_ = actmat->ComputeDensity(provaram);
+  }
+  else densam_ = densnp_;
+
+  // factor for density derivative:
+  densdtfac_ = (actmat->UnbDens() - actmat->BurDens())/densam_;
+
+  // no addition to density derivative
+  densdtadd_ = 0.0;
 }
 else dserror("Material type is not supported");
 

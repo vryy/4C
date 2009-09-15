@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file sutherland_condif.H
+\file sutherland_scatra.H
 
 <pre>
 Maintainer: Volker Gravemeier
@@ -10,8 +10,8 @@ Maintainer: Volker Gravemeier
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifndef SUTHERLAND_CONDIF_H
-#define SUTHERLAND_CONDIF_H
+#ifndef SUTHERLAND_SCATRA_H
+#define SUTHERLAND_SCATRA_H
 
 #ifdef CCADISCRET
 
@@ -25,20 +25,18 @@ namespace MAT
   {
 
     /*----------------------------------------------------------------------*/
-    /// material parameters for temperature-dependent viscosity according to Sutherland law
-    ///
-    /// This object exists only once for each read Newton fluid.
-    class SutherlandCondif : public Parameter
+    /// parameters for scalar transport material with temperature dependence according to Sutherland law
+    class SutherlandScatra : public Parameter
     {
     public:
 
       /// standard constructor
-      SutherlandCondif(
+      SutherlandScatra(
         Teuchos::RCP<MAT::PAR::Material> matdata
         );
 
       /// destructor
-      virtual ~SutherlandCondif() { ; }
+      virtual ~SutherlandScatra() { ; }
 
       /// @name material parameters
       //@{
@@ -60,21 +58,21 @@ namespace MAT
 
       //@}
 
-    };  // class SutherlandCondif
+    };  // class SutherlandScatra
 
   }  // namespace PAR
 
   /*----------------------------------------------------------------------*/
-  /// temperature-dependent viscosity according to Sutherland law
-  class SutherlandCondif : public Material
+  /// scalar transport material with temperature dependence according to Sutherland law
+  class SutherlandScatra : public Material
   {
   public:
 
     /// construct empty material object
-    SutherlandCondif();
+    SutherlandScatra();
 
     /// construct the material object given material parameters
-    explicit SutherlandCondif(MAT::PAR::SutherlandCondif* params);
+    explicit SutherlandScatra(MAT::PAR::SutherlandScatra* params);
 
     //! @name Packing and Unpacking
 
@@ -85,7 +83,7 @@ namespace MAT
       top of drt_parobject.H (this file) and should return it in this method.
     */
 
-    virtual int UniqueParObjectId() const { return ParObject_SutherlandCondif; }
+    virtual int UniqueParObjectId() const { return ParObject_SutherlandScatra; }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -116,7 +114,7 @@ namespace MAT
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_sutherland_condif; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_sutherland_scatra; }
 
     /// compute diffusivity
     double ComputeDiffusivity(const double temp) const;
@@ -147,7 +145,7 @@ namespace MAT
   private:
 
     /// my material parameters
-    MAT::PAR::SutherlandCondif* params_;
+    MAT::PAR::SutherlandScatra* params_;
   };
 
 }

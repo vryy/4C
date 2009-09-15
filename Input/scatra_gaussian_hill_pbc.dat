@@ -121,9 +121,9 @@ PARTITION         Cut_Elements
 --------------------------------------------------------ALE SOLVER
 ----------------------------------------------------THERMAL SOLVER
 ---------------------------------------------------------MATERIALS
-MAT       1 MAT_condif  DIFFUSIVITY 0.0033333333333  // Pe_e = 1
-MAT       2 MAT_condif  DIFFUSIVITY 0.0006666666666  // Pe_e = 5
-MAT       3 MAT_condif  DIFFUSIVITY 0.0000333333333  // Pe_e = 100
+MAT       1 MAT_scatra  DIFFUSIVITY 0.0033333333333  // Pe_e = 1
+MAT       2 MAT_scatra  DIFFUSIVITY 0.0006666666666  // Pe_e = 5
+MAT       3 MAT_scatra  DIFFUSIVITY 0.0000333333333  // Pe_e = 100
 MAT       4 MAT_matlist NUMMAT 2 MATIDS 2 3
 ----------------------------------------------MULTILAYER MATERIALS
 ------------------------------------------------------CONTROL NODE

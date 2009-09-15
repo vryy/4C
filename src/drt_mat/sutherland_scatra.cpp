@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file sutherland_condif.cpp
+\file sutherland_scatra.cpp
 
 <pre>
 Maintainer: Volker Gravemeier
@@ -14,12 +14,12 @@ Maintainer: Volker Gravemeier
 
 #include <vector>
 
-#include "sutherland_condif.H"
+#include "sutherland_scatra.H"
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::SutherlandCondif::SutherlandCondif(
+MAT::PAR::SutherlandScatra::SutherlandScatra(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : Parameter(matdata),
@@ -36,7 +36,7 @@ MAT::PAR::SutherlandCondif::SutherlandCondif(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::SutherlandCondif::SutherlandCondif()
+MAT::SutherlandScatra::SutherlandScatra()
   : params_(NULL)
 {
 }
@@ -44,7 +44,7 @@ MAT::SutherlandCondif::SutherlandCondif()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::SutherlandCondif::SutherlandCondif(MAT::PAR::SutherlandCondif* params)
+MAT::SutherlandScatra::SutherlandScatra(MAT::PAR::SutherlandScatra* params)
   : params_(params)
 {
 }
@@ -52,7 +52,7 @@ MAT::SutherlandCondif::SutherlandCondif(MAT::PAR::SutherlandCondif* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::SutherlandCondif::Pack(vector<char>& data) const
+void MAT::SutherlandScatra::Pack(vector<char>& data) const
 {
   data.resize(0);
 
@@ -68,7 +68,7 @@ void MAT::SutherlandCondif::Pack(vector<char>& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::SutherlandCondif::Unpack(const vector<char>& data)
+void MAT::SutherlandScatra::Unpack(const vector<char>& data)
 {
   int position = 0;
   // extract type
@@ -85,7 +85,7 @@ void MAT::SutherlandCondif::Unpack(const vector<char>& data)
     const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
   MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
   if (mat->Type() == MaterialType())
-    params_ = static_cast<MAT::PAR::SutherlandCondif*>(mat);
+    params_ = static_cast<MAT::PAR::SutherlandScatra*>(mat);
   else
       dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
   }
@@ -101,7 +101,7 @@ void MAT::SutherlandCondif::Unpack(const vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::SutherlandCondif::ComputeDiffusivity(const double temp) const
+double MAT::SutherlandScatra::ComputeDiffusivity(const double temp) const
 {
   const double diffus = pow((temp/RefTemp()),1.5)*((RefTemp()+SuthTemp())/(temp+SuthTemp()))*RefVisc()/PraNum();
 
@@ -110,7 +110,7 @@ double MAT::SutherlandCondif::ComputeDiffusivity(const double temp) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::SutherlandCondif::ComputeDensity(const double temp,
+double MAT::SutherlandScatra::ComputeDensity(const double temp,
                                              const double thermpress) const
 {
   const double density = thermpress/(GasConst()*temp);

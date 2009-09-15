@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file arrhenius_spec.H
+\file arrhenius_pv_scatra.H
 
 <pre>
 Maintainer: Volker Gravemeier
@@ -10,8 +10,8 @@ Maintainer: Volker Gravemeier
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifndef ARRHENIUS_SPEC_H
-#define ARRHENIUS_SPEC_H
+#ifndef ARRHENIUS_PV_SCATRA_H
+#define ARRHENIUS_PV_SCATRA_H
 
 #ifdef CCADISCRET
 
@@ -25,18 +25,18 @@ namespace MAT
   {
 
     /*----------------------------------------------------------------------*/
-    /// parameters for scalar transport material according to Sutherland law with Arrhenius-type chemical kinetics (species)
-    class ArrheniusSpec : public Parameter
+    /// parameters for scalar transport material with Arrhenius-type chemical kinetics (progress variable)
+    class ArrheniusPVScatra : public Parameter
     {
     public:
 
       /// standard constructor
-      ArrheniusSpec(
+      ArrheniusPVScatra(
         Teuchos::RCP<MAT::PAR::Material> matdata
         );
 
       /// destructor
-      virtual ~ArrheniusSpec() { ; }
+      virtual ~ArrheniusPVScatra() { ; }
 
       /// @name material parameters
       //@{
@@ -47,32 +47,46 @@ namespace MAT
       const double reftemp_;
       /// Sutherland temperature (K)
       const double suthtemp_;
-      /// Schmidt number
-      const double schnum_;
+      /// Prandtl number
+      const double pranum_;
       /// pre-exponential constant
       const double preexcon_;
       /// exponent of temperature dependence
       const double tempexp_;
       /// activation temperature
       const double actemp_;
+      /// flame speed
+      const double flamespeed_;
+      /// specific heat capacity of unburnt phase
+      const double unbshc_;
+      /// specific heat capacity of burnt phase
+      const double burshc_;
+      /// temperature of unburnt phase
+      const double unbtemp_;
+      /// temperature of burnt phase
+      const double burtemp_;
+      /// density of unburnt phase
+      const double unbdens_;
+      /// density of burnt phase
+      const double burdens_;
 
       //@}
 
-    };  // class ArrheniusSpec
+    };  // class ArrheniusPV
 
   }  // namespace PAR
 
   /*----------------------------------------------------------------------*/
-  /// wrapper for scalar transport material according to Sutherland law with Arrhenius-type chemical kinetics (species)
-  class ArrheniusSpec : public Material
+  /// wrapper for scalar transport material with Arrhenius-type chemical kinetics (progress variable)
+  class ArrheniusPVScatra : public Material
   {
   public:
 
     /// construct empty material object
-    ArrheniusSpec();
+    ArrheniusPVScatra();
 
     /// construct the material object given material parameters
-    explicit ArrheniusSpec(MAT::PAR::ArrheniusSpec* params);
+    explicit ArrheniusPVScatra(MAT::PAR::ArrheniusPVScatra* params);
 
     //! @name Packing and Unpacking
 
@@ -83,7 +97,7 @@ namespace MAT
       top of drt_parobject.H (this file) and should return it in this method.
     */
 
-    virtual int UniqueParObjectId() const { return ParObject_ArrheniusSpec; }
+    virtual int UniqueParObjectId() const { return ParObject_ArrheniusPVScatra; }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -114,7 +128,28 @@ namespace MAT
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_arrhenius_spec; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_arrhenius_pv_scatra; }
+
+    /// compute rate parameter alpha
+    double ComputeAlpha() const;
+
+    /// compute rate parameter beta
+    double ComputeBeta() const;
+
+    /// compute diffusive flame thickness
+    double ComputeDiffFlameThickness() const;
+
+    /// compute flame thickness due to Blint (1986)
+    double ComputeBlintFlameThickness() const;
+
+    /// compute specific heat capacity at constant pressure
+    double ComputeShc(const double provar) const;
+
+    /// compute temperature
+    double ComputeTemperature(const double provar) const;
+
+    /// compute density
+    double ComputeDensity(const double provar) const;
 
     /// compute diffusivity
     double ComputeDiffusivity(const double temp) const;
@@ -131,21 +166,35 @@ namespace MAT
     double RefTemp() const { return params_->reftemp_; }
     /// Sutherland temperature (K)
     double SuthTemp() const { return params_->suthtemp_; }
-    /// Schmidt number
-    double SchNum() const { return params_->schnum_; }
+    /// Prandtl number
+    double PraNum() const { return params_->pranum_; }
     /// pre-exponential constant
     double PreExCon() const { return params_->preexcon_; }
     /// exponent of temperature dependence
     double TempExp() const { return params_->tempexp_; }
     /// activation temperature
     double AcTemp() const { return params_->actemp_; }
+    /// flame speed
+    double FlameSpeed() const { return params_->flamespeed_; }
+    /// specific heat capacity of unburnt phase
+    double UnbShc() const { return params_->unbshc_; }
+    /// specific heat capacity of burnt phase
+    double BurShc() const { return params_->burshc_; }
+    /// temperature of unburnt phase
+    double UnbTemp() const { return params_->unbtemp_; }
+    /// temperature of burnt phase
+    double BurTemp() const { return params_->burtemp_; }
+    /// density of unburnt phase
+    double UnbDens() const { return params_->unbdens_; }
+    /// density of burnt phase
+    double BurDens() const { return params_->burdens_; }
 
     //@}
 
   private:
 
     /// my material parameters
-    MAT::PAR::ArrheniusSpec* params_;
+    MAT::PAR::ArrheniusPVScatra* params_;
   };
 
 }

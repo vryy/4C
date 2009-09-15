@@ -68,7 +68,7 @@ using namespace std;
 #define ParObject_Fluid3Line            (int)47
 #define ParObject_LungPenalty           (int)48
 #define ParObject_NeoHooke              (int)49
-#define ParObject_ConvecDiffus          (int)50
+#define ParObject_ScatraMat             (int)50
 #define ParObject_So_weg6               (int)51
 #define ParObject_Sow6Register          (int)52
 #define ParObject_SoDisp                (int)56
@@ -142,7 +142,7 @@ using namespace std;
 #define ParObject_Transport             (int)128
 #define ParObject_TransportBoundary     (int)129
 #define ParObject_SutherlandFluid       (int)130
-#define ParObject_SutherlandCondif      (int)131
+#define ParObject_SutherlandScatra      (int)131
 #define ParObject_CompOgden             (int)132
 #define ParObject_ParMaterial           (int)133
 #define ParObject_CHARMM                (int)134
@@ -181,8 +181,11 @@ using namespace std;
 #define ParObject_XDiff3Register        (int)167
 #define ParObject_XDiff3Surface         (int)168
 #define ParObject_XDiff3Line            (int)169
-#define ParObject_ArrheniusPV           (int)170
+#define ParObject_ArrheniusPVScatra     (int)170
 #define ParObject_FourierIso            (int)171
+#define ParObject_ArrheniusPVFluid      (int)172
+#define ParObject_MixFracScatra         (int)173
+#define ParObject_MixFracFluid          (int)174
 
 namespace DRT
 {

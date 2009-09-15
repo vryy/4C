@@ -1,6 +1,5 @@
-/*----------------------------------------------------------------------*/
-/*!
-\file sutherland_fluid.H
+/*!----------------------------------------------------------------------
+\file mixfrac_scatra.H
 
 <pre>
 Maintainer: Volker Gravemeier
@@ -8,13 +7,13 @@ Maintainer: Volker Gravemeier
             http://www.lnm.mw.tum.de
             089 - 289-15245
 </pre>
-*/
-/*----------------------------------------------------------------------*/
-#ifndef SUTHERLAND_FLUID_H
-#define SUTHERLAND_FLUID_H
+*----------------------------------------------------------------------*/
+#ifndef MIXFRAC_SCATRA_H
+#define MIXFRAC_SCATRA_H
 
 #ifdef CCADISCRET
 
+#include "matpar_parameter.H"
 #include "material.H"
 
 namespace MAT
@@ -24,51 +23,49 @@ namespace MAT
   {
 
     /*----------------------------------------------------------------------*/
-    /// parameters for fluid material with temperature dependence according to Sutherland law
-    class SutherlandFluid : public Parameter
+    /// parameters for scalar transport material according to mixture-fraction approach
+    class MixFracScatra : public Parameter
     {
     public:
 
       /// standard constructor
-      SutherlandFluid(
+      MixFracScatra(
         Teuchos::RCP<MAT::PAR::Material> matdata
         );
 
       /// destructor
-      virtual ~SutherlandFluid() { ; }
+      virtual ~ MixFracScatra() { ; }
 
       /// @name material parameters
       //@{
 
-      /// reference dynamic viscosity (kg/(m*s))
-      const double refvisc_;
-      /// reference temperature (K)
-      const double reftemp_;
-      /// Sutherland temperature (K)
-      const double suthtemp_;
-      /// (initial) thermodynamic pressure
-      const double thermpress_;
-      /// specific gas constant R
-      const double gasconst_;
+      /// dynamic diffusivity
+      const double diffusivity_;
+
+      /// equation-of-state factor a
+      const double eosfaca_;
+
+      /// equation-of-state factor b
+      const double eosfacb_;
 
       //@}
 
-    };  // class SutherlandFluid
+    };  // class MixFracScatra
 
-  }  // namespace PAR
+  } // namespace PAR
 
 
   /*----------------------------------------------------------------------*/
-  /// wrapper for fluid material with temperature dependence according to Sutherland law
-  class SutherlandFluid : public Material
+  /// Wrapper for scalar transport material according to mixture-fraction approach
+  class  MixFracScatra : public Material
   {
   public:
 
     /// construct empty material object
-    SutherlandFluid();
+    MixFracScatra();
 
     /// construct the material object given material parameters
-    explicit SutherlandFluid(MAT::PAR::SutherlandFluid* params);
+    explicit MixFracScatra(MAT::PAR::MixFracScatra* params);
 
     //! @name Packing and Unpacking
 
@@ -78,8 +75,7 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-
-    virtual int UniqueParObjectId() const { return ParObject_SutherlandFluid; }
+    virtual int UniqueParObjectId() const { return ParObject_MixFracScatra; }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -110,34 +106,23 @@ namespace MAT
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_sutherland_fluid; }
-
-    /// compute diffusivity
-    double ComputeViscosity(const double temp) const;
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_mixfrac_scatra; }
 
     /// compute density
-    double ComputeDensity(const double temp, const double thermpress) const;
+    double ComputeDensity(const double mixfrac) const;
 
-    /// return material parameters for element calculation
-    //@{
-
-    ///  reference dynamic viscosity (kg/(m*s))
-    double RefVisc() const { return params_->refvisc_; }
-    /// reference temperature (K)
-    double RefTemp() const { return params_->reftemp_; }
-    /// Sutherland temperature (K)
-    double SuthTemp() const { return params_->suthtemp_; }
-    /// (initial) thermodynamic pressure
-    double ThermPress() const { return params_->thermpress_; }
-    /// specific gas constant R
-    double GasConst() const { return params_->gasconst_; }
-
-    //@}
+    /// dynamic diffusivity
+    double Diffusivity() const { return params_->diffusivity_; }
+    /// equation-of-state factor a
+    double EosFacA() const { return params_->eosfaca_; }
+    /// equation-of-state factor b
+    double EosFacB() const { return params_->eosfacb_; }
 
   private:
 
     /// my material parameters
-    MAT::PAR::SutherlandFluid* params_;
+    MAT::PAR::MixFracScatra* params_;
+
   };
 
 }

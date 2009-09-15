@@ -1,32 +1,35 @@
 /*!----------------------------------------------------------------------
-\file convecdiffus.cpp
+\file mixfrac_fluid.cpp
 
 <pre>
-Maintainer: ???
+Maintainer: Volker Gravemeier
+            vgravem@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15245
 </pre>
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
 #include <vector>
-#include "convecdiffus.H"
+#include "mixfrac_fluid.H"
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::ConvecDiffus::ConvecDiffus(
+MAT::PAR::MixFracFluid::MixFracFluid(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : Parameter(matdata),
-  diffusivity_(matdata->GetDouble("DIFFUSIVITY")),
-  reacoeff_(matdata->GetDouble("REACOEFF")),
-  shc_(matdata->GetDouble("SHC"))
+  viscosity_(matdata->GetDouble("VISCOSITY")),
+  eosfaca_(matdata->GetDouble("EOSFACA")),
+  eosfacb_(matdata->GetDouble("EOSFACB"))
 {
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::ConvecDiffus::ConvecDiffus()
+MAT::MixFracFluid::MixFracFluid()
   : params_(NULL)
 {
 }
@@ -34,7 +37,7 @@ MAT::ConvecDiffus::ConvecDiffus()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::ConvecDiffus::ConvecDiffus(MAT::PAR::ConvecDiffus* params)
+MAT::MixFracFluid::MixFracFluid(MAT::PAR::MixFracFluid* params)
   : params_(params)
 {
 }
@@ -42,7 +45,7 @@ MAT::ConvecDiffus::ConvecDiffus(MAT::PAR::ConvecDiffus* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ConvecDiffus::Pack(vector<char>& data) const
+void MAT::MixFracFluid::Pack(vector<char>& data) const
 {
   data.resize(0);
 
@@ -59,7 +62,7 @@ void MAT::ConvecDiffus::Pack(vector<char>& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ConvecDiffus::Unpack(const vector<char>& data)
+void MAT::MixFracFluid::Unpack(const vector<char>& data)
 {
   int position = 0;
   // extract type
@@ -76,7 +79,7 @@ void MAT::ConvecDiffus::Unpack(const vector<char>& data)
     const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
     MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
     if (mat->Type() == MaterialType())
-      params_ = static_cast<MAT::PAR::ConvecDiffus*>(mat);
+      params_ = static_cast<MAT::PAR::MixFracFluid*>(mat);
     else
       dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
   }
@@ -87,6 +90,15 @@ void MAT::ConvecDiffus::Unpack(const vector<char>& data)
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double MAT::MixFracFluid::ComputeDensity(const double mixfrac) const
+{
+  const double density = 1.0 / (EosFacA() * mixfrac + EosFacB());
+
+  return density;
 }
 
 #endif

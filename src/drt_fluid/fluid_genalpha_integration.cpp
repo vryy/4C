@@ -211,6 +211,9 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
     velnm_        = LINALG::CreateVector(*dofrowmap,true);
   }
 
+  // velocity/scalar at time n+1 (required only for Neumann boundary conditions)
+  vescnp_       = LINALG::CreateVector(*dofrowmap,true);
+
   // grid displacements and velocities for the ale case
   if (alefluid_)
   {
@@ -801,6 +804,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaApplyDirichletAndNeumann()
   eleparams.set("thsl",1.);
 
   neumann_loads_->PutScalar(0.0);
+  discret_->SetState("vescnp",vescnp_);
   discret_->EvaluateNeumann(eleparams,*neumann_loads_);
   discret_->ClearState();
 
@@ -1246,6 +1250,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   {
     discret_->ClearState();
     discret_->SetState("velnp",velaf_);
+    discret_->SetState("vescnp",vescnp_);
     eleparams.set("thsl",1.);
     eleparams.set("outflow stabilization",outflow_stab_);
 

@@ -19,11 +19,12 @@ Maintainer: Georg Bauer
 #include <cstdlib>
 #include "scatra_ele_boundary_impl.H"
 #include "scatra_ele_impl.H"
-#include "../drt_mat/convecdiffus.H"
-#include "../drt_mat/sutherland_condif.H"
+#include "../drt_mat/scatra_mat.H"
+#include "../drt_mat/mixfrac_scatra.H"
+#include "../drt_mat/sutherland_scatra.H"
 #include "../drt_mat/arrhenius_spec.H"
 #include "../drt_mat/arrhenius_temp.H"
-#include "../drt_mat/arrhenius_pv.H"
+#include "../drt_mat/arrhenius_pv_scatra.H"
 #include "../drt_mat/ion.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -635,9 +636,19 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
           }
           else dserror("type of material found in material list is not supported");
         }
-        else if (material->MaterialType() == INPAR::MAT::m_sutherland_condif)
+        else if (material->MaterialType() == INPAR::MAT::m_mixfrac_scatra)
         {
-          const MAT::SutherlandCondif* actmat = static_cast<const MAT::SutherlandCondif*>(material.get());
+          const MAT::MixFracScatra* actmat = static_cast<const MAT::MixFracScatra*>(material.get());
+
+          // compute mixture fraction
+          const double mixfrac = funct_.Dot(ephinp[k]);
+
+          // compute density based on mixture fraction
+          dens = actmat->ComputeDensity(mixfrac);
+        }
+        else if (material->MaterialType() == INPAR::MAT::m_sutherland_scatra)
+        {
+          const MAT::SutherlandScatra* actmat = static_cast<const MAT::SutherlandScatra*>(material.get());
 
           // compute temperature
           const double temp = funct_.Dot(ephinp[k]);
@@ -645,9 +656,9 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
           // compute density based on temperature and thermodynamic pressure
           dens = actmat->ComputeDensity(temp,thermpress_);
         }
-        else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
+        else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv_scatra)
         {
-          const MAT::ArrheniusPV* actmat = static_cast<const MAT::ArrheniusPV*>(material.get());
+          const MAT::ArrheniusPVScatra* actmat = static_cast<const MAT::ArrheniusPVScatra*>(material.get());
 
           // compute progress variable
           const double provar = funct_.Dot(ephinp[k]);

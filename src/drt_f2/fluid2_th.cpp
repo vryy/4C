@@ -309,7 +309,7 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcImpulseEqnImplicit(Fluid2* ele,
 
     // get current state vectors from discretization
     RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
-    RCP<const Epetra_Vector> vedenp = discretization.GetState("vedenp");
+    RCP<const Epetra_Vector> vedenp = discretization.GetState("vescnp");
     RCP<const Epetra_Vector> hist = discretization.GetState("hist");
     RCP<const Epetra_Vector> dispnp;
     RCP<const Epetra_Vector> gridv;

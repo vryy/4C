@@ -29,7 +29,9 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/drt_function.H"
 
 #include "../drt_mat/newtonianfluid.H"
+#include "../drt_mat/mixfrac_fluid.H"
 #include "../drt_mat/sutherland_fluid.H"
+#include "../drt_mat/arrhenius_pv_fluid.H"
 #include "../drt_mat/carreauyasuda.H"
 #include "../drt_mat/modpowerlaw.H"
 
@@ -251,7 +253,7 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
   //const double inc_dens = params.get("inc_density",0.0);
 
   // get flag for low-Mach-number solver
-  const bool loma  = params.get<bool>("low-Mach-number solver");
+  const bool loma  = params.get<bool>("low-Mach-number solver",false);
 
   // get discretization type
   const DiscretizationType distype = this->Shape();
@@ -367,7 +369,7 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
   // This is a hack for low-Mach-number flow with temperature
   // equation until material data will be available here
   // get thermodynamic pressure and its time derivative or history
-  double thermpress = params.get<double>("thermodynamic pressure");
+  double thermpress = params.get<double>("thermodynamic pressure",0.0);
   double gasconstant = 287.0;
 
   /*----------------------------------------------------------------------*
@@ -946,7 +948,7 @@ void DRT::ELEMENTS::Fluid3Surface::NeumannInflow(
   if (timefac < 0.0) dserror("No thsl supplied");
 
   // get flag for low-Mach-number solver
-  const bool loma  = params.get<bool>("low-Mach-number solver");
+  const bool loma = params.get<bool>("low-Mach-number solver");
 
   // get discretization type
   const DiscretizationType distype = this->Shape();
@@ -1046,7 +1048,7 @@ void DRT::ELEMENTS::Fluid3Surface::NeumannInflow(
   // This is a hack for low-Mach-number flow with temperature
   // equation until material data will be available here
   // get thermodynamic pressure and its time derivative or history
-  double thermpress = params.get<double>("thermodynamic pressure");
+  double thermpress = params.get<double>("thermodynamic pressure",0.0);
   double gasconstant = 287.0;
 
   /*----------------------------------------------------------------------*

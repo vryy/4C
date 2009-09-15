@@ -129,14 +129,10 @@ FLD::FluidProjectionMethod::FluidProjectionMethod(RefCountPtr<DRT::Discretizatio
 
         // acceleration/(density time derivative) at time n+alpha_M
         accam_        = LINALG::CreateVector(*dofrowmap,true);
-
-        // velocity/density at time n+alpha_M and n+alpha_F
-        //vedeam_       = LINALG::CreateVector(*dofrowmap,true);
-        //vedeaf_       = LINALG::CreateVector(*dofrowmap,true);
     }
 
-    // velocity/density at time n+1
-    vedenp_       = LINALG::CreateVector(*dofrowmap,true);
+    // velocity/scalar at time n+1
+    vescnp_       = LINALG::CreateVector(*dofrowmap,true);
 
     // history vector
     hist_           = LINALG::CreateVector(*dofrowmap,true);
@@ -173,15 +169,14 @@ FLD::FluidProjectionMethod::FluidProjectionMethod(RefCountPtr<DRT::Discretizatio
     trueresidual_ = LINALG::CreateVector(*dofrowmap,true);
 
     // get constant density variable for incompressible flow
-    // set vedenp-vector values to 1.0 for incompressible flow
-    // set density variable to 1.0 for low-Mach-number flow
+    // set velocity/scalar vector to 1.0
     {
-        ParameterList eleparams;
-        eleparams.set("action","get_density");
-        discret_->Evaluate(eleparams,null,null,null,null,null);
-        density_ = eleparams.get("density", 1.0);
-        if (density_ <= 0.0) dserror("received illegal density value");
-        vedenp_->PutScalar(1.0);
+      ParameterList eleparams;
+      eleparams.set("action","get_density");
+      discret_->Evaluate(eleparams,null,null,null,null,null);
+      density_ = eleparams.get("density", 1.0);
+      if (density_ < EPS15) dserror("received zero or negative density value");
+      vescnp_->PutScalar(1.0);
     }
     }
 
@@ -416,15 +411,12 @@ void FLD::FluidProjectionMethod::PrepareTimeStep()
             eleparams.set("total time",time_);
             eleparams.set("thsl",theta_*dta_);
         }
-        // For generalized-alpha, the following is an approximation,
-        // since actually vedeaf would be required, which is not yet
-        // available, though.
-        discret_->SetState("vedenp",vedenp_);
-        neumann_loads_->PutScalar(0.0);
 
-        // evaluate Neumann conditions
-        discret_->EvaluateNeumann(eleparams,*neumann_loads_);
-        discret_->ClearState();
+      // evaluate Neumann conditions
+      neumann_loads_->PutScalar(0.0);
+      discret_->SetState("vescnp",vescnp_);
+      discret_->EvaluateNeumann(eleparams,*neumann_loads_);
+      discret_->ClearState();
     }
 
     // -------------------------------------------------------------------
@@ -809,7 +801,8 @@ void FLD::FluidProjectionMethod::SolveImpulseEqn()
         // set vector values needed by elements
         discret_->ClearState();
         discret_->SetState("velnp",velnp_);
-        discret_->SetState("vedenp",vedenp_);
+        discret_->SetState("vescnp",vescnp_);
+        discret_->SetState("acc", accnp_ );
         discret_->SetState("hist"  ,hist_ );
         if (alefluid_)
         {
@@ -1078,7 +1071,8 @@ void FLD::FluidProjectionMethod::SolveImpulseEqnSemi()
     discret_->ClearState();
     discret_->SetState("velnp",velnp_);
     discret_->SetState("veln",veln_);   // alte Daten
-    discret_->SetState("vedenp",vedenp_);
+    discret_->SetState("vescnp",vescnp_);
+    discret_->SetState("acc", accnp_ );
     discret_->SetState("hist"  ,hist_ );
     if (alefluid_)
     {
@@ -1275,7 +1269,8 @@ void FLD::FluidProjectionMethod::CalcResidual()
     // set vector values needed by elements
     discret_->ClearState();
     discret_->SetState("velnp",velnp_);
-    discret_->SetState("vedenp",vedenp_);
+    discret_->SetState("vescnp",vescnp_);
+    discret_->SetState("acc", accnp_ );
     discret_->SetState("hist"  ,hist_ );
     if (alefluid_)
     {

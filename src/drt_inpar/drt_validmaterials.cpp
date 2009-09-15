@@ -89,9 +89,24 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             "Newtonian fluid",
                                             INPAR::MAT::m_fluid));
 
-    AddNamedReal(m,"VISCOSITY","kinematic or dynamic viscosity");
+    AddNamedReal(m,"VISCOSITY","kinematic viscosity");
     AddNamedReal(m,"DENSITY","spatial mass density");
     AddNamedReal(m,"GAMMA","surface tension coeficient",true);
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // fluid material coupled to mixture-fraction approach
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_mixfrac_fluid",
+                                            "fluid material coupled to mixture-fraction approach",
+                                            INPAR::MAT::m_mixfrac_fluid));
+
+    AddNamedReal(m,"VISCOSITY","dynamic viscosity");
+    AddNamedReal(m,"EOSFACA","equation-of-state factor a");
+    AddNamedReal(m,"EOSFACB","equation-of-state factor b");
 
     AppendMaterialDefinition(matlist,m);
   }
@@ -109,6 +124,26 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"SUTHTEMP","Sutherland temperature (K)");
     AddNamedReal(m,"THERMPRESS","(initial) thermodynamic pressure (J/m³)");
     AddNamedReal(m,"GASCON","specific gas constant R (J/(kg*K))");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // fluid material according to Sutherland law
+  // with Arrhenius-type chemical kinetics (progress variable)
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_arrhenius_pv_fluid",
+                                            "fluid material with Arrhenius-type chemical kinetics (progress variable)",
+                                            INPAR::MAT::m_arrhenius_pv_fluid));
+
+    AddNamedReal(m,"REFVISC","reference dynamic viscosity (kg/(m*s))");
+    AddNamedReal(m,"REFTEMP","reference temperature (K)");
+    AddNamedReal(m,"SUTHTEMP","Sutherland temperature (K)");
+    AddNamedReal(m,"UNBTEMP","temperature of unburnt phase (K)");
+    AddNamedReal(m,"BURTEMP","temperature of burnt phase (K)");
+    AddNamedReal(m,"UNBDENS","density of unburnt phase (kg/mï¿½)");
+    AddNamedReal(m,"BURDENS","density of burnt phase (kg/mï¿½)");
 
     AppendMaterialDefinition(matlist,m);
   }
@@ -148,28 +183,41 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*----------------------------------------------------------------------*/
-  // convection-diffusion material
+  // scalar transport material (with potential reaction coefficient)
   {
     Teuchos::RCP<MaterialDefinition> m
-      = Teuchos::rcp(new MaterialDefinition("MAT_condif",
-                                            "convection-diffusion material ",
-                                            INPAR::MAT::m_condif));
+      = Teuchos::rcp(new MaterialDefinition("MAT_scatra",
+                                            "scalar transport material",
+                                            INPAR::MAT::m_scatra));
 
     AddNamedReal(m,"DIFFUSIVITY","kinematic diffusivity");
     AddNamedReal(m,"REACOEFF","reaction coefficient",true);
-    // actually not required anymore
-    AddNamedReal(m,"SHC","specific heat capacity at constant pressure",true);
 
     AppendMaterialDefinition(matlist,m);
   }
 
   /*----------------------------------------------------------------------*/
-  // convection-diffusion material according to Sutherland law
+  // scalar transport material according to mixture-fraction approach
   {
     Teuchos::RCP<MaterialDefinition> m
-      = Teuchos::rcp(new MaterialDefinition("MAT_sutherland_condif",
-                                            "convection-diffusion material according to Sutherland law",
-                                            INPAR::MAT::m_sutherland_condif));
+      = Teuchos::rcp(new MaterialDefinition("MAT_mixfrac_scatra",
+                                            "scalar transport material according to mixture-fraction approach",
+                                            INPAR::MAT::m_mixfrac_scatra));
+
+    AddNamedReal(m,"DIFFUSIVITY","dynamic diffusivity");
+    AddNamedReal(m,"EOSFACA","equation-of-state factor a");
+    AddNamedReal(m,"EOSFACB","equation-of-state factor b");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // scalar transport material according to Sutherland law
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_sutherland_scatra",
+                                            "scalar transport material according to Sutherland law",
+                                            INPAR::MAT::m_sutherland_scatra));
 
     AddNamedReal(m,"REFVISC","reference dynamic viscosity (kg/(m*s))");
     AddNamedReal(m,"REFTEMP","reference temperature (K)");
@@ -183,7 +231,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*----------------------------------------------------------------------*/
-  // convection-diffusion material according to Sutherland law
+  // scalar transport material according to Sutherland law
   // with Arrhenius-type chemical kinetics (species)
   {
     Teuchos::RCP<MaterialDefinition> m
@@ -203,7 +251,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*----------------------------------------------------------------------*/
-  // convection-diffusion material according to Sutherland law
+  // scalar transport material according to Sutherland law
   // with Arrhenius-type chemical kinetics (temperature)
   {
     Teuchos::RCP<MaterialDefinition> m
@@ -227,13 +275,13 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*----------------------------------------------------------------------*/
-  // convection-diffusion material according to Sutherland law
+  // scalar transport material according to Sutherland law
   // with Arrhenius-type chemical kinetics (progress variable)
   {
     Teuchos::RCP<MaterialDefinition> m
-      = Teuchos::rcp(new MaterialDefinition("MAT_arrhenius_pv",
-                                            "Arrhenius-type chemical kinetics (progress variable)",
-                                            INPAR::MAT::m_arrhenius_pv));
+      = Teuchos::rcp(new MaterialDefinition("MAT_arrhenius_pv_scatra",
+                                            "scalar transport material with Arrhenius-type chemical kinetics (progress variable)",
+                                            INPAR::MAT::m_arrhenius_pv_scatra));
 
     AddNamedReal(m,"REFVISC","reference dynamic viscosity (kg/(m*s))");
     AddNamedReal(m,"REFTEMP","reference temperature (K)");

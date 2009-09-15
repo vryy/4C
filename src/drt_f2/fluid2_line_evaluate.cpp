@@ -25,7 +25,9 @@ Maintainer: Peter Gmanitzer
 #include "../drt_lib/drt_function.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_mat/newtonianfluid.H"
+#include "../drt_mat/mixfrac_fluid.H"
 #include "../drt_mat/sutherland_fluid.H"
+#include "../drt_mat/arrhenius_pv_fluid.H"
 #include "../drt_mat/carreauyasuda.H"
 #include "../drt_mat/modpowerlaw.H"
 
@@ -202,7 +204,7 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
   //const double inc_dens = params.get("inc_density",0.0);
 
   // get flag for low-Mach-number solver
-  const bool loma  = params.get<bool>("low-Mach-number solver");
+  const bool loma  = params.get<bool>("low-Mach-number solver",false);
 
   // get discretization type
   const DiscretizationType distype = this->Shape();
@@ -443,7 +445,7 @@ void DRT::ELEMENTS::Fluid2Line::NeumannInflow(
   if (timefac < 0.0) dserror("No thsl supplied");
 
   // get flag for low-Mach-number solver
-  const bool loma  = params.get<bool>("low-Mach-number solver");
+  const bool loma  = params.get<bool>("low-Mach-number solver",false);
 
   // get discretization type
   const DiscretizationType distype = this->Shape();
