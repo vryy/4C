@@ -647,7 +647,7 @@ vector<double> PostResult::get_result_times(const string& fieldname)
 
     if (times.size() == 0)
     {
-      dserror("PostResult::get_result_times(fieldname):\n  no solution steps found in specified timestep range! Check --start, --end, --step parameters.");
+      dserror("PostResult::get_result_times(fieldname='%s'):\n  no solution steps found in specified timestep range! Check --start, --end, --step parameters.", fieldname.c_str());
     }
 
     return times;
@@ -673,7 +673,7 @@ vector<double> PostResult::get_result_times(
 
     if (times.size() == 0)
     {
-      dserror("PostResult::get_result_times(fieldname, groupname):\n  no solution steps found in specified timestep range! Check --start, --end, --step parameters.");
+      dserror("PostResult::get_result_times(fieldname='%s', groupname='%s'):\n  no solution steps found in specified timestep range! Check --start, --end, --step parameters.", fieldname.c_str(), groupname.c_str());
     }
 
     return times;
