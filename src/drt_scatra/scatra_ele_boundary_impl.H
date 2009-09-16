@@ -217,6 +217,7 @@ public:
     //! calculate potential Neumann inflow terms
     void NeumannInflow(
         const DRT::Element*                   ele,
+        Teuchos::RCP<const MAT::Material>     material,
         const vector<LINALG::Matrix<iel,1> >& ephinp,
         const LINALG::Matrix<nsd_+1,iel>&     evelnp,
         Epetra_SerialDenseMatrix&             emat,

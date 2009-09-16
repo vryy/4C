@@ -461,6 +461,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     }
 
     NeumannInflow(ele,
+                  mat,
                   ephinp,
                   evelnp,
                   elemat1_epetra,
@@ -576,6 +577,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateNeumann(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
     const DRT::Element*                   ele,
+    Teuchos::RCP<const MAT::Material>     material,
     const vector<LINALG::Matrix<iel,1> >& ephinp,
     const LINALG::Matrix<nsd_+1,iel>&     evelnp,
     Epetra_SerialDenseMatrix&             emat,
@@ -594,9 +596,6 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
 
   // determine constant normal to this element
   GetConstNormal(normal_,xyze_);
-
-  // get the material
-  RefCountPtr<MAT::Material> material = ele->Material();
 
   // integration loop
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
