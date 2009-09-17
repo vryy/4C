@@ -82,7 +82,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
     numdofpernode_=actmat->NumMat();
   }
   else
-    dserror("condif material expected but got type %d", mat->MaterialType());
+    dserror("Transport element got unsupported material type %d", mat->MaterialType());
 
   // for problem type ELCH we have one additional degree of freedom per node
   // for the electric potential
