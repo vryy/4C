@@ -199,6 +199,8 @@ namespace UTILS
     if (nsd > global->NumVectors())
       dserror("Requested %d of %d available columns", nsd,global->NumVectors());
     const int iel = ele->NumNode(); // number of nodes
+    if (localmatrix.N()!=iel) dserror("local matrix has wrong number of columns");
+    if (localmatrix.M()!=nsd) dserror("local matrix has wrong number of rows");
 
     for (int i=0; i<nsd; i++)
     {
@@ -209,12 +211,47 @@ namespace UTILS
       {
         const int nodegid = (ele->Nodes()[j])->Id();
         const int lid = global->Map().LID(nodegid);
+        if (lid<0) dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",(*global).Comm().MyPID(),nodegid);
         localmatrix(i,j) = globalcolumn[lid];
       }
     }
     return;
   }
 
+  /*!
+  \brief extract local values from global node-based (multi) vector
+
+  This function returns a column vector!
+
+  \author henke
+ */
+  template <class M>
+  void ExtractMyNodeBasedValues(
+    const DRT::Element* ele,
+    M& local,
+    const Epetra_MultiVector& global)
+{
+  const int numnode = ele->NumNode();
+  const int numcol = global.NumVectors();
+  if (local.N()!=1) dserror("local matrix must have one column");
+  if (local.M()!=numnode) dserror("local matrix has wrong number of rows");
+
+  // loop over element nodes
+  for (int i=0; i<numnode; ++i)
+  {
+    const int nodegid = (ele->Nodes()[i])->Id();
+    const int lid = global.Map().LID(nodegid);
+    if (lid<0) dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",global.Comm().MyPID(),nodegid);
+
+    // loop over multi vector columns (numcol=1 for Epetra_Vector)
+    for (int col=0; col<numcol; col++)
+    {
+      double* globalcolumn = (global)[col];
+      local((col+(numcol*i)),0) = globalcolumn[lid];
+    }
+  }
+  return;
+}
 
   //! flag, whether surfaces or lines have to be created in the ElementBoundaryFactory
   enum BoundaryBuildType
