@@ -1,0 +1,373 @@
+//   In this file represents the following progress:
+//    1- Arteries must be constant in properties i.e. each artery has 1 material property
+//    2- Boundary condition is still not implimented but still the terminal one will be
+-------------------------------------------------------------TITLE
+baby arterial network
+------------------------------------------------------PROBLEM SIZE
+ELEMENTS        2
+NODES           3
+DIM                1
+MATERIALS          1
+NUMDF        2
+-------------------------------------------------------PROBLEM TYP
+PROBLEMTYP   ArterialNetwork
+NUMFIELD     1
+TIMETYP      Dynamic
+RESTART      0
+----------------------------------------------------------------IO
+--------------------------------------------------ARTERIAL DYNAMIC
+DYNAMICTYP   ExpTaylorGalerkin
+NUMSTEP      10000
+TIMESTEP     1.0e-4
+RESTARTEVRY  200
+UPRES        200      
+-----------------------------------------------------FLUID DYNAMIC
+DYNAMICTYP   Nlin_Time_Int
+TIMEINTEGR   One_Step_Theta
+UPPSS        1
+UPOUT        1
+UPRES        1
+RESTARTEVRY  1
+MAXTIME      1000.0
+NUMSTEP      1000
+TIMESTEP     0.05
+THETA        1.0
+NONLINITER   fixed_point_like
+ITEMAX       10
+CONVCHECK    L_2_norm
+CONVTOL      1.0E-8
+STEADYCHECK  L_2_norm   
+STEADYSTEP   5
+STEADYTOL    1.0E-6
+STARTINGALGO One_Step_Theta
+NUMSTASTEPS  0
+START_THETA  1.00
+INITIALFIELD zero_field
+STARTFUNCNO  2
+------------------------------------FLUID DYNAMIC/STABILIZATION
+-----------------------------------------------------ALE DYNAMIC
+TIMESTEP     0.1
+NUMSTEP      41 
+MAXTIME      4.0
+ALE_TYPE     classic_lin
+NUM_INITSTEP 0
+RESEVRYDISP  1
+---------------------------------------------ARTERY NETWORK SOLVER
+SOLVER         UMFPACK      // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+AZOUTPUT       0            // output every so often, 0 no output
+AZSOLVE        CG           // CG GMRES CGS BiCGSTAB LU TFQMR
+AZPREC         ML           // none ML MLFLUID MLFLUID2 MLAPI LU ILU ILUT LU ICC Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
+AZREUSE        0            // how often to recompute some preconditioners
+AZDROP         0.0          // drop tolerance for ILUT
+AZFILL         1.0          // fill-in for ILUT
+AZGFILL        0            // graph fill for ILU
+AZTOL          1.0E-8       // tolerance in unscaled residual
+AZITER         1000         // max iterations
+AZSUB          25           // size of krylov space for gmres
+AZOMEGA        1.0          // damping factor for Jacobi/GaussSeidel type preconditioners
+AZGRAPH        1            // unused
+AZPOLY         5            // polynomial order for Neumann
+AZOVERLAP      0            // amount of ASM overlap for ILU, ILU, ICC, LU
+AZSCAL         infnorm      // none sym infnorm scaling of the system
+AZCONV         AZ_r0        // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
+ML_PRINT          0         // ML print-out level (0-10)
+ML_MAXCOARSESIZE  5000      // ML stop coarsening when coarse ndof smaller then this
+ML_MAXLEVEL       5         // ML max number of levels
+ML_COARSEN        UC        // UC MIS METIS VBMETIS
+ML_AGG_SIZE       27        // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
+ML_PROLONG_SMO    1.33      // damping factor for prolongator smoother (usually 0.0 or 1.33)
+ML_PROLONG_THRES  0.0       // threshold for prolongator smoother/aggregation
+ML_SMOOTHERFINE   Chebychev // SGS GS DGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERMED    Chebychev // SGS GS DGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERCOARSE KLU       // SGS GS DGS Jacobi Chebychev MLS KLU Superlu
+ML_SMOTIMES       3 3 3 3 1 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_DAMPFINE       1.0       // damping fine grid
+ML_DAMPMED        1.0       // damping med grids
+ML_DAMPCOARSE     1.0       // damping coarse grid
+PARTITION         Cut_Elements
+------------------------------------------------------FLUID SOLVER
+SOLVER         Aztec_MSR          // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+AZOUTPUT       0                  // output every so often, 0 no output
+AZSOLVE        GMRES              // CG GMRES CGS BiCGSTAB LU TFQMR
+AZPREC         MLFLUID2           // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
+AZREUSE        0                  // how often to recompute some preconditioners
+AZDROP         0.0                // drop tolerance for ILUT
+AZFILL         1.0                // fill-in for ILUT
+AZGFILL        0                  // graph fill for ILU
+AZTOL          1.0E-4             // tolerance in (un)scaled residual
+AZCONV         AZ_r0              // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
+AZITER         1000               // max iterations
+AZSUB          25                 // size of krylov space for gmres
+AZOMEGA        1.0                // damping factor for Jacobi/GaussSeidel type preconditioners
+AZGRAPH        1                  // unused
+AZPOLY         1                  // polynomial order for Neumann
+AZOVERLAP      0                  // amount of ASM overlap for ILU, ILU, ICC, LU
+AZSCAL         none               // none sym infnorm scaling of the system
+DWINDTAU       2.5                // (for DownwindGaussSeidel and DGS, choose between 1.5 - 4.0) Considers only values in matrix that are tau times larger than the average in the frobenius norm
+ML_PRINT          0               // ML print-out level (0-10)
+ML_MAXCOARSESIZE  5000            // ML stop coarsening when coarse ndof smaller then this
+ML_MAXLEVEL       5               // ML max number of levels
+ML_COARSEN        UC              // UC MIS METIS VBMETIS
+ML_AGG_SIZE       27              // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
+ML_PROLONG_SMO    0.0             // damping factor for prolongator smoother (usually 1.33 or 0.0)
+ML_PROLONG_THRES  0.0             // threshold for prolongator smoother/aggregation
+ML_SMOOTHERFINE   SGS             // SGS GS DGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERMED    ILU             // SGS GS DGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERCOARSE KLU             // SGS GS DGS Jacobi Chebychev MLS KLU Superlu
+ML_SMOTIMES       2 0 0 0 1       // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_DAMPFINE       0.67            // damping fine grid
+ML_DAMPMED        1.0             // damping med grids
+ML_DAMPCOARSE     1.0             // damping coarse grid
+PARTITION         Cut_Elements
+---------------------------------------------FLUID PRESSURE SOLVER
+SOLVER         Aztec_MSR          // Aztec_MSR SPOOLES_nonsym Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+AZOUTPUT       0                  // output every so often, 0 no output
+AZSOLVE        GMRES              // CG GMRES CGS BiCGSTAB LU TFQMR
+AZPREC         ML                 // none ML MLFLUID MLFLUID2 ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
+AZREUSE        0                  // how often to recompute some preconditioners
+AZDROP         0.0                // drop tolerance for ILUT
+AZFILL         1.0                // fill-in for ILUT
+AZGFILL        0                  // graph fill for ILU
+AZTOL          1.0E-8             // tolerance in unscaled residual
+AZITER         2500               // max iterations
+AZSUB          50                 // size of krylov space for gmres
+AZOMEGA        1.0                // damping factor for Jacobi/GaussSeidel type preconditioners
+AZGRAPH        1                  // unused
+AZPOLY         5                  // polynomial order for Neumann
+AZOVERLAP      0                  // amount of ASM overlap for ILU, ILU, ICC, LU
+AZSCAL         none               // none sym infnorm scaling of the system
+AZCONV         AZ_r0              // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
+ML_PRINT          0               // ML print-out level (0-10)
+ML_MAXCOARSESIZE  5000            // ML stop coarsening when coarse ndof smaller then this
+ML_MAXLEVEL       5               // ML max number of levels
+ML_COARSEN        UC              // UC MIS METIS VBMETIS
+ML_AGG_SIZE       27              // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
+ML_PROLONG_SMO    1.33            // damping factor for prolongator smoother (usually 1.33 or 0.0)
+ML_PROLONG_THRES  0.0             // threshold for prolongator smoother/aggregation
+ML_SMOOTHERFINE   SGS             // SGS GS DGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERMED    SGS             // SGS GS DGS Jacobi Chebychev MLS ILU KLU 
+ML_SMOOTHERCOARSE KLU             // SGS GS DGS Jacobi Chebychev MLS KLU Superlu
+ML_SMOTIMES       1 2 2 2 1       // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_DAMPFINE       0.89            // damping fine grid
+ML_DAMPMED        0.67            // damping med grids
+ML_DAMPCOARSE     1.0             // damping coarse grid
+PARTITION         Cut_Elements
+-------------------------------------------SCALAR TRANSPORT SOLVER
+-----------------------------------------------------STRUCT SOLVER
+SOLVER         Aztec_MSR    // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+AZOUTPUT       0            // output every so often, 0 no output
+AZSOLVE        CG           // CG GMRES CGS BiCGSTAB LU TFQMR
+AZPREC         ML           // none ML MLFLUID MLFLUID2 MLAPI LU ILU ILUT LU ICC Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
+AZREUSE        0            // how often to recompute some preconditioners
+AZDROP         0.0          // drop tolerance for ILUT
+AZFILL         1.0          // fill-in for ILUT
+AZGFILL        0            // graph fill for ILU
+AZTOL          1.0E-8       // tolerance in unscaled residual
+AZITER         1000         // max iterations
+AZSUB          25           // size of krylov space for gmres
+AZOMEGA        1.0          // damping factor for Jacobi/GaussSeidel type preconditioners
+AZGRAPH        1            // unused
+AZPOLY         5            // polynomial order for Neumann
+AZOVERLAP      0            // amount of ASM overlap for ILU, ILU, ICC, LU
+AZSCAL         infnorm      // none sym infnorm scaling of the system
+AZCONV         AZ_r0        // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
+ML_PRINT          0         // ML print-out level (0-10)
+ML_MAXCOARSESIZE  5000      // ML stop coarsening when coarse ndof smaller then this
+ML_MAXLEVEL       5         // ML max number of levels
+ML_COARSEN        UC        // UC MIS METIS VBMETIS
+ML_AGG_SIZE       27        // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
+ML_PROLONG_SMO    1.33      // damping factor for prolongator smoother (usually 0.0 or 1.33)
+ML_PROLONG_THRES  0.0       // threshold for prolongator smoother/aggregation
+ML_SMOOTHERFINE   Chebychev // SGS GS DGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERMED    Chebychev // SGS GS DGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERCOARSE KLU       // SGS GS DGS Jacobi Chebychev MLS KLU Superlu
+ML_SMOTIMES       3 3 3 3 1 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_DAMPFINE       1.0       // damping fine grid
+ML_DAMPMED        1.0       // damping med grids
+ML_DAMPCOARSE     1.0       // damping coarse grid
+PARTITION         Cut_Elements
+--------------------------------------------------------ALE SOLVER
+SOLVER         Aztec_MSR    // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+AZOUTPUT       0            // output every so often, 0 no output
+AZSOLVE        CG           // CG GMRES CGS BiCGSTAB LU TFQMR
+AZPREC         ML           // none ML MLFLUID MLFLUID2 MLAPI LU ILU ILUT LU ICC Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
+AZREUSE        0            // how often to recompute some preconditioners
+AZDROP         0.0          // drop tolerance for ILUT
+AZFILL         1.0          // fill-in for ILUT
+AZGFILL        0            // graph fill for ILU
+AZTOL          1.0E-8       // tolerance in unscaled residual
+AZCONV         AZ_noscaled  // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
+AZITER         1000         // max iterations
+AZSUB          40           // size of krylov space for gmres
+AZOMEGA        1.0          // damping factor for Jacobi/GaussSeidel type preconditioners
+AZGRAPH        1            // unused
+               AZPOLY         5            // polynomial order for Neumann
+AZOVERLAP      0            // amount of ASM overlap for ILU, ILU, ICC, LU
+AZSCAL         infnorm      // none sym infnorm scaling of the system
+ML_PRINT          0         // ML print-out level (0-10)
+ML_MAXCOARSESIZE  5000      // ML stop coarsening when coarse ndof smaller then this
+ML_MAXLEVEL       5         // ML max number of levels
+ML_COARSEN        UC        // UC MIS METIS VBMETIS
+ML_AGG_SIZE       27              // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
+ML_PROLONG_SMO    1.33      // damping factor for prolongator smoother (usually 0.0 or 1.33)
+ML_PROLONG_THRES  0.0       // threshold for prolongator smoother/aggregation
+ML_SMOOTHERFINE   Chebychev // SGS GS DGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERMED    Chebychev // SGS GS DGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERCOARSE KLU       // SGS GS DGS Jacobi Chebychev MLS KLU Superlu
+ML_SMOTIMES       3 3 3 3 1 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_DAMPFINE       1.0       // damping fine grid
+ML_DAMPMED        1.0       // damping med grids
+ML_DAMPCOARSE     1.0       // damping coarse grid
+PARTITION         Cut_Elements
+------------------------------------------------DESIGN DESCRIPTION
+NDPOINT 6
+NDLINE  3
+NDSURF  0
+NDVOL   0
+-----------------------------------------------------DESIGN POINTS
+------------------------------------------------------DESIGN LINES
+---------------------------------------------------DESIGN SURFACES
+----------------------------------------------------DESIGN VOLUMES
+------------------------------------DESIGN POINT DIRICH CONDITIONS 
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE TYPE TYPE TYPE TYPE TYPE TYPE
+DPOINT 0
+// Flags: Flow | Velcity | Pressure | Area | W1/2 | Forced/Absorbed
+// E 1 -   1 0 0 0 0 1 1.0 0.0 0.0 0.0 0.0 0.0 1    none none none none 3 
+// E 4 -   0 0 0 0 0 1 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none 2 
+// E 6 -   0 0 0 0 0 1 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none 2 
+-------------------------DESIGN NODE 1D ARTERY PRESCRIBED CONDITIONS
+DPOINT 1
+//  DOBJECT - BC BCTYPE BCVAL RFVAL BCCURVE RFCURVE
+ E 1 - inflow forced 1.0 1.0 1 2
+-------------------------DESIGN NODE 1D ARTERY REFLECTIVE CONDITIONS
+DPOINT 2
+// DOBJECT - RFVAL RFCURVE
+ E 4 -   1.0 2
+ E 6 -   1.0 3
+---------------------------DESIGN NODE 1D ARTERY JUNCTION CONDITIONS
+// DOBJECT CONNECTION_Num  NODE_NUM PRES_HEAD_LOSS_VAR
+ DPOINT 3
+ E 2 - 1 0.1  
+ E 3 - 1 0.2  
+ E 5 - 1 0.3  
+-------------------------------------DESIGN LINE DIRICH CONDITIONS 
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE TYPE TYPE TYPE TYPE TYPE TYPE
+DLINE 0
+-------------DESIGN LINE EXPORT 1D-ARTERIAL NETWORK GNUPLOT FORMAT
+DLINE 3
+E 1 - 1
+E 2 - 2
+E 3 - 3
+-------------------------------------DESIGN SURF DIRICH CONDITIONS 
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE TYPE TYPE TYPE TYPE TYPE TYPE
+DSURF 0
+--------------------------------------DESIGN VOL DIRICH CONDITIONS 
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE TYPE TYPE TYPE TYPE TYPE TYPE
+DVOL 0
+-----------------------------------DESIGN POINT NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE 
+DPOINT 0
+------------------------------------DESIGN LINE NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE 
+DLINE 0
+------------------------------------DESIGN SURF NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE
+DSURF 0
+-------------------------------------DESIGN VOL NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE
+DVOL 0
+----------------------------------DESIGN COUPLING POINT CONDITIONS
+// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG 
+DPOINT 0
+-----------------------------------DESIGN COUPLING LINE CONDITIONS
+// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG 
+DLINE 0
+-----------------------------------DESIGN COUPLING SURF CONDITIONS
+// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG 
+DSURF 0
+------------------------------------DESIGN COUPLING VOL CONDITIONS
+// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG 
+DVOL 0
+-------------------------------DESIGN FSI COUPLING LINE CONDITIONS
+// DOBJECT FSI_ID FIELD MESH
+DLINE 0
+-------------------------DESIGN FLUID FREE SURFACE POINT CONDITIONS
+// DOBJECT FIELD FIXED FIXED FIXED FIXED FIXED FIXED
+DPOINT 0
+-------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
+// DOBJECT
+DLINE 0 
+------------------------DESIGN FLUID SURFACE STABILISING CONDITIONS
+// DOBJECT STABTYPE IADVEC IPRES IVISC ICONT ISTAPA NORM_P MK IHELEM NINTHS ISTAPC C_LAMB
+DSURF 0
+//-----------------------------------DESIGN NODE IMPEDANCE CONDITIONS
+//DNODE               2
+// E 5 - 1 timeperiod 1.050 windkessel  termradius 5.0  16.6  278.73  0.002800
+// E 6 - 1 timeperiod 1.050 windkessel  termradius 5.0  16.6  278.73  0.002800
+-----------------------------------------ARTERY BOUNDARY CONDITIONS
+-----------------------------------------------DNODE-NODE TOPOLOGY
+NODE    1 DNODE 1
+NODE    5 DNODE 2
+NODE    6 DNODE 3
+NODE    8 DNODE 4
+NODE    9 DNODE 5
+NODE   11 DNODE 6
+-----------------------------------------------DLINE-NODE TOPOLOGY
+NODE    1 DLINE 1
+NODE    2 DLINE 1
+NODE    3 DLINE 1
+NODE    4 DLINE 1
+NODE    5 DLINE 1
+NODE    6 DLINE 2
+NODE    7 DLINE 2
+NODE    8 DLINE 2
+NODE    9 DLINE 3
+NODE   10 DLINE 3
+NODE   11 DLINE 3
+-----------------------------------------------DSURF-NODE TOPOLOGY
+-----------------------------------------------DVOL-NODE TOPOLOGY
+-------------------------------------------------------NODE COORDS
+NODE            1     COORD 0.00 1.0 0.0
+NODE            2     COORD 10.0 1.0 0.0   
+NODE            3     COORD 20.0 1.0 0.0   
+NODE            4     COORD 30.0 1.0 0.0
+NODE            5     COORD 40.0 1.0 0.0   
+NODE            6     COORD 40.0 1.0 0.0   
+NODE            7     COORD 45.0 1.0 0.0   
+NODE            8     COORD 50.0 1.0 0.0   
+NODE            9     COORD 50.0 1.0 0.0   
+NODE           10     COORD 55.0 1.0 0.0   
+NODE           11     COORD 60.0 1.0 0.0   
+----------------------------------------------------------ELEMENTS
+---------------------------------------------------ARTERY ELEMENTS
+      1 ART    LINE2    1   2 MAT 1 GP 5 TYPE NonLin
+      2 ART    LINE2    2   3 MAT 1 GP 5 TYPE NonLin
+      3 ART    LINE2    3   4 MAT 1 GP 5 TYPE NonLin
+      4 ART    LINE2    4   5 MAT 1 GP 5 TYPE NonLin
+      5 ART    LINE2    6   7 MAT 2 GP 5 TYPE NonLin
+      6 ART    LINE2    7   8 MAT 2 GP 5 TYPE NonLin
+      7 ART    LINE2    9  10 MAT 3 GP 5 TYPE NonLin
+      8 ART    LINE2   10  11 MAT 3 GP 5 TYPE NonLin
+----------------------------------------------------FLUID ELEMENTS
+------------------------------------------------------ALE ELEMENTS
+---------------------------------------------------------MATERIALS
+//MAT_CNST_ART : Arterial material with constant properties
+//MAT_CNST_ART : BloodViscosity BloodDensity ArtYoungsMod ArtPoissonsRatio ArtDiameter ArtThickness
+MAT       1 MAT_CNST_ART  VISCOSITY 0.04 DENS 0.001 YOUNG 400000.0 NUE 0.5 DIAM 24.0 TH 1.630 PEXT1 0.0 PEXT2 0.0
+MAT       2 MAT_CNST_ART  VISCOSITY 0.04 DENS 0.001 YOUNG 400000.0 NUE 0.5 DIAM 22.4 TH 1.260 PEXT1 0.0 PEXT2 0.0
+MAT       3 MAT_CNST_ART  VISCOSITY 0.04 DENS 0.001 YOUNG 400000.0 NUE 0.5 DIAM 12.4 TH 0.800 PEXT1 0.0 PEXT2 0.0
+------------------------------------------------------CONTROL NODE
+
+-------------------------------------------------------LOAD CURVES
+------------------------------------------------------------CURVE1
+CURVE 1 on PhysiologicalWaveform Period 1.0 Flowrate 1.0 Samplingpoints 60 Arrayread 7.83 7.72 8.05 10.65 15.11 19.91 26.54 38.11 55.31 72.69 89.48 106.85 119.60 136.97 147.09 153.04 157.64 157.81 157.53 156.70 154.33 151.61 146.49 139.93 132.96 128.34 120.90 111.45 105.15 101.88 94.05 85.02 76.14 66.87 55.42 44.79 33.34 24.12 18.71 12.33 9.78 9.21 8.48 8.59 9.36 9.97 10.70 11.99 13.25 14.18 15.21 16.10 16.25 16.74 18.47 18.46 17.77 17.76 17.95 17.96
+------------------------------------------------------------CURVE2
+CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.0 10000.0 FACTOR 0.0 0.0
+------------------------------------------------------------CURVE3
+CURVE3 on Polygonal T 0.0 BYABSTIME Yes 0.0 10000.0 FACTOR 1.0 1.0
+------------------------------------------------------------CURVE4
+CURVE4 on PhysiologicalWaveform Period 1.1 Flowrate 1.0 Samplingpoints 60 Arrayread 0.0 0.0 0.0 0.0 0.0   0.0  0.0   0.0   0.0   0.0   0.00 0.0    0.0   0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0  0.0   0.0   0.0   0.0
+------------------------------------------------------------CURVE5
+------------------------------------------------RESULT DESCRIPTION
+---------------------------------------------------------------END
+// END
