@@ -134,7 +134,7 @@ namespace XFEM
        
        \author henke 07/09
       */
-      Teuchos::RCP<Epetra_Vector> transformXFEMtoOutputVector(
+      Teuchos::RCP<Epetra_Vector> transformXFEMtoStandardVector(
           const Epetra_Vector&                    originalvector,
           const DRT::DofSet&                      dofsetout,
           const map<DofKey<onNode>, DofGID>&      nodalDofDistributionMap,

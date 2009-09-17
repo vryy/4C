@@ -17,8 +17,8 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_discret.H"
 #include "../drt_geometry/intersection_service.H"
 #include "interfacexfsi.H"
-#include "../drt_lib/drt_utils.H" //URSULA
-#include "../drt_fem_general/drt_utils_gder2.H" //URSULA
+#include "../drt_lib/drt_utils.H"
+#include "../drt_fem_general/drt_utils_gder2.H"
 #include <string>
 #include <sstream>
 
@@ -113,7 +113,7 @@ double XFEM::Enrichment::EnrValue(
     }
     case XFEM::Enrichment::typeJump:
     {
-        dserror("Use enrichment function for level set EnrValueLevelSet() instead!");
+        dserror("Use enrichment functions based on level set function instead!");
         // Heaviside function (jump height is 2!)
         switch (approachdirection)
         {
@@ -156,7 +156,7 @@ double XFEM::Enrichment::EnrValue(
 double XFEM::Enrichment::EnrValueIntCell(const GEO::DomainIntCell& cell) const
 {
     //std::cout << "EnrValueIntCell()" << std::endl;
-    double enrval = 1.0;
+    double enrval = -777.7;
 
     switch (Type())
     {
@@ -186,6 +186,80 @@ double XFEM::Enrichment::EnrValueIntCell(const GEO::DomainIntCell& cell) const
     case XFEM::Enrichment::typeKink:
     {
         dserror("enrichment value not constant within integration cell for kink enrichment!");
+    }
+    default:
+        dserror("unsupported type of enrichment!");
+    }
+    return enrval;
+}
+
+/*----------------------------------------------------------------------*
+ | get enrichment value at an embedded interface            henke 09/09 |
+ *----------------------------------------------------------------------*/
+double XFEM::Enrichment::EnrValueAtInterface(
+        const XFEM::Enrichment::ApproachFrom  approachdirection
+        ) const
+{
+    // return value
+    double enrval = -777.7;
+
+    switch (Type())
+    {
+    case XFEM::Enrichment::typeStandard:
+    {
+        dserror("there is no embedded interface for a standard enrichment!");
+        break;
+    }
+    case XFEM::Enrichment::typeVoid:
+    {
+        // standard Heaviside function
+        switch (approachdirection)
+        {
+            case approachFromPlus:
+            {
+                enrval = 1.0;
+                break;
+            }
+            case approachFromMinus:
+            {
+                enrval = 0.0;
+                break;
+            }
+            case approachUnknown:
+            {
+                dserror("specify side of embedded interface!");
+                break;
+            }
+        }
+
+        break;
+    }
+    case XFEM::Enrichment::typeJump:
+    {
+        // Heaviside function (jump height is 2!)
+        switch (approachdirection)
+        {
+            case approachFromPlus:
+            {
+                enrval = 1.0;
+                break;
+            }
+            case approachFromMinus:
+            {
+                enrval = -1.0;
+                break;
+            }
+            case approachUnknown:
+            {
+                dserror("specify side of embedded interface!");
+                break;
+            }
+        }
+        break;
+    }
+    case XFEM::Enrichment::typeKink:
+    {
+        dserror("do enrichment values really vary over the embedded interface for a kink enrichment?");
     }
     default:
         dserror("unsupported type of enrichment!");

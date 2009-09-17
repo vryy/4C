@@ -16,7 +16,7 @@
 
 
 #include "interfacexfsi.H"
-#include "../drt_combust/combust_interface.H" //URSULA
+#include "../drt_combust/combust_interface.H"
 
 //! namespace for all XFEM related stuff
 namespace XFEM
@@ -157,6 +157,11 @@ namespace XFEM
           const GEO::DomainIntCell& cell
       ) const;
 
+      //! compute enrichment value at an embedded interface
+      double EnrValueAtInterface(
+          const XFEM::Enrichment::ApproachFrom  approachdirection
+      ) const;
+
       /*!
        * \brief get enrichment value at node using the level set function
        *
@@ -180,7 +185,7 @@ namespace XFEM
           }
           case XFEM::Enrichment::typeVoid:
           {
-              if (phi(inode) < 0.0) { // Syntax () oder []?
+              if (phi(inode) < 0.0) {
                   enrval = 0.0;
               } else {
                   enrval = 1.0; // phi == 0 is enriched!
@@ -189,7 +194,7 @@ namespace XFEM
           }
           case XFEM::Enrichment::typeJump:
           {
-              if (phi(inode) < 0.0) { // Syntax () oder []?
+              if (phi(inode) < 0.0) {
                   enrval = -1.0;
               } else {
                   enrval = 1.0; // phi == 0 is enriched!

@@ -47,7 +47,7 @@ namespace XFEM
     );
 
     /*!
-     * \brief compute enrichment value for integration cell
+     * \brief compute enrichment value for domain integration cell
      *
      * constructor called for combustion problems (jump enrichment)
      *
@@ -57,7 +57,7 @@ namespace XFEM
     explicit ElementEnrichmentValues(
             const DRT::Element&             ele,    ///< pointer to element
             const XFEM::ElementDofManager&  dofman, ///< pointer to element dof manager
-            const GEO::DomainIntCell&       cell,   ///< pointer to integration cell
+            const GEO::DomainIntCell&       cell,   ///< pointer to domain integration cell
             const V1&                       phi     ///< vector of level set values
      ) :
        ele_(ele),
@@ -79,6 +79,79 @@ namespace XFEM
       {
         const double enrvalcell = enriter->EnrValueIntCell(cell);
         enrvals_[*enriter] = enrvalcell;
+      }
+
+      //------------------------------------------------------------
+      // loop over nodes to evaluate enrichment values at the nodes
+      //------------------------------------------------------------
+      for(int inode=0; inode < numnode; inode++)
+      {
+        std::map<XFEM::Enrichment, double> enrvalstmp;
+        for (std::set<XFEM::Enrichment>::const_iterator enriter = enrset.begin(); enriter != enrset.end(); ++enriter)
+        {
+          const double enrvalnode = enriter->EnrValueNodeLevelSet(inode,phi);
+          enrvalstmp[*enriter] = enrvalnode;
+        }
+        enrvalnodes[inode] = enrvalstmp;
+        enrvalstmp.clear();
+      }
+
+      //------------------------------------------------------------------------
+      // evaluate final enrichment values for each node H(G(cell)) - H(G(node))
+      //------------------------------------------------------------------------
+      // literature (p. 1006, penultimate line):
+      // Belytschko, T., Moës, N., Usui, S. and Parimi, C.
+      // Arbitrary discontinuities in finite elements:
+      // "International Journal for Numerical Methods in Engineering", 50:993--1013,2001.
+
+      for(int inode=0; inode < numnode; inode++)
+      {
+        std::map<XFEM::Enrichment, double> enrvalstmp;
+        for (std::set<XFEM::Enrichment>::const_iterator enriter = enrset.begin(); enriter != enrset.end(); ++enriter)
+        {
+          enrvalstmp[*enriter] = enrvals_.find(*enriter)->second - (enrvalnodes.find(inode)->second).find(*enriter)->second;
+        }
+        enrvalnodes_[inode] = enrvalstmp;
+        enrvalstmp.clear();
+      }
+
+      return;
+    }
+
+
+    /*!
+     * \brief compute enrichment value at one side of an embedded interface
+     *
+     * constructor called for combustion problems (jump enrichment)
+     *
+     * \author henke 09/09
+     */
+    template<class V1>
+    explicit ElementEnrichmentValues(
+            const DRT::Element&                   ele,               ///< pointer to element
+            const XFEM::ElementDofManager&        dofman,            ///< pointer to element dof manager
+            const XFEM::Enrichment::ApproachFrom  approachdirection, ///< side of embedded interface
+            const V1&                             phi                ///< vector of level set values
+     ) :
+       ele_(ele),
+       dofman_(dofman)
+    {
+      enrvals_.clear();
+      enrvalnodes_.clear();
+      enrvalderxy_.clear();  // not used for jump enrichment
+      enrvalderxy2_.clear(); // not used for jump enrichment
+
+      const std::set<XFEM::Enrichment>& enrset(dofman.getUniqueEnrichments());
+      const int numnode = ele_.NumNode();
+      std::map<int,std::map<XFEM::Enrichment, double> > enrvalnodes;
+
+      //------------------------------------------------------
+      // evaluate enrichment values for this integration cell
+      //------------------------------------------------------
+      for (std::set<XFEM::Enrichment>::const_iterator enriter = enrset.begin(); enriter != enrset.end(); ++enriter)
+      {
+        const double enrvalside = enriter->EnrValueAtInterface(approachdirection);
+        enrvals_[*enriter] = enrvalside;
       }
 
       //------------------------------------------------------------
@@ -351,12 +424,6 @@ namespace XFEM
               enr_derxy(isd,dofcounter) = derxy(isd,inode) * enrval + funct(inode) * enrvalderxy[isd];
             }
 
-//            for (std::size_t isd = 0; isd < 6; ++isd)
-//            {
-//              //product rule
-//              // da fehlt noch was
-//              enr_derxy2(isd,dofcounter) = derxy2(isd,inode) * enrval + funct(inode) * enrvalderxy2[isd];
-//            }
             enr_derxy2(0,dofcounter) = derxy2(0,inode) * enrval + funct(inode) * enrvalderxy2[0] + derxy(0,inode) * enrvalderxy[0] + derxy(0,inode) * enrvalderxy[0];
             enr_derxy2(1,dofcounter) = derxy2(1,inode) * enrval + funct(inode) * enrvalderxy2[1] + derxy(1,inode) * enrvalderxy[1] + derxy(1,inode) * enrvalderxy[1];
             enr_derxy2(2,dofcounter) = derxy2(2,inode) * enrval + funct(inode) * enrvalderxy2[2] + derxy(2,inode) * enrvalderxy[2] + derxy(2,inode) * enrvalderxy[2];
@@ -463,11 +530,9 @@ namespace XFEM
     //! map holding values for enrichments for every node
     std::map<int,std::map<XFEM::Enrichment, double> > enrvalnodes_;
 
-//URSULA
     // member variables required for kink enrichment
     std::map<XFEM::Enrichment, std::vector<double> > enrvalderxy_;
     std::map<XFEM::Enrichment, std::vector<double> > enrvalderxy2_;
-//URSULA
 
   };
 

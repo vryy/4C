@@ -318,7 +318,7 @@ Teuchos::RCP<Epetra_Vector> XFEM::DofManager::fillPhysicalOutputVector(
 /*----------------------------------------------------------------------*
  | transform XFEM vector to (standard FEM) output vector     henke 07/09|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> XFEM::DofManager::transformXFEMtoOutputVector(
+Teuchos::RCP<Epetra_Vector> XFEM::DofManager::transformXFEMtoStandardVector(
     const Epetra_Vector&                   xfemvector,
     const DRT::DofSet&                     outdofset,
     const map<DofKey<onNode>, DofGID>&     nodalDofDistributionMap,
@@ -328,7 +328,6 @@ Teuchos::RCP<Epetra_Vector> XFEM::DofManager::transformXFEMtoOutputVector(
   // get DofRowMaps for output and XFEM vectors
   const Epetra_Map* outdofrowmap = outdofset.DofRowMap();
   const Epetra_Map* xfemdofrowmap = ih_->xfemdis()->DofRowMap();
-
   // create output vector (standard FEM layout)
   Teuchos::RCP<Epetra_Vector> outvector = LINALG::CreateVector(*outdofrowmap,true);
 
@@ -608,6 +607,41 @@ void XFEM::DofManager::toGmsh(
           for (std::set<XFEM::FieldEnr>::const_iterator f = fields.begin(); f != fields.end(); ++f)
           {
             if ((f->getEnrichment().Type()) == XFEM::Enrichment::typeVoid)
+            {
+              val += 1.0;
+            }
+          }
+          if (val > 0.5)
+          {
+            gmshfilecontent << "SP(";
+            gmshfilecontent << scientific << pos(0) << ",";
+            gmshfilecontent << scientific << pos(1) << ",";
+            gmshfilecontent << scientific << pos(2);
+            gmshfilecontent << "){";
+            gmshfilecontent << val << "};\n";
+          }
+        }
+      };
+      gmshfilecontent << "};\n";
+      f_system << gmshfilecontent.str();
+    }
+    
+    {
+      stringstream gmshfilecontent;
+      gmshfilecontent << "View \" " << "NumDof" << " Kink enriched nodes \" {\n";
+      for (int i=0; i<ih_->xfemdis()->NumMyColNodes(); ++i)
+      {
+        const DRT::Node* xfemnode = ih_->xfemdis()->lColNode(i);
+        const LINALG::Matrix<3,1> pos(xfemnode->X());
+
+        double val = 0.0;
+        std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(xfemnode->Id());
+        if (blub != nodalDofSet_.end())
+        {
+          const std::set<XFEM::FieldEnr> fields = blub->second;
+          for (std::set<XFEM::FieldEnr>::const_iterator f = fields.begin(); f != fields.end(); ++f)
+          {
+            if ((f->getEnrichment().Type()) == XFEM::Enrichment::typeKink)
             {
               val += 1.0;
             }
