@@ -108,8 +108,11 @@ void StatMechTime::Integrate()
 
     ConsistentPredictor();
 
-    //FullNewton();
-    PTC();
+    if(ndim ==3)
+      PTC();
+    else
+      FullNewton();
+    
 
     UpdateandOutput();
 

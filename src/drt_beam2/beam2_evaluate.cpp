@@ -63,7 +63,7 @@ int DRT::ELEMENTS::Beam2::Evaluate(ParameterList& params,
   {
     case Beam2::calc_struct_ptcstiff:
     {
-      //Beam2 element does'nt need any special ptc tools to allow stable implicit dynamics with acceptable time step size
+      dserror("Beam2 element does'nt need any special ptc tools to allow stable implicit dynamics with acceptable time step size");
     }
     break;
     //action type for evaluating statistical forces

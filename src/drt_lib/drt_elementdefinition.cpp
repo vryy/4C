@@ -203,16 +203,16 @@ void DRT::INPUT::ElementDefinition::SetupBeam2Lines()
     .AddIntVector("LINE2",2)
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
-    .AddNamedDouble("INERMOM")
     .AddNamedDouble("SHEARCORR")
+    .AddNamedDouble("INERMOM")
     ;
 
   defs["LIN2"]
     .AddIntVector("LIN2",2)
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
-    .AddNamedDouble("INERMOM")
     .AddNamedDouble("SHEARCORR")
+    .AddNamedDouble("INERMOM")
     ;
 }
 
