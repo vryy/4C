@@ -470,28 +470,29 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
       double squaredispmid = sumdispmiddle_.Norm2()*sumdispmiddle_.Norm2();
       
       //total displacement of rotational angle (in 2D only)
+      double incangle = 0;
       if(ndim == 2)
       {
         //angle of old axis relative to x-axis
         double phiold = acos(axisold(0)/axisold.Norm2());
-        if axisold(1) < 0
+        if(axisold(1) < 0)
           phiold *= -1;
         
         //angle of new axis relative to x-axis
         double phinew = acos(axisnew(0)/axisnew.Norm2());
-        if axisnew(1) < 0
+        if(axisnew(1) < 0)
           phinew *= -1;
         
         //angle increment
-        double incangle = phinew - phiold;
-        if(incangle > pi)
+        incangle = phinew - phiold;
+        if(incangle > PI)
         {
-          incangle -= 2*pi;
+          incangle -= 2*PI;
           incangle *= -1;
         }
-        if(incangle < -pi)
+        if(incangle < -PI)
         {
-          incangle += 2*pi;
+          incangle += 2*PI;
           incangle *= -1;
         }
         
