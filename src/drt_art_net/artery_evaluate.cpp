@@ -58,26 +58,10 @@ int DRT::ELEMENTS::Artery::Evaluate(ParameterList& params,
   if (action == "none") dserror("No action supplied");
   else if (action == "calc_sys_matrix_rhs")
     act = Artery::calc_sys_matrix_rhs;
-  else if (action == "get_stiffness_matrix")
-    act = Artery::get_stiffness_matrix;
-  else if (action == "calc_stiffness_matrix")
-    act = Artery::calc_stiffness_matrix;
-  else if (action == "calc_charcteristic_variables")
-    act = Artery::calc_charcteristic_variables;
-  else if (action == "calc_mass_matrix")
-    act = Artery::calc_mass_matrix;
-  else if (action == "get_density")
-    act = Artery::get_density;
-  else if (action == "get_viscosity")
-    act = Artery::get_viscosity;
-  else if (action == "get_mass_matrix")
-    act = Artery::get_mass_matrix;
-  else if (action == "get_beta")
-    act = Artery::get_beta;
-  else if (action == "get_sound_speed")
-    act = Artery::get_sound_speed;
   else if (action == "get_initail_artery_state")
     act = Artery::get_initail_artery_state;
+  else if (action == "solve_riemann_problem")
+    act = Artery::solve_riemann_problem;
   else if (action == "set_term_bc")
     act = Artery::set_term_bc;
   else
@@ -98,62 +82,25 @@ Here must add the steps for evaluating an element
   {
     case calc_sys_matrix_rhs:
     {
-    return DRT::ELEMENTS::ArteryExpInterface::Expl(this)->Evaluate(this,
-                                                                      params,
-                                                                      discretization,
-                                                                      lm,
-                                                                      elemat1,
-                                                                      elemat2,
-                                                                      elevec1,
-                                                                      elevec2,
-                                                                      elevec3,
-                                                                      mat);
-    }
-    break;
-    case calc_stiffness_matrix:
-    {
-    }
-    break;
-    case get_stiffness_matrix:
-    {
-      
-    }
-    break;
-    case get_mass_matrix:
-    {
-    }
-    break;
-    case calc_mass_matrix:
-    {
-    }
-    break;
-    case calc_charcteristic_variables:
-    {
-    }
-    break;
-    case get_density:
-    {
-    }
-    break;
-    case get_viscosity:
-    {
-    }
-    break;
-    case get_beta:
-    {
-    }
-    break;
-    case get_sound_speed:
-    {
+      return DRT::ELEMENTS::ArteryExpInterface::Expl(this)->Evaluate(this,
+                                                                        params,
+                                                                        discretization,
+                                                                        lm,
+                                                                        elemat1,
+                                                                        elemat2,
+                                                                        elevec1,
+                                                                        elevec2,
+                                                                        elevec3,
+                                                                        mat);
     }
     break;
     case get_initail_artery_state:
     {
-    DRT::ELEMENTS::ArteryExpInterface::Expl(this)->Initial(this,
-                                                           params,
-                                                           discretization,
-                                                           lm,
-                                                           mat);
+      DRT::ELEMENTS::ArteryExpInterface::Expl(this)->Initial(this,
+                                                             params,
+                                                             discretization,
+                                                             lm,
+                                                             mat);
 
     }
     break;
@@ -163,17 +110,23 @@ Here must add the steps for evaluating an element
                                                                         params,
                                                                         discretization,
                                                                         lm,
-                                                                        elemat1,
-                                                                        elevec1,
                                                                         mat);
+
+    }
+    break;
+    case solve_riemann_problem:
+    {
+      DRT::ELEMENTS::ArteryExpInterface::Expl(this)->SolveRiemann(this,
+                                                                  params,
+                                                                  discretization,
+                                                                  lm,
+                                                                  mat);
 
     }
     break;
     default:
       dserror("Unkown type of action for Artery");
   }// end of switch(act)
-
-
 
 
   return 0;

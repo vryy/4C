@@ -150,7 +150,11 @@ public:
     FlowRateThroughSurface_3D,
     ImpulsRateThroughSurface_3D,
     SurfaceModeKrylovProjection,
-    VolumeModeKrylovProjection
+    VolumeModeKrylovProjection,
+    ArtJunctionCond,
+    ArtWriteGnuplotCond,
+    ArtPrescribedCond,
+    ArtRfCond
   };
 
   /*!

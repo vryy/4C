@@ -101,14 +101,14 @@ public:
   }
 
   /*!
-  \brief Return number of surfaces of this element
+  \brief Return number of surfaces of this element (always 1)
   */
-  virtual int NumSurface() const {return 0;}
+  virtual int NumSurface() const {return -1;}
 
   /*!
-  \brief Return number of volumes of this element (always 1) even though it's a 1D element
+  \brief Return number of volumes of this element (always 1) 
   */
-  virtual int NumVolume() const {return 0;}
+  virtual int NumVolume() const {return -1;}
 
   /*!
   \brief Return unique ParObject id
@@ -292,16 +292,8 @@ private:
   {
     none,
     calc_sys_matrix_rhs,
-    calc_stiffness_matrix,
-    calc_mass_matrix,
-    calc_charcteristic_variables,
-    get_density,
-    get_viscosity,
-    get_stiffness_matrix,
-    get_mass_matrix,
-    get_beta,
-    get_sound_speed,
     get_initail_artery_state,
+    solve_riemann_problem,
     set_term_bc
   };
 

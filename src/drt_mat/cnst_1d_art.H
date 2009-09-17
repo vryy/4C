@@ -38,7 +38,7 @@ namespace MAT
         );
 
       /// destructor
-      virtual ~Cnst_1d_art() { ; }
+      virtual ~Cnst_1d_art() { }
 
       /// @name material parameters
       //@{
@@ -144,6 +144,7 @@ namespace MAT
             else if(i==1)
               return params_->pext2_;
             else dserror("There is no pressure with id %d",i);
+              return 0.0;
            }
   private:
 

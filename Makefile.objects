@@ -1416,7 +1416,10 @@ OBJS_DRT_ARTNET =  src/drt_art_net/art_net_dyn_drt.o \
 OBJS_DRT_ARTNET_LIB =  src/drt_art_net/artery.o \
                    src/drt_art_net/artery_evaluate.o \
                    src/drt_art_net/artery_input.o \
-                   src/drt_art_net/artery_lin_exp.o
+                   src/drt_art_net/artery_lin_exp.o\
+                   src/drt_art_net/art_junction.o\
+                   src/drt_art_net/art_write_gnuplot.o\
+                   src/drt_art_net/art_terminal_bc.o
 # boundary elements
 OBJS_DRT_BELE3_LIB = src/drt_bele3/bele3.o \
                   src/drt_bele3/bele3_line.o \

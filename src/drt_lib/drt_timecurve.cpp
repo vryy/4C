@@ -523,14 +523,14 @@ void DRT::UTILS::TimeCurveManager::ReadInput(const DRT::INPUT::DatFileReader& re
         double period;
         double flowrate;
         int points;
-        std::vector<double> ArrayLength;
+        std::vector<double> Arrayread;
 
         curves[j]->ExtractDouble("Period",period);
         curves[j]->ExtractDouble("Flowrate",flowrate);
         curves[j]->ExtractInt("Samplingpoints",points);
-        curves[j]->ExtractDoubleVector("ArrayLength",ArrayLength);
+        curves[j]->ExtractDoubleVector("Arrayread",Arrayread);
 
-        curve.AddSlice(rcp(new BloodTimeSlice(period, flowrate, points, ArrayLength)));
+        curve.AddSlice(rcp(new BloodTimeSlice(period, flowrate, points, Arrayread)));
       }
       else
         dserror("unknown type of time curve in CURVE%d", i);

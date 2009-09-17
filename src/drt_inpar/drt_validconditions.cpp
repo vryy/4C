@@ -1366,6 +1366,84 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   }
   condlist.push_back(surfrigidbodymode);
   condlist.push_back(volrigidbodymode);
+
+  /*--------------------------------------------------------------------*/
+  // 1D-Artery connector condition
+
+  Teuchos::RCP<ConditionDefinition> art_connection_bc =
+    Teuchos::rcp(new ConditionDefinition("DESIGN NODE 1D ARTERY JUNCTION CONDITIONS",
+                                         "ArtJunctionCond",
+                                         "Artery junction boundary condition",
+                                         DRT::Condition::ArtJunctionCond,
+                                         true,
+                                         DRT::Condition::Point));
+
+  art_connection_bc->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+  art_connection_bc->AddComponent(Teuchos::rcp(new RealConditionComponent("Kr")));
+
+  condlist.push_back(art_connection_bc);
+
+  /*--------------------------------------------------------------------*/
+  // Export 1D-Arterial network in gnuplot format
+
+  Teuchos::RCP<ConditionDefinition> art_write_gnuplot_c =
+    Teuchos::rcp(new ConditionDefinition("DESIGN LINE EXPORT 1D-ARTERIAL NETWORK GNUPLOT FORMAT",
+                                         "ArtWriteGnuplotCond",
+                                         "Artery write gnuplot format condition",
+                                         DRT::Condition::ArtWriteGnuplotCond,
+                                         false,
+                                         DRT::Condition::Line));
+
+  art_write_gnuplot_c->AddComponent(Teuchos::rcp(new IntConditionComponent("ArteryNumber")));
+
+  condlist.push_back(art_write_gnuplot_c);
+
+  /*--------------------------------------------------------------------*/
+  // 1D artery prescribed BC
+
+  Teuchos::RCP<ConditionDefinition> art_in_bc =
+    Teuchos::rcp(new ConditionDefinition("DESIGN NODE 1D ARTERY PRESCRIBED CONDITIONS",
+                                         "ArtPrescribedCond",
+                                         "Artery prescribed boundary condition",
+                                         DRT::Condition::ArtPrescribedCond,
+                                         true,
+                                         DRT::Condition::Point));
+
+  art_in_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("boundarycond", "inflow",
+    Teuchos::tuple<std::string>("inflow","pressure","velocity","area","characteristicWave"),
+    Teuchos::tuple<std::string>("inflow","pressure","velocity","area","characteristicWave"),    
+    true)));
+  art_in_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("type", "forced",
+    Teuchos::tuple<std::string>("forced","absorbing"),
+    Teuchos::tuple<std::string>("forced","absorbing"),
+    true)));
+
+  std::vector<Teuchos::RCP<ConditionComponent> > artinletcomponents;
+  artinletcomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("val",2)));
+  artinletcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("curve",2,true,true)));
+  for (unsigned i=0; i<artinletcomponents.size(); ++i)
+    art_in_bc->AddComponent(artinletcomponents[i]);
+
+  condlist.push_back(art_in_bc);
+
+  /*--------------------------------------------------------------------*/
+  // 1D artery reflective BC
+  Teuchos::RCP<ConditionDefinition> art_rf_bc =
+    Teuchos::rcp(new ConditionDefinition("DESIGN NODE 1D ARTERY REFLECTIVE CONDITIONS",
+                                         "ArtRfCond",
+                                         "Artery reflection condition",
+                                         DRT::Condition::ArtRfCond,
+                                         true,
+                                         DRT::Condition::Point));
+
+  std::vector<Teuchos::RCP<ConditionComponent> > artrfcomponents;
+  artrfcomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("val",1)));
+  artrfcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("curve",1,true,true)));
+  for (unsigned i=0; i<artrfcomponents.size(); ++i)
+    art_rf_bc->AddComponent(artrfcomponents[i]);
+
+  condlist.push_back(art_rf_bc);
+
   return vc;
 
 }

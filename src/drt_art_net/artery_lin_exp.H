@@ -61,13 +61,18 @@ namespace ELEMENTS
                          vector<int>&                             lm,
                          Teuchos::RCP<const MAT::Material>        material)=0;
 
-    virtual void EvaluateTerminalBC(Artery*                      ele,
-                                    ParameterList&               params,
-                                    DRT::Discretization&         discretization,
-                                    vector<int>&                 lm,
-                                    Epetra_SerialDenseMatrix&    elemat1,
-                                    Epetra_SerialDenseVector&    elevec1,
-                                    RefCountPtr<MAT::Material>   mat) = 0;
+    virtual void EvaluateTerminalBC(Artery*                       ele,
+                                    ParameterList&                params,
+                                    DRT::Discretization&          discretization,
+                                    vector<int>&                  lm,
+                                    RefCountPtr<MAT::Material>    mat) = 0;
+
+    virtual bool SolveRiemann(Artery*                             ele,
+                              ParameterList&                      params,
+                              DRT::Discretization&                discretization,
+                              vector<int>&                        lm,
+                              Teuchos::RCP<const MAT::Material>   mat) = 0;
+
     /// Internal implementation class for artery element
     static ArteryExpInterface* Expl(DRT::ELEMENTS::Artery* art);
 
@@ -133,19 +138,16 @@ namespace ELEMENTS
                 Teuchos::RCP<const MAT::Material>        material,
                 double                                   dt);
 
-    bool SolveRiemann(Artery*                             ele,
-                      ParameterList&                      params,
-                      const LINALG::Matrix<iel,1>&        eqnp,
-                      const LINALG::Matrix<iel,1>&        eareanp,
-                      Teuchos::RCP<const MAT::Material>   material,
-                      double                              dt);
+    virtual bool SolveRiemann(Artery*                            ele,
+                              ParameterList&                     params,
+                              DRT::Discretization&               discretization,
+                              vector<int>&                       lm,
+                              Teuchos::RCP<const MAT::Material>  mat);
 
     virtual void EvaluateTerminalBC(Artery*                      ele,
                                     ParameterList&               params,
                                     DRT::Discretization&         disctretization,
                                     vector<int>&                 lm,
-                                    Epetra_SerialDenseMatrix&    elemat1,
-                                    Epetra_SerialDenseVector&    elevec1,
                                     RefCountPtr<MAT::Material>   mat);
 
     /*!
@@ -182,10 +184,6 @@ namespace ELEMENTS
 #endif
     
   private:
-    //! node coordinates
-    //    LINALG::Matrix<3,iel> xyze_;
-    //! node 1D coordinates on the "s" axis
-    LINALG::Matrix<iel,1> se_;
     //! array for shape functions
     LINALG::Matrix<iel,1> funct_;
     //! array for shape function derivatives w.r.t s
@@ -210,40 +208,6 @@ namespace ELEMENTS
     LINALG::Matrix<iel,1> young_;
     //! vector containing the fixed external pressure
     LINALG::Matrix<iel,1> pext_;
-    //! Element Length
-    //    double L_;
-    //! Initial Cross-sectional Area of a the artery at element node 1
-    double area1_0_;
-    //! Initial Cross-sectional Area of a the artery at element node 2
-    double area2_0_;
-    //! Artery Thickness at element node 1
-    double th1_;
-    //! Artery Thickness at element node 2
-    double th2_;
-    //! Artery's Youngs Modulus of Elasticity at element node 1
-    double young1_;
-    //! Artery's Youngs Modulus of Elasticity at element node 2
-    double young2_;
-    //! Blood viscosity
-    double visc_;
-    //! Blood density
-    double dens_;
-    //! Poisson's ration of arterial wall
-    double nue_;
-    //! Viscosity parameter
-    double Kr_;
-    //! Time indipendent external artery wall pressure at terminal 1
-    double pext1_;
-    //! Time indipendent external artery wall pressure at terminal 2
-    double pext2_;
-    //! Forward Characteristic wave at time step n+1 at terminal 1
-    double Wf1np_;
-    //! Backward Characteristic wave at time step n+1 at terminal 1
-    double Wb1np_;
-    //! Forward Characteristic wave at time step n+1 at terminal 2
-    double Wf2np_;
-    //! Backward Characteristic wave at time step n+1 at terminal 2
-    double Wb2np_;
   };
 
 }

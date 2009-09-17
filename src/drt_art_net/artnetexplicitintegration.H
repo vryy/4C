@@ -40,6 +40,8 @@ Maintainer: Mahmoud Ismail
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_nodematchingoctree.H"
 #include "../drt_lib/drt_function.H"
+#include "art_junction.H"
+#include "art_write_gnuplot.H"
 
 #include "Epetra_Vector.h"
 #include "Epetra_Operator.h"
@@ -282,6 +284,16 @@ protected:
   RCP<Epetra_Vector>    qnm_;
   //@}
 
+  //! @name Forward and backwar characteristic wave speeds at time n+1, n and n-1
+  RCP<Epetra_Vector>    Wfnp_;
+  RCP<Epetra_Vector>    Wfn_;
+  RCP<Epetra_Vector>    Wfnm_;
+  RCP<Epetra_Vector>    Wbnp_;
+  RCP<Epetra_Vector>    Wbn_;
+  RCP<Epetra_Vector>    Wbnm_;
+  //@}
+
+
   //! @name cross-sectional area at time n+1, n and n-1
   RCP<Epetra_Vector>    arean_;
   RCP<Epetra_Vector>    areanp_;
@@ -292,6 +304,19 @@ protected:
   RCP<Epetra_Vector>    bcval_;
   RCP<Epetra_Vector>    dbctog_;
   //@}
+
+  //! @name Junction boundary condition
+  RCP<UTILS::ArtJunctionWrapper> artjun_;
+  //@}
+
+  //! @name 1D artery values at the junctions
+  RCP<map<const int, RCP<ART::UTILS::JunctionNodeParams> > > junc_nodal_vals_;
+  //@}
+
+  //! @name A condition to export 1D arteries as a gnuplot format
+  RCP<UTILS::ArtWriteGnuplotWrapper> artgnu_;
+  //@}
+
 
   /// connection between master and slave nodes on this proc
   RCP<map<int,vector<int> > >     pbcmapmastertoslave_;

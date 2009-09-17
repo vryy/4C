@@ -21,6 +21,7 @@ Maintainer: Mahmoud Ismail
 
 #include "../drt_art_net/artnetexplicitintegration.H"
 
+#include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/linalg_ana.H"
 #include "../drt_lib/linalg_utils.H"
@@ -28,6 +29,7 @@ Maintainer: Mahmoud Ismail
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_nodematchingoctree.H"
 #include "../drt_lib/drt_function.H"
+#include "art_junction.H"
 
 //#include "../drt_fluid/fluidimpedancecondition.H"
 
@@ -42,11 +44,6 @@ Maintainer: Mahmoud Ismail
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-
-#ifdef DEBUG
-ofstream fout("DATAout.txt");
-#include <fstream.h>
-#endif
 
 ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization> actdis,
                                                 LINALG::Solver&       solver,
@@ -90,7 +87,14 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization> actdi
   // vectors and matrices
   //                 local <-> global dof numbering
   // -------------------------------------------------------------------
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  const Epetra_Map* dofrowmap  = discret_->DofRowMap();
+
+  // -------------------------------------------------------------------
+  // get a vector layout from the discretization to construct matching
+  // vectors and matrices
+  //                 local <-> global node numbering
+  // -------------------------------------------------------------------
+  const Epetra_Map* noderowmap = discret_->NodeRowMap();
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization for a vector which only
@@ -118,13 +122,17 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization> actdi
 
   // Vectors associated to boundary conditions
   // -----------------------------------------
+  Wfnp_          = LINALG::CreateVector(*noderowmap,true);
+  Wfn_           = LINALG::CreateVector(*noderowmap,true);
+  Wfnm_          = LINALG::CreateVector(*noderowmap,true);
+  Wbnp_          = LINALG::CreateVector(*noderowmap,true);
+  Wbn_           = LINALG::CreateVector(*noderowmap,true);
+  Wbnm_          = LINALG::CreateVector(*noderowmap,true);
 
-  
   // a vector of zeros to be used to enforce zero dirichlet boundary conditions
   // This part might be optimized later
   bcval_   = LINALG::CreateVector(*dofrowmap,true);
   dbctog_  = LINALG::CreateVector(*dofrowmap,true);
-
 
   // Vectors used for solution process
   // ---------------------------------
@@ -132,6 +140,19 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization> actdi
   // right hand side vector and right hand side corrector
   rhs_     = LINALG::CreateVector(*dofrowmap,true);
 
+  // create the junction boundary conditions
+  ParameterList junparams;
+
+  junc_nodal_vals_=rcp(new map<const int, RCP<ART::UTILS::JunctionNodeParams> >);
+
+  junparams.set<RCP<map<const int, RCP<ART::UTILS::JunctionNodeParams> > > >("Junctions Parameters",junc_nodal_vals_);
+
+  artjun_ = rcp(new UTILS::ArtJunctionWrapper(discret_, output_, junparams, dta_) );
+
+  // create the gnuplot export conditions
+  artgnu_ = rcp(new ART::UTILS::ArtWriteGnuplotWrapper(discret_,junparams));
+
+  // ---------------------------------------------------------------------------------------
   // Initialize all the arteries' cross-sectional areas to the initial crossectional area Ao
   // and the volumetric flow rate to 0
   // ---------------------------------------------------------------------------------------
@@ -139,6 +160,7 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization> actdi
   discret_->ClearState();
   discret_->SetState("qanp",qanp_);
   // loop all elements on this proc (including ghosted ones)
+  int localNode;
   for (int nele=0;nele<discret_->NumMyColElements();++nele)
   {
     // get the element
@@ -155,13 +177,25 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization> actdi
     eleparams.set("lmowner",lmowner);
     eleparams.set("action","get_initail_artery_state");
     discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+
+    //initialize the characteristic wave maps
+    if(nele == discret_->NumMyColElements()-1)
+    {
+      localNode = 1;
+    }
+    else
+      localNode = 0;
+
   }
+
+
 #if 0
   cout<<"|**************************************************************************|"<<endl;
   cout<<"|******************** The Initialize Vector qanp is ***********************|"<<endl;
   cout<<"|**************************************************************************|"<<endl;
   cout<<*qanp_<<endl;
   cout<<"|**************************************************************************|"<<endl;
+  cout<<*Wfnp_<<endl;
 #endif
 
 } // ArtNetExplicitTimeInt::ArtNetExplicitTimeInt
@@ -323,11 +357,38 @@ void ART::ArtNetExplicitTimeInt::Solve()
   // end time measurement for element
 
   // -------------------------------------------------------------------
-  // call elements to calculate boundary conditions
+  // call elements to calculate the Riemann problem
+  // -------------------------------------------------------------------
+  {
+    // create the parameters for the discretization
+    ParameterList eleparams;
+
+    // action for elements
+    eleparams.set("action","solve_riemann_problem");
+
+    // set vecotr values needed by elements
+    discret_->ClearState();
+    discret_->SetState("qanp",qanp_);
+
+    eleparams.set("time step size",dta_);
+    eleparams.set("Wfnp",Wfnp_);
+    eleparams.set("Wbnp",Wbnp_);
+
+    eleparams.set("total time",time_);
+    eleparams.set<RCP<map<const int, RCP<ART::UTILS::JunctionNodeParams> > > >("Junctions Parameters",junc_nodal_vals_);
+
+    // call standard loop over all elements
+    discret_->Evaluate(eleparams,sysmat_,rhs_);
+  }
+
+  // -------------------------------------------------------------------
+  // Solve the boundary conditions 
   // -------------------------------------------------------------------
   bcval_->PutScalar(0.0);
   dbctog_->PutScalar(0.0);
+  // Solve terminal BCs
   {
+
     // create the parameters for the discretization
     ParameterList eleparams;
 
@@ -337,15 +398,25 @@ void ART::ArtNetExplicitTimeInt::Solve()
     // set vecotr values needed by elements
     discret_->ClearState();
     discret_->SetState("qanp",qanp_);
+
     eleparams.set("time step size",dta_);
     eleparams.set("total time",time_);
     eleparams.set("bcval",bcval_);
     eleparams.set("dbctog",dbctog_);
+    eleparams.set("Wfnp",Wfnp_);
+    eleparams.set("Wbnp",Wbnp_);
+    eleparams.set<RCP<map<const int, RCP<ART::UTILS::JunctionNodeParams> > > >("Junctions Parameters",junc_nodal_vals_);
+
+    // solve junction boundary conditions
+    artjun_->Solve(eleparams);
 
     // call standard loop over all elements
     discret_->Evaluate(eleparams,sysmat_,rhs_);
   }
 
+  // -------------------------------------------------------------------
+  // Apply the BCs to the system matrix and rhs
+  // -------------------------------------------------------------------
   {
     // time measurement: application of dbc
     TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
@@ -367,22 +438,16 @@ void ART::ArtNetExplicitTimeInt::Solve()
     //    qanp_->Update(1.0,*bcval_,1.0);
   }
 
+#if 0
+  if (time_<0.41 && time_>0.39)
+  {
+    cout<<"RESSSSSSSSSS"<<endl<<*qanp_<<endl;
+    throw;
+  }
+#endif
+
   // end time measurement for solver
   dtsolve_ = ds_cputime() - tcpusolve;
-
-#if 0
-    
-  for(int index = 0; index<=discret->NumMyColElements(); index++)
-  {
-    DRT::Element* ele = discret_->lColElement(index);
-    fout<<time_<<"\t"<<(ele->Nodes()[0]).X[0]<<"\t"<<(*qanp_)[2*index]<<"\t"<<(*qanp_)[2*index+1]<<endl;
-  }
-  int index = discret->NumMyColElements()-1;
-  DRT::Element* ele = discret_->lColElement(index);
-  fout<<time_<<"\t"<<(ele->Nodes()[1]).X[0]<<"\t"<<(*qanp_)[2*index]<<"\t"<<(*qanp_)[2*index+1]<<endl;
-
-  fout<<endl;
-#endif
 
   if (myrank_ == 0)
     cout << "te=" << dtele_ << ", ts=" << dtsolve_ << "\n\n" ;
@@ -489,18 +554,21 @@ void ART::ArtNetExplicitTimeInt::Output()
       // impedancebc_->WriteRestart(output_);
     }
 
-#ifdef DEBUG 
-  for(int index = 0; index<discret_->NumMyColElements(); index++)
-  {
-    DRT::Element* ele = discret_->lColElement(index);
-    fout<<time_<<"\t"<<(ele->Nodes()[0])->X()[0]<<"\t"<<(*qanp_)[2*index]<<"\t"<<(*qanp_)[2*index+1]<<endl;
-  }
-  int index = discret_->NumMyColElements()-1;
-  DRT::Element* ele = discret_->lColElement(index);
-  fout<<time_<<"\t"<<(ele->Nodes()[1])->X()[0]<<"\t"<<(*qanp_)[2*(index+1)]<<"\t"<<(*qanp_)[2*(index+1)+1]<<endl;
+    // ------------------------------------------------------------------
+    // Export gnuplot format arteries
+    // ------------------------------------------------------------------
+    ParameterList params;
+    // other parameters that might be needed by the elements
+    params.set("total time",time_);
 
-  fout<<endl;
-#endif
+    // set the dof vector values 
+    discret_->ClearState();
+    discret_->SetState("qanp",qanp_);
+
+    // call the gnuplot writer
+    artgnu_->Write(params);
+    discret_->ClearState();
+
   }
   // write restart also when uprestart_ is not a integer multiple of upres_
   else if (uprestart_ != 0 && step_%uprestart_ == 0)
@@ -514,18 +582,22 @@ void ART::ArtNetExplicitTimeInt::Output()
     // also write impedance bc information if required
     // Note: this method acts only if there is an impedance BC
     // impedancebc_->WriteRestart(output_);
-#ifdef DEBUG
-  for(int index = 0; index<discret_->NumMyColElements(); index++)
-  {
-    DRT::Element* ele = discret_->lColElement(index);
-    fout<<time_<<"\t"<<(ele->Nodes()[0])->X()[0]<<"\t"<<(*qanp_)[2*index]<<"\t"<<(*qanp_)[2*index+1]<<endl;
-  }
-  int index = discret_->NumMyColElements()-1;
-  DRT::Element* ele = discret_->lColElement(index);
-  fout<<time_<<"\t"<<(ele->Nodes()[1])->X()[0]<<"\t"<<(*qanp_)[2*index]<<"\t"<<(*qanp_)[2*index+1]<<endl;
 
-  fout<<endl;
-#endif
+    // ------------------------------------------------------------------
+    // Export gnuplot format arteries
+    // ------------------------------------------------------------------
+    ParameterList params;
+    // other parameters that might be needed by the elements
+    params.set("total time",time_);
+
+    // set the dof vector values 
+    discret_->ClearState();
+    discret_->SetState("qanp",qanp_);
+
+    // call the gnuplot writer
+    artgnu_->Write(params);
+    discret_->ClearState();
+
   }
 
   return;
@@ -536,7 +608,7 @@ void ART::ArtNetExplicitTimeInt::Output()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- |                                                          ismail 07/09|
+ | ReadRestart (public)                                     ismail 07/09|
  -----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

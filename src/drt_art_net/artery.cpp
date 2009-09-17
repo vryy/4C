@@ -167,7 +167,6 @@ RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Artery::ElementRegister() const
 }
 
 
-
 /*----------------------------------------------------------------------*
  |  ctor (public)                                           ismail 01/09|
  *----------------------------------------------------------------------*/
