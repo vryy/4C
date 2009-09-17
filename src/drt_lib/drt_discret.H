@@ -1079,6 +1079,18 @@ public:
                                  Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor=Teuchos::null);
 
   /*!
+  \brief Evaluate Dirichlet boundary conditions for XFEM problems (preliminary hack!)
+
+  \author henke 07/09
+  */
+  virtual void EvaluateDirichletXFEM(ParameterList& params,
+                                 Teuchos::RCP<Epetra_Vector> systemvector,
+                                 Teuchos::RCP<Epetra_Vector> systemvectord,
+                                 Teuchos::RCP<Epetra_Vector> systemvectordd,
+                                 Teuchos::RCP<Epetra_Vector> toggle,
+                                 Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor=Teuchos::null);
+
+  /*!
   \brief Evaluate a specified condition
 
   Loop all conditions attached to the discretization and evaluate them.
