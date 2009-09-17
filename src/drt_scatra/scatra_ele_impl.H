@@ -272,9 +272,10 @@ public:
 
     //! calculate scalars and domain integral
    virtual void CalculateScalars(
-        const DRT::Element*       ele,     ///< pointer to the element
-        const vector<double>&     ephinp,  ///< current scalar field
-        Epetra_SerialDenseVector& scalars  ///< vector for the computed integrals
+        const DRT::Element*       ele,      ///< pointer to the element
+        const vector<double>&     ephinp,   ///< current scalar field
+        Epetra_SerialDenseVector& scalars,  ///< vector for computed integrals
+        const bool                inverting ///< flag for invertuing
         );
 
     //! calculate domain and bodyforce integral

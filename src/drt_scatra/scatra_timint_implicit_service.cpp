@@ -449,17 +449,14 @@ void SCATRA::ScaTraTimIntImpl::ComputeInitialThermPressureDeriv()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::ComputeInitialMass()
 {
-  // provide storage space for inverse temperature and compute
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
-  RCP<Epetra_Vector> invphin = LINALG::CreateVector(*dofrowmap,true);
-  invphin->Reciprocal(*phin_);
-
-  // set inverse-scalar values needed by elements
+  // set scalar values needed by elements
   discret_->ClearState();
-  discret_->SetState("phinp",invphin);
+  discret_->SetState("phinp",phin_);
   // set action for elements
   ParameterList eleparams;
   eleparams.set("action","calc_mean_scalars");
+  // inverted scalar values are required here
+  eleparams.set("inverting",true);
 
   //provide displacement field in case of ALE
   eleparams.set("isale",isale_);
@@ -493,17 +490,14 @@ void SCATRA::ScaTraTimIntImpl::ComputeInitialMass()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::ComputeThermPressureFromMassCons()
 {
-  // provide storage space for inverse temperature and compute
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
-  RCP<Epetra_Vector> invphinp = LINALG::CreateVector(*dofrowmap,true);
-  invphinp->Reciprocal(*phinp_);
-
-  // set inverse-scalar values needed by elements
+  // set scalar values needed by elements
   discret_->ClearState();
-  discret_->SetState("phinp",invphinp);
+  discret_->SetState("phinp",phinp_);
   // set action for elements
   ParameterList eleparams;
   eleparams.set("action","calc_mean_scalars");
+  // inverted scalar values are required here
+  eleparams.set("inverting",true);
 
   //provide displacement field in case of ALE
   eleparams.set("isale",isale_);
@@ -559,6 +553,7 @@ void SCATRA::ScaTraTimIntImpl::SetupElchNatConv()
     // set action for elements
     ParameterList eleparams;
     eleparams.set("action","calc_mean_scalars");
+    eleparams.set("inverting",false);
 
     //provide displacement field in case of ALE
     eleparams.set("isale",isale_);
@@ -731,6 +726,7 @@ void SCATRA::ScaTraTimIntImpl::OutputMeanScalars()
   // set action for elements
   ParameterList eleparams;
   eleparams.set("action","calc_mean_scalars");
+  eleparams.set("inverting",false);
 
   //provide displacement field in case of ALE
   eleparams.set("isale",isale_);

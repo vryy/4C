@@ -706,6 +706,9 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     // NOTE: add integral values only for elements which are NOT ghosted!
     if (ele->Owner() == discretization.Comm().MyPID())
     {
+      // get flag for inverting
+      bool inverting = params.get<bool>("inverting");
+
       // need current scalar vector
       // -> extract local values from the global vectors
       RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
@@ -714,7 +717,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
 
       // calculate scalars and domain integral
-      CalculateScalars(ele,myphinp,elevec1_epetra);
+      CalculateScalars(ele,myphinp,elevec1_epetra,inverting);
     }
   }
   else if (action=="calc_domain_and_bodyforce")
@@ -3663,7 +3666,8 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateScalars(
     const DRT::Element*             ele,
     const vector<double>&           ephinp,
-    Epetra_SerialDenseVector&       scalars
+    Epetra_SerialDenseVector&       scalars,
+    const bool                      inverting
 )
 {
   /*------------------------------------------------- set element data */
@@ -3681,15 +3685,30 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateScalars(
   {
     EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
 
-    // calculate integrals of scalar(s) and domain
-    for (int i=0; i<iel; i++)
+    // calculate integrals of (inverted) scalar(s) and domain
+    if (inverting)
     {
-      const double fac_funct_i = fac_*funct_(i);
-      for (int k = 0; k < numscal_; k++)
+      for (int i=0; i<iel; i++)
       {
-        scalars[k] += fac_funct_i*ephinp[i*numdofpernode_+k];
+        const double fac_funct_i = fac_*funct_(i);
+        for (int k = 0; k < numscal_; k++)
+        {
+          scalars[k] += fac_funct_i/ephinp[i*numdofpernode_+k];
+        }
+        scalars[numscal_] += fac_funct_i;
       }
-      scalars[numscal_] += fac_funct_i;
+    }
+    else
+    {
+      for (int i=0; i<iel; i++)
+      {
+        const double fac_funct_i = fac_*funct_(i);
+        for (int k = 0; k < numscal_; k++)
+        {
+          scalars[k] += fac_funct_i*ephinp[i*numdofpernode_+k];
+        }
+        scalars[numscal_] += fac_funct_i;
+      }
     }
   } // loop over integration points
 
