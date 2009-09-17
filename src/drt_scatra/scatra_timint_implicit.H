@@ -464,9 +464,6 @@ protected:
   double thermpressdtnp_;
   double thermpressdtn_;
 
-  /// LOMA-specific parameter: gas constant
-  double gasconstant_;
-
   /// LOMA-specific parameter: initial mass in domain
   double initialmass_;
 

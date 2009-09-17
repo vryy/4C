@@ -798,7 +798,6 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       const MAT::SutherlandScatra* actmat = static_cast<const MAT::SutherlandScatra*>(material.get());
 
       params.set("thermodynamic pressure",actmat->ThermPress());
-      params.set("gas constant",actmat->GasConst());
     }
     else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv_scatra)
     {
@@ -807,13 +806,8 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       params.set("flame parameter beta",     actmat->ComputeBeta());
       params.set("diffusive flame thickness",actmat->ComputeDiffFlameThickness());
       params.set("thermodynamic pressure",0.0);
-      params.set("gas constant",0.0);
     }
-    else
-    {
-      params.set("thermodynamic pressure",0.0);
-      params.set("gas constant",1.0);
-    }
+    else params.set("thermodynamic pressure",0.0);
   }
   else
     dserror("Unknown type of action for Scatra Implementation: %s",action.c_str());
