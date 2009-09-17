@@ -422,21 +422,19 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
         beginnew(i) = ( discret_.gNode(0)                            )->X()[i] + dis[i];
         endnew(i)   = ( discret_.gNode(discret_.NumMyRowNodes() - 1) )->X()[i] + dis[num_dof - discret_.NumDof(discret_.gNode(discret_.NumMyRowNodes() - 1)) + i];
       }
-      
-      
+            
       //unit direction vector for filament axis in last time step
       LINALG::Matrix<3,1> axisold;
       axisold  = endold_;
       axisold -= beginold_;
       axisold.Scale(1/axisold.Norm2());
       
-      //unit direction vector for filament axis in actual time step
+      //unit direction vector for filament axis in current time step
       LINALG::Matrix<3,1> axisnew;
       axisnew = endnew;
       axisnew -= beginnew;      
       axisnew.Scale(1/axisnew.Norm2());
-
-      
+     
       //displacement of first and last node between last time step and current time step
       LINALG::Matrix<3,1> dispbegin;
       LINALG::Matrix<3,1> dispend;
@@ -444,105 +442,77 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
       dispbegin -= beginold_;
       dispend  = endnew;
       dispend -= endold_;
-
-      
-      
+        
       //displacement of middle point
       LINALG::Matrix<3,1> dispmiddle;
       dispmiddle  = dispbegin;
       dispmiddle += dispend;
       dispmiddle.Scale(0.5);
-
-     
+      sumdispmiddle_ += dispmiddle;
+   
+      //update sum of square displacement increments of middle point
       double incdispmiddle = dispmiddle.Norm2()*dispmiddle.Norm2();      
-      sumincdispmiddle_+=incdispmiddle;
-
-      sumdispmiddle_+=dispmiddle;
-      double dispmiddle_square=0.0;
-      dispmiddle_square=sumdispmiddle_.Norm2()*sumdispmiddle_.Norm2();
-      /*note: to compare this values with the par/orth displacements calulated further down,
-       * it hast to be divided by two in the 2D case and by three in the 3D case*/
-    
-      
-      //displacement of middle point parallel to new filament axis (computed by scalar product)     
+      sumsquareincmid_+=incdispmiddle;
+   
+      //update sum of square displacement increments of middle point parallel to new filament axis (computed by scalar product)    
       double disppar_square = pow(axisnew(0)*dispmiddle(0) + axisnew(1)*dispmiddle(1) + axisnew(2)*dispmiddle(2), 2);       
-      accumdispar_+=disppar_square;
+      sumsquareincpar_+=disppar_square;
       
-      //std::cout << "parallel increment: " << disppar_square << " accumulated: " << accumdispar_ << "\n";
-      
-      //displacement of middle point orthogonal to new filament axis (computed by crossproduct)
+      //update sum of square displacement increments of middle point orthogonal to new filament axis (via crossproduct)
       LINALG::Matrix<3,1> aux;
       aux(0) = dispmiddle(1)*axisnew(2) - dispmiddle(2)*axisnew(1);
       aux(1) = dispmiddle(2)*axisnew(0) - dispmiddle(0)*axisnew(2);
       aux(2) = dispmiddle(0)*axisnew(1) - dispmiddle(1)*axisnew(0);
       double disport_square = aux.Norm2()*aux.Norm2();
-      accumdisorth_+=disport_square;
+      sumsquareincort_+=disport_square;
       
-      /*Important note for 3D case: the orthogonal displacement calculated by above equations
-       * is the sum of squares of both independet orthogonal displacements. To get a values that
-       * is qualitatively representative to compare with the parallel displacement, disport_square
-       * hast to be multiplied with 0.5*/
+      //total square displacement of middle point
+      double squaredispmid = sumdispmiddle_.Norm2()*sumdispmiddle_.Norm2();
       
+      //total displacement of rotational angle (in 2D only)
+      if(ndim == 2)
+      {
+        //angle of old axis relative to x-axis
+        double phiold = acos(axisold(0)/axisold.Norm2());
+        if axisold(1) < 0
+          phiold *= -1;
+        
+        //angle of new axis relative to x-axis
+        double phinew = acos(axisnew(0)/axisnew.Norm2());
+        if axisnew(1) < 0
+          phinew *= -1;
+        
+        //angle increment
+        double incangle = phinew - phiold;
+        if(incangle > pi)
+        {
+          incangle -= 2*pi;
+          incangle *= -1;
+        }
+        if(incangle < -pi)
+        {
+          incangle += 2*pi;
+          incangle *= -1;
+        }
+        
+        //update absolute rotational displacement compared to reference configuration
+        dispangle_ += incangle;
+      }
       
-      
-     
-      /*
-      //this section is for the rotational diffusioncoefficient
-      // angle of rotation around normal of filament axis relative to previous time step
-      double cosangle=0.0;
-      double angle=0.0;
-      double dispangle_square=0.0;
 
-      cosangle = axisold(0)*axisnew(0)+axisold(1)*axisnew(1)+axisold(2)*axisnew(2);
-      angle = acos(cosangle);
-      dispangle_square=angle*angle;
-      dispangle_+=angle*angle;
-      
-      if(axisnew(1)<0.0)  // changes sign if slope of axisnew is negative
-                  {
-                    angle = (-1)*angle;
-                  }
-      
-      angabs_ +=angle;
-      */
-      
-      // absolute angle of rotation around normal of filament axis  (0 degree ~ horizontal)
-      // only for 2D
-      double cosangleAbs=0.0;
-      double angleAbs=0.0;
-      LINALG::Matrix<3,1> horizont;
-      
-      horizont(0)=1.0;
-      horizont(1)=0.0;
-      horizont(2)=0.0;
-      
-      cosangleAbs = horizont(0)*axisnew(0)+horizont(1)*axisnew(1)+horizont(2)*axisnew(2);
-      angleAbs=acos(cosangleAbs);
-      
-      if(axisnew(1)<0.0)  // changes sign if slope of axisnew is negative
-            {
-              angleAbs = (-1)*angleAbs;
-            }
-          
-
-      
-      
       {
 	      // open file and append new data line
-	      fp = fopen(outputfilename.str().c_str(), "a");
-	    
+	      fp = fopen(outputfilename.str().c_str(), "a");    
 	    
 	      //defining temporary stringstream variable
 	      std::stringstream filecontent;
-	      filecontent << scientific << setprecision(15) << dt << " " << dispmiddle_square << " " << sumincdispmiddle_ << " " << accumdispar_ << " " << accumdisorth_ << " " << incdispmiddle << " " << angleAbs << endl;//" " << dispangle_ << " " << angabs_ << endl;
+	      filecontent << scientific << setprecision(15) << dt << " " << squaredispmid << " " << sumsquareincmid_ << " " << sumsquareincpar_ << " " << sumsquareincort_ << " "  << incangle << " " <<dispangle_*dispangle_ << endl;
 	    
 	      // move temporary stringstream to file and close it
 	      fprintf(fp,filecontent.str().c_str());
 	      fclose(fp);
       }
-      
-
-      
+       
       //new positions in this time step become old positions in last time step     
       beginold_ = beginnew;
       endold_   = endnew;
@@ -955,11 +925,10 @@ void StatMechManager::StatMechInitOutput(const int ndim,const double& dt)
       for (int i=0; i<3; i++)
        sumdispmiddle_(i,0)=0.0;
       
-      accumdispar_=0.0;
-      accumdisorth_=0.0;
+      sumsquareincpar_=0.0;
+      sumsquareincort_=0.0;
       dispangle_=0.0;
-      angabs_=0.0;
-      sumincdispmiddle_=0.0;
+      sumsquareincmid_=0.0;
 
       
     }

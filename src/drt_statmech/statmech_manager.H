@@ -121,13 +121,12 @@ protected:
   RCP<Epetra_Vector> forcesensor_;
   
   //! \store accumulated disp
-  double accumdispar_;
-  double accumdisorth_;
+  double sumsquareincpar_;
+  double sumsquareincort_;
   double dispangle_;
-  double angabs_;
-  double sumincdispmiddle_;
+  double sumsquareincmid_;
   
-  //store displacement of midpoint
+  //store displacement of midpoint compared to initial state as a 3-vector
   LINALG::Matrix<3,1>sumdispmiddle_;
 
   //! SearchTree which allows accelerated search for neighbouring nodes in case of dynamic crosslinkers
