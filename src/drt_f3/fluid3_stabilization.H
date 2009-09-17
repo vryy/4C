@@ -119,7 +119,9 @@ namespace XFLUID
 
   template <class V>
   void computeStabilization(
-      const V&       derxy,
+      const V&       shp_dx,
+      const V&       shp_dy,
+      const V&       shp_dz,
       const LINALG::Matrix<3,1>&      gpvelnp,
       const int   numparamvelx,
       const bool instationary,
@@ -154,8 +156,11 @@ namespace XFLUID
     //const double val = sum(abs(velino(j)*derxy(j,i)));
     LINALG::SerialDenseVector velinoder(numparamvelx,true);
     for (int iparam = 0; iparam < numparamvelx; ++iparam)
-        for (int isd = 0; isd < nsd; ++isd)
-            velinoder(iparam) += velino(isd)*derxy(isd,iparam);
+    {
+      velinoder(iparam) += velino(0)*shp_dx(iparam);
+      velinoder(iparam) += velino(1)*shp_dy(iparam);
+      velinoder(iparam) += velino(2)*shp_dz(iparam);
+    }
 
     double val = 0.0;
     for (int iparam = 0; iparam < numparamvelx; ++iparam)

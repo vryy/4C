@@ -482,7 +482,7 @@ void SysmatDomainProjection(
             double tau_stab_M  = 0.0;
             double tau_stab_Mp = 0.0;
             double tau_stab_C  = 0.0;
-            XFLUID::computeStabilization(derxy, u2_proj, numparamvelx, false, 1.0, hk, mk, 1.0,
+            XFLUID::computeStabilization(shp.dx, shp.dy, shp.dz, u2_proj, numparamvelx, false, 1.0, hk, mk, 1.0,
                 tau_stab_M, tau_stab_Mp, tau_stab_C);
 
 

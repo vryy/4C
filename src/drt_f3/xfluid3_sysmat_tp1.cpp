@@ -1264,7 +1264,7 @@ void SysmatDomainTP1(
             double tau_stab_M  = 0.0;
             double tau_stab_Mp = 0.0;
             double tau_stab_C  = 0.0;
-            XFLUID::computeStabilization(derxy, gpvelnp, numparamvelx, instationary, visc, hk, mk, timefac,
+            XFLUID::computeStabilization(shp.dx, shp.dy, shp.dz, gpvelnp, numparamvelx, instationary, visc, hk, mk, timefac,
                 tau_stab_M, tau_stab_Mp, tau_stab_C);
 
 

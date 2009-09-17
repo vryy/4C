@@ -1269,7 +1269,7 @@ void SysmatTwoPhase(
             //was passiert hier wenn numparamvelx != numparampres ist, nur numparamvel wird gebraucht
             // Vorsicht bekommt Viskosität, man geht im Moment von der kinematischen aus
             // also statt visc -> visc/dens übergeben???
-            XFLUID::computeStabilization(derxy, gpvelnp, numparamvelx, instationary, visc/dens, hk, mk, timefac,
+            XFLUID::computeStabilization(shpvel.dx, shpvel.dy, shpvel.dz, gpvelnp, numparamvelx, instationary, visc/dens, hk, mk, timefac,
                 tau_stab_M, tau_stab_Mp, tau_stab_C);
 
 
@@ -2269,7 +2269,7 @@ void SysmatDomain4(
             double tau_stab_M  = 0.0;
             double tau_stab_Mp = 0.0;
             double tau_stab_C  = 0.0;
-            XFLUID::computeStabilization(derxy, gpvelnp, numparamvelx, instationary, visc, hk, mk, timefac,
+            XFLUID::computeStabilization(shp.dx, shp.dy, shp.dz, gpvelnp, numparamvelx, instationary, visc, hk, mk, timefac,
                 tau_stab_M, tau_stab_Mp, tau_stab_C);
 
 
