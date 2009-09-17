@@ -76,8 +76,8 @@ THR::TimIntOneStepTheta::TimIntOneStepTheta
   // internal force vector F_{int;n+1} at new time
   fintn_ = LINALG::CreateVector(*dofrowmap_, true);
   // set initial internal force vector
-  ApplyForceTangInternal((*time_)[0], (*dt_)[0], (*temp_)(0), zeros_,
-                          fint_, tang_);
+   ApplyForceTangInternal((*time_)[0], (*dt_)[0], (*temp_)(0), zeros_,
+                           fint_, tang_);
 
   // external force vector F_ext at last times
   fext_ = LINALG::CreateVector(*dofrowmap_, true);
@@ -132,10 +132,6 @@ void THR::TimIntOneStepTheta::EvaluateRhsTangResidual()
 
   // ordinary internal force and tangent
   ApplyForceTangInternal(timen_, (*dt_)[0], tempn_, tempi_, fintn_, tang_);
-
-//  // potential forces
-//  ApplyForceTangPotential(tempn_, fintn_, tang_);
-//
 
   // build residual  Res = M . A_{n+theta}
   //                     + C . V_{n+theta}
@@ -289,7 +285,7 @@ void THR::TimIntOneStepTheta::UpdateStepState()
   // update anything that needs to be updated at the element level
   {
     // create the parameters for the discretization
-    ParameterList p;
+    Teuchos::ParameterList p;
     // other parameters that might be needed by the elements
     p.set("total time", timen_);
     p.set("delta time", (*dt_)[0]);
@@ -318,6 +314,46 @@ void THR::TimIntOneStepTheta::ReadRestartForce()
 
   return;
 }
+
+/*----------------------------------------------------------------------*/
+void THR::TimIntOneStepTheta::ApplyForceTangInternal(
+  const double time,  //!< evaluation time
+  const double dt,  //!< step size
+  const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
+  const Teuchos::RCP<Epetra_Vector> tempi,  //!< residual temperatures
+  Teuchos::RCP<Epetra_Vector> fint,  //!< internal force
+  Teuchos::RCP<LINALG::SparseMatrix> tang  //!< stiffness matrix
+)
+{
+  // create the parameters for the discretization
+  Teuchos::ParameterList p;
+  // set parameters
+  p.set("theta", theta_);
+  // call the base function
+  TimInt::ApplyForceTangInternal(p,time,dt,temp,tempi,fint,tang);
+  // finish
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+void THR::TimIntOneStepTheta::ApplyForceInternal(
+  const double time,  //!< evaluation time
+  const double dt,  //!< step size
+  const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
+  const Teuchos::RCP<Epetra_Vector> tempi,  //!< incremental temperatures
+  Teuchos::RCP<Epetra_Vector> fint  //!< internal force
+)
+{
+  // create the parameters for the discretization
+  Teuchos::ParameterList p;
+  // set parameters
+  p.set("theta", theta_);
+  // call the base function
+  TimInt::ApplyForceInternal(p,time,dt,temp,tempi,fint);
+  // finish
+  return;
+}
+
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifdef CCADISCRET

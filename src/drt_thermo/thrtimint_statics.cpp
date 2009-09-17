@@ -58,8 +58,7 @@ THR::TimIntStatics::TimIntStatics
   fintn_ = LINALG::CreateVector(*dofrowmap_, true);
   // set initial internal force vector
   ApplyForceTangInternal((*time_)[0], (*dt_)[0], (*temp_)(0), zeros_,
-                          fint_, tang_);
-
+                         fint_, tang_);
   // external force vector F_ext at last times
   fext_ = LINALG::CreateVector(*dofrowmap_, true);
   // external force vector F_{n+1} at new time
@@ -242,6 +241,46 @@ void THR::TimIntStatics::ReadRestartForce()
 
   return;
 }
+
+/*----------------------------------------------------------------------*/
+void THR::TimIntStatics::ApplyForceTangInternal(
+  const double time,  //!< evaluation time
+  const double dt,  //!< step size
+  const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
+  const Teuchos::RCP<Epetra_Vector> tempi,  //!< residual temperatures
+  Teuchos::RCP<Epetra_Vector> fint,  //!< internal force
+  Teuchos::RCP<LINALG::SparseMatrix> tang  //!< stiffness matrix
+)
+{
+  // create the parameters for the discretization
+  Teuchos::ParameterList p;
+  // set parameters
+  // ...
+  // call the base function
+  TimInt::ApplyForceTangInternal(p,time,dt,temp,tempi,fint,tang);
+  // finish
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+void THR::TimIntStatics::ApplyForceInternal(
+  const double time,  //!< evaluation time
+  const double dt,  //!< step size
+  const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
+  const Teuchos::RCP<Epetra_Vector> tempi,  //!< incremental temperatures
+  Teuchos::RCP<Epetra_Vector> fint  //!< internal force
+)
+{
+  // create the parameters for the discretization
+  Teuchos::ParameterList p;
+  // set parameters
+  // ...
+  // call the base function
+  TimInt::ApplyForceInternal(p,time,dt,temp,tempi,fint);
+  // finish
+  return;
+}
+
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifdef CCADISCRET

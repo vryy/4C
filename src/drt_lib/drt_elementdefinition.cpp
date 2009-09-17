@@ -59,7 +59,7 @@ void PrintElementDatHeader()
   //ed.PrintElementLines(std::cout,"BELE3");
   //ed.PrintElementLines(std::cout,"VELE3");
 
-  ed.PrintSectionHeader(std::cout,"THERMAL ELEMENTS");
+  ed.PrintSectionHeader(std::cout,"THERMO ELEMENTS");
   ed.PrintElementLines(std::cout,"THERMO");
 }
 

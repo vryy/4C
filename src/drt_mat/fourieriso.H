@@ -125,12 +125,26 @@ namespace MAT
 
     //@}
 
-    /// Main material call to determine heat flux and constitutive tensor
+    /// Main 1D material call to determine heat flux and constitutive tensor
     void Evaluate(
-      const LINALG::Matrix<3,1>& gradtemp,  ///< Green-Lagrange strain tensor
+      const LINALG::Matrix<1,1>& gradtemp,  ///< temperature gradient (strain tensor)
+      LINALG::Matrix<1,1>& cmat,  ///< constitutive matrix
+      LINALG::Matrix<1,1>& heatflux  ///< 3D heatflux (2nd PK stress)
+      ) const;
+
+    /// Main 2D material call to determine heat flux and constitutive tensor
+    void Evaluate(
+      const LINALG::Matrix<2,1>& gradtemp,  ///< temperature gradient (strain tensor)
+      LINALG::Matrix<2,2>& cmat,  ///< constitutive matrix
+      LINALG::Matrix<2,1>& heatflux  ///< 3D heatflux (2nd PK stress)
+      ) const;
+
+    /// Main 3D material call to determine heat flux and constitutive tensor
+    void Evaluate(
+      const LINALG::Matrix<3,1>& gradtemp,  ///< temperature gradient (strain tensor)
       LINALG::Matrix<3,3>& cmat,  ///< constitutive matrix
-      LINALG::Matrix<3,1>& heatflux  ///< 2nd PK stress
-      );
+      LINALG::Matrix<3,1>& heatflux  ///< 3D heatflux (2nd PK stress)
+      ) const;
 
   private:
 

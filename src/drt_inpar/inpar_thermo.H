@@ -35,6 +35,7 @@ namespace INPAR
     /// Type of time integrator including statics
     enum DynamicType
     {
+      dyna_undefined,                  ///< undefined integrator (sth like a default)
       dyna_statics,                    ///< static analysis
       dyna_onesteptheta,               ///< one-step-theta time integrator (implicit)
       dyna_gemm                        ///< generalised energy-momementum method
@@ -48,6 +49,9 @@ namespace INPAR
     {
       switch (name)
       {
+      case dyna_undefined :
+        return "Undefined";
+        break;
       case dyna_statics :
         return "Statics";
         break;

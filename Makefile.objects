@@ -257,6 +257,14 @@ OBJS_DRT_THERMO = \
                 src/drt_thermo/thrtimint_impl.o \
                 src/drt_thermo/thrtimint_statics.o \
                 src/drt_thermo/thrtimint_ost.o
+OBJS_DRT_THERMO_LIB = \
+                src/drt_thermo/thermo_element.o \
+                src/drt_thermo/thermo_element_input.o \
+                src/drt_thermo/thermo_element_evaluate.o \
+                src/drt_thermo/thermo_element_boundary_evaluate.o \
+                src/drt_thermo/thermo_ele_impl.o \
+                src/drt_thermo/thermo_ele_impl_utils.o \
+                src/drt_thermo/thermo_ele_boundary_impl.o
 # --------------------------------------------------- drt version of fluid
 OBJS_DRT_FLUID= src/drt_fluid/fluid_utils.o \
                 src/drt_fluid/fluid_utils_mapextractor.o \
@@ -278,7 +286,8 @@ OBJS_DRT_FLUID= src/drt_fluid/fluid_utils.o \
                 src/drt_fluid/fluidresulttest.o \
                 src/drt_fluid/xfluidresulttest.o
 # ---------------------------------------------- scalar transport problems
-OBJS_DRT_SCATRA=src/drt_scatra/scatra_dyn.o \
+OBJS_DRT_SCATRA = \
+                src/drt_scatra/scatra_dyn.o \
                 src/drt_scatra/scatra_timint_implicit.o \
                 src/drt_scatra/scatra_timint_implicit_service.o \
                 src/drt_scatra/scatra_timint_ost.o \
@@ -288,7 +297,8 @@ OBJS_DRT_SCATRA=src/drt_scatra/scatra_dyn.o \
                 src/drt_scatra/scatra_resulttest.o \
                 src/drt_scatra/scatra_utils.o \
                 src/drt_scatra/passive_scatra_algorithm.o
-OBJS_DRT_SCATRA_LIB = src/drt_scatra/scatra_ele_impl.o \
+OBJS_DRT_SCATRA_LIB = \
+                src/drt_scatra/scatra_ele_impl.o \
                 src/drt_scatra/scatra_ele_impl_utils.o \
                 src/drt_scatra/scatra_ele_boundary_impl.o \
                 src/drt_scatra/scatra_element.o \

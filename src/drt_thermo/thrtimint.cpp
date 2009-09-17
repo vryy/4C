@@ -592,6 +592,7 @@ void THR::TimInt::ApplyForceExternal
 /* evaluate ordinary internal force, its tangent at state */
 void THR::TimInt::ApplyForceTangInternal
 (
+  Teuchos::ParameterList& p,
   const double time,
   const double dt,
   const Teuchos::RCP<Epetra_Vector> temp,  // temperature state
@@ -600,8 +601,8 @@ void THR::TimInt::ApplyForceTangInternal
   Teuchos::RCP<LINALG::SparseMatrix> tang  // tangent matrix
 )
 {
-  // create the parameters for the discretization
-  Teuchos::ParameterList p;
+  // type of calling time integrator
+  p.set("time integrator", MethodName());
   // action for elements
   const std::string action = "calc_thermo_finttang";
   p.set("action", action);
@@ -621,8 +622,8 @@ void THR::TimInt::ApplyForceTangInternal
 
 /*----------------------------------------------------------------------*/
 /* evaluate ordinary internal force */
-void THR::TimInt::ApplyForceInternal
-(
+void THR::TimInt::ApplyForceInternal(
+  Teuchos::ParameterList& p,
   const double time,
   const double dt,
   const Teuchos::RCP<Epetra_Vector> temp,  // temperature state
@@ -630,8 +631,8 @@ void THR::TimInt::ApplyForceInternal
   Teuchos::RCP<Epetra_Vector> fint  // internal force
 )
 {
-  // create the parameters for the discretization
-  ParameterList p;
+  // type of calling time integrator
+  p.set("time integrator", MethodName());
   // action for elements
   const std::string action = "calc_thermo_fint";
   p.set("action", action);

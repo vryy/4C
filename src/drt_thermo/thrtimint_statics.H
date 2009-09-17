@@ -99,6 +99,25 @@ namespace THR
     //! and consistent temperature rates and temperatures
     void PredictConstTempConsistRate();
 
+    //! Evaluate ordinary internal force, its stiffness at state
+    void ApplyForceTangInternal(
+      const double time,  //!< evaluation time
+      const double dt,  //!< step size
+      const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
+      const Teuchos::RCP<Epetra_Vector> tempi,  //!< residual temperatures
+      Teuchos::RCP<Epetra_Vector> fint,  //!< internal force
+      Teuchos::RCP<LINALG::SparseMatrix> tang  //!< stiffness matrix
+    );
+
+    //! Evaluate ordinary internal force
+    void ApplyForceInternal(
+      const double time,  //!< evaluation time
+      const double dt,  //!< step size
+      const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
+      const Teuchos::RCP<Epetra_Vector> tempi,  //!< incremental temperatures
+      Teuchos::RCP<Epetra_Vector> fint  //!< internal force
+    );
+
     //! Create force residual #fres_ and ist tangent #tang_
     void EvaluateRhsTangResidual();
 

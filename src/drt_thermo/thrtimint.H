@@ -239,6 +239,7 @@ namespace THR
 
     //! Evaluate ordinary internal force, its stiffness at state
     void ApplyForceTangInternal(
+      Teuchos::ParameterList& p,  //!< parameter list handed down to elements
       const double time,  //!< evaluation time
       const double dt,  //!< step size
       const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
@@ -260,6 +261,7 @@ namespace THR
     //! increment \f$T_{n+1}-T_{n}\f$.
     void ApplyForceInternal
     (
+      Teuchos::ParameterList& p,  //!< parameter list handed down to elements
       const double time,  //!< evaluation time
       const double dt,  //!< step size
       const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state

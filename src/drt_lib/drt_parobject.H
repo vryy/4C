@@ -186,6 +186,8 @@ using namespace std;
 #define ParObject_ArrheniusPVFluid      (int)172
 #define ParObject_MixFracScatra         (int)173
 #define ParObject_MixFracFluid          (int)174
+#define ParObject_Thermo                (int)175
+#define ParObject_ThermoBoundary        (int)176
 
 namespace DRT
 {

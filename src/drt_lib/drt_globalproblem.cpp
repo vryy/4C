@@ -868,22 +868,22 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
   case prb_thermo:
   {
     {
-       // allocate and input general old stuff....
-       if (genprob.numfld!=1) dserror("numfld != 1 for thermal problem");
+      // allocate and input general old stuff....
+      if (genprob.numfld!=1) dserror("numfld != 1 for thermal problem");
 
-       std::string distype = ptype.get<std::string>("SHAPEFCT");
+      //std::string distype = ptype.get<std::string>("SHAPEFCT");
 
-       thermdis = rcp(new DRT::Discretization("thermo",reader.Comm()));
-       AddDis(genprob.numtf, thermdis);
+      thermdis = Teuchos::rcp(new DRT::Discretization("thermo",reader.Comm()));
+      AddDis(genprob.numtf, thermdis);
 
-       DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
-       nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(thermdis, reader, "--THERMO ELEMENTS")));
-       nodereader.Read();
-       break;
-     } // end of else if (genprob.probtyp==prb_thermo)
+      DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
+      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(thermdis, reader, "--THERMO ELEMENTS")));
+      nodereader.Read();
+      break;
+    } // end of else if (genprob.probtyp==prb_thermo)
   }
 
- case prb_structure:
+  case prb_structure:
   {
     // allocate and input general old stuff....
     if (genprob.numfld!=1) dserror("numfld != 1 for structural problem");

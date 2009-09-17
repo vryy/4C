@@ -106,10 +106,47 @@ void MAT::FourierIso::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::FourierIso::Evaluate(
+  const LINALG::Matrix<1,1>& gradtemp,
+  LINALG::Matrix<1,1>& cmat,
+  LINALG::Matrix<1,1>& heatflux
+  ) const
+{
+  // conductivity tensor
+  cmat(0,0) = params_->conduct_;
+
+  // heatflux
+  heatflux.MultiplyNN(cmat,gradtemp);
+
+  // done
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::FourierIso::Evaluate(
+  const LINALG::Matrix<2,1>& gradtemp,
+  LINALG::Matrix<2,2>& cmat,
+  LINALG::Matrix<2,1>& heatflux
+  ) const
+{
+  // conductivity tensor
+  cmat.Clear();
+  for (int i=0; i<2; ++i) cmat(i,i) = params_->conduct_;
+
+  // heatflux
+  heatflux.MultiplyNN(cmat,gradtemp);
+
+  // done
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::FourierIso::Evaluate(
   const LINALG::Matrix<3,1>& gradtemp,
   LINALG::Matrix<3,3>& cmat,
   LINALG::Matrix<3,1>& heatflux
-  )
+  ) const
 {
   // conductivity tensor
   cmat.Clear();
