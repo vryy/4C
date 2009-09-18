@@ -217,6 +217,16 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   }
 
   // -------------------------------------------------------------------
+  // ensure that the Transport string was removed from conditions
+  // -------------------------------------------------------------------
+  {
+    DRT::Condition* cond = discret_->GetCondition("TransportDirichlet");
+    if (cond) dserror("Found a Transport Dirichlet condition. Remove Transport string!");
+    cond = discret_->GetCondition("TransportNeumann");
+    if (cond) dserror("Found a Transport Neumann condition. Remove Transport string!");
+  }
+
+  // -------------------------------------------------------------------
   // create vectors associated to solution process
   // -------------------------------------------------------------------
   // the vector containing body and surface forces
@@ -1583,34 +1593,32 @@ void SCATRA::ScaTraTimIntImpl::PrepareKrylovSpaceProjection()
         // in this case, we want to project out some zero pressure modes
         const string* definition = KSPcond[imode]->Get<string>("weight vector definition");
 
+        // get rigid body modes
+        const vector<double>* mode = KSPcond[imode]->Get<vector<double> >("mode");
+
+        int numdof = 0;
+        Epetra_IntSerialDenseVector dofids(6);
+        for(int rr=0;rr<6;rr++)
+        {
+          if(abs((*mode)[rr])>1e-14)
+          {
+            numdof++;
+            dofids(rr)=rr;
+          }
+          else
+            dofids(rr)=-1;
+        }
+
         if(*definition == "pointvalues")
         {
           dserror("option pointvalues not implemented");
         }
         else if(*definition == "integration")
         {
-          // get rigid body modes
-          const vector<double>* mode = KSPcond[imode]->Get<vector<double> >("mode");
-
           ParameterList mode_params;
 
           // set parameters for elements
           mode_params.set("action","integrate_shape_functions");
-
-          int numdof = 0;
-          Epetra_IntSerialDenseVector dofids(6);
-          for(int rr=0;rr<6;rr++)
-          {
-            if(abs((*mode)[rr])>1e-14)
-            {
-              numdof++;
-              dofids(rr)=rr;
-            }
-            else
-              dofids(rr)=-1;
-          }
-
-        //  if (numdof > 1) dserror("only basis vectors with 1 dof active are allowed");
           mode_params.set("dofids",dofids);
 
           mode_params.set("isale",isale_);
@@ -1634,7 +1642,7 @@ void SCATRA::ScaTraTimIntImpl::PrepareKrylovSpaceProjection()
 
           // compute integral of shape functions
           discret_->EvaluateCondition
-              (mode_params       ,
+              (mode_params           ,
               Teuchos::null      ,
               Teuchos::null      ,
               wi                 ,
@@ -1642,24 +1650,25 @@ void SCATRA::ScaTraTimIntImpl::PrepareKrylovSpaceProjection()
               Teuchos::null      ,
               "KrylovSpaceProjection");
 
-          // set the current kernel basis vector
-          for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
-          {
-            DRT::Node* node = discret_->lRowNode(inode);
-            vector<int> gdof = discret_->Dof(node);
-            int numdof = gdof.size();
-            if (numdof > 6) dserror("only up to 6 dof per node supported");
-            for(int rr=0;rr<numdof;++rr)
-            {
-              const double val = (*mode)[rr];
-              int err = c_->ReplaceGlobalValue(gdof[rr],imode,val);
-              if (err != 0) dserror("error while inserting value into c_");
-            }
-          }
         }
         else
         {
           dserror("unknown definition of weight vector w for restriction of Krylov space");
+        }
+
+        // set the current kernel basis vector
+        for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
+        {
+          DRT::Node* node = discret_->lRowNode(inode);
+          vector<int> gdof = discret_->Dof(node);
+          int numdof = gdof.size();
+          if (numdof > 6) dserror("only up to 6 dof per node supported");
+          for(int rr=0;rr<numdof;++rr)
+          {
+            const double val = (*mode)[rr];
+            int err = c_->ReplaceGlobalValue(gdof[rr],imode,val);
+            if (err != 0) dserror("error while inserting value into c_");
+          }
         }
 
       } // loop over nummodes
