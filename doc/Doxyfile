@@ -1080,6 +1080,7 @@ PREDEFINED             = __cplusplus \
                          D_FLUID2 \
                          D_FLUID3 \
                          D_WALL1 \
+                         D_THERMO \
                          DEBUG \
                          PARALLEL \
                          SPOOLES_PACKAGE \

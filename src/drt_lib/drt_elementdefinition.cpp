@@ -145,6 +145,8 @@ void DRT::INPUT::ElementDefinition::SetupValidElementLines()
   SetupAle2Lines();
   SetupAle3Lines();
 
+  SetupThermoLines();
+
   // backward compatibility
   // still needed?
   //SetupCondif2Lines();
