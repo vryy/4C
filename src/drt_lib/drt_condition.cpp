@@ -166,6 +166,7 @@ void DRT::Condition::Print(ostream& os) const
   else if (Type()==ArtWriteGnuplotCond)         os << "Artery write gnuplot format condition";
   else if (Type()==ArtPrescribedCond)           os << "Artery prescribed boundary condition";
   else if (Type()==ArtRfCond)                   os << "Artery reflective boundary condition";
+  else if (Type()==ArtWkCond)                   os << "Artery windkessel boundary condition";
   else dserror("no output string for condition defined in DRT::Condition::Print");
 
   Container::Print(os);

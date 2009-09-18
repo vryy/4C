@@ -154,7 +154,8 @@ public:
     ArtJunctionCond,
     ArtWriteGnuplotCond,
     ArtPrescribedCond,
-    ArtRfCond
+    ArtRfCond,
+    ArtWkCond
   };
 
   /*!

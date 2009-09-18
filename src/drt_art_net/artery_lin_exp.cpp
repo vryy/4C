@@ -892,7 +892,7 @@ bool  DRT::ELEMENTS::ArteryLinExp<distype>::SolveRiemann(
   }
 
   // Check whether node 2 is an outlet node of the artery (i.e has a condition)
-  if(ele->Nodes()[1]->GetCondition("ArtRfCond") || ele->Nodes()[1]->GetCondition("ArtJunctionCond") || ele->Nodes()[1]->GetCondition("ArtPrescribedCond"))
+  if(ele->Nodes()[1]->GetCondition("ArtRfCond") || ele->Nodes()[1]->GetCondition("ArtJunctionCond") || ele->Nodes()[1]->GetCondition("ArtPrescribedCond") ||  ele->Nodes()[1]->GetCondition("ArtWkCond"))
   {
     // sound speed at node 1 = sqrt(beta/(2*Ao*rho)) and Lambda1 = Q/A + c
     const double c1      = sqrt(sqrt(PI)*young_(1)*th_(1)/(1.0-pow(nue,2))*sqrt(earean(1))/(2.0*area0_(1)*dens));
@@ -962,6 +962,9 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
 
   RCP<Epetra_Vector>   Wfnp  = params.get<RCP<Epetra_Vector> >("Wfnp");
   RCP<Epetra_Vector>   Wbnp  = params.get<RCP<Epetra_Vector> >("Wbnp");
+
+  // get time-step size
+  const double dt = params.get<double>("time step size");
 
   // check here, if we really have an artery !!
   // Define Geometric variables
@@ -1044,9 +1047,9 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
   }
 
   // ---------------------------------------------------------------------------------
-  // Resolve the BC at the inlet
+  // Resolve the BC at the inlet and outlet
   // ---------------------------------------------------------------------------------
-  if(ele->Nodes()[0]->GetCondition("ArtPrescribedCond") || ele->Nodes()[1]->GetCondition("ArtPrescribedCond") || ele->Nodes()[1]->GetCondition("ArtRfCond"))
+  if(ele->Nodes()[0]->GetCondition("ArtPrescribedCond") || ele->Nodes()[1]->GetCondition("ArtPrescribedCond") || ele->Nodes()[1]->GetCondition("ArtRfCond") || ele->Nodes()[1]->GetCondition("ArtWkCond"))
   {
 
     RefCountPtr<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
@@ -1095,7 +1098,6 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
       }
 
 
-      //      Wb1np_ = (*Wbnp)[ele->Nodes()[0]->Id()];
       // calculating A at node 0
       (*bcval )[lm[0]] = pow(2.0*dens*Ao1/beta,2)*pow((Wf1np - Wb1)/8.0,4);
       (*dbctog)[lm[0]] = 1;
@@ -1107,7 +1109,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
 
 
     //start with the outlet boundary condition
-    if(ele->Nodes()[1]->GetCondition("ArtRfCond")|| ele->Nodes()[1]->GetCondition("ArtPrescribedCond"))
+    if(ele->Nodes()[1]->GetCondition("ArtRfCond")|| ele->Nodes()[1]->GetCondition("ArtPrescribedCond") || ele->Nodes()[1]->GetCondition("ArtWkCond"))
     {
 
       const double beta = sqrt(PI)*E2*t2/(1.0-pow(nue,2));
@@ -1128,13 +1130,22 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
       condition = ele->Nodes()[1]->GetCondition("ArtRfCond");
       if(condition)
         ART::UTILS::SolveReflectiveTerminal(rcp(&discretization,false), condition, Cparams);
-      else
-      {
-        cout<<"What is happening here!"<<endl;
-        condition = ele->Nodes()[1]->GetCondition("ArtPrescribedCond");
+
+      condition = ele->Nodes()[1]->GetCondition("ArtPrescribedCond");
+      if(condition)      
         ART::UTILS::SolvePrescribedTerminalBC(rcp(&discretization,false), condition, Cparams);
-        cout<<"Nothing is happening here!"<<endl;
+
+      condition = ele->Nodes()[1]->GetCondition("ArtWkCond");
+      if(condition)
+      {      
+        Cparams.set<double>("time step size",dt);
+        Cparams.set<double>("external pressure",pext2);
+        Cparams.set<double>("terminal volumetric flow rate",qn_(1));
+        Cparams.set<double>("terminal cross-sectional area",an_(1));
+
+        ART::UTILS::SolveExplWindkesselBC(rcp(&discretization,false), condition, Cparams);
       }
+
 
       const double Wb2np   = Cparams.get<double>("backward characteristic wave speed");
 

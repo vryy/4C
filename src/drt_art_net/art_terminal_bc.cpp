@@ -88,7 +88,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(RefCountPtr<DRT::Discretization> actd
     dserror("forced reflection (Rf = %f) should always belong to the range :[0  1.0]",Rf);
   }
   else
-    dserror("%s is not defined as a 1D artery's inlet BC type",Type);
+    dserror("%s is not defined as a 1D artery's inlet BC type",Type.c_str());
 
   // -------------------------------------------------------------------
   // Read in the value of the applied BC
@@ -210,11 +210,10 @@ void ART::UTILS::SolvePrescribedTerminalBC(RefCountPtr<DRT::Discretization> actd
       Wfnp = BCin;
     }
     else
-      dserror("%s is not defined!",BC);
+      dserror("%s is not defined!",BC.c_str());
   }//If BC is prescribed at the inlet
   else if(IO == 1) // If BC is prescribed at the outlet
   {
-    cout<<"NO FUN!!!!!!!!"<<endl;
     Wfnp  =  params.get<double>("forward characteristic wave speed");
     // Initial forward characteristic speed at terminal 2
     const double Wfo   =  4.0*sqrt(beta/(2.0*dens*sqrt(Ao)));
@@ -384,6 +383,341 @@ void ART::UTILS::SolveReflectiveTerminal(RefCountPtr<DRT::Discretization> actdis
   params.set<double>("backward characteristic wave speed",Wbnp);
 
 } //void ART::UTILS::SolveReflectiveTerminal
+
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |  SolveExplWindkesselBC (public)                          ismail 08/09|
+ |  Solves the windkessel boundary condition                            |
+ |                                                                      |
+ |  This code                                                           |
+ |                                                                      |
+ |                                                                      |
+ |                                                                      |
+ |                                                                      |
+ |                                                                      |
+ |                                                                      |
+ |                                                                      |
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void ART::UTILS::SolveExplWindkesselBC(RefCountPtr<DRT::Discretization> actdis,
+                                       const DRT::Condition *condition,
+                                       ParameterList & params)
+{
+  // define BC windkessel inigration type string (e.g: BC   = "inflow")
+  string int_type = *(condition->Get<string>("intigrationType"));
+  // define windkessel BC type string (e.g: Type = "forced")
+  string wk_type  = *(condition->Get<string>("windkesselType"));
+
+
+  // -------------------------------------------------------------------
+  // Read in the bc curve information
+  // -------------------------------------------------------------------
+  const  vector<int>*    curve  = condition->Get<vector<int>    >("curve");
+  double curvefac = 1.0;
+  const  vector<double>* vals   = condition->Get<vector<double> >("val");
+
+  double Wb;
+  if(int_type == "ExplicitWindkessel")
+  {
+    const double time = params.get<double>("total time");
+    const double Wf   = params.get<double>("forward characteristic wave speed");
+    const double Ao   = params.get<double>("artery area");
+    const double beta = params.get<double>("artery beta");
+    const double dens = params.get<double>("blood density");
+    const double dt   = params.get<double>("time step size");
+    const double Pext = params.get<double>("external pressure");
+    double       Q    = params.get<double>("terminal volumetric flow rate");
+    double       A    = params.get<double>("terminal cross-sectional area");
+    double       P    = beta/Ao*(sqrt(A)-sqrt(Ao)) + Pext;
+
+
+    // calculate the initial wave speed
+    const double co = sqrt(beta/(2.0*dens*Ao));
+
+    // -----------------------------------------------------------------
+    // Find the type of windkessel model
+    // -----------------------------------------------------------------
+    if(wk_type == "R")  // a resister with a peripheral Pressure (Pout)
+    {
+      dserror("So far, only the 3 element windkessel model is implimented\n");
+      // ---------------------------------------------------------------
+      // Read in the wind kessel parameters
+      // ---------------------------------------------------------------
+      // define a terminal resistance
+      double R, Rf;
+      // read in the reflection value
+      if ((*curve)[1]>=0)
+      {
+        curvefac = DRT::Problem::Instance()->Curve((*curve)[0]).f(time);
+        R = (*vals)[1]*curvefac;
+      }
+      else
+      {
+        R = (*vals)[1];
+      }
+
+      if (R<0.0)
+      {
+        dserror("terminal resistance must be greater or equal to zero\n");
+      }
+
+      // calculate the 
+      Rf = (R - dens*co/Ao)/ (R + dens*co/Ao);
+      // calculate the backward charachteristic speed
+      const double Wo = 4.0*sqrt(beta/(2.0*dens*sqrt(Ao)));
+      Wb = -Rf*(Wf - Wo) - Wo;
+    }// if(wk_type == "R")
+    else if (wk_type == "RC") // an RC circuit with a peripheral Pressure (Pout)
+    {
+      dserror("So far, only the 3 element windkessel model is implimented\n");
+
+      // ---------------------------------------------------------------
+      // Read in the wind kessel parameters
+      // ---------------------------------------------------------------
+      // define the 2 element windkessel parameters
+      double Pout, R, C;
+
+      // Read in the periferal pressure of the wind kessel model
+      if ((*curve)[0]>=0)
+      {
+        curvefac = DRT::Problem::Instance()->Curve((*curve)[0]).f(time);
+        Pout = (*vals)[0]*curvefac;
+      }
+      else
+      {
+        Pout = (*vals)[2];
+      }
+      // read in the resistance value
+      if ((*curve)[1]>=0)
+      {
+        curvefac = DRT::Problem::Instance()->Curve((*curve)[1]).f(time);
+        R = (*vals)[1]*curvefac;
+      }
+      else
+      {
+        R = (*vals)[1];
+      }
+      // Read in the capacitance value
+      if ((*curve)[2]>=0)
+      {
+        curvefac = DRT::Problem::Instance()->Curve((*curve)[2]).f(time);
+        C = (*vals)[2]*curvefac;
+      }
+      else
+      {
+        C = (*vals)[2];
+      }
+
+      if (R <= 0.0 || C <= 0.0)
+      {
+        dserror("terminal resistance and capacitance must be always greater than zero\n");
+      }
+
+      // Calculate W2
+      
+
+    }//if (wk_type == "RC")
+    else if (wk_type == "RCR") // The famous 3 element wind kessel model
+    {
+      // ---------------------------------------------------------------
+      // Read in the wind kessel parameters
+      // ---------------------------------------------------------------
+
+      // define the 3 element windkessel parameters
+      double Pout, R1, C, R2, Poutnm;
+
+      // Read in the periferal pressure of the wind kessel model
+      if ((*curve)[0]>=0)
+      {
+        curvefac = DRT::Problem::Instance()->Curve((*curve)[0]).f(time);
+        Pout = (*vals)[0]*curvefac;
+      }
+      else
+      {
+        Pout = (*vals)[2];
+      }
+      // Read in Pout at time step n-1
+      if ((*curve)[0]>=0)
+      {
+        double t;
+        if (time <= dt)
+          t = time;
+        else 
+          t = time -dt;
+        curvefac = DRT::Problem::Instance()->Curve((*curve)[0]).f(t);
+        Pout = (*vals)[0]*curvefac;
+      }
+      else
+      {
+        Pout = (*vals)[2];
+      }
+      // read in the source resistance value
+      if ((*curve)[1]>=0)
+      {
+        curvefac = DRT::Problem::Instance()->Curve((*curve)[1]).f(time);
+        R1 = (*vals)[1]*curvefac;
+      }
+      else
+      {
+        R1 = (*vals)[1];
+      }
+      // Read in the capacitance value
+      if ((*curve)[2]>=0)
+      {
+        curvefac = DRT::Problem::Instance()->Curve((*curve)[2]).f(time);
+        C = (*vals)[2]*curvefac;
+      }
+      else
+      {
+        C = (*vals)[2];
+      }
+      // read in the periferal resistance value
+      if ((*curve)[3]>=0)
+      {
+        curvefac = DRT::Problem::Instance()->Curve((*curve)[3]).f(time);
+        R2 = (*vals)[3]*curvefac;
+      }
+      else
+      {
+        R2 = (*vals)[3];
+      }
+
+      if (R1 < 0.0 || C <= 0.0 || R2 <= 0.0)
+      {
+        dserror("terminal resistances and capacitance must always be greater than zero\n");
+      }
+
+      // ---------------------------------------------------------------
+      // Calculate Wb (backward characteristic wave speed)
+      // ---------------------------------------------------------------
+
+      // define inportant valriable
+      double Pc, Qout, F, F_A, dFdA;
+
+      // find Pc at time step n
+      Pc   = P - Q*R1;
+
+      // find Qout at time step n
+      Qout = (Pc - Poutnm)/R2;
+
+      // find Pc at n+1
+      Pc   = Pc + dt/C*(Q - Qout);
+
+      //solving the nonlinear equation F(A) = 0 using Newton-Raphson scheme
+
+      F    = R1*Wf*A  - 4.0*R1*sqrt(beta/(2.0*dens*Ao)*sqrt(pow(A,5)))
+                      - Pext - beta/Ao*(sqrt(A)-sqrt(Ao)) + Pc;
+      int i = 0;
+      F_A = pow(F*sqrt(Ao)/beta+1.0,2);
+      while(fabs(F_A)>0.0000001)
+      {
+        dFdA = R1*Wf - 5.0*R1*sqrt(beta/(2.0*dens*Ao)*sqrt(A)) - 0.5*beta/(Ao*sqrt(A));
+        A= A - F/dFdA;
+        F = R1*Wf*A  - 4.0*R1*sqrt(beta/(2.0*dens*Ao)*sqrt(pow(A,5))) - Pext - beta/Ao*(sqrt(A)-sqrt(Ao)) + Pc;
+        i++;
+        F_A = pow(F*sqrt(Ao)/beta+1.0,2)-1.0;
+        if(i>40)
+          dserror("3 element windkessel Newton Raphson is not converging\n");
+      }
+
+      // finally find evaluate Wb
+      Wb = Wf - 8.0*sqrt(beta/(2.0*dens*Ao)*sqrt(A));
+
+    }// if (wk_type == "RCR")
+    else if (wk_type == "RCRL") // four element windkessel model
+    {
+
+      dserror("So far, only the 3 element windkessel model is implimented\n");
+      // ---------------------------------------------------------------
+      // Read in the wind kessel parameters
+      // ---------------------------------------------------------------
+
+      // define the 4 element windkessel parameters
+      double Pout, R1, C, R2, L;
+
+      // Read in the periferal pressure of the wind kessel model
+      if ((*curve)[0]>=0)
+      {
+        curvefac = DRT::Problem::Instance()->Curve((*curve)[0]).f(time);
+        Pout = (*vals)[0]*curvefac;
+      }
+      else
+      {
+        Pout = (*vals)[2];
+      }
+      // read in the source resistance value
+      if ((*curve)[1]>=0)
+      {
+        curvefac = DRT::Problem::Instance()->Curve((*curve)[1]).f(time);
+        R1 = (*vals)[1]*curvefac;
+      }
+      else
+      {
+        R1 = (*vals)[1];
+      }
+      // Read in the capacitance value
+      if ((*curve)[2]>=0)
+      {
+        curvefac = DRT::Problem::Instance()->Curve((*curve)[2]).f(time);
+        C = (*vals)[2]*curvefac;
+      }
+      else
+      {
+        C = (*vals)[2];
+      }
+      // read in the periferal resistance value
+      if ((*curve)[3]>=0)
+      {
+        curvefac = DRT::Problem::Instance()->Curve((*curve)[3]).f(time);
+        R2 = (*vals)[3]*curvefac;
+      }
+      else
+      {
+        R2 = (*vals)[3];
+      }
+      // read in the inductance value
+      if ((*curve)[4]>=0)
+      {
+        curvefac = DRT::Problem::Instance()->Curve((*curve)[4]).f(time);
+        L = (*vals)[4]*curvefac;
+      }
+      else
+      {
+        L = (*vals)[4];
+      }
+
+      if (R1 <= 0.0 || C <= 0.0 || R2 <=0.0 || L <=0.0)
+      {
+        dserror("terminal resistance and capacitance must be always greater than zero\n");
+      }
+      // Calculate W2
+
+    }//if (wk_type == "RCRL")
+    else if (wk_type == "none")
+    {
+      dserror("So far, only the 3 element windkessel model is implimented\n");
+    }
+    else
+    {
+      dserror("\"%s\" is not supported type of windkessel model\n",wk_type.c_str());
+    }
+
+    // -----------------------------------------------------------------
+    // return the calculated backward characteristic wave speed
+    // -----------------------------------------------------------------
+    params.set<double>("backward characteristic wave speed",Wb);
+
+  }
+  else
+    dserror("so far windkessel BC supports only ExplicitWindkessel");
+
+} //void ART::UTILS::SolveExplWindkesselBC
 
 
 #endif // CCADISCRET

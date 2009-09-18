@@ -60,6 +60,13 @@ namespace ART
                                  const DRT::Condition *           condition,
                                  ParameterList &                  params);
 
+    /*
+    \brief Standard solver for 1d artery explicit windkessel BC outlet
+    */
+    void SolveExplWindkesselBC(RefCountPtr<DRT::Discretization> actdis,
+                               const DRT::Condition *           condition,
+                               ParameterList &                  params);
+
   } // namespace UTILS
 } // namespace ART
 

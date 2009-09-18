@@ -1444,6 +1444,35 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   condlist.push_back(art_rf_bc);
 
+  /*--------------------------------------------------------------------*/
+  // 1D artery windkessel BC
+  Teuchos::RCP<ConditionDefinition> art_wk_bc =
+    Teuchos::rcp(new ConditionDefinition("DESIGN NODE 1D ARTERY WINDKESSEL CONDITIONS",
+                                         "ArtWkCond",
+                                         "Artery windkessel condition",
+                                         DRT::Condition::ArtWkCond,
+                                         true,
+                                         DRT::Condition::Point));
+
+  std::vector<Teuchos::RCP<ConditionComponent> > artwkcomponents;
+
+  art_wk_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("intigrationType", "ExplicitWindkessel",
+    Teuchos::tuple<std::string>("ExplicitWindkessel", "ImpedaceWindkessel"),
+    Teuchos::tuple<std::string>("ExplicitWindkessel", "ImpedaceWindkessel"),    
+    true)));
+
+  art_wk_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("windkesselType", "RCR",
+    Teuchos::tuple<std::string>("R","RC", "RCR", "RCRL" "none"),
+    Teuchos::tuple<std::string>("R","RC", "RCR", "RCRL" "none"),
+    true)));
+
+  artwkcomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("val",5)));
+  artwkcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("curve",5,true,true)));
+  for (unsigned i=0; i<artwkcomponents.size(); ++i)
+    art_wk_bc->AddComponent(artwkcomponents[i]);
+
+  condlist.push_back(art_wk_bc);
+
   return vc;
 
 }
