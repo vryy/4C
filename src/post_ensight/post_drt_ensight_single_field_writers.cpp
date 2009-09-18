@@ -210,6 +210,21 @@ void ElchEnsightWriter::WriteAllResults(PostField* field)
   WriteElementResults(field);
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ThermoEnsightWriter::WriteAllResults(PostField* field)
+{
+  const int numdofpernode = 1;
+
+  // write temperature
+  EnsightWriter::WriteResult("temperature", "temperature", dofbased, numdofpernode);
+
+  // write temperature rate
+  //EnsightWriter::WriteResult("rate", "rate", dofbased, numdofpernode);
+
+  // write element results (e.g. element owner)
+  EnsightWriter::WriteElementResults(field);
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

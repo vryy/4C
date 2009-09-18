@@ -214,6 +214,20 @@ int main(
         scatrawriter.WriteFiles();
         break;
     }
+    case prb_art_net:
+    {
+      PostField* field = problem.get_discretization(0);
+      
+      cout<<"artery network post-processing will be implimented here!"<<endl;
+      break;
+    }
+    case prb_thermo:
+    {
+      PostField* field = problem.get_discretization(0);
+      ThermoEnsightWriter writer(field, problem.outname(), problem.stresstype(), problem.straintype());
+      writer.WriteFiles();
+      break;
+    }
     case prb_none:
     {
       // Special problem type that contains one discretization and any number
@@ -221,13 +235,6 @@ int main(
       PostField* field = problem.get_discretization(0);
       AnyEnsightWriter writer(field, problem.outname());
       writer.WriteFiles();
-      break;
-    }
-    case prb_art_net:
-    {
-      PostField* field = problem.get_discretization(0);
-      
-      cout<<"artery network post-processing will be implimented here!"<<endl;
       break;
     }
     default:

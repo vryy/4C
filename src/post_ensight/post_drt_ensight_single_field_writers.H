@@ -225,6 +225,35 @@ protected:
 };
 
 
+/*!
+ \brief Writer for (in)stationary heat conduction
+
+ \author bborn
+ \date 09/09
+*/
+class ThermoEnsightWriter : public EnsightWriter
+{
+public:
+    /// constructor
+    ThermoEnsightWriter(
+            PostField* field,
+            string filename,
+            string hfluxtype="none",
+            string tgradtype="none") :
+        EnsightWriter(field, filename), hfluxtype_(hfluxtype), tgradtype_(tgradtype)
+    {
+    }
+
+protected:
+
+    virtual void WriteAllResults(
+            PostField* field);
+
+    string hfluxtype_;
+    string tgradtype_;
+};
+
+
 /// Writer for undefined problem types
 /*
   Just write all the vectors we have.
