@@ -1,3 +1,4 @@
+/*----------------------------------------------------------------------*/
 /*!
 \file thermo_ele_impl_utils.cpp
 
@@ -10,6 +11,7 @@ Maintainer: Caroline Danowski
 */
 /*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
+#ifdef D_THERMO
 
 #include "thermo_ele_impl_utils.H"
 #include "../drt_lib/standardtypes_cpp.H"
@@ -18,4 +20,5 @@ namespace THR
 {
 } // namespace THR
 
+#endif  // D_THERMO
 #endif  // CCADISCRET

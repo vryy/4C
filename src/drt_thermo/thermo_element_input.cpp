@@ -11,8 +11,8 @@ Maintainer: Caroline Danowski
 </pre>
 */
 /*----------------------------------------------------------------------*/
-
 #ifdef CCADISCRET
+#ifdef D_THERMO
 
 #include "thermo_element.H"
 #include "../drt_lib/drt_linedefinition.H"
@@ -101,4 +101,5 @@ bool DRT::ELEMENTS::Thermo::ReadElement()
 } // Thermo::ReadElement()
 #endif
 
+#endif  // #ifdef D_THERMO
 #endif  // #ifdef CCADISCRET

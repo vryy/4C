@@ -109,6 +109,7 @@ extern "C"
 #include "../drt_so3/so_shw6.H"
 #include "../drt_so3/so_disp.H"
 #include "../drt_so3/so_hex8p1j1.H"
+#include "../drt_thermo/thermo_element.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/mixfrac_fluid.H"
 #include "../drt_mat/sutherland_fluid.H"
@@ -140,13 +141,15 @@ extern "C"
 #include "../drt_mat/matlist.H"
 #include "../drt_mat/charmm.H"
 #include "../drt_mat/elasthyper.H"
+#include "../drt_mat/cnst_1d_art.H"
+#include "../drt_mat/fourieriso.H"
+#include "../drt_mat/itskov.H"
 #include "../drt_contact/drt_cnode.H"
 #include "../drt_contact/drt_celement.H"
 #include "../drt_art_net/artery.H"
-#include "../drt_mat/cnst_1d_art.H"
 #include "drt_dserror.H"
 #include "standardtypes_cpp.H"
-#include "../drt_mat/itskov.H"
+
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -929,6 +932,12 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
       elhy->Unpack(data);
       return elhy;
     }
+    case ParObject_FourierIso:
+    {
+      MAT::FourierIso* fourieriso = new MAT::FourierIso();
+      fourieriso->Unpack(data);
+      return fourieriso;
+    }
     case ParObject_CNode:
     {
       double x[3];
@@ -986,6 +995,16 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
     }
     break;
 #endif
+#ifdef D_THERMO
+    case ParObject_Thermo:
+    {
+      DRT::ELEMENTS::Thermo* object =
+                      new DRT::ELEMENTS::Thermo(-1,-1);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+#endif
     default:
       dserror("Unknown type of ParObject instance: %d",type);
     break;
@@ -1038,7 +1057,8 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     constrele3,
     transport,
     art_ele,
-    so_hex8p1j1
+    so_hex8p1j1,
+    thermo
   };
 
   TypeofElement type = none;
@@ -1079,6 +1099,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
   else if (eletype=="TRANSP") type = transport;
   else if (eletype=="ART")    type = art_ele;
   else if (eletype=="SOLIDH8P1J1") type = so_hex8p1j1;
+  else if (eletype=="THERMO") type = thermo;
   // continue to add elements here....
   else
   {
@@ -1352,6 +1373,14 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     {
        RefCountPtr<DRT::Element> ele =  rcp(new DRT::ELEMENTS::Artery(id,owner));
        return ele;
+    }
+    break;
+#endif
+#ifdef D_THERMO
+    case thermo:
+    {
+      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::Thermo(id,owner));
+      return ele;
     }
     break;
 #endif

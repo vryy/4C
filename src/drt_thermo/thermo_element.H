@@ -15,6 +15,8 @@ Maintainer: Caroline Danowski
 </pre>
 */
 #ifdef CCADISCRET
+#ifdef D_THERMO
+
 #ifndef THERMO_ELEMENT_H
 #define THERMO_ELEMENT_H
 
@@ -633,5 +635,6 @@ class Discretization;
 
 
 #endif  // #ifndef THERMO_ELEMENT_H
+#endif  // #ifdef D_THERMO
 #endif  // #ifdef CCADISCRET
 

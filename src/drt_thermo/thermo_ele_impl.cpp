@@ -14,6 +14,7 @@ Maintainer: Caroline Danowski
 /*----------------------------------------------------------------------*/
 
 #ifdef CCADISCRET
+#ifdef D_THERMO
 
 #include "../drt_inpar/inpar_thermo.H"
 
@@ -812,4 +813,5 @@ void DRT::ELEMENTS::TemperImpl<distype>::IntegrateShapeFunctions(
   return;
  } //TemperImpl<distype>::IntegrateShapeFunction
 
+#endif // D_THERMO
 #endif // CCADISCRET

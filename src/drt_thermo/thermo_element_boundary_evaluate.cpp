@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file thermo_element_boundary_evaluate.cpp
 \brief
 
@@ -12,6 +13,7 @@ Maintainer: Caroline Danowski
 </pre>
  *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
+#ifdef D_THERMO
 
 #include "thermo_ele_boundary_impl.H"
 
@@ -75,5 +77,5 @@ int DRT::ELEMENTS::ThermoBoundary::EvaluateNeumann(
       );
 }
 
-
+#endif  // #ifdef D_THERMO
 #endif  // #ifdef CCADISCRET

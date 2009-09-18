@@ -14,6 +14,7 @@ Maintainer: Caroline Danowski
 /*----------------------------------------------------------------------*/
 
 #ifdef CCADISCRET
+#ifdef D_THERMO
 
 #ifndef THERMO_ELE_BOUNDARY_IMPL_H
 #define THERMO_ELE_BOUNDARY_IMPL_H
@@ -197,5 +198,6 @@ Maintainer: Caroline Danowski
   } // DRT
 
 #endif //THERMO_ELE_BOUNDARY_IMPL_H
+#endif // D_THERMO
 #endif // CCADISCRET
 

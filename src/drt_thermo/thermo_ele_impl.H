@@ -14,6 +14,7 @@ Maintainer: Caroline Danowski
 /*----------------------------------------------------------------------*/
 
 #ifdef CCADISCRET
+#ifdef D_THERMO
 
 #ifndef THERMO_ELE_IMPL_H
 #define THERMO_ELE_IMPL_H
@@ -228,4 +229,5 @@ namespace DRT
 } // DRT
 
 #endif // THERMO_ELE_IMPL_H
+#endif // D_THERMO
 #endif // CCADISCRET

@@ -14,6 +14,7 @@ Maintainer: Caroline Danowski
 /*----------------------------------------------------------------------*/
 
 #ifdef CCADISCRET
+#ifdef D_THERMO
 
 #include <cstdlib>
 #include "thermo_ele_boundary_impl.H"
@@ -393,4 +394,5 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::IntegrateShapeFunctions(
 
 } //TemperBoundaryImpl<distype>::IntegrateShapeFunction
 
-#endif // CCADISCRET
+#endif  // D_THERMO
+#endif  // CCADISCRET

@@ -11,6 +11,7 @@ Maintainer: Caroline Danowski
 */
 /*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
+#ifdef D_THERMO
 
 #include "thermo_element.H"
 #include "../drt_lib/drt_discret.H"
@@ -414,5 +415,5 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::ThermoBoundary::Surfaces
   return surfaces;
 }
 
-
+#endif  // #ifdef D_THERMO
 #endif  // #ifdef CCADISCRET
