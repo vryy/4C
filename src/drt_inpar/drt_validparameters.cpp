@@ -372,10 +372,23 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("FLUID_STRESS","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter<int>("FLUID_VIS","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter<int>("ALE_DISP","No","",yesnotuple,yesnovalue,&io);
-
   setStringToIntegralParameter<int>("THERM_TEMPERATURE","No","",yesnotuple,yesnovalue,&io);
-  setStringToIntegralParameter<int>("THERM_HEATFLUX","No","",yesnotuple,yesnovalue,&io);
-  setStringToIntegralParameter<int>("THERM_TEMPGRAD","No","",yesnotuple,yesnovalue,&io);
+  setStringToIntegralParameter<INPAR::THR::HeatFluxType>("THERM_HEATFLUX","None","",
+                               tuple<std::string>("None",
+                                                  "Current",
+                                                  "Initial"),
+                               tuple<INPAR::THR::HeatFluxType>(INPAR::THR::heatflux_none,
+                                                               INPAR::THR::heatflux_current,
+                                                               INPAR::THR::heatflux_initial),
+                               &io);
+  setStringToIntegralParameter<INPAR::THR::TempGradType>("THERM_TEMPGRAD","None","",
+                               tuple<std::string>("None",
+                                                  "Current",
+                                                  "Initial"),
+                               tuple<INPAR::THR::TempGradType>(INPAR::THR::tempgrad_none,
+                                                               INPAR::THR::tempgrad_current,
+                                                               INPAR::THR::tempgrad_initial),
+                               &io);
 
   IntParameter("FILESTEPS",1000,"",&io);
 
@@ -972,7 +985,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                   INPAR::THR::convnorm_mix),
                                 &tdyn);
 
-   DoubleParameter("TOLRESF",1.0E-08,
+   DoubleParameter("TOLRES",1.0E-08,
                    "tolerance in the residual norm for the Newton iteration",
                    &tdyn);
    setStringToIntegralParameter<INPAR::THR::ConvNorm>("NORM_RESF","Abs","type of norm for residual convergence check",

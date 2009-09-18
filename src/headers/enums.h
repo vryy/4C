@@ -66,11 +66,12 @@ typedef enum _FIELDTYP
                        pressure,    /* pure pressure field */
                        boundary,    /* boundary field */
                        scatra,      /* scalar transport field */
-                       atrery       /* artery field*/
+                       atrery,      /* artery field*/
+                       thermo       /* thermal field */
 } FIELDTYP;
 /* Mapping from fieldtyp numbers to printable names. To be used to
  * initialize static variables. Keep in sync! */
-#define FIELDNAMES {"none", "fluid", "ale", "structure", "thermal", "pressure", "boundary", "scatra", "artery", NULL}
+#define FIELDNAMES {"none", "fluid", "ale", "structure", "thermal", "pressure", "boundary", "scatra", "artery", "thermo", NULL}
 
 
 

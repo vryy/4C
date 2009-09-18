@@ -217,11 +217,10 @@ void THR::TimIntStatics::UpdateStepState()
     // other parameters that might be needed by the elements
     p.set("total time", timen_);
     p.set("delta time", (*dt_)[0]);
-    //   //p.set("alpha f", theta_);
     // action for elements
     p.set("action", "calc_thermo_update_istep");
     // go to elements
-    discret_->Evaluate(p, null, null, null, null, null);
+    discret_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   }
 
   // look out

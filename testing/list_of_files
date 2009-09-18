@@ -279,3 +279,4 @@ Input/sosh8p8_hybrid_patchtest.dat                      x        x        x     
 Input/sosh8p8_cooks_nl_incomp.dat                       x        x        x        x        -        -
 Input/sosh8p8_lin_bending_patchtest.dat                 x        x        x        -        -        -
 Input/sohex8p1j1_cooks_nln_drt.dat                      x        x        x        x        -        -
+Input/thermo-line.dat                                   x        x        x        x        -        -

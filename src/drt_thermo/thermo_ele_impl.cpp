@@ -200,10 +200,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
   LINALG::Matrix<iel*numdofpernode_,iel*numdofpernode_> ecapa(elemat2_epetra,true);  // view only!
   LINALG::Matrix<iel*numdofpernode_,1> efint(elevec1_epetra,true);  // view only!
   LINALG::Matrix<iel*numdofpernode_,1> efext(elevec2_epetra,true);  // view only!
-  // check for the action parameter
-  const std::string action = params.get<std::string>("action","none");
-  // extract local values from the global vectors
-  {
+  // disassemble temperature
+  if (discretization.HasState("temperature")) {
     std::vector<double> mytempnp(lm.size());
     Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState("temperature");
     if (tempnp==Teuchos::null)
@@ -212,6 +210,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     LINALG::Matrix<iel*numdofpernode_,1> etemp(&(mytempnp[0]),true);  // view only!
     etemp_.Update(etemp);  // copy
   }
+  // check for the action parameter
+  const std::string action = params.get<std::string>("action","none");
   // extract time
   const double time = params.get<double>("total time");
   // calculate tangent K and internal force F_int = K * Theta
@@ -222,7 +222,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
                           &econd,
                           NULL,
                           &efint,
-                          &efext);
+                          NULL);
   }
   // calculate only the internal force F_int
   else if (action=="calc_thermo_fint")
@@ -232,7 +232,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
                           NULL,
                           NULL,
                           &efint,
-                          &efext);
+                          NULL);
   }
   // calculate tangent matrix K and consistent capacity matrix C
   else if (action=="calc_thermo_finttangcapa")
@@ -242,6 +242,39 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
                           &econd,
                           &ecapa,
                           &efint,
+                          NULL);
+    // BUILD EFFECTIVE TANGENT AND RESIDUAL ACC TO TIME INTEGRATOR
+    // check the time integrator
+    const INPAR::THR::DynamicType timint
+      = params.get<INPAR::THR::DynamicType>("time integrator",INPAR::THR::dyna_undefined);
+    switch (timint) {
+    case INPAR::THR::dyna_statics :
+    {
+      // continue
+      break;
+    }
+    case INPAR::THR::dyna_onesteptheta :
+    {
+      const double theta = params.get<double>("theta");
+      const double stepsize = params.get<double>("delta time");
+      econd.Update(theta/stepsize,ecapa,1.0);
+      break;
+    }
+    case INPAR::THR::dyna_undefined :
+    default :
+    {
+      dserror("Don't know what to do...");
+      break;
+    }
+    }
+  }
+  else if (action=="calc_thermo_fext")
+  {
+    CalculateFintTangCapa(ele,
+                          time,
+                          NULL,
+                          NULL,
+                          NULL,
                           &efext);
   }
   // Calculate heatflux q and temperature gradients gradtemp at gauss points
@@ -323,32 +356,13 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     const Epetra_IntSerialDenseVector dofids = params.get<Epetra_IntSerialDenseVector>("dofids");
     IntegrateShapeFunctions(ele,elevec1_epetra,dofids);
   }
+  else if (action=="calc_thermo_update_istep")
+  {
+    ;  // do nothing
+  }
   else
+  {
     dserror("Unknown type of action for Temperature Implementation: %s",action.c_str());
-
-  // BUILD EFFECTIVE TANGENT AND RESIDUAL ACC TO TIME INTEGRATOR
-  // check the time integrator
-  const INPAR::THR::DynamicType timint
-    = params.get<INPAR::THR::DynamicType>("time integrator",INPAR::THR::dyna_undefined);
-  switch (timint) {
-  case INPAR::THR::dyna_statics :
-  {
-    // continue
-    break;
-  }
-  case INPAR::THR::dyna_onesteptheta :
-  {
-    const double theta = params.get<double>("theta");
-    const double stepsize = params.get<double>("delta time");
-    econd.Update(theta/stepsize,ecapa,1.0);
-    break;
-  }
-  case INPAR::THR::dyna_undefined :
-  default :
-  {
-    dserror("Don't know what to do...");
-    break;
-  }
   }
 
   return 0;

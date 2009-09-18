@@ -1,4 +1,4 @@
-/*----------------------------------------------------------------------*/
+ /*----------------------------------------------------------------------*/
 /*!
 \file drt_globalproblem.cpp
 
@@ -345,7 +345,7 @@ void DRT::Problem::InputControl()
   ioflags.fluid_vis = Teuchos::getIntegralValue<int>(io,"FLUID_VIS");
   ioflags.ale_disp = Teuchos::getIntegralValue<int>(io,"ALE_DISP");
   ioflags.therm_temper = Teuchos::getIntegralValue<int>(io,"THERM_TEMPERATURE");
-  ioflags.therm_heatflux = Teuchos::getIntegralValue<int>(io,"THERM_HEATFLUX");
+//  ioflags.therm_heatflux = Teuchos::getIntegralValue<int>(io,"THERM_HEATFLUX");
 
   ioflags.steps_per_file = io.get<int>("FILESTEPS");
 

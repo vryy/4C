@@ -70,7 +70,7 @@ THR::TimInt::TimInt
   writeelemevery_(tdynparams.get<int>("RESEVRYELEM")),
   writeheatflux_(Teuchos::getIntegralValue<INPAR::THR::HeatFluxType>(ioparams,"THERM_HEATFLUX")),
   writetempgrad_(Teuchos::getIntegralValue<INPAR::THR::TempGradType>(ioparams,"THERM_TEMPGRAD")),
-  writeenergyevery_(tdynparams.get<int>("RESEVRYERGY")),
+  writeenergyevery_(0),//(tdynparams.get<int>("RESEVRYERGY")),
   energyfile_(NULL),
   time_(Teuchos::null),
   timen_(0.0),
@@ -574,6 +574,11 @@ void THR::TimInt::ApplyForceExternal
 )
 {
   ParameterList p;
+  // action for elements
+  const std::string action = "calc_thermo_fext";
+  p.set("action", action);
+  // type of calling time integrator
+  p.set("time integrator", MethodName());
   // other parameters needed by the elements
   p.set("total time", time);
 
@@ -581,7 +586,7 @@ void THR::TimInt::ApplyForceExternal
   discret_->ClearState();
   discret_->SetState("temperature", temp);
   // get load vector
-  discret_->EvaluateNeumann(p, *fext);
+  discret_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, fext, Teuchos::null);
   discret_->ClearState();
 
   // go away
