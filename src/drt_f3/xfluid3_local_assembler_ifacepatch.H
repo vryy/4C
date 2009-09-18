@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file xfluid3_local_assembler.H
+\file xfluid3_local_assembler_ifacepatch.H
 
 \brief routines to assemble element stiffness matrix and vector
 
@@ -234,92 +234,6 @@ private:
 //    Epetra_SerialDenseVector& eforce_;
 };
 
-///*!
-// * class that assembles one after another integral of the weak form into the stiffness matrix
-// *
-// * specialization for standard assembly
-// */
-//template <DRT::Element::DiscretizationType DISTYPE, int NUMDOF>
-//class IFacePatchLocalAssembler<DISTYPE, NUMDOF>
-//{
-//public:
-//
-//    explicit IFacePatchLocalAssembler(
-//            const XFEM::ElementDofManager&
-//            )
-//    {
-//        return;
-//    }
-//
-//    explicit IFacePatchLocalAssembler(
-//            )
-//    {
-//        return;
-//    }
-//
-//    ~IFacePatchLocalAssembler()
-//    {
-//        return;
-//    }
-//
-//    //! assemble one expression for the element stiffness matrix for a given test and trial field
-//    template <XFEM::PHYSICS::Field testfield,
-//              XFEM::PHYSICS::Field trialfield,
-//              class V1,
-//              class V2>
-//    void Matrix(
-//            const V1&           testshape,
-//            const double&       fac,
-//            const V2&           trialshape
-//            )
-//    {
-//#ifdef DEBUG
-//      if (FieldNum<trialfield>::pos == IerrorCheckValue or FieldNum<testfield>::pos == IerrorCheckValue)
-//        dserror("no stress allowed here");
-//#endif
-//      const std::size_t numparam = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-//        for (std::size_t ui=0; ui!=numparam; ++ui)
-//        {
-//            const std::size_t trialpos = NUMDOF*ui + FieldNum<trialfield>::pos;
-//            const double multiply = fac*trialshape(ui);
-//            for (std::size_t vi=0; vi!=numparam; ++vi)
-//            {
-//                const std::size_t testpos = NUMDOF*vi + FieldNum<testfield>::pos;
-//                estif_(testpos, trialpos) += testshape(vi)*multiply ;
-//            }
-//        }
-//    }
-//
-//    //! assemble one expression for the element rhs for a given test field
-//    template <XFEM::PHYSICS::Field testfield,
-//              class V1>
-//    void Vector(
-//            const V1&           testshape,
-//            const double&       fac
-//            )
-//    {
-//#ifdef DEBUG
-//      if (FieldNum<testfield>::pos == IerrorCheckValue)
-//        dserror("no stress allowed here");
-//#endif
-//        const std::size_t numparam = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-//        for (std::size_t vi=0; vi<numparam; ++vi)
-//        {
-//            const std::size_t testpos = NUMDOF*vi + FieldNum<testfield>::pos;
-//            eforce_(testpos) += fac*testshape(vi);
-//        }
-//    }
-//
-//private:
-//    // don't want = operator and cctor
-//    IFacePatchLocalAssembler operator = (const IFacePatchLocalAssembler& old);
-//    IFacePatchLocalAssembler(const IFacePatchLocalAssembler& old);
-//
-////    LINALG::Matrix<NUMDOF*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement,NUMDOF*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement> estif_;
-////    LINALG::Matrix<NUMDOF*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement,1> eforce_;
-//};
-
 
 #endif
-
 #endif

@@ -71,51 +71,6 @@ public:
         return;
     }
 
-private:
-    template<std::size_t numparamtest,
-    std::size_t numparamtrial,
-             class V1,
-             class V2>
-    void IntegrateMatrix(
-        const V1&                 testshape,
-        const std::vector<int>&   testdof,
-        const double&             fac,
-        const V2&                 trialshape,
-        const std::vector<int>&   trialdof
-        ) const
-    {
-      vector<int>::const_iterator trialpos = trialdof.begin();
-      for (std::size_t ui=0; ui!=numparamtrial; ++ui)
-      {
-        const double multiply = fac * trialshape(ui);
-        vector<int>::const_iterator testpos = testdof.begin();
-        for (std::size_t vi=0; vi!=numparamtest; ++vi)
-        {
-//          const std::size_t testpos = testdof[vi];
-          estif_(*testpos, *trialpos) += testshape(vi)*multiply ;
-          ++testpos;
-        }
-        ++trialpos;
-      }
-    }
-
-    template<std::size_t numparamtest,
-             class V1>
-    void IntegrateVector(
-        const V1&                 testshape,
-        const std::vector<int>&   testdof,
-        const double&             fac
-        ) const
-    {
-      vector<int>::const_iterator testpos = testdof.begin();
-      for (std::size_t vi=0; vi!=numparamtest; ++vi)
-      {
-          eforce_(*testpos) += fac*testshape(vi);
-          ++testpos;
-      }
-    }
-
-public:
     //! assemble one expression for the element stiffness matrix for a given test and trial field
     template <XFEM::PHYSICS::Field testfield,
               XFEM::PHYSICS::Field trialfield,
@@ -131,38 +86,18 @@ public:
         const std::vector<int>& testdof (dofman_.LocalDofPosPerField<SymmetryMangle<testfield>::name>());
         const std::vector<int>& trialdof(dofman_.LocalDofPosPerField<SymmetryMangle<trialfield>::name>());
 
-        const std::size_t numparamtest  = testdof.size();
-        const std::size_t numparamtrial = trialdof.size();
-
-        bool found_template = true;
-        if (numparamtest == numparamtrial) // diagonal blocks
-        {
-          switch (numparamtest)
-          {
-            case  8: this->template IntegrateMatrix< 8, 8>(testshape,testdof,fac,trialshape,trialdof); break;
-            case 20: this->template IntegrateMatrix<20,20>(testshape,testdof,fac,trialshape,trialdof); break;
-            case 27: this->template IntegrateMatrix<27,27>(testshape,testdof,fac,trialshape,trialdof); break;
-            default: found_template = false;
-          }
-        }
-        else
-        {
-          found_template = false;
-        }
-
-        if (not found_template)
-        {
-//          cout << numparamtest << "   " << numparamtrial << endl;
-//          for (std::size_t ui=0; ui<numparamtrial; ++ui)
-//          {
-//              const std::size_t trialpos = trialdof[ui];
-//              const double multiply = fac * trialshape(ui);
-//              for (std::size_t vi=0; vi<numparamtest; ++vi)
-//              {
-//                  const std::size_t testpos = testdof[vi];
-//                  estif_(testpos, trialpos) += testshape(vi)*multiply ;
-//              }
-//          }
+//        const std::size_t numparamtest  = testdof.size();
+//        const std::size_t numparamtrial = trialdof.size();
+//        for (std::size_t ui=0; ui<numparamtrial; ++ui)
+//        {
+//            const std::size_t trialpos = trialdof[ui];
+//            const double multiply = fac * trialshape(ui);
+//            for (std::size_t vi=0; vi<numparamtest; ++vi)
+//            {
+//                const std::size_t testpos = testdof[vi];
+//                estif_(testpos, trialpos) += testshape(vi)*multiply ;
+//            }
+//        }
         std::size_t ui = 0;
         for (std::vector<int>::const_iterator trialpos = trialdof.begin(); trialpos != trialdof.end(); ++trialpos)
         {
@@ -174,7 +109,6 @@ public:
                 ++vi;
             }
             ++ui;
-        }
         }
     }
 
@@ -188,29 +122,11 @@ public:
     {
         const std::vector<int>& testdof(dofman_.LocalDofPosPerField<SymmetryMangle<testfield>::name>());
 
-        const std::size_t numparamtest  = testdof.size();
-
-        bool found_template = true;
-        switch (numparamtest)
-        {
-          case 20: this->template IntegrateVector<20>(testshape,testdof,fac); break;
-          case  8: this->template IntegrateVector< 8>(testshape,testdof,fac); break;
-          default: found_template = false;
-        }
-//
-//        for (std::size_t vi=0; vi<numparamtest; ++vi)
-//        {
-//            const int testpos = testdof[vi];
-//            eforce_(testpos) += fac*testshape(vi);
-//        }
-        if (not found_template)
-        {
         std::size_t vi = 0;
         for (std::vector<int>::const_iterator testpos = testdof.begin(); testpos != testdof.end(); ++testpos)
         {
             eforce_(*testpos) += fac*testshape(vi);
             vi++;
-        }
         }
     }
 
@@ -227,7 +143,8 @@ private:
 /*!
  * class that assembles one after another integral of the weak form into the stiffness matrix
  *
- * specialization for standard assembly
+ * specialization for standard assembly. Here, we can use fixed size matrices that
+ * are views on Epetra serial dense matrices and vectors
  */
 template <DRT::Element::DiscretizationType DISTYPE, int NUMDOF>
 class LocalAssembler<DISTYPE, XFEM::standard_assembly, NUMDOF>
@@ -272,10 +189,10 @@ public:
             )
     {
 #ifdef DEBUG
-      if (FieldNum<trialfield>::pos == errorCheckValue or FieldNum<testfield>::pos == errorCheckValue)
-        dserror("no stress allowed here");
+        if (FieldNum<trialfield>::pos == errorCheckValue or FieldNum<testfield>::pos == errorCheckValue)
+            dserror("no stress allowed here");
 #endif
-      const std::size_t numparam = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+        const std::size_t numparam = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
         for (std::size_t ui=0; ui!=numparam; ++ui)
         {
             const std::size_t trialpos = NUMDOF*ui + FieldNum<trialfield>::pos;
@@ -297,8 +214,8 @@ public:
             )
     {
 #ifdef DEBUG
-      if (FieldNum<testfield>::pos == errorCheckValue)
-        dserror("no stress allowed here");
+        if (FieldNum<testfield>::pos == errorCheckValue)
+            dserror("no stress allowed here");
 #endif
         const std::size_t numparam = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
         for (std::size_t vi=0; vi<numparam; ++vi)
