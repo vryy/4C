@@ -251,6 +251,7 @@ OBJS_DRT_STATMECH = \
 OBJS_DRT_STATMECH_LIB = src/drt_statmech/bromotion_manager.o
 #----------------------------------------------------------thermal drivers
 OBJS_DRT_THERMO = \
+                src/drt_thermo/thr_dyn.o \
                 src/drt_thermo/thr_aux.o \
                 src/drt_thermo/thr_resulttest.o \
                 src/drt_thermo/thrtimint.o \

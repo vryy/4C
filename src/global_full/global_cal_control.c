@@ -76,6 +76,7 @@ extern struct _FIELD      *sm_field;
 #include "../drt_loma/loma_dyn.H"
 #include "../drt_elch/elch_dyn.H"
 #include "../drt_combust/combust_dyn.H"
+#include "../drt_thermo/thr_dyn.H"
 #endif
 
 /*----------------------------------------------------------------------*
@@ -232,9 +233,9 @@ case prb_structure:
     break;
   case time_dynamic:
 #ifndef CCADISCRET
-  caldyn();
+    caldyn();
 #else
-  caldyn_drt();
+    caldyn_drt();
 #endif
     break;
   default:
@@ -286,12 +287,12 @@ case prb_fluid_xfem:
   break;
 
 #ifdef CCADISCRET
-  case prb_fluid_ale:
-    fluid_ale_drt();
-    break;
-  case prb_freesurf:
-    fluid_freesurf_drt();
-    break;
+case prb_fluid_ale:
+  fluid_ale_drt();
+  break;
+case prb_freesurf:
+  fluid_freesurf_drt();
+  break;
 #endif
 
 #ifdef D_FSI
@@ -333,6 +334,14 @@ case prb_opt:
   caloptmain();
   break;
 #endif
+
+case prb_thermo:
+#ifndef CCADISCRET
+  dserror("(In)Stationary heat conduction is not available in CCARAT");
+#else
+  thr_dyn_drt();
+#endif
+  break;
 
 #ifdef D_TSI
 case prb_tsi:
