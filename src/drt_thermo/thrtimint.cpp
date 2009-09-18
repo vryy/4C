@@ -586,7 +586,7 @@ void THR::TimInt::ApplyForceExternal
   discret_->ClearState();
   discret_->SetState("temperature", temp);
   // get load vector
-  discret_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, fext, Teuchos::null);
+  discret_->EvaluateNeumann(p, *fext);
   discret_->ClearState();
 
   // go away

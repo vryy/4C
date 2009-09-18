@@ -72,7 +72,14 @@ int DRT::ELEMENTS::Thermo::EvaluateNeumann(Teuchos::ParameterList& params,
     Epetra_SerialDenseVector& elevec1,
     Epetra_SerialDenseMatrix* elemat1)
 {
-  return 0;
+  return DRT::ELEMENTS::TemperImplInterface::Impl(this)->EvaluateNeumann(
+      this,
+      params,
+      discretization,
+      lm,
+      elevec1,
+      elemat1
+      );
 }
 
 

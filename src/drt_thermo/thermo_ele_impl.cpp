@@ -199,7 +199,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
   LINALG::Matrix<iel*numdofpernode_,iel*numdofpernode_> econd(elemat1_epetra,true);  // view only!
   LINALG::Matrix<iel*numdofpernode_,iel*numdofpernode_> ecapa(elemat2_epetra,true);  // view only!
   LINALG::Matrix<iel*numdofpernode_,1> efint(elevec1_epetra,true);  // view only!
-  LINALG::Matrix<iel*numdofpernode_,1> efext(elevec2_epetra,true);  // view only!
+  //LINALG::Matrix<iel*numdofpernode_,1> efext(elevec2_epetra,true);  // view only!
   // disassemble temperature
   if (discretization.HasState("temperature")) {
     std::vector<double> mytempnp(lm.size());
@@ -267,15 +267,6 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
       break;
     }
     }
-  }
-  else if (action=="calc_thermo_fext")
-  {
-    CalculateFintTangCapa(ele,
-                          time,
-                          NULL,
-                          NULL,
-                          NULL,
-                          &efext);
   }
   // Calculate heatflux q and temperature gradients gradtemp at gauss points
   else if (action=="calc_thermo_heatflux")
@@ -366,7 +357,56 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
   }
 
   return 0;
- }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::TemperImpl<distype>::EvaluateNeumann(
+    DRT::Element*              ele,
+    Teuchos::ParameterList&    params,
+    DRT::Discretization&       discretization,
+    std::vector<int>&          lm,
+    Epetra_SerialDenseVector&  elevec1_epetra,
+    Epetra_SerialDenseMatrix*  elemat1_epetra
+    )
+ {
+  // check length
+  if (lm.size() != iel*numdofpernode_)
+    dserror("Location vector length does not match!");
+  // set views
+  LINALG::Matrix<iel*numdofpernode_,1> efext(elevec1_epetra,true);  // view only!
+  // disassemble temperature
+  if (discretization.HasState("temperature")) {
+    std::vector<double> mytempnp(lm.size());
+    Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState("temperature");
+    if (tempnp==Teuchos::null)
+      dserror("Cannot get state vector 'tempnp'");
+    DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,lm);
+    LINALG::Matrix<iel*numdofpernode_,1> etemp(&(mytempnp[0]),true);  // view only!
+    etemp_.Update(etemp);  // copy
+  }
+  // check for the action parameter
+  const std::string action = params.get<std::string>("action","none");
+  // extract time
+  const double time = params.get<double>("total time");
+  // perform actions
+  if (action=="calc_thermo_fext")
+  {
+    CalculateFintTangCapa(ele,
+                          time,
+                          NULL,
+                          NULL,
+                          NULL,
+                          &efext);
+  }
+  else
+  {
+    dserror("Unknown type of action for Temperature Implementation: %s",action.c_str());
+  }
+
+  return 0;
+}
 
 /*----------------------------------------------------------------------*
  |  calculate system matrix and rhs (public)                 g.bau 08/08|
