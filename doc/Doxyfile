@@ -503,6 +503,7 @@ INPUT                  = index.doc \
                          ../src/drt_combust \
                          ../src/drt_loma \
                          ../src/drt_scatra \
+                         ../src/drt_thermo \
                          ../src/drt_geometry
 
 # If the value of the INPUT tag contains directories, you can use the 
