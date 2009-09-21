@@ -54,7 +54,7 @@ namespace THR
   //! This method is applied to the set of ODEs reflecting the second order degree of the governing equations in thermal dynamics:
   //! \f[\left\{\begin{array}{rcl}
   //!   M \, \dot{T}(t) - M \, R(t) & = & 0
-  //! \\
+  //!
   //!   M \, \dot{R}(t) + C \, R(t) + F_{int}(T,t) - F_{ext}(t) & = & 0
   //! \end{array}\right.\f]
   //! in which \f$M\f$ is the global capacity matrix (#capa_), \f$C\f$ a global damping matrix (in our algorithm the
@@ -64,7 +64,7 @@ namespace THR
   //!   \frac{T_{n+1} - R_n}{\Delta t}
   //!   - \theta R_{n+1} - (1-\theta) R_n
   //!   & = & 0
-  //! \\
+  //!
   //!   M \frac{R_{n+1} + R_n}{\Delta t}
   //!   + C \big( \theta R_{n+1} - (1-\theta) R_n \big)
   //!   + F_{int,n+\theta}
@@ -96,7 +96,7 @@ namespace THR
   //!   - \frac{1}{\theta \Delta t} R_n
   //!   & =: &
   //!   \theta A_{n+1} + (1-\theta) A_n    --> delete this term because there is no accelerations A_!!! 5.8.09
-  //! \\
+  //!
   //!   R_{n+\theta}(T_{n+1})
   //!   & = &
   //!   \frac{1}{\Delta t} ( T_{n+1} - T_n )

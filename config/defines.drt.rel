@@ -20,7 +20,7 @@ D_FLUID2           # fluid2
 D_FLUID3           # fluid3
 D_SHELL8           # shell8
 D_WALL1            # wall1
-D_THERMO           # thermal elments
+D_THERMO           # thermal elements
 D_SOLID3           # spatial solid elements
 D_BEAM2            # two dimensional Timoshenko beam element
 D_BEAM3            # two dimensional Reissner beam element
