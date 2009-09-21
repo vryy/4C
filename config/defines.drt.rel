@@ -24,6 +24,7 @@ D_THERMO           # thermal elements
 D_SOLID3           # spatial solid elements
 D_BEAM2            # two dimensional Timoshenko beam element
 D_BEAM3            # two dimensional Reissner beam element
+D_BEAM2R
 D_TRUSS3
 D_ARTNET           # arterial network
 
