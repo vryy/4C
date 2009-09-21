@@ -197,6 +197,6 @@ namespace THR
 
 }  // namespace THR
 
-/*----------------------------------------------------------------------*/
+
 #endif  // #ifndef THRTIMINT_STATICS_H
 #endif  // #ifdef CCADISCRET

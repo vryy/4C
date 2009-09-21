@@ -22,13 +22,13 @@ Maintainer: Caroline Danowski
 namespace THR
 {
 
-  //! flux parameters recognized by thermo implementation class (Temper)
-  enum FluxType
-  {
-    noflux,
-    totalflux,
-    diffusiveflux
-  };
+//  //! flux parameters recognized by thermo implementation class (Temper)
+//  enum FluxType
+//  {
+//    noflux,
+//    totalflux,
+//    diffusiveflux
+//  };
 
   //! Template Meta Programming version of switch over discretization type
   template<DRT::Element::DiscretizationType DISTYPE>
@@ -108,6 +108,7 @@ namespace THR
   }
 
 } // namespace THR
+
 
 #endif  // THERMO_ELE_IMPL_UTILS_H
 #endif  // D_THERMO

@@ -8,17 +8,19 @@ Maintainer: Burkhard Bornemann
             http://www.lnm.mw.tum.de
             089 - 289-15237
 
-            changed cd 05.08.09
 </pre>
 */
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ | definitions                                              bborn 08/09 |
+ *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 #ifndef THRTIMINT_MSTEP_H
 #define THRTIMINT_MSTEP_H
 
-/*----------------------------------------------------------------------*/
-/* headers */
+/*----------------------------------------------------------------------*
+ | headers                                                  bborn 08/09 |
+ *----------------------------------------------------------------------*/
 #include <vector>
 #include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_Vector.h"
@@ -30,29 +32,29 @@ Maintainer: Burkhard Bornemann
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_io/io.H"
 
-/*----------------------------------------------------------------------*/
-/* belongs to thermal dynamics namespace */
+/*----------------------------------------------------------------------*
+ | belongs to thermal dynamics namespace                    bborn 08/09 |
+ *----------------------------------------------------------------------*/
 namespace THR
 {
 
   /*====================================================================*/
-  /*!
-   * \brief This is the base object for holding multi-step quantities,
-   *        e.g. temperatures \f$T_n\f$, \f$T_{n-1}\f$, \f$T_{n-2}\f$,
-   *        \f$\ldots\f$, or time points \f$t_n\f$, \f$t_{n-1}\f$,
-   *        \f$t_{n-2}\f$, \f$\ldots\f$, etc.
-   *
-   * Multi-step quantities occur --surprisingly indeed-- in multi-step time
-   * integrators. However, they are needed in single-step integrators
-   * as well, if the auxiliar scheme is multi-step. The idea is to be
-   * able to resize the multi-step quantities dynamically and have
-   * intrinsic update mechanism such that a single-step integrator
-   * can provide the data on which a multi-step auxiliar integrator
-   * can work.
-   *
-   * \author bborn
-   * \date 07/08
-   */
+  //!
+  //! \brief This is the base object for holding multi-step quantities,
+  //!        e.g. temperatures \f$T_n\f$, \f$T_{n-1}\f$, \f$T_{n-2}\f$,
+  //!        \f$\ldots\f$, or time points \f$t_n\f$, \f$t_{n-1}\f$,
+  //!        \f$t_{n-2}\f$, \f$\ldots\f$, etc.
+  //!
+  //! Multi-step quantities occur --surprisingly indeed-- in multi-step time
+  //! integrators. However, they are needed in single-step integrators
+  //! as well, if the auxiliar scheme is multi-step. The idea is to be
+  //! able to resize the multi-step quantities dynamically and have
+  //! intrinsic update mechanism such that a single-step integrator
+  //! can provide the data on which a multi-step auxiliar integrator
+  //! can work.
+  //!
+  //! \author bborn
+  //! \date 07/08
   template <typename STATE> class TimIntMStepBase
   {
 
@@ -203,11 +205,10 @@ namespace THR
   };
 
   /*====================================================================*/
-  /*!
-   * \brief General derived class for multi-step quantities of
-   *        simple type.
-   *        This is going to be used with \c double and \c int
-   */
+  //!
+  //! \brief General derived class for multi-step quantities of
+  //!        simple type.
+  //!        This is going to be used with \c double and \c int
   template <typename STATE> class TimIntMStep
   : public TimIntMStepBase<STATE>
   {
@@ -310,10 +311,9 @@ namespace THR
   };
 
   /*====================================================================*/
-  /*! \brief Specialise general #TimIntMStepBase object
-   *         for \c Epetra_Vector as needed for state vectors
-   *         -- temperatures and temperature rates
-   */
+  //! \brief Specialise general #TimIntMStepBase object
+  //!         for \c Epetra_Vector as needed for state vectors
+  //!         -- temperatures and temperature rates
   template <> class TimIntMStep<Epetra_Vector>
   : public TimIntMStepBase<Epetra_Vector>
   {
@@ -418,6 +418,6 @@ namespace THR
 
 }  // namespace THR
 
-/*----------------------------------------------------------------------*/
+
 #endif  // #ifndef THRTIMINT_MSTEP_H
 #endif  // #ifdef CCADISCRET

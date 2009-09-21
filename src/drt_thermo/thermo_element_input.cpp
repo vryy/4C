@@ -10,10 +10,15 @@ Maintainer: Caroline Danowski
             089 - 289-15253
 </pre>
 */
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |  definitions                                                gjb 01/08|
+ *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 #ifdef D_THERMO
 
+/*----------------------------------------------------------------------*
+ |  headers                                                    gjb 01/08|
+ *----------------------------------------------------------------------*/
 #include "thermo_element.H"
 #include "../drt_lib/drt_linedefinition.H"
 
@@ -100,6 +105,7 @@ bool DRT::ELEMENTS::Thermo::ReadElement()
 
 } // Thermo::ReadElement()
 #endif
+
 
 #endif  // #ifdef D_THERMO
 #endif  // #ifdef CCADISCRET

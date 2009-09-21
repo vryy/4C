@@ -117,7 +117,7 @@ DRT::ELEMENTS::TemperBoundaryImpl<distype>::TemperBoundaryImpl
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
-    DRT::ELEMENTS::ThermoBoundary* ele,
+    DRT::ELEMENTS::ThermoBoundary*    ele,
     Teuchos::ParameterList&           params,
     DRT::Discretization&              discretization,
     std::vector<int>&                 lm,
@@ -177,7 +177,6 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
 
   return 0;
 }
-
 
 /*----------------------------------------------------------------------*
  |  Integrate a Surface/Line Neumann boundary condition       gjb 01/09 |
@@ -271,7 +270,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(
  }
 
 /*----------------------------------------------------------------------*
- | evaluate shape functions and int. factor at int. point     gjb 01/09 |
+ |  evaluate shape functions and int. factor at int. point    gjb 01/09 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvalShapeFuncAndIntFac(
@@ -301,7 +300,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvalShapeFuncAndIntFac(
   }
 
 /*----------------------------------------------------------------------*
- | get constant normal                                        gjb 01/09 |
+ |  get constant normal                                       gjb 01/09 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperBoundaryImpl<distype>::GetConstNormal(
@@ -343,7 +342,6 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::GetConstNormal(
 
   return;
 } // TemperBoundaryImpl<distype>::
-
 
 /*----------------------------------------------------------------------*
  |  Integrate shapefunctions over surface (private)           gjb 02/09 |
@@ -394,5 +392,6 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::IntegrateShapeFunctions(
 
 } //TemperBoundaryImpl<distype>::IntegrateShapeFunction
 
-#endif  // D_THERMO
-#endif  // CCADISCRET
+
+#endif // D_THERMO
+#endif // CCADISCRET

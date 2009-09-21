@@ -32,6 +32,7 @@ distype_(dis_none)
   return;
 }
 
+
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       dano 09/09 |
  *----------------------------------------------------------------------*/
@@ -42,6 +43,7 @@ distype_(old.distype_)
 {
   return;
 }
+
 
 /*----------------------------------------------------------------------*
  |  Deep copy this instance of Thermo and return pointer to it (public) |
@@ -55,13 +57,14 @@ DRT::Element* DRT::ELEMENTS::Thermo::Clone() const
 
 
 /*----------------------------------------------------------------------*
- |  Return the shape of a Thermo element                      (public) |
+ |  Return the shape of a Thermo element                      (public)  |
  |                                                           dano 09/09 |
  *----------------------------------------------------------------------*/
 DRT::Element::DiscretizationType DRT::ELEMENTS::Thermo::Shape() const
 {
   return distype_;
 }
+
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
@@ -119,7 +122,7 @@ void DRT::ELEMENTS::Thermo::Unpack(const std::vector<char>& data)
 
 
 /*----------------------------------------------------------------------*
- |  dtor (public)                                             dano 09/09|
+ |  dtor (public)                                            dano 09/09 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Thermo::~Thermo()
 {
@@ -128,7 +131,7 @@ DRT::ELEMENTS::Thermo::~Thermo()
 
 
 /*----------------------------------------------------------------------*
- |  print this element (public)                               dano 09/09|
+ |  print this element (public)                              dano 09/09 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Thermo::Print(std::ostream& os) const
 {
@@ -143,8 +146,9 @@ void DRT::ELEMENTS::Thermo::Print(std::ostream& os) const
   return;
 }
 
+
 /*----------------------------------------------------------------------*
- |  allocate and return register element (public)             dano 09/09|
+ |  allocate and return register element (public)            dano 09/09 |
  *----------------------------------------------------------------------*/
 Teuchos::RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Thermo::ElementRegister() const
 {
@@ -155,7 +159,7 @@ Teuchos::RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Thermo::ElementRegiste
 
 
 /*----------------------------------------------------------------------*
- |  get vector of lines            (public)                   dano 09/09|
+ |  get vector of lines            (public)                  dano 09/09 |
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Thermo::Lines()
 {
@@ -180,7 +184,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Thermo::Lines()
 
 
 /*----------------------------------------------------------------------*
- |  get vector of surfaces (public)                          dano 09/09|
+ |  get vector of surfaces (public)                          dano 09/09 |
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Thermo::Surfaces()
 {
@@ -369,7 +373,6 @@ DRT::ELEMENTS::ThermoBoundary::~ThermoBoundary()
 {
   return;
 }
-
 
 /*----------------------------------------------------------------------*
  |  print this element (public)                              dano 09/09 |

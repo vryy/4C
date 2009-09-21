@@ -12,20 +12,23 @@ Maintainer: Burkhard Bornemann
 </pre>
 */
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ | definitions                                              bborn 08/09 |
+ *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-/*----------------------------------------------------------------------*/
-/* headers */
+/*----------------------------------------------------------------------*
+ | headers                                                  bborn 08/09 |
+ *----------------------------------------------------------------------*/
 #include <sstream>
 
 #include "thrtimint.H"
 #include "thrtimint_impl.H"
 #include "thr_aux.H"
 
-
-/*----------------------------------------------------------------------*/
-/* constructor */
+/*----------------------------------------------------------------------*
+ | constructor                                              bborn 08/09 |
+ *----------------------------------------------------------------------*/
 THR::TimIntImpl::TimIntImpl
 (
   const Teuchos::ParameterList& ioparams,
@@ -80,8 +83,9 @@ THR::TimIntImpl::TimIntImpl
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/* integrate step */
+/*----------------------------------------------------------------------*
+ | integrate step                                           bborn 08/09 |
+ *----------------------------------------------------------------------*/
 void THR::TimIntImpl::IntegrateStep()
 {
   Predict();
@@ -89,8 +93,9 @@ void THR::TimIntImpl::IntegrateStep()
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/* predict solution */
+/*----------------------------------------------------------------------*
+ | predict solution                                         bborn 08/09 |
+ *----------------------------------------------------------------------*/
 void THR::TimIntImpl::Predict()
 {
 
@@ -148,8 +153,10 @@ void THR::TimIntImpl::Predict()
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/* predict solution as constant temperatures, temperature rates */
+/*----------------------------------------------------------------------*
+ | predict solution as constant temperatures,               bborn 08/09 |
+ | temperature rates                                                    |
+ *----------------------------------------------------------------------*/
 void THR::TimIntImpl::PredictConstTempRate()
 {
   // constant predictor
@@ -160,7 +167,10 @@ void THR::TimIntImpl::PredictConstTempRate()
   return;
 }
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ | Predict solution as constant temperatures,               bborn 08/09 |
+ | temperature rates and tangent                                        |
+ *----------------------------------------------------------------------*/
 void THR::TimIntImpl::PredictTangTempConsistRate()
 {
   // initialise
@@ -251,7 +261,9 @@ void THR::TimIntImpl::PredictTangTempConsistRate()
   return;
 }
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ | converged                                                bborn 08/09 |
+ *----------------------------------------------------------------------*/
 bool THR::TimIntImpl::Converged()
 {
   // verify: #normcharforce_ has been delivered strictly larger than zero
@@ -316,8 +328,9 @@ bool THR::TimIntImpl::Converged()
   return conv;
 }
 
-/*----------------------------------------------------------------------*/
-/* solve equilibrium */
+/*----------------------------------------------------------------------*
+ | solve equilibrium                                        bborn 08/09 |
+ *----------------------------------------------------------------------*/
 void THR::TimIntImpl::Solve()
 {
   // choose solution technique in accordance with user's will
@@ -337,8 +350,9 @@ void THR::TimIntImpl::Solve()
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/* solution with full Newton-Raphson iteration */
+/*----------------------------------------------------------------------*
+ | solution with full Newton-Raphson iteration              bborn 08/09 |
+ *----------------------------------------------------------------------*/
 void THR::TimIntImpl::NewtonFull()
 {
   // we do a Newton-Raphson iteration here.
@@ -429,8 +443,9 @@ void THR::TimIntImpl::NewtonFull()
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/* Prepare system for solving with Newton's method */
+/*----------------------------------------------------------------------*
+ | Prepare system for solving with Newton's method          bborn 08/09 |
+ *----------------------------------------------------------------------*/
 void THR::TimIntImpl::PrepareSystemForNewtonSolve()
 {
 
@@ -452,9 +467,9 @@ void THR::TimIntImpl::PrepareSystemForNewtonSolve()
   return;
 }
 
-
-/*----------------------------------------------------------------------*/
-/* Update iteration */
+/*----------------------------------------------------------------------*
+ | Update iteration                                         bborn 08/09 |
+ *----------------------------------------------------------------------*/
 void THR::TimIntImpl::UpdateIter
 (
   const int iter  //!< iteration counter
@@ -478,8 +493,10 @@ void THR::TimIntImpl::UpdateIter
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/* Update iteration incrementally with prescribed residual temperatures */
+/*----------------------------------------------------------------------*
+ |  Update iteration incrementally with prescribed          bborn 08/09 |
+ |  residual temperatures                                               |
+ *----------------------------------------------------------------------*/
 void THR::TimIntImpl::UpdateIterIncrementally
 (
   const Teuchos::RCP<const Epetra_Vector> tempi  //!< input residual temperatures
@@ -498,9 +515,10 @@ void THR::TimIntImpl::UpdateIterIncrementally
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/* print to screen
- * lw 12/07 */
+/*----------------------------------------------------------------------*
+ |  print to screen                                         bborn 08/09 |
+ |  originally by lw 12/07                                              |
+ *----------------------------------------------------------------------*/
 void THR::TimIntImpl::PrintPredictor()
 {
   // only master processor
@@ -540,9 +558,10 @@ void THR::TimIntImpl::PrintPredictor()
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/* print Newton-Raphson iteration to screen and error file
- * originally by lw 12/07, tk 01/08 */
+/*----------------------------------------------------------------------*
+ |  print Newton-Raphson iteration to screen and error file bborn 08/09 |
+ |  originally by lw 12/07, tk 01/08                                    |
+ *----------------------------------------------------------------------*/
 void THR::TimIntImpl::PrintNewtonIter()
 {
   // print to standard out
@@ -565,7 +584,9 @@ void THR::TimIntImpl::PrintNewtonIter()
   return;
 }
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |  print header                                            bborn 08/09 |
+ *----------------------------------------------------------------------*/
 void THR::TimIntImpl::PrintNewtonIterHeader
 (
   FILE* ofile
@@ -626,9 +647,10 @@ void THR::TimIntImpl::PrintNewtonIterHeader
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/* print Newton-Raphson iteration to screen
- * originally by lw 12/07, tk 01/08 */
+/*----------------------------------------------------------------------*
+ |  print Newton-Raphson iteration to screen                bborn 08/09 |
+ |  originally by lw 12/07, tk 01/08                                    |
+ *----------------------------------------------------------------------*/
 void THR::TimIntImpl::PrintNewtonIterText
 (
   FILE* ofile
@@ -690,17 +712,18 @@ void THR::TimIntImpl::PrintNewtonIterText
 
 }
 
-
-/*----------------------------------------------------------------------*/
-/* print statistics of converged NRI */
+/*----------------------------------------------------------------------*
+ |  print statistics of converged NRI                       bborn 08/09 |
+ *----------------------------------------------------------------------*/
 void THR::TimIntImpl::PrintNewtonConv()
 {
   // somebody did the door
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/* print step summary */
+/*----------------------------------------------------------------------*
+ |  print step summary                                      bborn 08/09 |
+ *----------------------------------------------------------------------*/
 void THR::TimIntImpl::PrintStep()
 {
 
@@ -720,8 +743,9 @@ void THR::TimIntImpl::PrintStep()
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/* print step summary */
+/*----------------------------------------------------------------------*
+ |  print step summary                                      bborn 08/09 |
+ *----------------------------------------------------------------------*/
 void THR::TimIntImpl::PrintStepText
 (
   FILE* ofile
@@ -746,5 +770,5 @@ void THR::TimIntImpl::PrintStepText
   return;
 }
 
-/*----------------------------------------------------------------------*/
+
 #endif  // #ifdef CCADISCRET

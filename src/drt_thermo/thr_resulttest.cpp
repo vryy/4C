@@ -24,7 +24,6 @@ Maintainer: Moritz Frenzel
 #endif
 
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 THR::ResultTest::ResultTest(TimInt& tintegrator)
@@ -108,13 +107,11 @@ void THR::ResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& 
   }
 }
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool THR::ResultTest::Match(DRT::INPUT::LineDefinition& res)
 {
-  /* res.field is a enum of type _FIELDTYP and can be found in headers/enums.h
-   */
+  // res.field is a enum of type _FIELDTYP and can be found in headers/enums.h
   return (res.HaveNamed("THERMAL"));
 }
 

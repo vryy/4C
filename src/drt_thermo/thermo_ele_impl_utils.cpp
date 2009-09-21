@@ -9,7 +9,7 @@ Maintainer: Caroline Danowski
             089 - 289-15253
 </pre>
 */
-/*----------------------------------------------------------------------*/
+
 #ifdef CCADISCRET
 #ifdef D_THERMO
 
@@ -19,6 +19,7 @@ Maintainer: Caroline Danowski
 namespace THR
 {
 } // namespace THR
+
 
 #endif  // D_THERMO
 #endif  // CCADISCRET

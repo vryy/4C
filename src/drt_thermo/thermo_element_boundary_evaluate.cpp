@@ -77,5 +77,6 @@ int DRT::ELEMENTS::ThermoBoundary::EvaluateNeumann(
       );
 }
 
+
 #endif  // #ifdef D_THERMO
 #endif  // #ifdef CCADISCRET

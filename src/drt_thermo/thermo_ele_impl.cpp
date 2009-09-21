@@ -38,8 +38,8 @@ DRT::ELEMENTS::TemperImplInterface* DRT::ELEMENTS::TemperImplInterface::Impl(
     DRT::Element* ele
     )
  {
-  // we assume here, that numdofpernode is equal for every node within
-  // the discretization and does not change during the computations
+  //! we assume here, that numdofpernode is equal for every node within
+  //! the discretization and does not change during the computations
   const int numdofpernode = ele->NumDofPerNode(*(ele->Nodes()[0]));
   switch (ele->Shape())
   {
@@ -155,8 +155,8 @@ DRT::ELEMENTS::TemperImplInterface* DRT::ELEMENTS::TemperImplInterface::Impl(
  }
 
 /*----------------------------------------------------------------------*
+ |  Initialization of the data with respect to the declaration          |
  *----------------------------------------------------------------------*/
-// Initialization of the data with respect to the declaration
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::TemperImpl<distype>::TemperImpl(int numdofpernode)
   : etemp_(false),
@@ -360,6 +360,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
 }
 
 /*----------------------------------------------------------------------*
+ |                                                                      |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::TemperImpl<distype>::EvaluateNeumann(
@@ -554,7 +555,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::Radiation(
 
 
 /*----------------------------------------------------------------------*
- |                                                                      |
+ |  get the material                                         dano 09/09 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::Materialize(
@@ -866,6 +867,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::IntegrateShapeFunctions(
 
   return;
  } //TemperImpl<distype>::IntegrateShapeFunction
+
 
 #endif // D_THERMO
 #endif // CCADISCRET

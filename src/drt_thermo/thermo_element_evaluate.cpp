@@ -10,6 +10,9 @@ Maintainer: Caroline Danowski
 </pre>
 
 */
+/*----------------------------------------------------------------------*
+ |  definitions                                                gjb 01/08|
+ *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 #ifdef D_THERMO
 
@@ -19,12 +22,14 @@ Maintainer: Caroline Danowski
 #include "mpi.h"
 #endif
 
+/*----------------------------------------------------------------------*
+ |  headers                                                    gjb 01/08|
+ *----------------------------------------------------------------------*/
 #include "thermo_element.H"
 #include "../drt_thermo/thermo_ele_impl.H"
 
-
 /*----------------------------------------------------------------------*
- |  evaluate the element (public)                             dano 09/09|
+ |  evaluate the element (public)                            dano 09/09 |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Thermo::Evaluate(
     Teuchos::ParameterList&   params,
@@ -57,9 +62,8 @@ int DRT::ELEMENTS::Thermo::Evaluate(
 
 } //DRT::ELEMENTS::Thermo::Evaluate
 
-
 /*----------------------------------------------------------------------*
- |  do nothing (public)                                       dano 09/09|
+ |  do nothing (public)                                      dano 09/09 |
  |                                                                      |
  |  The function is just a dummy. For the thermo elements, the          |
  |  integration of the volume neumann (body forces) loads takes place   |

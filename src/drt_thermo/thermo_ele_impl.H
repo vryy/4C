@@ -11,15 +11,18 @@ Maintainer: Caroline Danowski
             089 - 289-15253
 </pre>
 */
-/*----------------------------------------------------------------------*/
-
+/*----------------------------------------------------------------------*
+ |  definitions                                                gjb 01/08|
+ *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 #ifdef D_THERMO
 
 #ifndef THERMO_ELE_IMPL_H
 #define THERMO_ELE_IMPL_H
 
-
+/*----------------------------------------------------------------------*
+ |  headers                                                    gjb 01/08|
+ *----------------------------------------------------------------------*/
 #include "thermo_ele_impl_utils.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include <Epetra_IntSerialDenseVector.h>
@@ -111,7 +114,7 @@ namespace DRT
   class TemperImpl: public TemperImplInterface
   {
   public:
-    /// Constructor
+    //! Constructor
     TemperImpl(int numdofpernode);
 
     //! number of nodes
@@ -135,7 +138,7 @@ namespace DRT
                          Epetra_SerialDenseVector&  elevec3_epetra
                          );
 
-    /// Evaluate the element
+    //! Evaluate the element
     virtual int EvaluateNeumann(DRT::Element*              ele,
                                 Teuchos::ParameterList&    params,
                                 DRT::Discretization&       discretization,
@@ -238,6 +241,7 @@ namespace DRT
   } // ELEMENTS
 
 } // DRT
+
 
 #endif // THERMO_ELE_IMPL_H
 #endif // D_THERMO

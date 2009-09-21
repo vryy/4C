@@ -9,7 +9,6 @@ Maintainer: Burkhard Bornemann
             http://www.lnm.mw.tum.de
             089 - 289-15237
 
-            cd changed 05.08.09
 </pre>
 */
 
@@ -17,12 +16,14 @@ Maintainer: Burkhard Bornemann
 /* macros */
 #ifdef CCADISCRET
 
-/*----------------------------------------------------------------------*/
-/* headers */
+/*----------------------------------------------------------------------*
+ |  headers                                                  dano 08/09 |
+ *----------------------------------------------------------------------*/
 #include "thrtimint_ost.H"
 
-/*======================================================================*/
-/* constructor */
+/*----------------------------------------------------------------------*
+ |  constructor                                              dano 08/09 |
+ *----------------------------------------------------------------------*/
 THR::TimIntOneStepTheta::TimIntOneStepTheta
 (
   const Teuchos::ParameterList& ioparams,
@@ -66,8 +67,6 @@ THR::TimIntOneStepTheta::TimIntOneStepTheta
   tempt_ = LINALG::CreateVector(*dofrowmap_, true);
   // mid-temperature rates
   ratet_ = LINALG::CreateVector(*dofrowmap_, true);
-  // mid-accelerations
-  // acct_ = LINALG::CreateVector(*dofrowmap_, true);
 
   // create force vectors
 
@@ -90,9 +89,10 @@ THR::TimIntOneStepTheta::TimIntOneStepTheta
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/* Consistent predictor with constant temperatures
- * and consistent temperature rates and temperatures */
+/*----------------------------------------------------------------------*
+ |  Consistent predictor with constant temperatures          dano 08/09 |
+ |  and consistent temperature rates and temperatures                   |
+ *----------------------------------------------------------------------*/
 void THR::TimIntOneStepTheta::PredictConstTempConsistRate()
 {
   // time step size
@@ -112,9 +112,10 @@ void THR::TimIntOneStepTheta::PredictConstTempConsistRate()
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/* evaluate residual force and its tangent, ie derivative
- * with respect to end-point temperatures \f$T_{n+1}\f$ */
+/*----------------------------------------------------------------------*
+ |  evaluate residual force and its tangent, ie derivative   dano 08/09 |
+ |  with respect to end-point temperatures \f$T_{n+1}\f$                |
+ *----------------------------------------------------------------------*/
 void THR::TimIntOneStepTheta::EvaluateRhsTangResidual()
 {
   // theta-interpolate state vectors
@@ -157,8 +158,10 @@ void THR::TimIntOneStepTheta::EvaluateRhsTangResidual()
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/* evaluate theta-state vectors by averaging end-point vectors */
+/*----------------------------------------------------------------------*
+ |  evaluate theta-state vectors by averaging                dano 08/09 |
+ |  end-point vector                                                    |
+ *----------------------------------------------------------------------*/
 void THR::TimIntOneStepTheta::EvaluateMidState()
 {
   // mid-temperatures T_{n+1-alpha_f} (tempm)
@@ -173,9 +176,10 @@ void THR::TimIntOneStepTheta::EvaluateMidState()
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/* calculate characteristic/reference norms for temperatures
- * originally by lw */
+/*----------------------------------------------------------------------*
+ |  calculate characteristic/reference norms for             dano 08/09 |
+ |  temperatures originally by lw                                       |
+ *----------------------------------------------------------------------*/
 double THR::TimIntOneStepTheta::CalcRefNormTemperature()
 {
   // The reference norms are used to scale the calculated iterative
@@ -191,9 +195,10 @@ double THR::TimIntOneStepTheta::CalcRefNormTemperature()
   return charnormtemp;
 }
 
-/*----------------------------------------------------------------------*/
-/* calculate characteristic/reference norms for forces
- * originally by lw */
+/*----------------------------------------------------------------------*
+ |  calculate characteristic/reference norms for forces      dano 08/09 |
+ |  originally by lw                                                    |
+ *----------------------------------------------------------------------*/
 double THR::TimIntOneStepTheta::CalcRefNormForce()
 {
   // The reference norms are used to scale the calculated iterative
@@ -219,8 +224,9 @@ double THR::TimIntOneStepTheta::CalcRefNormForce()
   return max(fintnorm, max(fextnorm, freactnorm));
 }
 
-/*----------------------------------------------------------------------*/
-/* incremental iteration update of state */
+/*----------------------------------------------------------------------*
+ |  incremental iteration update of state                    dano 08/09 |
+ *----------------------------------------------------------------------*/
 void THR::TimIntOneStepTheta::UpdateIterIncrementally()
 {
   // Auxiliar vector holding new temperature rates
@@ -247,8 +253,9 @@ void THR::TimIntOneStepTheta::UpdateIterIncrementally()
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/* iterative iteration update of state */
+/*----------------------------------------------------------------------*
+ |  iterative iteration update of state                      dano 08/09 |
+ *----------------------------------------------------------------------*/
 void THR::TimIntOneStepTheta::UpdateIterIteratively()
 {
   // new end-point temperatures
@@ -262,8 +269,9 @@ void THR::TimIntOneStepTheta::UpdateIterIteratively()
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/* update after time step */
+/*----------------------------------------------------------------------*
+ |  update after time step                                   dano 08/09 |
+ *----------------------------------------------------------------------*/
 void THR::TimIntOneStepTheta::UpdateStepState()
 {
   // update state
@@ -301,8 +309,9 @@ void THR::TimIntOneStepTheta::UpdateStepState()
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/* read restart forces */
+/*----------------------------------------------------------------------*
+ |  read restart forces                                      dano 08/09 |
+ *----------------------------------------------------------------------*/
 void THR::TimIntOneStepTheta::ReadRestartForce()
 {
   IO::DiscretizationReader reader(discret_, step_);
@@ -315,7 +324,9 @@ void THR::TimIntOneStepTheta::ReadRestartForce()
   return;
 }
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |  evaluate the internal force and the tangent              dano 08/09 |
+ *----------------------------------------------------------------------*/
 void THR::TimIntOneStepTheta::ApplyForceTangInternal(
   const double time,  //!< evaluation time
   const double dt,  //!< step size
@@ -335,7 +346,9 @@ void THR::TimIntOneStepTheta::ApplyForceTangInternal(
   return;
 }
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |  evaluate the internal force                              dano 08/09 |
+ *----------------------------------------------------------------------*/
 void THR::TimIntOneStepTheta::ApplyForceInternal(
   const double time,  //!< evaluation time
   const double dt,  //!< step size
@@ -355,5 +368,4 @@ void THR::TimIntOneStepTheta::ApplyForceInternal(
 }
 
 
-/*----------------------------------------------------------------------*/
 #endif  // #ifdef CCADISCRET

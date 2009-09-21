@@ -14,12 +14,18 @@ Maintainer: Caroline Danowski
             089 - 289-15253
 </pre>
 */
+/*----------------------------------------------------------------------*
+ |  definitions                                                gjb 01/08|
+ *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 #ifdef D_THERMO
 
 #ifndef THERMO_ELEMENT_H
 #define THERMO_ELEMENT_H
 
+/*----------------------------------------------------------------------*
+ |  headers                                                    gjb 01/08|
+ *----------------------------------------------------------------------*/
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
@@ -179,25 +185,24 @@ class Discretization;
       //! @name Acess methods
 
       //! \brief Get number of degrees of freedom of a certain node
-      //!       (implements pure virtual DRT::Element)
+      //!        (implements pure virtual DRT::Element)
       //!
       //! The element decides how many degrees of freedom its nodes must have.
       //! As this may vary along a simulation, the element can redecide the
       //! number of degrees of freedom per node along the way for each of it's nodes
       //! separately.
-      //!
       virtual int NumDofPerNode(const DRT::Node& node) const { return numdofpernode_; }
 
       //!
       //! \brief Get number of degrees of freedom per element
-      //!       (implements pure virtual DRT::Element)
+      //!        (implements pure virtual DRT::Element)
       //!
       //! The element decides how many element degrees of freedom it has.
       //! It can redecide along the way of a simulation.
       //!
       //! \note Element degrees of freedom mentioned here are dofs that are visible
-      //!      at the level of the total system of equations. Purely internal
-      //!      element dofs that are condensed internally should NOT be considered.
+      //!       at the level of the total system of equations. Purely internal
+      //!       element dofs that are condensed internally should NOT be considered.
       virtual int NumDofPerElement() const { return 0; }
 
       //! \brief Print this element
@@ -210,48 +215,43 @@ class Discretization;
       //! an instance of a matching DRT::ElementRegister.
       virtual Teuchos::RefCountPtr<DRT::ElementRegister> ElementRegister() const;
 
-      /*!
-      \brief Query names of element data to be visualized using BINIO
+      //! \brief Query names of element data to be visualized using BINIO
+      //!
+      //! The element fills the provided map with key names of
+      //! visualization data the element wants to visualize AT THE CENTER
+      //! of the element geometry. The value is supposed to be dimension of the
+      //! data to be visualized. It can either be 1 (scalar), 3 (vector), 6 (sym. tensor)
+      //! or 9 (nonsym. tensor)
+      //!
+      //! Example:
+      //! \code
+      //!  // Name of data is 'Owner', dimension is 1 (scalar value)
+      //!  names.insert(pair<string,int>("Owner",1));
+      //!  // Name of data is 'HeatfluxXYZ', dimension is 3 (vector value)
+      //!  names.insert(pair<string,int>("HeatfluxXYZ",3));
+      //! \endcode
+      //!
+      //! \param names (out): On return, the derived class has filled names with
+      //!                     key names of data it wants to visualize and with int dimensions
+      //!                     of that data.
 
-      The element fills the provided map with key names of
-      visualization data the element wants to visualize AT THE CENTER
-      of the element geometry. The value is supposed to be dimension of the
-      data to be visualized. It can either be 1 (scalar), 3 (vector), 6 (sym. tensor)
-      or 9 (nonsym. tensor)
-
-      Example:
-      \code
-        // Name of data is 'Owner', dimension is 1 (scalar value)
-        names.insert(pair<string,int>("Owner",1));
-        // Name of data is 'HeatfluxXYZ', dimension is 3 (vector value)
-        names.insert(pair<string,int>("HeatfluxXYZ",3));
-      \endcode
-
-      \param names (out): On return, the derived class has filled names with
-                          key names of data it wants to visualize and with int dimensions
-                          of that data.
-      */
       virtual void VisNames(std::map<std::string,int>& names);
 
-      /*!
-      \brief Query data to be visualized using BINIO of a given name
-
-      The method is supposed to call this base method to visualize the owner of
-      the element.
-      If the derived method recognizes a supported data name, it shall fill it
-      with corresponding data.
-      If it does NOT recognizes the name, it shall do nothing.
-
-      \warning The method must not change size of data
-
-      \param name (in):   Name of data that is currently processed for visualization
-      \param data (out):  data to be filled by element if element recognizes the name
-      */
+      //! \brief Query data to be visualized using BINIO of a given name
+      //!
+      //! The method is supposed to call this base method to visualize the owner of
+      //! the element.
+      //! If the derived method recognizes a supported data name, it shall fill it
+      //! with corresponding data.
+      //! If it does NOT recognizes the name, it shall do nothing.
+      //!
+      //! \warning The method must not change size of data
+      //!
+      //! \param name (in):   Name of data that is currently processed for visualization
+      //! \param data (out):  data to be filled by element if element recognizes the name
       virtual bool VisData(const std::string& name, std::vector<double>& data);
 
-      /*!
-      \brief Add values to the data_ container
-      */
+      //! \brief Add values to the data_ container
       virtual void AddToData(const std::string& name, std::vector<double> data)
       {data_.Add(name,data);};
 
@@ -259,14 +259,10 @@ class Discretization;
 
       //! @name Input and Creation
 
-      /*!
-      \brief Read input for this element
-      */
+      //! \brief Read input for this element
       //bool ReadElement();
 
-      /*!
-      \brief Read input for this element
-      */
+      //! \brief Read input for this element
       bool ReadElement(const std::string& eletype,
                        const std::string& distype,
                        DRT::INPUT::LineDefinition* linedef);
@@ -275,39 +271,37 @@ class Discretization;
 
       //! @name Evaluation
 
-      /*!
-      \brief Evaluate an element, i.e. call the implementation to evaluate element
-      tangent, capacity, internal forces or evaluate errors, statistics or updates
-      etc. directly.
-
-      Following implementations of the element are allowed:
-      <pre>
-        o Evaluation of thermal system matrix and residual for the One-Step-Theta
-
-        o Evaluation of thermal system matrix and residual for the stationary thermal solver
-      </pre>
-
-      \param params (in/out): ParameterList for communication between control routine
-                              and elements
-      \param discretization (in): A reference to the underlying discretization
-      \param lm (in):         location vector of this element
-      \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
-                              the controlling method does not expect the element to fill
-                              this matrix.
-      \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
-                              the controlling method does not expect the element to fill
-                              this matrix.
-      \param elevec1 (out)  : vector to be filled by element. If NULL on input,
-                              the controlling method does not expect the element
-                              to fill this vector
-      \param elevec2 (out)  : vector to be filled by element. If NULL on input,
-                              the controlling method does not expect the element
-                              to fill this vector
-      \param elevec3 (out)  : vector to be filled by element. If NULL on input,
-                              the controlling method does not expect the element
-                              to fill this vector
-      \return 0 if successful, negative otherwise
-      */
+      //! \brief Evaluate an element, i.e. call the implementation to evaluate element
+      //! tangent, capacity, internal forces or evaluate errors, statistics or updates
+      //! etc. directly.
+      //!
+      //! Following implementations of the element are allowed:
+      //! <pre>
+      //!  o Evaluation of thermal system matrix and residual for the One-Step-Theta
+      //!
+      //!  o Evaluation of thermal system matrix and residual for the stationary thermal solver
+      //! </pre>
+      //!
+      //! \param params (in/out): ParameterList for communication between control routine
+      //!                         and elements
+      //! \param discretization (in): A reference to the underlying discretization
+      //! \param lm (in):         location vector of this element
+      //! \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
+      //!                         the controlling method does not expect the element to fill
+      //!                         this matrix.
+      //! \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
+      //!                         the controlling method does not expect the element to fill
+      //!                         this matrix.
+      //! \param elevec1 (out)  : vector to be filled by element. If NULL on input,
+      //!                         the controlling method does not expect the element
+      //!                         to fill this vector
+      //! \param elevec2 (out)  : vector to be filled by element. If NULL on input,
+      //!                         the controlling method does not expect the element
+      //!                         to fill this vector
+      //! \param elevec3 (out)  : vector to be filled by element. If NULL on input,
+      //!                         the controlling method does not expect the element
+      //!                         to fill this vector
+      //! \return 0 if successful, negative otherwise
       int Evaluate(Teuchos::ParameterList&   params,
                    DRT::Discretization&      discretization,
                    std::vector<int>&         lm,
@@ -317,21 +311,18 @@ class Discretization;
                    Epetra_SerialDenseVector& elevec2,
                    Epetra_SerialDenseVector& elevec3);
 
-
-      /*!
-      \brief Evaluate a Neumann boundary condition
-
-      this method evaluates a surfaces Neumann condition on the shell element
-
-      \param params (in/out)    : ParameterList for communication between control routine
-                                  and elements
-      \param discretization (in): A reference to the underlying discretization
-      \param condition (in)     : The condition to be evaluated
-      \param lm (in)            : location vector of this element
-      \param elevec1 (out)      : vector to be filled by element. If NULL on input,
-
-      \return 0 if successful, negative otherwise
-      */
+      //! \brief Evaluate a Neumann boundary condition
+      //!
+      //! this method evaluates a surfaces Neumann condition on the shell element
+      //!
+      //! \param params (in/out)    : ParameterList for communication between control routine
+      //!                             and elements
+      //! \param discretization (in): A reference to the underlying discretization
+      //! \param condition (in)     : The condition to be evaluated
+      //! \param lm (in)            : location vector of this element
+      //! \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+      //!
+      //! \return 0 if successful, negative otherwise
       virtual int EvaluateNeumann(Teuchos::ParameterList&   params,
                                   DRT::Discretization&      discretization,
                                   DRT::Condition&           condition,
@@ -361,38 +352,32 @@ class Discretization;
 
     }; // class Thermo
 
-
   ////=======================================================================
   ////=======================================================================
   ////=======================================================================
   ////=======================================================================
 
+  //! \brief An element representing a boundary element of a thermo element
+  //!
+  //! \note This is a pure boundary condition element. It's only
+  //!       purpose is to evaluate certain boundary conditions that might be
+  //!       adjacent to a parent Thermo element.
 
-  /*!
-  \brief An element representing a boundary element of a thermo element
-
-  \note This is a pure boundary condition element. It's only
-        purpose is to evaluate certain boundary conditions that might be
-        adjacent to a parent Thermo element.
-
-  */
   class ThermoBoundary : public DRT::Element
     {
     public:
 
       //! @name Constructors and destructors and related methods
 
-      /*!
-      \brief Standard Constructor
-
-      \param id : A unique global id
-      \param owner: Processor owning this surface
-      \param nnode: Number of nodes attached to this element
-      \param nodeids: global ids of nodes attached to this element
-      \param nodes: the discretization map of nodes to build ptrs to nodes from
-      \param parent: The parent fluid element of this surface
-      \param lsurface: the local surface number of this surface w.r.t. the parent element
-      */
+      //! \brief Standard Constructor
+      //!
+      //! \param id : A unique global id
+      //! \param owner: Processor owning this surface
+      //! \param nnode: Number of nodes attached to this element
+      //! \param nodeids: global ids of nodes attached to this element
+      //! \param nodes: the discretization map of nodes to build ptrs to nodes from
+      //! \param parent: The parent fluid element of this surface
+      //! \param lsurface: the local surface number of this surface w.r.t. the parent element
       ThermoBoundary
       (
           int id,
@@ -404,31 +389,21 @@ class Discretization;
           const int lsurface
        );
 
-      /*!
-      \brief Copy Constructor
-
-      Makes a deep copy of a Element
-
-      */
+      //! \brief Copy Constructor
+      //!
+      //! Makes a deep copy of a Element
       ThermoBoundary(const ThermoBoundary& old);
 
-      /*!
-      \brief Deep copy this instance of an element and return pointer to the copy
-
-      The Clone() method is used from the virtual base class Element in cases
-      where the type of the derived class is unknown and a copy-constructor is needed
-
-      */
+      //! \brief Deep copy this instance of an element and return pointer to the copy
+      //!
+      //! The Clone() method is used from the virtual base class Element in cases
+      //! where the type of the derived class is unknown and a copy-constructor is needed
       DRT::Element* Clone() const;
 
-      /*!
-      \brief Get shape type of element
-      */
+      //! \brief Get shape type of element
       virtual DiscretizationType Shape() const;
 
-      /*!
-      \brief Return number of lines of boundary element
-      */
+      //! \brief Return number of lines of boundary element
       virtual int NumLine() const
       {
         // get spatial dimension of boundary
@@ -446,9 +421,7 @@ class Discretization;
         }
       }
 
-      /*!
-      \brief Return number of surfaces of boundary element
-       */
+      //! \brief Return number of surfaces of boundary element
       virtual int NumSurface() const
       {
         // get spatial dimension of parent element
@@ -460,61 +433,42 @@ class Discretization;
           return 0;
       }
 
-      /*!
-      \brief Get vector of RefCountPtrs to the lines of this element
-
-      */
+      //! \brief Get vector of RefCountPtrs to the lines of this element
       virtual std::vector<RCP<DRT::Element> > Lines();
 
-      /*!
-      \brief Get vector of RefCountPtrs to the surfaces of this element
-      */
+      //! \brief Get vector of RefCountPtrs to the surfaces of this element
       virtual std::vector<RCP<DRT::Element> > Surfaces();
 
-      /*!
-      \brief Return unique ParObject id
-
-      every class implementing ParObject needs a unique id defined at the
-      top of the drt_parobject.H file.
-      */
+      //! \brief Return unique ParObject id
+      //!
+      //! every class implementing ParObject needs a unique id defined at the
+      //! top of the drt_parobject.H file.
       virtual int UniqueParObjectId() const { return ParObject_ThermoBoundary;}
 
-      /*!
-      \brief Pack this class so it can be communicated
-
-      \ref Pack and \ref Unpack are used to communicate this element
-
-      */
+      //! \brief Pack this class so it can be communicated
+      //!
+      //! \ref Pack and \ref Unpack are used to communicate this element
       virtual void Pack(std::vector<char>& data) const;
 
-      /*!
-      \brief Unpack data from a char vector into this class
-
-      \ref Pack and \ref Unpack are used to communicate this element
-
-      */
+      //! \brief Unpack data from a char vector into this class
+      //!
+      //! \ref Pack and \ref Unpack are used to communicate this element
       virtual void Unpack(const std::vector<char>& data);
 
-      /*!
-      \brief Destructor
-
-      */
+      //! brief Destructor
       virtual ~ThermoBoundary();
 
       //@}
 
       //! @name Acess methods
 
-
-      /*!
-      \brief Get number of degrees of freedom of a certain node
-             (implements pure virtual DRT::Element)
-
-      The element decides how many degrees of freedom its nodes must have.
-      As this may vary along a simulation, the element can redecide the
-      number of degrees of freedom per node along the way for each of it's nodes
-      separately.
-      */
+      //! \brief Get number of degrees of freedom of a certain node
+      //!       (implements pure virtual DRT::Element)
+      //!
+      //! The element decides how many degrees of freedom its nodes must have.
+      //! As this may vary along a simulation, the element can redecide the
+      //! number of degrees of freedom per node along the way for each of it's nodes
+      //! separately.
       virtual int NumDofPerNode(const DRT::Node& node) const
       {return parent_->NumDofPerNode(node);}
 
@@ -522,31 +476,25 @@ class Discretization;
       virtual DRT::ELEMENTS::Thermo* ParentElement()
       {return parent_;}
 
-      /*!
-      \brief Get number of degrees of freedom per element
-             (implements pure virtual DRT::Element)
-
-      The element decides how many element degrees of freedom it has.
-      It can redecide along the way of a simulation.
-
-      \note Element degrees of freedom mentioned here are dofs that are visible
-            at the level of the total system of equations. Purely internal
-            element dofs that are condensed internally should NOT be considered.
-      */
+      //! \brief Get number of degrees of freedom per element
+      //!       (implements pure virtual DRT::Element)
+      //!
+      //! The element decides how many element degrees of freedom it has.
+      //! It can redecide along the way of a simulation.
+      //!
+      //! \note Element degrees of freedom mentioned here are dofs that are visible
+      //!      at the level of the total system of equations. Purely internal
+      //!      element dofs that are condensed internally should NOT be considered.
       virtual int NumDofPerElement() const { return 0; }
 
-      /*!
-      \brief Print this element
-      */
+      //! \brief Print this element
       void Print(std::ostream& os) const;
 
-      /*!
-      \brief Allocate and return a ElementRegister class
-
-      Every implementation of DRT::Element must also implement
-      an DRT::ElementRegister. This method allocates and returns
-      an instance of a matching DRT::ElementRegister.
-      */
+      //! \brief Allocate and return a ElementRegister class
+      //!
+      //! Every implementation of DRT::Element must also implement
+      //! an DRT::ElementRegister. This method allocates and returns
+      //! an instance of a matching DRT::ElementRegister.
       virtual Teuchos::RCP<DRT::ElementRegister> ElementRegister() const
       { return Teuchos::rcp(new DRT::ElementRegister(Type())); }
 
@@ -554,32 +502,30 @@ class Discretization;
 
       //! @name Evaluation
 
-      /*!
-      \brief Evaluate an element
-
-      Evaluate Thermo element tangent, capacity, internal forces etc
-
-      \param params (in/out): ParameterList for communication between control routine
-                              and elements
-      \param discretization (in): A reference to the underlying discretization
-      \param lm (in):         location vector of this element, vector of degrees of freedom adressed by this element
-      \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
-                              the controlling method does not expect the element to fill
-                              this matrix.
-      \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
-                              the controlling method does not expect the element to fill
-                              this matrix.
-      \param elevec1 (out)  : vector to be filled by element. If NULL on input,
-                              the controlling method does not expect the element
-                              to fill this vector
-      \param elevec2 (out)  : vector to be filled by element. If NULL on input,
-                              the controlling method does not expect the element
-                              to fill this vector
-      \param elevec3 (out)  : vector to be filled by element. If NULL on input,
-                              the controlling method does not expect the element
-                              to fill this vector
-      \return 0 if successful, negative otherwise
-      */
+      //! \brief Evaluate an element
+      //!
+      //! Evaluate Thermo element tangent, capacity, internal forces etc
+      //!
+      //! \param params (in/out): ParameterList for communication between control routine
+      //!                         and elements
+      //! \param discretization (in): A reference to the underlying discretization
+      //! \param lm (in):         location vector of this element, vector of degrees of freedom adressed by this element
+      //! \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
+      //!                         the controlling method does not expect the element to fill
+      //!                         this matrix.
+      //! \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
+      //!                         the controlling method does not expect the element to fill
+      //!                         this matrix.
+      //! \param elevec1 (out)  : vector to be filled by element. If NULL on input,
+      //!                         the controlling method does not expect the element
+      //!                         to fill this vector
+      //! \param elevec2 (out)  : vector to be filled by element. If NULL on input,
+      //!                         the controlling method does not expect the element
+      //!                         to fill this vector
+      //! \param elevec3 (out)  : vector to be filled by element. If NULL on input,
+      //!                         the controlling method does not expect the element
+      //!                         to fill this vector
+      //! \return 0 if successful, negative otherwise
       int Evaluate(Teuchos::ParameterList&   params,
                    DRT::Discretization&      discretization,
                    std::vector<int>&         lm,
@@ -594,20 +540,18 @@ class Discretization;
 
       //! @name Evaluate methods
 
-      /*!
-      \brief Evaluate a Neumann boundary condition
-
-      this method evaluates a surface Neumann condition on the thermo element
-
-      \param params (in/out)    : ParameterList for communication between control routine
-                                  and elements
-      \param discretization (in): A reference to the underlying discretization
-      \param condition (in)     : The condition to be evaluated
-      \param lm (in)            : location vector of this element
-      \param elevec1 (out)      : vector to be filled by element. If NULL on input,
-
-      \return 0 if successful, negative otherwise
-      */
+      //! \brief Evaluate a Neumann boundary condition
+      //!
+      //! this method evaluates a surface Neumann condition on the thermo element
+      //!
+      //! \param params (in/out)    : ParameterList for communication between control routine
+      //!                             and elements
+      //! \param discretization (in): A reference to the underlying discretization
+      //! \param condition (in)     : The condition to be evaluated
+      //! \param lm (in)            : location vector of this element
+      //! \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+      //!
+      //! \return 0 if successful, negative otherwise
       virtual int EvaluateNeumann(Teuchos::ParameterList&   params,
                                   DRT::Discretization&      discretization,
                                   DRT::Condition&           condition,

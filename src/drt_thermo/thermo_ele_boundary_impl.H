@@ -11,7 +11,9 @@ Maintainer: Caroline Danowski
             089 - 289-15253
 </pre>
 */
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |  definitions                                              dano 09/09 |
+ *----------------------------------------------------------------------*/
 
 #ifdef CCADISCRET
 #ifdef D_THERMO
@@ -19,7 +21,9 @@ Maintainer: Caroline Danowski
 #ifndef THERMO_ELE_BOUNDARY_IMPL_H
 #define THERMO_ELE_BOUNDARY_IMPL_H
 
-
+/*----------------------------------------------------------------------*
+ |  headers                                                  dano 09/09 |
+ *----------------------------------------------------------------------*/
 #include "thermo_ele_impl_utils.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "thermo_element.H"
@@ -27,7 +31,6 @@ Maintainer: Caroline Danowski
 
 // forward declarations
 //struct _MATERIAL;
-
 
   namespace DRT
   {
@@ -160,7 +163,7 @@ Maintainer: Caroline Danowski
             const int&                                   eleid       ///< the element id
         );
 
-          //! integral of shape functions over boundary surface
+         //! integral of shape functions over boundary surface
          void IntegrateShapeFunctions(
              const DRT::Element*       ele,    ///< the actual boundary element
              Teuchos::ParameterList&   params, ///< the parameter list
@@ -189,13 +192,14 @@ Maintainer: Caroline Danowski
         //! unit normal vector at integration point
         LINALG::Matrix<nsd_+1,1> normal_;
         //! metric tensor at integration point
-            LINALG::Matrix<nsd_,nsd_>  metrictensor_;
+        LINALG::Matrix<nsd_,nsd_>  metrictensor_;
         //! integration factor for current GP: fac = GaussWeight * drs
         double fac_;
 
       }; // TemperBoundaryImpl
     } // ELEMENTS
   } // DRT
+
 
 #endif //THERMO_ELE_BOUNDARY_IMPL_H
 #endif // D_THERMO

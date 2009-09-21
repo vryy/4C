@@ -9,15 +9,17 @@ Maintainer: Burkhard Bornemann
             http://www.lnm.mw.tum.de
             089 - 289-15237
 
-            cd changed 06.08.09
 </pre>
 */
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |  definitions                                             bborn 08/09 |
+ *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-/*----------------------------------------------------------------------*/
-/* headers */
+/*----------------------------------------------------------------------*
+ |  headers                                                 bborn 08/09 |
+ *----------------------------------------------------------------------*/
 #include <iostream>
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
@@ -29,8 +31,9 @@ Maintainer: Burkhard Bornemann
 #include "../drt_io/io_control.H"
 #include "../drt_fluid/fluid_utils.H"
 
-/*----------------------------------------------------------------------*/
-/* print tea time logo */
+/*----------------------------------------------------------------------*
+ |  print thermal time logo                                  dano 08/09 |
+ *----------------------------------------------------------------------*/
 void THR::TimInt::Logo()
 {
   std::cout << "Welcome to Thermal Time Integration " << std::endl;
@@ -40,8 +43,9 @@ void THR::TimInt::Logo()
 
 }
 
-/*----------------------------------------------------------------------*/
-/* constructor */
+/*----------------------------------------------------------------------*
+ |  constructor                                             bborn 08/09 |
+ *----------------------------------------------------------------------*/
 THR::TimInt::TimInt
 (
   const Teuchos::ParameterList& ioparams,
@@ -139,9 +143,10 @@ THR::TimInt::TimInt
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/* equilibrate system at initial state
- * and identify consistent accelerations */
+/*----------------------------------------------------------------------*
+ |  equilibrate system at initial state                     bborn 08/09 |
+ |  and identify consistent temperature rate                            |
+ *----------------------------------------------------------------------*/
 void THR::TimInt::DetermineCapaConsistTempRate()
 {
   // temporary force vectors in this routine
@@ -201,8 +206,9 @@ void THR::TimInt::DetermineCapaConsistTempRate()
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/* evaluate Dirichlet BC at t_{n+1} */
+/*----------------------------------------------------------------------*
+ |  evaluate Dirichlet BC at t_{n+1}                       bborn 06/08  |
+ *----------------------------------------------------------------------*/
 void THR::TimInt::ApplyDirichletBC
 (
   const double time,
@@ -235,8 +241,9 @@ void THR::TimInt::ApplyDirichletBC
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/* Update time and step counter */
+/*----------------------------------------------------------------------*
+ |  Update time and step counter                            bborn 06/08 |
+ *----------------------------------------------------------------------*/
 void THR::TimInt::UpdateStepTime()
 {
   // update time and step
@@ -250,8 +257,9 @@ void THR::TimInt::UpdateStepTime()
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/* Reset configuration after time step */
+/*----------------------------------------------------------------------*
+ |  Reset configuration after time step                     bborn 06/08 |
+ *----------------------------------------------------------------------*/
 void THR::TimInt::ResetStep()
 {
   // reset state vectors
@@ -273,8 +281,9 @@ void THR::TimInt::ResetStep()
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/* Read and set restart values */
+/*----------------------------------------------------------------------*
+ |  Read and set restart values                             bborn 06/08 |
+ *----------------------------------------------------------------------*/
 void THR::TimInt::ReadRestart
 (
   const int step
@@ -297,8 +306,9 @@ void THR::TimInt::ReadRestart
   dofrowmap_ = discret_->DofRowMap();
 }
 
-/*----------------------------------------------------------------------*/
-/* Read and set restart state */
+/*----------------------------------------------------------------------*
+ |  Read and set restart state                              bborn 06/08 |
+ *----------------------------------------------------------------------*/
 void THR::TimInt::ReadRestartState()
 {
   IO::DiscretizationReader reader(discret_, step_);
@@ -310,10 +320,9 @@ void THR::TimInt::ReadRestartState()
   return;
 }
 
-
-/*----------------------------------------------------------------------*/
-/* output to file
- * originally by mwgee 03/07 */
+/*----------------------------------------------------------------------*
+ |  output to file                                          mwgee 03/07 |
+ *----------------------------------------------------------------------*/
 void THR::TimInt::OutputStep()
 {
   // this flag is passed along subroutines and prevents
@@ -355,9 +364,9 @@ void THR::TimInt::OutputStep()
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/* write restart
- * originally by mwgee 03/07 */
+/*----------------------------------------------------------------------*
+ |  write restart                                           mwgee 03/07 |
+ *----------------------------------------------------------------------*/
 void THR::TimInt::OutputRestart
 (
   bool& datawritten
@@ -396,9 +405,10 @@ void THR::TimInt::OutputRestart
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/* output temperature,temperature rate
- * originally by mwgee 03/07 */
+/*----------------------------------------------------------------------*
+ |  output temperature,temperature rate                     bborn 06/08 |
+ |  originally by mwgee 03/07                                           |
+ *----------------------------------------------------------------------*/
 void THR::TimInt::OutputState
 (
   bool& datawritten
@@ -418,9 +428,10 @@ void THR::TimInt::OutputState
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/* heatflux calculation and output
- * originally by lw */
+/*----------------------------------------------------------------------*
+ |  heatflux calculation and output                         bborn 06/08 |
+ |  originally by lw                                                    |
+ *----------------------------------------------------------------------*/
 void THR::TimInt::OutputHeatfluxTempgrad
 (
   bool& datawritten
@@ -503,8 +514,9 @@ void THR::TimInt::OutputHeatfluxTempgrad
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/* output system energies */
+/*----------------------------------------------------------------------*
+ |  output system energies                                  bborn 06/08 |
+ *----------------------------------------------------------------------*/
 void THR::TimInt::OutputEnergy()
 {
 
@@ -564,8 +576,9 @@ void THR::TimInt::OutputEnergy()
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/* evaluate external forces at t_{n+1} */
+/*----------------------------------------------------------------------*
+ |  evaluate external forces at t_{n+1}                     bborn 06/08 |
+ *----------------------------------------------------------------------*/
 void THR::TimInt::ApplyForceExternal
 (
   const double time,  //!< evaluation time
@@ -593,8 +606,9 @@ void THR::TimInt::ApplyForceExternal
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/* evaluate ordinary internal force, its tangent at state */
+/*----------------------------------------------------------------------*
+ |  evaluate ordinary internal force, its tangent at state  bborn 06/08 |
+ *----------------------------------------------------------------------*/
 void THR::TimInt::ApplyForceTangInternal
 (
   Teuchos::ParameterList& p,
@@ -625,8 +639,9 @@ void THR::TimInt::ApplyForceTangInternal
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/* evaluate ordinary internal force */
+/*----------------------------------------------------------------------*
+ |  evaluate ordinary internal force                        bborn 06/08 |
+ *----------------------------------------------------------------------*/
 void THR::TimInt::ApplyForceInternal(
   Teuchos::ParameterList& p,
   const double time,
@@ -656,8 +671,9 @@ void THR::TimInt::ApplyForceInternal(
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/* integrate */
+/*----------------------------------------------------------------------*
+ |  integrate                                               bborn 06/08 |
+ *----------------------------------------------------------------------*/
 void THR::TimInt::Integrate()
 {
   // target time #timen_ and step #stepn_ already set
@@ -690,5 +706,5 @@ void THR::TimInt::Integrate()
   return;
 }
 
-/*----------------------------------------------------------------------*/
+
 #endif  // #ifdef CCADISCRET

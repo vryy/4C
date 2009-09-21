@@ -1,4 +1,3 @@
-/*----------------------------------------------------------------------*/
 /*!
 \file thr_dyn.cpp
 \brief entry point for (in)stationary heat conduction
@@ -10,7 +9,9 @@ Maintainer: Burkhard Bornemann
             089 - 289-15237
 </pre>
 */
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |  definitions                                               gjb 01/08 |
+ *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
 #include <Teuchos_TimeMonitor.hpp>
@@ -19,6 +20,9 @@ Maintainer: Burkhard Bornemann
 #include <mpi.h>
 #endif
 
+/*----------------------------------------------------------------------*
+ |  headers                                                   gjb 01/08 |
+ *----------------------------------------------------------------------*/
 #include "thr_dyn.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -93,12 +97,8 @@ void thr_dyn_drt()
     output->WriteMesh(step, time);
   }
 
-
-  // 
   // integrate in time
-  //
   atti->Integrate();
-
 
   // test results
   DRT::Problem::Instance()->AddFieldTest(atti->CreateFieldTest());
@@ -108,5 +108,6 @@ void thr_dyn_drt()
   return;
 
 } // end of thr_dyn_drt()
+
 
 #endif  // #ifdef CCADISCRET

@@ -1,4 +1,3 @@
-/*----------------------------------------------------------------------*/
 /*!
 \file thr_resulttest.H
 
@@ -11,19 +10,25 @@ Maintainer: Moritz Frenzel
             089 - 289-15240
 </pre>
 */
-/*----------------------------------------------------------------------*/
-
+/*----------------------------------------------------------------------*
+ |  definitions                                                   08/09 |
+ *----------------------------------------------------------------------*/
 #ifndef THR_RESULTTEST_H
 #define THR_RESULTTEST_H
 
 #ifdef CCADISCRET
 
+/*----------------------------------------------------------------------*
+ |  headers                                                       08/09 |
+ *----------------------------------------------------------------------*/
 #include "thrtimint.H"
 #include "../drt_lib/drt_resulttest.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io.H"
 
-
+/*----------------------------------------------------------------------*
+ |  belongs to thermal dynamics namespace                         08/09 |
+ *----------------------------------------------------------------------*/
 namespace THR
 {
 
@@ -65,6 +70,6 @@ private:
 
 }  // namespace THR
 
-#endif // #ifdef CCADISCRET
 
+#endif // #ifdef CCADISCRET
 #endif // #ifndef THR_RESULTTEST_H
