@@ -466,8 +466,6 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
       double disport_square = aux.Norm2()*aux.Norm2();
       sumsquareincort_+=disport_square;
       
-      //total square displacement of middle point
-      double squaredispmid = sumdispmiddle_.Norm2()*sumdispmiddle_.Norm2();
       
       //total displacement of rotational angle (in 2D only)
       double incangle = 0;
@@ -497,7 +495,8 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
         }
         
         //update absolute rotational displacement compared to reference configuration
-        dispangle_ += incangle;
+        sumsquareincrot_ += incangle*incangle;
+        sumrotmiddle_ += incangle;
       }
       
 
@@ -507,7 +506,7 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
 	    
 	      //defining temporary stringstream variable
 	      std::stringstream filecontent;
-	      filecontent << scientific << setprecision(15) << dt << " " << squaredispmid << " " << sumsquareincmid_ << " " << sumsquareincpar_ << " " << sumsquareincort_ << " "  << incangle << " " <<dispangle_*dispangle_ << endl;
+	      filecontent << scientific << setprecision(15)<<dt<<" "<<sumsquareincmid_ <<" "<<sumsquareincpar_<<" "<<sumsquareincort_<<" "<<sumsquareincrot_<<" "<<sumdispmiddle_.Norm2() * sumdispmiddle_.Norm2()<<" "<<sumrotmiddle_*sumrotmiddle_ << endl;
 	    
 	      // move temporary stringstream to file and close it
 	      fprintf(fp,filecontent.str().c_str());
@@ -928,8 +927,9 @@ void StatMechManager::StatMechInitOutput(const int ndim,const double& dt)
       
       sumsquareincpar_=0.0;
       sumsquareincort_=0.0;
-      dispangle_=0.0;
+      sumrotmiddle_=0.0;
       sumsquareincmid_=0.0;
+      sumsquareincrot_=0.0;
 
       
     }

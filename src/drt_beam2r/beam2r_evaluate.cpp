@@ -548,27 +548,24 @@ void DRT::ELEMENTS::Beam2r::ComputeLocalBrownianForces(ParameterList& params)
         }
         break;
         case 1:
-        {
+        {        
+          //compute damping coefficients consistently to LiTang2004 assuming that actin filament is
+          //discretized by one element only and actin diameter 8nm
           /*
-          //konsistent simulation according to Li, for Actin Filament diameter 8nm
-          double gamma_par=2.0*PI*lrefe_*params.get<double>("ETA",0.0)/(log(lrefe_/0.008)-0.114);
-          double gamma_perp=4.0*PI*lrefe_*params.get<double>("ETA",0.0)/(log(lrefe_/0.008)+0.886);
-                    
+          double K_r = 2.94382;
+          double K_t = 1.921348;
+          double lnp = log(lrefe_ / 0.008);
+          double gamma_perp = K_r*4.0*PI*lrefe_*params.get<double>("ETA",0.0)/(lnp - 0.447);       
+          double gamma_par  = 4.0*PI*lrefe_*params.get<double>("ETA",0.0)/( (1/K_t)*(3*lnp + 0.658) - (1/K_r)*(lnp - 0.447) );
+          */
+                  
+          double gamma_perp = zeta;    
+          double gamma_par  = zeta/2.0;
                     
           floc_[0](0,0) = pow(gamma_par/3.0,0.5)*aux(0,0);
           floc_[0](1,0) = pow(gamma_perp/3.0,0.5)*aux(0,1);
           floc_[1](0,0) = pow(gamma_par/12.0,0.5)*aux(0,0)+pow(gamma_par/4.0,0.5)*aux(1,0);
-          floc_[1](1,0) = pow(gamma_perp/12.0,0.5)*aux(0,1)+pow(gamma_perp/4.0,0.5)*aux(1,1);
-                    
-            */        
-      
-          
-          //multiply S_loc(cholesky decomposition of C_loc) for gamma_parallel=gamma_perp/2
-          floc_[0](0,0) = pow(zeta/6,0.5)*aux(0,0);
-          floc_[0](1,0) = pow(zeta/3,0.5)*aux(0,1);
-          floc_[1](0,0) = pow(zeta/24,0.5)*aux(0,0)+pow(zeta/8,0.5)*aux(1,0);
-          floc_[1](1,0) = pow(zeta/12,0.5)*aux(0,1)+pow(zeta/4,0.5)*aux(1,1);
-          
+          floc_[1](1,0) = pow(gamma_perp/12.0,0.5)*aux(0,1)+pow(gamma_perp/4.0,0.5)*aux(1,1);                  
         }
         break;
       }//end switch stochorder
@@ -791,31 +788,34 @@ inline void DRT::ELEMENTS::Beam2r::CalcBrownian(ParameterList& params,
          double theta=(disp[2]+disp[5])*0.5;
          
          //triad to rotate local configuration into global
-          LINALG::Matrix<2,2> T(true);
-          T(0,0) =  cos(theta);
-          T(0,1) = -sin(theta);
-          T(1,0) =  sin(theta);
-          T(1,1) =  cos(theta);
+         LINALG::Matrix<2,2> T(true);
+         T(0,0) =  cos(theta);
+         T(0,1) = -sin(theta);
+         T(1,0) =  sin(theta);
+         T(1,1) =  cos(theta);
       
           
-          /*
-          //konsistent simulation according to Li, for Actin Filament diameter 8nm
-          double gamma_par=2.0*PI*lrefe_*params.get<double>("ETA",0.0)/(log(lrefe_/0.008)-0.114);
-          double gamma_perp=4.0*PI*lrefe_*params.get<double>("ETA",0.0)/(log(lrefe_/0.008)+0.886);
+         
+          //compute damping coefficients consistently to LiTang2004 assuming that actin filament is
+          //discretized by one element only and actin diameter 8nm
+          /*          
+          double K_r = 2.94382;
+          double K_t = 1.921348;
+          double lnp = log(lrefe_ / 0.008);
+          double gamma_perp = K_r*4.0*PI*lrefe_*params.get<double>("ETA",0.0)/(lnp - 0.447);       
+          double gamma_par  = 4.0*PI*lrefe_*params.get<double>("ETA",0.0)/( (1/K_t)*(3*lnp + 0.658) - (1/K_r)*(lnp - 0.447) );
+          */
           
-          
+          double gamma_perp = zeta;    
+          double gamma_par  = zeta/2.0;
+
+
           //local damping matrix
           LINALG::Matrix<2,2> dampbasis(true);
           dampbasis(0,0) = gamma_par;
           dampbasis(1,1) = gamma_perp;
-          */
 
-        
-          //local damping matrix
-          LINALG::Matrix<2,2> dampbasis(true);
-          dampbasis(0,0) = zeta/2.0;
-          dampbasis(1,1) = zeta;
-    
+
       
           //turning local into global damping matrix (storing intermediate result in variable "aux1")
           LINALG::Matrix<2,2> aux1;

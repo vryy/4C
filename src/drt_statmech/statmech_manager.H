@@ -123,8 +123,9 @@ protected:
   //! \store accumulated disp
   double sumsquareincpar_;
   double sumsquareincort_;
-  double dispangle_;
+  double sumrotmiddle_;
   double sumsquareincmid_;
+  double sumsquareincrot_;
   
   //store displacement of midpoint compared to initial state as a 3-vector
   LINALG::Matrix<3,1>sumdispmiddle_;
