@@ -60,7 +60,7 @@ public:
   //! @name Friends
   friend class Truss3Register;
   friend class StatMechManager;
-  friend void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& dis);
+  friend void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,const std::map<int,LINALG::Matrix<3,1> >& currentpositions,const std::map<int,LINALG::Matrix<3,1> >& currentrotations);
   friend void StatMechTime::Integrate();
 
 

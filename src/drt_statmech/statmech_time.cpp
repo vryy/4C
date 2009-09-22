@@ -18,10 +18,6 @@ Maintainer: Christian Cyron
 
 #include <random/normal.h>
 
-#ifdef D_BEAM3
-#include "../drt_beam3/beam3.H"
-#endif  // #ifdef D_BEAM3
-
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             cyron 08/08|
@@ -107,13 +103,26 @@ void StatMechTime::Integrate()
     */
 
     ConsistentPredictor();
+    
+    const double t_PTC = ds_cputime();
 
     if(ndim ==3)
       PTC();
     else
       FullNewton();
     
+    
+    cout << "\n***\ntotal PTC time: " << ds_cputime() - t_PTC<< " seconds\n***\n";
+    
+    {
+    double disnormtest = 0;
+    disn_->Norm2(&disnormtest);
+    std::cout<<"\n\ndisn_.Norm2() = "<<disnormtest<<"\n\n";
+    }
+    
 
+    const double t_admin = ds_cputime();
+ 
     UpdateandOutput();
 
     /*special update for statistical mechanics; this output has to be handled seperately from the time integration scheme output
@@ -121,7 +130,7 @@ void StatMechTime::Integrate()
     statmechmanager_->StatMechUpdate(dt,*dis_);
     statmechmanager_->StatMechOutput(params_,ndim,time,i,dt,*dis_,*fint_);
 
-
+    cout << "\n***\ntotal administration time: " << ds_cputime() - t_admin<< " seconds\n***\n";
 
     if (time>=maxtime) break;
   }
@@ -608,7 +617,7 @@ void StatMechTime::FullNewton()
       dserror("Gmsh output implemented for a maximum of 99999 steps");
 
     //statmechmanager_->GmshOutput(*dism_,filename,numiter);
-#endif  // #ifdef D_BEAM3
+#endif  // #ifdef DEBUG
 
 
     // a short message
@@ -736,6 +745,7 @@ void StatMechTime::PTC()
     LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
 
     //--------------------------------------------------- solve for disi
+    const double t_solver = ds_cputime();
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
     if (isadapttol && numiter)
     {
@@ -745,6 +755,13 @@ void StatMechTime::PTC()
     }
     solver_.Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,numiter==0);
     solver_.ResetTolerance();
+    
+    
+
+    
+    
+    cout << "\n***\ntotal solution time: " << ds_cputime() - t_solver<< " seconds\n***\n";
+    
 
     //---------------------------------- update mid configuration values
     // displacements
