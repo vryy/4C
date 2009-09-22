@@ -402,7 +402,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
    * in case that the i-th rigid body mode is applied to the
    * structure; the structure altogether always has 3 rigid body
    * modes in R^2 and 6 in R^3; these modes are translation in
-   * each coordinate direction, respectively, and translation
+   * each coordinate direction, respectively, and rotation
    * around each axis, respectively. This is summed up in the
    * following table where in the left column x,y,z denote
    * translations in x-, y- and z-direction of a node due to
@@ -439,7 +439,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   x-axis.
   */
 
-  /* for beam2 elements the above table reduces to
+  /* for beam2 and beam2r elements the above table reduces to
    *
         xtrans   ytrans    zrot
         mode[0]  mode[1]   mode[2]
@@ -447,8 +447,8 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   x   |    1       0       -y+y0
   y   |    0       1       x-x0
   dz  |    0       0       1
-  note: for the here employed Timoshenko beam elements a rigid body
-  rotation entails also an increment of the rotation degree of freedom
+  note: for the here employed Timoshenko and Reissner beam elements a rigid
+  body rotation entails also an increment of the rotation degree of freedom
   dz which makes the director of the beam move accordingly; only then
   a rotation does not lead to any shear stress and is truely a rigid
   body rotation
@@ -509,18 +509,107 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
    * general this relation may require calling all the elements.
    * However, in opposition to the SHELL8 element it is not
    * sufficient to just call a director saved in the element.
-   * Rather for 3D non-linear beam elements a more complicated
-   * relation has to be employed. As no use of beam3 elements
-   * together with Algebraic Multigrid is supposed to be required
-   * this case has not been treated here and if support is called
-   * then just a dserror is returned*/
+   * Rather to calculate proper increments for the rotational
+   * degrees of freedom due to a rigid body rotation of the 
+   * complete structure, the triad at each node is required in 
+   * order to transform non-additive increments into additive ones.
+   * However, the beam3 element currently does not save the nodal
+   * triads as a class variable, but only the triads at each Gauss
+   * point. In the following a wrong (!!!) dummy version is implemneted
+   * but commented out. In this dummy version the rotational degrees of
+   * freedom are treated identically to the additive translational
+   * degrees of freedom. Activating and using this part of the code
+   * quickly reveals the problems of such a naive implemnetation. 
+   * Usually the equation solver simply does not work with this
+   * dummy code, i.e. the iterative solution process does not converge.
+   * If Algebraic Multigrid methods should be really used for beam3 
+   * elements, one first has to develop efficient special methods for
+   * these elements. Currently trying to use Algebraic multigrid methods
+   * for beam3 elements just amounts to an error as no properly working
+   * implementation has been available so far*/
+  
+  else if (ele->Type() == DRT::Element::element_beam3)
+  {
+    dserror("No Algebraic Multigrid support by beam3 element");
+    /*   
+    //looping through all nodes
+    for (int i=0; i<NumMyRowNodes(); ++i)
+    {
+      //getting pointer at current node
+      DRT::Node* actnode = lRowNode(i);
 
- else if (ele->Type() == DRT::Element::element_beam3)
- {
-   dserror("No Algebraic Multigrid support by beam3 element");
- } // else if (ele->Type() == DRT::Element::element_beam3)
+      //getting coordinates of current node
+      const double* x = actnode->X();
 
+      //getting number of degrees of freedom of current node
+      vector<int> dofs = Dof(actnode);
 
+      //looping through all degrees of freedom of a node
+      for (unsigned j=0; j<dofs.size(); ++j)
+      {
+        const int dof = dofs[j];
+        const int lid = rowmap->LID(dof);
+        if (lid<0) dserror("Cannot find dof");
+        // j is degree of freedom; each case refers to one line in the above table
+        switch (j)
+        {
+        case 0:
+          mode[0][lid] = 1.0;
+          mode[1][lid] = 0.0;
+          mode[2][lid] = 0.0;
+          mode[3][lid] = 0.0;
+          mode[4][lid] =  x[2] - x0[2];
+          mode[5][lid] = -x[1] + x0[1];
+        break;
+        case 1:
+          mode[0][lid] = 0.0;
+          mode[1][lid] = 1.0;
+          mode[2][lid] = 0.0;
+          mode[3][lid] = -x[2] + x0[2];
+          mode[4][lid] = 0.0;
+          mode[5][lid] =  x[0] - x0[0];
+        break;
+        case 2:
+          mode[0][lid] = 0.0;
+          mode[1][lid] = 0.0;
+          mode[2][lid] = 1.0;
+          mode[3][lid] =  x[1] - x0[1];
+          mode[4][lid] = -x[0] + x0[0];
+          mode[5][lid] = 0.0;
+        break;
+        case 3:
+          mode[0][lid] = 0.0;
+          mode[1][lid] = 0.0;
+          mode[2][lid] = 0.0;
+          mode[3][lid] = 1.0;
+          mode[4][lid] = 0.0;
+          mode[5][lid] = 0.0;
+        break;
+        case 4:
+          mode[0][lid] = 0.0;
+          mode[1][lid] = 0.0;
+          mode[2][lid] = 0.0;
+          mode[3][lid] = 0.0;
+          mode[4][lid] = 1.0;
+          mode[5][lid] = 0.0;
+        break;
+        case 5:
+          mode[0][lid] = 0.0;
+          mode[1][lid] = 0.0;
+          mode[2][lid] = 0.0;
+          mode[3][lid] = 0.0;
+          mode[4][lid] = 0.0;
+          mode[5][lid] = 1.0;
+        break;
+        default:
+          dserror("Only dofs 0 - 5 supported");
+        break;
+        } // switch (j)
+      } // for (int j=0; j<actnode->Dof().NumDof(); ++j)
+    } // for (int i=0; i<NumMyRowNodes(); ++i)
+  } // else if (ele->Type() == DRT::Element::element_beam2 || ele->Type() == DRT::Element::element_beam2r)
+  */
+  
   /* the rigid body modes for fluids are:
         xtrans   ytrans  ztrans   pressure
         mode[0]  mode[1] mode[2]  mode[3]
