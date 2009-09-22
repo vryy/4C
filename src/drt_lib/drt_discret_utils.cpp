@@ -607,8 +607,9 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
         } // switch (j)
       } // for (int j=0; j<actnode->Dof().NumDof(); ++j)
     } // for (int i=0; i<NumMyRowNodes(); ++i)
-  } // else if (ele->Type() == DRT::Element::element_beam2 || ele->Type() == DRT::Element::element_beam2r)
-  */
+    */
+  } // else if (ele->Type() == DRT::Element::element_beam3)
+  
   
   /* the rigid body modes for fluids are:
         xtrans   ytrans  ztrans   pressure
