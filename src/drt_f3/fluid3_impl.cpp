@@ -3065,7 +3065,7 @@ else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv_fluid)
   const double tempnp = actmat->ComputeTemperature(provarnp);
 
   // compute viscosity according to Sutherland law
-  visc_ = actmat->ComputeViscosity(provarnp);
+  visc_ = actmat->ComputeViscosity(tempnp);
 
   // compute density at n+1 or n+alpha_F based on temperature
   // and thermodynamic pressure
