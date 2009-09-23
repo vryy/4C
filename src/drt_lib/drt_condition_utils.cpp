@@ -548,30 +548,32 @@ void DRT::UTILS::CollectElementsByConditionLabel(
   // Reset
   elementsByLabel.clear();
   // get condition
-  vector< DRT::Condition * >  conditions;
+  vector< DRT::Condition* >  conditions;
   discret.GetCondition (name, conditions);
 
   // collect elements by xfem coupling label
   for(vector<DRT::Condition*>::const_iterator conditer = conditions.begin(); conditer!= conditions.end(); ++conditer)
   {
-    DRT::Condition* condition = *conditer;
+    const DRT::Condition* condition = *conditer;
     const int label = condition->GetInt("label");
-    const vector<int> geometryMap = *condition->Nodes();
-    vector<int>::const_iterator iterNode;
-    for(iterNode = geometryMap.begin(); iterNode != geometryMap.end(); ++iterNode )
+    for (int iele=0;iele < discret.NumMyColElements(); ++iele)
     {
-      const int nodegid = *iterNode;
-      const DRT::Node* node = discret.gNode(nodegid);
-      const DRT::Element*const* elements = node->Elements();
-      for (int iele=0;iele < node->NumElement(); ++iele)
+      // for each element, check, whether all nodes belong to same condition label
+      const DRT::Element* element = discret.lColElement(iele);
+      int nodecounter = 0;
+      for (int inode=0; inode < element->NumNode(); ++inode)
       {
-        const DRT::Element* element = elements[iele];
-        elementsByLabel[label].insert(element->Id());
+        const DRT::Node* node = element->Nodes()[inode];
+        if (condition->ContainsNode(node->Id()))
+          nodecounter++;
       }
+      // if all nodes belong to label, then this element gets a label entry
+      if (nodecounter == element->NumNode())
+        elementsByLabel[label].insert(element->Id());
     }
   }
   int numOfCollectedIds = 0;
-  for(unsigned int i = 0; i < elementsByLabel.size(); i++)
+  for(std::size_t i = 0; i < elementsByLabel.size(); i++)
     numOfCollectedIds += elementsByLabel[i].size();
 
   if(discret.NumMyColElements() != numOfCollectedIds)
