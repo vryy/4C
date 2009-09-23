@@ -31,7 +31,6 @@ material_(0),
 lrefe_(0),
 crosssec_(0),
 kintype_(tr3_totlag),
-
 //note: for corotational approach integration for Neumann conditions only
 //hence enough to integrate 3rd order polynomials exactly
 gaussrule_(DRT::UTILS::intrule_line_2point)

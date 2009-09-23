@@ -279,8 +279,7 @@ public:
   virtual int EvaluateStatForceDamp(ParameterList& params,
                                     vector<double> mydisp,
                                     Epetra_SerialDenseVector& elevec1,
-                                    Epetra_SerialDenseMatrix& elemat1,
-                                    int& ActNumDof0);
+                                    Epetra_SerialDenseMatrix& elemat1);
 
   /*!
   \brief Evaluate PTC addition to stiffness for free Brownian motion
@@ -296,8 +295,7 @@ public:
   \return 0 if successful, negative otherwise
   */
   virtual int EvaluatePTC(ParameterList& params,
-                          Epetra_SerialDenseMatrix& elemat1,
-                          int& ActNumDof0);
+                          Epetra_SerialDenseMatrix& elemat1);
   //@}
 
 
@@ -322,7 +320,7 @@ private:
     calc_struct_reset_istep,  //!< reset elementwise internal variables
                              //!< during iteration to last converged state
     postprocess_stress,
-    calc_stat_force_damp, //calculate statistical forces and damping for Brownian dynamics
+    calc_brownian, //calculate statistical forces and damping for Brownian dynamics
     calc_struct_ptcstiff //calculate artificial stiffness due to PTC solution strategy
   };
 
@@ -370,16 +368,14 @@ private:
   void t3_nlnstiffmass(vector<double>&           disp,
                        Epetra_SerialDenseMatrix* stiffmatrix,
                        Epetra_SerialDenseMatrix* massmatrix,
-                       Epetra_SerialDenseVector* force,
-                       int& ActNumDof0);
+                       Epetra_SerialDenseVector* force);
 
 
   //!calculation of nonlinear stiffness and mass matrix
   void t3_nlnstiffmass_totlag( vector<double>& disp,
       Epetra_SerialDenseMatrix* stiffmatrix,
       Epetra_SerialDenseMatrix* massmatrix,
-      Epetra_SerialDenseVector* force,
-      int& ActNumDof0);
+      Epetra_SerialDenseVector* force);
 
   /*!
    * \brief calculate force, nonlinear stiffness and mass matrix using a engineering strain measure.
@@ -391,8 +387,7 @@ private:
   void t3_nlnstiffmass_engstr( vector<double>& disp,
       Epetra_SerialDenseMatrix* stiffmatrix,
       Epetra_SerialDenseMatrix* massmatrix,
-      Epetra_SerialDenseVector* force,
-      int& ActNumDof0);
+      Epetra_SerialDenseVector* force);
 
   //! lump mass matrix
   void t3_lumpmass(Epetra_SerialDenseMatrix* emass);

@@ -59,7 +59,7 @@ int DRT::ELEMENTS::Truss3::Evaluate(ParameterList& params,
   else if (action=="calc_struct_update_imrlike") act = Truss3::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep") act = Truss3::calc_struct_reset_istep;
   else if (action=="postprocess_stress") act = Truss3::postprocess_stress;
-  else if (action=="calc_stat_force_damp") act = Truss3::calc_stat_force_damp;
+  else if (action=="calc_brownian")        act = Truss3::calc_brownian;
   else if (action=="calc_struct_ptcstiff") act = Truss3::calc_struct_ptcstiff;
   else
     {
@@ -67,19 +67,15 @@ int DRT::ELEMENTS::Truss3::Evaluate(ParameterList& params,
       dserror("Unknown type of action for Truss3");
     }
 
-  /*number of degrees of freedom actually assigned to the discretization by the first node
-   *(allows connectin truss3 and beam3 directly)*/
-  int ActNumDof0 = discretization.NumDof(Nodes()[0]);
-
   switch(act)
   {
     case Truss3::calc_struct_ptcstiff:
     {
-      EvaluatePTC(params, elemat1,ActNumDof0);
+      EvaluatePTC(params, elemat1);
     }
     break;
     //action type for evaluating statistical forces
-    case Truss3::calc_stat_force_damp:
+    case Truss3::calc_brownian:
     {
       /*in order to understand the way how in the following parallel computing is handled one has to
        * be aware of what usually happens: each processor evaluates forces on each of its elements no
@@ -100,7 +96,7 @@ int DRT::ELEMENTS::Truss3::Evaluate(ParameterList& params,
        * freedom right no matter whether its the row map owner of these DOF (outside the element routine
        * in the evaluation method of the discretization this would be not possible by default*/
 
-
+      /*
       //test whether current processor is row map owner of the element
       if(this->Owner() != discretization.Comm().MyPID()) return 0;
 
@@ -112,10 +108,10 @@ int DRT::ELEMENTS::Truss3::Evaluate(ParameterList& params,
 
       //evaluation of statistical forces with the local statistical forces vector fstat
       Epetra_SerialDenseVector fstat(lm.size());
-      EvaluateStatForceDamp(params,mydisp,fstat,elemat1,ActNumDof0);
+      EvaluateStatForceDamp(params,mydisp,fstat,elemat1);
 
-      /*all the above evaluated forces are used in assembly of the column map force vector no matter if the current processor if
-       * the row map owner of these DOF*/
+      //all the above evaluated forces are used in assembly of the column map force vector no matter if the current processor if
+      //the row map owner of these DOF
       //note carefully: a space between the two subsequal ">" signs is mandatory for the C++ parser in order to avoid confusion with ">>" for streams
       RCP<Epetra_Vector>    fstatcol = params.get<  RCP<Epetra_Vector> >("statistical force vector",Teuchos::null);
 
@@ -131,6 +127,7 @@ int DRT::ELEMENTS::Truss3::Evaluate(ParameterList& params,
         //add to the related element of fstatcol the contribution of fstat
         (*fstatcol)[lid] += fstat[i];
       }
+      */
 
     }
     break;
@@ -174,18 +171,18 @@ int DRT::ELEMENTS::Truss3::Evaluate(ParameterList& params,
 
       // for engineering strains instead of total lagrange use t3_nlnstiffmass2
       if (act == Truss3::calc_struct_nlnstiffmass)
-      t3_nlnstiffmass(mydisp,&elemat1,&elemat2,&elevec1,ActNumDof0);
+      t3_nlnstiffmass(mydisp,&elemat1,&elemat2,&elevec1);
       else if (act == Truss3::calc_struct_nlnstifflmass)
       {
-        t3_nlnstiffmass(mydisp,&elemat1,&elemat2,&elevec1,ActNumDof0);
+        t3_nlnstiffmass(mydisp,&elemat1,&elemat2,&elevec1);
         // lump mass matrix (bborn 07/08)
         // the mass matrix is lumped anyway, cf #b3_nlnstiffmass
         //b3_lumpmass(&elemat2);
       }
       else if (act == Truss3::calc_struct_nlnstiff)
-      t3_nlnstiffmass(mydisp,&elemat1,NULL,&elevec1,ActNumDof0);
+      t3_nlnstiffmass(mydisp,&elemat1,NULL,&elevec1);
       else if (act == Truss3::calc_struct_internalforce)
-      t3_nlnstiffmass(mydisp,NULL,NULL,&elevec1,ActNumDof0);
+      t3_nlnstiffmass(mydisp,NULL,NULL,&elevec1);
 
     }
     break;
@@ -229,10 +226,6 @@ int DRT::ELEMENTS::Truss3::EvaluateNeumann(ParameterList& params,
     Epetra_SerialDenseVector& elevec1,
     Epetra_SerialDenseMatrix* elemat1)
 {
-  //first the actual number of DOF of each node is detected
-  int ActNumDof0 = discretization.NumDof(Nodes()[0]);
-  int ActNumDof1 = discretization.NumDof(Nodes()[1]);
-
   // get element displacements
   RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
   if (disp==null) dserror("Cannot get state vector 'displacement'");
@@ -295,18 +288,16 @@ int DRT::ELEMENTS::Truss3::EvaluateNeumann(ParameterList& params,
     // loop the dofs of a node
 
     for (int i = 0; i < 6; ++i)
-    {
       ar[i] = fac * (*onoff)[i]*(*val)[i]*curvefac;
+  
+    for (int dof=0; dof < 3; ++dof)
+    {
+      //computing entries for first node
+      elevec1[dof] += funct[0] *ar[dof];
+      //computing entries for first node
+      elevec1[3 + dof] += funct[1] *ar[dof];
     }
-
-    //computing entries for first node
-    for (int dof=0; dof < ActNumDof0; ++dof)
-        elevec1[dof] += funct[0] *ar[dof];
-
-    //computing entries for second node
-    for (int dof=0; dof < ActNumDof1; ++dof)
-      elevec1[ActNumDof0 + dof] += funct[1] *ar[dof];
-
+      
   } // for (int ip=0; ip<intpoints.nquad; ++ip)
 
   return 0;
@@ -319,8 +310,7 @@ int DRT::ELEMENTS::Truss3::EvaluateNeumann(ParameterList& params,
 int DRT::ELEMENTS::Truss3::EvaluateStatForceDamp(ParameterList& params,
                                                 vector<double> mydisp,
                                                 Epetra_SerialDenseVector& elevec1,
-                                                Epetra_SerialDenseMatrix& elemat1,
-                                                int& ActNumDof0)
+                                                Epetra_SerialDenseMatrix& elemat1)
 {
   // frictional coefficient per unit length (approximated by the one of an infinitely long staff)
   double zeta = 4 * PI * lrefe_ * params.get<double>("ETA",0.0);
@@ -331,19 +321,15 @@ int DRT::ELEMENTS::Truss3::EvaluateStatForceDamp(ParameterList& params,
   //computing damping matrix (by background fluid of thermal bath)
 
   //diagonal entries
-  for(int i= 0; i<3; i++)
-  {
-    //first node
+  for(int i= 0; i<6; i++)
     elemat1(i,i) += zeta/3.0;
-    //second node
-    elemat1(ActNumDof0+i,ActNumDof0+i) += zeta/3.0;
-  }
+
 
   //offdiagonal entries
   for(int i= 0; i<3; i++)
   {
-    elemat1(i,ActNumDof0+i) += zeta/6.0;
-    elemat1(ActNumDof0+i,i) += zeta/6.0;
+    elemat1(i,3+i) += zeta/6.0;
+    elemat1(3+i,i) += zeta/6.0;
   }
 
   //computing statistical forces due to fluctuation-dissipation theorem
@@ -359,25 +345,16 @@ int DRT::ELEMENTS::Truss3::EvaluateStatForceDamp(ParameterList& params,
   ranlib::Normal<double> normalGen(0,stand_dev_trans);
 
   //uncorrelated part of the statistical forces
-  for(int i= 0; i<3; i++)
-  {
-    //first node
+  for(int i= 0; i<6; i++)
     elevec1[i] += normalGen.random();
-    //second node
-    elevec1[ActNumDof0+i] += normalGen.random();
-  }
 
   //correlated part of the statistical forces
   for(int i= 0; i<3; i++)
   {
     double force = normalGen.random();
-
-    //first node
     elevec1[i] += force;
-    //second node
-    elevec1[ActNumDof0+i] += force;
+    elevec1[3+i] += force;
   }
-
 
   return 0;
 } //DRT::ELEMENTS::Truss3::EvaluateStatisticalNeumann
@@ -389,18 +366,12 @@ int DRT::ELEMENTS::Truss3::EvaluateStatForceDamp(ParameterList& params,
  *----------------------------------------------------------------------------------------------------------*/
 
 int DRT::ELEMENTS::Truss3::EvaluatePTC(ParameterList& params,
-                                      Epetra_SerialDenseMatrix& elemat1,
-                                      int& ActNumDof0)
+                                      Epetra_SerialDenseMatrix& elemat1)
 {
   double dti = params.get<double>("dti",0.0);
 
-  //first node
-  for(int i= 0; i<3; i++)
+  for(int i= 0; i<6; i++)
     elemat1(i,i) += dti;
-
-  //second node
-  for(int i= 0; i<3; i++)
-    elemat1(i+ActNumDof0,i+ActNumDof0) += dti;
 
   return 0;
 } //DRT::ELEMENTS::Truss3::EvaluatePTC
@@ -411,16 +382,15 @@ int DRT::ELEMENTS::Truss3::EvaluatePTC(ParameterList& params,
 void DRT::ELEMENTS::Truss3::t3_nlnstiffmass( vector<double>& disp,
     Epetra_SerialDenseMatrix* stiffmatrix,
     Epetra_SerialDenseMatrix* massmatrix,
-    Epetra_SerialDenseVector* force,
-    int& ActNumDof0)
+    Epetra_SerialDenseVector* force)
 {
   switch(kintype_)
   {
   case tr3_totlag:
-    t3_nlnstiffmass_totlag(disp,stiffmatrix,massmatrix,force,ActNumDof0);
+    t3_nlnstiffmass_totlag(disp,stiffmatrix,massmatrix,force);
     return;
   case tr3_engstrain:
-    t3_nlnstiffmass_engstr(disp,stiffmatrix,massmatrix,force,ActNumDof0);
+    t3_nlnstiffmass_engstr(disp,stiffmatrix,massmatrix,force);
     return;
   }
 }
@@ -432,8 +402,7 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass( vector<double>& disp,
 void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_totlag( vector<double>& disp,
     Epetra_SerialDenseMatrix* stiffmatrix,
     Epetra_SerialDenseMatrix* massmatrix,
-    Epetra_SerialDenseVector* force,
-    int& ActNumDof0)
+    Epetra_SerialDenseVector* force)
 {
   //current node position (first entries 0 .. 2 for first node, 3 ..5 for second node)
   LINALG::Matrix<6,1> xcurr;
@@ -456,7 +425,7 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_totlag( vector<double>& disp,
   for (int j=0; j<3; ++j)
   {
     xcurr(j  )   = Nodes()[0]->X()[j] + disp[  j]; //first node
-    xcurr(j+3)   = Nodes()[1]->X()[j] + disp[ActNumDof0 + j]; //second node
+    xcurr(j+3)   = Nodes()[1]->X()[j] + disp[3+j]; //second node
   }
 
   //current displacement = current position - reference position
@@ -502,7 +471,6 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_totlag( vector<double>& disp,
     {
       const MAT::StVenantKirchhoff* actmat = static_cast<const MAT::StVenantKirchhoff*>(currmat.get());
       ym = actmat->Youngs();
-      sm = ym / (2*(1 + actmat->PoissonRatio()));
       density = actmat->Density();
     }
     break;
@@ -514,12 +482,8 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_totlag( vector<double>& disp,
   //computing global internal forces
   if (force != NULL)
   {
-    for (int i=0; i<3; ++i)
+    for (int i=0; i<6; ++i)
      (*force)(i) = (4*ym*crosssec_*epsilon/lrefe_) * aux(i);
-
-    for (int i=0; i<3; ++i)
-     (*force)(ActNumDof0 + i) = (4*ym*crosssec_*epsilon/lrefe_) * aux(i+3);
-
   }
 
 
@@ -529,46 +493,27 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_totlag( vector<double>& disp,
     for (int i=0; i<3; ++i)
     {
         //stiffness entries for first node
-        (*stiffmatrix)(i              ,i             )   =  (ym*crosssec_*epsilon/lrefe_);
-        (*stiffmatrix)(i              ,ActNumDof0 + i)   = -(ym*crosssec_*epsilon/lrefe_);
+        (*stiffmatrix)(i,i)     =  (ym*crosssec_*epsilon/lrefe_);
+        (*stiffmatrix)(i,3+i)   = -(ym*crosssec_*epsilon/lrefe_);
         //stiffness entries for second node
-        (*stiffmatrix)(i + ActNumDof0 ,i + ActNumDof0)   =  (ym*crosssec_*epsilon/lrefe_);
-        (*stiffmatrix)(i + ActNumDof0 ,i             )   = -(ym*crosssec_*epsilon/lrefe_);
+        (*stiffmatrix)(i+3,i+3) =  (ym*crosssec_*epsilon/lrefe_);
+        (*stiffmatrix)(i+3,i )  = -(ym*crosssec_*epsilon/lrefe_);
     }
-
-    //auxiliary variables for handling indices:
-    int id = 0;
-    int jd = 0;
 
     for (int i=0; i<6; ++i)
-    {
       for (int j=0; j<6; ++j)
-      {
-        if(i<3)
-          id = i;
-        else
-          id = i + ActNumDof0 - 3;
-        if(j<3)
-          jd = j;
-        else
-          jd = j + ActNumDof0 - 3;
-
-        (*stiffmatrix)(id,jd) += (16*ym*crosssec_/pow(lrefe_,3))*aux(i)*aux(j);
-      }
-    }
-
-
-  }
+        (*stiffmatrix)(i,j) += (16*ym*crosssec_/pow(lrefe_,3))*aux(i)*aux(j);
+   }
 
   //calculating consistent mass matrix
   if (massmatrix != NULL)
   {
     for (int i=0; i<3; ++i)
     {
-      (*massmatrix)(i             ,i             ) = density*lrefe_*crosssec_ / 3;
-      (*massmatrix)(i + ActNumDof0,i + ActNumDof0) = density*lrefe_*crosssec_ / 3;
-      (*massmatrix)(i             ,i + ActNumDof0) = density*lrefe_*crosssec_ / 6;
-      (*massmatrix)(i + ActNumDof0,i             ) = density*lrefe_*crosssec_ / 6;
+      (*massmatrix)(i,i) = density*lrefe_*crosssec_ / 3;
+      (*massmatrix)(i+3,i+3) = density*lrefe_*crosssec_ / 3;
+      (*massmatrix)(i,i+3) = density*lrefe_*crosssec_ / 6;
+      (*massmatrix)(i+3,i) = density*lrefe_*crosssec_ / 6;
     }
   }
 
@@ -583,8 +528,7 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_totlag( vector<double>& disp,
 void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_engstr( vector<double>& disp,
     Epetra_SerialDenseMatrix* stiffmatrix,
     Epetra_SerialDenseMatrix* massmatrix,
-    Epetra_SerialDenseVector* force,
-    int& ActNumDof0)
+    Epetra_SerialDenseVector* force)
 {
   //current node position (first entries 0 .. 2 for first node, 3 ..5 for second node)
   LINALG::Matrix<6,1> xcurr;
@@ -599,7 +543,7 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_engstr( vector<double>& disp,
   for (int j=0; j<3; ++j)
   {
     xcurr(j  )   = Nodes()[0]->X()[j] + disp[  j]; //first node
-    xcurr(j+3)   = Nodes()[1]->X()[j] + disp[ActNumDof0 + j]; //second node
+    xcurr(j+3)   = Nodes()[1]->X()[j] + disp[3+j]; //second node
   }
 
   //computing auxiliary vector aux = 4.0*N^T_{,xi} * N_{,xi} * xcurr
@@ -645,50 +589,26 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_engstr( vector<double>& disp,
 
   //computing global internal forces
   if (force != NULL)
-  {
-    //node 1
-    for (int i=0; i<3; ++i)
+    for (int i=0; i<6; ++i)
      (*force)(i) = forcescalar * aux(i);
-    //node 2
-    for (int i=0; i<3; ++i)
-     (*force)(ActNumDof0 + i) = forcescalar * aux(i+3);
-  }
+
 
   //computing linear stiffness matrix
   if (stiffmatrix != NULL)
   {
-
     for (int i=0; i<3; ++i)
     {
         //stiffness entries for first node
-        (*stiffmatrix)(i              ,i             )   =  forcescalar;
-        (*stiffmatrix)(i              ,ActNumDof0 + i)   = -forcescalar;
+        (*stiffmatrix)(i,i)    =  forcescalar;
+        (*stiffmatrix)(i,3+i)  = -forcescalar;
         //stiffness entries for second node
-        (*stiffmatrix)(i + ActNumDof0 ,i + ActNumDof0)   =  forcescalar;
-        (*stiffmatrix)(i + ActNumDof0 ,i             )   = -forcescalar;
+        (*stiffmatrix)(i+3,i+3)=  forcescalar;
+        (*stiffmatrix)(i+3,i)  = -forcescalar;
     }
-
-    //auxiliary variables for handling indices:
-    int id = 0;
-    int jd = 0;
 
     for (int i=0; i<6; ++i)
-    {
       for (int j=0; j<6; ++j)
-      {
-        if(i<3)
-          id = i;
-        else
-          id = i + ActNumDof0 - 3;
-        if(j<3)
-          jd = j;
-        else
-          jd = j + ActNumDof0 - 3;
-
-        (*stiffmatrix)(id,jd) += (ym*crosssec_/pow(lrefe_,3))*aux(i)*aux(j);
-      }
-    }
-
+        (*stiffmatrix)(i,j) += (ym*crosssec_/pow(lrefe_,3))*aux(i)*aux(j);
   }
 
   //calculating consistent mass matrix
@@ -696,15 +616,15 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_engstr( vector<double>& disp,
   {
     for (int i=0; i<3; ++i)
     {
-      (*massmatrix)(i             ,i             ) = density*lrefe_*crosssec_ / 3;
-      (*massmatrix)(i + ActNumDof0,i + ActNumDof0) = density*lrefe_*crosssec_ / 3;
-      (*massmatrix)(i             ,i + ActNumDof0) = density*lrefe_*crosssec_ / 6;
-      (*massmatrix)(i + ActNumDof0,i             ) = density*lrefe_*crosssec_ / 6;
+      (*massmatrix)(i,i)     = density*lrefe_*crosssec_ / 3;
+      (*massmatrix)(i+3,i+3) = density*lrefe_*crosssec_ / 3;
+      (*massmatrix)(i,i+3)   = density*lrefe_*crosssec_ / 6;
+      (*massmatrix)(i+3,i)   = density*lrefe_*crosssec_ / 6;
     }
   }
 
   return;
-} // DRT::ELEMENTS::Truss3::bt_nlnstiffmass2
+} // DRT::ELEMENTS::Truss3::bt_nlnstiffmass3
 
 
 // lump mass matrix
