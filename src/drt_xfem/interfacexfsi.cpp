@@ -408,6 +408,33 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
 
   if (gmshdebugout)
   {
+    // debug: write both meshes to file in Gmsh format
+    std::stringstream filename;
+    std::stringstream filenamedel;
+    filename    << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".interface_patches_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
+    filenamedel << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".interface_patches_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
+    std::remove(filenamedel.str().c_str());
+    if (screen_out) std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
+    std::ofstream f_system(filename.str().c_str());
+    f_system << IO::GMSH::XdisToString("Fluid", 0.0, xfemdis_, elementalDomainIntCells_, elementalBoundaryIntCells_);
+
+    const std::string s("Interface patches");
+    f_system << "View \" " << s << " Elements \" {\n";
+    for (int i=0; i<cutterdis_->NumMyColElements(); ++i)
+    {
+      const DRT::Element* actele = cutterdis_->lColElement(i);
+      const int scalar = this->GetLabelPerBoundaryElementId(actele->Id());
+      f_system << IO::GMSH::cellWithScalarToString(actele->Shape(),
+          scalar, GEO::getCurrentNodalPositions(actele,cutterposnp_) ) << "\n";
+    };
+    f_system << "};\n";
+
+    f_system.close();
+    if (screen_out) cout << " done" << endl;
+  }
+
+  if (gmshdebugout)
+  {
     std::stringstream filename;
     std::stringstream filenamedel;
     filename    << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".domains_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
