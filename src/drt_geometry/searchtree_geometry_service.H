@@ -83,8 +83,8 @@ namespace GEO
   \return  XAxisAlignedBoundingBox
    */
   LINALG::Matrix<3,2> getXAABBofEles(
-      map<int, RCP<DRT::Element> >&			          elements,
-      const std::map<int,LINALG::Matrix<3,1> >& 	currentpositions
+      map<int, RCP<DRT::Element> >&               elements,
+      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions
   );
   
   
@@ -258,6 +258,25 @@ namespace GEO
     LINALG::Matrix<3,1>&                        minDistanceVec,
     GEO::NearestObject&                         nearestObject
     );
+
+
+  /*!
+  \brief Searches for the nearest point to the query point in elementList
+  \param dis                  discretization
+  \param elements	          list of all elements 
+  \param currentpositions     current nodal positions in discretization
+  \param elementList          element list of close elements, is looped
+  \param point                point to be examined
+  \param minDistCoords        Coords of the nearest point
+   */
+  void nearestObjectInNode(
+      const RCP<DRT::Discretization>              dis,
+      map<int, RCP<DRT::Element> >&               elements,
+      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
+      const std::map<int, std::set<int> >&        elementList,
+      const LINALG::Matrix<3,1>&                  point,
+      LINALG::Matrix<3,1>&                        minDistCoords
+  );
 
 
   /*!
@@ -437,7 +456,7 @@ namespace GEO
   \return true, if a point lies with in a node box, false otherwise
    */
   bool  pointInTreeNode(
-      const LINALG::Matrix<3,1>&            point,
+      const LINALG::Matrix<3,1>&              point,
       const LINALG::Matrix<3,2>&            nodeBox
       );
 
@@ -494,7 +513,7 @@ namespace GEO
    */
   void checkRoughGeoType(
       const DRT::Element*                     element,
-      const LINALG::SerialDenseMatrix         xyze_element,
+      const LINALG::SerialDenseMatrix&        xyze_element,
       GEO::EleGeoType&                        eleGeoType
       );
 
@@ -507,9 +526,9 @@ namespace GEO
   \param eleGeoType           geometry type
    */
   void checkRoughGeoType(
-      RCP<DRT::Element>   		    element,
-      LINALG::SerialDenseMatrix  	xyze_element,
-      GEO::EleGeoType&           	eleGeoType
+      RCP<DRT::Element>                 element,
+      const LINALG::SerialDenseMatrix& 	xyze_element,
+      GEO::EleGeoType&           	      eleGeoType
   );
 
   
