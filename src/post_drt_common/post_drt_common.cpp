@@ -188,8 +188,16 @@ PostProblem::~PostProblem()
 /*----------------------------------------------------------------------*
  * returns a pointer to the num-th discretization
  *----------------------------------------------------------------------*/
-PostField* PostProblem::get_discretization(int num)
+PostField* PostProblem::get_discretization(const int num)
 {
+  if (num >= static_cast<int>(fields_.size()))
+  {
+    cout << "You asked for discretization " << num << " (counting from zero), but there are only "
+         << fields_.size() << " discretization(s)!";
+    dserror("This is a bug!");
+  }
+  if (&fields_[num] == NULL)
+    dserror("Null pointer to discretization detected!");
   return &fields_[num];
 }
 

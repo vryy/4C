@@ -120,7 +120,7 @@ public:
   int num_dim() const { return ndim_; }
 
   //! returns a pointer to the num-th discretization
-  PostField* get_discretization(int num);
+  PostField* get_discretization(const int num);
 
   int field_pos(const PostField* field) const;
 
