@@ -19,6 +19,13 @@ Maintainer: Georg Bauer
 #include <cstdlib>
 #include "scatra_ele_boundary_impl.H"
 #include "scatra_ele_impl.H"
+#include "../drt_lib/drt_timecurve.H"
+#include "../drt_lib/drt_function.H"
+#include "../drt_lib/drt_utils.H"
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "../drt_geometry/position_array.H"
+#include "../drt_fem_general/drt_utils_boundary_integration.H"
+// material headers
 #include "../drt_mat/scatra_mat.H"
 #include "../drt_mat/mixfrac_scatra.H"
 #include "../drt_mat/sutherland_scatra.H"
@@ -27,16 +34,6 @@ Maintainer: Georg Bauer
 #include "../drt_mat/arrhenius_pv_scatra.H"
 #include "../drt_mat/ion.H"
 #include "../drt_mat/matlist.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_timecurve.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_geometry/position_array.H"
-#include "../drt_lib/linalg_serialdensematrix.H"
-
-#include "../drt_fem_general/drt_utils_boundary_integration.H"
-#include "../drt_lib/drt_function.H"
-
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -874,29 +871,13 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
         for (int vi=0; vi<iel; ++vi)
         {
           fac_fz_i0_funct_vi = fac_*fz*i0*funct_(vi);
-          if (true) //eta < -0.04)
-          {
           // ---------------------matrix
           for (int ui=0; ui<iel; ++ui)
           {
             emat(vi*numdofpernode_,ui*numdofpernode_+numscal_) += fac_fz_i0_funct_vi*(-alphaa)*frt*funct_(ui);
           }
           // ------------right-hand-side
-          erhs[vi*numdofpernode_] -= fac_fz_i0_funct_vi*(alphaa*frt*eta + 0.0);
-          }
-          else
-          {
-          // ---------------------matrix
-           double m = (alphaa*frt*(-0.04) + 1.0)/(-0.04);
-           m = alphaa*frt;
-          //cout<<"m = "<<m<<endl;
-            for (int ui=0; ui<iel; ++ui)
-          {
-            emat(vi*numdofpernode_,ui*numdofpernode_+numscal_) += fac_fz_i0_funct_vi*(-m)*funct_(ui);
-          }
-          // ------------right-hand-side
-          erhs[vi*numdofpernode_] -= fac_fz_i0_funct_vi*(m*eta + 0.0);
-          }
+          erhs[vi*numdofpernode_] -= fac_fz_i0_funct_vi*(alphaa*frt*eta + 1.0);
         }
       }
       else
@@ -1040,7 +1021,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
     {
       // compute integrals
       overpotentialint += eta * fac_;
-      currentintegral += (-i0) * (alphaa*frt*eta + 0.0) * fac_; // the negative(!) normal flux density
+      currentintegral += (-i0) * (alphaa*frt*eta + 1.0) * fac_; // the negative(!) normal flux density
       boundaryint += fac_;
       concentrationint += conint*fac_;
     }
