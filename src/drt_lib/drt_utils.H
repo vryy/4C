@@ -199,8 +199,8 @@ namespace UTILS
     if (nsd > global->NumVectors())
       dserror("Requested %d of %d available columns", nsd,global->NumVectors());
     const int iel = ele->NumNode(); // number of nodes
-    if (localmatrix.N()!=iel) dserror("local matrix has wrong number of columns");
-    if (localmatrix.M()!=nsd) dserror("local matrix has wrong number of rows");
+    if (((int) localmatrix.N())!=iel) dserror("local matrix has wrong number of columns");
+    if (((int) localmatrix.M())!=nsd) dserror("local matrix has wrong number of rows");
 
     for (int i=0; i<nsd; i++)
     {
@@ -233,8 +233,8 @@ namespace UTILS
 {
   const int numnode = ele->NumNode();
   const int numcol = global.NumVectors();
-  if (local.N()!=1) dserror("local matrix must have one column");
-  if (local.M()!=numnode) dserror("local matrix has wrong number of rows");
+  if (((int) local.N())!=1) dserror("local matrix must have one column");
+  if (((int) local.M())!=numnode) dserror("local matrix has wrong number of rows");
 
   // loop over element nodes
   for (int i=0; i<numnode; ++i)
