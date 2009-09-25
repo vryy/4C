@@ -1061,9 +1061,6 @@ OBJS_DRT_MAT_LIB = src/drt_mat/matpar_bundle.o \
                 src/drt_mat/matpar_parameter.o \
                 src/drt_mat/micromaterial.o \
                 src/drt_mat/newtonianfluid.o \
-                src/drt_mat/sutherland_fluid.o \
-                src/drt_mat/arrhenius_pv_fluid.o \
-                src/drt_mat/mixfrac_fluid.o \
                 src/drt_mat/stvenantkirchhoff.o \
                 src/drt_mat/lung_penalty.o \
                 src/drt_mat/lung_ogden.o \
@@ -1080,11 +1077,11 @@ OBJS_DRT_MAT_LIB = src/drt_mat/matpar_bundle.o \
                 src/drt_mat/artwallremod.o \
                 src/drt_mat/biocell.o \
                 src/drt_mat/scatra_mat.o \
-                src/drt_mat/sutherland_scatra.o \
+                src/drt_mat/mixfrac.o \
+                src/drt_mat/sutherland.o \
                 src/drt_mat/arrhenius_spec.o \
                 src/drt_mat/arrhenius_temp.o \
-                src/drt_mat/arrhenius_pv_scatra.o \
-                src/drt_mat/mixfrac_scatra.o \
+                src/drt_mat/arrhenius_pv.o \
                 src/drt_mat/carreauyasuda.o \
                 src/drt_mat/modpowerlaw.o \
                 src/drt_mat/material.o \

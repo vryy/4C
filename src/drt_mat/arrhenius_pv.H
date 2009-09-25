@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file arrhenius_pv_scatra.H
+\file arrhenius_pv.H
 
 <pre>
 Maintainer: Volker Gravemeier
@@ -10,8 +10,8 @@ Maintainer: Volker Gravemeier
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifndef ARRHENIUS_PV_SCATRA_H
-#define ARRHENIUS_PV_SCATRA_H
+#ifndef ARRHENIUS_PV_H
+#define ARRHENIUS_PV_H
 
 #ifdef CCADISCRET
 
@@ -26,17 +26,17 @@ namespace MAT
 
     /*----------------------------------------------------------------------*/
     /// parameters for scalar transport material with Arrhenius-type chemical kinetics (progress variable)
-    class ArrheniusPVScatra : public Parameter
+    class ArrheniusPV : public Parameter
     {
     public:
 
       /// standard constructor
-      ArrheniusPVScatra(
+      ArrheniusPV(
         Teuchos::RCP<MAT::PAR::Material> matdata
         );
 
       /// destructor
-      virtual ~ArrheniusPVScatra() { ; }
+      virtual ~ArrheniusPV() { ; }
 
       /// @name material parameters
       //@{
@@ -78,15 +78,15 @@ namespace MAT
 
   /*----------------------------------------------------------------------*/
   /// wrapper for scalar transport material with Arrhenius-type chemical kinetics (progress variable)
-  class ArrheniusPVScatra : public Material
+  class ArrheniusPV : public Material
   {
   public:
 
     /// construct empty material object
-    ArrheniusPVScatra();
+    ArrheniusPV();
 
     /// construct the material object given material parameters
-    explicit ArrheniusPVScatra(MAT::PAR::ArrheniusPVScatra* params);
+    explicit ArrheniusPV(MAT::PAR::ArrheniusPV* params);
 
     //! @name Packing and Unpacking
 
@@ -97,7 +97,7 @@ namespace MAT
       top of drt_parobject.H (this file) and should return it in this method.
     */
 
-    virtual int UniqueParObjectId() const { return ParObject_ArrheniusPVScatra; }
+    virtual int UniqueParObjectId() const { return ParObject_ArrheniusPV; }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -128,7 +128,25 @@ namespace MAT
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_arrhenius_pv_scatra; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_arrhenius_pv; }
+
+    /// compute temperature
+    double ComputeTemperature(const double provar) const;
+
+    /// compute density
+    double ComputeDensity(const double provar) const;
+
+    /// compute specific heat capacity at constant pressure
+    double ComputeShc(const double provar) const;
+
+    /// compute viscosity
+    double ComputeViscosity(const double temp) const;
+
+    /// compute diffusivity
+    double ComputeDiffusivity(const double temp) const;
+
+    /// compute reaction coefficient
+    double ComputeReactionCoeff(const double temp) const;
 
     /// compute rate parameter alpha
     double ComputeAlpha() const;
@@ -141,21 +159,6 @@ namespace MAT
 
     /// compute flame thickness due to Blint (1986)
     double ComputeBlintFlameThickness() const;
-
-    /// compute specific heat capacity at constant pressure
-    double ComputeShc(const double provar) const;
-
-    /// compute temperature
-    double ComputeTemperature(const double provar) const;
-
-    /// compute density
-    double ComputeDensity(const double provar) const;
-
-    /// compute diffusivity
-    double ComputeDiffusivity(const double temp) const;
-
-    /// compute reaction coefficient
-    double ComputeReactionCoeff(const double temp) const;
 
     /// return material parameters for element calculation
     //@{
@@ -194,7 +197,7 @@ namespace MAT
   private:
 
     /// my material parameters
-    MAT::PAR::ArrheniusPVScatra* params_;
+    MAT::PAR::ArrheniusPV* params_;
   };
 
 }

@@ -17,7 +17,6 @@ Created on: Jun 3, 2009
 
 #include "fluid2_th.H"
 #include "../drt_mat/newtonianfluid.H"
-#include "../drt_mat/sutherland_fluid.H"
 #include "../drt_mat/carreauyasuda.H"
 #include "../drt_mat/modpowerlaw.H"
 #include "../drt_lib/drt_utils.H"
@@ -471,7 +470,6 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcImpulseEqnImplicit(Fluid2* ele,
 
   // check here, if we really have a fluid !!
   if( material->MaterialType() != INPAR::MAT::m_fluid
-      && material->MaterialType() != INPAR::MAT::m_sutherland_fluid
       && material->MaterialType() != INPAR::MAT::m_carreauyasuda
       && material->MaterialType() != INPAR::MAT::m_modpowerlaw) dserror("Material law is not a fluid");
 
@@ -1020,7 +1018,6 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcImpulseEqnSemiImplicit(Fluid2* ele,
 
   // check here, if we really have a fluid !!
   if( material->MaterialType() != INPAR::MAT::m_fluid
-      && material->MaterialType() != INPAR::MAT::m_sutherland_fluid
       && material->MaterialType() != INPAR::MAT::m_carreauyasuda
       && material->MaterialType() != INPAR::MAT::m_modpowerlaw) dserror("Material law is not a fluid");
 
@@ -1570,7 +1567,6 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcSysmatAndResidual(Fluid2* ele,
 
   // check here, if we really have a fluid !!
   if( material->MaterialType() != INPAR::MAT::m_fluid
-      && material->MaterialType() != INPAR::MAT::m_sutherland_fluid
       && material->MaterialType() != INPAR::MAT::m_carreauyasuda
       && material->MaterialType() != INPAR::MAT::m_modpowerlaw) dserror("Material law is not a fluid");
 
@@ -2164,7 +2160,6 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcResidual(Fluid2* ele,
 
   // check here, if we really have a fluid !!
   if( material->MaterialType() != INPAR::MAT::m_fluid
-      && material->MaterialType() != INPAR::MAT::m_sutherland_fluid
       && material->MaterialType() != INPAR::MAT::m_carreauyasuda
       && material->MaterialType() != INPAR::MAT::m_modpowerlaw) dserror("Material law is not a fluid");
 
@@ -3006,16 +3001,6 @@ void DRT::ELEMENTS::Fluid2TH<distype>::CalVisc(
     // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
     visc = m * pow((delta + rateofshear), (-1)*a);
   }
-  /*else if (material->MaterialType() == INPAR::MAT::m_sutherland_fluid)
-	{
-		const MAT::SutherlandFluid* actmat = static_cast<const MAT::SutherlandFluid*>(material.get());
-
-		// compute viscosity according to Sutherland law
-		const double s  = actmat->SuthTemp();
-		const double rt = actmat->RefTemp();
-		const double t  = eosfac/dens;
-		visc = pow((t/rt),1.5)*((rt+s)/(t+s))*actmat->RefVisc();
-	}*/
   else
     dserror("material type is not yet implemented");
     }

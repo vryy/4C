@@ -18,11 +18,11 @@ Maintainer: Georg Bauer
 
 #include "scatra_ele_impl.H"
 #include "../drt_mat/scatra_mat.H"
-#include "../drt_mat/mixfrac_scatra.H"
-#include "../drt_mat/sutherland_scatra.H"
+#include "../drt_mat/mixfrac.H"
+#include "../drt_mat/sutherland.H"
 #include "../drt_mat/arrhenius_spec.H"
 #include "../drt_mat/arrhenius_temp.H"
-#include "../drt_mat/arrhenius_pv_scatra.H"
+#include "../drt_mat/arrhenius_pv.H"
 #include "../drt_mat/ion.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -796,15 +796,15 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     // get the material
     RefCountPtr<MAT::Material> material = ele->Material();
 
-    if (material->MaterialType() == INPAR::MAT::m_sutherland_scatra)
+    if (material->MaterialType() == INPAR::MAT::m_sutherland)
     {
-      const MAT::SutherlandScatra* actmat = static_cast<const MAT::SutherlandScatra*>(material.get());
+      const MAT::Sutherland* actmat = static_cast<const MAT::Sutherland*>(material.get());
 
       params.set("thermodynamic pressure",actmat->ThermPress());
     }
-    else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv_scatra)
+    else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
     {
-      const MAT::ArrheniusPVScatra* actmat = static_cast<const MAT::ArrheniusPVScatra*>(material.get());
+      const MAT::ArrheniusPV* actmat = static_cast<const MAT::ArrheniusPV*>(material.get());
 
       params.set("flame parameter beta",     actmat->ComputeBeta());
       params.set("diffusive flame thickness",actmat->ComputeDiffFlameThickness());
@@ -1384,23 +1384,23 @@ else if (material->MaterialType() == INPAR::MAT::m_scatra)
   densam_[0]      = 1.0;
   densgradfac_[0] = 0.0;
 }
-else if (material->MaterialType() == INPAR::MAT::m_mixfrac_scatra)
+else if (material->MaterialType() == INPAR::MAT::m_mixfrac)
 {
-  const MAT::MixFracScatra* actmat = static_cast<const MAT::MixFracScatra*>(material.get());
+  const MAT::MixFrac* actmat = static_cast<const MAT::MixFrac*>(material.get());
 
-  dsassert(numdofpernode_==1,"more than 1 dof per node for mixture-fraction SCATRA material");
-
-  // get constant diffusivity
-  diffus_[0] = actmat->Diffusivity();
-
-  // set specific heat capacity at constant pressure to 1.0
-  shcacp_ = 1.0;
+  dsassert(numdofpernode_==1,"more than 1 dof per node for mixture-fraction material");
 
   // compute mixture fraction at n+1 or n+alpha_F
   const double mixfracnp = funct_.Dot(ephinp_[0]);
 
+  // compute dynamic diffusivity at n+1 or n+alpha_F based on mixture fraction
+  diffus_[0] = actmat->ComputeDiffusivity(mixfracnp);
+
   // compute density at n+1 or n+alpha_F based on mixture fraction
   densnp_[0] = actmat->ComputeDensity(mixfracnp);
+
+  // set specific heat capacity at constant pressure to 1.0
+  shcacp_ = 1.0;
 
   if (is_genalpha_)
   {
@@ -1425,11 +1425,11 @@ else if (material->MaterialType() == INPAR::MAT::m_mixfrac_scatra)
   reacoeff_[0] = 0.0;
   reatemprhs_[0] = 0.0;
 }
-else if (material->MaterialType() == INPAR::MAT::m_sutherland_scatra)
+else if (material->MaterialType() == INPAR::MAT::m_sutherland)
 {
-  const MAT::SutherlandScatra* actmat = static_cast<const MAT::SutherlandScatra*>(material.get());
+  const MAT::Sutherland* actmat = static_cast<const MAT::Sutherland*>(material.get());
 
-  dsassert(numdofpernode_==1,"more than 1 dof per node for Sutherland SCATRA material");
+  dsassert(numdofpernode_==1,"more than 1 dof per node for Sutherland material");
 
   // get specific heat capacity at constant pressure
   shcacp_ = actmat->Shc();
@@ -1467,11 +1467,11 @@ else if (material->MaterialType() == INPAR::MAT::m_sutherland_scatra)
   reacoeff_[0] = 0.0;
   reatemprhs_[0] = 0.0;
 }
-else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv_scatra)
+else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
 {
-  const MAT::ArrheniusPVScatra* actmat = static_cast<const MAT::ArrheniusPVScatra*>(material.get());
+  const MAT::ArrheniusPV* actmat = static_cast<const MAT::ArrheniusPV*>(material.get());
 
-  dsassert(numdofpernode_==1,"more than 1 dof per node for SCATRA progress-variable material");
+  dsassert(numdofpernode_==1,"more than 1 dof per node for progress-variable material");
 
   // get progress variable at n+1 or n+alpha_F
   const double provarnp = funct_.Dot(ephinp_[0]);
@@ -3514,12 +3514,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
     // set density to 1.0
     dens = 1.0;
   }
-  else if (material->MaterialType() == INPAR::MAT::m_mixfrac_scatra)
+  else if (material->MaterialType() == INPAR::MAT::m_mixfrac)
   {
-    const MAT::MixFracScatra* actmat = static_cast<const MAT::MixFracScatra*>(material.get());
-
-    // get constant diffusivity
-    diffus = actmat->Diffusivity();
+    const MAT::MixFrac* actmat = static_cast<const MAT::MixFrac*>(material.get());
 
     // compute mixture fraction
     double mixfrac = 0.0;
@@ -3528,12 +3525,15 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
       mixfrac += funct_(i)*ephinp[i];
     }
 
+    // compute dynamic diffusivity based on mixture fraction
+    diffus = actmat->ComputeDiffusivity(mixfrac);
+
     // compute density based on mixture fraction
     dens = actmat->ComputeDensity(mixfrac);
   }
-  else if (material->MaterialType() == INPAR::MAT::m_sutherland_scatra)
+  else if (material->MaterialType() == INPAR::MAT::m_sutherland)
   {
-    const MAT::SutherlandScatra* actmat = static_cast<const MAT::SutherlandScatra*>(material.get());
+    const MAT::Sutherland* actmat = static_cast<const MAT::Sutherland*>(material.get());
 
     // get specific heat capacity at constant pressure
     shcacp_ = actmat->Shc();
@@ -3551,9 +3551,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
     // compute density based on temperature and thermodynamic pressure
     dens = actmat->ComputeDensity(temp,thermpressnp_);
   }
-  else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv_scatra)
+  else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
   {
-    const MAT::ArrheniusPVScatra* actmat = static_cast<const MAT::ArrheniusPVScatra*>(material.get());
+    const MAT::ArrheniusPV* actmat = static_cast<const MAT::ArrheniusPV*>(material.get());
 
     // compute progress variable
     double provar = 0.0;

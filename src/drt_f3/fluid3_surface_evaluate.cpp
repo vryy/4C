@@ -29,9 +29,6 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/drt_function.H"
 
 #include "../drt_mat/newtonianfluid.H"
-#include "../drt_mat/mixfrac_fluid.H"
-#include "../drt_mat/sutherland_fluid.H"
-#include "../drt_mat/arrhenius_pv_fluid.H"
 #include "../drt_mat/carreauyasuda.H"
 #include "../drt_mat/modpowerlaw.H"
 
@@ -1676,12 +1673,8 @@ void DRT::ELEMENTS::Fluid3Surface::ElementSurfaceTension(ParameterList& params,
     const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
     SFgamma = actmat->Gamma();
   }
-  else if (mat->MaterialType()==INPAR::MAT::m_sutherland_fluid)
-  {
-    // no Gamma available
-  }
   else
-    dserror("newtonian or sutherland fluid material expected but got type %d", mat->MaterialType());
+    dserror("Newtonian fluid material expected but got type %d", mat->MaterialType());
 
   // gaussian points
   const DiscretizationType distype = this->Shape();
@@ -1831,7 +1824,6 @@ void DRT::ELEMENTS::Fluid3Surface::AreaCaculation(ParameterList& params)
 
   if( mat->MaterialType()    != INPAR::MAT::m_carreauyasuda
       && mat->MaterialType() != INPAR::MAT::m_modpowerlaw
-      && mat->MaterialType() != INPAR::MAT::m_sutherland_fluid
       && mat->MaterialType() != INPAR::MAT::m_fluid)
           dserror("Material law is not a fluid");
 
@@ -1840,11 +1832,6 @@ void DRT::ELEMENTS::Fluid3Surface::AreaCaculation(ParameterList& params)
     const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
     density = actmat->Density();
     viscosity =  actmat->Viscosity();
-  }
-  else if(mat->MaterialType()== INPAR::MAT::m_sutherland_fluid)
-  {
-    //const MAT::SutherlandFluid* actmat = static_cast<const MAT::SutherlandFluid*>(mat.get());
-    dserror("How to extract viscosity from Sutherland law material for artery tree??");
   }
   else if(mat->MaterialType()== INPAR::MAT::m_carreauyasuda)
   {
@@ -1859,7 +1846,7 @@ void DRT::ELEMENTS::Fluid3Surface::AreaCaculation(ParameterList& params)
     dserror("How to extract viscosity from modified power law material for artery tree??");
   }
   else
-    dserror("fluid material expected but got type %d", mat->MaterialType());
+    dserror("Fluid material expected but got type %d", mat->MaterialType());
 
   // set required material data for communication
   params.set<double>("density", density);
@@ -2060,7 +2047,6 @@ void DRT::ELEMENTS::Fluid3Surface::ImpedanceIntegration(ParameterList& params,
 
   if( mat->MaterialType()    != INPAR::MAT::m_carreauyasuda
       && mat->MaterialType() != INPAR::MAT::m_modpowerlaw
-      && mat->MaterialType() != INPAR::MAT::m_sutherland_fluid
       && mat->MaterialType() != INPAR::MAT::m_fluid)
           dserror("Material law is not a fluid");
 
@@ -2068,11 +2054,6 @@ void DRT::ELEMENTS::Fluid3Surface::ImpedanceIntegration(ParameterList& params,
   {
     const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
     invdensity = 1.0/actmat->Density();
-  }
-  else if(mat->MaterialType()== INPAR::MAT::m_sutherland_fluid)
-  {
-    //const MAT::SutherlandFluid* actmat = static_cast<const MAT::SutherlandFluid*>(mat.get());
-    dserror("You really want to compute this with Sutherland fluid???");
   }
   else if(mat->MaterialType()== INPAR::MAT::m_carreauyasuda)
   {
@@ -2085,7 +2066,7 @@ void DRT::ELEMENTS::Fluid3Surface::ImpedanceIntegration(ParameterList& params,
     invdensity = 1.0/actmat->Density();
   }
   else
-    dserror("fluid material expected but got type %d", mat->MaterialType());
+    dserror("Fluid material expected but got type %d", mat->MaterialType());
 
 
   // allocate vector for shape functions and matrix for derivatives

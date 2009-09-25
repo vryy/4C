@@ -32,9 +32,9 @@ Maintainer: Georg Bauer
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_mat/newtonianfluid.H"
-#include "../drt_mat/mixfrac_fluid.H"
-#include "../drt_mat/sutherland_fluid.H"
-#include "../drt_mat/arrhenius_pv_fluid.H"
+#include "../drt_mat/mixfrac.H"
+#include "../drt_mat/sutherland.H"
+#include "../drt_mat/arrhenius_pv.H"
 #include "../drt_mat/carreauyasuda.H"
 #include "../drt_mat/modpowerlaw.H"
 
@@ -647,9 +647,9 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
       break;
       case get_gas_constant:
       {
-        if (mat->MaterialType()== INPAR::MAT::m_sutherland_fluid)
+        if (mat->MaterialType()== INPAR::MAT::m_sutherland)
         {
-          MAT::SutherlandFluid* actmat = static_cast<MAT::SutherlandFluid*>(mat.get());
+          MAT::Sutherland* actmat = static_cast<MAT::Sutherland*>(mat.get());
           params.set("gas constant", actmat->GasConst());
         }
       }

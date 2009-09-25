@@ -1,5 +1,6 @@
-/*!----------------------------------------------------------------------
-\file mixfrac_fluid.cpp
+/*----------------------------------------------------------------------*/
+/*!
+\file sutherland.cpp
 
 <pre>
 Maintainer: Volker Gravemeier
@@ -7,29 +8,35 @@ Maintainer: Volker Gravemeier
             http://www.lnm.mw.tum.de
             089 - 289-15245
 </pre>
-*----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
 #include <vector>
-#include "mixfrac_fluid.H"
+
+#include "sutherland.H"
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::MixFracFluid::MixFracFluid(
+MAT::PAR::Sutherland::Sutherland(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : Parameter(matdata),
-  viscosity_(matdata->GetDouble("VISCOSITY")),
-  eosfaca_(matdata->GetDouble("EOSFACA")),
-  eosfacb_(matdata->GetDouble("EOSFACB"))
+  refvisc_(matdata->GetDouble("REFVISC")),
+  reftemp_(matdata->GetDouble("REFTEMP")),
+  suthtemp_(matdata->GetDouble("SUTHTEMP")),
+  shc_(matdata->GetDouble("SHC")),
+  pranum_(matdata->GetDouble("PRANUM")),
+  thermpress_(matdata->GetDouble("THERMPRESS")),
+  gasconst_(matdata->GetDouble("GASCON"))
 {
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::MixFracFluid::MixFracFluid()
+MAT::Sutherland::Sutherland()
   : params_(NULL)
 {
 }
@@ -37,7 +44,7 @@ MAT::MixFracFluid::MixFracFluid()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::MixFracFluid::MixFracFluid(MAT::PAR::MixFracFluid* params)
+MAT::Sutherland::Sutherland(MAT::PAR::Sutherland* params)
   : params_(params)
 {
 }
@@ -45,14 +52,13 @@ MAT::MixFracFluid::MixFracFluid(MAT::PAR::MixFracFluid* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::MixFracFluid::Pack(vector<char>& data) const
+void MAT::Sutherland::Pack(vector<char>& data) const
 {
   data.resize(0);
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
-
   // matid
   int matid = -1;
   if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
@@ -62,7 +68,7 @@ void MAT::MixFracFluid::Pack(vector<char>& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::MixFracFluid::Unpack(const vector<char>& data)
+void MAT::Sutherland::Unpack(const vector<char>& data)
 {
   int position = 0;
   // extract type
@@ -77,10 +83,10 @@ void MAT::MixFracFluid::Unpack(const vector<char>& data)
   if (DRT::Problem::NumInstances() > 0)
   {
     const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
-    MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-    if (mat->Type() == MaterialType())
-      params_ = static_cast<MAT::PAR::MixFracFluid*>(mat);
-    else
+  MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+  if (mat->Type() == MaterialType())
+    params_ = static_cast<MAT::PAR::Sutherland*>(mat);
+  else
       dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
   }
   else
@@ -92,13 +98,34 @@ void MAT::MixFracFluid::Unpack(const vector<char>& data)
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
 }
 
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::MixFracFluid::ComputeDensity(const double mixfrac) const
+double MAT::Sutherland::ComputeViscosity(const double temp) const
 {
-  const double density = 1.0 / (EosFacA() * mixfrac + EosFacB());
+  const double visc = pow((temp/RefTemp()),1.5)*((RefTemp()+SuthTemp())/(temp+SuthTemp()))*RefVisc();
+
+  return visc;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double MAT::Sutherland::ComputeDiffusivity(const double temp) const
+{
+  const double diffus = pow((temp/RefTemp()),1.5)*((RefTemp()+SuthTemp())/(temp+SuthTemp()))*RefVisc()/PraNum();
+
+  return diffus;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double MAT::Sutherland::ComputeDensity(const double temp,
+                                       const double thermpress) const
+{
+  const double density = thermpress/(GasConst()*temp);
 
   return density;
 }
+
 
 #endif

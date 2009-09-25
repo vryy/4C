@@ -19,9 +19,6 @@ Maintainer: Lena Wiechert
 
 #include "material.H"
 #include "newtonianfluid.H"
-#include "mixfrac_fluid.H"
-#include "sutherland_fluid.H"
-#include "arrhenius_pv_fluid.H"
 #include "stvenantkirchhoff.H"
 #include "micromaterial.H"
 #include "neohooke.H"
@@ -29,11 +26,11 @@ Maintainer: Lena Wiechert
 #include "aaaraghavanvorp_damage.H"
 #include "logneohooke.H"
 #include "scatra_mat.H"
-#include "mixfrac_scatra.H"
-#include "sutherland_scatra.H"
+#include "mixfrac.H"
+#include "sutherland.H"
 #include "arrhenius_spec.H"
 #include "arrhenius_temp.H"
-#include "arrhenius_pv_scatra.H"
+#include "arrhenius_pv.H"
 #include "anisotropic_balzani.H"
 #include "mooneyrivlin.H"
 #include "yeoh.H"
@@ -81,27 +78,6 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
       curmat->SetParameter(new MAT::PAR::NewtonianFluid(curmat));
     MAT::PAR::NewtonianFluid* params = static_cast<MAT::PAR::NewtonianFluid*>(curmat->Parameter());
     return Teuchos::rcp(new NewtonianFluid(params));
-  }
-  case INPAR::MAT::m_mixfrac_fluid:
-  {
-    if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::MixFracFluid(curmat));
-    MAT::PAR::MixFracFluid* params = static_cast<MAT::PAR::MixFracFluid*>(curmat->Parameter());
-    return Teuchos::rcp(new MixFracFluid(params));
-  }
-  case INPAR::MAT::m_sutherland_fluid:
-  {
-    if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::SutherlandFluid(curmat));
-    MAT::PAR::SutherlandFluid* params = static_cast<MAT::PAR::SutherlandFluid*>(curmat->Parameter());
-    return Teuchos::rcp(new SutherlandFluid(params));
-  }
-  case INPAR::MAT::m_arrhenius_pv_fluid:
-  {
-    if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::ArrheniusPVFluid(curmat));
-    MAT::PAR::ArrheniusPVFluid* params = static_cast<MAT::PAR::ArrheniusPVFluid*>(curmat->Parameter());
-    return Teuchos::rcp(new ArrheniusPVFluid(params));
   }
   case INPAR::MAT::m_stvenant:
   {
@@ -208,19 +184,19 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
     MAT::PAR::ScatraMat* params = static_cast<MAT::PAR::ScatraMat*>(curmat->Parameter());
     return Teuchos::rcp(new ScatraMat(params));
   }
-  case INPAR::MAT::m_mixfrac_scatra:
+  case INPAR::MAT::m_mixfrac:
   {
     if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::MixFracScatra(curmat));
-    MAT::PAR::MixFracScatra* params = static_cast<MAT::PAR::MixFracScatra*>(curmat->Parameter());
-    return Teuchos::rcp(new MixFracScatra(params));
+      curmat->SetParameter(new MAT::PAR::MixFrac(curmat));
+    MAT::PAR::MixFrac* params = static_cast<MAT::PAR::MixFrac*>(curmat->Parameter());
+    return Teuchos::rcp(new MixFrac(params));
   }
-  case INPAR::MAT::m_sutherland_scatra:
+  case INPAR::MAT::m_sutherland:
   {
     if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::SutherlandScatra(curmat));
-    MAT::PAR::SutherlandScatra* params = static_cast<MAT::PAR::SutherlandScatra*>(curmat->Parameter());
-    return Teuchos::rcp(new SutherlandScatra(params));
+      curmat->SetParameter(new MAT::PAR::Sutherland(curmat));
+    MAT::PAR::Sutherland* params = static_cast<MAT::PAR::Sutherland*>(curmat->Parameter());
+    return Teuchos::rcp(new Sutherland(params));
   }
   case INPAR::MAT::m_arrhenius_spec:
   {
@@ -236,12 +212,12 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
     MAT::PAR::ArrheniusTemp* params = static_cast<MAT::PAR::ArrheniusTemp*>(curmat->Parameter());
     return Teuchos::rcp(new ArrheniusTemp(params));
   }
-  case INPAR::MAT::m_arrhenius_pv_scatra:
+  case INPAR::MAT::m_arrhenius_pv:
   {
     if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::ArrheniusPVScatra(curmat));
-    MAT::PAR::ArrheniusPVScatra* params = static_cast<MAT::PAR::ArrheniusPVScatra*>(curmat->Parameter());
-    return Teuchos::rcp(new ArrheniusPVScatra(params));
+      curmat->SetParameter(new MAT::PAR::ArrheniusPV(curmat));
+    MAT::PAR::ArrheniusPV* params = static_cast<MAT::PAR::ArrheniusPV*>(curmat->Parameter());
+    return Teuchos::rcp(new ArrheniusPV(params));
   }
   case INPAR::MAT::m_carreauyasuda:
   {

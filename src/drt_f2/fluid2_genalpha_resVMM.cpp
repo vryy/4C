@@ -19,7 +19,6 @@ Maintainer: Peter Gamnitzer
 #include "fluid2_genalpha_resVMM.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/carreauyasuda.H"
-#include "../drt_mat/sutherland_fluid.H"
 #include "../drt_mat/modpowerlaw.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"

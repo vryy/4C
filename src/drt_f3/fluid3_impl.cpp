@@ -19,9 +19,9 @@ Maintainer: Ulrich Kuettler
 #include "fluid3_impl.H"
 
 #include "../drt_mat/newtonianfluid.H"
-#include "../drt_mat/mixfrac_fluid.H"
-#include "../drt_mat/sutherland_fluid.H"
-#include "../drt_mat/arrhenius_pv_fluid.H"
+#include "../drt_mat/mixfrac.H"
+#include "../drt_mat/sutherland.H"
+#include "../drt_mat/arrhenius_pv.H"
 #include "../drt_mat/carreauyasuda.H"
 #include "../drt_mat/modpowerlaw.H"
 #include "../drt_lib/drt_timecurve.H"
@@ -2989,15 +2989,15 @@ else if (material->MaterialType() == INPAR::MAT::m_modpowerlaw)
   // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
   visc_ = m * pow((delta + rateofstrain), (-1)*a);
 }
-else if (material->MaterialType() == INPAR::MAT::m_mixfrac_fluid)
+else if (material->MaterialType() == INPAR::MAT::m_mixfrac)
 {
-  const MAT::MixFracFluid* actmat = static_cast<const MAT::MixFracFluid*>(material.get());
-
-  // get constant viscosity
-  visc_ = actmat->Viscosity();
+  const MAT::MixFrac* actmat = static_cast<const MAT::MixFrac*>(material.get());
 
   // compute mixture fraction at n+1 or n+alpha_F
   const double mixfracnp = funct_.Dot(escanp);
+
+  // compute dynamic viscosity at n+1 or n+alpha_F based on mixture fraction
+  visc_ = actmat->ComputeViscosity(mixfracnp);
 
   // compute density at n+1 or n+alpha_F based on mixture fraction
   densnp_ = actmat->ComputeDensity(mixfracnp);
@@ -3016,9 +3016,9 @@ else if (material->MaterialType() == INPAR::MAT::m_mixfrac_fluid)
   // no addition to density derivative
   densdtadd_ = 0.0;
 }
-else if (material->MaterialType() == INPAR::MAT::m_sutherland_fluid)
+else if (material->MaterialType() == INPAR::MAT::m_sutherland)
 {
-  const MAT::SutherlandFluid* actmat = static_cast<const MAT::SutherlandFluid*>(material.get());
+  const MAT::Sutherland* actmat = static_cast<const MAT::Sutherland*>(material.get());
 
   // compute temperature at n+1 or n+alpha_F
   const double tempnp = funct_.Dot(escanp);
@@ -3054,9 +3054,9 @@ else if (material->MaterialType() == INPAR::MAT::m_sutherland_fluid)
     densdtadd_ = -thermpressdt_/thermpressnp_;
   }
 }
-else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv_fluid)
+else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
 {
-  const MAT::ArrheniusPVFluid* actmat = static_cast<const MAT::ArrheniusPVFluid*>(material.get());
+  const MAT::ArrheniusPV* actmat = static_cast<const MAT::ArrheniusPV*>(material.get());
 
   // get progress variable at n+1 or n+alpha_F
   const double provarnp = funct_.Dot(escanp);

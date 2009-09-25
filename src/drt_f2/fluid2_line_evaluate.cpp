@@ -25,9 +25,6 @@ Maintainer: Peter Gmanitzer
 #include "../drt_lib/drt_function.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_mat/newtonianfluid.H"
-#include "../drt_mat/mixfrac_fluid.H"
-#include "../drt_mat/sutherland_fluid.H"
-#include "../drt_mat/arrhenius_pv_fluid.H"
 #include "../drt_mat/carreauyasuda.H"
 #include "../drt_mat/modpowerlaw.H"
 
@@ -892,11 +889,8 @@ void DRT::ELEMENTS::Fluid2Line::ElementSurfaceTension(ParameterList& params,
     MAT::NewtonianFluid* actmat = static_cast<MAT::NewtonianFluid*>(mat.get());
     SFgamma = actmat->Gamma();
   }
-  else if (mat->MaterialType()==INPAR::MAT::m_sutherland_fluid)
-    //MAT::SutherlandFluid* actmat = static_cast<MAT::SutherlandFluid*>(mat.get());
-    dserror("no gamma for Sutherland's fluid");
   else
-    dserror("newtonian or sutherland fluid material expected but got type %d", mat->MaterialType());
+    dserror("Newtonian fluid material expected but got type %d", mat->MaterialType());
 
   // gaussian points
   const DiscretizationType distype = this->Shape();
