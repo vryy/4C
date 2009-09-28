@@ -942,7 +942,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                yesnotuple,yesnovalue,&statmech);
   //Reading double parameters for shear flow field
   DoubleParameter("SHEARAMPLITUDE",0.0,"Shear amplitude of flow in z-direction",&statmech);
-  DoubleParameter("SHEARFREQUENZY",0.0,"Shear frequency of flow in z-direction",&statmech);
+  DoubleParameter("SHEARFREQUENCY",0.0,"Shear frequency of flow in z-direction",&statmech);
   //Reading double parameter for viscosity of background fluid
   DoubleParameter("ETA",0.0,"viscosity",&statmech);
   //Reading double parameter for thermal energy in background fluid (temperature * Boltzmann constant)
