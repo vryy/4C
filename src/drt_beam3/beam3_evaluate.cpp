@@ -552,16 +552,15 @@ void DRT::ELEMENTS::Beam3::ComputeLocalBrownianForces(ParameterList& params)
   //get ndof=3 independent stochastic forces for each node
   LINALG::Matrix<nnode,3> aux;
     for (int i=0; i<nnode; i++)
-    {
     	for(int j=0; j<3; j++)
-    	{
     		aux(i,j) = normalGen.random();
-    	}
-    }
 
-  /*calculation of Brownian forces and damping is based on drag coefficient; this coefficient per unit
-  * length is approximated by the one of an infinitely long staff for friciton orthogonal to staff axis*/
-  double zeta = 4 * PI * lrefe_ * params.get<double>("ETA",0.0);
+    //zeta: damping constant per length (~4*pi*eta) times element length
+    DRT::UTILS::IntegrationPoints1D gausspointsdamping(gaussrule_);
+    double zeta =  0;
+    for (int gp=0; gp<nnode-1; gp++)//loop through Gauss points
+      zeta += 4*PI*gausspointsdamping.qwgt[gp]*alpha_[gp]* params.get<double>("ETA",0.0);
+      
   int stochasticorder = params.get<int>("STOCH_ORDER",-2);
   
   
@@ -767,17 +766,17 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
 
 	double dt = params.get<double>("delta time",0.0);//timestep
 
- 
-	/*the following block adds a rotational damping and related internal forces; this damping goes along with the damping of a
-	 * rigid straight rod spinning around its own axis; analytically it is given by a damping coefficient
-	 * gamma_a = 4*pi*eta*r^2*lrefe_ where r is the radius of the crosssection; as this
-	 * coefficient is very small for thin rods it is increased artificially by a factor for numerical convencience*/
- 
-	double rsquare = pow((4*Iyy_/PI),0.5);
-  //gamma_a artificially increased by factor artificial; this factor should scale with lrefe_^2 and comprise a heuristically calculated constant (here 60)
+	 /*the following block adds a rotational damping and related internal forces; this damping goes along with the damping of a
+   * rigid straight rod spinning around its own axis; analytically it is given by a damping coefficient per length
+   * gamma_a = 4*pi*eta*r^2 where r is the radius of the crosssection; as this coefficient is very small for thin 
+   * rods it is increased artificially by a factor for numerical convencience*/
+	 
+  double rsquare = pow((4*Iyy_/PI),0.5);
+  //gamma_a artificially increased by factor artificial
   double artificial = 60*16;
   double gammaa = 4*PI*params.get<double>("ETA",0.0)*(rsquare)*artificial;
-  
+	
+	
   //aux variables for rot damp calculation,vector contains matrix for each Gausspoint
   vector<LINALG::Matrix<4,1> > deltaQ;
   deltaQ.resize(nnode-1);
@@ -795,7 +794,8 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
   artstiff.resize(nnode-1);
   vector<LINALG::Matrix<3,1> > artforce;
   artforce.resize(nnode-1);
-    
+  
+ 
   //Get the applied integrationpoints for complete integration
   DRT::UTILS::IntegrationPoints1D gausspointsrotdamp(gaussrule_);
   
@@ -844,185 +844,23 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
 			for (int j=0; j<nnode; j++)
 			{
 				for(int k=0; k<3; k++)//loop over rotation dof blocks
-				{
 					for (int l=0; l<3; l++)
-					{
-						//add rot damp stiffness
 						(*stiffmatrix)(i*6+3+k,j*6+3+l) += artstiff[gp](k,l)*funct(i)*funct(j)*wgt*alpha_[gp];						
-					}
-				}	
 				//add rot damp forces
 				for (int k=0; k<3; k++)
-				{
-				(*force)(i*6+3+k)	+=artforce[gp](k)*funct(i)*funct(j)*wgt*alpha_[gp];
-				}							
+				  (*force)(i*6+3+k)	+=artforce[gp](k)*funct(i)*funct(j)*wgt*alpha_[gp];						
 			}
 		}		
   }
 
+		 
+	//zeta: damping constant per length times element length
+	DRT::UTILS::IntegrationPoints1D gausspointsdamping(gaussrule_);
+	double zeta =  0;
+  for (int gp=0; gp<nnode-1; gp++)//loop through Gauss points
+    zeta += 4*PI*gausspointsdamping.qwgt[gp]*alpha_[gp]* params.get<double>("ETA",0.0);
 	
-	
-	
-		
-	/*the following block is optional to insert for the above block to calc a rotational damping only in case
-	 * of linear elements. For this case it follows a full implicit integrations scheme */
-	
-	/*
-	if(nnode==2)
-	{	
-		double rsquare = pow((4*Iyy_/PI),0.5);
-	  //gamma_a artificially increased by factor artificial; this factor should scale with lrefe_^2 and comprise a heuristically calculated constant (here 60)
-	  double artificial = 60*(lrefe_);
-	  double gammaa = 4*PI*params.get<double>("ETA",0.0)*(rsquare)*artificial; 
-	  
-	 
-	  //computing angle increment from current position in comparison with last converged position for damping
-	  LINALG::Matrix<4,1> deltaQ;
-	  LINALG::Matrix<3,1> deltatheta;     
-	  quaternionproduct(inversequaternion(Qconv_[0]),Qnew_[0],deltaQ);      
-	  quaterniontoangle(deltaQ,deltatheta);
-	  
-	  //angular velocity
-	  LINALG::Matrix<3,1> omega = deltatheta;
-	  omega.Scale(1/ params.get<double>("delta time",0.01));
-	          
-	  //computing special matrix for anisotropic damping
-	  LINALG::Matrix<3,3> Tnew;
-	  quaterniontotriad(Qnew_[0],Tnew);
-	  LINALG::Matrix<3,3> Theta;
-	  for(int i = 0; i<3; i++)
-	    for(int j = 0; j<3; j++)
-	      Theta(i,j) = Tnew(i,0)*Tnew(j,0);
-	  
-	  //inverse exponential map
-	  LINALG::Matrix<3,3> Hinverse = Hinv(deltatheta);
-	    
-	  //stiffness due to rotational damping    
-	  LINALG::Matrix<3,3> artstiff;
-	  artstiff.Multiply(Theta,Hinverse);
-	  artstiff.Scale(gammaa*0.5 / params.get<double>("delta time",0.01));
-	      
-	  //forces due to rotational damping 
-	  LINALG::Matrix<3,1> artforce;
-	  artforce.Multiply(Theta,omega);
-	  artforce.Scale(gammaa);
-	  
-	  //adding artificial contributions to stiffness matrix and force vector
-	  for(int i= 0; i<3; i++)
-	  {
-	    for(int j=0;j<3;j++)
-	    {
-	      (*stiffmatrix)(3+i, 3+j) += artstiff(i,j);
-	      (*stiffmatrix)(9+i, 9+j) += artstiff(i,j);
-	      (*stiffmatrix)(9+i, 3+j) += artstiff(i,j);
-	      (*stiffmatrix)(3+i, 9+j) += artstiff(i,j);
-	    }
-	  }    
-	
-	  for(int i = 0; i<3; i++)
-	  {    
-	    (*force)[3+i] += artforce(i);
-	    (*force)[9+i] += artforce(i);      
-	  }     
-	  
-	  
-	  //section for additional term, due to using Tnew instead of Tconv for transforming Theta to global
-		  //define seperate spin matrix for each rot dof	  				
-			 LINALG::Matrix<3,3> Spin1(true);//delta alpha1
-			 Spin1(1,2)=-1.0;
-			 Spin1(2,1)=1.0;
-			 
-			 LINALG::Matrix<3,3> Spin2(true);//delta alpha2
-			 Spin2(0,2)=1.0;
-			 Spin2(2,0)=-1.0;
-			 
-			 LINALG::Matrix<3,3> Spin3(true);//delta alpha3
-			 Spin3(0,1)=-1.0;
-			 Spin3(1,0)=1.0;
-		   LINALG::Matrix<3,3> rot1(true);
-		   LINALG::Matrix<3,3> rot2(true);
-		   LINALG::Matrix<3,1> col(true);
-		   LINALG::Matrix<3,3> rotstifftemp;
-			 
-			 //values due to alpha 1
-			 rot1.Multiply(Spin1,Theta);//multiply S1 from left
-			 rot2.Multiply(Theta,Spin1);//multiply S1 from right
-			 	  				 
-			 for(int i=0; i<3; i++)//calc difference of both contributions
-		 	 {
-		 		 for (int j=0; j<3; j++)
-		 		 {
-		 			rot1(i,j)=rot1(i,j)-rot2(i,j); 
-		 		 }
-		 	 }
-		  	
-		   rot1.Scale(gammaa);
-		   col.Multiply(rot1,omega);
-		   
-		   for (int i=0; i<3; i++)
-		   {
-		     rotstifftemp(i,0)=col(i,0);
-		   }
-		  
-		   //values due to alpha 2
-		   rot1.Multiply(Spin2,Theta);//multiply S1 from left
-		   rot2.Multiply(Theta,Spin2);//multiply S1 from right
-		   	 	  				 
-		 	 for(int i=0; i<3; i++)//calc difference of both contributions
-			 {
-				 for (int j=0; j<3; j++)
-				 {
-					rot1(i,j)=rot1(i,j)-rot2(i,j); 
-				 }
-			 }
-		   	
-		   rot1.Scale(gammaa);
-		   col.Multiply(rot1,omega);
-		    
-		   for (int i=0; i<3; i++)
-		   {
-		     rotstifftemp(i,1)=col(i,0);	
-		   }
-		      
-			 //values due to alpha 1
-			 rot1.Multiply(Spin3,Theta);//multiply S1 from left
-			 rot2.Multiply(Theta,Spin3);//multiply S1 from right
-			 	  				 
-			 for(int i=0; i<3; i++)//calc difference of both contributions
-		 	 {
-		 		 for (int j=0; j<3; j++)
-		 		 {
-		 			rot1(i,j)=rot1(i,j)-rot2(i,j); 
-		 		 }
-		 	 }
-		    	
-		   rot1.Scale(gammaa);
-		   col.Multiply(rot1,omega);
-		     
-		   for (int i=0; i<3; i++)
-		   {
-		  	 rotstifftemp(i,2)=col(i,0);	
-		   }
-		   
-		   //fill calculated additional stiffness to stiffmatrix	   
-		   for(int i= 0; i<3; i++)
-	     {
-	       for(int j=0;j<3;j++)
-	       {
-	         (*stiffmatrix)(3+i, 3+j) += rotstifftemp(i,j);
-	         (*stiffmatrix)(9+i, 9+j) += rotstifftemp(i,j);
-	         (*stiffmatrix)(9+i, 3+j) += rotstifftemp(i,j);
-	         (*stiffmatrix)(3+i, 9+j) += rotstifftemp(i,j);
-	       }
-	     } 
-	 //end of section for add rotational damping full implicit 
-	}
-	else dserror("for high order, please change from exact full implicit case for rot damp to semi implicit gauss integr");
-	 */
-	 
-	//the following code blocks incalculate damping due to translation of the nodes
-	double zeta = 4 * PI * lrefe_ * params.get<double>("ETA",0.0);//damping parameter zeta
- 	
+
 	
   switch(nnode)//switch polynomial order of Ansatzfunctions
  	{
@@ -1039,18 +877,27 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
 					for (int i=0; i<3; i++)
 					{
 						(*stiffmatrix)(i,i) += zeta/(2.0*dt);
-						(*stiffmatrix)(6+i,6+i) += zeta/(2.0*dt);
+						(*stiffmatrix)(6+i,6+i) += zeta/(2.0*dt);					
 					}
+					/*additional stiffness in case of shear flow (assumption: shear gradient in z-direciton only
+					 *and zero backbround velocity at z = 0*/
+					(*stiffmatrix)(0,2) += -(zeta/2.0)*params.get<double>("CURRENTSHEAR",0.0);
+					(*stiffmatrix)(6,8) += -(zeta/2.0)*params.get<double>("CURRENTSHEAR",0.0);
+
 				}				
 				if (force != NULL)
 				{
-					//calc int brownian forces
+					//calc damping forces
 					for (int i=0; i<3; i++)
 					{
 					  (*force)(i) +=zeta/(2.0)*vel[i];
 					  (*force)(6+i) +=zeta/(2.0)*vel[6+i];
 					}
-						
+					/*additional damping in case of shear flow (assumption: shear gradient in z-direciton only
+					*and zero backbround velocity at z = 0*/
+          (*force)(0) += -(zeta/2.0)*params.get<double>("CURRENTSHEAR",0.0)*disp[2];
+          (*force)(6) += -(zeta/2.0)*params.get<double>("CURRENTSHEAR",0.0)*disp[8];
+					
 					//calc ext brownian forces
 				  for (int i=0; i<3; i++)
 		  		{
@@ -1170,12 +1017,8 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
 	  				 aux2.Multiply(dampbasis,S1);//multiply S1 from right
 	  				 	  				 
 	  				 for(int i=0; i<3; i++)//calc difference of both contributions
-	  	 	   	 {
 	  	 	   		 for (int j=0; j<3; j++)
-	  	 	   		 {
 	  	 	   			aux1(i,j)=aux1(i,j)-aux2(i,j); 
-	  	 	   		 }
-	  	 	   	 }
 	  	  	 
 	  				 LINALG::Matrix<6,6> aux3(true); //to store result for two nodes, multiply velcoef	  				 
 	  				 for(int i=0; i<3; i++)
@@ -1213,12 +1056,8 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
 	  	 			 aux2.Multiply(dampbasis,S2);//multiply S2 from right
 	  	 			 	  	 			 
 	  	 			 for(int i=0; i<3; i++)//calc difference
-	  	  	   	 {
-	  	  	   		 for (int j=0; j<3; j++)
-	  	  	   		 {
-	  	  	   			aux1(i,j)=aux1(i,j)-aux2(i,j); 
-	  	  	   		 }
-	  	  	   	 }
+  	  	   		 for (int j=0; j<3; j++)
+  	  	   			aux1(i,j)=aux1(i,j)-aux2(i,j); 
 	  	   	 	  	 			 
 	  	 			 for(int i=0; i<3; i++)//now two nodes
 	  	  	   	 {
@@ -1257,12 +1096,8 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
 	  	 			 aux2.Multiply(dampbasis,S3);//multiply S3 from right
 	  	 			 	  	 			 
 	  	 			 for(int i=0; i<3; i++)//calc difference
-	  	  	   	 {
-	  	  	   		 for (int j=0; j<3; j++)
-	  	  	   		 {
-	  	  	   			aux1(i,j)=aux1(i,j)-aux2(i,j); 
-	  	  	   		 }
-	  	  	   	 }
+  	  	   		 for (int j=0; j<3; j++)
+  	  	   			aux1(i,j)=aux1(i,j)-aux2(i,j); 
 	  	   	 	  	 			 
 	  	 			 for(int i=0; i<3; i++)//now two nodes
 	  	  	   	 {
@@ -1799,9 +1634,7 @@ void DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
    * Length L: reduing
    */
 
-
-
-  double basisdamp   = (20e-2)*PI; //2 for network0_5.dat
+  double basisdamp   = (20e-2)*PI*3*3; //3 for crosssec_ = 1.9e-6;
   double anisofactor = 10;
 
   
@@ -1865,20 +1698,44 @@ void DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
 		artstiff[gp].Scale( params.get<double>("dti",0.0) );
 
 		for(int i=0; i<nnode; i++)
-		{
 			for (int j=0; j<nnode; j++)
-			{
 				for(int k=0; k<3; k++)
-				{
 					for (int l=0; l<3; l++)
-					{
-						//add rot damp stiffness
 						elemat1(i*6+3+k,j*6+3+l) += artstiff[gp](k,l)*funct(i)*funct(j)*wgt*alpha_[gp]*1.0;//scale 4.0 to get same result as in previous implementation, also for higher order this value gives better convergence
-					}
-				}								
-			}
-		}		
   }
+  
+  /*
+  //the following part in the code is related to the trial of a proper merely translational PTC damping
+  double ptctrans = params.get<double>("dti",0.0) * 2;
+  for (int gp=0; gp<nnode-1; gp++)
+  {
+    const double wgt = gausspointsptc.qwgt[gp];
+    LINALG::Matrix<3,3> dampbasis(true);
+    
+    dampbasis(0,0) = 0.0;
+    dampbasis(1,1) = ptctrans;
+    dampbasis(2,2) = ptctrans;
+    //rotate C to global
+    LINALG::Matrix<3,3> aux1(true);
+    aux1.Multiply(Tconv[gp],dampbasis);
+    dampbasis.MultiplyNT(aux1,Tconv[gp]);
+    
+    //add stiffness due to variation of transl dofs to stiffmatrix
+    for(int i=0; i<3; i++)
+    {
+      for (int j=0; j<3; j++)
+      {
+        elemat1(i,j) += dampbasis(i,j)*wgt;
+        elemat1(i,j+6) += dampbasis(i,j)*wgt;
+        elemat1(i+6,j) += dampbasis(i,j)*wgt;
+        elemat1(i+6,j+6) += dampbasis(i,j)*wgt;
+      }
+    }
+  
+  }
+  */
+  
+
    
   return;
 } //DRT::ELEMENTS::Beam3::EvaluatePTC
@@ -1925,9 +1782,7 @@ inline void DRT::ELEMENTS::Beam3::computestiffbasis(const LINALG::Matrix<3,3>& T
     {
       StTCmTt(i,j) = 0.0;
       for (int k = 0; k < 3; ++k)
-      {
         StTCmTt(i,j) += S(k,i)*TCmTt(k,j);
-      }
     }
   }
 
@@ -1938,9 +1793,7 @@ inline void DRT::ELEMENTS::Beam3::computestiffbasis(const LINALG::Matrix<3,3>& T
     {
       StTCmTtS(i,j) = 0.0;
       for (int k = 0; k < 3; ++k)
-      {
         StTCmTtS(i,j) += StTCmTt(i,k)*S(k,j);
-      }
     }
   }
 
@@ -1951,9 +1804,7 @@ inline void DRT::ELEMENTS::Beam3::computestiffbasis(const LINALG::Matrix<3,3>& T
     {
       TCmTtS(i,j) = 0.0;
       for (int k = 0; k < 3; ++k)
-      {
         TCmTtS(i,j) += TCmTt(i,k)*S(k,j);
-      }
     }
   }
 
@@ -2554,7 +2405,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
 		{
 			for (int node=0; node<nnode; ++node)
 			{
-				dxdxi_gp(dof)              += (Nodes()[node]->X()[dof]+disp[6*node+dof])*deriv(node);
+				dxdxi_gp(dof)              += (X_[node](dof)+disp[6*node+dof])*deriv(node);
 
 				/*compute interpolated angle displacemnt at specific Gauss point; angle displacement is
 				 * taken from discretization and interpolated with the according shapefunctions*/

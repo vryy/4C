@@ -1198,13 +1198,13 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
            * first nodes of the crosslinker element. Then we add GID2, which is the GID of the second node of the
            * crosslinker element. Hence basisnodes_ + GID1*basisnodes_ + GID2 always give a GID which cannot be 
            * used by any other element*/     
-          
+         
    #ifdef D_BEAM3         
           RCP<DRT::ELEMENTS::Beam3> newcrosslinker = rcp(new DRT::ELEMENTS::Beam3((noderowmap.GID(i) + 1)*basisnodes_ +  nodecolmap.GID((crosslinkerneighbours_[i])[j]), discret_.Comm().MyPID()) );
           
           //setting up crosslinker element parameters
-          newcrosslinker ->crosssec_ = 1.9e-09;
-          newcrosslinker ->crosssecshear_ = 1.9e-09*1.1;
+          newcrosslinker ->crosssec_ = 1.9e-08;
+          newcrosslinker ->crosssecshear_ = 1.9e-08*1.1;
           newcrosslinker ->Iyy_ = 2.874e-11;
           newcrosslinker ->Izz_ = 2.874e-11;
           newcrosslinker ->Irr_ = 5.748e-11; 
@@ -1235,7 +1235,7 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
            RCP<DRT::ELEMENTS::Truss3> newcrosslinker = rcp(new DRT::ELEMENTS::Truss3((noderowmap.GID(i) + 1)*basisnodes_ +  nodecolmap.GID((crosslinkerneighbours_[i])[j]), discret_.Comm().MyPID()) );
            
            //setting up crosslinker element parameters
-           newcrosslinker ->crosssec_ = 1.9e-09;
+           newcrosslinker ->crosssec_ = 1.9e-08;
            newcrosslinker ->kintype_ = DRT::ELEMENTS::Truss3::tr3_engstrain;       
           
            //nodes are assigned to the new crosslinker element by first assigning global node Ids and then assigning nodal pointers
@@ -1250,7 +1250,7 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
            LINALG::Matrix<6,1> xrefematrix;
            for (int node=0; node<2; node++) 
               for(int dof= 0; dof < 3; dof++)// element node has three coordinates x1, x2 and x3
-                xrefematrix(node*3 + dof,1) = xrefe[node*3 + dof];
+                xrefematrix(node*3 + dof,0) = xrefe[node*3 + dof];
            
            newcrosslinker->SetUpReferenceGeometry(xrefematrix); 
            

@@ -14,6 +14,7 @@ Maintainer: Christian Cyron
 
 #include "statmech_time.H"
 #include "../drt_statmech/statmech_manager.H"
+#include "../drt_inpar/inpar_statmech.H"
 #include "../drt_io/io_control.H"
 
 #include <random/normal.h>
@@ -101,25 +102,13 @@ void StatMechTime::Integrate()
     if      (predictor==1) ConstantPredictor();
     else if (predictor==2) ConsistentPredictor();
     */
-
     ConsistentPredictor();
-    
-    const double t_PTC = ds_cputime();
+
 
     if(ndim ==3)
       PTC();
     else
       FullNewton();
-    
-    
-    cout << "\n***\ntotal PTC time: " << ds_cputime() - t_PTC<< " seconds\n***\n";
-    
-    {
-    double disnormtest = 0;
-    disn_->Norm2(&disnormtest);
-    std::cout<<"\n\ndisn_.Norm2() = "<<disnormtest<<"\n\n";
-    }
-    
 
     const double t_admin = ds_cputime();
  
@@ -368,6 +357,11 @@ void StatMechTime::ConsistentPredictor()
 
     //passing statistical mechanics parameters to elements
     p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
+    p.set("THERMALBATH",Teuchos::getIntegralValue<INPAR::STATMECH::ThermalBathType>(statmechmanager_->statmechparams_,"THERMALBATH"));
+    
+    //computing current gradient in z-direction of shear flow (assuming sine shear load)
+    double currentshear = cos(timen)*(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0)*(statmechmanager_->statmechparams_).get<double>("SHEARFREQUENCY",0.0);
+    p.set("CURRENTSHEAR",currentshear);
     p.set("STOCH_ORDER",(statmechmanager_->statmechparams_).get<int>("STOCH_ORDER",0));
 
     //add statistical vector to parameter list for statistical forces and damping matrix computation
@@ -553,6 +547,10 @@ void StatMechTime::FullNewton()
 
       //passing statistical mechanics parameters to elements
       p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
+      p.set("THERMALBATH",Teuchos::getIntegralValue<INPAR::STATMECH::ThermalBathType>(statmechmanager_->statmechparams_,"THERMALBATH"));
+      //computing current gradient in z-direction of shear flow (assuming sine shear load)
+      double currentshear = cos(timen)*(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0)*(statmechmanager_->statmechparams_).get<double>("SHEARFREQUENCY",0.0);
+      p.set("CURRENTSHEAR",currentshear);
       p.set("STOCH_ORDER",(statmechmanager_->statmechparams_).get<int>("STOCH_ORDER",0));
 
       //add statistical vector to parameter list for statistical forces
@@ -674,6 +672,11 @@ void StatMechTime::PTC()
   #ifndef STRUGENALPHA_BE
     //double delta = beta;
   #endif
+  
+  
+  double sumsolver     = 0;
+  double sumevaluation = 0;
+  const double tbegin = ds_cputime();
 
   if (!errfile) printerr = false;
   //------------------------------ turn adaptive solver tolerance on/off
@@ -719,8 +722,7 @@ void StatMechTime::PTC()
 
     //backward Euler
     stiff_->Complete();
-
-
+    
     //the following part was especially introduced for Brownian dynamics
     {
       // create the parameters for the discretization
@@ -733,6 +735,10 @@ void StatMechTime::PTC()
       //add statistical vector to parameter list for statistical forces and damping matrix computation
       p.set("statistical vector",browniancol_);
       p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
+      p.set("THERMALBATH",Teuchos::getIntegralValue<INPAR::STATMECH::ThermalBathType>(statmechmanager_->statmechparams_,"THERMALBATH"));
+      //computing current gradient in z-direction of shear flow (assuming sine shear load)
+      double currentshear = cos(timen)*(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0)*(statmechmanager_->statmechparams_).get<double>("SHEARFREQUENCY",0.0);
+      p.set("CURRENTSHEAR",currentshear);
       p.set("STOCH_ORDER",(statmechmanager_->statmechparams_).get<int>("STOCH_ORDER",0));
 
       //evaluate ptc stiffness contribution in all the elements
@@ -756,11 +762,8 @@ void StatMechTime::PTC()
     solver_.Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,numiter==0);
     solver_.ResetTolerance();
     
-    
+    sumsolver += ds_cputime() - t_solver;
 
-    
-    
-    cout << "\n***\ntotal solution time: " << ds_cputime() - t_solver<< " seconds\n***\n";
     
 
     //---------------------------------- update mid configuration values
@@ -794,6 +797,10 @@ void StatMechTime::PTC()
 
       //passing statistical mechanics parameters to elements
       p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
+      p.set("THERMALBATH",Teuchos::getIntegralValue<INPAR::STATMECH::ThermalBathType>(statmechmanager_->statmechparams_,"THERMALBATH"));
+      //computing current gradient in z-direction of shear flow (assuming sine shear load with maximal amplitude SHEARAMPLITUDE and frequency SHEARFREQUENCY)
+      double currentshear = cos(timen)*(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0)*(statmechmanager_->statmechparams_).get<double>("SHEARFREQUENCY",0.0);
+      p.set("CURRENTSHEAR",currentshear); 
       p.set("STOCH_ORDER",(statmechmanager_->statmechparams_).get<int>("STOCH_ORDER",0));
 
       //add statistical vector to parameter list for statistical forces and damping matrix computation
@@ -811,9 +818,15 @@ void StatMechTime::PTC()
       discret_.SetState("velocity",velm_);
 
       //discret_.SetState("velocity",velm_); // not used at the moment
-
       fint_->PutScalar(0.0);  // initialise internal force vector
+      
+      const double t_evaluate = ds_cputime();
+      
       discret_.Evaluate(p,stiff_,null,fint_,null,null);
+      
+      sumevaluation += ds_cputime() - t_evaluate;
+      
+      
 
       discret_.ClearState();
 
@@ -919,6 +932,9 @@ void StatMechTime::PTC()
   }
 
   params_.set<int>("num iterations",numiter);
+  
+  
+  std::cout << "\n***\nevaluation time: " << sumevaluation<< " seconds\nsolver time: "<< sumsolver <<" seconds\ntotal solution time: "<<ds_cputime() - tbegin<<" seconds\n***\n";
 
   return;
 } // StatMechTime::PTC()

@@ -29,7 +29,6 @@ DRT::ELEMENTS::Beam3::Beam3(int id, int owner) :
 DRT::Element(id,element_beam3,owner),
 data_(),
 isinit_(false),
-lrefe_(0),
 crosssec_(0),
 crosssecshear_(0),
 Iyy_(0),
@@ -48,7 +47,6 @@ DRT::ELEMENTS::Beam3::Beam3(const DRT::ELEMENTS::Beam3& old) :
  DRT::Element(old),
  data_(old.data_),
  isinit_(old.isinit_),
- lrefe_(old.lrefe_),
  Qconv_(old.Qconv_),
  Qold_(old.Qold_),
  Qnew_(old.Qnew_),
@@ -69,6 +67,7 @@ DRT::ELEMENTS::Beam3::Beam3(const DRT::ELEMENTS::Beam3& old) :
  alpha_(old.alpha_),
  alphamass_(old.alphamass_),
  floc_(old.floc_),
+ X_(old.X_),
  gaussrule_(old.gaussrule_)
 {
   return;
@@ -173,12 +172,13 @@ void DRT::ELEMENTS::Beam3::Pack(vector<char>& data) const
     AddtoPack(data,curvold_[i]);
   for (int i=0; i<(int)floc_.size(); i++)
     AddtoPack(data,floc_[i]);
+  for (int i=0; i<(int)X_.size(); i++)
+    AddtoPack(data,X_[i]);
   AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
   AddtoPack(data,isinit_);
   AddtoPack(data,Irr_);
   AddtoPack(data,Iyy_);
   AddtoPack(data,Izz_);
-  AddtoPack(data,lrefe_);
   for (int i=0; i<(int)Qconv_.size(); i++)
     AddtoPack(data,Qconv_[i]);
   for (int i=0; i<(int)Qnew_.size(); i++)
@@ -238,6 +238,8 @@ void DRT::ELEMENTS::Beam3::Unpack(const vector<char>& data)
     ExtractfromPack(position,data,curvold_[i]);
   for (int i=0; i<(int)floc_.size(); i++)
     ExtractfromPack(position,data,floc_[i]); 
+  for (int i=0; i<(int)X_.size(); i++)
+    ExtractfromPack(position,data,X_[i]); 
   int gausrule_integer;
   ExtractfromPack(position,data,gausrule_integer);
   gaussrule_ = DRT::UTILS::GaussRule1D(gausrule_integer); //explicit conversion from integer to enum
@@ -245,7 +247,6 @@ void DRT::ELEMENTS::Beam3::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,Irr_);
   ExtractfromPack(position,data,Iyy_);
   ExtractfromPack(position,data,Izz_);
-  ExtractfromPack(position,data,lrefe_);
   for (int i=0; i<(int)Qconv_.size(); i++)
     ExtractfromPack(position,data,Qconv_[i]);
   for (int i=0; i<(int)Qnew_.size(); i++)
@@ -326,6 +327,7 @@ void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const vector<double>& xrefe,co
   thetaprimeold_.resize((nnode-1));
   thetaprimenew_.resize((nnode-1));
   floc_.resize(nnode);
+  X_.resize(nnode);
   
   //create Matrix for the derivates of the shapefunctions at the GP
 	LINALG::Matrix<1,nnode> shapefuncderiv;
@@ -339,16 +341,9 @@ void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const vector<double>& xrefe,co
 	//Get the applied integrationpoints
 	DRT::UTILS::IntegrationPoints1D gausspoints(gaussrule_);
 	
-
-	//length in reference configuration
-    lrefe_ = pow( pow(xrefe[0]-xrefe[3],2) + pow(xrefe[1]-xrefe[4],2) + pow(xrefe[2]-xrefe[5],2) ,0.5 );
-    //attention, the nodal positions are stored in xrefe as in the input file, therefore the position of the "last" element
-    //node is the second vector
-	
     //Loop through all GPs and calculate alpha the triads at the GPs
 	for(int numgp=0; numgp < gausspoints.nquad; numgp++)
-	{
-	  	
+	{  	
 		//Get position xi of GP
 		const double xi = gausspoints.qxg[numgp][0];
 		
@@ -361,8 +356,6 @@ void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const vector<double>& xrefe,co
 		//triad in reference configuration at GP
 		LINALG::Matrix<3,3> Tref;
 	
-      
-    
     /*initial triad Tref = [t1,t2,t3] is set in a way for which we don`t have strains in reference configuration*/
     LINALG::Matrix<3,1> dxdxi;
 
@@ -376,6 +369,7 @@ void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const vector<double>& xrefe,co
     	for(int dof=0; dof<3 ; dof++)
     	{
 	    	dxdxi(dof) += shapefuncderiv(node) * xrefe[3*node+dof];
+	    	X_[node](dof) = xrefe[3*node+dof];
 		    thetaconv_[numgp](dof) += funct(node) * rotrefe[3*node+dof];
 		    thetaprimeconv_[numgp](dof) += shapefuncderiv(node) * rotrefe[3*node+dof]; 		
     	}//for(int dof=0; dof<3 ; dof++)
@@ -464,9 +458,9 @@ void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const vector<double>& xrefe,co
     //calculate dx/dxi and dz/dxi
     for(int node=0; node<nnode; node++)
     {
-	    dxdximass(0)+=shapefuncderiv(node)*xrefe[3*node];
-	    dxdximass(1)+=shapefuncderiv(node)*xrefe[3*node+1];
-	    dxdximass(2)+=shapefuncderiv(node)*xrefe[3*node+2];
+	    dxdximass(0)+=shapefuncderiv(node)*X_[node](0);
+	    dxdximass(1)+=shapefuncderiv(node)*X_[node](1);
+	    dxdximass(2)+=shapefuncderiv(node)*X_[node](2);
 	
     }//for(int node=0; node<nnode; node++)
 

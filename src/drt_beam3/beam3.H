@@ -320,9 +320,6 @@ private:
   //! variable saving whether element has already been initialized (then isinit_ == true)
   bool isinit_;
 
-  //! length in reference configuration has been replaced by alpha_ only needed for damping calculations
-  double lrefe_;
-
   //! quaternions of triads at GPs at the end of the preceeding time step due to Crisfield, Vol. 2, equation (17.65)
   vector<LINALG::Matrix<4,1> > Qconv_;
   //! quaternions of triads at GPs at the end of the preceeding iteration step due to Crisfield, Vol. 2, equation (17.65)
@@ -364,14 +361,17 @@ private:
   //!polar moment of inertia of area
   double Irr_;
 
-  //! Vector holding alpha for each gausspoint
+  //! Vector holding value of Jacobi determinant alpha for each Gauss point for underintegration
   vector<double> alpha_;
 
-  //! Vector holding alpha for each gausspoint for complete integration of massmatrix
+  //! Vector holding value of Jacobi determinant alpha for complete integration of massmatrix
   vector<double> alphamass_;
 
   //! store stochastic forces for each node
   vector<LINALG::Matrix<3,1> > floc_;
+  
+  //! store reference coordinates for each node (important in case that element has been added after simulation start!)
+  vector<LINALG::Matrix<3,1> > X_;
 
   //! gaussrule_ will be initialized automatically for underintegration in order to get rid of Locking
   DRT::UTILS::GaussRule1D gaussrule_;
