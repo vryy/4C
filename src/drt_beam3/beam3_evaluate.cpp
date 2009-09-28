@@ -773,7 +773,7 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
 	 
   double rsquare = pow((4*Iyy_/PI),0.5);
   //gamma_a artificially increased by factor artificial
-  double artificial = 60*16;
+  double artificial = 60*16*2;
   double gammaa = 4*PI*params.get<double>("ETA",0.0)*(rsquare)*artificial;
 	
 	
@@ -1634,7 +1634,9 @@ void DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
    * Length L: reduing
    */
 
-  double basisdamp   = (20e-2)*PI*3*3; //3 for crosssec_ = 1.9e-6;
+
+
+  double basisdamp   = (20e-2)*PI*20; //(20e-2)*PI for A = 1.9e-8, (20e-2)*PI*3 for A = 1.9e-6
   double anisofactor = 10;
 
   
