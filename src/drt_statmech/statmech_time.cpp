@@ -359,9 +359,10 @@ void StatMechTime::ConsistentPredictor()
     p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
     p.set("THERMALBATH",Teuchos::getIntegralValue<INPAR::STATMECH::ThermalBathType>(statmechmanager_->statmechparams_,"THERMALBATH"));
     
-    //computing current gradient in z-direction of shear flow (assuming sine shear load)
-    double currentshear = cos(timen)*(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0)*(statmechmanager_->statmechparams_).get<double>("SHEARFREQUENCY",0.0);
-    p.set("CURRENTSHEAR",currentshear);
+    //computing current gradient in z-direction of shear flow (assuming sine shear load with maximal amplitude SHEARAMPLITUDE and frequency SHEARFREQUENCY)
+    double omegashear = 2*PI*(statmechmanager_->statmechparams_).get<double>("SHEARFREQUENCY",0.0);
+    double currentshear = cos(omegashear*timen)*(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0)*omegashear;
+    p.set("CURRENTSHEAR",currentshear); 
     p.set("STOCH_ORDER",(statmechmanager_->statmechparams_).get<int>("STOCH_ORDER",0));
 
     //add statistical vector to parameter list for statistical forces and damping matrix computation
@@ -548,9 +549,10 @@ void StatMechTime::FullNewton()
       //passing statistical mechanics parameters to elements
       p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
       p.set("THERMALBATH",Teuchos::getIntegralValue<INPAR::STATMECH::ThermalBathType>(statmechmanager_->statmechparams_,"THERMALBATH"));
-      //computing current gradient in z-direction of shear flow (assuming sine shear load)
-      double currentshear = cos(timen)*(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0)*(statmechmanager_->statmechparams_).get<double>("SHEARFREQUENCY",0.0);
-      p.set("CURRENTSHEAR",currentshear);
+      //computing current gradient in z-direction of shear flow (assuming sine shear load with maximal amplitude SHEARAMPLITUDE and frequency SHEARFREQUENCY)
+      double omegashear = 2*PI*(statmechmanager_->statmechparams_).get<double>("SHEARFREQUENCY",0.0);
+      double currentshear = cos(omegashear*timen)*(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0)*omegashear;
+      p.set("CURRENTSHEAR",currentshear); 
       p.set("STOCH_ORDER",(statmechmanager_->statmechparams_).get<int>("STOCH_ORDER",0));
 
       //add statistical vector to parameter list for statistical forces
@@ -736,9 +738,10 @@ void StatMechTime::PTC()
       p.set("statistical vector",browniancol_);
       p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
       p.set("THERMALBATH",Teuchos::getIntegralValue<INPAR::STATMECH::ThermalBathType>(statmechmanager_->statmechparams_,"THERMALBATH"));
-      //computing current gradient in z-direction of shear flow (assuming sine shear load)
-      double currentshear = cos(timen)*(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0)*(statmechmanager_->statmechparams_).get<double>("SHEARFREQUENCY",0.0);
-      p.set("CURRENTSHEAR",currentshear);
+      //computing current gradient in z-direction of shear flow (assuming sine shear load with maximal amplitude SHEARAMPLITUDE and frequency SHEARFREQUENCY)
+      double omegashear = 2*PI*(statmechmanager_->statmechparams_).get<double>("SHEARFREQUENCY",0.0);
+      double currentshear = cos(omegashear*timen)*(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0)*omegashear;
+      p.set("CURRENTSHEAR",currentshear); 
       p.set("STOCH_ORDER",(statmechmanager_->statmechparams_).get<int>("STOCH_ORDER",0));
 
       //evaluate ptc stiffness contribution in all the elements
@@ -799,7 +802,8 @@ void StatMechTime::PTC()
       p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
       p.set("THERMALBATH",Teuchos::getIntegralValue<INPAR::STATMECH::ThermalBathType>(statmechmanager_->statmechparams_,"THERMALBATH"));
       //computing current gradient in z-direction of shear flow (assuming sine shear load with maximal amplitude SHEARAMPLITUDE and frequency SHEARFREQUENCY)
-      double currentshear = cos(timen)*(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0)*(statmechmanager_->statmechparams_).get<double>("SHEARFREQUENCY",0.0);
+      double omegashear = 2*PI*(statmechmanager_->statmechparams_).get<double>("SHEARFREQUENCY",0.0);
+      double currentshear = cos(omegashear*timen)*(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0)*omegashear;
       p.set("CURRENTSHEAR",currentshear); 
       p.set("STOCH_ORDER",(statmechmanager_->statmechparams_).get<int>("STOCH_ORDER",0));
 
