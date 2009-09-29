@@ -472,7 +472,7 @@ void EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh& m
   }
 
   // print thermo elements
-  dat << "------------------------------------------------THERMO ELEMENTS" << endl;
+  dat << "---------------------------------------------------THERMO ELEMENTS" << endl;
   for(i_et=thermo.begin();i_et!=thermo.end();++i_et)
   {
     EXODUS::elem_def acte = *i_et;
