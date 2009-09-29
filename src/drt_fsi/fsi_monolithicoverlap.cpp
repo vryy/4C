@@ -365,7 +365,7 @@ void FSI::MonolithicOverlap::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
                    false);
 
     fmgitransform_(fmgi,
-                   1,
+                   scale,
                    ADAPTER::Coupling::SlaveConverter(coupsf),
                    ADAPTER::Coupling::MasterConverter(coupfa),
                    mat.Matrix(0,2),
