@@ -261,7 +261,7 @@ void THR::TimIntStatics::ApplyForceTangInternal(
   const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
   const Teuchos::RCP<Epetra_Vector> tempi,  //!< residual temperatures
   Teuchos::RCP<Epetra_Vector> fint,  //!< internal force
-  Teuchos::RCP<LINALG::SparseMatrix> tang  //!< stiffness matrix
+  Teuchos::RCP<LINALG::SparseMatrix> tang  //!< tangent matrix
 )
 {
   //! create the parameters for the discretization

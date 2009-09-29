@@ -411,11 +411,12 @@ void EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh& m
 {
   dat << "----------------------------------------------------------ELEMENTS" << endl;
 
-  // sort elements w.r.t. structure, fluid, ale, scalar transport, etc.
+  // sort elements w.r.t. structure, fluid, ale, scalar transport, thermo, etc.
   vector<EXODUS::elem_def> strus;
   vector<EXODUS::elem_def> fluids;
   vector<EXODUS::elem_def> ales;
   vector<EXODUS::elem_def> transport;
+  vector<EXODUS::elem_def> thermo;
   vector<EXODUS::elem_def>::const_iterator i_et;
 
   for(i_et=eledefs.begin();i_et!=eledefs.end();++i_et){
@@ -424,6 +425,7 @@ void EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh& m
     else if (acte.sec.compare("FLUID")==0) fluids.push_back(acte);
     else if (acte.sec.compare("ALE")==0) ales.push_back(acte);
     else if (acte.sec.compare("TRANSPORT")==0) transport.push_back(acte);
+    else if (acte.sec.compare("THERMO")==0) thermo.push_back(acte);
     else if (acte.sec.compare("")==0);
     else{
       cout << "Unknown ELEMENT sectionname in eb" << acte.id << ": '" << acte.sec << "'!" << endl;
@@ -463,6 +465,15 @@ void EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh& m
   // print transport elements
   dat << "------------------------------------------------TRANSPORT ELEMENTS" << endl;
   for(i_et=transport.begin();i_et!=transport.end();++i_et)
+  {
+    EXODUS::elem_def acte = *i_et;
+    RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
+    EXODUS::DatEles(eb,acte,startele,dat,elecenterlineinfo,acte.id);
+  }
+
+  // print thermo elements
+  dat << "------------------------------------------------THERMO ELEMENTS" << endl;
+  for(i_et=thermo.begin();i_et!=thermo.end();++i_et)
   {
     EXODUS::elem_def acte = *i_et;
     RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);

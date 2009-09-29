@@ -134,8 +134,7 @@ void THR::TimIntOneStepTheta::EvaluateRhsTangResidual()
   // ordinary internal force and tangent
   ApplyForceTangInternal(timen_, (*dt_)[0], tempn_, tempi_, fintn_, tang_);
 
-  // build residual  Res = M . A_{n+theta}
-  //                     + C . V_{n+theta}
+  // build residual  Res = C . R_{n+theta}
   //                     + F_{int;n+theta}
   //                     - F_{ext;n+theta}
   fres_->Update(-theta_, *fextn_, -(1.0-theta_), *fext_, 0.0);
@@ -333,7 +332,7 @@ void THR::TimIntOneStepTheta::ApplyForceTangInternal(
   const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
   const Teuchos::RCP<Epetra_Vector> tempi,  //!< residual temperatures
   Teuchos::RCP<Epetra_Vector> fint,  //!< internal force
-  Teuchos::RCP<LINALG::SparseMatrix> tang  //!< stiffness matrix
+  Teuchos::RCP<LINALG::SparseMatrix> tang  //!< tangent matrix
 )
 {
   // create the parameters for the discretization
