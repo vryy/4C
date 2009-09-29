@@ -25,6 +25,8 @@ Here is everything related with writing a dat-file
 using namespace std;
 using namespace Teuchos;
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 int EXODUS::WriteDatFile(const string& datfile, const EXODUS::Mesh& mymesh,
     const string& headfile, const vector<EXODUS::elem_def>& eledefs, const vector<EXODUS::cond_def>& condefs,
     const map<int,map<int,vector<vector<double> > > >& elecenterlineinfo)
@@ -65,6 +67,8 @@ int EXODUS::WriteDatFile(const string& datfile, const EXODUS::Mesh& mymesh,
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void EXODUS::WriteDatIntro(const string& headfile, const EXODUS::Mesh& mymesh, ostream& dat)
 {
   dat <<"==================================================================\n" \
@@ -76,13 +80,14 @@ void EXODUS::WriteDatIntro(const string& headfile, const EXODUS::Mesh& mymesh, o
   dat << "ELEMENTS " << '\t' << mymesh.GetNumEle() << endl;
   dat << "NODES    " << '\t' << mymesh.GetNumNodes() << endl;
   dat << "DIM      " << '\t' << mymesh.GetBACIDim() << endl;
-  const int nummat = EXODUS::CountMat(headfile);
-  dat << "MATERIALS" << '\t' << nummat << endl;
+  dat << "MATERIALS" << '\t' << EXODUS::CountMat(headfile) << endl;
   dat << "NUMDF    " << '\t' << "6" << endl;
 
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 int EXODUS::CountMat(const string& headfile){
   stringstream head;
   const char *headfilechar = headfile.c_str();
@@ -105,6 +110,8 @@ int EXODUS::CountMat(const string& headfile){
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void EXODUS::WriteDatHead(const string& headfile, ostream& dat)
 {
   stringstream head;
@@ -149,6 +156,8 @@ void EXODUS::WriteDatHead(const string& headfile, ostream& dat)
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void EXODUS::WriteDatDesign(const vector<EXODUS::cond_def>& condefs, ostream& dat)
 {
   vector<EXODUS::cond_def>::const_iterator it;
@@ -177,6 +186,8 @@ void EXODUS::WriteDatDesign(const vector<EXODUS::cond_def>& condefs, ostream& da
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void EXODUS::WriteDatConditions(const vector<EXODUS::cond_def>& condefs,const EXODUS::Mesh& mymesh, ostream& dat)
 {
   Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > condlist = DRT::INPUT::ValidConditions();
@@ -186,11 +197,10 @@ void EXODUS::WriteDatConditions(const vector<EXODUS::cond_def>& condefs,const EX
   map<string,vector<int> > count_cond;
   map<string,vector<int> >::const_iterator count;
   vector<int>::const_iterator i_c;
-  //vector<EXODUS::cond_def>::const_iterator i_cond;
   for (unsigned int i_cond = 0; i_cond < condefs.size(); ++i_cond)
-  //for (i_cond = condefs.begin(); i_cond != condefs.end(); ++i_cond)
     (count_cond[condefs.at(i_cond).sec]).push_back(i_cond);
 
+  // loop all valid conditions that BACI knows
   for (unsigned int i=0; i<(*condlist).size(); ++i)
   {
     size_t linelength = 66;
@@ -210,10 +220,13 @@ void EXODUS::WriteDatConditions(const vector<EXODUS::cond_def>& condefs,const EX
       dserror("geometry type unspecified");
     }
     count = count_cond.find(sectionname);
-    if (count == count_cond.end()) dat << geo << "0" << endl;
-    else  {
+    if (count == count_cond.end())
+      dat << geo << "0" << endl;
+    else
+    {
       dat << geo << (count->second).size() << endl;
-      for (i_c=(count->second).begin();i_c!=(count->second).end();++i_c){
+      for (i_c=(count->second).begin();i_c!=(count->second).end();++i_c)
+      {
         EXODUS::cond_def actcon = condefs[*i_c];
         string name;
         string pname;
@@ -243,12 +256,23 @@ void EXODUS::WriteDatConditions(const vector<EXODUS::cond_def>& condefs,const EX
         } else
           dat << "E " << actcon.e_id << " - " << actcon.desc << endl;
       }
+      // remove sectionname from map, since writing is done
+      count_cond.erase(sectionname);
     }
+  }
+  if (count_cond.size() > 0) // there are conditions left that were not recognized!!
+  {
+    for (count = count_cond.begin(); count != count_cond.end(); ++count)
+      cout<<"Section name "<< count->first <<" not valid. Typo?"<<endl;
+    dserror("There are invalid condition names in your bc file (see list above)");
   }
 
   return;
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 vector<double> EXODUS::CalcNormalSurfLocsys(const int ns_id,const EXODUS::Mesh& m)
 {
   vector<double> normaltangent;
@@ -297,6 +321,9 @@ vector<double> EXODUS::CalcNormalSurfLocsys(const int ns_id,const EXODUS::Mesh& 
   return normaltangent;
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void EXODUS::WriteDatDesignTopology(const vector<EXODUS::cond_def>& condefs, const EXODUS::Mesh& mymesh, ostream& dat)
 {
   // sort baciconds w.r.t. underlying topology
@@ -358,6 +385,9 @@ void EXODUS::WriteDatDesignTopology(const vector<EXODUS::cond_def>& condefs, con
   return;
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 const set<int> EXODUS::GetNsFromBCEntity(const EXODUS::cond_def& e, const EXODUS::Mesh& m)
 {
   if (e.me==EXODUS::bcns){
@@ -390,6 +420,9 @@ const set<int> EXODUS::GetNsFromBCEntity(const EXODUS::cond_def& e, const EXODUS
   return n;
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void EXODUS::WriteDatNodes(const EXODUS::Mesh& mymesh, ostream& dat)
 {
   dat << "-------------------------------------------------------NODE COORDS" << endl;
@@ -406,6 +439,9 @@ void EXODUS::WriteDatNodes(const EXODUS::Mesh& mymesh, ostream& dat)
   return;
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh& mymesh, ostream& dat,
      const map<int,map<int,vector<vector<double> > > >& elecenterlineinfo)
 {
@@ -483,6 +519,9 @@ void EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh& m
   return;
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void EXODUS::DatEles(RCP< const EXODUS::ElementBlock> eb, const EXODUS::elem_def& acte, int& startele, ostream& datfile,
     const map<int,map<int,vector<vector<double> > > >& elescli,const int eb_id)
 {
