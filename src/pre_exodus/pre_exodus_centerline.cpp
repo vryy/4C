@@ -7,6 +7,8 @@
 
 using namespace EXODUS;
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 map<int,map<int,vector<vector<double> > > > EXODUS::EleCenterlineInfo(string& cline,EXODUS::Mesh& mymesh, const vector<double> coordcorr)
 {
 
@@ -160,7 +162,8 @@ map<int,map<int,vector<vector<double> > > > EXODUS::EleCenterlineInfo(string& cl
   return mymap;
 }
 
-
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 map<int,double> EXODUS::NdCenterlineThickness(string cline,const set<int>& nodes, const map<int,vector<int> >& conn, const EXODUS::Mesh& mesh, const double ratio, const vector<double> coordcorr)
 {
   map<int,double> ndthick;
@@ -301,6 +304,8 @@ Centerline::Centerline(string filename,vector<double> coordcorr)
 	*/
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Centerline::Centerline(const EXODUS::NodeSet& ns, const RCP<map<int,vector<double> > > nodes)
 {
   //initialization of points_
@@ -762,4 +767,6 @@ void EXODUS::PlotCosys(EXODUS::Centerline& mycline,const EXODUS::Mesh& mymesh, c
 	}
 	gmshFile << "};";
 	gmshFile.close();
+
+	return;
 }

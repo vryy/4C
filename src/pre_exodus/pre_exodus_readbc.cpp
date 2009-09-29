@@ -22,6 +22,8 @@ Here is everything related with reading a bc file
 using namespace std;
 using namespace Teuchos;
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void EXODUS::ReadBCFile(const string& bcfile, vector<EXODUS::elem_def>& eledefs, vector<EXODUS::cond_def>& condefs)
 {
   // first we read the whole file into one stream/string
@@ -222,6 +224,8 @@ void EXODUS::ReadBCFile(const string& bcfile, vector<EXODUS::elem_def>& eledefs,
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 EXODUS::elem_def EXODUS::ReadEdef(const string& mesh_entity,const int id, const string& actcond)
 {
   EXODUS::elem_def edef;
@@ -246,6 +250,8 @@ EXODUS::elem_def EXODUS::ReadEdef(const string& mesh_entity,const int id, const 
   return edef;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 EXODUS::cond_def EXODUS::ReadCdef(const string& mesh_entity,const int id, const string& actcond)
 {
   EXODUS::cond_def cdef;
@@ -290,7 +296,8 @@ EXODUS::cond_def EXODUS::ReadCdef(const string& mesh_entity,const int id, const 
   return cdef;
 }
 
-
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void EXODUS::PrintBCDef(ostream& os, const EXODUS::elem_def& def)
 {
   string mesh_entity;
@@ -302,6 +309,9 @@ void EXODUS::PrintBCDef(ostream& os, const EXODUS::elem_def& def)
   os << "Description: " << def.desc << endl;
   os << endl;
 }
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void EXODUS::PrintBCDef(ostream& os, const EXODUS::cond_def& def)
 {
   string mesh_entity;

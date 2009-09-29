@@ -43,6 +43,9 @@ its parameters and conditions.
 using namespace std;
 using namespace Teuchos;
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 int main(
         int argc,
         char** argv)
@@ -313,7 +316,9 @@ int main(
 } //main.cpp
 
 
-// create default bc file
+/*----------------------------------------------------------------------*/
+/* create default bc file                                               */
+/*----------------------------------------------------------------------*/
 int EXODUS::CreateDefaultBCFile(EXODUS::Mesh& mymesh)
 {
   string defaultbcfilename = "default.bc";

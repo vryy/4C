@@ -28,6 +28,8 @@ using namespace Teuchos;
 using namespace EXODUS;
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void EXODUS::ValidateInputFile(const RCP<Epetra_Comm> comm, const string datfile)
 {
   // read and check the provided header file
@@ -61,6 +63,8 @@ void EXODUS::ValidateInputFile(const RCP<Epetra_Comm> comm, const string datfile
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void EXODUS::ValidateMeshElementJacobians(Mesh& mymesh)
 {
   if (mymesh.GetNumDim() != 3) dserror("Element Validation only for 3 Dimensions");
@@ -80,6 +84,8 @@ void EXODUS::ValidateMeshElementJacobians(Mesh& mymesh)
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void EXODUS::ValidateElementJacobian(Mesh& mymesh, const DRT::Element::DiscretizationType distype, RCP<ElementBlock> eb)
 {
   // use one point gauss rule to calculate jacobian at element center
@@ -145,6 +151,8 @@ void EXODUS::ValidateElementJacobian(Mesh& mymesh, const DRT::Element::Discretiz
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 int EXODUS::ValidateElementJacobian_fullgp(Mesh& mymesh, const DRT::Element::DiscretizationType distype, RCP<ElementBlock> eb)
 {
   DRT::UTILS::GaussRule3D integrationrule = DRT::UTILS::intrule3D_undefined;
@@ -202,7 +210,8 @@ int EXODUS::ValidateElementJacobian_fullgp(Mesh& mymesh, const DRT::Element::Dis
   return invalids;
 }
 
-
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 bool EXODUS::PositiveEle(const int& eleid, const vector<int>& nodes,const Mesh& mymesh,const Epetra_SerialDenseMatrix& deriv)
 {
   const int iel = deriv.N();
@@ -239,6 +248,8 @@ bool EXODUS::PositiveEle(const int& eleid, const vector<int>& nodes,const Mesh& 
   return true;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 int EXODUS::EleSaneSign(const vector<int>& nodes,const map<int,vector<double> >& nodecoords)
 {
   const int iel = nodes.size();
@@ -312,6 +323,8 @@ int EXODUS::EleSaneSign(const vector<int>& nodes,const map<int,vector<double> >&
   return 0;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 vector<int> EXODUS::RewindEle(vector<int> old_nodeids, const DRT::Element::DiscretizationType distype)
 {
   vector<int> new_nodeids(old_nodeids.size());

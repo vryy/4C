@@ -387,6 +387,8 @@ void EXODUS::Mesh::Print(ostream & os, bool verbose) const
   }
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 RCP<EXODUS::ElementBlock> EXODUS::Mesh::GetElementBlock(const int id) const
 {
   if (elementBlocks_.find(id) == elementBlocks_.end()){
@@ -396,6 +398,8 @@ RCP<EXODUS::ElementBlock> EXODUS::Mesh::GetElementBlock(const int id) const
   return (elementBlocks_.find(id))->second;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 EXODUS::NodeSet EXODUS::Mesh::GetNodeSet(const int id) const
 {
   if (nodeSets_.find(id) == nodeSets_.end()){
@@ -405,6 +409,8 @@ EXODUS::NodeSet EXODUS::Mesh::GetNodeSet(const int id) const
   return (nodeSets_.find(id))->second;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 EXODUS::SideSet EXODUS::Mesh::GetSideSet(const int id) const
 {
   if (sideSets_.find(id) == sideSets_.end()){
@@ -414,6 +420,8 @@ EXODUS::SideSet EXODUS::Mesh::GetSideSet(const int id) const
   return (sideSets_.find(id))->second;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void EXODUS::Mesh::PrintNodes(ostream& os, bool storeid) const
 {
   map<int,vector<double> >::const_iterator it;
@@ -429,13 +437,16 @@ void EXODUS::Mesh::PrintNodes(ostream& os, bool storeid) const
   }
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 vector<double> EXODUS::Mesh::GetNode(const int NodeID) const
 {
   map<int,vector<double> >::const_iterator  it = nodes_->find(NodeID);
   return it->second;
 }
 
-
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 map<int,vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sideset) const
 {
   cout << "Creating SideSet Connectivity... " << endl;
@@ -555,6 +566,8 @@ map<int,vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sideset) const
   return conn;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 map<int,vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sideset, bool checkoutside) const
 {
   cout << "Creating SideSet Connectivity with outside-check... " << endl;
@@ -640,6 +653,8 @@ map<int,vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sideset, bool c
   return conn;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 vector<int> EXODUS::Mesh::OutsideOrientedSide(const vector<int> parentele, const vector<int> sidemap) const
 {
   // first guess of child
@@ -681,6 +696,8 @@ vector<int> EXODUS::Mesh::OutsideOrientedSide(const vector<int> parentele, const
   return out_side;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 vector<double> EXODUS::Mesh::Normal(const int head1,const int origin,const int head2) const
 {
   vector<double> normal(3);
@@ -700,6 +717,8 @@ vector<double> EXODUS::Mesh::Normal(const int head1,const int origin,const int h
   return normal;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 vector<double> EXODUS::Mesh::NodeVec(const int tail, const int head) const
 {
   vector<double> nv(3);
@@ -711,7 +730,8 @@ vector<double> EXODUS::Mesh::NodeVec(const int tail, const int head) const
   return nv;
 }
 
-
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 vector<EXODUS::ElementBlock> EXODUS::Mesh::SideSetToEBlocks(const EXODUS::SideSet& sideset, const map<int,vector<int> >& sideconn) const
 {
   vector<ElementBlock> eblocks;
@@ -749,6 +769,8 @@ vector<EXODUS::ElementBlock> EXODUS::Mesh::SideSetToEBlocks(const EXODUS::SideSe
   return eblocks;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 EXODUS::NodeSet EXODUS::Mesh::SideSetToNodeSet(const EXODUS::SideSet& sideset, const map<int,vector<int> >& sideconn) const
 {
   map<int,vector<int> >::const_iterator i_side;
@@ -765,6 +787,8 @@ EXODUS::NodeSet EXODUS::Mesh::SideSetToNodeSet(const EXODUS::SideSet& sideset, c
   return nodeset;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 set<int> EXODUS::Mesh::GetSideSetNodes(const EXODUS::SideSet& sideset, const map<int,vector<int> >& sideconn) const
 {
   map<int,vector<int> >::const_iterator i_side;
@@ -777,7 +801,7 @@ set<int> EXODUS::Mesh::GetSideSetNodes(const EXODUS::SideSet& sideset, const map
 }
 
 /*----------------------------------------------------------------------*
- |  Write Mesh into exodus file (public)                                maf 01/08|
+ |  Write Mesh into exodus file (public)                       maf 01/08|
  *----------------------------------------------------------------------*/
 void EXODUS::Mesh::WriteMesh(const string newexofilename) const
 {
@@ -933,6 +957,7 @@ void EXODUS::Mesh::WriteMesh(const string newexofilename) const
   if (error!=0) dserror("error closing exodus file");
   cout << ".. finished" << endl;
 }
+
 /*----------------------------------------------------------------------*
  |  Add Element Block to mesh(public)                          maf 01/08|
  *----------------------------------------------------------------------*/
@@ -1036,6 +1061,8 @@ map<int,pair<int,int> > EXODUS::Mesh::createMidpoints(map<int,vector<double> >& 
 	return conn_mpID_elID;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 map<int,vector<int> > EXODUS::Mesh::GlobalifySSeleids(const int ssid) const
 {
   SideSet ss = GetSideSet(ssid);
@@ -1229,7 +1256,8 @@ void EXODUS::Mesh::PlotConnGmsh(const string fname,const EXODUS::Mesh& mymesh, c
   return;
 }
 
-
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 EXODUS::ElementBlock::ElementBlock(ElementBlock::Shape Distype, RCP<map<int,vector<int> > >& eleconn, string name)
 : distype_(Distype),
   eleconn_(eleconn),
@@ -1245,17 +1273,24 @@ EXODUS::ElementBlock::ElementBlock(ElementBlock::Shape Distype, RCP<map<int,vect
   }
   return;
 }
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 EXODUS::ElementBlock::~ElementBlock()
 {
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 vector<int> EXODUS::ElementBlock::GetEleNodes(int i) const
 {
   map<int,vector<int> >::const_iterator  it = eleconn_->find(i);
   return it->second;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 int EXODUS::ElementBlock::GetEleNode(int ele, int node) const
 {
   map<int,vector<int> >::const_iterator  it = eleconn_->find(ele);
@@ -1264,6 +1299,8 @@ int EXODUS::ElementBlock::GetEleNode(int ele, int node) const
   return elenodes[node];
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void EXODUS::ElementBlock::FillEconnArray(int *connarray) const
 {
   const map<int,vector<int> >::const_iterator iele;
@@ -1277,7 +1314,8 @@ void EXODUS::ElementBlock::FillEconnArray(int *connarray) const
   }
 }
 
-
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void EXODUS::ElementBlock::Print(ostream& os, bool verbose) const
 {
   os << "Element Block, named: " << name_ << endl
@@ -1296,7 +1334,8 @@ void EXODUS::ElementBlock::Print(ostream& os, bool verbose) const
   }
 }
 
-
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 EXODUS::NodeSet::NodeSet(const set<int>& nodeids, const string& name, const string& propname)
 : nodeids_(nodeids),
   name_(name.c_str()),
@@ -1305,11 +1344,15 @@ EXODUS::NodeSet::NodeSet(const set<int>& nodeids, const string& name, const stri
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 EXODUS::NodeSet::~NodeSet()
 {
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void EXODUS::NodeSet::Print(ostream& os, bool verbose) const
 {
   os << "Node Set, named: " << name_ << endl
@@ -1323,6 +1366,8 @@ void EXODUS::NodeSet::Print(ostream& os, bool verbose) const
   }
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void EXODUS::NodeSet::FillNodelistArray(int* nodelist) const
 {
   set<int> nlist = GetNodeSet();
@@ -1334,7 +1379,8 @@ void EXODUS::NodeSet::FillNodelistArray(int* nodelist) const
   }
 }
 
-
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 EXODUS::SideSet::SideSet(const map<int,vector<int> >& sides, const string& name)
 : sides_(sides),
   name_(name.c_str())
@@ -1342,6 +1388,8 @@ EXODUS::SideSet::SideSet(const map<int,vector<int> >& sides, const string& name)
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void EXODUS::SideSet::FillSideLists(int* elemlist, int* sidelist) const
 {
   map<int,vector<int> > sides = GetSideSet();
@@ -1354,6 +1402,8 @@ void EXODUS::SideSet::FillSideLists(int* elemlist, int* sidelist) const
   }
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void EXODUS::SideSet::FillSideLists(int* elemlist, int* sidelist, const map<int,vector<int> >& sides) const
 {
   map<int,vector<int> >::const_iterator it;
@@ -1365,6 +1415,8 @@ void EXODUS::SideSet::FillSideLists(int* elemlist, int* sidelist, const map<int,
   }
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void EXODUS::SideSet::Print(ostream& os, bool verbose) const{
   os << "SideSet, named: " << name_ << endl
   << "has " << GetNumSides() << " Sides" << endl;
@@ -1377,12 +1429,15 @@ void EXODUS::SideSet::Print(ostream& os, bool verbose) const{
   }
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 EXODUS::SideSet::~SideSet()
 {
   return;
 }
 
-
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 EXODUS::Mesh EXODUS::QuadtoTri(EXODUS::Mesh& basemesh)
 {
   map<int,RCP<EXODUS::ElementBlock> > neweblocks;   // here the new EBlocks are stored
@@ -1434,7 +1489,8 @@ EXODUS::Mesh EXODUS::QuadtoTri(EXODUS::Mesh& basemesh)
   TINY HELPER FUNCTIONS
  *----------------------------------------------------------------------*/
 
-
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void EXODUS::PrintMap(ostream& os,const map<int,vector<int> > mymap)
 {
   map<int,vector<int> >::const_iterator iter;
@@ -1450,6 +1506,8 @@ void EXODUS::PrintMap(ostream& os,const map<int,vector<int> > mymap)
   }
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void EXODUS::PrintMap(ostream& os,const map<int,set<int> > mymap)
 {
   map<int,set<int> >::const_iterator iter;
@@ -1465,6 +1523,8 @@ void EXODUS::PrintMap(ostream& os,const map<int,set<int> > mymap)
   }
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void EXODUS::PrintMap(ostream& os,const map<int,vector<double> > mymap)
 {
   map<int,vector<double> >::const_iterator iter;
@@ -1480,6 +1540,8 @@ void EXODUS::PrintMap(ostream& os,const map<int,vector<double> > mymap)
   }
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void EXODUS::PrintMap(ostream& os,const map<double,int> mymap)
 {
   map<double,int>::const_iterator iter;
@@ -1490,6 +1552,8 @@ void EXODUS::PrintMap(ostream& os,const map<double,int> mymap)
   }
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void EXODUS::PrintMap(ostream& os,const map<int,map<int,int> > mymap)
 {
   map<int,map<int,int> >::const_iterator iter;
@@ -1505,6 +1569,8 @@ void EXODUS::PrintMap(ostream& os,const map<int,map<int,int> > mymap)
   }
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void EXODUS::PrintMap(ostream& os,const map<int,pair<int,int> > mymap)
 {
   map<int,pair<int,int> >::const_iterator iter;
@@ -1517,6 +1583,8 @@ void EXODUS::PrintMap(ostream& os,const map<int,pair<int,int> > mymap)
   }
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void EXODUS::PrintMap(ostream& os,const map<int,int> mymap)
 {
   map<int,int>::const_iterator iter;
@@ -1528,6 +1596,8 @@ void EXODUS::PrintMap(ostream& os,const map<int,int> mymap)
   }
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void EXODUS::PrintMap(ostream& os,const map<int,double> mymap)
 {
   map<int,double>::const_iterator iter;
@@ -1539,6 +1609,8 @@ void EXODUS::PrintMap(ostream& os,const map<int,double> mymap)
   }
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void EXODUS::PrintVec(ostream& os, const vector<int> actvec)
 {
   vector<int>::const_iterator i;
@@ -1548,6 +1620,8 @@ void EXODUS::PrintVec(ostream& os, const vector<int> actvec)
   os << endl;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void EXODUS::PrintVec(ostream& os, const vector<double> actvec)
 {
   vector<double>::const_iterator i;
@@ -1557,6 +1631,8 @@ void EXODUS::PrintVec(ostream& os, const vector<double> actvec)
   os << endl;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void EXODUS::PrintSet(ostream& os, const set<int> actset)
 {
   set<int>::iterator i;
@@ -1567,12 +1643,16 @@ void EXODUS::PrintSet(ostream& os, const set<int> actset)
 
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 int EXODUS::HexSideNumberExoToBaci(const int exoface)
 {
   const int map[6] = {1,2,3,4,0,5};
   return map[exoface];
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 int EXODUS::PyrSideNumberExoToBaci(const int exoface)
 {
   const int map[5] = {1,2,3,4,0};
