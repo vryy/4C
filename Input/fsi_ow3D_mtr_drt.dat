@@ -370,18 +370,6 @@ ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1 1
 PARTITION                       Cut_Elements
 SOLVER                          UMFPACK
-----------------------------------------------STATISTICAL MECHANICS
-DYN_CROSSLINKERS                No
-ETA                             0
-GRADIENT                        0
-KT                              0
-K_OFF                           0
-K_ON                            0
-R_LINK                          0
-SPECIAL_OUTPUT                  None
-START_FACTOR                    0
-STOCH_ORDER                     0
-THERMALBATH                     None
 ------------------------------------------------------STRUCT SOLVER
 AZBDIAG                         0
 AZCONV                          AZ_r0
