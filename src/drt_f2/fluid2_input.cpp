@@ -18,6 +18,8 @@ Maintainer: Michael Gee
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_linedefinition.H"
 
+extern struct _GENPROB     genprob;
+
 using namespace DRT::UTILS;
 
 
@@ -27,6 +29,9 @@ bool DRT::ELEMENTS::Fluid2::ReadElement(const std::string& eletype,
                                         const std::string& distype,
                                         DRT::INPUT::LineDefinition* linedef)
 {
+  if (genprob.ndim!=2)
+    dserror("Problem defined as %dd, but found FLUID2 element.",genprob.ndim);
+
   // read number of material model
   int material = 0;
   linedef->ExtractInt("MAT",material);
