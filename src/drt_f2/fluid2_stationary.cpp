@@ -125,8 +125,8 @@ int DRT::ELEMENTS::Fluid2Stationary<distype>::Evaluate(
   LINALG::Matrix<3*iel,    1> elevec1(elevec1_epetra.A(),true);
 
   // need current velocity/pressure vector
-  RefCountPtr<const Epetra_Vector> velnp = discretization.GetState("velnp");
-  if (velnp==null) dserror("Cannot get state vector 'velnp'");
+  RefCountPtr<const Epetra_Vector> velnp = discretization.GetState("velaf");
+  if (velnp==null) dserror("Cannot get state vector 'velaf'");
 
   // extract local values from the global vectors
   vector<double> myvelnp(lm.size());

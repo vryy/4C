@@ -302,7 +302,7 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcImpulseEqnImplicit(Fluid2* ele,
 
   // get current state vectors from discretization
   RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
-  RCP<const Epetra_Vector> vedenp = discretization.GetState("vescnp");
+  RCP<const Epetra_Vector> vedenp = discretization.GetState("scanp");
   RCP<const Epetra_Vector> hist = discretization.GetState("hist");
   RCP<const Epetra_Vector> dispnp;
   RCP<const Epetra_Vector> gridv;
@@ -848,7 +848,7 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcImpulseEqnSemiImplicit(Fluid2* ele,
   RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
   RCP<const Epetra_Vector> veln = discretization.GetState("veln");
   //RCP<const Epetra_Vector> vedenp = discretization.GetState("vedenp");
-  RCP<const Epetra_Vector> vedenp = discretization.GetState("vescnp");
+  RCP<const Epetra_Vector> vedenp = discretization.GetState("scanp");
   RCP<const Epetra_Vector> hist = discretization.GetState("hist");
   RCP<const Epetra_Vector> dispnp;
   RCP<const Epetra_Vector> gridv;
@@ -1404,7 +1404,7 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcSysmatAndResidual(Fluid2* ele,
 
   RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
   //RCP<const Epetra_Vector> vedenp = discretization.GetState("vedenp");
-  RCP<const Epetra_Vector> vescnp = discretization.GetState("vescnp");
+  RCP<const Epetra_Vector> vescnp = discretization.GetState("scanp");
   RCP<const Epetra_Vector> hist = discretization.GetState("hist");
   RCP<const Epetra_Vector> dispnp;
   RCP<const Epetra_Vector> gridv;
@@ -1994,7 +1994,7 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcResidual(Fluid2* ele,
 
   RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
   //RCP<const Epetra_Vector> vedenp = discretization.GetState("vedenp");
-  RCP<const Epetra_Vector> vedenp = discretization.GetState("vescnp");
+  RCP<const Epetra_Vector> vedenp = discretization.GetState("scanp");
   RCP<const Epetra_Vector> hist = discretization.GetState("hist");
   RCP<const Epetra_Vector> dispnp;
   RCP<const Epetra_Vector> gridv;

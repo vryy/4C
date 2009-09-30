@@ -53,19 +53,22 @@ namespace LOMA
     /// virtual destructor to support polymorph destruction
     virtual ~Algorithm();
 
-    /// time loop
+    /// LOMA time loop
     void TimeLoop();
 
   protected:
 
-    /// initial calculations
+    /// do initial calculations
     void InitialCalculations();
 
     /// prepare time step
     void PrepareTimeStep();
 
-    /// outer iteration loop
-    void OuterLoop();
+    /// do generalized-alpha outer iteration loop
+    void GenAlphaOuterLoop();
+
+    /// do one-step-theta/BDF2 outer iteration loop
+    void OSTBDF2OuterLoop();
 
     /// update for next time step
     void Update();

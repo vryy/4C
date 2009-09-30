@@ -158,9 +158,6 @@ public:
   /// set the initial scalar field phi
   void SetInitialField(int init,int startfuncno);
 
-  /// compute values at intermediate time steps (required for generalized-alpha)
-  virtual void ComputeIntermediateValues()=0;
-
   /// set initial thermodynamic pressure for low-Mach-number flow
   void SetInitialThermPressure();
 
@@ -173,6 +170,12 @@ public:
   /// predict thermodynamic pressure and time derivative for low-Mach-number flow
   virtual void PredictThermPressure() = 0;
 
+  /// compute values at intermediate time steps (required for generalized-alpha)
+  virtual void ComputeIntermediateValues() = 0;
+
+  /// compute values of thermodynamic pressure at intermediate time steps
+  virtual void ComputeThermPressureIntermediateValues() = 0;
+
   /// compute thermodynamic pressure and time derivative for low-Mach-number flow
   virtual void ComputeThermPressure()=0;
 
@@ -184,6 +187,12 @@ public:
 
   /// check convergence for low-Mach-number flow
   bool LomaConvergenceCheck(int itnum, int itmax, const double ittol);
+
+  ///  update time derivative
+  virtual void UpdateTimeDerivative() = 0;
+
+  ///  update time derivative of thermodynamic pressure after solution
+  virtual void UpdateThermPressureTimeDerivative() = 0;
 
   /// update thermodynamic pressure and time derivative for low-Mach-number flow
   virtual void UpdateThermPressure() = 0;
@@ -201,10 +210,16 @@ public:
   Teuchos::RCP<Epetra_Vector> Phin() { return phin_; }
 
   /// routine to return time derivative of scalar field phi at time step n+1
-  Teuchos::RCP<Epetra_Vector> PhiDtnp() { return phidtnp_; }
+  Teuchos::RCP<Epetra_Vector> Phidtnp() { return phidtnp_; }
 
-  /// routine to return time derivative of scalar field phi at time step n
-  Teuchos::RCP<Epetra_Vector> PhiDtn() { return phidtn_; }
+  /// routine to return scalar field phi at time step n+alpha_F
+  virtual Teuchos::RCP<Epetra_Vector> Phiaf() = 0;
+
+  /// routine to return scalar field phi at time step n+alpha_M
+  virtual Teuchos::RCP<Epetra_Vector> Phiam() = 0;
+
+  /// routine to return time derivative of scalar field phi at time step n+alpha_M
+  virtual Teuchos::RCP<Epetra_Vector> Phidtam() = 0;
 
   /// routine to return scalar field convective velocity at time step n+1
   Teuchos::RCP<Epetra_MultiVector> ConVel() { return convel_; }
@@ -236,11 +251,17 @@ public:
   /// routine to return thermo. press. at time step n for low-Mach-number flow
   double ThermPressN() { return thermpressn_; }
 
+  /// routine to return thermo. press. at time step n+alpha_F for low-Mach-number flow
+  virtual double ThermPressAf() = 0;
+
+  /// routine to return thermo. press. at time step n+alpha_M for low-Mach-number flow
+  virtual double ThermPressAm() = 0;
+
   /// routine to return time der. of thermo. press. at time step n+1 for low-Mach-number flow
   double ThermPressDtNp() { return thermpressdtnp_; }
 
-  /// routine to return time der. of thermo. press. at time step n for low-Mach-number flow
-  double ThermPressDtN() { return thermpressdtn_; }
+  /// routine to return thermo. press. at time step n+alpha_M for low-Mach-number flow
+  virtual double ThermPressDtAm() = 0;
 
   /// return current time value
   double Time() const { return time_; }

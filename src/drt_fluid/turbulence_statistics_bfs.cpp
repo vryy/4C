@@ -673,11 +673,11 @@ Teuchos::RefCountPtr<Epetra_Vector> subgrvisc
 
 
 //----------------------------------------------------------------------
-// sampling of velocity/pressure values
+// sampling of velocity, pressure and temperature values
 //----------------------------------------------------------------------
 void FLD::TurbulenceStatisticsBfs::DoLomaTimeSample(
 Teuchos::RefCountPtr<Epetra_Vector> velnp,
-Teuchos::RefCountPtr<Epetra_Vector> vescnp,
+Teuchos::RefCountPtr<Epetra_Vector> scanp,
 Teuchos::RefCountPtr<Epetra_Vector> subgrvisc,
 const double                        eosfac)
 {
@@ -748,14 +748,14 @@ const double                        eosfac)
       if (countnodesonallprocs)
       {
         //----------------------------------------------------------------------
-        // get values for velocity derivative, pressure and density
+        // get values for velocity derivative, pressure and temperature
         //----------------------------------------------------------------------
         double u;
         velnp->Dot(*toggleu_,&u);
         double p;
         velnp->Dot(*togglep_,&p);
         double T;
-        vescnp->Dot(*togglep_,&T);
+        scanp->Dot(*togglep_,&T);
 
         //----------------------------------------------------------------------
         // calculate spatial means
@@ -851,7 +851,7 @@ const double                        eosfac)
         subgrvisc->Dot(*togglep_,&sv);
 
         double T;
-        vescnp->Dot(*togglep_,&T);
+        scanp->Dot(*togglep_,&T);
 
         //----------------------------------------------------------------------
         // calculate spatial means on this line

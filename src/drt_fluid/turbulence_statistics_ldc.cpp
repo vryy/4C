@@ -800,7 +800,7 @@ Teuchos::RefCountPtr<Epetra_Vector> velnp
  *----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsLdc::DoLomaTimeSample(
 Teuchos::RefCountPtr<Epetra_Vector> velnp,
-Teuchos::RefCountPtr<Epetra_Vector> vescnp,
+Teuchos::RefCountPtr<Epetra_Vector> scanp,
 Teuchos::RefCountPtr<Epetra_Vector> subgrvisc,
 Epetra_Vector &                     force,
 const double                        eosfac)
@@ -871,7 +871,7 @@ const double                        eosfac)
       velnp->Dot(*togglep_,&p);
 
       double T;
-      vescnp->Dot(*togglep_,&T);
+      scanp->Dot(*togglep_,&T);
 
       double sv;
       subgrvisc->Dot(*togglep_,&sv);
@@ -981,7 +981,7 @@ const double                        eosfac)
       velnp->Dot(*togglep_,&p);
 
       double T;
-      vescnp->Dot(*togglep_,&T);
+      scanp->Dot(*togglep_,&T);
 
       double sv;
       subgrvisc->Dot(*togglep_,&sv);
@@ -1090,7 +1090,7 @@ const double                        eosfac)
       velnp->Dot(*togglep_,&p);
 
       double T;
-      vescnp->Dot(*togglep_,&T);
+      scanp->Dot(*togglep_,&T);
 
       double sv;
       subgrvisc->Dot(*togglep_,&sv);

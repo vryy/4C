@@ -133,7 +133,7 @@ public:
   average of the nodal values after a certain amount of timesteps.
   */
   void DoLomaTimeSample(Teuchos::RefCountPtr<Epetra_Vector> velnp,
-                        Teuchos::RefCountPtr<Epetra_Vector> vescnp,
+                        Teuchos::RefCountPtr<Epetra_Vector> scanp,
                         Teuchos::RefCountPtr<Epetra_Vector> subgrvisc,
                         Epetra_Vector &                     force,
                         const double                        eosfac);
@@ -322,9 +322,9 @@ private:
   //! and averaging methods
   ParameterList                    eleparams_;
 
-  //! pointer to mean vel/pres and vel/sca field
+  //! pointer to mean vel/pres and scalar field
   RefCountPtr<Epetra_Vector>       meanvelnp_;
-  RefCountPtr<Epetra_Vector>       meanvescnp_;
+  RefCountPtr<Epetra_Vector>       meanscanp_;
 
   //! pointer to mean subgrid viscosity
   RefCountPtr<Epetra_Vector>       meansubgrvisc_;

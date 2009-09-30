@@ -94,7 +94,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   meanvelnp_     = LINALG::CreateVector(*dofrowmap,true);
   meansubgrvisc_ = LINALG::CreateVector(*dofrowmap,true);
   // this vector is only necessary for low-Mach-number flow
-  if (loma_ != "No") meanvescnp_ = LINALG::CreateVector(*dofrowmap,true);
+  if (loma_ != "No") meanscanp_ = LINALG::CreateVector(*dofrowmap,true);
 
   toggleu_      = LINALG::CreateVector(*dofrowmap,true);
   togglev_      = LINALG::CreateVector(*dofrowmap,true);
@@ -1108,7 +1108,7 @@ void FLD::TurbulenceStatisticsCha::DoTimeSample(
   ----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsCha::DoLomaTimeSample(
   Teuchos::RefCountPtr<Epetra_Vector> velnp,
-  Teuchos::RefCountPtr<Epetra_Vector> vescnp,
+  Teuchos::RefCountPtr<Epetra_Vector> scanp,
   Teuchos::RefCountPtr<Epetra_Vector> subgrvisc,
   Epetra_Vector &                     force,
   const double                        eosfac
@@ -1120,10 +1120,10 @@ void FLD::TurbulenceStatisticsCha::DoLomaTimeSample(
   numsamp_++;
 
   //----------------------------------------------------------------------
-  // meanvelnp, meanvescnp and meansubgrvisc are refcount copies
+  // meanvelnp, meanscanp and meansubgrvisc are refcount copies
 
   meanvelnp_->Update(1.0,*velnp,0.0);
-  meanvescnp_->Update(1.0,*vescnp,0.0);
+  meanscanp_->Update(1.0,*scanp,0.0);
   meansubgrvisc_->Update(1.0,*subgrvisc,0.0);
 
   //----------------------------------------------------------------------
@@ -1623,7 +1623,7 @@ const double eosfac)
   // set vector values needed by elements
   discret_->ClearState();
   discret_->SetState("u and p (n+1,converged)",meanvelnp_ );
-  discret_->SetState("rho (n+1,converged)"    ,meanvescnp_);
+  discret_->SetState("scalar (n+1,converged)" ,meanscanp_);
   discret_->SetState("sv (n+1,converged)"     ,meansubgrvisc_);
 
   // call loop over elements
@@ -3228,7 +3228,7 @@ void FLD::TurbulenceStatisticsCha::ClearStatistics()
 
   meanvelnp_->PutScalar(0.0);
   meansubgrvisc_->PutScalar(0.0);
-  if (loma_ != "No") meanvescnp_->PutScalar(0.0);
+  if (loma_ != "No") meanscanp_->PutScalar(0.0);
 
   // reset smapling for dynamic Smagorinsky model
   if (smagorinsky_)

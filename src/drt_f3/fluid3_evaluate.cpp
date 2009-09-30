@@ -405,23 +405,23 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           // extract velocities and pressure as well as densities
           // from the global distributed vectors
 
-          // velocity and pressure values (n+1)
+          // velocity, pressure, scalar and subgrid-viscosity values (n+1)
           RCP<const Epetra_Vector> velnp
             = discretization.GetState("u and p (n+1,converged)");
-          RCP<const Epetra_Vector> vedenp
-            = discretization.GetState("rho (n+1,converged)");
+          RCP<const Epetra_Vector> scanp
+            = discretization.GetState("scalar (n+1,converged)");
           RCP<const Epetra_Vector> subgrviscnp
             = discretization.GetState("sv (n+1,converged)");
 
-          if (velnp==null || vedenp==null || subgrviscnp==null)
-            dserror("Cannot get state vectors 'velnp', 'vedenp' and/or 'subgrviscnp'");
+          if (velnp==null || scanp==null || subgrviscnp==null)
+            dserror("Cannot get state vectors 'velnp', 'scanp' and/or 'subgrviscnp'");
 
           // extract local values from the global vectors
           vector<double> myvelpre(lm.size());
-          vector<double> mydens(lm.size());
+          vector<double> mysca(lm.size());
           vector<double> mysv(lm.size());
           DRT::UTILS::ExtractMyValues(*velnp,myvelpre,lm);
-          DRT::UTILS::ExtractMyValues(*vedenp,mydens,lm);
+          DRT::UTILS::ExtractMyValues(*scanp,mysca,lm);
           DRT::UTILS::ExtractMyValues(*subgrviscnp,mysv,lm);
 
           // get factor for equation of state
@@ -434,17 +434,17 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           {
           case DRT::Element::hex8:
           {
-            f3_calc_loma_means<8>(discretization,myvelpre,mydens,mysv,params,eosfac);
+            f3_calc_loma_means<8>(discretization,myvelpre,mysca,mysv,params,eosfac);
             break;
           }
           case DRT::Element::hex20:
           {
-            f3_calc_loma_means<20>(discretization,myvelpre,mydens,mysv,params,eosfac);
+            f3_calc_loma_means<20>(discretization,myvelpre,mysca,mysv,params,eosfac);
             break;
           }
           case DRT::Element::hex27:
           {
-            f3_calc_loma_means<27>(discretization,myvelpre,mydens,mysv,params,eosfac);
+            f3_calc_loma_means<27>(discretization,myvelpre,mysca,mysv,params,eosfac);
             break;
           }
           default:

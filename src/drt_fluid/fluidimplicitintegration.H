@@ -288,26 +288,24 @@ public:
   const FLUID_TIMEINTTYPE TimIntScheme() const {return timealgo_;}
 
   /*!
-  \brief set time-step-related fields for low-Mach-number flow
+  \brief set fields for low-Mach-number flow within outer iteration loop
 
   */
-  void SetTimeLomaFields(RCP<const Epetra_Vector> scalarnp,
-                         RCP<const Epetra_Vector> scalarn,
-                         RCP<const Epetra_Vector> scalardtn,
-                         const double             thermpressnp,
-                         const double             thermpressn,
-                         const double             thermpressdtn,
-                         RCP<const Epetra_Vector> scatraresidual,
+  void SetIterLomaFields(RCP<const Epetra_Vector> scalaraf,
+                         RCP<const Epetra_Vector> scalaram,
+                         RCP<const Epetra_Vector> scalardtam,
+                         const double             thermpressaf,
+                         const double             thermpressam,
+                         const double             thermpressdtam,
                          const int                numscal);
 
   /*!
-  \brief set outer-iteration-related fields for low-Mach-number flow
+  \brief set fields for low-Mach-number flow at end of time step
 
   */
-  void SetIterLomaFields(RCP<const Epetra_Vector> scalarnp,
-                         RCP<const Epetra_Vector> scalardtnp,
+  void SetTimeLomaFields(RCP<const Epetra_Vector> scalarnp,
                          const double             thermpressnp,
-                         const double             thermpressdtnp,
+                         RCP<const Epetra_Vector> scatraresidual,
                          const int                numscal);
 
   /// introduce surface split extractor object
@@ -421,14 +419,10 @@ protected:
   /// (set to 1.0 for low-Mach-number flow)
   double density_;
 
-  /// for low-Mach-number flow solver: thermodynamic pressure and its time
-  /// derivative at various time steps
-  double thermpressnp_;
-  double thermpressn_;
+  /// for low-Mach-number flow solver: thermodynamic pressure at n+alpha_F/n+1
+  /// and at n+alpha_M/n as well as its time derivative at n+alpha_M/n
   double thermpressaf_;
   double thermpressam_;
-  double thermpressdtnp_;
-  double thermpressdtn_;
   double thermpressdtam_;
 
   /// gas constant (only for low-Mach-number flow)
@@ -456,6 +450,7 @@ protected:
 
   //! @name time-integration-scheme factors
   double theta_;
+  double omtheta_;
   double alphaM_;
   double alphaF_;
   double gamma_;
@@ -523,7 +518,7 @@ protected:
   /// Nonlinear iteration increment vector
   RCP<Epetra_Vector>    incvel_;
 
-  //! @name acceleration (and scalar time derivative) at time n+1, n and n+alpha_M
+  //! @name acceleration/(scalar time derivative) at time n+1, n and n+alpha_M/(n+alpha_M/n)
   RCP<Epetra_Vector>    accnp_;
   RCP<Epetra_Vector>    accn_;
   RCP<Epetra_Vector>    accam_;
@@ -536,12 +531,9 @@ protected:
   RCP<Epetra_Vector>    velaf_;
   //@}
 
-  //! @name velocity and scalar at time n+1, n, n-1, n+alpha_M and n+alpha_F
-  RCP<Epetra_Vector>    vescnp_;
-  RCP<Epetra_Vector>    vescn_;
-  RCP<Epetra_Vector>    vescnm_;
-  RCP<Epetra_Vector>    vescam_;
-  RCP<Epetra_Vector>    vescaf_;
+  //! @name scalar at time n+alpha_F/n+1 and n+alpha_M/n
+  RCP<Epetra_Vector>    scaaf_;
+  RCP<Epetra_Vector>    scaam_;
   //@}
 
   //! @name displacemets at time n+1, n and n-1
@@ -557,7 +549,7 @@ protected:
   RCP<LINALG::SparseMatrix> Sep_;
 
   /// only necessary for AVM3: fine-scale solution vector
-  RCP<Epetra_Vector>    fsvelnp_;
+  RCP<Epetra_Vector>    fsvelaf_;
 
   /// grid velocity (set from the adapter!)
   RCP<Epetra_Vector>    gridv_;

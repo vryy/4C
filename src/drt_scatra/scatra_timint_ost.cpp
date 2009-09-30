@@ -39,15 +39,6 @@ SCATRA::TimIntOneStepTheta::TimIntOneStepTheta(
   // temporal solution derivative at time n
   phidtn_ = LINALG::CreateVector(*dofrowmap,true);
 
-  // only required for low-Mach-number flow
-  if (prbtype_ == "loma")
-  {
-    // time derivative of thermodynamic pressure at n+1 and n
-    // (computed if not constant, otherwise remaining zero)
-    thermpressdtnp_ = 0.0;
-    thermpressdtn_ = 0.0;
-  }
-
   // ELCH with natural convection
   if (prbtype_ == "elch" && params_->get<string>("Natural Convection") != "No")
   {
@@ -177,6 +168,7 @@ void SCATRA::TimIntOneStepTheta::AddSpecificTimeIntegrationParameters(
     params.set("time derivative of thermodynamic pressure",thermpressdtnp_);
   }
 
+  discret_->SetState("hist",hist_);
   discret_->SetState("phinp",phinp_);
 
   return;
@@ -271,7 +263,36 @@ void SCATRA::TimIntOneStepTheta::ComputeThermPressure()
     cout << "+--------------------------------------------------------------------------------------------+" << endl;
   }
 
-  // compute time derivative of thermodynamic pressure at n+1
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | update time derivative                                      vg 09/09 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntOneStepTheta::UpdateTimeDerivative()
+{
+  // time derivative of phi:
+  // phidt(n+1) = (phi(n+1)-phi(n)) / (theta*dt) + (1-(1/theta))*phidt(n)
+  const double fact1 = 1.0/(theta_*dta_);
+  const double fact2 = 1.0 - (1.0/theta_);
+  phidtnp_->Update(fact2,*phidtn_,0.0);
+  phidtnp_->Update(fact1,*phinp_,-fact1,*phin_,1.0);
+
+  // we know the first time derivative on Dirichlet boundaries
+  // so we do not need an approximation of these values!
+  ApplyDirichletBC(time_,Teuchos::null,phidtnp_);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | update time derivative of thermodynamic pressure            vg 09/09 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntOneStepTheta::UpdateThermPressureTimeDerivative()
+{
+  // time derivative of thermodynamic pressure:
   // tpdt(n+1) = (tp(n+1)-tp(n))/(theta*dt)+((theta-1)/theta)*tpdt(n)
   double fact1 = 1.0/(theta_*dta_);
   double fact2 = (theta_-1.0)/theta_;
@@ -287,18 +308,12 @@ void SCATRA::TimIntOneStepTheta::ComputeThermPressure()
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntOneStepTheta::Update()
 {
-  // update time derivative of phi:
-  // phidt(n) = (phi(n)-phi(n-1)) / (Theta*dt(n)) - (1/Theta -1)*phidt(n-1)
-  double fact1 = 1.0/(theta_*dta_);
-  double fact2 = (-1.0/theta_) +1.0;
-  phidtn_->Update(fact1,*phinp_,-fact1,*phin_,fact2);
-
-  // we know the first time derivative on Dirichlet boundaries
-  // so we do not need an approximation of these values!
-  ApplyDirichletBC(time_,Teuchos::null,phidtn_);
-
   // solution of this step becomes most recent solution of the last step
   phin_ ->Update(1.0,*phinp_,0.0);
+
+  // time deriv. of this step becomes most recent time derivative of
+  // last step
+  phidtn_->Update(1.0,*phidtnp_,0.0);
 
   return;
 }

@@ -124,13 +124,14 @@ namespace ELEMENTS
       \brief calculate element matrix and rhs
 
       \param ele              (i) the element those matrix is calculated
-      \param evelnp           (i) nodal velocities at n+1/n+alpha_F
-      \param fsevelnp         (i) fine-scale nodal velocities at n+1/n+alpha_F
-      \param eprenp           (i) nodal pressure at n+1/n+alpha_F
-      \param escanp           (i) nodal scalar at n+1/n+alpha_F
+      \param evelaf           (i) nodal velocities at n+alpha_F/n+1
+      \param eveln            (i) nodal velocities at n
+      \param fsevelaf         (i) fine-scale nodal velocities at n+alpha_F/n+1
+      \param epreaf           (i) nodal pressure at n+alpha_F/n+1
       \param eaccam           (i) nodal accelerations at n+alpha_M
-      \param escdt            (i) nodal scalar derivatives at n+1/n+alpha_M
-      \param escaam           (i) nodal scalar at n+alpha_M
+      \param escaaf           (i) nodal scalar at n+alpha_F/n+1
+      \param escaam           (i) nodal scalar at n+alpha_M/n
+      \param escadtam         (i) nodal scalar derivatives at n+alpha_M/n+1
       \param emhist           (i) time rhs for momentum equation
       \param edispnp          (i) nodal displacements (on moving mesh)
       \param egridv           (i) grid velocity (on moving mesh)
@@ -140,7 +141,6 @@ namespace ELEMENTS
       \param sgvelvisc        (o) subgrid-velocity/viscosity vector
       \param material         (i) fluid material
       \param time             (i) current simulation time
-      \param dt               (i) timestep
       \param timefac          (i) time discretization factor
       \param newton           (i) boolean flag for linearisation
       \param loma             (i) boolean flag for potential low-Mach-number solver
@@ -163,13 +163,14 @@ namespace ELEMENTS
       \param visceff          (i) viscosity + subgrid viscosity
       */
     void Sysmat(Fluid2*                                  ele,
-                const LINALG::Matrix<2,iel>&             evelnp,
-                const LINALG::Matrix<2,iel>&             fsevelnp,
-                const LINALG::Matrix<iel,1>&             eprenp,
-                const LINALG::Matrix<iel,1>&             escanp,
+                const LINALG::Matrix<2,iel>&             evelaf,
+                const LINALG::Matrix<2,iel>&             eveln,
+                const LINALG::Matrix<2,iel>&             fsevelaf,
+                const LINALG::Matrix<iel,1>&             epreaf,
                 const LINALG::Matrix<2,iel>&             eaccam,
-                const LINALG::Matrix<iel,1>&             escdt,
+                const LINALG::Matrix<iel,1>&             escaaf,
                 const LINALG::Matrix<iel,1>&             escaam,
+                const LINALG::Matrix<iel,1>&             escadtam,
                 const LINALG::Matrix<2,iel>&             emhist,
                 const LINALG::Matrix<2,iel>&             edispnp,
                 const LINALG::Matrix<2,iel>&             egridv,
@@ -179,7 +180,6 @@ namespace ELEMENTS
                 LINALG::Matrix<3*iel,    1>&             sgvelvisc,
                 Teuchos::RCP<const MAT::Material>        material,
                 double                                   time,
-                double                                   dt,
                 double                                   timefac,
                 const bool                               newton,
                 const bool                               loma,
@@ -225,9 +225,9 @@ namespace ELEMENTS
            tauC : Codina
 
       \param ele              (i) the element those matrix is calculated
-      \param evelnp           (i) nodal velocities at n+1
-      \param fsevelnp         (i) fine-scale nodal velocities at n+1
-      \param eprenp           (i) nodal pressure
+      \param evelaf           (i) nodal velocities at n+alpha_F/n+1
+      \param fsevelaf         (i) fine-scale nodal velocities at n+alpha_F/n+1
+      \param epreaf           (i) nodal pressure at n+alpha_F/n+1
       \param eaccam           (i) nodal accelerations at n+alpha_M
       \param emhist           (i) time rhs for momentum equation
       \param sgvelvisc        (o) subgrid-velocity/viscosity vector
@@ -247,13 +247,12 @@ namespace ELEMENTS
       \param visceff          (i) viscosity + subgrid viscosity
     */
     void Caltau(Fluid2*                                 ele,
-                const LINALG::Matrix<2,iel>&            evelnp,
-                const LINALG::Matrix<2,iel>&            fsevelnp,
-                const LINALG::Matrix<iel,1>&            eprenp,
+                const LINALG::Matrix<2,iel>&            evelaf,
+                const LINALG::Matrix<2,iel>&            fsevelaf,
+                const LINALG::Matrix<iel,1>&            epreaf,
                 const LINALG::Matrix<2,iel>&            eaccam,
                 const LINALG::Matrix<2,iel>&            emhist,
                 LINALG::Matrix<3*iel,1>&                sgvelvisc,
-                const double                            dt,
                 const double                            timefac,
                 const double                            area,
                 const bool                              loma,
@@ -293,8 +292,8 @@ namespace ELEMENTS
        \brief get material parameters
      */
     void GetMaterialParams(Teuchos::RCP<const MAT::Material>  material,
-                           const LINALG::Matrix<2,iel>&       evelnp,
-                           const LINALG::Matrix<iel,1>&       escanp,
+                           const LINALG::Matrix<2,iel>&       evelaf,
+                           const LINALG::Matrix<iel,1>&       escaaf,
                            const LINALG::Matrix<iel,1>&       escaam,
                            const bool                         is_genalpha);
 
@@ -359,8 +358,8 @@ namespace ELEMENTS
   private:
     //! node coordinates
     LINALG::Matrix<2,iel> xyze_;
-    //! dead load in nodes
-    LINALG::Matrix<2,iel> edeadng_;
+    //! dead load in nodes at n+alpha_F/n+1
+    LINALG::Matrix<2,iel> edeadaf_;
     //! array for shape functions
     LINALG::Matrix<iel,1> funct_;
     //! array for shape function derivatives w.r.t r,s,t
@@ -393,8 +392,8 @@ namespace ELEMENTS
     LINALG::Matrix<2,1> sgvelint_;
     //! density-weighted ale convective velocity in gausspoint, c=rho*u-rho*u_G
     LINALG::Matrix<2,1> convvelint_;
-    //! acceleration vector at n+alphaM in gausspoint
-    LINALG::Matrix<2,1> accintam_;
+    //! acceleration vector in gausspoint
+    LINALG::Matrix<2,1> accint_;
     //! pressure gradient in gausspoint
     LINALG::Matrix<2,1> gradp_;
     //! the stabilisation parameters
@@ -413,8 +412,10 @@ namespace ELEMENTS
     LINALG::Matrix<2,1> conv_old_;
     //! div epsilon(u_old)
     LINALG::Matrix<2,1> visc_old_;
-    //! the old residual
-    LINALG::Matrix<2,1> res_old_;
+    //! old residual of momentum equation
+    LINALG::Matrix<2,1> momres_old_;
+    //! old residual of continuity equation
+    double conres_old_;
     //! 2nd derivatives of coord.-functions w.r.t r,s,t
     LINALG::Matrix<3,2> xder2_;
 
@@ -432,28 +433,40 @@ namespace ELEMENTS
     double visc_;
     //! artificial viscosity
     double vart_;
+    //! time-step length
+    double dt_;
+    //! factor for right-hand side due to time-integration scheme
+    double omtheta_;
 
     //! LOMA-specific variables:
     //! right-hand-side term at int.-point for continuity equation
     double rhscon_;
-    //! density at t_(n+1) or t_(n+alpha_F)
-    double densnp_;
+    //! density at t_(n+alpha_F) or t_(n+1)
+    double densaf_;
     //! density at t_(n+alpha_M)
     double densam_;
-    //! factor for density derivative
-    double densdtfac_;
-    //! addition to density derivative due to thermodynamic pressure
-    double densdtadd_;
+    //! factor for scalar time derivative
+    double scadtfac_;
+    //! factor for convective scalar term at t_(n+alpha_F) or t_(n+1)
+    double scaconvfacaf_;
+    //! factor for convective scalar term at t_(n)
+    double scaconvfacn_;
+    //! addition to continuity equation due to thermodynamic pressure
+    double thermpressadd_;
+    //! global velocity derivatives in gausspoint w.r.t x,y,z at t_(n)
+    LINALG::Matrix<2,2> vderxyn_;
     //! scalar gradient
     LINALG::Matrix<2,1> grad_sca_;
-    //! convective scalar term
-    double conv_sca_;
-    //! thermodynamic pressure at t_(n+1) or t_(n+alpha_F)
-    double thermpressnp_;
-    //! thermodynamic pressure at t_(n+alpha_M)
+    //! convective scalar term at t_(n+alpha_F) or t_(n+1)
+    double conv_scaaf_;
+    //! convective scalar term at t_(n)
+    double conv_scan_;
+    //! thermodynamic pressure at t_(n+alpha_F) or t_(n+1)
+    double thermpressaf_;
+    //! thermodynamic pressure at t_(n+alpha_M) or t_(n)
     double thermpressam_;
-    //! history or time derivative of thermodynamic pressure
-    double thermpressdt_;
+    //! time derivative of thermodynamic pressure at t_(n+alpha_M) or t_(n+1)
+    double thermpressdtam_;
   };
 
 }

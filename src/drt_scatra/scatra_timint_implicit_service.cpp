@@ -106,6 +106,9 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidt()
   // solve for phidtn
   solver_->Solve(sysmat_->EpetraOperator(),phidtn_,residual_,true,true);
 
+  // copy solution also to phidtnp
+  phidtnp_->Update(1.0,*phidtn_,0.0);
+
   // reset the matrix (and its graph!) since we solved
   // a very special problem here that has a different sparsity pattern_
   if (params_->get<int>("BLOCKPRECOND")) ; //how to reset a block matrix ??
@@ -360,7 +363,13 @@ void SCATRA::ScaTraTimIntImpl::SetInitialThermPressure()
   thermpressn_ = eleparams.get("thermodynamic pressure", 98100.0);
 
   // initialize also value at n+1
+  // (computed if not constant, otherwise remaining zero)
   thermpressnp_ = thermpressn_;
+
+  // initialize time derivative of thermodynamic pressure at n+1 and n
+  // (computed if not constant, otherwise remaining zero)
+  thermpressdtnp_ = 0.0;
+  thermpressdtn_  = 0.0;
 
   return;
 }
@@ -513,16 +522,12 @@ void SCATRA::ScaTraTimIntImpl::ComputeThermPressureFromMassCons()
   // compute thermodynamic pressure: tp = R*M_0/int(1/T)
   thermpressnp_ = initialmass_/(*scalars)[0];
 
-  // compute time derivative of thermodynamic pressure: tpdt = (tp(n+1)-tp(n))/dt
-  thermpressdtnp_ = (thermpressnp_-thermpressn_)/dta_;
-
-  // print out thermodynamic pressure and its time derivative
+  // print out thermodynamic pressure
   if (myrank_ == 0)
   {
     cout << endl;
     cout << "+--------------------------------------------------------------------------------------------+" << endl;
     cout << "Thermodynamic pressure from mass conservation: " << thermpressnp_ << endl;
-    cout << "Time derivative of thermodynamic pressure: " << thermpressdtnp_ << endl;
     cout << "+--------------------------------------------------------------------------------------------+" << endl;
   }
 
@@ -1148,7 +1153,6 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
 
     // set vector values needed by elements
     discret_->ClearState();
-    discret_->SetState("hist",hist_);
     if (turbmodel_) discret_->SetState("subgrid diffusivity",subgrdiff_);
 
     // add element parameters according to time-integration scheme

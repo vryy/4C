@@ -45,19 +45,10 @@ SCATRA::TimIntGenAlpha::TimIntGenAlpha(
   phiaf_ = LINALG::CreateVector(*dofrowmap,true);
   phiam_ = LINALG::CreateVector(*dofrowmap,true);
 
-  // temporal solution derivative at times n+1 and n
+  // temporal derivative of scalar at times n+1, n and n+alpha_M
   phidtnp_ = LINALG::CreateVector(*dofrowmap,true);
   phidtn_  = LINALG::CreateVector(*dofrowmap,true);
-
-  // only required for low-Mach-number flow
-  if (prbtype_ == "loma")
-  {
-    // time derivative of thermodynamic pressure at n+1, n+alpha_F and n
-    // (computed if not constant, otherwise remaining zero)
-    thermpressdtnp_ = 0.0;
-    thermpressdtaf_ = 0.0;
-    thermpressdtn_  = 0.0;
-  }
+  phidtam_ = LINALG::CreateVector(*dofrowmap,true);
 
   // compute specific time factor for generalized-alpha time integration:
   // genalphatimefac = gamma*alpha_F/alpha_M
@@ -131,43 +122,39 @@ void SCATRA::TimIntGenAlpha::PredictThermPressure()
 
 
 /*----------------------------------------------------------------------*
- | compute values at intermediate time steps                   vg 02/09 |
+ | compute values at intermediate time steps                   vg 09/09 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntGenAlpha::ComputeIntermediateValues()
 {
-  // computations for incremental case: phi at time n+alpha_F and time deriv.
-  if (incremental_)
-  {
-    // computation of time derivative of phi:
-    // phidt(n+1) = (phi(n+1)-phi(n)) / (gamma*dt) - (1/gamma -1)*phidt(n)
-    const double fact1 = 1.0/(gamma_*dta_);
-    const double fact2 = (-1.0/gamma_) +1.0;
-    phidtnp_->Update(fact2,*phidtn_,0.0);
-    phidtnp_->Update(fact1,*phinp_,-fact1,*phin_,1.0);
-
-    // calculation of time derivative of phi at n+alpha_M, stored on
-    // history vector for comfortable later transport to element routine
-    hist_->Update(alphaM_,*phidtnp_,(1.0-alphaM_),*phidtn_,0.0);
-  }
-
-  // compute phi at n+alpha_F
+  // compute phi at n+alpha_F and n+alpha_M
   phiaf_->Update(alphaF_,*phinp_,(1.0-alphaF_),*phin_,0.0);
+  phiam_->Update(alphaM_,*phinp_,(1.0-alphaM_),*phin_,0.0);
 
-  if (prbtype_ == "loma")
-  {
-    // thermodynamic pressure at n+alpha_F and n+alpha_M for low-Mach-number case
-    // -> required for evaluation of equation of state
-    thermpressaf_ = alphaF_*thermpressnp_ + (1.0-alphaF_)*thermpressn_;
-    thermpressam_ = alphaM_*thermpressnp_ + (1.0-alphaM_)*thermpressn_;
+  // compute time derivative of phi at n+alpha_M
+  phidtam_->Update(alphaM_,*phidtnp_,(1.0-alphaM_),*phidtn_,0.0);
 
-    // time derivative of thermodyn. press. at n+alpha_F for low-Mach-number case
-    // -> required as right-hand-side contribution to temperature equation,
-    // hence, evaluated at n+alpha_F
-    thermpressdtaf_ = alphaF_*thermpressdtnp_ + (1.0-alphaF_)*thermpressdtn_;
+  return;
+}
 
-    // compute phi at n+alpha_M
-    phiam_->Update(alphaM_,*phinp_,(1.0-alphaM_),*phin_,0.0);
-  }
+
+/*----------------------------------------------------------------------*
+ | compute values of therm. pressure at interm. time steps     vg 09/09 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntGenAlpha::ComputeThermPressureIntermediateValues()
+{
+  // thermodynamic pressure at n+alpha_F and n+alpha_M for low-Mach-number case
+  // -> required for evaluation of equation of state
+  thermpressaf_ = alphaF_*thermpressnp_ + (1.0-alphaF_)*thermpressn_;
+  thermpressam_ = alphaM_*thermpressnp_ + (1.0-alphaM_)*thermpressn_;
+
+  // time derivative of thermodyn. press. at n+alpha_F for low-Mach-number case
+  // -> required as right-hand-side contribution to temperature equation,
+  // hence, evaluated at n+alpha_F
+  thermpressdtaf_ = alphaF_*thermpressdtnp_ + (1.0-alphaF_)*thermpressdtn_;
+
+  // time derivative of thermodyn. press. at n+alpha_M for low-Mach-number case
+  // -> required for transfer to flow solver and use in continuity equation
+  thermpressdtam_ = alphaM_*thermpressdtnp_ + (1.0-alphaM_)*thermpressdtn_;
 
   return;
 }
@@ -234,7 +221,12 @@ void SCATRA::TimIntGenAlpha::AddSpecificTimeIntegrationParameters(
   }
 
   discret_->SetState("phinp",phiaf_);
-  if (not incremental_) discret_->SetState("phin",phin_);
+  if (not incremental_)
+  {
+    discret_->SetState("hist",hist_);
+    discret_->SetState("phin",phin_);
+  }
+  else discret_->SetState("hist",phidtam_);
 
   return;
 }
@@ -320,29 +312,6 @@ void SCATRA::TimIntGenAlpha::ComputeThermPressure()
                      + (1.0 - genalphafac_)*dta_*thermpressdtn_;
   thermpressnp_ = (rhs + hist)/(1.0 + lhs);
 
-  // compute time derivative of thermodynamic pressure
-  // tpdt(n+1) = (tp(n+1)-tp(n))/(gamma*dt)+((gamma-1)/gamma)*tpdt(n)
-  const double fact1 = 1.0/(gamma_*dta_);
-  const double fact2 = (gamma_-1.0)/gamma_;
-  thermpressdtnp_ = fact1*(thermpressnp_-thermpressn_) + fact2*thermpressdtn_;
-
-  // generalized-alpha version for time derivative of thermodynamic pressure
-  /*const double lhs  = alphaF_*gamma_*dta_*divt;
-  const double rhs  = (shr-1.0)*(pardiffint+parbofint)/pardomint;
-  const double hist = (alphaF_-1.0)*divt*thermpressn_
-                     + (alphaM_-1.0+alphaF_*(gamma_-1.0)*dta_*divt)*thermpressdtn_;
-  thermpressdtnp_ = (rhs + hist)/(alphaM_ + lhs);
-  const double fact1 = gamma_*dta_;
-  constdouble fact2 = (1.0-gamma_)*dta_;
-  thermpressnp_ = thermpressn_ + fact1*thermpressdtnp_ + fact2*thermpressdtn_;*/
-
-  // backward-Euler version for thermodynamic pressure
-  /*const double lhs  = dta_*divt;
-  const double rhs  = dta_*(shr-1.0)*(pardiffint+parbofint)/pardomint;
-  const double hist = thermpressn_;
-  thermpressnp_ = (rhs + hist)/(1.0 + lhs);
-  thermpressdtnp_ = (thermpressnp_-thermpressn_)/dta_;*/
-
   // print out thermodynamic pressure
   if (myrank_ == 0)
   {
@@ -360,28 +329,55 @@ void SCATRA::TimIntGenAlpha::ComputeThermPressure()
 
 
 /*----------------------------------------------------------------------*
+ | update time derivative                                      vg 09/09 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntGenAlpha::UpdateTimeDerivative()
+{
+  // time derivative of phi:
+  // phidt(n+1) = (phi(n+1)-phi(n)) / (gamma*dt) + (1-(1/gamma))*phidt(n)
+  const double fact1 = 1.0/(gamma_*dta_);
+  const double fact2 = 1.0 - (1.0/gamma_);
+  phidtnp_->Update(fact2,*phidtn_,0.0);
+  phidtnp_->Update(fact1,*phinp_,-fact1,*phin_,1.0);
+
+  // we know the first time derivative on Dirichlet boundaries
+  // so we do not need an approximation of these values!
+  ApplyDirichletBC(time_,Teuchos::null,phidtnp_);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | update time derivative of thermodynamic pressure            vg 09/09 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntGenAlpha::UpdateThermPressureTimeDerivative()
+{
+  // time derivative of thermodynamic pressure:
+  // tpdt(n+1) = (tp(n+1)-tp(n)) / (gamma*dt) + (1-(1/gamma))*tpdt(n)
+  const double fact1 = 1.0/(gamma_*dta_);
+  const double fact2 = 1.0 - (1.0/gamma_);
+  thermpressdtnp_ = fact1*(thermpressnp_-thermpressn_) + fact2*thermpressdtn_;
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
  | current solution becomes most recent solution of next timestep       |
  | and computation of acceleration for next time step          vg 11/08 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntGenAlpha::Update()
 {
-  // compute time derivative of phi for non-incremental case:
-  // phidt(n) = (phi(n)-phi(n-1)) / (gamma*dt(n)) - (1/gamma -1)*phidt(n-1)
-  if (not incremental_)
-  {
-    const double fact1 = 1.0/(gamma_*dta_);
-    const double fact2 = (-1.0/gamma_) +1.0;
-    phidtn_->Update(fact1,*phinp_,-fact1,*phin_,fact2);
-
-    // set history variable to zero for not spoiling flux calculation
-    hist_->PutScalar(0.0);
-  }
-  // time deriv. of this step becomes most recent time derivative of
-  // last step for incremental solver
-  else phidtn_->Update(1.0,*phidtnp_,0.0);
+  // set history variable to zero for not spoiling flux calculation
+  if (not incremental_) hist_->PutScalar(0.0);
 
   // solution of this step becomes most recent solution of last step
   phin_->Update(1.0,*phinp_,0.0);
+
+  // time deriv. of this step becomes most recent time derivative of
+  // last step
+  phidtn_->Update(1.0,*phidtnp_,0.0);
 
   return;
 }

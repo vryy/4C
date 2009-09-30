@@ -211,7 +211,7 @@ namespace FLD
     myvelnp_    (fluid.velnp_       ),
     myveln_     (fluid.veln_        ),
     myvelaf_    (fluid.velaf_       ),
-    myvescnp_   (fluid.vescnp_      ),
+    myscanp_    (fluid.scaaf_       ),
     mydispnp_   (fluid.dispnp_      ),
     mydispn_    (fluid.dispn_       ),
     mygridveln_ (fluid.gridv_       ),
@@ -519,7 +519,7 @@ namespace FLD
         if(statistics_channel_==null)
           dserror("need statistics_channel_ to do a time sample for a turbulent channel flow at low Mach number");
 
-        statistics_channel_->DoLomaTimeSample(myvelnp_,myvescnp_,mysubgrvisc_,*myforce_,eosfac);
+        statistics_channel_->DoLomaTimeSample(myvelnp_,myscanp_,mysubgrvisc_,*myforce_,eosfac);
         break;
       }
       case lid_driven_cavity:
@@ -535,7 +535,7 @@ namespace FLD
         if(statistics_ldc_==null)
           dserror("need statistics_ldc_ to do a time sample for a cavity flow at low Mach number");
 
-        statistics_ldc_->DoLomaTimeSample(myvelnp_,myvescnp_,mysubgrvisc_,*myforce_,eosfac);
+        statistics_ldc_->DoLomaTimeSample(myvelnp_,myscanp_,mysubgrvisc_,*myforce_,eosfac);
         break;
       }
       case backward_facing_step:
@@ -551,7 +551,7 @@ namespace FLD
         if(statistics_bfs_==null)
           dserror("need statistics_bfs_ to do a time sample for a flow over a backward-facing step at low Mach number");
 
-        statistics_bfs_->DoLomaTimeSample(myvelnp_,myvescnp_,mysubgrvisc_,eosfac);
+        statistics_bfs_->DoLomaTimeSample(myvelnp_,myscanp_,mysubgrvisc_,eosfac);
         break;
       }
       case square_cylinder:

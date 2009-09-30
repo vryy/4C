@@ -346,13 +346,13 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
     }
   }
 
-  // get velocity/scalar vector
-  RCP<const Epetra_Vector> vescnp = discretization.GetState("vescnp");
-  if (vescnp==null) dserror("Cannot get state vector 'vescnp'");
+  // get scalar vector
+  RCP<const Epetra_Vector> scanp = discretization.GetState("scanp");
+  if (scanp==null) dserror("Cannot get state vector 'scanp'");
 
   // extract local values from global vector
-  vector<double> myvescnp(lm.size());
-  DRT::UTILS::ExtractMyValues(*vescnp,myvescnp,lm);
+  vector<double> myscanp(lm.size());
+  DRT::UTILS::ExtractMyValues(*scanp,myscanp,lm);
 
   // create vector for scalar array
   Epetra_SerialDenseVector escanp(iel);
@@ -360,13 +360,13 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
   // insert scalar into element array
   for (int i=0;i<iel;++i)
   {
-    escanp(i) = myvescnp[3+(i*4)];
+    escanp(i) = myscanp[3+(i*4)];
   }
 
   // This is a hack for low-Mach-number flow with temperature
   // equation until material data will be available here
   // get thermodynamic pressure and its time derivative or history
-  double thermpress = params.get<double>("thermodynamic pressure",0.0);
+  double thermpress = params.get<double>("thermpress at n+1",0.0);
   double gasconstant = 287.0;
 
   /*----------------------------------------------------------------------*
@@ -1016,36 +1016,36 @@ void DRT::ELEMENTS::Fluid3Surface::NeumannInflow(
     normal(inode) = normal(inode)/length;
   }
 
-  // get velocity and velocity/scalar vector
-  RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
-  RCP<const Epetra_Vector> vescnp = discretization.GetState("vescnp");
-  if (velnp==null or vescnp==null)
-    dserror("Cannot get state vector 'velnp' and/or 'vescnp'");
+  // get velocity and scalar vector at time n+alpha_F/n+1
+  RCP<const Epetra_Vector> velaf = discretization.GetState("velaf");
+  RCP<const Epetra_Vector> scaaf = discretization.GetState("scaaf");
+  if (velaf==null or scaaf==null)
+    dserror("Cannot get state vector 'velaf' and/or 'scaaf'");
 
   // extract local values from global vector
-  vector<double> myvelnp(lm.size());
-  vector<double> myvescnp(lm.size());
-  DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
-  DRT::UTILS::ExtractMyValues(*vescnp,myvescnp,lm);
+  vector<double> myvelaf(lm.size());
+  vector<double> myscaaf(lm.size());
+  DRT::UTILS::ExtractMyValues(*velaf,myvelaf,lm);
+  DRT::UTILS::ExtractMyValues(*scaaf,myscaaf,lm);
 
   // create Epetra objects for scalar array and velocities
-  Epetra_SerialDenseMatrix evelnp(3,iel);
-  Epetra_SerialDenseVector escanp(iel);
+  Epetra_SerialDenseMatrix evelaf(3,iel);
+  Epetra_SerialDenseVector escaaf(iel);
 
-  // insert velocity and density into element array
+  // insert velocity and scalar into element array
   for (int i=0;i<iel;++i)
   {
-    evelnp(0,i) = myvelnp[0+(i*4)];
-    evelnp(1,i) = myvelnp[1+(i*4)];
-    evelnp(2,i) = myvelnp[2+(i*4)];
+    evelaf(0,i) = myvelaf[0+(i*4)];
+    evelaf(1,i) = myvelaf[1+(i*4)];
+    evelaf(2,i) = myvelaf[2+(i*4)];
 
-    escanp(i) = myvescnp[3+(i*4)];
+    escaaf(i) = myscaaf[3+(i*4)];
   }
 
   // This is a hack for low-Mach-number flow with temperature
   // equation until material data will be available here
   // get thermodynamic pressure and its time derivative or history
-  double thermpress = params.get<double>("thermodynamic pressure",0.0);
+  double thermpress = params.get<double>("thermpress at n+alpha_F/n+1",0.0);
   double gasconstant = 287.0;
 
   /*----------------------------------------------------------------------*
@@ -1067,7 +1067,7 @@ void DRT::ELEMENTS::Fluid3Surface::NeumannInflow(
       velint(j) = 0.0;
       for (int i=0;i<iel;++i)
       {
-        velint(j) += funct(i)*evelnp(j,i);
+        velint(j) += funct(i)*evelaf(j,i);
       }
       normvel += velint(j)*normal(j);
     }
@@ -1088,7 +1088,7 @@ void DRT::ELEMENTS::Fluid3Surface::NeumannInflow(
         double temp = 0.0;
         for (int i=0;i<3;++i)
         {
-          temp += funct(i)*escanp(i);
+          temp += funct(i)*escaaf(i);
         }
         dens = thermpress/(gasconstant*temp);
       }

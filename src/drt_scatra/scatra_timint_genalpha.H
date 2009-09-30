@@ -41,8 +41,17 @@ public:
   /// compute values at intermediate time steps
   void ComputeIntermediateValues();
 
+  /// compute values of thermodynamic pressure at intermediate time steps
+  void ComputeThermPressureIntermediateValues();
+
   /// compute thermodynamic pressure and time derivative for low-Mach-number flow
   void ComputeThermPressure();
+
+  ///  update time derivative after solution
+  void UpdateTimeDerivative();
+
+  ///  update time derivative of thermodynamic pressure after solution
+  void UpdateThermPressureTimeDerivative();
 
   /// Update the solution after convergence of the nonlinear iteration.
   /// Current solution becomes old solution of next timestep.
@@ -56,6 +65,24 @@ public:
 
   /// read restart data
   void ReadRestart(int step);
+
+  /// routine to return scalar field phi at time step n+alpha_F
+  Teuchos::RCP<Epetra_Vector> Phiaf() { return phiaf_; }
+
+  /// routine to return scalar field phi at time step n+alpha_M
+  Teuchos::RCP<Epetra_Vector> Phiam() { return phiam_; }
+
+  /// routine to return time derivative of scalar field phi at time step n+alpha_M
+  Teuchos::RCP<Epetra_Vector> Phidtam() { return phidtam_; }
+
+  /// routine to return thermo. press. at time step n+alpha_F for low-Mach-number flow
+  double ThermPressAf() { return thermpressaf_; }
+
+  /// routine to return thermo. press. at time step n+alpha_M for low-Mach-number flow
+  double ThermPressAm() { return thermpressam_; }
+
+  /// routine to return thermo. press. at time step n+alpha_M for low-Mach-number flow
+  double ThermPressDtAm() { return thermpressdtam_; }
 
 
 protected:
@@ -96,11 +123,14 @@ protected:
 
 private:
 
-  /// solution vectors at time n+alpha_F and n+alpha_M
+  /// scalar at time n+alpha_F and n+alpha_M
   RCP<Epetra_Vector>  phiaf_;
   RCP<Epetra_Vector>  phiam_;
 
-  /// fine-scale solution vector at time n+alpha_F
+  /// scalar time derivative at time n+alpha_M
+  RCP<Epetra_Vector>  phidtam_;
+
+  /// fine-scale part at time n+alpha_F
   RCP<Epetra_Vector>  fsphiaf_;
 
   /// time factors for generalized-alpha time integration
@@ -110,10 +140,11 @@ private:
   double genalphafac_;
 
   /// LOMA-specific parameter: thermodynamic pressure at n+alpha_F and n+alpha_M
-  /// and its time derivative at n+alpha_F
+  /// and its time derivative at n+alpha_F and n+alpha_M
   double thermpressaf_;
   double thermpressam_;
   double thermpressdtaf_;
+  double thermpressdtam_;
 
 }; // class TimIntGenAlpha
 

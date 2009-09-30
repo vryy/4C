@@ -39,11 +39,6 @@ SCATRA::TimIntBDF2::TimIntBDF2(
   // state vector for solution at time t_{n-1}
   phinm_ = LINALG::CreateVector(*dofrowmap,true);
 
-  // only required for low-Mach-number flow:
-  // time derivative of thermodynamic pressure at n+1
-  // (computed if not constant, otherwise remaining zero)
-  if (prbtype_ == "loma") thermpressdtnp_ = 0.0;
-
   // ELCH with natural convection
   if (prbtype_ == "elch" && params_->get<string>("Natural Convection") != "No")
   {
@@ -200,6 +195,7 @@ void SCATRA::TimIntBDF2::AddSpecificTimeIntegrationParameters(
     params.set("time derivative of thermodynamic pressure",thermpressdtnp_);
   }
 
+  discret_->SetState("hist",hist_);
   discret_->SetState("phinp",phinp_);
 
   return;
@@ -305,6 +301,63 @@ void SCATRA::TimIntBDF2::ComputeThermPressure()
 
   // compute time derivative of thermodynamic pressure at n+1
   thermpressdtnp_ = (thermpressnp_-thermpressn_)/dta_;
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | update time derivative                                      vg 09/09 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntBDF2::UpdateTimeDerivative()
+{
+  if (step_ == 1)
+  {
+    // time derivative of phi for first time step:
+    // phidt(n+1) = (phi(n+1)-phi(n))/dt
+    const double fact = 1.0/dta_;
+    phidtnp_->Update(fact,*phinp_,-fact,*phin_,0.0);
+  }
+  else
+  {
+    // time derivative of phi:
+    // phidt(n+1) = ((3/2)*phi(n+1)-2*phi(n)+(1/2)*phi(n-1))/dt
+    const double fact1 = 3.0/(2.0*dta_);
+    const double fact2 = -2.0/dta_;
+    const double fact3 = 1.0/(2.0*dta_);
+    phidtnp_->Update(fact3,*phinm_,0.0);
+    phidtnp_->Update(fact1,*phinp_,fact2,*phin_,1.0);
+  }
+
+  // we know the first time derivative on Dirichlet boundaries
+  // so we do not need an approximation of these values!
+  ApplyDirichletBC(time_,Teuchos::null,phidtnp_);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | update time derivative of thermodynamic pressure            vg 09/09 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntBDF2::UpdateThermPressureTimeDerivative()
+{
+  if (step_ == 1)
+  {
+    // time derivative of thermodynamic pressure for first time step:
+    // tpdt(n+1) = (tp(n+1)-tp(n))/dt
+    const double fact = 1.0/dta_;
+    thermpressdtnp_ = fact*(thermpressnp_-thermpressn_);
+  }
+  else
+  {
+    // time derivative of of thermodynamic pressure:
+    // tpdt(n+1) = ((3/2)*tp(n+1)-2*tp(n)+(1/2)*tp(n-1))/dt
+    const double fact1 = 3.0/(2.0*dta_);
+    const double fact2 = -2.0/dta_;
+    const double fact3 = 1.0/(2.0*dta_);
+    thermpressdtnp_ = fact1*thermpressnp_+fact2*thermpressn_+fact2*thermpressnm_;
+  }
 
   return;
 }

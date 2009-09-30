@@ -189,14 +189,13 @@ void ELCH::Algorithm::PrepareTimeStepConvection()
   case timeint_one_step_theta:
   case timeint_bdf2:
   {
-    FluidField().SetTimeLomaFields(
+    FluidField().SetIterLomaFields(
         ScaTraField().DensElchNp(),
         ScaTraField().DensElchN(),
-        ScaTraField().DensElchN(),
+        ScaTraField().DensElchNp(),
         1.0,
         1.0,
         0.0,
-        null,
         numscal);
     break;
   }
@@ -272,6 +271,10 @@ void ELCH::Algorithm::DoTransportStep()
 void ELCH::Algorithm::Update()
 {
   FluidField().Update();
+
+  // update scalar time derivative
+  ScaTraField().UpdateTimeDerivative();
+
   ScaTraField().Update();
   return;
 }
@@ -305,14 +308,13 @@ void ELCH::Algorithm::UpdateConvection()
   case timeint_one_step_theta:
   case timeint_bdf2:
   {
-    FluidField().SetTimeLomaFields(
+    FluidField().SetIterLomaFields(
         ScaTraField().DensElchNp(),
         ScaTraField().DensElchN(),
-        ScaTraField().DensElchN(),
+        ScaTraField().DensElchNp(),
         1.0,
         1.0,
         0.0,
-        null,
         numscal);
     break;
   }
@@ -388,7 +390,7 @@ void ELCH::Algorithm::OuterIterationConvection()
     // Density derivative is not used for OST, BDF2 and convective formulation
     int numscal = 1;
     if (itnum != 1)
-    FluidField().SetIterLomaFields(ScaTraField().DensElchNp(),ScaTraField().DensElchNp(),1.0,0.0,numscal);
+    FluidField().SetTimeLomaFields(ScaTraField().DensElchNp(),0.0,null,numscal);
 
     // solve nonlinear Navier-Stokes system with body forces
     DoFluidStep();

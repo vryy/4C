@@ -131,8 +131,8 @@ FLD::FluidProjectionMethod::FluidProjectionMethod(RefCountPtr<DRT::Discretizatio
         accam_        = LINALG::CreateVector(*dofrowmap,true);
     }
 
-    // velocity/scalar at time n+1
-    vescnp_       = LINALG::CreateVector(*dofrowmap,true);
+    // scalar at time n+1
+    scanp_       = LINALG::CreateVector(*dofrowmap,true);
 
     // history vector
     hist_           = LINALG::CreateVector(*dofrowmap,true);
@@ -169,14 +169,14 @@ FLD::FluidProjectionMethod::FluidProjectionMethod(RefCountPtr<DRT::Discretizatio
     trueresidual_ = LINALG::CreateVector(*dofrowmap,true);
 
     // get constant density variable for incompressible flow
-    // set velocity/scalar vector to 1.0
+    // set scalar vector to 1.0
     {
       ParameterList eleparams;
       eleparams.set("action","get_density");
       discret_->Evaluate(eleparams,null,null,null,null,null);
       density_ = eleparams.get("density", 1.0);
       if (density_ < EPS15) dserror("received zero or negative density value");
-      vescnp_->PutScalar(1.0);
+      scanp_->PutScalar(1.0);
     }
     }
 
@@ -414,7 +414,7 @@ void FLD::FluidProjectionMethod::PrepareTimeStep()
 
       // evaluate Neumann conditions
       neumann_loads_->PutScalar(0.0);
-      discret_->SetState("vescnp",vescnp_);
+      discret_->SetState("scanp",scanp_);
       discret_->EvaluateNeumann(eleparams,*neumann_loads_);
       discret_->ClearState();
     }
@@ -801,7 +801,7 @@ void FLD::FluidProjectionMethod::SolveImpulseEqn()
         // set vector values needed by elements
         discret_->ClearState();
         discret_->SetState("velnp",velnp_);
-        discret_->SetState("vescnp",vescnp_);
+        discret_->SetState("scanp",scanp_);
         discret_->SetState("acc", accnp_ );
         discret_->SetState("hist"  ,hist_ );
         if (alefluid_)
@@ -1071,7 +1071,7 @@ void FLD::FluidProjectionMethod::SolveImpulseEqnSemi()
     discret_->ClearState();
     discret_->SetState("velnp",velnp_);
     discret_->SetState("veln",veln_);   // alte Daten
-    discret_->SetState("vescnp",vescnp_);
+    discret_->SetState("scanp",scanp_);
     discret_->SetState("acc", accnp_ );
     discret_->SetState("hist"  ,hist_ );
     if (alefluid_)
@@ -1269,7 +1269,7 @@ void FLD::FluidProjectionMethod::CalcResidual()
     // set vector values needed by elements
     discret_->ClearState();
     discret_->SetState("velnp",velnp_);
-    discret_->SetState("vescnp",vescnp_);
+    discret_->SetState("scanp",scanp_);
     discret_->SetState("acc", accnp_ );
     discret_->SetState("hist"  ,hist_ );
     if (alefluid_)

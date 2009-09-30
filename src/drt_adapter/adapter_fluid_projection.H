@@ -86,20 +86,18 @@ public:
 
     virtual void SetInitialFlowField(int whichinitialfield,int startfuncno);
 
-    virtual void SetTimeLomaFields(RCP<const Epetra_Vector> scalarnp,
-                         RCP<const Epetra_Vector> scalarn,
-                         RCP<const Epetra_Vector> scalardtn,
-                         const double             thermpressnp,
-                         const double             thermpressn,
-                         const double             thermpressdtn,
-                         RCP<const Epetra_Vector> scatraresidual,
-                         const int                numscal);
+    virtual void SetIterLomaFields(RCP<const Epetra_Vector> scalaraf,
+                                   RCP<const Epetra_Vector> scalaram,
+                                   RCP<const Epetra_Vector> scalardtam,
+                                   const double             thermpressaf,
+                                   const double             thermpressam,
+                                   const double             thermpressdtam,
+                                   const int                numscal);
 
-    virtual void SetIterLomaFields(RCP<const Epetra_Vector> scalarnp,
-                         RCP<const Epetra_Vector> scalardtnp,
-                         const double             thermpressnp,
-                         const double             thermpressdtnp,
-                         const int                numscal);
+    virtual void SetTimeLomaFields(RCP<const Epetra_Vector> scalarnp,
+                                   const double             thermpressnp,
+                                   RCP<const Epetra_Vector> scatraresidual,
+                                   const int                numscal);
 
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces();
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForcesRobin();

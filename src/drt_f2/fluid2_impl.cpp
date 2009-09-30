@@ -85,7 +85,7 @@ DRT::ELEMENTS::Fluid2ImplInterface* DRT::ELEMENTS::Fluid2ImplInterface::Impl(DRT
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::Fluid2Impl<distype>::Fluid2Impl()
   : xyze_(),
-    edeadng_(),
+    edeadaf_(),
     funct_(),
     deriv_(),
     deriv2_(),
@@ -102,7 +102,7 @@ DRT::ELEMENTS::Fluid2Impl<distype>::Fluid2Impl()
     fsvelint_(),
     sgvelint_(),
     convvelint_(),
-    accintam_(),
+    accint_(),
     gradp_(),
     tau_(),
     viscs2_(),
@@ -112,7 +112,8 @@ DRT::ELEMENTS::Fluid2Impl<distype>::Fluid2Impl()
     rhsmom_(),
     conv_old_(),
     visc_old_(),
-    res_old_(true),  // initialize to zero
+    momres_old_(true),  // initialize to zero
+    conres_old_(),
     xder2_(),
     vderiv_(),
     mat_gp_(),
@@ -121,16 +122,22 @@ DRT::ELEMENTS::Fluid2Impl<distype>::Fluid2Impl()
     fac_(),
     visc_(),
     vart_(),
+    dt_(),
+    omtheta_(),
     rhscon_(),
-    densnp_(),
+    densaf_(),
     densam_(),
-    densdtfac_(),
-    densdtadd_(),
+    scadtfac_(),
+    scaconvfacaf_(),
+    scaconvfacn_(),
+    thermpressadd_(),
+    vderxyn_(),
     grad_sca_(),
-    conv_sca_(),
-    thermpressnp_(),
+    conv_scaaf_(),
+    conv_scan_(),
+    thermpressaf_(),
     thermpressam_(),
-    thermpressdt_()
+    thermpressdtam_()
 {
 }
 
@@ -166,15 +173,18 @@ int DRT::ELEMENTS::Fluid2Impl<distype>::Evaluate(
   // get current time: n+alpha_F for generalized-alpha scheme, n+1 otherwise
   const double time = params.get<double>("total time",-1.0);
 
-  // get time-step size
-  const double dt = params.get<double>("dt");
+  // get time-step length and time-integration parameters
+  dt_                = params.get<double>("dt");
+  const double theta = params.get<double>("theta",-1.0);
+  omtheta_           = params.get<double>("omtheta",-1.0);
 
-  // get timefactor for left hand side
+  // compute timefactor for left-hand side
   // One-step-Theta:    timefac = theta*dt
   // BDF2:              timefac = 2/3 * dt
   // generalized-alpha: timefac = (alpha_F/alpha_M) * gamma * dt
-  const double timefac = params.get<double>("thsl",-1.0);
-  if (timefac < 0.0) dserror("No thsl supplied");
+  const double timefac = theta*dt_;
+  if (timefac < 0.0)
+    dserror("Negative time-integration parameter or time-step length supplied");
 
   // ---------------------------------------------------------------------
   // get control parameters for linearization, low-Mach-number solver,
@@ -234,58 +244,65 @@ int DRT::ELEMENTS::Fluid2Impl<distype>::Evaluate(
   // less accurate) computations
   if (stablist.get<string>("STABTYPE") == "inconsistent") higher_order_ele = false;
 
-  // set thermodynamic pressure and its time derivative or history
-  thermpressnp_ = params.get<double>("thermodynamic pressure");
-  thermpressdt_ = params.get<double>("thermodynamic pressure derivative");
-  if (is_genalpha)
-    thermpressam_ = params.get<double>("thermodynamic pressure at n+alpha_M");
+  // set thermodynamic pressure at n+1/n+alpha_F and n+alpha_M/n and
+  // its time derivative at n+alpha_M/n+1
+  thermpressaf_   = params.get<double>("thermpress at n+alpha_F/n+1");
+  thermpressam_   = params.get<double>("thermpress at n+alpha_M/n");
+  thermpressdtam_ = params.get<double>("thermpressderiv at n+alpha_M/n+1");
 
   // ---------------------------------------------------------------------
-  // get all general state vectors: velocity/pressure, velocity/scalar,
+  // get all general state vectors: velocity/pressure, scalar,
   // acceleration/scalar time derivative and history
-  // vel./press., vel./scal. values are at time n+alpha_F for
-  // generalized-alpha scheme and at time n+1 for all other schemes
-  // acc./sdt. values are at time n+alpha_M for
+  // velocity/pressure and scalar values are at time n+alpha_F/n+alpha_M
+  // for generalized-alpha scheme and at time n+1/n for all other schemes
+  // acceleration/scalar time derivative values are at time n+alpha_M for
   // generalized-alpha scheme and at time n+1 for all other schemes
   // ---------------------------------------------------------------------
-  RefCountPtr<const Epetra_Vector> velnp  = discretization.GetState("velnp");
-  RefCountPtr<const Epetra_Vector> vescnp = discretization.GetState("vescnp");
-  RefCountPtr<const Epetra_Vector> acc    = discretization.GetState("acc");
-  RefCountPtr<const Epetra_Vector> hist   = discretization.GetState("hist");
-  if (velnp==null || vescnp==null || acc==null || hist==null)
-    dserror("Cannot get state vectors 'velnp', 'vescnp', 'acc' and/or 'hist'");
+  RefCountPtr<const Epetra_Vector> velaf = discretization.GetState("velaf");
+  RefCountPtr<const Epetra_Vector> accam = discretization.GetState("accam");
+  RefCountPtr<const Epetra_Vector> scaaf = discretization.GetState("scaaf");
+  RefCountPtr<const Epetra_Vector> scaam = discretization.GetState("scaam");
+  RefCountPtr<const Epetra_Vector> hist  = discretization.GetState("hist");
+  if (velaf==null || accam==null || scaaf==null || scaam==null || hist==null)
+    dserror("Cannot get state vectors 'velaf', 'accam', 'scaaf', 'scaam' and/or 'hist'");
 
   // extract local values from the global vectors
-  vector<double> myvelnp(lm.size());
-  DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
-  vector<double> myvescnp(lm.size());
-  DRT::UTILS::ExtractMyValues(*vescnp,myvescnp,lm);
-  vector<double> myacc(lm.size());
-  DRT::UTILS::ExtractMyValues(*acc,myacc,lm);
+  vector<double> myvelaf(lm.size());
+  DRT::UTILS::ExtractMyValues(*velaf,myvelaf,lm);
+  vector<double> myaccam(lm.size());
+  DRT::UTILS::ExtractMyValues(*accam,myaccam,lm);
+  vector<double> myscaaf(lm.size());
+  DRT::UTILS::ExtractMyValues(*scaaf,myscaaf,lm);
+  vector<double> myscaam(lm.size());
+  DRT::UTILS::ExtractMyValues(*scaam,myscaam,lm);
   vector<double> myhist(lm.size());
   DRT::UTILS::ExtractMyValues(*hist,myhist,lm);
 
   // create objects for element arrays
-  LINALG::Matrix<2,numnode> evelnp;
-  LINALG::Matrix<numnode,1> eprenp;
-  LINALG::Matrix<numnode,1> escanp;
-  LINALG::Matrix<numnode,1> escdt;
+  LINALG::Matrix<2,numnode> evelaf;
+  LINALG::Matrix<numnode,1> epreaf;
+  LINALG::Matrix<numnode,1> escaaf;
+  LINALG::Matrix<numnode,1> escaam;
+  LINALG::Matrix<numnode,1> escadtam;
   LINALG::Matrix<2,numnode> emhist;
 
   for (int i=0;i<numnode;++i)
   {
     // velocity at n+alpha_F or n+1
-    evelnp(0,i) = myvelnp[0+(i*3)];
-    evelnp(1,i) = myvelnp[1+(i*3)];
+    evelaf(0,i) = myvelaf[0+(i*3)];
+    evelaf(1,i) = myvelaf[1+(i*3)];
 
     // pressure at n+alpha_F or n+1
-    eprenp(i) = myvelnp[2+(i*3)];
+    epreaf(i) = myvelaf[2+(i*3)];
 
     // scalar at n+alpha_F or n+1
-    escanp(i) = myvescnp[2+(i*3)];
+    escaaf(i) = myscaaf[2+(i*3)];
+
+    // scalar at n+alpha_M or n
+    escaam(i) = myscaam[2+(i*3)];
 
     // scalar time derivative at n+alpha_M or n+1
-    escdt(i)  = myacc[2+(i*3)];
+    escadtam(i) = myaccam[2+(i*3)];
 
     // momentum equation part of history vector
     // (containing information of time step t_n (mass rhs!))
@@ -294,33 +311,29 @@ int DRT::ELEMENTS::Fluid2Impl<distype>::Evaluate(
   }
 
   // ---------------------------------------------------------------------
-  // get additional state vectors for generalized-alpha scheme:
-  // velocity/scalar at time n+alpha_M
+  // get additional state vector for generalized-alpha scheme or OST/BDF2:
+  // acceleration at time n+alpha_M or velocity at time n
   // ---------------------------------------------------------------------
-  RefCountPtr<const Epetra_Vector> vescam;
-  vector<double> myvescam;
-
   // create objects for element arrays
   LINALG::Matrix<2,numnode> eaccam;
-  LINALG::Matrix<numnode,1> escaam;
+  LINALG::Matrix<2,numnode> eveln;
 
   if (is_genalpha)
   {
-    vescam = discretization.GetState("vescam");
-    if (vescam==null) dserror("Cannot get state vectors 'vescam'");
-
-    // extract local values from the global vectors
-    myvescam.resize(lm.size());
-    DRT::UTILS::ExtractMyValues(*vescam,myvescam,lm);
-
     for (int i=0;i<numnode;++i)
     {
       // acceleration at n+alpha_M
-      eaccam(0,i) = myacc[0+(i*3)];
-      eaccam(1,i) = myacc[1+(i*3)];
-
-      // scalar at n+alpha_M
-      escaam(i)  = myvescam[2+(i*3)];
+      eaccam(0,i) = myaccam[0+(i*3)];
+      eaccam(1,i) = myaccam[1+(i*3)];
+    }
+  }
+  else
+  {
+    for (int i=0;i<numnode;++i)
+    {
+      // acceleration at n+alpha_M
+      eveln(0,i) = myscaam[0+(i*3)];
+      eveln(1,i) = myscaam[1+(i*3)];
     }
   }
 
@@ -376,24 +389,25 @@ int DRT::ELEMENTS::Fluid2Impl<distype>::Evaluate(
     else if (fssgvdef == "Smagorinsky_small") fssgv = Fluid2::smagorinsky_small;
   }
 
-  RCP<const Epetra_Vector> fsvelnp;
-  vector<double> myfsvelnp;
+  // fine-scale velocity at time n+alpha_F/n+1
+  RCP<const Epetra_Vector> fsvelaf;
+  vector<double> myfsvelaf;
 
   // create object for element array
-  LINALG::Matrix<2,numnode> fsevelnp;
+  LINALG::Matrix<2,numnode> fsevelaf;
 
   if (fssgv != Fluid2::no_fssgv)
   {
-    fsvelnp = discretization.GetState("fsvelnp");
-    if (fsvelnp==null) dserror("Cannot get state vector 'fsvelnp'");
-    myfsvelnp.resize(lm.size());
-    DRT::UTILS::ExtractMyValues(*fsvelnp,myfsvelnp,lm);
+    fsvelaf = discretization.GetState("fsvelaf");
+    if (fsvelaf==null) dserror("Cannot get state vector 'fsvelaf'");
+    myfsvelaf.resize(lm.size());
+    DRT::UTILS::ExtractMyValues(*fsvelaf,myfsvelaf,lm);
 
     for (int i=0;i<numnode;++i)
     {
       // get fine-scale velocity
-      fsevelnp(0,i) = myfsvelnp[0+(i*3)];
-      fsevelnp(1,i) = myfsvelnp[1+(i*3)];
+      fsevelaf(0,i) = myfsvelaf[0+(i*3)];
+      fsevelaf(1,i) = myfsvelaf[1+(i*3)];
     }
   }
 
@@ -436,13 +450,14 @@ int DRT::ELEMENTS::Fluid2Impl<distype>::Evaluate(
   // call routine for calculating element matrix and right hand side
   // ---------------------------------------------------------------------
   Sysmat(ele,
-         evelnp,
-         fsevelnp,
-         eprenp,
-         escanp,
+         evelaf,
+         eveln,
+         fsevelaf,
+         epreaf,
          eaccam,
-         escdt,
+         escaaf,
          escaam,
+         escadtam,
          emhist,
          edispnp,
          egridv,
@@ -452,7 +467,6 @@ int DRT::ELEMENTS::Fluid2Impl<distype>::Evaluate(
          elevec2,
          mat,
          time,
-         dt,
          timefac,
          newton,
          loma,
@@ -483,13 +497,14 @@ int DRT::ELEMENTS::Fluid2Impl<distype>::Evaluate(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
   Fluid2*                                 ele,
-  const LINALG::Matrix<2,iel>&            evelnp,
-  const LINALG::Matrix<2,iel>&            fsevelnp,
-  const LINALG::Matrix<iel,1>&            eprenp,
-  const LINALG::Matrix<iel,1>&            escanp,
+  const LINALG::Matrix<2,iel>&            evelaf,
+  const LINALG::Matrix<2,iel>&            eveln,
+  const LINALG::Matrix<2,iel>&            fsevelaf,
+  const LINALG::Matrix<iel,1>&            epreaf,
   const LINALG::Matrix<2,iel>&            eaccam,
-  const LINALG::Matrix<iel,1>&            escdt,
+  const LINALG::Matrix<iel,1>&            escaaf,
   const LINALG::Matrix<iel,1>&            escaam,
+  const LINALG::Matrix<iel,1>&            escadtam,
   const LINALG::Matrix<2,iel>&            emhist,
   const LINALG::Matrix<2,iel>&            edispnp,
   const LINALG::Matrix<2,iel>&            egridv,
@@ -499,7 +514,6 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
   LINALG::Matrix<3*iel,    1>&            sgvelvisc,
   Teuchos::RCP<const MAT::Material>       material,
   double                                  time,
-  double                                  dt,
   double                                  timefac,
   const bool                              newton,
   const bool                              loma,
@@ -553,8 +567,8 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
   // get material parameters (evaluation at element center)
   //----------------------------------------------------------------------
   if (not mat_gp_ or not tau_gp_) GetMaterialParams(material,
-                                                    evelnp,
-                                                    escanp,
+                                                    evelaf,
+                                                    escaaf,
                                                     escaam,
                                                     is_genalpha);
 
@@ -572,16 +586,15 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
   if (not tau_gp_)
   {
     // get velocity at element center
-    velint_.Multiply(evelnp,funct_);
+    velint_.Multiply(evelaf,funct_);
 
     Caltau(ele,
-           evelnp,
-           fsevelnp,
-           eprenp,
+           evelaf,
+           fsevelaf,
+           epreaf,
            eaccam,
            emhist,
            sgvelvisc,
-           dt,
            timefac,
            area,
            loma,
@@ -609,23 +622,22 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
     // get material parameters (evaluation at integration point)
     //----------------------------------------------------------------------
     if (mat_gp_) GetMaterialParams(material,
-                                   evelnp,
-                                   escanp,
+                                   evelaf,
+                                   escaaf,
                                    escaam,
                                    is_genalpha);
 
     // get velocity at integration point
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-    velint_.Multiply(evelnp,funct_);
+    velint_.Multiply(evelaf,funct_);
 
     if (tau_gp_) Caltau(ele,
-                        evelnp,
-                        fsevelnp,
-                        eprenp,
+                        evelaf,
+                        fsevelaf,
+                        epreaf,
                         eaccam,
                         emhist,
                         sgvelvisc,
-                        dt,
                         timefac,
                         area,
                         loma,
@@ -644,11 +656,11 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
 
     // get velocity derivatives at integration point
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-    vderxy_.MultiplyNT(evelnp,derxy_);
+    vderxy_.MultiplyNT(evelaf,derxy_);
 
     // get fine-scale velocity derivatives at integration point
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-    if (fssgv != Fluid2::no_fssgv) fsvderxy_.MultiplyNT(fsevelnp,derxy_);
+    if (fssgv != Fluid2::no_fssgv) fsvderxy_.MultiplyNT(fsevelaf,derxy_);
     else                           fsvderxy_.Clear();
 
     // get convective velocity at integration point
@@ -660,15 +672,15 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
 
     // get pressure gradient at integration point
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-    gradp_.Multiply(derxy_,eprenp);
+    gradp_.Multiply(derxy_,epreaf);
 
     // get pressure at integration point
     // (value at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-    double press = funct_.Dot(eprenp);
+    double press = funct_.Dot(epreaf);
 
     // get dbodyforce in gausspoint
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-    bodyforce_.Multiply(edeadng_,funct_);
+    bodyforce_.Multiply(edeadaf_,funct_);
 
     //--------------------------------------------------------------------
     // get numerical representation of some single operators
@@ -707,8 +719,8 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
       viscs2_(3,0) = 0.5 * (sum + derxy2_(1,0));
 
       /* viscous term  div epsilon(u_old) */
-      visc_old_(0) = viscs2_(0,0)*evelnp(0,0)+viscs2_(1,0)*evelnp(1,0);
-      visc_old_(1) = viscs2_(1,0)*evelnp(0,0)+viscs2_(3,0)*evelnp(1,0);
+      visc_old_(0) = viscs2_(0,0)*evelaf(0,0)+viscs2_(1,0)*evelaf(1,0);
+      visc_old_(1) = viscs2_(1,0)*evelaf(0,0)+viscs2_(3,0)*evelaf(1,0);
 
       for (int i=1; i<numnode; ++i)
       {
@@ -719,8 +731,8 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
         viscs2_(3,i) = 0.5 * (sum + derxy2_(1,i));
 
         /* viscous term  div epsilon(u_old) */
-        visc_old_(0) += viscs2_(0,i)*evelnp(0,i)+viscs2_(1,i)*evelnp(1,i);
-        visc_old_(1) += viscs2_(1,i)*evelnp(0,i)+viscs2_(3,i)*evelnp(1,i);
+        visc_old_(0) += viscs2_(0,i)*evelaf(0,i)+viscs2_(1,i)*evelaf(1,i);
+        visc_old_(1) += viscs2_(1,i)*evelaf(0,i)+viscs2_(3,i)*evelaf(1,i);
       }
     }
     else
@@ -748,33 +760,18 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
     const double timefacfac = timefac * fac_;
     const double timetauM   = timefac * tau_M;
     const double timetauMp  = timefac * tau_Mp;
+
     double       rhsfac     = fac_;
 
     const double vartfac    = vart_*timefacfac;
 
     //--------------------------------------------------------------------
-    // calculation of convective scalar term and rhs for continuity equat.
-    // -> only required for low-Mach-number flow
-    // -> continuity rhs different for generalized-alpha and other schemes
-    //--------------------------------------------------------------------
-    if (loma)
-    {
-      // gradient of scalar value
-      grad_sca_.Multiply(derxy_,escanp);
-
-      // convective scalar term
-      conv_sca_ = velint_.Dot(grad_sca_);
-
-      // get time derivative of scalar at n+alpha_M or n+1 at integr. point
-      const double tder_sca = funct_.Dot(escdt);
-
-      // rhs of continuity equation (only relevant for low-Mach-number flow)
-      rhscon_ = densdtfac_*(tder_sca+conv_sca_) + densdtadd_;
-    }
-
-    //--------------------------------------------------------------------
     // calculation of rhs for momentum equation and momentum residual
     // -> different for generalized-alpha and other schemes
+    // calculation of convective scalar term, rhs for continuity equation
+    // and residual of continuity equations
+    // -> only required for low-Mach-number flow
+    // -> for incompressible flow, residual is velocity divergence only
     //--------------------------------------------------------------------
     if (is_genalpha)
     {
@@ -782,12 +779,33 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
       rhsmom_.Update(1.0,bodyforce_,0.0);
 
       // get acceleration at time n+alpha_M at integration point
-      accintam_.Multiply(eaccam,funct_);
+      accint_.Multiply(eaccam,funct_);
 
-      // evaluate residual once for all stabilization right hand sides
+      // evaluate momentum residual once for all stabilization right hand sides
       for (int rr=0;rr<2;++rr)
       {
-        res_old_(rr) = densam_*accintam_(rr)+densnp_*conv_old_(rr)+gradp_(rr)-2*visceff*visc_old_(rr)-densnp_*bodyforce_(rr);
+        momres_old_(rr) = densam_*accint_(rr)+densaf_*conv_old_(rr)+gradp_(rr)-2*visceff*visc_old_(rr)-densaf_*bodyforce_(rr);
+      }
+
+      // "incompressible" part of continuity residual: velocity divergence
+      conres_old_ = vdiv_;
+
+      if (loma)
+      {
+        // time derivative of scalar at n+alpha_M
+        const double tder_sca = funct_.Dot(escadtam);
+
+        // gradient of scalar value at n+alpha_F
+        grad_sca_.Multiply(derxy_,escaaf);
+
+        // convective scalar term at n+alpha_F
+        conv_scaaf_ = velint_.Dot(grad_sca_);
+
+        // rhs of continuity equation (only relevant for low-Mach-number flow)
+        rhscon_ = scadtfac_*tder_sca + scaconvfacaf_*conv_scaaf_ + thermpressadd_;
+
+        // residual of continuity equation
+        conres_old_ -= rhscon_;
       }
     }
     else
@@ -798,10 +816,37 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
       // modify integration factor for Galerkin rhs and continuity stabilization
       rhsfac *= timefac;
 
-      // evaluate residual once for all stabilization right hand sides
+      // evaluate  momentum residual once for all stabilization right hand sides
       for (int rr=0;rr<2;++rr)
       {
-        res_old_(rr) = densnp_*(velint_(rr)-rhsmom_(rr))+timefac*(densnp_*conv_old_(rr)+gradp_(rr)-2*visceff*visc_old_(rr));
+        momres_old_(rr) = densaf_*(velint_(rr)-rhsmom_(rr))+timefac*(densaf_*conv_old_(rr)+gradp_(rr)-2*visceff*visc_old_(rr));
+      }
+
+      // "incompressible" part of continuity residual: velocity divergence
+      conres_old_ = timefac*vdiv_;
+
+      if (loma)
+      {
+        // get velocity derivatives at n
+        vderxyn_.MultiplyNT(eveln,derxy_);
+
+        // velocity divergence at n
+        const double vdivn = vderxyn_(0, 0) + vderxyn_(1, 1);
+
+        // time derivative of scalar
+        const double tder_sca = funct_.Dot(escadtam);
+
+        // gradient of scalar value at n+1
+        grad_sca_.Multiply(derxy_,escaaf);
+
+        // convective scalar term at n+1
+        conv_scaaf_ = velint_.Dot(grad_sca_);
+
+        // rhs of continuity equation (only relevant for low-Mach-number flow)
+        rhscon_ = scadtfac_*tder_sca + timefac*scaconvfacaf_*conv_scaaf_ + omtheta_*dt_*(scaconvfacn_*conv_scan_-vdivn) + thermpressadd_;
+
+        // residual of continuity equation
+        conres_old_ -= rhscon_;
       }
     }
 
@@ -819,7 +864,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
         reynolds != Fluid2::reynolds_stress_stab_none)
     {
       // compute subgrid-scale velocity
-      sgvelint_.Update(-tau_M,res_old_,0.0);
+      sgvelint_.Update(-tau_M,momres_old_,0.0);
 
       // compute subgrid-scale convective operator
       sgconv_c_.MultiplyTN(derxy_,sgvelint_);
@@ -849,7 +894,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
         const int fuip  = fui+1;
         const double v = fac_*densam_*funct_(ui)
 #if 1
-                         + timefacfac*densnp_*(conv_c_(ui)+sgconv_c_(ui))
+                         + timefacfac*densaf_*(conv_c_(ui)+sgconv_c_(ui))
 #endif
                          ;
         for (int vi=0; vi<numnode; ++vi)
@@ -884,7 +929,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
         {
           const int fvi   = 3*vi;
           const int fvip  = fvi+1;
-          const double v = timefacfac*densnp_*funct_(vi);
+          const double v = timefacfac*densaf_*funct_(vi);
           for (int ui=0; ui<numnode; ++ui)
           {
             const int fui   = 3*ui;
@@ -912,8 +957,8 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
           const int fvi = 3*vi;
           /* inertia term on right-hand side for generalized-alpha scheme */
           const double v = -fac_*densam_*funct_(vi);
-          eforce(fvi    ) += v*accintam_(0) ;
-          eforce(fvi + 1) += v*accintam_(1) ;
+          eforce(fvi    ) += v*accint_(0) ;
+          eforce(fvi + 1) += v*accint_(1) ;
         }
       }
       else
@@ -922,7 +967,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
         {
           const int fvi = 3*vi;
           /* inertia term on right-hand side for one-step-theta/BDF2 schem */
-          const double v = -fac_*densnp_*funct_(vi);
+          const double v = -fac_*densaf_*funct_(vi);
           eforce(fvi    ) += v*velint_(0) ;
           eforce(fvi + 1) += v*velint_(1) ;
         }
@@ -933,7 +978,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
       {
         const int fvi   = 3*vi;
         /* convection (convective form) on right-hand side */
-        double v = -rhsfac*densnp_*funct_(vi);
+        double v = -rhsfac*densaf_*funct_(vi);
         eforce(fvi    ) += v*conv_old_(0) ;
         eforce(fvi + 1) += v*conv_old_(1) ;
       }
@@ -950,13 +995,15 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
         {
           const int fui   = 3*ui;
           const int fuip  = fui+1;
-          double v = timefacfac*densnp_*funct_(ui)*vdiv_;
-          if (loma) v -= timefacfac*densnp_*densdtfac_*conv_sca_;
+          double v = timefacfac*densaf_*funct_(ui)*vdiv_;
+          if (loma) v -= timefacfac*densaf_*scaconvfacaf_*conv_scaaf_;
           for (int vi=0; vi<numnode; ++vi)
           {
             const int fvi   = 3*vi;
             const int fvip  = fvi+1;
             /* convection, convective part (conservative addition) */
+            // second part required for low-Mach-number flow
+            // not implemented currently
             /*
             /                                                   \
             |      /              n+1    n+1           \      |
@@ -976,8 +1023,8 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
           {
             const int fvi   = 3*vi;
             const int fvip  = fvi+1;
-            const double v0 = timefacfac*densnp_*velint_(0)*funct_(vi);
-            const double v1 = timefacfac*densnp_*velint_(1)*funct_(vi);
+            const double v0 = timefacfac*densaf_*velint_(0)*funct_(vi);
+            const double v1 = timefacfac*densaf_*velint_(1)*funct_(vi);
             for (int ui=0; ui<numnode; ++ui)
             {
               const int fui   = 3*ui;
@@ -1003,8 +1050,8 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
             {
               const int fvi   = 3*vi;
               const int fvip  = fvi+1;
-              const double v0 = -timefacfac*densnp_*densdtfac_*grad_sca_(0)*velint_(0)*funct_(vi);
-              const double v1 = -timefacfac*densnp_*densdtfac_*grad_sca_(1)*velint_(1)*funct_(vi);
+              const double v0 = -timefacfac*densaf_*scaconvfacaf_*grad_sca_(0)*velint_(0)*funct_(vi);
+              const double v1 = -timefacfac*densaf_*scaconvfacaf_*grad_sca_(1)*velint_(1)*funct_(vi);
               for (int ui=0; ui<numnode; ++ui)
               {
                 const int fui   = 3*ui;
@@ -1030,7 +1077,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
         {
           const int fvi   = 3*vi;
           /* convection (conservative addition) on right-hand side */
-          double v = -rhsfac*densnp_*funct_(vi)*vdiv_;
+          double v = -rhsfac*densaf_*funct_(vi)*vdiv_;
           eforce(fvi    ) += v*velint_(0) ;
           eforce(fvi + 1) += v*velint_(1) ;
         }
@@ -1041,7 +1088,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
           {
             const int fvi   = 3*vi;
             /* convection (conservative addition) on rhs for low-Mach-number flow */
-            double v = rhsfac*densnp_*densdtfac_*conv_sca_*funct_(vi);
+            double v = rhsfac*densaf_*scaconvfacaf_*conv_scaaf_*funct_(vi);
             eforce(fvi    ) += v*velint_(0) ;
             eforce(fvi + 1) += v*velint_(1) ;
           }
@@ -1167,7 +1214,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
       for (int vi=0; vi<numnode; ++vi)
       {
         const int fvi = 3*vi;
-        const double v = fac_*densnp_*funct_(vi);
+        const double v = fac_*densaf_*funct_(vi);
         eforce(fvi    ) += v*rhsmom_(0) ;
         eforce(fvi + 1) += v*rhsmom_(1) ;
       }
@@ -1175,7 +1222,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
       //----------------------------------------------------------------------
       // computation of additional terms for low-Mach-number flow:
       // 1) subtracted viscosity term including right-hand-side contribution
-      // 2) additional rhs term of continuity equation: density time derivat.
+      // 2) additional rhs term of continuity equation
       //----------------------------------------------------------------------
       if (loma)
       {
@@ -1230,7 +1277,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
           const int tuip = tui+1;
           const double v = tau_Mp*densam_*funct_(ui)
 #if 1
-                           + timetauMp*densnp_*conv_c_(ui)
+                           + timetauMp*densaf_*conv_c_(ui)
 #endif
                            ;
           for (int vi=0; vi<numnode; ++vi)
@@ -1316,7 +1363,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
           {
             const int tui  = 3*ui;
             const int tuip = tui+1;
-            const double v = timetauMp*densnp_*funct_(ui);
+            const double v = timetauMp*densaf_*funct_(ui);
             for (int vi=0; vi<numnode; ++vi)
             {
               const int tvipp = 3*vi + 2;
@@ -1343,9 +1390,9 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
         for (int vi=0; vi<numnode; ++vi)
         {
           // pressure stabilisation
-          eforce(vi*3 + 2) -= tau_Mp*(res_old_(0)*derxy_(0, vi)
+          eforce(vi*3 + 2) -= tau_Mp*(momres_old_(0)*derxy_(0, vi)
                                       +
-                                      res_old_(1)*derxy_(1, vi)) ;
+                                      momres_old_(1)*derxy_(1, vi)) ;
         }
       }
 
@@ -1359,7 +1406,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
         {
           const int tui  = 3*ui;
           const int tuip = tui+1;
-          const double v = densnp_*(tau_M*densam_*funct_(ui) + timetauM*densnp_*conv_c_(ui));
+          const double v = densaf_*(tau_M*densam_*funct_(ui) + timetauM*densaf_*conv_c_(ui));
           for (int vi=0; vi<numnode; ++vi)
           {
             const int tvi = 3*vi;
@@ -1394,7 +1441,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
         {
           const int tvi  = 3*vi;
           const int tvip = tvi+1;
-          const double v = timetauM*densnp_*(conv_c_(vi)+sgconv_c_(vi));
+          const double v = timetauM*densaf_*(conv_c_(vi)+sgconv_c_(vi));
           for (int ui=0; ui<numnode; ++ui)
           {
             const int tuipp = 3*ui + 2;
@@ -1417,7 +1464,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
           {
             const int tvi  = 3*vi;
             const int tvip = tvi+1;
-            const double v = -2.0*visceff*timetauM*densnp_*(conv_c_(vi)+sgconv_c_(vi));
+            const double v = -2.0*visceff*timetauM*densaf_*(conv_c_(vi)+sgconv_c_(vi));
             for (int ui=0; ui<numnode; ++ui)
             {
               const int tui  = 3*ui;
@@ -1446,7 +1493,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
           {
             const int tui  = 3*ui;
             const int tuip = tui+1;
-            const double v = tau_M*densam_*densnp_*funct_(ui);
+            const double v = tau_M*densam_*densaf_*funct_(ui);
             const double v0 = v*velint_(0);
             const double v1 = v*velint_(1);
             for (int vi=0; vi<numnode; ++vi)
@@ -1479,7 +1526,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
             {
               const int tui  = 3*ui;
               const int tuip = tui+1;
-              const double v = timetauM*densnp_*densnp_*funct_(ui);
+              const double v = timetauM*densaf_*densaf_*funct_(ui);
               for (int vi=0; vi<numnode; ++vi)
               {
                 const int tvi  = 3*vi;
@@ -1513,7 +1560,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
           {
             const int tui  = 3*ui;
             const int tuip = tui+1;
-            const double v = timetauM*densnp_*funct_(ui);
+            const double v = timetauM*densaf_*funct_(ui);
             const double v0 = v*gradp_(0);
             const double v1 = v*gradp_(1);
             for (int vi=0; vi<numnode; ++vi)
@@ -1543,7 +1590,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
             {
               const int tui  = 3*ui;
               const int tuip = tui+1;
-              const double v = -2.0*visceff*timetauM*densnp_*funct_(ui);
+              const double v = -2.0*visceff*timetauM*densaf_*funct_(ui);
               const double v0 = v*visc_old_(0);
               const double v1 = v*visc_old_(1);
               for (int vi=0; vi<numnode; ++vi)
@@ -1573,7 +1620,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
           {
             const int tui  = 3*ui;
             const int tuip = tui+1;
-            const double v = -tau_M*densnp_*densnp_*funct_(ui);
+            const double v = -tau_M*densaf_*densaf_*funct_(ui);
             const double v0 = v*rhsmom_(0);
             const double v1 = v*rhsmom_(1);
             for (int vi=0; vi<numnode; ++vi)
@@ -1609,9 +1656,9 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
         {
           const int tvi = 3*vi;
           // supg stabilisation
-          const double v = -tau_M*densnp_*(conv_c_(vi)+sgconv_c_(vi));
-          eforce(tvi    ) += v*res_old_(0) ;
-          eforce(tvi + 1) += v*res_old_(1) ;
+          const double v = -tau_M*densaf_*(conv_c_(vi)+sgconv_c_(vi));
+          eforce(tvi    ) += v*momres_old_(0) ;
+          eforce(tvi + 1) += v*momres_old_(1) ;
         }
 #endif
       }
@@ -1637,7 +1684,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
               const int tuip = tui+1;
               const double v = two_visc_tauMp*densam_*funct_(ui)
 #if 1
-                         + two_visc_timetauMp*densnp_*conv_c_(ui)
+                         + two_visc_timetauMp*densaf_*conv_c_(ui)
 #endif
                                ;
               for (int vi=0; vi<numnode; ++vi)
@@ -1722,7 +1769,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
               {
                 const int tui  = 3*ui;
                 const int tuip = tui+1;
-                const double v = two_visc_timetauMp*densnp_*funct_(ui);
+                const double v = two_visc_timetauMp*densaf_*funct_(ui);
                 for (int vi=0; vi<numnode; ++vi)
                 {
                   const int tvi  = 3*vi;
@@ -1749,8 +1796,8 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
           {
             const int tvi = 3*vi;
             /* viscous stabilisation */
-            eforce(tvi    ) -= two_visc_tauMp*(res_old_(0)*viscs2_(0, vi)+res_old_(1)*viscs2_(1, vi)) ;
-            eforce(tvi + 1) -= two_visc_tauMp*(res_old_(0)*viscs2_(1, vi)+res_old_(1)*viscs2_(3, vi)) ;
+            eforce(tvi    ) -= two_visc_tauMp*(momres_old_(0)*viscs2_(0, vi)+momres_old_(1)*viscs2_(1, vi)) ;
+            eforce(tvi + 1) -= two_visc_tauMp*(momres_old_(0)*viscs2_(1, vi)+momres_old_(1)*viscs2_(3, vi)) ;
           }
         }
       }
@@ -1760,9 +1807,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
 
       if (cstab == Fluid2::continuity_stab_yes)
       {
-        const double timetauC     = timefac*tau_C;
-        const double rhs_tauC_div = rhsfac*tau_C*vdiv_/fac_;
-
+        const double timetauC = timefac*tau_C;
         for (int ui=0; ui<numnode; ++ui)
         {
           const int tui  = 3*ui;
@@ -1789,24 +1834,13 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
           }
         }
 
+        const double tauC_conres = tau_C*conres_old_;
         for (int vi=0; vi<numnode; ++vi)
         {
           const int tvi = 3*vi;
           /* continuity stabilisation on right hand side */
-          eforce(tvi    ) -= rhs_tauC_div*derxy_(0, vi) ;
-          eforce(tvi + 1) -= rhs_tauC_div*derxy_(1, vi) ;
-        }
-
-        if (loma)
-        {
-          const double v = tau_C*rhscon_;
-          for (int vi=0; vi<numnode; ++vi)
-          {
-            const int tvi = 3*vi;
-            /* continuity stabilisation of rhs term of continuity equation */
-            eforce(tvi    ) += v*derxy_(0, vi) ;
-            eforce(tvi + 1) += v*derxy_(1, vi) ;
-          }
+          eforce(tvi    ) -= tauC_conres*derxy_(0, vi) ;
+          eforce(tvi + 1) -= tauC_conres*derxy_(1, vi) ;
         }
       }
 
@@ -1863,7 +1897,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
         }
       }
 
-      vderiv_.MultiplyNT(evelnp, deriv_);
+      vderiv_.MultiplyNT(evelaf, deriv_);
 
 //#define derxjm_(r,c,d,i) derxjm_ ## r ## c ## d (i)
 
@@ -2115,18 +2149,20 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid2Impl<distype>::GetMaterialParams(
   Teuchos::RCP<const MAT::Material>  material,
-  const LINALG::Matrix<2,iel>&       evelnp,
-  const LINALG::Matrix<iel,1>&       escanp,
+  const LINALG::Matrix<2,iel>&       evelaf,
+  const LINALG::Matrix<iel,1>&       escaaf,
   const LINALG::Matrix<iel,1>&       escaam,
   const bool                         is_genalpha
 )
 {
-// initially set density values
+// initially set density values and values with respect to continuity rhs
 // -> will only be changed for low-Mach-number flow "material" below
-densam_    = 1.0;
-densnp_    = 1.0;
-densdtfac_ = 0.0;
-densdtadd_ = 0.0;
+densam_        = 1.0;
+densaf_        = 1.0;
+scadtfac_      = 0.0;
+scaconvfacaf_  = 0.0;
+scaconvfacn_   = 0.0;
+thermpressadd_ = 0.0;
 
 if (material->MaterialType() == INPAR::MAT::m_fluid)
 {
@@ -2145,9 +2181,9 @@ else if (material->MaterialType() == INPAR::MAT::m_carreauyasuda)
   double a      = actmat->AParam(); // constant parameter
   double b      = actmat->BParam(); // constant parameter
 
-  // compute rate of strain
+  // compute rate of strain at n+alpha_F or n+1
   double rateofstrain   = -1.0e30;
-  rateofstrain = GetStrainRate(evelnp,derxy_,vderxy_);
+  rateofstrain = GetStrainRate(evelaf,derxy_,vderxy_);
 
   // compute viscosity according to the Carreau-Yasuda model for shear-thinning fluids
   // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
@@ -2163,9 +2199,9 @@ else if (material->MaterialType() == INPAR::MAT::m_modpowerlaw)
   double delta = actmat->Delta();      // safety factor
   double a     = actmat->AExp();      // exponent
 
-  // compute rate of strain
+  // compute rate of strain at n+alpha_F or n+1
   double rateofstrain   = -1.0e30;
-  rateofstrain = GetStrainRate(evelnp,derxy_,vderxy_);
+  rateofstrain = GetStrainRate(evelaf,derxy_,vderxy_);
 
   // compute viscosity according to a modified power law model for shear-thinning fluids
   // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
@@ -2175,96 +2211,124 @@ else if (material->MaterialType() == INPAR::MAT::m_mixfrac)
 {
   const MAT::MixFrac* actmat = static_cast<const MAT::MixFrac*>(material.get());
 
-  // compute mixture fraction at n+1 or n+alpha_F
-  const double mixfracnp = funct_.Dot(escanp);
+  // compute mixture fraction at n+alpha_F or n+1
+  const double mixfracaf = funct_.Dot(escaaf);
 
-  // compute dynamic viscosity at n+1 or n+alpha_F based on mixture fraction
-  visc_ = actmat->ComputeViscosity(mixfracnp);
+  // compute dynamic viscosity at n+alpha_F or n+1 based on mixture fraction
+  visc_ = actmat->ComputeViscosity(mixfracaf);
 
-  // compute density at n+1 or n+alpha_F based on mixture fraction
-  densnp_ = actmat->ComputeDensity(mixfracnp);
+  // compute density at n+alpha_F or n+1 based on mixture fraction
+  densaf_ = actmat->ComputeDensity(mixfracaf);
 
-  // compute density at n+alpha_M
+  // compute density at n+alpha_M or n based on mixture fraction
+  const double mixfracam = funct_.Dot(escaam);
+  densam_ = actmat->ComputeDensity(mixfracam);
+
+  // factor for convective scalar term at n+alpha_F or n+1
+  scaconvfacaf_ = actmat->EosFacA()*densaf_;
+
   if (is_genalpha)
   {
-    const double mixfracam = funct_.Dot(escaam);
-    densam_ = actmat->ComputeDensity(mixfracam);
+    // factor for scalar time derivative at n+alpha_M or n+1
+    scadtfac_ = actmat->EosFacA()*densam_;
   }
-  else densam_ = densnp_;
+  else
+  {
+    // factor for convective scalar term at n
+    scaconvfacn_ = actmat->EosFacA()*densam_;
 
-  // factor for density derivative:
-  densdtfac_ = densam_*actmat->EosFacA();
+    // set density at n+1
+    densam_ = densaf_;
 
-  // no addition to density derivative
-  densdtadd_ = 0.0;
+    // factor for scalar time derivative
+    scadtfac_ = dt_*actmat->EosFacA()*densam_;
+  }
 }
 else if (material->MaterialType() == INPAR::MAT::m_sutherland)
 {
   const MAT::Sutherland* actmat = static_cast<const MAT::Sutherland*>(material.get());
 
-  // compute temperature at n+1 or n+alpha_F
-  const double tempnp = funct_.Dot(escanp);
+  // compute temperature at n+alpha_F or n+1
+  const double tempaf = funct_.Dot(escaaf);
+
+  // compute temperature at n+alpha_M or n
+  const double tempam = funct_.Dot(escaam);
 
   // compute viscosity according to Sutherland law
-  visc_ = actmat->ComputeViscosity(tempnp);
+  visc_ = actmat->ComputeViscosity(tempaf);
 
-  // compute density at n+1 or n+alpha_F based on temperature
+  // compute density at n+alpha_F or n+1 based on temperature
   // and thermodynamic pressure
-  densnp_ = actmat->ComputeDensity(tempnp,thermpressnp_);
+  densaf_ = actmat->ComputeDensity(tempaf,thermpressaf_);
+
+  // factor for convective scalar term at n+alpha_F or n+1
+  scaconvfacaf_ = 1.0/tempaf;
 
   if (is_genalpha)
   {
-    // compute density at n+alpha_M
-    const double tempam = funct_.Dot(escaam);
+    // factor for scalar time derivative at n+alpha_M
+    scadtfac_ = 1.0/tempam;
+
+    // compute density at n+alpha_M based on temperature
     densam_ = actmat->ComputeDensity(tempam,thermpressam_);
 
-    // factor for density derivative: 1/T
-    densdtfac_ = 1.0/tempam;
-
-    // addition to density derivative: -(1/p_the)*dp_the/dt
-    densdtadd_ = -thermpressdt_/thermpressam_;
+    // addition due to thermodynamic pressure at n+alpha_M
+    thermpressadd_ = -thermpressdtam_/thermpressam_;
   }
   else
   {
-    // set density at n+alpha_M
-    densam_ = densnp_;
+    // factor for convective scalar term at n
+    scaconvfacn_ = 1.0/tempam;
 
-    // factor for density derivative: 1/T
-    densdtfac_ = 1.0/tempnp;
+    // set density at n+1
+    densam_ = densaf_;
 
-    // addition to density derivative: -(1/p_the)*dp_the/dt
-    densdtadd_ = -thermpressdt_/thermpressnp_;
+    // factor for scalar time derivative
+    scadtfac_ = dt_/tempaf;
+
+    // addition due to thermodynamic pressure
+    thermpressadd_ = -dt_*thermpressdtam_/thermpressaf_;
   }
 }
 else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
 {
   const MAT::ArrheniusPV* actmat = static_cast<const MAT::ArrheniusPV*>(material.get());
 
-  // get progress variable at n+1 or n+alpha_F
-  const double provarnp = funct_.Dot(escanp);
+  // get progress variable at n+alpha_F or n+1
+  const double provaraf = funct_.Dot(escaaf);
 
-  // compute temperature based on progress variable
-  const double tempnp = actmat->ComputeTemperature(provarnp);
+  // compute temperature based on progress variable at n+alpha_F or n+1
+  const double tempaf = actmat->ComputeTemperature(provaraf);
 
   // compute viscosity according to Sutherland law
-  visc_ = actmat->ComputeViscosity(tempnp);
+  visc_ = actmat->ComputeViscosity(tempaf);
 
-  // compute density at n+1 or n+alpha_F based on progress variable
-  densnp_ = actmat->ComputeDensity(provarnp);
+  // compute density at n+alpha_F or n+1 based on progress variable
+  densaf_ = actmat->ComputeDensity(provaraf);
 
-  // compute density at n+alpha_M
+  // compute density at n+alpha_M or n based on progress variable
+  const double provaram = funct_.Dot(escaam);
+  densam_ = actmat->ComputeDensity(provaram);
+
+  // factor for convective scalar term at n+alpha_F or n+1
+  scaconvfacaf_ = (actmat->UnbDens()-actmat->BurDens())/densaf_;
+
   if (is_genalpha)
   {
-    const double provaram = funct_.Dot(escaam);
-    densam_ = actmat->ComputeDensity(provaram);
+    // factor for scalar time derivative at n+alpha_M
+    scadtfac_ = (actmat->UnbDens()-actmat->BurDens())/densam_;
   }
-  else densam_ = densnp_;
+  else
+  {
+    // factor for convective scalar term at n
+    scaconvfacn_ = (actmat->UnbDens()-actmat->BurDens())/densam_;
 
-  // factor for density derivative:
-  densdtfac_ = (actmat->UnbDens() - actmat->BurDens())/densam_;
+    // set density at n+1
+    densam_ = densaf_;
 
-  // no addition to density derivative
-  densdtadd_ = 0.0;
+    // factor for scalar time derivative
+    scadtfac_ = dt_*(actmat->UnbDens()-actmat->BurDens())/densam_;
+  }
 }
 else dserror("Material type is not supported");
 
@@ -2283,13 +2347,12 @@ return;
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid2Impl<distype>::Caltau(
   Fluid2*                                 ele,
-  const LINALG::Matrix<2,iel>&            evelnp,
-  const LINALG::Matrix<2,iel>&            fsevelnp,
-  const LINALG::Matrix<iel,1>&            eprenp,
+  const LINALG::Matrix<2,iel>&            evelaf,
+  const LINALG::Matrix<2,iel>&            fsevelaf,
+  const LINALG::Matrix<iel,1>&            epreaf,
   const LINALG::Matrix<2,iel>&            eaccam,
   const LINALG::Matrix<2,iel>&            emhist,
   LINALG::Matrix<3*iel,1>&                sgvelvisc,
-  const double                            dt,
   const double                            timefac,
   const double                            area,
   const bool                              loma,
@@ -2376,13 +2439,13 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Caltau(
 
     // compute (all-scale) rate of strain
     double rateofstrain = -1.0e30;
-    rateofstrain = GetStrainRate(evelnp,derxy_,vderxy_);
+    rateofstrain = GetStrainRate(evelaf,derxy_,vderxy_);
 
     //
     //          visc    = visc + visc
     //              eff              turbulent
 
-    sgvisc = densnp_ * lmix * lmix * rateofstrain;
+    sgvisc = densaf_ * lmix * lmix * rateofstrain;
 
     // store element value for subgrid viscosity for all nodes of element
     // in subgrid-velocity/viscosity vector (at "pressure location")
@@ -2418,15 +2481,15 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Caltau(
     http://www.lncc.br/~valentin/publication.htm                   */
 
     /* viscous : reactive forces */
-    const double re1 = 4.0 * timefac * visceff / (mk * densnp_ * DSQR(hk));
+    const double re1 = 4.0 * timefac * visceff / (mk * densaf_ * DSQR(hk));
 
     /* convective : viscous forces */
-    const double re2 = mk * densnp_ * vel_norm * hk / (2.0 * visceff);
+    const double re2 = mk * densaf_ * vel_norm * hk / (2.0 * visceff);
 
     const double xi1 = DMAX(re1,1.0);
     const double xi2 = DMAX(re2,1.0);
 
-    tau_(0) = timefac*DSQR(hk)/(DSQR(hk)*densnp_*xi1+(4.0*timefac*visceff/mk)*xi2);
+    tau_(0) = timefac*DSQR(hk)/(DSQR(hk)*densaf_*xi1+(4.0*timefac*visceff/mk)*xi2);
     tau_(1) = tau_(0);
 
     /*------------------------------------------------------ compute tau_C ---*/
@@ -2451,7 +2514,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Caltau(
                               1
     */
     const double xi_tau_c = DMIN(re2,1.0);
-    tau_(2) = densnp_ * vel_norm * hk * 0.5 * xi_tau_c;
+    tau_(2) = densaf_ * vel_norm * hk * 0.5 * xi_tau_c;
   }
   else if(whichtau == Fluid2::bazilevs)
   {
@@ -2503,7 +2566,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Caltau(
     double normG = 0;
     double Gnormu = 0;
 
-    const double dens_sqr = densnp_*densnp_;
+    const double dens_sqr = densaf_*densaf_;
     for (int nn=0;nn<2;++nn)
     {
       const double dens_sqr_velint_nn = dens_sqr*velint_(nn);
@@ -2533,7 +2596,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Caltau(
                  | dt            -                   -   - |
                  +-                                       -+
     */
-    tau_(0) = 1.0/(sqrt((4.0*dens_sqr)/(dt*dt)+Gnormu+CI*visceff*visceff*normG));
+    tau_(0) = 1.0/(sqrt((4.0*dens_sqr)/(dt_*dt_)+Gnormu+CI*visceff*visceff*normG));
     tau_(1) = tau_(0);
 
     /*           +-     -+   +-     -+   +-     -+
@@ -2563,7 +2626,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Caltau(
                           tau  * | g * g |
                              M    \-   -/
     */
-    tau_(2) = densnp_/(tau_(0)*normgsq);
+    tau_(2) = densaf_/(tau_(0)*normgsq);
   }
   else if(whichtau == Fluid2::codina)
   {
@@ -2584,15 +2647,15 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Caltau(
     http://www.lncc.br/~valentin/publication.htm                   */
 
     /* viscous : reactive forces */
-    const double re1 = 4.0 * timefac * visceff / (mk * densnp_ * DSQR(hk));
+    const double re1 = 4.0 * timefac * visceff / (mk * densaf_ * DSQR(hk));
 
     /* convective : viscous forces */
-    const double re2 = mk * densnp_ * vel_norm * hk / (2.0 * visceff);
+    const double re2 = mk * densaf_ * vel_norm * hk / (2.0 * visceff);
 
     const double xi1 = DMAX(re1,1.0);
     const double xi2 = DMAX(re2,1.0);
 
-    tau_(0) = timefac*DSQR(hk)/(DSQR(hk)*densnp_*xi1+(4.0*timefac*visceff/mk)*xi2);
+    tau_(0) = timefac*DSQR(hk)/(DSQR(hk)*densaf_*xi1+(4.0*timefac*visceff/mk)*xi2);
     tau_(1) = tau_(0);
 
     /*------------------------------------------------------ compute tau_C ---*/
@@ -2603,7 +2666,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Caltau(
      * Ramon Codina, Jordi Blasco; Comput. Visual. Sci., 4 (3): 167-174, 2002.
      *
      * */
-    tau_(2) = sqrt(DSQR(visceff)+DSQR(0.5*densnp_*vel_norm*hk));
+    tau_(2) = sqrt(DSQR(visceff)+DSQR(0.5*densaf_*vel_norm*hk));
   }
   else dserror("unknown definition of tau\n");
 
@@ -2619,7 +2682,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Caltau(
       {
         // get fine-scale velocities at element center
         // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-        fsvelint_.Multiply(fsevelnp,funct_);
+        fsvelint_.Multiply(fsevelaf,funct_);
 
         // get fine-scale velocity norm
         fsvel_norm = fsvelint_.Norm2();
@@ -2628,10 +2691,10 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Caltau(
       else fsvel_norm = vel_norm;
 
       // element Reynolds number
-      const double re = mk * densnp_ * fsvel_norm * hk / visc_;
+      const double re = mk * densaf_ * fsvel_norm * hk / visc_;
       const double xi = DMAX(re,1.0);
 
-      vart_ = (DSQR(hk)*mk*DSQR(densnp_)*DSQR(fsvel_norm))/(2.0*visc_*xi);
+      vart_ = (DSQR(hk)*mk*DSQR(densaf_)*DSQR(fsvel_norm))/(2.0*visc_*xi);
     }
     else if (fssgv == Fluid2::smagorinsky_all)
     {
@@ -2650,9 +2713,9 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Caltau(
 
       // compute (all-scale) rate of strain
       double rateofstrain = -1.0e30;
-      rateofstrain = GetStrainRate(evelnp,derxy_,vderxy_);
+      rateofstrain = GetStrainRate(evelaf,derxy_,vderxy_);
 
-      vart_ = densnp_ * Cs * Cs * hk * hk * rateofstrain;
+      vart_ = densaf_ * Cs * Cs * hk * hk * rateofstrain;
     }
     else if (fssgv == Fluid2::smagorinsky_small)
     {
@@ -2671,9 +2734,9 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Caltau(
 
       // fine-scale rate of strain
       double fsrateofstrain = -1.0e30;
-      fsrateofstrain = GetStrainRate(fsevelnp,derxy_,fsvderxy_);
+      fsrateofstrain = GetStrainRate(fsevelaf,derxy_,fsvderxy_);
 
-      vart_ = densnp_ * Cs * Cs * hk * hk * fsrateofstrain;
+      vart_ = densaf_ * Cs * Cs * hk * hk * fsrateofstrain;
     }
 
     // store element value for fine-scale subgrid viscosity for all nodes of element
@@ -2696,15 +2759,15 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Caltau(
 
     // get velocity derivatives at element center
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-    vderxy_.MultiplyNT(evelnp,derxy_);
+    vderxy_.MultiplyNT(evelaf,derxy_);
 
     // get pressure gradient at integration point
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-    gradp_.Multiply(derxy_,eprenp);
+    gradp_.Multiply(derxy_,epreaf);
 
     // get bodyforce in gausspoint
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-    bodyforce_.Multiply(edeadng_,funct_);
+    bodyforce_.Multiply(edeadaf_,funct_);
 
     //--------------------------------------------------------------------
     // get numerical representation of some single operators
@@ -2743,8 +2806,8 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Caltau(
       viscs2_(3,0) = 0.5 * (sum + derxy2_(1,0));
 
       /* viscous term  div epsilon(u_old) */
-      visc_old_(0) = viscs2_(0,0)*evelnp(0,0)+viscs2_(1,0)*evelnp(1,0);
-      visc_old_(1) = viscs2_(1,0)*evelnp(0,0)+viscs2_(3,0)*evelnp(1,0);
+      visc_old_(0) = viscs2_(0,0)*evelaf(0,0)+viscs2_(1,0)*evelaf(1,0);
+      visc_old_(1) = viscs2_(1,0)*evelaf(0,0)+viscs2_(3,0)*evelaf(1,0);
 
       for (int i=1; i<iel; ++i)
       {
@@ -2755,8 +2818,8 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Caltau(
         viscs2_(3,i) = 0.5 * (sum + derxy2_(1,i));
 
         /* viscous term  div epsilon(u_old) */
-        visc_old_(0) += viscs2_(0,i)*evelnp(0,i)+viscs2_(1,i)*evelnp(1,i);
-        visc_old_(1) += viscs2_(1,i)*evelnp(0,i)+viscs2_(3,i)*evelnp(1,i);
+        visc_old_(0) += viscs2_(0,i)*evelaf(0,i)+viscs2_(1,i)*evelaf(1,i);
+        visc_old_(1) += viscs2_(1,i)*evelaf(0,i)+viscs2_(3,i)*evelaf(1,i);
       }
     }
     else
@@ -2774,12 +2837,12 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Caltau(
     if (is_genalpha)
     {
       // compute acceleration
-      accintam_.Multiply(eaccam,funct_);
+      accint_.Multiply(eaccam,funct_);
 
       // evaluate residual
       for (int rr=0;rr<2;++rr)
       {
-        res_old_(rr) = densam_*accintam_(rr)+densnp_*conv_old_(rr)+gradp_(rr)-2*visceff*visc_old_(rr)-densnp_*bodyforce_(rr);
+        momres_old_(rr) = densam_*accint_(rr)+densaf_*conv_old_(rr)+gradp_(rr)-2*visceff*visc_old_(rr)-densaf_*bodyforce_(rr);
       }
     }
     else
@@ -2787,7 +2850,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Caltau(
       // evaluate residual
       for (int rr=0;rr<2;++rr)
       {
-        res_old_(rr) = (densnp_*(velint_(rr)-histmom_(rr))/timefac)+densnp_*conv_old_(rr)+gradp_(rr)-2*visceff*visc_old_(rr)-densnp_*bodyforce_(rr);
+        momres_old_(rr) = (densaf_*(velint_(rr)-histmom_(rr))/timefac)+densaf_*conv_old_(rr)+gradp_(rr)-2*visceff*visc_old_(rr)-densaf_*bodyforce_(rr);
       }
     }
 
@@ -2800,8 +2863,8 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Caltau(
     {
       const int fvi   = 3*vi;
       const int fvip  = fvi+1;
-      sgvelvisc(fvi)   = tauMp*res_old_(0)/ele->Nodes()[vi]->NumElement();
-      sgvelvisc(fvip)  = tauMp*res_old_(1)/ele->Nodes()[vi]->NumElement();
+      sgvelvisc(fvi)   = tauMp*momres_old_(0)/ele->Nodes()[vi]->NumElement();
+      sgvelvisc(fvip)  = tauMp*momres_old_(1)/ele->Nodes()[vi]->NumElement();
     }
   }
 }
@@ -2810,7 +2873,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Caltau(
 /*----------------------------------------------------------------------*
  |  get the body force in the nodes of the element (private) gammi 04/07|
  |  the Neumann condition associated with the nodes is stored in the    |
- |  array edeadng only if all nodes have a VolumeNeumann condition      |
+ |  array edeadaf only if all nodes have a VolumeNeumann condition      |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid2Impl<distype>::BodyForce(Fluid2*      ele,
@@ -2862,7 +2925,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::BodyForce(Fluid2*      ele,
     double functionfac = 1.0;
     int functnum = -1;
 
-    // set this condition to the edeadng array
+    // set this condition to the edeadaf array
     for (int jnode=0; jnode<iel; jnode++)
     {
       const double* x = (ele->Nodes()[jnode])->X();
@@ -2883,14 +2946,14 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::BodyForce(Fluid2*      ele,
           functionfac = 1.0;
 
         // compute and store the (normalized) bodyforce value
-        edeadng_(isd,jnode) = (*onoff)[isd]*(*val)[isd]*curvefac*functionfac;
+        edeadaf_(isd,jnode) = (*onoff)[isd]*(*val)[isd]*curvefac*functionfac;
       }
     }
   }
   else
   {
     // we have no dead load
-    edeadng_.Clear();
+    edeadaf_.Clear();
   }
 }
 

@@ -43,8 +43,17 @@ public:
   /// compute values at intermediate time steps (required for generalized-alpha)
   void ComputeIntermediateValues(){return;};
 
+  /// compute values of thermodynamic pressure at intermediate time steps (required for generalized-alpha)
+  void ComputeThermPressureIntermediateValues(){return;};
+
   /// compute thermodynamic pressure and time derivative for low-Mach-number flow
   void ComputeThermPressure();
+
+  ///  update time derivative after solution
+  void UpdateTimeDerivative();
+
+  ///  update time derivative of thermodynamic pressure after solution
+  void UpdateThermPressureTimeDerivative();
 
   /// Update the solution after convergence of the nonlinear iteration.
   /// Current solution becomes old solution of next timestep.
@@ -58,6 +67,24 @@ public:
 
   /// read restart data
   void ReadRestart(int step);
+
+  /// routine to return scalar field phi at time step n+alpha_F
+  Teuchos::RCP<Epetra_Vector> Phiaf(){return null;}
+
+  /// routine to return scalar field phi at time step n+alpha_M
+  Teuchos::RCP<Epetra_Vector> Phiam(){return null;}
+
+  /// routine to return time derivative of scalar field phi at time step n+alpha_M
+  Teuchos::RCP<Epetra_Vector> Phidtam(){return null;}
+
+  /// routine to return thermo. press. at time step n+alpha_F for low-Mach-number flow
+  double ThermPressAf(){return 1.0;}
+
+  /// routine to return thermo. press. at time step n+alpha_M for low-Mach-number flow
+  double ThermPressAm(){return 1.0;}
+
+  /// routine to return thermo. press. at time step n+alpha_M for low-Mach-number flow
+  double ThermPressDtAm(){return 0.0;}
 
 
 protected:

@@ -179,6 +179,9 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   phinp_ = LINALG::CreateVector(*dofrowmap,true);
   phin_  = LINALG::CreateVector(*dofrowmap,true);
 
+  // temporal solution derivative at time n+1
+  phidtnp_ = LINALG::CreateVector(*dofrowmap,true);
+
   // history vector (a linear combination of phinm, phin (BDF)
   // or phin, phidtn (One-Step-Theta, Generalized-alpha))
   hist_ = LINALG::CreateVector(*dofrowmap,true);
@@ -422,6 +425,11 @@ void SCATRA::ScaTraTimIntImpl::TimeLoop()
     else            Solve();
 
     // -------------------------------------------------------------------
+    //                update time derivative after solution
+    // -------------------------------------------------------------------
+    UpdateTimeDerivative();
+
+    // -------------------------------------------------------------------
     //                         update solution
     //        current solution becomes old solution of next timestep
     // -------------------------------------------------------------------
@@ -481,9 +489,13 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
   SetOldPartOfRighthandside();
 
   // -------------------------------------------------------------------
-  //         evaluate Dirichlet and Neumann boundary conditions
+  //  evaluate Dirichlet boundary conditions (also for time derivative)
   // -------------------------------------------------------------------
-  ApplyDirichletBC(time_,phinp_,Teuchos::null);
+  ApplyDirichletBC(time_,phinp_,phidtnp_);
+
+  // -------------------------------------------------------------------
+  //                evaluate Neumann boundary conditions
+  // -------------------------------------------------------------------
   ApplyNeumannBC(time_,phinp_,neumann_loads_);
 
   // -------------------------------------------------------------------
@@ -1015,7 +1027,6 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
 
   // set vector values needed by elements
   discret_->ClearState();
-  discret_->SetState("hist",hist_);
   if (turbmodel_) discret_->SetState("subgrid diffusivity",subgrdiff_);
 
   // AVM3 separation

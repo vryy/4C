@@ -225,22 +225,22 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidProjection::ConvectiveVel()
             dserror("not implemented! todo"); return;
         }
 
-        void ADAPTER::FluidProjection:: SetTimeLomaFields(RCP<const Epetra_Vector> scalarnp,
-                         RCP<const Epetra_Vector> scalarn,
-                         RCP<const Epetra_Vector> scalardtn,
-                         const double             thermpressnp,
-                         const double             thermpressn,
-                         const double             thermpressdtn,
-                         RCP<const Epetra_Vector> scatraresidual,
+        void ADAPTER::FluidProjection:: SetIterLomaFields(
+                         RCP<const Epetra_Vector> scalaraf,
+                         RCP<const Epetra_Vector> scalaram,
+                         RCP<const Epetra_Vector> scalardtam,
+                         const double             thermpressaf,
+                         const double             thermpressam,
+                         const double             thermpressdtam,
                          const int                numscal)
         {
             dserror("not implemented"); return;
         }
 
-        void ADAPTER::FluidProjection::SetIterLomaFields(RCP<const Epetra_Vector> scalarnp,
-                         RCP<const Epetra_Vector> scalardtnp,
+        void ADAPTER::FluidProjection:: SetTimeLomaFields(
+                         RCP<const Epetra_Vector> scalarnp,
                          const double             thermpressnp,
-                         const double             thermpressdtnp,
+                         RCP<const Epetra_Vector> scatraresidual,
                          const int                numscal)
         {
             dserror("not implemented"); return;

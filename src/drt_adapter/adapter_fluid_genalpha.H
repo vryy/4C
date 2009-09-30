@@ -177,22 +177,22 @@ namespace ADAPTER {
     /// set initial flow field
     virtual void SetInitialFlowField(int whichinitialfield,int startfuncno);
 
-    ///  set time-step-related fields for low-Mach-number flow
-    virtual void SetTimeLomaFields(RCP<const Epetra_Vector> scalarnp,
-                         RCP<const Epetra_Vector> scalarn,
-                         RCP<const Epetra_Vector> scalardtn,
-                         const double             thermpressnp,
-                         const double             thermpressn,
-                         const double             thermpressdtn,
-                         RCP<const Epetra_Vector> scatraresidual,
-                         const int                numscal){ dserror("not implemented!"); return; };
+    ///  set fields for low-Mach-number flow within outer iteration loop
+    virtual void SetIterLomaFields(RCP<const Epetra_Vector> scalaraf,
+                                   RCP<const Epetra_Vector> scalaram,
+                                   RCP<const Epetra_Vector> scalardtam,
+                                   const double             thermpressaf,
+                                   const double             thermpressam,
+                                   const double             thermpressdtam,
+                                   const int                numscal){ dserror("not implemented!");
+                                        return; };
 
-    /// set outer-iteration-related fields for low-Mach-number flow
-    virtual void SetIterLomaFields(RCP<const Epetra_Vector> scalarnp,
-                         RCP<const Epetra_Vector> scalardtnp,
-                         const double             thermpressnp,
-                         const double             thermpressdtnp,
-                         const int                numscal){ dserror("not implemented!"); return; };
+    /// set fields for low-Mach-number flow at end of time step
+    virtual void SetTimeLomaFields(RCP<const Epetra_Vector> scalarnp,
+                                   const double             thermpressnp,
+                                   RCP<const Epetra_Vector> scatraresidual,
+                                   const int                numscal){ dserror("not implemented!");
+                                        return; };
 
   private:
 

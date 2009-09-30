@@ -202,7 +202,7 @@ protected:
     RCP<Epetra_Vector>    velnm_;
     RCP<Epetra_Vector>    velaf_;
 
-    RCP<Epetra_Vector>    vescnp_;
+    RCP<Epetra_Vector>    scanp_;
 
     RCP<Epetra_Vector>    dispnp_;
     RCP<Epetra_Vector>    dispn_;
