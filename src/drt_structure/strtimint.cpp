@@ -612,6 +612,7 @@ void STR::TimInt::OutputRestart
   output_->WriteVector("velocity", (*vel_)(0));
   output_->WriteVector("acceleration", (*acc_)(0));
   output_->WriteVector("fexternal", Fext());
+  output_->WriteElementData();
 
   // surface stress
   if (surfstressman_->HaveSurfStress())
