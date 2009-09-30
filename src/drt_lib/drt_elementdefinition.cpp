@@ -10,57 +10,63 @@ extern "C"
 void PrintElementDatHeader()
 {
   DRT::INPUT::ElementDefinition ed;
+  ed.PrintElementDatHeaderToStream(std::cout);
+}
 
-  ed.SetupValidElementLines();
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::INPUT::ElementDefinition::PrintElementDatHeaderToStream(std::ostream& stream)
+{
+  SetupValidElementLines();
 
-  ed.PrintSectionHeader(std::cout,"STRUCTURE ELEMENTS");
+  PrintSectionHeader(stream,"STRUCTURE ELEMENTS");
 
-  ed.PrintElementLines(std::cout,"ART");
-  ed.PrintElementLines(std::cout,"BEAM2");
-  ed.PrintElementLines(std::cout,"BEAM2R");
-  ed.PrintElementLines(std::cout,"BEAM3");
-  //ed.PrintElementLines(std::cout,"CONSTRELE2");
-  //ed.PrintElementLines(std::cout,"CONSTRELE3");
-  ed.PrintElementLines(std::cout,"PTET4");
-  ed.PrintElementLines(std::cout,"SHELL8");
-  ed.PrintElementLines(std::cout,"SOLID3");
-  ed.PrintElementLines(std::cout,"SOLIDH20");
-  ed.PrintElementLines(std::cout,"SOLIDH27");
-  ed.PrintElementLines(std::cout,"SOLIDH8");
-  ed.PrintElementLines(std::cout,"SOLIDH8P1J1");
-  ed.PrintElementLines(std::cout,"SOLIDSH8");
-  ed.PrintElementLines(std::cout,"SOLIDSH8P8");
-  ed.PrintElementLines(std::cout,"SOLIDSHW6");
-  ed.PrintElementLines(std::cout,"SOLIDT10");
-  ed.PrintElementLines(std::cout,"SOLIDT4");
-  ed.PrintElementLines(std::cout,"SOLIDW6");
-  ed.PrintElementLines(std::cout,"TORSION2");
-  ed.PrintElementLines(std::cout,"TORSION3");
-  ed.PrintElementLines(std::cout,"TRUSS2");
-  ed.PrintElementLines(std::cout,"TRUSS3");
-  ed.PrintElementLines(std::cout,"WALL");
+  PrintElementLines(stream,"ART");
+  PrintElementLines(stream,"BEAM2");
+  PrintElementLines(stream,"BEAM2R");
+  PrintElementLines(stream,"BEAM3");
+  //PrintElementLines(stream,"CONSTRELE2");
+  //PrintElementLines(stream,"CONSTRELE3");
+  PrintElementLines(stream,"PTET4");
+  PrintElementLines(stream,"SHELL8");
+  PrintElementLines(stream,"SOLID3");
+  PrintElementLines(stream,"SOLIDH20");
+  PrintElementLines(stream,"SOLIDH27");
+  PrintElementLines(stream,"SOLIDH8");
+  PrintElementLines(stream,"SOLIDH8P1J1");
+  PrintElementLines(stream,"SOLIDSH8");
+  PrintElementLines(stream,"SOLIDSH8P8");
+  PrintElementLines(stream,"SOLIDSHW6");
+  PrintElementLines(stream,"SOLIDT10");
+  PrintElementLines(stream,"SOLIDT4");
+  PrintElementLines(stream,"SOLIDW6");
+  PrintElementLines(stream,"TORSION2");
+  PrintElementLines(stream,"TORSION3");
+  PrintElementLines(stream,"TRUSS2");
+  PrintElementLines(stream,"TRUSS3");
+  PrintElementLines(stream,"WALL");
 
-  ed.PrintSectionHeader(std::cout,"FLUID ELEMENTS");
-  ed.PrintElementLines(std::cout,"COMBUST3");
-  ed.PrintElementLines(std::cout,"FLUID2");
-  ed.PrintElementLines(std::cout,"FLUID3");
-  ed.PrintElementLines(std::cout,"XDIFF3");
-  ed.PrintElementLines(std::cout,"XFLUID3");
+  PrintSectionHeader(stream,"FLUID ELEMENTS");
+  PrintElementLines(stream,"COMBUST3");
+  PrintElementLines(stream,"FLUID2");
+  PrintElementLines(stream,"FLUID3");
+  PrintElementLines(stream,"XDIFF3");
+  PrintElementLines(stream,"XFLUID3");
 
-  ed.PrintSectionHeader(std::cout,"TRANSPORT ELEMENTS");
-  //ed.PrintElementLines(std::cout,"CONDIF2");
-  //ed.PrintElementLines(std::cout,"CONDIF3");
-  ed.PrintElementLines(std::cout,"TRANSP");
+  PrintSectionHeader(stream,"TRANSPORT ELEMENTS");
+  //PrintElementLines(stream,"CONDIF2");
+  //PrintElementLines(stream,"CONDIF3");
+  PrintElementLines(stream,"TRANSP");
 
-  ed.PrintSectionHeader(std::cout,"ALE ELEMENTS");
-  ed.PrintElementLines(std::cout,"ALE2");
-  ed.PrintElementLines(std::cout,"ALE3");
+  PrintSectionHeader(stream,"ALE ELEMENTS");
+  PrintElementLines(stream,"ALE2");
+  PrintElementLines(stream,"ALE3");
 
-  //ed.PrintElementLines(std::cout,"BELE3");
-  //ed.PrintElementLines(std::cout,"VELE3");
+  //PrintElementLines(stream,"BELE3");
+  //PrintElementLines(stream,"VELE3");
 
-  ed.PrintSectionHeader(std::cout,"THERMO ELEMENTS");
-  ed.PrintElementLines(std::cout,"THERMO");
+  PrintSectionHeader(stream,"THERMO ELEMENTS");
+  PrintElementLines(stream,"THERMO");
 }
 
 

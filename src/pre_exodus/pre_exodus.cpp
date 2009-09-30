@@ -32,6 +32,7 @@ its parameters and conditions.
 #include "../drt_inpar/drt_validmaterials.H"
 #include "../drt_inpar/drt_validconditions.H"
 #include "../drt_lib/drt_conditiondefinition.H"
+#include "../drt_lib/drt_elementdefinition.H"
 #include "pre_exodus_reader.H"
 #include "pre_exodus_soshextrusion.H"
 #include "pre_exodus_writedat.H"
@@ -228,10 +229,6 @@ int main(
     Teuchos::RCP<const Teuchos::ParameterList> list = DRT::INPUT::ValidParameters();
 
     // write default .dat header into file
-//      Teuchos::ParameterList empty;
-//      Teuchos::ParameterList size = list->sublist("PROBLEM SIZE");
-//      cout << size << " hello " << endl;
-//      DRT::INPUT::PrintDatHeader(defaulthead,*list);
     stringstream prelimhead;
     DRT::INPUT::PrintDatHeader(prelimhead,*list);
     string headstring = prelimhead.str();
@@ -259,6 +256,13 @@ int main(
     "------------------------------------------------------------FUNCT2"<<endl<<
     "------------------------------------------------------------FUNCT3"<<endl<<
     "------------------------------------------------------------FUNCT4"<<endl;
+
+    // default result-test lines
+    {
+    DRT::ResultTestManager resulttestmanager;
+    Teuchos::RCP<DRT::INPUT::Lines> lines = resulttestmanager.ValidResultLines();
+    lines->Print(defaulthead);
+    }
 
     // close default header file
     if (defaulthead.is_open()) defaulthead.close();
@@ -401,6 +405,11 @@ int EXODUS::CreateDefaultBCFile(EXODUS::Mesh& mymesh)
   defaultbc << "-----------------------------------------VALIDCONDITIONS"<< endl;
   Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > condlist = DRT::INPUT::ValidConditions();
   DRT::INPUT::PrintEmptyConditionDefinitions(defaultbc,*condlist,false);
+
+  // print valid element lines as proposal
+  defaultbc << endl << endl;
+  DRT::INPUT::ElementDefinition ed;
+  ed.PrintElementDatHeaderToStream(defaultbc);
 
   // close default bc specification file
   if (defaultbc.is_open())

@@ -29,6 +29,9 @@ namespace INPUT
     /// Setup of
     void SetupValidElementLines();
 
+    /// print all valid element defintions to stream
+    void PrintElementDatHeaderToStream(std::ostream& stream);
+
     /// Print section header to stream
     void PrintSectionHeader(std::ostream& stream, std::string name, bool color=false);
 
