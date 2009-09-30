@@ -128,6 +128,12 @@ namespace MAT
 
     /// Update internal stress variables
     void Update();
+    
+    void UpdateFiberDirs
+    (
+      const int numgp, 
+      LINALG::Matrix<3,3>* defgrd
+    );
 
     /// Reset internal stress variables
     void Reset(){
@@ -159,10 +165,10 @@ namespace MAT
       { return isinit_&&(histstresscurr_!=Teuchos::null);}
 
     /// return a1s
-    RCP<vector<vector<double> > > Geta1() const {return a1_;}
+    RCP<vector<vector<double> > > Geta1() const {return ca1_;}
 
     /// return a2s
-    RCP<vector<vector<double> > > Geta2() const {return a2_;}
+    RCP<vector<vector<double> > > Geta2() const {return ca2_;}
 
 
   private:
@@ -171,8 +177,10 @@ namespace MAT
     MAT::PAR::ViscoAnisotropic* params_;
 
     // internal variables for fibers
-    RCP<vector<vector<double> > > a1_; ///< first fiber vector per gp
-    RCP<vector<vector<double> > > a2_; ///< second fiber vector per gp
+    RCP<vector<vector<double> > > a1_; ///< first fiber vector per gp (reference)
+    RCP<vector<vector<double> > > a2_; ///< second fiber vector per gp (reference)
+    RCP<vector<vector<double> > > ca1_; ///< first fiber vector per gp (spatial config)
+    RCP<vector<vector<double> > > ca2_; ///< second fiber vector per gp (spatial config)
 
     // visco history stresses for every gausspoint and every stress type
     RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histstresscurr_; ///< current stress

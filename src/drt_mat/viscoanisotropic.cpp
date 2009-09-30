@@ -92,6 +92,8 @@ void MAT::ViscoAnisotropic::Pack(vector<char>& data) const
   {
     AddtoPack(data,a1_->at(gp));
     AddtoPack(data,a2_->at(gp));
+    AddtoPack(data,ca1_->at(gp));
+    AddtoPack(data,ca2_->at(gp));
   }
   //Pack history data
   if (numhist != 0) AddtoPack(data,numhist); // Length of history vector(s)
@@ -145,13 +147,21 @@ void MAT::ViscoAnisotropic::Unpack(const vector<char>& data)
   // unpack fiber internal variables
   a1_ = rcp(new vector<vector<double> >(numgp));
   a2_ = rcp(new vector<vector<double> >(numgp));
+  ca1_ = rcp(new vector<vector<double> >(numgp));
+  ca2_ = rcp(new vector<vector<double> >(numgp));
+  
   for (int gp = 0; gp < numgp; ++gp) {
     vector<double> a;
     ExtractfromPack(position,data,a);
     a1_->at(gp) = a;
     ExtractfromPack(position,data,a);
     a2_->at(gp) = a;
+    ExtractfromPack(position,data,a);
+    ca1_->at(gp) = a;
+    ExtractfromPack(position,data,a);
+    ca2_->at(gp) = a;
   }
+  
 
   // unpack history
   ExtractfromPack(position,data,numhist);
@@ -191,7 +201,10 @@ void MAT::ViscoAnisotropic::Setup(const int numgp, DRT::INPUT::LineDefinition* l
     related to a local element cosy which has to be specified in the element line */
 
   a1_ = rcp(new vector<vector<double> > (numgp));
-  a2_ = rcp(new vector<vector<double> > (numgp));
+  a2_ = rcp(new vector<vector<double> > (numgp)); 
+  ca1_ = rcp(new vector<vector<double> > (numgp));
+  ca2_ = rcp(new vector<vector<double> > (numgp));
+  
   if ((params_->gamma_<0) || (params_->gamma_ >90)) dserror("Fiber angle not in [0,90]");
   const double gamma = (params_->gamma_*PI)/180.; //convert
 
@@ -218,11 +231,15 @@ void MAT::ViscoAnisotropic::Setup(const int numgp, DRT::INPUT::LineDefinition* l
   for (int gp = 0; gp < numgp; ++gp) {
     a1_->at(gp).resize(3);
     a2_->at(gp).resize(3);
+    ca1_->at(gp).resize(3);
+    ca2_->at(gp).resize(3);
     for (int i = 0; i < 3; ++i) {
       // a1 = cos gamma e3 + sin gamma e2
       a1_->at(gp)[i] = cos(gamma)*locsys(i,2) + sin(gamma)*locsys(i,1);
       // a2 = cos gamma e3 - sin gamma e2
       a2_->at(gp)[i] = cos(gamma)*locsys(i,2) - sin(gamma)*locsys(i,1);
+      ca1_->at(gp)[i] = a1_->at(gp)[i];
+      ca2_->at(gp)[i] = a2_->at(gp)[i];
     }
   }
 
@@ -267,6 +284,9 @@ void MAT::ViscoAnisotropic::Setup(const int numgp, const vector<double> thickvec
   {
     a1_ = rcp(new vector<vector<double> > (numgp));
     a2_ = rcp(new vector<vector<double> > (numgp));
+    ca1_ = rcp(new vector<vector<double> > (numgp));
+    ca2_ = rcp(new vector<vector<double> > (numgp));
+    
     if (abs(params_->gamma_)>=1.0E-6) dserror("Fibers can only be aligned in thickness direction for gamma = 0.0!");
     const double gamma = (params_->gamma_*PI)/180.; //convert
 
@@ -290,11 +310,15 @@ void MAT::ViscoAnisotropic::Setup(const int numgp, const vector<double> thickvec
     for (int gp = 0; gp < numgp; ++gp) {
       a1_->at(gp).resize(3);
       a2_->at(gp).resize(3);
+      ca1_->at(gp).resize(3);
+      ca2_->at(gp).resize(3);
       for (int i = 0; i < 3; ++i) {
         // a1 = cos gamma e3 + sin gamma e2
         a1_->at(gp)[i] = cos(gamma)*locsys(i,2) + sin(gamma)*locsys(i,1);
         // a2 = cos gamma e3 - sin gamma e2
         a2_->at(gp)[i] = cos(gamma)*locsys(i,2) - sin(gamma)*locsys(i,1);
+        ca1_->at(gp)[i] = a1_->at(gp)[i];
+        ca2_->at(gp)[i] = a2_->at(gp)[i];
       }
     }
   }
@@ -324,6 +348,20 @@ void MAT::ViscoAnisotropic::Update()
     artstresscurr_->at(j) = emptyvec;
   }
 
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MAT::ViscoAnisotropic::UpdateFiberDirs(const int gp, LINALG::Matrix<3,3>* defgrad)
+{
+  //Loop over all gp and update fiber directions
+  ca1_->at(gp).resize(3);
+  ca2_->at(gp).resize(3);
+  LINALG::DENSEFUNCTIONS::multiply<3,3,1>(&((ca1_->at(gp))[0]),defgrad->A(),&((a1_->at(gp))[0]));
+  LINALG::DENSEFUNCTIONS::multiply<3,3,1>(&((ca2_->at(gp))[0]),defgrad->A(),&((a2_->at(gp))[0]));
+  //cout << (ca1_->at(gp))[0] << ",  " << (ca1_->at(gp))[1] << ",  " << (ca1_->at(gp))[2] << endl;
+  //cout <<  (a1_->at(gp))[0] << ",  " <<  (a1_->at(gp))[1] << ",  " <<  (a1_->at(gp))[2] << endl;
   return;
 }
 

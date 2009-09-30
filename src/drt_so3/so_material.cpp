@@ -163,6 +163,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
     {
       MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
       visco->Evaluate(glstrain,gp,params,cmat,stress);
+      //visco->UpdateFiberDirs(gp,defgrd);
       *density = visco->Density();
       return;
       break;
