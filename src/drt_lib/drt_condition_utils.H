@@ -222,10 +222,6 @@ namespace DRT
                         LINALG::MapExtractor& extractor);
 
     //! create discretization from a given condition
-    /*
-     * This file is the right place to have such functionionality, but it needs to be generalized
-     * A. Gerstenberger 05/08
-     */
     Teuchos::RCP<DRT::Discretization> CreateDiscretizationFromCondition(
       Teuchos::RCP<DRT::Discretization> sourcedis,    ///< discretization with condition
       const std::string&                condname,     ///< name of the condition, by which the derived discretization is identified
@@ -238,7 +234,7 @@ namespace DRT
     //!collects elements by labels (have to be implemented in the corresponding condition
     void CollectElementsByConditionLabel(
         const DRT::Discretization&           discret,               ///< discretization with condition
-        std::map<int,std::set<int> >&        elementsByLabel,       ///< data structure label - set elements
+        std::map<int,std::set<int> >&        elementsByLabel,       ///< map from label to set of element GID
         const string&                        name                   ///< name of the condition
         );
 
