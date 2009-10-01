@@ -996,7 +996,7 @@ void SysmatDomain4(
             }
             else
             {
-              const int labelnp = 0;
+              const int labelnp = ih->PositionWithinConditionNP(cellcenter_xyz);
               const bool was_in_fluid = (ih->PositionWithinConditionN(posx_gp) == 0);
 
               XFLUID::TimeFormulation timeformulation = XFLUID::Eulerian;
