@@ -35,8 +35,7 @@ Iyy_(0),
 Izz_(0),
 Irr_(0),
 alpha_(0),
-alphamass_(0),
-gaussrule_(DRT::UTILS::intrule1D_undefined)
+alphamass_(0)
 {
   return;
 }
@@ -66,9 +65,7 @@ DRT::ELEMENTS::Beam3::Beam3(const DRT::ELEMENTS::Beam3& old) :
  Irr_(old.Irr_),
  alpha_(old.alpha_),
  alphamass_(old.alphamass_),
- floc_(old.floc_),
- X_(old.X_),
- gaussrule_(old.gaussrule_)
+ floc_(old.floc_)
 {
   return;
 }
@@ -96,9 +93,6 @@ DRT::ELEMENTS::Beam3::~Beam3()
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3::Print(ostream& os) const
 {
-  os << "Beam3 ";
-  Element::Print(os);
-  os << " gaussrule_: " << gaussrule_ << " ";
   return;
 }
 
@@ -172,9 +166,6 @@ void DRT::ELEMENTS::Beam3::Pack(vector<char>& data) const
     AddtoPack(data,curvold_[i]);
   for (int i=0; i<(int)floc_.size(); i++)
     AddtoPack(data,floc_[i]);
-  for (int i=0; i<(int)X_.size(); i++)
-    AddtoPack(data,X_[i]);
-  AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
   AddtoPack(data,isinit_);
   AddtoPack(data,Irr_);
   AddtoPack(data,Iyy_);
@@ -238,11 +229,6 @@ void DRT::ELEMENTS::Beam3::Unpack(const vector<char>& data)
     ExtractfromPack(position,data,curvold_[i]);
   for (int i=0; i<(int)floc_.size(); i++)
     ExtractfromPack(position,data,floc_[i]); 
-  for (int i=0; i<(int)X_.size(); i++)
-    ExtractfromPack(position,data,X_[i]); 
-  int gausrule_integer;
-  ExtractfromPack(position,data,gausrule_integer);
-  gaussrule_ = DRT::UTILS::GaussRule1D(gausrule_integer); //explicit conversion from integer to enum
   ExtractfromPack(position,data,isinit_);
   ExtractfromPack(position,data,Irr_);
   ExtractfromPack(position,data,Iyy_);
@@ -285,6 +271,99 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Beam3::Lines()
   return lines;
 }
 
+/*----------------------------------------------------------------------*
+ |determine Gauss rule from required type of integration                |
+ |                                                   (public)cyron 09/09|
+ *----------------------------------------------------------------------*/
+DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3::MyGaussRule(int nnode, IntegrationType integrationtype)
+{
+  DRT::UTILS::GaussRule1D gaussrule;
+  
+  switch(nnode)
+  {
+    case 2:
+    {     
+      switch(integrationtype)
+      {
+        case gaussexactintegration:
+        {
+          gaussrule = DRT::UTILS::intrule_line_2point;
+          break;
+        }
+        case gaussunderintegration:
+        {
+          gaussrule =  DRT::UTILS::intrule_line_1point;
+          break;
+        }
+        default:
+          dserror("unknown type of integration");
+      }
+      break;
+    }
+    case 3:
+    {
+      switch(integrationtype)
+      {
+        case gaussexactintegration:
+        {
+          gaussrule = DRT::UTILS::intrule_line_3point;
+          break;
+        }
+        case gaussunderintegration:
+        {
+          gaussrule =  DRT::UTILS::intrule_line_2point;
+          break;
+        }
+
+        default:
+          dserror("unknown type of integration");
+      }
+      break;
+    }
+    case 4:
+    {
+      switch(integrationtype)
+      {
+        case gaussexactintegration:
+        {
+          gaussrule = DRT::UTILS::intrule_line_4point;
+          break;
+        }
+        case gaussunderintegration:
+        {
+          gaussrule =  DRT::UTILS::intrule_line_3point;
+          break;
+        }
+        default:
+          dserror("unknown type of integration");
+      }
+      break;
+    }
+    case 5:
+    {
+      switch(integrationtype)
+      {
+        case gaussexactintegration:
+        {
+          gaussrule = DRT::UTILS::intrule_line_5point;
+          break;
+        }
+        case gaussunderintegration:
+        {
+          gaussrule =  DRT::UTILS::intrule_line_4point;
+          break;
+        }
+        default:
+          dserror("unknown type of integration");
+      }
+      break;
+    }
+    default:
+      dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
+  }
+  
+  return gaussrule;
+}
 
 /*----------------------------------------------------------------------*
  | sets up geometric data from current nodal position as reference
@@ -305,12 +384,7 @@ void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const vector<double>& xrefe,co
   {
     isinit_ = true;
     
-  
-    
-  //Set the applied Gaussrule ( It can be proven that we need 1 GP less than nodes to integrate exact )
-  //note: we use a static cast for the enumeration here cf. Practical C++ Programming p.185
-  gaussrule_ = static_cast<enum DRT::UTILS::GaussRule1D>(nnode-1);
-  
+
   //resize all class STL vectors so that they can each store 1 value at each GP
   alpha_.resize(nnode-1);
   alphamass_.resize(nnode);
@@ -327,7 +401,6 @@ void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const vector<double>& xrefe,co
   thetaprimeold_.resize((nnode-1));
   thetaprimenew_.resize((nnode-1));
   floc_.resize(nnode);
-  X_.resize(nnode);
   
   //create Matrix for the derivates of the shapefunctions at the GP
 	LINALG::Matrix<1,nnode> shapefuncderiv;
@@ -338,8 +411,8 @@ void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const vector<double>& xrefe,co
 	//Get DiscretizationType
 	DRT::Element::DiscretizationType distype = Shape();
 	
-	//Get the applied integrationpoints
-	DRT::UTILS::IntegrationPoints1D gausspoints(gaussrule_);
+	//Get the applied integrationpoints for underintegration
+	DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,gaussunderintegration));
 	
     //Loop through all GPs and calculate alpha the triads at the GPs
 	for(int numgp=0; numgp < gausspoints.nquad; numgp++)
@@ -369,7 +442,6 @@ void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const vector<double>& xrefe,co
     	for(int dof=0; dof<3 ; dof++)
     	{
 	    	dxdxi(dof) += shapefuncderiv(node) * xrefe[3*node+dof];
-	    	X_[node](dof) = xrefe[3*node+dof];
 		    thetaconv_[numgp](dof) += funct(node) * rotrefe[3*node+dof];
 		    thetaprimeconv_[numgp](dof) += shapefuncderiv(node) * rotrefe[3*node+dof]; 		
     	}//for(int dof=0; dof<3 ; dof++)
@@ -435,12 +507,9 @@ void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const vector<double>& xrefe,co
 
   thetaprimeold_ = thetaprimeconv_;
   thetaprimenew_ = thetaprimeconv_;
-
-	//Now we get the integrationfactor alphamass_ for a complete integration of the massmatrix therefor we increase the gaussrule by 1
-	gaussrule_ = static_cast<enum DRT::UTILS::GaussRule1D>(nnode);
 	
-	//Get the applied integrationpoints
-	DRT::UTILS::IntegrationPoints1D gausspointsmass(gaussrule_);
+	//Get the applied integrationpoints for exact integration of mass matrix
+	DRT::UTILS::IntegrationPoints1D gausspointsmass(MyGaussRule(nnode,gaussexactintegration));
 	  	
 	//Loop through all GPs and calculate alpha and theta0
 	for(int numgp=0; numgp < gausspointsmass.nquad; numgp++)
@@ -457,21 +526,15 @@ void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const vector<double>& xrefe,co
     dxdximass.Clear();
     //calculate dx/dxi and dz/dxi
     for(int node=0; node<nnode; node++)
-    {
-	    dxdximass(0)+=shapefuncderiv(node)*X_[node](0);
-	    dxdximass(1)+=shapefuncderiv(node)*X_[node](1);
-	    dxdximass(2)+=shapefuncderiv(node)*X_[node](2);
-	
-    }//for(int node=0; node<nnode; node++)
+      for(int dof=0; dof<3; dof++)
+        dxdximass(dof)+=shapefuncderiv(node)*xrefe[3*node+dof];
+    
 
     //Store length factor for every GP
     //note: the length factor alpha replaces the determinant and refers by definition always to the reference configuration
-    alphamass_[numgp]= pow(pow( dxdximass(0) ,2.0) + pow( dxdximass(1) ,2.0) + pow(dxdximass(2) ,2.0) ,0.5);	
+    alphamass_[numgp]= dxdximass.Norm2();	
 	
 	}//for(int numgp=0; numgp < gausspointsmass.nquad; numgp++)
-
-	//reset gaussrule_ for further calculations
-	gaussrule_ = static_cast<enum DRT::UTILS::GaussRule1D>(nnode-1);
 	
 	return;
 

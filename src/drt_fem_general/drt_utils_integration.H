@@ -105,6 +105,9 @@ enum GaussRule2D
 };
 
 //! supported 1d integration rules
+
+/*note: the following enum should be renamed the following way: GaussRule1D -> IntRule1D,
+ *  intrule1D_line*point -> gauss1D_*point, intrule_line_lobatto*point -> lobatto1D_*point*/
 enum GaussRule1D
 {
     intrule1D_undefined,           ///< use this to initialize a gaussrule, if you don't know the value, yet!
@@ -117,9 +120,12 @@ enum GaussRule1D
     intrule_line_7point,           ///< degree of precision: 13 (open)
     intrule_line_8point,           ///< degree of precision: 15 (open)
     intrule_line_9point,           ///< degree of precision: 17 (open)
-    intrule_line_10point           ///< degree of precision: 19 (open)
+    intrule_line_10point,          ///< degree of precision: 19 (open)
+    intrule_line_lobatto2point,    ///< degree of precision: 1  (open)
+    intrule_line_lobatto3point     ///< degree of precision: 3  (open)
 
 };
+
 
 /*!
  \brief a point with a position and an associated weight

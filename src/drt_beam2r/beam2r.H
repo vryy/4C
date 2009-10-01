@@ -32,9 +32,8 @@ using namespace Teuchos;
 #include "../drt_lib/linalg_serialdensevector.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/drt_utils_integration.H"
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_lib/linalg_fixedsizematrix.H"
-//including random number library of blitz for statistical forces
-#include <random/normal.h>
 
 
 
@@ -288,6 +287,13 @@ private:
     calc_brownian,
     calc_struct_ptcstiff
   };
+  
+  //! kind of integration to be performed
+  enum IntegrationType
+  {
+    gaussexactintegration,
+    gaussunderintegration
+  };
 
   //! container containing all kind of beam2r thisandthat
   DRT::Container data_;
@@ -303,10 +309,6 @@ private:
   
   //! variable saving whether element has already been initialized (then isinit_ == true)
   bool isinit_;
-  
-  /*calculation of Brownian forces and damping is based on drag coefficient; this coefficient per unit
-  * length is approximated by the one of an infinitely long staff for friciton orthogonal to staff axis*/
-  double lrefe_;
 
   //! moment of inertia of area
   double mominer_;
@@ -353,6 +355,9 @@ private:
   //!this function transforms the consistent massmatrix into a lumped massmatrix. Only called when needed
   template<int nnode>
   void lumpedmass(Epetra_SerialDenseMatrix* massmatrix);
+  
+  //! determine Gauss rule from required type of integration
+  DRT::UTILS::GaussRule1D MyGaussRule(int nnode, IntegrationType integrationtype);
 
 
 

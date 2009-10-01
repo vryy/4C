@@ -48,9 +48,6 @@ public:
   //! \brief special update for statistical mechanics including setting and deleting crosslinkers in the discretization
   void StatMechUpdate(const double dt, const Epetra_Vector& disrow);
 
-  //! \brief updates system damping matrix and external force vector according to influence of thermal bath
-  void StatMechBrownian(ParameterList& params, RCP<Epetra_Vector> dis, RCP<Epetra_Vector> browniancol);
-
   //! \brief initializing special output for statistical mechanics by looking for a suitable name of the outputfile and setting up an empty file with this name
   void StatMechInitOutput(const int ndim, const double& dt);
 

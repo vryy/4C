@@ -4044,6 +4044,26 @@ DRT::UTILS::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gaussrule
 
       break;
   }
+  case intrule_line_lobatto2point:
+  {
+    nquad = 2;
+    qwgt[0]  =  0.5;
+    qwgt[1]  =  0.5;
+    qxg[0][0] = -1.0;
+    qxg[1][0] =  1.0;
+    break;
+  }
+  case intrule_line_lobatto3point:
+  {
+    nquad = 3;
+    qwgt[0]  = -1.0;
+    qwgt[1]  =  0.0;
+    qwgt[1]  =  1.0;
+    qxg[0][0] = 0.33333333333333;
+    qxg[1][0] = 0.66666666666667;
+    qxg[1][0] = 0.33333333333333;
+    break;
+  }
   default:
     dserror("unknown 1D integration rule");
   }

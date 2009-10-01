@@ -41,6 +41,15 @@ namespace INPAR
       statout_viscoelasticity, ///< measuring viscoelastic properties of filament networks
       statout_gmsh ///< writing special output in order to generate a Gmsh movie
     };
+    
+    /// (this enum represents the input file parameter STAT_OUTPUT)
+    enum FrictionModel
+    {
+      frictionmodel_none,                  ///< no friction model
+      frictionmodel_isotropiclumped,       ///< isotropic, lumped damping matrix
+      frictionmodel_isotropicconsistent,   ///< isotropic, consistent damping matrix
+      frictionmodel_anisotropicconsistent  ///< anisotropic, consistent damping matrix
+    };
 
   }  // namespace STATMECH
 

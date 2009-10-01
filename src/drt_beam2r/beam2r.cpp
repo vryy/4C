@@ -33,7 +33,6 @@ crosssec_(0),
 crosssecshear_(0),
 gaussrule_(DRT::UTILS::intrule1D_undefined),
 isinit_(false),
-lrefe_(0),
 mominer_(0)
 {
   return;
@@ -48,7 +47,6 @@ crosssec_(old.crosssec_),
 crosssecshear_(old.crosssecshear_),
 gaussrule_(old.gaussrule_),
 isinit_(old.isinit_),
-lrefe_(old.lrefe_),
 mominer_(old.mominer_),
 alpha_(old.alpha_),
 alphamass_(old.alphamass_),
@@ -148,7 +146,6 @@ void DRT::ELEMENTS::Beam2r::Pack(vector<char>& data) const
   AddtoPack(data,crosssecshear_);
   AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
   AddtoPack(data,isinit_);
-  AddtoPack(data,lrefe_);
   AddtoPack(data,mominer_);
   AddtoPack(data,alpha_);
   AddtoPack(data,alphamass_);
@@ -187,11 +184,10 @@ void DRT::ELEMENTS::Beam2r::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,gausrule_integer);
   gaussrule_ = DRT::UTILS::GaussRule1D(gausrule_integer); //explicit conversion from integer to enum
   ExtractfromPack(position,data,isinit_);
-  ExtractfromPack(position,data,lrefe_);
   ExtractfromPack(position,data,mominer_);
   ExtractfromPack(position,data,alpha_);
   ExtractfromPack(position,data,alphamass_);
-  for(int i=0;i<floc_.size();i++)
+  for(int i=0;i<(int)floc_.size();i++)
     ExtractfromPack<2,1>(position,data,floc_[i]); 
   ExtractfromPack(position,data,theta0_);
  
@@ -212,6 +208,100 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Beam2r::Lines()
   vector<RCP<Element> > lines(1);
   lines[0]= rcp(this, false);
   return lines;
+}
+
+/*----------------------------------------------------------------------*
+ |determine Gauss rule from required type of integration                |
+ |                                                   (public)cyron 09/09|
+ *----------------------------------------------------------------------*/
+DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam2r::MyGaussRule(int nnode, IntegrationType integrationtype)
+{
+  DRT::UTILS::GaussRule1D gaussrule;
+  
+  switch(nnode)
+  {
+    case 2:
+    {     
+      switch(integrationtype)
+      {
+        case gaussexactintegration:
+        {
+          gaussrule = DRT::UTILS::intrule_line_2point;
+          break;
+        }
+        case gaussunderintegration:
+        {
+          gaussrule =  DRT::UTILS::intrule_line_1point;
+          break;
+        }
+        default:
+          dserror("unknown type of integration");
+      }
+      break;
+    }
+    case 3:
+    {
+      switch(integrationtype)
+      {
+        case gaussexactintegration:
+        {
+          gaussrule = DRT::UTILS::intrule_line_3point;
+          break;
+        }
+        case gaussunderintegration:
+        {
+          gaussrule =  DRT::UTILS::intrule_line_2point;
+          break;
+        }
+
+        default:
+          dserror("unknown type of integration");
+      }
+      break;
+    }
+    case 4:
+    {
+      switch(integrationtype)
+      {
+        case gaussexactintegration:
+        {
+          gaussrule = DRT::UTILS::intrule_line_4point;
+          break;
+        }
+        case gaussunderintegration:
+        {
+          gaussrule =  DRT::UTILS::intrule_line_3point;
+          break;
+        }
+        default:
+          dserror("unknown type of integration");
+      }
+      break;
+    }
+    case 5:
+    {
+      switch(integrationtype)
+      {
+        case gaussexactintegration:
+        {
+          gaussrule = DRT::UTILS::intrule_line_5point;
+          break;
+        }
+        case gaussunderintegration:
+        {
+          gaussrule =  DRT::UTILS::intrule_line_4point;
+          break;
+        }
+        default:
+          dserror("unknown type of integration");
+      }
+      break;
+    }
+    default:
+      dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
+  }
+  
+  return gaussrule;
 }
 
 

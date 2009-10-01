@@ -937,13 +937,26 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                             INPAR::STATMECH::statout_viscoelasticity,INPAR::STATMECH::statout_viscoelasticity,INPAR::STATMECH::statout_viscoelasticity,
                                             INPAR::STATMECH::statout_gmsh,INPAR::STATMECH::statout_gmsh),
                                  &statmech);
+  //Reading which kind of friction model should be applied
+  setStringToIntegralParameter<INPAR::STATMECH::FrictionModel>("FRICTION_MODEL","none","friction model for polymer dynamics",
+                                 //listing possible strings in input file in category FRICTION_MODEL
+                                 tuple<std::string>("none",
+                                                    "isotropiclumped",
+                                                    "isotropicconsistent",
+                                                    "anisotropicconsistent"),
+                                 //translating input strings into BACI input parameters
+                                 tuple<INPAR::STATMECH::FrictionModel>(INPAR::STATMECH::frictionmodel_none,
+                                                                    INPAR::STATMECH::frictionmodel_isotropiclumped,
+                                                                    INPAR::STATMECH::frictionmodel_isotropicconsistent,
+                                                                    INPAR::STATMECH::frictionmodel_anisotropicconsistent),
+                                                                    &statmech);  
   //percentage of total simulation time after which writing of statistical output is started
   DoubleParameter("START_FACTOR",0.0,"Percentage of total simulation time after which writing of statistical output is started",&statmech);
   //Reading whether dynamics remodelling of cross linker distribution takes place
   setStringToIntegralParameter<int>("DYN_CROSSLINKERS","No","If chosen cross linker proteins are added and removed in each time step",
                                yesnotuple,yesnovalue,&statmech);
   //Reading double parameters for shear flow field
-  DoubleParameter("SHEARAMPLITUDE",0.0,"Shear amplitude of flow in z-direction",&statmech);
+  DoubleParameter("SHEARAMPLITUDE",0.0,"Shear amplitude of flow in z-direction; note: not amplitude of displacement, but of shear strain!",&statmech);
   DoubleParameter("SHEARFREQUENCY",0.0,"Shear frequency of flow in z-direction",&statmech);
   //Reading double parameter for viscosity of background fluid
   DoubleParameter("ETA",0.0,"viscosity",&statmech);
@@ -957,9 +970,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("R_LINK",0.0,"Maximal distance between two nodes connected by a crosslinker",&statmech);
   //Reading double parameter for concentration of crosslinking protein
   DoubleParameter("C_CROSSLINKER",0.0,"Molar concentration of crosslinking protein",&statmech);
-  //order of interpolation for stochastical fields
-  IntParameter("STOCH_ORDER",0,"order of interpolation for stochastical fields",&statmech);
-
 
   /*----------------------------------------------------------------------*/
    Teuchos::ParameterList& tdyn = list->sublist("THERMAL DYNAMIC",false,"");

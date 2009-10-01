@@ -31,9 +31,6 @@ StruGenAlpha(params,dis,solver,output)
 {
   statmechmanager_ = rcp(new StatMechManager(params,dis,stiff_));
 
-  //create vector for statistical forces
-  browniancol_ = LINALG::CreateVector(*(discret_.DofRowMap()),true);
-
   return;
 } // StatMechTime::StatMechTime
 
@@ -102,6 +99,7 @@ void StatMechTime::Integrate()
     if      (predictor==1) ConstantPredictor();
     else if (predictor==2) ConsistentPredictor();
     */
+    
     ConsistentPredictor();
 
 
@@ -202,9 +200,6 @@ void StatMechTime::ConsistentPredictor()
   // -------------------------------------------------------------------
   // get some parameters from parameter list
   // -------------------------------------------------------------------
-	
-	
-	
   double time        = params_.get<double>("total time"     ,0.0);
   double dt          = params_.get<double>("delta time"     ,0.01);
   double alphaf      = params_.get<double>("alpha f"        ,0.459);
@@ -216,20 +211,18 @@ void StatMechTime::ConsistentPredictor()
   // internal, external and inertial forces if a relative convergence
   // check is desired
   if (!firststep_ and (convcheck != "AbsRes_And_AbsDis" or convcheck != "AbsRes_Or_AbsDis"))
-  {
     CalcRefNorms();
-  }
 
   // increment time and step
   double timen = time + dt;  // t_{n+1}
   //int istep = step + 1;  // n+1
 
 
-  // constant predictor : displacement in domain
+  //consistent predictor for backward Euler time integration scheme
   disn_->Update(1.0,*dis_,0.0);
+  veln_->Update(1.0/dt,*disn_,-1.0/dt,*dis_,0.0);
 
-  /*compute new ordinary external forces (if dependent on displacement with respect to old displacemnet for a
-   * semi-implicit-time-integration scheme)*/
+  //evaluate deterministic external forces
   {
     ParameterList p;
     // action for elements
@@ -253,27 +246,7 @@ void StatMechTime::ConsistentPredictor()
     discret_.ClearState();
   }
 
-  /*Statistical mechanics includes some Brownian forces. These are evaluated at the beginning of a time step, i.e. in the sense
-   * of an Ito integral by means of random numbers. Thus currently a semi-implicit time step scheme is applied (implicit in drift
-   * term and explicit in noise term). The Brownian forces are evaluated in such a way that the resulting Langevin equation goes
-   * along with the correct Fokker-Planck-Diffusion equation*/
-  statmechmanager_->StatMechBrownian(params_,dis_,browniancol_);
-
-
-
-  //cout << *disn_ << endl;
-
-  // consistent predictor
-  // predicting velocity V_{n+1} (veln)
-  // V_{n+1} := gamma/(beta*dt) * (D_{n+1} - D_n)
-  //          + (beta-gamma)/beta * V_n
-  //          + (2.*beta-gamma)/(2.*beta) * A_n
-
-  //backward Euler
-  veln_->Update(1.0/dt,*disn_,-1.0/dt,*dis_,0.0);
-
-
-
+  
 #ifdef STRUGENALPHA_STRONGDBC
   // apply new velocities at DBCs
   {
@@ -291,28 +264,6 @@ void StatMechTime::ConsistentPredictor()
     // predicted dirichlet values
     // veln_ then also holds prescribed new Dirichlet velocities
     discret_.EvaluateDirichlet(p,null,veln_,null,dirichtoggle_);
-    discret_.ClearState();
-  }
-#endif
-
-
-#ifdef STRUGENALPHA_STRONGDBC
-  // apply new accelerations at DBCs
-  {
-    ParameterList p;
-    // action for elements
-    p.set("action","calc_struct_eleload");
-    // other parameters needed by the elements
-    p.set("total time",timen);
-    p.set("delta time",dt);
-    p.set("alpha f",alphaf);
-    //p.set("time derivative degree",2);  // we want accelerations
-    // set vector values needed by elements
-    discret_.ClearState();
-    discret_.SetState("acceleration",accn_);
-    // predicted dirichlet values
-    // accn_ then also holds prescribed new Dirichlet accelerations
-    discret_.EvaluateDirichlet(p,null,null,accn_,dirichtoggle_);
     discret_.ClearState();
   }
 #endif
@@ -358,16 +309,13 @@ void StatMechTime::ConsistentPredictor()
     //passing statistical mechanics parameters to elements
     p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
     p.set("THERMALBATH",Teuchos::getIntegralValue<INPAR::STATMECH::ThermalBathType>(statmechmanager_->statmechparams_,"THERMALBATH"));
+    p.set("FRICTION_MODEL",Teuchos::getIntegralValue<INPAR::STATMECH::FrictionModel>(statmechmanager_->statmechparams_,"FRICTION_MODEL"));
     
     //computing current gradient in z-direction of shear flow (assuming sine shear load with maximal amplitude SHEARAMPLITUDE and frequency SHEARFREQUENCY)
     double omegashear = 2*PI*(statmechmanager_->statmechparams_).get<double>("SHEARFREQUENCY",0.0);
     double currentshear = cos(omegashear*timen)*(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0)*omegashear;
     p.set("CURRENTSHEAR",currentshear); 
-    p.set("STOCH_ORDER",(statmechmanager_->statmechparams_).get<int>("STOCH_ORDER",0));
-
-    //add statistical vector to parameter list for statistical forces and damping matrix computation
-    p.set("statistical vector",browniancol_);
-
+    
     // set vector values needed by elements
     discret_.ClearState();
     disi_->PutScalar(0.0);
@@ -384,14 +332,8 @@ void StatMechTime::ConsistentPredictor()
     discret_.ClearState();
 
 
-
-
-
-
-
     // do NOT finalize the stiffness matrix, add mass and damping to it later
   }
-
 
   //-------------------------------------------- compute residual forces
   // build residual
@@ -553,10 +495,7 @@ void StatMechTime::FullNewton()
       double omegashear = 2*PI*(statmechmanager_->statmechparams_).get<double>("SHEARFREQUENCY",0.0);
       double currentshear = cos(omegashear*timen)*(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0)*omegashear;
       p.set("CURRENTSHEAR",currentshear); 
-      p.set("STOCH_ORDER",(statmechmanager_->statmechparams_).get<int>("STOCH_ORDER",0));
-
-      //add statistical vector to parameter list for statistical forces
-      p.set("statistical vector",browniancol_);
+      p.set("FRICTION_MODEL",Teuchos::getIntegralValue<INPAR::STATMECH::FrictionModel>(statmechmanager_->statmechparams_,"FRICTION_MODEL"));
 
 
       // set vector values needed by elements
@@ -735,14 +674,13 @@ void StatMechTime::PTC()
       p.set("dti",dti);
 
       //add statistical vector to parameter list for statistical forces and damping matrix computation
-      p.set("statistical vector",browniancol_);
       p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
       p.set("THERMALBATH",Teuchos::getIntegralValue<INPAR::STATMECH::ThermalBathType>(statmechmanager_->statmechparams_,"THERMALBATH"));
       //computing current gradient in z-direction of shear flow (assuming sine shear load with maximal amplitude SHEARAMPLITUDE and frequency SHEARFREQUENCY)
       double omegashear = 2*PI*(statmechmanager_->statmechparams_).get<double>("SHEARFREQUENCY",0.0);
       double currentshear = cos(omegashear*timen)*(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0)*omegashear;
       p.set("CURRENTSHEAR",currentshear); 
-      p.set("STOCH_ORDER",(statmechmanager_->statmechparams_).get<int>("STOCH_ORDER",0));
+      p.set("FRICTION_MODEL",Teuchos::getIntegralValue<INPAR::STATMECH::FrictionModel>(statmechmanager_->statmechparams_,"FRICTION_MODEL"));
 
       //evaluate ptc stiffness contribution in all the elements
       discret_.Evaluate(p,stiff_,null,null,null,null);
@@ -805,10 +743,8 @@ void StatMechTime::PTC()
       double omegashear = 2*PI*(statmechmanager_->statmechparams_).get<double>("SHEARFREQUENCY",0.0);
       double currentshear = cos(omegashear*timen)*(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0)*omegashear;
       p.set("CURRENTSHEAR",currentshear); 
-      p.set("STOCH_ORDER",(statmechmanager_->statmechparams_).get<int>("STOCH_ORDER",0));
+      p.set("FRICTION_MODEL",Teuchos::getIntegralValue<INPAR::STATMECH::FrictionModel>(statmechmanager_->statmechparams_,"FRICTION_MODEL"));
 
-      //add statistical vector to parameter list for statistical forces and damping matrix computation
-      p.set("statistical vector",browniancol_);
 
       // set vector values needed by elements
       discret_.ClearState();

@@ -36,6 +36,7 @@ using namespace Teuchos;
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_statmech/statmech_manager.H"
 #include "../drt_statmech/statmech_time.H"
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_lib/linalg_fixedsizematrix.H"
 
 
@@ -313,6 +314,13 @@ private:
     calc_brownian, //calculate statistical forces and damping for Brownian dynamics
     calc_struct_ptcstiff //calculate artificial stiffness due to PTC solution strategy
   };
+  
+  //! kind of integration to be performed
+  enum IntegrationType
+  {
+    gaussexactintegration,
+    gaussunderintegration
+  };
 
   //! container containing all kind of Beam3 thisandthat
   DRT::Container data_;
@@ -369,13 +377,6 @@ private:
 
   //! store stochastic forces for each node
   vector<LINALG::Matrix<3,1> > floc_;
-  
-  //! store reference coordinates for each node (important in case that element has been added after simulation start!)
-  vector<LINALG::Matrix<3,1> > X_;
-
-  //! gaussrule_ will be initialized automatically for underintegration in order to get rid of Locking
-  DRT::UTILS::GaussRule1D gaussrule_;
-
 
   //! @name methods for initilization of the element
 
@@ -454,6 +455,9 @@ private:
   //! lump mass matrix
   template<int nnode>
   void lumpmass(Epetra_SerialDenseMatrix* emass);
+  
+  //! determine Gauss rule from required type of integration
+  DRT::UTILS::GaussRule1D MyGaussRule(int nnode, IntegrationType integrationtype);
 
   //@}
 

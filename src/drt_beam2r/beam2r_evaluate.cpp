@@ -26,6 +26,11 @@ Maintainer: Christian Cyron
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_mat/stvenantkirchhoff.H"
+#include "../drt_lib/linalg_fixedsizematrix.H"
+#include "../drt_inpar/inpar_statmech.H"
+//including random number library of blitz for statistical forces
+#include <random/normal.h>
+
 
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public)                                                                 cyron 01/08|
@@ -70,18 +75,7 @@ int DRT::ELEMENTS::Beam2r::Evaluate(ParameterList& params,
     case Beam2r::calc_brownian:
     {
 
-      /*calculation of Brownian forces and damping is based on drag coefficient; this coefficient per unit
-       * length is approximated by the one of an infinitely long staff for friciton orthogonal to staff axis*/
 
-       LINALG::Matrix<2,2> xrefe;
-       for (int k=0; k<2; ++k)
-       {
-         xrefe(0,k) = Nodes()[k]->X()[0];
-         xrefe(1,k) = Nodes()[k]->X()[1];
-       }
-
-       //this derivation need to be checked (hering)
-       lrefe_  = pow( pow(xrefe(1,1)-xrefe(1,0),2) + pow(xrefe(0,1)-xrefe(0,0),2) , 0.5 );
 
        //this section refers to previous implementation, where local forces were not stored in class variable
        //but in columnmap/rowmap vector in paramlist
@@ -506,28 +500,27 @@ void DRT::ELEMENTS::Beam2r::ComputeLocalBrownianForces(ParameterList& params)
   //fstoch consists of nnode*2 values, two forces at each node
   LINALG::Matrix<nnode,2> aux;
   for (int i=0; i<nnode; i++)
-  {
     for(int j=0; j<2; j++)
-    {
       aux(i,j) = normalGen.random();
-    }
-  }
-     
-  /*calculation of Brownian forces and damping is based on drag coefficient; this coefficient per unit
-  * length is approximated by the one of an infinitely long staff for friciton orthogonal to staff axis*/
-  double zeta = 4 * PI * lrefe_ * params.get<double>("ETA",0.0);
-  int stochasticorder = params.get<int>("STOCH_ORDER",-2);
-  //if no stochasticorder has been chosen explicitly we exit this function without any action
-  if(stochasticorder == -2)
-    return;
+  
+  //zeta: damping constant per length (~4*pi*eta) times element length
+  DRT::UTILS::IntegrationPoints1D gausspointsdamping(MyGaussRule(nnode,gaussunderintegration));
+  double zeta =  0;
+  for (int gp=0; gp<nnode-1; gp++)//loop through Gauss points
+    zeta += 4*PI*gausspointsdamping.qwgt[gp]*alpha_[gp]* params.get<double>("ETA",0.0);
+  
+  
+  INPAR::STATMECH::FrictionModel frictionmodel = Teuchos::getIntegralValue<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
+    
+
  
   switch(nnode)
   {
     case 2:     
     { 
-      switch(stochasticorder)
+      switch(frictionmodel)
       {
-        case -1:
+        case INPAR::STATMECH::frictionmodel_isotropiclumped:
         {
           //multiply S_loc (cholesky decomposition of C_loc) for C_loc only diagonal
           for (int i=0; i<2; i++)
@@ -537,7 +530,7 @@ void DRT::ELEMENTS::Beam2r::ComputeLocalBrownianForces(ParameterList& params)
           }
         }
         break;
-        case 0:
+        case INPAR::STATMECH::frictionmodel_isotropicconsistent:
         {
           //multiply S_loc(cholesky decomposition of C_loc) for gamma_parallel=gamma_perp
           for (int i=0; i<2; i++)
@@ -547,7 +540,7 @@ void DRT::ELEMENTS::Beam2r::ComputeLocalBrownianForces(ParameterList& params)
           }               
         }
         break;
-        case 1:
+        case INPAR::STATMECH::frictionmodel_anisotropicconsistent:
         {        
           //compute damping coefficients consistently to LiTang2004 assuming that actin filament is
           //discretized by one element only and actin diameter 8nm
@@ -568,14 +561,16 @@ void DRT::ELEMENTS::Beam2r::ComputeLocalBrownianForces(ParameterList& params)
           floc_[1](1,0) = pow(gamma_perp/12.0,0.5)*aux(0,1)+pow(gamma_perp/4.0,0.5)*aux(1,1);                  
         }
         break;
+        default:
+          dserror("\nno action for this friction model specified\n");
       }//end switch stochorder
     }//end nnode=2
     break;
     case 3:
     {
-      switch(stochasticorder)
+      switch(frictionmodel)
       {
-        case -1:
+        case INPAR::STATMECH::frictionmodel_isotropiclumped:
         {
           for (int i=0; i<2; i++)
           {
@@ -586,7 +581,7 @@ void DRT::ELEMENTS::Beam2r::ComputeLocalBrownianForces(ParameterList& params)
           
         }
         break;
-        case 0:
+        case INPAR::STATMECH::frictionmodel_isotropicconsistent:
         {
           for (int i=0; i<2; i++)
           {
@@ -596,19 +591,21 @@ void DRT::ELEMENTS::Beam2r::ComputeLocalBrownianForces(ParameterList& params)
           }
         }
         break;
-        case 1:
+        case INPAR::STATMECH::frictionmodel_anisotropicconsistent:
         {
           dserror("high order not with stochorder 1 implemented");
         }
         break;
+        default:
+          dserror("\nno action for this friction model specified\n");
       }//end switch stochorder
     }//end nnode=3
     break;
     case 4:
     {
-      switch(stochasticorder)
+      switch(frictionmodel)
       {
-        case -1:
+        case INPAR::STATMECH::frictionmodel_isotropiclumped:
         {
           for (int i=0; i<2; i++)
           {
@@ -619,7 +616,7 @@ void DRT::ELEMENTS::Beam2r::ComputeLocalBrownianForces(ParameterList& params)
           }         
         }
         break;
-        case 0:
+        case INPAR::STATMECH::frictionmodel_isotropicconsistent:
         {
           for (int i=0; i<2; i++)
           {
@@ -630,19 +627,21 @@ void DRT::ELEMENTS::Beam2r::ComputeLocalBrownianForces(ParameterList& params)
           }
         }
         break;
-        case 1:
+        case INPAR::STATMECH::frictionmodel_anisotropicconsistent:
         {
           dserror("high order not with stochorder 1 implemented");
         }
         break;
+        default:
+          dserror("\nno action for this friction model specified\n");
       }//end switch stochorder
     }//end nnode=4    
     break;
     case 5:
     {
-      switch(stochasticorder)
+      switch(frictionmodel)
       {
-        case -1:
+        case INPAR::STATMECH::frictionmodel_isotropiclumped:
         {
           for (int i=0; i<2; i++)
           {
@@ -654,7 +653,7 @@ void DRT::ELEMENTS::Beam2r::ComputeLocalBrownianForces(ParameterList& params)
           }         
         }
         break;
-        case 0:
+        case INPAR::STATMECH::frictionmodel_isotropicconsistent:
         {
           for (int i=0; i<2; i++)
           {
@@ -666,11 +665,13 @@ void DRT::ELEMENTS::Beam2r::ComputeLocalBrownianForces(ParameterList& params)
           }
         }
         break;
-        case 1:
+        case INPAR::STATMECH::frictionmodel_anisotropicconsistent:
         {
           dserror("high order not with stochorder 1 implemented");
         }
         break;
+        default:
+          dserror("\nno action for this friction model specified\n");
       }//end switch stochorder
     }
     break;
@@ -695,10 +696,18 @@ inline void DRT::ELEMENTS::Beam2r::CalcBrownian(ParameterList& params,
   
    //get parameters
    double dt = params.get<double>("delta time",0.0);
-   int stochasticorder = params.get<int>("STOCH_ORDER",-2);// polynomial order for interpolation of stochastic line load
-   double zeta = 4 * PI * lrefe_ * params.get<double>("ETA",0.0);
-   //if no stochasticorder has been chosen explicitly we exit this function without any action
-   if(stochasticorder == -2)
+
+   //zeta: damping constant per length (~4*pi*eta) times element length
+   DRT::UTILS::IntegrationPoints1D gausspointsdamping(MyGaussRule(nnode,gaussunderintegration));
+   double zeta =  0;
+   for (int gp=0; gp<nnode-1; gp++)//loop through Gauss points
+     zeta += 4*PI*gausspointsdamping.qwgt[gp]*alpha_[gp]* params.get<double>("ETA",0.0);
+   
+     
+   INPAR::STATMECH::FrictionModel frictionmodel = Teuchos::getIntegralValue<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
+   
+   //if no friction model has been chosen explicitly we exit this function without any action
+   if(frictionmodel == INPAR::STATMECH::frictionmodel_none)
      return;
      
 
@@ -707,10 +716,10 @@ inline void DRT::ELEMENTS::Beam2r::CalcBrownian(ParameterList& params,
     {
     case 2:     
     { 
-     switch(stochasticorder)
+     switch(frictionmodel)
        {
        //simple isotropic model of Brownian motion with uncorrelated nodal forces
-       case -1:
+       case INPAR::STATMECH::frictionmodel_isotropiclumped:
        {
          
          //calc brownian damp matrix 
@@ -746,7 +755,7 @@ inline void DRT::ELEMENTS::Beam2r::CalcBrownian(ParameterList& params,
        break;
        
        //isotropic model of Brownian motion with correlated forces
-       case 0:
+       case INPAR::STATMECH::frictionmodel_isotropicconsistent:
        {           
          //calc brownian damp matrix 
          if (stiffmatrix != NULL) // necessary to run stiffmatrix control routine
@@ -779,7 +788,7 @@ inline void DRT::ELEMENTS::Beam2r::CalcBrownian(ParameterList& params,
        }//end case 0
        break;
        //anisotropic model of Brownian motion with correlated nodal forces
-       case 1:
+       case INPAR::STATMECH::frictionmodel_anisotropicconsistent:
        {           
         
          /* This section is to calc the angle for a geometrical midpoint triad due to the angles stored at nodes
@@ -957,15 +966,17 @@ inline void DRT::ELEMENTS::Beam2r::CalcBrownian(ParameterList& params,
   
        }//end case 1 
        break;
+       default:
+         dserror("\nno action for this friction model specified\n");
        
       }//switch       
     }//end nnode=2
     break;
     case 3:
     {
-      switch(stochasticorder)
+      switch(frictionmodel)
       {
-        case -1:
+        case INPAR::STATMECH::frictionmodel_isotropiclumped:
         {
           if (stiffmatrix != NULL) // necessary to run stiffmatrix control routine
            {
@@ -999,7 +1010,7 @@ inline void DRT::ELEMENTS::Beam2r::CalcBrownian(ParameterList& params,
            }
         }
         break;
-        case 0:
+        case INPAR::STATMECH::frictionmodel_isotropicconsistent:
        {           
          //calc brownian damp matrix 
          if (stiffmatrix != NULL) // necessary to run stiffmatrix control routine
@@ -1041,19 +1052,21 @@ inline void DRT::ELEMENTS::Beam2r::CalcBrownian(ParameterList& params,
          }         
        }//end case 0
         break;
-        case 1:
+        case INPAR::STATMECH::frictionmodel_anisotropicconsistent:
         {
           dserror("high order not with stochorder 1");
         }
         break;
+        default:
+          dserror("\nno action for this friction model specified\n");
       }//end switch stochorder
     }//end nnode=3
     break;
     case 4:
     {
-      switch(stochasticorder)
+      switch(frictionmodel)
       {
-        case -1:
+        case INPAR::STATMECH::frictionmodel_isotropiclumped:
         {
           if (stiffmatrix != NULL) // necessary to run stiffmatrix control routine
            {
@@ -1088,7 +1101,7 @@ inline void DRT::ELEMENTS::Beam2r::CalcBrownian(ParameterList& params,
            }
         }
         break;
-        case 0:
+        case INPAR::STATMECH::frictionmodel_isotropicconsistent:
        {           
          //calc brownian damp matrix 
          if (stiffmatrix != NULL) // necessary to run stiffmatrix control routine
@@ -1139,19 +1152,21 @@ inline void DRT::ELEMENTS::Beam2r::CalcBrownian(ParameterList& params,
          }         
        }//end case 0
         break;
-        case 1:
+        case INPAR::STATMECH::frictionmodel_anisotropicconsistent:
         {
           dserror("high order not with stochorder 1");
         }
         break;
+        default:
+          dserror("\nno action for this friction model specified\n");
       }//end switch stochorder
     }//end case 4     
     break;
     case 5:
     {
-      switch(stochasticorder)
+      switch(frictionmodel)
       {
-        case -1:
+        case INPAR::STATMECH::frictionmodel_isotropiclumped:
         {
           if (stiffmatrix != NULL) // necessary to run stiffmatrix control routine
            {
@@ -1189,7 +1204,7 @@ inline void DRT::ELEMENTS::Beam2r::CalcBrownian(ParameterList& params,
            }
         }
         break;
-        case 0:
+        case INPAR::STATMECH::frictionmodel_isotropicconsistent:
        {           
          //calc brownian damp matrix 
          if (stiffmatrix != NULL) // necessary to run stiffmatrix control routine
@@ -1255,11 +1270,13 @@ inline void DRT::ELEMENTS::Beam2r::CalcBrownian(ParameterList& params,
          }         
        }//end case 0
         break;
-        case 1:
+        case INPAR::STATMECH::frictionmodel_anisotropicconsistent:
         {
           dserror("high order not with stochorder 1");
         }
         break;
+        default:
+          dserror("\nno action for this friction model specified\n");
       }//end switch stochorder
     }  
     break;
