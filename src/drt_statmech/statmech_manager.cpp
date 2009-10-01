@@ -544,20 +544,15 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
        
         double f = 0;//mean value of force
         double d = 0;//Displacement
-        int n=0; //Num of Forcesensors at the Top of the cube
         for(int i = 0; i < forcesensor_->MyLength(); i++)//changed
         {
           if( (*forcesensor_)[i] == 1)
              {
                f += fint[i];
-               d =  dis[i];
-               n++;
+               d =  dis[i];          
              }
          }
         
-        //mean value over all force sensor nodes
-        f=f/n;//<f>
-      
         //Putting time, displacement, meanforce  in Filestream
         filecontent << "   "<< d << "   " << f << "   " << discret_.NumMyRowElements() << endl; //changed
         //writing filecontent into output file and closing it
@@ -934,7 +929,6 @@ void StatMechManager::StatMechInitOutput(const int ndim,const double& dt)
       
     }
     break;
-    //measurement of viscoelastic properties should be carried out by means of force sensors
     case INPAR::STATMECH::statout_viscoelasticity:
     {
       //pointer to file into which each processor writes the output related with the dof of which it is the row map owner
@@ -950,7 +944,7 @@ void StatMechManager::StatMechInitOutput(const int ndim,const double& dt)
     
       fp = fopen(outputfilename.str().c_str(), "w");
         
-      filecontent << "Output for measurement of viscoelastic properties written by processor "<< discret_.Comm().MyPID() << endl;
+      //filecontent << "Output for measurement of viscoelastic properties written by processor "<< discret_.Comm().MyPID() << endl;
          
       // move temporary stringstream to file and close it
       fprintf(fp,filecontent.str().c_str());
@@ -1313,49 +1307,6 @@ void StatMechManager::DelCrosslinkers(const double& dt, const Epetra_Map& nodero
   
 }//void DelCrosslinkers(const Epetra_Vector& delcrosslinkercol)
 
-/*----------------------------------------------------------------------*
- | updates system damping matrix and either external force vector or    |
- | displacement vector according to influence of thermal bath (public)  |
- |                                                           cyron 10/08|
- *----------------------------------------------------------------------*/
-void StatMechManager::StatMechBrownian(ParameterList& params, RCP<Epetra_Vector> dis, RCP<Epetra_Vector> browniancol)
-{   
-  /*declaration of a column and row map Epetra_Vector for evaluation of statistical forces or Brownian stets in space;
-   *  note: zero initilization mandatory for correct computations later on*/
-  RCP<Epetra_Vector>    brownianrow;
-  brownianrow = LINALG::CreateVector(*discret_.DofRowMap(),true);
-  
-  //defining parameter list passed down to the elements in order to evalute statistical forces down there
-  ParameterList pstat;
-  pstat.set("action","calc_brownian");
-  pstat.set("delta time",params.get<double>("delta time",0.0));
-  pstat.set("KT",statmechparams_.get<double>("KT",0.0));
-  pstat.set("ETA",statmechparams_.get<double>("ETA",0.0));
-  pstat.set("STOCH_ORDER",statmechparams_.get<int>("STOCH_ORDER",0));
-  
-  /*note: the column map statistical force vector is passed down via the parameter list and not as a systemvector 
-   * so that assembly is not done by the evaluate method itself, but elementwise; this is in order to account for the
-   * special assembly needs of randomly evaluated variables: the evaluate method of the discretization uses the LINALG
-   * assembly method in which a processor assembles to the element of the global vector only if the processor is the 
-   * row owner of the related DOF; this is efficient for global row map vectors, but does not assemble correctly if a 
-   * global column map vector is used*/
-  pstat.set("statistical vector",browniancol);
-  
-  //evaluation of statistical Brownian forces  on column map vector
-  discret_.SetState("displacement",dis); //during evaluation of statistical forces or steps in space access to current displacement possible
-  discret_.Evaluate(pstat,null,null,null,null,null);
-  discret_.ClearState();
- 
-  
-  /*exporting col map statistical force vector to a row map vector additively, i.e. in such a way that a 
-   * vector element with a certain GID in the final row vector is the sum of all elements of the column 
-   * vector related to the same GID*/
-  Epetra_Export dofexporter(*discret_.DofColMap(),*discret_.DofRowMap());
-  brownianrow->Export(*browniancol,dofexporter,Add);
-  
-
-  return;
-} // StatMechManager::StatMechBrownian()
 
 /*----------------------------------------------------------------------*
  | (public) writing restart information for manager objects   cyron 12/08|
