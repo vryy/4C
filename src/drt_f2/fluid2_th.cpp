@@ -1402,9 +1402,10 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcSysmatAndResidual(Fluid2* ele,
       dserror("distype not supported");
   }
 
-  RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
+  //RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
+  RCP<const Epetra_Vector> velnp = discretization.GetState("velaf");
   //RCP<const Epetra_Vector> vedenp = discretization.GetState("vedenp");
-  RCP<const Epetra_Vector> vescnp = discretization.GetState("scanp");
+  RCP<const Epetra_Vector> vescnp = discretization.GetState("scaaf");
   RCP<const Epetra_Vector> hist = discretization.GetState("hist");
   RCP<const Epetra_Vector> dispnp;
   RCP<const Epetra_Vector> gridv;
@@ -1540,8 +1541,9 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcSysmatAndResidual(Fluid2* ele,
 
   // One-step-Theta: timefac = theta*dt
   // BDF2:           timefac = 2/3 * dt
-  const double timefac = params.get<double>("thsl",-1.0);
-  if (timefac < 0.0) dserror("No thsl supplied");
+  const double theta = params.get<double>("theta",-1.0);
+  const double timefac = dt * theta;
+  if (timefac < 0.0) dserror("Negative time-integration parameter or time-step length supplied");
 
   // initialise the Smagorinsky constant Cs to zero
   double Cs            = 0.0;

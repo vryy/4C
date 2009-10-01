@@ -78,14 +78,6 @@ UZAWAALGO iterative
 KIND None
 ------------------------------------------------STRUCTURAL CONTACT
 ------------------------------------------------STATISTICAL MECHANICS
-THERMALBATH None
-GRADIENT 0.0
-KT 4.047522e-3
-ETA 1e-3
-DYN_CROSSLINKERS No
-K_OFF 0.0
-R_LINK 0.0
-STOCH_ORDER 0
 -----------------------------------------------------FLUID DYNAMIC
 LOWMACH No
 DYNAMICTYP Nlin_Time_Int

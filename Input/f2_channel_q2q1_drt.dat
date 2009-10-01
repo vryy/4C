@@ -107,7 +107,7 @@ COUPLING_AUXPLANE   No
 THERMALBATH         none
 SPECIAL_OUTPUT      none
 START_FACTOR        0.0
-GRADIENT            0.0
+//GRADIENT            0.0
 KT                  4.047522e-3
 ETA                 1e-3
 DYN_CROSSLINKERS    No
