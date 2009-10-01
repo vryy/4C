@@ -83,7 +83,7 @@ namespace XFEM
         xfemconditionlabel_(other.xfemconditionlabel_),
         type_(other.type_)
       {
-        assert(&other != this);
+        dsassert(&other != this, "self copy not allowed");
         return;
       }
 
@@ -436,7 +436,7 @@ namespace XFEM
 
     private:
 
-      //! a global id used to distuinguish several surfaces within one element
+      //! a global id used to distinguish several surfaces within one element
       int xfemconditionlabel_;
       //! the specific type of enrichment
       EnrType type_;
