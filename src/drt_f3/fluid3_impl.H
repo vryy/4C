@@ -144,7 +144,6 @@ namespace ELEMENTS
       \param material         (i) fluid material
       \param time             (i) current simulation time
       \param timefac          (i) time discretization factor
-      \param eosfac           (i) equation-of-state factor
       \param newton           (i) boolean flag for linearisation
       \param loma             (i) boolean flag for potential low-Mach-number solver
       \param conservative     (i) boolean flag for conservative form
@@ -165,7 +164,6 @@ namespace ELEMENTS
       \param Cs               (i) Smagorinsky model parameter
       \param Cs_delta_sq      (i) Model parameter computed by dynamic Smagorinsky
                                   approach (Cs*h*h)
-      \param visceff          (i) viscosity + subgrid viscosity
       \param l_tau            (i) viscous length scale, required for van driest
                                   damping function and defined on input
       */
@@ -207,80 +205,10 @@ namespace ELEMENTS
                 const enum Fluid3::TurbModelAction       turb_mod_action,
                 double&                                  Cs,
                 double&                                  Cs_delta_sq,
-                double&                                  visceff,
                 double&                                  l_tau);
 
 
   private:
-
-    /*!
-      \brief calculate various values at element center: stabilization parameter,
-             (non-linear) viscosity, subgrid viscosity, subgrid velocity
-
-      Options for tau:
-
-      o Franca-Barrenechea-Valentin-Wall:
-           tauMp: Barrenechea, Valentin
-           tauMu: Franca, Valentin
-           tauC : Wall
-
-      o Bazilevs: bazilevs
-           tauM : Bazilevs, Whiting
-           tauC : Bazilevs
-
-      o Codina: codina
-           tauMp: Barrenechea, Valentin
-           tauMu: Franca, Valentin
-           tauC : Codina
-
-      \param ele              (i) the element those matrix is calculated
-      \param evelaf           (i) nodal velocities at n+alpha_F/n+1
-      \param fsevelaf         (i) fine-scale nodal velocities at n+alpha_F/n+1
-      \param epreaf           (i) nodal pressure at n+alpha_F/n+1
-      \param eaccam           (i) nodal accelerations at n+alpha_M
-      \param emhist           (i) time rhs for momentum equation
-      \param sgvelvisc        (o) subgrid-velocity/viscosity vector
-      \param dt               (i) timestep
-      \param timefac          (i) time discretization factor
-      \param loma             (i) boolean flag for potential low-Mach-number solver
-      \param conservative     (i) boolean flag for conservative form
-      \param sgvel            (i) boolean flag for subgrid-scale velocity
-      \param is_genalpha      (i) boolean flag for generalized-alpha time integration
-      \param higher_order_ele (i) keep or drop second derivatives
-      \param fssgv            (i) flag for type of fine-scale subgrid viscosity
-      \param whichtau         (i) selecting available tau definition
-      \param turb_mod_action  (i) selecting turbulence model (none, Smagorisky,
-                                  dynamic Smagorinsky, Smagorinsky with van Driest
-                                  damping for channel flows)
-      \param Cs               (i) Smagorinsky model parameter
-      \param Cs_delta_sq      (i) Model parameter computed by dynamic Smagorinsky
-                                  approach (Cs*h*h)
-      \param visceff          (i) viscosity + subgrid viscosity
-      \param l_tau            (i) viscous length scale, required for van driest
-                                  damping function and defined on input
-    */
-    void Caltau(Fluid3*                                 ele,
-                const LINALG::Matrix<3,iel>&            evelaf,
-                const LINALG::Matrix<3,iel>&            fsevelaf,
-                const LINALG::Matrix<iel,1>&            epreaf,
-                const LINALG::Matrix<3,iel>&            eaccam,
-                const LINALG::Matrix<3,iel>&            emhist,
-                LINALG::Matrix<4*iel,1>&                sgvelvisc,
-                const double                            timefac,
-                const double                            vol,
-                const bool                              loma,
-                const bool                              conservative,
-                const bool                              sgvel,
-                const bool                              is_genalpha,
-                const bool                              higher_order_ele,
-                const enum Fluid3::FineSubgridVisc      fssgv,
-                const enum Fluid3::TauType              whichtau,
-                const enum Fluid3::TurbModelAction      turb_mod_action,
-                double&                                 Cs,
-                double&                                 Cs_delta_sq,
-                double&                                 visceff,
-                double&                                 l_tau);
-
 
     /*!
      * \brief calculate body force from node condition
@@ -311,6 +239,69 @@ namespace ELEMENTS
                            const LINALG::Matrix<iel,1>&       escaaf,
                            const LINALG::Matrix<iel,1>&       escaam,
                            const bool                         is_genalpha);
+
+    /*!
+      \brief calculate (all-scale) subgrid viscosity
+    */
+    void CalcSubgrVisc(Fluid3*                             ele,
+                       const LINALG::Matrix<3,iel>&        evelaf,
+                       LINALG::Matrix<4*iel,1>&            sgvelvisc,
+                       const double                        vol,
+                       const enum Fluid3::TurbModelAction  turb_mod_action,
+                       double&                             Cs,
+                       double&                             Cs_delta_sq,
+                       double&                             l_tau,
+                       const bool                          transfer);
+
+    /*!
+      \brief calculate fine-scale subgrid viscosity
+    */
+    void CalcFineScaleSubgrVisc(Fluid3*                             ele,
+                                const LINALG::Matrix<3,iel>&        evelaf,
+                                const LINALG::Matrix<3,iel>&        fsevelaf,
+                                LINALG::Matrix<4*iel,1>&            sgvelvisc,
+                                const double                        vol,
+                                const enum Fluid3::FineSubgridVisc  fssgv,
+                                double&                             Cs,
+                                const bool                          transfer);
+
+    /*!
+      \brief calculate stabilization parameter
+
+      Options for tau:
+
+      o Franca-Barrenechea-Valentin-Wall:
+           tauMp: Barrenechea, Valentin
+           tauMu: Franca, Valentin
+           tauC : Wall
+
+      o Bazilevs: bazilevs
+           tauM : Bazilevs, Whiting
+           tauC : Bazilevs
+
+      o Codina: codina
+           tauMp: Barrenechea, Valentin
+           tauMu: Franca, Valentin
+           tauC : Codina
+    */
+    void CalcStabParameter(const double               timefac,
+                           const double               vol,
+                           const enum Fluid3::TauType whichtau);
+
+    /*!
+      \brief calculate subgrid-scale velocity at element center
+             for transfer to coupled scalar transport solver
+    */
+    void CalcSubgrVelocity(Fluid3*                      ele,
+                           const LINALG::Matrix<3,iel>& evelaf,
+                           const LINALG::Matrix<iel,1>& epreaf,
+                           const LINALG::Matrix<3,iel>& eaccam,
+                           const LINALG::Matrix<3,iel>& emhist,
+                           LINALG::Matrix<4*iel,1>&     sgvelvisc,
+                           const double                 timefac,
+                           const bool                   loma,
+                           const bool                   is_genalpha,
+                           const bool                   higher_order_ele);
 
     /*!
       \brief calculate rate of strain of (fine-scale) velocity
@@ -414,9 +405,8 @@ namespace ELEMENTS
     LINALG::Matrix<3,1> gradp_;
     //! the stabilisation parameters
     LINALG::Matrix<3,1> tau_;
-    // this array once had three dimensions, I combined the first two
-    // to one.
     //! viscous term including 2nd derivatives
+    //! (This array once had three dimensions, now the first two are combined to one.)
     LINALG::Matrix<3*3,iel> viscs2_;
     //! linearisation of convection, convective part
     LINALG::Matrix<iel,1> conv_c_;
@@ -447,10 +437,14 @@ namespace ELEMENTS
     double det_;
     //! integration factor
     double fac_;
-    //! viscosity
+    //! physical viscosity
     double visc_;
-    //! artificial viscosity
-    double vart_;
+    //! (all-scale) subgrid viscosity
+    double sgvisc_;
+    //! effective viscosity = physical viscosity + (all-scale) subgrid viscosity
+    double visceff_;
+    //! fine-scale subgrid viscosity
+    double fssgvisc_;
     //! time-step length
     double dt_;
     //! factor for right-hand side due to time-integration scheme
@@ -473,8 +467,10 @@ namespace ELEMENTS
     double thermpressadd_;
     //! global velocity derivatives in gausspoint w.r.t x,y,z at t_(n)
     LINALG::Matrix<3,3> vderxyn_;
-    //! scalar gradient
-    LINALG::Matrix<3,1> grad_sca_;
+    //! scalar gradient at t_(n+alpha_F) or t_(n+1)
+    LINALG::Matrix<3,1> grad_scaaf_;
+    //! scalar gradient at t_(n)
+    LINALG::Matrix<3,1> grad_scan_;
     //! convective scalar term at t_(n+alpha_F) or t_(n+1)
     double conv_scaaf_;
     //! convective scalar term at t_(n)

@@ -191,9 +191,7 @@ int DRT::ELEMENTS::Fluid2Stationary<distype>::Evaluate(
   {
     const string fssgvdef = params.get<string>("fs subgrid viscosity","No");
 
-    if (fssgvdef == "artificial_all")         fssgv = Fluid2::artificial_all;
-    else if (fssgvdef == "artificial_small")  fssgv = Fluid2::artificial_small;
-    else if (fssgvdef == "Smagorinsky_all")   fssgv = Fluid2::smagorinsky_all;
+    if (fssgvdef == "Smagorinsky_all")        fssgv = Fluid2::smagorinsky_all;
     else if (fssgvdef == "Smagorinsky_small") fssgv = Fluid2::smagorinsky_small;
   }
 
@@ -1565,29 +1563,8 @@ void DRT::ELEMENTS::Fluid2Stationary<distype>::CalTauStationary(
   tau_(2) = 0.5*vel_norm*hk*xi_tau_c;
 
   /*------------------------------------------- compute subgrid viscosity ---*/
-  if (fssgv == Fluid2::artificial_all or fssgv == Fluid2::artificial_small)
-  {
-    double fsvel_norm = 0.0;
-    if (fssgv == Fluid2::artificial_small)
-    {
-      // get fine-scale velocities at element center
-      fsvelint_.Multiply(fsevelnp, funct_);
-
-      // get fine-scale velocity norm
-      fsvel_norm = fsvelint_.Norm2();
-    }
-    // get all-scale velocity norm
-    else fsvel_norm = vel_norm;
-
-    /*----------------------------- compute artificial subgrid viscosity ---*/
-    const double re_sv = mk * fsvel_norm * hk / visc; /* convective : viscous forces */
-    const double xi_sv = DMAX(re_sv,1.0);
-
-    vart_ = (DSQR(hk)*mk*DSQR(fsvel_norm))/(2.0*visc*xi_sv);
-
-  }
-  else if (fssgv == Fluid2::smagorinsky_all or
-           fssgv == Fluid2::smagorinsky_small)
+  if (fssgv == Fluid2::smagorinsky_all or
+      fssgv == Fluid2::smagorinsky_small)
   {
     //
     // SMAGORINSKY MODEL

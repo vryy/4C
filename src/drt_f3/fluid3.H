@@ -467,8 +467,6 @@ private:
   enum FineSubgridVisc
   {
     no_fssgv,
-    artificial_all,
-    artificial_small,
     smagorinsky_all,
     smagorinsky_small
   };

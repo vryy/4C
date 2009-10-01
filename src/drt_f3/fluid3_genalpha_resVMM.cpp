@@ -195,9 +195,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
   {
     const string fssgvdef = params.get<string>("fs subgrid viscosity","No");
 
-    if (fssgvdef == "artificial_all")         fssgv = Fluid3::artificial_all;
-    else if (fssgvdef == "artificial_small")  fssgv = Fluid3::artificial_small;
-    else if (fssgvdef == "Smagorinsky_all")   fssgv = Fluid3::smagorinsky_all;
+    if (fssgvdef == "Smagorinsky_all")        fssgv = Fluid3::smagorinsky_all;
     else if (fssgvdef == "Smagorinsky_small") fssgv = Fluid3::smagorinsky_small;
   }
 
@@ -12767,7 +12765,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::SetElementData(
   // ---------------------------------------------------------------------------
   // Initialisation of tau computation: mk and hk
 
-  // get element type constant mk for tau and the fssgv_artificial approach
+  // get element type constant mk for tau
   switch (distype)
   {
       case DRT::Element::tet4:
@@ -12887,7 +12885,6 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::SetElementData(
   vol_ = wquad*det;
 
   // get element length hk for tau_M and tau_C: volume-equival. diameter/sqrt(3)
-  // the same hk is used for the fssgv_artificial approach
   hk = pow((6.*vol_/PI),(1.0/3.0))/sqrt(3.0);
 
   /*------------------------------------------------------------------*/
@@ -13226,48 +13223,6 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::SetElementData(
       //
       vart_ = Cs * Cs * hk * hk * fsrateofstrain;
     }
-  }
-
-  // ------------------------------------------------------------------
-  // fine scale models based on artificial subgrid viscosities
-  // ------------------------------------------------------------------
-
-  if (fssgv == Fluid3::artificial_all   or
-      fssgv == Fluid3::artificial_small
-    )
-  {
-    double fsvel_normaf = 0.0;
-    if (fssgv == Fluid3::artificial_small)
-    {
-      // SMALL SCALE ARTIFICIAL SUBGRID VISCOSITY MODEL
-      // ----------------------------------------------
-
-      // get fine-scale velocities at element center
-      fsvelintaf_.Multiply(fsevelaf,funct_);
-
-      // get fine-scale velocity norm
-      fsvel_normaf = fsvelintaf_.Norm2();
-    }
-    // get all-scale velocity norm
-    else
-    {
-      // LARGE SCALE ARTIFICIAL SUBGRID VISCOSITY MODEL
-      // ----------------------------------------------
-
-      // get velocities (n+alpha_F,i) at integration point
-      velintaf_.Multiply(evelaf,funct_);
-
-      // get velocity norms
-      const double vel_normaf = velintaf_.Norm2();
-
-      fsvel_normaf = vel_normaf;
-    }
-
-    /*----------------------------- compute artificial subgrid viscosity ---*/
-    const double re = mk * fsvel_normaf * hk / visc; /* convective : viscous forces */
-    const double xi = DMAX(re,1.0);
-
-    vart_ = (DSQR(hk)*mk*DSQR(fsvel_normaf))/(2.0*visc*xi);
   }
 
   return;

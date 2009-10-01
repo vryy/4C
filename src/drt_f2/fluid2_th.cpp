@@ -2880,28 +2880,7 @@ void DRT::ELEMENTS::Fluid2TH<distype>::Caltau(
   /*------------------------------------------- compute subgrid viscosity ---*/
   if (fssgv != Fluid2::no_fssgv)
   {
-    if (fssgv == Fluid2::artificial_all || fssgv == Fluid2::artificial_small)
-    {
-      double fsvel_norm = 0.0;
-      if (fssgv == Fluid2::artificial_small)
-      {
-        // get fine-scale velocities at element center
-        fsvelint_.Multiply(fsevelnp, funct_);
-
-        // get fine-scale velocity norm
-        fsvel_norm = fsvelint_.Norm2();
-      }
-      // get all-scale velocity norm
-      else fsvel_norm = vel_norm;
-
-      /*----------------------------- compute artificial subgrid viscosity ---*/
-      const double re = mk * dens * fsvel_norm * hk / visc; /* convective : viscous forces */
-      const double xi = DMAX(re,1.0);
-
-      vart_ = (DSQR(hk)*mk*DSQR(dens)*DSQR(fsvel_norm))/(2.0*visc*xi);
-
-    }
-    else if (fssgv == Fluid2::smagorinsky_all or
+    if (fssgv == Fluid2::smagorinsky_all or
         fssgv == Fluid2::smagorinsky_small)
     {
       //

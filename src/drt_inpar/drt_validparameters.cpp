@@ -1254,12 +1254,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("FSSUGRVISC","No","fine-scale subgrid viscosity",
                                tuple<std::string>(
                                  "No",
-                                 "artificial_all",
-                                 "artificial_small",
                                  "Smagorinsky_all",
                                  "Smagorinsky_small"
                                  ),
-                               tuple<int>(0,1,2,3,4),
+                               tuple<int>(0,1,2),
                                &fdyn);
 
   setStringToIntegralParameter<int>("SIMPLER","no",
