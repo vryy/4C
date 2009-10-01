@@ -245,6 +245,9 @@ void dyn_nlnstructural_drt()
         case INPAR::STR::soltech_newtonls:
           genalphaparams.set<string>("equilibrium iteration","line search newton");
         break;
+        case INPAR::STR::soltech_newtonopp:
+          genalphaparams.set<string>("equilibrium iteration","oppositely converging newton");
+        break;
         case INPAR::STR::soltech_newtonmod:
           genalphaparams.set<string>("equilibrium iteration","modified newton");
         break;

@@ -482,6 +482,329 @@ void StruGenAlpha::LineSearchUpdateMidConfiguration(double lambda,
   return;
 }
 
+void StruGenAlpha::OppNewton()
+{
+    const int myrank = discret_.Comm().MyPID();
+
+    //-------------------------------------------------------
+    // get some parameters from parameter list
+    //-------------------------------------------------------
+    double time      = params_.get<double>("total time", 0.0);
+    double dt        = params_.get<double>("delta time", 0.01);
+    double timen     = time + dt;
+    int maxiter      = params_.get<int>("max iterations", 10);
+    bool damping     = params_.get<bool>("damping", false);
+    double beta      = params_.get<double>("beta", 0.292);
+    double gamma     = params_.get<double>("gamma", 0.581);
+    double alpham    = params_.get<double>("alpha m", 0.378);
+    double alphaf    = params_.get<double>("alpha f", 0.459);
+    string convcheck = params_.get<string>("convcheck","AbsRes_Or_AbsDis");
+    double toldisp   = params_.get<double>("tolerance displacements", 1.0e-07);
+    double tolres    = params_.get<double>("tolerance residual", 1.0e-07);
+    bool printscreen = params_.get<bool>("print to screen",true);
+    bool printerr    = params_.get<bool>("print to err",false);
+    FILE* errfile    = params_.get<FILE*>("err file",NULL);
+    if(!errfile) printerr = false;
+    bool dynkindstat = (params_.get<string>("DYNAMICTYP")=="Static");
+    const bool isadapttol = params_.get<bool>("ADAPTCONV",true);
+    const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
+
+    // check whether mass and damping are present
+    // note: the stiffness matrix might be filled already
+    if(!mass_->Filled()) dserror("mass matrix must be filled here");
+    if(damping) if(!damp_->Filled()) dserror("damping matrix must be filled here");
+
+    // storage of old values to???
+    RCP<Epetra_Vector> disno = rcp(new Epetra_Vector(disn_->Map(),false));
+    RCP<Epetra_Vector> dismo = rcp(new Epetra_Vector(dism_->Map(),false));
+    RCP<Epetra_Vector> velmo = rcp(new Epetra_Vector(velm_->Map(),false));
+    RCP<Epetra_Vector> accmo = rcp(new Epetra_Vector(accm_->Map(),false));
+
+    RCP<Epetra_Vector> fresmq = rcp(new Epetra_Vector(fresm_->Map(),true));
+    RCP<Epetra_Vector> x1vec  = rcp(new Epetra_Vector(disi_->Map(),true));
+    RCP<Epetra_Vector> qvec  = rcp(new Epetra_Vector(disi_->Map(),true));
+    RCP<Epetra_Vector> svec = rcp(new Epetra_Vector(disi_->Map(),true));
+    RCP<Epetra_Vector> xvec = rcp(new Epetra_Vector(disi_->Map(),true));
+    RCP<Epetra_Vector> disim = rcp(new Epetra_Vector(disi_->Map(),true));
+
+    // define some variables for newton iteration
+    int nIter = 0;
+    bool print_unconv = true;
+    double fresmnorm = 1.0e6;    // very huge norm estimation
+    double disinorm  = 1.0e6;
+
+    fresm_->Norm2(&fresmnorm);  // initial state stiff_ and fresm_ has been calculated by predictor
+
+    Epetra_Time timer(discret_.Comm());    // for time measurement
+    timer.ResetStartTime();
+
+    if(!myrank) printf("Initial residual %15.5e\n",fresmnorm);
+
+    // predictor gives us stiff_, fresm_ and disi_ = 0
+
+    // x1 in disim <- scaled with correct lambda
+    // fresm = f_p;
+    // stiff = fderiv_p;
+    // fresmq = f_q (only local)
+    // p = 0???
+
+    // ======================================== EQUILIBRIUM LOOP
+    while(!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) and nIter<=maxiter)
+    {
+        //================== effective rhs is frsm = f_p
+        //------------------ build effective lhs = fderiv_p
+        if(dynkindstat);    // do nothing -> stiff_ is effective matrix
+        else
+        {
+            stiff_->Add(*mass_,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
+            if(damping) stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
+        }
+        stiff_->Complete(); // finalize stiff_
+
+        disi_->PutScalar(0.0);  // disi corresponds to point delta_p in matlab script
+        LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_); // entspricht dirichlet rb unten im matlab skript (rhs + matrix)
+
+        //================== solve for disi = delta_p
+        // Solve K_Teffdyn * IncD = -R ===> IncD_{n+1}
+        if(isadapttol && nIter)
+        {
+            double worst = fresmnorm;
+            double wanted = tolres;
+            solver_.AdaptTolerance(wanted,worst,adaptolbetter);
+        }
+        solver_.Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,nIter==0);
+        solver_.ResetTolerance();
+
+        //----------------------------------------- here we have just delta_p in disi_
+        //x1vec->Update(1.0,*disi_,0.0);
+        x1vec->Update(1.-alphaf,*disi_,0.0);
+
+        /*{   // test print out
+            double temp = 0.0;
+            x1vec->Norm2(&temp); printf("x1norm = %5.5e  ",temp);
+        }*/
+
+        //----------------------------------------- store the current values
+        disno->Update(1.0,*disn_,0.0);
+        dismo->Update(1.0,*dism_,0.0);
+        velmo->Update(1.0,*velm_,0.0);
+        accmo->Update(1.0,*accm_,0.0);
+
+        //========================================= newton step with double step size
+        // we need point (qvec,fresmq)
+        double stepWidth = 2.;
+        qvec->Update(stepWidth*(1.-alphaf),*disi_,0.0);
+
+        // evaluate for f_q = fresmq
+        // get disnm_, velnm_ and accm_ for stepWidth
+        LineSearchUpdateMidConfiguration(stepWidth,disi_,disno,dismo,velmo,accmo,dt,alphaf,alpham,beta,gamma);
+
+        // zerofy velocity and acceleration in case of quasistatics
+        if(dynkindstat)
+        {
+            velm_->PutScalar(0.0);
+            accm_->PutScalar(0.0);
+        }
+
+        //------------------ compute internal forces and stiffness for second newton step
+        {
+            stiff_->Zero();             // zero out stiff_ and fint_
+            fint_->PutScalar(0.0);
+            ParameterList p;
+            p.set("action","calc_struct_nlnstiff");
+            p.set("total time",timen);
+            p.set("delta time",dt);
+            p.set("alpha f",alphaf);
+            discret_.ClearState();
+            // do not touch disi_ (we need it later untouched)
+            disim->Update(1.0,*qvec,0.0);
+            // scale disim -> get mid increment
+            //disim->Scale(1.-alphaf);
+            discret_.SetState("residual displacement",disim);   // ok, give disim to discretization for evaluation
+            discret_.SetState("displacement",dism_);
+            discret_.SetState("velocity",velm_);
+            discret_.Evaluate(p,stiff_,null,fint_,null,null);   // evaluate
+            discret_.ClearState();
+            // TODO: note: we don't need stiff_ evaluated here, we only need fint_
+            // don't finalize stiff_. it will be finalized at start of equilibrium loop
+            // stiff has non cleared dirichlet bc's!
+        }
+        //------------------- compute residual forces for second newton step (->fresmq)
+        if(dynkindstat)
+        {
+            // static residual Res = F_int - F_ext
+            fresmq->PutScalar(0.0);
+        }
+        else
+        {
+            // Res = M*A_{n+1-alpha_m} + C*V_{n+1-alpha_f} + F_int(D_{n+1-alpha_f}) - F_{ext;n+1-alpha_f}
+            // add inertia mid-forces
+            mass_->Multiply(false,*accm_,*finert_);
+            fresmq->Update(1.0,*finert_,0.0);
+            // add viscous mid-forces
+            if(damping)
+            {
+                damp_->Multiply(false,*velm_,*fvisc_);
+                fresmq->Update(1.0,*fvisc_,1.0);
+            }
+        }
+        // add static mid-balance
+        fresmq->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
+        { // blank residual DOFs that are on Dirichlet BCs
+            Epetra_Vector fresmcopy(*fresmq);
+            fresmq->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
+        }
+
+        // ok, now we have (qvec,fresmq)
+
+        /*{ // test print out
+            fresmq->Norm2(&fresmnorm);
+            disim->Norm2(&disinorm); printf("fresmq -> ");
+            if(!myrank_ and (printscreen or printerr))
+            {
+                PrintNewton(printscreen,printerr,print_unconv,errfile,timer,nIter,maxiter,fresmnorm,disinorm,convcheck);
+            }
+        }*/
+
+        // ============================= get optimal mu for intersection point (p,f(p)) -- (q,f(q))
+        // (0,fresm_) -- (qvec,fresmq)
+        double temp = 0.0;
+        double zaehler = 0.0;
+        double nenner = 0.0;
+        fresm_->Dot(*fresm_,&temp); // f_p'*f_p
+        zaehler = temp;
+        fresm_->Dot(*fresmq,&temp); // f_p'*f_q
+        zaehler -= temp;
+
+        // we don't need fresmq any more, so we just set fresmq <- fresmq - fresm_ = (f_q-f_p)
+        fresmq->Update(-1.0,*fresm_,1.0);
+        fresmq->Dot(*fresmq,&nenner);   // (f_q-f_p)'*(f_q-f_p)
+
+        if(nenner==0.0) dserror("nenner must not be zero!");
+        double mu = zaehler/nenner;
+
+        // calculate intersection point
+        svec->Update(mu,*qvec,0.0); // because pvec = 0!
+
+        {
+            double temp = 0.0; svec->Norm2(&temp);
+            //printf("mu: %5.5e  svecnorm: %5.5e   ",mu,temp);
+            printf("mu: %5.5e   ",mu);
+        }
+
+        // ============================================ get average value
+        xvec->Update(1.0,*x1vec,1.0,*svec,0.0);
+        xvec->Scale(0.5);
+
+        // ============================================ evaluate fresm_, stiff_ at point x
+        // that means xvec corresponds to increment disi_
+
+        // update mid configuration
+        dism_->Update(1.0,*xvec,1.0,*dismo,0.0);
+        velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
+        velm_->Update((beta-(1.0-alphaf)*gamma)/beta,*vel_,(1.0-alphaf)*(2.*beta-gamma)*dt/(2.*beta),*acc_,gamma/(beta*dt));
+        accm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
+        accm_->Update(-(1.-alpham)/(beta*dt),*vel_,(2.*beta-1.+alpham)/(2.*beta),*acc_,(1.-alpham)/((1.-alphaf)*beta*dt*dt));
+
+        if(dynkindstat)
+        {
+            velm_->PutScalar(0.0);
+            accm_->PutScalar(0.0);
+        }
+
+        // ----------------- compute internal forces and stiffness
+        // now we are really interested in stiff_ and fresm_, input is xvec
+        {
+            stiff_->Zero();
+            fint_->PutScalar(0.0);
+            ParameterList p;
+            p.set("action","calc_struct_nlnstiff");
+            p.set("total time",timen);
+            p.set("delta time",dt);
+            p.set("alpha f",alphaf);
+            discret_.ClearState();
+            discret_.SetState("residual displacement",xvec);
+            discret_.SetState("displacement",dism_);
+            discret_.SetState("velocity",velm_);
+            discret_.Evaluate(p,stiff_,null,fint_,null,null);
+            discret_.ClearState();
+        }   // do not finalize matrix
+
+        // now we're computing residual forces
+        // -> fresm_ :-)
+        if(dynkindstat)
+        {
+            // static residual Res = F_int - F_ext
+            fresm_->PutScalar(0.0);
+        }
+        else
+        {
+            // Res = M*A_{n+1-alpham}+C*V_{n+1-alphaf}+F_int(D_{n+1-alphaf})-F_{ext;n+1-alphaf}
+            // add inertia mid-forces
+            mass_->Multiply(false,*accm_,*finert_);
+            fresm_->Update(1.0,*finert_,0.0);
+            // add viscous mid-forces
+            if(damping)
+            {
+                damp_->Multiply(false,*velm_,*fvisc_);
+                fresm_->Update(1.0,*fvisc_,1.0);
+            }
+        }
+        // add static mid-balance
+        fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
+
+        // blank residual DOFs that are on Dirichlet BCs
+        {
+            Epetra_Vector fresmcopy(*fresm_);
+            fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
+        }
+        // Dirichlet DOFs in stiff_ are eliminated at start of next step
+
+        // recompute norms
+        // we need fresmnorm and disinorm (that is norm of xvec)
+        xvec->Norm2(&disinorm);
+        fresm_->Norm2(&fresmnorm);
+
+        //================ give user some feedback
+        if(!myrank_ and (printscreen or printerr))
+        {
+
+            // wie viel unterschied zwischen x1 und x??
+              x1vec->Update(-1.0,*xvec,1.0);
+              double temp = 0.0;
+              x1vec->Norm2(&temp);
+              printf("||x1-x||_2 = %8.8e   ",temp);
+
+            PrintNewton(printscreen,printerr,print_unconv,errfile,timer,nIter,maxiter,fresmnorm,disinorm,convcheck);
+        }
+
+        //================ increment loop index
+        ++nIter;
+    }
+    // ==================================== END EQUILIBRIUM LOOP
+
+    print_unconv = false;
+
+    //-------------------------------- test whether max iterations was hit
+    if (nIter>=maxiter)
+    {
+       dserror("Newton unconverged in %d iterations",nIter);
+    }
+    else
+    {
+      if (constrMan_->HaveMonitor())
+      {
+        constrMan_->ComputeMonitorValues(dism_);
+      }
+      if (!myrank_ and printscreen)
+      {
+        PrintNewton(printscreen,printerr,print_unconv,errfile,timer,nIter,maxiter,
+                    fresmnorm,disinorm,convcheck);
+      }
+    }
+
+    params_.set<int>("num iterations",nIter);
+}
 
 
 
@@ -1048,6 +1371,7 @@ void StruGenAlpha::PrintControlledPredictor(string convcheck, double fresmnorm,
   printf(" Lambda %10.5e\n",lambda);
   fflush(stdout);
 }
+
 
 
 #endif  // #ifdef CCADISCRET

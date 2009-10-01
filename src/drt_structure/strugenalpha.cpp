@@ -178,6 +178,7 @@ fsisurface_(NULL)
 
   // mid-displacements D_{n+1-alpha_f}
   dism_ = LINALG::CreateVector(*dofrowmap,true);
+
   // mid-velocities V_{n+1-alpha_f}
   velm_ = LINALG::CreateVector(*dofrowmap,true);
   // mid-accelerations A_{n+1-alpha_m}
@@ -3387,6 +3388,18 @@ void StruGenAlpha::Integrate()
       double time = params_.get<double>("total time",0.0);
       if (time>=maxtime) break;
     }
+  }
+  else if (equil=="oppositely converging newton")
+  {
+      for (int i=step; i<nstep; ++i)
+      {
+        if      (predictor==1) ConstantPredictor();
+        else if (predictor==2) ConsistentPredictor();
+        OppNewton();
+        UpdateandOutput();
+        double time = params_.get<double>("total time",0.0);
+        if (time>=maxtime) break;
+      }
   }
   else if (equil=="modified newton")
   {

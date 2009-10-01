@@ -163,6 +163,11 @@ public:
   */
   virtual void LineSearchNewton();
 
+  /*!
+  \brief test oppositely converging newton
+  */
+  virtual void OppNewton();
+
 
   /*!
     \brief do classical augmented lagrange for volume constraint
