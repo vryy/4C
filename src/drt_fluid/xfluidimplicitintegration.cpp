@@ -1757,11 +1757,15 @@ void FLD::XFluidImplicitTimeInt::ReadRestart(
     )
 {
 
+  const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
+  const bool gmshdebugout = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1;
+
   const int output_test_step = 999999;
 
   const Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih =
     rcp(new XFEM::InterfaceHandleXFSI(discret_, cutterdiscret));
-  ih->toGmsh(output_test_step);
+  if (gmshdebugout)
+    ih->toGmsh(output_test_step);
 
   // apply enrichments
   std::set<XFEM::PHYSICS::Field> fieldset;
@@ -1780,7 +1784,8 @@ void FLD::XFluidImplicitTimeInt::ReadRestart(
   TransferDofInformationToElements(ih, dofmanager);
 
   // print global and element dofmanager to Gmsh
-  dofmanager->toGmsh(output_test_step);
+  if (gmshdebugout)
+    dofmanager->toGmsh(output_test_step);
 
 
   // get old dofmap, compute new one and get the new one, too
@@ -1815,7 +1820,7 @@ void FLD::XFluidImplicitTimeInt::ReadRestart(
   reader.ReadVector(state_.accnp_ ,"accnp");
   reader.ReadVector(state_.accn_ ,"accn");
 
-  if (discret_->Comm().NumProc() == 1)
+  if (discret_->Comm().NumProc() == 1 and gmshdebugout)
   {
     OutputToGmsh(output_test_step, time_);
   }
@@ -3237,6 +3242,7 @@ void FLD::XFluidImplicitTimeInt::ProjectOldTimeStepValues(
       Teuchos::RCP<Epetra_Vector>    residual_veln = LINALG::CreateVector(*discret_->DofRowMap(),true);
       Teuchos::RCP<Epetra_Vector>    residual_accn = Teuchos::null;//LINALG::CreateVector(*discret_->DofRowMap(),true);
       {
+        const double telebegin=ds_cputime();
         ////////////////////////
         // make a better veln //
         ////////////////////////
@@ -3273,24 +3279,38 @@ void FLD::XFluidImplicitTimeInt::ProjectOldTimeStepValues(
         // finalize the complete matrix
         sysmat_projection_veln->Complete();
 //        sysmat_projection_accn->Complete();
+
+        discret_->Comm().Barrier();
+        const double dtele = ds_cputime()-telebegin;
+        cout << " Time needed for element evaluation and matrix assembly: " << dtele << " s." << endl;
       }
 
-      // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
-      Teuchos::RCP<LINALG::MapExtractor> dbcmaps_projection = Teuchos::rcp(new LINALG::MapExtractor());
-      EvaluateDirichletProjection(discret_, *ih_np_, dbcmaps_projection);
+      {
+        discret_->Comm().Barrier();
+        const double tDBCbegin = ds_cputime();
+        // object holds maps/subsets for DOFs that are known from the old timestep and are discret incompressible
+        Teuchos::RCP<LINALG::MapExtractor> dbcmaps_projection = Teuchos::rcp(new LINALG::MapExtractor());
+        EvaluateDirichletProjection(discret_, *ih_np_, dbcmaps_projection);
 
-      Teuchos::RCP<Epetra_Map> combimap = LINALG::MergeMap(*dbcmaps_projection->CondMap(), *dbcmaps_->CondMap());
-      *dbcmaps_projection = LINALG::MapExtractor(*(discret_->DofRowMap()), combimap);
+        // object holds maps/subsets for DOFs subjected to Dirichlet BCs and fixed values from old time step
+        Teuchos::RCP<Epetra_Map> combinedDBCmap = LINALG::MergeMap(*dbcmaps_projection->CondMap(), *dbcmaps_->CondMap());
+        Teuchos::RCP<LINALG::MapExtractor> combinedDBCmapextractor = Teuchos::rcp(new LINALG::MapExtractor(*(discret_->DofRowMap()), combinedDBCmap));
 
-      // blank residual DOFs which are on Dirichlet BC
-      dbcmaps_projection->InsertCondVector(dbcmaps_projection->ExtractCondVector(state_.veln_), residual_veln);
-//      dbcmaps_projection->InsertCondVector(dbcmaps_projection->ExtractCondVector(state_.accn_), residual_accn);
+        // blank residual DOFs which are Dirichlet Conditions
+        combinedDBCmapextractor->InsertCondVector(combinedDBCmapextractor->ExtractCondVector(state_.veln_), residual_veln);
+  //      dbcmaps_projection->InsertCondVector(dbcmaps_projection->ExtractCondVector(state_.accn_), residual_accn);
 
-      LINALG::ApplyDirichlettoSystem(sysmat_projection_veln,state_.veln_,residual_veln,state_.veln_,*(dbcmaps_projection->CondMap()));
-//      LINALG::ApplyDirichlettoSystem(sysmat_projection_accn,state_.accn_,residual_accn,state_.accn_,*(dbcmaps_projection->CondMap()));
-
+        LINALG::ApplyDirichlettoSystem(sysmat_projection_veln,state_.veln_,residual_veln,state_.veln_,*(combinedDBCmapextractor->CondMap()));
+  //      LINALG::ApplyDirichlettoSystem(sysmat_projection_accn,state_.accn_,residual_accn,state_.accn_,*(dbcmaps_projection->CondMap()));
+        discret_->Comm().Barrier();
+        const double dtDBC = ds_cputime()-tDBCbegin;
+        cout << " Time needed for DBC computation and application: " << dtDBC << " s." << endl;
+      }
       //-------solve for residual displacements to correct incremental displacements
       {
+        discret_->Comm().Barrier();
+        const double tsolvebegin = ds_cputime();
+
         Teuchos::RCP<LINALG::Solver> solver = rcp(new LINALG::Solver(DRT::Problem::Instance()->XFluidProjectionSolverParams(),
             discret_->Comm(),
             DRT::Problem::Instance()->ErrorFile()->Handle()));
@@ -3304,9 +3324,13 @@ void FLD::XFluidImplicitTimeInt::ProjectOldTimeStepValues(
 //        discret_->ComputeNullSpaceIfNecessary(solver->Params());
 //        solver->Solve(sysmat_projection_accn->EpetraOperator(), state_.accn_, residual_accn, true, true);
 //        solver->ResetTolerance();
+
+        discret_->Comm().Barrier();
+        const double dtsolve = ds_cputime()-tsolvebegin;
+        cout << " Time needed for solution: " << dtsolve << " s." << endl;
       }
 
-#if 1
+#if 0
       if ((this->physprob_.fieldset_.find(XFEM::PHYSICS::Pres) != this->physprob_.fieldset_.end()))
       {
         std::stringstream filename;
