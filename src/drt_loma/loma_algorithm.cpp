@@ -211,7 +211,7 @@ void LOMA::Algorithm::GenAlphaOuterLoop()
       ScaTraField().ComputeThermPressure();
 
       // update time derivative of thermodynamic pressure after solution
-      ScaTraField().UpdateTimeDerivative();
+      ScaTraField().UpdateThermPressureTimeDerivative();
 
       // compute values of therm. pressure at intermediate time steps
       ScaTraField().ComputeThermPressureIntermediateValues();
@@ -221,7 +221,7 @@ void LOMA::Algorithm::GenAlphaOuterLoop()
       ScaTraField().ComputeThermPressureFromMassCons();
 
       // update time derivative of thermodynamic pressure after solution
-      ScaTraField().UpdateTimeDerivative();
+      ScaTraField().UpdateThermPressureTimeDerivative();
 
       // compute values of therm. pressure at intermediate time steps
       ScaTraField().ComputeThermPressureIntermediateValues();
@@ -306,14 +306,14 @@ void LOMA::Algorithm::OSTBDF2OuterLoop()
       ScaTraField().ComputeThermPressure();
 
       // update time derivative of thermodynamic pressure after solution
-      ScaTraField().UpdateTimeDerivative();
+      ScaTraField().UpdateThermPressureTimeDerivative();
     }
     else if (consthermpress_=="No_mass")
     {
       ScaTraField().ComputeThermPressureFromMassCons();
 
       // update time derivative of thermodynamic pressure after solution
-      ScaTraField().UpdateTimeDerivative();
+      ScaTraField().UpdateThermPressureTimeDerivative();
     }
 
     // set scalar and thermodynamic pressure values as well as time derivatives
