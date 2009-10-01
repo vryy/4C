@@ -312,11 +312,6 @@ ML_SMOTIMES                     1 1 1 1 1 1
 PARTITION                       Cut_Elements
 SOLVER                          UMFPACK
 ----------------------------------------------STATISTICAL MECHANICS
-DYN_CROSSLINKERS                No
-GRADIENT                        0
-K_OFF                           0
-R_LINK                          0
-THERMALBATH                     None
 ------------------------------------------------------STRUCT SOLVER
 AZBDIAG                         0
 AZCONV                          AZ_r0
