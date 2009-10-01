@@ -318,7 +318,7 @@ namespace DRT
             ) const;
 
         //! condense (u,p,sigma) matrix to (u,p) matrix and store this iterations sub-matrices
-        void CondenseDLMAndStoreOldIterationStep(
+        void CondenseElementStressAndStoreOldIterationStep(
             const Epetra_SerialDenseMatrix& elemat1_uncond,
             const Epetra_SerialDenseVector& elevec1_uncond,
             const Epetra_SerialDenseMatrix& Gds_uncond,

@@ -174,7 +174,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       }
 
       // create an eledofman that has stress unknowns only for intersected elements
-      // Note: condensation for unintersected elements is not handled, but also not needed
+      // Note: condensation for uncut elements is not handled, but also not needed
       if (ih_->ElementIntersected(Id()))
       {
         std::set<XFEM::FieldEnr> enrfieldset;
@@ -309,7 +309,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
                 mat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution, monolithic_FSI, L2);
 
         // condensation
-        CondenseDLMAndStoreOldIterationStep(
+        CondenseElementStressAndStoreOldIterationStep(
             elemat1_uncond, elevec1_uncond,
             *Gds_uncond, *rhsd_uncond,
             elemat1, elevec1,
@@ -402,7 +402,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
                 mat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution, monolithic_FSI, L2);
 
         // condensation
-        CondenseDLMAndStoreOldIterationStep(
+        CondenseElementStressAndStoreOldIterationStep(
             elemat1_uncond, elevec1_uncond,
             *Gds_uncond, *rhsd_uncond,
             elemat1, elevec1,
@@ -842,7 +842,7 @@ void DRT::ELEMENTS::XFluid3::UpdateOldDLMAndDLMRHS(
 
 /*---------------------------------------------------------------------*
  *---------------------------------------------------------------------*/
-void DRT::ELEMENTS::XFluid3::CondenseDLMAndStoreOldIterationStep(
+void DRT::ELEMENTS::XFluid3::CondenseElementStressAndStoreOldIterationStep(
     const Epetra_SerialDenseMatrix& elemat1_uncond,
     const Epetra_SerialDenseVector& elevec1_uncond,
     const Epetra_SerialDenseMatrix& Gds_uncond,
@@ -963,8 +963,6 @@ void DRT::ELEMENTS::XFluid3::CondenseDLMAndStoreOldIterationStep(
           for (size_t j=0;j<ns;j++)
             rhsd(i) += - GdsKssinv(i,j)*fs(j);
       }
-
-
     }
 
     // store current DLM data in iteration history
@@ -1037,7 +1035,6 @@ void integrateShapefunctionT(
     {
       // integrate only in fluid integration cells (works well only with void enrichments!!!)
       labelnp = ih->PositionWithinConditionNP(cellcenter_xyz);
-      const std::set<int> xlabelset(dofman.getUniqueEnrichmentLabels());
       bool compute = false;
       if (labelnp == 0) // fluid
       {

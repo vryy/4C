@@ -74,21 +74,10 @@ Maintainer: Axel Gerstenberger
       const size_t numparamvelz = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velz);
       const size_t numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
       dsassert((numparamvelx == numparamvely) and (numparamvelx == numparamvelz), "assumption violation");
-      // put one here to create arrays of size 1, since they are not needed anyway
-      // in the xfem assembly, the numparam is determined by the dofmanager
-      const size_t numparamtauxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Sigmaxx);
-
       const size_t shpVecSize       = SizeFac<ASSTYPE>::fac*numnode;
-      const DRT::Element::DiscretizationType stressdistype = XFLUID::StressInterpolation3D<DISTYPE>::distype;
-      const size_t shpVecSizeStress = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
-
       if (numparamvelx > shpVecSize)
       {
-        cout << "increase SizeFac for nodal unknowns" << endl;
-      }
-      if (numparamtauxx > shpVecSizeStress)
-      {
-        cout << "increase SizeFac for stress unknowns" << endl;
+        dserror("increase SizeFac for nodal unknowns");
       }
 
       const std::vector<int>& velxdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Velx>());
@@ -131,11 +120,20 @@ Maintainer: Axel Gerstenberger
       const bool tauele_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmaxx, 0) > 0);
       if (tauele_unknowns_present)
       {
+          // put one here to create arrays of size 1, since they are not needed anyway
+          // in the xfem assembly, the numparam is determined by the dofmanager
+          const size_t numparamtauxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Sigmaxx);
           const size_t numparamtauyy = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmayy, 1);
           const size_t numparamtauzz = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmazz, 1);
           const size_t numparamtauxy = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmaxy, 1);
           const size_t numparamtauxz = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmaxz, 1);
           const size_t numparamtauyz = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmayz, 1);
+          const DRT::Element::DiscretizationType stressdistype = XFLUID::StressInterpolation3D<DISTYPE>::distype;
+          const size_t shpVecSizeStress = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
+          if (numparamtauxx > shpVecSizeStress)
+          {
+            dserror("increase SizeFac for stress unknowns");
+          }
           const std::vector<int>& tauxxdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Sigmaxx>());
           const std::vector<int>& tauyydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Sigmayy>());
           const std::vector<int>& tauzzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Sigmazz>());
@@ -813,30 +811,12 @@ void SysmatDomain4(
     {
         const LINALG::Matrix<nsd,1> cellcenter_xyz(cell->GetPhysicalCenterPosition());
 
-        int labelnp = 0;
-
-        if (ASSTYPE == XFEM::xfem_assembly)
-        {
-          // integrate only in fluid integration cells (works well only with void enrichments!!!)
-          labelnp = ih->PositionWithinConditionNP(cellcenter_xyz);
-          const std::set<int> xlabelset(dofman.getUniqueEnrichmentLabels());
-          bool compute = false;
-          if (labelnp == 0) // fluid
-          {
-            compute = true;
-          }
-          if (not compute)
-          {
-            continue; // next integration cell
-          }
-        }
-
         const XFEM::ElementEnrichmentValues enrvals(
               *ele,
               ih,
               dofman,
               cellcenter_xyz,
-              XFEM::Enrichment::approachFromPlus);
+              XFEM::Enrichment::approachUnknown);
 
         const DRT::UTILS::GaussRule3D gaussrule = XFLUID::getXFEMGaussrule<DISTYPE>(ele, xyze, ih->ElementIntersected(ele->Id()),cell->Shape(),params.get<bool>("FAST_INTEGRATION"));
 
@@ -928,12 +908,6 @@ void SysmatDomain4(
                 static LINALG::Matrix<3,shpVecSize> enr_derxy;
                 static LINALG::Matrix<6,shpVecSize> enr_derxy2;
 
-//                const std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
-//                      ih,
-//                      dofman.getUniqueEnrichments(),
-//                      gauss_pos_xyz,
-//                      XFEM::Enrichment::approachUnknown));
-
                 // shape function for nodal dofs
                 enrvals.ComputeEnrichedNodalShapefunction(
                         Velx,
@@ -1022,7 +996,7 @@ void SysmatDomain4(
             }
             else
             {
-
+              const int labelnp = 0;
               const bool was_in_fluid = (ih->PositionWithinConditionN(posx_gp) == 0);
 
               XFLUID::TimeFormulation timeformulation = XFLUID::Eulerian;
