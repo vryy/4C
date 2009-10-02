@@ -1107,7 +1107,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       // convergence check at itemax is skipped for speedup if
       // CONVCHECK is set to L_2_norm_without_residual_at_itemax
       if ((itnum != itemax)
-          ||
+          or
           (params_.get<string>("CONVCHECK")
            !=
            "L_2_norm_without_residual_at_itemax"))
@@ -1293,11 +1293,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 
     // warn if itemax is reached without convergence, but proceed to
     // next timestep...
-    if ((itnum == itemax) and (vresnorm > ittol or presnorm > ittol or
-                             fullresnorm > ittol or
-                             incvelnorm_L2/velnorm_L2 > ittol or
-                             incprenorm_L2/prenorm_L2 > ittol or
-                             incfullnorm_L2/fullnorm_L2 > ittol))
+    if ((itnum > itemax) and stopnonliniter == false)
     {
       stopnonliniter=true;
       if (myrank_ == 0)
@@ -1317,6 +1313,18 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       }
       break;
     }
+
+    // stop if NaNs occur
+    if (std::isnan(vresnorm) or
+        std::isnan(presnorm) or
+        std::isnan(fullresnorm) or
+        std::isnan(incvelnorm_L2/velnorm_L2) or
+        std::isnan(incprenorm_L2/prenorm_L2) or
+        std::isnan(incfullnorm_L2/fullnorm_L2))
+    {
+      dserror("NaN's detected! Quitting...");
+    }
+
 
     //--------- Apply Dirichlet boundary conditions to system of equations
     //          residual displacements are supposed to be zero at
