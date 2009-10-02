@@ -779,6 +779,7 @@ void SCATRA::ScaTraTimIntImpl::OutputMeanScalars()
         {
           f << "| Mean concentration (c_"<<k+1<<") ";
         }
+        f << "\n";
       }
     }
     else
@@ -793,6 +794,7 @@ void SCATRA::ScaTraTimIntImpl::OutputMeanScalars()
       {
         f << (*scalars)[k]/domint << " ";
       }
+      f << "\n";
     }
     f.flush();
     f.close();
