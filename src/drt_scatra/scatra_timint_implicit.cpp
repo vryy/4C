@@ -489,13 +489,9 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
   SetOldPartOfRighthandside();
 
   // -------------------------------------------------------------------
-  //  evaluate Dirichlet boundary conditions (also for time derivative)
+  //         evaluate Dirichlet and Neumann boundary conditions
   // -------------------------------------------------------------------
-  ApplyDirichletBC(time_,phinp_,phidtnp_);
-
-  // -------------------------------------------------------------------
-  //                evaluate Neumann boundary conditions
-  // -------------------------------------------------------------------
+  ApplyDirichletBC(time_,phinp_,Teuchos::null);
   ApplyNeumannBC(time_,phinp_,neumann_loads_);
 
   // -------------------------------------------------------------------

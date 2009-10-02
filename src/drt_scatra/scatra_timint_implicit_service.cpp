@@ -363,7 +363,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialThermPressure()
   thermpressn_ = eleparams.get("thermodynamic pressure", 98100.0);
 
   // initialize also value at n+1
-  // (computed if not constant, otherwise remaining zero)
+  // (computed if not constant, otherwise prescribed value remaining)
   thermpressnp_ = thermpressn_;
 
   // initialize time derivative of thermodynamic pressure at n+1 and n
