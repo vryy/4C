@@ -53,7 +53,7 @@ namespace THR
   //!
   //! This method is applied to the set of ODEs reflecting the second order degree of the governing equations in thermal dynamics:
   //! \f[\left\{\begin{array}{rcl}
-  //!   M \, \dot{T}(t) - M \, R(t) & = & 0
+  //!   M \, \dot{T}(t) - M \, R(t) & = & 0 \\
   //!
   //!   M \, \dot{R}(t) + C \, R(t) + F_{int}(T,t) - F_{ext}(t) & = & 0
   //! \end{array}\right.\f]
