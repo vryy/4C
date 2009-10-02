@@ -31,3 +31,6 @@ src/boundaryconditions/boundaryconditions.tex
 src/struct_mat/struct_mat.tex
 src/postprocessing/postprocessing.tex
 src/emacsgoodies/emacsgoodies.tex
+\part{Miscellaneous math guide}
+src/math_intro/math_intro.tex
+src/surface_int/surface_int.tex
