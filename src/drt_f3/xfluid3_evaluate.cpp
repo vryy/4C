@@ -317,6 +317,12 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
             monolithic_FSI
             );
       }
+
+#if 0
+      if (std::isnan(elevec1.Norm2()))   { cout << *this << endl; dserror("NaNs in elevec1 detected! Quitting..."); }
+      if (std::isnan(elemat1.InfNorm())) { cout << *this << endl; dserror("NaNs in elemat1 detected! Quitting..."); }
+#endif
+
       params.set<double>("L2",L2);
       break;
     }
@@ -411,6 +417,11 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
             );
       }
 
+#if 0
+      if (std::isnan(elevec1.Norm2()))   { cout << *this << endl; dserror("NaNs in elevec1 detected! Quitting..."); }
+      if (std::isnan(elemat1.InfNorm())) { cout << *this << endl; dserror("NaNs in elemat1 detected! Quitting..."); }
+#endif
+
       params.set<double>("L2",L2);
 
 #if 0
@@ -500,6 +511,10 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
               this, ih_, *eleDofManager_, mystate, elemat1, elemat2, elevec1, elevec2,
               pstab, ifaceForceContribution);
 
+#if 0
+      if (std::isnan(elevec1.Norm2()))   { cout << *this << endl; dserror("NaNs in elevec1 detected! Quitting..."); }
+      if (std::isnan(elemat1.InfNorm())) { cout << *this << endl; dserror("NaNs in elemat1 detected! Quitting..."); }
+#endif
 
       break;
     }
