@@ -166,7 +166,12 @@ namespace XFLUID
     for (int iparam = 0; iparam < numparamvelx; ++iparam)
         val += fabs(velinoder(iparam));
 
+    if (val == 0) // can happen, if ALL aprrox derivatives (shp_dx, shp_dy and shp_dz) are zero as in XFEM simulations
+      val = 1.0;
     const double strle = 2.0/val;
+
+    if (std::isinf(strle))
+      dserror("Infinite stream-length detected! Quitting...");
 
     if (instationary)
     {

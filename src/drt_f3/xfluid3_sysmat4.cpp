@@ -178,8 +178,8 @@ Maintainer: Axel Gerstenberger
       const bool pstab,
       const bool supg,
       const bool cstab,
-      const double& tau_stab_Mp,
       const double& tau_stab_M,
+      const double& tau_stab_Mp,
       const double& tau_stab_C
         )
   {
@@ -997,13 +997,14 @@ void SysmatDomain4(
             else
             {
               const int labelnp = ih->PositionWithinConditionNP(cellcenter_xyz);
+              const bool is_in_fluid = (labelnp == 0);
               const bool was_in_fluid = (ih->PositionWithinConditionN(posx_gp) == 0);
 
               XFLUID::TimeFormulation timeformulation = XFLUID::Eulerian;
 //            double dtstar = dt;
               if (timealgo != timeint_stationary)
               {
-                if (not was_in_fluid)
+                if (is_in_fluid and not was_in_fluid)
                 {
                   timeformulation = XFLUID::ReducedTimeStepSize;
                   const bool valid_spacetime_cell_found = XFLUID::modifyOldTimeStepsValues<DISTYPE>(ele, ih, xyze, posXiDomain, labelnp, dt, ivelcolnp, ivelcoln, ivelcolnm, iacccoln, gpveln, gpvelnm, gpaccn, dtstar);
@@ -1252,7 +1253,7 @@ void SysmatDomain4(
                 gpvelnp, pres, gradp, vderxy, rhsint, res_old, visc_old, tau,
                 enr_conv_c_, enr_viscs2,
                 tauele_unknowns_present, instationary, newton, pstab, supg, cstab,
-                tau_stab_Mp, tau_stab_M, tau_stab_C);
+                tau_stab_M, tau_stab_Mp, tau_stab_C);
 
         } // end loop over gauss points
     } // end loop over integration cells
