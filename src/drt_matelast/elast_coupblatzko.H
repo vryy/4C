@@ -79,7 +79,7 @@ namespace ELASTIC
   ///\f]
   ///
   /// \f[
-  ///    with \ \beta=\nue-0.5
+  ///    with \ \beta=\nu-0.5
   /// \f]
   ///
   ///
