@@ -22,8 +22,8 @@ Maintainer: Georg Bauer
 
 #include "scatra_ele_impl_utils.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "../drt_inpar/inpar_scatra.H"
 #include <Epetra_IntSerialDenseVector.h>
-
 
 namespace DRT
 {
@@ -174,6 +174,7 @@ public:
         const bool                            assgd, ///< all-scale subgrid-diff. flag
         const bool                            fssgd, ///< fine-scale subgrid-diff. flag
         const bool                            turbmodel, ///< flag for turbulence model
+        const bool                            reinitswitch,
         const double                          frt ///< factor F/RT needed for ELCH calculations
     );
 
@@ -182,6 +183,7 @@ public:
         DRT::Element*                         ele,  ///< the element
         Epetra_SerialDenseMatrix&             emat, ///< element matrix to calculate
         Epetra_SerialDenseVector&             erhs, ///< element rhs to calculate
+        const bool                            reinitswitch,
         const double                          frt ///< factor F/RT needed for ELCH calculations
     );
 
@@ -194,9 +196,17 @@ public:
 
     //! get the body force
     virtual void BodyForce(
+        const DRT::Element*    ele,  ///< the element we are dealing with
+        const double           time  ///< current simulation time
+    );
+
+//REINHARD
+    //! get the body force for the sign function on the right hand side in reinitialization
+    virtual void BodyForceReinit(
         const DRT::Element*    ele, ///< the element we are dealing with
         const double           time ///< current simulation time
     );
+//end REINHARD
 
     //! get the material parameters
     virtual void GetMaterialParams(const DRT::Element* ele);
@@ -282,7 +292,8 @@ public:
    virtual void CalculateDomainAndBodyforce(
         Epetra_SerialDenseVector&  scalars, ///< vector for the computed integrals
         const DRT::Element*        ele,     ///< pointer to the element
-        const double               time     ///< current simulation time
+        const double               time,    ///< current simulation time
+        const bool                 reinitswitch
         );
 
    //! integral of shape functions over the element
@@ -423,6 +434,8 @@ public:
     const bool iselch_;
     //! flag for using ALE formulation
     bool isale_;
+    //! flag for type of scalar transport problem (standard or level set function)
+    INPAR::SCATRA::ScaTraType scatratype_;
     //! flag for inclusion of reactive terms
     bool reaction_;
     //! (sign) factor for diffusive and reactive stabilization terms

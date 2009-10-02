@@ -118,7 +118,11 @@ class DomainIntCell : public IntCell
     //! returns an array with the coordinates of the integration cell in physical coordinates
     const LINALG::Matrix<3,1>&  GetPhysicalCenterPosition() const{ return phys_center_;}
 
+    //! compute volume of cell from local coordinates
     double VolumeInXiDomain(const DRT::Element& ele) const;
+    
+    //! compute volume of cell from physical coordinates
+    double VolumeInPhysicalDomain() const; 
 
     //! return string representation of the DomainIntCell
     virtual std::string toString() const;

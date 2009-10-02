@@ -40,7 +40,7 @@ ADAPTER::FluidCombust::FluidCombust(Teuchos::RCP<DRT::Discretization> dis,
     params_(params),
     output_(output)
 {
-  std::cout << "Proc " << fluiddis_->Comm().MyPID() << "ADAPTER::FluidCombust constructor done \n" << endl;
+  // std::cout << "Proc " << fluiddis_->Comm().MyPID() << "ADAPTER::FluidCombust constructor done \n" << endl;
 }
 
 void ADAPTER::FluidCombust::SetInitialFlowField(int whichinitialfield, int startfuncno)
@@ -88,6 +88,7 @@ void ADAPTER::FluidCombust::PrepareTimeStep()
  *------------------------------------------------------------------------------------------------*/
 void ADAPTER::FluidCombust::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
 {
+  dserror("Thou shalt not call this function!");
   if (vel!=Teuchos::null)
   {
     fluid_.Evaluate(vel);
@@ -104,38 +105,6 @@ void ADAPTER::FluidCombust::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
 void ADAPTER::FluidCombust::Update()
 {
   fluid_.TimeUpdate();
-
-// henke 08/08 Ich denke die Parameterliste müsste mit params_ eigentlich schon alles beeinhalten!
-// -> wozu ist das hier dann gut?
-//  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-  const double dt = params_->get<double>("TIMESTEP");
-
-  // compute acceleration at timestep n+1
-  Teuchos::RCP<Epetra_Vector> iaccnp = rcp(new Epetra_Vector(iaccn_->Map()));
-  Teuchos::RCP<Epetra_Vector> ivelnp = rcp(new Epetra_Vector(iveln_->Map()));
-  const double theta = 1.0;
-  iaccnp->Update(-(1.0-theta)/(theta),*iaccn_,0.0);
-  iaccnp->Update(1.0/(theta*dt),*ivelnp_,-1.0/(theta*dt),*iveln_,1.0);
-
-//  const double beta = 1.0/4.0;
-//  const double gamma = 1.0/2.0;
-//
-//  iaccnp->Update(-(1.0-(2.0*beta))/(2.0*beta),*iaccn_,0.0);
-//  iaccnp->Update(-1.0/(beta*dt),*iveln_,1.0);
-//  iaccnp->Update(1.0/(beta*dt*dt),*idispnp_,-1.0/(beta*dt*dt),*idispn_,1.0);
-//
-//  ivelnp->Update(1.0,*iveln_,0.0);
-//  ivelnp->Update(gamma*dt,*iaccnp,(1-gamma)*dt,*iaccn_,1.0);
-
-  // update acceleration n
-  iaccn_->Update(1.0,*iaccnp,0.0);
-
-  // update velocity n-1
-  iveln_->Update(1.0,*ivelnp_,0.0);
-
-  // update velocity n
-  iveln_->Update(1.0,*ivelnp_,0.0);
-
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -156,7 +125,8 @@ void ADAPTER::FluidCombust::PrintInterfaceVectorField(
     const std::string name_in_gmsh
     )
 {
-/*  const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
+/*
+  const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
   const bool gmshdebugout = (bool)getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
   if (gmshdebugout)
   {
@@ -225,8 +195,7 @@ void ADAPTER::FluidCombust::PrintInterfaceVectorField(
 void ADAPTER::FluidCombust::NonlinearSolve()
 {
 
-  std::cout << "Proc " << fluiddis_->Comm().MyPID()<< "FluidCombust::NonlinearSolve()" << endl;
-
+  // std::cout << "Proc " << fluiddis_->Comm().MyPID()<< "FluidCombust::NonlinearSolve()" << endl;
   fluid_.NonlinearSolve();
 }
 
@@ -317,16 +286,16 @@ void ADAPTER::FluidCombust::LiftDrag()
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidCombust::ExtractInterfaceForces()
 {
   dserror("Don't use this function, I don't know what it does!");
-  return interface_.ExtractFSICondVector(itrueresnp_);
+  return Teuchos::null;
 }
 
 /*------------------------------------------------------------------------------------------------*
- | henke 08/08 |
+ | henke 07/09 |
  *------------------------------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidCombust::ExtractInterfaceVeln()
 {
-  dserror("Don't use this function, I don't know what it does!");
-  return interface_.ExtractFSICondVector(iveln_);
+  // get convection velocity vector (including pressure) for transfer to scalar transport field
+  return fluid_.ConVelnp();
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -335,7 +304,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidCombust::ExtractInterfaceVeln()
 void ADAPTER::FluidCombust::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel)
 {
   dserror("Don't use this function, I don't know what it does!");
-  interface_.InsertFSICondVector(ivel,ivelnp_);
+  return;
 }
 
 /*------------------------------------------------------------------------------------------------*

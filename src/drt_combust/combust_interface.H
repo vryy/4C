@@ -51,8 +51,11 @@ namespace COMBUST
 
     //! update interfacehandle according to current flame front
     void UpdateInterfaceHandle();
+    
+    //! compute volume of domain minus
+    const double ComputeVolumeMinus();
 
-    //! implement this function if needed for combustion!
+    //! output of domain and boundary integration cells to Gmsh!
     void toGmsh(const int step) const;
 
     //! implement this function if needed for combustion!

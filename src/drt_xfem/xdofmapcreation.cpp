@@ -753,7 +753,7 @@ void XFEM::createDofMapCombust(
         // build a DofMap holding dofs for all nodes including additional dofs of enriched nodes
         switch(combusttype)
         {
-          case INPAR::COMBUST::premixedcombustion:
+          case INPAR::COMBUST::combusttype_premixedcombustion:
           {
             // apply jump enrichments to all nodes of an intersected element
             skipped_node_enr = ApplyJumpEnrichment(xfemele, fieldset, volumeRatioLimit, nodeDofMap);
@@ -761,7 +761,7 @@ void XFEM::createDofMapCombust(
             //         Anreicherung funktioniert hat?
           }
           break;
-          case INPAR::COMBUST::twophaseflow:
+          case INPAR::COMBUST::combusttype_twophaseflow:
           {
             // apply kink enrichments to all nodes of an intersected element
             skipped_node_enr = ApplyKinkEnrichment(xfemele, fieldset, volumeRatioLimit, nodeDofMap);

@@ -73,6 +73,11 @@ namespace XFEM
         Teuchos::RCP<Epetra_Vector>&     vector
     ) const;
 
+    //! switch from old to new dof distribution for jump/kink enrichment problems
+    void mapVectorToNewDofDistributionCombust(
+        Teuchos::RCP<Epetra_Vector>&     vector
+    ) const;
+
 
     //! switch from old to new dof distribution
     void generateTransferInformation(

@@ -72,6 +72,35 @@ namespace COMBUST
     /// build signed distance function
     void SignedDistFunc();
 
+    /// not documented
+    void ComputeNormalVectorToFlameFront(
+          const LINALG::SerialDenseMatrix& patch,
+          LINALG::Matrix<3,1>&             normal
+     );
+
+    /// not documented
+    void ComputeDistanceToFlameFront(
+          const LINALG::Matrix<3,1>&       node,
+          const LINALG::SerialDenseMatrix& patch,
+          double&                          distance
+    );
+
+    /// not documented
+    void FindFacingPatch(
+          const LINALG::Matrix<3,1>&       node,
+          const LINALG::SerialDenseMatrix& patch,
+          bool&                            facenode,
+          double&                          vertexdist
+    );
+
+    /// overwrite Navier-Stokes velocity field (used for test cases)
+    const Teuchos::RCP<Epetra_Vector> OverwriteFluidVel();
+
+    /// compute flame velocity
+    const Teuchos::RCP<Epetra_Vector> ComputeFlameVel(const Teuchos::RCP<Epetra_Vector>& velnp,
+                                                      const Teuchos::RCP<const DRT::DofSet>& dofset
+    );
+
     /// tests if the FGI iteration has converged
     bool NotConvergedFGI();
 
@@ -107,10 +136,26 @@ namespace COMBUST
     double fgvelnormL2_;
     // L2-norm of g-function in Fluid-G-function iteration
     double fggfuncnormL2_;
+    //
+    double convtol_;
+    // velocity vector of last iteration step
+    Teuchos::RCP<Epetra_Vector> velnpi_;
+    // velocity vector of new iteration step
+    Teuchos::RCP<Epetra_Vector> velnpip_;
+    // g-function vector of last iteration step
+    Teuchos::RCP<Epetra_Vector> phinpi_;
+    // g-function vector of new iteration step
+    Teuchos::RCP<Epetra_Vector> phinpip_;
     //@}
+
+    /// switch for type of combustion problem
+    INPAR::COMBUST::CombustionType combusttype_;
 
     /// options for reinitialization of G-function;
     INPAR::COMBUST::ReInitialActionGfunc reinitializationaction_;
+
+    /// interval for reinitialization (every "reinitinterval_" time steps)
+    int reinitinterval_;
 
     /// combustion input parameter list
     const Teuchos::ParameterList& combustdyn_;

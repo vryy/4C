@@ -82,8 +82,8 @@ DRT::ELEMENTS::Combust3::StabilisationAction DRT::ELEMENTS::Combust3::ConvertStr
 }
 
 
- /*----------------------------------------------------------------------*
- |  evaluate the element (public)                            g.bau 03/07|
+/*----------------------------------------------------------------------*
+ |  evaluate the element (public)                           g.bau 03/07 |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
                                      DRT::Discretization&      discretization,
@@ -98,25 +98,10 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
   const string action(params.get<string>("action","none"));
   const DRT::ELEMENTS::Combust3::ActionType act = convertStringToActionType(action);
 
-  // get the material
-  const Teuchos::RCP<MAT::Material> mat = Material();
-//URSULA  if (mat->MaterialType()!=INPAR::MAT::m_fluid)
-  // TODO: here, I should check the content of the list, too!
-  if (mat->MaterialType()!=INPAR::MAT::m_matlist)
-    dserror("material list with newtonian fluid material expected but got type %d", mat->MaterialType());
-
-  //TEST
-//  const MAT::MatList* actmaterials = static_cast<const MAT::MatList*>(mat.get());
-//  Teuchos::RCP<const MAT::Material> mater = actmaterials->MaterialById(4);
-//  dsassert(mater->MaterialType() == INPAR::MAT::m_fluid, "Material law is not of type m_fluid.");
-//  const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mater.get());
-//  const double visc = actmat->Viscosity();
-//  std::cout << "Viskositaet Fluid 3 ist " << visc << std::endl;
-
+  // get the list of materials
+  const Teuchos::RCP<MAT::Material> material = Material();
 
   // was macht man dann mit der Dichte
-//  if (mat->MaterialType()!=INPAR::MAT::m_fluid)
-//    dserror("newtonian fluid material expected but got type %d", mat->MaterialType());
   // wird hier nur für Dichte benötigt kin Druck -> dyn Druck
   // man sollte hier mit dem dyn Druck rechnen
   // daher entfällt nachfolgende Zeile, actmat wird nur für die Rückgabe der Dichte verwendet
@@ -170,16 +155,32 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 
       // get pointer to vector holding G-function values at the fluid nodes
       const Teuchos::RCP<Epetra_Vector> phinp = ih_->FlameFront()->Phinp();
-      // get map of this vector
-      const Epetra_BlockMap& phimap = phinp->Map();
-      // check, whether this map is still identical with the current node map in the discretization
-      if (not phimap.SameAs(*discretization.NodeColMap())) dserror("node column map has changed!");
 
-      const INPAR::COMBUST::CombustionType combusttype = params.get<INPAR::COMBUST::CombustionType>("combusttype");
+#ifdef DEBUG
+      // check if this element is the first element on this processor
+      // remark:
+      // The SameAs-operation requires MPI communication between processors. Therefore it can only
+      // be performed once (at the beginning) on each processor. Otherwise some processors would
+      // wait to receive MPI information, but would never get it, because some processores are
+      // already done with their element loop. This will cause a mean parallel bug!   henke 11.08.09
+      if(this->Id() == discretization.lRowElement(0)->Id())
+      {
+        // get map of this vector
+        const Epetra_BlockMap& phimap = phinp->Map();
+        // check, whether this map is still identical with the current node map in the discretization
+        if (not phimap.SameAs(*discretization.NodeColMap())) dserror("node column map has changed!");
+      }
+#endif
+
       // extract G-function values to element level (used kink enrichment)
       DRT::UTILS::ExtractMyNodeBasedValues(this, mystate.phinp, *phinp);
 
       const bool newton = params.get<bool>("include reactive terms for linearisation",false);
+
+      const INPAR::COMBUST::CombustionType combusttype = params.get<INPAR::COMBUST::CombustionType>("combusttype");
+      const double flamespeed = params.get<double>("flamespeed");
+      const double nitschevel = params.get<double>("nitschevel");
+      const double nitschepres = params.get<double>("nitschepres");
 
       // stabilization terms
       const bool pstab = true;
@@ -191,23 +192,14 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       const double            dt       = params.get<double>("dt");
       const double            theta    = params.get<double>("theta");
 
-//      const Teuchos::RCP<const Epetra_Vector> ivelcol = params.get<Teuchos::RCP<const Epetra_Vector> >("interface velocity");
-//      const Teuchos::RCP<Epetra_Vector> iforcecol = params.get<Teuchos::RCP<Epetra_Vector> >("interface force");
-//      if (ivelcol==null)
-//        dserror("Cannot get interface velocity from parameters");
-//      const Teuchos::RCP<Epetra_Vector> iforcecol = null; //params.get<Teuchos::RCP<Epetra_Vector> >("interface force");
-//      if (iforcecol==null)
-//        dserror("Cannot get interface force from parameters");
-
-      const bool ifaceForceContribution = discretization.ElementRowMap()->MyGID(this->Id());
-
       const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
               *eleDofManager_, NumNode(), NodeIds());
 
       // calculate element coefficient matrix and rhs
-      COMBUST::callSysmat4(assembly_type,
-        this, ih_, *eleDofManager_, mystate, Teuchos::null, Teuchos::null, elemat1, elevec1,
-        mat, timealgo, dt, theta, newton, pstab, supg, cstab, true, ifaceForceContribution, combusttype);
+      COMBUST::callSysmat(assembly_type,
+        this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
+        material, timealgo, dt, theta, newton, pstab, supg, cstab, true,
+        combusttype, flamespeed, nitschevel, nitschepres);
     }
     break;
     case calc_fluid_beltrami_error:
@@ -239,7 +231,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
         }
 
         // integrate beltrami error
-        f3_int_beltrami_err(myvelnp,myprenp,mat,params);
+        f3_int_beltrami_err(myvelnp,myprenp,material,params);
       }
     }
     break;
@@ -263,6 +255,9 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 //        dserror("Cannot get interface force from parameters");
 
       const INPAR::COMBUST::CombustionType combusttype = params.get<INPAR::COMBUST::CombustionType>("combusttype");
+      const double flamespeed = params.get<double>("flamespeed");
+      const double nitschevel = params.get<double>("nitschevel");
+      const double nitschepres = params.get<double>("nitschepres");
 
       // time integration factors
       const FLUID_TIMEINTTYPE timealgo = params.get<FLUID_TIMEINTTYPE>("timealgo");
@@ -273,8 +268,6 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       const bool pstab  = true;
       const bool supg   = true;
       const bool cstab  = true;
-
-      const bool ifaceForceContribution = discretization.ElementRowMap()->MyGID(this->Id());
 
       const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
               *eleDofManager_, NumNode(), NodeIds());
@@ -294,9 +287,9 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
               }
               // R_0
               // calculate element coefficient matrix and rhs
-              COMBUST::callSysmat4(assembly_type,
-                      this, ih_, eleDofManager_, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
-                      mat, pseudotime, 1.0, newton, pstab, supg, cstab, false, combusttype);
+              COMBUST::callSysmat(assembly_type,
+                      this, ih_, eleDofManager_, locval, locval_hist, estif, eforce,
+                      material, pseudotime, 1.0, newton, pstab, supg, cstab, false, combusttype);
 
               LINALG::SerialDensevector eforce_0(locval.size());
               for (unsigned i = 0;i < locval.size(); ++i)
@@ -322,9 +315,9 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 
               // R_0+dx
               // calculate element coefficient matrix and rhs
-              COMBUST::callSysmat4(assembly_type,
-                      this, ih_, eleDofManager_, locval_disturbed, locval_hist, ivelcol, iforcecol, estif, eforce,
-                      mat, pseudotime, 1.0, newton, pstab, supg, cstab, false, combusttype);
+              COMBUST::callSysmat(assembly_type,
+                      this, ih_, eleDofManager_, locval_disturbed, locval_hist, estif, eforce,
+                      material, pseudotime, 1.0, newton, pstab, supg, cstab, false, combusttype);
 
 
 
@@ -344,15 +337,19 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 #endif
       {
         // calculate element coefficient matrix and rhs
-        COMBUST::callSysmat4(assembly_type,
-                 this, ih_, *eleDofManager_, mystate, Teuchos::null, Teuchos::null, elemat1, elevec1,
-                 mat, timealgo, dt, theta, newton, pstab, supg, cstab, false, ifaceForceContribution, combusttype);
+        COMBUST::callSysmat(assembly_type,
+                 this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
+                 material, timealgo, dt, theta, newton, pstab, supg, cstab, false,
+                 combusttype, flamespeed, nitschevel, nitschepres);
       }
     }
     break;
     case store_xfem_info:
     {
       TEUCHOS_FUNC_TIME_MONITOR("COMBUST3 - evaluate - store_xfem_info");
+
+      // now the element can answer how many (XFEM) dofs it has
+      output_mode_ = false;
 
       // store pointer to interface handle
       ih_ = params.get< Teuchos::RCP< COMBUST::InterfaceHandleCombust > >("interfacehandle",Teuchos::null);
@@ -488,13 +485,15 @@ void DRT::ELEMENTS::Combust3::f3_int_beltrami_err(
 
   // get viscosity
   double  visc = 0.0;
-  if(material->MaterialType()==INPAR::MAT::m_fluid)
-  {
-    const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(material.get());
-    visc = actmat->Viscosity();
-  }
-  else
-    dserror("Cannot handle material of type %d", material->MaterialType());
+  // just to be sure - actually this has already been checked in Combust3::Evaluate, before
+  dsassert(material->MaterialType() == INPAR::MAT::m_matlist, "material is not of type m_matlist");
+  const MAT::MatList* matlist = static_cast<const MAT::MatList*>(material.get());
+  // use material MAT 3 (first in the material list) for Beltrami flow
+  Teuchos::RCP<const MAT::Material> matptr = matlist->MaterialById(3);
+  dsassert(matptr->MaterialType() == INPAR::MAT::m_fluid, "material is not of type m_fluid");
+  std::cout << "material MAT 3 is used for Beltrami flow" << std::endl;
+  const MAT::NewtonianFluid* mat = static_cast<const MAT::NewtonianFluid*>(matptr.get());
+  visc = mat->Viscosity();
 
   double         preint;
   vector<double> velint  (3);

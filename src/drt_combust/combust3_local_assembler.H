@@ -45,32 +45,6 @@ template<> struct SymmetryMangle<XFEM::PHYSICS::Tauyx>   {static const XFEM::PHY
 template<> struct SymmetryMangle<XFEM::PHYSICS::Tauzx>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxz;};
 template<> struct SymmetryMangle<XFEM::PHYSICS::Tauzy>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauyz;};
 
-//! which shape functions are equal anyway
-template <XFEM::PHYSICS::Field FIELD>
-struct ShapeMangle;
-template<> struct ShapeMangle<XFEM::PHYSICS::Velx> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Velx;};
-template<> struct ShapeMangle<XFEM::PHYSICS::Vely> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Velx;};
-template<> struct ShapeMangle<XFEM::PHYSICS::Velz> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Velx;};
-template<> struct ShapeMangle<XFEM::PHYSICS::Pres> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Velx;};
-template<> struct ShapeMangle<XFEM::PHYSICS::DiscPres> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::DiscPres;};
-template<> struct ShapeMangle<XFEM::PHYSICS::Sigmaxx> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxx;};
-template<> struct ShapeMangle<XFEM::PHYSICS::Sigmaxy> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxx;};
-template<> struct ShapeMangle<XFEM::PHYSICS::Sigmaxz> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxx;};
-template<> struct ShapeMangle<XFEM::PHYSICS::Sigmayx> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxx;};
-template<> struct ShapeMangle<XFEM::PHYSICS::Sigmayy> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxx;};
-template<> struct ShapeMangle<XFEM::PHYSICS::Sigmayz> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxx;};
-template<> struct ShapeMangle<XFEM::PHYSICS::Sigmazx> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxx;};
-template<> struct ShapeMangle<XFEM::PHYSICS::Sigmazy> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxx;};
-template<> struct ShapeMangle<XFEM::PHYSICS::Sigmazz> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxx;};
-template<> struct ShapeMangle<XFEM::PHYSICS::Tauxx>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxx;};
-template<> struct ShapeMangle<XFEM::PHYSICS::Tauxy>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxx;};
-template<> struct ShapeMangle<XFEM::PHYSICS::Tauxz>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxx;};
-template<> struct ShapeMangle<XFEM::PHYSICS::Tauyx>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxx;};
-template<> struct ShapeMangle<XFEM::PHYSICS::Tauyy>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxx;};
-template<> struct ShapeMangle<XFEM::PHYSICS::Tauyz>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxx;};
-template<> struct ShapeMangle<XFEM::PHYSICS::Tauzx>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxx;};
-template<> struct ShapeMangle<XFEM::PHYSICS::Tauzy>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxx;};
-template<> struct ShapeMangle<XFEM::PHYSICS::Tauzz>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxx;};
 
 //! class that assembles one after another integral of the weak form into the stiffness matrix
 template <DRT::Element::DiscretizationType DISTYPE,
@@ -161,30 +135,26 @@ public:
         const std::size_t numparamtrial = trialdof.size();
 
         bool found_template = true;
-        switch (numparamtest)
+        // this is a short cut for diagonal blocks (?)
+        if (numparamtest == numparamtrial) // diagonal blocks
         {
-        case 20:
-        {
-          switch (numparamtrial) {
-          case 20: this->template IntegrateMatrix<20,20>(testshape,testdof,fac,trialshape,trialdof); break;
-          default: found_template = false;
+          switch (numparamtest)
+          {
+            case  8: this->template IntegrateMatrix< 8, 8>(testshape,testdof,fac,trialshape,trialdof); break;
+            case 20: this->template IntegrateMatrix<20,20>(testshape,testdof,fac,trialshape,trialdof); break;
+            case 27: this->template IntegrateMatrix<27,27>(testshape,testdof,fac,trialshape,trialdof); break;
+            default: found_template = false;
           }
-          break;
         }
-        case 8:
+        else
         {
-          switch (numparamtrial) {
-          case 8: this->template IntegrateMatrix<8,8>(testshape,testdof,fac,trialshape,trialdof); break;
-          default: found_template = false;
-          }
-          break;
-        }
-        default:
           found_template = false;
         }
 
+        // this the regular path
         if (not found_template)
         {
+          // this loop does the same thing as the one below, but it is slower
 //          cout << numparamtest << "   " << numparamtrial << endl;
 //          for (std::size_t ui=0; ui<numparamtrial; ++ui)
 //          {
@@ -196,6 +166,7 @@ public:
 //                  estif_(testpos, trialpos) += testshape(vi)*multiply ;
 //              }
 //          }
+        // this loop does the same thing as the one above (commented), but it is faster
         std::size_t ui = 0;
         for (std::vector<int>::const_iterator trialpos = trialdof.begin(); trialpos != trialdof.end(); ++trialpos)
         {
@@ -208,7 +179,7 @@ public:
             }
             ++ui;
         }
-        }
+      }
     }
 
     //! assemble one expression for the element rhs for a given test field
@@ -226,16 +197,9 @@ public:
         bool found_template = true;
         switch (numparamtest)
         {
-        case 20:
-        {
-          this->template IntegrateVector<20>(testshape,testdof,fac); break;
-        }
-        case 8:
-        {
-          this->template IntegrateVector<8>(testshape,testdof,fac); break;
-        }
-        default:
-          found_template = false;
+          case 20: this->template IntegrateVector<20>(testshape,testdof,fac); break;
+          case  8: this->template IntegrateVector< 8>(testshape,testdof,fac); break;
+          default: found_template = false;
         }
 //
 //        for (std::size_t vi=0; vi<numparamtest; ++vi)

@@ -35,6 +35,7 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
   ScaTraField().SetVelocityField(
       FluidField().Velnp(),
       Teuchos::null,
+      Teuchos::null,
       FluidField().Discretization()
   );
 

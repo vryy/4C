@@ -111,6 +111,7 @@ void LOMA::Algorithm::InitialCalculations()
   // derivative in SCATRA
   ScaTraField().SetVelocityField(FluidField().Velnp(),
                                  FluidField().SgVelVisc(),
+                                 Teuchos::null,
                                  FluidField().Discretization());
 
   // set initial value of thermodynamic pressure in SCATRA
@@ -183,6 +184,7 @@ void LOMA::Algorithm::GenAlphaOuterLoop()
   // and discretization
   ScaTraField().SetVelocityField(FluidField().Velaf(),
                                  FluidField().SgVelVisc(),
+                                 Teuchos::null,
                                  FluidField().Discretization());
 
   // compute scalar values at intermediate time steps
@@ -245,6 +247,7 @@ void LOMA::Algorithm::GenAlphaOuterLoop()
     // and discretization
     ScaTraField().SetVelocityField(FluidField().Velaf(),
                                    FluidField().SgVelVisc(),
+                                   Teuchos::null,
                                    FluidField().Discretization());
 
     // solve scalar transport equation
@@ -284,6 +287,7 @@ void LOMA::Algorithm::OSTBDF2OuterLoop()
   // and discretization
   ScaTraField().SetVelocityField(FluidField().Velnp(),
                                  FluidField().SgVelVisc(),
+                                 Teuchos::null,
                                  FluidField().Discretization());
 
   // initially solve scalar transport equation
@@ -334,6 +338,7 @@ void LOMA::Algorithm::OSTBDF2OuterLoop()
     // and discretization
     ScaTraField().SetVelocityField(FluidField().Velnp(),
                                    FluidField().SgVelVisc(),
+                                   Teuchos::null,
                                    FluidField().Discretization());
 
     // solve scalar transport equation

@@ -160,6 +160,7 @@ namespace ADAPTER
     virtual void SetInitialFlowField(int whichinitialfield, int startfuncno);
 
     virtual Teuchos::RCP<DRT::Discretization> Discretization() { return fluiddis_; }
+    virtual Teuchos::RCP<const DRT::DofSet> DofSet() { return fluid_.StandardDofSet(); }
     virtual void PrepareTimeStep();
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> vel);
     virtual void Update();
@@ -234,15 +235,15 @@ namespace ADAPTER
     //@}
 
     //! @name state vectors using the solid boundary parallel distribution (row vectors)
-    Teuchos::RCP<Epetra_Vector>            itrueresnp_;///< interface residual      n+1
-    Teuchos::RCP<Epetra_Vector>            ivelnp_;    ///< interface velocity      n+1
-    Teuchos::RCP<Epetra_Vector>            iveln_;     ///< interface velocity      n
-    Teuchos::RCP<Epetra_Vector>            ivelnm_;    ///< interface velocity      n-1
-    Teuchos::RCP<Epetra_Vector>            iaccn_;     ///< interface acceleration  n
+//    Teuchos::RCP<Epetra_Vector>            itrueresnp_;///< interface residual      n+1
+//    Teuchos::RCP<Epetra_Vector>            ivelnp_;    ///< interface velocity      n+1
+//    Teuchos::RCP<Epetra_Vector>            iveln_;     ///< interface velocity      n
+//    Teuchos::RCP<Epetra_Vector>            ivelnm_;    ///< interface velocity      n-1
+//    Teuchos::RCP<Epetra_Vector>            iaccn_;     ///< interface acceleration  n
     //@}
 
     /// all velocity dofs not at the interface
-    Teuchos::RCP<Epetra_Map>       innervelmap_;
+//    Teuchos::RCP<Epetra_Map>       innervelmap_;
 
     /// pointer to the level set discretization
     // this is the link to the interface information contained in the level set discretization

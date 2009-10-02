@@ -31,6 +31,32 @@ namespace INPAR
       timeint_gen_alpha
     };
 
+    /// type of calar transport problem
+    enum ScaTraType
+    {
+      scatratype_standard,
+      scatratype_levelset
+    };
+
+    /// type of reinitialization strategy for level set function
+    enum ReinitializationAction
+    {
+      reinitaction_none,
+      reinitaction_directdistance,
+      reinitaction_sussman,
+      reinitaction_interfaceprojection,
+      reinitaction_function,
+      reinitaction_signeddistancefunction
+    };
+
+    /// type of mass calculation strategy for level set function
+    enum MassCalculation
+    {
+      masscalc_none,
+      masscalc_squares,
+      masscalc_interpolated
+    };
+
   }  // namespace SCATRA
 
 }  // namespace INPAR

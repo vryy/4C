@@ -28,6 +28,9 @@ Maintainer: Georg Bauer
 #include "../drt_lib/drt_function.H"
 #include "../drt_fluid/fluid_utils.H" // for splitter
 #include "scatra_utils.H" // for splitstrategy
+//REINHARD
+#include "../drt_geometry/element_volume.H"
+//end REINHARD
 
 // for the condition writer output
 /*
@@ -63,6 +66,10 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   prbtype_  (params_->get<string>("problem type")),
   solvtype_ (params_->get<string>("solver type")),
   isale_    (params_->get<bool>("isale")),
+  scatratype_  (params_->get<INPAR::SCATRA::ScaTraType>("scatratype")),
+  reinitaction_(INPAR::SCATRA::reinitaction_none),
+  masscalc_    (INPAR::SCATRA::masscalc_none),
+  reinitswitch_(false),
   stepmax_  (params_->get<int>("max number timesteps")),
   maxtime_  (params_->get<double>("total time")),
   timealgo_ (params_->get<INPAR::SCATRA::TimeIntegrationScheme>("time int algo")),
@@ -141,6 +148,12 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   {
     // set up a species-temperature splitter (if more than one scalar)
     FLD::UTILS::SetupFluidSplit(*discret_,numscal_-1,splitter_);
+  }
+
+  if (scatratype_ == INPAR::SCATRA::scatratype_levelset)
+  {
+    reinitaction_ = Teuchos::getIntegralValue<INPAR::SCATRA::ReinitializationAction>(params_->sublist("LEVELSET"),"REINITIALIZATION");
+    masscalc_     = Teuchos::getIntegralValue<INPAR::SCATRA::MassCalculation>(params_->sublist("LEVELSET"),"MASSCALCULATION");
   }
 
   if (params_->get<int>("BLOCKPRECOND",0) )
@@ -424,6 +437,14 @@ void SCATRA::ScaTraTimIntImpl::TimeLoop()
     if (nonlinear_) NonlinearSolve();
     else            Solve();
 
+//REINHARD
+    // -------------------------------------------------------------------
+    //                reinitialize the level set function
+    // -------------------------------------------------------------------
+    if ((scatratype_ == INPAR::SCATRA::scatratype_levelset) and (reinitaction_ != INPAR::SCATRA::reinitaction_none))
+      Reinitialize();
+//end REINHARD
+
     // -------------------------------------------------------------------
     //                update time derivative after solution
     // -------------------------------------------------------------------
@@ -449,6 +470,14 @@ void SCATRA::ScaTraTimIntImpl::TimeLoop()
     //                       update time step sizes
     // -------------------------------------------------------------------
     dtp_ = dta_;
+
+//REINHARD
+    // -------------------------------------------------------------------
+    // compute mass loss for level set function and print it to display
+    // -------------------------------------------------------------------
+    if ((scatratype_ == INPAR::SCATRA::scatratype_levelset) and (masscalc_ != INPAR::SCATRA::masscalc_none))
+      CalculateMassLoss();
+//end REINHARD
 
   } // while
 
@@ -1018,6 +1047,12 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   eleparams.set("isale",isale_);
   if (isale_) AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
 
+  // set type of scalar transport problem
+  eleparams.set("scatratype",scatratype_);
+
+  // set switch for reinitialization
+  eleparams.set("reinitswitch",reinitswitch_);
+
   // parameters for stabilization
   eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
 
@@ -1173,6 +1208,7 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField()
 void SCATRA::ScaTraTimIntImpl::SetVelocityField(
 Teuchos::RCP<const Epetra_Vector> fluidvel,
 Teuchos::RCP<const Epetra_Vector> fluidsgvelvisc,
+Teuchos::RCP<const DRT::DofSet> dofset,
 Teuchos::RCP<DRT::Discretization> fluiddis)
 {
   if (cdvel_ != 2)
@@ -1187,7 +1223,7 @@ Teuchos::RCP<DRT::Discretization> fluiddis)
   double subgriddiff;
 
   // get dofrowmap of fluid discretization
-  const Epetra_Map* fluiddofrowmap = fluiddis->DofRowMap();
+//  const Epetra_Map* fluiddofrowmap = fluiddis->DofRowMap();
 
   // loop over all local nodes of scatra discretization
   for (int lnodeid=0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
@@ -1198,8 +1234,14 @@ Teuchos::RCP<DRT::Discretization> fluiddis)
 
     // get the processor's local fluid node with the same lnodeid
     DRT::Node* fluidlnode = fluiddis->lRowNode(lnodeid);
+
     // get the degrees of freedom associated with this fluid node
-    vector<int> fluidnodedofs = fluiddis->Dof(fluidlnode);
+    vector<int> fluidnodedofs;
+    if (dofset == Teuchos::null)
+      fluidnodedofs = fluiddis->Dof(fluidlnode);
+    else // ask a different dofset e.g. for a XFEM fluid
+      fluidnodedofs = (*dofset).Dof(fluidlnode);
+
     // determine number of space dimensions (numdof - pressure dof)
     const int numdim = ((int) fluidnodedofs.size()) -1;
 
@@ -1208,7 +1250,9 @@ Teuchos::RCP<DRT::Discretization> fluiddis)
     {
       // global and processor's local fluid dof ID
       const int fgid = fluidnodedofs[index];
-      const int flid = fluiddofrowmap->LID(fgid);
+//      const int flid = fluiddofrowmap->LID(fgid);
+      const int flid = fluidvel->Map().LID(fgid);
+      if (flid < 0) dserror("lid not found in map for given gid");
 
       // get value of corresponding velocity component
       double velocity = (*fluidvel)[flid];
@@ -1232,7 +1276,9 @@ Teuchos::RCP<DRT::Discretization> fluiddis)
 
       // global and processor's local fluid dof ID
       const int fgid = fluidnodedofs[numdim];
-      const int flid = fluiddofrowmap->LID(fgid);
+//      const int flid = fluiddofrowmap->LID(fgid);
+      const int flid = fluidsgvelvisc->Map().LID(fgid);
+      if (flid < 0) dserror("lid not found in map for given gid");
 
       // get subgrid viscosity for this processor's local fluid dof and
       // divide by turbulent Prandtl number to get subgrid diffusivity
@@ -1573,6 +1619,981 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
 
   return;
 } // ScaTraTimIntImpl::SetInitialField
+
+
+//REINHARD
+/*----------------------------------------------------------------------*
+ | do reinitialization by function
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::Reinitialize()
+{
+	if (reinitaction_ == INPAR::SCATRA::reinitaction_directdistance)
+	{
+		//Reinitialization as distance calculation to some interfacial points
+		//written for hex8 elements
+		cout << "Reinitialize as distance calculation" << endl;
+		const Epetra_Map* elemrowmap = discret_->ElementRowMap();
+		const int nsd = 3;
+
+		//first: a set of known interfacial points has to be computed
+		std::vector<std::vector<double> > interpointscollection;
+		//loop over all elements
+		for (int j=0;j<discret_->NumMyColElements();++j)
+		{
+			//tell, whether this element is intersected
+			//nearly identical to void COMBUST::RefinementCell::IdentifyIntersectionStatus()
+			DRT::Element* actele = discret_->gElement(elemrowmap->GID(j));
+			bool intersected = false;
+			int counter = 0;
+			int numnode = actele->NumNode();
+		vector<int> lm(numnode);
+		// get vector of node GIDs for this element
+		const int* nodeids = actele->NodeIds();
+		for (unsigned inode=0; inode < lm.size(); inode++)
+			lm[inode] = nodeids[inode];
+		// create vector "ephinp" holding scalar phi values for this element
+		vector<double> ephinp(numnode);
+		//do extraction at last
+		DRT::UTILS::ExtractMyValues(*phinp_, ephinp, lm);
+
+			if (ephinp[0] == 0.0)
+				intersected = true;
+			else if (ephinp[0] < 0.0)
+			{
+				while ((counter<(numnode-1)) and (intersected == false))
+				{
+					counter++;
+					if (ephinp[counter]>=0.0)
+						intersected = true;
+				}
+			}
+			else if (ephinp[0]>0.0)
+			{
+				while((counter<(numnode-1)) and  (intersected == false))
+				{
+					counter++;
+					if (ephinp[counter]<=0.0)
+						intersected = true;
+				}
+			}
+
+			//the following is only done, if the current element is intersected...
+			//similar to void COMBUST::FlameFront::FindIntersectionPoints(...)
+
+			if (intersected == true)
+			{
+				//get global coordinates of nodes of current elements
+				LINALG::SerialDenseMatrix xyze(nsd,numnode);
+				xyze = GEO::InitialPositionArray(actele);
+				if(actele->Shape()!=DRT::Element::hex8)
+					dserror("The reinitialization is only supported for hex8 elements");
+				std::vector<std::vector<int> > lines = DRT::UTILS::getEleNodeNumberingLines(DRT::Element::hex8);
+				//loop over all lines
+				for(std::size_t ilines=0; ilines<lines.size(); ilines++)
+				{
+					int node1 = lines[ilines][0];
+					int node2 = lines[ilines][1];
+					double phival1 = ephinp[node1];
+					double phival2 = ephinp[node2];
+					vector<double> coordinates(nsd);
+
+					if (phival1*phival2 < 0)	//real intersection point
+					{
+						for (int dim=0; dim<nsd; dim++)
+						{
+							if(xyze(dim,node1)==xyze(dim,node2))
+								coordinates[dim]=xyze(dim,node1);
+							else 	//calculate intersectionpoint
+								coordinates[dim]=xyze(dim,node1)-phival1/(phival2-phival1)*(xyze(dim,node2)-xyze(dim,node1));
+						}
+						//now vector coordinates contains global coordinates of intersection point
+						//interpointscollection[interpointscollection.size()]=coordinates;
+						//compare with existing points and write in interpointscollection
+
+						//flag is true, if coordinates shall be written in interpointscollection
+						bool flag = true;
+						for (unsigned i=0; i<interpointscollection.size(); i++)
+						{
+							if (interpointscollection[i] == coordinates)
+							{
+								flag = false;
+								break;
+							}
+						}
+						if (flag == true)
+							interpointscollection.push_back(coordinates);
+					}
+					else if ((phival1 == 0.0) or (phival2 == 0.0))
+					{
+						if (phival1 == 0.0)
+						{
+							for (int dim=0; dim<nsd; dim++)
+								coordinates[dim]=xyze(dim,node1);
+							bool flag = true;
+							for (unsigned i=0; i<interpointscollection.size(); i++)
+							{
+								if (interpointscollection[i] == coordinates)
+								{
+									flag = false;
+									break;
+								}
+							}
+							if (flag == true)
+								interpointscollection.push_back(coordinates);
+						}
+						if (phival2 == 0.0)
+						{
+							for (int dim=0; dim<nsd; dim++)
+								coordinates[dim]=xyze(dim,node2);
+							bool flag = true;
+							for (unsigned i=0; i<interpointscollection.size(); i++)
+							{
+								if (interpointscollection[i] == coordinates)
+								{
+									flag = false;
+									break;
+								}
+							}
+							if (flag == true)
+								interpointscollection.push_back(coordinates);
+
+						}
+					}
+					//else do nothing
+				}//end loop over all lines
+			}//end of calculation of intersection points if intersected == true
+		}//end loop over all elements for calculation of intersection points
+
+		//now, intersection points are in std::vector<std::vector<double> > interpointscollection
+		//and reinitialization for all points shall be done
+
+		//loop over all nodes
+		for (int lnodeid=0; lnodeid<discret_->NumMyRowNodes(); lnodeid++)
+		{
+			//get current node
+			DRT::Node* actnode = discret_->lRowNode(lnodeid);
+			const double* nodecoords = actnode->X();
+
+			//new_phi will become new signed distance function
+			vector<double> new_phi(1);
+			//distance to current intersection point
+			double curdistance = 0.0;
+			for (int k=0; k<nsd; k++)
+				curdistance = curdistance + DSQR(nodecoords[k]-interpointscollection[0][k]);
+			curdistance = sqrt(curdistance);
+			new_phi[0] = curdistance;
+
+			for (unsigned j=1; j<interpointscollection.size(); j++)
+			{
+				curdistance = 0;
+				for (int k=0; k<nsd; k++)
+					curdistance = curdistance + DSQR(nodecoords[k]-interpointscollection[j][k]);
+				curdistance = sqrt(curdistance);
+				if (curdistance<new_phi[0])
+					new_phi[0] = curdistance;
+			}
+			//the right sign still has to be adjusted...
+			vector<double> phi_old(1);
+			vector<int> lm_node(1);
+			lm_node[0] = lnodeid;
+			DRT::UTILS::ExtractMyValues(*phinp_,phi_old,lm_node);
+
+			if (phi_old[0]<0.0)
+				new_phi[0] = -new_phi[0];
+
+			phinp_->ReplaceMyValues(1,&new_phi[0],&lnodeid);
+
+		}//end loop over all nodes
+
+	}//end of reinitialization with distance calculation to some interfacial points
+
+	else if (reinitaction_ == INPAR::SCATRA::reinitaction_sussman)
+	{
+		//Reinitialization according to Sussman 1994 or the Hamilton-Jacobi formulation in Marchandise
+		cout << "Reinitialize according to Sussman" << endl;
+		//compare suggestion of Sussman: timestepsize = 0.9*characteristic length
+		double timestepsize_reinit = 0.009;
+
+		RCP<Epetra_Vector> phi_old = Teuchos::rcp(new Epetra_Vector(*phin_));
+		RCP<Epetra_Vector> phidtn_old = Teuchos::rcp(new Epetra_Vector(*phidtn_));
+
+		//set a new time step size and save the old time step size
+		// this is up to now directly adapted for my problem of Zalesaks disk
+		double timestepsize_old = params_->get<double> ("time step size");
+		params_->set<double> ("time step size" , timestepsize_reinit);
+		double dta_save = dta_;
+		double dtp_save = dtp_;
+		dta_ = timestepsize_reinit;
+		dtp_ = timestepsize_reinit;
+
+
+		//maximal number the time loop is done
+		int nmax = 3;
+		int loopindex=0;
+		//flag to decide on end of reinitialization
+		bool reinitflag = false;
+
+		//is switch finally for Sysmat and BodyForce, as slightly different actions have to be done
+		//in this reinitialization compared to the normal level set solving
+		reinitswitch_ = true;
+
+		//time loop for reinitialization
+		//for (int loopindex=0; loopindex<nmax; loopindex++)
+		while ((loopindex<nmax) and (reinitflag==false))
+		{
+			Update();
+
+			//set phidtn_ to zero
+			phidtn_->PutScalar(0.0);
+
+			SetReinitVelocityField();
+			SetOldPartOfRighthandside();
+
+			if(nonlinear_) NonlinearSolve();
+			else Solve();
+
+			dtp_=dta_;
+
+			//now, phinp_ and phin_ are compared to decide whether another reinit. step is necessary
+			//sum of abs values of changes during this reinitialization step
+			double change = 0.0;
+			vector<double> ephinp(discret_->NumMyRowNodes());
+			vector<double> ephin(discret_->NumMyRowNodes());
+			vector<int> lm(discret_->NumMyRowNodes());
+			for (int lnodeid=0; lnodeid<discret_->NumMyRowNodes();lnodeid++)
+				lm[lnodeid]=lnodeid;
+			DRT::UTILS::ExtractMyValues(*phinp_,ephinp,lm);
+			DRT::UTILS::ExtractMyValues(*phin_,ephin,lm);
+			for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+				change = change + abs(ephinp[lnodeid]-ephin[lnodeid]);
+
+			if (change<1.0)
+				reinitflag = true;
+
+			loopindex = loopindex + 1;
+		} //end time loop for reinitialization
+
+		//set back phin_ and phidtn_
+		*phin_ = *phi_old;
+		*phidtn_ = *phidtn_old;
+
+		//set back the param "Type of reinitialization" in sublist LEVELSET
+		reinitswitch_ = false;
+
+		//end reinitialization by setting back the velocity field
+		SetVelocityField();
+		//set back the time step
+		params_->set<double> ("time step size" , timestepsize_old);
+		dta_ = dta_save;
+		dtp_ = dtp_save;
+
+
+	}	//end of Reinitialization according to Sussman 1994
+
+	else if (reinitaction_ == INPAR::SCATRA::reinitaction_interfaceprojection)
+	{
+		//Reinitialization according to Parolini/Burman
+		//here, extrapolation is still done for demonstrating its structure
+		//Reinitialization by function according to:
+		//A local projection reinitialization procedure for the level set equation on unstructured grids
+		//by Nicola Parolini and Erik Burman
+		cout << "Reinitialize as InterfaceProjection according to Parolini" << endl;
+		const Epetra_Map* dofrowmap = discret_->DofRowMap();
+		// phi at times n+1
+		RCP<Epetra_Vector> phinpnew_ = LINALG::CreateVector(*dofrowmap,true);
+		phinpnew_->PutScalar(0.0);
+
+		//calculation of expol
+		Epetra_SerialDenseMatrix expol(8,8);
+
+		double sq3=sqrt(3.0);
+		expol(0,0)=1.25+0.75*sq3;
+		expol(0,1)=-0.25-0.25*sq3;
+		expol(0,2)=-0.25+0.25*sq3;
+		expol(0,3)=-0.25-0.25*sq3;
+		expol(0,4)=-0.25-0.25*sq3;
+		expol(0,5)=-0.25+0.25*sq3;
+		expol(0,6)=1.25-0.75*sq3;
+		expol(0,7)=-0.25+0.25*sq3;
+		expol(1,1)=1.25+0.75*sq3;
+		expol(1,2)=-0.25-0.25*sq3;
+		expol(1,3)=-0.25+0.25*sq3;
+		expol(1,4)=-0.25+0.25*sq3;
+		expol(1,5)=-0.25-0.25*sq3;
+		expol(1,6)=-0.25+0.25*sq3;
+		expol(1,7)=1.25-0.75*sq3;
+		expol(2,2)=1.25+0.75*sq3;
+		expol(2,3)=-0.25-0.25*sq3;
+		expol(2,4)=1.25-0.75*sq3;
+		expol(2,5)=-0.25+0.25*sq3;
+		expol(2,6)=-0.25-0.25*sq3;
+		expol(2,7)=-0.25+0.25*sq3;
+		expol(3,3)=1.25+0.75*sq3;
+		expol(3,4)=-0.25+0.25*sq3;
+		expol(3,5)=1.25-0.75*sq3;
+		expol(3,6)=-0.25+0.25*sq3;
+		expol(3,7)=-0.25-0.25*sq3;
+		expol(4,4)=1.25+0.75*sq3;
+		expol(4,5)=-0.25-0.25*sq3;
+		expol(4,6)=-0.25+0.25*sq3;
+		expol(4,7)=-0.25-0.25*sq3;
+		expol(5,5)=1.25+0.75*sq3;
+		expol(5,6)=-0.25-0.25*sq3;
+		expol(5,7)=-0.25+0.25*sq3;
+		expol(6,6)=1.25+0.75*sq3;
+		expol(6,7)=-0.25-0.25*sq3;
+		expol(7,7)=1.25+0.75*sq3;
+
+		for (int k=0;k<8;++k)
+		{
+			for (int l=0;l<k;++l)
+				expol(k,l)=expol(l,k);
+		}
+		//end calculation of expol
+
+		//loop over all nodes
+		for (int lnodeid=0; lnodeid<discret_->NumMyRowNodes(); lnodeid++)
+		{
+			//get current node
+			DRT::Node* actnode = discret_->lRowNode(lnodeid);
+			//get all adjacent elements to this node
+			DRT::Element** elements=actnode->Elements();
+
+			//variable, that will become the new signed distance value of this node
+			double phi_new = 0;
+			int numadnodes = actnode->NumElement();
+
+			//gradient of phi at the one relevant node
+			Epetra_SerialDenseMatrix gradphi(3,1);
+			for (int j=0; j<3; j++)
+				gradphi(j,0)=2.0;
+
+			//loop over all adjacent elements
+			for (int j=0; j<numadnodes; ++j)
+			{
+				//get current element
+				DRT::Element* ele = elements[j];
+
+				//number of nodes in current element
+				int iel = ele->NumNode();
+
+				// create vector "ephinp" holding scalar phi values for this element
+				Epetra_SerialDenseMatrix ephinp(iel,1);
+
+				//temporal vector necessary just for function ExtractMyValues...
+				//that is requiring vectors and not matrices
+				vector<double> etemp(iel);
+
+				// remark: vector "lm" is neccessary, because ExtractMyValues() only accepts "vector<int>"
+				// arguments, but ele->NodeIds delivers an "int*" argument
+				vector<int> lm(iel);
+
+				// get vector of node GIDs for this element
+				const int* nodeids = ele->NodeIds();
+				for (int inode=0; inode < iel; inode++)
+					lm[inode] = nodeids[inode];
+
+				// get entries in "gfuncvalues" corresponding to node GIDs "lm" and store them in "ephinp"
+				DRT::UTILS::ExtractMyValues(*phinp_, etemp, lm);
+
+				for (int k=0; k<iel; k++)
+					ephinp(k,0) = etemp[k];
+
+				const DRT::Element::DiscretizationType distype = ele->Shape();
+
+				//gradphi is calculated by extrapolating values of gausspoints
+				//LINALG::Matrix<3,1> xsi_;
+				//current node is number iquad of current element
+				int iquad = 0;
+				for (int i=0; i<iel; i++)
+				{
+					if (actnode->Id()==nodeids[i])
+						iquad = i;
+				}
+
+				//note: the calculation of deriv_ is only implemented for hex8-elements
+				//calculation of deriv_ as weighted value over the gausspoints with extrapolation
+
+				//matrix with the derivatives of the form functions (in paramspace)
+				Epetra_SerialDenseMatrix gradphi_gps(8,3);
+
+				// the following is necessary for getting the gaussian points
+				const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_hex_8point;
+				const DRT::UTILS::IntegrationPoints3D  intpoints(gaussrule);
+
+				//calculation of gradphi_gps(8,3)
+				//loop over all gaussian points
+				for (int i=0; i<8; i++)
+				{
+					//coordinates of current gaussian point
+					LINALG::Matrix<3,1> xsi_;
+					for (int idim = 0; idim<3; idim++)
+						xsi_(idim) = intpoints.qxg[i][idim];
+
+					Epetra_SerialDenseMatrix deriv_(3,8);
+					DRT::UTILS::shape_function_3D_deriv1(deriv_,xsi_(0),xsi_(1),xsi_(2),distype);
+
+					//calculation of xji_ (inverse of transposed jacobian)
+
+					//xyze are the positions of the nodes in the global coordinate system
+				Epetra_SerialDenseMatrix xyze(3,iel);
+				GEO::fillInitialPositionArray(ele, xyze);
+
+				// get transposed of the jacobian matrix d x / d \xi
+				Epetra_SerialDenseMatrix xjm(3,3);		//should be the "this"-object
+				//computing: this = 0*this+1*deriv_*(xyze)T
+				xjm.Multiply('N','T',1.0,deriv_,xyze,0.0);
+
+				// inverse of jacobian
+				//xji = xjm^-1
+				Epetra_SerialDenseMatrix xji(xjm);
+					//for inverting: works with LINALG-matrices, therefore using a temporal matrix
+				//just for inverting
+				LINALG::Matrix<3,3> xjm_temp;
+				for (int i1=0; i1<3; i1++)
+					for (int i2=0; i2<3; i2++)
+						xjm_temp(i1,i2) = xjm(i1,i2);
+				LINALG::Matrix<3,3> xji_temp;
+
+				const double det = xji_temp.Invert(xjm_temp);
+				if (det < 1e-16)
+					dserror("zero or negative jacobian determinant");
+
+				for (int i1=0; i1<3; i1++)
+					for (int i2=0; i2<3; i2++)
+						xji(i1,i2) = xji_temp(i1,i2);
+
+				Epetra_SerialDenseMatrix derxy_(3,iel);
+					//compute global derivatives
+				derxy_.Multiply('N','N',1.0,xji,deriv_,0.0);
+
+					//gradient of phi at gaussian point shall be calculated in the end
+				Epetra_SerialDenseMatrix gradphi_gp(3,1);
+				gradphi_gp.Multiply('N','N',1.0,derxy_,ephinp,0.0);
+
+				//writing this result in gradphi_gps(NUMGPT_SOH8,3)
+					for (int i1=0; i1<3; i1++)
+						gradphi_gps(i,i1)=gradphi_gp(i1,0);
+
+				}	//end loop over all gaussian points
+				//end calculation of gradphi_gps
+
+				//gradphi at all nodes
+				Epetra_SerialDenseMatrix gradphi_nodes(8,3);
+
+				//now, gradphi is computed at all nodes
+				//room for improvement, as only the values at one node (iquad) are required...
+				gradphi_nodes.Multiply('N','N',1.0,expol,gradphi_gps,0.0);
+
+
+
+				//here, the highly important selection of gradphi in an upwind sense is done
+				//the sign of the single derivatives is here not important
+				for (int i1=0; i1<3; i1++)
+				{
+					if (abs(gradphi_nodes(iquad,i1))<abs(gradphi(i1,0)))
+						gradphi(i1,0)=gradphi_nodes(iquad,i1);
+				}
+			}//end loop over all adjacent elements
+
+			//What has been achieved by now:
+			//gradient in current element has been computed (actually not more...)
+
+			//now compute d_h = phi(x)/|gradphi(x)| as new signed distance value
+
+			double norm_grad = sqrt(gradphi(0,0)*gradphi(0,0)+gradphi(1,0)*gradphi(1,0)+gradphi(2,0)*gradphi(2,0));
+			vector<double> etemp(1);
+			vector<int> lm(1);
+			lm[0]=lnodeid;
+			DRT::UTILS::ExtractMyValues(*phinp_, etemp, lm);
+
+			if (norm_grad == 0.0)
+				//no idea, whether this is useful. Actually, this should never happen...
+				phi_new = etemp[0];
+			else
+				phi_new = etemp[0]/norm_grad;
+
+			//What has been achieved by now:
+			//the new signed distance value has been computed for the current node
+
+			//now phi_new has to be written in the discretization
+				phinpnew_->ReplaceMyValues(1,&phi_new,&lnodeid);
+
+				//the following is not done, as huge mistakes occur, when some values are already changed
+				//and these are used for calculating the other values
+				//therefore, calculation of all new values always on the basis of the old values
+				//and the replacement of phin_ and phinp_
+				phinp_->ReplaceMyValues(1,&phi_new,&lnodeid);
+
+		}//end loop over all nodes
+
+	}//end of Reinitialization according to Parolini/Burman
+
+	return;
+} //SCATRA::ScaTraTimIntImpl::Reinitialize()
+//end REINHARD
+
+
+//REINHARD
+/*----------------------------------------------------------------------*
+ | calculate mass loss of Zalesaks disk
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::CalculateMassLoss()
+{
+	//basic idea: loop over all elements and calculate area of inner region
+	//important: assume discretization with nice rectangular hex8-elements, one element as height
+	//therefore a pseudo-3d problem...
+
+	int numele = discret_->NumGlobalElements();
+
+	//length of one hex8-element (here directly designed for Zalesaks disk!!)
+	double h = 1/sqrt(numele);
+	double area = 0;
+
+	if (masscalc_ == INPAR::SCATRA::masscalc_squares)
+	{
+		//first alternative for calculating the mass loss
+		//here, a loop over all nodes is done. For each node with negative phi-value, the area of a square around this
+		//node is added to the inner area
+		cout << "In Massenberechnung Squares" << endl;
+		double h_h = h*h;
+		//loop all nodes
+		for (int lnodeid=0; lnodeid<discret_->NumMyRowNodes(); lnodeid++)
+		{
+	      		// get pointer to current node
+	      		DRT::Node* node = discret_->lRowNode(lnodeid);
+	      		// build vector of all node GIDs of this element
+	      		//lm[inode] = nodeid;
+	      		const double* pos = node->X();
+	      		//we are only interested in half of the nodes, that is for example
+	      		//all nodes with negative z-value...
+	      		if (pos[2]<=0)
+	      		{
+	    	  		//control, whether phi of this element is negative
+	    	  		vector<double> etemp(1);
+	    	  		vector<int> lm(1);
+	    	  		lm[0] = lnodeid;
+	    	  		DRT::UTILS::ExtractMyValues(*phinp_, etemp, lm);
+	    	  		if (etemp[0]<0)
+	    	  		{
+	    			 	// get number of adjacent elements
+	    			 	// 3 possibilities: 1,2,4
+	    		 	 	// get GID of this node
+	    		 	 	int numadnodes = node->NumElement();
+	    		 	 	switch (numadnodes)
+	    		 	 	{
+	    	  				case 1:
+	    	  				{
+	    	  					area = area + 0.25*h_h;
+	    	  					break;
+	    	  				}
+	    	  				case 2:
+	    	  				{
+	    	  					area = area + 0.5*h_h;
+	    	  					break;
+	    	  				}
+	    	  				case 4:
+	    	  				{
+	    	  					area = area + h_h;
+	    	  					break;
+	    	  					}
+	    	  				default:
+	    	  					dserror ("wrong number of adjacent elements!");
+	    		  		}
+
+	    	 		}
+	      		}
+
+		}
+	}//end first alternative
+
+	else if (masscalc_ == INPAR::SCATRA::masscalc_interpolated)
+	{
+		//here the mass is calculated by calculating interface points and interpolating between these points
+		//the interpolation procedure is depending on the number of nodes with negative phi-values
+		//the loop is now element based
+		cout << "In Massenberechnung Interpolated" << endl;
+		const Epetra_Map* elemrowmap = discret_->ElementRowMap();
+
+		// loop all elements
+		for (int i=0; i<numele; ++i)
+		{
+			//get current element
+			DRT::Element* actele = discret_->gElement(elemrowmap->GID(i));
+			// extract phi-values of current element
+			// remark: vector "lm" is neccessary, because ExtractMyValues() only accepts "vector<int>"
+			// arguments, but ele->NodeIds delivers an "int*" argument
+			vector<int> lm(actele->NumNode());
+
+	    		// get vector of node GIDs for this element
+	    		const int* nodeids = actele->NodeIds();
+	    		for (unsigned inode=0; inode < lm.size(); inode++)
+	    			lm[inode] = nodeids[inode];
+
+	    		// create vector "ephinp" holding scalar phi values for this element
+	    		vector<double> ephinp(actele->NumNode());
+
+	    		//do extraction at last
+	    		DRT::UTILS::ExtractMyValues(*phinp_, ephinp, lm);
+
+	    		//compare the values of those 4 nodes, that have got a negative z-value
+	    		//first of all get vector with these four relevant phi-values
+	    		vector<double> phi_values(4);			//directly constructed for Zalesaks disk
+	    		int curnum = 0;
+	    		for (int j=0; j<actele->NumNode(); j++)
+	    		{
+	    			DRT::Node* node = discret_->lRowNode(lm[j]);
+	    			const double* pos = node->X();
+	    			if (pos[2] < 0)
+	    			{
+	    				if (curnum == 4)
+	    					dserror("Mistake when calculating the mass loss");
+	    				phi_values[curnum]=ephinp[j];
+	    				curnum = curnum+1;
+	    			}
+
+	    		}
+
+			//number of nonpositive values of the first 4 values of phi_values (negative means inside)
+			int numneg = 0;
+			for (int j=0; j<4; ++j)
+			{
+				if (phi_values[j] <= 0)
+					numneg = numneg + 1;
+			}
+
+			switch (numneg)
+			{
+				case 0: //element is completely in outer region; no contribution to area
+				{
+					break;
+				}
+				case 1:
+				{
+					//get number of the negative node (as k)
+					int k = 0;
+					for (int j=0; j<4; ++j)
+					{
+						if (phi_values[j] <= 0)
+							k=j;
+					}
+
+					//compare value phi_values[k] with neighbor values and compute lengths of triangle
+					double l1 = 0;
+					double l2 = 0;
+					if (k==3)
+						l1 = -h*phi_values[3]/(phi_values[0]-phi_values[3]);
+					else
+						l1 = -h*phi_values[k]/(phi_values[k+1]-phi_values[k]);
+
+					if (k==0)
+						l2 = -h*phi_values[0]/(phi_values[3]-phi_values[0]);
+					else
+						l2 = -h*phi_values[k]/(phi_values[k-1]-phi_values[k]);
+
+					area = area + 0.5*l1*l2;
+
+					break;
+				}
+				case 2:
+				{
+					//get number of the negative nodes (as k1 and k2)
+					int k1 = 0;
+					int k2 = 0;
+					for (int j=0; j<4; ++j)
+					{
+						if (phi_values[j] <= 0)
+						{
+							k1 = j;
+							break;
+						}
+					}
+					for (int j=3; j>=0; --j)
+					{
+						if (phi_values[j] <= 0)
+						{
+							k2 = j;
+							break;
+						}
+					}
+
+					//two cases: nonpositive nodes are neighbors or not
+					//but it is always ensured, that k1<k2
+					if ((k1+1==k2)||((k1==0)&&(k2==3)))		//they are neighbors
+					{
+						double l1 = 0;
+						double l2 = 0;
+						if (k1+1 == k2)
+						{
+							if (k1 == 0)
+								l1 = -h*phi_values[0]/(-phi_values[0]+phi_values[3]);
+							else
+								l1 = -h*phi_values[k1]/(-phi_values[k1]+phi_values[k1-1]);
+							if (k2 == 3)
+								l2 = -h*phi_values[3]/(-phi_values[3]+phi_values[0]);
+							else
+								l2 = -h*phi_values[k2]/(-phi_values[k2]+phi_values[k2+1]);
+						}
+						else		//k1==0 and k2==3
+						{
+							l1 = -h*phi_values[0]/(-phi_values[0]+phi_values[1]);
+							l2 = -h*phi_values[3]/(-phi_values[3]+phi_values[2]);
+						}
+
+						area = area + 0.5*h*(l1+l2);		//trapezoid
+					}
+					else 			//they are not neighbors
+					{
+						//assumption: inside area is not interrupted
+						//would be possible in coarser grid
+						double l1 = 0;
+						double l2 = 0;
+						double l3 = 0;
+						double l4 = 0;
+						//only two possibilities k1==0 and k2==2 or k1==1 and k2==3
+						if (k1==0)		//and k2==2
+						{
+							l1 = -h*phi_values[0]/(-phi_values[0]+phi_values[1]);
+							l2 = -h*phi_values[0]/(-phi_values[0]+phi_values[3]);
+							l3 = -h*phi_values[2]/(-phi_values[2]+phi_values[1]);
+							l4 = -h*phi_values[2]/(-phi_values[2]+phi_values[3]);
+						}
+						else			//k1==1 and k2==3
+						{
+							l1 = -h*phi_values[1]/(-phi_values[1]+phi_values[2]);
+							l2 = -h*phi_values[1]/(-phi_values[1]+phi_values[0]);
+							l3 = -h*phi_values[3]/(-phi_values[3]+phi_values[2]);
+							l4 = -h*phi_values[3]/(-phi_values[3]+phi_values[0]);
+						}
+						area = area + h*h - (0.5*(h-l1)*(h-l3)+0.5*(h-l2)*(h-l4));
+					}
+					break;
+				}
+				case 3:			//actually quite similar to case 1
+				{
+					//get number of the positive node (as k)
+					int k = 0;
+					for (int j=0; j<4; ++j)
+					{
+						if (phi_values[j] > 0)
+							k=j;
+					}
+
+					//compare value ephinp[k] with neighbor values and compute lengths of triangle
+					double l1 = 0;
+					double l2 = 0;
+					if (k==3)
+						l1 = h*phi_values[3]/(-phi_values[0]+phi_values[3]);
+					else
+						l1 = h*phi_values[k]/(-phi_values[k+1]+phi_values[k]);
+
+					if (k==0)
+						l2 = h*phi_values[0]/(-phi_values[3]+phi_values[0]);
+					else
+						l2 = h*phi_values[k]/(-phi_values[k-1]+phi_values[k]);
+
+					area = area + h*h - 0.5*l1*l2;
+
+					break;
+				}
+				case 4:
+				{
+					area = area + h*h;
+					break;
+				}
+				default:
+					dserror("problem with number of nonpositive values");
+			}
+
+
+		}//end loop over all elements
+	}//end second alternative
+
+	double area_old = 0.05822070305889007;
+	double mass_loss = (area_old-area)/area_old;
+
+	//Output to screen of mass loss (in percent of the original mass)
+	std::cout << "area_old: " << area_old << std::endl;
+	std::cout << "area: " << area << std::endl;
+	std::cout << "mass loss: " << mass_loss <<std::endl;
+
+	return;
+} // ScaTraTimIntImpl::CalculateMassLoss
+//end REINHARD
+
+
+//REINHARD
+/*--------------------------------------------------------------------------*
+ | update the velocity field during reinitialization (according to Sussman) |
+ *--------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::SetReinitVelocityField()
+{
+    const int numdim = 3; // the velocity field is always 3D
+
+    // loop all nodes on the processor
+    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+    {
+		//get current node
+		DRT::Node* actnode = discret_->lRowNode(lnodeid);
+		//get all adjacent elements to this node
+		DRT::Element** elements=actnode->Elements();
+
+	    //phi-value at current node
+	    double phiatnode = 0.0;
+
+		double norm_gradphi=0.0;
+
+	    //gradient of phi at the one relevant node
+	    Epetra_SerialDenseMatrix gradphi(3,1);
+
+	    for (int i=0; i<3; i++)
+	    	gradphi(i,0) = 0.0;
+
+		int numadnodes = actnode->NumElement();
+
+		//loop over all adjacent elements
+	    for (int elecur=0; elecur<numadnodes; ++elecur)
+	    {
+	    	Epetra_SerialDenseMatrix gradphi_node(3,1);
+
+	    	//get current element
+	    	const DRT::Element* ele = elements[elecur];
+
+		    //number of nodes in current element
+		    int iel = ele->NumNode();
+
+		    // create vector "ephinp" holding scalar phi values for this element
+		    Epetra_SerialDenseMatrix ephinp(iel,1);
+
+		    //temporal vector necessary just for function ExtractMyValues...
+		    //that is requiring vectors and not matrices
+		    vector<double> etemp(iel);
+
+		    // remark: vector "lm" is neccessary, because ExtractMyValues() only accepts "vector<int>"
+		    // arguments, but ele->NodeIds delivers an "int*" argument
+	    	vector<int> lm(iel);
+
+		    // get vector of node GIDs for this element
+		    const int* nodeids = ele->NodeIds();
+		    for (int inode=0; inode < iel; inode++)
+		    	lm[inode] = nodeids[inode];
+
+		    // get entries in "gfuncvalues" corresponding to node GIDs "lm" and store them in "ephinp"
+		    DRT::UTILS::ExtractMyValues(*phinp_, etemp, lm);
+
+		    for (int k=0; k<iel; k++)
+		    	ephinp(k,0) = etemp[k];
+
+		    const DRT::Element::DiscretizationType distype = ele->Shape();
+
+		    //current node is number iquad of current element
+		    int iquad = 0;
+		    for (int k=0; k<iel; k++)
+		    {
+		    	if (actnode->Id()==nodeids[k])
+		    		iquad = k;
+		    }
+		    phiatnode = ephinp(iquad,0);
+
+		    //local coordinates of current node
+		    LINALG::Matrix<3,1> xsi;
+		    LINALG::SerialDenseMatrix eleCoordMatrix=DRT::UTILS::getEleNodeNumbering_nodes_paramspace(distype);
+		    for (int k=0; k<3; k++)
+		    	xsi(k,0)=eleCoordMatrix(k,iquad);
+
+		    Epetra_SerialDenseMatrix deriv(3,iel);
+	    	DRT::UTILS::shape_function_3D_deriv1(deriv,xsi(0),xsi(1),xsi(2),distype);
+
+		    //xyze are the positions of the nodes in the global coordinate system
+            Epetra_SerialDenseMatrix xyze(3,iel);			//Epetra_SerialDenseMatrix
+            const DRT::Node*const* nodes = ele->Nodes();
+            for (int inode=0; inode<iel; inode++)
+            {
+                const double* x = nodes[inode]->X();
+                xyze(0,inode) = x[0];
+                xyze(1,inode) = x[1];
+                xyze(2,inode) = x[2];
+            }
+
+            //get transposed of the jacobian matrix
+            Epetra_SerialDenseMatrix xjm(3,3);
+            //computing: this = 0*this+1*deriv_*(xyze)T
+            xjm.Multiply('N','T',1.0,deriv,xyze,0.0);
+
+            // inverse of jacobian
+            //xji = xjm^-1
+            Epetra_SerialDenseMatrix xji(xjm);
+		    //for inverting: works with LINALG-matrices, therefore using a temporal matrix
+            //just for inverting
+            LINALG::Matrix<3,3> xjm_temp;
+            for (int i1=0; i1<3; i1++)
+            	for (int i2=0; i2<3; i2++)
+            		xjm_temp(i1,i2) = xjm(i1,i2);
+            LINALG::Matrix<3,3> xji_temp;
+
+            const double det = xji_temp.Invert(xjm_temp);
+            if (det < 1e-16)
+            	dserror("zero or negative jacobian determinant");
+
+            for (int i1=0; i1<3; i1++)
+            	for (int i2=0; i2<3; i2++)
+            		xji(i1,i2) = xji_temp(i1,i2);
+
+            Epetra_SerialDenseMatrix derxy(3,iel);
+		    //compute global derivatives
+            derxy.Multiply('N','N',1.0,xji,deriv,0.0);
+
+            gradphi_node.Multiply('N','N',1.0,derxy,ephinp,0.0);
+
+		    double norm = sqrt(gradphi_node(0,0)*gradphi_node(0,0)+gradphi_node(1,0)*gradphi_node(1,0)+gradphi_node(2,0)*gradphi_node(2,0));
+
+//		    //the element is chosen, where the gradient is closest to 1
+//    		if (abs(norm-1.0)<abs(norm_gradphi-1.0))
+//    		{
+//    			norm_gradphi=norm;
+//    			gradphi=gradphi_node;
+//    		}
+
+		    //a middle value is calculated of all adjacent elements to get second order accuracy
+		    norm_gradphi = norm_gradphi+norm;
+		    for (int k=0; k<3; k++)
+		    	gradphi(k,0) = gradphi(k,0)+gradphi_node(k,0);
+		    if (elecur==(numadnodes-1))
+		    {
+		    	norm_gradphi=norm_gradphi/numadnodes;
+		    	for (int k=0; k<3; k++)
+		    		gradphi(k,0) = gradphi(k,0)/numadnodes;
+		    }
+	    }//end loop over all adjacent elements
+
+	    if (norm_gradphi == 0.0)
+	    {
+	    	norm_gradphi = 1e-9;
+	    	cout << "Here, the computed gradient is 0.0" << endl;
+	    }
+
+	    double signum = 0.0;
+	    double epsilon = 0.015;		//vgl. Sussman1994 (1.5*h)
+    	if (phiatnode<-epsilon)
+    		signum = -1.0;
+    	else if (phiatnode>epsilon)
+    		signum = 1.0;
+    	else
+    		signum = phiatnode/epsilon + sin(PI*phiatnode/epsilon)/PI;
+
+	    for (int index=0; index<numdim; index++)
+	    {
+	    	double value = signum*gradphi(index,0)/norm_gradphi;
+	    	convel_->ReplaceMyValue(lnodeid,index,value);
+	    }
+
+
+	}//end loop over all nodes
+
+  return;
+
+} // ScaTraImplicitTimeInt::SetReinitVelocityField
+//end REINHARD
 
 
 /*----------------------------------------------------------------------*

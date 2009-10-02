@@ -25,15 +25,16 @@ namespace INPAR
     /// Type of combustion problem
     enum CombustionType
     {
-      premixedcombustion,
-      twophaseflow
+      combusttype_premixedcombustion,
+      combusttype_twophaseflow
     };
 
     /// Type of reinitialization for level set function (G-function)
     enum ReInitialActionGfunc
     {
-      reinitialize_by_function,
-      compute_signeddistancefunction
+      reinitaction_none,
+      reinitaction_byfunction,
+      reinitaction_signeddistancefunction
     };
   }  // namespace COMBUST
 

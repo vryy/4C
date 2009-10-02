@@ -72,6 +72,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
     DRT::INPUT::PrintDefaultParameters(std::cout, scatradyn);
     DRT::INPUT::PrintDefaultParameters(std::cout, scatradyn.sublist("STABILIZATION"));
     DRT::INPUT::PrintDefaultParameters(std::cout, scatradyn.sublist("NONLINEAR"));
+    DRT::INPUT::PrintDefaultParameters(std::cout, scatradyn.sublist("LEVELSET"));
   }
   // -------------------------------------------------------------------
   // create a solver
@@ -95,6 +96,9 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
 
   // ----Eulerian or ALE formulation of transport equation(s)
   scatratimeparams->set<bool>("isale",isale);
+
+  // ----type of scalar transport problem (standard or level set function)
+  scatratimeparams->set<INPAR::SCATRA::ScaTraType>("scatratype",Teuchos::getIntegralValue<INPAR::SCATRA::ScaTraType>(scatradyn,"SCATRATYPE"));
 
   // --------------------type of time-integration (or stationary) scheme
   INPAR::SCATRA::TimeIntegrationScheme timintscheme =
@@ -150,6 +154,13 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
 
   // ----------------sublist containing parameters for newton iteration
   scatratimeparams->sublist("NONLINEAR") = scatradyn.sublist("NONLINEAR");
+
+  // -----------------------sublist containing level set parameters
+  const INPAR::SCATRA::ScaTraType scatratype = (*scatratimeparams).get<INPAR::SCATRA::ScaTraType>("scatratype");
+  if(scatratype == INPAR::SCATRA::scatratype_levelset);
+  {
+    scatratimeparams->sublist("LEVELSET")=scatradyn.sublist("LEVELSET");
+  }
 
   // --------------sublist for combustion-specific gfunction parameters
   /* This sublist COMBUSTION DYNAMIC/GFUNCTION contains parameters for the gfunction field

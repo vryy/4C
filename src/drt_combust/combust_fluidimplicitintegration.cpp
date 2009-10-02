@@ -65,6 +65,9 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   myrank_(discret_->Comm().MyPID()),
   cout0_(discret_->Comm(), std::cout),
   combusttype_(Teuchos::getIntegralValue<INPAR::COMBUST::CombustionType>(params_.sublist("COMBUSTION FLUID"),"COMBUSTTYPE")),
+  flamespeed_(params_.sublist("COMBUSTION FLUID").get<double>("LAMINAR_FLAMESPEED")),
+  nitschevel_(params_.sublist("COMBUSTION FLUID").get<double>("NITSCHE_VELOCITY")),
+  nitschepres_(params_.sublist("COMBUSTION FLUID").get<double>("NITSCHE_PRESSURE")),
   step_(0),
   time_(0.0),
   stepmax_ (params_.get<int>   ("max number timesteps")),
@@ -79,12 +82,20 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   writestresses_(params.get<int>("write stresses", 0))
 {
 
-  std::cout << "CombustFluidImplicitTimeInt constructor start" << endl;
+  // std::cout << "CombustFluidImplicitTimeInt constructor start" << endl;
 
   //------------------------------------------------------------------------------------------------
   // time measurement: initialization
   //------------------------------------------------------------------------------------------------
   TEUCHOS_FUNC_TIME_MONITOR(" + initialization");
+
+  //------------------------------------------------------------------------------------------------
+  // set parameters for stationary simulation
+  //------------------------------------------------------------------------------------------------
+  if (timealgo_ == timeint_stationary and params_.get<double>("time step size") != 1.0)
+    dserror("Timestep size (delta t) has to be 1.0 for stationary computations!");
+  if (timealgo_ == timeint_stationary)
+    theta_ = 1.0;
 
   //------------------------------------------------------------------------------------------------
   // future: connect degrees of freedom for periodic boundary conditions                 henke 01/09
@@ -108,10 +119,31 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   // pass dof information to elements (no enrichments yet, standard FEM!)
   TransferDofInformationToElements(ihdummy, dofmanagerdummy);
 
+//  {
+//    ParameterList eleparams;
+//    eleparams.set("action","set_output_mode");
+//    eleparams.set("output_mode",true);
+//    discret_->Evaluate(eleparams);
+//  }
+
   // ensure that degrees of freedom in the discretization have been set
   discret_->FillComplete();
 
   output_.WriteMesh(0,0.0);
+
+  // store a dofset with the complete fluid unknowns
+  standarddofset_ = Teuchos::rcp(new DRT::DofSet());
+  standarddofset_->Reset();
+  standarddofset_->AssignDegreesOfFreedom(*discret_,0);
+  // split based on complete fluid field
+  FLD::UTILS::SetupFluidSplit(*discret_,*standarddofset_,3,velpressplitterForOutput_);
+
+//  {
+//    ParameterList eleparams;
+//    eleparams.set("action","set_output_mode");
+//    eleparams.set("output_mode",false);
+//    discret_->Evaluate(eleparams);
+//  }
 
   //------------------------------------------------------------------------------------------------
   // get dof layout from the discretization to construct vectors and matrices
@@ -184,7 +216,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
     if (density_ <= 0.0) dserror("received negative or zero density value from elements");
   }
 
-  std::cout << "CombustFluidImplicitTimeInt constructor done \n" << endl;
+  // std::cout << "CombustFluidImplicitTimeInt constructor done \n" << endl;
 
 } // CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt
 
@@ -296,7 +328,7 @@ void FLD::CombustFluidImplicitTimeInt::PrepareNonlinearSolve()
     discret_->SetState("velnp",state_.velnp_);
     // predicted dirichlet values
     // velnp then also holds prescribed new dirichlet values
-    discret_->EvaluateDirichlet(eleparams,state_.velnp_,null,null,null,dbcmaps_);
+    discret_->EvaluateDirichletXFEM(eleparams,state_.velnp_,null,null,null,dbcmaps_);
     discret_->ClearState();
 
     // evaluate Neumann conditions
@@ -355,7 +387,9 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
   TransferDofInformationToElements(interfacehandle, dofmanager);
 
   // print global and element dofmanager to Gmsh
-//  dofmanager->toGmsh(step_);
+  std::cout<< "Dofmanager and InterfaceHandle to Gmsh" << std::endl;
+  dofmanager->toGmsh(step_);
+  interfacehandle->toGmsh(step_);
 
 
   // get old dofmap, compute new one and get the new one, too
@@ -386,13 +420,13 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
 
     cout0_ << " Initialize system vectors..." << endl;
   // accelerations at time n and n-1
-  dofswitch.mapVectorToNewDofDistribution(state_.accnp_);
-  dofswitch.mapVectorToNewDofDistribution(state_.accn_);
+  dofswitch.mapVectorToNewDofDistributionCombust(state_.accnp_);
+  dofswitch.mapVectorToNewDofDistributionCombust(state_.accn_);
 
   // velocities and pressures at time n+1, n and n-1
-  dofswitch.mapVectorToNewDofDistribution(state_.velnp_); // use old velocity as start value
-  dofswitch.mapVectorToNewDofDistribution(state_.veln_);
-  dofswitch.mapVectorToNewDofDistribution(state_.velnm_);
+  dofswitch.mapVectorToNewDofDistributionCombust(state_.velnp_); // use old velocity as start value
+  dofswitch.mapVectorToNewDofDistributionCombust(state_.veln_);
+  dofswitch.mapVectorToNewDofDistributionCombust(state_.velnm_);
   }
   // --------------------------------------------------
   // create remaining vectors with new dof distribution
@@ -406,7 +440,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
     ParameterList eleparams;
     // other parameters needed by the elements
     eleparams.set("total time",time_);
-    discret_->EvaluateDirichlet(eleparams, zeros_, Teuchos::null, Teuchos::null,
+    discret_->EvaluateDirichletXFEM(eleparams, zeros_, Teuchos::null, Teuchos::null,
                                 Teuchos::null, dbcmaps_);
     zeros_->PutScalar(0.0); // just in case of change
   }
@@ -440,12 +474,35 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
 }
 
 /*------------------------------------------------------------------------------------------------*
+ | get convection velocity vector for transfer to scalar transport field              henke 07/09 |
+ *------------------------------------------------------------------------------------------------*/
+const Teuchos::RCP<Epetra_Vector> FLD::CombustFluidImplicitTimeInt::ConVelnp()
+{
+  // velocity vector has to be transformed from XFEM format to Standard FEM format, because ScaTra
+  // cannot handle XFEM dofs at enriched nodes
+  // remark: has to include pressure, since ScaTraTimIntImpl::SetVelocityField() expects it!
+  std::set<XFEM::PHYSICS::Field> outputfields;
+  outputfields.insert(XFEM::PHYSICS::Velx);
+  outputfields.insert(XFEM::PHYSICS::Vely);
+  outputfields.insert(XFEM::PHYSICS::Velz);
+  outputfields.insert(XFEM::PHYSICS::Pres);
+
+  // TODO: check performance time to built convel vector; if this is costly, it could be stored as
+  //       a private member variable of the time integration scheme, since it is built in two places
+  //       (here in every nonlinear iteration, and in the Output() function after every time step)
+
+  // convection velocity vector
+  Teuchos::RCP<Epetra_Vector> convel = dofmanagerForOutput_->transformXFEMtoStandardVector(
+                                         *state_.velnp_, *standarddofset_,
+                                         state_.nodalDofDistributionMap_, outputfields);
+  return convel;
+}
+
+/*------------------------------------------------------------------------------------------------*
  | solve the nonlinear fluid problem                                                  henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
 void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 {
-  //IncorporateInterface();
-
   PrepareNonlinearSolve();
 
   TEUCHOS_FUNC_TIME_MONITOR("   + nonlin. iteration/lin. solve");
@@ -463,6 +520,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 
   int               itnum = 0;
   const int         itemax = params_.get<int>("max nonlin iter steps");
+  cout << "******************** itemax ************** "<< itemax << endl;
   bool              stopnonliniter = false;
 
   double dtsolve = 0.0;
@@ -533,6 +591,9 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 
       // flag for type of combustion problem
       eleparams.set("combusttype",combusttype_);
+      eleparams.set("flamespeed",flamespeed_);
+      eleparams.set("nitschevel",nitschevel_);
+      eleparams.set("nitschepres",nitschepres_);
 
       // other parameters that might be needed by the elements
       //eleparams.set("total time",time_);
@@ -569,7 +630,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
         discret_->ClearState();
 
         // scaling to get true residual vector for all other schemes
-        trueresidual_->Update(ResidualScaling(),*residual_,0.0);
+//        trueresidual_->Update(ResidualScaling(),*residual_,0.0);
 
         // finalize the complete matrix
         sysmat_->Complete();
@@ -650,7 +711,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
         printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   |      --      |      --      |      --      |",
                itnum,itemax,ittol,vresnorm,presnorm,fullresnorm);
         printf(" (      --     ,te=%10.3E",dtele);
-        printf(")");
+        printf(")\n");
       }
     }
     /* ordinary case later iteration steps:
@@ -691,7 +752,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
                  itnum,itemax,ittol,vresnorm,presnorm,fullresnorm,
                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2,incfullnorm_L2/fullnorm_L2);
           printf(" (ts=%10.3E,te=%10.3E",dtsolve,dtele);
-          printf(")");
+          printf(")\n");
         }
     }
 
@@ -758,7 +819,6 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
     state_.velnp_->Update(1.0,*incvel_,1.0);
 
   }
-
 } // CombustImplicitTimeInt::NonlinearSolve
 
 /*------------------------------------------------------------------------------------------------*
@@ -900,9 +960,6 @@ void FLD::CombustFluidImplicitTimeInt::StatisticsAndOutput()
  *------------------------------------------------------------------------------------------------*/
 void FLD::CombustFluidImplicitTimeInt::Output()
 {
-
-  //-------------------------------------------- output of solution
-
   if (step_%upres_ == 0)  //write solution
   {
     output_.NewStep    (step_,time_);
@@ -912,11 +969,27 @@ void FLD::CombustFluidImplicitTimeInt::Output()
     fields_out.insert(XFEM::PHYSICS::Vely);
     fields_out.insert(XFEM::PHYSICS::Velz);
     fields_out.insert(XFEM::PHYSICS::Pres);
-    Teuchos::RCP<Epetra_Vector> velnp_out = dofmanagerForOutput_->fillPhysicalOutputVector(
-        *state_.velnp_, dofset_out_, state_.nodalDofDistributionMap_, fields_out);
+
+    // TODO: check performance time to built convel vector; if this is costly, it could be stored
+    //       as a private member variable of the time integration scheme, since it is built in two
+    //       places (here after every time step and in the ConVelnp() function in every nonlinear
+    //       iteration)
+
+    Teuchos::RCP<Epetra_Vector> velnp_out = Teuchos::null;
+    if (step_ == 0)
+    {
+      velnp_out = state_.velnp_;
+    }
+    else
+    {
+      velnp_out = dofmanagerForOutput_->transformXFEMtoStandardVector(
+          *state_.velnp_, *standarddofset_, state_.nodalDofDistributionMap_, fields_out);
+    }
+
     output_.WriteVector("velnp", velnp_out);
+
 //    Teuchos::RCP<Epetra_Vector> accn_out = dofmanagerForOutput_->fillPhysicalOutputVector(
-//        *state_.accn_, dofset_out_, nodalDofDistributionMap_, fields_out);
+//        *state_.accn_, standarddofset_, nodalDofDistributionMap_, fields_out);
 //    output_.WriteVector("accn", accn_out);
 
     // output (hydrodynamic) pressure
@@ -938,16 +1011,20 @@ void FLD::CombustFluidImplicitTimeInt::Output()
     if (step_==upres_)
      output_.WriteElementData();
 
-    if (uprestart_ != 0 && step_%uprestart_ == 0) //add restart data
+    if (uprestart_ != 0 and step_%uprestart_ == 0) //add restart data
     {
       output_.WriteVector("accn", state_.accn_);
       output_.WriteVector("veln", state_.veln_);
       output_.WriteVector("velnm", state_.velnm_);
     }
+    else if (xfemfields_.find(XFEM::PHYSICS::Temp) != xfemfields_.end())
+    {
+      output_.WriteVector("temperature", velnp_out);
+    }
   }
 
   // write restart also when uprestart_ is not a integer multiple of upres_
-  else if (uprestart_ != 0 && step_%uprestart_ == 0)
+  else if (uprestart_ != 0 and step_%uprestart_ == 0)
   {
     output_.NewStep    (step_,time_);
     output_.WriteVector("velnp", state_.velnp_);
@@ -967,7 +1044,7 @@ void FLD::CombustFluidImplicitTimeInt::Output()
 
   if (discret_->Comm().NumProc() == 1)
   {
-    OutputToGmsh();
+//    OutputToGmsh();
   }
   return;
 } // FluidImplicitTimeInt::Output

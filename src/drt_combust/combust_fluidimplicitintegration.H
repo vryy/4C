@@ -69,6 +69,9 @@ public:
   /// import geometrical information about the interface and incorporate it into the fluid field
   void IncorporateInterface(const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandle);
 
+  /// get convection velocity vector for transfer to scalar transport field
+  const Teuchos::RCP<Epetra_Vector> ConVelnp();
+
   /*!
   \brief do nonlinear iteration, e.g. full Newton, Newton like or fixpoint iteration
   */
@@ -225,6 +228,7 @@ public:
   Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_); }
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_); }
   Teuchos::RCP<DRT::Discretization>& Discretization() { return discret_; }
+  Teuchos::RCP<const DRT::DofSet> StandardDofSet() { return standarddofset_; }
   Teuchos::RCP<Epetra_Vector>& RobinRHS()      { return robinrhs_; }
 
   LINALG::MapExtractor& VelPresSplitter()         { return velpressplitter_; }
@@ -318,8 +322,15 @@ protected:
   IO::Ostream0 cout0_;
   //@}
 
-  /// flag for type of combustion problem
+  /// switch for type of combustion problem
   INPAR::COMBUST::CombustionType combusttype_;
+
+  // laminar flame speed
+  const double flamespeed_;
+  // Nitsche parameter velocity
+  const double nitschevel_;
+  // Nitsche parameter pressure
+  const double nitschepres_;
 
   //! @name time stepping variables
   int     step_;    ///< timestep
@@ -358,7 +369,7 @@ protected:
   //! store dof distribution information for output
   Teuchos::RCP<XFEM::DofManager>      dofmanagerForOutput_;
   //! store dofset for unintersected domain
-  DRT::DofSet                dofset_out_;
+  Teuchos::RCP<DRT::DofSet>                standarddofset_;
 
   /// (standard) system matrix
   Teuchos::RCP<LINALG::SparseOperator> sysmat_;

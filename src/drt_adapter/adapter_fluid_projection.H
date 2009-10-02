@@ -51,6 +51,7 @@ public:
     virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
     virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> ShapeDerivatives();
     virtual Teuchos::RCP<DRT::Discretization> Discretization();
+    virtual Teuchos::RCP<const DRT::DofSet> DofSet() { dserror("not implemented"); return Teuchos::null; };
 
     virtual void PrepareTimeStep();
 

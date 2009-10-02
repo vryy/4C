@@ -54,7 +54,7 @@ void COMBUST::printlogo()
  *------------------------------------------------------------------------------------------------*/
 
 /*------------------------------------------------------------------------------------------------*
- | This function is only called in the dofmanager constructor                         henke 10/08 |
+ | This function is only called in the dofmanager constructor (unused? henke 08/09)   henke 10/08 |
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::createDofMap(
     const XFEM::InterfaceHandle&                    ih,

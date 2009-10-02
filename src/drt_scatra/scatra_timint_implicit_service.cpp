@@ -44,8 +44,8 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidt()
 {
   // time measurement:
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + calc inital phidt");
-  if (myrank_ == 0)
-  cout<<"SCATRA: calculating initial time derivative of phi\n"<<endl;
+  //if (myrank_ == 0)
+  // std::cout<<"SCATRA: calculating initial time derivative of phi\n"<<endl;
 
   // are we really at step 0?
   dsassert(step_==0,"Step counter is not 0");
@@ -79,6 +79,12 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidt()
     //provide velocity field (export to column map necessary for parallel evaluation)
     AddMultiVectorToParameterList(eleparams,"velocity field",convel_);
     AddMultiVectorToParameterList(eleparams,"subgrid-scale velocity field",sgvel_);
+
+    // set type of scalar transport problem
+    eleparams.set("scatratype",scatratype_);
+
+    // set switch for reinitialization
+    eleparams.set("reinitswitch",reinitswitch_);
 
     // parameters for stabilization (here required for material evaluation location)
     eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
@@ -229,6 +235,9 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
 
   // action for elements, time factor and stationary flag
   eleparams.set("action","calc_subgrid_diffusivity_matrix");
+
+  // set type of scalar transport problem
+  eleparams.set("scatratype",scatratype_);
 
   //provide displacement field in case of ALE
   eleparams.set("isale",isale_);
@@ -1062,6 +1071,9 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain
   if (isale_)
     AddMultiVectorToParameterList(params,"dispnp",dispnp_);
 
+  // set type of scalar transport problem
+  params.set("scatratype",scatratype_);
+
   // set vector values needed by elements
   discret_->ClearState();
   discret_->SetState("phinp",phinp_);
@@ -1149,6 +1161,9 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
     eleparams.set("isale",isale_);
     if (isale_)
       AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+
+    // set type of scalar transport problem
+    eleparams.set("scatratype",scatratype_);
 
     // parameters for stabilization
     eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");

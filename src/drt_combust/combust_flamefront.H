@@ -89,7 +89,7 @@ namespace COMBUST
     explicit FlameFront(const FlameFront&);
 
     /// refine the region around flame front
-    void RefineFlameFront(const Teuchos::RCP<const COMBUST::RefinementCell> cell);
+    void RefineFlameFront(const Teuchos::RCP<COMBUST::RefinementCell> cell);
 
     /// find the flame front within a refinement cell according to G-function field
     void FindFlameFront(
@@ -151,9 +151,11 @@ namespace COMBUST
 
     /// not documented yet
     void buildPLC(
-            const Teuchos::RCP<const COMBUST::RefinementCell> cell,
-            GEO::DomainIntCells&                              domainintcelllist,
-            GEO::BoundaryIntCells&                            boundaryintcelllist
+            //const Teuchos::RCP<const COMBUST::RefinementCell> cell,
+            const COMBUST::RefinementCell* cell,
+            const std::vector<double>&     gfuncvaluesrootcell,
+            GEO::DomainIntCells&           domainintcelllist,
+            GEO::BoundaryIntCells&         boundaryintcelllist
             );
 
     /// not documented yet
@@ -195,6 +197,9 @@ namespace COMBUST
 
     /// pointer to vector on fluid NodeColMap holding G-function values originally stored in phinp
     Teuchos::RCP<Epetra_Vector> phinp_;
+    
+    /// variable holding the number of refinement steps
+    int maxRefinementLevel_;
 
     //URSULA
     // integration cells for each element

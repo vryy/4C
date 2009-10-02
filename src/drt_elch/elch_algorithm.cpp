@@ -210,6 +210,7 @@ void ELCH::Algorithm::PrepareTimeStepConvection()
     ScaTraField().SetVelocityField(
         FluidField().Velnp(),
         FluidField().SgVelVisc(),
+        Teuchos::null,
         FluidField().Discretization());
 
   // prepare time step (+ initialize one-step-theta scheme correctly with
@@ -255,6 +256,7 @@ void ELCH::Algorithm::DoTransportStep()
   ScaTraField().SetVelocityField(
       FluidField().Velnp(),
       FluidField().SgVelVisc(),
+      Teuchos::null,
       FluidField().Discretization()
   );
 

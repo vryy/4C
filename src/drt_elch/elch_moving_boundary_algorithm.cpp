@@ -145,6 +145,7 @@ void ELCH::MovingBoundaryAlgorithm::DoTransportStep()
   ScaTraField().SetVelocityField(
       FluidField().Velnp(),
       FluidField().SgVelVisc(),
+      Teuchos::null,
       FluidField().Discretization()
   );
   // solve coupled transport equations for ion concentrations and electric

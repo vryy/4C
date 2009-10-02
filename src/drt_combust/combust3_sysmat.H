@@ -26,17 +26,15 @@ namespace COMBUST
 {
   /*!
    * \brief entry point for Sysmat call
-   * at one point, one has to call specific template intantiations of Sysmat using the current Shape() of the element.
+   * at one point, one has to call specific template instantiations of Sysmat using the current Shape() of the element.
    * This is the point.
    */
-  void callSysmat4(
+  void callSysmat(
           const XFEM::AssemblyType          assembly_type,
           const DRT::ELEMENTS::Combust3*     ele,
           const Teuchos::RCP<COMBUST::InterfaceHandleCombust>&  ih,
           const XFEM::ElementDofManager&    eleDofManager,
           const DRT::ELEMENTS::Combust3::MyState&  mystate,   ///< element state variables
-          const Teuchos::RCP<const Epetra_Vector>& ivelcol,
-          const Teuchos::RCP<Epetra_Vector>& iforcecol,     ///< reaction force due to given interface velocity
           Epetra_SerialDenseMatrix&         estif,
           Epetra_SerialDenseVector&         eforce,
           Teuchos::RCP<const MAT::Material> material,
@@ -48,8 +46,10 @@ namespace COMBUST
           const bool                        supg   ,
           const bool                        cstab  ,
           const bool                        instationary,
-          const bool                        ifaceForceContribution,
-          const INPAR::COMBUST::CombustionType combusttype
+          const INPAR::COMBUST::CombustionType combusttype,
+          const double                       flamespeed,
+          const double                       nitschevel,
+          const double                       nitschepres
           );
 }
 

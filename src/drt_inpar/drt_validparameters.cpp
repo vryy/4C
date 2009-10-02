@@ -1763,6 +1763,18 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "Switch to block-preconditioned family of solvers, needs additional SCALAR TRANSPORT ELECTRIC POTENTIAL SOLVER block!",
                                yesnotuple,yesnovalue,&scatradyn);
 
+  setStringToIntegralParameter<INPAR::SCATRA::ScaTraType>("SCATRATYPE","Standard",
+                               "Type of scalar transport problem",
+                               tuple<std::string>(
+                                 "Standard",
+                                 "LevelSet"),
+                               tuple<INPAR::SCATRA::ScaTraType>(
+                                 INPAR::SCATRA::scatratype_standard,
+                                 INPAR::SCATRA::scatratype_levelset),
+                               &scatradyn);
+
+  DoubleParameter("INITIALDENS",1.0,"Initial value for density",&scatradyn);
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& scatra_nonlin = scatradyn.sublist(
       "NONLINEAR",
@@ -1781,6 +1793,40 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("ADAPTCONV_BETTER",0.1,"The linear solver shall be this much better than the current nonlinear residual in the nonlinear convergence limit",&scatra_nonlin);
 
   /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& scatradyn_levelset = scatradyn.sublist("LEVELSET",false,
+      "control parameters for a level set function");
+
+  setStringToIntegralParameter<INPAR::SCATRA::ReinitializationAction>("REINITIALIZATION","None",
+                               "Type of reinitialization strategy for level set function",
+                               tuple<std::string>(
+                                 "None",
+                                 "DirectDistance",
+                                 "Sussman",
+                                 "InterfaceProjection",
+                                 "Function",
+                                 "Signed_Distance_Function"),
+                               tuple<INPAR::SCATRA::ReinitializationAction>(
+                                 INPAR::SCATRA::reinitaction_none,
+                                 INPAR::SCATRA::reinitaction_directdistance,
+                                 INPAR::SCATRA::reinitaction_sussman,
+                                 INPAR::SCATRA::reinitaction_interfaceprojection,
+                                 INPAR::SCATRA::reinitaction_function,
+                                 INPAR::SCATRA::reinitaction_signeddistancefunction),
+                               &scatradyn_levelset);
+
+  setStringToIntegralParameter<INPAR::SCATRA::MassCalculation>("MASSCALCULATION","No",
+                               "Type of mass calculation",
+                               tuple<std::string>(
+                                 "No",
+                                 "Squares",
+                                 "Interpolated"),
+                               tuple<INPAR::SCATRA::MassCalculation>(
+                                 INPAR::SCATRA::masscalc_none,
+                                 INPAR::SCATRA::masscalc_squares,
+                                 INPAR::SCATRA::masscalc_interpolated),
+                             &scatradyn_levelset);
+
+/*----------------------------------------------------------------------*/
   Teuchos::ParameterList& scatradyn_stab = scatradyn.sublist("STABILIZATION",false,"");
 
   // this parameter governs type of stabilization
@@ -1989,11 +2035,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "Premixed_Combustion",
                                  "Two_Phase_Flow"),
                                tuple<INPAR::COMBUST::CombustionType>(
-                                 INPAR::COMBUST::premixedcombustion,
-                                 INPAR::COMBUST::twophaseflow),
+                                 INPAR::COMBUST::combusttype_premixedcombustion,
+                                 INPAR::COMBUST::combusttype_twophaseflow),
                                &combustcontrolfluid);
   DoubleParameter("LAMINAR_FLAMESPEED",1.0,"The laminar flamespeed incorporates all chemical kinetics into the problem for now",&combustcontrolfluid);
   DoubleParameter("MARKSTEIN_LENGTH",0.0,"The Markstein length takes flame curvature into account",&combustcontrolfluid);
+  DoubleParameter("NITSCHE_VELOCITY",0.0,"Nitsche parameter to stabilize/penalize the velocity jump",&combustcontrolfluid);
+  DoubleParameter("NITSCHE_PRESSURE",0.0,"Nitsche parameter to stabilize/penalize the pressure jump",&combustcontrolfluid);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& combustcontrolgfunc = combustcontrol.sublist("COMBUSTION GFUNCTION",false,
@@ -2002,15 +2050,19 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<INPAR::COMBUST::ReInitialActionGfunc>("REINITIALIZATION","Signed_Distance_Function",
                                "Type of reinitialization strategy for level set function",
                                tuple<std::string>(
+                                 "None",
                                  "Function",
                                  "Signed_Distance_Function"),
                                tuple<INPAR::COMBUST::ReInitialActionGfunc>(
-                                 INPAR::COMBUST::reinitialize_by_function,
-                                 INPAR::COMBUST::compute_signeddistancefunction),
+                                 INPAR::COMBUST::reinitaction_none,
+                                 INPAR::COMBUST::reinitaction_byfunction,
+                                 INPAR::COMBUST::reinitaction_signeddistancefunction),
                                &combustcontrolgfunc);
   IntParameter("REINITFUNCNO",-1,"function number for reinitialization of level set (G-function) field",&combustcontrolgfunc);
+  IntParameter("REINITINTERVAL",1,"reinitialization interval",&combustcontrolgfunc);
   setStringToIntegralParameter<int>("REFINEMENT","No","Turn refinement strategy for level set function on/off",
                                      yesnotuple,yesnovalue,&combustcontrolgfunc);
+  IntParameter("REFINEMENTLEVEL",-1,"number of refinement level for refinement strategy",&combustcontrolgfunc);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fsidyn = list->sublist(

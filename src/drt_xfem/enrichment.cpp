@@ -207,7 +207,8 @@ double XFEM::Enrichment::EnrValueAtInterface(
     {
     case XFEM::Enrichment::typeStandard:
     {
-        dserror("there is no embedded interface for a standard enrichment!");
+        //dserror("there is no embedded interface for a standard enrichment!");
+        enrval = 1.0;
         break;
     }
     case XFEM::Enrichment::typeVoid:

@@ -127,6 +127,9 @@ namespace ADAPTER {
     /// direct access to discretization
     virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;
 
+    /// direct access to dofset
+    virtual Teuchos::RCP<const DRT::DofSet> DofSet() = 0;
+
     //virtual Teuchos::RCP<Epetra_Vector> StructCondRHS() const = 0;
 
     /// set initial flow field

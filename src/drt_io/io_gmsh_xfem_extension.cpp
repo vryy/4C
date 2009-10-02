@@ -41,6 +41,9 @@ std::string IO::GMSH::XdisToString(
         gmshfilecontent << IO::GMSH::cellWithScalarToString(cell->Shape(),
             scalar, dxyz_ele) << "\n";
       }
+    }
+    if (elementBoundaryIntCellsMap.count(id) > 0)
+    {
       const GEO::BoundaryIntCells bcells = elementBoundaryIntCellsMap.find(id)->second;
       for (GEO::BoundaryIntCells::const_iterator bcell = bcells.begin(); bcell
           != bcells.end(); ++bcell)

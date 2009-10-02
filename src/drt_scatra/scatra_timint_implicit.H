@@ -148,6 +148,7 @@ public:
   void SetVelocityField(
       Teuchos::RCP<const Epetra_Vector> fluidvel,       ///< fluid velocity vector
       Teuchos::RCP<const Epetra_Vector> fluidsgvelvisc, ///< fluid subgrid velocity/viscosity vector
+      Teuchos::RCP<const DRT::DofSet> dofset,
       Teuchos::RCP<DRT::Discretization> fluiddis);    ///< fluid discretization
 
  /// apply moving mesh data
@@ -226,6 +227,21 @@ public:
 
   /// output of electrode information to screen
   void OutputElectrodeInfo();
+
+//REINHARD
+  /// preliminary: reinitialize level set function
+  void Reinitialize();
+//end REINHARD
+
+//REINHARD
+  /// preliminary: calculate mass loss for level set function
+  void CalculateMassLoss();
+//end REINHARD
+
+//REINHARD
+  /// preliminary: set velocity field for level set functon
+  void SetReinitVelocityField();
+//end REINHARD
 
   /// routine to return density field at time n+1 for ELCH natural convection
   Teuchos::RCP<Epetra_Vector> DensElchNp() { return elchdensnp_; }
@@ -419,6 +435,15 @@ protected:
 
   /// flag for Eulerian or ALE formulation of equation(s)
   bool isale_;
+
+  /// flag for type of scalar transport problem
+  const INPAR::SCATRA::ScaTraType scatratype_;
+
+  /// flag controlling level set reinitialization strategy
+  INPAR::SCATRA::ReinitializationAction reinitaction_;
+  /// flag controlling level set mass calculation strategy
+  INPAR::SCATRA::MassCalculation masscalc_;
+  bool reinitswitch_;
 
   /// maximum number of steps
   int stepmax_;

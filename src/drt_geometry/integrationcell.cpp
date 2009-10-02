@@ -90,9 +90,10 @@ GEO::DomainIntCell::DomainIntCell(
             indomainplus_(false)
 {}
 
-//URSULA
+
+
 /*----------------------------------------------------------------------*
- * Constructor Domain integration cell                                  *
+ * Constructor Domain integration cell                  rasthofer 07/09 *
  *----------------------------------------------------------------------*/
 GEO::DomainIntCell::DomainIntCell(
         const DRT::Element::DiscretizationType&     distype,
@@ -106,7 +107,7 @@ GEO::DomainIntCell::DomainIntCell(
             label_(-1),
             indomainplus_(indomainplus)
 {}
-//URSULA
+
 
 
 /*----------------------------------------------------------------------*
@@ -263,6 +264,18 @@ double GEO::DomainIntCell::VolumeInXiDomain(
   return normed_cell_volume;
 }
 
+/*----------------------------------------------------------------------*
+ * compute volume in physical domain
+ *----------------------------------------------------------------------*/
+double GEO::DomainIntCell::VolumeInPhysicalDomain() const
+{
+  double vol = GEO::ElementVolume(this->Shape(), nodalpos_xyz_domain_);
+
+  if(vol < 0.0)
+    dserror("cell with negative volume");
+
+  return vol;
+}
 
 ////////////// Boundary integration cell ////////////////////////////////
 

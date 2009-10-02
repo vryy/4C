@@ -37,10 +37,11 @@ COMBUST::FlameFront::FlameFront(
     ) :
     fluiddis_(fluiddis),
     gfuncdis_(gfuncdis),
-    phinp_(Teuchos::null)
+    phinp_(Teuchos::null),
+    maxRefinementLevel_(0)
 {
-  if (fluiddis->Comm().MyPID() == 0)
-    std::cout << "Constructing FlameFront done" << std::endl;
+  //if (fluiddis->Comm().MyPID() == 0)
+  //  std::cout << "Constructing FlameFront done" << std::endl;
 }
 
 
@@ -77,6 +78,10 @@ void COMBUST::FlameFront::ProcessFlameFront(
    *
    * henke 02/09
    */
+//  if (Comm().MyPID()==0)
+  {
+    cout<<"\n--------------------------------------  PROCESS FLAME FRONT  ---------------------------------\n\n";
+  }
 
   //URSULA
   //diese Maps müssen bei jeden Durchlauf von ProcessFlameFront
@@ -168,7 +173,16 @@ void COMBUST::FlameFront::ProcessFlameFront(
 
     // refinement strategy is turned on
     if (Teuchos::getIntegralValue<int>(combustdyn.sublist("COMBUSTION GFUNCTION"),"REFINEMENT") == true)
+    {
+//      std::cout << "starting refinement ..." << std::endl;
+      maxRefinementLevel_ = Teuchos::getIntParameter(combustdyn.sublist("COMBUSTION GFUNCTION"),"REFINEMENTLEVEL");
+//      std::cout << "maximal refinement level " << maxRefinementLevel_ << std::endl;
+      //maxRefinementLevel_ = 2;
+      if (maxRefinementLevel_ < 0)
+        dserror("maximal refinement level not defined");
+
       RefineFlameFront(rootcell);
+    }
 
     else // refinement strategy is turned off
       FindFlameFront(rootcell);
@@ -180,6 +194,12 @@ void COMBUST::FlameFront::ProcessFlameFront(
     // generate interface (flame front) surface
     CaptureFlameFront(rootcell);
   }
+#ifdef PARALLEL
+  //----------------------------------------------------------------------------------------
+  // TODO: distribute flame front (boundary integration cells) to all processors (redundant)
+  //----------------------------------------------------------------------------------------
+  // syncFlameFront()
+#endif
   return;
 }
 
@@ -187,7 +207,7 @@ void COMBUST::FlameFront::ProcessFlameFront(
 /*------------------------------------------------------------------------------------------------*
  | refine the region around the flame front                                           henke 10/08 |
  *------------------------------------------------------------------------------------------------*/
-void COMBUST::FlameFront::RefineFlameFront(const Teuchos::RCP<const COMBUST::RefinementCell> cell)
+void COMBUST::FlameFront::RefineFlameFront(const Teuchos::RCP<COMBUST::RefinementCell> cell)
 {
 /*
   hier muss der gesamte rekursive Verfeinerungsprozess gestartet werden, d.h. dass hier der Suchbaum
@@ -201,9 +221,23 @@ void COMBUST::FlameFront::RefineFlameFront(const Teuchos::RCP<const COMBUST::Ref
       falls maximale Anzahl von Verfeinerungen noch nicht erreicht
         rekursiver Aufruf: RefineFlamefront() (RefineCell())
 */
-//  FindFlameFront(refinementcell); // Der phinpcol Vektor muss hier auch noch reingegeben werden!
 
-  dserror("Die Verfeinerung funktioniert noch nicht!");
+  // get G-Function values of refinement cell and determine, if it is intersected
+  FindFlameFront(cell);
+  // is maximal refinement level already reached?
+  if (cell->RefinementLevel() < maxRefinementLevel_) //->No
+  {
+     if (cell->Intersected()) // cell is intersected ....
+     {
+        cell->RefineCell(); // ... and will be refined
+//        std::cout << "RefineCell done" << std::endl;
+        // loop over all new refinement cells and call of RefineFlameFront
+        for (int icell = 0; icell < cell->NumOfChildren(); icell++)
+    	    RefineFlameFront(cell->GetRefinementCell(icell));
+     }
+  }
+
+  //dserror("Die Verfeinerung funktioniert noch nicht!");
   return;
 }
 
@@ -311,6 +345,15 @@ void COMBUST::FlameFront::FindFlameFront(
 //        phis[6]=0;
 //        phis[7]=1;
         //
+//        phis[0]=1;
+//        phis[1]=1;
+//        phis[2]=1;
+//        phis[3]=1;
+//        phis[4]=1;
+//        phis[5]=1;
+//        phis[6]=1;
+//        phis[7]=1;
+        //
 //        phis[0]=-1.5;
 //        phis[1]=0.5;
 //        phis[2]=-1.5;
@@ -337,6 +380,24 @@ void COMBUST::FlameFront::FindFlameFront(
 //       phis[5]=-0.5;
 //       phis[6]=1.5;
 //       phis[7]=2;
+      //
+//       phis[0]=1;
+//       phis[1]=-1;
+//       phis[2]=-1;
+//       phis[3]=1;
+//       phis[4]=1;
+//       phis[5]=-1;
+//       phis[6]=-1;
+//       phis[7]=1;
+      //
+//       phis[0]=1.5;
+//       phis[1]=1.5;
+//       phis[2]=1.5;
+//       phis[3]=1.5;
+//       phis[4]=-0.5;
+//       phis[5]=0.1;
+//       phis[6]=-0.5;
+//       phis[7]=0.1;
 //        cell->SetGfuncValues(phis);
 //URSULA
 
@@ -349,7 +410,6 @@ void COMBUST::FlameFront::FindFlameFront(
     //----------------------------------------------------------------------------------------------
     else
     {
-      dserror("refinement not working yet!");
       /* hole GID dieses Fluid Elementes
            // const int gid = ele->Id();
          für alle Eckpunkte der Zelle
@@ -357,6 +417,38 @@ void COMBUST::FlameFront::FindFlameFront(
              // GID der Elemente beider Dis identisch!
              // lokale Fluid und G-Funktion Koordinaten identisch!
            speichere den Wert am Eckpunkt */
+
+      // get the vertex coordinates of the refinement cell
+      // given in the coordinate system of the element == rootcell
+      const std::vector<std::vector<double> > vertexcoord = cell->GetVertexCoord();
+      // to be filled with the G-Function values of the refinement cell
+      std::vector<double> gfunctionvalues(8);
+      // G-Function values of the corresponding element
+      if (cell->ReturnRootCell()==NULL)
+    	  dserror("return NULL");
+      const std::vector<double> gfuncelement = cell->ReturnRootCell()->GetGfuncValues();
+      //TEST
+//      std::cout<< "G-Funct of rootcell "<< std::endl;
+//      for (std::size_t i=0; i<gfuncelement.size(); i++)
+//          std::cout<< gfuncelement[i] << std::endl;
+
+      const int numnode = cell->Ele()->NumNode();
+//      if (gfuncelement.size() != numnode)
+//        dserror("number of G-Function values does not match number of element nodes");
+
+      // loop over all vertices of the refinement cell
+      for (std::size_t ivertex = 0; ivertex < vertexcoord.size(); ivertex++)
+      {
+        // evaluate shape function at the coordinates of the current refinement cell vertex
+        Epetra_SerialDenseVector funct(numnode);
+        DRT::UTILS::shape_function_3D(funct,vertexcoord[ivertex][0],vertexcoord[ivertex][1],vertexcoord[ivertex][2],DRT::Element::hex8);
+        // compute G-Function value
+        gfunctionvalues[ivertex] = 0;
+        for (int inode = 0; inode < numnode; inode++)
+          gfunctionvalues[ivertex] += gfuncelement[inode] * funct(inode);
+      }
+//      std::cout << "FindFlameFront finished " << std::endl;
+      cell->SetGfuncValues(gfunctionvalues);
     }
   }
   //------------------------------------------------------------------------------------------------
@@ -554,100 +646,110 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
   //   else
   //    refinement cell is also an integration cell
 
+//  std::cout << "CaptureFlameFront " << std::endl;
+
+  std::vector<const COMBUST::RefinementCell* > RefinementCells;
+  cell->SearchRefinementCells(RefinementCells);
+//  std::cout << "Number of refinement cells " << RefinementCells.size() << std::endl;
+
   // vectors holding lists if domain integration cells and boundary integration surfaces, respectively
   GEO::DomainIntCells listDomainIntCellsperEle;
   GEO::BoundaryIntCells listBoundaryIntCellsperEle;
 
-  // TODO: remark: loop over cells per element is still missing!
-  //---------------------
-  // cell is intersected
-  //---------------------
-  if (cell->Intersected())
+  //-------------------------------------------
+  // loop over all refinement cells of root cell
+  //-------------------------------------------
+  for (std::size_t icell = 0; icell < RefinementCells.size(); icell++)
   {
-    buildPLC(cell, listDomainIntCellsperEle, listBoundaryIntCellsperEle);
-  }
-  //-------------------------
-  // cell is not intersected
-  //-------------------------
-  // remark: if the refinement cell is not cut, it will be an integration cell of either side of
-  //         the domain (refinement cell == integration cell)
-  //         refinement cell can be identical with element, if refinement strategy is turned off
-  else
-  {
-    std::cout<< "add DomainIntCell for uncut refinement cell" <<std::endl;
-
-    // get G-function values at vertices from refinement cell
-    // TODO: sollten später die gfuncvalues der rootcell werden
-    const std::vector<double>& gfuncvalues = cell->GetGfuncValues();
-    // get vertex coordinates (local fluid element coordinates) from refinement cell
-    const std::vector<std::vector<double> >& vertexcoord = cell->GetVertexCoord();
-
-    //---------------------------------
-    // get global coordinates of nodes
-    //---------------------------------
-    const int numnode = cell->Ele()->NumNode();
-    //const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
-    LINALG::SerialDenseMatrix xyze(3,numnode);
-
-    for(int inode=0;inode<numnode;inode++)
+    //---------------------
+    // cell is intersected
+    //---------------------
+    if (RefinementCells[icell]->Intersected())
     {
-      xyze(0,inode) = cell->Ele()->Nodes()[inode]->X()[0];
-      xyze(1,inode) = cell->Ele()->Nodes()[inode]->X()[1];
-      xyze(2,inode) = cell->Ele()->Nodes()[inode]->X()[2];
+//   std::cout << "Cell is intersected " << std::endl;
+      const std::vector<double>& gfuncvalues = cell->GetGfuncValues();
+      buildPLC(RefinementCells[icell], gfuncvalues, listDomainIntCellsperEle, listBoundaryIntCellsperEle);
     }
-
-    //-----------------------------------------
-    // get global coordinates of cell vertices
-    //-----------------------------------------
-    //entspricht vertexcoord
-    LINALG::SerialDenseMatrix cellcoord(3,numnode);
-    // if cell == element, globalcellcoord == xyze
-    LINALG::SerialDenseMatrix globalcellcoord(3,numnode);
-
-    for(int ivert=0; ivert<numnode; ivert++)
+    //-------------------------
+    // cell is not intersected
+    //-------------------------
+    // remark: if the refinement cell is not cut, it will be an integration cell of either side of
+    //         the domain (refinement cell == integration cell)
+    //         refinement cell can be identical with element, if refinement strategy is turned off
+    else
     {
-      static LINALG::Matrix<3,1> vertcoord;
-      for(int dim=0; dim<3; dim++)
+//    std::cout<< "add DomainIntCell for uncut refinement cell" <<std::endl;
+
+      // get G-function values at vertices from rootcell cell
+      const std::vector<double>& gfuncvalues = cell->GetGfuncValues();
+      // get vertex coordinates (local fluid element coordinates) from refinement cell
+      const std::vector<std::vector<double> >& vertexcoord = RefinementCells[icell]->GetVertexCoord();
+
+      //---------------------------------
+      // get global coordinates of nodes
+      //---------------------------------
+      const int numnode = cell->Ele()->NumNode();
+      //const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+      LINALG::SerialDenseMatrix xyze(3,numnode);
+
+      for(int inode=0;inode<numnode;inode++)
       {
-        // cellcoord = transpose of vertexcoord
-        cellcoord(dim,ivert) = vertexcoord[ivert][dim];
-        // coordinates of a single cell vertex
-        vertcoord(dim) = cellcoord(dim,ivert);
+        xyze(0,inode) = cell->Ele()->Nodes()[inode]->X()[0];
+        xyze(1,inode) = cell->Ele()->Nodes()[inode]->X()[1];
+        xyze(2,inode) = cell->Ele()->Nodes()[inode]->X()[2];
       }
-      // transform vertex from local (element) coordinates to global (physical) coordinates
-      GEO::elementToCurrentCoordinatesInPlace(cell->Ele()->Shape(), xyze, vertcoord);
 
-      // store vertex in array of global cell coordinates
-      for(int  dim=0; dim<3; dim++)
-        globalcellcoord(dim,ivert) = vertcoord(dim);
-       // if cell == element, globalcellcoord == xyze!
+      //-----------------------------------------
+      // get global coordinates of cell vertices
+      //-----------------------------------------
+      //corresponds to vertexcoord
+      LINALG::SerialDenseMatrix cellcoord(3,numnode);
+      // if cell == element, globalcellcoord == xyze
+      LINALG::SerialDenseMatrix globalcellcoord(3,numnode);
+
+      for(int ivert=0; ivert<numnode; ivert++)
+      {
+        static LINALG::Matrix<3,1> vertcoord;
+        for(int dim=0; dim<3; dim++)
+        {
+          // cellcoord = transpose of vertexcoord
+          cellcoord(dim,ivert) = vertexcoord[ivert][dim];
+          // coordinates of a single cell vertex
+          vertcoord(dim) = cellcoord(dim,ivert);
+        }
+        // transform vertex from local (element) coordinates to global (physical) coordinates
+        GEO::elementToCurrentCoordinatesInPlace(cell->Ele()->Shape(), xyze, vertcoord);
+
+        // store vertex in array of global cell coordinates
+        for(int  dim=0; dim<3; dim++)
+          globalcellcoord(dim,ivert) = vertcoord(dim);
+        // if cell == element, globalcellcoord == xyze!
+      }
+
+      //---------------------------------
+      // determine which domain of flame
+      //---------------------------------
+      // compute average G-function value for this refinement cell (= integration cell)
+      bool inGplus = GetIntCellDomain(cellcoord, gfuncvalues, cell->Ele()->Shape(), DRT::Element::hex8);
+
+      //TEST
+      //std::cout << "globalcellcoord " << globalcellcoord(0,3) << globalcellcoord(1,3) << std::endl;
+//      if(inGplus) {
+//        std::cout << "In G plus" << std::endl;
+//      }
+//      else {
+//        std::cout << "In G minus" << std::endl;
+//      }
+      //-- ----------------------
+      // create integration cell
+      //--- ---------------------
+      // create a hex8 integration cell and add it to the list of integration cells per element
+      listDomainIntCellsperEle.push_back(GEO::DomainIntCell(DRT::Element::hex8, cellcoord, globalcellcoord, inGplus));
     }
-
-    //---------------------------------
-    // determine which domain of flame
-    //---------------------------------
-    // compute average G-function value for this refinement cell (= integration cell)
-    bool inGplus = GetIntCellDomain(cellcoord, gfuncvalues, cell->Ele()->Shape(), DRT::Element::hex8);
-
-    //TEST
-//    std::cout << "globalcellcoord " << globalcellcoord(0,3) << globalcellcoord(1,3) << std::endl;
-//    if(inGplus) {
-//      std::cout << "In G plus" << std::endl;
-//    }
-//    else {
-//      std::cout << "In G minus" << std::endl;
-//    }
-
-    //-- ----------------------
-    // create integration cell
-    //--- ---------------------
-    // create a hex8 integration cell and add it to the list of integration cells per element
-    listDomainIntCellsperEle.push_back(GEO::DomainIntCell(DRT::Element::hex8, cellcoord, globalcellcoord, inGplus));
-  }
-
+  }//end loop over all refinement cells
   //TEST
-  std::cout << cell->Ele()->Id() << "size of DomainIntCell: " << listDomainIntCellsperEle.size() << std::endl;
-  std::cout << cell->Ele()->Id() << "size of BoundaryIntCell: " << listBoundaryIntCellsperEle.size() << std::endl;
+//  std::cout << cell->Ele()->Id() << "size of DomainIntCell: " << listDomainIntCellsperEle.size() << std::endl;
+//  std::cout << cell->Ele()->Id() << "size of BoundaryIntCell: " << listBoundaryIntCellsperEle.size() << std::endl;
 
   //------------------------------------------------------------
   // store list of integration cells per element in flame front
@@ -677,16 +779,17 @@ void COMBUST::FlameFront::TriangulateFlameFront(
        const std::vector<double>&            gfuncvalues
        )
 {
-  //std::cout << "Triangulierung" << std::endl;
-  //check -> is cell really intersected?
-  if(segmentlist.count(-1)<segmentlist.size()) //oder !=, segmentlist darf nicht nur Würfelkanten enthalten (key=-1)
+  //std::cout << "TriangulateFlameFront" << std::endl;
+  //check -> is cell really intersected? This means, not only edges of the cell are contained in segmentlist (key=-1)
+  if(segmentlist.count(-1)<segmentlist.size()) //or !=
   {
     std::map<int,std::vector<int> > polygonpoints;
     int actpoint;
 
-    //Suche Einstieg, falls eine Fläche zwei Interfacestuecke besitzt, beginne ich dort
-    //warum: -damit ich das zweite Polygon nicht übersehe
-    //       -damit ich nicht mit Kante beginne, da es möglich ist, das diese die Interfacefläche nur berührt
+    // determine start segment for polygon
+    // if a surface is intersected twice, the is the start segment
+    //  -> so the second segment can not be forgotten
+    //  -> and an edge is also not a good beginning
     int numpolygon = 1;
     int beginpolygon=-1;
     for (std::multimap<int,std::vector<int> >::iterator seglistiter = segmentlist.begin(); seglistiter != segmentlist.end(); seglistiter++)
@@ -713,17 +816,18 @@ void COMBUST::FlameFront::TriangulateFlameFront(
       }
     }
 
-    //hier werden die Polygone gebildet
-    //also die zugehoerigen Punkte in die richtige Reihenfolge gebracht
-    //einschließlich des Umlaufsinns
+    //-----------------------------------------------------------------------
+    // build polygon representing the boundary of the interface patch
+    //-----------------------------------------------------------------------
     int j=0;
     //loop over all polygons
     for (std::multimap<int,std::vector<int> >::iterator segmentiter=segmentlist.equal_range(beginpolygon).first; segmentiter!=segmentlist.equal_range(beginpolygon).second; segmentiter++)
     {
       // int actkey = segmentiter->first;
       // std::vector<int> actsegmentpoints = segmentiter->second;
-      // es reicht aus dem ersten Segment den richtigen Umlaufsinn zugeben
-      // der Rest ergibt sich im Folgenden automatisch
+
+      // Its sufficent to determine the orientation of the first segment
+      // to get the right direction of rotation (Umlaufsinn) of the polygon.
       IdentifyPolygonOrientation(segmentiter->second, segmentiter->first, intersectionpointsids, gfuncvalues);
       // IdentifyPolygonOrientation(actsegmentpoints, actkey, intersectionpointsids, gfuncvalues);
       std::vector<int> actsegmentpoints = segmentiter->second;
@@ -739,17 +843,15 @@ void COMBUST::FlameFront::TriangulateFlameFront(
       actpoint = actsegmentpoints[1];
       polypoints.push_back(actpoint);
 
-      // jetzt wird Segment gesucht, das daran anschließt
-      // also als Endpunkt auch den gerade aktuellen Punkt besitzt
-      // dann wird für dieses Segment der Anschluss gesucht
-      // das geht solange bis man wieder beim ersten Punkt von polypoints ankommt
+      // now, the following segment is searched
+      // this means the end point of this segment is equal the end point of the last segment
+      // this procedure is repeated until the starting point is reached
       while(actpoint!=polypoints[0])
       {
-        //muss abgebrochen werden sobald naechster Punkt gefunden ist
         for (std::multimap<int,std::vector<int> >::const_iterator iter = segmentlist.begin(); iter != segmentlist.end(); ++iter)
         {
           std::vector<int> it_points = iter->second;
-          if (it_points!=actsegmentpoints) //damit man nicht mit dem im letzten Schritt gefunden Segemnt vergleicht
+          if (it_points!=actsegmentpoints)
           {
             if (it_points[0]==actpoint)
             {
@@ -778,26 +880,40 @@ void COMBUST::FlameFront::TriangulateFlameFront(
       polygonpoints[j] = polypoints;
       j++;
       //TEST
-      std::cout<<"polygonecken"<< std::endl;
-      for (std::size_t ipoly=0; ipoly<polypoints.size(); ipoly++)
+//      std::cout<<"polygonvertices"<< std::endl;
+//      for (std::size_t ipoly=0; ipoly<polypoints.size(); ipoly++)
+//      {
+//        std::cout<< polypoints[ipoly] << std::endl;
+//      }
+
+      //URSULA 270709 ----- Modification
+      //URSULA 310709 ----- Modification
+      if (numpolygon==2)
       {
-        std::cout<< polypoints[ipoly] << std::endl;
+        if (polypoints.size()>(segmentlist.size()-3))
+        {
+//    		  std::cout<< "G-function values" << std::endl;
+//    		  for (std::size_t i=0; i<gfuncvalues.size(); i++)
+//    		  {
+//    			  std::cout<< gfuncvalues[i] << std::endl;
+//    		  }
+//    		  dserror("Unexpected intersection");
+          // special case: both segments of the double intersected surface belong to the same polygon
+          break;
+        }
       }
     }
 
-    //jetzt müssen Dreiecke gebildet werden
-    //falls polygon nur 3 Punkte verschiedene Punkte enthält ist man fertig
-    //bei mehr als 3 Punkten muss "Mittelpunkt" bestimmt werden
-    //dieser bildet zusammen mit zwei aufeinanderfolgenden Punkten von polypoints
-    //ein Dreieck, das dann bereits den richtigen Umlaufsinn besitzt, so dass Normalenvektor
-    // von + nach - zeigt
+    //--------------------------------------------------------------------------
+    // build triangles
+    //--------------------------------------------------------------------------
     for (std::size_t ipolygons=0; ipolygons<polygonpoints.size(); ipolygons++)
     {
       std::vector<int> polypoints = polygonpoints[ipolygons];
       if (polypoints.size()<4)
         dserror("TriangulateFlameFront needs at least 3 intersectionpoints");
 
-      if (polypoints.size()==4) //erster und letzter Punkt identisch
+      if (polypoints.size()==4) //there are only tree different points and tree points form a triangle
       {
         std::vector<int> trianglepoints (3);
         for (int i=0; i<3; i++)
@@ -826,8 +942,13 @@ void COMBUST::FlameFront::TriangulateFlameFront(
         for (int dim=0; dim<3; dim++)
         {
           midpoint[dim] = (point2[dim] + point1[dim]) * 0.5;
+          //URSULA 310709 ------ Modification
+          /*This is to avoid problems with TetGen, when triangles lie competely on a surface
+           */
+          if (midpoint[dim]==1 or midpoint[dim]==-1) // midpoint lies on surface of the cell
+        	  midpoint[dim] = midpoint[dim] * 0.98;  // -> move midpoint into th cell
         }
-        std::size_t midpoint_id = pointlist.size();//id beginnen bei 0
+        std::size_t midpoint_id = pointlist.size();//ids start at 0
         //std::cout<< "pointlistsize " << pointlist.size() << "midpointid " << midpoint_id<<std::endl;
         pointlist.push_back(midpoint);
 
@@ -844,13 +965,13 @@ void COMBUST::FlameFront::TriangulateFlameFront(
     }
 
     //TEST
-    std::cout<<"dreiecke"<< std::endl;
-    for (std::size_t itriangle=0; itriangle<trianglelist.size(); itriangle++)
-    {
-      std::cout<< "dreieck " << itriangle<< std::endl;
-     for (int i=0; i<3; i++)
-       std::cout<< trianglelist[itriangle][i]<<std::endl;
-    }
+//    std::cout<<"triangles"<< std::endl;
+//    for (std::size_t itriangle=0; itriangle<trianglelist.size(); itriangle++)
+//    {
+//      std::cout<< "dreieck " << itriangle<< std::endl;
+//     for (int i=0; i<3; i++)
+//       std::cout<< trianglelist[itriangle][i]<<std::endl;
+//    }
   }
   return;
 }
@@ -907,7 +1028,7 @@ void COMBUST::FlameFront::IdentifyPolygonOrientation(
       }
     }
   }
-  else //Diagonalenschnitt
+  else //segment == diagonal
   {
     for(int k=0; k<4; k++)
     {
@@ -921,7 +1042,7 @@ void COMBUST::FlameFront::IdentifyPolygonOrientation(
       }
     }
   }
-  if(gfuncvalues[testnode[surf_id][testpoint]]>0) //tausche, (in plus <0)
+  if(gfuncvalues[testnode[surf_id][testpoint]]>0) //change! (normal vector in domain plus <0 is needed)
   {
     int temp = segment[0];
     segment[0] = segment[1];
@@ -933,7 +1054,7 @@ void COMBUST::FlameFront::IdentifyPolygonOrientation(
 
 /*------------------------------------------------------------------------------------------------*
  | build polygon segments of intersection surface of a refinement cell                            |
- | hex8 only                                    |
+ | hex8 only                                                                                      |
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::FlameFront::buildFlameFrontSegments(
         std::map<int,int>&                       intersectionpointsids,
@@ -951,7 +1072,7 @@ void COMBUST::FlameFront::buildFlameFrontSegments(
                        {8, 9,10,11}};
 
   //int numsurf = DRT::UTILS::getNumberOfElementSurfaces(DRT::Element::hex8);
-  //das ist hex8 spezifisch
+  //hex8 only
   for (int i=0; i<6; i++)//loop over all surfaces
   {
     // gets end points of the segment
@@ -968,7 +1089,7 @@ void COMBUST::FlameFront::buildFlameFrontSegments(
     }
   }
 
-  //std::cout << "segmentpoints größe" << segmentpoints.size() << std::endl;
+  //std::cout << "segmentpoints size" << segmentpoints.size() << std::endl;
 
   switch (segmentpoints.size())
   {
@@ -983,7 +1104,7 @@ void COMBUST::FlameFront::buildFlameFrontSegments(
       if (gfuncvalues[surfacepointlist[i][k]]==0)
         zeropoints.push_back(surfacepointlist[i][k]);
     }
-    //std::cout << "zeropoints größe" << zeropoints.size() << std::endl;
+    //std::cout << "zeropoints size" << zeropoints.size() << std::endl;
     switch (zeropoints.size())
     {
     case 0: //surface not intersected
@@ -992,18 +1113,19 @@ void COMBUST::FlameFront::buildFlameFrontSegments(
       break;
     }
     case 2:
-      //zwei gegenueberliegende Ecken sind Null
-      // - echter Schnitt, entspricht dann der Diagonalen, falls die anderen Ecken unterschiedliches Vorzeichen haben
-      // - sonst nur Beruehrung
-      //zwei benachbarte Ecken haben phi==0
-      //   - Kante ist "Tangente" (Teil des Interfaces), aber Zelle selbst wird nicht geschnitten
-      //   - Kante ist interfacebegrenzendes Segement -> man braucht Segment in TriangulateFlameFront
+      /*
+       * 2 opposite vertices with Phi=0
+       * - surface is intersected, iff Phi at the remaining vertices has different sign (segment == diagonal)
+       * - otherwise vertiches touch interface
+       * 2 neighboring vertices with Phi=0
+       * - edge touchs interface, but cell is not intersected
+       * - edge limits interface patch -> then, it is needed in TriangulateFlameFront()
+       */
     {
-      // Schnitt nur bei zwei gegenüberliegenden Nullen möglich
+      // intersection: opposite vertices with Phi=0
       if(((zeropoints[0]==surfacepointlist[i][0])and(zeropoints[1]==surfacepointlist[i][2])))
       {
-        //std::cout<< "Diagonalenschnitt"<<std::endl;
-        //dann braucht man noch unterschiedliches Vorzeichen bei den verbleibenden Knoten	
+        // different sign of Phi at the remaining vertices
         if (gfuncvalues[surfacepointlist[i][1]]*gfuncvalues[surfacepointlist[i][3]]<0)
         {
           //store in segmentlist
@@ -1012,7 +1134,6 @@ void COMBUST::FlameFront::buildFlameFrontSegments(
       }
       else if (((zeropoints[0]==surfacepointlist[i][1])and(zeropoints[1]==surfacepointlist[i][3])))
       {
-        //std::cout<< "Diagonalenschnitt"<<std::endl;
         if (gfuncvalues[surfacepointlist[i][0]]*gfuncvalues[surfacepointlist[i][2]]<0)
         {
           segmentlist.insert(pair<int,std::vector<int> >(i,zeropoints));
@@ -1020,19 +1141,16 @@ void COMBUST::FlameFront::buildFlameFrontSegments(
       }
       else
       {
-        //no intersection
-        //jedoch wird eventuell segment benoetigt um ein vollstaendiges Polygon zu haben
-        //ich ordnen die Punkte in zeropoints nach ihrer ID
-        //damit ich dann vergleichen kann, ob das segment schon in der segmentlist
-        //vorhanden ist, nicht das ich es doppelt habe
-        //Key=-1, da es sich nicht eindeutig einer Fläche zuordnen lässt
+        // no intersection
+        // possibly segment limits the interface
+        // store in segment list (key=-1), if it is not already contained in the segmentlist
         if (zeropoints[0]>zeropoints[1])
         {
           int temp =zeropoints[1];
           zeropoints[1] = zeropoints[0];
           zeropoints[0] = temp;
         }
-        //schon in segmentlist?
+        //already in segmentlist?
         bool not_in_segmentlist = true;
         for (std::multimap<int,std::vector<int> >::iterator iter=segmentlist.equal_range(-1).first; iter!=segmentlist.equal_range(-1).second; iter++)
         {
@@ -1045,25 +1163,24 @@ void COMBUST::FlameFront::buildFlameFrontSegments(
       }
       break;
     }
-    case 3: //Flaeche ist nicht geschnitten, aber zwei aneinander anstoßende Kanten liegen auf dem Interface
+    case 3:
     {
-      //ich füge die Segmente noch hinzu, key=-1
-      //aber nur falls noch nicht vorhanden
-      //am besten nach Punkt_id ordnen, wie bei case2
+      // surface is not intersected, but two following edges are aligned with the interface
+      // store in segment list (key=-1), if it is not already contained in the segmentlist
 
-      //erst die zeropoints den segmenten zu ordnen
-      //suche dazu welcher Knoten fehlt
+      // zeropoints are assigned to segments
+      // checke which vertex is missing
       if(zeropoints[0]==surfacepointlist[i][0])
       {
         if(zeropoints[1]==surfacepointlist[i][1])
         {
           if(zeropoints[2]==surfacepointlist[i][2])
           {
-            //der vierte Knoten fehlt -> kein Problem
+            //vertex 4 is missing -> no problem
           }
           else
           {
-            //der dritte Knoten fehlt -> zeropoints neu ordnen
+        	//vertex 3 is missing -> rearrange zeropoints
             int temp = zeropoints[0];
             zeropoints[0] = zeropoints[2];
             zeropoints[2] = zeropoints[1];
@@ -1072,7 +1189,7 @@ void COMBUST::FlameFront::buildFlameFrontSegments(
         }
         else
         {
-          //der zweite Knoten fehlt -> zeropoints neu ordnen
+        	//vertex 2 is missing -> rearrange zeropoints
           int temp = zeropoints[0];
           zeropoints[0] = zeropoints[1];
           zeropoints[1] = zeropoints[2];
@@ -1081,7 +1198,7 @@ void COMBUST::FlameFront::buildFlameFrontSegments(
       }
       else
       {
-        //der erste Knoten fehlt -> kein Problem
+        //vertex 1 is missing -> no problem
       }
 
       for (std::size_t k=0; k<zeropoints.size()-1; k++)
@@ -1107,17 +1224,12 @@ void COMBUST::FlameFront::buildFlameFrontSegments(
       break;
     }
     case 4:
-    //Seitenflaeche ist Interfacestueck -> Zelle ist nicht geschnitten
-    //aber weitere Seitenflaechen koennen Interfacestuecke sein (ebenfalls 4 Nullwerte)
-    //diese Seitenflaechen sind BoundaryIntCells und muessen da hinzugefuegt werden
+    // suface is aligned with the interface -> cell is not intersected
+    // surface has to be added to BoundaryIntCells
     {
-      //zu beachten ist noch, dass an der Interfaceseitenflache immer 2 Zellen zusammen stoßen
-      //die BoundaryIntCell darf man aber nur einmal haben
-      //Auswahlkriterium: Normalenvektor zeigt von - nach +
-      //dserror("Seite gleich Interface geht noch nicht");
 
-      //mit 2 und 3 findet man bereits alle Segmente die das Interface begrenzen
-      //und man muss hier nichts mehr tun
+      // as all segments, limiting the interface, are already found in case 2 and 3,
+      // nothing remains to do here
 
       break;
     }
@@ -1128,7 +1240,7 @@ void COMBUST::FlameFront::buildFlameFrontSegments(
   }
   case 1:
   {
-  //std::cout << "ein Schnittpunkt" << std::endl;
+  //std::cout << "one intersection point" << std::endl;
   //find zeropoint to build segment
   std::vector<int> zeropoints;
   std::vector<std::vector<int> > surfacepointlist = DRT::UTILS::getEleNodeNumberingSurfaces(DRT::Element::hex8);
@@ -1160,13 +1272,12 @@ void COMBUST::FlameFront::buildFlameFrontSegments(
   }
   case 4:
   {
-    // zwei Segmente pro Fläche sind bei hex8-Elementen theoretisch möglich
-    // das entspricht vier Intersectionpoints
-
-    //suche Segment mit maximaler Länege
-    //das ist nicht mögliche Kombination der Endpunkte
-    //und damit kenne ich den Rest
-    //std::cout << "4 Schnittpunkte " << std::endl;
+    //std::cout << "4 intersection points " << std::endl;
+	// 2 segments per surface are possible for hex8 -> 4 intersection points
+	// idea to assign the intersection points to the segments:
+	//       look for maximal distance
+	//       this combination is not possible
+	//       the segments are now obtained
     double distance;
     double maxdist = 0.0;
     int maxdistcounter = 0;
@@ -1187,7 +1298,7 @@ void COMBUST::FlameFront::buildFlameFrontSegments(
         maxdistcounter = k;
     }
 
-    //bilde Segmente
+    //build segment
     //std::cout << "Maxdist" << maxdistcounter << std::endl;
     if (maxdistcounter==0 or maxdistcounter==2)
     {
@@ -1226,17 +1337,20 @@ void COMBUST::FlameFront::buildFlameFrontSegments(
  | build piecewise linear complex (PLC) in Tetgen format                              henke 10/08 |
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::FlameFront::buildPLC(
-        const Teuchos::RCP<const COMBUST::RefinementCell> cell,
+        //const Teuchos::RCP<const COMBUST::RefinementCell> cell,
+        const COMBUST::RefinementCell* cell,
+        const std::vector<double>& gfuncvaluesrootcell,
         GEO::DomainIntCells& domainintcelllist,
         GEO::BoundaryIntCells& boundaryintcelllist)
 {
-  // übergeben wird RefinementCell
-  // für PLC braucht man (siehe auch Ursulas Intersection-Klasse)
-  // - pointlist-> Ecken, Schnittpunkte, Mittelpunkt des Interfaces(Triangulierung)
-  // - XFEMSurfaces-> Elementflächen bzw Seitenfläche der Refinementcell
-  // - trianglelist-> Dreiecke, die Interface darstellen, werden in TriangulateFlameFront() gebaut
-  // - segmentlist -> Schnittkurve Interface mit Elementflächen, werden in buildFlameFrontSegments() gebaut
-  // das muss schließlich an CreateIntegrationCells() übergeben werden
+ /*---------------------------------------------------------------------------------
+  * a PLC contains
+  * - points -> vertices, intersection points, center of interface patch
+  * - XFEMSurfaces -> surfaces of refinement cell
+  * - trianglelist -> triangles approximating the interface: TriangulateFlameFront()
+  * - segmentlist -> intersection curve between interface and surfaces of cell: buildFlameFrontSegments()
+  * input of CreateIntegrationCells()
+  *---------------------------------------------------------------------------------*/
 
   std::vector<std::vector<double> >    pointlist;
   std::multimap<int,std::vector<int> > segmentlist;
@@ -1255,10 +1369,10 @@ void COMBUST::FlameFront::buildPLC(
     xyze(2,inode) = cell->Ele()->Nodes()[inode]->X()[2];
   }
 
-  //für jede Seitenfläche zugehörige Knoten-ID
-  //diese wird dann als Punkt-ID verwendet
+  // node ids of each surface
+  // here used as point ids
   const std::vector<std::vector<int> >& xfemsurfacelist = DRT::UTILS::getEleNodeNumberingSurfaces(distype);
-  //entspricht intersectionpoints, enthält jedoch anstatt der Punktkoordinaten Punkt-ID
+  // corresponds to intersection points, contains point ids instead of coordinates
   std::map<int,int> intersectionpointsids;
 
   // get vertex coordinates (local fluid element coordinates) from refinement cell
@@ -1267,15 +1381,20 @@ void COMBUST::FlameFront::buildPLC(
   const std::map<int,std::vector<double> >& intersectionpoints = cell->intersectionpoints_;
 
   // get G-function values from refinement cell
-  //G-Funktion der Zelle hier == G-Funktion des Elements
-  //diese werden dann zusätzlich gebraucht, wenn verfeinert wird
   const std::vector<double>& gfuncvalues = cell->GetGfuncValues();
+  //TEST
+//  std::cout << cell->Ele()->Id() << std::endl;
+//  std::cout<< "G-Werte" << std::endl;
+//  for (std::size_t i=0; i<gfuncvalues.size(); i++)
+//  {
+//	  std::cout<< gfuncvalues[i] << std::endl;
+//  }
 
   //---------------------------------------------
   // fill list of points and intersection points
   //---------------------------------------------
   // das ist allgemein gültig, egal welcher Elementtyp
-  // als erstes die Ecken des Würfels
+  // vertices of the cell
   int numofpoints = 0;
   int numvertex = DRT::UTILS::getNumberOfElementCornerNodes(distype);
   for (int ivertex=0; ivertex<numvertex; ivertex++)
@@ -1285,8 +1404,7 @@ void COMBUST::FlameFront::buildPLC(
     pointlist.push_back(vertexcoord[ivertex]);
     numofpoints++;
   }
-  // und dann die Intersectionpoints
-  // gleichzeitig wird intersectionpointsids mit den IDs gefüllt
+  // intersection points
   for (std::map<int,std::vector<double> >::const_iterator iter = intersectionpoints.begin(); iter != intersectionpoints.end(); ++iter)
   {
     pointlist.push_back(iter->second);
@@ -1305,13 +1423,12 @@ void COMBUST::FlameFront::buildPLC(
 //    }
 
   //------------------------------------------------------------------
-  // built segments enclosing interface patches within a cell/element
+  // build segments enclosing interface patches within a cell/element
   //------------------------------------------------------------------
-  //nun bilde ich die Segmente, die die Interfacefläche im Element begrenzen
-  //diese werden dann an TriangulateFlameFront() übergeben,
-  //so das darin Dreiecke gebildet werden
-  //das geschieht durch Aufruf einer extra Funktion, da einige Sonderfaelle unterschieden
-  //werden muessen
+  /*
+   * Segments form the boundary of the interfacepatch in the element.
+   * Here, some special cases have to be distinguished
+   */
   if(distype == DRT::Element::hex8) {
     buildFlameFrontSegments(intersectionpointsids, segmentlist, gfuncvalues, pointlist);
   }
@@ -1320,7 +1437,7 @@ void COMBUST::FlameFront::buildPLC(
   }
 
   //TEST
-//  std::cout<<"Segmente"<< std::endl;
+//  std::cout<<"Segments"<< std::endl;
 //  for (std::map<int,std::vector<int> >::const_iterator iter = segmentlist.begin(); iter != segmentlist.end(); ++iter)
 //  {
 //    std::cout<<"Segment "<< iter->first << std::endl;
@@ -1352,10 +1469,13 @@ void COMBUST::FlameFront::buildPLC(
 //    }
 //  }
 
-  //---------------------
-  // cell is intersected
-  //---------------------
-  if (cell->Intersected())
+  //--------------------------
+  // cell does have triangles
+  //--------------------------
+  // remark: Normally, a refinement cell will have triangles if it is cut. However, if a single
+  //         point lies on the cell surface, or the flame front is aligned with the cell surface, it
+  //         is "cut" (cell->Intersected() == true), but has no triangles in its list.
+  if (trianglelist.size() > 0)
   {
     // if cell is intersected, there have to be triangles in the list
     dsassert(trianglelist.size() != 0,"The triangle list for this cell is empty!\n");
@@ -1365,7 +1485,7 @@ void COMBUST::FlameFront::buildPLC(
     //--------------------------------------------------------------
     // remark: if cell is cut, tetrahedra have to be created serving as integration cells
     CreateIntegrationCells(pointlist, segmentlist, xfemsurfacelist, trianglelist,
-                           domainintcelllist, xyze, gfuncvalues);
+                           domainintcelllist, xyze, gfuncvaluesrootcell);
 #else
     dserror("Set QHULL flag to use Tetgen!");
 #endif
@@ -1377,7 +1497,7 @@ void COMBUST::FlameFront::buildPLC(
     //         from the trianglelist are used directly.
     for (std::size_t itriangle=0; itriangle<trianglelist.size(); itriangle++)
     {
-      LINALG::SerialDenseMatrix trianglecoord(3,3); //3Richtungen, 3Knoten
+      LINALG::SerialDenseMatrix trianglecoord(3,3); //3 directions, 3 nodes
       LINALG::SerialDenseMatrix phystrianglecoord(3,3);
       for (int inode=0; inode<3; inode++)
       {
@@ -1396,20 +1516,21 @@ void COMBUST::FlameFront::buildPLC(
                                     Teuchos::null, phystrianglecoord));
     }
   }
-  //-------------------------
-  // cell is not intersected
-  //-------------------------
-  // remark: if the refinement cell is not cut, it will be an integration cell of either side of
-  //         the domain (refinement cell == integration cell)
-  //         refinement cell can be identical with element, if refinement strategy is turned off
-  // TODO: Wird nicht genau das selbe schon in CaptureFlameFront() gemacht?
+  //------------------------------
+  // cell does not have triangles
+  //------------------------------
+  // remark: if the refinement cell is not cut (does not have triangles), it will be an integration
+  //         cell of either side of the domain (refinement cell == integration cell) refinement cell
+  //         can be identical with element, if refinement strategy is turned off
   else
   {
-    std::cout<< "add DomainIntCell for uncut refinement cell" <<std::endl;
-    // was jetzt kommt berauche ich für DomainIntCell
-    //entspricht vertexcoord
+//    std::cout<< "add DomainIntCell for uncut refinement cell" <<std::endl;
+    //--------------------------------------------------------------
+    // create and store domain integration cells for a cell/element
+    //--------------------------------------------------------------
+    //corresponds to vertexcoord
     LINALG::SerialDenseMatrix cellcoord(3, numnode);
-    //falls Element, dann ist das xyze
+    //physical cell coordinates
     LINALG::SerialDenseMatrix physcellcoord(3, numnode);
     for(int inode=0; inode<numnode; inode++)
     {
@@ -1423,8 +1544,8 @@ void COMBUST::FlameFront::buildPLC(
       for(int  dim=0; dim<3; dim++)
         physcellcoord(dim,inode) = ccoord(dim);
     }
-    // nun noch das Fluidgebiet bestimmen, in dem die Zelle liegt
-    bool inGplus = GetIntCellDomain(cellcoord, gfuncvalues, distype, DRT::Element::hex8);
+    // determine which domain of flame
+    bool inGplus = GetIntCellDomain(cellcoord, gfuncvaluesrootcell, distype, DRT::Element::hex8);
     //TEST
 //    std::cout << "physcellcoord " << physcellcoord(0,3) << physcellcoord(1,3) << std::endl;
 //    if(inGplus) {
@@ -1435,15 +1556,16 @@ void COMBUST::FlameFront::buildPLC(
 //    }
     domainintcelllist.push_back(GEO::DomainIntCell(distype, cellcoord, physcellcoord, inGplus));
 
-    if(segmentlist.size()>=4) //ab hier nur hex8
+    //----------------------------------
+    // store boundary integration cells
+    //----------------------------------
+    // remark: Boundary integartion cells are available, if one or more surfaces of the cell are aligned
+    //         with the flame front. However, to avoid to have boundary inegration cells twice, they are
+    //         only stored, if their normal vector points from + to -.
+    if(segmentlist.size()>=4) //hex8 only
     {
       if (cell->Ele()->Shape()!=DRT::Element::hex8)
         dserror("buildPLC() not supported for this element shape!");
-
-    //möglicherweise müssen noch Randintergationszellen berücksichtigt werden
-    //Normalenvektor soll von + nach - zeigen
-    //Seitenfläche ist nur zu berücksichtigen, falls sich zugehörige Zelle in + befindet
-    //macht man das nicht, hat man die Fläche doppelt
       if(inGplus)
       {
         int numsurf = DRT::UTILS::getNumberOfElementSurfaces(DRT::Element::hex8);
@@ -1460,10 +1582,9 @@ void COMBUST::FlameFront::buildPLC(
           if (numzeronodes==4)
           {
             //store boundary integration cells in boundaryintcelllist
-            // Umlaufsinn entspricht den Knoten
-            //std::cout<< "füge BoundIntCell hinzu" <<std::endl;
+//            std::cout<< "store  BoundIntCell " <<std::endl;
             //std::cout<< isurf <<std::endl;
-            LINALG::SerialDenseMatrix quadcoord(3,4); //3Richtungen, 4Knoten
+            LINALG::SerialDenseMatrix quadcoord(3,4); //3 directions, 4 nodes
             LINALG::SerialDenseMatrix physquadcoord(3,4);
             for (int inode=0; inode<4; inode++)
             {
@@ -1503,10 +1624,10 @@ void COMBUST::FlameFront::CreateIntegrationCells(
        const std::vector<double>&                gfuncvalues
         ) // output: integration cells in Tetgen format
 {
-  // übergeben werden Referenzen auf die in buildPLC genannten Listen
-  // damit muss nun die Variable tetgenio in gefüllt werden
-  // zusätzlich braucht man noch tetgenio out, wird von TetGen gefüllt
-  // damit dann in TransformIntegrationCells()
+  /*---------------------------------------------------------------------------
+   * tetgenio in is filled with the PLC
+   * tetgenio out is filled by TetGen with tetrahedras
+   *---------------------------------------------------------------------------*/
 
   const int dim = 3;
   tetgenio in;
@@ -1516,11 +1637,12 @@ void COMBUST::FlameFront::CreateIntegrationCells(
   tetgenio::facet *f;
   tetgenio::polygon *p;
 
-  //brauche ich auch scalefactor (siehe GEO::Intersection)?
-
   //allocate point list
   in.numberofpoints = pointlist.size();
   in.pointlist = new REAL[in.numberofpoints * dim];
+
+  // TODO: should scale factor be an input parameter? Is it neccessary?
+  const double scalefactor = 1.0E7;
 
   // fill point list
   int fill = 0;
@@ -1528,8 +1650,8 @@ void COMBUST::FlameFront::CreateIntegrationCells(
   {
     for(int j = 0; j < dim; j++)
     {
-      double coord = pointlist[i][j];
-      in.pointlist[fill] = (REAL) coord; //(REAL)?
+      double coord = pointlist[i][j] * scalefactor;
+      in.pointlist[fill] = (REAL) coord;
       fill++;
     }
   }
@@ -1558,11 +1680,11 @@ void COMBUST::FlameFront::CreateIntegrationCells(
     f->holelist = NULL;
     // face of hex
     p = &f->polygonlist[0];
-    p->numberofvertices = 4; //Hexaederseitenfläche hat vier Ecken, evtl allgemeiner xfemsurfacelist[i].size()
+    p->numberofvertices = 4; //hexahedra has 4 verices
     p->vertexlist = new int[p->numberofvertices];
     for(int ivertex = 0; ivertex < p->numberofvertices; ivertex++)
     {
-      p->vertexlist[ivertex] = xfemsurfacelist[i][ivertex]; //hier braucht man jetzt die richtigen Id's
+      p->vertexlist[ivertex] = xfemsurfacelist[i][ivertex];
     }
     //store segments if present
     if (numsegments)
@@ -1608,7 +1730,7 @@ void COMBUST::FlameFront::CreateIntegrationCells(
     f->numberofholes = 0;
     f->holelist = NULL;
     p = &f->polygonlist[0];
-    p->numberofvertices = 3; //Dreieck hat 3 Ecken
+    p->numberofvertices = 3; //triangle has 3 vertices
     p->vertexlist = new int[p->numberofvertices];
     for(int j=0; j<3; j++)
     {
@@ -1622,14 +1744,23 @@ void COMBUST::FlameFront::CreateIntegrationCells(
     k++;
   }
 
-  std::cout << "-----Start Tetgen-----" << std::endl;
+//  std::cout << "----- Start Tetgen -----" << std::endl;
   //in.save_nodes("tetin");
   //in.save_poly("tetin");
   tetrahedralize(switches, &in,  &out);
   //out.save_nodes("tetout");
   //out.save_elements("tetout");
   //out.save_faces("tetout");
-  std::cout << "----- End Tetgen -----" << std::endl;
+//  std::cout << "----- End Tetgen -----" << std::endl;
+
+  // store interface triangles (+ recovery of higher order meshes)
+  fill = 0;
+  for(int i = 0; i <  out.numberofpoints; i++)
+    for(int j = 0; j < dim; j++)
+    {
+      out.pointlist[fill] = (REAL) (out.pointlist[fill] * (1.0/scalefactor));
+      fill++;
+    }
 
   TransformIntegrationCells(out, domainintcelllist, xyze, gfuncvalues);
 
@@ -1653,6 +1784,7 @@ void COMBUST::FlameFront::TransformIntegrationCells(
   DRT::Element::DiscretizationType distype = DRT::Element::tet4;
   const int numTetNodes = DRT::UTILS::getNumberOfElementNodes(distype);
 
+  //std::cout << "number of Tertrahedra " << out.numberoftetrahedra << std::endl;
   for(int i=0; i<out.numberoftetrahedra; i++ )
   {
     LINALG::SerialDenseMatrix tetrahedroncoord(3, numTetNodes);
@@ -1665,10 +1797,8 @@ void COMBUST::FlameFront::TransformIntegrationCells(
         tetrahedroncoord(k,j) = out.pointlist[out.tetrahedronlist[i*out.numberofcorners+j]*3+k];
         // k: drei aufeinanderfolgende Einträge in der pointlist, entspricht den 3 Richtungen
         // *3: Richtungen je Knoten
-        // tetraherdronlist[i*out.numberofcorners+j]: KontenID für i-tes Element j-ter Knoten
+        // tetraherdronlist[i*out.numberofcorners+j]: node ID for ith element, jth node
         tetcoord(k) = tetrahedroncoord(k,j);
-        //TEST
-        //std::cout << "Tetraeder " << i << "Knoten " << j << "Koord " << k << "ist " << tetcoord(k) << std::endl;
       }
       // compute physical coordinates
       GEO::elementToCurrentCoordinatesInPlace(DRT::Element::hex8, xyze, tetcoord);
@@ -1679,20 +1809,14 @@ void COMBUST::FlameFront::TransformIntegrationCells(
     // if degenerated don't store
     if(!GEO::checkDegenerateTet(numTetNodes, tetrahedroncoord, phystetrahedroncoord))
     {
-       //ich habe einen weiteren Constructor für DomainIntCell gebaut,
-       //da ich label gleich 0 setzen möchte und das ist das wichtige der Intergrationszelle gleich
-       //mitgeben möchte, ob sie in + oder minus liegt
-       //das heißt dann aber auch, dass ich auch nicht geschnittenen Elemente der in CaptureFlameFront
-       //definierten map hinzufügen muss, da nun der Defaultfall nicht mehr zuverwenden ist,
-       //da nichts mehr über das Fluidgebiet bekannt ist
        bool inGplus = GetIntCellDomain(tetrahedroncoord, gfuncvalues, DRT::Element::hex8, distype);
        if(inGplus)
        {
-         std::cout << "In G plus" << std::endl;
+//         std::cout << "In G plus" << std::endl;
        }
        else
        {
-         std::cout << "In G minus" << std::endl;
+//         std::cout << "In G minus" << std::endl;
        }
        domainintcelllist.push_back(GEO::DomainIntCell(distype, tetrahedroncoord, phystetrahedroncoord, inGplus));
     }
@@ -1713,11 +1837,12 @@ bool COMBUST::FlameFront::GetIntCellDomain(
        const DRT::Element::DiscretizationType cell_distype
        )
 {
-  //berechnen zunächst phi an jedem Knoten der DomainIntCell
-  //anschließen wird der Mittelwert gebildet
-  //falls Mittelwert
-  // >0 true
-  // <0 false
+  /*------------------------------------------------------------------------------
+   * - compute phi at each node of domain integration cell
+   * - compute average G-value for each domain integration cell
+   * -> >=0 in plus == true
+   * _> <0  in minus == false
+   * ----------------------------------------------------------------------------*/
 
   bool inGplus = false;
 
@@ -1773,13 +1898,19 @@ bool COMBUST::FlameFront::GetIntCellDomain(
   for (int icellnode=0; icellnode<numcellnodes; icellnode++)
     averageGvalue += gvalcellnodes[icellnode];
 
+  if (numcellnodes == 0.0)
+    dserror("division by zero: number of vertices per cell is 0!");
   averageGvalue /= numcellnodes;
 
   //determine DomainIntCell position
-  if(averageGvalue>0)
+  //URSULA 030809 ----- Modfication
+  // >= ; because of the approximation of the interface,
+  // also averageGvalue=0 is possible; as always approximation errors are made,
+  // this is just one more
+  if(averageGvalue>=0.0)
     inGplus = true;
-  if(averageGvalue==0)
-    dserror("can't determine DomainIntCell position");
+//  if(averageGvalue==0)
+//    dserror("can't determine DomainIntCell position");
 
   return inGplus;
 }

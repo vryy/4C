@@ -112,6 +112,7 @@ void SCATRA::PassiveScaTraAlgorithm::DoTransportStep()
   ScaTraField().SetVelocityField(
       FluidField().Velnp(),
       FluidField().SgVelVisc(),
+      Teuchos::null,
       FluidField().Discretization()
   );
 
