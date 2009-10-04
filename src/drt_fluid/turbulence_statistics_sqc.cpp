@@ -711,6 +711,22 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
   cylbsumsqp_ =  rcp(new vector<double> );
   cylbsumsqp_->resize(sizetb,0.0);
 
+  //----------------------------------------------------------------------
+  // initialize output and initially open respective statistics output file
+
+  Teuchos::RefCountPtr<std::ofstream> log;
+
+  if (discret_->Comm().MyPID()==0)
+  {
+    std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+    s.append(".flow_statistics");
+
+    log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
+    (*log) << "# Statistics for turbulent incompressible flow past a square-section cylinder (first- and second-order moments)\n\n";
+
+    log->flush();
+  }
+
   // clear statistics
   this->ClearStatistics();
 
@@ -1487,10 +1503,10 @@ void FLD::TurbulenceStatisticsSqc::DumpStatistics(int step)
   if (discret_->Comm().MyPID()==0)
   {
     std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
-    s.append(".flow_statistic");
+    s.append(".flow_statistics");
 
     log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
-    (*log) << "# Flow statistics for turbulent flow past a square-section cylinder (first- and second-order moments)";
+    (*log) << "# Statistics for turbulent incompressible flow past a square-section cylinder (first- and second-order moments)";
     (*log) << "\n\n\n";
     (*log) << "# Statistics record ";
     (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";

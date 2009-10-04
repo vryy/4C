@@ -51,6 +51,9 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
   if (numdim!=3)
     dserror("Evaluation of turbulence statistics only for 3d flow problems!");
 
+  // type of solver: low-Mach-number or incompressible solver
+  string loma_ = params_.get<string>("low-Mach-number solver","No");
+
   //----------------------------------------------------------------------
   // allocate some (toggle) vectors
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
@@ -455,6 +458,33 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
 
   // set number of samples to zero
   numsamp_ = 0;
+
+  //----------------------------------------------------------------------
+  // initialize output and initially open respective statistics output file
+
+  Teuchos::RefCountPtr<std::ofstream> log;
+
+  if (discret_->Comm().MyPID()==0)
+  {
+    std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+
+    if (loma_ != "No")
+    {
+      s.append(".loma_statistics");
+
+      log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
+      (*log) << "# Statistics for turbulent variable-density flow over a backward-facing step at low Mach number (first- and second-order moments)\n\n";
+    }
+    else
+    {
+      s.append(".flow_statistics");
+
+      log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
+      (*log) << "# Statistics for turbulent incompressible flow over a backward-facing step (first- and second-order moments)\n\n";
+    }
+
+    log->flush();
+  }
 
   return;
 }// TurbulenceStatisticsBfs::TurbulenceStatisticsBfs
@@ -915,7 +945,7 @@ void FLD::TurbulenceStatisticsBfs::DumpStatistics(int step)
     s.append(".flow_statistics");
 
     log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
-    (*log) << "# Flow statistics for turbulent flow over a backward-facing step (first- and second-order moments)";
+    (*log) << "# Statistics for turbulent incompressible flow over a backward-facing step (first- and second-order moments)";
     (*log) << "\n\n";
     (*log) << "# Statistics record ";
     (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
@@ -1030,7 +1060,7 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step,
     s.append(".loma_statistics");
 
     log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
-    (*log) << "# Flow statistics for turbulent flow over a backward-facing step at low Mach number (first- and second-order moments)";
+    (*log) << "# Statistics for turbulent variable-density flow over a backward-facing step at low Mach number (first- and second-order moments)";
     (*log) << "\n\n";
     (*log) << "# Statistics record ";
     (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";

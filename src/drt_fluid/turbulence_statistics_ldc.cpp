@@ -49,6 +49,9 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
   if (numdim!=3)
     dserror("Evaluation of turbulence statistics only for 3d flow problems!");
 
+  // type of solver: low-Mach-number or incompressible solver
+  string loma_ = params_.get<string>("low-Mach-number solver","No");
+
   //----------------------------------------------------------------------
   // allocate some (toggle) vectors
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
@@ -499,8 +502,32 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
   x3sumsqsv_ =  rcp(new vector<double> );
   x3sumsqsv_->resize(size3,0.0);
 
-  // clear statistics
-  this->ClearStatistics();
+  //----------------------------------------------------------------------
+  // initialize output and initially open respective statistics output file
+
+  Teuchos::RefCountPtr<std::ofstream> log;
+
+  if (discret_->Comm().MyPID()==0)
+  {
+    std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+
+    if (loma_ != "No")
+    {
+      s.append(".loma_statistics");
+
+      log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
+      (*log) << "# Statistics for turbulent variable-density flow in a lid-driven cavity at low Mach number (first- and second-order moments)\n\n";
+    }
+    else
+    {
+      s.append(".flow_statistics");
+
+      log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
+      (*log) << "# Statistics for turbulent incompressible flow in a lid-driven cavity (first- and second-order moments)\n\n";
+    }
+
+    log->flush();
+  }
 
   return;
 }// TurbulenceStatisticsLdc::TurbulenceStatisticsLdc
@@ -1153,10 +1180,10 @@ void FLD::TurbulenceStatisticsLdc::DumpStatistics(int step)
   if (discret_->Comm().MyPID()==0)
   {
     std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
-    s.append(".flow_statistic");
+    s.append(".flow_statistics");
 
     log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
-    (*log) << "# Flow statistics for turbulent flow in a lid-driven cavity (first- and second-order moments)";
+    (*log) << "# Statistics for turbulent incompressible flow in a lid-driven cavity (first- and second-order moments)";
     (*log) << "\n\n\n";
     (*log) << "# Statistics record ";
     (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
@@ -1174,16 +1201,14 @@ void FLD::TurbulenceStatisticsLdc::DumpStatistics(int step)
       double x1w    = (*x1sumw_)[i]/numsamp_;
       double x1p    = (*x1sump_)[i]/numsamp_;
 
-      // factor 10 for better depiction
-      double x1urms = 10*sqrt((*x1sumsqu_)[i]/numsamp_-x1u*x1u);
-      double x1vrms = 10*sqrt((*x1sumsqv_)[i]/numsamp_-x1v*x1v);
-      double x1wrms = 10*sqrt((*x1sumsqw_)[i]/numsamp_-x1w*x1w);
-      double x1prms = 10*sqrt((*x1sumsqp_)[i]/numsamp_-x1p*x1p);
+      double x1urms = sqrt((*x1sumsqu_)[i]/numsamp_-x1u*x1u);
+      double x1vrms = sqrt((*x1sumsqv_)[i]/numsamp_-x1v*x1v);
+      double x1wrms = sqrt((*x1sumsqw_)[i]/numsamp_-x1w*x1w);
+      double x1prms = sqrt((*x1sumsqp_)[i]/numsamp_-x1p*x1p);
 
-      // factor 500 for better depiction
-      double x1uv   = 500*((*x1sumuv_)[i]/numsamp_-x1u*x1v);
-      double x1uw   = 500*((*x1sumuw_)[i]/numsamp_-x1u*x1w);
-      double x1vw   = 500*((*x1sumvw_)[i]/numsamp_-x1v*x1w);
+      double x1uv   = (*x1sumuv_)[i]/numsamp_-x1u*x1v;
+      double x1uw   = (*x1sumuw_)[i]/numsamp_-x1u*x1w;
+      double x1vw   = (*x1sumvw_)[i]/numsamp_-x1v*x1w;
 
       (*log) <<  " "  << setw(11) << setprecision(4) << (*x1coordinates_)[i];
       (*log) << "   " << setw(11) << setprecision(4) << x1u;
@@ -1213,16 +1238,14 @@ void FLD::TurbulenceStatisticsLdc::DumpStatistics(int step)
       double x2w    = (*x2sumw_)[i]/numsamp_;
       double x2p    = (*x2sump_)[i]/numsamp_;
 
-      // factor 10 for better depiction
-      double x2urms = 10*sqrt((*x2sumsqu_)[i]/numsamp_-x2u*x2u);
-      double x2vrms = 10*sqrt((*x2sumsqv_)[i]/numsamp_-x2v*x2v);
-      double x2wrms = 10*sqrt((*x2sumsqw_)[i]/numsamp_-x2w*x2w);
-      double x2prms = 10*sqrt((*x2sumsqp_)[i]/numsamp_-x2p*x2p);
+      double x2urms = sqrt((*x2sumsqu_)[i]/numsamp_-x2u*x2u);
+      double x2vrms = sqrt((*x2sumsqv_)[i]/numsamp_-x2v*x2v);
+      double x2wrms = sqrt((*x2sumsqw_)[i]/numsamp_-x2w*x2w);
+      double x2prms = sqrt((*x2sumsqp_)[i]/numsamp_-x2p*x2p);
 
-      // factor 500 for better depiction
-      double x2uv   = 500*((*x2sumuv_)[i]/numsamp_-x2u*x2v);
-      double x2uw   = 500*((*x2sumuw_)[i]/numsamp_-x2u*x2w);
-      double x2vw   = 500*((*x2sumvw_)[i]/numsamp_-x2v*x2w);
+      double x2uv   = (*x2sumuv_)[i]/numsamp_-x2u*x2v;
+      double x2uw   = (*x2sumuw_)[i]/numsamp_-x2u*x2w;
+      double x2vw   = (*x2sumvw_)[i]/numsamp_-x2v*x2w;
 
       (*log) <<  " "  << setw(11) << setprecision(4) << (*x2coordinates_)[i];
       (*log) << "   " << setw(11) << setprecision(4) << x2u;
@@ -1252,16 +1275,14 @@ void FLD::TurbulenceStatisticsLdc::DumpStatistics(int step)
       double x3w    = (*x3sumw_)[i]/numsamp_;
       double x3p    = (*x3sump_)[i]/numsamp_;
 
-      // factor 10 for better depiction
-      double x3urms = 10*sqrt((*x3sumsqu_)[i]/numsamp_-x3u*x3u);
-      double x3vrms = 10*sqrt((*x3sumsqv_)[i]/numsamp_-x3v*x3v);
-      double x3wrms = 10*sqrt((*x3sumsqw_)[i]/numsamp_-x3w*x3w);
-      double x3prms = 10*sqrt((*x3sumsqp_)[i]/numsamp_-x3p*x3p);
+      double x3urms = sqrt((*x3sumsqu_)[i]/numsamp_-x3u*x3u);
+      double x3vrms = sqrt((*x3sumsqv_)[i]/numsamp_-x3v*x3v);
+      double x3wrms = sqrt((*x3sumsqw_)[i]/numsamp_-x3w*x3w);
+      double x3prms = sqrt((*x3sumsqp_)[i]/numsamp_-x3p*x3p);
 
-      // factor 500 for better depiction
-      double x3uv   = 500*((*x3sumuv_)[i]/numsamp_-x3u*x3v);
-      double x3uw   = 500*((*x3sumuw_)[i]/numsamp_-x3u*x3w);
-      double x3vw   = 500*((*x3sumvw_)[i]/numsamp_-x3v*x3w);
+      double x3uv   = (*x3sumuv_)[i]/numsamp_-x3u*x3v;
+      double x3uw   = (*x3sumuw_)[i]/numsamp_-x3u*x3w;
+      double x3vw   = (*x3sumvw_)[i]/numsamp_-x3v*x3w;
 
       (*log) <<  " "  << setw(11) << setprecision(4) << (*x3coordinates_)[i];
       (*log) << "   " << setw(11) << setprecision(4) << x3u;
@@ -1296,10 +1317,10 @@ void FLD::TurbulenceStatisticsLdc::DumpLomaStatistics(int step)
   if (discret_->Comm().MyPID()==0)
   {
     std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
-    s.append(".loma_statistic");
+    s.append(".loma_statistics");
 
     log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
-    (*log) << "# Flow statistics for turbulent variable-density flow in a lid-driven cavity at low Mach number (first- and second-order moments)";
+    (*log) << "# Statistics for turbulent variable-density flow in a lid-driven cavity at low Mach number (first- and second-order moments)";
     (*log) << "\n\n\n";
     (*log) << "# Statistics record ";
     (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
@@ -1474,90 +1495,6 @@ void FLD::TurbulenceStatisticsLdc::DumpLomaStatistics(int step)
   return;
 
 }// TurbulenceStatisticsLdc::DumpLomaStatistics
-
-
-/*----------------------------------------------------------------------*
- *
- *----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsLdc::ClearStatistics()
-{
-  numsamp_ =0;
-
-  for(unsigned i=0; i<x1coordinates_->size(); ++i)
-  {
-    (*x1sumu_)[i]=0;
-    (*x1sumv_)[i]=0;
-    (*x1sumw_)[i]=0;
-    (*x1sump_)[i]=0;
-    (*x1sumrho_)[i]=0;
-    (*x1sumT_)[i]=0;
-
-    (*x1sumsqu_)[i]=0;
-    (*x1sumsqv_)[i]=0;
-    (*x1sumsqw_)[i]=0;
-    (*x1sumsqp_)[i]=0;
-    (*x1sumsqrho_)[i]=0;
-    (*x1sumsqT_)[i]=0;
-
-    (*x1sumuv_)[i] =0;
-    (*x1sumuw_)[i] =0;
-    (*x1sumvw_)[i] =0;
-    (*x1sumuT_)[i] =0;
-    (*x1sumvT_)[i] =0;
-    (*x1sumwT_)[i] =0;
-  }
-
-  for(unsigned i=0; i<x2coordinates_->size(); ++i)
-  {
-    (*x2sumu_)[i]=0;
-    (*x2sumv_)[i]=0;
-    (*x2sumw_)[i]=0;
-    (*x2sump_)[i]=0;
-    (*x2sumrho_)[i]=0;
-    (*x2sumT_)[i]=0;
-
-    (*x2sumsqu_)[i]=0;
-    (*x2sumsqv_)[i]=0;
-    (*x2sumsqw_)[i]=0;
-    (*x2sumsqp_)[i]=0;
-    (*x2sumsqrho_)[i]=0;
-    (*x2sumsqT_)[i]=0;
-
-    (*x2sumuv_)[i] =0;
-    (*x2sumuw_)[i] =0;
-    (*x2sumvw_)[i] =0;
-    (*x2sumuT_)[i] =0;
-    (*x2sumvT_)[i] =0;
-    (*x2sumwT_)[i] =0;
-  }
-
-  for(unsigned i=0; i<x3coordinates_->size(); ++i)
-  {
-    (*x3sumu_)[i]=0;
-    (*x3sumv_)[i]=0;
-    (*x3sumw_)[i]=0;
-    (*x3sump_)[i]=0;
-    (*x3sumrho_)[i]=0;
-    (*x3sumT_)[i]=0;
-
-    (*x3sumsqu_)[i]=0;
-    (*x3sumsqv_)[i]=0;
-    (*x3sumsqw_)[i]=0;
-    (*x3sumsqp_)[i]=0;
-    (*x3sumsqrho_)[i]=0;
-    (*x3sumsqT_)[i]=0;
-
-    (*x3sumuv_)[i] =0;
-    (*x3sumuw_)[i] =0;
-    (*x3sumvw_)[i] =0;
-    (*x3sumuT_)[i] =0;
-    (*x3sumvT_)[i] =0;
-    (*x3sumwT_)[i] =0;
-  }
-
-  return;
-}// TurbulenceStatisticsLdc::ClearStatistics
-
 
 
 #endif /* CCADISCRET       */

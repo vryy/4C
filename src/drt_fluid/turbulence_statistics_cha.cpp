@@ -35,9 +35,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   // plausibility check
   int numdim = params_.get<int>("number of velocity degrees of freedom");
   if (numdim!=3)
-  {
     dserror("Evaluation of turbulence statistics only for 3d channel flow!");
-  }
 
   //----------------------------------------------------------------------
   // switches, control parameters, material parameters
@@ -906,7 +904,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
 
 
   //----------------------------------------------------------------------
-  // initialise output
+  // initialize output and initially open respective statistics output file(s)
 
   Teuchos::RefCountPtr<std::ofstream> log;
   Teuchos::RefCountPtr<std::ofstream> log_Cs;
@@ -915,31 +913,44 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   if (discret_->Comm().MyPID()==0)
   {
     std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
-    s.append(".flow_statistic");
 
-    log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
-    (*log) << "# Flow statistics for turbulent channel flow (first- and second-order moments)\n\n";
-
-    log->flush();
-
-    // additional output for dynamic Smagorinsky model
-    if(smagorinsky_)
+    if (loma_ != "No")
     {
-      std::string s_smag = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
-      s_smag.append(".Cs_statistic");
+      s.append(".loma_statistics");
 
-      log_Cs = Teuchos::rcp(new std::ofstream(s_smag.c_str(),ios::out));
-      (*log_Cs) << "# Statistics for turbulent channel flow (Smagorinsky constant)\n\n";
+      log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
+      (*log) << "# Statistics for turbulent variable-density channel flow at low Mach number (first- and second-order moments)\n\n";
+
+      log->flush();
     }
+    else
+    {
+      s.append(".flow_statistics");
 
-    // output of residuals and subscale quantities
-    std::string s_res = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
-    s_res.append(".res_statistic");
+      log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
+      (*log) << "# Statistics for turbulent incompressible channel flow (first- and second-order moments)\n\n";
 
-    log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),ios::out));
-    (*log_res) << "# Statistics for turbulent channel flow (residuals and subscale quantities)\n";
-    (*log_res) << "# All values are first averaged over the integration points in an element \n";
-    (*log_res) << "# and after that averaged over a whole element layer in the homogeneous plane\n\n";
+      log->flush();
+
+      // additional output for dynamic Smagorinsky model
+      if (smagorinsky_)
+      {
+        std::string s_smag = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+        s_smag.append(".Cs_statistics");
+
+        log_Cs = Teuchos::rcp(new std::ofstream(s_smag.c_str(),ios::out));
+        (*log_Cs) << "# Statistics for turbulent incompressible channel flow (Smagorinsky constant)\n\n";
+      }
+
+      // output of residuals and subscale quantities
+      std::string s_res = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      s_res.append(".res_statistics");
+
+      log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),ios::out));
+      (*log_res) << "# Statistics for turbulent incompressible channel flow (residuals and subscale quantities)\n";
+      (*log_res) << "# All values are first averaged over the integration points in an element \n";
+      (*log_res) << "# and after that averaged over a whole element layer in the homogeneous plane\n\n";
+    }
   }
 
   // clear statistics
@@ -2563,7 +2574,7 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(int ste
   if (discret_->Comm().MyPID()==0)
   {
     std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
-    s.append(".flow_statistic");
+    s.append(".flow_statistics");
 
     log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::app));
     (*log) << "\n\n\n";
@@ -2633,7 +2644,7 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(int ste
       Teuchos::RefCountPtr<std::ofstream> log_Cs;
 
       std::string s_smag = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
-      s_smag.append(".Cs_statistic");
+      s_smag.append(".Cs_statistics");
 
       log_Cs = Teuchos::rcp(new std::ofstream(s_smag.c_str(),ios::app));
 
@@ -2667,7 +2678,7 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(int ste
 
       // output of residuals and subscale quantities
       std::string s_res = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
-      s_res.append(".res_statistic");
+      s_res.append(".res_statistics");
 
       log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),ios::app));
 
@@ -2896,10 +2907,10 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(int step)
   if (discret_->Comm().MyPID()==0)
   {
     std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
-    s.append(".flow_statistic");
+    s.append(".flow_statistics");
 
     log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
-    (*log) << "# Flow statistics for turbulent flow in a channel (first- and second-order moments)";
+    (*log) << "# Statistics for turbulent incompressible channel flow (first- and second-order moments)";
     (*log) << "\n\n\n";
     (*log) << "# Statistics record ";
     (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
@@ -2948,10 +2959,10 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(int step)
       Teuchos::RefCountPtr<std::ofstream> log_Cs;
 
       std::string s_smag = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
-      s_smag.append(".Cs_statistic");
+      s_smag.append(".Cs_statistics");
 
       log_Cs = Teuchos::rcp(new std::ofstream(s_smag.c_str(),ios::out));
-      (*log_Cs) << "# Smagorinsky parameter statistics for turbulent flow in a channel";
+      (*log_Cs) << "# Smagorinsky parameter statistics for turbulent incompressible flow in a channel";
       (*log_Cs) << "\n\n\n";
       (*log_Cs) << "# Statistics record ";
       (*log_Cs) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
@@ -2979,10 +2990,10 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(int step)
 
       // output of residuals and subscale quantities
       std::string s_res = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
-      s_res.append(".res_statistic");
+      s_res.append(".res_statistics");
 
       log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),ios::out));
-      (*log_res) << "# Residual statistics for turbulent flow in a channel";
+      (*log_res) << "# Residual statistics for turbulent incompressible flow in a channel";
       (*log_res) << "\n\n\n";
       (*log_res) << "# Statistics record ";
       (*log_res) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
@@ -3103,10 +3114,10 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(int step)
   if (discret_->Comm().MyPID()==0)
   {
     std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
-    s.append(".loma_statistic");
+    s.append(".loma_statistics");
 
     log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
-    (*log) << "# Flow statistics for turbulent variable-density channel flow at low Mach number (first- and second-order moments)";
+    (*log) << "# Statistics for turbulent variable-density channel flow at low Mach number (first- and second-order moments)";
     (*log) << "\n\n\n";
     (*log) << "# Statistics record ";
     (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";

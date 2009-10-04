@@ -440,10 +440,10 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(
   if (discret_->Comm().MyPID()==0)
   {
     std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
-    s.append(".flow_statistic");
+    s.append(".flow_statistics");
 
     log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
-    (*log) << "# Flow statistics for a flow in a rotating cylinder (first- and second-order moments)\n\n";
+    (*log) << "# Statistics for turbulent incompressible flow in a rotating cylinder (first- and second-order moments)\n\n";
 
     log->flush();
   }
@@ -1107,7 +1107,7 @@ void FLD::TurbulenceStatisticsCcy::TimeAverageMeansAndOutputOfStatistics(int ste
   if (discret_->Comm().MyPID()==0)
   {
     std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
-    s.append(".flow_statistic");
+    s.append(".flow_statistics");
 
     log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::app));
     (*log) << "\n\n\n";
