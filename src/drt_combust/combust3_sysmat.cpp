@@ -28,9 +28,10 @@ Maintainer: Florian Henke
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_xfem/enrichment_utils.H"
 #include "../drt_fluid/time_integration_element.H"
-#include "../drt_xfem/spacetime_boundary.H"
+//#include "../drt_xfem/spacetime_boundary.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_fem_general/drt_utils_gder2.H"
+#include "../drt_fem_general/drt_utils_shapefunctions_service.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_xfem/enrichment.H"
 
@@ -51,7 +52,7 @@ Maintainer: Florian Henke
   template<> struct SizeFac<XFEM::xfem_assembly>     {static const std::size_t fac = 2;};
 
 
-  //! fill a number of arrays with unknown values from the unknown vector given by the discretization
+  //! fill a number of (local) element arrays with unknown values from the (global) unknown vector given by the discretization
   template <DRT::Element::DiscretizationType DISTYPE,
             XFEM::AssemblyType ASSTYPE,
             class M1, class V1, class M2, class V2>
@@ -76,21 +77,11 @@ Maintainer: Florian Henke
       const size_t numparamvely = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Vely);
       const size_t numparamvelz = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velz);
       const size_t numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
-      // put one here to create arrays of size 1, since they are not needed anyway
-      // in the xfem assembly, the numparam is determined by the dofmanager
-      const size_t numparamtauxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Sigmaxx);
-
+      dsassert((numparamvelx == numparamvely) and (numparamvelx == numparamvelz) and (numparamvelx == numparampres), "assumption violation");
       const size_t shpVecSize       = SizeFac<ASSTYPE>::fac*numnode;
-      const DRT::Element::DiscretizationType stressdistype = COMBUST::StressInterpolation3D<DISTYPE>::distype;
-      const size_t shpVecSizeStress = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
-
       if (numparamvelx > shpVecSize)
       {
-        cout << "increase SizeFac for nodal unknowns" << endl;
-      }
-      if (numparamtauxx > shpVecSizeStress)
-      {
-        cout << "increase SizeFac for stress unknowns" << endl;
+        dserror("increase SizeFac for nodal unknowns");
       }
 
       const std::vector<int>& velxdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Velx>());
@@ -133,11 +124,20 @@ Maintainer: Florian Henke
       const bool tauele_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmaxx, 0) > 0);
       if (tauele_unknowns_present)
       {
+          // put one here to create arrays of size 1, since they are not needed anyway
+          // in the xfem assembly, the numparam is determined by the dofmanager
+          const size_t numparamtauxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Sigmaxx);
           const size_t numparamtauyy = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmayy, 1);
           const size_t numparamtauzz = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmazz, 1);
           const size_t numparamtauxy = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmaxy, 1);
           const size_t numparamtauxz = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmaxz, 1);
           const size_t numparamtauyz = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmayz, 1);
+          const DRT::Element::DiscretizationType stressdistype = COMBUST::StressInterpolation3D<DISTYPE>::distype;
+          const size_t shpVecSizeStress = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
+          if (numparamtauxx > shpVecSizeStress)
+          {
+            dserror("increase SizeFac for stress unknowns");
+          }
           const std::vector<int>& tauxxdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Sigmaxx>());
           const std::vector<int>& tauyydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Sigmayy>());
           const std::vector<int>& tauzzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Sigmazz>());
@@ -783,7 +783,7 @@ void SysmatTwoPhase(
     const MAT::MatList* matlist = static_cast<const MAT::MatList*>(material.get());
 
     // flag for higher order elements
-    const bool higher_order_ele = XFLUID::secondDerivativesAvailable<DISTYPE>();
+    const bool higher_order_ele = DRT::UTILS::secondDerivativesZero<DISTYPE>();
 
     //const int numparamvelx = getNumParam<ASSTYPE>(dofman, Velx, numnode);
     // different enrichments for pressure and velocity possible
@@ -1196,7 +1196,7 @@ void SysmatTwoPhase(
             else
             	XFLUID::computeStabilization(shpvel.dx, shpvel.dy, shpvel.dz, gpvelnp, numparamvelx, instationary, visc/dens, hk, mk, timefac, tau_stab_M, tau_stab_Mp, tau_stab_C);
 
-            //Modificate stabilization
+            //Modify stabilization
             tau_stab_M /= dens;
             tau_stab_Mp /= dens;
 
@@ -1791,29 +1791,29 @@ template <DRT::Element::DiscretizationType DISTYPE,
           int NUMDOF,
           class M1, class V1, class M2, class V2>
 void SysmatCombustDomain(
-    const DRT::ELEMENTS::Combust3*      ele,           ///< the element those matrix is calculated
-    const Teuchos::RCP<COMBUST::InterfaceHandleCombust>  ih,   ///< connection to the interface handler
-    const XFEM::ElementDofManager&      dofman,        ///< dofmanager of the current element
-    const M1&                           evelnp,
-    const M1&                           eveln,
-    const M1&                           evelnm,
-    const M1&                           eaccn,
-    const V1&                           eprenp,
-    const V2&                           ephi,
-    const M2&                           etau,
-    Teuchos::RCP<const MAT::Material>   material,      ///< fluid material
-    const FLUID_TIMEINTTYPE             timealgo,      ///< time discretization type
-    const double                        dt,            ///< delta t (time step size)
-    const double                        theta,         ///< factor for one step theta scheme
-    const bool                          newton,        ///< full Newton or fixed-point-like
-    const bool                          pstab,         ///< flag for stabilization
-    const bool                          supg,          ///< flag for stabilization
-    const bool                          cstab,         ///< flag for stabilization
-    const bool                          instationary,  ///< switch between stationary and instationary formulation
+    const DRT::ELEMENTS::Combust3*      ele,          ///< element whose matrix is calculated
+    const Teuchos::RCP<COMBUST::InterfaceHandleCombust>  ih, ///< information about the interface
+    const XFEM::ElementDofManager&      dofman,       ///< dofmanager of this element
+    const M1&                           evelnp,       ///< nodal velocity n+1 values for this element
+    const M1&                           eveln,        ///< nodal velocity n   values for this element
+    const M1&                           evelnm,       ///< nodal velocity n-1 values for this element
+    const M1&                           eaccn,        ///< nodal acceleration n values for this element
+    const V1&                           eprenp,       ///< nodal pressure n+1 values for this element
+    const V2&                           ephi,         ///< nodal G-function values for this element
+    const M2&                           etau,         ///< element stresses (?) not used in combustion
+    Teuchos::RCP<const MAT::Material>   material,     ///< fluid material
+    const FLUID_TIMEINTTYPE             timealgo,     ///< time discretization scheme
+    const double                        dt,           ///< delta t (time step size)
+    const double                        theta,        ///< parameter for one step theta scheme
+    const bool                          newton,       ///< full Newton or fixed-point-like
+    const bool                          pstab,        ///< flag for stabilization
+    const bool                          supg,         ///< flag for stabilization
+    const bool                          cstab,        ///< flag for stabilization
+    const bool                          instationary, ///< switch between stationary and instationary formulation
     LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>&   assembler
 )
 {
-    TEUCHOS_FUNC_TIME_MONITOR(" - evaluate - Sysmat - domain");
+    TEUCHOS_FUNC_TIME_MONITOR(" - evaluating - combustion sysmat - domain");
 
     // number space dimensions for 3d combustion element
     const size_t nsd = 3;
@@ -1821,26 +1821,25 @@ void SysmatCombustDomain(
     // number of nodes of this element
     const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
-    // time integration constant
+    // time integration factor
     const double timefac = FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dt, theta);
 
-    // get node coordinates of the current element
+    // get node coordinates of this element
     static LINALG::Matrix<nsd,numnode> xyze;
     GEO::fillInitialPositionArray<DISTYPE>(ele, xyze);
 
     // dead load in element nodes
-    //////////////////////////////////////////////////// , LINALG::SerialDenseMatrix edeadng_(BodyForce(ele->Nodes(),time));
+    //LINALG::SerialDenseMatrix edeadng_(BodyForce(ele->Nodes(),time));
 
 #ifdef DEBUG
     // check if we really got a list of materials
     dsassert(material->MaterialType() == INPAR::MAT::m_matlist, "Material law is not of type m_matlist");
 #endif
-
     // get material list for this element
     const MAT::MatList* matlist = static_cast<const MAT::MatList*>(material.get());
 
     // flag for higher order elements
-    const bool higher_order_ele = XFLUID::secondDerivativesAvailable<DISTYPE>();
+    const bool higher_order_ele = DRT::UTILS::secondDerivativesZero<DISTYPE>();
 
     const DRT::Element::DiscretizationType stressdistype = COMBUST::StressInterpolation3D<DISTYPE>::distype;
 #if 0
@@ -1856,6 +1855,7 @@ void SysmatCombustDomain(
     // remark: it is assumed that all fields are enriched -> equal for all velocity components and pressure
     const size_t numparamvelx = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velx);
     const size_t numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
+    dsassert(numparamvelx == numparampres, "assumption violation");
 #if 0
     // put one here to create arrays of size 1, since they are not needed anyway
     // in the xfem assembly, numparam is determined by the dofmanager
@@ -1877,32 +1877,29 @@ void SysmatCombustDomain(
         //------------------------------------------------------------------------------------------
         // get material parameters for this integration cell
         //------------------------------------------------------------------------------------------
-        // TODO: hack to compile - only one material is used! henke 06/09
-        int matid = 3;
-        // here I need a check on which side of the interface the cell is
-        /*
-        bool influidplus = cell->getDomainPlus();
-        if(cell->indomainplus_) // cell is burnt
+        int matid = 777;
+        // check on which side of the interface the cell is located
+        if(cell->getDomainPlus()) // cell belongs to burnt domain
         {
-          matid = 3; // plus == burnt material? check this!
+          matid = 3; // burnt material
         }
-        else
+        else // cell belongs to unburnt domain
         {
-          matid = 4; // minus == unburnt material? check this!
-        }*/
+          matid = 4; // unburnt material
+        }
         // get material from list of materials
         Teuchos::RCP<const MAT::Material> matptr = matlist->MaterialById(matid);
         // check if we really have a fluid material
         dsassert(matptr->MaterialType() == INPAR::MAT::m_fluid, "material is not of type m_fluid");
         const MAT::NewtonianFluid* mat = static_cast<const MAT::NewtonianFluid*>(matptr.get());
         // get the kinematic viscosity \nu
-//        const double kinvisc = mat->Viscosity();
+        const double kinvisc = mat->Viscosity();
         // get the density \rho
         const double dens = mat->Density();
         // get dynamic viscosity \mu
-//        const double visc = kinvisc * dens;
-        // TODO preliminary
-        const double visc = mat->Viscosity();
+        const double visc = kinvisc * dens;
+//        // TODO preliminary
+//        const double visc = mat->Viscosity();
 
         //------------------------------------------------------------------------------------------
         // evaluate the enrichment function for this integration cell
@@ -2016,15 +2013,17 @@ void SysmatCombustDomain(
                 // temporary arrays holding enriched shape functions (N * \Psi)
                 static LINALG::Matrix<shpVecSize,1> enr_funct;
                 static LINALG::Matrix<3,shpVecSize> enr_derxy;
-//                static LINALG::Matrix<6,shpVecSize> enr_derxy2;
+                static LINALG::Matrix<6,shpVecSize> enr_derxy2;
 
                 // shape functions and derivatives for nodal parameters (dofs)
                 enrvals.ComputeEnrichedNodalShapefunction(
                         Velx,
                         funct,
                         derxy,
+                        derxy2,
                         enr_funct,
-                        enr_derxy);
+                        enr_derxy,
+                        enr_derxy2);
 
                 // fill approximation functions for XFEM
                 for (size_t iparam = 0; iparam != numparamvelx; ++iparam)
@@ -2033,15 +2032,15 @@ void SysmatCombustDomain(
                   shp.dx(iparam) = enr_derxy(0,iparam);
                   shp.dy(iparam) = enr_derxy(1,iparam);
                   shp.dz(iparam) = enr_derxy(2,iparam);
-//                  shp.dxdx(iparam) = enr_derxy2(0,iparam);
-//                  shp.dxdy(iparam) = enr_derxy2(3,iparam);
-//                  shp.dxdz(iparam) = enr_derxy2(4,iparam);
-//                  shp.dydx(iparam) = shp.dxdy(iparam);
-//                  shp.dydy(iparam) = enr_derxy2(1,iparam);
-//                  shp.dydz(iparam) = enr_derxy2(5,iparam);
-//                  shp.dzdx(iparam) = shp.dxdz(iparam);
-//                  shp.dzdy(iparam) = shp.dydz(iparam);
-//                  shp.dzdz(iparam) = enr_derxy2(2,iparam);
+                  shp.dxdx(iparam) = enr_derxy2(0,iparam);
+                  shp.dxdy(iparam) = enr_derxy2(3,iparam);
+                  shp.dxdz(iparam) = enr_derxy2(4,iparam);
+                  shp.dydx(iparam) = shp.dxdy(iparam);
+                  shp.dydy(iparam) = enr_derxy2(1,iparam);
+                  shp.dydz(iparam) = enr_derxy2(5,iparam);
+                  shp.dzdx(iparam) = shp.dxdz(iparam);
+                  shp.dzdy(iparam) = shp.dydz(iparam);
+                  shp.dzdz(iparam) = enr_derxy2(2,iparam);
                 }
 
 #if 0
@@ -2077,15 +2076,15 @@ void SysmatCombustDomain(
                 shp.dx(iparam) = derxy(0,iparam);
                 shp.dy(iparam) = derxy(1,iparam);
                 shp.dz(iparam) = derxy(2,iparam);
-//                shp.dxdx(iparam) = derxy2(0,iparam);
-//                shp.dxdy(iparam) = derxy2(3,iparam);
-//                shp.dxdz(iparam) = derxy2(4,iparam);
-//                shp.dydx(iparam) = shp.dxdy(iparam);
-//                shp.dydy(iparam) = derxy2(1,iparam);
-//                shp.dydz(iparam) = derxy2(5,iparam);
-//                shp.dzdx(iparam) = shp.dxdz(iparam);
-//                shp.dzdy(iparam) = shp.dydz(iparam);
-//                shp.dzdz(iparam) = derxy2(2,iparam);
+                shp.dxdx(iparam) = derxy2(0,iparam);
+                shp.dxdy(iparam) = derxy2(3,iparam);
+                shp.dxdz(iparam) = derxy2(4,iparam);
+                shp.dydx(iparam) = shp.dxdy(iparam);
+                shp.dydy(iparam) = derxy2(1,iparam);
+                shp.dydz(iparam) = derxy2(5,iparam);
+                shp.dzdx(iparam) = shp.dxdz(iparam);
+                shp.dzdy(iparam) = shp.dydz(iparam);
+                shp.dzdz(iparam) = derxy2(2,iparam);
               }
 #if 0
               if (tauele_unknowns_present)
@@ -2095,11 +2094,13 @@ void SysmatCombustDomain(
 #endif
             }
 
+            //--------------------------------------------------------------------------------------
             // get velocities and accelerations at integration point
+            //--------------------------------------------------------------------------------------
             const LINALG::Matrix<nsd,1> gpvelnp = COMBUST::interpolateVectorFieldToIntPoint(evelnp, shp.d0, numparamvelx);
-            LINALG::Matrix<nsd,1> gpveln  = COMBUST::interpolateVectorFieldToIntPoint(eveln , shp.d0, numparamvelx);
-            LINALG::Matrix<nsd,1> gpvelnm = COMBUST::interpolateVectorFieldToIntPoint(evelnm, shp.d0, numparamvelx);
-            LINALG::Matrix<nsd,1> gpaccn  = COMBUST::interpolateVectorFieldToIntPoint(eaccn , shp.d0, numparamvelx);
+            const LINALG::Matrix<nsd,1> gpveln  = COMBUST::interpolateVectorFieldToIntPoint(eveln , shp.d0, numparamvelx);
+            const LINALG::Matrix<nsd,1> gpvelnm = COMBUST::interpolateVectorFieldToIntPoint(evelnm, shp.d0, numparamvelx);
+            const LINALG::Matrix<nsd,1> gpaccn  = COMBUST::interpolateVectorFieldToIntPoint(eaccn , shp.d0, numparamvelx);
 
             // commenting this section out leads to problems with instationary calculations   henke 01/09
 //            if (ASSTYPE == XFEM::xfem_assembly and timealgo != timeint_stationary)
@@ -2124,10 +2125,12 @@ void SysmatCombustDomain(
             const LINALG::Matrix<nsd,1> histvec = FLD::TIMEINT_THETA_BDF2::GetOldPartOfRighthandside(
                 gpveln, gpvelnm, gpaccn, timealgo, dt, theta);
 
-            // get velocity (np,i) derivatives at integration point
-            // vderxy = enr_derxy(j,k)*evelnp(i,k);
+            //--------------------------------------------------------------------------------------
+            // get velocity derivatives at integration point
+            //--------------------------------------------------------------------------------------
             static LINALG::Matrix<3,nsd> vderxy;
             vderxy.Clear();
+            // vderxy = enr_derxy(j,k)*evelnp(i,k);
             for (size_t iparam = 0; iparam < numparamvelx; ++iparam)
             {
               for (size_t isd = 0; isd < nsd; ++isd)
@@ -2138,57 +2141,47 @@ void SysmatCombustDomain(
               }
             }
 
-            //cout << "eps_xy" << (0.5*(vderxy(0,1)+vderxy(1,0))) << ", "<< endl;
-
-            // calculate 2nd velocity derivatives at integration point
+            //--------------------------------------------------------------------------------------
+            // get second velocity derivatives at integration point
+            //--------------------------------------------------------------------------------------
             static LINALG::Matrix<3,6> vderxy2;
+            vderxy2.Clear();
+            //vderxy2 = evelnp(i,k)*enr_derxy2(j,k);
             if (higher_order_ele)
             {
-              //vderxy2 = evelnp(i,k)*enr_derxy2(j,k);
-              vderxy2.Clear();
-//              for (size_t iparam = 0; iparam < numparamvelx; ++iparam)
-//              {
-//                for (size_t isd = 0; isd < nsd; ++isd)
-//                {
-//                 vderxy2(isd,0) += evelnp(isd,iparam)*shp.dxdx(iparam);
-//                  vderxy2(isd,1) += evelnp(isd,iparam)*shp.dydy(iparam);
-//                  vderxy2(isd,2) += evelnp(isd,iparam)*shp.dzdz(iparam);
-//                  vderxy2(isd,3) += evelnp(isd,iparam)*shp.dxdy(iparam);
-//                  vderxy2(isd,4) += evelnp(isd,iparam)*shp.dxdz(iparam);
-//                  vderxy2(isd,5) += evelnp(isd,iparam)*shp.dydz(iparam);
-//               }
-//              }
-            }
-            else
-            {
-              vderxy2.Clear();
+              for (size_t iparam = 0; iparam < numparamvelx; ++iparam)
+              {
+                for (size_t isd = 0; isd < nsd; ++isd)
+                {
+                  vderxy2(isd,0) += evelnp(isd,iparam) * shp.dxdx(iparam);
+                  vderxy2(isd,1) += evelnp(isd,iparam) * shp.dydy(iparam);
+                  vderxy2(isd,2) += evelnp(isd,iparam) * shp.dzdz(iparam);
+                  vderxy2(isd,3) += evelnp(isd,iparam) * shp.dxdy(iparam);
+                  vderxy2(isd,4) += evelnp(isd,iparam) * shp.dxdz(iparam);
+                  vderxy2(isd,5) += evelnp(isd,iparam) * shp.dydz(iparam);
+               }
+              }
             }
 
-            // get pressure gradients
-            // gradp = enr_derxy(i,j)*eprenp(j);
-            LINALG::Matrix<nsd,1> gradp(true);
-            for (size_t iparam = 0; iparam != numparampres; ++iparam)
-            {
-              gradp(0) += shp.dx(iparam)*eprenp(iparam);
-              gradp(1) += shp.dy(iparam)*eprenp(iparam);
-              gradp(2) += shp.dz(iparam)*eprenp(iparam);
-            }
-
-//            // get discont. pressure gradients
-//            LINALG::Matrix<3,1> graddiscp;
-//            //gradp = enr_derxy(i,j)*eprenp(j);
-//            for (int isd = 0; isd < nsd; ++isd)
-//            {
-//                graddiscp(isd) = 0.0;
-//                for (int iparam = 0; iparam < numparamdiscpres; ++iparam)
-//                    graddiscp(isd) += enr_derxy_discpres(isd,iparam)*ediscprenp(iparam);
-//            }
-
+            //--------------------------------------------------------------------------------------
             // get pressure
+            //--------------------------------------------------------------------------------------
             double pres = 0.0;
             for (size_t iparam = 0; iparam != numparampres; ++iparam)
-              pres += shp.d0(iparam)*eprenp(iparam);
+              pres += shp.d0(iparam) * eprenp(iparam);
 
+            //--------------------------------------------------------------------------------------
+            // get pressure gradients
+            //--------------------------------------------------------------------------------------
+            static LINALG::Matrix<nsd,1> gradp;
+            gradp.Clear();
+            // gradp = enr_derxy(i,j)*eprenp(j);
+            for (size_t iparam = 0; iparam != numparampres; ++iparam)
+            {
+              gradp(0) += shp.dx(iparam) * eprenp(iparam);
+              gradp(1) += shp.dy(iparam) * eprenp(iparam);
+              gradp(2) += shp.dz(iparam) * eprenp(iparam);
+            }
 
             // get viscous stress unknowns
             static LINALG::Matrix<nsd,nsd> tau;
@@ -2210,13 +2203,15 @@ void SysmatCombustDomain(
 //            cout << bodyforce << endl;
             ///////////////LINALG::SerialDenseVector bodyforce_(enr_edeadng_(i,j)*enr_funct_(j));
 
+            //--------------------------------------------------------------------------------------
             // compute stabilization parameters (3 taus)
+            //--------------------------------------------------------------------------------------
             double tau_stab_M  = 0.0;
             double tau_stab_Mp = 0.0;
             double tau_stab_C  = 0.0;
             XFLUID::computeStabilization(shp.dx, shp.dy, shp.dz, gpvelnp, numparamvelx, instationary, visc/dens, hk, mk, timefac, tau_stab_M, tau_stab_Mp, tau_stab_C);
 
-            //Modificate stabilization
+            //modify stabilization
             // TODO: is this correct?
             tau_stab_M /= dens;
             tau_stab_Mp /= dens;
@@ -2368,7 +2363,7 @@ void SysmatCombustBoundary(
     const double                      nitschepres
 )
 {
-  TEUCHOS_FUNC_TIME_MONITOR(" - evaluate - Sysmat - boundary");
+  TEUCHOS_FUNC_TIME_MONITOR(" - evaluating - combustion sysmat - boundary");
 
 #ifdef DEBUG
   if (ASSTYPE != XFEM::xfem_assembly)
