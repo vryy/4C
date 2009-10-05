@@ -276,7 +276,7 @@ private:
     calc_struct_update_istep,
     calc_struct_update_imrlike,
     calc_struct_reset_istep, //!< reset elementwise internal variables during iteration to last converged state
-    calc_brownian,
+    calc_brownian_predictor,
     calc_struct_ptcstiff
   };
 

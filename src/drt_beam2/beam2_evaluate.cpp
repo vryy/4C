@@ -55,7 +55,7 @@ int DRT::ELEMENTS::Beam2::Evaluate(ParameterList& params,
   else if (action=="calc_struct_update_istep")  act = Beam2::calc_struct_update_istep;
   else if (action=="calc_struct_update_imrlike") act = Beam2::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep")   act = Beam2::calc_struct_reset_istep;
-  else if (action=="calc_brownian")       act = Beam2::calc_brownian;
+  else if (action=="calc_brownian_predictor")       act = Beam2::calc_brownian_predictor;
   else if (action=="calc_struct_ptcstiff")        act = Beam2::calc_struct_ptcstiff;
   else dserror("Unknown type of action for Beam2");
 
@@ -67,7 +67,7 @@ int DRT::ELEMENTS::Beam2::Evaluate(ParameterList& params,
     }
     break;
     //action type for evaluating statistical forces
-    case Beam2::calc_brownian:
+    case Beam2::calc_brownian_predictor:
     {
       /*
       // get element displacements (for use in shear flow fields)

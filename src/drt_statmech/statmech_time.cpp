@@ -231,6 +231,7 @@ void StatMechTime::ConsistentPredictor()
     p.set("total time",timen);
     p.set("delta time",dt);
     p.set("alpha f",alphaf);
+    
     // set vector values needed by elements
     discret_.ClearState();
     discret_.SetState("displacement",disn_);
@@ -244,7 +245,7 @@ void StatMechTime::ConsistentPredictor()
     fextn_->PutScalar(0.0);  // initialize external force vector (load vect)
     discret_.EvaluateNeumann(p,*fextn_);
     discret_.ClearState();
-  }
+  } 
 
   
 #ifdef STRUGENALPHA_STRONGDBC
@@ -297,6 +298,7 @@ void StatMechTime::ConsistentPredictor()
   {
     // zero out stiffness
     stiff_->Zero();
+    
     // create the parameters for the discretization
     ParameterList p;
     // action for elements
@@ -308,6 +310,7 @@ void StatMechTime::ConsistentPredictor()
 
     //passing statistical mechanics parameters to elements
     p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
+    p.set("KT",(statmechmanager_->statmechparams_).get<double>("KT",0.0));
     p.set("THERMALBATH",Teuchos::getIntegralValue<INPAR::STATMECH::ThermalBathType>(statmechmanager_->statmechparams_,"THERMALBATH"));
     p.set("FRICTION_MODEL",Teuchos::getIntegralValue<INPAR::STATMECH::FrictionModel>(statmechmanager_->statmechparams_,"FRICTION_MODEL"));
     
@@ -315,6 +318,7 @@ void StatMechTime::ConsistentPredictor()
     double omegashear = 2*PI*(statmechmanager_->statmechparams_).get<double>("SHEARFREQUENCY",0.0);
     double currentshear = cos(omegashear*timen)*(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0)*omegashear;
     p.set("CURRENTSHEAR",currentshear); 
+    
     
     // set vector values needed by elements
     discret_.ClearState();
@@ -325,8 +329,16 @@ void StatMechTime::ConsistentPredictor()
     discret_.SetState("velocity",velm_);
 
     //discret_.SetState("velocity",velm_); // not used at the moment
+    
+
 
     fint_->PutScalar(0.0);  // initialise internal force vector
+    
+    //calculate stochastic forces
+    p.set("action","calc_brownian_predictor");
+    discret_.Evaluate(p,null,null,null,null,null);
+    
+    p.set("action","calc_struct_nlnstiff");
     discret_.Evaluate(p,stiff_,null,fint_,null,null);
 
     discret_.ClearState();
@@ -490,6 +502,7 @@ void StatMechTime::FullNewton()
 
       //passing statistical mechanics parameters to elements
       p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
+      p.set("KT",(statmechmanager_->statmechparams_).get<double>("KT",0.0));
       p.set("THERMALBATH",Teuchos::getIntegralValue<INPAR::STATMECH::ThermalBathType>(statmechmanager_->statmechparams_,"THERMALBATH"));
       //computing current gradient in z-direction of shear flow (assuming sine shear load with maximal amplitude SHEARAMPLITUDE and frequency SHEARFREQUENCY)
       double omegashear = 2*PI*(statmechmanager_->statmechparams_).get<double>("SHEARFREQUENCY",0.0);
@@ -675,6 +688,7 @@ void StatMechTime::PTC()
 
       //add statistical vector to parameter list for statistical forces and damping matrix computation
       p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
+      p.set("KT",(statmechmanager_->statmechparams_).get<double>("KT",0.0));
       p.set("THERMALBATH",Teuchos::getIntegralValue<INPAR::STATMECH::ThermalBathType>(statmechmanager_->statmechparams_,"THERMALBATH"));
       //computing current gradient in z-direction of shear flow (assuming sine shear load with maximal amplitude SHEARAMPLITUDE and frequency SHEARFREQUENCY)
       double omegashear = 2*PI*(statmechmanager_->statmechparams_).get<double>("SHEARFREQUENCY",0.0);
@@ -738,6 +752,7 @@ void StatMechTime::PTC()
 
       //passing statistical mechanics parameters to elements
       p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
+      p.set("KT",(statmechmanager_->statmechparams_).get<double>("KT",0.0));
       p.set("THERMALBATH",Teuchos::getIntegralValue<INPAR::STATMECH::ThermalBathType>(statmechmanager_->statmechparams_,"THERMALBATH"));
       //computing current gradient in z-direction of shear flow (assuming sine shear load with maximal amplitude SHEARAMPLITUDE and frequency SHEARFREQUENCY)
       double omegashear = 2*PI*(statmechmanager_->statmechparams_).get<double>("SHEARFREQUENCY",0.0);

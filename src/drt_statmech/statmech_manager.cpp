@@ -1197,11 +1197,11 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
           RCP<DRT::ELEMENTS::Beam3> newcrosslinker = rcp(new DRT::ELEMENTS::Beam3((noderowmap.GID(i) + 1)*basisnodes_ +  nodecolmap.GID((crosslinkerneighbours_[i])[j]), discret_.Comm().MyPID()) );
           
           //setting up crosslinker element parameters
-          newcrosslinker ->crosssec_ = 1.9e-08;
-          newcrosslinker ->crosssecshear_ = 1.9e-08*1.1;
-          newcrosslinker ->Iyy_ = 2.874e-11;
-          newcrosslinker ->Izz_ = 2.874e-11;
-          newcrosslinker ->Irr_ = 5.748e-11; 
+          newcrosslinker ->crosssec_ = 2.375829e-05;
+          newcrosslinker ->crosssecshear_ = 1.1*2.375829e-05;
+          newcrosslinker ->Iyy_ = 4.49180e-11;
+          newcrosslinker ->Izz_ = 4.49180e-11;
+          newcrosslinker ->Irr_ = 8.9836e-11; 
 
   
           //nodes are assigned to the new crosslinker element by first assigning global node Ids and then assigning nodal pointers
@@ -1216,7 +1216,7 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
           newcrosslinker->SetUpReferenceGeometry<2>(xrefe,rotrefe); 
     
           //set material for new element
-          newcrosslinker->SetMaterial(1);
+          newcrosslinker->SetMaterial(2);
           
           //add new element to discretization
           discret_.AddElement(newcrosslinker);  

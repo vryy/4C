@@ -60,7 +60,7 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
   else if (action=="calc_struct_update_istep") act = Beam3::calc_struct_update_istep;
   else if (action=="calc_struct_update_imrlike") act = Beam3::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep") act = Beam3::calc_struct_reset_istep;
-  else if (action=="calc_brownian")        act = Beam3::calc_brownian;
+  else if (action=="calc_brownian_predictor")        act = Beam3::calc_brownian_predictor;
   else if (action=="calc_struct_ptcstiff")        act = Beam3::calc_struct_ptcstiff;
   else dserror("Unknown type of action for Beam3");
 
@@ -81,7 +81,7 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
     }
     break;
     //action type for evaluating statistical forces
-    case Beam3::calc_brownian:
+    case Beam3::calc_brownian_predictor:
     {
 
 
@@ -462,6 +462,8 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(ParameterList& params,
                                         Epetra_SerialDenseVector& elevec1,
                                         Epetra_SerialDenseMatrix* elemat1)
 {
+  std::cout<<"\naufruf !!!\n";
+  
   // get element displacements
   RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
   if (disp==null) dserror("Cannot get state vector 'displacement'");
@@ -563,7 +565,8 @@ void DRT::ELEMENTS::Beam3::ComputeLocalBrownianForces(ParameterList& params)
   for (int gp=0; gp<nnode-1; gp++)//loop through Gauss points
     zeta += 4*PI*gausspointsdamping.qwgt[gp]*alpha_[gp]* params.get<double>("ETA",0.0);
   
-  INPAR::STATMECH::FrictionModel frictionmodel = Teuchos::getIntegralValue<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
+  //get friction model according to which forces and damping are applied
+  INPAR::STATMECH::FrictionModel frictionmodel = Teuchos::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
   
   
   switch(nnode)
@@ -602,12 +605,16 @@ void DRT::ELEMENTS::Beam3::ComputeLocalBrownianForces(ParameterList& params)
 			  	 * for a space defined by damping translational and rotational perpendicular to beam axis, shifting
 			  	 * to orthogonal and parallel in the 3D case is shown in work of hering, these correction factors
 			  	 * are only valid for a discretization with one element, due to the intensive effect of free end terms*/
-			  	/*
-			  	double p=lrefe_/(pow(crosssec_*4.0/PI,0.5));
+			  	
+	         double lrefe=0;
+	          for (int gp=0; gp<nnode-1; gp++)
+	            lrefe += gausspointsdamping.qwgt[gp]*alpha_[gp];
+			    
+			  	double p=lrefe/(pow(crosssec_*4.0/PI,0.5));
 			  	double Ct=0.312+0.565/p-0.100/pow(p,2.0);
 			  	double Cr=-0.662+0.917/p-0.05/pow(p,2.0);
-			  	double gamma_par=PI*lrefe_*params.get<double>("ETA",0.0)/(Ct-Cr);
-			  	double gamma_perp=2.0*PI*lrefe_*params.get<double>("ETA",0.0)/(log(p)+Cr);
+			  	double gamma_par = 2*PI*lrefe*params.get<double>("ETA",0.0)/(log(p) + 2*Ct - Cr);
+			  	double gamma_perp = 4.0*PI*lrefe*params.get<double>("ETA",0.0)/(log(p)+Cr);
 			  	
 			  	
 			  	floc_[0](0,0) = pow(gamma_par/3.0,0.5)*aux(0,0);
@@ -616,9 +623,9 @@ void DRT::ELEMENTS::Beam3::ComputeLocalBrownianForces(ParameterList& params)
 			  	floc_[1](0,0) = pow(gamma_par/12.0,0.5)*aux(0,0)+pow(gamma_par/4.0,0.5)*aux(1,0);
 			  	floc_[1](1,0) = pow(gamma_perp/12.0,0.5)*aux(0,1)+pow(gamma_perp/4.0,0.5)*aux(1,1);
 			  	floc_[1](2,0) = pow(gamma_perp/12.0,0.5)*aux(0,2)+pow(gamma_perp/4.0,0.5)*aux(1,2);
-			  	*/
 			  	
 			  	
+			  	/*
 			  	//apply simple damping coefficients (gamma_par=gamma_perp/2)
 			  	//multiply S_loc (cholesky decomposition of local element damp) to random object
 			  	floc_[0](0,0) = pow(zeta/6,0.5)*aux(0,0);
@@ -627,7 +634,7 @@ void DRT::ELEMENTS::Beam3::ComputeLocalBrownianForces(ParameterList& params)
 			  	floc_[1](0,0) = pow(zeta/24,0.5)*aux(0,0)+pow(zeta/8,0.5)*aux(1,0);
 			  	floc_[1](1,0) = pow(zeta/12,0.5)*aux(0,1)+pow(zeta/4,0.5)*aux(1,1);
 			  	floc_[1](2,0) = pow(zeta/12,0.5)*aux(0,2)+pow(zeta/4,0.5)*aux(1,2);
-			  	
+			  	*/
 			  }
 			  break;
         default:
@@ -767,11 +774,14 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
                               vector<double>&           disp, //!< element displacement vector
                               Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
                               Epetra_SerialDenseVector* force) //!< element internal force vector
-{
-	//if no frictionmodel has been chosen explicitly we exit this function without any action
-  INPAR::STATMECH::FrictionModel frictionmodel = Teuchos::getIntegralValue<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
-	if(frictionmodel == INPAR::STATMECH::frictionmodel_none)
+{ 
+  //at zero temperature (default value) no stochastic forces are acting and this method left without any action
+  if(params.get<double>("KT",0.0) == 0.0)
 		return;
+  
+  //get friction model according to which forces and damping are applied
+  INPAR::STATMECH::FrictionModel frictionmodel = Teuchos::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
+
 
 	double dt = params.get<double>("delta time",0.0);//timestep
 
@@ -955,15 +965,19 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
 			  case INPAR::STATMECH::frictionmodel_anisotropicconsistent:
 			  {			  		
 			  	
-			  	/*
+			  	
 			  	 //damping coefficient for simulation with corrected damp parameters as in ortega 2003,
 			  	 //for details go to computelocalforces section
+			    
+			    double lrefe=0;
+			    for (int gp=0; gp<nnode-1; gp++)
+			      lrefe += gausspointsdamping.qwgt[gp]*alpha_[gp];
 			  	 
-			  	double p=lrefe_/(pow(crosssec_*4.0/PI,0.5));
-			  	double Ct=0.312+0.565/p-0.100/pow(p,2.0);
-			  	double Cr=-0.662+0.917/p-0.05/pow(p,2.0);
-			  	double gamma_par=PI*lrefe_*params.get<double>("ETA",0.0)/(Ct-Cr);
-			  	double gamma_perp=2.0*PI*lrefe_*params.get<double>("ETA",0.0)/(log(p)+Cr);
+          double p=lrefe/(pow(crosssec_*4.0/PI,0.5));
+          double Ct=0.312+0.565/p-0.100/pow(p,2.0);
+          double Cr=-0.662+0.917/p-0.05/pow(p,2.0);
+          double gamma_par = 2*PI*lrefe*params.get<double>("ETA",0.0)/(log(p) + 2*Ct - Cr);
+          double gamma_perp = 4.0*PI*lrefe*params.get<double>("ETA",0.0)/(log(p)+Cr);
 			  	
 			  	 //local damping matrix
  	  	  	 LINALG::Matrix<3,3> dampbasis(true);
@@ -971,15 +985,15 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
  	  	  	 dampbasis(1,1)=gamma_perp;
  	  	  	 dampbasis(2,2)=gamma_perp;
 			  	
-			  	 */
-			 
+			  	 
+			 /*
 			  	 //section for apply simple damping coefficients
  	  	  	 //local damping matrix
 	  	  	 LINALG::Matrix<3,3> dampbasis(true);
 	  	  	 dampbasis(0,0)=zeta/2.0;
 	  	  	 dampbasis(1,1)=zeta;
 	  	  	 dampbasis(2,2)=zeta;
-	  	 
+	  	  	 */
  	  	  	 
 	  	  	 
 	  	  	 LINALG::Matrix<3,3> Tnew;//Rotation matrix in current iteration step
@@ -1652,8 +1666,8 @@ void DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
 
 
 
-  double basisdamp   = (20e-2)*PI*20; //(20e-2)*PI for A = 1.9e-8, (20e-2)*PI*3 for A = 1.9e-6
-  double anisofactor = 10;
+  double basisdamp   = (20e-2)*PI*40; //(20e-2)*PI for A = 1.9e-8, (20e-2)*PI*3 for A = 1.9e-6
+  double anisofactor = 10*5;
 
   
   //aux variables

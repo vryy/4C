@@ -60,7 +60,7 @@ int DRT::ELEMENTS::Beam2r::Evaluate(ParameterList& params,
   else if (action=="calc_struct_update_istep")  act = Beam2r::calc_struct_update_istep;
   else if (action=="calc_struct_update_imrlike") act = Beam2r::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep")   act = Beam2r::calc_struct_reset_istep;
-  else if (action=="calc_brownian")       act = Beam2r::calc_brownian;
+  else if (action=="calc_brownian_predictor")       act = Beam2r::calc_brownian_predictor;
   else if (action=="calc_struct_ptcstiff")        act = Beam2r::calc_struct_ptcstiff;
   else dserror("Unknown type of action for Beam2r");
 
@@ -72,7 +72,7 @@ int DRT::ELEMENTS::Beam2r::Evaluate(ParameterList& params,
     }
     break;
     //action type for evaluating statistical forces
-    case Beam2r::calc_brownian:
+    case Beam2r::calc_brownian_predictor:
     {
 
 
@@ -493,6 +493,10 @@ int DRT::ELEMENTS::Beam2r::EvaluateNeumann(ParameterList& params,
 template<int nnode>
 void DRT::ELEMENTS::Beam2r::ComputeLocalBrownianForces(ParameterList& params)
 {
+  //at zero temperature (default value) no stochastic forces are acting and this method left without any action
+  if(params.get<double>("KT",0.0) == 0.0)
+    return;
+  
   /*creating a random generator object which creates random numbers with mean = 0 and standard deviation
    * (2kT/dt)^0,5 with thermal energy kT, time step size dt; using Blitz namespace "ranlib" for random number generation*/
   ranlib::Normal<double> normalGen(0,pow(2.0 * params.get<double>("KT",0.0) / params.get<double>("delta time",0.0),0.5));
@@ -509,8 +513,8 @@ void DRT::ELEMENTS::Beam2r::ComputeLocalBrownianForces(ParameterList& params)
   for (int gp=0; gp<nnode-1; gp++)//loop through Gauss points
     zeta += 4*PI*gausspointsdamping.qwgt[gp]*alpha_[gp]* params.get<double>("ETA",0.0);
   
-  
-  INPAR::STATMECH::FrictionModel frictionmodel = Teuchos::getIntegralValue<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
+  //get friction model according to which forces and damping are applied
+  INPAR::STATMECH::FrictionModel frictionmodel = Teuchos::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
     
 
  
@@ -693,6 +697,13 @@ inline void DRT::ELEMENTS::Beam2r::CalcBrownian(ParameterList& params,
                               Epetra_SerialDenseVector* force)  //!< element internal force vector
 {  
   
+  //at zero temperature (default value) no stochastic forces are acting and this method left without any action
+  if(params.get<double>("KT",0.0) == 0.0)
+    return;
+  
+  //get friction model according to which forces and damping are applied
+  INPAR::STATMECH::FrictionModel frictionmodel = Teuchos::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
+
   
    //get parameters
    double dt = params.get<double>("delta time",0.0);
@@ -703,15 +714,7 @@ inline void DRT::ELEMENTS::Beam2r::CalcBrownian(ParameterList& params,
    for (int gp=0; gp<nnode-1; gp++)//loop through Gauss points
      zeta += 4*PI*gausspointsdamping.qwgt[gp]*alpha_[gp]* params.get<double>("ETA",0.0);
    
-     
-   INPAR::STATMECH::FrictionModel frictionmodel = Teuchos::getIntegralValue<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
-   
-   //if no friction model has been chosen explicitly we exit this function without any action
-   if(frictionmodel == INPAR::STATMECH::frictionmodel_none)
-     return;
-     
-
-   
+  
     switch(nnode)
     {
     case 2:     
