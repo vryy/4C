@@ -33,6 +33,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_function.H"
 #include "../drt_fem_general/drt_utils_gder2.H"
+#include "../drt_fem_general/drt_utils_shapefunctions_service.H"
 
   using namespace XFEM::PHYSICS;
 
@@ -772,7 +773,7 @@ void SysmatDomain4(
     const double visc = actmat->Viscosity();
 
     // flag for higher order elements
-    const bool higher_order_ele = XFLUID::secondDerivativesAvailable<DISTYPE>();
+    const bool higher_order_ele = DRT::UTILS::secondDerivativesZero<DISTYPE>();
 
     const DRT::Element::DiscretizationType stressdistype = XFLUID::StressInterpolation3D<DISTYPE>::distype;
 
@@ -1224,13 +1225,13 @@ void SysmatDomain4(
             // for Jeffery-Hamel Flow
             LINALG::Matrix<3,1> physpos(true);
             GEO::elementToCurrentCoordinates(DISTYPE, xyze, posXiDomain, physpos);
-            
+
             const double x = physpos(0);
             const double y = physpos(1);
-            
+
             const double alpha = atan(y/x);
             const double u_alpha = DRT::UTILS::JefferyHamelFlowFunction::RadialVelocity(alpha);
-            
+
             const double nu = 1;
             const double u_exact_x = nu * (u_alpha/(x*x+y*y))*x;
             const double u_exact_y = nu * (u_alpha/(x*x+y*y))*y;
@@ -1290,7 +1291,7 @@ void SysmatBoundary4(
     const size_t nsd = 3;
     const size_t numnodefix_boundary = 9;
 
-#if 0 
+#if 0
     // get node coordinates of the current element
     // number of nodes for element
     const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
@@ -1515,24 +1516,24 @@ void SysmatBoundary4(
                 for (std::size_t inode = 0; inode < numnode_boundary; ++inode)
                     for (std::size_t isd = 0; isd < nsd; ++isd)
                         interface_gpvelnp(isd) += vel_boundary(isd,inode)*funct_boundary(inode);
-            
+
 #if 0
             // for Jeffery-Hamel Flow
             LINALG::Matrix<3,1> physpos(true);
             GEO::elementToCurrentCoordinates(DISTYPE, xyze, posXiDomain, physpos);
-            
+
             const double x = physpos(0);
             const double y = physpos(1);
-            
+
             const double alpha = atan(y/x);
             const double u_alpha = DRT::UTILS::JefferyHamelFlowFunction::RadialVelocity(alpha);
-            
+
             const double nu = 1;
             interface_gpvelnp(0) = nu * (u_alpha/(x*x+y*y))*x;
             interface_gpvelnp(1) = nu * (u_alpha/(x*x+y*y))*y;
             interface_gpvelnp(2) = 0.0;
 #endif
-            
+
 
             // get viscous stress unknowns
             static LINALG::Matrix<nsd,nsd> tau;

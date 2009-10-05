@@ -31,6 +31,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/spacetime_boundary.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_fem_general/drt_utils_gder2.H"
+#include "../drt_fem_general/drt_utils_shapefunctions_service.H"
 
 
   using namespace XFEM::PHYSICS;
@@ -856,7 +857,7 @@ void SysmatDomainTP1(
     const double visc = actmat->Viscosity();
 
     // flag for higher order elements
-    const bool higher_order_ele = XFLUID::secondDerivativesAvailable<DISTYPE>();
+    const bool higher_order_ele = DRT::UTILS::secondDerivativesZero<DISTYPE>();
 
     const DRT::Element::DiscretizationType stressdistype = XFLUID::StressInterpolation3D<DISTYPE>::distype;
     const DRT::Element::DiscretizationType discpresdistype = XFLUID::DiscPressureInterpolation3D<DISTYPE>::distype;
