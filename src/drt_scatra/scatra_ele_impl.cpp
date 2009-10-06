@@ -1970,40 +1970,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
     case SCATRA::tau_franca_valentin:
     // stabilization parameter definition according to Franca and Valentin (2000)
     {
-      // get number of dimensions (convert from int to double)
-      const double dim = (double) nsd_;
-
-      // get characteristic element length
-      // There exist different definitions for 'the' characteristic element length h:
-      // 1) get element length for tau_Mp/tau_C: volume-equival. diameter -> not default
-      // const double h = pow((6.*vol/PI),(1.0/3.0));
-
-      // 2) streamlength (based on velocity vector at element centre) -> not default
-/*
-      // normed velocity at element centre
-      LINALG::Matrix<nsd_,1> velino;
-      if (vel_norm>=1e-6)
-        velino.Update(1.0/vel_norm,velint_);
-      else
-      {
-        velino.Clear();
-        velino(0,0) = 1;
-      }
-
-      // get streamlength using the normed velocity at element centre
-      LINALG::Matrix<iel,1> tmp;
-      tmp.MultiplyTN(derxy_,velino);
-      const double val = tmp.Norm1();
-      const double h = 2.0/val; // h=streamlength
-*/
-      // 3) use cubic root of the element volume as characteristic length -> default
-      //    2D case: characterisitc length is the square root of the element area
-      //    1D case: characteristic length is the element length
-      const double h = pow(vol,(1.0/dim));
-
       // get Euclidean norm of (weighted) velocity at element center
       double vel_norm;
-
 #ifdef MIGRATIONSTAB
       if (iselch_) // ELCH
       {
@@ -2034,6 +2002,35 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
       else
 #endif
         vel_norm = velint_.Norm2();
+
+      // get characteristic element length
+      // There exist different definitions for 'the' characteristic element length h:
+
+      // 1) streamlength (based on velocity vector at element centre) -> default
+      // normed velocity at element centre
+      LINALG::Matrix<nsd_,1> velino;
+      if (vel_norm>=1e-6)
+        velino.Update(1.0/vel_norm,velint_);
+      else
+      {
+        velino.Clear();
+        velino(0,0) = 1;
+      }
+      // get streamlength using the normed velocity at element centre
+      LINALG::Matrix<iel,1> tmp;
+      tmp.MultiplyTN(derxy_,velino);
+      const double val = tmp.Norm1();
+      const double h = 2.0/val; // h=streamlength
+
+      // 2) get element length for tau_Mp/tau_C: volume-equival. diameter -> not default
+      // const double h = pow((6.*vol/PI),(1.0/3.0)); //warning: 3D formula
+
+      // 3) use cubic root of the element volume as characteristic length -> not default
+      //    2D case: characterisitc length is the square root of the element area
+      //    1D case: characteristic length is the element length
+      // get number of dimensions (convert from int to double)
+      // const double dim = (double) nsd_;
+      // const double h = pow(vol,(1.0/dim));
 
       // parameter relating convective and diffusive forces + respective switch
       double epe = mk * densnp_[k] * vel_norm * h / diffus;
