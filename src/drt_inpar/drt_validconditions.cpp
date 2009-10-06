@@ -741,7 +741,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   AddNamedReal(lj_potential_volume,"beta");
 
   condlist.push_back(lj_potential_volume);
-  
+
   /*--------------------------------------------------------------------*/
   // Lennard Jones potential surface
 
@@ -762,11 +762,11 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   AddNamedReal(lj_potential_surface,"beta");
 
   condlist.push_back(lj_potential_surface);
-  
-  
+
+
   /*--------------------------------------------------------------------*/
   // Lennard Jones potential line
-  
+
   Teuchos::RCP<ConditionDefinition> lj_potential_line =
     Teuchos::rcp(new ConditionDefinition("DESIGN LINE LJ_POTENTIAL CONDITIONS",
                                          "Potential",
@@ -804,7 +804,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   AddNamedReal(vanderwaals_potential_volume,"beta");
 
   condlist.push_back(vanderwaals_potential_volume);
-  
+
   /*--------------------------------------------------------------------*/
   // Van der Waals potential surface
 
@@ -824,11 +824,11 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   AddNamedReal(vanderwaals_potential_surface,"beta");
 
   condlist.push_back(vanderwaals_potential_surface);
-  
-  
+
+
   /*--------------------------------------------------------------------*/
   // Van der Waals line
-  
+
   Teuchos::RCP<ConditionDefinition> vanderwaals_potential_line =
     Teuchos::rcp(new ConditionDefinition("DESIGN LINE VAN DER WAALS POTENTIAL CONDITIONS",
                                          "Potential",
@@ -845,9 +845,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   AddNamedReal(vanderwaals_potential_line,"beta");
 
   condlist.push_back(vanderwaals_potential_line);
-  
-  
-  
+
+
+
   /*-------------------------------------------------------------------*/
   // Electrostatic Repulsion Surface
   Teuchos::RCP<ConditionDefinition> electro_repulsion_potential_surface =
@@ -866,8 +866,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   AddNamedReal(electro_repulsion_potential_surface,"beta");
 
   condlist.push_back(electro_repulsion_potential_surface);
-  
-  
+
+
   /*-------------------------------------------------------------------*/
   // Electrostatic Repulsion Line
   Teuchos::RCP<ConditionDefinition> electro_repulsion_potential_line =
@@ -1249,6 +1249,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   eleccomponents.push_back(Teuchos::rcp(new RealConditionComponent("i0")));
   eleccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("gamma")));
   eleccomponents.push_back(Teuchos::rcp(new RealConditionComponent("gamma")));
+  eleccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("refcon")));
+  eleccomponents.push_back(Teuchos::rcp(new RealConditionComponent("refcon")));
 
   Teuchos::RCP<ConditionDefinition> lineelec =
     Teuchos::rcp(new ConditionDefinition("ELECTRODE KINETICS LINE CONDITIONS",
@@ -1411,7 +1413,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   art_in_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("boundarycond", "inflow",
     Teuchos::tuple<std::string>("inflow","pressure","velocity","area","characteristicWave"),
-    Teuchos::tuple<std::string>("inflow","pressure","velocity","area","characteristicWave"),    
+    Teuchos::tuple<std::string>("inflow","pressure","velocity","area","characteristicWave"),
     true)));
   art_in_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("type", "forced",
     Teuchos::tuple<std::string>("forced","absorbing"),
@@ -1458,7 +1460,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   art_wk_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("intigrationType", "ExplicitWindkessel",
     Teuchos::tuple<std::string>("ExplicitWindkessel", "ImpedaceWindkessel"),
-    Teuchos::tuple<std::string>("ExplicitWindkessel", "ImpedaceWindkessel"),    
+    Teuchos::tuple<std::string>("ExplicitWindkessel", "ImpedaceWindkessel"),
     true)));
 
   art_wk_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("windkesselType", "RCR",
