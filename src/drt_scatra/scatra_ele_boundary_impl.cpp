@@ -221,6 +221,8 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     double       i0 = cond->GetDouble("i0");
     if (i0>0.0) dserror("i0 is positive, ergo not pointing INTO the domain: %f",i0);
     const double gamma = cond->GetDouble("gamma");
+    const double refcon = cond->GetDouble("refcon");
+    if (refcon < EPS12) dserror("reference concentration is too small: %f",refcon);
     const double frt = params.get<double>("frt"); // = F/RT
 
     // get control parameter from parameter list
@@ -266,6 +268,8 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
       cout<<"alpha_a        = "<<alphaa<<endl;
       cout<<"alpha_c        = "<<alphac<<endl;
       cout<<"i0(mod.)       = "<<i0<<endl;
+      cout<<"gamma          = "<<gamma<<endl;
+      cout<<"conref         = "<<conref<<endl;
       cout<<"F/RT           = "<<frt<<endl<<endl;
 #endif
 
@@ -283,6 +287,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
           i0,
           frt,
           gamma,
+          refcon,
           iselch
       );
     }
@@ -301,6 +306,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
             i0,
             frt,
             gamma,
+            refcon,
             iselch);}
     }
   }
@@ -467,7 +473,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
                   alphaF);
   }
   else
-    dserror("Unknown type of action for Scatra Implementation: %s",action.c_str());
+    dserror("Unknown type of action for Scatra boundary impl.: %s",action.c_str());
 
   return 0;
 }
@@ -763,6 +769,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
     const double                i0,
     const double               frt,
     const double             gamma,
+    const double            refcon,
     const bool              iselch
 )
 {
@@ -848,10 +855,26 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
     {
       if (kinetics=="Butler-Volmer")  // concentration-dependent Butler-Volmer law
       {
-        double pow_conint_gamma_k = pow(conint,gamma);
-        // note: gamma==0 deactivates concentration dependency in Butler-Volmer!
+        double pow_conint_gamma_k = 0.0;
 
+        // some safety checks/ user warnings
+        if ((alphaa*frt*eta) > 100.0)
+          cout<<"WARNING: Exp(alpha_a...) in Butler-Volmer law is near overflow!"
+          <<exp(alphaa*frt*eta)<<endl;
+        if (((-alphac)*frt*eta) > 100.0)
+          cout<<"WARNING: Exp(alpha_c...) in Butler-Volmer law is near overflow!"
+          <<exp((-alphac)*frt*eta)<<endl;
+        if ((conint/refcon) < EPS13)
+          cout<<"WARNING: Conc. in Butler-Volmer formula is zero/negative: "<<(conint/refcon)<<endl;
+        else
+          pow_conint_gamma_k = pow(conint/refcon,gamma);
+
+        // note: gamma==0 deactivates concentration dependency in Butler-Volmer!
         const double expterm = exp(alphaa*frt*eta)-exp((-alphac)*frt*eta);
+
+        double concterm = 0.0;
+        if ((conint/refcon) > EPS13)
+          concterm = gamma*pow(conint,(gamma-1.0))/pow(refcon,gamma);
 
         for (int vi=0; vi<iel; ++vi)
         {
@@ -859,7 +882,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
           // ---------------------matrix
           for (int ui=0; ui<iel; ++ui)
           {
-            emat(vi*numdofpernode_,ui*numdofpernode_) += fac_fz_i0_funct_vi*gamma*pow(conint,(gamma-1.0))*funct_(ui)*expterm;
+            emat(vi*numdofpernode_,ui*numdofpernode_) += fac_fz_i0_funct_vi*concterm*funct_(ui)*expterm;
             emat(vi*numdofpernode_,ui*numdofpernode_+numscal_) += fac_fz_i0_funct_vi*pow_conint_gamma_k*(((-alphaa)*frt*exp(alphaa*frt*eta))+((-alphac)*frt*exp((-alphac)*frt*eta)))*funct_(ui);
           }
           // ------------right-hand-side
@@ -946,6 +969,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
     const double                i0,
     const double               frt,
     const double             gamma,
+    const double            refcon,
     const bool              iselch
 )
 {
@@ -1007,7 +1031,12 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
     {
       double expterm(0.0);
       if (iselch)
-        expterm = pow(conint,gamma) * (exp(alphaa*frt*eta)-exp((-alphac)*frt*eta));
+      {
+        if ((conint<EPS13) && (gamma < 1.0))
+          expterm = 0.0; // prevents NaN's in the current density evaluation
+        else
+          expterm = pow(conint/refcon,gamma) * (exp(alphaa*frt*eta)-exp((-alphac)*frt*eta));
+      }
       else
         expterm = exp(alphaa*eta)-exp((-alphac)*eta);
 

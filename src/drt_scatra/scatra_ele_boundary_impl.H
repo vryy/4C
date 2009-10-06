@@ -175,6 +175,7 @@ public:
        const double                i0,  ///< exchange current density
        const double               frt,  ///< factor F/RT
        const double             gamma,  ///< exponent for concentration dependency
+       const double            refcon,  ///< reference concentration of reactive ion species
        const bool              iselch   ///< problemtype elch or scatra
        );
 
@@ -190,6 +191,7 @@ public:
         const double                i0,  ///< exchange current density
         const double               frt,  ///< factor F/RT
         const double             gamma,  ///< exponent for concentration dependency
+        const double            refcon,  ///< reference concentration of reactive ion species
         const bool              iselch   ///< problemtype elch or scatra
     );
 
