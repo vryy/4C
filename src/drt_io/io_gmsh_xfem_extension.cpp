@@ -16,15 +16,15 @@ Maintainer: Axel Gerstenberger
 #include "io_gmsh.H"
 #include "io_gmsh_xfem_extension.H"
 
-std::string IO::GMSH::XdisToString(
-    const std::string& s,
+void IO::GMSH::XdisToStream(
+    const std::string& text,
     const double scalar,
     const Teuchos::RCP<DRT::Discretization> dis,
     const std::map<int, GEO::DomainIntCells >& elementDomainIntCellsMap,
-    const std::map<int, GEO::BoundaryIntCells >& elementBoundaryIntCellsMap)
+    const std::map<int, GEO::BoundaryIntCells >& elementBoundaryIntCellsMap,
+    std::ostream& s)
 {
-  std::stringstream gmshfilecontent;
-  gmshfilecontent << "View \" " << s << " Elements and Integration Cells \" {\n";
+  s << "View \" " << text << " Elements and Integration Cells \" {\n";
 
   for (int i=0; i<dis->NumMyRowElements(); ++i)
   {
@@ -38,8 +38,7 @@ std::string IO::GMSH::XdisToString(
           != cells.end(); ++cell)
       {
         const LINALG::SerialDenseMatrix& dxyz_ele = cell->CellNodalPosXYZ();
-        gmshfilecontent << IO::GMSH::cellWithScalarToString(cell->Shape(),
-            scalar, dxyz_ele) << "\n";
+        IO::GMSH::cellWithScalarToStream(cell->Shape(), scalar, dxyz_ele, s);
       }
     }
     if (elementBoundaryIntCellsMap.count(id) > 0)
@@ -49,16 +48,25 @@ std::string IO::GMSH::XdisToString(
           != bcells.end(); ++bcell)
       {
         const LINALG::SerialDenseMatrix& bxyz_ele = bcell->CellNodalPosXYZ();
-        gmshfilecontent << IO::GMSH::cellWithScalarToString(bcell->Shape(),
-            scalar, bxyz_ele) << "\n";
+        IO::GMSH::cellWithScalarToStream(bcell->Shape(), scalar, bxyz_ele, s);
       }
     }
     // print element
-    gmshfilecontent << IO::GMSH::elementAtInitialPositionToString(scalar, actele) << "\n";
+    IO::GMSH::elementAtInitialPositionToStream(scalar, actele, s);
   };
-  gmshfilecontent << "};\n";
-  return gmshfilecontent.str();
+  s << "};\n";
 }
 
+std::string IO::GMSH::XdisToString(
+    const std::string& text,
+    const double scalar,
+    const Teuchos::RCP<DRT::Discretization> dis,
+    const std::map<int, GEO::DomainIntCells >& elementDomainIntCellsMap,
+    const std::map<int, GEO::BoundaryIntCells >& elementBoundaryIntCellsMap)
+{
+  std::ostringstream s;
+  XdisToStream(text, scalar, dis, elementDomainIntCellsMap, elementBoundaryIntCellsMap, s);
+  return s.str();
+}
 
 #endif // #ifdef CCADISCRET

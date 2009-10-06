@@ -23,8 +23,17 @@ namespace IO
   namespace GMSH
   {
     //! print discretization including intersection information in initial configuration (t = 0)
+    void XdisToStream(
+        const std::string& text,
+        const double scalar,
+        const Teuchos::RCP<DRT::Discretization> dis,
+        const std::map<int,GEO::DomainIntCells >& elementDomainIntCellsMap,
+        const std::map<int,GEO::BoundaryIntCells >& elementBoundaryIntCellsMap,
+        std::ostream& s);
+
+    //! print discretization including intersection information in initial configuration (t = 0)
     std::string XdisToString(
-        const std::string& s,
+        const std::string& text,
         const double scalar,
         const Teuchos::RCP<DRT::Discretization> dis,
         const std::map<int,GEO::DomainIntCells >& elementDomainIntCellsMap,

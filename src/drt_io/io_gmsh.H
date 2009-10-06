@@ -1,6 +1,14 @@
 /*!
  * \file io_gmsh.H
- * \brief simple element print library for Gmsh (mostly for debugging, only output per processor (no communication)
+ * \brief simple element print library for Gmsh
+ *
+ * Useful for debugging, only output per processor (no communication supported)
+ *
+ * For a complete description, see the section about post processing formats in the Gmsh documentation.
+ *
+ * Most routines come in pairs: one gives a string as return argument, another pipes
+ * the same string directly to an output stream. The latter avoid numerous string copies
+ * and should be much faster when large discretizations are piped into a file.
  *
  * <pre>
  * Maintainer: Axel Gerstenberger
@@ -9,7 +17,6 @@
  *             089 - 289-15236
  * </pre>
  *
- * For a complete description, see the section about post processing formations in the Gmsh documentation
  */
 #ifndef GMSH_H
 #define GMSH_H
@@ -27,53 +34,54 @@ namespace IO
         const DRT::Element::DiscretizationType distype   ///< element shape
         );
 
-    //! for each DRT::Element::DiscretizationType find the apropriate number of element nodes for Gmsh output
+    //! for each DRT::Element::DiscretizationType find the appropriate number of element nodes for Gmsh output
     int distypeToGmshNumNode(
         const DRT::Element::DiscretizationType distype   ///< element shape
       );
 
-    //! take an array (3,numnode) and translate it to the coordinate section of en Gmsh element entry
-    template<class M> std::string CoordinatesToString(
-        const M& coord,
-        const DRT::Element::DiscretizationType distype   ///< element shape
+    //! take an array (3,numnode) and translate it to the coordinate section of a Gmsh element entry
+    template<class M> void CoordinatesToStream(
+        const M&                               coord,     ///< position array (3, numnode)
+        const DRT::Element::DiscretizationType distype,   ///< element shape
+        std::ostream&                          s
     )
     {
-      std::stringstream pos_array_string;
-      pos_array_string.setf(ios::scientific,ios::floatfield);
-      pos_array_string.precision(12);
+      s.setf(ios::scientific,ios::floatfield);
+      s.precision(12);
 
       const int numnode = distypeToGmshNumNode(distype);
 
       // coordinates
-      pos_array_string << "(";
+      s << "(";
       for (int inen = 0; inen < numnode; ++inen)
       {
         // print position
-        pos_array_string << coord(0, inen) << ",";
-        pos_array_string << coord(1, inen) << ",";
-        pos_array_string << coord(2, inen);
+        s << coord(0, inen) << ",";
+        s << coord(1, inen) << ",";
+        s << coord(2, inen);
         if (inen < numnode-1)
         {
-          pos_array_string << ",";
+          s << ",";
         }
       };
-      pos_array_string << ")";
-      return pos_array_string.str();
+      s << ")";
+      return;
     }
 
     //! take a double value and translate it to the value section of an Gmsh element entry -> gives a constant value over the element
-    std::string ScalarToString(
-        const double scalar,
-        const DRT::Element::DiscretizationType distype      ///< element shape
+    void ScalarToStream(
+        const double                           scalar,
+        const DRT::Element::DiscretizationType distype,     ///< element shape
+        std::ostream&                          s
     );
 
     //! take an array (numnode) and translate it to the scalar value section of an Gmsh element entry
-    template<class V> std::string ScalarFieldToString(
-        const V& scalarfield,
-        const DRT::Element::DiscretizationType distype      ///< element shape
+    template<class V> void ScalarFieldToStream(
+        const V&                               scalarfield,
+        const DRT::Element::DiscretizationType distype,      ///< element shape
+        std::ostream&                     s
     )
     {
-      std::stringstream s;
       s.setf(ios::scientific,ios::floatfield);
       s.precision(12);
 
@@ -90,16 +98,15 @@ namespace IO
         }
       };
       s << "};";
-      return s.str();
     }
 
     //! take an array (3,numnode) and translate it to the vector value section of an Gmsh element entry
-    template<class M> std::string VectorFieldToString(
-        const M& vectorfield,
-        const DRT::Element::DiscretizationType distype      ///< element shape
+    template<class M> void VectorFieldToStream(
+        const M&                               vectorfield,  ///< vector value array (3, numnode)
+        const DRT::Element::DiscretizationType distype,      ///< element shape
+        std::ostream&                          s
     )
     {
-      std::stringstream s;
       s.setf(ios::scientific,ios::floatfield);
       s.precision(12);
 
@@ -122,16 +129,15 @@ namespace IO
         }
       };
       s << "};";
-      return s.str();
     }
 
     //! take an array (9,numnode) and translate it to the tensor value section of an Gmsh element entry
-    template<class M> std::string TensorFieldToString(
-        const M& tensorfield,
-        const DRT::Element::DiscretizationType distype      ///< element shape
+    template<class M> void TensorFieldToStream(
+        const M&                               tensorfield,
+        const DRT::Element::DiscretizationType distype,      ///< element shape
+        std::ostream&                          s
     )
     {
-      std::stringstream s;
       s.setf(ios::scientific,ios::floatfield);
       s.precision(12);
 
@@ -154,15 +160,29 @@ namespace IO
         }
       };
       s << "};";
-      return s.str();
     }
 
-    //! take an entire DRT::Element and print it with constant scalar value at its initial pusition
+    //! take an entire DRT::Element and print it with constant scalar value at its initial position
+    void elementAtInitialPositionToStream(
+        const double        scalar,
+        const DRT::Element* ele,
+        std::ostream&       s
+        );
+
+    //! take an entire DRT::Element and print it with constant scalar value at its initial position
     std::string elementAtInitialPositionToString(
         const double scalar,
         const DRT::Element* ele);
 
-    //! take an entire DRT::Element and print it with constant scalar value at the given pusition
+    //! take an entire DRT::Element and print it with constant scalar value at the given position
+    void elementAtCurrentPositionToStream(
+        const double                            scalar,                 ///< scalar value for the entire element
+        const DRT::Element*                     ele,                    ///< element to print
+        const map<int,LINALG::Matrix<3,1> >&    currentelepositions,    ///< nodal position array
+        std::ostream&                           s
+    );
+
+    //! take an entire DRT::Element and print it with constant scalar value at the given position
     std::string elementAtCurrentPositionToString(
         const double                            scalar,                 ///< scalar value for the entire element
         const DRT::Element*                     ele,                    ///< element to print
@@ -176,15 +196,39 @@ namespace IO
         const M& xyze                                     ///< position array (3, numnode)
     )
     {
-      std::stringstream gmsh_ele_line;
-      // header for this element
-      gmsh_ele_line << "S" << distypeToGmshElementHeader(distype);
-      // coordinates
-      gmsh_ele_line << CoordinatesToString(xyze, distype);
-      // values
-      gmsh_ele_line << ScalarToString(scalar, distype);
+      std::ostringstream s;
+      cellWithScalarToStream(distype, scalar, xyze, s);
+      return s.str();
+    }
 
-      return gmsh_ele_line.str();
+    //! take an array (numnode) and translate it to the scalar value section of an Gmsh element entry
+    template<class M> void cellWithScalarToStream(
+        const DRT::Element::DiscretizationType  distype,  ///< element shape
+        const double                            scalar,   ///< scalar value for the entire element
+        const M&                                xyze,     ///< position array (3, numnode)
+        std::ostream&                           s
+    )
+    {
+      s << "S"; // scalar field indicator
+      s << distypeToGmshElementHeader(distype);
+      CoordinatesToStream(xyze, distype, s);
+      ScalarToStream(scalar, distype, s);
+      s << "\n";
+    }
+
+    //! take an value array (numnode) and a position array (3,numnode) and translate it to an element section of a Gmsh postprocessing file
+    template<class V, class M> void cellWithScalarFieldToStream(
+        const DRT::Element::DiscretizationType  distype,        ///< element shape
+        const V&                                scalarfield,    ///< scalar field in the element
+        const M&                                xyze,           ///< position array (3, numnode)
+        std::ostream&                           s
+    )
+    {
+      s << "S"; // scalar field indicator
+      s << distypeToGmshElementHeader(distype);
+      CoordinatesToStream(xyze, distype, s);
+      ScalarFieldToStream(scalarfield, distype, s);
+      s << "\n";
     }
 
     //! take an value array (numnode) and a position array (3,numnode) and translate it to an element section of a Gmsh postprocessing file
@@ -194,73 +238,99 @@ namespace IO
         const M&                                xyze            ///< position array (3, numnode)
     )
     {
-      std::stringstream gmsh_ele_line;
-      // header for this element
-      gmsh_ele_line << "S" << distypeToGmshElementHeader(distype);
-      // coordinates
-      gmsh_ele_line << CoordinatesToString(xyze, distype);
-      // values
-      gmsh_ele_line << ScalarFieldToString(scalarfield, distype);
+      std::ostringstream s;
+      cellWithScalarFieldToStream(distype, scalarfield, xyze, s);
+      return s.str();
+    }
 
-      return gmsh_ele_line.str();
+    //! take an value array (3,numnode) and a position array (3,numnode) and translate it to an element section of a Gmsh postprocessing file
+    template<class M1, class M2> void cellWithVectorFieldToStream(
+        const DRT::Element::DiscretizationType  distype,        ///< element shape
+        const M1&                               vectorfield,    ///< vector field in the element (3, numnode)
+        const M2&                               xyze,           ///< position array (3, numnode)
+        std::ostream&                           s
+        )
+    {
+      s << "V"; // vector field indicator
+      s << distypeToGmshElementHeader(distype);
+      CoordinatesToStream(xyze, distype, s);
+      VectorFieldToStream(vectorfield, distype, s);
+      s << "\n";
     }
 
     //! take an value array (3,numnode) and a position array (3,numnode) and translate it to an element section of a Gmsh postprocessing file
     template<class M1, class M2> std::string cellWithVectorFieldToString(
         const DRT::Element::DiscretizationType  distype,        ///< element shape
-        const M1&                               vectorfield,    ///< vector field in the element
-        const M2&                               xyze            ///< position array
+        const M1&                               vectorfield,    ///< vector field in the element (3, numnode)
+        const M2&                               xyze            ///< position array (3, numnode)
         )
     {
-      std::stringstream gmsh_ele_line;
-      // header for this element
-      gmsh_ele_line << "V" << distypeToGmshElementHeader(distype);
-      // coordinates
-      gmsh_ele_line << CoordinatesToString(xyze, distype);
-      // values
-      gmsh_ele_line << VectorFieldToString(vectorfield, distype);
+      std::ostringstream s;
+      cellWithVectorFieldToStream(distype, vectorfield, xyze, s);
+      return s.str();
+    }
 
-      return gmsh_ele_line.str();
+    //! take an value array (9,numnode) and a position array (3,numnode) and translate it to an element section of a Gmsh postprocessing file
+    template<class M1, class M2> void cellWithTensorFieldToStream(
+        const DRT::Element::DiscretizationType  distype,        ///< element shape
+        const M1&                               tensorfield,    ///< tensor field in the element (9,numnode)
+        const M2&                               xyze,           ///< position array (3, numnode)
+        std::ostream&                           s
+        )
+    {
+      s << "T"; // tensor field indicator
+      s << distypeToGmshElementHeader(distype);
+      CoordinatesToStream(xyze, distype, s);
+      TensorFieldToStream(tensorfield, distype, s);
+      s << "\n";
     }
 
     //! take an value array (9,numnode) and a position array (3,numnode) and translate it to an element section of a Gmsh postprocessing file
     template<class M1, class M2> std::string cellWithTensorFieldToString(
         const DRT::Element::DiscretizationType  distype,        ///< element shape
-        const M1&                               tensorfield,    ///< tensor field in the element
-        const M2&                               xyze            ///< position array
+        const M1&                               tensorfield,    ///< tensor field in the element (9,numnode)
+        const M2&                               xyze            ///< position array (3, numnode)
         )
     {
-      std::stringstream gmsh_ele_line;
-      // header for this element
-      gmsh_ele_line << "T" << distypeToGmshElementHeader(distype);
-      // coordinates
-      gmsh_ele_line << CoordinatesToString(xyze, distype);
-      // values
-      gmsh_ele_line << TensorFieldToString(tensorfield, distype);
-
-      return gmsh_ele_line.str();
+      std::ostringstream s;
+      cellWithTensorFieldToStream(distype, tensorfield, xyze, s);
+      return s.str();
     }
 
     /// print a piece of text at a given position
     std::string text3dToString(
         const LINALG::Matrix<3,1>&            xyz,      ///< 3d Position of text
-        const std::string                     text,     ///< text to be printed
+        const std::string&                    text,     ///< text to be printed
         const int                             fontsize  ///< font size
         );
 
     //! print discretization in initial configuration (t = 0)
+    void disToStream(
+        const std::string&                      text,
+        const double                            scalar,
+        const Teuchos::RCP<DRT::Discretization> dis,
+        std::ostream&                           s);
+
+    //! print discretization in initial configuration (t = 0)
     std::string disToString(
-        const std::string& s,
-        const double scalar,
+        const std::string&                      text,
+        const double                            scalar,
         const Teuchos::RCP<DRT::Discretization> dis);
 
     //! print discretization in current configuration (t > 0)
+    void disToStream(
+        const std::string&                         text,
+        const double                               scalar,
+        const Teuchos::RCP<DRT::Discretization>    dis,
+        const std::map<int,LINALG::Matrix<3,1> >&  currentpositions,
+        std::ostream&                              s);
+
+    //! print discretization in current configuration (t > 0)
     std::string disToString(
-        const std::string&                         s,
+        const std::string&                         text,
         const double                               scalar,
         const Teuchos::RCP<DRT::Discretization>    dis,
         const std::map<int,LINALG::Matrix<3,1> >&  currentpositions);
-
   }
 }
 

@@ -1,7 +1,7 @@
 /*!
 \file io_gmsh.cpp
 
-\brief simple element print library for Gmsh (debugging only)
+\brief simple element print library for Gmsh
 
 <pre>
 Maintainer: Axel Gerstenberger
@@ -22,45 +22,19 @@ std::string IO::GMSH::distypeToGmshElementHeader(
 {
   switch (distype)
   {
-    case DRT::Element::hex8:
-      return "H";
-      break;
-    case DRT::Element::hex20:
-      return "H";
-      break;
-    case DRT::Element::hex27:
-      return "H";
-      break;
-    case DRT::Element::tet4:
-      return "S";
-      break;
-    case DRT::Element::tet10:
-      return "S";
-      break;
-    case DRT::Element::point1:
-      return "P";
-      break;
-    case DRT::Element::quad4:
-      return "Q";
-      break;
-    case DRT::Element::quad8:
-      return "Q";
-      break;
-    case DRT::Element::quad9:
-      return "Q";
-      break;
-    case DRT::Element::tri3:
-      return "T";
-      break;
-    case DRT::Element::tri6:
-      return "T";
-      break;
-    case DRT::Element::line2:
-      return "L";
-      break;
-    case DRT::Element::line3:
-      return "L2";
-      break;
+    case DRT::Element::hex8:    return "H";  break;
+    case DRT::Element::hex20:   return "H";  break;
+    case DRT::Element::hex27:   return "H";  break;
+    case DRT::Element::tet4:    return "S";  break;
+    case DRT::Element::tet10:   return "S";  break;
+    case DRT::Element::point1:  return "P";  break;
+    case DRT::Element::quad4:   return "Q";  break;
+    case DRT::Element::quad8:   return "Q";  break;
+    case DRT::Element::quad9:   return "Q";  break;
+    case DRT::Element::tri3:    return "T";  break;
+    case DRT::Element::tri6:    return "T";  break;
+    case DRT::Element::line2:   return "L";  break;
+    case DRT::Element::line3:   return "L2"; break;
     default:
       dserror("distypeToGmshElementHeader: distype not supported for printout!");
   }
@@ -73,106 +47,105 @@ int IO::GMSH::distypeToGmshNumNode(
 {
   switch (distype)
   {
-    case DRT::Element::hex8:
-      return 8;
-      break;
-    case DRT::Element::hex20:
-      return 8;
-      break;
-    case DRT::Element::hex27:
-      return 8;
-      break;
-    case DRT::Element::tet4:
-      return 4;
-      break;
-    case DRT::Element::tet10:
-      return 4;
-      break;
-    case DRT::Element::point1:
-      return 1;
-      break;
-    case DRT::Element::quad4:
-      return 4;
-      break;
-    case DRT::Element::quad8:
-      return 4;
-      break;
-    case DRT::Element::quad9:
-      return 4;
-      break;
-    case DRT::Element::tri3:
-      return 3;
-      break;
-    case DRT::Element::tri6:
-      return 3;
-      break;
-    case DRT::Element::line2:
-      return 2;
-      break;
-    case DRT::Element::line3:
-      return 3;
-      break;
+    case DRT::Element::hex8:   return 8;  break;
+    case DRT::Element::hex20:  return 8;  break;
+    case DRT::Element::hex27:  return 8;  break;
+    case DRT::Element::tet4:   return 4;  break;
+    case DRT::Element::tet10:  return 4;  break;
+    case DRT::Element::point1: return 1;  break;
+    case DRT::Element::quad4:  return 4;  break;
+    case DRT::Element::quad8:  return 4;  break;
+    case DRT::Element::quad9:  return 4;  break;
+    case DRT::Element::tri3:   return 3;  break;
+    case DRT::Element::tri6:   return 3;  break;
+    case DRT::Element::line2:  return 2;  break;
+    case DRT::Element::line3:  return 3;  break;
     default:
       dserror("distypeToGmshNumNode: distype not supported for printout!");
   }
   return -1;
 }
 
-std::string IO::GMSH::ScalarToString(
-    const double scalar,
-    const DRT::Element::DiscretizationType distype)
+void IO::GMSH::ScalarToStream(
+    const double                           scalar,
+    const DRT::Element::DiscretizationType distype,
+    std::ostream&                          s
+    )
 {
-  std::stringstream pos_array_string;
-  pos_array_string.setf(ios::scientific,ios::floatfield);
-  pos_array_string.precision(12);
+  s.setf(ios::scientific,ios::floatfield);
+  s.precision(12);
 
   const int numnode = distypeToGmshNumNode(distype);
 
   // values
-  pos_array_string << "{";
+  s << "{";
   for (int i = 0; i<numnode; ++i)
   {
-    pos_array_string << scalar;
+    s << scalar;
     if (i < numnode-1)
     {
-      pos_array_string << ",";
+      s << ",";
     }
   };
-  pos_array_string << "};";
-  return pos_array_string.str();
+  s << "};";
 }
 
-std::string IO::GMSH::elementAtInitialPositionToString(const double scalar, const DRT::Element* ele)
+void IO::GMSH::elementAtInitialPositionToStream(
+    const double scalar,
+    const DRT::Element* ele,
+    std::ostream& s)
 {
   const DRT::Node*const* nodes = ele->Nodes();
 
   const DRT::Element::DiscretizationType distype = ele->Shape();
   const int numnode = distypeToGmshNumNode(distype);
 
-  std::stringstream pos_array_string;
-  pos_array_string.setf(ios::scientific,ios::floatfield);
-  pos_array_string.precision(12);
+  s.setf(ios::scientific,ios::floatfield);
+  s.precision(12);
 
-  pos_array_string << "S" << distypeToGmshElementHeader(distype) << "(";
+  s << "S" << distypeToGmshElementHeader(distype) << "(";
   for (int i = 0; i<numnode; ++i)
   {
     const DRT::Node* node = nodes[i];
     const double* x = node->X();
-    pos_array_string << x[0] << ",";
-    pos_array_string << x[1] << ",";
-    pos_array_string << x[2];
+    s << x[0] << ",";
+    s << x[1] << ",";
+    s << x[2];
     if (i < numnode-1)
     {
-      pos_array_string << ",";
+      s << ",";
     }
   };
-  pos_array_string << ")";
+  s << ")";
   // values
-  pos_array_string << ScalarToString(scalar, distype);
-
-  return pos_array_string.str();
+  ScalarToStream(scalar, distype, s);
+  s << "\n";
 }
 
+
+std::string IO::GMSH::elementAtInitialPositionToString(
+    const double scalar,
+    const DRT::Element* ele)
+{
+  std::ostringstream s;
+  elementAtInitialPositionToStream(scalar, ele, s);
+  return s.str();
+}
+
+
+void IO::GMSH::elementAtCurrentPositionToStream(
+    const double                            scalar,
+    const DRT::Element*                     ele,
+    const map<int,LINALG::Matrix<3,1> >&    currentelepositions,
+    std::ostream&                           s
+    )
+{
+  IO::GMSH::cellWithScalarToStream(
+      ele->Shape(),
+      scalar,
+      GEO::getCurrentNodalPositions(ele,currentelepositions),
+      s);
+}
 
 
 std::string IO::GMSH::elementAtCurrentPositionToString(
@@ -180,71 +153,89 @@ std::string IO::GMSH::elementAtCurrentPositionToString(
     const DRT::Element*                     ele,
     const map<int,LINALG::Matrix<3,1> >&    currentelepositions)
 {
-
-  const DRT::Element::DiscretizationType distype = ele->Shape();
-
-  std::stringstream gmshfilecontent;
-  gmshfilecontent << IO::GMSH::cellWithScalarToString(
-      distype, scalar, GEO::getCurrentNodalPositions(ele,currentelepositions)
-      ) << "\n";
-  return gmshfilecontent.str();
+  std::ostringstream s;
+  IO::GMSH::elementAtCurrentPositionToStream(
+      scalar,
+      ele,
+      currentelepositions,
+      s);
+  return s.str();
 }
 
 
-
-std::string text3dToString(
+std::string IO::GMSH::text3dToString(
     const LINALG::Matrix<3,1>&            xyz,      ///< 3d Position of text
-    const std::string                     text,     ///< text to be printed
+    const std::string&                    text,     ///< text to be printed
     const int                             fontsize  ///< font size
     )
 {
-  std::stringstream gmsh_ele_line;
+  std::ostringstream s;
 
-  gmsh_ele_line << "T3";
+  s << "T3";
   // coordinates
-  gmsh_ele_line << "("<< scientific << xyz(0)<<",";
-  gmsh_ele_line << scientific << xyz(1)<<",";
-  gmsh_ele_line << scientific << xyz(2) <<",";
-  gmsh_ele_line << fontsize << ")";
-  gmsh_ele_line <<"{\"" << text <<"\"};";
-
-  return gmsh_ele_line.str();
+  s << "(";
+  s << scientific << xyz(0) <<",";
+  s << scientific << xyz(1) <<",";
+  s << scientific << xyz(2) <<",";
+  s << fontsize << ")";
+  s << "{\"" << text <<"\"};";
+  s << "\n";
+  return s.str();
 }
 
-std::string IO::GMSH::disToString(
-    const std::string& s,
-    const double scalar,
-    const Teuchos::RCP<DRT::Discretization> dis)
+void IO::GMSH::disToStream(
+    const std::string&                      text,
+    const double                            scalar,
+    const Teuchos::RCP<DRT::Discretization> dis,
+    std::ostream&                           s
+    )
 {
-  std::stringstream gmshfilecontent;
-  gmshfilecontent << "View \" " << s << " Elements \" {\n";
+  s << "View \" " << text << " Elements \" {\n";
   for (int i=0; i<dis->NumMyRowElements(); ++i)
   {
     const DRT::Element* actele = dis->lRowElement(i);
-    gmshfilecontent << IO::GMSH::elementAtInitialPositionToString(scalar, actele) << "\n";
+    IO::GMSH::elementAtInitialPositionToStream(scalar, actele, s);
   };
-  gmshfilecontent << "};\n";
-  return gmshfilecontent.str();
+  s << "};\n";
 }
 
 std::string IO::GMSH::disToString(
-    const std::string&                          s,
+    const std::string& text,
+    const double scalar,
+    const Teuchos::RCP<DRT::Discretization> dis)
+{
+  std::ostringstream s;
+  disToStream(text, scalar, dis, s);
+  return s.str();
+}
+
+void IO::GMSH::disToStream(
+    const std::string&                          text,
     const double                                scalar,
     const Teuchos::RCP<DRT::Discretization>     dis,
-    const std::map<int,LINALG::Matrix<3,1> >&   currentpositions)
+    const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
+    std::ostream&                               s)
 {
-  std::stringstream gmshfilecontent;
-  gmshfilecontent << "View \" " << s << " Elements \" {\n";
+  s << "View \" " << text << " Elements \" {\n";
 
   for (int i=0; i<dis->NumMyColElements(); ++i)
   {
     const DRT::Element* actele = dis->lColElement(i);
-    gmshfilecontent << IO::GMSH::cellWithScalarToString(actele->Shape(),
-        scalar, GEO::getCurrentNodalPositions(actele,currentpositions) ) << "\n";
+    IO::GMSH::cellWithScalarToStream(actele->Shape(),
+        scalar, GEO::getCurrentNodalPositions(actele,currentpositions), s);
   };
-  gmshfilecontent << "};\n";
-  return gmshfilecontent.str();
+  s << "};\n";
 }
 
+std::string IO::GMSH::disToString(
+    const std::string&                          text,
+    const double                                scalar,
+    const Teuchos::RCP<DRT::Discretization>     dis,
+    const std::map<int,LINALG::Matrix<3,1> >&   currentpositions)
+{
+  std::ostringstream s;
+  disToStream(text, scalar, dis, currentpositions, s);
+  return s.str();
+}
 
 #endif // #ifdef CCADISCRET
