@@ -152,6 +152,21 @@ public:
   void IntegrateDerivSlave2D3D(
       CONTACT::CElement& sele, double* sxia, double* sxib,
       RCP<Epetra_SerialDenseMatrix> dseg);
+  
+  /*!
+  \brief Build all integrals and linearizations on a 1D or 2D
+         slave element (i.e. D, LinD).
+
+  This method is a modified version of the method above and is
+  ONLY applicable for the 3D quadratic case with STANDARD shape
+  fucntions (penalty, augmented), where piecewise linear
+  interpolation for the Lagrange multipliers is applied.
+
+  */
+  void IntegrateDerivSlave3DQuad(
+      CONTACT::CElement& sele, CONTACT::IntElement& sintele,
+      double* sxia, double* sxib,
+      RCP<Epetra_SerialDenseMatrix> dseg);
 
   /*!
   \brief Build all integrals and linearizations on a 1D slave /
@@ -284,6 +299,17 @@ public:
   bool AssembleD(const Epetra_Comm& comm,
                  CONTACT::CElement& sele,
                  Epetra_SerialDenseMatrix& D_seg);
+  
+  /*!
+  \brief Assemble D contribution of current overlap into slave nodes
+  Modified version for quadratic 3D case with linear interpolation
+  for Lagrange multiplier field.
+
+  */
+  bool AssembleD(const Epetra_Comm& comm,
+                 CONTACT::CElement& sele,
+                 CONTACT::CElement& sintele,
+                 Epetra_SerialDenseMatrix& D_seg);
 
   /*!
   \brief Assemble M contribution of current overlap into slave nodes
@@ -295,13 +321,16 @@ public:
                  Epetra_SerialDenseMatrix& M_seg);
 
   /*!
-  \brief Assemble Mmod contribution of current overlap into slave nodes
+  \brief Assemble M contribution of current overlap into slave nodes
+  Modified version for quadratic 3D case with linear interpolation
+  for Lagrange multiplier field.
 
   */
-  bool AssembleMmod(const Epetra_Comm& comm,
-                    CONTACT::CElement& sele,
-                    CONTACT::CElement& mele,
-                    Epetra_SerialDenseMatrix& Mmod_seg);
+  bool AssembleM(const Epetra_Comm& comm,
+                 CONTACT::CElement& sele,
+                 CONTACT::CElement& sintele,
+                 CONTACT::CElement& mele,
+                 Epetra_SerialDenseMatrix& M_seg);
 
   /*!
   \brief Assemble g~ contribution of current overlap into slave nodes
@@ -310,6 +339,27 @@ public:
   bool AssembleG(const Epetra_Comm& comm,
                  CONTACT::CElement& sele,
                  Epetra_SerialDenseVector& g_seg);
+  
+  /*!
+  \brief Assemble g~ contribution of current overlap into slave nodes
+  Modified version for quadratic 3D case with linear interpolation
+  for Lagrange multiplier field.
+
+  */
+  bool AssembleG(const Epetra_Comm& comm,
+                 CONTACT::CElement& sele,
+                 CONTACT::CElement& sintele,
+                 Epetra_SerialDenseVector& g_seg);
+  
+  /*!
+  \brief Assemble Mmod contribution of current overlap into slave nodes
+  (this is outdated!)
+
+  */
+  bool AssembleMmod(const Epetra_Comm& comm,
+                    CONTACT::CElement& sele,
+                    CONTACT::CElement& mele,
+                    Epetra_SerialDenseMatrix& Mmod_seg);
 
   //@}
 

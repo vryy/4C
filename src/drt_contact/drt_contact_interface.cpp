@@ -1148,9 +1148,6 @@ bool CONTACT::Interface::EvaluateContactSearchBinarytree()
  *----------------------------------------------------------------------*/
 bool CONTACT::Interface::IntegrateSlave(CONTACT::CElement& sele)
 {
-  // create an integrator instance with correct NumGP and Dim
-  CONTACT::Integrator integrator(shapefcn_,sele.Shape());
-
   // create correct integration limits
   double sxia[2] = {0.0, 0.0};
   double sxib[2] = {0.0, 0.0};
@@ -1166,13 +1163,50 @@ bool CONTACT::Interface::IntegrateSlave(CONTACT::CElement& sele)
     sxib[0] =  1.0; sxib[1] =  1.0;
   }
 
-  // do the element integration (integrate and linearize D)
-  int nrow = sele.NumNode();
-  RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
-  integrator.IntegrateDerivSlave2D3D(sele,sxia,sxib,dseg);
+  // check for quadratic 3D case
+  bool auxplane = Teuchos::getIntegralValue<int>(IParams(),"COUPLING_AUXPLANE");
 
-  // do the assembly into the slave nodes
-  integrator.AssembleD(Comm(),sele,*dseg);
+  // ************************************************** quadratic 3D ***
+  if (Dim()==3 && sele.IsQuad() && shapefcn_==CONTACT::Interface::StandardFunctions)
+  {
+    // only for auxiliary plane 3D version
+    if (!auxplane) dserror("ERROR: Quadratic 3D contact only for AuxPlane case!");
+    
+    // build linear integration elements from quadratic CElements
+    vector<RCP<CONTACT::IntElement> > sauxelements(0);
+    SplitIntElements(sele,sauxelements);
+    
+    for (int i=0;i<(int)sauxelements.size();++i)
+    {
+      // do the int element integration (integrate and linearize D)
+      int nrow = sele.NumNode();
+      int nintrow = sauxelements[i]->NumNode();
+      RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nintrow*Dim(),nrow*Dim()));
+      
+      // create an integrator instance with correct NumGP and Dim
+      CONTACT::Integrator integrator(shapefcn_,sauxelements[i]->Shape());
+      integrator.IntegrateDerivSlave3DQuad(sele,*(sauxelements[i]),sxia,sxib,dseg);
+
+      // do the assembly into the slave nodes
+      integrator.AssembleD(Comm(),sele,*(sauxelements[i]),*dseg);
+    }
+  }
+  
+  else
+  {
+    // do the element integration (integrate and linearize D)
+    int nrow = sele.NumNode();
+    RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
+    
+    // create an integrator instance with correct NumGP and Dim
+    CONTACT::Integrator integrator(shapefcn_,sele.Shape());
+    integrator.IntegrateDerivSlave2D3D(sele,sxia,sxib,dseg);
+
+    // do the assembly into the slave nodes
+    integrator.AssembleD(Comm(),sele,*dseg);
+  }
+        
+  
 
   return true;
 }
@@ -1584,6 +1618,8 @@ void CONTACT::Interface::AssembleMacauley(bool& localisincontact,
     for (int k=0;k<dim;++k)
       lmuzawan += cnode->lmuzawa()[k]*cnode->n()[k];
     
+    //cout << "gap: " << gap << " scaled gap: " << kappa*gap << endl;
+    
 #ifdef CONTACTFDPENALTYKC1
     // set lagrangian multipliers explicitely to constant
     // and corresponding derivatives to zero
@@ -1617,7 +1653,7 @@ void CONTACT::Interface::AssembleMacauley(bool& localisincontact,
     //********************************************************************
     
     // Activate/Deactivate node and notice any change    
-    if( (cnode->Active() == false) && (lmuzawan - kappa * pp * gap > 0) )
+    if( (cnode->Active() == false) && (lmuzawan - kappa * pp * gap >= 0) )
     {
         cnode->Active() = true;
         localactivesetchange = true;
@@ -1628,7 +1664,7 @@ void CONTACT::Interface::AssembleMacauley(bool& localisincontact,
         cout << ") gap=" << gap << endl;
     }
     
-    else if( (cnode->Active() == true) && (lmuzawan - kappa * pp * gap <= 0) )
+    else if( (cnode->Active() == true) && (lmuzawan - kappa * pp * gap < 0) )
     {
         cnode->Active() = false;
         localactivesetchange = true;

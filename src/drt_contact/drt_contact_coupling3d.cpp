@@ -2600,11 +2600,19 @@ bool CONTACT::Coupling3d::IntegrateCells()
     // *******************************************************************
     // ************ Coupling with or without auxiliary plane *************
     // *******************************************************************
-    int nrow = SlaveElement().NumNode();
-    int ncol = MasterElement().NumNode();
-    RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
-    RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
-    RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
+    
+    // decide on dimensions of segment matrices and vectors
+    bool quadpenalty = false;
+    if (Quad() && shapefcn_ == Interface::StandardFunctions) quadpenalty=true;
+    int nrow    = SlaveElement().NumNode();
+    int ncol    = MasterElement().NumNode();
+    int nintrow = SlaveElement().NumNode();
+    if (quadpenalty) nintrow = SlaveIntElement().NumNode();
+    
+    // define empty segment matrices and vectors
+    RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nintrow*Dim(),nrow*Dim()));
+    RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nintrow*Dim(),ncol*Dim()));
+    RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nintrow));
 
     if (CouplingInAuxPlane())
     {
@@ -2624,25 +2632,49 @@ bool CONTACT::Coupling3d::IntegrateCells()
       integrator.IntegrateDerivCell3D(SlaveElement(),MasterElement(),Cells()[i],dseg,mseg,gseg);
     // *******************************************************************
 
-    // do the three assemblies into the slave nodes
-#ifdef CONTACTONEMORTARLOOP
-    integrator.AssembleD(Comm(),SlaveElement(),*dseg);
-#endif // #ifdef CONTACTONEMORTARLOOP
-    integrator.AssembleM(Comm(),SlaveElement(),MasterElement(),*mseg);
-
-    // for assembly of g we take into account the PetrovGalerkin idea
-    if (CouplingInAuxPlane() && Quad())
+    if (quadpenalty)
     {
+      // do the three assemblies into the slave nodes
+#ifdef CONTACTONEMORTARLOOP
+      integrator.AssembleD(Comm(),SlaveElement(),SlaveIntElement(),*dseg);
+#endif // #ifdef CONTACTONEMORTARLOOP
+      integrator.AssembleM(Comm(),SlaveElement(),SlaveIntElement(),MasterElement(),*mseg);
+
+      // for assembly of g we take into account the PetrovGalerkin idea
+      if (CouplingInAuxPlane())
+      {
 #ifdef CONTACTPETROVGALERKIN
-      // gap interpolation is based on piecewise linear approach
-      integrator.AssembleG(Comm(),SlaveIntElement(),*gseg);
+        dserror("Combination does not make sense!")
 #else
-      // hap interpolation is based on truly quadratic approach
-      integrator.AssembleG(Comm(),SlaveElement(),*gseg);
+        integrator.AssembleG(Comm(),SlaveElement(),SlaveIntElement(),*gseg);
 #endif // #ifdef CONTACTPETROVGALERKIN
+      }
+      else
+        dserror("Combination does not make sense!");
     }
+    
     else
-      integrator.AssembleG(Comm(),SlaveElement(),*gseg);
+    {
+      // do the three assemblies into the slave nodes
+  #ifdef CONTACTONEMORTARLOOP
+      integrator.AssembleD(Comm(),SlaveElement(),*dseg);
+  #endif // #ifdef CONTACTONEMORTARLOOP
+      integrator.AssembleM(Comm(),SlaveElement(),MasterElement(),*mseg);
+  
+      // for assembly of g we take into account the PetrovGalerkin idea
+      if (CouplingInAuxPlane() && Quad())
+      {
+  #ifdef CONTACTPETROVGALERKIN
+        // gap interpolation is based on piecewise linear approach
+        integrator.AssembleG(Comm(),SlaveIntElement(),*gseg);
+  #else
+        // hap interpolation is based on truly quadratic approach
+        integrator.AssembleG(Comm(),SlaveElement(),*gseg);
+  #endif // #ifdef CONTACTPETROVGALERKIN
+      }
+      else
+        integrator.AssembleG(Comm(),SlaveElement(),*gseg);
+    }
   }
   return true;
 }
