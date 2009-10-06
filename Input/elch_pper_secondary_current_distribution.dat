@@ -267,9 +267,9 @@ DLINE  0
 --------------------------------ELECTRODE KINETICS SURF CONDITIONS
 DSURF  2
 // anode
-E 1 - Butler-Volmer matid 2 pot 1.0 curve none alpha_a 0.5 alpha_c 0.5 i0 -0.1 gamma 1.0
+E 1 - Butler-Volmer matid 2 pot 1.0 curve none alpha_a 0.5 alpha_c 0.5 i0 -0.1 gamma 1.0 refcon 1.0
 // cathode
-E 2 - Butler-Volmer matid 2 pot -1.0 curve none alpha_a 0.5 alpha_c 0.5 i0 -0.1 gamma 1.0
+E 2 - Butler-Volmer matid 2 pot -1.0 curve none alpha_a 0.5 alpha_c 0.5 i0 -0.1 gamma 1.0 refcon 1.0
 ---------------------------------DESIGN LINE CONTACT CONDITIONS 2D
 DLINE  0
 ---------------------------------DESIGN SURF CONTACT CONDITIONS 3D
