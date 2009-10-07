@@ -131,7 +131,8 @@ namespace XFEM
     //! for each xfem condition label there is a set of boundary elements
     std::map<int,std::set<int> >              boundaryElementsByLabel_;
 
-     //! each boundary element belongs to one label (inverted information of elementsByLabel_)
+    //! each boundary element belongs to one label (inverted information of elementsByLabel_)
+    //! i.e. its a map like (ElementGID,Label)
     std::map<int,int>                         labelPerBoundaryElementId_;
 
     //! SearchTree octtree for timestep n+1
