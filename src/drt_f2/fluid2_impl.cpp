@@ -2704,27 +2704,18 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::CalcStabParameter(
   }
   else if(whichtau == Fluid2::bazilevs)
   {
-    /* INSTATIONARY FLOW PROBLEM, ONE-STEP-THETA, BDF2
+    /*
 
     tau_M: Bazilevs et al.
-                                                               1.0
-                 +-                                       -+ - ---
-                 |                                         |   2.0
-                 | 4.0    n+1       n+1          2         |
-          tau  = | --- + u     * G u     + C * nu  * G : G |
-             M   |   2           -          I        -   - |
-                 | dt            -                   -   - |
-                 +-                                       -+
+                                                                              1.0
+                 +-                                                      -+ - ---
+                 |        2                                               |   2.0
+                 | 4.0*rho         n+1             n+1          2         |
+          tau  = | -------  + rho*u     * G * rho*u     + C * mu  * G : G |
+             M   |     2                  -                I        -   - |
+                 |   dt                   -                         -   - |
+                 +-                                                      -+
 
-   tau_C: Bazilevs et al., derived from the fine scale complement Shur
-          operator of the pressure equation
-
-
-                                  1.0
-                    tau  = -----------------
-                       C            /     \
-                            tau  * | g * g |
-                               M    \-   -/
     */
     /*            +-           -+   +-           -+   +-           -+
                   |             |   |             |   |             |
@@ -2741,14 +2732,14 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::CalcStabParameter(
           -   -   +----
                    i,j
     */
-    /*                      +----
-           n+1       n+1     \     n+1          n+1
-          u     * G u     =   +   u    * G   * u
-                  -          /     i     -ij    j
-                  -         +----        -
-                             i,j
+    /*                                 +----
+               n+1             n+1     \         n+1              n+1
+          rho*u     * G * rho*u     =   +   rho*u    * G   * rho*u
+                      -                /         i     -ij        j
+                      -               +----        -
+                                        i,j
     */
-    double g;
+    double G;
     double normG = 0;
     double Gnormu = 0;
 
@@ -2758,33 +2749,34 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::CalcStabParameter(
       const double dens_sqr_velint_nn = dens_sqr*velint_(nn);
       for (int rr=0;rr<2;++rr)
       {
-        g = xji_(nn,0)*xji_(rr,0);
+        G = xji_(nn,0)*xji_(rr,0);
         for (int mm=1;mm<2;++mm)
         {
-          g += xji_(nn,mm)*xji_(rr,mm);
+          G += xji_(nn,mm)*xji_(rr,mm);
         }
-        normG += g*g;
-        Gnormu+=dens_sqr_velint_nn*g*velint_(rr);
+        normG += G*G;
+        Gnormu+=dens_sqr_velint_nn*G*velint_(rr);
       }
     }
 
-    // definition of constant
-    // (Akkerman et al. (2008) used 36.0 for quadratics, but Stefan
-    //  brought 144.0 from Austin...)
+    // definition of constant according to Akkerman et al. (2008):
+    // 12.0/m_k = 36.0 for linear elements and 144.0 for quadratic elements
     const double CI = 12.0/mk;
 
-    /*                                                         1.0
-                 +-                                       -+ - ---
-                 |                                         |   2.0
-                 | 4.0    n+1       n+1          2         |
-          tau  = | --- + u     * G u     + C * nu  * G : G |
-             M   |   2           -          I        -   - |
-                 | dt            -                   -   - |
-                 +-                                       -+
-    */
     tau_(0) = 1.0/(sqrt((4.0*dens_sqr)/(dt_*dt_)+Gnormu+CI*visceff_*visceff_*normG));
     tau_(1) = tau_(0);
 
+    /*
+      tau_C: Bazilevs et al., derived from fine-scale complement Shur
+                              operator of the pressure equation
+
+
+                                  1.0
+                    tau  = -----------------
+                       C            /     \
+                            tau  * | g * g |
+                               M    \-   -/
+    */
     /*           +-     -+   +-     -+   +-     -+
                  |       |   |       |   |       |
                  |  dr   |   |  ds   |   |  dt   |
@@ -2793,9 +2785,6 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::CalcStabParameter(
                  |    i  |   |    i  |   |    i  |
                  +-     -+   +-     -+   +-     -+
     */
-    const double g0 = xji_(0,0) + xji_(0,1);
-    const double g1 = xji_(1,0) + xji_(1,1);
-
     /*           +----
                   \
          g * g =   +   g * g
@@ -2803,16 +2792,12 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::CalcStabParameter(
                  +----
                    i
     */
+    const double g0 = xji_(0,0) + xji_(0,1);
+    const double g1 = xji_(1,0) + xji_(1,1);
+
     const double normgsq = g0*g0+g1*g1;
 
-    /*
-                                1.0
-                  tau  = -----------------
-                     C            /     \
-                          tau  * | g * g |
-                             M    \-   -/
-    */
-    tau_(2) = densaf_/(tau_(0)*normgsq);
+    tau_(2) = 1.0/(tau_(0)*normgsq);
   }
   else if(whichtau == Fluid2::codina)
   {

@@ -3574,15 +3574,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(
     tau_(1) = timefac*DSQR(hk)/(DSQR(hk)*densaf_*xi11+(4.0*timefac*visceff_/mk)*xi12);
 
     /*------------------------------------------------------ compute tau_C ---*/
-    /*-- stability parameter definition according to Codina (2002), CMAME 191
-     *
-     * Analysis of a stabilized finite element approximation of the transient
-     * convection-diffusion-reaction equation using orthogonal subscales.
-     * Ramon Codina, Jordi Blasco; Comput. Visual. Sci., 4 (3): 167-174, 2002.
-     *
-     * */
-    //tau[2] = sqrt(DSQR(visc)+DSQR(0.5*vel_norm*hk));
-
     // Wall Diss. 99
     /*
                       xi2 ^
@@ -3599,27 +3590,18 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(
   }
   else if(whichtau == Fluid3::bazilevs)
   {
-    /* INSTATIONARY FLOW PROBLEM, ONE-STEP-THETA, BDF2
+    /*
 
     tau_M: Bazilevs et al.
-                                                               1.0
-                 +-                                       -+ - ---
-                 |                                         |   2.0
-                 | 4.0    n+1       n+1          2         |
-          tau  = | --- + u     * G u     + C * nu  * G : G |
-             M   |   2           -          I        -   - |
-                 | dt            -                   -   - |
-                 +-                                       -+
+                                                                              1.0
+                 +-                                                      -+ - ---
+                 |        2                                               |   2.0
+                 | 4.0*rho         n+1             n+1          2         |
+          tau  = | -------  + rho*u     * G * rho*u     + C * mu  * G : G |
+             M   |     2                  -                I        -   - |
+                 |   dt                   -                         -   - |
+                 +-                                                      -+
 
-   tau_C: Bazilevs et al., derived from the fine scale complement Shur
-          operator of the pressure equation
-
-
-                                  1.0
-                    tau  = -----------------
-                       C            /     \
-                            tau  * | g * g |
-                               M    \-   -/
     */
     /*            +-           -+   +-           -+   +-           -+
                   |             |   |             |   |             |
@@ -3636,12 +3618,12 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(
           -   -   +----
                    i,j
     */
-    /*                      +----
-           n+1       n+1     \     n+1          n+1
-          u     * G u     =   +   u    * G   * u
-                  -          /     i     -ij    j
-                  -         +----        -
-                             i,j
+    /*                                 +----
+               n+1             n+1     \         n+1              n+1
+          rho*u     * G * rho*u     =   +   rho*u    * G   * rho*u
+                      -                /         i     -ij        j
+                      -               +----        -
+                                        i,j
     */
     double G;
     double normG = 0;
@@ -3658,23 +3640,24 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(
       }
     }
 
-    // definition of constant
-    // (Akkerman et al. (2008) used 36.0 for quadratics, but Stefan
-    //  brought 144.0 from Austin...)
+    // definition of constant according to Akkerman et al. (2008):
+    // 12.0/m_k = 36.0 for linear elements and 144.0 for quadratic elements
     const double CI = 12.0/mk;
 
-    /*                                                         1.0
-                 +-                                       -+ - ---
-                 |                                         |   2.0
-                 | 4.0    n+1       n+1          2         |
-          tau  = | --- + u     * G u     + C * nu  * G : G |
-             M   |   2           -          I        -   - |
-                 | dt            -                   -   - |
-                 +-                                       -+
-    */
     tau_(0) = 1.0/(sqrt((4.0*dens_sqr)/(dt_*dt_)+Gnormu+CI*visceff_*visceff_*normG));
     tau_(1) = tau_(0);
 
+    /*
+      tau_C: Bazilevs et al., derived from fine-scale complement Shur
+                              operator of the pressure equation
+
+
+                                  1.0
+                    tau  = -----------------
+                       C            /     \
+                            tau  * | g * g |
+                               M    \-   -/
+    */
     /*           +-     -+   +-     -+   +-     -+
                  |       |   |       |   |       |
                  |  dr   |   |  ds   |   |  dt   |
@@ -3698,14 +3681,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(
       normgsq += g*g;
     }
 
-    /*
-                                1.0
-                  tau  = -----------------
-                     C            /     \
-                          tau  * | g * g |
-                             M    \-   -/
-    */
-    tau_(2) = densaf_/(tau_(0)*normgsq);
+    tau_(2) = 1.0/(tau_(0)*normgsq);
   }
   else if(whichtau == Fluid3::codina)
   {
