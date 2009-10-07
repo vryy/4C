@@ -31,6 +31,7 @@ Maintainer: Ursula Mayer
 *----------------------------------------------------------------------*/
 
 #ifdef CCADISCRET
+#ifdef QHULL
 
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
@@ -4567,5 +4568,5 @@ void GEO::Intersection::debugTetVolumes(
 }
 #endif
 
-
+#endif  // #ifdef QHULL
 #endif  // #ifdef CCADISCRET

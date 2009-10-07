@@ -26,6 +26,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_io/io_gmsh.H"
 #include "../drt_io/io_gmsh_xfem_extension.H"
 #include "../drt_geometry/intersection.H"
+#include "../drt_geometry/intersection_service.H"
 #include "../drt_geometry/position_array.H"
 #include "../drt_geometry/integrationcell_coordtrafo.H"
 #include "enrichment_utils.H"
@@ -68,10 +69,10 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
     filenamedel << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".uncut_elements_coupled_system"<< ".p" << myrank << ".pos";
     std::remove(filenamedel.str().c_str());
     if (screen_out) std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
-    std::ofstream f_system(filename.str().c_str());
-    f_system << IO::GMSH::disToString("Fluid", 0.0, xfemdis_);
-    f_system << IO::GMSH::disToString("Boundary", 1.0, cutterdis_, cutterposnp_);
-    f_system.close();
+    std::ofstream gmshfilecontent(filename.str().c_str());
+    IO::GMSH::disToStream("Fluid", 0.0, xfemdis_, gmshfilecontent);
+    IO::GMSH::disToStream("Boundary", 1.0, cutterdis_, cutterposnp_, gmshfilecontent);
+    gmshfilecontent.close();
     if (screen_out) cout << " done" << endl;
   }
 
@@ -82,9 +83,12 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
 
   if(cutterdis_->NumMyColElements()!=0)
   {
+#ifdef QHULL
     Teuchos::RCP<GEO::Intersection> is = rcp(new GEO::Intersection());
     is->computeIntersection(xfemdis, cutterdis, cutterposnp_, currentXAABBs_, elementalDomainIntCells_, elementalBoundaryIntCells_, labelPerBoundaryElementId_);
-    is = Teuchos::null;
+#else
+    dserror("you have to compile with the QHULL flag!");
+#endif
   }
 
 
@@ -388,64 +392,43 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
 
   const bool gmsh_tree_output = false;
 
-  const int myrank = xfemdis_->Comm().MyPID();
-
   if (gmshdebugout)
   {
     // debug: write both meshes to file in Gmsh format
-    std::stringstream filename;
-    std::stringstream filenamedel;
-    filename    << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".elements_coupled_system_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
-    filenamedel << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".elements_coupled_system_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
-    std::remove(filenamedel.str().c_str());
-    if (screen_out) std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
-    std::ofstream f_system(filename.str().c_str());
-    f_system << IO::GMSH::XdisToString("Fluid", 0.0, xfemdis_, elementalDomainIntCells_, elementalBoundaryIntCells_);
-    f_system << IO::GMSH::disToString("Solid", 1.0, cutterdis_, cutterposnp_);
-    f_system.close();
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("elements_coupled_system", step, 5, screen_out);
+    std::ofstream gmshfilecontent(filename.c_str());
+    IO::GMSH::XdisToStream("Fluid", 0.0, xfemdis_, elementalDomainIntCells_, elementalBoundaryIntCells_, gmshfilecontent);
+    IO::GMSH::disToStream("Solid", 1.0, cutterdis_, cutterposnp_, gmshfilecontent);
+    gmshfilecontent.close();
     if (screen_out) cout << " done" << endl;
   }
 
   if (gmshdebugout)
   {
-    // debug: write both meshes to file in Gmsh format
-    std::stringstream filename;
-    std::stringstream filenamedel;
-    filename    << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".interface_patches_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
-    filenamedel << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".interface_patches_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
-    std::remove(filenamedel.str().c_str());
-    if (screen_out) std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
-    std::ofstream f_system(filename.str().c_str());
-    f_system << IO::GMSH::XdisToString("Fluid", 0.0, xfemdis_, elementalDomainIntCells_, elementalBoundaryIntCells_);
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("interface_patches", step, 5, screen_out);
+    std::ofstream gmshfilecontent(filename.c_str());
+//    IO::GMSH::XdisToStream("Fluid", 0.0, xfemdis_, elementalDomainIntCells_, elementalBoundaryIntCells_, gmshfilecontent);
 
     const std::string s("Interface patches");
-    f_system << "View \" " << s << " Elements \" {\n";
+    gmshfilecontent << "View \" " << s << " Elements \" {\n";
     for (int i=0; i<cutterdis_->NumMyColElements(); ++i)
     {
       const DRT::Element* actele = cutterdis_->lColElement(i);
       const int scalar = this->GetLabelPerBoundaryElementId(actele->Id());
-      f_system << IO::GMSH::cellWithScalarToString(actele->Shape(),
-          scalar, GEO::getCurrentNodalPositions(actele,cutterposnp_) ) << "\n";
+      IO::GMSH::cellWithScalarToStream(actele->Shape(),
+          scalar, GEO::getCurrentNodalPositions(actele,cutterposnp_), gmshfilecontent);
     };
-    f_system << "};\n";
+    gmshfilecontent << "};\n";
 
-    f_system.close();
+    gmshfilecontent.close();
     if (screen_out) cout << " done" << endl;
   }
 
   if (gmshdebugout)
   {
-    std::stringstream filename;
-    std::stringstream filenamedel;
-    filename    << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".domains_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
-    filenamedel << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".domains_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
-    std::remove(filenamedel.str().c_str());
-    if (screen_out) std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
-
-    std::ofstream f_system(filename.str().c_str());
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("domains", step, 5, screen_out);
+    std::ofstream gmshfilecontent(filename.c_str());
     {
-      // stringstream for domains
-      stringstream gmshfilecontent;
       gmshfilecontent << "View \" " << "Domains using CellCenter of Elements and Integration Cells \" {" << endl;
 
       for (int i=0; i<xfemdis_->NumMyColElements(); ++i)
@@ -458,31 +441,60 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
           const LINALG::SerialDenseMatrix& cellpos = cell->CellNodalPosXYZ();
           const LINALG::Matrix<3,1> cellcenterpos(cell->GetPhysicalCenterPosition());
           const int domain_id = PositionWithinConditionNP(cellcenterpos);
-          //const double color = domain_id*100000+(closestElementId);
           const double color = domain_id;
-          gmshfilecontent << IO::GMSH::cellWithScalarToString(cell->Shape(), color, cellpos) << endl;
+          IO::GMSH::cellWithScalarToStream(cell->Shape(), color, cellpos, gmshfilecontent);
         };
       };
       gmshfilecontent << "};" << endl;
-      f_system << gmshfilecontent.str();
     }
-    f_system.close();
+    gmshfilecontent.close();
     if (screen_out) cout << " done" << endl;
   }
 
+//  if (gmshdebugout)
+//  {
+//    std::stringstream filename;
+//    std::stringstream filenamedel;
+//    filename    << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".domains_for_patches" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
+//    filenamedel << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".domains_for_patches" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
+//    std::remove(filenamedel.str().c_str());
+//    if (screen_out) std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
+//
+//    std::ofstream gmshfilecontent(filename.str().c_str());
+//    for (map<int, const Teuchos::RCP<GEO::SearchTree> >::const_iterator entry = octTreePerLabeln_.begin();
+//        entry != octTreePerLabeln_.end();
+//        ++entry)
+//    {
+//      const int label = entry->first;
+//
+//      gmshfilecontent << "View \" " << "Domains using CellCenter of Elements and Integration Cells \" {" << endl;
+//
+//      for (int i=0; i<xfemdis_->NumMyColElements(); ++i)
+//      {
+//        const DRT::Element* actele = xfemdis_->lColElement(i);
+//        const GEO::DomainIntCells& elementDomainIntCells = this->GetDomainIntCells(actele);
+//        GEO::DomainIntCells::const_iterator cell;
+//        for(cell = elementDomainIntCells.begin(); cell != elementDomainIntCells.end(); ++cell )
+//        {
+//          const LINALG::SerialDenseMatrix& cellpos = cell->CellNodalPosXYZ();
+//          const LINALG::Matrix<3,1> cellcenterpos(cell->GetPhysicalCenterPosition());
+//          const int domain_id = PositionWithinConditionNP(cellcenterpos,label);
+//          //const double color = domain_id*100000+(closestElementId);
+//          const double color = domain_id;
+//          IO::GMSH::cellWithScalarToStream(cell->Shape(), color, cellpos, gmshfilecontent);
+//        };
+//      };
+//      gmshfilecontent << "};" << endl;
+//    }
+//    gmshfilecontent.close();
+//    if (screen_out) cout << " done" << endl;
+//  }
+
   if (gmshdebugout) // print space time layer
   {
-    std::stringstream filename;
-    std::stringstream filenamedel;
-    filename    << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".spacetime_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
-    filenamedel << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".spacetime_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
-    std::remove(filenamedel.str().c_str());
-    if (screen_out) std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
-
-    std::ofstream f_system(filename.str().c_str());
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("spacetime", step, 5, screen_out);
+    std::ofstream gmshfilecontent(filename.c_str());
     {
-      // stringstream for domains
-      stringstream gmshfilecontent;
       gmshfilecontent << "View \" " << "SpaceTime cells \" {" << endl;
       LINALG::SerialDenseVector vals(8);
       vals(0) = 0.0;vals(1) = 0.0;vals(2) = 0.0;vals(3) = 0.0;
@@ -491,12 +503,11 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
       {
         const XFEM::SpaceTimeBoundaryCell& slabitem = slabiter->second;
 
-        gmshfilecontent << IO::GMSH::cellWithScalarFieldToString(DRT::Element::hex8, vals, slabitem.get_xyzt()) << endl;
+        IO::GMSH::cellWithScalarFieldToStream(DRT::Element::hex8, vals, slabitem.get_xyzt(), gmshfilecontent);
       }
       gmshfilecontent << "};" << endl;
-      f_system << gmshfilecontent.str();
     }
-    f_system.close();
+    gmshfilecontent.close();
     if (screen_out) cout << " done" << endl;
   }
 
@@ -504,18 +515,10 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
   if (gmsh_tree_output)
   {
     // debug: write information about which structure we are in
-    std::stringstream filenameP;
-    std::stringstream filenamePdel;
-    filenameP    << DRT::Problem::Instance()->OutputControlFile()->FileName() << "_points_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
-    filenamePdel << DRT::Problem::Instance()->OutputControlFile()->FileName() << "_points_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
-    std::remove(filenamePdel.str().c_str());
-
-    std::cout << "writing " << left << std::setw(50) <<filenameP.str()<<"...";
-    std::ofstream f_systemP(filenameP.str().c_str());
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("points", step, 5, screen_out);
+    std::ofstream gmshfilecontent(filename.c_str());
     {
-      // stringstream for cellcenter points
-      stringstream gmshfilecontentP;
-      gmshfilecontentP << "View \" " << "CellCenter of Elements and Integration Cells \" {" << endl;
+      gmshfilecontent << "View \" " << "CellCenter of Elements and Integration Cells \" {" << endl;
 
       for (int i=0; i<xfemdis_->NumMyColElements(); ++i)
       {
@@ -533,13 +536,12 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
           point(1,0)=cellcenterpos(1);
           point(2,0)=cellcenterpos(2);
 
-          gmshfilecontentP << IO::GMSH::cellWithScalarToString(DRT::Element::point1, (actele->Id()), point) << endl;
+          IO::GMSH::cellWithScalarToStream(DRT::Element::point1, (actele->Id()), point, gmshfilecontent);
         };
       };
-      gmshfilecontentP << "};" << endl;
-      f_systemP << gmshfilecontentP.str();
+      gmshfilecontent << "};" << endl;
     }
-    f_systemP.close();
+    gmshfilecontent.close();
     cout << " done" << endl;
 
     octTreenp_->printTree(DRT::Problem::Instance()->OutputControlFile()->FileName(), step);

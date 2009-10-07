@@ -16,8 +16,11 @@ Maintainer: Florian Henke
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "combust_refinementcell.H"
+#ifdef QHULL
 #include <tetgen.h>
+#endif
 #include "../drt_geometry/intersection.H"
+#include "../drt_geometry/integrationcell.H"
 
 namespace COMBUST
 {
@@ -28,10 +31,10 @@ namespace COMBUST
   /*!
 
     The purpose of this class is to perform the intersection of the fluid domain by the flame front
-    and to provide integration cells (in the burnt and unburnt domain) for the fluid time integration
+    and to provide integration cells (in the burnt and unburned domain) for the fluid time integration
     scheme. A refinement strategy is used to increase accuracy and simplify intersection patterns.
 
-    The following tasks are peformed:
+    The following tasks are performed:
 
     refinement
     - initialize the searchtree
@@ -46,7 +49,7 @@ namespace COMBUST
     capture flame front
     - triangulate flame front surface (spanned by the intersection points) in every refinement cell
     - create a piecewise linear complex (PLC) in Tetgen format from every refinement cell
-    - call the Constraint Delaunay Tetrahedrization (CDT) to produce burnt and unburnt integration cells
+    - call the Constraint Delaunay Tetrahedrization (CDT) to produce burnt and unburned integration cells
     - transform integration cells from Tetgen format to baci format
 
     \author henke

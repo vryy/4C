@@ -12,6 +12,7 @@ Maintainer: Ursula Mayer
 */
 
 #ifdef CCADISCRET
+#ifdef QHULL
 #ifndef INTERSECTION_H
 #define INTERSECTION_H
 
@@ -1672,5 +1673,6 @@ class Intersection
 }
 
 #endif  // #ifndef INTERSECTION_H
+#endif  // #ifdef QHULL
 #endif  // #ifdef CCADISCRET
 
