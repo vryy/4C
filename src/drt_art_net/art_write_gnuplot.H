@@ -22,7 +22,7 @@ Maintainer: Mahmoud Ismail
 #include "Epetra_SerialComm.h"
 #endif /* PARALLEL */
 
-#include <fstream.h>
+#include <iostream>
 #include "Teuchos_RefCountPtr.hpp"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_utils.H"
