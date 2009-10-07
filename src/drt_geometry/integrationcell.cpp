@@ -172,7 +172,7 @@ GEO::DomainIntCell::~DomainIntCell()
  *----------------------------------------------------------------------*/
 static string PosToString(double x, double y, double z)
 {
-  std::stringstream s;
+  std::ostringstream s;
   s << "(" << std::setw(14) << scientific << x <<
        "," << std::setw(14) << scientific << y <<
        "," << std::setw(14) << scientific << z << ")";
@@ -186,7 +186,7 @@ static string PosToString(double x, double y, double z)
  *----------------------------------------------------------------------*/
 std::string GEO::DomainIntCell::toString() const
 {
-  std::stringstream s;
+  std::ostringstream s;
   s << "DomainIntCell:" << endl;
   s << " position in xi coordinates: " << endl;
   for (int inode = 0; inode < 4; ++inode)
@@ -212,7 +212,7 @@ void GEO::DomainIntCell::toGmsh(const std::string& filename) const
 
   std::ofstream f_system(filename.c_str());
   f_system << "View \" " << "Bad Cell \" {\n";
-  f_system << IO::GMSH::cellWithScalarToString(this->Shape(), 0.0, cellpos) << "\n";
+  f_system << IO::GMSH::cellWithScalarToString(this->Shape(), 0.0, cellpos);
   f_system << "};\n";
   f_system << "View[0].Axes = 3;\nView[0].AxesMikado = 1;\n";
   f_system.close();
@@ -340,7 +340,7 @@ GEO::BoundaryIntCell& GEO::BoundaryIntCell::operator=(const GEO::BoundaryIntCell
  *----------------------------------------------------------------------*/
 std::string GEO::BoundaryIntCell::toString() const
 {
-  std::stringstream s;
+  std::ostringstream s;
   s << "BoundaryIntCell" << endl;
   s << nodalpos_xi_domain_ << endl;
   return s.str();
