@@ -14,6 +14,8 @@ Maintainer: Axel Gerstenberger
 #ifdef CCADISCRET
 
 #include "io_gmsh.H"
+#include "io_control.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_geometry/intersection_service.H"
 
 
@@ -236,6 +238,23 @@ std::string IO::GMSH::disToString(
   std::ostringstream s;
   disToStream(text, scalar, dis, currentpositions, s);
   return s.str();
+}
+
+std::string IO::GMSH::GetNewFileNameAndDeleteOldFiles(
+    const std::string&   filename_base,
+    const int&           actstep,           ///< generate filename for this step
+    const int&           step_diff,         ///< how many steps are kept
+    const bool           screen_out
+    )
+{
+  std::ostringstream filename;
+  std::ostringstream filenamedel;
+  const std::string filebase(DRT::Problem::Instance()->OutputControlFile()->FileName());
+  filename    << filebase << "." << filename_base << "_" << std::setw(5) << setfill('0') << actstep           << ".pos";
+  filenamedel << filebase << "." << filename_base << "_" << std::setw(5) << setfill('0') << actstep-step_diff << ".pos";
+  std::remove(filenamedel.str().c_str());
+  if (screen_out) std::cout << "writing " << left << std::setw(60) <<filename.str()<<"...";
+  return filename.str();
 }
 
 #endif // #ifdef CCADISCRET

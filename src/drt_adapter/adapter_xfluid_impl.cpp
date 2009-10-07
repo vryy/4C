@@ -370,12 +370,12 @@ void ADAPTER::XFluidImpl::Output()
   // print redundant arrays on proc 0
   if (boundarydis_->Comm().MyPID() == 0)
   {
-    PrintInterfaceVectorField(idispnpcol, ivelnpcol  , ".solution_iface_velnp_", "interface velocity n+1");
-    PrintInterfaceVectorField(idispnpcol, ivelncol   , ".solution_iface_veln_" , "interface velocity n");
-    PrintInterfaceVectorField(idispnpcol, iaccnpcol  , ".solution_iface_accnp_", "interface acceleration n+1");
-    PrintInterfaceVectorField(idispnpcol, iaccncol   , ".solution_iface_accn_" , "interface acceleration n");
-    PrintInterfaceVectorField(idispnpcol, idispnpcol , ".solution_iface_disp_" , "interface displacement n+1");
-    PrintInterfaceVectorField(idispnpcol, itruerescol, ".solution_iface_force_", "interface force");
+    PrintInterfaceVectorField(idispnpcol, ivelnpcol  , "solution_iface_velnp", "interface velocity n+1");
+    PrintInterfaceVectorField(idispnpcol, ivelncol   , "solution_iface_veln" , "interface velocity n");
+    PrintInterfaceVectorField(idispnpcol, iaccnpcol  , "solution_iface_accnp", "interface acceleration n+1");
+    PrintInterfaceVectorField(idispnpcol, iaccncol   , "solution_iface_accn" , "interface acceleration n");
+    PrintInterfaceVectorField(idispnpcol, idispnpcol , "solution_iface_disp" , "interface displacement n+1");
+    PrintInterfaceVectorField(idispnpcol, itruerescol, "solution_iface_force", "interface force");
   }
 
   if (boundarydis_->Comm().MyPID() == 0 && itruerescol->MyLength() >= 3)
@@ -434,27 +434,20 @@ void ADAPTER::XFluidImpl::PrintInterfaceVectorField(
 {
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
   const bool gmshdebugout = (bool)getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
-  const bool screen_out = false;
+  const bool screen_out = true;
   if (gmshdebugout)
   {
-    std::stringstream filename;
-    std::stringstream filenamedel;
-    const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
-    filename << filebase << filestr << std::setw(5) << setfill('0') << Step() << ".pos";
-    filenamedel << filebase << filestr << std::setw(5) << setfill('0') << Step()-5 << ".pos";
-    std::remove(filenamedel.str().c_str());
-    if (screen_out) std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
-    std::ofstream f_system(filename.str().c_str());
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filestr, Step(), 5, screen_out);
+    std::ofstream gmshfilecontent(filename.c_str());
 
     {
-      stringstream gmshfilecontent;
       gmshfilecontent << "View \" " << name_in_gmsh << " \" {\n";
       for (int i=0; i<boundarydis_->NumMyColElements(); ++i)
       {
-        const DRT::Element* actele = boundarydis_->lColElement(i);
+        const DRT::Element* bele = boundarydis_->lColElement(i);
         vector<int> lm;
         vector<int> lmowner;
-        actele->LocationVector(*boundarydis_, lm, lmowner);
+        bele->LocationVector(*boundarydis_, lm, lmowner);
 
         // extract local values from the global vector
         vector<double> myvelnp(lm.size());
@@ -464,13 +457,13 @@ void ADAPTER::XFluidImpl::PrintInterfaceVectorField(
         DRT::UTILS::ExtractMyValues(*displacementfield, mydisp, lm);
 
         const int nsd = 3;
-        const int numnode = actele->NumNode();
+        const int numnode = bele->NumNode();
         LINALG::SerialDenseMatrix elementvalues(nsd,numnode);
         LINALG::SerialDenseMatrix elementpositions(nsd,numnode);
         int counter = 0;
         for (int iparam=0; iparam<numnode; ++iparam)
         {
-          const DRT::Node* node = actele->Nodes()[iparam];
+          const DRT::Node* node = bele->Nodes()[iparam];
           const double* pos = node->X();
           for (int isd = 0; isd < nsd; ++isd)
           {
@@ -480,13 +473,12 @@ void ADAPTER::XFluidImpl::PrintInterfaceVectorField(
           }
         }
 
-        gmshfilecontent << IO::GMSH::cellWithVectorFieldToString(
-            actele->Shape(), elementvalues, elementpositions) << "\n";
+        IO::GMSH::cellWithVectorFieldToStream(
+            bele->Shape(), elementvalues, elementpositions, gmshfilecontent);
       }
       gmshfilecontent << "};\n";
-      f_system << gmshfilecontent.str();
     }
-    f_system.close();
+    gmshfilecontent.close();
     if (screen_out) std::cout << " done" << endl;
   }
 }
@@ -695,8 +687,8 @@ void ADAPTER::XFluidImpl::LiftDrag()
     }
 
     // print to file
-    std::stringstream s;
-    std::stringstream header;
+    std::ostringstream s;
+    std::ostringstream header;
 
     header << left  << std::setw(10) << "Time"
            << right << std::setw(16) << "F_x"

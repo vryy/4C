@@ -331,6 +331,13 @@ namespace IO
         const double                               scalar,
         const Teuchos::RCP<DRT::Discretization>    dis,
         const std::map<int,LINALG::Matrix<3,1> >&  currentpositions);
+
+    std::string GetNewFileNameAndDeleteOldFiles(
+        const std::string&   filename_base,
+        const int&           actstep,           ///< generate filename for this step
+        const int&           step_diff,         ///< how many steps are kept
+        const bool           screen_out
+        );
   }
 }
 

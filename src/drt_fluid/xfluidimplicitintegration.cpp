@@ -1859,26 +1859,16 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
   {
     cout << "XFluidImplicitTimeInt::OutputToGmsh()" << endl;
 
-    std::stringstream filename;
-    std::stringstream filenamedel;
-    filename    << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".solution_field_pressure_" << std::setw(5) << setfill('0') << step   << ".pos";
-    filenamedel << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".solution_field_pressure_" << std::setw(5) << setfill('0') << step-5 << ".pos";
-    std::remove(filenamedel.str().c_str());
-    if (screen_out) std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
-    std::ofstream f_system(filename.str().c_str());
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_pressure", step, 5, screen_out);
+    std::ofstream gmshfilecontent(filename.c_str());
 
     const XFEM::PHYSICS::Field field = XFEM::PHYSICS::Pres;
 
     {
-      stringstream gmshfilecontent;
       gmshfilecontent << "View \" " << "Pressure Solution (Physical) \" {\n";
       for (int i=0; i<discret_->NumMyColElements(); ++i)
       {
-
         const DRT::Element* actele = discret_->lColElement(i);
-
-        static LINALG::Matrix<3,27> xyze_xfemElement;
-        GEO::fillInitialPositionArray(actele,xyze_xfemElement);
 
         // create local copy of information about dofs
         const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatzp_->getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
@@ -1906,41 +1896,26 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
           LINALG::SerialDenseVector cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromNodalUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
               *cell, field, elementvalues, cellvalues);
-          //LINALG::SerialDenseMatrix xyze_cell(3, cell->NumNode());
-          //cell->NodalPosXYZ(*actele, xyze_cell);
-          // TODO remove
-          const LINALG::SerialDenseMatrix& xyze_cell = cell->CellNodalPosXYZ();
-          gmshfilecontent << IO::GMSH::cellWithScalarFieldToString(
-              cell->Shape(), cellvalues, xyze_cell) << "\n";
+          IO::GMSH::cellWithScalarFieldToStream(
+              cell->Shape(), cellvalues, cell->CellNodalPosXYZ(), gmshfilecontent);
         }
       }
       gmshfilecontent << "};\n";
-      f_system << gmshfilecontent.str();
     }
-    f_system.close();
+    gmshfilecontent.close();
     if (screen_out) std::cout << " done" << endl;
   }
   if (gmshdebugout and (this->physprob_.fieldset_.find(XFEM::PHYSICS::Temp) != this->physprob_.fieldset_.end()) )
   {
-    std::stringstream filename;
-    std::stringstream filenamedel;
-    filename    << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".solution_field_temperature_" << std::setw(5) << setfill('0') << step   << ".pos";
-    filenamedel << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".solution_field_temperature_" << std::setw(5) << setfill('0') << step-5 << ".pos";
-    std::remove(filenamedel.str().c_str());
-    if (screen_out) std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
-    std::ofstream f_system(filename.str().c_str());
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_temperature", step, 5, screen_out);
+    std::ofstream gmshfilecontent(filename.c_str());
 
     {
       const XFEM::PHYSICS::Field field = XFEM::PHYSICS::Temp;
-      stringstream gmshfilecontent;
       gmshfilecontent << "View \" " << "Temperature Solution (Physical) \" {\n";
       for (int i=0; i<discret_->NumMyColElements(); ++i)
       {
-
         const DRT::Element* actele = discret_->lColElement(i);
-
-        static LINALG::Matrix<3,27> xyze_xfemElement;
-        GEO::fillInitialPositionArray(actele,xyze_xfemElement);
 
         // create local copy of information about dofs
         const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatzp_->getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
@@ -1968,37 +1943,33 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
           LINALG::SerialDenseVector cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromNodalUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
               *cell, field, elementvalues, cellvalues);
-          const LINALG::SerialDenseMatrix& xyze_cell = cell->CellNodalPosXYZ();
 
-          gmshfilecontent << IO::GMSH::cellWithScalarFieldToString(
-              cell->Shape(), cellvalues, xyze_cell) << "\n";
+          IO::GMSH::cellWithScalarFieldToStream(
+              cell->Shape(), cellvalues, cell->CellNodalPosXYZ(), gmshfilecontent);
         }
       }
       gmshfilecontent << "};\n";
-      f_system << gmshfilecontent.str();
     }
-    f_system.close();
+    gmshfilecontent.close();
     if (screen_out) std::cout << " done" << endl;
   }
 
 #if 0
   if (gmshdebugout)
   {
-    std::stringstream filename;
-    std::stringstream filenamedel;
+    std::ostringstream filename;
+    std::ostringstream filenamedel;
     const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
     filename    << filebase << ".solution_field_pressure_disc_" << std::setw(5) << setfill('0') << step   << ".pos";
     filenamedel << filebase << ".solution_field_pressure_disc_" << std::setw(5) << setfill('0') << step-5 << ".pos";
     std::remove(filenamedel.str().c_str());
     if (screen_out) std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"...";
-    std::ofstream f_system(filename.str().c_str());
+    std::ofstream gmshfilecontent(filename.str().c_str());
 
     const XFEM::PHYSICS::Field field = XFEM::PHYSICS::DiscPres;
 
     {
-      stringstream gmshfilecontent;
-      gmshfilecontent << "View \" " << "Discontinous Pressure Solution (Physical) \" {"
-      << "\n";
+      gmshfilecontent << "View \" " << "Discontinous Pressure Solution (Physical) \" {\n";
       for (int i=0; i<discret_->NumMyColElements(); ++i)
       {
         const DRT::Element* actele = discret_->lColElement(i);
@@ -2034,38 +2005,33 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
           LINALG::SerialDenseVector cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
               *cell, field, elementvalues, cellvalues);
-          // LINALG::SerialDenseMatrix xyze_cell(3, cell->NumNode());
-          //cell->NodalPosXYZ(*actele, xyze_cell);
-          // TODO remove
-          const LINALG::SerialDenseMatrix& xyze_cell = cell->CellNodalPosXYZ();
-          gmshfilecontent << IO::GMSH::cellWithScalarFieldToString(
-              cell->Shape(), cellvalues, xyze_cell) << "\n";
+          IO::GMSH::cellWithScalarFieldToStream(
+              cell->Shape(), cellvalues, cell->CellNodalPosXYZ(), gmshfilecontent);
         }
       }
       gmshfilecontent << "};\n";
-      f_system << gmshfilecontent.str();
     }
-    f_system.close();
+    gmshfilecontent.close();
     if (screen_out) std::cout << " done" << endl;
   }
 #endif
 #if 0
   if (gmshdebugout)
   {
-    std::stringstream filename;
-    std::stringstream filenamexx;
-    std::stringstream filenameyy;
-    std::stringstream filenamezz;
-    std::stringstream filenamexy;
-    std::stringstream filenamexz;
-    std::stringstream filenameyz;
-    std::stringstream filenamedel;
-    std::stringstream filenamexxdel;
-    std::stringstream filenameyydel;
-    std::stringstream filenamezzdel;
-    std::stringstream filenamexydel;
-    std::stringstream filenamexzdel;
-    std::stringstream filenameyzdel;
+    std::ostringstream filename;
+    std::ostringstream filenamexx;
+    std::ostringstream filenameyy;
+    std::ostringstream filenamezz;
+    std::ostringstream filenamexy;
+    std::ostringstream filenamexz;
+    std::ostringstream filenameyz;
+    std::ostringstream filenamedel;
+    std::ostringstream filenamexxdel;
+    std::ostringstream filenameyydel;
+    std::ostringstream filenamezzdel;
+    std::ostringstream filenamexydel;
+    std::ostringstream filenamexzdel;
+    std::ostringstream filenameyzdel;
     //filename   << "solution_tau_disc_"   << std::setw(5) << setfill('0') << step_ << ".pos";
     const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
     filename   << filebase << ".solution_field_sigma_disc_"   << std::setw(5) << setfill('0') << step << ".pos";
@@ -2091,24 +2057,17 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
     std::remove(filenameyzdel.str().c_str());
     if (screen_out) std::cout << "writing " << std::left << std::setw(50) <<"stresses"<<"..."<<flush;
 
-    std::ofstream f_system(  filename.str().c_str());
-    std::ofstream f_systemxx(filenamexx.str().c_str());
-    std::ofstream f_systemyy(filenameyy.str().c_str());
-    std::ofstream f_systemzz(filenamezz.str().c_str());
-    std::ofstream f_systemxy(filenamexy.str().c_str());
-    std::ofstream f_systemxz(filenamexz.str().c_str());
-    std::ofstream f_systemyz(filenameyz.str().c_str());
+    std::ofstream gmshfilecontent(  filename.str().c_str());
+    std::ofstream gmshfilecontentxx(filenamexx.str().c_str());
+    std::ofstream gmshfilecontentyy(filenameyy.str().c_str());
+    std::ofstream gmshfilecontentzz(filenamezz.str().c_str());
+    std::ofstream gmshfilecontentxy(filenamexy.str().c_str());
+    std::ofstream gmshfilecontentxz(filenamexz.str().c_str());
+    std::ofstream gmshfilecontentyz(filenameyz.str().c_str());
 
     const XFEM::PHYSICS::Field field = XFEM::PHYSICS::Sigmaxx;
 
     {
-      stringstream gmshfilecontent;
-      stringstream gmshfilecontentxx;
-      stringstream gmshfilecontentyy;
-      stringstream gmshfilecontentzz;
-      stringstream gmshfilecontentxy;
-      stringstream gmshfilecontentxz;
-      stringstream gmshfilecontentyz;
       gmshfilecontent   << "View \" " << "Discontinous Stress Solution (Physical) \" {" << endl;
       gmshfilecontentxx << "View \" " << "Discontinous Stress (xx) Solution (Physical) \" {\n";
       gmshfilecontentyy << "View \" " << "Discontinous Stress (yy) Solution (Physical) \" {\n";
@@ -2177,55 +2136,48 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
           LINALG::SerialDenseMatrix cellvalues(9,DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeTensorCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
               *cell, field, elementvalues, cellvalues);
-          gmshfilecontent << IO::GMSH::cellWithTensorFieldToString(cell->Shape(), cellvalues, xyze_cell) << endl;
+          gmshfilecontent << IO::GMSH::cellWithTensorFieldToString(cell->Shape(), cellvalues, xyze_cell);
           }
 
           {
           LINALG::SerialDenseVector cellvaluexx(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvaluexx, cellvaluexx);
-          gmshfilecontentxx << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvaluexx, xyze_cell) << "\n";
+          gmshfilecontentxx << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvaluexx, xyze_cell);
           }
           {
           LINALG::SerialDenseVector cellvalueyy(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvalueyy, cellvalueyy);
-          gmshfilecontentyy << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvalueyy, xyze_cell) << "\n";
+          gmshfilecontentyy << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvalueyy, xyze_cell);
           }
           {
           LINALG::SerialDenseVector cellvaluezz(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvaluezz, cellvaluezz);
-          gmshfilecontentzz << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvaluezz, xyze_cell) << "\n";
+          gmshfilecontentzz << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvaluezz, xyze_cell);
           }
           {
           LINALG::SerialDenseVector cellvaluexy(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvaluexy, cellvaluexy);
-          gmshfilecontentxy << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvaluexy, xyze_cell) << "\n";
+          gmshfilecontentxy << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvaluexy, xyze_cell);
           }
           {
           LINALG::SerialDenseVector cellvaluexz(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvaluexz, cellvaluexz);
-          gmshfilecontentxz << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvaluexz, xyze_cell) << "\n";
+          gmshfilecontentxz << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvaluexz, xyze_cell);
           }
           {
           LINALG::SerialDenseVector cellvalueyz(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvalueyz, cellvalueyz);
-          gmshfilecontentyz << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvalueyz, xyze_cell) << "\n";
+          gmshfilecontentyz << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvalueyz, xyze_cell);
           }
         }
       }
-      gmshfilecontent   << "};" << endl;
+      gmshfilecontent   << "};\n";
       gmshfilecontentxx << "};\n";
       gmshfilecontentyy << "};\n";
       gmshfilecontentzz << "};\n";
       gmshfilecontentxy << "};\n";
       gmshfilecontentxz << "};\n";
       gmshfilecontentyz << "};\n";
-      f_system   << gmshfilecontent.str();
-      f_systemxx << gmshfilecontentxx.str();
-      f_systemyy << gmshfilecontentyy.str();
-      f_systemzz << gmshfilecontentzz.str();
-      f_systemxy << gmshfilecontentxy.str();
-      f_systemxz << gmshfilecontentxz.str();
-      f_systemyz << gmshfilecontentyz.str();
     }
     if (screen_out) std::cout << " done" << endl;
   }
@@ -2233,11 +2185,11 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
 
   if (this->physprob_.fieldset_.find(XFEM::PHYSICS::Velx) != this->physprob_.fieldset_.end())
   {
-    PlotVectorFieldToGmsh(state_.velnp_, ".solution_field_velocity_np_","Velocity Solution (Physical) n+1",true, step, time);
-    PlotVectorFieldToGmsh(state_.veln_,  ".solution_field_velocity_n_","Velocity Solution (Physical) n",false, step, time);
-//    PlotVectorFieldToGmsh(state_.velnm_, ".solution_field_velocity_nm_","Velocity Solution (Physical) n-1",false, step, time);
-    PlotVectorFieldToGmsh(state_.accnp_, ".solution_field_acceleration_np_","Acceleration Solution (Physical) n+1",false, step, time);
-    PlotVectorFieldToGmsh(state_.accn_,  ".solution_field_acceleration_n_","Acceleration Solution (Physical) n",false, step, time);
+    PlotVectorFieldToGmsh(state_.velnp_, "solution_field_velocity_np","Velocity Solution (Physical) n+1",true, step, time);
+    PlotVectorFieldToGmsh(state_.veln_,  "solution_field_velocity_n","Velocity Solution (Physical) n",false, step, time);
+//    PlotVectorFieldToGmsh(state_.velnm_, "solution_field_velocity_nm","Velocity Solution (Physical) n-1",false, step, time);
+    PlotVectorFieldToGmsh(state_.accnp_, "solution_field_acceleration_np","Acceleration Solution (Physical) n+1",false, step, time);
+    PlotVectorFieldToGmsh(state_.accn_,  "solution_field_acceleration_n","Acceleration Solution (Physical) n",false, step, time);
   }
 }
 
@@ -2257,31 +2209,18 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
   const bool gmshdebugout = (bool)getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
 
-  const bool screen_out = false;
+  const bool screen_out = true;
 
   if (gmshdebugout)
   {
-
-    bool ele_to_textfile = false;
-    std::stringstream filename;
-    std::stringstream filenamedel;
-    const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
-    filename    << filebase << filestr << std::setw(5) << std::setfill('0') << step << ".pos";
-    filenamedel << filebase << filestr << std::setw(5) << std::setfill('0') << step-5 << ".pos";
-    std::remove(filenamedel.str().c_str());
-    if (screen_out) std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"...";
-    std::ofstream f_system(filename.str().c_str());
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filestr, step, 5, screen_out);
+    std::ofstream gmshfilecontent(filename.c_str());
 
     {
-      stringstream gmshfilecontent;
       gmshfilecontent << "View \" " << name_in_gmsh << "\" {\n";
       for (int i=0; i<discret_->NumMyColElements(); ++i)
       {
         const DRT::Element* actele = discret_->lColElement(i);
-        const int elegid = actele->Id();
-
-        static LINALG::Matrix<3,27> xyze_xfemElement;
-        GEO::fillInitialPositionArray(actele,xyze_xfemElement);
 
         // create local copy of information about dofs
         const XFLUID::FluidElementAnsatz elementAnsatz;
@@ -2294,7 +2233,6 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
         // extract local values from the global vector
         vector<double> myvelnp(lm.size());
         DRT::UTILS::ExtractMyValues(*vectorfield, myvelnp, lm);
-
 
         const vector<int>& dofposvelx =
           eledofman.LocalDofPosPerField(XFEM::PHYSICS::Velx);
@@ -2312,61 +2250,44 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
           elementvalues(2, iparam) = myvelnp[dofposvelz[iparam]];
         }
 
-//        if (!dofmanagerForOutput_->getInterfaceHandle()->ElementIntersected(elegid))
-//        {
           const GEO::DomainIntCells& domainintcells =
             dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(actele);
           for (GEO::DomainIntCells::const_iterator cell =
             domainintcells.begin(); cell != domainintcells.end(); ++cell)
           {
             LINALG::SerialDenseMatrix cellvalues(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-            //std::cout << cellvalues << endl;
             XFEM::computeVectorCellNodeValues(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
                 *cell, XFEM::PHYSICS::Velx, elementvalues, cellvalues);
-            //LINALG::SerialDenseMatrix xyze_cell(3, cell->NumNode());
-            //cell->NodalPosXYZ(*actele, xyze_cell);
-            // TODO remove
-            const LINALG::SerialDenseMatrix& xyze_cell = cell->CellNodalPosXYZ();
-            gmshfilecontent << IO::GMSH::cellWithVectorFieldToString(
-                cell->Shape(), cellvalues, xyze_cell) << "\n";
+            IO::GMSH::cellWithVectorFieldToStream(
+                cell->Shape(), cellvalues, cell->CellNodalPosXYZ(), gmshfilecontent);
           }
-//        }
-//        else
-//        {
           const GEO::BoundaryIntCells& boundaryintcells =
-            dofmanagerForOutput_->getInterfaceHandle()->GetBoundaryIntCells(elegid);
+            dofmanagerForOutput_->getInterfaceHandle()->GetBoundaryIntCells(actele->Id());
           // draw boundary integration cells with values
           for (GEO::BoundaryIntCells::const_iterator cell =
             boundaryintcells.begin(); cell != boundaryintcells.end(); ++cell)
           {
             LINALG::SerialDenseMatrix cellvalues(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-            //std::cout << cellvalues << endl;
             XFEM::computeVectorCellNodeValues(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
                 *cell, XFEM::PHYSICS::Velx, elementvalues, cellvalues);
-            //LINALG::SerialDenseMatrix xyze_cell(3, cell->NumNode());
-            //cell->NodalPosXYZ(*actele, xyze_cell);
-            // TODO remove
-            const LINALG::SerialDenseMatrix& xyze_cell = cell->CellNodalPosXYZ();
-            gmshfilecontent << IO::GMSH::cellWithVectorFieldToString(
-                cell->Shape(), cellvalues, xyze_cell) << "\n";
+            IO::GMSH::cellWithVectorFieldToStream(
+                cell->Shape(), cellvalues, cell->CellNodalPosXYZ(), gmshfilecontent);
           }
 
-          // draw uncutted element
+          // draw uncut element
           {
             LINALG::SerialDenseMatrix elevalues(3, DRT::UTILS::getNumberOfElementNodes(actele->Shape()),true);
             static LINALG::Matrix<3,27> xyze_ele;
             GEO::fillInitialPositionArray(actele, xyze_ele);
-            const GEO::DomainIntCell cell(actele->Shape(),GEO::InitialPositionArray(actele));
-            gmshfilecontent << IO::GMSH::cellWithVectorFieldToString(
-                actele->Shape(), elevalues, xyze_ele) << "\n";
+            IO::GMSH::cellWithVectorFieldToStream(
+                            actele->Shape(), elevalues, xyze_ele, gmshfilecontent);
           }
 
 //        }
         //if (dofmanagerForOutput_->getInterfaceHandle()->ElementIntersected(elegid) and not ele_to_textfile and ele_to_textfile2)
 //        if (elegid == 14 and elementvalues.N() > 0 and plot_to_gnuplot)
-        if (elegid == 1 and elementvalues.N() > 0 and plot_to_gnuplot)
+        if (actele->Id() == 1 and elementvalues.N() > 0 and plot_to_gnuplot)
         {
-          ele_to_textfile = true;
           //std::cout << elementvalues << std::endl;
           std::ofstream f;
           const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
@@ -2384,9 +2305,8 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
 
       }
       gmshfilecontent << "};\n";
-      f_system << gmshfilecontent.str();
     }
-    f_system.close();
+    gmshfilecontent.close();
     if (screen_out) std::cout << " done" << endl;
   }
 }
@@ -3338,28 +3258,19 @@ void FLD::XFluidImplicitTimeInt::ProjectOldTimeStepValues(
         cout << " Time needed for solution: " << dtsolve << " s." << endl;
       }
 
-#if 0
+#if 1
       if ((this->physprob_.fieldset_.find(XFEM::PHYSICS::Pres) != this->physprob_.fieldset_.end()))
       {
-        std::stringstream filename;
-        std::stringstream filenamedel;
-        filename    << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".solution_field_pressure_projected_" << std::setw(5) << setfill('0') << Step()   << ".pos";
-        filenamedel << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".solution_field_pressure_projected_" << std::setw(5) << setfill('0') << Step()-5 << ".pos";
-        std::remove(filenamedel.str().c_str());
-        std::ofstream f_system(filename.str().c_str());
+        const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_pressure_projected", Step(), 5, true);
+        std::ofstream gmshfilecontent(filename.c_str());
 
         const XFEM::PHYSICS::Field field = XFEM::PHYSICS::Pres;
 
         {
-          stringstream gmshfilecontent;
           gmshfilecontent << "View \" " << "Pressure Solution (Physical) \" {\n";
           for (int i=0; i<discret_->NumMyColElements(); ++i)
           {
-
             const DRT::Element* actele = discret_->lColElement(i);
-
-            static LINALG::Matrix<3,27> xyze_xfemElement;
-            GEO::fillInitialPositionArray(actele,xyze_xfemElement);
 
             // create local copy of information about dofs
             const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatzp_->getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
@@ -3387,21 +3298,16 @@ void FLD::XFluidImplicitTimeInt::ProjectOldTimeStepValues(
               LINALG::SerialDenseVector cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
               XFEM::computeScalarCellNodeValuesFromNodalUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
                   *cell, field, elementvalues, cellvalues);
-              //LINALG::SerialDenseMatrix xyze_cell(3, cell->NumNode());
-              //cell->NodalPosXYZ(*actele, xyze_cell);
-              // TODO remove
-              const LINALG::SerialDenseMatrix& xyze_cell = cell->CellNodalPosXYZ();
-              gmshfilecontent << IO::GMSH::cellWithScalarFieldToString(
-                  cell->Shape(), cellvalues, xyze_cell) << "\n";
+              IO::GMSH::cellWithScalarFieldToStream(
+                  cell->Shape(), cellvalues, cell->CellNodalPosXYZ(), gmshfilecontent);
             }
           }
           gmshfilecontent << "};\n";
-          f_system << gmshfilecontent.str();
         }
-        f_system.close();
+        gmshfilecontent.close();
       }
-      PlotVectorFieldToGmsh(state_.veln_,  ".solution_field_velocity_projected_n_","Velocity Solution (Physical) n",false, Step(), Time());
-//      PlotVectorFieldToGmsh(state_.accn_,  ".solution_field_acceleration_projected_n_","Velocity Solution (Physical) n",false, Step(), Time());
+      PlotVectorFieldToGmsh(state_.veln_,  "solution_field_velocity_projected_n","Velocity Solution (Physical) n",false, Step(), Time());
+//      PlotVectorFieldToGmsh(state_.accn_,  "solution_field_acceleration_projected_n","Velocity Solution (Physical) n",false, Step(), Time());
 #endif
       discret_->Comm().Barrier();
       const double dtsolve = ds_cputime()-tcpu;
