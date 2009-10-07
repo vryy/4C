@@ -619,8 +619,9 @@ std::vector<double> DomainCoverageRatioPerNode(
  * \warning should be done separately for each enrichment, but currently it's not done
  */
 double BoundaryCoverageRatio(
-    const DRT::Element&               ele,           ///< the element whose area ratio we want to compute
-    const XFEM::InterfaceHandle&  ih             ///< interface information
+    const DRT::Element&               xele,          ///< the element whose area ratio we want to compute
+    const GEO::BoundaryIntCells&      boundaryIntCells,
+    const XFEM::InterfaceHandle&      ih             ///< interface information
     );
 
 /*!

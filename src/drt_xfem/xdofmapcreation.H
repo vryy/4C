@@ -79,7 +79,7 @@ namespace XFEM
   bool ApplyElementEnrichments(
       const DRT::Element*                           xfemele,
       const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>&  element_ansatz,
-      const XFEM::InterfaceHandle&                  ih,
+      const XFEM::InterfaceHandleXFSI&              ih,
       const int&                                    label,
       const XFEM::Enrichment::EnrType               enrtype,
       const double                                  boundaryRatioLimit,
@@ -91,7 +91,7 @@ namespace XFEM
   void ApplyVoidEnrichmentForElement(
       const DRT::Element*                           xfemele,
       const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>&  element_ansatz,
-      const XFEM::InterfaceHandle&                  ih,
+      const XFEM::InterfaceHandleXFSI&              ih,
       const int&                                    label,
       const std::set<XFEM::PHYSICS::Field>&         fieldset,
       const double                                  volumeRatioLimit,
@@ -107,7 +107,7 @@ namespace XFEM
    * \note this is 3d fluid specific and should somehow be generalized
    */
   void createDofMap(
-      const XFEM::InterfaceHandle&                      ih,                  ///< interface information
+      const XFEM::InterfaceHandleXFSI&                  ih,                  ///< interface information
       std::map<int, const std::set<XFEM::FieldEnr> >&   nodalDofSetFinal,    ///< enriched fields per node
       std::map<int, const std::set<XFEM::FieldEnr> >&   elementalDofsFinal,  ///< enriched fields per element
       const std::set<XFEM::PHYSICS::Field>&             fieldset,

@@ -37,7 +37,7 @@ namespace XFEM
 
       //! constructor
       explicit DofManager(
-          const RCP<XFEM::InterfaceHandle>&      ih,
+          const RCP<XFEM::InterfaceHandleXFSI>&  ih,
           const std::set<XFEM::PHYSICS::Field>&  fieldset,
           const XFEM::ElementAnsatz&             element_ansatz,
           const Teuchos::ParameterList&          params

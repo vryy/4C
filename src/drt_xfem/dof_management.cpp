@@ -32,7 +32,7 @@ Maintainer: Axel Gerstenberger
  | constructor: used for xfsi problems                                                   ag 11/07 |
  *------------------------------------------------------------------------------------------------*/
 XFEM::DofManager::DofManager(
-    const RCP<XFEM::InterfaceHandle>&      ih,
+    const RCP<XFEM::InterfaceHandleXFSI>&  ih,
     const std::set<XFEM::PHYSICS::Field>&  fieldset,
     const XFEM::ElementAnsatz&             element_ansatz,
     const Teuchos::ParameterList&          params
@@ -463,21 +463,18 @@ void XFEM::DofManager::toGmsh(
     filenamedel << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".numdof_coupled_system_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
     std::remove(filenamedel.str().c_str());
     if (screen_out) std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"..."<<flush;
-    std::ofstream f_system(filename.str().c_str());
+    std::ofstream gmshfilecontent(filename.str().c_str());
     {
       // draw elements with associated gid
-      std::stringstream gmshfilecontent;
       gmshfilecontent << "View \" " << "Element->Id() \" {" << endl;
       for (int i=0; i<ih_->xfemdis()->NumMyColElements(); ++i)
       {
         const DRT::Element* actele = ih_->xfemdis()->lColElement(i);
-        gmshfilecontent << IO::GMSH::elementAtInitialPositionToString(double(actele->Id()), actele);
+        IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, gmshfilecontent);
       };
       gmshfilecontent << "};" << endl;
-      f_system << gmshfilecontent.str();
     }
     {
-      std::stringstream gmshfilecontent;
       gmshfilecontent << "View \" " << " Stress unknowns in element \" {" << endl;
       for (int i=0; i<ih_->xfemdis()->NumMyColElements(); ++i)
       {
@@ -488,14 +485,12 @@ void XFEM::DofManager::toGmsh(
         {
           const std::set<XFEM::FieldEnr> fieldenrset = iter->second;
           const double val = (double)fieldenrset.size();
-          gmshfilecontent << IO::GMSH::elementAtInitialPositionToString(val, actele);
+          IO::GMSH::elementAtInitialPositionToStream(val, actele, gmshfilecontent);
         }
       }
       gmshfilecontent << "};\n";
-      f_system << gmshfilecontent.str();
     }
     {
-      std::stringstream gmshfilecontent;
       gmshfilecontent << "View \" " << "NumDof per node \" {\n";
       for (int i=0; i<ih_->xfemdis()->NumMyColNodes(); ++i)
       {
@@ -518,11 +513,9 @@ void XFEM::DofManager::toGmsh(
         }
       };
       gmshfilecontent << "};\n";
-      f_system << gmshfilecontent.str();
     }
 
     {
-      stringstream gmshfilecontent;
       gmshfilecontent << "View \" " << "NumDof Jump enriched nodes \" {\n";
       for (int i=0; i<ih_->xfemdis()->NumMyColNodes(); ++i)
       {
@@ -553,11 +546,9 @@ void XFEM::DofManager::toGmsh(
         }
       };
       gmshfilecontent << "};\n";
-      f_system << gmshfilecontent.str();
     }
 
     {
-      stringstream gmshfilecontent;
       gmshfilecontent << "View \" " << "NumDof" << " standard enriched nodes \" {\n";
       for (int i=0; i<ih_->xfemdis()->NumMyColNodes(); ++i)
       {
@@ -588,11 +579,9 @@ void XFEM::DofManager::toGmsh(
         }
       };
       gmshfilecontent << "};\n";
-      f_system << gmshfilecontent.str();
     }
 
     {
-      stringstream gmshfilecontent;
       gmshfilecontent << "View \" " << "NumDof" << " Void enriched nodes \" {\n";
       for (int i=0; i<ih_->xfemdis()->NumMyColNodes(); ++i)
       {
@@ -623,11 +612,9 @@ void XFEM::DofManager::toGmsh(
         }
       };
       gmshfilecontent << "};\n";
-      f_system << gmshfilecontent.str();
     }
     
     {
-      stringstream gmshfilecontent;
       gmshfilecontent << "View \" " << "NumDof" << " Kink enriched nodes \" {\n";
       for (int i=0; i<ih_->xfemdis()->NumMyColNodes(); ++i)
       {
@@ -658,10 +645,9 @@ void XFEM::DofManager::toGmsh(
         }
       };
       gmshfilecontent << "};\n";
-      f_system << gmshfilecontent.str();
     }
 
-    f_system.close();
+    gmshfilecontent.close();
     if (screen_out) std::cout << " done" << endl;
   }
 #if 0
@@ -675,9 +661,8 @@ void XFEM::DofManager::toGmsh(
       filenamedel << filebase << "_eledofman_check_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
       std::remove(filenamedel.str().c_str());
       if (screen_out) std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"..."<<flush;
-      std::ofstream f_system(filename.str().c_str());
+      std::ofstream gmshfilecontent(filename.str().c_str());
       {
-        stringstream gmshfilecontent;
         gmshfilecontent << "View \" " << " NumDofPerElement() in element \" {\n";
         for (int i=0; i<ih_->xfemdis()->NumMyColElements(); ++i)
         {
@@ -686,13 +671,12 @@ void XFEM::DofManager::toGmsh(
           //double val = 0.0;
           //std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator blub = elementalDofs_.find(ele_gid);
           const double val = actele->NumDofPerElement();
-          gmshfilecontent << IO::GMSH::elementAtInitialPositionToString(val, actele) << "\n";
+          IO::GMSH::elementAtInitialPositionToStream(val, actele, gmshfilecontent);
 
         };
         gmshfilecontent << "};\n";
-        f_system << gmshfilecontent.str();
       }
-      f_system.close();
+      gmshfilecontent.close();
       if (screen_out) std::cout << " done" << endl;
   }
 #endif

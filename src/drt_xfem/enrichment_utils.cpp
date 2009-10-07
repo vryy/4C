@@ -541,17 +541,14 @@ vector<double> XFEM::DomainCoverageRatioPerNode(
  */
 template <DRT::Element::DiscretizationType DISTYPE>
     double BoundaryCoverageRatioT(
-        const DRT::Element&               ele,           ///< the element whose boundary ratio we want to compute
+        const DRT::Element&               xele,          ///< the element whose boundary ratio we want to compute
+        const GEO::BoundaryIntCells&      boundaryIntCells,
         const XFEM::InterfaceHandle&      ih             ///< connection to the interface handler
         )
 {
   static const Epetra_BLAS blas;
 
   double area_fict = 0.0;
-
-  // information about boundary integration cells
-  const GEO::BoundaryIntCells& boundaryIntCells = ih.GetBoundaryIntCells(ele.Id());
-
   double base_area = 0.0;
   if (DISTYPE == DRT::Element::tet10 or DISTYPE == DRT::Element::tet4)
   {
@@ -644,21 +641,22 @@ template <DRT::Element::DiscretizationType DISTYPE>
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 double XFEM::BoundaryCoverageRatio(
-        const DRT::Element&           ele,
+        const DRT::Element&           xele,
+        const GEO::BoundaryIntCells&  boundaryIntCells,
         const XFEM::InterfaceHandle&  ih)
 {
-  switch (ele.Shape())
+  switch (xele.Shape())
   {
     case DRT::Element::hex8:
-      return BoundaryCoverageRatioT<DRT::Element::hex8>(ele,ih);
+      return BoundaryCoverageRatioT<DRT::Element::hex8>(xele,boundaryIntCells,ih);
     case DRT::Element::hex20:
-      return BoundaryCoverageRatioT<DRT::Element::hex20>(ele,ih);
+      return BoundaryCoverageRatioT<DRT::Element::hex20>(xele,boundaryIntCells,ih);
     case DRT::Element::hex27:
-      return BoundaryCoverageRatioT<DRT::Element::hex27>(ele,ih);
+      return BoundaryCoverageRatioT<DRT::Element::hex27>(xele,boundaryIntCells,ih);
     case DRT::Element::tet4:
-      return BoundaryCoverageRatioT<DRT::Element::tet4>(ele,ih);
+      return BoundaryCoverageRatioT<DRT::Element::tet4>(xele,boundaryIntCells,ih);
     case DRT::Element::tet10:
-      return BoundaryCoverageRatioT<DRT::Element::tet10>(ele,ih);
+      return BoundaryCoverageRatioT<DRT::Element::tet10>(xele,boundaryIntCells,ih);
     default:
       dserror("add you distype here...");
       exit(1);
@@ -807,8 +805,7 @@ XFEM::AssemblyType XFEM::ComputeAssemblyType(
       };
   };
 
-  const std::size_t eledof = eleDofManager.NumElemDof();
-  if (eledof != 0)
+  if (eleDofManager.NumElemDof() != 0)
     assembly_type = XFEM::xfem_assembly;
 
 

@@ -14,6 +14,11 @@ Maintainer: Axel Gerstenberger
  */
 #ifdef CCADISCRET
 
+#include <algorithm>
+#include <set>
+#include <iterator>
+
+
 #include "xdofmapcreation.H"
 #include "enrichment_utils.H"
 #include "dofkey.H"
@@ -337,6 +342,108 @@ bool XFEM::ApplyNodalEnrichmentsNodeWise(
   return skipped_element;
 }
 
+static bool ConnectedElements(
+    const set<int>& patchset,
+    const set<int>& testset
+    )
+{
+  std::set<int> result;
+  std::set_intersection(patchset.begin(), patchset.end(), testset.begin(), testset.end(),
+    std::insert_iterator<set<int> >(result, result.begin()));
+  return result.size() > 0;
+}
+
+static void findOutMultitude(
+    const XFEM::InterfaceHandleXFSI&              ih,
+    set<int>                                      beles,
+    vector<set<int> >&                            distinct_interfaces_NGid,
+    vector<set<int> >&                            distinct_interfaces_BeleGid
+    )
+{
+//  cout << "numbele: " << beles.size() << endl;
+  for (set<int>::const_iterator ibele = beles.begin(); ibele != beles.end(); ++ibele)
+  {
+    const DRT::Element* bele = ih.cutterdis()->gElement(*ibele);
+
+    const int* bnodeids = bele->NodeIds();
+    set<int> current_nodeid_set;
+    for (int inode = 0; inode < bele->NumNode(); ++inode)
+    {
+      current_nodeid_set.insert(bnodeids[inode]);
+    }
+
+    // if first element, create patch
+    if (distinct_interfaces_NGid.empty())
+    {
+      distinct_interfaces_NGid.push_back(current_nodeid_set);
+      distinct_interfaces_BeleGid.push_back(set<int>());
+      distinct_interfaces_BeleGid[0].insert(bele->Id());
+      continue;
+    }
+
+    for (size_t ipatch = 0; ipatch < distinct_interfaces_NGid.size(); ++ipatch)
+    {
+      const bool connected_elements = ConnectedElements(distinct_interfaces_NGid[ipatch],current_nodeid_set);
+
+      if (connected_elements)
+      {
+        // add bele to existing set
+        distinct_interfaces_NGid[ipatch].insert(current_nodeid_set.begin(),current_nodeid_set.end());
+        distinct_interfaces_BeleGid[ipatch].insert(bele->Id());
+      }
+      else
+      {
+        // create new patch with bele as first entry
+        distinct_interfaces_NGid.push_back(current_nodeid_set);
+        distinct_interfaces_BeleGid.push_back(set<int>());
+        distinct_interfaces_BeleGid[ipatch+1].insert(bele->Id());
+      }
+    }
+  }
+
+  // sanity check
+  const size_t initnumpatch = distinct_interfaces_NGid.size();
+  if (initnumpatch != distinct_interfaces_BeleGid.size())
+  {
+    dserror("bug!");
+  }
+
+  //check patches with themselves
+  for (size_t ibase=0; ibase < initnumpatch; ++ibase)
+  {
+    if (ibase == 1)
+      break;  // we don't need to merge just one set
+
+    if (ibase == distinct_interfaces_NGid.size())
+      break;  //
+
+    bool restart = false;
+    const set<int>& baseset = distinct_interfaces_NGid[ibase];
+    for (size_t itest=1; itest < distinct_interfaces_NGid.size(); ++itest)
+    {
+      const set<int>& testset = distinct_interfaces_NGid[itest];
+      const bool connected_elements = ConnectedElements(baseset,testset);
+      if (connected_elements)
+      {
+        // add things to base sets
+        distinct_interfaces_NGid[ibase].insert(testset.begin(),testset.end());
+        distinct_interfaces_BeleGid[ibase].insert(distinct_interfaces_BeleGid[itest].begin(),distinct_interfaces_BeleGid[itest].end());
+
+        // remove test sets
+        distinct_interfaces_NGid.erase(distinct_interfaces_NGid.begin() + itest);
+        distinct_interfaces_BeleGid.erase(distinct_interfaces_BeleGid.begin() + itest);
+
+        restart = true;
+      }
+      if (restart)
+        break;
+    }
+  }
+
+
+//  cout << "distint_interfaces.size() = " << distinct_interfaces_NGid.size() << endl;
+
+}
 
 
 /*----------------------------------------------------------------------*
@@ -344,14 +451,14 @@ bool XFEM::ApplyNodalEnrichmentsNodeWise(
 bool XFEM::ApplyElementEnrichments(
     const DRT::Element*                           xfemele,
     const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>&  element_ansatz,
-    const XFEM::InterfaceHandle&                  ih,
+    const XFEM::InterfaceHandleXFSI&              ih,
     const int&                                    label,
     const XFEM::Enrichment::EnrType               enrtype,
     const double                                  boundaryRatioLimit,
     std::set<XFEM::FieldEnr>&                     enrfieldset)
 {
   // check, how much area for integration we have (from BoundaryIntcells)
-  const double boundarysize = XFEM::BoundaryCoverageRatio(*xfemele,ih);
+  const double boundarysize = XFEM::BoundaryCoverageRatio(*xfemele,ih.GetBoundaryIntCells(xfemele->Id()),ih);
   const bool almost_zero_surface = (fabs(boundarysize) < boundaryRatioLimit);
 
   bool skipped_element = false;
@@ -380,13 +487,68 @@ bool XFEM::ApplyElementEnrichments(
 }
 
 
+///*----------------------------------------------------------------------*
+// *----------------------------------------------------------------------*/
+//bool XFEM::ApplyElementEnrichments(
+//    const DRT::Element*                           xfemele,
+//    const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>&  element_ansatz,
+//    const XFEM::InterfaceHandleXFSI&              ih,
+//    const int&                                    label,
+//    const XFEM::Enrichment::EnrType               enrtype,
+//    const double                                  boundaryRatioLimit,
+//    std::set<XFEM::FieldEnr>&                     enrfieldset)
+//{
+//
+//  set<int> beles;
+//  if (ih.ElementIntersected(xfemele->Id()))
+//    beles = ih.GetIntersectingBoundaryElementsGID(xfemele->Id());
+//
+//  vector<set<int> > distinct_interface_NGid; // set with all nodal Gids
+//  vector<set<int> > distinct_interface_BeleGid; // set with
+//  findOutMultitude(ih, beles, distinct_interface_NGid,distinct_interface_BeleGid);
+//
+//  bool skipped_element = false;
+//
+//  size_t imultitude = 0;
+//  for (size_t iface = 0; iface < distinct_interface_NGid.size(); ++iface)
+//  {
+//    // information about all boundary integration cells
+//    const GEO::BoundaryIntCells allboundaryIntCells = ih.GetBoundaryIntCells(xfemele->Id());
+//
+//    // check, how much area for integration we have (from BoundaryIntcells)
+//    const double boundarysize = XFEM::BoundaryCoverageRatio(*xfemele,allboundaryIntCells,ih);
+//    const bool almost_zero_surface = (fabs(boundarysize) < boundaryRatioLimit);
+//
+//    const XFEM::Enrichment enr_multi(label, enrtype);
+//    //  const XFEM::Enrichment stdenr(0, XFEM::Enrichment::typeStandard);
+//    if ( not almost_zero_surface)
+//    {
+//      map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>::const_iterator fielditer;
+//      for (fielditer = element_ansatz.begin();fielditer != element_ansatz.end();++fielditer)
+//      {
+//        enrfieldset.insert(XFEM::FieldEnr(fielditer->first, enr_multi));
+//      }
+//      imultitude++;
+//    }
+//    else
+//    {
+//      skipped_element = true;
+//      //    cout << "skipped stress unknowns for element: "<< xfemele->Id() << ", boundary size: " << boundarysize << endl;
+//    }
+//  }
+//
+////  cout << "enrfieldset.size() = " << enrfieldset.size() << endl;
+//
+//  return skipped_element;
+//}
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void XFEM::ApplyVoidEnrichmentForElement(
     const DRT::Element*                           xfemele,
     const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>&  element_ansatz,
-    const XFEM::InterfaceHandle&                  ih,
+    const XFEM::InterfaceHandleXFSI&              ih,
     const int&                                    label,
     const std::set<XFEM::PHYSICS::Field>&         fieldset,
     const double                                  volumeRatioLimit,
@@ -605,10 +767,61 @@ void XFEM::syncNodalDofs(
 #endif
 
 
+///*----------------------------------------------------------------------*
+// *----------------------------------------------------------------------*/
+//static void applyMultitudeNodalVoidEnrichments(
+//    const XFEM::InterfaceHandleXFSI&              ih,
+//    const std::set<XFEM::PHYSICS::Field>&         fieldset,
+//    std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet)
+//{
+//
+//  for (int i=0; i<ih.xfemdis()->NumMyColNodes(); ++i)
+//  {
+//    DRT::Node* node = ih.xfemdis()->lColNode(i);
+//
+//    DRT::Element** eles = node->Elements();
+////    cout << "vorher " << nodalDofSet[node->Id()].size() << endl;
+//    vector<set<int> > distinct_interfaces_NGid;
+//    vector<set<int> > distinct_interfaces_BeleGid;
+//    for (int iele = 0; iele < node->NumElement(); ++iele)
+//    {
+//      DRT::Element* fluidele = eles[iele];
+//
+//      set<int> beles;
+//      if (ih.ElementIntersected(fluidele->Id()))
+//        beles = ih.GetIntersectingBoundaryElementsGID(fluidele->Id());
+//
+//      findOutMultitude(ih, beles, distinct_interfaces_NGid, distinct_interfaces_BeleGid);
+//
+//      // loop here
+//      if (distinct_interfaces_NGid.size() > 1)
+//      {
+////        cout << "found multitude" << endl;
+//        const LINALG::Matrix<3,1> nodalpos(node->X());
+//        const int label = ih.PositionWithinConditionNP(nodalpos);
+//
+//        const XFEM::Enrichment enr_multi(label, XFEM::Enrichment::typeVoid);
+//
+//
+//        for (std::set<XFEM::PHYSICS::Field>::const_iterator field = fieldset.begin();field != fieldset.end();++field)
+//        {
+//          nodalDofSet[node->Id()].insert(XFEM::FieldEnr(*field, enr_multi));
+//        }
+//
+//      }
+//
+//    }
+////    cout << "nachher" << nodalDofSet[node->Id()].size() << endl;
+//  };
+//}
+
+
+
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void XFEM::createDofMap(
-    const XFEM::InterfaceHandle&                        ih,
+    const XFEM::InterfaceHandleXFSI&                    ih,
     std::map<int, const std::set<XFEM::FieldEnr> >&     nodalDofSetFinal,
     std::map<int, const std::set<XFEM::FieldEnr> >&     elementalDofsFinal,
     const std::set<XFEM::PHYSICS::Field>&               fieldset,
@@ -661,6 +874,12 @@ void XFEM::createDofMap(
         skipped_elem_enr_count++;
     };
   };
+
+//  for(std::set<int>::const_iterator labeliter = labels.begin(); labeliter!=labels.end(); ++labeliter)
+//  {
+//    applyMultitudeNodalVoidEnrichments(ih, fieldset, nodalDofSet);
+//  };
+
 
 #ifdef PARALLEL
   syncNodalDofs(ih, nodalDofSet);
