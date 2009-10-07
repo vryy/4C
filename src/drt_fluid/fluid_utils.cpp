@@ -463,7 +463,7 @@ void FLD::UTILS::WriteLiftDragToFile(
   )
 {
   // print to file
-  std::stringstream header;
+  std::ostringstream header;
   header << right << std::setw(16) << "Time"
          << right << std::setw(10) << "Step"
          << right << std::setw(10) << "Label"
@@ -474,7 +474,7 @@ void FLD::UTILS::WriteLiftDragToFile(
 
   for (map<int,vector<double> >::const_iterator liftdragval = liftdragvals.begin(); liftdragval != liftdragvals.end(); ++liftdragval)
   {
-    std::stringstream s;
+    std::ostringstream s;
     s << right << std::setw(16) << scientific << time
       << right << std::setw(10) << scientific << step
       << right << std::setw(10) << scientific << liftdragval->first
@@ -482,7 +482,7 @@ void FLD::UTILS::WriteLiftDragToFile(
       << right << std::setw(16) << scientific << liftdragval->second[1]
       << right << std::setw(16) << scientific << liftdragval->second[2];
 
-    std::stringstream slabel;
+    std::ostringstream slabel;
     slabel << std::setw(3) << setfill('0') << liftdragval->first;
     std::ofstream f;
     const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
