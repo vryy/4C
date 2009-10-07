@@ -356,7 +356,7 @@ void SCATRA::TimIntBDF2::UpdateThermPressureTimeDerivative()
     const double fact1 = 3.0/(2.0*dta_);
     const double fact2 = -2.0/dta_;
     const double fact3 = 1.0/(2.0*dta_);
-    thermpressdtnp_ = fact1*thermpressnp_+fact2*thermpressn_+fact2*thermpressnm_;
+    thermpressdtnp_ = fact1*thermpressnp_+fact2*thermpressn_+fact3*thermpressnm_;
   }
 
   return;
