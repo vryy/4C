@@ -266,12 +266,12 @@ void FSI::MonolithicXFEM::SetupRHS(bool firstcall)
     Teuchos::RCP<LINALG::SparseMatrix> Cdd = cmats.find("Cdd")->second;
 
 
-    LINALG::SparseMatrix& fig = *cmats.find("Mdu")->second;
-    LINALG::SparseMatrix& fgg = *FluidField().SystemMatrix();
+//    LINALG::SparseMatrix& fig = *cmats.find("Mdu")->second;
+//    LINALG::SparseMatrix& fgg = *FluidField().SystemMatrix();
 
     Teuchos::RCP<Epetra_Vector> fveln = FluidField().ExtractInterfaceVeln();
-    double timescale = FluidField().TimeScaling();
-    double scale     = FluidField().ResidualScaling();
+//    double timescale = FluidField().TimeScaling();
+//    double scale     = FluidField().ResidualScaling();
 
 //    Teuchos::RCP<Epetra_Vector> rhs_fig = Teuchos::rcp(new Epetra_Vector(fig.RowMap()));
 //    fig.Apply(*fveln,*rhs_fig);
