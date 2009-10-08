@@ -51,7 +51,8 @@ SCATRA::TimIntOneStepTheta::TimIntOneStepTheta(
   }
 
   // fine-scale vector at time n+1
-  if (fssgd_ != "No") fsphinp_ = LINALG::CreateVector(*dofrowmap,true);
+  if (fssgd_ != INPAR::SCATRA::fssugrdiff_no)
+    fsphinp_ = LINALG::CreateVector(*dofrowmap,true);
 
   return;
 }

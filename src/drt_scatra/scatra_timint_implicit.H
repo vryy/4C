@@ -157,7 +157,10 @@ public:
      Teuchos::RCP<DRT::Discretization> fluiddis ); ///< fluid discretization
 
   /// set the initial scalar field phi
-  void SetInitialField(int init,int startfuncno);
+  void SetInitialField(
+      const INPAR::SCATRA::InitialField, ///< type of initial field
+      const int startfuncno              ///< number of spatial function
+      );
 
   /// set initial thermodynamic pressure for low-Mach-number flow
   void SetInitialThermPressure();
@@ -301,7 +304,9 @@ public:
   void EvaluateErrorComparedToAnalyticalSol();
 
   /// routine to calculate mass/heat flux vector field in computational domain
-  Teuchos::RCP<Epetra_MultiVector> CalcFluxInDomain(const std::string fluxtype);
+  Teuchos::RCP<Epetra_MultiVector> CalcFluxInDomain(
+      const INPAR::SCATRA::FluxType fluxtype ///< fluxtype enum
+  );
 
   /// routine to calculate mass/heat normal flux at specified boundaries
   Teuchos::RCP<Epetra_MultiVector> CalcFluxAtBoundary(std::vector<string>& condnames);
@@ -426,7 +431,7 @@ protected:
 
   /// solvertype and flags for nonlinear (always incremental) and
   /// (linear) incremental solver
-  string solvtype_;
+  INPAR::SCATRA::SolverType solvtype_;
   bool nonlinear_;
   bool incremental_;
 
@@ -441,8 +446,10 @@ protected:
 
   /// flag controlling level set reinitialization strategy
   INPAR::SCATRA::ReinitializationAction reinitaction_;
+
   /// flag controlling level set mass calculation strategy
   INPAR::SCATRA::MassCalculation masscalc_;
+
   bool reinitswitch_;
 
   /// maximum number of steps
@@ -461,7 +468,7 @@ protected:
   int uprestart_;
 
   /// flag for writing the flux vector fields
-  string writeflux_;
+  INPAR::SCATRA::FluxType writeflux_;
 
   /// flag for printing out mean values of scalars
   const bool outmean_;
@@ -473,7 +480,7 @@ protected:
   double dtp_;
 
   /// type of velocity field
-  int cdvel_;
+  const INPAR::SCATRA::VelocityField cdvel_;
 
   /// maximum number of nonlinear iterations
   int itemax_;
@@ -491,7 +498,7 @@ protected:
   bool neumanninflow_;
 
   /// fine-scale subgrid-viscosity flag
-  string fssgd_;
+  INPAR::SCATRA::FSSUGRDIFF fssgd_;
 
   /// ELCH-specific parameter F/RT (default value for the temperature is 298K)
   double frt_;

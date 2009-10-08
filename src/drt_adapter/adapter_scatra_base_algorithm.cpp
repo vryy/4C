@@ -92,7 +92,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   scatratimeparams->set<string>("problem type",DRT::Problem::Instance()->ProblemType());
 
   // ----solver type (linear full, linear incremental or nonlinear (incremental))
-  scatratimeparams->set<string>("solver type",scatradyn.get<string>("SOLVERTYPE"));
+  scatratimeparams->set<INPAR::SCATRA::SolverType>("solver type",Teuchos::getIntegralValue<INPAR::SCATRA::SolverType>(scatradyn,"SOLVERTYPE"));
 
   // ----Eulerian or ALE formulation of transport equation(s)
   scatratimeparams->set<bool>("isale",isale);
@@ -120,22 +120,22 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   scatratimeparams->set           ("write solution every"      ,prbdyn.get<int>("UPRES"));
   //scatratimeparams->set           ("write solution every"      ,prbdyn.get<int>("WRITESOLEVRY"));
   // write also flux vectors when solution is written out?
-  scatratimeparams->set<string>   ("write flux"   ,       scatradyn.get<string>("WRITEFLUX"));
+  scatratimeparams->set<INPAR::SCATRA::FluxType>   ("write flux",Teuchos::getIntegralValue<INPAR::SCATRA::FluxType>(scatradyn,"WRITEFLUX"));
   // output of mean values of transported scalars/ density
   scatratimeparams->set<bool>     ("write mean values"   ,Teuchos::getIntegralValue<int>(scatradyn,"OUTMEAN"));
   // pointer to the error file (for output)
   scatratimeparams->set<FILE*>    ("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
 
   // ---------------------------------------------------- initial field
-  scatratimeparams->set<int>("scalar initial field" ,Teuchos::getIntegralValue<int>(scatradyn,"INITIALFIELD"));
+  scatratimeparams->set<INPAR::SCATRA::InitialField>("scalar initial field" ,Teuchos::getIntegralValue<INPAR::SCATRA::InitialField>(scatradyn,"INITIALFIELD"));
   scatratimeparams->set<int>("scalar initial field func number",scatradyn.get<int>("INITFUNCNO"));
 
   // ----------------------------------------------------velocity field
-  scatratimeparams->set<int>("velocity field" ,Teuchos::getIntegralValue<int>(scatradyn,"VELOCITYFIELD"));
+  scatratimeparams->set<INPAR::SCATRA::VelocityField>("velocity field" ,Teuchos::getIntegralValue<INPAR::SCATRA::VelocityField>(scatradyn,"VELOCITYFIELD"));
   scatratimeparams->set<int>("velocity function number",scatradyn.get<int>("VELFUNCNO"));
 
   // -------------------- compute error compared to analytical solution
-  scatratimeparams->set<int>("CALCERROR",Teuchos::getIntegralValue<int>(scatradyn,"CALCERROR"));
+  scatratimeparams->set<INPAR::SCATRA::CalcError>("CALCERROR",Teuchos::getIntegralValue<INPAR::SCATRA::CalcError>(scatradyn,"CALCERROR"));
 
   // ------------------------------------------ form of convective term
   scatratimeparams->set<string>("form of convective term",scatradyn.get<string>("CONVFORM"));
@@ -144,7 +144,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   scatratimeparams->set<string>("Neumann inflow",scatradyn.get<string>("NEUMANNINFLOW"));
 
   // -------------------------------- (fine-scale) subgrid diffusivity?
-  scatratimeparams->set<string>("fs subgrid diffusivity",scatradyn.get<string>("FSSUGRDIFF"));
+  scatratimeparams->set<INPAR::SCATRA::FSSUGRDIFF>("fs subgrid diffusivity",getIntegralValue<INPAR::SCATRA::FSSUGRDIFF>(scatradyn,"FSSUGRDIFF"));
 
   // -------------------- block preconditioning (only supported by ELCH)
   scatratimeparams->set<int>("BLOCKPRECOND",Teuchos::getIntegralValue<int>(scatradyn,"BLOCKPRECOND"));
@@ -174,7 +174,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   if (genprob.probtyp == prb_elch)
   {
     // Electrochemistry is always a nonlinear problem!
-    if (scatratimeparams->get<string>("solver type") != "nonlinear")
+    if (scatratimeparams->get<INPAR::SCATRA::SolverType>("solver type") != INPAR::SCATRA::solvertype_nonlinear)
       dserror("Set parameter SOLVERTYPE = nonlinear for electrochemistry!");
 
     // Flag for natural convection: Must be awailable in each ScaTra problem

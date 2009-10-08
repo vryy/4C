@@ -115,7 +115,7 @@ protected:
   void AddSpecificTimeIntegrationParameters(ParameterList& params);
 
   /// write additional data required for restart
-  void OutputRestart(){return;};
+  void OutputRestart();
 
   /// return the right time-scaling-factor for the true residual
   double ResidualScaling() const { return 1.0; }

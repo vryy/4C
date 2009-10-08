@@ -31,7 +31,88 @@ namespace INPAR
       timeint_gen_alpha
     };
 
-    /// type of calar transport problem
+    /// type of solution procedures for scalar transport problems
+    enum SolverType
+    {
+      solvertype_linear_full,
+      solvertype_linear_incremental,
+      solvertype_nonlinear
+    };
+
+    /// type of convective velocity field
+    enum VelocityField
+    {
+      velocity_zero,
+      velocity_function,
+      velocity_Navier_Stokes
+    };
+
+    /// initial field for scalar transport problem
+    enum InitialField
+    {
+      initfield_zero_field,
+      initfield_field_by_function,
+      initfield_field_by_condition,
+      initfield_disturbed_field_by_function,
+      initfield_DISCONTPV_1D,
+      initfield_FVI_FERECHPRO,
+      initfield_RAYTAYMIXFRAC
+    };
+
+    /// compute error compared to analytical solution
+    enum CalcError
+    {
+      calcerror_no,
+      calcerror_Kwok_Wu
+    };
+
+    /// possible types of stabilization
+    enum StabType
+    {
+      stabtype_no_stabilization,
+      stabtype_SUPG,
+      stabtype_GLS,
+      stabtype_USFEM
+    };
+
+    /// possible options for the stabilization parameter
+    enum TauType
+    {
+      tau_franca_valentin,
+      tau_bazilevs,
+      tau_exact_1d,
+      tau_zero
+    };
+
+    /// possible options for all-scale subgrid diffusivity
+    enum KartType
+    {
+      kart_artificial,
+      kart_hughes,
+      kart_tezduyar,
+      kart_docarmo,
+      kart_almeida
+    };
+
+    /// possible options for fine-scale subgrid diffusivity
+    enum FSSUGRDIFF
+    {
+      fssugrdiff_no,
+      fssugrdiff_artificial,
+      fssugrdiff_transfer_from_fluid
+    };
+
+    /// parameters for flux calculation of scalar transport problems
+    enum FluxType
+    {
+      flux_no,
+      flux_total_domain,
+      flux_diffusive_domain,
+      flux_total_boundary,
+      flux_diffusive_boundary
+    };
+
+    /// type of scalar transport problem
     enum ScaTraType
     {
       scatratype_standard,

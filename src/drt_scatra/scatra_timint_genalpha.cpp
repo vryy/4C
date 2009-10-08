@@ -56,7 +56,8 @@ SCATRA::TimIntGenAlpha::TimIntGenAlpha(
   genalphafac_ = gamma_/alphaM_;
 
   // fine-scale vector at time n+alpha_F
-  if (fssgd_ != "No") fsphiaf_ = LINALG::CreateVector(*dofrowmap,true);
+  if (fssgd_ != INPAR::SCATRA::fssugrdiff_no)
+    fsphiaf_ = LINALG::CreateVector(*dofrowmap,true);
 
   return;
 }

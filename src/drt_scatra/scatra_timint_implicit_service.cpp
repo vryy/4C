@@ -1003,22 +1003,16 @@ void SCATRA::ScaTraTimIntImpl::OutputFlux()
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
 {
-  // set control parameters
-  string fluxcomputation("nowhere"); // domain / boundary
-  string fluxtype("noflux"); // noflux / totalflux / diffusiveflux
-  if (writeflux_!="No")
+  switch(writeflux_)
   {
-    size_t pos = writeflux_.find("_");    // find position of "_" in str
-    fluxcomputation = writeflux_.substr(pos+1);   // get from "_" to the end
-    fluxtype = writeflux_.substr(0,pos); // get from beginning to "_"
-  }
-
-  // now compute the fluxes
-  if (fluxcomputation=="domain")
+  case INPAR::SCATRA::flux_total_domain:
+  case INPAR::SCATRA::flux_diffusive_domain:
   {
-    return CalcFluxInDomain(fluxtype);
+    return CalcFluxInDomain(writeflux_);
+    break;
   }
-  if (fluxcomputation=="boundary")
+  case INPAR::SCATRA::flux_total_boundary:
+  case INPAR::SCATRA::flux_diffusive_boundary:
   {
     // calculate normal flux vector field only for these boundary conditions:
     vector<std::string> condnames;
@@ -1028,8 +1022,11 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
     condnames.push_back("SurfaceNeumann");
 
     return CalcFluxAtBoundary(condnames);
+    break;
   }
-
+  default:
+    break;
+  }
   // else: we just return a zero vector field (needed for result testing)
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
   return rcp(new Epetra_MultiVector(*dofrowmap,3,true));
@@ -1040,7 +1037,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
  |  calculate mass / heat flux vector field in comp. domain    gjb 06/09|
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain
-(const std::string fluxtype)
+(const INPAR::SCATRA::FluxType fluxtype)
 {
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
@@ -1411,13 +1408,14 @@ RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeNormalVectors(
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
 {
-  int calcerr = params_->get<int>("CALCERROR");
+  const INPAR::SCATRA::CalcError calcerr
+    = params_->get<INPAR::SCATRA::CalcError>("CALCERROR");
 
   switch (calcerr)
   {
-  case 0: // do nothing (the usual case)
+  case INPAR::SCATRA::calcerror_no: // do nothing (the usual case)
     break;
-  case 1:
+  case INPAR::SCATRA::calcerror_Kwok_Wu:
   {
     //------------------------------------------------- Kwok et Wu,1995
     //   Reference:

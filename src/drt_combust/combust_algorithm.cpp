@@ -216,7 +216,7 @@ void COMBUST::Algorithm::ReinitializeGfunc(INPAR::COMBUST::ReInitialActionGfunc 
       break;
     case INPAR::COMBUST::reinitaction_byfunction:
       // read a FUNCTION from the input file and reinitialize the G-function bz evaluating it
-      ScaTraField().SetInitialField(1,combustdyn_.sublist("COMBUSTION GFUNCTION").get<int>("REINITFUNCNO"));
+      ScaTraField().SetInitialField(INPAR::SCATRA::initfield_field_by_function,combustdyn_.sublist("COMBUSTION GFUNCTION").get<int>("REINITFUNCNO"));
       break;
     case INPAR::COMBUST::reinitaction_signeddistancefunction:
 #ifdef PARALLEL

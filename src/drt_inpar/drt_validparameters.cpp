@@ -949,7 +949,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                                                     INPAR::STATMECH::frictionmodel_isotropiclumped,
                                                                     INPAR::STATMECH::frictionmodel_isotropicconsistent,
                                                                     INPAR::STATMECH::frictionmodel_anisotropicconsistent),
-                                                                    &statmech);  
+                                                                    &statmech);
   //percentage of total simulation time after which writing of statistical output is started
   DoubleParameter("START_FACTOR",0.0,"Percentage of total simulation time after which writing of statistical output is started",&statmech);
   //Reading whether dynamics remodelling of cross linker distribution takes place
@@ -1642,14 +1642,17 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       false,
       "control parameters for scalar transport problems\n");
 
-  setStringToIntegralParameter<int>("SOLVERTYPE","linear_full",
+  setStringToIntegralParameter<INPAR::SCATRA::SolverType>("SOLVERTYPE","linear_full",
                                "type of scalar transport solver",
                                tuple<std::string>(
                                  "linear_full",
                                  "linear_incremental",
                                  "nonlinear"
                                  ),
-                               tuple<int>(0,1,2),
+                               tuple<INPAR::SCATRA::SolverType>(
+                                   INPAR::SCATRA::solvertype_linear_full,
+                                   INPAR::SCATRA::solvertype_linear_incremental,
+                                   INPAR::SCATRA::solvertype_nonlinear),
                                &scatradyn);
 
   setStringToIntegralParameter<INPAR::SCATRA::TimeIntegrationScheme>("TIMEINTEGR","One_Step_Theta",
@@ -1681,19 +1684,22 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&scatradyn);
   IntParameter("MATID",-1,"Material Id for automatic mesh creation",&scatradyn);
 
-  setStringToIntegralParameter<int>("VELOCITYFIELD","zero",
-                               "type of velocity field used for scalar tranport problems",
+  setStringToIntegralParameter<INPAR::SCATRA::VelocityField>("VELOCITYFIELD","zero",
+                               "type of velocity field used for scalar transport problems",
                                tuple<std::string>(
                                  "zero",
                                  "function",
                                  "Navier_Stokes"
                                  ),
-                               tuple<int>(0,1,2),
+                               tuple<INPAR::SCATRA::VelocityField>(
+                                   INPAR::SCATRA::velocity_zero,
+                                   INPAR::SCATRA::velocity_function,
+                                   INPAR::SCATRA::velocity_Navier_Stokes),
                                &scatradyn);
 
   IntParameter("VELFUNCNO",-1,"function number for scalar transport velocity field",&scatradyn);
 
-  setStringToIntegralParameter<int>("INITIALFIELD","zero_field",
+  setStringToIntegralParameter<INPAR::SCATRA::InitialField>("INITIALFIELD","zero_field",
                                "Initial Field for scalar transport problem",
                                tuple<std::string>(
                                  "zero_field",
@@ -1703,21 +1709,30 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "1D_DISCONTPV",
                                  "FVI_FERECHPRO",
                                  "RAYTAYMIXFRAC"),
-                               tuple<int>(0,1,2,3,4,5,6),
+                               tuple<INPAR::SCATRA::InitialField>(
+                                   INPAR::SCATRA::initfield_zero_field,
+                                   INPAR::SCATRA::initfield_field_by_function,
+                                   INPAR::SCATRA::initfield_field_by_condition,
+                                   INPAR::SCATRA::initfield_disturbed_field_by_function,
+                                   INPAR::SCATRA::initfield_DISCONTPV_1D,
+                                   INPAR::SCATRA::initfield_FVI_FERECHPRO,
+                                   INPAR::SCATRA::initfield_RAYTAYMIXFRAC),
                                &scatradyn);
 
   IntParameter("INITFUNCNO",-1,"function number for scalar transport initial field",&scatradyn);
 
-  setStringToIntegralParameter<int>("CALCERROR","No",
+  setStringToIntegralParameter<INPAR::SCATRA::CalcError>("CALCERROR","No",
                                "compute error compared to analytical solution",
                                tuple<std::string>(
                                  "No",
                                  "Kwok_Wu"
                                  ),
-                               tuple<int>(0,1),
+                               tuple<INPAR::SCATRA::CalcError>(
+                                   INPAR::SCATRA::calcerror_no,
+                                   INPAR::SCATRA::calcerror_Kwok_Wu),
                                &scatradyn);
 
-  setStringToIntegralParameter<int>("WRITEFLUX","No","output of diffusive/total flux vectors",
+  setStringToIntegralParameter<INPAR::SCATRA::FluxType>("WRITEFLUX","No","output of diffusive/total flux vectors",
                                tuple<std::string>(
                                  "No",
                                  "totalflux_domain",
@@ -1725,7 +1740,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "totalflux_boundary",
                                  "diffusiveflux_boundary"
                                  ),
-                               tuple<int>(0,1,2,3,4),
+                               tuple<INPAR::SCATRA::FluxType>(
+                                   INPAR::SCATRA::flux_no,
+                                   INPAR::SCATRA::flux_total_domain,
+                                   INPAR::SCATRA::flux_diffusive_domain,
+                                   INPAR::SCATRA::flux_total_boundary,
+                                   INPAR::SCATRA::flux_diffusive_boundary),
                                &scatradyn);
 
   BoolParameter("OUTMEAN","No","Output of mean values for scalars and density",&scatradyn);
@@ -1750,13 +1770,18 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(0,1),
                                &scatradyn);
 
-  setStringToIntegralParameter<int>("FSSUGRDIFF","No","fine-scale subgrid diffusivity",
+  setStringToIntegralParameter<INPAR::SCATRA::FSSUGRDIFF>("FSSUGRDIFF",
+                               "No",
+                               "fine-scale subgrid diffusivity",
                                tuple<std::string>(
                                  "No",
                                  "artificial",
                                  "transfer_from_fluid"
                                  ),
-                               tuple<int>(0,1,2),
+                               tuple<INPAR::SCATRA::FSSUGRDIFF>(
+                                   INPAR::SCATRA::fssugrdiff_no,
+                                   INPAR::SCATRA::fssugrdiff_artificial,
+                                   INPAR::SCATRA::fssugrdiff_transfer_from_fluid),
                                &scatradyn);
 
   setStringToIntegralParameter<int>("BLOCKPRECOND","no",
@@ -1830,7 +1855,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   Teuchos::ParameterList& scatradyn_stab = scatradyn.sublist("STABILIZATION",false,"");
 
   // this parameter governs type of stabilization
-  setStringToIntegralParameter<int>("STABTYPE",
+  setStringToIntegralParameter<INPAR::SCATRA::StabType>("STABTYPE",
                                     "SUPG",
                                     "type of stabilization (if any)",
                                tuple<std::string>(
@@ -1843,7 +1868,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "Use SUPG",
                                  "Use GLS",
                                  "Use USFEM")  ,
-                               tuple<int>(0,1,2,3),
+                               tuple<INPAR::SCATRA::StabType>(
+                                   INPAR::SCATRA::stabtype_no_stabilization,
+                                   INPAR::SCATRA::stabtype_SUPG,
+                                   INPAR::SCATRA::stabtype_GLS,
+                                   INPAR::SCATRA::stabtype_USFEM),
                                &scatradyn_stab);
 
   // this parameter governs whether subgrid-scale velocity is included
@@ -1873,7 +1902,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &scatradyn_stab);
 
   // this parameter selects the tau definition applied
-  setStringToIntegralParameter<int>("DEFINITION_TAU",
+  setStringToIntegralParameter<INPAR::SCATRA::TauType>("DEFINITION_TAU",
                                "Franca_Valentin",
                                "Definition of tau",
                                tuple<std::string>(
@@ -1886,11 +1915,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "tau according to Bazilevs et al. (2007) (based on G_ij and g_i)",
                                  "exact tau for stationary 1d problems and linear shape functions",
                                  "zero tau (no stabilizing effect)")  ,
-                                tuple<int>(0,1,2,3),
+                                tuple<INPAR::SCATRA::TauType>(
+                                    INPAR::SCATRA::tau_franca_valentin,
+                                    INPAR::SCATRA::tau_bazilevs,
+                                    INPAR::SCATRA::tau_exact_1d,
+                                    INPAR::SCATRA::tau_zero),
                                &scatradyn_stab);
 
   // this parameter selects the subgrid-diffusivity definition applied
-  setStringToIntegralParameter<int>("DEFINITION_KART",
+  setStringToIntegralParameter<INPAR::SCATRA::KartType>("DEFINITION_KART",
                                "artificial_linear",
                                "Definition of (all-scale) artificial diffusivity",
                                tuple<std::string>(
@@ -1905,7 +1938,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "nonlinear isotropic according to Tezduyar and Park (1986)",
                                  "nonlinear isotropic according to doCarmo and Galeao (1991)",
                                  "nonlinear isotropic according to Almeida and Silva (1997)")  ,
-                                tuple<int>(0,1,2),
+                                tuple<INPAR::SCATRA::KartType>(
+                                    INPAR::SCATRA::kart_artificial,
+                                    INPAR::SCATRA::kart_hughes,
+                                    INPAR::SCATRA::kart_tezduyar,
+                                    INPAR::SCATRA::kart_docarmo,
+                                    INPAR::SCATRA::kart_almeida),
                                &scatradyn_stab);
 
   // this parameter selects the location where tau is evaluated

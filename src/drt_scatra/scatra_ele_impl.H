@@ -168,8 +168,8 @@ public:
         const double                          dt, ///< current time-step length
         const double                          timefac, ///< time discretization factor
         const double                          alphaF, ///< factor for generalized-alpha time integration
-        const enum SCATRA::TauType            whichtau, ///< stabilization parameter definition
-        const enum SCATRA::KartType           whichkart, ///< all-scale artificial subgrid-diffusivity definition
+        const enum INPAR::SCATRA::TauType     whichtau, ///< stabilization parameter definition
+        const enum INPAR::SCATRA::KartType    whichkart, ///< all-scale artificial subgrid-diffusivity definition
         const bool                            sgvel, ///< subgrid-scale velocity flag
         const bool                            assgd, ///< all-scale subgrid-diff. flag
         const bool                            fssgd, ///< fine-scale subgrid-diff. flag
@@ -217,7 +217,7 @@ public:
         double                                diffus,
         const double                          dt,
         const double                          timefac,
-        const enum SCATRA::TauType            whichtau,
+        const enum INPAR::SCATRA::TauType     whichtau,
         const bool                            turbmodel,
         const double                          vol,
         const int                             k
@@ -230,7 +230,7 @@ public:
         double                                diffus,
         const double                          dt,
         const double                          timefac,
-        const enum SCATRA::KartType           whichkart,
+        const enum INPAR::SCATRA::KartType    whichkart,
         const bool                            assgd,
         const bool                            fssgd,
         const double                          vol,
@@ -276,7 +276,7 @@ public:
         const vector<double>&           ephinp,
         const double                    frt,
         const Epetra_SerialDenseVector& evel,
-        const SCATRA::FluxType          fluxtype,
+        const INPAR::SCATRA::FluxType   fluxtype,
         const int                       dofindex
     );
 

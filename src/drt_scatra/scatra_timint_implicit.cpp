@@ -64,7 +64,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   time_   (0.0),
   step_   (0),
   prbtype_  (params_->get<string>("problem type")),
-  solvtype_ (params_->get<string>("solver type")),
+  solvtype_ (params_->get<INPAR::SCATRA::SolverType>("solver type")),
   isale_    (params_->get<bool>("isale")),
   scatratype_  (params_->get<INPAR::SCATRA::ScaTraType>("scatratype")),
   reinitaction_(INPAR::SCATRA::reinitaction_none),
@@ -75,14 +75,14 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   timealgo_ (params_->get<INPAR::SCATRA::TimeIntegrationScheme>("time int algo")),
   upres_    (params_->get<int>("write solution every")),
   uprestart_(params_->get<int>("write restart every")),
-  writeflux_(params_->get<string>("write flux")),
+  writeflux_(params_->get<INPAR::SCATRA::FluxType>("write flux")),
   outmean_  (params_->get<bool>("write mean values")),
   dta_      (params_->get<double>("time step size")),
   dtp_      (params_->get<double>("time step size")),
-  cdvel_    (params_->get<int>("velocity field")),
+  cdvel_    (params_->get<INPAR::SCATRA::VelocityField>("velocity field")),
   convform_ (params_->get<string>("form of convective term")),
   neumannin_(params_->get<string>("Neumann inflow")),
-  fssgd_    (params_->get<string>("fs subgrid diffusivity")),
+  fssgd_    (params_->get<INPAR::SCATRA::FSSUGRDIFF>("fs subgrid diffusivity")),
   frt_      (96485.3399/(8.314472 * params_->get<double>("TEMPERATURE",298.15))),
   tpn_      (1.0),
   errfile_  (params_->get<FILE*>("err file")),
@@ -92,20 +92,28 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // -------------------------------------------------------------------
   // determine whether linear incremental or nonlinear solver
   // -------------------------------------------------------------------
-  if (solvtype_ == "nonlinear")
+  switch(solvtype_)
+  {
+  case INPAR::SCATRA::solvertype_nonlinear:
   {
     incremental_ = true;
     nonlinear_   = true;
   }
-  else if (solvtype_ == "linear_incremental")
+  break;
+  case INPAR::SCATRA::solvertype_linear_incremental:
   {
     incremental_ = true;
     nonlinear_   = false;
   }
-  else
+  break;
+  case INPAR::SCATRA::solvertype_linear_full:
   {
     incremental_ = false;
     nonlinear_   = false;
+  }
+  break;
+  default:
+    dserror("Received illegal scatra solvertype enum.");
   }
 
   // -------------------------------------------------------------------
@@ -180,7 +188,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     // initialize standard (stabilized) system matrix (and save its graph!)
     // in standard case, but do not save the graph if fine-scale subgrid
     // diffusivity is used in non-incremental case
-    if (fssgd_ != "No" and not incremental_)
+    if (fssgd_ != INPAR::SCATRA::fssugrdiff_no and not incremental_)
          sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27));
     else sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27,false,true));
   }
@@ -280,7 +288,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // necessary only for AVM3 approach:
   // initialize subgrid-diffusivity matrix + respective ouptput
   // -------------------------------------------------------------------
-  if (fssgd_ != "No")
+  if (fssgd_ != INPAR::SCATRA::fssugrdiff_no)
   {
     sysmat_sd_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27));
 
@@ -311,7 +319,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
 
     // warning if classical (all-scale) turbulence model and fine-scale
     // subgrid-viscosity approach are intended to be used simultaneously
-    if (turbmodel_ and fssgd_ != "No")
+    if (turbmodel_ and fssgd_ != INPAR::SCATRA::fssugrdiff_no)
       dserror("No combination of classical (all-scale) turbulence model and fine-scale subgrid-diffusivity approach currently possible!");
 
     // turbulent Prandtl number
@@ -329,7 +337,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // -------------------------------------------------------------------
   // set initial field
   // -------------------------------------------------------------------
-  SetInitialField(params_->get<int>("scalar initial field"), params_->get<int>("scalar initial field func number"));
+  SetInitialField(params_->get<INPAR::SCATRA::InitialField>("scalar initial field"), params_->get<int>("scalar initial field func number"));
 
   // initializes variables for natural convection (ELCH) if necessary
   SetupElchNatConv();
@@ -526,7 +534,7 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
   // -------------------------------------------------------------------
   //           preparation of AVM3-based scale separation
   // -------------------------------------------------------------------
-  if (step_==1 and fssgd_ != "No") AVM3Preparation();
+  if (step_==1 and fssgd_ != INPAR::SCATRA::fssugrdiff_no) AVM3Preparation();
 
   return;
 
@@ -1061,7 +1069,7 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   if (turbmodel_) discret_->SetState("subgrid diffusivity",subgrdiff_);
 
   // AVM3 separation
-  if (incremental_ and fssgd_ != "No")
+  if (incremental_ and fssgd_ != INPAR::SCATRA::fssugrdiff_no)
   {
     discret_->SetState("subgrid diffusivity",subgrdiff_);
     AVM3Separation();
@@ -1075,7 +1083,8 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   discret_->ClearState();
 
   // AVM3 scaling
-  if (not incremental_ and fssgd_ != "No") AVM3Scaling(eleparams);
+  if (not incremental_ and fssgd_ != INPAR::SCATRA::fssugrdiff_no)
+    AVM3Scaling(eleparams);
 
   // finalize the complete matrix
   sysmat_->Complete();
@@ -1130,7 +1139,7 @@ void SCATRA::ScaTraTimIntImpl::Output()
     if (step_%uprestart_==0) OutputRestart();
 
     // write flux vector field
-    if (writeflux_!="No") OutputFlux();
+    if (writeflux_!=INPAR::SCATRA::flux_no) OutputFlux();
 
     // write mean values of scalar(s)
     if (outmean_)
@@ -1142,7 +1151,7 @@ void SCATRA::ScaTraTimIntImpl::Output()
   else
   {
     // calculation of statistics for normal fluxes (no output to file)
-    if (step_>=samstart_ and step_<=samstop_ and writeflux_!="No") CalcFlux();
+    if (step_>=samstart_ and step_<=samstop_ and writeflux_!=INPAR::SCATRA::flux_no) CalcFlux();
   }
 
   return;
@@ -1172,9 +1181,9 @@ void SCATRA::ScaTraTimIntImpl::OutputState()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::SetVelocityField()
 {
-  if (cdvel_ == 0) // zero
+  if (cdvel_ == INPAR::SCATRA::velocity_zero) // zero
     convel_->PutScalar(0); // just to be sure!
-  else if ((cdvel_ == 1))  // function
+  else if ((cdvel_ == INPAR::SCATRA::velocity_function))  // function
   {
     const int numdim = 3; // the velocity field is always 3D
     const int velfuncno = params_->get<int>("velocity function number");
@@ -1211,7 +1220,7 @@ Teuchos::RCP<const Epetra_Vector> fluidsgvelvisc,
 Teuchos::RCP<const DRT::DofSet> dofset,
 Teuchos::RCP<DRT::Discretization> fluiddis)
 {
-  if (cdvel_ != 2)
+  if (cdvel_ != INPAR::SCATRA::velocity_Navier_Stokes)
     dserror("Wrong SetVelocityField() called for velocity field type %d!",cdvel_);
 
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA: set convective velocity field");
@@ -1376,14 +1385,20 @@ void SCATRA::ScaTraTimIntImpl::ApplyMeshMovement(
 /*----------------------------------------------------------------------*
  |  set initial field for phi                                 gjb 04/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
+void SCATRA::ScaTraTimIntImpl::SetInitialField(
+    const INPAR::SCATRA::InitialField init,
+    const int startfuncno)
 {
-  if (init == 0) // zero_field
+  switch(init)
+  {
+  case INPAR::SCATRA::initfield_zero_field:
   {
     phin_-> PutScalar(0.0);
     phinp_-> PutScalar(0.0);
+    break;
   }
-  else if (init == 1 || init == 3)  // (disturbed_)field_by_function
+  case INPAR::SCATRA::initfield_field_by_function:
+  case INPAR::SCATRA::initfield_disturbed_field_by_function:
   {
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
@@ -1410,7 +1425,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
     }
 
     // add random perturbation for initial field of turbulent flows
-    if(init==3)
+    if(init==INPAR::SCATRA::initfield_disturbed_field_by_function)
     {
       int err = 0;
 
@@ -1443,8 +1458,9 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
         if (err!=0) dserror("Error while disturbing initial field.");
       }
     }
+    break;
   }
-  else if (init==2) // field_by_condition
+  case INPAR::SCATRA::initfield_field_by_condition:
   {
     // access the initial field condition
     vector<DRT::Condition*> cond;
@@ -1486,9 +1502,10 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
         }
       }
     }
+    break;
   }
   // discontinuous 0-1 field for progress variable in 1-D
-  else if (init == 4)
+  case INPAR::SCATRA::initfield_DISCONTPV_1D:
   {
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
@@ -1518,10 +1535,11 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
         phinp_->ReplaceMyValues(1,&initialval,&doflid);
       }
     }
+    break;
   }
   // analytical reactive profile in x2-direction due to Ferziger and Echekki (1993)
   // for two-dimensional flame-vortex interaction problem (x2=0-200)
-  else if (init == 5)
+  case INPAR::SCATRA::initfield_FVI_FERECHPRO:
   {
     // get flame parameter beta and diffusive flame thickness
     ParameterList eleparams;
@@ -1564,9 +1582,10 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
         phinp_->ReplaceMyValues(1,&initialval,&doflid);
       }
     }
+    break;
   }
   // initial mixture-fraction profile for Rayleigh-Taylor instability
-  else if (init == 6)
+  case INPAR::SCATRA::initfield_RAYTAYMIXFRAC:
   {
     // define interface thickness, sinusoidal disturbance wave amplitude and pi
     const double delta = 0.002;
@@ -1623,9 +1642,11 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
         phinp_->ReplaceMyValues(1,&initialval,&doflid);
       }
     }
+    break;
   }
-  else
+  default:
     dserror("Unknown option for initial field: %d", init);
+  } // switch(init)
 
   return;
 } // ScaTraTimIntImpl::SetInitialField

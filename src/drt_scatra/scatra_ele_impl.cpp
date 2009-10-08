@@ -34,6 +34,7 @@ Maintainer: Georg Bauer
 #include "../drt_lib/linalg_serialdensematrix.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_lib/drt_condition_utils.H"
+#include "../drt_inpar/inpar_scatra.H"
 
 //#define VISUALIZE_ELEMENT_DATA
 #include "scatra_element.H" // only for visualization of element data
@@ -321,22 +322,27 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     ParameterList& stablist = params.sublist("STABILIZATION");
 
     // select tau definition
-    SCATRA::TauType whichtau = SCATRA::tau_franca_valentin; //default
-    {
-      const string taudef = stablist.get<string>("DEFINITION_TAU");
-
-      if      (taudef == "Zero")     whichtau = SCATRA::tau_zero;
-      else if (taudef == "Bazilevs") whichtau = SCATRA::tau_bazilevs;
-      else if (taudef == "Exact_1D") whichtau = SCATRA::tau_exact_1d;
-    }
+    INPAR::SCATRA::TauType whichtau = Teuchos::getIntegralValue<INPAR::SCATRA::TauType>(stablist,"DEFINITION_TAU");
 
     // set (sign) factor for diffusive and reactive stabilization terms
     // (factor is zero for SUPG) and overwrite tau definition when there
     // is no stabilization
-    const string stabinp = stablist.get<string>("STABTYPE");
-    if (stabinp == "no stabilization") whichtau = SCATRA::tau_zero;
-    else if (stabinp == "GLS")   diffreastafac_ = 1.0;
-    else if (stabinp == "USFEM") diffreastafac_ = -1.0;
+    const INPAR::SCATRA::StabType stabinp = Teuchos::getIntegralValue<INPAR::SCATRA::StabType>(stablist,"STABTYPE");
+
+    switch(stabinp)
+    {
+    case INPAR::SCATRA::stabtype_no_stabilization:
+      whichtau = INPAR::SCATRA::tau_zero;
+      break;
+    case INPAR::SCATRA::stabtype_GLS:
+      diffreastafac_ = 1.0;
+      break;
+    case INPAR::SCATRA::stabtype_USFEM:
+      diffreastafac_ = -1.0;
+    break;
+    default:
+      break;
+    }
 
     // set flags for subgrid-scale velocity and all-scale subgrid-diffusivity term
     // (default: "false" for both flags)
@@ -350,22 +356,8 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     }
 
     // select type of all-scale artificial subgrid-diffusivity if included
-    SCATRA::KartType whichkart = SCATRA::kart_artificial; //default
-    if (assgd)
-    {
-      const string kartdef = stablist.get<string>("DEFINITION_KART");
-
-      if (kartdef == "artificial_linear")
-        whichkart = SCATRA::kart_artificial;
-      else if (kartdef == "Hughes_etal_86_nonlinear")
-        whichkart = SCATRA::kart_hughes;
-      else if (kartdef == "Tezduyar_Park_86_nonlinear")
-        whichkart = SCATRA::kart_tezduyar;
-      else if (kartdef == "doCarmo_Galeao_91_nonlinear")
-        whichkart = SCATRA::kart_docarmo;
-      else if (kartdef == "Almeida_Silva_97_nonlinear")
-        whichkart = SCATRA::kart_almeida;
-    }
+    const INPAR::SCATRA::KartType whichkart
+    = Teuchos::getIntegralValue<INPAR::SCATRA::KartType>(stablist,"DEFINITION_KART");
 
     // set flags for potential evaluation of tau and material law at int. point
     tau_gp_ = false; //default
@@ -380,14 +372,14 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     // set flag for fine-scale subgrid diffusivity and perform some checks
     bool fssgd = false; //default
     {
-      const string fssgdinp = params.get<string>("fs subgrid diffusivity","No");
-      if (fssgdinp == "artificial")
+      const INPAR::SCATRA::FSSUGRDIFF fssgdinp = params.get<INPAR::SCATRA::FSSUGRDIFF>("fs subgrid diffusivity");
+      if (fssgdinp == INPAR::SCATRA::fssugrdiff_artificial)
       {
         fssgd = true;
         // check for solver type
         if (is_incremental_) dserror("Artificial fine-scale subgrid-diffusivity approach only in combination with non-incremental solver so far!");
       }
-      else if (fssgdinp == "transfer_from_fluid")
+      else if (fssgdinp == INPAR::SCATRA::fssugrdiff_transfer_from_fluid)
       {
         fssgd = true;
         // check for solver type
@@ -674,12 +666,8 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       }
     }
 
-    // access control parameter
-    SCATRA::FluxType fluxtype;
-    string fluxtypestring = params.get<string>("fluxtype","noflux");
-    if (fluxtypestring == "totalflux")          fluxtype = SCATRA::totalflux;
-    else if (fluxtypestring == "diffusiveflux") fluxtype = SCATRA::diffusiveflux;
-    else                                        fluxtype = SCATRA::noflux;
+    // access control parameter for flux calculation
+    INPAR::SCATRA::FluxType fluxtype = params.get<INPAR::SCATRA::FluxType>("fluxtype");
 
     // set number of scalars and frt for ELCH
     int numscal = numdofpernode_;
@@ -850,10 +838,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFluxSerialDense(
 )
 {
   // access control parameter
-  SCATRA::FluxType fluxtype;
-  if (fluxtypestring == "totalflux")          fluxtype = SCATRA::totalflux;
-  else if (fluxtypestring == "diffusiveflux") fluxtype = SCATRA::diffusiveflux;
-  else                                        fluxtype = SCATRA::noflux;
+  INPAR::SCATRA::FluxType fluxtype;
+  if (fluxtypestring == "totalflux")          fluxtype = INPAR::SCATRA::flux_total_domain;
+  else if (fluxtypestring == "diffusiveflux") fluxtype = INPAR::SCATRA::flux_diffusive_domain;
+  else                                        fluxtype = INPAR::SCATRA::flux_no;
 
   // we always get an 3D flux vector for each node
   LINALG::Matrix<3,iel> eflux(true); //initialize!
@@ -882,8 +870,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
     const double                          dt, ///< current time-step length
     const double                          timefac, ///< time discretization factor
     const double                          alphaF, ///< factor for generalized-alpha time integration
-    const enum SCATRA::TauType            whichtau, ///< stabilization parameter definition
-    const enum SCATRA::KartType           whichkart, ///< all-scale artificial subgrid-diffusivity definition
+    const enum INPAR::SCATRA::TauType     whichtau, ///< stabilization parameter definition
+    const enum INPAR::SCATRA::KartType    whichkart, ///< all-scale artificial subgrid-diffusivity definition
     const bool                            sgvel, ///< subgrid-scale velocity flag
     const bool                            assgd, ///< all-scale subgrid-diff. flag
     const bool                            fssgd, ///< fine-scale subgrid-diff. flag
@@ -951,6 +939,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
       twoionsystem = SCATRA::IsBinaryElectrolyte(valence_);
       if (twoionsystem)
         resdiffus = SCATRA::CalResDiffCoeff(valence_,diffus_,diffusvalence_);
+
+ //     cout<<"resdiffus = "<<resdiffus<<endl;
     }
 
     for (int k = 0;k<numscal_;++k) // loop of each transported scalar
@@ -960,7 +950,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
 
       // use resulting diffusion coefficient for binary electrolyte solutions
       if (twoionsystem && (k<2)) diffus = resdiffus;
-
+/*
+      if (k==0) diffus = 0.0017391304*1.0; //66666666666; //0.0017391304; //0.6*resdiffus; //0.00975;
+      if (k==1) diffus = 0.0017391304*1.0; //1.1*0.0017391304;//1.5;
+      if (k==2) diffus = 0.0017391304*1.0;  //0.0017391304/10.0; //0.000 666666666; // wird total überstabilisiert???
+*/
       // calculation of stabilization parameter at element center
       CalTau(ele,
              diffus,
@@ -1862,7 +1856,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
     double                                diffus,
     const double                          dt,
     const double                          timefac,
-    const enum SCATRA::TauType            whichtau,
+    const enum INPAR::SCATRA::TauType     whichtau,
     const bool                            turbmodel,
     const double                          vol,
     const int                             k
@@ -1891,7 +1885,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
   switch (whichtau)
   {
     // stabilization parameter definition according to Bazilevs et al. (2007)
-    case SCATRA::tau_bazilevs:
+    case INPAR::SCATRA::tau_bazilevs:
     {
       // effective velocity at element center:
       // (weighted) convective velocity + individual migration velocity
@@ -1965,7 +1959,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
         tau_[k] = 1.0/(sqrt(dens_sqr*(4.0/(dt*dt)+reacoeff_[k]*reacoeff_[k])+Gnormu+CI*diffus*diffus*normG));
     }
     break;
-    case SCATRA::tau_franca_valentin:
+    case INPAR::SCATRA::tau_franca_valentin:
     // stabilization parameter definition according to Franca and Valentin (2000)
     {
       // get Euclidean norm of (weighted) velocity at element center
@@ -2070,7 +2064,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
 #endif
     }
     break;
-    case SCATRA::tau_exact_1d:
+    case INPAR::SCATRA::tau_exact_1d:
     {
       // optimal tau (stationary 1D-problem using linear shape functions)
       if (not is_stationary_)
@@ -2106,7 +2100,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
       else tau_[k] = 0.0;
     }
     break;
-    case SCATRA::tau_zero:
+    case INPAR::SCATRA::tau_zero:
     {
       // set tau's to zero (-> no stabilization effect)
       tau_[k] = 0.0;
@@ -2141,7 +2135,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalKart(
     double                                diffus,
     const double                          dt,
     const double                          timefac,
-    const enum SCATRA::KartType           whichkart,
+    const enum INPAR::SCATRA::KartType    whichkart,
     const bool                            assgd,
     const bool                            fssgd,
     const double                          vol,
@@ -2154,7 +2148,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalKart(
   if (assgd)
   {
     // classical linear all-scale artificial subgrid diffusivity
-    if (whichkart == SCATRA::kart_artificial)
+    if (whichkart == INPAR::SCATRA::kart_artificial)
     {
       // get element-type constant
       const double mk = SCATRA::MK<distype>();
@@ -2236,7 +2230,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalKart(
         double specific_term = 0.0;
         switch (whichkart)
         {
-          case SCATRA::kart_hughes:
+          case INPAR::SCATRA::kart_hughes:
           {
             // get norm of velocity vector b_h^par
             const double vel_norm_bhpar = abs(conv_phi/grad_norm);
@@ -2270,7 +2264,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalKart(
             specific_term = conv_phi;
           }
           break;
-          case SCATRA::kart_tezduyar:
+          case INPAR::SCATRA::kart_tezduyar:
           {
             // velocity norm
             const double vel_norm = velint_.Norm2();
@@ -2299,8 +2293,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalKart(
             specific_term = conv_phi;
           }
           break;
-          case SCATRA::kart_docarmo:
-          case SCATRA::kart_almeida:
+          case INPAR::SCATRA::kart_docarmo:
+          case INPAR::SCATRA::kart_almeida:
           {
             // velocity norm
             const double vel_norm = velint_.Norm2();
@@ -2311,7 +2305,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalKart(
             // parameter zeta differentiating approaches by doCarmo and Galeao (1991)
             // and Almeida and Silva (1997)
             double zeta = 0.0;
-            if (whichkart == SCATRA::kart_docarmo) zeta = 1.0;
+            if (whichkart == INPAR::SCATRA::kart_docarmo) zeta = 1.0;
             else zeta = max(1.0,(conv_phi/residual));
 
             // compute sigma
@@ -3748,7 +3742,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
     const vector<double>&           ephinp,
     const double                    frt,
     const Epetra_SerialDenseVector& evel,
-    const SCATRA::FluxType          fluxtype,
+    const INPAR::SCATRA::FluxType   fluxtype,
     const int                       dofindex
 )
 {
@@ -3949,7 +3943,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
     // add different flux contributions as specified by user input
     switch (fluxtype)
     {
-      case SCATRA::totalflux:
+      case INPAR::SCATRA::flux_total_domain:
         if (frt > 0.0) // ELCH
         {
           // migration flux terms
@@ -3964,7 +3958,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
           flux(idim,iquad) -= dens*evel[idim+iquad*nsd_]*ephinpatnode;
         }
         // no break statement here!
-      case SCATRA::diffusiveflux:
+      case INPAR::SCATRA::flux_diffusive_domain:
         //diffusive flux terms
         for (int k=0;k<iel;k++)
         {
@@ -3974,8 +3968,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
           }
         }
         break;
-      case SCATRA::noflux:
-        dserror("received noflux flag inside flux evaluation");
+      default:
+        dserror("received illegal flag inside flux evaluation for whole domain");
     };
 
     //set zeros for unused space dimenions

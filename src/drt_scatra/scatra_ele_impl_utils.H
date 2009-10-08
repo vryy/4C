@@ -20,34 +20,6 @@ Maintainer: Georg Bauer
 
 namespace SCATRA
 {
-
-  //! possible options for the stabilization parameter
-  enum TauType
-  {
-    tau_franca_valentin,
-    tau_bazilevs,
-    tau_exact_1d,
-    tau_zero
-  };
-
-  //! possible options for all-scale subgrid diffusivity
-  enum KartType
-  {
-    kart_artificial,
-    kart_hughes,
-    kart_tezduyar,
-    kart_docarmo,
-    kart_almeida
-  };
-
-  //! flux parameters recognized by scalar transport implementation class
-  enum FluxType
-  {
-    noflux,
-    totalflux,
-    diffusiveflux
-  };
-
   //! decide, whether second derivatives are needed  (template version)
   /*! In convection-diffusion problems, ONLY N,xx , N,yy and N,zz are needed
    *  to evaluate the laplacian operator for the residual-based stabilization.

@@ -36,7 +36,8 @@ SCATRA::TimIntStationary::TimIntStationary(
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
   // fine-scale vector
-  if (fssgd_ != "No") fsphinp_ = LINALG::CreateVector(*dofrowmap,true);
+  if (fssgd_ != INPAR::SCATRA::fssugrdiff_no)
+    fsphinp_ = LINALG::CreateVector(*dofrowmap,true);
 
   return;
 }
@@ -130,6 +131,21 @@ void SCATRA::TimIntStationary::ReadRestart(int step)
 
   // read state vectors that are needed for restart
   reader.ReadVector(phinp_, "phinp");
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | write additional data required for restart                 gjb 10/09 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntStationary::OutputRestart()
+{
+  // This feature enables starting a time-dependent simulation from
+  // a non-trivial steady-state solution that was calculated before.
+  output_->WriteVector("phin", phinp_);
+  output_->WriteVector("phinm", phinp_); // for BDF2
+  output_->WriteVector("phidtn", zeros_); // for OST
 
   return;
 }

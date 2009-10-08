@@ -61,13 +61,14 @@ void loma_dyn(int disnumff,int disnumscatra, int restart)
 
   // access the scalar transport parameter list
   const Teuchos::ParameterList& scatradyn = DRT::Problem::Instance()->ScalarTransportDynamicParams();
-  int veltype = Teuchos::getIntegralValue<int>(scatradyn,"VELOCITYFIELD");
+  const INPAR::SCATRA::VelocityField veltype
+    = Teuchos::getIntegralValue<INPAR::SCATRA::VelocityField>(scatradyn,"VELOCITYFIELD");
 
   // choose algorithm depending on velocity field type
   switch (veltype)
   {
-  case 0:  // zero  (see case 1)
-  case 1:  // function
+  case INPAR::SCATRA::velocity_zero:  // zero  (see case 1)
+  case INPAR::SCATRA::velocity_function:  // function
   {
     // we directly use the elements from the scalar transport elements section
     if (scatradis->NumGlobalNodes()==0)
@@ -92,7 +93,7 @@ void loma_dyn(int disnumff,int disnumscatra, int restart)
 
     break;
   }
-  case 2:  // Navier_Stokes
+  case INPAR::SCATRA::velocity_Navier_Stokes:  // Navier_Stokes
   {
     // we use the fluid discretization as layout for the scalar transport discretization
     if (fluiddis->NumGlobalNodes()==0) dserror("Fluid discretization is empty!");
