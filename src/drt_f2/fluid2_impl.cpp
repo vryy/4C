@@ -2679,16 +2679,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::CalcStabParameter(
     tau_(1) = tau_(0);
 
     /*------------------------------------------------------ compute tau_C ---*/
-    /*-- stability parameter definition according to Codina (2002), CMAME 191
-     *
-     * Analysis of a stabilized finite element approximation of the transient
-     * convection-diffusion-reaction equation using orthogonal subscales.
-     * Ramon Codina, Jordi Blasco; Comput. Visual. Sci., 4 (3): 167-174, 2002.
-     *
-     * */
-    //tau[2] = sqrt(DSQR(visc)+DSQR(0.5*vel_norm*hk));
-
-    // Wall Diss. 99
+    // PhD thesis Wall (1999)
     /*
                       xi2 ^
                           |
@@ -2706,7 +2697,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::CalcStabParameter(
   {
     /*
 
-    tau_M: Bazilevs et al.
+    tau_M: Bazilevs et al. (2007)
                                                                               1.0
                  +-                                                      -+ - ---
                  |        2                                               |   2.0
@@ -2759,17 +2750,17 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::CalcStabParameter(
       }
     }
 
-    // definition of constant according to Akkerman et al. (2008):
+    // definition of constant:
     // 12.0/m_k = 36.0 for linear elements and 144.0 for quadratic elements
+    // (differently defined, e.g., in Akkerman et al. (2008))
     const double CI = 12.0/mk;
 
     tau_(0) = 1.0/(sqrt((4.0*dens_sqr)/(dt_*dt_)+Gnormu+CI*visceff_*visceff_*normG));
     tau_(1) = tau_(0);
 
     /*
-      tau_C: Bazilevs et al., derived from fine-scale complement Shur
-                              operator of the pressure equation
-
+      tau_C: Bazilevs et al. (2007), derived from fine-scale complement Shur
+                                     operator of the pressure equation
 
                                   1.0
                     tau  = -----------------

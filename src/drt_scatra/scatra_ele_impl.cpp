@@ -1902,41 +1902,39 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
         veleff.Update(diffusvalence_[k],migvelint_,1.0);
       }
 #endif
-
       /*
-                                                                1.0
-               +-                                          -+ - ---
-               |                                            |   2.0
-               | 4.0    n+1       n+1             2         |
-        tau  = | --- + u     * G u     + C * kappa  * G : G |
-               |   2           -          I           -   - |
-               | dt            -                      -   - |
-               +-                                          -+
+                                                                              1.0
+                 +-                                                      -+ - ---
+                 |        2                                               |   2.0
+                 | 4.0*rho         n+1             n+1          2         |
+          tau  = | -------  + rho*u     * G * rho*u     + C * mu  * G : G |
+                 |     2                  -                I        -   - |
+                 |   dt                   -                         -   - |
+                 +-                                                      -+
 
-       */
-
-      /*            +-           -+   +-           -+   +-           -+
-                    |             |   |             |   |             |
-                    |  dr    dr   |   |  ds    ds   |   |  dt    dt   |
-              G   = |  --- * ---  | + |  --- * ---  | + |  --- * ---  |
-               ij   |  dx    dx   |   |  dx    dx   |   |  dx    dx   |
-                    |    i     j  |   |    i     j  |   |    i     j  |
-                    +-           -+   +-           -+   +-           -+
-       */
-      /*            +----
-                     \
-            G : G =   +   G   * G
-            -   -    /     ij    ij
-            -   -   +----
-                     i,j
-       */
-      /*                      +----
-             n+1       n+1     \     n+1          n+1
-            u     * G u     =   +   u    * G   * u
-                    -          /     i     -ij    j
-                    -         +----        -
-                               i,j
-       */
+      */
+      /*          +-           -+   +-           -+   +-           -+
+                  |             |   |             |   |             |
+                  |  dr    dr   |   |  ds    ds   |   |  dt    dt   |
+            G   = |  --- * ---  | + |  --- * ---  | + |  --- * ---  |
+             ij   |  dx    dx   |   |  dx    dx   |   |  dx    dx   |
+                  |    i     j  |   |    i     j  |   |    i     j  |
+                  +-           -+   +-           -+   +-           -+
+      */
+      /*          +----
+                   \
+          G : G =   +   G   * G
+          -   -    /     ij    ij
+          -   -   +----
+                   i,j
+      */
+      /*                               +----
+               n+1             n+1     \         n+1              n+1
+          rho*u     * G * rho*u     =   +   rho*u    * G   * rho*u
+                      -                /         i     -ij        j
+                      -               +----        -
+                                        i,j
+      */
       double G;
       double normG(0.0);
       double Gnormu(0.0);
@@ -1955,9 +1953,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
         }
       }
 
-      // definition of constant
-      // (Akkerman et al. (2008) used 36.0 for quadratics, but Stefan
-      //  brought 144.0 from Austin...)
+      // definition of constant:
+      // 12.0/m_k = 36.0 for linear elements and 144.0 for quadratic elements
+      // (differently defined, e.g., in Akkerman et al. (2008))
       const double CI = 12.0/mk;
 
       // stabilization parameters for stationary and instationary case, respectively
