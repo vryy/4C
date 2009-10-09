@@ -1652,7 +1652,9 @@ if (material->MaterialType() == INPAR::MAT::m_matlist)
           const double tempn = funct_.Dot(ephin_[k]);
           densn_[k] = actsinglemat->ComputeDensity(tempn,thermpressam_);
         }
+        else densn_[k] = 1.0;
       }
+      else densam_[k] = densnp_[k];
 
       // factor for density gradient
       densgradfac_[k] = -densnp_[k]/tempnp;
@@ -1738,7 +1740,7 @@ else if (material->MaterialType() == INPAR::MAT::m_mixfrac)
     }
     else densn_[0] = 1.0;
   }
-  else densam_[0] = 1.0;
+  else densam_[0] = densnp_[0];
 
   // factor for density gradient
   densgradfac_[0] = -densnp_[0]*densnp_[0]*actmat->EosFacA();
@@ -1780,7 +1782,7 @@ else if (material->MaterialType() == INPAR::MAT::m_sutherland)
     }
     else densn_[0] = 1.0;
   }
-  else densam_[0] = 1.0;
+  else densam_[0] = densnp_[0];
 
   // factor for density gradient
   densgradfac_[0] = -densnp_[0]/tempnp;
@@ -1820,7 +1822,7 @@ else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
     }
     else densn_[0] = 1.0;
   }
-  else densam_[0] = 1.0;
+  else densam_[0] = densnp_[0];
 
   // factor for density gradient: unburnt-burnt density difference
   densgradfac_[0] = actmat->BurDens() - actmat->UnbDens();
