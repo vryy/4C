@@ -54,38 +54,40 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     RCP<DRT::Discretization>      actdis,
     RCP<LINALG::Solver>           solver,
     RCP<ParameterList>            params,
+    RCP<ParameterList>            extraparams,
     RCP<IO::DiscretizationWriter> output) :
   // call constructor for "nontrivial" objects
   discret_(actdis),
   solver_ (solver),
   params_ (params),
+  extraparams_(extraparams),
   output_ (output),
   myrank_ (discret_->Comm().MyPID()),
   time_   (0.0),
   step_   (0),
-  prbtype_  (params_->get<string>("problem type")),
-  solvtype_ (params_->get<INPAR::SCATRA::SolverType>("solver type")),
-  isale_    (params_->get<bool>("isale")),
-  scatratype_  (params_->get<INPAR::SCATRA::ScaTraType>("scatratype")),
+  prbtype_  (extraparams_->get<string>("problem type")),
+  solvtype_ (Teuchos::getIntegralValue<INPAR::SCATRA::SolverType>(*params,"SOLVERTYPE")),
+  isale_    (extraparams_->get<bool>("isale")),
+  scatratype_  (Teuchos::getIntegralValue<INPAR::SCATRA::ScaTraType>(*params,"SCATRATYPE")),
   reinitaction_(INPAR::SCATRA::reinitaction_none),
   masscalc_    (INPAR::SCATRA::masscalc_none),
   reinitswitch_(false),
-  stepmax_  (params_->get<int>("max number timesteps")),
-  maxtime_  (params_->get<double>("total time")),
-  timealgo_ (params_->get<INPAR::SCATRA::TimeIntegrationScheme>("time int algo")),
-  upres_    (params_->get<int>("write solution every")),
-  uprestart_(params_->get<int>("write restart every")),
-  writeflux_(params_->get<INPAR::SCATRA::FluxType>("write flux")),
-  outmean_  (params_->get<bool>("write mean values")),
-  dta_      (params_->get<double>("time step size")),
-  dtp_      (params_->get<double>("time step size")),
-  cdvel_    (params_->get<INPAR::SCATRA::VelocityField>("velocity field")),
-  convform_ (params_->get<string>("form of convective term")),
-  neumannin_(params_->get<string>("Neumann inflow")),
-  fssgd_    (params_->get<INPAR::SCATRA::FSSUGRDIFF>("fs subgrid diffusivity")),
+  stepmax_  (params_->get<int>("NUMSTEP")),
+  maxtime_  (params_->get<double>("MAXTIME")),
+  timealgo_ (Teuchos::getIntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(*params,"TIMEINTEGR")),
+  upres_    (params_->get<int>("UPRES")),
+  uprestart_(params_->get<int>("RESTARTEVRY")),
+  writeflux_(Teuchos::getIntegralValue<INPAR::SCATRA::FluxType>(*params,"WRITEFLUX")),
+  outmean_  (Teuchos::getIntegralValue<int>(*params,"OUTMEAN")),
+  dta_      (params_->get<double>("TIMESTEP")),
+  dtp_      (params_->get<double>("TIMESTEP")),
+  cdvel_    (Teuchos::getIntegralValue<INPAR::SCATRA::VelocityField>(*params,"VELOCITYFIELD")),
+  convform_ (Teuchos::getIntegralValue<INPAR::SCATRA::ConvForm>(*params,"CONVFORM")),
+  neumanninflow_(Teuchos::getIntegralValue<int>(*params,"NEUMANNINFLOW")),
+  fssgd_    (Teuchos::getIntegralValue<INPAR::SCATRA::FSSUGRDIFF>(*params,"FSSUGRDIFF")),
   frt_      (96485.3399/(8.314472 * params_->get<double>("TEMPERATURE",298.15))),
   tpn_      (1.0),
-  errfile_  (params_->get<FILE*>("err file")),
+  errfile_  (extraparams_->get<FILE*>("err file")),
   initialvelset_(false),
   lastfluxoutputstep_(-1)
 {
@@ -115,12 +117,6 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   default:
     dserror("Received illegal scatra solvertype enum.");
   }
-
-  // -------------------------------------------------------------------
-  // determine whether Neumann inflow terms need to be accounted for
-  // -------------------------------------------------------------------
-  neumanninflow_ = false;
-  if (neumannin_ == "yes") neumanninflow_ = true;
 
   // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
@@ -164,22 +160,16 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     masscalc_     = Teuchos::getIntegralValue<INPAR::SCATRA::MassCalculation>(params_->sublist("LEVELSET"),"MASSCALCULATION");
   }
 
-  if (params_->get<int>("BLOCKPRECOND",0) )
+  if (Teuchos::getIntegralValue<int>(*params_,"BLOCKPRECOND"))
   {
     // we need a block sparse matrix here
     if (prbtype_ != "elch")
       dserror("Block-Preconditioning is only for ELCH problems");
     // initial guess for non-zeros per row: 27 neighboring nodes for hex8 times (numscal_+1) dofs
-
+    // usage of a split strategy that makes use of the ELCH-specific sparsity pattern
     Teuchos::RCP<LINALG::BlockSparseMatrix<SCATRA::SplitStrategy> > blocksysmat =
       Teuchos::rcp(new LINALG::BlockSparseMatrix<SCATRA::SplitStrategy>(splitter_,splitter_,27*(numscal_+1),false,true));
     blocksysmat->SetNumScal(numscal_);
-
-    // the fluid assembly strategy still works, but it does not make use
-    // of the ELCH-specific sparsity pattern
-    //Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy> > blocksysmat =
-    //Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy>(splitter_,splitter_,27*(numscal_+1),false,true));
-    //blocksysmat->SetNumdim(numscal_);
 
     sysmat_ = blocksysmat;
   }
@@ -274,7 +264,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // set parameters associated to potential statistical flux evaluations
   // -------------------------------------------------------------------
   // get fluid turbulence sublist
-  ParameterList * turbparams =&(params_->sublist("TURBULENCE PARAMETERS"));
+  ParameterList * turbparams =&(extraparams_->sublist("TURBULENCE PARAMETERS"));
 
   // parameters for statistical evaluation of normal fluxes
   samstart_  = turbparams->get<int>("SAMPLING_START");
@@ -337,7 +327,8 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // -------------------------------------------------------------------
   // set initial field
   // -------------------------------------------------------------------
-  SetInitialField(params_->get<INPAR::SCATRA::InitialField>("scalar initial field"), params_->get<int>("scalar initial field func number"));
+  SetInitialField(Teuchos::getIntegralValue<INPAR::SCATRA::InitialField>(*params_,"INITIALFIELD"),
+      params_->get<int>("INITFUNCNO"));
 
   // initializes variables for natural convection (ELCH) if necessary
   SetupElchNatConv();
@@ -638,7 +629,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
   const double  ittol = params_->sublist("NONLINEAR").get<double>("CONVTOL");
 
   //------------------------------ turn adaptive solver tolerance on/off
-  const bool   isadapttol    = (getIntegralValue<int>(params_->sublist("NONLINEAR"),"ADAPTCONV") == 1);
+  const bool   isadapttol    = (getIntegralValue<int>(params_->sublist("NONLINEAR"),"ADAPTCONV"));
   const double adaptolbetter = params_->sublist("NONLINEAR").get<double>("ADAPTCONV_BETTER");
   double       actresidual(0.0);
 
@@ -1186,7 +1177,7 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField()
   else if ((cdvel_ == INPAR::SCATRA::velocity_function))  // function
   {
     const int numdim = 3; // the velocity field is always 3D
-    const int velfuncno = params_->get<int>("velocity function number");
+    const int velfuncno = params_->get<int>("VELFUNCNO");
     // loop all nodes on the processor
     for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
     {
@@ -1430,7 +1421,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
       int err = 0;
 
       // random noise is relative to difference of max-min values of initial profile
-      double perc = params_->sublist("TURBULENCE PARAMETERS").get<double>("CHAN_AMPL_INIT_DIST",0.1);
+      double perc = extraparams_->sublist("TURBULENCE PARAMETERS").get<double>("CHAN_AMPL_INIT_DIST",0.1);
 
       // out to screen
       if (myrank_==0)

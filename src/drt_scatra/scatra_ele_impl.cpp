@@ -310,9 +310,10 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     }
 
     // set flag for conservative form
-    string convform = params.get<string>("form of convective term");
+    const INPAR::SCATRA::ConvForm convform =
+    params.get<INPAR::SCATRA::ConvForm>("form of convective term");
     conservative_ = false;
-    if (convform =="conservative") conservative_ = true;
+    if (convform ==INPAR::SCATRA::convform_conservative) conservative_ = true;
 
     // get type of scalar transport problem (standard or level set function)
     scatratype_ = params.get<INPAR::SCATRA::ScaTraType>("scatratype");
@@ -346,28 +347,18 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
 
     // set flags for subgrid-scale velocity and all-scale subgrid-diffusivity term
     // (default: "false" for both flags)
-    bool sgvel = false; //default
-    bool assgd = false; //default
-    {
-      const string sgvelinp = stablist.get<string>("SUGRVEL");
-      if (sgvelinp == "yes") sgvel = true;
-      const string assgdinp = stablist.get<string>("ASSUGRDIFF");
-      if (assgdinp == "yes") assgd = true;
-    }
+    const bool sgvel(Teuchos::getIntegralValue<int>(stablist,"SUGRVEL"));
+    const bool assgd(Teuchos::getIntegralValue<int>(stablist,"ASSUGRDIFF"));
 
     // select type of all-scale artificial subgrid-diffusivity if included
     const INPAR::SCATRA::KartType whichkart
     = Teuchos::getIntegralValue<INPAR::SCATRA::KartType>(stablist,"DEFINITION_KART");
 
     // set flags for potential evaluation of tau and material law at int. point
-    tau_gp_ = false; //default
-    mat_gp_ = false; //default
-    {
-      const string tauloc = stablist.get<string>("EVALUATION_TAU");
-      if (tauloc == "integration_point") tau_gp_ = true;
-      const string matloc = stablist.get<string>("EVALUATION_MAT");
-      if (matloc == "integration_point") mat_gp_ = true;
-    }
+    const INPAR::SCATRA::EvalTau tauloc = Teuchos::getIntegralValue<INPAR::SCATRA::EvalTau>(stablist,"EVALUATION_TAU");
+    tau_gp_ = (tauloc == INPAR::SCATRA::evaltau_integration_point); // set true/false
+    const INPAR::SCATRA::EvalMat matloc = Teuchos::getIntegralValue<INPAR::SCATRA::EvalMat>(stablist,"EVALUATION_MAT");
+    mat_gp_ = (matloc == INPAR::SCATRA::evalmat_integration_point); // set true/false
 
     // set flag for fine-scale subgrid diffusivity and perform some checks
     bool fssgd = false; //default
@@ -538,9 +529,10 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     reaction_ = false;
 
     // set flag for conservative form
-    string convform = params.get<string>("form of convective term");
+    const INPAR::SCATRA::ConvForm convform =
+      params.get<INPAR::SCATRA::ConvForm>("form of convective term");
     conservative_ = false;
-    if (convform =="conservative") conservative_ = true;
+    if (convform ==INPAR::SCATRA::convform_conservative) conservative_ = true;
 
     // get initial velocity values at the nodes
     const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
@@ -950,11 +942,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
 
       // use resulting diffusion coefficient for binary electrolyte solutions
       if (twoionsystem && (k<2)) diffus = resdiffus;
-/*
-      if (k==0) diffus = 0.0017391304*1.0; //66666666666; //0.0017391304; //0.6*resdiffus; //0.00975;
-      if (k==1) diffus = 0.0017391304*1.0; //1.1*0.0017391304;//1.5;
-      if (k==2) diffus = 0.0017391304*1.0;  //0.0017391304/10.0; //0.000 666666666; // wird total überstabilisiert???
-*/
+
       // calculation of stabilization parameter at element center
       CalTau(ele,
              diffus,

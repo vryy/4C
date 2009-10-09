@@ -65,6 +65,7 @@ public:
   ScaTraTimIntImpl(RCP<DRT::Discretization>       dis,
                    RCP<LINALG::Solver>            solver,
                    RCP<ParameterList>             params,
+                   RCP<ParameterList>             xparams,
                    RCP<IO::DiscretizationWriter>  output);
 
   /// Destructor
@@ -415,6 +416,8 @@ protected:
   RCP<LINALG::Solver>        solver_;
   /// the parameter list
   RCP<ParameterList>         params_;
+  /// the parameter list containing extra parameters (application dependent)
+  RCP<ParameterList>         extraparams_;
   /// the discretization writer
   RCP<IO::DiscretizationWriter>  output_;
   /// processor id
@@ -491,10 +494,9 @@ protected:
   int dumperiod_;
 
   /// form of convective term
-  string convform_;
+  INPAR::SCATRA::ConvForm convform_;
 
   /// flag for potential Neumann inflow
-  string neumannin_;
   bool neumanninflow_;
 
   /// fine-scale subgrid-viscosity flag

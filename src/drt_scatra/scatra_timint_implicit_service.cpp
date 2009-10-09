@@ -36,6 +36,7 @@ Maintainer: Georg Bauer
 #include "../drt_mat/material.H"
 #include "../drt_mat/ion.H"
 #include "../drt_mat/matlist.H"
+#include "../drt_inpar/inpar_elch.H"
 
 /*----------------------------------------------------------------------*
  | calculate initial time derivative of phi at t=t_0           gjb 08/08|
@@ -117,7 +118,7 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidt()
 
   // reset the matrix (and its graph!) since we solved
   // a very special problem here that has a different sparsity pattern_
-  if (params_->get<int>("BLOCKPRECOND")) ; //how to reset a block matrix ??
+  if (getIntegralValue<int>(*params_,"BLOCKPRECOND")) ; //how to reset a block matrix ??
   else SystemMatrix()->Reset();
 
   return;
@@ -552,7 +553,9 @@ void SCATRA::ScaTraTimIntImpl::SetupElchNatConv()
   // loads densification coefficients and the initial mean concentration
 
   // only required for ELCH with natural convection
-  if (prbtype_ == "elch" && params_->get<string>("Natural Convection") != "No")
+  if (prbtype_ == "elch" &&
+      //(Teuchos::getIntegralValue<INPAR::ELCH::NatConv>(*extraparams_,"Natural Convection")!= INPAR::ELCH::natural_convection_no))
+    (extraparams_->get<INPAR::ELCH::NatConv>("Natural Convection")!= INPAR::ELCH::natural_convection_no))
   {
     // allocate denselch_ with *noderowmap instead of *dofrowmap and initialize it
     const Epetra_Map* noderowmap = discret_->NodeRowMap();
@@ -587,7 +590,7 @@ void SCATRA::ScaTraTimIntImpl::SetupElchNatConv()
         c0_[k] = (*scalars)[k]/domint;
     }
 
-    //initialisation of the densification coefficient vector
+    //initialization of the densification coefficient vector
     densific_.resize(numscal_);
     DRT::Element*   element = discret_->lRowElement(0);
     RefCountPtr<MAT::Material>  mat = element->Material();
@@ -1409,7 +1412,7 @@ RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeNormalVectors(
 void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
 {
   const INPAR::SCATRA::CalcError calcerr
-    = params_->get<INPAR::SCATRA::CalcError>("CALCERROR");
+    = getIntegralValue<INPAR::SCATRA::CalcError>(*params_,"CALCERROR");
 
   switch (calcerr)
   {

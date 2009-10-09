@@ -16,6 +16,7 @@ Maintainer: Georg Bauer
 
 #include "scatra_timint_bdf2.H"
 #include <Teuchos_TimeMonitor.hpp>
+#include "../drt_inpar/inpar_elch.H"
 
 
 /*----------------------------------------------------------------------*
@@ -25,8 +26,9 @@ SCATRA::TimIntBDF2::TimIntBDF2(
   RCP<DRT::Discretization>      actdis,
   RCP<LINALG::Solver>           solver,
   RCP<ParameterList>            params,
+  RCP<ParameterList>            extraparams,
   RCP<IO::DiscretizationWriter> output)
-: ScaTraTimIntImpl(actdis,solver,params,output),
+: ScaTraTimIntImpl(actdis,solver,params,extraparams,output),
   theta_(0.0)
 {
   // -------------------------------------------------------------------
@@ -40,7 +42,8 @@ SCATRA::TimIntBDF2::TimIntBDF2(
   phinm_ = LINALG::CreateVector(*dofrowmap,true);
 
   // ELCH with natural convection
-  if (prbtype_ == "elch" && params_->get<string>("Natural Convection") != "No")
+  if (prbtype_ == "elch" &&
+      (extraparams_->get<INPAR::ELCH::NatConv>("Natural Convection")!= INPAR::ELCH::natural_convection_no))
   {
     const Epetra_Map* noderowmap = discret_->NodeRowMap();
 

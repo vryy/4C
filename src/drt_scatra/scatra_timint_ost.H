@@ -30,6 +30,7 @@ public:
   TimIntOneStepTheta(RCP<DRT::Discretization>       dis,
                      RCP<LINALG::Solver>            solver,
                      RCP<ParameterList>             params,
+                     RCP<ParameterList>             extraparams,
                      RCP<IO::DiscretizationWriter>  output);
 
   /// Destructor

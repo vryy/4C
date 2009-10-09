@@ -25,11 +25,12 @@ SCATRA::TimIntGenAlpha::TimIntGenAlpha(
   RCP<DRT::Discretization>      actdis,
   RCP<LINALG::Solver>           solver,
   RCP<ParameterList>            params,
+  RCP<ParameterList>            extraparams,
   RCP<IO::DiscretizationWriter> output)
-: ScaTraTimIntImpl(actdis,solver,params,output),
-  alphaM_(params_->get<double>("alpha_M")),
-  alphaF_(params_->get<double>("alpha_F")),
-  gamma_ (params_->get<double>("gamma"))
+: ScaTraTimIntImpl(actdis,solver,params,extraparams,output),
+  alphaM_(params_->get<double>("ALPHA_M")),
+  alphaF_(params_->get<double>("ALPHA_F")),
+  gamma_ (params_->get<double>("GAMMA"))
 {
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching

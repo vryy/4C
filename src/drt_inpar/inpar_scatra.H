@@ -59,6 +59,13 @@ namespace INPAR
       initfield_RAYTAYMIXFRAC
     };
 
+    /// form of convective term
+    enum ConvForm
+    {
+      convform_convective,
+      convform_conservative
+    };
+
     /// compute error compared to analytical solution
     enum CalcError
     {
@@ -110,6 +117,20 @@ namespace INPAR
       flux_diffusive_domain,
       flux_total_boundary,
       flux_diffusive_boundary
+    };
+
+    // this parameter selects the location where tau is evaluated
+    enum EvalTau
+    {
+      evaltau_element_center,
+      evaltau_integration_point
+    };
+
+    // this parameter selects the location where the material is evaluated
+    enum EvalMat
+    {
+      evalmat_element_center,
+      evalmat_integration_point
     };
 
     /// type of scalar transport problem

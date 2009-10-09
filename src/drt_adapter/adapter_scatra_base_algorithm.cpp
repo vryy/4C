@@ -18,6 +18,7 @@ Maintainer: Georg Bauer
 #include "adapter_scatra_base_algorithm.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_scatra.H"
+#include "../drt_inpar/inpar_elch.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_scatra/scatra_timint_stat.H"
 #include "../drt_scatra/scatra_timint_ost.H"
@@ -86,106 +87,72 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   // -------------------------------------------------------------------
   // set parameters in list required for all schemes
   // -------------------------------------------------------------------
-  RCP<ParameterList> scatratimeparams= rcp(new ParameterList());
+  // make a copy (inside an rcp)
+  RCP<ParameterList> scatratimeparams= rcp(new ParameterList(scatradyn));
+
+  // -------------------------------------------------------------------
+  // overrule certain parameters
+  // -------------------------------------------------------------------
+  // the default time step size
+  scatratimeparams->set<double>   ("TIMESTEP"    ,prbdyn.get<double>("TIMESTEP"));
+  // maximum simulation time
+  scatratimeparams->set<double>   ("MAXTIME"     ,prbdyn.get<double>("MAXTIME"));
+  // maximum number of timesteps
+  scatratimeparams->set<int>      ("NUMSTEP"     ,prbdyn.get<int>("NUMSTEP"));
+  // restart
+  scatratimeparams->set           ("RESTARTEVRY" ,prbdyn.get<int>("RESTARTEVRY"));
+  // solution output
+  scatratimeparams->set           ("UPRES"       ,prbdyn.get<int>("UPRES"));
+
+  // -------------------------------------------------------------------
+  // list for extra parameters
+  // (put here everything that is not available in scatradyn or its sublists)
+  // -------------------------------------------------------------------
+  Teuchos::RCP<Teuchos::ParameterList> xparams
+    = Teuchos::rcp(new Teuchos::ParameterList());
 
   // ----problem type (type of scalar transport problem we want to solve)
-  scatratimeparams->set<string>("problem type",DRT::Problem::Instance()->ProblemType());
+  xparams->set<string>("problem type",DRT::Problem::Instance()->ProblemType());
 
-  // ----solver type (linear full, linear incremental or nonlinear (incremental))
-  scatratimeparams->set<INPAR::SCATRA::SolverType>("solver type",Teuchos::getIntegralValue<INPAR::SCATRA::SolverType>(scatradyn,"SOLVERTYPE"));
+  // ------------------------------pointer to the error file (for output)
+  xparams->set<FILE*>    ("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
 
-  // ----Eulerian or ALE formulation of transport equation(s)
-  scatratimeparams->set<bool>("isale",isale);
+  // ----------------Eulerian or ALE formulation of transport equation(s)
+  xparams->set<bool>("isale",isale);
 
-  // ----type of scalar transport problem (standard or level set function)
-  scatratimeparams->set<INPAR::SCATRA::ScaTraType>("scatratype",Teuchos::getIntegralValue<INPAR::SCATRA::ScaTraType>(scatradyn,"SCATRATYPE"));
-
-  // --------------------type of time-integration (or stationary) scheme
-  INPAR::SCATRA::TimeIntegrationScheme timintscheme =
-    Teuchos::getIntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(scatradyn,"TIMEINTEGR");
-  scatratimeparams->set<INPAR::SCATRA::TimeIntegrationScheme>("time int algo",timintscheme);
-
-  // --------------------------------------- time integration parameters
-  // the default time step size
-  scatratimeparams->set<double>   ("time step size"           ,prbdyn.get<double>("TIMESTEP"));
-  // maximum simulation time
-  scatratimeparams->set<double>   ("total time"               ,prbdyn.get<double>("MAXTIME"));
-  // maximum number of timesteps
-  scatratimeparams->set<int>      ("max number timesteps"     ,prbdyn.get<int>("NUMSTEP"));
-
-  // ----------------------------------------------- restart and output
-  // restart
-  scatratimeparams->set           ("write restart every"       ,prbdyn.get<int>("RESTARTEVRY"));
-  // solution output
-  scatratimeparams->set           ("write solution every"      ,prbdyn.get<int>("UPRES"));
-  //scatratimeparams->set           ("write solution every"      ,prbdyn.get<int>("WRITESOLEVRY"));
-  // write also flux vectors when solution is written out?
-  scatratimeparams->set<INPAR::SCATRA::FluxType>   ("write flux",Teuchos::getIntegralValue<INPAR::SCATRA::FluxType>(scatradyn,"WRITEFLUX"));
-  // output of mean values of transported scalars/ density
-  scatratimeparams->set<bool>     ("write mean values"   ,Teuchos::getIntegralValue<int>(scatradyn,"OUTMEAN"));
-  // pointer to the error file (for output)
-  scatratimeparams->set<FILE*>    ("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
-
-  // ---------------------------------------------------- initial field
-  scatratimeparams->set<INPAR::SCATRA::InitialField>("scalar initial field" ,Teuchos::getIntegralValue<INPAR::SCATRA::InitialField>(scatradyn,"INITIALFIELD"));
-  scatratimeparams->set<int>("scalar initial field func number",scatradyn.get<int>("INITFUNCNO"));
-
-  // ----------------------------------------------------velocity field
-  scatratimeparams->set<INPAR::SCATRA::VelocityField>("velocity field" ,Teuchos::getIntegralValue<INPAR::SCATRA::VelocityField>(scatradyn,"VELOCITYFIELD"));
-  scatratimeparams->set<int>("velocity function number",scatradyn.get<int>("VELFUNCNO"));
-
-  // -------------------- compute error compared to analytical solution
-  scatratimeparams->set<INPAR::SCATRA::CalcError>("CALCERROR",Teuchos::getIntegralValue<INPAR::SCATRA::CalcError>(scatradyn,"CALCERROR"));
-
-  // ------------------------------------------ form of convective term
-  scatratimeparams->set<string>("form of convective term",scatradyn.get<string>("CONVFORM"));
-
-  // ------------------------------------ potential Neumann inflow terms
-  scatratimeparams->set<string>("Neumann inflow",scatradyn.get<string>("NEUMANNINFLOW"));
-
-  // -------------------------------- (fine-scale) subgrid diffusivity?
-  scatratimeparams->set<INPAR::SCATRA::FSSUGRDIFF>("fs subgrid diffusivity",getIntegralValue<INPAR::SCATRA::FSSUGRDIFF>(scatradyn,"FSSUGRDIFF"));
-
-  // -------------------- block preconditioning (only supported by ELCH)
-  scatratimeparams->set<int>("BLOCKPRECOND",Teuchos::getIntegralValue<int>(scatradyn,"BLOCKPRECOND"));
-
-  // -----------------------sublist containing stabilization parameters
-  scatratimeparams->sublist("STABILIZATION")=scatradyn.sublist("STABILIZATION");
-
-  // ----------------sublist containing parameters for newton iteration
-  scatratimeparams->sublist("NONLINEAR") = scatradyn.sublist("NONLINEAR");
-
-  // -----------------------sublist containing level set parameters
-  const INPAR::SCATRA::ScaTraType scatratype = (*scatratimeparams).get<INPAR::SCATRA::ScaTraType>("scatratype");
+  // -----------------------------sublist containing level set parameters
+/*  const INPAR::SCATRA::ScaTraType scatratype
+    = getIntegralValue<INPAR::SCATRA::ScaTraType>(scatradyn,"SCATRATYPE");
   if(scatratype == INPAR::SCATRA::scatratype_levelset);
   {
     scatratimeparams->sublist("LEVELSET")=scatradyn.sublist("LEVELSET");
   }
+  */
 
   // --------------sublist for combustion-specific gfunction parameters
   /* This sublist COMBUSTION DYNAMIC/GFUNCTION contains parameters for the gfunction field
    * which are only relevant for a combustion problem.                         07/08 henke */
   if (genprob.probtyp == prb_combust)
   {
-    scatratimeparams->sublist("COMBUSTION GFUNCTION")=prbdyn.sublist("COMBUSTION GFUNCTION");
+    xparams->sublist("COMBUSTION GFUNCTION")=prbdyn.sublist("COMBUSTION GFUNCTION");
   }
 
   // -------------------sublist for electrochemistry-specific parameters
   if (genprob.probtyp == prb_elch)
   {
     // Electrochemistry is always a nonlinear problem!
-    if (scatratimeparams->get<INPAR::SCATRA::SolverType>("solver type") != INPAR::SCATRA::solvertype_nonlinear)
+    if (getIntegralValue<INPAR::SCATRA::SolverType>(scatradyn,"SOLVERTYPE")
+        != INPAR::SCATRA::solvertype_nonlinear)
       dserror("Set parameter SOLVERTYPE = nonlinear for electrochemistry!");
 
-    // Flag for natural convection: Must be awailable in each ScaTra problem
-    scatratimeparams->set<string>("Natural Convection",prbdyn.get<string>("NATURAL_CONVECTION"));
+    // flag for natural convection
+    xparams->set<INPAR::ELCH::NatConv>("Natural Convection",
+        Teuchos::getIntegralValue<INPAR::ELCH::NatConv>(prbdyn,"NATURAL_CONVECTION"));
+    // temperature of electrolyte solution
+    xparams->set<double>("TEMPERATURE",prbdyn.get<double>("TEMPERATURE"));
 
-    scatratimeparams->set<double>("TEMPERATURE",prbdyn.get<double>("TEMPERATURE"));
-
-    // -------------------------------------------------------------------
     // create a 2nd solver for block-preconditioning if chosen from input
-    // -------------------------------------------------------------------
-    if (scatratimeparams->get<int>("BLOCKPRECOND"))
+    if (Teuchos::getIntegralValue<int>(scatradyn,"BLOCKPRECOND"))
     {
       // switch to the SIMPLE(R) algorithms
       solver->PutSolverParamsToSubParams("SIMPLER",
@@ -195,59 +162,46 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
 
   // ------------------------------------get also fluid turbulence sublist
   const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
-  scatratimeparams->sublist("TURBULENCE PARAMETERS")=fdyn.sublist("TURBULENCE MODEL");
+  xparams->sublist("TURBULENCE PARAMETERS")=fdyn.sublist("TURBULENCE MODEL");
 
   // -------------------------------------------------------------------
-  // additional parameters and algorithm construction depending on
+  // algorithm construction depending on
   // respective time-integration (or stationary) scheme
   // -------------------------------------------------------------------
-  if(timintscheme == INPAR::SCATRA::timeint_stationary)
-  {
-    //------------------------------------------------------------------
-    // create instance of time integration class (call the constructor)
-    //------------------------------------------------------------------
-    scatra_ = rcp(new SCATRA::TimIntStationary::TimIntStationary(actdis, solver, scatratimeparams, output));
-  }
-  else if (timintscheme == INPAR::SCATRA::timeint_one_step_theta)
-  {
-    // -----------------------------------------------------------------
-    // set additional parameters in list for one-step-theta scheme
-    // -----------------------------------------------------------------
+   INPAR::SCATRA::TimeIntegrationScheme timintscheme =
+     Teuchos::getIntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(scatradyn,"TIMEINTEGR");
 
-    // parameter theta for time-integration schemes
-    scatratimeparams->set<double>("theta",scatradyn.get<double>("THETA"));
+   switch(timintscheme)
+   {
+   case INPAR::SCATRA::timeint_stationary:
+   {
+     // create instance of time integration class (call the constructor)
+     scatra_ = rcp(new SCATRA::TimIntStationary::TimIntStationary(actdis, solver, scatratimeparams, xparams, output));
+     break;
+   }
+   case INPAR::SCATRA::timeint_one_step_theta:
+   {
+     // create instance of time integration class (call the constructor)
+     scatra_ = rcp(new SCATRA::TimIntOneStepTheta::TimIntOneStepTheta(actdis, solver, scatratimeparams, xparams,output));
+     break;
+   }
+   case INPAR::SCATRA::timeint_bdf2:
+   {
+     // create instance of time integration class (call the constructor)
+     scatra_ = rcp(new SCATRA::TimIntBDF2::TimIntBDF2(actdis, solver, scatratimeparams,xparams, output));
+     break;
+   }
+   case INPAR::SCATRA::timeint_gen_alpha:
+   {
+     // create instance of time integration class (call the constructor)
+     scatra_ = rcp(new SCATRA::TimIntGenAlpha::TimIntGenAlpha(actdis, solver, scatratimeparams,xparams, output));
+     break;
+   }
+   default:
+     dserror("Unknown time-integration scheme for scalar tranport problem");
+   }// switch(timintscheme)
 
-    //------------------------------------------------------------------
-    // create instance of time integration class (call the constructor)
-    //------------------------------------------------------------------
-    scatra_ = rcp(new SCATRA::TimIntOneStepTheta::TimIntOneStepTheta(actdis, solver, scatratimeparams, output));
-  }
-  else if (timintscheme == INPAR::SCATRA::timeint_bdf2)
-  {
-    //------------------------------------------------------------------
-    // create instance of time integration class (call the constructor)
-    //------------------------------------------------------------------
-    scatra_ = rcp(new SCATRA::TimIntBDF2::TimIntBDF2(actdis, solver, scatratimeparams, output));
-  }
-  else if (timintscheme == INPAR::SCATRA::timeint_gen_alpha)
-  {
-    // -------------------------------------------------------------------
-    // set additional parameters in list for generalized-alpha scheme
-    // -------------------------------------------------------------------
-    // parameter alpha_M for for generalized-alpha scheme
-    scatratimeparams->set<double>("alpha_M",scatradyn.get<double>("ALPHA_M"));
-    // parameter alpha_F for for generalized-alpha scheme
-    scatratimeparams->set<double>("alpha_F",scatradyn.get<double>("ALPHA_F"));
-    // parameter gamma for for generalized-alpha scheme
-    scatratimeparams->set<double>("gamma",  scatradyn.get<double>("GAMMA"));
-
-    //------------------------------------------------------------------
-    // create instance of time integration class (call the constructor)
-    //------------------------------------------------------------------
-    scatra_ = rcp(new SCATRA::TimIntGenAlpha::TimIntGenAlpha(actdis, solver, scatratimeparams, output));
-  }
-  else
-    dserror("Unknown time-integration scheme for scalar tranport problem");
+  return;
 
 }
 

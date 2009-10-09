@@ -35,6 +35,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_inpar/inpar_potential.H"
 #include "../drt_inpar/inpar_thermo.H"
+#include "../drt_inpar/inpar_elch.H"
 
 /*----------------------------------------------------------------------*/
 //! Print function to be called from C
@@ -1761,25 +1762,18 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   BoolParameter("OUTMEAN","No","Output of mean values for scalars and density",&scatradyn);
 
-  setStringToIntegralParameter<int>("CONVFORM","convective","form of convective term",
+  setStringToIntegralParameter<INPAR::SCATRA::ConvForm>("CONVFORM","convective","form of convective term",
                                tuple<std::string>(
                                  "convective",
                                  "conservative"
                                  ),
-                               tuple<int>(0,1),
+                               tuple<INPAR::SCATRA::ConvForm>(
+                                 INPAR::SCATRA::convform_convective,
+                                 INPAR::SCATRA::convform_conservative),
                                &scatradyn);
 
-  setStringToIntegralParameter<int>("NEUMANNINFLOW",
-                               "no",
-                               "Flag to (de)activate potential Neumann inflow term(s)",
-                               tuple<std::string>(
-                                 "no",
-                                 "yes"),
-                               tuple<std::string>(
-                                 "No Neumann inflow term(s)",
-                                 "Neumann inflow term(s) might occur"),
-                               tuple<int>(0,1),
-                               &scatradyn);
+  BoolParameter("NEUMANNINFLOW",
+      "no","Flag to (de)activate potential Neumann inflow term(s)",&scatradyn);
 
   setStringToIntegralParameter<INPAR::SCATRA::FSSUGRDIFF>("FSSUGRDIFF",
                                "No",
@@ -1795,9 +1789,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    INPAR::SCATRA::fssugrdiff_transfer_from_fluid),
                                &scatradyn);
 
-  setStringToIntegralParameter<int>("BLOCKPRECOND","no",
-                               "Switch to block-preconditioned family of solvers, needs additional SCALAR TRANSPORT ELECTRIC POTENTIAL SOLVER block!",
-                               yesnotuple,yesnovalue,&scatradyn);
+  BoolParameter("BLOCKPRECOND","NO",
+      "Switch to block-preconditioned family of solvers, needs additional SCALAR TRANSPORT ELECTRIC POTENTIAL SOLVER block!",&scatradyn);
 
   setStringToIntegralParameter<INPAR::SCATRA::ScaTraType>("SCATRATYPE","Standard",
                                "Type of scalar transport problem",
@@ -1819,13 +1812,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   IntParameter("ITEMAX",10,"max. number of nonlin. iterations",&scatra_nonlin);
   DoubleParameter("CONVTOL",1e-6,"Tolerance for convergence check",&scatra_nonlin);
-  setStringToIntegralParameter<int>("EXPLPREDICT","no",
-                               "do an explicit predictor step before starting nonlinear iteration",
-                               yesnotuple,yesnovalue,&scatra_nonlin);
+  BoolParameter("EXPLPREDICT","no","do an explicit predictor step before starting nonlinear iteration",&scatra_nonlin);
+
   // convergence criteria adaptivity
-  setStringToIntegralParameter<int>("ADAPTCONV","yes",
-                               "Switch on adaptive control of linear solver tolerance for nonlinear solution",
-                               yesnotuple,yesnovalue,&scatra_nonlin);
+  BoolParameter("ADAPTCONV","yes","Switch on adaptive control of linear solver tolerance for nonlinear solution",&scatra_nonlin);
   DoubleParameter("ADAPTCONV_BETTER",0.1,"The linear solver shall be this much better than the current nonlinear residual in the nonlinear convergence limit",&scatra_nonlin);
 
   /*----------------------------------------------------------------------*/
@@ -1887,30 +1877,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &scatradyn_stab);
 
   // this parameter governs whether subgrid-scale velocity is included
-  setStringToIntegralParameter<int>("SUGRVEL",
-                                    "no",
-                                    "potential incorporation of subgrid-scale velocity",
-                               tuple<std::string>(
-                                 "no",
-                                 "yes"),
-                               tuple<std::string>(
-                                 "no incorporation of subgrid-scale velocity",
-                                 "incorporation of subgrid-scale velocity")  ,
-                               tuple<int>(0,1),
-                               &scatradyn_stab);
+  BoolParameter("SUGRVEL","no","potential incorporation of subgrid-scale velocity",&scatradyn_stab);
 
-  // this parameter governs whether subgrid-scale velocity is included
-  setStringToIntegralParameter<int>("ASSUGRDIFF",
-                                    "no",
-                                    "potential incorporation of all-scale subgrid diffusivity (a.k.a. discontinuity-capturing) term",
-                               tuple<std::string>(
-                                 "no",
-                                 "yes"),
-                               tuple<std::string>(
-                                 "no incorporation of all-scale subgrid diffusivity term",
-                                 "incorporation of all-scale subgrid diffusivity term")  ,
-                               tuple<int>(0,1),
-                               &scatradyn_stab);
+  // this parameter governs whether all-scale subgrid diffusivity is included
+  BoolParameter("ASSUGRDIFF","no",
+      "potential incorporation of all-scale subgrid diffusivity (a.k.a. discontinuity-capturing) term",&scatradyn_stab);
 
   // this parameter selects the tau definition applied
   setStringToIntegralParameter<INPAR::SCATRA::TauType>("DEFINITION_TAU",
@@ -1958,7 +1929,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &scatradyn_stab);
 
   // this parameter selects the location where tau is evaluated
-  setStringToIntegralParameter<int>("EVALUATION_TAU",
+  setStringToIntegralParameter<INPAR::SCATRA::EvalTau>("EVALUATION_TAU",
                                "element_center",
                                "Location where tau is evaluated",
                                tuple<std::string>(
@@ -1967,12 +1938,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<std::string>(
                                  "evaluate tau at element center",
                                  "evaluate tau at integration point")  ,
-                                tuple<int>(0,1),
+                                tuple<INPAR::SCATRA::EvalTau>(
+                                  INPAR::SCATRA::evaltau_element_center,
+                                  INPAR::SCATRA::evaltau_integration_point),
                                &scatradyn_stab);
 
   // this parameter selects the location where the material law is evaluated
   // (does not fit here very well, but parameter transfer is easier)
-  setStringToIntegralParameter<int>("EVALUATION_MAT",
+  setStringToIntegralParameter<INPAR::SCATRA::EvalMat>("EVALUATION_MAT",
                                "element_center",
                                "Location where material law is evaluated",
                                tuple<std::string>(
@@ -1980,8 +1953,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "integration_point"),
                                tuple<std::string>(
                                  "evaluate material law at element center",
-                                 "evaluate material law at integration point")  ,
-                                tuple<int>(0,1),
+                                 "evaluate material law at integration point"),
+                               tuple<INPAR::SCATRA::EvalMat>(
+                                 INPAR::SCATRA::evalmat_element_center,
+                                 INPAR::SCATRA::evalmat_integration_point),
                                &scatradyn_stab);
 
   /*----------------------------------------------------------------------*/
@@ -2041,17 +2016,17 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("TEMPERATURE",298.0,"Constant temperature (Kelvin)",&elchcontrol);
   BoolParameter("MOVINGBOUNDARY","No","ELCH algorithm for deforming meshes",&elchcontrol);
   DoubleParameter("MOLARVOLUME",0.0,"Molar volume for electrode shape change computations",&elchcontrol);
-  setStringToIntegralParameter<string>("NATURAL_CONVECTION","No",
+  setStringToIntegralParameter<INPAR::ELCH::NatConv>("NATURAL_CONVECTION","No",
                                "Include natural convection effects",
-                               tuple<std::string>(
+                               tuple<string>(
                                  "No",
                                  "Natural_Convection_substance",
                                  "Natural_Convection_ion"
                                  ),
-                                 tuple<string>(
-                                 "No",
-                                 "Natural_Convection_substance",
-                                 "Natural_Convection_ion"),
+                                 tuple<INPAR::ELCH::NatConv>(
+                                     INPAR::ELCH::natural_convection_no,
+                                     INPAR::ELCH::natural_convection_substance,
+                                     INPAR::ELCH::natural_convection_ion),
                                &elchcontrol);
 
   /*----------------------------------------------------------------------*/

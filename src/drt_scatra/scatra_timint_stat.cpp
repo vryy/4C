@@ -25,8 +25,9 @@ SCATRA::TimIntStationary::TimIntStationary(
   RCP<DRT::Discretization>      actdis,
   RCP<LINALG::Solver>           solver,
   RCP<ParameterList>            params,
+  RCP<ParameterList>            extraparams,
   RCP<IO::DiscretizationWriter> output)
-: ScaTraTimIntImpl(actdis,solver,params,output)
+: ScaTraTimIntImpl(actdis,solver,params,extraparams,output)
 {
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching

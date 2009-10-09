@@ -19,6 +19,7 @@ Maintainer: Georg Bauer
 #define ELCH_ALGORITHM_H
 
 #include "../drt_adapter/adapter_scatra_fluid_coupling_algorithm.H"
+#include "../drt_inpar/inpar_elch.H"
 
 
 /*!
@@ -99,7 +100,7 @@ namespace ELCH
   private:
 
     /// flag for natural convection effects
-    const string natconv_;
+    enum INPAR::ELCH::NatConv natconv_;
 
     /// maximum iteration steps
     const int itmax_;

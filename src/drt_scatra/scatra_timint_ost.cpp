@@ -16,6 +16,7 @@ Maintainer: Georg Bauer
 
 #include "scatra_timint_ost.H"
 #include <Teuchos_TimeMonitor.hpp>
+#include "../drt_inpar/inpar_elch.H"
 
 
 /*----------------------------------------------------------------------*
@@ -25,9 +26,10 @@ SCATRA::TimIntOneStepTheta::TimIntOneStepTheta(
   RCP<DRT::Discretization>      actdis,
   RCP<LINALG::Solver>           solver,
   RCP<ParameterList>            params,
+  RCP<ParameterList>            extraparams,
   RCP<IO::DiscretizationWriter> output)
-: ScaTraTimIntImpl(actdis,solver,params,output),
-  theta_(params_->get<double>("theta"))
+: ScaTraTimIntImpl(actdis,solver,params,extraparams,output),
+  theta_(params_->get<double>("THETA"))
 {
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
@@ -40,7 +42,8 @@ SCATRA::TimIntOneStepTheta::TimIntOneStepTheta(
   phidtn_ = LINALG::CreateVector(*dofrowmap,true);
 
   // ELCH with natural convection
-  if (prbtype_ == "elch" && params_->get<string>("Natural Convection") != "No")
+  if (prbtype_ == "elch" &&
+      (extraparams_->get<INPAR::ELCH::NatConv>("Natural Convection")!= INPAR::ELCH::natural_convection_no))
   {
     const Epetra_Map* noderowmap = discret_->NodeRowMap();
 
