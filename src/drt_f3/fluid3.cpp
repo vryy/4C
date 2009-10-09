@@ -261,6 +261,181 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Fluid3::Volumes()
   return volumes;
 }
 
+/*----------------------------------------------------------------------*
+ |  calculate volume of current element (public)                tw 10/09|
+ *----------------------------------------------------------------------*/
+double DRT::ELEMENTS::Fluid3::CalculateVolume(ParameterList& params, DRT::Discretization& discretization,vector<int>& lm) const
+{
+  // the number of nodes
+  const int numnode = NumNode();
+
+  const DRT::Node*const* nodes = Nodes();
+  if(!nodes)  dserror("no nodes? make sure that Discretization::FillComplete is called!");
+
+  // --------------------------------------------------
+  // create matrix objects for nodal values
+  Epetra_SerialDenseMatrix  edispnp(3,numnode);
+
+
+  if(is_ale_)
+  {
+    // get most recent displacements
+    RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+
+    if (dispnp==null)
+    {
+      dserror("Cannot get state vector 'dispnp'");
+    }
+
+    vector<double> mydispnp(lm.size());
+    DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
+
+    // extract velocity part from "mygridvelaf" and get
+    // set element displacements
+    for (int i=0;i<numnode;++i)
+    {
+      int fi    =4*i;
+      int fip   =fi+1;
+      int fipp  =fip+1;
+      edispnp(0,i)    = mydispnp   [fi  ];
+      edispnp(1,i)    = mydispnp   [fip ];
+      edispnp(2,i)    = mydispnp   [fipp];
+    }
+  }
+
+  Epetra_SerialDenseMatrix xyze(3,numnode);
+
+  // get node coordinates
+  for (int inode=0; inode<numnode; inode++)
+  {
+    const double* x = nodes[inode]->X();
+    xyze(0,inode) = x[0];
+    xyze(1,inode) = x[1];
+    xyze(2,inode) = x[2];
+  }
+
+  // add displacement, when fluid nodes move in the ALE case
+  if (is_ale_)
+  {
+    for (int inode=0; inode<numnode; inode++)
+    {
+      xyze(0,inode) += edispnp(0,inode);
+      xyze(1,inode) += edispnp(1,inode);
+      xyze(2,inode) += edispnp(2,inode);
+    }
+  }
+
+  switch(Shape())
+  {
+  case DRT::Element::tet4:
+  case DRT::Element::tet10:
+  {
+    /*
+     *        3 +
+     *         /|\.
+     *          |   .
+     *        c |     .
+     *          |       .
+     *        0 +-------->+
+     *      a  /    b     2
+     *        /
+     *      |/_ 1
+     */
+    // TODO: not tested
+    double a1 = 0.0; double a2 = 0.0; double a3 = 0.0;
+    double b1 = 0.0; double b2 = 0.0; double b3 = 0.0;
+    double c1 = 0.0; double c2 = 0.0; double c3 = 0.0;
+    a1 = xyze(0,1) - xyze(0,0); a2 = xyze(1,1) - xyze(1,0); a3 = xyze(2,1) - xyze(2,0);
+    b1 = xyze(0,2) - xyze(0,0); b2 = xyze(1,2) - xyze(1,0); b3 = xyze(2,2) - xyze(2,0);
+    c1 = xyze(0,3) - xyze(0,0); c2 = xyze(1,3) - xyze(1,0); c3 = xyze(2,3) - xyze(2,0);
+
+    // V = 1/6 * |(a x b) * c|
+    double ret = (double) 1/6 * abs((a2*b3-a3*b2)*c1 + (a3*b1-a1*b3)*c2 + (a1*b2-a2*b1)*c3);
+
+    return ret; // volume of tet
+  }
+  break;
+  case DRT::Element::wedge6:
+  case DRT::Element::wedge15:
+  {
+    // TODO: not tested
+    double a1 = 0.0; double a2 = 0.0; double a3 = 0.0;
+    double b1 = 0.0; double b2 = 0.0; double b3 = 0.0;
+    double c1 = 0.0; double c2 = 0.0; double c3 = 0.0;
+    // ~ tet1
+    a1 = xyze(0,1) - xyze(0,0); a2 = xyze(1,1) - xyze(1,0); a3 = xyze(2,1) - xyze(2,0);
+    b1 = xyze(0,2) - xyze(0,0); b2 = xyze(1,2) - xyze(1,0); b3 = xyze(2,2) - xyze(2,0);
+    c1 = xyze(0,3) - xyze(0,0); c2 = xyze(1,3) - xyze(1,0); c3 = xyze(2,3) - xyze(2,0);
+    double ret = (double) 1/6 * abs((a2*b3-a3*b2)*c1 + (a3*b1-a1*b3)*c2 + (a1*b2-a2*b1)*c3);
+
+    // ~ tet2
+    a1 = xyze(0,3) - xyze(0,4); a2 = xyze(1,3) - xyze(1,4); a3 = xyze(2,3) - xyze(2,4);
+    b1 = xyze(0,5) - xyze(0,4); b2 = xyze(1,5) - xyze(1,4); b3 = xyze(2,5) - xyze(2,4);
+    c1 = xyze(0,1) - xyze(0,4); c2 = xyze(1,1) - xyze(1,4); c3 = xyze(2,1) - xyze(2,4);
+    ret += (double) 1/6 * abs((a2*b3-a3*b2)*c1 + (a3*b1-a1*b3)*c2 + (a1*b2-a2*b1)*c3);
+
+    // ~ tet3
+    a1 = xyze(0,3) - xyze(0,5); a2 = xyze(1,3) - xyze(1,5); a3 = xyze(2,3) - xyze(2,5);
+    b1 = xyze(0,2) - xyze(0,5); b2 = xyze(1,2) - xyze(1,5); b3 = xyze(2,2) - xyze(2,5);
+    c1 = xyze(0,1) - xyze(0,5); c2 = xyze(1,1) - xyze(1,5); c3 = xyze(2,1) - xyze(2,5);
+    ret += (double) 1/6 * abs((a2*b3-a3*b2)*c1 + (a3*b1-a1*b3)*c2 + (a1*b2-a2*b1)*c3);
+
+    return ret;
+  }
+  break;
+  case DRT::Element::hex8:
+  case DRT::Element::hex20:
+  case DRT::Element::hex27:
+  {
+    // calculate volume of the 6 tetrahedal elements that "form" the hexahedral element
+    double a1 = 0.0; double a2 = 0.0; double a3 = 0.0;
+    double b1 = 0.0; double b2 = 0.0; double b3 = 0.0;
+    double c1 = 0.0; double c2 = 0.0; double c3 = 0.0;
+
+    // ~ wedge 1
+    a1 = xyze(0,1) - xyze(0,0); a2 = xyze(1,1) - xyze(1,0); a3 = xyze(2,1) - xyze(2,0);
+    b1 = xyze(0,3) - xyze(0,0); b2 = xyze(1,3) - xyze(1,0); b3 = xyze(2,3) - xyze(2,0);
+    c1 = xyze(0,4) - xyze(0,0); c2 = xyze(1,4) - xyze(1,0); c3 = xyze(2,4) - xyze(2,0);
+
+    // V = 1/6 * |(a x b) * c|
+    double ret = (double) 1/6 * abs((a2*b3-a3*b2)*c1 + (a3*b1-a1*b3)*c2 + (a1*b2-a2*b1)*c3);
+
+    a1 = xyze(0,4) - xyze(0,7); a2 = xyze(1,4) - xyze(1,7); a3 = xyze(2,4) - xyze(2,7);
+    b1 = xyze(0,3) - xyze(0,7); b2 = xyze(1,3) - xyze(1,7); b3 = xyze(2,3) - xyze(2,7);
+    c1 = xyze(0,5) - xyze(0,7); c2 = xyze(1,5) - xyze(1,7); c3 = xyze(2,5) - xyze(2,7);
+
+    ret += (double)  1/6 * abs((a2*b3-a3*b2)*c1 + (a3*b1-a1*b3)*c2 + (a1*b2-a2*b1)*c3);
+
+    a1 = xyze(0,5) - xyze(0,1); a2 = xyze(1,5) - xyze(1,1); a3 = xyze(2,5) - xyze(2,1);
+    b1 = xyze(0,3) - xyze(0,1); b2 = xyze(1,3) - xyze(1,1); b3 = xyze(2,3) - xyze(2,1);
+    c1 = xyze(0,4) - xyze(0,1); c2 = xyze(1,4) - xyze(1,1); c3 = xyze(2,4) - xyze(2,1);
+
+    ret += (double) 1/6 * abs((a2*b3-a3*b2)*c1 + (a3*b1-a1*b3)*c2 + (a1*b2-a2*b1)*c3);
+
+    // ~ wedge 2
+    a1 = xyze(0,2) - xyze(0,1); a2 = xyze(1,2) - xyze(1,1); a3 = xyze(2,2) - xyze(2,1);
+    b1 = xyze(0,3) - xyze(0,1); b2 = xyze(1,3) - xyze(1,1); b3 = xyze(2,3) - xyze(2,1);
+    c1 = xyze(0,5) - xyze(0,1); c2 = xyze(1,5) - xyze(1,1); c3 = xyze(2,5) - xyze(2,1);
+    ret += (double) 1/6 * abs((a2*b3-a3*b2)*c1 + (a3*b1-a1*b3)*c2 + (a1*b2-a2*b1)*c3);
+
+    a1 = xyze(0,5) - xyze(0,3); a2 = xyze(1,5) - xyze(1,3); a3 = xyze(2,5) - xyze(2,3);
+    b1 = xyze(0,2) - xyze(0,3); b2 = xyze(1,2) - xyze(1,3); b3 = xyze(2,2) - xyze(2,3);
+    c1 = xyze(0,7) - xyze(0,3); c2 = xyze(1,7) - xyze(1,3); c3 = xyze(2,7) - xyze(2,3);
+    ret += (double) 1/6 * abs((a2*b3-a3*b2)*c1 + (a3*b1-a1*b3)*c2 + (a1*b2-a2*b1)*c3);
+
+    a1 = xyze(0,5) - xyze(0,6); a2 = xyze(1,5) - xyze(1,6); a3 = xyze(2,5) - xyze(2,6);
+    b1 = xyze(0,7) - xyze(0,6); b2 = xyze(1,7) - xyze(1,6); b3 = xyze(2,7) - xyze(2,6);
+    c1 = xyze(0,2) - xyze(0,6); c2 = xyze(1,2) - xyze(1,6); c3 = xyze(2,2) - xyze(2,6);
+    ret += (double) 1/6 * abs((a2*b3-a3*b2)*c1 + (a3*b1-a1*b3)*c2 + (a1*b2-a2*b1)*c3);
+
+    return ret;
+  }
+  break;
+  default:
+    dserror("CalculateVolume for current element type not implemented.");
+  }
+  return -1.0;
+}
 
 //=======================================================================
 //=======================================================================

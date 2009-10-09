@@ -3744,5 +3744,32 @@ const Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::InvDirichlet(
   return invtoggle;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+double FLD::FluidImplicitTimeInt::CalcFluidVolume()
+{
+  double fluidvolume = 0.0;
+
+  ParameterList p;
+
+  // prepare element call
+  p.set("action", "calc_fluid_elementvolume");
+
+  // get volume
+  Teuchos::RCP<Epetra_SerialDenseVector> elvolume = Teuchos::rcp(new Epetra_SerialDenseVector(1));
+
+  // element call
+  discret_->ClearState();
+  if (alefluid_)
+  {
+    discret_->SetState("dispnp", dispnp_);
+  }
+  discret_->EvaluateScalars(p, elvolume);
+  discret_->ClearState();
+  fluidvolume = (*elvolume)(0);
+
+  return 0.0;
+}
+
 
 #endif /* CCADISCRET       */

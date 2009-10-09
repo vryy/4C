@@ -230,6 +230,16 @@ public:
 
   //@}
 
+  //! @name Geometry related methods
+
+  /*!
+   * \brief calculate volume of current element
+   * @return volume of current element (out double)
+   */
+  double CalculateVolume(ParameterList& params, DRT::Discretization& discretization,vector<int>& lm) const;
+
+  //@}
+
   //! @name Acess methods
 
 
@@ -400,7 +410,8 @@ private:
     get_density,
     get_gas_constant,
     integrate_shape,
-    calc_node_normal
+    calc_node_normal,
+    calc_fluid_elementvolume
   };
 
   //! stabilisation actions recognized by fluid3 (genalpha implementation)

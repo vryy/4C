@@ -185,6 +185,17 @@ public:
 
   //@}
 
+  //! @name Geometry related methods
+
+  /*!
+   * \brief calculate volume (=surface) of current element
+   * @return surface of current element (out double)
+   */
+  double CalculateSurface(  ParameterList&             params,
+                            DRT::Discretization&       discretization,
+                            vector<int>&               lm) const;
+  //}
+
   //! @name Acess methods
 
 
@@ -337,7 +348,8 @@ private:
     calc_gradop_and_massmatrix,
     calc_impulseeqn_implicit,
     calc_impulseeqn_semiimplicit,
-    calc_fluid_residual
+    calc_fluid_residual,
+    calc_fluid_elementvolume
   };
 
   //! linearisation actions recognized by fluid3 (genalpha implementation)

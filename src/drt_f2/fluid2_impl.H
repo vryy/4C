@@ -45,7 +45,7 @@ namespace ELEMENTS
     /// Evaluate the element
     /*!
       This class does not provide a definition for this function, it
-      must be defined in Fluid3Impl.
+      must be defined in Fluid2Impl.
      */
     virtual int Evaluate(Fluid2*                   ele,
                          ParameterList&            params,
@@ -198,8 +198,7 @@ namespace ELEMENTS
                 const enum Fluid2::TurbModelAction       turb_mod_action,
                 double&                                  Cs);
 
-
-  private:
+   private:
 
     /*!
      * \brief calculate body force from node condition

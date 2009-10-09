@@ -98,6 +98,8 @@ DRT::ELEMENTS::Fluid3::ActionType DRT::ELEMENTS::Fluid3::convertStringToActionTy
     act = Fluid3::calc_node_normal;
   else if (action == "integrate_shape")
     act = Fluid3::integrate_shape;
+  else if (action == "calc_fluid_elementvolume")
+    act = Fluid3::calc_fluid_elementvolume;
   else
     dserror("Unknown type of action for Fluid3");
   return act;
@@ -727,6 +729,13 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           dserror("Unknown element type for shape function integration\n");
         }
         }
+        break;
+      }
+      case calc_fluid_elementvolume:
+      {
+        // calculate volume of current fluid element
+        double surf = this->CalculateVolume(params,discretization,lm);
+        elevec1[0] = surf;  // return "volume" of 2d fluid element
         break;
       }
       default:

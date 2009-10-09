@@ -275,6 +275,135 @@ int DRT::ELEMENTS::Fluid2::NumDofPerNode(const DRT::Node& node) const
 	return 3;
 }
 
+/*----------------------------------------------------------------------*
+ |  calculate volume (=surface) of current element (public)     tw 10/09|
+ *----------------------------------------------------------------------*/
+double DRT::ELEMENTS::Fluid2::CalculateSurface(ParameterList& params, DRT::Discretization& discretization, vector<int>& lm) const
+{
+  // the number of nodes
+  const int numnode = NumNode();
+
+  const DRT::Node*const* nodes = Nodes();
+  if(!nodes)  dserror("no nodes? make sure that Discretization::FillComplete is called!");
+
+  // --------------------------------------------------
+  // create matrix objects for nodal values
+  Epetra_SerialDenseMatrix  edispnp(2,numnode);
+
+
+  if(is_ale_)
+  {
+    // get most recent displacements
+    RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+
+    if (dispnp==null)
+    {
+      dserror("Cannot get state vector 'dispnp'");
+    }
+
+    vector<double> mydispnp(lm.size());
+    DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
+
+    // extract velocity part from "mygridvelaf" and get
+    // set element displacements
+    for (int i=0;i<numnode;++i)
+    {
+      int fi    =3*i;
+      int fip   =fi+1;
+      edispnp(0,i)    = mydispnp   [fi  ];
+      edispnp(1,i)    = mydispnp   [fip ];
+    }
+  }
+
+  Epetra_SerialDenseMatrix xyze(2,numnode);
+
+  // get node coordinates
+  for (int inode=0; inode<numnode; inode++)
+  {
+    const double* x = nodes[inode]->X();
+    xyze(0,inode) = x[0];
+    xyze(1,inode) = x[1];
+  }
+
+  // add displacement, when fluid nodes move in the ALE case
+  if (is_ale_)
+  {
+    for (int inode=0; inode<numnode; inode++)
+    {
+      xyze(0,inode) += edispnp(0,inode);
+      xyze(1,inode) += edispnp(1,inode);
+    }
+  }
+
+  switch(Shape())
+  {
+  case DRT::Element::tri3:
+  case DRT::Element::tri6:
+  {
+    /*  2
+     *   +
+     *  /|\.
+     *   |   .
+     * b |     .
+     *   |       .
+     *   +-------->+
+     *  0    a      1
+     */
+
+    double ax = 0.0; double ay = 0.0;
+    double bx = 0.0; double by = 0.0;
+    ax = xyze(0,1) - xyze(0,0); ay = xyze(1,1) - xyze(1,0);
+    bx = xyze(0,2) - xyze(0,0); by = xyze(1,2) - xyze(1,0);
+
+    // calculate determinant
+    double det = ax*by - ay*bx;
+    if(det < 0.0) dserror("error in FLUID2::CalculateSurface. Surface < 0 ???");
+
+    return det/2.0; // area of tri element
+  }
+  break;
+  case DRT::Element::quad4:
+  case DRT::Element::quad8:
+  case DRT::Element::quad9:
+  {
+    /*  3     c     2
+     *   +<--------+
+     *  /|\.       |
+     *   |   .     |
+     * b |     .   | d
+     *   |       .\|/
+     *   +-------->+
+     *  0    a      1
+     */
+
+    double ax = 0.0; double ay = 0.0;
+    double bx = 0.0; double by = 0.0;
+    double cx = 0.0; double cy = 0.0;
+    double dx = 0.0; double dy = 0.0;
+    ax = xyze(0,1) - xyze(0,0); ay = xyze(1,1) - xyze(1,0);
+    bx = xyze(0,3) - xyze(0,0); by = xyze(1,3) - xyze(1,0);
+    cx = xyze(0,3) - xyze(0,2); cy = xyze(1,3) - xyze(1,2);
+    dx = xyze(0,1) - xyze(0,2); dy = xyze(1,1) - xyze(1,2);
+
+    // calculate vol triangle (a x b)
+    double tri1 = 0.5 * (ax*by - ay*bx);
+
+    // calculate vol triangle (c x d)
+    double tri2 = 0.5 * (cx*dy - cy*dx);
+
+    double ret = tri1 + tri2;
+    if(ret < 0.0) dserror("error in FLUID2::CalculateSurface. Surface < 0 ???");
+
+    return ret;
+  }
+  break;
+  default:
+    dserror("CalculateSurface for current element type not implemented. (only tri and quad supported)");
+  }
+
+  return -1.0;
+}
+
 //=======================================================================
 //=======================================================================
 //=======================================================================

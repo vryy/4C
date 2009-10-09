@@ -218,6 +218,11 @@ public:
   Teuchos::RCP<Epetra_Vector> CalcStresses();
 
   /*!
+   * \brief calculate fluid volume (2d case: calculate fluid "surface")
+   */
+  double CalcFluidVolume();
+
+  /*!
   \brief read restart data
 
   */

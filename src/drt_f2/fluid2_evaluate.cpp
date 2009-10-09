@@ -105,13 +105,15 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
   else if (action == "integrate_shape")
     act = Fluid2::integrate_shape;
   else if (action == "calc_gradop_and_massmatrix")
-	act = Fluid2::calc_gradop_and_massmatrix;
+    act = Fluid2::calc_gradop_and_massmatrix;
   else if (action == "calc_impulseeqn_implicit")
-	act = Fluid2::calc_impulseeqn_implicit;
+    act = Fluid2::calc_impulseeqn_implicit;
   else if (action == "calc_impulseeqn_semiimplicit")
-	act = Fluid2::calc_impulseeqn_semiimplicit;
+    act = Fluid2::calc_impulseeqn_semiimplicit;
   else if (action == "calc_fluid_residual")
-	act = Fluid2::calc_fluid_residual;
+    act = Fluid2::calc_fluid_residual;
+  else if (action == "calc_fluid_elementvolume")
+    act = Fluid2::calc_fluid_elementvolume;
   else
   {
     char errorout[200];
@@ -439,6 +441,13 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
         discretization,
         lm            ,
         elevec1       );
+    }
+    break;
+    case calc_fluid_elementvolume:
+    {
+      // calculate volume (=surface) of current fluid element
+      double surf = this->CalculateSurface(params,discretization,lm);
+      elevec1[0] = surf;  // return "volume" of 2d fluid element
     }
     break;
     default:
