@@ -770,7 +770,11 @@ void SysmatDomain4(
     // check here, if we really have a fluid !!
     dsassert(material->MaterialType() == INPAR::MAT::m_fluid, "Material law is not of type m_fluid.");
     const MAT::NewtonianFluid* actmat = dynamic_cast<const MAT::NewtonianFluid*>(material.get());
+    // kinematic viscosity \nu
     const double visc = actmat->Viscosity();
+    const double dens = actmat->Density();
+    // dynamic viscosity \mu
+    const double dynvisc = visc * dens;
 
     // flag for higher order elements
     const bool higher_order_ele = DRT::UTILS::secondDerivativesZero<DISTYPE>();
@@ -801,8 +805,8 @@ void SysmatDomain4(
     const size_t numparamtauxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Sigmaxx);
 
     // stabilization parameter
-    const double hk = XFLUID::HK<DISTYPE>(evelnp,xyze);
-    const double mk = XFLUID::MK<DISTYPE>();
+    const double hk = FLD::UTILS::HK<DISTYPE>(evelnp,xyze);
+    const double mk = FLD::UTILS::MK<DISTYPE>();
 
     // information about domain integration cells
     const GEO::DomainIntCells&  domainIntCells(ih->GetDomainIntCells(ele));
@@ -984,6 +988,27 @@ void SysmatDomain4(
               }
             }
 
+            double normdx = 0.0;
+            double normdy = 0.0;
+            double normdz = 0.0;
+            double normd0 = 0.0;
+            for (size_t iparam = 0; iparam < numparamvelx; ++iparam)
+            {
+                normdx += std::abs(shp.dx(iparam));
+                normdy += std::abs(shp.dy(iparam));
+                normdz += std::abs(shp.dz(iparam));
+                normd0 += std::abs(shp.d0(iparam));
+            }
+            // can happen, if ALL approx derivatives (shp_dx, shp_dy and shp_dz) are zero as in XFEM simulations
+            if (normdx < 1.0e-12 or
+                normdy < 1.0e-12 or
+                normdz < 1.0e-12 or
+                normd0 < 1.0e-12
+                )
+            {
+              continue;
+            }
+
             // get velocities and accelerations at integration point
             const LINALG::Matrix<nsd,1> gpvelnp = XFLUID::interpolateVectorFieldToIntPoint(evelnp, shp.d0, numparamvelx);
             LINALG::Matrix<nsd,1> gpveln  = XFLUID::interpolateVectorFieldToIntPoint(eveln , shp.d0, numparamvelx);
@@ -1133,13 +1158,22 @@ void SysmatDomain4(
             ///////////////LINALG::SerialDenseVector bodyforce_(enr_edeadng_(i,j)*enr_funct_(j));
 
             // compute stabilization parameters (3 taus)
+            const double vel_norm = gpvelnp.Norm2();
+            const double strle = FLD::UTILS::Streamlength(shp.dx, shp.dy, shp.dz, gpvelnp, vel_norm, numparamvelx);
             double tau_stab_M  = 0.0;
             double tau_stab_Mp = 0.0;
             double tau_stab_C  = 0.0;
-            XFLUID::computeStabilization(shp.dx, shp.dy, shp.dz, gpvelnp, numparamvelx, instationary, visc, hk, mk, FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dtstar, theta),
+            FLD::UTILS::computeStabilizationParams(gpvelnp, xji,
+                instationary, dynvisc, dens, vel_norm, strle, hk, mk, FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dtstar, theta),
+                dt, INPAR::FLUID::tautype_franca_barrenechea_valentin_wall,
                 tau_stab_M, tau_stab_Mp, tau_stab_C);
 
 
+
+            // correction due to definition of stabilization parameter in computeStabilizationParams()
+            tau_stab_M  /= timefac;
+            tau_stab_Mp /= timefac;
+            tau_stab_C  /= timefac;
 
             // integration factors and coefficients of single terms
             const double timefacfac = timefac * fac;

@@ -422,6 +422,7 @@ OBJS_DRT_F3_LIB = src/drt_f3/fluid3.o \
                   src/drt_f3/fluid3_surface_evaluate.o \
                   src/drt_f3/fluid3_line_evaluate.o \
                   src/drt_f3/fluid3_weak_dbc.o \
+                  src/drt_f3/fluid3_stabilization.o \
                   src/drt_f3/xfluid3.o \
                   src/drt_f3/xfluid3_line.o \
                   src/drt_f3/xfluid3_surface.o \

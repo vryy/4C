@@ -854,7 +854,11 @@ void SysmatDomainTP1(
     // check here, if we really have a fluid !!
     dsassert(material->MaterialType() == INPAR::MAT::m_fluid, "Material law is not of type m_fluid.");
     const MAT::NewtonianFluid* actmat = dynamic_cast<const MAT::NewtonianFluid*>(material.get());
+    // kinematic viscosity \nu
     const double visc = actmat->Viscosity();
+    const double dens = actmat->Density();
+    // dynamic viscosity \mu
+    const double dynvisc = visc * dens;
 
     // flag for higher order elements
     const bool higher_order_ele = DRT::UTILS::secondDerivativesZero<DISTYPE>();
@@ -890,8 +894,8 @@ void SysmatDomainTP1(
     const int numparamdiscpres = XFEM::getNumParam<ASSTYPE>(dofman, DiscPres, 1);
 
     // stabilization parameter
-    const double hk = XFLUID::HK<DISTYPE>(evelnp,xyze);
-    const double mk = XFLUID::MK<DISTYPE>();
+    const double hk = FLD::UTILS::HK<DISTYPE>(evelnp,xyze);
+    const double mk = FLD::UTILS::MK<DISTYPE>();
 
     // information about domain integration cells
     const GEO::DomainIntCells&  domainIntCells(ih->GetDomainIntCells(ele));
@@ -1262,11 +1266,18 @@ void SysmatDomainTP1(
             ///////////////LINALG::SerialDenseVector bodyforce_(enr_edeadng_(i,j)*enr_funct_(j));
 
             // compute stabilization parameters (3 taus)
+            const double vel_norm = gpvelnp.Norm2();
+            const double strle = FLD::UTILS::Streamlength(shp.dx, shp.dy, shp.dz, gpvelnp, vel_norm, numparamvelx);
             double tau_stab_M  = 0.0;
             double tau_stab_Mp = 0.0;
             double tau_stab_C  = 0.0;
-            XFLUID::computeStabilization(shp.dx, shp.dy, shp.dz, gpvelnp, numparamvelx, instationary, visc, hk, mk, timefac,
+            FLD::UTILS::computeStabilizationParams(gpvelnp, xji,
+                instationary, dynvisc, dens, vel_norm, strle, hk, mk, timefac, dt, INPAR::FLUID::tautype_franca_barrenechea_valentin_wall,
                 tau_stab_M, tau_stab_Mp, tau_stab_C);
+            // correction due to definition of stabilization parameter in computeStabilizationParams()
+            tau_stab_M  /= timefac;
+            tau_stab_Mp /= timefac;
+            tau_stab_C  /= timefac;
 
 
 

@@ -240,7 +240,7 @@ void SysmatDomain4(
     const double visc = actmat->Viscosity();
 
     // flag for higher order elements
-//    const bool higher_order_ele = XDIFF::secondDerivativesAvailable<DISTYPE>();
+//    const bool higher_order_ele = DRT::UTILS::secondDerivativesZero<DISTYPE>();
 
     const DRT::Element::DiscretizationType stressdistype = XDIFF::StressInterpolation3D<DISTYPE>::distype;
 
@@ -519,7 +519,9 @@ void SysmatDomain4(
 //            double tau_stab_M  = 0.0;
 //            double tau_stab_Mp = 0.0;
 //            double tau_stab_C  = 0.0;
-//            XFLUID::computeStabilization(derxy, gpvelnp, numparamvelx, instationary, visc, hk, mk, timefac,
+//              // function call does not work like this!
+//            FLD::UTILS::computeStabilizationParams(derxy, gpvelnp, xji, numparamvelx,
+//                instationary, visc, 1.0, hk, mk, timefac, dt, INPAR::FLUID::tautype_franca_barrenechea_valentin_wall,
 //                tau_stab_M, tau_stab_Mp, tau_stab_C);
 
 

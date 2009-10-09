@@ -24,7 +24,10 @@ Maintainer: Florian Henke
 #include "../drt_xfem/dof_management.H"
 #include "../drt_xfem/xdofmapcreation.H"
 #include "../drt_xfem/enrichment_utils.H"
-#include "../drt_mat/matlist.H" //URSULA
+#include "../drt_mat/matlist.H"
+#include "../drt_f3/fluid3_stabilization.H"
+#include "../drt_inpar/inpar_fluid.H"
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 
 // converts a string into an Action for this element
@@ -186,6 +189,12 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       const bool pstab = true;
       const bool supg  = true;
       const bool cstab = true;
+      // stabilization parameters
+      const INPAR::FLUID::TauType tautype = Teuchos::getIntegralValue<INPAR::FLUID::TauType>(params.sublist("STABILIZATION"),"TAUTYPE");
+      // check if stabilization parameter definition can be handled by combust3 element
+      if (tautype == INPAR::FLUID::tautype_franca_barrenechea_valentin_wall or
+          tautype == INPAR::FLUID::tautype_bazilevs)
+        dserror("unknown type of stabilization parameter definition");
 
       // time integration parameters
       const FLUID_TIMEINTTYPE timealgo = params.get<FLUID_TIMEINTTYPE>("timealgo");
@@ -198,7 +207,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       // calculate element coefficient matrix and rhs
       COMBUST::callSysmat(assembly_type,
         this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
-        material, timealgo, dt, theta, newton, pstab, supg, cstab, true,
+        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, true,
         combusttype, flamespeed, nitschevel, nitschepres);
     }
     break;
@@ -265,6 +274,12 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       const double            theta    = 1.0;
 
       const bool newton = params.get<bool>("include reactive terms for linearisation",false);
+      // stabilization parameters
+      const INPAR::FLUID::TauType tautype = Teuchos::getIntegralValue<INPAR::FLUID::TauType>(params.sublist("STABILIZATION"),"TAUTYPE");
+      // check if stabilization parameter definition can be handled by combust3 element
+      if (tautype == INPAR::FLUID::tautype_franca_barrenechea_valentin_wall or
+          tautype == INPAR::FLUID::tautype_bazilevs)
+        dserror("unknown type of stabilization parameter definition");
       const bool pstab  = true;
       const bool supg   = true;
       const bool cstab  = true;
@@ -289,7 +304,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
               // calculate element coefficient matrix and rhs
               COMBUST::callSysmat(assembly_type,
                       this, ih_, eleDofManager_, locval, locval_hist, estif, eforce,
-                      material, pseudotime, 1.0, newton, pstab, supg, cstab, false, combusttype);
+                      material, pseudotime, 1.0, newton, pstab, supg, cstab, tautype, false, combusttype);
 
               LINALG::SerialDensevector eforce_0(locval.size());
               for (unsigned i = 0;i < locval.size(); ++i)
@@ -317,7 +332,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
               // calculate element coefficient matrix and rhs
               COMBUST::callSysmat(assembly_type,
                       this, ih_, eleDofManager_, locval_disturbed, locval_hist, estif, eforce,
-                      material, pseudotime, 1.0, newton, pstab, supg, cstab, false, combusttype);
+                      material, pseudotime, 1.0, newton, pstab, supg, cstab, tautype, false, combusttype);
 
 
 
@@ -339,7 +354,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
         // calculate element coefficient matrix and rhs
         COMBUST::callSysmat(assembly_type,
                  this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
-                 material, timealgo, dt, theta, newton, pstab, supg, cstab, false,
+                 material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, false,
                  combusttype, flamespeed, nitschevel, nitschepres);
       }
     }

@@ -16,15 +16,22 @@
 #ifdef D_FLUID3
 #ifdef CCADISCRET
 
-#ifndef XFLUID3_STABILIZATION_H
-#define XFLUID3_STABILIZATION_H
+#ifndef FLUID3_STABILIZATION_H
+#define FLUID3_STABILIZATION_H
 
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "../drt_fem_general/drt_utils_integration.H"
+#include "../drt_lib/drt_element.H"
 #include "../drt_lib/linalg_serialdensevector.H"
+#include "../drt_lib/standardtypes_cpp.H"
+#include "../drt_inpar/inpar_fluid.H"
 
 
-namespace XFLUID
+namespace FLD
 {
-
+namespace UTILS
+{
   //! for each distype there should be an m_k needed for stabilization computation
   template<DRT::Element::DiscretizationType DISTYPE>
   double MK()
@@ -35,13 +42,13 @@ namespace XFLUID
       case DRT::Element::pyramid5:
       case DRT::Element::hex8:
       case DRT::Element::wedge6:
-        return 0.333333333333333333333;
+        return 0.333333333333333333333; // 1/3
         break;
       case DRT::Element::hex20:
       case DRT::Element::hex27:
       case DRT::Element::tet10:
       case DRT::Element::wedge15:
-        return 0.083333333333333333333;
+        return 0.083333333333333333333; // 1/12
         break;
       default:
         dserror("type unknown!\n");
@@ -76,6 +83,50 @@ namespace XFLUID
         dserror("invalid discretization type for fluid3");
         return DRT::UTILS::intrule3D_undefined;
     }
+  }
+
+
+  //! calculate characteristic element size for stabilization
+  template <class V>
+  double Streamlength(
+      const V&     shp_dx,
+      const V&     shp_dy,
+      const V&     shp_dz,
+      const LINALG::Matrix<3,1>& gpvelnp,  /// velocity at Gaussian point
+      const double               vel_norm, /// velocity norm
+      const int                  numparamvelx
+  )
+  {
+    // normed velocity at Gauss point
+    LINALG::Matrix<3,1> velino;
+    if (vel_norm >= 1e-6)
+    {
+      velino.Update(1.0/vel_norm,gpvelnp);
+    }
+    else
+    {
+      velino.Clear();
+      velino(0) = 1.0;
+    }
+
+    // get streamlength
+    //const double val = sum(abs(velino(j)*derxy(j,i)));
+    LINALG::SerialDenseVector velinoder(numparamvelx,true);
+    for (int iparam = 0; iparam < numparamvelx; ++iparam)
+    {
+      velinoder(iparam) += velino(0)*shp_dx(iparam);
+      velinoder(iparam) += velino(1)*shp_dy(iparam);
+      velinoder(iparam) += velino(2)*shp_dz(iparam);
+    }
+    // remark: "const double val = velinoder.Norm1();" ;
+    double val = 0.0;
+    for (int iparam = 0; iparam < numparamvelx; ++iparam)
+      val += fabs(velinoder(iparam));
+
+    if (val == 0.0) dserror("infinite stream length detected!");
+    const double strle = 2.0/val;
+
+    return strle;
   }
 
 
@@ -117,149 +168,28 @@ namespace XFLUID
     return hk;
   }
 
-  template <class V>
-  void computeStabilization(
-      const V&       shp_dx,
-      const V&       shp_dy,
-      const V&       shp_dz,
-      const LINALG::Matrix<3,1>&      gpvelnp,
-      const int   numparamvelx,
-      const bool instationary,
-      const double visc,
+
+  void computeStabilizationParams(
+      const LINALG::Matrix<3,1>& gpvelnp,  /// velocity at Gaussian point
+      const LINALG::Matrix<3,3>& xji,      /// inverse of transposed Jacobian matrix
+      const bool   instationary,
+      const double dynvisc,                /// dyamic viscosity
+      const double dens,                   /// density
+      const double vel_norm,
+      const double strle,
       const double hk,
       const double mk,
       const double timefac,
-      double& tau_stab_M,
+      const double dt,
+      const enum INPAR::FLUID::TauType tautype,
+      double& tau_stab_Mu,
       double& tau_stab_Mp,
       double& tau_stab_C
-      )
-  {
-    const int nsd = 3;
+      );
 
-    // get velocity norm
-    const double vel_norm = std::sqrt(gpvelnp(0)*gpvelnp(0)+gpvelnp(1)*gpvelnp(1)+gpvelnp(2)*gpvelnp(2));
 
-    // normed velocity at Gauss point
-    LINALG::Matrix<3,1> velino;
-    if (vel_norm>=1e-6)
-    {
-        for (int isd = 0; isd < nsd; ++isd)
-            velino(isd) = gpvelnp(isd)/vel_norm;
-    }
-    else
-    {
-        velino.Clear();
-        velino(0) = 1.0;
-    }
-
-    // get streamlength
-    //const double val = sum(abs(velino(j)*derxy(j,i)));
-    LINALG::SerialDenseVector velinoder(numparamvelx,true);
-    for (int iparam = 0; iparam < numparamvelx; ++iparam)
-    {
-      velinoder(iparam) += velino(0)*shp_dx(iparam);
-      velinoder(iparam) += velino(1)*shp_dy(iparam);
-      velinoder(iparam) += velino(2)*shp_dz(iparam);
-    }
-
-    double val = 0.0;
-    for (int iparam = 0; iparam < numparamvelx; ++iparam)
-        val += fabs(velinoder(iparam));
-
-    if (val == 0) // can happen, if ALL aprrox derivatives (shp_dx, shp_dy and shp_dz) are zero as in XFEM simulations
-      val = 1.0;
-    const double strle = 2.0/val;
-
-    if (std::isinf(strle))
-      dserror("Infinite stream-length detected! Quitting...");
-
-    if (instationary)
-    {
-        // calculate tau: stabilization parameters for stationary case
-
-        const double visceff = visc;
-        /* viscous : reactive forces */
-        const double re1 = 4.0 * timefac * visceff / (mk * DSQR(strle));
-
-        /* convective : viscous forces */
-        const double re2 = mk * vel_norm * strle / (2.0 * visceff);
-
-        const double xi1 = max(re1,1.0);
-        const double xi2 = max(re2,1.0);
-
-        tau_stab_M = DSQR(strle) / (DSQR(strle)*xi1+( 4.0 * timefac*visceff/mk)*xi2);
-
-        // compute tau_Mp
-        //    stability parameter definition according to Franca and Valentin (2000)
-        //                                       and Barrenechea and Valentin (2002)
-
-         /* viscous : reactive forces */
-        const double re_viscous = 4.0 * timefac * visceff / (mk * DSQR(hk));
-        /* convective : viscous forces */
-        const double re_convect = mk * vel_norm * hk / (2.0 * visceff);
-
-        const double xi_viscous = max(re_viscous,1.0);
-        const double xi_convect = max(re_convect,1.0);
-
-        /*
-                        xi1,xi2 ^
-                                |      /
-                                |     /
-                                |    /
-                              1 +---+
-                                |
-                                |
-                                |
-                                +--------------> re1,re2
-                                    1
-        */
-        tau_stab_Mp = DSQR(hk) / (DSQR(hk) * xi_viscous + ( 4.0 * timefac * visceff/mk) * xi_convect);
-
-        /*------------------------------------------------------ compute tau_C ---*/
-        /*-- stability parameter definition according to Codina (2002), CMAME 191
-         *
-         * Analysis of a stabilized finite element approximation of the transient
-         * convection-diffusion-reaction equation using orthogonal subscales.
-         * Ramon Codina, Jordi Blasco; Comput. Visual. Sci., 4 (3): 167-174, 2002.
-         *
-         * */
-        //tau[2] = sqrt(DSQR(visc)+DSQR(0.5*vel_norm*hk));
-
-        // Wall Diss. 99
-        /*
-                            xi2 ^
-                                |
-                              1 |   +-----------
-                                |  /
-                                | /
-                                |/
-                                +--------------> Re2
-                                    1
-        */
-        const double xi_tau_c = min(re2,1.0);
-        tau_stab_C = vel_norm * hk * 0.5 * xi_tau_c /timefac;
-    }
-    else
-    {
-        // calculate tau: stabilization parameters for stationary case
-
-        // compute tau_Mu
-        const double re_tau_mu = mk * vel_norm * strle / (2.0 * visc);   /* convective : viscous forces */
-        const double xi_tau_mu = max(re_tau_mu, 1.0);
-        tau_stab_M = (DSQR(strle)*mk)/(4.0*visc*xi_tau_mu);
-
-        // compute tau_Mp
-        const double re_tau_mp = mk * vel_norm * hk / (2.0 * visc);      /* convective : viscous forces */
-        const double xi_tau_mp = max(re_tau_mp,1.0);
-        tau_stab_Mp = (DSQR(hk)*mk)/(4.0*visc*xi_tau_mp);
-
-        // compute tau_C
-        const double xi_tau_c = min(re_tau_mp, 1.0);
-        tau_stab_C = 0.5*vel_norm*hk*xi_tau_c;
-    }
-  }
-
-}  // end namespace XFLUID
+} // namespace UTILS
+} // namespace FLD
 
 #endif
 

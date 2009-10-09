@@ -20,6 +20,7 @@ Maintainer: Florian Henke
 #define COMBUST3_SYSMAT_H
 
 #include "combust3.H"
+#include "../drt_inpar/inpar_fluid.H"
 #include "../drt_xfem/xfem_enums.H"
 
 namespace COMBUST
@@ -41,10 +42,11 @@ namespace COMBUST
           const FLUID_TIMEINTTYPE           timealgo,      ///< time discretization type
           const double                      dt,            ///< delta t (time step size)
           const double                      theta,         ///< factor for one step theta scheme
-          const bool                        newton ,
-          const bool                        pstab  ,
-          const bool                        supg   ,
-          const bool                        cstab  ,
+          const bool                        newton,
+          const bool                        pstab,
+          const bool                        supg,
+          const bool                        cstab,
+          const INPAR::FLUID::TauType       tautype,       ///< stabilization parameter definition
           const bool                        instationary,
           const INPAR::COMBUST::CombustionType combusttype,
           const double                       flamespeed,

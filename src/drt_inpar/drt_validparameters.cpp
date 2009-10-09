@@ -26,6 +26,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_lib/drt_colors.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_inpar/inpar_solver.H"
+#include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_combust.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_statmech.H"
@@ -1476,6 +1477,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "tau_M and tau_C (Bazilevs, based on G_ij and g_i)",
                                  "tau_M and tau_C: Codina")  ,
                                     tuple<int>(0,1,2,3,4,5,6),
+                               &fdyn_stab);
+
+  setStringToIntegralParameter<INPAR::FLUID::TauType>("TAUTYPE","Franca_Barrenechea_Valentin_Wall",
+                               "Type of definition of stabilization parameter",
+                               tuple<std::string>(
+                                 "Franca_Barrenechea_Valentin_Wall",
+                                 "Bazilevs"),
+                               tuple<INPAR::FLUID::TauType>(
+                                 INPAR::FLUID::tautype_franca_barrenechea_valentin_wall,
+                                 INPAR::FLUID::tautype_bazilevs),
                                &fdyn_stab);
 
   // this parameter selects the location where tau is evaluated

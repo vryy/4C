@@ -300,8 +300,8 @@ void SysmatDomainProjection(
     const size_t numparamvelx = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velx);
 
     // stabilization parameter
-    const double hk = XFLUID::HK<DISTYPE>(eveln,xyze);
-    const double mk = XFLUID::MK<DISTYPE>();
+    const double hk = FLD::UTILS::HK<DISTYPE>(eveln,xyze);
+    const double mk = FLD::UTILS::MK<DISTYPE>();
 
     // information about domain integration cells
     const GEO::DomainIntCells&  domainIntCells(ih->GetDomainIntCells(ele));
@@ -479,12 +479,14 @@ void SysmatDomainProjection(
 
 
             // compute stabilization parameters (3 taus)
+            const double vel_norm = u2_proj.Norm2();
+            const double strle = FLD::UTILS::Streamlength(shp.dx, shp.dy, shp.dz, u2_proj, vel_norm, numparamvelx);
             double tau_stab_M  = 0.0;
             double tau_stab_Mp = 0.0;
             double tau_stab_C  = 0.0;
-            XFLUID::computeStabilization(shp.dx, shp.dy, shp.dz, u2_proj, numparamvelx, false, 1.0, hk, mk, 1.0,
+            FLD::UTILS::computeStabilizationParams(u2_proj, xji,
+                false, 1.0, 1.0, vel_norm, strle, hk, mk, 1.0, 0.0, INPAR::FLUID::tautype_franca_barrenechea_valentin_wall,
                 tau_stab_M, tau_stab_Mp, tau_stab_C);
-
 
 
 

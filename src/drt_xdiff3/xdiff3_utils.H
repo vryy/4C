@@ -272,33 +272,6 @@ DRT::UTILS::GaussRule3D getXFEMGaussrule(
   return rule;
 }
 
-/*!
-  tell, whether second derivatives have to be calculated
- */
-template <DRT::Element::DiscretizationType  DISTYPE>
-bool secondDerivativesAvailable()
-{
-  bool hoel = true;
-  switch (DISTYPE)
-  {
-  case DRT::Element::hex8:
-  case DRT::Element::hex20:
-  case DRT::Element::hex27:
-  case DRT::Element::tet10:
-  case DRT::Element::wedge6:
-  case DRT::Element::wedge15:
-  case DRT::Element::pyramid5:
-    hoel = true;
-    break;
-  case DRT::Element::tet4:
-    hoel = false;
-    break;
-  default:
-    dserror("DISTYPE unknown!");
-  }
-  return hoel;
-}
-
 
 //! interpolate from nodal vector array to integration point vector using the shape function
 template <class M, class VS>
