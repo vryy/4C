@@ -154,6 +154,7 @@ DRT::ELEMENTS::Fluid3Impl<distype>::Fluid3Impl()
     rhscon_(),
     densaf_(),
     densam_(),
+    densn_(),
     scadtfac_(),
     scaconvfacaf_(),
     scaconvfacn_(),
@@ -986,8 +987,8 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     //--------------------------------------------------------------------
     if (is_genalpha)
     {
-      // rhs of momentum equation: only bodyforce at n+alpha_F
-      rhsmom_.Update(1.0,bodyforce_,0.0);
+      // rhs of momentum equation: density*bodyforce at n+alpha_F
+      rhsmom_.Update(densaf_,bodyforce_,0.0);
 
       // get acceleration at time n+alpha_M at integration point
       accint_.Multiply(eaccam,funct_);
@@ -1043,8 +1044,9 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     }
     else
     {
-      // rhs of momentum equation: timefac*bodyforce at n+1 + histmom
-      rhsmom_.Update(1.0,histmom_,timefac,bodyforce_);
+      // rhs of momentum equation:
+      // density*timefac*bodyforce at n+1 + density*histmom at n
+      rhsmom_.Update(densn_,histmom_,densaf_*timefac,bodyforce_);
 
       // modify integration factor for Galerkin rhs
       rhsfac *= timefac;
@@ -1052,14 +1054,14 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
       // evaluate momentum residual once for all stabilization right hand sides
       for (int rr=0;rr<3;++rr)
       {
-        momres_old_(rr) = densaf_*(velint_(rr)-rhsmom_(rr))+timefac*(densaf_*conv_old_(rr)+gradp_(rr)-2*visceff_*visc_old_(rr));
+        momres_old_(rr) = densaf_*velint_(rr)+timefac*(densaf_*conv_old_(rr)+gradp_(rr)-2*visceff_*visc_old_(rr))-rhsmom_(rr);
       }
 
       if (cross    != Fluid3::cross_stress_stab_none or
           reynolds != Fluid3::reynolds_stress_stab_none)
       {
         // compute subgrid-scale velocity
-        sgvelint_.Update(-(tau_Mp/timefac),momres_old_,0.0);
+        sgvelint_.Update(-(tau_Mp/dt_),momres_old_,0.0);
 
         // compute subgrid-scale convective operator
         sgconv_c_.MultiplyTN(derxy_,sgvelint_);
@@ -1522,7 +1524,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
       for (int vi=0; vi<numnode; ++vi)
       {
         const int fvi = 4*vi;
-        const double v = fac_*densaf_*funct_(vi);
+        const double v = fac_*funct_(vi);
         eforce(fvi    ) += v*rhsmom_(0) ;
         eforce(fvi + 1) += v*rhsmom_(1) ;
         eforce(fvi + 2) += v*rhsmom_(2) ;
@@ -2010,7 +2012,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
             const int fui   = 4*ui;
             const int fuip  = fui+1;
             const int fuipp = fui+2;
-            const double v = -tau_M*densaf_*densaf_*funct_(ui);
+            const double v = -tau_M*densaf_*funct_(ui);
             for (int vi=0; vi<numnode; ++vi)
             {
               const int fvi   = 4*vi;
@@ -3092,6 +3094,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::GetMaterialParams(
 // -> will only be changed for low-Mach-number flow "material" below
 densam_        = 1.0;
 densaf_        = 1.0;
+densn_         = 1.0;
 scadtfac_      = 0.0;
 scaconvfacaf_  = 0.0;
 scaconvfacn_   = 0.0;
@@ -3153,24 +3156,28 @@ else if (material->MaterialType() == INPAR::MAT::m_mixfrac)
   // compute density at n+alpha_F or n+1 based on mixture fraction
   densaf_ = actmat->ComputeDensity(mixfracaf);
 
-  // compute density at n+alpha_M or n based on mixture fraction
-  const double mixfracam = funct_.Dot(escaam);
-  densam_ = actmat->ComputeDensity(mixfracam);
-
   // factor for convective scalar term at n+alpha_F or n+1
   scaconvfacaf_ = actmat->EosFacA()*densaf_;
 
   if (is_genalpha)
   {
-    // factor for scalar time derivative at n+alpha_M or n+1
+    // compute density at n+alpha_M based on mixture fraction
+    const double mixfracam = funct_.Dot(escaam);
+    densam_ = actmat->ComputeDensity(mixfracam);
+
+    // factor for scalar time derivative at n+alpha_M
     scadtfac_ = actmat->EosFacA()*densam_;
   }
   else
   {
-    // factor for convective scalar term at n
-    scaconvfacn_ = actmat->EosFacA()*densam_;
+    // compute density at n based on mixture fraction
+    const double mixfracn = funct_.Dot(escaam);
+    densn_ = actmat->ComputeDensity(mixfracn);
 
-    // set density at n+1
+    // factor for convective scalar term at n
+    scaconvfacn_ = actmat->EosFacA()*densn_;
+
+    // set density at n+1 at location n+alpha_M as well
     densam_ = densaf_;
 
     // factor for scalar time derivative
@@ -3184,9 +3191,6 @@ else if (material->MaterialType() == INPAR::MAT::m_sutherland)
   // compute temperature at n+alpha_F or n+1
   const double tempaf = funct_.Dot(escaaf);
 
-  // compute temperature at n+alpha_M or n
-  const double tempam = funct_.Dot(escaam);
-
   // compute viscosity according to Sutherland law
   visc_ = actmat->ComputeViscosity(tempaf);
 
@@ -3199,6 +3203,9 @@ else if (material->MaterialType() == INPAR::MAT::m_sutherland)
 
   if (is_genalpha)
   {
+    // compute temperature at n+alpha_M
+    const double tempam = funct_.Dot(escaam);
+
     // factor for scalar time derivative at n+alpha_M
     scadtfac_ = 1.0/tempam;
 
@@ -3210,14 +3217,21 @@ else if (material->MaterialType() == INPAR::MAT::m_sutherland)
   }
   else
   {
-    // factor for convective scalar term at n
-    scaconvfacn_ = 1.0/tempam;
+    // compute temperature at n
+    const double tempn = funct_.Dot(escaam);
 
-    // set density at n+1
-    densam_ = densaf_;
+    // compute density at n based on temperature at n and
+    // (approximately) thermodynamic pressure at n+1
+    densn_ = actmat->ComputeDensity(tempn,thermpressaf_);
+
+    // factor for convective scalar term at n
+    scaconvfacn_ = 1.0/tempn;
 
     // factor for scalar time derivative
     scadtfac_ = dt_/tempaf;
+
+    // set density at n+1 at location n+alpha_M as well
+    densam_ = densaf_;
 
     // addition due to thermodynamic pressure
     thermpressadd_ = -dt_*thermpressdtam_/thermpressaf_;
@@ -3239,24 +3253,28 @@ else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
   // compute density at n+alpha_F or n+1 based on progress variable
   densaf_ = actmat->ComputeDensity(provaraf);
 
-  // compute density at n+alpha_M or n based on progress variable
-  const double provaram = funct_.Dot(escaam);
-  densam_ = actmat->ComputeDensity(provaram);
-
   // factor for convective scalar term at n+alpha_F or n+1
   scaconvfacaf_ = (actmat->UnbDens()-actmat->BurDens())/densaf_;
 
   if (is_genalpha)
   {
+    // compute density at n+alpha_M based on progress variable
+    const double provaram = funct_.Dot(escaam);
+    densam_ = actmat->ComputeDensity(provaram);
+
     // factor for scalar time derivative at n+alpha_M
     scadtfac_ = (actmat->UnbDens()-actmat->BurDens())/densam_;
   }
   else
   {
-    // factor for convective scalar term at n
-    scaconvfacn_ = (actmat->UnbDens()-actmat->BurDens())/densam_;
+    // compute density at n based on progress variable
+    const double provarn = funct_.Dot(escaam);
+    densn_ = actmat->ComputeDensity(provarn);
 
-    // set density at n+1
+    // factor for convective scalar term at n
+    scaconvfacn_ = (actmat->UnbDens()-actmat->BurDens())/densn_;
+
+    // set density at n+1 at location n+alpha_M as well
     densam_ = densaf_;
 
     // factor for scalar time derivative
@@ -3895,7 +3913,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcSubgrVelocity(
     // evaluate residual
     for (int rr=0;rr<3;++rr)
     {
-      momres_old_(rr) = (densaf_*(velint_(rr)-histmom_(rr))/timefac)+densaf_*conv_old_(rr)+gradp_(rr)-2*visceff_*visc_old_(rr)-densaf_*bodyforce_(rr);
+      momres_old_(rr) = (densaf_*velint_(rr)+timefac*(densaf_*conv_old_(rr)+gradp_(rr)-2*visceff_*visc_old_(rr)-densaf_*bodyforce_(rr))-densn_*histmom_(rr))/dt_;
     }
   }
 

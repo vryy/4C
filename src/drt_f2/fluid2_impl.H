@@ -444,6 +444,8 @@ namespace ELEMENTS
     double densaf_;
     //! density at t_(n+alpha_M)
     double densam_;
+    //! density at t_(n)
+    double densn_;
     //! factor for scalar time derivative
     double scadtfac_;
     //! factor for convective scalar term at t_(n+alpha_F) or t_(n+1)
