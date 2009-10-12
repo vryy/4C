@@ -27,7 +27,7 @@ namespace INPAR
     {
       natural_convection_no,
       natural_convection_substance,
-      natural_convection_ion,
+      natural_convection_ion
     };
 
 
