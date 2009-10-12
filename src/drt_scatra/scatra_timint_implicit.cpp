@@ -85,7 +85,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   convform_ (Teuchos::getIntegralValue<INPAR::SCATRA::ConvForm>(*params,"CONVFORM")),
   neumanninflow_(Teuchos::getIntegralValue<int>(*params,"NEUMANNINFLOW")),
   fssgd_    (Teuchos::getIntegralValue<INPAR::SCATRA::FSSUGRDIFF>(*params,"FSSUGRDIFF")),
-  frt_      (96485.3399/(8.314472 * params_->get<double>("TEMPERATURE",298.15))),
+  frt_      (96485.3399/(8.314472 * extraparams_->get<double>("TEMPERATURE",298.15))),
   tpn_      (1.0),
   errfile_  (extraparams_->get<FILE*>("err file")),
   initialvelset_(false),
