@@ -43,7 +43,6 @@ POTENTIAL::Potential::Potential(
 }
 
 
-
 /*-------------------------------------------------------------------*
  |  ctor (public)                                          umay 05/09|
  *-------------------------------------------------------------------*/
@@ -73,7 +72,7 @@ void POTENTIAL::Potential::searchElementsInCutOffRadius(
     const double                                radius)
 {
   const double tol =  1e-7;
-
+  
 // only for testing no labels are distinguished
   for (int lid = 0; lid < potentialdis->NumMyColNodes(); ++lid)
   {
@@ -100,7 +99,6 @@ void POTENTIAL::Potential::searchElementsInCutOffRadius(
 }
 
 
-
 /*-------------------------------------------------------------------*
 | (protected)                                             umay  07/08|
 |                                                                    |
@@ -121,8 +119,39 @@ void POTENTIAL::Potential::treeSearchElementsInCutOffRadius(
     searchTree_->searchElementsInRadius(*potentialdis, currentpositions, point, radius, label);
 
   return;
+  
 }
 
+
+/*-------------------------------------------------------------------*
+| (protected)                                             umay  09/09|
+| serial version of search method                                    |
+| method runs over all nodes of the boundary discretization and      |
+| checks, if a node lies within a given cut off radius               |
+| in this case the element ids of adjacent elements are stored       |
+*--------------------------------------------------------------------*/
+void POTENTIAL::Potential::treeSearchElementsInCutOffRadius(
+    const Teuchos::RCP<DRT::Discretization>     potentialdis,
+    std::map<int,LINALG::Matrix<3,2> >&		      elemXAABBList,
+    const DRT::Element* 	                      element,
+    std::map<int,std::set<int> >&               potentialElementIds,
+    const double                                radius,
+    const int                                   label)
+{
+
+  LINALG::Matrix<3,2> eleXAABB = elemXAABBList[element->LID()];
+
+  // enlarge box by cut off radius
+  for(int dim = 0; dim < 3; dim++)
+  {
+    eleXAABB(dim,0) = eleXAABB(dim,0) - radius;
+    eleXAABB(dim,1) = eleXAABB(dim,1) + radius;
+  }
+
+  searchTree_->queryPotentialElements(elemXAABBList, eleXAABB, potentialElementIds, label);
+
+  return;
+}
 
 
 /*-------------------------------------------------------------------*
@@ -196,13 +225,13 @@ void POTENTIAL::Potential::EvaluatePotentialCondition(
       vector<int> lmowner;
       curr->second->LocationVector(discret_,lm,lmowner);
       const int rowsize = lm.size();
-
+      
       // Reshape element matrices and vectors and init to zero in element->evaluate
       // call the element specific evaluate method
       int err = curr->second->Evaluate( params,discret_,lm, elematrix1,elematrix2,
                                         elevector1,elevector2,elevector3);
       if (err) dserror("error while evaluating elements");
-
+            
       // specify lm row and lm col
       vector<int> lmrow;
       vector<int> lmcol;
@@ -234,7 +263,7 @@ void POTENTIAL::Potential::EvaluatePotentialCondition(
       if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,lmrow,lmowner);
       if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,lmrow,lmowner);
       if (assemblevec3) LINALG::Assemble(*systemvector3,elevector3,lmrow,lmowner);
-    }
+    } 
   } // for(vector<DRT::Condition*>::iterator condIter = potentialcond->begin() ; condIter != potentialcond->end(); ++ condIter)
   return;
 } // end of EvaluatePotentialCondition

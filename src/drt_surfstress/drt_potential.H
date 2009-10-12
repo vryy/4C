@@ -104,6 +104,21 @@ protected:
     const double                                radius,
     const int                                   label
     );
+  
+  
+  /*!
+  \brief  set history variables after reading restart. The row map
+          based vectors written in case of restart are exported to column
+          based ones needed for calculations again. 
+   */
+  void treeSearchElementsInCutOffRadius(
+    const Teuchos::RCP<DRT::Discretization>   potentialdis,
+    std::map<int,LINALG::Matrix<3,2> >&       elemXAABBList,
+    const DRT::Element*                       element,
+    std::map<int,std::set<int> >&             potentialElementIds,
+    const double                              radius,
+    const int                                 label
+    );
 
 
   /*!

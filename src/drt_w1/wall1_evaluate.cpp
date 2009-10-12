@@ -38,11 +38,13 @@ Maintainer: Markus Gitterle
 #include "Epetra_SerialDenseSolver.h"
 
 #include "../drt_mat/stvenantkirchhoff.H"
+#include "../drt_surfstress/drt_potential_manager.H"
 
 /*----------------------------------------------------------------------*/
 // namespaces
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
+using POTENTIAL::PotentialManager; // potential manager
 
 
 /*----------------------------------------------------------------------*
@@ -83,6 +85,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
   else if (action=="calc_struct_update_imrlike") act = Wall1::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep")   act = Wall1::calc_struct_reset_istep;
   else if (action=="calc_struct_energy")        act = Wall1::calc_struct_energy;
+  else if (action=="calc_potential_stiff")      act = Wall1::calc_potential_stiff;
   else dserror("Unknown type of action %s for Wall1", action.c_str());
 
   // get the material law
@@ -351,6 +354,25 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
       if (elevec1.Length() < 1) dserror("Result vector too short");
       // determine energies
       Energy(params,lm,mydisp,&elevec1,actmat);
+    }
+    break;
+    case Wall1::calc_potential_stiff:
+    {
+      RefCountPtr<PotentialManager> potentialmanager =
+        params.get<RefCountPtr<PotentialManager> >("pot_man", null);
+      if (potentialmanager==null)
+        dserror("No PotentialManager in Wall1 Volume available");
+
+      RefCountPtr<DRT::Condition> cond = params.get<RefCountPtr<DRT::Condition> >("condition",null);
+      if (cond==null)
+        dserror("Condition not available in Wall1 Volume");
+
+      if (cond->Type()==DRT::Condition::LJ_Potential_Volume) // Lennard-Jones potential
+      {
+        potentialmanager->StiffnessAndInternalForcesPotential(this, gaussrule_, params, lm, elemat1, elevec1);
+      }
+      else
+        dserror("Unknown condition type %d",cond->Type());           
     }
     break;
     case Wall1::calc_struct_eleload:

@@ -41,7 +41,7 @@ LINALG::Matrix<3,2> GEO::getXAABBofDis(
     XAABB(dim, 1) = pos(dim) + GEO::TOL7;
   }
 
-  // TODO make more efficeient by cahcking nodes
+  // TODO make more efficient by cahcking nodes
   // loop over elements and merge XAABB with their eXtendedAxisAlignedBoundingBox
   for (int j=0; j< dis.NumMyColElements(); ++j)
   {
@@ -59,11 +59,11 @@ LINALG::Matrix<3,2> GEO::getXAABBofDis(
 
 
 /*----------------------------------------------------------------------*
- | delivers a slightly enlarged axis-aligned bounding box for  neu 09/09|
+ | delivers a slightly enlarged axis-aligned bounding box foru.may 09/09|
  | given elements with their current postions for SlipALE               |
  *----------------------------------------------------------------------*/
 LINALG::Matrix<3,2> GEO::getXAABBofEles(
-    map<int, RCP<DRT::Element> >&               elements,
+    map<int, RCP<DRT::Element> >& 							elements,
     const std::map<int,LINALG::Matrix<3,1> >& 	currentpositions)
 {
   LINALG::Matrix<3,2> XAABB(true);
@@ -85,14 +85,14 @@ LINALG::Matrix<3,2> GEO::getXAABBofEles(
   midpoint(0) = 0.5*(XAABB(0,0)+XAABB(0,1));
   midpoint(1) = 0.5*(XAABB(1,0)+XAABB(1,1));
   midpoint(2) = 0.5*(XAABB(2,0)+XAABB(2,1));
-
+  
   XAABB(0,0) = midpoint(0) + 1.1*(XAABB(0,0)-midpoint(0));
   XAABB(1,0) = midpoint(1) + 1.1*(XAABB(1,0)-midpoint(1));
   XAABB(2,0) = midpoint(2) + 1.1*(XAABB(2,0)-midpoint(2));
   XAABB(0,1) = midpoint(0) + 1.1*(XAABB(0,1)-midpoint(0));
   XAABB(1,1) = midpoint(1) + 1.1*(XAABB(1,1)-midpoint(1));
   XAABB(2,1) = midpoint(2) + 1.1*(XAABB(2,1)-midpoint(2));
-
+  
   return XAABB;
 }
   			
@@ -297,7 +297,7 @@ std::map<int,std::set<int> > GEO::getElementsInRadius(
     const DRT::Discretization&                  dis, 		
     const std::map<int,LINALG::Matrix<3,1> >&   currentpositions, 	
     const LINALG::Matrix<3,1>&                  querypoint,
-    const double		                            radius,
+    const double		                       			radius,
     const int                                   label,
     std::map<int, std::set<int> >&              elementList)
 {
@@ -307,7 +307,7 @@ std::map<int,std::set<int> > GEO::getElementsInRadius(
   // collect all nodes with different label
   for(std::map<int, std::set<int> >::const_iterator labelIter = elementList.begin(); labelIter != elementList.end(); labelIter++)
   {
-    if(label != labelIter->first) // don t collect nodes which belong to the same label
+    if(label != labelIter->first) // don't collect nodes which belong to the same label
     {
       for(std::set<int>::const_iterator eleIter = (labelIter->second).begin(); eleIter != (labelIter->second).end(); eleIter++)
       {
@@ -324,9 +324,10 @@ std::map<int,std::set<int> > GEO::getElementsInRadius(
       double distance = GEO::LARGENUMBER;
       const DRT::Node* node = dis.gNode(*nodeIter);
       GEO::getDistanceToPoint(node, currentpositions, querypoint, distance);
+  
       if(distance < (radius + GEO::TOL7) )
       {
-        for(int i=0; i<dis.gNode(*nodeIter)->NumElement();i++)
+          for(int i=0; i<dis.gNode(*nodeIter)->NumElement();i++)
           elementMap[labelIter->first].insert(dis.gNode(*nodeIter)->Elements()[i]->Id());
       }
     }
@@ -334,6 +335,53 @@ std::map<int,std::set<int> > GEO::getElementsInRadius(
   return elementMap;
 }
 
+
+/*----------------------------------------------------------------------*
+ | FELIX MEIER																													| 
+ | a set of nodes in a given radius from a element.          u.may 07/08| 
+ | The radius is approximated by a box with edge                        |
+ | length 2xRadius + box width																	        | 
+ *----------------------------------------------------------------------*/
+std::map<int,std::set<int> > GEO::getElementsInRadius(
+    const DRT::Discretization&                  dis, 		//von potential::discretRCP_
+    const std::map<int,LINALG::Matrix<3,1> >&   currentpositions, 
+    const std::map<int,LINALG::Matrix<3,2> >&	  elemXAABBList,
+    LINALG::Matrix<3,2> 	  			       				elemXAABB,
+    const int                                   label,
+    std::map<int, std::set<int> >&              elementList)
+{
+  std::map< int, std::set<int> >  nodeList;
+  std::map< int, std::set<int> >  elementMap;
+
+     // collect all nodes with different label
+	 for(std::map<int, std::set<int> >::const_iterator labelIter = elementList.begin(); labelIter != elementList.end(); labelIter++)
+	 {
+	   if(label != labelIter->first) // don't collect nodes which belong to the same label
+	   {
+	     for(std::set<int>::const_iterator eleIter = (labelIter->second).begin(); eleIter != (labelIter->second).end(); eleIter++)
+	     {
+	       DRT::Element* element = dis.gElement(*eleIter);
+	       for(int i = 0; i < DRT::UTILS::getNumberOfElementCornerNodes(element->Shape()); i++)
+	         nodeList[labelIter->first].insert(element->NodeIds()[i]);
+	     }
+	   }
+	 }
+	
+	 for(std::map<int, std::set<int> >::const_iterator labelIter = nodeList.begin(); labelIter != nodeList.end(); labelIter++)
+	   for(std::set<int>::const_iterator nodeIter = (labelIter->second).begin(); nodeIter != (labelIter->second).end(); nodeIter++)
+	   {
+	     const DRT::Node* node = dis.gNode(*nodeIter);
+	     const LINALG::Matrix<3,1> x_node = currentpositions.find(node->Id())->second;
+	 
+	     if(GEO::pointInTreeNode(x_node, elemXAABB) )
+	     {
+	       for(int i=0; i<dis.gNode(*nodeIter)->NumElement();i++)
+	       elementMap[labelIter->first].insert(dis.gNode(*nodeIter)->Elements()[i]->Id());
+	     }
+	   }
+   
+  return elementMap;
+}
 
 
 /*------------------------------------------------------------------------*
@@ -446,7 +494,6 @@ LINALG::Matrix<3,2> GEO::computeContactXAABB(
     return XAABB;
 }
 
-
 /*----------------------------------------------------------------------*
  | searches a nearest object in tree node                    u.may 07/08|
  | object is either a node, line or surface element                     |
@@ -519,81 +566,6 @@ int GEO::nearestObjectInNode(
   return nearestObject.getLabel();
 }
 
-
-
-/*-----------------------------------------------------------------------*
- | gives the coords of the nearest point on or in an object inu.may 09/09|
- | tree node; object is either a node, line or surface element           |
- *-----------------------------------------------------------------------*/
-void GEO::nearestObjectInNode(
-    const RCP<DRT::Discretization>              dis,
-    map<int, RCP<DRT::Element> >& 				      elements,
-    const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
-    const std::map<int, std::set<int> >&        elementList,
-    const LINALG::Matrix<3,1>&                  point,
-    LINALG::Matrix<3,1>&                        minDistCoords)
-{
-
-  GEO::NearestObject nearestObject;        
-  bool pointFound = false;
-  double min_distance = GEO::LARGENUMBER;
-  double distance = GEO::LARGENUMBER;
-  LINALG::Matrix<3,1> normal(true);
-  LINALG::Matrix<3,1> x_surface(true);
-  std::map< int, std::set<int> > nodeList;
-
-  // run over all surface elements
-  for(std::map<int, std::set<int> >::const_iterator labelIter = elementList.begin(); labelIter != elementList.end(); labelIter++)
-    for(std::set<int>::const_iterator eleIter = (labelIter->second).begin(); eleIter != (labelIter->second).end(); eleIter++)
-    {
-      // not const because otherwise no lines can be obtained
-      DRT::Element* element = elements[*eleIter].get();
-      pointFound = GEO::getDistanceToSurface(element, currentpositions, point, x_surface, distance);
-      if(pointFound && distance < min_distance)
-      {
-        pointFound = false;
-        min_distance = distance;
-        nearestObject.setSurfaceObjectType(*eleIter, labelIter->first, x_surface);
-      }
-
-      // run over all line elements
-      const std::vector<Teuchos::RCP< DRT::Element> > eleLines = element->Lines();
-      for(int i = 0; i < element->NumLine(); i++)
-      {
-        pointFound = GEO::getDistanceToLine(eleLines[i].get(), currentpositions, point, x_surface, distance);
-        if(pointFound && distance < min_distance)
-        {
-          pointFound = false;
-          min_distance = distance;
-          nearestObject.setLineObjectType(i, *eleIter, labelIter->first, x_surface);
-        }
-      }
-      // collect nodes
-      for(int i = 0; i < DRT::UTILS::getNumberOfElementCornerNodes(element->Shape()); i++)
-        nodeList[labelIter->first].insert(element->NodeIds()[i]);
-    }
-
-  // run over all nodes
-  for (std::map<int, std::set<int> >::const_iterator labelIter = nodeList.begin(); labelIter != nodeList.end(); labelIter++)
-    for (std::set<int>::const_iterator nodeIter = (labelIter->second).begin(); nodeIter != (labelIter->second).end(); nodeIter++)
-    {
-      const DRT::Node* node = dis->gNode(*nodeIter);
-      GEO::getDistanceToPoint(node, currentpositions, point, distance);
-      if (distance < min_distance)
-      {
-        min_distance = distance;
-        nearestObject.setNodeObjectType(*nodeIter, labelIter->first, currentpositions.find(node->Id())->second);
-      }
-    }
-
-  if(nearestObject.getObjectType()== GEO::NOTYPE_OBJECT)
-    dserror("no nearest object obtained");
-
-  // save projection point
-  minDistCoords = nearestObject.getPhysCoord();
-
-  return;  
-}
 
 
 /*----------------------------------------------------------------------*
@@ -1320,7 +1292,7 @@ bool GEO::inSameNodeBox(
  *----------------------------------------------------------------------*/
 void GEO::checkRoughGeoType(
     const DRT::Element*               element,
-    const LINALG::SerialDenseMatrix&  xyze_element,
+    const LINALG::SerialDenseMatrix   xyze_element,
     GEO::EleGeoType&                  eleGeoType)
 {
   const int order = DRT::UTILS::getOrder(element->Shape());
@@ -1344,7 +1316,7 @@ void GEO::checkRoughGeoType(
  *----------------------------------------------------------------------*/
 void GEO::checkRoughGeoType(
     const RCP<DRT::Element>           element,
-    const LINALG::SerialDenseMatrix&  xyze_element,
+    const LINALG::SerialDenseMatrix   xyze_element,
     GEO::EleGeoType&                  eleGeoType)
 {
   const int order = DRT::UTILS::getOrder(element->Shape());
@@ -1371,8 +1343,11 @@ void GEO::getIntersectionCandidates(
     const std::map<int, std::set<int> >&        elementList,
     std::set<int>&                              intersectionCandidateIds)
 {
+
+
   // loop over all entries of elementList (= intersection candidates)
   // run over global ids
+	
   for(std::set<int>::const_iterator elementIter = (elementList.begin()->second).begin();
       elementIter != (elementList.begin()->second).end(); elementIter++)
   {
@@ -1380,6 +1355,36 @@ void GEO::getIntersectionCandidates(
       intersectionCandidateIds.insert(*elementIter);
   }
 
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | returns a set of potential elements                     u.may   10/09|
+ *----------------------------------------------------------------------*/
+void GEO::getPotentialElements(
+    const std::map<int,LINALG::Matrix<3,2> >&   currentXAABBs,
+    const LINALG::Matrix<3,2>&                  xfemXAABB,
+    const std::map<int, std::set<int> >&        elementList,
+    std::map<int,std::set<int> >&               intersectionCandidateIds,
+    const int                                   label)
+{
+  // loop over all entries of elementList (= intersection candidates)
+  // run over global ids
+	
+	// collect all nodes with different label
+  for(std::map<int, std::set<int> >::const_iterator labelIter = elementList.begin(); labelIter != elementList.end(); labelIter++)
+  {
+    if(label != labelIter->first) // don't collect nodes which belong to the same label
+    {
+
+			for(std::set<int>::const_iterator elementIter = (labelIter->second).begin(); elementIter != (labelIter->second).end(); elementIter++)
+			  {
+			    if(intersectionOfXAABB<3>(currentXAABBs.find(*elementIter)->second, xfemXAABB))
+			      intersectionCandidateIds[labelIter->first].insert(*elementIter);
+			  }
+     }  
+	}  
   return;
 }
 

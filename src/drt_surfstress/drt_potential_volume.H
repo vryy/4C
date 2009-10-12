@@ -62,7 +62,6 @@ public:
       RefCountPtr<Epetra_Vector> disp,
       RefCountPtr<Epetra_Vector> fint,
       RefCountPtr<LINALG::SparseMatrix> stiff);
-
   
   
   void StiffnessAndInternalForcesPotential(
@@ -73,7 +72,6 @@ public:
       Epetra_SerialDenseMatrix&       K_surf,
       Epetra_SerialDenseVector&       F_int
       );
-  
   
 
   /*!
@@ -89,25 +87,6 @@ public:
   void StiffnessAndInternalForcesPotential(
       const DRT::Element*               element,
       const DRT::UTILS::GaussRule2D&    gaussrule,
-      ParameterList&                    params,
-      vector<int>&                      lm,
-      Epetra_SerialDenseMatrix&         K_surf,
-      Epetra_SerialDenseVector&         fint);
-
-
-  /*!
-    \brief Routine to calculate additional internal forces and
-    stiffnesses due to interfacial phenomena for line elements
-
-    \param element    (in)  : element
-    \param gaussrule  (in)  : gaussrule of element
-    \param params     (in)  : first partial derivatives of surface area
-    \param K_surf     (out) : element stiffness matrix
-    \param fint       (out) : element internal force vector
-   */
-  void StiffnessAndInternalForcesPotential(
-      const DRT::Element*               element,
-      const DRT::UTILS::GaussRule1D&    gaussrule,
       ParameterList&                    params,
       vector<int>&                      lm,
       Epetra_SerialDenseMatrix&         K_surf,
@@ -131,7 +110,7 @@ private:
 
   /*!
   \brief  compute internal force and stiffness matrix
-          for surface elements
+          for volume elements
    */
   void computeFandK(
       const DRT::Element*              actEle,
@@ -162,24 +141,8 @@ private:
       const double                     curvefac
       );
 
-
-  /*!
-  \brief  compute internal force and stiffness matrix
-          for line elements
-   */
-  void computeFandK(
-      const DRT::Element*              actEle,
-      const DRT::UTILS::GaussRule1D&   gaussrule,
-      std::map<int,std::set<int> >&    potElements,
-      vector<int>&                     lm,
-      Epetra_SerialDenseMatrix&        K_surf,
-      Epetra_SerialDenseVector&        F_int,
-      RefCountPtr<DRT::Condition>      cond,
-      const int                        label,
-      const double                     curvefac
-      );
-
   
+  //! compute integration factors for volume elements
   double ComputeFactor(
       const DRT::Element*                     element,
       LINALG::SerialDenseVector&              funct,
@@ -203,18 +166,7 @@ private:
       );
 
 
-  //! compute integration factors for line elements
-  double ComputeFactor(
-      const DRT::Element*                     element,
-      LINALG::SerialDenseVector&              funct,
-      LINALG::SerialDenseMatrix&              deriv,
-      const DRT::UTILS::IntegrationPoints1D&  intpoints,
-      const int                               gp,
-      LINALG::Matrix<3,1>&                    x_gp,
-      const double                            curve_fac
-      );
 
-  
   //! returns gauss rule for given distype
   void GetGaussRule3D(
       const DRT::Element::DiscretizationType& distype,
@@ -229,29 +181,13 @@ private:
       );
 
 
-  //! compute surface normal in gaussian point
-  LINALG::Matrix<3,1> ComputeNormalInGP(
-      const DRT::Element*                     element,
-      const LINALG::Matrix<3,1>&              x_gp
-      );
-
-
-  //! determine valid contribution
-  bool DetermineValidContribution(
-      const LINALG::Matrix<3,1>&              x_gp,
-      const LINALG::Matrix<3,1>&              x_pot_gp,
-      const LINALG::Matrix<3,1>&              normal_gp,
-      const LINALG::Matrix<3,1>&              normal_pot_gp
-      );
-
-
   //! name@ Private Attributes
 
   //! current position of boundary elements
   std::map<int,LINALG::Matrix<3,1> >          currentpositions_;
 
   //! for each potential condition label there is a set of boundary elements
- std::map<int,std::set<int> >                 elementsByLabel_;
+  std::map<int,std::set<int> >                 elementsByLabel_;
 
   //! potential boundary
   LINALG::MapExtractor                        potboundary_;
@@ -267,6 +203,9 @@ private:
 
   //! @name importer
   Teuchos::RCP<Epetra_Import>                 importer_;
+  
+  //! List of current XAABBs 
+  std::map<int,LINALG::Matrix<3,2> > 					elemXAABBList_;
 
 
 }; //class

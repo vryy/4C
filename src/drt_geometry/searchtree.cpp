@@ -53,7 +53,7 @@ void GEO::SearchTree::initializeTree(
   treeRoot_ = rcp(new TreeNode(NULL, max_depth_, nodeBox, treetype));
 
   // insert element map into tree root node
-  if(elementsByLabel.size()>0)
+    if(elementsByLabel.size()>0)
     treeRoot_->setElementList(elementsByLabel);
 
 }
@@ -239,7 +239,6 @@ std::map<int,std::set<int> > GEO::SearchTree::searchElementsInRadius(
 }
 
 
-
 /*----------------------------------------------------------------------*
  | returns a vector of elements whose XAABB s are            u.may 09/08|
  | intersecting with the XAABB of a given volume element                |
@@ -270,6 +269,33 @@ void GEO::SearchTree::queryIntersectionCandidates(
 
   if(!(treeRoot_->getElementList().empty()))
     treeRoot_->queryIntersectionCandidates(currentXAABBs, eleXAABB, elementset);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | returns a vector of elements whose XAABB s are            u.may 10/09|
+ | intersecting with the XAABB of a given volume element                |
+ *----------------------------------------------------------------------*/
+void GEO::SearchTree::queryPotentialElements(
+    const std::map<int,LINALG::Matrix<3,2> >&   currentXAABBs,
+    const LINALG::Matrix<3,2>&                  eleXAABB,
+    std::map<int, std::set<int> >&              elementset,
+    const int                                   label)
+{
+  TEUCHOS_FUNC_TIME_MONITOR("SearchTree - queryTime");
+
+  elementset.clear();
+
+  if(treeRoot_ == Teuchos::null)
+  	dserror("tree is not yet initialized !!!");
+
+  if(!intersectionOfXAABB<3>(treeRoot_->getNodeBox(), eleXAABB))
+  	dserror("eleXAABB not inside NodeBox!!!");
+
+  if(!(treeRoot_->getElementList().empty()))
+    treeRoot_->queryPotentialElements(currentXAABBs, eleXAABB, elementset, label);
 
   return;
 }
@@ -1575,7 +1601,7 @@ std::vector<int> GEO::SearchTree::TreeNode::classifyElement(
 
 
 /*----------------------------------------------------------------------*
- | classifiy element in tree node			                      u.may  09/09|
+ | classifiy element in tree node			               u.may   07/08|
  *----------------------------------------------------------------------*/
 std::vector<int> GEO::SearchTree::TreeNode::classifyElement(
     const RCP<DRT::Element>                     element,
@@ -1588,7 +1614,6 @@ std::vector<int> GEO::SearchTree::TreeNode::classifyElement(
   const LINALG::Matrix<3,2> elemXAABB(GEO::computeFastXAABB(element->Shape(), xyze, eleGeoType));
   return classifyXAABB(elemXAABB);
 }
-
 
 
 /*----------------------------------------------------------------------*
@@ -1904,8 +1929,8 @@ std::map<int,std::set<int> > GEO::SearchTree::TreeNode::searchElementsInRadius(
         return GEO::getElementsInRadius(dis, currentpositions, point, radius, label, elementList_);
 
       // dynamically grow tree otherwise, create children and set label for empty children
-      // search in apropriate child node
-      const vector<int> childindex = classifyRadius(radius, point);
+      // search in appropriate child node
+      const vector<int> childindex = classifyRadius(radius, point); 
       if(childindex.size() < 1)
         dserror("no child found\n");
       else if (childindex.size() ==1) // child node found which encloses AABB so refine further
@@ -1922,7 +1947,6 @@ std::map<int,std::set<int> > GEO::SearchTree::TreeNode::searchElementsInRadius(
   }
   return eleMap;
 }
-
 
 
 /*------------------------------------------------------------------------------*
@@ -1990,7 +2014,7 @@ std::vector<int> GEO::SearchTree::TreeNode::searchPointsInRadius(
 void GEO::SearchTree::TreeNode::queryIntersectionCandidates(
     const std::map<int,LINALG::Matrix<3,2> >&   currentXAABBs,
     const LINALG::Matrix<3,2>&                  eleXAABB,
-    std::set<int>&                              elementset)
+    std::set<int>&								              elementset)
 {
   switch(treeNodeType_)
   {
@@ -2042,6 +2066,66 @@ void GEO::SearchTree::TreeNode::queryIntersectionCandidates(
   return;
 }
 
+
+/*----------------------------------------------------------------------*
+ | returns a set of elements whose XAABB s are               u.may 10/09|
+ | intersecting with the XAABB of a given volume element                |
+ *----------------------------------------------------------------------*/
+void GEO::SearchTree::TreeNode::queryPotentialElements(
+    const std::map<int,LINALG::Matrix<3,2> >&   currentXAABBs,
+    const LINALG::Matrix<3,2>&                  eleXAABB,
+    std::map<int, std::set<int> >&              elementset,
+    const int                                   label)
+{
+  switch(treeNodeType_)
+  {
+    case INNER_NODE:
+    {
+      int index = -1;
+      if(classifyXAABB(index,eleXAABB))
+      {
+        children_[index]->queryPotentialElements(currentXAABBs, eleXAABB, elementset, label);
+        return;
+      }
+      else
+      {
+        GEO::getPotentialElements(currentXAABBs, eleXAABB, elementList_, elementset, label);
+        return;
+      }
+      break;
+    }
+    case LEAF_NODE:
+    {
+      if(elementList_.empty())
+        return;
+
+      // max depth reached, counts reverse
+      if(treedepth_ <= 0 || (elementList_.begin()->second).size() == 1)
+      {
+        GEO::getPotentialElements(currentXAABBs, eleXAABB, elementList_, elementset, label);
+        return;
+      }
+      // dynamically grow tree otherwise, create children and set label for empty children
+      // search in apropriate child node
+      int index = -1;
+      if(classifyXAABB(index,eleXAABB))
+      {
+        createChildren(currentXAABBs);
+        children_[index]->queryPotentialElements(currentXAABBs, eleXAABB, elementset, label);
+        return;
+      }
+      else
+      {
+        GEO::getPotentialElements(currentXAABBs, eleXAABB,  elementList_, elementset, label);
+        return;
+      }
+      break;
+    }
+    default:
+      dserror("should not get here\n");
+  }
+  return;
+}
 
 
 /*----------------------------------------------------------------------*

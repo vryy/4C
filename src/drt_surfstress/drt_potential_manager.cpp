@@ -77,6 +77,7 @@ void POTENTIAL::PotentialManager::ReadParameter()
 {
   const Teuchos::ParameterList& intpot   = DRT::Problem::Instance()->InteractionPotentialParams();
   // parameters for interaction potential
+  
   switch(Teuchos::getIntegralValue<INPAR::POTENTIAL::PotentialType>(intpot,"POTENTIAL_TYPE"))
   {
     case INPAR::POTENTIAL::potential_surface:
@@ -101,7 +102,7 @@ void POTENTIAL::PotentialManager::ReadParameter()
       params_.set<string>("potential type","Surface");
     break;
   }
-  
+    
   cout << params_.get<string>("potential type")<< endl;
   // set approximation method for volume potentials
   switch(Teuchos::getIntegralValue<INPAR::POTENTIAL::ApproximationType>(intpot,"APPROXIMATION_TYPE"))

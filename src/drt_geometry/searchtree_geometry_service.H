@@ -83,8 +83,8 @@ namespace GEO
   \return  XAxisAlignedBoundingBox
    */
   LINALG::Matrix<3,2> getXAABBofEles(
-      map<int, RCP<DRT::Element> >&               elements,
-      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions
+      map<int, RCP<DRT::Element> >&			          elements,
+      const std::map<int,LINALG::Matrix<3,1> >& 	currentpositions
   );
   
   
@@ -171,7 +171,28 @@ namespace GEO
       const int                                   label,
       std::map<int, std::set<int> >&              elementList
       );
-
+  
+  /*!
+	FELIX MEIER
+    \brief Returns a map of element ids lying in a circle of a given querypoint and a radius
+    \param dis                  discretization
+    \param currentpositions     current nodal positions in discretization
+    \param elemXAABB           	elementbox to be examined
+    \param radius               radius
+    \param label                label
+    \param elementList          map of elements label gid
+    \return                     label
+     */
+    std::map<int,std::set<int> > getElementsInRadius(
+        const DRT::Discretization&                  dis,
+        const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
+        const std::map<int,LINALG::Matrix<3,2> >&	  elemXAABBList,
+        LINALG::Matrix<3,2> 	  			       			  elemXAABB,
+        const int                                   label,
+        std::map<int, std::set<int> >&              elementList
+        );
+       
+   
   /*!
   \brief returns vector with GIDs of nodes within given radius around querypoint
   \param dis                  discretization
@@ -258,25 +279,6 @@ namespace GEO
     LINALG::Matrix<3,1>&                        minDistanceVec,
     GEO::NearestObject&                         nearestObject
     );
-
-
-  /*!
-  \brief Searches for the nearest point to the query point in elementList
-  \param dis                  discretization
-  \param elements	          list of all elements 
-  \param currentpositions     current nodal positions in discretization
-  \param elementList          element list of close elements, is looped
-  \param point                point to be examined
-  \param minDistCoords        Coords of the nearest point
-   */
-  void nearestObjectInNode(
-      const RCP<DRT::Discretization>              dis,
-      map<int, RCP<DRT::Element> >&               elements,
-      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
-      const std::map<int, std::set<int> >&        elementList,
-      const LINALG::Matrix<3,1>&                  point,
-      LINALG::Matrix<3,1>&                        minDistCoords
-  );
 
 
   /*!
@@ -456,7 +458,7 @@ namespace GEO
   \return true, if a point lies with in a node box, false otherwise
    */
   bool  pointInTreeNode(
-      const LINALG::Matrix<3,1>&              point,
+      const LINALG::Matrix<3,1>&            point,
       const LINALG::Matrix<3,2>&            nodeBox
       );
 
@@ -513,7 +515,7 @@ namespace GEO
    */
   void checkRoughGeoType(
       const DRT::Element*                     element,
-      const LINALG::SerialDenseMatrix&        xyze_element,
+      const LINALG::SerialDenseMatrix         xyze_element,
       GEO::EleGeoType&                        eleGeoType
       );
 
@@ -526,9 +528,9 @@ namespace GEO
   \param eleGeoType           geometry type
    */
   void checkRoughGeoType(
-      RCP<DRT::Element>                 element,
-      const LINALG::SerialDenseMatrix& 	xyze_element,
-      GEO::EleGeoType&           	      eleGeoType
+      RCP<DRT::Element>   		    element,
+      LINALG::SerialDenseMatrix  	xyze_element,
+      GEO::EleGeoType&           	eleGeoType
   );
 
   
@@ -538,7 +540,7 @@ namespace GEO
   \param currentpositions     current nodal positions in discretization
   \param xfemElement          element to be examined
   \param elementList          map of elements label gid
-  \return                     label
+  \return                     
    */
   void getIntersectionCandidates(
       const std::map<int,LINALG::Matrix<3,2> >&   currentXAABBs,
@@ -546,10 +548,26 @@ namespace GEO
       const std::map<int, std::set<int> >&        elementList,
       std::set<int>&                              intersectionCandidateIds
       );
-
-
-
+  
+  
+  /*! 
+    \brief Returns a vector of intersection candidate ids
+    \param dis                  discretization
+    \param currentpositions     current nodal positions in discretization
+    \param xfemElement          element to be examined
+    \param elementList          map of elements label gid
+    \return                     
+     */
+    void getPotentialElements(
+      const std::map<int,LINALG::Matrix<3,2> >&   currentXAABBs,
+      const LINALG::Matrix<3,2>&                  xfemXAABB,
+      const std::map<int, std::set<int> >&        elementList,
+      std::map<int,std::set<int> >&               intersectionCandidateIds,
+      const int                                   label
+      );   
+  
 }
+
 
 #endif
 #endif

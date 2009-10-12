@@ -235,8 +235,8 @@ private:
    \return vector of children ids
    */
   std::vector<int> classifyElement(
-      const RCP<DRT::Element>       		       	  element,
-      const std::map<int,LINALG::Matrix<3,1> >& 	currentpositions
+      const RCP<DRT::Element>       		       			element,
+      const std::map<int,LINALG::Matrix<3,1> >&   	currentpositions
   ) const;
 
 
@@ -580,8 +580,25 @@ public:
   void queryIntersectionCandidates(
       const std::map<int,LINALG::Matrix<3,2> >&   currentXAABBs,
       const LINALG::Matrix<3,2>&                  eleXAABB,
-      std::set<int>&                           elementset
+      std::set<int>&                              elementset
       );
+  
+  
+  /*! 
+    \brief   returns a set of elements whose XAABB s are
+             intersecting with the XAABB of a given volume element and whose labels are different
+
+    \param element              given slave contact element
+    \param xyze_element         coordinates of element
+    \param label								label of element to be examined
+    \return set of node gids
+     */
+    void queryPotentialElements(
+        const std::map<int,LINALG::Matrix<3,2> >&   currentXAABBs,
+        const LINALG::Matrix<3,2>&                  eleXAABB,
+        std::map<int, std::set<int> >&              elementset,
+        const int                                   label
+        );
 
 
   /*!
@@ -807,6 +824,7 @@ public:
       const int                                   label
       );
 
+  
   /*!
   \brief returns a vector of Ids of points in a radius around a given querypoint
   \param currentpositions     current positions of a number of points assigned to a unique Id
@@ -831,9 +849,23 @@ public:
       const std::map<int,LINALG::Matrix<3,2> >&   currentXAABBs,
       const std::vector< LINALG::Matrix<3,2> >&   structure_AABBs,
       const LINALG::Matrix<3,2>&                  eleXAABB,
-      std::set<int>&                           elementset
+      std::set<int>&                       		    elementset
       );
 
+  
+  /*! 
+   \brief   returns a vector of elements whose XAABB s are
+            intersecting with the XAABB of a given volume element
+   \param dis                  discretization
+   \param currentpositions     current nodal positions in discretization
+   \return set of node gids
+    */
+   void queryPotentialElements(
+       const std::map<int,LINALG::Matrix<3,2> >&   currentXAABBs,
+       const LINALG::Matrix<3,2>&                  eleXAABB,
+       std::map<int, std::set<int> >&        		   elementset,
+       const int                                   label
+       );
 
   /*!
   \brief returns a vector of gids of contact elements whose AABBs intersect with

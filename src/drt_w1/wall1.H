@@ -283,7 +283,8 @@ private:
     calc_struct_update_imrlike,
     calc_struct_reset_istep,  ///< reset elementwise internal variables
                               ///< during iteration to last converged state
-    calc_struct_energy  ///< calculate internal energy of element
+    calc_struct_energy,       ///< calculate internal energy of element
+    calc_potential_stiff      ///< calculate volume potential
   };
 
   /// type of 2D dimension reduction
