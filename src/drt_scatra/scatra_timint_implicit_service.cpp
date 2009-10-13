@@ -193,7 +193,7 @@ void SCATRA::ScaTraTimIntImpl::ComputeNeumannInflow(
   // set vector values needed by elements
   discret_->ClearState();
 
-  // add element parameters according to time-integtration scheme
+  // add element parameters according to time-integration scheme
   AddSpecificTimeIntegrationParameters(condparams);
 
   std::string condstring("TransportNeumannInflow");
