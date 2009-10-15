@@ -103,6 +103,9 @@ void loma_dyn(int disnumff,int disnumscatra, int restart)
     {
       Epetra_Time time(comm);
       std::map<string,string> conditions_to_copy;
+      conditions_to_copy.insert(pair<string,string>("LineNeumann","FluidLineNeumann"));
+      conditions_to_copy.insert(pair<string,string>("SurfaceNeumann","FluidSurfaceNeumann"));
+      conditions_to_copy.insert(pair<string,string>("VolumeNeumann","FluidVolumeNeumann"));
       conditions_to_copy.insert(pair<string,string>("TransportDirichlet","Dirichlet"));
       conditions_to_copy.insert(pair<string,string>("TransportPointNeumann","PointNeumann"));
       conditions_to_copy.insert(pair<string,string>("TransportLineNeumann","LineNeumann"));

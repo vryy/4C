@@ -237,7 +237,8 @@ public:
   Teuchos::RCP<Epetra_Vector> Velnp() { return velnp_; }
   Teuchos::RCP<Epetra_Vector> Velaf() { return velaf_; }
   Teuchos::RCP<Epetra_Vector> Veln() { return veln_; }
-  Teuchos::RCP<Epetra_Vector> SgVelVisc();
+  Teuchos::RCP<Epetra_Vector> Accam() { return accam_; }
+  Teuchos::RCP<Epetra_Vector> Hist() { return hist_; }
   Teuchos::RCP<Epetra_Vector> GridVel() { return gridv_; }
 
   /// provide access to the Dirichlet map
@@ -476,9 +477,6 @@ protected:
   /// flag for potential Neumann inflow
   bool neumanninflow_;
 
-  /// flag for evaluation of subgrid-scale velocity
-  bool sgvel_;
-
   /// form of convective term
   string convform_;
 
@@ -546,9 +544,6 @@ protected:
   RCP<Epetra_Vector>    dispn_;
   RCP<Epetra_Vector>    dispnm_;
   //@}
-
-  /// subgrid-viscosity vector
-  RCP<Epetra_Vector>    sgvelvisc_;
 
   /// only necessary for AVM3: scale-separation matrix
   RCP<LINALG::SparseMatrix> Sep_;

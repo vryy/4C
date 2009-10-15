@@ -177,13 +177,13 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(int numdofpernode, int numscal)
     scatratype_(INPAR::SCATRA::scatratype_standard),
     diffreastafac_(0.0),
     evelnp_(true),   // initialize to zero
-    esgvelnp_(true),
+    eaccnp_(true),
+    eprenp_(true),
     ephin_(numscal_),
     ephinp_(numscal_),
     ephiam_(numscal_),
     ehist_(numdofpernode_),
     epotnp_(true),
-    esubgrdiff_(true),
     fsphinp_(numscal_),
     edispnp_(true),
     xyze_(true),
@@ -214,7 +214,7 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(int numdofpernode, int numscal)
     migvelint_(true),
     vdiv_(0.0),
     tau_(numscal_),
-    kart_(numscal_),
+    sgdiff_(numscal_),
     xder2_(true),
     fac_(0.0),
     conv_(true),
@@ -348,11 +348,12 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     // set flags for subgrid-scale velocity and all-scale subgrid-diffusivity term
     // (default: "false" for both flags)
     const bool sgvel(Teuchos::getIntegralValue<int>(stablist,"SUGRVEL"));
+    sgvel_ = sgvel;
     const bool assgd(Teuchos::getIntegralValue<int>(stablist,"ASSUGRDIFF"));
 
-    // select type of all-scale artificial subgrid-diffusivity if included
-    const INPAR::SCATRA::KartType whichkart
-    = Teuchos::getIntegralValue<INPAR::SCATRA::KartType>(stablist,"DEFINITION_KART");
+    // select type of all-scale subgrid diffusivity if included
+    const INPAR::SCATRA::AssgdType whichassgd
+    = Teuchos::getIntegralValue<INPAR::SCATRA::AssgdType>(stablist,"DEFINITION_ASSGD");
 
     // set flags for potential evaluation of tau and material law at int. point
     const INPAR::SCATRA::EvalTau tauloc = Teuchos::getIntegralValue<INPAR::SCATRA::EvalTau>(stablist,"EVALUATION_TAU");
@@ -362,34 +363,47 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
 
     // set flag for fine-scale subgrid diffusivity and perform some checks
     bool fssgd = false; //default
+    const INPAR::SCATRA::FSSUGRDIFF whichfssgd = params.get<INPAR::SCATRA::FSSUGRDIFF>("fs subgrid diffusivity");
+    if (whichfssgd == INPAR::SCATRA::fssugrdiff_artificial)
     {
-      const INPAR::SCATRA::FSSUGRDIFF fssgdinp = params.get<INPAR::SCATRA::FSSUGRDIFF>("fs subgrid diffusivity");
-      if (fssgdinp == INPAR::SCATRA::fssugrdiff_artificial)
-      {
-        fssgd = true;
-        // check for solver type
-        if (is_incremental_) dserror("Artificial fine-scale subgrid-diffusivity approach only in combination with non-incremental solver so far!");
-      }
-      else if (fssgdinp == INPAR::SCATRA::fssugrdiff_transfer_from_fluid)
-      {
-        fssgd = true;
-        // check for solver type
-        if (not is_incremental_) dserror("Fine-scale subgrid-diffusivity approach with transfer from fluid part only in combination with incremental solver so far!");
-      }
+      fssgd = true;
 
-      // check for combination of all-scale and fine-scale subgrid diffusivity
-      if (assgd and fssgd) dserror("No combination of all-scale and fine-scale subgrid-diffusivity approach currently possible!");
+      // check for solver type
+      if (is_incremental_) dserror("Artificial fine-scale subgrid-diffusivity approach only in combination with non-incremental solver so far!");
     }
+    else if (whichfssgd == INPAR::SCATRA::fssugrdiff_smagorinsky_all)
+    {
+      fssgd = true;
+
+      // check for solver type
+      if (not is_incremental_) dserror("Fine-scale subgrid-diffusivity approach using all-scale Smagorinsky model only in combination with incremental solver so far!");
+    }
+    else if (whichfssgd == INPAR::SCATRA::fssugrdiff_smagorinsky_small)
+      dserror("Fine-scale subgrid-diffusivity approach using fine-scale Smagorinsky model not available so far!");
+
+    // check for combination of all-scale and fine-scale subgrid diffusivity
+    if (assgd and fssgd) dserror("No combination of all-scale and fine-scale subgrid-diffusivity approach currently possible!");
 
     // get velocity at nodes
     const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
     DRT::UTILS::ExtractMyNodeBasedValues(ele,evelnp_,velocity,nsd_);
 
     // also get subgrid-scale velocity field if required
-    if (sgvel)
+    if (sgvel_)
     {
-      const RCP<Epetra_MultiVector> sgvel = params.get< RCP<Epetra_MultiVector> >("subgrid-scale velocity field",null);
-      DRT::UTILS::ExtractMyNodeBasedValues(ele,esgvelnp_,sgvel,nsd_);
+      const RCP<Epetra_MultiVector> accpre = params.get< RCP<Epetra_MultiVector> >("acceleration/pressure field",null);
+      LINALG::Matrix<nsd_+1,iel> eaccprenp;
+      DRT::UTILS::ExtractMyNodeBasedValues(ele,eaccprenp,accpre,nsd_+1);
+
+      // split acceleration and pressure values
+      for (int i=0;i<iel;++i)
+      {
+        for (int j=0;j<nsd_;++j)
+        {
+          eaccnp_(j,i) = eaccprenp(j,i);
+        }
+        eprenp_(i) = eaccprenp(nsd_,i);
+      }
     }
 
     // extract local values from the global vectors
@@ -468,20 +482,14 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     }
     else epotnp_.Clear();
 
+    double Cs(0.0);
+    double tpn(1.0);
     // get subgrid-diffusivity vector if turbulence model is used
     if (turbmodel or (is_incremental_ and fssgd))
     {
-      RefCountPtr<const Epetra_Vector> sgdiff = discretization.GetState("subgrid diffusivity");
-      if (sgdiff==null) dserror("Cannot get state vector 'subgrid diffusivity'");
-
-      // extract local values from the global vector
-      vector<double> mysgdiff(lm.size());
-      DRT::UTILS::ExtractMyValues(*sgdiff,mysgdiff,lm);
-
-      for (int i=0;i<iel;++i)
-      {
-        esubgrdiff_(i,0) = mysgdiff[0+(i*numdofpernode_)];
-      }
+      // get Smagorinsky constant and turbulent Prandtl number
+      Cs  = params.get<double>("Smagorinsky constant");
+      tpn = params.get<double>("turbulent Prandtl number");
 
       if (is_incremental_ and fssgd)
       {
@@ -513,12 +521,14 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         timefac,
         alphaF,
         whichtau,
-        whichkart,
-        sgvel,
+        whichassgd,
+        whichfssgd,
         assgd,
         fssgd,
         turbmodel,
         reinitswitch,
+        Cs,
+        tpn,
         frt);
   }
   // calculate time derivative for time value t_0
@@ -863,12 +873,14 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
     const double                          timefac, ///< time discretization factor
     const double                          alphaF, ///< factor for generalized-alpha time integration
     const enum INPAR::SCATRA::TauType     whichtau, ///< stabilization parameter definition
-    const enum INPAR::SCATRA::KartType    whichkart, ///< all-scale artificial subgrid-diffusivity definition
-    const bool                            sgvel, ///< subgrid-scale velocity flag
+    const enum INPAR::SCATRA::AssgdType   whichassgd, ///< all-scale subgrid-diffusivity definition
+    const enum INPAR::SCATRA::FSSUGRDIFF  whichfssgd, ///< fine-scale subgrid-diffusivity definition
     const bool                            assgd, ///< all-scale subgrid-diff. flag
     const bool                            fssgd, ///< fine-scale subgrid-diff. flag
     const bool                            turbmodel, ///< turbulence model flag
     const bool                            reinitswitch,
+    const double                          Cs, ///< Smagorinsky constant
+    const double                          tpn, ///< turbulent Prandtl number
     const double                          frt ///< factor F/RT needed for ELCH calculations
 )
 {
@@ -908,7 +920,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
   if (not mat_gp_ or not tau_gp_) GetMaterialParams(ele);
 
   //----------------------------------------------------------------------
-  // calculation of stabilization parameter(s) tau at element center
+  // calculation of subgrid diffusivity and stabilization parameter(s)
+  // at element center
   //----------------------------------------------------------------------
   if (not tau_gp_)
   {
@@ -937,6 +950,14 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
 
     for (int k = 0;k<numscal_;++k) // loop of each transported scalar
     {
+      // calculation of all-scale subgrid diffusivity (artificial or due to
+      // constant-coefficient Smagorinsky model) at element center
+      if (assgd or turbmodel)
+        CalcSubgrDiff(dt,timefac,whichassgd,assgd,turbmodel,Cs,tpn,vol,k);
+
+      // calculation of fine-scale artificial subgrid diffusivity at element center
+      if (fssgd) CalcFineScaleSubgrDiff(ele,subgrdiff,whichfssgd,Cs,tpn,vol,k);
+
       // generating copy of diffusivity for use in CalTau routine
       double diffus = diffus_[k];
 
@@ -944,27 +965,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
       if (twoionsystem && (k<2)) diffus = resdiffus;
 
       // calculation of stabilization parameter at element center
-      CalTau(ele,
-             diffus,
-             dt,
-             timefac,
-             whichtau,
-             turbmodel,
-             vol,
-             k);
-
-      // calculation of all-scale or fine-scale artificial subgrid
-      // diffusivity at element center
-      if (assgd or fssgd) CalKart(ele,
-                                  subgrdiff,
-                                  diffus,
-                                  dt,
-                                  timefac,
-                                  whichkart,
-                                  assgd,
-                                  fssgd,
-                                  vol,
-                                  k);
+      CalTau(ele,diffus,dt,timefac,whichtau,vol,k);
     }
   }
 
@@ -993,7 +994,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
       conv_.MultiplyTN(derxy_,velint_);
 
       //--------------------------------------------------------------------
-      // calculation of stabilization parameter(s) tau at integration point
+      // calculation of subgrid diffusivity and stabilization parameter(s)
+      // at integration point
       //--------------------------------------------------------------------
       if (tau_gp_)
       {
@@ -1014,33 +1016,23 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
 
         for (int k = 0;k<numscal_;++k) // loop of each transported scalar
         {
-          // generating copy of diffusivity for use in  routine
+          // calculation of all-scale subgrid diffusivity (artificial or due to
+          // constant-coefficient Smagorinsky model) at integration point
+          if (assgd or turbmodel)
+            CalcSubgrDiff(dt,timefac,whichassgd,assgd,turbmodel,Cs,tpn,vol,k);
+
+          // calculation of fine-scale artificial subgrid diffusivity
+          // at integration point
+          if (fssgd) CalcFineScaleSubgrDiff(ele,subgrdiff,whichfssgd,Cs,tpn,vol,k);
+
+          // generating copy of diffusivity for use in CalTau routine
           double diffus = diffus_[k];
 
           // use resulting diffusion coefficient for binary electrolyte solutions
           if (twoionsystem && (k<2)) diffus = resdiffus;
 
-          CalTau(ele,
-                 diffus,
-                 dt,
-                 timefac,
-                 whichtau,
-                 turbmodel,
-                 vol,
-                 k);
-
-          // calculation of all-scale or fine-scale artificial subgrid
-          // diffusivity at element center
-          if (assgd or fssgd) CalKart(ele,
-                                      subgrdiff,
-                                      diffus,
-                                      dt,
-                                      timefac,
-                                      whichkart,
-                                      assgd,
-                                      fssgd,
-                                      vol,
-                                      k);
+          // calculation of stabilization parameter at integration point
+          CalTau(ele,diffus,dt,timefac,whichtau,vol,k);
         }
       }
 
@@ -1261,34 +1253,34 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
         if (conservative_) GetVelocityDivergence(vdiv_,evelnp_,derxy_);
 
         //--------------------------------------------------------------------
-        // calculation of stabilization parameter(s) tau at integration point
+        // calculation of subgrid diffusivity and stabilization parameter(s)
+        // at integration point
         //--------------------------------------------------------------------
         if (tau_gp_)
         {
-          // get velocity at integration point
-          velint_.Multiply(evelnp_,funct_);
+          // calculation of all-scale subgrid diffusivity (artificial or due to
+          // constant-coefficient Smagorinsky model) at integration point
+          if (assgd or turbmodel)
+            CalcSubgrDiff(dt,timefac,whichassgd,assgd,turbmodel,Cs,tpn,vol,k);
+
+          // calculation of fine-scale artificial subgrid diffusivity
+          // at integration point
+          if (fssgd) CalcFineScaleSubgrDiff(ele,subgrdiff,whichfssgd,Cs,tpn,vol,k);
 
           // generating copy of diffusivity for use in CalTau routine
           double diffus = diffus_[k];
 
-          // calculation of stabilization parameter at element center
-          CalTau(ele,
-                 diffus,
-                 dt,
-                 timefac,
-                 whichtau,
-                 turbmodel,
-                 vol,
-                 k);
+          // calculation of stabilization parameter at integration point
+          CalTau(ele,diffus,dt,timefac,whichtau,vol,k);
         }
 
-        // computations when including subgrid-scale velocity
-        if (sgvel)
+        // subgrid-scale velocity
+        if (sgvel_)
         {
-          // get (density-weighted) subgrid-scale velocity
-          sgvelint_.Multiply(esgvelnp_,funct_);
+          // calculate subgrid-scale velocity
+          CalcSubgrVelocity(ele,time,dt,timefac,k);
 
-          // subgrid-scale convective part
+          // calculate subgrid-scale convective part
           sgconv_.MultiplyTN(derxy_,sgvelint_);
         }
         else
@@ -1297,7 +1289,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
           sgconv_.Clear();
         }
 
-        // get (non-density-weighted) history data (or acceleration)
+        // get history data (or acceleration)
         hist_[k] = funct_.Dot(ehist_[k]);
 
         // get bodyforce in gausspoint (divided by shcacp)
@@ -1314,9 +1306,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
 //        for (int j=0; j<3; j++)
 //          gradphi_(j,0)=gradphi_gpscur(iquad,j);
 //end REINHARD
-
-        // gradient of current fine-scale part of scalar value
-        if (is_incremental_ and fssgd) fsgradphi_.Multiply(derxy_,fsphinp_[k]);
 
         // compute matrix and rhs
         CalMatAndRHS(sys_mat,
@@ -1350,13 +1339,35 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
         // velocity divergence required for conservative form
         if (conservative_) GetVelocityDivergence(vdiv_,evelnp_,derxy_);
 
-        // computations when including subgrid-scale velocity
-        if (sgvel)
+        //--------------------------------------------------------------------
+        // calculation of subgrid diffusivity and stabilization parameter(s)
+        // at integration point
+        //--------------------------------------------------------------------
+        if (tau_gp_)
         {
-          // get subgrid-scale velocity
-          sgvelint_.Multiply(esgvelnp_,funct_);
+          // calculation of all-scale subgrid diffusivity (artificial or due to
+          // constant-coefficient Smagorinsky model) at integration point
+          if (assgd or turbmodel)
+            CalcSubgrDiff(dt,timefac,whichassgd,assgd,turbmodel,Cs,tpn,vol,k);
 
-          // subgrid-scale convective part
+          // calculation of fine-scale artificial subgrid diffusivity
+          // at integration point
+          if (fssgd) CalcFineScaleSubgrDiff(ele,subgrdiff,whichfssgd,Cs,tpn,vol,k);
+
+          // generating copy of diffusivity for use in CalTau routine
+          double diffus = diffus_[k];
+
+          // calculation of stabilization parameter at integration point
+          CalTau(ele,diffus,dt,timefac,whichtau,vol,k);
+        }
+
+        // subgrid-scale velocity
+        if (sgvel_)
+        {
+          // calculate subgrid-scale velocity
+          CalcSubgrVelocity(ele,time,dt,timefac,k);
+
+          // calculate subgrid-scale convective part
           sgconv_.MultiplyTN(derxy_,sgvelint_);
         }
         else
@@ -1365,41 +1376,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
           sgconv_.Clear();
         }
 
-        //--------------------------------------------------------------------
-        // calculation of stabilization parameter(s) tau at integration point
-        //--------------------------------------------------------------------
-        if (tau_gp_)
-        {
-          // get velocity at integration point
-          velint_.Multiply(evelnp_,funct_);
-
-          // generating copy of diffusivity for use in CalTau routine
-          double diffus = diffus_[k];
-
-          CalTau(ele,
-                 diffus,
-                 dt,
-                 timefac,
-                 whichtau,
-                 turbmodel,
-                 vol,
-                 k);
-
-          // calculation of all-scale or fine-scale artificial subgrid
-          // diffusivity at element center
-          if (assgd or fssgd) CalKart(ele,
-                                      subgrdiff,
-                                      diffus,
-                                      dt,
-                                      timefac,
-                                      whichkart,
-                                      assgd,
-                                      fssgd,
-                                      vol,
-                                      k);
-        }
-
-        // get (non-density-weighted) history data (or acceleration)
+        // get history data (or acceleration)
         hist_[k] = funct_.Dot(ehist_[k]);
 
         // get bodyforce in gausspoint (divided by shcacp)
@@ -1409,9 +1386,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
         rhs_[k] = bodyforce_[k].Dot(funct_)/shcacp_;
         rhs_[k] += thermpressdt_/shcacp_;
         rhs_[k] += densnp_[k]*reatemprhs_[k];
-
-        // gradient of current fine-scale part of scalar value
-        if (is_incremental_ and fssgd) fsgradphi_.Multiply(derxy_,fsphinp_[k]);
 
         // compute matrix and rhs
         CalMatAndRHS(sys_mat,
@@ -1551,6 +1525,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::BodyForceReinit(
   return;
 } //ScaTraImpl::BodyForceReinit
 //end REINHARD
+
 
 /*----------------------------------------------------------------------*
  |  get the material constants  (private)                      gjb 10/08|
@@ -1736,6 +1711,9 @@ else if (material->MaterialType() == INPAR::MAT::m_mixfrac)
   // set reaction coeff. and temperature rhs for reactive equation system to zero
   reacoeff_[0] = 0.0;
   reatemprhs_[0] = 0.0;
+
+  // get also fluid viscosity if subgrid-scale velocity is to be included
+  if (sgvel_) visc_ = actmat->ComputeViscosity(mixfracnp);
 }
 else if (material->MaterialType() == INPAR::MAT::m_sutherland)
 {
@@ -1778,6 +1756,9 @@ else if (material->MaterialType() == INPAR::MAT::m_sutherland)
   // set reaction coeff. and temperature rhs for reactive equation system to zero
   reacoeff_[0] = 0.0;
   reatemprhs_[0] = 0.0;
+
+  // get also fluid viscosity if subgrid-scale velocity is to be included
+  if (sgvel_) visc_ = actmat->ComputeViscosity(tempnp);
 }
 else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
 {
@@ -1827,6 +1808,9 @@ else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
 
   // set reaction flag to true
   reaction_ = true;
+
+  // get also fluid viscosity if subgrid-scale velocity is to be included
+  if (sgvel_) visc_ = actmat->ComputeViscosity(tempnp);
 }
 else dserror("Material type is not supported");
 
@@ -1835,6 +1819,341 @@ if (diffus_[0] < EPS15) dserror("zero or negative (physical) diffusivity");
 
 return;
 } //ScaTraImpl::GetMaterialParams
+
+
+/*----------------------------------------------------------------------*
+ |  calculate all-scale art. subgrid diffusivity (private)     vg 10/09 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrDiff(
+    const double                          dt,
+    const double                          timefac,
+    const enum INPAR::SCATRA::AssgdType   whichassgd,
+    const bool                            assgd,
+    const bool                            turbmodel,
+    const double                          Cs,
+    const double                          tpn,
+    const double                          vol,
+    const int                             k
+  )
+{
+  // get number of dimensions
+  const double dim = (double) nsd_;
+
+  // get characteristic element length as cubic root of element volume
+  // (2D: square root of element area, 1D: element length)
+  const double h = pow(vol,(1.0/dim));
+
+  // artficial all-scale subgrid diffusivity
+  if (assgd )
+  {
+    // classical linear artificial all-scale subgrid diffusivity
+    if (whichassgd == INPAR::SCATRA::assgd_artificial)
+    {
+      // get element-type constant
+      const double mk = SCATRA::MK<distype>();
+
+      // velocity norm
+      const double vel_norm = velint_.Norm2();
+
+      // parameter relating convective and diffusive forces + respective switch
+      const double epe = mk * densnp_[k] * vel_norm * h / diffus_[k];
+      const double xi = DMAX(epe,1.0);
+
+      // compute subgrid diffusivity
+      sgdiff_[k] = (DSQR(h)*mk*DSQR(vel_norm)*DSQR(densnp_[k]))/(2.0*diffus_[k]*xi);
+    }
+    else
+    {
+      // gradient of current scalar value
+      gradphi_.Multiply(derxy_,ephinp_[k]);
+
+      // gradient norm
+      const double grad_norm = gradphi_.Norm2();
+
+      if (grad_norm > EPS10)
+      {
+        // initialize residual and compute values required for residual
+        double residual  = 0.0;
+
+        // get non-density-weighted history data (or acceleration)
+        hist_[k] = funct_.Dot(ehist_[k]);
+
+        // convective term using current scalar value
+        double conv_phi = velint_.Dot(gradphi_);
+
+        // diffusive term using current scalar value for higher-order elements
+        double diff_phi = 0.0;
+        if (use2ndderiv_) diff_phi = diff_.Dot(ephinp_[k]);
+
+       // reactive term using current scalar value
+        double rea_phi = 0.0;
+        if (reaction_)
+        {
+          // scalar at integration point
+          const double phi = funct_.Dot(ephinp_[k]);
+
+          rea_phi = densnp_[k]*reacoeff_[k]*phi;
+        }
+
+        // get bodyforce (divided by shcacp)
+        // (For temperature equation, time derivative of thermodynamic pressure
+        //  is added, if not constant, and for temperature equation of a reactive
+        //  equation system, a reaction-rate term is added.)
+        rhs_[k] = bodyforce_[k].Dot(funct_)/shcacp_;
+        rhs_[k] += thermpressdt_/shcacp_;
+        rhs_[k] += densnp_[k]*reatemprhs_[k];
+
+        // computation of residual depending on respective time-integration scheme
+        if (is_genalpha_)
+          residual = densam_[k]*hist_[k] + densnp_[k]*conv_phi - diff_phi + rea_phi - rhs_[k];
+        else if (is_stationary_)
+          residual = conv_phi - diff_phi + rea_phi - rhs_[k];
+        else
+        {
+          // compute density-weighted scalar at integration point
+          double dens_phi = funct_.Dot(ephinp_[k]);
+
+          residual = (densnp_[k]*(dens_phi - hist_[k]) + timefac * (densnp_[k]*conv_phi - diff_phi + rea_phi - rhs_[k])) / dt;
+        }
+
+        // for the present definitions, sigma and a specific term (either
+        // residual or convective term) are different
+        double sigma = 0.0;
+        double specific_term = 0.0;
+        switch (whichassgd)
+        {
+          case INPAR::SCATRA::assgd_hughes:
+          {
+            // get norm of velocity vector b_h^par
+            const double vel_norm_bhpar = abs(conv_phi/grad_norm);
+
+            // compute stabilization parameter based on b_h^par
+            // (so far, only exact formula for stationary 1-D implemented)
+            // element Peclet number relating convective and diffusive forces
+            double epe = 0.5 * vel_norm_bhpar * h / diffus_[k];
+            const double pp = exp(epe);
+            const double pm = exp(-epe);
+            double xi = 0.0;
+            double tau_bhpar = 0.0;
+            if (epe >= 700.0) tau_bhpar = 0.5*h/vel_norm_bhpar;
+            else if (epe < 700.0 and epe > EPS15)
+            {
+              xi = (((pp+pm)/(pp-pm))-(1.0/epe)); // xi = coth(epe) - 1/epe
+              // compute optimal stabilization parameter
+              tau_bhpar = 0.5*h*xi/vel_norm_bhpar;
+            }
+
+            // compute sigma
+            sigma = max(0.0,tau_bhpar-tau_[k]);
+
+            // set specific term to convective term
+            specific_term = conv_phi;
+          }
+          break;
+          case INPAR::SCATRA::assgd_tezduyar:
+          {
+            // velocity norm
+            const double vel_norm = velint_.Norm2();
+
+            // get norm of velocity vector b_h^par
+            const double vel_norm_bhpar = abs(conv_phi/grad_norm);
+
+            // compute stabilization parameter based on b_h^par
+            // (so far, only exact formula for stationary 1-D implemented)
+
+            // compute sigma (version 1 according to John and Knobloch (2007))
+            //sigma = (h/vel_norm)*(1.0-(vel_norm_bhpar/vel_norm));
+
+            // compute sigma (version 2 according to John and Knobloch (2007))
+            // setting scaling phi_0=1.0 as in John and Knobloch (2007)
+            const double phi0 = 1.0;
+            sigma = (h*h*grad_norm/(vel_norm*phi0))*(1.0-(vel_norm_bhpar/vel_norm));
+
+            // set specific term to convective term
+            specific_term = conv_phi;
+          }
+          break;
+          case INPAR::SCATRA::assgd_docarmo:
+          case INPAR::SCATRA::assgd_almeida:
+          {
+            // velocity norm
+            const double vel_norm = velint_.Norm2();
+
+            // get norm of velocity vector z_h
+            const double vel_norm_zh = abs(residual/grad_norm);
+
+            // parameter zeta differentiating approaches by doCarmo and Galeao (1991)
+            // and Almeida and Silva (1997)
+            double zeta = 0.0;
+            if (whichassgd == INPAR::SCATRA::assgd_docarmo)
+                 zeta = 1.0;
+            else zeta = max(1.0,(conv_phi/residual));
+
+            // compute sigma
+            sigma = tau_[k]*max(0.0,(vel_norm/vel_norm_zh)-zeta);
+
+            // set specific term to residual
+            specific_term = residual;
+          }
+          break;
+          default: dserror("unknown type of all-scale subgrid diffusivity\n");
+        } //switch (whichassgd)
+
+        // computation of subgrid diffusivity
+        sgdiff_[k] = sigma*residual*specific_term/(grad_norm*grad_norm);
+      }
+      else sgdiff_[k] = 0.0;
+    }
+  }
+  // all-scale subgrid diffusivity due to Smagorinsky model divided by
+  // turbulent Prandtl number
+  else if (turbmodel)
+  {
+    //
+    // SMAGORINSKY MODEL
+    // -----------------
+    //                                   +-                                 -+ 1
+    //                               2   |          / h \           / h \    | -
+    //    visc          = dens * lmix  * | 2 * eps | u   |   * eps | u   |   | 2
+    //        turbulent           |      |          \   / ij        \   / ij |
+    //                            |      +-                                 -+
+    //                            |
+    //                            |      |                                   |
+    //                            |      +-----------------------------------+
+    //                            |           'resolved' rate of strain
+    //                    mixing length
+    // -> either provided by dynamic modeling procedure and stored in Cs_delta_sq
+    // -> or computed based on fixed Smagorinsky constant Cs:
+    //             Cs = 0.17   (Lilly --- Determined from filter
+    //                          analysis of Kolmogorov spectrum of
+    //                          isotropic turbulence)
+    //             0.1 < Cs < 0.24 (depending on the flow)
+    //
+
+    // compute (all-scale) rate of strain
+    double rateofstrain = -1.0e30;
+    rateofstrain = GetStrainRate(evelnp_,derxy_,vderxy_);
+
+    // subgrid diffusivity = subgrid viscosity / turbulent Prandtl number
+    sgdiff_[k] = densnp_[k] * Cs * Cs * h * h * rateofstrain / tpn;
+
+    // add subgrid viscosity to physical viscosity for computation
+    // of subgrid-scale velocity when turbulence model is applied
+    if (sgvel_) visc_ += sgdiff_[k]*tpn;
+  }
+
+  // compute sum of physical and all-scale subgrid diffusivity
+  // -> set internal variable for use when calculating matrix and rhs
+  diffus_[k] += sgdiff_[k];
+
+  return;
+} //ScaTraImpl::CalcSubgrDiff
+
+
+/*----------------------------------------------------------------------*
+ |  calculate fine-scale art. subgrid diffusivity (private)    vg 10/09 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraImpl<distype>::CalcFineScaleSubgrDiff(
+    DRT::Element*                         ele,
+    Epetra_SerialDenseVector&             subgrdiff,
+    const enum INPAR::SCATRA::FSSUGRDIFF  whichfssgd,
+    const double                          Cs,
+    const double                          tpn,
+    const double                          vol,
+    const int                             k
+  )
+{
+  // get number of dimensions
+  const double dim = (double) nsd_;
+
+  // get characteristic element length as cubic root of element volume
+  // (2D: square root of element area, 1D: element length)
+  const double h = pow(vol,(1.0/dim));
+
+  //----------------------------------------------------------------------
+  // computation of fine-scale subgrid diffusivity for non-incremental
+  // solver -> only artificial subgrid diffusivity
+  // (values are stored in subgrid-diffusivity-scaling vector)
+  //----------------------------------------------------------------------
+  if (not is_incremental_)
+  {
+    // get element-type constant
+    const double mk = SCATRA::MK<distype>();
+
+    // velocity norm
+    const double vel_norm = velint_.Norm2();
+
+    // parameter relating convective and diffusive forces + respective switch
+    const double epe = mk * densnp_[k] * vel_norm * h / diffus_[k];
+    const double xi = DMAX(epe,1.0);
+
+    // compute artificial subgrid diffusivity
+    sgdiff_[k] = (DSQR(h)*mk*DSQR(vel_norm)*DSQR(densnp_[k]))/(2.0*diffus_[k]*xi);
+
+    // compute entries of (fine-scale) subgrid-diffusivity-scaling vector
+    for (int vi=0; vi<iel; ++vi)
+    {
+      subgrdiff(vi) = sgdiff_[k]/ele->Nodes()[vi]->NumElement();
+    }
+  }
+  //----------------------------------------------------------------------
+  // computation of fine-scale subgrid diffusivity for incremental solver
+  // -> only all-scale Smagorinsky model
+  //----------------------------------------------------------------------
+  else
+  {
+  //if (whichfssgd == INPAR::SCATRA::fssugrdiff_smagorinsky_all)
+  //{
+    //
+    // ALL-SCALE SMAGORINSKY MODEL
+    // ---------------------------
+    //                                      +-                                 -+ 1
+    //                                  2   |          / h \           / h \    | -
+    //    visc          = dens * (C_S*h)  * | 2 * eps | u   |   * eps | u   |   | 2
+    //        turbulent                     |          \   / ij        \   / ij |
+    //                                      +-                                 -+
+    //                                      |                                   |
+    //                                      +-----------------------------------+
+    //                                            'resolved' rate of strain
+    //
+
+    // compute (all-scale) rate of strain
+    double rateofstrain = -1.0e30;
+    rateofstrain = GetStrainRate(evelnp_,derxy_,vderxy_);
+
+    // subgrid diffusivity = subgrid viscosity / turbulent Prandtl number
+    sgdiff_[k] = densnp_[k] * Cs * Cs * h * h * rateofstrain / tpn;
+  /*}
+  else if (whichfssgd == INPAR::SCATRA::fssugrdiff_smagorinsky_small)
+  {
+    //
+    // FINE-SCALE SMAGORINSKY MODEL
+    // ----------------------------
+    //                                      +-                                 -+ 1
+    //                                  2   |          /    \          /   \    | -
+    //    visc          = dens * (C_S*h)  * | 2 * eps | fsu |   * eps | fsu |   | 2
+    //        turbulent                     |          \   / ij        \   / ij |
+    //                                      +-                                 -+
+    //                                      |                                   |
+    //                                      +-----------------------------------+
+    //                                            'resolved' rate of strain
+    //
+
+    // fine-scale rate of strain
+    double fsrateofstrain = -1.0e30;
+    fsrateofstrain = GetStrainRate(fsevelnp_,derxy_,fsvderxy_);
+
+    sgdiff_[k] = densnp_[k] * Cs * Cs * h * h * fsrateofstrain;
+  }*/
+
+    // compute gradient of fine-scale part of scalar value
+    fsgradphi_.Multiply(derxy_,fsphinp_[k]);
+  }
+
+  return;
+} //ScaTraImpl::CalcFineScaleSubgrDiff
 
 
 /*----------------------------------------------------------------------*
@@ -1847,25 +2166,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
     const double                          dt,
     const double                          timefac,
     const enum INPAR::SCATRA::TauType     whichtau,
-    const bool                            turbmodel,
     const double                          vol,
     const int                             k
   )
 {
-  // modify subgrid diffusivity if required by turbulence model
-  if (turbmodel)
-  {
-    // computation of subgrid diffusivity due to all-scale turbulence model
-    const double sgdiff = funct_.Dot(esubgrdiff_);
-
-    // sum physical and subgrid diffusivity
-    diffus = diffus_[k] + sgdiff;
-
-    // sum of physical and subgrid diffusivity will also be used in
-    // computation of matrix and rhs -> set internal variable accordingly
-    diffus_[k] = diffus;
-  }
-
   // get element-type constant for tau
   const double mk = SCATRA::MK<distype>();
 
@@ -2115,256 +2419,164 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
 
 
 /*----------------------------------------------------------------------*
- |  calculate all-scale or fine-scale artificial subgrid diffusivity    |
- |  (private)                                                  vg 08/09 |
+ |  calculate subgrid-scale velocity                           vg 10/09 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraImpl<distype>::CalKart(
-    DRT::Element*                         ele,
-    Epetra_SerialDenseVector&             subgrdiff,
-    double                                diffus,
-    const double                          dt,
-    const double                          timefac,
-    const enum INPAR::SCATRA::KartType    whichkart,
-    const bool                            assgd,
-    const bool                            fssgd,
-    const double                          vol,
-    const int                             k
+void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrVelocity(
+    DRT::Element*  ele,
+    const double   time,
+    const double   dt,
+    const double   timefac,
+    const int      k
   )
 {
-  //----------------------------------------------------------------------
-  // computation of all-scale artificial subgrid diffusivity
-  //----------------------------------------------------------------------
-  if (assgd)
+  // definitions
+  LINALG::Matrix<nsd_,1> acc;
+  LINALG::Matrix<nsd_,1> conv;
+  LINALG::Matrix<nsd_,1> gradp;
+  LINALG::Matrix<nsd_,1> visc;
+  LINALG::Matrix<nsd_,1> bodyforce;
+  LINALG::Matrix<nsd_,iel> nodebodyforce;
+
+  // get acceleration or momentum history data
+  acc.Multiply(eaccnp_,funct_);
+
+  // get velocity derivatives
+  vderxy_.MultiplyNT(evelnp_,derxy_);
+
+  // compute convective fluid term
+  conv.Multiply(vderxy_,velint_);
+
+  // get pressure gradient
+  gradp.Multiply(derxy_,eprenp_);
+
+  //--------------------------------------------------------------------
+  // get nodal values of fluid body force
+  //--------------------------------------------------------------------
+  vector<DRT::Condition*> myfluidneumcond;
+
+  // check whether all nodes have a unique Fluid Neumann condition
+  switch(nsd_)
   {
-    // classical linear all-scale artificial subgrid diffusivity
-    if (whichkart == INPAR::SCATRA::kart_artificial)
+  case 3:
+    DRT::UTILS::FindElementConditions(ele, "FluidVolumeNeumann", myfluidneumcond);
+  break;
+  case 2:
+    DRT::UTILS::FindElementConditions(ele, "FluidSurfaceNeumann", myfluidneumcond);
+  break;
+  case 1:
+    DRT::UTILS::FindElementConditions(ele, "FluidLineNeumann", myfluidneumcond);
+  break;
+  default:
+    dserror("Illegal number of space dimensions: %d",nsd_);
+  }
+
+  if (myfluidneumcond.size()>1)
+    dserror("more than one Fluid Neumann condition on one node");
+
+  if (myfluidneumcond.size()==1)
+  {
+    // find out whether we will use a time curve
+    const vector<int>* curve  = myfluidneumcond[0]->Get<vector<int> >("curve");
+    int curvenum = -1;
+
+    if (curve) curvenum = (*curve)[0];
+
+    // initialisation
+    double curvefac(0.0);
+
+    if (curvenum >= 0) // yes, we have a timecurve
     {
-      // get element-type constant
-      const double mk = SCATRA::MK<distype>();
-
-      // get number of dimensions
-      const double dim = (double) nsd_;
-
-      // get characteristic element length as cubic root of element volume
-      // (2D: square root of element area, 1D: element length)
-      const double h = pow(vol,(1.0/dim));
-
-      // velocity norm
-      const double vel_norm = velint_.Norm2();
-
-      // parameter relating convective and diffusive forces + respective switch
-      const double epe = mk * densnp_[k] * vel_norm * h / diffus;
-      const double xi = DMAX(epe,1.0);
-
-      // compute subgrid diffusivity
-      kart_[k] = (DSQR(h)*mk*DSQR(vel_norm)*DSQR(densnp_[k]))/(2.0*diffus*xi);
+      // time factor for the intermediate step
+      // (negative time value indicates error)
+      if(time >= 0.0)
+        curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+      else
+        dserror("Negative time value in body force calculation: time = %f",time);
     }
-    else
+    else // we do not have a timecurve: timefactors are constant equal 1
+      curvefac = 1.0;
+
+    // get values and switches from the condition
+    const vector<int>*    onoff = myfluidneumcond[0]->Get<vector<int> >   ("onoff");
+    const vector<double>* val   = myfluidneumcond[0]->Get<vector<double> >("val"  );
+
+    // set this condition to the bodyforce array
+    for(int isd=0;isd<nsd_;isd++)
     {
-      // gradient of current scalar value
-      gradphi_.Multiply(derxy_,ephinp_[k]);
-
-      // gradient norm
-      const double grad_norm = gradphi_.Norm2();
-
-      if (grad_norm > EPS10)
+      for (int jnode=0; jnode<iel; jnode++)
       {
-        // initialize residual and compute values required for residual
-        double residual  = 0.0;
-
-        // get non-density-weighted history data (or acceleration)
-        hist_[k] = funct_.Dot(ehist_[k]);
-
-        // convective term using current scalar value
-        double conv_phi = velint_.Dot(gradphi_);
-
-        // diffusive term using current scalar value for higher-order elements
-        double diff_phi = 0.0;
-        if (use2ndderiv_) diff_phi = diff_.Dot(ephinp_[k]);
-
-       // reactive term using current scalar value
-        double rea_phi = 0.0;
-        if (reaction_)
-        {
-          // scalar at integration point
-          const double phi = funct_.Dot(ephinp_[k]);
-
-          rea_phi = densnp_[k]*reacoeff_[k]*phi;
-        }
-
-        // get bodyforce (divided by shcacp)
-        // (For temperature equation, time derivative of thermodynamic pressure
-        //  is added, if not constant, and for temperature equation of a reactive
-        //  equation system, a reaction-rate term is added.)
-        rhs_[k] = bodyforce_[k].Dot(funct_)/shcacp_;
-        rhs_[k] += thermpressdt_/shcacp_;
-        rhs_[k] += densnp_[k]*reatemprhs_[k];
-
-        // computation of residual depending on respective time-integration scheme
-        if (is_genalpha_)
-          residual = densam_[k]*hist_[k] + densnp_[k]*conv_phi - diff_phi + rea_phi - rhs_[k];
-        else if (is_stationary_)
-          residual = conv_phi - diff_phi + rea_phi - rhs_[k];
-        else
-        {
-          // compute density-weighted scalar at integration point
-          double dens_phi = funct_.Dot(ephinp_[k]);
-
-          residual = (densnp_[k]*(dens_phi - hist_[k]) + timefac * (densnp_[k]*conv_phi - diff_phi + rea_phi - rhs_[k])) / dt;
-        }
-
-        // for the present definitions, sigma and a specific term (either
-        // residual or convective term) are different
-        double sigma = 0.0;
-        double specific_term = 0.0;
-        switch (whichkart)
-        {
-          case INPAR::SCATRA::kart_hughes:
-          {
-            // get norm of velocity vector b_h^par
-            const double vel_norm_bhpar = abs(conv_phi/grad_norm);
-
-            // compute stabilization parameter based on b_h^par
-            // (so far, only exact formula for stationary 1-D implemented)
-            // get number of dimensions (convert from int to double)
-            const double dim = (double) nsd_;
-
-            // get characteristic element length
-            const double h = pow(vol,(1.0/dim));
-
-            // element Peclet number relating convective and diffusive forces
-            double epe = 0.5 * vel_norm_bhpar * h / diffus;
-            const double pp = exp(epe);
-            const double pm = exp(-epe);
-            double xi = 0.0;
-            double tau_bhpar = 0.0;
-            if (epe >= 700.0) tau_bhpar = 0.5*h/vel_norm_bhpar;
-            else if (epe < 700.0 and epe > EPS15)
-            {
-              xi = (((pp+pm)/(pp-pm))-(1.0/epe)); // xi = coth(epe) - 1/epe
-              // compute optimal stabilization parameter
-              tau_bhpar = 0.5*h*xi/vel_norm_bhpar;
-            }
-
-            // compute sigma
-            sigma = max(0.0,tau_bhpar-tau_[k]);
-
-            // set specific term to convective term
-            specific_term = conv_phi;
-          }
-          break;
-          case INPAR::SCATRA::kart_tezduyar:
-          {
-            // velocity norm
-            const double vel_norm = velint_.Norm2();
-
-            // get norm of velocity vector b_h^par
-            const double vel_norm_bhpar = abs(conv_phi/grad_norm);
-
-            // compute stabilization parameter based on b_h^par
-            // (so far, only exact formula for stationary 1-D implemented)
-            // get number of dimensions (convert from int to double)
-            const double dim = (double) nsd_;
-
-            // get characteristic element length (simplified version here, actual
-            // one in Tezduyar and Park (1986) is more involved)
-            const double h = pow(vol,(1.0/dim));
-
-            // compute sigma (version 1 according to John and Knobloch (2007))
-            //sigma = (h/vel_norm)*(1.0-(vel_norm_bhpar/vel_norm));
-
-            // compute sigma (version 2 according to John and Knobloch (2007))
-            // setting scaling phi_0=1.0 as in John and Knobloch (2007)
-            const double phi0 = 1.0;
-            sigma = (h*h*grad_norm/(vel_norm*phi0))*(1.0-(vel_norm_bhpar/vel_norm));
-
-            // set specific term to convective term
-            specific_term = conv_phi;
-          }
-          break;
-          case INPAR::SCATRA::kart_docarmo:
-          case INPAR::SCATRA::kart_almeida:
-          {
-            // velocity norm
-            const double vel_norm = velint_.Norm2();
-
-            // get norm of velocity vector z_h
-            const double vel_norm_zh = abs(residual/grad_norm);
-
-            // parameter zeta differentiating approaches by doCarmo and Galeao (1991)
-            // and Almeida and Silva (1997)
-            double zeta = 0.0;
-            if (whichkart == INPAR::SCATRA::kart_docarmo) zeta = 1.0;
-            else zeta = max(1.0,(conv_phi/residual));
-
-            // compute sigma
-            sigma = tau_[k]*max(0.0,(vel_norm/vel_norm_zh)-zeta);
-
-            // set specific term to residual
-            specific_term = residual;
-          }
-          break;
-          default: dserror("unknown type of all-scale subgrid diffusivity\n");
-        } //switch (whichkart)
-
-        // computation of subgrid diffusivity
-        kart_[k] = sigma*residual*specific_term/(grad_norm*grad_norm);
+        nodebodyforce(isd,jnode) = (*onoff)[isd]*(*val)[isd]*curvefac;
       }
-      else kart_[k] = 0.0;
     }
-
-    // compute sum of physical and all-scale subgrid diffusivity
-    // -> set internal variable for use when calculating matrix and rhs
-    diffus_[k] = diffus + kart_[k];
   }
-  //----------------------------------------------------------------------
-  // computation of fine-scale artificial subgrid diffusivity for
-  // non-incremental solver
-  // (values are stored in subgrid-diffusivity-scaling vector)
-  //----------------------------------------------------------------------
-  else if (not is_incremental_ and fssgd)
+
+  // get fluid body force
+  bodyforce.Multiply(nodebodyforce,funct_);
+
+  // get viscous term
+  if (use2ndderiv_)
   {
-    // get element-type constant
-    const double mk = SCATRA::MK<distype>();
+    /*--- viscous term: div(epsilon(u)) --------------------------------*/
+    /*   /                                                \
+         |  2 N_x,xx + N_x,yy + N_y,xy + N_x,zz + N_z,xz  |
+       1 |                                                |
+       - |  N_y,xx + N_x,yx + 2 N_y,yy + N_z,yz + N_y,zz  |
+       2 |                                                |
+         |  N_z,xx + N_x,zx + N_y,zy + N_z,yy + 2 N_z,zz  |
+         \                                                /
 
-    // get number of dimensions
-    const double dim = (double) nsd_;
+         with N_x .. x-line of N
+         N_y .. y-line of N                                             */
 
-    // get characteristic element length as cubic root of element volume
-    // (2D: square root of element area, 1D: element length)
-    const double h = pow(vol,(1.0/dim));
+    /*--- subtraction for low-Mach-number flow: div((1/3)*(div u)*I) */
+    /*   /                            \
+         |  N_x,xx + N_y,yx + N_z,zx  |
+       1 |                            |
+    -  - |  N_x,xy + N_y,yy + N_z,zy  |
+       3 |                            |
+         |  N_x,xz + N_y,yz + N_z,zz  |
+         \                            /
 
-    // velocity norm
-    const double vel_norm = velint_.Norm2();
+           with N_x .. x-line of N
+           N_y .. y-line of N                                             */
 
-    // parameter relating convective and diffusive forces + respective switch
-    const double epe = mk * densnp_[k] * vel_norm * h / diffus;
-    const double xi = DMAX(epe,1.0);
+    double prefac = 1.0/3.0;
+    derxy2_.Scale(prefac);
 
-    // compute subgrid diffusivity
-    kart_[k] = (DSQR(h)*mk*DSQR(vel_norm)*DSQR(densnp_[k]))/(2.0*diffus*xi);
-
-    // compute entries of (fine-scale) subgrid-diffusivity-scaling vector
-    for (int vi=0; vi<iel; ++vi)
+    for (int i=0; i<iel; ++i)
     {
-      subgrdiff(vi) = kart_[k]/ele->Nodes()[vi]->NumElement();
+      double sum = (derxy2_(0,i)+derxy2_(1,i)+derxy2_(2,i))/prefac;
+
+      visc(0) = ((sum + derxy2_(0,i))*evelnp_(0,i) + derxy2_(3,i)*evelnp_(1,i) + derxy2_(4,i)*evelnp_(2,i))/2.0;
+      visc(1) = (derxy2_(3,i)*evelnp_(0,i) + (sum + derxy2_(1,i))*evelnp_(1,i) + derxy2_(5,i)*evelnp_(2,i))/2.0;
+      visc(2) = (derxy2_(4,i)*evelnp_(0,i) + derxy2_(5,i)*evelnp_(1,i) + (sum + derxy2_(2,i))*evelnp_(2,i))/2.0;
     }
   }
-  //----------------------------------------------------------------------
-  // computation of fine-scale artificial subgrid diffusivity for
-  // incremental solver
-  //----------------------------------------------------------------------
-  else if (is_incremental_ and fssgd)
-  {
-    // computation of fine-scale subgrid diffusivity
-    const double sgdiff = funct_.Dot(esubgrdiff_);
+  else visc.Clear();
 
-    kart_[k] = sgdiff;
+  //--------------------------------------------------------------------
+  // calculation of subgrid-scale velocity based on momentum residual
+  // and stabilization parameter
+  // (different for generalized-alpha and other time-integration schemes)
+  //--------------------------------------------------------------------
+  if (is_genalpha_)
+  {
+    for (int rr=0;rr<nsd_;++rr)
+    {
+      sgvelint_(rr) = -tau_[k]*(densam_[k]*acc(rr)+densnp_[k]*conv(rr)+gradp(rr)-2*visc_*visc(rr)-densnp_[k]*bodyforce(rr));
+    }
+  }
+  else
+  {
+    for (int rr=0;rr<nsd_;++rr)
+    {
+       sgvelint_(rr) = -tau_[k]*(densnp_[k]*velint_(rr)+timefac*(densnp_[k]*conv(rr)+gradp(rr)-2*visc_*visc(rr)-densnp_[k]*bodyforce(rr))-densn_[k]*acc(rr))/dt;
+    }
   }
 
   return;
-} //ScaTraImpl::CalKart
+} //ScaTraImpl::CalcSubgrVelocity
 
 
 /*----------------------------------------------------------------------*
@@ -2430,7 +2642,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
 
   // say goodbye
   return;
-}
+} //ScaTraImpl::CalcSubgrVelocity
 
 
 /*----------------------------------------------------------------------*
@@ -3017,7 +3229,7 @@ if (reaction_)
 //----------------------------------------------------------------
 if (is_incremental_ and fssgd)
 {
-  vrhs = rhsfac*kart_[dofindex];
+  vrhs = rhsfac*sgdiff_[dofindex];
   for (int vi=0; vi<iel; ++vi)
   {
     const int fvi = vi*numdofpernode_+dofindex;

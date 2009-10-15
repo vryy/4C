@@ -332,17 +332,11 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           // velocity and pressure values (n+1)
           RCP<const Epetra_Vector> velnp
             = discretization.GetState("u and p (n+1,converged)");
-          RCP<const Epetra_Vector> subgrviscnp
-            = discretization.GetState("sv (n+1,converged)");
-
-          if (velnp==null || subgrviscnp==null)
-            dserror("Cannot get state vectors 'velnp' and/or 'subgrviscnp'");
+          if (velnp==null) dserror("Cannot get state vector 'velnp'");
 
           // extract local values from the global vectors
           vector<double> mysol  (lm.size());
-          vector<double> mysv   (lm.size());
           DRT::UTILS::ExtractMyValues(*velnp,mysol,lm);
-          DRT::UTILS::ExtractMyValues(*subgrviscnp,mysv,lm);
 
           vector<double> mydisp(lm.size());
           if(is_ale_)
@@ -367,27 +361,27 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           {
           case DRT::Element::hex8:
           {
-            f3_calc_means<8>(discretization,mysol,mysv,mydisp,params);
+            f3_calc_means<8>(discretization,mysol,mydisp,params);
             break;
           }
           case DRT::Element::hex20:
           {
-            f3_calc_means<20>(discretization,mysol,mysv,mydisp,params);
+            f3_calc_means<20>(discretization,mysol,mydisp,params);
             break;
           }
           case DRT::Element::hex27:
           {
-            f3_calc_means<27>(discretization,mysol,mysv,mydisp,params);
+            f3_calc_means<27>(discretization,mysol,mydisp,params);
             break;
           }
           case DRT::Element::nurbs8:
           {
-            f3_calc_means<8>(discretization,mysol,mysv,mydisp,params);
+            f3_calc_means<8>(discretization,mysol,mydisp,params);
             break;
           }
           case DRT::Element::nurbs27:
           {
-            f3_calc_means<27>(discretization,mysol,mysv,mydisp,params);
+            f3_calc_means<27>(discretization,mysol,mydisp,params);
             break;
           }
           default:
@@ -407,24 +401,19 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           // extract velocities and pressure as well as densities
           // from the global distributed vectors
 
-          // velocity, pressure, scalar and subgrid-viscosity values (n+1)
+          // velocity/pressure and scalar values (n+1)
           RCP<const Epetra_Vector> velnp
             = discretization.GetState("u and p (n+1,converged)");
           RCP<const Epetra_Vector> scanp
             = discretization.GetState("scalar (n+1,converged)");
-          RCP<const Epetra_Vector> subgrviscnp
-            = discretization.GetState("sv (n+1,converged)");
-
-          if (velnp==null || scanp==null || subgrviscnp==null)
-            dserror("Cannot get state vectors 'velnp', 'scanp' and/or 'subgrviscnp'");
+          if (velnp==null || scanp==null)
+            dserror("Cannot get state vectors 'velnp' and/or 'scanp'");
 
           // extract local values from the global vectors
           vector<double> myvelpre(lm.size());
           vector<double> mysca(lm.size());
-          vector<double> mysv(lm.size());
           DRT::UTILS::ExtractMyValues(*velnp,myvelpre,lm);
           DRT::UTILS::ExtractMyValues(*scanp,mysca,lm);
-          DRT::UTILS::ExtractMyValues(*subgrviscnp,mysv,lm);
 
           // get factor for equation of state
           const double eosfac = params.get<double>("eos factor",100000.0/287.0);
@@ -436,17 +425,17 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           {
           case DRT::Element::hex8:
           {
-            f3_calc_loma_means<8>(discretization,myvelpre,mysca,mysv,params,eosfac);
+            f3_calc_loma_means<8>(discretization,myvelpre,mysca,params,eosfac);
             break;
           }
           case DRT::Element::hex20:
           {
-            f3_calc_loma_means<20>(discretization,myvelpre,mysca,mysv,params,eosfac);
+            f3_calc_loma_means<20>(discretization,myvelpre,mysca,params,eosfac);
             break;
           }
           case DRT::Element::hex27:
           {
-            f3_calc_loma_means<27>(discretization,myvelpre,mysca,mysv,params,eosfac);
+            f3_calc_loma_means<27>(discretization,myvelpre,mysca,params,eosfac);
             break;
           }
           default:
@@ -993,14 +982,12 @@ template<int iel>
 void DRT::ELEMENTS::Fluid3::f3_calc_means(
   DRT::Discretization&      discretization,
   vector<double>&           solution      ,
-  vector<double>&           subgrvisc  ,
   vector<double>&           displacement  ,
   ParameterList& 	    params
   )
 {
   // get view of solution and subgrid-viscosity vector
   LINALG::Matrix<4*iel,1> sol(&(solution[0]),true);
-  LINALG::Matrix<4*iel,1> sv(&(subgrvisc[0]),true);
 
   // set element data
   const DiscretizationType distype = this->Shape();
@@ -1019,7 +1006,6 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
   RCP<vector<double> > sumv   = params.get<RCP<vector<double> > >("mean velocity v");
   RCP<vector<double> > sumw   = params.get<RCP<vector<double> > >("mean velocity w");
   RCP<vector<double> > sump   = params.get<RCP<vector<double> > >("mean pressure p");
-  RCP<vector<double> > sumsv = params.get<RCP<vector<double> > >("mean subgrid visc");
 
   RCP<vector<double> > sumsqu = params.get<RCP<vector<double> > >("mean value u^2");
   RCP<vector<double> > sumsqv = params.get<RCP<vector<double> > >("mean value v^2");
@@ -1028,7 +1014,6 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
   RCP<vector<double> > sumuw  = params.get<RCP<vector<double> > >("mean value uw");
   RCP<vector<double> > sumvw  = params.get<RCP<vector<double> > >("mean value vw");
   RCP<vector<double> > sumsqp = params.get<RCP<vector<double> > >("mean value p^2");
-  RCP<vector<double> > sumsqsv = params.get<RCP<vector<double> > >("mean value sv^2");
 
   // get node coordinates of element
   LINALG::Matrix<3,iel>  xyze;
@@ -1203,7 +1188,6 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
       double vbar=0;
       double wbar=0;
       double pbar=0;
-      double svbar=0;
 
       double usqbar=0;
       double vsqbar=0;
@@ -1212,7 +1196,6 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
       double uwbar =0;
       double vwbar =0;
       double psqbar=0;
-      double svsqbar=0;
 
       // get the integration point in wall normal direction
       double e[3];
@@ -1327,7 +1310,6 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
 	double vgp=0;
 	double wgp=0;
 	double pgp=0;
-        double svgp=0;
 
         // the computation of this jacobian determinant from the 3d
         // mapping is based on the assumption that we do not deform
@@ -1345,7 +1327,6 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
           vgp  += funct(inode)*sol(finode++);
 	  wgp  += funct(inode)*sol(finode++);
 	  pgp  += funct(inode)*sol(finode  );
-	  svgp += funct(inode)*sv (finode  );
 	}
 
 	// add contribution to integral
@@ -1354,13 +1335,11 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
 	double dvbar  = vgp*fac;
 	double dwbar  = wgp*fac;
 	double dpbar  = pgp*fac;
-	double dsvbar = svgp*fac;
 
 	ubar   += dubar;
 	vbar   += dvbar;
 	wbar   += dwbar;
 	pbar   += dpbar;
-        svbar  += dsvbar;
 
 	usqbar += ugp*dubar;
 	vsqbar += vgp*dvbar;
@@ -1369,7 +1348,6 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
 	uwbar  += ugp*dwbar;
 	vwbar  += vgp*dwbar;
 	psqbar += pgp*dpbar;
-        svsqbar+= svgp*dsvbar;
       } // end loop integration points
 
       // add increments from this layer to processor local vectors
@@ -1379,7 +1357,6 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
       (*sumv   )[*id] += vbar;
       (*sumw   )[*id] += wbar;
       (*sump   )[*id] += pbar;
-      (*sumsv  )[*id] += svbar;
 
       (*sumsqu )[*id] += usqbar;
       (*sumsqv )[*id] += vsqbar;
@@ -1388,7 +1365,6 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
       (*sumuw  )[*id] += uwbar;
       (*sumvw  )[*id] += vwbar;
       (*sumsqp )[*id] += psqbar;
-      (*sumsqsv)[*id] += svsqbar;
 
       // jump to the next layer in the element.
       // in case of an hex8 element, the two coordinates are -1 and 1(+2)
@@ -1659,7 +1635,6 @@ void DRT::ELEMENTS::Fluid3::f3_calc_loma_means(
   DRT::Discretization&      discretization,
   vector<double>&           velocitypressure ,
   vector<double>&           temperature  ,
-  vector<double>&           subgrvisc  ,
   ParameterList&            params,
   const double              eosfac
   )
@@ -1667,7 +1642,6 @@ void DRT::ELEMENTS::Fluid3::f3_calc_loma_means(
   // get view of solution vector
   LINALG::Matrix<4*iel,1> velpre(&(velocitypressure[0]),true);
   LINALG::Matrix<4*iel,1> temp(&(temperature[0]),true);
-  LINALG::Matrix<4*iel,1> sv(&(subgrvisc[0]),true);
 
   // set element data
   const DiscretizationType distype = this->Shape();
@@ -1690,7 +1664,6 @@ void DRT::ELEMENTS::Fluid3::f3_calc_loma_means(
   RCP<vector<double> > sumT   = params.get<RCP<vector<double> > >("mean temperature T");
   RCP<vector<double> > sumrhou  = params.get<RCP<vector<double> > >("mean momentum rho*u");
   RCP<vector<double> > sumrhouT = params.get<RCP<vector<double> > >("mean rho*u*T");
-  RCP<vector<double> > sumsv = params.get<RCP<vector<double> > >("mean subgrid visc");
 
   RCP<vector<double> > sumsqu = params.get<RCP<vector<double> > >("mean value u^2");
   RCP<vector<double> > sumsqv = params.get<RCP<vector<double> > >("mean value v^2");
@@ -1698,7 +1671,6 @@ void DRT::ELEMENTS::Fluid3::f3_calc_loma_means(
   RCP<vector<double> > sumsqp = params.get<RCP<vector<double> > >("mean value p^2");
   RCP<vector<double> > sumsqrho = params.get<RCP<vector<double> > >("mean value rho^2");
   RCP<vector<double> > sumsqT = params.get<RCP<vector<double> > >("mean value T^2");
-  RCP<vector<double> > sumsqsv = params.get<RCP<vector<double> > >("mean value sv^2");
 
   RCP<vector<double> > sumuv  = params.get<RCP<vector<double> > >("mean value uv");
   RCP<vector<double> > sumuw  = params.get<RCP<vector<double> > >("mean value uw");
@@ -1859,7 +1831,6 @@ void DRT::ELEMENTS::Fluid3::f3_calc_loma_means(
       double Tbar=0;
       double rhoubar=0;
       double rhouTbar=0;
-      double svbar=0;
 
       double usqbar=0;
       double vsqbar=0;
@@ -1867,7 +1838,6 @@ void DRT::ELEMENTS::Fluid3::f3_calc_loma_means(
       double psqbar=0;
       double rhosqbar=0;
       double Tsqbar=0;
-      double svsqbar=0;
 
       double uvbar =0;
       double uwbar =0;
@@ -1959,7 +1929,6 @@ void DRT::ELEMENTS::Fluid3::f3_calc_loma_means(
         double Tgp=0;
         double rhougp=0;
         double rhouTgp=0;
-        double svgp=0;
         double usave=0;
 
         // the computation of this jacobian determinant from the 3d
@@ -1979,7 +1948,6 @@ void DRT::ELEMENTS::Fluid3::f3_calc_loma_means(
           vgp   += funct(inode)*velpre(finode++);
           wgp   += funct(inode)*velpre(finode++);
           pgp   += funct(inode)*velpre(finode  );
-          svgp  += funct(inode)*sv(finode  );
           Tgp   += funct(inode)*temp(finode  );
         }
         rhogp   = eosfac/Tgp;
@@ -1995,7 +1963,6 @@ void DRT::ELEMENTS::Fluid3::f3_calc_loma_means(
         double dTbar   = Tgp*fac;
         double drhoubar  = rhougp*fac;
         double drhouTbar = rhouTgp*fac;
-        double dsvbar  = svgp*fac;
 
         ubar   += dubar;
         vbar   += dvbar;
@@ -2005,7 +1972,6 @@ void DRT::ELEMENTS::Fluid3::f3_calc_loma_means(
         Tbar   += dTbar;
         rhoubar  += drhoubar;
         rhouTbar += drhouTbar;
-        svbar += dsvbar;
 
         usqbar   += ugp*dubar;
         vsqbar   += vgp*dvbar;
@@ -2013,7 +1979,6 @@ void DRT::ELEMENTS::Fluid3::f3_calc_loma_means(
         psqbar   += pgp*dpbar;
         rhosqbar += rhogp*drhobar;
         Tsqbar   += Tgp*dTbar;
-        svsqbar  += svgp*dsvbar;
 
         uvbar  += ugp*dvbar;
         uwbar  += ugp*dwbar;
@@ -2034,7 +1999,6 @@ void DRT::ELEMENTS::Fluid3::f3_calc_loma_means(
       (*sumT   )[*id] += Tbar;
       (*sumrhou)[*id] += rhoubar;
       (*sumrhouT)[*id] += rhouTbar;
-      (*sumsv)[*id]   += svbar;
 
       (*sumsqu  )[*id] += usqbar;
       (*sumsqv  )[*id] += vsqbar;
@@ -2042,7 +2006,6 @@ void DRT::ELEMENTS::Fluid3::f3_calc_loma_means(
       (*sumsqp  )[*id] += psqbar;
       (*sumsqrho)[*id] += rhosqbar;
       (*sumsqT  )[*id] += Tsqbar;
-      (*sumsqsv )[*id] += svsqbar;
 
       (*sumuv  )[*id] += uvbar;
       (*sumuw  )[*id] += uwbar;

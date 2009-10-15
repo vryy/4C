@@ -605,7 +605,6 @@ private:
   void f3_calc_means(
     DRT::Discretization&      discretization,
     vector<double>&           vel   ,
-    vector<double>&           subgrvisc  ,
     vector<double>&           disp  ,
     ParameterList& 	      params
     );
@@ -618,7 +617,6 @@ private:
     DRT::Discretization&      discretization,
     vector<double>&           velocitypressure ,
     vector<double>&           temperature  ,
-    vector<double>&           subgrvisc  ,
     ParameterList&            params,
     const double              eosfac
     );

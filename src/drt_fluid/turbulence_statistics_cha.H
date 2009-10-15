@@ -123,7 +123,6 @@ public:
   'sum' vectors.
   */
   void DoTimeSample(Teuchos::RefCountPtr<Epetra_Vector> velnp,
-                    Teuchos::RefCountPtr<Epetra_Vector> subgrvisc,
                     Epetra_Vector & force);
 
 
@@ -134,7 +133,6 @@ public:
   */
   void DoLomaTimeSample(Teuchos::RefCountPtr<Epetra_Vector> velnp,
                         Teuchos::RefCountPtr<Epetra_Vector> scanp,
-                        Teuchos::RefCountPtr<Epetra_Vector> subgrvisc,
                         Epetra_Vector &                     force,
                         const double                        eosfac);
 
@@ -326,9 +324,6 @@ private:
   RefCountPtr<Epetra_Vector>       meanvelnp_;
   RefCountPtr<Epetra_Vector>       meanscanp_;
 
-  //! pointer to mean subgrid viscosity
-  RefCountPtr<Epetra_Vector>       meansubgrvisc_;
-
    //! pointer to vel/pres^2 field (space allocated in constructor)
   RefCountPtr<Epetra_Vector>       squaredvelnp_;
 
@@ -372,8 +367,6 @@ private:
   RefCountPtr<vector<double> >     sumrhou_;
   //! sum over density*u*T (over one plane in each component)
   RefCountPtr<vector<double> >     sumrhouT_;
-  //! sum over subgrid viscosity (over one plane in each component)
-  RefCountPtr<vector<double> >     sumsv_;
 
   //! sum over u^2 (over one plane in each component)
   RefCountPtr<vector<double> >     sumsqu_;
@@ -387,8 +380,6 @@ private:
   RefCountPtr<vector<double> >     sumsqrho_;
   //! sum over T^2 (over one plane in each component)
   RefCountPtr<vector<double> >     sumsqT_;
-  //! sum over subgrid viscosity^2 (over one plane in each component)
-  RefCountPtr<vector<double> >     sumsqsv_;
 
   //! sum over uv (over one plane in each component)
   RefCountPtr<vector<double> >     sumuv_;
@@ -418,7 +409,7 @@ private:
   RefCountPtr<vector<double> >     pointsumw_;
   //! sum over p (over one plane in each component)
   RefCountPtr<vector<double> >     pointsump_;
-  //! sum over p (over one plane in each component)
+  //! sum over T (over one plane in each component)
   RefCountPtr<vector<double> >     pointsumT_;
 
   //! sum over u^2 (over one plane in each component)
@@ -429,7 +420,7 @@ private:
   RefCountPtr<vector<double> >     pointsumsqw_;
   //! sum over p^2 (over one plane in each component)
   RefCountPtr<vector<double> >     pointsumsqp_;
-  //! sum over p^2 (over one plane in each component)
+  //! sum over T^2 (over one plane in each component)
   RefCountPtr<vector<double> >     pointsumsqT_;
 
   //!--------------------------------------------------

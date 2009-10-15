@@ -202,9 +202,9 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   const Epetra_Map* noderowmap = discret_->NodeRowMap();
   convel_ = rcp(new Epetra_MultiVector(*noderowmap,3,true));
 
-  // subgrid-scale velocity (always three velocity components per node)
-  // (get noderowmap of discretization for creating this multivector)
-  sgvel_ = rcp(new Epetra_MultiVector(*noderowmap,3,true));
+  // acceleration and pressure required for computation of subgrid-scale
+  // velocity (always four components per node)
+  accpre_ = rcp(new Epetra_MultiVector(*noderowmap,4,true));
 
   if (isale_)
   {
@@ -307,10 +307,19 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     if (turbparams->get<string>("PHYSICAL_MODEL") != "no_model")
       turbmodel_ = true;
 
-    // warning if classical (all-scale) turbulence model and fine-scale
+    // warning No. 1: if classical (all-scale) turbulence model other than
+    // constant-coefficient Smagorinsky is intended to be used
+    if (turbparams->get<string>("PHYSICAL_MODEL") == "Smagorinsky_with_van_Driest_damping" or
+        turbparams->get<string>("PHYSICAL_MODEL") == "Dynamic_Smagorinsky")
+      dserror("No classical (all-scale) turbulence model other than constant-coefficient Smagorinsky model currently possible!");
+
+    // warning No. 2: if classical (all-scale) turbulence model and fine-scale
     // subgrid-viscosity approach are intended to be used simultaneously
     if (turbmodel_ and fssgd_ != INPAR::SCATRA::fssugrdiff_no)
       dserror("No combination of classical (all-scale) turbulence model and fine-scale subgrid-diffusivity approach currently possible!");
+
+    // Smagorinsky constant
+    Cs_ = turbparams->get<double>("C_SMAGORINSKY",0.0);
 
     // turbulent Prandtl number
     tpn_ = turbparams->get<double>("C_TURBPRANDTL",1.0);
@@ -1036,11 +1045,14 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   eleparams.set("form of convective term",convform_);
   eleparams.set("fs subgrid diffusivity",fssgd_);
   eleparams.set("turbulence model",turbmodel_);
+  eleparams.set("Smagorinsky constant",Cs_);
+  eleparams.set("turbulent Prandtl number",tpn_);
   eleparams.set("frt",frt_);// ELCH specific factor F/RT
 
-  // provide velocity field (export to column map necessary for parallel evaluation)
+  // provide velocity field and potentially acceleration/pressure field
+  // (export to column map necessary for parallel evaluation)
   AddMultiVectorToParameterList(eleparams,"velocity field",convel_);
-  AddMultiVectorToParameterList(eleparams,"subgrid-scale velocity field",sgvel_);
+  AddMultiVectorToParameterList(eleparams,"acceleration/pressure field",accpre_);
 
   // provide displacement field in case of ALE
   eleparams.set("isale",isale_);
@@ -1202,12 +1214,12 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField()
 
 
 /*----------------------------------------------------------------------*
- | set convective velocity field, (subgrid velocity field and subgrid   |
- | viscosity field)                                           gjb 05/09 |
+ | set convective velocity field (+ pressure and acceleration field     |
+ | if required)                                               gjb 05/09 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::SetVelocityField(
 Teuchos::RCP<const Epetra_Vector> fluidvel,
-Teuchos::RCP<const Epetra_Vector> fluidsgvelvisc,
+Teuchos::RCP<const Epetra_Vector> fluidacc,
 Teuchos::RCP<const DRT::DofSet> dofset,
 Teuchos::RCP<DRT::Discretization> fluiddis)
 {
@@ -1226,14 +1238,12 @@ Teuchos::RCP<DRT::Discretization> fluiddis)
     dserror("Fluid and Scatra noderowmaps are NOT identical. Emergency!");
 #endif
 
-  // boolean indicating whether subgrid velocity-diffusivity vector does exist
-  bool subgridswitch = fluidsgvelvisc!=Teuchos::null;
-
-  // variable to store subgrid diffusivity temporarily
-  double subgriddiff;
+  // boolean indicating whether acceleration vector exists
+  // -> if yes, subgrid-scale velocity may need to be computed on element level
+  bool sgvelswitch = fluidacc != Teuchos::null;
 
   // get dofrowmap of fluid discretization
-//  const Epetra_Map* fluiddofrowmap = fluiddis->DofRowMap();
+  // const Epetra_Map* fluiddofrowmap = fluiddis->DofRowMap();
 
   // loop over all local nodes of scatra discretization
   for (int lnodeid=0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
@@ -1269,32 +1279,28 @@ Teuchos::RCP<DRT::Discretization> fluiddis)
       // insert velocity value into node-based vector
       convel_->ReplaceMyValue(lnodeid, index, velocity);
 
-      if (subgridswitch)
+      if (sgvelswitch)
       {
-        // get subgrid-scale velocity component
-        double sgvelocity = (*fluidsgvelvisc)[flid];
-        // insert subgrid-scale velocity value into node-based vector
-        sgvel_->ReplaceMyValue(lnodeid, index, sgvelocity);
+        // get value of corresponding acceleration component
+        double acceleration = (*fluidacc)[flid];
+        // insert acceleration value into node-based vector
+        accpre_->ReplaceMyValue(lnodeid, index, acceleration);
       }
     }
 
-    if (subgridswitch)
+    // now we transfer pressure dofs only
+    if (sgvelswitch)
     {
-      // now we transfer "pressure" dofs
-      // remark: the "pressure" dof is used to store the nodal values of
-      // the subgrid viscosity
-
       // global and processor's local fluid dof ID
       const int fgid = fluidnodedofs[numdim];
-//      const int flid = fluiddofrowmap->LID(fgid);
-      const int flid = fluidsgvelvisc->Map().LID(fgid);
+      // const int flid = fluiddofrowmap->LID(fgid);
+      const int flid = fluidvel->Map().LID(fgid);
       if (flid < 0) dserror("lid not found in map for given gid");
 
-      // get subgrid viscosity for this processor's local fluid dof and
-      // divide by turbulent Prandtl number to get subgrid diffusivity
-      subgriddiff  = (*fluidsgvelvisc)[flid]/tpn_;
-      // insert subgrid diffusivity value into node-based vector
-      subgrdiff_->ReplaceMyValues(1,&subgriddiff,&lnodeid);
+      // get value of corresponding pressure component
+      double pressure = (*fluidvel)[flid];
+      // insert pressure value into node-based vector
+      accpre_->ReplaceMyValue(lnodeid, numdim, pressure);
     }
 
     // for security reasons in 1D or 2D problems:
@@ -1302,7 +1308,6 @@ Teuchos::RCP<DRT::Discretization> fluiddis)
     for (int index=numdim; index < 3; ++index)
     {
       convel_->ReplaceMyValue(lnodeid, index, 0.0);
-      if (subgridswitch) sgvel_->ReplaceMyValue(lnodeid, index, 0.0);
     }
   }
 

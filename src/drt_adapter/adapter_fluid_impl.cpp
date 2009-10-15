@@ -103,9 +103,17 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidImpl::Veln()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidImpl::SgVelVisc()
+Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidImpl::Accam()
 {
-  return fluid_.SgVelVisc();
+  return fluid_.Accam();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidImpl::Hist()
+{
+  return fluid_.Hist();
 }
 
 

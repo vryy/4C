@@ -168,8 +168,8 @@ public:
   */
   void TimeLoop();
 
-  /// not available yet! henke 05/09 (return vector sgvelvisc_)
-  Teuchos::RCP<Epetra_Vector> SgVelVisc();
+  /// not yet supported! vg 10/09
+  Teuchos::RCP<Epetra_Vector> Hist();
 
   /*!
   \brief not used in combustion or XFEM -> remove

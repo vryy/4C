@@ -822,13 +822,13 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 } // CombustImplicitTimeInt::NonlinearSolve
 
 /*------------------------------------------------------------------------------------------------*
- | not available yet!                                                                 henke 05/09 |
+ | not yet supported!     vg 10/09 |
  *------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FLD::CombustFluidImplicitTimeInt::SgVelVisc()
+Teuchos::RCP<Epetra_Vector> FLD::CombustFluidImplicitTimeInt::Hist()
 {
-  // -> see comment for ADAPTER::FluidCombust::SgVelVisc()
-  dserror("Variable sgvelvisc_ does not exist in CombustFluidImplicitTimeInt yet!");
-  // -> see FLD::FluidImplicitTimeInt::SgVelVisc() to implement this function
+  // -> see comment for ADAPTER::FluidCombust::Hist()
+  dserror("not yet supported!");
+  // -> see FLD::FluidImplicitTimeInt::Hist() to implement this function
   return Teuchos::null;
 }
 

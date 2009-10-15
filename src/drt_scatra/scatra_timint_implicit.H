@@ -147,8 +147,8 @@ public:
 
   /// set the convective velocity + subgrid velocity/viscosity field (Navier-Stokes solution)
   void SetVelocityField(
-      Teuchos::RCP<const Epetra_Vector> fluidvel,       ///< fluid velocity vector
-      Teuchos::RCP<const Epetra_Vector> fluidsgvelvisc, ///< fluid subgrid velocity/viscosity vector
+      Teuchos::RCP<const Epetra_Vector> fluidvel, ///< fluid velocity/press. vector
+      Teuchos::RCP<const Epetra_Vector> fluidacc, ///< fluid acceleration vector
       Teuchos::RCP<const DRT::DofSet> dofset,
       Teuchos::RCP<DRT::Discretization> fluiddis);    ///< fluid discretization
 
@@ -508,7 +508,8 @@ protected:
   /// LOMA-specific parameter: flag for turbulence model
   bool turbmodel_;
 
-  /// LOMA-specific parameter: turbulent Prandtl number
+  /// LOMA-specific parameters: Smagorinsky constant and turbulent Prandtl number
+  double Cs_;
   double tpn_;
 
   /// LOMA-specific parameter: thermodynamic pressure at n+1 and n
@@ -561,11 +562,11 @@ protected:
   ///                or phin, phidtn (One-Step-Theta)
   RCP<Epetra_Vector>    hist_;
 
-  /// actual convective velocity
+  /// convective velocity
   RCP<Epetra_MultiVector>    convel_;
 
-  /// subgrid-scale velocity
-  RCP<Epetra_MultiVector>    sgvel_;
+  /// acceleration and pressure required for computation of subgrid-scale velocity
+  RCP<Epetra_MultiVector>    accpre_;
 
   /// displacements at time n+1 for ALE formulation
   RCP<Epetra_MultiVector>    dispnp_;

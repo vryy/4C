@@ -293,10 +293,6 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // Nonlinear iteration increment vector
   incvel_ = LINALG::CreateVector(*dofrowmap,true);
 
-  // subgrid-velocity/viscosity vector (enabling statistical evaluation and
-  // transfer to coupled scalar transport solver)
-  sgvelvisc_ = LINALG::CreateVector(*dofrowmap,true);
-
   // initialise vectors and flags for (dynamic) Smagorinsky model
   // ------------------------------------------------------------
   //
@@ -445,20 +441,11 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   }
 
   // ---------------------------------------------------------------------
-  // set subgrid-scale velocity if required by a coupled scalar transport
-  // problem (currently only for low-Mach-number flow)
-  // set density variable to 1.0 for low-Mach-number flow and get
-  // constant density variable for incompressible flow
+  // set density variable to 1.0 and get gas constant for low-Mach-number
+  // flow and get constant density variable for incompressible flow
   // ---------------------------------------------------------------------
-  sgvel_ = false;
   if (loma_)
   {
-    // get sublist containing SCATRA stabilization parameters
-    ParameterList * scatrastabparams =&(params_.sublist("SCATRA STABILIZATION"));
-
-    // flag for evaluation of subgrid-scale velocity
-    if (scatrastabparams->get<string>("SUGRVEL") == "yes") sgvel_ = true;
-
     // set density variable to 1.0 for low-Mach-number flow
     density_ = 1.0;
 
@@ -903,7 +890,6 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       eleparams.set("fs subgrid viscosity",fssgv_);
       eleparams.set("Linearisation",newton_);
       eleparams.set("low-Mach-number solver",loma_);
-      eleparams.set("subgrid-scale velocity",sgvel_);
 
       // parameters for stabilization
       eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
@@ -967,8 +953,8 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
            !=
            "L_2_norm_without_residual_at_itemax"))
       {
-        // call standard loop over elements (incl. subgrid-velocity/viscosity vector)
-        discret_->Evaluate(eleparams,sysmat_,null,residual_,sgvelvisc_,null);
+        // call standard loop over elements
+        discret_->Evaluate(eleparams,sysmat_,null,residual_,null,null);
 
         discret_->ClearState();
 
@@ -1559,7 +1545,6 @@ void FLD::FluidImplicitTimeInt::LinearSolve()
     eleparams.set("total time",time_);
     eleparams.set("thsl",theta_*dta_);
     eleparams.set("low-Mach-number solver",loma_);
-    eleparams.set("subgrid-scale velocity",sgvel_);
 
     eleparams.set("thermpress at n+alpha_F/n+1",thermpressaf_);
     eleparams.set("thermpress at n+alpha_M/n",thermpressam_);
@@ -2044,9 +2029,6 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
 
   sysmat_->Zero();
 
-  // zero subgrid-velocity/viscosity vector
-  sgvelvisc_->PutScalar(0.0);
-
   // create the parameters for the discretization
   ParameterList eleparams;
 
@@ -2072,7 +2054,6 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   eleparams.set("fs subgrid viscosity",fssgv_);
   eleparams.set("Linearisation",newton_);
   eleparams.set("low-Mach-number solver",loma_);
-  eleparams.set("subgrid-scale velocity",sgvel_);
 
   // parameters for stabilization
   eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
@@ -2127,8 +2108,8 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   //----------------------------------------------------------------------
   if (fssgv_ != "No") AVM3Separation();
 
-  // call standard loop over elements (incl. subgrid-velocity/viscosity vector)
-  discret_->Evaluate(eleparams,sysmat_,null,residual_,sgvelvisc_,null);
+  // call standard loop over elements
+  discret_->Evaluate(eleparams,sysmat_,null,residual_,null,null);
   discret_->ClearState();
 
   // account for potential Neumann inflow terms
@@ -2210,35 +2191,6 @@ void FLD::FluidImplicitTimeInt::GenAlphaUpdateAcceleration()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- | apply zero Dirichlet boundary conditions to subgrid-scale   vg 05/09 |
- | velocity vector (note that subgrid-viscosity values on pressure dofs |
- | are also zeroed if pressure DBC exist)                               |
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::SgVelVisc()
-{
-  // used as dummy here
-  incvel_->PutScalar(0.0);
-
-  // extract subgrid-viscosity values before applying zero Dirichlet bc
-  Teuchos::RCP<Epetra_Vector> onlysgvisc = velpressplitter_.ExtractCondVector(sgvelvisc_);
-
-  // set zero values at vector locations for Dirichlet boundary conditions
-  LINALG::ApplyDirichlettoSystem(incvel_,sgvelvisc_,zeros_,*(dbcmaps_->CondMap()));
-
-  // insert subgrid-viscosity values again
-  velpressplitter_.InsertCondVector(onlysgvisc,sgvelvisc_);
-
-  return sgvelvisc_;
-} // FluidImplicitTimeInt::SgVelVisc
-
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
  | build linear system matrix and rhs                        u.kue 11/07|
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -2277,7 +2229,6 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   eleparams.set("fs subgrid viscosity",fssgv_);
   eleparams.set("Linearisation",newton_);
   eleparams.set("low-Mach-number solver",loma_);
-  eleparams.set("subgrid-scale velocity",sgvel_);
 
   // parameters for stabilization
   eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
@@ -2680,7 +2631,6 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
   eleparams.set("fs subgrid viscosity","No");
   eleparams.set("Linearisation",newton_);
   eleparams.set("low-Mach-number solver",loma_);
-  eleparams.set("subgrid-scale velocity",sgvel_);
 
   // parameters for stabilization
   eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
@@ -2732,7 +2682,7 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
 
   // element evaluation for getting system matrix
   // -> we merely need matrix "structure" below, not the actual contents
-  discret_->Evaluate(eleparams,sysmat_,null,residual_,sgvelvisc_,null);
+  discret_->Evaluate(eleparams,sysmat_,null,residual_,null,null);
   discret_->ClearState();
 
   // complete system matrix
@@ -3607,7 +3557,6 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
     eleparams.set("Linearisation",newton_);
     eleparams.set("form of convective term",convform_);
     eleparams.set("low-Mach-number solver",loma_);
-    eleparams.set("subgrid-scale velocity",sgvel_);
 
     // parameters for stabilization
     eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");

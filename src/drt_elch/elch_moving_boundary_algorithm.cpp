@@ -144,7 +144,7 @@ void ELCH::MovingBoundaryAlgorithm::DoTransportStep()
   // transfer actual velocity fields
   ScaTraField().SetVelocityField(
       FluidField().Velnp(),
-      FluidField().SgVelVisc(),
+      FluidField().Hist(),
       Teuchos::null,
       FluidField().Discretization()
   );

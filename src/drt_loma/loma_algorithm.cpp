@@ -110,7 +110,7 @@ void LOMA::Algorithm::InitialCalculations()
   // set initial velocity field for evaluation of initial scalar time
   // derivative in SCATRA
   ScaTraField().SetVelocityField(FluidField().Velnp(),
-                                 FluidField().SgVelVisc(),
+                                 Teuchos::null,
                                  Teuchos::null,
                                  FluidField().Discretization());
 
@@ -180,10 +180,10 @@ void LOMA::Algorithm::GenAlphaOuterLoop()
   // evaluate fluid predictor step (currently not performed)
   //FluidField().Predictor();
 
-  // set respective field vectors for velocity, subgrid velocity/viscosity
+  // set respective field vectors for velocity/pressure, acceleration
   // and discretization
   ScaTraField().SetVelocityField(FluidField().Velaf(),
-                                 FluidField().SgVelVisc(),
+                                 FluidField().Accam(),
                                  Teuchos::null,
                                  FluidField().Discretization());
 
@@ -243,10 +243,10 @@ void LOMA::Algorithm::GenAlphaOuterLoop()
     if (Comm().MyPID()==0) cout<<"\n************************\n      FLOW SOLVER\n************************\n";
     FluidField().MultiCorrector();
 
-    // set respective field vectors for velocity, subgrid velocity/viscosity
+    // set respective field vectors for velocity/pressure, acceleration
     // and discretization
     ScaTraField().SetVelocityField(FluidField().Velaf(),
-                                   FluidField().SgVelVisc(),
+                                   FluidField().Accam(),
                                    Teuchos::null,
                                    FluidField().Discretization());
 
@@ -283,10 +283,10 @@ void LOMA::Algorithm::OSTBDF2OuterLoop()
   // evaluate fluid predictor step (currently not performed)
   //FluidField().Predictor();
 
-  // set respective field vectors for velocity, subgrid velocity/viscosity
+  // set respective field vectors for velocity/pressure, history vector
   // and discretization
   ScaTraField().SetVelocityField(FluidField().Velnp(),
-                                 FluidField().SgVelVisc(),
+                                 FluidField().Hist(),
                                  Teuchos::null,
                                  FluidField().Discretization());
 
@@ -334,10 +334,10 @@ void LOMA::Algorithm::OSTBDF2OuterLoop()
     if (Comm().MyPID()==0) cout<<"\n************************\n      FLOW SOLVER\n************************\n";
     FluidField().MultiCorrector();
 
-    // set respective field vectors for velocity, subgrid velocity/viscosity
+    // set respective field vectors for velocity/pressure, history vector
     // and discretization
     ScaTraField().SetVelocityField(FluidField().Velnp(),
-                                   FluidField().SgVelVisc(),
+                                   FluidField().Hist(),
                                    Teuchos::null,
                                    FluidField().Discretization());
 

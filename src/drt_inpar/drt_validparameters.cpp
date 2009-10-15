@@ -1781,12 +1781,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<std::string>(
                                  "No",
                                  "artificial",
-                                 "transfer_from_fluid"
+                                 "Smagorinsky_all",
+                                 "Smagorinsky_small"
                                  ),
                                tuple<INPAR::SCATRA::FSSUGRDIFF>(
                                    INPAR::SCATRA::fssugrdiff_no,
                                    INPAR::SCATRA::fssugrdiff_artificial,
-                                   INPAR::SCATRA::fssugrdiff_transfer_from_fluid),
+                                   INPAR::SCATRA::fssugrdiff_smagorinsky_all,
+                                   INPAR::SCATRA::fssugrdiff_smagorinsky_small),
                                &scatradyn);
 
   BoolParameter("BLOCKPRECOND","NO",
@@ -1904,10 +1906,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                     INPAR::SCATRA::tau_zero),
                                &scatradyn_stab);
 
-  // this parameter selects the subgrid-diffusivity definition applied
-  setStringToIntegralParameter<INPAR::SCATRA::KartType>("DEFINITION_KART",
+  // this parameter selects the all-scale subgrid-diffusivity definition applied
+  setStringToIntegralParameter<INPAR::SCATRA::AssgdType>("DEFINITION_ASSGD",
                                "artificial_linear",
-                               "Definition of (all-scale) artificial diffusivity",
+                               "Definition of (all-scale) subgrid diffusivity",
                                tuple<std::string>(
                                  "artificial_linear",
                                  "Hughes_etal_86_nonlinear",
@@ -1920,12 +1922,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "nonlinear isotropic according to Tezduyar and Park (1986)",
                                  "nonlinear isotropic according to doCarmo and Galeao (1991)",
                                  "nonlinear isotropic according to Almeida and Silva (1997)")  ,
-                                tuple<INPAR::SCATRA::KartType>(
-                                    INPAR::SCATRA::kart_artificial,
-                                    INPAR::SCATRA::kart_hughes,
-                                    INPAR::SCATRA::kart_tezduyar,
-                                    INPAR::SCATRA::kart_docarmo,
-                                    INPAR::SCATRA::kart_almeida),
+                                tuple<INPAR::SCATRA::AssgdType>(
+                                    INPAR::SCATRA::assgd_artificial,
+                                    INPAR::SCATRA::assgd_hughes,
+                                    INPAR::SCATRA::assgd_tezduyar,
+                                    INPAR::SCATRA::assgd_docarmo,
+                                    INPAR::SCATRA::assgd_almeida),
                                &scatradyn_stab);
 
   // this parameter selects the location where tau is evaluated

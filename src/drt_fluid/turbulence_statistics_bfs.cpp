@@ -422,13 +422,6 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
   x2sumvw_ =  rcp(new Epetra_SerialDenseMatrix);
   x2sumvw_->Reshape(numx1statlocations_,numx2coor_);
 
-  // mean and rms of subgrid viscosity
-  x2sumsv_ =  rcp(new Epetra_SerialDenseMatrix);
-  x2sumsv_->Reshape(numx1statlocations_,numx2coor_);
-
-  x2sumsqsv_ =  rcp(new Epetra_SerialDenseMatrix);
-  x2sumsqsv_->Reshape(numx1statlocations_,numx2coor_);
-
   // the following vectors are only necessary for low-Mach-number flow
   // first-order moments
   x2sumrho_ =  rcp(new Epetra_SerialDenseMatrix);
@@ -502,8 +495,7 @@ FLD::TurbulenceStatisticsBfs::~TurbulenceStatisticsBfs()
 // sampling of velocity/pressure values
 //----------------------------------------------------------------------
 void FLD::TurbulenceStatisticsBfs::DoTimeSample(
-Teuchos::RefCountPtr<Epetra_Vector> velnp,
-Teuchos::RefCountPtr<Epetra_Vector> subgrvisc
+Teuchos::RefCountPtr<Epetra_Vector> velnp
 )
 {
   //----------------------------------------------------------------------
@@ -653,7 +645,7 @@ Teuchos::RefCountPtr<Epetra_Vector> subgrvisc
       if (countnodesonallprocs)
       {
         //----------------------------------------------------------------------
-        // get values for velocity, pressure and subgrid viscosity on this line
+        // get values for velocity and pressure on this line
         //----------------------------------------------------------------------
         double u;
         double v;
@@ -664,9 +656,6 @@ Teuchos::RefCountPtr<Epetra_Vector> subgrvisc
         velnp->Dot(*togglew_,&w);
         velnp->Dot(*togglep_,&p);
 
-        double sv;
-        subgrvisc->Dot(*togglep_,&sv);
-
         //----------------------------------------------------------------------
         // calculate spatial means on this line
         //----------------------------------------------------------------------
@@ -674,7 +663,6 @@ Teuchos::RefCountPtr<Epetra_Vector> subgrvisc
         double vsm=v/countnodesonallprocs;
         double wsm=w/countnodesonallprocs;
         double psm=p/countnodesonallprocs;
-        double svsm=sv/countnodesonallprocs;
 
         //----------------------------------------------------------------------
         // add spatial mean values to statistical sample
@@ -683,13 +671,11 @@ Teuchos::RefCountPtr<Epetra_Vector> subgrvisc
         (*x2sumv_)(x1nodnum,x2nodnum)+=vsm;
         (*x2sumw_)(x1nodnum,x2nodnum)+=wsm;
         (*x2sump_)(x1nodnum,x2nodnum)+=psm;
-        (*x2sumsv_)(x1nodnum,x2nodnum)+=svsm;
 
         (*x2sumsqu_)(x1nodnum,x2nodnum)+=usm*usm;
         (*x2sumsqv_)(x1nodnum,x2nodnum)+=vsm*vsm;
         (*x2sumsqw_)(x1nodnum,x2nodnum)+=wsm*wsm;
         (*x2sumsqp_)(x1nodnum,x2nodnum)+=psm*psm;
-        (*x2sumsqsv_)(x1nodnum,x2nodnum)+=svsm*svsm;
 
         (*x2sumuv_)(x1nodnum,x2nodnum)+=usm*vsm;
         (*x2sumuw_)(x1nodnum,x2nodnum)+=usm*wsm;
@@ -708,7 +694,6 @@ Teuchos::RefCountPtr<Epetra_Vector> subgrvisc
 void FLD::TurbulenceStatisticsBfs::DoLomaTimeSample(
 Teuchos::RefCountPtr<Epetra_Vector> velnp,
 Teuchos::RefCountPtr<Epetra_Vector> scanp,
-Teuchos::RefCountPtr<Epetra_Vector> subgrvisc,
 const double                        eosfac)
 {
   //----------------------------------------------------------------------
@@ -877,9 +862,6 @@ const double                        eosfac)
         velnp->Dot(*togglew_,&w);
         velnp->Dot(*togglep_,&p);
 
-        double sv;
-        subgrvisc->Dot(*togglep_,&sv);
-
         double T;
         scanp->Dot(*togglep_,&T);
 
@@ -890,7 +872,6 @@ const double                        eosfac)
         double vsm=v/countnodesonallprocs;
         double wsm=w/countnodesonallprocs;
         double psm=p/countnodesonallprocs;
-        double svsm=sv/countnodesonallprocs;
         double Tsm=T/countnodesonallprocs;
         // compute density: rho = eosfac/T
         double rhosm=eosfac/Tsm;
@@ -902,7 +883,6 @@ const double                        eosfac)
         (*x2sumv_)(x1nodnum,x2nodnum)+=vsm;
         (*x2sumw_)(x1nodnum,x2nodnum)+=wsm;
         (*x2sump_)(x1nodnum,x2nodnum)+=psm;
-        (*x2sumsv_)(x1nodnum,x2nodnum)+=svsm;
 
         (*x2sumT_)(x1nodnum,x2nodnum)+=Tsm;
         (*x2sumrho_)(x1nodnum,x2nodnum)+=rhosm;
@@ -911,7 +891,6 @@ const double                        eosfac)
         (*x2sumsqv_)(x1nodnum,x2nodnum)+=vsm*vsm;
         (*x2sumsqw_)(x1nodnum,x2nodnum)+=wsm*wsm;
         (*x2sumsqp_)(x1nodnum,x2nodnum)+=psm*psm;
-        (*x2sumsqsv_)(x1nodnum,x2nodnum)+=svsm*svsm;
 
         (*x2sumsqT_)(x1nodnum,x2nodnum)+=Tsm*Tsm;
         (*x2sumsqrho_)(x1nodnum,x2nodnum)+=rhosm*rhosm;
@@ -999,8 +978,8 @@ void FLD::TurbulenceStatisticsBfs::DumpStatistics(int step)
       (*log) << "\n";
       (*log) << "# line in x2-direction at x1 = " << setw(11) << setprecision(4) << x1statlocations_(i) << "\n";
       (*log) << "#     x2";
-      (*log) << "           umean         vmean         wmean         pmean        svmean";
-      (*log) << "         urms          vrms          wrms          prms         svrms";
+      (*log) << "           umean         vmean         wmean         pmean";
+      (*log) << "         urms          vrms          wrms          prms";
       (*log) << "          u'v'          u'w'          v'w'\n";
 
       for (unsigned j=0; j<x2coordinates_->size(); ++j)
@@ -1009,13 +988,11 @@ void FLD::TurbulenceStatisticsBfs::DumpStatistics(int step)
         double x2v  = (*x2sumv_)(i,j)/numsamp_;
         double x2w  = (*x2sumw_)(i,j)/numsamp_;
         double x2p  = (*x2sump_)(i,j)/numsamp_;
-        double x2sv = (*x2sumsv_)(i,j)/numsamp_;
 
         double x2urms  = sqrt((*x2sumsqu_)(i,j)/numsamp_-x2u*x2u);
         double x2vrms  = sqrt((*x2sumsqv_)(i,j)/numsamp_-x2v*x2v);
         double x2wrms  = sqrt((*x2sumsqw_)(i,j)/numsamp_-x2w*x2w);
         double x2prms  = sqrt((*x2sumsqp_)(i,j)/numsamp_-x2p*x2p);
-        double x2svrms = sqrt((*x2sumsqsv_)(i,j)/numsamp_-x2sv*x2sv);
 
         double x2uv   = (*x2sumuv_)(i,j)/numsamp_-x2u*x2v;
         double x2uw   = (*x2sumuw_)(i,j)/numsamp_-x2u*x2w;
@@ -1026,12 +1003,10 @@ void FLD::TurbulenceStatisticsBfs::DumpStatistics(int step)
         (*log) << "   " << setw(11) << setprecision(4) << x2v;
         (*log) << "   " << setw(11) << setprecision(4) << x2w;
         (*log) << "   " << setw(11) << setprecision(4) << x2p;
-        (*log) << "   " << setw(11) << setprecision(4) << x2sv;
         (*log) << "   " << setw(11) << setprecision(4) << x2urms;
         (*log) << "   " << setw(11) << setprecision(4) << x2vrms;
         (*log) << "   " << setw(11) << setprecision(4) << x2wrms;
         (*log) << "   " << setw(11) << setprecision(4) << x2prms;
-        (*log) << "   " << setw(11) << setprecision(4) << x2svrms;
         (*log) << "   " << setw(11) << setprecision(4) << x2uv;
         (*log) << "   " << setw(11) << setprecision(4) << x2uw;
         (*log) << "   " << setw(11) << setprecision(4) << x2vw;
@@ -1124,8 +1099,8 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step,
       (*log) << "\n";
       (*log) << "# line in x2-direction at x1 = " << setw(11) << setprecision(10) << x1statlocations_(i) << "\n";
       (*log) << "#        x2";
-      (*log) << "                 umean               vmean               wmean               pmean              svmean             rhomean               Tmean            rhoumean           rhouTmean            rhovmean           rhovTmean";
-      (*log) << "               urms                vrms                wrms                prms               svrms              rhorms                Trms";
+      (*log) << "                 umean               vmean               wmean               pmean             rhomean               Tmean            rhoumean           rhouTmean            rhovmean           rhovTmean";
+      (*log) << "               urms                vrms                wrms                prms               rhorms                Trms";
       (*log) << "                u'v'                u'w'                v'w'             rhou'T'             rhov'T'\n";
 
       for (unsigned j=0; j<x2coordinates_->size(); ++j)
@@ -1134,7 +1109,6 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step,
         double x2v  = (*x2sumv_)(i,j)/numsamp_;
         double x2w  = (*x2sumw_)(i,j)/numsamp_;
         double x2p  = (*x2sump_)(i,j)/numsamp_;
-        double x2sv = (*x2sumsv_)(i,j)/numsamp_;
 
         double x2rho   = (*x2sumrho_)(i,j)/numsamp_;
         double x2T     = (*x2sumT_)(i,j)/numsamp_;
@@ -1147,7 +1121,6 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step,
         double x2vrms  = sqrt((*x2sumsqv_)(i,j)/numsamp_-x2v*x2v);
         double x2wrms  = sqrt((*x2sumsqw_)(i,j)/numsamp_-x2w*x2w);
         double x2prms  = sqrt((*x2sumsqp_)(i,j)/numsamp_-x2p*x2p);
-        double x2svrms = sqrt((*x2sumsqsv_)(i,j)/numsamp_-x2sv*x2sv);
 
         double x2rhorms = sqrt((*x2sumsqrho_)(i,j)/numsamp_-x2rho*x2rho);
         double x2Trms   = sqrt((*x2sumsqT_)(i,j)/numsamp_-x2T*x2T);
@@ -1164,7 +1137,6 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step,
         (*log) << "   " << setw(17) << setprecision(10) << x2v;
         (*log) << "   " << setw(17) << setprecision(10) << x2w;
         (*log) << "   " << setw(17) << setprecision(10) << x2p;
-        (*log) << "   " << setw(17) << setprecision(10) << x2sv;
         (*log) << "   " << setw(17) << setprecision(10) << x2rho;
         (*log) << "   " << setw(17) << setprecision(10) << x2T;
         (*log) << "   " << setw(17) << setprecision(10) << x2rhou;
@@ -1175,7 +1147,6 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step,
         (*log) << "   " << setw(17) << setprecision(10) << x2vrms;
         (*log) << "   " << setw(17) << setprecision(10) << x2wrms;
         (*log) << "   " << setw(17) << setprecision(10) << x2prms;
-        (*log) << "   " << setw(17) << setprecision(10) << x2svrms;
         (*log) << "   " << setw(17) << setprecision(10) << x2rhorms;
         (*log) << "   " << setw(17) << setprecision(10) << x2Trms;
         (*log) << "   " << setw(17) << setprecision(10) << x2uv;

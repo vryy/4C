@@ -77,9 +77,10 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidt()
       eleparams.set("time derivative of thermodynamic pressure",thermpressdtn_);
     }
 
-    //provide velocity field (export to column map necessary for parallel evaluation)
+    // provide velocity field and potentially acceleration/pressure field
+    // (export to column map necessary for parallel evaluation)
     AddMultiVectorToParameterList(eleparams,"velocity field",convel_);
-    AddMultiVectorToParameterList(eleparams,"subgrid-scale velocity field",sgvel_);
+    AddMultiVectorToParameterList(eleparams,"acceleration/pressure field",accpre_);
 
     // set type of scalar transport problem
     eleparams.set("scatratype",scatratype_);
@@ -182,9 +183,10 @@ void SCATRA::ScaTraTimIntImpl::ComputeNeumannInflow(
   condparams.set("problem type",prbtype_);
   condparams.set("incremental solver",incremental_);
 
-  //provide velocity field (export to column map necessary for parallel evaluation)
+  // provide velocity field and potentially acceleration/pressure field
+  // (export to column map necessary for parallel evaluation)
   AddMultiVectorToParameterList(condparams,"velocity field",convel_);
-  AddMultiVectorToParameterList(condparams,"subgrid-scale velocity field",sgvel_);
+  AddMultiVectorToParameterList(condparams,"acceleration/pressure field",accpre_);
 
   //provide displacement field in case of ALE
   condparams.set("isale",isale_);
@@ -397,9 +399,10 @@ void SCATRA::ScaTraTimIntImpl::ComputeInitialThermPressureDeriv()
   // define element parameter list
   ParameterList eleparams;
 
-  //provide velocity field (export to column map necessary for parallel evaluation)
+  // provide velocity field and potentially acceleration/pressure field
+  // (export to column map necessary for parallel evaluation)
   AddMultiVectorToParameterList(eleparams,"velocity field",convel_);
-  AddMultiVectorToParameterList(eleparams,"subgrid-scale velocity field",sgvel_);
+  AddMultiVectorToParameterList(eleparams,"acceleration/pressure field",accpre_);
 
   //provide displacement field in case of ALE
   eleparams.set("isale",isale_);
@@ -1062,9 +1065,10 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain
   params.set("frt",frt_);
   params.set("fluxtype",fluxtype);
 
-  //provide velocity field (export to column map necessary for parallel evaluation)
+  // provide velocity field and potentially acceleration/pressure field
+  // (export to column map necessary for parallel evaluation)
   AddMultiVectorToParameterList(params,"velocity field",convel_);
-  AddMultiVectorToParameterList(params,"subgrid-scale velocity field",sgvel_);
+  AddMultiVectorToParameterList(params,"acceleration/pressure field",accpre_);
 
   //provide displacement field in case of ALE
   params.set("isale",isale_);
@@ -1153,9 +1157,10 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
     eleparams.set("turbulence model",turbmodel_);
     eleparams.set("frt",frt_);
 
-    //provide velocity field (export to column map necessary for parallel evaluation)
+    // provide velocity field and potentially acceleration/pressure field
+    // (export to column map necessary for parallel evaluation)
     AddMultiVectorToParameterList(eleparams,"velocity field",convel_);
-    AddMultiVectorToParameterList(eleparams,"subgrid-scale velocity field",sgvel_);
+    AddMultiVectorToParameterList(eleparams,"acceleration/pressure field",accpre_);
 
     //provide displacement field in case of ALE
     eleparams.set("isale",isale_);

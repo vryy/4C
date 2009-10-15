@@ -209,7 +209,7 @@ void ELCH::Algorithm::PrepareTimeStepConvection()
   if (Step()==1)
     ScaTraField().SetVelocityField(
         FluidField().Velnp(),
-        FluidField().SgVelVisc(),
+        FluidField().Hist(),
         Teuchos::null,
         FluidField().Discretization());
 
@@ -255,7 +255,7 @@ void ELCH::Algorithm::DoTransportStep()
   // transfer actual velocity fields
   ScaTraField().SetVelocityField(
       FluidField().Velnp(),
-      FluidField().SgVelVisc(),
+      FluidField().Hist(),
       Teuchos::null,
       FluidField().Discretization()
   );

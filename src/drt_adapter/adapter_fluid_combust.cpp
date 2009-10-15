@@ -64,12 +64,12 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidCombust::Velnp()
 }
 
 /*------------------------------------------------------------------------------------------------*
- | return null pointer instead of subgrid velocity/viscosity vector                   henke 05/09 |
+ | return null pointer instead of history vector                        vg 10/09 |
  *------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidCombust::SgVelVisc()
+Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidCombust::Hist()
 {
   /* This function is merely required to be able to call SetVelocityField(), in the constructor of
-   * ScaTraFluidCouplingAlgorithm. There, a vector sgvelvisc_ is transferred to the initial scalar
+   * ScaTraFluidCouplingAlgorithm. There, a history vector is transferred to the initial scalar
    * transport field by default. The combustion fluid does not have this vector and thus this
    * function returns a null pointer
    */

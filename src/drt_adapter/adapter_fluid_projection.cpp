@@ -101,15 +101,21 @@ output_(output)
             return fluid_.Veln();
         }
 
-        Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidProjection::Dispnp()
-        {
-            return fluid_.Dispnp();
-        }
-
-        Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidProjection::SgVelVisc()
+        Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidProjection::Accam()
         {
             dserror("not implemented");
             return Teuchos::null;
+        }
+
+        Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidProjection::Hist()
+        {
+            dserror("not implemented");
+            return Teuchos::null;
+        }
+
+        Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidProjection::Dispnp()
+        {
+            return fluid_.Dispnp();
         }
 
         Teuchos::RCP<const Epetra_Map>    ADAPTER::FluidProjection::DofRowMap()

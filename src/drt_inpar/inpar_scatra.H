@@ -92,13 +92,13 @@ namespace INPAR
     };
 
     /// possible options for all-scale subgrid diffusivity
-    enum KartType
+    enum AssgdType
     {
-      kart_artificial,
-      kart_hughes,
-      kart_tezduyar,
-      kart_docarmo,
-      kart_almeida
+      assgd_artificial,
+      assgd_hughes,
+      assgd_tezduyar,
+      assgd_docarmo,
+      assgd_almeida
     };
 
     /// possible options for fine-scale subgrid diffusivity
@@ -106,7 +106,8 @@ namespace INPAR
     {
       fssugrdiff_no,
       fssugrdiff_artificial,
-      fssugrdiff_transfer_from_fluid
+      fssugrdiff_smagorinsky_all,
+      fssugrdiff_smagorinsky_small
     };
 
     /// parameters for flux calculation of scalar transport problems

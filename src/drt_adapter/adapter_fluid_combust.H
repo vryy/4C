@@ -59,6 +59,8 @@ namespace ADAPTER
                                                                return fluid_.Residual(); };
     virtual Teuchos::RCP<const Epetra_Vector> Velaf()        { dserror("not implemented");
                                                                return null; };
+    virtual Teuchos::RCP<const Epetra_Vector> Accam()        { dserror("not implemented");
+                                                               return null; };
     virtual Teuchos::RCP<const Epetra_Vector> Dispnp()       { dserror("not implemented");
                                                                return Teuchos::null; };
     virtual Teuchos::RCP<const Epetra_Map> DofRowMap() { dserror("not implemented");
@@ -153,7 +155,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<const Epetra_Vector> TrueResidual();
     virtual Teuchos::RCP<const Epetra_Vector> Veln();
     virtual Teuchos::RCP<const Epetra_Vector> Velnp();
-    virtual Teuchos::RCP<const Epetra_Vector> SgVelVisc();
+    virtual Teuchos::RCP<const Epetra_Vector> Hist();
     virtual Teuchos::RCP<const Epetra_Vector> ConvectiveVel(){ dserror("not implemented"); return null; };
 
     /// set initial flow field

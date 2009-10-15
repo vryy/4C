@@ -94,8 +94,7 @@ public:
   global vectors. This method allows to do the time average of the
   nodal values after a certain amount of timesteps.
   */
-  void DoTimeSample(Teuchos::RCP<Epetra_Vector> velnp,
-                    Teuchos::RCP<Epetra_Vector> subgrvisc);
+  void DoTimeSample(Teuchos::RCP<Epetra_Vector> velnp);
 
   /*!
   \brief The values of velocity, pressure, temperature and its squared
@@ -104,7 +103,6 @@ public:
   */
   void DoLomaTimeSample(Teuchos::RCP<Epetra_Vector> velnp,
                         Teuchos::RCP<Epetra_Vector> scanp,
-                        Teuchos::RCP<Epetra_Vector> subgrvisc,
                         const double                eosfac);
 
   /*!
@@ -202,7 +200,6 @@ private:
   RCP<Epetra_SerialDenseMatrix>     x2sumv_;
   RCP<Epetra_SerialDenseMatrix>     x2sumw_;
   RCP<Epetra_SerialDenseMatrix>     x2sump_;
-  RCP<Epetra_SerialDenseMatrix>     x2sumsv_;
 
   RCP<Epetra_SerialDenseMatrix>     x2sumrho_;
   RCP<Epetra_SerialDenseMatrix>     x2sumT_;
@@ -211,7 +208,6 @@ private:
   RCP<Epetra_SerialDenseMatrix>     x2sumsqv_;
   RCP<Epetra_SerialDenseMatrix>     x2sumsqw_;
   RCP<Epetra_SerialDenseMatrix>     x2sumsqp_;
-  RCP<Epetra_SerialDenseMatrix>     x2sumsqsv_;
 
   RCP<Epetra_SerialDenseMatrix>     x2sumsqrho_;
   RCP<Epetra_SerialDenseMatrix>     x2sumsqT_;

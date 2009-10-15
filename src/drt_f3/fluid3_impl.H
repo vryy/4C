@@ -140,14 +140,12 @@ namespace ELEMENTS
       \param estif            (o) element matrix to calculate
       \param emesh            (o) linearization wrt mesh motion
       \param eforce           (o) element rhs to calculate
-      \param sgvelvisc        (o) subgrid-velocity/viscosity vector
       \param material         (i) fluid material
       \param time             (i) current simulation time
       \param timefac          (i) time discretization factor
       \param newton           (i) boolean flag for linearisation
       \param loma             (i) boolean flag for potential low-Mach-number solver
       \param conservative     (i) boolean flag for conservative form
-      \param sgvel            (i) boolean flag for subgrid-scale velocity
       \param is_genalpha      (i) boolean flag for generalized-alpha time integration
       \param higher_order_ele (i) keep or drop second derivatives
       \param fssgv            (i) flag for type of fine-scale subgrid viscosity
@@ -182,14 +180,12 @@ namespace ELEMENTS
                 LINALG::Matrix<4*iel,4*iel>&             estif,
                 LINALG::Matrix<4*iel,4*iel>&             emesh,
                 LINALG::Matrix<4*iel,    1>&             eforce,
-                LINALG::Matrix<4*iel,    1>&             sgvelvisc,
                 Teuchos::RCP<const MAT::Material>        material,
                 double                                   time,
                 double                                   timefac,
                 const bool                               newton,
                 const bool                               loma,
                 const bool                               conservative,
-                const bool                               sgvel,
                 const bool                               is_genalpha,
                 const bool                               higher_order_ele,
                 const bool                               tau_gp,
@@ -243,27 +239,21 @@ namespace ELEMENTS
     /*!
       \brief calculate (all-scale) subgrid viscosity
     */
-    void CalcSubgrVisc(Fluid3*                             ele,
-                       const LINALG::Matrix<3,iel>&        evelaf,
-                       LINALG::Matrix<4*iel,1>&            sgvelvisc,
+    void CalcSubgrVisc(const LINALG::Matrix<3,iel>&        evelaf,
                        const double                        vol,
                        const enum Fluid3::TurbModelAction  turb_mod_action,
                        double&                             Cs,
                        double&                             Cs_delta_sq,
-                       double&                             l_tau,
-                       const bool                          transfer);
+                       double&                             l_tau);
 
     /*!
       \brief calculate fine-scale subgrid viscosity
     */
-    void CalcFineScaleSubgrVisc(Fluid3*                             ele,
-                                const LINALG::Matrix<3,iel>&        evelaf,
+    void CalcFineScaleSubgrVisc(const LINALG::Matrix<3,iel>&        evelaf,
                                 const LINALG::Matrix<3,iel>&        fsevelaf,
-                                LINALG::Matrix<4*iel,1>&            sgvelvisc,
                                 const double                        vol,
                                 const enum Fluid3::FineSubgridVisc  fssgv,
-                                double&                             Cs,
-                                const bool                          transfer);
+                                double&                             Cs);
 
     /*!
       \brief calculate stabilization parameter
@@ -287,21 +277,6 @@ namespace ELEMENTS
     void CalcStabParameter(const double               timefac,
                            const double               vol,
                            const enum Fluid3::TauType whichtau);
-
-    /*!
-      \brief calculate subgrid-scale velocity at element center
-             for transfer to coupled scalar transport solver
-    */
-    void CalcSubgrVelocity(Fluid3*                      ele,
-                           const LINALG::Matrix<3,iel>& evelaf,
-                           const LINALG::Matrix<iel,1>& epreaf,
-                           const LINALG::Matrix<3,iel>& eaccam,
-                           const LINALG::Matrix<3,iel>& emhist,
-                           LINALG::Matrix<4*iel,1>&     sgvelvisc,
-                           const double                 timefac,
-                           const bool                   loma,
-                           const bool                   is_genalpha,
-                           const bool                   higher_order_ele);
 
     /*!
       \brief calculate rate of strain of (fine-scale) velocity

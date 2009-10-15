@@ -169,12 +169,14 @@ public:
         const double                          timefac, ///< time discretization factor
         const double                          alphaF, ///< factor for generalized-alpha time integration
         const enum INPAR::SCATRA::TauType     whichtau, ///< stabilization parameter definition
-        const enum INPAR::SCATRA::KartType    whichkart, ///< all-scale artificial subgrid-diffusivity definition
-        const bool                            sgvel, ///< subgrid-scale velocity flag
+        const enum INPAR::SCATRA::AssgdType   whichassgd, ///< all-scale subgrid-diffusivity definition
+        const enum INPAR::SCATRA::FSSUGRDIFF  whichfssgd, ///< fine-scale subgrid-diffusivity definition
         const bool                            assgd, ///< all-scale subgrid-diff. flag
         const bool                            fssgd, ///< fine-scale subgrid-diff. flag
         const bool                            turbmodel, ///< flag for turbulence model
         const bool                            reinitswitch,
+        const double                          Cs, ///< Smagorinsky constant
+        const double                          tpn, ///< turbulent Prandtl number
         const double                          frt ///< factor F/RT needed for ELCH calculations
     );
 
@@ -218,23 +220,41 @@ public:
         const double                          dt,
         const double                          timefac,
         const enum INPAR::SCATRA::TauType     whichtau,
-        const bool                            turbmodel,
         const double                          vol,
         const int                             k
     );
 
-    //! calculate all-scale or fine-scale subgrid diffusivity
-    virtual void CalKart(
-        DRT::Element*                         ele,
-        Epetra_SerialDenseVector&             subgrdiff,
-        double                                diffus,
+    //! calculate all-scale subgrid diffusivity
+    virtual void CalcSubgrDiff(
         const double                          dt,
         const double                          timefac,
-        const enum INPAR::SCATRA::KartType    whichkart,
+        const enum INPAR::SCATRA::AssgdType   whichassgd,
         const bool                            assgd,
-        const bool                            fssgd,
+        const bool                            turbmodel,
+        const double                          Cs,
+        const double                          tpn,
         const double                          vol,
         const int                             k
+    );
+
+    //! calculate fine-scale subgrid diffusivity
+    virtual void CalcFineScaleSubgrDiff(
+        DRT::Element*                         ele,
+        Epetra_SerialDenseVector&             subgrdiff,
+        const enum INPAR::SCATRA::FSSUGRDIFF  whichfssgd,
+        const double                          Cs,
+        const double                          tpn,
+        const double                          vol,
+        const int                             k
+    );
+
+    //! calculate subgrid-scale velocity
+    virtual void CalcSubgrVelocity(
+        DRT::Element* ele,
+        const double  time,
+        const double  dt,
+        const double  timefac,
+        const int     k
     );
 
     //! evaluate shape functions and their derivatives at current integration point
@@ -448,15 +468,19 @@ public:
     bool is_incremental_;
     //! flag for conservative form of convective term
     bool conservative_;
+    //! flag for inclusion of subgrid-scale velocity
+    bool sgvel_;
     //! flag for material evaluation at Gaussian integration points
     bool mat_gp_;
     //! flag for stabilization parameter evaluation at Gaussian integration points
     bool tau_gp_;
 
-    //! nodal velocity values
+    //! nodal velocity values at t_(n+1) or t_(n+alpha_F)
     LINALG::Matrix<nsd_,iel> evelnp_;
-    //! nodal subgrid-scale velocity values
-    LINALG::Matrix<nsd_,iel> esgvelnp_;
+    //! nodal acceleration values at t_(n+1) or t_(n+alpha_F)
+    LINALG::Matrix<nsd_,iel> eaccnp_;
+    //! nodal pressure values at t_(n+1) or t_(n+alpha_F)
+    LINALG::Matrix<iel,1> eprenp_;
     //! scalar at t_(n)
     vector<LINALG::Matrix<iel,1> > ephin_;
     //! scalar at t_(n+1) or t_(n+alpha_F)
@@ -467,8 +491,6 @@ public:
     vector<LINALG::Matrix<iel,1> > ehist_;
     //! actual electric potential (ELCH)
     LINALG::Matrix<iel,1> epotnp_;
-    //! subgrid diffusivity
-    LINALG::Matrix<iel,1> esubgrdiff_;
     //! fine-scale solution
     vector<LINALG::Matrix<iel,1> > fsphinp_;
     //! nodal displacement values for ALE
@@ -496,6 +518,8 @@ public:
     vector<double> diffusvalence_;
     //! specific heat capacity at constant pressure (in case of temp. or react. eq.)
     double shcacp_;
+    //! fluid viscosity
+    double visc_;
     //! coordinates of current integration point in reference coordinates
     LINALG::Matrix<nsd_,1> xsi_;
     //! array for shape functions
@@ -530,8 +554,8 @@ public:
     double vdiv_;
     //! the stabilisation parameters (one per transported scalar)
     vector<double> tau_;
-    //! artificial diffusivities (one per transported scalar)
-    vector<double> kart_;
+    //! all-scale or fine-scale subgrid diffusivities (one per transported scalar)
+    vector<double> sgdiff_;
     //! 2nd derivatives of coord.-functions w.r.t r,s,t
     LINALG::Matrix<numderiv2_,nsd_> xder2_;
     //! integration factor for current GP: fac = GaussWeight * det(J)
