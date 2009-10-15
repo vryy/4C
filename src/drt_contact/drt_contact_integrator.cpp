@@ -345,136 +345,6 @@ void CONTACT::Integrator::IntegrateDerivSlave2D3D(
 }
 
 /*----------------------------------------------------------------------*
- |  Integrate and linearize D on a slave element (2D / 3D)    popp 02/09|
- |  This method integrates the element D matrix and stores it in dseg.  |
- |  Moreover, derivatives LinD are built and stored directly into the   |
- |  adajcent nodes. (Thus this method combines EVERYTHING before done   |
- |  aperarately in IntegrateD and DerivD!)                              |
- |  ********** modified version: only for 3D quad, standard * popp 05/09|
- *----------------------------------------------------------------------*/
-void CONTACT::Integrator::IntegrateDerivSlave3DQuad(
-      CONTACT::CElement& sele, CONTACT::IntElement& sintele,
-      double* sxia, double* sxib,
-      RCP<Epetra_SerialDenseMatrix> dseg)
-{
-  // explicitely defined shapefunction type needed
-  if (shapefcn_ == Interface::Undefined)
-    dserror("ERROR: IntegrateDerivSlave3DQuad called without specific shape function defined!");
-  
-  // check for problem dimension
-  if (Dim()!=3) dserror("ERROR: 3D integration method called for non-3D problem");
- 
-  //check input data
-  if (!sele.IsSlave())
-    dserror("ERROR: IntegrateDerivSlave3DQuad called on a non-slave CElement!");
-  if ((sxia[0]<-1.0) || (sxia[1]<-1.0) || (sxib[0]>1.0) || (sxib[1]>1.0))
-    dserror("ERROR: IntegrateDerivSlave3DQuad called with infeasible slave limits!");
-
-  // number of nodes (slave)
-  int nrow = sele.NumNode();
-  int ndof = Dim();
-  int ncol = nrow;
-  int nintrow = sintele.NumNode();
-
-  // create empty objects for shape fct. evaluation
-  LINALG::SerialDenseVector val(nrow);
-  LINALG::SerialDenseMatrix deriv(nrow,2,true);
-  LINALG::SerialDenseVector intval(nintrow);
-  LINALG::SerialDenseMatrix intderiv(nintrow,2,true);
-  
-
-  // get slave element nodes themselves for GP normal evaluation
-  DRT::Node** mynodes = sele.Nodes();
-  if (!mynodes) dserror("ERROR: IntegrateDerivSlave3DQuad: Null pointer!");
-  DRT::Node** myintnodes = sintele.Nodes();
-  if(!myintnodes) dserror("ERROR: IntegrateDerivSlave3DQuad: Null pointer!");
-
-  // map iterator
-  typedef map<int,double>::const_iterator CI;
-
-  //**********************************************************************
-  // loop over all Gauss points for integration
-  //**********************************************************************
-  for (int gp=0;gp<nGP();++gp)
-  {
-    // coordinates and weight
-    double eta[2] = {Coordinate(gp,0), Coordinate(gp,1)};
-    double wgt = Weight(gp);
-
-    // map Gauss point back to slave element (affine map)
-    double peta[2] = {0.0, 0.0};
-    sintele.MapToParent(eta,peta);
-        
-    // evaluate trace space shape functions
-    sele.EvaluateShape(peta,val,deriv,nrow);
-    sintele.EvaluateShape(eta,intval,intderiv,nintrow);
-
-    // evaluate the Jacobian det
-    double dxdsxi = sintele.Jacobian(eta);
-
-    // evaluate the Jacobian derivative
-    map<int,double> derivjac;
-    sintele.DerivJacobian(eta,derivjac);
-
-    // compute element D matrix ******************************************
-    // loop over all dtemp matrix entries
-    // nintrow represents the Lagrange multipliers !!!
-    // ncol represents the dofs !!!
-    for (int j=0;j<nintrow*ndof;++j)
-    {
-      for (int k=0;k<ncol*ndof;++k)
-      {
-        int jindex = (int)(j/ndof);
-        int kindex = (int)(k/ndof);
-
-        // multiply the two shape functions
-        double prod = intval[jindex]*val[kindex];
-
-        // isolate the dseg entries to be filled
-        // (both the main diagonal and every other secondary diagonal)
-        // and add current Gauss point's contribution to dseg
-        if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
-          (*dseg)(j,k) += prod*dxdsxi*wgt;
-      }
-    }
-    // compute element D matrix ******************************************
-
-    // compute element D linearization ***********************************
-    
-    // here we have to adapt the alogrithm to support arbitrary shape functions
-    // because we can't rely on the diagonality of D anymore
-    // this was built analogous to building derivM from IntegrateDerivSegment2D
-    
-    for (int i=0;i<nintrow;++i)
-    {
-      CONTACT::CNode* mycnode = static_cast<CONTACT::CNode*>(myintnodes[i]);
-      if (!mycnode) dserror("ERROR: IntegrateDerivSlave3DQuad: Null pointer!");
-
-      // loop over all slave nodes again
-      for (int k=0; k<nrow; ++k)
-      {
-        // slave node ID
-        int sgid = sele.Nodes()[k]->Id();
-
-        // get the correct map as a reference
-        map<int,double>& ddmap_ik = mycnode->GetDerivD()[sgid];
-        
-        // multiply the corresponding two shape functions
-        double prod = wgt*intval[i]*val[k];
-
-        // derivative of Jacobian
-        for (CI p=derivjac.begin(); p!=derivjac.end(); ++p)
-          ddmap_ik[p->first] += prod*(p->second);
-      } 
-    }
-    // compute element D linearization ***********************************
-  }
-  //**********************************************************************
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
  |  Integrate and linearize a 1D slave / master overlap (2D)  popp 02/09|
  |  This method integrates the overlap M matrix and weighted gap g~     |
  |  and stores it in mseg and gseg respectively. Moreover, derivatives  |
@@ -498,9 +368,9 @@ void CONTACT::Integrator::IntegrateDerivSegment2D(
 
   // check input data
   if ((!sele.IsSlave()) || (mele.IsSlave()))
-    dserror("ERROR: IntegrateDerivSegment2D called on a wrong type of CElement pair!");
+    dserror("ERROR: IntegrateAndDerivSegment called on a wrong type of CElement pair!");
   if ((sxia<-1.0) || (sxib>1.0))
-    dserror("ERROR: IntegrateDerivSegment2D called with infeasible slave limits!");
+    dserror("ERROR: IntegrateAndDerivSegment called with infeasible slave limits!");
   if ((mxia<-1.0) || (mxib>1.0))
     dserror("ERROR: IntegrateAndDerivSegment called with infeasible master limits!");
 
@@ -526,7 +396,7 @@ void CONTACT::Integrator::IntegrateDerivSegment2D(
 
   // get slave element nodes themselves
   DRT::Node** mynodes = sele.Nodes();
-  if(!mynodes) dserror("ERROR: IntegrateDerivSegment2D: Null pointer!");
+  if(!mynodes) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
 
   // map iterator
   typedef map<int,double>::const_iterator CI;
@@ -599,7 +469,7 @@ void CONTACT::Integrator::IntegrateDerivSegment2D(
       cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
       cout << "Gauss point: " << sxi[0] << " " << sxi[1] << endl;
       cout << "Projection: " << mxi[0] << " " << mxi[1] << endl;
-      dserror("ERROR: IntegrateDerivSegment2D: Gauss point projection failed! mxi=%d",mxi[0]);
+      dserror("ERROR: IntegrateAndDerivSegment: Gauss point projection failed! mxi=%d",mxi[0]);
     }
 
     // evaluate dual space shape functions (on slave element)
@@ -629,7 +499,7 @@ void CONTACT::Integrator::IntegrateDerivSegment2D(
 
     // normalize interpolated GP normal back to length 1.0 !!!
     double length = sqrt(gpn[0]*gpn[0]+gpn[1]*gpn[1]+gpn[2]*gpn[2]);
-    if (length<1.0e-12) dserror("ERROR: IntegrateDerivSegment2D: Divide by zero!");
+    if (length<1.0e-12) dserror("ERROR: IntegrateAndDerivSegment: Divide by zero!");
 
     for (int i=0;i<3;++i)
       gpn[i]/=length;
@@ -691,13 +561,13 @@ void CONTACT::Integrator::IntegrateDerivSegment2D(
     for (int i=0;i<nrow;++i)
     {
       scnodes[i] = static_cast<CONTACT::CNode*>(snodes[i]);
-      if (!scnodes[i]) dserror("ERROR: IntegrateDerivSegment2D: Null pointer!");
+      if (!scnodes[i]) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
     }
 
     for (int i=0;i<ncol;++i)
     {
       mcnodes[i] = static_cast<CONTACT::CNode*>(mnodes[i]);
-      if (!mcnodes[i]) dserror("ERROR: IntegrateDerivSegment2D: Null pointer!");
+      if (!mcnodes[i]) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
     }
 
     // build directional derivative of slave GP normal (non-unit)
@@ -799,7 +669,7 @@ void CONTACT::Integrator::IntegrateDerivSegment2D(
     {
       // check the shape function type (not really necessary because only dual shape functions arrive here)
       if (shapefcn_ == Interface::StandardFunctions)
-        dserror("ERROR: IntegrateDerivSegment2D: Edge node mod. called for standard shape functions");
+        dserror("ERROR: IntegrateAndDerivSlave: Edge node mod. called for standard shape functions");
       
       CONTACT::CNode* mycnode = static_cast<CONTACT::CNode*>(mynodes[k]);
       if (!mycnode) dserror("ERROR: IntegrateDerivSegment2D: Null pointer!");
@@ -958,7 +828,7 @@ void CONTACT::Integrator::IntegrateDerivSegment2D(
     {
       // check the shape function type (not really necessary because only dual shape functions arrive here)
       if (shapefcn_ == Interface::StandardFunctions)
-        dserror("ERROR: IntegrateDerivSegment2D: Edge node mod. called for standard shape functions");
+        dserror("ERROR: IntegrateAndDerivSlave: Edge node mod. called for standard shape functions");
       
       for (int j=0;j<nrow;++j)
       {
@@ -1077,7 +947,7 @@ void CONTACT::Integrator::IntegrateDerivSegment2D(
     for (int j=0;j<nrow;++j)
     {
       CONTACT::CNode* mycnode = static_cast<CONTACT::CNode*>(mynodes[j]);
-      if (!mycnode) dserror("ERROR: IntegrateDerivSegment2D: Null pointer!");
+      if (!mycnode) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
 
       int sgid = mycnode->Id();
 
@@ -1258,7 +1128,7 @@ void CONTACT::Integrator::IntegrateDerivSegment2D(
     for (int j=0;j<nrow;++j)
     {
       CONTACT::CNode* mycnode = static_cast<CONTACT::CNode*>(mynodes[j]);
-      if (!mycnode) dserror("ERROR: IntegrateDerivSegment2D: Null pointer!");
+      if (!mycnode) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
 
       double fac = 0.0;
 
@@ -3699,7 +3569,7 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneQuad(
     {
       if (sxi[0]<-1.0-tol || sxi[1]<-1.0-tol || sxi[0]>1.0+tol || sxi[1]>1.0+tol)
       {
-        cout << "\n***Warning: IntegrateDerivCell3DAuxPlaneQuad: Gauss point projection outside!";
+        cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Gauss point projection outside!";
         cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
         cout << "GP local: " << eta[0] << " " << eta[1] << endl;
         cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << endl;
@@ -3709,7 +3579,7 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneQuad(
     {
       if (sxi[0]<-tol || sxi[1]<-tol || sxi[0]>1.0+tol || sxi[1]>1.0+tol || sxi[0]+sxi[1]>1.0+2*tol)
       {
-        cout << "\n***Warning: IntegrateDerivCell3DAuxPlaneQuad: Gauss point projection outside!";
+        cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Gauss point projection outside!";
         cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
         cout << "GP local: " << eta[0] << " " << eta[1] << endl;
         cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << endl;
@@ -3721,7 +3591,7 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneQuad(
     {
       if (mxi[0]<-1.0-tol || mxi[1]<-1.0-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol)
       {
-        cout << "\n***Warning: IntegrateDerivCell3DAuxPlaneQuad: Gauss point projection outside!";
+        cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Gauss point projection outside!";
         cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
         cout << "GP local: " << eta[0] << " " << eta[1] << endl;
         cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << endl;
@@ -3731,7 +3601,7 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneQuad(
     {
       if (mxi[0]<-tol || mxi[1]<-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol || mxi[0]+mxi[1]>1.0+2*tol)
       {
-        cout << "\n***Warning: IntegrateDerivCell3DAuxPlaneQuad: Gauss point projection outside!";
+        cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Gauss point projection outside!";
         cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
         cout << "GP local: " << eta[0] << " " << eta[1] << endl;
         cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << endl;
@@ -3994,11 +3864,11 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneQuad(
     if (shapefcn_ == Interface::StandardFunctions)
     {
       // loop over all mseg matrix entries
-      // !!! nintrow represents the slave Lagrange multipliers !!!
+      // !!! nrow represents the slave Lagrange multipliers !!!
       // !!! ncol represents the master dofs                !!!
       // (this DOES matter here for mseg, as it might
       // sometimes be rectangular, not quadratic!)
-      for (int j=0; j<nintrow*ndof; ++j)
+      for (int j=0; j<nrow*ndof; ++j)
       {
         // for standard shape functions we use the same algorithm
         // for dseg as in IntegrateDerivSlave2D3D (but with modified integration area)
@@ -4010,7 +3880,7 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneQuad(
           int kindex = (int)(k/ndof);
   
           // multiply the two shape functions
-          double prod = sintval[jindex]*mval[kindex];
+          double prod = sval[jindex]*mval[kindex];
   
           // isolate the mseg entries to be filled and
           // add current Gauss point's contribution to mseg
@@ -4026,7 +3896,7 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneQuad(
             int kindex = (int)(k/ndof);
   
             // multiply the two shape functions
-            double prod = sintval[jindex]*sval[kindex];
+            double prod = sval[jindex]*sval[kindex];
   
             // isolate the mseg entries to be filled and
             // add current Gauss point's contribution to mseg
@@ -4080,37 +3950,37 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneQuad(
     // weighted gap interpolation, but also reducing polynomial order by one!
 #ifdef CONTACTPETROVGALERKIN  
     if( shapefcn_ == Interface::StandardFunctions )
-      dserror("Integrator::IntegrateDerivAuxPlaneQuad : CONTACTPETROVGALERKIN flag invalid for standard shape functions");
-    
-    for (int j=0;j<nintrow;++j)
-    {
-      double prod = dualintval[j]*gap;
-      // add current Gauss point's contribution to gseg
-      (*gseg)(j) += prod*jac*wgt;
-    }
-#else
-    
-    if (shapefcn_ == Interface::StandardFunctions)
     {
       for (int j=0;j<nintrow;++j)
       {
         double prod = sintval[j]*gap;
-        
         // add current Gauss point's contribution to gseg
         (*gseg)(j) += prod*jac*wgt;
       }
     }
-    else if (shapefcn_ == Interface::DualFunctions)
+    
+    else if (shapefcn_ == Interface::StandardFunctions)
     {
-      for (int j=0;j<nrow;++j)
+      for (int j=0;j<nintrow;++j)
       {
-        double prod = 0;
-        prod = dualval[j]*gap;
-        
+        double prod = dualintval[j]*gap;
         // add current Gauss point's contribution to gseg
         (*gseg)(j) += prod*jac*wgt;
       }
-    }  
+    }
+    
+#else
+    for (int j=0;j<nrow;++j)
+    {
+      double prod = 0;
+      if (shapefcn_ == Interface::DualFunctions)
+        prod = dualval[j]*gap;
+      else if (shapefcn_ == Interface::StandardFunctions)
+        prod = sval[j]*gap;
+      
+      // add current Gauss point's contribution to gseg
+      (*gseg)(j) += prod*jac*wgt;
+    }
 #endif // #ifdef CONTACTPETROVGALERKIN
 
     // compute cell gap vector *******************************************
@@ -4120,17 +3990,18 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneQuad(
     // method IntegrateDerivSlave2D3D(). But in the CONTACTONEMORTARLOOP
     // case we want to combine the linearization of D and M, just as we
     // combine the computation of D and M itself.
-    
-    if (shapefcn_ == Interface::StandardFunctions)
+    for (int j=0;j<nrow;++j)
     {
-      for (int j=0;j<nintrow;++j)
+      CONTACT::CNode* mycnode = static_cast<CONTACT::CNode*>(mynodes[j]);
+      if (!mycnode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
+
+      int sgid = mycnode->Id();
+
+      // for standard shape functions we use the same algorithm
+      // for ddmap_jk as in IntegrateDerivSlave2D3D 
+      // this means that ddmap_jk and dmmap_jk have to be calculated separately
+      if (shapefcn_ == Interface::StandardFunctions)
       {
-        CONTACT::CNode* mycnode = static_cast<CONTACT::CNode*>(myintnodes[j]);
-        if (!mycnode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
-        
-        // for standard shape functions we use the same algorithm
-        // for ddmap_jk as in IntegrateDerivSlave2D3D 
-        // this means that ddmap_jk and dmmap_jk have to be calculated separately
         // loop over master nodes for building nodal derivM
         for (int k=0; k<ncol; ++k)
         {
@@ -4145,25 +4016,25 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneQuad(
           // this vanishes here since there are no deformation-dependent dual functions
 
           // (2) Lin(NSlave) - slave GP coordinates
-          fac = wgt*sintderiv(j, 0)*mval[k]*jac;
-          for (CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
+          fac = wgt*sderiv(j, 0)*mval[k]*jac;
+          for (CI p=dpsxigp[0].begin(); p!=dpsxigp[0].end(); ++p)
             dmmap_jk[p->first] += fac*(p->second);
 
-          fac = wgt*sintderiv(j, 1)*mval[k]*jac;
-          for (CI p=dsxigp[1].begin(); p!=dsxigp[1].end(); ++p)
+          fac = wgt*sderiv(j, 1)*mval[k]*jac;
+          for (CI p=dpsxigp[1].begin(); p!=dpsxigp[1].end(); ++p)
             dmmap_jk[p->first] += fac*(p->second);
 
           // (3) Lin(NMaster) - master GP coordinates
-          fac = wgt*sintval[j]*mderiv(k, 0)*jac;
+          fac = wgt*sval[j]*mderiv(k, 0)*jac;
           for (CI p=dpmxigp[0].begin(); p!=dpmxigp[0].end(); ++p)
             dmmap_jk[p->first] += fac*(p->second);
 
-          fac = wgt*sintval[j]*mderiv(k, 1)*jac;
+          fac = wgt*sval[j]*mderiv(k, 1)*jac;
           for (CI p=dpmxigp[1].begin(); p!=dpmxigp[1].end(); ++p)
             dmmap_jk[p->first] += fac*(p->second);
 
           // (4) Lin(dsxideta) - intcell GP Jacobian
-          fac = wgt*sintval[j]*mval[k];
+          fac = wgt*sval[j]*mval[k];
           for (CI p=jacintcellmap.begin(); p!=jacintcellmap.end(); ++p)
             dmmap_jk[p->first] += fac*(p->second);
         } // loop over master nodes
@@ -4184,41 +4055,33 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneQuad(
             // this vanishes here since there are no deformation-dependent dual functions
 
             // (2) Lin(NSlave) - slave GP coordinates
-            fac = wgt*sintderiv(j, 0)*sval[k]*jac;
-            for (CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
-              ddmap_jk[p->first] += fac*(p->second);
-
-            fac = wgt*sintderiv(j, 1)*sval[k]*jac;
-            for (CI p=dsxigp[1].begin(); p!=dsxigp[1].end(); ++p)
-              ddmap_jk[p->first] += fac*(p->second);
-
-            // (3) Lin(NSlave) - slave GP coordinates
-            fac = wgt*sintval[j]*sderiv(k, 0)*jac;
+            fac = wgt*sderiv(j, 0)*sval[k]*jac;
             for (CI p=dpsxigp[0].begin(); p!=dpsxigp[0].end(); ++p)
               ddmap_jk[p->first] += fac*(p->second);
 
-            fac = wgt*sintval[j]*sderiv(k, 1)*jac;
+            fac = wgt*sderiv(j, 1)*sval[k]*jac;
+            for (CI p=dpsxigp[1].begin(); p!=dpsxigp[1].end(); ++p)
+              ddmap_jk[p->first] += fac*(p->second);
+
+            // (3) Lin(NSlave) - slave GP coordinates
+            fac = wgt*sval[j]*sderiv(k, 0)*jac;
+            for (CI p=dpsxigp[0].begin(); p!=dpsxigp[0].end(); ++p)
+              ddmap_jk[p->first] += fac*(p->second);
+
+            fac = wgt*sval[j]*sderiv(k, 1)*jac;
             for (CI p=dpsxigp[1].begin(); p!=dpsxigp[1].end(); ++p)
               ddmap_jk[p->first] += fac*(p->second);
 
             // (4) Lin(dsxideta) - intcell GP Jacobian
-            fac = wgt*sintval[j]*sval[k];
+            fac = wgt*sval[j]*sval[k];
             for (CI p=jacintcellmap.begin(); p!=jacintcellmap.end(); ++p)
               ddmap_jk[p->first] += fac*(p->second);
           } // loop over slave nodes        
-        } // if (dod)
-      } // loop over slave nodes
-    } // shapefcn switch
-    
-    else if (shapefcn_ == Interface::DualFunctions)
-    {
-      for (int j=0;j<nrow;++j)
+        }
+      }
+      
+      else if (shapefcn_ == Interface::DualFunctions)
       {
-        CONTACT::CNode* mycnode = static_cast<CONTACT::CNode*>(mynodes[j]);
-        if (!mycnode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
-
-        int sgid = mycnode->Id();
-        
         // get the D-map as a reference
         map<int,double>& ddmap_jj = mycnode->GetDerivD()[sgid];
 
@@ -4279,19 +4142,89 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneQuad(
             if (dod) ddmap_jj[p->first] += fac*(p->second);
           }
         } // loop over master nodes
-      } // loop over slave nodes
-    } // shapefcn switch
+      } // shapefcn_ switch
+    } // loop over slave nodes
     // compute cell D/M linearization ************************************
 
     // compute cell gap linearization ************************************
 #ifdef CONTACTPETROVGALERKIN
     
     if (shapefcn_ == Interface::StandardFunctions)
-      dserror("CONTACTPETROVGALERKIN flag invalid for standard shape functions");
-    
-    for (int j=0;j<nintrow;++j)
     {
-      CONTACT::CNode* mycnode = static_cast<CONTACT::CNode*>(myintnodes[j]);
+      for (int j=0;j<nintrow;++j)
+      {
+        CONTACT::CNode* mycnode = static_cast<CONTACT::CNode*>(myintnodes[j]);
+        if (!mycnode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
+  
+        double fac = 0.0;
+  
+        // get the corresponding map as a reference
+        map<int,double>& dgmap = mycnode->GetDerivG();
+  
+        // (2) Lin(Phi) - slave GP coordinates
+        fac = wgt*sintderiv(j,0)*gap*jac;
+        for (CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
+          dgmap[p->first] += fac*(p->second);
+        fac = wgt*sintderiv(j,1)*gap*jac;
+        for (CI p=dsxigp[1].begin();p!=dsxigp[1].end();++p)
+          dgmap[p->first] += fac*(p->second);
+  
+        // (3) Lin(g) - gap function
+        fac = wgt*sintval[j]*jac;
+        for (CI p=dgapgp.begin();p!=dgapgp.end();++p)
+          dgmap[p->first] += fac*(p->second);
+  
+        // (4) Lin(dsxideta) - intcell GP Jacobian
+        fac = wgt*sintval[j]*gap;
+        for (CI p=jacintcellmap.begin();p!=jacintcellmap.end();++p)
+          dgmap[p->first] += fac*(p->second);
+      }
+    }
+    
+    else if (shapefcn_ == Interface::DualFunctions)
+    {
+      for (int j=0;j<nintrow;++j)
+      {
+        CONTACT::CNode* mycnode = static_cast<CONTACT::CNode*>(myintnodes[j]);
+        if (!mycnode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
+  
+        double fac = 0.0;
+  
+        // get the corresponding map as a reference
+        map<int,double>& dgmap = mycnode->GetDerivG();
+  
+        // (1) Lin(Phi) - dual shape functions
+        if (dualintlin)
+          for (int m=0;m<nintrow;++m)
+          {
+            fac = wgt*sintval[m]*gap*jac;
+            for (CI p=dualintmap[j][m].begin();p!=dualintmap[j][m].end();++p)
+              dgmap[p->first] += fac*(p->second);
+          }
+  
+        // (2) Lin(Phi) - slave GP coordinates
+        fac = wgt*dualintderiv(j,0)*gap*jac;
+        for (CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
+          dgmap[p->first] += fac*(p->second);
+        fac = wgt*dualintderiv(j,1)*gap*jac;
+        for (CI p=dsxigp[1].begin();p!=dsxigp[1].end();++p)
+          dgmap[p->first] += fac*(p->second);
+  
+        // (3) Lin(g) - gap function
+        fac = wgt*dualintval[j]*jac;
+        for (CI p=dgapgp.begin();p!=dgapgp.end();++p)
+          dgmap[p->first] += fac*(p->second);
+  
+        // (4) Lin(dsxideta) - intcell GP Jacobian
+        fac = wgt*dualintval[j]*gap;
+        for (CI p=jacintcellmap.begin();p!=jacintcellmap.end();++p)
+          dgmap[p->first] += fac*(p->second);
+      }
+    }
+#else
+    for (int j=0;j<nrow;++j)
+    {
+      CONTACT::CNode* mycnode = static_cast<CONTACT::CNode*>(mynodes[j]);
       if (!mycnode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
 
       double fac = 0.0;
@@ -4300,113 +4233,45 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneQuad(
       map<int,double>& dgmap = mycnode->GetDerivG();
 
       // (1) Lin(Phi) - dual shape functions
-      if (dualintlin)
-        for (int m=0;m<nintrow;++m)
+      if (duallin)
+        for (int m=0;m<nrow;++m)
         {
-          fac = wgt*sintval[m]*gap*jac;
-          for (CI p=dualintmap[j][m].begin();p!=dualintmap[j][m].end();++p)
+          fac = wgt*sval[m]*gap*jac;
+          for (CI p=dualmap[j][m].begin();p!=dualmap[j][m].end();++p)
             dgmap[p->first] += fac*(p->second);
         }
 
       // (2) Lin(Phi) - slave GP coordinates
-      fac = wgt*dualintderiv(j,0)*gap*jac;
-      for (CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
+      if (shapefcn_ == Interface::DualFunctions)
+        fac = wgt*dualderiv(j,0)*gap*jac;
+      else if (shapefcn_ == Interface::StandardFunctions)
+        fac = wgt*sderiv(j,0)*gap*jac;
+      for (CI p=dpsxigp[0].begin();p!=dpsxigp[0].end();++p)
         dgmap[p->first] += fac*(p->second);
-      fac = wgt*dualintderiv(j,1)*gap*jac;
-      for (CI p=dsxigp[1].begin();p!=dsxigp[1].end();++p)
+      
+      if (shapefcn_ == Interface::DualFunctions)
+        fac = wgt*dualderiv(j,1)*gap*jac;
+      else if (shapefcn_ == Interface::StandardFunctions)
+        fac = wgt*sderiv(j,1)*gap*jac;
+      for (CI p=dpsxigp[1].begin();p!=dpsxigp[1].end();++p)
         dgmap[p->first] += fac*(p->second);
 
       // (3) Lin(g) - gap function
-      fac = wgt*dualintval[j]*jac;
+      if (shapefcn_ == Interface::DualFunctions)
+        fac = wgt*dualval[j]*jac;
+      else if (shapefcn_ == Interface::StandardFunctions)
+        fac = wgt*sval[j]*jac;
       for (CI p=dgapgp.begin();p!=dgapgp.end();++p)
         dgmap[p->first] += fac*(p->second);
 
       // (4) Lin(dsxideta) - intcell GP Jacobian
-      fac = wgt*dualintval[j]*gap;
+      if (shapefcn_ == Interface::DualFunctions)
+        fac = wgt*dualval[j]*gap;
+      else if (shapefcn_ == Interface::StandardFunctions)
+        fac = wgt*sval[j]*gap;
       for (CI p=jacintcellmap.begin();p!=jacintcellmap.end();++p)
         dgmap[p->first] += fac*(p->second);
     }
-#else
-    
-    if (shapefcn_ == Interface::StandardFunctions)
-    {
-      for (int j=0;j<nintrow;++j)
-      {
-        CONTACT::CNode* mycnode = static_cast<CONTACT::CNode*>(myintnodes[j]);
-        if (!mycnode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
-
-        double fac = 0.0;
-
-        // get the corresponding map as a reference
-        map<int,double>& dgmap = mycnode->GetDerivG();
-
-        // (1) Lin(Phi) - dual shape functions
-        // this vanishes here as there are no defo-dependent dual functions
-
-        // (2) Lin(Phi) - slave GP coordinates
-        fac = wgt*sintderiv(j,0)*gap*jac;
-        for (CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
-          dgmap[p->first] += fac*(p->second);
-        
-        fac = wgt*sintderiv(j,1)*gap*jac;
-        for (CI p=dsxigp[1].begin();p!=dsxigp[1].end();++p)
-          dgmap[p->first] += fac*(p->second);
-
-        // (3) Lin(g) - gap function
-        fac = wgt*sintval[j]*jac;
-        for (CI p=dgapgp.begin();p!=dgapgp.end();++p)
-          dgmap[p->first] += fac*(p->second);
-
-        // (4) Lin(dsxideta) - intcell GP Jacobian
-        fac = wgt*sintval[j]*gap;
-        for (CI p=jacintcellmap.begin();p!=jacintcellmap.end();++p)
-          dgmap[p->first] += fac*(p->second);
-      }
-    }
-    else if (shapefcn_ == Interface::DualFunctions)
-    {
-      for (int j=0;j<nrow;++j)
-      {
-        CONTACT::CNode* mycnode = static_cast<CONTACT::CNode*>(mynodes[j]);
-        if (!mycnode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
-
-        double fac = 0.0;
-
-        // get the corresponding map as a reference
-        map<int,double>& dgmap = mycnode->GetDerivG();
-
-        // (1) Lin(Phi) - dual shape functions
-        if (duallin)
-          for (int m=0;m<nrow;++m)
-          {
-            fac = wgt*sval[m]*gap*jac;
-            for (CI p=dualmap[j][m].begin();p!=dualmap[j][m].end();++p)
-              dgmap[p->first] += fac*(p->second);
-          }
-
-        // (2) Lin(Phi) - slave GP coordinates
-        fac = wgt*dualderiv(j,0)*gap*jac;
-        for (CI p=dpsxigp[0].begin();p!=dpsxigp[0].end();++p)
-          dgmap[p->first] += fac*(p->second);
-        
-        fac = wgt*dualderiv(j,1)*gap*jac;
-        for (CI p=dpsxigp[1].begin();p!=dpsxigp[1].end();++p)
-          dgmap[p->first] += fac*(p->second);
-
-        // (3) Lin(g) - gap function
-        fac = wgt*dualval[j]*jac;
-        for (CI p=dgapgp.begin();p!=dgapgp.end();++p)
-          dgmap[p->first] += fac*(p->second);
-
-        // (4) Lin(dsxideta) - intcell GP Jacobian
-        fac = wgt*dualval[j]*gap;
-        for (CI p=jacintcellmap.begin();p!=jacintcellmap.end();++p)
-          dgmap[p->first] += fac*(p->second);
-      }
-    }
-    
-    
-    
 #endif // #ifdef CONTACTPETROVGALERKIN
     // compute cell gap linearization ************************************
   }
@@ -4779,76 +4644,6 @@ bool CONTACT::Integrator::AssembleD(const Epetra_Comm& comm,
 }
 
 /*----------------------------------------------------------------------*
- |  Assemble D contribution (2D / 3D)                         popp 10/09|
- |  This method assembles the contrubution of a 1D/2D slave             |
- |  element to the D map of the adjacent slave nodes.                   |
- |  Modified version for quadratic 3D case with linear interpolation    |
- |  for Lagrange multiplier field.                                      |
- *----------------------------------------------------------------------*/
-bool CONTACT::Integrator::AssembleD(const Epetra_Comm& comm,
-                                    CONTACT::CElement& sele,
-                                    CONTACT::CElement& sintele,
-                                    Epetra_SerialDenseMatrix& dseg)
-{
-  // get adjacent nodes to assemble to
-  CONTACT::IntElement& sintref = static_cast<CONTACT::IntElement&>(sintele);
-  DRT::Node** snodes = sintref.Nodes();
-  if (!snodes) dserror("ERROR: AssembleD: Null pointer for snodes!");
-  DRT::Node** mnodes = sele.Nodes();
-  if (!mnodes) dserror("ERROR: AssembleD: Null pointer for mnodes!");
-  
-  // loop over all slave int nodes
-  for (int slave=0;slave<sintref.NumNode();++slave)
-  {
-    CONTACT::CNode* snode = static_cast<CONTACT::CNode*>(snodes[slave]);
-    int sndof = snode->NumDof();
-
-    // only process slave node rows that belong to this proc
-    if (snode->Owner() != comm.MyPID())
-      continue;
-
-    // loop over all dofs of the slave node
-    for (int sdof=0;sdof<sndof;++sdof)
-    {
-      // loop over all slave nodes again ("master nodes")
-      // this time, its is really sele, not sintele
-      for (int master=0;master<sele.NumNode();++master)
-      {
-        CONTACT::CNode* mnode = static_cast<CONTACT::CNode*>(mnodes[master]);
-        const int* mdofs = mnode->Dofs();
-        int mndof = mnode->NumDof();
-
-        // loop over all dofs of the slave node again ("master dofs")
-        for (int mdof=0;mdof<mndof;++mdof)
-        {
-          int col = mdofs[mdof];
-          double val = dseg(slave*sndof+sdof,master*mndof+mdof);
-          snode->AddDValue(sdof,col,val);
-        }
-      }
-    }
-    /*
-#ifdef DEBUG
-    cout << "Node: " << snode->Id() << "  Owner: " << snode->Owner() << endl;
-    map<int, double> nodemap0 = (snode->GetD())[0];
-    map<int, double> nodemap1 = (snode->GetD())[1];
-    typedef map<int,double>::const_iterator CI;
-
-    cout << "Row dof id: " << sdofs[0] << endl;;
-    for (CI p=nodemap0.begin();p!=nodemap0.end();++p)
-      cout << p->first << '\t' << p->second << endl;
-
-    cout << "Row dof id: " << sdofs[1] << endl;
-    for (CI p=nodemap1.begin();p!=nodemap1.end();++p)
-      cout << p->first << '\t' << p->second << endl;
-#endif // #ifdef DEBUG
-    */
-  }
-
-  return true;
-}
-
-/*----------------------------------------------------------------------*
  |  Assemble M contribution (2D / 3D)                         popp 01/08|
  |  This method assembles the contrubution of a 1D/2D slave and master  |
  |  overlap pair to the M map of the adjacent slave nodes.              |
@@ -4916,163 +4711,6 @@ bool CONTACT::Integrator::AssembleM(const Epetra_Comm& comm,
       cout << p->first << '\t' << p->second << endl;
 #endif // #ifdef DEBUG
      */
-  }
-
-  return true;
-}
-
-/*----------------------------------------------------------------------*
- |  Assemble M contribution (2D / 3D)                         popp 01/08|
- |  This method assembles the contrubution of a 1D/2D slave and master  |
- |  overlap pair to the M map of the adjacent slave nodes.              |
- |  Modified version for quadratic 3D case with linear interpolation    |
- |  for Lagrange multiplier field.                                      |
- *----------------------------------------------------------------------*/
-bool CONTACT::Integrator::AssembleM(const Epetra_Comm& comm,
-                                    CONTACT::CElement& sele,
-                                    CONTACT::CElement& sintele,
-                                    CONTACT::CElement& mele,
-                                    Epetra_SerialDenseMatrix& mseg)
-{
-  // get adjacent slave nodes and master nodes
-  CONTACT::IntElement& sintref = static_cast<CONTACT::IntElement&>(sintele);
-  DRT::Node** snodes = sintref.Nodes();
-  if (!snodes) dserror("ERROR: AssembleM: Null pointer for snodes!");
-  DRT::Node** mnodes = mele.Nodes();
-  if (!mnodes) dserror("ERROR: AssembleM: Null pointer for mnodes!");
-
-  // loop over all slave nodes
-  for (int slave=0;slave<sintref.NumNode();++slave)
-  {
-    CONTACT::CNode* snode = static_cast<CONTACT::CNode*>(snodes[slave]);
-    int sndof = snode->NumDof();
-
-    // only process slave node rows that belong to this proc
-    if (snode->Owner() != comm.MyPID())
-      continue;
-
-    // loop over all dofs of the slave node
-    for (int sdof=0;sdof<sndof;++sdof)
-    {
-      // loop over all master nodes
-      for (int master=0;master<mele.NumNode();++master)
-      {
-        CONTACT::CNode* mnode = static_cast<CONTACT::CNode*>(mnodes[master]);
-        const int* mdofs = mnode->Dofs();
-        int mndof = mnode->NumDof();
-
-        // loop over all dofs of the master node
-        for (int mdof=0;mdof<mndof;++mdof)
-        {
-          int col = mdofs[mdof];
-          double val = mseg(slave*sndof+sdof,master*mndof+mdof);
-          snode->AddMValue(sdof,col,val);
-        }
-      }
-    }
-    /*
-#ifdef DEBUG
-    cout << "Node: " << snode->Id() << "  Owner: " << snode->Owner() << endl;
-    map<int, double> nodemap0 = (snode->GetM())[0];
-    map<int, double> nodemap1 = (snode->GetM())[1];
-    typedef map<int,double>::const_iterator CI;
-
-    cout << "Row dof id: " << sdofs[0] << endl;;
-    for (CI p=nodemap0.begin();p!=nodemap0.end();++p)
-      cout << p->first << '\t' << p->second << endl;
-
-    cout << "Row dof id: " << sdofs[1] << endl;
-    for (CI p=nodemap1.begin();p!=nodemap1.end();++p)
-      cout << p->first << '\t' << p->second << endl;
-#endif // #ifdef DEBUG
-     */
-  }
-
-  return true;
-}
-
-/*----------------------------------------------------------------------*
- |  Assemble g~ contribution (2D / 3D)                        popp 01/08|
- |  This method assembles the contribution of a 1D/2D slave and master  |
- |  overlap pair to the weighted gap of the adjacent slave nodes.       |
- *----------------------------------------------------------------------*/
-bool CONTACT::Integrator::AssembleG(const Epetra_Comm& comm,
-                                    CONTACT::CElement& sele,
-                                    Epetra_SerialDenseVector& gseg)
-{
-
-#ifdef CONTACTPETROVGALERKIN
-  CONTACT::IntElement& sintref = static_cast<CONTACT::IntElement&>(sele);
-#else
-  CONTACT::CElement& sintref = sele;
-#endif // #ifdef CONTACTPETROVGALERKIN
-
-  // get adjacent slave to assemble to
-  DRT::Node** snodes = sintref.Nodes();
-  if (!snodes)
-    dserror("ERROR: AssembleG: Null pointer for snodes!");
-
-  // loop over all slave nodes
-  for (int slave=0;slave<sintref.NumNode();++slave)
-  {
-    CONTACT::CNode* snode = static_cast<CONTACT::CNode*>(snodes[slave]);
-
-    // only process slave node rows that belong to this proc
-    if (snode->Owner() != comm.MyPID())
-      continue;
-
-    // do not process slave side boundary nodes
-    // (their row entries would be zero anyway!)
-    if (snode->IsOnBound())
-      continue;
-
-    double val = gseg(slave);
-    snode->AddgValue(val);
-    /*
-#ifdef DEBUG
-    cout << "Node: " << snode->Id() << "  Owner: " << snode->Owner() << endl;
-    cout << "Weighted gap: " << snode->Getg() << endl;
-#endif // #ifdef DEBUG
-    */
-  }
-
-  return true;
-}
-
-/*----------------------------------------------------------------------*
- |  Assemble g~ contribution (2D / 3D)                        popp 01/08|
- |  This method assembles the contribution of a 1D/2D slave and master  |
- |  overlap pair to the weighted gap of the adjacent slave nodes.       |
- |  Modified version for quadratic 3D case with linear interpolation    |
- |  for Lagrange multiplier field.                                      |
- *----------------------------------------------------------------------*/
-bool CONTACT::Integrator::AssembleG(const Epetra_Comm& comm,
-                                    CONTACT::CElement& sele,
-                                    CONTACT::CElement& sintele,
-                                    Epetra_SerialDenseVector& gseg)
-{
-  // get adjacent slave to assemble to
-  CONTACT::IntElement& sintref = static_cast<CONTACT::IntElement&>(sintele);
-  DRT::Node** snodes = sintref.Nodes();
-  if (!snodes) dserror("ERROR: AssembleG: Null pointer for snodes!");
-
-  // loop over all slave nodes
-  for (int slave=0;slave<sintref.NumNode();++slave)
-  {
-    CONTACT::CNode* snode = static_cast<CONTACT::CNode*>(snodes[slave]);
-
-    // only process slave node rows that belong to this proc
-    if (snode->Owner() != comm.MyPID())
-      continue;
-
-    double val = gseg(slave);
-    snode->AddgValue(val);
-    /*
-#ifdef DEBUG
-    cout << "Node: " << snode->Id() << "  Owner: " << snode->Owner() << endl;
-    cout << "Weighted gap: " << snode->Getg() << endl;
-#endif // #ifdef DEBUG
-    */
   }
 
   return true;
@@ -5147,6 +4785,54 @@ bool CONTACT::Integrator::AssembleMmod(const Epetra_Comm& comm,
       cout << p->first << '\t' << p->second << endl;
 #endif // #ifdef DEBUG
      */
+  }
+
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Assemble g~ contribution (2D / 3D)                        popp 01/08|
+ |  This method assembles the contribution of a 1D/2D slave and master  |
+ |  overlap pair to the weighted gap of the adjacent slave nodes.       |
+ *----------------------------------------------------------------------*/
+bool CONTACT::Integrator::AssembleG(const Epetra_Comm& comm,
+                                    CONTACT::CElement& sele,
+                                    Epetra_SerialDenseVector& gseg)
+{
+
+#ifdef CONTACTPETROVGALERKIN
+  CONTACT::IntElement& sintref = static_cast<CONTACT::IntElement&>(sele);
+#else
+  CONTACT::CElement& sintref = sele;
+#endif // #ifdef CONTACTPETROVGALERKIN
+
+  // get adjacent slave to assemble to
+  DRT::Node** snodes = sintref.Nodes();
+  if (!snodes)
+    dserror("ERROR: AssembleG: Null pointer for snodes!");
+
+  // loop over all slave nodes
+  for (int slave=0;slave<sintref.NumNode();++slave)
+  {
+    CONTACT::CNode* snode = static_cast<CONTACT::CNode*>(snodes[slave]);
+
+    // only process slave node rows that belong to this proc
+    if (snode->Owner() != comm.MyPID())
+      continue;
+
+    // do not process slave side boundary nodes
+    // (their row entries would be zero anyway!)
+    if (snode->IsOnBound())
+      continue;
+
+    double val = gseg(slave);
+    snode->AddgValue(val);
+    /*
+#ifdef DEBUG
+    cout << "Node: " << snode->Id() << "  Owner: " << snode->Owner() << endl;
+    cout << "Weighted gap: " << snode->Getg() << endl;
+#endif // #ifdef DEBUG
+    */
   }
 
   return true;

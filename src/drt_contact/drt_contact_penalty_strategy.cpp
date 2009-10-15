@@ -148,7 +148,15 @@ void CONTACT::PenaltyStrategy::SaveReferenceState(const RCP<Epetra_Vector> dis)
         rowsum += iter->second;
       
       // store kappa as the inverse
+      // for quadratic interpolation in 3D with penalty approach
+      // and Petrov-Galerkin scheme: NO SCALING with kappa, as
+      // this will introduce unphysical negative gaps!!!
+      // (LM interpolation quadratic, but \delta LM interpolation piecewise linear)
+#ifdef CONTACTPETROVGALERKIN
+      cnode->Kappa() = 1.0;
+#else
       cnode->Kappa() = 1.0/rowsum;
+#endif // #ifdef CONTACTPETROVGALERKIN
 
       //cout << "S-NODE #" << gid << " kappa=" << cnode->Kappa() << endl;
     }
