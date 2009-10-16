@@ -581,11 +581,8 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     ParameterList& stablist = params.sublist("STABILIZATION");
 
     // set flags for potential evaluation of material law at int. point
-    mat_gp_ = false; //default
-    {
-      const string matloc = stablist.get<string>("EVALUATION_MAT");
-      if (matloc == "integration_point") mat_gp_ = true;
-    }
+    const INPAR::SCATRA::EvalMat matloc = Teuchos::getIntegralValue<INPAR::SCATRA::EvalMat>(stablist,"EVALUATION_MAT");
+    mat_gp_ = (matloc == INPAR::SCATRA::evalmat_integration_point); // set true/false
 
     double frt(0.0);
     if(scaltypestr =="elch")
