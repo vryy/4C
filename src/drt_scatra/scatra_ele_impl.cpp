@@ -2501,7 +2501,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrVelocity(
     const vector<int>*    onoff = myfluidneumcond[0]->Get<vector<int> >   ("onoff");
     const vector<double>* val   = myfluidneumcond[0]->Get<vector<double> >("val"  );
 
-    // set this condition to the bodyforce array
+    // set this condition to the body force array
     for(int isd=0;isd<nsd_;isd++)
     {
       for (int jnode=0; jnode<iel; jnode++)
@@ -2510,6 +2510,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrVelocity(
       }
     }
   }
+  else nodebodyforce.Clear();
 
   // get fluid body force
   bodyforce.Multiply(nodebodyforce,funct_);
