@@ -316,7 +316,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     if (convform ==INPAR::SCATRA::convform_conservative) conservative_ = true;
 
     // get type of scalar transport problem (standard or level set function)
-    scatratype_ = params.get<INPAR::SCATRA::ScaTraType>("scatratype");
+    scatratype_ = params.get<INPAR::SCATRA::ScaTraType>("scatratype",INPAR::SCATRA::scatratype_standard);
     bool reinitswitch = params.get<bool>("reinitswitch",false);
 
     // set parameters for stabilization
@@ -574,7 +574,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     }
 
     // get type of scalar transport problem (standard or level set function)
-    scatratype_ = params.get<INPAR::SCATRA::ScaTraType>("scatratype");
+    scatratype_ = params.get<INPAR::SCATRA::ScaTraType>("scatratype",INPAR::SCATRA::scatratype_standard);
     bool reinitswitch = params.get<bool>("reinitswitch",false);
 
     // get stabilization parameter sublist
@@ -730,7 +730,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       const double time = params.get<double>("total time");
 
       // get type of scalar transport problem (standard or level set function)
-      scatratype_ = params.get<INPAR::SCATRA::ScaTraType>("scatratype");
+      scatratype_ = params.get<INPAR::SCATRA::ScaTraType>("scatratype",INPAR::SCATRA::scatratype_standard);
       bool reinitswitch = params.get<bool>("reinitswitch",false);
 
       // calculate domain and bodyforce integral
