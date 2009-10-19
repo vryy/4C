@@ -84,6 +84,7 @@ Maintainer: Alexander Popp
 // GMSH DEBUGGING OPTIONS
 //#define CONTACTGMSH1              /* flag for gmsh output in each time step */
 //#define CONTACTGMSH2              /* flag for gmsh output in each iteration */
+//#define CONTACTGMSH3              /* flag for gmsh output at t = 0.0 */
 //#define CONTACTGMSHTN             /* flag for gmsh output of all treenodes */
 //#define CONTACTGMSHCTN            /* flag for gmsh output of contact treenodes */
 

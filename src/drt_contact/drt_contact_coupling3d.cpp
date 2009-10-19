@@ -1258,9 +1258,10 @@ void CONTACT::Coupling3d::PolygonClipping(vector<Vertex>& poly1,
     }
 
     // print final input polygons to screen
-      //cout << "\nResult Poylgon:";
-      //for (int i=0;i<(int)respoly.size();++i)
-      //  cout << "\nVertex " << i << ":\t" << respoly[i][0] << "\t" << respoly[i][1] << "\t" << respoly[i][2];
+    //cout << "\nResult Poylgon:";
+    //for (int i=0;i<(int)respoly.size();++i)
+    //  cout << "\nVertex " << i << ":\t" << respoly[i].Coord()[0] << "\t" << respoly[i].Coord()[1] << "\t" << respoly[i].Coord()[2];
+    //cout << endl;
 
     // check if result polygon is convex
     // a polygon is convex if the scalar product of an edge normal and the

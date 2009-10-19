@@ -3569,7 +3569,7 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneQuad(
     {
       if (sxi[0]<-1.0-tol || sxi[1]<-1.0-tol || sxi[0]>1.0+tol || sxi[1]>1.0+tol)
       {
-        cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Gauss point projection outside!";
+        cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Slave Gauss point projection outside!";
         cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
         cout << "GP local: " << eta[0] << " " << eta[1] << endl;
         cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << endl;
@@ -3579,7 +3579,7 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneQuad(
     {
       if (sxi[0]<-tol || sxi[1]<-tol || sxi[0]>1.0+tol || sxi[1]>1.0+tol || sxi[0]+sxi[1]>1.0+2*tol)
       {
-        cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Gauss point projection outside!";
+        cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Slave Gauss point projection outside!";
         cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
         cout << "GP local: " << eta[0] << " " << eta[1] << endl;
         cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << endl;
@@ -3591,7 +3591,7 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneQuad(
     {
       if (mxi[0]<-1.0-tol || mxi[1]<-1.0-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol)
       {
-        cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Gauss point projection outside!";
+        cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Master Gauss point projection outside!";
         cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
         cout << "GP local: " << eta[0] << " " << eta[1] << endl;
         cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << endl;
@@ -3601,7 +3601,7 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneQuad(
     {
       if (mxi[0]<-tol || mxi[1]<-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol || mxi[0]+mxi[1]>1.0+2*tol)
       {
-        cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Gauss point projection outside!";
+        cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Master Gauss point projection outside!";
         cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
         cout << "GP local: " << eta[0] << " " << eta[1] << endl;
         cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << endl;
@@ -3959,7 +3959,7 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneQuad(
       }
     }
     
-    else if (shapefcn_ == Interface::StandardFunctions)
+    else if (shapefcn_ == Interface::DualFunctions)
     {
       for (int j=0;j<nintrow;++j)
       {
@@ -3970,6 +3970,9 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneQuad(
     }
     
 #else
+    if (sele.Shape()==CElement::tri6 || sele.Shape()==CElement::quad8) 
+     dserror("ERROR: 3D penalty for slave = tri6 / quad8 needs Petrov Galerkin approach");
+     
     for (int j=0;j<nrow;++j)
     {
       double prod = 0;

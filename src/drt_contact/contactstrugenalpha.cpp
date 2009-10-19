@@ -2221,6 +2221,10 @@ void CONTACT::ContactStruGenAlpha::Integrate()
   int    nstep   = params_.get<int>   ("nstep",5);
   double maxtime = params_.get<double>("max time",0.0);
 
+#ifdef CONTACTGMSH3
+  contactmanager_->GetStrategy().VisualizeGmsh(0,0);
+#endif // #ifdef CONTACTGMSH2
+  
   // can have values "full newton" , "modified newton" , "nonlinear cg"
   string equil = params_.get<string>("equilibrium iteration","full newton");
 
