@@ -1580,14 +1580,9 @@ void LINALG::PrintMatrixInMatlabFormat(std::string fname,
         A.ExtractGlobalRowCopy(Row, MaxNumIndices, NumIndices, Values, Indices);
 
         for (j = 0; j < NumIndices ; j++) {
-          //os.width(8);
-          //os <<  MyPID ; os << "    ";
-          os.width(10);
-          os <<  Row+1 ; os << "    "; // increase index by one for matlab
-          os.width(10);
-          os <<  Indices[j]+1; os << "    "; // increase index by one for matlab
-          os.width(20);
-          os <<  Values[j]; os << "    ";
+          os << std::setw(10) << Row+1 ; // increase index by one for matlab
+          os << std::setw(10) << Indices[j]+1;  // increase index by one for matlab
+          os << std::setw(30) << std::setprecision(16) << std::scientific << Values[j]; 
           os << endl;
         }
       }
@@ -1664,43 +1659,23 @@ void LINALG::PrintVectorInMatlabFormat(std::string fname,
       if (MaxElementSize1!=1) FirstPointInElementList1 = V.Map().FirstPointInElementList();
       double ** A_Pointers = V.Pointers();
 
-      /*if (MyPID==0)
-          {
-              os.width(8);
-              os <<  "     MyPID"; os << "    ";
-              os.width(12);
-              if (MaxElementSize1==1)
-                  os <<  "GID  ";
-              else
-                  os <<  "     GID/Point";
-              for (int j = 0; j < NumVectors1 ; j++)
-              {
-                  os.width(20);
-                  os <<  "Value  ";
-              }
-              os << endl;
-          }*/
       for (int i=0; i<NumMyElements1; i++)
       {
         for(int ii=0; ii< V.Map().ElementSize(i); ii++)
         {
           int iii;
-          os.width(10);
-          os << MyPID; os << "    ";
-          os.width(10);
           if(MaxElementSize1==1)
           {
-            os << MyGlobalElements1[i] << "    ";
+            os << std::setw(10)<< MyGlobalElements1[i] ;
             iii = i;
           }
           else
           {
-            os << MyGlobalElements1[i]<< "/" << ii << "    ";
+            os << std::setw(10) << MyGlobalElements1[i]<< "/" << std::setw(10) << ii;
             iii = FirstPointInElementList1[i]+ii;
           }
 
-          os.width(20);
-          os <<  A_Pointers[0][iii];    // print out values of 1. vector (only Epetra_Vector supported, no Multi_Vector)
+          os << std::setw(30) << std::setprecision(16) <<  A_Pointers[0][iii];    // print out values of 1. vector (only Epetra_Vector supported, no Multi_Vector)
           os << endl;
         }
       }
