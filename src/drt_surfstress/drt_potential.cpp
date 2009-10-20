@@ -310,6 +310,45 @@ void POTENTIAL::Potential::EvaluatePotentialfromCondition(
 
 
 /*-------------------------------------------------------------------*
+| (protected)                                             umay  10/09|
+|                                                                    |
+| evaluate potential (approximation)                                 |
+*--------------------------------------------------------------------*/
+void POTENTIAL::Potential::EvaluatePotentialfromCondition_Approx(
+    RefCountPtr<DRT::Condition>   cond,
+    const LINALG::Matrix<3,1>&    x,
+    const LINALG::Matrix<3,1>&    y,
+    LINALG::Matrix<3,1>&          potderiv1,
+    LINALG::Matrix<3,3>&          potderiv2)
+{
+
+  if (cond->Type()==DRT::Condition::LJ_Potential_Volume || 
+      cond->Type()==DRT::Condition::LJ_Potential_Surface)
+  {
+    const double depth    = cond->GetDouble("depth");
+    const double rootDist = cond->GetDouble("rootDist");
+
+    EvaluateLennardJonesPotential_Approx(depth, rootDist, x, y, potderiv1, potderiv2);
+
+  }
+  else if (cond->Type()==DRT::Condition::VanDerWaals_Potential_Surface ||
+           cond->Type()==DRT::Condition::VanDerWaals_Potential_Volume)
+  {
+    const double lambda    = cond->GetDouble("lambda");
+    // compute vander waals
+    
+  }
+  else
+  {
+    dserror("cannot evaluate potential - condition unknown");
+  }
+  return;
+}
+
+
+
+
+/*-------------------------------------------------------------------*
 | (protected)                                             umay  07/08|
 |                                                                    |
 | evaluate Lennard Jones potential                                   |
@@ -350,6 +389,57 @@ void POTENTIAL::Potential::EvaluateLennardJonesPotential(
       potderiv2(i,i) += dpotdr/distance;
       for(int j = 0; j < 3; j++)
         potderiv2(i,j) += (dpotdrdr - (dpotdr/distance))*du_tensor_du(i,j);
+  }
+}
+
+
+
+/*-------------------------------------------------------------------*
+| (protected)                                             umay  09/09|
+|                                                                    |
+| evaluate Lennard Jones potential    (for volume approximation)     |
+*--------------------------------------------------------------------*/
+void POTENTIAL::Potential::EvaluateLennardJonesPotential_Approx(
+    const double                  depth,
+    const double                  rootDist,
+    const LINALG::Matrix<3,1>&    x,
+    const LINALG::Matrix<3,1>&    y,
+    LINALG::Matrix<3,1>&          potderiv1,
+    LINALG::Matrix<3,3>&          potderiv2)
+{
+
+  // evaluate distance related stuff
+  double          distance      = 0.0;
+  LINALG::Matrix<3,1>       distance_vec(true);
+  LINALG::Matrix<3,1>       distance_unit(true);
+  LINALG::Matrix<3,3>       du_tensor_du;
+  computeDistance(x,y, du_tensor_du, distance_vec, distance_unit, distance);
+
+  //----------------------------------------------------------------------
+  // evaluate 1.derivative dphi/du_i
+  //----------------------------------------------------------------------
+  double Fs = (12*depth*rootDist)*(((1.0/110.0)*pow((double)(rootDist/distance),11))
+            - (1.0/20.0)*(pow((double)(rootDist/distance), 5)));
+  
+  
+  for(int i = 0; i < 3; i++)
+    potderiv1(i) = Fs*distance_unit(i);
+  //cout<<"dpotdr  "<<dpotdr<<endl; 
+
+  //----------------------------------------------------------------------
+  // evaluate 2.derivative dphi/du_i d_uiI  (this is not a mistake !!!!)
+  //----------------------------------------------------------------------
+  const double Fsdr = (12*depth)*((0.25*pow((double)(rootDist/distance), 6))
+                     -(0.1*pow((double)(rootDist/distance),12)));
+  for(int i = 0; i < 3; i++)
+    for(int j = 0; j < 3; j++)
+      potderiv2(i,j) = 0.0;
+
+  for(int i = 0; i < 3; i++)
+  {
+      potderiv2(i,i) += Fs/distance;
+      for(int j = 0; j < 3; j++)
+        potderiv2(i,j) += (Fsdr - (Fs/distance))*du_tensor_du(i,j);
   }
 }
 

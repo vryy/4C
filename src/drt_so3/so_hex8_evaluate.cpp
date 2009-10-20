@@ -458,8 +458,13 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       {
         potentialmanager->StiffnessAndInternalForcesPotential(this, DRT::UTILS::intrule_hex_8point, params, lm, elemat1_epetra, elevec1_epetra);
       }
-      else
-        dserror("Unknown condition type %d",cond->Type());
+      if (cond->Type()==DRT::Condition::VanDerWaals_Potential_Volume) // Van der Walls forces
+      {
+        potentialmanager->StiffnessAndInternalForcesPotential(this, DRT::UTILS::intrule_hex_8point, params, lm, elemat1_epetra, elevec1_epetra);
+      }
+      if( cond->Type()!=DRT::Condition::LJ_Potential_Volume &&
+          cond->Type()!=DRT::Condition::VanDerWaals_Potential_Volume)
+            dserror("Unknown condition type %d",cond->Type());
     }
     break;
 

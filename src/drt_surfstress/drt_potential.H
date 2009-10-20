@@ -145,6 +145,18 @@ protected:
     LINALG::Matrix<3,1>&          potderiv1,
     LINALG::Matrix<3,3>&          potderiv2
     );
+  
+  
+  /*!
+    \brief  select correct potential out of condition
+     */
+  void EvaluatePotentialfromCondition_Approx(
+      RefCountPtr<DRT::Condition>   cond,
+      const LINALG::Matrix<3,1>&    x,
+      const LINALG::Matrix<3,1>&    y,
+      LINALG::Matrix<3,1>&          potderiv1,
+      LINALG::Matrix<3,3>&          potderiv2
+      );
 
 
   /*!
@@ -157,6 +169,19 @@ protected:
       const LINALG::Matrix<3,1>&  y,
       LINALG::Matrix<3,1>&        potderiv1,
       LINALG::Matrix<3,3>&        potderiv2
+      );
+  
+  
+  /*!
+     \brief  compute first and second derivative of the approximated Lennard-Jones  potential
+     */
+  void EvaluateLennardJonesPotential_Approx(
+      const double                  depth,
+      const double                  rootDist,
+      const LINALG::Matrix<3,1>&    x,
+      const LINALG::Matrix<3,1>&    y,
+      LINALG::Matrix<3,1>&          potderiv1,
+      LINALG::Matrix<3,3>&          potderiv2
       );
 
 

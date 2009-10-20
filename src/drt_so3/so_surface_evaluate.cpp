@@ -769,14 +769,20 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
 
         if (cond->Type()==DRT::Condition::LJ_Potential_Surface) // Lennard-Jones potential
         {
-          potentialmanager->StiffnessAndInternalForcesPotential(this, gaussrule_, params,lm, elematrix1, elevector1);
+          potentialmanager->StiffnessAndInternalForcesPotential(this, gaussrule_, params, lm, elematrix1, elevector1);
         }
-        else if (cond->Type()==DRT::Condition::ElectroRepulsion_Potential_Surface) // Electrostatic potential
+        if (cond->Type()==DRT::Condition::ElectroRepulsion_Potential_Surface) // Electrostatic potential
         {
         	potentialmanager->StiffnessAndInternalForcesPotential(this, gaussrule_, params,lm, elematrix1, elevector1);
         }
-        else
-          dserror("Unknown condition type %d",cond->Type());
+        if (cond->Type()==DRT::Condition::VanDerWaals_Potential_Surface) // Electrostatic potential
+        {
+          potentialmanager->StiffnessAndInternalForcesPotential(this, gaussrule_, params,lm, elematrix1, elevector1);
+        }
+        if( cond->Type()!=DRT::Condition::LJ_Potential_Surface &&
+            cond->Type()!=DRT::Condition::ElectroRepulsion_Potential_Surface &&
+            cond->Type()!=DRT::Condition::VanDerWaals_Potential_Surface)
+                    dserror("Unknown condition type %d",cond->Type());
       }
       break;
 

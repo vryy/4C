@@ -798,8 +798,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   vanderwaals_potential_volume->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
   AddNamedInt(vanderwaals_potential_volume,"label");
-  AddNamedReal(vanderwaals_potential_volume,"depth");
-  AddNamedReal(vanderwaals_potential_volume,"rootDist");
+  AddNamedReal(vanderwaals_potential_volume,"lambda");
   AddNamedReal(vanderwaals_potential_volume,"cutOff");
   AddNamedReal(vanderwaals_potential_volume,"beta");
 
@@ -818,8 +817,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   vanderwaals_potential_surface->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
   AddNamedInt(vanderwaals_potential_surface,"label");
-  AddNamedReal(vanderwaals_potential_surface,"depth");
-  AddNamedReal(vanderwaals_potential_surface,"rootDist");
+  AddNamedReal(vanderwaals_potential_surface,"lambda");
   AddNamedReal(vanderwaals_potential_surface,"cutOff");
   AddNamedReal(vanderwaals_potential_surface,"beta");
 
@@ -839,8 +837,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   vanderwaals_potential_line->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
   AddNamedInt(vanderwaals_potential_line,"label");
-  AddNamedReal(vanderwaals_potential_line,"depth");
-  AddNamedReal(vanderwaals_potential_line,"rootDist");
+  AddNamedReal(vanderwaals_potential_line,"lambda");
   AddNamedReal(vanderwaals_potential_line,"cutOff");
   AddNamedReal(vanderwaals_potential_line,"beta");
 

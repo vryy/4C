@@ -21,6 +21,12 @@ Maintainer: Ursula Mayer
 #include "Epetra_SerialDenseVector.h"
 #include <math.h>
 
+//#include <Epetra_Map.h>
+//#include <Epetra_Operator.h>
+//#include "Epetra_Import.h"
+#include "../drt_lib/linalg_serialdensematrix.H"
+//#include "../drt_lib/linalg_utils.H"
+
 namespace GEO
 {
 
@@ -59,8 +65,9 @@ namespace GEO
     {
         return (b >= 0.0 ? fabs(a) : -fabs(a));
     }
-
-
+    
+ 
+  
 
     /*!
     \brief calculate a*a
@@ -93,7 +100,6 @@ namespace GEO
       //      no check for zero needed
         return sqrt(sqr(a)+sqr(b));
     }
-
 
 
     /*!
@@ -396,7 +402,31 @@ namespace GEO
             }
         }
     }
+    
+/*-------------------------------------------------------------------*
+| 	VON MIR GESCHRIEBEN                                             |
+*--------------------------------------------------------------------*/
 
+    /*!
+        \brief  Given a matrix A[1..m][1..n], this method computes its
+                singular value decomposition, A =U ·W ·V T .
+                The matrix U replaces a on output. The diagonal matrix of
+                singular values W is output as a vector W[1..n].
+                The matrix V (not the transpose V T ) is output as V[1..n][1..n].
+                (modified from NUMERICAL RECIPES)
+
+        \param A    (in/out)        : system matrix / matrix U
+        \param W    (out)           : diagonal matrix stored in a vector
+        \param V    (out)           : V matrix (not its transpose)
+        */
+    
+    //Selbe Funktion wie svdcmp nur SerialDenseMatrizen als Eingabeparameter
+
+ void svdcmpSerialDense(
+         LINALG::SerialDenseMatrix&  A,
+         LINALG::SerialDenseMatrix&  W,
+         LINALG::SerialDenseMatrix&  V
+         );
 
     /*!
   \brief  Solves a linear system of equations with help of
@@ -470,7 +500,6 @@ namespace GEO
       */
       return nonsingular;
   }
-
 
   /*!
   \brief  Tests the singular value decomposition

@@ -148,8 +148,7 @@ private:
         Epetra_SerialDenseVector&        F_int,
         RefCountPtr<DRT::Condition>      cond,
         const int                        label,
-        const double                     curvefac
-        );
+        const double                     curvefac);
 
 
   /*!
@@ -189,7 +188,7 @@ private:
         const int                               gp,
         LINALG::Matrix<3,1>&                    x_gp,
         LINALG::Matrix<3,1>&                    X_gp,
-        const double                            curve_fac
+        const double                            curve_fac        
         );
 
 
@@ -217,7 +216,22 @@ private:
       const DRT::Element*                     element,
       const LINALG::Matrix<3,1>&              x_gp
       );
+  
+  /*!
+    \brief  computes unit distance vector
+    */
+  void computeDistanceVector(
+      const LINALG::Matrix<3,1>&  x,
+      const LINALG::Matrix<3,1>&  y,    
+      LINALG::Matrix<3,1>&        dist_unit);
 
+  
+  //! compute surface normal in gaussian point in reference configuration
+  LINALG::Matrix<3,1> ComputeNormalInGP_Initialconf(
+      const DRT::Element*                     element,
+      const LINALG::Matrix<3,1>&              X_gp
+      );
+  
 
   //! determine valid contribution
   bool DetermineValidContribution(
@@ -228,8 +242,7 @@ private:
       );
 
 
-  //! name@ Private Attributes
-
+  //! name@ Private Attributes 
 
   //! current position of boundary elements
   std::map<int,LINALG::Matrix<3,1> >          currentpositions_;
