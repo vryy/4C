@@ -43,13 +43,13 @@ public:
   void Integrate();
 
   //! \brief do consistent predictor step
-  virtual void ConsistentPredictor();
+  virtual void ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers);
 
   //!\brief do full Newton iteration
-  virtual void FullNewton();
+  virtual void FullNewton(RCP<Epetra_MultiVector> randomnumbers);
 
   //!\brief solve non-linear problem by means of PTC method
-  virtual void PTC();
+  virtual void PTC(RCP<Epetra_MultiVector> randomnumbers);
 
   //!\brief writing output including restart information
   virtual void Output();
@@ -65,9 +65,11 @@ protected:
   StatMechTime(const StatMechTime& old);
 
   //! \brief manager for administration of statistical mechanics stuff
-  RCP<StatMechManager>         statmechmanager_;
-
-
+  RCP<StatMechManager> statmechmanager_;
+  
+  //! \brief maximal number of random numbers to be generated in each time step per element
+  int maxrandomnumbersperglobalelement_;
+  
 }; // class StatMechTime
 
 #endif  // #ifndef STATMECH_H

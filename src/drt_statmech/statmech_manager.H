@@ -57,8 +57,15 @@ public:
   //! \brief set crosslinker if two nodes are close enough and probability check is passed
   void SetCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,const std::map<int,LINALG::Matrix<3,1> >& currentpositions,const std::map<int,LINALG::Matrix<3,1> >& currentrotations);
 
+  //! \brief generate gaussian randomnumbers with mean "meanvalue" and standarddeviation "standarddeviation" for parallel use
+  void GenerateGaussianRandomNumbers(RCP<Epetra_MultiVector> randomnumbers,const double meanvalue, const double standarddeviation);
+  
+  
   //! \brief containing statistical mechanics input parameters
   Teuchos::ParameterList statmechparams_;
+  
+  //! \brief current simulation time
+  double time_;
 
 protected:
 

@@ -28,7 +28,6 @@ Maintainer: Christian Cyron
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam2::Beam2(int id, int owner) :
 DRT::Element(id,element_beam2,owner),
-data_(),
 isinit_(false),
 lrefe_(0),
 crosssec_(0),
@@ -52,7 +51,6 @@ gaussrule_(DRT::UTILS::intrule_line_2point)
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam2::Beam2(const DRT::ELEMENTS::Beam2& old) :
 DRT::Element(old),
-data_(old.data_),
 isinit_(old.isinit_),
 lrefe_(old.lrefe_),
 crosssec_(old.crosssec_),
@@ -157,9 +155,6 @@ void DRT::ELEMENTS::Beam2::Pack(vector<char>& data) const
   AddtoPack(data,floc_);
   // gaussrule_
   AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
-  vector<char> tmp(0);
-  data_.Pack(tmp);
-  AddtoPack(data,tmp);
 
   return;
 }
@@ -205,9 +200,7 @@ void DRT::ELEMENTS::Beam2::Unpack(const vector<char>& data)
   int gausrule_integer;
   ExtractfromPack(position,data,gausrule_integer);
   gaussrule_ = DRT::UTILS::GaussRule1D(gausrule_integer); //explicit conversion from integer to enum
-  vector<char> tmp(0);
-  ExtractfromPack(position,data,tmp);
-  data_.Unpack(tmp);
+
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);

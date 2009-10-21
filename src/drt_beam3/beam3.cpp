@@ -27,7 +27,6 @@ Maintainer: Christian Cyron
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam3::Beam3(int id, int owner) :
 DRT::Element(id,element_beam3,owner),
-data_(),
 isinit_(false),
 crosssec_(0),
 crosssecshear_(0),
@@ -44,7 +43,6 @@ alphamass_(0)
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam3::Beam3(const DRT::ELEMENTS::Beam3& old) :
  DRT::Element(old),
- data_(old.data_),
  isinit_(old.isinit_),
  Qconv_(old.Qconv_),
  Qold_(old.Qold_),
@@ -64,8 +62,7 @@ DRT::ELEMENTS::Beam3::Beam3(const DRT::ELEMENTS::Beam3& old) :
  Izz_(old.Izz_),
  Irr_(old.Irr_),
  alpha_(old.alpha_),
- alphamass_(old.alphamass_),
- floc_(old.floc_)
+ alphamass_(old.alphamass_)
 {
   return;
 }
@@ -164,8 +161,6 @@ void DRT::ELEMENTS::Beam3::Pack(vector<char>& data) const
     AddtoPack(data,curvconv_[i]);
   for (int i=0; i<(int)curvold_.size(); i++)
     AddtoPack(data,curvold_[i]);
-  for (int i=0; i<(int)floc_.size(); i++)
-    AddtoPack(data,floc_[i]);
   AddtoPack(data,isinit_);
   AddtoPack(data,Irr_);
   AddtoPack(data,Iyy_);
@@ -189,9 +184,6 @@ void DRT::ELEMENTS::Beam3::Pack(vector<char>& data) const
   for (int i=0; i<(int)thetaprimeold_.size(); i++)
     AddtoPack(data,thetaprimeold_[i]);
 
-  vector<char> tmp(0);
-  data_.Pack(tmp);
-  AddtoPack(data,tmp);
 
   return;
 }
@@ -227,8 +219,6 @@ void DRT::ELEMENTS::Beam3::Unpack(const vector<char>& data)
     ExtractfromPack(position,data,curvconv_[i]);
   for (int i=0; i<(int)curvold_.size(); i++)
     ExtractfromPack(position,data,curvold_[i]);
-  for (int i=0; i<(int)floc_.size(); i++)
-    ExtractfromPack(position,data,floc_[i]); 
   ExtractfromPack(position,data,isinit_);
   ExtractfromPack(position,data,Irr_);
   ExtractfromPack(position,data,Iyy_);
@@ -251,10 +241,6 @@ void DRT::ELEMENTS::Beam3::Unpack(const vector<char>& data)
     ExtractfromPack(position,data,thetaprimeconv_[i]); 
   for (int i=0; i<(int)thetaprimeold_.size(); i++)
     ExtractfromPack(position,data,thetaprimeold_[i]);
-  
-  vector<char> tmp(0);
-  ExtractfromPack(position,data,tmp);
-  data_.Unpack(tmp);
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -277,7 +263,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Beam3::Lines()
  *----------------------------------------------------------------------*/
 DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3::MyGaussRule(int nnode, IntegrationType integrationtype)
 {
-  DRT::UTILS::GaussRule1D gaussrule;
+  DRT::UTILS::GaussRule1D gaussrule = DRT::UTILS::intrule1D_undefined;
   
   switch(nnode)
   {
@@ -293,6 +279,11 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3::MyGaussRule(int nnode, Integration
         case gaussunderintegration:
         {
           gaussrule =  DRT::UTILS::intrule_line_1point;
+          break;
+        }
+        case lobattointegration:
+        {
+          gaussrule =  DRT::UTILS::intrule_line_lobatto2point;
           break;
         }
         default:
@@ -314,7 +305,11 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3::MyGaussRule(int nnode, Integration
           gaussrule =  DRT::UTILS::intrule_line_2point;
           break;
         }
-
+        case lobattointegration:
+        {
+          gaussrule =  DRT::UTILS::intrule_line_lobatto3point;
+          break;
+        }
         default:
           dserror("unknown type of integration");
       }
@@ -400,7 +395,6 @@ void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const vector<double>& xrefe,co
   thetaprimeconv_.resize((nnode-1));
   thetaprimeold_.resize((nnode-1));
   thetaprimenew_.resize((nnode-1));
-  floc_.resize(nnode);
   
   //create Matrix for the derivates of the shapefunctions at the GP
 	LINALG::Matrix<1,nnode> shapefuncderiv;
@@ -451,7 +445,7 @@ void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const vector<double>& xrefe,co
 
     //Store length factor for every GP
     //note: the length factor alpha replaces the determinant and refers to the reference configuration by definition
-    alpha_[numgp]= pow(pow( dxdxi(0) ,2.0) + pow( dxdxi(1) ,2.0) + pow(dxdxi(2) ,2.0) ,0.5);	
+    alpha_[numgp]= dxdxi.Norm2();
 
     for (int k=0; k<3; k++)
     {

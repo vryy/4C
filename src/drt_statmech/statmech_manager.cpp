@@ -23,6 +23,7 @@ Maintainer: Christian Cyron
 
 //including random number library of blitz for statistical forces
 #include <random/uniform.h>
+#include <random/normal.h>
 
 
 #ifdef D_BEAM3
@@ -1306,6 +1307,31 @@ void StatMechManager::DelCrosslinkers(const double& dt, const Epetra_Map& nodero
    }//for(int i = 0; i < discret_.NumMyRowNodes(); i++)
   
 }//void DelCrosslinkers(const Epetra_Vector& delcrosslinkercol)
+
+/*----------------------------------------------------------------------*
+ | (public) generate gaussian randomnumbers with mean "meanvalue" and   |
+ | standarddeviation "standarddeviation" for parallel use     cyron10/09|
+ *----------------------------------------------------------------------*/
+void StatMechManager::GenerateGaussianRandomNumbers(RCP<Epetra_MultiVector> randomnumbers,const double meanvalue, const double standarddeviation)
+{   
+  //multivector for stochastic forces evaluated by each element based on row map
+  Epetra_MultiVector randomnumbersrow( *(discret_.ElementRowMap()),randomnumbers->NumVectors()); 
+    
+  //creating a random generator object which creates random numbers with zero mean and unit standard deviation using the Blitz routine
+  ranlib::Normal<double> normalGen(meanvalue,standarddeviation);
+  
+  for(int i=0; i<randomnumbersrow.MyLength(); i++)
+    for(int j=0; j<randomnumbersrow.NumVectors(); j++)
+      randomnumbersrow[j][i] = normalGen.random();
+  
+  //export stochastic forces from row map to column map
+  Epetra_Export exporter(*discret_.ElementRowMap(),*discret_.ElementColMap());
+  randomnumbers->Export(randomnumbersrow,exporter,Add);
+  
+  //now fstoch contains stochastic forces identical on all processors
+
+  return;
+} // StatMechManager::SynchronizeRandomForces()
 
 
 /*----------------------------------------------------------------------*

@@ -1673,6 +1673,18 @@ inline void DRT::ELEMENTS::Beam2r::lumpedmass(Epetra_SerialDenseMatrix* massmatr
   return;
 } /* DRT::ELEMENTS::Beam2r::lumpedmass */
 
+/*-----------------------------------------------------------------------------------------------------------*
+ |computes the number of different random numbers required in each time step for generation of stochastic    |
+ |forces;                                                                    (public)           cyron   10/09|
+ *----------------------------------------------------------------------------------------------------------*/
+int DRT::ELEMENTS::Beam2r::HowManyRandomNumbersINeed()
+{
+  /*at each Gauss point one needs for each node as many random numbers as randomly excited degrees of freedom,
+   *i.e. two random numbers for the translational degrees of freedom*/
+  return (2*NumNode());
+
+}
+
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_BEAM2R

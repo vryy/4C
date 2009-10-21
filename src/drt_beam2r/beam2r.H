@@ -34,6 +34,8 @@ using namespace Teuchos;
 #include "../drt_fem_general/drt_utils_integration.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_lib/linalg_fixedsizematrix.H"
+#include "../drt_statmech/statmech_manager.H"
+#include "../drt_statmech/statmech_time.H"
 
 
 
@@ -60,6 +62,7 @@ public:
 
   //! @name Friends
   friend class Beam2rRegister;
+  friend StatMechTime::StatMechTime(ParameterList& params,DRT::Discretization& dis,LINALG::Solver& solver,IO::DiscretizationWriter& output);
 
 
   //! @name Constructors and destructors and related methods
@@ -295,9 +298,6 @@ private:
     gaussunderintegration
   };
 
-  //! container containing all kind of beam2r thisandthat
-  DRT::Container data_;
-
   //! cross section area
   double crosssec_;
 
@@ -365,7 +365,10 @@ private:
   template<int nnode>
   void SetUpReferenceGeometry(const vector<double>& xrefe);
 
-
+  //! @name Methods for Brownian dynamics simulations
+  
+  //!computes the number of different random numbers required in each time step for generation of stochastic forces
+  int HowManyRandomNumbersINeed();
 
   //!Compute statistical forces in local coordinate system and do not(!) yet assemble them
 
@@ -379,6 +382,8 @@ private:
 
   \return 0 if successful, negative otherwise
   */
+  
+  
   template<int nnode>
   void ComputeLocalBrownianForces(ParameterList& params);
   
@@ -389,6 +394,8 @@ private:
                     vector<double>&           disp, //!< element displacement vector
                     Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
                     Epetra_SerialDenseVector* force);  //!< element internal force vector
+  
+  //@}
 
 
   // don't want = operator

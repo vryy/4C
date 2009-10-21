@@ -26,6 +26,7 @@ Maintainer: Christian Cyron
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_mat/stvenantkirchhoff.H"
+#include "../drt_inpar/inpar_statmech.H"
 
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public)                                                                 cyron 01/08|
@@ -984,6 +985,18 @@ void DRT::ELEMENTS::Beam2::nlnstiffmass(ParameterList& params,
 
   return;
 } // DRT::ELEMENTS::Beam2::nlnstiffmass
+
+/*-----------------------------------------------------------------------------------------------------------*
+ |computes the number of different random numbers required in each time step for generation of stochastic    |
+ |forces;                                                                    (public)           cyron   10/09|
+ *----------------------------------------------------------------------------------------------------------*/
+int DRT::ELEMENTS::Beam2::HowManyRandomNumbersINeed()
+{
+  /*at each Gauss point one needs as many random numbers as randomly excited degrees of freedom, i.e. three
+   *random numbers for the translational degrees of freedom and one random number for the rotation around the element axis*/
+  return (2*NumNode());
+
+}
 
 
 #endif  // #ifdef CCADISCRET

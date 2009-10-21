@@ -38,6 +38,7 @@ using namespace Teuchos;
 #include "../drt_statmech/statmech_time.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_lib/linalg_fixedsizematrix.H"
+#include "../drt_inpar/inpar_statmech.H"
 
 
 
@@ -73,6 +74,9 @@ public:
   friend class StatMechManager;
   friend void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,const std::map<int,LINALG::Matrix<3,1> >& currentpositions,const std::map<int,LINALG::Matrix<3,1> >& currentrotations);
   friend void StatMechTime::Integrate();
+  friend StatMechTime::StatMechTime(ParameterList& params,DRT::Discretization& dis,LINALG::Solver& solver,IO::DiscretizationWriter& output);
+  
+  
 
   //! @name Constructors and destructors and related methods
 
@@ -311,7 +315,6 @@ private:
     calc_struct_update_istep,
     calc_struct_update_imrlike,
     calc_struct_reset_istep, //!< reset elementwise internal variables during iteration to last converged state
-    calc_brownian_predictor, //calculate statistical forces and damping for Brownian dynamics
     calc_struct_ptcstiff //calculate artificial stiffness due to PTC solution strategy
   };
   
@@ -319,11 +322,9 @@ private:
   enum IntegrationType
   {
     gaussexactintegration,
-    gaussunderintegration
+    gaussunderintegration,
+    lobattointegration
   };
-
-  //! container containing all kind of Beam3 thisandthat
-  DRT::Container data_;
 
   //! variable saving whether element has already been initialized (then isinit_ == true)
   bool isinit_;
@@ -374,9 +375,6 @@ private:
 
   //! Vector holding value of Jacobi determinant alpha for complete integration of massmatrix
   vector<double> alphamass_;
-
-  //! store stochastic forces for each node
-  vector<LINALG::Matrix<3,1> > floc_;
 
   //! @name methods for initilization of the element
 
@@ -456,34 +454,67 @@ private:
   template<int nnode>
   void lumpmass(Epetra_SerialDenseMatrix* emass);
   
-  //! determine Gauss rule from required type of integration
+  //!determine Gauss rule from required type of integration
   DRT::UTILS::GaussRule1D MyGaussRule(int nnode, IntegrationType integrationtype);
 
   //@}
-
-  //!Compute statistical forces in local coordinate system and do not(!) yet assemble them
-
-   /*This function allows for computation of Brownian forces in a local coordinate system according to
-   fluctuation dissipation theorem; the forces are not yet added to either external or internal force
-   vector, but just computed in order to be applied later (e.g. during iteration steps of an implicit
-   time integration scheme
-
-   \param params (in/out)       : ParameterList for communication between control routine and elements
-   \param brownian        : Vector to store computed brownian forces
-
-   \return 0 if successful, negative otherwise
-   */
-   template<int nnode>
-   void ComputeLocalBrownianForces(ParameterList& params);
+  
+  //! @name Methods for Brownian dynamics simulations
 
    //!compute damping matrix and statistical forces according to fluctuation dissipation theorem
-   template<int nnode>
+   template<int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
    void CalcBrownian(ParameterList& params,  //!<parameter list
-                     vector<double>&           vel,  //!< element velocity vector
-                     vector<double>&           disp, //!<element disp vector
+                     const vector<double>&           vel,  //!< element velocity vector
+                     const vector<double>&           disp, //!<element disp vector
                      Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-                     Epetra_SerialDenseVector* force);//!< element internal force vector
+                     Epetra_SerialDenseVector* force);//!< element internal force vector  
+   
+   //!computes damping coefficients for employed friction model
+   void MyDampingConstants(ParameterList& params,LINALG::Matrix<3,1>& gamma, const INPAR::STATMECH::FrictionModel& frictionmodel);
+   
+   //!computes the number of different random numbers required in each time step for generation of stochastic forces
+   int HowManyRandomNumbersINeed();
+   
+   //!computes rotational damping forces and stiffness
+   template<int nnode> //number of nodes
+   void MyRotationalDamping(ParameterList& params,  //!<parameter list
+                           const vector<double>&           vel,  //!< element velocity vector
+                           const vector<double>&           disp, //!<element disp vector
+                           Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+                           Epetra_SerialDenseVector* force);//!< element internal force vector
+   
+   //!computes translational damping forces and stiffness
+   template<int nnode, int ndim, int dof> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node
+   void MyTranslationalDamping(ParameterList& params,  //!<parameter list
+                             const vector<double>&           vel,  //!< element velocity vector
+                             const vector<double>&           disp, //!<element disp vector
+                             Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+                             Epetra_SerialDenseVector* force);//!< element internal force vector
+   
+   //!computes stochastic translational forces and resulting stiffness
+   template<int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
+   void MyStochasticForces(ParameterList& params,  //!<parameter list
+                         const vector<double>&           vel,  //!< element velocity vector
+                         const vector<double>&           disp, //!<element disp vector
+                         Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+                         Epetra_SerialDenseVector* force);//!< element internal force vector
+   
+   //!computes stochastic rotational moments and resulting stiffness
+   template<int nnode, int randompergauss> //number of nodes, number of random numbers required per Gauss point
+   void MyStochasticMoments(ParameterList& params,  //!<parameter list
+                         const vector<double>&           vel,  //!< element velocity vector
+                         const vector<double>&           disp, //!<element disp vector
+                         Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+                         Epetra_SerialDenseVector* force);//!< element internal force vector
+   
+   //!computes velocity of background fluid and gradient of that velocity at a certain evaluation point in the physical space and adds respective terms to internal forces and damping matrix
+   template<int ndim> //number of dimensions of embedding space
+   void MyBackgroundVelocity(ParameterList& params,  //!<parameter list
+                             const LINALG::Matrix<ndim,1>& evaluationpoint,  //!<point at which background velocity and its gradient has to be computed
+                             LINALG::Matrix<ndim,1>& velbackground,  //!< velocity of background fluid
+                             LINALG::Matrix<ndim,ndim>& velbackgroundgrad); //!<gradient of velocity of background fluid
 
+   //@}
 
 
   // don't want = operator

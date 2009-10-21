@@ -28,7 +28,6 @@ Maintainer: Christian Cyron
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam2r::Beam2r(int id, int owner) :
 DRT::Element(id,element_beam2r,owner),
-data_(),
 crosssec_(0),
 crosssecshear_(0),
 gaussrule_(DRT::UTILS::intrule1D_undefined),
@@ -42,7 +41,6 @@ mominer_(0)
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam2r::Beam2r(const DRT::ELEMENTS::Beam2r& old) :
 DRT::Element(old),
-data_(old.data_),
 crosssec_(old.crosssec_),
 crosssecshear_(old.crosssecshear_),
 gaussrule_(old.gaussrule_),
@@ -153,10 +151,6 @@ void DRT::ELEMENTS::Beam2r::Pack(vector<char>& data) const
     AddtoPack<2,1>(data,floc_[i]); 
   AddtoPack(data,theta0_);
 
-  vector<char> tmp(0);
-  data_.Pack(tmp);
-  AddtoPack(data,tmp);
-
   return;
 }
 
@@ -190,10 +184,7 @@ void DRT::ELEMENTS::Beam2r::Unpack(const vector<char>& data)
   for(int i=0;i<(int)floc_.size();i++)
     ExtractfromPack<2,1>(position,data,floc_[i]); 
   ExtractfromPack(position,data,theta0_);
- 
-  vector<char> tmp(0);
-  ExtractfromPack(position,data,tmp);
-  data_.Unpack(tmp);
+
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -341,27 +332,27 @@ void DRT::ELEMENTS::Beam2r::SetUpReferenceGeometry(const vector<double>& xrefe)
       
       //Get derivatives of shapefunctions at GP
       DRT::UTILS::shape_function_1D_deriv1(shapefuncderiv,xi,distype);
-              
-      double dxdxi_gp(0.0),dzdxi_gp(0.0);
       
-      //calculate dx/dxi and dz/dxi
-      for(int i=0; i<nnode; i++)
-      {
-        dxdxi_gp+=shapefuncderiv(i)*xrefe[2*i];
-        dzdxi_gp+=shapefuncderiv(i)*xrefe[2*i+1];
-      }//for(int i=0; i<nnode; i++)
+      //calculate vector dxdxi
+      LINALG::Matrix<2,1> dxdxi;
+      dxdxi.Clear();
+      for(int node=0; node<nnode; node++)
+        for(int dof=0; dof<2; dof++)
+          dxdxi(dof) += shapefuncderiv(node) * xrefe[2*node+dof];
+      
       //Store length factor for every GP
       //note: the length factor alpha replaces the determinant and refers by definition always to the reference configuration
-      alpha_[numgp]= pow(pow( dxdxi_gp ,2.0) + pow( dzdxi_gp ,2.0) ,0.5);
+      alpha_[numgp] = dxdxi.Norm2();
       
+            
       /*calculate sin and cos theta0 for each gausspoint for a stress-free-reference-configuration
        *the formulas are derived from Crisfield Vol.1 (7.132) and (7.133) for no strain
        * Therfore we assume that we have no strain at each GP in ref. config. 
        */
-      double cos_theta0 = alpha_[numgp]*dxdxi_gp/(pow(dxdxi_gp,2)+pow(dzdxi_gp,2));
+      double cos_theta0 = dxdxi(0) / alpha_[numgp];      
+      double sin_theta0 = dxdxi(1) / alpha_[numgp];
       
-      double sin_theta0 = alpha_[numgp]*dzdxi_gp/(pow(dxdxi_gp,2)+pow(dzdxi_gp,2));
-        
+              
       //we calculate thetaav0 in a range between -pi < thetaav0 <= pi, Crisfield Vol. 1 (7.60)
       if (cos_theta0 >= 0)
         theta0_[numgp] = asin(sin_theta0);
@@ -381,7 +372,7 @@ void DRT::ELEMENTS::Beam2r::SetUpReferenceGeometry(const vector<double>& xrefe)
        */
       double check = 0.0;
       
-      check = (cos(theta0_[numgp])*dxdxi_gp+sin(theta0_[numgp])*dzdxi_gp);
+      check = (cos(theta0_[numgp])*dxdxi(0)+sin(theta0_[numgp])*dxdxi(1));
       
       if (check<0)
       {
@@ -409,19 +400,19 @@ void DRT::ELEMENTS::Beam2r::SetUpReferenceGeometry(const vector<double>& xrefe)
       
       //Get derivatives of shapefunctions at GP
       DRT::UTILS::shape_function_1D_deriv1(shapefuncderiv,xi,distype);
-              
-      double dxdxi_gp(0.0),dzdxi_gp(0.0);
       
-      //calculate dx/dxi and dz/dxi
-      for(int i=0; i<nnode; i++)
-      {
-        dxdxi_gp+=shapefuncderiv(i)*xrefe[2*i];
-        dzdxi_gp+=shapefuncderiv(i)*xrefe[2*i+1];
-      }//for(int i=0; i<nnode; i++)
+      
+      //calculate vector dxdxi
+      LINALG::Matrix<2,1> dxdxi;
+      dxdxi.Clear();
+      for(int node=0; node<nnode; node++)
+        for(int dof=0; dof<2; dof++)
+          dxdxi(dof) += shapefuncderiv(node) * xrefe[2*node+dof];
+      
       //Store length factor for every GP
       //note: the length factor alpha replaces the determinant and refers by definition always to the reference configuration
-      alphamass_[numgp]= pow(pow( dxdxi_gp ,2.0) + pow( dzdxi_gp ,2.0) ,0.5);
-      
+      alphamass_[numgp] = dxdxi.Norm2();
+            
     }//for(int numgp=0; numgp < gausspointsmass.nquad; numgp++)
    
     gaussrule_ = static_cast<enum DRT::UTILS::GaussRule1D>(nnode-1);

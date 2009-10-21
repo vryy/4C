@@ -28,8 +28,7 @@ Maintainer: Christian Cyron
 #include "../drt_mat/stvenantkirchhoff.H"
 #include "../drt_lib/linalg_fixedsizematrix.H"
 #include "../drt_inpar/inpar_statmech.H"
-//including random number library of blitz for statistical forces
-#include <random/normal.h>
+
 
 
 /*-----------------------------------------------------------------------------------------------------------*
@@ -60,7 +59,6 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
   else if (action=="calc_struct_update_istep") act = Beam3::calc_struct_update_istep;
   else if (action=="calc_struct_update_imrlike") act = Beam3::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep") act = Beam3::calc_struct_reset_istep;
-  else if (action=="calc_brownian_predictor")        act = Beam3::calc_brownian_predictor;
   else if (action=="calc_struct_ptcstiff")        act = Beam3::calc_struct_ptcstiff;
   else dserror("Unknown type of action for Beam3");
 
@@ -80,72 +78,6 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
    	  }
     }
     break;
-    //action type for evaluating statistical forces
-    case Beam3::calc_brownian_predictor:
-    {
-
-
-    	/*this section is required for not storing the local brownian forces in a class variable
-    	 * but in a rowmap/column map vector in the parameter list, for a future change in
-    	 * implementation it might be reused
-      			// get element displacements (for use in shear flow fields)
-      			RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-      			if (disp==null) dserror("Cannot get state vector 'displacement'");
-      			vector<double> mydisp(lm.size());
-      			DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);      
-      
-			      *in case of parallel computing the random forces have to be handled in a special way: normally
-			       * in the frame of evaluation each processor evaluates forces for its column elements (including
-			       * ghost elements); later on in the assembly each processor adds the thereby gained forces only
-			       * for those DOF of whose owner it is. In case of random forces such an assembly would render it
-			       * impossible to establish certain correlations between forces related to nodes with different ownerss
-			       * (for each nodes the random forces would be evaluated in an identical process, but due to
-			       * independent random numbers); as correlation between forces is restricted to the support of at
-			       * the maximum one element a solution to this problem is, to evaluate all the forces of one element
-			       * only by means of one specific processor (here we employ the elemnet owner processor); these
-			       * forces are assembled in a column map vector and later exported to a row map force vector; this
-			       * export is carried out additively so that it is important not to evaluate any forces at all if
-			       * this processor is not owner of the element;
-			       * note: the crucial difference between this assembly and the common one is that for certain nodal
-			       * forces not the owner of the node is responsible, but the owner of the element
-			
-			      //test whether this processor is row map owner of the element (otherwise no forces added)
-			     // if(this->Owner() != discretization.Comm().MyPID()) return 0;
-			    	
-			    	
-			    	//all the above evaluated forces or movements are assembled
-			      //note carefully: a space between the two subsequal ">" signs is mandatory for the C++ parser in order to avoid confusion with ">>" for streams
-			      //RCP<Epetra_Vector>    browniancol = params.get<  RCP<Epetra_Vector> >("statistical vector",Teuchos::null);
-						
-			      for(unsigned int i = 0; i < lm.size(); i++)
-			      {
-			        //note: lm contains the global Ids of the degrees of freedom of this element
-			        //testing whether the browniancol vector has really an element related with the i-th element of brownian by the i-the entry of lm
-			        if (!(browniancol->Map()).MyGID(lm[i])) dserror("Sparse vector browniancol does not have global row %d",lm[i]);
-			
-			        //get local Id of the fstatcol vector related with a certain element of fstat
-			        int lid = (browniancol->Map()).LID(lm[i]);
-			
-			        //add to the related element of fstatcol the contribution of fstat
-			        (*browniancol)[lid] += brownian[i];
-			      }
-    				*/
-    		//end of section for store forces in parameter list
-      
-      const int nnode = NumNode();
-    	switch(nnode)//switch due to order of Ansatzfunctions
-   	  {
-   	  		case 2:ComputeLocalBrownianForces<2>(params); break;//linear
-   	  		case 3:ComputeLocalBrownianForces<3>(params); break;//quadratic
-   	  		case 4:ComputeLocalBrownianForces<4>(params); break;//cubic  		
-   	  		case 5:ComputeLocalBrownianForces<5>(params); break;//quartic  		
-   	  		default:dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
-   	  }
-
-
-    }
-    break;
-
     /*in case that only linear stiffness matrix is required b3_nlstiffmass is called with zero dispalcement and
      residual values*/
     case Beam3::calc_struct_linstiff:
@@ -310,8 +242,8 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
   thetaold_ = thetanew_;
   thetaprimeold_ = thetaprimenew_;
 
-
-/*    //the following code block can be used to check quickly whether the nonlinear stiffness matrix is calculated
+/*
+    //the following code block can be used to check quickly whether the nonlinear stiffness matrix is calculated
     //correctly or not by means of a numerically approximated stiffness matrix
     //The code block will work for all higher order elements.
     if(Id() == 3) //limiting the following tests to certain element numbers
@@ -349,13 +281,14 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
 
       		//modifying displacement artificially (for numerical derivative of internal forces):
       		disp_aux[6*k + i] += h_rel;
-      		vel_aux[6*k + i] += h_rel * params.get<double>("gamma",0.581) / ( params.get<double>("delta time",0.01)*params.get<double>("beta",0.292) );
+      		vel_aux[6*k + i] += h_rel / params.get<double>("delta time",0.01);
+      		
 		  //b3_nlnstiffmass is a templated function. therefore we need to point out the number of nodes in advance
         	  switch(nnode)
         	  {
         	  		case 2:
         	  		{
-        	  			b3_nlnstiffmass<2>(params,vel_aux,disp_aux,NULL,NULL,&force_aux);
+        	  			b3_nlnstiffmass<2>(params,vel_aux,disp_aux,NULL,NULL,&force_aux);       	  			
         	  			break;
         	  		}
         	  		case 3:
@@ -377,15 +310,14 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
         	  			dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
         	  }
 
-
+        	//computing derivative d(fint)/du numerically by finite difference
       		for(int u = 0 ; u < 6*nnode ; u++ )
-      		{
-      			stiff_approx(u,k*6+i)= ( pow(force_aux[u],2) - pow(elevec1(u),2) )/ (h_rel * (force_aux[u] + elevec1(u) ) );// berechnet mit dem Differenzenquotient dFres/du
-      		}
+      			stiff_approx(u,k*6+i)= ( pow(force_aux[u],2) - pow(elevec1(u),2) )/ (h_rel * (force_aux[u] + elevec1(u) ) );
 
       	} //for(int k=0; k<nnode; k++)//for all nodes
 
       } //for(int i=0; i<3; i++) //for all dof
+      
 
       for(int line=0; line<6*nnode; line++)
       {
@@ -461,9 +393,7 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(ParameterList& params,
                                         vector<int>& lm,
                                         Epetra_SerialDenseVector& elevec1,
                                         Epetra_SerialDenseMatrix* elemat1)
-{
-  std::cout<<"\naufruf !!!\n";
-  
+{  
   // get element displacements
   RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
   if (disp==null) dserror("Cannot get state vector 'displacement'");
@@ -542,1236 +472,6 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(ParameterList& params,
 
   return 0;
 }
-
-
-/*-----------------------------------------------------------------------------------------------------------*
- | Compute forces for Brownian motion (public)                                                       06/09|
- *----------------------------------------------------------------------------------------------------------*/
-template<int nnode>
-void DRT::ELEMENTS::Beam3::ComputeLocalBrownianForces(ParameterList& params)
-{
-  /*creating a random generator object which creates random numbers with mean = 0 and standard deviation
-   * (2kT/dt)^0,5 with thermal energy kT, time step size dt; using Blitz namespace "ranlib" for random number generation*/
-  ranlib::Normal<double> normalGen(0,pow(2.0 * params.get<double>("KT",0.0) / params.get<double>("delta time",0.0),0.5));
-  //get ndof=3 independent stochastic forces for each node
-  LINALG::Matrix<nnode,3> aux;
-    for (int i=0; i<nnode; i++)
-    	for(int j=0; j<3; j++)
-    		aux(i,j) = normalGen.random();
-
-  //zeta: damping constant per length (~4*pi*eta) times element length
-  DRT::UTILS::IntegrationPoints1D gausspointsdamping(MyGaussRule(nnode,gaussunderintegration));
-  double zeta =  0;
-  for (int gp=0; gp<nnode-1; gp++)//loop through Gauss points
-    zeta += 4*PI*gausspointsdamping.qwgt[gp]*alpha_[gp]* params.get<double>("ETA",0.0);
-  
-  //get friction model according to which forces and damping are applied
-  INPAR::STATMECH::FrictionModel frictionmodel = Teuchos::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
-  
-  
-  switch(nnode)
-   	{
-  		case 2:  		
-  		{	
-  			 			
-  			switch(frictionmodel)
-			  {
-			  case INPAR::STATMECH::frictionmodel_isotropiclumped:
-			  {
-			    //multiply S_loc (cholesky decomposition of local element damp) to random object
-			    for (int i=0; i<3; i++)
-			    {
-				  	floc_[0](i,0) = pow(zeta/2,0.5)*aux(0,i);
-				    floc_[1](i,0) = pow(zeta/2,0.5)*aux(1,i);
-			    }					
-			  }
-			  break;
-			  case INPAR::STATMECH::frictionmodel_isotropicconsistent:
-			  {
-			  	//multiply S_loc (cholesky decomposition of local element damp) to random object
-			  	for (int i=0; i<3; i++)
-			  	{
-				  	floc_[0](i,0) = pow(zeta/3,0.5)*aux(0,i);
-				  	floc_[1](i,0) = pow(zeta/12,0.5)*aux(0,i)+pow(zeta/4,0.5)*aux(1,i);
-			  	}					
-			  }
-			  break;
-			  case INPAR::STATMECH::frictionmodel_anisotropicconsistent:
-			  {
-			  	/*special section to validate simulation with Ortega (2003), for exakt simulation
-			  	 * correction terms has to be applied to the parallel and orthogonal damping
-			  	 * see howard p.107, there is a ln(aspectratio) term and further a term regarding the
-			  	 * effects at the free ends of the rod. These second part is given in Ortega explicitly only
-			  	 * for a space defined by damping translational and rotational perpendicular to beam axis, shifting
-			  	 * to orthogonal and parallel in the 3D case is shown in work of hering, these correction factors
-			  	 * are only valid for a discretization with one element, due to the intensive effect of free end terms*/
-			  	
-	         double lrefe=0;
-	          for (int gp=0; gp<nnode-1; gp++)
-	            lrefe += gausspointsdamping.qwgt[gp]*alpha_[gp];
-			    
-			  	double p=lrefe/(pow(crosssec_*4.0/PI,0.5));
-			  	double Ct=0.312+0.565/p-0.100/pow(p,2.0);
-			  	double Cr=-0.662+0.917/p-0.05/pow(p,2.0);
-			  	double gamma_par = 2*PI*lrefe*params.get<double>("ETA",0.0)/(log(p) + 2*Ct - Cr);
-			  	double gamma_perp = 4.0*PI*lrefe*params.get<double>("ETA",0.0)/(log(p)+Cr);
-			  	
-			  	
-			  	floc_[0](0,0) = pow(gamma_par/3.0,0.5)*aux(0,0);
-			  	floc_[0](1,0) = pow(gamma_perp/3.0,0.5)*aux(0,1);
-			  	floc_[0](2,0) = pow(gamma_perp/3.0,0.5)*aux(0,2);
-			  	floc_[1](0,0) = pow(gamma_par/12.0,0.5)*aux(0,0)+pow(gamma_par/4.0,0.5)*aux(1,0);
-			  	floc_[1](1,0) = pow(gamma_perp/12.0,0.5)*aux(0,1)+pow(gamma_perp/4.0,0.5)*aux(1,1);
-			  	floc_[1](2,0) = pow(gamma_perp/12.0,0.5)*aux(0,2)+pow(gamma_perp/4.0,0.5)*aux(1,2);
-			  	
-			  	
-			  	/*
-			  	//apply simple damping coefficients (gamma_par=gamma_perp/2)
-			  	//multiply S_loc (cholesky decomposition of local element damp) to random object
-			  	floc_[0](0,0) = pow(zeta/6,0.5)*aux(0,0);
-			  	floc_[0](1,0) = pow(zeta/3,0.5)*aux(0,1);
-			  	floc_[0](2,0) = pow(zeta/3,0.5)*aux(0,2);
-			  	floc_[1](0,0) = pow(zeta/24,0.5)*aux(0,0)+pow(zeta/8,0.5)*aux(1,0);
-			  	floc_[1](1,0) = pow(zeta/12,0.5)*aux(0,1)+pow(zeta/4,0.5)*aux(1,1);
-			  	floc_[1](2,0) = pow(zeta/12,0.5)*aux(0,2)+pow(zeta/4,0.5)*aux(1,2);
-			  	*/
-			  }
-			  break;
-        default:
-           dserror("\nno action for this friction model specified\n");
-			  }//end switch frictionmodel		
-  		}//end nnode=2
-  		break;
-  		case 3:
-  		{
-  			switch(frictionmodel)
-  		  {
-  		  	case INPAR::STATMECH::frictionmodel_isotropiclumped: 
-  		  	{
-  		  		//multiply S_loc (cholesky decomposition of local element damp) to random object
-  		  		for (int i=0; i<3; i++)
-  		  		{
-	  		  		floc_[0](i,0) = pow(zeta/6.0,0.5)*aux(0,i);
-	  		  		floc_[1](i,0) = pow(2.0*zeta/3.0,0.5)*aux(1,i);
-	  		  		floc_[2](i,0) = pow(zeta/6.0,0.5)*aux(2,i);
-  		  		}
-  		  		
-  		  	}
-  		  	break;
-  		  	case INPAR::STATMECH::frictionmodel_isotropicconsistent:
-  		  	{
-  		  		//multiply S_loc (cholesky decomposition of local element damp) to random object
-  		  		for (int i=0; i<3; i++)
-  		  		{
-	  		  		floc_[0](i,0) = pow(2.0*zeta/15.0,0.5)*aux(0,i);
-	  		  		floc_[1](i,0) = pow(zeta/30.0,0.5)*aux(0,i)+pow(zeta/2.0,0.5)*aux(1,i);
-	  		  		floc_[2](i,0) = -pow(zeta/120.0,0.5)*aux(0,i)+pow(zeta/72.0,0.5)*aux(1,i)+pow(zeta/9.0,0.5)*aux(2,i);
-  		  		}
-  		  	}
-  		  	break;
-  		  	case INPAR::STATMECH::frictionmodel_anisotropicconsistent:
-  		  	{
-  		  		dserror("no higher order anisotropic friction implemented");
-  		  	}
-  		  	break;
-          default:
-            dserror("\nno action for this friction model specified\n");
-  		  }//end switch frictionmodel
-  		}//end nnode=3
-  		break;
-  		case 4:
-  		{
-  			switch(frictionmodel)
-  		  {
-  		  	case INPAR::STATMECH::frictionmodel_isotropiclumped: 
-  		  	{
-  		  		//multiply S_loc (cholesky decomposition of local element damp) to random object
-  		  		for (int i=0; i<3; i++)
-  		  		{
-	  		  		floc_[0](i,0) = pow(zeta/8.0,0.5)*aux(0,i);
-	  		  		floc_[1](i,0) = pow(3.0*zeta/8.0,0.5)*aux(1,i);
-	  		  		floc_[2](i,0) = pow(3.0*zeta/8.0,0.5)*aux(2,i);
-	  		  		floc_[3](i,0) = pow(zeta/8.0,0.5)*aux(3,i);
-  		  		}
-  		  		
-  		  	}
-  		  	break;
-  		  	case INPAR::STATMECH::frictionmodel_isotropicconsistent:
-  		  	{
-  		  		//multiply S_loc (cholesky decomposition of local element damp) to random object
-  		  		for (int i=0; i<3; i++)
-  		  		{
-	  		  		floc_[0](i,0) = pow(8.0*zeta/105.0,0.5)*aux(0,i);
-	  		  		floc_[1](i,0) = 99.0/128.0*pow(8.0*zeta/105.0,0.5)*aux(0,i)+pow(3483.0*zeta/10240.0,0.5)*aux(1,i);
-	  		  		floc_[2](i,0) = -9.0/32.0*pow(8.0*zeta/105.0,0.5)*aux(0,i)-4.0/43.0*pow(3483.0*zeta/10240.0,0.5)*aux(1,i)+pow(81.0*zeta/215.0,0.5)*aux(2,i);
-	  		  		floc_[3](i,0) = 19.0/118.0*pow(8.0*zeta/105.0,0.5)*aux(0,i)-103.0/1161.0*pow(3483.0*zeta/10240.0,0.5)*aux(1,i)+17.0/108.0*pow(81.0*zeta/215.0,0.5)*aux(2,i)+pow(zeta/16.0,0.5)*aux(3,i);
-  		  		}
-  		  	}
-  		  	break;
-  		  	case INPAR::STATMECH::frictionmodel_anisotropicconsistent:
-  		  	{
-  		  		dserror("no higher order anisotropic friction implemented");
-  		  	}
-  		  	break;
-          default:
-            dserror("\nno action for this friction model specified\n");
-  	  	}//end switch stochorder
-  		}//end nnode=4		
-  		break;
-  		case 5:
-  		{
-  			switch(frictionmodel)
-  		  {
-  		  	case INPAR::STATMECH::frictionmodel_isotropiclumped: 
-  		  	{
-  		  		//multiply S_loc (cholesky decomposition of local element damp) to random object
-  		  		for (int i=0; i<3; i++)
-  		  		{
-	  		  		floc_[0](i,0) = pow(7.0*zeta/45.0,0.5)*aux(0,i);
-	  		  		floc_[1](i,0) = pow(32.0*zeta/45.0,0.5)*aux(1,i);
-	  		  		floc_[2](i,0) = pow(4.0*zeta/15.0,0.5)*aux(2,i);
-	  		  		floc_[3](i,0) = pow(32.0*zeta/45.0,0.5)*aux(3,i);
-	  		  		floc_[4](i,0) = pow(7.0*zeta/45.0,0.5)*aux(4,i);
-  		  		}
-  		  		
-  		  	}
-  		  	break;
-  		  	case INPAR::STATMECH::frictionmodel_isotropicconsistent:
-  		  	{
-  		  		//multiply S_loc (cholesky decomposition of local element damp) to random object
-  		  		for (int i=0; i<3; i++)
-  		  		{
-	  		  		floc_[0](i,0) = 396.0/1745.0*pow(zeta,0.5)*aux(0,i);
-	  		  		floc_[1](i,0) = 268.0/1165.0*pow(zeta,0.5)*aux(0,i)+653.0/1273.0*pow(zeta,0.5)*aux(1,i);
-	  		  		floc_[2](i,0) = -278.0/2041.0*pow(zeta,0.5)*aux(0,i)-223.0/3124.0*pow(zeta,0.5)*aux(1,i)+915.0/1652.0*pow(zeta,0.5)*aux(2,i);
-	  		  		floc_[3](i,0) = 131.0/3010.0*pow(zeta,0.5)*aux(0,i)+259.0/3781.0*pow(zeta,0.5)*aux(1,i)-113.0/1099.0*pow(zeta,0.5)*aux(2,i)+515.0/942.0*pow(zeta,0.5)*aux(3,i);
-	  		  		floc_[4](i,0) = -46.0/2041.0*pow(zeta,0.5)*aux(0,i)+137.0/4666.0*pow(zeta,0.5)*aux(1,i)-176.0/3081.0*pow(zeta,0.5)*aux(2,i)+409.0/4936.0*pow(zeta,0.5)*aux(3,i)+1.0/5.0*pow(zeta,0.5)*aux(4,i);
-  		  		}
-  		  	}
-  		  	break;
-  		  	case INPAR::STATMECH::frictionmodel_anisotropicconsistent:
-  		  	{
-  		  		dserror("no higher order anisotropic friction implemented");
-  		  	}
-  		  	break;
-          default:
-            dserror("\nno action for this friction model specified\n");
-  	  	}//end switch stochorder
-  		}
-  		break;
-  		default:
-  			dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
-   	}//end switch nnode  
-
-return;
-}//DRT::ELEMENTS::Beam3::ComputeLocalBrownianForces
-/*-----------------------------------------------------------------------------------------------------------*
- | Assemble statistical forces and damping matrix according to fluctuation dissipation theorem (public) 06/09|
- *----------------------------------------------------------------------------------------------------------*/
-template<int nnode>
-inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
-                              vector<double>&           vel,  //!< element velocity vector
-                              vector<double>&           disp, //!< element displacement vector
-                              Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-                              Epetra_SerialDenseVector* force) //!< element internal force vector
-{ 
-  //at zero temperature (default value) no stochastic forces are acting and this method left without any action
-  if(params.get<double>("KT",0.0) == 0.0)
-		return;
-  
-  //get friction model according to which forces and damping are applied
-  INPAR::STATMECH::FrictionModel frictionmodel = Teuchos::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
-
-
-	double dt = params.get<double>("delta time",0.0);//timestep
-
-	 /*the following block adds a rotational damping and related internal forces; this damping goes along with the damping of a
-   * rigid straight rod spinning around its own axis; analytically it is given by a damping coefficient per length
-   * gamma_a = 4*pi*eta*r^2 where r is the radius of the crosssection; as this coefficient is very small for thin 
-   * rods it is increased artificially by a factor for numerical convencience*/
-	 
-  double rsquare = pow((4*Iyy_/PI),0.5);
-  //gamma_a artificially increased by factor artificial
-  double artificial = 60*16*2;//knyrim Rotationsdämpfung alt:60*16
-  double gammaa = 4*PI*params.get<double>("ETA",0.0)*(rsquare)*artificial;
-	
-	
-  //aux variables for rot damp calculation,vector contains matrix for each Gausspoint
-  vector<LINALG::Matrix<4,1> > deltaQ;
-  deltaQ.resize(nnode-1);
-  vector<LINALG::Matrix<3,1> > deltatheta;
-  deltatheta.resize(nnode-1);  
-  vector<LINALG::Matrix<3,1> > omega;
-  omega.resize(nnode-1);
-  vector<LINALG::Matrix<3,3> > Tconv;
-  Tconv.resize(nnode-1);
-  vector<LINALG::Matrix<3,3> >Theta;
-	Theta.resize(nnode-1);
-  vector<LINALG::Matrix<3,3> > Hinverse;
-  Hinverse.resize(nnode-1);
-  vector<LINALG::Matrix<3,3> > artstiff;
-  artstiff.resize(nnode-1);
-  vector<LINALG::Matrix<3,1> > artforce;
-  artforce.resize(nnode-1);
-  
- 
-  //integration points for underintegration
-  DRT::UTILS::IntegrationPoints1D gausspointsrotdamp(MyGaussRule(nnode,gaussunderintegration));
-  
-  const DRT::Element::DiscretizationType distype = Shape(); //Get discretization typ 
-  
-  LINALG::Matrix<1,nnode> funct;//matrix to store Ansatzfunktionen
- 
-	for (int gp=0; gp<nnode-1; gp++)//loop through Gauss points
-  {
-		
-		//Get location and weight of GP in parameter space	
-	  const double xi = gausspointsrotdamp.qxg[gp][0];
-	  const double wgt = gausspointsrotdamp.qwgt[gp];
-		
-	  DRT::UTILS::shape_function_1D(funct,xi,distype);//get evaluated ansatzfunktionen at gausspoints
-		
-		//computing angle increment from current position in comparison with last converged position for damping
-  	quaternionproduct(inversequaternion(Qconv_[gp]),Qnew_[gp],deltaQ[gp]);
-  	quaterniontoangle(deltaQ[gp],deltatheta[gp]);
-  	
-  	//angular velocity
-  	for(int j=0; j<3; j++)
-  		omega[gp](j,0)=deltatheta[gp](j,0);
-  	omega[gp].Scale(1/dt);
-  	
-  	//computing special matrix for anisotropic damping
-		quaterniontotriad(Qconv_[gp],Tconv[gp]);		
-		for(int k=0; k<3; k++)
-		  for(int j = 0; j<3; j++)
-		    Theta[gp](k,j) = Tconv[gp](k,0)*Tconv[gp](j,0);
-    
-		//inverse exponential map
-		Hinverse[gp]=Hinv(deltatheta[gp]);
-  
-		//stiffness due to rotational damping
-		artstiff[gp].Multiply(Theta[gp],Hinverse[gp]);
-		artstiff[gp].Scale(gammaa/dt); 
-  
-		//forces due to rotational damping  
-		artforce[gp].Multiply(Theta[gp],omega[gp]);
-		artforce[gp].Scale(gammaa);
-  
-		
-		for(int i=0; i<nnode; i++)//loop twice over nodes (integration N_xi*N_xi)
-		{
-			for (int j=0; j<nnode; j++)
-			{
-				for(int k=0; k<3; k++)//loop over rotation dof blocks
-					for (int l=0; l<3; l++)
-						(*stiffmatrix)(i*6+3+k,j*6+3+l) += artstiff[gp](k,l)*funct(i)*funct(j)*wgt*alpha_[gp];						
-				//add rot damp forces
-				for (int k=0; k<3; k++)
-				  (*force)(i*6+3+k)	+=artforce[gp](k)*funct(i)*funct(j)*wgt*alpha_[gp];						
-			}
-		}		
-  }
-
-		 
-	//zeta: damping constant per length times element length
-	DRT::UTILS::IntegrationPoints1D gausspointsdamping(MyGaussRule(nnode,gaussunderintegration));
-	double zeta =  0;
-  for (int gp=0; gp<nnode-1; gp++)//loop through Gauss points
-    zeta += 4*PI*gausspointsdamping.qwgt[gp]*alpha_[gp]* params.get<double>("ETA",0.0);
-	
-
-	
-  switch(nnode)//switch polynomial order of Ansatzfunctions
- 	{
- 		case 2://linear case with two nodes per element
- 		{	
-		 switch(frictionmodel)
-		 {
-			 //simple isotropic model of Brownian motion with uncorrelated nodal forces
-			 case INPAR::STATMECH::frictionmodel_isotropiclumped: 
-			 {			 					
-				if (stiffmatrix != NULL) 
-				{
-					//calc int stiffness
-					for (int i=0; i<3; i++)
-					{
-						(*stiffmatrix)(i,i) += zeta/(2.0*dt);
-						(*stiffmatrix)(6+i,6+i) += zeta/(2.0*dt);					
-					}
-					/*additional stiffness in case of shear flow (assumption: shear gradient in z-direciton only
-					 *and zero backbround velocity at z = 0*/
-					(*stiffmatrix)(0,2) += -(zeta/2.0)*params.get<double>("CURRENTSHEAR",0.0);
-					(*stiffmatrix)(6,8) += -(zeta/2.0)*params.get<double>("CURRENTSHEAR",0.0);
-
-				}				
-				if (force != NULL)
-				{
-					//calc damping forces
-					for (int i=0; i<3; i++)
-					{
-					  (*force)(i) +=zeta/(2.0)*vel[i];
-					  (*force)(6+i) +=zeta/(2.0)*vel[6+i];
-					}
-					/*additional damping in case of shear flow (assumption: shear gradient in z-direciton only
-					*and zero backbround velocity at z = 0*/	
-					 (*force)(0) -= (zeta/2.0)*params.get<double>("CURRENTSHEAR",0.0)*(Nodes()[0]->X()[2]+disp[2]);
-					 (*force)(6) -= (zeta/2.0)*params.get<double>("CURRENTSHEAR",0.0)*(Nodes()[1]->X()[2]+disp[8]);		          			          
-					//calc ext brownian forces
-				  for (int i=0; i<3; i++)
-		  		{
-			  		 (*force)(i) -=floc_[0](i,0);
-	 		  		 (*force)(6+i) -=floc_[1](i,0);
-		  		}	
-				}			
-			 }
-			 break;
-			
-			 //isotropic model of Brownian motion with correlated forces
-			 case INPAR::STATMECH::frictionmodel_isotropicconsistent:
-			 {						   
-				 if (stiffmatrix != NULL)
-				 {
-					 //calc int stiffness
-					 for (int i=0; i<3; i++)
-					 {
-					   (*stiffmatrix)(i,i) += zeta/(3.0*dt);
-					   (*stiffmatrix)(6+i,6+i) += zeta/(3.0*dt);
-					   (*stiffmatrix)(i,6+i) += zeta/(6.0*dt);
-					   (*stiffmatrix)(6+i,i) += zeta/(6.0*dt);
-					 }
-				 }
-			
-				 if (force != NULL)
-				 {
-					 //calc int brownian forces
-					 for (int i=0; i<3; i++)
-					 {
-						 (*force)(i) +=zeta/(3.0)*vel[i]+zeta/(6.0)*vel[6+i];
-					   (*force)(6+i) +=zeta/(6.0)*vel[i]+zeta/(3.0)*vel[6+i];
-					 }
-			
-				   //calc ext brownian forces
-				   for (int i=0; i<3; i++)
- 		  		 {
- 			  		 (*force)(i) -=floc_[0](i,0);
- 	 		  		 (*force)(6+i) -=floc_[1](i,0);
- 		  		 }
-				 }
-			
-			
-			  }
-			  break;
-			  //anisotropic model of Brownian motion with correlated nodal forces
-			  case INPAR::STATMECH::frictionmodel_anisotropicconsistent:
-			  {			  		
-			  	
-			  	
-			  	 //damping coefficient for simulation with corrected damp parameters as in ortega 2003,
-			  	 //for details go to computelocalforces section
-			    
-			    double lrefe=0;
-			    for (int gp=0; gp<nnode-1; gp++)
-			      lrefe += gausspointsdamping.qwgt[gp]*alpha_[gp];
-			  	 
-          double p=lrefe/(pow(crosssec_*4.0/PI,0.5));
-          double Ct=0.312+0.565/p-0.100/pow(p,2.0);
-          double Cr=-0.662+0.917/p-0.05/pow(p,2.0);
-          double gamma_par = 2*PI*lrefe*params.get<double>("ETA",0.0)/(log(p) + 2*Ct - Cr);
-          double gamma_perp = 4.0*PI*lrefe*params.get<double>("ETA",0.0)/(log(p)+Cr);
-			  	
-			  	 //local damping matrix
- 	  	  	 LINALG::Matrix<3,3> dampbasis(true);
- 	  	  	 dampbasis(0,0)=gamma_par;
- 	  	  	 dampbasis(1,1)=gamma_perp;
- 	  	  	 dampbasis(2,2)=gamma_perp;
-			  	
-			  	 
-			 /*
-			  	 //section for apply simple damping coefficients
- 	  	  	 //local damping matrix
-	  	  	 LINALG::Matrix<3,3> dampbasis(true);
-	  	  	 dampbasis(0,0)=zeta/2.0;
-	  	  	 dampbasis(1,1)=zeta;
-	  	  	 dampbasis(2,2)=zeta;
-	  	  	 */
- 	  	  	 
-	  	  	 
-	  	  	 LINALG::Matrix<3,3> Tnew;//Rotation matrix in current iteration step
-	  	  	 quaterniontotriad(Qnew_[0],Tnew);
-	  	  	 
-	  	  	 //rotate C to global
-	  	  	 LINALG::Matrix<3,3> aux1(true);
-	  	  	 aux1.Multiply(Tnew,dampbasis);
-	  	  	 dampbasis.MultiplyNT(aux1,Tnew);
-	  	  	 
-	  	  	 //calc internal stiffness
-	  	  	 if (stiffmatrix !=NULL)
-	  	  	 {
-	  				 //add stiffness due to variation of transl dofs to stiffmatrix
-	  				 for(int i=0; i<3; i++)
-	  				 {
-	  					 for (int j=0; j<3; j++)
-	  					 {
-	  						(*stiffmatrix)(i,j) += dampbasis(i,j)/(3.0*dt);
-	  						(*stiffmatrix)(i,j+6) += dampbasis(i,j)/(6.0*dt);
-	  						(*stiffmatrix)(i+6,j) += dampbasis(i,j)/(6.0*dt);
-	  						(*stiffmatrix)(i+6,j+6) += dampbasis(i,j)/(3.0*dt);
-	  					 }
-	  				 }
-	  	  	 
-	  				 
-	  	  	   //define seperate spin matrix for each rot dof	  				
-	  				 LINALG::Matrix<3,3> S1(true);//delta alpha1
-	  				 S1(1,2)=-1.0;
-	  				 S1(2,1)=1.0;
-	  				 
-	  				 LINALG::Matrix<3,3> S2(true);//delta alpha2
-	  				 S2(0,2)=1.0;
-	  				 S2(2,0)=-1.0;
-	  				 
-	  				 LINALG::Matrix<3,3> S3(true);//delta alpha3
-	  				 S3(0,1)=-1.0;
-	  				 S3(1,0)=1.0;
-	  	  	 
-	  				 LINALG::Matrix<3,3> aux2(true);	  				 
-	  				 //values due to alpha 1
-	  				 aux1.Multiply(S1,dampbasis);//multiply S1 from left
-	  				 aux2.Multiply(dampbasis,S1);//multiply S1 from right
-	  				 	  				 
-	  				 for(int i=0; i<3; i++)//calc difference of both contributions
-	  	 	   		 for (int j=0; j<3; j++)
-	  	 	   			aux1(i,j)=aux1(i,j)-aux2(i,j); 
-	  	  	 
-	  				 LINALG::Matrix<6,6> aux3(true); //to store result for two nodes, multiply velcoef	  				 
-	  				 for(int i=0; i<3; i++)
-	  	 	   	 {
-	  	 	   		 for (int j=0; j<3; j++)
-	  	 	   		 {
-	  	 	   			 aux3(i,j)=aux1(i,j)/3.0;
-	  	 	   			 aux3(i+3,j)=aux1(i,j)/6.0;
-	  	 	   			 aux3(i,j+3)=aux1(i,j)/6.0;
-	  	 	   			 aux3(i+3,j+3)=aux1(i,j)/3.0;
-	  	 	   		 }
-	  	 	   	 }
-	  	  	
-	  				 LINALG::Matrix<6,1> aux4(true);	  				 
-	  				 for(int i=0; i<6; i++)//multiply velocity
-	  	 	   	 {
-	  	 	   		 for (int j=0; j<3; j++)
-	  	 	   		 {
-	  	 	   			 aux4(i,0)+=aux3(i,j)*vel[j];
-	  	 	   			 aux4(i,0)+=aux3(i,j+3)*vel[j+6];
-	  	 	   		 }
-	  	 	   	 }
-	  	  	 
-		 
-	  				 for (int i=0; i<3; i++)//fill stiffness values due to delta alpha1 in stiffmatrix
-	  	  		 {
-	  	  			 (*stiffmatrix)(i,3)+=aux4(i,0)*0.5;
-	  	  			 (*stiffmatrix)(i+6,3)+=aux4(i+3,0)*0.5;
-	  	  			 (*stiffmatrix)(i,9)+=aux4(i,0)*0.5;
-	  	  			 (*stiffmatrix)(i+6,9)+=aux4(i+3,0)*0.5;
-	  	  		 } 		 //end delta alpha1
-	  	  	 
-	  	  		 //values due to alpha 2
-	  	 			 aux1.Multiply(S2,dampbasis);//multiply S2 from left
-	  	 			 aux2.Multiply(dampbasis,S2);//multiply S2 from right
-	  	 			 	  	 			 
-	  	 			 for(int i=0; i<3; i++)//calc difference
-  	  	   		 for (int j=0; j<3; j++)
-  	  	   			aux1(i,j)=aux1(i,j)-aux2(i,j); 
-	  	   	 	  	 			 
-	  	 			 for(int i=0; i<3; i++)//now two nodes
-	  	  	   	 {
-	  	  	   		 for (int j=0; j<3; j++)
-	  	  	   		 {
-	  	  	   			 aux3(i,j)=aux1(i,j)/3.0;
-	  	  	   			 aux3(i+3,j)=aux1(i,j)/6.0;
-	  	  	   			 aux3(i,j+3)=aux1(i,j)/6.0;
-	  	  	   			 aux3(i+3,j+3)=aux1(i,j)/3.0;
-	  	  	   		 }
-	  	  	   	 }	  	   	
-	  	 			 
-	  	 			 for (int i=0; i<6; i++)//set aux4 to zero
-	  	 				 aux4(i,0)=0.0;
-	  	 			 
-	  	 			 for(int i=0; i<6; i++)//multiply velocity
-	  	  	   	 {
-	  	  	   		 for (int j=0; j<3; j++)
-	  	  	   		 {
-	  	  	   			 aux4(i,0)+=aux3(i,j)*vel[j];
-	  	  	   			 aux4(i,0)+=aux3(i,j+3)*vel[j+6];
-	  	  	   		 }
-	  	  	   	 }
-	  	   	 
-	  	 			 for (int i=0; i<3; i++)//fill stiffness values due to delta alpha2 in stiffmatrix
-	  	   		 {
-	  	   			 (*stiffmatrix)(i,4)+=aux4(i,0)*0.5;
-	  	   			 (*stiffmatrix)(i+6,4)+=aux4(i+3,0)*0.5;
-	  	   			 (*stiffmatrix)(i,10)+=aux4(i,0)*0.5;
-	  	   			 (*stiffmatrix)(i+6,10)+=aux4(i+3,0)*0.5;
-	  	   			 
-	  	   		 }//end delta alpha2	  	  		 
-	  	  		 
-	  	   		 //values due to alpha 3
-	  	 			 aux1.Multiply(S3,dampbasis);//multiply S3 from left
-	  	 			 aux2.Multiply(dampbasis,S3);//multiply S3 from right
-	  	 			 	  	 			 
-	  	 			 for(int i=0; i<3; i++)//calc difference
-  	  	   		 for (int j=0; j<3; j++)
-  	  	   			aux1(i,j)=aux1(i,j)-aux2(i,j); 
-	  	   	 	  	 			 
-	  	 			 for(int i=0; i<3; i++)//now two nodes
-	  	  	   	 {
-	  	  	   		 for (int j=0; j<3; j++)
-	  	  	   		 {
-	  	  	   			 aux3(i,j)=aux1(i,j)/3.0;
-	  	  	   			 aux3(i+3,j)=aux1(i,j)/6.0;
-	  	  	   			 aux3(i,j+3)=aux1(i,j)/6.0;
-	  	  	   			 aux3(i+3,j+3)=aux1(i,j)/3.0;
-	  	  	   		 }
-	  	  	   	 }
-	  	   		  	 			 
-	  	 			 for (int i=0; i<6; i++)//set aux4 to zero
-	  	 			 				 aux4(i,0)=0.0;
-	  	 			
-	  	 			 for(int i=0; i<6; i++)//multiply velocity
-	  	  	   	 {
-	  	  	   		 for (int j=0; j<3; j++)
-	  	  	   		 {
-	  	  	   			 aux4(i,0)+=aux3(i,j)*vel[j];
-	  	  	   			 aux4(i,0)+=aux3(i,j+3)*vel[j+6];
-	  	  	   		 }
-	  	  	   	 }
-	  	   	 
-	  	 			 for (int i=0; i<3; i++)//fill stiffness values due to delta alpha3 in stiffmatrix
-	  	   		 {
-	  	   			 (*stiffmatrix)(i,5)+=aux4(i,0)*0.5;
-	  	   			 (*stiffmatrix)(i+6,5)+=aux4(i+3,0)*0.5;
-	  	   			 (*stiffmatrix)(i,11)+=aux4(i,0)*0.5;
-	  	   			 (*stiffmatrix)(i+6,11)+=aux4(i+3,0)*0.5;
-	  	   		 } //end delta alpha3
-	  	  		 
-	  	  		 //end internal stiffness 
-	  	  		 
-	  	  		 //calc ext stiffness 
-	  	 
-	  	   		 //begin delta alpha1
-	  	   		 aux1.Multiply(S1,Tnew);
-	  	   		 
-	  	   		 for (int i=0; i<6; i++)//set aux4 to zero
-	  	 			 		aux4(i,0)=0.0;
-	  	  		 	  	  		 
-	  	  		 for (int i=0; i<3; i++)
-	  	  		 {
-	  	  			 for (int j=0; j<3; j++)
-	  	  			 {
-	  	  				 aux4(i,0) += aux1(i,j)*floc_[0](j,0);
-	  	  				 aux4(i+3,0) += aux1(i,j)*floc_[1](j,0);
-	  	  			 }
-	  	  		 }
-	  	  		 
-	  	  		 for (int i=0; i<3; i++)//fill ext stiffness values due to delta alpha1 in stiffmatrix
-	  	   		 {
-	  	   			 (*stiffmatrix)(i,3)-=aux4(i,0)*0.5;
-	  	   			 (*stiffmatrix)(i+6,3)-=aux4(i+3,0)*0.5;
-	  	   			 (*stiffmatrix)(i,9)-=aux4(i,0)*0.5;
-	  	   			 (*stiffmatrix)(i+6,9)-=aux4(i+3,0)*0.5;
-	  	   		 }//end delta alpha 1
-	  	   		 	  	   		 
-	  	   		 //begin delta alpha2
-	  	   		 aux1.Multiply(S2,Tnew);
-	  	   		 
-	  	   		 for (int i=0; i<6; i++)//set aux4 to zero
-	  	   			 aux4(i,0)=0.0;
-	  	   		  		 	  	   		  		 
-	  				 for (int i=0; i<3; i++)
-	  				 {
-	  					 for (int j=0; j<3; j++)
-	  					 {
-	  						 aux4(i,0) += aux1(i,j)*floc_[0](j,0);
-	  						 aux4(i+3,0) += aux1(i,j)*floc_[1](j,0);
-	  					 }
-	  				 }
-	  				 
-	  				 for (int i=0; i<3; i++)//fill extstiffness values due to delta alpha2 in stiffmatrix
-	  	  		 {
-	  	  			 (*stiffmatrix)(i,4)-=aux4(i,0)*0.5;
-	  	  			 (*stiffmatrix)(i+6,4)-=aux4(i+3,0)*0.5;
-	  	  			 (*stiffmatrix)(i,10)-=aux4(i,0)*0.5;
-	  	  			 (*stiffmatrix)(i+6,10)-=aux4(i+3,0)*0.5;
-	  	  		 }//end delta alpha2
-	  	  		 
-	  	  		 //begin delta alpha3
-	  	  		 aux1.Multiply(S3,Tnew);
-	  	    		  		 
-	  	  		 for (int i=0; i<6; i++)//set aux4 to zero
-	  	  			 aux4(i,0)=0.0;
-	  	  		 
-	  	 			 for (int i=0; i<3; i++)
-	  	 			 {
-	  	 				 for (int j=0; j<3; j++)
-	  	 				 {
-	  	 					 aux4(i,0) += aux1(i,j)*floc_[0](j,0);
-	  	 					 aux4(i+3,0) += aux1(i,j)*floc_[1](j,0);
-	  	 				 }
-	  	 			 }
-	  	 
-	  	 			 for (int i=0; i<3; i++)//fill ext stiffness values due to delta alpha3 in stiffmatrix
-	  		 		 {
-	  		 			 (*stiffmatrix)(i,5)-=aux4(i,0)*0.5;
-	  		 			 (*stiffmatrix)(i+6,5)-=aux4(i+3,0)*0.5;
-	  		 			 (*stiffmatrix)(i,11)-=aux4(i,0)*0.5;
-	  		 			 (*stiffmatrix)(i+6,11)-=aux4(i+3,0)*0.5;
-	  		 		 } //end delta alpha3
-	  	  		 
-	  	  		//end calc ext stiffness 
-	  	  	 
-	  	  	 }//end stiffmatrix calc
-	  	  	 
-	  	  	 
-	  	  	 if (force != NULL)
-	  	  	 {	  	  		 
-	  	  		 //calc internal forces
-	  	  		 LINALG::Matrix<6,6> aux5(true);
-	  	  		 for (int i=0; i<3; i++)
-	  	  		 {
-	  	  			 for (int j=0; j<3; j++)
-	  	  			 {
-	  	  				 aux5(i,j)=dampbasis(i,j)/3.0;
-	  	  				 aux5(i+3,j)=dampbasis(i,j)/6.0;
-	  	  				 aux5(i,j+3)=dampbasis(i,j)/6.0;
-	  	  				 aux5(i+3,j+3)=dampbasis(i,j)/3.0;
-	  	  			 }
-	  	  		 }	  	  		 	  		 
-	  	  		 for (int i=0; i<3; i++)//fill in force vector after multiply velocity
-	  	  		 {
-	  	  			 for (int j=0; j<3; j++)
-	  	  			 {
-	  	  				 (*force)(i) +=aux5(i,j)*vel[j];
-	  	  				 (*force)(i) +=aux5(i,j+3)*vel[j+6];
-	  	  				 (*force)(i+6) +=aux5(i+3,j)*vel[j];
-	  	  				 (*force)(i+6) +=aux5(i+3,j+3)*vel[j+6];
-	  	  			 }			 
-	  	  		 }	  	  		 
-	  	  		 //calc external forces
-	  	  		 for (int i=0; i<3; i++)
-	  	  		 {
-	  	  			 for (int j=0; j<3; j++)
-	  	  			 {
-	  	  				 (*force)(i) -= Tnew(i,j)*floc_[0](j,0);
-	  	  				 (*force)(i+6) -= Tnew(i,j)*floc_[1](j,0);
-	  	  			 }
-	  	  		 } 			 
-	  	  		 
-	  	  	 }//end calc forces	  	  	 
-			   } //end case 1
-			   break;
-        default:
-          dserror("\nno action for this friction model specified\n");
-		  }//end stochorder switch
-		 
-		}//end nnode=2
- 		break;
-		case 3://quadratic ansatzfunction, element with 3 nodes
-		{
- 			switch(frictionmodel)
- 		  {
- 		  	case INPAR::STATMECH::frictionmodel_isotropiclumped: 
- 		  	{
- 		  		if (stiffmatrix != NULL) // necessary to run stiffmatrix control routine
-			  	 {
- 		  			 for (int i=0; i<3; i++)
- 		  			 { 		  				
-				  		 (*stiffmatrix)(i,i) += zeta/(6.0*dt);
-				  		 (*stiffmatrix)(12+i,12+i) += 2.0*zeta/(3.0*dt);
-				  		 (*stiffmatrix)(6+i,6+i) += zeta/(6.0*dt);
- 		  			 }
-			  	 } 
-			     
-
-			  	 //calc int brownian forces
-			  	 if (force !=  NULL)
-			  	 {
-			  		 for (int i=0; i<3; i++)
-			  		 {
-				  		 (*force)(i) +=zeta/(6.0)*vel[i];
-				  		 (*force)(12+i) +=2.0*zeta/(3.0)*vel[12+i];
-				  		 (*force)(6+i) +=zeta/(6.0)*vel[6+i];
-			  		 }
-			
-			  		 //calc ext brownian forces
- 			  		 for (int i=0; i<3; i++)
-			  		 {
-		 		  		 (*force)(i) -=floc_[0](i,0);		 		  		 
-		 		  		 (*force)(12+i) -=floc_[1](i,0);
-		 		  		 (*force)(6+i) -=floc_[2](i,0);
-		 		  		 
-			  		 }
-			  	 }
- 		  	}
- 		  	break;
- 		  	case INPAR::STATMECH::frictionmodel_isotropicconsistent:
- 		   {   		  	 
- 		     //calc brownian damp matrix 
- 		  	 if (stiffmatrix != NULL) // necessary to run stiffmatrix control routine
- 		  	 {
- 		  		 for (int i=0; i<3; i++)
- 		  		 {
-	 		  		 (*stiffmatrix)(i,i) += 2.0*zeta/(15.0*dt);
-	 		  		 (*stiffmatrix)(12+i,12+i) += 8.0*zeta/(15.0*dt);
-	 		  		 (*stiffmatrix)(6+i,6+i) += 2.0*zeta/(15.0*dt);
-
-	 		  		 (*stiffmatrix)(i,12+i) += zeta/(15.0*dt);
-	 		  		 (*stiffmatrix)(12+i,i) += zeta/(15.0*dt);
-	 		  		 (*stiffmatrix)(12+i,6+i) += zeta/(15.0*dt);
-	 		  		 (*stiffmatrix)(6+i,12+i) += zeta/(15.0*dt);
-	 		  		
-	 		  		 (*stiffmatrix)(i,6+i) -= zeta/(30.0*dt);
-	 		  		 (*stiffmatrix)(6+i,i) -= zeta/(30.0*dt);
- 		  		 }
- 		  	 } 
- 		     		 	 
- 		  	 //calc int brownian forces
- 		  	 if (force !=  NULL)
- 		  	 {
- 		  		 for (int i=0; i<3; i++)
- 		  		 {
-	 		  		 (*force)(i) +=2.0*zeta/(15.0)*vel[i]+zeta/(15.0)*vel[12+i]-zeta/30.0*vel[6+i];
-	 		  		 (*force)(12+i) +=zeta/(15.0)*vel[i]+8.0*zeta/(15.0)*vel[12+i]+zeta/15.0*vel[6+i];
-	 		  		 (*force)(6+i) +=2.0*zeta/(15.0)*vel[6+i]+zeta/(15.0)*vel[12+i]-zeta/30.0*vel[i];
- 		  		 }
- 		
- 		  		 //calc ext brownian forces
- 		  		 for (int i=0; i<3; i++)
-		  		 {
-	 		  		 (*force)(i) -=floc_[0](i,0);
-	 		  		 (*force)(12+i) -=floc_[1](i,0);
-	 		  		 (*force)(6+i) -=floc_[2](i,0);
-	 		  		 
-		  		 }
- 		  	 }		     
- 		   }//end case 0
- 		  	break;
- 		  	case INPAR::STATMECH::frictionmodel_anisotropicconsistent:
- 		  	{
- 		  		dserror("high order not with stochorder 1");
- 		  	}
- 		  	break;
-        default:
-          dserror("\nno action for this friction model specified\n");
- 		  }//end switch stochorder
- 		}//end nnode=3
- 		break;
- 		case 4:
- 		{
- 			switch(frictionmodel)
- 		  {
- 		  	case INPAR::STATMECH::frictionmodel_isotropiclumped: 
- 		  	{
- 		  		if (stiffmatrix != NULL) // necessary to run stiffmatrix control routine
-			  	 {
- 		  			 for (int i=0; i<3; i++)
- 		  			 {
-				  		 (*stiffmatrix)(i,i) += zeta/(8.0*dt);
-				  		 (*stiffmatrix)(12+i,12+i) += 3.0*zeta/(8.0*dt);
-				  		 (*stiffmatrix)(18+i,18+i) += 3.0*zeta/(8.0*dt);
-				  		 (*stiffmatrix)(6+i,6+i) += zeta/(8.0*dt);
- 		  			 }
-			  	 } 
-			     		 	 
-			  	 //calc int brownian forces
-			  	 if (force !=  NULL)
-			  	 {
-			  		 for (int i=0; i<3; i++)
-			  		 {
-				  		 (*force)(i) +=zeta/(8.0)*vel[i];
-				  		 (*force)(12+i) +=3.0*zeta/(8.0)*vel[12+i];
-				  		 (*force)(18+i) +=3.0*zeta/(8.0)*vel[18+i];
-				  		 (*force)(6+i) +=zeta/(8.0)*vel[6+i];
-			  		 }
-			
-			  		 //calc ext brownian forces
- 			  		 for (int i=0; i<3; i++)
-			  		 {
-		 		  		 (*force)(i) -=floc_[0](i,0);
-		 		  		 (*force)(12+i) -=floc_[1](i,0);
-		 		  		 (*force)(18+i) -=floc_[2](i,0);
-		 		  		 (*force)(6+i) -=floc_[3](i,0);
-			  		 }
-			  	 }
- 		  	}
- 		  	break;
- 		  	case INPAR::STATMECH::frictionmodel_isotropicconsistent:
- 		   {   		  	 
- 		     //calc brownian damp matrix 
- 		  	 if (stiffmatrix != NULL) // necessary to run stiffmatrix control routine
- 		  	 {
- 		  		 for (int i=0; i<3; i++)
- 		  		 {
-	 		  		 (*stiffmatrix)(i,i) += 8.0*zeta/(105.0*dt);
-	 		  		 (*stiffmatrix)(12+i,12+i) += 27.0*zeta/(70.0*dt);
-	 		  		 (*stiffmatrix)(18+i,18+i) += 27.0*zeta/(70.0*dt);
-	 		  		 (*stiffmatrix)(6+i,6+i) += 8.0*zeta/(105.0*dt);
-	 		  		 
-	 		  		 (*stiffmatrix)(i,12+i) += 33.0*zeta/(560.0*dt);
-	 		  		 (*stiffmatrix)(12+i,i) += 33.0*zeta/(560.0*dt);
-	 		  		 (*stiffmatrix)(18+i,6+i) += 33.0*zeta/(560.0*dt);
-	 		  		 (*stiffmatrix)(6+i,18+i) += 33.0*zeta/(560.0*dt);
-
-	 		  		 (*stiffmatrix)(i,18+i) -= 3.0*zeta/(140.0*dt);
-	 		  		 (*stiffmatrix)(18+i,i) -= 3.0*zeta/(140.0*dt);
-	 		  		 (*stiffmatrix)(12+i,6+i) -= 3.0*zeta/(140.0*dt);
-	 		  		 (*stiffmatrix)(6+i,12+i) -= 3.0*zeta/(140.0*dt);
-
-	 		  		 (*stiffmatrix)(i,6+i) += 19.0*zeta/(1680.0*dt);
-	 		  		 (*stiffmatrix)(6+i,i) += 19.0*zeta/(1680.0*dt);
-
-	 		  		 (*stiffmatrix)(12+i,18+i) -= 27.0*zeta/(560.0*dt);
-	 		  		 (*stiffmatrix)(18+i,12+i) -= 27.0*zeta/(560.0*dt);
- 		  		 }
- 		  	 } 
- 		     		 	 
- 		  	 //calc int brownian forces
- 		  	 if (force !=  NULL)
- 		  	 {
- 		  		 for (int i=0; i<3; i++)
- 		  		 {
-	 		  		 (*force)(i) +=8.0*zeta/(105.0)*vel[i]+33.0*zeta/(560.0)*vel[12+i]-3.0*zeta/140.0*vel[18+i]+19.0*zeta/(1680.0)*vel[6+i];
-	 		  		 (*force)(12+i) +=33.0*zeta/(560.0)*vel[i]+27.0*zeta/(70.0)*vel[12+i]-27.0*zeta/560.0*vel[18+i]-3.0*zeta/(140.0)*vel[6+i];
-	 		  		 (*force)(18+i) +=33.0*zeta/(560.0)*vel[6+i]+27.0*zeta/(70.0)*vel[18+i]-27.0*zeta/560.0*vel[12+i]-3.0*zeta/(140.0)*vel[i];
-	 		  		 (*force)(6+i) +=8.0*zeta/(105.0)*vel[6+i]+33.0*zeta/(560.0)*vel[18+i]-3.0*zeta/140.0*vel[12+i]+19.0*zeta/(1680.0)*vel[i];
- 		  		 }
- 		  		 //calc ext brownian forces
- 		  		 for (int i=0; i<3; i++)
-		  		 {
-	 		  		 (*force)(i) -=floc_[0](i,0);
-	 		  		 (*force)(12+i) -=floc_[1](i,0);
-	 		  		 (*force)(18+i) -=floc_[2](i,0);
-	 		  		 (*force)(6+i) -=floc_[3](i,0);
-		  		 }
- 		  	 }		     
- 		   }//end case 0
- 		  	break;
- 		  	case INPAR::STATMECH::frictionmodel_anisotropicconsistent:
- 		  	{
- 		  		dserror("high order not with stochorder 1");
- 		  	}
- 		  	break;
-        default:
-          dserror("\nno action for this friction model specified\n");
- 		  }//end switch stochorder
- 		}//end case 4  		
- 		break;
- 		case 5:
- 		{
- 			switch(frictionmodel)
- 		  {
- 		  	case INPAR::STATMECH::frictionmodel_isotropiclumped: 
- 		  	{
- 		  		if (stiffmatrix != NULL) // necessary to run stiffmatrix control routine
-			  	 {
- 		  			 for (int i=0; i<3; i++)
- 		  			 {
-				  		 (*stiffmatrix)(i,i) += 7.0*zeta/(90.0*dt);
-				  		 (*stiffmatrix)(12+i,12+i) += 32.0*zeta/(90.0*dt);
-				  		 (*stiffmatrix)(18+i,18+i) += 4.0*zeta/(30.0*dt);
-				  		 (*stiffmatrix)(24+i,24+i) += 32.0*zeta/(90.0*dt);
-				  		 (*stiffmatrix)(6+i,6+i) += 7.0*zeta/(90.0*dt);
- 		  			 }
-			  	 } 
-			     		 	 
-			  	 //calc int brownian forces
-			  	 if (force !=  NULL)
-			  	 {
-			  		 for (int i=0; i<3; i++)
-			  		 {
-				  		 (*force)(i) +=7.0*zeta/(90.0)*vel[i];
-				  		 (*force)(12+i) +=32.0*zeta/(90.0)*vel[12+i];
-				  		 (*force)(18+i) +=4.0*zeta/(30.0)*vel[18+i];
-				  		 (*force)(24+i) +=32.0*zeta/(90.0)*vel[24+i];
-	 			  		 (*force)(6+i) +=7.0*zeta/(90.0)*vel[6+i];
-			  		 }
-			
-			  		 //calc ext brownian forces
-			  		 for (int i=0; i<3; i++)
-  		  		 {
-	 	 		  		 (*force)(i) -=floc_[0](i,0);
-	 	 		  		 (*force)(12+i) -=floc_[1](i,0);
-	 	 		  		 (*force)(18+i) -=floc_[2](i,0);
-	 	 		  		 (*force)(24+i) -=floc_[3](i,0);
-	 	 		  		 (*force)(6+i) -=floc_[4](i,0);
-  		  		 }
-			  	 }
- 		  	}
- 		  	break;
- 		  	case INPAR::STATMECH::frictionmodel_isotropicconsistent:
- 		   {   		  	 
- 		     //calc brownian damp matrix 
- 		  	 if (stiffmatrix != NULL) // necessary to run stiffmatrix control routine
- 		  	 {
- 		  		 for (int i=0; i<3; i++)
- 		  		 {
-	 		  		 (*stiffmatrix)(i,i) += 146.0*zeta/(2835.0*dt);
-	 		  		 (*stiffmatrix)(6+i,6+i) += 146.0*zeta/(2835.0*dt);	 		  		 
-	 		  		 (*stiffmatrix)(12+i,12+i) += 128.0*zeta/(405.0*dt);
-	 		  		 (*stiffmatrix)(24+i,24+i) += 128.0*zeta/(405.0*dt); 		  		 
-	 		  		 (*stiffmatrix)(18+i,18+i) += 104.0*zeta/(315.0*dt);
-
-	 		  		 (*stiffmatrix)(i,12+i) += 148.0*zeta/(2835.0*dt);
-	 		  		 (*stiffmatrix)(12+i,i) += 148.0*zeta/(2835.0*dt);
-	 		  		 (*stiffmatrix)(24+i,6+i) += 148.0*zeta/(2835.0*dt);
-	 		  		 (*stiffmatrix)(6+i,24+i) += 148.0*zeta/(2835.0*dt);
-	 		  		 		  		 
-	 		  		 (*stiffmatrix)(i,18+i) -= 29.0*zeta/(945.0*dt);
-	 		  	 	 (*stiffmatrix)(18+i,i) -= 29.0*zeta/(945.0*dt);
-	 		  		 (*stiffmatrix)(18+i,6+i) -= 29.0*zeta/(945.0*dt);
-	 		  		 (*stiffmatrix)(6+i,18+i) -= 29.0*zeta/(945.0*dt);
-	 		  		 		  		
-	 		  		 (*stiffmatrix)(12+i,18+i) -= 64.0*zeta/(945.0*dt);
-	 		  		 (*stiffmatrix)(18+i,12+i) -= 64.0*zeta/(945.0*dt);
-	 		  		 (*stiffmatrix)(18+i,24+i) -= 64.0*zeta/(945.0*dt);
-	 		  		 (*stiffmatrix)(24+i,18+i) -= 64.0*zeta/(945.0*dt);
-	 		  		
-	 		  		 (*stiffmatrix)(i,24+i) += 4.0*zeta/(405.0*dt);
-	 		  		 (*stiffmatrix)(24+i,i) += 4.0*zeta/(405.0*dt);
-	 		  		 (*stiffmatrix)(12+i,6+i) += 4.0*zeta/(405.0*dt);
-	 		  		 (*stiffmatrix)(6+i,12+i) += 4.0*zeta/(405.0*dt);
-	 		  				  			 		  		
-	 		  		 (*stiffmatrix)(12+i,24+i) += 128.0*zeta/(2835.0*dt);
-	 		  		 (*stiffmatrix)(24+i,12+i) += 128.0*zeta/(2835.0*dt);
-	 		  		
-	 		  		 (*stiffmatrix)(i,6+i) -= 29.0*zeta/(5670.0*dt);
-	 		  		 (*stiffmatrix)(6+i,i) -= 29.0*zeta/(5670.0*dt);
- 		  		 }
-	
- 		  	 } 
- 		     		 	 
- 		  	 //calc int brownian forces
- 		  	 if (force !=  NULL)
- 		  	 {
- 		  		 for (int i=0; i<3; i++)
- 		  		 {
-	 		  		 (*force)(i) +=146.0*zeta/(2835.0)*vel[i]+148.0*zeta/(2835.0)*vel[12+i]-29.0*zeta/945.0*vel[18+i]+4.0*zeta/(405.0)*vel[24+i]-29.0*zeta/(5670.0)*vel[6+i];
-	 		  		 (*force)(12+i) +=148.0*zeta/(2835.0)*vel[i]+128.0*zeta/(405.0)*vel[12+i]-64.0*zeta/945.0*vel[18+i]+128.0*zeta/(2835.0)*vel[24+i]+4.0*zeta/(405.0)*vel[6+i];
-	 		  		 (*force)(18+i) +=-29.0*zeta/(945.0)*vel[i]-64.0*zeta/(945.0)*vel[12+i]+104.0*zeta/315.0*vel[18+i]-64.0*zeta/(945.0)*vel[24+i]-29.0*zeta/(945.0)*vel[6+i];
-	 		  		 (*force)(24+i) +=148.0*zeta/(2835.0)*vel[6+i]+128.0*zeta/(405.0)*vel[24+i]-64.0*zeta/945.0*vel[18+i]+128.0*zeta/(2835.0)*vel[12+i]+4.0*zeta/(405.0)*vel[i];
-	 		  		 (*force)(6+i) +=146.0*zeta/(2835.0)*vel[6+i]+148.0*zeta/(2835.0)*vel[24+i]-29.0*zeta/945.0*vel[18+i]+4.0*zeta/(405.0)*vel[12+i]-29.0*zeta/(5670.0)*vel[i];
- 		  		 }
- 		  		 
- 		  		 //calc ext brownian forces
- 		  		 for (int i=0; i<3; i++)
- 		  		 {
-	 		  		 (*force)(i) -=floc_[0](i,0);
-	 		  		 (*force)(12+i) -=floc_[1](i,0);
-	 		  		 (*force)(18+i) -=floc_[2](i,0);
-	 		  		 (*force)(24+i) -=floc_[3](i,0);
-	 		  		 (*force)(6+i) -=floc_[4](i,0);
- 		  		 }
- 		  	 }		     
- 		   }//end case 0
-        break;
-        case INPAR::STATMECH::frictionmodel_anisotropicconsistent:
-        {
-        	dserror("high order not with stochorder 1");
-        }
-        break;
-        default:
-          dserror("\nno action for this friction model specified\n");
- 		  }//end switch stochorder
- 		}  
- 		break;
-		default:
-			dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
- 	}//end switch nnode
-  
-
-return;
-
-}//DRT::ELEMENTS::Beam2::CalcBrownian
-
-/*-----------------------------------------------------------------------------------------------------------*
- | Evaluate PTC damping (public)                                                                  cyron 10/08|
- *----------------------------------------------------------------------------------------------------------*/
-template<int nnode>
-void DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
-                                      Epetra_SerialDenseMatrix& elemat1)
-{
-  /*comment on the calculation of a proper PTC parameter: it is not a priori clear which phyiscal parameters
-   * should be incalculated when computing a proper PTC parameter; the reason for instability without PTC is
-   * seemingly the vast difference in stiffness of different eigenmodes (namely those related to bending and
-   * stretching, respectively). To understand the influence of different parameters to the numerical stability
-   * we study a simple model problem: we consider a clamped beam of length L with horizontal and vertical tip
-   * loads F_h and F_v, respectively. These tip loads go along horizontal and vertical displacements u and w of
-   * the tip point, respectively. Let the beam be undeformed at the beginning of a time step and let the
-   * displacements u and w arise at the end of a time step of lenght dt. Then simple calculus shows that with a
-   * damping constat gamma ~ eta*L there holds true F_h = EIw/L^3 + gamma*w/dt and F_v = EAu/L + gamma*u/dt.
-   * Stability is assumed to be preserved if the ratio between beding u and w is close to one for F_h = F_v.
-   * Thus we expect stability if either EI/L^3 ~ EA/L or EI/L^3, EA/L << gamma/dt. In the first case the
-   * elastic resistence against bending and streching is comparable, in the second case the problem is dominated
-   * by viscous instead of elastic forces. In practice time step size is oriented to either to the bending or
-   * stretching time constants tau of the system with dt ~ const1*tau and typically const1 ~ 1e-3. The bending time
-   * constants are given by tau_EI = const2*eta*L^4 / EI and the stretching time constants by tau_EA = const3*eta*L^4 / EA,
-   * with constant expressions const2, const3 < 1. If dt is chosen according to tau_EI we get gamma /dt ~ const1*const2*EI / L^3,
-   * which is always much smaller than the stiffness expression EI/L^3 related to bending and if dt is chosen
-   * according to tau_EA the same rationale applies. Therefore EI/L^3, EA/L << gamma/dt never arises in practice
-   * and stability depends on the requirement EI/L^3 ~ EA/L. If this requirement is naturally violated an
-   * artificial PTC damping has to be employed, which increases the damping stiffness that far that the ratio
-   * EI/L^3 ~ EA/L can no longer destabilize the system.
-   *
-   * The crucial question is obviously how the PTC damping parameter scales with different simulation parameters.
-   * In the following we discuss the effect of variations of different parameters:
-   *
-   * Young's modulus E: As both bending and axial stiffness scale linearly with the Young's modulus E  one may assume
-   * that the PTC parameter may be calculated independently on this parameter; this was indeed found in practice:
-   * varying E over 3 orders of magnitude upwards and downwards (and scaling time step size by the same factor
-   * as all eigenfrequencies depend linearly on Young's modulus) did not affect the PTC parameter required for
-   * stabilization.For too small values of E instability was found due to too large curvature in the beam elements,
-   * however, this is expected as the beam formulation is valid for moderate curvature only and small values
-   * of E naturally admit increasing curvature.
-   *
-   * Viscosity eta: a similar rationale as for Young's modulus E applies. All the system time constants depend
-   * linearly on eta. On the other hand the critical ratio between bending and axial stiffness does not depend
-   * on eta. Thus scaling eta and time step size dt by the same factor does not change the PTC factor required
-   * for stabilization.
-   *
-   * Numerical tests revealed that refining the discretization by factor const and at the same time the time
-   * step size by a factor const^2 (because the critical axial eigenfrequencies scale with L^2 for element
-   * length L) did not change the required PTC parameter. One and the same parameter could be used for a wide
-   * range of element lengths up to a scale where the element length became comparable with the persistnece
-   * length l_p. For L >= l_p / 2 the simulation became unstable, however, this is supposed to happen not due
-   * to an improper PTC parameter, but rather due to the large deformations arsing then, which violated the
-   * small strain assumption of this Reissner element. Thus the PTC parameter depends rather on physical parameters
-   * than on the choice of the discretization.
-   *
-   * The above parameter discussion reveals how to adapt the PTC factor in case of changes of the environment of
-   * a structure with fixed cross section A, moment of inertia I and length L. However, how to choose the PTC
-   * factor and time step size dt for a first discretization and parameter set up has not been discussed so far.
-   * Indeed the latter step can be done heuristically once for
-   *
-   * Cross section A, moment of inertia I: from the above discussed physics one might assume a dependence of the
-   * PTC parameter on the ratio of bending and strechting stiffness, i.e. on EI / EA. Such a dependence might
-   * considerably exacerbate the application of the PTC algorithm. However, by means of numerical experiments a
-   * different rule to deterime the PTC parameter was found: Beyond some ratio EI / EA simulations were found to
-   * be unstable without PTC damping. However, a constant PTC damping factor was capable of stabilizing the system
-   * over a large range of ratios EI / EA, if the time step size was adopted accordingly. The time step size
-   * has to be determined both with respect to bending and stretching time constants. When scaling I by a factor
-   * const_I and A by a factor const_A, one first has to decide which of both types of time constants may become
-   * critical by the parameter change. Subsequently one has to scale the time step size either by 1/const_A if
-   * the stretching time constants are the critical ones or by 1/const_I otherwise.
-   *
-   *
-   * Length L: reduing
-   */
-
-
-
-  double basisdamp   = (20e-2)*PI*40; //(20e-2)*PI for A = 1.9e-8, (20e-2)*PI*3 for A = 1.9e-6
-  double anisofactor = 10*5;
-
-  
-  //aux variables
-  vector<LINALG::Matrix<4,1> > deltaQ;
-  deltaQ.resize(nnode-1);
-  vector<LINALG::Matrix<3,1> > deltatheta;
-  deltatheta.resize(nnode-1);  
-  vector<LINALG::Matrix<3,3> > Tconv;
-  Tconv.resize(nnode-1);
-  vector<LINALG::Matrix<3,3> >Theta;
-	Theta.resize(nnode-1);
-  vector<LINALG::Matrix<3,3> > Hinverse;
-  Hinverse.resize(nnode-1);
-  vector<LINALG::Matrix<3,3> > artstiff;
-  artstiff.resize(nnode-1);
-  vector<LINALG::Matrix<3,3> > auxstiff;
-  auxstiff.resize(nnode-1);
-  
-   
-  
-  //Get the applied integrationpoints for underintegration
-  DRT::UTILS::IntegrationPoints1D gausspointsptc(MyGaussRule(nnode,gaussunderintegration));
-  //Get discretization typ
-  const DRT::Element::DiscretizationType distype = Shape();  
-  //matrix to store Ansatzfunktionen
-  LINALG::Matrix<1,nnode> funct;
-  
-  for (int gp=0; gp<nnode-1; gp++)
-  {
-		
-		//Get location and weight of GP in parameter space	
-	  const double xi = gausspointsptc.qxg[gp][0];
-	  const double wgt = gausspointsptc.qwgt[gp];
-		
-	  DRT::UTILS::shape_function_1D(funct,xi,distype);
-		
-		//computing angle increment from current position in comparison with last converged position for damping
-  	quaternionproduct(inversequaternion(Qconv_[gp]),Qnew_[gp],deltaQ[gp]);
-  	quaterniontoangle(deltaQ[gp],deltatheta[gp]);
-  
-  	//computing special matrix for anisotropic damping
-		quaterniontotriad(Qconv_[gp],Tconv[gp]);		
-		for(int k=0; k<3; k++)
-		  for(int j = 0; j<3; j++)
-		    Theta[gp](k,j) = Tconv[gp](k,0)*Tconv[gp](j,0);
-
-		//inverse exponential map
-		Hinverse[gp]=Hinv(deltatheta[gp]);
-
-		//isotropic artificial stiffness
-		artstiff[gp] = Hinverse[gp];
-		artstiff[gp].Scale(basisdamp);
-
-		//anisotropic artificial stiffness
-		auxstiff[gp].Multiply(Theta[gp],Hinverse[gp]);
-		auxstiff[gp].Scale(anisofactor*basisdamp);
-		artstiff[gp] += auxstiff[gp];
-
-		//scale artificial damping with dti parameter for PTC method
-		artstiff[gp].Scale( params.get<double>("dti",0.0) );
-
-		for(int i=0; i<nnode; i++)
-			for (int j=0; j<nnode; j++)
-				for(int k=0; k<3; k++)
-					for (int l=0; l<3; l++)
-						elemat1(i*6+3+k,j*6+3+l) += artstiff[gp](k,l)*funct(i)*funct(j)*wgt*alpha_[gp]*1.0;//scale 4.0 to get same result as in previous implementation, also for higher order this value gives better convergence
-  }
-  
-  /*
-  //the following part in the code is related to the trial of a proper merely translational PTC damping
-  double ptctrans = params.get<double>("dti",0.0) * 2;
-  for (int gp=0; gp<nnode-1; gp++)
-  {
-    const double wgt = gausspointsptc.qwgt[gp];
-    LINALG::Matrix<3,3> dampbasis(true);
-    
-    dampbasis(0,0) = 0.0;
-    dampbasis(1,1) = ptctrans;
-    dampbasis(2,2) = ptctrans;
-    //rotate C to global
-    LINALG::Matrix<3,3> aux1(true);
-    aux1.Multiply(Tconv[gp],dampbasis);
-    dampbasis.MultiplyNT(aux1,Tconv[gp]);
-    
-    //add stiffness due to variation of transl dofs to stiffmatrix
-    for(int i=0; i<3; i++)
-    {
-      for (int j=0; j<3; j++)
-      {
-        elemat1(i,j) += dampbasis(i,j)*wgt;
-        elemat1(i,j+6) += dampbasis(i,j)*wgt;
-        elemat1(i+6,j) += dampbasis(i,j)*wgt;
-        elemat1(i+6,j+6) += dampbasis(i,j)*wgt;
-      }
-    }
-  
-  }
-  */
-  
-
-   
-  return;
-} //DRT::ELEMENTS::Beam3::EvaluatePTC
-
 
 /*-----------------------------------------------------------------------------------------------------------*
  | auxiliary functions for dealing with large rotations and nonlinear stiffness                    cyron 04/08|
@@ -2118,9 +818,6 @@ inline void DRT::ELEMENTS::Beam3::updatetriad(const LINALG::Matrix<3,1>& deltath
   return;
 } //DRT::ELEMENTS::Beam3::updatetriad
 
-
-
-
 /*-----------------------------------------------------------------------------------*
  |computes inverse quaternion q^{-1} for input quaternion q 	   (public)cyron02/09|
  *-----------------------------------------------------------------------------------*/
@@ -2140,12 +837,7 @@ inline LINALG::Matrix<4,1> DRT::ELEMENTS::Beam3::inversequaternion(const LINALG:
 
   return qinv;
 
-
 } //DRT::ELEMENTS::Beam3::inversequaternion
-
-
-
-
 
 /*---------------------------------------------------------------------------------------------------*
  |quaternion product q12 = q2*q1, Crisfield, Vol. 2, equation (16.71)		  	   (public)cyron02/09|
@@ -2627,13 +1319,14 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
 	  }//for(int numgp=0; numgp < gausspointsmass.nquad; numgp++)
 
   }//if (massmatrix != NULL)
+  
 
   /*the following function call applied statistical forces and damping matrix according to the fluctuation dissipation theorem;
    * it is dedicated to the application of beam2 elements in the frame of statistical mechanics problems; for these problems a
    * special vector has to be passed to the element packed in the params parameter list; in case that the control routine calling
    * the element does not attach this special vector to params the following method is just doing nothing, which means that for
    * any ordinary problem of structural mechanics it may be ignored*/
-   CalcBrownian<nnode>(params,vel,disp,stiffmatrix,force);
+   CalcBrownian<nnode,3,6,4>(params,vel,disp,stiffmatrix,force);
 
 
   return;
@@ -2663,6 +1356,646 @@ void DRT::ELEMENTS::Beam3::lumpmass(Epetra_SerialDenseMatrix* emass)
 	  }
   }
 }
+
+/*-----------------------------------------------------------------------------------------------------------*
+ | Evaluate PTC damping (public)                                                                  cyron 10/08|
+ *----------------------------------------------------------------------------------------------------------*/
+template<int nnode>
+void DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
+                                      Epetra_SerialDenseMatrix& elemat1)
+{
+  /*comment on the calculation of a proper PTC parameter: it is not a priori clear which phyiscal parameters
+   * should be incalculated when computing a proper PTC parameter; the reason for instability without PTC is
+   * seemingly the vast difference in stiffness of different eigenmodes (namely those related to bending and
+   * stretching, respectively). To understand the influence of different parameters to the numerical stability
+   * we study a simple model problem: we consider a clamped beam of length L with horizontal and vertical tip
+   * loads F_h and F_v, respectively. These tip loads go along horizontal and vertical displacements u and w of
+   * the tip point, respectively. Let the beam be undeformed at the beginning of a time step and let the
+   * displacements u and w arise at the end of a time step of lenght dt. Then simple calculus shows that with a
+   * damping constat gamma ~ eta*L there holds true F_h = EIw/L^3 + gamma*w/dt and F_v = EAu/L + gamma*u/dt.
+   * Stability is assumed to be preserved if the ratio between beding u and w is close to one for F_h = F_v.
+   * Thus we expect stability if either EI/L^3 ~ EA/L or EI/L^3, EA/L << gamma/dt. In the first case the
+   * elastic resistence against bending and streching is comparable, in the second case the problem is dominated
+   * by viscous instead of elastic forces. In practice time step size is oriented to either to the bending or
+   * stretching time constants tau of the system with dt ~ const1*tau and typically const1 ~ 1e-3. The bending time
+   * constants are given by tau_EI = const2*eta*L^4 / EI and the stretching time constants by tau_EA = const3*eta*L^4 / EA,
+   * with constant expressions const2, const3 < 1. If dt is chosen according to tau_EI we get gamma /dt ~ const1*const2*EI / L^3,
+   * which is always much smaller than the stiffness expression EI/L^3 related to bending and if dt is chosen
+   * according to tau_EA the same rationale applies. Therefore EI/L^3, EA/L << gamma/dt never arises in practice
+   * and stability depends on the requirement EI/L^3 ~ EA/L. If this requirement is naturally violated an
+   * artificial PTC damping has to be employed, which increases the damping stiffness that far that the ratio
+   * EI/L^3 ~ EA/L can no longer destabilize the system.
+   *
+   * The crucial question is obviously how the PTC damping parameter scales with different simulation parameters.
+   * In the following we discuss the effect of variations of different parameters:
+   *
+   * Young's modulus E: As both bending and axial stiffness scale linearly with the Young's modulus E  one may assume
+   * that the PTC parameter may be calculated independently on this parameter; this was indeed found in practice:
+   * varying E over 3 orders of magnitude upwards and downwards (and scaling time step size by the same factor
+   * as all eigenfrequencies depend linearly on Young's modulus) did not affect the PTC parameter required for
+   * stabilization.For too small values of E instability was found due to too large curvature in the beam elements,
+   * however, this is expected as the beam formulation is valid for moderate curvature only and small values
+   * of E naturally admit increasing curvature.
+   *
+   * Viscosity eta: a similar rationale as for Young's modulus E applies. All the system time constants depend
+   * linearly on eta. On the other hand the critical ratio between bending and axial stiffness does not depend
+   * on eta. Thus scaling eta and time step size dt by the same factor does not change the PTC factor required
+   * for stabilization.
+   *
+   * Numerical tests revealed that refining the discretization by factor const and at the same time the time
+   * step size by a factor const^2 (because the critical axial eigenfrequencies scale with L^2 for element
+   * length L) did not change the required PTC parameter. One and the same parameter could be used for a wide
+   * range of element lengths up to a scale where the element length became comparable with the persistnece
+   * length l_p. For L >= l_p / 2 the simulation became unstable, however, this is supposed to happen not due
+   * to an improper PTC parameter, but rather due to the large deformations arsing then, which violated the
+   * small strain assumption of this Reissner element. Thus the PTC parameter depends rather on physical parameters
+   * than on the choice of the discretization.
+   *
+   * The above parameter discussion reveals how to adapt the PTC factor in case of changes of the environment of
+   * a structure with fixed cross section A, moment of inertia I and length L. However, how to choose the PTC
+   * factor and time step size dt for a first discretization and parameter set up has not been discussed so far.
+   * Indeed the latter step can be done heuristically once for
+   *
+   * Cross section A, moment of inertia I: from the above discussed physics one might assume a dependence of the
+   * PTC parameter on the ratio of bending and strechting stiffness, i.e. on EI / EA. Such a dependence might
+   * considerably exacerbate the application of the PTC algorithm. However, by means of numerical experiments a
+   * different rule to deterime the PTC parameter was found: Beyond some ratio EI / EA simulations were found to
+   * be unstable without PTC damping. However, a constant PTC damping factor was capable of stabilizing the system
+   * over a large range of ratios EI / EA, if the time step size was adopted accordingly. The time step size
+   * has to be determined both with respect to bending and stretching time constants. When scaling I by a factor
+   * const_I and A by a factor const_A, one first has to decide which of both types of time constants may become
+   * critical by the parameter change. Subsequently one has to scale the time step size either by 1/const_A if
+   * the stretching time constants are the critical ones or by 1/const_I otherwise.
+   *
+   *
+   * Length L: reduing
+   */
+
+
+
+  double basisdamp   = (20e-2)*PI*3; //(20e-2)*PI for A = 1.9e-8, (20e-2)*PI*3 for A = 1.9e-6
+  double anisofactor = 10;
+
+
+  
+   
+  
+  //Get the applied integrationpoints for underintegration
+  DRT::UTILS::IntegrationPoints1D gausspointsptc(MyGaussRule(nnode,gaussunderintegration));
+  //Get discretization typ
+  const DRT::Element::DiscretizationType distype = Shape();  
+  //matrix to store Ansatzfunktionen
+  LINALG::Matrix<1,nnode> funct;
+  
+  for (int gp=0; gp<gausspointsptc.nquad; gp++)
+  {
+    
+    //Get location and weight of GP in parameter space  
+    const double xi = gausspointsptc.qxg[gp][0];
+    const double wgt = gausspointsptc.qwgt[gp];
+    
+    DRT::UTILS::shape_function_1D(funct,xi,distype);
+    
+    //computing angle increment from current position in comparison with last converged position for damping
+    LINALG::Matrix<4,1> deltaQ;
+    LINALG::Matrix<3,1> deltatheta;
+    quaternionproduct(inversequaternion(Qconv_[gp]),Qnew_[gp],deltaQ);
+    quaterniontoangle(deltaQ,deltatheta);
+  
+    //computing special matrix for anisotropic damping
+    LINALG::Matrix<3,3> Tconv;
+    LINALG::Matrix<3,3> Theta;
+    quaterniontotriad(Qconv_[gp],Tconv);    
+    for(int k=0; k<3; k++)
+      for(int j = 0; j<3; j++)
+        Theta(k,j) = Tconv(k,0)*Tconv(j,0);
+
+    //inverse exponential map
+    LINALG::Matrix<3,3> Hinverse;
+    Hinverse = Hinv(deltatheta);
+
+    //isotropic artificial stiffness
+    LINALG::Matrix<3,3> artstiff;
+    artstiff = Hinverse;
+    artstiff.Scale(basisdamp);
+
+    //anisotropic artificial stiffness
+    LINALG::Matrix<3,3> auxstiff;
+    auxstiff.Multiply(Theta,Hinverse);
+    auxstiff.Scale(anisofactor*basisdamp);
+    artstiff += auxstiff;
+
+    //scale artificial damping with dti parameter for PTC method
+    artstiff.Scale( params.get<double>("dti",0.0) );
+
+    for(int i=0; i<nnode; i++)
+      for (int j=0; j<nnode; j++)
+        for(int k=0; k<3; k++)
+          for (int l=0; l<3; l++)
+            elemat1(i*6+3+k,j*6+3+l) += artstiff(k,l)*funct(i)*funct(j)*wgt*alpha_[gp];
+  }
+  
+    
+  return;
+} //DRT::ELEMENTS::Beam3::EvaluatePTC
+
+/*-----------------------------------------------------------------------------------------------------------*
+ | computes damping coefficients per lengthand stores them in a matrix in the following order: damping of    |
+ | translation parallel to filament axis, damping of translation orthogonal to filament axis, damping of     |
+ | rotation around filament axis                                             (public)           cyron   10/09|
+ *----------------------------------------------------------------------------------------------------------*/
+inline void DRT::ELEMENTS::Beam3::MyDampingConstants(ParameterList& params,LINALG::Matrix<3,1>& gamma, const INPAR::STATMECH::FrictionModel& frictionmodel)
+{  
+  //translational damping coefficients according to Howard, p. 107, table 6.2;
+  gamma(0) = 2*PI*params.get<double>("ETA",0.0);
+  gamma(1) = 4*PI*params.get<double>("ETA",0.0);
+  
+  /*damping coefficient of rigid straight rod spinning around its own axis according to Howard, p. 107, table 6.2;
+   *as this coefficient is very small for thin rods it is increased artificially by a factor for numerical convencience*/
+  double rsquare = pow((4*Iyy_/PI),0.5);
+  double artificial = 60*16*2; 
+  gamma(2) = 4*PI*params.get<double>("ETA",0.0)*rsquare*artificial;
+  
+  //in case of an isotropic friction model the same damping coefficients are applied parallel to the polymer axis as perpendicular to it
+  if(frictionmodel == INPAR::STATMECH::frictionmodel_isotropicconsistent || frictionmodel == INPAR::STATMECH::frictionmodel_isotropiclumped)
+    gamma(0) = gamma(1);
+
+
+   /* in the following section damping coefficients are replaced by those suggested in Ortega2003, which allows for a 
+    * comparison of the finite element simulation with the results of that article; note that we assume that the element
+    * length is equivalent to the particle length in the following when computing the length to diameter ratio p*/
+   /*
+   double lrefe=0;
+   for (int gp=0; gp<nnode-1; gp++)
+     lrefe += gausspointsdamping.qwgt[gp]*alpha_[gp];
+   
+   double p=lrefe/(pow(crosssec_*4.0/PI,0.5));
+   double Ct=0.312+0.565/p-0.100/pow(p,2.0);
+   double Cr=-0.662+0.917/p-0.05/pow(p,2.0);
+   gamma(0) = 2.0*PI*params.get<double>("ETA",0.0)/(log(p) + 2*Ct - Cr);
+   gamma(1) = 4.0*PI*params.get<double>("ETA",0.0)/(log(p)+Cr);
+   gamma(3) = 4.0*PI*params.get<double>("ETA",0.0)*rsquare*artificial*(0.96 + 0.64992/p - 0.17568/p^2);
+   */    
+}
+
+/*-----------------------------------------------------------------------------------------------------------*
+ |computes the number of different random numbers required in each time step for generation of stochastic    |
+ |forces;                                                                    (public)           cyron   10/09|
+ *----------------------------------------------------------------------------------------------------------*/
+int DRT::ELEMENTS::Beam3::HowManyRandomNumbersINeed()
+{
+  /*at each Gauss point one needs as many random numbers as randomly excited degrees of freedom, i.e. three
+   *random numbers for the translational degrees of freedom and one random number for the rotation around the element axis*/
+  return (4*NumNode());
+
+}
+
+/*-----------------------------------------------------------------------------------------------------------*
+ |computes velocity of background fluid and gradient of that velocity at a certain evaluation point in       |
+ |the physical space                                                         (public)           cyron   10/09|
+ *----------------------------------------------------------------------------------------------------------*/
+template<int ndim> //number of dimensions of embedding space
+void DRT::ELEMENTS::Beam3::MyBackgroundVelocity(ParameterList& params,  //!<parameter list
+                                                const LINALG::Matrix<ndim,1>& evaluationpoint,  //!<point at which background velocity and its gradient has to be computed
+                                                LINALG::Matrix<ndim,1>& velbackground,  //!< velocity of background fluid
+                                                LINALG::Matrix<ndim,ndim>& velbackgroundgrad) //!<gradient of velocity of background fluid
+{
+  
+  /*note: this function is not yet a general one, but always assumes a shear flow, where the velocity of the
+   * background fluid is always directed in x-direction. In 3D the velocity increases linearly in z and equals zero for z = 0.
+   * In 2D the velocity increases linearly in y and equals zero for y = 0. */
+  
+  velbackground.PutScalar(0);
+  velbackground(0) = evaluationpoint(ndim-1) * params.get<double>("CURRENTSHEAR",0.0);
+  
+  velbackgroundgrad.PutScalar(0);
+  velbackgroundgrad(0,ndim-1) = params.get<double>("CURRENTSHEAR",0.0);
+
+}
+/*-----------------------------------------------------------------------------------------------------------*
+ | computes rotational damping forces and stiffness (public)                                    cyron   10/09|
+ *----------------------------------------------------------------------------------------------------------*/
+template<int nnode> //number of nodes
+inline void DRT::ELEMENTS::Beam3::MyRotationalDamping(ParameterList& params,  //!<parameter list
+                                              const vector<double>&     vel,  //!< element velocity vector
+                                              const vector<double>&     disp, //!<element disp vector
+                                              Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+                                              Epetra_SerialDenseVector* force)//!< element internal force vector
+{
+  //get time step size
+  double dt = params.get<double>("delta time",0.0);
+  
+  //integration points for underintegration
+  DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,gaussunderintegration));
+  
+  //get friction model according to which forces and damping are applied
+  INPAR::STATMECH::FrictionModel frictionmodel = Teuchos::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
+
+  //damping coefficients for translational and rotatinal degrees of freedom
+  LINALG::Matrix<3,1> gamma(true);
+  MyDampingConstants(params,gamma,frictionmodel);
+
+  //matrix to store basis functions evaluated at a certain Gauss point
+  LINALG::Matrix<1,nnode> funct;
+/*  
+  for (int gp=0; gp<gausspoints.nquad; gp++)//loop through Gauss points
+  {    
+    //get evaluated basis functions at current Gauss point
+    DRT::UTILS::shape_function_1D(funct,gausspoints.qxg[gp][0],Shape());
+    
+    //rotation between last converged position and current position expressend as a quaternion
+    LINALG::Matrix<4,1>  deltaQ;
+    quaternionproduct(inversequaternion(Qconv_[gp]),Qnew_[gp],deltaQ);
+    
+    //rotation between last converged position and current position expressed as a three element rotation vector
+    LINALG::Matrix<3,1> deltatheta;
+    quaterniontoangle(deltaQ,deltatheta);
+    
+    //angular velocity at this Gauss point
+    LINALG::Matrix<3,1> omega(true);
+    omega += deltatheta;
+    omega.Scale(1/dt);
+    
+    //compute matrix T*W*T^t
+    LINALG::Matrix<3,3> Tnew;
+    LINALG::Matrix<3,3> TWTt;
+    quaterniontotriad(Qnew_[gp],Tnew);    
+    for(int k=0; k<3; k++)
+      for(int j = 0; j<3; j++)
+        TWTt(k,j) = Tnew(k,0)*Tnew(j,0);
+    
+    //compute vector T*W*T^t*\omega 
+    LINALG::Matrix<3,1> TWTtomega;
+    TWTtomega.Multiply(TWTt,omega);
+    
+    //compute matrix T*W*T^t*H^(-1)
+    LINALG::Matrix<3,3> TWTtHinv;
+    TWTtHinv.Multiply(TWTt,Hinv(deltatheta));
+    
+    //compute spin matrix S(\omega)
+    LINALG::Matrix<3,3> Sofomega;
+    computespin(Sofomega,omega,1);
+    
+    //compute matrix T*W*T^t*S(\omega)
+    LINALG::Matrix<3,3> TWTtSofomega;
+    TWTtSofomega.Multiply(TWTt,Sofomega);
+    
+    //compute spin matrix S(T*W*T^t*\omega) 
+    LINALG::Matrix<3,3> SofTWTtomega;
+    computespin(SofTWTtomega,TWTtomega,1);
+         
+    //loop over all line nodes
+    for(int i=0; i<nnode; i++)
+      //loop over three dimensions in line direction
+      for(int k=0; k<3; k++)
+      {
+        if(force != NULL)
+          (*force)(i*6+3+k) += gamma(2)*TWTtomega(k)*funct(i)*gausspoints.qwgt[gp]*alpha_[gp]; 
+        
+        if(stiffmatrix != NULL)
+          //loop over all column nodes
+          for (int j=0; j<nnode; j++)
+            //loop over three dimensions in column direction
+            for (int l=0; l<3; l++)
+              (*stiffmatrix)(i*6+3+k,j*6+3+l) += gamma(2)*( TWTtHinv(k,l) / dt + TWTtSofomega(k,l) - SofTWTtomega(k,l) )*funct(i)*funct(j)*gausspoints.qwgt[gp]*alpha_[gp]; 
+      }     
+  }
+  
+  */
+  
+  for (int gp=0; gp<gausspoints.nquad; gp++)//loop through Gauss points
+  {    
+    //get evaluated basis functions at current Gauss point
+    DRT::UTILS::shape_function_1D(funct,gausspoints.qxg[gp][0],Shape());
+    
+    //rotation between last converged position and current position expressend as a quaternion
+    LINALG::Matrix<4,1>  deltaQ;
+    quaternionproduct(inversequaternion(Qconv_[gp]),Qnew_[gp],deltaQ);
+    
+    //rotation between last converged position and current position expressed as a three element rotation vector
+    LINALG::Matrix<3,1> deltatheta;
+    quaterniontoangle(deltaQ,deltatheta);
+    
+    //angular velocity at this Gauss point
+    LINALG::Matrix<3,1> omega(true);
+    omega += deltatheta;
+    omega.Scale(1/dt);
+    
+    //compute matrix T*W*T^t
+    LINALG::Matrix<3,3> Tconv;
+    LINALG::Matrix<3,3> TWTt;
+    quaterniontotriad(Qconv_[gp],Tconv);    
+    for(int k=0; k<3; k++)
+      for(int j = 0; j<3; j++)
+        TWTt(k,j) = Tconv(k,0)*Tconv(j,0);
+    
+    //compute vector T*W*T^t*\omega 
+    LINALG::Matrix<3,1> TWTtomega;
+    TWTtomega.Multiply(TWTt,omega);
+    
+    //compute matrix T*W*T^t*H^(-1)
+    LINALG::Matrix<3,3> TWTtHinv;
+    TWTtHinv.Multiply(TWTt,Hinv(deltatheta));
+      
+    //loop over all line nodes
+    for(int i=0; i<nnode; i++)
+      //loop over three dimensions in line direction
+      for(int k=0; k<3; k++)
+      {
+        if(force != NULL)
+          (*force)(i*6+3+k) += gamma(2)*TWTtomega(k)*funct(i)*gausspoints.qwgt[gp]*alpha_[gp]; 
+        
+        if(stiffmatrix != NULL)
+          //loop over all column nodes
+          for (int j=0; j<nnode; j++)
+            //loop over three dimensions in column direction
+            for (int l=0; l<3; l++)
+              (*stiffmatrix)(i*6+3+k,j*6+3+l) += gamma(2)*( TWTtHinv(k,l) / dt  )*funct(i)*funct(j)*gausspoints.qwgt[gp]*alpha_[gp]; 
+      }     
+  }
+  
+  
+  return;
+}//DRT::ELEMENTS::Beam3::MyRotationalDamping(.)
+
+/*-----------------------------------------------------------------------------------------------------------*
+ | computes translational damping forces and stiffness (public)                                 cyron   10/09|
+ *----------------------------------------------------------------------------------------------------------*/
+template<int nnode, int ndim, int dof> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node
+inline void DRT::ELEMENTS::Beam3::MyTranslationalDamping(ParameterList& params,  //!<parameter list
+                                                  const vector<double>&     vel,  //!< element velocity vector
+                                                  const vector<double>&     disp, //!<element disp vector
+                                                  Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+                                                  Epetra_SerialDenseVector* force)//!< element internal force vector
+{  
+  //get time step size
+  double dt = params.get<double>("delta time",0.0);
+  
+  //velocity and gradient of background velocity field
+  LINALG::Matrix<ndim,1> velbackground;
+  LINALG::Matrix<ndim,ndim> velbackgroundgrad;
+  
+  //evaluation point in physical space corresponding to a certain Gauss point in parameter space
+  LINALG::Matrix<ndim,1> evaluationpoint;
+  
+  //get friction model according to which forces and damping are applied
+  INPAR::STATMECH::FrictionModel frictionmodel = Teuchos::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
+
+  //damping coefficients for translational and rotatinal degrees of freedom
+  LINALG::Matrix<3,1> gamma(true);
+  MyDampingConstants(params,gamma,frictionmodel);
+  
+  //determine type of numerical integration performed (lumped damping matrix via lobatto integration!)
+  IntegrationType integrationtype = gaussexactintegration;
+  if(frictionmodel == INPAR::STATMECH::frictionmodel_isotropiclumped)
+    integrationtype = lobattointegration;
+  
+  //get Gauss points and weights for evaluation of damping matrix
+  DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,integrationtype));
+  
+  //matrix to store basis functions and their derivatives evaluated at a certain Gauss point
+  LINALG::Matrix<1,nnode> funct;
+  LINALG::Matrix<1,nnode> deriv;
+  
+
+  for(int gp=0; gp < gausspoints.nquad; gp++)
+  {
+    //evaluate basis functions and their derivatives at current Gauss point
+    DRT::UTILS::shape_function_1D(funct,gausspoints.qxg[gp][0],Shape());
+    DRT::UTILS::shape_function_1D_deriv1(deriv,gausspoints.qxg[gp][0],Shape());
+    
+    //compute point in phyiscal space corresponding to Gauss point
+    evaluationpoint.PutScalar(0);
+    //loop over all line nodes
+    for(int i=0; i<nnode; i++)
+      //loop over all dimensions
+      for(int j=0; j<ndim; j++)
+        evaluationpoint(j) += funct(i)*(Nodes()[i]->X()[j]+disp[dof*i+j]);
+    
+    //compute velocity and gradient of background flow field at evaluationpoint
+    MyBackgroundVelocity<ndim>(params,evaluationpoint,velbackground,velbackgroundgrad);
+
+ 
+    //compute tangent vector t_{\par} at current Gauss point
+    LINALG::Matrix<ndim,1> tpar(true);
+    for(int i=0; i<nnode; i++)
+      for(int k=0; k<ndim; k++)
+        tpar(k) += deriv(i)*(Nodes()[i]->X()[k]+disp[dof*i+k]) / alphamass_[gp];
+    
+    //compute velocity vector at this Gauss point
+    LINALG::Matrix<ndim,1> velgp(true);
+    for(int i=0; i<nnode; i++)
+      for(int l=0; l<ndim; l++)
+        velgp(l) += funct(i)*vel[dof*i+l]; 
+    
+    //compute matrix product (t_{\par} \otimes t_{\par}) \cdot velbackgroundgrad
+    LINALG::Matrix<ndim,ndim> tpartparvelbackgroundgrad(true);
+    for(int i=0; i<ndim; i++)
+      for(int j=0; j<ndim; j++)
+        for(int k=0; k<ndim; k++)
+          tpartparvelbackgroundgrad(i,j) += tpar(i)*tpar(k)*velbackgroundgrad(k,j);
+        
+    //loop over all line nodes
+    for(int i=0; i<nnode; i++)            
+      //loop over lines of matrix t_{\par} \otimes t_{\par}
+      for(int k=0; k<ndim; k++)
+        //loop over columns of matrix t_{\par} \otimes t_{\par}
+        for(int l=0; l<ndim; l++)           
+        {     
+          if(force != NULL)
+            (*force)(i*dof+k)+= funct(i)*alphamass_[gp]*gausspoints.qwgt[gp]*( (k==l)*gamma(1) + (gamma(0) - gamma(1))*tpar(k)*tpar(l) ) *(velgp(l)- velbackground(l));
+          
+          if(stiffmatrix != NULL)
+            //loop over all column nodes
+            for (int j=0; j<nnode; j++) 
+            {
+              (*stiffmatrix)(i*dof+k,j*dof+l) += gausspoints.qwgt[gp]*funct(i)*funct(j)*alphamass_[gp]*(                 (k==l)*gamma(1) + (gamma(0) - gamma(1))*tpar(k)*tpar(l) ) / dt;
+              (*stiffmatrix)(i*dof+k,j*dof+l) -= gausspoints.qwgt[gp]*funct(i)*funct(j)*alphamass_[gp]*( velbackgroundgrad(k,l)*gamma(1) + (gamma(0) - gamma(1))*tpartparvelbackgroundgrad(k,l) ) ;             
+              (*stiffmatrix)(i*dof+k,j*dof+k) += gausspoints.qwgt[gp]*funct(i)*deriv(j)*                                                   (gamma(0) - gamma(1))*tpar(l)*(velgp(l) - velbackground(l));
+              (*stiffmatrix)(i*dof+k,j*dof+l) += gausspoints.qwgt[gp]*funct(i)*deriv(j)*                                                   (gamma(0) - gamma(1))*tpar(k)*(velgp(l) - velbackground(l));
+            }    
+        }   
+  }
+
+  
+  return;
+}//DRT::ELEMENTS::Beam3::MyTranslationalDamping(.)
+
+/*-----------------------------------------------------------------------------------------------------------*
+ | computes stochastic forces and resulting stiffness (public)                                  cyron   10/09|
+ *----------------------------------------------------------------------------------------------------------*/
+template<int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
+inline void DRT::ELEMENTS::Beam3::MyStochasticForces(ParameterList& params,  //!<parameter list
+                                              const vector<double>&     vel,  //!< element velocity vector
+                                              const vector<double>&     disp, //!<element disp vector
+                                              Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+                                              Epetra_SerialDenseVector* force)//!< element internal force vector
+{
+  //get friction model according to which forces and damping are applied
+  INPAR::STATMECH::FrictionModel frictionmodel = Teuchos::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
+  
+  //damping coefficients for three translational and one rotatinal degree of freedom
+  LINALG::Matrix<3,1> gamma(true);
+  MyDampingConstants(params,gamma,frictionmodel);
+  
+  //determine type of numerical integration performed
+  IntegrationType integrationtype = gaussexactintegration;
+  if(frictionmodel == INPAR::STATMECH::frictionmodel_isotropiclumped)
+    integrationtype = lobattointegration;  
+  
+  //get Gauss points and weights for evaluation of damping matrix
+  DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,integrationtype));
+  
+  //matrix to store basis functions and their derivatives evaluated at a certain Gauss point
+  LINALG::Matrix<1,nnode> funct;
+  LINALG::Matrix<1,nnode> deriv;
+  
+  
+  /*get pointer at Epetra multivector in parameter list linking to random numbers for stochastic forces with zero mean
+   * and standard deviation (2*kT / dt)^0.5; note carefully: a space between the two subsequal ">" signs is mandatory
+   * for the C++ parser in order to avoid confusion with ">>" for streams*/
+   RCP<Epetra_MultiVector> randomnumbers = params.get<  RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null);
+
+  for(int gp=0; gp < gausspoints.nquad; gp++)
+  {
+    //evaluate basis functions and their derivatives at current Gauss point
+    DRT::UTILS::shape_function_1D(funct,gausspoints.qxg[gp][0],Shape());
+    DRT::UTILS::shape_function_1D_deriv1(deriv,gausspoints.qxg[gp][0],Shape());
+    
+    //compute tangent vector t_{\par} at current Gauss point
+    LINALG::Matrix<ndim,1> tpar(true);
+    for(int i=0; i<nnode; i++)
+      for(int k=0; k<ndim; k++)
+        tpar(k) += deriv(i)*(Nodes()[i]->X()[k]+disp[dof*i+k]) / alphamass_[gp];
+     
+    
+    //loop over all line nodes
+    for(int i=0; i<nnode; i++)             
+      //loop dimensions with respect to lines
+      for(int k=0; k<ndim; k++)
+        //loop dimensions with respect to columns
+        for(int l=0; l<ndim; l++)           
+        {
+          if(force != NULL)
+            (*force)(i*dof+k) -= funct(i)*(sqrt(gamma(1))*(k==l) + (sqrt(gamma(0)) - sqrt(gamma(1)))*tpar(k)*tpar(l))*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(alphamass_[gp]*gausspoints.qwgt[gp]);          
+
+          if(stiffmatrix != NULL)
+            //loop over all column nodes
+            for (int j=0; j<nnode; j++) 
+            {            
+              (*stiffmatrix)(i*dof+k,j*dof+k) -= funct(i)*deriv(j)*tpar(l)*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(gausspoints.qwgt[gp]/ alphamass_[gp])*(sqrt(gamma(0)) - sqrt(gamma(1)));   
+              (*stiffmatrix)(i*dof+k,j*dof+l) -= funct(i)*deriv(j)*tpar(k)*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(gausspoints.qwgt[gp]/ alphamass_[gp])*(sqrt(gamma(0)) - sqrt(gamma(1)));  
+            }
+        }  
+  }
+  return;
+}//DRT::ELEMENTS::Beam3::MyStochasticForces(.)
+
+/*-----------------------------------------------------------------------------------------------------------*
+ | computes stochastic moments and (if required) resulting stiffness (public)                   cyron   10/09|
+ *----------------------------------------------------------------------------------------------------------*/
+template<int nnode, int randompergauss> //number of nodes, number of random numbers required per Gauss point, number of random numbers required per Gauss point
+inline void DRT::ELEMENTS::Beam3::MyStochasticMoments(ParameterList& params,  //!<parameter list
+                                              const vector<double>&     vel,  //!< element velocity vector
+                                              const vector<double>&     disp, //!<element disp vector
+                                              Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+                                              Epetra_SerialDenseVector* force)//!< element internal force vector
+{
+
+  //get friction model according to which forces and damping are applied
+  INPAR::STATMECH::FrictionModel frictionmodel = Teuchos::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
+  
+  //damping coefficients for three translational and one rotatinal degree of freedom
+  LINALG::Matrix<3,1> gamma(true);
+  MyDampingConstants(params,gamma,frictionmodel);
+  
+  //determine type of numerical integration performed (note: underintegration applied as for related points triads already known from elasticity)
+  IntegrationType integrationtype = gaussunderintegration;
+
+  //get Gauss points and weights for evaluation of damping matrix
+  DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,integrationtype));
+  
+  //matrix to store basis functions and their derivatives evaluated at a certain Gauss point
+  LINALG::Matrix<1,nnode> funct;
+   
+  /*get pointer at Epetra multivector in parameter list linking to random numbers for stochastic forces with zero mean
+   * and standard deviation (2*kT / dt)^0.5; note carefully: a space between the two subsequal ">" signs is mandatory
+   * for the C++ parser in order to avoid confusion with ">>" for streams*/
+   RCP<Epetra_MultiVector> randomnumbers = params.get<  RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null);
+
+  for(int gp=0; gp < gausspoints.nquad; gp++)
+  {
+    //evaluate basis functions and their derivatives at current Gauss point
+    DRT::UTILS::shape_function_1D(funct,gausspoints.qxg[gp][0],Shape());
+    
+    //get current triad at this Gauss point:
+    LINALG::Matrix<3,3> Tnew;
+    quaterniontotriad(Qnew_[gp],Tnew); 
+    
+    //get first column out of Tnew 
+    LINALG::Matrix<3,1> t1;
+    for(int i=0; i<3; i++)
+      t1(i) = Tnew(i,0);
+    
+    //compute spin matrix from first column of Tnew times random number
+    LINALG::Matrix<3,3> S;
+    computespin(S,t1,(*randomnumbers)[gp*randompergauss+3][LID()]);
+    
+    
+    //loop over all line nodes
+    for(int i=0; i<nnode; i++)             
+      //loop over lines of matrix t_{\par} \otimes t_{\par}
+      for(int k=0; k<3; k++)
+      {
+        if(force != NULL)
+          (*force)(i*6+3+k) -= funct(i)*t1(k)*(*randomnumbers)[gp*randompergauss+3][LID()]*sqrt(alpha_[gp]*gausspoints.qwgt[gp]*gamma(2));
+      
+        if(stiffmatrix != NULL)
+          //loop over all column nodes
+          for (int j=0; j<nnode; j++) 
+            //loop over three dimensions with respect to columns
+            for(int l=0; l<3; l++)           
+              (*stiffmatrix)(i*6+3+k,j*6+3+l) += funct(i)*funct(j)*S(k,l)*sqrt(alpha_[gp]*gausspoints.qwgt[gp]*gamma(2)); 
+               
+    }
+  }
+  return;
+}//DRT::ELEMENTS::Beam3::MyStochasticMoments(.)
+
+/*-----------------------------------------------------------------------------------------------------------*
+ | Assemble stochastic and viscous forces and respective stiffness according to fluctuation dissipation      |
+ | theorem                                                                               (public) cyron 10/09|
+ *----------------------------------------------------------------------------------------------------------*/
+template<int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
+inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
+                                              const vector<double>&           vel,  //!< element velocity vector
+                                              const vector<double>&           disp, //!< element displacement vector
+                                              Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+                                              Epetra_SerialDenseVector* force) //!< element internal force vector
+{   
+  //if no random numbers for generation of stochastic forces are passed to the element no Brownian dynamics calculations are conducted
+  if( params.get<  RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null) == Teuchos::null)
+    return;
+
+  
+  //add stiffness and forces due to translational damping effects
+  MyTranslationalDamping<nnode,3,6>(params,vel,disp,stiffmatrix,force);
+
+  //add stiffness and forces (i.e. moments) due to rotational damping effects
+  MyRotationalDamping<nnode>(params,vel,disp,stiffmatrix,force);
+
+  //add stochastic forces and (if required) resulting stiffness
+  MyStochasticForces<nnode,3,6,4>(params,vel,disp,stiffmatrix,force);
+  
+  //add stochastic moments and resulting stiffness
+  MyStochasticMoments<nnode,4>(params,vel,disp,stiffmatrix,force);
+
+
+return;
+
+}//DRT::ELEMENTS::Beam3::CalcBrownian(.)
+
+
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_BEAM3

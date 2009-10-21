@@ -33,6 +33,8 @@ using namespace Teuchos;
 #include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_lib/linalg_fixedsizematrix.H"
+#include "../drt_statmech/statmech_manager.H"
+#include "../drt_statmech/statmech_time.H"
 //including random number library of blitz for statistical forces
 #include <random/normal.h>
 
@@ -55,6 +57,7 @@ public:
 
   //! @name Friends
   friend class Beam2Register;
+  friend StatMechTime::StatMechTime(ParameterList& params,DRT::Discretization& dis,LINALG::Solver& solver,IO::DiscretizationWriter& output);
 
 
   //! @name Constructors and destructors and related methods
@@ -280,9 +283,6 @@ private:
     calc_struct_ptcstiff
   };
 
-  //! container containing all kind of beam2 thisandthat
-  DRT::Container data_;
-
   //! variable saving whether element has already been initialized (then isinit_ == true)
   bool isinit_;
 
@@ -350,6 +350,11 @@ private:
 
   //!sets up element reference geomtry for reference nodal position vector xrefe (may be used also after simulation start)
   void SetUpReferenceGeometry(const LINALG::Matrix<4,1>& xrefe);
+  
+  //! @name Methods for Brownian dynamics simulations
+  
+  //!computes the number of different random numbers required in each time step for generation of stochastic forces
+  int HowManyRandomNumbersINeed();
 
   //!Compute statistical forces in local coordinate system and do not(!) yet assemble them
 
@@ -371,6 +376,8 @@ private:
                     vector<double>&           vel,  //!< element velocity vector
                     Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
                     Epetra_SerialDenseVector* force);  //!< element internal force vector
+  
+  //@}
 
 
   // don't want = operator
