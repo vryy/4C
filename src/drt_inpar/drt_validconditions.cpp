@@ -410,7 +410,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   pbccomponents.push_back(Teuchos::rcp(new IntConditionComponent("Layer of periodic boundary condition",true)));
 
   pbccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("ANGLE")));
-  pbccomponents.push_back(Teuchos::rcp(new RealConditionComponent("Angle of slave plane rotation")));
+  pbccomponents.push_back(Teuchos::rcp(new RealConditionComponent("Angle of rotation")));
 
   Teuchos::RCP<ConditionDefinition> lineperiodic =
     Teuchos::rcp(new ConditionDefinition("DESIGN LINE PERIODIC BOUNDARY CONDITIONS",

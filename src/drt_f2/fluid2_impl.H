@@ -22,6 +22,7 @@ Maintainer: Volker Gravemeier
 #include "fluid2.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_lib/linalg_fixedsizematrix.H"
+#include "../drt_fluid/fluid_rotsym_periodicbc.H"
 
 namespace DRT
 {
@@ -444,6 +445,8 @@ namespace ELEMENTS
     double thermpressam_;
     //! time derivative of thermodynamic pressure at t_(n+alpha_M) or t_(n+1)
     double thermpressdtam_;
+    //! for the handling of rotationally symmetric periodic boundary conditions
+    RCP<FLD::RotationallySymmetricPeriodicBC<distype> > rotsymmpbc_;
   };
 
 }

@@ -21,7 +21,7 @@ Maintainer: Georg Bauer
 
 #include "fluid3.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-//#include <blitz/array.h>
+#include "../drt_fluid/fluid_rotsym_periodicbc.H"
 
 
 namespace DRT
@@ -216,6 +216,7 @@ namespace ELEMENTS
     LINALG::Matrix<3,1> res_old_;
     LINALG::Matrix<iel,1> conv_resM_;
     LINALG::Matrix<6,3> xder2_;
+    RCP<FLD::RotationallySymmetricPeriodicBC<distype> > rotsymmpbc_; /// rotsymm periodic bc's
   };
 
 }

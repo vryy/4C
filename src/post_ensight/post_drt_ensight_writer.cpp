@@ -16,6 +16,7 @@
 
 #include "post_drt_ensight_writer.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
+#include "../drt_fluid/fluid_rotsym_periodicbc_utils.H"
 #include <string>
 
 using namespace std;
@@ -1223,7 +1224,19 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
           int lid = finaldatamap.LID(actdofgid);
           if (lid > -1)
           {
-            Write(file, static_cast<float>((*proc0data)[lid]));
+            // care for rotationally symmetric periodic boundary conditions
+            // note: only vector fields with numdf > 1 require checking!
+            double rotangle(0.0);
+            DRT::Node* n = dis->lRowNode(inode);
+            if ((numdf > 1) and (FLD::IsSlaveNodeOfRotSymPBC(n,rotangle)))
+            {
+              // this is the desired component of the rotated vector field result
+              double value = FLD::GetComponentOfRotatedVectorField(idf,proc0data,lid,rotangle);
+              Write(file, static_cast<float>(value));
+            }
+            else
+              // the standard case
+              Write(file, static_cast<float>((*proc0data)[lid]));
           }
           else
             dserror("received illegal dof local id: %d", lid);

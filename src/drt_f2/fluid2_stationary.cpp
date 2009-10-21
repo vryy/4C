@@ -101,8 +101,10 @@ DRT::ELEMENTS::Fluid2Stationary<distype>::Fluid2Stationary()
     visc_old_(),
     res_old_(),
     conv_resM_(),
-    xder2_()
+    xder2_(),
+    rotsymmpbc_(Teuchos::null)
 {
+  rotsymmpbc_= Teuchos::rcp(new FLD::RotationallySymmetricPeriodicBC<distype>());
 }
 
 template <DRT::Element::DiscretizationType distype>
@@ -124,6 +126,9 @@ int DRT::ELEMENTS::Fluid2Stationary<distype>::Evaluate(
   LINALG::Matrix<3*iel,3*iel> elemat2(elemat2_epetra.A(),true);
   LINALG::Matrix<3*iel,    1> elevec1(elevec1_epetra.A(),true);
 
+  // rotationally symmetric periodic bc's: do setup for current element
+  rotsymmpbc_->Setup(ele);
+
   // need current velocity/pressure vector
   RefCountPtr<const Epetra_Vector> velnp = discretization.GetState("velaf");
   if (velnp==null) dserror("Cannot get state vector 'velaf'");
@@ -131,6 +136,10 @@ int DRT::ELEMENTS::Fluid2Stationary<distype>::Evaluate(
   // extract local values from the global vectors
   vector<double> myvelnp(lm.size());
   DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
+
+  // rotation of velocity components
+  // for rotationally symmetric boundary conditions
+  rotsymmpbc_->RotateMyValuesIfNecessary(myvelnp);
 
   if (ele->is_ale_) dserror("No ALE support within stationary fluid solver.");
 
@@ -202,6 +211,10 @@ int DRT::ELEMENTS::Fluid2Stationary<distype>::Evaluate(
     vector<double> myfsvelnp(lm.size());
     DRT::UTILS::ExtractMyValues(*fsvelnp,myfsvelnp,lm);
 
+    // rotation of velocity components
+    // for rotationally symmetric boundary conditions
+    rotsymmpbc_->RotateMyValuesIfNecessary(myfsvelnp);
+
     // get fine-scale velocity and insert into element arrays
     for (int i=0;i<numnode;++i)
     {
@@ -241,6 +254,9 @@ int DRT::ELEMENTS::Fluid2Stationary<distype>::Evaluate(
          cross,
          reynolds,
          Cs);
+
+  //rotate matrices and vectors if we have a rotationally symmetric problem
+  rotsymmpbc_->RotateMatandVecIfNecessary(elemat1,elemat2,elevec1);
 
   // This is a very poor way to transport the density to the
   // outside world. Is there a better one?

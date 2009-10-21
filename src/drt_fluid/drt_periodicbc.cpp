@@ -371,15 +371,15 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
                 const double angle = slavecond->GetDouble("Angle of rotation");
                 if (abs(angle)> EPS13)
                 {
-                  if (*thisplane != "xy")
-                    dserror("Rotation of slave plane only implemented for xy planes");
+                  if ((*thisplane != "xz")&&(*thisplane != "yz"))
+                    dserror("Rotation of slave plane only implemented for xz and yz planes");
                   else
                   {
                     rotangles[pbcid] = angle*PI/180.0;  //convert from DEG to RAD!
                     if (pbcid > 0)
                     {
                       if (rotangles[pbcid] != rotangles[pbcid-1])
-                        dserror("Angle has to be the same for all xy pairs in pbc");
+                        dserror("Angle has to be the same for all pairs in pbc");
                     }
                   }
                 }

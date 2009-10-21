@@ -22,7 +22,7 @@ Maintainer: Volker Gravemeier
 #include "fluid2.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_lib/linalg_fixedsizematrix.H"
-//#include <blitz/array.h>
+#include "../drt_fluid/fluid_rotsym_periodicbc.H"
 
 
 namespace DRT
@@ -188,7 +188,7 @@ namespace ELEMENTS
                    const double pseudotime);
 
   private:
-    double vart_;                                         /// fine-scale subgrid viscosity
+    double vart_;                     /// fine-scale subgrid viscosity
     LINALG::Matrix<2,iel> xyze_;      /// nodal position array
     LINALG::Matrix<2,iel> edeadng_;   /// nodal dead load
     LINALG::Matrix<iel,1> funct_;     /// nodal shape functions
@@ -215,6 +215,7 @@ namespace ELEMENTS
     LINALG::Matrix<2,1>   res_old_;
     LINALG::Matrix<iel,1> conv_resM_;
     LINALG::Matrix<3,2>   xder2_;
+    RCP<FLD::RotationallySymmetricPeriodicBC<distype> > rotsymmpbc_; /// rotsymm periodic bc's
   };
 
 }

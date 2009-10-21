@@ -166,8 +166,10 @@ DRT::ELEMENTS::Fluid3Impl<distype>::Fluid3Impl()
     conv_scan_(),
     thermpressaf_(),
     thermpressam_(),
-    thermpressdtam_()
+    thermpressdtam_(),
+    rotsymmpbc_(Teuchos::null)
 {
+  rotsymmpbc_= Teuchos::rcp(new FLD::RotationallySymmetricPeriodicBC<distype>());
 }
 
 template <DRT::Element::DiscretizationType distype>
@@ -191,6 +193,9 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
   LINALG::Matrix<4*iel,4*iel> elemat2(elemat2_epetra,true);
   LINALG::Matrix<4*iel,    1> elevec1(elevec1_epetra,true);
   // elevec2 and elevec3 are currently not use
+
+  // rotationally symmetric periodic bc's: do setup for current element
+  rotsymmpbc_->Setup(ele);
 
   //----------------------------------------------------------------------
   // get control parameters for time integration
@@ -302,6 +307,11 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
   DRT::UTILS::ExtractMyValues(*scaam,myscaam,lm);
   vector<double> myhist(lm.size());
   DRT::UTILS::ExtractMyValues(*hist,myhist,lm);
+
+  // rotation of velocity components
+  // for rotationally symmetric boundary conditions
+  rotsymmpbc_->RotateMyValuesIfNecessary(myvelaf);
+  rotsymmpbc_->RotateMyValuesIfNecessary(myhist);
 
   // create objects for element arrays
   LINALG::Matrix<3,numnode> evelaf;
@@ -666,6 +676,9 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
       }
     }
   }
+
+  //rotate matrices and vectors if we have a rotationally symmetric problem
+  rotsymmpbc_->RotateMatandVecIfNecessary(elemat1,elemat2,elevec1);
 
   return 0;
 }

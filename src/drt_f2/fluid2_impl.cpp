@@ -27,9 +27,9 @@ Maintainer: Volker Gravemeier
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/drt_function.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_condition_utils.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_gder2.H"
-#include "../drt_lib/drt_condition_utils.H"
 
 
 /*----------------------------------------------------------------------*
@@ -141,8 +141,10 @@ DRT::ELEMENTS::Fluid2Impl<distype>::Fluid2Impl()
     conv_scan_(),
     thermpressaf_(),
     thermpressam_(),
-    thermpressdtam_()
+    thermpressdtam_(),
+    rotsymmpbc_(Teuchos::null)
 {
+  rotsymmpbc_= Teuchos::rcp(new FLD::RotationallySymmetricPeriodicBC<distype>());
 }
 
 template <DRT::Element::DiscretizationType distype>
@@ -166,6 +168,9 @@ int DRT::ELEMENTS::Fluid2Impl<distype>::Evaluate(
   LINALG::Matrix<3*iel,3*iel> elemat2(elemat2_epetra.A(),true);
   LINALG::Matrix<3*iel,    1> elevec1(elevec1_epetra.A(),true);
   // elevec2 and elevec3 currently not used
+
+  // rotationally symmetric periodic bc's: do setup for current element
+  rotsymmpbc_->Setup(ele);
 
   //----------------------------------------------------------------------
   // get control parameters for time integration
@@ -279,6 +284,11 @@ int DRT::ELEMENTS::Fluid2Impl<distype>::Evaluate(
   DRT::UTILS::ExtractMyValues(*scaam,myscaam,lm);
   vector<double> myhist(lm.size());
   DRT::UTILS::ExtractMyValues(*hist,myhist,lm);
+
+  // rotation of velocity components
+  // for rotationally symmetric boundary conditions
+  rotsymmpbc_->RotateMyValuesIfNecessary(myvelaf);
+  rotsymmpbc_->RotateMyValuesIfNecessary(myhist);
 
   // create objects for element arrays
   LINALG::Matrix<2,numnode> evelaf;
@@ -483,6 +493,9 @@ int DRT::ELEMENTS::Fluid2Impl<distype>::Evaluate(
          whichtau,
          turb_mod_action,
          Cs);
+
+  //rotate matrices and vectors if we have a rotationally symmetric problem
+  rotsymmpbc_->RotateMatandVecIfNecessary(elemat1,elemat2,elevec1);
 
   return 0;
 }
