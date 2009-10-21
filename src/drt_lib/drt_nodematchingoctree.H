@@ -119,6 +119,7 @@ public:
                                parallel to the boundary condition
                                (used to "shift" nodes in the normal
                                 direction)
+  \param  rotangle         (i) angle (RAD) for rotation of slave plane
   \param  midtosid         (o) map from master to slavenodes
 
   \return void
@@ -127,6 +128,7 @@ public:
   void CreateGlobalNodeMatching(
     const vector<int>     & slavenodeids,
     const vector<int>     & dofsforpbcplane,
+    const double            rotangle,
     map<int,vector<int> > & midtosid
     );
 

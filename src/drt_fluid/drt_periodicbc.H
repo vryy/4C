@@ -211,7 +211,7 @@ protected:
   \param  masternodeids   (i) all master node ids
   \param  slavenodeids    (i) all slave node ids
   \param  dofsforpbcplane (i) periodic boundary is in this plane
-
+  \param  rotangle        (i) angle (RAD) for rotation of slave plane
   \return void
 
   */
@@ -219,7 +219,8 @@ protected:
     map<int,vector<int> > &midtosid,
     const vector <int>     masternodeids,
     const vector <int>     slavenodeids,
-    const vector <int>     dofsforpbcplane);
+    const vector <int>     dofsforpbcplane,
+    const double           rotangle);
 
   /*!
   \brief Add the connectivity from this condition (midtosid, on input)

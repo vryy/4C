@@ -132,6 +132,7 @@ DRT::UTILS::NodeMatchingOctree::NodeMatchingOctree(
 void DRT::UTILS::NodeMatchingOctree::CreateGlobalNodeMatching(
   const vector<int>    &     slavenodeids,
   const vector<int>    &     dofsforpbcplane,
+  const double               rotangle,
   map<int,vector<int> >&     midtosid
   )
 {
@@ -260,9 +261,21 @@ void DRT::UTILS::NodeMatchingOctree::CreateGlobalNodeMatching(
       {
         // get its coordinates
         vector <double> x(3);
-        for (int dim=0;dim<3;dim++)
+
+        if (abs(rotangle) < EPS13)
         {
-          x[dim] = actnode->X()[dim];
+          for (int dim=0;dim<3;dim++)
+          {
+            x[dim] = actnode->X()[dim];
+          }
+        }
+        else
+        {
+          // if there is a rotationally symmetric periodic boundary condition:
+          // rotate slave plane for making it parallel to the master plane
+          x[0] = actnode->X()[0]*cos(rotangle) + actnode->X()[1]*sin(rotangle);
+          x[1] = actnode->X()[0]*(-sin(rotangle)) + actnode->X()[1]*cos(rotangle);
+          x[2] = actnode->X()[2];
         }
 
         // Substitute the coordinate normal to the master plane by the

@@ -276,6 +276,8 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
       // master and slave sets for this periodic direction
       std::set<int> masterset;
       std::set<int> slaveset;
+      // possible angles of rotation for slave plane for each pbc pair
+      vector<double> rotangles(numpbcpairs_);
 
       //----------------------------------------------------
       // in the following, we loop all periodic boundary
@@ -332,6 +334,11 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
                 {
                   masterset.insert(*idtoadd);
                 }
+
+                // check for angle of rotation (has to be zero for master plane)
+                const double angle = mastercond->GetDouble("Angle of rotation");
+                if (abs(angle) > EPS13)
+                  dserror("Angle is not zero for master plane: %f",angle);
               }
             }
             else if (*mymasterslavetoggle=="Slave")
@@ -358,6 +365,23 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
                     ++idtoadd)
                 {
                   slaveset.insert(*idtoadd);
+                }
+
+                // check for angle of rotation of slave plane and store it
+                const double angle = slavecond->GetDouble("Angle of rotation");
+                if (abs(angle)> EPS13)
+                {
+                  if (*thisplane != "xy")
+                    dserror("Rotation of slave plane only implemented for xy planes");
+                  else
+                  {
+                    rotangles[pbcid] = angle*PI/180.0;  //convert from DEG to RAD!
+                    if (pbcid > 0)
+                    {
+                      if (rotangles[pbcid] != rotangles[pbcid-1])
+                        dserror("Angle has to be the same for all xy pairs in pbc");
+                    }
+                  }
                 }
               }
             }
@@ -447,7 +471,8 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
         midtosid,
         masternodeids,
         slavenodeids ,
-        dofsforpbcplane);
+        dofsforpbcplane,
+        rotangles[0]);
       // time measurement --- this causes the TimeMonitor tm1 to stop here
       tm1_ref_ = null;
 
@@ -524,7 +549,8 @@ void PeriodicBoundaryConditions::CreateNodeCouplingForSinglePBC(
   map<int,vector<int> > &midtosid,
   const vector <int>     masternodeids,
   const vector <int>     slavenodeids,
-  const vector <int>     dofsforpbcplane
+  const vector <int>     dofsforpbcplane,
+  const double           rotangle
   )
 {
 
@@ -560,10 +586,11 @@ void PeriodicBoundaryConditions::CreateNodeCouplingForSinglePBC(
 
     // create map from gid masternode -> gid corresponding slavenode
     nodematchingoctree.CreateGlobalNodeMatching(
-      slavenodeids   ,
-      dofsforpbcplane,
-      midtosid
-      );
+        slavenodeids   ,
+        dofsforpbcplane,
+        rotangle,
+        midtosid
+    );
   }
 
   // time measurement --- this causes the TimeMonitor tm3 to stop here
@@ -618,28 +645,30 @@ void PeriodicBoundaryConditions::AddConnectivity(
       vector<int>::iterator i;
       for(i=(iter->second).begin();i!=(iter->second).end();++i)
       {
-	slaveid = *i;
+        slaveid = *i;
+        if (slaveid == masterid)
+          dserror("Node %d is master AND slave node of periodic boundary condition", masterid);
 
-	// is masterid already in allcoupledrownodes?
-	{
-	  alreadyinlist=false;
-	
-	  map<int,vector<int> >::iterator found;
-	
-	  found = allcoupledrownodes_->find(masterid);
-	  if(found != allcoupledrownodes_->end())
-	  {
-	    // masterid is already in the list --- i.e., the master is the
-	    // master of a previous condition. Simply append the slave id here
-	    alreadyinlist=true;
-	    found->second.push_back(slaveid);
-	  }
-	  // masterid is not in the list yet. -> new entry
-	  if (alreadyinlist==false)
-	  {
-	    (*allcoupledrownodes_)[masterid].push_back(slaveid);
-	  } // end if not in map
-	}
+        // is masterid already in allcoupledrownodes?
+        {
+          alreadyinlist=false;
+
+          map<int,vector<int> >::iterator found;
+
+          found = allcoupledrownodes_->find(masterid);
+          if(found != allcoupledrownodes_->end())
+          {
+            // masterid is already in the list --- i.e., the master is the
+            // master of a previous condition. Simply append the slave id here
+            alreadyinlist=true;
+            found->second.push_back(slaveid);
+          }
+          // masterid is not in the list yet. -> new entry
+          if (alreadyinlist==false)
+          {
+            (*allcoupledrownodes_)[masterid].push_back(slaveid);
+          } // end if not in map
+        }
       }
     } // end insert entries of midtosid into the allcoupledrownodes map
 
