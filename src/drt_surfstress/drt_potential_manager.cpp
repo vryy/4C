@@ -21,6 +21,14 @@ Maintainer: Ursula Mayer
 #include <cstdlib>
 
 
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
+
 /*-------------------------------------------------------------------*
  |  ctor (public)                                          umay 06/08|
  *-------------------------------------------------------------------*/
@@ -161,7 +169,16 @@ void POTENTIAL::PotentialManager::StiffnessAndInternalForcesPotential(
     Epetra_SerialDenseVector&       F_int)
 {
   if( params_.get<string>("approximation type") == "None" )
-    surfacePotential_->StiffnessAndInternalForcesPotential(element, gaussrule, eleparams, lm, K_stiff, F_int);
+  {	
+  	int prob_dim = genprob.ndim;
+  	// due to the Gaussrule 2D
+  	if(prob_dim == 2)
+  	  volumePotential_->StiffnessAndInternalForcesPotential(element, gaussrule, eleparams, lm, K_stiff, F_int);
+  	else if(prob_dim == 3)
+  		surfacePotential_->StiffnessAndInternalForcesPotential(element, gaussrule, eleparams, lm, K_stiff, F_int);
+  	else
+  	 dserror("problem dimension not correct");
+  }
   else if( params_.get<string>("approximation type")== "Surface_approx" )
     surfacePotential_->StiffnessAndInternalForcesPotentialApprox(element, gaussrule, eleparams, lm, K_stiff, F_int);
   //else if( params_.get<string>("approximation type")== "point_approx" )

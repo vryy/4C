@@ -310,6 +310,45 @@ void POTENTIAL::Potential::EvaluatePotentialfromCondition(
 
 
 /*-------------------------------------------------------------------*
+| (protected)                                             umay  02/09|
+|                                                                    |
+| evaluate potential 2D                                              |
+*--------------------------------------------------------------------*/
+void POTENTIAL::Potential::EvaluatePotentialfromCondition(
+    RefCountPtr<DRT::Condition>   cond,
+    const LINALG::Matrix<2,1>&    x,
+    const LINALG::Matrix<2,1>&    y,
+    LINALG::Matrix<2,1>&          potderiv1,
+    LINALG::Matrix<2,2>&          potderiv2)
+{
+
+  if (cond->Type()==DRT::Condition::LJ_Potential_Volume || 
+      cond->Type()==DRT::Condition::LJ_Potential_Surface)
+  {
+    const double depth    = cond->GetDouble("depth");
+    const double rootDist = cond->GetDouble("rootDist");
+
+    EvaluateLennardJonesPotential(depth, rootDist, x, y, potderiv1, potderiv2);
+
+  }
+  else if (cond->Type()==DRT::Condition::ElectroRepulsion_Potential_Surface || 
+           cond->Type()==DRT::Condition::ElectroRepulsion_Potential_Line)
+  {
+    const double zeta_param_1 = cond->GetDouble("zeta_param_1");
+    const double zeta_param_2 = cond->GetDouble("zeta_param_2");
+
+    EvaluateZetaPotential(zeta_param_1, zeta_param_2, x, y, potderiv1, potderiv2);
+  }
+  else
+  {
+    dserror("cannot evaluate potential - condition unknown");
+  }
+  return;
+}
+
+
+
+/*-------------------------------------------------------------------*
 | (protected)                                             umay  10/09|
 |                                                                    |
 | evaluate potential (approximation)                                 |
@@ -391,6 +430,51 @@ void POTENTIAL::Potential::EvaluateLennardJonesPotential(
         potderiv2(i,j) += (dpotdrdr - (dpotdr/distance))*du_tensor_du(i,j);
   }
 }
+
+
+/*-------------------------------------------------------------------*
+| (protected)                                             umay  07/08|
+|                                                                    |
+| evaluate Lennard Jones potential 2D                                |
+*--------------------------------------------------------------------*/
+void POTENTIAL::Potential::EvaluateLennardJonesPotential(
+    const double                  depth,
+    const double                  rootDist,
+    const LINALG::Matrix<2,1>&    x,
+    const LINALG::Matrix<2,1>&    y,
+    LINALG::Matrix<2,1>&          potderiv1,
+    LINALG::Matrix<2,2>&          potderiv2)
+{
+
+  // evaluate distance related stuff
+  double          distance      = 0.0;
+  LINALG::Matrix<2,1>       distance_vec(true);
+  LINALG::Matrix<2,1>       distance_unit(true);
+  LINALG::Matrix<2,2>       du_tensor_du;
+  computeDistance(x,y, du_tensor_du, distance_vec, distance_unit, distance);
+  //----------------------------------------------------------------------
+  // evaluate 1.derivative dphi/du_i
+  //----------------------------------------------------------------------
+  const double dpotdr = -3.141592654*depth*((693/256)*pow((double)(rootDist/distance),12) - (15/4)*pow((double)(rootDist/distance),6));
+  for(int i = 0; i < 2; i++)
+    potderiv1(i) = dpotdr*distance_unit(i);
+
+  //----------------------------------------------------------------------
+  // evaluate 2.derivative dphi/du_i d_uiI  (this is not a mistake !!!!)
+  //----------------------------------------------------------------------
+  const double dpotdrdr = (3.141592654*depth/rootDist)*((2079/64)*pow((double)(rootDist/distance),13) - (45/2)*pow((double)(rootDist/distance),7));
+  for(int i = 0; i < 2; i++)
+    for(int j = 0; j < 2; j++)
+      potderiv2(i,j) = 0.0;
+
+  for(int i = 0; i < 2; i++)
+  {
+      potderiv2(i,i) += dpotdr/distance;
+      for(int j = 0; j < 2; j++)
+        potderiv2(i,j) += (dpotdrdr - (dpotdr/distance))*du_tensor_du(i,j);
+  }
+}
+
 
 
 
@@ -491,6 +575,52 @@ void POTENTIAL::Potential::EvaluateZetaPotential(
 }
 
 
+/*-------------------------------------------------------------------*
+| (protected)                                             umay  10/09|
+|                                                                    |
+| evaluate Zeta potential 2D                                         |
+| not yet the correct formula, just an exponantial function          |
+*--------------------------------------------------------------------*/
+void POTENTIAL::Potential::EvaluateZetaPotential(
+    const double                  zeta_param_1,   //depth
+    const double                  zeta_param_2,   //rootdist
+    const LINALG::Matrix<2,1>&    x,
+    const LINALG::Matrix<2,1>&    y,
+    LINALG::Matrix<2,1>&          potderiv1,
+    LINALG::Matrix<2,2>&          potderiv2)
+{
+
+  // evaluate distance related stuff
+  double                    distance      = 0.0;
+  LINALG::Matrix<2,1>       distance_vec(true);
+  LINALG::Matrix<2,1>       distance_unit(true);
+  LINALG::Matrix<2,2>       du_tensor_du;
+  computeDistance(x,y, du_tensor_du, distance_vec, distance_unit, distance);
+
+  //----------------------------------------------------------------------
+  // evaluate 1.derivative dphi/du_i
+  //----------------------------------------------------------------------
+  const double dpotdr = zeta_param_1* (-1)*zeta_param_2 *exp((-1)*zeta_param_2*distance);
+  for(int i = 0; i < 2; i++)
+    potderiv1(i) = dpotdr*distance_unit(i);
+
+  //----------------------------------------------------------------------
+  // evaluate 2.derivative dphi/du_i d_uiI  (this is not a mistake !!!!)
+  //----------------------------------------------------------------------
+  const double dpotdrdr = (-1)*zeta_param_1*zeta_param_2* (-1)*zeta_param_2* exp((-1)*zeta_param_2*distance);
+  for(int i = 0; i < 2; i++)
+    for(int j = 0; j < 2; j++)
+      potderiv2(i,j) = 0.0;
+
+  for(int i = 0; i < 2; i++)
+  {
+      potderiv2(i,i) += dpotdr/distance;
+      for(int j = 0; j < 2; j++)
+        potderiv2(i,j) += (dpotdrdr - (dpotdr/distance))*du_tensor_du(i,j);
+  }
+}
+
+
 
 /*-------------------------------------------------------------------*
 | (protected)                                             umay  07/08|
@@ -519,6 +649,38 @@ void POTENTIAL::Potential::computeDistance(
   // compute r_unit tensorproduct tensor_product
   for(int i=0; i<3; i++)
     for(int j=0; j<3; j++)
+      du_tensor_du(i,j) = dist_unit(i)*dist_unit(j);
+
+}
+
+
+/*-------------------------------------------------------------------*
+| (protected)                                             umay  09/10|
+|                                                                    |
+| computes distance vector, distance, the distance unit vector       |
+| and r_unit tensorproduct r_unit                                    |
+*--------------------------------------------------------------------*/
+void POTENTIAL::Potential::computeDistance(
+    const LINALG::Matrix<2,1>&  x,
+    const LINALG::Matrix<2,1>&  y,
+    LINALG::Matrix<2,2>&        du_tensor_du,
+    LINALG::Matrix<2,1>&        dist_vec,
+    LINALG::Matrix<2,1>&        dist_unit,
+    double&                     distance)
+{
+  // compute distance vector
+  dist_vec.Update(1.0, x, -1.0, y);
+
+  // compute distance
+  distance = dist_vec.Norm2();
+
+  // compute distance unit vector
+  dist_unit = dist_vec;
+  dist_unit.Scale(1.0/distance);
+
+  // compute r_unit tensorproduct tensor_product
+  for(int i=0; i<2; i++)
+    for(int j=0; j<2; j++)
       du_tensor_du(i,j) = dist_unit(i)*dist_unit(j);
 
 }

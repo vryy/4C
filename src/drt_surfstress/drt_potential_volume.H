@@ -17,6 +17,12 @@ Maintainer: Ursula Mayer
 #define DRT_POTENTIAL_VOLUME_H_
 
 
+// This is just here to get the c++ mpi header, otherwise it would
+// use the c version included inside standardtypes.h
+#ifdef PARALLEL
+#include "mpi.h"
+#endif
+
 #include "../drt_surfstress/drt_potential.H"
 
 
@@ -161,7 +167,7 @@ private:
       LINALG::SerialDenseMatrix&              deriv,
       const DRT::UTILS::IntegrationPoints2D&  intpoints,
       const int                               gp,
-      LINALG::Matrix<3,1>&                    x_gp,
+      LINALG::Matrix<2,1>&                    x_gp,
       const double                            curve_fac
       );
 
@@ -187,7 +193,7 @@ private:
   std::map<int,LINALG::Matrix<3,1> >          currentpositions_;
 
   //! for each potential condition label there is a set of boundary elements
-  std::map<int,std::set<int> >                 elementsByLabel_;
+  std::map<int,std::set<int> >                elementsByLabel_;
 
   //! potential boundary
   LINALG::MapExtractor                        potboundary_;

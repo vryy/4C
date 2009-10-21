@@ -139,12 +139,24 @@ protected:
   \brief  select correct potential out of condition
    */
   void EvaluatePotentialfromCondition(
-    RefCountPtr<DRT::Condition>   cond,
-    const LINALG::Matrix<3,1>&    x,
-    const LINALG::Matrix<3,1>&    y,
-    LINALG::Matrix<3,1>&          potderiv1,
-    LINALG::Matrix<3,3>&          potderiv2
-    );
+      RefCountPtr<DRT::Condition>   cond,
+      const LINALG::Matrix<3,1>&    x,
+      const LINALG::Matrix<3,1>&    y,
+      LINALG::Matrix<3,1>&          potderiv1,
+      LINALG::Matrix<3,3>&          potderiv2
+      );
+  
+  
+  /*!
+   \brief  select correct potential out of condition
+   */
+  void EvaluatePotentialfromCondition(
+      RefCountPtr<DRT::Condition>   cond,
+      const LINALG::Matrix<2,1>&    x,
+      const LINALG::Matrix<2,1>&    y,
+      LINALG::Matrix<2,1>&          potderiv1,
+      LINALG::Matrix<2,2>&          potderiv2
+      );
   
   
   /*!
@@ -160,7 +172,8 @@ protected:
 
 
   /*!
-  \brief  compute first and second derivative of the Lennard-Jones potential
+  \brief  compute first and second derivative of the Lennard-Jones potential 
+          for 3D problems
    */
   void EvaluateLennardJonesPotential(
       const double                depth,
@@ -169,6 +182,20 @@ protected:
       const LINALG::Matrix<3,1>&  y,
       LINALG::Matrix<3,1>&        potderiv1,
       LINALG::Matrix<3,3>&        potderiv2
+      );
+  
+  
+  /*!
+    \brief  compute first and second derivative of the Lennard-Jones potential 
+            for 2D problems
+   */
+  void EvaluateLennardJonesPotential(
+      const double                  depth,
+      const double                  rootDist,
+      const LINALG::Matrix<2,1>&    x,
+      const LINALG::Matrix<2,1>&    y,
+      LINALG::Matrix<2,1>&          potderiv1,
+      LINALG::Matrix<2,2>&          potderiv2
       );
   
   
@@ -187,6 +214,7 @@ protected:
 
   /*!
   \brief  compute first and second derivative of the Zeta potential
+          for 3D problems
    */
   void EvaluateZetaPotential(
     const double                  zeta_param_1,
@@ -196,10 +224,24 @@ protected:
     LINALG::Matrix<3,1>&          potderiv1,
     LINALG::Matrix<3,3>&          potderiv2
     );
+  
+  
+  /*!
+    \brief  compute first and second derivative of the Zeta potential
+            for 2D problems
+   */
+  void EvaluateZetaPotential(
+    const double                  zeta_param_1,   //depth
+    const double                  zeta_param_2,   //rootdist
+    const LINALG::Matrix<2,1>&    x,
+    const LINALG::Matrix<2,1>&    y,
+    LINALG::Matrix<2,1>&          potderiv1,
+    LINALG::Matrix<2,2>&          potderiv2
+    );
 
 
   /*!
-  \brief  computes distance related structures
+  \brief  computes distance related structures 3D
    */
   void computeDistance(
       const LINALG::Matrix<3,1>&  x,
@@ -207,6 +249,18 @@ protected:
       LINALG::Matrix<3,3>&        du_tensor_du,
       LINALG::Matrix<3,1>&        dist_vec,
       LINALG::Matrix<3,1>&        dist_unit,
+      double&                     distance
+      );
+  
+  /*!
+    \brief  computes distance related structures 2D
+     */
+  void computeDistance(
+      const LINALG::Matrix<2,1>&  x,
+      const LINALG::Matrix<2,1>&  y,
+      LINALG::Matrix<2,2>&        du_tensor_du,
+      LINALG::Matrix<2,1>&        dist_vec,
+      LINALG::Matrix<2,1>&        dist_unit,
       double&                     distance
       );
 
