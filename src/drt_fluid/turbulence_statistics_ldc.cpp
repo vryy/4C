@@ -514,6 +514,9 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
     log->flush();
   }
 
+  // clear statistics
+  ClearStatistics();
+
   return;
 }// TurbulenceStatisticsLdc::TurbulenceStatisticsLdc
 
@@ -1449,6 +1452,89 @@ void FLD::TurbulenceStatisticsLdc::DumpLomaStatistics(int step)
   return;
 
 }// TurbulenceStatisticsLdc::DumpLomaStatistics
+
+
+/*----------------------------------------------------------------------*
+ *
+ *----------------------------------------------------------------------*/
+void FLD::TurbulenceStatisticsLdc::ClearStatistics()
+{
+  numsamp_ = 0;
+
+  for(unsigned i=0; i<x1coordinates_->size(); ++i)
+  {
+    (*x1sumu_)[i]=0;
+    (*x1sumv_)[i]=0;
+    (*x1sumw_)[i]=0;
+    (*x1sump_)[i]=0;
+    (*x1sumrho_)[i]=0;
+    (*x1sumT_)[i]=0;
+
+    (*x1sumsqu_)[i]=0;
+    (*x1sumsqv_)[i]=0;
+    (*x1sumsqw_)[i]=0;
+    (*x1sumsqp_)[i]=0;
+    (*x1sumsqrho_)[i]=0;
+    (*x1sumsqT_)[i]=0;
+
+    (*x1sumuv_)[i] =0;
+    (*x1sumuw_)[i] =0;
+    (*x1sumvw_)[i] =0;
+    (*x1sumuT_)[i] =0;
+    (*x1sumvT_)[i] =0;
+    (*x1sumwT_)[i] =0;
+  }
+
+  for(unsigned i=0; i<x2coordinates_->size(); ++i)
+  {
+    (*x2sumu_)[i]=0;
+    (*x2sumv_)[i]=0;
+    (*x2sumw_)[i]=0;
+    (*x2sump_)[i]=0;
+    (*x2sumrho_)[i]=0;
+    (*x2sumT_)[i]=0;
+
+    (*x2sumsqu_)[i]=0;
+    (*x2sumsqv_)[i]=0;
+    (*x2sumsqw_)[i]=0;
+    (*x2sumsqp_)[i]=0;
+    (*x2sumsqrho_)[i]=0;
+    (*x2sumsqT_)[i]=0;
+
+    (*x2sumuv_)[i] =0;
+    (*x2sumuw_)[i] =0;
+    (*x2sumvw_)[i] =0;
+    (*x2sumuT_)[i] =0;
+    (*x2sumvT_)[i] =0;
+    (*x2sumwT_)[i] =0;
+  }
+
+  for(unsigned i=0; i<x3coordinates_->size(); ++i)
+  {
+    (*x3sumu_)[i]=0;
+    (*x3sumv_)[i]=0;
+    (*x3sumw_)[i]=0;
+    (*x3sump_)[i]=0;
+    (*x3sumrho_)[i]=0;
+    (*x3sumT_)[i]=0;
+
+    (*x3sumsqu_)[i]=0;
+    (*x3sumsqv_)[i]=0;
+    (*x3sumsqw_)[i]=0;
+    (*x3sumsqp_)[i]=0;
+    (*x3sumsqrho_)[i]=0;
+    (*x3sumsqT_)[i]=0;
+
+    (*x3sumuv_)[i] =0;
+    (*x3sumuw_)[i] =0;
+    (*x3sumvw_)[i] =0;
+    (*x3sumuT_)[i] =0;
+    (*x3sumvT_)[i] =0;
+    (*x3sumwT_)[i] =0;
+  }
+
+  return;
+}// TurbulenceStatisticsLdc::ClearStatistics
 
 
 #endif /* CCADISCRET       */

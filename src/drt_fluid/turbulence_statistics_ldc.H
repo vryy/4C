@@ -121,6 +121,12 @@ public:
 
   void DumpLomaStatistics(int step);
 
+  /*!
+  \brief Reset sums and number of samples to zero
+  */
+
+  void ClearStatistics();
+
 
 protected:
 
