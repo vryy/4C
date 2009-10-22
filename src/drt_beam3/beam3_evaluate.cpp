@@ -343,8 +343,8 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
       }
 
     } //end of section in which numerical approximation for stiffness matrix is computed
-*/
 
+*/
     }
     break;
     case calc_struct_update_istep:
@@ -1594,10 +1594,11 @@ inline void DRT::ELEMENTS::Beam3::MyRotationalDamping(ParameterList& params,  //
   //damping coefficients for translational and rotatinal degrees of freedom
   LINALG::Matrix<3,1> gamma(true);
   MyDampingConstants(params,gamma,frictionmodel);
+  
 
   //matrix to store basis functions evaluated at a certain Gauss point
   LINALG::Matrix<1,nnode> funct;
-/*  
+  
   for (int gp=0; gp<gausspoints.nquad; gp++)//loop through Gauss points
   {    
     //get evaluated basis functions at current Gauss point
@@ -1661,7 +1662,11 @@ inline void DRT::ELEMENTS::Beam3::MyRotationalDamping(ParameterList& params,  //
       }     
   }
   
-  */
+  
+  
+  /*
+  
+  //neuer Code so umgewandelt, dass explizite Rotationsdämpfung
   
   for (int gp=0; gp<gausspoints.nquad; gp++)//loop through Gauss points
   {    
@@ -1715,6 +1720,103 @@ inline void DRT::ELEMENTS::Beam3::MyRotationalDamping(ParameterList& params,  //
   }
   
   
+  
+  */
+  
+  
+  
+  
+  
+  
+  
+  
+ /*
+
+     
+    double rsquare = pow((4*Iyy_/PI),0.5);
+    //gamma_a artificially increased by factor artificial
+    double artificial = 60*16*2;//knyrim Rotationsdämpfung alt:60*16
+    double gammaa = 4*PI*params.get<double>("ETA",0.0)*(rsquare)*artificial;
+    
+    
+    //aux variables for rot damp calculation,vector contains matrix for each Gausspoint
+    vector<LINALG::Matrix<4,1> > deltaQ;
+    deltaQ.resize(nnode-1);
+    vector<LINALG::Matrix<3,1> > deltatheta;
+    deltatheta.resize(nnode-1);  
+    vector<LINALG::Matrix<3,1> > omega;
+    omega.resize(nnode-1);
+    vector<LINALG::Matrix<3,3> > Tconv;
+    Tconv.resize(nnode-1);
+    vector<LINALG::Matrix<3,3> >Theta;
+    Theta.resize(nnode-1);
+    vector<LINALG::Matrix<3,3> > Hinverse;
+    Hinverse.resize(nnode-1);
+    vector<LINALG::Matrix<3,3> > artstiff;
+    artstiff.resize(nnode-1);
+    vector<LINALG::Matrix<3,1> > artforce;
+    artforce.resize(nnode-1);
+    
+    const DRT::Element::DiscretizationType distype = Shape(); //Get discretization typ 
+   
+    for (int gp=0; gp<nnode-1; gp++)//loop through Gauss points
+    {
+      
+      //Get location and weight of GP in parameter space  
+      const double xi = gausspoints.qxg[gp][0];
+      const double wgt = gausspoints.qwgt[gp];
+      
+      DRT::UTILS::shape_function_1D(funct,xi,distype);//get evaluated ansatzfunktionen at gausspoints
+      
+      //computing angle increment from current position in comparison with last converged position for damping
+      quaternionproduct(inversequaternion(Qconv_[gp]),Qnew_[gp],deltaQ[gp]);
+      quaterniontoangle(deltaQ[gp],deltatheta[gp]);
+      
+      //angular velocity
+      for(int j=0; j<3; j++)
+        omega[gp](j,0)=deltatheta[gp](j,0);
+      omega[gp].Scale(1/dt);
+      
+      //computing special matrix for anisotropic damping
+      quaterniontotriad(Qconv_[gp],Tconv[gp]);    
+      for(int k=0; k<3; k++)
+        for(int j = 0; j<3; j++)
+          Theta[gp](k,j) = Tconv[gp](k,0)*Tconv[gp](j,0);
+      
+      //inverse exponential map
+      Hinverse[gp]=Hinv(deltatheta[gp]);
+    
+      //stiffness due to rotational damping
+      artstiff[gp].Multiply(Theta[gp],Hinverse[gp]);
+      artstiff[gp].Scale(gammaa/dt); 
+    
+      //forces due to rotational damping  
+      artforce[gp].Multiply(Theta[gp],omega[gp]);
+      artforce[gp].Scale(gammaa);
+    
+      
+      for(int i=0; i<nnode; i++)//loop twice over nodes (integration N_xi*N_xi)
+      {
+        //add rot damp forces
+        for (int k=0; k<3; k++)
+          if(force != NULL)
+            (*force)(i*6+3+k) +=artforce[gp](k)*funct(i)*wgt*alpha_[gp];    
+        
+        for (int j=0; j<nnode; j++)
+        {
+          for(int k=0; k<3; k++)//loop over rotation dof blocks
+            for (int l=0; l<3; l++)
+              if(stiffmatrix != NULL)
+                (*stiffmatrix)(i*6+3+k,j*6+3+l) += artstiff[gp](k,l)*funct(i)*funct(j)*wgt*alpha_[gp]; 
+       
+        }
+      }   
+    }
+  
+  
+ */ 
+  
+  
   return;
 }//DRT::ELEMENTS::Beam3::MyRotationalDamping(.)
 
@@ -1745,10 +1847,16 @@ inline void DRT::ELEMENTS::Beam3::MyTranslationalDamping(ParameterList& params, 
   LINALG::Matrix<3,1> gamma(true);
   MyDampingConstants(params,gamma,frictionmodel);
   
+  //get vector alpha with Jacobi determinants at each integration point (gets by default those values required for consistent damping matrix)
+  vector<double> alpha(alphamass_);
+  
   //determine type of numerical integration performed (lumped damping matrix via lobatto integration!)
   IntegrationType integrationtype = gaussexactintegration;
   if(frictionmodel == INPAR::STATMECH::frictionmodel_isotropiclumped)
+  {
     integrationtype = lobattointegration;
+    alpha = alphanode_;
+  }
   
   //get Gauss points and weights for evaluation of damping matrix
   DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,integrationtype));
@@ -1756,14 +1864,13 @@ inline void DRT::ELEMENTS::Beam3::MyTranslationalDamping(ParameterList& params, 
   //matrix to store basis functions and their derivatives evaluated at a certain Gauss point
   LINALG::Matrix<1,nnode> funct;
   LINALG::Matrix<1,nnode> deriv;
-  
 
   for(int gp=0; gp < gausspoints.nquad; gp++)
-  {
+  {    
     //evaluate basis functions and their derivatives at current Gauss point
     DRT::UTILS::shape_function_1D(funct,gausspoints.qxg[gp][0],Shape());
     DRT::UTILS::shape_function_1D_deriv1(deriv,gausspoints.qxg[gp][0],Shape());
-    
+     
     //compute point in phyiscal space corresponding to Gauss point
     evaluationpoint.PutScalar(0);
     //loop over all line nodes
@@ -1780,7 +1887,7 @@ inline void DRT::ELEMENTS::Beam3::MyTranslationalDamping(ParameterList& params, 
     LINALG::Matrix<ndim,1> tpar(true);
     for(int i=0; i<nnode; i++)
       for(int k=0; k<ndim; k++)
-        tpar(k) += deriv(i)*(Nodes()[i]->X()[k]+disp[dof*i+k]) / alphamass_[gp];
+        tpar(k) += deriv(i)*(Nodes()[i]->X()[k]+disp[dof*i+k]) / alpha[gp];
     
     //compute velocity vector at this Gauss point
     LINALG::Matrix<ndim,1> velgp(true);
@@ -1801,23 +1908,22 @@ inline void DRT::ELEMENTS::Beam3::MyTranslationalDamping(ParameterList& params, 
       for(int k=0; k<ndim; k++)
         //loop over columns of matrix t_{\par} \otimes t_{\par}
         for(int l=0; l<ndim; l++)           
-        {     
+        {               
           if(force != NULL)
-            (*force)(i*dof+k)+= funct(i)*alphamass_[gp]*gausspoints.qwgt[gp]*( (k==l)*gamma(1) + (gamma(0) - gamma(1))*tpar(k)*tpar(l) ) *(velgp(l)- velbackground(l));
+            (*force)(i*dof+k)+= funct(i)*alpha[gp]*gausspoints.qwgt[gp]*( (k==l)*gamma(1) + (gamma(0) - gamma(1))*tpar(k)*tpar(l) ) *(velgp(l)- velbackground(l));
           
           if(stiffmatrix != NULL)
             //loop over all column nodes
             for (int j=0; j<nnode; j++) 
             {
-              (*stiffmatrix)(i*dof+k,j*dof+l) += gausspoints.qwgt[gp]*funct(i)*funct(j)*alphamass_[gp]*(                 (k==l)*gamma(1) + (gamma(0) - gamma(1))*tpar(k)*tpar(l) ) / dt;
-              (*stiffmatrix)(i*dof+k,j*dof+l) -= gausspoints.qwgt[gp]*funct(i)*funct(j)*alphamass_[gp]*( velbackgroundgrad(k,l)*gamma(1) + (gamma(0) - gamma(1))*tpartparvelbackgroundgrad(k,l) ) ;             
+              (*stiffmatrix)(i*dof+k,j*dof+l) += gausspoints.qwgt[gp]*funct(i)*funct(j)*alpha[gp]*(                 (k==l)*gamma(1) + (gamma(0) - gamma(1))*tpar(k)*tpar(l) ) / dt;
+              (*stiffmatrix)(i*dof+k,j*dof+l) -= gausspoints.qwgt[gp]*funct(i)*funct(j)*alpha[gp]*( velbackgroundgrad(k,l)*gamma(1) + (gamma(0) - gamma(1))*tpartparvelbackgroundgrad(k,l) ) ;             
               (*stiffmatrix)(i*dof+k,j*dof+k) += gausspoints.qwgt[gp]*funct(i)*deriv(j)*                                                   (gamma(0) - gamma(1))*tpar(l)*(velgp(l) - velbackground(l));
               (*stiffmatrix)(i*dof+k,j*dof+l) += gausspoints.qwgt[gp]*funct(i)*deriv(j)*                                                   (gamma(0) - gamma(1))*tpar(k)*(velgp(l) - velbackground(l));
             }    
         }   
   }
-
-  
+ 
   return;
 }//DRT::ELEMENTS::Beam3::MyTranslationalDamping(.)
 
@@ -1838,10 +1944,17 @@ inline void DRT::ELEMENTS::Beam3::MyStochasticForces(ParameterList& params,  //!
   LINALG::Matrix<3,1> gamma(true);
   MyDampingConstants(params,gamma,frictionmodel);
   
-  //determine type of numerical integration performed
+
+  //get vector alpha with Jacobi determinants at each integration point (gets by default those values required for consistent damping matrix)
+  vector<double> alpha(alphamass_);
+  
+  //determine type of numerical integration performed (lumped damping matrix via lobatto integration!)
   IntegrationType integrationtype = gaussexactintegration;
   if(frictionmodel == INPAR::STATMECH::frictionmodel_isotropiclumped)
-    integrationtype = lobattointegration;  
+  {
+    integrationtype = lobattointegration;
+    alpha = alphanode_;
+  }
   
   //get Gauss points and weights for evaluation of damping matrix
   DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,integrationtype));
@@ -1855,6 +1968,8 @@ inline void DRT::ELEMENTS::Beam3::MyStochasticForces(ParameterList& params,  //!
    * and standard deviation (2*kT / dt)^0.5; note carefully: a space between the two subsequal ">" signs is mandatory
    * for the C++ parser in order to avoid confusion with ">>" for streams*/
    RCP<Epetra_MultiVector> randomnumbers = params.get<  RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null);
+   
+
 
   for(int gp=0; gp < gausspoints.nquad; gp++)
   {
@@ -1866,7 +1981,7 @@ inline void DRT::ELEMENTS::Beam3::MyStochasticForces(ParameterList& params,  //!
     LINALG::Matrix<ndim,1> tpar(true);
     for(int i=0; i<nnode; i++)
       for(int k=0; k<ndim; k++)
-        tpar(k) += deriv(i)*(Nodes()[i]->X()[k]+disp[dof*i+k]) / alphamass_[gp];
+        tpar(k) += deriv(i)*(Nodes()[i]->X()[k]+disp[dof*i+k]) / alpha[gp];
      
     
     //loop over all line nodes
@@ -1877,17 +1992,20 @@ inline void DRT::ELEMENTS::Beam3::MyStochasticForces(ParameterList& params,  //!
         for(int l=0; l<ndim; l++)           
         {
           if(force != NULL)
-            (*force)(i*dof+k) -= funct(i)*(sqrt(gamma(1))*(k==l) + (sqrt(gamma(0)) - sqrt(gamma(1)))*tpar(k)*tpar(l))*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(alphamass_[gp]*gausspoints.qwgt[gp]);          
+            (*force)(i*dof+k) -= funct(i)*(sqrt(gamma(1))*(k==l) + (sqrt(gamma(0)) - sqrt(gamma(1)))*tpar(k)*tpar(l))*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(alpha[gp]*gausspoints.qwgt[gp]);          
 
           if(stiffmatrix != NULL)
             //loop over all column nodes
             for (int j=0; j<nnode; j++) 
             {            
-              (*stiffmatrix)(i*dof+k,j*dof+k) -= funct(i)*deriv(j)*tpar(l)*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(gausspoints.qwgt[gp]/ alphamass_[gp])*(sqrt(gamma(0)) - sqrt(gamma(1)));   
-              (*stiffmatrix)(i*dof+k,j*dof+l) -= funct(i)*deriv(j)*tpar(k)*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(gausspoints.qwgt[gp]/ alphamass_[gp])*(sqrt(gamma(0)) - sqrt(gamma(1)));  
+              (*stiffmatrix)(i*dof+k,j*dof+k) -= funct(i)*deriv(j)*tpar(l)*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(gausspoints.qwgt[gp]/ alpha[gp])*(sqrt(gamma(0)) - sqrt(gamma(1)));   
+              (*stiffmatrix)(i*dof+k,j*dof+l) -= funct(i)*deriv(j)*tpar(k)*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(gausspoints.qwgt[gp]/ alpha[gp])*(sqrt(gamma(0)) - sqrt(gamma(1)));  
             }
         }  
   }
+  
+  
+  
   return;
 }//DRT::ELEMENTS::Beam3::MyStochasticForces(.)
 
@@ -1976,10 +2094,9 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
   //if no random numbers for generation of stochastic forces are passed to the element no Brownian dynamics calculations are conducted
   if( params.get<  RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null) == Teuchos::null)
     return;
-
   
   //add stiffness and forces due to translational damping effects
-  MyTranslationalDamping<nnode,3,6>(params,vel,disp,stiffmatrix,force);
+  MyTranslationalDamping<nnode,3,6>(params,vel,disp,stiffmatrix,force); 
 
   //add stiffness and forces (i.e. moments) due to rotational damping effects
   MyRotationalDamping<nnode>(params,vel,disp,stiffmatrix,force);
@@ -1988,7 +2105,7 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
   MyStochasticForces<nnode,3,6,4>(params,vel,disp,stiffmatrix,force);
   
   //add stochastic moments and resulting stiffness
-  MyStochasticMoments<nnode,4>(params,vel,disp,stiffmatrix,force);
+  //MyStochasticMoments<nnode,4>(params,vel,disp,stiffmatrix,force);
 
 
 return;

@@ -375,6 +375,9 @@ private:
 
   //! Vector holding value of Jacobi determinant alpha for complete integration of massmatrix
   vector<double> alphamass_;
+  
+  //! Vector holding value of Jacobi determinant alpha at nodes
+  vector<double> alphanode_;
 
   //! @name methods for initilization of the element
 

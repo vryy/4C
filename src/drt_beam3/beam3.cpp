@@ -34,7 +34,8 @@ Iyy_(0),
 Izz_(0),
 Irr_(0),
 alpha_(0),
-alphamass_(0)
+alphamass_(0),
+alphanode_(0)
 {
   return;
 }
@@ -62,7 +63,8 @@ DRT::ELEMENTS::Beam3::Beam3(const DRT::ELEMENTS::Beam3& old) :
  Izz_(old.Izz_),
  Irr_(old.Irr_),
  alpha_(old.alpha_),
- alphamass_(old.alphamass_)
+ alphamass_(old.alphamass_),
+ alphanode_(old.alphanode_)
 {
   return;
 }
@@ -153,6 +155,8 @@ void DRT::ELEMENTS::Beam3::Pack(vector<char>& data) const
     AddtoPack(data,alpha_[i]); 
   for (int i=0; i<(int)alphamass_.size(); i++)
     AddtoPack(data,alphamass_[i]);
+  for (int i=0; i<(int)alphanode_.size(); i++)
+    AddtoPack(data,alphanode_[i]);
   AddtoPack(data,crosssec_);
   AddtoPack(data,crosssecshear_);
   for (int i=0; i<(int)curvnew_.size(); i++)
@@ -211,6 +215,8 @@ void DRT::ELEMENTS::Beam3::Unpack(const vector<char>& data)
     ExtractfromPack(position,data,alpha_[i]); 
   for (int i=0; i<(int)alphamass_.size(); i++)
     ExtractfromPack(position,data,alphamass_[i]);
+  for (int i=0; i<(int)alphanode_.size(); i++)
+    ExtractfromPack(position,data,alphanode_[i]);
   ExtractfromPack(position,data,crosssec_);
   ExtractfromPack(position,data,crosssecshear_);
   for (int i=0; i<(int)curvnew_.size(); i++)
@@ -383,6 +389,7 @@ void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const vector<double>& xrefe,co
   //resize all class STL vectors so that they can each store 1 value at each GP
   alpha_.resize(nnode-1);
   alphamass_.resize(nnode);
+  alphanode_.resize(nnode);
   Qconv_.resize((nnode-1));
   Qold_.resize((nnode-1));
   Qnew_.resize((nnode-1));
@@ -529,6 +536,30 @@ void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const vector<double>& xrefe,co
     alphamass_[numgp]= dxdximass.Norm2();	
 	
 	}//for(int numgp=0; numgp < gausspointsmass.nquad; numgp++)
+	
+	
+	//compute Jacobi determinant at gauss points for Lobatto quadrature (i.e. at nodes)
+  for(int numgp=0; numgp< nnode; numgp++)
+  {
+      
+    //Get position xi of nodes
+    const double xi = -1.0 + 2*numgp / (nnode - 1);
+    
+    //Get derivatives of shapefunctions at GP
+    DRT::UTILS::shape_function_1D_deriv1(shapefuncderiv,xi,distype);
+  
+    LINALG::Matrix<3,1> dxdxi;
+
+    dxdxi.Clear();
+    //calculate dx/dxi and dz/dxi
+    for(int node=0; node<nnode; node++)
+      for(int dof=0; dof<3; dof++)
+        dxdxi(dof)+=shapefuncderiv(node)*xrefe[3*node+dof];
+    
+    //Store Jacobi determinant for each node (Jacobi determinant refers by definition always to the reference configuration)
+    alphanode_[numgp]= dxdxi.Norm2(); 
+  
+  }//for(int numgp=0; numgp< nnode; numgp++)
 	
 	return;
 

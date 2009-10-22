@@ -1327,7 +1327,7 @@ void StatMechManager::GenerateGaussianRandomNumbers(RCP<Epetra_MultiVector> rand
   //export stochastic forces from row map to column map
   Epetra_Export exporter(*discret_.ElementRowMap(),*discret_.ElementColMap());
   randomnumbers->Export(randomnumbersrow,exporter,Add);
-  
+
   //now fstoch contains stochastic forces identical on all processors
 
   return;

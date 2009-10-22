@@ -49,7 +49,7 @@ StruGenAlpha(params,dis,solver,output)
   statmechmanager_ = rcp(new StatMechManager(params,dis,stiff_));
   
   //maximal number of random numbers to be generated per time step for any column map element of this processor
-  int randomnumbersperlocalelement;
+  int randomnumbersperlocalelement = 0;
 
   /*check maximal number of nodes of an element with stochastic forces on this processor*/ 
   for (int i=0; i<  dis.NumMyColElements(); ++i)
@@ -83,8 +83,7 @@ StruGenAlpha(params,dis,solver,output)
 #endif  // #ifdef D_BEAM2R
       default:
         continue;
-    }
-    
+    }  
   } //for (int i=0; i<dis_.NumMyColElements(); ++i)
    
   /*so far the maximal number of random numbers required per element has been checked only locally on this processor;
@@ -136,6 +135,7 @@ void StatMechTime::Integrate()
     }
     */
 
+
     double time = params_.get<double>("total time",0.0);
     
     statmechmanager_->time_ = time;
@@ -163,11 +163,13 @@ void StatMechTime::Integrate()
     if      (predictor==1) ConstantPredictor();
     else if (predictor==2) ConsistentPredictor();
     */
-    
+
     //generate gaussian random numbers for parallel use with mean value 0 and standard deviation (2KT / dt)0.5
     statmechmanager_->GenerateGaussianRandomNumbers(randomnumbers,0,pow(2.0 * (statmechmanager_->statmechparams_).get<double>("KT",0.0) / dt,0.5));
+
     
     ConsistentPredictor(randomnumbers);
+    
     
     if(ndim ==3)
       PTC(randomnumbers);
