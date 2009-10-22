@@ -27,6 +27,10 @@ DRT::ELEMENTS::So_shw6::So_shw6(int id, int owner) :
 DRT::ELEMENTS::So_weg6(id,owner)
 {
   SetType(element_so_shw6);
+  eastype_ = soshw6_easnone;
+  neas_ = 0;
+  optimal_parameterspace_map_ = false;
+  nodes_rearranged_ = false;
   return;
 }
 

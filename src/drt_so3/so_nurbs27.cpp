@@ -30,6 +30,12 @@ data_()
 
   invJ_.resize(NUMGPT_SONURBS27);
   detJ_.resize(NUMGPT_SONURBS27);
+  for (int i=0; i<NUMGPT_SONURBS27; ++i)
+  {
+    detJ_[i]= 0.0;
+    invJ_[i]= LINALG::Matrix<NUMDIM_SONURBS27,NUMDIM_SONURBS27>(true);
+  }
+  
 
   return;
 }
@@ -128,11 +134,12 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::Unpack(const vector<char>& data)
   // detJ_
   ExtractfromPack(position,data,detJ_);
   // invJ_
-  int size;
+  int size = 0;
   ExtractfromPack(position,data,size);
   invJ_.resize(size);
   for (int i=0; i<size; ++i)
   {
+    invJ_[i] = LINALG::Matrix<NUMDIM_SONURBS27,NUMDIM_SONURBS27>(true);
     ExtractfromPack(position,data,invJ_[i]);
   }
 

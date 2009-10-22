@@ -33,8 +33,11 @@ data_()
   kintype_ = soh27_totlag;
   invJ_.resize(NUMGPT_SOH27);
   detJ_.resize(NUMGPT_SOH27);
-//  for (int i=0; i<NUMGPT_SOH27; ++i)
-//    invJ_[i].Shape(3,3);
+  for (int i=0; i<NUMGPT_SOH27; ++i)
+  {
+    detJ_[i]= 0.0;
+    invJ_[i]=LINALG::Matrix<NUMDIM_SOH27,NUMDIM_SOH27>(true);
+  }
 
   return;
 }
@@ -53,7 +56,6 @@ detJ_(old.detJ_)
   for (int i=0; i<(int)invJ_.size(); ++i)
   {
     // can this size be anything but NUMDIM_SOH27 x NUMDIM_SOH27?
-    //invJ_[i].Shape(old.invJ_[i].M(),old.invJ_[i].N());
     invJ_[i] = old.invJ_[i];
   }
 
@@ -135,12 +137,12 @@ void DRT::ELEMENTS::So_hex27::Unpack(const vector<char>& data)
   // detJ_
   ExtractfromPack(position,data,detJ_);
   // invJ_
-  int size;
+  int size = 0;
   ExtractfromPack(position,data,size);
   invJ_.resize(size);
   for (int i=0; i<size; ++i)
   {
-    //invJ_[i].Shape(0,0);
+    invJ_[i] = LINALG::Matrix<NUMDIM_SOH27,NUMDIM_SOH27>(true);
     ExtractfromPack(position,data,invJ_[i]);
   }
 

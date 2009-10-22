@@ -370,8 +370,7 @@ protected:
   //! container containing all kind of solid3 thisandthat
   DRT::Container                                                        data_;
   //! vector of inverses of the jacobian in material frame
-  //vector<Epetra_SerialDenseMatrix>                 invJ_;
-  vector<LINALG::Matrix<NUMDIM_SOH20,NUMDIM_SOH20> >  invJ_;
+  vector<LINALG::Matrix<NUMDIM_SOH20,NUMDIM_SOH20> >                    invJ_;
   //! determinant of Jacobian in material frame
   vector<double>                                                        detJ_;
 

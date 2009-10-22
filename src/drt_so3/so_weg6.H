@@ -365,13 +365,13 @@ protected:
     sow6_updlag
   };
   //! kinematic type
-  KinematicType                                    kintype_;
+  KinematicType                                     kintype_;
   //! container containing all kind of solid3 thisandthat
-  DRT::Container                                   data_;
+  DRT::Container                                    data_;
   //! vector of inverses of the jacobian in material frame
-  vector<LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> >                 invJ_;
+  vector<LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> >  invJ_;
   //! determinant of Jacobian in material frame
-  vector<double>                                   detJ_;
+  vector<double>                                    detJ_;
 
 #if defined(PRESTRESS) || defined(POSTSTRESS)
   /// Prestressing object

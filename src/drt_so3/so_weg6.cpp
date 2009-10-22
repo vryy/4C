@@ -38,6 +38,11 @@ data_()
   kintype_ = sow6_totlag;
   invJ_.resize(NUMGPT_WEG6);
   detJ_.resize(NUMGPT_WEG6);
+  for (int i=0; i<NUMGPT_WEG6; ++i)
+  {
+    detJ_[i]= 0.0;
+    invJ_[i]=LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6>(true);
+  }
 
 #if defined(PRESTRESS) || defined(POSTSTRESS)
   prestress_ = rcp(new DRT::ELEMENTS::PreStress(NUMNOD_WEG6,NUMGPT_WEG6));
@@ -184,11 +189,14 @@ void DRT::ELEMENTS::So_weg6::Unpack(const vector<char>& data)
   // detJ_
   ExtractfromPack(position,data,detJ_);
   // invJ_
-  int size;
+  int size = 0;
   ExtractfromPack(position,data,size);
   invJ_.resize(size);
   for (int i=0; i<size; ++i)
+  {
+    invJ_[i] = LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6>(true);
     ExtractfromPack(position,data,invJ_[i]);
+  }
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);

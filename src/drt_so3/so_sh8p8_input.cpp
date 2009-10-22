@@ -111,9 +111,15 @@ bool DRT::ELEMENTS::So_sh8p8::ReadElement(const std::string& eletype,
     neas_ = NUMEAS_A_;
   }
   else if (buffer=="None")
+  {
     eastype_ = soh8_easnone;
+    neas_ = 0;
+  }
   else if (buffer=="none")
+  {
     eastype_ = soh8_easnone;
+    neas_ = 0;
+  }
   else
     dserror("Reading of SO_SH8P8 EAS type failed");
 

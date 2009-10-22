@@ -86,7 +86,10 @@ bool DRT::ELEMENTS::So_hex8::ReadElement(const std::string& eletype,
   }
   // no EAS technology
   else if (buffer=="none")
+  {
     eastype_ = soh8_easnone;
+    neas_ = 0;  
+  }
   else
     dserror("Reading of SO_HEX8 EAS technology failed");
 

@@ -105,7 +105,10 @@ bool DRT::ELEMENTS::So_sh8::ReadElement(const std::string& eletype,
   }
   // no EAS technology
   else if (buffer=="none")
+  {
     eastype_ = soh8_easnone;
+    neas_ = 0;               // number of eas parameters for EAS_SOSH8
+  }
   else
     dserror("Reading of SO_SH8 EAS technology failed");
 
