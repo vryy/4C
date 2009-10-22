@@ -220,7 +220,8 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::FluidCombust::PressureRowMap()
  *------------------------------------------------------------------------------------------------*/
 double ADAPTER::FluidCombust::ResidualScaling() const
 {
-  return fluid_.ResidualScaling();
+  dserror("Thou shalt not call this function!");
+  return 0.0;
 }
 
 /*------------------------------------------------------------------------------------------------*

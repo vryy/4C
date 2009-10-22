@@ -81,9 +81,6 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   upres_(params.get("write solution every", -1)),
   writestresses_(params.get<int>("write stresses", 0))
 {
-
-  // std::cout << "CombustFluidImplicitTimeInt constructor start" << endl;
-
   //------------------------------------------------------------------------------------------------
   // time measurement: initialization
   //------------------------------------------------------------------------------------------------
@@ -206,17 +203,15 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
 
   //------------------------------------------------------------------------------------------------
   // get density from elements
-  //---.--------------------------------------------------------------------------------------------
-  {
-    ParameterList eleparams;
-    eleparams.set("action","get_density");
-    std::cout << "Warning: two-phase flows have different densities, evaluate(get_density) returns 1.0" << std::endl;
-    discret_->Evaluate(eleparams,null,null,null,null,null);
-    density_ = eleparams.get<double>("density");
-    if (density_ <= 0.0) dserror("received negative or zero density value from elements");
-  }
-
-  // std::cout << "CombustFluidImplicitTimeInt constructor done \n" << endl;
+  //------------------------------------------------------------------------------------------------
+//  {
+//    ParameterList eleparams;
+//    eleparams.set("action","get_density");
+//    std::cout << "Warning: two-phase flows have different densities, evaluate(get_density) returns 1.0" << std::endl;
+//    discret_->Evaluate(eleparams,null,null,null,null,null);
+//    density_ = eleparams.get<double>("density");
+//    if (density_ <= 0.0) dserror("received negative or zero density value from elements");
+//  }
 
 } // CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt
 
@@ -394,7 +389,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
 
   // get old dofmap, compute new one and get the new one, too
   const Epetra_Map olddofrowmap = *discret_->DofRowMap();
-  discret_->FillComplete();
+  discret_->FillComplete(true,false,false);
   const Epetra_Map& newdofrowmap = *discret_->DofRowMap();
 
   discret_->ComputeNullSpaceIfNecessary(solver_.Params());
@@ -520,15 +515,16 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 
   int               itnum = 0;
   const int         itemax = params_.get<int>("max nonlin iter steps");
-  cout << "******************** itemax ************** "<< itemax << endl;
   bool              stopnonliniter = false;
 
   double dtsolve = 0.0;
   double dtele   = 0.0;
 
-  // get new interface velocity
-// const Teuchos::RCP<const Epetra_Vector> ivelcolnp = cutterdiscret->GetState("ivelcolnp");
-// const Teuchos::RCP<const Epetra_Vector> ivelcoln  = cutterdiscret->GetState("ivelcoln");
+  // action for elements
+  if (timealgo_!=timeint_stationary and theta_ < 1.0)
+  {
+    cout0_ << "* Warning! Works reliable only for Backward Euler time discretization! *" << endl;
+  }
 
 /*
   {
@@ -545,14 +541,6 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
     f.close();
   }
 */
-
-  // action for elements
-  if (timealgo_!=timeint_stationary)
-  {
-    cout0_ << "******************************************************" << endl;
-    cout0_ << "* Warning! Does not work for moving boundaries, yet! *" << endl;
-    cout0_ << "******************************************************" << endl;
-  }
 
   if (myrank_ == 0)
   {
@@ -638,7 +626,8 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 
       // end time measurement for element
       dtele=ds_cputime()-tcpu;
-    }
+
+    } // end of element call
 
     // blank residual DOFs which are on Dirichlet BC
     // We can do this because the values at the dirichlet positions
@@ -722,8 +711,12 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
     // this is the convergence check
     // We always require at least one solve. Otherwise the
     // perturbation at the FSI interface might get by unnoticed.
-      if (vresnorm <= ittol and presnorm <= ittol and
-          incvelnorm_L2/velnorm_L2 <= ittol and incprenorm_L2/prenorm_L2 <= ittol)
+      if (vresnorm <= ittol and
+          presnorm <= ittol and
+          fullresnorm <= ittol and
+          incvelnorm_L2/velnorm_L2 <= ittol and
+          incprenorm_L2/prenorm_L2 <= ittol and
+          incfullnorm_L2/fullnorm_L2 <= ittol)
       {
         stopnonliniter=true;
         if (myrank_ == 0)
@@ -782,6 +775,18 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
       break;
     }
 
+    // stop if NaNs occur
+    if (std::isnan(vresnorm) or
+        std::isnan(presnorm) or
+        std::isnan(fullresnorm) or
+        std::isnan(incvelnorm_L2/velnorm_L2) or
+        std::isnan(incprenorm_L2/prenorm_L2) or
+        std::isnan(incfullnorm_L2/fullnorm_L2))
+    {
+      dserror("NaN's detected! Quitting...");
+    }
+
+
     //--------- Apply Dirichlet boundary conditions to system of equations
     //          residual displacements are supposed to be zero at
     //          boundary conditions
@@ -801,7 +806,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
       const double tcpusolve=ds_cputime();
 
       // do adaptive linear solver tolerance (not in first solve)
-      if (isadapttol && itnum>1)
+      if (isadapttol and itnum>1)
       {
         double currresidual = max(vresnorm,presnorm);
         currresidual = max(currresidual,incvelnorm_L2/velnorm_L2);
@@ -821,16 +826,6 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
   }
 } // CombustImplicitTimeInt::NonlinearSolve
 
-/*------------------------------------------------------------------------------------------------*
- | not yet supported!     vg 10/09 |
- *------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FLD::CombustFluidImplicitTimeInt::Hist()
-{
-  // -> see comment for ADAPTER::FluidCombust::Hist()
-  dserror("not yet supported!");
-  // -> see FLD::FluidImplicitTimeInt::Hist() to implement this function
-  return Teuchos::null;
-}
 
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |
@@ -994,7 +989,8 @@ void FLD::CombustFluidImplicitTimeInt::Output()
 
     // output (hydrodynamic) pressure
     Teuchos::RCP<Epetra_Vector> pressure = velpressplitterForOutput_.ExtractCondVector(velnp_out);
-    pressure->Scale(density_);
+    // pressure scaling was removed in COMBUST; we always compute the real pressure [N/m^2] (not p/density!)
+    // pressure->Scale(density_);
     output_.WriteVector("pressure", pressure);
 
     //output_.WriteVector("residual", trueresidual_);
@@ -1044,7 +1040,7 @@ void FLD::CombustFluidImplicitTimeInt::Output()
 
   if (discret_->Comm().NumProc() == 1)
   {
-//    OutputToGmsh();
+    OutputToGmsh();
   }
   return;
 } // FluidImplicitTimeInt::Output

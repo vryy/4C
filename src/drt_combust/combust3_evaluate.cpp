@@ -104,24 +104,12 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
   // get the list of materials
   const Teuchos::RCP<MAT::Material> material = Material();
 
-  // was macht man dann mit der Dichte
-  // wird hier nur für Dichte benötigt kin Druck -> dyn Druck
-  // man sollte hier mit dem dyn Druck rechnen
-  // daher entfällt nachfolgende Zeile, actmat wird nur für die Rückgabe der Dichte verwendet
-  // damit wird der Output dyn Druck berechnet (Multiplikation)
-//  const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
-
   switch(act)
   {
     case get_density:
     {
-      // This is a very poor way to transport the density to the outside world. Is there a better one?
-//      params.set("density", actmat->Density());
-//URSULA
-      // einzige Stelle, die die Dichte benötigt ist Output von Fluid
-      // Druck ist schon mit Dichte skaliert -> Skalierung mit 1 ändert nichts
+      std::cout << "Warning! The density is set to 1.0!" << std::endl;
       params.set("density", 1.0);
-//URSULA
       break;
     }
     case reset:
@@ -192,8 +180,8 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       // stabilization parameters
       const INPAR::FLUID::TauType tautype = Teuchos::getIntegralValue<INPAR::FLUID::TauType>(params.sublist("STABILIZATION"),"TAUTYPE");
       // check if stabilization parameter definition can be handled by combust3 element
-      if (tautype == INPAR::FLUID::tautype_franca_barrenechea_valentin_wall or
-          tautype == INPAR::FLUID::tautype_bazilevs)
+      if (!(tautype == INPAR::FLUID::tautype_franca_barrenechea_valentin_wall or
+          tautype == INPAR::FLUID::tautype_bazilevs))
         dserror("unknown type of stabilization parameter definition");
 
       // time integration parameters

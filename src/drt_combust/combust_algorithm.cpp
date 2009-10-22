@@ -134,7 +134,7 @@ void COMBUST::Algorithm::TimeLoop()
       DoFluidField();
 
       // solve linear G-function equation
-      DoGfuncField();
+//      DoGfuncField();
 
       // update field vectors
       UpdateFGIteration();
@@ -162,7 +162,7 @@ void COMBUST::Algorithm::TimeLoop()
     std::cout << "              Mass calculation         \n" << endl;
     std::cout << "initial mass: " << volume_start << endl;
     std::cout << "final mass:   " << volume_current << endl;
-    std::cout << "mass change:  " << mass_current << endl;
+    std::cout << "mass current: " << mass_current << endl;
     std::cout << "\n=======================================\n" << endl;
   }
 
@@ -175,12 +175,12 @@ void COMBUST::Algorithm::TimeLoop()
   double mass_change = fabs(volume_end - volume_start) / volume_start;
   if (Comm().MyPID()==0)
   {
-	  std::cout << "\n=======================================\n" << endl;
-	  std::cout << "              Mass calculation         \n" << endl;
-	  std::cout << "initial mass: " << volume_start << endl;
-	  std::cout << "final mass:   " << volume_end << endl;
-	  std::cout << "mass change:  " << mass_change << endl;
-	  std::cout << "\n=======================================\n" << endl;
+    std::cout << "\n=======================================\n" << endl;
+    std::cout << "              Mass calculation         \n" << endl;
+    std::cout << "initial mass: " << volume_start << endl;
+    std::cout << "final mass:   " << volume_end << endl;
+    std::cout << "mass change:  " << mass_change << endl;
+    std::cout << "\n=======================================\n" << endl;
   }
 
   return;
@@ -794,71 +794,72 @@ bool COMBUST::Algorithm::NotConvergedFGI()
 
   bool notconverged = true;
 
-  if (fgiter_ <= fgitermax_)
+  if (fgiter_ < fgitermax_)
   {
-      if (fgiter_ == 0)
-      {
-
-      }
-      else if (fgiter_ == 1)
-      {
-    	  if (velnpip_->MyLength() != FluidField().ExtractInterfaceVeln()->MyLength())
-    	    dserror("vectors must have the same length");
-    	  velnpip_->Update(1.0,*(FluidField().ExtractInterfaceVeln()),0.0);
-    	  phinpip_->Update(1.0,*(flamefront_->Phinp()),0.0);
-
-    	  if (fgiter_ == fgitermax_)
-    		  notconverged = false;
-      }
-      else
-      {
-    	  velnpi_->Update(1.0,*velnpip_,0.0);
-    	  phinpi_->Update(1.0,*phinpip_,0.0);
-    	  velnpip_->Update(1.0,*(FluidField().ExtractInterfaceVeln()),0.0);
-    	  phinpip_->Update(1.0,*(flamefront_->Phinp()),0.0);
-
-    	  fgvelnormL2_ = 1.0;
-    	  fggfuncnormL2_ = 1.0;
-
-    	  Teuchos::RCP<Epetra_Vector> incvel = rcp(new Epetra_Vector(velnpip_->Map()),true);
-    	  if (incvel->MyLength() != FluidField().ExtractInterfaceVeln()->MyLength())
-    	    dserror("vectors must have the same length");
-    	  incvel->Update(1.0,*velnpip_,-1.0,*velnpi_,0.0);
-    	  incvel->Norm2(&fgvelnormL2_);
-
-    	  Teuchos::RCP<Epetra_Vector> incgfunc = rcp(new Epetra_Vector(*ScaTraField().Discretization()->NodeRowMap()),true);
-    	  incgfunc->Update(1.0,*phinpip_,-1.0,*phinpi_,0.0);
-    	  incgfunc->Norm2(&fggfuncnormL2_);
-
-    	  if (Comm().MyPID()==0)
-    	  {
-    	     printf("\n|+---------------------- FGI ----------------------+|");
-    	     printf("\n|iter/itermax|----tol-----|-fluid inc--|-g-func inc-|");
-    	     printf("\n|   %2d/%2d    | %10.3E | %10.3E | %10.3E |",fgiter_,fgitermax_,convtol_,fgvelnormL2_,fggfuncnormL2_);
-    	     printf("\n|+-------------------------------------------------+|\n");
-    	  }
-
-    	  if ((fgvelnormL2_ <= convtol_) and (fggfuncnormL2_ <= convtol_))
-    	  {
-             notconverged = false;
-    	  }
-          else
-          {
-             if (fgiter_ == fgitermax_)
-             {
-            	 notconverged = false;
-            	 if (Comm().MyPID()==0)
-            	 {
-            	    printf("|+---------------- not converged ------------------+|");
-            	    printf("\n|+-------------------------------------------------+|");
-            	 }
-             }
-          }
-      }
+//      if (fgiter_ == 0)
+//      {
+//
+//      }
+//      else if (fgiter_ == 1)
+//      {
+//    	  if (velnpip_->MyLength() != FluidField().ExtractInterfaceVeln()->MyLength())
+//    	    dserror("vectors must have the same length");
+//    	  velnpip_->Update(1.0,*(FluidField().ExtractInterfaceVeln()),0.0);
+//    	  phinpip_->Update(1.0,*(flamefront_->Phinp()),0.0);
+//
+//    	  if (fgiter_ == fgitermax_)
+//    		  notconverged = false;
+//      }
+//      else
+//      {
+//    	  velnpi_->Update(1.0,*velnpip_,0.0);
+//    	  phinpi_->Update(1.0,*phinpip_,0.0);
+//    	  velnpip_->Update(1.0,*(FluidField().ExtractInterfaceVeln()),0.0);
+//    	  phinpip_->Update(1.0,*(flamefront_->Phinp()),0.0);
+//
+//    	  fgvelnormL2_ = 1.0;
+//    	  fggfuncnormL2_ = 1.0;
+//
+//    	  Teuchos::RCP<Epetra_Vector> incvel = rcp(new Epetra_Vector(velnpip_->Map()),true);
+//    	  if (incvel->MyLength() != FluidField().ExtractInterfaceVeln()->MyLength())
+//    	    dserror("vectors must have the same length");
+//    	  incvel->Update(1.0,*velnpip_,-1.0,*velnpi_,0.0);
+//    	  incvel->Norm2(&fgvelnormL2_);
+//
+//    	  Teuchos::RCP<Epetra_Vector> incgfunc = rcp(new Epetra_Vector(*ScaTraField().Discretization()->NodeRowMap()),true);
+//    	  incgfunc->Update(1.0,*phinpip_,-1.0,*phinpi_,0.0);
+//    	  incgfunc->Norm2(&fggfuncnormL2_);
+//
+//    	  if (Comm().MyPID()==0)
+//    	  {
+//    	     printf("\n|+---------------------- FGI ----------------------+|");
+//    	     printf("\n|iter/itermax|----tol-----|-fluid inc--|-g-func inc-|");
+//    	     printf("\n|   %2d/%2d    | %10.3E | %10.3E | %10.3E |",fgiter_,fgitermax_,convtol_,fgvelnormL2_,fggfuncnormL2_);
+//    	     printf("\n|+-------------------------------------------------+|\n");
+//    	  }
+//
+//    	  if ((fgvelnormL2_ <= convtol_) and (fggfuncnormL2_ <= convtol_))
+//    	  {
+//             notconverged = false;
+//    	  }
+//          else
+//          {
+//             if (fgiter_ == fgitermax_)
+//             {
+//            	 notconverged = false;
+//            	 if (Comm().MyPID()==0)
+//            	 {
+//            	    printf("|+---------------- not converged ------------------+|");
+//            	    printf("\n|+-------------------------------------------------+|");
+//            	 }
+//             }
+//          }
+//      }
   }
   else
   {
-
+    // added by me 21/10/09
+    notconverged = false;
   }
 
   return notconverged;
@@ -987,6 +988,7 @@ void COMBUST::Algorithm::DoGfuncField()
 //TEST
 #endif
 
+    std::cout << "convective velocity is transferred to ScaTra" << std::endl;
     ScaTraField().SetVelocityField(
       ComputeFlameVel(convel,FluidField().DofSet()),
       Teuchos::null,

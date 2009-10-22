@@ -39,8 +39,6 @@ void FLD::UTILS::computeStabilizationParams(
   // ---------------------------------------------------------------
   // computation of stabilization parameter tau
   // ---------------------------------------------------------------
-  const double visceff = dynvisc;
-
   // compute stabilization parameters for instationary case
   if (instationary)
   {
@@ -62,24 +60,24 @@ void FLD::UTILS::computeStabilizationParams(
       http://www.lncc.br/~valentin/publication.htm                   */
 
       /* viscous : reactive forces */
-      const double re01 = 4.0 * timefac * visceff / (mk * dens * DSQR(strle));
+      const double re01 = 4.0 * timefac * dynvisc / (mk * dens * DSQR(strle));
 
       /* convective : viscous forces */
-      const double re02 = mk * dens * vel_norm * strle / (2.0 * visceff);
+      const double re02 = mk * dens * vel_norm * strle / (2.0 * dynvisc);
 
       const double xi01 = DMAX(re01,1.0);
       const double xi02 = DMAX(re02,1.0);
 
-      tau_stab_Mu = timefac*DSQR(strle) / (DSQR(strle)*dens*xi01 + (4.0*timefac*visceff/mk)*xi02);
+      tau_stab_Mu = timefac*DSQR(strle) / (DSQR(strle)*dens*xi01 + (4.0*timefac*dynvisc/mk)*xi02);
 
       // compute tau_Mp
       //    stability parameter definition according to Franca and Valentin (2000)
       //                                       and Barrenechea and Valentin (2002)
 
        /* viscous : reactive forces */
-      const double re11 = 4.0 * timefac * visceff / (mk * dens * DSQR(hk));
+      const double re11 = 4.0 * timefac * dynvisc / (mk * dens * DSQR(hk));
       /* convective : viscous forces */
-      const double re12 = mk * dens * vel_norm * hk / (2.0 * visceff);
+      const double re12 = mk * dens * vel_norm * hk / (2.0 * dynvisc);
 
       const double xi11 = DMAX(re11,1.0);
       const double xi12 = DMAX(re12,1.0);
@@ -95,7 +93,7 @@ void FLD::UTILS::computeStabilizationParams(
                               +--------------> re1,re2
                                   1
       */
-      tau_stab_Mp = timefac*DSQR(hk) / (DSQR(hk)*dens*xi11+(4.0 * timefac * visceff/mk) * xi12);
+      tau_stab_Mp = timefac*DSQR(hk) / (DSQR(hk)*dens*xi11+(4.0 * timefac * dynvisc/mk) * xi12);
        /*------------------------------------------------------ compute tau_C ---*/
       /*-- stability parameter definition according to Codina (2002), CMAME 191
        *
@@ -190,7 +188,7 @@ void FLD::UTILS::computeStabilizationParams(
                | dt            -                   -   - |
                +-                                       -+
        */
-      tau_stab_Mu = 1.0/(sqrt((4.0*dens_sqr)/(dt*dt)+Gnormu+CI*visceff*visceff*normG));
+      tau_stab_Mu = 1.0/(sqrt((4.0*dens_sqr)/(dt*dt)+Gnormu+CI*dynvisc*dynvisc*normG));
       tau_stab_Mp = tau_stab_Mu;
        /*           +-     -+   +-     -+   +-     -+
                    |       |   |       |   |       |
@@ -230,13 +228,13 @@ void FLD::UTILS::computeStabilizationParams(
   else
   {
       // compute tau_Mu
-      const double re_tau_mu = mk * dens * vel_norm * strle / (2.0 * visceff);   /* convective : viscous forces */
+      const double re_tau_mu = mk * dens * vel_norm * strle / (2.0 * dynvisc);   /* convective : viscous forces */
       const double xi_tau_mu = DMAX(re_tau_mu, 1.0);
-      tau_stab_Mu = (DSQR(strle)*mk)/(4.0*visceff*xi_tau_mu);
+      tau_stab_Mu = (DSQR(strle)*mk)/(4.0*dynvisc*xi_tau_mu);
        // compute tau_Mp
-      const double re_tau_mp = mk * dens * vel_norm * hk / (2.0 * visceff);      /* convective : viscous forces */
+      const double re_tau_mp = mk * dens * vel_norm * hk / (2.0 * dynvisc);      /* convective : viscous forces */
       const double xi_tau_mp = DMAX(re_tau_mp,1.0);
-      tau_stab_Mp = (DSQR(hk)*mk)/(4.0*visceff*xi_tau_mp);
+      tau_stab_Mp = (DSQR(hk)*mk)/(4.0*dynvisc*xi_tau_mp);
        // compute tau_C
       const double xi_tau_c = min(re_tau_mp, 1.0);
       tau_stab_C = dens*0.5*vel_norm*hk*xi_tau_c;

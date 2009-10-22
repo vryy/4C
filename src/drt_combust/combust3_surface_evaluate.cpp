@@ -250,7 +250,7 @@ void  DRT::ELEMENTS::Combust3Surface::ComputeMetricTensorForSurface(
   return;
 
   // this is old documentation
-  // nomenclature has changed, but tis might still ne helpfull to understand   henke
+  // nomenclature has changed, but this might still ne helpfull to understand   henke
 
   /*
   |                                              0 1 2
