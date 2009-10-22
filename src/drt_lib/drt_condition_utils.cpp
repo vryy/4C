@@ -573,8 +573,12 @@ void DRT::UTILS::CollectElementsByConditionLabel(
     }
   }
   int numOfCollectedIds = 0;
-  for(std::size_t i = 0; i < elementsByLabel.size(); i++)
-    numOfCollectedIds += elementsByLabel[i].size();
+  for (std::map<int,std::set<int> >::const_iterator entry = elementsByLabel.begin();
+      entry != elementsByLabel.end();
+      ++entry)
+  {
+    numOfCollectedIds += entry->second.size();
+  }
 
   if(discret.NumMyColElements() != numOfCollectedIds)
     dserror("not all elements collected.");
