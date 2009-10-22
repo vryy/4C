@@ -22,6 +22,7 @@ Maintainer: Axel Gerstenberger
 #include "xfluid3_local_assembler.H"
 #include "xfluid3_interpolation.H"
 #include "xfluid3_utils.H"
+#include "../drt_xfem/xfem_element_utils.H"
 #include "../drt_geometry/integrationcell_coordtrafo.H"
 #include "../drt_xfem/physics.H"
 #include "../drt_lib/linalg_utils.H"
@@ -1117,7 +1118,7 @@ void integrateShapefunctionT(
 
       const size_t shpVecSize       = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
-      static XFLUID::ApproxFunc<shpVecSize> shp;
+      static XFEM::ApproxFunc<shpVecSize> shp;
 
       if (ASSTYPE == XFEM::xfem_assembly)
       {

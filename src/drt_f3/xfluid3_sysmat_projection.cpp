@@ -28,6 +28,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_geometry/integrationcell_coordtrafo.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_xfem/enrichment_utils.H"
+#include "../drt_xfem/xfem_element_utils.H"
 #include "../drt_fluid/time_integration_element.H"
 #include "../drt_xfem/spacetime_boundary.H"
 #include "../drt_lib/drt_utils.H"
@@ -156,7 +157,7 @@ Maintainer: Axel Gerstenberger
             size_t shpVecSize>
   void BuildStiffnessMatrixEntries(
       LocalAssembler<DISTYPE,ASSTYPE,NUMDOF>&   assembler,
-      const XFLUID::ApproxFunc<shpVecSize>&     shp,
+      const XFEM::ApproxFunc<shpVecSize>&     shp,
       const double&                             fac,
       const double&                             visc,
       const LINALG::Matrix<3,1>&                u2_proj,
@@ -404,7 +405,7 @@ void SysmatDomainProjection(
 
             const size_t shpVecSize       = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
-            static XFLUID::ApproxFunc<shpVecSize> shp;
+            static XFEM::ApproxFunc<shpVecSize> shp;
 
             if (ASSTYPE == XFEM::xfem_assembly)
             {

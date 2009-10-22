@@ -28,6 +28,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_geometry/integrationcell_coordtrafo.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_xfem/enrichment_utils.H"
+#include "../drt_xfem/xfem_element_utils.H"
 #include "../drt_fluid/time_integration_element.H"
 #include "../drt_xfem/spacetime_boundary.H"
 #include "../drt_lib/drt_utils.H"
@@ -157,7 +158,7 @@ Maintainer: Axel Gerstenberger
             size_t shpVecSizeStress>
   void BuildStiffnessMatrixEntries(
       LocalAssembler<DISTYPE,ASSTYPE,NUMDOF>&           assembler,
-      const XFLUID::ApproxFunc<shpVecSize>&                     shp,
+      const XFEM::ApproxFunc<shpVecSize>&                     shp,
       const LINALG::Matrix<shpVecSizeStress,1>&  shp_tau,
       const double& fac,
       const double& timefac,
@@ -902,7 +903,7 @@ void SysmatDomain4(
             const size_t shpVecSize       = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
             const size_t shpVecSizeStress = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
 
-            static XFLUID::ApproxFunc<shpVecSize> shp;
+            static XFEM::ApproxFunc<shpVecSize> shp;
 
             static LINALG::Matrix<shpVecSizeStress,1>   shp_tau;
 
