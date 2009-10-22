@@ -1,8 +1,8 @@
 /*!----------------------------------------------------------------------
 \file fluid_rotsym_periodicbc_utils.cpp
 
-\brief Methods to apply rotationally symmetric periodic boundary conditions
-       for fluid problems on element level
+\brief Methods needed to apply rotationally symmetric periodic boundary
+       conditions for fluid problems
 
 <pre>
 Maintainer: Georg Bauer
@@ -21,18 +21,7 @@ Maintainer: Georg Bauer
 
 using namespace Teuchos;
 
-/*!
-\brief  This class manages local transformations(rotation) of velocity fields
-
-        o used for rotationally symmetric boundary conditions
-        o used for rotationally symmetric boundary conditions
-
-\author gjb
-
- */
-
 /*----------------------------------------------------------------------*/
-// this function is operating on global level and used
 /*----------------------------------------------------------------------*/
 double FLD::GetComponentOfRotatedVectorField
 (const int idf,
@@ -64,7 +53,7 @@ double FLD::GetComponentOfRotatedVectorField
   }
 
   return (*proc0data)[lid]; // case > 1: return unchanged value
-};
+}
 
 
 /*----------------------------------------------------------------------*/
@@ -98,7 +87,7 @@ bool FLD::IsSlaveNodeOfRotSymPBC(
       }
   }
 
-      return isrotsymslave; // slave node with non-zero angle
+      return isrotsymslave; // yes, it is a slave node with non-zero angle
     }
 
 

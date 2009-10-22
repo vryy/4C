@@ -1,8 +1,8 @@
 /*!----------------------------------------------------------------------
 \file fluid_rotsym_periodicbc_utils.H
 
-\brief Methods to apply rotationally symmetric periodic boundary conditions
-       for fluid problems on element level
+\brief Methods needed to apply rotationally symmetric periodic boundary
+       conditions for fluid problems
 
 <pre>
 Maintainer: Georg Bauer
@@ -23,33 +23,22 @@ Maintainer: Georg Bauer
 using namespace std;
 using namespace Teuchos;
 
-/*!
-\brief  This class manages local transformations(rotation) of velocity fields
-
-        o used for rotationally symmetric boundary conditions
-        o used for rotationally symmetric boundary conditions
-
-\author gjb
-
- */
-
 namespace FLD
 {
 
-//! return specific component of rotated vector result
-double GetComponentOfRotatedVectorField
-(const int idf, ///< the component id 0,1 (and 2)
- const RCP<const Epetra_Vector> proc0data, ///< the data vector
- const int lid, ///< local dof id (w.r.t proc0data) of component idf
- const double rotangle ///< angle of rotation (RAD)
-  );
+//! return specific component of rotated global vector result
+double GetComponentOfRotatedVectorField(
+    const int idf,                            ///< the component id 0,1 (and 2)
+    const RCP<const Epetra_Vector> proc0data, ///< the data vector
+    const int lid,                            ///< local dof id (w.r.t proc0data) of component idf
+    const double rotangle                     ///< angle of rotation (RAD)
+);
 
-/// Is given node a slave node of rotationally symmetric periodic boundary conditions?
-/*!
-  \param node (in) the node
-  \param rotangle (out) the angle of rotation (RAD!)
-*/
-bool IsSlaveNodeOfRotSymPBC(const DRT::Node* node, double& rotangle);
+//! Is given node a slave node of rotationally symmetric periodic boundary conditions?
+bool IsSlaveNodeOfRotSymPBC(
+    const DRT::Node* node, ///< the node
+    double& rotangle       ///< the angle of slave plane rotation (RAD)
+);
 
 } // namespace FLD
 
