@@ -251,7 +251,7 @@ void ADAPTER::ContactStructureGenAlpha::Solve()
   if (equil=="full newton")
   {
     RCP<CONTACT::Manager> contactmanager = structure_.getContactmanager();
-    bool semismooth = (contactmanager->GetStrategy().Params()).get<bool>("semismooth newton",false);
+    bool semismooth = Teuchos::getIntegralValue<int>(contactmanager->GetStrategy().Params(),"SEMI_SMOOTH_NEWTON");
 
     if(semismooth)
     {
