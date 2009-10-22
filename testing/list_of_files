@@ -66,6 +66,7 @@ Input/elch_pper_primary_current_distribution.dat        x        x        x     
 Input/elch_pper_secondary_current_distribution.dat      x        x        x        x        -        -
 Input/elch_straight_convection.dat                      x        x        x        x        -        -
 Input/elch_test.dat                                     x        x        x        x        -        -
+Input/elch_RCE_rotsymm_pbc.dat                          x        x        x        x        -        -
 Input/f2_channel_neumann.dat                            x        x        x        x        -        -
 Input/f2_channel_modpowerlaw_impl_drt.dat               x        x        x        -        -        -
 Input/f2_channel_carreauyasuda_genalpha_drt.dat         x        x        x        -        -        -
