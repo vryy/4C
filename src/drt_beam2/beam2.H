@@ -32,12 +32,11 @@ using namespace Teuchos;
 #include "../drt_lib/linalg_serialdensevector.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/drt_utils_integration.H"
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_lib/linalg_fixedsizematrix.H"
 #include "../drt_statmech/statmech_manager.H"
 #include "../drt_statmech/statmech_time.H"
-//including random number library of blitz for statistical forces
-#include <random/normal.h>
-
+#include "../drt_inpar/inpar_statmech.H"
 
 
 
@@ -279,8 +278,15 @@ private:
     calc_struct_update_istep,
     calc_struct_update_imrlike,
     calc_struct_reset_istep, //!< reset elementwise internal variables during iteration to last converged state
-    calc_brownian_predictor,
     calc_struct_ptcstiff
+  };
+  
+  //! kind of integration to be performed
+  enum IntegrationType
+  {
+    gaussexactintegration,
+    gaussunderintegration,
+    lobattointegration
   };
 
   //! variable saving whether element has already been initialized (then isinit_ == true)
@@ -318,9 +324,15 @@ private:
 
   //! absolute angle between x-axis and element frame in reference configuration
   double alpha0_;
+  
+  //! Vector holding jacobi for each gausspoint
+  vector<double> jacobi_;
 
-  //! store stochastic forces of element in local frame
-  LINALG::Matrix<4,1> floc_;
+  //! Vector holding jacobi for each gausspoint for complete integration of massmatrix
+  vector<double> jacobimass_;
+  
+  //! Vector holding value of Jacobi determinant jacobi at nodes
+  vector<double> jacobinode_;
 
   //! gaussrule_ will be initialized automatically to a 2 point integration rule
   DRT::UTILS::GaussRule1D gaussrule_;
@@ -351,33 +363,55 @@ private:
   //!sets up element reference geomtry for reference nodal position vector xrefe (may be used also after simulation start)
   void SetUpReferenceGeometry(const LINALG::Matrix<4,1>& xrefe);
   
+  //! determine Gauss rule from required type of integration
+  DRT::UTILS::GaussRule1D MyGaussRule(int nnode, IntegrationType integrationtype);
+
+
+
+  //!sets up element reference geometry for reference nodal position vector xrefe (may be used also after simulation start)
+  template<int nnode>
+  void SetUpReferenceGeometry(const vector<double>& xrefe);
+
   //! @name Methods for Brownian dynamics simulations
-  
-  //!computes the number of different random numbers required in each time step for generation of stochastic forces
-  int HowManyRandomNumbersINeed();
 
-  //!Compute statistical forces in local coordinate system and do not(!) yet assemble them
+   //!compute damping matrix and statistical forces according to fluctuation dissipation theorem
+   template<int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
+   void CalcBrownian(ParameterList& params,  //!<parameter list
+                     const vector<double>&           vel,  //!< element velocity vector
+                     const vector<double>&           disp, //!<element disp vector
+                     Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+                     Epetra_SerialDenseVector* force);//!< element internal force vector  
+   
+   //!computes damping coefficients for employed friction model
+   void MyDampingConstants(ParameterList& params,LINALG::Matrix<3,1>& gamma, const INPAR::STATMECH::FrictionModel& frictionmodel);
+   
+   //!computes the number of different random numbers required in each time step for generation of stochastic forces
+   int HowManyRandomNumbersINeed();
+   
+   //!computes translational damping forces and stiffness
+   template<int nnode, int ndim, int dof> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node
+   void MyTranslationalDamping(ParameterList& params,  //!<parameter list
+                             const vector<double>&           vel,  //!< element velocity vector
+                             const vector<double>&           disp, //!<element disp vector
+                             Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+                             Epetra_SerialDenseVector* force);//!< element internal force vector
+   
+   //!computes stochastic translational forces and resulting stiffness
+   template<int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
+   void MyStochasticForces(ParameterList& params,  //!<parameter list
+                         const vector<double>&           vel,  //!< element velocity vector
+                         const vector<double>&           disp, //!<element disp vector
+                         Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+                         Epetra_SerialDenseVector* force);//!< element internal force vector
+   
+   //!computes velocity of background fluid and gradient of that velocity at a certain evaluation point in the physical space and adds respective terms to internal forces and damping matrix
+   template<int ndim> //number of dimensions of embedding space
+   void MyBackgroundVelocity(ParameterList& params,  //!<parameter list
+                             const LINALG::Matrix<ndim,1>& evaluationpoint,  //!<point at which background velocity and its gradient has to be computed
+                             LINALG::Matrix<ndim,1>& velbackground,  //!< velocity of background fluid
+                             LINALG::Matrix<ndim,ndim>& velbackgroundgrad); //!<gradient of velocity of background fluid
 
-  /*This function allows for computation of Brownian forces in a local coordinate system according to
-  fluctuation dissipation theorem; the forces are not yet added to either external or internal force
-  vector, but just computed in order to be applied later (e.g. during iteration steps of an implicit
-  time integration scheme
-
-  \param params (in/out)       : ParameterList for communication between control routine and elements
-  \param brownian        : Vector to store computed brownian forces
-
-  \return 0 if successful, negative otherwise
-  */
-  virtual int ComputeLocalBrownianForces(ParameterList& params);
-
-  //!coputed damping matrix and statistical forces according to fluctuation dissipation theorem
-  void CalcBrownian(ParameterList& params,
-                    vector<int>&              lm,
-                    vector<double>&           vel,  //!< element velocity vector
-                    Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-                    Epetra_SerialDenseVector* force);  //!< element internal force vector
-  
-  //@}
+   //@}
 
 
   // don't want = operator

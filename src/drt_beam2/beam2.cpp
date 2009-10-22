@@ -63,6 +63,9 @@ alphanew_(old.alphanew_),
 alphaold_(old.alphaold_),
 alphaconv_(old.alphaconv_),
 alpha0_(old.alpha0_),
+jacobi_(old.jacobi_),
+jacobimass_(old.jacobimass_),
+jacobinode_(old.jacobinode_),
 gaussrule_(old.gaussrule_)
 {
   return;
@@ -152,7 +155,12 @@ void DRT::ELEMENTS::Beam2::Pack(vector<char>& data) const
   AddtoPack(data,alphaconv_);
   //angle relative to x-axis in reference configuration
   AddtoPack(data,alpha0_);
-  AddtoPack(data,floc_);
+  for (int i=0; i<(int)jacobi_.size(); i++)
+    AddtoPack(data,jacobi_[i]); 
+  for (int i=0; i<(int)jacobimass_.size(); i++)
+    AddtoPack(data,jacobimass_[i]);
+  for (int i=0; i<(int)jacobinode_.size(); i++)
+    AddtoPack(data,jacobinode_[i]);
   // gaussrule_
   AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
 
@@ -195,7 +203,12 @@ void DRT::ELEMENTS::Beam2::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,alphaconv_);
   //angle relative to x-axis in reference configuration
   ExtractfromPack(position,data,alpha0_);
-  ExtractfromPack(position,data,floc_);
+  for (int i=0; i<(int)jacobi_.size(); i++)
+    ExtractfromPack(position,data,jacobi_[i]); 
+  for (int i=0; i<(int)jacobimass_.size(); i++)
+    ExtractfromPack(position,data,jacobimass_[i]);
+  for (int i=0; i<(int)jacobinode_.size(); i++)
+    ExtractfromPack(position,data,jacobinode_[i]);
   // gaussrule_
   int gausrule_integer;
   ExtractfromPack(position,data,gausrule_integer);
@@ -217,6 +230,38 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Beam2::Lines()
   return lines;
 }
 
+/*----------------------------------------------------------------------*
+ |determine Gauss rule from required type of integration                |
+ |                                                   (public)cyron 09/09|
+ *----------------------------------------------------------------------*/
+DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam2::MyGaussRule(int nnode, IntegrationType integrationtype)
+{
+  DRT::UTILS::GaussRule1D gaussrule = DRT::UTILS::intrule1D_undefined;
+  
+  switch(integrationtype)
+  {
+    case gaussexactintegration:
+    {
+      gaussrule = DRT::UTILS::intrule_line_2point;
+      break;
+    }
+    case gaussunderintegration:
+    {
+      gaussrule =  DRT::UTILS::intrule_line_1point;
+      break;
+    }
+    case lobattointegration:
+    {
+      gaussrule =  DRT::UTILS::intrule_line_lobatto2point;
+      break;
+    }
+    default:
+      dserror("unknown type of integration");
+  }
+
+  return gaussrule;
+}
+
 //sets up element reference geomtry for reference nodal position vector xrefe (may be used also after simulation start)
 void DRT::ELEMENTS::Beam2::SetUpReferenceGeometry(const LINALG::Matrix<4,1>& xrefe)
 {
@@ -230,6 +275,16 @@ void DRT::ELEMENTS::Beam2::SetUpReferenceGeometry(const LINALG::Matrix<4,1>& xre
 
     //length in reference configuration
     lrefe_  = pow( pow(xrefe(3)-xrefe(1),2) + pow(xrefe(2)-xrefe(0),2) , 0.5 );
+    
+    //resize jacobi_, jacobimass_, jacobinode_  so they can each store for each Gauss point jacobi determinant lrefe_ / 2.0
+
+    //underintegration in elasticity -> nnode - 1 Gauss points required
+    jacobi_.resize(1,lrefe_ / 2.0);
+    //exact integration of mass matrix -> nnode Gauss point required
+    jacobimass_.resize(2,lrefe_ / 2.0);
+    //for nodal quadrature as many Gauss points as nodes required
+    jacobinode_.resize(2,lrefe_ / 2.0);
+    
 
     // beta is the rotation angle out of x-axis in a x-y-plane in reference configuration
     double cos_alpha0 = (xrefe(2)-xrefe(0))/lrefe_;

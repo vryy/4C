@@ -370,14 +370,14 @@ private:
   //!polar moment of inertia of area
   double Irr_;
 
-  //! Vector holding value of Jacobi determinant alpha for each Gauss point for underintegration
-  vector<double> alpha_;
+  //! Vector holding value of Jacobi determinant jacobi for each Gauss point for underintegration
+  vector<double> jacobi_;
 
-  //! Vector holding value of Jacobi determinant alpha for complete integration of massmatrix
-  vector<double> alphamass_;
+  //! Vector holding value of Jacobi determinant jacobi for complete integration of massmatrix
+  vector<double> jacobimass_;
   
-  //! Vector holding value of Jacobi determinant alpha at nodes
-  vector<double> alphanode_;
+  //! Vector holding value of Jacobi determinant jacobi at nodes
+  vector<double> jacobinode_;
 
   //! @name methods for initilization of the element
 

@@ -46,9 +46,9 @@ crosssecshear_(old.crosssecshear_),
 gaussrule_(old.gaussrule_),
 isinit_(old.isinit_),
 mominer_(old.mominer_),
-alpha_(old.alpha_),
-alphamass_(old.alphamass_),
-floc_(old.floc_),
+jacobi_(old.jacobi_),
+jacobimass_(old.jacobimass_),
+jacobinode_(0),
 theta0_(old.theta0_)
 {
   return;
@@ -145,11 +145,14 @@ void DRT::ELEMENTS::Beam2r::Pack(vector<char>& data) const
   AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
   AddtoPack(data,isinit_);
   AddtoPack(data,mominer_);
-  AddtoPack(data,alpha_);
-  AddtoPack(data,alphamass_);
-  for(int i=0; i<(int)floc_.size();i++)
-    AddtoPack<2,1>(data,floc_[i]); 
-  AddtoPack(data,theta0_);
+  for (int i=0; i<(int)jacobi_.size(); i++)
+    AddtoPack(data,jacobi_[i]); 
+  for (int i=0; i<(int)jacobimass_.size(); i++)
+    AddtoPack(data,jacobimass_[i]);
+  for (int i=0; i<(int)jacobinode_.size(); i++)
+    AddtoPack(data,jacobinode_[i]);
+  for (int i=0; i<(int)theta0_.size(); i++)
+    AddtoPack(data,theta0_[i]);
 
   return;
 }
@@ -179,11 +182,14 @@ void DRT::ELEMENTS::Beam2r::Unpack(const vector<char>& data)
   gaussrule_ = DRT::UTILS::GaussRule1D(gausrule_integer); //explicit conversion from integer to enum
   ExtractfromPack(position,data,isinit_);
   ExtractfromPack(position,data,mominer_);
-  ExtractfromPack(position,data,alpha_);
-  ExtractfromPack(position,data,alphamass_);
-  for(int i=0;i<(int)floc_.size();i++)
-    ExtractfromPack<2,1>(position,data,floc_[i]); 
-  ExtractfromPack(position,data,theta0_);
+  for (int i=0; i<(int)jacobi_.size(); i++)
+    ExtractfromPack(position,data,jacobi_[i]); 
+  for (int i=0; i<(int)jacobimass_.size(); i++)
+    ExtractfromPack(position,data,jacobimass_[i]);
+  for (int i=0; i<(int)jacobinode_.size(); i++)
+    ExtractfromPack(position,data,jacobinode_[i]);
+  for (int i=0; i<(int)theta0_.size(); i++)
+    ExtractfromPack(position,data,theta0_[i]);
 
 
   if (position != (int)data.size())
@@ -207,7 +213,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Beam2r::Lines()
  *----------------------------------------------------------------------*/
 DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam2r::MyGaussRule(int nnode, IntegrationType integrationtype)
 {
-  DRT::UTILS::GaussRule1D gaussrule;
+  DRT::UTILS::GaussRule1D gaussrule = DRT::UTILS::intrule1D_undefined;
   
   switch(nnode)
   {
@@ -223,6 +229,11 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam2r::MyGaussRule(int nnode, Integratio
         case gaussunderintegration:
         {
           gaussrule =  DRT::UTILS::intrule_line_1point;
+          break;
+        }
+        case lobattointegration:
+        {
+          gaussrule =  DRT::UTILS::intrule_line_lobatto2point;
           break;
         }
         default:
@@ -244,7 +255,11 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam2r::MyGaussRule(int nnode, Integratio
           gaussrule =  DRT::UTILS::intrule_line_2point;
           break;
         }
-
+        case lobattointegration:
+        {
+          gaussrule =  DRT::UTILS::intrule_line_lobatto3point;
+          break;
+        }
         default:
           dserror("unknown type of integration");
       }
@@ -308,11 +323,19 @@ void DRT::ELEMENTS::Beam2r::SetUpReferenceGeometry(const vector<double>& xrefe)
    * method will initialize the geometric variables if the class variable isinit_ == false and afterwards set this variable to 
    * isinit_ = true; if this method is called and finds alreday isinit_ == true it will just do nothing*/ 
   if(!isinit_)
-  {
-
-    floc_.resize(nnode);//set vector size for local stochastic forces
-    
+  {   
     isinit_ = true;
+    
+    //resize jacobi_, jacobimass_, jacobinode_ and theta0_ so they can each store one value per Gauss point
+
+    //underintegration in elasticity -> nnode - 1 Gauss points required
+    jacobi_.resize(nnode-1);
+    theta0_.resize(nnode-1);
+    //exact integration of mass matrix -> nnode Gauss point required
+    jacobimass_.resize(nnode);
+    //for nodal quadrature as many Gauss points as nodes required
+    jacobinode_.resize(nnode);
+    
     
     //create Matrix for the derivates of the shapefunctions at the GP
     LINALG::Matrix<1,nnode> shapefuncderiv;
@@ -323,7 +346,7 @@ void DRT::ELEMENTS::Beam2r::SetUpReferenceGeometry(const vector<double>& xrefe)
     //Get the applied integrationpoints
     DRT::UTILS::IntegrationPoints1D gausspoints(gaussrule_);
     
-    //Loop through all GPs and calculate alpha and theta0
+    //Loop through all GPs and calculate jacobi and theta0
     for(int numgp=0; numgp < gausspoints.nquad; numgp++)
     {
       
@@ -341,16 +364,16 @@ void DRT::ELEMENTS::Beam2r::SetUpReferenceGeometry(const vector<double>& xrefe)
           dxdxi(dof) += shapefuncderiv(node) * xrefe[2*node+dof];
       
       //Store length factor for every GP
-      //note: the length factor alpha replaces the determinant and refers by definition always to the reference configuration
-      alpha_[numgp] = dxdxi.Norm2();
+      //note: the length factor jacobi replaces the determinant and refers by definition always to the reference configuration
+      jacobi_[numgp] = dxdxi.Norm2();
       
             
       /*calculate sin and cos theta0 for each gausspoint for a stress-free-reference-configuration
        *the formulas are derived from Crisfield Vol.1 (7.132) and (7.133) for no strain
        * Therfore we assume that we have no strain at each GP in ref. config. 
        */
-      double cos_theta0 = dxdxi(0) / alpha_[numgp];      
-      double sin_theta0 = dxdxi(1) / alpha_[numgp];
+      double cos_theta0 = dxdxi(0) / jacobi_[numgp];      
+      double sin_theta0 = dxdxi(1) / jacobi_[numgp];
       
               
       //we calculate thetaav0 in a range between -pi < thetaav0 <= pi, Crisfield Vol. 1 (7.60)
@@ -384,14 +407,14 @@ void DRT::ELEMENTS::Beam2r::SetUpReferenceGeometry(const vector<double>& xrefe)
     
     }//for(int numgp=0; numgp < gausspoints.nquad; numgp++)
     
-    //Now we get the integrationfactor alphamass_ for a complete integration of the massmatrix
+    //Now we get the integrationfactor jacobimass_ for a complete integration of the massmatrix
     
     gaussrule_ = static_cast<enum DRT::UTILS::GaussRule1D>(nnode);
     
     //Get the applied integrationpoints
     DRT::UTILS::IntegrationPoints1D gausspointsmass(gaussrule_);
     
-    //Loop through all GPs and calculate alpha and theta0
+    //Loop through all GPs and calculate jacobi and theta0
     for(int numgp=0; numgp < gausspointsmass.nquad; numgp++)
     {
       
@@ -410,10 +433,34 @@ void DRT::ELEMENTS::Beam2r::SetUpReferenceGeometry(const vector<double>& xrefe)
           dxdxi(dof) += shapefuncderiv(node) * xrefe[2*node+dof];
       
       //Store length factor for every GP
-      //note: the length factor alpha replaces the determinant and refers by definition always to the reference configuration
-      alphamass_[numgp] = dxdxi.Norm2();
+      //note: the length factor jacobi replaces the determinant and refers by definition always to the reference configuration
+      jacobimass_[numgp] = dxdxi.Norm2();
             
     }//for(int numgp=0; numgp < gausspointsmass.nquad; numgp++)
+    
+    
+    //compute Jacobi determinant at gauss points for Lobatto quadrature (i.e. at nodes)
+    for(int numgp=0; numgp< nnode; numgp++)
+    {
+        
+      //Get position xi of nodes
+      const double xi = -1.0 + 2*numgp / (nnode - 1);
+      
+      //Get derivatives of shapefunctions at GP
+      DRT::UTILS::shape_function_1D_deriv1(shapefuncderiv,xi,distype);
+    
+      LINALG::Matrix<2,1> dxdxi;
+
+      dxdxi.Clear();
+      //calculate dx/dxi and dz/dxi
+      for(int node=0; node<nnode; node++)
+        for(int dof=0; dof<2; dof++)
+          dxdxi(dof)+=shapefuncderiv(node)*xrefe[2*node+dof];
+      
+      //Store Jacobi determinant for each node (Jacobi determinant refers by definition always to the reference configuration)
+      jacobinode_[numgp]= dxdxi.Norm2(); 
+    
+    }//for(int numgp=0; numgp< nnode; numgp++)
    
     gaussrule_ = static_cast<enum DRT::UTILS::GaussRule1D>(nnode-1);
    
@@ -545,12 +592,7 @@ int DRT::ELEMENTS::Beam2rRegister::Initialize(DRT::Discretization& dis)
         for(int l= 0; l < 2; l++)// element node has two coordinates x and z
           xrefe[k*2 + l] = currele->Nodes()[k]->X()[l];
     }
-    //resize alpha_, alphamass_ and theta0_ so they can each store 1 value at each GP
-    //it can be proven, that we will always need one GP less than nodes zu underintagrate in order to get rid of shear locking
-    currele->alpha_.resize(nnode-1);
-    currele->alphamass_.resize(nnode);
-    currele->theta0_.resize(nnode-1);
-    currele->floc_.resize(nnode);
+
     
     //SetUpReferenceGeometry is a templated function
     switch(nnode)

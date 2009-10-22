@@ -33,9 +33,9 @@ crosssecshear_(0),
 Iyy_(0),
 Izz_(0),
 Irr_(0),
-alpha_(0),
-alphamass_(0),
-alphanode_(0)
+jacobi_(0),
+jacobimass_(0),
+jacobinode_(0)
 {
   return;
 }
@@ -62,9 +62,9 @@ DRT::ELEMENTS::Beam3::Beam3(const DRT::ELEMENTS::Beam3& old) :
  Iyy_(old.Iyy_),
  Izz_(old.Izz_),
  Irr_(old.Irr_),
- alpha_(old.alpha_),
- alphamass_(old.alphamass_),
- alphanode_(old.alphanode_)
+ jacobi_(old.jacobi_),
+ jacobimass_(old.jacobimass_),
+ jacobinode_(old.jacobinode_)
 {
   return;
 }
@@ -151,12 +151,12 @@ void DRT::ELEMENTS::Beam3::Pack(vector<char>& data) const
   AddtoPack(data,basedata);
   
   //add all class variables of beam2r element
-  for (int i=0; i<(int)alpha_.size(); i++)
-    AddtoPack(data,alpha_[i]); 
-  for (int i=0; i<(int)alphamass_.size(); i++)
-    AddtoPack(data,alphamass_[i]);
-  for (int i=0; i<(int)alphanode_.size(); i++)
-    AddtoPack(data,alphanode_[i]);
+  for (int i=0; i<(int)jacobi_.size(); i++)
+    AddtoPack(data,jacobi_[i]); 
+  for (int i=0; i<(int)jacobimass_.size(); i++)
+    AddtoPack(data,jacobimass_[i]);
+  for (int i=0; i<(int)jacobinode_.size(); i++)
+    AddtoPack(data,jacobinode_[i]);
   AddtoPack(data,crosssec_);
   AddtoPack(data,crosssecshear_);
   for (int i=0; i<(int)curvnew_.size(); i++)
@@ -211,12 +211,12 @@ void DRT::ELEMENTS::Beam3::Unpack(const vector<char>& data)
   
   
   //extract all class variables of beam2r element
-  for (int i=0; i<(int)alpha_.size(); i++)
-    ExtractfromPack(position,data,alpha_[i]); 
-  for (int i=0; i<(int)alphamass_.size(); i++)
-    ExtractfromPack(position,data,alphamass_[i]);
-  for (int i=0; i<(int)alphanode_.size(); i++)
-    ExtractfromPack(position,data,alphanode_[i]);
+  for (int i=0; i<(int)jacobi_.size(); i++)
+    ExtractfromPack(position,data,jacobi_[i]); 
+  for (int i=0; i<(int)jacobimass_.size(); i++)
+    ExtractfromPack(position,data,jacobimass_[i]);
+  for (int i=0; i<(int)jacobinode_.size(); i++)
+    ExtractfromPack(position,data,jacobinode_[i]);
   ExtractfromPack(position,data,crosssec_);
   ExtractfromPack(position,data,crosssecshear_);
   for (int i=0; i<(int)curvnew_.size(); i++)
@@ -387,9 +387,9 @@ void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const vector<double>& xrefe,co
     
 
   //resize all class STL vectors so that they can each store 1 value at each GP
-  alpha_.resize(nnode-1);
-  alphamass_.resize(nnode);
-  alphanode_.resize(nnode);
+  jacobi_.resize(nnode-1);
+  jacobimass_.resize(nnode);
+  jacobinode_.resize(nnode);
   Qconv_.resize((nnode-1));
   Qold_.resize((nnode-1));
   Qnew_.resize((nnode-1));
@@ -415,7 +415,7 @@ void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const vector<double>& xrefe,co
 	//Get the applied integrationpoints for underintegration
 	DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,gaussunderintegration));
 	
-    //Loop through all GPs and calculate alpha the triads at the GPs
+    //Loop through all GPs and calculate jacobi the triads at the GPs
 	for(int numgp=0; numgp < gausspoints.nquad; numgp++)
 	{  	
 		//Get position xi of GP
@@ -451,13 +451,13 @@ void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const vector<double>& xrefe,co
 
 
     //Store length factor for every GP
-    //note: the length factor alpha replaces the determinant and refers to the reference configuration by definition
-    alpha_[numgp]= dxdxi.Norm2();
+    //note: the length factor jacobi replaces the determinant and refers to the reference configuration by definition
+    jacobi_[numgp]= dxdxi.Norm2();
 
     for (int k=0; k<3; k++)
     {
   		//t1 axis points in positive direction along xi and is a unit vector
-  		Tref(k,0)=dxdxi(k)/alpha_[numgp];
+  		Tref(k,0)=dxdxi(k)/jacobi_[numgp];
     }
 
     //t2 is a unit vector in the x2x3-plane orthogonal to t1
@@ -512,7 +512,7 @@ void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const vector<double>& xrefe,co
 	//Get the applied integrationpoints for exact integration of mass matrix
 	DRT::UTILS::IntegrationPoints1D gausspointsmass(MyGaussRule(nnode,gaussexactintegration));
 	  	
-	//Loop through all GPs and calculate alpha and theta0
+	//Loop through all GPs and calculate jacobi and theta0
 	for(int numgp=0; numgp < gausspointsmass.nquad; numgp++)
 	{
 	  	
@@ -532,8 +532,8 @@ void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const vector<double>& xrefe,co
     
 
     //Store length factor for every GP
-    //note: the length factor alpha replaces the determinant and refers by definition always to the reference configuration
-    alphamass_[numgp]= dxdximass.Norm2();	
+    //note: the length factor jacobi replaces the determinant and refers by definition always to the reference configuration
+    jacobimass_[numgp]= dxdximass.Norm2();	
 	
 	}//for(int numgp=0; numgp < gausspointsmass.nquad; numgp++)
 	
@@ -557,7 +557,7 @@ void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const vector<double>& xrefe,co
         dxdxi(dof)+=shapefuncderiv(node)*xrefe[3*node+dof];
     
     //Store Jacobi determinant for each node (Jacobi determinant refers by definition always to the reference configuration)
-    alphanode_[numgp]= dxdxi.Norm2(); 
+    jacobinode_[numgp]= dxdxi.Norm2(); 
   
   }//for(int numgp=0; numgp< nnode; numgp++)
 	
