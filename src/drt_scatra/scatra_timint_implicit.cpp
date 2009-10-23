@@ -28,6 +28,7 @@ Maintainer: Georg Bauer
 #include "../drt_lib/drt_function.H"
 #include "../drt_fluid/fluid_utils.H" // for splitter
 #include "scatra_utils.H" // for splitstrategy
+#include "../drt_fluid/fluid_rotsym_periodicbc_utils.H"
 //REINHARD
 #include "../drt_geometry/element_volume.H"
 //end REINHARD
@@ -85,7 +86,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   convform_ (Teuchos::getIntegralValue<INPAR::SCATRA::ConvForm>(*params,"CONVFORM")),
   neumanninflow_(Teuchos::getIntegralValue<int>(*params,"NEUMANNINFLOW")),
   fssgd_    (Teuchos::getIntegralValue<INPAR::SCATRA::FSSUGRDIFF>(*params,"FSSUGRDIFF")),
-  frt_      (96485.3399/(8.314472 * extraparams_->get<double>("TEMPERATURE",298.15))),
+  frt_      (0.0),
   tpn_      (1.0),
   errfile_  (extraparams_->get<FILE*>("err file")),
   initialvelset_(false),
@@ -345,11 +346,13 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // screen output (has to come after SetInitialField)
   if (prbtype_ == "elch")
   {
+    frt_ = 96485.3399/(8.314472 * extraparams_->get<double>("TEMPERATURE"));
+
     double sigma = ComputeConductivity(); // every processor has to do this call
     if (myrank_==0)
     {
       cout<<"\nSetup of splitter: numscal = "<<numscal_<<endl;
-      cout<<"Temperature value T (Kelvin)     = "<<params_->get<double>("TEMPERATURE",298.0)<<endl;
+      cout<<"Temperature value T (Kelvin)     = "<<extraparams_->get<double>("TEMPERATURE")<<endl;
       cout<<"Constant F/RT                    = "<<frt_<<endl;
       cout<<"Conductivity of electrolyte      = "<<sigma<<endl<<endl;
     }
@@ -1242,9 +1245,6 @@ Teuchos::RCP<DRT::Discretization> fluiddis)
   // -> if yes, subgrid-scale velocity may need to be computed on element level
   bool sgvelswitch = fluidacc != Teuchos::null;
 
-  // get dofrowmap of fluid discretization
-  // const Epetra_Map* fluiddofrowmap = fluiddis->DofRowMap();
-
   // loop over all local nodes of scatra discretization
   for (int lnodeid=0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
   {
@@ -1254,6 +1254,10 @@ Teuchos::RCP<DRT::Discretization> fluiddis)
 
     // get the processor's local fluid node with the same lnodeid
     DRT::Node* fluidlnode = fluiddis->lRowNode(lnodeid);
+
+    // care for the slave nodes of rotationally symm. periodic boundary conditions
+    double rotangle(0.0);
+    bool havetorotate = FLD::IsSlaveNodeOfRotSymPBC(fluidlnode,rotangle);
 
     // get the degrees of freedom associated with this fluid node
     vector<int> fluidnodedofs;
@@ -1276,6 +1280,12 @@ Teuchos::RCP<DRT::Discretization> fluiddis)
 
       // get value of corresponding velocity component
       double velocity = (*fluidvel)[flid];
+      if (havetorotate)
+      {
+        // this is the desired component of the rotated vector field
+        velocity = FLD::GetComponentOfRotatedVectorField(index,fluidvel,flid,rotangle);
+      }
+
       // insert velocity value into node-based vector
       convel_->ReplaceMyValue(lnodeid, index, velocity);
 
@@ -1283,6 +1293,13 @@ Teuchos::RCP<DRT::Discretization> fluiddis)
       {
         // get value of corresponding acceleration component
         double acceleration = (*fluidacc)[flid];
+
+        if (havetorotate)
+        {
+          // this is the desired component of the rotated vector field
+          acceleration = FLD::GetComponentOfRotatedVectorField(index,fluidacc,flid,rotangle);
+        }
+
         // insert acceleration value into node-based vector
         accpre_->ReplaceMyValue(lnodeid, index, acceleration);
       }

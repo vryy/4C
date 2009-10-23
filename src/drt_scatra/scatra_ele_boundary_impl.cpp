@@ -257,10 +257,8 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
         i0 *= timefac;
       }
 
-
 # if 0
       // print all parameters read from the current condition
-      cout<<"sign           = "<<sign<<endl;
       cout<<"kinetic model  = "<<*kinetics<<endl;
       cout<<"reactant id    = "<<reactantid<<endl;
       cout<<"pot0(mod.)     = "<<pot0<<endl;
@@ -269,8 +267,10 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
       cout<<"alpha_c        = "<<alphac<<endl;
       cout<<"i0(mod.)       = "<<i0<<endl;
       cout<<"gamma          = "<<gamma<<endl;
-      cout<<"conref         = "<<conref<<endl;
+      cout<<"refcon         = "<<refcon<<endl;
       cout<<"F/RT           = "<<frt<<endl<<endl;
+      cout<<"time factor    = "<<timefac<<endl;
+      cout<<"alpha_F        = "<<alphaF<<endl;
 #endif
 
       EvaluateElectrodeKinetics(
@@ -774,7 +774,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
 )
 {
   //for pre-multiplication of i0 with 1/(F z_k)
-  double fz = 1.0/96485.3399; // unit of F: C/mol or mC/mmol
+  double fz = 1.0/96485.3399; // unit of F: C/mol or mC/mmol or muC / mumol
 
   // get node coordinates (we have a nsd_+1 dimensional domain!)
   GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,iel> >(ele,xyze_);
@@ -782,7 +782,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
   // in the ALE case add nodal displacements
   if (isale_) xyze_ += edispnp_;
 
-  if (iselch)
+  if (iselch) // this is not necessary for secondary current distributions
   {
     // get valence of the single(!) reactant
     if (material->MaterialType() == INPAR::MAT::m_matlist)
@@ -853,7 +853,8 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
 
     if (iselch) // tertiary current distribution
     {
-      if (kinetics=="Butler-Volmer")  // concentration-dependent Butler-Volmer law
+      // concentration-dependent Butler-Volmer law(s)
+      if ((kinetics=="Butler-Volmer") or (kinetics=="Butler-Volmer-Yang1997"))
       {
         double pow_conint_gamma_k = 0.0;
 
@@ -865,16 +866,23 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
           cout<<"WARNING: Exp(alpha_c...) in Butler-Volmer law is near overflow!"
           <<exp((-alphac)*frt*eta)<<endl;
         if ((conint/refcon) < EPS13)
-          cout<<"WARNING: Conc. in Butler-Volmer formula is zero/negative: "<<(conint/refcon)<<endl;
+        {
+          cout<<"WARNING: Rel. Conc. in Butler-Volmer formula is zero/negative: "<<(conint/refcon)<<endl;
+          pow_conint_gamma_k = pow(EPS13,gamma);
+          cout<<"-> Replacement value: pow(EPS,gamma) = "<< pow_conint_gamma_k <<endl;
+        }
         else
           pow_conint_gamma_k = pow(conint/refcon,gamma);
-
+        if (kinetics=="Butler-Volmer")
+        {
         // note: gamma==0 deactivates concentration dependency in Butler-Volmer!
         const double expterm = exp(alphaa*frt*eta)-exp((-alphac)*frt*eta);
 
         double concterm = 0.0;
-        if ((conint/refcon) > EPS13)
+        if (conint > EPS13)
           concterm = gamma*pow(conint,(gamma-1.0))/pow(refcon,gamma);
+        else
+          concterm = gamma*pow(EPS13,(gamma-1.0))/pow(refcon,gamma);
 
         for (int vi=0; vi<iel; ++vi)
         {
@@ -888,6 +896,29 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
           // ------------right-hand-side
           erhs[vi*numdofpernode_] -= fac_fz_i0_funct_vi*pow_conint_gamma_k*expterm;
         }
+        } // if (kinetics=="Butler-Volmer")
+        if (kinetics=="Butler-Volmer-Yang1997")
+        {
+          // note: gamma==0 deactivates concentration dependency in Butler-Volmer!
+          double concterm = 0.0;
+          if ((conint/refcon) > EPS13)
+            concterm = gamma*pow(conint,(gamma-1.0))/pow(refcon,gamma);
+          else
+            concterm = gamma*pow(EPS13,(gamma-1.0))/pow(refcon,gamma);
+
+          for (int vi=0; vi<iel; ++vi)
+          {
+            fac_fz_i0_funct_vi = fac_*fz*i0*funct_(vi);
+            // ---------------------matrix
+            for (int ui=0; ui<iel; ++ui)
+            {
+              emat(vi*numdofpernode_,ui*numdofpernode_) += fac_fz_i0_funct_vi*funct_(ui)*(-(concterm*exp((-alphac)*frt*eta)));
+              emat(vi*numdofpernode_,ui*numdofpernode_+numscal_) += fac_fz_i0_funct_vi*(((-alphaa)*frt*exp(alphaa*frt*eta))+(pow_conint_gamma_k*(-alphac)*frt*exp((-alphac)*frt*eta)))*funct_(ui);
+            }
+            // ------------right-hand-side
+            erhs[vi*numdofpernode_] -= fac_fz_i0_funct_vi*(exp(alphaa*frt*eta)-(pow_conint_gamma_k*exp((-alphac)*frt*eta)));
+          }
+        } // if (kinetics=="Butler-Volmer-Yang1997")
       }
       else if(kinetics=="linear") // linear law:  i_n = i_0*(alphaa*frt*(V_M - phi) + 1.0)
       {
@@ -1027,17 +1058,26 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
     // surface overpotential eta at integration point
     const double eta = (pot0 - potint);
 
-    if (kinetics=="Butler-Volmer")     // Butler-Volmer
+    if ((kinetics=="Butler-Volmer") or (kinetics=="Butler-Volmer-Yang1997"))
     {
       double expterm(0.0);
       if (iselch)
       {
-        if ((conint<EPS13) && (gamma < 1.0))
-          expterm = 0.0; // prevents NaN's in the current density evaluation
-        else
+        if (kinetics=="Butler-Volmer")
+        {
           expterm = pow(conint/refcon,gamma) * (exp(alphaa*frt*eta)-exp((-alphac)*frt*eta));
+        }
+        if (kinetics=="Butler-Volmer-Yang1997")
+        {
+          if (((conint/refcon)<EPS13) && (gamma < 1.0))
+          {// prevents NaN's in the current density evaluation
+            expterm = (exp(alphaa*frt*eta)-(pow(EPS13/refcon,gamma)*exp((-alphac)*frt*eta)));
+          }
+          else
+            expterm = (exp(alphaa*frt*eta)-(pow(conint/refcon,gamma)*exp((-alphac)*frt*eta)));
+        }
       }
-      else
+      else // secondary current distribution
         expterm = exp(alphaa*eta)-exp((-alphac)*eta);
 
       // compute integrals
