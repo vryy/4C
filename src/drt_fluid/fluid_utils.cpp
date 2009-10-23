@@ -304,7 +304,7 @@ void FLD::UTILS::LiftDrag(
       for( unsigned i=0; i<ldconds.size(); ++i) // loop L&D conditions (i.e. lines in .dat file)
       {
         /* get label of present LiftDrag condition  */
-        const unsigned int label = ldconds[i]->GetInt("label");
+        const int label = ldconds[i]->GetInt("label");
 
         ((*liftdragvals)).insert(pair<int,vector<double> >(label,vector<double> (6,0.0)));
       }
@@ -328,7 +328,7 @@ void FLD::UTILS::LiftDrag(
       for( unsigned i=0; i<ldconds.size(); ++i) // loop L&D conditions (i.e. lines in .dat file)
       {
         /* get label of present LiftDrag condition  */
-        const unsigned int label = ldconds[i]->GetInt("label");
+        const int label = ldconds[i]->GetInt("label");
 
         /* get new nodeset for new label OR:
            return pointer to nodeset for known label ... */
