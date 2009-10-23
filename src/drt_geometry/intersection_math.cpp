@@ -131,7 +131,7 @@ void GEO::svdcmpSerialDense(
    	  if (!((W.M()==n) && (V.M()==n && V.N()==n)))
    		dserror("Dimensionen der Matrizen nicht korrekt");  
 
-   	  LINALG::SerialDenseMatrix rv1(n,0);
+   	  LINALG::SerialDenseMatrix rv1(n,1);
 
            //Householder reduction to bidiagonal form.
          double g = 0.0;
