@@ -22,7 +22,6 @@ Maintainer: Florian Henke
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_xfem/dof_management.H"
-#include "../drt_xfem/xdofmapcreation.H"
 #include "../drt_xfem/enrichment_utils.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_f3/fluid3_stabilization.H"
