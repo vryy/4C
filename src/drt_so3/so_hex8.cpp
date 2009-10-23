@@ -39,13 +39,9 @@ data_()
   kintype_ = soh8_totlag;
   eastype_ = soh8_easnone;
   neas_ = 0;
-  invJ_.resize(NUMGPT_SOH8);
-  detJ_.resize(NUMGPT_SOH8);
-  for (int i=0; i<NUMGPT_SOH8; ++i)
-  {
-    detJ_[i]= 0.0;
-    invJ_[i]= LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>(true);
-  }
+  invJ_.resize(NUMGPT_SOH8, LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>(true));
+  detJ_.resize(NUMGPT_SOH8, 0.0);
+
 #if defined(PRESTRESS) || defined(POSTSTRESS)
   prestress_ = rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH8,NUMGPT_SOH8));
 #endif
@@ -205,13 +201,10 @@ void DRT::ELEMENTS::So_hex8::Unpack(const vector<char>& data)
   // invJ_
   int size = 0;
   ExtractfromPack(position,data,size);
-  invJ_.resize(size);
+  invJ_.resize(size, LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>(true));
   for (int i=0; i<size; ++i)
-  {
-    invJ_[i] = LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>(true);
     ExtractfromPack(position,data,invJ_[i]);
-  }
-
+  
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;

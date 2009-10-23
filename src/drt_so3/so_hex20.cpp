@@ -31,14 +31,8 @@ DRT::Element(id,element_so_hex20,owner),
 data_()
 {
   kintype_ = soh20_totlag;
-  invJ_.resize(NUMGPT_SOH20);
-  detJ_.resize(NUMGPT_SOH20);
-  for (int i=0; i<NUMGPT_SOH20; ++i)
-  {
-    detJ_[i]= 0.0;
-    invJ_[i]=LINALG::Matrix<NUMDIM_SOH20,NUMDIM_SOH20>(true);
-  }
-
+  invJ_.resize(NUMGPT_SOH20, LINALG::Matrix<NUMDIM_SOH20,NUMDIM_SOH20>(true));
+  detJ_.resize(NUMGPT_SOH20, 0.0);
   return;
 }
 
@@ -140,12 +134,9 @@ void DRT::ELEMENTS::So_hex20::Unpack(const vector<char>& data)
   // invJ_
   int size = 0;
   ExtractfromPack(position,data,size);
-  invJ_.resize(size);
+  invJ_.resize(size, LINALG::Matrix<NUMDIM_SOH20,NUMDIM_SOH20>(true));
   for (int i=0; i<size; ++i)
-  {
-    invJ_[i] = LINALG::Matrix<NUMDIM_SOH20,NUMDIM_SOH20>(true);
     ExtractfromPack(position,data,invJ_[i]);
-  }
   
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);

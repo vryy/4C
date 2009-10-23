@@ -28,15 +28,8 @@ data_()
 {
   kintype_ = sonurbs27_totlag;
 
-  invJ_.resize(NUMGPT_SONURBS27);
-  detJ_.resize(NUMGPT_SONURBS27);
-  for (int i=0; i<NUMGPT_SONURBS27; ++i)
-  {
-    detJ_[i]= 0.0;
-    invJ_[i]= LINALG::Matrix<NUMDIM_SONURBS27,NUMDIM_SONURBS27>(true);
-  }
-  
-
+  invJ_.resize(NUMGPT_SONURBS27, LINALG::Matrix<NUMDIM_SONURBS27,NUMDIM_SONURBS27>(true));
+  detJ_.resize(NUMGPT_SONURBS27, 0.0);
   return;
 }
 
@@ -136,12 +129,9 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::Unpack(const vector<char>& data)
   // invJ_
   int size = 0;
   ExtractfromPack(position,data,size);
-  invJ_.resize(size);
+  invJ_.resize(size, LINALG::Matrix<NUMDIM_SONURBS27,NUMDIM_SONURBS27>(true));
   for (int i=0; i<size; ++i)
-  {
-    invJ_[i] = LINALG::Matrix<NUMDIM_SONURBS27,NUMDIM_SONURBS27>(true);
     ExtractfromPack(position,data,invJ_[i]);
-  }
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);

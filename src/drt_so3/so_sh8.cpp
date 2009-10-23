@@ -31,9 +31,7 @@ DRT::ELEMENTS::So_hex8(id,owner)
   SetType(element_sosh8);
   thickdir_ = globx;
   nodes_rearranged_ = false;
-  thickvec_.resize(3);
-  for(int i=0; i<3; i++)
-    thickvec_[i]=0.0;
+  thickvec_.resize(3, 0.0);
     
   return;
 }
