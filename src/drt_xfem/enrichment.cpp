@@ -58,6 +58,7 @@ std::string XFEM::Enrichment::enrTypeToString(const EnrType type) const
         case typeStandard:  typetext = "Stnd"; break;
         case typeJump:      typetext = "Jump"; break;
         case typeVoid:      typetext = "Void"; break;
+        case typeVoidFSI:   typetext = "VoidFSI"; break;
         case typeKink:      typetext = "Kink"; break;
         default: dserror("no string defined for EnrType");
     };
@@ -104,6 +105,34 @@ double XFEM::Enrichment::EnrValue(
                   enrval = 0.0;
                 } else {
                   enrval = 1.0;
+                }
+                break;
+            }
+        }
+
+        break;
+    }
+    case XFEM::Enrichment::typeVoidFSI:
+    {
+        // standard Heaviside function ignoring the label and only looking for inside/outside
+        switch (approachdirection)
+        {
+            case approachFromPlus:
+            {
+                enrval = 1.0;
+                break;
+            }
+            case approachFromMinus:
+            {
+                enrval = 0.0;
+                break;
+            }
+            case approachUnknown:
+            {
+                if (ih.PositionWithinConditionNP(actpos) == 0) {
+                  enrval = 1.0;
+                } else {
+                  enrval = 0.0;
                 }
                 break;
             }

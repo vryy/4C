@@ -40,6 +40,7 @@ namespace XFEM
         typeStandard,  ///< standard enrichment  - corresponds to the standard finite element method
         typeJump,      ///< jump enrichment - Heaviside function from +1 (in Omega+) to -1 (in Omega-)
         typeVoid,      ///< void enrichment - Heaviside function from +1 (in Omega+) to  0 (in Omega-)
+        typeVoidFSI,   ///< void enrichment - Heaviside function from +1 (in Omega+) to  0 (in Omega-), only distinguish between inside (==0) and outside (>0), not with respect to different labels normal
         typeKink       ///< kink enrichment - TODO: discription missing
       };
 
