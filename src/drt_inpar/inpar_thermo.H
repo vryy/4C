@@ -38,7 +38,10 @@ namespace INPAR
       dyna_undefined,                  ///< undefined integrator (sth like a default)
       dyna_statics,                    ///< static analysis
       dyna_onesteptheta,               ///< one-step-theta time integrator (implicit)
-      dyna_gemm                        ///< generalised energy-momementum method
+      dyna_gemm,                       ///< generalised energy-momementum method
+      dyna_genalpha                    ///< generalised-alpha time integrator,
+                                       ///< new style (implicit)
+
     };
 
     /// Map time integrator to string
@@ -61,12 +64,34 @@ namespace INPAR
       case dyna_gemm :
         return "GEMM";
         break;
+      case dyna_genalpha :
+        return "GenAlpha";
+        break;
       default :
         dserror("Cannot make string for time integrator %d", name);
         return "";
       }
     }
 
+    /// Mid-average type of internal forces for generalised-alpha-like
+    /// time integration schemes
+    ///
+    /// \author bborn
+    /// \date 11/08
+    enum MidAverageEnum
+    {
+      midavg_vague = 0,  ///< undefined mid-averaging type
+      midavg_imrlike,  ///< alphaf-mid-averaging is done IMR-like, i.e.
+                       ///< \f$F_{int,m}\f$
+                       ///< \f$= F_{int}(D_m)\f$
+                       ///< \f$= F_{int}( (1-\alpha_f)*D_{n+1} + \alpha_f*D_n )\f$
+                       ///< (IMR means implicit mid-point rule.)
+      midavg_trlike    ///< alphaf-mid-averaging is done TR-like, i.e.
+                       ///< \f$F_{int,m}\f$
+                       ///< \f$= (1-\alpha_f)*F_{int,n+1} + \alpha_f*F_{int,n}\f$
+                       ///<  \f$= (1-\alpha_f)*F_{int}(D_{n+1}) + \alpha_f*F_{int}(D_n)\f$
+                       ///<  (TR means trapezoidal rule.)
+    };
     //@}
 
     /// @name Solution technique and related

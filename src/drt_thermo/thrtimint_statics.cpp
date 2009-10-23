@@ -1,4 +1,3 @@
-/*----------------------------------------------------------------------*/
 /*!
 \file thrtimint_statics.cpp
 \brief Statics analysis
@@ -108,14 +107,10 @@ void THR::TimIntStatics::EvaluateRhsTangResidual()
   //! ordinary internal force and tangent
   ApplyForceTangInternal(timen_, (*dt_)[0], tempn_, tempi_, fintn_, tang_);
 
-  // potential forces
-  //ApplyForceTangPotential(tempn_, fintn_, tang_);
-
   //! build residual  Res = F_{int;n+1}
   //!                     - F_{ext;n+1}
   fres_->Update(-1.0, *fextn_, 0.0);
   fres_->Update(1.0, *fintn_, 1.0);
-//  cout << *fintn_ << endl;
 
   //! build tangent matrix : effective dynamic tangent matrix
   //!    K_{Teffdyn} = K_{T}

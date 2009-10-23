@@ -259,7 +259,8 @@ OBJS_DRT_THERMO = \
                 src/drt_thermo/thrtimint.o \
                 src/drt_thermo/thrtimint_impl.o \
                 src/drt_thermo/thrtimint_statics.o \
-                src/drt_thermo/thrtimint_ost.o
+                src/drt_thermo/thrtimint_ost.o \
+                src/drt_thermo/thrtimint_genalpha.o
 OBJS_DRT_THERMO_LIB = \
                 src/drt_thermo/thermo_element.o \
                 src/drt_thermo/thermo_element_input.o \

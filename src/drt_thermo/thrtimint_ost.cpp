@@ -24,15 +24,14 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*
  |  constructor                                              dano 08/09 |
  *----------------------------------------------------------------------*/
-THR::TimIntOneStepTheta::TimIntOneStepTheta
-(
+THR::TimIntOneStepTheta::TimIntOneStepTheta(
   const Teuchos::ParameterList& ioparams,
   const Teuchos::ParameterList& tdynparams,
   const Teuchos::ParameterList& xparams,
   Teuchos::RCP<DRT::Discretization> actdis,
   Teuchos::RCP<LINALG::Solver> solver,
   Teuchos::RCP<IO::DiscretizationWriter> output
-)
+  )
 : TimIntImpl
   (
     ioparams,
@@ -47,6 +46,8 @@ THR::TimIntOneStepTheta::TimIntOneStepTheta
   ratet_(Teuchos::null),
   fint_(Teuchos::null),
   fintn_(Teuchos::null),
+  fcap_(Teuchos::null),
+  fcapn_(Teuchos::null),
   fext_(Teuchos::null),
   fextn_(Teuchos::null)
 {
@@ -74,9 +75,13 @@ THR::TimIntOneStepTheta::TimIntOneStepTheta
   fint_ = LINALG::CreateVector(*dofrowmap_, true);
   // internal force vector F_{int;n+1} at new time
   fintn_ = LINALG::CreateVector(*dofrowmap_, true);
+  // stored force vector F_{transient;n} at last time
+  fcap_ = LINALG::CreateVector(*dofrowmap_, true);
+  // stored force vector F_{transient;n+1} at new time
+  fcapn_ = LINALG::CreateVector(*dofrowmap_, true);
   // set initial internal force vector
-   ApplyForceTangInternal((*time_)[0], (*dt_)[0], (*temp_)(0), zeros_,
-                           fint_, tang_);
+  ApplyForceTangInternal((*time_)[0], (*dt_)[0], (*temp_)(0), zeros_,
+                         fcap_, fint_, tang_);
 
   // external force vector F_ext at last times
   fext_ = LINALG::CreateVector(*dofrowmap_, true);
@@ -127,31 +132,26 @@ void THR::TimIntOneStepTheta::EvaluateRhsTangResidual()
 
   // initialise internal forces
   fintn_->PutScalar(0.0);
+  fcapn_->PutScalar(0.0);
 
   // initialise tangent matrix to zero
   tang_->Zero();
 
   // ordinary internal force and tangent
-  ApplyForceTangInternal(timen_, (*dt_)[0], tempn_, tempi_, fintn_, tang_);
+  ApplyForceTangInternal(timen_, (*dt_)[0], tempn_, tempi_, fcapn_, fintn_, tang_);
 
   // build residual  Res = C . R_{n+theta}
   //                     + F_{int;n+theta}
   //                     - F_{ext;n+theta}
-  fres_->Update(-theta_, *fextn_, -(1.0-theta_), *fext_, 0.0);
+  // with R_{n+theta}     = ( T_{n+1} - T_n ) / dt
+  //      F_{int;n+theta} = theta * F_{int;n} - (1 - theta) * F_{int;n+1}
+  //      F_{ext;n+theta} = theta * F_{ext;n} - (1 - theta) * F_{ext;n+1}
+  fres_->Update(1.0, *fcapn_, -1.0, *fcap_, 0.0);
+  fres_->Scale(1.0/(*dt_)[0]);
   fres_->Update(theta_, *fintn_, (1.0-theta_), *fint_, 1.0);
+  fres_->Update(-theta_, *fextn_, -(1.0-theta_), *fext_, 1.0);
 
-//  //cout << THR::AUX::CalculateVectorNorm(vectornorm_l2, fextn_) << endl;
-//
-//  // build tangent matrix : effective dynamic stiffness matrix
-//  //    K_{Teffdyn} = 1/(theta*dt^2) M
-//  //                + 1/dt C
-//  //                + theta K_{T}
-//  stiff_->Add(*capa_, false, 1.0/(theta_*(*dt_)[0]*(*dt_)[0]), theta_);
-//  if (damping_ == INPAR::THR::damp_rayleigh)
-//  {
-//    stiff_->Add(*damp_, false, 1.0/(*dt_)[0], 1.0);
-//  }
-//  stiff_->Complete();  // close stiffness matrix
+  tang_->Complete();  // close tangent matrix
 
   // hallelujah
   return;
@@ -289,6 +289,10 @@ void THR::TimIntOneStepTheta::UpdateStepState()
   //    F_{int;n} := F_{int;n+1}
   fint_->Update(1.0, *fintn_, 0.0);
 
+  // update new stored force
+  //    F_{transient;n} := F_{transient;n+1}
+  fcap_->Update(1.0, *fcapn_, 0.0);
+
   // update anything that needs to be updated at the element level
   {
     // create the parameters for the discretization
@@ -331,6 +335,7 @@ void THR::TimIntOneStepTheta::ApplyForceTangInternal(
   const double dt,  //!< step size
   const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
   const Teuchos::RCP<Epetra_Vector> tempi,  //!< residual temperatures
+  Teuchos::RCP<Epetra_Vector> fcap,  //!< stored force
   Teuchos::RCP<Epetra_Vector> fint,  //!< internal force
   Teuchos::RCP<LINALG::SparseMatrix> tang  //!< tangent matrix
 )
@@ -338,9 +343,9 @@ void THR::TimIntOneStepTheta::ApplyForceTangInternal(
   // create the parameters for the discretization
   Teuchos::ParameterList p;
   // set parameters
-  p.set("theta", theta_);
+  p.set<double>("theta", theta_);
   // call the base function
-  TimInt::ApplyForceTangInternal(p,time,dt,temp,tempi,fint,tang);
+  TimInt::ApplyForceTangInternal(p,time,dt,temp,tempi,fcap,fint,tang);
   // finish
   return;
 }

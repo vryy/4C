@@ -26,8 +26,7 @@ Maintainer: Caroline Danowski
 #include <Teuchos_Time.hpp>
 
 /*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | general problem data                                                 |
+ | general problem data                                     m.gee 06/01 |
  | global variable GENPROB genprob is defined in global_control.c       |
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
@@ -64,6 +63,7 @@ void ADAPTER::ThermoBaseAlgorithm::SetupThermo(const Teuchos::ParameterList& prb
   case INPAR::THR::dyna_statics :
   case INPAR::THR::dyna_onesteptheta :
   case INPAR::THR::dyna_gemm :
+  case INPAR::THR::dyna_genalpha :
     SetupTimIntImpl(prbdyn);   // <-- here is the show
     break;
   default :
@@ -179,5 +179,4 @@ void ADAPTER::Thermo::Integrate()
   return;
 }
 
-/*----------------------------------------------------------------------*/
-#endif
+#endif // #ifdef CCADISCRET

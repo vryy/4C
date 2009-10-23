@@ -12,19 +12,23 @@ Maintainer: Caroline Danowski
 </pre>
 */
 
-/*----------------------------------------------------------------------*/
-/* macros */
+/*----------------------------------------------------------------------*
+ |  macros                                                  bborn 08/09 |
+ *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-/*----------------------------------------------------------------------*/
-/* headers */
+/*----------------------------------------------------------------------*
+ |  headers                                                 bborn 08/09 |
+ *----------------------------------------------------------------------*/
 #include "adapter_thermo_timint.H"
 
 #include "../drt_thermo/thrtimint_impl.H"
 #include "../drt_thermo/thrtimint_statics.H"
 #include "../drt_thermo/thrtimint_ost.H"
+#include "../drt_thermo/thrtimint_genalpha.H"
 
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_condition_utils.H"
 #include "../drt_thermo/thr_resulttest.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -34,8 +38,9 @@ Maintainer: Caroline Danowski
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
 
-/*======================================================================*/
-/* constructor */
+/*----------------------------------------------------------------------*
+ |  constructor                                             bborn 08/09 |
+ *----------------------------------------------------------------------*/
 ADAPTER::ThermoTimInt::ThermoTimInt(
   Teuchos::RCP<Teuchos::ParameterList> ioparams,
   Teuchos::RCP<Teuchos::ParameterList> tdynparams,
@@ -57,18 +62,18 @@ ADAPTER::ThermoTimInt::ThermoTimInt(
     dserror("Failed to create thermal integrator");
 
   // initialise temperature increments to 0 (in words zero)
-  // this variable in only used in monolithic FSI
   tempinc_ = Teuchos::rcp(new Epetra_Vector(*(DofRowMap()),true));
 
   // good bye
   return;
 }
 
-
-/*----------------------------------------------------------------------*/
-/* create implicit marching time integrator */
-  // originally included in the file strtimint_create.cpp
-Teuchos::RCP<THR::TimIntImpl> ADAPTER::ThermoTimInt::Create(
+/*----------------------------------------------------------------------*
+ |  create implicit marching time integrator                bborn 08/09 |
+ | originally included in the file strtimint_create.cpp                 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<THR::TimIntImpl> ADAPTER::ThermoTimInt::Create
+(
   const Teuchos::ParameterList& ioflags,
   const Teuchos::ParameterList& tdyn,
   const Teuchos::ParameterList& xparams,
@@ -107,6 +112,14 @@ Teuchos::RCP<THR::TimIntImpl> ADAPTER::ThermoTimInt::Create(
      break;
     }
 */
+  // Generalized alpha time integration
+  case INPAR::THR::dyna_genalpha :
+  {
+    tti = Teuchos::rcp(new THR::TimIntGenAlpha(ioflags, tdyn, xparams,
+                                               actdis, solver, output));
+    break;
+  }
+
   // Everything else
   default :
   {
@@ -119,16 +132,17 @@ Teuchos::RCP<THR::TimIntImpl> ADAPTER::ThermoTimInt::Create(
   return tti;
 }
 
-/*----------------------------------------------------------------------*/
-/* */
+/*----------------------------------------------------------------------*
+ |                                                          bborn 08/09 |
+ *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> ADAPTER::ThermoTimInt::InitialGuess()
 {
   return thermo_->TempRes();
 }
 
-
-/*----------------------------------------------------------------------*/
-/* right-hand side alias the dynamic force residual */
+/*----------------------------------------------------------------------*
+ | right-hand side alias the dynamic force residual         bborn 08/09 |
+ *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> ADAPTER::ThermoTimInt::RHS()
 {
   // this expects a _negative_ (Newton-ready) residual with blanked
@@ -136,58 +150,59 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::ThermoTimInt::RHS()
   return thermo_->ForceRes();
 }
 
-
-/*----------------------------------------------------------------------*/
-/* get current temperature T_{n+1} */
+/*----------------------------------------------------------------------*
+ | get current temperature T_{n+1}                          bborn 08/09 |
+ *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> ADAPTER::ThermoTimInt::Tempnp()
 {
   return thermo_->TempNew();
 }
 
-
-/*----------------------------------------------------------------------*/
-/* get last converged temperature T_{n} */
+/*----------------------------------------------------------------------*
+ | get last converged temperature T_{n}                     bborn 08/09 |
+ *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> ADAPTER::ThermoTimInt::Tempn()
 {
   return thermo_->Temp();
 }
 
-
-/*----------------------------------------------------------------------*/
-/* non-overlapping DOF map */
+/*----------------------------------------------------------------------*
+ | non-overlapping DOF map                                  bborn 08/09 |
+ *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> ADAPTER::ThermoTimInt::DofRowMap()
 {
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
   return Teuchos::rcp(new Epetra_Map(*dofrowmap));
 }
 
-
-/*----------------------------------------------------------------------*/
-/* tangent, i.e. force residual R_{n+1} differentiated
- * by temperatures T_{n+1} */
+/*----------------------------------------------------------------------*
+ | tangent, i.e. force residual R_{n+1} differentiated      bborn 08/09 |
+ | by temperatures T_{n+1}                                              |
+ *----------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::ThermoTimInt::SystemMatrix()
 {
   return thermo_->Tang();
 }
 
-
-/*----------------------------------------------------------------------*/
-/* get discretisation */
+/*----------------------------------------------------------------------*
+ | get discretisation                                       bborn 08/09 |
+ *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Discretization> ADAPTER::ThermoTimInt::Discretization()
 {
   return thermo_->Discretization();
 }
 
-/*----------------------------------------------------------------------*/
-/* External force F_{ext,n+1} */
+/*----------------------------------------------------------------------*
+ | External force F_{ext,n+1}                               bborn 08/09 |
+ *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> ADAPTER::ThermoTimInt::FExtnp()
 {
   return thermo_->FextNew();
 }
 
-
-/*----------------------------------------------------------------------*/
-/* prepare time step */
+/*----------------------------------------------------------------------*
+ | prepare time step                                        bborn 08/09 |
+ *----------------------------------------------------------------------*/
 void ADAPTER::ThermoTimInt::PrepareTimeStep()
 {
   // Note: MFSI requires a constant predictor. Otherwise the fields will get
@@ -201,11 +216,10 @@ void ADAPTER::ThermoTimInt::PrepareTimeStep()
 
 }
 
-
-/*----------------------------------------------------------------------*/
-/* build linear system tangent matrix and rhs/force residual
- *
- * Monolithic TSI accesses the linearised thermo problem. */
+/*----------------------------------------------------------------------*
+ | build linear system tangent matrix and rhs/force residual bborn 08/09 |
+ | Monolithic TSI accesses the linearised thermo problem                |
+ *----------------------------------------------------------------------*/
 void ADAPTER::ThermoTimInt::Evaluate(
   Teuchos::RCP<const Epetra_Vector> temp
 )
@@ -238,9 +252,9 @@ void ADAPTER::ThermoTimInt::Evaluate(
   thermo_->PrepareSystemForNewtonSolve();
 }
 
-
-/*----------------------------------------------------------------------*/
-/* update time step */
+/*----------------------------------------------------------------------*
+ | update time step                                         bborn 08/09 |
+ *----------------------------------------------------------------------*/
 void ADAPTER::ThermoTimInt::Update()
 {
   thermo_->UpdateStepState();
@@ -248,41 +262,41 @@ void ADAPTER::ThermoTimInt::Update()
   return;
 }
 
-
-/*----------------------------------------------------------------------*/
-/* output */
+/*----------------------------------------------------------------------*
+ | output                                                   bborn 08/09 |
+ *----------------------------------------------------------------------*/
 void ADAPTER::ThermoTimInt::Output()
 {
   thermo_->OutputStep();
 }
 
-
-/*----------------------------------------------------------------------*/
-/* domain map */
+/*----------------------------------------------------------------------*
+ | domain map                                               bborn 08/09 |
+ *----------------------------------------------------------------------*/
 const Epetra_Map& ADAPTER::ThermoTimInt::DomainMap()
 {
   return thermo_->GetDomainMap();
 }
 
-
-/*----------------------------------------------------------------------*/
-/* read restart */
+/*----------------------------------------------------------------------*
+ | read restart                                             bborn 08/09 |
+ *----------------------------------------------------------------------*/
 void ADAPTER::ThermoTimInt::ReadRestart(const int step)
 {
   thermo_->ReadRestart(step);
 }
 
-
-/*----------------------------------------------------------------------*/
-/* find iteratively solution */
+/*----------------------------------------------------------------------*
+ | find iteratively solution                                bborn 08/09 |
+ *----------------------------------------------------------------------*/
 void ADAPTER::ThermoTimInt::Solve()
 {
   thermo_->Solve();
 }
 
-
-/*----------------------------------------------------------------------*/
-/* thermal result test */
+/*----------------------------------------------------------------------*
+ | thermal result test                                      bborn 08/09 |
+ *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::ResultTest> ADAPTER::ThermoTimInt::CreateFieldTest()
 {
   return Teuchos::rcp(new THR::ResultTest(*thermo_));
@@ -290,4 +304,4 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::ThermoTimInt::CreateFieldTest()
 
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifdef CCADISCRET
+#endif  // CCADISCRET

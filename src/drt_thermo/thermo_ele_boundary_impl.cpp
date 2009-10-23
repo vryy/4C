@@ -116,17 +116,18 @@ DRT::ELEMENTS::TemperBoundaryImpl<distype>::TemperBoundaryImpl
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
-    DRT::ELEMENTS::ThermoBoundary*    ele,
-    Teuchos::ParameterList&           params,
-    DRT::Discretization&              discretization,
-    std::vector<int>&                 lm,
-    Epetra_SerialDenseMatrix&         elemat1_epetra,
-    Epetra_SerialDenseMatrix&         elemat2_epetra,
-    Epetra_SerialDenseVector&         elevec1_epetra,
-    Epetra_SerialDenseVector&         elevec2_epetra,
-    Epetra_SerialDenseVector&         elevec3_epetra
-    )
+int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate
+(
+  DRT::ELEMENTS::ThermoBoundary*    ele,
+  Teuchos::ParameterList&           params,
+  DRT::Discretization&              discretization,
+  std::vector<int>&                 lm,
+  Epetra_SerialDenseMatrix&         elemat1_epetra,
+  Epetra_SerialDenseMatrix&         elemat2_epetra,
+  Epetra_SerialDenseVector&         elevec1_epetra,
+  Epetra_SerialDenseVector&         elevec2_epetra,
+  Epetra_SerialDenseVector&         elevec3_epetra
+)
 {
   // First, do the things that are needed for all actions:
   // get the material (of the parent element)
@@ -182,15 +183,16 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
  |  Integrate a Surface/Line Neumann boundary condition       gjb 01/09 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(
-    DRT::Element*             ele,
-    Teuchos::ParameterList&   params,
-    DRT::Discretization&      discretization,
-    DRT::Condition&           condition,
-    std::vector<int>&         lm,
-    Epetra_SerialDenseVector& elevec1
-    )
- {
+int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann
+(
+  DRT::Element*             ele,
+  Teuchos::ParameterList&   params,
+  DRT::Discretization&      discretization,
+  DRT::Condition&           condition,
+  std::vector<int>&         lm,
+  Epetra_SerialDenseVector& elevec1
+)
+{
   // get node coordinates (we have a nsd_+1 dimensional domain!)
   GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,iel> >(ele,xyze_);
 
@@ -267,46 +269,48 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(
   } //end of loop over integration points
 
   return 0;
- }
+}
 
 /*----------------------------------------------------------------------*
  |  evaluate shape functions and int. factor at int. point    gjb 01/09 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvalShapeFuncAndIntFac(
-    const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
-    const int&                                   iquad,      ///< id of current Gauss point
-    const int&                                   eleid       ///< the element id
-    )
-  {
-    // coordinates of the current integration point
-    const double* gpcoord = (intpoints.IP().qxg)[iquad];
-    for (int idim=0;idim<nsd_;idim++)
-    {xsi_(idim) = gpcoord[idim];}
+void DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvalShapeFuncAndIntFac
+(
+  const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
+  const int&                                   iquad,      ///< id of current Gauss point
+  const int&                                   eleid       ///< the element id
+)
+{
+  // coordinates of the current integration point
+  const double* gpcoord = (intpoints.IP().qxg)[iquad];
+  for (int idim=0;idim<nsd_;idim++)
+  {xsi_(idim) = gpcoord[idim];}
 
-    // shape functions and their first derivatives
-    DRT::UTILS::shape_function<distype>(xsi_,funct_);
-    DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);
+  // shape functions and their first derivatives
+  DRT::UTILS::shape_function<distype>(xsi_,funct_);
+  DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);
 
-    // the metric tensor and the area of an infinitesimal surface/line element
-    double drs(0.0);
-    DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>(xyze_,deriv_,metrictensor_,drs);
+  // the metric tensor and the area of an infinitesimal surface/line element
+  double drs(0.0);
+  DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>(xyze_,deriv_,metrictensor_,drs);
 
-    // set the integration factor
-    fac_ = intpoints.IP().qwgt[iquad] * drs;
+  // set the integration factor
+  fac_ = intpoints.IP().qwgt[iquad] * drs;
 
-    // say goodbye
-    return;
-  }
+  // say goodbye
+  return;
+}
 
 /*----------------------------------------------------------------------*
  |  get constant normal                                       gjb 01/09 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::TemperBoundaryImpl<distype>::GetConstNormal(
-    LINALG::Matrix<nsd_+1,1>&          normal,
-    const LINALG::Matrix<nsd_+1,iel>&  xyze
-    )
+void DRT::ELEMENTS::TemperBoundaryImpl<distype>::GetConstNormal
+(
+  LINALG::Matrix<nsd_+1,1>&          normal,
+  const LINALG::Matrix<nsd_+1,iel>&  xyze
+)
 {
   // determine normal to this element
   switch(nsd_)
@@ -347,11 +351,12 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::GetConstNormal(
  |  Integrate shapefunctions over surface (private)           gjb 02/09 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::TemperBoundaryImpl<distype>::IntegrateShapeFunctions(
-    const DRT::Element*        ele,
-    Teuchos::ParameterList&    params,
-    Epetra_SerialDenseVector&  elevec1,
-    const bool                 addarea
+void DRT::ELEMENTS::TemperBoundaryImpl<distype>::IntegrateShapeFunctions
+(
+  const DRT::Element*        ele,
+  Teuchos::ParameterList&    params,
+  Epetra_SerialDenseVector&  elevec1,
+  const bool                 addarea
 )
 {
   // access boundary area variable with its actual value

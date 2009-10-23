@@ -70,7 +70,7 @@ namespace THR
    * <h3> Responsibilties </h3>
    * Most importantly the base integrator manages the system state vectors and
    * matrices. It also deals with the output to files and offers method to
-   * determine forces and stiffnesses (tangents).
+   * determine forces and tangents.
    *
    * \author bborn
    * \date 06/08
@@ -234,12 +234,13 @@ namespace THR
 
     //! Apply external force
     void ApplyForceExternal(
+//      Teuchos::ParameterList& p,  //!< parameter list handed down to elements
       const double time,  //!< evaluation time
       const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
       Teuchos::RCP<Epetra_Vector>& fext  //!< external force
     );
 
-    //! Evaluate ordinary internal force, its stiffness at state
+    //! Evaluate ordinary internal force, its tangent at state
     void ApplyForceTangInternal(
       Teuchos::ParameterList& p,  //!< parameter list handed down to elements
       const double time,  //!< evaluation time
@@ -247,7 +248,19 @@ namespace THR
       const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
       const Teuchos::RCP<Epetra_Vector> tempi,  //!< residual temperatures
       Teuchos::RCP<Epetra_Vector> fint,  //!< internal force
-      Teuchos::RCP<LINALG::SparseMatrix> tang  //!< stiffness matrix
+      Teuchos::RCP<LINALG::SparseMatrix> tang  //!< tangent matrix
+    );
+
+    //! Evaluate ordinary internal force, its tangent and the stored force at state
+    void ApplyForceTangInternal(
+      Teuchos::ParameterList& p,  //!< parameter list handed down to elements
+      const double time,  //!< evaluation time
+      const double dt,  //!< step size
+      const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
+      const Teuchos::RCP<Epetra_Vector> tempi,  //!< residual temperatures
+      Teuchos::RCP<Epetra_Vector> fcap,  //!< stored force
+      Teuchos::RCP<Epetra_Vector> fint,  //!< internal force
+      Teuchos::RCP<LINALG::SparseMatrix> tang  //!< tangent matrix
     );
 
     //! Evaluate ordinary internal force
@@ -459,7 +472,7 @@ namespace THR
     //! holds eventually effective tangent
     Teuchos::RCP<LINALG::SparseMatrix> tang_;
     //! capacity matrix (constant)
-    Teuchos::RCP<LINALG::SparseMatrix> capa_;
+    //Teuchos::RCP<LINALG::SparseMatrix> capa_;
 
     //@}
 

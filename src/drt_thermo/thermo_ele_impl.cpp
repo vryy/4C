@@ -160,6 +160,7 @@ DRT::ELEMENTS::TemperImplInterface* DRT::ELEMENTS::TemperImplInterface::Impl(
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::TemperImpl<distype>::TemperImpl(int numdofpernode)
   : etemp_(false),
+    ecapa_(true),
     xyze_(true),
     radiation_(false),
     xsi_(true),
@@ -196,10 +197,11 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
   if (lm.size() != iel*numdofpernode_)
     dserror("Location vector length does not match!");
   // set views
-  LINALG::Matrix<iel*numdofpernode_,iel*numdofpernode_> econd(elemat1_epetra,true);  // view only!
+  LINALG::Matrix<iel*numdofpernode_,iel*numdofpernode_> etang(elemat1_epetra,true);  // view only!
   LINALG::Matrix<iel*numdofpernode_,iel*numdofpernode_> ecapa(elemat2_epetra,true);  // view only!
   LINALG::Matrix<iel*numdofpernode_,1> efint(elevec1_epetra,true);  // view only!
   //LINALG::Matrix<iel*numdofpernode_,1> efext(elevec2_epetra,true);  // view only!
+  LINALG::Matrix<iel*numdofpernode_,1> efcap(elevec3_epetra,true);  // view only!
   // disassemble temperature
   if (discretization.HasState("temperature")) {
     std::vector<double> mytempnp(lm.size());
@@ -210,16 +212,18 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     LINALG::Matrix<iel*numdofpernode_,1> etemp(&(mytempnp[0]),true);  // view only!
     etemp_.Update(etemp);  // copy
   }
+  // initialize capacity matrix
+  ecapa_.Clear();
   // check for the action parameter
   const std::string action = params.get<std::string>("action","none");
   // extract time
   const double time = params.get<double>("total time");
   // calculate tangent K and internal force F_int = K * Theta
-  if (action=="calc_thermo_finttang")
+  if (action=="calc_thermo_fintcond")
   {
-    CalculateFintTangCapa(ele,
+    CalculateFintCondCapa(ele,
                           time,
-                          &econd,
+                          &etang,
                           NULL,
                           &efint,
                           NULL);
@@ -227,26 +231,40 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
   // calculate only the internal force F_int
   else if (action=="calc_thermo_fint")
   {
-    CalculateFintTangCapa(ele,
+    CalculateFintCondCapa(ele,
                           time,
                           NULL,
                           NULL,
                           &efint,
                           NULL);
   }
-  // calculate tangent matrix K and consistent capacity matrix C
-  else if (action=="calc_thermo_finttangcapa")
+  // calculate only the internal force F_int
+  else if (action=="calc_thermo_fintcapa")
   {
-    CalculateFintTangCapa(ele,
+    CalculateFintCondCapa(ele,
                           time,
-                          &econd,
-                          &ecapa,
+                          NULL,
+                          &ecapa,  // delivers capacity matrix
                           &efint,
                           NULL);
+    // copy capacity matrix if available
+    //if (ecapa.A() != NULL) ecapa.Update(ecapa_);
+  }
+  // calculate tangent matrix K and consistent capacity matrix C
+  else if (action=="calc_thermo_finttang")
+  {
+    CalculateFintCondCapa(ele,
+                          time,
+                          &etang,
+                          &ecapa_,
+                          &efint,
+                          NULL);
+    // copy capacity matrix if available
+    if (ecapa.A() != NULL) ecapa.Update(ecapa_);
     // BUILD EFFECTIVE TANGENT AND RESIDUAL ACC TO TIME INTEGRATOR
     // check the time integrator
     const INPAR::THR::DynamicType timint
-      = params.get<INPAR::THR::DynamicType>("time integrator",INPAR::THR::dyna_undefined);
+    = params.get<INPAR::THR::DynamicType>("time integrator",INPAR::THR::dyna_undefined);
     switch (timint) {
     case INPAR::THR::dyna_statics :
     {
@@ -257,7 +275,15 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     {
       const double theta = params.get<double>("theta");
       const double stepsize = params.get<double>("delta time");
-      econd.Update(theta/stepsize,ecapa,1.0);
+      etang.Update(1.0/stepsize,ecapa_,theta);  // combined tangent and conductivity matrix to one global matrix
+      efcap.Multiply(ecapa_,etemp_);
+      break;
+    }
+    case INPAR::THR::dyna_genalpha :
+    {
+//      //const double theta = params.get<double>("theta");
+//      const double stepsize = params.get<double>("delta time");
+//      etang.Update(theta/stepsize,ecapa,1.0);
       break;
     }
     case INPAR::THR::dyna_undefined :
@@ -378,7 +404,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::EvaluateNeumann(
   // set views
   LINALG::Matrix<iel*numdofpernode_,1> efext(elevec1_epetra,true);  // view only!
   // disassemble temperature
-  if (discretization.HasState("temperature")) {
+  if (discretization.HasState("temperature")) 
+  {
     std::vector<double> mytempnp(lm.size());
     Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState("temperature");
     if (tempnp==Teuchos::null)
@@ -394,7 +421,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::EvaluateNeumann(
   // perform actions
   if (action=="calc_thermo_fext")
   {
-    CalculateFintTangCapa(ele,
+    CalculateFintCondCapa(ele,
                           time,
                           NULL,
                           NULL,
@@ -413,10 +440,10 @@ int DRT::ELEMENTS::TemperImpl<distype>::EvaluateNeumann(
  |  calculate system matrix and rhs (public)                 g.bau 08/08|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::TemperImpl<distype>::CalculateFintTangCapa(
+void DRT::ELEMENTS::TemperImpl<distype>::CalculateFintCondCapa(
   DRT::Element* ele,  ///< the element whose matrix is calculated
   const double& time,  ///< current time
-  LINALG::Matrix<iel*numdofpernode_,iel*numdofpernode_>* econd,  ///< conductivity matrix
+  LINALG::Matrix<iel*numdofpernode_,iel*numdofpernode_>* etang,  ///< conductivity matrix
   LINALG::Matrix<iel*numdofpernode_,iel*numdofpernode_>* ecapa,  ///< capacity matrix
   LINALG::Matrix<iel*numdofpernode_,1>* efint,  ///< internal force
   LINALG::Matrix<iel*numdofpernode_,1>* efext  ///< external force
@@ -461,10 +488,10 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateFintTangCapa(
     }
 
     // conductivity matrix
-    if (econd != NULL) {
+    if (etang != NULL) {
       LINALG::Matrix<nsd_,iel> aop(false);
       aop.MultiplyNN(cmat_,derxy_);
-      econd->MultiplyTN(fac_,derxy_,aop,1.0);
+      etang->MultiplyTN(fac_,derxy_,aop,1.0);
     }
 
     // capacity matrix
@@ -578,7 +605,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::Materialize(
   }
 
   return;
-} //TemperImpl::GetMaterialParams
+} //TemperImpl::Materialize
+
 
 /*----------------------------------------------------------------------*
  | evaluate shape functions and derivatives at int. point     gjb 08/08 |
@@ -589,7 +617,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
     const int                                    iquad,      ///< id of current Gauss point
     const int                                    eleid       ///< the element id
     )
- {
+{
   // coordinates of the current integration point
   const double* gpcoord = (intpoints.IP().qxg)[iquad];
   for (int idim=0;idim<nsd_;idim++)
@@ -631,7 +659,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
 
   // say goodbye
   return;
-  } // EvalShapeFuncAndDerivsAtIntPoint
+} // EvalShapeFuncAndDerivsAtIntPoint
 
 
 

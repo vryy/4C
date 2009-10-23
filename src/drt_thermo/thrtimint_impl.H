@@ -35,7 +35,12 @@ namespace THR
    *        with \b implicit time integration
    *
    * <h3> About </h3>
-   * The implicit time integrator object is a derivation of the base time integrators with an eye towards implicit time integration. #TimIntImpl provides the environment needed to execute implicit integrators. This is chiefly the non-linear solution technique, e.g., Newton-Raphson iteration. These iterative solution techniques require a set of control parameters which are stored within this object. It is up to derived object to implement the time-space discretised residuum an d its tangent. This object provides some utility functions to obtain various force vectors necessary in the calculation of the force residual in the derived tim integrators.
+   * The implicit time integrator object is a derivation of the base time integrators with an eye towards implicit time integration.
+   * #TimIntImpl provides the environment needed to execute implicit integrators. This is chiefly the non-linear solution technique,
+   * e.g., Newton-Raphson iteration. These iterative solution techniques require a set of control parameters which are stored within
+   * this object. It is up to derived object to implement the time-space discretised residuum an d its tangent. This object provides
+   * some utility functions to obtain various force vectors necessary in the calculation of the force residual in the derived time
+   * integrators.
    *
    * \author bborn
    * \date 06/08
@@ -204,7 +209,7 @@ namespace THR
     //! \f$T_{n} := T_{n+1}\f$ and \f$R_{n} := R_{n+1}\f$
     //! Thus the 'last' converged state is lost and a reset
     //! of the time step becomes impossible.
-    //! We are ready and keen awating the next time step.
+    //! We are ready and keen awaiting the next time step.
     virtual void UpdateStepState() = 0;
 
     //! @name Output

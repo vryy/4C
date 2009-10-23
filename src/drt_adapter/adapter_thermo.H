@@ -30,7 +30,6 @@ Maintainer: Caroline Danowski
 #include "../drt_thermo/thr_resulttest.H"
 
 
-
 namespace ADAPTER {
 
   /// general thermal field interface
@@ -204,5 +203,5 @@ namespace ADAPTER {
 
 }  // namespace ADAPTER
 
-#endif
-#endif
+#endif // ADAPTER_THERMO_H
+#endif // CCADISCRET

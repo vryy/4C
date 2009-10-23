@@ -328,7 +328,8 @@ class Discretization;
                                   DRT::Condition&           condition,
                                   std::vector<int>&         lm,
                                   Epetra_SerialDenseVector& elevec1,
-                                  Epetra_SerialDenseMatrix* elemat1);
+                                  Epetra_SerialDenseMatrix* elemat1
+                                  );
 
 
       //@}

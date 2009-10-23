@@ -150,10 +150,10 @@ namespace DRT
      private:
 
      //! Calculate element vectors (internal/external) and a few matrices
-     void CalculateFintTangCapa(
+     void CalculateFintCondCapa(
          DRT::Element* ele,  ///< the element whose matrix is calculated
          const double& time,  ///< current time
-         LINALG::Matrix<iel*numdofpernode_,iel*numdofpernode_>* ekond,  ///< conductivity matrix
+         LINALG::Matrix<iel*numdofpernode_,iel*numdofpernode_>* econd,  ///< conductivity matrix
          LINALG::Matrix<iel*numdofpernode_,iel*numdofpernode_>* ecapa,  ///< capacity matrix
          LINALG::Matrix<iel*numdofpernode_,1>* efint,  ///< internal force
          LINALG::Matrix<iel*numdofpernode_,1>* efext  ///< external force
@@ -206,6 +206,8 @@ namespace DRT
 
       //! actual values of temperatures
       LINALG::Matrix<iel,1> etemp_;
+      //! capacity matrix
+      LINALG::Matrix<iel,iel> ecapa_;
 
       //! node coordinates
       LINALG::Matrix<nsd_,iel> xyze_;

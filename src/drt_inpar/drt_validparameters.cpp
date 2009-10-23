@@ -981,12 +981,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                 tuple<std::string>(
                                   "Statics",
                                   "OneStepTheta",
-                                  "GEMM"
+                                  "GEMM",
+                                  "GenAlpha"
                                   ),
                                 tuple<INPAR::THR::DynamicType>(
                                    INPAR::THR::dyna_statics,
                                    INPAR::THR::dyna_onesteptheta,
-                                   INPAR::THR::dyna_gemm),
+                                   INPAR::THR::dyna_gemm,
+                                   INPAR::THR::dyna_genalpha),
                                 &tdyn);
 
    // Output type
@@ -1086,6 +1088,31 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                 yesnotuple,yesnovalue,&tdyn);
    DoubleParameter("ADAPTCONV_BETTER",0.1,"The linear solver shall be this much better than the current nonlinear residual in the nonlinear convergence limit",&tdyn);
 
+   /*----------------------------------------------------------------------*/
+   /* parameters for generalised-alpha thermal integrator */
+   Teuchos::ParameterList& tgenalpha = tdyn.sublist("GENALPHA",false,"");
+
+   setStringToIntegralParameter<INPAR::THR::MidAverageEnum>("GENAVG","ImrLike",
+                                "mid-average type of internal forces",
+                                tuple<std::string>(
+                                  "Vague",
+                                  "ImrLike",
+                                  "TrLike"),
+                                tuple<INPAR::THR::MidAverageEnum>(
+                                  INPAR::THR::midavg_vague,
+                                  INPAR::THR::midavg_imrlike,
+                                  INPAR::THR::midavg_trlike),
+                                &tgenalpha);
+   DoubleParameter("BETA",0.25,"Generalised-alpha factor in (0,1/2]",&tgenalpha);
+   DoubleParameter("GAMMA",0.5,"Generalised-alpha factor in (0,1]",&tgenalpha);
+   DoubleParameter("ALPHA_M",0.5,"Generalised-alpha factor in [0,1)",&tgenalpha);
+   DoubleParameter("ALPHA_F",0.5,"Generalised-alpha factor in [0,1)",&tgenalpha);
+
+   /*----------------------------------------------------------------------*/
+   /* parameters for one-step-theta thermal integrator */
+   Teuchos::ParameterList& tonesteptheta = tdyn.sublist("ONESTEPTHETA",false,"");
+
+   DoubleParameter("THETA",0.5,"One-step-theta factor in (0,1]",&tonesteptheta);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn = list->sublist("FLUID DYNAMIC",false,"");

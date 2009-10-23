@@ -88,8 +88,8 @@ THR::TimInt::TimInt
   rate_(Teuchos::null),
   tempn_(Teuchos::null),
   raten_(Teuchos::null),
-  tang_(Teuchos::null),
-  capa_(Teuchos::null)
+  tang_(Teuchos::null)
+//  capa_(Teuchos::null)
 {
   // welcome user
   if ( (printlogo_) and (myrank_ == 0) )
@@ -137,7 +137,7 @@ THR::TimInt::TimInt
 
   // create empty matrices
   tang_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_, 81, true, true));
-  capa_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_, 81, true, true));
+//  capa_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_, 81, true, true));
 
   // stay with us
   return;
@@ -163,14 +163,16 @@ void THR::TimInt::DetermineCapaConsistTempRate()
 
   // initialise matrices
   tang_->Zero();
-  capa_->Zero();
+//  capa_->Zero();
 
-  // get initial internal force and tangent and capacity
+  // get initial internal force, tangent and capacity
   {
     // create the parameters for the discretization
     ParameterList p;
     // action for elements
-    p.set("action", "calc_thermo_finttangcapa");
+    p.set("action", "calc_thermo_fintcapa");
+    // type of calling time integrator
+    p.set("time integrator", MethodName());
     // other parameters that might be needed by the elements
     p.set("total time", (*time_)[0]);
     p.set("delta time", (*dt_)[0]);
@@ -178,12 +180,12 @@ void THR::TimInt::DetermineCapaConsistTempRate()
     discret_->ClearState();
     discret_->SetState("residual temperature", zeros_);
     discret_->SetState("temperature", (*temp_)(0));
-    discret_->Evaluate(p, tang_, capa_, fint, Teuchos::null, Teuchos::null);
+    discret_->Evaluate(p, Teuchos::null, tang_, fint, Teuchos::null, Teuchos::null);
     discret_->ClearState();
   }
 
   // finish capacity matrix
-  capa_->Complete();
+//  capa_->Complete();
 
   // close tangent matrix
   tang_->Complete();
@@ -194,7 +196,7 @@ void THR::TimInt::DetermineCapaConsistTempRate()
     rhs->Update(-1.0, *fint, 1.0, *fext, -1.0);
     // blank RHS on DBC DOFs
     dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), rhs);
-    solver_->Solve(capa_->EpetraMatrix(), (*rate_)(0), rhs, true, true);
+    solver_->Solve(tang_->EpetraMatrix(), (*rate_)(0), rhs, true, true);
   }
 
   // We need to reset the tangent matrix because its graph (topology)
@@ -540,13 +542,13 @@ void THR::TimInt::OutputEnergy()
 
   // global calculation of kinetic energy
   double kinergy = 0.0;  // total kinetic energy
-  {
-    Teuchos::RCP<Epetra_Vector> linmom
-      = LINALG::CreateVector(*dofrowmap_, true);
-    capa_->Multiply(false, (*rate_)[0], *linmom);
-    linmom->Dot((*rate_)[0], &kinergy);
-    kinergy *= 0.5;
-  }
+//  {
+//    Teuchos::RCP<Epetra_Vector> linmom
+//      = LINALG::CreateVector(*dofrowmap_, true);
+//    capa_->Multiply(false, (*rate_)[0], *linmom);
+//    linmom->Dot((*rate_)[0], &kinergy);
+//    kinergy *= 0.5;
+//  }
 
   // external energy
   double extergy = 0.0;  // total external energy
@@ -606,6 +608,37 @@ void THR::TimInt::ApplyForceExternal
   return;
 }
 
+// 23.10.09
+///*----------------------------------------------------------------------*
+// |  evaluate external forces at t_{n+1}                     bborn 06/08 |
+// *----------------------------------------------------------------------*/
+//void THR::TimInt::ApplyForceExternal
+//(
+//  Teuchos::ParameterList& p,
+//  const double time,  //!< evaluation time
+//  const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
+//  Teuchos::RCP<Epetra_Vector>& fext  //!< external force
+//)
+//{
+//  const std::string action = "calc_thermo_fext";
+//  p.set("action", action);
+//  // type of calling time integrator
+//  p.set<INPAR::THR::DynamicType>("time integrator", MethodName());
+//  // other parameters needed by the elements
+//  p.set("total time", time);
+//
+//  // set vector values needed by elements
+//  discret_->ClearState();
+//  discret_->SetState("temperature", temp);
+//  // get load vector
+//  discret_->EvaluateNeumann(p, *fext);
+//  discret_->ClearState();
+//
+//  // go away
+//  return;
+//}
+
+
 /*----------------------------------------------------------------------*
  |  evaluate ordinary internal force, its tangent at state  bborn 06/08 |
  *----------------------------------------------------------------------*/
@@ -621,7 +654,41 @@ void THR::TimInt::ApplyForceTangInternal
 )
 {
   // type of calling time integrator
-  p.set("time integrator", MethodName());
+  p.set<INPAR::THR::DynamicType>("time integrator", MethodName());
+  // action for elements
+  const std::string action = "calc_thermo_fintcond";
+  p.set("action", action);
+  // other parameters that might be needed by the elements
+  p.set("total time", time);
+  p.set("delta time", dt);
+  // set vector values needed by elements
+  discret_->ClearState();
+  discret_->SetState("residual temperature", tempi);
+  discret_->SetState("temperature", temp);
+  discret_->Evaluate(p, tang, Teuchos::null, fint, Teuchos::null, Teuchos::null);
+  discret_->ClearState();
+
+  // that's it
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  evaluate ordinary internal force, its tangent at state  bborn 06/08 |
+ *----------------------------------------------------------------------*/
+void THR::TimInt::ApplyForceTangInternal
+(
+  Teuchos::ParameterList& p,
+  const double time,
+  const double dt,
+  const Teuchos::RCP<Epetra_Vector> temp,  // temperature state
+  const Teuchos::RCP<Epetra_Vector> tempi,  // residual temperature
+  Teuchos::RCP<Epetra_Vector> fcap,  // stored force
+  Teuchos::RCP<Epetra_Vector> fint,  // internal force
+  Teuchos::RCP<LINALG::SparseMatrix> tang  // tangent matrix
+)
+{
+  // type of calling time integrator
+  p.set<INPAR::THR::DynamicType>("time integrator", MethodName());
   // action for elements
   const std::string action = "calc_thermo_finttang";
   p.set("action", action);
@@ -632,7 +699,7 @@ void THR::TimInt::ApplyForceTangInternal
   discret_->ClearState();
   discret_->SetState("residual temperature", tempi);
   discret_->SetState("temperature", temp);
-  discret_->Evaluate(p, tang, Teuchos::null, fint, Teuchos::null, Teuchos::null);
+  discret_->Evaluate(p, tang, Teuchos::null, fint, Teuchos::null, fcap);
   discret_->ClearState();
 
   // that's it

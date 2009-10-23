@@ -225,7 +225,7 @@ void THR::TimIntImpl::PredictTangTempConsistRate()
                                  Teuchos::null, zeros_, *(dbcmaps_->CondMap()));
 
   // solve for tempi_
-  // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
+  // Solve K_Teffdyn . IncT = -R  ===>  IncT_{n+1}
   solver_->Reset();
   solver_->Solve(tang_->EpetraMatrix(), tempi_, fres_, true, true);
   solver_->Reset();
@@ -701,7 +701,6 @@ void THR::TimIntImpl::PrintNewtonIterText
   oss << std::ends;
 
   // print to screen (could be done differently...)
-  // fprintf(ofile, "%s\n", oss.str().c_str());
   fprintf(ofile, "%s\n", oss.str().c_str());
 
   // print it, now
