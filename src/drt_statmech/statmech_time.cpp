@@ -156,6 +156,7 @@ void StatMechTime::Integrate()
     if(!discret_.Comm().MyPID())
       std::cout<<"\nNumber of elements at the beginning of time step "<<i<<" : "<<discret_.NumGlobalElements()<<"\n";
 
+
     //pay attention: for a constant predictor an incremental velocity update is necessary, which has
     //been deleted out of the code in oder to simplify it
 
@@ -166,7 +167,6 @@ void StatMechTime::Integrate()
 
     //generate gaussian random numbers for parallel use with mean value 0 and standard deviation (2KT / dt)0.5
     statmechmanager_->GenerateGaussianRandomNumbers(randomnumbers,0,pow(2.0 * (statmechmanager_->statmechparams_).get<double>("KT",0.0) / dt,0.5));
-
     
     ConsistentPredictor(randomnumbers);
     
@@ -184,7 +184,9 @@ void StatMechTime::Integrate()
      * as it may take place independently on writing geometric output data in a specific time step or not*/
     statmechmanager_->StatMechUpdate(dt,*dis_);
     statmechmanager_->StatMechOutput(params_,ndim,time,i,dt,*dis_,*fint_);
-
+    
+    
+    if(!discret_.Comm().MyPID())
     cout << "\n***\ntotal administration time: " << ds_cputime() - t_admin<< " seconds\n***\n";
 
     if (time>=maxtime) break;
@@ -219,7 +221,6 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
   // increment time and step
   double timen = time + dt;  // t_{n+1}
   //int istep = step + 1;  // n+1
-
 
   //consistent predictor for backward Euler time integration scheme
   disn_->Update(1.0,*dis_,0.0);
@@ -311,6 +312,7 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
     p.set("delta time",dt);
     p.set("alpha f",alphaf);
 
+
     //passing statistical mechanics parameters to elements
     p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
     p.set("THERMALBATH",Teuchos::getIntegralValue<INPAR::STATMECH::ThermalBathType>(statmechmanager_->statmechparams_,"THERMALBATH"));
@@ -328,6 +330,9 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
     
     p.set("CURRENTSHEAR",currentshear); 
     
+
+    
+    
   
     // set vector values needed by elements
     discret_.ClearState();
@@ -340,13 +345,11 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
     //discret_.SetState("velocity",velm_); // not used at the moment
     
     fint_->PutScalar(0.0);  // initialise internal force vector   
-    
  
     p.set("action","calc_struct_nlnstiff");
     discret_.Evaluate(p,stiff_,null,fint_,null,null);
 
     discret_.ClearState();
-
 
     // do NOT finalize the stiffness matrix, add mass and damping to it later
   }
@@ -901,7 +904,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
 
   params_.set<int>("num iterations",numiter);
   
-  
+  if(!discret_.Comm().MyPID())
   std::cout << "\n***\nevaluation time: " << sumevaluation<< " seconds\nsolver time: "<< sumsolver <<" seconds\ntotal solution time: "<<ds_cputime() - tbegin<<" seconds\n***\n";
 
   return;

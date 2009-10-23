@@ -139,7 +139,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Beam3::Shape() const
  |                                                           cyron 01/08/
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3::Pack(vector<char>& data) const
-{
+{ 
   data.resize(0);
 
   // pack type of this instance of ParObject
@@ -151,46 +151,44 @@ void DRT::ELEMENTS::Beam3::Pack(vector<char>& data) const
   AddtoPack(data,basedata);
   
   //add all class variables of beam2r element
-  for (int i=0; i<(int)jacobi_.size(); i++)
-    AddtoPack(data,jacobi_[i]); 
-  for (int i=0; i<(int)jacobimass_.size(); i++)
-    AddtoPack(data,jacobimass_[i]);
-  for (int i=0; i<(int)jacobinode_.size(); i++)
-    AddtoPack(data,jacobinode_[i]);
+  AddtoPack(data,jacobi_);
+  AddtoPack(data,jacobimass_);
+  AddtoPack(data,jacobinode_);
   AddtoPack(data,crosssec_);
   AddtoPack(data,crosssecshear_);
-  for (int i=0; i<(int)curvnew_.size(); i++)
-    AddtoPack(data,curvnew_[i]);
-  for (int i=0; i<(int)curvconv_.size(); i++)
-    AddtoPack(data,curvconv_[i]);
-  for (int i=0; i<(int)curvold_.size(); i++)
-    AddtoPack(data,curvold_[i]);
+  
+  AddtoPack<3,1>(data,curvnew_);
+  AddtoPack<3,1>(data,curvconv_);
+  AddtoPack<3,1>(data,curvold_);
+
+  
+
+ 
+  
   AddtoPack(data,isinit_);
   AddtoPack(data,Irr_);
   AddtoPack(data,Iyy_);
   AddtoPack(data,Izz_);
-  for (int i=0; i<(int)Qconv_.size(); i++)
-    AddtoPack(data,Qconv_[i]);
-  for (int i=0; i<(int)Qnew_.size(); i++)
-    AddtoPack(data,Qnew_[i]);
-  for (int i=0; i<(int)Qold_.size(); i++)
-    AddtoPack(data,Qold_[i]); 
-  for (int i=0; i<(int)thetanew_.size(); i++)
-    AddtoPack(data,thetanew_[i]); 
-  for (int i=0; i<(int)thetaconv_.size(); i++)
-    AddtoPack(data,thetaconv_[i]); 
-  for (int i=0; i<(int)thetaold_.size(); i++)
-    AddtoPack(data,thetaold_[i]);
-  for (int i=0; i<(int)thetaprimenew_.size(); i++)
-    AddtoPack(data,thetaprimenew_[i]);
-  for (int i=0; i<(int)thetaprimeconv_.size(); i++)
-    AddtoPack(data,thetaprimeconv_[i]); 
-  for (int i=0; i<(int)thetaprimeold_.size(); i++)
-    AddtoPack(data,thetaprimeold_[i]);
+  
+  AddtoPack<4,1>(data,Qconv_);
+  AddtoPack<4,1>(data,Qnew_);
+  AddtoPack<4,1>(data,Qold_);
+  AddtoPack<3,1>(data,thetanew_);
+  AddtoPack<3,1>(data,thetaconv_);
+  AddtoPack<3,1>(data,thetaold_);
+  AddtoPack<3,1>(data,thetaprimenew_);
+  AddtoPack<3,1>(data,thetaprimeconv_);
+  AddtoPack<3,1>(data,thetaprimeold_);
 
 
   return;
 }
+
+
+
+
+
+
 
 
 /*----------------------------------------------------------------------*
@@ -211,42 +209,35 @@ void DRT::ELEMENTS::Beam3::Unpack(const vector<char>& data)
   
   
   //extract all class variables of beam2r element
-  for (int i=0; i<(int)jacobi_.size(); i++)
-    ExtractfromPack(position,data,jacobi_[i]); 
-  for (int i=0; i<(int)jacobimass_.size(); i++)
-    ExtractfromPack(position,data,jacobimass_[i]);
-  for (int i=0; i<(int)jacobinode_.size(); i++)
-    ExtractfromPack(position,data,jacobinode_[i]);
+  
+  ExtractfromPack(position,data,jacobi_);
+  ExtractfromPack(position,data,jacobimass_);
+  ExtractfromPack(position,data,jacobinode_);
   ExtractfromPack(position,data,crosssec_);
   ExtractfromPack(position,data,crosssecshear_);
-  for (int i=0; i<(int)curvnew_.size(); i++)
-    ExtractfromPack(position,data,curvnew_[i]);
-  for (int i=0; i<(int)curvconv_.size(); i++)
-    ExtractfromPack(position,data,curvconv_[i]);
-  for (int i=0; i<(int)curvold_.size(); i++)
-    ExtractfromPack(position,data,curvold_[i]);
+  
+  
+  ExtractfromPack<3,1>(position,data,curvnew_);
+  ExtractfromPack<3,1>(position,data,curvconv_);
+  ExtractfromPack<3,1>(position,data,curvold_);
+
+  
+
   ExtractfromPack(position,data,isinit_);
   ExtractfromPack(position,data,Irr_);
   ExtractfromPack(position,data,Iyy_);
   ExtractfromPack(position,data,Izz_);
-  for (int i=0; i<(int)Qconv_.size(); i++)
-    ExtractfromPack(position,data,Qconv_[i]);
-  for (int i=0; i<(int)Qnew_.size(); i++)
-    ExtractfromPack(position,data,Qnew_[i]);
-  for (int i=0; i<(int)Qold_.size(); i++)
-    ExtractfromPack(position,data,Qold_[i]); 
-  for (int i=0; i<(int)thetanew_.size(); i++)
-    ExtractfromPack(position,data,thetanew_[i]); 
-  for (int i=0; i<(int)thetaconv_.size(); i++)
-    ExtractfromPack(position,data,thetaconv_[i]); 
-  for (int i=0; i<(int)thetaold_.size(); i++)
-    ExtractfromPack(position,data,thetaold_[i]);
-  for (int i=0; i<(int)thetaprimenew_.size(); i++)
-    ExtractfromPack(position,data,thetaprimenew_[i]);
-  for (int i=0; i<(int)thetaprimeconv_.size(); i++)
-    ExtractfromPack(position,data,thetaprimeconv_[i]); 
-  for (int i=0; i<(int)thetaprimeold_.size(); i++)
-    ExtractfromPack(position,data,thetaprimeold_[i]);
+  
+  ExtractfromPack<4,1>(position,data,Qconv_);
+  ExtractfromPack<4,1>(position,data,Qnew_);
+  ExtractfromPack<4,1>(position,data,Qold_);
+  ExtractfromPack<3,1>(position,data,thetanew_);
+  ExtractfromPack<3,1>(position,data,thetaconv_);
+  ExtractfromPack<3,1>(position,data,thetaold_);
+  ExtractfromPack<3,1>(position,data,thetaprimenew_);
+  ExtractfromPack<3,1>(position,data,thetaprimeconv_);
+  ExtractfromPack<3,1>(position,data,thetaprimeold_);
+
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);

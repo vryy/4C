@@ -145,14 +145,10 @@ void DRT::ELEMENTS::Beam2r::Pack(vector<char>& data) const
   AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
   AddtoPack(data,isinit_);
   AddtoPack(data,mominer_);
-  for (int i=0; i<(int)jacobi_.size(); i++)
-    AddtoPack(data,jacobi_[i]); 
-  for (int i=0; i<(int)jacobimass_.size(); i++)
-    AddtoPack(data,jacobimass_[i]);
-  for (int i=0; i<(int)jacobinode_.size(); i++)
-    AddtoPack(data,jacobinode_[i]);
-  for (int i=0; i<(int)theta0_.size(); i++)
-    AddtoPack(data,theta0_[i]);
+  AddtoPack(data,jacobi_);
+  AddtoPack(data,jacobimass_);
+  AddtoPack(data,jacobinode_);
+  AddtoPack(data,theta0_);
 
   return;
 }
@@ -181,17 +177,12 @@ void DRT::ELEMENTS::Beam2r::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,gausrule_integer);
   gaussrule_ = DRT::UTILS::GaussRule1D(gausrule_integer); //explicit conversion from integer to enum
   ExtractfromPack(position,data,isinit_);
-  ExtractfromPack(position,data,mominer_);
-  for (int i=0; i<(int)jacobi_.size(); i++)
-    ExtractfromPack(position,data,jacobi_[i]); 
-  for (int i=0; i<(int)jacobimass_.size(); i++)
-    ExtractfromPack(position,data,jacobimass_[i]);
-  for (int i=0; i<(int)jacobinode_.size(); i++)
-    ExtractfromPack(position,data,jacobinode_[i]);
-  for (int i=0; i<(int)theta0_.size(); i++)
-    ExtractfromPack(position,data,theta0_[i]);
-
-
+  ExtractfromPack(position,data,mominer_); 
+  ExtractfromPack(position,data,jacobi_);
+  ExtractfromPack(position,data,jacobimass_);
+  ExtractfromPack(position,data,jacobinode_);
+  ExtractfromPack(position,data,theta0_);
+  
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;

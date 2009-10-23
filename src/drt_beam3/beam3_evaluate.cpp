@@ -1433,7 +1433,7 @@ void DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
 
 
   double basisdamp   = (20e-2)*PI*3; //(20e-2)*PI for A = 1.9e-8, (20e-2)*PI*3 for A = 1.9e-6
-  double anisofactor = 10;
+  double anisofactor = 10; //10 for A = 1.9e-8 and A = 1.9e-6
 
 
   

@@ -1035,12 +1035,11 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& disro
      * commmand generates or deletes ghost elements if necessary and calls FillCompete() method of discretization; 
      * this is enough as long as only elements, but no nodes are added in a time step; finally Crs matrices stiff_ has
      * to be deleted completely and made ready for new assembly since their graph was changed*/     
-    DRT::UTILS::RedistributeWithNewNodalDistribution(discret_,noderowmap,nodecolmap);      
-    discret_.FillComplete(true,false,false);
+    DRT::UTILS::RedistributeWithNewNodalDistribution(discret_,noderowmap,nodecolmap);     
+    discret_.FillComplete(true,false,false);   
     stiff_->Reset();
 
-
-    
+   
 #ifdef MEASURETIME
     cout << "\n***\nadministration time: " << ds_cputime() - t_admin<< " seconds\n***\n";
 #endif // #ifdef MEASURETIME

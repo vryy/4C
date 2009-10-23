@@ -135,32 +135,23 @@ void DRT::ELEMENTS::Beam2::Pack(vector<char>& data) const
   vector<char> basedata(0);
   Element::Pack(basedata);
   AddtoPack(data,basedata);
-  //whether element has already been initialized
+
   AddtoPack(data,isinit_);
-  //reference length
   AddtoPack(data,lrefe_);
-  //cross section
   AddtoPack(data,crosssec_);
-   //cross section with shear correction
   AddtoPack(data,crosssecshear_);
-  //moment of inertia of area
   AddtoPack(data,mominer_);
-  //number of 2*PI rotations of element frame compared to angle gained from sine- and cosine evaluatoin
   AddtoPack(data,numperiodsnew_);
   AddtoPack(data,numperiodsold_);
   AddtoPack(data,numperiodsconv_);
-  //absolute angle of element frame
   AddtoPack(data,alphanew_);
   AddtoPack(data,alphaold_);
   AddtoPack(data,alphaconv_);
-  //angle relative to x-axis in reference configuration
-  AddtoPack(data,alpha0_);
-  for (int i=0; i<(int)jacobi_.size(); i++)
-    AddtoPack(data,jacobi_[i]); 
-  for (int i=0; i<(int)jacobimass_.size(); i++)
-    AddtoPack(data,jacobimass_[i]);
-  for (int i=0; i<(int)jacobinode_.size(); i++)
-    AddtoPack(data,jacobinode_[i]);
+  AddtoPack(data,alpha0_); 
+  AddtoPack(data,jacobi_);
+  AddtoPack(data,jacobimass_);
+  AddtoPack(data,jacobinode_);
+
   // gaussrule_
   AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
 
@@ -183,32 +174,24 @@ void DRT::ELEMENTS::Beam2::Unpack(const vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
+  
   //whether element has already been initialized
   ExtractfromPack(position,data,isinit_);
-  //reference length
   ExtractfromPack(position,data,lrefe_);
-  //cross section
   ExtractfromPack(position,data,crosssec_);
-   //cross section with shear correction
   ExtractfromPack(position,data,crosssecshear_);
-  //moment of inertia of area
   ExtractfromPack(position,data,mominer_);
-  //number of 2*PI rotations of element frame compared to angle gained from sine- and cosine evaluatoin
   ExtractfromPack(position,data,numperiodsnew_);
   ExtractfromPack(position,data,numperiodsold_);
   ExtractfromPack(position,data,numperiodsconv_);
-  //absolute angle of element frame
   ExtractfromPack(position,data,alphanew_);
   ExtractfromPack(position,data,alphaold_);
   ExtractfromPack(position,data,alphaconv_);
-  //angle relative to x-axis in reference configuration
-  ExtractfromPack(position,data,alpha0_);
-  for (int i=0; i<(int)jacobi_.size(); i++)
-    ExtractfromPack(position,data,jacobi_[i]); 
-  for (int i=0; i<(int)jacobimass_.size(); i++)
-    ExtractfromPack(position,data,jacobimass_[i]);
-  for (int i=0; i<(int)jacobinode_.size(); i++)
-    ExtractfromPack(position,data,jacobinode_[i]);
+  ExtractfromPack(position,data,alpha0_); 
+  ExtractfromPack(position,data,jacobi_);
+  ExtractfromPack(position,data,jacobimass_);
+  ExtractfromPack(position,data,jacobinode_);
+
   // gaussrule_
   int gausrule_integer;
   ExtractfromPack(position,data,gausrule_integer);
