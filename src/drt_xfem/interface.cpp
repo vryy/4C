@@ -81,6 +81,30 @@ int XFEM::InterfaceHandle::PositionWithinConditionN(const LINALG::Matrix<3,1>& x
 /*----------------------------------------------------------------------*
  * implement this member function in derived classes!
  *----------------------------------------------------------------------*/
+int XFEM::InterfaceHandle::PositionWithinConditionNP(
+    const LINALG::Matrix<3,1>& x_in,
+    const int label)
+{
+  dserror("not implemented for the InterfaceHandle base class");
+  return 0;
+}
+
+
+/*----------------------------------------------------------------------*
+ * implement this member function in derived classes!
+ *----------------------------------------------------------------------*/
+int XFEM::InterfaceHandle::PositionWithinConditionN(
+    const LINALG::Matrix<3,1>& x_in,
+    const int label)
+{
+  dserror("not implemented for the InterfaceHandle base class");
+  return 0;
+}
+
+
+/*----------------------------------------------------------------------*
+ * implement this member function in derived classes!
+ *----------------------------------------------------------------------*/
 int XFEM::InterfaceHandle::PositionWithinConditionNP(const LINALG::Matrix<3,1>&     x_in,
                                                      GEO::NearestObject&  nearestobject) const
 {

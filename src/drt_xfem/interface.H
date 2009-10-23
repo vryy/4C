@@ -108,6 +108,12 @@ namespace XFEM
     virtual int PositionWithinConditionN(const LINALG::Matrix<3,1>&     x_in,
                                          GEO::NearestObject&  nearestobject) const;
 
+    //! get domain information at x_in at timestep n+1 for interface named label
+    virtual int PositionWithinConditionNP(const LINALG::Matrix<3,1>& x_in, const int label);
+
+    //! get domain information at x_in at timestep n for interface named label
+    virtual int PositionWithinConditionN(const LINALG::Matrix<3,1>& x_in, const int label);
+
     //! get the label to which the boundary element belongs
     virtual int GetLabelPerBoundaryElementId(const int boundaryEleId) const
     {
@@ -141,6 +147,11 @@ namespace XFEM
     //! SearchTree octtree for timestep n
     const Teuchos::RCP<GEO::SearchTree>       octTreen_;
 
+    //! SearchTree octtree for timestep n+1
+    map<int, const Teuchos::RCP<GEO::SearchTree> >  octTreePerLabelnp_;
+
+    //! SearchTree octtree for timestep n
+    map<int, const Teuchos::RCP<GEO::SearchTree> >  octTreePerLabeln_;
 
   private:
 

@@ -83,6 +83,18 @@ namespace XFEM
         GEO::NearestObject&               nearestobject
     ) const;
 
+    //! get domain information at x_in at timestep n+1 for interface named label
+    int PositionWithinConditionNP(
+        const LINALG::Matrix<3,1>&    x_in,
+        const int label
+        ) const;
+
+    //! get domain information at x_in at timestep n for interface named label
+    int PositionWithinConditionN(
+        const LINALG::Matrix<3,1>&     x_in,
+        const int label
+        ) const;
+
     //! find space time layer cell
     bool FindSpaceTimeLayerCell(
         const LINALG::Matrix<3,1>&        querypos,

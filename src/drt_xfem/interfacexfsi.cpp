@@ -58,18 +58,10 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
 
   const bool screen_out = false;
 
-  const int myrank = xfemdis_->Comm().MyPID();
-
   if (gmshdebugout)
   {
-    // debug: write both meshes to file in Gmsh format, we will not keep old files, since this is only for debugging
-    std::stringstream filename;
-    std::stringstream filenamedel;
-    filename    << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".uncut_elements_coupled_system"<< ".p" << myrank << ".pos";
-    filenamedel << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".uncut_elements_coupled_system"<< ".p" << myrank << ".pos";
-    std::remove(filenamedel.str().c_str());
-    if (screen_out) std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
-    std::ofstream gmshfilecontent(filename.str().c_str());
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("uncut_elements_coupled_system", 999999, 5, screen_out);
+    std::ofstream gmshfilecontent(filename.c_str());
     IO::GMSH::disToStream("Fluid", 0.0, xfemdis_, gmshfilecontent);
     IO::GMSH::disToStream("Boundary", 1.0, cutterdis_, cutterposnp_, gmshfilecontent);
     gmshfilecontent.close();
@@ -104,6 +96,19 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
 
   octTreenp_->initializeTree(AABB, boundaryElementsByLabel_, GEO::TreeType(GEO::OCTTREE));
   octTreen_->initializeTree(AABB, boundaryElementsByLabel_, GEO::TreeType(GEO::OCTTREE));
+
+  for (std::map<int,std::set<int> >::const_iterator entry = boundaryElementsByLabel_.begin();
+      entry != boundaryElementsByLabel_.end();
+      ++entry)
+  {
+    const int label = entry->first;
+    map<int,set<int> > onelabelmap;
+    onelabelmap[label] = entry->second;
+    octTreePerLabelnp_.insert(make_pair(label,rcp( new GEO::SearchTree(20))));
+    octTreePerLabelnp_[label]->initializeTree(AABB, onelabelmap, GEO::TreeType(GEO::OCTTREE));
+    octTreePerLabeln_.insert(make_pair(label,rcp( new GEO::SearchTree(20))));
+    octTreePerLabeln_[label]->initializeTree(AABB, onelabelmap, GEO::TreeType(GEO::OCTTREE));
+  }
 
   ClassifyIntegrationCells();
 
@@ -272,6 +277,26 @@ int XFEM::InterfaceHandleXFSI::PositionWithinConditionN(
 {
   TEUCHOS_FUNC_TIME_MONITOR(" - search - InterfaceHandle::PositionWithinConditionN");
   return octTreen_->queryFSINearestObject(*(cutterdis_), cutterposn_, currentXAABBs_, x_in, nearestobject);
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int XFEM::InterfaceHandleXFSI::PositionWithinConditionNP(
+    const LINALG::Matrix<3,1>&        x_in,
+    const int label) const
+{
+  return octTreePerLabelnp_.find(label)->second->queryXFEMFSIPointType(*(cutterdis_), cutterposnp_, currentXAABBs_, x_in);
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int XFEM::InterfaceHandleXFSI::PositionWithinConditionN(
+    const LINALG::Matrix<3,1>&        x_in,
+    const int label) const
+{
+  return octTreePerLabeln_.find(label)->second->queryXFEMFSIPointType(*(cutterdis_), cutterposn_, currentXAABBs_, x_in);
 }
 
 
@@ -451,44 +476,40 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
     if (screen_out) cout << " done" << endl;
   }
 
-//  if (gmshdebugout)
-//  {
-//    std::stringstream filename;
-//    std::stringstream filenamedel;
-//    filename    << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".domains_for_patches" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
-//    filenamedel << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".domains_for_patches" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
-//    std::remove(filenamedel.str().c_str());
-//    if (screen_out) std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
-//
-//    std::ofstream gmshfilecontent(filename.str().c_str());
-//    for (map<int, const Teuchos::RCP<GEO::SearchTree> >::const_iterator entry = octTreePerLabeln_.begin();
-//        entry != octTreePerLabeln_.end();
-//        ++entry)
-//    {
-//      const int label = entry->first;
-//
-//      gmshfilecontent << "View \" " << "Domains using CellCenter of Elements and Integration Cells \" {" << endl;
-//
-//      for (int i=0; i<xfemdis_->NumMyColElements(); ++i)
-//      {
-//        const DRT::Element* actele = xfemdis_->lColElement(i);
-//        const GEO::DomainIntCells& elementDomainIntCells = this->GetDomainIntCells(actele);
-//        GEO::DomainIntCells::const_iterator cell;
-//        for(cell = elementDomainIntCells.begin(); cell != elementDomainIntCells.end(); ++cell )
-//        {
-//          const LINALG::SerialDenseMatrix& cellpos = cell->CellNodalPosXYZ();
-//          const LINALG::Matrix<3,1> cellcenterpos(cell->GetPhysicalCenterPosition());
-//          const int domain_id = PositionWithinConditionNP(cellcenterpos,label);
-//          //const double color = domain_id*100000+(closestElementId);
-//          const double color = domain_id;
-//          IO::GMSH::cellWithScalarToStream(cell->Shape(), color, cellpos, gmshfilecontent);
-//        };
-//      };
-//      gmshfilecontent << "};" << endl;
-//    }
-//    gmshfilecontent.close();
-//    if (screen_out) cout << " done" << endl;
-//  }
+  if (gmshdebugout)
+  {
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("domains_for_patches", step, 5, screen_out);
+    std::ofstream gmshfilecontent(filename.c_str());
+    for (map<int, const Teuchos::RCP<GEO::SearchTree> >::const_iterator entry = octTreePerLabelnp_.begin();
+        entry != octTreePerLabelnp_.end();
+        ++entry)
+    {
+      const int label = entry->first;
+      const Teuchos::RCP<GEO::SearchTree> tree = entry->second;
+
+
+      gmshfilecontent << "View \" " << "Domains using CellCenter of Elements and Integration Cells \" {" << endl;
+
+      for (int i=0; i<xfemdis_->NumMyColElements(); ++i)
+      {
+        const DRT::Element* actele = xfemdis_->lColElement(i);
+        const GEO::DomainIntCells& elementDomainIntCells = this->GetDomainIntCells(actele);
+        GEO::DomainIntCells::const_iterator cell;
+        for(cell = elementDomainIntCells.begin(); cell != elementDomainIntCells.end(); ++cell )
+        {
+          const LINALG::SerialDenseMatrix& cellpos = cell->CellNodalPosXYZ();
+          const LINALG::Matrix<3,1> cellcenterpos(cell->GetPhysicalCenterPosition());
+          const int domain_id = octTreePerLabelnp_.find(label)->second->queryXFEMFSIPointType(*(cutterdis_), cutterposnp_, currentXAABBs_, cellcenterpos);
+          //const double color = domain_id*100000+(closestElementId);
+          const double color = domain_id;
+          IO::GMSH::cellWithScalarToStream(cell->Shape(), color, cellpos, gmshfilecontent);
+        };
+      };
+      gmshfilecontent << "};" << endl;
+    }
+    gmshfilecontent.close();
+    if (screen_out) cout << " done" << endl;
+  }
 
   if (gmshdebugout) // print space time layer
   {
