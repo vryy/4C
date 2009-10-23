@@ -108,17 +108,17 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   // list for extra parameters
   // (put here everything that is not available in scatradyn or its sublists)
   // -------------------------------------------------------------------
-  Teuchos::RCP<Teuchos::ParameterList> xparams
+  Teuchos::RCP<Teuchos::ParameterList> extraparams
     = Teuchos::rcp(new Teuchos::ParameterList());
 
   // ----problem type (type of scalar transport problem we want to solve)
-  xparams->set<string>("problem type",DRT::Problem::Instance()->ProblemType());
+  extraparams->set<string>("problem type",DRT::Problem::Instance()->ProblemType());
 
   // ------------------------------pointer to the error file (for output)
-  xparams->set<FILE*>    ("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
+  extraparams->set<FILE*>    ("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
 
   // ----------------Eulerian or ALE formulation of transport equation(s)
-  xparams->set<bool>("isale",isale);
+  extraparams->set<bool>("isale",isale);
 
   // -----------------------------sublist containing level set parameters
 /*  const INPAR::SCATRA::ScaTraType scatratype
@@ -134,7 +134,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
    * which are only relevant for a combustion problem.                         07/08 henke */
   if (genprob.probtyp == prb_combust)
   {
-    xparams->sublist("COMBUSTION GFUNCTION")=prbdyn.sublist("COMBUSTION GFUNCTION");
+    extraparams->sublist("COMBUSTION GFUNCTION")=prbdyn.sublist("COMBUSTION GFUNCTION");
   }
 
   // -------------------sublist for electrochemistry-specific parameters
@@ -146,10 +146,10 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
       dserror("Set parameter SOLVERTYPE = nonlinear for electrochemistry!");
 
     // flag for natural convection
-    xparams->set<INPAR::ELCH::NatConv>("Natural Convection",
+    extraparams->set<INPAR::ELCH::NatConv>("Natural Convection",
         Teuchos::getIntegralValue<INPAR::ELCH::NatConv>(prbdyn,"NATURAL_CONVECTION"));
     // temperature of electrolyte solution
-    xparams->set<double>("TEMPERATURE",prbdyn.get<double>("TEMPERATURE"));
+    extraparams->set<double>("TEMPERATURE",prbdyn.get<double>("TEMPERATURE"));
 
     // create a 2nd solver for block-preconditioning if chosen from input
     if (Teuchos::getIntegralValue<int>(scatradyn,"BLOCKPRECOND"))
@@ -162,7 +162,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
 
   // ------------------------------------get also fluid turbulence sublist
   const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
-  xparams->sublist("TURBULENCE PARAMETERS")=fdyn.sublist("TURBULENCE MODEL");
+  extraparams->sublist("TURBULENCE PARAMETERS")=fdyn.sublist("TURBULENCE MODEL");
 
   // -------------------------------------------------------------------
   // algorithm construction depending on
@@ -176,25 +176,25 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
    case INPAR::SCATRA::timeint_stationary:
    {
      // create instance of time integration class (call the constructor)
-     scatra_ = rcp(new SCATRA::TimIntStationary::TimIntStationary(actdis, solver, scatratimeparams, xparams, output));
+     scatra_ = rcp(new SCATRA::TimIntStationary::TimIntStationary(actdis, solver, scatratimeparams, extraparams, output));
      break;
    }
    case INPAR::SCATRA::timeint_one_step_theta:
    {
      // create instance of time integration class (call the constructor)
-     scatra_ = rcp(new SCATRA::TimIntOneStepTheta::TimIntOneStepTheta(actdis, solver, scatratimeparams, xparams,output));
+     scatra_ = rcp(new SCATRA::TimIntOneStepTheta::TimIntOneStepTheta(actdis, solver, scatratimeparams, extraparams,output));
      break;
    }
    case INPAR::SCATRA::timeint_bdf2:
    {
      // create instance of time integration class (call the constructor)
-     scatra_ = rcp(new SCATRA::TimIntBDF2::TimIntBDF2(actdis, solver, scatratimeparams,xparams, output));
+     scatra_ = rcp(new SCATRA::TimIntBDF2::TimIntBDF2(actdis, solver, scatratimeparams,extraparams, output));
      break;
    }
    case INPAR::SCATRA::timeint_gen_alpha:
    {
      // create instance of time integration class (call the constructor)
-     scatra_ = rcp(new SCATRA::TimIntGenAlpha::TimIntGenAlpha(actdis, solver, scatratimeparams,xparams, output));
+     scatra_ = rcp(new SCATRA::TimIntGenAlpha::TimIntGenAlpha(actdis, solver, scatratimeparams,extraparams, output));
      break;
    }
    default:
