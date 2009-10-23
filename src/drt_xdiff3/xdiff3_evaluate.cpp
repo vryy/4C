@@ -23,7 +23,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_xfem/dof_management.H"
-#include "../drt_xfem/xdofmapcreation.H"
+#include "../drt_xfem/xdofmapcreation_fsi.H"
 #include "../drt_xfem/enrichment_utils.H"
 
 
@@ -144,7 +144,6 @@ int DRT::ELEMENTS::XDiff3::Evaluate(ParameterList& params,
       const Teuchos::RCP<XFEM::DofManager> globaldofman = params.get< Teuchos::RCP< XFEM::DofManager > >("dofmanager");
 
       const bool DLM_condensation = params.get<bool>("DLM_condensation");
-      const double boundaryRatioLimit = params.get<double>("boundaryRatioLimit");
 
       const XDIFF::Diff3ElementAnsatz elementAnsatz;
       const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz_empty;
@@ -169,21 +168,12 @@ int DRT::ELEMENTS::XDiff3::Evaluate(ParameterList& params,
       {
         std::set<XFEM::FieldEnr> enrfieldset;
 
-        const std::set<int> xlabelset(eleDofManager_->getUniqueEnrichmentLabels());
-        // loop condition labels
-        for(std::set<int>::const_iterator labeliter = xlabelset.begin(); labeliter!=xlabelset.end(); ++labeliter)
-        {
-          const int label = *labeliter;
-          // for surface with label, loop my col elements and add void enrichments to each elements member nodes
-          if (ih_->ElementHasLabel(this->Id(), label))
-          {
-            const bool anothervoidenrichment_in_set = XFEM::EnrichmentInDofSet(XFEM::Enrichment::typeVoid, enrfieldset);
-            if (not anothervoidenrichment_in_set)
-            {
-              XFEM::ApplyElementEnrichments(this, element_ansatz_filled, *ih_, label, XFEM::Enrichment::typeVoid, boundaryRatioLimit, enrfieldset);
-            }
-          }
-        };
+        bool skipped_elem_enr;
+        XFEM::processVoidEnrichmentForElement(
+            this, element_ansatz_filled, *ih_, eleDofManager_->getUniqueEnrichmentLabels(),
+            params.get<double>("boundaryRatioLimit"),
+            enrfieldset,
+            skipped_elem_enr);
 
         // nodal dofs for ele
         eleDofManager_uncondensed_ =

@@ -66,31 +66,31 @@ namespace XFEM
     }
 
     //! get domain information at x_in at timestep n+1
-    int PositionWithinConditionNP(const LINALG::Matrix<3,1>&    x_in) const;
+    virtual int PositionWithinConditionNP(const LINALG::Matrix<3,1>&    x_in) const;
 
     //! get domain information at x_in at timestep n
-    int PositionWithinConditionN(const LINALG::Matrix<3,1>&     x_in) const;
+    virtual int PositionWithinConditionN(const LINALG::Matrix<3,1>&     x_in) const;
 
     //! get domain information at x_in at timestep n+1
-    int PositionWithinConditionNP(
+    virtual int PositionWithinConditionNP(
         const LINALG::Matrix<3,1>&        x_in,
         GEO::NearestObject&               nearestobject
     ) const;
 
     //! get domain information at x_in at timestep n
-    int PositionWithinConditionN(
+    virtual int PositionWithinConditionN(
         const LINALG::Matrix<3,1>&        x_in,
         GEO::NearestObject&               nearestobject
     ) const;
 
     //! get domain information at x_in at timestep n+1 for interface named label
-    int PositionWithinConditionNP(
+    virtual int PositionWithRespectToInterfaceNP(
         const LINALG::Matrix<3,1>&    x_in,
         const int label
         ) const;
 
     //! get domain information at x_in at timestep n for interface named label
-    int PositionWithinConditionN(
+    virtual int PositionWithRespectToInterfaceN(
         const LINALG::Matrix<3,1>&     x_in,
         const int label
         ) const;

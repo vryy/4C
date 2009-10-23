@@ -334,8 +334,7 @@ void SysmatDomainProjection(
               *ele,
               ih,
               dofman,
-              cellcenter_xyz,
-              XFEM::Enrichment::approachUnknown);
+              cellcenter_xyz, false, -1);
 
         const DRT::UTILS::GaussRule3D gaussrule = XFLUID::getXFEMGaussrule<DISTYPE>(ele, xyze, ih->ElementIntersected(ele->Id()),cell->Shape(),true);
 

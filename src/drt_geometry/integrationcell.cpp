@@ -21,6 +21,21 @@ Maintainer: Ursula Mayer
 #include "../drt_io/io_gmsh.H"
 
 
+/*----------------------------------------------------------------------*
+ * get center in physical coordinates
+ *----------------------------------------------------------------------*/
+LINALG::Matrix<3,1> GEO::IntCell::ComputePhysicalCenterPosition(
+  const DRT::Element::DiscretizationType&   distype,
+  const LINALG::SerialDenseMatrix&          xyze) const
+{
+  // center in local coordinates
+  const LINALG::Matrix<3,1> localcenterpos(DRT::UTILS::getLocalCenterPosition<3>(distype));
+  // center in physical coordinates
+  static LINALG::Matrix<3,1> pyhsicalcenterpos;
+  GEO::elementToCurrentCoordinates(distype, xyze, localcenterpos, pyhsicalcenterpos);
+  return pyhsicalcenterpos;
+}
+
 
 ////////////// Integration cell ////////////////////////////////////////
 
@@ -221,22 +236,6 @@ void GEO::DomainIntCell::toGmsh(const std::string& filename) const
 
 
 /*----------------------------------------------------------------------*
- * get center in physical coordinates
- *----------------------------------------------------------------------*/
-LINALG::Matrix<3,1> GEO::DomainIntCell::ComputePhysicalCenterPosition(
-  const DRT::Element::DiscretizationType&   distype,
-  const LINALG::SerialDenseMatrix&          xyze) const
-{
-  // center in local coordinates
-  const LINALG::Matrix<3,1> localcenterpos(DRT::UTILS::getLocalCenterPosition<3>(distype));
-  // center in physical coordinates
-  static LINALG::Matrix<3,1> pyhsicalcenterpos;
-  GEO::elementToCurrentCoordinates(distype, xyze, localcenterpos, pyhsicalcenterpos);
-  return pyhsicalcenterpos;
-}
-
-
-/*----------------------------------------------------------------------*
  * set xfem label, if fluid label = 0; if solid label = solid id
  *----------------------------------------------------------------------*/
 void GEO::DomainIntCell::setLabel(const int   label)
@@ -292,7 +291,8 @@ GEO::BoundaryIntCell::BoundaryIntCell(
             surface_ele_gid_(surface_ele_gid),
             nodalpos_xi_domain_(    xfemEleDomainCoordinates),
             nodalpos_xi_boundary_(  eleBoundaryCoordinates),
-            nodalpos_xyz_domain_(   physDomainCoordinates)
+            nodalpos_xyz_domain_(   physDomainCoordinates),
+            phys_center_(ComputePhysicalCenterPosition(distype, physDomainCoordinates))
 {}
 
 

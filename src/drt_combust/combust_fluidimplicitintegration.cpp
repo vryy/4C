@@ -1516,7 +1516,7 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
             LINALG::SerialDenseMatrix cellvalues(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
             //std::cout << cellvalues << endl;
             XFEM::computeVectorCellNodeValues(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
-                *cell, XFEM::PHYSICS::Velx, elementvalues, cellvalues);
+                *cell, XFEM::PHYSICS::Velx, 0, elementvalues, cellvalues);
             //LINALG::SerialDenseMatrix xyze_cell(3, cell->NumNode());
             //cell->NodalPosXYZ(*actele, xyze_cell);
             // TODO remove

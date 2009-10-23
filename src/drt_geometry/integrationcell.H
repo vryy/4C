@@ -61,6 +61,12 @@ class IntCell
   protected:
     //! shape
     DRT::Element::DiscretizationType distype_;
+
+    //! get geometric center of the cell in physical coordinates
+    LINALG::Matrix<3,1> ComputePhysicalCenterPosition(
+        const DRT::Element::DiscretizationType&   distype,
+        const LINALG::SerialDenseMatrix&          xyze
+        ) const;
 };
 
 
@@ -144,12 +150,6 @@ class DomainIntCell : public IntCell
     //! hide default constructor
     explicit DomainIntCell();
 
-    //! get geometric center of the cell in physical coordinates
-    LINALG::Matrix<3,1> ComputePhysicalCenterPosition(
-        const DRT::Element::DiscretizationType&   distype,
-        const LINALG::SerialDenseMatrix&          xyze
-        ) const;
-
     //! coordinates of the nodes in the parent element coordinates system ( xi_domain )
     LINALG::SerialDenseMatrix                       nodalpos_xi_domain_;
 
@@ -207,6 +207,9 @@ class BoundaryIntCell : public IntCell
     //! returns an array with the coordinates of the integration cell in physical coordinates
     const LINALG::SerialDenseMatrix&  CellNodalPosXYZ() const{ return nodalpos_xyz_domain_;}
 
+    //! returns an array with the coordinates of the integration cell in physical coordinates
+    const LINALG::Matrix<3,1>&  GetPhysicalCenterPosition() const{ return phys_center_;}
+
     //! return "parent" cutter element id (global id)
     int GetSurfaceEleGid() const {return surface_ele_gid_;}
 
@@ -230,6 +233,9 @@ class BoundaryIntCell : public IntCell
 
     //! coordinates of the nodes of the integration cell in physical coordinates
     LINALG::SerialDenseMatrix             nodalpos_xyz_domain_;
+
+    //! get geometric center of the cell in physical coordinates
+    LINALG::Matrix<3,1>                             phys_center_;
 
 };
 

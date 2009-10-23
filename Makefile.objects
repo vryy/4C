@@ -1393,7 +1393,10 @@ OBJS_INTERSECTION = src/drt_xfem/physics.o \
                     src/drt_xfem/interfacexfsi.o \
                     src/drt_xfem/spacetime_boundary.o \
                     src/drt_xfem/enrichment_utils.o \
-                    src/drt_xfem/xdofmapcreation.o
+                    src/drt_xfem/xdofmapcreation.o \
+                    src/drt_xfem/xdofmapcreation_combust.o \
+                    src/drt_xfem/xdofmapcreation_parallel_utils.o \
+                    src/drt_xfem/xdofmapcreation_fsi.o
 #               inverse analysis
 OBJS_INV_ANALYSIS = src/drt_inv_analysis/inv_analysis.o
 #               low-Mach-number flow

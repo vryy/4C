@@ -13,7 +13,8 @@ Maintainer: Axel Gerstenberger
 #ifdef CCADISCRET
 
 #include "dof_management.H"
-#include "xdofmapcreation.H"
+#include "xdofmapcreation_fsi.H"
+#include "xdofmapcreation_combust.H"
 #include "enrichment_utils.H"
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_gmsh.H"
@@ -39,7 +40,7 @@ XFEM::DofManager::DofManager(
     ) :
   ih_(ih)
 {
-  XFEM::createDofMap(*ih, nodalDofSet_, elementalDofs_, fieldset, element_ansatz, params);
+  XFEM::createDofMapFSI(*ih, nodalDofSet_, elementalDofs_, fieldset, element_ansatz, params);
 
   GatherUniqueEnrichments();
 }
@@ -453,17 +454,10 @@ void XFEM::DofManager::toGmsh(
 
   const bool screen_out = false;
 
-  const int myrank = ih_->xfemdis()->Comm().MyPID();
-
   if (gmshdebugout)
   {
-    std::stringstream filename;
-    std::stringstream filenamedel;
-    filename    << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".numdof_coupled_system_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
-    filenamedel << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".numdof_coupled_system_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
-    std::remove(filenamedel.str().c_str());
-    if (screen_out) std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"..."<<flush;
-    std::ofstream gmshfilecontent(filename.str().c_str());
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("numdof_coupled_system", step, 5, screen_out);
+    std::ofstream gmshfilecontent(filename.c_str());
     {
       // draw elements with associated gid
       gmshfilecontent << "View \" " << "Element->Id() \" {" << endl;
@@ -479,7 +473,8 @@ void XFEM::DofManager::toGmsh(
       for (int i=0; i<ih_->xfemdis()->NumMyColElements(); ++i)
       {
         const DRT::Element* actele = ih_->xfemdis()->lColElement(i);
-        std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator iter = elementalDofs_.find(actele->Id());
+        std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator iter =
+            elementalDofs_.find(actele->Id());
 
         if (iter != elementalDofs_.end())
         {
@@ -494,22 +489,15 @@ void XFEM::DofManager::toGmsh(
       gmshfilecontent << "View \" " << "NumDof per node \" {\n";
       for (int i=0; i<ih_->xfemdis()->NumMyColNodes(); ++i)
       {
-        //DRT::Element* actele = ih_->xfemdis()->lColElement(i);
         const DRT::Node* xfemnode = ih_->xfemdis()->lColNode(i);
-        const LINALG::Matrix<3,1> pos(xfemnode->X());
 
-        std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(xfemnode->Id());
-
+        std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator blub =
+            nodalDofSet_.find(xfemnode->Id());
         if (blub != nodalDofSet_.end())
         {
           const std::set<XFEM::FieldEnr> fieldenrset = blub->second;
-
-          gmshfilecontent << "SP(";
-          gmshfilecontent << scientific << pos(0) << ",";
-          gmshfilecontent << scientific << pos(1) << ",";
-          gmshfilecontent << scientific << pos(2);
-          gmshfilecontent << "){";
-          gmshfilecontent << fieldenrset.size() << "};\n";
+          const LINALG::Matrix<3,1> pos(xfemnode->X());
+          IO::GMSH::cellWithScalarToStream(DRT::Element::point1, fieldenrset.size(), pos, gmshfilecontent);
         }
       };
       gmshfilecontent << "};\n";
@@ -520,28 +508,23 @@ void XFEM::DofManager::toGmsh(
       for (int i=0; i<ih_->xfemdis()->NumMyColNodes(); ++i)
       {
         const DRT::Node* xfemnode = ih_->xfemdis()->lColNode(i);
-        const LINALG::Matrix<3,1> pos(xfemnode->X());
 
-        double val = 0.0;
         std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(xfemnode->Id());
         if (blub != nodalDofSet_.end())
         {
+          double val = 0.0;
           const std::set<XFEM::FieldEnr> fields = blub->second;
           for (std::set<XFEM::FieldEnr>::const_iterator f = fields.begin(); f != fields.end(); ++f)
           {
-            if ((f->getEnrichment().Type()) == XFEM::Enrichment::typeJump)
+            if (f->getEnrichment().Type() == XFEM::Enrichment::typeJump)
             {
-              val = val+1.0;
+              val += 1.0;
             }
           }
           if (val > 0.5)
           {
-            gmshfilecontent << "SP(";
-            gmshfilecontent << scientific << pos(0) << ",";
-            gmshfilecontent << scientific << pos(1) << ",";
-            gmshfilecontent << scientific << pos(2);
-            gmshfilecontent << "){";
-            gmshfilecontent << val << "};\n";
+            const LINALG::Matrix<3,1> pos(xfemnode->X());
+            IO::GMSH::cellWithScalarToStream(DRT::Element::point1, val, pos, gmshfilecontent);
           }
         }
       };
@@ -553,28 +536,23 @@ void XFEM::DofManager::toGmsh(
       for (int i=0; i<ih_->xfemdis()->NumMyColNodes(); ++i)
       {
         const DRT::Node* xfemnode = ih_->xfemdis()->lColNode(i);
-        const LINALG::Matrix<3,1> pos(xfemnode->X());
 
-        double val = 0.0;
         std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(xfemnode->Id());
         if (blub != nodalDofSet_.end())
         {
+          double val = 0.0;
           const std::set<XFEM::FieldEnr> fields = blub->second;
           for (std::set<XFEM::FieldEnr>::const_iterator f = fields.begin(); f != fields.end(); ++f)
           {
-            if ((f->getEnrichment().Type()) == XFEM::Enrichment::typeStandard)
+            if (f->getEnrichment().Type() == XFEM::Enrichment::typeStandard)
             {
-              val = val+1.0;
+              val += 1.0;
             }
           }
           if (val > 0.5)
           {
-            gmshfilecontent << "SP(";
-            gmshfilecontent << scientific << pos(0) << ",";
-            gmshfilecontent << scientific << pos(1) << ",";
-            gmshfilecontent << scientific << pos(2);
-            gmshfilecontent << "){";
-            gmshfilecontent << val << "};\n";
+            const LINALG::Matrix<3,1> pos(xfemnode->X());
+            IO::GMSH::cellWithScalarToStream(DRT::Element::point1, val, pos, gmshfilecontent);
           }
         }
       };
@@ -586,28 +564,23 @@ void XFEM::DofManager::toGmsh(
       for (int i=0; i<ih_->xfemdis()->NumMyColNodes(); ++i)
       {
         const DRT::Node* xfemnode = ih_->xfemdis()->lColNode(i);
-        const LINALG::Matrix<3,1> pos(xfemnode->X());
 
-        double val = 0.0;
         std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(xfemnode->Id());
         if (blub != nodalDofSet_.end())
         {
+          double val = 0.0;
           const std::set<XFEM::FieldEnr> fields = blub->second;
           for (std::set<XFEM::FieldEnr>::const_iterator f = fields.begin(); f != fields.end(); ++f)
           {
-            if ((f->getEnrichment().Type()) == XFEM::Enrichment::typeVoid)
+            if (f->getEnrichment().Type() == XFEM::Enrichment::typeVoid)
             {
               val += 1.0;
             }
           }
           if (val > 0.5)
           {
-            gmshfilecontent << "SP(";
-            gmshfilecontent << scientific << pos(0) << ",";
-            gmshfilecontent << scientific << pos(1) << ",";
-            gmshfilecontent << scientific << pos(2);
-            gmshfilecontent << "){";
-            gmshfilecontent << val << "};\n";
+            const LINALG::Matrix<3,1> pos(xfemnode->X());
+            IO::GMSH::cellWithScalarToStream(DRT::Element::point1, val, pos, gmshfilecontent);
           }
         }
       };
@@ -615,32 +588,58 @@ void XFEM::DofManager::toGmsh(
     }
     
     {
-      gmshfilecontent << "View \" " << "NumDof" << " Kink enriched nodes \" {\n";
+      gmshfilecontent << "View \" " << "NumDof" << " VoidFSI enriched nodes \" {\n";
       for (int i=0; i<ih_->xfemdis()->NumMyColNodes(); ++i)
       {
-        const DRT::Node* xfemnode = ih_->xfemdis()->lColNode(i);
-        const LINALG::Matrix<3,1> pos(xfemnode->X());
 
-        double val = 0.0;
-        std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(xfemnode->Id());
+        const DRT::Node* xfemnode = ih_->xfemdis()->lColNode(i);
+
+        std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator blub =
+            nodalDofSet_.find(xfemnode->Id());
         if (blub != nodalDofSet_.end())
         {
+
+          double val = 0.0;
           const std::set<XFEM::FieldEnr> fields = blub->second;
           for (std::set<XFEM::FieldEnr>::const_iterator f = fields.begin(); f != fields.end(); ++f)
           {
-            if ((f->getEnrichment().Type()) == XFEM::Enrichment::typeKink)
+            if (f->getEnrichment().Type() == XFEM::Enrichment::typeVoidFSI)
             {
               val += 1.0;
             }
           }
           if (val > 0.5)
           {
-            gmshfilecontent << "SP(";
-            gmshfilecontent << scientific << pos(0) << ",";
-            gmshfilecontent << scientific << pos(1) << ",";
-            gmshfilecontent << scientific << pos(2);
-            gmshfilecontent << "){";
-            gmshfilecontent << val << "};\n";
+            const LINALG::Matrix<3,1> pos(xfemnode->X());
+            IO::GMSH::cellWithScalarToStream(DRT::Element::point1, val, pos, gmshfilecontent);
+          }
+        }
+      };
+      gmshfilecontent << "};\n";
+    }
+
+    {
+      gmshfilecontent << "View \" " << "NumDof" << " Kink enriched nodes \" {\n";
+      for (int i=0; i<ih_->xfemdis()->NumMyColNodes(); ++i)
+      {
+        const DRT::Node* xfemnode = ih_->xfemdis()->lColNode(i);
+
+        std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(xfemnode->Id());
+        if (blub != nodalDofSet_.end())
+        {
+          double val = 0.0;
+          const std::set<XFEM::FieldEnr> fields = blub->second;
+          for (std::set<XFEM::FieldEnr>::const_iterator f = fields.begin(); f != fields.end(); ++f)
+          {
+            if (f->getEnrichment().Type() == XFEM::Enrichment::typeKink)
+            {
+              val += 1.0;
+            }
+          }
+          if (val > 0.5)
+          {
+            const LINALG::Matrix<3,1> pos(xfemnode->X());
+            IO::GMSH::cellWithScalarToStream(DRT::Element::point1, val, pos, gmshfilecontent);
           }
         }
       };
@@ -650,29 +649,18 @@ void XFEM::DofManager::toGmsh(
     gmshfilecontent.close();
     if (screen_out) std::cout << " done" << endl;
   }
-#if 0
+#if 1
   if (gmshdebugout)
   {
-      // debug info: print ele dofmanager information
-      std::stringstream filename;
-      std::stringstream filenamedel;
-      const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
-      filename    << filebase << "_eledofman_check_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
-      filenamedel << filebase << "_eledofman_check_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
-      std::remove(filenamedel.str().c_str());
-      if (screen_out) std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"..."<<flush;
-      std::ofstream gmshfilecontent(filename.str().c_str());
+      const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("eledofman_check", step, 5, screen_out);
+      std::ofstream gmshfilecontent(filename.c_str());
       {
         gmshfilecontent << "View \" " << " NumDofPerElement() in element \" {\n";
         for (int i=0; i<ih_->xfemdis()->NumMyColElements(); ++i)
         {
           DRT::Element* actele = ih_->xfemdis()->lColElement(i);
-          //const int ele_gid = actele->Id();
-          //double val = 0.0;
-          //std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator blub = elementalDofs_.find(ele_gid);
           const double val = actele->NumDofPerElement();
           IO::GMSH::elementAtInitialPositionToStream(val, actele, gmshfilecontent);
-
         };
         gmshfilecontent << "};\n";
       }

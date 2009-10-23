@@ -180,8 +180,8 @@ Maintainer: Axel Gerstenberger
       const bool pstab,
       const bool supg,
       const bool cstab,
-      const double& tau_stab_M,
       const double& tau_stab_Mp,
+      const double& tau_stab_M,
       const double& tau_stab_C
         )
   {
@@ -821,8 +821,7 @@ void SysmatDomain4(
               *ele,
               ih,
               dofman,
-              cellcenter_xyz,
-              XFEM::Enrichment::approachUnknown);
+              cellcenter_xyz, false, -1);
 
         const DRT::UTILS::GaussRule3D gaussrule = XFLUID::getXFEMGaussrule<DISTYPE>(ele, xyze, ih->ElementIntersected(ele->Id()),cell->Shape(),params.get<bool>("FAST_INTEGRATION"));
 
@@ -1289,7 +1288,7 @@ void SysmatDomain4(
                 gpvelnp, pres, gradp, vderxy, rhsint, res_old, visc_old, tau,
                 enr_conv_c_, enr_viscs2,
                 tauele_unknowns_present, instationary, newton, pstab, supg, cstab,
-                tau_stab_M, tau_stab_Mp, tau_stab_C);
+                tau_stab_Mp, tau_stab_M, tau_stab_C);
 
         } // end loop over gauss points
     } // end loop over integration cells
@@ -1372,6 +1371,8 @@ void SysmatBoundary4(
         // get the right boundary element
         const DRT::Element* boundaryele = ih->GetBoundaryEle(cell->GetSurfaceEleGid());
         const std::size_t numnode_boundary = boundaryele->NumNode();
+
+        const int label = ih->GetLabelPerBoundaryElementId(boundaryele->Id());
 
         // get current node coordinates
 //        LINALG::SerialDenseMatrix xyze_boundary(nsd,numnode_boundary);
@@ -1488,7 +1489,8 @@ void SysmatBoundary4(
                   ih,
                   dofman,
                   gauss_pos_xyz,
-                  XFEM::Enrichment::approachFromPlus);
+                  true,
+                  label);
 
             // shape function for nodal dofs
             enrvals.ComputeEnrichedNodalShapefunction(

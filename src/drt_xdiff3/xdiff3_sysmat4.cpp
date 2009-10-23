@@ -298,8 +298,7 @@ void SysmatDomain4(
               *ele,
               ih,
               dofman,
-              cellcenter_xyz,
-              XFEM::Enrichment::approachUnknown);
+              cellcenter_xyz, false, -1);
 
         const DRT::UTILS::GaussRule3D gaussrule = XDIFF::getXFEMGaussrule<DISTYPE>(ele, xyze, ih->ElementIntersected(ele->Id()),cell->Shape());
 
@@ -695,6 +694,8 @@ void SysmatBoundary4(
         const DRT::Element* boundaryele = ih->GetBoundaryEle(cell->GetSurfaceEleGid());
         const std::size_t numnode_boundary = boundaryele->NumNode();
 
+        const int label = ih->GetLabelPerBoundaryElementId(boundaryele->Id());
+
         // get current node coordinates
 //        LINALG::SerialDenseMatrix xyze_boundary(nsd,numnode_boundary);
         static LINALG::Matrix<nsd,numnodefix_boundary> xyze_boundary;
@@ -810,7 +811,8 @@ void SysmatBoundary4(
                   ih,
                   dofman,
                   gauss_pos_xyz,
-                  XFEM::Enrichment::approachFromPlus);
+                  true,
+                  label);
 
             // shape function for nodal dofs
             enrvals.ComputeEnrichedNodalShapefunction(

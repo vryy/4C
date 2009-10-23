@@ -101,10 +101,10 @@ double XFEM::Enrichment::EnrValue(
             }
             case approachUnknown:
             {
-                if (ih.PositionWithinConditionNP(actpos) == this->XFEMConditionLabel()) {
-                  enrval = 0.0;
-                } else {
+                if (ih.PositionWithRespectToInterfaceNP(actpos, this->XFEMConditionLabel()) == 0) {
                   enrval = 1.0;
+                } else {
+                  enrval = 0.0;
                 }
                 break;
             }
@@ -296,65 +296,5 @@ double XFEM::Enrichment::EnrValueAtInterface(
     }
     return enrval;
 }
-
-
-/*----------------------------------------------------------------------*
- | get modified enrichment value                               ag 11/07 |
- | remark: the enrichment function is 0 at nodes and hence the usual    |
- | interpolation property of the standard FEM is satisfied              |
- *----------------------------------------------------------------------*/
-double XFEM::Enrichment::ModifiedEnrValue(
-        const LINALG::Matrix<3,1>&            actpos,
-        const LINALG::Matrix<3,1>&            nodalpos,
-        const XFEM::InterfaceHandle&          ih,
-        const XFEM::Enrichment::ApproachFrom  approachdirection
-        ) const
-{
-    dserror("function not in use; needs update for the approach variable");
-    // return value
-    double enrval = 1.0;
-
-    switch (Type()){
-    case XFEM::Enrichment::typeStandard:
-    {
-        enrval = 1.0;
-        break;
-    }
-    case XFEM::Enrichment::typeVoid:
-    {
-        double actpos_enr_val = 0.0;
-        if (ih.PositionWithinConditionNP(actpos) == this->XFEMConditionLabel()) {
-            actpos_enr_val = 0.0;
-        } else {
-            actpos_enr_val = 1.0;
-        }
-
-        double nodepos_enr_val = 0.0;
-        if (ih.PositionWithinConditionNP(nodalpos) == this->XFEMConditionLabel()) {
-            nodepos_enr_val = 0.0;
-        } else {
-            nodepos_enr_val = 1.0;
-        }
-
-        enrval = actpos_enr_val - nodepos_enr_val;
-
-        break;
-    }
-    case XFEM::Enrichment::typeJump:
-    {
-        dserror("Do not evaluate jump enrichment values using ModifiedEnrValue()!");
-        break;
-    }
-    case XFEM::Enrichment::typeKink:
-    {
-        dserror("Do not evaluate kink enrichment values using ModifiedEnrValue()!");
-        break;
-    }
-    default:
-        dserror("unsupported type of (modified) enrichment!");
-    }
-    return enrval;
-}
-
 
 #endif  // #ifdef CCADISCRET

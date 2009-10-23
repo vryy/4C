@@ -43,7 +43,8 @@ namespace XFEM
         const RCP<XFEM::InterfaceHandle>&     ih,               ///< interface information
         const XFEM::ElementDofManager&        dofman,
         const LINALG::Matrix<3,1>&            actpos,           ///< a 3d position
-        const XFEM::Enrichment::ApproachFrom  approachdirection ///< is location with respect to interface is known or not
+        const bool                            boundary_integral,
+        const int                             boundary_label
     );
 
     /*!
@@ -588,6 +589,7 @@ void computeVectorCellNodeValues(
   const XFEM::ElementDofManager& dofman,
   const GEO::BoundaryIntCell& cell,
   const XFEM::PHYSICS::Field field,
+  const int label,
   const LINALG::SerialDenseMatrix& elementvalues,
   LINALG::SerialDenseMatrix&     cellvalues
   );

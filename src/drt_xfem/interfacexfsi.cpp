@@ -110,7 +110,7 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
     octTreePerLabeln_[label]->initializeTree(AABB, onelabelmap, GEO::TreeType(GEO::OCTTREE));
   }
 
-  ClassifyIntegrationCells();
+//  ClassifyIntegrationCells();
 
   GenerateSpaceTimeLayer(cutterdis_, cutterposnp_, cutterposn_);
 
@@ -282,7 +282,7 @@ int XFEM::InterfaceHandleXFSI::PositionWithinConditionN(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int XFEM::InterfaceHandleXFSI::PositionWithinConditionNP(
+int XFEM::InterfaceHandleXFSI::PositionWithRespectToInterfaceNP(
     const LINALG::Matrix<3,1>&        x_in,
     const int label) const
 {
@@ -292,7 +292,7 @@ int XFEM::InterfaceHandleXFSI::PositionWithinConditionNP(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int XFEM::InterfaceHandleXFSI::PositionWithinConditionN(
+int XFEM::InterfaceHandleXFSI::PositionWithRespectToInterfaceN(
     const LINALG::Matrix<3,1>&        x_in,
     const int label) const
 {
@@ -549,8 +549,6 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
         for(cell = elementDomainIntCells.begin(); cell != elementDomainIntCells.end(); ++cell )
         {
           const LINALG::Matrix<3,1> cellcenterpos(cell->GetPhysicalCenterPosition());
-
-          //const int domain_id = PositionWithinConditionNP(cellcenterpos);
 
           LINALG::SerialDenseMatrix point(3,1);
           point(0,0)=cellcenterpos(0);

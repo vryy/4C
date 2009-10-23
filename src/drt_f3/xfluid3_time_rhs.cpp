@@ -246,28 +246,27 @@ void SysmatDomain4(
 
         int labelnp = 0;
 
-        if (ASSTYPE == XFEM::xfem_assembly)
-        {
-          // integrate only in fluid integration cells (works well only with void enrichments!!!)
-          labelnp = ih->PositionWithinConditionNP(cellcenter_xyz);
-          const std::set<int> xlabelset(dofman.getUniqueEnrichmentLabels());
-          bool compute = false;
-          if (labelnp == 0) // fluid
-          {
-            compute = true;
-          }
-          if (not compute)
-          {
-            continue; // next integration cell
-          }
-        }
+//        if (ASSTYPE == XFEM::xfem_assembly)
+//        {
+//          // integrate only in fluid integration cells (works well only with void enrichments!!!)
+//          labelnp = ih->PositionWithinConditionNP(cellcenter_xyz);
+//          const std::set<int> xlabelset(dofman.getUniqueEnrichmentLabels());
+//          bool compute = false;
+//          if (labelnp == 0) // fluid
+//          {
+//            compute = true;
+//          }
+//          if (not compute)
+//          {
+//            continue; // next integration cell
+//          }
+//        }
 
         const XFEM::ElementEnrichmentValues enrvals(
               *ele,
               ih,
               dofman,
-              cellcenter_xyz,
-              XFEM::Enrichment::approachUnknown);
+              cellcenter_xyz, false, -1);
 
         const DRT::UTILS::GaussRule3D gaussrule = XFLUID::getXFEMGaussrule<DISTYPE>(ele, xyze, ih->ElementIntersected(ele->Id()),cell->Shape(),false);
 

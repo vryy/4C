@@ -109,10 +109,10 @@ namespace XFEM
                                          GEO::NearestObject&  nearestobject) const;
 
     //! get domain information at x_in at timestep n+1 for interface named label
-    virtual int PositionWithinConditionNP(const LINALG::Matrix<3,1>& x_in, const int label);
+    virtual int PositionWithRespectToInterfaceNP(const LINALG::Matrix<3,1>& x_in, const int label) const;
 
     //! get domain information at x_in at timestep n for interface named label
-    virtual int PositionWithinConditionN(const LINALG::Matrix<3,1>& x_in, const int label);
+    virtual int PositionWithRespectToInterfaceN(const LINALG::Matrix<3,1>& x_in, const int label) const;
 
     //! get the label to which the boundary element belongs
     virtual int GetLabelPerBoundaryElementId(const int boundaryEleId) const

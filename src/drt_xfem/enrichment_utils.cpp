@@ -31,7 +31,8 @@ XFEM::ElementEnrichmentValues::ElementEnrichmentValues(
         const RCP<XFEM::InterfaceHandle>&      ih,                ///< interface information
         const XFEM::ElementDofManager&         dofman,
         const LINALG::Matrix<3,1>&             actpos,
-        const XFEM::Enrichment::ApproachFrom   approachdirection
+        const bool                             boundary_integral,
+        const int                              boundary_label
         ) :
           ele_(ele),
           dofman_(dofman)
@@ -42,11 +43,15 @@ XFEM::ElementEnrichmentValues::ElementEnrichmentValues(
     enrvalderxy2_.clear(); // not used for void enrichment
 
     const std::set<XFEM::Enrichment>& enrset(dofman.getUniqueEnrichments());
-    //TODO: achtung: bei mehreren enrichments ist approach from plus nicht mehr so einfach
     for (std::set<XFEM::Enrichment>::const_iterator enriter = enrset.begin(); enriter != enrset.end(); ++enriter)
     {
+        XFEM::Enrichment::ApproachFrom   approachdirection = XFEM::Enrichment::approachUnknown;
+        if (boundary_integral and enriter->XFEMConditionLabel() == boundary_label)
+          approachdirection = XFEM::Enrichment::approachFromPlus;
+        else
+          approachdirection = XFEM::Enrichment::approachUnknown;
+
         const double enrval = enriter->EnrValue(actpos, *ih, approachdirection);
-//        enrvals_.insert(make_pair((*enriter), enrval));
         enrvals_[*enriter] = enrval;
     }
     return;
@@ -66,17 +71,12 @@ void XFEM::computeScalarCellNodeValuesFromNodalUnknowns(
 {
   const LINALG::SerialDenseMatrix& nodalPosXiDomain(cell.CellNodalPosXiDomain());
 
-  // if cell node is on the interface, the value is not defined for a jump.
-  // however, we approach the interface from one particular side and therefore,
-  // -> we use the center of the cell to determine, where we come from
-  const LINALG::Matrix<3,1> cellcenterpos(cell.GetPhysicalCenterPosition());
-
   const XFEM::ElementEnrichmentValues enrvals(
         ele,
         ih,
         dofman,
-        cellcenterpos,
-        XFEM::Enrichment::approachUnknown);
+        cell.GetPhysicalCenterPosition(),
+        false, -1);
 
   cellvalues.Zero();
   for (int inen = 0; inen < cell.NumNode(); ++inen)
@@ -113,17 +113,12 @@ void XFEM::computeScalarCellNodeValuesFromElementUnknowns(
 {
   const LINALG::SerialDenseMatrix& nodalPosXiDomain(cell.CellNodalPosXiDomain());
 
-  // if cell node is on the interface, the value is not defined for a jump.
-  // however, we approach the interface from one particular side and therefore,
-  // -> we use the center of the cell to determine, where we come from
-  const LINALG::Matrix<3,1> cellcenterpos(cell.GetPhysicalCenterPosition());
-
   const XFEM::ElementEnrichmentValues enrvals(
         ele,
         ih,
         dofman,
-        cellcenterpos,
-        XFEM::Enrichment::approachUnknown);
+        cell.GetPhysicalCenterPosition(),
+        false, -1);
 
   cellvalues.Zero();
   for (int incn = 0; incn < cell.NumNode(); ++incn)
@@ -134,9 +129,8 @@ void XFEM::computeScalarCellNodeValuesFromElementUnknowns(
 
     const DRT::Element::DiscretizationType eleval_distype = dofman.getDisTypePerField(field);
     const std::size_t numvirtnode = DRT::UTILS::getNumberOfElementNodes(eleval_distype);
-    if (numvirtnode != numparam) dserror("bug");
 
-    LINALG::SerialDenseVector funct(numparam);
+    LINALG::SerialDenseVector funct(numvirtnode);
     // fill shape functions
     DRT::UTILS::shape_function_3D(funct,
       nodalPosXiDomain(0,incn),
@@ -168,17 +162,12 @@ void XFEM::computeTensorCellNodeValuesFromElementUnknowns(
 {
   const LINALG::SerialDenseMatrix& nodalPosXiDomain(cell.CellNodalPosXiDomain());
 
-  // if cell node is on the interface, the value is not defined for a jump.
-  // however, we approach the interface from one particular side and therefore,
-  // -> we use the center of the cell to determine, where we come from
-  const LINALG::Matrix<3,1> cellcenterpos(cell.GetPhysicalCenterPosition());
-  flush(cout);
   const XFEM::ElementEnrichmentValues enrvals(
         ele,
         ih,
         dofman,
-        cellcenterpos,
-        XFEM::Enrichment::approachUnknown);
+        cell.GetPhysicalCenterPosition(),
+        false, -1);
 
   cellvalues.Zero();
   for (int incn = 0; incn < cell.NumNode(); ++incn)
@@ -189,9 +178,9 @@ void XFEM::computeTensorCellNodeValuesFromElementUnknowns(
 
     const DRT::Element::DiscretizationType eleval_distype = dofman.getDisTypePerField(field);
     const int numvirtnode = DRT::UTILS::getNumberOfElementNodes(eleval_distype);
-    if (numvirtnode != numparam) dserror("bug");
+//    if (numvirtnode != numparam) dserror("bug");
 
-    LINALG::SerialDenseVector funct(numparam);
+    LINALG::SerialDenseVector funct(numvirtnode);
     // fill shape functions
     DRT::UTILS::shape_function_3D(funct,
       nodalPosXiDomain(0,incn),
@@ -225,17 +214,12 @@ void XFEM::computeVectorCellNodeValues(
   const std::size_t numparam  = dofman.NumDofPerField(field);
   const LINALG::SerialDenseMatrix& nodalPosXiDomain(cell.CellNodalPosXiDomain());
 
-  // if cell node is on the interface, the value is not defined for a jump.
-  // however, we approach the interface from one particular side and therefore,
-  // -> we use the center of the cell to determine, where we come from
-  const LINALG::Matrix<3,1> cellcenterpos(cell.GetPhysicalCenterPosition());
-
   const XFEM::ElementEnrichmentValues enrvals(
         ele,
         ih,
         dofman,
-        cellcenterpos,
-        XFEM::Enrichment::approachUnknown);
+        cell.GetPhysicalCenterPosition(),
+        false, -1);
 
   // cell corner nodes
   LINALG::SerialDenseVector enr_funct(numparam);
@@ -269,6 +253,7 @@ void XFEM::computeVectorCellNodeValues(
   const XFEM::ElementDofManager&      dofman,
   const GEO::BoundaryIntCell&         cell,
   const XFEM::PHYSICS::Field          field,
+  const int                           label,
   const LINALG::SerialDenseMatrix&    elementvalues,
   LINALG::SerialDenseMatrix&          cellvalues)
 {
@@ -276,18 +261,13 @@ void XFEM::computeVectorCellNodeValues(
   const std::size_t numparam  = dofman.NumDofPerField(field);
   const LINALG::SerialDenseMatrix& nodalPosXiDomain(cell.CellNodalPosXiDomain());
 
-  // if cell node is on the interface, the value is not defined for a jump.
-  // however, we approach the interface from one particular side and therefore,
-  // -> we use the center of the cell to determine, where we come from
-  const LINALG::Matrix<3,1> cellcenterpos(true);
-
   const XFEM::ElementEnrichmentValues enrvals(
         ele,
         ih,
         dofman,
-        cellcenterpos,
-        XFEM::Enrichment::approachFromPlus);
-
+        cell.GetPhysicalCenterPosition(),
+        true,
+        label);
 
   LINALG::SerialDenseVector enr_funct(numparam);
   //LINALG::SerialDenseVector funct(DRT::UTILS::getNumberOfElementNodes(ele.Shape()));

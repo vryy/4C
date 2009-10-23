@@ -29,7 +29,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_xfem/dof_management.H"
-#include "../drt_xfem/xdofmapcreation.H"
+#include "../drt_xfem/xdofmapcreation_fsi.H"
 #include "../drt_xfem/enrichment_utils.H"
 
 
@@ -180,21 +180,12 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       {
         std::set<XFEM::FieldEnr> enrfieldset;
 
-        const std::set<int> xlabelset(eleDofManager_->getUniqueEnrichmentLabels());
-        // loop condition labels
-        for(std::set<int>::const_iterator labeliter = xlabelset.begin(); labeliter!=xlabelset.end(); ++labeliter)
-        {
-          const int label = *labeliter;
-          // for surface with label, loop my col elements and add void enrichments to each elements member nodes
-          if (ih_->ElementHasLabel(this->Id(), label))
-          {
-            const bool anothervoidenrichment_in_set = XFEM::EnrichmentInDofSet(XFEM::Enrichment::typeVoid, enrfieldset);
-            if (not anothervoidenrichment_in_set)
-            {
-              XFEM::ApplyElementEnrichments(this, element_ansatz_filled, *ih_, label, XFEM::Enrichment::typeVoid, params.get<double>("boundaryRatioLimit"), enrfieldset);
-            }
-          }
-        };
+        bool skipped_elem_enr;
+        XFEM::processVoidEnrichmentForElement(
+            this, element_ansatz_filled, *ih_, eleDofManager_->getUniqueEnrichmentLabels(),
+            params.get<double>("boundaryRatioLimit"),
+            enrfieldset,
+            skipped_elem_enr);
 
         int nd_old = -1;
         int na_old = -1;
@@ -213,7 +204,6 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 
         if (nd != nd_old or na != na_old)
         {
-
           DLM_info_ = Teuchos::rcp(new DLMInfo(nd,na));
         }
         else
@@ -1045,29 +1035,11 @@ void integrateShapefunctionT(
   {
     const LINALG::Matrix<nsd,1> cellcenter_xyz(cell->GetPhysicalCenterPosition());
 
-    int labelnp = 0;
-
-    if (ASSTYPE == XFEM::xfem_assembly)
-    {
-      // integrate only in fluid integration cells (works well only with void enrichments!!!)
-      labelnp = ih->PositionWithinConditionNP(cellcenter_xyz);
-      bool compute = false;
-      if (labelnp == 0) // fluid
-      {
-        compute = true;
-      }
-      if (not compute)
-      {
-        continue; // next integration cell
-      }
-    }
-
     const XFEM::ElementEnrichmentValues enrvals(
         *ele,
         ih,
         dofman,
-        cellcenter_xyz,
-        XFEM::Enrichment::approachUnknown);
+        cellcenter_xyz, false, -1);
 
     const DRT::UTILS::GaussRule3D gaussrule = XFLUID::getXFEMGaussrule<DISTYPE>(ele, xyze, ih->ElementIntersected(ele->Id()),cell->Shape(),true);
 
