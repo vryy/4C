@@ -217,7 +217,7 @@ void POTENTIAL::Potential::EvaluatePotentialCondition(
     Epetra_SerialDenseVector elevector1;
     Epetra_SerialDenseVector elevector2;
     Epetra_SerialDenseVector elevector3;
-
+          
     for (curr=geom.begin(); curr!=geom.end(); ++curr)
     {
       // get element location vector and ownerships
@@ -230,6 +230,8 @@ void POTENTIAL::Potential::EvaluatePotentialCondition(
       // call the element specific evaluate method
       int err = curr->second->Evaluate( params,discret_,lm, elematrix1,elematrix2,
                                         elevector1,elevector2,elevector3);
+      
+      
       if (err) dserror("error while evaluating elements");
             
       // specify lm row and lm col
