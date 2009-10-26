@@ -295,8 +295,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   Teuchos::ParameterList& type = list->sublist("PROBLEM TYP",false,"");
 
   {
-  Teuchos::Tuple<std::string,16> name;
-  Teuchos::Tuple<PROBLEM_TYP,16> label;
+  Teuchos::Tuple<std::string,17> name;
+  Teuchos::Tuple<PROBLEM_TYP,17> label;
   name[ 0] = "Structure";                                   label[ 0] = prb_structure;
   name[ 1] = "Fluid";                                       label[ 1] = prb_fluid;
   name[ 2] = "Fluid_XFEM";                                  label[ 2] = prb_fluid_xfem;
@@ -313,6 +313,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   name[13] = "Electrochemistry";                            label[13] = prb_elch;
   name[14] = "Combustion";                                  label[14] = prb_combust;
   name[15] = "ArterialNetwork";                             label[15] = prb_art_net;
+  name[16] = "Fluid_Structure_Interaction_Lung";            label[16] = prb_fsi_lung;
   setStringToIntegralParameter<PROBLEM_TYP>(
                                "PROBLEMTYP",
                                "Fluid_Structure_Interaction",
@@ -2124,43 +2125,31 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     "Partitioned FSI solver with various coupling methods"
     );
 
+  Teuchos::Tuple<std::string,16> name;
+  Teuchos::Tuple<int,16> label;
+
+  name[ 0] = "basic_sequ_stagg";                   label[ 0] = fsi_basic_sequ_stagg;
+  name[ 1] = "iter_stagg_fixed_rel_param";         label[ 1] = fsi_iter_stagg_fixed_rel_param;
+  name[ 2] = "iter_stagg_AITKEN_rel_param";        label[ 2] = fsi_iter_stagg_AITKEN_rel_param;
+  name[ 3] = "iter_stagg_steep_desc";              label[ 3] = fsi_iter_stagg_steep_desc;
+  name[ 4] = "iter_stagg_NLCG";                    label[ 4] = fsi_iter_stagg_NLCG;
+  name[ 5] = "iter_stagg_MFNK_FD";                 label[ 5] = fsi_iter_stagg_MFNK_FD;
+  name[ 6] = "iter_stagg_MFNK_FSI";                label[ 6] = fsi_iter_stagg_MFNK_FSI;
+  name[ 7] = "iter_stagg_MPE";                     label[ 7] = fsi_iter_stagg_MPE;
+  name[ 8] = "iter_stagg_RRE";                     label[ 8] = fsi_iter_stagg_RRE;
+  name[ 9] = "iter_monolithicfluidsplit";          label[ 9] = fsi_iter_monolithicfluidsplit;
+  name[10] = "iter_monolithiclagrange";            label[10] = fsi_iter_monolithiclagrange;
+  name[11] = "iter_monolithicstructuresplit";      label[11] = fsi_iter_monolithicstructuresplit;
+  name[12] = "iter_lung_monolithicstructuresplit"; label[12] = fsi_iter_lung_monolithicstructuresplit;
+  name[13] = "iter_lung_monolithicfluidsplit";     label[13] = fsi_iter_lung_monolithicfluidsplit;
+  name[14] = "iter_monolithicxfem";                label[14] = fsi_iter_monolithicxfem;
+  name[15] = "pseudo_structure";                   label[15] = fsi_pseudo_structureale;
+
   setStringToIntegralParameter<int>("COUPALGO","iter_stagg_AITKEN_rel_param",
-                               "Iteration Scheme over the fields",
-                               tuple<std::string>(
-                                 "basic_sequ_stagg",
-                                 //"sequ_stagg_pred",
-                                 //"sequ_stagg_shift",
-                                 "iter_stagg_fixed_rel_param",
-                                 "iter_stagg_AITKEN_rel_param",
-                                 "iter_stagg_steep_desc",
-                                 "iter_stagg_NLCG",
-                                 "iter_stagg_MFNK_FD",
-                                 "iter_stagg_MFNK_FSI",
-                                 "iter_stagg_MPE",
-                                 "iter_stagg_RRE",
-                                 "iter_monolithicfluidsplit",
-                                 "iter_monolithiclagrange",
-                                 "iter_monolithicstructuresplit",
-                                 "iter_monolithicxfem",
-                                 "pseudo_structure"),
-                               tuple<int>(
-                                 fsi_basic_sequ_stagg,
-                                 //fsi_sequ_stagg_pred,
-                                 //fsi_sequ_stagg_shift,
-                                 fsi_iter_stagg_fixed_rel_param,
-                                 fsi_iter_stagg_AITKEN_rel_param,
-                                 fsi_iter_stagg_steep_desc,
-                                 fsi_iter_stagg_NLCG,
-                                 fsi_iter_stagg_MFNK_FD,
-                                 fsi_iter_stagg_MFNK_FSI,
-                                 fsi_iter_stagg_MPE,
-                                 fsi_iter_stagg_RRE,
-                                 fsi_iter_monolithicfluidsplit,
-                                 fsi_iter_monolithiclagrange,
-                                 fsi_iter_monolithicstructuresplit,
-                                 fsi_iter_monolithicxfem,
-                                 fsi_pseudo_structureale),
-                                 &fsidyn);
+                                    "Iteration Scheme over the fields",
+                                    name,
+                                    label,
+                                    &fsidyn);
 
   setStringToIntegralParameter<INPAR::FSI::PartitionedCouplingMethod>(
                                "PARTITIONED","DirichletNeumann",

@@ -155,7 +155,10 @@ public:
     ArtWriteGnuplotCond,
     ArtPrescribedCond,
     ArtRfCond,
-    ArtWkCond
+    ArtWkCond,
+    StructAleCoupling,
+    StructFluidSurfCoupling,
+    StructFluidVolCoupling
   };
 
   /*!

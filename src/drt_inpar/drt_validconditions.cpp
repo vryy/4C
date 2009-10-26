@@ -657,6 +657,69 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(surffreesurf);
 
   /*--------------------------------------------------------------------*/
+  // Additional coupling of structure and ale fields (for lung fsi)
+
+  std::vector<Teuchos::RCP<ConditionComponent> > saccomponents;
+
+  saccomponents.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
+  saccomponents.push_back(
+    Teuchos::rcp(
+      new StringConditionComponent(
+        "field","structure",
+        Teuchos::tuple<std::string>("structure","fluid"),
+        Teuchos::tuple<std::string>("structure","fluid"))));
+
+  Teuchos::RCP<ConditionDefinition> surfsac =
+    Teuchos::rcp(new ConditionDefinition("DESIGN STRUCTURE ALE COUPLING SURF CONDITIONS",
+                                         "StructAleCoupling",
+                                         "StructAleCoupling",
+                                         DRT::Condition::StructAleCoupling,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  for (unsigned i=0; i<saccomponents.size(); ++i)
+    surfsac->AddComponent(saccomponents[i]);
+
+  condlist.push_back(surfsac);
+
+  /*--------------------------------------------------------------------*/
+  // Additional coupling of structure and fluid volumes (for lung fsi)
+
+  std::vector<Teuchos::RCP<ConditionComponent> > sfvcomponents;
+
+  sfvcomponents.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
+  sfvcomponents.push_back(
+    Teuchos::rcp(
+      new StringConditionComponent(
+        "field","structure",
+        Teuchos::tuple<std::string>("structure","fluid"),
+        Teuchos::tuple<std::string>("structure","fluid"))));
+
+  Teuchos::RCP<ConditionDefinition> surfsfv =
+    Teuchos::rcp(new ConditionDefinition("DESIGN STRUCTURE FLUID VOLUME COUPLING SURF CONDITIONS",
+                                         "StructFluidSurfCoupling",
+                                         "StructFluidSurfCoupling",
+                                         DRT::Condition::StructFluidSurfCoupling,
+                                         true,
+                                         DRT::Condition::Surface));
+  Teuchos::RCP<ConditionDefinition> volsfv =
+    Teuchos::rcp(new ConditionDefinition("DESIGN STRUCTURE FLUID VOLUME COUPLING VOL CONDITIONS",
+                                         "StructFluidVolCoupling",
+                                         "StructFluidVolCoupling",
+                                         DRT::Condition::StructFluidVolCoupling,
+                                         true,
+                                         DRT::Condition::Volume));
+
+  for (unsigned i=0; i<sfvcomponents.size(); ++i)
+  {
+    surfsfv->AddComponent(sfvcomponents[i]);
+    volsfv->AddComponent(sfvcomponents[i]);
+  }
+
+  condlist.push_back(surfsfv);
+  condlist.push_back(volsfv);
+
+  /*--------------------------------------------------------------------*/
   // xfem
 
   std::vector<Teuchos::RCP<ConditionComponent> > xfemcomponents;

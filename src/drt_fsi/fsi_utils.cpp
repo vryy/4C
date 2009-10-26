@@ -412,6 +412,15 @@ void FSI::UTILS::CreateAleDiscretization()
   }
 
   cond.clear();
+  fluiddis->GetCondition("StructAleCoupling", cond);
+  for (unsigned i=0; i<cond.size(); ++i)
+  {
+    // We use the same nodal ids and therefore we can just copy the
+    // conditions.
+    aledis->SetCondition("StructAleCoupling", rcp(new DRT::Condition(*cond[i])));
+  }
+
+  cond.clear();
   fluiddis->GetCondition("ALEDirichlet", cond);
   for (std::size_t i=0; i<cond.size(); ++i)
   {

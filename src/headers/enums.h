@@ -18,6 +18,7 @@ typedef enum _PROBLEM_TYP
                        prb_none,         /*  not a problem at all */
                        prb_fsi,          /*  fluid structure interaction problem */
                        prb_fsi_xfem,     /*  fluid structure interaction problem including XFEM interfaces*/
+                       prb_fsi_lung,     /*  airway fsi problem with attached parenchyma balloon */
                        prb_ssi,          /*  structure structure interaction problem */
                        prb_structure,    /*  structural problem */
                        prb_fluid,        /*  fluid problem */
@@ -42,7 +43,7 @@ typedef enum _PROBLEM_TYP
  * initialize static variables. Keep in sync!
  * The trailing NULL is essential for the filters to read the problem
  * type! */
-#define PROBLEMNAMES { "none","fsi","fsi_xfem","ssi","structure", "fluid","fluid_xfem","fluid_dgfem","fluid_ale","freesurf","opt","ale","tsi","thermo","fluid_pm","scatra","pfsi","struct_multi","loma","elch","combustion","art_net",NULL }
+#define PROBLEMNAMES { "none","fsi","fsi_xfem","fsi_lung","ssi","structure", "fluid","fluid_xfem","fluid_dgfem","fluid_ale","freesurf","opt","ale","tsi","thermo","fluid_pm","scatra","pfsi","struct_multi","loma","elch","combustion","art_net",NULL }
 /*----------------------------------------------------------------------*
  | TIME TYPES                                             m.gee 7/01    |
  *----------------------------------------------------------------------*/
@@ -646,6 +647,8 @@ typedef enum _FSI_COUPLING
   fsi_iter_monolithicfluidsplit=13,
   fsi_iter_monolithiclagrange,
   fsi_iter_monolithicstructuresplit,
+  fsi_iter_lung_monolithicstructuresplit,
+  fsi_iter_lung_monolithicfluidsplit, 
   fsi_iter_monolithicxfem,
   fsi_iter_stagg_NLCG,
   fsi_iter_stagg_MFNK_FD,
