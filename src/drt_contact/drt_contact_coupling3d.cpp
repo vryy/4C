@@ -2601,12 +2601,12 @@ bool CONTACT::Coupling3d::IntegrateCells()
     // *******************************************************************
     // ************ Coupling with or without auxiliary plane *************
     // *******************************************************************
-    int nintrow = SlaveIntElement().NumNode();
     int nrow = SlaveElement().NumNode();
     int ncol = MasterElement().NumNode();
     RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
     RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
 #ifdef CONTACTPETROVGALERKIN
+    int nintrow = SlaveIntElement().NumNode();
     RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nintrow));
 #else
     RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));

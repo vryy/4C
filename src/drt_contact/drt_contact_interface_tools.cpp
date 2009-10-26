@@ -88,6 +88,15 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
   filename << iter;
 #endif // #ifdef CONTACTGMSH2
 
+#ifdef CONTACTGMSH3
+  filename << "_";
+  if (iter<10)
+    filename << 0;
+  else if (iter>99)
+    dserror("Gmsh output implemented for a maximum of 99 iterations");
+  filename << iter;
+#endif // #ifdef CONTACTGMSH3
+  
   filename << ".pos";
 
   // do output to file in c-style
