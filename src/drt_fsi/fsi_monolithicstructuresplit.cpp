@@ -379,7 +379,8 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
   f->UnComplete();
 
   mat.Assign(0,0,View,sii);
-  sigtransform_(*blocks,
+  sigtransform_(blocks->FullRowMap(),
+                blocks->FullColMap(),
                 sig,
                 1./timescale,
                 ADAPTER::Coupling::MasterConverter(coupsf),
@@ -398,7 +399,8 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
 
   mat.Assign(1,1,View,*f);
 
-  aigtransform_(*a,
+  aigtransform_(a->FullRowMap(),
+                a->FullColMap(),
                 aig,
                 1./timescale,
                 ADAPTER::Coupling::SlaveConverter(icoupfa_),
@@ -421,7 +423,8 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
 
     const ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
-    fmgitransform_(*mmm,
+    fmgitransform_(mmm->FullRowMap(),
+                   mmm->FullColMap(),
                    fmgi,
                    1.,
                    ADAPTER::Coupling::MasterConverter(coupfa),
@@ -429,7 +432,8 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
                    false,
                    false);
 
-    fmiitransform_(*mmm,
+    fmiitransform_(mmm->FullRowMap(),
+                   mmm->FullColMap(),
                    fmii,
                    1.,
                    ADAPTER::Coupling::MasterConverter(coupfa),
@@ -444,7 +448,8 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
     // here we extract the free surface submatrices from position 2
     LINALG::SparseMatrix& aig = a->Matrix(0,2);
 
-    fsaigtransform_(*a,
+    fsaigtransform_(a->FullRowMap(),
+                    a->FullColMap(),
                     aig,
                     1./timescale,
                     ADAPTER::Coupling::SlaveConverter(fscoupfa_),
@@ -466,7 +471,8 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
 
       const ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
-      fsmgitransform_(*mmm,
+      fsmgitransform_(mmm->FullRowMap(),
+                      mmm->FullColMap(),
                       fmgi,
                       1.,
                       ADAPTER::Coupling::MasterConverter(coupfa),

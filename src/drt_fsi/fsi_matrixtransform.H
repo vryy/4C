@@ -154,7 +154,8 @@ namespace FSI
       The call operator to be used for a matrix data copy between \p src and
       \p dst matrices.
 
-      \param fullsrc   (i) full source block matrix
+      \param rowmap    (i) row map of full source block matrix
+      \param colmap    (i) col map of full source block matrix
       \param src       (i) source matrix
       \param scale     (i) scaling factor to be applied
       \param converter (i) src to dst abstaction on ADAPTER::Coupling
@@ -162,6 +163,16 @@ namespace FSI
       \param exactmatch (i) do not drop any source values if true
       \param addmatrix (i) remove current dst values if false
      */
+    bool operator()(const Epetra_Map& rowmap,
+                    const Epetra_Map& colmap,
+                    const LINALG::SparseMatrix& src,
+                    double scale,
+                    const ADAPTER::Coupling::Converter& converter,
+                    LINALG::SparseMatrix& dst,
+                    bool exactmatch=true,
+                    bool addmatrix=false);
+
+#if 0
     bool operator()(const LINALG::BlockSparseMatrixBase& fullsrc,
                     const LINALG::SparseMatrix& src,
                     double scale,
@@ -169,6 +180,7 @@ namespace FSI
                     LINALG::SparseMatrix& dst,
                     bool exactmatch=true,
                     bool addmatrix=false);
+#endif
 
     /// setup column map matching between source and destination gids
     /*!

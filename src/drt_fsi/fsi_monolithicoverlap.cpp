@@ -302,7 +302,8 @@ void FSI::MonolithicOverlap::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
                 ADAPTER::Coupling::SlaveConverter(coupsf),
                 mat.Matrix(0,1));
 
-  figtransform_(*blockf,
+  figtransform_(blockf->FullRowMap(),
+                blockf->FullColMap(),
                 fig,
                 timescale,
                 ADAPTER::Coupling::SlaveConverter(coupsf),
@@ -316,7 +317,8 @@ void FSI::MonolithicOverlap::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
   mat.Assign(1,1,View,fii);
 #endif
 
-  aigtransform_(*a,
+  aigtransform_(a->FullRowMap(),
+                a->FullColMap(),
                 aig,
                 1.,
                 ADAPTER::Coupling::SlaveConverter(coupsa),
@@ -338,7 +340,8 @@ void FSI::MonolithicOverlap::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
 
     // reuse transform objects to add shape derivative matrices to structural blocks
 
-    figtransform_(*blockf,
+    figtransform_(blockf->FullRowMap(),
+                  blockf->FullColMap(),
                   fmig,
                   1.,
                   ADAPTER::Coupling::SlaveConverter(coupsf),
@@ -357,7 +360,8 @@ void FSI::MonolithicOverlap::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
 
     // We cannot copy the pressure value. It is not used anyway. So no exact
     // match here.
-    fmiitransform_(*mmm,
+    fmiitransform_(mmm->FullRowMap(),
+                   mmm->FullColMap(),
                    fmii,
                    1.,
                    ADAPTER::Coupling::MasterConverter(coupfa),

@@ -275,11 +275,12 @@ void FSI::MonolithicLagrange::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& m
   // ale
   mat.Assign(2,2,View,aii);
 
-  aigtransform_(*a,             // full src
-                aig,            // src
-                1./timescale,   // scale
+  aigtransform_(a->FullRowMap(),   // full src rowmap
+                a->FullColMap(),   // full src colmap
+                aig,               // src
+                1./timescale,      // scale
                 ADAPTER::Coupling::SlaveConverter(icoupfa_), // converter
-                mat.Matrix(2,1)); // dst
+                mat.Matrix(2,1));  // dst
 
 #if 1
 
@@ -315,20 +316,22 @@ void FSI::MonolithicLagrange::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& m
     mat.Matrix(1,1).Add(fmig,false,1./timescale,1.0);
 
     // insert fmgi, fmii into (1,2)-block using columnmap transformations between fluid and ale
-    fmgitransform_(*mmm,        // full src
-                   fmgi,        // src
-                   1.,          // scale
+    fmgitransform_(mmm->FullRowMap(),  // full src rowmap
+                   mmm->FullColMap(),  // full src colmap
+                   fmgi,               // src
+                   1.,                 // scale
                    ADAPTER::Coupling::MasterConverter(coupfa), // converter
-                   mat.Matrix(1,2), // dst
-                   false,       // exactmatch
-                   false);      // addmatrix
-    fmiitransform_(*mmm,        // full src
-                   fmii,        // src
-                   1.,          // scale
+                   mat.Matrix(1,2),    // dst
+                   false,              // exactmatch
+                   false);             // addmatrix
+    fmiitransform_(mmm->FullRowMap(),  // full src rowmap
+                   mmm->FullColMap(),  // full src colmap
+                   fmii,               // src
+                   1.,                 // scale
                    ADAPTER::Coupling::MasterConverter(coupfa), // converter
-                   mat.Matrix(1,2), // dst
-                   false,       // exactmatch
-                   true);       // addmatrix
+                   mat.Matrix(1,2),    // dst
+                   false,              // exactmatch
+                   true);              // addmatrix
   }
 
   // Done. make sure all blocks are filled.

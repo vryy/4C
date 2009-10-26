@@ -388,7 +388,8 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
   systemmatrix_->Assign(1,1,View,*f);
 
 //  matrix_->Matrix(1,0).Add(*Mud,false,1.0,0.0);
-  sigtransform_(*blocks,
+  sigtransform_(blocks->FullRowMap(),
+                blocks->FullColMap(),
                 *Mud,
                 1./timescale,
                 ADAPTER::Coupling::SlaveConverter(coupsf),

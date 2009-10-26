@@ -758,7 +758,8 @@ void FSI::MonolithicFS::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat)
 
   mat.Assign(0,0,View,*f);
 
-  aigtransform_(*a,
+  aigtransform_(a->FullRowMap(),
+                a->FullColMap(),
                 aig,
                 1./timescale,
                 ADAPTER::Coupling::SlaveConverter(icoupfa_),
@@ -782,7 +783,8 @@ void FSI::MonolithicFS::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat)
 
     const ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
-    fmgitransform_(*mmm,
+    fmgitransform_(mmm->FullRowMap(),
+                   mmm->FullColMap(),
                    fmgi,
                    1.,
                    ADAPTER::Coupling::MasterConverter(coupfa),
@@ -790,7 +792,8 @@ void FSI::MonolithicFS::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat)
                    false,
                    false);
 
-    fmiitransform_(*mmm,
+    fmiitransform_(mmm->FullRowMap(),
+                   mmm->FullColMap(),
                    fmii,
                    1.,
                    ADAPTER::Coupling::MasterConverter(coupfa),
