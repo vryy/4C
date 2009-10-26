@@ -611,7 +611,7 @@ inline void DRT::ELEMENTS::Beam3::quaterniontoangle(const LINALG::Matrix<4,1>& q
     //note that with q(3) == 0 the first three elements of q represent the unit direction vector of the angle
     //according to Crisfield, Vol. 2, equation (16.67)
     for(int i = 0; i<3; i++)
-      theta(i) = q(i) * PI;
+      theta(i) = q(i) * M_PI;
 
     return;
   }
@@ -901,7 +901,7 @@ inline void DRT::ELEMENTS::Beam3::updatecurvature(const LINALG::Matrix<3,3>& Tne
      * in the very beginning of this method. However, for the above reason we assume that theta lies always in the proper
      * region and thus save the related compuational cost and just throw an error if this prerequesite is unexpectedly not
      * satisfied */
-    if(abs_theta > PI)
+    if(abs_theta > M_PI)
       dserror("delta theta exceeds region for which equation (16.147) is valid");
     omegaprime.Scale(2*tan(abs_theta / 2) / abs_theta);
 

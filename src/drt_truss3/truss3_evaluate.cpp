@@ -313,7 +313,7 @@ int DRT::ELEMENTS::Truss3::EvaluateStatForceDamp(ParameterList& params,
                                                 Epetra_SerialDenseMatrix& elemat1)
 {
   // frictional coefficient per unit length (approximated by the one of an infinitely long staff)
-  double zeta = 4 * PI * lrefe_ * params.get<double>("ETA",0.0);
+  double zeta = 4 * M_PI * lrefe_ * params.get<double>("ETA",0.0);
 
   /*the following funcitons are assuming linear interpolation of thermal and drag forces between the nodes
    * comparable to the case stoch_order == 1 for the beam3 element*/

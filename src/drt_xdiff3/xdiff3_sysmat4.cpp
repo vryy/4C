@@ -589,7 +589,7 @@ void SysmatDomain4(
             const double a = 0.5;
             const double b = 1.0;
             const double c = 1.0;
-            const double pi = PI;
+            const double pi = M_PI;
 
 //            rhsint = -2*sin(pi*y/b)*sin(2*pi*z/c) - x*pi*pi*(a - x)*sin(pi*y/b)*sin(2*pi*z/c)/(b*b) - 4*x*pi*pi*(a - x)*sin(pi*y/b)*sin(2*pi*z/c)/(c*c);
 //            rhsint = -2*sin(pi*y/b)*sin(pi*z/c) - x*pi*pi*(a - x)*sin(pi*y/b)*sin(pi*z/c)/(b*b) - x*pi*pi*(a - x)*sin(pi*y/b)*sin(pi*z/c)/(c*c);
@@ -607,7 +607,7 @@ void SysmatDomain4(
             const double y = physpos(1);
             const double a = 0.5;
             const double b = 1.0;
-            const double pi = PI;
+            const double pi = M_PI;
 
             rhsint = - (pi*pi*sin(pi*x/a)*sin(pi*y/b)/(a*a) + pi*pi*sin(pi*x/a)*sin(pi*y/b)/(b*b));
 

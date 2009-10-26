@@ -173,7 +173,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::Initial(
     if(myrank == lmown[0])
     {
       int gid = lm[0];
-      double val = PI*pow(actmat->Diam()/2,2);
+      double val = M_PI*pow(actmat->Diam()/2,2);
       qa0->ReplaceGlobalValues(1,&val,&gid);
     }
     if(myrank == lmown[1])
@@ -185,7 +185,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::Initial(
     if(myrank == lmown[2])
     {
       int gid = lm[2];
-      double val = PI*pow(actmat->Diam()/2,2);
+      double val = M_PI*pow(actmat->Diam()/2,2);
       qa0->ReplaceGlobalValues(1,&val,&gid);
     }
     if(myrank == lmown[3])
@@ -269,7 +269,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::Sysmat(
   {
     const MAT::Cnst_1d_art* actmat = static_cast<const MAT::Cnst_1d_art*>(material.get());
     // Read in initial cross-sectional area at node 1
-    Ao1   = PI*pow(actmat->Diam()/2,2);
+    Ao1   = M_PI*pow(actmat->Diam()/2,2);
     // Read in initial cross-sectional area at node 2
     Ao2   = Ao1;
     // Read in blood density
@@ -606,7 +606,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::Sysmat(
                                                                           
     */
     //Calculate Kr
-    Kr = 8.0 * PI * visc / dens;
+    Kr = 8.0 * M_PI * visc / dens;
 
     //Calculate H
     H(0,0) = 0.0 ;
@@ -725,7 +725,7 @@ bool  DRT::ELEMENTS::ArteryLinExp<distype>::SolveRiemann(
   {
     const MAT::Cnst_1d_art* actmat = static_cast<const MAT::Cnst_1d_art*>(material.get());
     // Read in initial cross-sectional area at node 1
-    Ao1    = PI*pow(actmat->Diam()/2,2);
+    Ao1    = M_PI*pow(actmat->Diam()/2,2);
     // Read in initial cross-sectional area at node 2
     Ao2    = Ao1;
     // Read in blood density
@@ -980,7 +980,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
   {
     const MAT::Cnst_1d_art* actmat = static_cast<const MAT::Cnst_1d_art*>(material.get());
     // Read in initial cross-sectional area at node 1
-    Ao1    = PI*pow(actmat->Diam()/2,2);
+    Ao1    = M_PI*pow(actmat->Diam()/2,2);
     // Read in initial cross-sectional area at node 2
     Ao2    = Ao1;
     // Read in blood density

@@ -369,11 +369,11 @@ inline void DRT::ELEMENTS::Beam2::updatealpha(const LINALG::Matrix<3,2>& xcurr,c
 
   if(beta + numperiodsnew_*2*PI - alphaold_ < -PI)
     numperiodsnew_ ++;
-  else if(beta + numperiodsnew_*2*PI - alphaold_ > PI)
+  else if(beta + numperiodsnew_*2*PI - alphaold_ > M_PI)
     numperiodsnew_ --;
 
 
-  alphanew_ = beta + 2*PI*numperiodsnew_;
+  alphanew_ = beta + 2*M_PI*numperiodsnew_;
 
 }
 
