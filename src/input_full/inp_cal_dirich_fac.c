@@ -217,8 +217,8 @@ void cal_dirich_fac(
 
     case funct_bel:  /* spatial function for beltrami flow */
       /* set some constants */
-      a    = PI/4.0;
-      d    = PI/2.0;
+      a    = M_PI/4.0;
+      d    = M_PI/2.0;
       /* calculate values */
       switch (index)
       {

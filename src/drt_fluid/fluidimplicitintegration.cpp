@@ -2978,8 +2978,8 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
     if (numdim_!=3) dserror("Beltrami flow is a three-dimensional flow!");
 
     // set constants for analytical solution
-    const double a = PI/4.0;
-    const double d = PI/2.0;
+    const double a = M_PI/4.0;
+    const double d = M_PI/2.0;
 
     // loop all nodes on the processor
     for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)

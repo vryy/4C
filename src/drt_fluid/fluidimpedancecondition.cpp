@@ -1053,7 +1053,7 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::DCArteryImpedance(int generat
   //*************************************************************
 
   // calculate dc impedance of this, the present, vessel
-  complex<double> zparentdc = 8.0 * mu * lscale / ( PI*radius*radius*radius ) + zdown;
+  complex<double> zparentdc = 8.0 * mu * lscale / ( M_PI*radius*radius*radius ) + zdown;
   // DEBUG output
   //cout << "generation: " << generation << endl;
   return zparentdc;
@@ -1260,7 +1260,7 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::DCLungImpedance(int generatio
     //*************************************************************
 
     // calculate dc impedance of this, the present vessel
-    complex<double>  zparentdc = 8.0 * mu * lscale / ( PI*radius*radius*radius ) + zdown;
+    complex<double>  zparentdc = 8.0 * mu * lscale / ( M_PI*radius*radius*radius ) + zdown;
     return zparentdc;
 }//FluidImplicitTimeInt::DCLungImpedance
 

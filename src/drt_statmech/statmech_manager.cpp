@@ -484,14 +484,14 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
         
         //angle increment
         incangle = phinew - phiold;
-        if(incangle > PI)
+        if(incangle > M_PI)
         {
-          incangle -= 2*PI;
+          incangle -= 2*M_PI;
           incangle *= -1;
         }
-        if(incangle < -PI)
+        if(incangle < -M_PI)
         {
-          incangle += 2*PI;
+          incangle += 2*M_PI;
           incangle *= -1;
         }
         

@@ -452,11 +452,11 @@ void th2_hflux_steep(DOUBLE *hflux,
   {
     if (hflux[1] > 0.0)
     {
-      *hfluxang = PI/2.0;
+      *hfluxang = M_PI/2.0;
     }
     else if (hflux[1] < 0.0)
     {
-      *hfluxang = -PI/2.0;
+      *hfluxang = -M_PI/2.0;
     }
     else
     {

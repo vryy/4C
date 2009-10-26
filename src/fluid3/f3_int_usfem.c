@@ -647,8 +647,8 @@ void f3_int_beltrami_err(
         x2 = xint[1];
         x3 = xint[2];
 
-        a = PI/4.0;
-        d = PI/2.0;
+        a = M_PI/4.0;
+        d = M_PI/2.0;
 
         if (fdyn->init == 8 )
         {

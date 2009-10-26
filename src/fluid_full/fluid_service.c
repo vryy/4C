@@ -1259,8 +1259,8 @@ void fluid_init(
       numnp_total=actfield->dis[disnum_calc].numnp;
       /* set some constants */
       visc   = mat[actmat].m.fluid->viscosity;
-      a      = PI/4.0;
-      d      = PI/2.0;
+      a      = M_PI/4.0;
+      d      = M_PI/2.0;
       t      = 0.0;
       for (i=0;i<numnp_total;i++) /* loop nodes */
       {

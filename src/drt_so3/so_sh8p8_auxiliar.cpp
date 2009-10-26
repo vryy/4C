@@ -999,9 +999,6 @@ void DRT::ELEMENTS::So_sh8p8::StretchTensor(
   if ( (ut == NULL) and (invut == NULL) )
     dserror("Senseless call: You do not want to compute anything");
 
-  // pi
-//  const double PI = 3.14159265358979323846;
-
   // set identity tensor
   LINALG::Matrix<NUMDIM_,NUMDIM_> it(true);
   for (int i=0; i<NUMDIM_; ++i) it(i,i) = 1.0;

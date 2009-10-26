@@ -2252,8 +2252,8 @@ void FLD::FluidGenAlphaIntegration::SetInitialFlowField(
     }
 
     // set constants for analytical solution
-    double a      = PI/4.0;
-    double d      = PI/2.0;
+    double a      = M_PI/4.0;
+    double d      = M_PI/2.0;
 
     // loop all nodes on the processor
     for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)

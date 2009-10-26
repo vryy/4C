@@ -2619,7 +2619,7 @@ void SCATRA::ScaTraTimIntImpl::SetReinitVelocityField()
     	else if (phiatnode>epsilon)
     		signum = 1.0;
     	else
-    		signum = phiatnode/epsilon + sin(PI*phiatnode/epsilon)/PI;
+    		signum = phiatnode/epsilon + sin(M_PI*phiatnode/epsilon)/M_PI;
 
 	    for (int index=0; index<numdim; index++)
 	    {

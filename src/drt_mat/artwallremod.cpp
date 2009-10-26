@@ -213,7 +213,7 @@ void MAT::ArtWallRemod::Unpack(const vector<char>& data)
         }
       } else { // assign input variables or zeros, respectively
         for (int gp = 0; gp < numgp; ++gp) {
-          gamma_->at(gp) = (params_->gamma_ * PI)/180.0;  // convert to radians
+          gamma_->at(gp) = (params_->gamma_ * M_PI)/180.0;  // convert to radians
           lambda_->at(gp).resize(3);
           for (int i = 0; i < 3; ++i) lambda_->at(gp)[i] = 0.0;
           Epetra_SerialDenseMatrix emptymat(3,3);
@@ -254,7 +254,7 @@ void MAT::ArtWallRemod::Setup(const int numgp, const int eleid, DRT::INPUT::Line
   a2_ = rcp(new vector<vector<double> > (numgp));
   int initflag = params_->init_;
   double gamma = params_->gamma_;
-  gamma = (gamma * PI)/180.0;  // convert to radians
+  gamma = (gamma * M_PI)/180.0;  // convert to radians
   // switch how to setup/initialize fiber directions
   if (initflag==0){
   // fibers aligned in YZ-plane with gamma around Z in global cartesian cosy

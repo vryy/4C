@@ -145,9 +145,9 @@ void MAT::AnisotropicBalzani::Setup(DRT::INPUT::LineDefinition* linedef)
 
     // alignment angles gamma_i are read from first entry of then unnecessary vectors a1 and a2
     double gamma1 = params_->a1_[0];
-    gamma1 = (gamma1 * PI)/180.0;  // convert to radians
+    gamma1 = (gamma1 * M_PI)/180.0;  // convert to radians
     double gamma2 = params_->a2_[0];
-    gamma2 = (gamma2 * PI)/180.0;  // convert to radians
+    gamma2 = (gamma2 * M_PI)/180.0;  // convert to radians
 
     a1_.resize(3);
     a2_.resize(3);
