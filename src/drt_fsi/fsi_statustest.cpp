@@ -27,8 +27,6 @@ Maintainer: Ulrich Kuettler
 
 #include <NOX_Epetra_Vector.H>
 
-#include <Thyra_DefaultProductVector.hpp>
-
 #include "../drt_lib/linalg_utils.H"
 
 
