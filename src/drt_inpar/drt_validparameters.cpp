@@ -2069,13 +2069,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("CONVTOL",1e-6,"Tolerance for iteration over fields",&combustcontrol);
   IntParameter("RESTARTEVRY",20,"Increment for writing restart",&combustcontrol);
   IntParameter("UPRES",1,"Increment for writing solution",&combustcontrol);
-  setStringToIntegralParameter<FLUID_TIMEINTTYPE>("TIMEINTEGR","One_Step_Theta","Time Integration Scheme",
+  setStringToIntegralParameter<INPAR::FLUID::TimeIntegrationScheme>("TIMEINT","One_Step_Theta","Time Integration Scheme",
                                tuple<std::string>(
                                  "Stationary",
                                  "One_Step_Theta"),
-                               tuple<FLUID_TIMEINTTYPE>(
-                                 timeint_stationary,
-                                 timeint_one_step_theta),
+                               tuple<INPAR::FLUID::TimeIntegrationScheme>(
+                                 INPAR::FLUID::timeint_stationary,
+                                 INPAR::FLUID::timeint_one_step_theta),
                                &combustcontrol);
 
   /*----------------------------------------------------------------------*/

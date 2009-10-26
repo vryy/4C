@@ -19,6 +19,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
 #include "../drt_inpar/drt_validparameters.H"
+#include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_fsi.H"
 #include "../drt_inpar/inpar_combust.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -265,7 +266,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
   // -------------------------------------------------------------------
   // additional parameters and algorithm call depending on respective
-  // time-integration (or stationary) scheme
+  // time-integration (or statioTIMnary) scheme
   // -------------------------------------------------------------------
   FLUID_TIMEINTTYPE iop = Teuchos::getIntegralValue<FLUID_TIMEINTTYPE>(fdyn,"TIMEINTEGR");
 

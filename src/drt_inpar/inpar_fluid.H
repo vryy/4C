@@ -23,16 +23,23 @@ namespace INPAR
   namespace FLUID
   {
     /// type of stabilization parameter definition
-    // remark: more definitions to be added in the future
     enum TauType
     {
       tautype_franca_barrenechea_valentin_wall,
       tautype_bazilevs
     };
+
+    /// time integration scheme
+    enum TimeIntegrationScheme
+    {
+      timeint_stationary,
+      timeint_one_step_theta
+    };
+
     //---------------------------------------------
     // some enums which could also be defined here
     //---------------------------------------------
-    // time integration scheme
+    // more time integration schemes
     // linearization strategy convective term
     // type of stabilization strategy (SUPG,PSPG,CSTAB,...)
 
