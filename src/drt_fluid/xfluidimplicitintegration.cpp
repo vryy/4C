@@ -1828,6 +1828,8 @@ void FLD::XFluidImplicitTimeInt::ReadRestart(
   reader.ReadVector(state_.accnp_ ,"accnp");
   reader.ReadVector(state_.accn_ ,"accn");
 
+  cout << state_.velnp_ << endl;
+
   if (discret_->Comm().NumProc() == 1 and gmshdebugout)
   {
     OutputToGmsh(output_test_step, time_);
@@ -2270,7 +2272,7 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
           else
             f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
 
-          //f << time_ << " " << (-1.5*std::sin(0.1*2.0*time_* PI) * PI*0.1) << "  " << elementvalues(0,0) << endl;
+          //f << time_ << " " << (-1.5*std::sin(0.1*2.0*time_* M_PI) * M_PI*0.1) << "  " << elementvalues(0,0) << endl;
           f << time << "  " << elementvalues(0,0) << "\n";
 
           f.close();
@@ -2345,8 +2347,8 @@ void FLD::XFluidImplicitTimeInt::SetInitialFlowField(
     }
 
     // set constants for analytical solution
-    const double a      = PI/4.0;
-    const double d      = PI/2.0;
+    const double a      = M_PI/4.0;
+    const double d      = M_PI/2.0;
 
     // loop all nodes on the processor
     for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
@@ -3232,9 +3234,10 @@ void FLD::XFluidImplicitTimeInt::ProjectOldTimeStepValues(
       }
 
 #if 1
+      bool screen_out = true;
       if ((this->physprob_.fieldset_.find(XFEM::PHYSICS::Pres) != this->physprob_.fieldset_.end()))
       {
-        const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_pressure_projected", Step(), 5, true);
+        const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_pressure_projected", Step(), 5, screen_out);
         std::ofstream gmshfilecontent(filename.c_str());
 
         const XFEM::PHYSICS::Field field = XFEM::PHYSICS::Pres;
@@ -3278,6 +3281,7 @@ void FLD::XFluidImplicitTimeInt::ProjectOldTimeStepValues(
           gmshfilecontent << "};\n";
         }
         gmshfilecontent.close();
+        if (screen_out) std::cout << " done" << endl;
       }
       PlotVectorFieldToGmsh(state_.veln_,  "solution_field_velocity_projected_n","Velocity Solution (Physical) n",false, Step(), Time());
 //      PlotVectorFieldToGmsh(state_.accn_,  "solution_field_acceleration_projected_n","Velocity Solution (Physical) n",false, Step(), Time());
