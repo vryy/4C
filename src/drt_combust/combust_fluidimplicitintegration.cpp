@@ -73,7 +73,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   stepmax_ (params_.get<int>   ("max number timesteps")),
   maxtime_ (params_.get<double>("total time")),
   dta_     (params_.get<double> ("time step size")),
-  dtp_     (params_.get<double> ("time step size")), // Was soll das? Brauch ich den?
+  dtp_     (params_.get<double> ("time step size")),
   timealgo_(params_.get<FLUID_TIMEINTTYPE>("time int algo")),
   theta_   (params_.get<double>("theta")),
   extrapolationpredictor_(params.get("do explicit predictor",true)),
@@ -87,13 +87,15 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   TEUCHOS_FUNC_TIME_MONITOR(" + initialization");
 
   //------------------------------------------------------------------------------------------------
-  // set parameters for stationary simulation
+  // set time integration parameters for stationary simulation
   //------------------------------------------------------------------------------------------------
-  if (timealgo_ == timeint_stationary and params_.get<double>("time step size") != 1.0)
-    dserror("Timestep size (delta t) has to be 1.0 for stationary computations!");
   if (timealgo_ == timeint_stationary)
+  {
+    dta_ = 1.0;
+    dtp_ = 1.0;
     theta_ = 1.0;
-
+    cout0_ << "parameters 'theta' and 'time step size' have been set to 1.0 for stationary problem " << endl;
+  }
   //------------------------------------------------------------------------------------------------
   // future: connect degrees of freedom for periodic boundary conditions                 henke 01/09
   //------------------------------------------------------------------------------------------------
@@ -244,22 +246,21 @@ void FLD::CombustFluidImplicitTimeInt::TimeLoop()
  *------------------------------------------------------------------------------------------------*/
 void FLD::CombustFluidImplicitTimeInt::PrepareTimeStep()
 {
-  // -------------------------------------------------------------------
-  //              set time dependent parameters
-  // -------------------------------------------------------------------
+  //---------------------------- -------------------------------------------------------------------
+  // set time dependent parameters
+  // -----------------------------------------------------------------------------------------------
   step_ += 1;
   time_ += dta_;
 
-  // for bdf2 theta is set by the timestepsizes, 2/3 for const. dt
-  if (timealgo_==timeint_bdf2)
+  if (params_.get<FLUID_TIMEINTTYPE>("time int algo") == timeint_stationary)
   {
-    // for bdf2 theta is set  by the timestepsizes, 2/3 for const. dt
-    if (params_.get<FLUID_TIMEINTTYPE>("time int algo")==timeint_bdf2)
-    {
-      theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
-    }
-
-    // do a backward Euler step for the first timestep
+    dserror("How do you dare calling PrepareTimeStep() for stationary problems!");
+    timealgo_ = timeint_stationary;
+    theta_ = 1.0;
+  }
+  else if (params_.get<FLUID_TIMEINTTYPE>("time int algo") == timeint_bdf2)
+  {
+    // do a backward Euler step for the first time step
     if (step_==1)
     {
       timealgo_ = timeint_one_step_theta;
@@ -267,12 +268,15 @@ void FLD::CombustFluidImplicitTimeInt::PrepareTimeStep()
     }
     else
     {
-      timealgo_ = params_.get<FLUID_TIMEINTTYPE>("time int algo");
-      theta_ = params_.get<double>("theta");
-
+      timealgo_ = timeint_bdf2;
       // for BDF2, theta is set by the time-step sizes, 2/3 for const. dt
-      if (timealgo_==timeint_bdf2) theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
+      theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
     }
+  }
+  else
+  {
+    timealgo_ = params_.get<FLUID_TIMEINTTYPE>("time int algo");
+    theta_ = params_.get<double>("theta");
   }
 }
 
@@ -1859,92 +1863,8 @@ void FLD::CombustFluidImplicitTimeInt::SolveStationaryProblem()
  */
 
   dserror("This is the wrong stationary algorithm! Use COMBUST::Algorithm::SolveStationaryProblem()");
-/*
-  const Epetra_Map* fluidsurface_dofcolmap = cutterdiscret->DofColMap();
-  const Teuchos::RCP<Epetra_Vector> idispcolnp  = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-  const Teuchos::RCP<Epetra_Vector> idispcoln   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-  const Teuchos::RCP<Epetra_Vector> ivelcolnp   = LINALG::CreateVector(*fluidsurface_dofcolmap,true); // one could give a velocity here to have stationary flow over the interface
-  const Teuchos::RCP<Epetra_Vector> ivelcoln    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-  const Teuchos::RCP<Epetra_Vector> ivelcolnm   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-  const Teuchos::RCP<Epetra_Vector> iacccoln    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-  const Teuchos::RCP<Epetra_Vector> itruerescol = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
 
-  IncorporateInterface();
-
-  PrepareNonlinearSolve();
-
-  // time measurement: time loop (stationary) --- start TimeMonitor tm2
-  TEUCHOS_FUNC_TIME_MONITOR(" + time loop");
-
-  // override time integration parameters in order to avoid misuse in
-  // NonLinearSolve method below
-  const double origdta = dta_;
-  dta_= 1.0;
-  theta_ = 1.0;
-
-
-  // -------------------------------------------------------------------
-  // pseudo time loop (continuation loop)
-  // -------------------------------------------------------------------
-  // slightly increasing b.c. values by given (pseudo-)timecurves to reach
-  // convergence also for higher Reynolds number flows
-  // as a side effect, you can do parameter studies for different Reynolds
-  // numbers within only ONE simulation when you apply a proper
-  // (pseudo-)timecurve
-
-  while (step_< stepmax_)
-  {
-   // -------------------------------------------------------------------
-   //              set (pseudo-)time dependent parameters
-   // -------------------------------------------------------------------
-   step_ += 1;
-   time_ += origdta;
-   // -------------------------------------------------------------------
-   //                         out to screen
-   // -------------------------------------------------------------------
-   if (myrank_==0)
-    {
-      printf("Stationary Fluid Solver - STEP = %4d/%4d \n",step_,stepmax_);
-    }
-
-    // -------------------------------------------------------------------
-    //         evaluate dirichlet and neumann boundary conditions
-    // -------------------------------------------------------------------
-    {
-      ParameterList eleparams;
-
-      // other parameters needed by the elements
-      eleparams.set("total time",time_);
-      eleparams.set("delta time",origdta);
-      eleparams.set("thsl",1.0); // no timefac in stationary case
-
-      // set vector values needed by elements
-      discret_->ClearState();
-      discret_->SetState("velnp",state_.velnp_);
-      // predicted dirichlet values
-      // velnp then also holds prescribed new dirichlet values
-      discret_->EvaluateDirichlet(eleparams,state_.velnp_,null,null,null,dbcmaps_);
-      discret_->ClearState();
-
-     // evaluate Neumann b.c.
-     neumann_loads_->PutScalar(0.0);
-     discret_->EvaluateNeumann(eleparams,*neumann_loads_);
-     discret_->ClearState();
-   }
-
-    // -------------------------------------------------------------------
-    //                     solve nonlinear equation system
-    // -------------------------------------------------------------------
-    NonlinearSolve();
-
-    // -------------------------------------------------------------------
-    //                         output of solution
-    // -------------------------------------------------------------------
-    StatisticsAndOutput();
-
-  } // end of pseudo time loop
-*/
-} // CombustFluidImplicitTimeInt::SolveStationaryProblem
+}
 
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |

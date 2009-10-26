@@ -192,6 +192,76 @@ void COMBUST::Algorithm::TimeLoop()
 void COMBUST::Algorithm::SolveStationaryProblem()
 {
   dserror("Der Algorithmus für statische Verbrennungprobleme kann noch nix!");
+
+  // volume of minus domain before simulation
+  const double volume_start = interfacehandle_->ComputeVolumeMinus();
+
+  fgiter_ = 0;
+  // fgnormgfunc = large value, determined in Input file
+  fgvelnormL2_ = 1.0;
+  // fgnormfluid = large value
+  fggfuncnormL2_ = 1.0;
+
+  if (Comm().MyPID()==0)
+  {
+    //cout<<"---------------------------------------  time step  ------------------------------------------\n";
+    printf("--------Stationary-Combustion-------  time step %2d ----------------------------------------\n",Step());
+    printf("TIME: %11.4E/%11.4E  DT = %11.4E STEP = %4d/%4d \n",Time(),MaxTime(),Dt(),Step(),NStep());
+  }
+
+  // check if ScaTraField().initialvelset == true
+  /* remark: initial velocity field has been transfered to scalar transport field in constructor of
+   * ScaTraFluidCouplingAlgorithm (initialvelset_ == true). Time integration schemes, such as
+   * the one-step-theta scheme, are thus initialized correctly.
+   */
+
+  // check time integration schemes in single fields
+  if (FluidField().TimIntScheme() != timeint_stationary)
+    dserror("Fluid time integration scheme is not stationary");
+  //TODO: implement TimIntScheme in Scatra
+//  if (ScaTraField().TimIntScheme() != timeint_stationary)
+//    dserror("Scatra time integration scheme is not stationary");
+
+  // Fluid-G-function-Interaction loop
+  while (NotConvergedFGI())
+  {
+    // prepare Fluid-G-function iteration
+    PrepareFGIteration();
+
+    // solve nonlinear Navier-Stokes system
+    DoFluidField();
+
+    // solve linear G-function equation
+    DoGfuncField();
+
+    // update field vectors
+    UpdateFGIteration();
+
+  } // Fluid-G-function-Interaction loop
+
+//    if (ScaTraField().Step() % reinitinterval_ == 0)
+//    {
+//      // reinitialize G-function
+//      ReinitializeGfunc(reinitializationaction_);
+//    }
+
+  // write output to screen and files
+  Output();
+
+  // final volume of domain minus
+  const double volume_end = interfacehandle_->ComputeVolumeMinus();
+  // compute mass loss
+  double mass_change = fabs(volume_end - volume_start) / volume_start;
+  if (Comm().MyPID()==0)
+  {
+    std::cout << "\n=======================================\n" << endl;
+    std::cout << "              Mass calculation         \n" << endl;
+    std::cout << "initial mass: " << volume_start << endl;
+    std::cout << "final mass:   " << volume_end << endl;
+    std::cout << "mass change:  " << mass_change << endl;
+    std::cout << "\n=======================================\n" << endl;
+  }
+
   return;
 }
 

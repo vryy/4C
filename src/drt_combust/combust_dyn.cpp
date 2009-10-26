@@ -20,6 +20,7 @@ Maintainer: Florian Henke
 #endif
 
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_inpar/inpar_fluid.H"
 #include "combust_dyn.H"
 #include "combust_utils.H"
 #include "combust_algorithm.H"
@@ -113,9 +114,9 @@ void combust_dyn()
   //------------------------------------------------------------------------------------------------
   // call one of the available time integration schemes
   //------------------------------------------------------------------------------------------------
-  FLUID_TIMEINTTYPE timeintscheme = Teuchos::getIntegralValue<FLUID_TIMEINTTYPE>(combustdyn,"TIMEINTEGR");
+  INPAR::FLUID::TimeIntegrationScheme timeintscheme = Teuchos::getIntegralValue<INPAR::FLUID::TimeIntegrationScheme>(combustdyn,"TIMEINT");
 
-  if (timeintscheme == timeint_one_step_theta)
+  if (timeintscheme == INPAR::FLUID::timeint_one_step_theta)
   {
     // solve a dynamic combustion problem
     combust_->TimeLoop();
@@ -126,7 +127,7 @@ void combust_dyn()
      * FluidCombust immer ein CombustFluidImplicitTimeInt!
      */
   }
-  else if (timeintscheme == timeint_stationary)
+  else if (timeintscheme == INPAR::FLUID::timeint_stationary)
   {
     // solve a static combustion problem
     combust_->SolveStationaryProblem();

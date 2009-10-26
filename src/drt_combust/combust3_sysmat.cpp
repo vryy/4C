@@ -2970,7 +2970,7 @@ void Sysmat(
       break;
       case INPAR::COMBUST::combusttype_twophaseflow:
       {
-        std::cout << "********************* two-phase flow *********************" << std::endl;
+//        std::cout << "********************* two-phase flow *********************" << std::endl;
         SysmatTwoPhase<DISTYPE,ASSTYPE,NUMDOF>(
             ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, ephi, etau,
             material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, assembler);

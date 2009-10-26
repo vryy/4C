@@ -336,8 +336,8 @@ protected:
   //@}
 
   //! @name time step sizes
-  double dta_;
-  double dtp_;
+  double dta_;    ///< time step size
+  double dtp_;    ///< time step size (used for BDF2 time integration scheme)
   //@}
 
   /// time algorithm flag
