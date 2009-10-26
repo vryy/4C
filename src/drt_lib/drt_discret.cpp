@@ -114,6 +114,30 @@ void DRT::Discretization::AddElement(RCP<DRT::Element> ele)
 }
 
 /*----------------------------------------------------------------------*
+ |Calls Reset() on each processor if not Filled() == true on each proc   |
+ |                                                            cyron 10/09|
+ *----------------------------------------------------------------------*/
+void DRT::Discretization::CheckFilledGlobally()
+{
+  //global filled flag (is true / one if and only if filled_ == true on each processor
+  int globalfilled = 0;
+  
+  //convert filled_ flag on this procesor  into integer (no Epetra communicator for type bool)
+  int localfilled = (int)filled_;
+  
+  /*the global filled flag is set to the minimal value of any local filled flag
+   * i.e. if on any processor filled_ == false, the flag globalfilled is set to
+   * zero*/
+  Comm().MinAll(&localfilled,&globalfilled,1);
+  
+  //if not Filled() == true on all the processors call Reset()
+  if(!globalfilled)
+    Reset();
+    
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  Add a node (public)                                      mwgee 11/06|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::AddNode(RCP<DRT::Node> node)
