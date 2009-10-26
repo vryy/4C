@@ -201,7 +201,8 @@ OBJS_DRT_STRUCTURE      = \
                 src/drt_structure/strudyn_direct.o \
                 src/drt_structure/stru_static_drt.o \
                 src/drt_structure/stru_resulttest.o \
-                src/drt_structure/str_invanalysis.o
+                src/drt_structure/str_invanalysis.o \
+                src/drt_structure/structure_utils_mapextractor.o
 #-------------------------------------------------------constraint drivers
 OBJS_DRT_CONSTRAINT      = \
                 src/drt_constraint/constraint_manager.o \
@@ -360,6 +361,7 @@ OBJS_DRT_ADAPT= src/drt_adapter/adapter_algorithmbase.o \
                 src/drt_adapter/adapter_structure_contactstrugenalpha.o \
                 src/drt_adapter/adapter_structure_timint.o \
                 src/drt_adapter/adapter_structure_constrained.o \
+                //src/drt_adapter/adapter_structure_lung.o \
                 src/drt_adapter/adapter_structure_wrapper.o \
                 src/drt_adapter/adapter_thermo.o \
                 src/drt_adapter/adapter_thermo_timint.o \
