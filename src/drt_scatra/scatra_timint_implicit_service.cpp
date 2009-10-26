@@ -1173,9 +1173,8 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
     // parameters for stabilization
     eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
 
-    // set vector values needed by elements
+    // clear state
     discret_->ClearState();
-    if (turbmodel_) discret_->SetState("subgrid diffusivity",subgrdiff_);
 
     // add element parameters according to time-integration scheme
     AddSpecificTimeIntegrationParameters(eleparams);

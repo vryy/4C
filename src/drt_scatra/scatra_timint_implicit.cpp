@@ -1072,14 +1072,9 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
 
   // set vector values needed by elements
   discret_->ClearState();
-  if (turbmodel_) discret_->SetState("subgrid diffusivity",subgrdiff_);
 
-  // AVM3 separation
-  if (incremental_ and fssgd_ != INPAR::SCATRA::fssugrdiff_no)
-  {
-    discret_->SetState("subgrid diffusivity",subgrdiff_);
-    AVM3Separation();
-  }
+  // AVM3 separation for incremental solver: get fine-scale part of scalar
+  if (incremental_ and fssgd_ != INPAR::SCATRA::fssugrdiff_no) AVM3Separation();
 
   // add element parameters according to time-integration scheme
   AddSpecificTimeIntegrationParameters(eleparams);
@@ -1088,7 +1083,8 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   discret_->Evaluate(eleparams,sysmat_,null,residual_,subgrdiff_,null);
   discret_->ClearState();
 
-  // AVM3 scaling
+  // AVM3 scaling for non-incremental solver: scaling of normalized AVM3-based
+  // fine-scale subgrid-diffusivity matrix by subgrid diffusivity
   if (not incremental_ and fssgd_ != INPAR::SCATRA::fssugrdiff_no)
     AVM3Scaling(eleparams);
 
