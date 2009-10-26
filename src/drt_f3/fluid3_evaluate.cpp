@@ -824,8 +824,8 @@ void DRT::ELEMENTS::Fluid3::f3_int_beltrami_err(
   const double t = params.get("total time",-1.0);
   dsassert (t >= 0.0, "beltrami: no total time for error calculation");
 
-  const double a      = PI/4.0;
-  const double d      = PI/2.0;
+  const double a      = M_PI/4.0;
+  const double d      = M_PI/2.0;
 
   // get viscosity
   dsassert(material->MaterialType()==INPAR::MAT::m_fluid, "Material is not Newtonian Fluid");

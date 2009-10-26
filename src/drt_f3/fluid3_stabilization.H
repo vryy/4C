@@ -163,7 +163,7 @@ namespace UTILS
     const double vol = wquad * xjm.Determinant();
 
     // get element length for tau_Mp/tau_C: volume-equival. diameter/sqrt(3)
-    const double hk = pow((6.*vol/PI),(1.0/3.0))/sqrt(3.0);
+    const double hk = pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
 
     return hk;
   }

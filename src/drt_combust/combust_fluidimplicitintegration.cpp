@@ -1146,7 +1146,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
           else
             f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
 
-          //f << time_ << " " << (-1.5*std::sin(0.1*2.0*time_* PI) * PI*0.1) << "  " << elementvalues(0,0) << endl;
+          //f << time_ << " " << (-1.5*std::sin(0.1*2.0*time_* M_PI) * M_PI*0.1) << "  " << elementvalues(0,0) << endl;
           f << time_ << "  " << elementvalues(0) << "\n";
 
           f.close();
@@ -1552,7 +1552,7 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
           else
             f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
 
-          //f << time_ << " " << (-1.5*std::sin(0.1*2.0*time_* PI) * PI*0.1) << "  " << elementvalues(0,0) << endl;
+          //f << time_ << " " << (-1.5*std::sin(0.1*2.0*time_* M_PI) * M_PI*0.1) << "  " << elementvalues(0,0) << endl;
           f << time_ << "  " << elementvalues(0,0) << "\n";
 
           f.close();
@@ -1603,8 +1603,8 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
     }
 
     // set constants for analytical solution
-    const double a      = PI/4.0;
-    const double d      = PI/2.0;
+    const double a      = M_PI/4.0;
+    const double d      = M_PI/2.0;
 
     // loop all nodes on the processor
     for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
