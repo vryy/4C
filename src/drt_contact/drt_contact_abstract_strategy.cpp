@@ -327,6 +327,10 @@ void CONTACT::AbstractStrategy::StoreNodalQuantities(AbstractStrategy::QuantityT
             (*vectorinterface)[locindex[dof]] = 0.0;
 #endif // #ifndef CONTACTPSEUDO2D
 
+          // explicity set global Lag. Mult. to zero for inactive nodes
+          if (cnode->Active()==false)
+            (*vectorinterface)[locindex[dof]] = 0.0;
+                    
           // store updated LM into node
           cnode->lm()[dof] = (*vectorinterface)[locindex[dof]];
           break;
