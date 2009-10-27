@@ -1770,30 +1770,22 @@ void FLD::XFluidImplicitTimeInt::ReadRestart(
 
   const int output_test_step = 999999;
 
-  const Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih =
-    rcp(new XFEM::InterfaceHandleXFSI(discret_, cutterdiscret));
+  ih_np_ = rcp(new XFEM::InterfaceHandleXFSI(discret_, cutterdiscret));
   if (gmshdebugout)
-    ih->toGmsh(output_test_step);
+    ih_np_->toGmsh(output_test_step);
 
   // apply enrichments
-  std::set<XFEM::PHYSICS::Field> fieldset;
-  fieldset.insert(XFEM::PHYSICS::Velx);
-  fieldset.insert(XFEM::PHYSICS::Vely);
-  fieldset.insert(XFEM::PHYSICS::Velz);
-  fieldset.insert(XFEM::PHYSICS::Pres);
-  const XFLUID::FluidElementAnsatz elementAnsatz;
   const Teuchos::RCP<XFEM::DofManager> dofmanager =
-    rcp(new XFEM::DofManager(ih, fieldset, elementAnsatz, xparams_));
+      rcp(new XFEM::DofManager(ih_np_, physprob_.fieldset_, *physprob_.elementAnsatzp_, xparams_));
 
   // save dofmanager to be able to plot Gmsh stuff in Output()
   dofmanagerForOutput_ = dofmanager;
 
   // tell elements about the dofs and the integration
-  TransferDofInformationToElements(ih, dofmanager);
+  TransferDofInformationToElements(ih_np_, dofmanager);
 
   // print global and element dofmanager to Gmsh
-  if (gmshdebugout)
-    dofmanager->toGmsh(output_test_step);
+  dofmanager->toGmsh(step_);
 
 
   // get old dofmap, compute new one and get the new one, too
@@ -2232,22 +2224,22 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
             IO::GMSH::cellWithVectorFieldToStream(
                 cell->Shape(), cellvalues, cell->CellNodalPosXYZ(), gmshfilecontent);
           }
-          const GEO::BoundaryIntCells& boundaryintcells =
-              ih_np_->GetBoundaryIntCells(actele->Id());
-          // draw boundary integration cells with values
-          for (GEO::BoundaryIntCells::const_iterator cell =
-            boundaryintcells.begin(); cell != boundaryintcells.end(); ++cell)
-          {
-            LINALG::SerialDenseMatrix cellvalues(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-
-            const DRT::Element* boundaryele = ih_np_->GetBoundaryEle(cell->GetSurfaceEleGid());
-            const int label = ih_np_->GetLabelPerBoundaryElementId(boundaryele->Id());
-
+//          const GEO::BoundaryIntCells& boundaryintcells =
+//              ih_np_->GetBoundaryIntCells(actele->Id());
+//          // draw boundary integration cells with values
+//          for (GEO::BoundaryIntCells::const_iterator cell =
+//            boundaryintcells.begin(); cell != boundaryintcells.end(); ++cell)
+//          {
+//            LINALG::SerialDenseMatrix cellvalues(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+//
+//            const DRT::Element* boundaryele = ih_np_->GetBoundaryEle(cell->GetSurfaceEleGid());
+//            const int label = ih_np_->GetLabelPerBoundaryElementId(boundaryele->Id());
+//
 //            XFEM::computeVectorCellNodeValues(*actele, ih_np_, eledofman,
 //                *cell, XFEM::PHYSICS::Velx, label, elementvalues, cellvalues);
 //            IO::GMSH::cellWithVectorFieldToStream(
 //                cell->Shape(), cellvalues, cell->CellNodalPosXYZ(), gmshfilecontent);
-          }
+//          }
 
           // draw uncut element
           {
@@ -3056,8 +3048,8 @@ static void DoDirichletCondition(
     const unsigned numdf = dofs.size();
     if (numdf == 0)
       continue;
-    if (numdf != 4)
-      dserror("not implemented");
+//    if (numdf != 4)
+//      dserror("numdf != 4: case not implemented");
 
     // is node within old structure domain
     const int label = ih.PositionWithinConditionN(LINALG::Matrix<3,1>(actnode->X()));
