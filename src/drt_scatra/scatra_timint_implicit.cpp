@@ -1239,7 +1239,7 @@ Teuchos::RCP<DRT::Discretization> fluiddis)
 
   // boolean indicating whether acceleration vector exists
   // -> if yes, subgrid-scale velocity may need to be computed on element level
-  bool sgvelswitch = fluidacc != Teuchos::null;
+  bool sgvelswitch = (fluidacc != Teuchos::null);
 
   // loop over all local nodes of scatra discretization
   for (int lnodeid=0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
