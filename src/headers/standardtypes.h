@@ -18,6 +18,9 @@ Maintainer: Michael Gee
  | includes of Ansi C standard headers                   m.gee 8/00    |
  *----------------------------------------------------------------------*/
 #include "math.h"
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 #include "stdlib.h"
 #include "stdio.h"
 #include "string.h"
