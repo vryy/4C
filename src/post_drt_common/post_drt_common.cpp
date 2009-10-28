@@ -462,7 +462,10 @@ void PostProblem::read_meshes()
         reader.ReadElementData(step, comm_->NumProc(), comm_->MyPID());
       currfield.discretization()->UnPackMyElements(element_data);
 
-      for (SYMBOL* condition = map_find_symbol(control_table_,"condition");
+      RCP<vector<char> > cond_pbcsline;
+      RCP<vector<char> > cond_pbcssurf;
+
+      for (SYMBOL* condition = map_find_symbol(&control_table_,"condition");
            condition!=NULL;
            condition = condition->next)
       {
@@ -473,7 +476,6 @@ void PostProblem::read_meshes()
         // read periodic boundary conditions if available
         if (string(condname)=="LinePeriodic")
         {
-          RCP<vector<char> > cond_pbcsline;
           if (comm_->MyPID()==0)
             cond_pbcsline = reader.ReadCondition(step, comm_->NumProc(), comm_->MyPID(), "LinePeriodic");
           else
@@ -482,7 +484,6 @@ void PostProblem::read_meshes()
         }
         else if (string(condname)=="SurfacePeriodic")
         {
-          RCP<vector<char> > cond_pbcssurf;
           if (comm_->MyPID()==0)
             cond_pbcssurf = reader.ReadCondition(step, comm_->NumProc(), comm_->MyPID(), "SurfacePeriodic");
           else
@@ -558,7 +559,9 @@ void PostProblem::read_meshes()
       // -------------------------------------------------------------------
       // connect degrees of freedom for periodic boundary conditions
       // -------------------------------------------------------------------
-      if(!cond_pbcssurf->empty() || !cond_pbcsline->empty())
+      // parallel execution?!
+      if ((cond_pbcssurf!=Teuchos::null and not cond_pbcssurf->empty()) or
+          (cond_pbcsline!=Teuchos::null and not cond_pbcsline->empty()))
       {
         PeriodicBoundaryConditions::PeriodicBoundaryConditions pbc(currfield.discretization());
         pbc.UpdateDofsForPeriodicBoundaryConditions();
