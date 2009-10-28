@@ -462,13 +462,36 @@ void PostProblem::read_meshes()
         reader.ReadElementData(step, comm_->NumProc(), comm_->MyPID());
       currfield.discretization()->UnPackMyElements(element_data);
 
-      // read periodic boundary conditions if available
-      RCP<vector<char> > cond_pbcsline =
-        reader.ReadCondition(step, comm_->NumProc(), comm_->MyPID(), "LinePeriodic");
-      currfield.discretization()->UnPackCondition(cond_pbcsline, "LinePeriodic");
-      RCP<vector<char> > cond_pbcssurf =
-        reader.ReadCondition(step, comm_->NumProc(), comm_->MyPID(), "SurfacePeriodic");
-      currfield.discretization()->UnPackCondition(cond_pbcssurf, "SurfacePeriodic");
+      for (SYMBOL* condition = map_find_symbol(control_table_,"condition");
+           condition!=NULL;
+           condition = condition->next)
+      {
+        char* condname;
+        if (not symbol_get_string(condition,&condname))
+          dserror("condition name expected");
+
+        // read periodic boundary conditions if available
+        if (string(condname)=="LinePeriodic")
+        {
+          RCP<vector<char> > cond_pbcsline;
+          if (comm_->MyPID()==0)
+            cond_pbcsline = reader.ReadCondition(step, comm_->NumProc(), comm_->MyPID(), "LinePeriodic");
+          else
+            cond_pbcsline = Teuchos::rcp(new std::vector<char>());
+          currfield.discretization()->UnPackCondition(cond_pbcsline, "LinePeriodic");
+        }
+        else if (string(condname)=="SurfacePeriodic")
+        {
+          RCP<vector<char> > cond_pbcssurf;
+          if (comm_->MyPID()==0)
+            cond_pbcssurf = reader.ReadCondition(step, comm_->NumProc(), comm_->MyPID(), "SurfacePeriodic");
+          else
+            cond_pbcssurf = Teuchos::rcp(new std::vector<char>());
+          currfield.discretization()->UnPackCondition(cond_pbcssurf, "SurfacePeriodic");
+        }
+        else
+          dserror("condition name '%s' not supported", condname);
+      }
 
       // read knot vectors for nurbs discretisations
       if(spatial_approx_=="Nurbs")
@@ -478,8 +501,11 @@ void PostProblem::read_meshes()
         =
           dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*currfield.discretization()));
 
-        RCP<vector<char> > packed_knots =
-          reader.ReadKnotvector(step);
+        RCP<vector<char> > packed_knots;
+        if (comm_->MyPID()==0)
+          packed_knots = reader.ReadKnotvector(step);
+        else
+          packed_knots = Teuchos::rcp(new std::vector<char>());
 
         RefCountPtr<DRT::NURBS::Knotvector> knots=Teuchos::rcp(new DRT::NURBS::Knotvector());
 

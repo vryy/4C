@@ -847,6 +847,11 @@ void IO::DiscretizationWriter::WriteCondition(const string condname) const
   // which means it is not used -> so no dserror() here
   if(!block->empty())
   {
+    if (dis_->Comm().MyPID() == 0)
+    {
+      output_->ControlFile() << "    condition = \"" << condname << "\"\n";
+    }
+
     hsize_t dim = static_cast<hsize_t>(block->size());
     const herr_t status = H5LTmake_dataset_char(
             meshgroup_,
@@ -1000,7 +1005,7 @@ void IO::DiscretizationWriter::WriteElementData()
  *----------------------------------------------------------------------*/
 void IO::DiscretizationWriter::WriteKnotvector() const
 {
-  #ifdef BINIO
+#ifdef BINIO
   // try a dynamic cast of the discretisation to a nurbs discretisation
   DRT::NURBS::NurbsDiscretization* nurbsdis
     =
@@ -1034,7 +1039,7 @@ void IO::DiscretizationWriter::WriteKnotvector() const
       dserror("block empty --- couldn't write knots\n");
     }
   }
-  #endif
+#endif
 
   return;
 }

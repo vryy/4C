@@ -18,7 +18,19 @@ Maintainer: Ulrich Kuettler
 #ifdef CCADISCRET
 #ifdef BINIO
 
+#define H5Gcreate_vers 1
+#define H5Dopen_vers 1
+
+#include <hdf5.h>
+
+#if H5_VERS_MINOR==6
 #include <H5LT.h>
+#elif H5_VERS_MINOR==8
+#include <hdf5_hl.h>
+#else
+#error Unsupported hdf5 version
+#endif
+
 #include <string>
 #include <sstream>
 #include <vector>

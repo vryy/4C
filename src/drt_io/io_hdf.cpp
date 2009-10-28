@@ -118,28 +118,9 @@ Teuchos::RCP<std::vector<char> > IO::HDFReader::ReadCondition(
   const int start =0;
   const int end   =1;
 
-  //////////////////////
-  // This is illegal code! It needs to be removed!
+  Teuchos::RCP<std::vector<char> > block;
+  block = ReadCharData(path.str(),start,end);
 
-  /* Save old error handler */
-  herr_t (*old_func)(void*);
-  void *old_client_data;
-  H5Eget_auto(&old_func, &old_client_data);
-
-  /* Turn off error handling */
-  H5Eset_auto(NULL, NULL);
-
-  /* Probe. Likely to fail, but that's okay */
-  const hid_t dataset = H5Dopen(files_[0],(path.str()).c_str());
-
-  /* Restore previous error handler */
-  H5Eset_auto(old_func, old_client_data);
-
-  Teuchos::RCP<std::vector<char> > block = Teuchos::rcp(new std::vector<char>());
-  if (dataset > -1)
-  {
-    block = ReadCharData(path.str(),start,end);
-  }
   return block;
 }
 
@@ -162,25 +143,8 @@ Teuchos::RCP<std::vector<char> > IO::HDFReader::ReadKnotvector(
   const int start =0;
   const int end   =1;
 
-  /* Save old error handler */
-  herr_t (*old_func)(void*);
-  void *old_client_data;
-  H5Eget_auto(&old_func, &old_client_data);
-
-  /* Turn off error handling */
-  H5Eset_auto(NULL, NULL);
-
-  /* Probe. Likely to fail, but that's okay */
-  const hid_t dataset = H5Dopen(files_[0],(path.str()).c_str());
-
-  /* Restore previous error handler */
-  H5Eset_auto(old_func, old_client_data);
-
-  Teuchos::RCP<std::vector<char> > block = Teuchos::rcp(new std::vector<char>());
-  if (dataset > -1)
-  {
-    block = ReadCharData(path.str(),start,end);
-  }
+  Teuchos::RCP<std::vector<char> > block;
+  block = ReadCharData(path.str(),start,end);
 
   return block;
 }
