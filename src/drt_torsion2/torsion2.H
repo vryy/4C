@@ -60,7 +60,6 @@ public:
   //! @name Friends
   friend class Torsion2Register;
   friend class StatMechManager;
-  friend void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& dis);
   friend void StatMechTime::Integrate();
 
 
