@@ -79,6 +79,33 @@ void DRT::Discretization::Reset(bool killdofs)
     fool->second->ClearGeometry();
   }
 
+  // Remove ghost nodes and elements as well. Just to make sure.
+
+  int myrank = comm_->MyPID();
+  for (std::map<int,Teuchos::RCP<DRT::Node> >::iterator curr=node_.begin(); curr!=node_.end();)
+  {
+    if (curr->second->Owner() != myrank)
+    {
+      node_.erase(curr++);
+    }
+    else
+    {
+      ++curr;
+    }
+  }
+
+  for (std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr=element_.begin(); curr!=element_.end();)
+  {
+    if (curr->second->Owner() != myrank)
+    {
+      element_.erase(curr++);
+    }
+    else
+    {
+      ++curr;
+    }
+  }
+
   return;
 }
 
