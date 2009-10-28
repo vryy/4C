@@ -47,7 +47,7 @@ StatMechTime::StatMechTime(ParameterList& params,
 StruGenAlpha(params,dis,solver,output)
 {
   Teuchos::RCP<LINALG::SparseMatrix> stiff = SystemMatrix();
-  statmechmanager_ = rcp(new StatMechManager(params,dis,stiff));
+  statmechmanager_ = rcp(new StatMechManager(params,dis));
 
   //maximal number of random numbers to be generated per time step for any column map element of this processor
   int randomnumbersperlocalelement = 0;
@@ -187,7 +187,7 @@ void StatMechTime::Integrate()
     
     /*special update for statistical mechanics; this output has to be handled seperately from the time integration scheme output
      * as it may take place independently on writing geometric output data in a specific time step or not*/
-    statmechmanager_->StatMechUpdate(dt,*dis_);
+    statmechmanager_->StatMechUpdate(dt,*dis_,stiff_);
     
     statmechmanager_->StatMechOutput(params_,ndim,time,i,dt,*dis_,*fint_);
 

@@ -31,7 +31,7 @@ class StatMechManager
 public:
 
   //! \brief Standard Constructor
-  explicit StatMechManager(ParameterList& params, DRT::Discretization& discret, RCP<LINALG::SparseMatrix>& stiff);
+  explicit StatMechManager(ParameterList& params, DRT::Discretization& discret);
 
   //! \brief Destructor
   virtual ~StatMechManager() {};
@@ -46,7 +46,7 @@ public:
   void StatMechReadRestart(IO::DiscretizationReader& reader);
 
   //! \brief special update for statistical mechanics including setting and deleting crosslinkers in the discretization
-  void StatMechUpdate(const double dt, const Epetra_Vector& disrow);
+  void StatMechUpdate(const double dt, const Epetra_Vector& disrow,RCP<LINALG::SparseOperator>& stiff);
 
   //! \brief initializing special output for statistical mechanics by looking for a suitable name of the outputfile and setting up an empty file with this name
   void StatMechInitOutput(const int ndim, const double& dt);
@@ -108,9 +108,6 @@ protected:
 
   //! \brief reference to current discretization
   DRT::Discretization& discret_;
-
-  //! \brief reference to current stiffness matrix
-  RCP<LINALG::SparseMatrix>& stiff_;
 
   //! \brief storing for each row map node the column map LID of all proper neighbour nodes
   std::vector< std::vector<int> >  crosslinkerneighbours_;

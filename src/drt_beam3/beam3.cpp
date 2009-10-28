@@ -155,21 +155,14 @@ void DRT::ELEMENTS::Beam3::Pack(vector<char>& data) const
   AddtoPack(data,jacobimass_);
   AddtoPack(data,jacobinode_);
   AddtoPack(data,crosssec_);
-  AddtoPack(data,crosssecshear_);
-  
+  AddtoPack(data,crosssecshear_); 
   AddtoPack<3,1>(data,curvnew_);
   AddtoPack<3,1>(data,curvconv_);
   AddtoPack<3,1>(data,curvold_);
-
-  
-
- 
-  
   AddtoPack(data,isinit_);
   AddtoPack(data,Irr_);
   AddtoPack(data,Iyy_);
   AddtoPack(data,Izz_);
-  
   AddtoPack<4,1>(data,Qconv_);
   AddtoPack<4,1>(data,Qnew_);
   AddtoPack<4,1>(data,Qold_);
@@ -180,16 +173,8 @@ void DRT::ELEMENTS::Beam3::Pack(vector<char>& data) const
   AddtoPack<3,1>(data,thetaprimeconv_);
   AddtoPack<3,1>(data,thetaprimeold_);
 
-
   return;
 }
-
-
-
-
-
-
-
 
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
@@ -208,26 +193,19 @@ void DRT::ELEMENTS::Beam3::Unpack(const vector<char>& data)
   Element::Unpack(basedata);
   
   
-  //extract all class variables of beam2r element
-  
+  //extract all class variables of beam3 element 
   ExtractfromPack(position,data,jacobi_);
   ExtractfromPack(position,data,jacobimass_);
   ExtractfromPack(position,data,jacobinode_);
   ExtractfromPack(position,data,crosssec_);
   ExtractfromPack(position,data,crosssecshear_);
-  
-  
   ExtractfromPack<3,1>(position,data,curvnew_);
   ExtractfromPack<3,1>(position,data,curvconv_);
   ExtractfromPack<3,1>(position,data,curvold_);
-
-  
-
   ExtractfromPack(position,data,isinit_);
   ExtractfromPack(position,data,Irr_);
   ExtractfromPack(position,data,Iyy_);
-  ExtractfromPack(position,data,Izz_);
-  
+  ExtractfromPack(position,data,Izz_); 
   ExtractfromPack<4,1>(position,data,Qconv_);
   ExtractfromPack<4,1>(position,data,Qnew_);
   ExtractfromPack<4,1>(position,data,Qold_);
@@ -237,7 +215,6 @@ void DRT::ELEMENTS::Beam3::Unpack(const vector<char>& data)
   ExtractfromPack<3,1>(position,data,thetaprimenew_);
   ExtractfromPack<3,1>(position,data,thetaprimeconv_);
   ExtractfromPack<3,1>(position,data,thetaprimeold_);
-
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);

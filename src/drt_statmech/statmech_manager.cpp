@@ -44,7 +44,7 @@ Maintainer: Christian Cyron
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             cyron 09/08|
  *----------------------------------------------------------------------*/
-StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& discret, RCP<LINALG::SparseMatrix>& stiff):
+StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& discret):
   statmechparams_( DRT::Problem::Instance()->StatisticalMechanicsParams() ),
   maxtime_(params.get<double>("max time",0.0)),
   starttimeoutput_(-1.0),
@@ -53,8 +53,7 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
   rlink_(params.get<double>("R_LINK",0.0)),
   basisnodes_(0),
   outputfilenumber_(-1),
-  discret_(discret),
-  stiff_(stiff)
+  discret_(discret)
 { 
   //initialize random generator on this processor
   
@@ -964,14 +963,14 @@ void StatMechManager::StatMechInitOutput(const int ndim,const double& dt)
 /*----------------------------------------------------------------------*
  | write special output for statistical mechanics (public)    cyron 09/08|
  *----------------------------------------------------------------------*/
-void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& disrow)
+void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& disrow, RCP<LINALG::SparseOperator>& stiff)
 {  
   #ifdef D_BEAM3
   
 #ifdef MEASURETIME
     const double t_start = ds_cputime();
 #endif // #ifdef MEASURETIME
-  
+      
   //if dynamic crosslinkers are used update comprises adding and deleting crosslinkers
   if(Teuchos::getIntegralValue<int>(statmechparams_,"DYN_CROSSLINKERS"))
   {
@@ -1025,6 +1024,9 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& disro
     const double t_admin = ds_cputime();
 #endif // #ifdef MEASURETIME 
     
+
+    
+    
     //setting the crosslinkers for neighbours in crosslinkerneighbours_ after probability check
     SetCrosslinkers(dt,noderowmap,nodecolmap,currentpositions,currentrotations);
         
@@ -1035,10 +1037,19 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& disro
      *the Filled() stat on all processors after having added or deleted elements by ChekcFilledGlobally(); then build
      *new element maps and call FillComplete(); finally Crs matrices stiff_ has to be deleted completely and made ready
      *for new assembly since their graph was changed*/ 
+    
+
+
+    
     discret_.CheckFilledGlobally();
     DRT::UTILS::RedistributeWithNewNodalDistribution(discret_,noderowmap,nodecolmap);      
-    discret_.FillComplete(true,false,false);   
-    stiff_->Reset();
+    discret_.FillComplete(true,false,false);  
+    stiff->Reset();
+    
+    
+
+    
+    
 
    
 #ifdef MEASURETIME
