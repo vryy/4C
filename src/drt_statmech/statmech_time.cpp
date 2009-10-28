@@ -137,11 +137,6 @@ void StatMechTime::Integrate()
     */
 
 
-    double time = params_.get<double>("total time",0.0);
-
-    statmechmanager_->time_ = time;
-
-
     /*multivector for stochastic forces evaluated by each element; the numbers of vectors in the multivector equals the maximal
      *number of random numbers required by any element in the discretization per time step; therefore this multivector is suitable
      *for synchrinisation of these random numbers in parallel computing*/
@@ -153,39 +148,48 @@ void StatMechTime::Integrate()
     if(i == 0)
       statmechmanager_->StatMechInitOutput(ndim,dt);
 
-    //processor 0 write total number of elements at the beginning of time step i to console:
+    //processor 0 write total number of elements at the beginning of time step i to console as well as how often a time step had to be restarted due to bad random numbers
     if(!discret_.Comm().MyPID())
+    {
       std::cout<<"\nNumber of elements at the beginning of time step "<<i<<" : "<<discret_.NumGlobalElements()<<"\n";
+      std::cout<<"\nNumber of unconverged steps "<<unconvergedsteps_<<"\n";
+    }
+
+    
+      double time = params_.get<double>("total time",0.0);
+      statmechmanager_->time_ = time;
+        
+      do
+      {
+        //assuming that iterations will converge
+        isconverged_ = 1;
+
+        //pay attention: for a constant predictor an incremental velocity update is necessary, which has
+        //been deleted out of the code in oder to simplify it
+        
+        //generate gaussian random numbers for parallel use with mean value 0 and standard deviation (2KT / dt)0.5
+        statmechmanager_->GenerateGaussianRandomNumbers(randomnumbers,0,pow(2.0 * (statmechmanager_->statmechparams_).get<double>("KT",0.0) / dt,0.5));
+
+        ConsistentPredictor(randomnumbers);
 
 
-    //pay attention: for a constant predictor an incremental velocity update is necessary, which has
-    //been deleted out of the code in oder to simplify it
+        if(ndim ==3)
+          PTC(randomnumbers);
+        else
+          FullNewton(randomnumbers);
+               
+      }
+      while(isconverged_ == 0);
 
-    /*
-    if      (predictor==1) ConstantPredictor();
-    else if (predictor==2) ConsistentPredictor();
-    */
-
-    //generate gaussian random numbers for parallel use with mean value 0 and standard deviation (2KT / dt)0.5
-    statmechmanager_->GenerateGaussianRandomNumbers(randomnumbers,0,pow(2.0 * (statmechmanager_->statmechparams_).get<double>("KT",0.0) / dt,0.5));
-
-    ConsistentPredictor(randomnumbers);
-
-
-    if(ndim ==3)
-      PTC(randomnumbers);
-    else
-      FullNewton(randomnumbers);
-
-    const double t_admin = ds_cputime();
+        const double t_admin = ds_cputime();
 
     UpdateandOutput();
-
+    
     /*special update for statistical mechanics; this output has to be handled seperately from the time integration scheme output
      * as it may take place independently on writing geometric output data in a specific time step or not*/
     statmechmanager_->StatMechUpdate(dt,*dis_);
+    
     statmechmanager_->StatMechOutput(params_,ndim,time,i,dt,*dis_,*fint_);
-
 
     if(!discret_.Comm().MyPID())
     cout << "\n***\ntotal administration time: " << ds_cputime() - t_admin<< " seconds\n***\n";
@@ -598,9 +602,13 @@ void StatMechTime::FullNewton(RCP<Epetra_MultiVector> randomnumbers)
   print_unconv = false;
 
   //-------------------------------- test whether max iterations was hit
+  //if on convergence arises within maxiter iterations the time step is restarted with new random numbers
   if (numiter>=maxiter)
   {
-     dserror("Newton unconverged in %d iterations",numiter);
+    isconverged_ = 0;
+    unconvergedsteps_++;
+    std::cout<<"\n\niteration unconverged - new trial with new random numbers!\n\n";
+     //dserror("PTC unconverged in %d iterations",numiter);
   }
   else if(!myrank_ and printscreen)
   {
@@ -890,9 +898,13 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
   print_unconv = false;
 
   //-------------------------------- test whether max iterations was hit
+  //if on convergence arises within maxiter iterations the time step is restarted with new random numbers
   if (numiter>=maxiter)
   {
-     dserror("PTC unconverged in %d iterations",numiter);
+    isconverged_ = 0;
+    unconvergedsteps_++;
+    std::cout<<"\n\niteration unconverged - new trial with new random numbers!\n\n";
+     //dserror("FullNewton unconverged in %d iterations",numiter);
   }
   else
   {

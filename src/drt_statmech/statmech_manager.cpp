@@ -1031,11 +1031,12 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& disro
     //deleting the crosslinkers in crosslinkerpartner_ after probability check
     DelCrosslinkers(dt,noderowmap,nodecolmap);
      
-    /*settling administrative stuff in order to make the discretization ready for the next time step: the following
-     * commmand generates or deletes ghost elements if necessary and calls FillCompete() method of discretization; 
-     * this is enough as long as only elements, but no nodes are added in a time step; finally Crs matrices stiff_ has
-     * to be deleted completely and made ready for new assembly since their graph was changed*/     
-    DRT::UTILS::RedistributeWithNewNodalDistribution(discret_,noderowmap,nodecolmap);     
+    /*settling administrative stuff in order to make the discretization ready for the next time step: synchronized
+     *the Filled() stat on all processors after having added or deleted elements by ChekcFilledGlobally(); then build
+     *new element maps and call FillComplete(); finally Crs matrices stiff_ has to be deleted completely and made ready
+     *for new assembly since their graph was changed*/ 
+    discret_.CheckFilledGlobally();
+    DRT::UTILS::RedistributeWithNewNodalDistribution(discret_,noderowmap,nodecolmap);      
     discret_.FillComplete(true,false,false);   
     stiff_->Reset();
 
@@ -1196,6 +1197,9 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
    #ifdef D_BEAM3         
           RCP<DRT::ELEMENTS::Beam3> newcrosslinker = rcp(new DRT::ELEMENTS::Beam3((noderowmap.GID(i) + 1)*basisnodes_ +  nodecolmap.GID((crosslinkerneighbours_[i])[j]), discret_.Comm().MyPID()) );
           
+          
+          std::cout<<"\nadd crosslinkerid = "<<newcrosslinker->Id()<<"\n";
+          
           //setting up crosslinker element parameters
           newcrosslinker ->crosssec_ = 2.375829e-05;
           newcrosslinker ->crosssecshear_ = 1.1*2.375829e-05;
@@ -1292,6 +1296,8 @@ void StatMechManager::DelCrosslinkers(const double& dt, const Epetra_Map& nodero
       {       
         //we compute the GID of the crosslinker to be deleted 
         int crosslinkerid = (noderowmap.GID(i) + 1)*basisnodes_ +  nodecolmap.GID(*iter);
+        
+        std::cout<<"\ndelete crosslinkerid = "<<crosslinkerid<<"\n";
                 
         //delete crosslinker from discretization
         if( !discret_.DeleteElement(crosslinkerid) )
