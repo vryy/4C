@@ -161,7 +161,7 @@ void MAT::AAAneohooke::Evaluate(
   const double alpha    = youngs*0.1666666666666666667;       // E = alpha * 6..
 
   // material parameters for volumetric part
-  const double beta2 = 9.0;                                   // parameter from Holzapfel
+  const double beta2 = -2.0;                                   // parameter from Holzapfel
   const double komp  = (nue!=0.5) ? 2.0*alpha / (1.0-2.0*nue) : 0.0;              // bulk modulus
 
   //--------------------------------------------------------------------------------------
