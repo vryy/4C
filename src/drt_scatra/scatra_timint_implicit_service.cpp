@@ -118,9 +118,11 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidt()
   phidtnp_->Update(1.0,*phidtn_,0.0);
 
   // reset the matrix (and its graph!) since we solved
-  // a very special problem here that has a different sparsity pattern_
-  if (getIntegralValue<int>(*params_,"BLOCKPRECOND")) ; //how to reset a block matrix ??
-  else SystemMatrix()->Reset();
+  // a very special problem here that has a different sparsity pattern
+  if (getIntegralValue<int>(*params_,"BLOCKPRECOND"))
+    BlockSystemMatrix()->Reset();
+  else
+    SystemMatrix()->Reset();
 
   return;
 }
