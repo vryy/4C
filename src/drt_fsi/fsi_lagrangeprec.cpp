@@ -64,7 +64,7 @@ void FSI::LagrangianBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_MultiVe
   const LINALG::SparseMatrix& Sgg = blocks_->Matrix(1,1);
 
   std::vector<Teuchos::RCP<const Epetra_Map> > innerstruct;
-  innerstruct.push_back(structure_.Interface().CondMap());
+  innerstruct.push_back(structure_.Interface().FSICondMap());
   innerstruct.push_back(structure_.Interface().OtherMap());
   innerstruct.push_back(Teuchos::null);
   LINALG::MultiMapExtractor innerstructextract(FullRowMap(),innerstruct);
@@ -83,7 +83,7 @@ void FSI::LagrangianBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_MultiVe
   Teuchos::RCP<Epetra_Vector> ay = RangeExtractor().ExtractVector(y,2);
   Teuchos::RCP<Epetra_Vector> ly = RangeExtractor().ExtractVector(y,3);
 
-  Teuchos::RCP<Epetra_Vector> sgy = Teuchos::rcp(new Epetra_Vector(*structure_.Interface().CondMap()));
+  Teuchos::RCP<Epetra_Vector> sgy = Teuchos::rcp(new Epetra_Vector(*structure_.Interface().FSICondMap()));
   Teuchos::RCP<Epetra_Vector> siy = Teuchos::rcp(new Epetra_Vector(*structure_.Interface().OtherMap()));
 
   Teuchos::RCP<Epetra_Vector> sz = Teuchos::rcp(new Epetra_Vector(sy->Map()));
@@ -125,7 +125,7 @@ void FSI::LagrangianBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_MultiVe
 
       // semi-solve. Assume CSF==I
       CSF.Multiply(true,*lx,*sy);
-      structure_.Interface().ExtractCondVector(sy,sgy);
+      structure_.Interface().ExtractFSICondVector(sy,sgy);
     }
 
     // structure
@@ -162,7 +162,7 @@ void FSI::LagrangianBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_MultiVe
     sgx->Update(-1.0,*tmpsgx,1.0);
 
     // semi-solve. Assume CSFT==I
-    structure_.Interface().InsertCondVector(sgx,tmpsx);
+    structure_.Interface().InsertFSICondVector(sgx,tmpsx);
     CSFT.Multiply(true,*tmpsx,*ly);
 
     // ale
@@ -214,7 +214,7 @@ void FSI::LagrangianBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_MultiVe
 
   // build solution vector
 
-  structure_.Interface().InsertCondVector(sgy,sy);
+  structure_.Interface().InsertFSICondVector(sgy,sy);
   structure_.Interface().InsertOtherVector(siy,sy);
 
   RangeExtractor().InsertVector(*sy,0,y);

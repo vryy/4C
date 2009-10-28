@@ -6,7 +6,7 @@
 Maintainer: Michael Gee
             gee@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15239
+            089 - 289-15239s
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -107,7 +107,7 @@ fsisurface_(NULL)
       int send     = 0;
       int dof      = 0;
       int owner    = -1;
-      if (haveit) 
+      if (haveit)
       {
         DRT::Node* node = dis.gNode(controlnode);
         if (!node) dserror("Do not have node");
@@ -140,7 +140,7 @@ fsisurface_(NULL)
   stiff_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,81,true,true));
   mass_  = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,81,true,true));
   if (damping) damp_    = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,81,true,true));
-  if (loadlin) 
+  if (loadlin)
   {
     fextlin_    = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,81,true,true));
     fextlinold_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,81,true,true));
@@ -317,7 +317,7 @@ fsisurface_(NULL)
     rhs->Update(-1.0,*fint_,1.0,*fext_,-1.0);
     Epetra_Vector rhscopy(*rhs);
     rhs->Multiply(1.0,*invtoggle_,rhscopy,0.0);
-    solver.Solve(mass_->EpetraMatrix(),acc_,rhs,true,true);
+    solver.Solve(mass_->EpetraOperator(),acc_,rhs,true,true);
   }
 
   //-------------------------------------- it's static, ie accels are zero
@@ -473,20 +473,20 @@ void StruGenAlpha::ConstantPredictor()
     if (surf_stress_man_->HaveSurfStress())
     {
       p.set("surfstr_man", surf_stress_man_);
-      surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fint_,stiff_);
+      surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fint_,SystemMatrix());
     }
 
     if (pot_man_!=null)
     {
       p.set("pot_man", pot_man_);
-      pot_man_->EvaluatePotential(p,dism_,fint_,stiff_);
+      pot_man_->EvaluatePotential(p,dism_,fint_,SystemMatrix());
     }
 
     if (constrMan_->HaveConstraint())
     {
       ParameterList pcon;
       pcon.set("scaleStiffEntries",1.0/(1.0-alphaf));
-      constrMan_->StiffnessAndInternalForces(time+dt,dis_,disn_,fint_,stiff_,pcon);
+      constrMan_->StiffnessAndInternalForces(time+dt,dis_,disn_,fint_,SystemMatrix(),pcon);
     }
 
     // do NOT finalize the stiffness matrix, add mass and damping to it later
@@ -585,7 +585,7 @@ void StruGenAlpha::ConsistentPredictor()
   bool   dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
   bool   loadlin     = params_.get<bool>("LOADLIN",false);
   if (loadlin) dserror("Pressure load linearization currently only with ConstantPredictor and FullNewton");
-  
+
   // store norms of old displacements and maximum of norms of
   // internal, external and inertial forces if a relative convergence
   // check is desired
@@ -728,7 +728,7 @@ void StruGenAlpha::ConsistentPredictor()
   // external mid-forces F_{ext;n+1-alpha_f} (fextm)
   //    F_{ext;n+1-alpha_f} := (1.-alphaf) * F_{ext;n+1}
   //                         + alpha_f * F_{ext;n}
-  fextm_->Update(1.-alphaf,*fextn_,alphaf,*fext_,0.0); 
+  fextm_->Update(1.-alphaf,*fextn_,alphaf,*fext_,0.0);
 
   //------------- eval fint at interpolated state, eval stiffness matrix
   {
@@ -766,20 +766,20 @@ void StruGenAlpha::ConsistentPredictor()
     if (surf_stress_man_->HaveSurfStress())
     {
       p.set("surfstr_man", surf_stress_man_);
-      surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fint_,stiff_);
+      surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fint_,SystemMatrix());
     }
 
     if (pot_man_!=null)
     {
       p.set("pot_man", pot_man_);
-      pot_man_->EvaluatePotential(p,dism_,fint_,stiff_);
+      pot_man_->EvaluatePotential(p,dism_,fint_,SystemMatrix());
     }
 
     if (constrMan_->HaveConstraint())
     {
       ParameterList pcon;
       pcon.set("scaleStiffEntries",1.0/(1.0-alphaf));
-      constrMan_->StiffnessAndInternalForces(time+dt,dis_,disn_,fint_,stiff_,pcon);
+      constrMan_->StiffnessAndInternalForces(time+dt,dis_,disn_,fint_,SystemMatrix(),pcon);
     }
 
     // do NOT finalize the stiffness matrix, add mass and damping to it later
@@ -856,7 +856,7 @@ void StruGenAlpha::ConsistentPredictor()
 /*----------------------------------------------------------------------*
  |  setup equilibrium with additional external forces        u.kue 02/08|
  *----------------------------------------------------------------------*/
-void StruGenAlpha::ApplyExternalForce(const LINALG::MapExtractor& extractor,
+void StruGenAlpha::ApplyExternalForce(const STR::UTILS::MapExtractor& extractor,
                                       Teuchos::RCP<Epetra_Vector> iforce)
 {
   // -------------------------------------------------------------------
@@ -900,7 +900,7 @@ void StruGenAlpha::ApplyExternalForce(const LINALG::MapExtractor& extractor,
 
   // Add iforce to fextn_
   // there might already be (body) forces at the interface nodes
-  extractor.AddCondVector(iforce,fextn_);
+  extractor.AddFSICondVector(iforce,fextn_);
 
   //------------------------------- compute interpolated external forces
   // external mid-forces F_{ext;n+1-alpha_f} (fextm)
@@ -953,7 +953,7 @@ void StruGenAlpha::ApplyExternalForce(const LINALG::MapExtractor& extractor,
     if (pot_man_!=null)
     {
       p.set("pot_man", pot_man_);
-      pot_man_->EvaluatePotential(p,dism_,fint_,stiff_);
+      pot_man_->EvaluatePotential(p,dism_,fint_,SystemMatrix());
     }
 
     // do NOT finalize the stiffness matrix, add mass and damping to it later
@@ -965,12 +965,12 @@ void StruGenAlpha::ApplyExternalForce(const LINALG::MapExtractor& extractor,
       double alphas = params_.get<double>("alpha s",-1.);
 
       // Add structural part of Robin force
-      fsisurface_->AddCondVector(alphas/dt,
-                                 fsisurface_->ExtractCondVector(dism_),
-                                 fint_);
+      fsisurface_->AddFSICondVector(alphas/dt,
+                                    fsisurface_->ExtractFSICondVector(dism_),
+                                    fint_);
 
       double scale = alphas*(1.-alphaf)/dt;
-      const Epetra_Map& robinmap = *fsisurface_->CondMap();
+      const Epetra_Map& robinmap = *fsisurface_->FSICondMap();
       int numrdofs = robinmap.NumMyElements();
       int* rdofs = robinmap.MyGlobalElements();
       for (int lid=0; lid<numrdofs; ++lid)
@@ -1171,14 +1171,14 @@ void StruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
       if (pot_man_!=null)
       {
         p.set("pot_man", pot_man_);
-        pot_man_->EvaluatePotential(p,dism_,fint_,stiff_);
+        pot_man_->EvaluatePotential(p,dism_,fint_,SystemMatrix());
       }
 
       if (constrMan_->HaveConstraint())
       {
         ParameterList pcon;
         pcon.set("scaleStiffEntries",1.0/(1.0-alphaf));
-        constrMan_->StiffnessAndInternalForces(time+dt,dis_,disn_,fint_,stiff_,pcon);
+        constrMan_->StiffnessAndInternalForces(time+dt,dis_,disn_,fint_,SystemMatrix(),pcon);
       }
 
       // do NOT finalize the stiffness matrix to add masses to it later
@@ -1302,7 +1302,7 @@ void StruGenAlpha::FullNewton()
   timer.ResetStartTime();
   bool print_unconv = true;
 
-  
+
   while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) and numiter<=maxiter)
   {
     //------------------------------------------- effective rhs is fresm
@@ -1327,7 +1327,7 @@ void StruGenAlpha::FullNewton()
         stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
 #endif
       }
-      
+
 #if 1
       if (loadlin)
       {
@@ -1341,7 +1341,7 @@ void StruGenAlpha::FullNewton()
     stiff_->Complete();
 
     //-----------------------------transform to local coordinate systems
-    if (locsysmanager_ != null) locsysmanager_->RotateGlobalToLocal(stiff_,fresm_);
+    if (locsysmanager_ != null) locsysmanager_->RotateGlobalToLocal(SystemMatrix(),fresm_);
 
     //----------------------- apply dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
@@ -1355,7 +1355,7 @@ void StruGenAlpha::FullNewton()
       double wanted = tolres;
       solver_.AdaptTolerance(wanted,worst,adaptolbetter);
     }
-    solver_.Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,numiter==0);
+    solver_.Solve(stiff_->EpetraOperator(),disi_,fresm_,true,numiter==0);
     solver_.ResetTolerance();
 
     //----------------------- transform back to global coordinate system
@@ -1418,7 +1418,7 @@ void StruGenAlpha::FullNewton()
     }
 
     //--------------------------- recompute external forces if nonlinear
-    // at state n, the external forces and linearization are interpolated at 
+    // at state n, the external forces and linearization are interpolated at
     // time 1-alphaf in a TR fashion
     if (loadlin)
     {
@@ -1432,9 +1432,9 @@ void StruGenAlpha::FullNewton()
       // set vector values needed by elements
       discret_.ClearState();
       discret_.SetState("displacement",disn_);
-      discret_.SetState("velocity",veln_);    
+      discret_.SetState("velocity",veln_);
 //      discret_.SetState("displacement",dism_); // mid point
-//      discret_.SetState("velocity",velm_);    
+//      discret_.SetState("velocity",velm_);
       fextn_->PutScalar(0.0); // TR
 //      fextm_->PutScalar(0.0);
       fextlin_->Zero();
@@ -1444,7 +1444,7 @@ void StruGenAlpha::FullNewton()
       discret_.ClearState();
       fextm_->Update(1.-alphaf,*fextn_,alphaf,*fext_,0.0);
     }
-    
+
     //---------------------------- compute internal forces and stiffness
     {
       // zero out stiffness
@@ -1486,20 +1486,20 @@ void StruGenAlpha::FullNewton()
       if (surf_stress_man_->HaveSurfStress())
       {
         p.set("surfstr_man", surf_stress_man_);
-        surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fint_,stiff_);
+        surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fint_,SystemMatrix());
       }
 
       if (pot_man_!=null)
       {
         p.set("pot_man", pot_man_);
-        pot_man_->EvaluatePotential(p,dism_,fint_,stiff_);
+        pot_man_->EvaluatePotential(p,dism_,fint_,SystemMatrix());
       }
 
       if (constrMan_->HaveConstraint())
       {
         ParameterList pcon;
         pcon.set("scaleStiffEntries",1.0/(1.0-alphaf));
-        constrMan_->StiffnessAndInternalForces(time+dt,dis_,disn_,fint_,stiff_,pcon);
+        constrMan_->StiffnessAndInternalForces(time+dt,dis_,disn_,fint_,SystemMatrix(),pcon);
       }
 
       // do NOT finalize the stiffness matrix to add masses to it later
@@ -1510,12 +1510,12 @@ void StruGenAlpha::FullNewton()
         double alphas = params_.get<double>("alpha s",-1.);
 
         // Add structural part of Robin force
-        fsisurface_->AddCondVector(alphas/dt,
-                                   fsisurface_->ExtractCondVector(dism_),
-                                   fint_);
+        fsisurface_->AddFSICondVector(alphas/dt,
+                                      fsisurface_->ExtractFSICondVector(dism_),
+                                      fint_);
 
         double scale = alphas*(1.-alphaf)/dt;
-        const Epetra_Map& robinmap = *fsisurface_->CondMap();
+        const Epetra_Map& robinmap = *fsisurface_->FSICondMap();
         int numrdofs = robinmap.NumMyElements();
         int* rdofs = robinmap.MyGlobalElements();
         for (int lid=0; lid<numrdofs; ++lid)
@@ -1731,7 +1731,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
     lagrIncr->PutScalar(0.0);
 
     // Call Uzawa algorithm to solve system with zeros on diagonal
-    constrSolv_->Solve(stiff_,constrMatrix,disi_,lagrIncr,fresm_,constrRHS);
+    constrSolv_->Solve(SystemMatrix(),constrMatrix,disi_,lagrIncr,fresm_,constrRHS);
 
     //update lagrange multiplier
     constrMan_->UpdateLagrMult(lagrIncr);
@@ -1803,7 +1803,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
       ParameterList pcon;
 
       pcon.set("scaleStiffEntries",1.0/(1.0-alphaf));
-      constrMan_->StiffnessAndInternalForces(time+dt,dis_,disn_,fint_,stiff_,pcon);
+      constrMan_->StiffnessAndInternalForces(time+dt,dis_,disn_,fint_,SystemMatrix(),pcon);
       constrMatrix = constrMan_->GetConstrMatrix();
       constrRHS = rcp(new Epetra_Vector(*(constrMan_->GetError())));
       constrnorm=constrMan_->GetErrorNorm();
@@ -1818,7 +1818,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
       if (surf_stress_man_->HaveSurfStress())
       {
         p.set("surfstr_man", surf_stress_man_);
-        surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fint_,stiff_);
+        surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fint_,SystemMatrix());
       }
 
      // do NOT finalize the stiffness matrix to add masses to it later
@@ -1968,7 +1968,7 @@ void StruGenAlpha::ModifiedNewton()
       double wanted = tolres;
       solver_.AdaptTolerance(wanted,worst,adaptolbetter);
     }
-    solver_.Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,numiter==0);
+    solver_.Solve(stiff_->EpetraOperator(),disi_,fresm_,true,numiter==0);
     solver_.ResetTolerance();
 
     //---------------------------------- update mid configuration values
@@ -2058,13 +2058,13 @@ void StruGenAlpha::ModifiedNewton()
       if (surf_stress_man_->HaveSurfStress())
       {
         p.set("surfstr_man", surf_stress_man_);
-        surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fint_,stiff_);
+        surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fint_,SystemMatrix());
       }
 
       if (pot_man_!=null)
       {
         p.set("pot_man", pot_man_);
-        pot_man_->EvaluatePotential(p,dism_,fint_,stiff_);
+        pot_man_->EvaluatePotential(p,dism_,fint_,SystemMatrix());
       }
     }
 
@@ -2525,12 +2525,12 @@ void StruGenAlpha::PTC()
 
     //------------------------------- do ptc modification to effective LHS
     {
-      RCP<Epetra_Vector> tmp = LINALG::CreateVector(stiff_->RowMap(),false);
+      RCP<Epetra_Vector> tmp = LINALG::CreateVector(SystemMatrix()->RowMap(),false);
       tmp->PutScalar(dti);
-      RCP<Epetra_Vector> diag = LINALG::CreateVector(stiff_->RowMap(),false);
-      stiff_->ExtractDiagonalCopy(*diag);
+      RCP<Epetra_Vector> diag = LINALG::CreateVector(SystemMatrix()->RowMap(),false);
+      SystemMatrix()->ExtractDiagonalCopy(*diag);
       diag->Update(1.0,*tmp,1.0);
-      stiff_->ReplaceDiagonalValues(*diag);
+      SystemMatrix()->ReplaceDiagonalValues(*diag);
     }
 
     //----------------------- apply dirichlet BCs to system of equations
@@ -2545,7 +2545,7 @@ void StruGenAlpha::PTC()
       double wanted = tolres;
       solver_.AdaptTolerance(wanted,worst,adaptolbetter);
     }
-    solver_.Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,numiter==0);
+    solver_.Solve(stiff_->EpetraOperator(),disi_,fresm_,true,numiter==0);
     solver_.ResetTolerance();
 
     //---------------------------------- update mid configuration values
@@ -2678,17 +2678,17 @@ void StruGenAlpha::PTC()
     {
       // TTI step size control
       double ttau=0.75;
-      RCP<Epetra_Vector> d1 = LINALG::CreateVector(stiff_->RowMap(),false);
+      RCP<Epetra_Vector> d1 = LINALG::CreateVector(SystemMatrix()->RowMap(),false);
       d1->Update(1.0,*disi_,-1.0,*x0,0.0);
       d1->Scale(dti0);
-      RCP<Epetra_Vector> d0 = LINALG::CreateVector(stiff_->RowMap(),false);
+      RCP<Epetra_Vector> d0 = LINALG::CreateVector(SystemMatrix()->RowMap(),false);
       d0->Update(1.0,*x0,-1.0,*xm,0.0);
       d0->Scale(dtim);
       double dt0 = 1/dti0;
       double dtm = 1/dtim;
-      RCP<Epetra_Vector> xpp = LINALG::CreateVector(stiff_->RowMap(),false);
+      RCP<Epetra_Vector> xpp = LINALG::CreateVector(SystemMatrix()->RowMap(),false);
       xpp->Update(2.0/(dt0+dtm),*d1,-2.0/(dt0+dtm),*d0,0.0);
-      RCP<Epetra_Vector> xtt = LINALG::CreateVector(stiff_->RowMap(),false);
+      RCP<Epetra_Vector> xtt = LINALG::CreateVector(SystemMatrix()->RowMap(),false);
       for (int i=0; i<xtt->MyLength(); ++i) (*xtt)[i] = abs((*xpp)[i])/(1.0+abs((*disi_)[i]));
       double ett;
       xtt->MaxValue(&ett);
@@ -3309,7 +3309,7 @@ void StruGenAlpha::Integrate()
   bool control = false;
   if (dynkindstat)
     control = (controltype != INPAR::STR::control_load);
-  
+
   // can have values "full newton" , "modified newton" , "nonlinear cg"
   string equil = params_.get<string>("equilibrium iteration","full newton");
   if (control && equil != "full newton") dserror("All controls other than load only with full newton");
@@ -3563,7 +3563,7 @@ void StruGenAlpha::ReadRestart(int step)
   double time  = reader.ReadDouble("time");
   int    rstep = reader.ReadInt("step");
   if (rstep != step) dserror("Time step on file not equal to given step");
-  
+
   bool control = false;
   INPAR::STR::ControlType controltype = params_.get<INPAR::STR::ControlType>("CONTROLTYPE",INPAR::STR::control_load);
   if (controltype!=INPAR::STR::control_load) control=true;
@@ -4136,9 +4136,59 @@ Teuchos::RCP<Epetra_Vector> StruGenAlpha::LinearRelaxationSolve(Teuchos::RCP<Epe
 
   //--------------------------------------------------- solve for disi
   // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
-  solver_.Solve(stiff_->EpetraMatrix(),disi_,fextm_,true,true);
+  solver_.Solve(stiff_->EpetraOperator(),disi_,fextm_,true,true);
 
   return disi_;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void StruGenAlpha::UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
+                                  const LINALG::MultiMapExtractor& rangemaps)
+{
+  // (re)allocate system matrix
+  stiff_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(domainmaps,rangemaps,81,false,true));
+  mass_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(domainmaps,rangemaps,81,false,true));
+
+  // -------------------------------------------------------------------
+  // call elements to fill mass matrix again
+  // -------------------------------------------------------------------
+  {
+    double time    = params_.get<double>("total time"      ,0.0);
+    double dt      = params_.get<double>("delta time"      ,0.01);
+    double alphaf  = params_.get<double>("alpha f"         ,0.459);
+
+    // create the parameters for the discretization
+    ParameterList p;
+    // action for elements
+    p.set("action","calc_struct_nlnstiffmass");
+    // other parameters that might be needed by the elements
+    p.set("total time",time);
+    p.set("delta time",dt);
+    p.set("alpha f",alphaf);
+    // set vector values needed by elements
+    discret_.ClearState();
+    discret_.SetState("residual displacement",zeros_);
+    discret_.SetState("displacement",zeros_);
+    discret_.SetState("velocity",zeros_);
+    Teuchos::RCP<LINALG::SparseMatrix> stiff = Teuchos::rcp(new LINALG::SparseMatrix(*discret_.DofRowMap(),81,true,true));
+    Teuchos::RCP<Epetra_Vector> fint = LINALG::CreateVector(*discret_.DofRowMap(),true);
+    discret_.Evaluate(p,stiff,mass_,fint,null,null);
+    discret_.ClearState();
+
+    // close mass matrix
+    mass_->Complete();
+  }
+
+  bool loadlin = params_.get<bool>("LOADLIN",false);
+  if (loadlin)
+  {
+    fextlin_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(domainmaps,rangemaps,81,false,true));
+    fextlinold_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(domainmaps,rangemaps,81,false,true));
+  }
+  bool damping = params_.get<bool>  ("damping",false);
+  if (damping) damp_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(domainmaps,rangemaps,81,false,true));
 }
 
 

@@ -312,7 +312,7 @@ void STR::TimIntImpl::PredictTangDisConsistVelAcc()
 
   // transform to local co-ordinate systems
   if (locsysman_ != Teuchos::null)
-    locsysman_->RotateGlobalToLocal(stiff_, fres_);
+    locsysman_->RotateGlobalToLocal(SystemMatrix(), fres_);
 
   // apply Dirichlet BCs to system of equations
   disi_->PutScalar(0.0);
@@ -323,7 +323,7 @@ void STR::TimIntImpl::PredictTangDisConsistVelAcc()
   // solve for disi_
   // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
   solver_->Reset();
-  solver_->Solve(stiff_->EpetraMatrix(), disi_, fres_, true, true);
+  solver_->Solve(stiff_->EpetraOperator(), disi_, fres_, true, true);
   solver_->Reset();
 
   // extract norm of disi_
@@ -378,18 +378,20 @@ void STR::TimIntImpl::ApplyForceStiffSurfstress
   const Teuchos::RCP<Epetra_Vector> dism,
   const Teuchos::RCP<Epetra_Vector> disn,
   Teuchos::RCP<Epetra_Vector>& fint,
-  Teuchos::RCP<LINALG::SparseMatrix>& stiff
+  Teuchos::RCP<LINALG::SparseOperator>& stiff
 )
 {
   // surface stress loads (but on internal force vector side)
   if (surfstressman_->HaveSurfStress())
   {
+    Teuchos::RCP<LINALG::SparseMatrix> mat = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff);
     // create the parameters for the discretization
     ParameterList p;
     p.set("surfstr_man", surfstressman_);
     p.set("total time", time);
     p.set("delta time", dt);
-    surfstressman_->EvaluateSurfStress(p, dism, disn, fint, stiff);
+    surfstressman_->EvaluateSurfStress(p, dism, disn, fint, mat);
+    stiff = mat;
   }
 
   // bye bye
@@ -404,18 +406,20 @@ void STR::TimIntImpl::ApplyForceStiffPotential
   const double time,
   const Teuchos::RCP<Epetra_Vector> dis,
   Teuchos::RCP<Epetra_Vector>& fint,
-  Teuchos::RCP<LINALG::SparseMatrix>& stiff
+  Teuchos::RCP<LINALG::SparseOperator>& stiff
 )
 {
   // potential force loads (but on internal force vector side)
   if (potman_ != Teuchos::null)
   {
+    Teuchos::RCP<LINALG::SparseMatrix> mat = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff);
     ParameterList p; // create the parameters for manager
     p.set("pot_man", potman_);
     p.set("total time", time);
-    potman_->EvaluatePotential(p, dis, fint, stiff);
+    potman_->EvaluatePotential(p, dis, fint, mat);
+    stiff = mat;
   }
- 
+
   // wooop
   return;
 }
@@ -428,13 +432,15 @@ void STR::TimIntImpl::ApplyForceStiffConstraint
   const Teuchos::RCP<Epetra_Vector> dis,
   const Teuchos::RCP<Epetra_Vector> disn,
   Teuchos::RCP<Epetra_Vector>& fint,
-  Teuchos::RCP<LINALG::SparseMatrix>& stiff,
+  Teuchos::RCP<LINALG::SparseOperator>& stiff,
   Teuchos::ParameterList pcon
 )
 {
   if (conman_->HaveConstraint())
   {
-    conman_->StiffnessAndInternalForces(time, dis, disn, fint, stiff, pcon);
+    Teuchos::RCP<LINALG::SparseMatrix> mat = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff);
+    conman_->StiffnessAndInternalForces(time, dis, disn, fint, mat, pcon);
+    stiff = mat;
   }
 
   // wotcha
@@ -445,12 +451,14 @@ void STR::TimIntImpl::ApplyForceStiffConstraint
 /* evaluate forces / stiffness due to contact */
 void STR::TimIntImpl::ApplyForceStiffContact
 (
-  Teuchos::RCP<LINALG::SparseMatrix>& stiff,
+  Teuchos::RCP<LINALG::SparseOperator>& stiff,
   Teuchos::RCP<Epetra_Vector>& fint
 )
 {
   if (contactman_ != Teuchos::null)
   {
+    Teuchos::RCP<LINALG::SparseMatrix> mat = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff);
+
     // contact modifications need -fres
     fres_->Scale(-1.0);
 
@@ -463,7 +471,8 @@ void STR::TimIntImpl::ApplyForceStiffContact
     contactman_->GetStrategy().EvaluateMortar();
     contactman_->GetStrategy().UpdateActiveSetSemiSmooth();
     contactman_->GetStrategy().Initialize();
-    contactman_->GetStrategy().Evaluate(stiff_,fres_);
+    contactman_->GetStrategy().Evaluate(mat,fres_);
+    stiff = mat;
 
     // evaluate contact forces
     contactman_->GetStrategy().ContactForces(frescopy);
@@ -666,7 +675,7 @@ void STR::TimIntImpl::NewtonFull()
 
     // transform to local co-ordinate systems
     if (locsysman_ != Teuchos::null)
-      locsysman_->RotateGlobalToLocal(stiff_, fres_);
+      locsysman_->RotateGlobalToLocal(SystemMatrix(), fres_);
 
     // apply Dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
@@ -681,7 +690,7 @@ void STR::TimIntImpl::NewtonFull()
       double wanted = tolfres_;
       solver_->AdaptTolerance(wanted, worst, solveradaptolbetter_);
     }
-    solver_->Solve(stiff_->EpetraMatrix(), disi_, fres_, true, iter_==1);
+    solver_->Solve(stiff_->EpetraOperator(), disi_, fres_, true, iter_==1);
     solver_->ResetTolerance();
 
     // recover contact Lagrange multipliers
@@ -871,7 +880,7 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
 
     // transform to local co-ordinate systems
     if (locsysman_ != Teuchos::null)
-      locsysman_->RotateGlobalToLocal(stiff_, fres_);
+      locsysman_->RotateGlobalToLocal(SystemMatrix(), fres_);
 
     // apply Dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
@@ -881,7 +890,7 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
     // prepare residual Lagrange multiplier
     lagrincr->PutScalar(0.0);
     // Call constraint solver to solve system with zeros on diagonal
-    consolv_->Solve(stiff_, conmatrix,
+    consolv_->Solve(SystemMatrix(), conmatrix,
                     disi_, lagrincr,
                     fres_, conrhs);
 
@@ -1356,7 +1365,7 @@ void STR::TimIntImpl::PrintStepText
 /* introduce (robin) fsi surface extractor object */
 void STR::TimIntImpl::SetSurfaceFSI
 (
-  const LINALG::MapExtractor* fsisurface  //!< the FSI surface
+  const STR::UTILS::MapExtractor* fsisurface  //!< the FSI surface
 )
 {
   fsisurface_ = fsisurface;
@@ -1366,12 +1375,12 @@ void STR::TimIntImpl::SetSurfaceFSI
 /* Set forces due to interface with fluid */
 void STR::TimIntImpl::SetForceInterface
 (
-  const LINALG::MapExtractor& extractor,
+  const STR::UTILS::MapExtractor& extractor,
   Teuchos::RCP<Epetra_Vector> iforce  ///< the force on interface
 )
 {
   fifc_->PutScalar(0.0);
-  extractor.AddCondVector(iforce, fifc_);
+  extractor.AddFSICondVector(iforce, fifc_);
 }
 
 /*----------------------------------------------------------------------*/
@@ -1402,7 +1411,7 @@ Teuchos::RCP<Epetra_Vector> STR::TimIntImpl::SolveRelaxationLinear()
                                  zeros_, *(dbcmaps_->CondMap()));
 
   // solve for #disi_
-  solver_->Solve(stiff_->EpetraMatrix(), disi_, fres_, true, true);
+  solver_->Solve(stiff_->EpetraOperator(), disi_, fres_, true, true);
 
   // go back
   return disi_;

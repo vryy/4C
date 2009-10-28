@@ -31,7 +31,7 @@ void FSI::PartitionedMonolithic::SetupSystem()
   // structure to fluid
 
   coupsf.SetupConditionCoupling(*StructureField().Discretization(),
-                                 StructureField().Interface().CondMap(),
+                                 StructureField().Interface().FSICondMap(),
                                 *FluidField().Discretization(),
                                  FluidField().Interface().FSICondMap(),
                                  "FSICoupling");
@@ -39,7 +39,7 @@ void FSI::PartitionedMonolithic::SetupSystem()
   // structure to ale
 
   coupsa.SetupConditionCoupling(*StructureField().Discretization(),
-                                 StructureField().Interface().CondMap(),
+                                 StructureField().Interface().FSICondMap(),
                                 *AleField().Discretization(),
                                  AleField().Interface().FSICondMap(),
                                  "FSICoupling");
@@ -126,7 +126,7 @@ void FSI::PartitionedMonolithic::SetupRHS(Epetra_Vector& f, bool firstcall)
     rhs->Scale(scale*timescale*Dt());
 
     rhs = FluidToStruct(rhs);
-    rhs = StructureField().Interface().InsertCondVector(rhs);
+    rhs = StructureField().Interface().InsertFSICondVector(rhs);
     Extractor().AddVector(*rhs,0,f);
   }
 #endif
@@ -293,7 +293,7 @@ void FSI::PartitionedMonolithic::ExtractFieldVectors(Teuchos::RCP<const Epetra_V
   // right translation.)
 
   sx = Extractor().ExtractVector(x,0);
-  Teuchos::RCP<const Epetra_Vector> scx = StructureField().Interface().ExtractCondVector(sx);
+  Teuchos::RCP<const Epetra_Vector> scx = StructureField().Interface().ExtractFSICondVector(sx);
 
   // process fluid unknowns
 
@@ -335,7 +335,7 @@ void FSI::PartitionedMonolithic::SetupVector(Epetra_Vector &f,
   {
     // add fluid interface values to structure vector
     Teuchos::RCP<Epetra_Vector> fcv = FluidField().Interface().ExtractFSICondVector(fv);
-    Teuchos::RCP<Epetra_Vector> modsv = StructureField().Interface().InsertCondVector(FluidToStruct(fcv));
+    Teuchos::RCP<Epetra_Vector> modsv = StructureField().Interface().InsertFSICondVector(FluidToStruct(fcv));
     modsv->Update(1.0, *sv, fluidscale);
 
     Extractor().InsertVector(*modsv,0,f);

@@ -76,7 +76,7 @@ namespace STR
    *
    * Although #Integrate is the main interface, this base time integrator
    * allows the public to access a few of its datum objects, for instance
-   * the tangent system matrix #stiff_ by #Stiff(). This selective access
+   * the tangent system matrix #stiff_ by #SystemMatrix(). This selective access
    * is needed in environments in which a independent time loop is provided.
    * This happens e.g. in fluid-structure-interaction.
    *
@@ -298,7 +298,7 @@ namespace STR
       const Teuchos::RCP<Epetra_Vector> disi,  //!< residual displacements
       const Teuchos::RCP<Epetra_Vector> vel,  // velocity state
       Teuchos::RCP<Epetra_Vector> fint,  //!< internal force
-      Teuchos::RCP<LINALG::SparseMatrix> stiff  //!< stiffness matrix
+      Teuchos::RCP<LINALG::SparseOperator> stiff  //!< stiffness matrix
     );
 
     //! Evaluate ordinary internal force
@@ -451,7 +451,18 @@ namespace STR
 
     //! Return stiffness,
     //! i.e. force residual differentiated by displacements
-    Teuchos::RCP<LINALG::SparseMatrix> Stiff() { return stiff_; }
+    Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_); }
+
+    //! Return stiffness,
+    //! i.e. force residual differentiated by displacements
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(stiff_); }
+
+    //! Return sparse mass matrix
+    Teuchos::RCP<LINALG::SparseMatrix> MassMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(mass_); }
+
+    //! switch structure field to block matrix in fsi simulations
+    void UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
+                        const LINALG::MultiMapExtractor& rangemaps);
 
     //! Return domain map
     const Epetra_Map& GetDomainMap() { return mass_->DomainMap(); }
@@ -537,11 +548,11 @@ namespace STR
     //@{
 
     //! whatever constraints
-    Teuchos::RCP<UTILS::ConstrManager> conman_;  //!< constraint manager
-    Teuchos::RCP<UTILS::ConstraintSolver> consolv_;  //!< constraint solver
+    Teuchos::RCP< ::UTILS::ConstrManager> conman_;  //!< constraint manager
+    Teuchos::RCP< ::UTILS::ConstraintSolver> consolv_;  //!< constraint solver
 
     //! surface stresses
-    Teuchos::RCP<UTILS::SurfStressManager> surfstressman_;
+    Teuchos::RCP< ::UTILS::SurfStressManager> surfstressman_;
 
     //! potential conditions
     Teuchos::RCP<POTENTIAL::PotentialManager>   potman_;
@@ -598,11 +609,11 @@ namespace STR
     //! @name System matrices
     //@{
     //! holds eventually effective stiffness
-    Teuchos::RCP<LINALG::SparseMatrix> stiff_;
+    Teuchos::RCP<LINALG::SparseOperator> stiff_;
     //! mass matrix (constant)
-    Teuchos::RCP<LINALG::SparseMatrix> mass_;
+    Teuchos::RCP<LINALG::SparseOperator> mass_;
     //! Rayleigh damping matrix (constant)
-    Teuchos::RCP<LINALG::SparseMatrix> damp_;
+    Teuchos::RCP<LINALG::SparseOperator> damp_;
     //@}
 
   };

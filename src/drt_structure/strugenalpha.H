@@ -28,6 +28,7 @@ Maintainer: Michael Gee
 #include "../drt_surfstress/drt_surfstress_manager.H"
 #include "../drt_surfstress/drt_potential_manager.H"
 #include "../drt_lib/drt_locsys.H"
+#include "structure_utils_mapextractor.H"
 
 
 #include "Epetra_Vector.h"
@@ -398,7 +399,8 @@ public:
   Teuchos::RCP<Epetra_Vector> Acc() { return acc_; }
   Teuchos::RCP<Epetra_Vector> FRobin() { return frobin_; }
   Teuchos::RCP<Epetra_Vector> FExtn() { return fextn_; }
-  Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return stiff_; }
+  Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_); }
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(stiff_); }
   Teuchos::RCP<Epetra_Vector> Dirichlet() { return dirichtoggle_; }
   Teuchos::RCP<DRT::Discretization> Discretization() { return Teuchos::rcp(&discret_,false); }
 
@@ -429,7 +431,7 @@ public:
   Teuchos::RCP<Epetra_Vector> LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax);
 
   /// setup equilibrium with additional external forces
-  void ApplyExternalForce(const LINALG::MapExtractor& extractor,
+  void ApplyExternalForce(const STR::UTILS::MapExtractor& extractor,
                           Teuchos::RCP<Epetra_Vector> iforce);
 
   /// introduce (robin) fsi surface extractor object
@@ -437,7 +439,11 @@ public:
     Introduce the FSI surface to the fluid algorithm. This way special case
     algorithms (robin coupling) can work on the surface.
    */
-  void SetFSISurface(const LINALG::MapExtractor* fsisurface) { fsisurface_ = fsisurface; }
+  void SetFSISurface(const STR::UTILS::MapExtractor* fsisurface) { fsisurface_ = fsisurface; }
+
+  /// switch structure field to block matrix in fsi simulations
+  void UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
+                      const LINALG::MultiMapExtractor& rangemaps);
 
   //@}
 
@@ -474,11 +480,11 @@ protected:
 
   //! @name The usual structural dynamics matrix triple
 
-  RCP<LINALG::SparseMatrix> stiff_;
-  RCP<LINALG::SparseMatrix> mass_;
-  RCP<LINALG::SparseMatrix> damp_;
-  RCP<LINALG::SparseMatrix> fextlin_;     /// tangent at time n+1
-  RCP<LINALG::SparseMatrix> fextlinold_;  /// tangent at time n
+  RCP<LINALG::SparseOperator> stiff_;
+  RCP<LINALG::SparseOperator> mass_;
+  RCP<LINALG::SparseOperator> damp_;
+  RCP<LINALG::SparseOperator> fextlin_;     /// tangent at time n+1
+  RCP<LINALG::SparseOperator> fextlinold_;  /// tangent at time n
 
   //@}
 
@@ -512,7 +518,7 @@ protected:
   //@}
 
   //! @name disp and arc length control
-  
+
   double                lambda_;
   double                dlambda_;
   RCP<Epetra_Vector>    vp_;
@@ -552,7 +558,7 @@ protected:
   //@}
 
   /// (robin) fsi coupling row dof map extractor
-  const LINALG::MapExtractor* fsisurface_;
+  const STR::UTILS::MapExtractor* fsisurface_;
 
 }; // class StruGenAlpha
 
@@ -646,7 +652,8 @@ public:
   virtual Epetra_CrsMatrix* getJacobian()
   {
     if (integrator_.stiff_==null) dserror("integrator_.stiff_ = null!");
-    return &*integrator_.stiff_->EpetraMatrix();
+
+    return &*integrator_.SystemMatrix()->EpetraMatrix();
   }
 
   /*!
@@ -656,7 +663,7 @@ public:
   virtual const Epetra_CrsGraph* getGraph()
   {
     if (integrator_.stiff_==null) dserror("integrator_.stiff_ = null!");
-    return &(integrator_.stiff_->EpetraMatrix()->Graph());
+    return &(integrator_.SystemMatrix()->EpetraMatrix()->Graph());
   }
 
   /*!
@@ -666,7 +673,7 @@ public:
   virtual const Epetra_CrsGraph* getModifiedGraph()
   {
     if (integrator_.stiff_==null) dserror("integrator_.stiff_ = null!");
-    return &(integrator_.stiff_->EpetraMatrix()->Graph());
+    return &(integrator_.SystemMatrix()->EpetraMatrix()->Graph());
   }
 
   /*!
@@ -684,7 +691,7 @@ public:
   */
   virtual const Epetra_Map& getMap()
   {
-    return integrator_.mass_->RowMap();
+    return integrator_.SystemMatrix()->RowMap();
   }
 
   /*!

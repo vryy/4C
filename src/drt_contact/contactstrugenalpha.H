@@ -90,7 +90,7 @@ public:
 
 
   /// setup equilibrium with additional external forces
-  void ApplyExternalForce(  const LINALG::MapExtractor& extractor,
+  void ApplyExternalForce(  const STR::UTILS::MapExtractor& extractor,
                             Teuchos::RCP<Epetra_Vector> iforce
                             );
 

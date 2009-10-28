@@ -121,7 +121,7 @@ void StruGenAlpha::LineSearchNewton()
       double wanted = tolres;
       solver_.AdaptTolerance(wanted,worst,adaptolbetter);
     }
-    solver_.Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,numiter==0);
+    solver_.Solve(stiff_->EpetraOperator(),disi_,fresm_,true,numiter==0);
     solver_.ResetTolerance();
 
     //----------------------------------------- store the current values
@@ -572,7 +572,7 @@ void StruGenAlpha::OppNewton()
             double wanted = tolres;
             solver_.AdaptTolerance(wanted,worst,adaptolbetter);
         }
-        solver_.Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,nIter==0);
+        solver_.Solve(stiff_->EpetraOperator(),disi_,fresm_,true,nIter==0);
         solver_.ResetTolerance();
 
         //----------------------------------------- here we have just delta_p in disi_
@@ -917,20 +917,20 @@ void StruGenAlpha::ControlledConstantPredictor()
     if (surf_stress_man_->HaveSurfStress())
     {
       p.set("surfstr_man", surf_stress_man_);
-      surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fint_,stiff_);
+      surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fint_,SystemMatrix());
     }
 
     if (pot_man_!=null)
     {
       p.set("pot_man", pot_man_);
-      pot_man_->EvaluatePotential(p,dism_,fint_,stiff_);
+      pot_man_->EvaluatePotential(p,dism_,fint_,SystemMatrix());
     }
 
     if (constrMan_->HaveConstraint())
     {
       ParameterList pcon;
       pcon.set("scaleStiffEntries",1.0/(1.0-alphaf));
-      constrMan_->StiffnessAndInternalForces(time+dt,dis_,disn_,fint_,stiff_,pcon);
+      constrMan_->StiffnessAndInternalForces(time+dt,dis_,disn_,fint_,SystemMatrix(),pcon);
     }
 
     // do NOT finalize the stiffness matrix, add mass and damping to it later
@@ -1045,7 +1045,7 @@ void StruGenAlpha::ControlledFullNewton()
     //-----------------------------transform to local coordinate systems
     if (locsysmanager_ != null)
     {
-      locsysmanager_->RotateGlobalToLocal(stiff_,fresm_);
+      locsysmanager_->RotateGlobalToLocal(SystemMatrix(),fresm_);
       locsysmanager_->RotateGlobalToLocal(vp_);
     }
 
@@ -1063,8 +1063,8 @@ void StruGenAlpha::ControlledFullNewton()
       double wanted = tolres;
       solver_.AdaptTolerance(wanted,worst,adaptolbetter);
     }
-    solver_.Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,numiter==0);
-    solver_.Solve(stiff_->EpetraMatrix(),vp_,fextn_,true,false);
+    solver_.Solve(stiff_->EpetraOperator(),disi_,fresm_,true,numiter==0);
+    solver_.Solve(stiff_->EpetraOperator(),vp_,fextn_,true,false);
     solver_.ResetTolerance();
 
     //----------------------- transform back to global coordinate system
@@ -1159,20 +1159,20 @@ void StruGenAlpha::ControlledFullNewton()
       if (surf_stress_man_->HaveSurfStress())
       {
         p.set("surfstr_man", surf_stress_man_);
-        surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fint_,stiff_);
+        surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fint_,SystemMatrix());
       }
 
       if (pot_man_!=null)
       {
         p.set("pot_man", pot_man_);
-        pot_man_->EvaluatePotential(p,dism_,fint_,stiff_);
+        pot_man_->EvaluatePotential(p,dism_,fint_,SystemMatrix());
       }
 
       if (constrMan_->HaveConstraint())
       {
         ParameterList pcon;
         pcon.set("scaleStiffEntries",1.0/(1.0-alphaf));
-        constrMan_->StiffnessAndInternalForces(time+dt,dis_,disn_,fint_,stiff_,pcon);
+        constrMan_->StiffnessAndInternalForces(time+dt,dis_,disn_,fint_,SystemMatrix(),pcon);
       }
 
       // do NOT finalize the stiffness matrix to add masses to it later
@@ -1183,12 +1183,12 @@ void StruGenAlpha::ControlledFullNewton()
         double alphas = params_.get<double>("alpha s",-1.);
 
         // Add structural part of Robin force
-        fsisurface_->AddCondVector(alphas/dt,
-                                   fsisurface_->ExtractCondVector(dism_),
-                                   fint_);
+        fsisurface_->AddFSICondVector(alphas/dt,
+                                      fsisurface_->ExtractFSICondVector(dism_),
+                                      fint_);
 
         double scale = alphas*(1.-alphaf)/dt;
-        const Epetra_Map& robinmap = *fsisurface_->CondMap();
+        const Epetra_Map& robinmap = *fsisurface_->FSICondMap();
         int numrdofs = robinmap.NumMyElements();
         int* rdofs = robinmap.MyGlobalElements();
         for (int lid=0; lid<numrdofs; ++lid)

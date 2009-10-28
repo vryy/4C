@@ -121,6 +121,7 @@ class BlockSparseMatrixBase : public SparseOperator
   //@{
 
   void Zero();
+  void Reset();
   void Complete();
   void Complete(const Epetra_Map& domainmap, const Epetra_Map& rangemap);
 
@@ -161,6 +162,10 @@ class BlockSparseMatrixBase : public SparseOperator
   /// total matrix domain map with all blocks
   const Epetra_Map& FullDomainMap() const { return *domainmaps_.FullMap(); }
 
+  /// total matrix domain map with all blocks (this is needed for
+  /// consistency with LINALG::SparseMatrix)
+  const Epetra_Map& DomainMap() const { return *domainmaps_.FullMap(); }
+
   /// total matrix row map with all blocks
   /*!
     \pre Filled()==true
@@ -191,6 +196,33 @@ class BlockSparseMatrixBase : public SparseOperator
 
   /// Returns the result of a Epetra_Operator inverse applied to an Epetra_MultiVector X in Y.
   virtual int ApplyInverse(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
+
+  /// Resolve virtual function of parent class
+  virtual int Multiply(bool TransA, const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
+
+  /// Add a (transposed) BlockSparseMatrix: (*this) = (*this)*scalarB + A(^T)*scalarA
+  virtual void Add(const BlockSparseMatrixBase& A,
+                   const bool transposeA,
+                   const double scalarA,
+                   const double scalarB);
+
+  /// Resolve virtual function of parent class
+  virtual void Add(const SparseOperator& A,
+                   const bool transposeA,
+                   const double scalarA,
+                   const double scalarB);
+
+  /// Resolve virtual function of parent class
+  virtual const void AddOther(SparseMatrix& A,
+                              const bool transposeA,
+                              const double scalarA,
+                              const double scalarB) const;
+
+  /// Resolve virtual function of parent class
+  virtual const void AddOther(BlockSparseMatrixBase& A,
+                              const bool transposeA,
+                              const double scalarA,
+                              const double scalarB) const;
 
   /// Returns the infinity norm of the global matrix.
   virtual double NormInf() const;

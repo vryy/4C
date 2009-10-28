@@ -47,9 +47,12 @@ Maintainer: Michael Gee
 #include <Epetra_Map.h>
 #include <Teuchos_RCP.hpp>
 
-
 namespace LINALG
 {
+  // forward declarations
+  class BlockSparseMatrixBase;
+  class SparseMatrix;
+
 
   /// Linear operator interface enhanced for use in FE simulations
   /*!
@@ -81,6 +84,9 @@ class SparseOperator : public Epetra_Operator
 
     /// set matrix to zero
     virtual void Zero() = 0;
+
+    /// throw away the matrix and its graph and start anew
+    virtual void Reset() = 0;
 
     /// Assemble a Epetra_SerialDenseMatrix into a matrix
     /*!
@@ -164,6 +170,9 @@ class SparseOperator : public Epetra_Operator
     /// single value assemble using gids
     virtual void Assemble(double val, int rgid, int cgid) = 0;
 
+    /// If Complete() has been called, this query returns true, otherwise it returns false.
+    virtual bool Filled() const = 0;
+
     /// Call FillComplete on a matrix
     virtual void Complete() = 0;
 
@@ -186,6 +195,21 @@ class SparseOperator : public Epetra_Operator
     ///  quite expensive, because the matrix is stored in a sparse and distributed
     ///  manner.
     virtual void ApplyDirichlet(const Epetra_Map& dbcmap, bool diagonalblock=true) = 0;
+
+    /// Returns the Epetra_Map object associated with the (full) domain of this operator.
+    virtual const Epetra_Map& DomainMap() const = 0;
+
+    /// Add one operator to another
+    virtual void Add(const LINALG::SparseOperator& A, const bool transposeA, const double scalarA,  const double scalarB) = 0;
+
+    /// Add one SparseMatrix to another
+    virtual const void AddOther(LINALG::SparseMatrix& A, const bool transposeA, const double scalarA,  const double scalarB) const = 0;
+
+    /// Add one BlockSparseMatrix to another
+    virtual const void AddOther(LINALG::BlockSparseMatrixBase& A, const bool transposeA, const double scalarA,  const double scalarB) const = 0;
+
+    /// Matrix-vector product
+    virtual int Multiply(bool TransA, const Epetra_MultiVector &X, Epetra_MultiVector &Y) const = 0;
 
 };
 

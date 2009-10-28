@@ -27,6 +27,7 @@ Maintainer: Ursula Mayer
 #include "../drt_lib/drt_utils.H"
 #include "../drt_contact/contactstrugenalpha.H"
 #include "../drt_structure/stru_resulttest.H"
+#include "../drt_structure/structure_utils_mapextractor.H"
 
 
 
@@ -51,6 +52,8 @@ namespace ADAPTER {
     Teuchos::RCP<const Epetra_Vector> Dispnm();
     Teuchos::RCP<const Epetra_Map> DofRowMap();
     Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
+    void UseBlockMatrix();
     Teuchos::RCP<DRT::Discretization> Discretization();
     Teuchos::RCP<const Epetra_Vector> FExtn();
     Teuchos::RCP<const Epetra_Vector> FRobin();
@@ -86,10 +89,16 @@ namespace ADAPTER {
     }
     void Output();
 
+    /// Access to output object
+    Teuchos::RCP<IO::DiscretizationWriter> DiscWriter()
+    {
+      return output_;
+    }
+
     //@}
 
     /// communication object at the interface
-    virtual const LINALG::MapExtractor& Interface() const { return interface_; }
+    virtual const STR::UTILS::MapExtractor& Interface() const { return interface_; }
 
     virtual const Epetra_Map& DomainMap();
 
@@ -168,7 +177,7 @@ namespace ADAPTER {
     CONTACT::ContactStruGenAlpha structure_;
 
     /// the interface map setup for interface <-> full translation
-    LINALG::MapExtractor interface_;
+    STR::UTILS::MapExtractor interface_;
 
     //! @name local copies of input parameters
 

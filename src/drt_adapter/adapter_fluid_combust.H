@@ -73,6 +73,8 @@ namespace ADAPTER
                                                                              return Teuchos::null; };
     virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> ShapeDerivatives(){ dserror("not implemented");
                                                                           return Teuchos::null; };
+    virtual Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor(){ dserror("not implemented");
+                                                                         return Teuchos::null; };
     virtual const LINALG::MapExtractor& FreeSurface() const { dserror("not implemented!");
             // this is a hack to compile the code! danger of dangling reference!
             LINALG::MapExtractor object;
@@ -188,6 +190,7 @@ namespace ADAPTER
     virtual void ReadRestart(int step);
     virtual double Time() const;
     virtual int Step() const;
+    virtual double Dt() const;
     virtual int  Itemax() const;
     virtual void SetItemax(int itemax);
 

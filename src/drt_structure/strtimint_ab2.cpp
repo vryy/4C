@@ -156,7 +156,7 @@ void STR::TimIntAB2::IntegrateStep()
     // refactor==false: This is not necessary, because we always
     // use the same constant mass matrix, which was firstly factorised
     // in TimInt::DetermineMassDampConsistAccel
-    solver_->Solve(mass_->EpetraMatrix(), accn_, frimpn_, false, true);
+    solver_->Solve(mass_->EpetraOperator(), accn_, frimpn_, false, true);
   }
 
   // apply Dirichlet BCs on accelerations

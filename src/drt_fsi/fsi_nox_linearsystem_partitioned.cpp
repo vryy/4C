@@ -88,7 +88,7 @@ NOX::FSI::LinearPartitioned::StructOp(Teuchos::RCP<const Epetra_Vector> iforce, 
     stmp_->Update(1.0,*srhs_,0.0);
   }
 
-  structurefield_.Interface().AddCondVector(iforce,stmp_);
+  structurefield_.Interface().AddFSICondVector(iforce,stmp_);
 
   // solve
 
@@ -97,7 +97,7 @@ NOX::FSI::LinearPartitioned::StructOp(Teuchos::RCP<const Epetra_Vector> iforce, 
   // extract interface displacement
 
   Teuchos::RCP<Epetra_Vector> idisp =
-    structurefield_.Interface().ExtractCondVector(sx_);
+    structurefield_.Interface().ExtractFSICondVector(sx_);
 
   return idisp;
 }
@@ -516,9 +516,9 @@ void NOX::FSI::LinearPartitionedSolver::LinearPartitionedSolve(NOX::Epetra::Vect
 //     extractor_.ExtractVector(result.getEpetraVector(),0);
 
 //   Teuchos::RCP<Epetra_Vector> idisp =
-//     structurefield_.Interface().ExtractCondVector(disp);
+//     structurefield_.Interface().ExtractFSICondVector(disp);
 
-  Teuchos::RCP<Epetra_Vector> idisp = Teuchos::rcp(new Epetra_Vector(*structurefield_.Interface().CondMap()));
+  Teuchos::RCP<Epetra_Vector> idisp = Teuchos::rcp(new Epetra_Vector(*structurefield_.Interface().FSICondMap()));
   NOX::Epetra::Vector noxSoln(*idisp);
 
   Teuchos::RCP<LinearPartitioned> partitionedInterface =

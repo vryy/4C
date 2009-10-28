@@ -1251,6 +1251,39 @@ void LINALG::SparseMatrix::Add(const LINALG::SparseMatrix& A,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void LINALG::SparseMatrix::Add(const LINALG::SparseOperator& A,
+                               const bool transposeA,
+                               const double scalarA,
+                               const double scalarB)
+{
+  A.AddOther(*this, transposeA, scalarA, scalarB);
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void const LINALG::SparseMatrix::AddOther(LINALG::SparseMatrix& A,
+                                          const bool transposeA,
+                                          const double scalarA,
+                                          const double scalarB) const
+{
+  A.Add(*this, transposeA, scalarA, scalarB);
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void const LINALG::SparseMatrix::AddOther(LINALG::BlockSparseMatrixBase& A,
+                                          const bool transposeA,
+                                          const double scalarA,
+                                          const double scalarB) const
+{
+  dserror("BlockSparseMatrix and SparseMatrix cannot be added");
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void LINALG::SparseMatrix::Add(const Epetra_CrsMatrix& A,
                                const bool transposeA,
                                const double scalarA,

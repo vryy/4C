@@ -424,7 +424,7 @@ void STR::TimIntGEMM::ApplyForceStiffInternalMid
   const Teuchos::RCP<Epetra_Vector> disi,  // residual displacements
   const Teuchos::RCP<Epetra_Vector> vel,  // velocity state
   Teuchos::RCP<Epetra_Vector> fint,  // internal force
-  Teuchos::RCP<LINALG::SparseMatrix> stiff  // stiffness matrix
+  Teuchos::RCP<LINALG::SparseOperator> stiff  // stiffness matrix
 )
 {
   // create the parameters for the discretization

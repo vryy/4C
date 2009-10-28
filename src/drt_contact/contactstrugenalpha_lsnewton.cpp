@@ -128,7 +128,7 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
       double wanted = tolres;
       solver_.AdaptTolerance(wanted,worst,adaptolbetter);
     }
-    solver_.Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,numiter==0);
+    solver_.Solve(stiff_->EpetraOperator(),disi_,fresm_,true,numiter==0);
     solver_.ResetTolerance();
 
     //------------------------------------ -- recover disi and Lag. Mult.
@@ -253,12 +253,12 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
         double alphas = params_.get<double>("alpha s",-1.);
 
         // Add structural part of Robin force
-        fsisurface_->AddCondVector(alphas/dt,
-                                   fsisurface_->ExtractCondVector(dism_),
-                                   fint_);
+        fsisurface_->AddFSICondVector(alphas/dt,
+                                      fsisurface_->ExtractFSICondVector(dism_),
+                                      fint_);
 
         double scale = alphas*(1.-alphaf)/dt;
-        const Epetra_Map& robinmap = *fsisurface_->CondMap();
+        const Epetra_Map& robinmap = *fsisurface_->FSICondMap();
         int numrdofs = robinmap.NumMyElements();
         int* rdofs = robinmap.MyGlobalElements();
         for (int lid=0; lid<numrdofs; ++lid)
@@ -338,7 +338,7 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
       contactmanager_->GetStrategy().EvaluateMortar();
 
       contactmanager_->GetStrategy().Initialize();
-      contactmanager_->GetStrategy().Evaluate(stiff_,fresm_);
+      contactmanager_->GetStrategy().Evaluate(SystemMatrix(),fresm_);
     }
 
     //--------------------------------------------------- contact forces
@@ -502,12 +502,12 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
           double alphas = params_.get<double>("alpha s",-1.);
 
           // Add structural part of Robin force
-          fsisurface_->AddCondVector(alphas/dt,
-                                     fsisurface_->ExtractCondVector(dism_),
-                                     fint_);
+          fsisurface_->AddFSICondVector(alphas/dt,
+                                        fsisurface_->ExtractFSICondVector(dism_),
+                                        fint_);
 
           double scale = alphas*(1.-alphaf)/dt;
-          const Epetra_Map& robinmap = *fsisurface_->CondMap();
+          const Epetra_Map& robinmap = *fsisurface_->FSICondMap();
           int numrdofs = robinmap.NumMyElements();
           int* rdofs = robinmap.MyGlobalElements();
           for (int lid=0; lid<numrdofs; ++lid)
@@ -587,7 +587,7 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
         contactmanager_->GetStrategy().EvaluateMortar();
 
         contactmanager_->GetStrategy().Initialize();
-        contactmanager_->GetStrategy().Evaluate(stiff_,fresm_);
+        contactmanager_->GetStrategy().Evaluate(SystemMatrix(),fresm_);
       }
 
       //--------------------------------------------------- contact forces
@@ -757,7 +757,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
       double wanted = tolres;
       solver_.AdaptTolerance(wanted,worst,adaptolbetter);
     }
-    solver_.Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,numiter==0);
+    solver_.Solve(stiff_->EpetraOperator(),disi_,fresm_,true,numiter==0);
     solver_.ResetTolerance();
 
     //------------------------------------ -- recover disi and Lag. Mult.
@@ -882,12 +882,12 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
         double alphas = params_.get<double>("alpha s",-1.);
 
         // Add structural part of Robin force
-        fsisurface_->AddCondVector(alphas/dt,
-                                   fsisurface_->ExtractCondVector(dism_),
-                                   fint_);
+        fsisurface_->AddFSICondVector(alphas/dt,
+                                      fsisurface_->ExtractFSICondVector(dism_),
+                                      fint_);
 
         double scale = alphas*(1.-alphaf)/dt;
-        const Epetra_Map& robinmap = *fsisurface_->CondMap();
+        const Epetra_Map& robinmap = *fsisurface_->FSICondMap();
         int numrdofs = robinmap.NumMyElements();
         int* rdofs = robinmap.MyGlobalElements();
         for (int lid=0; lid<numrdofs; ++lid)
@@ -973,7 +973,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
       contactmanager_->GetStrategy().UpdateActiveSetSemiSmooth();
 
       contactmanager_->GetStrategy().Initialize();
-      contactmanager_->GetStrategy().Evaluate(stiff_,fresm_);
+      contactmanager_->GetStrategy().Evaluate(SystemMatrix(),fresm_);
     }
 
     //--------------------------------------------------- contact forces
@@ -1139,12 +1139,12 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
           double alphas = params_.get<double>("alpha s",-1.);
 
           // Add structural part of Robin force
-          fsisurface_->AddCondVector(alphas/dt,
-                                     fsisurface_->ExtractCondVector(dism_),
-                                     fint_);
+          fsisurface_->AddFSICondVector(alphas/dt,
+                                        fsisurface_->ExtractFSICondVector(dism_),
+                                        fint_);
 
           double scale = alphas*(1.-alphaf)/dt;
-          const Epetra_Map& robinmap = *fsisurface_->CondMap();
+          const Epetra_Map& robinmap = *fsisurface_->FSICondMap();
           int numrdofs = robinmap.NumMyElements();
           int* rdofs = robinmap.MyGlobalElements();
           for (int lid=0; lid<numrdofs; ++lid)
@@ -1228,7 +1228,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
         // set has to be kept constant!
 
         contactmanager_->GetStrategy().Initialize();
-        contactmanager_->GetStrategy().Evaluate(stiff_,fresm_);
+        contactmanager_->GetStrategy().Evaluate(SystemMatrix(),fresm_);
       }
 
       //--------------------------------------------------- contact forces

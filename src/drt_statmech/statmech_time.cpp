@@ -46,12 +46,13 @@ StatMechTime::StatMechTime(ParameterList& params,
                           IO::DiscretizationWriter& output) :
 StruGenAlpha(params,dis,solver,output)
 {
-  statmechmanager_ = rcp(new StatMechManager(params,dis,stiff_));
-  
+  Teuchos::RCP<LINALG::SparseMatrix> stiff = SystemMatrix();
+  statmechmanager_ = rcp(new StatMechManager(params,dis,stiff));
+
   //maximal number of random numbers to be generated per time step for any column map element of this processor
   int randomnumbersperlocalelement = 0;
 
-  /*check maximal number of nodes of an element with stochastic forces on this processor*/ 
+  /*check maximal number of nodes of an element with stochastic forces on this processor*/
   for (int i=0; i<  dis.NumMyColElements(); ++i)
   {
     /*stochastic forces implemented so far only for the following elements:*/
@@ -61,7 +62,7 @@ StruGenAlpha(params,dis,solver,output)
       case DRT::Element::element_beam3:
       {
         //see whether current element needs more random numbers per time step than any other before
-        randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Beam3*>(dis.lColElement(i))->HowManyRandomNumbersINeed()); 
+        randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Beam3*>(dis.lColElement(i))->HowManyRandomNumbersINeed());
         break;
       }
 #endif  // #ifdef D_BEAM3
@@ -69,7 +70,7 @@ StruGenAlpha(params,dis,solver,output)
       case DRT::Element::element_beam2:
       {
         //see whether current element needs more random numbers per time step than any other before
-        randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Beam2*>(dis.lColElement(i))->HowManyRandomNumbersINeed()); 
+        randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Beam2*>(dis.lColElement(i))->HowManyRandomNumbersINeed());
         break;
       }
 #endif  // #ifdef D_BEAM2
@@ -77,19 +78,19 @@ StruGenAlpha(params,dis,solver,output)
       case DRT::Element::element_beam2r:
       {
         //see whether current element needs more random numbers per time step than any other before
-        randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Beam2r*>(dis.lColElement(i))->HowManyRandomNumbersINeed()); 
+        randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Beam2r*>(dis.lColElement(i))->HowManyRandomNumbersINeed());
         break;
       }
 #endif  // #ifdef D_BEAM2R
       default:
         continue;
-    }  
+    }
   } //for (int i=0; i<dis_.NumMyColElements(); ++i)
-   
+
   /*so far the maximal number of random numbers required per element has been checked only locally on this processor;
    *now we compare the results of each processor and store the maximal one in maxrandomnumbersperglobalelement_*/
   dis.Comm().MaxAll(&randomnumbersperlocalelement,&maxrandomnumbersperglobalelement_ ,1);
-  
+
   return;
 } // StatMechTime::StatMechTime
 
@@ -137,16 +138,16 @@ void StatMechTime::Integrate()
 
 
     double time = params_.get<double>("total time",0.0);
-    
+
     statmechmanager_->time_ = time;
-    
-    
+
+
     /*multivector for stochastic forces evaluated by each element; the numbers of vectors in the multivector equals the maximal
      *number of random numbers required by any element in the discretization per time step; therefore this multivector is suitable
      *for synchrinisation of these random numbers in parallel computing*/
     RCP<Epetra_MultiVector> randomnumbers = rcp( new Epetra_MultiVector(*(discret_.ElementColMap()),maxrandomnumbersperglobalelement_) );
-    
-    
+
+
     /*in the very first step and in case that special output for statistical mechanics is requested we have
      * to initialized the related output method*/
     if(i == 0)
@@ -167,25 +168,25 @@ void StatMechTime::Integrate()
 
     //generate gaussian random numbers for parallel use with mean value 0 and standard deviation (2KT / dt)0.5
     statmechmanager_->GenerateGaussianRandomNumbers(randomnumbers,0,pow(2.0 * (statmechmanager_->statmechparams_).get<double>("KT",0.0) / dt,0.5));
-    
+
     ConsistentPredictor(randomnumbers);
-    
-    
+
+
     if(ndim ==3)
       PTC(randomnumbers);
     else
       FullNewton(randomnumbers);
 
     const double t_admin = ds_cputime();
- 
+
     UpdateandOutput();
 
     /*special update for statistical mechanics; this output has to be handled seperately from the time integration scheme output
      * as it may take place independently on writing geometric output data in a specific time step or not*/
     statmechmanager_->StatMechUpdate(dt,*dis_);
     statmechmanager_->StatMechOutput(params_,ndim,time,i,dt,*dis_,*fint_);
-    
-    
+
+
     if(!discret_.Comm().MyPID())
     cout << "\n***\ntotal administration time: " << ds_cputime() - t_admin<< " seconds\n***\n";
 
@@ -235,7 +236,7 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
     p.set("total time",timen);
     p.set("delta time",dt);
     p.set("alpha f",alphaf);
-    
+
     // set vector values needed by elements
     discret_.ClearState();
     discret_.SetState("displacement",disn_);
@@ -249,9 +250,9 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
     fextn_->PutScalar(0.0);  // initialize external force vector (load vect)
     discret_.EvaluateNeumann(p,*fextn_);
     discret_.ClearState();
-  } 
+  }
 
-  
+
 #ifdef STRUGENALPHA_STRONGDBC
   // apply new velocities at DBCs
   {
@@ -302,7 +303,7 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
   {
     // zero out stiffness
     stiff_->Zero();
-    
+
     // create the parameters for the discretization
     ParameterList p;
     // action for elements
@@ -318,22 +319,22 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
     p.set("THERMALBATH",Teuchos::getIntegralValue<INPAR::STATMECH::ThermalBathType>(statmechmanager_->statmechparams_,"THERMALBATH"));
     p.set("FRICTION_MODEL",Teuchos::getIntegralValue<INPAR::STATMECH::FrictionModel>(statmechmanager_->statmechparams_,"FRICTION_MODEL"));
     p.set("RandomNumbers",randomnumbers);
-    
+
     //computing current gradient in z-direction of shear flow (assuming sine shear load with maximal amplitude SHEARAMPLITUDE and frequency SHEARFREQUENCY)
     double omegashear = 2*PI*(statmechmanager_->statmechparams_).get<double>("SHEARFREQUENCY",0.0);
     double currentshear = cos(omegashear*timen)*(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0)*omegashear;
-    
+
     //osciallations start only after equilibration; set shear rate to zero before
     if( timen < (statmechmanager_->statmechparams_).get<double>("START_FACTOR",0.0)*params_.get<double>("max time",0.0))
       currentshear = 0;
 
-    
-    p.set("CURRENTSHEAR",currentshear); 
-    
 
-    
-    
-  
+    p.set("CURRENTSHEAR",currentshear);
+
+
+
+
+
     // set vector values needed by elements
     discret_.ClearState();
     disi_->PutScalar(0.0);
@@ -343,9 +344,9 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
     discret_.SetState("velocity",velm_);
 
     //discret_.SetState("velocity",velm_); // not used at the moment
-    
-    fint_->PutScalar(0.0);  // initialise internal force vector   
- 
+
+    fint_->PutScalar(0.0);  // initialise internal force vector
+
     p.set("action","calc_struct_nlnstiff");
     discret_.Evaluate(p,stiff_,null,fint_,null,null);
 
@@ -472,7 +473,7 @@ void StatMechTime::FullNewton(RCP<Epetra_MultiVector> randomnumbers)
       double wanted = tolres;
       solver_.AdaptTolerance(wanted,worst,adaptolbetter);
     }
-    solver_.Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,numiter==0);
+    solver_.Solve(stiff_->EpetraOperator(),disi_,fresm_,true,numiter==0);
     solver_.ResetTolerance();
 
 
@@ -512,14 +513,14 @@ void StatMechTime::FullNewton(RCP<Epetra_MultiVector> randomnumbers)
       p.set("THERMALBATH",Teuchos::getIntegralValue<INPAR::STATMECH::ThermalBathType>(statmechmanager_->statmechparams_,"THERMALBATH"));
       p.set("FRICTION_MODEL",Teuchos::getIntegralValue<INPAR::STATMECH::FrictionModel>(statmechmanager_->statmechparams_,"FRICTION_MODEL"));
       p.set("RandomNumbers",randomnumbers);
-      
+
       //computing current gradient in z-direction of shear flow (assuming sine shear load with maximal amplitude SHEARAMPLITUDE and frequency SHEARFREQUENCY)
       double omegashear = 2*PI*(statmechmanager_->statmechparams_).get<double>("SHEARFREQUENCY",0.0);
       double currentshear = cos(omegashear*timen)*(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0)*omegashear;
       //osciallations start only after equilibration; set shear rate to zero before
       if( timen < (statmechmanager_->statmechparams_).get<double>("START_FACTOR",0.0)*params_.get<double>("max time",0.0) )
         currentshear = 0;
-      p.set("CURRENTSHEAR",currentshear); 
+      p.set("CURRENTSHEAR",currentshear);
 
       // set vector values needed by elements
       discret_.ClearState();
@@ -636,8 +637,8 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
   #ifndef STRUGENALPHA_BE
     //double delta = beta;
   #endif
-  
-  
+
+
   double sumsolver     = 0;
   double sumevaluation = 0;
   const double tbegin = ds_cputime();
@@ -686,7 +687,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
 
     //backward Euler
     stiff_->Complete();
-    
+
     //the following part was especially introduced for Brownian dynamics
     {
       // create the parameters for the discretization
@@ -705,9 +706,9 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
       //osciallations start only after equilibration; set shear rate to zero before
       if( timen < (statmechmanager_->statmechparams_).get<double>("START_FACTOR",0.0)*params_.get<double>("max time",0.0) )
         currentshear = 0;
-      p.set("CURRENTSHEAR",currentshear); 
+      p.set("CURRENTSHEAR",currentshear);
       p.set("FRICTION_MODEL",Teuchos::getIntegralValue<INPAR::STATMECH::FrictionModel>(statmechmanager_->statmechparams_,"FRICTION_MODEL"));
-      
+
       //evaluate ptc stiffness contribution in all the elements
       discret_.Evaluate(p,stiff_,null,null,null,null);
     }
@@ -726,12 +727,12 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
       double wanted = tolres;
       solver_.AdaptTolerance(wanted,worst,adaptolbetter);
     }
-    solver_.Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,numiter==0);
+    solver_.Solve(stiff_->EpetraOperator(),disi_,fresm_,true,numiter==0);
     solver_.ResetTolerance();
-    
+
     sumsolver += ds_cputime() - t_solver;
 
-    
+
 
     //---------------------------------- update mid configuration values
     // displacements
@@ -767,15 +768,15 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
       p.set("THERMALBATH",Teuchos::getIntegralValue<INPAR::STATMECH::ThermalBathType>(statmechmanager_->statmechparams_,"THERMALBATH"));
       p.set("FRICTION_MODEL",Teuchos::getIntegralValue<INPAR::STATMECH::FrictionModel>(statmechmanager_->statmechparams_,"FRICTION_MODEL"));
       p.set("RandomNumbers",randomnumbers);
-      
+
       //computing current gradient in z-direction of shear flow (assuming sine shear load with maximal amplitude SHEARAMPLITUDE and frequency SHEARFREQUENCY)
       double omegashear = 2*PI*(statmechmanager_->statmechparams_).get<double>("SHEARFREQUENCY",0.0);
       double currentshear = cos(omegashear*timen)*(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0)*omegashear;
       //osciallations start only after equilibration; set shear rate to zero before
       if( timen < (statmechmanager_->statmechparams_).get<double>("START_FACTOR",0.0)*params_.get<double>("max time",0.0) )
         currentshear = 0;
-      p.set("CURRENTSHEAR",currentshear); 
-      
+      p.set("CURRENTSHEAR",currentshear);
+
 
       // set vector values needed by elements
       discret_.ClearState();
@@ -790,14 +791,14 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
 
       //discret_.SetState("velocity",velm_); // not used at the moment
       fint_->PutScalar(0.0);  // initialise internal force vector
-      
+
       const double t_evaluate = ds_cputime();
-      
+
       discret_.Evaluate(p,stiff_,null,fint_,null,null);
-      
+
       sumevaluation += ds_cputime() - t_evaluate;
-      
-      
+
+
 
       discret_.ClearState();
 
@@ -855,17 +856,17 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
     {
       // TTE step size control
       double ttau=0.75;
-      RCP<Epetra_Vector> d1 = LINALG::CreateVector(stiff_->RowMap(),false);
+      RCP<Epetra_Vector> d1 = LINALG::CreateVector(SystemMatrix()->RowMap(),false);
       d1->Update(1.0,*disi_,-1.0,*x0,0.0);
       d1->Scale(dti0);
-      RCP<Epetra_Vector> d0 = LINALG::CreateVector(stiff_->RowMap(),false);
+      RCP<Epetra_Vector> d0 = LINALG::CreateVector(SystemMatrix()->RowMap(),false);
       d0->Update(1.0,*x0,-1.0,*xm,0.0);
       d0->Scale(dtim);
       double dt0 = 1/dti0;
       double dtm = 1/dtim;
-      RCP<Epetra_Vector> xpp = LINALG::CreateVector(stiff_->RowMap(),false);
+      RCP<Epetra_Vector> xpp = LINALG::CreateVector(SystemMatrix()->RowMap(),false);
       xpp->Update(2.0/(dt0+dtm),*d1,-2.0/(dt0+dtm),*d0,0.0);
-      RCP<Epetra_Vector> xtt = LINALG::CreateVector(stiff_->RowMap(),false);
+      RCP<Epetra_Vector> xtt = LINALG::CreateVector(SystemMatrix()->RowMap(),false);
       for (int i=0; i<xtt->MyLength(); ++i) (*xtt)[i] = abs((*xpp)[i])/(1.0+abs((*disi_)[i]));
       double ett;
       xtt->MaxValue(&ett);
@@ -903,7 +904,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
   }
 
   params_.set<int>("num iterations",numiter);
-  
+
   if(!discret_.Comm().MyPID())
   std::cout << "\n***\nevaluation time: " << sumevaluation<< " seconds\nsolver time: "<< sumsolver <<" seconds\ntotal solution time: "<<ds_cputime() - tbegin<<" seconds\n***\n";
 

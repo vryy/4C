@@ -712,7 +712,7 @@ void LINALG::ApplyDirichlettoSystem(RCP<LINALG::SparseOperator> A,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::ApplyDirichlettoSystem(RCP<LINALG::SparseMatrix>   A,
+void LINALG::ApplyDirichlettoSystem(RCP<LINALG::SparseOperator> A,
                                     RCP<Epetra_Vector>&         x,
                                     RCP<Epetra_Vector>&         b,
                                     RCP<const LINALG::SparseMatrix> trafo,
@@ -720,7 +720,7 @@ void LINALG::ApplyDirichlettoSystem(RCP<LINALG::SparseMatrix>   A,
                                     const Epetra_Map&           dbcmap)
 {
   if (trafo != Teuchos::null)
-    A->ApplyDirichletWithTrafo(trafo,dbcmap);
+    Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(A)->ApplyDirichletWithTrafo(trafo,dbcmap);
   else
     A->ApplyDirichlet(dbcmap);
   ApplyDirichlettoSystem(x,b,dbcval,dbcmap);
@@ -1582,7 +1582,7 @@ void LINALG::PrintMatrixInMatlabFormat(std::string fname,
         for (j = 0; j < NumIndices ; j++) {
           os << std::setw(10) << Row+1 ; // increase index by one for matlab
           os << std::setw(10) << Indices[j]+1;  // increase index by one for matlab
-          os << std::setw(30) << std::setprecision(16) << std::scientific << Values[j]; 
+          os << std::setw(30) << std::setprecision(16) << std::scientific << Values[j];
           os << endl;
         }
       }

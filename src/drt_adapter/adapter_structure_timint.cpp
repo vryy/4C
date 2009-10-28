@@ -54,7 +54,7 @@ ADAPTER::StructureTimInt::StructureTimInt(
     dserror("Failed to create structural integrator");
 
   // set-up FSI interface
-  DRT::UTILS::SetupNDimExtractor(*discret, "FSICoupling", interface_);
+  interface_.Setup(*discret_, *discret_->DofRowMap());
   structure_->SetSurfaceFSI(&interface_);
 }
 
@@ -118,7 +118,24 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::StructureTimInt::DofRowMap()
  * by displacements D_{n+1} */
 Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::StructureTimInt::SystemMatrix()
 {
-  return structure_->Stiff();
+  return structure_->SystemMatrix();
+}
+
+
+/*----------------------------------------------------------------------*/
+/* stiffness, i.e. force residual R_{n+1} differentiated
+ * by displacements D_{n+1} */
+Teuchos::RCP<LINALG::BlockSparseMatrixBase> ADAPTER::StructureTimInt::BlockSystemMatrix()
+{
+  return structure_->BlockSystemMatrix();
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void ADAPTER::StructureTimInt::UseBlockMatrix()
+{
+  structure_->UseBlockMatrix(Interface(),Interface());
 }
 
 
@@ -155,8 +172,8 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimInt::FExtn()
 
 //   // extrapolate d(n+1) at the interface and substract d(n)
 
-//   Teuchos::RCP<Epetra_Vector> idism = interface_.ExtractCondVector(structure_->Dispm());
-//   Teuchos::RCP<Epetra_Vector> idis  = interface_.ExtractCondVector(structure_->Disp ());
+//   Teuchos::RCP<Epetra_Vector> idism = interface_.ExtractFSICondVector(structure_->Dispm());
+//   Teuchos::RCP<Epetra_Vector> idis  = interface_.ExtractFSICondVector(structure_->Disp ());
 
 //   double alphaf = structure_->AlphaF();
 //   idis->Update(1./(1.-alphaf), *idism, -alphaf/(1.-alphaf)-1.);
@@ -173,8 +190,8 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimInt::FExtn()
 
 //   // extrapolate d(n+1) at the interface
 
-//   Teuchos::RCP<Epetra_Vector> idism = interface_.ExtractCondVector(structure_->Dispm());
-//   Teuchos::RCP<Epetra_Vector> idis  = interface_.ExtractCondVector(structure_->Disp ());
+//   Teuchos::RCP<Epetra_Vector> idism = interface_.ExtractFSICondVector(structure_->Dispm());
+//   Teuchos::RCP<Epetra_Vector> idis  = interface_.ExtractFSICondVector(structure_->Disp ());
 
 //   double alphaf = structure_->AlphaF();
 //   idis->Update(1./(1.-alphaf), *idism, -alphaf/(1.-alphaf));
@@ -258,12 +275,12 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimInt::RelaxationSolve(
   Teuchos::RCP<Epetra_Vector> iforce
 )
 {
-  Teuchos::RCP<Epetra_Vector> relax = interface_.InsertCondVector(iforce);
+  Teuchos::RCP<Epetra_Vector> relax = interface_.InsertFSICondVector(iforce);
   structure_->SetForceInterface(relax);
   Teuchos::RCP<Epetra_Vector> idisi = structure_->SolveRelaxationLinear();
 
   // we are just interested in the incremental interface displacements
-  idisi = interface_.ExtractCondVector(idisi);
+  idisi = interface_.ExtractFSICondVector(idisi);
   return idisi;
 }
 
@@ -273,10 +290,10 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimInt::ExtractInterfaceDispn()
 {
 #ifdef INVERSEDESIGNCREATE
   dserror("Check this");
-  return Teuchos::rcp(new Epetra_Vector(*interface_.CondMap()));
+  return Teuchos::rcp(new Epetra_Vector(*interface_.FSICondMap()));
 #else
   Teuchos::RCP<Epetra_Vector> idis
-    = interface_.ExtractCondVector(structure_->Dis());
+    = interface_.ExtractFSICondVector(structure_->Dis());
   return idis;
 #endif
 }
@@ -287,10 +304,10 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimInt::ExtractInterfaceDispnp()
 {
 #ifdef INVERSEDESIGNCREATE
   dserror("Check this");
-  return Teuchos::rcp(new Epetra_Vector(*interface_.CondMap()));
+  return Teuchos::rcp(new Epetra_Vector(*interface_.FSICondMap()));
 #else
   Teuchos::RCP<Epetra_Vector> idis
-    = interface_.ExtractCondVector(structure_->DisNew());
+    = interface_.ExtractFSICondVector(structure_->DisNew());
   return idis;
 #endif
 }
@@ -300,7 +317,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimInt::ExtractInterfaceDispnp()
 Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimInt::ExtractInterfaceForces()
 {
   Teuchos::RCP<Epetra_Vector> iforce
-    = interface_.ExtractCondVector(structure_->FextNew());
+    = interface_.ExtractFSICondVector(structure_->FextNew());
   return iforce;
 }
 
@@ -319,7 +336,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimInt::PredictInterfaceDispnp()
   {
     // d(n)
     // respect Dirichlet conditions at the interface (required for pseudo-rigid body)
-    idis  = interface_.ExtractCondVector(structure_->DisNew());
+    idis  = interface_.ExtractFSICondVector(structure_->DisNew());
     break;
   }
   case 2:
@@ -331,9 +348,9 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimInt::PredictInterfaceDispnp()
     // d(n)+dt*v(n)
     double dt = sdynparams_->get<double>("TIMESTEP");
 
-    idis = interface_.ExtractCondVector(structure_->Dis());
+    idis = interface_.ExtractFSICondVector(structure_->Dis());
     Teuchos::RCP<Epetra_Vector> ivel
-      = interface_.ExtractCondVector(structure_->Vel());
+      = interface_.ExtractFSICondVector(structure_->Vel());
 
     idis->Update(dt,* ivel, 1.0);
     break;
@@ -343,11 +360,11 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimInt::PredictInterfaceDispnp()
     // d(n)+dt*v(n)+0.5*dt^2*a(n)
     double dt = sdynparams_->get<double>("TIMESTEP");
 
-    idis = interface_.ExtractCondVector(structure_->Dis());
+    idis = interface_.ExtractFSICondVector(structure_->Dis());
     Teuchos::RCP<Epetra_Vector> ivel
-      = interface_.ExtractCondVector(structure_->Vel());
+      = interface_.ExtractFSICondVector(structure_->Vel());
     Teuchos::RCP<Epetra_Vector> iacc
-      = interface_.ExtractCondVector(structure_->Acc());
+      = interface_.ExtractFSICondVector(structure_->Acc());
 
     idis->Update(dt, *ivel, 0.5*dt*dt, *iacc, 1.0);
     break;
@@ -411,14 +428,14 @@ void ADAPTER::StructureTimInt::ApplyInterfaceRobinValue(
   // after successfully reaching timestep end.
   // This is why an additional robin force vector is needed.
 
-  Teuchos::RCP<Epetra_Vector> idisn  = interface_.ExtractCondVector(structure_->Disp());
-  Teuchos::RCP<Epetra_Vector> frobin = interface_.ExtractCondVector(structure_->FRobin());
+  Teuchos::RCP<Epetra_Vector> idisn  = interface_.ExtractFSICondVector(structure_->Disp());
+  Teuchos::RCP<Epetra_Vector> frobin = interface_.ExtractFSICondVector(structure_->FRobin());
 
   // save robin coupling values in frobin vector (except iforce which
   // is passed separately)
   frobin->Update(alphas/dt,*idisn,alphas*(1-alphaf),*ifluidvel,0.0);
 
-  interface_.InsertCondVector(frobin,structure_->FRobin());
+  interface_.InsertFSICondVector(frobin,structure_->FRobin());
   structure_->ApplyExternalForce(interface_,iforce);
 */
 }

@@ -361,6 +361,7 @@ OBJS_DRT_ADAPT= src/drt_adapter/adapter_algorithmbase.o \
                 src/drt_adapter/adapter_structure_contactstrugenalpha.o \
                 src/drt_adapter/adapter_structure_timint.o \
                 src/drt_adapter/adapter_structure_constrained.o \
+                src/drt_adapter/adapter_structure_lung.o \
                 src/drt_adapter/adapter_structure_wrapper.o \
                 src/drt_adapter/adapter_thermo.o \
                 src/drt_adapter/adapter_thermo_timint.o \
@@ -371,6 +372,7 @@ OBJS_DRT_ADAPT= src/drt_adapter/adapter_algorithmbase.o \
                 src/drt_adapter/adapter_fluid_impl.o \
                 src/drt_adapter/adapter_fluid_genalpha.o \
                 src/drt_adapter/adapter_xfluid_impl.o \
+                src/drt_adapter/adapter_fluid_lung.o \
                 src/drt_adapter/adapter_scatra_base_algorithm.o \
                 src/drt_adapter/adapter_scatra_fluid_coupling_algorithm.o \
                 src/drt_adapter/adapter_scatra_fluid_ale_coupling_algo.o \

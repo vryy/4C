@@ -138,10 +138,10 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
 
     // store contact state to contact nodes (active or inactive)
     contactmanager_->GetStrategy().StoreNodalQuantities(AbstractStrategy::activeold);
-  	
+
   	// store D and M to old ones
     contactmanager_->GetStrategy().StoreDM("old");
-  	
+
    	// store nodal entries from D and M to old ones
     contactmanager_->GetStrategy().StoreDMToNodes();
   }
@@ -322,7 +322,7 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
     if (pot_man_!=null)
     {
       p.set("pot_man", pot_man_);
-      pot_man_->EvaluatePotential(p,dism_,fint_,stiff_);
+      pot_man_->EvaluatePotential(p,dism_,fint_,SystemMatrix());
     }
 
     // do NOT finalize the stiffness matrix, add mass and damping to it later
@@ -416,7 +416,7 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   contactmanager_->GetStrategy().EvaluateMortar();
 
   contactmanager_->GetStrategy().Initialize();
-  contactmanager_->GetStrategy().Evaluate(stiff_,fresm_);
+  contactmanager_->GetStrategy().Evaluate(SystemMatrix(),fresm_);
 
   //---------------------------------------------------- contact forces
   contactmanager_->GetStrategy().ContactForces(fresmcopy);
@@ -507,10 +507,10 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
 
     // store contact state to contact nodes (active or inactive)
     contactmanager_->GetStrategy().StoreNodalQuantities(AbstractStrategy::activeold);
-  	
+
   	// store D and M to old ones
     contactmanager_->GetStrategy().StoreDM("old");
-  	
+
   	// store nodal entries from D and M to old ones
     contactmanager_->GetStrategy().StoreDMToNodes();
   }
@@ -614,7 +614,7 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
     if (pot_man_!=null)
     {
       p.set("pot_man", pot_man_);
-      pot_man_->EvaluatePotential(p,dism_,fint_,stiff_);
+      pot_man_->EvaluatePotential(p,dism_,fint_,SystemMatrix());
     }
 
     // do NOT finalize the stiffness matrix, add mass and damping to it later
@@ -706,7 +706,7 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   contactmanager_->GetStrategy().EvaluateMortar();
 
   contactmanager_->GetStrategy().Initialize();
-  contactmanager_->GetStrategy().Evaluate(stiff_,fresm_);
+  contactmanager_->GetStrategy().Evaluate(SystemMatrix(),fresm_);
 
   //---------------------------------------------------- contact forces
   contactmanager_->GetStrategy().ContactForces(fresmcopy);
@@ -754,7 +754,7 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
 /*----------------------------------------------------------------------*
  |  setup equilibrium with additional external forces        u.may 05/09|
  *----------------------------------------------------------------------*/
-void CONTACT::ContactStruGenAlpha::ApplyExternalForce(  const LINALG::MapExtractor& extractor,
+void CONTACT::ContactStruGenAlpha::ApplyExternalForce(  const STR::UTILS::MapExtractor& extractor,
                                                         Teuchos::RCP<Epetra_Vector> iforce)
 {
   // -------------------------------------------------------------------
@@ -809,7 +809,7 @@ void CONTACT::ContactStruGenAlpha::ApplyExternalForce(  const LINALG::MapExtract
 
   // Add iforce to fextn_
   // there might already be (body) forces at the interface nodes
-  extractor.AddCondVector(iforce,fextn_);
+  extractor.AddFSICondVector(iforce,fextn_);
 
   //------------------------------- compute interpolated external forces
   // external mid-forces F_{ext;n+1-alpha_f} (fextm)
@@ -862,7 +862,7 @@ void CONTACT::ContactStruGenAlpha::ApplyExternalForce(  const LINALG::MapExtract
     if (pot_man_!=null)
     {
       p.set("pot_man", pot_man_);
-      pot_man_->EvaluatePotential(p,dism_,fint_,stiff_);
+      pot_man_->EvaluatePotential(p,dism_,fint_,SystemMatrix());
     }
 
     // do NOT finalize the stiffness matrix, add mass and damping to it later
@@ -874,12 +874,12 @@ void CONTACT::ContactStruGenAlpha::ApplyExternalForce(  const LINALG::MapExtract
       double alphas = params_.get<double>("alpha s",-1.);
 
       // Add structural part of Robin force
-      fsisurface_->AddCondVector(alphas/dt,
-                                 fsisurface_->ExtractCondVector(dism_),
-                                 fint_);
+      fsisurface_->AddFSICondVector(alphas/dt,
+                                    fsisurface_->ExtractFSICondVector(dism_),
+                                    fint_);
 
       double scale = alphas*(1.-alphaf)/dt;
-      const Epetra_Map& robinmap = *fsisurface_->CondMap();
+      const Epetra_Map& robinmap = *fsisurface_->FSICondMap();
       int numrdofs = robinmap.NumMyElements();
       int* rdofs = robinmap.MyGlobalElements();
       for (int lid=0; lid<numrdofs; ++lid)
@@ -970,7 +970,7 @@ void CONTACT::ContactStruGenAlpha::ApplyExternalForce(  const LINALG::MapExtract
   contactmanager_->GetStrategy().EvaluateMortar();
 
   contactmanager_->GetStrategy().Initialize();
-  contactmanager_->GetStrategy().Evaluate(stiff_,fresm_);
+  contactmanager_->GetStrategy().Evaluate(SystemMatrix(),fresm_);
 
   //---------------------------------------------------- contact forces
   contactmanager_->GetStrategy().ContactForces(fresmcopy);
@@ -1110,7 +1110,7 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
   while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) && numiter<maxiter)
   {
     //-----------------------------transform to local coordinate systems
-    if (locsysmanager_ != null) locsysmanager_->RotateGlobalToLocal(stiff_,fresm_);
+    if (locsysmanager_ != null) locsysmanager_->RotateGlobalToLocal(SystemMatrix(),fresm_);
 
     //----------------------- apply dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
@@ -1121,12 +1121,12 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
     std::ostringstream filename;
     const std::string filebase = "sparsematrix";
     filename << "o/matlab_output/" << filebase << "_" << globindex << "_" << numiter+1 << ".mtl";
-    LINALG::PrintMatrixInMatlabFormat(filename.str().c_str(),*(stiff_->EpetraMatrix()));
-    
+    LINALG::PrintMatrixInMatlabFormat(filename.str().c_str(),*(SystemMatrix()->EpetraMatrix()));
+
     // print sparsity pattern to file
-    LINALG::PrintSparsityToPostscript( *(stiff_->EpetraMatrix()) );
+    LINALG::PrintSparsityToPostscript( *(SystemMatrix()->EpetraMatrix()) );
 #endif // #ifdef CONTACTEIG
-    
+
     //--------------------------------------------------- solve for disi
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
     if (isadapttol && numiter)
@@ -1135,7 +1135,7 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
       double wanted = tolres;
       solver_.AdaptTolerance(wanted,worst,adaptolbetter);
     }
-    solver_.Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,numiter==0);
+    solver_.Solve(stiff_->EpetraOperator(),disi_,fresm_,true,numiter==0);
     solver_.ResetTolerance();
 
     //----------------------- transform back to global coordinate system
@@ -1239,7 +1239,7 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
       if (pot_man_!=null)
       {
         p.set("pot_man", pot_man_);
-        pot_man_->EvaluatePotential(p,dism_,fint_,stiff_);
+        pot_man_->EvaluatePotential(p,dism_,fint_,SystemMatrix());
       }
 
       // do NOT finalize the stiffness matrix to add masses to it later
@@ -1251,12 +1251,12 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
         double alphas = params_.get<double>("alpha s",-1.);
 
         // Add structural part of Robin force
-        fsisurface_->AddCondVector(alphas/dt,
-                                   fsisurface_->ExtractCondVector(dism_),
-                                   fint_);
+        fsisurface_->AddFSICondVector(alphas/dt,
+                                      fsisurface_->ExtractFSICondVector(dism_),
+                                      fint_);
 
         double scale = alphas*(1.-alphaf)/dt;
-        const Epetra_Map& robinmap = *fsisurface_->CondMap();
+        const Epetra_Map& robinmap = *fsisurface_->FSICondMap();
         int numrdofs = robinmap.NumMyElements();
         int* rdofs = robinmap.MyGlobalElements();
         for (int lid=0; lid<numrdofs; ++lid)
@@ -1345,7 +1345,7 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
         contactmanager_->GetStrategy().EvaluateRelMov(disi_);
 
       contactmanager_->GetStrategy().Initialize();
-      contactmanager_->GetStrategy().Evaluate(stiff_,fresm_);
+      contactmanager_->GetStrategy().Evaluate(SystemMatrix(),fresm_);
     }
 
     //--------------------------------------------------- contact forces
@@ -1470,7 +1470,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
   static int globindex = 0;
   ++globindex;
 #endif // #ifdef CONTACTEIG
-  
+
   // active set search and geometrical nonlinearity are merged into
   // ONE Newton loop, thus we have to check for convergence of the
   // active set here, too!
@@ -1482,7 +1482,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
     const double t_start = ds_cputime();
 #endif // #ifdef CONTACTTIME
     //-----------------------------transform to local coordinate systems
-    if (locsysmanager_ != null) locsysmanager_->RotateGlobalToLocal(stiff_,fresm_);
+    if (locsysmanager_ != null) locsysmanager_->RotateGlobalToLocal(SystemMatrix(),fresm_);
 
     //----------------------- apply dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
@@ -1491,14 +1491,14 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
 #ifdef CONTACTEIG
     // print to file in matlab format
     std::ostringstream filename;
-    const std::string filebase = "sparsematrix";  
+    const std::string filebase = "sparsematrix";
     filename << "o/matlab_output/" << filebase << "_" << globindex << "_" << numiter+1 << ".mtl";
-    LINALG::PrintMatrixInMatlabFormat(filename.str().c_str(),*(stiff_->EpetraMatrix()));
-    
+    LINALG::PrintMatrixInMatlabFormat(filename.str().c_str(),*(SystemMatrix()->EpetraMatrix()));
+
     // print sparsity pattern to file
-    LINALG::PrintSparsityToPostscript( *(stiff_->EpetraMatrix()) );
+    LINALG::PrintSparsityToPostscript( *(SystemMatrix()->EpetraMatrix()) );
 #endif // #ifdef CONTACTEIG
-    
+
     //--------------------------------------------------- solve for disi
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
     if (isadapttol && numiter)
@@ -1507,7 +1507,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
       double wanted = tolres;
       solver_.AdaptTolerance(wanted,worst,adaptolbetter);
     }
-    solver_.Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,numiter==0);
+    solver_.Solve(stiff_->EpetraOperator(),disi_,fresm_,true,numiter==0);
     solver_.ResetTolerance();
 
     //----------------------- transform back to global coordinate system
@@ -1618,7 +1618,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
       if (pot_man_!=null)
       {
         p.set("pot_man", pot_man_);
-        pot_man_->EvaluatePotential(p,dism_,fint_,stiff_);
+        pot_man_->EvaluatePotential(p,dism_,fint_,SystemMatrix());
       }
 
       // do NOT finalize the stiffness matrix to add masses to it later
@@ -1630,12 +1630,12 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
         double alphas = params_.get<double>("alpha s",-1.);
 
         // Add structural part of Robin force
-        fsisurface_->AddCondVector(alphas/dt,
-                                   fsisurface_->ExtractCondVector(dism_),
-                                   fint_);
+        fsisurface_->AddFSICondVector(alphas/dt,
+                                      fsisurface_->ExtractFSICondVector(dism_),
+                                      fint_);
 
         double scale = alphas*(1.-alphaf)/dt;
-        const Epetra_Map& robinmap = *fsisurface_->CondMap();
+        const Epetra_Map& robinmap = *fsisurface_->FSICondMap();
         int numrdofs = robinmap.NumMyElements();
         int* rdofs = robinmap.MyGlobalElements();
         for (int lid=0; lid<numrdofs; ++lid)
@@ -1760,7 +1760,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
       const double t_start34 = ds_cputime();
 #endif // #ifdef CONTACTTIME
       contactmanager_->GetStrategy().Initialize();
-      contactmanager_->GetStrategy().Evaluate(stiff_,fresm_);
+      contactmanager_->GetStrategy().Evaluate(SystemMatrix(),fresm_);
 #ifdef CONTACTTIME
       const double t_end34 = ds_cputime()-t_start34;
       cout << "\nContact.StiffFresm: " << t_end34 << " seconds";
@@ -1977,10 +1977,10 @@ void CONTACT::ContactStruGenAlpha::Update()
     Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(contactmanager_->GetStrategy().Params(),"CONTACT");
   if(ctype != INPAR::CONTACT::contact_normal)
   {
-  	
+
   	// store contact state to contact nodes (active or inactive)
     contactmanager_->GetStrategy().StoreNodalQuantities(AbstractStrategy::activeold);
-  	  	
+
   	// store nodal entries of D and M to old ones
     contactmanager_->GetStrategy().StoreDMToNodes();
 
@@ -2076,7 +2076,7 @@ void CONTACT::ContactStruGenAlpha::Output()
   if (!errfile) printerr = false;
 
   bool isdatawritten = false;
-  
+
   //------------------------------- evaluate contact stresses for output
   contactmanager_->GetStrategy().OutputStresses();
 	RCP<Epetra_Map> problem = (contactmanager_->GetStrategy().ProblemRowMap());
@@ -2085,12 +2085,12 @@ void CONTACT::ContactStruGenAlpha::Output()
   RCP<Epetra_Vector> normalstresses = contactmanager_->GetStrategy().ContactNorStress();
 	RCP<Epetra_Vector> normalstressesexp = rcp(new Epetra_Vector(*problem));
 	LINALG::Export(*normalstresses, *normalstressesexp);
-	
+
   // tangential plane
 	RCP<Epetra_Vector> tangentialstresses = contactmanager_->GetStrategy().ContactTanStress();
 	RCP<Epetra_Vector> tangentialstressesexp = rcp(new Epetra_Vector(*problem));
 	LINALG::Export(*tangentialstresses, *tangentialstressesexp);
-	
+
   //------------------------------------------------- write restart step
   if (writeresevry and istep%writeresevry==0)
   {
@@ -2224,7 +2224,7 @@ void CONTACT::ContactStruGenAlpha::Integrate()
 #ifdef CONTACTGMSH3
   contactmanager_->GetStrategy().VisualizeGmsh(0,0);
 #endif // #ifdef CONTACTGMSH2
-  
+
   // can have values "full newton" , "modified newton" , "nonlinear cg"
   string equil = params_.get<string>("equilibrium iteration","full newton");
 
@@ -2236,9 +2236,9 @@ void CONTACT::ContactStruGenAlpha::Integrate()
   else dserror("Unknown type of predictor");
 
   // unknown types of nonlinear iteration schemes
-  if (equil != "full newton" && equil != "line search newton")  
+  if (equil != "full newton" && equil != "line search newton")
     dserror("Unknown type of equilibrium iteration");
-  
+
   //********************************************************************
   // OPTIONS FOR PRIMAL-DUAL ACTIVE SET STRATEGY (PDASS)
   //********************************************************************
@@ -2254,19 +2254,19 @@ void CONTACT::ContactStruGenAlpha::Integrate()
   // linearization (=geimetrical nonlinearity) is treated by a standard
   // Newton scheme. This yields TWO nested iteration loops
   //********************************************************************
-  
+
   INPAR::CONTACT::SolvingStrategy soltype =
       Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(contactmanager_->GetStrategy().Params(),"STRATEGY");
   bool semismooth = Teuchos::getIntegralValue<int>(contactmanager_->GetStrategy().Params(),"SEMI_SMOOTH_NEWTON");
 
   // Solving Strategy using Lagrangian Multipliers
   // here we can do sa SEMI-SMOOTH NEWTON  -or- a FIXED-POINT APPROACH
-  
+
   if (soltype == INPAR::CONTACT::solution_lagmult)
   {
     if (discret_.Comm().MyPID() == 0)
       cout << "===== Lagrange multiplier strategy =============================" << endl;
-    
+
     //********************************************************************
     // 1) SEMI-SMOOTH NEWTON
     // The search for the correct active set (=contact nonlinearity) and
@@ -2282,22 +2282,22 @@ void CONTACT::ContactStruGenAlpha::Integrate()
   #ifdef CONTACTTIME
         const double t_start = ds_cputime();
   #endif // #ifdef CONTACTTIME
-  
+
         // predictor step
         if      (predictor==1) ConstantPredictor();
         else if (predictor==2) ConsistentPredictor();
-  
+
         // LOOP2: nonlinear iteration (Newton)
         if (equil=="full newton") SemiSmoothNewton();
         else if (equil=="line search newton") SemiSmoothNewtonLineSearch();
-  
+
         UpdateandOutput();
-  
+
   #ifdef CONTACTTIME
         const double t_end = ds_cputime()-t_start;
         cout << "\n***\nTime Step (overall): " << t_end << " seconds\n***\n";
   #endif // #ifdef CONTACTTIME
-  
+
         double time = params_.get<double>("total time",0.0);
         if (time>=maxtime) break;
       }
@@ -2315,22 +2315,22 @@ void CONTACT::ContactStruGenAlpha::Integrate()
       // LOOP1: time steps
       for (int i=step; i<nstep; ++i)
       {
-  
+
         // LOOP2: active set strategy
         while (contactmanager_->GetStrategy().ActiveSetConverged()==false)
         {
           // predictor step
           if      (predictor==1) ConstantPredictor();
           else if (predictor==2) ConsistentPredictor();
-  
+
           // LOOP3: nonlinear iteration (Newton)
           if (equil=="full newton") FullNewton();
           else if (equil=="line search newton") FullNewtonLineSearch();
-  
+
           // update of active set (fixed-point)
           contactmanager_->GetStrategy().UpdateActiveSet();
         }
-  
+
         UpdateandOutput();
         double time = params_.get<double>("total time",0.0);
         if (time>=maxtime) break;
@@ -2340,7 +2340,7 @@ void CONTACT::ContactStruGenAlpha::Integrate()
     // END: options for primal-dual active set strategy (PDASS)
     //********************************************************************
   }
-  
+
   // Solving Strategy using Regularization Techniques (Penalty Method)
   // here we have just one option: the ordinary NEWTON
   else if (soltype == INPAR::CONTACT::solution_penalty)
@@ -2366,13 +2366,13 @@ void CONTACT::ContactStruGenAlpha::Integrate()
       else if (equil=="line search newton") FullNewtonLineSearch();
 
       strategy.UpdateConstraintNorm();
-      UpdateandOutput();  
-      double time = params_.get<double>("total time", 0.0);      
+      UpdateandOutput();
+      double time = params_.get<double>("total time", 0.0);
       if (time>=maxtime) break;
     }
 
   }
-  
+
   // Solving Strategy using Augmented Lagrange Techniques (with Uzawa)
   // here we have just one option: the ordinary NEWTON
   else if (soltype == INPAR::CONTACT::solution_auglag)
@@ -2389,44 +2389,44 @@ void CONTACT::ContactStruGenAlpha::Integrate()
     {
       // reset penalty parameter
       strategy.ResetPenalty();
-      
+
       // predictor step
        if (predictor==1)
          ConstantPredictor();
        else if (predictor==2)
          ConsistentPredictor();
-              
+
       // get tolerance and maximum Uzawa steps
       double eps = contactmanager_->GetStrategy().Params().get<double>("UZAWACONSTRTOL");
       int maxuzawaiter = contactmanager_->GetStrategy().Params().get<int>("UZAWAMAXSTEPS");
-      
+
       // LOOP2: augmented Lagrangian (Uzawa)
       int uzawaiter=0;
       do
-      { 
+      {
         // increase iteration index
         ++uzawaiter;
         if (uzawaiter > maxuzawaiter)
           dserror("Uzawa unconverged in %d iterations",maxuzawaiter);
-        
+
         if (discret_.Comm().MyPID() == 0)
           cout << "Starting Uzawa step No. " << uzawaiter << endl;
-        
+
         // LOOP3: nonlinear iteration (Newton)
         if (equil=="full newton") FullNewton();
         else if (equil=="line search newton") FullNewtonLineSearch();
-        
+
         // update constraint norm and penalty parameter
         strategy.UpdateConstraintNorm(uzawaiter);
-        
+
         // store Lagrange multipliers for next Uzawa step
         strategy.UpdateAugmentedLagrange();
         strategy.StoreNodalQuantities(AbstractStrategy::lmuzawa);
-        
+
       } while (strategy.ConstraintNorm() >= eps);
-      
-      UpdateandOutput();       
-      double time = params_.get<double>("total time", 0.0);      
+
+      UpdateandOutput();
+      double time = params_.get<double>("total time", 0.0);
       if (time>=maxtime) break;
     }
   }

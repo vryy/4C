@@ -118,6 +118,20 @@ void LINALG::BlockSparseMatrixBase::Zero()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void LINALG::BlockSparseMatrixBase::Reset()
+{
+  for (int i=0; i<Rows(); ++i)
+  {
+    for (int j=0; j<Cols(); ++j)
+    {
+      Matrix(i,j).Reset();
+    }
+  }
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void LINALG::BlockSparseMatrixBase::Complete()
 {
   for (int r=0; r<Rows(); ++r)
@@ -304,6 +318,71 @@ int LINALG::BlockSparseMatrixBase::ApplyInverse(const Epetra_MultiVector &X, Epe
 {
   dserror("LINALG::BlockSparseMatrixBase::ApplyInverse not implemented");
   return -1;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void LINALG::BlockSparseMatrixBase::Add(const LINALG::SparseOperator& A,
+                                        const bool transposeA,
+                                        const double scalarA,
+                                        const double scalarB)
+{
+  A.AddOther(*this, transposeA, scalarA, scalarB);
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+const void LINALG::BlockSparseMatrixBase::AddOther(LINALG::BlockSparseMatrixBase& A,
+                                                   const bool transposeA,
+                                                   const double scalarA,
+                                                   const double scalarB) const
+{
+  A.Add(*this, transposeA, scalarA, scalarB);
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+const void LINALG::BlockSparseMatrixBase::AddOther(LINALG::SparseMatrix& A,
+                                                   const bool transposeA,
+                                                   const double scalarA,
+                                                   const double scalarB) const
+{
+  dserror("BlockSparseMatrix and SparseMatrix cannot be added");
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void LINALG::BlockSparseMatrixBase::Add(const LINALG::BlockSparseMatrixBase& A,
+                                        const bool transposeA,
+                                        const double scalarA,
+                                        const double scalarB)
+{
+  for (int i=0; i<Rows(); i++)
+  {
+    for (int j=0; j<Cols(); j++)
+    {
+      if (transposeA)
+        Matrix(i,j).Add(A.Matrix(j,i), transposeA, scalarA, scalarB);
+      else
+        Matrix(i,j).Add(A.Matrix(i,j), transposeA, scalarA, scalarB);
+    }
+  }
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int LINALG::BlockSparseMatrixBase::Multiply(bool TransA,
+                                            const Epetra_MultiVector &X,
+                                            Epetra_MultiVector &Y) const
+{
+  if (TransA)
+    dserror("transpose multiply not implemented for BlockSparseMatrix");
+  return Apply(X,Y);
 }
 
 

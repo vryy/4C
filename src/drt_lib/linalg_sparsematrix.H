@@ -488,6 +488,24 @@ class SparseMatrix : public SparseOperator
              const double scalarA,
              const double scalarB);
 
+    /// Resolve virtual function of parent class
+    virtual void Add(const SparseOperator& A,
+                     const bool transposeA,
+                     const double scalarA,
+                     const double scalarB);
+
+    /// Resolve virtual function of parent class
+    virtual const void AddOther(SparseMatrix& A,
+                                const bool transposeA,
+                                const double scalarA,
+                                const double scalarB) const;
+
+    /// Resolve virtual function of parent class
+    virtual const void AddOther(BlockSparseMatrixBase& A,
+                                const bool transposeA,
+                                const double scalarA,
+                                const double scalarB) const;
+
     /// Add a (transposed) Epetra_CrsMatrix to another: (*this) = (*this)*scalarB + A(^T)*scalarA
     void Add(const Epetra_CrsMatrix& A,
              const bool transposeA,

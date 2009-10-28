@@ -24,6 +24,7 @@ Maintainer: Burkhard Bornemann
 
 #include "strtimint.H"
 #include "str_aux.H"
+#include "structure_utils_mapextractor.H"
 
 /*----------------------------------------------------------------------*/
 /* belongs to structural dynamics namespace */
@@ -123,7 +124,7 @@ namespace STR
       const Teuchos::RCP<Epetra_Vector> dis,  //!< last evaluated displacements
       const Teuchos::RCP<Epetra_Vector> disn,  //!< evaluation displacements
       Teuchos::RCP<Epetra_Vector>& fint,  //!< forces are added onto
-      Teuchos::RCP<LINALG::SparseMatrix>& stiff,  //!< stiffness is added onto
+      Teuchos::RCP<LINALG::SparseOperator>& stiff,  //!< stiffness is added onto
       Teuchos::ParameterList pcon   //!< Parameterlist containing scale factors for matrix entries
     );
 
@@ -137,7 +138,7 @@ namespace STR
       const Teuchos::RCP<Epetra_Vector> dism,    //!< displacement state at n+1-alphaf
       const Teuchos::RCP<Epetra_Vector> disn,    //!< displacement state at n+1
       Teuchos::RCP<Epetra_Vector>& fint,         //!< internal force
-      Teuchos::RCP<LINALG::SparseMatrix>& stiff  //! stiffness
+      Teuchos::RCP<LINALG::SparseOperator>& stiff  //! stiffness
     );
 
     //! evaluate certain potential forces and its stiffness
@@ -150,13 +151,13 @@ namespace STR
       const double time, //!< total time
       const Teuchos::RCP<Epetra_Vector> dis,  //!< displacement state
       Teuchos::RCP<Epetra_Vector>& fint,  //!< internal force vector
-      Teuchos::RCP<LINALG::SparseMatrix>& stiff  //!< stiffness
+      Teuchos::RCP<LINALG::SparseOperator>& stiff  //!< stiffness
     );
 
     //! Evaluate forces / stiffness due to contact
     void ApplyForceStiffContact
     (
-      Teuchos::RCP<LINALG::SparseMatrix>& stiff,  //!< stiffness is modified
+      Teuchos::RCP<LINALG::SparseOperator>& stiff,  //!< stiffness is modified
       Teuchos::RCP<Epetra_Vector>& fres  //!< residual forces are modified
     );
 
@@ -472,7 +473,7 @@ namespace STR
     }
 
     //! Return rcp to ConstraintManager conman_
-    virtual const RCP<const UTILS::ConstrManager> GetConstraintManager()
+    virtual const RCP<const ::UTILS::ConstrManager> GetConstraintManager()
     {
       return conman_;
     }
@@ -499,13 +500,13 @@ namespace STR
     //! algorithms (robin coupling) can work on the surface.
     void SetSurfaceFSI
     (
-      const LINALG::MapExtractor* fsisurface  //!< the FSI surface
+      const UTILS::MapExtractor* fsisurface  //!< the FSI surface
     );
 
     //! Set forces due to interface with fluid
     void SetForceInterface
     (
-      const LINALG::MapExtractor& extractor,
+      const UTILS::MapExtractor& extractor,
       Teuchos::RCP<Epetra_Vector> iforce  ///< the force on interface
     );
 
@@ -585,9 +586,9 @@ namespace STR
 
     //! @name FSI stuff
     //@{
-    const LINALG::MapExtractor* fsisurface_;  //!< surface of structural
-                                              //!< which is in contact
-                                              //!< with fluid
+    const UTILS::MapExtractor* fsisurface_;  //!< surface of structural
+                                                  //!< which is in contact
+                                                  //!< with fluid
     //@}
 
     //! @name General purpose algorithm parameters

@@ -33,7 +33,7 @@ FSI::MonolithicBaseXFEM::MonolithicBaseXFEM(Epetra_Comm& comm)
   // structure to fluid
 
   coupsf.SetupConditionCoupling(*StructureField().Discretization(),
-                                 StructureField().Interface().CondMap(),
+                                 StructureField().Interface().FSICondMap(),
                                 *FluidField().Discretization(),
                                  FluidField().Interface().FSICondMap(),
                                  "FSICoupling");
@@ -201,7 +201,7 @@ void FSI::MonolithicXFEM::Evaluate()
     Teuchos::RCP<Epetra_Vector> fx = extractor_->ExtractFluidVector(x_);
 
     // expects \Delta x^{n+1}_{i+1} ???
-    Teuchos::RCP<Epetra_Vector> idisp = StructureField().Interface().ExtractCondVector(sx);
+    Teuchos::RCP<Epetra_Vector> idisp = StructureField().Interface().ExtractFSICondVector(sx);
 
     FluidField().Evaluate(StructToFluid(idisp), fx);
   }
@@ -281,11 +281,11 @@ void FSI::MonolithicXFEM::SetupRHS(bool firstcall)
 //    Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(fgg.RowMap()));
 //    fgg.Apply(*fveln,*rhs);
 //    rhs->Scale(scale*timescale*Dt());
-//    Extractor().AddVector(*StructureField().Interface().InsertCondVector(FluidToStruct(rhs)),0,*rhs_);
+//    Extractor().AddVector(*StructureField().Interface().InsertFSICondVector(FluidToStruct(rhs)),0,*rhs_);
 
   }
 
-  Extractor().AddVector(*StructureField().Interface().InsertCondVector(FluidToStruct(rhsd)),0,*rhs_);
+  Extractor().AddVector(*StructureField().Interface().InsertFSICondVector(FluidToStruct(rhsd)),0,*rhs_);
 
   // NOX expects a different sign here.
 //  f.Scale(-1.);

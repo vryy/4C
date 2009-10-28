@@ -164,6 +164,12 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidProjection::ConvectiveVel()
             return fluid_.Discretization();
         }
 
+        Teuchos::RCP<const LINALG::MapExtractor> ADAPTER::FluidProjection::GetDBCMapExtractor()
+        {
+            dserror("not implemented");
+            return Teuchos::null;
+        }
+
         void ADAPTER::FluidProjection::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
         {
             dserror("not implemented");	return;
@@ -265,6 +271,11 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidProjection::ConvectiveVel()
         int ADAPTER::FluidProjection::Step() const
         {
             return fluid_.Step();
+        }
+
+        double ADAPTER::FluidProjection::Dt() const
+        {
+            return fluid_.Dt();
         }
 
         void ADAPTER::FluidProjection::LiftDrag()

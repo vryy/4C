@@ -30,6 +30,7 @@ Maintainer: Thomas Kloeppel
 
 #include "../drt_lib/drt_utils.H"
 #include "../drt_structure/stru_resulttest.H"
+#include "../drt_structure/structure_utils_mapextractor.H"
 
 #include "../drt_structure/strtimint_impl.H"
 #include "adapter_structure.H"
@@ -78,6 +79,9 @@ namespace ADAPTER {
     /// direct access to system matrix
     RCP<LINALG::SparseMatrix> SystemMatrix();
 
+    /// direct access to system matrix
+    RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
+
     /// External force at t_{n+1}
     RCP<const Epetra_Vector> FExtn();
 
@@ -90,7 +94,7 @@ namespace ADAPTER {
     );
 
     /// communication object at the interface
-    virtual const LINALG::MapExtractor& Interface() const
+    virtual const STR::UTILS::MapExtractor& Interface() const
     {
       return interface_;
     }
@@ -138,7 +142,7 @@ namespace ADAPTER {
   private:
 
     /// the interface map setup for interface <-> full translation
-    LINALG::MapExtractor interface_;
+    STR::UTILS::MapExtractor interface_;
 
     /// the constraint map setup for full <-> stuct+constr transition
     LINALG::MapExtractor conmerger_;

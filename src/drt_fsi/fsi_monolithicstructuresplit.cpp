@@ -38,7 +38,7 @@ void FSI::MonolithicStructureSplit::SetupSystem()
   // structure to fluid
 
   coupsf.SetupConditionCoupling(*StructureField().Discretization(),
-                                 StructureField().Interface().CondMap(),
+                                 StructureField().Interface().FSICondMap(),
                                 *FluidField().Discretization(),
                                  FluidField().Interface().FSICondMap(),
                                  "FSICoupling");
@@ -46,7 +46,7 @@ void FSI::MonolithicStructureSplit::SetupSystem()
   // structure to ale
 
   coupsa.SetupConditionCoupling(*StructureField().Discretization(),
-                                 StructureField().Interface().CondMap(),
+                                 StructureField().Interface().FSICondMap(),
                                 *AleField().Discretization(),
                                  AleField().Interface().FSICondMap(),
                                  "FSICoupling");
@@ -105,6 +105,9 @@ void FSI::MonolithicStructureSplit::SetupSystem()
   // Use normal matrix for fluid equations but build (splitted) mesh movement
   // linearization (if requested in the input file)
   FluidField().UseBlockMatrix(false);
+
+  // Use splitted structure matrix
+  StructureField().UseBlockMatrix();
 
   // build ale system matrix in splitted system
   AleField().BuildSystemMatrix(false);
@@ -243,10 +246,10 @@ void FSI::MonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
     Extractor().AddVector(*rhs,2,f);
 
     // structure
-    Teuchos::RCP<Epetra_Vector> veln = StructureField().Interface().InsertCondVector(sveln);
+    Teuchos::RCP<Epetra_Vector> veln = StructureField().Interface().InsertFSICondVector(sveln);
     rhs = Teuchos::rcp(new Epetra_Vector(veln->Map()));
 
-    Teuchos::RCP<LINALG::SparseMatrix> s = StructureField().SystemMatrix();
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> s = StructureField().BlockSystemMatrix();
     s->Apply(*veln,*rhs);
 
     rhs->Scale(-1.*Dt());
@@ -254,7 +257,7 @@ void FSI::MonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
     veln = StructureField().Interface().ExtractOtherVector(rhs);
     Extractor().AddVector(*veln,0,f);
 
-    veln = StructureField().Interface().ExtractCondVector(rhs);
+    veln = StructureField().Interface().ExtractFSICondVector(rhs);
     veln = FluidField().Interface().InsertFSICondVector(StructToFluid(veln));
 
     double scale     = FluidField().ResidualScaling();
@@ -340,25 +343,13 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
   const ADAPTER::Coupling& coupsf = StructureFluidCoupling();
   //const ADAPTER::Coupling& coupsa = StructureAleCoupling();
 
-  Teuchos::RCP<LINALG::SparseMatrix> s = StructureField().SystemMatrix();
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocks =
-    s->Split<LINALG::DefaultBlockMatrixStrategy>(StructureField().Interface(),
-                                                 StructureField().Interface());
-  blocks->Complete();
-
-  LINALG::SparseMatrix& sii = blocks->Matrix(0,0);
-  LINALG::SparseMatrix& sig = blocks->Matrix(0,1);
-  LINALG::SparseMatrix& sgi = blocks->Matrix(1,0);
-  LINALG::SparseMatrix& sgg = blocks->Matrix(1,1);
-
-  // split fluid matrix
-
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> s = StructureField().BlockSystemMatrix();
+  if (s==Teuchos::null)
+    dserror("expect structure block matrix");
   Teuchos::RCP<LINALG::SparseMatrix> f = FluidField().SystemMatrix();
-
-  /*----------------------------------------------------------------------*/
-
+  if (f==Teuchos::null)
+    dserror("expect fluid matrix");
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField().BlockSystemMatrix();
-
   if (a==Teuchos::null)
     dserror("expect ale block matrix");
 
@@ -378,21 +369,22 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
   // interface meshes.
   f->UnComplete();
 
-  mat.Assign(0,0,View,sii);
-  sigtransform_(blocks->FullRowMap(),
-                blocks->FullColMap(),
-                sig,
+  mat.Assign(0,0,View,s->Matrix(0,0));
+
+  sigtransform_(s->FullRowMap(),
+                s->FullColMap(),
+                s->Matrix(0,1),
                 1./timescale,
                 ADAPTER::Coupling::MasterConverter(coupsf),
                 mat.Matrix(0,1));
-  sggtransform_(sgg,
+  sggtransform_(s->Matrix(1,1),
                 1./(scale*timescale),
                 ADAPTER::Coupling::MasterConverter(coupsf),
                 ADAPTER::Coupling::MasterConverter(coupsf),
                 *f,
                 true,
                 true);
-  sgitransform_(sgi,
+  sgitransform_(s->Matrix(1,0),
                 1./scale,
                 ADAPTER::Coupling::MasterConverter(coupsf),
                 mat.Matrix(1,0));
@@ -669,7 +661,7 @@ void FSI::MonolithicStructureSplit::SetupVector(Epetra_Vector &f,
   if (fluidscale!=0)
   {
     // add fluid interface values to structure vector
-    Teuchos::RCP<Epetra_Vector> scv = StructureField().Interface().ExtractCondVector(sv);
+    Teuchos::RCP<Epetra_Vector> scv = StructureField().Interface().ExtractFSICondVector(sv);
     Teuchos::RCP<Epetra_Vector> modfv = FluidField().Interface().InsertFSICondVector(StructToFluid(scv));
     modfv->Update(1.0, *fv, 1./fluidscale);
 
@@ -904,7 +896,7 @@ void FSI::MonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const Epetr
   Teuchos::RCP<Epetra_Vector> scx = FluidToStruct(fcx);
 
   Teuchos::RCP<Epetra_Vector> s = StructureField().Interface().InsertOtherVector(sox);
-  StructureField().Interface().InsertCondVector(scx, s);
+  StructureField().Interface().InsertFSICondVector(scx, s);
   sx = s;
 
   // process ale unknowns

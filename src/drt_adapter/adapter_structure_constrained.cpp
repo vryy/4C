@@ -53,7 +53,7 @@ ADAPTER::StructureConstrained::StructureConstrained
                     structure_->GetConstraintManager()->GetConstraintMap());
 
   //setup fsi-Interface
-  DRT::UTILS::SetupNDimExtractor(*(structure_->Discretization()),"FSICoupling",dofrowmap_,interface_);
+  interface_.Setup(*Discretization(), *dofrowmap_);
 }
 
 
@@ -151,6 +151,14 @@ RCP<LINALG::SparseMatrix> ADAPTER::StructureConstrained::SystemMatrix()
   mergedmatrix -> ApplyDirichlet( *(structure_->GetDBCMapExtractor()->CondMap()));
 
   return mergedmatrix;
+}
+
+
+/*----------------------------------------------------------------------*/
+RCP<LINALG::BlockSparseMatrixBase> ADAPTER::StructureConstrained::BlockSystemMatrix()
+{
+  dserror("constrained BlockSparseMatrix not yet implemented");
+  return null;
 }
 
 

@@ -200,7 +200,7 @@ STR::TimInt::TimInt
     discret_->GetCondition("Potential", potentialcond);
     if (potentialcond.size())
     {
-      potman_ = Teuchos::rcp(new POTENTIAL::PotentialManager(Discretization(), *discret_)); 
+      potman_ = Teuchos::rcp(new POTENTIAL::PotentialManager(Discretization(), *discret_));
       stiff_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_,81,true,false, LINALG::SparseMatrix::FE_MATRIX));
     }
   }
@@ -325,10 +325,10 @@ void STR::TimInt::DetermineMassDampConsistAccel()
 
   // in case of C0 pressure field, we need to get rid of
   // pressure equations
-  Teuchos::RCP<LINALG::SparseMatrix> mass = Teuchos::null;
+  Teuchos::RCP<LINALG::SparseOperator> mass = Teuchos::null;
   if (pressure_ != Teuchos::null)
   {
-    mass = Teuchos::rcp(new LINALG::SparseMatrix(*mass_,Copy));
+    mass = Teuchos::rcp(new LINALG::SparseMatrix(*MassMatrix(),Copy));
     mass->ApplyDirichlet(*(pressure_->CondMap()));
   }
   else
@@ -351,7 +351,7 @@ void STR::TimInt::DetermineMassDampConsistAccel()
     dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), rhs);
     if (pressure_ != Teuchos::null)
       pressure_->InsertCondVector(pressure_->ExtractCondVector(zeros_), rhs);
-    solver_->Solve(mass->EpetraMatrix(), (*acc_)(0), rhs, true, true);
+    solver_->Solve(mass->EpetraOperator(), (*acc_)(0), rhs, true, true);
   }
 
   // We need to reset the stiffness matrix because its graph (topology)
@@ -867,7 +867,7 @@ void STR::TimInt::ApplyForceStiffInternal
   const Teuchos::RCP<Epetra_Vector> disi,  // residual displacements
   const Teuchos::RCP<Epetra_Vector> vel,  // velocity state
   Teuchos::RCP<Epetra_Vector> fint,  // internal force
-  Teuchos::RCP<LINALG::SparseMatrix> stiff  // stiffness matrix
+  Teuchos::RCP<LINALG::SparseOperator> stiff  // stiffness matrix
 )
 {
   // create the parameters for the discretization
@@ -965,6 +965,19 @@ void STR::TimInt::Integrate()
   // that's it
   return;
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void STR::TimInt::UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
+                                 const LINALG::MultiMapExtractor& rangemaps)
+{
+  // (re)allocate system matrix
+  stiff_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(domainmaps,rangemaps,81,false,true));
+  mass_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(domainmaps,rangemaps,81,false,true));
+  if (damping_ == INPAR::STR::damp_rayleigh)
+    damp_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(domainmaps,rangemaps,81,false,true));
+}
+
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifdef CCADISCRET

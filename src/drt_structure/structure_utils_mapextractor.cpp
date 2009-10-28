@@ -17,12 +17,12 @@ extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void STR::UTILS::MapExtractor::Setup(const DRT::Discretization& dis)
+void STR::UTILS::MapExtractor::Setup(const DRT::Discretization& dis, Epetra_Map fullmap)
 {
   DRT::UTILS::MultiConditionSelector mcs;
   mcs.AddSelector(rcp(new DRT::UTILS::NDimConditionSelector(dis,"FSICoupling",0,genprob.ndim)));
   mcs.AddSelector(rcp(new DRT::UTILS::NDimConditionSelector(dis,"StructAleCoupling",0,genprob.ndim)));
-  mcs.SetupExtractor(dis,*dis.DofRowMap(),*this);
+  mcs.SetupExtractor(dis,fullmap,*this);
 }
 
 

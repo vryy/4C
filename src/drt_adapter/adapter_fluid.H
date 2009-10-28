@@ -133,6 +133,9 @@ namespace ADAPTER {
     /// direct access to dofset
     virtual Teuchos::RCP<const DRT::DofSet> DofSet() = 0;
 
+    /// Return MapExtractor for Dirichlet boundary conditions
+    virtual Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() = 0;
+
     //virtual Teuchos::RCP<Epetra_Vector> StructCondRHS() const = 0;
 
     /// set initial flow field
@@ -181,6 +184,9 @@ namespace ADAPTER {
 
     /// current time step
     virtual int Step() const = 0;
+
+    /// time step size
+    virtual double Dt() const = 0;
 
     /// calculation (and output) of lift&drag
     virtual void LiftDrag() = 0;

@@ -110,6 +110,12 @@ namespace ADAPTER {
     /// direct access to system matrix
     virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() = 0;
 
+    /// direct access to system matrix
+    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() = 0;
+
+    /// switch structure field to block matrix
+    virtual void UseBlockMatrix() = 0;
+
     /// direct access to discretization
     virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;
 
@@ -137,7 +143,7 @@ namespace ADAPTER {
     //virtual Teuchos::RCP<Epetra_Vector> MeshCondRHS() const = 0;
 
     /// communication object at the interface
-    virtual const LINALG::MapExtractor& Interface() const = 0;
+    virtual const STR::UTILS::MapExtractor& Interface() const = 0;
 
     //@}
 
@@ -176,6 +182,8 @@ namespace ADAPTER {
     //! Add residual increment to Lagrange multipliers stored in Constraint manager
     virtual void UpdateIterIncrConstr(Teuchos::RCP<Epetra_Vector> lagrincr) = 0;
 
+    //! Access to output object
+    virtual Teuchos::RCP<IO::DiscretizationWriter> DiscWriter() = 0;
 
     /// output results
     virtual void Output() = 0;

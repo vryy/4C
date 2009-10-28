@@ -186,6 +186,14 @@ Teuchos::RCP<DRT::Discretization> ADAPTER::FluidImpl::Discretization()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+Teuchos::RCP<const LINALG::MapExtractor> ADAPTER::FluidImpl::GetDBCMapExtractor()
+{
+  return fluid_.DirichMaps();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 // Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImpl::StructCondRHS() const
 // {
 //   return interface_.ExtractCondVector(Velnp());
@@ -340,6 +348,13 @@ double ADAPTER::FluidImpl::Time() const
 int ADAPTER::FluidImpl::Step() const
 {
   return fluid_.Step();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double ADAPTER::FluidImpl::Dt() const
+{
+  return fluid_.Dt();
 }
 
 

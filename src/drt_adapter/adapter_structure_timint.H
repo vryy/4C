@@ -32,6 +32,7 @@ Maintainer: Burkhard Bornemann
 #include "../drt_structure/stru_resulttest.H"
 
 #include "../drt_structure/strtimint_impl.H"
+#include "../drt_structure/structure_utils_mapextractor.H"
 #include "adapter_structure.H"
 
 
@@ -76,6 +77,12 @@ namespace ADAPTER {
 
     /// direct access to system matrix
     Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
+
+    /// direct access to system matrix
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
+
+    /// switch structure field to block matrix
+    void UseBlockMatrix();
 
     /// direct access to discretization
     Teuchos::RCP<DRT::Discretization> Discretization();
@@ -131,13 +138,19 @@ namespace ADAPTER {
       return structure_->GetDBCMapExtractor();
     }
 
+    /// Access to output object
+    Teuchos::RCP<IO::DiscretizationWriter> DiscWriter()
+    {
+      return output_;
+    }
+
     /// output results
     void Output();
 
     //@}
 
     /// communication object at the interface
-    virtual const LINALG::MapExtractor& Interface() const
+    virtual const STR::UTILS::MapExtractor& Interface() const
     {
       return interface_;
     }
@@ -231,7 +244,7 @@ namespace ADAPTER {
     Teuchos::RCP<STR::TimIntImpl> structure_;
 
     /// the interface map setup for interface <-> full translation
-    LINALG::MapExtractor interface_;
+    STR::UTILS::MapExtractor interface_;
 
     /// @name local copies of input parameters
     //{@

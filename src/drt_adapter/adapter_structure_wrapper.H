@@ -29,6 +29,10 @@ namespace ADAPTER
     { return structure_->DomainMap(); }
     virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix()
     { return structure_->SystemMatrix(); }
+    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix()
+    { return structure_->BlockSystemMatrix(); }
+    virtual void UseBlockMatrix()
+    { return structure_->UseBlockMatrix(); }
     virtual Teuchos::RCP<DRT::Discretization> Discretization()
     { return structure_->Discretization(); }
     virtual bool HaveConstraint()
@@ -38,7 +42,7 @@ namespace ADAPTER
     virtual const RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
     { return structure_->GetDBCMapExtractor(); }
 
-    virtual const LINALG::MapExtractor& Interface() const
+    virtual const STR::UTILS::MapExtractor& Interface() const
     { return structure_->Interface(); }
     virtual double GetTime() const
     { return structure_->GetTime(); }
@@ -60,7 +64,8 @@ namespace ADAPTER
     virtual void UpdateIterIncrConstr(Teuchos::RCP<Epetra_Vector> lagrincr)
     { structure_->UpdateIterIncrConstr(lagrincr); }
 
-
+    virtual Teuchos::RCP<IO::DiscretizationWriter> DiscWriter()
+    { return structure_->DiscWriter();}
     virtual void Output()
     { return structure_->Output(); }
     virtual void ReadRestart(int step)

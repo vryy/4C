@@ -45,6 +45,8 @@ namespace ADAPTER
     { return fluid_->Discretization(); }
     virtual Teuchos::RCP<const DRT::DofSet> DofSet()
     { return fluid_->DofSet(); }
+    virtual Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
+    { return fluid_->GetDBCMapExtractor(); }
     virtual void SetInitialFlowField(int whichinitialfield,int startfuncno)
     { return fluid_->SetInitialFlowField(whichinitialfield, startfuncno); }
     virtual void SetIterLomaFields(RCP<const Epetra_Vector> scalaraf,
@@ -64,7 +66,7 @@ namespace ADAPTER
     virtual void PrepareTimeStep()
     { return fluid_->PrepareTimeStep(); }
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
-    { return fluid_->Evaluate(); }
+    { return fluid_->Evaluate(vel); }
     virtual void Update()
     { return fluid_->Update(); }
     virtual void StatisticsAndOutput()
@@ -72,11 +74,13 @@ namespace ADAPTER
     virtual void Output()
     { return fluid_->Output(); }
     virtual void ReadRestart(int step)
-    { return fluid_->ReadRestart(); }
+    { return fluid_->ReadRestart(step); }
     virtual double Time() const
     { return fluid_->Time(); }
     virtual int Step() const
     { return fluid_->Step(); }
+    virtual double Dt() const
+    { return fluid_->Dt(); }
     virtual void LiftDrag()
     { return fluid_->LiftDrag(); }
     virtual void NonlinearSolve()
@@ -91,7 +95,7 @@ namespace ADAPTER
     { return fluid_->LinearSolver(); }
     virtual Teuchos::RCP<const Epetra_Map> InnerVelocityRowMap()
     { return fluid_->InnerVelocityRowMap(); }
-    virtual Teuchos::RCP<const Epetra_Map>    VelocityRowMap()
+    virtual Teuchos::RCP<const Epetra_Map> VelocityRowMap()
     { return fluid_->VelocityRowMap(); }
     virtual Teuchos::RCP<const Epetra_Map> PressureRowMap()
     { return fluid_->PressureRowMap(); }
@@ -125,7 +129,7 @@ namespace ADAPTER
     { return fluid_->ApplyInterfaceRobinValue(ivel,iforce); }
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceFluidVelocity()
     { return fluid_->ExtractInterfaceFluidVelocity(); }
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln()
     { return fluid_->ExtractInterfaceVeln(); }
     virtual Teuchos::RCP<Epetra_Vector> ExtractFreeSurfaceVeln()
     { return fluid_->ExtractFreeSurfaceVeln(); }
@@ -159,8 +163,8 @@ namespace ADAPTER
 
   protected:
 
-    Teuchos::RCP<Structure> fluid_;
-  }
+    Teuchos::RCP<Fluid> fluid_;
+  };
 }
 
 #endif

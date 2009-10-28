@@ -32,14 +32,14 @@ void FSI::MonolithicLagrange::SetupSystem()
 
   // structure (master) to fluid (slave)
   coupsf.SetupConditionCoupling(*StructureField().Discretization(),
-                                 StructureField().Interface().CondMap(),
+                                 StructureField().Interface().FSICondMap(),
                                 *FluidField().Discretization(),
                                  FluidField().Interface().FSICondMap(),
                                  "FSICoupling");
 
   // structure (master) to ale (slave)
   coupsa.SetupConditionCoupling(*StructureField().Discretization(),
-                                 StructureField().Interface().CondMap(),
+                                 StructureField().Interface().FSICondMap(),
                                 *AleField().Discretization(),
                                  AleField().Interface().FSICondMap(),
                                  "FSICoupling");
@@ -80,7 +80,7 @@ void FSI::MonolithicLagrange::SetupSystem()
   vecSpaces.push_back(StructureField().DofRowMap());
   vecSpaces.push_back(FluidField()    .DofRowMap());
   vecSpaces.push_back(AleField()      .Interface().OtherMap());
-  vecSpaces.push_back(UTILS::ShiftMap(StructureField().Interface().CondMap(),vecSpaces));
+  vecSpaces.push_back(UTILS::ShiftMap(StructureField().Interface().FSICondMap(),vecSpaces));
 
   SetDofRowMaps(vecSpaces);
 
@@ -597,7 +597,7 @@ FSI::MonolithicLagrange::CreateStatusTest(Teuchos::ParameterList& nlParams,
   Teuchos::RCP<NOX::FSI::PartialSumNormF> interfaceForce =
     Teuchos::rcp(new NOX::FSI::PartialSumNormF("interface",
                                                LINALG::MapExtractor(*DofRowMap(),
-                                                                    StructureField().Interface().CondMap(),
+                                                                    StructureField().Interface().FSICondMap(),
                                                                     Teuchos::null),
                                                1.0,
                                                LINALG::MapExtractor(*DofRowMap(),
