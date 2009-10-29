@@ -506,7 +506,7 @@ public:
 
   The discretization takes ownership of the added node.
   Note that if a node with the same Id() exists, it will be
-  deleted and replaced by the new one; 
+  deleted and replaced by the new one;
   note furthermore that in this method Reset() is called only on the processor where
   a node has been added actually; however, as such a modification may affect the
   discretization as a whole it may be required to call Reset() on each processor
@@ -521,7 +521,7 @@ public:
 
   Delete an element from the discretization. Element can either be ghosted or not.
   If element on calling processor is not found nothing is done and false is returned.
-  Note that this is not a fatal error and no message will be posted; 
+  Note that this is not a fatal error and no message will be posted;
   note furthermore that in this method Reset() is called only on the processor where
   an element has been deleted actually; however, as such a modification may affect the
   discretization as a whole it may be required to call Reset() on each processor
@@ -540,7 +540,7 @@ public:
 
   Delete an element from the discretization. Element can either be ghosted or not.
   If element on calling processor is not found nothing is done and false is returned.
-  Note that this is not a fatal error and no message will be posted; 
+  Note that this is not a fatal error and no message will be posted;
   note furthermore that in this method Reset() is called only on the processor where
   an element has been deleted actually; however, as such a modification may affect the
   discretization as a whole it may be required to call Reset() on each processor
@@ -590,18 +590,18 @@ public:
   virtual int FillComplete(bool assigndegreesoffreedom=true,
                            bool initelements = true,
                            bool doboundaryconditions = true);
-  
+
   /*!
   \brief Synchronize filled_ flag on all processors
-  
+
   Modifying the discretization on some processors only (e.g. using AddElement, AddNode, DeleteElement)
   may amount to filled_ == false on some processors only, but not on each processor; as one may consider
-  the discretization as incomplete already if filled_ == false on at least one processor, it is 
+  the discretization as incomplete already if filled_ == false on at least one processor, it is
   recommended to set filled_ == false on each processor as soon as it occurs on at least one processor
   and to call Reset() subsequently on each processor; to do so just call CheckFilledGlobally
   */
   virtual void CheckFilledGlobally();
-  
+
 
   //@}
 
@@ -1489,6 +1489,15 @@ private:
 
   */
   virtual void BuildVolumesinCondition(const string name,RefCountPtr<DRT::Condition> cond);
+
+  /*!
+  \brief Request for associated volume elements necessary for certain
+  surface conditions (returns 1 if associated volume was found, 0 if
+  no associated volume condition exists and -1 if associated volume
+  condition exists but volume element is not a part of it)
+  */
+  int FoundAssociatedVolEle(const string CondName, const int CondId, const int EleId);
+
 
 protected:
 

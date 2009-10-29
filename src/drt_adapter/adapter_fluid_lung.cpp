@@ -25,6 +25,13 @@ ADAPTER::FluidLung::FluidLung(Teuchos::RCP<Fluid> fluid)
       constrcond_.push_back(temp[i]);
   }
   if (constrcond_.size() == 0) dserror("No structure-fluid volume constraints found for lung fsi");
+
+  // build map extractor for fsi <-> full map
+  fsiinterface_ = LINALG::MapExtractor(*Interface().FullMap(), Interface().FSICondMap());
+
+  // build map extractor for asi, other <-> full inner map
+  Teuchos::RCP<Epetra_Map> fullmap = LINALG::MergeMap(*Interface().OtherMap(), *Interface().LungASICondMap());
+  innersplit_ = LINALG::MapExtractor(*fullmap, Interface().LungASICondMap());
 }
 
 

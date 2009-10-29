@@ -50,6 +50,16 @@ void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis, std::string condname, std::set<int>& nodeset)
+{
+  std::vector<DRT::Condition*> conds;
+  dis.GetCondition(condname, conds);
+  FindConditionedNodes(dis,conds,nodeset);
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis,
                                       const std::vector<DRT::Condition*>& conds,
                                       std::vector<int>& nodes)
@@ -71,6 +81,28 @@ void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis,
 
   nodes.reserve(nodeset.size());
   nodes.assign(nodeset.begin(),nodeset.end());
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis,
+                                      const std::vector<DRT::Condition*>& conds,
+                                      std::set<int>& nodeset)
+{
+  const int myrank = dis.Comm().MyPID();
+  for (unsigned i=0; i<conds.size(); ++i)
+  {
+    const std::vector<int>* n = conds[i]->Nodes();
+    for (unsigned j=0; j<n->size(); ++j)
+    {
+      const int gid = (*n)[j];
+      if (dis.HaveGlobalNode(gid) and dis.gNode(gid)->Owner()==myrank)
+      {
+        nodeset.insert(gid);
+      }
+    }
+  }
 }
 
 

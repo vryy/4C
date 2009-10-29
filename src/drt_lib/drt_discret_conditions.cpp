@@ -568,6 +568,19 @@ void DRT::Discretization::BuildSurfacesinCondition(
     DRT::Element** elements = actnode->Elements();
     for (int i=0; i<actnode->NumElement(); ++i)
     {
+      // check whether current surface condition is associated with a volume
+      // condition
+      if (cond->Type() == DRT::Condition::StructFluidSurfCoupling)
+      {
+        if  (*(cond->Get<string>("field")) == "structure")
+        {
+          const int found = FoundAssociatedVolEle("StructFluidVolCoupling", cond->GetInt("coupling id"), elements[i]->Id());
+          if (found == 0) dserror("Missing associated volume condition for structure fluid volume coupling");
+          else if (found == -1)
+            continue;
+        }
+      }
+
       // loop all surfaces of all elements attached to actnode
       const int numsurfs = elements[i]->NumSurface();
       if (!numsurfs) continue;
@@ -677,6 +690,48 @@ void DRT::Discretization::BuildVolumesinCondition(
 
   return;
 } // DRT::Discretization::BuildVolumesinCondition
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int DRT::Discretization::FoundAssociatedVolEle(const string CondName, const int CondId, const int EleId)
+{
+  std::vector<DRT::Condition*> constrcond;
+  GetCondition(CondName,constrcond);
+
+  // in the beginning, we assume that no associated volume condition
+  // exists, hence the return parameter is set to 0.
+  int found = 0;
+
+  for (unsigned int i = 0; i < constrcond.size(); ++i)
+  {
+    DRT::Condition& cond = *(constrcond[i]);
+
+    if (cond.GetInt("coupling id") == CondId)
+    {
+      // the associated volume condition exists. as long as we do not
+      // know whether the given volume element is part of it, we set
+      // the return parameter to -1.
+      found = -1;
+
+      map<int,RefCountPtr<DRT::Element> >& geom = cond.Geometry();
+
+      if (geom.begin() == geom.end())
+        BuildVolumesinCondition(CondName,rcp(constrcond[i],false));
+
+      map<int,RefCountPtr<DRT::Element> >::iterator curr;
+      for (curr=geom.begin(); curr!=geom.end(); ++curr)
+      {
+        if (curr->second->Id() == EleId)
+        {
+          // the given volume is really part of the associated volume condition
+          found = 1;
+        }
+      }
+    }
+  }
+  return found;
+}
 
 
 

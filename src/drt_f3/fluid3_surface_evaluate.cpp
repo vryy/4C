@@ -32,6 +32,8 @@ Maintainer: Peter Gamnitzer
 #include "../drt_mat/carreauyasuda.H"
 #include "../drt_mat/modpowerlaw.H"
 
+#include <blitz/array.h>
+
 using namespace DRT::UTILS;
 
 /*----------------------------------------------------------------------*
@@ -55,6 +57,8 @@ int DRT::ELEMENTS::Fluid3Surface::Evaluate(     ParameterList&            params
         act = Fluid3Surface::areacalc;
     else if (action == "flowrate calculation")
         act = Fluid3Surface::flowratecalc;
+    else if (action == "flowrate_deriv")
+        act = Fluid3Surface::flowratederiv;
     else if (action == "Outlet impedance")
         act = Fluid3Surface::Outletimpedance;
     else if (action == "calc_node_normal")
@@ -100,6 +104,11 @@ int DRT::ELEMENTS::Fluid3Surface::Evaluate(     ParameterList&            params
     {
         FlowRateParameterCalculation(params,discretization,lm);
         break;
+    }
+    case flowratederiv:
+    {
+      FlowRateDeriv(params,discretization,lm,elemat1,elemat2,elevec1,elevec2,elevec3);
+      break;
     }
     case Outletimpedance:
     {
@@ -2025,9 +2034,302 @@ void DRT::ELEMENTS::Fluid3Surface::FlowRateParameterCalculation(ParameterList& p
 
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Fluid3Surface::FlowRateDeriv(ParameterList& params,
+                                                 DRT::Discretization&       discretization,
+                                                 vector<int>&               lm,
+                                                 Epetra_SerialDenseMatrix& elemat1,
+                                                 Epetra_SerialDenseMatrix& elemat2,
+                                                 Epetra_SerialDenseVector& elevec1,
+                                                 Epetra_SerialDenseVector& elevec2,
+                                                 Epetra_SerialDenseVector& elevec3)
+{
+  RefCountPtr<const Epetra_Vector> dispnp;
+  vector<double> edispnp;
+
+  if (parent_->IsAle())
+  {
+    dispnp = discretization.GetState("dispnp");
+    if (dispnp==null) dserror("Cannot get state vectors 'dispnp'");
+    edispnp.resize(lm.size());
+    DRT::UTILS::ExtractMyValues(*dispnp,edispnp,lm);
+  }
+
+  // there are 3 velocities and 1 pressure
+  const int numdf = 4;
+
+  // set number of nodes
+  const int iel   = this->NumNode();
+
+  // gaussian points
+  const DiscretizationType distype = this->Shape();
+
+  GaussRule2D  gaussrule = intrule2D_undefined;
+  switch(distype)
+  {
+  case quad4:
+      gaussrule = intrule_quad_4point;
+      break;
+  case quad8: case quad9:
+      gaussrule = intrule_quad_9point;
+      break;
+  case tri3 :
+      gaussrule = intrule_tri_3point;
+      break;
+  case tri6:
+      gaussrule = intrule_tri_6point;
+      break;
+  default:
+      dserror("shape type unknown!\n");
+  }
+  const IntegrationPoints2D  intpoints(gaussrule);
+
+  // order of accuracy of grid velocity determination
+  const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
+  int gridvel = fdyn.get<int>("GRIDVEL");
+
+  // allocate vector for shape functions and for derivatives
+  Epetra_SerialDenseVector   funct(iel);
+  Epetra_SerialDenseMatrix   deriv(2,iel);
+
+  // node coordinates
+  Epetra_SerialDenseMatrix   xyze(3,iel);
+
+  // get node coordinates
+  for(int i=0;i<iel;i++)
+  {
+    xyze(0,i)=this->Nodes()[i]->X()[0];
+    xyze(1,i)=this->Nodes()[i]->X()[1];
+    xyze(2,i)=this->Nodes()[i]->X()[2];
+  }
+
+  if (parent_->IsAle())
+  {
+    dsassert(edispnp.size()!=0,"paranoid");
+
+    for (int i=0;i<iel;i++)
+    {
+      xyze(0,i) += edispnp[numdf*i];
+      xyze(1,i) += edispnp[numdf*i+1];
+      xyze(2,i) += edispnp[numdf*i+2];
+    }
+  }
+
+  // get nodal velocities and pressures
+  RefCountPtr<const Epetra_Vector> convelnp = discretization.GetState("convectivevel");
+
+  if (convelnp==null)
+    dserror("Cannot get state vector 'convectivevel'");
+
+  // extract local values from the global vectors
+  vector<double> myconvelnp(lm.size());
+  DRT::UTILS::ExtractMyValues(*convelnp,myconvelnp,lm);
+
+  // extract velocities
+  blitz::Array<double, 2> evelnp(3,iel,blitz::ColumnMajorArray<2>());
+
+  for (int i=0;i<iel;++i)
+  {
+    evelnp(0,i) = myconvelnp[0+(i*4)];
+    evelnp(1,i) = myconvelnp[1+(i*4)];
+    evelnp(2,i) = myconvelnp[2+(i*4)];
+  }
 
 
   /*----------------------------------------------------------------------*
+  |               start loop over integration points                     |
+  *----------------------------------------------------------------------*/
+  for (int gpid=0; gpid<intpoints.nquad; gpid++)
+  {
+    const double e0 = intpoints.qxg[gpid][0];
+    const double e1 = intpoints.qxg[gpid][1];
+
+    // get shape functions and derivatives in the plane of the element
+    shape_function_2D(funct, e0, e1, distype);
+    shape_function_2D_deriv1(deriv, e0, e1, distype);
+
+    // outward gp normal
+    Epetra_SerialDenseMatrix dxyzdrs (2,3);
+    dxyzdrs.Multiply('N','T',1.0,deriv,xyze,0.0);
+    vector<double> normal(3);
+    normal[0] = dxyzdrs(0,1) * dxyzdrs(1,2) - dxyzdrs(0,2) * dxyzdrs(1,1);
+    normal[1] = dxyzdrs(0,2) * dxyzdrs(1,0) - dxyzdrs(0,0) * dxyzdrs(1,2);
+    normal[2] = dxyzdrs(0,0) * dxyzdrs(1,1) - dxyzdrs(0,1) * dxyzdrs(1,0);
+
+    //-------------------------------------------------------------------
+    //  Q
+    const double fac = intpoints.qwgt[gpid];
+    blitz::Array<double,1> u(3);
+    u = 0.;
+    for (int dim=0;dim<3;++dim)
+        for (int node=0;node<iel;++node)
+          u(dim) += funct[node] * evelnp(dim,node);
+
+    for(int dim=0;dim<3;++dim)
+      elevec3[0] += u(dim) * normal[dim] * fac;
+
+    if (params.get<bool>("flowrateonly", false)==false)
+    {
+      //-------------------------------------------------------------------
+      // dQ/du
+      for (int node=0;node<iel;++node)
+      {
+        for (int dim=0;dim<3;++dim)
+          elevec1[node*numdf+dim] += funct[node] * normal[dim] * fac;
+        elevec1[node*numdf+3] = 0.0;
+      }
+
+      //-------------------------------------------------------------------
+      // dQ/dd
+
+      // determine derivatives of surface normals wrt mesh displacements
+      blitz::Array<double,2> normalderiv(3,iel*3);
+
+      for (int node=0;node<iel;++node)
+      {
+        normalderiv(0,3*node)   = 0.;
+        normalderiv(0,3*node+1) = deriv(0,node)*dxyzdrs(1,2)-deriv(1,node)*dxyzdrs(0,2);
+        normalderiv(0,3*node+2) = deriv(1,node)*dxyzdrs(0,1)-deriv(0,node)*dxyzdrs(1,1);
+
+        normalderiv(1,3*node)   = deriv(1,node)*dxyzdrs(0,2)-deriv(0,node)*dxyzdrs(1,2);
+        normalderiv(1,3*node+1) = 0.;
+        normalderiv(1,3*node+2) = deriv(0,node)*dxyzdrs(1,0)-deriv(1,node)*dxyzdrs(0,0);
+
+        normalderiv(2,3*node)   = deriv(0,node)*dxyzdrs(1,1)-deriv(1,node)*dxyzdrs(0,1);
+        normalderiv(2,3*node+1) = deriv(1,node)*dxyzdrs(0,0)-deriv(0,node)*dxyzdrs(1,0);
+        normalderiv(2,3*node+2) = 0.;
+      }
+
+      for (int node=0;node<iel;++node)
+      {
+        for (int dim=0;dim<3;++dim)
+          for (int iterdim=0;iterdim<3;++iterdim)
+            elevec2[node*numdf+dim] += u(iterdim) * normalderiv(iterdim,3*node+dim) * fac;
+        elevec2[node*numdf+3] = 0.0;
+      }
+
+      // consideration of grid velocity
+      if (parent_->IsAle())
+      {
+        // get time step size
+        const double dt = params.get<double>("dt", -1.0);
+        if (dt < 0.) dserror("invalid time step size");
+
+        if (gridvel == 1)  // BE time discretization
+        {
+          for (int node=0;node<iel;++node)
+          {
+            for (int dim=0;dim<3;++dim)
+              elevec2[node*numdf+dim] -= 1.0/dt * funct[node] * normal[dim] * fac;
+          }
+        }
+        else
+          dserror("flowrate calculation: higher order of accuracy of grid velocity not implemented");
+      }
+
+      //-------------------------------------------------------------------
+      // (d^2 Q)/(du dd)
+
+      for (int unode=0;unode<iel;++unode)
+      {
+        for (int udim=0;udim<numdf;++udim)
+        {
+          for (int nnode=0;nnode<iel;++nnode)
+          {
+            for (int ndim=0;ndim<numdf;++ndim)
+            {
+              if (udim == 3 or ndim == 3)
+                elemat1(unode*numdf+udim,nnode*numdf+ndim) = 0.0;
+              else
+                elemat1(unode*numdf+udim,nnode*numdf+ndim) = funct[unode] * normalderiv(udim,3*nnode+ndim) * fac;
+            }
+          }
+        }
+      }
+
+      //-------------------------------------------------------------------
+      // (d^2 Q)/(dd)^2
+
+      // determine second derivatives of surface normals wrt mesh displacements
+      blitz::Array<double,3> normalderiv2(3,iel*3,iel*3);
+      normalderiv2 = 0.;
+
+      for (int node1=0;node1<iel;++node1)
+      {
+        for (int node2=0;node2<iel;++node2)
+        {
+          double temp = deriv(0,node1)*deriv(1,node2)-deriv(1,node1)*deriv(0,node2);
+
+          normalderiv2(0,node1*3+1,node2*3+2) = temp;
+          normalderiv2(0,node1*3+2,node2*3+1) = - temp;
+
+          normalderiv2(1,node1*3  ,node2*3+2) = - temp;
+          normalderiv2(1,node1*3+2,node2*3  ) = temp;
+
+          normalderiv2(2,node1*3  ,node2*3+1) = temp;
+          normalderiv2(2,node1*3+1,node2*3  ) = - temp;
+        }
+      }
+
+      for (int node1=0;node1<iel;++node1)
+      {
+        for (int dim1=0;dim1<numdf;++dim1)
+        {
+          for (int node2=0;node2<iel;++node2)
+          {
+            for (int dim2=0;dim2<numdf;++dim2)
+            {
+              if (dim1 == 3 or dim2 == 3)
+                elemat2(node1*numdf+dim1,node2*numdf+dim2) = 0.0;
+              else
+              {
+                for (int iterdim=0;iterdim<3;++iterdim)
+                  elemat2(node1*numdf+dim1,node2*numdf+dim2) +=
+                    u(iterdim) * normalderiv2(iterdim,node1*3+dim1,node2*3+dim2) * fac;
+              }
+            }
+          }
+        }
+      }
+
+      // consideration of grid velocity
+      if (parent_->IsAle())
+      {
+        // get time step size
+        const double dt = params.get<double>("dt", -1.0);
+        if (dt < 0.) dserror("invalid time step size");
+
+        if (gridvel == 1)
+        {
+          for (int node1=0;node1<iel;++node1)
+          {
+            for (int dim1=0;dim1<3;++dim1)
+            {
+              for (int node2=0;node2<iel;++node2)
+              {
+                for (int dim2=0;dim2<3;++dim2)
+                {
+                  elemat2(node1*numdf+dim1,node2*numdf+dim2) -= (1.0/dt * funct[node1] * normalderiv(dim1, 3*node2+dim2)
+                                                                 + 1.0/dt * funct[node2] * normalderiv(dim2, 3*node1+dim1))
+                                                                * fac;
+                }
+              }
+            }
+          }
+        }
+        else
+          dserror("flowrate calculation: higher order of accuracy of grid velocity not implemented");
+      }
+
+
+      //-------------------------------------------------------------------
+    }
+  }
+}//DRT::ELEMENTS::Fluid3Surface::FlowRateDeriv
+
+
+ /*----------------------------------------------------------------------*
   |  Impedance related parameters on boundary elements          AC 03/08  |
   *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Fluid3Surface::ImpedanceIntegration(ParameterList& params,

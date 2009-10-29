@@ -95,6 +95,86 @@ void ADAPTER::Coupling::SetupConditionCoupling(const DRT::Discretization& master
 }
 
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::Coupling::SetupConstrainedConditionCoupling(const DRT::Discretization& masterdis,
+                                                          Teuchos::RCP<const Epetra_Map> mastercondmap,
+                                                          const DRT::Discretization& slavedis,
+                                                          Teuchos::RCP<const Epetra_Map> slavecondmap,
+                                                          const std::string& condname1,
+                                                          const std::string& condname2)
+{
+  std::vector<int> masternodes1;
+  DRT::UTILS::FindConditionedNodes(masterdis,condname1,masternodes1);
+  std::vector<int> slavenodes1;
+  DRT::UTILS::FindConditionedNodes(slavedis,condname1,slavenodes1);
+
+  std::set<int> masternodes2;
+  DRT::UTILS::FindConditionedNodes(masterdis,condname2,masternodes2);
+  std::set<int> slavenodes2;
+  DRT::UTILS::FindConditionedNodes(slavedis,condname2,slavenodes2);
+
+  // now find all those elements of slavenodes1 and masternodes1 that
+  // do not belong to slavenodes2 and masternodes2 at the same time
+
+  std::vector<int> masternodes;
+  std::vector<int> slavenodes;
+
+  for (unsigned int i=0; i<masternodes1.size(); ++i)
+  {
+    if (masternodes2.find(masternodes1[i]) == masternodes2.end())
+      masternodes.push_back(masternodes1[i]);
+  }
+
+  for (unsigned int i=0; i<slavenodes1.size(); ++i)
+  {
+    if (slavenodes2.find(slavenodes1[i]) == slavenodes2.end())
+      slavenodes.push_back(slavenodes1[i]);
+  }
+
+  int localmastercount = static_cast<int>(masternodes.size());
+  int mastercount;
+  int localslavecount = static_cast<int>(slavenodes.size());
+  int slavecount;
+
+  masterdis.Comm().SumAll(&localmastercount,&mastercount,1);
+  slavedis.Comm().SumAll(&localslavecount,&slavecount,1);
+
+  if (mastercount != slavecount)
+    dserror("got %d master nodes but %d slave nodes for coupling",
+            mastercount,slavecount);
+
+  SetupCoupling(masterdis, slavedis, masternodes, slavenodes);
+
+  // test for completeness
+  if (static_cast<int>(masternodes.size())*genprob.ndim != masterdofmap_->NumMyElements())
+    dserror("failed to setup master nodes properly");
+  if (static_cast<int>(slavenodes.size())*genprob.ndim != slavedofmap_->NumMyElements())
+    dserror("failed to setup slave nodes properly");
+
+  // Now swap in the maps we already had.
+  // So we did a little more work than required. But there are cases
+  // where we have to do that work (fluid-ale coupling) and we want to
+  // use just one setup implementation.
+  //
+  // The point is to make sure there is only one map for each
+  // interface.
+
+  if (not masterdofmap_->SameAs(*mastercondmap))
+    dserror("master dof map mismatch");
+
+  if (not slavedofmap_->SameAs(*slavecondmap))
+    dserror("slave dof map mismatch");
+
+  masterdofmap_ = mastercondmap;
+  masterexport_ = rcp(new Epetra_Export(*permmasterdofmap_, *masterdofmap_));
+
+  slavedofmap_ = slavecondmap;
+  slaveexport_ = rcp(new Epetra_Export(*permslavedofmap_, *slavedofmap_));
+}
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,

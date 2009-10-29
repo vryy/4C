@@ -24,6 +24,9 @@ ADAPTER::StructureLung::StructureLung(Teuchos::RCP<Structure> stru)
       constrcond_.push_back(temp[i]);
   }
   if (constrcond_.size() == 0) dserror("No structure-fluid volume constraints found for lung fsi");
+
+  // build mapextractor for fsi <-> full map
+  fsiinterface_ = LINALG::MapExtractor(*Interface().FullMap(), Interface().FSICondMap());
 }
 
 

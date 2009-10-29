@@ -325,6 +325,9 @@ OBJS_DRT_FSI  = src/drt_fsi/fsi_dyn.o \
                 src/drt_fsi/fsi_monolithicxfem.o \
                 src/drt_fsi/fs_monolithic.o \
                 src/drt_fsi/fsi_monolithic_linearsystem.o \
+                src/drt_fsi/fsi_lungmonolithic.o \
+                src/drt_fsi/fsi_lungmonolithic_structuresplit.o \
+                src/drt_fsi/fsi_lungmonolithic_fluidsplit.o \
                 src/drt_fsi/fsi_partitionedmonolithic.o \
                 src/drt_fsi/fsi_fluid_ale.o \
                 src/drt_fsi/fsi_fluid_xfem.o \

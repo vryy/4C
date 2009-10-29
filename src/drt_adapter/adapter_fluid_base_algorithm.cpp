@@ -31,6 +31,7 @@ Maintainer: Ulrich Kuettler
 #include "adapter_xfluid_impl.H"
 #include "adapter_fluid_genalpha.H"
 #include "adapter_fluid_combust.H"
+#include "adapter_fluid_lung.H"
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -271,7 +272,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   FLUID_TIMEINTTYPE iop = Teuchos::getIntegralValue<FLUID_TIMEINTTYPE>(fdyn,"TIMEINTEGR");
 
   // sanity checks and default flags
-  if (genprob.probtyp == prb_fsi)
+  if (genprob.probtyp == prb_fsi or genprob.probtyp == prb_fsi_lung)
   {
     // in case of FSI calculations we do not want a stationary fluid solver
     if (iop == timeint_stationary)
@@ -286,7 +287,9 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     const int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
     if (coupling == fsi_iter_monolithicfluidsplit or
         coupling == fsi_iter_monolithiclagrange or
-        coupling == fsi_iter_monolithicstructuresplit)
+        coupling == fsi_iter_monolithicstructuresplit or
+        coupling == fsi_iter_lung_monolithicstructuresplit or
+        coupling == fsi_iter_lung_monolithicstructuresplit)
     {
       // there are a couple of restrictions in monolithic FSI
       fluidtimeparams->set<bool>("do explicit predictor",false);
@@ -369,14 +372,16 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     fluidtimeparams->set<FILE*>("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
 
     bool dirichletcond = true;
-    if (genprob.probtyp == prb_fsi)
+    if (genprob.probtyp == prb_fsi or genprob.probtyp == prb_fsi_lung)
     {
       // FSI input parameters
       const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
       const int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
       if (coupling == fsi_iter_monolithicfluidsplit or
           coupling == fsi_iter_monolithiclagrange or
-          coupling == fsi_iter_monolithicstructuresplit)
+          coupling == fsi_iter_monolithicstructuresplit or
+          coupling == fsi_iter_lung_monolithicstructuresplit or
+          coupling == fsi_iter_lung_monolithicfluidsplit)
       {
         dirichletcond = false;
       }
@@ -395,6 +400,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     // integration (call the constructor);
     // the only parameter from the list required here is the number of
     // velocity degrees of freedom
+
     if (genprob.probtyp == prb_fsi_xfem or
         genprob.probtyp == prb_fluid_xfem)
     {
@@ -408,11 +414,12 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     }
     else
     {
+      RCP<Fluid> tmpfluid;
       int fluidsolver = Teuchos::getIntegralValue<int>(fdyn,"FLUID_SOLVER");
       switch(fluidsolver)
       {
       case fluid_solver_implicit:
-        fluid_ = rcp(new ADAPTER::FluidImpl(actdis, solver, fluidtimeparams, output, isale, dirichletcond));
+        tmpfluid = rcp(new ADAPTER::FluidImpl(actdis, solver, fluidtimeparams, output, isale, dirichletcond));
         break;
       case fluid_solver_pressurecorrection:
       case fluid_solver_pressurecorrection_semiimplicit:
@@ -427,12 +434,16 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
         psolver->PutSolverParamsToSubParams("FLUID PRESSURE SOLVER",
                                             DRT::Problem::Instance()->FluidPressureSolverParams());
 
-        fluid_ = rcp(new ADAPTER::FluidProjection(actdis, solver, psolver, fluidtimeparams, output, isale, dirichletcond));
+        tmpfluid = rcp(new ADAPTER::FluidProjection(actdis, solver, psolver, fluidtimeparams, output, isale, dirichletcond));
       }
       break;
       default:
         dserror("fluid solving strategy unknown.");
       }
+      if (genprob.probtyp == prb_fsi_lung)
+        fluid_ = rcp(new FluidLung(rcp(new FluidWrapper(tmpfluid))));
+      else
+        fluid_ = tmpfluid;
     }
   }
   else if (iop == timeint_gen_alpha)
@@ -445,7 +456,12 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     // the only parameter from the list required here is the number of
     // velocity degrees of freedom
     //------------------------------------------------------------------
-    fluid_ = rcp(new ADAPTER::FluidGenAlpha(actdis, solver, fluidtimeparams, output, isale));
+    RCP<Fluid> tmpfluid;
+    tmpfluid = rcp(new ADAPTER::FluidGenAlpha(actdis, solver, fluidtimeparams, output, isale));
+    if (genprob.probtyp == prb_fsi_lung)
+      fluid_ = rcp(new FluidLung(rcp(new FluidWrapper(tmpfluid))));
+    else
+      fluid_ = tmpfluid;
   }
   else
   {

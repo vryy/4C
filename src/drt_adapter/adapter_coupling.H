@@ -96,6 +96,20 @@ namespace ADAPTER
                                 Teuchos::RCP<const Epetra_Map> slavecondmap,
                                 const std::string& condname);
 
+    /// setup coupling of nodes marked with condition1 not belonging
+    /// also to condition2
+    /*!
+      Setup the whole thing. Find matching nodes via octtree, check
+      affiliation to other condition and build appropriate dof maps.
+
+     */
+    void SetupConstrainedConditionCoupling(const DRT::Discretization& masterdis,
+                                           Teuchos::RCP<const Epetra_Map> mastercondmap,
+                                           const DRT::Discretization& slavedis,
+                                           Teuchos::RCP<const Epetra_Map> slavecondmap,
+                                           const std::string& condname1,
+                                           const std::string& condname2);
+
     /// setup coupling of given nodes
     /*!
       Setup the whole thing. Find matching nodes via octtree and build

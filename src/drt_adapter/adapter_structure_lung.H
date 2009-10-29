@@ -67,10 +67,19 @@ public:
                          Teuchos::RCP<Epetra_Vector> OldVolsRed,
                          Teuchos::RCP<Epetra_Vector> OldLagrMultRed);
 
+  /// Get MapExtractor for fsi <-> full map
+  LINALG::MapExtractor& FSIInterface() { return fsiinterface_;  }
+
 private:
 
   /// conditions that define the lung volume constraints
   std::vector<DRT::Condition*> constrcond_;
+
+  /// map extractor for fsi <-> full map
+  /// this is needed since otherwise "OtherMap" contains only dofs
+  /// which are not part of a condition. however, asi dofs are of
+  /// course also "inner" dofs for the structural field.
+  LINALG::MapExtractor fsiinterface_;
 
 };
 

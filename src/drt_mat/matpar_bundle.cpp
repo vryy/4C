@@ -95,7 +95,7 @@ Teuchos::RCP<MAT::PAR::Material> MAT::PAR::Bundle::ById(
   std::map<int,Teuchos::RCP<MAT::PAR::Material> >::const_iterator m = matmap_.find(num);
 
   if (matmap_.size() == 0)
-    dserror("No materials avialable");
+    dserror("No materials available");
 
   if (m == matmap_.end())
     dserror("Material 'MAT %d' could not be found", num);

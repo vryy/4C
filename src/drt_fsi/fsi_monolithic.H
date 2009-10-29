@@ -72,7 +72,7 @@ namespace UTILS
     virtual ~MonolithicBase();
 
     /// read restart data
-    void ReadRestart(int step);
+    virtual void ReadRestart(int step);
 
   protected:
 

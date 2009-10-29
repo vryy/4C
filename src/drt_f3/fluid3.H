@@ -1105,6 +1105,7 @@ private:
     integrate_Shapefunction,
     areacalc,
     flowratecalc,
+    flowratederiv,
     Outletimpedance,
     calc_node_normal,
     calc_node_curvature,
@@ -1209,6 +1210,31 @@ private:
   void FlowRateParameterCalculation(ParameterList& params,
                   DRT::Discretization&       discretization,
                   vector<int>&               lm);
+
+  /*!
+  \brief determine elemental flow rate and its derivatives wrt dofs
+
+  \param params (in/out)    : parameterList for communication between control routine
+                              and elements
+  \param discretization (in): reference to the underlying discretization
+  \param lm (in)            : location vector of this element
+  \param elemat1 (out)      : 2nd derivative of flowrates wrt
+                              velocities and displacements
+  \param elemat2 (out)      : 2nd derivative of flowrates wrt displacements
+  \param elevec1 (out)      : derivative of flowrates wrt velocities
+  \param elevec2 (out)      : derivative of flowrate wrt displacements
+  \param elevec3 (out)      : flowrate
+
+  */
+  void FlowRateDeriv(ParameterList& params,
+                     DRT::Discretization&       discretization,
+                     vector<int>&               lm,
+                     Epetra_SerialDenseMatrix& elemat1,
+                     Epetra_SerialDenseMatrix& elemat2,
+                     Epetra_SerialDenseVector& elevec1,
+                     Epetra_SerialDenseVector& elevec2,
+                     Epetra_SerialDenseVector& elevec3);
+
 
   /*!
   \brief apply impedance boundary condition (outlet pressures)

@@ -481,4 +481,470 @@ const char* FSI::OverlappingBlockMatrix::Label() const
   return "FSI::OverlappingBlockMatrix";
 }
 
+
+
+// /*----------------------------------------------------------------------*
+//  *----------------------------------------------------------------------*/
+FSI::LungOverlappingBlockMatrix::LungOverlappingBlockMatrix(const LINALG::MultiMapExtractor& maps,
+                                                            ADAPTER::Structure& structure,
+                                                            ADAPTER::Fluid& fluid,
+                                                            ALE::Ale& ale,
+                                                            bool structuresplit,
+                                                            int symmetric,
+                                                            double omega,
+                                                            int iterations,
+                                                            double somega,
+                                                            int siterations,
+                                                            double fomega,
+                                                            int fiterations,
+                                                            double aomega,
+                                                            int aiterations,
+                                                            FILE* err)
+  : OverlappingBlockMatrix(maps,
+                           structure,
+                           fluid,
+                           ale,
+                           structuresplit,
+                           symmetric,
+                           omega,
+                           iterations,
+                           somega,
+                           siterations,
+                           fomega,
+                           fiterations,
+                           aomega,
+                           aiterations,
+                           err)
+{
+//   if (!structuresplit_)
+//     dserror("LungOverlappingBlockMatrix implemented for structure split only!");
+
+  // determine map of all dofs not related to constraint
+
+  std::vector<Teuchos::RCP<const Epetra_Map> > fsimaps;
+  fsimaps.push_back(maps.Map(0));
+  fsimaps.push_back(maps.Map(1));
+  fsimaps.push_back(maps.Map(2));
+  overallfsimap_ = LINALG::MultiMapExtractor::MergeMaps(fsimaps);
+  fsiextractor_ = LINALG::MultiMapExtractor(*overallfsimap_, fsimaps);
+//   invDiag_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(fsiextractor_, fsiextractor_, 1, false, true));
+//   interconA_ = Teuchos::rcp(new LINALG::SparseMatrix(*maps.Map(3), maps.Map(3)->NumGlobalElements(), true, true));
+//   interconrhs_ = Teuchos::rcp(new Epetra_Vector(*maps.Map(3)));
+//   interconsol_ = Teuchos::rcp(new Epetra_Vector(*maps.Map(3)));
+
+  // allocate solver for constraint part
+
+//   Epetra_CrsMatrix* matrix = &*interconA_->EpetraMatrix();
+//   linprob_ = rcp(new Epetra_LinearProblem(matrix, &(*interconsol_), &(*interconrhs_)));
+//   constraintsolver_ = Teuchos::rcp(new Amesos_Umfpack(*linprob_));
+
+  // stuff needed for SIMPLE preconditioner -> this needs to be read
+  // in from the input file one day!
+  alpha_ = 1.0;
+  simpleiter_ = 2;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void FSI::LungOverlappingBlockMatrix::SetupPreconditioner()
+{
+#ifdef BLOCKMATRIXMERGE
+
+  // this is really evil :)
+  // note that this only works with UMFPACK as fluid solver (saddle
+  // point problem!)
+
+  sparse_ = Merge();
+  fluidsolver_->Setup(sparse_->EpetraMatrix());
+
+#else
+
+  const LINALG::SparseMatrix& structInnerOp = Matrix(0,0);
+  const LINALG::SparseMatrix& fluidInnerOp  = Matrix(1,1);
+  const LINALG::SparseMatrix& aleInnerOp    = Matrix(2,2);
+
+  RCP<LINALG::MapExtractor> fsidofmapex = null;
+  RCP<Epetra_Map>           irownodes = null;
+
+  structuresolver_->Setup(structInnerOp.EpetraMatrix());
+  fluidsolver_->Setup(fluidInnerOp.EpetraMatrix(),
+                      fsidofmapex,
+                      fluid_.Discretization(),
+                      irownodes,
+                      structuresplit_);
+  if (constalesolver_==Teuchos::null)
+    alesolver_->Setup(aleInnerOp.EpetraMatrix());
+
+#endif
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void FSI::LungOverlappingBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
+{
+  const LINALG::SparseMatrix& structInnerOp  = Matrix(0,0);
+  const LINALG::SparseMatrix& structBoundOp  = Matrix(0,1);
+  const LINALG::SparseMatrix& structABoundOp  = Matrix(0,2);
+  const LINALG::SparseMatrix& fluidBoundOp   = Matrix(1,0);
+  const LINALG::SparseMatrix& fluidInnerOp   = Matrix(1,1);
+  const LINALG::SparseMatrix& fluidMeshOp    = Matrix(1,2);
+  const LINALG::SparseMatrix& aleSBoundOp    = Matrix(2,0);
+  const LINALG::SparseMatrix& aleInnerOp     = Matrix(2,2);
+
+  // Extract vector blocks
+  // RHS
+
+  const Epetra_Vector &x = Teuchos::dyn_cast<const Epetra_Vector>(X);
+
+  // initial guess
+
+  Epetra_Vector &y = Teuchos::dyn_cast<Epetra_Vector>(Y);
+
+  Teuchos::RCP<Epetra_Vector> sy = RangeExtractor().ExtractVector(y,0);
+  Teuchos::RCP<Epetra_Vector> fy = RangeExtractor().ExtractVector(y,1);
+  Teuchos::RCP<Epetra_Vector> ay = RangeExtractor().ExtractVector(y,2);
+  Teuchos::RCP<Epetra_Vector> cy = RangeExtractor().ExtractVector(y,3);
+
+  Teuchos::RCP<Epetra_Vector> sz = Teuchos::rcp(new Epetra_Vector(sy->Map()));
+  Teuchos::RCP<Epetra_Vector> fz = Teuchos::rcp(new Epetra_Vector(fy->Map()));
+  Teuchos::RCP<Epetra_Vector> az = Teuchos::rcp(new Epetra_Vector(ay->Map()));
+
+  Teuchos::RCP<Epetra_Vector> tmpsx = Teuchos::rcp(new Epetra_Vector(DomainMap(0)));
+  Teuchos::RCP<Epetra_Vector> tmpfx = Teuchos::rcp(new Epetra_Vector(DomainMap(1)));
+  Teuchos::RCP<Epetra_Vector> tmpax = Teuchos::rcp(new Epetra_Vector(DomainMap(2)));
+
+  for (int outerrun=0; outerrun<simpleiter_; ++outerrun)
+  {
+
+    // -------------------------------------------------------------------
+    // intermediate fsi dofs: u_(n+1/2) = F^(-1)(f-B^T*lambda_n)
+    // -------------------------------------------------------------------
+
+    // inner Richardson loop (FSI block)
+
+    for (int run=0; run<iterations_; ++run)
+    {
+      Teuchos::RCP<Epetra_Vector> sx = DomainExtractor().ExtractVector(x,0);
+      Teuchos::RCP<Epetra_Vector> fx = DomainExtractor().ExtractVector(x,1);
+      Teuchos::RCP<Epetra_Vector> ax = DomainExtractor().ExtractVector(x,2);
+      Teuchos::RCP<Epetra_Vector> cx = DomainExtractor().ExtractVector(x,3);
+
+      // ----------------------------------------------------------------
+      // lower GS
+
+
+      // Structure
+      {
+        if (run>0 or outerrun>0)
+        {
+          structInnerOp.Multiply(false,*sy,*tmpsx);
+          sx->Update(-1.0,*tmpsx,1.0);
+          structBoundOp.Multiply(false,*fy,*tmpsx);
+          sx->Update(-1.0,*tmpsx,1.0);
+          structABoundOp.Multiply(false,*ay,*tmpsx);
+          sx->Update(-1.0,*tmpsx,1.0);
+#if 0
+          Matrix(0,3).Apply(*cy, *tmpsx);
+          sx->Update(-1.0, *tmpsx, 1.0);
+#endif
+        }
+
+        // Solve structure equations for sy with the rhs sx
+        structuresolver_->Solve(structInnerOp.EpetraMatrix(),sz,sx,true);
+
+        // do Richardson iteration
+        LocalBlockRichardson(structuresolver_,structInnerOp,sx,sz,tmpsx,siterations_,somega_,err_,Comm());
+
+        if (run>0 or outerrun>0)
+        {
+          sy->Update(omega_,*sz,1.0);
+        }
+        else
+        {
+          sy->Update(omega_,*sz,0.0);
+        }
+      }
+
+      // Ale
+      {
+        // Solve ale equations for ay with the rhs ax - A(I,Gamma) sy
+
+        if (run>0 or outerrun>0)
+        {
+          aleInnerOp.Multiply(false,*ay,*tmpax);
+          ax->Update(-1.0,*tmpax,1.0);
+        }
+        if (structuresplit_)
+        {
+          if (run>0 or outerrun>0)
+          {
+            const LINALG::SparseMatrix& aleFBoundOp = Matrix(2,1);
+            aleFBoundOp.Multiply(false,*fy,*tmpax);
+            ax->Update(-1.0,*tmpax,1.0);
+          }
+        }
+        else
+        {
+          const LINALG::SparseMatrix& aleFBoundOp = Matrix(2,0);
+          aleFBoundOp.Multiply(false,*sy,*tmpax);
+          ax->Update(-1.0,*tmpax,1.0);
+        }
+
+        aleSBoundOp.Multiply(false,*sy,*tmpax);
+        ax->Update(-1.0,*tmpax,1.0);
+
+        alesolver_->Solve(aleInnerOp.EpetraMatrix(),az,ax,true);
+
+        // do Richardson iteration
+        LocalBlockRichardson(alesolver_,aleInnerOp,ax,az,tmpax,aiterations_,aomega_,err_,Comm());
+
+        if (run>0 or outerrun>0)
+        {
+          ay->Update(omega_,*az,1.0);
+        }
+        else
+        {
+          ay->Update(omega_,*az,0.0);
+        }
+      }
+
+      // Fluid
+      {
+        // Solve fluid equations for fy with the rhs fx - F(I,Gamma) sy - F(Mesh) ay
+
+        if (run>0 or outerrun>0)
+        {
+          fluidInnerOp.Multiply(false,*fy,*tmpfx);
+          fx->Update(-1.0,*tmpfx,1.0);
+
+#if 0
+          Matrix(1,3).Apply(*cy, *tmpfx);
+          fx->Update(-1.0, *tmpfx, 1.0);
+#endif
+        }
+
+        fluidBoundOp.Multiply(false,*sy,*tmpfx);
+        fx->Update(-1.0,*tmpfx,1.0);
+        fluidMeshOp.Multiply(false,*ay,*tmpfx);
+        fx->Update(-1.0,*tmpfx,1.0);
+
+        fluidsolver_->Solve(fluidInnerOp.EpetraMatrix(),fz,fx,true);
+
+        LocalBlockRichardson(fluidsolver_,fluidInnerOp,fx,fz,tmpfx,fiterations_,fomega_,err_,Comm());
+
+        if (run>0 or outerrun>0)
+        {
+          fy->Update(omega_,*fz,1.0);
+        }
+        else
+        {
+          fy->Update(omega_,*fz,0.0);
+        }
+      }
+
+      // ----------------------------------------------------------------
+      // the symmetric part of the pc can be skipped
+
+      if (symmetric_)
+      {
+
+        sx = DomainExtractor().ExtractVector(x,0);
+        fx = DomainExtractor().ExtractVector(x,1);
+        ax = DomainExtractor().ExtractVector(x,2);
+        cx = DomainExtractor().ExtractVector(x,3);
+
+        // add constraint part to rhs
+
+        Teuchos::RCP<Epetra_Vector> scx;
+        Matrix(0,3).Apply(*cx, *scx);
+        sx->Update(-1.0, *scx, 1.0);
+
+        Teuchos::RCP<Epetra_Vector> fcx;
+        Matrix(1,3).Apply(*cx, *fcx);
+        fx->Update(-1.0, *fcx, 1.0);
+
+//         Teuchos::RCP<Epetra_Vector> acx;
+//         Matrix(2,3).Apply(*cx, *acx);
+//         ax->Update(-1.0, *acx, 1.0);
+
+        // ----------------------------------------------------------------
+        // upper GS
+
+        {
+          fluidInnerOp.Multiply(false,*fy,*tmpfx);
+          fx->Update(-1.0,*tmpfx,1.0);
+          fluidBoundOp.Multiply(false,*sy,*tmpfx);
+          fx->Update(-1.0,*tmpfx,1.0);
+          fluidMeshOp.Multiply(false,*ay,*tmpfx);
+          fx->Update(-1.0,*tmpfx,1.0);
+
+          fluidsolver_->Solve(fluidInnerOp.EpetraMatrix(),fz,fx,true);
+
+          LocalBlockRichardson(fluidsolver_,fluidInnerOp,fx,fz,tmpfx,fiterations_,fomega_,err_,Comm());
+          fy->Update(omega_,*fz,1.0);
+        }
+
+        {
+          aleInnerOp.Multiply(false,*ay,*tmpax);
+          ax->Update(-1.0,*tmpax,1.0);
+
+          if (structuresplit_)
+          {
+            const LINALG::SparseMatrix& aleFBoundOp = Matrix(2,1);
+            aleFBoundOp.Multiply(false,*fy,*tmpax);
+            ax->Update(-1.0,*tmpax,1.0);
+          }
+          else
+          {
+            const LINALG::SparseMatrix& aleFBoundOp = Matrix(2,0);
+            aleFBoundOp.Multiply(false,*sy,*tmpax);
+            ax->Update(-1.0,*tmpax,1.0);
+          }
+
+          aleSBoundOp.Multiply(false,*sy,*tmpax);
+          ax->Update(-1.0,*tmpax,1.0);
+
+          alesolver_->Solve(aleInnerOp.EpetraMatrix(),az,ax,true);
+
+          LocalBlockRichardson(alesolver_,aleInnerOp,ax,az,tmpax,aiterations_,aomega_,err_,Comm());
+
+          ay->Update(omega_,*az,1.0);
+        }
+
+        {
+          structInnerOp.Multiply(false,*sy,*tmpsx);
+          sx->Update(-1.0,*tmpsx,1.0);
+          structBoundOp.Multiply(false,*fy,*tmpsx);
+          sx->Update(-1.0,*tmpsx,1.0);
+
+          structuresolver_->Solve(structInnerOp.EpetraMatrix(),sz,sx,true);
+
+          LocalBlockRichardson(structuresolver_,structInnerOp,sx,sz,tmpsx,siterations_,somega_,err_,Comm());
+          sy->Update(omega_,*sz,1.0);
+        }
+      }
+    }
+
+#if 0
+    // -------------------------------------------------------------------
+    // intermediate constraint dofs: Dlambda~ = S^(-1) * B^ * u_(n+1/2)
+    // -------------------------------------------------------------------
+
+    // interconrhs = B^ * u_(n+1/2)
+    // note: Matrix(3,2) has no entries
+
+    Epetra_Vector interconrhs(RangeMap(3));
+
+    Epetra_Vector inters(cy->Map());
+    Matrix(3,0).Apply(*sy, inters);
+    Epetra_Vector interf(cy->Map());
+    Matrix(3,1).Apply(*fy, interf);
+
+    interconrhs.Update(1.0, inters, 0.0);
+    interconrhs.Update(1.0, interf, 1.0);
+
+    // D^{-1} = diag(A(0,0))^{-1}
+
+    LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> invDiag(fsiextractor_, fsiextractor_, 1, false, true);
+
+    Epetra_Vector structDiagVec(structInnerOp.RowMap(),false);
+    structInnerOp.ExtractDiagonalCopy(structDiagVec);
+    int err = structDiagVec.Reciprocal(structDiagVec);
+    if (err) dserror("Epetra_MultiVector::Reciprocal (structure matrix) returned %d",err);
+    LINALG::SparseMatrix invstructDiag(structDiagVec);
+
+    Epetra_Vector fluidDiagVec(fluidInnerOp.RowMap(),false);
+    fluidInnerOp.ExtractDiagonalCopy(fluidDiagVec);
+    err = fluidDiagVec.Reciprocal(fluidDiagVec);
+    if (err) dserror("Epetra_MultiVector::Reciprocal (fluid matrix) returned %d",err);
+    LINALG::SparseMatrix invfluidDiag(fluidDiagVec);
+
+    Epetra_Vector aleDiagVec(aleInnerOp.RowMap(),false);
+    aleInnerOp.ExtractDiagonalCopy(aleDiagVec);
+    err = aleDiagVec.Reciprocal(aleDiagVec);
+    if (err) dserror("Epetra_MultiVector::Reciprocal (ale matrix) returned %d",err);
+    LINALG::SparseMatrix invaleDiag(aleDiagVec);
+
+    invDiag.Assign(0,0,View,invstructDiag);
+    invDiag.Assign(1,1,View,invfluidDiag);
+    invDiag.Assign(2,2,View,invaleDiag);
+
+    invDiag.Complete();
+
+
+    // S = B^ * D^{-1} * B^T
+    // note: Matrix(3,2) and Matrix(2,3) have no entries
+
+    Teuchos::RCP<LINALG::SparseMatrix> interconA = rcp(new LINALG::SparseMatrix(RangeMap(3), RangeMap(3).NumGlobalElements(), true, true));
+
+    Teuchos::RCP<LINALG::SparseMatrix> temps = Multiply(Matrix(3,0), false, invDiag.Matrix(0,0), false, true);
+    Teuchos::RCP<LINALG::SparseMatrix> tempss = Multiply(*temps, false, Matrix(0,3), false, true);
+    interconA->Add(*tempss, false, 1.0, 0.0);
+
+    temps = Multiply(Matrix(3,1), false, invDiag.Matrix(1,1), false, true);
+    tempss = Multiply(*temps, false, Matrix(1,3), false, true);
+    interconA->Add(*tempss, false, 1.0, 1.0);
+
+    interconA->Complete();
+
+    // allocate solver for constraint part
+
+    Epetra_Vector interconsol(RangeMap(3));
+    Epetra_CrsMatrix* matrix = &*interconA->EpetraMatrix();
+    Epetra_LinearProblem linprob(matrix, &interconsol, &interconrhs);
+    Amesos_Umfpack constraintsolver(linprob);
+
+    constraintsolver.Solve();
+
+
+    // -------------------------------------------------------------------
+    // update of all dofs
+    // -------------------------------------------------------------------
+
+    // note: Matrix(2,3) has no entries -> hence no update of ay!
+
+    cy->Update(1.0/alpha_, interconsol, 1.0);
+
+    // the following update of fsi dofs was found to be detrimental
+    // -> matrix became singular (the preconditioner might not be a
+    // linear operator anymore in this case!)
+
+//     Teuchos::RCP<Epetra_Vector> temp1;
+//     Teuchos::RCP<Epetra_Vector> temp2;
+
+//     temp1 = rcp(new Epetra_Vector(sy->Map()));
+//     temp2 = rcp(new Epetra_Vector(sy->Map()));
+//     Matrix(0,3).Apply(interconsol, *temp1);
+//     temp1->Scale(1.0/alpha_);
+//     invDiag.Matrix(0,0).Apply(*temp1, *temp2);
+//     sy->Update(-1.0, *temp2, 1.0);
+
+//     temp1 = rcp(new Epetra_Vector(fy->Map()));
+//     temp2 = rcp(new Epetra_Vector(fy->Map()));
+//     Matrix(1,3).Apply(interconsol, *temp1);
+//     temp1->Scale(1.0/alpha_);
+//     invDiag.Matrix(1,1).Apply(*temp1, *temp2);
+//     fy->Update(-1.0, *temp2, 1.0);
+
+#endif
+  }
+
+  RangeExtractor().InsertVector(*sy,0,y);
+  RangeExtractor().InsertVector(*fy,1,y);
+  RangeExtractor().InsertVector(*ay,2,y);
+  RangeExtractor().InsertVector(*cy,3,y);
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+const char* FSI::LungOverlappingBlockMatrix::Label() const
+{
+  return "FSI::LungOverlappingBlockMatrix";
+}
+
+
+
 #endif

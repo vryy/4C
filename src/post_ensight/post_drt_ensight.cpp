@@ -50,6 +50,7 @@ int main(
     switch (problem.Problemtype())
     {
     case prb_fsi:
+    case prb_fsi_lung:
     {
         string basename = problem.outname();
         PostField* structfield = problem.get_discretization(0);
@@ -241,7 +242,7 @@ int main(
     case prb_art_net:
     {
       PostField* field = problem.get_discretization(0);
-      
+
       cout<<"artery network post-processing will be implimented here!"<<endl;
       break;
     }

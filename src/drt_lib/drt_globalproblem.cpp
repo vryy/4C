@@ -243,6 +243,7 @@ void DRT::Problem::InputControl()
   switch (genprob.probtyp)
   {
   case prb_fsi:
+  case prb_fsi_lung:
   {
     genprob.numsf=0;
     genprob.numff=1;
@@ -713,6 +714,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
 
   switch (genprob.probtyp){
   case prb_fsi:
+  case prb_fsi_lung:
   {
     // allocate and input general old stuff....
     if (genprob.numfld!=3) dserror("numfld != 3 for fsi problem");

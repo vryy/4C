@@ -210,7 +210,7 @@ out_general();
 if (par.myrank==0 && ioflags.output_gid)
 {
   out_gid_sol_init();
-  if (genprob.probtyp != prb_structure && genprob.probtyp != prb_fsi && genprob.probtyp != prb_pfsi)
+  if (genprob.probtyp != prb_structure && genprob.probtyp != prb_fsi && genprob.probtyp != prb_pfsi && genprob.probtyp != prb_fsi_lung)
     out_gid_msh();
 }
 #else
@@ -298,6 +298,7 @@ case prb_freesurf:
 #ifdef D_FSI
 case prb_fsi:
 case prb_pfsi:
+case prb_fsi_lung:
 #ifndef CCADISCRET
   dyn_fsi(0);
 #else

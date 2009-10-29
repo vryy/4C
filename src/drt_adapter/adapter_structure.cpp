@@ -20,6 +20,7 @@ Maintainer: Ulrich Kuettler
 #include "adapter_structure_timint.H"
 #include "adapter_structure_constrained.H"
 #include "adapter_structure_wrapper.H"
+#include "adapter_structure_lung.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 
@@ -237,7 +238,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
   genalphaparams->set<INPAR::STR::ConSolveAlgo>("UZAWAALGO",getIntegralValue<INPAR::STR::ConSolveAlgo>(sdyn,"UZAWAALGO"));
 
   // sanity checks and default flags
-  if (genprob.probtyp == prb_fsi)
+  if (genprob.probtyp == prb_fsi or genprob.probtyp == prb_fsi_lung)
   {
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
 
@@ -252,7 +253,9 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
     int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
     if (coupling == fsi_iter_monolithicfluidsplit or
         coupling == fsi_iter_monolithiclagrange or
-        coupling == fsi_iter_monolithicstructuresplit)
+        coupling == fsi_iter_monolithicstructuresplit or
+        coupling == fsi_iter_lung_monolithicstructuresplit or
+        coupling == fsi_iter_lung_monolithicfluidsplit)
     {
       if (Teuchos::getIntegralValue<INPAR::STR::PredEnum>(sdyn,"PREDICT")!=INPAR::STR::pred_constdisvelacc)
         dserror("only constant structure predictor with monolithic FSI possible");
@@ -282,6 +285,8 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
       // no NOX correction required
       structure_ = tmpstr;
     }
+    else if (genprob.probtyp == prb_fsi_lung)
+      structure_ = rcp(new StructureLung(rcp(new StructureNOXCorrectionWrapper(tmpstr))));
     else
       structure_ = rcp(new StructureNOXCorrectionWrapper(tmpstr));
   }
@@ -361,7 +366,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
   sdyn->set<int>("RESTARTEVRY", prbdyn.get<int>("RESTARTEVRY"));
 
   // sanity checks and default flags
-  if (genprob.probtyp == prb_fsi)
+  if (genprob.probtyp == prb_fsi or genprob.probtyp == prb_fsi_lung)
   {
     // FSI input parameters
     const Teuchos::ParameterList& fsidyn
@@ -381,7 +386,9 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
     int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
     if ( (coupling == fsi_iter_monolithicfluidsplit)
          or (coupling == fsi_iter_monolithiclagrange)
-         or (coupling == fsi_iter_monolithicstructuresplit) )
+         or (coupling == fsi_iter_monolithicstructuresplit)
+         or (coupling == fsi_iter_lung_monolithicstructuresplit)
+         or (coupling == fsi_iter_lung_monolithicfluidsplit) )
     {
       if ((Teuchos::getIntegralValue<INPAR::STR::PredEnum>(*sdyn,"PREDICT")
           != INPAR::STR::pred_constdisvelacc) and
@@ -405,7 +412,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
   // create marching time integrator
   RCP<Structure> tmpstr;
   tmpstr = Teuchos::rcp(new StructureTimInt(ioflags, sdyn, xparams,
-                                                actdis, solver, output));
+                                            actdis, solver, output));
 
   if (tmpstr->HaveConstraint())
     structure_ = rcp(new StructureNOXCorrectionWrapper(rcp(new StructureConstrained(tmpstr))));
@@ -417,6 +424,8 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
       // no NOX correction required
       structure_ = tmpstr;
     }
+    else if (genprob.probtyp == prb_fsi_lung)
+      structure_ = rcp(new StructureLung(rcp(new StructureNOXCorrectionWrapper(tmpstr))));
     else
       structure_ = rcp(new StructureNOXCorrectionWrapper(tmpstr));
   }

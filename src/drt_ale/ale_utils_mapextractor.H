@@ -19,9 +19,10 @@ namespace UTILS
   public:
 
     enum {
-      cond_other = 0,
-      cond_fsi   = 1,
-      cond_fs    = 2
+      cond_other     = 0,
+      cond_fsi       = 1,
+      cond_fs        = 2,
+      cond_lung_asi  = 3
     };
 
     /// setup the whole thing
@@ -33,6 +34,7 @@ namespace UTILS
     MAP_EXTRACTOR_VECTOR_METHODS(Other,  cond_other)
     MAP_EXTRACTOR_VECTOR_METHODS(FSICond,cond_fsi)
     MAP_EXTRACTOR_VECTOR_METHODS(FSCond, cond_fs)
+    MAP_EXTRACTOR_VECTOR_METHODS(LungASICond,cond_lung_asi)
   };
 }
 }

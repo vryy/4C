@@ -87,6 +87,11 @@ namespace DRT
                               std::vector<int>& nodes);
 
     /// find all local nodes from discretization marked with condition
+    void FindConditionedNodes(const DRT::Discretization& dis,
+                              std::string condname,
+                              std::set<int>& nodeset);
+
+    /// find all local nodes from discretization marked with condition
     /*!
       Loop all conditions of the given discretization, find the ones with the
       specified name and collect the locally owned node ids in the suppied
@@ -107,6 +112,11 @@ namespace DRT
     void FindConditionedNodes(const DRT::Discretization& dis,
                               const std::vector<DRT::Condition*>& conds,
                               map<int, DRT::Node*>& nodes);
+    /// find all local nodes from discretization marked with condition
+    void FindConditionedNodes(const DRT::Discretization& dis,
+                              const std::vector<DRT::Condition*>& conds,
+                              std::set<int>& nodeset);
+
 
     /// collect all local nodes and elements in a condition
     /*!
