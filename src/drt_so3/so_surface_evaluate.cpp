@@ -562,30 +562,25 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
 
         //get projection method
         RCP<DRT::Condition> condition = params.get<RefCountPtr<DRT::Condition> >("condition");
-        const string* projtype = condition->Get<string>("projection");
+        const string* projtype = condition->Get<string>("projection", "none");
 
-        if (projtype != NULL)
+        //call submethod to compute volume and its derivatives w.r.t. to current displ.
+        if (*projtype == "yz")
         {
-          //call submethod to compute volume and its derivatives w.r.t. to current displ.
-          if (*projtype == "yz")
-          {
-            ComputeVolDeriv(xscurr, NumNode(),numdim*NumNode(), volumeele, Vdiff1, Vdiff2, 0, 0);
-          }
-          else if (*projtype == "xz")
-          {
-            ComputeVolDeriv(xscurr, NumNode(),numdim*NumNode(), volumeele, Vdiff1, Vdiff2, 1, 1);
-          }
-          else if (*projtype == "xy")
-          {
-            ComputeVolDeriv(xscurr, NumNode(),numdim*NumNode(), volumeele, Vdiff1, Vdiff2, 2, 2);
-          }
-          else
-          {
-            ComputeVolDeriv(xscurr, NumNode(),numdim*NumNode(), volumeele, Vdiff1, Vdiff2);
-          }
+          ComputeVolDeriv(xscurr, NumNode(),numdim*NumNode(), volumeele, Vdiff1, Vdiff2, 0, 0);
+        }
+        else if (*projtype == "xz")
+        {
+          ComputeVolDeriv(xscurr, NumNode(),numdim*NumNode(), volumeele, Vdiff1, Vdiff2, 1, 1);
+        }
+        else if (*projtype == "xy")
+        {
+          ComputeVolDeriv(xscurr, NumNode(),numdim*NumNode(), volumeele, Vdiff1, Vdiff2, 2, 2);
         }
         else
+        {
           ComputeVolDeriv(xscurr, NumNode(),numdim*NumNode(), volumeele, Vdiff1, Vdiff2);
+        }
 
         //update rhs vector and corresponding column in "constraint" matrix
         elevector1 = *Vdiff1;
