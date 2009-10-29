@@ -1310,7 +1310,7 @@ void LINALG::SparseMatrix::Add(const Epetra_CrsMatrix& A,
     sysmat_->Scale(scalarB);
 
   //Loop over Aprime's rows and sum into
-  int MaxNumEntries = EPETRA_MAX( Aprime->MaxNumEntries(), sysmat_->MaxNumEntries() );
+  int MaxNumEntries = Aprime->MaxNumEntries();
   int NumEntries;
   vector<int>    Indices(MaxNumEntries);
   vector<double> Values(MaxNumEntries);
@@ -1329,10 +1329,14 @@ void LINALG::SparseMatrix::Add(const Epetra_CrsMatrix& A,
       for (int j=0; j<NumEntries; ++j)
       {
         err = sysmat_->SumIntoGlobalValues(Row,1,&Values[j],&Indices[j]);
-        if (err<0 || err==2)
+        if (err==2)
+        {
           err = sysmat_->InsertGlobalValues(Row,1,&Values[j],&Indices[j]);
-        if (err < 0)
-          dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d",err);
+          if (err<0)
+            dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d",err);
+        }
+        else if (err)
+          dserror("Epetra_CrsMatrix::SumIntoGlobalValues returned err=%d",err);
       }
     }
   }
