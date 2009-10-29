@@ -79,7 +79,8 @@ void DRT::Discretization::Reset(bool killdofs)
     fool->second->ClearGeometry();
   }
 
-  // Remove ghost nodes and elements as well. Just to make sure.
+#if 0
+  // Remove ghost nodes and elements as well. Does not work!
 
   int myrank = comm_->MyPID();
   for (std::map<int,Teuchos::RCP<DRT::Node> >::iterator curr=node_.begin(); curr!=node_.end();)
@@ -105,6 +106,7 @@ void DRT::Discretization::Reset(bool killdofs)
       ++curr;
     }
   }
+#endif
 
   return;
 }
