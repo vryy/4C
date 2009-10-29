@@ -1162,6 +1162,9 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
         case 5: // Amesos' KLU
           smolevelsublist.set("smoother: type"                        ,"Amesos-KLU");
         break;
+        case 9: // Amesos' Umfpack
+          smolevelsublist.set("smoother: type"                        ,"Amesos-UMFPACK");
+        break;
 #ifdef PARALLEL
         case 6: // Amesos' SuperLU_Dist
           smolevelsublist.set("smoother: type"                        ,"Amesos-Superludist");
@@ -1222,6 +1225,9 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
         break;
         case 5:
           mllist.set("coarse: type","Amesos-KLU");
+        break;
+        case 9:
+          mllist.set("coarse: type","Amesos-UMFPACK");
         break;
         case 6:
           mllist.set("coarse: type","Amesos-Superludist");
