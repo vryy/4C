@@ -45,8 +45,8 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidt()
 {
   // time measurement:
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + calc inital phidt");
-  //if (myrank_ == 0)
-  // std::cout<<"SCATRA: calculating initial time derivative of phi\n"<<endl;
+  if (myrank_ == 0)
+    std::cout<<"SCATRA: calculating initial time derivative of phi\n"<<endl;
 
   // are we really at step 0?
   dsassert(step_==0,"Step counter is not 0");
