@@ -218,7 +218,7 @@ void FSI::LungMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
   LINALG::SparseMatrix s = *StructureField().SystemMatrix();
   s.UnComplete();
   s.Add(AddStructConstrMatrix_->Matrix(0,0), false, 1.0, 1.0);
-  s.Complete();
+  //s.Complete();
   mat.Assign(0,0,View,s);
 
   /*----------------------------------------------------------------------*/
@@ -242,7 +242,7 @@ void FSI::LungMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
   LINALG::SparseMatrix& fGg = blockf->Matrix(3,1);
   LINALG::SparseMatrix& fGG = blockf->Matrix(3,3);
 
-  mat.Matrix(0,0).UnComplete();
+  //mat.Matrix(0,0).UnComplete();
   fggtransform_(fgg,
                 scale*timescale,
                 ADAPTER::Coupling::SlaveConverter(coupsf),
