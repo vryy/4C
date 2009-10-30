@@ -476,59 +476,98 @@ void PostProblem::read_meshes()
         // read periodic boundary conditions if available
         if (string(condname)=="LinePeriodic")
         {
+          DRT::Exporter exporter(*comm_);
+
+          cond_pbcsline = Teuchos::rcp(new std::vector<char>());
+          
           if (comm_->MyPID()==0)
+          {
             cond_pbcsline = reader.ReadCondition(step, comm_->NumProc(), comm_->MyPID(), "LinePeriodic");
+
+            // distribute condition to all procs
+            if (comm_->NumProc()>1)
+            {
+              MPI_Request request;
+              int         tag    =-1;
+              int         frompid= 0;
+              int         topid  =-1;
+              
+              for(int np=1;np<comm_->NumProc();++np)
+              {
+                tag   = np;
+                topid = np;
+                
+                exporter.ISend(frompid,topid,
+                               &((*cond_pbcsline)[0]),
+                               (*cond_pbcsline).size(),
+                               tag,request);
+              }
+            }
+          }
           else
-            cond_pbcsline = Teuchos::rcp(new std::vector<char>());
+          {
+            
+            int length =-1;
+            int frompid= 0;
+            int mypid  =comm_->MyPID();
+            
+            vector<char> rblock;
+
+            exporter.ReceiveAny(frompid,mypid,rblock,length);
+
+            *cond_pbcsline=rblock;
+          }
+          
           currfield.discretization()->UnPackCondition(cond_pbcsline, "LinePeriodic");
         }
         else if (string(condname)=="SurfacePeriodic")
         {
+          DRT::Exporter exporter(*comm_);
+
+          cond_pbcssurf = Teuchos::rcp(new std::vector<char>());
+          
           if (comm_->MyPID()==0)
+          {
             cond_pbcssurf = reader.ReadCondition(step, comm_->NumProc(), comm_->MyPID(), "SurfacePeriodic");
+
+            // distribute condition to all procs
+            if (comm_->NumProc()>1)
+            {
+              MPI_Request request;
+              int         tag    =-1;
+              int         frompid= 0;
+              int         topid  =-1;
+              
+              for(int np=1;np<comm_->NumProc();++np)
+              {
+                tag   = np;
+                topid = np;
+                
+                exporter.ISend(frompid,topid,
+                               &((*cond_pbcssurf)[0]),
+                               (*cond_pbcssurf).size(),
+                               tag,request);
+              }
+            }
+          }
           else
-            cond_pbcssurf = Teuchos::rcp(new std::vector<char>());
+          {
+            
+            int length =-1;
+            int frompid= 0;
+            int mypid  =comm_->MyPID();
+            
+            vector<char> rblock;
+
+            exporter.ReceiveAny(frompid,mypid,rblock,length);
+
+            *cond_pbcssurf=rblock;
+          }
+          
           currfield.discretization()->UnPackCondition(cond_pbcssurf, "SurfacePeriodic");
         }
         else
           dserror("condition name '%s' not supported", condname);
-      }
-
-      // read knot vectors for nurbs discretisations
-      if(spatial_approx_=="Nurbs")
-      {
-        // try a dynamic cast of the discretisation to a nurbs discretisation
-        DRT::NURBS::NurbsDiscretization* nurbsdis
-        =
-          dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*currfield.discretization()));
-
-        RCP<vector<char> > packed_knots;
-        if (comm_->MyPID()==0)
-          packed_knots = reader.ReadKnotvector(step);
-        else
-          packed_knots = Teuchos::rcp(new std::vector<char>());
-
-        RefCountPtr<DRT::NURBS::Knotvector> knots=Teuchos::rcp(new DRT::NURBS::Knotvector());
-
-        knots->Unpack(*packed_knots);
-
-        if(nurbsdis==NULL)
-        {
-          dserror("expected a nurbs discretisation for spatial approx. Nurbs\n");
-        }
-
-        nurbsdis->FillComplete();
-
-        if(!(nurbsdis->Filled()))
-        {
-          dserror("nurbsdis was not fc\n");
-        }
-
-        int smallest_gid_in_dis=nurbsdis->ElementRowMap()->MinAllGID();
-
-        knots->FinishKnots(smallest_gid_in_dis);
-
-        nurbsdis->SetKnotVector(knots);
       }
 
       // to avoid building dofmanagers, in output mode elements answer
@@ -565,6 +604,80 @@ void PostProblem::read_meshes()
       {
         PeriodicBoundaryConditions::PeriodicBoundaryConditions pbc(currfield.discretization());
         pbc.UpdateDofsForPeriodicBoundaryConditions();
+      }
+
+      // read knot vectors for nurbs discretisations
+      if(spatial_approx_=="Nurbs")
+      {
+        // try a dynamic cast of the discretisation to a nurbs discretisation
+        DRT::NURBS::NurbsDiscretization* nurbsdis
+        =
+          dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*currfield.discretization()));
+
+        RCP<vector<char> > packed_knots;
+        if (comm_->MyPID()==0)
+          packed_knots = reader.ReadKnotvector(step);
+        else
+          packed_knots = Teuchos::rcp(new std::vector<char>());
+
+        // distribute knots to all procs
+        if (comm_->NumProc()>1)
+        {
+          DRT::Exporter exporter(nurbsdis->Comm());
+
+          if(comm_->MyPID()==0)
+          {
+            MPI_Request request;
+            int         tag    =-1;
+            int         frompid= 0;
+            int         topid  =-1;
+
+            for(int np=1;np<comm_->NumProc();++np)
+            {
+              tag   = np;
+              topid = np;
+
+              exporter.ISend(frompid,topid,
+                             &((*packed_knots)[0]),
+                             (*packed_knots).size(),
+                             tag,request);
+            }
+          }
+          else
+          {
+            int length =-1;
+            int frompid= 0;
+            int mypid  =comm_->MyPID();
+
+            vector<char> rblock;
+
+            exporter.ReceiveAny(frompid,mypid,rblock,length);
+
+            *packed_knots=rblock;
+          }
+        }
+
+        RefCountPtr<DRT::NURBS::Knotvector> knots=Teuchos::rcp(new DRT::NURBS::Knotvector());
+
+        knots->Unpack(*packed_knots);
+
+        if(nurbsdis==NULL)
+        {
+          dserror("expected a nurbs discretisation for spatial approx. Nurbs\n");
+        }
+
+        nurbsdis->FillComplete();
+
+        if(!(nurbsdis->Filled()))
+        {
+          dserror("nurbsdis was not fc\n");
+        }
+
+        int smallest_gid_in_dis=nurbsdis->ElementRowMap()->MinAllGID();
+
+        knots->FinishKnots(smallest_gid_in_dis);
+
+        nurbsdis->SetKnotVector(knots);
       }
 
       fields_.push_back(currfield);
