@@ -1025,10 +1025,14 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& disro
 #endif // #ifdef MEASURETIME 
     
 
-    
+    for(int i = 0; i < discret_.NumMyRowElements(); i++)
+      std::cout<<"\noutput before SetCrosslinkers on proc "<<discret_.Comm().MyPID()  <<": element "<<(discret_.lRowElement(i))->Id()<<" owned by proc "<<(discret_.lRowElement(i))->Owner() <<"\n"<<endl;
     
     //setting the crosslinkers for neighbours in crosslinkerneighbours_ after probability check
     SetCrosslinkers(dt,noderowmap,nodecolmap,currentpositions,currentrotations);
+    
+    //for(int i = 0; i < discret_.NumMyRowElements(); i++)
+      //std::cout<<"\noutput before DelCrosslinkers on proc "<<discret_.Comm().MyPID()  <<": element "<<(discret_.lRowElement(i))->Id()<<" owned by proc "<<(discret_.lRowElement(i))->Owner() <<"\n";
         
     //deleting the crosslinkers in crosslinkerpartner_ after probability check
     DelCrosslinkers(dt,noderowmap,nodecolmap);
@@ -1037,21 +1041,19 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& disro
      *the Filled() stat on all processors after having added or deleted elements by ChekcFilledGlobally(); then build
      *new element maps and call FillComplete(); finally Crs matrices stiff_ has to be deleted completely and made ready
      *for new assembly since their graph was changed*/ 
-    
-
-
-    
     discret_.CheckFilledGlobally();
     DRT::UTILS::RedistributeWithNewNodalDistribution(discret_,noderowmap,nodecolmap);      
     discret_.FillComplete(true,false,false);  
     stiff->Reset();
     
     
+    
+    for(int i = 0; i < discret_.NumMyRowElements(); i++)
+      std::cout<<"\noutput proc after FillComplete on  "<<discret_.Comm().MyPID()  <<": element "<<(discret_.lRowElement(i))->Id()<<" owned by proc "<<(discret_.lRowElement(i))->Owner() <<"\n"<<endl;
+
 
     
-    
 
-   
 #ifdef MEASURETIME
     cout << "\n***\nadministration time: " << ds_cputime() - t_admin<< " seconds\n***\n";
 #endif // #ifdef MEASURETIME
@@ -1078,14 +1080,14 @@ void StatMechManager::SearchNeighbours(const std::map<int,LINALG::Matrix<3,1> > 
   //maximal distance bridged by a crosslinker
   double rlink = statmechparams_.get<double>("R_LINK",0.0);
   
-  //each processor looks for each of its row nodes for neighbours
+  //each processor looks for each of its row nodes for neighbours; loop index i is the local row node Id
   for(int i = 0; i < discret_.NumMyRowNodes(); i++)
   { 
     //get GID and column map LID of row node i
     int iGID = (discret_.lRowNode(i))->Id();
     int icolID = (discret_.gNode(iGID))->LID();
     
-    /*getting iterator to current position of local node colID from map currentpositions;
+    /*getting iterator to current position of local node icolID from map currentpositions;
      * note that currentpositions is organized with respect to column map LIDs*/
     const map< int,LINALG::Matrix<3,1> >::const_iterator posi = currentpositions.find(icolID);
     
@@ -1109,7 +1111,7 @@ void StatMechManager::SearchNeighbours(const std::map<int,LINALG::Matrix<3,1> > 
     //(B): seraching neighbours with search tree
     //neighboursLID = octTree_->searchPointsInRadius(currentpositions,(currentpositions.find(iLID))->second,rlink);
     
-    /*after having searched all nodes withing distance rlink around row node i we cancel out those
+    /* after having searched all nodes within distance rlink around row node i we cancel out those
      * neighbours, which do not comply with certain requirements; here we establish the following
      * requirements: first if filament numbering is activated (i.e. not all filament numbers are set to -1) the
      * neighbour node should belong to a filament different from the one the searching node belongs to;
@@ -1174,7 +1176,7 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
             notyet = false;
         }
         
-        //only if no crosslinker has already been established to the same node, yet, the crosslinker is established
+        //only if no crosslinker has  been established to the same node, yet, the crosslinker is established
         if(notyet)
         {
         
@@ -1198,18 +1200,22 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
           
           /*there is the problem of how to assign to a crosslinker element a GID which is certainly not used by any
            * other element; we know that for a network at the beginning (without crosslinkers) each node has a
-           * connectivity of 1 or 2 so that the number of all elements used to discretized the filaments is smaller
+           * connectivity of 1 or 2 so that the number of all elements used to discretize the filaments is smaller
            * than basisnodes_. Thus we choose crosslinker GIDs >= basisnodes_. To make sure that two crosslinkers
            * never have the same GID we add to basisnodes_ the value basisnodes_*GID1, where GID1 is the GID of the
-           * first nodes of the crosslinker element. Then we add GID2, which is the GID of the second node of the
-           * crosslinker element. Hence basisnodes_ + GID1*basisnodes_ + GID2 always give a GID which cannot be 
+           * first node of the crosslinker element. Then we add GID2 (note: GID2 < basisnodes_), which is the GID of the second node of the
+           * crosslinker element. Hence basisnodes_ + GID1*basisnodes_ + GID2 always gives a GID which cannot be 
            * used by any other element*/     
          
    #ifdef D_BEAM3         
           RCP<DRT::ELEMENTS::Beam3> newcrosslinker = rcp(new DRT::ELEMENTS::Beam3((noderowmap.GID(i) + 1)*basisnodes_ +  nodecolmap.GID((crosslinkerneighbours_[i])[j]), discret_.Comm().MyPID()) );
           
           
-          std::cout<<"\nadd crosslinkerid = "<<newcrosslinker->Id()<<"\n";
+
+          
+          std::cout<<"\nadd crosslinkerid = "<<newcrosslinker->Id()<<" on proc "<<discret_.Comm().MyPID() <<"\n";
+          std::cout<<"crosslinkerid "<< (noderowmap.GID(i) + 1)*basisnodes_ +  nodecolmap.GID((crosslinkerneighbours_[i])[j]) <<" owned by proc "<<newcrosslinker->Owner() <<"\n";
+          
           
           //setting up crosslinker element parameters
           newcrosslinker ->crosssec_ = 2.375829e-05;
@@ -1291,7 +1297,7 @@ void StatMechManager::DelCrosslinkers(const double& dt, const Epetra_Map& nodero
   //creating a random generator object which creates uniformly distributed random numbers in [0;1]
   ranlib::UniformClosed<double> UniformGen;
   
-  /*this method removes crosslinkers listed in crosslinkerpartner_ after probability check; note that 
+  /* this method removes crosslinkers listed in crosslinkerpartner_ after probability check; note that 
    * removing crosslinkers should be done after setting the crosslinkers since the latter one uses 
    * operations only possible on a discretization on which already FillComplete() has been called;
    * note: here we loop through all row map nodes not by means of the discretization, but by means
@@ -1308,7 +1314,10 @@ void StatMechManager::DelCrosslinkers(const double& dt, const Epetra_Map& nodero
         //we compute the GID of the crosslinker to be deleted 
         int crosslinkerid = (noderowmap.GID(i) + 1)*basisnodes_ +  nodecolmap.GID(*iter);
         
-        std::cout<<"\ndelete crosslinkerid = "<<crosslinkerid<<"\n";
+    
+        
+        std::cout<<"\ndelete crosslinkerid = "<<crosslinkerid<<" on proc "<<discret_.Comm().MyPID() <<"\n";
+        std::cout<<"crosslinkerid "<<crosslinkerid<<" owned by proc "<<(discret_.gElement(crosslinkerid))->Owner() <<"\n";
                 
         //delete crosslinker from discretization
         if( !discret_.DeleteElement(crosslinkerid) )
@@ -1383,6 +1392,5 @@ void StatMechManager::StatMechReadRestart(IO::DiscretizationReader& reader)
 
   return;
 }// StatMechManager::StatMechReadRestart()
-
 
 #endif  // #ifdef CCADISCRET

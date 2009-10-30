@@ -59,7 +59,7 @@ public:
 
   //! \brief generate gaussian randomnumbers with mean "meanvalue" and standarddeviation "standarddeviation" for parallel use
   void GenerateGaussianRandomNumbers(RCP<Epetra_MultiVector> randomnumbers,const double meanvalue, const double standarddeviation);
-  
+      
   
   //! \brief containing statistical mechanics input parameters
   Teuchos::ParameterList statmechparams_;
@@ -109,13 +109,13 @@ protected:
   //! \brief reference to current discretization
   DRT::Discretization& discret_;
 
-  //! \brief storing for each row map node the column map LID of all proper neighbour nodes
+  //! \brief storing for each row map node the column map LIDs of all proper neighbour nodes
   std::vector< std::vector<int> >  crosslinkerneighbours_;
 
-  //! \brief storing for each node GIDs of nodes to which a crosslinker has been established
+  //! \brief storing for each row map node the column map LIDs of nodes to which a crosslinker has been established
   std::vector< std::vector<int> >  crosslinkerpartner_;
 
-  //! \brief storing for each node LID number of filament to which it belongs
+  //! \brief storing for each node column map LID number of filament to which it belongs
   RCP<Epetra_Vector> filamentnumber_;
 
   //! \brief storing for degree of freedom whether force has to be measured
