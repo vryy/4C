@@ -107,7 +107,7 @@ void FSI::LungMonolithicFluidSplit::SetupSystem()
                                                                 StructureField(),
                                                                 FluidField(),
                                                                 AleField(),
-                                                                true,
+                                                                false,
                                                                 Teuchos::getIntegralValue<int>(fsidyn,"SYMMETRICPRECOND"),
                                                                 pcomega[0],
                                                                 pciter[0],
@@ -498,17 +498,14 @@ void FSI::LungMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
 
   mat.Assign(3,1,View,cfii);
 
-  LINALG::SparseMatrix cfigtemp(cfig);
-  cfigtemp.Scale(timescale);
-
-//   cfigtransform_(constrfluidblocks->FullRowMap(),
-//                  constrfluidblocks->FullColMap(),
-//                  cfig,
-//                  timescale,
-//                  ADAPTER::Coupling::MasterConverter(coupsf),
-//                  mat.Matrix(3,0),
-//                  false,
-//                  true);
+  cfigtransform_(constrfluidblocks->FullRowMap(),
+                 constrfluidblocks->FullColMap(),
+                 cfig,
+                 timescale,
+                 ADAPTER::Coupling::MasterConverter(coupsf),
+                 mat.Matrix(3,0),
+                 false,
+                 true);
 
   /*----------------------------------------------------------------------*/
   // constraint part -> "ale"

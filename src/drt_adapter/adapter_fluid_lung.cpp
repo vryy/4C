@@ -30,7 +30,10 @@ ADAPTER::FluidLung::FluidLung(Teuchos::RCP<Fluid> fluid)
   fsiinterface_ = LINALG::MapExtractor(*Interface().FullMap(), Interface().FSICondMap());
 
   // build map extractor for asi, other <-> full inner map
-  Teuchos::RCP<Epetra_Map> fullmap = LINALG::MergeMap(*Interface().OtherMap(), *Interface().LungASICondMap());
+  std::vector<Teuchos::RCP<const Epetra_Map> > maps;
+  maps.push_back(Interface().OtherMap());
+  maps.push_back(Interface().LungASICondMap());
+  Teuchos::RCP<Epetra_Map> fullmap = LINALG::MultiMapExtractor::MergeMaps(maps);
   innersplit_ = LINALG::MapExtractor(*fullmap, Interface().LungASICondMap());
 }
 
