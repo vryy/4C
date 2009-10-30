@@ -199,7 +199,8 @@ namespace FSI
                       const Epetra_Map& dstmap,
                       Teuchos::RCP<Epetra_CrsMatrix> edst,
                       bool exactmatch,
-                      bool addmatrix);
+                      bool addmatrix,
+                      double scale);
 
   private:
 

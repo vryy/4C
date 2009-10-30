@@ -265,7 +265,8 @@ FSI::UTILS::MatrixColTransform::MatrixInsert(Teuchos::RCP<Epetra_CrsMatrix> esrc
                                              const Epetra_Map& dstmap,
                                              Teuchos::RCP<Epetra_CrsMatrix> edst,
                                              bool exactmatch,
-                                             bool addmatrix)
+                                             bool addmatrix,
+                                             double scale)
 {
   if (not esrc->Filled())
     dserror("filled source matrix expected");
@@ -286,8 +287,7 @@ FSI::UTILS::MatrixColTransform::MatrixInsert(Teuchos::RCP<Epetra_CrsMatrix> esrc
     std::vector<int> idx;
     std::vector<double> vals;
     idx.reserve(NumEntries);
-    if (not exactmatch)
-      vals.reserve(NumEntries);
+    vals.reserve(NumEntries);
 
     for (int j=0; j<NumEntries; ++j)
     {
@@ -296,8 +296,7 @@ FSI::UTILS::MatrixColTransform::MatrixInsert(Teuchos::RCP<Epetra_CrsMatrix> esrc
       if (iter!=gidmap_.end())
       {
         idx.push_back(iter->second);
-        if (not exactmatch)
-          vals.push_back(Values[j]);
+        vals.push_back(Values[j]*scale);
       }
       else
       {
@@ -307,14 +306,8 @@ FSI::UTILS::MatrixColTransform::MatrixInsert(Teuchos::RCP<Epetra_CrsMatrix> esrc
       }
     }
 
-    // If we do not demand an exact match, some values of this row might have
-    // been skipped. Thus we redirect the value pointer and reset the number
-    // of entries on this row.
-    if (not exactmatch)
-    {
-      Values = &vals[0];
-      NumEntries = vals.size();
-    }
+    Values = &vals[0];
+    NumEntries = vals.size();
 
     if (addmatrix)
       AddValues(edst,dstrowmap,dstmap,i,NumEntries,Values,&idx[0]);
@@ -344,10 +337,7 @@ FSI::UTILS::MatrixColTransform::operator()(const LINALG::BlockSparseMatrixBase& 
   Teuchos::RCP<Epetra_CrsMatrix> esrc = src.EpetraMatrix();
   Teuchos::RCP<Epetra_CrsMatrix> edst = dst.EpetraMatrix();
 
-  MatrixInsert(esrc,esrc->RowMap(),edst,exactmatch,addmatrix);
-
-  if (scale!=1.)
-    edst->Scale(scale);
+  MatrixInsert(esrc,esrc->RowMap(),edst,exactmatch,addmatrix,scale);
 
   return true;
 }
@@ -374,10 +364,7 @@ FSI::UTILS::MatrixColTransform::operator()(const Epetra_Map& rowmap,
   Teuchos::RCP<Epetra_CrsMatrix> esrc = src.EpetraMatrix();
   Teuchos::RCP<Epetra_CrsMatrix> edst = dst.EpetraMatrix();
 
-  MatrixInsert(esrc,esrc->RowMap(),edst,exactmatch,addmatrix);
-
-  if (scale!=1.)
-    edst->Scale(scale);
+  MatrixInsert(esrc,esrc->RowMap(),edst,exactmatch,addmatrix,scale);
 
   return true;
 }
@@ -407,7 +394,7 @@ FSI::UTILS::MatrixRowColTransform::operator()(const LINALG::SparseMatrix& src,
   Teuchos::RCP<Epetra_CrsMatrix> edst = dst.EpetraMatrix();
 
   coltrans_.SetupGidMap(*rowconverter.SrcMap(),permsrc->ColMap(),colconverter,src.Comm());
-  coltrans_.MatrixInsert(permsrc,dstmap,edst,exactmatch,addmatrix);
+  coltrans_.MatrixInsert(permsrc,dstmap,edst,exactmatch,addmatrix,1.0);
 
   return true;
 }
