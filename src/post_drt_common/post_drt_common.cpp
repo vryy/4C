@@ -465,7 +465,7 @@ void PostProblem::read_meshes()
       RCP<vector<char> > cond_pbcsline;
       RCP<vector<char> > cond_pbcssurf;
 
-      for (SYMBOL* condition = map_find_symbol(&control_table_,"condition");
+      for (SYMBOL* condition = map_find_symbol(meshmap,"condition");
            condition!=NULL;
            condition = condition->next)
       {

@@ -903,15 +903,6 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
   // ... write other mesh informations
   if (dis_->Comm().MyPID() == 0)
   {
-
-    WriteCondition("SurfacePeriodic");
-    WriteCondition("LinePeriodic");
-
-    WriteCondition("XFEMCoupling");
-
-    // knotvectors for nurbs-discretisation
-    WriteKnotvector();
-
     output_->ControlFile()
       << "field:\n"
       << "    field = \"" << dis_->Name() << "\"\n"
@@ -921,6 +912,14 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
       << "    num_ele = " << dis_->NumGlobalElements() << "\n"
       << "    num_dof = " << dis_->DofRowMap()->NumGlobalElements() << "\n\n"
       ;
+
+    WriteCondition("SurfacePeriodic");
+    WriteCondition("LinePeriodic");
+    WriteCondition("XFEMCoupling");
+
+    // knotvectors for nurbs-discretisation
+    WriteKnotvector();
+
     if (write_file)
     {
       if (dis_->Comm().NumProc() > 1)
