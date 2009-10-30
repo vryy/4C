@@ -1240,6 +1240,12 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
       mllist.set("null space: type","pre-computed");
       mllist.set("null space: add default vectors",false);
       mllist.set<double*>("null space: vectors",NULL);
+#ifdef PARMETIS
+      mllist.set("repartition: enable",1);
+      mllist.set("repartition: partitioner","ParMETIS");
+      mllist.set("repartition: max min ratio",1.3);
+      mllist.set("repartition: min per proc",5000);
+#endif
       //cout << mllist << endl << endl << endl; fflush(stdout);
     } // if ml preconditioner
   }
