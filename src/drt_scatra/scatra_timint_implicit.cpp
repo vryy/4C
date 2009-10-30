@@ -1552,7 +1552,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
   {
     // get flame parameter beta and diffusive flame thickness
     ParameterList eleparams;
-    eleparams.set("action","get_flame_parameters");
+    eleparams.set("action","get_material_parameters");
     eleparams.set("isale",isale_);
     discret_->Evaluate(eleparams,null,null,null,null,null);
     const double beta  = eleparams.get("flame parameter beta", 1.0);
