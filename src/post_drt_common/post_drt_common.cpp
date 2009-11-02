@@ -476,6 +476,7 @@ void PostProblem::read_meshes()
         // read periodic boundary conditions if available
         if (string(condname)=="LinePeriodic")
         {
+
           DRT::Exporter exporter(*comm_);
 
           cond_pbcsline = Teuchos::rcp(new std::vector<char>());
@@ -484,6 +485,7 @@ void PostProblem::read_meshes()
           {
             cond_pbcsline = reader.ReadCondition(step, comm_->NumProc(), comm_->MyPID(), "LinePeriodic");
 
+#ifdef PARALLEL
             // distribute condition to all procs
             if (comm_->NumProc()>1)
             {
@@ -503,10 +505,11 @@ void PostProblem::read_meshes()
                                tag,request);
               }
             }
+#endif
           }
           else
           {
-            
+#ifdef PARALLEL
             int length =-1;
             int frompid= 0;
             int mypid  =comm_->MyPID();
@@ -516,6 +519,7 @@ void PostProblem::read_meshes()
             exporter.ReceiveAny(frompid,mypid,rblock,length);
 
             *cond_pbcsline=rblock;
+#endif
           }
           
           currfield.discretization()->UnPackCondition(cond_pbcsline, "LinePeriodic");
@@ -533,6 +537,7 @@ void PostProblem::read_meshes()
             // distribute condition to all procs
             if (comm_->NumProc()>1)
             {
+#ifdef PARALLEL
               MPI_Request request;
               int         tag    =-1;
               int         frompid= 0;
@@ -548,11 +553,12 @@ void PostProblem::read_meshes()
                                (*cond_pbcssurf).size(),
                                tag,request);
               }
+#endif            
             }
           }
           else
           {
-            
+#ifdef PARALLEL
             int length =-1;
             int frompid= 0;
             int mypid  =comm_->MyPID();
@@ -562,8 +568,8 @@ void PostProblem::read_meshes()
             exporter.ReceiveAny(frompid,mypid,rblock,length);
 
             *cond_pbcssurf=rblock;
+#endif          
           }
-          
           currfield.discretization()->UnPackCondition(cond_pbcssurf, "SurfacePeriodic");
         }
         else
@@ -627,6 +633,7 @@ void PostProblem::read_meshes()
 
           if(comm_->MyPID()==0)
           {
+#ifdef PARALLEL
             MPI_Request request;
             int         tag    =-1;
             int         frompid= 0;
@@ -642,9 +649,11 @@ void PostProblem::read_meshes()
                              (*packed_knots).size(),
                              tag,request);
             }
+#endif
           }
           else
           {
+#ifdef PARALLEL
             int length =-1;
             int frompid= 0;
             int mypid  =comm_->MyPID();
@@ -654,6 +663,7 @@ void PostProblem::read_meshes()
             exporter.ReceiveAny(frompid,mypid,rblock,length);
 
             *packed_knots=rblock;
+#endif
           }
         }
 
