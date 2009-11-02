@@ -2,8 +2,8 @@
 \file beam3contact.H
 
 <pre>
-Maintainer: Christian Cyron
-            cyron@lnm.mw.tum.de
+Maintainer: Christian Cyron, Alexander Popp
+            {cyron,popp}@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15264
 </pre>
@@ -33,11 +33,13 @@ using namespace Teuchos;
 #include "../drt_lib/linalg_fixedsizematrix.H"
 
 
+namespace CONTACT
+{
 
 /*!
 \brief contact element for contact between two elements of type beam3
 
-\author cyron (cyron @lnm.mw.tum.de)
+\author cyron (cyron@lnm.mw.tum.de),  popp (popp@lnm.mw.tum.de)
 */
 class Beam3contact 
 {
@@ -70,7 +72,7 @@ public:
   /*!
   \brief Destructor
   */
-  virtual ~Beam3contact();
+  virtual ~Beam3contact() {};
   
   //@}
 
@@ -122,6 +124,7 @@ private:
   //@}
 
 }; // class Beam3contact
+} // namespace CONTACT
 
 #endif  // #ifndef BEAM3C_H
 #endif  // #ifdef D_BEAM3
