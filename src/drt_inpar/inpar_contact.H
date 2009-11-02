@@ -29,7 +29,8 @@ namespace INPAR
       contact_none,  ///< no contact
       contact_normal,  ///< frictionless contact
       contact_frictional,  ///< frictional contact
-      contact_meshtying  ///< tied contact (mesh tying)
+      contact_meshtying,  ///< tied contact (mesh tying)
+      contact_beams  ///< beam contact
     };
 
     /// Type of contact friction law

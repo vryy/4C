@@ -806,12 +806,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<std::string>("None","none",
                                                   "Normal","normal",
                                                   "Frictional","frictional",
-                                                  "MeshTying","Meshtying","meshtying"),
+                                                  "MeshTying","Meshtying","meshtying",
+                                                  "Beams","beams"),
                                tuple<INPAR::CONTACT::ContactType>(INPAR::CONTACT::contact_none,INPAR::CONTACT::contact_none,
                                           INPAR::CONTACT::contact_normal,INPAR::CONTACT::contact_normal,
                                           INPAR::CONTACT::contact_frictional,INPAR::CONTACT::contact_frictional,
                                           INPAR::CONTACT::contact_meshtying,INPAR::CONTACT::contact_meshtying,
-                                          INPAR::CONTACT::contact_meshtying),
+                                          INPAR::CONTACT::contact_meshtying,
+                                          INPAR::CONTACT::contact_beams, INPAR::CONTACT::contact_beams),
                                &scontact);
 
   setStringToIntegralParameter<INPAR::CONTACT::ContactFrictionType>("FRICTION","None","Type of friction law",

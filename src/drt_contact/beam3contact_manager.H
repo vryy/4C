@@ -18,12 +18,12 @@ Maintainer: Alexander Popp, Christian Cyron
 #ifndef BEAM3C_MANAGER_H
 #define BEAM3C_MANAGER_H
 
-#include "../drt_beam3/beam3.H"
-#include "beam3contact.H"
 #include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_Vector.h"
+#include "../drt_lib/linalg_sparsematrix.H"
+#include "../drt_lib/drt_discret.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -63,27 +63,36 @@ public:
   
   //@}
 
+  //! @name access methods
+  
+  /*!
+  \brief Print this beam3 contact manager
+
+  */
+  virtual void Print(ostream& os) const;
+    
+  /*!
+  \brief Get discretization
+
+  */
+  inline const DRT::Discretization& Discret() const { return discret_;};
+  
+  //@}
+  
   //! @name public evaluation methods
 
   /*!
   \brief Evaluate beam contact
 
-  This method calls each beam contact pair to compute its contact forces
-  and stiffness. Then all entries are assembles into global force resdiual
+  First, the discretization is searched for potential beam element pairs coming
+  into contact. For each pair, a temporary Beam3contact class is generated
+  which handles penalty force and stiffness computation.
+  Then, this method calls each beam contact pair to compute its contact forces
+  and stiffness. Finally, all entries are assembles into global force resdiual
   and global stiffness matrix.
 
   */
-  virtual int Evaluate();
-  
-  /*!
-  \brief Search for beam contact
-  
-  The discretization is searched for potential beam element pairs coming
-  into contact. For each pair, a temporary Beam3contact class is generated
-  which handles penalty force and stiffness computation.
-  
-  */
-  virtual int SearchContact();
+  virtual int Evaluate(LINALG::SparseMatrix& stiffc, Epetra_Vector& fc);
   
   //@}
 
@@ -98,9 +107,6 @@ private:
   //! discretizaton
   const DRT::Discretization& discret_;
   
-  //! current contact element pairs
-  vector<RCP<CONTACT::Beam3contact> > cpairs_;
- 
   //@}
 
 }; // class Beam3cmanager

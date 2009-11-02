@@ -28,6 +28,7 @@ Maintainer: Michael Gee
 #include "../drt_surfstress/drt_surfstress_manager.H"
 #include "../drt_surfstress/drt_potential_manager.H"
 #include "../drt_lib/drt_locsys.H"
+#include "../drt_contact/beam3contact_manager.H"
 #include "structure_utils_mapextractor.H"
 
 
@@ -542,6 +543,9 @@ protected:
 
   /// local coordinate systems
   RCP<DRT::UTILS::LocsysManager>   locsysmanager_;
+  
+  /// beam contact
+  RCP<CONTACT::Beam3cmanager> beam3cmanager_;
 
   // For a relative convergence check, reference norms have to be
   // calculated. We need to know whether we are in the first step

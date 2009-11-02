@@ -289,6 +289,7 @@ void dyn_nlnstructural_drt()
       }
 
       // detect if contact is present
+      // note that beam contact will be treated seperately, thus contact=false in this case
       bool contact = false;
       switch (Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(scontact,"CONTACT"))
       {
@@ -303,6 +304,9 @@ void dyn_nlnstructural_drt()
           break;
         case INPAR::CONTACT::contact_meshtying:
           contact = true;
+          break;
+        case INPAR::CONTACT::contact_beams:
+          contact = false;
           break;
         default:
           dserror("Cannot cope with choice of contact type");
