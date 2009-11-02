@@ -308,6 +308,23 @@ class AbstractStrategy
     virtual void EvaluateContact(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff) = 0;
 
     /*!
+    \brief Evaluate Friction
+     
+    This is the main routine of our frictional contact algorithm on a global level.
+    It contains the setup of the global linear system including contact.
+    This makes modifications to the effective stiffness K and the effective
+    load vector f necessary.
+     
+    Note: No basis transformation is applied to the displacement variables:
+    delta_d_slave and delta_d_master are used directly as unknowns!
+     
+    \param kteff (in/out): effective stiffness matrix (without -> with contact)
+    \param feff (in/out): effective residual / force vector (without -> with contact)
+     
+    */
+    virtual void EvaluateFriction(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff) = 0;
+
+    /*!
     \brief Recovery method
      
     Recovery is needed for the specialization of lagrangian multiplier approach.

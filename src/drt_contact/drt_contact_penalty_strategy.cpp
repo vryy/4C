@@ -503,6 +503,35 @@ void CONTACT::PenaltyStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
 }
 
 /*----------------------------------------------------------------------*
+ | evaluate frictional contact and create linear system gitterle   10/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::PenaltyStrategy::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
+                                               RCP<Epetra_Vector> feff)
+{
+  // this is almost the same as in the frictionless contact
+	// whereas we chose the EvaluateContact routine with 
+	// one difference
+
+  // check if friction should be applied
+  INPAR::CONTACT::ContactFrictionType ftype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(Params(),"FRICTION");
+	
+	// coulomb friction case
+	if(ftype == INPAR::CONTACT::friction_coulomb)
+	{
+		EvaluateContact(kteff,feff);
+  }	
+  else if (ftype == INPAR::CONTACT::friction_tresca ||
+           ftype == INPAR::CONTACT::friction_stick)
+	{
+	  dserror("Error in AbstractStrategy::Evaluate: Penalty Strategy for"
+	         " Stick and Tresca friction not yet implemented"); 		
+	} 		
+	else
+	  dserror("Error in AbstractStrategy::Evaluate: Unknown friction type");
+}
+
+/*----------------------------------------------------------------------*
  | reset penalty parameter to intial value                    popp 08/09|
  *----------------------------------------------------------------------*/
 void CONTACT::PenaltyStrategy::ResetPenalty()

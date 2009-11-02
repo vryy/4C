@@ -396,21 +396,15 @@ void CONTACT::AbstractStrategy::Evaluate(RCP<LINALG::SparseMatrix> kteff, RCP<Ep
   INPAR::CONTACT::ContactFrictionType ftype =
     Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(Params(),"FRICTION");
 
-  // normal contact and coulomb friction case
-  if(ftype == INPAR::CONTACT::friction_none ||
- 	   ftype == INPAR::CONTACT::friction_coulomb)
   {
-  	EvaluateContact(kteff,feff);
-  }	
-  else if (ftype == INPAR::CONTACT::friction_tresca ||
-           ftype == INPAR::CONTACT::friction_stick)
-  {
-  	dserror("Error in AbstractStrategy::Evaluate: Penalty Strategy for"
-            " Stick and Tresca friction not yet implemented"); 		
-  } 		
-  else
-  	dserror("Error in AbstractStrategy::Evaluate: Unknown friction type");
-
+   	if (ftype == INPAR::CONTACT::friction_tresca ||
+        ftype == INPAR::CONTACT::friction_coulomb ||
+  	    ftype == INPAR::CONTACT::friction_stick )
+  	  EvaluateFriction(kteff,feff);
+ 	  // Frictionless contact case
+  	else
+  	  EvaluateContact(kteff,feff);
+   }
   return;
 }
 

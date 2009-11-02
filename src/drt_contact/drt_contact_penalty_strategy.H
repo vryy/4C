@@ -138,9 +138,7 @@ class PenaltyStrategy : public AbstractStrategy
   /*!
   \brief Evaluate frictional contact
    
-  Note: For a penalty strategy it is not possible to evaluate frictional contact yet.
-  This method is a stub and has no functionality.
-  
+   This includes the evaluation of of the frictional contact forces.  
   */
   void EvaluateFriction(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff);
 
