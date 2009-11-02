@@ -1244,7 +1244,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
       mllist.set("repartition: enable",1);
       mllist.set("repartition: partitioner","ParMETIS");
       mllist.set("repartition: max min ratio",1.3);
-      mllist.set("repartition: min per proc",5000);
+      mllist.set("repartition: min per proc",3000);
 #endif
       //cout << mllist << endl << endl << endl; fflush(stdout);
     } // if ml preconditioner
