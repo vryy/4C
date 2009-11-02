@@ -837,7 +837,7 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
       printf(" (      --     ,te=%10.3E",dtele_);
       printf(")\n");
     }
-    // abort iteration for ELCH, when there's nothing to do
+    // abort iteration, when there's nothing more to do
     if ((conresnorm < EPS15) && (potresnorm < EPS15))
     {
       // print 'finish line'
@@ -884,6 +884,18 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
       // yes, we stop the iteration
       return true;
     }
+
+    // abort iteration, when there's nothing more to do! -> more robustness
+    if ((conresnorm < EPS15) && (potresnorm < EPS15))
+    {
+      // print 'finish line'
+      if (myrank_ == 0)
+      {
+        printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
+      }
+      return true;
+    }
+
     // if not yet converged go on...
   }
 
