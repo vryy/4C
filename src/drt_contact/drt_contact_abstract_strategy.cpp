@@ -527,6 +527,7 @@ void CONTACT::AbstractStrategy::StoreNodalQuantities(AbstractStrategy::QuantityT
 #endif // #ifndef CONTACTPSEUDO2D
 
           // explicity set global Lag. Mult. to zero for inactive nodes
+          // (this is what we wanted to enforce anyway before condensation)
           if (cnode->Active()==false)
             (*vectorinterface)[locindex[dof]] = 0.0;
                     
