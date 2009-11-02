@@ -76,19 +76,64 @@ bool FLD::IsSlaveNodeOfRotSymPBC(
       pbc[j]->Get<std::string>("Is slave periodic boundary condition");
       if (*isslave == "Slave")
       {
-        const double rotangle_deg = pbc[j]->GetDouble("Angle of rotation");
-        if (abs(rotangle_deg) > EPS13) // angle is not zero
+        rotangle = GetRotAngleFromCondition(pbc[j]);
+        if (abs(rotangle) > EPS13) // angle is not zero
         {
           if (isrotsymslave)
             dserror("Node is slave of more than one rot.sym. periodic bc");
           isrotsymslave=true;
         }
-        rotangle = rotangle_deg*PI/180.0; // angle of rotation (RAD)
       }
   }
 
       return isrotsymslave; // yes, it is a slave node with non-zero angle
     }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double FLD::GetRotAngleFromCondition(const DRT::Condition* cond)
+{
+  const double rotangle_deg = cond->GetDouble("Angle of rotation");
+
+  return rotangle_deg*PI/180.0; // angle of rotation (RAD);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FLD::GetRelevantSlaveNodesOfRotSymPBC(
+    map<int,double>& pbcslavenodemap,
+    RCP<DRT::Discretization> dis)
+{
+  // get all periodic boundary conditions
+  vector<DRT::Condition*> mypbccond;
+  dis->GetCondition("SurfacePeriodic",mypbccond);
+  if(mypbccond.empty())
+  {
+    dis->GetCondition("LinePeriodic",mypbccond);
+  }
+
+  // loop the periodic boundary conditions
+  for (unsigned numcond=0;numcond<mypbccond.size();++numcond)
+  {
+    const string* mymasterslavetoggle
+    = mypbccond[numcond]->Get<string>("Is slave periodic boundary condition");
+    const double rotangle = FLD::GetRotAngleFromCondition(mypbccond[numcond]);
+
+    // only slave nodes with non-zero angle of rotation require rotation
+    // of vector results!
+    if((*mymasterslavetoggle=="Slave")
+        && (abs(rotangle)> EPS13))
+    {
+      const vector<int>* nodes = mypbccond[numcond]->Nodes();
+      for (unsigned int inode=0; inode < nodes->size(); inode++)
+      {
+        const int nodegid = nodes->at(inode);
+        pbcslavenodemap[nodegid] = rotangle;
+      }
+    } // end is slave condition?
+  } // end loop periodic boundary conditions
+
+  return;
+}
 
 #endif  // #ifdef CCADISCRET

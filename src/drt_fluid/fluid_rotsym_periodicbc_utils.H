@@ -19,6 +19,7 @@ Maintainer: Georg Bauer
 
 #include "Epetra_Vector.h"
 #include "../drt_lib/drt_node.H"
+#include "../drt_lib/drt_discret.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -39,6 +40,16 @@ bool IsSlaveNodeOfRotSymPBC(
     const DRT::Node* node, ///< the node
     double& rotangle       ///< the angle of slave plane rotation (RAD)
 );
+
+//! Access angle of rotation and convert it to RAD
+inline double GetRotAngleFromCondition(
+    const DRT::Condition* cond ///< pointer to desired periodic boundary condition
+);
+
+//! Get all relevant slave nodes of rotationally symmetric periodic bc's
+void GetRelevantSlaveNodesOfRotSymPBC(
+    map<int,double>& pbcslavenodemap, ///< map to be filled with node gids and rotation angles
+    RCP<DRT::Discretization> dis);    ///< discretization
 
 } // namespace FLD
 

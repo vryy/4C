@@ -1126,6 +1126,60 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
                                      0,
                                      datamap.Comm()));
 
+#if 0
+  // care for rotationally symmetric periodic boundary conditions
+  // note: only vector fields with numdf > 1 require checking!
+  if(numdf > 1)
+  {
+    vector<DRT::Condition*> mypbccond;
+    // get periodic boundary conditions
+    dis->GetCondition("SurfacePeriodic",mypbccond);
+    if(mypbccond.empty())
+    {
+      dis->GetCondition("LinePeriodic",mypbccond);
+    }
+
+    // loop all periodic boundary conditions
+    for (unsigned numcond=0;numcond<mypbccond.size();++numcond)
+    {
+      const string* mymasterslavetoggle
+      = mypbccond[numcond]->Get<string>("Is slave periodic boundary condition");
+      const double rotangle = FLD::GetRotAngleFromCondition(mypbccond[numcond]);
+
+      // only slave node with non-zero angle of rotation
+      // require rotation of vector results!
+      if((*mymasterslavetoggle=="Slave")
+          && (abs(rotangle)> EPS13))
+      {
+        const vector<int>* nodes = mypbccond[numcond]->Nodes();
+        for (unsigned int inode=0; inode < nodes->size(); inode++)
+        {
+          const int nodegid = nodes->at(inode);
+
+          if (dis->HaveGlobalNode(nodegid)) // is node on this proc?
+          {
+            cout<<"nodegid = "<<nodegid<<"  rotangle = "<<rotangle<<endl;
+            DRT::Node* n = dis->gNode(nodegid);
+            double values[3];
+            int    indices[3];
+            for (int idf=0; idf<numdf; ++idf)
+            {
+              int dofgid = dis->Dof(n,idf);
+              int lid = datamap.LID(dofgid);
+              indices[idf] = lid;
+              values[idf] = FLD::GetComponentOfRotatedVectorField(idf,data,lid,rotangle);
+            }
+            // we have to modify the data read from written output
+            int err = data->ReplaceMyValues(2,values,indices);
+            if (err!= 0) cout<<"Could not insert data";
+          }
+        }
+        cout<<endl<<endl;
+      } // end is slave condition?
+    } // end loop periodic boundary conditions
+  } // if numdf>1
+
+#endif
   //switch between nurbs an others
   if(field_->problem()->SpatialApproximation()=="Nurbs")
   {
@@ -1210,6 +1264,13 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
     const int finalnumnode = proc0map_->NumGlobalElements();
     if (myrank_==0) // ensures pointer dofgids is valid
     {
+      // care for rotationally symmetric periodic boundary conditions
+      // note: only vector fields with numdf > 1 require checking!
+      map<int,double> pbcslavenodemap;
+      map<int,double>::iterator iter;
+      if(numdf > 1)
+        FLD::GetRelevantSlaveNodesOfRotSymPBC(pbcslavenodemap, dis);
+
       double* dofgids = (dofgidpernodelid_proc0->Values()); // columnwise data storage
       for (int idf=0; idf<numdf; ++idf)
       {
@@ -1224,14 +1285,13 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
           int lid = finaldatamap.LID(actdofgid);
           if (lid > -1)
           {
-            // care for rotationally symmetric periodic boundary conditions
-            // note: only vector fields with numdf > 1 require checking!
-            double rotangle(0.0);
-            DRT::Node* n = dis->lRowNode(inode);
-            if ((numdf > 1) and (FLD::IsSlaveNodeOfRotSymPBC(n,rotangle)))
+            // is the current node a slave of a rot. symm. periodic boundary condition?
+            const int nodegid = proc0map_->GID(inode);
+            iter = pbcslavenodemap.find(nodegid);
+            if (iter != pbcslavenodemap.end())
             {
               // this is the desired component of the rotated vector field result
-              double value = FLD::GetComponentOfRotatedVectorField(idf,proc0data,lid,rotangle);
+              double value = FLD::GetComponentOfRotatedVectorField(idf,proc0data,lid,iter->second);
               Write(file, static_cast<float>(value));
             }
             else
