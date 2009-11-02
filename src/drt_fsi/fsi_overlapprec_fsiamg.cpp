@@ -495,8 +495,8 @@ void FSI::OverlappingBlockMatrixFSIAMG::WrapILUSmoother(ML* ml,
   void* data = ml->post_smoother[level].smoother->data;
   Ifpack_Preconditioner* prec = static_cast<Ifpack_Preconditioner*>(data);
   // make sure this really is an Epetra_Operator
-  std::string test = prec->Label();
-  if (!prec->Comm().MyPID()) cout << test << endl;
+  //std::string test = prec->Label();
+  //if (!prec->Comm().MyPID()) cout << test << endl;
   S.Reshape(prec,A,false);
 
   return;
