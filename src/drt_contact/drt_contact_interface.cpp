@@ -461,7 +461,7 @@ void CONTACT::Interface::FillComplete()
 	  binarytree_ = rcp(new CONTACT::BinaryTree(Discret(),selecolmap_,melefullmap_,Dim(),SearchParam()));
 
 	  // initialize active contact nodes via binarytree
-	  //binarytree_->SearchContactInit(binarytree_->Sroot(), binarytree_->Mroot());
+	  // binarytree_->SearchContactInit(binarytree_->Sroot(), binarytree_->Mroot());
   }
 
   return;
@@ -1556,10 +1556,10 @@ bool CONTACT::Interface::SplitIntElements(CONTACT::CElement& ele,
 }
 
 /*----------------------------------------------------------------------*
- |  Assemble gap-dependent lagrange multipliers (nodes)       popp 05/09|
+ |  Evaluate regularized normal forces (nodes)                 popp 05/09|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::AssembleMacauley(bool& localisincontact,
-                                          bool& localactivesetchange)
+void CONTACT::Interface::AssembleRegNormalForces(bool& localisincontact,
+                                                 bool& localactivesetchange)
 {
   // get out of here if not participating in interface
   if (!lComm())
@@ -1687,7 +1687,347 @@ void CONTACT::Interface::AssembleMacauley(bool& localisincontact,
 }
 
 /*----------------------------------------------------------------------*
- |  Assemble gap-dependent lagrange multipliers (global)      popp 05/09|
+ |  Evaluate regularized tangential forces                 gitterle 10/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::Interface::AssembleRegTangentForces()
+{
+  // get out of here if not participating in interface
+  if (!lComm())
+    return;
+  
+  // penalty parameter in tangential direction 
+  double ppnor = IParams().get<double>("PENALTYPARAM");
+  double pptan = IParams().get<double>("PENALTYPARAMTAN");
+  double frcoeff = IParams().get<double>("FRCOEFF");
+  
+  // loop over all slave row nodes on the current interface
+  for (int i=0; i<SlaveRowNodes()->NumMyElements(); ++i)
+  {
+    int gid = SlaveRowNodes()->GID(i);
+    DRT::Node* node = Discret().gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    CNode* cnode = static_cast<CNode*>(node);
+
+    // get some informatiom form the node
+    double gap = cnode->Getg();
+    int dim = cnode->NumDof();
+    double kappa = cnode->Kappa();
+    double* n = cnode->n();
+    
+    //FIXGIT
+    // first, the jump is evaluated
+    // this will be done in a central interface routine
+    
+    // evaluate jump (relative displacement) of this node
+    double jump[3];
+    for(int dim=0;dim<Dim();dim++)
+      jump[dim] = 0;	
+    
+    vector<map<int,double> > dmap = cnode->GetD();
+    vector<map<int,double> > dmapold = cnode->GetDOld();
+    
+    map<int,double>::iterator colcurr;
+    set <int> snodes;
+    
+    for (colcurr=dmap[0].begin(); colcurr!=dmap[0].end(); colcurr++)
+      snodes.insert((colcurr->first)/Dim());
+   
+    set<int>::iterator scurr;
+
+    // loop over all slave nodes with an entry adjacent to this node
+    for (scurr=snodes.begin(); scurr != snodes.end(); scurr++)
+    {
+      int gid = *scurr;
+      DRT::Node* snode = idiscret_->gNode(gid);
+      if (!snode) dserror("ERROR: Cannot find node with gid %",gid);
+      CNode* csnode = static_cast<CNode*>(snode);
+      const int* sdofs = csnode->Dofs();
+
+      double dik = (dmap[0])[sdofs[0]];
+      double dikold = (dmapold[0])[sdofs[0]];
+      
+      map<int,double>::iterator mcurr;
+
+      for (int dim=0;dim<csnode->NumDof();++dim)
+      {
+         jump[dim]-=(dik-dikold)*(csnode->xspatial()[dim]);
+      }
+    } //  loop over adjacent slave nodes
+
+    vector<map<int,double> > mmap = cnode->GetM();
+    vector<map<int,double> > mmapold = cnode->GetMOld();
+
+    set <int> mnodes;
+
+    for (colcurr=mmap[0].begin(); colcurr!=mmap[0].end(); colcurr++)
+      mnodes.insert((colcurr->first)/Dim());
+    
+    if(mmapold.size()>0)
+    {
+    	for (colcurr=mmapold[0].begin(); colcurr!=mmapold[0].end(); colcurr++)
+      mnodes.insert((colcurr->first)/Dim());
+    }
+    set<int>::iterator mcurr;
+
+    // loop over all master nodes (find adjacent ones to this slip node)
+    for (mcurr=mnodes.begin(); mcurr != mnodes.end(); mcurr++)
+    {
+      int gid = *mcurr;
+      DRT::Node* mnode = idiscret_->gNode(gid);
+      if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
+      CNode* cmnode = static_cast<CNode*>(mnode);
+      const int* mdofs = cmnode->Dofs();
+
+      double mik = (mmap[0])[mdofs[0]];
+      double mikold = (mmapold[0])[mdofs[0]];
+
+      map<int,double>::iterator mcurr;
+
+      for (int dim=0;dim<cnode->NumDof();++dim)
+      {
+         jump[dim]+= (mik-mikold)*(cmnode->xspatial()[dim]);
+      }
+    } //  loop over master nodes
+  
+    // evaluate relative tangential movement (jump)
+    Epetra_SerialDenseMatrix jumpvec(dim,1);
+    Epetra_SerialDenseMatrix tanplane(dim,dim);
+    double trailtraction[dim];
+    double tractionold[dim];
+    double magnitude = 0;
+
+    // fill vectors and matrices
+    for (int i=0;i<dim;i++)
+    {
+    	jumpvec(i,0) = jump[i];
+      tractionold[i] = cnode->tractionold()[i];  
+    }
+    
+    if (dim==3)
+    {	
+      tanplane(0,0)= 1-(n[0]*n[0]);
+      tanplane(0,1)=  -(n[0]*n[1]);
+      tanplane(0,2)=  -(n[0]*n[2]);
+      tanplane(1,0)=  -(n[1]*n[0]);
+      tanplane(1,1)= 1-(n[1]*n[1]);
+      tanplane(1,2)=  -(n[1]*n[2]);
+
+      tanplane(2,0)=  -(n[2]*n[0]);
+      tanplane(2,1)=  -(n[2]*n[1]);
+      tanplane(2,2)= 1-(n[2]*n[2]);
+    }
+    else if (dim==2)
+    {
+      tanplane(0,0)= 1-(n[0]*n[0]);
+      tanplane(0,1)=  -(n[0]*n[1]);
+  
+      tanplane(1,0)=  -(n[1]*n[0]);
+      tanplane(1,1)= 1-(n[1]*n[1]);
+    }
+    else
+      dserror("Error in AssembleTangentForces: Unknown dimension.");
+    
+    
+    // Evaluate frictional trail traction
+    Epetra_SerialDenseMatrix temptrac(dim,1);
+    temptrac.Multiply('N','N',kappa*pptan,tanplane,jumpvec,0.0);
+    
+    for (int i=0;i<dim;i++)
+    { 
+    	trailtraction[i]=tractionold[i]+temptrac(i,0);
+      magnitude += (trailtraction[i]*trailtraction[i]);
+    }
+    
+    // evaluate magnitude of trailtraction
+    magnitude = sqrt(magnitude);
+    
+    // evaluate maximal tangential traction
+    double maxtantrac = frcoeff*kappa * ppnor * gap;
+    
+    if(cnode->Active()==false)
+    {
+    }
+    else if (cnode->Active()==true && (abs(maxtantrac)>abs(magnitude)))
+    {
+    	//cout << "Node " << gid << " is stick" << endl;
+    	cnode->Slip() = false;
+
+    	// in the stick case, traction is trailtraction  
+    	for (int i=0;i<dim;i++)
+    		cnode->traction()[i]=trailtraction[i];
+    	
+      // compute lagrange multipliers and store into node
+      for( int j=0;j<dim;++j)
+        cnode->lm()[j] = n[j]*(- kappa * ppnor * gap) + trailtraction[j];                                                         ;
+    }
+    else
+      dserror("Error in Interface::AssembleRegTangentForces(): Regularized"
+      		     " Slip Traction not yet implemented!");    
+    
+      		     
+    // linearization of contact forces (lagrange multipliers)
+    // this consists the linearization of the tangential part,
+    // the normal part was already done in AssembleRegNormalTraction
+  
+    /*** 01  ************************************************************/
+    // loop over all slave nodes (find adjacent ones to this stick node)
+    for (scurr=snodes.begin(); scurr != snodes.end(); scurr++)
+    {
+      int gid = *scurr;
+      DRT::Node* snode = idiscret_->gNode(gid);
+      if (!snode) dserror("ERROR: Cannot find node with gid %",gid);
+      CNode* csnode = static_cast<CNode*>(snode);
+      const int* sdofs = csnode->Dofs();
+   
+      double dik = (dmap[0])[sdofs[0]];
+      double dikold=(dmapold[0])[sdofs[0]];
+     
+ 	    for (int dimrow=0;dimrow<cnode->NumDof();++dimrow)    
+	    {
+	    	for (int dim=0;dim<cnode->NumDof();++dim)
+	      {
+          int col = csnode->Dofs()[dim];
+          double val = -pptan*kappa*tanplane(dimrow,dim)*(dik-dikold);
+          cnode->AddDerivZValue(dimrow,col,val);
+        } 
+	    }	
+    }
+    
+    /*** 02  ************************************************************/
+    // loop over all master nodes (find adjacent ones to this stick node)
+    for (mcurr=mnodes.begin(); mcurr != mnodes.end(); mcurr++)
+    {
+      int gid = *mcurr;
+      DRT::Node* mnode = idiscret_->gNode(gid);
+      if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
+      CNode* cmnode = static_cast<CNode*>(mnode);
+      const int* mdofs = cmnode->Dofs();
+   
+      double mik = (mmap[0])[mdofs[0]];
+      double mikold=(mmapold[0])[mdofs[0]];
+
+	    for (int dimrow=0;dimrow<cnode->NumDof();++dimrow)    
+	    {
+	    	for (int dim=0;dim<cnode->NumDof();++dim)
+	      {
+          int col = cmnode->Dofs()[dim];
+          double val = pptan*kappa*tanplane(dimrow,dim)*(mik-mikold);
+          cnode->AddDerivZValue(dimrow,col,val);
+        } 
+	    }	
+    }
+    
+    /*** 03 *************************************************************/
+    // we need the Lin(D-matrix) entries of this node
+    map<int,map<int,double> >& ddmap = cnode->GetDerivD();
+    map<int,map<int,double> >::iterator dscurr;
+    
+    // loop over all slave nodes in the DerivM-map of the stick slave node
+    for (dscurr=ddmap.begin();dscurr!=ddmap.end();++dscurr)
+    {
+      int gid = dscurr->first;
+      DRT::Node* snode = idiscret_->gNode(gid);
+      if (!snode) dserror("ERROR: Cannot find node with gid %",gid);
+      CNode* csnode = static_cast<CNode*>(snode);
+      double* dxi = csnode->xspatial();
+      
+      // compute entry of the current stick node / slave node pair
+      map<int,double>& thisdmmap = cnode->GetDerivD(gid);
+        
+      for(int dimrow=0;dimrow<cnode->NumDof();++dimrow)
+      {  
+         // we need the dot product tanplane*x of this node pair
+         double tanplanedotx = 0;
+      
+      	for (int dim=0;dim<cnode->NumDof();++dim)
+        	tanplanedotx += tanplane(dimrow,dim)*dxi[dim];
+       
+        // loop over all entries of the current derivative map
+        for (colcurr=thisdmmap.begin();colcurr!=thisdmmap.end();++colcurr)
+        {
+          int col = colcurr->first;
+          
+          double val =-pptan*kappa*tanplanedotx*colcurr->second;
+          cnode->AddDerivZValue(dimrow,col,val);
+        }
+      }
+    }
+    
+    /*** 04 *************************************************************/
+    // we need the Lin(M-matrix) entries of this node
+    map<int,map<int,double> >& dmmap = cnode->GetDerivM();
+    map<int,map<int,double> >::iterator dmcurr;
+    
+    // loop over all master nodes in the DerivM-map of the stick slave node
+    for (dmcurr=dmmap.begin();dmcurr!=dmmap.end();++dmcurr)
+    {
+      int gid = dmcurr->first;
+      DRT::Node* mnode = idiscret_->gNode(gid);
+      if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
+      CNode* cmnode = static_cast<CNode*>(mnode);
+      double* mxi = cmnode->xspatial();
+      
+      // compute entry of the current stick node / master node pair
+      map<int,double>& thisdmmap = cnode->GetDerivM(gid);
+        
+      for(int dimrow=0;dimrow<cnode->NumDof();++dimrow)
+      {	
+        // we need the dot product tanplane*x of this node pair
+        double tanplanedotx = 0.0;
+      
+        for (int dim=0;dim<cnode->NumDof();++dim)
+        	tanplanedotx += tanplane(dimrow,dim)*mxi[dim];
+       
+        // loop over all entries of the current derivative map
+        for (colcurr=thisdmmap.begin();colcurr!=thisdmmap.end();++colcurr)
+        {
+          int col = colcurr->first;
+          double val =pptan*kappa*tanplanedotx*colcurr->second;
+          cnode->AddDerivZValue(dimrow,col,val);
+        } 
+      }
+    }
+    
+    /*** 05 **************************************************************/
+    vector<map<int,double> >& derivn = cnode->GetDerivN();
+    map<int,double>::iterator ncurr;
+    
+    // loop over dimensions
+    for (int dimrow=0;dimrow<cnode->NumDof();++dimrow)
+    {
+      // loop over all entries of the current derivative map (txi)
+      for (colcurr=derivn[dimrow].begin();colcurr!=derivn[dimrow].end();++colcurr)
+      {
+      	for (int dim =0;dim<cnode->NumDof();++dim)
+      	{
+      		int col = colcurr->first;
+          double val =-pptan*kappa*(colcurr->second)*n[dim]*jump[dim];
+          cnode->AddDerivZValue(dimrow,col,val);
+      	}  
+      }
+    }
+    
+    // loop over dimensions
+    for (int dim=0;dim<cnode->NumDof();++dim)
+    {
+      // loop over all entries of the current derivative map (txi)
+      for (colcurr=derivn[dim].begin();colcurr!=derivn[dim].end();++colcurr)
+      {
+      	for (int dimrow =0;dimrow<cnode->NumDof();++dimrow)
+      	{
+      		int col = colcurr->first;
+          double val =-pptan*kappa*(colcurr->second)*n[dimrow]*jump[dim];
+          cnode->AddDerivZValue(dimrow,col,val);
+      	}  
+      }
+    }
+  } // loop over active nodes
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Assemble geometry-dependent lagrange multipliers (global)      popp 05/09|
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::AssembleLM(Epetra_Vector& zglobal)
 {

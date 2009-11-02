@@ -71,6 +71,8 @@ grow_(1.0e12)
     teta()[i]=0.0;
     u()[i]=0.0;
     uold()[i]=0.0;
+    traction()[i]=0.0;
+    tractionold()[i]=0.0;
     xspatial()[i]=X()[i];
     lm()[i]=0.0;
     lmold()[i]=0.0;
@@ -113,6 +115,8 @@ grow_(old.grow_)
     teta()[i]=old.teta_[i];
     u()[i]=old.u_[i];
     uold()[i]=old.uold_[i];
+    traction()[i]=old.traction_[i];
+    tractionold()[i]=old.tractionold_[i];
     xspatial()[i]=old.xspatial_[i];
     lm()[i]=old.lm_[i];
     lmold()[i]=old.lmold_[i];
@@ -201,6 +205,10 @@ void CONTACT::CNode::Pack(vector<char>& data) const
   AddtoPack(data,u_,3);
   // add uold_
   AddtoPack(data,uold_,3);
+  // add traction_
+  AddtoPack(data,traction_,3);
+  // add tractionold_
+  AddtoPack(data,tractionold_,3);
   // add lm_
   AddtoPack(data,lm_,3);
   // add lmold_
@@ -262,6 +270,10 @@ void CONTACT::CNode::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,u_,3);
   // uold_
   ExtractfromPack(position,data,uold_,3);
+  // traction_
+  ExtractfromPack(position,data,traction_,3);
+  // tractionold_
+  ExtractfromPack(position,data,tractionold_,3);
   // lm_
   ExtractfromPack(position,data,lm_,3);
   // lmold_
@@ -433,6 +445,18 @@ void CONTACT::CNode::StoreDMOld()
 	drowsold_ = drows_;
   mrowsold_ = mrows_;
 	
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Store nodal entries penalty tractions to old ones      gitterle 10/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::CNode::StoreTracOld()
+{
+  // write entries to old ones
+  for (int j=0;j<3;++j)
+    tractionold_[j]=traction_[j];
+
   return;
 }
 

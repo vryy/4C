@@ -143,7 +143,7 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
     contactmanager_->GetStrategy().StoreDM("old");
 
    	// store nodal entries from D and M to old ones
-    contactmanager_->GetStrategy().StoreDMToNodes();
+    contactmanager_->GetStrategy().StoreDMToNodes(AbstractStrategy::dm);
   }
 
   // increment time and step
@@ -393,19 +393,6 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   }
   stiff_->Complete();
 
-//  // reset Lagrange multipliers to last converged state
-//  // this resetting is necessary due to multiple active set steps
-//  RCP<Epetra_Vector> z = contactmanager_->LagrMult();
-//  RCP<Epetra_Vector> zold = contactmanager_->LagrMultOld();
-//  z->Update(1.0,*zold,0.0);
-//  contactmanager_->StoreNodalQuantities(Manager::lmcurrent);
-
-//  // friction
-//  // reset displacement jumps (slave dofs)
-//  RCP<Epetra_Vector> jump = contactmanager_->Jump();
-//  jump->Scale(0.0);
-//  contactmanager_->StoreNodalQuantities(Manager::jump);
-
   // keep a copy of fresm for contact forces / equilibrium check
   RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
 
@@ -414,6 +401,13 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
 
   contactmanager_->GetStrategy().InitializeMortar();
   contactmanager_->GetStrategy().EvaluateMortar();
+  
+  // friction
+  // here the relative movement of the contact bodies is evaluated
+  // therefore the current configuration and the according mortar
+  // matrices are needed
+  if(ctype != INPAR::CONTACT::contact_normal)
+    contactmanager_->GetStrategy().EvaluateRelMov(disi_);
 
   contactmanager_->GetStrategy().Initialize();
   contactmanager_->GetStrategy().Evaluate(SystemMatrix(),fresm_);
@@ -512,7 +506,7 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
     contactmanager_->GetStrategy().StoreDM("old");
 
   	// store nodal entries from D and M to old ones
-    contactmanager_->GetStrategy().StoreDMToNodes();
+    contactmanager_->GetStrategy().StoreDMToNodes(AbstractStrategy::dm);
   }
 
   // increment time and step
@@ -686,24 +680,18 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   // keep a copy of fresm for contact forces / equilibrium check
   RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
 
-//  // reset Lagrange multipliers to last converged state
-//  // this resetting is necessary due to multiple active set steps
-//  RCP<Epetra_Vector> z = contactmanager_->LagrMult();
-//  RCP<Epetra_Vector> zold = contactmanager_->LagrMultOld();
-//  z->Update(1.0,*zold,0.0);
-//  contactmanager_->StoreNodalQuantities(Manager::lmcurrent);
-
-//  // friction
-//  // reset displacement jumps (slave dofs)
-//  RCP<Epetra_Vector> jump = contactmanager_->Jump();
-//  jump->Scale(0.0);
-//  contactmanager_->StoreNodalQuantities(Manager::jump);
-
   //-------------------------- make contact modifications to lhs and rhs
   contactmanager_->GetStrategy().SetState("displacement",disn_);
 
   contactmanager_->GetStrategy().InitializeMortar();
   contactmanager_->GetStrategy().EvaluateMortar();
+  
+  // friction
+  // here the relative movement of the contact bodies is evaluated
+  // therefore the current configuration and the according mortar
+  // matrices are needed
+  if(ctype != INPAR::CONTACT::contact_normal)
+    contactmanager_->GetStrategy().EvaluateRelMov(disi_);
 
   contactmanager_->GetStrategy().Initialize();
   contactmanager_->GetStrategy().Evaluate(SystemMatrix(),fresm_);
@@ -950,24 +938,20 @@ void CONTACT::ContactStruGenAlpha::ApplyExternalForce(  const STR::UTILS::MapExt
   // keep a copy of fresm for contact forces / equilibrium check
   RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
 
-//  // reset Lagrange multipliers to last converged state
-//  // this resetting is necessary due to multiple active set steps
-//  RCP<Epetra_Vector> z = contactmanager_->LagrMult();
-//  RCP<Epetra_Vector> zold = contactmanager_->LagrMultOld();
-//  z->Update(1.0,*zold,0.0);
-//  contactmanager_->StoreNodalQuantities(Manager::lmcurrent);
-
-//  // friction
-//  // reset displacement jumps (slave dofs)
-//  RCP<Epetra_Vector> jump = contactmanager_->Jump();
-//  jump->Scale(0.0);
-//  contactmanager_->StoreNodalQuantities(Manager::jump);
-
   //-------------------------- make contact modifications to lhs and rhs
   contactmanager_->GetStrategy().SetState("displacement",disn_);
 
   contactmanager_->GetStrategy().InitializeMortar();
   contactmanager_->GetStrategy().EvaluateMortar();
+  
+  // friction
+  // here the relative movement of the contact bodies is evaluated
+  // therefore the current configuration and the according mortar
+  // matrices are needed
+  INPAR::CONTACT::ContactType ctype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(contactmanager_->GetStrategy().Params(),"CONTACT");
+  if(ctype != INPAR::CONTACT::contact_normal)
+    contactmanager_->GetStrategy().EvaluateRelMov(disi_);
 
   contactmanager_->GetStrategy().Initialize();
   contactmanager_->GetStrategy().Evaluate(SystemMatrix(),fresm_);
@@ -1982,7 +1966,10 @@ void CONTACT::ContactStruGenAlpha::Update()
     contactmanager_->GetStrategy().StoreNodalQuantities(AbstractStrategy::activeold);
 
   	// store nodal entries of D and M to old ones
-    contactmanager_->GetStrategy().StoreDMToNodes();
+    contactmanager_->GetStrategy().StoreDMToNodes(AbstractStrategy::dm);
+    
+    // store nodal entries form penalty contact tractions to old ones
+    contactmanager_->GetStrategy().StoreDMToNodes(AbstractStrategy::pentrac);
 
     // store the displacements to contact nodes
     contactmanager_->GetStrategy().SetState("olddisplacement",dis_);

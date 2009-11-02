@@ -96,19 +96,6 @@ class LagrangeStrategy : public AbstractStrategy
     */
     void Initialize();
 
-    /*
-    \brief Evaluate Mortar related quantities
-     
-    For a lagrangian strategy this includes the nodal normal calculations, 
-    contact search, projection and overlap detection, integration of the 
-    Mortar terms D, M and of the weighted gap. Additionally, the linearizations     
-    of geometrical quantities (delta_n, delta_t, delta_D, delta_M) are calculated.
-     
-    The nodal D, M and g values are then assembled into global matrices and vectors respectively. 
-    
-    */
-    void EvaluateMortar();
-
     /*!
     \brief Evaluate contact
      
@@ -119,12 +106,6 @@ class LagrangeStrategy : public AbstractStrategy
     
     */
     void EvaluateContact(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff);
-
-    /*!
-    \brief Evaluate relative movement of contact bodies
-     
-    */
-    void EvaluateRelMov(RCP<Epetra_Vector> disi);
 
     /*!
     \brief Evaluate frictional contact

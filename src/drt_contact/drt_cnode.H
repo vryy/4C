@@ -227,6 +227,16 @@ public:
   \brief Return old displacement (length 3)
   */
   virtual inline double* uold() { return uold_; }
+  
+  /*!
+  \brief Return current penalty traction (length 3)
+  */
+  virtual inline double* traction() { return traction_; }
+  
+  /*!
+  \brief Return old penalty traction (length 3)
+  */
+  virtual inline double* tractionold() { return tractionold_; }
 
   /*!
   \brief Return current nodal normal (only for slave side!) (length 3)
@@ -366,6 +376,15 @@ public:
 
   */
   void StoreDMOld();
+  
+  /*!
+  \brief Write nodal entries of Penalty tractions to old ones
+
+  At the end of a time step the nodal entries (vector) of the Penalty
+  tractions are stored to the old ones.
+
+  */
+  void StoreTracOld();
 
   /*!
   \brief Return the 'D' map (vector) of this node
@@ -454,6 +473,22 @@ public:
   */
   virtual inline map<int,map<int,double> >& GetDerivM() { return derivm_; }
 
+  /*!
+  \brief Return one specific 'DerivD' map of this node
+
+  This method returns the map of directional derivatives of one
+  specific D-matrix D_ik entry of this node i.
+
+  */
+  virtual inline map<int,double>& GetDerivD(int& k)
+  {
+    typedef map<int,map<int,double> >::const_iterator CI;
+    CI p =derivd_.find(k);
+    if (p==derivd_.end())
+     dserror("ERROR: GetDerivD: No map entry existing for given index");
+    return derivd_[k];
+  }
+  
   /*!
   \brief Return one specific 'DerivM' map of this node
 
@@ -574,8 +609,10 @@ protected:
   map<int,double>               derivg_;     // directional derivative of nodal weighted gap value
 
   // Penalty-related quantities 
-  double                        kappa_;      // gap-scaling factor
-  vector<map<int,double> >      derivz_;     // direction derivative of nodal z-matrix value
+  double                        traction_[3];     // traction vector of current time step
+  double                        tractionold_[3];  // traction vector of previous time step 
+  double                        kappa_;           // gap-scaling factor
+  vector<map<int,double> >      derivz_;          // direction derivative of nodal z-matrix value
 
 }; // class CNode
 } // namespace CONTACT

@@ -187,6 +187,207 @@ void CONTACT::AbstractStrategy::InitializeMortar()
 }
 
 /*----------------------------------------------------------------------*
+ | evaluate Mortar matrices D,M & gap g~ only                 popp 06/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::AbstractStrategy::EvaluateMortar()
+{
+  /**********************************************************************/
+  /* evaluate interfaces                                                */
+  /* (nodal normals, projections, Mortar integration, Mortar assembly)  */
+  /**********************************************************************/
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    // evaluate D-, derivD- and M-, derivM-matrices, store them in nodes
+    interface_[i]->Evaluate();
+    
+    // assemble D-, M-matrix and g-vector, store them globally
+    interface_[i]->AssembleDMG(*dmatrix_, *mmatrix_, *g_);
+
+#ifdef CONTACTFDMORTARD
+  // FD check of Mortar matrix D derivatives
+  cout << " -- CONTACTFDMORTARD -----------------------------------" << endl;
+  dmatrix_->Complete();
+  if( dmatrix_->NormOne() )
+    interface_[i]->FDCheckMortarDDeriv();
+  dmatrix_->UnComplete();
+  cout << " -- CONTACTFDMORTARD -----------------------------------" << endl;
+#endif // #ifdef CONTACTFDMORTARD
+#ifdef CONTACTFDMORTARM
+  // FD check of Mortar matrix M derivatives
+  cout << " -- CONTACTFDMORTARM -----------------------------------" << endl;
+  mmatrix_->Complete(*gmdofrowmap_, *gsdofrowmap_);
+  if( mmatrix_->NormOne() )
+      interface_[i]->FDCheckMortarMDeriv();
+  mmatrix_->UnComplete();
+  cout << " -- CONTACTFDMORTARM -----------------------------------" << endl;
+#endif // #ifdef CONTACTFDMORTARM
+  }
+
+  // FillComplete() global Mortar matrices
+  dmatrix_->Complete();
+  mmatrix_->Complete(*gmdofrowmap_, *gsdofrowmap_);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | evaluate relative movement of contact bodies            gitterle 10/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::AbstractStrategy::EvaluateRelMov(RCP<Epetra_Vector> disi)
+{
+#ifdef CONTACTRELVELMATERIAL
+  
+  // extract slave displacements from disi
+  RCP<Epetra_Vector> disis = rcp(new Epetra_Vector(*gsdofrowmap_));
+  LINALG::Export(*disi,*disis);
+
+  // extract master displacements from disi
+  RCP<Epetra_Vector> disim = rcp(new Epetra_Vector(*gmdofrowmap_));
+  LINALG::Export(*disi,*disim);
+
+  /**********************************************************************/
+  /* Multiply Mortar matrices: m^ = inv(d) * m                          */
+  /**********************************************************************/
+  RCP<LINALG::SparseMatrix> invd = rcp(new LINALG::SparseMatrix(*dmatrix_));
+  RCP<Epetra_Vector> diag = LINALG::CreateVector(*gsdofrowmap_,true);
+  int err = 0;
+
+  // extract diagonal of invd into diag
+  invd->ExtractDiagonalCopy(*diag);
+
+  // set zero diagonal values to dummy 1.0
+  for (int i=0;i<diag->MyLength();++i)
+    if ((*diag)[i]==0.0) (*diag)[i]=1.0;
+
+  // scalar inversion of diagonal values
+  err = diag->Reciprocal(*diag);
+  if (err>0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+
+  // re-insert inverted diagonal into invd
+  err = invd->ReplaceDiagonalValues(*diag);
+  // we cannot use this check, as we deliberately replaced zero entries
+  //if (err>0) dserror("ERROR: ReplaceDiagonalValues: Missing diagonal entry!");
+
+  // do the multiplication M^ = inv(D) * M
+  mhatmatrix_ = LINALG::Multiply(*invd,false,*mmatrix_,false);
+
+  // recover incremental jump (for active set)
+  incrjump_ = rcp(new Epetra_Vector(*gsdofrowmap_));
+  mhatmatrix_->Multiply(false,*disim,*incrjump_);
+  incrjump_->Update(1.0,*disis,-1.0);
+
+  // sum up incremental jumps from active set nodes
+  jump_->Update(1.0,*incrjump_,1.0);
+
+#else
+
+  // export global quantity to current interface slave dof row map
+  RCP<Epetra_Vector> slaveconfiguration = rcp(new Epetra_Vector(*gsdofrowmap_));
+  RCP<Epetra_Vector> masterconfiguration = rcp(new Epetra_Vector(*gmdofrowmap_));
+
+  // create vector of current slave configuration
+  // loop over all interfaces
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    // currently this only works safely for 1 interface
+    if (i>0) dserror("ERROR: Evaluate RelSliding: not working for n interfaces yet!");
+
+    // loop over all slave row nodes on the current interface
+    for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)
+    {
+      int gid = interface_[i]->SlaveRowNodes()->GID(j);
+      DRT::Node* node = interface_[i]->Discret().gNode(gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      CNode* cnode = static_cast<CNode*>(node);
+
+      // be aware of problem dimension
+      int dim = Dim();
+      int numdof = cnode->NumDof();
+      if (dim!=numdof) dserror("ERROR: Inconsisteny Dim <-> NumDof");
+
+      // find indices for DOFs of current node in Epetra_Vector
+      // and put node coordinates into slaveconfiguration at these DOFs
+      vector<int> locindex(dim);
+
+      for (int dof=0;dof<dim;++dof)
+      {
+        locindex[dof] = (slaveconfiguration->Map()).LID(cnode->Dofs()[dof]);
+        if (locindex[dof]<0) dserror("ERROR: StoreNodalQuantites: Did not find dof in map");
+        (*slaveconfiguration)[locindex[dof]] = cnode->xspatial()[dof];
+      }
+    }
+  }
+
+  // create vector of current master configuration
+  // loop over all interfaces
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    // currently this only works safely for 1 interface
+    if (i>0) dserror("ERROR: Evaluate RelSliding: not working for n interfaces yet!");
+
+    // loop over all slave row nodes on the current interface
+    for (int j=0;j<interface_[i]->MasterRowNodes()->NumMyElements();++j)
+    {
+      int gid = interface_[i]->MasterRowNodes()->GID(j);
+      DRT::Node* node = interface_[i]->Discret().gNode(gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      CNode* cnode = static_cast<CNode*>(node);
+
+      // be aware of problem dimension
+      int dim = Dim();
+      int numdof = cnode->NumDof();
+      if (dim!=numdof) dserror("ERROR: Inconsisteny Dim <-> NumDof");
+
+      // find indices for DOFs of current node in Epetra_Vector
+      // and put node coordinates into masterconfiguration at these DOFs
+      vector<int> locindex(dim);
+
+      for (int dof=0;dof<dim;++dof)
+      {
+        locindex[dof] = (masterconfiguration->Map()).LID(cnode->Dofs()[dof]);
+        if (locindex[dof]<0) dserror("ERROR: StoreNodalQuantites: Did not find dof in map");
+        (*masterconfiguration)[locindex[dof]] = cnode->xspatial()[dof];
+      }
+    }
+  }
+  
+  RCP<LINALG::SparseMatrix> diffD = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,81));
+  diffD->Add(*dmatrix_,false,1.0,0.0);
+  diffD->Add(*dold_,false,-1.0,1.0);
+  diffD->Complete(dmatrix_->DomainMap(),dmatrix_->RowMap());
+
+  RCP<Epetra_Vector> diffDx = rcp(new Epetra_Vector(*gsdofrowmap_));
+  diffD->Multiply(false,*slaveconfiguration,*diffDx);
+
+  // create a merged map of domain map of M and Mold
+  const Epetra_Map& mmatrixdofs = mmatrix_->DomainMap();
+  const Epetra_Map& molddofs = mold_->DomainMap();
+  RCP<Epetra_Map> mdiffdofs = LINALG::MergeMap(mmatrixdofs,molddofs,true);
+
+  // Create a new Matrix, add M and -Mold
+  RCP<LINALG::SparseMatrix> diffM = rcp(new LINALG::SparseMatrix(mmatrix_->RowMap(),81));
+  diffM->Add(*mmatrix_,false,+1.0,0.0);
+  diffM->Add(*mold_,false,-1.0,1.0);
+  
+  diffM->Complete(*mdiffdofs,mmatrix_->RowMap());
+
+  RCP<Epetra_Vector> diffMx = rcp(new Epetra_Vector(*gsdofrowmap_));
+  diffM->Multiply(false,*masterconfiguration,*diffMx);
+
+  //RCP<Epetra_Vector> jump = rcp(new Epetra_Vector(*gsdofrowmap_));
+  jump_->Update(-1.0,*diffDx,0.0);
+  jump_->Update(+1.0,*diffMx,1.0);
+  
+#endif
+
+  // friction
+  // store updaded jumps to nodes
+  StoreNodalQuantities(AbstractStrategy::jump);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  | call appropriate evaluate for contact evaluation           popp 06/09|
  *----------------------------------------------------------------------*/
 void CONTACT::AbstractStrategy::Evaluate(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff)
@@ -195,16 +396,20 @@ void CONTACT::AbstractStrategy::Evaluate(RCP<LINALG::SparseMatrix> kteff, RCP<Ep
   INPAR::CONTACT::ContactFrictionType ftype =
     Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(Params(),"FRICTION");
 
-  // friction case
-  // (note that this also includes Mesh Tying)
-  if (ftype == INPAR::CONTACT::friction_tresca ||
-      ftype == INPAR::CONTACT::friction_coulomb ||
-      ftype == INPAR::CONTACT::friction_stick )
-    EvaluateFriction(kteff,feff);
-
-  // Frictionless contact case
+  // normal contact and coulomb friction case
+  if(ftype == INPAR::CONTACT::friction_none ||
+ 	   ftype == INPAR::CONTACT::friction_coulomb)
+  {
+  	EvaluateContact(kteff,feff);
+  }	
+  else if (ftype == INPAR::CONTACT::friction_tresca ||
+           ftype == INPAR::CONTACT::friction_stick)
+  {
+  	dserror("Error in AbstractStrategy::Evaluate: Penalty Strategy for"
+            " Stick and Tresca friction not yet implemented"); 		
+  } 		
   else
-    EvaluateContact(kteff,feff);
+  	dserror("Error in AbstractStrategy::Evaluate: Unknown friction type");
 
   return;
 }
@@ -459,7 +664,7 @@ void CONTACT::AbstractStrategy::StoreDirichletStatus(RCP<LINALG::MapExtractor> d
 /*----------------------------------------------------------------------*
  |  Store DM to Nodes (in vecor of last conv. time step)  gitterle 02/09|
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::StoreDMToNodes()
+void CONTACT::AbstractStrategy::StoreDMToNodes(AbstractStrategy::QuantityType type)
 {
   // loop over all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
@@ -477,11 +682,25 @@ void CONTACT::AbstractStrategy::StoreDMToNodes()
         dserror("ERROR: Cannot find node with gid %",gid);
       CNode* cnode = static_cast<CNode*>(node);
 
-      // store D and M entries 
-      cnode->StoreDMOld();
+      switch (type)
+      {
+        case AbstractStrategy::dm:
+        {
+          // store D and M entries
+          cnode->StoreDMOld();
+          break;
+        }
+        case AbstractStrategy::pentrac:
+        {
+          // store penalty tractions to old ones
+          cnode->StoreTracOld();
+        	break;
+        }
+        default:
+          dserror("ERROR: StoreDMToNodes: Unknown state string variable!");
+      } // switch
     }
   }
-
   return;
 }
 
@@ -620,7 +839,7 @@ void CONTACT::AbstractStrategy::DoReadRestart(RCP<Epetra_Vector> activetoggle, R
   EvaluateMortar();
   StoreDM("old");
   StoreNodalQuantities(AbstractStrategy::activeold);
-  StoreDMToNodes();
+  StoreDMToNodes(AbstractStrategy::dm);
   
   return;
 }
@@ -993,9 +1212,9 @@ void CONTACT::AbstractStrategy::PrintActiveSet()
       if(cnode->Active())
       {
         if(cnode->Slip())
-          cout << "SLIP " << gid << " Normal " << nz << " Tangential " << zt << " DISPX " << cnode->xspatial()[0]-cnode->X()[0] << " DISPY " << cnode->xspatial()[1]-cnode->X()[1] << " LMX " << cnode->lm()[0] << " LMY"  << cnode->lm()[1] << endl;
+          cout << "SLIP " << gid << " Normal " << nz << " Tangential " << zt << endl;
         else
-         cout << "STICK " << gid << " Normal " << nz << " Tangential " << zt << " DISPX " << cnode->xspatial()[0]-cnode->X()[0] << " DISPY " << cnode->xspatial()[1]-cnode->X()[1]  << endl;
+         cout << "STICK " << gid << " Normal " << nz << " Tangential " << zt << endl;
       }
     }
   }

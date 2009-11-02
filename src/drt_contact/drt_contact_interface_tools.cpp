@@ -5637,7 +5637,7 @@ void CONTACT::Interface::FDCheckDerivZ()
     // Evaluate
     Evaluate();
     bool isincontact, activesetchange = false;
-    AssembleMacauley(isincontact, activesetchange);
+    AssembleRegNormalForces(isincontact, activesetchange);
 
     // compute finite difference derivative
     for (int k=0; k<snoderowmap_->NumMyElements(); ++k)
@@ -5755,7 +5755,7 @@ void CONTACT::Interface::FDCheckDerivZ()
     // Evaluate
     Evaluate();
     bool isincontact, activesetchange = false;
-    AssembleMacauley(isincontact, activesetchange);
+    AssembleRegNormalForces(isincontact, activesetchange);
 
     // compute finite difference derivative
     for (int k=0; k<snoderowmap_->NumMyElements(); ++k)
@@ -5845,7 +5845,7 @@ void CONTACT::Interface::FDCheckDerivZ()
   // *******************************************************************    
   Evaluate();
   bool isincontact, activesetchange = false;
-  AssembleMacauley(isincontact, activesetchange);
+  AssembleRegNormalForces(isincontact, activesetchange);
 
   return;
 }
@@ -5908,7 +5908,7 @@ void CONTACT::Interface::FDCheckPenaltyKTeff(RCP<LINALG::SparseMatrix> kc, RCP<E
     // Evaluate
     Evaluate();
     bool isincontact, activesetchange = false;
-    AssembleMacauley(isincontact, activesetchange);
+    AssembleRegNormalForces(isincontact, activesetchange);
     
     RCP<LINALG::SparseMatrix> dmatrix = rcp( new LINALG::SparseMatrix(*sdofrowmap_,100));
     RCP<LINALG::SparseMatrix> mmatrix = rcp( new LINALG::SparseMatrix(*sdofrowmap_,100));
@@ -6103,7 +6103,7 @@ void CONTACT::Interface::FDCheckPenaltyKTeff(RCP<LINALG::SparseMatrix> kc, RCP<E
     //cout << "eval" << endl;
     Evaluate();
     bool isincontact, activesetchange = false;
-    AssembleMacauley(isincontact, activesetchange);
+    AssembleRegNormalForces(isincontact, activesetchange);
     
     RCP<LINALG::SparseMatrix> dmatrix = rcp( new LINALG::SparseMatrix(*sdofrowmap_,100));
     RCP<LINALG::SparseMatrix> mmatrix = rcp( new LINALG::SparseMatrix(*sdofrowmap_,100));
@@ -6278,7 +6278,7 @@ void CONTACT::Interface::FDCheckPenaltyKTeff(RCP<LINALG::SparseMatrix> kc, RCP<E
   // *******************************************************************    
   Evaluate();
   bool isincontact, activesetchange = false;
-  AssembleMacauley(isincontact, activesetchange);
+  AssembleRegNormalForces(isincontact, activesetchange);
 
   return;  
 }
@@ -6343,7 +6343,7 @@ void CONTACT::Interface::FDCheckPenaltyLinD(RCP<LINALG::SparseMatrix> lindmatrix
     // Evaluate
     Evaluate();
     bool isincontact, activesetchange = false;
-    AssembleMacauley(isincontact, activesetchange);
+    AssembleRegNormalForces(isincontact, activesetchange);
     
     RCP<LINALG::SparseMatrix> dmatrix = rcp( new LINALG::SparseMatrix(*sdofrowmap_,100));
     RCP<LINALG::SparseMatrix> mmatrix = rcp( new LINALG::SparseMatrix(*sdofrowmap_,100));
@@ -6464,7 +6464,7 @@ void CONTACT::Interface::FDCheckPenaltyLinD(RCP<LINALG::SparseMatrix> lindmatrix
   // *******************************************************************    
   Evaluate();
   bool isincontact, activesetchange = false;
-  AssembleMacauley(isincontact, activesetchange);
+  AssembleRegNormalForces(isincontact, activesetchange);
 
   return;  
   
@@ -6530,7 +6530,7 @@ void CONTACT::Interface::FDCheckPenaltyLinM(RCP<LINALG::SparseMatrix> linmmatrix
     // Evaluate
     Evaluate();
     bool isincontact, activesetchange = false;
-    AssembleMacauley(isincontact, activesetchange);
+    AssembleRegNormalForces(isincontact, activesetchange);
     
     RCP<LINALG::SparseMatrix> dmatrix = rcp( new LINALG::SparseMatrix(*sdofrowmap_,100));
     RCP<LINALG::SparseMatrix> mmatrix = rcp( new LINALG::SparseMatrix(*sdofrowmap_,100));
@@ -6679,7 +6679,7 @@ void CONTACT::Interface::FDCheckPenaltyLinM(RCP<LINALG::SparseMatrix> linmmatrix
     // Evaluate
     Evaluate();
     bool isincontact, activesetchange = false;
-    AssembleMacauley(isincontact, activesetchange);
+    AssembleRegNormalForces(isincontact, activesetchange);
     
     RCP<LINALG::SparseMatrix> dmatrix = rcp( new LINALG::SparseMatrix(*sdofrowmap_,100));
     RCP<LINALG::SparseMatrix> mmatrix = rcp( new LINALG::SparseMatrix(*sdofrowmap_,100));
@@ -6801,7 +6801,7 @@ void CONTACT::Interface::FDCheckPenaltyLinM(RCP<LINALG::SparseMatrix> linmmatrix
   // *******************************************************************    
   Evaluate();
   bool isincontact, activesetchange = false;
-  AssembleMacauley(isincontact, activesetchange);
+  AssembleRegNormalForces(isincontact, activesetchange);
 
   return;  
   

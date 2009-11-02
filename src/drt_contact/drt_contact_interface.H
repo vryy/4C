@@ -600,8 +600,14 @@ public:
   these corresponding methods have to be called before AssembleMacauley()!
   
   */ 
-  virtual void AssembleMacauley(bool& localisincontact, bool& localactivesetchange);
+  virtual void AssembleRegNormalForces(bool& localisincontact, bool& localactivesetchange);
   
+  /*!
+  \brief Assemble geometry dependent, tangential lagrange multipliers 
+  and their derivatives in the penalty case
+  */ 
+  virtual void AssembleRegTangentForces();
+    
   /*!
   \brief Assemble lagrange multipliers into global z vector (penalty strategy)
   

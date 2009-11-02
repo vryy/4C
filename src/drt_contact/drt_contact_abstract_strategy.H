@@ -68,14 +68,16 @@ class AbstractStrategy
   public:
 
     //! @name Enums and Friends
-    enum QuantityType // types that can be called by StoreNodalQuantities()
+    enum QuantityType // can be called by StoreNodalQuantities() or StoreDMtoNodes
     {
       lmcurrent,
       lmold,
       activeold,
       lmupdate,
       lmuzawa,
-      jump
+      jump,
+      dm,
+      pentrac
     };
     //@}
 
@@ -264,13 +266,30 @@ class AbstractStrategy
     calls Evaluate() on all interfaces, which does a evaluation of
     all involved quantites at a nodal level plus
     the setup of all corresponding linearizations. 
-    These nodal quantites are then assembled to global  matrices and vectors respectively. 
+    It includes the nodal normal calculations, 
+    contact search, projection and overlap detection, integration of the 
+    Mortar terms D, M and of the weighted gap. Additionally, the linearizations     
+    of geometrical quantities (delta_n, delta_t, delta_D, delta_M) are calculated.
+    These nodal quantites are then assembled to global matrices and vectors respectively. 
     No setup of the global system is to be done here yet, so there is no need to pass
     in the effective stiffness K or the effective load vector f.
      
     */
-    virtual void EvaluateMortar() = 0;
+    void EvaluateMortar();
     
+    /*!
+    \brief Evaluate relative movement of contact bodies
+     
+    This is for evaluating the relative movement of contact bodies. This 
+    can either be done with regarding the different movement of material points
+    or regarding the change of mortar projection. The second possibility 
+    is definitely objective wheras the first possibility is objective 
+    only when the gap is zero.         
+    
+    */
+  
+    void EvaluateRelMov(RCP<Epetra_Vector> disi);
+
     /*!
     \brief Evaluate contact
      
@@ -287,31 +306,6 @@ class AbstractStrategy
      
     */
     virtual void EvaluateContact(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff) = 0;
-
-    /*!
-    \brief Evaluate relative movement of contact bodies
-     
-    This is for evaluating the relative movement of contact bodies. This 
-    can either be done with regarding the different movement of material points
-    or regarding the change of mortar projection. The second possibility 
-    is definitely objective wheras the first possibility is objective 
-    only when the gap is zero.         
-    
-    */
-    virtual void EvaluateRelMov(RCP<Epetra_Vector> disi) = 0;
-
-    /*!
-    \brief Evaluate frictional contact
-     
-    Note that this includes Perfect Stick, Tresca friction and Coulomb
-    friction, of course! But it also includes the mesh tying case, as
-    this is very similar to Perfect Stick from a conceptual point of view.
-     
-    \param kteff (in/out): effective stiffness matrix (without -> with contact)
-    \param feff (in/out): effective residual / force vector (without -> with contact)
-     
-    */
-    virtual void EvaluateFriction(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff) = 0;
 
     /*!
     \brief Recovery method
@@ -393,7 +387,7 @@ class AbstractStrategy
     current ones to the old ones.  
      
     */
-    void StoreDMToNodes();
+    void StoreDMToNodes(AbstractStrategy::QuantityType type);
 
     /*!
     \brief Update Mortar matrices D and M

@@ -64,7 +64,7 @@ AbstractStrategy(problemrowmap, params, interface, dim, comm, alphaf)
     Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(Params(),"FRICTION");
   
   if (ftype != INPAR::CONTACT::friction_none)
-    dserror("Frictional Contact not implemented as Penalty Strategy yet.");
+    cout << "Warning: Frictional contact not completely implemented as Penalty Strategy yet." << endl;
   
   // initialize constraint norm and initial penalty
   constrnorm_ = 0.0;
@@ -186,15 +186,28 @@ void CONTACT::PenaltyStrategy::Initialize()
 }
 
 /*----------------------------------------------------------------------*
- | evaluate nodal mortar quantities, assemble them globally   popp 06/09|
+ | evaluate contact (incl. friction) and create linear system popp 06/09|
  *----------------------------------------------------------------------*/
-void CONTACT::PenaltyStrategy::EvaluateMortar()
+void CONTACT::PenaltyStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
+                                               RCP<Epetra_Vector> feff)
 {
-  /**********************************************************************/
-  /* evaluate interfaces                                                */
-  /* (nodal normals, projections, Mortar integration, Mortar assembly)  */
-  /**********************************************************************/
+
+  // uncomment this if you want to do finite difference checks
+  // when enabled, kc1 and kc2 as part of kteff and fc as part of
+  // feff is stored separately so they can be checked on their own
   
+//#define FDCHECKS
+  
+  // FIXME: Currently only the old LINALG::Multiply method is used,
+  // because there are still problems with the transposed version of
+  // MLMultiply if a row has no entries! One day we should use ML...
+	
+	// in the beginning of this function, the regularized contact forces 
+	// in normal and tangential direction are evaluated from geometric 
+	// measures (gap and relative tangential velocity). Here, also active and 
+	// slip nodes are detected. Then, the insertion of the according stiffness
+	// blocks takes place.
+	
   bool isincontact = false;
   bool activesetchange = false;
   
@@ -203,33 +216,15 @@ void CONTACT::PenaltyStrategy::EvaluateMortar()
     bool localisincontact = false;
     bool localactivesetchange = false;
     
-    // evaluate D-, derivD- and M-, derivM-matrices, store them in nodes
-    interface_[i]->Evaluate();              
+    // evaluate lagrange multipliers (regularized forces) in normal direction
+    // and nodal derivz matrix values, store them in nodes
+    interface_[i]->AssembleRegNormalForces(localisincontact, localactivesetchange);
     
-#ifdef CONTACTFDMORTARD
-  // FD check of Mortar matrix D derivatives
-  if( IsInContact() )
-  {
-    cout << " -- CONTACTFDMORTARD -----------------------------------" << endl;
-    interface_[i]->FDCheckMortarDDeriv();
-    cout << " -- CONTACTFDMORTARD -----------------------------------" << endl;
-  }
-#endif // #ifdef CONTACTFDMORTARD
-#ifdef CONTACTFDMORTARM  
-  // FD check of Mortar matrix M derivatives
-
-  if( IsInContact() )
-  {
-      cout << " -- CONTACTFDMORTARM -----------------------------------" << endl;
-      interface_[i]->FDCheckMortarMDeriv();
-      cout << " -- CONTACTFDMORTARM -----------------------------------" << endl;
-  }
-#endif // #ifdef CONTACTFDMORTARM
-  
-    // evaluate lagrange multipliers and nodal derivz matrix values, store them in nodes
-    interface_[i]->AssembleMacauley(localisincontact, localactivesetchange);
-    // assemble D-, M-matrix and g-vector, store them globally
-    interface_[i]->AssembleDMG(*dmatrix_, *mmatrix_, *g_);
+    // evaluate lagrange multipliers (regularized forces) in tangential direction
+    INPAR::CONTACT::ContactFrictionType ftype =
+      Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(Params(),"FRICTION");
+    if(ftype==INPAR::CONTACT::friction_coulomb )  
+      interface_[i]->AssembleRegTangentForces();
     
     isincontact = isincontact || localisincontact;
     activesetchange = activesetchange || localactivesetchange;
@@ -237,6 +232,10 @@ void CONTACT::PenaltyStrategy::EvaluateMortar()
 #ifdef CONTACTFDPENALTYDERIVZ
   // check derivatives of lagrange multipliers
 
+  if(ftype==INPAR::CONTACT::friction_coulomb )  
+    dserror("Error in PenaltyStrategy::EvaluateContact: FD Check not yet"
+    		    " implemented for friction");
+    
   if( IsInContact() )
   {
     cout << "-- CONTACTFDDERIVZ --------------------" << endl;
@@ -246,10 +245,6 @@ void CONTACT::PenaltyStrategy::EvaluateMortar()
 #endif
   }
 
-  // FillComplete() global Mortar matrices
-  dmatrix_->Complete();
-  mmatrix_->Complete(*gmdofrowmap_, *gsdofrowmap_);
-  
   // broadcast contact status & active set change
   int globalcontact, globalchange = 0;
   int localcontact = isincontact;
@@ -280,34 +275,6 @@ void CONTACT::PenaltyStrategy::EvaluateMortar()
     gactivenodes_ = LINALG::MergeMap(gactivenodes_,interface_[i]->ActiveNodes(),false);
   }
   
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | evaluate relative movement of contact bodies               popp 06/09|
- *----------------------------------------------------------------------*/
-void CONTACT::PenaltyStrategy::EvaluateRelMov(RCP<Epetra_Vector> disi)
-{
-  dserror("Frictional Contact not implemented as Penalty Strategy yet.");
-}
-
-/*----------------------------------------------------------------------*
- | evaluate the contact and create linear system              popp 06/09|
- *----------------------------------------------------------------------*/
-void CONTACT::PenaltyStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
-                                               RCP<Epetra_Vector> feff)
-{
-
-  // uncomment this if you want to do finite difference checks
-  // when enabled, kc1 and kc2 as part of kteff and fc as part of
-  // feff is stored separately so they can be checked on their own
-  
-//#define FDCHECKS
-  
-  // FIXME: Currently only the old LINALG::Multiply method is used,
-  // because there are still problems with the transposed version of
-  // MLMultiply if a row has no entries! One day we should use ML...
-
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
   if( ! IsInContact() )
@@ -532,16 +499,6 @@ void CONTACT::PenaltyStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
   
 #endif  
 
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | evaluate frictional contact and create linear system       popp 06/09|
- *----------------------------------------------------------------------*/
-void CONTACT::PenaltyStrategy::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
-                                                RCP<Epetra_Vector> feff)
-{
-  dserror("Frictional Contact not implemented as Penalty Strategy yet.");
   return;
 }
 
