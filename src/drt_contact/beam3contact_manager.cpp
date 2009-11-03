@@ -27,14 +27,6 @@ discret_(discret)
   // initialize contact element pairs
   pairs_.resize(0);
   
-  // print welcome message
-  if (Discret().Comm().MyPID()==0)
-  {
-    cout << "\n*******************************";
-    cout << "\n* Welcome to 3D BEAM CONTACT! *";
-    cout << "\n*******************************\n" << endl;
-  }
-
 #ifndef D_BEAM3
   dserror("ERROR: Beam3 contact manager called without D_BEAM3 activated");
 #endif

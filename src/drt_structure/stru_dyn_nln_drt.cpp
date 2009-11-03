@@ -28,6 +28,7 @@ Maintainer: Michael Gee
 #include "strugenalpha.H"
 #include "strudyn_direct.H"
 #include "../drt_contact/contactstrugenalpha.H"
+#include "../drt_contact/beam3contactstrugenalpha.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -289,8 +290,10 @@ void dyn_nlnstructural_drt()
       }
 
       // detect if contact is present
-      // note that beam contact will be treated seperately, thus contact=false in this case
+      // note that beam contact will be treated seperately, thus contact = false in this case
+      // but instead beamcontact = true
       bool contact = false;
+      bool beamcontact = false;
       switch (Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(scontact,"CONTACT"))
       {
         case INPAR::CONTACT::contact_none:
@@ -307,6 +310,7 @@ void dyn_nlnstructural_drt()
           break;
         case INPAR::CONTACT::contact_beams:
           contact = false;
+          beamcontact = true;
           break;
         default:
           dserror("Cannot cope with choice of contact type");
@@ -334,12 +338,14 @@ void dyn_nlnstructural_drt()
       // create the time integrator
       bool inv_analysis = genalphaparams.get("inv_analysis",false);
       RCP<StruGenAlpha> tintegrator;
-      if (!contact && !inv_analysis && !thermalbath)
+      if (!contact && !beamcontact && !inv_analysis && !thermalbath)
         tintegrator = rcp(new StruGenAlpha(genalphaparams,*actdis,solver,output));
       else
       {
         if (contact)
           tintegrator = rcp(new CONTACT::ContactStruGenAlpha(genalphaparams,*actdis,solver,output));
+        if (beamcontact)
+          tintegrator = rcp(new CONTACT::Beam3ContactStruGenAlpha(genalphaparams,*actdis,solver,output));
         if (inv_analysis)
           dserror("Inverse analysis moved ahead to STI");
         if (thermalbath)
