@@ -64,7 +64,7 @@ Maintainer: Mahmoud Ismail
  |    (2) Check where the boundary conditions are connected to the      |
  |        inlet or the outlet of an artery element. This is easily done |
  |        by checking whether the design node of an element is locally  |
- |        Node[0] (i.e. inlet) or Node[1] (i.e. outlet).                |
+ |        has and in/outlet condition flag as "inlet" or "outlet"       |
  |                                                                      |
  |    (3) Group all the conditions having the same ID number            |
  |                                                                      |
@@ -84,140 +84,149 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(RefCountPtr<DRT::Discretizati
 {
 
   //----------------------------------------------------------------------
-  // (1) Get the junction boundary conditions
+  // Exit if the function accessed by a non-master processor
   //----------------------------------------------------------------------
-
-  vector<DRT::Condition*> myConditions;
-  discret_->GetCondition("ArtJunctionCond",myConditions);
-  int numofcond = myConditions.size();
-
-  if(numofcond==1)
-  {
-    dserror("An arterial junction is supposed to have at least two nodes!");
-  }
-  else if(numofcond>1) // if there is atleast two arteries connected to each other
+  if (discret_->Comm().MyPID()==0)
   {
     //----------------------------------------------------------------------
-    // (2) check whether the condition is connected to an inlet(-1) or
-    //     to an outlet(1)
+    // (1) Get the junction boundary conditions
     //----------------------------------------------------------------------
 
-    vector<int> IOart(numofcond);
-    for(int i =0; i<numofcond; i++)
+    vector<DRT::Condition*> myConditions;
+    discret_->GetCondition("ArtJunctionCond",myConditions);
+    int numofcond = myConditions.size();
+
+    if(numofcond==1)
     {
-      // get the node number connected to the condition
-      const vector<int> * nodes = myConditions[i]->Nodes();
-
-      // The junction condition must be connected to one and only one node
-      if(nodes->size()!=1)
-      dserror("Artery Connection BC should have only one node connected to it!");
-
-      // Get the elements connected to the node
-      DRT::Node * nd = discret_->lColNode((*nodes)[0]);
-      DRT::Element** Elems = nd->Elements();
-
-      // find whether the nodes is at the inlet of the outlet of the element
-      if(nd->Id() == Elems[0][0].Nodes()[0]->Id())
-        IOart[i] = -1;
-      else
-        IOart[i] = 1;
+      dserror("An arterial junction is supposed to have at least two nodes!");
     }
-
-    //----------------------------------------------------------------------
-    // (3) Group all of the conditions that belong to the same junction
-    //----------------------------------------------------------------------
-
-    DRT::Condition * cond_i;
-
-    //fist, sort the condition list according to there IDs
-    //In this case the bubble sort algorithm is used
-    int IO_i;
-    for(int i=myConditions.size(); i>1; i--)
+    else if(numofcond>1) // if there is atleast two arteries connected to each other
     {
-      for(int j = 1; j< i; j++)
+      //----------------------------------------------------------------------
+      // (2) check whether the condition is connected to an inlet(-1) or
+      //     to an outlet(1)
+      //----------------------------------------------------------------------
+      
+      vector<int> IOart(numofcond);
+      
+      for(int i =0; i<numofcond; i++)
       {
-        // if Id(j-1) > Id(j) then swap the two values
-        if(myConditions[j-1]->GetInt("ConditionID")>myConditions[j]->GetInt("ConditionID"))
+        // get the node number connected to the condition
+        const vector<int> * nodes = myConditions[i]->Nodes();
+        
+        // The junction condition must be connected to one and only one node
+        if(nodes->size()!=1)
+          dserror("Artery Connection BC should have only one node connected to it!");
+
+        // Get the actual node connected to the condition
+        DRT::Node * nd = discret_->lColNode((*nodes)[0]);        
+
+        // find whether the nodes is at the inlet or at the outlet of the element
+        string terminalType = *(nd->GetCondition("ArtInOutCond")->Get<string>("terminaltype"));
+        if(terminalType == "inlet")
+          IOart[i] = -1;
+        else if (terminalType == "outlet")
+          IOart[i] = 1;
+        else
+          dserror("Something is severely wrong! In/Out terminal condition should be either \"outlet\" or \"inlet\"");
+      }
+
+      //----------------------------------------------------------------------
+      // (3) Group all of the conditions that belong to the same junction
+      //----------------------------------------------------------------------
+      
+      DRT::Condition * cond_i;
+      
+      //fist, sort the condition list according to there IDs
+      //In this case the bubble sort algorithm is used
+      int IO_i;
+      for(int i=myConditions.size(); i>1; i--)
+      {
+        for(int j = 1; j< i; j++)
         {
-          cond_i = myConditions[j];
-          IO_i   = IOart[j];
-          myConditions[j] = myConditions[j-1];
-          IOart[j]        = IOart[j-1];
-          myConditions[j-1] = cond_i;
-          IOart[j-1]        = IO_i;
+          // if Id(j-1) > Id(j) then swap the two values
+          if(myConditions[j-1]->GetInt("ConditionID")>myConditions[j]->GetInt("ConditionID"))
+          {
+            cond_i = myConditions[j];
+            IO_i   = IOart[j];
+            myConditions[j] = myConditions[j-1];
+            IOart[j]        = IOart[j-1];
+            myConditions[j-1] = cond_i;
+            IOart[j-1]        = IO_i;
+          }
+          cond_i = myConditions[i];
         }
-        cond_i = myConditions[i];
       }
-    }
-
-    // second, group all the similar conditions in one vector
-    vector<vector<DRT::Condition*> > SortedConds;
-    vector<DRT::Condition *> grouped_cond;
-
-    vector<vector<int> > SortedIOarts;
-    vector<int> grouped_IO;
-
-    for(unsigned int i=0; i<myConditions.size();)
-    {
-      do
+      
+      // second, group all the similar conditions in one vector
+      vector<vector<DRT::Condition*> > SortedConds;
+      vector<DRT::Condition *> grouped_cond;
+      
+      vector<vector<int> > SortedIOarts;
+      vector<int> grouped_IO;
+      
+      for(unsigned int i=0; i<myConditions.size();)
       {
-        grouped_IO.push_back(IOart[i]);
-        grouped_cond.push_back(myConditions[i++]);
-
-        if(i==myConditions.size())
-        break;
+        do
+        {
+          grouped_IO.push_back(IOart[i]);
+          grouped_cond.push_back(myConditions[i++]);
+          
+          if(i==myConditions.size())
+          break;
+        }
+        while(myConditions[i]->GetInt("ConditionID") == grouped_cond[0]->GetInt("ConditionID"));
+        
+        SortedConds.push_back(grouped_cond);
+        grouped_cond.erase(grouped_cond.begin(),grouped_cond.end());
+        
+        SortedIOarts.push_back(grouped_IO);
+        grouped_IO.erase(grouped_IO.begin(),grouped_IO.end());
       }
-      while(myConditions[i]->GetInt("ConditionID") == grouped_cond[0]->GetInt("ConditionID"));
-
-      SortedConds.push_back(grouped_cond);
-      grouped_cond.erase(grouped_cond.begin(),grouped_cond.end());
-
-      SortedIOarts.push_back(grouped_IO);
-      grouped_IO.erase(grouped_IO.begin(),grouped_IO.end());
-    }
-
-    // ---------------------------------------------------------------------
-    // (4) Create junction boundary conditions
-    // ---------------------------------------------------------------------
-    int condid;
-    RCP<map<const int, RCP<JunctionNodeParams> > >  nodalParams;
-    nodalParams = params.get<RCP<map<const int, RCP<JunctionNodeParams> > > >("Junctions Parameters");
-
-    for(unsigned int i=0; i<SortedConds.size(); i++)
-    {
-      // -------------------------------------------------------------------
-      // allocate the junction bc class members for every case
-      // -------------------------------------------------------------------
-      condid = SortedConds[i][0]->GetInt("ConditionID");
-
-      // -------------------------------------------------------------------
-      // sort junction BCs in map 
-      // -------------------------------------------------------------------
-      RCP<ArtJunctionBc> junbc = rcp(new ArtJunctionBc(discret_, output_, SortedConds[i], SortedIOarts[i],dta, condid, i) );    
-      ajunmap_.insert( make_pair( condid, junbc ) ).second;
-
-      // -------------------------------------------------------------------
-      // Creat the nodes' parameters (material prameters, geometric 
-      // parameters, n-1 values) in map, and export all the values so that
-      // elements could access them.
-      // Finally check wheather a node has multiple BC, which is not allowed 
-      // -------------------------------------------------------------------
-      bool inserted;
-      // create an empty map associated to the RCP nodalParams_
-      //      nodalParams = rcp(new map<const int, RCP<JunctionNodeParams> >());
-
-      for (unsigned int j=0 ; j< SortedConds[i].size(); j++)
+      
+      // ---------------------------------------------------------------------
+      // (4) Create junction boundary conditions
+      // ---------------------------------------------------------------------
+      int condid;
+      RCP<map<const int, RCP<JunctionNodeParams> > >  nodalParams;
+      nodalParams = params.get<RCP<map<const int, RCP<JunctionNodeParams> > > >("Junctions Parameters");
+      
+      for(unsigned int i=0; i<SortedConds.size(); i++)
       {
-        const vector<int> * nodes = SortedConds[i][j]->Nodes();
-        RCP<JunctionNodeParams> nodeparams = rcp(new JunctionNodeParams);
-        inserted = nodalParams->insert( make_pair( (*nodes)[0], nodeparams) ).second;
-        if(!inserted)
-           dserror("Node %d has more than one condition", (*nodes)[0]+1);
+        // -------------------------------------------------------------------
+        // allocate the junction bc class members for every case
+        // -------------------------------------------------------------------
+        condid = SortedConds[i][0]->GetInt("ConditionID");
+        
+        // -------------------------------------------------------------------
+        // sort junction BCs in map 
+        // -------------------------------------------------------------------
+        RCP<ArtJunctionBc> junbc = rcp(new ArtJunctionBc(discret_, output_, SortedConds[i], SortedIOarts[i],dta, condid, i) );    
+        ajunmap_.insert( make_pair( condid, junbc ) ).second;
+
+        // -------------------------------------------------------------------
+        // Creat the nodes' parameters (material prameters, geometric 
+        // parameters, n-1 values) in map, and export all the values so that
+        // elements could access them.
+        // Finally check wheather a node has multiple BC, which is not allowed 
+        // -------------------------------------------------------------------
+        bool inserted;
+        // create an empty map associated to the RCP nodalParams_
+        //      nodalParams = rcp(new map<const int, RCP<JunctionNodeParams> >());
+        
+        for (unsigned int j=0 ; j< SortedConds[i].size(); j++)
+        {
+          const vector<int> * nodes = SortedConds[i][j]->Nodes();
+          RCP<JunctionNodeParams> nodeparams = rcp(new JunctionNodeParams);
+          inserted = nodalParams->insert( make_pair( (*nodes)[0], nodeparams) ).second;
+          if(!inserted)
+            dserror("Node %d has more than one condition", (*nodes)[0]+1);
+        }
+        
       }
-
-    }
-
-  }// end if there is a connection
+      
+    }// end if there is a connection
+  }
 }
 
 
@@ -247,6 +256,12 @@ ART::UTILS::ArtJunctionWrapper::~ArtJunctionWrapper()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 int ART::UTILS::ArtJunctionWrapper::Solve(ParameterList & params)
 {
+  //----------------------------------------------------------------------
+  // Exit if the function accessed by a non-master processor
+  //----------------------------------------------------------------------
+  if (discret_->Comm().MyPID()!=0)
+    return 0;
+
   map<const int, RCP<class ArtJunctionBc> >::iterator mapiter;
 
   for (mapiter = ajunmap_.begin(); mapiter != ajunmap_.end(); mapiter++ )

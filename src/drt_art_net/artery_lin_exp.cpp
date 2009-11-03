@@ -836,114 +836,98 @@ bool  DRT::ELEMENTS::ArteryLinExp<distype>::SolveRiemann(
     dserror("CFL number at element %d is %f",ele->Id(),sqrt(3.0)/3.0 * lambda*dt/L);
   }
 
-  // Check whether node 1 is an inlet node of the artery (i.e has a condition)
-  if(ele->Nodes()[0]->GetCondition("ArtJunctionCond")||ele->Nodes()[0]->GetCondition("ArtPrescribedCond"))
+  // Check whether node 0 or node 1 are described as inlet or outlet of an artery
+  // IO_BC_HERE
+#if 0
+  if(! ele->Nodes()[0]->GetCondition("ArtInOutCond") && ! ele->Nodes()[0]->GetCondition("ArtInOutCond"))
+    return BCnodes;    
+  else if (ele->Nodes()[0]->GetCondition("ArtInOutCond") && ele->Nodes()[0]->GetCondition("ArtInOutCond"))
   {
+    const DRT::Condition *cond1 = ele->Nodes()[0]->GetCondition("ArtInOutCond");
+    const DRT::Condition *cond2 = ele->Nodes()[1]->GetCondition("ArtInOutCond");
+    if (*(cond1->Get<string>("terminaltype")) == *(cond2->Get<string>("terminaltype")))
+      dserror ("Element has two nodes described with a similar Terminal type: %s",cond1->Get<string>("terminaltype"));
+  }
+  else
+  {
+    // proceed with solving the Riemann problem
+  }
+#endif
 
-    // sound speed at node 1 = sqrt(beta/(2*Ao*rho)) and Lambda2 = Q/A - c
-    const double c2      = sqrt(sqrt(PI)*young_(0)*th_(0)/(1.0-pow(nue,2))*sqrt(earean(0))/(2.0*area0_(0)*dens));
-    const double lambda2 = eqn(0)/earean(0) - c2;
-    const double N1      = (L + dt*lambda2)/L;
-    const double N2      = (  - dt*lambda2)/L;
-    const double A_l2    = N1*earean(0) + N2*earean(1);
-    const double beta_l2 = sqrt(PI)*(young_(0)*N1 + young_(1)*N2)*(th_(0)*N1 + th_(1)*N2)/(1.0-pow(nue,2));
-    const double Q_l2    = N1*eqn(0)    + N2*eqn(1);
-    const double Ao_l2   = N1*area0_(0) + N2*area0_(1);
-    const double c_l2    = sqrt(beta_l2*sqrt(A_l2)/(2.0*Ao_l2*dens));
-    
+  // Solve Riemann problem at the terminals
+  // loop over the terminal nodes
+  for (int i = 0; i<2; i++)
+  {
+    if(ele->Nodes()[i]->GetCondition("ArtInOutCond"))
+    {
+      double TermIO  = 0.0;
+      // Get the in/out terminal condition
+      string TerminalType = *(ele->Nodes()[i]->GetCondition("ArtInOutCond")->Get<string>("terminaltype"));
+      if(TerminalType=="inlet")
+        TermIO = -1.0;
+      else if (TerminalType=="outlet")
+        TermIO = 1.0;
+      else
+        dserror("Something is severely wrong! In/Out terminal condition should be either \"outlet\" or \"inlet\"");
+
+      // sound speed at node 1 = sqrt(beta/(2*Ao*rho)) and Lambda2 = Q/A - c
+      const double c      = sqrt(sqrt(PI)*young_(i)*th_(i)/(1.0-pow(nue,2))*sqrt(earean(i))/(2.0*area0_(i)*dens));
+      const double lambda = eqn(i)/earean(i) + TermIO*c;
+      const double N1     = (0.5*(-TermIO + 1.0)*L + dt*lambda)/L;
+      const double N2     = (0.5*( TermIO + 1.0)*L - dt*lambda)/L;
+      const double A_l    = N1*earean(0) + N2*earean(1);
+      const double beta_l = sqrt(PI)*(young_(0)*N1 + young_(1)*N2)*(th_(0)*N1 + th_(1)*N2)/(1.0-pow(nue,2));
+      const double Q_l    = N1*eqn(0)    + N2*eqn(1);
+      const double Ao_l   = N1*area0_(0) + N2*area0_(1);
+      const double c_l    = sqrt(beta_l*sqrt(A_l)/(2.0*Ao_l*dens));
 
     // defining W2n at dt*lambda2
-    const double W2n_l2  =  Q_l2/A_l2 - 4.0*c_l2;
-    const double W2on_l2 = -4.0*sqrt(beta_l2*sqrt(Ao_l2)/(2.0*Ao_l2*dens));
-    const double co1     = +sqrt(sqrt(PI)*young_(0)*th_(0)/(1.0-pow(nue,2))*sqrt(area0_(0))/(2.0*area0_(0)*dens));
+    const double Wn_l  =  Q_l/A_l + TermIO*4.0*c_l;
+    const double Won_l =  TermIO*4.0*sqrt(beta_l*sqrt(Ao_l)/(2.0*Ao_l*dens));
+    const double co    =  sqrt(sqrt(PI)*young_(i)*th_(i)/(1.0-pow(nue,2))*sqrt(area0_(i))/(2.0*area0_(i)*dens));
 
-    double Wb1np  = W2n_l2 - W2on_l2 -4.0*co1;
+    double Wnp  = Wn_l - Won_l +TermIO*4.0*co;
+
 
     // -----------------------------------------------------------------------------
     // Modify the global backkward characteristics speeds vector
     // -----------------------------------------------------------------------------
     int myrank  = discretization.Comm().MyPID();
-    if(myrank == ele->Nodes()[0]->Owner())
+    if(myrank == ele->Nodes()[i]->Owner())
     {
-      int    gid = ele->Nodes()[0]->Id();
-      double val = Wb1np;
-      Wbnp->ReplaceGlobalValues(1,&val,&gid);
+      int    gid = ele->Nodes()[i]->Id();
+      double val = Wnp;
+      if(TermIO == -1.0)
+        Wbnp->ReplaceGlobalValues(1,&val,&gid);
+      else if (TermIO == 1.0)
+        Wfnp->ReplaceGlobalValues(1,&val,&gid);
     }
 
     // -----------------------------------------------------------------------------
     // Update the information needed for solving the junctions
     // -----------------------------------------------------------------------------
-    if(ele->Nodes()[0]->GetCondition("ArtJunctionCond"))
+    if(ele->Nodes()[i]->GetCondition("ArtJunctionCond"))
     {
       // Update the characteristic wave speed
       RCP<std::map<const int, RCP<ART::UTILS::JunctionNodeParams> > > junc_nodal_vals =
         params.get<RCP<std::map<const int, RCP<ART::UTILS::JunctionNodeParams> > > >("Junctions Parameters");
-
-      (*junc_nodal_vals)[ele->Nodes()[0]->Id()]->W_     = (*Wbnp)[ele->Nodes()[0]->Id()];
-      (*junc_nodal_vals)[ele->Nodes()[0]->Id()]->A_     = earean(0);
-      (*junc_nodal_vals)[ele->Nodes()[0]->Id()]->Q_     = eqn(0);
-      (*junc_nodal_vals)[ele->Nodes()[0]->Id()]->Ao_    = area0_(0);
-      (*junc_nodal_vals)[ele->Nodes()[0]->Id()]->rho_   = dens;
-      (*junc_nodal_vals)[ele->Nodes()[0]->Id()]->Pext_  = pext_(0);
-      (*junc_nodal_vals)[ele->Nodes()[0]->Id()]->beta_  = sqrt(PI)*young_(0)*th_(0)/(1.0-pow(nue,2));
+      if(TermIO == -1.0)
+        (*junc_nodal_vals)[ele->Nodes()[i]->Id()]->W_     = (*Wbnp)[ele->Nodes()[i]->Id()];        
+      else if (TermIO == 1.0)
+        (*junc_nodal_vals)[ele->Nodes()[i]->Id()]->W_     = (*Wfnp)[ele->Nodes()[i]->Id()];
+      (*junc_nodal_vals)[ele->Nodes()[i]->Id()]->A_     = earean(i);
+      (*junc_nodal_vals)[ele->Nodes()[i]->Id()]->Q_     = eqn(i);
+      (*junc_nodal_vals)[ele->Nodes()[i]->Id()]->Ao_    = area0_(i);
+      (*junc_nodal_vals)[ele->Nodes()[i]->Id()]->rho_   = dens;
+      (*junc_nodal_vals)[ele->Nodes()[i]->Id()]->Pext_  = pext_(i);
+      (*junc_nodal_vals)[ele->Nodes()[i]->Id()]->beta_  = sqrt(PI)*young_(i)*th_(i)/(1.0-pow(nue,2));
     }
 
     BCnodes = true;
+      
+    }
   }
 
-  // Check whether node 2 is an outlet node of the artery (i.e has a condition)
-  if(ele->Nodes()[1]->GetCondition("ArtRfCond") || ele->Nodes()[1]->GetCondition("ArtJunctionCond") || ele->Nodes()[1]->GetCondition("ArtPrescribedCond") ||  ele->Nodes()[1]->GetCondition("ArtWkCond"))
-  {
-    // sound speed at node 1 = sqrt(beta/(2*Ao*rho)) and Lambda1 = Q/A + c
-    const double c1      = sqrt(sqrt(PI)*young_(1)*th_(1)/(1.0-pow(nue,2))*sqrt(earean(1))/(2.0*area0_(1)*dens));
-    const double lambda1 = eqn(1)/earean(1) + c1;
-    const double N1      = (    dt*lambda1)/L;
-    const double N2      = (L - dt*lambda1)/L;
-    const double A_l1    = N1*earean(0) + N2*earean(1);
-    const double beta_l1 = sqrt(PI)*(young_(0)*N1 + young_(1)*N2)*(th_(0)*N1 + th_(1)*N2)/(1.0-pow(nue,2));
-    const double Q_l1    = N1*eqn(0)    + N2*eqn(1);
-    const double Ao_l1   = N1*area0_(0) + N2*area0_(1);
-    const double c_l1    = sqrt(beta_l1*sqrt(A_l1)/(2.0*Ao_l1*dens));
-
-    //defining W2n at dt*lambda2
-    const double W1n_l1  =  Q_l1/A_l1 + 4.0*c_l1;
-    const double W1on_l1 =  4.0*sqrt(beta_l1*sqrt(Ao_l1)/(2.0*Ao_l1*dens));
-    const double co1     =  sqrt(sqrt(PI)*young_(1)*th_(1)/(1.0-pow(nue,2))*sqrt(area0_(1))/(2.0*area0_(1)*dens));;
-
-    const double Wf2np  = W1n_l1 - W1on_l1 +4.0*co1;
- 
-    // -----------------------------------------------------------------------------
-    // Modify the global forkward characteristics speeds vector
-    // -----------------------------------------------------------------------------
-    int myrank  = discretization.Comm().MyPID();
-    if(myrank == ele->Nodes()[1]->Owner())
-    {
-      int    gid = ele->Nodes()[1]->Id();
-      double val = Wf2np;
-      Wfnp->ReplaceGlobalValues(1,&val,&gid);
-    }
- 
-    // -----------------------------------------------------------------------------
-    // Update the information needed for solving the junctions
-    // -----------------------------------------------------------------------------
-    if(ele->Nodes()[1]->GetCondition("ArtJunctionCond"))
-    {
-      // Update the characteristic wave speed
-       RCP<map<const int, RCP<ART::UTILS::JunctionNodeParams> > > junc_nodal_vals;
-      junc_nodal_vals = params.get<RCP<map<const int, RCP<ART::UTILS::JunctionNodeParams> > > >("Junctions Parameters");
-
-      (*junc_nodal_vals)[ele->Nodes()[1]->Id()]->W_     = (*Wfnp)[ele->Nodes()[1]->Id()];
-      (*junc_nodal_vals)[ele->Nodes()[1]->Id()]->A_     = earean(1);
-      (*junc_nodal_vals)[ele->Nodes()[1]->Id()]->Q_     = eqn(1);
-      (*junc_nodal_vals)[ele->Nodes()[1]->Id()]->Ao_    = area0_(1);
-      (*junc_nodal_vals)[ele->Nodes()[1]->Id()]->rho_   = dens;
-      (*junc_nodal_vals)[ele->Nodes()[1]->Id()]->Pext_  = pext_(1);
-      (*junc_nodal_vals)[ele->Nodes()[1]->Id()]->beta_  = sqrt(PI)*young_(1)*th_(1)/(1.0-pow(nue,2));
-    }
-
-    BCnodes = true;
-  }
- 
   return BCnodes;
 }
 
@@ -1049,155 +1033,141 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
   // ---------------------------------------------------------------------------------
   // Resolve the BC at the inlet and outlet
   // ---------------------------------------------------------------------------------
-  if(ele->Nodes()[0]->GetCondition("ArtPrescribedCond") || ele->Nodes()[1]->GetCondition("ArtPrescribedCond") || ele->Nodes()[1]->GetCondition("ArtRfCond") || ele->Nodes()[1]->GetCondition("ArtWkCond"))
+  // IO_BC_HERE
+  for (int i =0; i<2; i++)
   {
-
-    RefCountPtr<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
-    RefCountPtr<Epetra_Vector> dbctog = params.get<RCP<Epetra_Vector> >("dbctog");
-
-  if (bcval==null||dbctog==null)
-    dserror("Cannot get state vectors 'bcval' and 'dbctog'");
-
-
-    const DRT::Condition *condition = ele->Nodes()[0]->GetCondition("ArtPrescribedCond");
-    const double beta = sqrt(PI)*E1*t1/(1.0-nue*nue);
-    double Wf1np, Wb1;
-    
-    //start with the inlet boundary condition
-    if(condition)
+    if(ele->Nodes()[i]->GetCondition("ArtInOutCond"))
     {
+      double TermIO  = 0.0;
+      // Get the in/out terminal condition
+      string TerminalType = *(ele->Nodes()[i]->GetCondition("ArtInOutCond")->Get<string>("terminaltype"));
+      if(TerminalType=="inlet")
+        TermIO = -1.0;
+      else if (TerminalType=="outlet")
+        TermIO = 1.0;
+      else
+        dserror("Something is severely wrong! In/Out terminal condition should be either \"outlet\" or \"inlet\"");
+
+      RefCountPtr<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
+      RefCountPtr<Epetra_Vector> dbctog = params.get<RCP<Epetra_Vector> >("dbctog");
+
+      if (bcval==null||dbctog==null)
+        dserror("Cannot get state vectors 'bcval' and 'dbctog'");
+
+
+      th_(0,0)    = t1;
+      th_(1,0)    = t2;
+      young_(0,0) = E1;
+      young_(1,0) = E2;
+      const double beta = sqrt(PI)*young_(i)*th_(i)/(1.0-nue*nue);
+      double Wf, Wb;
+
       // -----------------------------------------------------------------------------
       // fill the required parameters to solve the inlet BC
       // -----------------------------------------------------------------------------
       ParameterList Cparams;
-      Cparams.set<int>   ("in out flag",-1);
+      Cparams.set<int>   ("in out flag",TermIO);
       Cparams.set<double>("total time", params.get<double>("total time"));
       Cparams.set<double>("artery beta",beta);
-      Cparams.set<double>("artery area",Ao1);
+      Cparams.set<double>("artery area",area0_(i));
       Cparams.set<double>("blood density",dens);
-      Cparams.set<double>("backward characteristic wave speed",(*Wbnp)[ele->Nodes()[0]->Id()]);
-      Cparams.set<double>("external pressure",pext1);
+      if (TermIO == -1)
+         Cparams.set<double>("backward characteristic wave speed",(*Wbnp)[ele->Nodes()[i]->Id()]);
+      else
+         Cparams.set<double>("forward characteristic wave speed",(*Wfnp)[ele->Nodes()[i]->Id()]);
+      Cparams.set<double>("external pressure",pext_(i));
 
       // -----------------------------------------------------------------------------
-      // Solve the BC node for previous parameters
+      // Solve any possible prescribed boundary condition
       // -----------------------------------------------------------------------------
-      ART::UTILS::SolvePrescribedTerminalBC(rcp(&discretization,false), condition, Cparams);
-
-      Wf1np = Cparams.get<double>("forward characteristic wave speed");
-      Wb1   = Cparams.get<double>("backward characteristic wave speed");
-
-      // -----------------------------------------------------------------------------
-      // Modify the global forward characteristics speeds vector
-      // -----------------------------------------------------------------------------
-      int myrank  = discretization.Comm().MyPID();
-      if(myrank == ele->Nodes()[1]->Owner())
+      if(ele->Nodes()[i]->GetCondition("ArtPrescribedCond"))
       {
-        int    gid  = ele->Nodes()[0]->Id();
-        double val2 = Wf1np;
-        Wfnp->ReplaceGlobalValues(1,&val2,&gid);
-      }
-
-
-      // calculating A at node 0
-      (*bcval )[lm[0]] = pow(2.0*dens*Ao1/beta,2)*pow((Wf1np - Wb1)/8.0,4);
-      (*dbctog)[lm[0]] = 1;
-      // calculating Q at node 0
-      (*bcval )[lm[1]] = ((*bcval )[lm[0]])*(Wf1np + Wb1)/2.0;
-      (*dbctog)[lm[1]] = 1;
-
-    } //End of Node0 condition
-
-
-    //start with the outlet boundary condition
-    if(ele->Nodes()[1]->GetCondition("ArtRfCond")|| ele->Nodes()[1]->GetCondition("ArtPrescribedCond") || ele->Nodes()[1]->GetCondition("ArtWkCond"))
-    {
-
-      const double beta = sqrt(PI)*E2*t2/(1.0-pow(nue,2));
-      // -----------------------------------------------------------------------------
-      // fill the required parameters to solve the inlet BC
-      // -----------------------------------------------------------------------------
-      ParameterList Cparams;
-      Cparams.set<double>("total time", params.get<double>("total time"));
-      Cparams.set<double>("artery beta",beta);
-      Cparams.set<double>("artery area",Ao2);
-      Cparams.set<double>("blood density",dens);
-      Cparams.set<double>("forward characteristic wave speed",(*Wfnp)[ele->Nodes()[1]->Id()]);
-      Cparams.set<int>   ("in out flag",1);
-
-      // -----------------------------------------------------------------------------
-      // Solve the BC node for previous parameters
-      // -----------------------------------------------------------------------------
-      condition = ele->Nodes()[1]->GetCondition("ArtRfCond");
-      if(condition)
-        ART::UTILS::SolveReflectiveTerminal(rcp(&discretization,false), condition, Cparams);
-
-      condition = ele->Nodes()[1]->GetCondition("ArtPrescribedCond");
-      if(condition)      
+        const DRT::Condition *condition = ele->Nodes()[i]->GetCondition("ArtPrescribedCond");
         ART::UTILS::SolvePrescribedTerminalBC(rcp(&discretization,false), condition, Cparams);
-
-      condition = ele->Nodes()[1]->GetCondition("ArtWkCond");
-      if(condition)
-      {      
+      }
+      // -----------------------------------------------------------------------------
+      // Solve any possible reflection boundary condition
+      // -----------------------------------------------------------------------------
+      if(ele->Nodes()[i]->GetCondition("ArtRfCond"))
+      {
+        const DRT::Condition *condition = ele->Nodes()[i]->GetCondition("ArtRfCond");
+        ART::UTILS::SolveReflectiveTerminal(rcp(&discretization,false), condition, Cparams);
+      }
+      // -----------------------------------------------------------------------------
+      // Solve any possible windkessel boundary condition
+      // -----------------------------------------------------------------------------
+      if(ele->Nodes()[i]->GetCondition("ArtWkCond"))
+      {
+        const DRT::Condition *condition = ele->Nodes()[i]->GetCondition("ArtWkCond");
         Cparams.set<double>("time step size",dt);
-        Cparams.set<double>("external pressure",pext2);
-        Cparams.set<double>("terminal volumetric flow rate",qn_(1));
-        Cparams.set<double>("terminal cross-sectional area",an_(1));
-
+        Cparams.set<double>("external pressure",pext_(i));
+        Cparams.set<double>("terminal volumetric flow rate",qn_(i));
+        Cparams.set<double>("terminal cross-sectional area",an_(i));
         ART::UTILS::SolveExplWindkesselBC(rcp(&discretization,false), condition, Cparams);
       }
-
-
-      const double Wb2np   = Cparams.get<double>("backward characteristic wave speed");
-
       // -----------------------------------------------------------------------------
-      // Update the Dirichlet BC vector
+      // break the for loopIf the boundary condition is a junction, since it will be solved later
       // -----------------------------------------------------------------------------
-      (*Wbnp)[ele->Nodes()[1]->Id()] = Wb2np;
-      double Wf2np = (*Wfnp)[ele->Nodes()[1]->Id()];
-      // calculating A at node 1
-      (*bcval )[lm[2]] = pow(2.0*dens*Ao2/beta,2)*pow((Wf2np - Wb2np)/8.0,4);
-      (*dbctog)[lm[2]] = 1;
-      // calculating Q at node 1
-      (*bcval )[lm[3]] = ((*bcval )[lm[2]])*(Wf2np + Wb2np)/2.0;
-      (*dbctog)[lm[3]] = 1;
-    }
-  }
+      if(ele->Nodes()[i]->GetCondition("ArtJunctionCond")==NULL)
+      {
+        Wf = Cparams.get<double>("forward characteristic wave speed");
+        Wb = Cparams.get<double>("backward characteristic wave speed");
+        // -----------------------------------------------------------------------------
+        // Modify the global forward and backward characteristics speeds vector
+        // -----------------------------------------------------------------------------
+        int myrank  = discretization.Comm().MyPID();
+        if(myrank == ele->Nodes()[i]->Owner())
+        {
+          int    gid  = ele->Nodes()[i]->Id();
+          if (TermIO == -1.0)
+          {
+            double val1 = Wf;
+            Wfnp->ReplaceGlobalValues(1,&val1,&gid);
+          }
+          else
+          {
+            double val2 = Wb;
+            Wbnp->ReplaceGlobalValues(1,&val2,&gid);
+            Wf = (*Wfnp)[ele->Nodes()[i]->Id()];
+          }
+        }
+        
+        // calculating A at node i
+        (*bcval )[lm[2*i]  ] = pow(2.0*dens*area0_(i)/beta,2)*pow((Wf - Wb)/8.0,4);
+        (*dbctog)[lm[2*i]  ] = 1;
+        // calculating Q at node i
+        (*bcval )[lm[2*i+1]] = ((*bcval )[lm[2*i]])*(Wf + Wb)/2.0;
+        (*dbctog)[lm[2*i+1]] = 1;
+      }
+    } // End of node i has a condition
+  } //End of for loop
+
   // ---------------------------------------------------------------------------------
-  // Resolve the BC at the outlet
+  // Solve the any available junction boundary conditions
   // ---------------------------------------------------------------------------------   
-  else if(ele->Nodes()[0]->GetCondition("ArtJunctionCond") || ele->Nodes()[1]->GetCondition("ArtJunctionCond"))
+  for (int i =0; i<2; i++)
   {
-    RCP<map<const int, RCP<ART::UTILS::JunctionNodeParams> > > junc_nodal_vals;
-    junc_nodal_vals = params.get<RCP<map<const int, RCP<ART::UTILS::JunctionNodeParams> > > >("Junctions Parameters");
-
-    RefCountPtr<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
-    RefCountPtr<Epetra_Vector> dbctog = params.get<RCP<Epetra_Vector> >("dbctog");
-
-    // -------------------------------------------------------------------------------
-    // Update the Dirichlet BC vector
-    // -------------------------------------------------------------------------------
-    if(ele->Nodes()[0]->GetCondition("ArtJunctionCond"))
+    if(ele->Nodes()[i]->GetCondition("ArtJunctionCond"))
     {
-      const int Id = ele->Nodes()[0]->Id();
-      // set A at node 0
-      (*bcval )[lm[0]] = (*junc_nodal_vals)[Id]->A_;
-      (*dbctog)[lm[0]] = 1;
-      // set Q at node 0
-      (*bcval )[lm[1]] = (*junc_nodal_vals)[Id]->Q_;
-      (*dbctog)[lm[1]] = 1;
-    }
-    else
-    {
-      const int Id = ele->Nodes()[1]->Id();
-      // set A at node 1
-      (*bcval )[lm[2]] = (*junc_nodal_vals)[Id]->A_;
-      (*dbctog)[lm[2]] = 1;
-      // set Q at node 1
-      (*bcval )[lm[3]] = (*junc_nodal_vals)[Id]->Q_;
-      (*dbctog)[lm[3]] = 1;
+      RCP<map<const int, RCP<ART::UTILS::JunctionNodeParams> > > junc_nodal_vals;
+      junc_nodal_vals = params.get<RCP<map<const int, RCP<ART::UTILS::JunctionNodeParams> > > >("Junctions Parameters");
+
+      RefCountPtr<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
+      RefCountPtr<Epetra_Vector> dbctog = params.get<RCP<Epetra_Vector> >("dbctog");
+
+      // -------------------------------------------------------------------------------
+      // Update the Dirichlet BC vector
+      // -------------------------------------------------------------------------------
+      const int Id = ele->Nodes()[i]->Id();
+      // set A at node i
+      (*bcval )[lm[2*i  ]] = (*junc_nodal_vals)[Id]->A_;
+      (*dbctog)[lm[2*i  ]] = 1;
+      // set Q at node i
+      (*bcval )[lm[2*i+1]] = (*junc_nodal_vals)[Id]->Q_;
+      (*dbctog)[lm[2*i+1]] = 1;
+
     }
   }
- 
 }
 
 #endif

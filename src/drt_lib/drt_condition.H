@@ -158,7 +158,8 @@ public:
     ArtWkCond,
     StructAleCoupling,
     StructFluidSurfCoupling,
-    StructFluidVolCoupling
+    StructFluidVolCoupling,
+    ArtInOutletCond
   };
 
   /*!

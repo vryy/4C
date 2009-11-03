@@ -83,11 +83,22 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization> actdi
   if (!discret_->Filled() || !actdis->HaveDofs()) discret_->FillComplete();
 
   // -------------------------------------------------------------------
+  // Force the reducesd 1d arterial network discretization to run on
+  // and only one cpu
+  // -------------------------------------------------------------------
+  // reduce the node row map into processor 0
+  const Epetra_Map noderowmap_1_proc = * LINALG::AllreduceEMap(*discret_->NodeRowMap(), 0);
+  // update the discetization by redistributing the new row map
+  discret_->Redistribute(noderowmap_1_proc,noderowmap_1_proc);
+
+  // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
   //                 local <-> global dof numbering
   // -------------------------------------------------------------------
   const Epetra_Map* dofrowmap  = discret_->DofRowMap();
+
+  const Epetra_Map* dofcolmap  = discret_->DofColMap();
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
@@ -139,7 +150,6 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization> actdi
 
   // right hand side vector and right hand side corrector
   rhs_     = LINALG::CreateVector(*dofrowmap,true);
-
   // create the junction boundary conditions
   ParameterList junparams;
 
@@ -148,6 +158,7 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization> actdi
   junparams.set<RCP<map<const int, RCP<ART::UTILS::JunctionNodeParams> > > >("Junctions Parameters",junc_nodal_vals_);
 
   artjun_ = rcp(new UTILS::ArtJunctionWrapper(discret_, output_, junparams, dta_) );
+
 
   // create the gnuplot export conditions
   artgnu_ = rcp(new ART::UTILS::ArtWriteGnuplotWrapper(discret_,junparams));
@@ -185,8 +196,8 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization> actdi
     }
     else
       localNode = 0;
-
   }
+
 
 
 #if 0
@@ -197,7 +208,6 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization> actdi
   cout<<"|**************************************************************************|"<<endl;
   cout<<*Wfnp_<<endl;
 #endif
-
 } // ArtNetExplicitTimeInt::ArtNetExplicitTimeInt
 
 

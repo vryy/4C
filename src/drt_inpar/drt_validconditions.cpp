@@ -1527,8 +1527,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     true)));
 
   art_wk_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("windkesselType", "RCR",
-    Teuchos::tuple<std::string>("R","RC", "RCR", "RCRL" "none"),
-    Teuchos::tuple<std::string>("R","RC", "RCR", "RCRL" "none"),
+    Teuchos::tuple<std::string>("R","RC", "RCR", "RCRL", "none"),
+    Teuchos::tuple<std::string>("R","RC", "RCR", "RCRL", "none"),
     true)));
 
   artwkcomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("val",5)));
@@ -1537,6 +1537,24 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     art_wk_bc->AddComponent(artwkcomponents[i]);
 
   condlist.push_back(art_wk_bc);
+
+  /*--------------------------------------------------------------------*/
+  // 1D artery in/out condition
+
+  Teuchos::RCP<ConditionDefinition> art_in_outlet_bc =
+    Teuchos::rcp(new ConditionDefinition("DESIGN NODE 1D ARTERY IN_OUTLET CONDITIONS",
+                                         "ArtInOutCond",
+                                         "Artery terminal in_outlet condition",
+                                         DRT::Condition::ArtInOutletCond,
+                                         true,
+                                         DRT::Condition::Point));
+
+  art_in_outlet_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("terminaltype", "inlet",
+    Teuchos::tuple<std::string>("inlet","outlet"),
+    Teuchos::tuple<std::string>("inlet","outlet"),
+    true)));
+
+  condlist.push_back(art_in_outlet_bc);
 
   return vc;
 

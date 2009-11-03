@@ -162,14 +162,15 @@ void DRT::Condition::Print(ostream& os) const
   else if (Type()==ImpulsRateThroughSurface_3D)   os << "Monitor impuls rate through a interface: ";
   else if (Type()==FluidNeumannInflow)            os << "Fluid Neumann inflow: ";
   else if (Type()==ElectrodeKinetics)             os << "ElectrodeKinetics boundary condition: ";
-  else if (Type()==ArtJunctionCond)             os << "Artery junction boundary condition";
-  else if (Type()==ArtWriteGnuplotCond)         os << "Artery write gnuplot format condition";
-  else if (Type()==ArtPrescribedCond)           os << "Artery prescribed boundary condition";
-  else if (Type()==ArtRfCond)                   os << "Artery reflective boundary condition";
-  else if (Type()==ArtWkCond)                   os << "Artery windkessel boundary condition";
-  else if (Type()==StructAleCoupling)           os << "Structure - ALE coupling condition";
-  else if (Type()==StructFluidSurfCoupling)     os << "Structure - Fluid surface coupling condition";
-  else if (Type()==StructFluidVolCoupling)      os << "Structure - Fluid volume coupling condition";
+  else if (Type()==ArtJunctionCond)              os << "Artery junction boundary condition";
+  else if (Type()==ArtWriteGnuplotCond)          os << "Artery write gnuplot format condition";
+  else if (Type()==ArtPrescribedCond)            os << "Artery prescribed boundary condition";
+  else if (Type()==ArtRfCond)                    os << "Artery reflective boundary condition";
+  else if (Type()==ArtWkCond)                    os << "Artery windkessel boundary condition";
+  else if (Type()==StructAleCoupling)            os << "Structure - ALE coupling condition";
+  else if (Type()==StructFluidSurfCoupling)      os << "Structure - Fluid surface coupling condition";
+  else if (Type()==StructFluidVolCoupling)       os << "Structure - Fluid volume coupling condition";
+  else if (Type()==ArtInOutletCond)              os << "Artery terminal in_outlet condition";
   else dserror("no output string for condition defined in DRT::Condition::Print");
 
   Container::Print(os);

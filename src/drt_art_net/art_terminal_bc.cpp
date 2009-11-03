@@ -450,7 +450,7 @@ void ART::UTILS::SolveExplWindkesselBC(RefCountPtr<DRT::Discretization> actdis,
       // Read in the wind kessel parameters
       // ---------------------------------------------------------------
       // define a terminal resistance
-      double R, Rf;
+      double R, Rf, Pout, dFdA;
       // read in the reflection value
       if ((*curve)[1]>=0)
       {
@@ -467,11 +467,50 @@ void ART::UTILS::SolveExplWindkesselBC(RefCountPtr<DRT::Discretization> actdis,
         dserror("terminal resistance must be greater or equal to zero\n");
       }
 
+      if ((*curve)[0]>=0)
+      {
+        curvefac = DRT::Problem::Instance()->Curve((*curve)[0]).f(time);
+        Pout = (*vals)[0]*curvefac;
+      }
+      else
+      {
+        Pout = (*vals)[0];
+      }
+
+#if 0
       // calculate the 
       Rf = (R - dens*co/Ao)/ (R + dens*co/Ao);
       // calculate the backward charachteristic speed
       const double Wo = 4.0*sqrt(beta/(2.0*dens*sqrt(Ao)));
       Wb = -Rf*(Wf - Wo) - Wo;
+#endif
+      // ---------------------------------------------------------------      
+      // Solve the nonlinear problem using Newton-Raphsn scheme
+      // ---------------------------------------------------------------
+
+      const double Wo = 4.0*sqrt(beta/(2.0*dens*sqrt(Ao)));
+      //  Calculate the residual
+      double F =  R*Wf*A - 4.0*R*sqrt(beta/(2.0*dens*Ao))*pow(A,5.0/4.0)
+                + beta/Ao*(sqrt(Ao) - sqrt(A)) + Pout - Pext;
+
+      // loop until convergence
+      int count = 0;
+      while (fabs(F/(R*Ao*Wo)) > 0.0000000001)
+      {
+        
+        dFdA = R*Wf - 5.0*R*sqrt(beta/(2.0*dens*Ao) * sqrt(A)) - 0.5*beta/(Ao *sqrt(A));
+        A   -= F/dFdA;
+        F =  R*Wf*A - 4.0*R*sqrt(beta/(2.0*dens*Ao))*pow(A,5.0/4.0)
+           + beta/Ao*(sqrt(Ao) - sqrt(A)) + Pout - Pext;
+
+        count++;
+        if (count > 40)
+          dserror("1 windkessel elemenet (resistive) boundary condition didn't converge!");
+      }
+
+      // finally find evaluate Wb
+      Wb = Wf - 8.0*sqrt(beta/(2.0*dens*Ao)*sqrt(A));
+
     }// if(wk_type == "R")
     else if (wk_type == "RC") // an RC circuit with a peripheral Pressure (Pout)
     {
@@ -491,7 +530,7 @@ void ART::UTILS::SolveExplWindkesselBC(RefCountPtr<DRT::Discretization> actdis,
       }
       else
       {
-        Pout = (*vals)[2];
+        Pout = (*vals)[0];
       }
       // read in the resistance value
       if ((*curve)[1]>=0)
