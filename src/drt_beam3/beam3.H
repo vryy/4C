@@ -10,8 +10,6 @@ Maintainer: Christian Cyron
             089 - 289-15264
 </pre>
 *----------------------------------------------------------------------*/
-// line in order to swith on and off by comment in defines.drt
-#ifdef D_BEAM3
 
 // administrative line in order to make a difference between BACI and Ccarat files
 #ifdef CCADISCRET
@@ -632,8 +630,5 @@ private:
 } // namespace DRT
 
 
-
-
 #endif  // #ifndef BEAM_H
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_BEAM3
