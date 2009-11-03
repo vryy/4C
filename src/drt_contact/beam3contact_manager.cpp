@@ -12,9 +12,6 @@ Maintainer: Alexander Popp, Christian Cyron
 *-----------------------------------------------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-//compile only if beam3 element is complied, too, as beam3 element required for member variables of this class
-#ifdef D_BEAM3
-
 #include "beam3contact_manager.H"
 #include "beam3contact.H"
 
@@ -34,6 +31,10 @@ discret_(discret)
     cout << "\n* Welcome to 3D BEAM CONTACT! *";
     cout << "\n*******************************\n" << endl;
   }
+
+#ifndef D_BEAM3
+  dserror("ERROR: Beam3 contact manager called without D_BEAM3 activated");
+#endif
   
   // print discretization
   //Print(cout);
@@ -77,5 +78,4 @@ int CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffc, Epetra_Vector
   return 0;
 }
 
-#endif  // #ifdef D_BEAM3
 #endif  // #ifdef CCADISCRET 
