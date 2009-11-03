@@ -11,10 +11,14 @@ Maintainer: Alexander Popp, Christian Cyron
 // administrative line in order to make a difference between BACI and Ccarat files
 #ifdef CCADISCRET
 
+//compile only if beam3 element is complied, too, as beam3 element required for member variables of this class
+#ifdef D_BEAM3
+
 //header file only included if not yet included!
 #ifndef BEAM3C_MANAGER_H
 #define BEAM3C_MANAGER_H
 
+#include "beam3contact.H"
 #include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
@@ -104,10 +108,14 @@ private:
   //! discretizaton
   const DRT::Discretization& discret_;
   
+  //! vector of contact pairs
+  vector<RCP<Beam3contact> > pairs_;
+  
   //@}
 
 }; // class Beam3cmanager
 } // namespace CONTACT
 
 #endif  // #ifndef BEAM3C_MANAGER_H
+#endif  // #ifdef D_BEAM3
 #endif  // #ifdef CCADISCRET 

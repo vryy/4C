@@ -11,6 +11,9 @@ Maintainer: Christian Cyron, Alexander Popp
 // administrative line in order to make a difference between BACI and Ccarat files
 #ifdef CCADISCRET
 
+//compile only if beam3 element is complied, too, as beam3 element required for member variables of this class
+#ifdef D_BEAM3
+
 //header file only included if not yet included!
 #ifndef BEAM3C_H
 #define BEAM3C_H
@@ -124,4 +127,5 @@ private:
 } // namespace CONTACT
 
 #endif  // #ifndef BEAM3C_H
+#endif  // #ifdef D_BEAM3
 #endif  // #ifdef CCADISCRET 

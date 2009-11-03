@@ -242,16 +242,6 @@ fsisurface_(NULL)
   vector<DRT::Condition*> locsysconditions(0);
   discret_.GetCondition("Locsys",locsysconditions);
   if (locsysconditions.size()) locsysmanager_ = rcp(new DRT::UTILS::LocsysManager(discret_));
-
-  // -------------------------------------------------------------------
-  // check whether we have beam contact and create beam3cmanager if so
-  // -------------------------------------------------------------------
-  // Check for beam contact
-  const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->StructuralContactParams();
-  if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(scontact,"CONTACT") == INPAR::CONTACT::contact_beams)
-  {
-    beam3cmanager_ = rcp(new CONTACT::Beam3cmanager(discret_));
-  }
     
   //-------------------------------------------- calculate external forces
   {

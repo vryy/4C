@@ -12,6 +12,9 @@ Maintainer: Alexander Popp, Christian Cyron
 *-----------------------------------------------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+//compile only if beam3 element is complied, too, as beam3 element required for member variables of this class
+#ifdef D_BEAM3
+
 #include "beam3contact_manager.H"
 #include "beam3contact.H"
 
@@ -22,7 +25,7 @@ CONTACT::Beam3cmanager::Beam3cmanager(const DRT::Discretization& discret):
 discret_(discret)
 {
   // initialize contact element pairs
-  //cpairs_.resize(0);
+  pairs_.resize(0);
   
   // print welcome message
   if (Discret().Comm().MyPID()==0)
@@ -58,10 +61,7 @@ void CONTACT::Beam3cmanager::Print(ostream& os) const
  |  evaluate contact (public)                                 popp 11/09|
  *----------------------------------------------------------------------*/
 int CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffc, Epetra_Vector& fc)
-{
-  // temporary vector of element pairs
-  vector<RCP<Beam3contact> > pairs(0);
-  
+{ 
   // contact search
   // loop over all elements and find closest pairs
 
@@ -78,4 +78,5 @@ int CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffc, Epetra_Vector
   return 0;
 }
 
+#endif  // #ifdef D_BEAM3
 #endif  // #ifdef CCADISCRET 
