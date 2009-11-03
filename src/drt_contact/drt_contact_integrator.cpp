@@ -279,7 +279,7 @@ void CONTACT::Integrator::IntegrateDerivSlave2D3D(
           {
             for (int j=0;j<nrow;++j)
             {
-              double fac = wgt*val[i]*val[j]*dxdsxi;
+              double fac = wgt*val[j]*val[k]*dxdsxi;
               for (CI p=dualmap[i][j].begin();p!=dualmap[i][j].end();++p)
                 ddmap_ik[p->first] += fac*(p->second);
             }
