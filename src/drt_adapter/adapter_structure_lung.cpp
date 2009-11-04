@@ -140,7 +140,9 @@ void ADAPTER::StructureLung::InitializeVolCon(Teuchos::RCP<Epetra_Vector> initvo
 
   for (int i=0; i<initvol->MyLength(); ++i)
   {
-    if ((*initvol)[i] > 0.0)
+    double sumvol = 0.;
+    signvol->Map().Comm().SumAll(&((*initvol)[i]),&sumvol,1);
+    if (sumvol > 0.0)
     {
       (*signvol)[i] = 1.0;
     }
@@ -178,100 +180,97 @@ void ADAPTER::StructureLung::EvaluateVolCon(Teuchos::RCP<LINALG::BlockSparseMatr
   //---------------------------------------------------------------------
   for (unsigned int i = 0; i < constrcond_.size(); ++i)
   {
-    //cout << "CONDITION " << i << endl;
-
     DRT::Condition& cond = *(constrcond_[i]);
 
-    //if (*(cond.Get<string>("field")) == "structure")
+    // Get ConditionID of current condition if defined and write value in parameterlist
+    int condID = cond.GetInt("coupling id");
+    params.set("ConditionID",condID);
+
+    // global and local ID of this bc in the redundant vectors
+    int gindex = condID-offsetID;
+    const int lindex = (CurrVols->Map()).LID(gindex);
+    if (lindex == -1)
+      dserror("Corrupt vector of current volumes");
+
+    // Get the current lagrange multiplier value for this condition
+    const double lagraval = (*lagrMultVecRed)[lindex];
+
+    // Get the sign (of volume) for this condition
+    const double sign = (*SignVols)[lindex];
+
+    // elements might need condition
+    params.set<RefCountPtr<DRT::Condition> >("condition", rcp(&cond,false));
+
+    // define element matrices and vectors
+    Epetra_SerialDenseMatrix elematrix1;
+    Epetra_SerialDenseMatrix elematrix2;
+    Epetra_SerialDenseVector elevector1;
+    Epetra_SerialDenseVector elevector2;
+    Epetra_SerialDenseVector elevector3;
+
+    map<int,RefCountPtr<DRT::Element> >& geom = cond.Geometry();
+    // no check for empty geometry here since in parallel computations
+    // there might be processors which do not own a portion of the elements belonging
+    // to the condition geometry
+    map<int,RefCountPtr<DRT::Element> >::iterator curr;
+
+    for (curr=geom.begin(); curr!=geom.end(); ++curr)
     {
-      // Get ConditionID of current condition if defined and write value in parameterlist
-      int condID = cond.GetInt("coupling id");
-      params.set("ConditionID",condID);
+      // get element location vector and ownerships
+      vector<int> lm;
+      vector<int> lmowner;
+      curr->second->LocationVector(*Discretization(),lm,lmowner);
 
-      // global and local ID of this bc in the redundant vectors
-      int gindex = condID-offsetID;
-      const int lindex = (CurrVols->Map()).LID(gindex);
-      if (lindex == -1)
-        dserror("Corrupt vector of current volumes");
+      // get dimension of element matrices and vectors
+      // Reshape element matrices and vectors and init to zero
+      const int eledim = (int)lm.size();
+      elematrix1.Shape(eledim,eledim);  // stiffness part
+      elematrix2.Shape(eledim,eledim);  // this element matrix is only needed for the function call only
+      elevector1.Size(eledim);          // rhs part
+      elevector2.Size(eledim);          // constraint matrix
+      elevector3.Size(1);               // current volume
 
-      // Get the current lagrange multiplier value for this condition
-      const double lagraval = (*lagrMultVecRed)[lindex];
+      // call the element specific evaluate method
+      int err = curr->second->Evaluate(params,*Discretization(),lm,elematrix1,elematrix2,
+                                       elevector1,elevector2,elevector3);
+      if (err) dserror("error while evaluating elements");
 
-      // Get the sign (of volume) for this condition
-      const double sign = (*SignVols)[lindex];
+      // assembly
+      int eid = curr->second->Id();
 
-      // elements might need condition
-      params.set<RefCountPtr<DRT::Condition> >("condition", rcp(&cond,false));
+      // NOTE:
+      // - no time integration related scaling needed here, since everything is evaluated at the
+      //   end of the time step and assembled to the already completed system.
+      // - all element quantities are multiplied by the previously derived sign in order to assure
+      //   that computed volumes are positive and corresponding derivatives are determined with a
+      //   consistent sign.
+      // - additional multiplication with -1.0 accounts for different definition of volume
+      //   difference ("normal" volume constraint: Vref-Vcurr, lung volume constraint: Vcurr-Vref,
+      //   which seems more natural in this case)
 
-      // define element matrices and vectors
-      Epetra_SerialDenseMatrix elematrix1;
-      Epetra_SerialDenseMatrix elematrix2;
-      Epetra_SerialDenseVector elevector1;
-      Epetra_SerialDenseVector elevector2;
-      Epetra_SerialDenseVector elevector3;
+      elematrix1.Scale(-lagraval*sign);
+      StructMatrix->Assemble(eid,elematrix1,lm,lmowner);
 
-      map<int,RefCountPtr<DRT::Element> >& geom = cond.Geometry();
-      // no check for empty geometry here since in parallel computations
-      // there might be processors which do not own a portion of the elements belonging
-      // to the condition geometry
-      map<int,RefCountPtr<DRT::Element> >::iterator curr;
+      // assemble to rectangular matrix. The column corresponds to the constraint ID.
+      vector<int> colvec(1);
+      colvec[0]=gindex;
+      elevector2.Scale(-sign);
+      StructMatrix->Assemble(eid,elevector2,lm,lmowner,colvec);
 
-      for (curr=geom.begin(); curr!=geom.end(); ++curr)
-      {
-        // get element location vector and ownerships
-        vector<int> lm;
-        vector<int> lmowner;
-        curr->second->LocationVector(*Discretization(),lm,lmowner);
+      // "Newton-ready" residual -> already scaled with -1.0
+      elevector1.Scale(lagraval*sign);
+      LINALG::Assemble(*StructRHS,elevector1,lm,lmowner);
 
-        // get dimension of element matrices and vectors
-        // Reshape element matrices and vectors and init to zero
-        const int eledim = (int)lm.size();
-        elematrix1.Shape(eledim,eledim);  // stiffness part
-        elematrix2.Shape(eledim,eledim);  // this element matrix is only needed for the function call only
-        elevector1.Size(eledim);          // rhs part
-        elevector2.Size(eledim);          // constraint matrix
-        elevector3.Size(1);               // current volume
+      // No scaling with -1.0 necessary here, since the constraint rhs is determined consistently,
+      // i.e.  -(Vcurr - Vold) in the fsi algorithm, thus -1.0 is included there.
+      vector<int> constrlm;
+      vector<int> constrowner;
+      constrlm.push_back(gindex);
+      constrowner.push_back(curr->second->Owner());
+      elevector3.Scale(sign);
+      LINALG::Assemble(*CurrVols,elevector3,constrlm,constrowner);
 
-        // call the element specific evaluate method
-        int err = curr->second->Evaluate(params,*Discretization(),lm,elematrix1,elematrix2,
-                                         elevector1,elevector2,elevector3);
-        if (err) dserror("error while evaluating elements");
 
-        // assembly
-        int eid = curr->second->Id();
-
-        // NOTE:
-        // - no time integration related scaling needed here, since everything is evaluated at the
-        //   end of the time step and assembled to the already completed system.
-        // - all element quantities are multiplied by the previously derived sign in order to assure
-        //   that computed volumes are positive and corresponding derivatives are determined with a
-        //   consistent sign.
-        // - additional multiplication with -1.0 accounts for different definition of volume
-        //   difference ("normal" volume constraint: Vref-Vcurr, lung volume constraint: Vcurr-Vref,
-        //   which seems more natural in this case)
-
-        elematrix1.Scale(-lagraval*sign);
-        StructMatrix->Assemble(eid,elematrix1,lm,lmowner);
-
-        // assemble to rectangular matrix. The column corresponds to the constraint ID.
-        vector<int> colvec(1);
-        colvec[0]=gindex;
-        elevector2.Scale(-sign);
-        StructMatrix->Assemble(eid,elevector2,lm,lmowner,colvec);
-
-        // "Newton-ready" residual -> already scaled with -1.0
-        elevector1.Scale(lagraval*sign);
-        LINALG::Assemble(*StructRHS,elevector1,lm,lmowner);
-
-        // No scaling with -1.0 necessary here, since the constraint rhs is determined consistently,
-        // i.e.  -(Vcurr - Vold) in the fsi algorithm, thus -1.0 is included there.
-        vector<int> constrlm;
-        vector<int> constrowner;
-        constrlm.push_back(gindex);
-        constrowner.push_back(curr->second->Owner());
-        elevector3.Scale(sign);
-        LINALG::Assemble(*CurrVols,elevector3,constrlm,constrowner);
-      }
     }
   }
 
@@ -292,7 +291,6 @@ void ADAPTER::StructureLung::EvaluateVolCon(Teuchos::RCP<LINALG::BlockSparseMatr
   // blank residual at DOFs on Dirichlet BC
   Teuchos::RCP<Epetra_Vector> zeros = LINALG::CreateVector(*dispmap, true);
   GetDBCMapExtractor()->InsertCondVector(GetDBCMapExtractor()->ExtractCondVector(zeros), StructRHS);
-
 }
 
 

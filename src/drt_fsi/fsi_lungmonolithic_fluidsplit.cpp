@@ -140,11 +140,6 @@ void FSI::LungMonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
   Teuchos::RCP<Epetra_Vector> fluidRHS = rcp(new Epetra_Vector(*FluidField().Discretization()->DofRowMap()));
   fluidRHS->Update(1.0, *FluidField().RHS(), 1.0, *AddFluidRHS_, 0.0);
 
-//   Teuchos::RCP<Epetra_Vector> fluidRHS = rcp(new Epetra_Vector(*FluidField().Discretization()->DofRowMap()));
-//   Teuchos::RCP<Epetra_Vector> addfluidinner = fluidfield.FSIInterface().ExtractOtherVector(*AddFluidRHS_);
-//   Teuchos::RCP<Epetra_Vector> addfluid = fluidfield.FSIInterface().InsertOtherVector(addfluidinner);
-//   fluidRHS->Update(1.0, *FluidField().RHS(), 1.0, *addfluid, 0.0);
-
   double scale = FluidField().ResidualScaling();
 
   SetupVector(f,
