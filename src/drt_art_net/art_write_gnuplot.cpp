@@ -117,17 +117,25 @@ ART::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper( RCP<DRT::Discretizat
 
 void ART::UTILS::ArtWriteGnuplotWrapper::Write(ParameterList & params)
 {
-  // -------------------------------------------------------------------
-  // loop over all conditions and export the arteries values
-  // -------------------------------------------------------------------
-  map<const int, RCP<class ArtWriteGnuplot> >::iterator mapiter;
 
-  // defining a constant that will have the artery number
-  int art_num;
-  for (mapiter = agmap_.begin(); mapiter != agmap_.end(); mapiter++ )
+  //----------------------------------------------------------------------
+  // Exit if the function accessed by a non-master processor
+  //----------------------------------------------------------------------
+  if (discret_->Comm().MyPID()==0)
   {
-    art_num = mapiter->first;
-    mapiter->second->ArtWriteGnuplot::Write(discret_, params, agnode_map_[art_num]);
+  
+    // -------------------------------------------------------------------
+    // loop over all conditions and export the arteries values
+    // -------------------------------------------------------------------
+    map<const int, RCP<class ArtWriteGnuplot> >::iterator mapiter;
+    
+    // defining a constant that will have the artery number
+    int art_num;
+    for (mapiter = agmap_.begin(); mapiter != agmap_.end(); mapiter++ )
+    {
+      art_num = mapiter->first;
+      mapiter->second->ArtWriteGnuplot::Write(discret_, params, agnode_map_[art_num]);
+    }
   }
 }
 
@@ -163,6 +171,7 @@ ART::UTILS::ArtWriteGnuplot:: ArtWriteGnuplot(int ArteryNum):
   strcpy (cstr, str.c_str());
   fout_ = rcp(new ofstream(cstr));
   delete [] cstr;
+
 }
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
