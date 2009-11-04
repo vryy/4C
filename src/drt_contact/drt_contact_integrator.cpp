@@ -803,7 +803,7 @@ void CONTACT::Integrator::IntegrateDerivSegment2D(
       double prod = 0.0;
 #ifdef CONTACTPETROVGALERKIN
       if (shapefcn_ == Interface::StandardFunctions)
-        dserror("CONTACTPETROVGALERKIN flag invalid for standard shape functions");
+        dserror("CONTACTPETROVGALERKIN flag invalid for std. shape functions (2D)");
       prod = sval[j]*gap;
 #else
       if (shapefcn_ == Interface::DualFunctions)
@@ -3176,7 +3176,7 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlane(
       double prod = 0.0;
 #ifdef CONTACTPETROVGALERKIN
       if( shapefcn_ == Interface::StandardFunctions )
-        dserror("CONTACTPETROVGALERKIN flag invalid for standard shape functions");
+        dserror("CONTACTPETROVGALERKIN flag invalid for std. shape functions (linear 3D)");
       prod = sval[j]*gap;
 #else
       if (shapefcn_ == Interface::StandardFunctions)
@@ -4556,6 +4556,148 @@ void CONTACT::Integrator::DerivXiGP3DAuxPlane(CONTACT::CElement& ele,
     cout << p->first << " " << p->second << endl;
   */
 
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Compute penalty scaling factor kappa                      popp 11/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::Integrator::IntegrateKappaPenalty(CONTACT::CElement& sele,
+                             double* sxia, double* sxib,
+                             RCP<Epetra_SerialDenseVector> gseg)
+{
+  // explicitely defined shapefunction type needed
+  if (shapefcn_ != Interface::StandardFunctions)
+    dserror("ERROR: IntegrateKappaPenalty -> you should not be here!");
+    
+  //check input data
+  if (!sele.IsSlave())
+    dserror("ERROR: IntegrateKappaPenalty called on a non-slave CElement!");
+  if ((sxia[0]<-1.0) || (sxia[1]<-1.0) || (sxib[0]>1.0) || (sxib[1]>1.0))
+    dserror("ERROR: IntegrateKappaPenalty called with infeasible slave limits!");
+
+  // number of nodes (slave)
+  int nrow = sele.NumNode();
+
+  // create empty objects for shape fct. evaluation
+  LINALG::SerialDenseVector val(nrow);
+  LINALG::SerialDenseMatrix deriv(nrow,2,true);
+  
+  // map iterator
+  typedef map<int,double>::const_iterator CI;
+
+  //**********************************************************************
+  // loop over all Gauss points for integration
+  //**********************************************************************
+  for (int gp=0;gp<nGP();++gp)
+  {
+    // coordinates and weight
+    double eta[2] = {Coordinate(gp,0), 0.0};
+    if (Dim()==3) eta[1] = Coordinate(gp,1);
+    double wgt = Weight(gp);
+
+    // evaluate trace space shape functions
+    sele.EvaluateShape(eta,val,deriv,nrow);
+
+    // evaluate the Jacobian det
+    double jac = sele.Jacobian(eta);
+        
+    // compute cell gap vector *******************************************
+    // loop over all gseg vector entries
+    // nrow represents the slave side dofs !!!  */
+    for (int j=0;j<nrow;++j)
+    {
+#ifdef CONTACTPETROVGALERKIN
+      dserror("CONTACTPETROVGALERKIN flag invalid for std. shape fct. other than 3D quad.");
+#endif
+      // add current Gauss point's contribution to gseg
+      (*gseg)(j) += val[j]*jac*wgt;
+    }
+    // compute cell gap vector *******************************************
+  }
+  //**********************************************************************
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Compute penalty scaling factor kappa (3D quadratic)       popp 11/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::Integrator::IntegrateKappaPenalty(CONTACT::CElement& sele,
+                             CONTACT::IntElement& sintele,
+                             double* sxia, double* sxib,
+                             RCP<Epetra_SerialDenseVector> gseg)
+{
+  // explicitely defined shapefunction type needed
+  if (shapefcn_ != Interface::StandardFunctions)
+    dserror("ERROR: IntegrateKappaPenalty -> you should not be here!");
+    
+  //check input data
+  if (!sele.IsSlave())
+    dserror("ERROR: IntegrateKappaPenalty called on a non-slave CElement!");
+  if ((sxia[0]<-1.0) || (sxia[1]<-1.0) || (sxib[0]>1.0) || (sxib[1]>1.0))
+    dserror("ERROR: IntegrateKappaPenalty called with infeasible slave limits!");
+
+  // number of nodes (slave)
+  int nrow = sele.NumNode();
+  int nintrow = sintele.NumNode();
+
+  // create empty objects for shape fct. evaluation
+  LINALG::SerialDenseVector sval(nrow);
+  LINALG::SerialDenseMatrix sderiv(nrow,2,true);
+  LINALG::SerialDenseVector sintval(nintrow);
+  LINALG::SerialDenseMatrix sintderiv(nintrow,2,true);
+
+  // map iterator
+  typedef map<int,double>::const_iterator CI;
+
+  //**********************************************************************
+  // loop over all Gauss points for integration
+  //**********************************************************************
+  for (int gp=0;gp<nGP();++gp)
+  {
+    // coordinates and weight
+    double eta[2] = {Coordinate(gp,0), 0.0};
+    if (Dim()==3) eta[1] = Coordinate(gp,1);
+    double wgt = Weight(gp);
+
+    // map Gauss point back to slave element (affine map)
+    double psxi[2] = {0.0, 0.0};
+    sintele.MapToParent(eta,psxi);
+    
+    // evaluate trace space shape functions (on both elements)
+    sele.EvaluateShape(psxi,sval,sderiv,nrow);
+    sintele.EvaluateShape(eta,sintval,sintderiv,nintrow);
+
+    // evaluate the Jacobian det
+    double jac = sintele.Jacobian(eta);
+    
+    // compute cell gap vector *******************************************
+    // loop over all gseg vector entries
+    // nrow represents the slave side dofs !!!  */
+
+    // WATCH OUT (Petrov Galerkin approach reduces polynomial order by 1)
+#ifdef CONTACTPETROVGALERKIN  
+    for (int j=0;j<nintrow;++j)
+    {
+      // add current Gauss point's contribution to gseg
+      (*gseg)(j) += sintval[j]*jac*wgt;
+    }
+  
+#else
+    if (sele.Shape()==CElement::tri6 || sele.Shape()==CElement::quad8) 
+     dserror("ERROR: 3D penalty for slave = tri6 / quad8 needs Petrov Galerkin approach");
+     
+    for (int j=0;j<nrow;++j)
+    {
+      // add current Gauss point's contribution to gseg
+      (*gseg)(j) += sval[j]*jac*wgt;
+    }
+#endif // #ifdef CONTACTPETROVGALERKIN
+    // compute cell gap vector *******************************************
+  }
+  //**********************************************************************
+  
   return;
 }
 

@@ -582,6 +582,20 @@ public:
                                 vector<RCP<CONTACT::IntElement> >& auxele);
   
   /*!
+  \brief Integrate penalty sclaing factor kappa on slave element
+
+  This method is only called, if a penalty strategy is applied. It is
+  called ONCE at the beginning of the simulation and evaluates the
+  penalty scaling factor kappa_j = int_{slave} (N_j) dslave. The
+  correct interpolation N_j is chosen for any case (2D, 3D, linear
+  quadratic, CONTACTPETROVGALERKIN...)
+  
+  TODO: maybe update kappa each time step?
+
+  */
+  virtual bool IntegrateKappaPenalty(CONTACT::CElement& sele);
+    
+  /*!
   \brief Evaluate relative movement (jump) of slave nodes
   
   In the case of frictional contact, an important geometric measure is

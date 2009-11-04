@@ -81,13 +81,10 @@ void CONTACT::PenaltyStrategy::SaveReferenceState(const RCP<Epetra_Vector> dis)
   // initialize the displacement field
   SetState("displacement", dis);
   
-  // compute the nodal entries of D
-  // this is a rough copy of Interface::Evaluate
-  // unnecessary steps have been omitted to save time
-  
-  // build the nodal information
+  // kappa will be the shape function integral on the slave sides
+  // (1) build the nodal information
   for (int i=0; i<(int)interface_.size(); ++i)
-  {    
+  {
     // interface needs to be complete
     if (!interface_[i]->Filled() && Comm().MyPID()==0)
       dserror("ERROR: FillComplete() not called on interface %", i);
@@ -96,22 +93,8 @@ void CONTACT::PenaltyStrategy::SaveReferenceState(const RCP<Epetra_Vector> dis)
     if (!interface_[i]->lComm())
       continue;
 
-    // do the computation of nodal D
-    
-    // loop over proc's slave nodes of the interface
-    // use standard column map to include processor's ghosted nodes
-    // use boundary map to include slave side boundary nodes
-    for (int j=0; j<interface_[i]->SlaveColNodesBound()->NumMyElements(); ++j)
-    {
-      int gid = interface_[i]->SlaveColNodesBound()->GID(j);
-      DRT::Node* node = interface_[i]->Discret().gNode(gid);
-      if (!node)
-        dserror("ERROR: Cannot find node with gid %",gid);
-      CNode* cnode = static_cast<CNode*>(node);
-
-      // build averaged normal at each slave node
-      cnode->BuildAveragedNormal();
-    }
+    // do the computation of nodal shape function integral
+    // (for convenience, the results will be stored in nodal gap)
     
     // loop over proc's slave elements of the interface for integration
     // use standard column map to include processor's ghosted elements
@@ -123,11 +106,9 @@ void CONTACT::PenaltyStrategy::SaveReferenceState(const RCP<Epetra_Vector> dis)
         dserror("ERROR: Cannot find slave element with gid %",gid1);
       CElement* selement = static_cast<CElement*>(ele1);
       
-      interface_[i]->IntegrateSlave(*selement);
+      interface_[i]->IntegrateKappaPenalty(*selement);
     }
     
-    // do the computation of nodal kappa
-
     // loop over all slave row nodes on the current interface
     for (int j=0; j<interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
     {
@@ -136,27 +117,14 @@ void CONTACT::PenaltyStrategy::SaveReferenceState(const RCP<Epetra_Vector> dis)
       if (!node)
         dserror("ERROR: Cannot find node with gid %",gid);
       CNode* cnode = static_cast<CNode*>(node);
+
+      // get nodal weighted gap
+      // (this is where we stored the shape function integrals)
+      double gap = cnode->Getg();
       
-      typedef map<int,double>::iterator CI;
-      
-      // it is sufficient to evalute only the first drow, since the sum is equal for all of them
-      map<int, double> drow = cnode->GetD()[0];
-      double rowsum = 0;
-      
-      // do the summation
-      for( CI iter=drow.begin(); iter!=drow.end(); ++iter )
-        rowsum += iter->second;
-      
-      // store kappa as the inverse
-      // for quadratic interpolation in 3D with penalty approach
-      // and Petrov-Galerkin scheme: NO SCALING with kappa, as
-      // this will introduce unphysical negative gaps!!!
-      // (LM interpolation quadratic, but \delta LM interpolation piecewise linear)
-#ifdef CONTACTPETROVGALERKIN
-      cnode->Kappa() = 1.0;
-#else
-      cnode->Kappa() = 1.0/rowsum;
-#endif // #ifdef CONTACTPETROVGALERKIN
+      // store kappa as the inverse of gap
+      // (this removes the scaling introduced by weighting the gap!!!)
+      cnode->Kappa() = 1.0/gap;
 
       //cout << "S-NODE #" << gid << " kappa=" << cnode->Kappa() << endl;
     }

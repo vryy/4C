@@ -278,6 +278,24 @@ public:
                    const vector<map<int,double> >& derivgp);
 
   /*!
+  \brief Compute penalty scaling factor kappa on slave element
+
+  */
+  void IntegrateKappaPenalty(CONTACT::CElement& sele,
+                             double* sxia, double* sxib,
+                             RCP<Epetra_SerialDenseVector> gseg);
+    
+  /*!
+  \brief Compute penalty scaling factor kappa on slave integration element
+  (special version for the 3D quadratic case)
+
+  */
+  void IntegrateKappaPenalty(CONTACT::CElement& sele,
+                             CONTACT::IntElement& sintele,
+                             double* sxia, double* sxib,
+                             RCP<Epetra_SerialDenseVector> gseg);
+    
+  /*!
   \brief Assemble D contribution of current overlap into slave nodes
 
   */

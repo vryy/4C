@@ -421,10 +421,10 @@ void CONTACT::AbstractStrategy::StoreNodalQuantities(AbstractStrategy::QuantityT
         {
           // print a warning if a non-DBC inactive dof has a non-zero value
           // (only in semi-smooth Newton case, of course!)
-          bool semismooth = Teuchos::getIntegralValue<int>(Params(),"SEMI_SMOOTH_NEWTON");
-          if (semismooth && !cnode->Dbc()[dof] && !cnode->Active() && abs((*vectorinterface)[locindex[dof]])>1.0e-8)
-            cout << "***WARNING***: Non-D.B.C. inactive node " << cnode->Id() << " has non-zero Lag. Mult.: dof "
-                 << cnode->Dofs()[dof] << " lm " << (*vectorinterface)[locindex[dof]] << endl;
+          // bool semismooth = Teuchos::getIntegralValue<int>(Params(),"SEMI_SMOOTH_NEWTON");
+          //if (semismooth && !cnode->Dbc()[dof] && !cnode->Active() && abs((*vectorinterface)[locindex[dof]])>1.0e-8)
+          //  cout << "***WARNING***: Non-D.B.C. inactive node " << cnode->Id() << " has non-zero Lag. Mult.: dof "
+          //       << cnode->Dofs()[dof] << " lm " << (*vectorinterface)[locindex[dof]] << endl;
 
 #ifndef CONTACTPSEUDO2D
           // throw a dserror if node is Active and DBC

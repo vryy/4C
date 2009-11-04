@@ -1562,6 +1562,79 @@ bool CONTACT::Interface::SplitIntElements(CONTACT::CElement& ele,
 }
 
 /*----------------------------------------------------------------------*
+ |  Integrate penalty scaling factor kapp (public)            popp 11/09|
+ *----------------------------------------------------------------------*/
+bool CONTACT::Interface::IntegrateKappaPenalty(CONTACT::CElement& sele)
+{
+  // create correct integration limits
+  double sxia[2] = {0.0, 0.0};
+  double sxib[2] = {0.0, 0.0};
+  if (sele.Shape()==DRT::Element::tri3 || sele.Shape()==DRT::Element::tri6)
+  {
+    // parameter space is [0,1] for triangles
+    sxib[0] = 1.0; sxib[1] = 1.0;
+  }
+  else
+  {
+    // parameter space is [-1,1] for quadrilaterals
+    sxia[0] = -1.0; sxia[1] = -1.0;
+    sxib[0] =  1.0; sxib[1] =  1.0;
+  }
+
+  // check for quadratic 3D case
+  bool auxplane = Teuchos::getIntegralValue<int>(IParams(),"COUPLING_AUXPLANE");
+    
+  // ************************************************** quadratic 3D ***
+  if (Dim()==3 && sele.IsQuad())
+  {
+    // only for auxiliary plane 3D version
+    if (!auxplane) dserror("ERROR: Quadratic 3D contact only for AuxPlane case!");
+    
+    // build linear integration elements from quadratic CElements
+    vector<RCP<CONTACT::IntElement> > sauxelements(0);
+    SplitIntElements(sele,sauxelements);
+    
+    for (int i=0;i<(int)sauxelements.size();++i)
+    {
+      // do the int element integration of kappa and store into gap
+#ifdef CONTACTPETROVGALERKIN
+      int nrow = sauxelements[i]->NumNode();
+#else
+      int nrow = sele.NumNode();
+#endif // #ifdef CONTACTPETROVGALERKIN
+      RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
+      
+      // create an integrator instance with correct NumGP and Dim
+      CONTACT::Integrator integrator(shapefcn_,sauxelements[i]->Shape());
+      integrator.IntegrateKappaPenalty(sele,*(sauxelements[i]),sxia,sxib,gseg);
+
+      // do the assembly into the slave nodes
+#ifdef CONTACTPETROVGALERKIN
+      integrator.AssembleG(Comm(),*(sauxelements[i]),*gseg);
+#else
+      integrator.AssembleG(Comm(),sele,*gseg);
+#endif //#ifdef CONTACTPETROVGALERKIN
+    }
+  }
+  
+  else
+  {
+    // do the element integration of kappa and store into gap
+    int nrow = sele.NumNode();
+    RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
+    
+    // create an integrator instance with correct NumGP and Dim
+    CONTACT::Integrator integrator(shapefcn_,sele.Shape());
+    integrator.IntegrateKappaPenalty(sele,sxia,sxib,gseg);
+
+    // do the assembly into the slave nodes
+    integrator.AssembleG(Comm(),sele,*gseg);
+  }
+  
+  return true;
+}
+
+/*----------------------------------------------------------------------*
  |  Evaluate relative movement (jump) of a slave node      gitterle 10/09|
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::EvaluateRelMov()
@@ -1837,6 +1910,12 @@ void CONTACT::Interface::AssembleRegNormalForces(bool& localisincontact,
 
     int dim = cnode->NumDof();
     double gap = cnode->Getg();
+    
+    // modified gap for zero initial gap
+    // (if gap is below zero, it is explicitly set to zero)
+    //double modgap = cnode->Getg();
+    //if (abs(modgap) < 1.0e-10) modgap=0.0;
+    
     double kappa = cnode->Kappa();
 
     double lmuzawan = 0.0;
@@ -1876,23 +1955,23 @@ void CONTACT::Interface::AssembleRegNormalForces(bool& localisincontact,
     //********************************************************************
 
     // Activate/Deactivate node and notice any change
-    if( (cnode->Active() == false) && (lmuzawan - kappa * pp * gap > 0) )
+    if( (cnode->Active() == false) && (lmuzawan - kappa * pp * gap >= 0) )
     {
         cnode->Active() = true;
         localactivesetchange = true;
 
-        cout << "node #" << gid << " is now active (";
-        for( int j=0; j<dim; j++)
-          cout << " " << cnode->Dofs()[j] << " ";
-        cout << ") gap=" << gap << endl;
+        //cout << "node #" << gid << " is now active (";
+        //for( int j=0; j<dim; j++)
+        //  cout << " " << cnode->Dofs()[j] << " ";
+        //cout << ") gap=" << gap << endl;
     }
 
-    else if( (cnode->Active() == true) && (lmuzawan - kappa * pp * gap <= 0) )
+    else if( (cnode->Active() == true) && (lmuzawan - kappa * pp * gap < 0) )
     {
         cnode->Active() = false;
         localactivesetchange = true;
 
-        cout << "node #" << gid << " is now inactive, gap=" << gap << endl;
+        //cout << "node #" << gid << " is now inactive, gap=" << gap << endl;
     }
     //********************************************************************
 
