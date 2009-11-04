@@ -944,15 +944,6 @@ void CONTACT::ContactStruGenAlpha::ApplyExternalForce(  const STR::UTILS::MapExt
   contactmanager_->GetStrategy().InitializeMortar();
   contactmanager_->GetStrategy().EvaluateMortar();
   
-  // friction
-  // here the relative movement of the contact bodies is evaluated
-  // therefore the current configuration and the according mortar
-  // matrices are needed
-  INPAR::CONTACT::ContactType ctype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(contactmanager_->GetStrategy().Params(),"CONTACT");
-  if(ctype != INPAR::CONTACT::contact_normal)
-    contactmanager_->GetStrategy().EvaluateRelMov(disi_);
-
   contactmanager_->GetStrategy().Initialize();
   contactmanager_->GetStrategy().Evaluate(SystemMatrix(),fresm_);
 

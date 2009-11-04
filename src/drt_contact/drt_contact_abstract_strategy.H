@@ -311,7 +311,7 @@ class AbstractStrategy
     \brief Evaluate Friction
      
     This is the main routine of our frictional contact algorithm on a global level.
-    It contains the setup of the global linear system including contact.
+    It contains the setup of the global linear system including frictional contact.
     This makes modifications to the effective stiffness K and the effective
     load vector f necessary.
      

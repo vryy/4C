@@ -354,6 +354,18 @@ public:
   void AddgValue(double& val);
 
   /*!
+  \brief Add a value to the map of Jump derivatives of this node
+     
+  Note that derivjump_ here is a vector.
+  
+  \param row : local dof row id to add to (rowwise)
+  \param val : value to be added
+  \param col : global dof column id of the value added
+  
+  */
+  void AddDerivJumpValue(int& row, const int& col, double val);
+ 
+  /*!
   \brief Add a value to the map of LM derivatives of this node
      
   The 'DerivZ' map is later assembled to the global DerivZ matrix.
@@ -513,6 +525,16 @@ public:
 
   */
   virtual inline map<int,double>& GetDerivG() { return derivg_; }
+  
+  /*!
+  \brief Return the 'DerivJump' map (vector) of this node
+
+  These maps contain the directional derivatives of the node's
+  relative movement (jump).
+  A vector is used because the jump itself is a vector (2 or 3 components).
+
+  */
+  virtual inline vector<map<int,double> >& GetDerivJump() { return derivjump_; }
 
   /*!
   \brief Return the 'DerivZ map of this node
@@ -607,7 +629,8 @@ protected:
   map<int,map<int,double> >     derivd_;     // directional derivative of nodal D-matrix value
   map<int,map<int,double> >     derivm_;     // directional derivative of nodal M-matrix values
   map<int,double>               derivg_;     // directional derivative of nodal weighted gap value
-
+  vector<map<int,double> >      derivjump_;  // directional derivative of nodal weighted jump vector
+  
   // Penalty-related quantities 
   double                        traction_[3];     // traction vector of current time step
   double                        tractionold_[3];  // traction vector of previous time step 

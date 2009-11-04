@@ -423,6 +423,32 @@ void CONTACT::CNode::AddDerivZValue(int& row, const int& col, double val)
 }
 
 /*----------------------------------------------------------------------*
+ |  Add a value to the 'DerivJump' map                     gitterle 11/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::CNode::AddDerivJumpValue(int& row, const int& col, double val)
+{
+  // check if this is a master node or slave boundary node
+  if (IsSlave()==false)
+    dserror("ERROR: AddJumpValue: function called for master node %i", Id());
+  if (IsOnBound()==true)
+    dserror("ERROR: AddJumpValue: function called for boundary node %i", Id());
+    
+  // check if this has been called before
+  if ((int)derivjump_.size()==0)
+    derivjump_.resize(NumDof());
+    
+  // check row index input
+  if ((int)derivjump_.size() <= row)
+    dserror("ERROR: AddDerivJumpValue: tried to access invalid row index!");
+    
+  // add the pair (col,val) to the given row
+  map<int,double>& zmap = derivjump_[row];
+  zmap[col] += val;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  Store nodal entries of D and M to old ones             gitterle 12/08|
  *----------------------------------------------------------------------*/
 void CONTACT::CNode::StoreDMOld()

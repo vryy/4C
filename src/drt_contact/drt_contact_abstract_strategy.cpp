@@ -278,111 +278,22 @@ void CONTACT::AbstractStrategy::EvaluateRelMov(RCP<Epetra_Vector> disi)
 
   // sum up incremental jumps from active set nodes
   jump_->Update(1.0,*incrjump_,1.0);
-
-#else
-
-  // export global quantity to current interface slave dof row map
-  RCP<Epetra_Vector> slaveconfiguration = rcp(new Epetra_Vector(*gsdofrowmap_));
-  RCP<Epetra_Vector> masterconfiguration = rcp(new Epetra_Vector(*gmdofrowmap_));
-
-  // create vector of current slave configuration
-  // loop over all interfaces
-  for (int i=0; i<(int)interface_.size(); ++i)
-  {
-    // currently this only works safely for 1 interface
-    if (i>0) dserror("ERROR: Evaluate RelSliding: not working for n interfaces yet!");
-
-    // loop over all slave row nodes on the current interface
-    for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)
-    {
-      int gid = interface_[i]->SlaveRowNodes()->GID(j);
-      DRT::Node* node = interface_[i]->Discret().gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      CNode* cnode = static_cast<CNode*>(node);
-
-      // be aware of problem dimension
-      int dim = Dim();
-      int numdof = cnode->NumDof();
-      if (dim!=numdof) dserror("ERROR: Inconsisteny Dim <-> NumDof");
-
-      // find indices for DOFs of current node in Epetra_Vector
-      // and put node coordinates into slaveconfiguration at these DOFs
-      vector<int> locindex(dim);
-
-      for (int dof=0;dof<dim;++dof)
-      {
-        locindex[dof] = (slaveconfiguration->Map()).LID(cnode->Dofs()[dof]);
-        if (locindex[dof]<0) dserror("ERROR: StoreNodalQuantites: Did not find dof in map");
-        (*slaveconfiguration)[locindex[dof]] = cnode->xspatial()[dof];
-      }
-    }
-  }
-
-  // create vector of current master configuration
-  // loop over all interfaces
-  for (int i=0; i<(int)interface_.size(); ++i)
-  {
-    // currently this only works safely for 1 interface
-    if (i>0) dserror("ERROR: Evaluate RelSliding: not working for n interfaces yet!");
-
-    // loop over all slave row nodes on the current interface
-    for (int j=0;j<interface_[i]->MasterRowNodes()->NumMyElements();++j)
-    {
-      int gid = interface_[i]->MasterRowNodes()->GID(j);
-      DRT::Node* node = interface_[i]->Discret().gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      CNode* cnode = static_cast<CNode*>(node);
-
-      // be aware of problem dimension
-      int dim = Dim();
-      int numdof = cnode->NumDof();
-      if (dim!=numdof) dserror("ERROR: Inconsisteny Dim <-> NumDof");
-
-      // find indices for DOFs of current node in Epetra_Vector
-      // and put node coordinates into masterconfiguration at these DOFs
-      vector<int> locindex(dim);
-
-      for (int dof=0;dof<dim;++dof)
-      {
-        locindex[dof] = (masterconfiguration->Map()).LID(cnode->Dofs()[dof]);
-        if (locindex[dof]<0) dserror("ERROR: StoreNodalQuantites: Did not find dof in map");
-        (*masterconfiguration)[locindex[dof]] = cnode->xspatial()[dof];
-      }
-    }
-  }
   
-  RCP<LINALG::SparseMatrix> diffD = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,81));
-  diffD->Add(*dmatrix_,false,1.0,0.0);
-  diffD->Add(*dold_,false,-1.0,1.0);
-  diffD->Complete(dmatrix_->DomainMap(),dmatrix_->RowMap());
-
-  RCP<Epetra_Vector> diffDx = rcp(new Epetra_Vector(*gsdofrowmap_));
-  diffD->Multiply(false,*slaveconfiguration,*diffDx);
-
-  // create a merged map of domain map of M and Mold
-  const Epetra_Map& mmatrixdofs = mmatrix_->DomainMap();
-  const Epetra_Map& molddofs = mold_->DomainMap();
-  RCP<Epetra_Map> mdiffdofs = LINALG::MergeMap(mmatrixdofs,molddofs,true);
-
-  // Create a new Matrix, add M and -Mold
-  RCP<LINALG::SparseMatrix> diffM = rcp(new LINALG::SparseMatrix(mmatrix_->RowMap(),81));
-  diffM->Add(*mmatrix_,false,+1.0,0.0);
-  diffM->Add(*mold_,false,-1.0,1.0);
-  
-  diffM->Complete(*mdiffdofs,mmatrix_->RowMap());
-
-  RCP<Epetra_Vector> diffMx = rcp(new Epetra_Vector(*gsdofrowmap_));
-  diffM->Multiply(false,*masterconfiguration,*diffMx);
-
-  //RCP<Epetra_Vector> jump = rcp(new Epetra_Vector(*gsdofrowmap_));
-  jump_->Update(-1.0,*diffDx,0.0);
-  jump_->Update(+1.0,*diffMx,1.0);
-  
-#endif
-
   // friction
   // store updaded jumps to nodes
   StoreNodalQuantities(AbstractStrategy::jump);
+
+#else
+
+  // do the evaluation on the interface
+  // loop over all slave row nodes on the current interface
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    interface_[i]->EvaluateRelMov();
+    interface_[i]->AssembleJump(*jump_);
+   }
+ 
+#endif
 
   return;
 }
@@ -396,7 +307,6 @@ void CONTACT::AbstractStrategy::Evaluate(RCP<LINALG::SparseMatrix> kteff, RCP<Ep
   INPAR::CONTACT::ContactFrictionType ftype =
     Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(Params(),"FRICTION");
 
-  {
    	if (ftype == INPAR::CONTACT::friction_tresca ||
         ftype == INPAR::CONTACT::friction_coulomb ||
   	    ftype == INPAR::CONTACT::friction_stick )
@@ -404,7 +314,7 @@ void CONTACT::AbstractStrategy::Evaluate(RCP<LINALG::SparseMatrix> kteff, RCP<Ep
  	  // Frictionless contact case
   	else
   	  EvaluateContact(kteff,feff);
-   }
+
   return;
 }
 

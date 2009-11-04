@@ -580,6 +580,23 @@ public:
   */
   virtual bool SplitIntElements(CONTACT::CElement& ele,
                                 vector<RCP<CONTACT::IntElement> >& auxele);
+  
+  /*!
+  \brief Evaluate relative movement (jump) of slave nodes
+  
+  In the case of frictional contact, an important geometric measure is
+  the relative movement (jump) of the contacting bodies. Here, this is evaluated
+  over change of mortar projection. Also, the directional derivatives are
+  evaluated here.
+  
+  */ 
+  virtual void EvaluateRelMov();
+  
+  /*!
+  \brief Assemble jump vector into global jump vector 
+  
+  */
+  virtual void AssembleJump(Epetra_Vector& jumpglobal);
 
   /*!
   \brief Assemble gap-computed lagrange multipliers and nodal linlambda derivatives into nodal quantities
