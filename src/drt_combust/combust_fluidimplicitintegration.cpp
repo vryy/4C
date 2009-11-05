@@ -61,7 +61,8 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   solver_ (solver),
   params_ (params),
   xparams_(params.sublist("XFEM")),
-  output_ (output),
+//  output_ (output),
+  output_ (rcp(new IO::DiscretizationWriter(actdis))), // so ist es bei Axel
   myrank_(discret_->Comm().MyPID()),
   cout0_(discret_->Comm(), std::cout),
   combusttype_(Teuchos::getIntegralValue<INPAR::COMBUST::CombustionType>(params_.sublist("COMBUSTION FLUID"),"COMBUSTTYPE")),
@@ -79,7 +80,8 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   extrapolationpredictor_(params.get("do explicit predictor",true)),
   uprestart_(params.get("write restart every", -1)),
   upres_(params.get("write solution every", -1)),
-  writestresses_(params.get<int>("write stresses", 0))
+  writestresses_(params.get<int>("write stresses", 0)),
+  flamefront_(Teuchos::null)
 {
   //------------------------------------------------------------------------------------------------
   // time measurement: initialization
@@ -103,20 +105,24 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   //------------------------------------------------------------------------------------------------
   // prepare XFEM (initial degree of freedom management)
   //------------------------------------------------------------------------------------------------
-
+  physprob_.xfemfieldset_.clear();
   // declare physical fields to be enriched (XFEM fields)
-  xfemfields_.insert(XFEM::PHYSICS::Velx);
-  xfemfields_.insert(XFEM::PHYSICS::Vely);
-  xfemfields_.insert(XFEM::PHYSICS::Velz);
-  xfemfields_.insert(XFEM::PHYSICS::Pres);
+  physprob_.xfemfieldset_.insert(XFEM::PHYSICS::Velx);
+  physprob_.xfemfieldset_.insert(XFEM::PHYSICS::Vely);
+  physprob_.xfemfieldset_.insert(XFEM::PHYSICS::Velz);
+  physprob_.xfemfieldset_.insert(XFEM::PHYSICS::Pres);
+  physprob_.elementAnsatzp_ = rcp(new COMBUST::CombustElementAnsatz());
 
   // create dummy instance of interfacehandle holding no flamefront and hence no integration cells
   Teuchos::RCP<COMBUST::InterfaceHandleCombust> ihdummy = rcp(new COMBUST::InterfaceHandleCombust(discret_,Teuchos::null,Teuchos::null));
   // create dummy instance of dof manager assigning standard enrichments to all nodes
-  const Teuchos::RCP<XFEM::DofManager> dofmanagerdummy = rcp(new XFEM::DofManager(ihdummy,xfemfields_,xparams_));
+  const Teuchos::RCP<XFEM::DofManager> dofmanagerdummy = rcp(new XFEM::DofManager(ihdummy,physprob_.xfemfieldset_,xparams_));
 
   // pass dof information to elements (no enrichments yet, standard FEM!)
   TransferDofInformationToElements(ihdummy, dofmanagerdummy);
+
+  // save dofmanager to be able to plot Gmsh stuff in Output()
+  dofmanagerForOutput_ = dofmanagerdummy;
 
 //  {
 //    ParameterList eleparams;
@@ -128,7 +134,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   // ensure that degrees of freedom in the discretization have been set
   discret_->FillComplete();
 
-  output_.WriteMesh(0,0.0);
+  output_->WriteMesh(0,0.0);
 
   // store a dofset with the complete fluid unknowns
   standarddofset_ = Teuchos::rcp(new DRT::DofSet());
@@ -254,8 +260,11 @@ void FLD::CombustFluidImplicitTimeInt::PrepareTimeStep()
 
   if (params_.get<FLUID_TIMEINTTYPE>("time int algo") == timeint_stationary)
   {
-    dserror("How do you dare calling PrepareTimeStep() for stationary problems!");
+    // for stationary problems PrepareTimeStep() should only be called for output related reasons
+    cout << "Warning: 'time' and 'time step' are set to 1.0 and 1 for output control file" << endl;
     timealgo_ = timeint_stationary;
+    step_ = 1;
+    time_ = 1.0;
     theta_ = 1.0;
   }
   else if (params_.get<FLUID_TIMEINTTYPE>("time int algo") == timeint_bdf2)
@@ -377,7 +386,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
   // build instance of DofManager with information about the interface from the interfacehandle
   // remark: DofManager is rebuilt in every inter-field iteration step, because number and position
   // of enriched degrees of freedom change constantly.
-  const Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(interfacehandle,xfemfields_,xparams_));
+  const Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(interfacehandle,physprob_.xfemfieldset_,xparams_));
 
   // save dofmanager to be able to plot Gmsh stuff in Output()
   dofmanagerForOutput_ = dofmanager;
@@ -471,6 +480,21 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
   sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(newdofrowmap,0,false,true));
 
 }
+
+
+/*------------------------------------------------------------------------------------------------*
+ | import geometrical information about the interface (integration cells) from the combustion     |
+ | algorithm and incorporate it into the fluid field                                  henke 03/09 |
+ |
+ | remark: Within this routine, no parallel re-distribution is allowed to take place. Before and  |
+ | after this function, it's ok to do so.                                                    axel |
+ *------------------------------------------------------------------------------------------------*/
+void FLD::CombustFluidImplicitTimeInt::StoreFlameFront(const Teuchos::RCP<COMBUST::FlameFront>& flamefront)
+{
+  flamefront_ = flamefront;
+  return;
+}
+
 
 /*------------------------------------------------------------------------------------------------*
  | get convection velocity vector for transfer to scalar transport field              henke 07/09 |
@@ -641,9 +665,9 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
     // to avoid that.
     dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), residual_);
 
-    double incvelnorm_L2;
-    double velnorm_L2;
-    double vresnorm;
+    double incvelnorm_L2 = 0.0;
+    double velnorm_L2 = 0.0;
+    double vresnorm = 0.0;
 
     Teuchos::RCP<Epetra_Vector> onlyvel = velpressplitter_.ExtractOtherVector(residual_);
     onlyvel->Norm2(&vresnorm);
@@ -654,9 +678,9 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
     velpressplitter_.ExtractOtherVector(state_.velnp_,onlyvel);
     onlyvel->Norm2(&velnorm_L2);
 
-    double incprenorm_L2;
-    double prenorm_L2;
-    double presnorm;
+    double incprenorm_L2 = 0.0;
+    double prenorm_L2 = 0.0;
+    double presnorm = 0.0;
 
     Teuchos::RCP<Epetra_Vector> onlypre = velpressplitter_.ExtractCondVector(residual_);
     onlypre->Norm2(&presnorm);
@@ -667,9 +691,9 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
     velpressplitter_.ExtractCondVector(state_.velnp_,onlypre);
     onlypre->Norm2(&prenorm_L2);
 
-    double incfullnorm_L2;
-    double fullnorm_L2;
-    double fullresnorm;
+    double incfullnorm_L2 = 0.0;
+    double fullnorm_L2 = 0.0;
+    double fullresnorm = 0.0;
 
     const Epetra_Map* dofrowmap       = discret_->DofRowMap();
     Epetra_Vector full(*dofrowmap);
@@ -826,7 +850,6 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 
     //------------------------------------------------ update (u,p) trial
     state_.velnp_->Update(1.0,*incvel_,1.0);
-
   }
 } // CombustImplicitTimeInt::NonlinearSolve
 
@@ -836,64 +859,10 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
  *------------------------------------------------------------------------------------------------*/
 void FLD::CombustFluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
 {
-  sysmat_->Zero();
   dserror("no monolithic FSI tested, check first!");
-/*
-  // set the new solution we just got
-  if (vel!=Teuchos::null)
-  {
-    // Take Dirichlet values from velnp and add vel to veln for non-Dirichlet
-    // values.
-    Teuchos::RCP<Epetra_Vector> aux = LINALG::CreateVector(*(discret_->DofRowMap()),true);
-    aux->Update(1.0, *state_.veln_, 1.0, *vel, 0.0);
-    dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(aux), state_.velnp_);
-  }
+  sysmat_->Zero();
+  return;
 
-  // add Neumann loads
-  residual_->Update(1.0,*neumann_loads_,0.0);
-
-  // create the parameters for the discretization
-  ParameterList eleparams;
-
-  // action for elements
-  if (timealgo_==timeint_stationary)
-    eleparams.set("action","calc_fluid_stationary_systemmat_and_residual");
-  else
-    eleparams.set("action","calc_fluid_systemmat_and_residual");
-
-  // other parameters that might be needed by the elements
-  eleparams.set("total time",time_);
-  eleparams.set("thsl",theta_*dta_);
-  eleparams.set("dt",dta_);
-
-  // parameters for stabilization
-  eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
-
-  // parameters for stabilization
-  eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
-
-  // set vector values needed by elements
-  discret_->ClearState();
-  discret_->SetState("velnp",state_.velnp_);
-  discret_->SetState("veln" ,state_.veln_);
-  discret_->SetState("velnm",state_.velnm_);
-  discret_->SetState("accn" ,state_.accn_);
-
-  // call loop over elements
-  discret_->Evaluate(eleparams,sysmat_,residual_);
-  discret_->ClearState();
-
-  // finalize the system matrix
-  sysmat_->Complete();
-
-  trueresidual_->Update(ResidualScaling(),*residual_,0.0);
-
-  // Apply dirichlet boundary conditions to system of equations
-  // residual displacements are supposed to be zero at boundary
-  // conditions
-  incvel_->PutScalar(0.0);
-  LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(dbcmaps_->CondMap()));
-  */
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -959,95 +928,161 @@ void FLD::CombustFluidImplicitTimeInt::StatisticsAndOutput()
  *------------------------------------------------------------------------------------------------*/
 void FLD::CombustFluidImplicitTimeInt::Output()
 {
-  if (step_%upres_ == 0)  //write solution
+
+
+  const bool write_visualization_data = step_%upres_ == 0;
+  const bool write_restart_data       = uprestart_ != 0 and step_%uprestart_ == 0;
+
+  //-------------------------------------------- output of solution
+
+  if (write_visualization_data or write_restart_data)
   {
-    output_.NewStep    (step_,time_);
-    //output_.WriteVector("velnp", state_.velnp_);
-    std::set<XFEM::PHYSICS::Field> fields_out;
-    fields_out.insert(XFEM::PHYSICS::Velx);
-    fields_out.insert(XFEM::PHYSICS::Vely);
-    fields_out.insert(XFEM::PHYSICS::Velz);
-    fields_out.insert(XFEM::PHYSICS::Pres);
-
-    // TODO: check performance time to built convel vector; if this is costly, it could be stored
-    //       as a private member variable of the time integration scheme, since it is built in two
-    //       places (here after every time step and in the ConVelnp() function in every nonlinear
-    //       iteration)
-
-    Teuchos::RCP<Epetra_Vector> velnp_out = Teuchos::null;
-    if (step_ == 0)
-    {
-      velnp_out = state_.velnp_;
-    }
-    else
-    {
-      velnp_out = dofmanagerForOutput_->transformXFEMtoStandardVector(
-          *state_.velnp_, *standarddofset_, state_.nodalDofDistributionMap_, fields_out);
-    }
-
-    output_.WriteVector("velnp", velnp_out);
-
-//    Teuchos::RCP<Epetra_Vector> accn_out = dofmanagerForOutput_->fillPhysicalOutputVector(
-//        *state_.accn_, standarddofset_, nodalDofDistributionMap_, fields_out);
-//    output_.WriteVector("accn", accn_out);
-
-    // output (hydrodynamic) pressure
-    Teuchos::RCP<Epetra_Vector> pressure = velpressplitterForOutput_.ExtractCondVector(velnp_out);
-    // pressure scaling was removed in COMBUST; we always compute the real pressure [N/m^2] (not p/density!)
-    // pressure->Scale(density_);
-    output_.WriteVector("pressure", pressure);
-
-    //output_.WriteVector("residual", trueresidual_);
-
-    //only perform stress calculation when output is needed
-    if (writestresses_)
-    {
-      dserror("not supported, yet");
-      Teuchos::RCP<Epetra_Vector> traction = CalcStresses();
-      output_.WriteVector("traction",traction);
-    }
-
-    // write domain decomposition for visualization (only once!)
-    if (step_==upres_)
-     output_.WriteElementData();
-
-    if (uprestart_ != 0 and step_%uprestart_ == 0) //add restart data
-    {
-      output_.WriteVector("accn", state_.accn_);
-      output_.WriteVector("veln", state_.veln_);
-      output_.WriteVector("velnm", state_.velnm_);
-    }
-    else if (xfemfields_.find(XFEM::PHYSICS::Temp) != xfemfields_.end())
-    {
-      output_.WriteVector("temperature", velnp_out);
-    }
+    output_->NewStep(step_,time_);
   }
 
-  // write restart also when uprestart_ is not a integer multiple of upres_
-  else if (uprestart_ != 0 and step_%uprestart_ == 0)
+  if (write_visualization_data)  //write solution for visualization
   {
-    output_.NewStep    (step_,time_);
-    output_.WriteVector("velnp", state_.velnp_);
-    //output_.WriteVector("residual", trueresidual_);
+//    Teuchos::RCP<Epetra_Vector> velnp_out = dofmanagerForOutput_->fillPhysicalOutputVector(
+//        *state_.velnp_, dofset_out_, state_.nodalDofDistributionMap_, physprob_.fieldset_);
 
-    //only perform stress calculation when output is needed
-    if (writestresses_)
+    Teuchos::RCP<Epetra_Vector> velnp_out = dofmanagerForOutput_->transformXFEMtoStandardVector(
+        *state_.velnp_, *standarddofset_, state_.nodalDofDistributionMap_, physprob_.xfemfieldset_);
+
+    // write physical fields on full domain including voids etc.
+    if (physprob_.xfemfieldset_.find(XFEM::PHYSICS::Velx) != physprob_.xfemfieldset_.end())
     {
-      Teuchos::RCP<Epetra_Vector> traction = CalcStresses();
-      output_.WriteVector("traction",traction);
+      // output velocity field for visualization
+      output_->WriteVector("velocity_smoothed", velnp_out);
+
+      // output (hydrodynamic) pressure for visualization
+      Teuchos::RCP<Epetra_Vector> pressure = velpressplitterForOutput_.ExtractCondVector(velnp_out);
+//      pressure->Scale(density_);
+      output_->WriteVector("pressure_smoothed", pressure);
+
+      //output_->WriteVector("residual", trueresidual_);
+
+      //only perform stress calculation when output is needed
+      if (writestresses_)
+      {
+        Teuchos::RCP<Epetra_Vector> traction = CalcStresses();
+        output_->WriteVector("traction",traction);
+      }
+    }
+    else if (physprob_.xfemfieldset_.find(XFEM::PHYSICS::Temp) != physprob_.xfemfieldset_.end())
+    {
+      output_->WriteVector("temperature_smoothed", velnp_out);
     }
 
-    output_.WriteVector("accn", state_.accn_);
-    output_.WriteVector("veln", state_.veln_);
-    output_.WriteVector("velnm", state_.velnm_);
+    // write domain decomposition for visualization
+    output_->WriteElementData();
+  }
+
+  // write restart
+  if (write_restart_data)
+  {
+    output_->WriteVector("velnp", state_.velnp_);
+    output_->WriteVector("veln" , state_.veln_);
+    output_->WriteVector("velnm", state_.velnm_);
+    output_->WriteVector("accnp", state_.accnp_);
+    output_->WriteVector("accn" , state_.accn_);
   }
 
   if (discret_->Comm().NumProc() == 1)
   {
-    OutputToGmsh();
+    OutputToGmsh(step_, time_);
   }
+
+//  if (step_%upres_ == 0)  //write solution
+//  {
+//    output_.NewStep(step_,time_);
+//    //output_.WriteVector("velnp", state_.velnp_);
+//    std::set<XFEM::PHYSICS::Field> fields_out;
+//    fields_out.insert(XFEM::PHYSICS::Velx);
+//    fields_out.insert(XFEM::PHYSICS::Vely);
+//    fields_out.insert(XFEM::PHYSICS::Velz);
+//    fields_out.insert(XFEM::PHYSICS::Pres);
+//
+//    //----------------------------------------------------------------------------------------------
+//    // output velocity vector
+//    //----------------------------------------------------------------------------------------------
+//    // TODO: check performance time to built convel vector; if this is costly, it could be stored
+//    //       as a private member variable of the time integration scheme, since it is built in two
+//    //       places (here after every time step and in the ConVelnp() function in every nonlinear
+//    //       iteration)
+//
+//    Teuchos::RCP<Epetra_Vector> velnp_out = Teuchos::null;
+//    if (step_ == 0)
+//    {
+//      std::cout << "output standard velocity vector for time step 0" << std::endl;
+//      velnp_out = state_.velnp_;
+//    }
+//    else
+//    {
+//      std::cout << "output transformed velocity vector for time step 0" << std::endl;
+//      velnp_out = dofmanagerForOutput_->transformXFEMtoStandardVector(
+//          *state_.velnp_, *standarddofset_, state_.nodalDofDistributionMap_, fields_out);
+//    }
+//
+//    output_.WriteVector("velnp", velnp_out);
+//
+//    //----------------------------------------------------------------------------------------------
+//    // output (hydrodynamic) pressure vector
+//    //----------------------------------------------------------------------------------------------
+//    Teuchos::RCP<Epetra_Vector> pressure = velpressplitterForOutput_.ExtractCondVector(velnp_out);
+//    // remark: pressure scaling was removed in COMBUST;
+//    //         we always compute the real (hydrodynamic) pressure [N/m^2] (not p/density!)
+//    // pressure->Scale(density_);
+//    output_.WriteVector("pressure", pressure);
+//
+//    //only perform stress calculation when output is needed
+//    if (writestresses_)
+//    {
+//      dserror("not supported, yet");
+//      Teuchos::RCP<Epetra_Vector> traction = CalcStresses();
+//      output_.WriteVector("traction",traction);
+//    }
+//
+//    // write domain decomposition for visualization (only once!)
+//    if (step_ == upres_)
+//     output_.WriteElementData();
+//
+//    if (uprestart_ != 0 and step_%uprestart_ == 0) //add restart data
+//    {
+//      output_.WriteVector("accn", state_.accn_);
+//      output_.WriteVector("veln", state_.veln_);
+//      output_.WriteVector("velnm", state_.velnm_);
+//    }
+//    else if (physprob_.xfemfieldset_.find(XFEM::PHYSICS::Temp) != physprob_.xfemfieldset_.end())
+//    {
+//      output_.WriteVector("temperature", velnp_out);
+//    }
+//  }
+//
+//  // write restart also when uprestart_ is not a integer multiple of upres_
+//  else if (uprestart_ != 0 and step_%uprestart_ == 0)
+//  {
+//    output_.NewStep    (step_,time_);
+//    output_.WriteVector("velnp", state_.velnp_);
+//    //output_.WriteVector("residual", trueresidual_);
+//
+//    //only perform stress calculation when output is needed
+//    if (writestresses_)
+//    {
+//      Teuchos::RCP<Epetra_Vector> traction = CalcStresses();
+//      output_.WriteVector("traction",traction);
+//    }
+//
+//    output_.WriteVector("accn", state_.accn_);
+//    output_.WriteVector("veln", state_.veln_);
+//    output_.WriteVector("velnm", state_.velnm_);
+//  }
+//
+//  if (discret_->Comm().NumProc() == 1)
+//  {
+//    OutputToGmsh(step_, time_);
+//  }
   return;
-} // FluidImplicitTimeInt::Output
+}
 
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |
@@ -1068,41 +1103,32 @@ void FLD::CombustFluidImplicitTimeInt::ReadRestart(int step)
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
-void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
+void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
+    const int step,
+    const double time
+    ) const
 {
+  cout << "CombustFluidImplicitTimeInt::OutputToGmsh()" << endl;
+
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
-  const bool gmshdebugout = (bool)getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
+  const bool gmshdebugout = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1;
 
-  const bool screen_out = false;
+  const bool screen_out = true;
 
-  if (gmshdebugout)
+  if (gmshdebugout and (this->physprob_.xfemfieldset_.find(XFEM::PHYSICS::Pres) != this->physprob_.xfemfieldset_.end()))
   {
-    cout << "CombustFluidImplicitTimeInt::OutputToGmsh()" << endl;
-
-    std::stringstream filename;
-    std::stringstream filenamedel;
-    filename << DRT::Problem::Instance()->OutputControlFile()->FileName() << "_solution_pressure_" << std::setw(5) << setfill('0') << step_ << ".pos";
-    filenamedel << DRT::Problem::Instance()->OutputControlFile()->FileName() << "_solution_pressure_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
-    std::remove(filenamedel.str().c_str());
-    if (screen_out) std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
-    std::ofstream f_system(filename.str().c_str());
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_pressure", step, 5, screen_out);
+    std::ofstream gmshfilecontent(filename.c_str());
 
     const XFEM::PHYSICS::Field field = XFEM::PHYSICS::Pres;
-
     {
-      stringstream gmshfilecontent;
       gmshfilecontent << "View \" " << "Pressure Solution (Physical) \" {\n";
       for (int i=0; i<discret_->NumMyColElements(); ++i)
       {
-
         const DRT::Element* actele = discret_->lColElement(i);
-        const int elegid = actele->Id();
-
-        LINALG::SerialDenseMatrix xyze_xfemElement(GEO::InitialPositionArray(actele));
 
         // create local copy of information about dofs
-        const COMBUST::CombustElementAnsatz elementAnsatz;
-        const XFEM::ElementDofManager eledofman(*actele,elementAnsatz.getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
+        const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatzp_->getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
 
         vector<int> lm;
         vector<int> lmowner;
@@ -1115,74 +1141,168 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
         const int numparam = eledofman.NumDofPerField(field);
         const vector<int>& dofpos = eledofman.LocalDofPosPerField(field);
 
-        LINALG::SerialDenseVector elementvalues(numparam);
+        LINALG::SerialDenseMatrix elementvalues(1,numparam);
         for (int iparam=0; iparam<numparam; ++iparam)
-          elementvalues(iparam) = myvelnp[dofpos[iparam]];
+          elementvalues(0,iparam) = myvelnp[dofpos[iparam]];
+
+        //------------------------------------------------------------------------------------------
+        // extract local level-set (G-function) values from global vector
+        //------------------------------------------------------------------------------------------
+        // get pointer to vector holding G-function values at the fluid nodes
+        const Teuchos::RCP<Epetra_Vector> phinp = flamefront_->Phinp();
+
+        size_t numnode = actele->NumNode();
+        vector<double> myphinp(numnode);
+        // extract G-function values to element level
+        DRT::UTILS::ExtractMyNodeBasedValues(actele, myphinp, *phinp);
+        const GEO::DomainIntCells& domainintcells =
+          dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(actele);
+
+        for (GEO::DomainIntCells::const_iterator cell =
+          domainintcells.begin(); cell != domainintcells.end(); ++cell)
+        {
+          LINALG::SerialDenseMatrix cellvalues(1,DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+
+          switch(combusttype_)
+          {
+          case INPAR::COMBUST::combusttype_premixedcombustion:
+          {
+            //
+            XFEM::InterpolateCellValuesFromElementValuesLevelSet(*actele, eledofman, *cell, myphinp, field,
+              elementvalues, cellvalues);
+            break;
+          }
+          case INPAR::COMBUST::combusttype_twophaseflow:
+          {
+            //
+            XFEM::InterpolateCellValuesFromElementValuesLevelSetKink(*actele, eledofman, *cell, myphinp, field,
+              elementvalues, cellvalues);
+            break;
+          }
+          default:
+            dserror("unknown type of combustion problem!");
+          }
+          //
+          const size_t numnodes = DRT::UTILS::getNumberOfElementNodes(cell->Shape());
+          LINALG::SerialDenseVector cellvaluesvec(numnodes);
+          for (size_t inode=0; inode<numnodes; ++inode)
+          {
+            cellvaluesvec(inode) = cellvalues(0,inode);
+          }
+          IO::GMSH::cellWithScalarFieldToStream(
+              cell->Shape(), cellvaluesvec, cell->CellNodalPosXYZ(), gmshfilecontent);
+        }
+      }
+      gmshfilecontent << "};\n";
+    }
+    gmshfilecontent.close();
+    if (screen_out) std::cout << " done" << endl;
+  }
+  if (gmshdebugout and (this->physprob_.xfemfieldset_.find(XFEM::PHYSICS::Temp) != this->physprob_.xfemfieldset_.end()) )
+  {
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_temperature", step, 5, screen_out);
+    std::ofstream gmshfilecontent(filename.c_str());
+
+    {
+      const XFEM::PHYSICS::Field field = XFEM::PHYSICS::Temp;
+      gmshfilecontent << "View \" " << "Temperature Solution (Physical) \" {\n";
+      for (int i=0; i<discret_->NumMyColElements(); ++i)
+      {
+        const DRT::Element* actele = discret_->lColElement(i);
+
+        // create local copy of information about dofs
+        const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatzp_->getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
+
+        vector<int> lm;
+        vector<int> lmowner;
+        actele->LocationVector(*(discret_), lm, lmowner);
+
+        // extract local values from the global vector
+        vector<double> myvelnp(lm.size());
+        DRT::UTILS::ExtractMyValues(*state_.velnp_, myvelnp, lm);
+
+        const int numparam = eledofman.NumDofPerField(field);
+        const vector<int>& dofpos = eledofman.LocalDofPosPerField(field);
+
+        LINALG::SerialDenseMatrix elementvalues(1,numparam);
+        for (int iparam=0; iparam<numparam; ++iparam)
+          elementvalues(0,iparam) = myvelnp[dofpos[iparam]];
+
+        //------------------------------------------------------------------------------------------
+        // extract local level-set (G-function) values from global vector
+        //------------------------------------------------------------------------------------------
+        // get pointer to vector holding G-function values at the fluid nodes
+        const Teuchos::RCP<Epetra_Vector> phinp = flamefront_->Phinp();
+
+        size_t numnode = actele->NumNode();
+        vector<double> myphinp(numnode);
+        // extract G-function values to element level
+        DRT::UTILS::ExtractMyNodeBasedValues(actele, myphinp, *phinp);
 
         const GEO::DomainIntCells& domainintcells =
           dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(actele);
         for (GEO::DomainIntCells::const_iterator cell =
           domainintcells.begin(); cell != domainintcells.end(); ++cell)
         {
-          LINALG::SerialDenseVector cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeScalarCellNodeValuesFromNodalUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
-              *cell, field, elementvalues, cellvalues);
+          LINALG::SerialDenseMatrix cellvalues(1,DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
 
-          const LINALG::SerialDenseMatrix& xyze_cell = cell->CellNodalPosXYZ();
-          //LINALG::SerialDenseMatrix xyze_cell(3, cell->NumNode());
-          //cell->NodalPosXYZ(*actele, xyze_cell);
-          // TODO remove
-          gmshfilecontent << IO::GMSH::cellWithScalarFieldToString(
-              cell->Shape(), cellvalues, xyze_cell) << "\n";
-        }
-        if (elegid == 1 and elementvalues.Length() > 0)
-        {
-          //std::cout << elementvalues << "\n";
-          std::ofstream f;
-          const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
-                                  + ".outflowpres.txt";
-          if (step_ <= 1)
-            f.open(fname.c_str(),std::fstream::trunc);
-          else
-            f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+          switch(combusttype_)
+          {
+          case INPAR::COMBUST::combusttype_premixedcombustion:
+          {
+            //
+            XFEM::InterpolateCellValuesFromElementValuesLevelSet(*actele, eledofman, *cell, myphinp, field,
+              elementvalues, cellvalues);
+            break;
+          }
+          case INPAR::COMBUST::combusttype_twophaseflow:
+          {
+            //
+            XFEM::InterpolateCellValuesFromElementValuesLevelSetKink(*actele, eledofman, *cell, myphinp, field,
+              elementvalues, cellvalues);
+            break;
+          }
+          default:
+            dserror("unknown type of combustion problem!");
+          }
 
-          //f << time_ << " " << (-1.5*std::sin(0.1*2.0*time_* M_PI) * M_PI*0.1) << "  " << elementvalues(0,0) << endl;
-          f << time_ << "  " << elementvalues(0) << "\n";
-
-          f.close();
+          const size_t numnodes = DRT::UTILS::getNumberOfElementNodes(cell->Shape());
+          LINALG::SerialDenseVector cellvaluesvec(numnodes);
+          for (size_t inode=1; inode<numnode; ++inode)
+          {
+            cellvaluesvec(inode) = cellvalues(0,inode);
+          }
+          IO::GMSH::cellWithScalarFieldToStream(
+              cell->Shape(), cellvaluesvec, cell->CellNodalPosXYZ(), gmshfilecontent);
         }
       }
       gmshfilecontent << "};\n";
-      f_system << gmshfilecontent.str();
     }
-    f_system.close();
+    gmshfilecontent.close();
     if (screen_out) std::cout << " done" << endl;
   }
 #if 0
   if (gmshdebugout)
   {
-    std::stringstream filename;
-    std::stringstream filenamedel;
-    filename << DRT::Problem::Instance()->OutputControlFile()->FileName() << "_solution_pressure_disc_" << std::setw(5) << setfill('0') << step_
-    << ".pos";
-    filenamedel << DRT::Problem::Instance()->OutputControlFile()->FileName() << "_solution_pressure_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
+    std::ostringstream filename;
+    std::ostringstream filenamedel;
+    const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
+    filename    << filebase << ".solution_field_pressure_disc_" << std::setw(5) << setfill('0') << step   << ".pos";
+    filenamedel << filebase << ".solution_field_pressure_disc_" << std::setw(5) << setfill('0') << step-5 << ".pos";
     std::remove(filenamedel.str().c_str());
     if (screen_out) std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"...";
-    std::ofstream f_system(filename.str().c_str());
+    std::ofstream gmshfilecontent(filename.str().c_str());
 
     const XFEM::PHYSICS::Field field = XFEM::PHYSICS::DiscPres;
 
     {
-      stringstream gmshfilecontent;
-      gmshfilecontent << "View \" " << "Discontinous Pressure Solution (Physical) \" {"
-      << "\n";
+      gmshfilecontent << "View \" " << "Discontinous Pressure Solution (Physical) \" {\n";
       for (int i=0; i<discret_->NumMyColElements(); ++i)
       {
-
         const DRT::Element* actele = discret_->lColElement(i);
-        const int elegid = actele->Id();
 
-        LINALG::SerialDenseMatrix xyze_xfemElement(GEO::InitialPositionArray(actele));
+        static LINALG::Matrix<3,27> xyze_xfemElement;
+        GEO::fillInitialPositionArray(actele,xyze_xfemElement);
 
         const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(COMBUST::getElementAnsatz(actele->Shape()));
 
@@ -1203,11 +1323,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
         LINALG::SerialDenseVector elementvalues(numparam);
         for (int iparam=0; iparam<numparam; ++iparam)
           elementvalues(iparam) = myvelnp[dofpos[iparam]];
-        if(elementvalues.Length() != 0)
-        {
-          //cout << "eleval DiscPres" << endl;
-          //cout << elementvalues << endl;
-        }
+
         const GEO::DomainIntCells& domainintcells =
           dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(actele);
         for (GEO::DomainIntCells::const_iterator cell =
@@ -1216,102 +1332,56 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
           LINALG::SerialDenseVector cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
               *cell, field, elementvalues, cellvalues);
-
-          const LINALG::SerialDenseMatrix& xyze_cell = cell->CellNodalPosXYZ();
-          //LINALG::SerialDenseMatrix xyze_cell(3, cell->NumNode());
-          //cell->NodalPosXYZ(*actele, xyze_cell);
-          //TODO remove
-          if(elementvalues.Length() != 0)
-          {
-            //cout << "cellvalues DiscPres" << endl;
-            //cout << cellvalues << endl;
-          }
-          gmshfilecontent << IO::GMSH::cellWithScalarFieldToString(
-              cell->Shape(), cellvalues, xyze_cell) << "\n";
+          IO::GMSH::cellWithScalarFieldToStream(
+              cell->Shape(), cellvalues, cell->CellNodalPosXYZ(), gmshfilecontent);
         }
       }
       gmshfilecontent << "};\n";
-      f_system << gmshfilecontent.str();
     }
-    f_system.close();
+    gmshfilecontent.close();
     if (screen_out) std::cout << " done" << endl;
   }
 #endif
 #if 0
   if (gmshdebugout)
   {
-    //std::stringstream filename;
-    std::stringstream filenamexx;
-    std::stringstream filenameyy;
-    std::stringstream filenamezz;
-    std::stringstream filenamexy;
-    std::stringstream filenamexz;
-    std::stringstream filenameyz;
-    std::stringstream filenamexxdel;
-    std::stringstream filenameyydel;
-    std::stringstream filenamezzdel;
-    std::stringstream filenamexydel;
-    std::stringstream filenamexzdel;
-    std::stringstream filenameyzdel;
-    //filename   << "solution_tau_disc_"   << std::setw(5) << setfill('0') << step_ << ".pos";
-    const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
-    filenamexx << filebase << "_solution_tauxx_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
-    filenameyy << filebase << "_solution_tauyy_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
-    filenamezz << filebase << "_solution_tauzz_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
-    filenamexy << filebase << "_solution_tauxy_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
-    filenamexz << filebase << "_solution_tauxz_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
-    filenameyz << filebase << "_solution_tauyz_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
-    filenamexxdel << filebase << "_solution_tauxx_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
-    filenameyydel << filebase << "_solution_tauyy_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
-    filenamezzdel << filebase << "_solution_tauzz_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
-    filenamexydel << filebase << "_solution_tauxy_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
-    filenamexzdel << filebase << "_solution_tauxz_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
-    filenameyzdel << filebase << "_solution_tauyz_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
-    std::remove(filenamexxdel.str().c_str());
-    std::remove(filenameyydel.str().c_str());
-    std::remove(filenamezzdel.str().c_str());
-    std::remove(filenamexydel.str().c_str());
-    std::remove(filenamexzdel.str().c_str());
-    std::remove(filenameyzdel.str().c_str());
-    if (screen_out) std::cout << "writing " << std::left << std::setw(50) <<"stresses"<<"..."<<flush;
-
-    //std::ofstream f_system(  filename.str().c_str());
-    std::ofstream f_systemxx(filenamexx.str().c_str());
-    std::ofstream f_systemyy(filenameyy.str().c_str());
-    std::ofstream f_systemzz(filenamezz.str().c_str());
-    std::ofstream f_systemxy(filenamexy.str().c_str());
-    std::ofstream f_systemxz(filenamexz.str().c_str());
-    std::ofstream f_systemyz(filenameyz.str().c_str());
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigma_disc", step, 5, screen_out);
+    cout << endl;
+    const std::string filenamexx = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigmaxx_disc", step, 5, screen_out);
+    cout << endl;
+    const std::string filenameyy = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigmayy_disc", step, 5, screen_out);
+    cout << endl;
+    const std::string filenamezz = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigmazz_disc", step, 5, screen_out);
+    cout << endl;
+    const std::string filenamexy = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigmaxy_disc", step, 5, screen_out);
+    cout << endl;
+    const std::string filenamexz = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigmaxz_disc", step, 5, screen_out);
+    cout << endl;
+    const std::string filenameyz = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigmayz_disc", step, 5, screen_out);
+    std::ofstream gmshfilecontent(  filename.c_str());
+    std::ofstream gmshfilecontentxx(filenamexx.c_str());
+    std::ofstream gmshfilecontentyy(filenameyy.c_str());
+    std::ofstream gmshfilecontentzz(filenamezz.c_str());
+    std::ofstream gmshfilecontentxy(filenamexy.c_str());
+    std::ofstream gmshfilecontentxz(filenamexz.c_str());
+    std::ofstream gmshfilecontentyz(filenameyz.c_str());
 
     const XFEM::PHYSICS::Field field = XFEM::PHYSICS::Sigmaxx;
 
     {
-      //stringstream gmshfilecontent;
-      stringstream gmshfilecontentxx;
-      stringstream gmshfilecontentyy;
-      stringstream gmshfilecontentzz;
-      stringstream gmshfilecontentxy;
-      stringstream gmshfilecontentxz;
-      stringstream gmshfilecontentyz;
-      //gmshfilecontent << "View \" " << "Discontinous Viscous Stress Solution (Physical) \" {" << endl;
-      gmshfilecontentxx << "View \" " << "Discontinous Viscous Stress (xx) Solution (Physical) \" {\n";
-      gmshfilecontentyy << "View \" " << "Discontinous Viscous Stress (yy) Solution (Physical) \" {\n";
-      gmshfilecontentzz << "View \" " << "Discontinous Viscous Stress (zz) Solution (Physical) \" {\n";
-      gmshfilecontentxy << "View \" " << "Discontinous Viscous Stress (xy) Solution (Physical) \" {\n";
-      gmshfilecontentxz << "View \" " << "Discontinous Viscous Stress (xz) Solution (Physical) \" {\n";
-      gmshfilecontentyz << "View \" " << "Discontinous Viscous Stress (yz) Solution (Physical) \" {\n";
+      gmshfilecontent   << "View \" " << "Discontinous Stress Solution (Physical) \" {" << endl;
+      gmshfilecontentxx << "View \" " << "Discontinous Stress (xx) Solution (Physical) \" {\n";
+      gmshfilecontentyy << "View \" " << "Discontinous Stress (yy) Solution (Physical) \" {\n";
+      gmshfilecontentzz << "View \" " << "Discontinous Stress (zz) Solution (Physical) \" {\n";
+      gmshfilecontentxy << "View \" " << "Discontinous Stress (xy) Solution (Physical) \" {\n";
+      gmshfilecontentxz << "View \" " << "Discontinous Stress (xz) Solution (Physical) \" {\n";
+      gmshfilecontentyz << "View \" " << "Discontinous Stress (yz) Solution (Physical) \" {\n";
       for (int i=0; i<discret_->NumMyColElements(); ++i)
       {
-
         const DRT::Element* actele = discret_->lColElement(i);
-        const int elegid = actele->Id();
-
-        LINALG::SerialDenseMatrix xyze_xfemElement(GEO::InitialPositionArray(actele));
-
-        const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(COMBUST::getElementAnsatz(actele->Shape()));
 
         // create local copy of information about dofs
-        const XFEM::ElementDofManager eledofman(*actele,element_ansatz,*dofmanagerForOutput_);
+        const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatzp_->getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
 
         vector<int> lm;
         vector<int> lmowner;
@@ -1357,70 +1427,68 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
           //cell->NodalPosXYZ(*actele, xyze_cell);
           // TODO remove
           const LINALG::SerialDenseMatrix& xyze_cell = cell->CellNodalPosXYZ();
-//          {
-//          LINALG::SerialDenseMatrix cellvalues(9,DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-//          XFEM::computeTensorCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
-//              *cell, field, elementvalues, cellvalues);
-//          gmshfilecontent << IO::GMSH::cellWithTensorFieldToString(cell->Shape(), cellvalues, xyze_cell) << endl;
-//          }
+
+          {
+          LINALG::SerialDenseMatrix cellvalues(9,DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+          XFEM::computeTensorCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
+              *cell, field, elementvalues, cellvalues);
+           IO::GMSH::cellWithTensorFieldToStream(cell->Shape(), cellvalues, xyze_cell, gmshfilecontent);
+          }
 
           {
           LINALG::SerialDenseVector cellvaluexx(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvaluexx, cellvaluexx);
-          gmshfilecontentxx << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvaluexx, xyze_cell) << "\n";
+          IO::GMSH::cellWithScalarFieldToStream(cell->Shape(), cellvaluexx, xyze_cell, gmshfilecontentxx);
           }
           {
           LINALG::SerialDenseVector cellvalueyy(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvalueyy, cellvalueyy);
-          gmshfilecontentyy << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvalueyy, xyze_cell) << "\n";
+          IO::GMSH::cellWithScalarFieldToStream(cell->Shape(), cellvalueyy, xyze_cell, gmshfilecontentyy);
           }
           {
           LINALG::SerialDenseVector cellvaluezz(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvaluezz, cellvaluezz);
-          gmshfilecontentzz << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvaluezz, xyze_cell) << "\n";
+          IO::GMSH::cellWithScalarFieldToStream(cell->Shape(), cellvaluezz, xyze_cell, gmshfilecontentzz);
           }
           {
           LINALG::SerialDenseVector cellvaluexy(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvaluexy, cellvaluexy);
-          gmshfilecontentxy << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvaluexy, xyze_cell) << "\n";
+          IO::GMSH::cellWithScalarFieldToStream(cell->Shape(), cellvaluexy, xyze_cell, gmshfilecontentxy);
           }
           {
           LINALG::SerialDenseVector cellvaluexz(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvaluexz, cellvaluexz);
-          gmshfilecontentxz << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvaluexz, xyze_cell) << "\n";
+          IO::GMSH::cellWithScalarFieldToStream(cell->Shape(), cellvaluexz, xyze_cell, gmshfilecontentxz);
           }
           {
           LINALG::SerialDenseVector cellvalueyz(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvalueyz, cellvalueyz);
-          gmshfilecontentyz << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvalueyz, xyze_cell) << "\n";
+          IO::GMSH::cellWithScalarFieldToStream(cell->Shape(), cellvalueyz, xyze_cell, gmshfilecontentyz);
           }
         }
       }
-      //gmshfilecontent   << "};" << endl;
+      gmshfilecontent   << "};\n";
       gmshfilecontentxx << "};\n";
       gmshfilecontentyy << "};\n";
       gmshfilecontentzz << "};\n";
       gmshfilecontentxy << "};\n";
       gmshfilecontentxz << "};\n";
       gmshfilecontentyz << "};\n";
-      //f_system   << gmshfilecontent.str();
-      f_systemxx << gmshfilecontentxx.str();
-      f_systemyy << gmshfilecontentyy.str();
-      f_systemzz << gmshfilecontentzz.str();
-      f_systemxy << gmshfilecontentxy.str();
-      f_systemxz << gmshfilecontentxz.str();
-      f_systemyz << gmshfilecontentyz.str();
     }
     if (screen_out) std::cout << " done" << endl;
   }
 #endif
 
-
-  PlotVectorFieldToGmsh(state_.velnp_, "_solution_velocity_","Velocity Solution (Physical) n+1",true);
-//  PlotVectorFieldToGmsh(state_.veln_,  "_solution_velocity_old_step_","Velocity Solution (Physical) n",false);
-//  PlotVectorFieldToGmsh(state_.velnm_, "_solution_velocity_old2_step_","Velocity Solution (Physical) n-1",false);
-//  PlotVectorFieldToGmsh(state_.accn_,  "_solution_acceleration_old_step_","Acceleration Solution (Physical) n",false);
+  if (this->physprob_.xfemfieldset_.find(XFEM::PHYSICS::Velx) != this->physprob_.xfemfieldset_.end())
+  {
+    PlotVectorFieldToGmsh(state_.velnp_, "solution_field_velocity_np","Velocity Solution (Physical) n+1",true, step, time);
+    PlotVectorFieldToGmsh(state_.veln_,  "solution_field_velocity_n","Velocity Solution (Physical) n",false, step, time);
+//    PlotVectorFieldToGmsh(state_.velnm_, "solution_field_velocity_nm","Velocity Solution (Physical) n-1",false, step, time);
+//    PlotVectorFieldToGmsh(state_.accnp_, "solution_field_acceleration_np","Acceleration Solution (Physical) n+1",false, step, time);
+//    PlotVectorFieldToGmsh(state_.accn_,  "solution_field_acceleration_n","Acceleration Solution (Physical) n",false, step, time);
+  }
 }
+
 
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |
@@ -1429,37 +1497,28 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
     const Teuchos::RCP<Epetra_Vector>   vectorfield,
     const std::string filestr,
     const std::string name_in_gmsh,
-    const bool plot_to_gnuplot
+    const bool plot_to_gnuplot,
+    const int step,
+    const double time
     ) const
 {
+  cout << "PlotVectorFieldToGmsh" << endl;
 
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
-  const bool gmshdebugout = (bool)getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
+   const bool gmshdebugout = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1;
 
-  const bool screen_out = false;
+  const bool screen_out = true;
 
   if (gmshdebugout)
   {
-
-    bool ele_to_textfile = false;
-    std::stringstream filename;
-    std::stringstream filenamedel;
-    const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
-    filename << filebase << filestr << std::setw(5) << std::setfill('0') << step_ << ".pos";
-    filenamedel << filebase << filestr << std::setw(5) << std::setfill('0') << step_-5 << ".pos";
-    std::remove(filenamedel.str().c_str());
-    if (screen_out) std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"...";
-    std::ofstream f_system(filename.str().c_str());
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filestr, step, 5, screen_out);
+    std::ofstream gmshfilecontent(filename.c_str());
 
     {
-      stringstream gmshfilecontent;
       gmshfilecontent << "View \" " << name_in_gmsh << "\" {\n";
       for (int i=0; i<discret_->NumMyColElements(); ++i)
       {
         const DRT::Element* actele = discret_->lColElement(i);
-        const int elegid = actele->Id();
-
-        LINALG::SerialDenseMatrix xyze_xfemElement = GEO::InitialPositionArray(actele);
 
         // create local copy of information about dofs
         const COMBUST::CombustElementAnsatz elementAnsatz;
@@ -1467,12 +1526,11 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
 
         vector<int> lm;
         vector<int> lmowner;
-        actele->LocationVector(*(discret_), lm, lmowner);
+        actele->LocationVector(*discret_, lm, lmowner);
 
         // extract local values from the global vector
         vector<double> myvelnp(lm.size());
         DRT::UTILS::ExtractMyValues(*vectorfield, myvelnp, lm);
-
 
         const vector<int>& dofposvelx =
           eledofman.LocalDofPosPerField(XFEM::PHYSICS::Velx);
@@ -1490,79 +1548,96 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
           elementvalues(2, iparam) = myvelnp[dofposvelz[iparam]];
         }
 
-        if (!dofmanagerForOutput_->getInterfaceHandle()->ElementIntersected(elegid))
+        //------------------------------------------------------------------------------------------
+        // extract local level-set (G-function) values from global vector
+        //------------------------------------------------------------------------------------------
+        // get pointer to vector holding G-function values at the fluid nodes
+        const Teuchos::RCP<Epetra_Vector> phinp = flamefront_->Phinp();
+
+        size_t numnode = actele->NumNode();
+        vector<double> myphinp(numnode);
+        // extract G-function values to element level
+        DRT::UTILS::ExtractMyNodeBasedValues(actele, myphinp, *phinp);
+
+        const GEO::DomainIntCells& domainintcells =
+          dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(actele);
+        for (GEO::DomainIntCells::const_iterator cell =
+          domainintcells.begin(); cell != domainintcells.end(); ++cell)
         {
-          const GEO::DomainIntCells& domainintcells =
-            dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(actele);
-          for (GEO::DomainIntCells::const_iterator cell =
-            domainintcells.begin(); cell != domainintcells.end(); ++cell)
+          LINALG::SerialDenseMatrix cellvalues(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+
+          const XFEM::PHYSICS::Field field = XFEM::PHYSICS::Velx;
+          switch(combusttype_)
           {
-            LINALG::SerialDenseMatrix cellvalues(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-            //std::cout << cellvalues << endl;
-            XFEM::computeVectorCellNodeValues(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
-                *cell, XFEM::PHYSICS::Velx, elementvalues, cellvalues);
-            //LINALG::SerialDenseMatrix xyze_cell(3, cell->NumNode());
-            //cell->NodalPosXYZ(*actele, xyze_cell);
-            // TODO remove
-            const LINALG::SerialDenseMatrix& xyze_cell = cell->CellNodalPosXYZ();
-            gmshfilecontent << IO::GMSH::cellWithVectorFieldToString(
-                cell->Shape(), cellvalues, xyze_cell) << "\n";
+          case INPAR::COMBUST::combusttype_premixedcombustion:
+          {
+            //
+            XFEM::InterpolateCellValuesFromElementValuesLevelSet(*actele, eledofman, *cell, myphinp, field,
+              elementvalues, cellvalues);
+            break;
           }
-        }
-        else
-        {
-          const GEO::BoundaryIntCells& boundaryintcells =
-            dofmanagerForOutput_->getInterfaceHandle()->GetBoundaryIntCells(elegid);
-          // draw boundary integration cells with values
-          for (GEO::BoundaryIntCells::const_iterator cell =
-            boundaryintcells.begin(); cell != boundaryintcells.end(); ++cell)
+          case INPAR::COMBUST::combusttype_twophaseflow:
           {
-            LINALG::SerialDenseMatrix cellvalues(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-            //std::cout << cellvalues << endl;
-            XFEM::computeVectorCellNodeValues(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
-                *cell, XFEM::PHYSICS::Velx, 0, elementvalues, cellvalues);
-            //LINALG::SerialDenseMatrix xyze_cell(3, cell->NumNode());
-            //cell->NodalPosXYZ(*actele, xyze_cell);
-            // TODO remove
-            const LINALG::SerialDenseMatrix& xyze_cell = cell->CellNodalPosXYZ();
-            gmshfilecontent << IO::GMSH::cellWithVectorFieldToString(
-                cell->Shape(), cellvalues, xyze_cell) << "\n";
+            //
+            XFEM::InterpolateCellValuesFromElementValuesLevelSetKink(*actele, eledofman, *cell, myphinp, field,
+              elementvalues, cellvalues);
+            break;
+          }
+          default:
+            dserror("unknown type of combustion problem!");
           }
 
-          // draw uncutted element
-          {
-            LINALG::SerialDenseMatrix elevalues(3, DRT::UTILS::getNumberOfElementNodes(actele->Shape()),true);
-            const LINALG::SerialDenseMatrix xyze_ele(GEO::InitialPositionArray(actele));
-            const GEO::DomainIntCell cell(actele->Shape(), xyze_ele);
-            gmshfilecontent << IO::GMSH::cellWithVectorFieldToString(
-                actele->Shape(), elevalues, xyze_ele) << "\n";
-          }
-
+          IO::GMSH::cellWithVectorFieldToStream(
+              cell->Shape(), cellvalues, cell->CellNodalPosXYZ(), gmshfilecontent);
         }
+//          const GEO::BoundaryIntCells& boundaryintcells =
+//              dofmanagerForOutput_->getInterfaceHandle()->GetBoundaryIntCells(actele->Id());
+//          // draw boundary integration cells with values
+//          for (GEO::BoundaryIntCells::const_iterator cell =
+//            boundaryintcells.begin(); cell != boundaryintcells.end(); ++cell)
+//          {
+//            LINALG::SerialDenseMatrix cellvalues(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+//
+//            // the 'label' is set to -1 for combustion problems   henke 10/09
+//            XFEM::computeVectorCellNodeValues(*actele, ih_np_, eledofman,
+//                *cell, XFEM::PHYSICS::Velx, -1, elementvalues, cellvalues);
+//            IO::GMSH::cellWithVectorFieldToStream(
+//                cell->Shape(), cellvalues, cell->CellNodalPosXYZ(), gmshfilecontent);
+//          }
+
+        // draw uncut element
+        {
+          LINALG::SerialDenseMatrix elevalues(3, DRT::UTILS::getNumberOfElementNodes(actele->Shape()),true);
+          static LINALG::Matrix<3,27> xyze_ele;
+          GEO::fillInitialPositionArray(actele, xyze_ele);
+          IO::GMSH::cellWithVectorFieldToStream(
+                          actele->Shape(), elevalues, xyze_ele, gmshfilecontent);
+        }
+
+//        }
         //if (dofmanagerForOutput_->getInterfaceHandle()->ElementIntersected(elegid) and not ele_to_textfile and ele_to_textfile2)
-        if (elegid == 1 and elementvalues.N() > 0 and plot_to_gnuplot)
+//        if (elegid == 14 and elementvalues.N() > 0 and plot_to_gnuplot)
+        if (actele->Id() == 1 and elementvalues.N() > 0 and plot_to_gnuplot)
         {
-          ele_to_textfile = true;
           //std::cout << elementvalues << std::endl;
           std::ofstream f;
           const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
                                   + ".outflowvel.txt";
-          if (step_ <= 1)
+          if (step <= 1)
             f.open(fname.c_str(),std::fstream::trunc);
           else
             f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
 
           //f << time_ << " " << (-1.5*std::sin(0.1*2.0*time_* M_PI) * M_PI*0.1) << "  " << elementvalues(0,0) << endl;
-          f << time_ << "  " << elementvalues(0,0) << "\n";
+          f << time << "  " << elementvalues(0,0) << "\n";
 
           f.close();
         }
 
       }
       gmshfilecontent << "};\n";
-      f_system << gmshfilecontent.str();
     }
-    f_system.close();
+    gmshfilecontent.close();
     if (screen_out) std::cout << " done" << endl;
   }
 }

@@ -16,6 +16,7 @@ Maintainer: Axel Gerstenberger
 
 #include "interface.H"
 #include "../drt_combust/combust_interface.H"
+#include "../drt_inpar/inpar_combust.H"
 #include "dof_management_element.H"
 #include "xfem_enums.H"
 #include "../drt_lib/linalg_serialdensematrix.H"
@@ -35,7 +36,7 @@ namespace XFEM
     /*!
     * \brief for each given Enrichment in enrset, compute the enrichment value at actpos
     *
-    * if one already knows, an which side of the discontinuity one computes something,
+    * if one already knows, on which side of the discontinuity one computes something,
     * the information can be given via approachdirection
     */
     explicit ElementEnrichmentValues(
@@ -73,13 +74,26 @@ namespace XFEM
       const int numnode = ele_.NumNode();
       std::map<int,std::map<XFEM::Enrichment, double> > enrvalnodes;
 
+      std::vector<double> enrvalderxy(3);
+      enrvalderxy[0] = 0.0;
+      enrvalderxy[1] = 0.0;
+      enrvalderxy[2] = 0.0;
+      std::vector<double> enrvalderxy2(6);
+      for (int isd=0; isd<6; isd++)
+      {
+        enrvalderxy2[isd] = 0.0;
+      }
+
       //------------------------------------------------------
       // evaluate enrichment values for this integration cell
       //------------------------------------------------------
       for (std::set<XFEM::Enrichment>::const_iterator enriter = enrset.begin(); enriter != enrset.end(); ++enriter)
       {
         const double enrvalcell = enriter->EnrValueIntCell(cell);
+//cout << "enrichment value cell " << enrvalcell << endl;
         enrvals_[*enriter] = enrvalcell;
+        enrvalderxy_[*enriter] = enrvalderxy;
+        enrvalderxy2_[*enriter] = enrvalderxy2;
       }
 
       //------------------------------------------------------------
@@ -87,14 +101,19 @@ namespace XFEM
       //------------------------------------------------------------
       for(int inode=0; inode < numnode; inode++)
       {
-        std::map<XFEM::Enrichment, double> enrvalstmp;
+        std::map<XFEM::Enrichment, double> enrvalues;
         for (std::set<XFEM::Enrichment>::const_iterator enriter = enrset.begin(); enriter != enrset.end(); ++enriter)
         {
-          const double enrvalnode = enriter->EnrValueNodeLevelSet(inode,phi);
-          enrvalstmp[*enriter] = enrvalnode;
+          double enrvalnode = 0.0;
+          if (enriter->Type()==XFEM::Enrichment::typeJump || enriter->Type()==XFEM::Enrichment::typeVoid)
+          {
+            enrvalnode = enriter->EnrValueNodeLevelSet(inode,phi);
+          }
+//cout << "enrichment node: " << inode << "value: " << enrvalnode << endl;
+          enrvalues[*enriter] = enrvalnode;
         }
-        enrvalnodes[inode] = enrvalstmp;
-        enrvalstmp.clear();
+        enrvalnodes[inode] = enrvalues;
+        enrvalues.clear();
       }
 
       //------------------------------------------------------------------------
@@ -107,13 +126,14 @@ namespace XFEM
 
       for(int inode=0; inode < numnode; inode++)
       {
-        std::map<XFEM::Enrichment, double> enrvalstmp;
+        std::map<XFEM::Enrichment, double> enrvalues;
         for (std::set<XFEM::Enrichment>::const_iterator enriter = enrset.begin(); enriter != enrset.end(); ++enriter)
         {
-          enrvalstmp[*enriter] = enrvals_.find(*enriter)->second - (enrvalnodes.find(inode)->second).find(*enriter)->second;
+          enrvalues[*enriter] = enrvals_.find(*enriter)->second - (enrvalnodes.find(inode)->second).find(*enriter)->second;
+//cout << "enrval difference" << enrvalues[*enriter] << endl;
         }
-        enrvalnodes_[inode] = enrvalstmp;
-        enrvalstmp.clear();
+        enrvalnodes_[inode] = enrvalues;
+        enrvalues.clear();
       }
 
       return;
@@ -123,7 +143,7 @@ namespace XFEM
     /*!
      * \brief compute enrichment value at one side of an embedded interface
      *
-     * constructor called for combustion problems (jump enrichment)
+     * constructor called for evaluation of boundary integrals in combustion problems (jump enrichment)
      *
      * \author henke 09/09
      */
@@ -139,12 +159,22 @@ namespace XFEM
     {
       enrvals_.clear();
       enrvalnodes_.clear();
-      enrvalderxy_.clear();  // not used for jump enrichment
-      enrvalderxy2_.clear(); // not used for jump enrichment
+      enrvalderxy_.clear();  // 0 for jump enrichment
+      enrvalderxy2_.clear(); // 0 for jump enrichment
 
       const std::set<XFEM::Enrichment>& enrset(dofman.getUniqueEnrichments());
       const int numnode = ele_.NumNode();
       std::map<int,std::map<XFEM::Enrichment, double> > enrvalnodes;
+
+      std::vector<double> enrvalderxy(3);
+      enrvalderxy[0] = 0.0;
+      enrvalderxy[1] = 0.0;
+      enrvalderxy[2] = 0.0;
+      std::vector<double> enrvalderxy2(6);
+      for (int isd=0; isd<6; isd++)
+      {
+        enrvalderxy2[isd] = 0.0;
+      }
 
       //------------------------------------------------------
       // evaluate enrichment values for this integration cell
@@ -153,6 +183,8 @@ namespace XFEM
       {
         const double enrvalside = enriter->EnrValueAtInterface(approachdirection);
         enrvals_[*enriter] = enrvalside;
+        enrvalderxy_[*enriter] = enrvalderxy;
+        enrvalderxy2_[*enriter] = enrvalderxy2;
       }
 
       //------------------------------------------------------------
@@ -218,7 +250,6 @@ namespace XFEM
       enrvalderxy2_.clear();
 
       const std::set<XFEM::Enrichment>& enrset(dofman.getUniqueEnrichments());
-
       const int numnode = ele_.NumNode();
 
       for(int inode=0; inode<numnode; inode++)
@@ -255,11 +286,13 @@ namespace XFEM
 
 
     /*!
-    * \brief For a given situation compute the enriched shape functions
+    * \brief compute the enriched shape functions
     *
-    * simplest case: jump or void enrichment
-    * -> no chain rule, since enrichment function derivative is zero
-    * TODO: if enrichment function has derivatives not equal to zero, we need the chain rule here
+    * remarks:
+    * - simplest case: jump or void enrichment
+    *   -> no chain rule, since derivative of enrichment function is zero
+    * - be carefull: if enrichment function has derivatives not equal to zero, we need the chain rule here!
+    *   -> for kink enrichment use ComputeKinkEnrichedNodalShapefunction()
     */
     template<class VI, class VO>
     inline void ComputeEnrichedNodalShapefunction(
@@ -282,6 +315,7 @@ namespace XFEM
           if (enrfield->getField() == field)
           {
             const double enrval = enrvals_.find(enrfield->getEnrichment())->second;
+//cout << "enrichment value: " << enrval << endl;
             enr_funct(dofcounter) = funct(inode) * enrval;
             dofcounter += 1;
           }
@@ -291,11 +325,56 @@ namespace XFEM
     }
 
     /*!
-    * \brief For a given situation compute the enriched shape functions
+    * \brief compute the enriched shape functions
     *
-    * simplest case: jump or void enrichment
-    * -> no chain rule, since enrichment function derivative is zero
-    * TODO: if enrichment function has derivatives not equal to zero, we need the chain rule here
+    * the new one!
+    *
+    * remarks:
+    * - simplest case: jump or void enrichment
+    *   -> no chain rule, since derivative of enrichment function is zero
+    * - be carefull: if enrichment function has derivatives not equal to zero, we need the chain rule here!
+    *   -> for kink enrichment use ComputeKinkEnrichedNodalShapefunction()
+    */
+    template<class VI, class VO>
+    inline void ComputeModifiedEnrichedNodalShapefunction(
+        const XFEM::PHYSICS::Field                 field,
+        const VI&                                  funct,
+        VO&                                        enr_funct
+    ) const
+    {
+      const int* nodeids = ele_.NodeIds();
+      const std::size_t numnode = ele_.NumNode();
+
+      std::size_t dofcounter = 0;
+      for (std::size_t inode=0; inode < numnode; ++inode)
+      {
+        const int gid = nodeids[inode];
+        const std::set<XFEM::FieldEnr>& enrfieldset = dofman_.FieldEnrSetPerNode(gid);
+        const std::map<XFEM::Enrichment, double> enrvalues = enrvalnodes_.find(inode)->second;
+
+        for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
+          enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
+        {
+          if (enrfield->getField() == field)
+          {
+            const double enrval = enrvalues.find(enrfield->getEnrichment())->second;
+            enr_funct(dofcounter) = funct(inode) * enrval;
+            dofcounter += 1;
+          }
+        }
+      }
+      dsassert(dofcounter == dofman_.NumDofPerField(field), "mismatch in information from eledofmanager!");
+    }
+
+
+    /*!
+    * \brief compute the enriched shape functions
+    *
+    * remarks:
+    * - simplest case: jump or void enrichment
+    *   -> no chain rule, since derivative of enrichment function is zero
+    * - be carefull: if enrichment function has derivatives not equal to zero, we need the chain rule here!
+    *   -> for kink enrichment use ComputeKinkEnrichedNodalShapefunction()
     */
     template<class VI, class MI, class VO, class MO>
     inline void ComputeEnrichedNodalShapefunction(
@@ -333,11 +412,13 @@ namespace XFEM
     }
 
     /*!
-    * \brief For a given situation compute the enriched shape functions
+    * \brief compute the enriched shape functions
     *
-    * simplest case: jump or void enrichment
-    * -> no chain rule, since enrichment function derivative is zero
-    * TODO: if enrichment function has derivatives not equal to zero, we need the chain rule here
+    * remarks:
+    * - simplest case: jump or void enrichment
+    *   -> no chain rule, since derivative of enrichment function is zero
+    * - be carefull: if enrichment function has derivatives not equal to zero, we need the chain rule here!
+    *   -> for kink enrichment use ComputeKinkEnrichedNodalShapefunction()
     */
     template<class VI, class MI1, class MI2, class VO, class MO1, class MO2 >
     inline void ComputeEnrichedNodalShapefunction(
@@ -381,14 +462,14 @@ namespace XFEM
     }
 
     /*!
-     * \brief For a given situation compute the enriched shape functions for kink enrichment
+     * \brief compute the enriched shape functions for kink enrichment
      *
      * due to the kink enrichment, the chain rule is applied here
      *
-     * \author henke (rasthofer) 06/09
+     * \author rasthofer
      */
     template<class VI, class MI1, class MI2, class VO, class MO1, class MO2 >
-    inline void ComputeKinkEnrichedNodalShapefunction(
+    inline void ComputeModifiedEnrichedNodalShapefunction(
         const XFEM::PHYSICS::Field field,
         const VI& funct,
         const MI1& derxy,
@@ -414,7 +495,12 @@ namespace XFEM
           if (enrfield->getField() == field)
           {
             const double enrval = enrvalues.find(enrfield->getEnrichment())->second;
+//cout << "enrval " << enrval << endl;
             const std::vector<double> enrvalderxy = enrvalderxy_.find(enrfield->getEnrichment())->second;
+//cout << "enrvalderxy groesse: " << enrvalderxy.size() << endl;
+//for (size_t count=0; count < enrvalderxy.size(); ++count)
+//  cout << "enrvalderxy " << count << "wert " << enrvalderxy[count] << endl;
+
             const std::vector<double> enrvalderxy2 = enrvalderxy2_.find(enrfield->getEnrichment())->second;
 
             enr_funct(dofcounter) = funct(inode) * enrval;
@@ -424,7 +510,6 @@ namespace XFEM
               //product rule
               enr_derxy(isd,dofcounter) = derxy(isd,inode) * enrval + funct(inode) * enrvalderxy[isd];
             }
-
             enr_derxy2(0,dofcounter) = derxy2(0,inode) * enrval + funct(inode) * enrvalderxy2[0] + derxy(0,inode) * enrvalderxy[0] + derxy(0,inode) * enrvalderxy[0];
             enr_derxy2(1,dofcounter) = derxy2(1,inode) * enrval + funct(inode) * enrvalderxy2[1] + derxy(1,inode) * enrvalderxy[1] + derxy(1,inode) * enrvalderxy[1];
             enr_derxy2(2,dofcounter) = derxy2(2,inode) * enrval + funct(inode) * enrvalderxy2[2] + derxy(2,inode) * enrvalderxy[2] + derxy(2,inode) * enrvalderxy[2];
@@ -538,7 +623,10 @@ namespace XFEM
   };
 
 
-//! for output, compute values on integration cells
+/*! \brief for output, compute values on integration cells
+ *
+ * used for boundary discretization based XFEM problems
+ */
 void computeScalarCellNodeValuesFromNodalUnknowns(
   const DRT::Element&                 ele,
   const RCP<XFEM::InterfaceHandle>&   ih,
@@ -548,6 +636,41 @@ void computeScalarCellNodeValuesFromNodalUnknowns(
   const LINALG::SerialDenseVector&    elementvalues,
   LINALG::SerialDenseVector&          cellvalues
   );
+
+
+/*! \brief for output, interpolate field to integration cells
+ *
+ * interpolate field from element node values to cell node values based
+ * on a level-set field
+ * remark: function used for modified jump enrichment strategy
+ */
+void InterpolateCellValuesFromElementValuesLevelSet(
+  const DRT::Element&                   ele,
+  const XFEM::ElementDofManager&        dofman,
+  const GEO::DomainIntCell&             cell,
+  const std::vector<double>&            phivalues,
+  const XFEM::PHYSICS::Field            field,
+  const LINALG::SerialDenseMatrix&      elementvalues,
+  LINALG::SerialDenseMatrix&            cellvalues
+  );
+
+
+/*! \brief for output, interpolate field to integration cells
+ *
+ * interpolate field from element node values to cell node values based
+ * on a level-set field
+ * remark: function used for modified kink enrichment strategy
+ */
+void InterpolateCellValuesFromElementValuesLevelSetKink(
+  const DRT::Element&                   ele,
+  const XFEM::ElementDofManager&        dofman,
+  const GEO::DomainIntCell&             cell,
+  const std::vector<double>&            phivalues,
+  const XFEM::PHYSICS::Field            field,
+  const LINALG::SerialDenseMatrix&      elementvalues,
+  LINALG::SerialDenseMatrix&            cellvalues
+  );
+
 
 //! for output, compute values on the integration cells
 void computeScalarCellNodeValuesFromElementUnknowns(
@@ -559,6 +682,7 @@ void computeScalarCellNodeValuesFromElementUnknowns(
   const LINALG::SerialDenseVector&      elementvalues,
   LINALG::SerialDenseVector&            cellvalues
   );
+
 
 //! for output, compute values on the integration cells
 void computeTensorCellNodeValuesFromElementUnknowns(

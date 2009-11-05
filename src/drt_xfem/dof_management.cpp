@@ -586,7 +586,7 @@ void XFEM::DofManager::toGmsh(
       };
       gmshfilecontent << "};\n";
     }
-    
+
     {
       gmshfilecontent << "View \" " << "NumDof" << " VoidFSI enriched nodes \" {\n";
       for (int i=0; i<ih_->xfemdis()->NumMyColNodes(); ++i)

@@ -231,7 +231,7 @@ int main(
         string basename = problem.outname();
 
         PostField* fluidfield = problem.get_discretization(0);
-        FluidEnsightWriter fluidwriter(fluidfield, basename);
+        XFluidEnsightWriter fluidwriter(fluidfield, basename);
         fluidwriter.WriteFiles();
 
         PostField* scatrafield = problem.get_discretization(1);

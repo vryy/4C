@@ -129,17 +129,17 @@ namespace COMBUST
   class CombustElementAnsatz : public XFEM::ElementAnsatz
   {
   public:
+    //! default constructor
+    explicit CombustElementAnsatz()
+    :XFEM::ElementAnsatz()
+    {
+    };
+    //! destructor
+    virtual ~CombustElementAnsatz(){};
     //! for a given velocity interpolation, a map is produced which has the number of element unknowns per physical field
     virtual map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> getElementAnsatz(DRT::Element::DiscretizationType eledistype) const
     {
       map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz;
-  //    element_ansatz[XFEM::PHYSICS::Tauxx] = XFLUID::getStressInterpolationType3D(eledistype);
-  //    element_ansatz[XFEM::PHYSICS::Tauyy] = XFLUID::getStressInterpolationType3D(eledistype);
-  //    element_ansatz[XFEM::PHYSICS::Tauzz] = XFLUID::getStressInterpolationType3D(eledistype);
-  //    element_ansatz[XFEM::PHYSICS::Tauxy] = XFLUID::getStressInterpolationType3D(eledistype);
-  //    element_ansatz[XFEM::PHYSICS::Tauxz] = XFLUID::getStressInterpolationType3D(eledistype);
-  //    element_ansatz[XFEM::PHYSICS::Tauyz] = XFLUID::getStressInterpolationType3D(eledistype);
-  //    element_ansatz[XFEM::PHYSICS::DiscPres] = XFLUID::getDiscPressureInterpolationType3D(eledistype);
       element_ansatz.insert(make_pair(XFEM::PHYSICS::Sigmaxx,COMBUST::getStressInterpolationType3D(eledistype)));
       element_ansatz.insert(make_pair(XFEM::PHYSICS::Sigmayy,COMBUST::getStressInterpolationType3D(eledistype)));
       element_ansatz.insert(make_pair(XFEM::PHYSICS::Sigmazz,COMBUST::getStressInterpolationType3D(eledistype)));

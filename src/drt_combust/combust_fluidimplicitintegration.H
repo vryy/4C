@@ -21,6 +21,7 @@ Maintainer: Florian Henke
 #include "../drt_io/io_ostream0.H"
 #include "../drt_xfem/dof_management.H"
 #include "../drt_inpar/inpar_combust.H"
+#include "combust_flamefront.H"
 #include "combust_interface.H"
 
 namespace FLD
@@ -68,6 +69,9 @@ public:
 
   /// import geometrical information about the interface and incorporate it into the fluid field
   void IncorporateInterface(const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandle);
+
+  ///
+  void StoreFlameFront(const Teuchos::RCP<COMBUST::FlameFront>& flamefront);
 
   /// get convection velocity vector for transfer to scalar transport field
   const Teuchos::RCP<Epetra_Vector> ConVelnp();
@@ -187,7 +191,9 @@ public:
   \brief output solution fields to Gmsh for debugging
 
   */
-  void OutputToGmsh();
+  void OutputToGmsh(const int step,
+                    const double  time
+                   ) const;
 
   /*!
    * \brief plot a vector field to a Gmsh postprocessing file
@@ -201,7 +207,9 @@ public:
       const Teuchos::RCP<Epetra_Vector>   vectorfield,
       const std::string filestr,
       const std::string name_in_gmsh,
-      const bool plot_to_gnuplot
+      const bool plot_to_gnuplot,
+      const int step,
+      const double time
       ) const;
 
 
@@ -236,6 +244,13 @@ public:
   double Time() const { return time_; }
   int Step()    const { return step_; }
   int Itemax()  const { return params_.get<int>("max nonlin iter steps"); }
+
+  /// increment time and step value
+  void IncrementTimeAndStep()
+  {
+    step_ += 1;
+    time_ += dta_;
+  }
 
   /*!
   \brief return type of time integration scheme
@@ -309,7 +324,8 @@ protected:
   LINALG::Solver&                        solver_;
   const ParameterList&                   params_;
   const ParameterList&                   xparams_;
-  IO::DiscretizationWriter&              output_;
+//  IO::DiscretizationWriter&              output_;
+  const Teuchos::RCP<IO::DiscretizationWriter> output_;
 
   //! the processor ID from the communicator
   const int                     myrank_;
@@ -423,14 +439,21 @@ protected:
     //@}
   } state_;
 
+  /// this struct holds information about degrees of freedom for the problem
+  struct PhysProb
+  {
+    std::set<XFEM::PHYSICS::Field> xfemfieldset_; ///< which physical fields are used in this problem
+    RCP<XFEM::ElementAnsatz> elementAnsatzp_;     ///< element dofs for this problem
+  } physprob_;
+
   //! Extractor used for convergence check
   LINALG::MapExtractor      velpressplitter_;
 
   //! Extractor used for output
   LINALG::MapExtractor      velpressplitterForOutput_;
 
-  //! physical fields to be enriched (XFEM fields)
-  std::set<XFEM::PHYSICS::Field> xfemfields_;
+  //!
+  Teuchos::RCP<COMBUST::FlameFront> flamefront_;
 
 }; // class CombustFluidImplicitTimeInt
 

@@ -59,6 +59,7 @@ XFEM::ElementEnrichmentValues::ElementEnrichmentValues(
 
 
 /*----------------------------------------------------------------------*
+ | interpolate field (for boundary discret. based XFEM problems)     ag |
  *----------------------------------------------------------------------*/
 void XFEM::computeScalarCellNodeValuesFromNodalUnknowns(
   const DRT::Element&                   ele,
@@ -99,6 +100,146 @@ void XFEM::computeScalarCellNodeValuesFromNodalUnknowns(
   return;
 }
 
+/*----------------------------------------------------------------------*
+ | interpolate field from element node values to cell node values based |
+ | on a level-set field                                     henke 10/09 |
+ | remark: function used for modified jump enrichment strategy          |
+ *----------------------------------------------------------------------*/
+void XFEM::InterpolateCellValuesFromElementValuesLevelSet(
+  const DRT::Element&                   ele,
+  const XFEM::ElementDofManager&        dofman,
+  const GEO::DomainIntCell&             cell,
+  const std::vector<double>&            phivalues,
+  const XFEM::PHYSICS::Field            field,
+  const LINALG::SerialDenseMatrix&      elementvalues,
+  LINALG::SerialDenseMatrix&            cellvalues)
+{
+  if (ele.Shape() != DRT::Element::hex8)
+    dserror("OutputToGmsh() only available for hex8 elements! However, this is easy to extend.");
+  const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+  const size_t numparam  = dofman.NumDofPerField(field);
+
+  // copy element phi vector from std::vector (phivalues) to LINALG::Matrix (phi)
+  LINALG::Matrix<numnode,1> phi;
+  for (size_t inode=0; inode<numnode; ++inode)
+    phi(inode) = phivalues[inode];
+
+  // get coordinates of cell vertices
+  const LINALG::SerialDenseMatrix& nodalPosXiDomain(cell.CellNodalPosXiDomain());
+
+  // compute enrichment values based on a level set field 'phi'
+  const XFEM::ElementEnrichmentValues enrvals(ele, dofman, cell, phi);
+
+  LINALG::SerialDenseVector enr_funct(numparam);
+  LINALG::SerialDenseVector funct(numnode);
+
+  cellvalues.Zero();
+  for (int inode = 0; inode < cell.NumNode(); ++inode)
+  {
+    // evaluate shape functions
+    DRT::UTILS::shape_function_3D(funct,nodalPosXiDomain(0,inode),nodalPosXiDomain(1,inode),nodalPosXiDomain(2,inode),DRT::Element::hex8);
+
+    // evaluate enriched shape functions
+    enrvals.ComputeModifiedEnrichedNodalShapefunction(field, funct, enr_funct);
+
+    switch (field)
+    {
+    // scalar fields
+    case XFEM::PHYSICS::Pres:
+    {
+    // interpolate value
+    for (size_t iparam = 0; iparam < numparam; ++iparam)
+      cellvalues(0,inode) += elementvalues(0,iparam) * enr_funct(iparam);
+    break;
+    }
+    // vector fields
+    case XFEM::PHYSICS::Velx:
+    {
+      for (std::size_t iparam = 0; iparam < numparam; ++iparam)
+        for (std::size_t isd = 0; isd < 3; ++isd)
+          cellvalues(isd,inode) += elementvalues(isd,iparam) * enr_funct(iparam);
+      break;
+    }
+    default:
+      dserror("interpolation to cells not available for this field");
+    }
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | interpolate field from element node values to cell node values based |
+ | on a level-set field                                     henke 10/09 |
+ | remark: function used for modified kink enrichment strategy          |
+ *----------------------------------------------------------------------*/
+void XFEM::InterpolateCellValuesFromElementValuesLevelSetKink(
+  const DRT::Element&                   ele,
+  const XFEM::ElementDofManager&        dofman,
+  const GEO::DomainIntCell&             cell,
+  const std::vector<double>&            phivalues,
+  const XFEM::PHYSICS::Field            field,
+  const LINALG::SerialDenseMatrix&      elementvalues,
+  LINALG::SerialDenseMatrix&            cellvalues)
+{
+  if (ele.Shape() != DRT::Element::hex8)
+    dserror("OutputToGmsh() only available for hex8 elements! However, this is easy to extend.");
+  const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+  const size_t numparam  = dofman.NumDofPerField(field);
+
+  // copy element phi vector from std::vector (phivalues) to LINALG::Matrix (phi)
+//  LINALG::Matrix<numnode,1> phi;
+  LINALG::SerialDenseVector phi(numnode);
+  for (size_t inode=0; inode<numnode; ++inode)
+    phi(inode) = phivalues[inode];
+
+  // get coordinates of cell vertices
+  const LINALG::SerialDenseMatrix& nodalPosXiDomain(cell.CellNodalPosXiDomain());
+
+  LINALG::SerialDenseVector enr_funct(numparam);
+  enr_funct.Zero();
+  LINALG::SerialDenseVector funct(numnode);
+
+  cellvalues.Zero();
+  for (int inode = 0; inode < cell.NumNode(); ++inode)
+  {
+    // evaluate shape functions
+    DRT::UTILS::shape_function_3D(funct,nodalPosXiDomain(0,inode),nodalPosXiDomain(1,inode),nodalPosXiDomain(2,inode),DRT::Element::hex8);
+    // first and second derivatives are dummy matrices needed to call XFEM::ElementEnrichmentValues for kink enrichment
+    const LINALG::Matrix<3,numnode> derxy(true);
+    const LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::hex8>::numderiv2, DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement> derxy2(true);
+
+    // compute enrichment values based on a level set field 'phi'
+    const XFEM::ElementEnrichmentValues enrvals(ele, dofman, phi, funct, derxy, derxy2);
+
+    // evaluate enriched shape functions
+    // remark: since we do not compute derivatives of enriched shape functions (chain rule for kink
+    //         enrichment!), we can use the same function for all types of enrichments.
+    enrvals.ComputeModifiedEnrichedNodalShapefunction(field, funct, enr_funct);
+
+    switch (field)
+    {
+    // scalar fields
+    case XFEM::PHYSICS::Pres:
+    {
+    // interpolate value
+    for (size_t iparam = 0; iparam < numparam; ++iparam)
+      cellvalues(0,inode) += elementvalues(0,iparam) * enr_funct(iparam);
+    break;
+    }
+    // vector fields
+    case XFEM::PHYSICS::Velx:
+    {
+      for (std::size_t iparam = 0; iparam < numparam; ++iparam)
+        for (std::size_t isd = 0; isd < 3; ++isd)
+          cellvalues(isd,inode) += elementvalues(isd,iparam) * enr_funct(iparam);
+      break;
+    }
+    default:
+      dserror("interpolation to cells not available for this field");
+    }
+  }
+  return;
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -200,6 +341,7 @@ void XFEM::computeTensorCellNodeValuesFromElementUnknowns(
 
 
 /*----------------------------------------------------------------------*
+ | domain integration cell
  *----------------------------------------------------------------------*/
 void XFEM::computeVectorCellNodeValues(
   const DRT::Element&                 ele,
@@ -244,8 +386,8 @@ void XFEM::computeVectorCellNodeValues(
 }
 
 
-
 /*----------------------------------------------------------------------*
+ | boundary integration cell
  *----------------------------------------------------------------------*/
 void XFEM::computeVectorCellNodeValues(
   const DRT::Element&                 ele,
@@ -269,6 +411,7 @@ void XFEM::computeVectorCellNodeValues(
         true,
         label);
 
+  // cell corner nodes
   LINALG::SerialDenseVector enr_funct(numparam);
   //LINALG::SerialDenseVector funct(DRT::UTILS::getNumberOfElementNodes(ele.Shape()));
   LINALG::SerialDenseVector funct(27);

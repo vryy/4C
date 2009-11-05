@@ -49,7 +49,7 @@ void combust_dyn()
   //------------------------------------------------------------------------------------------------
   // print COMBUST-Logo on screen
   //------------------------------------------------------------------------------------------------
-  if (comm.MyPID()==0) COMBUST::printlogo();
+  if (comm.MyPID()==0) COMBUST::printCombustLogo();
 
   //------------------------------------------------------------------------------------------------
   // create G-function discretization by copying the fluid discretization (fill with scatra elements)

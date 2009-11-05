@@ -92,7 +92,6 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
   {
     std::cout << "\n-------------------------  Initial state of coupled problem set  -----------------------------" << std::endl;
   }
-  // std::cout << "Combustion Algorithm constructor done \n" << endl;
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -103,20 +102,15 @@ COMBUST::Algorithm::~Algorithm()
 }
 
 /*------------------------------------------------------------------------------------------------*
- | public: time loop of algorithm for dynamic combustion problem                      henke 06/08 |
+ | public: algorithm for a dynamic combustion problem                                 henke 06/08 |
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::Algorithm::TimeLoop()
 {
-
   if (Comm().MyPID()==0)
     std::cout << "Combustion Algorithm Timeloop starting \n" << endl;
 
-//URSULA
-  // initial volume of domain minus
+  // compute initial volume of minus domain
   const double volume_start = interfacehandle_->ComputeVolumeMinus();
-
-  // calling Output() here causes an error with the velpressplitterForOutput_ in TransformXFEMToStandardVector()
-//  Output();
 
   // time loop
   while (NotFinished())
@@ -153,61 +147,38 @@ void COMBUST::Algorithm::TimeLoop()
     // write output to screen and files
     Output();
 
+  // compute current volume of minus domain
   const double volume_current = interfacehandle_->ComputeVolumeMinus();
-  // compute mass loss
-  double mass_current = fabs(volume_current - volume_start) / volume_start;
-  if (Comm().MyPID()==0)
-  {
-    std::cout << "\n=======================================\n" << endl;
-    std::cout << "              Mass calculation         \n" << endl;
-    std::cout << "initial mass: " << volume_start << endl;
-    std::cout << "final mass:   " << volume_current << endl;
-    std::cout << "mass current: " << mass_current << endl;
-    std::cout << "\n=======================================\n" << endl;
-  }
+  // print mass conservation check on screen
+  printMassConservationCheck(volume_start, volume_current);
 
   } // time loop
 
-//URSULA
-  // final volume of domain minus
+  // compute final volume of minus domain
   const double volume_end = interfacehandle_->ComputeVolumeMinus();
-  // compute mass loss
-  double mass_change = fabs(volume_end - volume_start) / volume_start;
-  if (Comm().MyPID()==0)
-  {
-    std::cout << "\n=======================================\n" << endl;
-    std::cout << "              Mass calculation         \n" << endl;
-    std::cout << "initial mass: " << volume_start << endl;
-    std::cout << "final mass:   " << volume_end << endl;
-    std::cout << "mass change:  " << mass_change << endl;
-    std::cout << "\n=======================================\n" << endl;
-  }
+  // print mass conservation check on screen
+  printMassConservationCheck(volume_start, volume_end);
 
   return;
 } // TimeLoop()
 
 /*------------------------------------------------------------------------------------------------*
- | public: algorithm for static combustion problem                                    henke 08/08 |
+ | public: algorithm for a stationary combustion problem                              henke 10/09 |
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::Algorithm::SolveStationaryProblem()
 {
-  dserror("Der Algorithmus für statische Verbrennungprobleme kann noch nix!");
-
-  // volume of minus domain before simulation
-  const double volume_start = interfacehandle_->ComputeVolumeMinus();
-
+  if (Comm().MyPID()==0)
+  {
+    printf("--------Stationary-Combustion-------  time step ----------------------------------------\n");
+  }
+  //-----------------------------
+  // prepare stationary algorithm
+  //-----------------------------
   fgiter_ = 0;
   // fgnormgfunc = large value, determined in Input file
   fgvelnormL2_ = 1.0;
   // fgnormfluid = large value
   fggfuncnormL2_ = 1.0;
-
-  if (Comm().MyPID()==0)
-  {
-    //cout<<"---------------------------------------  time step  ------------------------------------------\n";
-    printf("--------Stationary-Combustion-------  time step %2d ----------------------------------------\n",Step());
-    printf("TIME: %11.4E/%11.4E  DT = %11.4E STEP = %4d/%4d \n",Time(),MaxTime(),Dt(),Step(),NStep());
-  }
 
   // check if ScaTraField().initialvelset == true
   /* remark: initial velocity field has been transfered to scalar transport field in constructor of
@@ -215,14 +186,19 @@ void COMBUST::Algorithm::SolveStationaryProblem()
    * the one-step-theta scheme, are thus initialized correctly.
    */
 
-  // check time integration schemes in single fields
+  // check time integration schemes of single fields
+  // remark: this was already done in ScaTraFluidCouplingAlgorithm() before
   if (FluidField().TimIntScheme() != timeint_stationary)
     dserror("Fluid time integration scheme is not stationary");
-  //TODO: implement TimIntScheme in Scatra
-//  if (ScaTraField().TimIntScheme() != timeint_stationary)
-//    dserror("Scatra time integration scheme is not stationary");
+  if (ScaTraField().MethodName() != INPAR::SCATRA::timeint_stationary)
+    dserror("Scatra time integration scheme is not stationary");
 
-  // Fluid-G-function-Interaction loop
+  // compute initial volume of minus domain
+  const double volume_start = interfacehandle_->ComputeVolumeMinus();
+
+  //--------------------------------------
+  // loop over fluid and G-function fields
+  //--------------------------------------
   while (NotConvergedFGI())
   {
     // prepare Fluid-G-function iteration
@@ -231,36 +207,40 @@ void COMBUST::Algorithm::SolveStationaryProblem()
     // solve nonlinear Navier-Stokes system
     DoFluidField();
 
-    // solve linear G-function equation
-    DoGfuncField();
+    // solve (non)linear G-function equation
+//    DoGfuncField();
+
+    ////reinitialize G-function
+    //if (fgiter_ % reinitinterval_ == 0)
+    //{
+    //  ReinitializeGfunc(reinitializationaction_);
+    //}
 
     // update field vectors
     UpdateFGIteration();
 
-  } // Fluid-G-function-Interaction loop
+  } // fluid-G-function loop
 
-//    if (ScaTraField().Step() % reinitinterval_ == 0)
-//    {
-//      // reinitialize G-function
-//      ReinitializeGfunc(reinitializationaction_);
-//    }
+  //-------
+  // output
+  //-------
+  // remark: if Output() was already called at initial state, another Output() call will cause an
+  //         error, because both times fields are written into the output control file at time and
+  //         time step 0.
+  //      -> the time and the time step have to be advanced even though this makes no physical sense
+  //         for a stationary computation
 
-  // write output to screen and files
+  //IncrementTimeAndStep();
+  //FluidField().PrepareTimeStep();
+  //ScaTraField().PrepareTimeStep();
+
+  // write output to screen and files (and Gmsh)
   Output();
 
-  // final volume of domain minus
+  // compute final volume of minus domain
   const double volume_end = interfacehandle_->ComputeVolumeMinus();
-  // compute mass loss
-  double mass_change = fabs(volume_end - volume_start) / volume_start;
-  if (Comm().MyPID()==0)
-  {
-    std::cout << "\n=======================================\n" << endl;
-    std::cout << "              Mass calculation         \n" << endl;
-    std::cout << "initial mass: " << volume_start << endl;
-    std::cout << "final mass:   " << volume_end << endl;
-    std::cout << "mass change:  " << mass_change << endl;
-    std::cout << "\n=======================================\n" << endl;
-  }
+  // print mass conservation check on screen
+  printMassConservationCheck(volume_start, volume_end);
 
   return;
 }
@@ -957,10 +937,9 @@ void COMBUST::Algorithm::PrepareTimeStep()
   FluidField().PrepareTimeStep();
 
   // prepare time step
-  /* remark: initial velocity field has been transfered to scalar transport field in constructor of
-   * ScaTraFluidCouplingAlgorithm (initialvelset_ == true). Time integration schemes, such as
-   * the one-step-theta scheme, are thus initialized correctly.
-   */
+  // remark: initial velocity field has been transferred to scalar transport field in constructor of
+  //         ScaTraFluidCouplingAlgorithm (initialvelset_ == true). Time integration schemes, such
+  //         as the one-step-theta scheme, are thus initialized correctly.
   ScaTraField().PrepareTimeStep();
 
   // synchronicity check between combust algorithm and base algorithms
@@ -1113,7 +1092,15 @@ void COMBUST::Algorithm::Output()
   // written. And these entries define the order in which the filters handle
   // the Discretizations, which in turn defines the dof number ordering of the
   // Discretizations.
+  //------------------------------------------------------------------------------------------------
+  // this hack is necessary for the visualization of disconituities in Gmsh             henke 10/09
+  //------------------------------------------------------------------------------------------------
+  // show flame front to fluid time integration scheme
+  FluidField().ImportFlameFront(flamefront_);
   FluidField().Output();
+  // delete fluid's memory of flame front; it should never have seen it in the first place!
+  FluidField().ImportFlameFront(Teuchos::null);
+
   FluidField().LiftDrag();
   ScaTraField().Output();
 
@@ -1124,6 +1111,24 @@ void COMBUST::Algorithm::Output()
 #endif
 
   return;
+}
+
+
+void COMBUST::Algorithm::printMassConservationCheck(const double volume_start, const double volume_end)
+{
+  // compute mass loss
+  double massloss = fabs(volume_start - volume_end) / volume_start;
+  if (std::isnan(massloss))
+    dserror("NaN detected in mass conservation check");
+  if (Comm().MyPID()==0)
+  {
+    std::cout << "\n=======================================" << endl;
+    std::cout << "           mass conservation           " << endl;
+    std::cout << " initial mass: " << volume_start << endl;
+    std::cout << " final mass:   " << volume_end   << endl;
+    std::cout << " mass loss:    " << massloss     << endl;
+    std::cout << "=======================================\n" << endl;
+  }
 }
 
 #endif // #ifdef CCADISCRET

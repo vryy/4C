@@ -125,6 +125,9 @@ namespace COMBUST
     /// write output
     void Output();
 
+    /// print mass conservation check on screen
+    void printMassConservationCheck(const double volume_start, const double volume_end);
+
   private:
 
     //! @name Fluid-G-function iteration variables

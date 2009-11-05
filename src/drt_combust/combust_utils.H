@@ -22,10 +22,10 @@ Maintainer: Florian Henke
 namespace COMBUST
 {
 
-/*------------------------------------------------------------------------------------------------*
- | print COMBUST module logo on screen                                                henke 06/08 |
- *------------------------------------------------------------------------------------------------*/
-void printlogo();
+
+/// print COMBUST module logo on screen
+void printCombustLogo();
+
 
 /*!
  * \brief create a map which, for each node (gid) and element (gid) on this processor, holds the

@@ -985,7 +985,7 @@ void SysmatTwoPhase(
 
 
                 // shape function for nodal dofs
-                enrvals.ComputeKinkEnrichedNodalShapefunction(
+                enrvals.ComputeModifiedEnrichedNodalShapefunction(
                         Velx,
                         funct,
                         derxy,
@@ -1027,7 +1027,7 @@ void SysmatTwoPhase(
 //                static LINALG::Matrix<3,shpVecSize> enr_derxy_pres;
 //                static LINALG::Matrix<6,shpVecSize> enr_derxy2_pres;
                 // shape function for nodal dofs pressure
-                enrvals.ComputeKinkEnrichedNodalShapefunction(
+                enrvals.ComputeModifiedEnrichedNodalShapefunction(
                         Pres,
                         funct,
                         derxy,
@@ -1227,7 +1227,7 @@ void SysmatTwoPhase(
             LINALG::Matrix<nsd,1> bodyforce;
             bodyforce.Clear();
 //            std::cout << "BodyForce" << std::endl;
-            bodyforce(1) = -9.8;
+//            bodyforce(1) = -9.8;
 // --------------- DAS GEHT AUCH, WENN MAN EINE VOLUMENLAST IM DAT-FILE VORGIBT!!!!!!!!!!!!!! -------
 //            LINALG::SerialDenseMatrix edeadng = XFLUID::BodyForceTwoPhaseFlow<DISTYPE>(ele, 0.0);
 //            for (std::size_t isd = 0; isd < nsd; isd++)
@@ -1945,7 +1945,6 @@ void SysmatCombustDomain(
         //------------------------------------------------------------------------------------------
         const DRT::UTILS::GaussRule3D gaussrule = XFLUID::getXFEMGaussrule<DISTYPE>(ele, xyze, ele->Intersected(), cell->Shape(),false);
         const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
-
         //------------------------------------------------------------------------------------------
         // integration loop over Gaussian points
         //------------------------------------------------------------------------------------------
@@ -2002,6 +2001,7 @@ void SysmatCombustDomain(
 
             const double det = xjm.Determinant();
             const double fac = intpoints.qwgt[iquad]*det*detcell;
+//cout << "domain spatial factor " << fac << endl;
 
             if (det < 0.0)
             {
@@ -2044,13 +2044,17 @@ void SysmatCombustDomain(
             static LINALG::Matrix<shpVecSizeStress,1> shp_tau;
             if (ASSTYPE == XFEM::xfem_assembly)
             {
+//cout << "this is a fully or partially enriched element" << endl;
                 // temporary arrays holding enriched shape functions (N * \Psi)
                 static LINALG::Matrix<shpVecSize,1> enr_funct;
+                enr_funct.Clear();
                 static LINALG::Matrix<3,shpVecSize> enr_derxy;
+                enr_derxy.Clear();
                 static LINALG::Matrix<6,shpVecSize> enr_derxy2;
+                enr_derxy2.Clear();
 
                 // shape functions and derivatives for nodal parameters (dofs)
-                enrvals.ComputeEnrichedNodalShapefunction(
+                enrvals.ComputeModifiedEnrichedNodalShapefunction(
                         Velx,
                         funct,
                         derxy,
@@ -2333,6 +2337,7 @@ void SysmatCombustDomain(
 
             // integration factors and coefficients of single terms
             const double timefacfac = timefac * fac;
+//cout << "domain tima and spatial factor " << timefacfac << endl;
 
             //--------------------------------------------------------------------------------------
             // build single stiffness matrix entries
@@ -2418,6 +2423,7 @@ void SysmatCombustBoundary(
   const double kinvisc_plus = mat->Viscosity();
   // get the density \rho
   const double dens_plus = mat->Density();
+//cout << "plus density: " << dens_plus << endl;
   // compute dynamic viscosity \mu
   const double visc_plus = kinvisc_plus * dens_plus;
 
@@ -2432,6 +2438,7 @@ void SysmatCombustBoundary(
   const double kinvisc_minus = mat->Viscosity();
   // get the density \rho
   const double dens_minus = mat->Density();
+//cout << "minus density: " << dens_minus << endl;
   // compute dynamic viscosity \mu
   const double visc_minus = kinvisc_minus * dens_minus;
 
@@ -2440,13 +2447,17 @@ void SysmatCombustBoundary(
   //------------------------------------------------------------------------------------------------
   // velocity jump value
   const double ju = (flamespeed*flamespeed*dens_minus*dens_minus)*(1/dens_plus - 1/dens_minus);
+//cout << "J_u: " << ju << endl;
   // pressure jump value
   const double jp = -flamespeed*dens_minus*(1/dens_plus - 1/dens_minus);
+//cout << "J_p: " << jp << endl;
 
   // Nitsche parameter velocity
   const double alphau = nitschevel;
+//cout << "alpha_u: " << alphau << endl;
   // Nitsche parameter pressure
   const double alphap = nitschepres;
+//cout << "alpha_p: " << alphap << endl;
 
   #if 0
   const bool tauele_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, Sigmaxx, 0) > 0);
@@ -2538,7 +2549,9 @@ void SysmatCombustBoundary(
       // evaluate shape functions and their first derivatives at this Gaussian point
       //--------------------------------------------------------------------------------------------
       static LINALG::Matrix<numnode,1> funct;
+      funct.Clear();
       static LINALG::Matrix<nsd,numnode> deriv;
+      deriv.Clear();
       DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
       DRT::UTILS::shape_function_3D_deriv1(deriv,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
 
@@ -2548,6 +2561,7 @@ void SysmatCombustBoundary(
       // get transposed of the jacobian matrix d x / d \xi
       // xjm(i,j) = deriv(i,k)*xyze(j,k)
       static LINALG::Matrix<nsd,nsd> xjm;
+      xjm.Clear();
       xjm.MultiplyNT(deriv,xyze);
       // determinant for mapping from physical space (X^3D/domain) to element (Xi^3D/domain)
       const double detXtoXi = xjm.Determinant();
@@ -2559,19 +2573,36 @@ void SysmatCombustBoundary(
 //#endif
       // inverse of jacobian
       static LINALG::Matrix<nsd,nsd> xji;
+      xji.Clear();
       xji.Invert(xjm);
 
       //--------------------------------------------------------------------------------------------
       // compute global derivates of shape functions at this Gaussian point
       //--------------------------------------------------------------------------------------------
+      // compute first global derivative
       static LINALG::Matrix<3,numnode> derxy;
+      derxy.Clear();
       // derxy(i,j) = xji(i,k) * deriv(k,j)
       derxy.Multiply(xji,deriv);
+
+      // compute second global derivative
+      static LINALG::Matrix<6,numnode> derxy2;
+      if (false) // if (higher_order_ele)
+      {
+        static LINALG::Matrix<6,numnode> deriv2;
+        DRT::UTILS::shape_function_3D_deriv2(deriv2,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
+        DRT::UTILS::gder2<DISTYPE>(xjm, derxy, deriv2, xyze, derxy2);
+      }
+      else
+      {
+        derxy2.Clear();
+      }
 
       //--------------------------------------------------------------------------------------------
       // compute Jacobian matrix for mapping to boundary
       //--------------------------------------------------------------------------------------------
       static LINALG::Matrix<nsd,numvertices> deriv_boundary;
+      deriv_boundary.Clear();
       DRT::UTILS::shape_function_2D_deriv1(deriv_boundary, posEtaBoundary(0),posEtaBoundary(1),cell->Shape());
 
       // get Jacobian matrix d \xi^domain / d \eta^boundary  (3x2)
@@ -2602,8 +2633,10 @@ void SysmatCombustBoundary(
       //--------------------------------------------------------------------------------------------
       // compute spatial integration factor
       const double fac = intpoints.qwgt[iquad]*detXtoXi*detXitoEta;
+//cout << "boundary spatial factor " << fac << endl;
       // compute total (time and spatial) integration factor (and coefficients of single terms)?
       const double timefacfac = timefac * fac;
+//cout << "boundary time and spatial factor " << timefacfac << endl;
 
       //--------------------------------------------------------------------------------------------
       // rearrange (enriched) shape functions and derivatives as approximation functions
@@ -2612,11 +2645,24 @@ void SysmatCombustBoundary(
 
       // temporary arrays holding enriched shape functions (N * \Psi) on either side of the interface
       static LINALG::Matrix<shpVecSize,1>       enrfunct_plus;
+      enrfunct_plus.Clear();
       static LINALG::Matrix<shpVecSize,1>       enrfunct_minus;
+      enrfunct_minus.Clear();
+
+      static LINALG::Matrix<3,shpVecSize> enrderxy_plus;
+      enrderxy_plus.Clear();
+      static LINALG::Matrix<3,shpVecSize> enrderxy_minus;
+      enrderxy_minus.Clear();
+      static LINALG::Matrix<6,shpVecSize> enrderxy2_plus;
+      enrderxy2_plus.Clear();
+      static LINALG::Matrix<6,shpVecSize> enrderxy2_minus;
+      enrderxy2_minus.Clear();
 
       // shape functions for nodal parameters (dofs) on plus and minus side
-      enrvals_plus.ComputeEnrichedNodalShapefunction(Velx, funct, enrfunct_plus);
-      enrvals_minus.ComputeEnrichedNodalShapefunction(Velx, funct, enrfunct_minus);
+      enrvals_plus.ComputeModifiedEnrichedNodalShapefunction(Velx, funct, derxy, derxy2,
+                                                             enrfunct_plus, enrderxy_plus, enrderxy2_plus);
+      enrvals_minus.ComputeModifiedEnrichedNodalShapefunction(Velx, funct, derxy, derxy2,
+                                                              enrfunct_minus, enrderxy_minus, enrderxy2_minus);
 
       // (enriched) shape functions = approximation functions (P = N * \Psi)
       static XFEM::ApproxFunc<shpVecSize> shp_jump;
@@ -2627,9 +2673,24 @@ void SysmatCombustBoundary(
       for (std::size_t iparam = 0; iparam < numparamvelx; ++iparam)
       {
         shp_jump.d0(iparam) = enrfunct_plus(iparam) - enrfunct_minus(iparam);
+//cout << "shp_jump.d0: " << shp_jump.d0(iparam) << endl;
         shp_mean.d0(iparam) = 0.5*(enrfunct_plus(iparam) + enrfunct_minus(iparam));
+//cout << "shp_mean.d0: " << shp_mean.d0(iparam) << endl;
         shp_mean_visc.d0(iparam) = 0.5*(visc_plus*enrfunct_plus(iparam) + visc_minus*enrfunct_minus(iparam));
+        shp_mean_visc.dx(iparam) = 0.5*(visc_plus*enrderxy_plus(0,iparam) + visc_minus*enrderxy_minus(0,iparam));
+        shp_mean_visc.dy(iparam) = 0.5*(visc_plus*enrderxy_plus(1,iparam) + visc_minus*enrderxy_minus(1,iparam));
+        shp_mean_visc.dz(iparam) = 0.5*(visc_plus*enrderxy_plus(2,iparam) + visc_minus*enrderxy_minus(2,iparam));
+        shp_mean_visc.dxdx(iparam) = 0.5*(visc_plus*enrderxy2_plus(0,iparam) + visc_minus*enrderxy2_minus(0,iparam));
+        shp_mean_visc.dxdy(iparam) = 0.5*(visc_plus*enrderxy2_plus(3,iparam) + visc_minus*enrderxy2_minus(3,iparam));
+        shp_mean_visc.dxdz(iparam) = 0.5*(visc_plus*enrderxy2_plus(4,iparam) + visc_minus*enrderxy2_minus(4,iparam));
+        shp_mean_visc.dydx(iparam) = shp_mean_visc.dxdy(iparam);
+        shp_mean_visc.dydy(iparam) = 0.5*(visc_plus*enrderxy2_plus(1,iparam) + visc_minus*enrderxy2_minus(1,iparam));
+        shp_mean_visc.dydz(iparam) = 0.5*(visc_plus*enrderxy2_plus(5,iparam) + visc_minus*enrderxy2_minus(5,iparam));
+        shp_mean_visc.dzdx(iparam) = shp_mean_visc.dxdz(iparam);
+        shp_mean_visc.dzdy(iparam) = shp_mean_visc.dydz(iparam);
+        shp_mean_visc.dzdz(iparam) = 0.5*(visc_plus*enrderxy2_plus(2,iparam) + visc_minus*enrderxy2_minus(2,iparam));
       }
+//cout << "mean enrichment function: " << shp_mean_visc.d0 << endl;
       //--------------------------------------------------------------------------------------------
       // compute data at Gaussian point for rhs
       //--------------------------------------------------------------------------------------------
@@ -2638,11 +2699,15 @@ void SysmatCombustBoundary(
       static LINALG::Matrix<nsd,1> vjump(true);
       vjump.Clear();
       vjump = COMBUST::interpolateVectorFieldToIntPoint(evelnp, shp_jump.d0, numparamvelx);
+//cout << "evelnp: " << evelnp << endl;
+//cout << "shp_jump.d0: " << shp_jump.d0 << endl;
+//cout << "vjump: " << vjump << endl;
 
       // mean velocity
       static LINALG::Matrix<nsd,1> vmean(true);
       vmean.Clear();
       vmean = COMBUST::interpolateVectorFieldToIntPoint(evelnp, shp_mean.d0, numparamvelx);
+//cout << "vmean: " << vmean << endl;
 
       // get velocity (np,i) derivatives at integration point
       // vderxy = enr_derxy(j,k)*evelnp(i,k);
@@ -2655,17 +2720,20 @@ void SysmatCombustBoundary(
           vderxy_mean_visc(isd,1) += evelnp(isd,iparam) * shp_mean_visc.dy(iparam);
           vderxy_mean_visc(isd,2) += evelnp(isd,iparam) * shp_mean_visc.dz(iparam);
         }
+//cout << "vderxy_mean_visc: " << vderxy_mean_visc << endl;
 
       // get pressure jump
       static double pjump;
       pjump = 0.0;
       for (size_t iparam = 0; iparam != numparampres; ++iparam)
         pjump += shp_jump.d0(iparam)*eprenp(iparam);
+//cout << "pjump: " << pjump << endl;
 
       static double pmean;
       pmean = 0.0;
       for (size_t iparam = 0; iparam != numparampres; ++iparam)
         pmean += shp_mean.d0(iparam)*eprenp(iparam);
+//cout << "pmean: " << pmean << endl;
 
 //            Epetra_SerialDenseVector shp_iface(numnode_boundary*begids.size());
 //            int pos = 0;
@@ -2962,9 +3030,9 @@ void Sysmat(
         // boundary integrals are only added for intersected elements (fully enriched elements)
         if (ele->Intersected() == true)
         {
-//          SysmatCombustBoundary<DISTYPE,ASSTYPE,NUMDOF>(
-//            ele, ih, dofman, evelnp, eprenp, ephi, etau, material, timealgo, dt, theta, assembler,
-//            flamespeed,nitschevel,nitschepres);
+          SysmatCombustBoundary<DISTYPE,ASSTYPE,NUMDOF>(
+            ele, ih, dofman, evelnp, eprenp, ephi, etau, material, timealgo, dt, theta, assembler,
+            flamespeed,nitschevel,nitschepres);
         }
       }
       break;

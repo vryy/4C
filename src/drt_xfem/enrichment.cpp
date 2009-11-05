@@ -184,8 +184,7 @@ double XFEM::Enrichment::EnrValue(
  *----------------------------------------------------------------------*/
 double XFEM::Enrichment::EnrValueIntCell(const GEO::DomainIntCell& cell) const
 {
-    //std::cout << "EnrValueIntCell()" << std::endl;
-    double enrval = -777.7;
+    double enrval = -777.777;
 
     switch (Type())
     {

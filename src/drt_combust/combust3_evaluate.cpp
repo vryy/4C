@@ -162,7 +162,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       }
 #endif
 
-      // extract G-function values to element level (used kink enrichment)
+      // extract G-function values to element level
       DRT::UTILS::ExtractMyNodeBasedValues(this, mystate.phinp, *phinp);
 
       const bool newton = params.get<bool>("include reactive terms for linearisation",false);
@@ -243,12 +243,27 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       mystate.instationary = false;
       DRT::UTILS::ExtractMyValues(*discretization.GetState("velnp"),mystate.velnp,lm);
 
-//      const Teuchos::RCP<const Epetra_Vector> ivelcol = params.get<Teuchos::RCP<const Epetra_Vector> >("interface velocity");
-//      if (ivelcol==null)
-//        dserror("Cannot get interface velocity from parameters");
-//      const Teuchos::RCP<Epetra_Vector> iforcecol = params.get<Teuchos::RCP<Epetra_Vector> >("interface force");
-//      if (iforcecol==null)
-//        dserror("Cannot get interface force from parameters");
+      // get pointer to vector holding G-function values at the fluid nodes
+      const Teuchos::RCP<Epetra_Vector> phinp = ih_->FlameFront()->Phinp();
+
+#ifdef DEBUG
+      // check if this element is the first element on this processor
+      // remark:
+      // The SameAs-operation requires MPI communication between processors. Therefore it can only
+      // be performed once (at the beginning) on each processor. Otherwise some processors would
+      // wait to receive MPI information, but would never get it, because some processores are
+      // already done with their element loop. This will cause a mean parallel bug!   henke 11.08.09
+      if(this->Id() == discretization.lRowElement(0)->Id())
+      {
+        // get map of this vector
+        const Epetra_BlockMap& phimap = phinp->Map();
+        // check, whether this map is still identical with the current node map in the discretization
+        if (not phimap.SameAs(*discretization.NodeColMap())) dserror("node column map has changed!");
+      }
+#endif
+
+      // extract G-function values to element level (used kink enrichment)
+      DRT::UTILS::ExtractMyNodeBasedValues(this, mystate.phinp, *phinp);
 
       const INPAR::COMBUST::CombustionType combusttype = params.get<INPAR::COMBUST::CombustionType>("combusttype");
       const double flamespeed = params.get<double>("flamespeed");
@@ -264,8 +279,8 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       // stabilization parameters
       const INPAR::FLUID::TauType tautype = Teuchos::getIntegralValue<INPAR::FLUID::TauType>(params.sublist("STABILIZATION"),"TAUTYPE");
       // check if stabilization parameter definition can be handled by combust3 element
-      if (tautype == INPAR::FLUID::tautype_franca_barrenechea_valentin_wall or
-          tautype == INPAR::FLUID::tautype_bazilevs)
+      if (!(tautype == INPAR::FLUID::tautype_franca_barrenechea_valentin_wall or
+          tautype == INPAR::FLUID::tautype_bazilevs))
         dserror("unknown type of stabilization parameter definition");
       const bool pstab  = true;
       const bool supg   = true;

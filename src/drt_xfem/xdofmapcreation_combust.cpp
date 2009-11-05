@@ -138,8 +138,8 @@ bool XFEM::ApplyKinkEnrichment(
           //cout << "Kink Enrichment applied for all fields" << endl;
 //          std::cout << "Kink Enrichment applied for node " << nodeid << std::endl;
           //Falls nur die Geschw ein KinkEnr bekommen
-          if (*field != XFEM::PHYSICS::Pres)
-        	  nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, kinkenr));
+//          if (*field != XFEM::PHYSICS::Pres)
+          nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, kinkenr));
           //cout << "Kink Enrichment applied for velocity fields only" << endl;
         }
 //      }
@@ -272,7 +272,7 @@ void XFEM::createDofMapCombust(
           const int nodeid = nodeidptrs[inode];
           std::set<XFEM::FieldEnr> nodeenrset = nodeDofMap[nodeid];
           for (std::set<XFEM::FieldEnr>::const_iterator nodeenr = nodeenrset.begin();nodeenr != nodeenrset.end();++nodeenr)
-          std::cout << "Angereichertes Feld " << physVarToString(nodeenr->getField()) << "Anreicherungstyp " << nodeenr->getEnrichment().toString() <<  std::endl;      	
+          std::cout << "Angereichertes Feld " << physVarToString(nodeenr->getField()) << "Anreicherungstyp " << nodeenr->getEnrichment().toString() <<  std::endl;
         }
 */
         // in case there are enriched element dofs they have to be applied now   henke 04/09

@@ -114,6 +114,8 @@ namespace DRT
 
         virtual bool Intersected() const { return intersected_; };
 
+        virtual Teuchos::RCP<COMBUST::InterfaceHandleCombust> InterfaceHandle() const { return ih_; };
+
         //! Destructor
         virtual ~Combust3();
 

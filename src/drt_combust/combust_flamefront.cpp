@@ -1632,8 +1632,9 @@ void COMBUST::FlameFront::CreateIntegrationCells(
   const int dim = 3;
   tetgenio in;
   tetgenio out;
-  char switches[] = "pQ";    //- p     tetrahedralizes a PLC
-                             //-Q      no terminal output except errors
+  char switches[] = "pQYY";    //- p     tetrahedralizes a PLC
+                               //-Q      no terminal output except errors
+                               // YY     do not generate additional points on surfaces -> fewer cells
   tetgenio::facet *f;
   tetgenio::polygon *p;
 

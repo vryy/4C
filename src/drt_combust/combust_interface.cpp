@@ -259,22 +259,21 @@ void COMBUST::InterfaceHandleCombust::UpdateInterfaceHandle()
 }
 
 /*------------------------------------------------------------------------------------------------*
- | compute the volume of domain minus; check for mass conservation                rasthofer 06/09 |
+ | compute the volume of the minus domain (mass conservation check)               rasthofer 06/09 |
  *------------------------------------------------------------------------------------------------*/
 const double COMBUST::InterfaceHandleCombust::ComputeVolumeMinus()
 {
   double volume = 0.0;
-  //for(std::map<int,GEO::DomainIntCells >::iterator iter=elementalDomainIntCells_.begin(); iter=elementalDomainIntCells_.end(); iter++)
-  for(std::size_t iter=0; iter<elementalDomainIntCells_.size(); iter++)
+  // loop over map entries for elements
+  for(std::map<int,GEO::DomainIntCells>::iterator itermap=elementalDomainIntCells_.begin(); itermap!=elementalDomainIntCells_.end(); ++itermap)
   {
-    //GEO::DomainIntCells cells = iter->second;
-    //for(std::size_t icell=0; icell<cells.size(); icell++)
-    //for(std::vector< GEO::DomainIntCell >::iterator itercell=iter->second.begin(); itercell=iter->second.end(); itercell++)
-     for(std::size_t icell=0; icell<elementalDomainIntCells_[iter].size(); icell++)
-     {
-        if(elementalDomainIntCells_[iter][icell].getDomainPlus()==false)
-           volume += elementalDomainIntCells_[iter][icell].VolumeInPhysicalDomain();
-     }
+    // loop over integration cells for this element
+    for(GEO::DomainIntCells::iterator itercell=itermap->second.begin(); itercell!=itermap->second.end(); itercell++)
+    {
+      // pick cells belonging to minus domain
+      if (itercell->getDomainPlus() == false)
+        volume += itercell->VolumeInPhysicalDomain();
+    }
   }
   return volume;
 }

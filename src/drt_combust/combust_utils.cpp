@@ -26,7 +26,7 @@ Maintainer: Florian Henke
 /*------------------------------------------------------------------------------------------------*
  | print COMBUST module logo on screen                                                henke 06/08 |
  *------------------------------------------------------------------------------------------------*/
-void COMBUST::printlogo()
+void COMBUST::printCombustLogo()
 {
     std::cout<<"     ___            ___    "<<std::endl;
     std::cout<<"    /   \\          /   \\ "<<std::endl;
@@ -41,7 +41,8 @@ void COMBUST::printlogo()
     std::cout<<"        \\_____/ /         "<<std::endl;
     std::cout<<"          \\____/          "<<std::endl;
     std::cout<<"                           "<<std::endl;
-} // void printlogo()
+}
+
 
 /*------------------------------------------------------------------------------------------------*
  | functions below copied from drt_xfem/xdofmapcreation.cpp                           henke 10/08 |
@@ -62,6 +63,7 @@ void COMBUST::createDofMap(
     std::map<int, const std::set<XFEM::FieldEnr> >&     elementalDofsFinal
 )
 {
+  dserror ("unused function COMBUST::createDofMap()");
   return;
 //  // temporary assembly
 //  std::map<int, std::set<XFEM::FieldEnr> >  nodalDofSet;
@@ -131,6 +133,7 @@ void COMBUST::ApplyNodalEnrichments(
     std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet
 )
 {
+  dserror ("unused function COMBUST::ApplyNodalEnrichments()");
   return;
 //  const double volumeratiolimit = 1.0e-4; // Hängt von Auflösung ab -> anpassen?
 //

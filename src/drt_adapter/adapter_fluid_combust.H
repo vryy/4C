@@ -214,6 +214,9 @@ namespace ADAPTER
     /// combustion fluid imports geometrical interface information from combustion algorithm
     virtual void ImportInterface(const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandle);
 
+    ///
+    virtual void ImportFlameFront(const Teuchos::RCP<COMBUST::FlameFront>& flamefront);
+
     virtual Teuchos::RCP<DRT::ResultTest>  CreateFieldTest();
 
   private:

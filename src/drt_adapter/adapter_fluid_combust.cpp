@@ -352,4 +352,10 @@ void ADAPTER::FluidCombust::ImportInterface(const Teuchos::RCP<COMBUST::Interfac
   fluid_.IncorporateInterface(interfacehandle);
 }
 
+void ADAPTER::FluidCombust::ImportFlameFront(const Teuchos::RCP<COMBUST::FlameFront>& flamefront)
+{
+  // pass geometrical information aboout flame front to fluid time integration scheme
+  fluid_.StoreFlameFront(flamefront);
+}
+
 #endif  // #ifdef CCADISCRET
