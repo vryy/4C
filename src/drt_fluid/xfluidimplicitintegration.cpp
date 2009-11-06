@@ -3226,6 +3226,8 @@ void FLD::XFluidImplicitTimeInt::ProjectOldTimeStepValues(
       }
 
 #if 1
+      // get a copy on columnmn parallel distribution
+      Teuchos::RCP<const Epetra_Vector> output_col_velnp = DRT::UTILS::GetColVersionOfRowVector(discret_, state_.velnp_);
       bool screen_out = true;
       if ((this->physprob_.fieldset_.find(XFEM::PHYSICS::Pres) != this->physprob_.fieldset_.end()))
       {
@@ -3249,7 +3251,7 @@ void FLD::XFluidImplicitTimeInt::ProjectOldTimeStepValues(
 
             // extract local values from the global vector
             vector<double> myvelnp(lm.size());
-            DRT::UTILS::ExtractMyValues(*state_.velnp_, myvelnp, lm);
+            DRT::UTILS::ExtractMyValues(*output_col_velnp, myvelnp, lm);
 
             const int numparam = eledofman.NumDofPerField(field);
             const vector<int>& dofpos = eledofman.LocalDofPosPerField(field);
@@ -3275,7 +3277,7 @@ void FLD::XFluidImplicitTimeInt::ProjectOldTimeStepValues(
         gmshfilecontent.close();
         if (screen_out) std::cout << " done" << endl;
       }
-      PlotVectorFieldToGmsh(state_.veln_,  "solution_field_velocity_projected_n","Velocity Solution (Physical) n",false, Step(), Time());
+      PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.veln_),  "solution_field_velocity_projected_n","Velocity Solution (Physical) n",false, Step(), Time());
 //      PlotVectorFieldToGmsh(state_.accn_,  "solution_field_acceleration_projected_n","Velocity Solution (Physical) n",false, Step(), Time());
 #endif
       discret_->Comm().Barrier();
