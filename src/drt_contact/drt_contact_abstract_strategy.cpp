@@ -290,9 +290,9 @@ void CONTACT::AbstractStrategy::EvaluateRelMov(RCP<Epetra_Vector> disi)
   for (int i=0; i<(int)interface_.size(); ++i)
   {
     interface_[i]->EvaluateRelMov();
-    interface_[i]->AssembleJump(*jump_);
-   }
- 
+    interface_[i]->AssembleRelMov(*jump_);
+  }
+  
 #endif
 
   return;

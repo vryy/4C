@@ -610,7 +610,7 @@ public:
   \brief Assemble jump vector into global jump vector 
   
   */
-  virtual void AssembleJump(Epetra_Vector& jumpglobal);
+  virtual void AssembleRelMov(Epetra_Vector& jumpglobal);
 
   /*!
   \brief Assemble gap-computed lagrange multipliers and nodal linlambda derivatives into nodal quantities

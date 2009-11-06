@@ -234,6 +234,7 @@ void CONTACT::PenaltyStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
   // this is due to the fact that we want to monitor the constraint norm
   // of the active nodes
   gactivenodes_ = null;
+  gslipnodes_ = null;
   
   // update active sets of all interfaces
   // (these maps are NOT allowed to be overlapping !!!)
@@ -241,6 +242,7 @@ void CONTACT::PenaltyStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
   {
     interface_[i]->BuildActiveSet();
     gactivenodes_ = LINALG::MergeMap(gactivenodes_,interface_[i]->ActiveNodes(),false);
+    gslipnodes_ = LINALG::MergeMap(gslipnodes_,interface_[i]->SlipNodes(),false);
   }
   
   // check if contact contributions are present,
