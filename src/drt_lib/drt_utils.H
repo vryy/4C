@@ -350,6 +350,23 @@ namespace UTILS
   /// print information about parallel mesh distribution
   void PrintParallelDistribution(const DRT::Discretization& dis);
 
+  /*!
+  \brief Get a column vector made of a row vector.
+
+  Using this method, a reference to a vector is returned.
+  If the vector is supplied in dis.DofColMap() the vector itself will be returned.
+  If the vector is NOT supplied in dis.DofColMap(), but in dis.DofRowMap(),
+  a new vector with column map is allocated and the supplied vector is exported to it and returned.
+
+  Note that the very same functionality is used in Discretization::SetState()!
+
+  \param name (in): discretization
+  \param state (in): vector of some data
+  */
+  Teuchos::RCP<const Epetra_Vector> GetColVersionOfRowVector(
+      const Teuchos::RCP<const DRT::Discretization> dis,
+      const Teuchos::RCP<const Epetra_Vector> state);
+
 } // namespace UTILS
 } // namespace DRT
 

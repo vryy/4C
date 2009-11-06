@@ -1749,5 +1749,33 @@ void DRT::UTILS::PrintParallelDistribution(const DRT::Discretization& dis)
   }
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> DRT::UTILS::GetColVersionOfRowVector(
+    const Teuchos::RCP<const DRT::Discretization> dis,
+    const Teuchos::RCP<const Epetra_Vector> state)
+{
+  // note that this routine has the same functionality as SetState,
+  // although here we do not store the new vector anywhere
+  // maybe this routine can be used in SetState or become a member function of the discretization class
+
+  if (!dis->HaveDofs()) dserror("FillComplete() was not called");
+  const Epetra_Map* colmap = dis->DofColMap();
+  const Epetra_BlockMap& vecmap = state->Map();
+
+  // if it's already in column map just set a reference
+  // This is a rought test, but it might be ok at this place. It is an
+  // error anyway to hand in a vector that is not related to our dof
+  // maps.
+  if (vecmap.PointSameAs(*colmap))
+    return state;
+  // if it's not in column map export and allocate
+  else
+  {
+    Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*colmap,false);
+    LINALG::Export(*state,*tmp);
+    return tmp;
+  }
+}
 
 #endif  // #ifdef CCADISCRET
