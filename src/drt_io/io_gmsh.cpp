@@ -244,14 +244,19 @@ std::string IO::GMSH::GetNewFileNameAndDeleteOldFiles(
     const std::string&   filename_base,
     const int&           actstep,           ///< generate filename for this step
     const int&           step_diff,         ///< how many steps are kept
-    const bool           screen_out
+    const bool           screen_out,
+    const int            pid
     )
 {
   std::ostringstream filename;
   std::ostringstream filenamedel;
   const std::string filebase(DRT::Problem::Instance()->OutputControlFile()->FileName());
-  filename    << filebase << "." << filename_base << "_" << std::setw(5) << setfill('0') << actstep           << ".pos";
-  filenamedel << filebase << "." << filename_base << "_" << std::setw(5) << setfill('0') << actstep-step_diff << ".pos";
+
+  std::ostringstream pid_stream;
+  pid_stream << ".p" << std::setw(2) << setfill('0') << pid;
+
+  filename    << filebase << "." << filename_base << "_" << std::setw(5) << setfill('0') << actstep           << pid_stream.str() << ".pos";
+  filenamedel << filebase << "." << filename_base << "_" << std::setw(5) << setfill('0') << actstep-step_diff << pid_stream.str() << ".pos";
   std::remove(filenamedel.str().c_str());
   if (screen_out) std::cout << "writing " << left << std::setw(60) <<filename.str()<<"...";
   return filename.str();
