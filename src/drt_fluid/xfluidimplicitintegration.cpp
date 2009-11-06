@@ -1741,10 +1741,7 @@ void FLD::XFluidImplicitTimeInt::Output()
     output_->WriteVector("accn" , state_.accn_);
   }
 
-  if (discret_->Comm().NumProc() == 1)
-  {
-    OutputToGmsh(step_, time_);
-  }
+  OutputToGmsh(step_, time_);
 
   return;
 } // FluidImplicitTimeInt::Output
@@ -1849,11 +1846,14 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
 
   const bool screen_out = true;
 
+  // get a copy on columnmn parallel distribution
+  Teuchos::RCP<const Epetra_Vector> output_col_velnp = DRT::UTILS::GetColVersionOfRowVector(discret_, state_.velnp_);
+
   if (gmshdebugout and (this->physprob_.fieldset_.find(XFEM::PHYSICS::Pres) != this->physprob_.fieldset_.end()))
   {
     cout << "XFluidImplicitTimeInt::OutputToGmsh()" << endl;
 
-    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_pressure", step, 5, screen_out);
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_pressure", step, 5, screen_out, discret_->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
 
     const XFEM::PHYSICS::Field field = XFEM::PHYSICS::Pres;
@@ -1873,7 +1873,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
 
         // extract local values from the global vector
         vector<double> myvelnp(lm.size());
-        DRT::UTILS::ExtractMyValues(*state_.velnp_, myvelnp, lm);
+        DRT::UTILS::ExtractMyValues(*output_col_velnp, myvelnp, lm);
 
         const int numparam = eledofman.NumDofPerField(field);
         const vector<int>& dofpos = eledofman.LocalDofPosPerField(field);
@@ -1901,7 +1901,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
   }
   if (gmshdebugout and (this->physprob_.fieldset_.find(XFEM::PHYSICS::Temp) != this->physprob_.fieldset_.end()) )
   {
-    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_temperature", step, 5, screen_out);
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_temperature", step, 5, screen_out, discret_->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
 
     {
@@ -1920,7 +1920,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
 
         // extract local values from the global vector
         vector<double> myvelnp(lm.size());
-        DRT::UTILS::ExtractMyValues(*state_.velnp_, myvelnp, lm);
+        DRT::UTILS::ExtractMyValues(*output_col_velnp, myvelnp, lm);
 
         const int numparam = eledofman.NumDofPerField(field);
         const vector<int>& dofpos = eledofman.LocalDofPosPerField(field);
@@ -2012,19 +2012,19 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
 #if 1
   if (gmshdebugout)
   {
-    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigma_disc", step, 5, screen_out);
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigma_disc", step, 5, screen_out, discret_->Comm().MyPID());
     cout << endl;
-    const std::string filenamexx = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigmaxx_disc", step, 5, screen_out);
+    const std::string filenamexx = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigmaxx_disc", step, 5, screen_out, discret_->Comm().MyPID());
     cout << endl;
-    const std::string filenameyy = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigmayy_disc", step, 5, screen_out);
+    const std::string filenameyy = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigmayy_disc", step, 5, screen_out, discret_->Comm().MyPID());
     cout << endl;
-    const std::string filenamezz = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigmazz_disc", step, 5, screen_out);
+    const std::string filenamezz = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigmazz_disc", step, 5, screen_out, discret_->Comm().MyPID());
     cout << endl;
-    const std::string filenamexy = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigmaxy_disc", step, 5, screen_out);
+    const std::string filenamexy = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigmaxy_disc", step, 5, screen_out, discret_->Comm().MyPID());
     cout << endl;
-    const std::string filenamexz = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigmaxz_disc", step, 5, screen_out);
+    const std::string filenamexz = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigmaxz_disc", step, 5, screen_out, discret_->Comm().MyPID());
     cout << endl;
-    const std::string filenameyz = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigmayz_disc", step, 5, screen_out);
+    const std::string filenameyz = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigmayz_disc", step, 5, screen_out, discret_->Comm().MyPID());
     std::ofstream gmshfilecontent(  filename.c_str());
     std::ofstream gmshfilecontentxx(filenamexx.c_str());
     std::ofstream gmshfilecontentyy(filenameyy.c_str());
@@ -2056,7 +2056,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
 
         // extract local values from the global vector
         vector<double> myvelnp(lm.size());
-        DRT::UTILS::ExtractMyValues(*state_.velnp_, myvelnp, lm);
+        DRT::UTILS::ExtractMyValues(*output_col_velnp, myvelnp, lm);
 
         const int numparam = eledofman.NumDofPerField(field);
         const vector<int>& dofposxx = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Sigmaxx);
@@ -2148,11 +2148,11 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
 
   if (this->physprob_.fieldset_.find(XFEM::PHYSICS::Velx) != this->physprob_.fieldset_.end())
   {
-    PlotVectorFieldToGmsh(state_.velnp_, "solution_field_velocity_np","Velocity Solution (Physical) n+1",true, step, time);
-    PlotVectorFieldToGmsh(state_.veln_,  "solution_field_velocity_n","Velocity Solution (Physical) n",false, step, time);
-//    PlotVectorFieldToGmsh(state_.velnm_, "solution_field_velocity_nm","Velocity Solution (Physical) n-1",false, step, time);
-    PlotVectorFieldToGmsh(state_.accnp_, "solution_field_acceleration_np","Acceleration Solution (Physical) n+1",false, step, time);
-    PlotVectorFieldToGmsh(state_.accn_,  "solution_field_acceleration_n","Acceleration Solution (Physical) n",false, step, time);
+    PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.velnp_), "solution_field_velocity_np","Velocity Solution (Physical) n+1",true, step, time);
+    PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.veln_),  "solution_field_velocity_n","Velocity Solution (Physical) n",false, step, time);
+//    PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.velnm_), "solution_field_velocity_nm","Velocity Solution (Physical) n-1",false, step, time);
+    PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.accnp_), "solution_field_acceleration_np","Acceleration Solution (Physical) n+1",false, step, time);
+    PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.accn_),  "solution_field_acceleration_n","Acceleration Solution (Physical) n",false, step, time);
   }
 }
 
@@ -2160,7 +2160,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
-    const Teuchos::RCP<Epetra_Vector>   vectorfield,
+    const Teuchos::RCP<const Epetra_Vector>   vectorfield,
     const std::string filestr,
     const std::string name_in_gmsh,
     const bool plot_to_gnuplot,
@@ -2176,7 +2176,7 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
 
   if (gmshdebugout)
   {
-    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filestr, step, 5, screen_out);
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filestr, step, 5, screen_out, discret_->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
 
     {
@@ -3229,7 +3229,7 @@ void FLD::XFluidImplicitTimeInt::ProjectOldTimeStepValues(
       bool screen_out = true;
       if ((this->physprob_.fieldset_.find(XFEM::PHYSICS::Pres) != this->physprob_.fieldset_.end()))
       {
-        const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_pressure_projected", Step(), 5, screen_out);
+        const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_pressure_projected", Step(), 5, screen_out, discret_->Comm().MyPID());
         std::ofstream gmshfilecontent(filename.c_str());
 
         const XFEM::PHYSICS::Field field = XFEM::PHYSICS::Pres;

@@ -456,7 +456,7 @@ void XFEM::DofManager::toGmsh(
 
   if (gmshdebugout)
   {
-    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("numdof_coupled_system", step, 5, screen_out);
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("numdof_coupled_system", step, 5, screen_out, ih_->xfemdis()->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
     {
       // draw elements with associated gid

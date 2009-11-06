@@ -60,7 +60,7 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
 
   if (gmshdebugout)
   {
-    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("uncut_elements_coupled_system", 999999, 5, screen_out);
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("uncut_elements_coupled_system", 999999, 5, screen_out, xfemdis_->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
     IO::GMSH::disToStream("Fluid", 0.0, xfemdis_, gmshfilecontent);
     IO::GMSH::disToStream("Boundary", 1.0, cutterdis_, cutterposnp_, gmshfilecontent);
@@ -420,7 +420,7 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
   if (gmshdebugout)
   {
     // debug: write both meshes to file in Gmsh format
-    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("elements_coupled_system", step, 5, screen_out);
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("elements_coupled_system", step, 5, screen_out, xfemdis_->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
     IO::GMSH::XdisToStream("Fluid", 0.0, xfemdis_, elementalDomainIntCells_, elementalBoundaryIntCells_, gmshfilecontent);
     IO::GMSH::disToStream("Solid", 1.0, cutterdis_, cutterposnp_, gmshfilecontent);
@@ -430,7 +430,7 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
 
   if (gmshdebugout)
   {
-    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("interface_patches", step, 5, screen_out);
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("interface_patches", step, 5, screen_out, xfemdis_->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
 //    IO::GMSH::XdisToStream("Fluid", 0.0, xfemdis_, elementalDomainIntCells_, elementalBoundaryIntCells_, gmshfilecontent);
 
@@ -451,7 +451,7 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
 
   if (gmshdebugout)
   {
-    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("domains", step, 5, screen_out);
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("domains", step, 5, screen_out, xfemdis_->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
     {
       gmshfilecontent << "View \" " << "Domains using CellCenter of Elements and Integration Cells \" {" << endl;
@@ -478,7 +478,7 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
 
   if (gmshdebugout)
   {
-    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("domains_for_patches", step, 5, screen_out);
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("domains_for_patches", step, 5, screen_out, xfemdis_->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
     for (map<int, const Teuchos::RCP<GEO::SearchTree> >::const_iterator entry = octTreePerLabelnp_.begin();
         entry != octTreePerLabelnp_.end();
@@ -513,7 +513,7 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
 
   if (gmshdebugout) // print space time layer
   {
-    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("spacetime", step, 5, screen_out);
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("spacetime", step, 5, screen_out, xfemdis_->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
     {
       gmshfilecontent << "View \" " << "SpaceTime cells \" {" << endl;
@@ -536,7 +536,7 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
   if (gmsh_tree_output)
   {
     // debug: write information about which structure we are in
-    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("points", step, 5, screen_out);
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("points", step, 5, screen_out, xfemdis_->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
     {
       gmshfilecontent << "View \" " << "CellCenter of Elements and Integration Cells \" {" << endl;
