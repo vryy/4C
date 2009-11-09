@@ -120,6 +120,8 @@ public:
     Surfactant,
     MicroBoundary,
     XFEMCoupling,
+    FluidFluidCoupling,
+    MovingFluid,
     FluidStressCalc,
     LineLIFTDRAG,
     SurfLIFTDRAG,

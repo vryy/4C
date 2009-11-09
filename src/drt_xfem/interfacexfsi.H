@@ -30,7 +30,8 @@ namespace XFEM
     //! constructor
     explicit InterfaceHandleXFSI(
              const Teuchos::RCP<DRT::Discretization>  xfemdis,   ///< discretization that will be intersected
-             const Teuchos::RCP<DRT::Discretization>  cutterdis  ///< discretization with boundary elements
+             const Teuchos::RCP<DRT::Discretization>  cutterdis,  ///< discretization with boundary elements
+             set<int>                                 MovingFluideleids_
              );
 
     //! destructor
@@ -144,6 +145,12 @@ namespace XFEM
 
     //! discretization that intersects the xfemdis_ -> should be a boundary discretization (e.g. surface of structure)
     const Teuchos::RCP<DRT::Discretization>       cutterdis_;
+
+    //! fluid fluid boundary discretization
+    Teuchos::RCP<DRT::Discretization>       FluidFluidboundarydis_;
+
+    //! moving fluid element ids
+    const set<int> 								MovingFluideleids_;
 
     //! bounding boxes of cutter elements
     std::map<int,LINALG::Matrix<3,2> >            currentXAABBs_;

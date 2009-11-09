@@ -368,11 +368,31 @@ protected:
       Teuchos::RCP<Epetra_Vector>             systemvector1
       );
 
+  void preparefluidfluidboundaryDis();
+
   //! @name general algorithm parameters
   //! fluid discretization
   const Teuchos::RCP<DRT::Discretization>      discret_;
   const ParameterList&                         fluidsolverparams_;
   Teuchos::RCP<LINALG::Solver>                 solver_;
+
+  //! Fluid-Fluid-Boundray discretization
+  Teuchos::RCP<DRT::Discretization>			   FluidFluidboundarydis_;
+
+  //! @name state vectors using the solid boundary parallel distribution (row vectors)
+  Teuchos::RCP<Epetra_Vector>            fidispnp_;   ///< fluid interface displacement  n+1
+  Teuchos::RCP<Epetra_Vector>            fivelnp_;    ///< fluid interface velocity      n+1
+  Teuchos::RCP<Epetra_Vector>            fitrueresnp_;///< fluid interface residual      n+1
+  Teuchos::RCP<Epetra_Vector>            fidispn_;    ///< fluid interface displacement  n
+  Teuchos::RCP<Epetra_Vector>            fiveln_;     ///< fluid interface velocity      n
+  Teuchos::RCP<Epetra_Vector>            fivelnm_;    ///< fluid interface velocity      n-1
+  Teuchos::RCP<Epetra_Vector>            fiaccnp_;    ///< fluid interface acceleration  n+1
+  Teuchos::RCP<Epetra_Vector>            fiaccn_;     ///< fluid interface acceleration  n
+  //@}
+
+  // the interface map setup for interface <-> full translation
+  FLD::UTILS::MapExtractor               FluidFluidinterface_;
+
   //! project nullspace (useful for completely Dirichlet bounded problems)
   bool                        project_;
   //! integrated basis vector (pressure component)
@@ -521,6 +541,12 @@ protected:
     std::set<XFEM::PHYSICS::Field> fieldset_; ///< which physical fields are used in this problem
     RCP<XFEM::ElementAnsatz> elementAnsatzp_; ///< element dofs for this problem
   } physprob_;
+
+  /// this struct holds information about the fluid fluid coupling
+  struct FluidFluidState
+  {
+	  set<int> MovingFluideleids_;  ///< this set contains the element ids of the moving Fluid	  
+  }fluidfluidstate_;
 
   /// histvector --- a linear combination of velnm, veln (BDF)
   ///                or veln, accn (One-Step-Theta)

@@ -39,9 +39,11 @@ Maintainer: Axel Gerstenberger
  *----------------------------------------------------------------------*/
 XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
     const Teuchos::RCP<DRT::Discretization>  xfemdis,
-    const Teuchos::RCP<DRT::Discretization>  cutterdis
+    const Teuchos::RCP<DRT::Discretization>  cutterdis,
+    const set<int> 						MovingFluideleids
     ) : InterfaceHandle(xfemdis),
-        cutterdis_(cutterdis)
+        cutterdis_(cutterdis),
+        MovingFluideleids_(MovingFluideleids)
 {
   if (cutterdis == Teuchos::null)
     dserror("We need a real boundary discretization here!");
@@ -49,8 +51,15 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
   if (xfemdis->Comm().MyPID() == 0)
     std::cout << "Constructing InterfaceHandle" << std::endl;
 
-  FillCurrentCutterPositionMap(cutterdis, *cutterdis->GetState("idispcolnp"), cutterposnp_);
-  FillCurrentCutterPositionMap(cutterdis, *cutterdis->GetState("idispcoln") , cutterposn_ );
+  if (cutterdis->Name() == "boundary"){
+	  FillCurrentCutterPositionMap(cutterdis, *cutterdis->GetState("idispcolnp"), cutterposnp_);
+	  FillCurrentCutterPositionMap(cutterdis, *cutterdis->GetState("idispcoln") , cutterposn_ );
+  }
+  else if (cutterdis->Name() == "FluidFluidboundary"){
+	  FillCurrentCutterPositionMap(cutterdis, *cutterdis->GetState("fidispcolnp"), cutterposnp_);
+	  FillCurrentCutterPositionMap(cutterdis, *cutterdis->GetState("fidispcoln") , cutterposn_ );
+  }
+
   currentXAABBs_ = GEO::getCurrentXAABBs(*cutterdis, cutterposnp_);
 
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
@@ -62,8 +71,13 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
   {
     const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("uncut_elements_coupled_system", 999999, 5, screen_out, xfemdis_->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
-    IO::GMSH::disToStream("Fluid", 0.0, xfemdis_, gmshfilecontent);
-    IO::GMSH::disToStream("Boundary", 1.0, cutterdis_, cutterposnp_, gmshfilecontent);
+    if (cutterdis->Name() == "FluidFluidboundary"){
+    	IO::GMSH::disToStream("FluidFluidBoundary", 1.0, cutterdis_, cutterposnp_, gmshfilecontent);
+    }
+    else if (cutterdis->Name() == "boundary"){
+    	IO::GMSH::disToStream("Fluid", 0.0, xfemdis_, gmshfilecontent);
+    	IO::GMSH::disToStream("Boundary", 1.0, cutterdis_, cutterposnp_, gmshfilecontent);
+    }
     gmshfilecontent.close();
     if (screen_out) cout << " done" << endl;
   }
@@ -77,7 +91,7 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
   {
 #ifdef QHULL
     Teuchos::RCP<GEO::Intersection> is = rcp(new GEO::Intersection());
-    is->computeIntersection(xfemdis, cutterdis, cutterposnp_, currentXAABBs_, elementalDomainIntCells_, elementalBoundaryIntCells_, labelPerBoundaryElementId_);
+    is->computeIntersection(xfemdis, cutterdis, cutterposnp_, currentXAABBs_, elementalDomainIntCells_, elementalBoundaryIntCells_, labelPerBoundaryElementId_, MovingFluideleids);
 #else
     dserror("you have to compile with the QHULL flag!");
 #endif
@@ -423,7 +437,7 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
     const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("elements_coupled_system", step, 5, screen_out, xfemdis_->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
     IO::GMSH::XdisToStream("Fluid", 0.0, xfemdis_, elementalDomainIntCells_, elementalBoundaryIntCells_, gmshfilecontent);
-    IO::GMSH::disToStream("Solid", 1.0, cutterdis_, cutterposnp_, gmshfilecontent);
+    IO::GMSH::disToStream("Cutter", 1.0, cutterdis_, cutterposnp_, gmshfilecontent);
     gmshfilecontent.close();
     if (screen_out) cout << " done" << endl;
   }

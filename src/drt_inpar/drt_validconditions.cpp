@@ -740,15 +740,33 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          DRT::Condition::XFEMCoupling,
                                          true,
                                          DRT::Condition::Surface));
+  Teuchos::RCP<ConditionDefinition> movingfluid =
+        Teuchos::rcp(new ConditionDefinition("DESIGN MOVING FLUID VOL CONDITIONS",
+                                             "MovingFluid",
+                                             "Moving Fluid",
+                                             DRT::Condition::MovingFluid,
+                                             true,
+                                             DRT::Condition::Volume));
+  Teuchos::RCP<ConditionDefinition> fluidfluidcoupling =
+      Teuchos::rcp(new ConditionDefinition("DESIGN FLUID FLUID COUPLING SURF CONDITIONS",
+                                           "FluidFluidCoupling",
+                                           "FLUID FLUID Coupling",
+                                           DRT::Condition::FluidFluidCoupling,
+                                           true,
+                                           DRT::Condition::Surface));
 
   for (unsigned i=0; i<xfemcomponents.size(); ++i)
   {
     linexfem->AddComponent(xfemcomponents[i]);
     surfxfem->AddComponent(xfemcomponents[i]);
+    movingfluid->AddComponent(xfemcomponents[i]);
+    fluidfluidcoupling->AddComponent(xfemcomponents[i]);
   }
 
   condlist.push_back(linexfem);
   condlist.push_back(surfxfem);
+  condlist.push_back(fluidfluidcoupling);
+  condlist.push_back(movingfluid);
 
   /*--------------------------------------------------------------------*/
   // surface tension

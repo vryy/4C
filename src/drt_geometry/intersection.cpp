@@ -79,7 +79,8 @@ void GEO::Intersection::computeIntersection(
     const std::map<int,LINALG::Matrix<3,2> >&      currentXAABBs,
     std::map< int, DomainIntCells >&               domainintcells,
     std::map< int, BoundaryIntCells >&             boundaryintcells,
-    const std::map<int,int>&                       labelPerElementId)
+    const std::map<int,int>&                       labelPerElementId,
+    set<int> 									   MovingFluideleids)
 {
 
   TEUCHOS_FUNC_TIME_MONITOR(" GEO::Intersection");
@@ -107,6 +108,16 @@ void GEO::Intersection::computeIntersection(
   {
     //printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!eleid = %d\n", k);
     DRT::Element* xfemElement = xfemdis->lColElement(k);
+    
+    // for fluid-fluid-coupling consider just the elements of background fluid
+	if (cutterdis->Name() == "FluidFluidboundary"){
+	   	set<int>::const_iterator eleid = MovingFluideleids.find(xfemElement->Id());
+	   	const bool is_moving = (eleid != MovingFluideleids.end());
+		if(is_moving){
+			continue;
+		}
+	}
+    
     initializeXFEM(k, xfemElement);
     EleGeoType xfemGeoType = HIGHERORDER;
     checkGeoType(xfemElement, xyze_xfemElement_, xfemGeoType);

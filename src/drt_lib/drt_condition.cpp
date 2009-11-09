@@ -130,6 +130,8 @@ void DRT::Condition::Print(ostream& os) const
   else if (Type()==VolumeLocsys)                  os << "Volume local coordinate system condition: ";
   else if (Type()==FSICoupling)                   os << "FSI Coupling condition: ";
   else if (Type()==XFEMCoupling)                  os << "XFEM Coupling condition: ";
+  else if (Type()==FluidFluidCoupling)            os << "Fluid Fluid Coupling condition: ";
+  else if (Type()==MovingFluid)                   os << "Moving Fluid Vol condition: ";
   else if (Type()==LineLIFTDRAG)                  os << "Line LIFTDRAG condition: ";
   else if (Type()==SurfLIFTDRAG)                  os << "Surf LIFTDRAG condition: ";
   else if (Type()==SurfaceTension)                os << "Surface tension condition: ";

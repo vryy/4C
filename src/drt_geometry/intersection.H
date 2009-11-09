@@ -83,7 +83,8 @@ class Intersection
       const std::map<int,LINALG::Matrix<3,2> >&   currentXAABBs,           ///< XAABBs of current elements
       map< int, DomainIntCells >&                 domainintcells,          ///< domainintegrationcells for each intersected element
       map< int, BoundaryIntCells >&               boundaryintcells,        ///< boundaryintegrationcells for each intersected element
-      const std::map<int,int>&                    labelPerElementId
+      const std::map<int,int>&                    labelPerElementId,
+      set<int> 									  MovingFluideleids		   ///< set of element ids of the moving fluid 
       );
 
 

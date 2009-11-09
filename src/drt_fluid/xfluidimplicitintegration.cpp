@@ -115,7 +115,7 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   emptyboundarydis->SetState("idispcoln",tmpdisp2);
   // intersection with empty cutter will result in a complete fluid domain with no holes or intersections
   Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih =
-    rcp(new XFEM::InterfaceHandleXFSI(discret_,emptyboundarydis));
+    rcp(new XFEM::InterfaceHandleXFSI(discret_,emptyboundarydis,fluidfluidstate_.MovingFluideleids_)));
 
   // apply enrichments
   std::set<XFEM::PHYSICS::Field> fieldset;
@@ -604,8 +604,37 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInter
   // within this routine, no parallel re-distribution is allowed to take place
   // before and after this function, it's ok to do that
 
-  // compute Intersection
-  ih_np_ = rcp(new XFEM::InterfaceHandleXFSI(discret_, cutterdiscret));
+  preparefluidfluidboundaryDis();
+
+  vector<string> conditions_to_copy;
+  conditions_to_copy.push_back("MovingFluid");
+  conditions_to_copy.push_back("XFEMCoupling");
+  Teuchos::RCP<DRT::Discretization> MovingFluiddis = DRT::UTILS::CreateDiscretizationFromCondition(discret_, "MovingFluid", "MovingFluid", "VELE3", conditions_to_copy);
+
+  for (int iele=0; iele< MovingFluiddis->NumMyColElements(); iele++){
+	  DRT::Element* MovingFluidele = MovingFluiddis->lColElement(iele);
+	  fluidfluidstate_.MovingFluideleids_.insert(MovingFluidele->Id());
+  }
+
+  const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
+  const bool gmshdebugout = (bool)getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
+
+  if (gmshdebugout) {
+	 const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("Fluid_Fluid_Coupling", 1, 0, false);
+	 std::ofstream gmshfilecontent(filename.c_str());
+	 IO::GMSH::disToStream("FluidFluid", 0.0, FluidFluidboundarydis_,gmshfilecontent);
+	 IO::GMSH::disToStream("Fluid", 0.0, discret_, gmshfilecontent);
+	 IO::GMSH::disToStream("MovingFluid", 0.0, MovingFluiddis, gmshfilecontent);
+	 gmshfilecontent.close();
+  }
+
+   // compute Intersection
+   if (!fluidfluidstate_.MovingFluideleids_.empty()){
+	  ih_np_ = rcp(new XFEM::InterfaceHandleXFSI(discret_, FluidFluidboundarydis_, fluidfluidstate_.MovingFluideleids_));
+    }
+   else
+	  ih_np_ = rcp(new XFEM::InterfaceHandleXFSI(discret_, cutterdiscret, fluidfluidstate_.MovingFluideleids_));
+
   ih_np_->toGmsh(step_);
 
   // apply enrichments
@@ -1767,7 +1796,7 @@ void FLD::XFluidImplicitTimeInt::ReadRestart(
 
   const int output_test_step = 999999;
 
-  ih_np_ = rcp(new XFEM::InterfaceHandleXFSI(discret_, cutterdiscret));
+  ih_np_ = rcp(new XFEM::InterfaceHandleXFSI(discret_, cutterdiscret, fluidfluidstate_.MovingFluideleids_));
   if (gmshdebugout)
     ih_np_->toGmsh(output_test_step);
 
@@ -3285,6 +3314,62 @@ void FLD::XFluidImplicitTimeInt::ProjectOldTimeStepValues(
       cout << " Time needed for projection: " << dtsolve << " s." << endl;
 }
 
+void FLD::XFluidImplicitTimeInt::preparefluidfluidboundaryDis(
+		)
+{
+	//create Fluid Fluid Boundary discretization
+	vector<string> conditions_to_copy;
+	conditions_to_copy.push_back("FluidFluidCoupling");
+	conditions_to_copy.push_back("XFEMCoupling");
+	FluidFluidboundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(discret_, "FluidFluidCoupling", "FluidFluidboundary", "BELE3", conditions_to_copy);
 
+	// create node and element distribution with elements and nodes ghosted on all processors
+	const Epetra_Map ffnoderowmap = *FluidFluidboundarydis_->NodeRowMap();
+    const Epetra_Map ffelemrowmap = *FluidFluidboundarydis_->ElementRowMap();
 
+    // put all boundary nodes and elements onto all processors
+    // Create an allreduced Epetra_Map from the given Epetra_Map and give it to all processors
+    const Epetra_Map ffnodecolmap = *LINALG::AllreduceEMap(ffnoderowmap);
+    const Epetra_Map ffelemcolmap = *LINALG::AllreduceEMap(ffelemrowmap);
+
+    // redistribute nodes and elements to column (ghost) map
+    FluidFluidboundarydis_->ExportColumnNodes(ffnodecolmap);
+    FluidFluidboundarydis_->ExportColumnElements(ffelemcolmap);
+
+    const int error = FluidFluidboundarydis_->FillComplete();
+    if (error) dserror("FluidFluidboundarydis_->FillComplete() returned error=%d",error);
+
+    // create fluid-fluid interface DOF vectors
+    fidispnp_    = LINALG::CreateVector(*FluidFluidboundarydis_->DofRowMap(),true);
+    fivelnp_     = LINALG::CreateVector(*FluidFluidboundarydis_->DofRowMap(),true);
+    fitrueresnp_ = LINALG::CreateVector(*FluidFluidboundarydis_->DofRowMap(),true);
+    fidispn_   = LINALG::CreateVector(*FluidFluidboundarydis_->DofRowMap(),true);
+    fiveln_    = LINALG::CreateVector(*FluidFluidboundarydis_->DofRowMap(),true);
+    fivelnm_   = LINALG::CreateVector(*FluidFluidboundarydis_->DofRowMap(),true);
+    fiaccnp_   = LINALG::CreateVector(*FluidFluidboundarydis_->DofRowMap(),true);
+    fiaccn_    = LINALG::CreateVector(*FluidFluidboundarydis_->DofRowMap(),true);
+
+    Teuchos::RCP<Epetra_Vector> fidispcolnp = LINALG::CreateVector(*FluidFluidboundarydis_->DofColMap(),true);
+    Teuchos::RCP<Epetra_Vector> fidispcoln  = LINALG::CreateVector(*FluidFluidboundarydis_->DofColMap(),true);
+    Teuchos::RCP<Epetra_Vector> fivelcolnp  = LINALG::CreateVector(*FluidFluidboundarydis_->DofColMap(),true);
+    Teuchos::RCP<Epetra_Vector> fivelcoln   = LINALG::CreateVector(*FluidFluidboundarydis_->DofColMap(),true);
+    Teuchos::RCP<Epetra_Vector> fivelcolnm  = LINALG::CreateVector(*FluidFluidboundarydis_->DofColMap(),true);
+    Teuchos::RCP<Epetra_Vector> fiacccoln   = LINALG::CreateVector(*FluidFluidboundarydis_->DofColMap(),true);
+
+     // map to fluid parallel distribution
+     LINALG::Export(*fidispnp_,*fidispcolnp);
+     LINALG::Export(*fidispn_ ,*fidispcoln);
+     LINALG::Export(*fivelnp_ ,*fivelcolnp);
+     LINALG::Export(*fiveln_  ,*fivelcoln);
+     LINALG::Export(*fivelnm_ ,*fivelcolnm);
+     LINALG::Export(*fiaccn_  ,*fiacccoln);
+
+     // put vectors into boundary discretization
+     FluidFluidboundarydis_->SetState("fidispcolnp",fidispcolnp);
+     FluidFluidboundarydis_->SetState("fidispcoln" ,fidispcoln);
+     FluidFluidboundarydis_->SetState("fivelcolnp" ,fivelcolnp);
+     FluidFluidboundarydis_->SetState("fivelcoln"  ,fivelcoln);
+     FluidFluidboundarydis_->SetState("fivelcolnm" ,fivelcolnm);
+     FluidFluidboundarydis_->SetState("fiacccoln"  ,fiacccoln);
+}
 #endif /* CCADISCRET       */

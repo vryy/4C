@@ -1237,6 +1237,12 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
       return ele;
     }
     break;
+    case vele3:
+    {
+      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::Vele3(id,owner));
+      return ele;
+    }
+    break;
     case constrele2:
     {
       RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::ConstraintElement2(id,owner));
