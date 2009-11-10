@@ -59,6 +59,8 @@ discret_(discret)
   // overwrite base class communicator
   comm_ = rcp(Discret().Comm().Clone());
   
+  // welcome message
+  
   // create some local variables (later to be stored in strategy)
   RCP<Epetra_Map> problemrowmap = rcp(new Epetra_Map(*(Discret().DofRowMap())));
   const Teuchos::ParameterList& psize = DRT::Problem::Instance()->ProblemSizeParams();
@@ -68,7 +70,13 @@ discret_(discret)
   Teuchos::ParameterList cparams;
 
   // read and check contact input parameters
+  if(Comm().MyPID()==0)
+  {
+    cout << "Checking contact input parameters...........";
+    fflush(stdout);
+  }
   ReadAndCheckInput(cparams);
+  if(Comm().MyPID()==0) cout << "done!" << endl;
 
   // check for FillComplete of discretization
   if (!Discret().Filled()) dserror("Discretization is not fillcomplete");
@@ -76,6 +84,12 @@ discret_(discret)
   // let's check for contact boundary conditions in discret
   // and detect groups of matching conditions
   // for each group, create a contact interface and store it
+  if(Comm().MyPID()==0)
+  {
+    cout << "Building contact interface(s)...............";
+    fflush(stdout);
+  }
+  
   vector<DRT::Condition*> contactconditions(0);
   Discret().GetCondition("Contact",contactconditions);
   if ((int)contactconditions.size()<=1)  dserror("Not enough contact conditions in discretization");
@@ -285,9 +299,15 @@ discret_(discret)
     interface->FillComplete();
 
   } // for (int i=0; i<(int)contactconditions.size(); ++i)
-
+  if(Comm().MyPID()==0) cout << "done!" << endl;
+  
   // create the solver strategy object
   // and pass all necessary data to it
+  if(Comm().MyPID()==0)
+  {
+    cout << "Building contact strategy object............";
+    fflush(stdout);
+  }
   INPAR::CONTACT::SolvingStrategy stype =
       Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(cparams,"STRATEGY");
   if (stype == INPAR::CONTACT::solution_lagmult)
@@ -298,11 +318,14 @@ discret_(discret)
     strategy_ = rcp(new PenaltyStrategy(problemrowmap,cparams,interfaces,dim,comm_,alphaf));
   else
     dserror("Unrecognized strategy");
-    
+  if(Comm().MyPID()==0) cout << "done!" << endl << endl;  
   // **** initialization of row/column maps moved to AbstractStrategy **** //
   // since the manager does not operate over nodes, elements, dofs anymore 
   // ********************************************************************* //
 
+  // print contact parameter list to screen
+  if (Comm().MyPID()==0) cout << GetStrategy().Params() << endl;
+  
   return;
 }
 

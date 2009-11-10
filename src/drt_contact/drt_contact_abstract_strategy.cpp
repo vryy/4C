@@ -68,9 +68,6 @@ activesetconv_(false),
 activesetsteps_(1),
 isincontact_(false)
 {
-  // print parameter list to screen
-  if (Comm().MyPID()==0) cout << Params() << endl;
-  
   // ------------------------------------------------------------------------
   // setup global accessible Epetra_Maps
   // ------------------------------------------------------------------------                     

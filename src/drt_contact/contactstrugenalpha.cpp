@@ -129,7 +129,7 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   INPAR::CONTACT::ContactType ctype =
     Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(contactmanager_->GetStrategy().Params(),"CONTACT");
 
-  if(params_.get<int>("step") == 0 && ctype == INPAR::CONTACT::contact_frictional)
+  if(params_.get<int>("step") == 0 && ctype != INPAR::CONTACT::contact_normal)
   {
   	// set state and do mortar calculation
     contactmanager_->GetStrategy().SetState("displacement",disn_);
@@ -492,7 +492,7 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   INPAR::CONTACT::ContactType ctype =
     Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(contactmanager_->GetStrategy().Params(),"CONTACT");
 
-  if(params_.get<int>("step") == 0 && ctype == INPAR::CONTACT::contact_frictional)
+  if(params_.get<int>("step") == 0 && ctype != INPAR::CONTACT::contact_normal)
   {
   	// set state and do mortar calculation
     contactmanager_->GetStrategy().SetState("displacement",disn_);
