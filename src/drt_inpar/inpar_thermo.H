@@ -192,16 +192,62 @@ namespace INPAR
       heatflux_initial      ///< output of heat flux in initial configuration
     };
 
-    /// Type of thermal gradient output
-     /// (this enum represents the input file parameter THERM_TEMPGRAD) CHECK IT!
-     enum TempGradType
-     {
-       tempgrad_none,    ///< no thermal gradient output
-       tempgrad_current,  ///< output of thermal gradient in current configuration
-       tempgrad_initial      ///< output of thermal gradient in initial configuration
-     };
+    /// Map predictor enum term to string
+    static inline const std::string HeatFluxString
+    (
+      const HeatFluxType& name  ///< identifier
+    )
+    {
+      switch (name)
+      {
+      case heatflux_none :
+        return "none";
+        break;
+      case heatflux_current :
+        return "heatflux_current";
+        break;
+      case heatflux_initial :
+        return "heatflux_initial";
+        break;
+      default :
+        dserror("Cannot make string for predictor %d", name);
+        return "";
+      }
+    }
 
-     //@}
+    /// Type of thermal gradient output
+    /// (this enum represents the input file parameter THERM_TEMPGRAD) CHECK IT!
+    enum TempGradType
+    {
+      tempgrad_none,    ///< no thermal gradient output
+      tempgrad_current,  ///< output of thermal gradient in current configuration
+      tempgrad_initial      ///< output of thermal gradient in initial configuration
+    };
+
+    /// Map predictor enum term to string
+    static inline const std::string TempGradString
+    (
+      const TempGradType& name  ///< identifier
+    )
+    {
+     switch (name)
+     {
+     case tempgrad_none :
+       return "none";
+       break;
+     case tempgrad_current :
+       return "tempgrad_current";
+       break;
+     case tempgrad_initial :
+       return "tempgrad_initial";
+       break;
+     default :
+       dserror("Cannot make string for predictor %d", name);
+       return "";
+     }
+    }
+
+    //@}
 
      /// @name General
     //@{

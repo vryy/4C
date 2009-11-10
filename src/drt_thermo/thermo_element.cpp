@@ -236,7 +236,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Thermo::Volumes()
 /*----------------------------------------------------------------------*
  |  Return names of visualization data (public)               dano 09/09|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Thermo::VisNames(map<string,int>& names)
+void DRT::ELEMENTS::Thermo::VisNames(std::map<std::string,int>& names)
 {
   // Put the owner of this element into the file (use base class method for this)
   DRT::Element::VisNames(names);
@@ -244,7 +244,7 @@ void DRT::ELEMENTS::Thermo::VisNames(map<string,int>& names)
   // see whether we have additional data for visualization in our container
   for (int k = 0 ;k<numdofpernode_; k++)
   {
-    ostringstream temp;
+    std::ostringstream temp;
     temp << k;
   } // loop over temperatures
 
@@ -255,7 +255,7 @@ void DRT::ELEMENTS::Thermo::VisNames(map<string,int>& names)
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                        dano 09/09|
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::Thermo::VisData(const string& name, std::vector<double>& data)
+bool DRT::ELEMENTS::Thermo::VisData(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
   if(DRT::Element::VisData(name,data))
@@ -263,7 +263,7 @@ bool DRT::ELEMENTS::Thermo::VisData(const string& name, std::vector<double>& dat
 
   for (int k = 0 ;k<numdofpernode_; k++)
   {
-    ostringstream temp;
+    std::ostringstream temp;
     temp << k;
       {
       if ((int)data.size()!=1) dserror("size mismatch");

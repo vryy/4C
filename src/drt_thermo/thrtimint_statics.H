@@ -7,8 +7,6 @@ Maintainer: Burkhard Bornemann
             bornemann@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15237
-
-            changed cd 05.08.09
 </pre>
 */
 
@@ -118,7 +116,7 @@ namespace THR
       Teuchos::RCP<Epetra_Vector> fint  //!< internal force
     );
 
-    //! Create force residual #fres_ and ist tangent #tang_
+    //! Create force residual #fres_ and its tangent #tang_
     void EvaluateRhsTangResidual();
 
     //! Evaluate/define the residual force vector #fres_ for

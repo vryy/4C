@@ -112,6 +112,10 @@ void THR::TimIntStatics::EvaluateRhsTangResidual()
   fres_->Update(-1.0, *fextn_, 0.0);
   fres_->Update(1.0, *fintn_, 1.0);
 
+  // 26.10.09
+  cout << "fextn \n" << *fextn_ << endl;
+  cout << "fres_ \n" << *fres_ << endl;
+
   //! build tangent matrix : effective dynamic tangent matrix
   //!    K_{Teffdyn} = K_{T}
   //! i.e. do nothing here
@@ -166,6 +170,12 @@ double THR::TimIntStatics::CalcRefNormForce()
 
   //! return char norm
   return max(fintnorm, max(fextnorm, freactnorm));
+
+  // 2.11.09
+  cout << "fintnorm \n" << fintnorm << endl;
+  cout << "fextnorm \n" << fextnorm << endl;
+  cout << "freactnorm \n" << freactnorm << endl;
+
 }
 
 /*----------------------------------------------------------------------*

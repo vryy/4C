@@ -58,6 +58,24 @@ namespace THR
   template<> struct DisTypeToGaussRuleForExactSol<DRT::Element::line2>   {static const DRT::UTILS::GaussRule1D rule =  DRT::UTILS::intrule1D_undefined; };
   template<> struct DisTypeToGaussRuleForExactSol<DRT::Element::line3>   {static const DRT::UTILS::GaussRule1D rule =  DRT::UTILS::intrule1D_undefined; };
 
+  //! Template Meta Programming version of switch over discretization type
+  template<DRT::Element::DiscretizationType DISTYPE>
+  struct DisTypeToNumGaussPoints {};
+  template<> struct DisTypeToNumGaussPoints<DRT::Element::hex8>    { static const int nquad =  8; };
+  template<> struct DisTypeToNumGaussPoints<DRT::Element::hex20>   { static const int nquad = 27; };
+  template<> struct DisTypeToNumGaussPoints<DRT::Element::hex27>   { static const int nquad = 27; };
+  template<> struct DisTypeToNumGaussPoints<DRT::Element::tet4>    { static const int nquad =  4; };
+  template<> struct DisTypeToNumGaussPoints<DRT::Element::tet10>   { static const int nquad =  5; };
+  template<> struct DisTypeToNumGaussPoints<DRT::Element::wedge6>  { static const int nquad =  6; };
+  template<> struct DisTypeToNumGaussPoints<DRT::Element::pyramid5>{ static const int nquad =  8; };
+  template<> struct DisTypeToNumGaussPoints<DRT::Element::quad4>   { static const int nquad =  4; };
+  template<> struct DisTypeToNumGaussPoints<DRT::Element::quad8>   { static const int nquad =  9; };
+  template<> struct DisTypeToNumGaussPoints<DRT::Element::quad9>   { static const int nquad =  9; };
+  template<> struct DisTypeToNumGaussPoints<DRT::Element::tri3>    { static const int nquad =  3; };
+  template<> struct DisTypeToNumGaussPoints<DRT::Element::tri6>    { static const int nquad =  6; };
+  template<> struct DisTypeToNumGaussPoints<DRT::Element::line2>   { static const int nquad =  2; };
+  template<> struct DisTypeToNumGaussPoints<DRT::Element::line3>   { static const int nquad =  3; };
+
 } // namespace THR
 
 

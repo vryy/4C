@@ -1345,6 +1345,7 @@ OBJS_POST_DRT_ENSIGHT = src/post_ensight/post_drt_ensight_writer.o \
                 src/post_ensight/post_drt_ensight_writer_nurbs.o \
                 src/post_ensight/post_drt_ensight_single_field_writers.o \
                 src/post_ensight/post_drt_ensight_structure_stress.o \
+                src/post_ensight/post_drt_ensight_thermo_heatflux.o \
                 src/post_ensight/post_drt_ensight.o
 
 OBJS_POST_DRT_MONITOR = src/post_monitor/post_drt_monitor.o

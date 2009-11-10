@@ -214,6 +214,7 @@ void ElchEnsightWriter::WriteAllResults(PostField* field)
 /*----------------------------------------------------------------------*/
 void ThermoEnsightWriter::WriteAllResults(PostField* field)
 {
+  // number of dofs per node in thermal problems is always 1
   const int numdofpernode = 1;
 
   // write temperature
@@ -224,6 +225,28 @@ void ThermoEnsightWriter::WriteAllResults(PostField* field)
 
   // write element results (e.g. element owner)
   EnsightWriter::WriteElementResults(field);
+
+  // Start new section 06/11/09
+  if (heatfluxtype_ != "none")
+  {
+    // although appearing here twice, only one function call to PostHeatflux
+    // is really postprocessing Gauss point heatfluxes, since only _either_
+    // Current _or_ Initial heatfluxes are written during simulation!
+    PostHeatflux("gauss_current_heatfluxes_xyz", heatfluxtype_);
+    PostHeatflux("gauss_initial_heatfluxes_xyz", heatfluxtype_);
+    //EnsightWriter::WriteResult("heatflux", "heatflux", nodebased, 3);
+  }
+  if (tempgradtype_ != "none")
+  {
+    // although appearing here twice, only one function call to PostHeatflux
+    // is really postprocessing Gauss point temperature gradients, since only _either_
+    // Initial _or_ Current temperature gradients are written during simulation!
+    PostHeatflux("gauss_current_tempgrad_xyz", tempgradtype_);
+    PostHeatflux("gauss_initial_tempgrad_xyz", tempgradtype_);
+    //EnsightWriter::WriteResult("tempgrad", "tempgrad", nodebased, 3);
+  }
+  // end new section 06/11/09
+
 }
 
 /*----------------------------------------------------------------------*/

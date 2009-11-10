@@ -5,10 +5,10 @@
 \brief tesing of structure calculation results
 
 <pre>
-Maintainer: Moritz Frenzel
-            frenzel@lnm.mw.tum.de
+Maintainer: Caroline Danowski
+            danowski@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15240
+            089 - 289-15253
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -40,7 +40,7 @@ void THR::ResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& 
   int dis;
   res.ExtractInt("DIS",dis);
   if (dis != 1)
-    dserror("fix me: only one structure discretization supported for testing");
+    dserror("fix me: only one thermal discretization supported for testing, but we have %g", dis);
 
   int node;
   res.ExtractInt("NODE",node);

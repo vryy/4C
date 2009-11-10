@@ -203,10 +203,14 @@ private:
   int end_;
   int step_;
 
-  /* stress output type optionally set by command line argument */
+  //! stress output type optionally set by command line argument
+  //!
+  //! In case of thermal field this holds the heatflux output.
   string stresstype_;
 
-   /* strain output type optionally set by command line argument */
+  //! strain output type optionally set by command line argument
+  //!
+  //! In case of thermal field this holds the spatial temperature gradient output.
   string straintype_;
 
   //! MAP pointers into the control file map.

@@ -442,7 +442,7 @@ void THR::TimInt::OutputHeatfluxTempgrad
   // create the parameters for the discretization
   ParameterList p;
   // action for elements
-  p.set("action", "calc_thermo_heatflux");
+  p.set("action", "proc_thermo_heatflux");
   // other parameters that might be needed by the elements
   p.set("total time", (*time_)[0]);
   p.set("delta time", (*dt_)[0]);
@@ -504,13 +504,129 @@ void THR::TimInt::OutputHeatfluxTempgrad
     {
       tempgradtext = "gauss_initial_tempgrad_xyz";
     }
-   else
+    else
     {
-     dserror("requested tempgrad type not supported");
+      dserror("requested tempgrad type not supported");
     }
     output_->WriteVector(tempgradtext, *tempgraddata,
                          *(discret_->ElementColMap()));
   }
+
+  // the way they do the output in SCATRA  10.11.09
+
+/*  // get a vector layout from the discretization to construct matching
+  // vectors and matrices
+  //                 local <-> global dof numbering
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+  // output heatflux
+  if (writeheatflux_ != INPAR::THR::heatflux_none)
+  {
+    // create the parameters for the discretization
+    ParameterList p;
+    // action for elements
+    p.set("action", "process_heatflux");
+    // other parameters that might be needed by the elements
+    p.set("total time", (*time_)[0]);
+    p.set("delta time", (*dt_)[0]);
+    p.set("ioheatflux", writeheatflux_);
+
+    // We have to treat each spatial direction separately
+    Teuchos::RCP<Epetra_Vector> fluxx = LINALG::CreateVector(*dofrowmap,true);
+    Teuchos::RCP<Epetra_Vector> fluxy = LINALG::CreateVector(*dofrowmap,true);
+    Teuchos::RCP<Epetra_Vector> fluxz = LINALG::CreateVector(*dofrowmap,true);
+
+    // set vector values needed by elements
+    discret_->ClearState();
+    //discret_->SetState("residual temperature", zeros_);
+    discret_->SetState("temperature", (*temp_)(0));
+    discret_->Evaluate(p, Teuchos::null, Teuchos::null,
+                       fluxx,fluxy,fluxz);
+    discret_->ClearState();
+
+    // empty vector for heat flux vectors (always 3D)
+    Teuchos::RCP<Epetra_MultiVector> flux = Teuchos::rcp(new Epetra_MultiVector(*dofrowmap,3,true));
+    // insert values into final flux vector for visualization
+    for (int i = 0;i<flux->MyLength();++i)
+    {
+      flux->ReplaceMyValue(i,0,(*fluxx)[i]);
+      flux->ReplaceMyValue(i,1,(*fluxy)[i]);
+      flux->ReplaceMyValue(i,2,(*fluxz)[i]);
+    }
+
+    // post_drt_ensight does not support multivectors based on the dofmap
+    // for now, I create single vectors that can be handled by the filter
+
+    // get the noderowmap
+    const Epetra_Map* noderowmap = discret_->NodeRowMap();
+    Teuchos::RCP<Epetra_MultiVector> fluxk = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
+
+    for (int i = 0;i<fluxk->MyLength();++i)
+    {
+      DRT::Node* actnode = discret_->lRowNode(i);
+      int dofgid = discret_->Dof(actnode,k-1);
+      fluxk->ReplaceMyValue(i,0,((*flux)[0])[(flux->Map()).LID(dofgid)]);
+      fluxk->ReplaceMyValue(i,1,((*flux)[1])[(flux->Map()).LID(dofgid)]);
+      fluxk->ReplaceMyValue(i,2,((*flux)[2])[(flux->Map()).LID(dofgid)]);
+    }
+
+    output_->WriteVector("heatflux", fluxk, IO::DiscretizationWriter::nodevector);
+  }
+
+  // output temperature gradient
+  if (writetempgrad_ != INPAR::THR::tempgrad_none)
+  {
+    // create the parameters for the discretization
+    ParameterList p;
+    // action for elements
+    p.set("action", "process_tempgrad");
+    // other parameters that might be needed by the elements
+    p.set("total time", (*time_)[0]);
+    p.set("delta time", (*dt_)[0]);
+    p.set("iotempgrad", writetempgrad_);
+
+    // We have to treat each spatial direction separately
+    Teuchos::RCP<Epetra_Vector> fluxx = LINALG::CreateVector(*dofrowmap,true);
+    Teuchos::RCP<Epetra_Vector> fluxy = LINALG::CreateVector(*dofrowmap,true);
+    Teuchos::RCP<Epetra_Vector> fluxz = LINALG::CreateVector(*dofrowmap,true);
+
+    // set vector values needed by elements
+    discret_->ClearState();
+    //discret_->SetState("residual temperature", zeros_);
+    discret_->SetState("temperature", (*temp_)(0));
+    discret_->Evaluate(p, Teuchos::null, Teuchos::null,
+                       fluxx,fluxy,fluxz);
+    discret_->ClearState();
+
+    // empty vector for (normal) mass or heat flux vectors (always 3D)
+    Teuchos::RCP<Epetra_MultiVector> flux = Teuchos::rcp(new Epetra_MultiVector(*dofrowmap,3,true));
+    // insert values into final flux vector for visualization
+    for (int i = 0;i<flux->MyLength();++i)
+    {
+      flux->ReplaceMyValue(i,0,(*fluxx)[i]);
+      flux->ReplaceMyValue(i,1,(*fluxy)[i]);
+      flux->ReplaceMyValue(i,2,(*fluxz)[i]);
+    }
+
+    // post_drt_ensight does not support multivectors based on the dofmap
+    // for now, I create single vectors that can be handled by the filter
+
+    // get the noderowmap
+    const Epetra_Map* noderowmap = discret_->NodeRowMap();
+    Teuchos::RCP<Epetra_MultiVector> fluxk = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
+
+    for (int i = 0;i<fluxk->MyLength();++i)
+    {
+      DRT::Node* actnode = discret_->lRowNode(i);
+      int dofgid = discret_->Dof(actnode,k-1);
+      fluxk->ReplaceMyValue(i,0,((*flux)[0])[(flux->Map()).LID(dofgid)]);
+      fluxk->ReplaceMyValue(i,1,((*flux)[1])[(flux->Map()).LID(dofgid)]);
+      fluxk->ReplaceMyValue(i,2,((*flux)[2])[(flux->Map()).LID(dofgid)]);
+    }
+
+    output_->WriteVector("tempgrad", fluxk, IO::DiscretizationWriter::nodevector);
+  }
+*/
 
   // leave me alone
   return;
@@ -668,12 +784,16 @@ void THR::TimInt::ApplyForceTangInternal
   discret_->Evaluate(p, tang, Teuchos::null, fint, Teuchos::null, Teuchos::null);
   discret_->ClearState();
 
+  // 29.10.09
+//  cout << "p " << p << endl;
+
   // that's it
   return;
 }
 
 /*----------------------------------------------------------------------*
- |  evaluate ordinary internal force, its tangent at state  bborn 06/08 |
+ |  evaluate ordinary internal force, its tangent at state  bborn 10/09 |
+ |  overloaded function specified for ost time integration              |
  *----------------------------------------------------------------------*/
 void THR::TimInt::ApplyForceTangInternal
 (

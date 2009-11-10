@@ -238,9 +238,9 @@ public:
     ThermoEnsightWriter(
             PostField* field,
             string filename,
-            string hfluxtype="none",
-            string tgradtype="none") :
-        EnsightWriter(field, filename), hfluxtype_(hfluxtype), tgradtype_(tgradtype)
+            string heatfluxtype="none",
+            string tempgradtype="none") :
+        EnsightWriter(field, filename), heatfluxtype_(heatfluxtype), tempgradtype_(tempgradtype)
     {
     }
 
@@ -249,8 +249,31 @@ protected:
     virtual void WriteAllResults(
             PostField* field);
 
-    string hfluxtype_;
-    string tgradtype_;
+    /*!
+    \brief postprocess gauss point heatfluxes and write results
+    \author lw changed to thermal stuff
+    \date 02/08
+    */
+    void PostHeatflux(const string groupname, const string stresstype);
+    void WriteNodalHeatflux(const string groupname,
+                          PostResult& result);
+    void WriteNodalHeatfluxStep(ofstream& file,
+                                PostResult& result,
+                                map<string, vector<ofstream::pos_type> >& resultfilepos,
+                                const string groupname,
+                                const string name,
+                                const int numdf) const;
+    void WriteElementCenterHeatflux(const string groupname,
+                                  PostResult& result);
+    void WriteElementCenterHeatfluxStep(ofstream& file,
+                                      PostResult& result,
+                                      map<string, vector<ofstream::pos_type> >& resultfilepos,
+                                      const string groupname,
+                                      const string name,
+                                      const int numdf) const;
+
+    string heatfluxtype_;  ///< type of heat flux output
+    string tempgradtype_;  ///< type of spatial temperature gradient output
 };
 
 

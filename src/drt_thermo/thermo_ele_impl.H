@@ -126,6 +126,9 @@ namespace DRT
     //! number of dof per node
     static const int numdofpernode_ = 1;
 
+    //! number of Gauss points
+    static const int nquad_ = THR::DisTypeToNumGaussPoints<distype>::nquad;
+
     //! Evaluate
     virtual int Evaluate(DRT::Element*              ele,
                          Teuchos::ParameterList&    params,
@@ -156,7 +159,9 @@ namespace DRT
          LINALG::Matrix<iel*numdofpernode_,iel*numdofpernode_>* econd,  ///< conductivity matrix
          LINALG::Matrix<iel*numdofpernode_,iel*numdofpernode_>* ecapa,  ///< capacity matrix
          LINALG::Matrix<iel*numdofpernode_,1>* efint,  ///< internal force
-         LINALG::Matrix<iel*numdofpernode_,1>* efext  ///< external force
+         LINALG::Matrix<iel*numdofpernode_,1>* efext,  ///< external force
+         LINALG::Matrix<nquad_,nsd_>* eheatflux,  ///< heat fluxes at Gauss points
+         LINALG::Matrix<nquad_,nsd_>* etempgrad  ///< temperature gradients at Gauss points
          );
 
       /*
@@ -202,6 +207,14 @@ namespace DRT
          const DRT::Element*                ele,      ///< the actual element
          Epetra_SerialDenseVector&          elevec1,  ///< result vector (to be assembled)
          const Epetra_IntSerialDenseVector& dofids    ///< for which dof we need to integrate?
+     );
+
+     void ExtrapolateFromGaussPointsToNodes(
+        DRT::Element* ele,  ///< the actual element
+        const LINALG::Matrix<nquad_,nsd_>& gpheatflux,
+        LINALG::Matrix<iel*numdofpernode_,1>& efluxx,
+        LINALG::Matrix<iel*numdofpernode_,1>& efluxy,
+        LINALG::Matrix<iel*numdofpernode_,1>& efluxz
      );
 
       //! actual values of temperatures
