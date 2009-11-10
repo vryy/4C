@@ -649,6 +649,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
 
   double sumsolver     = 0;
   double sumevaluation = 0;
+  double sumptc = 0;
   const double tbegin = ds_cputime();
 
   if (!errfile) printerr = false;
@@ -698,6 +699,8 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
 
     //the following part was especially introduced for Brownian dynamics
     {
+      const double t_ptc = ds_cputime();
+      
       // create the parameters for the discretization
       ParameterList p;
 
@@ -718,7 +721,14 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
       p.set("FRICTION_MODEL",Teuchos::getIntegralValue<INPAR::STATMECH::FrictionModel>(statmechmanager_->statmechparams_,"FRICTION_MODEL"));
 
       //evaluate ptc stiffness contribution in all the elements
+      
+      
       discret_.Evaluate(p,stiff_,null,null,null,null);
+      
+      sumptc += ds_cputime() - t_ptc;
+      
+
+      
     }
 
 
@@ -760,6 +770,8 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
 
     //---------------------------- compute internal forces and stiffness
     {
+      
+      
       // zero out stiffness
       stiff_->Zero();
       // create the parameters for the discretization
@@ -785,7 +797,8 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
         currentshear = 0;
       p.set("CURRENTSHEAR",currentshear);
 
-
+      
+      
       // set vector values needed by elements
       discret_.ClearState();
 
@@ -793,9 +806,12 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
       disi_->Scale(1.-alphaf);
 
       discret_.SetState("residual displacement",disi_);
-
       discret_.SetState("displacement",dism_);
       discret_.SetState("velocity",velm_);
+      
+
+      
+      
 
       //discret_.SetState("velocity",velm_); // not used at the moment
       fint_->PutScalar(0.0);  // initialise internal force vector
@@ -918,7 +934,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
   params_.set<int>("num iterations",numiter);
 
   if(!discret_.Comm().MyPID())
-  std::cout << "\n***\nevaluation time: " << sumevaluation<< " seconds\nsolver time: "<< sumsolver <<" seconds\ntotal solution time: "<<ds_cputime() - tbegin<<" seconds\n***\n";
+  std::cout << "\n***\nevaluation time: " << sumevaluation<< " seconds\nptc time: "<< sumptc <<" seconds\nsolver time: "<< sumsolver <<" seconds\ntotal solution time: "<<ds_cputime() - tbegin<<" seconds\n***\n";
 
   return;
 } // StatMechTime::PTC()

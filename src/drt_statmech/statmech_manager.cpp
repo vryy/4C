@@ -1023,36 +1023,20 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& disro
 #ifdef MEASURETIME
     const double t_admin = ds_cputime();
 #endif // #ifdef MEASURETIME 
-    
 
-    for(int i = 0; i < discret_.NumMyRowElements(); i++)
-      std::cout<<"\noutput before SetCrosslinkers on proc "<<discret_.Comm().MyPID()  <<": element "<<(discret_.lRowElement(i))->Id()<<" owned by proc "<<(discret_.lRowElement(i))->Owner() <<"\n"<<endl;
-    
     //setting the crosslinkers for neighbours in crosslinkerneighbours_ after probability check
     SetCrosslinkers(dt,noderowmap,nodecolmap,currentpositions,currentrotations);
-    
-    //for(int i = 0; i < discret_.NumMyRowElements(); i++)
-      //std::cout<<"\noutput before DelCrosslinkers on proc "<<discret_.Comm().MyPID()  <<": element "<<(discret_.lRowElement(i))->Id()<<" owned by proc "<<(discret_.lRowElement(i))->Owner() <<"\n";
         
     //deleting the crosslinkers in crosslinkerpartner_ after probability check
     DelCrosslinkers(dt,noderowmap,nodecolmap);
      
-    /*settling administrative stuff in order to make the discretization ready for the next time step: synchronized
-     *the Filled() stat on all processors after having added or deleted elements by ChekcFilledGlobally(); then build
+    /*settling administrative stuff in order to make the discretization ready for the next time step: synchronize
+     *the Filled() state on all processors after having added or deleted elements by ChekcFilledGlobally(); then build
      *new element maps and call FillComplete(); finally Crs matrices stiff_ has to be deleted completely and made ready
      *for new assembly since their graph was changed*/ 
-    discret_.CheckFilledGlobally();
-    DRT::UTILS::RedistributeWithNewNodalDistribution(discret_,noderowmap,nodecolmap);      
+    discret_.CheckFilledGlobally();    
     discret_.FillComplete(true,false,false);  
     stiff->Reset();
-    
-    
-    
-    for(int i = 0; i < discret_.NumMyRowElements(); i++)
-      std::cout<<"\noutput proc after FillComplete on  "<<discret_.Comm().MyPID()  <<": element "<<(discret_.lRowElement(i))->Id()<<" owned by proc "<<(discret_.lRowElement(i))->Owner() <<"\n"<<endl;
-
-
-    
 
 #ifdef MEASURETIME
     cout << "\n***\nadministration time: " << ds_cputime() - t_admin<< " seconds\n***\n";
@@ -1111,7 +1095,7 @@ void StatMechManager::SearchNeighbours(const std::map<int,LINALG::Matrix<3,1> > 
     //(B): seraching neighbours with search tree
     //neighboursLID = octTree_->searchPointsInRadius(currentpositions,(currentpositions.find(iLID))->second,rlink);
     
-    /* after having searched all nodes within distance rlink around row node i we cancel out those
+    /* after having searched all nodes within distance rlink around row node i we delete those
      * neighbours, which do not comply with certain requirements; here we establish the following
      * requirements: first if filament numbering is activated (i.e. not all filament numbers are set to -1) the
      * neighbour node should belong to a filament different from the one the searching node belongs to;
@@ -1147,146 +1131,160 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
 
   //creating a random generator object which creates uniformly distributed random numbers in [0;1]
   ranlib::UniformClosed<double> UniformGen;
-    
-  //we loop through all row nodes on each processor
+  
+  /*creating variable to save crosslinkers to be added in this time step on this processor; these crosslinkers are saved the following way:
+   *for each row node an STL vector is saved with the column map LIDs of the nodes to which additional crosslinkers are to be set in this time step;
+   *the variable is initialized with empty STL vectors*/
+  std::vector< std::vector<int> >  crosslinkerstobeaddedlocal;
+  std::vector<int> emptyvector;
+  crosslinkerstobeaddedlocal.resize(noderowmap.NumMyElements(),emptyvector);
+  
+  /*create counter variables to save the maximal number of crosslinkers to be added in this time step at any node in on this processor and
+   * on all processors, respectively*/
+  int maxaddcrosslinkslocal = 0;
+  int maxaddcrosslinksglobal = 0;
+  
+  //we loop through all row nodes and save the crosslinkers to be set without actually setting them yet; note that i is a row map LID
   for(int i = 0; i < noderowmap.NumMyElements(); i++)
-  { 
-    //get GID of row node i
-    int iGID = noderowmap.GID(i);
-    
-    //getting current position and rotational status of node with column map LID i from map currentpositions
-    map< int,LINALG::Matrix<3,1> >::const_iterator posi         = currentpositions.find(nodecolmap.LID(iGID));
-    map< int,LINALG::Matrix<3,1> >::const_iterator roti         = currentrotations.find(nodecolmap.LID(iGID));
-    
-    //we loop through all column map nodes, which are neighbours of row node i and test whether a crosslinked should be established
+  {     
+    //we loop through all column map nodes, which are neighbours of row node i and test whether a crosslink should be established
     for(int j = 0; j < (int)crosslinkerneighbours_[i].size(); j++)
-    {
-      //getting current position and rotational status of node with column map LID j from map currentpositions
-      map< int,LINALG::Matrix<3,1> >::const_iterator posj = currentpositions.find((crosslinkerneighbours_[i])[j]);
-      map< int,LINALG::Matrix<3,1> >::const_iterator rotj = currentrotations.find((crosslinkerneighbours_[i])[j]);
-      
-      //probability check whether crosslink should be established:
+    {     
+      //probability check whether crosslinker should be established:
       if(UniformGen.random() < plink)
       {
         //check whether a crosslinker has already been established to the same node
         bool notyet = true;
         for(int k = 0; k < (int)crosslinkerpartner_[i].size(); k++)
-        {
           if((crosslinkerpartner_[i])[k] == (crosslinkerneighbours_[i])[j] )
             notyet = false;
-        }
         
         //only if no crosslinker has  been established to the same node, yet, the crosslinker is established
         if(notyet)
-        {
-        
+        {       
           //add new crosslink to list of already established crosslinks for row node i
           crosslinkerpartner_[i].push_back( (crosslinkerneighbours_[i])[j] );
           
-          //save positions of nodes between which a crosslinker has to be established in variables xrefe and rotrefe:
-          std::vector<double> rotrefe(6);
-          std::vector<double> xrefe(6);
-       
-          for(int k = 0; k<3; k++)
-          {
-            //set nodal positions
-            xrefe[k  ] = (posi->second)(k);
-            xrefe[k+3] = (posj->second)(k);
-            
-            //set nodal rotations (not true ones, only those given in the displacment vector)
-            rotrefe[k  ] = (roti->second)(k);
-            rotrefe[k+3] = (rotj->second)(k);
-          }
+          //add new crosslink to list of crosslinks to be established in this time step
+          crosslinkerstobeaddedlocal[i].push_back( (crosslinkerneighbours_[i])[j] );
           
-          /*there is the problem of how to assign to a crosslinker element a GID which is certainly not used by any
-           * other element; we know that for a network at the beginning (without crosslinkers) each node has a
-           * connectivity of 1 or 2 so that the number of all elements used to discretize the filaments is smaller
-           * than basisnodes_. Thus we choose crosslinker GIDs >= basisnodes_. To make sure that two crosslinkers
-           * never have the same GID we add to basisnodes_ the value basisnodes_*GID1, where GID1 is the GID of the
-           * first node of the crosslinker element. Then we add GID2 (note: GID2 < basisnodes_), which is the GID of the second node of the
-           * crosslinker element. Hence basisnodes_ + GID1*basisnodes_ + GID2 always gives a GID which cannot be 
-           * used by any other element*/     
-         
-   #ifdef D_BEAM3         
-          RCP<DRT::ELEMENTS::Beam3> newcrosslinker = rcp(new DRT::ELEMENTS::Beam3((noderowmap.GID(i) + 1)*basisnodes_ +  nodecolmap.GID((crosslinkerneighbours_[i])[j]), discret_.Comm().MyPID()) );
-          
-          
-
-          
-          std::cout<<"\nadd crosslinkerid = "<<newcrosslinker->Id()<<" on proc "<<discret_.Comm().MyPID() <<"\n";
-          std::cout<<"crosslinkerid "<< (noderowmap.GID(i) + 1)*basisnodes_ +  nodecolmap.GID((crosslinkerneighbours_[i])[j]) <<" owned by proc "<<newcrosslinker->Owner() <<"\n";
-          
-          
-          //setting up crosslinker element parameters
-          newcrosslinker ->crosssec_ = 2.375829e-05;
-          newcrosslinker ->crosssecshear_ = 1.1*2.375829e-05;
-          newcrosslinker ->Iyy_ = 4.49180e-11;
-          newcrosslinker ->Izz_ = 4.49180e-11;
-          newcrosslinker ->Irr_ = 8.9836e-11; 
-
+          //update maximal number of crosslinkers to be added at any node on this processor in this time step
+          maxaddcrosslinkslocal = max(maxaddcrosslinkslocal,(int)crosslinkerstobeaddedlocal[i].size());         
+        }
+      }    
+    }
+  }
   
-          //nodes are assigned to the new crosslinker element by first assigning global node Ids and then assigning nodal pointers
-          int globalnodeids[2] = {noderowmap.GID(i),nodecolmap.GID( (crosslinkerneighbours_[i])[j] )}; 
-                 
-          newcrosslinker->SetNodeIds(2,globalnodeids);
-          DRT::Node *nodes[] = {discret_.gNode( globalnodeids[0] ) , discret_.gNode( globalnodeids[1] )};
-          newcrosslinker->BuildNodalPointers(&nodes[0]);
-                      
-          //correct reference configuration data is computed for the new crosslinker element;
-          //function SetUpReferenceGeometry is template and here only linear beam elements can be applied as crosslinkers
-          newcrosslinker->SetUpReferenceGeometry<2>(xrefe,rotrefe); 
-    
-          //set material for new element
-          newcrosslinker->SetMaterial(2);
-          
-          //add new element to discretization
-          discret_.AddElement(newcrosslinker);  
-          
-   #endif 
+  //get the maximal number of crosslinks to be added at any node on any processor in this time step
+  discret_.Comm().MaxAll(&maxaddcrosslinkslocal,&maxaddcrosslinksglobal,1);
+  
+  /*create an Epetra_MultiVector with the same information stored so far in the STL vector crosslinkerstobeaddedlocal, but using GIDs instead of node column map LIDs
+   *(shifting this kind of information to an Epetra_MultiVector allows for its parallel communication); note: if no crosslinkers are added at any node we yet set the
+   *numbers of vectors in the following Epetra_MultiVector to 1 instead of 0 as the latter choice would cause an error*/
+  Epetra_MultiVector crosslinkerstobeaddedglobalrow(noderowmap,max(maxaddcrosslinksglobal,1));
+  crosslinkerstobeaddedglobalrow.PutScalar(-1);
+  
+  for(int i=0; i<(int)crosslinkerstobeaddedlocal.size(); i++)
+    for(int j=0; j<(int)crosslinkerstobeaddedlocal[i].size(); j++)
+      crosslinkerstobeaddedglobalrow[j][i] = nodecolmap.GID( (crosslinkerstobeaddedlocal[i])[j] );
+  
+  //export Epetra_MultiVector with information about crosslinkers to be set to node column map format
+  Epetra_MultiVector crosslinkerstobeaddedglobalcol(nodecolmap,crosslinkerstobeaddedglobalrow.NumVectors(),true); 
    
-         
-    /*
-   #ifdef D_TRUSS3         
-           RCP<DRT::ELEMENTS::Truss3> newcrosslinker = rcp(new DRT::ELEMENTS::Truss3((noderowmap.GID(i) + 1)*basisnodes_ +  nodecolmap.GID((crosslinkerneighbours_[i])[j]), discret_.Comm().MyPID()) );
-           
-           //setting up crosslinker element parameters
-           newcrosslinker ->crosssec_ = 1.9e-08;
-           newcrosslinker ->kintype_ = DRT::ELEMENTS::Truss3::tr3_engstrain;       
-          
-           //nodes are assigned to the new crosslinker element by first assigning global node Ids and then assigning nodal pointers
-           int globalnodeids[2] = {noderowmap.GID(i),nodecolmap.GID( (crosslinkerneighbours_[i])[j] )}; 
-                  
-           newcrosslinker->SetNodeIds(2,globalnodeids);
-           DRT::Node *nodes[] = {discret_.gNode( globalnodeids[0] ) , discret_.gNode( globalnodeids[1] )};
-           newcrosslinker->BuildNodalPointers(&nodes[0]);
-                       
-           //correct reference configuration data is computed for the new crosslinker element;
-           //function SetUpReferenceGeometry is template and here only linear beam elements can be applied as crosslinkers
-           LINALG::Matrix<6,1> xrefematrix;
-           for (int node=0; node<2; node++) 
-              for(int dof= 0; dof < 3; dof++)// element node has three coordinates x1, x2 and x3
-                xrefematrix(node*3 + dof,0) = xrefe[node*3 + dof];
-           
-           newcrosslinker->SetUpReferenceGeometry(xrefematrix); 
-           
-           //set material for new element
-           newcrosslinker->SetMaterial(1);
-           
-           //add new element to discretization
-           discret_.AddElement(newcrosslinker);  
+  Epetra_Import importer(nodecolmap,noderowmap);
+  crosslinkerstobeaddedglobalcol.Import(crosslinkerstobeaddedglobalrow,importer,Add); 
+  
+
+  /*at this point the information which crosslinkers are to be added to a certain node is present on each processor which knows a certain node at least in
+   *its column map; now each processor loops through all column map nodes and checkes the crosslinkers to be added; if one of these crosslinkers has at least
+   *one node which is a row node on this processor, the crosslinker element is added to the discretization on this processor (possibly just as a ghost element);
+   *note that the following loop index i refers to node column map LIDs*/
+  for(int i = 0; i < crosslinkerstobeaddedglobalcol.MyLength(); i++)
+  { 
+    //getting current position and rotational status of node with column map LID i from map currentpositions
+    map< int,LINALG::Matrix<3,1> >::const_iterator posi         = currentpositions.find(i);
+    map< int,LINALG::Matrix<3,1> >::const_iterator roti         = currentrotations.find(i);
+    
+    //loop through all node GIDs to which a crosslink should be established from column map node i
+    for(int j = 0; j < crosslinkerstobeaddedglobalcol.NumVectors(); j++)
+    {
+      /*a crosslinker should be established if the following two conditions are satisfied: first there is a node stored to which it is to be established
+       * (i.e. the i-th element of the j-th vector in in the Multi_Vector crosslinkerstobeaddedglobalcol is unequal the default value -1; second one of 
+       * the two nodes between which the crosslinker should be established is a row node on this processor; otherwise one does not need to add the crosslinker
+       * element on this processor (not even as a ghost element)*/
+      if(crosslinkerstobeaddedglobalcol[j][i] > -0.9 &&
+         ( noderowmap.LID((nodecolmap.GID(i))) > -0.9 || noderowmap.LID(((int)crosslinkerstobeaddedglobalcol[j][i])) > -0.9 ) )
+      {
+        
+        //getting current position and rotational status of node with GID crosslinkerstobeaddedglobalcol[j][i]
+        map< int,LINALG::Matrix<3,1> >::const_iterator posj = currentpositions.find( nodecolmap.LID((int)crosslinkerstobeaddedglobalcol[j][i]) );
+        map< int,LINALG::Matrix<3,1> >::const_iterator rotj = currentrotations.find( nodecolmap.LID((int)crosslinkerstobeaddedglobalcol[j][i]) );
+                
+        //save positions of nodes between which a crosslinker has to be established in variables xrefe and rotrefe:
+        std::vector<double> rotrefe(6);
+        std::vector<double> xrefe(6);
      
-     #endif 
-      */
+        for(int k = 0; k<3; k++)
+        {
+          //set nodal positions
+          xrefe[k  ] = (posi->second)(k);
+          xrefe[k+3] = (posj->second)(k);
           
-         }//if(notyet)
-      }//if(UniformGen.random() < plink)     
-    }//for(int j = 0; j < (crosslinkerneighbours_[i]).size(); j++)
-  }//for(int i = 0; i < discret_.NumMyRowNodes(); i++)
+          //set nodal rotations (not true ones, only those given in the displacment vector)
+          rotrefe[k  ] = (roti->second)(k);
+          rotrefe[k+3] = (rotj->second)(k);
+        }
+        
+        /*there is the problem of how to assign to a crosslinker element a GID which is certainly not used by any
+         * other element; we know that for a network at the beginning (without crosslinkers) each node has a
+         * connectivity of 1 or 2 so that the number of all elements used to discretize the filaments is smaller
+         * than basisnodes_. Thus we choose crosslinker GIDs >= basisnodes_. To make sure that two crosslinkers
+         * never have the same GID we add to basisnodes_ the value basisnodes_*GID1, where GID1 is the GID of the
+         * first node of the crosslinker element. Then we add GID2 (note: GID2 < basisnodes_), which is the GID of the second node of the
+         * crosslinker element. Hence basisnodes_ + GID1*basisnodes_ + GID2 always gives a GID which cannot be 
+         * used by any other element*/     
+       
+ #ifdef D_BEAM3         
+        RCP<DRT::ELEMENTS::Beam3> newcrosslinker = rcp(new DRT::ELEMENTS::Beam3((nodecolmap.GID(i) + 1)*basisnodes_ + (int)crosslinkerstobeaddedglobalcol[j][i], (discret_.gNode(nodecolmap.GID(i)))->Owner() ) );
+        
+        //setting up crosslinker element parameters
+        newcrosslinker ->crosssec_ = 2.375829e-05;
+        newcrosslinker ->crosssecshear_ = 1.1*2.375829e-05;
+        newcrosslinker ->Iyy_ = 4.49180e-11;
+        newcrosslinker ->Izz_ = 4.49180e-11;
+        newcrosslinker ->Irr_ = 8.9836e-11; 
+
+
+        //nodes are assigned to the new crosslinker element by first assigning global node Ids and then assigning nodal pointers
+        int globalnodeids[2] = {nodecolmap.GID(i),(int)crosslinkerstobeaddedglobalcol[j][i]}; 
+               
+        newcrosslinker->SetNodeIds(2,globalnodeids);
+        DRT::Node *nodes[] = {discret_.gNode( globalnodeids[0] ) , discret_.gNode( globalnodeids[1] )};
+        newcrosslinker->BuildNodalPointers(&nodes[0]);
+                    
+        //correct reference configuration data is computed for the new crosslinker element;
+        //function SetUpReferenceGeometry is template and here only linear beam elements can be applied as crosslinkers
+        newcrosslinker->SetUpReferenceGeometry<2>(xrefe,rotrefe); 
+  
+        //set material for new element
+        newcrosslinker->SetMaterial(2);
+        
+        //add new element to discretization
+        discret_.AddElement(newcrosslinker);  
+        
+ #endif 
+        
+      }  
+    }   
+   } 
 }//void SetCrosslinkers(const Epetra_Vector& setcrosslinkercol)
 
 /*----------------------------------------------------------------------*
- | delete crosslinkers listed in crosslinkerpartner_ after random check |               
- | (private)                                                 cyron 02/09|
+ | delete crosslinkers listed in crosslinkerpartner_ after random check;|
+ | the random check is conducted by the owner processor of the          |
+ | crosslinker, respectively, and the result of that check is           | 
+ | communicated subsequently to all the other processors                |              
+ | (private)                                                 cyron 11/09|
  *----------------------------------------------------------------------*/
 void StatMechManager::DelCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap)
 { 
@@ -1296,6 +1294,18 @@ void StatMechManager::DelCrosslinkers(const double& dt, const Epetra_Map& nodero
   
   //creating a random generator object which creates uniformly distributed random numbers in [0;1]
   ranlib::UniformClosed<double> UniformGen;
+  
+  /*creating variable to save crosslinkers to be deleted in this time step; these crosslinkers are saved the following way:
+   *for each row node an STL vector is saved with the GIDs of the crosslinker elements to be deleted in this time step;
+   *the variable is initialized with empty STL vectors*/
+  std::vector< std::vector<int> >  crosslinkerstobedeletedlocal;
+  std::vector<int> emptyvector;
+  crosslinkerstobedeletedlocal.resize(noderowmap.NumMyElements(),emptyvector);
+  
+  /*create counter variables to save the maximal number of crosslinkers to be deleted in this time step at any node on this processor and
+   * on all processors, respectively*/
+  int maxdelcrosslinkslocal = 0;
+  int maxdelcrosslinksglobal = 0;
   
   /* this method removes crosslinkers listed in crosslinkerpartner_ after probability check; note that 
    * removing crosslinkers should be done after setting the crosslinkers since the latter one uses 
@@ -1307,6 +1317,10 @@ void StatMechManager::DelCrosslinkers(const double& dt, const Epetra_Map& nodero
   for(int i = 0; i < noderowmap.NumMyElements(); i++)
   {      
     vector<int>::iterator iter = crosslinkerpartner_[i].begin();
+    
+    //number of crosslinks to be deleted at this node
+    int delcrosslinksatthisnode = 0;
+    
     while( iter != crosslinkerpartner_[i].end() )
     {
       if(UniformGen.random() < punlink)
@@ -1314,23 +1328,56 @@ void StatMechManager::DelCrosslinkers(const double& dt, const Epetra_Map& nodero
         //we compute the GID of the crosslinker to be deleted 
         int crosslinkerid = (noderowmap.GID(i) + 1)*basisnodes_ +  nodecolmap.GID(*iter);
         
-    
-        
-        std::cout<<"\ndelete crosslinkerid = "<<crosslinkerid<<" on proc "<<discret_.Comm().MyPID() <<"\n";
-        std::cout<<"crosslinkerid "<<crosslinkerid<<" owned by proc "<<(discret_.gElement(crosslinkerid))->Owner() <<"\n";
-                
-        //delete crosslinker from discretization
-        if( !discret_.DeleteElement(crosslinkerid) )
-          dserror("Deleting crosslinker element failed");
+        //add crosslink to list of crosslinks to be deleted in this time step
+        crosslinkerstobedeletedlocal[i].push_back( crosslinkerid );
                
+        //update maximal number of crosslinkers to be deleted at any node on this processor in this time step
+        delcrosslinksatthisnode++;
+        maxdelcrosslinkslocal = max(maxdelcrosslinkslocal,delcrosslinksatthisnode);
+      
         //delete crosslinker from list of established crosslinkers
         iter = crosslinkerpartner_[i].erase(iter);
       }
       else
         ++iter;
-    }
-   }//for(int i = 0; i < discret_.NumMyRowNodes(); i++)
+    }   
+  }//for(int i = 0; i < discret_.NumMyRowNodes(); i++)
   
+  //get the maximal number of crosslinks to be deleted at any node on any processor in this time step
+  discret_.Comm().MaxAll(&maxdelcrosslinkslocal,&maxdelcrosslinksglobal,1);
+  
+  /*create an Epetra_MultiVector with the same information stored so far in the STL vector crosslinkerstobedeletedlocal, but using GIDs instead of node column map LIDs
+   *(shifting this kind of information to an Epetra_MultiVector allows for its parallel communication); note: if no crosslinkers are deleted at any node we yet set the
+   *numbers of vectors in the following Epetra_MultiVector to 1 instead of 0 as the latter choice would cause an error*/
+  Epetra_MultiVector crosslinkerstobedeletedglobalrow(noderowmap,max(maxdelcrosslinksglobal,1));
+  crosslinkerstobedeletedglobalrow.PutScalar(-1);
+  
+  for(int i=0; i<(int)crosslinkerstobedeletedlocal.size(); i++)
+    for(int j=0; j<(int)crosslinkerstobedeletedlocal[i].size(); j++)
+      crosslinkerstobedeletedglobalrow[j][i] = (crosslinkerstobedeletedlocal[i])[j];
+  
+  //export Epetra_MultiVector with information about crosslinkers to be deleted to node column map format
+  Epetra_MultiVector crosslinkerstobedeletedglobalcol(nodecolmap,crosslinkerstobedeletedglobalrow.NumVectors(),true); 
+  
+  Epetra_Import importer(nodecolmap,noderowmap);
+  crosslinkerstobedeletedglobalcol.Import(crosslinkerstobedeletedglobalrow,importer,Add); 
+
+  
+  /*at this point the information which crosslinkers are to be deleted to a certain node is present on each processor which knows a certain node at least in
+   *its column map; now each processor loops through all column map nodes and checks for the crosslinker to be added whether it exists on this processor (at
+   *least as a ghost element); if yes, the crosslinker element is actually deleted*/
+  for(int i = 0; i < crosslinkerstobedeletedglobalcol.MyLength(); i++)
+  { 
+    for(int j = 0; j < crosslinkerstobedeletedglobalcol.NumVectors(); j++)
+    {
+      //GID of crosslinker to be deleted (-1 if no crosslinker is to be deleted at this point)
+      int crosslinkerid = (int)crosslinkerstobedeletedglobalcol[j][i];
+      
+      if( crosslinkerid > -0.9 )
+        discret_.DeleteElement(crosslinkerid);    
+    }
+  }
+
 }//void DelCrosslinkers(const Epetra_Vector& delcrosslinkercol)
 
 /*----------------------------------------------------------------------*
