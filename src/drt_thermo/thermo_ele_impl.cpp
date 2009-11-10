@@ -1023,8 +1023,10 @@ void DRT::ELEMENTS::TemperImpl<distype>::ExtrapolateFromGaussPointsToNodes(
   )
 {
   // this quick'n'dirty hack functions only for hex8
-  if (distype != DRT::Element::hex8)
-    dserror("Sorry, only implemented for hex8");
+  if ( not ( (distype == DRT::Element::hex8)
+             or (distype == DRT::Element::quad4)
+             or (distype == DRT::Element::line2) ) )
+    dserror("Sorry, not implemented for element shape");
 
   // another check
   if (iel*numdofpernode_ != nquad_)
