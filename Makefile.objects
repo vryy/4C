@@ -1407,7 +1407,8 @@ OBJS_INTERSECTION = src/drt_xfem/physics.o \
                     src/drt_xfem/xdofmapcreation_parallel_utils.o \
                     src/drt_xfem/xdofmapcreation_fsi.o
 #               inverse analysis
-OBJS_INV_ANALYSIS = src/drt_inv_analysis/inv_analysis.o
+OBJS_INV_ANALYSIS = src/drt_inv_analysis/inv_analysis.o \
+                    src/drt_inv_analysis/gen_inv_analysis.o
 #               low-Mach-number flow
 OBJS_DRT_LOMA = src/drt_loma/loma_dyn.o \
                 src/drt_loma/loma_algorithm.o
