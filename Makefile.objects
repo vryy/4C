@@ -1111,7 +1111,6 @@ OBJS_DRT_MAT_LIB = src/drt_mat/matpar_bundle.o \
                 src/drt_matelast/elast_isoexpo.o \
                 src/drt_matelast/elast_isomooneyrivlin.o \
                 src/drt_matelast/elast_isoyeoh.o \
-                src/drt_matelast/elast_isolin.o \
                 src/drt_matelast/elast_isoquad.o \
                 src/drt_matelast/elast_isocub.o \
                 src/drt_matelast/elast_coupanisoexpotwo.o \
