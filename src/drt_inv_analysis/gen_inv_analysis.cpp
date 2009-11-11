@@ -189,7 +189,7 @@ void STR::GenInvAnalysis::Integrate()
     Epetra_SerialDenseMatrix cmatrix;
     if (!myrank) cmatrix.Shape(nmp_,np_+1);
     
-    // loop over parameters to fit
+    // loop over parameters to fit and build cmatrix
     for (int i=0; i<np_+1;i++)
     {
       if (!myrank)
@@ -197,21 +197,27 @@ void STR::GenInvAnalysis::Integrate()
       // make current set of material parameters
       Epetra_SerialDenseVector p_cur = p_;
       // perturb parameter i
-      if (i!= np_)
-        //p_cur[i] = p_[i] + inc;
-        p_cur[i] = p_[i] + perturb[i];
+      if (i!= np_) p_cur[i] = p_[i] + perturb[i];
+      
       // put perturbed material parameters to material laws
       SetParameters(p_cur);
-      Epetra_SerialDenseVector cvector = CalcCvector();  // only on proc 0 is enough?
+      
+      // compute nonlinear problem and obtain computed displacements
+      // output only for last run
+      Epetra_SerialDenseVector cvector;
+      if ( i != np_) cvector = CalcCvector(false);
+      else           cvector = CalcCvector(true);
+      
+      // copy displacements to sensitivity matrix
       if (!myrank)
         for (int j=0; j<nmp_;j++)
           cmatrix(j,i) = cvector[j];
-      output_->NewResultFile((numb_run_));
     }
-    discret_->Comm().Barrier();
     
+    discret_->Comm().Barrier();
     if (!myrank)
       CalcNewParameters(cmatrix,perturb);
+    discret_->Comm().Barrier();
       
     // set new material parameters
     SetParameters(p_);
@@ -219,7 +225,8 @@ void STR::GenInvAnalysis::Integrate()
     discret_->Comm().Broadcast(&error_o_,1,0);
     discret_->Comm().Broadcast(&error_,1,0);
     discret_->Comm().Broadcast(&numb_run_,1,0);
-
+    if (error_>tol_ && numb_run_<max_itter) 
+      output_->NewResultFile(numb_run_);
   } while (error_>tol_ && numb_run_<max_itter);
 
   return;
@@ -251,22 +258,24 @@ void STR::GenInvAnalysis::CalcNewParameters(Epetra_SerialDenseMatrix& cmatrix, v
       J(i,j) /= perturb[j];
     }
 
-  sto.Multiply('T','N',1.0,J,J,0.0);     //calculating J^T * J
+  sto.Multiply('T','N',1.0,J,J,0.0);
 
+  // do regularization by adding artifical lumped mass
   for (int i=0; i<np_; i++)
     sto(i,i) += mu_*sto(i,i);
 
+  // compute residual displacement (measured vs. computed)
   for (int i=0; i<nmp_; i++)
     rcurve[i] = mcurve_[i] - ccurve[i];
 
-  // (J.T*J+mu*diag(J^T * J))^{-1} * J^T * r
+  // delta_p = (J.T*J+mu*diag(J^T * J))^{-1} * J^T * r
   tmp.Multiply('T','N',1.0,J,rcurve,0.0);
   Epetra_SerialDenseSolver solver;
   solver.SetMatrix(sto);
-  solver.SolveToRefinedSolution(true);
   solver.SetVectors(delta_p,tmp);
+  solver.SolveToRefinedSolution(true);
   solver.Solve();
-      
+  
   for (int i=0;i<np_;i++)
     p_[i] += delta_p[i];
 
@@ -287,8 +296,10 @@ void STR::GenInvAnalysis::CalcNewParameters(Epetra_SerialDenseMatrix& cmatrix, v
 
 
 //--------------------------------------------------------------------------------------------
-Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector()
+Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(bool outputtofile)
 {
+  int myrank = discret_->Comm().MyPID();
+  
   // create a StruGenAlpha solver
   ParameterList genalphaparams;
   StruGenAlpha::SetDefaults(genalphaparams);
@@ -384,20 +395,24 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector()
   if      (pred=="constant")   predictor = 1;
   else if (pred=="consistent") predictor = 2;
   else dserror("Unknown type of predictor");
+
+  Epetra_SerialDenseVector cvector;
+  if (!myrank) cvector.Size(nsteps_*nnodes_*ndirs_);
+
   // load controled Newton only
-  Epetra_SerialDenseVector cvector(nsteps_*nnodes_*ndirs_);
   for (int i=step; i<nstep; ++i)
   {
     if      (predictor==1) tintegrator->ConstantPredictor();
     else if (predictor==2) tintegrator->ConsistentPredictor();
     tintegrator->FullNewton();
     tintegrator->Update();
-    tintegrator->Output();
-    {
-      Epetra_SerialDenseVector cvector_arg = GetCalculatedCurve(*(tintegrator->Disp()));
+    if (outputtofile) tintegrator->Output();
+
+    Epetra_SerialDenseVector cvector_arg = GetCalculatedCurve(*(tintegrator->Disp()));
+    if (!myrank)
       for (int j=0; j<nnodes_*ndirs_; ++j)
         cvector[i*nnodes_*ndirs_+j] = cvector_arg[j];
-    }
+
     double time = genalphaparams.get<double>("total time",0.0);
     if (time>=maxtime) break;
   }

@@ -137,7 +137,7 @@ public:
 
 
   ///
-  Epetra_SerialDenseVector CalcCvector();
+  Epetra_SerialDenseVector CalcCvector(bool outputtofile);
 
   ///
   void Integrate();
