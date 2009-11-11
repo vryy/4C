@@ -176,8 +176,8 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const int sta
   // input reader calls FillComplete(). If you create your own discretizations
   // try to understand what you do.
 
-  // Get highest GID used so far
-  int count = MaxGIDinList();
+  // Get highest GID used so far and add one
+  int count = MaxGIDinList() + 1;
 
   // Now this is tricky. We have to care for nodes and elements, both
   // row and column maps. In general both nodes and elements can have

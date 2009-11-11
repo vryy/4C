@@ -151,7 +151,7 @@ int DRT::DofSetBase::MaxGIDinList() const
     // ignore empty (no yet initialized) dof row maps
     if ((*i)->NumGlobalElements()>0)
     {
-      count = max((*i)->MaxAllGID() + 1,count);
+      count = max((*i)->MaxAllGID(),count);
     }
   }
   return count;

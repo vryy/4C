@@ -111,8 +111,8 @@ int UTILS::ConstraintDofSet::AssignDegreesOfFreedom(const RCP<DRT::Discretizatio
   // input reader calls FillComplete(). If you create your own discretizations
   // try to understand what you do.
 
-  // Get highest GID used so far
-  int count = MaxGIDinList();
+  // Get highest GID used so far and add one
+  const int count = MaxGIDinList() + 1;
 
   dofrowmap_=rcp(new Epetra_Map(ndofs,count,dis->Comm()));
 
