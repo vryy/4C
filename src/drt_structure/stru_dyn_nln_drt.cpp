@@ -35,6 +35,7 @@ Maintainer: Michael Gee
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_statmech.H"
 #include "../drt_inpar/inpar_structure.H"
+#include "../drt_inpar/inpar_invanalysis.H"
 #include "stru_resulttest.H"
 
 #include "str_invanalysis.H"
@@ -58,7 +59,8 @@ void caldyn_drt()
   const Teuchos::ParameterList& iap = DRT::Problem::Instance()->InverseAnalysisParams();
 
   // do we want to do inverse analysis?
-  if ((bool)Teuchos::getIntegralValue<int>(iap,"INV_ANALYSIS"))
+  if (Teuchos::getIntegralValue<INPAR::STR::InvAnalysisType>(iap,"INV_ANALYSIS")
+      != INPAR::STR::inv_none)
   {
     STR::invanalysis();
   }
@@ -124,7 +126,6 @@ void dyn_nlnstructural_drt()
   const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
   const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->StructuralContactParams();
   const Teuchos::ParameterList& statmech = DRT::Problem::Instance()->StatisticalMechanicsParams();
-  const Teuchos::ParameterList& iap      = DRT::Problem::Instance()->InverseAnalysisParams();
 
   if (actdis->Comm().MyPID()==0)
     DRT::INPUT::PrintDefaultParameters(std::cout, sdyn);
@@ -230,13 +231,6 @@ void dyn_nlnstructural_drt()
       genalphaparams.set<bool>  ("print to err",true);
       genalphaparams.set<FILE*> ("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
 
-      // parameters for inverse analysis
-      genalphaparams.set<bool>  ("inv_analysis",Teuchos::getIntegralValue<int>(iap,"INV_ANALYSIS"));
-      genalphaparams.set<double>("measured_curve0",iap.get<double>("MEASURED_CURVE0"));
-      genalphaparams.set<double>("measured_curve1",iap.get<double>("MEASURED_CURVE1"));
-      genalphaparams.set<double>("measured_curve2",iap.get<double>("MEASURED_CURVE2"));
-      genalphaparams.set<double>("inv_ana_tol",iap.get<double>("INV_ANA_TOL"));
-      
       // non-linear solution technique
       switch (Teuchos::getIntegralValue<INPAR::STR::NonlinSolTech>(sdyn,"NLNSOL"))
       {

@@ -34,6 +34,8 @@ Maintainer: Sophie Rausch
 #include "../drt_inpar/drt_validparameters.H"
 #include "stru_resulttest.H"
 #include "../drt_inv_analysis/inv_analysis.H"
+#include "../drt_inv_analysis/gen_inv_analysis.H"
+#include "../drt_inpar/inpar_invanalysis.H"
 
 #include "../drt_adapter/adapter_structure_timint.H"
 
@@ -64,6 +66,11 @@ extern GENPROB genprob;
 /* Inverse analysis of structures */
 void STR::invanalysis()
 {
+  cout << "yes I am in here\n"; fflush(stdout);
+  
+  // get input lists
+  const Teuchos::ParameterList& iap = DRT::Problem::Instance()->InverseAnalysisParams();
+
   // access the discretization
   Teuchos::RCP<DRT::Discretization> actdis = Teuchos::null;
   actdis = DRT::Problem::Instance()->Dis(genprob.numsf, 0);
@@ -99,11 +106,25 @@ void STR::invanalysis()
       dserror("For PROBLEMTYP=struct_multi you have to use DYNAMICTYP=GenAlpha with GENAVG=ImrLike");
   }
 
-  // make inverse analysis
-  Teuchos::RCP<STR::InvAnalysis> ia = Teuchos::rcp(new STR::InvAnalysis(actdis, solver, output));
-  // do inverse analysis
-  ia->Integrate();
-
+  switch(Teuchos::getIntegralValue<INPAR::STR::InvAnalysisType>(iap,"INV_ANALYSIS"))
+  {
+    case INPAR::STR::inv_lung:
+    {
+      STR::InvAnalysis ia(actdis,solver,output);
+      ia.Integrate();
+    }
+    break;
+    case INPAR::STR::inv_generalized:
+    {
+      STR::GenInvAnalysis ia(actdis,solver,output);
+      ia.Integrate();
+    }
+    break;
+    default:
+      dserror("Unknown type of inverse analysis");
+    break;
+  }
+  
   // done
   return;
 } // end str_invanalysis()
