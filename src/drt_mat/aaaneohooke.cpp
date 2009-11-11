@@ -124,7 +124,7 @@ void MAT::AAAneohooke::Unpack(const vector<char>& data)
  Ic   .. first invariant of right Cauchy-Green tensor C
  IIIc .. third invariant of right Cauchy-Green tensor C
 
- The volumetric part is done by a volumetric strain engergy function taken from
+ The volumetric part is done by a volumetric strain energy function taken from
  Holzapfel
 
  W_vol = K beta2^(-2) ( beta2 ln (J) + J^(-beta2) -1 )
