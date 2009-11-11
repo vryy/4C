@@ -151,7 +151,7 @@ void MAT::NeoHooke::Evaluate(
   
   stress = invc;
   stress.Scale(-2.0*c1*pow(I3,-beta)); // volumetric part
-  const double iso = 2.0*c1;           // isochoric part
+  const double iso = 2.0*c1;  // isochoric part
   stress(0) += iso;
   stress(1) += iso;
   stress(2) += iso;
