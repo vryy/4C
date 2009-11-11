@@ -1008,8 +1008,6 @@ void SysmatDomainTP1(
             static LINALG::Matrix<shpVecSizeStress,1>   shp_tau;
             static LINALG::Matrix<shpVecSizeDiscPres,1> shp_discpres;
 
-            LINALG::SerialDenseVector enr_funct_discpres(numparamdiscpres);
-
             if (ASSTYPE == XFEM::xfem_assembly)
             {
                 // temporary arrays
@@ -1068,7 +1066,7 @@ void SysmatDomainTP1(
 
                 if (discpres_unknowns_present)
                 {
-                    static LINALG::SerialDenseVector enr_funct_discpres(3*DRT::UTILS::DisTypeToNumNodePerEle<discpresdistype>::numNodePerElement);
+                    LINALG::Matrix<shpVecSizeDiscPres,1> enr_funct_discpres;
 
                     // shape functions for element dofs
                     enrvals.ComputeEnrichedElementShapefunction(
@@ -1083,7 +1081,7 @@ void SysmatDomainTP1(
                 }
                 else
                 {
-                  shp_discpres = 0.0;
+                  shp_discpres.Clear();
                 }
             }
             else // standard assembly
@@ -1476,7 +1474,6 @@ void SysmatBoundaryTP1(
     //const int numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
     // put one here to create arrays of size 1, since they are not needed anyway
     // in the xfem assembly, the numparam is determined by the dofmanager
-    //const int numparamtauxx = getNumParam<ASSTYPE>(dofman, Tauxx, 1);
     const size_t numparamtauxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Tauxx);
     const size_t numparamdiscpres = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::DiscPres);
 
@@ -1576,7 +1573,7 @@ void SysmatBoundaryTP1(
 
             // discontinouos pressure shape functions
             const DRT::Element::DiscretizationType discpresdistype = XFLUID::DiscPressureInterpolation3D<DISTYPE>::distype;
-            static LINALG::SerialDenseVector funct_discpres(DRT::UTILS::DisTypeToNumNodePerEle<discpresdistype>::numNodePerElement);
+            static LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<discpresdistype>::numNodePerElement,1> funct_discpres;
             DRT::UTILS::shape_function_3D(funct_discpres,posXiDomain(0),posXiDomain(1),posXiDomain(2),discpresdistype);
 
             // position of the gausspoint in physical coordinates
@@ -1811,12 +1808,12 @@ void SysmatBoundaryTP1(
             assembler.template Matrix<Velz,Tauzy>(shp, -timefacfac*normalvec_fluid(1), shp_tau);
             assembler.template Matrix<Velz,Tauzz>(shp, -timefacfac*normalvec_fluid(2), shp_tau);
 
-            static LINALG::Matrix<3,1> disctau_times_n;
-            disctau_times_n.Multiply(tau,normalvec_fluid);
+            LINALG::Matrix<nsd,1> disctau_times_nf;
+            disctau_times_nf.Multiply(tau,normalvec_fluid);
             //cout << "sigmaijnj : " << disctau_times_n << endl;
-            assembler.template Vector<Velx>(shp, timefacfac*disctau_times_n(0));
-            assembler.template Vector<Vely>(shp, timefacfac*disctau_times_n(1));
-            assembler.template Vector<Velz>(shp, timefacfac*disctau_times_n(2));
+            assembler.template Vector<Velx>(shp, timefacfac*disctau_times_nf(0));
+            assembler.template Vector<Vely>(shp, timefacfac*disctau_times_nf(1));
+            assembler.template Vector<Velz>(shp, timefacfac*disctau_times_nf(2));
 
                          /*         \
                         |  v , Dp n  |
@@ -1836,9 +1833,9 @@ void SysmatBoundaryTP1(
             // hence, we can't use the local assembler here
             for (size_t inode = 0; inode < numnode_boundary; ++inode)
             {
-              force_boundary(0,inode) += funct_boundary(inode) * ((- discpres*normalvec_fluid(0) + disctau_times_n(0)) * timefacfac);
-              force_boundary(1,inode) += funct_boundary(inode) * ((- discpres*normalvec_fluid(1) + disctau_times_n(1)) * timefacfac);
-              force_boundary(2,inode) += funct_boundary(inode) * ((- discpres*normalvec_fluid(2) + disctau_times_n(2)) * timefacfac);
+              force_boundary(0,inode) += funct_boundary(inode) * ((- discpres*normalvec_fluid(0) + disctau_times_nf(0)) * timefacfac);
+              force_boundary(1,inode) += funct_boundary(inode) * ((- discpres*normalvec_fluid(1) + disctau_times_nf(1)) * timefacfac);
+              force_boundary(2,inode) += funct_boundary(inode) * ((- discpres*normalvec_fluid(2) + disctau_times_nf(2)) * timefacfac);
             }
 
         } // end loop over gauss points
@@ -2015,8 +2012,13 @@ void XFLUID::callSysmatTP1(
                         params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
                 break;
+            case DRT::Element::tet4:
+                SysmatTP1<DRT::Element::tet4,XFEM::xfem_assembly>(
+                        params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
+                break;
             case DRT::Element::tet10:
-                SysmatTP1<DRT::Element::tet4,XFEM::standard_assembly>(
+                SysmatTP1<DRT::Element::tet10,XFEM::xfem_assembly>(
                         params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
                 break;
