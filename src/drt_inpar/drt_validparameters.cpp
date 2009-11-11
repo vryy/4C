@@ -36,6 +36,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/inpar_potential.H"
 #include "../drt_inpar/inpar_thermo.H"
 #include "../drt_inpar/inpar_elch.H"
+#include "../drt_inpar/inpar_invanalysis.H"
 
 /*----------------------------------------------------------------------*/
 //! Print function to be called from C
@@ -787,17 +788,38 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   Teuchos::ParameterList& iap = list->sublist("INVERSE ANALYSIS",false,"");
 
   // Inverse Analysis
-  setStringToIntegralParameter<int>("INV_ANALYSIS","No",
-                               "determines the material parameter for the lung material",
-                               yesnotuple,yesnovalue,
+  setStringToIntegralParameter<INPAR::STR::InvAnalysisType>("INV_ANALYSIS","none",
+                               "types of inverse analysis and on/off switch",
+                               tuple<std::string>(
+                                 "none",
+                                 "lung",
+                                 "gen"),
+                               tuple<INPAR::STR::InvAnalysisType>(
+                                 INPAR::STR::inv_none,
+                                 INPAR::STR::inv_lung,
+                                 INPAR::STR::inv_generalized),
                                &iap);
+
+
+
   // Measured displacement/load curve during the experiments  a1*(1-exp(-pow((a2*t), a3)))
-  DoubleParameter("MEASURED_CURVE0",0.0,"measured displacement of the tension testing",&iap);
-  DoubleParameter("MEASURED_CURVE1",0.0,"measured displacement of the tension testing",&iap);
-  DoubleParameter("MEASURED_CURVE2",0.0,"measured displacement of the tension testing",&iap);
+  DoubleParameter("MC_X_0",0.0,"measured displacment of the tension testing in x dir",&iap);
+  DoubleParameter("MC_X_1",0.0,"measured displacment of the tension testing in x dir",&iap);
+  DoubleParameter("MC_X_2",0.0,"measured displacment of the tension testing in x dir",&iap);
+  DoubleParameter("MC_Y_0",0.0,"measured displacment of the tension testing in y dir",&iap);
+  DoubleParameter("MC_Y_1",0.0,"measured displacment of the tension testing in y dir",&iap);
+  DoubleParameter("MC_Y_2",0.0,"measured displacment of the tension testing in y dir",&iap);
 
   // tolerance for inv_analysis
   DoubleParameter("INV_ANA_TOL",1.0,"tolerance for inverse analysis",&iap);
+
+  // initial regularization parameter
+  DoubleParameter("INV_INITREG",1.0,"initial regularization parameter",&iap);
+  
+  
+  setNumericStringParameter("MONITORFILE","none.monitor",
+                            "filename of file containing measured displacements",
+                            &iap);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& scontact = list->sublist("STRUCTURAL CONTACT",false,"");
