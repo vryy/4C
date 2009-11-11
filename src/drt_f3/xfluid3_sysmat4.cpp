@@ -1346,7 +1346,6 @@ void SysmatBoundary4(
     //const int numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
     // put one here to create arrays of size 1, since they are not needed anyway
     // in the xfem assembly, the numparam is determined by the dofmanager
-    //const int numparamtauxx = getNumParam<ASSTYPE>(dofman, Sigmaxx, 1);
     const size_t numparamtauxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Sigmaxx);
 
     IFacePatchLocalAssembler<DISTYPE, NUMDOF> patchassembler(dofman);
@@ -1475,12 +1474,12 @@ void SysmatBoundary4(
               dserror("negative fac! should be a bug!");
             }
 
-            const std::size_t shpVecSize       = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-            const std::size_t shpVecSizeStress = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
+            const std::size_t shpVecSize         = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+            const std::size_t shpVecSizeStress   = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
 
             // temporary arrays
-            static LINALG::Matrix<shpVecSize,1>       enr_funct;
-            static LINALG::Matrix<shpVecSizeStress,1> enr_funct_stress;
+            static LINALG::Matrix<shpVecSize,1>          enr_funct;
+            static LINALG::Matrix<shpVecSizeStress,1>    enr_funct_stress;
 
 //            if (dofman.getUniqueEnrichments().size() > 1)
 //              dserror("for an intersected element, we assume only 1 enrichment for now!");
@@ -1852,6 +1851,7 @@ void XFLUID::callSysmat4(
                 Sysmat4<DRT::Element::tet4,XFEM::xfem_assembly>(
                         params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
+                break;
             case DRT::Element::tet10:
                 Sysmat4<DRT::Element::tet10,XFEM::xfem_assembly>(
                         params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
