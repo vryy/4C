@@ -23,6 +23,9 @@ Maintainer: Burkhard Bornemann
 #include "elast_coupblatzko.H"
 #include "elast_isoneohooke.H"
 #include "elast_isoyeoh.H"
+#include "elast_isolin.H"
+#include "elast_isoquad.H"
+#include "elast_isocub.H"
 #include "elast_isoexpo.H"
 #include "elast_isomooneyrivlin.H"
 #include "elast_volsussmanbathe.H"
@@ -80,6 +83,27 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
       curmat->SetParameter(new MAT::ELASTIC::PAR::IsoYeoh(curmat));
     MAT::ELASTIC::PAR::IsoYeoh* params = static_cast<MAT::ELASTIC::PAR::IsoYeoh*>(curmat->Parameter());
     return Teuchos::rcp(new IsoYeoh(params));
+  }
+  case INPAR::MAT::mes_isolin:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::ELASTIC::PAR::IsoLin(curmat));
+    MAT::ELASTIC::PAR::IsoLin* params = static_cast<MAT::ELASTIC::PAR::IsoLin*>(curmat->Parameter());
+    return Teuchos::rcp(new IsoLin(params));
+  }
+  case INPAR::MAT::mes_isoquad:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::ELASTIC::PAR::IsoQuad(curmat));
+    MAT::ELASTIC::PAR::IsoQuad* params = static_cast<MAT::ELASTIC::PAR::IsoQuad*>(curmat->Parameter());
+    return Teuchos::rcp(new IsoQuad(params));
+  }
+  case INPAR::MAT::mes_isocub:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::ELASTIC::PAR::IsoCub(curmat));
+    MAT::ELASTIC::PAR::IsoCub* params = static_cast<MAT::ELASTIC::PAR::IsoCub*>(curmat->Parameter());
+    return Teuchos::rcp(new IsoCub(params));
   }
   case INPAR::MAT::mes_isoexpo:
   {

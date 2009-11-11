@@ -96,6 +96,9 @@ namespace INPAR
       mes_isoexpo,  ///< isochoric exponential hyperelastic potential summand
       mes_isomooneyrivlin,  ///< isochoric Mooney-Rivlin hyperelastic potential summand
       mes_isoyeoh,  ///< isochoric Yeoh hyperelastic potential summand
+      mes_isolin,  ///< isochoric linear hyperelastic potential summand
+      mes_isoquad,  ///< isochoric quadratic hyperelastic potential summand
+      mes_isocub,  ///< isochoric cubic hyperelastic potential summand
       mes_volsussmanbathe,  ///< volumetric SussmanBathe hyperelastic potential summand
       mes_volpenalty,  ///< Penalty volumetric part of the  hyperelastic potential summand
       mes_vologden,  ///< Ogden volumetric part of the  hyperelastic potential summand

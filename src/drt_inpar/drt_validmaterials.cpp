@@ -963,6 +963,43 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*--------------------------------------------------------------------*/
+  // isochoric contribution of Lin
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("ELAST_IsoLin",
+                                            "isochoric part of linear material",
+                                            INPAR::MAT::mes_isolin));
+
+    AddNamedReal(m,"C","material parameter");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+  /*--------------------------------------------------------------------*/
+  // isochoric contribution of Quad
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("ELAST_IsoQuad",
+                                            "isochoric part of quadratic material",
+                                            INPAR::MAT::mes_isoquad));
+
+    AddNamedReal(m,"C","material parameter");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+  /*--------------------------------------------------------------------*/
+  // isochoric contribution of Cub
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("ELAST_IsoCub",
+                                            "isochoric part of cubic material",
+                                            INPAR::MAT::mes_isocub));
+
+    AddNamedReal(m,"C","material parameter");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*--------------------------------------------------------------------*/
   // isochoric contribution of expo
   {
     Teuchos::RCP<MaterialDefinition> m
