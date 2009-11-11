@@ -319,7 +319,7 @@ UZAWAPARAM                      1
 ---------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY
 KIND                            None
 --------------------------------------------------INVERSE ANALYSIS
-INV_ANALYSIS   No
+INV_ANALYSIS   none
 MEASURED_CURVE0 0
 MEASURED_CURVE1 0
 MEASURED_CURVE2 0

@@ -81,7 +81,7 @@ MAXDT          0
 RESULTDT       0
 TIMEADAPT      0
 --------------------------------------------------INVERSE ANALYSIS
-INV_ANALYSIS    No
+INV_ANALYSIS    none
 MEASURED_CURVE0 26.940092186        //load
 MEASURED_CURVE1 0.002642
 MEASURED_CURVE2 3.494634
