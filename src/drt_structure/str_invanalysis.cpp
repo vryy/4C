@@ -66,8 +66,6 @@ extern GENPROB genprob;
 /* Inverse analysis of structures */
 void STR::invanalysis()
 {
-  cout << "yes I am in here\n"; fflush(stdout);
-  
   // get input lists
   const Teuchos::ParameterList& iap = DRT::Problem::Instance()->InverseAnalysisParams();
 
