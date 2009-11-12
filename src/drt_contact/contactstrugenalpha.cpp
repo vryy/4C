@@ -1709,7 +1709,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
 #ifdef CONTACTTIME
       const double t_end322 = ds_cputime()-t_start32;
       cout << "\nContact.InitMortar: " << t_end321 << " seconds";
-      cout << "\nContact.EvalMortar: " << t_end322 << " seconds";
+      cout << "\nContact.EvalMortar: " << t_end322 << " seconds\n\n";
 #endif // #ifdef CONTACTTIME
 
       // friction
