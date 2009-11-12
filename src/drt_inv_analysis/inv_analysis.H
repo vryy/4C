@@ -62,7 +62,7 @@ private:
   Teuchos::RCP<DRT::Discretization> discret_;
 
   /// vector layout from the discretization to construct matching vectors and matrices
-  Epetra_Map* dofrowmap_;
+  //Epetra_Map* dofrowmap_;
 
   /// linear algebraic solver
   Teuchos::RCP<LINALG::Solver> solver_;
@@ -74,38 +74,30 @@ private:
   Teuchos::RCP<STR::TimInt> sti_;
 
   ///  number of measurment points the
-  int mp_;
   double tstep_;                          // timestep
 
-  vector<double>   disp_;		        // displacment vector in all three direction
-  vector<int>      bc_nodes_;             // nodes with bc
-  vector<int>      bc_dof_;               // nodes with bc
-  vector<double>   load_;		        // load vector in all three direction
   int problem_type_;		        // Neumann or Dirichlet Problem
-  int pp_;                                // number of fitted parameters (default 3, 4 with kappa)
+  int np_;                                // number of fitted parameters (default 3, 4 with kappa)
+  int nmp_;                                // number of fitted parameters (default 3, 4 with kappa)
 
-  Epetra_SerialDenseVector ccurve_;       // calculated displacments
-  Epetra_SerialDenseVector ccurve_o_;	// calculated displacment of the previous loop
   Epetra_SerialDenseVector mcurve_;	// measured displacment of the experiments (target value)
-  Epetra_SerialDenseVector rcurve_;	// final_disp_ - measured_disp
 
   double mu_;
+  double tol_mu_;
   double mup_;
   double mum_;
-
-  int precond_;
 
   double error_;
   double error_o_;
   double tol_;
 
+  string filename_;
+
+  double kappa_multi_;
+
   int numb_run_;
-  int direction_;                       // gives the direction of the stretch
 
   Epetra_SerialDenseVector p_;	      // parameter vector
-  Epetra_SerialDenseVector p_neg_;	      // parameter vector
-  Epetra_SerialDenseVector p_o_;        // old parameter vector
-  Epetra_SerialDenseVector delta_p_;    // change of parameter
 
   /// @name Storage
   //@{
@@ -120,6 +112,8 @@ private:
   vector<DRT::Condition*> surfneum_;
   vector<DRT::Condition*> surfdir_;
 
+  int reset_out_count_;
+
 public:
 
   /// standard constructor
@@ -129,33 +123,32 @@ public:
     Teuchos::RCP<IO::DiscretizationWriter> output  ///< outputer
     );
 
-  /// reset parameters for new fitting loop
-  void ResetParameters();
+  /// Read in routine for the material parameters
+  void ReadInParameters();
+
+  /// Set material parameters
+  void SetParameters(Epetra_SerialDenseVector p_cur);
 
   /// get current state of calculated curve
-  void GetCalculatedCurve(
-    const Teuchos::RCP<Epetra_Vector> value,  ///< either
-                                              ///< displacements on
-                                              ///< NBC or
-                                              ///< reaction forces on DBC
-
-    int numb  ///< time step
-    );
+  Epetra_SerialDenseVector GetCalculatedCurve();
 
   /// coarse fitting of parameters
   void PrecondParameters();
 
   /// fitting the material parameters using the Levenberg-Marquart algorithm
-  void CalcNewParameters();
+  void CalcNewParameters(Epetra_SerialDenseMatrix cmatrix,  double inc);
+
 
   ///
-  void Evaluate();
+  Epetra_SerialDenseVector CalcCvector();
 
   ///
   void Integrate();
 
   ///
-  void PrintStorage();
+  void PrintStorage(Epetra_SerialDenseMatrix cmatrix,  Epetra_SerialDenseVector delta_p);
+  void PrintFile();
+
 
 };  // class InvAnalysis
 
