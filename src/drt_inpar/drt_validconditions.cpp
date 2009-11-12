@@ -1451,6 +1451,24 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(volrigidbodymode);
 
   /*--------------------------------------------------------------------*/
+  // inverse analysis fitted surface
+
+  std::vector<Teuchos::RCP<ConditionComponent> > invanacomponents;
+  invanacomponents.push_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+
+  Teuchos::RCP<ConditionDefinition> surfinvana =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURFACE INV ANALYSIS",
+                                         "SurfInvAna",
+                                         "Inverse Analysis Surface",
+                                         DRT::Condition::InvAnaSurface,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  surfinvana->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+
+  condlist.push_back(surfinvana);
+
+  /*--------------------------------------------------------------------*/
   // 1D-Artery connector condition
 
   Teuchos::RCP<ConditionDefinition> art_connection_bc =
