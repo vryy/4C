@@ -5541,7 +5541,7 @@ void CONTACT::Interface::FDCheckGP3DDeriv(vector<vector<double> >& testgps,
 /*----------------------------------------------------------------------*
  | Finite difference check of lagr. mult. derivatives        popp 06/09 |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::FDCheckDerivZ()
+void CONTACT::Interface::FDCheckPenaltyTracNor()
 {
   // get out of here if not participating in interface
   if (!lComm())
@@ -5849,6 +5849,497 @@ void CONTACT::Interface::FDCheckDerivZ()
 
   return;
 }
+
+/*----------------------------------------------------------------------*
+ | Finite difference check of frictional penalty traction     mgit 11/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::Interface::FDCheckPenaltyTracFric()
+{
+  // get out of here if not participating in interface
+  if (!lComm())
+    return;
+  
+  // information from interface contact parameter list
+  double frcoeff = IParams().get<double>("FRCOEFF");
+  double ppnor = IParams().get<double>("PENALTYPARAM");
+  double pptan = IParams().get<double>("PENALTYPARAMTAN");
+
+  
+   // create storage for values of complementary function C
+  int nrow = snoderowmap_->NumMyElements();
+  vector<double> reftrac1(nrow);
+  vector<double> newtrac1(nrow);
+  vector<double> reftrac2(nrow);
+  vector<double> newtrac2(nrow);
+  vector<double> reftrac3(nrow);
+  vector<double> newtrac3(nrow);
+    
+  // store reference
+  // loop over proc's slave nodes
+  for (int i=0; i<snoderowmap_->NumMyElements();++i)
+  {  	
+  	int gid = snoderowmap_->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    CNode* cnode = static_cast<CNode*>(node);
+    
+     // get some informatiom form the node
+     double gap = cnode->Getg();
+     int dim = cnode->NumDof();
+     double kappa = cnode->Kappa();
+     double* n = cnode->n();
+
+     // evaluate traction
+     Epetra_SerialDenseMatrix jumpvec(dim,1);
+     Epetra_SerialDenseMatrix tanplane(dim,dim);
+     vector<double> trailtraction(dim);
+     vector<double> tractionold(dim);
+     double magnitude = 0;
+
+     // fill vectors and matrices
+     for (int j=0;j<dim;j++)
+     {
+     	 jumpvec(j,0) = cnode->jump()[j];
+       tractionold[j] = cnode->tractionold()[j];
+     }
+
+     if (dim==3)
+     {
+       tanplane(0,0)= 1-(n[0]*n[0]);
+       tanplane(0,1)=  -(n[0]*n[1]);
+       tanplane(0,2)=  -(n[0]*n[2]);
+       tanplane(1,0)=  -(n[1]*n[0]);
+       tanplane(1,1)= 1-(n[1]*n[1]);
+       tanplane(1,2)=  -(n[1]*n[2]);
+
+       tanplane(2,0)=  -(n[2]*n[0]);
+       tanplane(2,1)=  -(n[2]*n[1]);
+       tanplane(2,2)= 1-(n[2]*n[2]);
+     }
+     else if (dim==2)
+     {
+       tanplane(0,0)= 1-(n[0]*n[0]);
+       tanplane(0,1)=  -(n[0]*n[1]);
+
+       tanplane(1,0)=  -(n[1]*n[0]);
+       tanplane(1,1)= 1-(n[1]*n[1]);
+     }
+     else
+       dserror("Error: Unknown dimension.");
+
+     // Evaluate frictional trail traction
+     Epetra_SerialDenseMatrix temptrac(dim,1);
+     temptrac.Multiply('N','N',kappa*pptan,tanplane,jumpvec,0.0);
+
+     for (int j=0;j<dim;j++)
+     {
+     	trailtraction[j]=tractionold[j]+temptrac(j,0);
+       magnitude += (trailtraction[j]*trailtraction[j]);
+     }
+
+     // evaluate magnitude of trailtraction
+     magnitude = sqrt(magnitude);
+
+     // evaluate maximal tangential traction
+     double maxtantrac = -frcoeff*kappa * ppnor * gap;
+
+     if(cnode->Active()==true and cnode->Slip()==false)
+     {
+         reftrac1[i] = n[0]*(- kappa * ppnor * gap)+trailtraction[0];
+         reftrac2[i] = n[1]*(- kappa * ppnor * gap)+trailtraction[1];
+         reftrac3[i] = n[2]*(- kappa * ppnor * gap)+trailtraction[2];
+     }
+     if(cnode->Active()==true and cnode->Slip()==true)
+     {
+     	// compute lagrange multipliers and store into node
+       	reftrac1[i] = n[0]*(- kappa * ppnor * gap)+maxtantrac/magnitude*trailtraction[0];
+       	reftrac2[i] = n[1]*(- kappa * ppnor * gap)+maxtantrac/magnitude*trailtraction[1];
+       	reftrac3[i] = n[2]*(- kappa * ppnor * gap)+maxtantrac/magnitude*trailtraction[2];
+     }
+  } // loop over procs slave nodes
+
+  // global loop to apply FD scheme to all slave dofs (=3*nodes)
+  for (int fd=0; fd<3*snodefullmap_->NumMyElements();++fd)
+  {
+    // Initialize
+    Initialize();
+
+    // now get the node we want to apply the FD scheme to
+    int gid = snodefullmap_->GID(fd/3);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
+    CNode* snode = static_cast<CNode*>(node);
+
+    // apply finite difference scheme
+    if (Comm().MyPID()==snode->Owner())
+    {
+      cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof: " << fd%3
+           << " Dof: " << snode->Dofs()[fd%3] << endl;
+    }
+
+    // do step forward (modify nodal displacement)
+    double delta = 1e-8;
+    if (fd%3==0)
+    {
+      snode->xspatial()[0] += delta;
+      snode->u()[0] += delta;
+    }
+    else if (fd%3==1)
+    {
+      snode->xspatial()[1] += delta;
+      snode->u()[1] += delta;
+    }
+    else
+    {
+      snode->xspatial()[2] += delta;
+      snode->u()[2] += delta;
+    }
+
+    // loop over all elements to set current element length / area
+    // (use fully overlapping column map)
+    for (int j=0;j<idiscret_->NumMyColElements();++j)
+    {
+      CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(j));
+      element->Area()=element->ComputeArea();
+    }
+
+    // *******************************************************************
+    // contents of Evaluate()
+    // *******************************************************************
+    Evaluate();
+    EvaluateRelMov();
+
+    // compute finite difference derivative
+    for (int k=0; k<snoderowmap_->NumMyElements();++k)
+    {
+    	int kgid = snoderowmap_->GID(k);
+      DRT::Node* knode = idiscret_->gNode(kgid);
+      if (!node) dserror("ERROR: Cannot find node with gid %",kgid);
+      CNode* kcnode = static_cast<CNode*>(knode);
+      
+      // get some informatiom form the node
+      double gap = kcnode->Getg();
+      int dim = kcnode->NumDof();
+      double kappa = kcnode->Kappa();
+      double* n = kcnode->n();
+
+      // evaluate traction
+      Epetra_SerialDenseMatrix jumpvec(dim,1);
+      Epetra_SerialDenseMatrix tanplane(dim,dim);
+      vector<double> trailtraction(dim);
+      vector<double> tractionold(dim);
+      double magnitude = 0;
+
+      // fill vectors and matrices
+      for (int j=0;j<dim;j++)
+      {
+      	jumpvec(j,0) = kcnode->jump()[j];
+        tractionold[j] = kcnode->tractionold()[j];
+      }
+
+      if (dim==3)
+      {
+        tanplane(0,0)= 1-(n[0]*n[0]);
+        tanplane(0,1)=  -(n[0]*n[1]);
+        tanplane(0,2)=  -(n[0]*n[2]);
+        tanplane(1,0)=  -(n[1]*n[0]);
+        tanplane(1,1)= 1-(n[1]*n[1]);
+        tanplane(1,2)=  -(n[1]*n[2]);
+
+        tanplane(2,0)=  -(n[2]*n[0]);
+        tanplane(2,1)=  -(n[2]*n[1]);
+        tanplane(2,2)= 1-(n[2]*n[2]);
+      }
+      else if (dim==2)
+      {
+        tanplane(0,0)= 1-(n[0]*n[0]);
+        tanplane(0,1)=  -(n[0]*n[1]);
+
+        tanplane(1,0)=  -(n[1]*n[0]);
+        tanplane(1,1)= 1-(n[1]*n[1]);
+      }
+      else
+        dserror("Error in AssembleTangentForces: Unknown dimension.");
+
+
+      // Evaluate frictional trail traction
+      Epetra_SerialDenseMatrix temptrac(dim,1);
+      temptrac.Multiply('N','N',kappa*pptan,tanplane,jumpvec,0.0);
+
+      for (int j=0;j<dim;j++)
+      {
+      	trailtraction[j]=tractionold[j]+temptrac(j,0);
+        magnitude += (trailtraction[j]*trailtraction[j]);
+      }
+
+      // evaluate magnitude of trailtraction
+      magnitude = sqrt(magnitude);
+
+      // evaluate maximal tangential traction
+      double maxtantrac = -frcoeff*kappa * ppnor * gap;
+
+      if(kcnode->Active()==true and kcnode->Slip()==false)
+      {
+          newtrac1[k] = n[0]*(- kappa * ppnor * gap)+trailtraction[0];
+          newtrac2[k] = n[1]*(- kappa * ppnor * gap)+trailtraction[1];
+          newtrac3[k] = n[2]*(- kappa * ppnor * gap)+trailtraction[2];
+      }
+      if(kcnode->Active()==true and kcnode->Slip()==true)
+      {
+       	// compute lagrange multipliers and store into node
+      	newtrac1[k] = n[0]*(- kappa * ppnor * gap)+maxtantrac/magnitude*trailtraction[0];
+      	newtrac2[k] = n[1]*(- kappa * ppnor * gap)+maxtantrac/magnitude*trailtraction[1];
+      	newtrac3[k] = n[2]*(- kappa * ppnor * gap)+maxtantrac/magnitude*trailtraction[2];
+      }
+
+      // print results (derivatives) to screen
+      if (abs(newtrac1[k]-reftrac1[k]) > 1e-12)
+      {
+        //cout << "SlipCon-FD-derivative for node S" << kcnode->Id() << endl;
+        //cout << "Ref-G: " << refG[k] << endl;
+        //cout << "New-G: " << newG[k] << endl;
+        cout << "Deriv:      " <<  kcnode->Dofs()[0] << " " << snode->Dofs()[fd%3] << " " << (newtrac1[k]-reftrac1[k])/delta << endl;
+        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetDerivG()[snode->Dofs()[fd%3]] << endl;
+        //if (abs(kcnode->GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
+        //  cout << "***WARNING*****************************************************************************" << endl;
+      }
+
+      // print results (derivatives) to screen
+      if (abs(newtrac2[k]-reftrac2[k]) > 1e-12)
+      {
+        //cout << "SlipCon-FD-derivative for node S" << kcnode->Id() << endl;
+        //cout << "Ref-G: " << refG[k] << endl;
+        //cout << "New-G: " << newG[k] << endl;
+        cout << "Deriv:      " <<  kcnode->Dofs()[1] << " "<< snode->Dofs()[fd%3] << " " << (newtrac2[k]-reftrac2[k])/delta << endl;
+        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetDerivG()[snode->Dofs()[fd%3]] << endl;
+        //if (abs(kcnode->GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
+        //  cout << "***WARNING*****************************************************************************" << endl;
+      }
+
+      // print results (derivatives) to screen
+      if (abs(newtrac3[k]-reftrac3[k]) > 1e-12)
+      {
+        //cout << "SlipCon-FD-derivative for node S" << kcnode->Id() << endl;
+        //cout << "Ref-G: " << refG[k] << endl;
+        //cout << "New-G: " << newG[k] << endl;
+        cout << "Deriv:      " <<  kcnode->Dofs()[2] << " " << snode->Dofs()[fd%3] << " " << (newtrac3[k]-reftrac3[k])/delta << endl;
+        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetDerivG()[snode->Dofs()[fd%3]] << endl;
+        //if (abs(kcnode->GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
+        //  cout << "***WARNING*****************************************************************************" << endl;
+      }
+    }
+    // undo finite difference modification
+    if (fd%3==0)
+    {
+      snode->xspatial()[0] -= delta;
+      snode->u()[0] -= delta;
+    }
+    else if (fd%3==1)
+    {
+      snode->xspatial()[1] -= delta;
+      snode->u()[1] -= delta;
+    }
+    else
+    {
+      snode->xspatial()[2] -= delta;
+      snode->u()[2] -= delta;
+    }
+  } // loop over procs slave nodes
+
+   // global loop to apply FD scheme to all master dofs (=3*nodes)
+  for (int fd=0; fd<3*mnodefullmap_->NumMyElements();++fd)
+  {
+    // Initialize
+    Initialize();
+
+    // now get the node we want to apply the FD scheme to
+    int gid = mnodefullmap_->GID(fd/3);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find master node with gid %",gid);
+    CNode* mnode = static_cast<CNode*>(node);
+
+    // apply finite difference scheme
+    if (Comm().MyPID()==mnode->Owner())
+    {
+      cout << "\nBuilding FD for Master Node: " << mnode->Id() << " Dof: " << fd%3
+           << " Dof: " << mnode->Dofs()[fd%3] << endl;
+    }
+
+    // do step forward (modify nodal displacement)
+    double delta = 1e-8;
+    if (fd%3==0)
+    {
+      mnode->xspatial()[0] += delta;
+      mnode->u()[0] += delta;
+    }
+    else if (fd%3==1)
+    {
+      mnode->xspatial()[1] += delta;
+      mnode->u()[1] += delta;
+    }
+    else
+    {
+      mnode->xspatial()[2] += delta;
+      mnode->u()[2] += delta;
+    }
+
+    // loop over all elements to set current element length / area
+    // (use fully overlapping column map)
+    for (int j=0;j<idiscret_->NumMyColElements();++j)
+    {
+      CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(j));
+      element->Area()=element->ComputeArea();
+    }
+
+    // *******************************************************************
+    // contents of Evaluate()
+    // *******************************************************************
+    Evaluate();
+    EvaluateRelMov();
+
+    // compute finite difference derivative
+    for (int k=0; k<snoderowmap_->NumMyElements();++k)
+    {
+    	int kgid = snoderowmap_->GID(k);
+      DRT::Node* knode = idiscret_->gNode(kgid);
+      if (!node) dserror("ERROR: Cannot find node with gid %",kgid);
+      CNode* kcnode = static_cast<CNode*>(knode);
+      
+      // get some informatiom form the node
+      double gap = kcnode->Getg();
+      int dim = kcnode->NumDof();
+      double kappa = kcnode->Kappa();
+      double* n = kcnode->n();
+
+      // evaluate traction
+      Epetra_SerialDenseMatrix jumpvec(dim,1);
+      Epetra_SerialDenseMatrix tanplane(dim,dim);
+      vector<double> trailtraction(dim);
+      vector<double> tractionold(dim);
+      double magnitude = 0;
+
+      // fill vectors and matrices
+      for (int j=0;j<dim;j++)
+      {
+      	jumpvec(j,0) = kcnode->jump()[j];
+        tractionold[j] = kcnode->tractionold()[j];
+      }
+
+      if (dim==3)
+      {
+        tanplane(0,0)= 1-(n[0]*n[0]);
+        tanplane(0,1)=  -(n[0]*n[1]);
+        tanplane(0,2)=  -(n[0]*n[2]);
+        tanplane(1,0)=  -(n[1]*n[0]);
+        tanplane(1,1)= 1-(n[1]*n[1]);
+        tanplane(1,2)=  -(n[1]*n[2]);
+
+        tanplane(2,0)=  -(n[2]*n[0]);
+        tanplane(2,1)=  -(n[2]*n[1]);
+        tanplane(2,2)= 1-(n[2]*n[2]);
+      }
+      else if (dim==2)
+      {
+        tanplane(0,0)= 1-(n[0]*n[0]);
+        tanplane(0,1)=  -(n[0]*n[1]);
+
+        tanplane(1,0)=  -(n[1]*n[0]);
+        tanplane(1,1)= 1-(n[1]*n[1]);
+      }
+      else
+        dserror("Error in AssembleTangentForces: Unknown dimension.");
+
+      // Evaluate frictional trail traction
+      Epetra_SerialDenseMatrix temptrac(dim,1);
+      temptrac.Multiply('N','N',kappa*pptan,tanplane,jumpvec,0.0);
+
+      for (int j=0;j<dim;j++)
+      {
+      	trailtraction[j]=tractionold[j]+temptrac(j,0);
+        magnitude += (trailtraction[j]*trailtraction[j]);
+      }
+
+      // evaluate magnitude of trailtraction
+      magnitude = sqrt(magnitude);
+
+      // evaluate maximal tangential traction
+      double maxtantrac = -frcoeff*kappa * ppnor * gap;
+
+      if(kcnode->Active()==true and kcnode->Slip()==false)
+      {
+          newtrac1[k] = n[0]*(- kappa * ppnor * gap)+trailtraction[0];
+          newtrac2[k] = n[1]*(- kappa * ppnor * gap)+trailtraction[1];
+          newtrac3[k] = n[2]*(- kappa * ppnor * gap)+trailtraction[2];
+      }
+      if(kcnode->Active()==true and kcnode->Slip()==true)
+      {
+       	// compute lagrange multipliers and store into node
+      	newtrac1[k] = n[0]*(- kappa * ppnor * gap)+maxtantrac/magnitude*trailtraction[0];
+      	newtrac2[k] = n[1]*(- kappa * ppnor * gap)+maxtantrac/magnitude*trailtraction[1];
+      	newtrac3[k] = n[2]*(- kappa * ppnor * gap)+maxtantrac/magnitude*trailtraction[2];
+      }
+
+      // print results (derivatives) to screen
+      if (abs(newtrac1[k]-reftrac1[k]) > 1e-12)
+      {
+        //cout << "SlipCon-FD-derivative for node S" << kcnode->Id() << endl;
+        //cout << "Ref-G: " << refG[k] << endl;
+        //cout << "New-G: " << newG[k] << endl;
+        cout << "Deriv:      " <<  kcnode->Dofs()[0] << " " << mnode->Dofs()[fd%3] << " " << (newtrac1[k]-reftrac1[k])/delta << endl;
+        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetDerivG()[snode->Dofs()[fd%3]] << endl;
+        //if (abs(kcnode->GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
+        //  cout << "***WARNING*****************************************************************************" << endl;
+      }
+
+      // print results (derivatives) to screen
+      if (abs(newtrac2[k]-reftrac2[k]) > 1e-12)
+      {
+        //cout << "SlipCon-FD-derivative for node S" << kcnode->Id() << endl;
+        //cout << "Ref-G: " << refG[k] << endl;
+        //cout << "New-G: " << newG[k] << endl;
+        cout << "Deriv:      " <<  kcnode->Dofs()[1] << " "<< mnode->Dofs()[fd%3] << " " << (newtrac2[k]-reftrac2[k])/delta << endl;
+        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetDerivG()[snode->Dofs()[fd%3]] << endl;
+        //if (abs(kcnode->GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
+        //  cout << "***WARNING*****************************************************************************" << endl;
+      }
+
+      // print results (derivatives) to screen
+      if (abs(newtrac3[k]-reftrac3[k]) > 1e-12)
+      {
+        //cout << "SlipCon-FD-derivative for node S" << kcnode->Id() << endl;
+        //cout << "Ref-G: " << refG[k] << endl;
+        //cout << "New-G: " << newG[k] << endl;
+        cout << "Deriv:      " <<  kcnode->Dofs()[2] << " " << mnode->Dofs()[fd%3] << " " << (newtrac3[k]-reftrac3[k])/delta << endl;
+        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetDerivG()[snode->Dofs()[fd%3]] << endl;
+        //if (abs(kcnode->GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
+        //  cout << "***WARNING*****************************************************************************" << endl;
+      }
+    }
+    // undo finite difference modification
+    if (fd%3==0)
+    {
+      mnode->xspatial()[0] -= delta;
+      mnode->u()[0] -= delta;
+    }
+    else if (fd%3==1)
+    {
+      mnode->xspatial()[1] -= delta;
+      mnode->u()[1] -= delta;
+    }
+    else
+    {
+      mnode->xspatial()[2] -= delta;
+      mnode->u()[2] -= delta;
+    }
+  }
+
+  // back to normal...
+  Initialize();
+  Evaluate();
+  EvaluateRelMov();
+
+  return;
+} // FDCheckPenaltyFricTrac
 
 /*----------------------------------------------------------------------*
  | Finite difference check contact tangent stiffness         popp 06/09 |

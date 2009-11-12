@@ -4763,7 +4763,10 @@ bool CONTACT::Integrator::AssembleD(const Epetra_Comm& comm,
             snode->AddMValue(sdof,col,minusval);
           }
           else
+          {	
             snode->AddDValue(sdof,col,val);
+            snode->AddSNode(mnode->Id());
+          }  
         }
       }
     }
@@ -4838,6 +4841,7 @@ bool CONTACT::Integrator::AssembleM(const Epetra_Comm& comm,
           double val = mseg(slave*sndof+sdof,master*mndof+mdof);
           snode->AddMValue(sdof,col,val);
         }
+        snode->AddMNode(mnode->Id());
       }
     }
     /*

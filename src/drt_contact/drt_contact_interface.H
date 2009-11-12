@@ -830,12 +830,18 @@ public:
   \brief Check penalty approach with finite differences
 
   */
-  virtual void FDCheckDerivZ();  
+  virtual void FDCheckPenaltyTracNor();  
   virtual void FDCheckPenaltyKTeff(RCP<LINALG::SparseMatrix> kc, RCP<Epetra_Vector> fc, RCP<LINALG::SparseMatrix> dold,
                                    RCP<LINALG::SparseMatrix> mold, RCP<Epetra_Vector> zold,
                                    RCP<Epetra_Map> problemrowmap, double alphaf);
   virtual void FDCheckPenaltyLinD(RCP<LINALG::SparseMatrix> lindmatrix, RCP<Epetra_Vector> reffcd);
   virtual void FDCheckPenaltyLinM(RCP<LINALG::SparseMatrix> linmmatrix, RCP<Epetra_Vector> reffcm);
+
+  /*!
+  \brief Check frictional penalty traction with finite differences
+
+  */
+  virtual void FDCheckPenaltyTracFric();
   
   /*!
   \brief Print shape function type (enum)

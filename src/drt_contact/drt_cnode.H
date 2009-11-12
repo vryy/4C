@@ -343,6 +343,18 @@ public:
   void AddMmodValue(int& row, int& col, double& val);
 
   /*!
+  \brief Add a value to the SNode set of this node
+
+  */
+  void AddSNode (int node);  
+  
+  /*!
+  \brief Add a value to the MNode set of this node
+
+  */
+  void AddMNode (int node);
+
+  /*!
   \brief Add a value to the weighted gap of this node
 
   This value is later assembled to the weighted gap vec.
@@ -422,6 +434,21 @@ public:
   \brief Return the 'Mmod' map (vector) of this node
   */
   virtual inline vector<map<int,double> >& GetMmod() { return mmodrows_; }
+
+  /*!
+  \brief Return the map with according master nodes
+  */
+  virtual inline set<int>& GetSNodes() { return snodes_; }
+  
+  /*!
+  \brief Return the map with according master nodes
+  */
+  virtual inline set<int>& GetMNodes() { return mnodes_; }
+
+  /*!
+  \brief Return the old map with according master nodes
+  */
+  virtual inline set<int>& GetMNodesOld() { return mnodesold_; }
 
   /*!
   \brief Return the weighted gap (scalar) of this node
@@ -621,6 +648,9 @@ protected:
   vector<map<int,double> >      drowsold_;   // nodal rows of old D matrix
   vector<map<int,double> >      mrowsold_;   // nodal rows of old M matrix
   vector<map<int,double> >      mmodrows_;   // nodal rows of Mmod matrix
+  set<int>                      snodes_;     // nodal set of according slave nodes
+  set<int>                      mnodes_;     // nodal set of according master nodes
+  set<int>                      mnodesold_;  // nodal set of old according masternodes
   double                        grow_;       // nodal entry of g vector
 
   vector<map<int,double> >      derivn_;     // directional derivative of nodal normal

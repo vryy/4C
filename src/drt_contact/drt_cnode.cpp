@@ -105,6 +105,8 @@ mrows_(old.mrows_),
 drowsold_(old.drowsold_),
 mrowsold_(old.mrowsold_),
 mmodrows_(old.mmodrows_),
+mnodes_(old.mnodes_),
+mnodesold_(old.mnodesold_),
 grow_(old.grow_)
 {
   for (int i=0;i<3;++i)
@@ -377,6 +379,38 @@ void CONTACT::CNode::AddMmodValue(int& row, int& col, double& val)
 }
 
 /*----------------------------------------------------------------------*
+ |  Add a value to the 'SNodes' set                        gitterle 11/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::CNode::AddSNode(int node)
+{
+  // check if this is a master node or slave boundary node
+  if (IsSlave()==false)
+    dserror("ERROR: AddSnode: function called for master node %i", Id());
+  if (IsOnBound()==true)
+    dserror("ERROR: AddSNode: function called for boundary node %i", Id());
+
+  snodes_.insert(node);
+	
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Add a value to the 'MNodes' set                        gitterle 11/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::CNode::AddMNode(int node)
+{
+  // check if this is a master node or slave boundary node
+  if (IsSlave()==false)
+    dserror("ERROR: AddMNode: function called for master node %i", Id());
+  if (IsOnBound()==true)
+    dserror("ERROR: AddMNode: function called for boundary node %i", Id());
+
+  mnodes_.insert(node);
+	
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  Add a value to the weighted gap                           popp 01/08|
  *----------------------------------------------------------------------*/
 void CONTACT::CNode::AddgValue(double& val)
@@ -470,7 +504,11 @@ void CONTACT::CNode::StoreDMOld()
 	// write drows_ to drowsold_
 	drowsold_ = drows_;
   mrowsold_ = mrows_;
-	
+  
+  // also vectors containing the according master nodes
+  mnodesold_.clear();
+  mnodesold_ = mnodes_;
+  
   return;
 }
 

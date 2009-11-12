@@ -71,7 +71,7 @@ Maintainer: Alexander Popp
 // PENALTY DEBUGGING OPTIONS
 //#define CONTACTFDPENALTYKTEFF     /* flag for FD check of global assembled contact tangent stiffness matrix */
 //#define CONTACTFDPENALTYKC1       /* flag for FD check of global assembled LinD and LinM part of contact tangent stiffness matrix */
-//#define CONTACTFDPENALTYDERIVZ    /* flag for FD check of nodal derivatives of lagrange multipliers */
+//#define CONTACTFDPENALTYDERIVTRAC   /* flag for FD check of nodal derivatives of lagrange multipliers */
 
 // FRICTIONAL DEBUGGING OPTIONS
 //#define CONTACTFDSTICK            /* flag for FD check of stick condition */

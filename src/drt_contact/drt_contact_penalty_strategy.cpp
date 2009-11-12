@@ -194,21 +194,6 @@ void CONTACT::PenaltyStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
     
     isincontact = isincontact || localisincontact;
     activesetchange = activesetchange || localactivesetchange;
-   
-#ifdef CONTACTFDPENALTYDERIVZ
-  // check derivatives of lagrange multipliers
-
-  if(ftype==INPAR::CONTACT::friction_coulomb )  
-    dserror("Error in PenaltyStrategy::EvaluateContact: FD Check not yet"
-    		    " implemented for friction");
-    
-  if( IsInContact() )
-  {
-    cout << "-- CONTACTFDDERIVZ --------------------" << endl;
-    interface_[i]->FDCheckDerivZ();
-    cout << "-- CONTACTFDDERIVZ --------------------" << endl;
-  }
-#endif
   }
 
   // broadcast contact status & active set change
@@ -265,14 +250,39 @@ void CONTACT::PenaltyStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
     interface_[i]->AssembleLinZ(*linzmatrix_);
     // assemble global derivatives of mortar D and M matrices
     interface_[i]->AssembleLinDM(*lindmatrix_, *linmmatrix_);
-    
   }
-
+  
   // FillComplete() global matrices LinD, LinM, LinZ
   lindmatrix_->Complete(*gsmdofs, *gsdofrowmap_);
   linmmatrix_->Complete(*gsmdofs, *gmdofrowmap_);
   linzmatrix_->Complete(*gsmdofs, *gsdofrowmap_);
   
+#ifdef CONTACTFDPENALTYDERIVTRAC
+  INPAR::CONTACT::ContactFrictionType ftype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(Params(),"FRICTION");
+
+  // check derivatives of penalty traction
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    if( IsInContact() )
+    {
+    	if(ftype==INPAR::CONTACT::friction_coulomb )
+      {	
+    	  cout << "LINZMATRIX" << *linzmatrix_ << endl;
+      	interface_[i]->FDCheckPenaltyTracFric();
+      }
+      else if (ftype==INPAR::CONTACT::friction_none)
+      {	
+        cout << "-- CONTACTFDDERIVZ --------------------" << endl;
+        interface_[i]->FDCheckPenaltyTracNor();
+        cout << "-- CONTACTFDDERIVZ --------------------" << endl;
+      }
+      else
+      	dserror("Error: FD Check for this friction type not implemented!");
+    }
+  }
+#endif
+
 #ifdef FDCHECKS
   // for debugging purposes kc is stored separately 
   RCP<LINALG::SparseMatrix> kc1 = rcp(new LINALG::SparseMatrix(*gsmdofs,81,true,true));
