@@ -70,9 +70,7 @@ AbstractStrategy(problemrowmap, params, interface, dim, comm, alphaf)
   constrnorm_ = 0.0;
   initialpenalty_ = Params().get<double>("PENALTYPARAM");
 }
-
-#define CONTACTPENALTYGAPSCALING
-                                          
+                                       
 /*----------------------------------------------------------------------*
  |  save the gap-scaling kappa from reference config          popp 06/09|
  *----------------------------------------------------------------------*/
