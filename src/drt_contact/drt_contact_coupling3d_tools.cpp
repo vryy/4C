@@ -556,7 +556,7 @@ bool CONTACT::Coupling3d::IntegrateCells(vector<vector<double> >& testgps,
     else dserror("ERROR: IntegrateCells: Invalid 3D slave element type");
 
     // integrate cell only if not neglectable
-    if (intcellarea<CONTACTINTLIM*selearea) continue;
+    if (intcellarea < CONTACTINTLIM*selearea) continue;
 
     // do the two integrations
     // *******************************************************************
@@ -579,6 +579,109 @@ bool CONTACT::Coupling3d::IntegrateCells(vector<vector<double> >& testgps,
     integrator.AssembleG(Comm(),sele_,*gseg);
   }
   return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Sort elements of a vector                                mwgee 10/05|
+ |  (taken from Trilinos MOERTEL package)                               |
+ *----------------------------------------------------------------------*/
+void CONTACT::Coupling3d::Sort(double* dlist, int N, int* list2)
+{
+  int    l, r, j, i, flag;
+  int    RR2;
+  double dRR, dK;
+
+  if (N <= 1) return;
+
+  l    = N / 2 + 1;
+  r    = N - 1;
+  l    = l - 1;
+  dRR  = dlist[l - 1];
+  dK   = dlist[l - 1];
+
+  if (list2 != NULL) {
+     RR2 = list2[l - 1];
+     while (r != 0) {
+        j = l;
+        flag = 1;
+
+        while (flag == 1) {
+           i = j;
+           j = j + j;
+
+           if (j > r + 1)
+              flag = 0;
+           else {
+              if (j < r + 1)
+                 if (dlist[j] > dlist[j - 1]) j = j + 1;
+
+              if (dlist[j - 1] > dK) {
+                 dlist[ i - 1] = dlist[ j - 1];
+                 list2[i - 1] = list2[j - 1];
+              }
+              else {
+                 flag = 0;
+              }
+           }
+        }
+        dlist[ i - 1] = dRR;
+        list2[i - 1] = RR2;
+
+        if (l == 1) {
+           dRR  = dlist [r];
+           RR2 = list2[r];
+           dK = dlist[r];
+           dlist[r ] = dlist[0];
+           list2[r] = list2[0];
+           r = r - 1;
+         }
+         else {
+            l   = l - 1;
+            dRR  = dlist[ l - 1];
+            RR2 = list2[l - 1];
+            dK   = dlist[l - 1];
+         }
+      }
+      dlist[ 0] = dRR;
+      list2[0] = RR2;
+   }
+   else {
+      while (r != 0) {
+         j = l;
+         flag = 1;
+         while (flag == 1) {
+            i = j;
+            j = j + j;
+            if (j > r + 1)
+               flag = 0;
+            else {
+               if (j < r + 1)
+                  if (dlist[j] > dlist[j - 1]) j = j + 1;
+               if (dlist[j - 1] > dK) {
+                  dlist[ i - 1] = dlist[ j - 1];
+               }
+               else {
+                  flag = 0;
+               }
+            }
+         }
+         dlist[ i - 1] = dRR;
+         if (l == 1) {
+            dRR  = dlist [r];
+            dK = dlist[r];
+            dlist[r ] = dlist[0];
+            r = r - 1;
+         }
+         else {
+            l   = l - 1;
+            dRR  = dlist[ l - 1];
+            dK   = dlist[l - 1];
+         }
+      }
+      dlist[ 0] = dRR;
+   }
+
+  return;
 }
 
 #endif //#ifdef CCADISCRET

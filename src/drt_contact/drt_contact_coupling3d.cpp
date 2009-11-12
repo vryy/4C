@@ -189,8 +189,8 @@ bool CONTACT::Coupling3d::EvaluateCoupling()
   }
   // *******************************************************************
 
-  // do polygon clipping
-  PolygonClipping(SlaveVertices(),MasterVertices(),Clip(),tol);
+  // do polygon clipping (NEW version)
+  PolygonClippingConvexHull(SlaveVertices(),MasterVertices(),Clip(),tol);
   int clipsize = (int)(Clip().size());
 
   // proceed only if clipping polygon is at least a triangle
@@ -375,6 +375,13 @@ void CONTACT::Coupling3d::PolygonClipping(vector<Vertex>& poly1,
                                           double& tol)
 {
   //**********************************************************************
+  dserror("ERROR: PolygonClipping outdated, use PolygonClippingConvexHull instead!");
+  //**********************************************************************
+  
+  // choose output
+  bool out = false;
+  
+  //**********************************************************************
   // STEP1: Input check
   // - input polygons must consist of min. 3 vertices each
   // - rotation of poly1 must be c-clockwise w.r.t. (0,0,1) or Auxn()
@@ -400,9 +407,12 @@ void CONTACT::Coupling3d::PolygonClipping(vector<Vertex>& poly1,
     for (int k=0;k<3;++k)
       center2[k] += poly2[i].Coord()[k]/((int)poly2.size());
 
-  //cout << "Center 1: " << center1[0] << " " << center1[1] << " " << center1[2] << endl;
-  //cout << "Center 2: " << center2[0] << " " << center2[1] << " " << center2[2] << endl;
-
+  if (out)
+  {
+    cout << "Center 1: " << center1[0] << " " << center1[1] << " " << center1[2] << endl;
+    cout << "Center 2: " << center2[0] << " " << center2[1] << " " << center2[2] << endl;
+  }
+  
   // then we compute the counter-clockwise plane normal
   double diff1[3] = {0.0, 0.0, 0.0};
   double edge1[3] = {0.0, 0.0, 0.0};
@@ -438,7 +448,7 @@ void CONTACT::Coupling3d::PolygonClipping(vector<Vertex>& poly1,
   // check polygon 2 and reorder in c-clockwise direction
   if (check2<0)
   {
-    //cout << "Polygon 2 (master) not ordered counter-clockwise -> reordered!" << endl;
+    if (out) cout << "Polygon 2 (master) not ordered counter-clockwise -> reordered!" << endl;
     std::reverse(poly2.begin(), poly2.end());
   }
 
@@ -506,17 +516,20 @@ void CONTACT::Coupling3d::PolygonClipping(vector<Vertex>& poly1,
   }
 
   // print final input polygons to screen
-  //cout << "\nInput Poylgon 1:";
-  //for (int i=0;i<(int)poly1.size();++i)
-  //  cout << "\nVertex " << i << ":\t" << scientific << poly1[i].Coord()[0]
-  //       << "\t" << poly1[i].Coord()[1] << "\t" << poly1[i].Coord()[2];
-
-  //cout << "\nInput Poylgon 2:";
-  //for (int i=0;i<(int)poly2.size();++i)
-  //  cout << "\nVertex " << i << ":\t" << scientific << poly2[i].Coord()[0]
-  //       << "\t" << poly2[i].Coord()[1] << "\t" << poly2[i].Coord()[2];
-
-  //cout << endl << endl;
+  if (out)
+  {
+    cout << "\nInput Poylgon 1:";
+    for (int i=0;i<(int)poly1.size();++i)
+      cout << "\nVertex " << i << ":\t" << scientific << poly1[i].Coord()[0]
+           << "\t" << poly1[i].Coord()[1] << "\t" << poly1[i].Coord()[2];
+  
+    cout << "\nInput Poylgon 2:";
+    for (int i=0;i<(int)poly2.size();++i)
+      cout << "\nVertex " << i << ":\t" << scientific << poly2[i].Coord()[0]
+           << "\t" << poly2[i].Coord()[1] << "\t" << poly2[i].Coord()[2];
+  
+    cout << endl << endl;
+  }
 
   //**********************************************************************
   // STEP2: Extend Vertex data structures
@@ -721,11 +734,11 @@ void CONTACT::Coupling3d::PolygonClipping(vector<Vertex>& poly1,
       double parallel = edge1[0]*n2[0]+edge1[1]*n2[1]+edge1[2]*n2[2];
       if(abs(parallel)<1.0e-12)
       {
-        //cout << "WARNING: Detected two parallel edges! (" << i << "," << j << ")" << endl;
+        if (out) cout << "WARNING: Detected two parallel edges! (" << i << "," << j << ")" << endl;
         continue;
       }
 
-      //cout << "Searching intersection (" << i << "," << j << ")" << endl;
+      if (out) cout << "Searching intersection (" << i << "," << j << ")" << endl;
 
       // check for intersection of non-parallel edges
       double wec_p1 = 0.0;
@@ -760,10 +773,13 @@ void CONTACT::Coupling3d::PolygonClipping(vector<Vertex>& poly1,
             if (abs(iq[k])<1.0e-12) iq[k] = 0.0;
           }
 
-          //cout << "Found intersection! (" << i << "," << j << ") " << alphap << " " << alphaq << endl;
-          //cout << "On Polygon 1: " << ip[0] << " " << ip[1] << " " << ip[2] << endl;
-          //cout << "On Polygon 2: " << iq[0] << " " << iq[1] << " " << iq[2] << endl;
-
+          if (out)
+          {
+            cout << "Found intersection! (" << i << "," << j << ") " << alphap << " " << alphaq << endl;
+            cout << "On Polygon 1: " << ip[0] << " " << ip[1] << " " << ip[2] << endl;
+            cout << "On Polygon 2: " << iq[0] << " " << iq[1] << " " << iq[2] << endl;
+          }
+          
           // generate vectors of underlying node ids for lineclip (2x slave, 2x master)
           vector<int> lcids(4);
           lcids[0] = (int)(poly1[i].Nodeids()[0]);
@@ -872,7 +888,7 @@ void CONTACT::Coupling3d::PolygonClipping(vector<Vertex>& poly1,
 
     if (poly1inner==true)
     {
-      //cout << "Polygon S lies fully inside polygon M!" << endl;
+      if (out) cout << "Polygon S lies fully inside polygon M!" << endl;
       respoly = poly1;
     }
 
@@ -907,14 +923,14 @@ void CONTACT::Coupling3d::PolygonClipping(vector<Vertex>& poly1,
 
       if (poly2inner==true)
       {
-        //cout << "Polygon M lies fully inside polygon S!" << endl;
+        if (out) cout << "Polygon M lies fully inside polygon S!" << endl;
         respoly = poly2;
       }
 
       // fully adjacent case
       else
       {
-        //cout << "Polygons S and M are fully adjacent!" << endl;
+        if (out) cout << "Polygons S and M are fully adjacent!" << endl;
         vector<Vertex> empty;
         respoly = empty;
       }
@@ -1082,18 +1098,20 @@ void CONTACT::Coupling3d::PolygonClipping(vector<Vertex>& poly1,
     }
 
     // print intersection points and their status
-    //cout << endl;
-    for (int i=0;i<(int)intersec1.size();++i)
+    if (out)
     {
-      //cout << "Intersec1: " << i << " " << intersec1[i].Coord()[0] << " " << intersec1[i].Coord()[1] << " " << intersec1[i].Coord()[2];
-      //cout << " EntryExit: " << intersec1[i].EntryExit() << endl;
-    }
-
-    //cout << endl;
-    for (int i=0;i<(int)intersec2.size();++i)
-    {
-     // cout << "Intersec2: " << i << " " <<  intersec2[i].Coord()[0] << " " << intersec2[i].Coord()[1] << " " << intersec2[i].Coord()[2];
-      //cout << " EntryExit: " << intersec2[i].EntryExit() << endl;
+      for (int i=0;i<(int)intersec1.size();++i)
+      {
+        cout << "Intersec1: " << i << " " << intersec1[i].Coord()[0] << " " << intersec1[i].Coord()[1] << " " << intersec1[i].Coord()[2];
+        cout << " EntryExit: " << intersec1[i].EntryExit() << endl;
+      }
+  
+      //cout << endl;
+      for (int i=0;i<(int)intersec2.size();++i)
+      {
+        cout << "Intersec2: " << i << " " <<  intersec2[i].Coord()[0] << " " << intersec2[i].Coord()[1] << " " << intersec2[i].Coord()[2];
+        cout << " EntryExit: " << intersec2[i].EntryExit() << endl;
+      }
     }
 
     // create clipped polygon by filtering
@@ -1106,37 +1124,40 @@ void CONTACT::Coupling3d::PolygonClipping(vector<Vertex>& poly1,
     Vertex* current = &intersec1[0];
 
     // push_back start Vertex coords into result polygon
-    //cout << "\nStart loop on Slave at " << current->Coord()[0] << " " << current->Coord()[1] << " " << current->Coord()[2] << endl;
+    if (out) cout << "\nStart loop on Slave at " << current->Coord()[0] << " " << current->Coord()[1] << " " << current->Coord()[2] << endl;
     respoly.push_back(Vertex(current->Coord(),Vertex::lineclip,current->Nodeids(),NULL,NULL,false,false,NULL,-1.0));
 
     do {
       // find next Vertex / Vertices (path)
       if (current->EntryExit()==true)
       {
-        //cout << "Intersection was Entry, so move to Next() on same polygon!" << endl;
+        if (out) cout << "Intersection was Entry, so move to Next() on same polygon!" << endl;
         do {
           current = current->Next();
-          //cout << "Current vertex is " << current->Coord()[0] << " " << current->Coord()[1] << " " << current->Coord()[2] << endl;
+          if (out) cout << "Current vertex is " << current->Coord()[0] << " " << current->Coord()[1] << " " << current->Coord()[2] << endl;
           respoly.push_back(Vertex(current->Coord(),current->VType(),current->Nodeids(),NULL,NULL,false,false,NULL,-1.0));
         } while (current->Intersect()==false);
-        //cout << "Found intersection: " << current->Coord()[0] << " " << current->Coord()[1] << " " << current->Coord()[2] << endl;
+        if (out) cout << "Found intersection: " << current->Coord()[0] << " " << current->Coord()[1] << " " << current->Coord()[2] << endl;
       }
       else
       {
-        //cout << "Intersection was Exit, so move to Prev() on same polygon!" << endl;
+        if (out) cout << "Intersection was Exit, so move to Prev() on same polygon!" << endl;
         do {
           current = current->Prev();
-          //cout << "Current vertex is " << current->Coord()[0] << " " << current->Coord()[1] << " " << current->Coord()[2] << endl;
+          if (out) cout << "Current vertex is " << current->Coord()[0] << " " << current->Coord()[1] << " " << current->Coord()[2] << endl;
           respoly.push_back(Vertex(current->Coord(),current->VType(),current->Nodeids(),NULL,NULL,false,false,NULL,-1.0));
         } while (current->Intersect()==false);
-        //cout << "Found intersection: " << current->Coord()[0] << " " << current->Coord()[1] << " " << current->Coord()[2] << endl;
+        if (out) cout << "Found intersection: " << current->Coord()[0] << " " << current->Coord()[1] << " " << current->Coord()[2] << endl;
       }
 
       // jump to the other input polygon
       current = current->Neighbor();
-      //cout << "Jumping to other polygon at intersection: " << current->Coord()[0] << " " << current->Coord()[1] << " " << current->Coord()[2] << endl;
-      //cout << "Length of result list so far: " << (int)respoly.size() << endl;
+      if (out) cout << "Jumping to other polygon at intersection: " << current->Coord()[0] << " " << current->Coord()[1] << " " << current->Coord()[2] << endl;
+      if (out) cout << "Length of result list so far: " << (int)respoly.size() << endl;
 
+      // check length of result polygon list
+      if ((int)respoly.size()>8) dserror("ERROR: Length of result polygon > 8! Something went wrong!");
+      
     } while (current!=&intersec1[0] && current!=&intersec2[0]);
 
     // check if last entry is identical to first entry
@@ -1162,8 +1183,7 @@ void CONTACT::Coupling3d::PolygonClipping(vector<Vertex>& poly1,
     {
       cout << "\nDifference Dists: " << fldist << " " << fldist2 << endl;
       dserror("ERROR: We did not arrive at the starting point again...?");
-     }
-
+    }
 
     // collapse respoly points that are very close
     vector<Vertex> collapsedrespoly;
@@ -1189,8 +1209,8 @@ void CONTACT::Coupling3d::PolygonClipping(vector<Vertex>& poly1,
 
         if (abs(dist) >= tolcollapse && abs(dist2) >= tolcollapse)
           collapsedrespoly.push_back(respoly[i]);
-        else {}
-         // cout << "Collapsed two points in result polygon!" << endl;
+        else
+          if (out) cout << "Collapsed two points in result polygon!" << endl;
       }
 
       // standard case
@@ -1204,19 +1224,19 @@ void CONTACT::Coupling3d::PolygonClipping(vector<Vertex>& poly1,
 
         if (abs(dist) >= tolcollapse)
           collapsedrespoly.push_back(respoly[i]);
-        else {}
-          //cout << "Collapsed two points in result polygon!" << endl;
+        else
+          if (out) cout << "Collapsed two points in result polygon!" << endl;
       }
     }
 
     // replace respoly by collapsed respoly
     respoly = collapsedrespoly;
-    //cout << "Final length of result list: " << (int)respoly.size() << endl;
+    if (out) cout << "Final length of result list: " << (int)respoly.size() << endl;
 
     // check if respoly collapsed to nothing
     if ((int)collapsedrespoly.size()<3)
     {
-     // cout << "Collapsing of result polygon led to < 3 vertices -> no respoly!" << endl;
+      if (out) cout << "Collapsing of result polygon led to < 3 vertices -> no respoly!" << endl;
       vector<Vertex> empty;
       respoly = empty;
     }
@@ -1229,7 +1249,7 @@ void CONTACT::Coupling3d::PolygonClipping(vector<Vertex>& poly1,
       for (int k=0;k<3;++k)
         center[k] += respoly[i].Coord()[k]/((int)respoly.size());
 
-    //cout << "\nCenter ResPoly: " << center[0] << " " << center[1] << " " << center[2] << endl;
+    if (out) cout << "\nCenter ResPoly: " << center[0] << " " << center[1] << " " << center[2] << endl;
 
     // then we compute the clockwise plane normal
     double diff[3] = {0.0, 0.0, 0.0};
@@ -1257,12 +1277,15 @@ void CONTACT::Coupling3d::PolygonClipping(vector<Vertex>& poly1,
       std::reverse(respoly.begin(),respoly.end());
     }
 
-    // print final input polygons to screen
-    //cout << "\nResult Poylgon:";
-    //for (int i=0;i<(int)respoly.size();++i)
-    //  cout << "\nVertex " << i << ":\t" << respoly[i].Coord()[0] << "\t" << respoly[i].Coord()[1] << "\t" << respoly[i].Coord()[2];
-    //cout << endl;
-
+    if (out)
+    {
+      // print final input polygons to screen
+      cout << "\nResult Poylgon:";
+      for (int i=0;i<(int)respoly.size();++i)
+        cout << "\nVertex " << i << ":\t" << respoly[i].Coord()[0] << "\t" << respoly[i].Coord()[1] << "\t" << respoly[i].Coord()[2];
+      cout << endl;
+    }
+    
     // check if result polygon is convex
     // a polygon is convex if the scalar product of an edge normal and the
     // next edge direction is negative for all edges
@@ -1294,129 +1317,1186 @@ void CONTACT::Coupling3d::PolygonClipping(vector<Vertex>& poly1,
       if (check>0) dserror("ERROR: Result polygon not convex!");
     }
   }
-  /*
-  // **********************************************************************
-  // STEP6: Result visualization with GMSH
-  // - plot the two input polygons and their vertex numbering
-  // - plot the result polygon and its vertex numbering
-  // **********************************************************************
-  std::ostringstream filename;
-  static int gmshcount=0;
-  filename << "o/gmsh_output/" << "clipping_";
-  if (gmshcount<10)
-    filename << 0 << 0 << 0 << 0;
-  else if (gmshcount<100)
-    filename << 0 << 0 << 0;
-  else if (gmshcount<1000)
-    filename << 0 << 0;
-  else if (gmshcount<10000)
-    dserror("Gmsh output implemented for a maximum of 9.999 clip polygons");
-  filename << gmshcount << ".pos";
-  gmshcount++;
+  
+  if (out)
+  {
+    // **********************************************************************
+    // STEP6: Result visualization with GMSH
+    // - plot the two input polygons and their vertex numbering
+    // - plot the result polygon and its vertex numbering
+    // **********************************************************************
+    std::ostringstream filename;
+    static int gmshcount=0;
+    filename << "o/gmsh_output/" << "clipping_";
+    if (gmshcount<10)
+      filename << 0 << 0 << 0 << 0;
+    else if (gmshcount<100)
+      filename << 0 << 0 << 0;
+    else if (gmshcount<1000)
+      filename << 0 << 0;
+    else if (gmshcount<10000)
+      dserror("Gmsh output implemented for a maximum of 9.999 clip polygons");
+    filename << gmshcount << ".pos";
+    gmshcount++;
+  
+    // do output to file in c-style
+    FILE* fp = NULL;
+    fp = fopen(filename.str().c_str(), "w");
+    std::stringstream gmshfilecontent;
+    gmshfilecontent << "View \" Clipping \" {" << endl;
+  
+    for (int i=0;i<(int)poly1.size();++i)
+    {
+      if (i!=(int)poly1.size()-1)
+      {
+        gmshfilecontent << "SL(" << scientific << poly1[i].Coord()[0] << "," << poly1[i].Coord()[1] << ","
+                                 << poly1[i].Coord()[2] << "," << poly1[i+1].Coord()[0] << "," << poly1[i+1].Coord()[1] << ","
+                                 << poly1[i+1].Coord()[2] << ")";
+        gmshfilecontent << "{" << scientific << 1.0 << "," << 1.0 << "};" << endl;
+      }
+      else
+      {
+        gmshfilecontent << "SL(" << scientific << poly1[i].Coord()[0] << "," << poly1[i].Coord()[1] << ","
+                                 << poly1[i].Coord()[2] << "," << poly1[0].Coord()[0] << "," << poly1[0].Coord()[1] << ","
+                                 << poly1[0].Coord()[2] << ")";
+        gmshfilecontent << "{" << scientific << 1.0 << "," << 1.0 << "};" << endl;
+  
+      }
+      gmshfilecontent << "T3(" << scientific << poly1[i].Coord()[0] << "," << poly1[i].Coord()[1] << "," << poly1[i].Coord()[2] << "," << 17 << ")";
+      gmshfilecontent << "{" << "S" << i << "};" << endl;
+    }
+  
+    for (int i=0;i<(int)poly2.size();++i)
+    {
+      if (i!=(int)poly2.size()-1)
+      {
+        gmshfilecontent << "SL(" << scientific << poly2[i].Coord()[0] << "," << poly2[i].Coord()[1] << ","
+                                 << poly2[i].Coord()[2] << "," << poly2[i+1].Coord()[0] << "," << poly2[i+1].Coord()[1] << ","
+                                 << poly2[i+1].Coord()[2] << ")";
+        gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
+      }
+      else
+      {
+        gmshfilecontent << "SL(" << scientific << poly2[i].Coord()[0] << "," << poly2[i].Coord()[1] << ","
+                                 << poly2[i].Coord()[2] << "," << poly2[0].Coord()[0] << "," << poly2[0].Coord()[1] << ","
+                                 << poly2[0].Coord()[2] << ")";
+        gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
+  
+      }
+      gmshfilecontent << "T3(" << scientific << poly2[i].Coord()[0] << "," << poly2[i].Coord()[1] << "," << poly2[i].Coord()[2] << "," << 17 << ")";
+      gmshfilecontent << "{" << "M" << i << "};" << endl;
+    }
+  
+    for (int i=0;i<(int)respoly.size();++i)
+    {
+      if (i!=(int)respoly.size()-1)
+      {
+        gmshfilecontent << "SL(" << scientific << respoly[i].Coord()[0] << "," << respoly[i].Coord()[1] << ","
+                                 << respoly[i].Coord()[2] << "," << respoly[i+1].Coord()[0] << "," << respoly[i+1].Coord()[1] << ","
+                                 << respoly[i+1].Coord()[2] << ")";
+        gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
+      }
+      else
+      {
+        gmshfilecontent << "SL(" << scientific << respoly[i].Coord()[0] << "," << respoly[i].Coord()[1] << ","
+                                 << respoly[i].Coord()[2] << "," << respoly[0].Coord()[0] << "," << respoly[0].Coord()[1] << ","
+                                 << respoly[0].Coord()[2] << ")";
+        gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
+  
+      }
+      gmshfilecontent << "T3(" << scientific << respoly[i].Coord()[0] << "," << respoly[i].Coord()[1] << "," << respoly[i].Coord()[2] << "," << 27 << ")";
+      gmshfilecontent << "{" << "R" << i << "};" << endl;
+    }
+  
+  //  for (int i=0;i<(int)intersec1.size();++i)
+  //  {
+  //    gmshfilecontent << "T3(" << scientific << intersec1[i].Coord()[0] << "," << intersec1[i].Coord()[1] << "," << intersec1[i].Coord()[2] << "," << 17 << ")";
+  //    if (intersec1[i].EntryExit()==true && intersec2[i].EntryExit()==true) gmshfilecontent << "{" << "SEME" << "};" << endl;
+  //    else if (intersec1[i].EntryExit()==false && intersec2[i].EntryExit()==true) gmshfilecontent << "{" << "SXME" << "};" << endl;
+  //    else if (intersec1[i].EntryExit()==true && intersec2[i].EntryExit()==false) gmshfilecontent << "{" << "SEMX" << "};" << endl;
+  //    else gmshfilecontent << "{" << "SXMX" << "};" << endl;
+  //  }
+  
+    gmshfilecontent << "};" << endl;
+  
+    // move everything to gmsh post-processing file and close it
+    fprintf(fp,gmshfilecontent.str().c_str());
+    fclose(fp);
+  }
 
-  // do output to file in c-style
-  FILE* fp = NULL;
-  fp = fopen(filename.str().c_str(), "w");
-  std::stringstream gmshfilecontent;
-  gmshfilecontent << "View \" Clipping \" {" << endl;
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Clipping of two polygons (NEW version)                    popp 11/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
+                                                    vector<Vertex>& poly2,
+                                                    vector<Vertex>& respoly,
+                                                    double& tol)
+{
+  // choose output
+  bool out = false;
+  
+  //**********************************************************************
+  // STEP1: Input check
+  // - input polygons must consist of min. 3 vertices each
+  // - rotation of poly1 must be c-clockwise w.r.t. (0,0,1) or Auxn()
+  // - rotation of poly 2 changed to c-clockwise w.r.t. (0,0,1) or Auxn()
+  // - both input polygons must be convex
+  //**********************************************************************
+
+  // check input variables
+  if ((int)poly1.size()<3 || (int)poly2.size()<3)
+    dserror("ERROR: Input Polygons must consist of min. 3 vertices each");
+
+  // check for rotation of polygon1 (slave) and polgon 2 (master)
+  // note that we implicitly already rely on convexity here!
+  // first get geometric centers of polygon1 and polygon2
+  double center1[3] = {0.0, 0.0, 0.0};
+  double center2[3] = {0.0, 0.0, 0.0};
 
   for (int i=0;i<(int)poly1.size();++i)
-  {
-    if (i!=(int)poly1.size()-1)
-    {
-      gmshfilecontent << "SL(" << scientific << poly1[i].Coord()[0] << "," << poly1[i].Coord()[1] << ","
-                               << poly1[i].Coord()[2] << "," << poly1[i+1].Coord()[0] << "," << poly1[i+1].Coord()[1] << ","
-                               << poly1[i+1].Coord()[2] << ")";
-      gmshfilecontent << "{" << scientific << 1.0 << "," << 1.0 << "};" << endl;
-    }
-    else
-    {
-      gmshfilecontent << "SL(" << scientific << poly1[i].Coord()[0] << "," << poly1[i].Coord()[1] << ","
-                               << poly1[i].Coord()[2] << "," << poly1[0].Coord()[0] << "," << poly1[0].Coord()[1] << ","
-                               << poly1[0].Coord()[2] << ")";
-      gmshfilecontent << "{" << scientific << 1.0 << "," << 1.0 << "};" << endl;
+    for (int k=0;k<3;++k)
+      center1[k] += poly1[i].Coord()[k]/((int)poly1.size());
 
+  for (int i=0;i<(int)poly2.size();++i)
+    for (int k=0;k<3;++k)
+      center2[k] += poly2[i].Coord()[k]/((int)poly2.size());
+
+  if (out)
+  {
+    cout << "Center 1: " << center1[0] << " " << center1[1] << " " << center1[2] << endl;
+    cout << "Center 2: " << center2[0] << " " << center2[1] << " " << center2[2] << endl;
+  }
+  
+  // then we compute the counter-clockwise plane normal
+  double diff1[3] = {0.0, 0.0, 0.0};
+  double edge1[3] = {0.0, 0.0, 0.0};
+  double diff2[3] = {0.0, 0.0, 0.0};
+  double edge2[3] = {0.0, 0.0, 0.0};
+
+  for (int k=0;k<3;++k)
+  {
+    diff1[k] = poly1[0].Coord()[k]-center1[k];
+    edge1[k] = poly1[1].Coord()[k]-poly1[0].Coord()[k];
+    diff2[k] = poly2[0].Coord()[k]-center2[k];
+    edge2[k] = poly2[1].Coord()[k]-poly2[0].Coord()[k];
+  }
+
+  double cross1[3] = {0.0, 0.0, 0.0};
+  double cross2[3] = {0.0, 0.0, 0.0};
+
+  cross1[0] = diff1[1]*edge1[2]-diff1[2]*edge1[1];
+  cross1[1] = diff1[2]*edge1[0]-diff1[0]*edge1[2];
+  cross1[2] = diff1[0]*edge1[1]-diff1[1]*edge1[0];
+
+  cross2[0] = diff2[1]*edge2[2]-diff2[2]*edge2[1];
+  cross2[1] = diff2[2]*edge2[0]-diff2[0]*edge2[2];
+  cross2[2] = diff2[0]*edge2[1]-diff2[1]*edge2[0];
+
+  // check against auxiliary plane normal
+  double check1 = cross1[0]*Auxn()[0]+cross1[1]*Auxn()[1]+cross1[2]*Auxn()[2];
+  double check2 = cross2[0]*Auxn()[0]+cross2[1]*Auxn()[1]+cross2[2]*Auxn()[2];
+
+  // check polygon 1 and throw dserror if not c-clockwise
+  if (check1<=0) dserror("ERROR: Polygon 1 (slave) not ordered counter-clockwise!");
+
+  // check polygon 2 and reorder in c-clockwise direction
+  if (check2<0)
+  {
+    if (out) cout << "Polygon 2 (master) not ordered counter-clockwise -> reordered!" << endl;
+    std::reverse(poly2.begin(), poly2.end());
+  }
+
+  // check if the two input polygons are convex
+  // a polygon is convex if the scalar product of an edge normal and the
+  // next edge direction is negative for all edges
+  for (int i=0;i<(int)poly1.size();++i)
+  {
+    // we need the edge vector first
+    double edge[3] = {0.0, 0.0, 0.0};
+    for (int k=0;k<3;++k)
+    {
+      if (i!=(int)poly1.size()-1) edge[k] = poly1[i+1].Coord()[k] - poly1[i].Coord()[k];
+      else edge[k] = poly1[0].Coord()[k] - poly1[i].Coord()[k];
     }
-    gmshfilecontent << "T3(" << scientific << poly1[i].Coord()[0] << "," << poly1[i].Coord()[1] << "," << poly1[i].Coord()[2] << "," << 17 << ")";
-    gmshfilecontent << "{" << "S" << i << "};" << endl;
+
+    // edge normal is result of cross product
+    double n[3] = {0.0, 0.0, 0.0};
+    n[0] = edge[1]*Auxn()[2]-edge[2]*Auxn()[1];
+    n[1] = edge[2]*Auxn()[0]-edge[0]*Auxn()[2];
+    n[2] = edge[0]*Auxn()[1]-edge[1]*Auxn()[0];
+
+    // we need the next edge vector now
+    double nextedge[3] = {0.0, 0.0, 0.0};
+    for (int k=0;k<3;++k)
+    {
+      if (i<(int)poly1.size()-2) nextedge[k] = poly1[i+2].Coord()[k] - poly1[i+1].Coord()[k];
+      else if (i==(int)poly1.size()-2) nextedge[k] = poly1[0].Coord()[k] - poly1[i+1].Coord()[k];
+      else nextedge[k] = poly1[1].Coord()[k] - poly1[0].Coord()[k];
+    }
+
+    // check scalar product
+    double check = n[0]*nextedge[0]+n[1]*nextedge[1]+n[2]*nextedge[2];
+    if (check>0) dserror("ERROR: Input polygon 1 not convex");
   }
 
   for (int i=0;i<(int)poly2.size();++i)
   {
-    if (i!=(int)poly2.size()-1)
+    // we need the edge vector first
+    double edge[3] = {0.0, 0.0, 0.0};
+    for (int k=0;k<3;++k)
     {
-      gmshfilecontent << "SL(" << scientific << poly2[i].Coord()[0] << "," << poly2[i].Coord()[1] << ","
-                               << poly2[i].Coord()[2] << "," << poly2[i+1].Coord()[0] << "," << poly2[i+1].Coord()[1] << ","
-                               << poly2[i+1].Coord()[2] << ")";
-      gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
+      if (i!=(int)poly2.size()-1) edge[k] = poly2[i+1].Coord()[k] - poly2[i].Coord()[k];
+      else edge[k] = poly2[0].Coord()[k] - poly2[i].Coord()[k];
     }
-    else
-    {
-      gmshfilecontent << "SL(" << scientific << poly2[i].Coord()[0] << "," << poly2[i].Coord()[1] << ","
-                               << poly2[i].Coord()[2] << "," << poly2[0].Coord()[0] << "," << poly2[0].Coord()[1] << ","
-                               << poly2[0].Coord()[2] << ")";
-      gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
 
+    // edge normal is result of cross product
+    double n[3] = {0.0, 0.0, 0.0};
+    n[0] = edge[1]*Auxn()[2]-edge[2]*Auxn()[1];
+    n[1] = edge[2]*Auxn()[0]-edge[0]*Auxn()[2];
+    n[2] = edge[0]*Auxn()[1]-edge[1]*Auxn()[0];
+
+    // we need the next edge vector now
+    double nextedge[3] = {0.0, 0.0, 0.0};
+    for (int k=0;k<3;++k)
+    {
+      if (i<(int)poly2.size()-2) nextedge[k] = poly2[i+2].Coord()[k] - poly2[i+1].Coord()[k];
+      else if (i==(int)poly2.size()-2) nextedge[k] = poly2[0].Coord()[k] - poly2[i+1].Coord()[k];
+      else nextedge[k] = poly2[1].Coord()[k] - poly2[0].Coord()[k];
     }
-    gmshfilecontent << "T3(" << scientific << poly2[i].Coord()[0] << "," << poly2[i].Coord()[1] << "," << poly2[i].Coord()[2] << "," << 17 << ")";
-    gmshfilecontent << "{" << "M" << i << "};" << endl;
+
+    // check scalar product
+    double check = n[0]*nextedge[0]+n[1]*nextedge[1]+n[2]*nextedge[2];
+    if (check>0) dserror("ERROR: Input polygon 2 not convex");
   }
 
-  for (int i=0;i<(int)respoly.size();++i)
+  // print final input polygons to screen
+  if (out)
   {
-    if (i!=(int)respoly.size()-1)
-    {
-      gmshfilecontent << "SL(" << scientific << respoly[i].Coord()[0] << "," << respoly[i].Coord()[1] << ","
-                               << respoly[i].Coord()[2] << "," << respoly[i+1].Coord()[0] << "," << respoly[i+1].Coord()[1] << ","
-                               << respoly[i+1].Coord()[2] << ")";
-      gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
-    }
-    else
-    {
-      gmshfilecontent << "SL(" << scientific << respoly[i].Coord()[0] << "," << respoly[i].Coord()[1] << ","
-                               << respoly[i].Coord()[2] << "," << respoly[0].Coord()[0] << "," << respoly[0].Coord()[1] << ","
-                               << respoly[0].Coord()[2] << ")";
-      gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
-
-    }
-    gmshfilecontent << "T3(" << scientific << respoly[i].Coord()[0] << "," << respoly[i].Coord()[1] << "," << respoly[i].Coord()[2] << "," << 27 << ")";
-    gmshfilecontent << "{" << "R" << i << "};" << endl;
+    cout << "\nInput Poylgon 1:";
+    for (int i=0;i<(int)poly1.size();++i)
+      cout << "\nVertex " << i << ":\t" << scientific << poly1[i].Coord()[0]
+           << "\t" << poly1[i].Coord()[1] << "\t" << poly1[i].Coord()[2];
+  
+    cout << "\nInput Poylgon 2:";
+    for (int i=0;i<(int)poly2.size();++i)
+      cout << "\nVertex " << i << ":\t" << scientific << poly2[i].Coord()[0]
+           << "\t" << poly2[i].Coord()[1] << "\t" << poly2[i].Coord()[2];
+  
+    cout << endl << endl;
   }
 
-//  for (int i=0;i<(int)intersec1.size();++i)
-//  {
-//    gmshfilecontent << "T3(" << scientific << intersec1[i].Coord()[0] << "," << intersec1[i].Coord()[1] << "," << intersec1[i].Coord()[2] << "," << 17 << ")";
-//    if (intersec1[i].EntryExit()==true && intersec2[i].EntryExit()==true) gmshfilecontent << "{" << "SEME" << "};" << endl;
-//    else if (intersec1[i].EntryExit()==false && intersec2[i].EntryExit()==true) gmshfilecontent << "{" << "SXME" << "};" << endl;
-//    else if (intersec1[i].EntryExit()==true && intersec2[i].EntryExit()==false) gmshfilecontent << "{" << "SEMX" << "};" << endl;
-//    else gmshfilecontent << "{" << "SXMX" << "};" << endl;
-//  }
+  //**********************************************************************
+  // STEP2: Extend Vertex data structures
+  // - note that poly1 is the slave element and poly2 the master element
+  // - assign Next() and Prev() pointers to initialize linked structure
+  //**********************************************************************
 
-  gmshfilecontent << "};" << endl;
-
-  // move everything to gmsh post-processing file and close it
-  fprintf(fp,gmshfilecontent.str().c_str());
-  fclose(fp);
-  */
-
-  /*
-  // check result polygon points
-  cout << "\nTesting result polygon points" << endl;
-  for (int i=0;i<(int)respoly.size();++i)
+  // set previous and next Vertex pointer for all elements in lists
+  for (int i=0;i<(int)poly1.size();++i)
   {
-    Vertex& testv = respoly[i];
-    cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " " << testv.Coord()[2] << endl;
-    cout << "Type: " << testv.VType() << endl;
-    cout << "Alpha: " << testv.Alpha() << endl;
-    if (testv.VType()==Vertex::lineclip)
+    // standard case
+    if (i!=0 && i!=(int)poly1.size()-1)
+    {
+      poly1[i].AssignNext(&poly1[i+1]);
+      poly1[i].AssignPrev(&poly1[i-1]);
+    }
+    // first element in list
+    else if (i==0)
+    {
+      poly1[i].AssignNext(&poly1[i+1]);
+      poly1[i].AssignPrev(&poly1[(int)poly1.size()-1]);
+    }
+    // last element in list
+    else
+    {
+      poly1[i].AssignNext(&poly1[0]);
+      poly1[i].AssignPrev(&poly1[i-1]);
+    }
+  }
+  for (int i=0;i<(int)poly2.size();++i)
+  {
+    // standard case
+    if (i!=0 && i!=(int)poly2.size()-1)
+    {
+      poly2[i].AssignNext(&poly2[i+1]);
+      poly2[i].AssignPrev(&poly2[i-1]);
+    }
+    // first element in list
+    else if (i==0)
+    {
+      poly2[i].AssignNext(&poly2[i+1]);
+      poly2[i].AssignPrev(&poly2[(int)poly2.size()-1]);
+    }
+    // last element in list
+    else
+    {
+      poly2[i].AssignNext(&poly2[0]);
+      poly2[i].AssignPrev(&poly2[i-1]);
+    }
+  }
+
+  //**********************************************************************
+  // STEP3: Perform line intersection of all edge pairs
+  // - this yields a new vector of intersection vertices
+  // - by default the respective edge end vertices are assumed to be
+  //   the next/prev vertices and connectivity is set up accordingly
+  //**********************************************************************
+  vector<Vertex> intersec;
+
+  for (int i=0;i<(int)poly1.size();++i)
+  {
+    for (int j=0;j<(int)poly2.size();++j)
+    {
+      // we need two diff vectors and edges first
+      double diffp1[3] = {0.0, 0.0, 0.0};
+      double diffp2[3] = {0.0, 0.0, 0.0};
+      double diffq1[3] = {0.0, 0.0, 0.0};
+      double diffq2[3] = {0.0, 0.0, 0.0};
+      double edge1[3] = {0.0, 0.0, 0.0};
+      double edge2[3] = {0.0, 0.0, 0.0};
+      for (int k=0;k<3;++k)
+      {
+        diffp1[k] = poly1[i].Coord()[k] - poly2[j].Coord()[k];
+        diffp2[k] = (poly1[i].Next())->Coord()[k] - poly2[j].Coord()[k];
+        diffq1[k] = poly2[j].Coord()[k] - poly1[i].Coord()[k];
+        diffq2[k] = (poly2[j].Next())->Coord()[k] - poly1[i].Coord()[k];
+        edge1[k] = (poly1[i].Next())->Coord()[k] - poly1[i].Coord()[k];
+        edge2[k] = (poly2[j].Next())->Coord()[k] - poly2[j].Coord()[k];
+      }
+
+      // outward edge normals of polygon 1 and 2 edges
+      double n1[3] = {0.0, 0.0, 0.0};
+      double n2[3] = {0.0, 0.0, 0.0};
+      n1[0] = edge1[1]*Auxn()[2]-edge1[2]*Auxn()[1];
+      n1[1] = edge1[2]*Auxn()[0]-edge1[0]*Auxn()[2];
+      n1[2] = edge1[0]*Auxn()[1]-edge1[1]*Auxn()[0];
+      n2[0] = edge2[1]*Auxn()[2]-edge2[2]*Auxn()[1];
+      n2[1] = edge2[2]*Auxn()[0]-edge2[0]*Auxn()[2];
+      n2[2] = edge2[0]*Auxn()[1]-edge2[1]*Auxn()[0];
+
+      // check for parallelity of edges
+      double parallel = edge1[0]*n2[0]+edge1[1]*n2[1]+edge1[2]*n2[2];
+      if (abs(parallel)<tol)
+      {
+        if (out) cout << "WARNING: Detected two parallel edges! (" << i << "," << j << ")" << endl;
+        continue;
+      }
+
+      if (out) cout << "Searching intersection (" << i << "," << j << ")" << endl;
+
+      // check for intersection of non-parallel edges
+      double wec_p1 = 0.0;
+      double wec_p2 = 0.0;
+      for (int k=0;k<3;++k)
+      {
+        wec_p1 += (poly1[i].Coord()[k] - poly2[j].Coord()[k]) * n2[k];
+        wec_p2 += ((poly1[i].Next())->Coord()[k] - poly2[j].Coord()[k]) * n2[k];
+      }
+
+      if (wec_p1*wec_p2<=0)
+      {
+        double wec_q1 = 0.0;
+        double wec_q2 = 0.0;
+        for (int k=0;k<3;++k)
+        {
+          wec_q1 += (poly2[j].Coord()[k] - poly1[i].Coord()[k]) * n1[k];
+          wec_q2 += ((poly2[j].Next())->Coord()[k] - poly1[i].Coord()[k]) * n1[k];
+        }
+
+        if (wec_q1*wec_q2<=0)
+        {
+          double alphap = wec_p1/(wec_p1-wec_p2);
+          double alphaq = wec_q1/(wec_q1-wec_q2);
+          vector<double> ip(3);
+          vector<double> iq(3);
+          for (int k=0;k<3;++k)
+          {
+            ip[k] = (1-alphap) * poly1[i].Coord()[k] + alphap * (poly1[i].Next())->Coord()[k];
+            iq[k] = (1-alphaq) * poly2[j].Coord()[k] + alphaq * (poly2[j].Next())->Coord()[k];
+            if (abs(ip[k]) < tol) ip[k] = 0.0;
+            if (abs(iq[k]) < tol) iq[k] = 0.0;
+          }
+
+          if (out)
+          {
+            cout << "Found intersection! (" << i << "," << j << ") " << alphap << " " << alphaq << endl;
+            cout << "On Polygon 1: " << ip[0] << " " << ip[1] << " " << ip[2] << endl;
+            cout << "On Polygon 2: " << iq[0] << " " << iq[1] << " " << iq[2] << endl;
+          }
+          
+          // generate vectors of underlying node ids for lineclip (2x slave, 2x master)
+          vector<int> lcids(4);
+          lcids[0] = (int)(poly1[i].Nodeids()[0]);
+          lcids[1] = (int)((poly1[i].Next())->Nodeids()[0]);
+          lcids[2] = (int)(poly2[j].Nodeids()[0]);
+          lcids[3] = (int)((poly2[j].Next())->Nodeids()[0]);
+
+          // store intersection points
+          intersec.push_back(Vertex(ip,Vertex::lineclip,lcids,poly1[i].Next(),&poly1[i],true,false,NULL,alphap));
+        }
+      }
+    }
+  }
+ 
+  if (out)
+  {
+    // check intersection points
+    cout << "\nTesting intersection points" << endl;
+    for (int i=0;i<(int)intersec.size();++i)
+    {
+      Vertex& testv = intersec[i];
+      cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " " << testv.Coord()[2] << endl;
+      cout << "Type: " << testv.VType() << endl;
+      cout << "Alpha: " << testv.Alpha() << endl;
       cout << "Lineclip ids: " << testv.Nodeids()[0] << " " << testv.Nodeids()[1]
            << " " << testv.Nodeids()[2] << " " << testv.Nodeids()[3] << endl << endl;
-    else
-      cout << "Node id: " << testv.Nodeids()[0] << endl << endl;
+    }
   }
-  */
+    
+  //**********************************************************************
+  // STEP4: Collapse line intersections
+  // - this yields a collapsed vector of intersection vertices
+  // - those intersection points close to poly1/poly2 vertices are deleted
+  //**********************************************************************
+  vector<Vertex> collintersec;
+  
+  for (int i=0;i<(int)intersec.size();++i)
+  {
+    // keep track of comparisons
+    bool close = false;
+    
+    // check against all poly1 (slave) points
+    for (int j=0;j<(int)poly1.size();++j)
+    {
+      // distance vector
+      double diff[3] = {0.0, 0.0, 0.0};
+      for (int k=0;k<3;++k) diff[k] = intersec[i].Coord()[k] - poly1[j].Coord()[k];
+      double dist = sqrt(diff[0]*diff[0]+diff[1]*diff[1]+diff[2]*diff[2]);
+      
+      // only keep intersection point if not close
+      if (dist <= tol)
+      {
+        close = true;
+        break;
+      }
+    }
+    
+    // do only if no close poly1 (slave) point found
+    if (!close)
+    {
+      // check against all poly2 (master) points
+      for (int j=0;j<(int)poly2.size();++j)
+      {
+        // distance vector
+        double diff[3] = {0.0, 0.0, 0.0};
+        for (int k=0;k<3;++k) diff[k] = intersec[i].Coord()[k] - poly2[j].Coord()[k];
+        double dist = sqrt(diff[0]*diff[0]+diff[1]*diff[1]+diff[2]*diff[2]);
+        
+        // only keep intersection point if not close
+        if (dist <= tol)
+        {
+          close = true;  
+          break;
+        }
+      }
+    }
+    
+    // keep intersection point only if not close to any poly1/poly2 point
+    if (!close) collintersec.push_back(intersec[i]);
+  }
+  
+  if (out)
+  {
+    // check collapsed intersection points
+    cout << "\nTesting collapsed intersection points" << endl;
+    for (int i=0;i<(int)collintersec.size();++i)
+    {
+      Vertex& testv = collintersec[i];
+      cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " " << testv.Coord()[2] << endl;
+      cout << "Type: " << testv.VType() << endl;
+      cout << "Alpha: " << testv.Alpha() << endl;
+      cout << "Lineclip ids: " << testv.Nodeids()[0] << " " << testv.Nodeids()[1]
+           << " " << testv.Nodeids()[2] << " " << testv.Nodeids()[3] << endl << endl;
+    }
+  }
+  
+  //**********************************************************************
+  // STEP5: Create points of convex hull
+  // - check all poly1 points against all poly1/poly2 edges
+  // - check all poly2 points against all poly1/poly2 edges
+  // - check all collintersec points against all poly1/poly2 edges
+  // - points outside any poly1/poly2 edge are NOT in the convex hull
+  // - as a result we obtain all points forming the convex hull
+  //**********************************************************************
+  vector<Vertex> convexhull;
+  
+  //----------------------------------------------------check poly1 points
+  for (int i=0;i<(int)poly1.size();++i)
+  {
+    // keep track of inside / outside status
+    bool outside = false;
+ 
+    // check against all poly1 (slave) edges
+    for (int j=0;j<(int)poly1.size();++j)
+    {
+      // we need diff vector and edge2 first
+      double diff[3] = {0.0, 0.0, 0.0};
+      double edge[3] = {0.0, 0.0, 0.0};
+      for (int k=0;k<3;++k)
+      {
+        diff[k] = poly1[i].Coord()[k] - poly1[j].Coord()[k];
+        edge[k] = (poly1[j].Next())->Coord()[k] - poly1[j].Coord()[k];
+      }
 
-  return;
+      // compute distance from point on poly1 to edge
+      double n[3] = {0.0, 0.0, 0.0};
+      n[0] = edge[1]*Auxn()[2]-edge[2]*Auxn()[1];
+      n[1] = edge[2]*Auxn()[0]-edge[0]*Auxn()[2];
+      n[2] = edge[0]*Auxn()[1]-edge[1]*Auxn()[0];
+      double ln = sqrt(n[0]*n[0]+n[1]*n[1]+n[2]*n[2]);
+      for (int k=0;k<3;++k) n[k] /= ln;
+
+      double dist = diff[0]*n[0]+diff[1]*n[1]+diff[2]*n[2];
+      
+      // only keep point if not in outside halfspace
+      if (dist > tol)
+      {
+        outside = true;
+        break;
+      }
+    }
+    
+    // do only if not already outside w.r.t. to a poly1 (slave) edge
+    if (!outside)
+    {
+      // check against all poly2 (master) edges
+      for (int j=0;j<(int)poly2.size();++j)
+      {
+        // we need diff vector and edge2 first
+        double diff[3] = {0.0, 0.0, 0.0};
+        double edge[3] = {0.0, 0.0, 0.0};
+        for (int k=0;k<3;++k)
+        {
+          diff[k] = poly1[i].Coord()[k] - poly2[j].Coord()[k];
+          edge[k] = (poly2[j].Next())->Coord()[k] - poly2[j].Coord()[k];
+        }
+
+        // compute distance from point on poly1 to edge
+        double n[3] = {0.0, 0.0, 0.0};
+        n[0] = edge[1]*Auxn()[2]-edge[2]*Auxn()[1];
+        n[1] = edge[2]*Auxn()[0]-edge[0]*Auxn()[2];
+        n[2] = edge[0]*Auxn()[1]-edge[1]*Auxn()[0];
+        double ln = sqrt(n[0]*n[0]+n[1]*n[1]+n[2]*n[2]);
+        for (int k=0;k<3;++k) n[k] /= ln;
+
+        double dist = diff[0]*n[0]+diff[1]*n[1]+diff[2]*n[2];
+        
+        // only keep point if not in outside halfspace
+        if (dist > tol)
+        {
+          outside = true;
+          break;
+        }
+      }
+    }
+    
+    // only keep point if never in outside halfspace
+    if (!outside) convexhull.push_back(poly1[i]);
+  }
+  
+  //----------------------------------------------------check poly2 points
+  for (int i=0;i<(int)poly2.size();++i)
+  {
+    // keep track of inside / outside status
+    bool outside = false;
+ 
+    // check against all poly1 (slave) edges
+    for (int j=0;j<(int)poly1.size();++j)
+    {
+      // we need diff vector and edge2 first
+      double diff[3] = {0.0, 0.0, 0.0};
+      double edge[3] = {0.0, 0.0, 0.0};
+      for (int k=0;k<3;++k)
+      {
+        diff[k] = poly2[i].Coord()[k] - poly1[j].Coord()[k];
+        edge[k] = (poly1[j].Next())->Coord()[k] - poly1[j].Coord()[k];
+      }
+
+      // compute distance from point on poly1 to edge
+      double n[3] = {0.0, 0.0, 0.0};
+      n[0] = edge[1]*Auxn()[2]-edge[2]*Auxn()[1];
+      n[1] = edge[2]*Auxn()[0]-edge[0]*Auxn()[2];
+      n[2] = edge[0]*Auxn()[1]-edge[1]*Auxn()[0];
+      double ln = sqrt(n[0]*n[0]+n[1]*n[1]+n[2]*n[2]);
+      for (int k=0;k<3;++k) n[k] /= ln;
+
+      double dist = diff[0]*n[0]+diff[1]*n[1]+diff[2]*n[2];
+      
+      // only keep point if not in outside halfspace
+      if (dist > tol)
+      {
+        outside = true;
+        break;
+      }
+    }
+    
+    // do only if not already outside w.r.t. to a poly1 (slave) edge
+    if (!outside)
+    {
+      // check against all poly2 (master) edges
+      for (int j=0;j<(int)poly2.size();++j)
+      {
+        // we need diff vector and edge2 first
+        double diff[3] = {0.0, 0.0, 0.0};
+        double edge[3] = {0.0, 0.0, 0.0};
+        for (int k=0;k<3;++k)
+        {
+          diff[k] = poly2[i].Coord()[k] - poly2[j].Coord()[k];
+          edge[k] = (poly2[j].Next())->Coord()[k] - poly2[j].Coord()[k];
+        }
+
+        // compute distance from point on poly1 to edge
+        double n[3] = {0.0, 0.0, 0.0};
+        n[0] = edge[1]*Auxn()[2]-edge[2]*Auxn()[1];
+        n[1] = edge[2]*Auxn()[0]-edge[0]*Auxn()[2];
+        n[2] = edge[0]*Auxn()[1]-edge[1]*Auxn()[0];
+        double ln = sqrt(n[0]*n[0]+n[1]*n[1]+n[2]*n[2]);
+        for (int k=0;k<3;++k) n[k] /= ln;
+
+        double dist = diff[0]*n[0]+diff[1]*n[1]+diff[2]*n[2];
+        
+        // only keep point if not in outside halfspace
+        if (dist > tol)
+        {
+          outside = true;
+          break;
+        }
+      }
+    }
+    
+    // only keep point if never in outside halfspace
+    if (!outside) convexhull.push_back(poly2[i]);
+  }
+  
+  //---------------------------------------------check collintersec points
+  for (int i=0;i<(int)collintersec.size();++i)
+  {
+    // keep track of inside / outside status
+    bool outside = false;
+ 
+    // check against all poly1 (slave) edges
+    for (int j=0;j<(int)poly1.size();++j)
+    {
+      // we need diff vector and edge2 first
+      double diff[3] = {0.0, 0.0, 0.0};
+      double edge[3] = {0.0, 0.0, 0.0};
+      for (int k=0;k<3;++k)
+      {
+        diff[k] = collintersec[i].Coord()[k] - poly1[j].Coord()[k];
+        edge[k] = (poly1[j].Next())->Coord()[k] - poly1[j].Coord()[k];
+      }
+
+      // compute distance from point on poly1 to edge
+      double n[3] = {0.0, 0.0, 0.0};
+      n[0] = edge[1]*Auxn()[2]-edge[2]*Auxn()[1];
+      n[1] = edge[2]*Auxn()[0]-edge[0]*Auxn()[2];
+      n[2] = edge[0]*Auxn()[1]-edge[1]*Auxn()[0];
+      double ln = sqrt(n[0]*n[0]+n[1]*n[1]+n[2]*n[2]);
+      for (int k=0;k<3;++k) n[k] /= ln;
+
+      double dist = diff[0]*n[0]+diff[1]*n[1]+diff[2]*n[2];
+      
+      // only keep point if not in outside halfspace
+      if (dist > tol)
+      {
+        outside = true;
+        break;
+      }
+    }
+    
+    // do only if not already outside w.r.t. to a poly1 (slave) edge
+    if (!outside)
+    {
+      // check against all poly2 (master) edges
+      for (int j=0;j<(int)poly2.size();++j)
+      {
+        // we need diff vector and edge2 first
+        double diff[3] = {0.0, 0.0, 0.0};
+        double edge[3] = {0.0, 0.0, 0.0};
+        for (int k=0;k<3;++k)
+        {
+          diff[k] = collintersec[i].Coord()[k] - poly2[j].Coord()[k];
+          edge[k] = (poly2[j].Next())->Coord()[k] - poly2[j].Coord()[k];
+        }
+
+        // compute distance from point on poly1 to edge
+        double n[3] = {0.0, 0.0, 0.0};
+        n[0] = edge[1]*Auxn()[2]-edge[2]*Auxn()[1];
+        n[1] = edge[2]*Auxn()[0]-edge[0]*Auxn()[2];
+        n[2] = edge[0]*Auxn()[1]-edge[1]*Auxn()[0];
+        double ln = sqrt(n[0]*n[0]+n[1]*n[1]+n[2]*n[2]);
+        for (int k=0;k<3;++k) n[k] /= ln;
+
+        double dist = diff[0]*n[0]+diff[1]*n[1]+diff[2]*n[2];
+        
+        // only keep point if not in outside halfspace
+        if (dist > tol)
+        {
+          outside = true;
+          break;
+        }
+      }
+    }
+    
+    // only keep point if never in outside halfspace
+    if (!outside) convexhull.push_back(collintersec[i]);
+  }
+  
+  if (out)
+  {
+    // check convex hull points
+    cout << "\nTesting convex hull points" << endl;
+    for (int i=0;i<(int)convexhull.size();++i)
+    {
+      Vertex& testv = convexhull[i];
+      cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " " << testv.Coord()[2] << endl;
+      cout << "Type: " << testv.VType() << endl;
+    }
+  }
+  
+  //**********************************************************************
+  // STEP6: Collapse convex hull points
+  // - this yields a collapsed vector of convex hull vertices
+  // - up to now only duplicate intersection points have been eliminated
+  // - this operation now removes ALL kinds of duplicate points
+  // - intersection points close to poly2/poly1 points are deleted
+  // - poly2 points close to poly1 vertices are deleted
+  //**********************************************************************
+  vector<Vertex> collconvexhull;
+  
+  for (int i=0;i<(int)convexhull.size();++i)
+  {
+    // keep track of comparisons
+    bool close = false;
+    
+    // do not collapse poly1 (slave) points
+    if (convexhull[i].VType()==CONTACT::Vertex::slave)
+    {
+      collconvexhull.push_back(convexhull[i]);
+      continue;
+    }
+    
+    // check remaining poly2 (master) and intersec points against poly1 (slave) points
+    for (int j=0;j<(int)convexhull.size();++j)
+    {
+      // only collapse with poly1 (slave) points
+      if (convexhull[j].VType()!=CONTACT::Vertex::slave) continue;
+          
+      // distance vector
+      double diff[3] = {0.0, 0.0, 0.0};
+      for (int k=0;k<3;++k) diff[k] = convexhull[i].Coord()[k] - convexhull[j].Coord()[k];
+      double dist = sqrt(diff[0]*diff[0]+diff[1]*diff[1]+diff[2]*diff[2]);
+      
+      // only keep point if not close
+      if (dist <= tol)
+      {
+        close = true;
+        break;
+      }
+    }
+    
+    // do not check poly2 (master) points
+    if (convexhull[i].VType()==CONTACT::Vertex::projmaster)
+    {
+      if (!close) collconvexhull.push_back(convexhull[i]);
+      continue;
+    }
+        
+    // check intersec points against poly2 (master) points
+    if (!close && convexhull[i].VType()==CONTACT::Vertex::lineclip)
+    {
+      for (int j=0;j<(int)convexhull.size();++j)
+      {
+        // only collapse with poly2 (master) points
+        if (convexhull[j].VType()!=CONTACT::Vertex::projmaster) continue;
+              
+        // distance vector
+        double diff[3] = {0.0, 0.0, 0.0};
+        for (int k=0;k<3;++k) diff[k] = convexhull[i].Coord()[k] - convexhull[j].Coord()[k];
+        double dist = sqrt(diff[0]*diff[0]+diff[1]*diff[1]+diff[2]*diff[2]);
+        
+        // only keep intersection point if not close
+        if (dist <= tol)
+        {
+          close = true;  
+          break;
+        }
+      }
+    }
+    
+    // keep intersection point only if not collapsed
+    if (!close) collconvexhull.push_back(convexhull[i]);
+  }
+  
+  if (out)
+  {
+    // check collapsed convex hull points
+    cout << "\nTesting collapsed convex hull points" << endl;
+    for (int i=0;i<(int)collconvexhull.size();++i)
+    {
+      Vertex& testv = collconvexhull[i];
+      cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " " << testv.Coord()[2] << endl;
+      cout << "Type: " << testv.VType() << endl;
+    }
+  }
+  
+  //**********************************************************************
+  // STEP7: Transform convex hull points to auxiliary plane
+  // - x* = A * (x - p1) where p1 = translation, A = rotation
+  // - this yields transformed points with coords (x_bar,y_bar,0)
+  //**********************************************************************
+  // number of points removed from convex hull (neede later)
+  int removed = 0;
+  
+  // only continue if more than two points remaining
+  if ((int)collconvexhull.size() < 3)
+  {
+    // no clip polygon if less than 3 points
+    vector<Vertex> empty;
+    respoly = empty;
+  }
+  else if ((int)collconvexhull.size()==3)
+  {
+    // 3 points already ARE the convex hull
+    respoly = collconvexhull;
+  }
+  else
+  {
+    // do transformation to auxiliary plane
+    double newzero[3] = {collconvexhull[0].Coord()[0],collconvexhull[0].Coord()[1],collconvexhull[0].Coord()[2]};
+    double newxaxis[3] = {collconvexhull[1].Coord()[0]-collconvexhull[0].Coord()[0],
+                          collconvexhull[1].Coord()[1]-collconvexhull[0].Coord()[1],
+                          collconvexhull[1].Coord()[2]-collconvexhull[0].Coord()[2]};
+    double newyaxis[3] = {Auxn()[1]*newxaxis[2]-Auxn()[2]*newxaxis[1],
+                          Auxn()[2]*newxaxis[0]-Auxn()[0]*newxaxis[2],
+                          Auxn()[0]*newxaxis[1]-Auxn()[1]*newxaxis[0]};
+    double lnewxaxis = sqrt(newxaxis[0]*newxaxis[0]+newxaxis[1]*newxaxis[1]+newxaxis[2]*newxaxis[2]);
+    double lnewyaxis = sqrt(newyaxis[0]*newyaxis[0]+newyaxis[1]*newyaxis[1]+newyaxis[2]*newyaxis[2]);
+    
+    // normalize
+    for (int k=0;k<3;++k)
+    {
+      newxaxis[k] /= lnewxaxis;
+      newyaxis[k] /= lnewyaxis;
+    }
+    
+    // trafo matrix
+    LINALG::Matrix<3,3> trafo;
+    for (int k=0;k<3;++k)
+    {
+      trafo(0,k) = newxaxis[k];
+      trafo(1,k) = newyaxis[k];
+      trafo(2,k) = Auxn()[k]; 
+    }
+    
+    // temporary storage for transformed points
+    int np = (int)collconvexhull.size();
+    Epetra_SerialDenseMatrix transformed(2,np);
+        
+    // transform each convex hull point
+    for (int i=0;i<np;++i)
+    {
+      double newpoint[3] = {0.0, 0.0, 0.0};
+      
+      for (int j=0;j<3;++j)
+        for (int k=0;k<3;++k) newpoint[j] += trafo(j,k) * (collconvexhull[i].Coord()[k] - newzero[k]);
+ 
+      if (abs(newpoint[2]) > tol) dserror("ERROR: Transformation to aux. plane failed: z!=0 !");
+      transformed(0,i) = newpoint[0];
+      transformed(1,i) = newpoint[1];
+    }
+ 
+    //**********************************************************************
+    // STEP8: Sort convex hull points to obtain final clip polygon
+    // - this yields the final clip polygon
+    // - sanity of the generated output is checked
+    //**********************************************************************
+    
+    // (1) Find point with smallest x-value
+    // (if more than 1 point with identical x-value exists, choose the one with the smallest y-value)
+    
+    // initialize starting point
+    int startindex = 0;
+    double startpoint[2] = {transformed(0,0), transformed(1,0)};
+    
+    for (int i=1;i<np;++i)
+    {
+      if (transformed(0,i) < startpoint[0])
+      {
+        startpoint[0] = transformed(0,i);
+        startpoint[1] = transformed(1,i);
+        startindex = i;
+      }
+      else if (transformed(0,i) == startpoint[0])
+      {
+        if (transformed(1,i) < startpoint[1])
+        {
+          startpoint[1] = transformed(1,i);
+          startindex = i;
+        }
+      }
+      else
+      {
+        // do nothing: starting point did not change
+      }
+    }
+    
+    if (out) cout << "Start of convex hull: Index " << startindex << "\t" << startpoint[0] << "\t" << startpoint[1] << endl;
+     
+    // (2) Sort remaining points ascending w.r.t their angle with the y-axis
+    // (if more than 1 point with identical angle exists, sort ascending w.r.t. their y-value)
+    vector<double> cotangle(0);
+    vector<double> yvalues(0);
+    vector<int> sorted(0);
+    
+    for (int i=0;i<np;++i)
+    {
+      // do nothing for starting point
+      if (i==startindex) continue;
+      
+      // compute angle and store
+      double xdiff = transformed(0,i) - startpoint[0];
+      double ydiff = transformed(1,i) - startpoint[1];
+      
+      if (xdiff < 0) dserror("ERROR: Found point with x < x_start for convex hull!");
+      if (xdiff < tol) xdiff=tol;
+      
+      cotangle.push_back(ydiff/xdiff);
+      sorted.push_back(i);
+    }
+    
+    if (out)
+    {
+      cout << "Unsorted convex hull:\n";
+      cout << "Index " << startindex << "\t" << startpoint[0] << "\t" << startpoint[1] << endl;
+      for (int i=0;i<np-1;++i)
+        cout << "Index " << sorted[i] << "\t" << transformed(0,sorted[i]) << "\t" << transformed(1,sorted[i]) << "\t" << cotangle[sorted[i]] << endl;
+    }
+    
+    // check if sizes are correct
+    if ((int)cotangle.size() != np-1) dserror("ERROR: Size went wrong for cot angle!");   
+    
+    // now sort descending w.r.t cotangle = ascending w.r.t angle
+    Sort(&cotangle[0],np-1,&sorted[0]);
+    std::reverse(cotangle.begin(), cotangle.end());
+    std::reverse(sorted.begin(), sorted.end());
+    
+    // get associated y-values
+    for (int i=0;i<np-1;++i)
+      yvalues.push_back(transformed(1,sorted[i]));
+    
+    // sort list again where two angles are identical
+    for (int i=0;i<np-2;++i)
+      if (cotangle[i]==cotangle[i+1])
+        if (yvalues[i]>yvalues[i+1])
+        {
+          Swap(cotangle[i],cotangle[i+1]);
+          Swap(yvalues[i],yvalues[i+1]);
+          Swap(sorted[i],sorted[i+1]);
+        }
+    
+    // check whether 3 points with identical angle exist (without starting point)
+    int count = 0;
+    
+    for (int i=0;i<np-1;++i)
+    {
+      for (int j=0;j<np-1;++j)
+      {
+        // check if cotangle is identical
+        if (cotangle[j]==cotangle[i]) count += 1;
+      }
+      
+      // stop if 3 identical values found
+      if (count >= 3) dserror("ERROR: 3 points on one line in convex hull!");
+      else            count = 0;
+    }
+    
+    if (out)
+    {
+      cout << "Sorted convex hull:\n";
+      cout << "Index " << startindex << "\t" << startpoint[0] << "\t" << startpoint[1] << endl;
+      for (int i=0;i<np-1;++i)
+        cout << "Index " << sorted[i] << "\t" << transformed(0,sorted[i]) << "\t" << transformed(1,sorted[i]) << "\t" << cotangle[sorted[i]] << endl;
+    }
+    
+    // (3) Go through sorted list of points
+    // (keep adding points as long as the last 3 points rotate clockwise)
+    // (if 3 points rotate counter-clockwise, do NOT add current point and continue)
+    
+    // always push pack starting point
+    Vertex* current = &collconvexhull[startindex];
+    respoly.push_back(Vertex(current->Coord(),current->VType(),current->Nodeids(),NULL,NULL,false,false,NULL,-1.0));
+    
+    // boolean indicating how many points are removed
+    removed = 0;
+    
+    // go through sorted list and check for clockwise rotation
+    for (int i=0;i<np-1;++i)
+    {
+      double edge1[2] = {0.0, 0.0};
+      double edge2[2] = {0.0, 0.0};
+      
+      // first triple
+      if (i==0)
+      {
+        edge1[0] = transformed(0,sorted[0]) - startpoint[0];
+        edge1[1] = transformed(1,sorted[0]) - startpoint[1];
+        edge2[0] = transformed(0,sorted[1]) - transformed(0,sorted[0]);
+        edge2[1] = transformed(1,sorted[1]) - transformed(1,sorted[0]);
+      }
+      
+      // standard case
+      else if (i<np-2)
+      {
+        edge1[0] = transformed(0,sorted[i]) - transformed(0,sorted[i-1]);
+        edge1[1] = transformed(1,sorted[i]) - transformed(1,sorted[i-1]);
+        edge2[0] = transformed(0,sorted[i+1]) - transformed(0,sorted[i]);
+        edge2[1] = transformed(1,sorted[i+1]) - transformed(1,sorted[i]);
+      }
+      
+      // last triple
+      else /* if i = np-1 */
+      {
+        edge1[0] = transformed(0,sorted[i]) - transformed(0,sorted[i-1]);
+        edge1[1] = transformed(1,sorted[i]) - transformed(1,sorted[i-1]);
+        edge2[0] = startpoint[0] - transformed(0,sorted[i]);
+        edge2[1] = startpoint[1] - transformed(1,sorted[i]);
+      }
+      
+      // check for clockwise rotation
+      double cw = edge1[0]*edge2[1]-edge1[1]*edge2[0];
+      
+      if (out) cout << "Check triple around point " << sorted[i] << endl;
+      if (out) cout << "cw: " << cw << endl;
+      
+      // add point to convex hull if clockwise triple
+      // increas counter "removed" if counter-clockwise triple
+      if (cw <= 0)
+      {
+        Vertex* current = &collconvexhull[sorted[i]];
+        respoly.push_back(Vertex(current->Coord(),current->VType(),current->Nodeids(),NULL,NULL,false,false,NULL,-1.0));
+      }
+      else
+        removed++;
+    }
+    
+    // (4) Keep in mind that our collconvexhull should already BE the convex hull
+    // (thus only sorting should be necessary, but no point should have to be removed in (3))
+    if (removed>0)
+      cout << "***WARNING*** In total, " << removed << " points removed from convex hull!" << endl;
+  }
+  
+  // **********************************************************************
+  // STEP9: Result visualization with GMSH
+  // - plot the two input polygons and their vertex numbering
+  // - plot the result polygon and its vertex numbering
+  // **********************************************************************
+  if (out)
+  {
+    std::ostringstream filename;
+    static int gmshcount=0;
+    filename << "o/gmsh_output/" << "clipping_";
+    if (gmshcount<10)
+      filename << 0 << 0 << 0 << 0;
+    else if (gmshcount<100)
+      filename << 0 << 0 << 0;
+    else if (gmshcount<1000)
+      filename << 0 << 0;
+    else if (gmshcount<10000)
+      dserror("Gmsh output implemented for a maximum of 9.999 clip polygons");
+    filename << gmshcount << ".pos";
+    gmshcount++;
+  
+    // do output to file in c-style
+    FILE* fp = NULL;
+    fp = fopen(filename.str().c_str(), "w");
+    std::stringstream gmshfilecontent;
+    gmshfilecontent << "View \" Clipping \" {" << endl;
+  
+    for (int i=0;i<(int)poly1.size();++i)
+    {
+      if (i!=(int)poly1.size()-1)
+      {
+        gmshfilecontent << "SL(" << scientific << poly1[i].Coord()[0] << "," << poly1[i].Coord()[1] << ","
+                                 << poly1[i].Coord()[2] << "," << poly1[i+1].Coord()[0] << "," << poly1[i+1].Coord()[1] << ","
+                                 << poly1[i+1].Coord()[2] << ")";
+        gmshfilecontent << "{" << scientific << 1.0 << "," << 1.0 << "};" << endl;
+      }
+      else
+      {
+        gmshfilecontent << "SL(" << scientific << poly1[i].Coord()[0] << "," << poly1[i].Coord()[1] << ","
+                                 << poly1[i].Coord()[2] << "," << poly1[0].Coord()[0] << "," << poly1[0].Coord()[1] << ","
+                                 << poly1[0].Coord()[2] << ")";
+        gmshfilecontent << "{" << scientific << 1.0 << "," << 1.0 << "};" << endl;
+  
+      }
+      gmshfilecontent << "T3(" << scientific << poly1[i].Coord()[0] << "," << poly1[i].Coord()[1] << "," << poly1[i].Coord()[2] << "," << 17 << ")";
+      gmshfilecontent << "{" << "S" << i << "};" << endl;
+    }
+  
+    for (int i=0;i<(int)poly2.size();++i)
+    {
+      if (i!=(int)poly2.size()-1)
+      {
+        gmshfilecontent << "SL(" << scientific << poly2[i].Coord()[0] << "," << poly2[i].Coord()[1] << ","
+                                 << poly2[i].Coord()[2] << "," << poly2[i+1].Coord()[0] << "," << poly2[i+1].Coord()[1] << ","
+                                 << poly2[i+1].Coord()[2] << ")";
+        gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
+      }
+      else
+      {
+        gmshfilecontent << "SL(" << scientific << poly2[i].Coord()[0] << "," << poly2[i].Coord()[1] << ","
+                                 << poly2[i].Coord()[2] << "," << poly2[0].Coord()[0] << "," << poly2[0].Coord()[1] << ","
+                                 << poly2[0].Coord()[2] << ")";
+        gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
+  
+      }
+      gmshfilecontent << "T3(" << scientific << poly2[i].Coord()[0] << "," << poly2[i].Coord()[1] << "," << poly2[i].Coord()[2] << "," << 17 << ")";
+      gmshfilecontent << "{" << "M" << i << "};" << endl;
+    }
+    
+    for (int i=0;i<(int)respoly.size();++i)
+    {
+      if (i!=(int)respoly.size()-1)
+      {
+        gmshfilecontent << "SL(" << scientific << respoly[i].Coord()[0] << "," << respoly[i].Coord()[1] << ","
+                                 << respoly[i].Coord()[2] << "," << respoly[i+1].Coord()[0] << "," << respoly[i+1].Coord()[1] << ","
+                                 << respoly[i+1].Coord()[2] << ")";
+        gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
+      }
+      else
+      {
+        gmshfilecontent << "SL(" << scientific << respoly[i].Coord()[0] << "," << respoly[i].Coord()[1] << ","
+                                 << respoly[i].Coord()[2] << "," << respoly[0].Coord()[0] << "," << respoly[0].Coord()[1] << ","
+                                 << respoly[0].Coord()[2] << ")";
+        gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
+  
+      }
+      gmshfilecontent << "T3(" << scientific << respoly[i].Coord()[0] << "," << respoly[i].Coord()[1] << "," << respoly[i].Coord()[2] << "," << 27 << ")";
+      gmshfilecontent << "{" << "R" << i << "};" << endl;
+    }
+    
+    gmshfilecontent << "};" << endl;
+  
+    // move everything to gmsh post-processing file and close it
+    fprintf(fp,gmshfilecontent.str().c_str());
+    fclose(fp);
+  }
+
+  return;  
 }
 
 /*----------------------------------------------------------------------*
@@ -2595,7 +3675,7 @@ bool CONTACT::Coupling3d::IntegrateCells()
     }
 
     // integrate cell only if not neglectable
-    if (intcellarea<CONTACTINTLIM*selearea) continue;
+    if (intcellarea < CONTACTINTLIM*selearea) continue;
 
     // do the cell integration (integrate and linearize both M and gap)
     // *******************************************************************

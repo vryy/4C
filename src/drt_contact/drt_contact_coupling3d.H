@@ -337,6 +337,38 @@ public:
                                vector<Vertex>& poly2list,
                                vector<Vertex>& respoly,
                                double& tol);
+  
+  /*!
+  \brief Clipping of slave and master element (3D) (NEW VERSION based on convex hull)
+
+  Note that PolygonClipping3D can EITHER be done in physical space (this
+  is the case when an auxiliary plane is used for 3D coupling) or in the
+  slave element parameter space (this is the case when 3D coupling is
+  performed on the slave surface without any auxiliary plane).
+
+  This method applies a polygon clipping algorithm to find the
+  polygon defined by the projection of the slave and master element
+  in the auxiliary plane (1st case) or defined by the slave element
+  itself and the projection of the master element into the slave
+  parameter space (2nd case). Of course, in the 2nd case the clipping
+  plane has the normal (0,0,1). As input variables the clipping algorithm
+  requires two sets of vertices, which define sele_ / mele_ respectively.
+  The clipping algorithm is based on finding the convex hull of three
+  sets of vertices: sele_ vertices, mele_ vertices, line intersections,
+  using an algorithm quite similar to the well-known "Graham Scan".
+  This makes the algorithm FAR MORE ROBUST than the old approach above.
+  Returns a vector of vertices defining the clipped polygon.
+
+  \param poly1list (in): vector of vertex objects for input polygon 1 (slave)
+  \param poly2list (in): vector of vertex objects for input polygon 2 (master)
+  \param respoly (out): vector of vertex objects for result polygon
+  \param tol (in): clipping tolerance for close vertices detection
+
+  */
+  virtual void PolygonClippingConvexHull(vector<Vertex>& poly1list,
+                                         vector<Vertex>& poly2list,
+                                         vector<Vertex>& respoly,
+                                         double& tol);
 
   /*!
   \brief Check / set projection status of slave nodes (3D)
@@ -453,9 +485,33 @@ public:
                               vector<vector<double> >& testjs,
                               vector<vector<double> >& testji,
                               bool printderiv=false);
+  
+  /*!
+  \brief Sort vector in ascending order
+  
+  This routine is taken from Trilinos MOERTEL package.
+  
+  \param dlist (in): vector to be sorted (unsorted on input, sorted on output)
+  \param N (in):     length of vector to be sorted
+  \param list2 (in): another vector which is sorted accordingly
+  
+  */  
+  void Sort(double* dlist, int N, int* list2);
 
+  /*!
+  \brief Template to swap 2 <kind> instances
+  
+  */
+  template<typename kind>
+  void Swap(kind& a, kind& b)
+  {
+    kind tmp = a;
+    a = b;
+    b = tmp;
+    return;
+  }
+  
   //@}
-
 
 protected:
 
