@@ -57,6 +57,8 @@ STR::GenInvAnalysis::GenInvAnalysis(Teuchos::RCP<DRT::Discretization> dis,
     output_(output),
     sti_(Teuchos::null)
 {
+  int myrank = dis->Comm().MyPID();
+  
   reset_out_count_=0;
 
   // input parameters structural dynamics
@@ -68,27 +70,50 @@ STR::GenInvAnalysis::GenInvAnalysis(Teuchos::RCP<DRT::Discretization> dis,
   
   /* this is how a monitor file should look like:
   
-     steps 10 nnodes 5 nodes 11 19 27 35 42 dirs 2 columns 11
-     # mandatory comment line (ignored): time node 11 x y 19 x y 27 x y 35 x y 42 x y
-     2.000000e-02   -9.914936e-02    7.907108e-02   -2.421293e-01    3.475674e-01   -2.018457e-01    6.164171e-01   2.622612e-02    5.351817e-01  2.623198e-03    6.524309e-02
-     4.000000e-02   -2.060081e-01    1.561979e-01   -4.495438e-01    6.425663e-01   -3.561049e-01    1.099916e+00   7.625965e-02    9.675498e-01  4.770331e-02    1.287581e-01
-     6.000000e-02   -3.063373e-01    2.286715e-01   -6.147396e-01    8.904266e-01   -4.628068e-01    1.481550e+00   1.405767e-01    1.313955e+00  1.144058e-01    1.871826e-01
-     8.000000e-02   -3.995311e-01    2.965706e-01   -7.500371e-01    1.103765e+00   -5.399646e-01    1.795528e+00   2.080302e-01    1.600827e+00  1.902863e-01    2.404236e-01
-     1.000000e-01   -4.871174e-01    3.603335e-01   -8.656673e-01    1.291507e+00   -6.003143e-01    2.063556e+00   2.732486e-01    1.846735e+00  2.684362e-01    2.890503e-01
-     1.200000e-01   -5.705636e-01    4.204134e-01   -9.684391e-01    1.459720e+00   -6.514304e-01    2.298985e+00   3.338117e-01    2.063424e+00  3.449541e-01    3.336880e-01
-     1.400000e-01   -6.508979e-01    4.772118e-01   -1.062618e+00    1.612613e+00   -6.975891e-01    2.510286e+00   3.888783e-01    2.258437e+00  4.178564e-01    3.749320e-01
-     1.600000e-01   -7.287384e-01    5.310691e-01   -1.150807e+00    1.753191e+00   -7.411234e-01    2.703069e+00   4.384501e-01    2.436805e+00  4.863525e-01    4.133178e-01
-     1.800000e-01   -8.044079e-01    5.822715e-01   -1.234572e+00    1.883657e+00   -7.832539e-01    2.881204e+00   4.829452e-01    2.602019e+00  5.503314e-01    4.493058e-01
-     2.000000e-01   -8.780469e-01    6.310615e-01   -1.314853e+00    2.005671e+00   -8.245805e-01    3.047458e+00   5.229514e-01    2.756584e+00  6.100265e-01    4.832787e-01
+steps 25 nnodes 5 
+11 2 0 1
+19 2 0 1
+27 2 0 1 
+35 2 0 1
+42 2 0 1
+# any number of comment lines, but only at this position
+# x and y disps at 5 nodes
+# time node 11 x y 19 x y 27 x y 35 x y 42 x y
+#
+2.000000e-02   -9.914936e-02    7.907108e-02   -2.421293e-01    3.475674e-01   -2.018457e-01    6.164171e-01   2.622612e-02    5.351817e-01  2.623198e-03    6.524309e-02
+4.000000e-02   -2.060081e-01    1.561979e-01   -4.495438e-01    6.425663e-01   -3.561049e-01    1.099916e+00   7.625965e-02    9.675498e-01  4.770331e-02    1.287581e-01
+6.000000e-02   -3.063373e-01    2.286715e-01   -6.147396e-01    8.904266e-01   -4.628068e-01    1.481550e+00   1.405767e-01    1.313955e+00  1.144058e-01    1.871826e-01
+8.000000e-02   -3.995311e-01    2.965706e-01   -7.500371e-01    1.103765e+00   -5.399646e-01    1.795528e+00   2.080302e-01    1.600827e+00  1.902863e-01    2.404236e-01
+1.000000e-01   -4.871174e-01    3.603335e-01   -8.656673e-01    1.291507e+00   -6.003143e-01    2.063556e+00   2.732486e-01    1.846735e+00  2.684362e-01    2.890503e-01
+1.200000e-01   -5.705636e-01    4.204134e-01   -9.684391e-01    1.459720e+00   -6.514304e-01    2.298985e+00   3.338117e-01    2.063424e+00  3.449541e-01    3.336880e-01
+1.400000e-01   -6.508979e-01    4.772118e-01   -1.062618e+00    1.612613e+00   -6.975891e-01    2.510286e+00   3.888783e-01    2.258437e+00  4.178564e-01    3.749320e-01
+1.600000e-01   -7.287384e-01    5.310691e-01   -1.150807e+00    1.753191e+00   -7.411234e-01    2.703069e+00   4.384501e-01    2.436805e+00  4.863525e-01    4.133178e-01
+1.800000e-01   -8.044079e-01    5.822715e-01   -1.234572e+00    1.883657e+00   -7.832539e-01    2.881204e+00   4.829452e-01    2.602019e+00  5.503314e-01    4.493058e-01
+2.000000e-01   -8.780469e-01    6.310615e-01   -1.314853e+00    2.005671e+00   -8.245805e-01    3.047458e+00   5.229514e-01    2.756584e+00  6.100265e-01    4.832787e-01
+2.200000e-01   -9.496984e-01    6.776474e-01   -1.392223e+00    2.120513e+00   -8.653673e-01    3.203878e+00   5.590896e-01    2.902354e+00  6.658185e-01    5.155483e-01
+2.400000e-01   -1.019365e+00    7.222113e-01   -1.467040e+00    2.229192e+00   -9.057055e-01    3.352017e+00   5.919446e-01    3.040735e+00  7.181279e-01    5.463664e-01
+2.600000e-01   -1.087042e+00    7.649147e-01   -1.539546e+00    2.332515e+00   -9.456044e-01    3.493080e+00   6.220354e-01    3.172817e+00  7.673616e-01    5.759360e-01
+2.800000e-01   -1.152735e+00    8.059027e-01   -1.609916e+00    2.431140e+00   -9.850398e-01    3.628021e+00   6.498057e-01    3.299461e+00  8.138890e-01    6.044213e-01
+3.000000e-01   -1.216466e+00    8.453065e-01   -1.678289e+00    2.525611e+00   -1.023980e+00    3.757606e+00   6.756268e-01    3.421355e+00  8.580353e-01    6.319557e-01
+3.200000e-01   -1.278278e+00    8.832457e-01   -1.744784e+00    2.616378e+00   -1.062399e+00    3.882462e+00   6.998053e-01    3.539062e+00  9.000811e-01    6.586487e-01
+3.400000e-01   -1.338225e+00    9.198289e-01   -1.809512e+00    2.703823e+00   -1.100276e+00    4.003104e+00   7.225922e-01    3.653044e+00  9.402670e-01    6.845912e-01
+3.600000e-01   -1.396378e+00    9.551554e-01   -1.872574e+00    2.788270e+00   -1.137603e+00    4.119965e+00   7.441921e-01    3.763688e+00  9.787981e-01    7.098591e-01
+3.800000e-01   -1.452811e+00    9.893160e-01   -1.934068e+00    2.869995e+00   -1.174379e+00    4.233408e+00   7.647719e-01    3.871317e+00  1.015850e+00    7.345163e-01
+4.000000e-01   -1.507606e+00    1.022393e+00   -1.994085e+00    2.949237e+00   -1.210611e+00    4.343745e+00   7.844680e-01    3.976208e+00  1.051572e+00    7.586177e-01
+4.200000e-01   -1.560847e+00    1.054463e+00   -2.052713e+00    3.026205e+00   -1.246311e+00    4.451242e+00   8.033921e-01    4.078601e+00  1.086093e+00    7.822100e-01
+4.400000e-01   -1.612617e+00    1.085593e+00   -2.110034e+00    3.101081e+00   -1.281495e+00    4.556132e+00   8.216362e-01    4.178700e+00  1.119525e+00    8.053342e-01
+4.600000e-01   -1.662996e+00    1.115847e+00   -2.166128e+00    3.174023e+00   -1.316181e+00    4.658615e+00   8.392767e-01    4.276685e+00  1.151964e+00    8.280258e-01
+4.800000e-01   -1.712064e+00    1.145282e+00   -2.221065e+00    3.245174e+00   -1.350390e+00    4.758870e+00   8.563772e-01    4.372714e+00  1.183494e+00    8.503160e-01
+5.000000e-01   -1.759895e+00    1.173949e+00   -2.274916e+00    3.314659e+00   -1.384141e+00    4.857055e+00   8.729911e-01    4.466927e+00  1.214188e+00    8.722325e-01
+
 
   */
   
   // open monitor file and read it
-  int checksum = 0;
-  vector<int> nodes;
   vector<double> timesteps;
+  ndofs_ = 0;
   {
-    char* foundit;
+    char* foundit = NULL;
     string filename = iap.get<string>("MONITORFILE");
     if (filename=="none.monitor") dserror("No monitor file provided");
     FILE* file = fopen(filename.c_str(),"rb");
@@ -103,38 +128,51 @@ STR::GenInvAnalysis::GenInvAnalysis(Teuchos::RCP<DRT::Discretization> dis,
     nnodes_ = strtol(foundit,&foundit,10);
     // read nodes
     nodes_.resize(nnodes_);
-    foundit = strstr(foundit,"nodes"); foundit += strlen("nodes");
+    dofs_.resize(nnodes_);
     for (int i=0; i<nnodes_; ++i)
+    {
+      fgets(buffer,150000,file);
+      foundit = buffer;
       nodes_[i] = strtol(foundit,&foundit,10);
-    // read number of directions
-    foundit = strstr(buffer,"dirs"); foundit += strlen("dirs");
-    ndirs_ = strtol(foundit,&foundit,10);
-    // read checksum
-    foundit = strstr(buffer,"columns"); foundit += strlen("columns");
-    checksum = strtol(foundit,&foundit,10);
-    if (checksum != nnodes_*ndirs_+1) dserror("number of columns in head of monitor file does not match number of nodes");
+      int ndofs = strtol(foundit,&foundit,10);
+      ndofs_ += ndofs;
+      dofs_[i].resize(ndofs,-1);
+      if (!myrank) printf("Monitored node %d ndofs %d dofs ",nodes_[i],(int)dofs_[i].size());
+      for (int j=0; j<ndofs; ++j)
+      {
+        dofs_[i][j] = strtol(foundit,&foundit,10);
+        if (!myrank) printf("%d ",dofs_[i][j]);
+      }
+      if (!myrank) printf("\n");
+    }
 
-    // measured points
-    nmp_    = nnodes_*ndirs_*nsteps_;
+    // total number of measured dofs
+    nmp_    = ndofs_*nsteps_;
     mcurve_ = Epetra_SerialDenseVector(nmp_);
+
+    if (!myrank) printf("nsteps %d ndofs %d\n",nsteps_,ndofs_);
+
     // time step from input file (do I need this?)
     tstep_  = sdyn.get<double>("TIMESTEP");
     
-    // read comment line
+    // read comment lines
+    foundit = buffer;
     fgets(buffer,150000,file);
+    while(strstr(buffer,"#")) 
+      fgets(buffer,150000,file);
     
     // read in the values for each node in dirs directions
     int count=0;
     for (int i=0; i<nsteps_; ++i)
     {
-      fgets(buffer,150000,file);
-      foundit = buffer;
       // read the time step
       timesteps[i] = strtod(foundit,&foundit);
-      for (int j=0; j<nnodes_*ndirs_; ++j)
+      for (int j=0; j<ndofs_; ++j)
         mcurve_[count++] = strtod(foundit,&foundit);
+      fgets(buffer,150000,file);
+      foundit = buffer;
     }
-    if (count != nsteps_*nnodes_*ndirs_) dserror("Number of measured disps wrong on input");
+    if (count != nmp_) dserror("Number of measured disps wrong on input");
   }
   
   // error: diference of the measured to the calculated curve
@@ -397,7 +435,7 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(bool outputtofile)
   else dserror("Unknown type of predictor");
 
   Epetra_SerialDenseVector cvector;
-  if (!myrank) cvector.Size(nsteps_*nnodes_*ndirs_);
+  if (!myrank) cvector.Size(nmp_);
 
   // load controled Newton only
   for (int i=step; i<nstep; ++i)
@@ -410,8 +448,8 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(bool outputtofile)
 
     Epetra_SerialDenseVector cvector_arg = GetCalculatedCurve(*(tintegrator->Disp()));
     if (!myrank)
-      for (int j=0; j<nnodes_*ndirs_; ++j)
-        cvector[i*nnodes_*ndirs_+j] = cvector_arg[j];
+      for (int j=0; j<ndofs_; ++j)
+        cvector[i*ndofs_+j] = cvector_arg[j];
 
     double time = genalphaparams.get<double>("total time",0.0);
     if (time>=maxtime) break;
@@ -427,23 +465,34 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::GetCalculatedCurve(Epetra_Vector& 
   int myrank = discret_->Comm().MyPID();
   
   // values observed at current time step
-  Epetra_SerialDenseVector lcvector_arg(nnodes_*ndirs_);
-  Epetra_SerialDenseVector gcvector_arg(nnodes_*ndirs_);
+  Epetra_SerialDenseVector lcvector_arg(ndofs_);
+  Epetra_SerialDenseVector gcvector_arg(ndofs_);
+  int count=0;
   for (int i=0; i<nnodes_; ++i)
   {
     int gnode = nodes_[i];
-    if (!discret_->NodeRowMap()->MyGID(gnode)) continue;
+    if (!discret_->NodeRowMap()->MyGID(gnode)) 
+    {
+      count += (int)dofs_[i].size();
+      continue;
+    }
     DRT::Node* node = discret_->gNode(gnode);
     if (!node) dserror("Cannot find node on this proc");
-    if (myrank != node->Owner()) continue;
-    for (int j=0; j<ndirs_; ++j)
+    if (myrank != node->Owner()) 
     {
-      int gdof = discret_->Dof(node,j);
-      if (!disp.Map().MyGID(gdof)) dserror("Cannot find dof on this proc");
-      lcvector_arg[i*ndirs_+j] = disp[disp.Map().LID(gdof)];
+      count += (int)dofs_[i].size();
+      continue;
     }
+    for (int j=0; j<(int)dofs_[i].size(); ++j)
+    {
+      int ldof = dofs_[i][j];
+      int gdof = discret_->Dof(node,ldof);
+      if (!disp.Map().MyGID(gdof)) dserror("Cannot find dof on this proc");
+      lcvector_arg[count+j] = disp[disp.Map().LID(gdof)];
+    }
+    count += (int)dofs_[i].size();
   }
-  discret_->Comm().SumAll(&lcvector_arg[0],&gcvector_arg[0],nnodes_*ndirs_);
+  discret_->Comm().SumAll(&lcvector_arg[0],&gcvector_arg[0],ndofs_);
   
   return gcvector_arg;
 }

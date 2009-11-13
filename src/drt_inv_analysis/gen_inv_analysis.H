@@ -105,11 +105,12 @@ private:
   int reset_out_count_;
 
   // Michael's inv_analysis stuff
-  int         nnodes_; // number of nodes observed
-  int         ndirs_;  // number of directions per node observed
-  int         nsteps_; // number of time steps observed
-  vector<int> nodes_;  // list of node gids observed
-  
+  int                  nnodes_;        // number of nodes observed
+  //int                  ndirs_;         // number of directions per node observed
+  int                  ndofs_;         // total number of dofs monitored
+  int                  nsteps_;        // number of time steps observed
+  vector<int>          nodes_;         // list of node gids observed
+  vector<vector<int> > dofs_;          // list of dofs on each node that are monitored
 
 public:
 
