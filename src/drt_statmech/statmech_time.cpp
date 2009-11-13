@@ -44,7 +44,9 @@ StatMechTime::StatMechTime(ParameterList& params,
                           DRT::Discretization& dis,
                           LINALG::Solver& solver,
                           IO::DiscretizationWriter& output) :
-StruGenAlpha(params,dis,solver,output)
+StruGenAlpha(params,dis,solver,output),
+isconverged_(0),
+unconvergedsteps_(0)
 {
   Teuchos::RCP<LINALG::SparseMatrix> stiff = SystemMatrix();
   statmechmanager_ = rcp(new StatMechManager(params,dis));
@@ -157,7 +159,7 @@ void StatMechTime::Integrate()
 
     
       double time = params_.get<double>("total time",0.0);
-      statmechmanager_->time_ = time;
+      statmechmanager_->time_ = time;    
         
       do
       {
@@ -797,8 +799,6 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
         currentshear = 0;
       p.set("CURRENTSHEAR",currentshear);
 
-      
-      
       // set vector values needed by elements
       discret_.ClearState();
 
@@ -808,10 +808,6 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
       discret_.SetState("residual displacement",disi_);
       discret_.SetState("displacement",dism_);
       discret_.SetState("velocity",velm_);
-      
-
-      
-      
 
       //discret_.SetState("velocity",velm_); // not used at the moment
       fint_->PutScalar(0.0);  // initialise internal force vector
@@ -821,8 +817,6 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
       discret_.Evaluate(p,stiff_,null,fint_,null,null);
 
       sumevaluation += ds_cputime() - t_evaluate;
-
-
 
       discret_.ClearState();
 

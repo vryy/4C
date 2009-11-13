@@ -78,6 +78,9 @@ protected:
 
   //! \brief Searches and saves in variable  crosslinkerneighbours_ neighbours for each row node
   void SearchNeighbours(const std::map<int,LINALG::Matrix<3,1> > currentpositions);
+  
+  //! \brief how often SearchNeighbours() has already been called
+  int nsearch_;
 
   //! \brief maximal simulation time
   double maxtime_;
@@ -100,8 +103,14 @@ protected:
   //! \brief maximal radius within which crosslinkers are established
   double rlink_;
 
-  //! \brief number of elements which are part of the discretization already before starting adding crosslinkers
+  //! \brief number of nodes which are part of the discretization already before starting adding crosslinkers
   int basisnodes_;
+  
+  //! \brief number of elements which are part of the discretization already before starting adding crosslinkers
+  int basiselements_;
+  
+  //! \brief number of elements which are part of the discretization in the beginning of this time step
+  int currentelements_;
 
   //! \brief number of file into which output is written (only important for single filament dynamics)
   int outputfilenumber_;

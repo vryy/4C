@@ -46,12 +46,15 @@ Maintainer: Christian Cyron
  *----------------------------------------------------------------------*/
 StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& discret):
   statmechparams_( DRT::Problem::Instance()->StatisticalMechanicsParams() ),
+  nsearch_(0),
   maxtime_(params.get<double>("max time",0.0)),
   starttimeoutput_(-1.0),
   endtoendref_(0.0),
   istart_(0),
   rlink_(params.get<double>("R_LINK",0.0)),
-  basisnodes_(0),
+  basisnodes_(discret.NumGlobalNodes()),
+  basiselements_(discret.NumGlobalElements()),
+  currentelements_(discret.NumGlobalElements()),
   outputfilenumber_(-1),
   discret_(discret)
 { 
@@ -153,9 +156,6 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
      * with any other processor; initialization with -1 indicates that so far no forcesensors have been set*/
     forcesensor_ = rcp( new Epetra_Vector(*(discret_.DofColMap())) );
     forcesensor_->PutScalar(-1);
-    
-    //basisnodes_ is the number of nodes existing in the discretization from the very beginning on (should not change)
-    basisnodes_ = discret_.NumGlobalNodes();
 
   
     /*since crosslinkers should be established only between different filaments the number of the filament
@@ -261,18 +261,9 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
       //initialize search tree
       octTree_->initializePointTree(rootBox,currentpositions,GEO::TreeType(GEO::OCTTREE));
       
-      /*we finish the initilization by once determining for each row map node on each processor
-       * neighbour nodes; as this search is preformed only once in the beginning, this algorithm
-       * is suitable for small network deformation only currently*/
-#ifdef MEASURETIME
-    const double t_search = ds_cputime();
-#endif // #ifdef MEASURETIME   
-    
-    SearchNeighbours(currentpositions);
+      //search neighbours for each row node on this processor among column nodes
+      SearchNeighbours(currentpositions);
       
-#ifdef MEASURETIME
-    cout << "\n***\nsearch time: " << ds_cputime() - t_search<< " seconds\n***\n";
-#endif // #ifdef MEASURETIME
     
   }//if(Teuchos::getIntegralValue<int>(statmechparams_,"DYN_CROSSLINKERS"))
 
@@ -982,6 +973,9 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& disro
     const Epetra_Map noderowmap = *discret_.NodeRowMap();
     const Epetra_Map nodecolmap = *discret_.NodeColMap(); 
     
+    /*search neighbours for each row node on this processor within column nodes*/
+    const double t_search = ds_cputime();
+ 
     /*in preparation for later decision whether a crosslink should be established between two nodes we first store the 
      * current positions of all column map nodes in the map currentpositions; additionally we store the roational displacments
      * analogously in a map currentrotations for later use in setting up reference geometry of crosslinkers; the maps
@@ -1017,12 +1011,20 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& disro
       currentpositions[node->LID()] = currpos;
       currentrotations[node->LID()] = currrot;
     }
-
+    
+    //new search for neighbour nodes after average time specified in input file
+    if(time_ - nsearch_*statmechparams_.get<double>("Delta_t_search",0.0) > statmechparams_.get<double>("Delta_t_search",0.0) )
+      SearchNeighbours(currentpositions);
+    
+    cout << "\n***\nsearch time: " << ds_cputime() - t_search<< " seconds\n***\n";
 
 
 #ifdef MEASURETIME
     const double t_admin = ds_cputime();
 #endif // #ifdef MEASURETIME 
+    
+    //number of elements in this time step before adding or deleting any elements
+    currentelements_ = discret_.NumGlobalElements();
 
     //setting the crosslinkers for neighbours in crosslinkerneighbours_ after probability check
     SetCrosslinkers(dt,noderowmap,nodecolmap,currentpositions,currentrotations);
@@ -1061,6 +1063,9 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& disro
  *----------------------------------------------------------------------*/
 void StatMechManager::SearchNeighbours(const std::map<int,LINALG::Matrix<3,1> > currentpositions)
 {   
+  //update the number of times the function SearchNeighbours has already been called
+  nsearch_++;
+  
   //maximal distance bridged by a crosslinker
   double rlink = statmechparams_.get<double>("R_LINK",0.0);
   
@@ -1126,8 +1131,16 @@ void StatMechManager::SearchNeighbours(const std::map<int,LINALG::Matrix<3,1> > 
  *----------------------------------------------------------------------*/
 void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,const std::map<int,LINALG::Matrix<3,1> >& currentpositions,const std::map<int,LINALG::Matrix<3,1> >& currentrotations)
 {  
+  //get current on-rate for crosslinkers
+  double kon = 0;
+  if( (currentelements_ - basiselements_) < statmechparams_.get<double>("N_crosslink",0.0) )
+    kon = statmechparams_.get<double>("K_ON_start",0.0);
+  else
+    kon = statmechparams_.get<double>("K_ON_end",0.0);
+  
+  
   //probability with which a crosslinker is established between neighbouring nodes
-  double plink = 1.0 - exp( -dt*statmechparams_.get<double>("K_ON",0.0)*statmechparams_.get<double>("C_CROSSLINKER",0.0) );
+  double plink = 1.0 - exp( -dt*kon*statmechparams_.get<double>("C_CROSSLINKER",0.0) );
 
   //creating a random generator object which creates uniformly distributed random numbers in [0;1]
   ranlib::UniformClosed<double> UniformGen;
@@ -1288,9 +1301,16 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
  *----------------------------------------------------------------------*/
 void StatMechManager::DelCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap)
 { 
+  //get current off-rate for crosslinkers
+  double koff = 0;
+  if( (currentelements_ - basiselements_) < statmechparams_.get<double>("N_crosslink",0.0) )
+    koff = statmechparams_.get<double>("K_OFF_start",0.0);
+  else
+    koff = statmechparams_.get<double>("K_OFF_end",0.0);
+  
   
   //probability with which a crosslink breaks up in the current time step 
-  double punlink = 1.0 - exp( -dt*statmechparams_.get<double>("K_OFF",0.0) );
+  double punlink = 1.0 - exp( -dt*koff );
   
   //creating a random generator object which creates uniformly distributed random numbers in [0;1]
   ranlib::UniformClosed<double> UniformGen;

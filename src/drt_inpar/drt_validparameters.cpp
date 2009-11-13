@@ -990,10 +990,18 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("ETA",0.0,"viscosity",&statmech);
   //Reading double parameter for thermal energy in background fluid (temperature * Boltzmann constant)
   DoubleParameter("KT",0.0,"thermal energy",&statmech);
-  //Reading double parameter for crosslinker off-rate
-  DoubleParameter("K_ON",0.0,"crosslinker on-rate",&statmech);
-  //Reading double parameter for crosslinker off-rate
-  DoubleParameter("K_OFF",0.0,"crosslinker off-rate",&statmech);
+  //Reading double parameter for crosslinker on-rate at the beginning
+  DoubleParameter("K_ON_start",0.0,"crosslinker on-rate at the end",&statmech);
+  //Reading double parameter for crosslinker on-rate at the end
+  DoubleParameter("K_ON_end",0.0,"crosslinker on-rate at the end",&statmech);
+  //Reading double parameter for crosslinker off-rate at the beginning
+  DoubleParameter("K_OFF_start",0.0,"crosslinker off-rate at the beginning",&statmech);
+  //Reading double parameter for crosslinker off-rate at the end
+  DoubleParameter("K_OFF_end",0.0,"crosslinker off-rate at the end",&statmech);
+  //upon reaching a number of N_crosslink crosslinkers the first time, statmechmanager switches from K_ON_start and K_OFF_start to K_ON_end and K_OFF_end
+  DoubleParameter("N_crosslink",0.0,"number of crosslinkers for switching on- and off-rates",&statmech);
+  //average time between searching new neighbours for setting crosslinkers
+  DoubleParameter("Delta_t_search",0.0,"average time between searching new neighbours for setting crosslinkers",&statmech);
   //Reading double parameter for maximal cross linker protein length
   DoubleParameter("R_LINK",0.0,"Maximal distance between two nodes connected by a crosslinker",&statmech);
   //Reading double parameter for concentration of crosslinking protein
