@@ -4,6 +4,7 @@ Input/orthopressure_shell8_eas_ans_sphere.dat           x        x        x     
 Input/orthopressure_solidh8_eas_sphere.dat              x        x        x        -        -        -
 Input/orthopressure_solidh8_sphere.dat                  x        x        x        -        -        -
 Input/orthopressure_solidw6_sphere.dat                  x        x        x        -        -        -
+Input/invaaa.dat                                        x        x        -        -        -        -
 Input/inversedesign.dat                                 x        x        -        -        -        -
 Input/inversedesign_wedge6.dat                          x        x        -        -        -        -
 Input/inversedesign_tet4.dat                            x        x        -        -        -        -
