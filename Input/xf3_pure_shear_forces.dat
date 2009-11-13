@@ -77,10 +77,6 @@ NONLINITER       Newton
 ITEMAX           10
 CONVCHECK        L_2_norm
 CONVTOL          1.0E-8
-STEADYCHECK      L_2_norm
-STEADYSTEP       -1
-STEADYTOL        1.0E-6
-UPOUT            1
 UPRES            1
 RESTARTEVRY      20
 NUMSTEP          1
