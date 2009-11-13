@@ -82,13 +82,13 @@ RESULTDT       0
 TIMEADAPT      0
 --------------------------------------------------INVERSE ANALYSIS
 INV_ANALYSIS    none
-MEASURED_CURVE0 26.940092186        //load
-MEASURED_CURVE1 0.002642
-MEASURED_CURVE2 3.494634
+//MEASURED_CURVE0 26.940092186        //load
+//MEASURED_CURVE1 0.002642
+//MEASURED_CURVE2 3.494634
 //MEASURED_CURVE0 1084.625603   //displacment
 //MEASURED_CURVE1 0.003123
 //MEASURED_CURVE2 2.281512
-INV_ANA_TOL    20
+INV_ANA_TOL    20.0
 -----------------------------------------------------STRUCT SOLVER
 SOLVER         UMFPACK    // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT       0            // output every so often, 0 no output
