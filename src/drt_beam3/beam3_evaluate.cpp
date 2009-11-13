@@ -1432,11 +1432,8 @@ void DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
 
 
 
-  double basisdamp   = (20e-2)*PI*3; //(20e-2)*PI for A = 1.9e-8, (20e-2)*PI*3 for A = 1.9e-6
-  double anisofactor = 10; //10 for A = 1.9e-8 and A = 1.9e-6
-
-
-  
+  double basisdamp   = (20e-2)*PI*20; // in Actin3D_XXX input files with(!) stochastic torsional moments:: (20e-2)*PI for A = 1.9e-8, (20e-2)*PI*3 for A = 1.9e-6; for input of Thomas Knyrim without(!) stochastic torsional moments: (20e-2)*PI*20
+  double anisofactor = 10; //10 for A = 1.9e-8 and A = 1.9e-6  
    
   
   //Get the applied integrationpoints for underintegration
@@ -1515,6 +1512,7 @@ inline void DRT::ELEMENTS::Beam3::MyDampingConstants(ParameterList& params,LINAL
   double artificial = 60*16*2; 
   gamma(2) = 4*PI*params.get<double>("ETA",0.0)*rsquare*artificial;
   
+
   //in case of an isotropic friction model the same damping coefficients are applied parallel to the polymer axis as perpendicular to it
   if(frictionmodel == INPAR::STATMECH::frictionmodel_isotropicconsistent || frictionmodel == INPAR::STATMECH::frictionmodel_isotropiclumped)
     gamma(0) = gamma(1);
@@ -1660,6 +1658,7 @@ inline void DRT::ELEMENTS::Beam3::MyRotationalDamping(ParameterList& params,  //
               (*stiffmatrix)(i*6+3+k,j*6+3+l) += gamma(2)*( TWTtHinv(k,l) / dt + TWTtSofomega(k,l) - SofTWTtomega(k,l) )*funct(i)*funct(j)*gausspoints.qwgt[gp]*jacobi_[gp]; 
       }     
   }
+  
 
   return;
 }//DRT::ELEMENTS::Beam3::MyRotationalDamping(.)
@@ -1949,7 +1948,7 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
   MyStochasticForces<nnode,ndim,dof,randompergauss>(params,vel,disp,stiffmatrix,force);
   
   //add stochastic moments and resulting stiffness
-  MyStochasticMoments<nnode,randompergauss>(params,vel,disp,stiffmatrix,force);
+  //MyStochasticMoments<nnode,randompergauss>(params,vel,disp,stiffmatrix,force);
 
 
 return;
