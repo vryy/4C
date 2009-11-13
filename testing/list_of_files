@@ -223,6 +223,8 @@ Input/xf3_flow_over_corner_fixpoint.dat                 x        x        x     
 Input/xf3_flow_over_corner_newton.dat                   x        -        x        -        -        -
 Input/xf3_flow_over_corner_plane_in_plane_full.dat      -        -        -        -        -        -
 Input/xf3_flow_over_corner_plane_in_plane.dat           -        -        -        -        -        -
+Input/xf3_multibody_hex8_tp_condense_no.dat             x        x        x        x        -        -
+Input/xf3_multibody_hex8_tp_condense_yes.dat            x        x        x        x        -        -
 Input/xf3_multibody_hex8.dat                            x        x        x        x        -        -
 Input/xf3_pure_shear_forces_bdf2.dat                    x        x        x        x        x        x
 Input/xf3_pure_shear_forces_ost.dat                     x        x        x        x        x        x
