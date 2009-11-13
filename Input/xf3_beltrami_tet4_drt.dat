@@ -1,7 +1,7 @@
 //
 // Maintainer: Axel Gerstenberger
 //
-// necessary defines: D_FLUID3 DEBUG CCADISCRET BINIO QHULL
+// necessary defines: D_FLUID3 CCADISCRET BINIO QHULL
 //
 ==================================================================
                         General Data File CCARAT
@@ -33,7 +33,6 @@ NUMTHERMDIS  0
 -----------------------------------------------------FLUID DYNAMIC
 DYNAMICTYP   Nlin_Time_Int
 TIMEINTEGR   BDF2
-UPOUT        1
 UPRES        1
 RESTARTEVRY  2
 MAXTIME      0.1
@@ -44,9 +43,6 @@ NONLINITER   Newton
 ITEMAX       10
 CONVCHECK    L_2_norm
 CONVTOL      1.0E-10
-STEADYCHECK  L_2_norm
-STEADYSTEP   5
-STEADYTOL    1.0E-8
 STARTINGALGO One_Step_Theta
 NUMSTASTEPS  0
 START_THETA  1.0

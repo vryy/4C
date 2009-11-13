@@ -29,7 +29,6 @@ FLUID_SOL         Yes
 -----------------------------------------------------FLUID DYNAMIC
 DYNAMICTYP   Nlin_Time_Int
 TIMEINTEGR   One_Step_Theta
-UPOUT        1
 UPRES        1
 RESTARTEVRY  5
 MAXTIME      1000.0
