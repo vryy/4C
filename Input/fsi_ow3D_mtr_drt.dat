@@ -243,11 +243,8 @@ TOLENCHECK                      1e-06
 UPPSS                           1
 UPRES                           1
 ---------------------------------------------------INVERSE ANALYSIS
-INV_ANALYSIS                    No
-INV_ANA_TOL                     1
-MEASURED_CURVE0                 0
-MEASURED_CURVE1                 0
-MEASURED_CURVE2                 0
+INV_ANALYSIS                    none
+INV_ANA_TOL                     1.0
 -----------------------------------------------------------------IO
 ALE_DISP                        No
 FILESTEPS                       1000

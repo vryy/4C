@@ -40,7 +40,7 @@ FILESTEPS                       1000
 INV_ANALYSIS    gen                   // lung gen none
 INV_INITREG     10.0                  // initial regularization value (>0.0)
 INV_ANA_TOL     0.0001                // tolerance of inv. analysis
-MONITORFILE     Input/invaaa.monitor  // file with monitored displacements
+MONITORFILE     Input/invaaa2.monitor  // file with monitored displacements
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP             Static                 // Gen_Alfa Static
 EIGEN                  0
