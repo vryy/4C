@@ -128,6 +128,9 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   // first time step
   INPAR::CONTACT::ContactType ctype =
     Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(contactmanager_->GetStrategy().Params(),"CONTACT");
+  
+  INPAR::CONTACT::SolvingStrategy strattype =
+      Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(contactmanager_->GetStrategy().Params(),"STRATEGY");
 
   if(params_.get<int>("step") == 0 && ctype != INPAR::CONTACT::contact_normal)
   {
@@ -406,9 +409,12 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   // here the relative movement of the contact bodies is evaluated
   // therefore the current configuration and the according mortar
   // matrices are needed
-  if(ctype != INPAR::CONTACT::contact_normal)
-    contactmanager_->GetStrategy().EvaluateRelMov(disi_);
-
+  // it is only evaluated (resetted) for penalty strategy  
+  if (strattype == INPAR::CONTACT::solution_penalty)
+  { 
+    if(ctype != INPAR::CONTACT::contact_normal)
+      contactmanager_->GetStrategy().EvaluateRelMov(disi_);
+  }
   contactmanager_->GetStrategy().Initialize();
   contactmanager_->GetStrategy().Evaluate(SystemMatrix(),fresm_);
 
@@ -491,6 +497,9 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   // first time step
   INPAR::CONTACT::ContactType ctype =
     Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(contactmanager_->GetStrategy().Params(),"CONTACT");
+  
+  INPAR::CONTACT::SolvingStrategy strattype =
+      Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(contactmanager_->GetStrategy().Params(),"STRATEGY");
 
   if(params_.get<int>("step") == 0 && ctype != INPAR::CONTACT::contact_normal)
   {
@@ -690,8 +699,12 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   // here the relative movement of the contact bodies is evaluated
   // therefore the current configuration and the according mortar
   // matrices are needed
-  if(ctype != INPAR::CONTACT::contact_normal)
-    contactmanager_->GetStrategy().EvaluateRelMov(disi_);
+  // it is only evaluated (resetted) for penalty strategy  
+  if (strattype == INPAR::CONTACT::solution_penalty)
+  { 
+    if(ctype != INPAR::CONTACT::contact_normal)
+      contactmanager_->GetStrategy().EvaluateRelMov(disi_);
+  }
 
   contactmanager_->GetStrategy().Initialize();
   contactmanager_->GetStrategy().Evaluate(SystemMatrix(),fresm_);

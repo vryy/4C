@@ -4761,6 +4761,7 @@ bool CONTACT::Integrator::AssembleD(const Epetra_Comm& comm,
           {
             double minusval = -val;
             snode->AddMValue(sdof,col,minusval);
+            snode->AddMNode(mnode->Id());
           }
           else
           {	
