@@ -37,6 +37,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/inpar_thermo.H"
 #include "../drt_inpar/inpar_elch.H"
 #include "../drt_inpar/inpar_invanalysis.H"
+#include "../drt_inpar/inpar_xfem.H"
 
 /*----------------------------------------------------------------------*/
 //! Print function to be called from C
@@ -2399,6 +2400,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("volumeRatioLimit",1.0e-2,"don't enrich nodes of elements, when less than this fraction of the element is on one side of the interface",&xfem_general);
   DoubleParameter("boundaryRatioLimit",1.0e-4,"don't enrich element, when less than this area fraction is within this element",&xfem_general);
 
+  setStringToIntegralParameter<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY","BoundaryTypeSigma","how to treat the interface",
+                               tuple<std::string>("BoundaryTypeSigma","BoundaryTypeTauPressure"),
+                               tuple<INPAR::XFEM::BoundaryIntegralType>(
+                                   INPAR::XFEM::BoundaryTypeSigma,
+                                   INPAR::XFEM::BoundaryTypeTauPressure),
+                               &xfem_general);
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fluidsolver = list->sublist("FLUID SOLVER",false,"");
   SetValidSolverParameters(fluidsolver);
