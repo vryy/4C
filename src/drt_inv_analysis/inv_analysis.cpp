@@ -35,6 +35,8 @@ Maintainer: Sophie Rausch
 #include "../drt_matelast/elast_isomooneyrivlin.H"
 #include "../drt_matelast/elast_isoneohooke.H"
 #include "../drt_matelast/elast_isoyeoh.H"
+#include "../drt_matelast/elast_isoquad.H"
+#include "../drt_matelast/elast_isocub.H"
 #include "../drt_matelast/elast_volpenalty.H"
 #include "../drt_matelast/elast_vologden.H"
 #include "../drt_matelast/elast_volsussmanbathe.H"
@@ -172,7 +174,7 @@ void STR::InvAnalysis::Integrate()
     discret_->Comm().Broadcast(&error_,1,0);
     discret_->Comm().Broadcast(&numb_run_,1,0);
 
-  } while (abs(error_o_-error_)>0.001 && error_>tol_ && numb_run_<max_itter);
+  }while(numb_run_<max_itter && error_<tol_) ;      // while (abs(error_o_-error_)>0.001 && error_>tol_ && numb_run_<max_itter);
 
   cout << "Just before printout " << endl;
   discret_->Comm().Barrier();
@@ -301,11 +303,10 @@ Epetra_SerialDenseVector STR::InvAnalysis::GetCalculatedCurve()
   if (problem_type_==0)
   {
     // current displacement vector
-    Teuchos::RCP<Epetra_Vector> dis = sti_->DisNew();
+    Teuchos::RCP<Epetra_Vector> disp = sti_->DisNew();
 
     vector<DRT::Condition*> invanacond;
     discret_->GetCondition("SurfInvAna",  invanacond);
-    if (!(int)invanacond.size()) dserror("Cannot find invana conditions");
 
     //nodes of the pulling direction
     const vector<int>* ia_nd_ps  = invanacond[0]->Nodes();
@@ -314,26 +315,52 @@ Epetra_SerialDenseVector STR::InvAnalysis::GetCalculatedCurve()
     const vector<int>* ia_nd_fs_p = invanacond[1]->Nodes();
     const vector<int>* ia_nd_fs_n = invanacond[2]->Nodes();
 
-    for (unsigned int i =0; i<(*ia_nd_ps).size(); i++)
+    for (vector<int>::const_iterator inode = ia_nd_ps->begin();
+                                     inode !=ia_nd_ps->end();
+                                   ++inode)
     {
-      if (dis->Map().MyGID(3*(*ia_nd_ps)[i]))
-        cvector_arg[0] +=(*dis)[dis->Map().LID(3*(*ia_nd_ps)[i])];
+      const DRT::Node* node = discret_->gNode(*inode);
+      if (node->Owner() == discret_->Comm().MyPID())
+      {
+        vector<int> lm = discret_->Dof(node);
+        const double disp_x = (*disp)[disp->Map().LID(lm[0])];
+        cvector_arg[0] += disp_x;
+      }
     }
+
     {
       double test;
       discret_->Comm().SumAll(&cvector_arg[0],&test,1);
       cvector_arg[0] = test/(*ia_nd_ps).size();
     }
 
-    for (unsigned int i =0; i<(*ia_nd_fs_p).size(); i++)
+    for (vector<int>::const_iterator inode = ia_nd_fs_p->begin();
+                                     inode !=ia_nd_fs_p->end();
+                                   ++inode)
     {
-
-      if (dis->Map().MyGID(3*(*ia_nd_fs_p)[i])+1)
+      const DRT::Node* node = discret_->gNode(*inode);
+      if (node->Owner() == discret_->Comm().MyPID())
       {
-        cvector_arg[1] +=(*dis)[dis->Map().LID(3*(*ia_nd_fs_p)[i]+1)];
-        cvector_arg[1] -=(*dis)[dis->Map().LID(3*(*ia_nd_fs_n)[i]+1)];
+        vector<int> lm = discret_->Dof(node);
+        const double disp_y = (*disp)[disp->Map().LID(lm[1])];
+        cvector_arg[1] += disp_y;
       }
     }
+
+
+    for (vector<int>::const_iterator inode = ia_nd_fs_n->begin();
+                                     inode !=ia_nd_fs_n->end();
+                                   ++inode)
+    {
+      const DRT::Node* node = discret_->gNode(*inode);
+      if (node->Owner() == discret_->Comm().MyPID())
+      {
+        vector<int> lm = discret_->Dof(node);
+        const double disp_y = (*disp)[disp->Map().LID(lm[1])];
+        cvector_arg[1] -= disp_y;
+      }
+    }
+
     {
       double test;
       discret_->Comm().SumAll(&cvector_arg[1],&test,1);
@@ -616,6 +643,7 @@ void STR::InvAnalysis::ReadInParameters()
         //p_[j+2] = actmat2->Parmode();
         p_[j] = actmat2->Youngs();
         p_[j+1] = (1./(1.-2.*actmat2->Nue()))-1.;
+        cout << "Get the parameter: " << p_[j+1] << " for the Simulation " << actmat2->Nue() << " was used!" << endl;
         break;
       }
       case INPAR::MAT::mes_coupblatzko:
@@ -627,7 +655,6 @@ void STR::InvAnalysis::ReadInParameters()
         p_.Resize(j+2);
         p_[j]   = (actmat2->Mue());
         p_[j+1] = (1./(1.-2.*actmat2->Nue()))-1.;
-        cout << "Get the parameter: " << p_[j+1] << " for the Simulation " << actmat2->Nue() << " was used!" << endl;
         //p_[j+1] = actmat2->F();
         break;
       }
@@ -649,6 +676,24 @@ void STR::InvAnalysis::ReadInParameters()
         p_[j]   = actmat2->C1();
         p_[j+1] = actmat2->C2();
         p_[j+2] = actmat2->C3();
+        break;
+      }
+      case INPAR::MAT::mes_isoquad:
+      {
+        filename_=filename_+"_isoquad";
+        const MAT::ELASTIC::IsoQuad* actmat2 = static_cast<const MAT::ELASTIC::IsoQuad*>(summat.get());
+        int j = p_.Length();
+        p_.Resize(j+1);
+        p_[j]   = actmat2->C();
+        break;
+      }
+      case INPAR::MAT::mes_isocub:
+      {
+        filename_=filename_+"_isocub";
+        const MAT::ELASTIC::IsoCub* actmat2 = static_cast<const MAT::ELASTIC::IsoCub*>(summat.get());
+        int j = p_.Length();
+        p_.Resize(j+1);
+        p_[j]   = actmat2->C();
         break;
       }
       case INPAR::MAT::mes_isoexpo:
@@ -816,6 +861,22 @@ void STR::InvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
         actmat2->SetC2(abs(p_cur(j+1)));
         actmat2->SetC3(abs(p_cur(j+2)));
         j = j+3;
+        break;
+      }
+      case INPAR::MAT::mes_isoquad:
+      {
+        MAT::ELASTIC::IsoQuad* actmat2 =
+          static_cast<const MAT::ELASTIC::IsoQuad*>(summat.get());
+        actmat2->SetC(abs(p_cur(j)));
+        j = j+1;
+        break;
+      }
+      case INPAR::MAT::mes_isocub:
+      {
+        MAT::ELASTIC::IsoCub* actmat2 =
+          static_cast<const MAT::ELASTIC::IsoCub*>(summat.get());
+        actmat2->SetC(abs(p_cur(j)));
+        j = j+1;
         break;
       }
       case INPAR::MAT::mes_isoexpo:
