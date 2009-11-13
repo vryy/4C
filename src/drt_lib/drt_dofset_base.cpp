@@ -140,7 +140,7 @@ bool DRT::DofSetBase::Initialized() const
  *----------------------------------------------------------------------*/
 int DRT::DofSetBase::MaxGIDinList() const
 {
-  int count = 0;
+  int count = -1;
   for (std::list<DofSetBase*>::const_iterator i=static_dofsets_.begin();
        i!=static_dofsets_.end();
        ++i)
