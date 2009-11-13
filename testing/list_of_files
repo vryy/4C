@@ -226,6 +226,9 @@ Input/xf3_flow_over_corner_plane_in_plane.dat           -        -        -     
 Input/xf3_multibody_hex8.dat                            x        x        x        x        -        -
 Input/xf3_pure_shear_forces_bdf2.dat                    x        x        x        x        x        x
 Input/xf3_pure_shear_forces_ost.dat                     x        x        x        x        x        x
+Input/xf3_pure_shear_forces_tp_ost_no_condense.dat      x        x        x        x        x        x
+Input/xf3_pure_shear_forces_tp_ost.dat                  x        x        x        x        x        x
+Input/xf3_pure_shear_forces_tp.dat                      x        x        x        x        -        -
 Input/xf3_pure_shear_forces.dat                         x        x        x        x        -        -
 Input/xfsi_fluid_pusher_BE.dat                          x        -        x        -        x        -
 Input/xfsi_fluid_pusher_bdf2.dat                        x        -        x        -        x        -
