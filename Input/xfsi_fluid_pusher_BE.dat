@@ -80,7 +80,6 @@ NONLINITER       Newton
 ITEMAX           10
 CONVCHECK        L_2_norm
 CONVTOL          1.0E-8
-UPOUT            1
 UPRES            1
 RESTARTEVRY      5
 NUMSTEP          30
