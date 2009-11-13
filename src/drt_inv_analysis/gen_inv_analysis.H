@@ -106,7 +106,6 @@ private:
 
   // Michael's inv_analysis stuff
   int                  nnodes_;        // number of nodes observed
-  //int                  ndirs_;         // number of directions per node observed
   int                  ndofs_;         // total number of dofs monitored
   int                  nsteps_;        // number of time steps observed
   vector<int>          nodes_;         // list of node gids observed
