@@ -73,7 +73,6 @@ FSI::LungMonolithic::LungMonolithic(Epetra_Comm& comm)
   // value here.
 
   OffsetID_ = FluidMinLungVolConID - ConstrDofSet_->FirstGID();
-
   ConstrMap_ = rcp(new Epetra_Map(*(ConstrDofSet_->DofRowMap())));
 
   // build an all reduced version of the constraintmap, since sometimes all processors
@@ -584,8 +583,8 @@ FSI::LungMonolithic::CreateLinearSystem(ParameterList& nlParams,
   {
   case INPAR::FSI::PreconditionedKrylov:
     linSys =
-      Teuchos::rcp(new FSI::MonolithicLinearSystem::MonolithicLinearSystem(
-                     //Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(
+      Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(
+                     //FSI::MonolithicLinearSystem::MonolithicLinearSystem(
                                                                printParams,
                                                                *lsParams,
                                                                Teuchos::rcp(iJac,false),
