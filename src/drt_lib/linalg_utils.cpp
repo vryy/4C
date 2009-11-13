@@ -1651,7 +1651,6 @@ void LINALG::PrintVectorInMatlabFormat(std::string fname,
       else
         os.open(fname.c_str(),std::fstream::ate | std::fstream::app);
 
-      int NumVectors1 = 1;  // we don't support MultiVector objects
       int NumMyElements1 = V.Map().NumMyElements();
       int MaxElementSize1 = V.Map().MaxElementSize();
       int* MyGlobalElements1 = V.Map().MyGlobalElements();
