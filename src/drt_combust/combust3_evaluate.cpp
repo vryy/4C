@@ -194,7 +194,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       // calculate element coefficient matrix and rhs
       COMBUST::callSysmat(assembly_type,
         this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
-        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, true,
+        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, mystate.instationary,
         combusttype, flamespeed, nitschevel, nitschepres);
     }
     break;
@@ -289,34 +289,41 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
               *eleDofManager_, NumNode(), NodeIds());
 
+      {
+        // calculate element coefficient matrix and rhs
+        COMBUST::callSysmat(assembly_type,
+                 this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
+                 material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, mystate.instationary,
+                 combusttype, flamespeed, nitschevel, nitschepres);
+      }
 #if 0
           const XFEM::BoundaryIntCells&  boundaryIntCells(ih_->GetBoundaryIntCells(this->Id()));
-          if ((assembly_type == XFEM::xfem_assembly) and (boundaryIntCells.size() > 0))
+          if ((assembly_type == XFEM::xfem_assembly) and (not boundaryIntCells.empty()))
           {
               const int entry = 4; // line in stiffness matrix to compare
               const double disturbance = 1.0e-4;
 
               // initialize locval
-              for (unsigned i = 0;i < locval.size(); ++i)
+              for (std::size_t i = 0;i < locval.size(); ++i)
               {
                   locval[i] = 0.0;
                   locval_hist[i] = 0.0;
               }
               // R_0
               // calculate element coefficient matrix and rhs
-              COMBUST::callSysmat(assembly_type,
-                      this, ih_, eleDofManager_, locval, locval_hist, estif, eforce,
-                      material, pseudotime, 1.0, newton, pstab, supg, cstab, tautype, false, combusttype);
+              XFLUID::callSysmat4(assembly_type,
+                      this, ih_, eleDofManager_, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
+                      mat, pseudotime, 1.0, newton, pstab, supg, cstab, false);
 
               LINALG::SerialDensevector eforce_0(locval.size());
-              for (unsigned i = 0;i < locval.size(); ++i)
+              for (std::size_t i = 0;i < locval.size(); ++i)
               {
                   eforce_0(i) = eforce(i);
               }
 
               // create disturbed vector
               vector<double> locval_disturbed(locval.size());
-              for (unsigned i = 0;i < locval.size(); ++i)
+              for (std::size_t i = 0;i < locval.size(); ++i)
               {
                   if (i == entry)
                   {
@@ -332,15 +339,15 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 
               // R_0+dx
               // calculate element coefficient matrix and rhs
-              COMBUST::callSysmat(assembly_type,
-                      this, ih_, eleDofManager_, locval_disturbed, locval_hist, estif, eforce,
-                      material, pseudotime, 1.0, newton, pstab, supg, cstab, tautype, false, combusttype);
+              XFLUID::callSysmat4(assembly_type,
+                      this, ih_, eleDofManager_, locval_disturbed, locval_hist, ivelcol, iforcecol, estif, eforce,
+                      mat, pseudotime, 1.0, newton, pstab, supg, cstab, false);
 
 
 
               // compare
               std::cout << "sekante" << endl;
-              for (int i = 0;i < locval.size(); ++i)
+              for (std::size_t i = 0;i < locval.size(); ++i)
               {
                   //cout << i << endl;
                   const double matrixentry = (eforce_0(i) - eforce(i))/disturbance;
@@ -352,13 +359,6 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
           }
           else
 #endif
-      {
-        // calculate element coefficient matrix and rhs
-        COMBUST::callSysmat(assembly_type,
-                 this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
-                 material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, false,
-                 combusttype, flamespeed, nitschevel, nitschepres);
-      }
     }
     break;
     case store_xfem_info:

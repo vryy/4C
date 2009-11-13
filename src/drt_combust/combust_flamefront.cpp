@@ -20,10 +20,7 @@ Maintainer: Florian Henke
 #include "../drt_lib/linalg_utils.H"  // LINALG::Export
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 // #include "../drt_geometry/integrationcell.H"
-
-//URSULA
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-//URSULA
 
 
 // extern struct _FILES  allfiles;

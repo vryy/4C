@@ -252,6 +252,20 @@ void FLD::CombustFluidImplicitTimeInt::TimeLoop()
  *------------------------------------------------------------------------------------------------*/
 void FLD::CombustFluidImplicitTimeInt::PrepareTimeStep()
 {
+  // update interface handle
+  //ih_n_ = ih_np_;
+
+  // update old acceleration
+  if (state_.accn_ != Teuchos::null)
+    state_.accn_->Update(1.0,*state_.accnp_,0.0);
+
+  // velocities/pressures of this step become most recent
+  // velocities/pressures of the last step
+  if (state_.velnm_ != Teuchos::null)
+    state_.velnm_->Update(1.0,*state_.veln_ ,0.0);
+  if (state_.veln_ != Teuchos::null)
+    state_.veln_ ->Update(1.0,*state_.velnp_,0.0);
+
   //---------------------------- -------------------------------------------------------------------
   // set time dependent parameters
   // -----------------------------------------------------------------------------------------------
@@ -876,14 +890,6 @@ void FLD::CombustFluidImplicitTimeInt::TimeUpdate()
           timealgo_, step_, theta_, dta_, dtp_,
           state_.accnp_);
 
-  // update old acceleration
-  state_.accn_->Update(1.0,*state_.accnp_,0.0);
-
-  // velocities/pressures of this step become most recent
-  // velocities/pressures of the last step
-  state_.velnm_->Update(1.0,*state_.veln_ ,0.0);
-  state_.veln_ ->Update(1.0,*state_.velnp_,0.0);
-
   return;
 }// FluidImplicitTimeInt::TimeUpdate
 
@@ -987,7 +993,7 @@ void FLD::CombustFluidImplicitTimeInt::Output()
     output_->WriteVector("accn" , state_.accn_);
   }
 
-  if (discret_->Comm().NumProc() == 1)
+//  if (discret_->Comm().NumProc() == 1)
   {
     OutputToGmsh(step_, time_);
   }
@@ -1108,24 +1114,26 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
     const double time
     ) const
 {
-  cout << "CombustFluidImplicitTimeInt::OutputToGmsh()" << endl;
-
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
   const bool gmshdebugout = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1;
 
   const bool screen_out = true;
 
+  // get a copy on columnmn parallel distribution
+  Teuchos::RCP<const Epetra_Vector> output_col_velnp = DRT::UTILS::GetColVersionOfRowVector(discret_, state_.velnp_);
+
+
   if (gmshdebugout and (this->physprob_.xfemfieldset_.find(XFEM::PHYSICS::Pres) != this->physprob_.xfemfieldset_.end()))
   {
-    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_pressure", step, 5, screen_out);
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_pressure", step, 50, screen_out, discret_->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
 
     const XFEM::PHYSICS::Field field = XFEM::PHYSICS::Pres;
     {
       gmshfilecontent << "View \" " << "Pressure Solution (Physical) \" {\n";
-      for (int i=0; i<discret_->NumMyColElements(); ++i)
+      for (int i=0; i<discret_->NumMyRowElements(); ++i)
       {
-        const DRT::Element* actele = discret_->lColElement(i);
+        const DRT::Element* actele = discret_->lRowElement(i);
 
         // create local copy of information about dofs
         const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatzp_->getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
@@ -1136,7 +1144,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
 
         // extract local values from the global vector
         vector<double> myvelnp(lm.size());
-        DRT::UTILS::ExtractMyValues(*state_.velnp_, myvelnp, lm);
+        DRT::UTILS::ExtractMyValues(*output_col_velnp, myvelnp, lm);
 
         const int numparam = eledofman.NumDofPerField(field);
         const vector<int>& dofpos = eledofman.LocalDofPosPerField(field);
@@ -1200,15 +1208,15 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
   }
   if (gmshdebugout and (this->physprob_.xfemfieldset_.find(XFEM::PHYSICS::Temp) != this->physprob_.xfemfieldset_.end()) )
   {
-    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_temperature", step, 5, screen_out);
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_temperature", step, 5, screen_out, discret_->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
 
     {
       const XFEM::PHYSICS::Field field = XFEM::PHYSICS::Temp;
       gmshfilecontent << "View \" " << "Temperature Solution (Physical) \" {\n";
-      for (int i=0; i<discret_->NumMyColElements(); ++i)
+      for (int i=0; i<discret_->NumMyRowElements(); ++i)
       {
-        const DRT::Element* actele = discret_->lColElement(i);
+        const DRT::Element* actele = discret_->lRowElement(i);
 
         // create local copy of information about dofs
         const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatzp_->getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
@@ -1219,7 +1227,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
 
         // extract local values from the global vector
         vector<double> myvelnp(lm.size());
-        DRT::UTILS::ExtractMyValues(*state_.velnp_, myvelnp, lm);
+        DRT::UTILS::ExtractMyValues(*output_col_velnp, myvelnp, lm);
 
         const int numparam = eledofman.NumDofPerField(field);
         const vector<int>& dofpos = eledofman.LocalDofPosPerField(field);
@@ -1297,9 +1305,9 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
 
     {
       gmshfilecontent << "View \" " << "Discontinous Pressure Solution (Physical) \" {\n";
-      for (int i=0; i<discret_->NumMyColElements(); ++i)
+      for (int i=0; i<discret_->NumMyRowElements(); ++i)
       {
-        const DRT::Element* actele = discret_->lColElement(i);
+        const DRT::Element* actele = discret_->lRowElement(i);
 
         static LINALG::Matrix<3,27> xyze_xfemElement;
         GEO::fillInitialPositionArray(actele,xyze_xfemElement);
@@ -1315,7 +1323,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
 
         // extract local values from the global vector
         vector<double> myvelnp(lm.size());
-        DRT::UTILS::ExtractMyValues(*state_.velnp_, myvelnp, lm);
+        DRT::UTILS::ExtractMyValues(*output_col_velnp, myvelnp, lm);
 
         const int numparam = eledofman.NumDofPerField(field);
         const vector<int>& dofpos = eledofman.LocalDofPosPerField(field);
@@ -1345,19 +1353,19 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
 #if 0
   if (gmshdebugout)
   {
-    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigma_disc", step, 5, screen_out);
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigma_disc", step, 5, screen_out, discret_->Comm().MyPID());
     cout << endl;
-    const std::string filenamexx = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigmaxx_disc", step, 5, screen_out);
+    const std::string filenamexx = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigmaxx_disc", step, 5, screen_out, discret_->Comm().MyPID());
     cout << endl;
-    const std::string filenameyy = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigmayy_disc", step, 5, screen_out);
+    const std::string filenameyy = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigmayy_disc", step, 5, screen_out, discret_->Comm().MyPID());
     cout << endl;
-    const std::string filenamezz = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigmazz_disc", step, 5, screen_out);
+    const std::string filenamezz = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigmazz_disc", step, 5, screen_out, discret_->Comm().MyPID());
     cout << endl;
-    const std::string filenamexy = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigmaxy_disc", step, 5, screen_out);
+    const std::string filenamexy = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigmaxy_disc", step, 5, screen_out, discret_->Comm().MyPID());
     cout << endl;
-    const std::string filenamexz = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigmaxz_disc", step, 5, screen_out);
+    const std::string filenamexz = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigmaxz_disc", step, 5, screen_out, discret_->Comm().MyPID());
     cout << endl;
-    const std::string filenameyz = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigmayz_disc", step, 5, screen_out);
+    const std::string filenameyz = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigmayz_disc", step, 5, screen_out, discret_->Comm().MyPID());
     std::ofstream gmshfilecontent(  filename.c_str());
     std::ofstream gmshfilecontentxx(filenamexx.c_str());
     std::ofstream gmshfilecontentyy(filenameyy.c_str());
@@ -1376,9 +1384,9 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
       gmshfilecontentxy << "View \" " << "Discontinous Stress (xy) Solution (Physical) \" {\n";
       gmshfilecontentxz << "View \" " << "Discontinous Stress (xz) Solution (Physical) \" {\n";
       gmshfilecontentyz << "View \" " << "Discontinous Stress (yz) Solution (Physical) \" {\n";
-      for (int i=0; i<discret_->NumMyColElements(); ++i)
+      for (int i=0; i<discret_->NumMyRowElements(); ++i)
       {
-        const DRT::Element* actele = discret_->lColElement(i);
+        const DRT::Element* actele = discret_->lRowElement(i);
 
         // create local copy of information about dofs
         const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatzp_->getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
@@ -1481,11 +1489,14 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
 
   if (this->physprob_.xfemfieldset_.find(XFEM::PHYSICS::Velx) != this->physprob_.xfemfieldset_.end())
   {
-    PlotVectorFieldToGmsh(state_.velnp_, "solution_field_velocity_np","Velocity Solution (Physical) n+1",true, step, time);
-    PlotVectorFieldToGmsh(state_.veln_,  "solution_field_velocity_n","Velocity Solution (Physical) n",false, step, time);
-//    PlotVectorFieldToGmsh(state_.velnm_, "solution_field_velocity_nm","Velocity Solution (Physical) n-1",false, step, time);
-//    PlotVectorFieldToGmsh(state_.accnp_, "solution_field_acceleration_np","Acceleration Solution (Physical) n+1",false, step, time);
-//    PlotVectorFieldToGmsh(state_.accn_,  "solution_field_acceleration_n","Acceleration Solution (Physical) n",false, step, time);
+    PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.velnp_), "solution_field_velocity_np","Velocity Solution (Physical) n+1",true, step, time);
+    if (timealgo_ != timeint_stationary)
+    {
+//      PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.velnm_), "solution_field_velocity_nm","Velocity Solution (Physical) n-1",false, step, time);
+//      PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.veln_), "solution_field_velocity_n","Velocity Solution (Physical) n",false, step, time);
+//      PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.accn_), "solution_field_acceleration_n","Acceleration Solution (Physical) n",false, step, time);
+      PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.accnp_), "solution_field_acceleration_np","Acceleration Solution (Physical) n+1",false, step, time);
+    }
   }
 }
 
@@ -1494,7 +1505,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
  | henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
 void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
-    const Teuchos::RCP<Epetra_Vector>   vectorfield,
+    const Teuchos::RCP<const Epetra_Vector>   vectorfield,
     const std::string filestr,
     const std::string name_in_gmsh,
     const bool plot_to_gnuplot,
@@ -1505,20 +1516,20 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
   cout << "PlotVectorFieldToGmsh" << endl;
 
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
-   const bool gmshdebugout = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1;
+  const bool gmshdebugout = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1;
 
   const bool screen_out = true;
 
   if (gmshdebugout)
   {
-    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filestr, step, 5, screen_out);
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filestr, step, 50, screen_out, discret_->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
 
     {
       gmshfilecontent << "View \" " << name_in_gmsh << "\" {\n";
-      for (int i=0; i<discret_->NumMyColElements(); ++i)
+      for (int i=0; i<discret_->NumMyRowElements(); ++i)
       {
-        const DRT::Element* actele = discret_->lColElement(i);
+        const DRT::Element* actele = discret_->lRowElement(i);
 
         // create local copy of information about dofs
         const COMBUST::CombustElementAnsatz elementAnsatz;
@@ -1606,13 +1617,13 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
 //          }
 
         // draw uncut element
-        {
-          LINALG::SerialDenseMatrix elevalues(3, DRT::UTILS::getNumberOfElementNodes(actele->Shape()),true);
-          static LINALG::Matrix<3,27> xyze_ele;
-          GEO::fillInitialPositionArray(actele, xyze_ele);
-          IO::GMSH::cellWithVectorFieldToStream(
-                          actele->Shape(), elevalues, xyze_ele, gmshfilecontent);
-        }
+//        {
+//          LINALG::SerialDenseMatrix elevalues(3, DRT::UTILS::getNumberOfElementNodes(actele->Shape()),true);
+//          static LINALG::Matrix<3,27> xyze_ele;
+//          GEO::fillInitialPositionArray(actele, xyze_ele);
+//          IO::GMSH::cellWithVectorFieldToStream(
+//                          actele->Shape(), elevalues, xyze_ele, gmshfilecontent);
+//        }
 
 //        }
         //if (dofmanagerForOutput_->getInterfaceHandle()->ElementIntersected(elegid) and not ele_to_textfile and ele_to_textfile2)

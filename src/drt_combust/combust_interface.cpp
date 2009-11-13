@@ -139,9 +139,9 @@ void COMBUST::InterfaceHandleCombust::toGmsh(const int step) const
       stringstream gmshfilecontent;
       gmshfilecontent << "View \" " << "Domains using CellCenter of Elements and Integration Cells \" {" << endl;
 
-      for (int i=0; i<xfemdis_->NumMyColElements(); ++i)
+      for (int i=0; i<xfemdis_->NumMyRowElements(); ++i)
       {
-        const DRT::Element* actele = xfemdis_->lColElement(i);
+        const DRT::Element* actele = xfemdis_->lRowElement(i);
         const GEO::DomainIntCells& elementDomainIntCells = this->GetDomainIntCells(actele);
         GEO::DomainIntCells::const_iterator cell;
         for(cell = elementDomainIntCells.begin(); cell != elementDomainIntCells.end(); ++cell )
@@ -210,9 +210,9 @@ void COMBUST::InterfaceHandleCombust::toGmsh(const int step) const
 //      stringstream gmshfilecontentP;
 //      gmshfilecontentP << "View \" " << "CellCenter of Elements and Integration Cells \" {" << endl;
 //
-//      for (int i=0; i<xfemdis_->NumMyColElements(); ++i)
+//      for (int i=0; i<xfemdis_->NumMyRowElements(); ++i)
 //      {
-//        const DRT::Element* actele = xfemdis_->lColElement(i);
+//        const DRT::Element* actele = xfemdis_->lRowElement(i);
 //        const GEO::DomainIntCells& elementDomainIntCells = this->GetDomainIntCells(actele);
 //        GEO::DomainIntCells::const_iterator cell;
 //        for(cell = elementDomainIntCells.begin(); cell != elementDomainIntCells.end(); ++cell )

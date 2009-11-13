@@ -204,7 +204,7 @@ public:
    * @param plot_to_gnuplot  plot some values to Gnuplot (debugging - will go away sooner or later)
    */
   void PlotVectorFieldToGmsh(
-      const Teuchos::RCP<Epetra_Vector>   vectorfield,
+      const Teuchos::RCP<const Epetra_Vector>   vectorfield,
       const std::string filestr,
       const std::string name_in_gmsh,
       const bool plot_to_gnuplot,

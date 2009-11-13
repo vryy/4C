@@ -345,9 +345,9 @@ Maintainer: Florian Henke
                  |      |
                   \    /
   */
-//  assembler.template Vector<Velx>(shp.d0, fac*rhsint(0));
-//  assembler.template Vector<Vely>(shp.d0, fac*rhsint(1));
-//  assembler.template Vector<Velz>(shp.d0, fac*rhsint(2));
+  assembler.template Vector<Velx>(shp.d0, fac*rhsint(0));
+  assembler.template Vector<Vely>(shp.d0, fac*rhsint(1));
+  assembler.template Vector<Velz>(shp.d0, fac*rhsint(2));
 
   // Hellinger-Reissner terms
 //  if (tauele_unknowns_present)
@@ -2311,7 +2311,7 @@ void SysmatCombustDomain(
             // evaluate residual (scaled with timefac and density)
             // remark: used for stabilization right hand sides
             //--------------------------------------------------------------------------------------
-//            LINALG::Matrix<nsd,1> res_old;
+//            LINALG::Matrix<nsd,1> res_old(true);
 //            if (instationary)
 //            {
 //              // timefac * (\rho*du/dt + (\rho u*grad) u + grad p - 2\mu\epsilon(u) - \rho g)
@@ -2328,16 +2328,17 @@ void SysmatCombustDomain(
 //            }
 
             // evaluate residual once for all stabilisation right hand sides
-            LINALG::Matrix<nsd,1> res_old;
+            LINALG::Matrix<nsd,1> res_old(true);
             for (size_t isd = 0; isd < nsd; ++isd)
                 res_old(isd) = -rhsint(isd)+timefac*(conv_old(isd)+gradp(isd)-2.0*dynvisc*visc_old(isd));
 
             if (instationary)
-                res_old += gpvelnp;
+            {
+              res_old += gpvelnp;
+            }
 
             // integration factors and coefficients of single terms
             const double timefacfac = timefac * fac;
-//cout << "domain tima and spatial factor " << timefacfac << endl;
 
             //--------------------------------------------------------------------------------------
             // build single stiffness matrix entries
@@ -2510,7 +2511,8 @@ void SysmatCombustBoundary(
     const size_t numvertices = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement;
 
     // TODO: are 6 Gaussian points enough?
-    const DRT::UTILS::IntegrationPoints2D intpoints(DRT::UTILS::intrule_tri_6point);
+    //const DRT::UTILS::IntegrationPoints2D intpoints(DRT::UTILS::intrule_tri_6point);
+    const DRT::UTILS::IntegrationPoints2D intpoints(DRT::UTILS::intrule_tri_37point);
 
     // get coordinates of vertices of boundary integration cell in element coordinates \xi^domain
     LINALG::SerialDenseMatrix cellXiDomaintmp = cell->CellNodalPosXiDomain();
@@ -3023,7 +3025,6 @@ void Sysmat(
     {
       case INPAR::COMBUST::combusttype_premixedcombustion:
       {
-//        std::cout << "********************* premixed combustion *********************" << std::endl;
         SysmatCombustDomain<DISTYPE,ASSTYPE,NUMDOF>(
             ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, ephi, etau,
             material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, assembler);
@@ -3038,10 +3039,9 @@ void Sysmat(
       break;
       case INPAR::COMBUST::combusttype_twophaseflow:
       {
-//        std::cout << "********************* two-phase flow *********************" << std::endl;
         SysmatTwoPhase<DISTYPE,ASSTYPE,NUMDOF>(
-            ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, ephi, etau,
-            material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, assembler);
+          ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, ephi, etau,
+          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, assembler);
       }
       break;
       default:

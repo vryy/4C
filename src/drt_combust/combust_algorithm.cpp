@@ -60,6 +60,14 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
   flamefront_(Teuchos::null)
   {
 
+  if (Comm().MyPID()==0)
+  {
+    if (combusttype_ == INPAR::COMBUST::combusttype_premixedcombustion)
+      std::cout << "********************* premixed combustion *********************" << std::endl;
+    else if (combusttype_ == INPAR::COMBUST::combusttype_twophaseflow)
+      std::cout << "********************* two-phase flow *********************" << std::endl;
+  }
+
   // get pointers to the discretizations from the time integration scheme of each field
   /* remark: fluiddis cannot be of type "const Teuchos::RCP<const DRT::Dis...>", because parent
    * class. InterfaceHandle only accepts "const Teuchos::RCP<DRT::Dis...>"            henke 01/09 */
@@ -128,18 +136,18 @@ void COMBUST::Algorithm::TimeLoop()
       DoFluidField();
 
       // solve linear G-function equation
-//      DoGfuncField();
+      DoGfuncField();
 
       // update field vectors
       UpdateFGIteration();
 
     } // Fluid-G-function-Interaction loop
 
-    if (ScaTraField().Step() % reinitinterval_ == 0)
-    {
-      // reinitialize G-function
-      ReinitializeGfunc(reinitializationaction_);
-    }
+//    if (ScaTraField().Step() % reinitinterval_ == 0)
+//    {
+//      // reinitialize G-function
+//      ReinitializeGfunc(reinitializationaction_);
+//    }
 
     // update all field solvers
     UpdateTimeStep();
@@ -149,15 +157,20 @@ void COMBUST::Algorithm::TimeLoop()
 
   // compute current volume of minus domain
   const double volume_current = interfacehandle_->ComputeVolumeMinus();
+
+#ifndef PARALLEL
   // print mass conservation check on screen
   printMassConservationCheck(volume_start, volume_current);
-
+#endif
   } // time loop
 
   // compute final volume of minus domain
   const double volume_end = interfacehandle_->ComputeVolumeMinus();
+
+#ifndef PARALLEL
   // print mass conservation check on screen
   printMassConservationCheck(volume_start, volume_end);
+#endif
 
   return;
 } // TimeLoop()
@@ -239,8 +252,11 @@ void COMBUST::Algorithm::SolveStationaryProblem()
 
   // compute final volume of minus domain
   const double volume_end = interfacehandle_->ComputeVolumeMinus();
+
+#ifndef PARALLEL
   // print mass conservation check on screen
   printMassConservationCheck(volume_start, volume_end);
+#endif
 
   return;
 }
@@ -746,7 +762,7 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(const Teuc
       for (int icomp=0; icomp<3; ++icomp)
         nvec(icomp) = -gradphi(icomp,0) / ngradphi;
 
-//      cout << "normal vector for element: " << ele->Id() << " at node: " << lnode->Id() << " is: " << nvec << endl;
+//cout << "normal vector for element: " << ele->Id() << " at node: " << lnode->Id() << " is: " << nvec << endl;
 
       // add normal vector to linear combination (could also be weighted in different ways!)
       for (int icomp=0; icomp<3; ++icomp)
@@ -761,7 +777,7 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(const Teuc
     if (avnorm == 0.0) dserror("length of normal is zero");
     for (int icomp=0; icomp<3; ++icomp) avnvec(icomp) /= avnorm;
 
-//    cout << "average normal vector at node: " << lnode->Id() << " is: " << avnvec << endl;
+//cout << "average normal vector at node: " << lnode->Id() << " is: " << avnvec << endl;
 
     //------------------------
     // get material parameters
@@ -803,6 +819,8 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(const Teuc
     LINALG::Matrix<3,1> flvelrel(true);
     for (int icomp=0; icomp<3; ++icomp)
       flvelrel(icomp) = speedfac * avnvec(icomp);
+
+//cout << "flame velocity at node: " << lnode->Id() << " is: " << flvelrel << endl;
     //-----------------------------------------------
     // compute (absolute) flame velocity at this node
     //-----------------------------------------------
@@ -818,6 +836,8 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(const Teuc
       lids[icomp] = convel->Map().LID(dofids[icomp]);
       fluidvel(icomp) = (*convel)[lids[icomp]];
     }
+
+//cout << "fluid velocity at node: " << lnode->Id() << " is: " << fluidvel << endl;
 
     LINALG::Matrix<3,1> flvelabs(true);
     // add fluid velocity (Navier Stokes solution) and relative flame velocity
@@ -1019,25 +1039,29 @@ void COMBUST::Algorithm::DoGfuncField()
     // for combustion, the velocity field is discontinuous; the relative flame velocity is added
     const Teuchos::RCP<Epetra_Vector> convel = FluidField().ExtractInterfaceVeln();
 
+    std::cout << "convective velocity is transferred to ScaTra" << std::endl;
+    cout << "length of convection velocity vector: " << (*convel).MyLength() << endl;
 #if 0
-//TEST
-//    const Teuchos::RCP<Epetra_Vector> xfemvel = ComputeFlameVel(convel,FluidField().DofSet());
-//    if((*convel).MyLength() != (*xfemvel).MyLength())
-//      dserror("length is not the same!");
-//
-//    const int dim = (*convel).MyLength();
-//    int counter = 0;
-//
-//    for(int idof=0; idof < dim ;++idof)
-//    {
-//      if ((*convel)[idof] == (*xfemvel)[idof])
-//        counter++;
-//    }
-//    cout << "So viele dofs sind gleich: " << counter << endl;
-//TEST
+
+    Epetra_Vector convelcopy = *convel;
+//    *copyconvel = *convel;
+
+    const Teuchos::RCP<Epetra_Vector> xfemvel = ComputeFlameVel(convel,FluidField().DofSet());
+    if((convelcopy).MyLength() != (*xfemvel).MyLength())
+      dserror("length is not the same!");
+
+    const int dim = (convelcopy).MyLength();
+    int counter = 0;
+
+    for(int idof=0; idof < dim ;++idof)
+    {
+      if ((convelcopy)[idof] == (*xfemvel)[idof])
+        counter++;
+    }
+    // number of identical dofs in convection velocity and flame velocity vector
+    cout << "number of identical velocity components: " << counter << endl;
 #endif
 
-    std::cout << "convective velocity is transferred to ScaTra" << std::endl;
     ScaTraField().SetVelocityField(
       ComputeFlameVel(convel,FluidField().DofSet()),
       Teuchos::null,
