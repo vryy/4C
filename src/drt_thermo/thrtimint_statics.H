@@ -10,20 +10,23 @@ Maintainer: Burkhard Bornemann
 </pre>
 */
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |  definitions                                              dano 06/09 |
+ *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 #ifndef THRTIMINT_STATICS_H
 #define THRTIMINT_STATICS_H
 
-/*----------------------------------------------------------------------*/
-/* headers */
+/*----------------------------------------------------------------------*
+ |  headers                                                  dano 06/09 |
+ *----------------------------------------------------------------------*/
 #include "thrtimint_impl.H"
 
-/*----------------------------------------------------------------------*/
-/* belongs to thermal dynamics namespace */
+/*----------------------------------------------------------------------*
+ | belongs to thermal dynamics namespace                    bborn 08/09 |
+ *----------------------------------------------------------------------*/
 namespace THR
 {
-
   /*====================================================================*/
   /*!
    * \brief Static analysis
@@ -47,15 +50,14 @@ namespace THR
     //@{
 
     //! Constructor
-    TimIntStatics
-    (
+    TimIntStatics(
       const Teuchos::ParameterList& ioparams,  //!< ioflags
       const Teuchos::ParameterList& tdynparams,  //!< input parameters
       const Teuchos::ParameterList& xparams,  //!< extra flags
       Teuchos::RCP<DRT::Discretization> actdis,  //!< current discretisation
       Teuchos::RCP<LINALG::Solver> solver,  //!< the solver
       Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
-    );
+      );
 
     //! Destructor
     // ....
@@ -105,7 +107,7 @@ namespace THR
       const Teuchos::RCP<Epetra_Vector> tempi,  //!< residual temperatures
       Teuchos::RCP<Epetra_Vector> fint,  //!< internal force
       Teuchos::RCP<LINALG::SparseMatrix> tang  //!< tangent matrix
-    );
+      );
 
     //! Evaluate ordinary internal force
     void ApplyForceInternal(
@@ -114,7 +116,7 @@ namespace THR
       const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
       const Teuchos::RCP<Epetra_Vector> tempi,  //!< incremental temperatures
       Teuchos::RCP<Epetra_Vector> fint  //!< internal force
-    );
+      );
 
     //! Create force residual #fres_ and its tangent #tang_
     void EvaluateRhsTangResidual();
@@ -195,6 +197,6 @@ namespace THR
 
 }  // namespace THR
 
-
+/*----------------------------------------------------------------------*/
 #endif  // #ifndef THRTIMINT_STATICS_H
 #endif  // #ifdef CCADISCRET

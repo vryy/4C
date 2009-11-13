@@ -29,24 +29,22 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*
  | constructor                                              bborn 08/09 |
  *----------------------------------------------------------------------*/
-THR::TimIntImpl::TimIntImpl
-(
+THR::TimIntImpl::TimIntImpl(
   const Teuchos::ParameterList& ioparams,
   const Teuchos::ParameterList& tdynparams,
   const Teuchos::ParameterList& xparams,
   Teuchos::RCP<DRT::Discretization> actdis,
   Teuchos::RCP<LINALG::Solver> solver,
   Teuchos::RCP<IO::DiscretizationWriter> output
-)
-: TimInt
-  (
+  )
+: TimInt(
     ioparams,
     tdynparams,
     xparams,
     actdis,
     solver,
     output
-  ),
+    ),
   pred_(Teuchos::getIntegralValue<INPAR::THR::PredEnum>(tdynparams,"PREDICT")),
   itertype_(Teuchos::getIntegralValue<INPAR::THR::NonlinSolTech>(tdynparams,"NLNSOL")),
   normtypetempi_(Teuchos::getIntegralValue<INPAR::THR::ConvNorm>(tdynparams,"NORM_TEMP")),
@@ -98,7 +96,6 @@ void THR::TimIntImpl::IntegrateStep()
  *----------------------------------------------------------------------*/
 void THR::TimIntImpl::Predict()
 {
-
   // choose predictor
   if (pred_ == INPAR::THR::pred_consttemp)
   {
@@ -448,7 +445,6 @@ void THR::TimIntImpl::NewtonFull()
  *----------------------------------------------------------------------*/
 void THR::TimIntImpl::PrepareSystemForNewtonSolve()
 {
-
   // extract reaction forces
   // reactions are negative to balance residual on DBC
   freact_->Update(-1.0, *fres_, 0.0);
@@ -470,10 +466,9 @@ void THR::TimIntImpl::PrepareSystemForNewtonSolve()
 /*----------------------------------------------------------------------*
  | Update iteration                                         bborn 08/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::UpdateIter
-(
+void THR::TimIntImpl::UpdateIter(
   const int iter  //!< iteration counter
-)
+  )
 {
   // we need to do an incremental update (expensive)
   // in the very first iteration (i.e. predictor) of a Newton loop
@@ -497,10 +492,9 @@ void THR::TimIntImpl::UpdateIter
  |  Update iteration incrementally with prescribed          bborn 08/09 |
  |  residual temperatures                                               |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::UpdateIterIncrementally
-(
+void THR::TimIntImpl::UpdateIterIncrementally(
   const Teuchos::RCP<const Epetra_Vector> tempi  //!< input residual temperatures
-)
+  )
 {
   // select residual temperatures
   if (tempi != Teuchos::null)
@@ -587,16 +581,13 @@ void THR::TimIntImpl::PrintNewtonIter()
 /*----------------------------------------------------------------------*
  |  print header                                            bborn 08/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::PrintNewtonIterHeader
-(
-  FILE* ofile
-)
+void THR::TimIntImpl::PrintNewtonIterHeader(FILE* ofile)
 {
   // open outstringstream
   std::ostringstream oss;
 
   // enter converged state etc
-  oss << std::setw(6)<< "numiter";
+  oss << std::setw(6) << "numiter";
 
   // different style due relative or absolute error checking
   // temperature
@@ -630,7 +621,6 @@ void THR::TimIntImpl::PrintNewtonIterHeader
     dserror("You should not turn up here.");
   }
 
-
   // add solution time
   oss << std::setw(14)<< "wct";
 
@@ -651,10 +641,7 @@ void THR::TimIntImpl::PrintNewtonIterHeader
  |  print Newton-Raphson iteration to screen                bborn 08/09 |
  |  originally by lw 12/07, tk 01/08                                    |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::PrintNewtonIterText
-(
-  FILE* ofile
-)
+void THR::TimIntImpl::PrintNewtonIterText(FILE* ofile)
 {
   // open outstringstream
   std::ostringstream oss;
@@ -708,7 +695,6 @@ void THR::TimIntImpl::PrintNewtonIterText
 
   // nice to have met you
   return;
-
 }
 
 /*----------------------------------------------------------------------*
@@ -745,10 +731,7 @@ void THR::TimIntImpl::PrintStep()
 /*----------------------------------------------------------------------*
  |  print step summary                                      bborn 08/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::PrintStepText
-(
-  FILE* ofile
-)
+void THR::TimIntImpl::PrintStepText(FILE* ofile)
 {
   // the text
   fprintf(ofile,
@@ -769,5 +752,5 @@ void THR::TimIntImpl::PrintStepText
   return;
 }
 
-
+/*----------------------------------------------------------------------*/
 #endif  // #ifdef CCADISCRET

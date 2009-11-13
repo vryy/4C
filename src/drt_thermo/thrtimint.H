@@ -41,11 +41,11 @@ Maintainer: Burkhard Bornemann
 
 #include "thrtimint_mstep.H"
 
-/*----------------------------------------------------------------------*/
-//! Thermal Dynamics
+/*----------------------------------------------------------------------*
+ | belongs to thermal dynamics namespace                    bborn 08/09 |
+ *----------------------------------------------------------------------*/
 namespace THR
 {
-
   /*====================================================================*/
   /*!
    * \brief Front-end for thermal dynamics by integrating in time.
@@ -87,15 +87,14 @@ namespace THR
     void Logo();
 
     //! Constructor
-    TimInt
-    (
+    TimInt(
       const Teuchos::ParameterList& ioparams,  //!< ioflags
       const Teuchos::ParameterList& tdynparams,  //!< input parameters
       const Teuchos::ParameterList& xparams,  //!< extra flags
       Teuchos::RCP<DRT::Discretization> actdis,  //!< current discretisation
       Teuchos::RCP<LINALG::Solver> solver,  //!< the solver
       Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
-    );
+      );
 
     //! Empty constructor
     TimInt() { ; }
@@ -134,7 +133,7 @@ namespace THR
                         //!< to Dirichlet BCs
                         //!< This needs to be true if the bounded DOFs
                         //!< have been changed.
-    );
+      );
 
     //! Do time integration of multiple steps
     void Integrate();
@@ -179,7 +178,7 @@ namespace THR
     void OutputRestart(
       bool& datawritten  //!< (in/out) read and append if
                          //!< it was written at this time step
-    );
+      );
 
     //! Output temperatures, temperature rates
     //! and more system vectors
@@ -187,14 +186,14 @@ namespace THR
     void OutputState(
       bool& datawritten  //!< (in/out) read and append if
                          //!< it was written at this time step
-    );
+      );
 
     //! Heatflux & temperature gradient output
     //! \author lw (originally)
     void OutputHeatfluxTempgrad(
       bool& datawritten  //!< (in/out) read and append if
                          //!< it was written at this time step
-    );
+      );
 
     //! Energy output
     void OutputEnergy();
@@ -235,10 +234,10 @@ namespace THR
     //! Apply external force
     void ApplyForceExternal(
 //      Teuchos::ParameterList& p,  //!< parameter list handed down to elements
-      const double time,  //!< evaluation time
-      const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
-      Teuchos::RCP<Epetra_Vector>& fext  //!< external force
-    );
+     const double time,  //!< evaluation time
+     const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
+     Teuchos::RCP<Epetra_Vector>& fext  //!< external force
+     );
 
     //! Evaluate ordinary internal force, its tangent at state
     void ApplyForceTangInternal(
@@ -249,7 +248,7 @@ namespace THR
       const Teuchos::RCP<Epetra_Vector> tempi,  //!< residual temperatures
       Teuchos::RCP<Epetra_Vector> fint,  //!< internal force
       Teuchos::RCP<LINALG::SparseMatrix> tang  //!< tangent matrix
-    );
+      );
 
     //! Evaluate ordinary internal force, its tangent and the stored force at state
     void ApplyForceTangInternal(
@@ -261,7 +260,7 @@ namespace THR
       Teuchos::RCP<Epetra_Vector> fcap,  //!< stored force
       Teuchos::RCP<Epetra_Vector> fint,  //!< internal force
       Teuchos::RCP<LINALG::SparseMatrix> tang  //!< tangent matrix
-    );
+      );
 
     //! Evaluate ordinary internal force
     //!
@@ -274,15 +273,14 @@ namespace THR
     //! manner means the static condensation is applied once with
     //! residual temperatures replaced by the full-step temperature
     //! increment \f$T_{n+1}-T_{n}\f$.
-    void ApplyForceInternal
-    (
+    void ApplyForceInternal(
       Teuchos::ParameterList& p,  //!< parameter list handed down to elements
       const double time,  //!< evaluation time
       const double dt,  //!< step size
       const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
       const Teuchos::RCP<Epetra_Vector> tempi,  //!< incremental temperatures
       Teuchos::RCP<Epetra_Vector> fint  //!< internal force
-    );
+      );
 
     //@}
 
@@ -340,7 +338,7 @@ namespace THR
     //! Read restart values
     void ReadRestart(
       const int step //!< restart step
-    );
+      );
 
     //! Read and set restart state
     void ReadRestartState();
@@ -480,6 +478,6 @@ namespace THR
 
 }  // namespace THR
 
-
+/*----------------------------------------------------------------------*/
 #endif  // #ifndef THRTIMINT_H
 #endif  // #ifdef CCADISCRET

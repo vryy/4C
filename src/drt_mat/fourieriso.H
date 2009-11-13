@@ -9,54 +9,62 @@ Maintainer: Caroline Danowski
             http://www.lnm.mw.tum.de
             089 - 289-15253
 </pre>
+*/
 
-*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |  definitions                                              dano 09/09 |
+ *----------------------------------------------------------------------*/
 #ifndef FOURIERISO_H_
 #define FOURIERISO_H_
 #ifdef CCADISCRET
 
+/*----------------------------------------------------------------------*
+ |  headers                                                  dano 09/09 |
+ *----------------------------------------------------------------------*/
 #include "matpar_parameter.H"
 #include "material.H"
 #include <Epetra_SerialDenseVector.h>
 #include <Epetra_SerialDenseMatrix.h>
 
-
+/*----------------------------------------------------------------------*
+ |                                                           dano 09/09 |
+ *----------------------------------------------------------------------*/
 namespace MAT
 {
 
-  namespace PAR
+namespace PAR
+{
+
+  /*----------------------------------------------------------------------*/
+  /// material parameters for FourierIso material
+  ///
+  /// <h3>Input line</h3>
+  /// MAT 1 THERM_FourierIsoIso CAPA 1.0 COND 1.0
+  class FourierIso : public Parameter
   {
+  public:
 
-    /*----------------------------------------------------------------------*/
-    /// material parameters for FourierIso material
-    ///
-    /// <h3>Input line</h3>
-    /// MAT 1 THERM_FourierIsoIso CAPA 1.0 COND 1.0
-    class FourierIso : public Parameter
-    {
-    public:
+    /// standard constructor
+    FourierIso(
+      Teuchos::RCP<MAT::PAR::Material> matdata
+      );
 
-      /// standard constructor
-      FourierIso(
-        Teuchos::RCP<MAT::PAR::Material> matdata
-        );
+    /// destructor
+    virtual ~FourierIso() { ; }
 
-      /// destructor
-      virtual ~FourierIso() { ; }
+    /// @name material parameters
+    //@{
 
-      /// @name material parameters
-      //@{
+    /// heat capacity
+    const double capa_;
+    /// heat conductivity
+    const double conduct_;
 
-      /// heat capacity
-      const double capa_;
-      /// heat conductivity
-      const double conduct_;
+    //@}
 
-      //@}
+  };  // class FourierIso
 
-    };  // class FourierIso
-
-  }  // namespace PAR
+}  // namespace PAR
 
   /*----------------------------------------------------------------------*/
   /// FourierIso material according to [1]
@@ -151,8 +159,10 @@ namespace MAT
     /// my material parameters
     MAT::PAR::FourierIso* params_;
 
-  };
-}
+  }; // FourierIso
 
+} // namespace MAT
+
+/*----------------------------------------------------------------------*/
 #endif  // CCADISCRET
 #endif  // FOURIERISO_H_

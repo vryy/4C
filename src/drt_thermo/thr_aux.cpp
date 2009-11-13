@@ -25,11 +25,10 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*
  |  Calculate vector norm                                    bborn 08/09 |
  *----------------------------------------------------------------------*/
-double THR::AUX::CalculateVectorNorm
-(
+double THR::AUX::CalculateVectorNorm(
   const enum INPAR::THR::VectorNorm norm,
   const Teuchos::RCP<Epetra_Vector> vect
-)
+  )
 {
   // L1 norm
   if (norm == INPAR::THR::norm_l1)
@@ -64,7 +63,7 @@ double THR::AUX::CalculateVectorNorm
     dserror("Cannot handle vector norm");
     return 0;
   }
-}
+} // CalculateVectorNorm
 
-
+/*----------------------------------------------------------------------*/
 #endif  // #ifdef CCADISCRET

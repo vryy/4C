@@ -10,6 +10,7 @@ Maintainer: Caroline Danowski
             089 - 289-15253
 </pre>
 */
+
 /*----------------------------------------------------------------------*
  |  definitions                                                gjb 01/08|
  *----------------------------------------------------------------------*/
@@ -25,9 +26,11 @@ Maintainer: Caroline Danowski
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::Thermo::ReadElement(const std::string& eletype,
-                                        const std::string& distype,
-                                        DRT::INPUT::LineDefinition* linedef)
+bool DRT::ELEMENTS::Thermo::ReadElement(
+  const std::string& eletype,
+  const std::string& distype,
+  DRT::INPUT::LineDefinition* linedef
+  )
 {
   // read number of material model
   int material = 0;
@@ -106,6 +109,6 @@ bool DRT::ELEMENTS::Thermo::ReadElement()
 } // Thermo::ReadElement()
 #endif
 
-
+/*----------------------------------------------------------------------*/
 #endif  // #ifdef D_THERMO
 #endif  // #ifdef CCADISCRET

@@ -1,3 +1,4 @@
+/*----------------------------------------------------------------------*/
 /*!
 \file adapter_thermo_timint.H
 
@@ -13,7 +14,7 @@ Maintainer: Burkhard Bornemann
 */
 
 /*----------------------------------------------------------------------*
- |  macros                                                  bborn 08/09 |
+ |  definitions                                             bborn 08/09 |
  *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
@@ -39,7 +40,8 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*
  |  adapting adapter                                        bborn 08/09 |
  *----------------------------------------------------------------------*/
-namespace ADAPTER {
+namespace ADAPTER
+{
 
   /*====================================================================*/
   /*!
@@ -59,7 +61,7 @@ namespace ADAPTER {
       Teuchos::RCP<DRT::Discretization> discret,  ///< current discretisation
       Teuchos::RCP<LINALG::Solver> solver,  ///< the solver
       Teuchos::RCP<IO::DiscretizationWriter> output  ///< the output
-    );
+      );
 
     /// initial guess of Newton's method
     Teuchos::RCP<const Epetra_Vector> InitialGuess();
@@ -118,7 +120,7 @@ namespace ADAPTER {
     /// evaluate elements with given temperature
     void Evaluate(
       Teuchos::RCP<const Epetra_Vector> temp  ///< current state
-    );
+      );
 
     /// update at time step end
     void Update();
@@ -129,10 +131,9 @@ namespace ADAPTER {
     //@}
 
     /// read restart information for given time step
-    virtual void ReadRestart
-    (
+    virtual void ReadRestart(
       const int step  ///< given time step
-    );
+      );
 
     /// @name Solver calls
     //@{
@@ -161,7 +162,7 @@ namespace ADAPTER {
       Teuchos::RCP<DRT::Discretization>& actdis,  //!< discretisation
       Teuchos::RCP<LINALG::Solver>& solver,  //!< the solver
       Teuchos::RCP<IO::DiscretizationWriter>& output  //!< output writer
-    );
+      );
 
     /// the actual thermo algorithm
     Teuchos::RCP<THR::TimIntImpl> thermo_;
@@ -185,5 +186,6 @@ namespace ADAPTER {
 
 }  // namespace ADAPTER
 
+/*----------------------------------------------------------------------*/
 #endif // ADAPTER_THERMO_TIMINT_H
 #endif // CCADISCRET

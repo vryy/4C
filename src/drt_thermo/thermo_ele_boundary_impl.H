@@ -11,10 +11,10 @@ Maintainer: Caroline Danowski
             089 - 289-15253
 </pre>
 */
+
 /*----------------------------------------------------------------------*
  |  definitions                                              dano 09/09 |
  *----------------------------------------------------------------------*/
-
 #ifdef CCADISCRET
 #ifdef D_THERMO
 
@@ -28,179 +28,183 @@ Maintainer: Caroline Danowski
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "thermo_element.H"
 
-
 // forward declarations
 //struct _MATERIAL;
 
-  namespace DRT
+/*----------------------------------------------------------------------*
+ |                                                           dano 09/09 |
+ *----------------------------------------------------------------------*/
+namespace DRT
+{
+namespace ELEMENTS
+{
+
+  /// Interface base class for TemperImpl
+  //!
+  //! This class exists to provide a common interface for all template
+  //! versions of TemperImpl. The only function
+  //! this class actually defines is Impl, which returns a pointer to
+  //! the appropriate version of TemperImpl.
+  class TemperBoundaryImplInterface
   {
-    namespace ELEMENTS
-    {
 
-    /// Interface base class for TemperImpl
-    /*!
-      This class exists to provide a common interface for all template
-      versions of TemperImpl. The only function
-      this class actually defines is Impl, which returns a pointer to
-      the appropriate version of TemperImpl.
-     */
-    class TemperBoundaryImplInterface
-    {
+  public:
+    //! Empty constructor
+    TemperBoundaryImplInterface() {}
+    //! Empty destructor
+    virtual ~TemperBoundaryImplInterface() {}
+    //! Evaluate the element
+    //!
+    //! This class does not provide a definition for this function, it
+    //! must be defined in TemperBoundaryImpl.
+    virtual int Evaluate(
+      DRT::ELEMENTS::ThermoBoundary* ele,
+      Teuchos::ParameterList& params,
+      DRT::Discretization& discretization,
+      std::vector<int>& lm,
+      Epetra_SerialDenseMatrix& elemat1_epetra,
+      Epetra_SerialDenseMatrix& elemat2_epetra,
+      Epetra_SerialDenseVector& elevec1_epetra,
+      Epetra_SerialDenseVector& elevec2_epetra,
+      Epetra_SerialDenseVector& elevec3_epetra
+      ) = 0;
 
-    public:
-      /// Empty constructor
-      TemperBoundaryImplInterface() {}
-      /// Empty destructor
-      virtual ~TemperBoundaryImplInterface() {}
-      /// Evaluate the element
-      /*!
-        This class does not provide a definition for this function, it
-        must be defined in TemperBoundaryImpl.
-       */
-      virtual int Evaluate(DRT::ELEMENTS::ThermoBoundary* ele,
-                           Teuchos::ParameterList&    params,
-                           DRT::Discretization&       discretization,
-                           std::vector<int>&          lm,
-                           Epetra_SerialDenseMatrix&  elemat1_epetra,
-                           Epetra_SerialDenseMatrix&  elemat2_epetra,
-                           Epetra_SerialDenseVector&  elevec1_epetra,
-                           Epetra_SerialDenseVector&  elevec2_epetra,
-                           Epetra_SerialDenseVector&  elevec3_epetra
-                           ) = 0;
+    //! Evaluate a Neumann boundary condition
+    //!
+    //! This class does not provide a definition for this function, it
+    //! must be defined in TemperBoundaryImpl.
+    virtual int EvaluateNeumann(
+      DRT::Element* ele,
+      Teuchos::ParameterList& params,
+      DRT::Discretization& discretization,
+      DRT::Condition& condition,
+      std::vector<int>& lm,
+      Epetra_SerialDenseVector& elevec1_epetra
+      ) = 0;
 
-      /// Evaluate a Neumann boundary condition
-      /*!
-        This class does not provide a definition for this function, it
-        must be defined in TemperBoundaryImpl.
-       */
-      virtual int EvaluateNeumann(DRT::Element*              ele,
-                                  Teuchos::ParameterList&    params,
-                                  DRT::Discretization&       discretization,
-                                  DRT::Condition&            condition,
-                                  std::vector<int>&          lm,
-                                  Epetra_SerialDenseVector&  elevec1_epetra
-                                  ) = 0;
+    //! Internal implementation class for thermo elements
+    static TemperBoundaryImplInterface* Impl(DRT::Element* ele);
 
-      /// Internal implementation class for thermo elements
-      static TemperBoundaryImplInterface* Impl(DRT::Element* ele);
+  }; // TemperBoundaryImplInterface
 
-    };
+  //! Internal thermo element implementation
+  //!
+  //! This internal class keeps all the working arrays needed to
+  //! calculate the Thermo element. Additionally the method Sysmat()
+  //! provides a clean and fast element implementation.
+  //!
+  //!  <h3>Purpose</h3>
+  //!
+  //! The idea is to separate the element maintenance (class Thermo)
+  //! from the mathematical contents (this class). Of course there are
+  //! different implementations of the Thermo element, this is just one
+  //! such implementation.
+  //!
+  //! The Thermo element will allocate exactly one object of this class
+  //! for all transport elements with the same number of nodes in the mesh.
+  //! This allows us to use exactly matching working arrays (and keep them
+  //! around.)
+  //!
+  //! The code is meant to be as clean as possible. This is the only way
+  //! to keep it fast. The number of working arrays has to be reduced to
+  //! a minimum so that the element fits into the cache. (There might be
+  //! room for improvements.)
+  //!
+  //! <h3>History</h3>
+  //!
+  //! The implementation here is the standard convection-diffusion element
+  //! capable of dealing with systems of transported scalars.
+  //!
+  //! Right now we do not read any stabilization parameters from the
+  //! input file but have a fixed version.
+  //!
+  //! \author gjb
+  //! \date 08/08
+  template<DRT::Element::DiscretizationType distype>
+  class TemperBoundaryImpl: public TemperBoundaryImplInterface
+  {
+  public:
+    /// Constructor
+    TemperBoundaryImpl(int numdofpernode);
 
-      /// Internal thermo element implementation
-      /*!
-        This internal class keeps all the working arrays needed to
-        calculate the Thermo element. Additionally the method Sysmat()
-        provides a clean and fast element implementation.
+    //! number of nodes
+    static const int iel = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
-        <h3>Purpose</h3>
+    //! number of space dimensions
+    static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
 
-        The idea is to separate the element maintenance (class Thermo)
-        from the mathematical contents (this class). Of course there are
-        different implementations of the Thermo element, this is just one
-        such implementation.
-
-        The Thermo element will allocate exactly one object of this class
-        for all transport elements with the same number of nodes in the mesh.
-        This allows us to use exactly matching working arrays (and keep them
-        around.)
-
-        The code is meant to be as clean as possible. This is the only way
-        to keep it fast. The number of working arrays has to be reduced to
-        a minimum so that the element fits into the cache. (There might be
-        room for improvements.)
-
-        <h3>History</h3>
-
-        The implementation here is the standard convection-diffusion element
-        capable of dealing with systems of transported scalars.
-
-        Right now we do not read any stabilization parameters from the
-        input file but have a fixed version.
-
-        \author gjb
-        \date 08/08
-      */
-    template<DRT::Element::DiscretizationType distype>
-    class TemperBoundaryImpl: public TemperBoundaryImplInterface
-    {
-    public:
-      /// Constructor
-      TemperBoundaryImpl(int numdofpernode);
-
-      //! number of nodes
-      static const int iel = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-
-      //! number of space dimensions
-      static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
-
-      //! Evaluate
-      virtual int Evaluate(DRT::ELEMENTS::ThermoBoundary* ele,
-                           Teuchos::ParameterList&        params,
-                           DRT::Discretization&           discretization,
-                           std::vector<int>&              lm,
-                           Epetra_SerialDenseMatrix&      elemat1_epetra,
-                           Epetra_SerialDenseMatrix&      elemat2_epetra,
-                           Epetra_SerialDenseVector&      elevec1_epetra,
-                           Epetra_SerialDenseVector&      elevec2_epetra,
-                           Epetra_SerialDenseVector&      elevec3_epetra
+    //! Evaluate
+    virtual int Evaluate(
+      DRT::ELEMENTS::ThermoBoundary* ele,
+      Teuchos::ParameterList& params,
+      DRT::Discretization& discretization,
+      std::vector<int>& lm,
+      Epetra_SerialDenseMatrix& elemat1_epetra,
+      Epetra_SerialDenseMatrix& elemat2_epetra,
+      Epetra_SerialDenseVector& elevec1_epetra,
+      Epetra_SerialDenseVector& elevec2_epetra,
+      Epetra_SerialDenseVector& elevec3_epetra
       );
 
-      //! Evaluate a Neumann boundary condition
-      virtual int EvaluateNeumann(DRT::Element*              ele,
-                                  Teuchos::ParameterList&    params,
-                                  DRT::Discretization&       discretization,
-                                  DRT::Condition&            condition,
-                                  std::vector<int>&          lm,
-                                  Epetra_SerialDenseVector&  elevec1_epetra
+    //! Evaluate a Neumann boundary condition
+    virtual int EvaluateNeumann(
+      DRT::Element* ele,
+      Teuchos::ParameterList& params,
+      DRT::Discretization& discretization,
+      DRT::Condition& condition,
+      std::vector<int>& lm,
+      Epetra_SerialDenseVector& elevec1_epetra
       );
 
-      private:
+  private:
 
-        //! evaluate shape functions and derivatives at int. point
-        void EvalShapeFuncAndIntFac(
-            const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
-            const int&                                   iquad,      ///< id of current Gauss point
-            const int&                                   eleid       ///< the element id
-        );
+    //! evaluate shape functions and derivatives at int. point
+    void EvalShapeFuncAndIntFac(
+      const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
+      const int& iquad, ///< id of current Gauss point
+      const int& eleid ///< the element id
+      );
 
-         //! integral of shape functions over boundary surface
-         void IntegrateShapeFunctions(
-             const DRT::Element*       ele,    ///< the actual boundary element
-             Teuchos::ParameterList&   params, ///< the parameter list
-             Epetra_SerialDenseVector& elevec1,///< result vector (to be assembled)
-             const bool                addarea ///< flag for area calculation
-         );
+    //! integral of shape functions over boundary surface
+    void IntegrateShapeFunctions(
+      const DRT::Element* ele,    ///< the actual boundary element
+      Teuchos::ParameterList& params, ///< the parameter list
+      Epetra_SerialDenseVector& elevec1,///< result vector (to be assembled)
+      const bool addarea ///< flag for area calculation
+      );
 
-        //! Compute a constant normal vector for a boundary element
-        void GetConstNormal(
-            LINALG::Matrix<nsd_+1,1>&            normal, ///< the constant normal vector
-            const LINALG::Matrix<nsd_+1,iel>&    xyze    ///< element node coordinates
-        );
+    //! Compute a constant normal vector for a boundary element
+    void GetConstNormal(
+      LINALG::Matrix<nsd_+1,1>& normal, ///< the constant normal vector
+      const LINALG::Matrix<nsd_+1,iel>& xyze    ///< element node coordinates
+      );
 
-        //! number of dof per node
-        const int numdofpernode_;
-        //! node coordinates
-        LINALG::Matrix<nsd_+1,iel> xyze_;
-         //! coordinates of current integration point in reference coordinates
-        LINALG::Matrix<nsd_,1> xsi_;
-        //! array for shape functions
-        LINALG::Matrix<iel,1> funct_;
-        //! array for shape function derivatives w.r.t r,s,t
-        LINALG::Matrix<nsd_,iel> deriv_;
-        //! global derivatives of shape functions w.r.t x,y,z
-        LINALG::Matrix<nsd_,iel> derxy_;
-        //! unit normal vector at integration point
-        LINALG::Matrix<nsd_+1,1> normal_;
-        //! metric tensor at integration point
-        LINALG::Matrix<nsd_,nsd_>  metrictensor_;
-        //! integration factor for current GP: fac = GaussWeight * drs
-        double fac_;
+      //! number of dof per node
+      const int numdofpernode_;
+      //! node coordinates
+      LINALG::Matrix<nsd_+1,iel> xyze_;
+       //! coordinates of current integration point in reference coordinates
+      LINALG::Matrix<nsd_,1> xsi_;
+      //! array for shape functions
+      LINALG::Matrix<iel,1> funct_;
+      //! array for shape function derivatives w.r.t r,s,t
+      LINALG::Matrix<nsd_,iel> deriv_;
+      //! global derivatives of shape functions w.r.t x,y,z
+      LINALG::Matrix<nsd_,iel> derxy_;
+      //! unit normal vector at integration point
+      LINALG::Matrix<nsd_+1,1> normal_;
+      //! metric tensor at integration point
+      LINALG::Matrix<nsd_,nsd_>  metrictensor_;
+      //! integration factor for current GP: fac = GaussWeight * drs
+      double fac_;
 
-      }; // TemperBoundaryImpl
-    } // ELEMENTS
-  } // DRT
+    }; // TemperBoundaryImpl
 
+} // ELEMENTS
 
+} // DRT
+
+/*----------------------------------------------------------------------*/
 #endif //THERMO_ELE_BOUNDARY_IMPL_H
 #endif // D_THERMO
 #endif // CCADISCRET

@@ -55,6 +55,6 @@ void thr_dyn_drt();
 #endif
 /* END     C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++*/
 
-
+/*----------------------------------------------------------------------*/
 #endif  /* #ifndef THR_DYN_H */
 #endif  /* #ifdef CCADISCRET */

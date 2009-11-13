@@ -34,25 +34,24 @@ namespace THR
 {
 
   /*====================================================================*/
-  /// A namespace for the various unsorted auxiliar kind of
-  /// methods needed in thermal analysis
-  ///
-  /// \author bborn
-  /// \date 11/08
-  namespace AUX
-  {
+  //! A namespace for the various unsorted auxiliar kind of
+  //! methods needed in thermal analysis
+  //!
+  //! \author bborn
+  //! \date 11/08
+namespace AUX
+{
 
-    /// Determine norm of force residual
-    double CalculateVectorNorm
-    (
-      const enum INPAR::THR::VectorNorm norm,  ///< norm to use
-      const Teuchos::RCP<Epetra_Vector> vect  ///< the vector of interest
+  //! Determine norm of force residual
+  double CalculateVectorNorm(
+    const enum INPAR::THR::VectorNorm norm,  ///< norm to use
+    const Teuchos::RCP<Epetra_Vector> vect  ///< the vector of interest
     );
 
-  }  // namespace AUX
+}  // namespace AUX
 
 }  // namespace THR
 
-
+/*----------------------------------------------------------------------*/
 #endif  // #ifndef THR_AUX_H
 #endif  // #ifdef CCADISCRET

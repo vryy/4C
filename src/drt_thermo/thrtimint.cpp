@@ -40,21 +40,19 @@ void THR::TimInt::Logo()
   std::cout << "      _______________________________  " << std::endl;
   std::cout << "  ===(_________|_|_|_|_|_37°C_|_|____)   " << std::endl;
   std::cout << std::endl;
-
 }
 
 /*----------------------------------------------------------------------*
  |  constructor                                             bborn 08/09 |
  *----------------------------------------------------------------------*/
-THR::TimInt::TimInt
-(
+THR::TimInt::TimInt(
   const Teuchos::ParameterList& ioparams,
   const Teuchos::ParameterList& tdynparams,
   const Teuchos::ParameterList& xparams,
   Teuchos::RCP<DRT::Discretization> actdis,
   Teuchos::RCP<LINALG::Solver> solver,
   Teuchos::RCP<IO::DiscretizationWriter> output
-)
+  )
 : discret_(actdis),
   myrank_(actdis->Comm().MyPID()),
   dofrowmap_(actdis->Filled() ? actdis->DofRowMap() : NULL),
@@ -151,9 +149,9 @@ void THR::TimInt::DetermineCapaConsistTempRate()
 {
   // temporary force vectors in this routine
   Teuchos::RCP<Epetra_Vector> fext
-    = LINALG::CreateVector(*dofrowmap_, true); // external force
+    = LINALG::CreateVector(*dofrowmap_, true); //!< external force
   Teuchos::RCP<Epetra_Vector> fint
-    = LINALG::CreateVector(*dofrowmap_, true); // internal force
+    = LINALG::CreateVector(*dofrowmap_, true); //!< internal force
 
   // overwrite initial state vectors with DirichletBCs
   ApplyDirichletBC((*time_)[0], (*temp_)(0), (*rate_)(0), false);
@@ -211,13 +209,12 @@ void THR::TimInt::DetermineCapaConsistTempRate()
 /*----------------------------------------------------------------------*
  |  evaluate Dirichlet BC at t_{n+1}                       bborn 06/08  |
  *----------------------------------------------------------------------*/
-void THR::TimInt::ApplyDirichletBC
-(
+void THR::TimInt::ApplyDirichletBC(
   const double time,
   Teuchos::RCP<Epetra_Vector> temp,
   Teuchos::RCP<Epetra_Vector> rate,
   bool recreatemap
-)
+  )
 {
   // apply DBCs
   // needed parameters
@@ -286,10 +283,7 @@ void THR::TimInt::ResetStep()
 /*----------------------------------------------------------------------*
  |  Read and set restart values                             bborn 06/08 |
  *----------------------------------------------------------------------*/
-void THR::TimInt::ReadRestart
-(
-  const int step
-)
+void THR::TimInt::ReadRestart(const int step)
 {
   IO::DiscretizationReader reader(discret_, step);
   if (step != reader.ReadInt("step"))
@@ -369,10 +363,7 @@ void THR::TimInt::OutputStep()
 /*----------------------------------------------------------------------*
  |  write restart                                           mwgee 03/07 |
  *----------------------------------------------------------------------*/
-void THR::TimInt::OutputRestart
-(
-  bool& datawritten
-)
+void THR::TimInt::OutputRestart(bool& datawritten)
 {
   // Yes, we are going to write...
   datawritten = true;
@@ -411,10 +402,7 @@ void THR::TimInt::OutputRestart
  |  output temperature,temperature rate                     bborn 06/08 |
  |  originally by mwgee 03/07                                           |
  *----------------------------------------------------------------------*/
-void THR::TimInt::OutputState
-(
-  bool& datawritten
-)
+void THR::TimInt::OutputState(bool& datawritten)
 {
   // Yes, we are going to write...
   datawritten = true;
@@ -434,10 +422,7 @@ void THR::TimInt::OutputState
  |  heatflux calculation and output                         bborn 06/08 |
  |  originally by lw                                                    |
  *----------------------------------------------------------------------*/
-void THR::TimInt::OutputHeatfluxTempgrad
-(
-  bool& datawritten
-)
+void THR::TimInt::OutputHeatfluxTempgrad(bool& datawritten)
 {
   // create the parameters for the discretization
   ParameterList p;
@@ -627,7 +612,6 @@ void THR::TimInt::OutputHeatfluxTempgrad
     output_->WriteVector("tempgrad", fluxk, IO::DiscretizationWriter::nodevector);
   }
 */
-
   // leave me alone
   return;
 }
@@ -637,7 +621,6 @@ void THR::TimInt::OutputHeatfluxTempgrad
  *----------------------------------------------------------------------*/
 void THR::TimInt::OutputEnergy()
 {
-
   // internal/tempgrad energy
   double intergy = 0.0;  // total internal energy
   {
@@ -697,12 +680,11 @@ void THR::TimInt::OutputEnergy()
 /*----------------------------------------------------------------------*
  |  evaluate external forces at t_{n+1}                     bborn 06/08 |
  *----------------------------------------------------------------------*/
-void THR::TimInt::ApplyForceExternal
-(
+void THR::TimInt::ApplyForceExternal(
   const double time,  //!< evaluation time
   const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
   Teuchos::RCP<Epetra_Vector>& fext  //!< external force
-)
+  )
 {
   ParameterList p;
   // action for elements
@@ -724,50 +706,18 @@ void THR::TimInt::ApplyForceExternal
   return;
 }
 
-// 23.10.09
-///*----------------------------------------------------------------------*
-// |  evaluate external forces at t_{n+1}                     bborn 06/08 |
-// *----------------------------------------------------------------------*/
-//void THR::TimInt::ApplyForceExternal
-//(
-//  Teuchos::ParameterList& p,
-//  const double time,  //!< evaluation time
-//  const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
-//  Teuchos::RCP<Epetra_Vector>& fext  //!< external force
-//)
-//{
-//  const std::string action = "calc_thermo_fext";
-//  p.set("action", action);
-//  // type of calling time integrator
-//  p.set<INPAR::THR::DynamicType>("time integrator", MethodName());
-//  // other parameters needed by the elements
-//  p.set("total time", time);
-//
-//  // set vector values needed by elements
-//  discret_->ClearState();
-//  discret_->SetState("temperature", temp);
-//  // get load vector
-//  discret_->EvaluateNeumann(p, *fext);
-//  discret_->ClearState();
-//
-//  // go away
-//  return;
-//}
-
-
 /*----------------------------------------------------------------------*
  |  evaluate ordinary internal force, its tangent at state  bborn 06/08 |
  *----------------------------------------------------------------------*/
-void THR::TimInt::ApplyForceTangInternal
-(
+void THR::TimInt::ApplyForceTangInternal(
   Teuchos::ParameterList& p,
   const double time,
   const double dt,
-  const Teuchos::RCP<Epetra_Vector> temp,  // temperature state
-  const Teuchos::RCP<Epetra_Vector> tempi,  // residual temperature
-  Teuchos::RCP<Epetra_Vector> fint,  // internal force
-  Teuchos::RCP<LINALG::SparseMatrix> tang  // tangent matrix
-)
+  const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
+  const Teuchos::RCP<Epetra_Vector> tempi,  //!< residual temperature
+  Teuchos::RCP<Epetra_Vector> fint,  //!< internal force
+  Teuchos::RCP<LINALG::SparseMatrix> tang  //!< tangent matrix
+  )
 {
   // type of calling time integrator
   p.set<INPAR::THR::DynamicType>("time integrator", MethodName());
@@ -784,9 +734,6 @@ void THR::TimInt::ApplyForceTangInternal
   discret_->Evaluate(p, tang, Teuchos::null, fint, Teuchos::null, Teuchos::null);
   discret_->ClearState();
 
-  // 29.10.09
-//  cout << "p " << p << endl;
-
   // that's it
   return;
 }
@@ -795,17 +742,16 @@ void THR::TimInt::ApplyForceTangInternal
  |  evaluate ordinary internal force, its tangent at state  bborn 10/09 |
  |  overloaded function specified for ost time integration              |
  *----------------------------------------------------------------------*/
-void THR::TimInt::ApplyForceTangInternal
-(
+void THR::TimInt::ApplyForceTangInternal(
   Teuchos::ParameterList& p,
   const double time,
   const double dt,
-  const Teuchos::RCP<Epetra_Vector> temp,  // temperature state
-  const Teuchos::RCP<Epetra_Vector> tempi,  // residual temperature
-  Teuchos::RCP<Epetra_Vector> fcap,  // stored force
-  Teuchos::RCP<Epetra_Vector> fint,  // internal force
-  Teuchos::RCP<LINALG::SparseMatrix> tang  // tangent matrix
-)
+  const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
+  const Teuchos::RCP<Epetra_Vector> tempi,  //!< residual temperature
+  Teuchos::RCP<Epetra_Vector> fcap,  //!< stored force
+  Teuchos::RCP<Epetra_Vector> fint,  //!< internal force
+  Teuchos::RCP<LINALG::SparseMatrix> tang  //!< tangent matrix
+  )
 {
   // type of calling time integrator
   p.set<INPAR::THR::DynamicType>("time integrator", MethodName());
@@ -833,10 +779,10 @@ void THR::TimInt::ApplyForceInternal(
   Teuchos::ParameterList& p,
   const double time,
   const double dt,
-  const Teuchos::RCP<Epetra_Vector> temp,  // temperature state
-  const Teuchos::RCP<Epetra_Vector> tempi,  // incremental temperature
-  Teuchos::RCP<Epetra_Vector> fint  // internal force
-)
+  const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
+  const Teuchos::RCP<Epetra_Vector> tempi,  //!< incremental temperature
+  Teuchos::RCP<Epetra_Vector> fint  //!< internal force
+  )
 {
   // type of calling time integrator
   p.set("time integrator", MethodName());
@@ -893,5 +839,5 @@ void THR::TimInt::Integrate()
   return;
 }
 
-
+/*----------------------------------------------------------------------*/
 #endif  // #ifdef CCADISCRET

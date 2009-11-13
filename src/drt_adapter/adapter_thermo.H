@@ -12,12 +12,18 @@ Maintainer: Caroline Danowski
 
 </pre>
 */
-/*----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*
+ |  definitions                                             bborn 08/09 |
+ *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
 #ifndef ADAPTER_THERMO_H
 #define ADAPTER_THERMO_H
 
+/*----------------------------------------------------------------------*
+ |  headers                                                 bborn 08/09 |
+ *----------------------------------------------------------------------*/
 #include <Teuchos_RefCountPtr.hpp>
 #include <Teuchos_ParameterList.hpp>
 
@@ -29,12 +35,14 @@ Maintainer: Caroline Danowski
 #include "../drt_lib/linalg_solver.H"
 #include "../drt_thermo/thr_resulttest.H"
 
-
-namespace ADAPTER {
+/*----------------------------------------------------------------------*
+ |  adapting adapter                                        bborn 08/09 |
+ *----------------------------------------------------------------------*/
+namespace ADAPTER
+{
 
   /// general thermal field interface
   /*!
-
   The point is to keep TSI as far apart from our field solvers as
   possible. Each thermal field solver we want to use should get its own
   subclass of this. The TSI algorithm should be able to extract all the
@@ -203,5 +211,6 @@ namespace ADAPTER {
 
 }  // namespace ADAPTER
 
+/*----------------------------------------------------------------------*/
 #endif // ADAPTER_THERMO_H
 #endif // CCADISCRET

@@ -11,11 +11,16 @@ Maintainer: Caroline Danowski
             089 - 289-15253
 </pre>
  */
-/*----------------------------------------------------------------------*/
 
+/*----------------------------------------------------------------------*
+ |  definitions                                              dano 09/09 |
+ *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 #ifdef D_THERMO
 
+/*----------------------------------------------------------------------*
+ |  headers                                                  dano 09/09 |
+ *----------------------------------------------------------------------*/
 #include <cstdlib>
 #include "thermo_ele_boundary_impl.H"
 #include "thermo_ele_impl.H"
@@ -30,8 +35,8 @@ Maintainer: Caroline Danowski
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
 #include "../drt_lib/drt_function.H"
 
-
 /*----------------------------------------------------------------------*
+ |                                                           dano 09/09 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::TemperBoundaryImplInterface* DRT::ELEMENTS::TemperBoundaryImplInterface::Impl(DRT::Element* ele)
 {
@@ -97,6 +102,7 @@ DRT::ELEMENTS::TemperBoundaryImplInterface* DRT::ELEMENTS::TemperBoundaryImplInt
 }
 
 /*----------------------------------------------------------------------*
+ |                                                           dano 09/09 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::TemperBoundaryImpl<distype>::TemperBoundaryImpl
@@ -109,25 +115,25 @@ DRT::ELEMENTS::TemperBoundaryImpl<distype>::TemperBoundaryImpl
     derxy_(true),
     normal_(true),
     fac_(0.0)
-    {
-        return;
-    }
+{
+  return;
+}
 
 /*----------------------------------------------------------------------*
+ |                                                           dano 09/09 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate
-(
-  DRT::ELEMENTS::ThermoBoundary*    ele,
-  Teuchos::ParameterList&           params,
-  DRT::Discretization&              discretization,
-  std::vector<int>&                 lm,
-  Epetra_SerialDenseMatrix&         elemat1_epetra,
-  Epetra_SerialDenseMatrix&         elemat2_epetra,
-  Epetra_SerialDenseVector&         elevec1_epetra,
-  Epetra_SerialDenseVector&         elevec2_epetra,
-  Epetra_SerialDenseVector&         elevec3_epetra
-)
+int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
+  DRT::ELEMENTS::ThermoBoundary* ele,
+  Teuchos::ParameterList& params,
+  DRT::Discretization& discretization,
+  std::vector<int>& lm,
+  Epetra_SerialDenseMatrix& elemat1_epetra,
+  Epetra_SerialDenseMatrix& elemat2_epetra,
+  Epetra_SerialDenseVector& elevec1_epetra,
+  Epetra_SerialDenseVector& elevec2_epetra,
+  Epetra_SerialDenseVector& elevec3_epetra
+  )
 {
   // First, do the things that are needed for all actions:
   // get the material (of the parent element)
@@ -183,15 +189,14 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate
  |  Integrate a Surface/Line Neumann boundary condition       gjb 01/09 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann
-(
-  DRT::Element*             ele,
-  Teuchos::ParameterList&   params,
-  DRT::Discretization&      discretization,
-  DRT::Condition&           condition,
-  std::vector<int>&         lm,
+int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(
+  DRT::Element* ele,
+  Teuchos::ParameterList& params,
+  DRT::Discretization& discretization,
+  DRT::Condition& condition,
+  std::vector<int>& lm,
   Epetra_SerialDenseVector& elevec1
-)
+  )
 {
   // get node coordinates (we have a nsd_+1 dimensional domain!)
   GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,iel> >(ele,xyze_);
@@ -275,12 +280,11 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann
  |  evaluate shape functions and int. factor at int. point    gjb 01/09 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvalShapeFuncAndIntFac
-(
+void DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvalShapeFuncAndIntFac(
   const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
-  const int&                                   iquad,      ///< id of current Gauss point
-  const int&                                   eleid       ///< the element id
-)
+  const int& iquad,  ///< id of current Gauss point
+  const int& eleid  ///< the element id
+  )
 {
   // coordinates of the current integration point
   const double* gpcoord = (intpoints.IP().qxg)[iquad];
@@ -306,11 +310,10 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvalShapeFuncAndIntFac
  |  get constant normal                                       gjb 01/09 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::TemperBoundaryImpl<distype>::GetConstNormal
-(
-  LINALG::Matrix<nsd_+1,1>&          normal,
-  const LINALG::Matrix<nsd_+1,iel>&  xyze
-)
+void DRT::ELEMENTS::TemperBoundaryImpl<distype>::GetConstNormal(
+  LINALG::Matrix<nsd_+1,1>& normal,
+  const LINALG::Matrix<nsd_+1,iel>& xyze
+  )
 {
   // determine normal to this element
   switch(nsd_)
@@ -345,19 +348,18 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::GetConstNormal
   normal.Scale(1/length);
 
   return;
-} // TemperBoundaryImpl<distype>::
+}
 
 /*----------------------------------------------------------------------*
  |  Integrate shapefunctions over surface (private)           gjb 02/09 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::TemperBoundaryImpl<distype>::IntegrateShapeFunctions
-(
-  const DRT::Element*        ele,
-  Teuchos::ParameterList&    params,
-  Epetra_SerialDenseVector&  elevec1,
-  const bool                 addarea
-)
+void DRT::ELEMENTS::TemperBoundaryImpl<distype>::IntegrateShapeFunctions(
+  const DRT::Element* ele,
+  Teuchos::ParameterList& params,
+  Epetra_SerialDenseVector& elevec1,
+  const bool addarea
+  )
 {
   // access boundary area variable with its actual value
   double boundaryint = params.get<double>("boundaryint");
@@ -397,6 +399,6 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::IntegrateShapeFunctions
 
 } //TemperBoundaryImpl<distype>::IntegrateShapeFunction
 
-
+/*----------------------------------------------------------------------*/
 #endif // D_THERMO
 #endif // CCADISCRET

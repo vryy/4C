@@ -37,7 +37,6 @@ Maintainer: Burkhard Bornemann
  *----------------------------------------------------------------------*/
 namespace THR
 {
-
   /*====================================================================*/
   //!
   //! \brief This is the base object for holding multi-step quantities,
@@ -103,11 +102,10 @@ namespace THR
 
     //! Another dummy constructor which sets vector limits and its size
     //! but does not allocate anything
-    TimIntMStepBase
-    (
+    TimIntMStepBase(
       const int steppast,  //!< lower index bound
       const int stepfuture  //!< higher index bound, >= lower bound
-    )
+      )
     : steppast_(steppast),
       stepfuture_(stepfuture),
       steps_(stepfuture>=steppast ? stepfuture-steppast+1 : 0),
@@ -127,11 +125,10 @@ namespace THR
     //@{
 
     //! Check sanity prior resize
-    bool ResizeSane
-    (
+    bool ResizeSane(
       const int steppast,  //!< lower index bound
       const int stepfuture  //!< higher index bound, >= lower bound
-    )
+      )
     {
       bool sane = true;
 
@@ -148,37 +145,33 @@ namespace THR
     }
 
     //! Determine wether step lies in given bounds
-    bool StepExists
-    (
+    bool StepExists(
       const int step  //!< inquired step
-    )
+      )
     {
       return ( (step >= steppast_) and (step <= stepfuture_) );
     }
 
     //! determine wether index lies in given bounds
-    bool IndexExists
-    (
+    bool IndexExists(
       const int index //!< inquired index
-    )
+      )
     {
       return ( (index >= 0) and (index < (int) state_.size()) );
     }
 
     //! Map step number to vector index
-    int StepByIndex
-    (
+    int StepByIndex(
       const int index  //!< vector index
-    )
+      )
     {
       return index + steppast_;
     }
 
     //! Map vector index to step
-    int IndexByStep
-    (
+    int IndexByStep(
       const int step  //!< step number
-    )
+      )
     {
       int index = step - steppast_;
       dsassert(IndexExists(index), "step is not permissible!");
@@ -224,12 +217,11 @@ namespace THR
     //@{
 
     //! Constructor
-    TimIntMStep
-    (
+    TimIntMStep(
       const int steppast,  //!< lower index bound
       const int stepfuture,  //!< higher index bound, >= lower bound
       const STATE init  //!< initialise to init
-    )
+      )
     : MStepBase(steppast, stepfuture)
     {
       // allocate the vectors themselves
@@ -243,12 +235,11 @@ namespace THR
     }
 
     //! Resize
-    void Resize
-    (
+    void Resize(
       const int steppast,  //!< lower index bound
       const int stepfuture,  //!< higher index bound, >= lower bound
       const STATE init  //!< initialise to init
-    )
+      )
     {
       // check this
       {
@@ -277,11 +268,10 @@ namespace THR
     //@{
 
     //! Set entrie at #step to #value
-    void SetStep
-    (
+    void SetStep(
       const int step,
       const STATE value
-    )
+      )
     {
       MStepBase::state_.at(MStepBase::IndexByStep(step)) = value;
     }
@@ -291,10 +281,9 @@ namespace THR
     //!      state_{n-1} := state_{n},
     //!      state_{n} := state_{n+1},
     //!      etc.
-    void UpdateSteps
-    (
+    void UpdateSteps(
       const STATE staten  //!< state_{n+1}
-    )
+      )
     {
       for (int ind=0; ind<MStepBase::steps_-1; ++ind)
       {
@@ -334,13 +323,12 @@ namespace THR
     { ; }
 
     //! Constructor
-    TimIntMStep
-    (
+    TimIntMStep(
       const int steppast,  //!< lower index bound
       const int stepfuture,  //!< higher index bound, >= lower bound
       const Epetra_Map* dofrowmap,  //!< vector layout from discretization
       const bool inittozero  //!< initialse to zero, if true
-    )
+      )
     : MStepBase(steppast, stepfuture)
     {
       // allocate the vectors themselves
@@ -357,13 +345,12 @@ namespace THR
     //!
     //! State vectors are added and placed according to their
     //! indices #steppast to #stepfuture
-    void Resize
-    (
+    void Resize(
       const int steppast,  //!< lower index bound
       const int stepfuture,  //!< higher index bound, >= lower bound
       const Epetra_Map* dofrowmap,  //!< vector layout from discretization
       const bool inittozero  //!< initialse to zero, if true
-    )
+      )
     {
       // check this
       {
@@ -397,10 +384,9 @@ namespace THR
     //!      state_{n-1} := state_{n},
     //!      state_{n} := state_{n+1},
     //!      etc.
-    void UpdateSteps
-    (
+    void UpdateSteps(
       const Epetra_Vector& staten  //!< state_{n+1}
-    )
+      )
     {
       for (int ind=0; ind<MStepBase::steps_-1; ++ind)
       {
@@ -418,6 +404,6 @@ namespace THR
 
 }  // namespace THR
 
-
+/*----------------------------------------------------------------------*/
 #endif  // #ifndef THRTIMINT_MSTEP_H
 #endif  // #ifdef CCADISCRET

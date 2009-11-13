@@ -1,3 +1,4 @@
+/*----------------------------------------------------------------------*/
 /*!
 \file thr_resulttest.H
 
@@ -32,44 +33,47 @@ Maintainer: Moritz Frenzel
 namespace THR
 {
 
-/*!
-  \brief Thermo specific result test class
-
-  \author cd
-*/
-class ResultTest : public DRT::ResultTest
-{
-public:
-
-  //! Constructor for time integrators of general kind
-  //! \author bborn \date 06/08
-  ResultTest(TimInt& tintegrator);
-
-  //! \brief thermo version of nodal value tests
   //!
-  //! Possible position flags are "temp",
-  //!                             "rate",
-  virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
+  //! \brief Thermo specific result test class
+  //!
+  //! \author cd
+  class ResultTest : public DRT::ResultTest
+  {
+  public:
 
-  //! return true if this is a thermo test
-  virtual bool Match(DRT::INPUT::LineDefinition& res);
+    //! Constructor for time integrators of general kind
+    //! \author bborn \date 06/08
+    ResultTest(TimInt& tintegrator);
 
-private:
+    //! \brief thermo version of nodal value tests
+    //!
+    //! Possible position flags are "temp",
+    //!                             "rate",
+    virtual void TestNode(
+      DRT::INPUT::LineDefinition& res,
+      int& nerr,
+      int& test_count
+      );
 
-  //! our discretisation
-  Teuchos::RCP<DRT::Discretization> thrdisc_;
-  // our solution
-  //! global temperature DOFs
-  Teuchos::RCP<Epetra_Vector> temp_;
-  //! global temperature rate DOFs
-  Teuchos::RCP<Epetra_Vector> rate_;
-  /* NOTE: these have to be present explicitly
-   * as they are not part of the problem instance like in fluid3
-   */
-};
+    //! return true if this is a thermo test
+    virtual bool Match(DRT::INPUT::LineDefinition& res);
+
+  private:
+
+    //! our discretisation
+    Teuchos::RCP<DRT::Discretization> thrdisc_;
+    // our solution
+    //! global temperature DOFs
+    Teuchos::RCP<Epetra_Vector> temp_;
+    //! global temperature rate DOFs
+    Teuchos::RCP<Epetra_Vector> rate_;
+    //! NOTE: these have to be present explicitly
+    //! as they are not part of the problem instance like in fluid3
+
+  }; // DRT::ResultTest
 
 }  // namespace THR
 
-
+/*----------------------------------------------------------------------*/
 #endif // #ifdef CCADISCRET
 #endif // #ifndef THR_RESULTTEST_H

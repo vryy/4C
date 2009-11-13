@@ -1,3 +1,4 @@
+/*----------------------------------------------------------------------*/
 /*!
 \file thr_dyn.cpp
 \brief entry point for (in)stationary heat conduction
@@ -9,6 +10,7 @@ Maintainer: Burkhard Bornemann
             089 - 289-15237
 </pre>
 */
+
 /*----------------------------------------------------------------------*
  |  definitions                                               gjb 01/08 |
  *----------------------------------------------------------------------*/
@@ -31,8 +33,7 @@ Maintainer: Burkhard Bornemann
 #include "thr_resulttest.H"
 
 /*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | general problem data                                                 |
+ | general problem data                                     m.gee 06/01 |
  | global variable GENPROB genprob is defined in global_control.c       |
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
@@ -109,5 +110,5 @@ void thr_dyn_drt()
 
 } // end of thr_dyn_drt()
 
-
+/*----------------------------------------------------------------------*/
 #endif  // #ifdef CCADISCRET

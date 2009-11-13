@@ -8,8 +8,8 @@ Maintainer: Caroline Danowski
             http://www.lnm.mw.tum.de
             089 - 289-15253
 </pre>
-
 */
+
 /*----------------------------------------------------------------------*
  |  definitions                                                gjb 01/08|
  *----------------------------------------------------------------------*/
@@ -32,14 +32,15 @@ Maintainer: Caroline Danowski
  |  evaluate the element (public)                            dano 09/09 |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Thermo::Evaluate(
-    Teuchos::ParameterList&   params,
-    DRT::Discretization&      discretization,
-    std::vector<int>&         lm,
-    Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseMatrix& elemat2,
-    Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2,
-    Epetra_SerialDenseVector& elevec3)
+  Teuchos::ParameterList& params,
+  DRT::Discretization& discretization,
+  std::vector<int>& lm,
+  Epetra_SerialDenseMatrix& elemat1,
+  Epetra_SerialDenseMatrix& elemat2,
+  Epetra_SerialDenseVector& elevec1,
+  Epetra_SerialDenseVector& elevec2,
+  Epetra_SerialDenseVector& elevec3
+  )
 {
 
   // all physics-related stuff is included in the implementation class that can
@@ -47,18 +48,17 @@ int DRT::ELEMENTS::Thermo::Evaluate(
   // If this element has special features/ methods that do not fit in the
   // generalized implementation class, you have to do a switch here in order to
   // call element-specific routines
-
   return DRT::ELEMENTS::TemperImplInterface::Impl(this)->Evaluate(
-      this,
-      params,
-      discretization,
-      lm,
-      elemat1,
-      elemat2,
-      elevec1,
-      elevec2,
-      elevec3
-      );
+    this,
+    params,
+    discretization,
+    lm,
+    elemat1,
+    elemat2,
+    elevec1,
+    elevec2,
+    elevec3
+    );
 
 } //DRT::ELEMENTS::Thermo::Evaluate
 
@@ -69,23 +69,25 @@ int DRT::ELEMENTS::Thermo::Evaluate(
  |  integration of the volume neumann (body forces) loads takes place   |
  |  in the element. We need it there for the stabilisation terms!       |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Thermo::EvaluateNeumann(Teuchos::ParameterList& params,
-    DRT::Discretization&      discretization,
-    DRT::Condition&           condition,
-    std::vector<int>&         lm,
-    Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseMatrix* elemat1)
+int DRT::ELEMENTS::Thermo::EvaluateNeumann(
+  Teuchos::ParameterList& params,
+  DRT::Discretization& discretization,
+  DRT::Condition& condition,
+  std::vector<int>& lm,
+  Epetra_SerialDenseVector& elevec1,
+  Epetra_SerialDenseMatrix* elemat1
+  )
 {
   return DRT::ELEMENTS::TemperImplInterface::Impl(this)->EvaluateNeumann(
-      this,
-      params,
-      discretization,
-      lm,
-      elevec1,
-      elemat1
-      );
+    this,
+    params,
+    discretization,
+    lm,
+    elevec1,
+    elemat1
+    );
 }
 
-
+/*----------------------------------------------------------------------*/
 #endif  // #ifdef D_THERMO
 #endif  // #ifdef CCADISCRET

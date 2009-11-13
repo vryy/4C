@@ -12,8 +12,9 @@ Maintainer: Burkhard Bornemann
 </pre>
 */
 
-/*----------------------------------------------------------------------*/
-/* macros */
+/*----------------------------------------------------------------------*
+ |  definitions                                              dano 08/09 |
+ *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
 /*----------------------------------------------------------------------*
@@ -32,15 +33,14 @@ THR::TimIntOneStepTheta::TimIntOneStepTheta(
   Teuchos::RCP<LINALG::Solver> solver,
   Teuchos::RCP<IO::DiscretizationWriter> output
   )
-: TimIntImpl
-  (
+: TimIntImpl(
     ioparams,
     tdynparams,
     xparams,
     actdis,
     solver,
     output
-  ),
+    ),
   theta_(tdynparams.sublist("ONESTEPTHETA").get<double>("THETA")),
   tempt_(Teuchos::null),
   ratet_(Teuchos::null),
@@ -63,14 +63,12 @@ THR::TimIntOneStepTheta::TimIntOneStepTheta(
   DetermineCapaConsistTempRate();
 
   // create state vectors
-
   // mid-temperatures
   tempt_ = LINALG::CreateVector(*dofrowmap_, true);
   // mid-temperature rates
   ratet_ = LINALG::CreateVector(*dofrowmap_, true);
 
   // create force vectors
-
   // internal force vector F_{int;n} at last time
   fint_ = LINALG::CreateVector(*dofrowmap_, true);
   // internal force vector F_{int;n+1} at new time
@@ -82,7 +80,6 @@ THR::TimIntOneStepTheta::TimIntOneStepTheta(
   // set initial internal force vector
   ApplyForceTangInternal((*time_)[0], (*dt_)[0], (*temp_)(0), zeros_,
                          fcap_, fint_, tang_);
-
   // external force vector F_ext at last times
   fext_ = LINALG::CreateVector(*dofrowmap_, true);
   // external force vector F_{n+1} at new time
@@ -308,7 +305,7 @@ void THR::TimIntOneStepTheta::UpdateStepState()
                        Teuchos::null, Teuchos::null, Teuchos::null);
   }
 
-   // look out
+  // look out
   return;
 }
 
@@ -338,7 +335,7 @@ void THR::TimIntOneStepTheta::ApplyForceTangInternal(
   Teuchos::RCP<Epetra_Vector> fcap,  //!< stored force
   Teuchos::RCP<Epetra_Vector> fint,  //!< internal force
   Teuchos::RCP<LINALG::SparseMatrix> tang  //!< tangent matrix
-)
+  )
 {
   // create the parameters for the discretization
   Teuchos::ParameterList p;
@@ -359,7 +356,7 @@ void THR::TimIntOneStepTheta::ApplyForceInternal(
   const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
   const Teuchos::RCP<Epetra_Vector> tempi,  //!< incremental temperatures
   Teuchos::RCP<Epetra_Vector> fint  //!< internal force
-)
+  )
 {
   // create the parameters for the discretization
   Teuchos::ParameterList p;
@@ -371,5 +368,5 @@ void THR::TimIntOneStepTheta::ApplyForceInternal(
   return;
 }
 
-
+/*----------------------------------------------------------------------*/
 #endif  // #ifdef CCADISCRET

@@ -235,12 +235,11 @@ class ThermoEnsightWriter : public EnsightWriter
 {
 public:
     /// constructor
-    ThermoEnsightWriter(
-            PostField* field,
-            string filename,
-            string heatfluxtype="none",
-            string tempgradtype="none") :
-        EnsightWriter(field, filename), heatfluxtype_(heatfluxtype), tempgradtype_(tempgradtype)
+    ThermoEnsightWriter(PostField* field,
+                        string filename,
+                        string heatfluxtype="none",
+                        string tempgradtype="none") :
+    EnsightWriter(field, filename), heatfluxtype_(heatfluxtype), tempgradtype_(tempgradtype)
     {
     }
 
@@ -251,12 +250,12 @@ protected:
 
     /*!
     \brief postprocess gauss point heatfluxes and write results
-    \author lw changed to thermal stuff
-    \date 02/08
+    \author originally by lw
+    \date 11/09
     */
-    void PostHeatflux(const string groupname, const string stresstype);
+    void PostHeatflux(const string groupname, const string heatfluxtype);
     void WriteNodalHeatflux(const string groupname,
-                          PostResult& result);
+                            PostResult& result);
     void WriteNodalHeatfluxStep(ofstream& file,
                                 PostResult& result,
                                 map<string, vector<ofstream::pos_type> >& resultfilepos,
@@ -264,13 +263,13 @@ protected:
                                 const string name,
                                 const int numdf) const;
     void WriteElementCenterHeatflux(const string groupname,
-                                  PostResult& result);
+                                    PostResult& result);
     void WriteElementCenterHeatfluxStep(ofstream& file,
-                                      PostResult& result,
-                                      map<string, vector<ofstream::pos_type> >& resultfilepos,
-                                      const string groupname,
-                                      const string name,
-                                      const int numdf) const;
+                                        PostResult& result,
+                                        map<string, vector<ofstream::pos_type> >& resultfilepos,
+                                        const string groupname,
+                                        const string name,
+                                        const int numdf) const;
 
     string heatfluxtype_;  ///< type of heat flux output
     string tempgradtype_;  ///< type of spatial temperature gradient output

@@ -28,23 +28,21 @@ Maintainer: Burkhard Bornemann
  *----------------------------------------------------------------------*/
 namespace THR
 {
-
   /*====================================================================*/
-  /*!
-   * \brief Front-end for thermal dynamics
-   *        with \b implicit time integration
-   *
-   * <h3> About </h3>
-   * The implicit time integrator object is a derivation of the base time integrators with an eye towards implicit time integration.
-   * #TimIntImpl provides the environment needed to execute implicit integrators. This is chiefly the non-linear solution technique,
-   * e.g., Newton-Raphson iteration. These iterative solution techniques require a set of control parameters which are stored within
-   * this object. It is up to derived object to implement the time-space discretised residuum an d its tangent. This object provides
-   * some utility functions to obtain various force vectors necessary in the calculation of the force residual in the derived time
-   * integrators.
-   *
-   * \author bborn
-   * \date 06/08
-   */
+  //!
+  //! \brief Front-end for thermal dynamics
+  //!        with \b implicit time integration
+  //!
+  //! <h3> About </h3>
+  //! The implicit time integrator object is a derivation of the base time integrators with an eye towards implicit time integration.
+  //! #TimIntImpl provides the environment needed to execute implicit integrators. This is chiefly the non-linear solution technique,
+  //! e.g., Newton-Raphson iteration. These iterative solution techniques require a set of control parameters which are stored within
+  //! this object. It is up to derived object to implement the time-space discretised residuum an d its tangent. This object provides
+  //! some utility functions to obtain various force vectors necessary in the calculation of the force residual in the derived time
+  //! integrators.
+  //!
+  //! \author bborn
+  //! \date 06/08
   class TimIntImpl : public TimInt
   {
 
@@ -54,15 +52,14 @@ namespace THR
     //@{
 
     //! Constructor
-    TimIntImpl
-    (
+    TimIntImpl(
       const Teuchos::ParameterList& ioparams,  //!< ioflags
       const Teuchos::ParameterList& tdynparams,  //!< input parameters
       const Teuchos::ParameterList& xparams,  //!< extra flags
       Teuchos::RCP<DRT::Discretization> actdis,  //!< current discretization
       Teuchos::RCP<LINALG::Solver> solver,  //!< the solver
       Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
-    );
+      );
 
     //! Destructor
     virtual ~TimIntImpl() { ; }
@@ -170,10 +167,9 @@ namespace THR
     //! This handles the iterative update of the current
     //! temperature \f$T_{n+1}\f$ with the residual temperature
     //! The temperature rate follow on par.
-    void UpdateIter
-    (
+    void UpdateIter(
       const int iter  //!< iteration counter
-    );
+      );
 
     //! Update iteration incrementally
     //!
@@ -186,10 +182,9 @@ namespace THR
 
     //! Update iteration incrementally with prescribed residual
     //! temperatures
-    void UpdateIterIncrementally
-    (
+    void UpdateIterIncrementally(
       const Teuchos::RCP<const Epetra_Vector> tempi  //!< input residual temperatures
-    );
+      );
 
     //! Update iteration iteratively
     //!
@@ -225,17 +220,15 @@ namespace THR
 
     //! Contains text to PrintNewtonIter
     //! \author lw (originally) \date 12/07
-    void PrintNewtonIterText
-    (
+    void PrintNewtonIterText(
       FILE* ofile  //!< output file handle
-    );
+      );
 
     //! Contains header to PrintNewtonIter
     //! \author lw (originally) \date 12/07
-    void PrintNewtonIterHeader
-    (
+    void PrintNewtonIterHeader(
       FILE* ofile  //!< output file handle
-    );
+      );
 
     //! print statistics of converged Newton-Raphson iteration
     void PrintNewtonConv();
@@ -244,10 +237,9 @@ namespace THR
     void PrintStep();
 
     //! The text for summary print, see #PrintStep
-    void PrintStepText
-    (
+    void PrintStepText(
       FILE* ofile  //!< output file handle
-    );
+      );
 
     //@}
 
@@ -299,10 +291,9 @@ namespace THR
     Teuchos::RCP<const Epetra_Vector> TempRes() const { return tempi_; }
 
     //! Set residual temperatures \f$\Delta T_{n+1}^{<k>}\f$
-    void SetTempResidual
-    (
+    void SetTempResidual(
       const Teuchos::RCP<const Epetra_Vector> tempi  //!< input residual temperatures
-    )
+      )
     {
       if (tempi != Teuchos::null) tempi_->Update(1.0, *tempi, 0.0);
     }
@@ -358,6 +349,6 @@ namespace THR
 
 }  // namespace THR
 
-
+/*----------------------------------------------------------------------*/
 #endif  // #ifndef THRTIMINT_IMPL_H
 #endif  // #ifdef CCADISCRET

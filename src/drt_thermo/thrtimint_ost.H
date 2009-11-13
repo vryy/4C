@@ -27,104 +27,103 @@ Maintainer: Burkhard Bornemann
  |  belongs to thermal dynamics namespace                    dano 08/09 |
  *----------------------------------------------------------------------*/
 namespace THR
-{
-
-/*====================================================================*/
-/*!
- * \brief One-step-theta time integration (or Crank-Nicholson scheme or generalised trapezoidal rule)
- *
- * <h3> Background </h3>
- * One-step theta time integration is a finite difference method for 1st order ordinary differential equations (ODE) of the type
- * \f[
- *   F(y,\dot{y},t) = \dot{y}(t) - f(y(t),t) = 0
- * \f]
- *
- * The one-step-theta time integration method discretises this equation into the following reference formula
- * \f[
- *   \frac{y_{n+1} - y_n}{\Delta t}
- *   - \theta f(y_{n+1},t_{n+1}) + (1-\theta) f(y_n,t_n)
- *   = 0
- * \qquad
- * \f]
- * in which \f$\theta\in[0,1]\f$ is the key parameter. The method is implicit unless \f$\theta=0\f$, which is the forward Euler scheme. The method recovers the backward Euler method with \f$\theta=1\f$. The trapezoidal rule (TR, or average acceleration method) is obtained with \f$\theta=1/2\f$. Only the trapezoidal rule is second order accurate, all other schemes are only first order.
- *
- * This method is applied to the set of ODEs reflecting the first order degree of the governing equations in thermal dynamics:
- * \f[\left\{\begin{array}{rcl}
- *
- *   C \, R(t) + F_{int}(T,t) - F_{ext}(t) & = & 0
- * \end{array}\right.\f]
- * \f$C\f$ is a global capacity matrix, \f$T(t)\f$ the temperature (#temp_), \f$R(t)\f$ the
- * temperature rates (#rate_), \f$F_{int}\f$ the internal forces and \f$F_{ext}\f$ the external forces.
- * One obtains
- * \f[\left\{\begin{array}{rcl}
- *   \frac{T_{n+1} - T_n}{\Delta t}
- *   - \theta R_{n+1} - (1-\theta) R_n
- *   & = & 0
- * \\
- *   C \frac{T_{n+1} - T_n}{\Delta t}
- *   + F_{int,n+\theta}
- *   - F_{ext,n+\theta}
- *   & = & 0
- * \end{array}\right.\f]
- * with
- * \f[
- *   F_{int,n+\theta}
- *   = \theta F_{int}(T_{n+1},t_{n+1}) + (1-\theta) F_{int}(T_{n+1},t_{n+1})
- *   \quad\mbox{and}\quad
- *   F_{ext,n+\theta}
- *   = \theta F_{ext}(t_{n+1}) + (1-\theta) F_{ext}(t_{n+1})
- * \f]
- * These vector equations can be rewritten such that the unknown temperature rates \f$r_{n+1}\f$
- * can be suppressed or rather expressed by the unknown temperatures \f$T_{n+1}\f$. The residual is achieved
- * \f[
- *   R_{n+\theta}(T_{n+1})
- *   = C R_{n+\theta}(T_{n+1})
- *   + F_{int,n+\theta} - F_{ext,n+\theta}
- *   = 0
- * \f]
- * in which
- * \f[\begin{array}{rclcl}
- *   R_{n+\theta}(T_{n+1})
- *   & = &
- *   \frac{1}{\Delta t} ( T_{n+1} - T_n )
- *   &&
- * \end{array}\f]
- *
- * <h3>Family members to be aware of</h3>
- * <table>
- *   <tr>
- *     <td>Name</td>
- *     <td>Abbreviation</td>
- *     <td>\f$\theta\f$</td>
- *     <td>Order of accuracy</td>
- *     <td>Stability</td>
- *   </tr>
- *   <tr>
- *     <td>Backward Euler</td>
- *     <td>BE</td>
- *     <td>\f$1\f$</td>
- *     <td>1</td>
- *     <td>A,L-stable</td>
- *   </tr>
- *   <tr>
- *     <td>Trapezoidal rule</td>
- *     <td>TR</td>
- *     <td>\f$\frac{1}{2}\f$</td>
- *     <td>2</td>
- *     <td>A-stable</td>
- *   </tr>
- * </table>
- *
- * <h3>References</h3>
- * - [1] HR Schwarz, Numerische Mathematik, Teubner, Stuttgart, 1997.
- * - [2] TJR Hughes, The finite element method, Dover, Mineola, 1987.
- * - [3] P Deuflhard and F Bornemann, Numerische Mathematik II: Integration gewohnlicher Differentialgleichungen, Walter de Gryter, Berlin, 1994.
- * - [4] ...
- *
- *
- * \author bborn
- * \date 06/08
- */
+  {
+  /*====================================================================*/
+  /*!
+   * \brief One-step-theta time integration (or Crank-Nicholson scheme or generalised trapezoidal rule)
+   *
+   * <h3> Background </h3>
+   * One-step theta time integration is a finite difference method for 1st order ordinary differential equations (ODE) of the type
+   * \f[
+   *   F(y,\dot{y},t) = \dot{y}(t) - f(y(t),t) = 0
+   * \f]
+   *
+   * The one-step-theta time integration method discretises this equation into the following reference formula
+   * \f[
+   *   \frac{y_{n+1} - y_n}{\Delta t}
+   *   - \theta f(y_{n+1},t_{n+1}) + (1-\theta) f(y_n,t_n)
+   *   = 0
+   * \qquad
+   * \f]
+   * in which \f$\theta\in[0,1]\f$ is the key parameter. The method is implicit unless \f$\theta=0\f$, which is the forward Euler scheme. The method recovers the backward Euler method with \f$\theta=1\f$. The trapezoidal rule (TR, or average acceleration method) is obtained with \f$\theta=1/2\f$. Only the trapezoidal rule is second order accurate, all other schemes are only first order.
+   *
+   * This method is applied to the set of ODEs reflecting the first order degree of the governing equations in thermal dynamics:
+   * \f[\left\{\begin{array}{rcl}
+   *
+   *   C \, R(t) + F_{int}(T,t) - F_{ext}(t) & = & 0
+   * \end{array}\right.\f]
+   * \f$C\f$ is a global capacity matrix, \f$T(t)\f$ the temperature (#temp_), \f$R(t)\f$ the
+   * temperature rates (#rate_), \f$F_{int}\f$ the internal forces and \f$F_{ext}\f$ the external forces.
+   * One obtains
+   * \f[\left\{\begin{array}{rcl}
+   *   \frac{T_{n+1} - T_n}{\Delta t}
+   *   - \theta R_{n+1} - (1-\theta) R_n
+   *   & = & 0
+   * \\
+   *   C \frac{T_{n+1} - T_n}{\Delta t}
+   *   + F_{int,n+\theta}
+   *   - F_{ext,n+\theta}
+   *   & = & 0
+   * \end{array}\right.\f]
+   * with
+   * \f[
+   *   F_{int,n+\theta}
+   *   = \theta F_{int}(T_{n+1},t_{n+1}) + (1-\theta) F_{int}(T_{n+1},t_{n+1})
+   *   \quad\mbox{and}\quad
+   *   F_{ext,n+\theta}
+   *   = \theta F_{ext}(t_{n+1}) + (1-\theta) F_{ext}(t_{n+1})
+   * \f]
+   * These vector equations can be rewritten such that the unknown temperature rates \f$r_{n+1}\f$
+   * can be suppressed or rather expressed by the unknown temperatures \f$T_{n+1}\f$. The residual is achieved
+   * \f[
+   *   R_{n+\theta}(T_{n+1})
+   *   = C R_{n+\theta}(T_{n+1})
+   *   + F_{int,n+\theta} - F_{ext,n+\theta}
+   *   = 0
+   * \f]
+   * in which
+   * \f[\begin{array}{rclcl}
+   *   R_{n+\theta}(T_{n+1})
+   *   & = &
+   *   \frac{1}{\Delta t} ( T_{n+1} - T_n )
+   *   &&
+   * \end{array}\f]
+   *
+   * <h3>Family members to be aware of</h3>
+   * <table>
+   *   <tr>
+   *     <td>Name</td>
+   *     <td>Abbreviation</td>
+   *     <td>\f$\theta\f$</td>
+   *     <td>Order of accuracy</td>
+   *     <td>Stability</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Backward Euler</td>
+   *     <td>BE</td>
+   *     <td>\f$1\f$</td>
+   *     <td>1</td>
+   *     <td>A,L-stable</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Trapezoidal rule</td>
+   *     <td>TR</td>
+   *     <td>\f$\frac{1}{2}\f$</td>
+   *     <td>2</td>
+   *     <td>A-stable</td>
+   *   </tr>
+   * </table>
+   *
+   * <h3>References</h3>
+   * - [1] HR Schwarz, Numerische Mathematik, Teubner, Stuttgart, 1997.
+   * - [2] TJR Hughes, The finite element method, Dover, Mineola, 1987.
+   * - [3] P Deuflhard and F Bornemann, Numerische Mathematik II: Integration gewohnlicher Differentialgleichungen, Walter de Gryter, Berlin, 1994.
+   * - [4] ...
+   *
+   *
+   * \author bborn
+   * \date 06/08
+   */
   class TimIntOneStepTheta : public TimIntImpl
   {
 
@@ -134,15 +133,14 @@ namespace THR
     //@{
 
     //! Constructor
-    TimIntOneStepTheta
-    (
+    TimIntOneStepTheta(
       const Teuchos::ParameterList& ioparams,  //!< ioflags
       const Teuchos::ParameterList& tdynparams,  //!< input parameters
       const Teuchos::ParameterList& xparams,  //!< extra flags
       Teuchos::RCP<DRT::Discretization> actdis,  //!< current discretisation
       Teuchos::RCP<LINALG::Solver> solver,  //!< the solver
       Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
-    );
+      );
 
     //! Destructor
     // ....
@@ -190,7 +188,7 @@ namespace THR
       Teuchos::RCP<Epetra_Vector> fcap,  //!< stored force
       Teuchos::RCP<Epetra_Vector> fint,  //!< internal force
       Teuchos::RCP<LINALG::SparseMatrix> tang  //!< tangent matrix
-    );
+      );
 
     //! Evaluate ordinary internal force
     void ApplyForceInternal(
@@ -199,7 +197,7 @@ namespace THR
       const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
       const Teuchos::RCP<Epetra_Vector> tempi,  //!< incremental temperatures
       Teuchos::RCP<Epetra_Vector> fint  //!< internal force
-    );
+      );
 
     //! Create force residual #fres_ and its tangent #tang_
     void EvaluateRhsTangResidual();
@@ -306,6 +304,6 @@ namespace THR
 
 }  // namespace THR
 
-
+/*----------------------------------------------------------------------*/
 #endif  // #ifndef THRTIMINT_OST_H
 #endif  // #ifdef CCADISCRET

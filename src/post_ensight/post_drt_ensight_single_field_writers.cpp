@@ -226,7 +226,6 @@ void ThermoEnsightWriter::WriteAllResults(PostField* field)
   // write element results (e.g. element owner)
   EnsightWriter::WriteElementResults(field);
 
-  // Start new section 06/11/09
   if (heatfluxtype_ != "none")
   {
     // although appearing here twice, only one function call to PostHeatflux
@@ -245,9 +244,8 @@ void ThermoEnsightWriter::WriteAllResults(PostField* field)
     PostHeatflux("gauss_initial_tempgrad_xyz", tempgradtype_);
     //EnsightWriter::WriteResult("tempgrad", "tempgrad", nodebased, 3);
   }
-  // end new section 06/11/09
 
-}
+} // ThermoEnsightWriter::WriteAllResults
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

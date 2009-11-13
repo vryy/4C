@@ -11,8 +11,10 @@ Maintainer: Caroline Danowski
             089 - 289-15253
 </pre>
 */
-/*----------------------------------------------------------------------*/
 
+/*----------------------------------------------------------------------*
+ | definitions                                               dano 08/09 |
+ *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 #ifdef D_THERMO
 
@@ -25,7 +27,6 @@ Maintainer: Caroline Danowski
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_parobject.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_fem_general/drt_utils_gder2.H"
 #include "../drt_geometry/position_array.H"
 #include "../drt_lib/linalg_serialdensematrix.H"
 #include "../drt_lib/linalg_fixedsizematrix.H"
@@ -35,11 +36,12 @@ Maintainer: Caroline Danowski
 #include "thermo_element.H" // only for visualization of element data
 
 /*----------------------------------------------------------------------*
+ |                                                           dano 09/09 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::TemperImplInterface* DRT::ELEMENTS::TemperImplInterface::Impl(
-    DRT::Element* ele
-    )
- {
+  DRT::Element* ele
+  )
+{
   //! we assume here, that numdofpernode is equal for every node within
   //! the discretization and does not change during the computations
   const int numdofpernode = ele->NumDofPerNode(*(ele->Nodes()[0]));
@@ -52,7 +54,7 @@ DRT::ELEMENTS::TemperImplInterface* DRT::ELEMENTS::TemperImplInterface::Impl(
       ch8 = new TemperImpl<DRT::Element::hex8>(numdofpernode);
     return ch8;
   }
-/*  case DRT::Element::hex20:
+  case DRT::Element::hex20:
   {
     static TemperImpl<DRT::Element::hex20>* ch20;
     if (ch20==NULL)
@@ -65,7 +67,7 @@ DRT::ELEMENTS::TemperImplInterface* DRT::ELEMENTS::TemperImplInterface::Impl(
     if (ch27==NULL)
       ch27 = new TemperImpl<DRT::Element::hex27>(numdofpernode);
     return ch27;
-  }*/
+  }
   case DRT::Element::tet4:
   {
     static TemperImpl<DRT::Element::tet4>* ct4;
@@ -154,7 +156,7 @@ DRT::ELEMENTS::TemperImplInterface* DRT::ELEMENTS::TemperImplInterface::Impl(
     dserror("Element shape %d (%d nodes) not activated. Just do it.", ele->Shape(), ele->NumNode());
   }
   return NULL;
- }
+}
 
 /*----------------------------------------------------------------------*
  |  Initialization of the data with respect to the declaration          |
@@ -175,26 +177,26 @@ DRT::ELEMENTS::TemperImpl<distype>::TemperImpl(int numdofpernode)
     gradtemp_(true),
     heatflux_(false),
     cmat_(false)
- {
+{
   return;
- }
-
+}
 
 /*----------------------------------------------------------------------*
+ |                                                                      |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
-    DRT::Element*              ele,
-    Teuchos::ParameterList&    params,
-    DRT::Discretization&       discretization,
-    std::vector<int>&          lm,
-    Epetra_SerialDenseMatrix&  elemat1_epetra,
-    Epetra_SerialDenseMatrix&  elemat2_epetra,
-    Epetra_SerialDenseVector&  elevec1_epetra,
-    Epetra_SerialDenseVector&  elevec2_epetra,
-    Epetra_SerialDenseVector&  elevec3_epetra
-    )
- {
+  DRT::Element* ele,
+  Teuchos::ParameterList& params,
+  DRT::Discretization& discretization,
+  std::vector<int>& lm,
+  Epetra_SerialDenseMatrix& elemat1_epetra,
+  Epetra_SerialDenseMatrix& elemat2_epetra,
+  Epetra_SerialDenseVector& elevec1_epetra,
+  Epetra_SerialDenseVector& elevec2_epetra,
+  Epetra_SerialDenseVector& elevec3_epetra
+  )
+{
   // check length
   if (lm.size() != iel*numdofpernode_)
     dserror("Location vector length does not match!");
@@ -205,10 +207,11 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
   //LINALG::Matrix<iel*numdofpernode_,1> efext(elevec2_epetra,true);  // view only!
   LINALG::Matrix<iel*numdofpernode_,1> efcap(elevec3_epetra,true);  // view only!
   // disassemble temperature
-  if (discretization.HasState("temperature")) {
+  if (discretization.HasState("temperature"))
+  {
     std::vector<double> mytempnp(lm.size());
     Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState("temperature");
-    if (tempnp==Teuchos::null)
+    if (tempnp == Teuchos::null)
       dserror("Cannot get state vector 'tempnp'");
     DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,lm);
     LINALG::Matrix<iel*numdofpernode_,1> etemp(&(mytempnp[0]),true);  // view only!
@@ -221,56 +224,64 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
   // extract time
   const double time = params.get<double>("total time");
   // calculate tangent K and internal force F_int = K * Theta
-  if (action=="calc_thermo_fintcond")
+  if (action == "calc_thermo_fintcond")
   {
-    CalculateFintCondCapa(ele,
-                          time,
-                          &etang,
-                          NULL,
-                          &efint,
-                          NULL,
-                          NULL,NULL);
+    CalculateFintCondCapa(
+      ele,
+      time,
+      &etang,
+      NULL,
+      &efint,
+      NULL,
+      NULL,NULL
+      );
   }
   // calculate only the internal force F_int
-  else if (action=="calc_thermo_fint")
+  else if (action == "calc_thermo_fint")
   {
-    CalculateFintCondCapa(ele,
-                          time,
-                          NULL,
-                          NULL,
-                          &efint,
-                          NULL,
-                          NULL,NULL);
+    CalculateFintCondCapa(
+      ele,
+      time,
+      NULL,
+      NULL,
+      &efint,
+      NULL,
+      NULL,NULL
+      );
   }
   // calculate only the internal force F_int
-  else if (action=="calc_thermo_fintcapa")
+  else if (action == "calc_thermo_fintcapa")
   {
-    CalculateFintCondCapa(ele,
-                          time,
-                          NULL,
-                          &ecapa,  // delivers capacity matrix
-                          &efint,
-                          NULL,
-                          NULL,NULL);
+    CalculateFintCondCapa(
+      ele,
+      time,
+      NULL,
+      &ecapa,  // delivers capacity matrix
+      &efint,
+      NULL,
+      NULL,NULL
+      );
     // copy capacity matrix if available
     //if (ecapa.A() != NULL) ecapa.Update(ecapa_);
   }
   // calculate tangent matrix K and consistent capacity matrix C
-  else if (action=="calc_thermo_finttang")
+  else if (action == "calc_thermo_finttang")
   {
-    CalculateFintCondCapa(ele,
-                          time,
-                          &etang,
-                          &ecapa_,
-                          &efint,
-                          NULL,
-                          NULL,NULL);
+    CalculateFintCondCapa(
+      ele,
+      time,
+      &etang,
+      &ecapa_,
+      &efint,
+      NULL,
+      NULL,NULL
+      );
     // copy capacity matrix if available
     if (ecapa.A() != NULL) ecapa.Update(ecapa_);
     // BUILD EFFECTIVE TANGENT AND RESIDUAL ACC TO TIME INTEGRATOR
     // check the time integrator
     const INPAR::THR::DynamicType timint
-    = params.get<INPAR::THR::DynamicType>("time integrator",INPAR::THR::dyna_undefined);
+      = params.get<INPAR::THR::DynamicType>("time integrator",INPAR::THR::dyna_undefined);
     switch (timint) {
     case INPAR::THR::dyna_statics :
     {
@@ -300,8 +311,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     }
     }
   }
-  // Calculate heatflux q and temperature gradients gradtemp at gauss points
-  else if (action=="proc_thermo_heatflux")
+  // Calculate/ evaluate heatflux q and temperature gradients gradtemp at gauss points
+  else if (action == "proc_thermo_heatflux")
   {
     // get storage arrays of Gauss-point-wise vectors
     Teuchos::RCP<std::vector<char> > heatfluxdata = params.get<Teuchos::RCP<std::vector<char> > >("heatflux");
@@ -313,22 +324,24 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     //const INPAR::THR::HeatFluxType ioheatflux = params.get<INPAR::THR::HeatFluxType>("ioheatflux");
     //const INPAR::THR::TempGradType iotempgrad = params.get<INPAR::THR::TempGradType>("iotempgrad");
     //
-    CalculateFintCondCapa(ele,
-                          time,
-                          NULL,
-                          NULL,
-                          NULL,
-                          NULL,
-                          &eheatflux,&etempgrad);
+    CalculateFintCondCapa(
+      ele,
+      time,
+      NULL,
+      NULL,
+      NULL,
+      NULL,
+      &eheatflux,&etempgrad
+      );
      // store in
      ParObject::AddtoPack(*heatfluxdata, eheatflux);
      ParObject::AddtoPack(*tempgraddata, etempgrad);
   }
   // Calculate heatflux q and temperature gradients gradtemp at gauss points
-  else if (action=="postproc_thermo_heatflux")
+  else if (action == "postproc_thermo_heatflux")
   {
     const Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > gpheatfluxmap
-       = params.get<Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > >("gpheatfluxmap");
+      = params.get<Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > >("gpheatfluxmap");
     std::string heatfluxtype = params.get<std::string>("heatfluxtype","ndxyz");
     const int gid = ele->Id();
     LINALG::Matrix<nquad_,nsd_> gpheatflux(((*gpheatfluxmap)[gid])->A(),true);  // view only!
@@ -342,15 +355,17 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     bool processed = false;
 
     // nodally
-    if ( (heatfluxtype=="ndxyz") or (heatfluxtype=="cxyz_ndxyz") )
+    // extrapolate heatflux q and temperature gradient gradtemp stored at gauss points
+    if ( (heatfluxtype == "ndxyz") or (heatfluxtype == "cxyz_ndxyz") )
     {
       processed = processed or true;
-      // extrapolate stresses/strains at Gauss points to nodes
+      // extrapolate heatfluxes/temperature gradients at Gauss points to nodes
+      // and store results in
       ExtrapolateFromGaussPointsToNodes(ele, gpheatflux, efluxx, efluxy, efluxz);
     }
 
     // centered
-    if ( (heatfluxtype=="cxyz") or (heatfluxtype=="cxyz_ndxyz") )
+    if ( (heatfluxtype == "cxyz") or (heatfluxtype == "cxyz_ndxyz") )
     {
       processed = processed or true;
 
@@ -373,13 +388,13 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
 
     // catch unknown heatflux types
     if (not processed)
-      dserror("unknown type of stress/strain output on element level");
+      dserror("unknown type of heatflux/temperature gradient output on element level");
   }
 /*  // Calculate heatflux q and temperature gradients gradtemp at gauss points
   else if (action=="calc_thermo_heatflux")
   {
    // extract local values from the global vectors
-//   Teuchos::RefCountPtr<const Epetra_Vector> tempnp = discretization.GetState("tempnp");
+//   Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState("tempnp");
 //   if (tempnp==Teuchos::null)
 //        dserror("Cannot get state vector 'tempnp'");
 //   std::vector<double> mytempnp(lm.size());
@@ -419,7 +434,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     DRT::UTILS::ExtractMyNodeBasedValues(ele,eratenp_,rate,nsd_);
 
     // need initial field
-    Teuchos::RefCountPtr<const Epetra_Vector> temp0 = discretization.GetState("temp0");
+    Teuchos::RCP<const Epetra_Vector> temp0 = discretization.GetState("temp0");
     if (temp0==Teuchos::null)
       dserror("Cannot get state vector 'temp0'");
 
@@ -444,13 +459,13 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
         elevec1_epetra
         );
   }*/
-  else if (action=="integrate_shape_functions")
+  else if (action == "integrate_shape_functions")
   {
     // calculate integral of shape functions
     const Epetra_IntSerialDenseVector dofids = params.get<Epetra_IntSerialDenseVector>("dofids");
     IntegrateShapeFunctions(ele,elevec1_epetra,dofids);
   }
-  else if (action=="calc_thermo_update_istep")
+  else if (action == "calc_thermo_update_istep")
   {
     ;  // do nothing
   }
@@ -463,18 +478,18 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
 }
 
 /*----------------------------------------------------------------------*
- |                                                                      |
+ | Evaluate the external load                               bborn 09/09 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::TemperImpl<distype>::EvaluateNeumann(
-    DRT::Element*              ele,
-    Teuchos::ParameterList&    params,
-    DRT::Discretization&       discretization,
-    std::vector<int>&          lm,
-    Epetra_SerialDenseVector&  elevec1_epetra,
-    Epetra_SerialDenseMatrix*  elemat1_epetra
-    )
- {
+  DRT::Element* ele,
+  Teuchos::ParameterList& params,
+  DRT::Discretization& discretization,
+  std::vector<int>& lm,
+  Epetra_SerialDenseVector& elevec1_epetra,
+  Epetra_SerialDenseMatrix* elemat1_epetra
+  )
+{
   // check length
   if (lm.size() != iel*numdofpernode_)
     dserror("Location vector length does not match!");
@@ -485,7 +500,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::EvaluateNeumann(
   {
     std::vector<double> mytempnp(lm.size());
     Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState("temperature");
-    if (tempnp==Teuchos::null)
+    if (tempnp == Teuchos::null)
       dserror("Cannot get state vector 'tempnp'");
     DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,lm);
     LINALG::Matrix<iel*numdofpernode_,1> etemp(&(mytempnp[0]),true);  // view only!
@@ -496,19 +511,18 @@ int DRT::ELEMENTS::TemperImpl<distype>::EvaluateNeumann(
   // extract time
   const double time = params.get<double>("total time");
 
-  // 26.10.09
-  cout << "params \n" << params;
-
   // perform actions
-  if (action=="calc_thermo_fext")
+  if (action == "calc_thermo_fext")
   {
-    CalculateFintCondCapa(ele,
-                          time,
-                          NULL,
-                          NULL,
-                          NULL,
-                          &efext,
-                          NULL,NULL);
+    CalculateFintCondCapa(
+      ele,
+      time,
+      NULL,
+      NULL,
+      NULL,
+      &efext,
+      NULL,NULL
+      );
   }
   else
   {
@@ -540,7 +554,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateFintCondCapa(
   // call routine for calculation of radiation in element nodes
   // (time n+alpha_F for generalized-alpha scheme, at time n+1 otherwise)
   // ---------------------------------------------------------------------
-  if (efext != NULL) {
+  if (efext != NULL)
+  {
     Radiation(ele,time);
   }
 
@@ -549,7 +564,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateFintCondCapa(
   //----------------------------------------------------------------------
   // integrations points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
-  if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
+  if (intpoints.IP().nquad != nquad_)
+    dserror("Trouble with number of Gauss points");
 
   // integration loop
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
@@ -557,7 +573,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateFintCondCapa(
     EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
 
     // get radiation in gausspoint
-    if (efext != NULL) {
+    if (efext != NULL)
+    {
       efext->MultiplyNN(fac_,funct_,radiation_,1.0);
     }
 
@@ -576,19 +593,22 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateFintCondCapa(
         (*eheatflux)(iquad,idim) = heatflux_(idim);
 
     // internal force vector
-    if (efint != NULL) {
+    if (efint != NULL)
+    {
       efint->MultiplyTN(fac_,derxy_,heatflux_,1.0);
     }
 
     // conductivity matrix
-    if (etang != NULL) {
+    if (etang != NULL)
+    {
       LINALG::Matrix<nsd_,iel> aop(false);
       aop.MultiplyNN(cmat_,derxy_);
       etang->MultiplyTN(fac_,derxy_,aop,1.0);
     }
 
     // capacity matrix
-    if (ecapa != NULL) {
+    if (ecapa != NULL)
+    {
       ecapa->MultiplyNT(fac_*capacoeff_,funct_,funct_,1.0);
     }
 
@@ -673,7 +693,6 @@ void DRT::ELEMENTS::TemperImpl<distype>::Radiation(
   return;
 } //TemperImpl::Radiation
 
-
 /*----------------------------------------------------------------------*
  |  get the material                                         dano 09/09 |
  *----------------------------------------------------------------------*/
@@ -700,16 +719,15 @@ void DRT::ELEMENTS::TemperImpl<distype>::Materialize(
   return;
 } //TemperImpl::Materialize
 
-
 /*----------------------------------------------------------------------*
  | evaluate shape functions and derivatives at int. point     gjb 08/08 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
-    const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
-    const int                                    iquad,      ///< id of current Gauss point
-    const int                                    eleid       ///< the element id
-    )
+  const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
+  const int iquad,  ///< id of current Gauss point
+  const int eleid   ///< the element id
+  )
 {
   // coordinates of the current integration point
   const double* gpcoord = (intpoints.IP().qxg)[iquad];
@@ -752,9 +770,111 @@ void DRT::ELEMENTS::TemperImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
 
   // say goodbye
   return;
+
 } // EvalShapeFuncAndDerivsAtIntPoint
 
+/*----------------------------------------------------------------------*
+ |  Integrate shape functions over domain (private)           gjb 07/09 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::TemperImpl<distype>::IntegrateShapeFunctions(
+  const DRT::Element* ele,
+  Epetra_SerialDenseVector& elevec1,
+  const Epetra_IntSerialDenseVector& dofids
+  )
+{
+  // get node coordinates
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze_);
 
+  // integrations points and weights
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+
+  // loop over integration points
+  for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
+  {
+    EvalShapeFuncAndDerivsAtIntPoint(intpoints,gpid,ele->Id());
+
+    // compute integral of shape functions (only for dofid)
+    for (int k=0; k<numdofpernode_; k++)
+    {
+      if (dofids[k] >= 0)
+      {
+        for (int node=0; node<iel; node++)
+        {
+          elevec1[node*numdofpernode_+k] += funct_(node) * fac_;
+        }
+      }
+    }
+
+  } //loop over integration points
+
+  return;
+} //TemperImpl<distype>::IntegrateShapeFunction
+
+/*----------------------------------------------------------------------*
+ | ExtrapolateFromGaussPointsToNodes                         dano 11/09 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::TemperImpl<distype>::ExtrapolateFromGaussPointsToNodes(
+  DRT::Element* ele,  ///< the element whose matrix is calculated
+  const LINALG::Matrix<nquad_,nsd_>& gpheatflux,
+  LINALG::Matrix<iel*numdofpernode_,1>& efluxx,
+  LINALG::Matrix<iel*numdofpernode_,1>& efluxy,
+  LINALG::Matrix<iel*numdofpernode_,1>& efluxz
+  )
+{
+  // this quick'n'dirty hack functions only for hex8
+  if ( not ( (distype == DRT::Element::hex8)
+             or (distype == DRT::Element::quad4)
+             or (distype == DRT::Element::line2) ) )
+    dserror("Sorry, not implemented for element shape");
+
+  // another check
+  if (iel*numdofpernode_ != nquad_)
+    dserror("Works only if number of gauss points and nodes match");
+
+  // integrations points and weights
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  if (intpoints.IP().nquad != nquad_)
+    dserror("Trouble with number of Gauss points");
+
+  // build matrix of shape functions at Gauss points
+  LINALG::Matrix<nquad_,nquad_> shpfctatgps;
+  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+  {
+    // coordinates of the current integration point
+    const double* gpcoord = (intpoints.IP().qxg)[iquad];
+    for (int idim=0; idim<nsd_; idim++)
+      xsi_(idim) = gpcoord[idim];
+
+    // shape functions and their first derivatives
+    DRT::UTILS::shape_function<distype>(xsi_,funct_);
+
+    for (int inode=0; inode<iel; ++inode)
+      shpfctatgps(iquad,inode) = funct_(inode);
+  }
+
+  // extrapolation
+  LINALG::Matrix<nquad_,nsd_> ndheatflux;  //!<  objective nodal heatflux
+  LINALG::Matrix<nquad_,nsd_> gpheatflux2(gpheatflux);  //!< copy the heatflux at the Gauss point
+  {
+    LINALG::FixedSizeSerialDenseSolver<nquad_,nquad_,nsd_> solver;  //!< must be quadratic
+    solver.SetMatrix(shpfctatgps);
+    solver.SetVectors(ndheatflux,gpheatflux2);
+    solver.Solve();
+  }
+
+  // copy into component vectors
+  for (int idof=0; idof<iel*numdofpernode_; ++idof)
+  {
+    efluxx(idof) = ndheatflux(idof,0);
+    if (nsd_>1) efluxy(idof) = ndheatflux(idof,1);
+    if (nsd_>2) efluxz(idof) = ndheatflux(idof,2);
+  }
+
+  // bye
+  return;
+} // ExtrapolateFromGaussPointsToNodes
 
 /*----------------------------------------------------------------------*
  | calculate mass matrix + rhs for determ. initial time deriv. gjb 08/08|
@@ -762,18 +882,18 @@ void DRT::ELEMENTS::TemperImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
 /*
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::InitialTimeDerivative(
-    DRT::Element*                         ele,
-    Epetra_SerialDenseMatrix&             emat,
-    Epetra_SerialDenseVector&             erhs
-    )
- {
+  DRT::Element* ele,
+  Epetra_SerialDenseMatrix& emat,
+  Epetra_SerialDenseVector& erhs
+  )
+{
   // get node coordinates
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze_);
 
   // dead load in element nodes at initial point in time
   Radiation(ele);
 
-   // integrations points and weights
+  // integrations points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
 
   //----------------------------------------------------------------------
@@ -845,9 +965,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::InitialTimeDerivative(
   } // integration loop
 
   return;
- } // TemperImpl::InitialTimeDerivative
+} // TemperImpl::InitialTimeDerivative
 */
-
 
 /*----------------------------------------------------------------------*
  |  calculate heatflux                             (private) dano 11/09 |
@@ -855,12 +974,12 @@ void DRT::ELEMENTS::TemperImpl<distype>::InitialTimeDerivative(
 /*
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::CalculateFlux(
-    LINALG::Matrix<3,iel>&          flux,
-    const DRT::Element*             ele,
-    const std::vector<double>&      etempnp,
-    const Epetra_SerialDenseVector& erate
-    )
-  {
+  LINALG::Matrix<3,iel>& flux,
+  const DRT::Element* ele,
+  const std::vector<double>& etempnp,
+  const Epetra_SerialDenseVector& erate
+  )
+{
   // get node coordinates
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze_);
 
@@ -869,7 +988,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateFlux(
   double conduct(0.0);
 
   // get the material
-  Teuchos::RefCountPtr<MAT::Material> material = ele->Material();
+  Teuchos::RCP<MAT::Material> material = ele->Material();
 
   // use one-point Gauss rule to do calculations at element center
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
@@ -969,110 +1088,10 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateFlux(
   } // loop over nodes
 
   return;
- } // TemperImpl::CalculateFlux
+
+} // TemperImpl::CalculateFlux
 */
 
-/*----------------------------------------------------------------------*
- |  Integrate shape functions over domain (private)           gjb 07/09 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::TemperImpl<distype>::IntegrateShapeFunctions(
-    const DRT::Element*                ele,
-    Epetra_SerialDenseVector&          elevec1,
-    const Epetra_IntSerialDenseVector& dofids
-    )
-  {
-  // get node coordinates
-  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze_);
-
-  // integrations points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
-
-  // loop over integration points
-  for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
-  {
-    EvalShapeFuncAndDerivsAtIntPoint(intpoints,gpid,ele->Id());
-
-    // compute integral of shape functions (only for dofid)
-    for (int k=0;k<numdofpernode_;k++)
-    {
-      if (dofids[k] >= 0)
-      {
-        for (int node=0;node<iel;node++)
-        {
-          elevec1[node*numdofpernode_+k] += funct_(node) * fac_;
-        }
-      }
-    }
-
-  } //loop over integration points
-
-  return;
- } //TemperImpl<distype>::IntegrateShapeFunction
-
-/*----------------------------------------------------------------------*
- |                                                                      |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::TemperImpl<distype>::ExtrapolateFromGaussPointsToNodes(
-  DRT::Element* ele,  ///< the element whose matrix is calculated
-  const LINALG::Matrix<nquad_,nsd_>& gpheatflux,
-  LINALG::Matrix<iel*numdofpernode_,1>& efluxx,
-  LINALG::Matrix<iel*numdofpernode_,1>& efluxy,
-  LINALG::Matrix<iel*numdofpernode_,1>& efluxz
-  )
-{
-  // this quick'n'dirty hack functions only for hex8
-  if ( not ( (distype == DRT::Element::hex8)
-             or (distype == DRT::Element::quad4)
-             or (distype == DRT::Element::line2) ) )
-    dserror("Sorry, not implemented for element shape");
-
-  // another check
-  if (iel*numdofpernode_ != nquad_)
-    dserror("Works only if number of gauss points and nodes match");
-
-  // integrations points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
-  if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
-
-  // build matrix of shape functions at Gauss points
-  LINALG::Matrix<nquad_,nquad_> shpfctatgps;
-  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
-  {
-    // coordinates of the current integration point
-    const double* gpcoord = (intpoints.IP().qxg)[iquad];
-    for (int idim=0; idim<nsd_; idim++)
-      xsi_(idim) = gpcoord[idim];
-
-    // shape functions and their first derivatives
-    DRT::UTILS::shape_function<distype>(xsi_,funct_);
-
-    for (int inode=0; inode<iel; ++inode)
-      shpfctatgps(iquad,inode) = funct_(inode);
-  }
-
-  // extrapolation
-  LINALG::Matrix<nquad_,nsd_> ndheatflux;
-  LINALG::Matrix<nquad_,nsd_> gpheatflux2(gpheatflux);
-  {
-    LINALG::FixedSizeSerialDenseSolver<nquad_,nquad_,nsd_> solver;
-    solver.SetMatrix(shpfctatgps);
-    solver.SetVectors(ndheatflux,gpheatflux2);
-    solver.Solve();
-  }
-
-  // copy into component vectors
-  for (int idof=0; idof<iel*numdofpernode_; ++idof)
-  {
-    efluxx(idof) = ndheatflux(idof,0);
-    if (nsd_>1) efluxy(idof) = ndheatflux(idof,1);
-    if (nsd_>2) efluxz(idof) = ndheatflux(idof,2);
-  }
-
-  // bye
-  return;
-}
-
+/*----------------------------------------------------------------------*/
 #endif // D_THERMO
 #endif // CCADISCRET

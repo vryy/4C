@@ -13,7 +13,7 @@ Maintainer: Caroline Danowski
 */
 
 /*----------------------------------------------------------------------*
- |  macros                                                  bborn 08/09 |
+ |  definitions                                             bborn 08/09 |
  *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
@@ -48,7 +48,7 @@ ADAPTER::ThermoTimInt::ThermoTimInt(
   Teuchos::RCP<DRT::Discretization> discret,
   Teuchos::RCP<LINALG::Solver> solver,
   Teuchos::RCP<IO::DiscretizationWriter> output
-)
+  )
 : thermo_(Create(*ioparams, *tdynparams, *xparams, discret, solver, output)),
   discret_(discret),
   ioparams_(ioparams),
@@ -69,18 +69,17 @@ ADAPTER::ThermoTimInt::ThermoTimInt(
 }
 
 /*----------------------------------------------------------------------*
- |  create implicit marching time integrator                bborn 08/09 |
+ | create implicit marching time integrator                 bborn 08/09 |
  | originally included in the file strtimint_create.cpp                 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<THR::TimIntImpl> ADAPTER::ThermoTimInt::Create
-(
+Teuchos::RCP<THR::TimIntImpl> ADAPTER::ThermoTimInt::Create(
   const Teuchos::ParameterList& ioflags,
   const Teuchos::ParameterList& tdyn,
   const Teuchos::ParameterList& xparams,
   Teuchos::RCP<DRT::Discretization>& actdis,
   Teuchos::RCP<LINALG::Solver>& solver,
   Teuchos::RCP<IO::DiscretizationWriter>& output
-)
+  )
 {
   Teuchos::RCP<THR::TimIntImpl> tti = Teuchos::null;
 
@@ -222,7 +221,7 @@ void ADAPTER::ThermoTimInt::PrepareTimeStep()
  *----------------------------------------------------------------------*/
 void ADAPTER::ThermoTimInt::Evaluate(
   Teuchos::RCP<const Epetra_Vector> temp
-)
+  )
 {
   // Yes, this is complicated. But we have to be very careful
   // here. The field solver always expects an increment only. And
@@ -301,7 +300,6 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::ThermoTimInt::CreateFieldTest()
 {
   return Teuchos::rcp(new THR::ResultTest(*thermo_));
 }
-
 
 /*----------------------------------------------------------------------*/
 #endif  // CCADISCRET
