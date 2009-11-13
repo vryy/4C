@@ -30,6 +30,7 @@ Maintainer: Axel Gerstenberger
 #include "time_integration_scheme.H"
 
 #include "../drt_io/io_control.H"
+#include "../drt_inpar/inpar_xfem.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/linalg_ana.H"
 #include "../drt_lib/drt_condition_utils.H"
@@ -219,7 +220,17 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
     physprob_.fieldset_.insert(XFEM::PHYSICS::Vely);
     physprob_.fieldset_.insert(XFEM::PHYSICS::Velz);
     physprob_.fieldset_.insert(XFEM::PHYSICS::Pres);
-    physprob_.elementAnsatzp_ = rcp(new XFLUID::FluidElementAnsatz());
+    switch (xparams_.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"))
+    {
+    case INPAR::XFEM::BoundaryTypeSigma:
+      physprob_.elementAnsatzp_  = rcp<XFLUID::FluidElementAnsatz>(new XFLUID::FluidElementAnsatz());
+      break;
+    case INPAR::XFEM::BoundaryTypeTauPressure:
+      physprob_.elementAnsatzp_  = rcp<XFLUID::FluidElementAnsatzWithExtraElementPressure>(new XFLUID::FluidElementAnsatzWithExtraElementPressure());
+      break;
+    default:
+      dserror("unknown boundary type");
+    }
   }
 
   {
@@ -581,6 +592,7 @@ void FLD::XFluidImplicitTimeInt::TransferDofInformationToElements(
   eleparams.set("dofmanager",dofmanager);
   eleparams.set("DLM_condensation",xparams_.get<bool>("DLM_condensation"));
   eleparams.set("boundaryRatioLimit",xparams_.get<double>("boundaryRatioLimit"));
+  eleparams.set("EMBEDDED_BOUNDARY",xparams_.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"));
   eleparams.set("interfacehandle",ih);
   discret_->Evaluate(eleparams);
 }
@@ -1132,6 +1144,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       eleparams.set("FAST_INTEGRATION",xparams_.get<bool>("FAST_INTEGRATION"));
       eleparams.set("boundaryRatioLimit",xparams_.get<double>("boundaryRatioLimit"));
       eleparams.set("monolithic_FSI",false);
+      eleparams.set("EMBEDDED_BOUNDARY",xparams_.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"));
 
       // convergence check at itemax is skipped for speedup if
       // CONVCHECK is set to L_2_norm_without_residual_at_itemax
@@ -1977,33 +1990,21 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
     if (screen_out) std::cout << " done" << endl;
   }
 
-#if 0
+#if 1
   if (gmshdebugout)
   {
-    std::ostringstream filename;
-    std::ostringstream filenamedel;
-    const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
-    filename    << filebase << ".solution_field_pressure_disc_" << std::setw(5) << setfill('0') << step   << ".pos";
-    filenamedel << filebase << ".solution_field_pressure_disc_" << std::setw(5) << setfill('0') << step-5 << ".pos";
-    std::remove(filenamedel.str().c_str());
-    if (screen_out) std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"...";
-    std::ofstream gmshfilecontent(filename.str().c_str());
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_pressure_disc", step, 5, screen_out, discret_->Comm().MyPID());
+    std::ofstream gmshfilecontent(filename.c_str());
 
     const XFEM::PHYSICS::Field field = XFEM::PHYSICS::DiscPres;
-
     {
       gmshfilecontent << "View \" " << "Discontinous Pressure Solution (Physical) \" {\n";
       for (int i=0; i<discret_->NumMyColElements(); ++i)
       {
         const DRT::Element* actele = discret_->lColElement(i);
 
-        static LINALG::Matrix<3,27> xyze_xfemElement;
-        GEO::fillInitialPositionArray(actele,xyze_xfemElement);
-
-        const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(XFLUID::getElementAnsatz(actele->Shape()));
-
         // create local copy of information about dofs
-        const XFEM::ElementDofManager eledofman(*actele,element_ansatz,*dofmanagerForOutput_);
+        const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatzp_->getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
 
         vector<int> lm;
         vector<int> lmowner;
@@ -2013,11 +2014,13 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
         vector<double> myvelnp(lm.size());
         DRT::UTILS::ExtractMyValues(*state_.velnp_, myvelnp, lm);
 
-        const int numparam = eledofman.NumDofPerField(field);
+        const size_t numparam = eledofman.NumDofPerField(field);
+        if (numparam == 0)
+          continue;
         const vector<int>& dofpos = eledofman.LocalDofPosPerField(field);
 
         LINALG::SerialDenseVector elementvalues(numparam);
-        for (int iparam=0; iparam<numparam; ++iparam)
+        for (size_t iparam=0; iparam<numparam; ++iparam)
           elementvalues(iparam) = myvelnp[dofpos[iparam]];
 
         const GEO::DomainIntCells& domainintcells =
@@ -2062,7 +2065,33 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
     std::ofstream gmshfilecontentxz(filenamexz.c_str());
     std::ofstream gmshfilecontentyz(filenameyz.c_str());
 
-    const XFEM::PHYSICS::Field field = XFEM::PHYSICS::Sigmaxx;
+    XFEM::PHYSICS::Field fieldxx = XFEM::PHYSICS::Sigmaxx;
+    XFEM::PHYSICS::Field fieldyy = XFEM::PHYSICS::Sigmayy;
+    XFEM::PHYSICS::Field fieldzz = XFEM::PHYSICS::Sigmazz;
+    XFEM::PHYSICS::Field fieldxy = XFEM::PHYSICS::Sigmaxy;
+    XFEM::PHYSICS::Field fieldxz = XFEM::PHYSICS::Sigmaxz;
+    XFEM::PHYSICS::Field fieldyz = XFEM::PHYSICS::Sigmayz;
+    switch (xparams_.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"))
+    {
+    case INPAR::XFEM::BoundaryTypeSigma:
+      fieldxx = XFEM::PHYSICS::Sigmaxx;
+      fieldyy = XFEM::PHYSICS::Sigmayy;
+      fieldzz = XFEM::PHYSICS::Sigmazz;
+      fieldxy = XFEM::PHYSICS::Sigmaxy;
+      fieldxz = XFEM::PHYSICS::Sigmaxz;
+      fieldyz = XFEM::PHYSICS::Sigmayz;
+      break;
+    case INPAR::XFEM::BoundaryTypeTauPressure:
+      fieldxx = XFEM::PHYSICS::Tauxx;
+      fieldyy = XFEM::PHYSICS::Tauyy;
+      fieldzz = XFEM::PHYSICS::Tauzz;
+      fieldxy = XFEM::PHYSICS::Tauxy;
+      fieldxz = XFEM::PHYSICS::Tauxz;
+      fieldyz = XFEM::PHYSICS::Tauyz;
+      break;
+    default:
+      dserror("unknown boundary type");
+    }
 
     {
       gmshfilecontent   << "View \" " << "Discontinous Stress Solution (Physical) \" {" << endl;
@@ -2087,13 +2116,15 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
         vector<double> myvelnp(lm.size());
         DRT::UTILS::ExtractMyValues(*output_col_velnp, myvelnp, lm);
 
-        const int numparam = eledofman.NumDofPerField(field);
-        const vector<int>& dofposxx = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Sigmaxx);
-        const vector<int>& dofposyy = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Sigmayy);
-        const vector<int>& dofposzz = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Sigmazz);
-        const vector<int>& dofposxy = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Sigmaxy);
-        const vector<int>& dofposxz = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Sigmaxz);
-        const vector<int>& dofposyz = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Sigmayz);
+        const int numparam = eledofman.NumDofPerField(fieldxx);
+        if (numparam == 0)
+          continue;
+        const vector<int>& dofposxx = eledofman.LocalDofPosPerField(fieldxx);
+        const vector<int>& dofposyy = eledofman.LocalDofPosPerField(fieldyy);
+        const vector<int>& dofposzz = eledofman.LocalDofPosPerField(fieldzz);
+        const vector<int>& dofposxy = eledofman.LocalDofPosPerField(fieldxy);
+        const vector<int>& dofposxz = eledofman.LocalDofPosPerField(fieldxz);
+        const vector<int>& dofposyz = eledofman.LocalDofPosPerField(fieldyz);
 
         LINALG::SerialDenseMatrix elementvalues(9,numparam);
         for (int iparam=0; iparam<numparam; ++iparam) elementvalues(0,iparam) = myvelnp[dofposxx[iparam]];
@@ -2127,38 +2158,38 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
           {
           LINALG::SerialDenseMatrix cellvalues(9,DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeTensorCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
-              *cell, field, elementvalues, cellvalues);
+              *cell, fieldxx, elementvalues, cellvalues);
            IO::GMSH::cellWithTensorFieldToStream(cell->Shape(), cellvalues, xyze_cell, gmshfilecontent);
           }
 
           {
           LINALG::SerialDenseVector cellvaluexx(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvaluexx, cellvaluexx);
+          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, fieldxx, elementvaluexx, cellvaluexx);
           IO::GMSH::cellWithScalarFieldToStream(cell->Shape(), cellvaluexx, xyze_cell, gmshfilecontentxx);
           }
           {
           LINALG::SerialDenseVector cellvalueyy(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvalueyy, cellvalueyy);
+          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, fieldyy, elementvalueyy, cellvalueyy);
           IO::GMSH::cellWithScalarFieldToStream(cell->Shape(), cellvalueyy, xyze_cell, gmshfilecontentyy);
           }
           {
           LINALG::SerialDenseVector cellvaluezz(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvaluezz, cellvaluezz);
+          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, fieldzz, elementvaluezz, cellvaluezz);
           IO::GMSH::cellWithScalarFieldToStream(cell->Shape(), cellvaluezz, xyze_cell, gmshfilecontentzz);
           }
           {
           LINALG::SerialDenseVector cellvaluexy(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvaluexy, cellvaluexy);
+          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, fieldxy, elementvaluexy, cellvaluexy);
           IO::GMSH::cellWithScalarFieldToStream(cell->Shape(), cellvaluexy, xyze_cell, gmshfilecontentxy);
           }
           {
           LINALG::SerialDenseVector cellvaluexz(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvaluexz, cellvaluexz);
+          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, fieldxz, elementvaluexz, cellvaluexz);
           IO::GMSH::cellWithScalarFieldToStream(cell->Shape(), cellvaluexz, xyze_cell, gmshfilecontentxz);
           }
           {
           LINALG::SerialDenseVector cellvalueyz(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvalueyz, cellvalueyz);
+          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, fieldyz, elementvalueyz, cellvalueyz);
           IO::GMSH::cellWithScalarFieldToStream(cell->Shape(), cellvalueyz, xyze_cell, gmshfilecontentyz);
           }
         }
@@ -2215,8 +2246,7 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
         const DRT::Element* actele = discret_->lColElement(i);
 
         // create local copy of information about dofs
-        const XFLUID::FluidElementAnsatz elementAnsatz;
-        const XFEM::ElementDofManager eledofman(*actele,elementAnsatz.getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
+        const XFEM::ElementDofManager eledofman(*actele, physprob_.elementAnsatzp_->getElementAnsatz(actele->Shape()), *dofmanagerForOutput_);
 
         vector<int> lm;
         vector<int> lmowner;

@@ -157,9 +157,20 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       // get access to global dofman
       const Teuchos::RCP<XFEM::DofManager> globaldofman = params.get< Teuchos::RCP< XFEM::DofManager > >("dofmanager");
 
-      const XFLUID::FluidElementAnsatz elementAnsatz;
+      Teuchos::RCP<XFEM::ElementAnsatz> elementAnsatz;
+      switch (params.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"))
+      {
+      case INPAR::XFEM::BoundaryTypeSigma:
+        elementAnsatz = rcp<XFLUID::FluidElementAnsatz>(new XFLUID::FluidElementAnsatz());
+        break;
+      case INPAR::XFEM::BoundaryTypeTauPressure:
+        elementAnsatz = rcp<XFLUID::FluidElementAnsatzWithExtraElementPressure>(new XFLUID::FluidElementAnsatzWithExtraElementPressure());
+        break;
+      default:
+        dserror("unknown boundary type");
+      }
       const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz_empty;
-      const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz_filled(elementAnsatz.getElementAnsatz(this->Shape()));
+      const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz_filled(elementAnsatz->getElementAnsatz(this->Shape()));
 
       // always build the eledofman that fits to the global dofs
       // problem: tight connectivity to xdofmapcreation
@@ -259,7 +270,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
                 *eleDofManager_, NumNode(), NodeIds());
 
         // calculate element coefficient matrix and rhs
-        XFLUID::callSysmat4(params, assembly_type,
+        XFLUID::callSysmat(params.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"), params, assembly_type,
                 this, ih_, *eleDofManager_, mystate, iforcecol, elemat1, elevec1, *Gds_uncond, *rhsd_uncond,
                 mat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution, monolithic_FSI, L2);
       }
@@ -295,7 +306,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         }
 
         // calculate element coefficient matrix and rhs
-        XFLUID::callSysmat4(params, assembly_type,
+        XFLUID::callSysmat(params.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"), params, assembly_type,
                 this, ih_, *eleDofManager_uncondensed_, mystate, iforcecol, elemat1_uncond, elevec1_uncond, *Gds_uncond, *rhsd_uncond,
                 mat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution, monolithic_FSI, L2);
 
@@ -358,7 +369,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
                 *eleDofManager_, NumNode(), NodeIds());
 
         // calculate element coefficient matrix and rhs
-        XFLUID::callSysmat4(params, assembly_type,
+        XFLUID::callSysmat(params.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"), params, assembly_type,
                 this, ih_, *eleDofManager_, mystate, iforcecol, elemat1, elevec1, *Gds_uncond, *rhsd_uncond,
                 mat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution, monolithic_FSI, L2);
       }
@@ -394,7 +405,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         }
 
         // calculate element coefficient matrix and rhs
-        XFLUID::callSysmat4(params, assembly_type,
+        XFLUID::callSysmat(params.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"), params, assembly_type,
                 this, ih_, *eleDofManager_uncondensed_, mystate, iforcecol, elemat1_uncond, elevec1_uncond, *Gds_uncond, *rhsd_uncond,
                 mat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution, monolithic_FSI, L2);
 

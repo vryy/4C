@@ -22,6 +22,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_fsi.H"
 #include "../drt_inpar/inpar_combust.H"
+#include "../drt_inpar/inpar_xfem.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
@@ -252,6 +253,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     fluidtimeparams->sublist("XFEM").set<bool>("CONDEST", getIntegralValue<int>(xdyn,"CONDEST")==1 );
     fluidtimeparams->sublist("XFEM").set<double>("volumeRatioLimit", xdyn.get<double>("volumeRatioLimit"));
     fluidtimeparams->sublist("XFEM").set<double>("boundaryRatioLimit", xdyn.get<double>("boundaryRatioLimit"));
+    fluidtimeparams->sublist("XFEM").set<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY", getIntegralValue<INPAR::XFEM::BoundaryIntegralType>(xdyn, "EMBEDDED_BOUNDARY"));
   }
 
   // --------------------------sublist for combustion-specific fluid parameters

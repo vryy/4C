@@ -55,7 +55,7 @@ Maintainer: Axel Gerstenberger
   template <DRT::Element::DiscretizationType DISTYPE,
             XFEM::AssemblyType ASSTYPE,
             class M1, class V1, class M2, class V2>
-  void fillElementUnknownsArraysTP1(
+  void fillElementUnknownsArrays(
           const XFEM::ElementDofManager& dofman,
           const DRT::ELEMENTS::XFluid3::MyState& mystate,
           M1& evelnp,
@@ -799,7 +799,7 @@ template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSTYPE,
           int NUMDOF,
           class M1, class V1, class M2, class V2>
-void SysmatDomainTP1(
+void SysmatDomainTauPressure(
     ParameterList&                      params,        ///< parameter list
     const DRT::Element*                 ele,           ///< the element those matrix is calculated
     const Teuchos::RCP<XFEM::InterfaceHandleXFSI>&  ih,   ///< connection to the interface handler
@@ -1430,7 +1430,7 @@ template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSTYPE,
           int NUMDOF,
           class M1, class M2, class V2>
-void SysmatBoundaryTP1(
+void SysmatBoundaryTauPressure(
     const DRT::Element*               ele,           ///< the element those matrix is calculated
     const Teuchos::RCP<XFEM::InterfaceHandleXFSI>&  ih,   ///< connection to the interface handler
     const XFEM::ElementDofManager&    dofman,        ///< dofmanager of the current element
@@ -1867,7 +1867,7 @@ void SysmatBoundaryTP1(
   */
 template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSTYPE>
-void SysmatTP1(
+void SysmatTauPressure(
         ParameterList&                    params,
         const DRT::Element*               ele,           ///< the element those matrix is calculated
         const Teuchos::RCP<XFEM::InterfaceHandleXFSI>&  ih,   ///< connection to the interface handler
@@ -1917,15 +1917,15 @@ void SysmatTP1(
     static LINALG::Matrix<6,shpVecSizeStress> etau;
     static LINALG::Matrix<shpVecSizeDiscPres,1> ediscpres;
 
-    fillElementUnknownsArraysTP1<DISTYPE,ASSTYPE>(dofman, mystate, evelnp, eveln, evelnm, eaccn, eprenp, etau, ediscpres);
+    fillElementUnknownsArrays<DISTYPE,ASSTYPE>(dofman, mystate, evelnp, eveln, evelnm, eaccn, eprenp, etau, ediscpres);
 
-    SysmatDomainTP1<DISTYPE,ASSTYPE,NUMDOF>(
+    SysmatDomainTauPressure<DISTYPE,ASSTYPE,NUMDOF>(
         params, ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, etau, ediscpres,
         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, assembler, L2);
 
     if (ih->ElementIntersected(ele->Id()))
     {
-      SysmatBoundaryTP1<DISTYPE,ASSTYPE,NUMDOF>(
+      SysmatBoundaryTauPressure<DISTYPE,ASSTYPE,NUMDOF>(
           ele, ih, dofman, evelnp, etau, ediscpres, iforcecol, Gds, rhsd,
           timealgo, dt, theta, assembler, ifaceForceContribution, monolithic_FSI);
     }
@@ -1934,7 +1934,7 @@ void SysmatTP1(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void XFLUID::callSysmatTP1(
+void XFLUID::callSysmatTauPressure(
         ParameterList&                    params,
         const XFEM::AssemblyType          assembly_type,
         const DRT::ELEMENTS::XFluid3*     ele,
@@ -1965,27 +1965,27 @@ void XFLUID::callSysmatTP1(
         switch (ele->Shape())
         {
             case DRT::Element::hex8:
-                SysmatTP1<DRT::Element::hex8,XFEM::standard_assembly>(
+                SysmatTauPressure<DRT::Element::hex8,XFEM::standard_assembly>(
                         params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
                 break;
             case DRT::Element::hex20:
-                SysmatTP1<DRT::Element::hex20,XFEM::standard_assembly>(
+                SysmatTauPressure<DRT::Element::hex20,XFEM::standard_assembly>(
                         params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
                 break;
             case DRT::Element::hex27:
-                SysmatTP1<DRT::Element::hex27,XFEM::standard_assembly>(
+                SysmatTauPressure<DRT::Element::hex27,XFEM::standard_assembly>(
                         params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
                 break;
             case DRT::Element::tet4:
-                SysmatTP1<DRT::Element::tet4,XFEM::standard_assembly>(
+                SysmatTauPressure<DRT::Element::tet4,XFEM::standard_assembly>(
                         params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
                 break;
             case DRT::Element::tet10:
-                SysmatTP1<DRT::Element::tet4,XFEM::standard_assembly>(
+                SysmatTauPressure<DRT::Element::tet4,XFEM::standard_assembly>(
                         params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
                 break;
@@ -1998,27 +1998,27 @@ void XFLUID::callSysmatTP1(
         switch (ele->Shape())
         {
             case DRT::Element::hex8:
-                SysmatTP1<DRT::Element::hex8,XFEM::xfem_assembly>(
+                SysmatTauPressure<DRT::Element::hex8,XFEM::xfem_assembly>(
                         params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
                 break;
             case DRT::Element::hex20:
-                SysmatTP1<DRT::Element::hex20,XFEM::xfem_assembly>(
+                SysmatTauPressure<DRT::Element::hex20,XFEM::xfem_assembly>(
                         params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
                 break;
             case DRT::Element::hex27:
-                SysmatTP1<DRT::Element::hex27,XFEM::xfem_assembly>(
+                SysmatTauPressure<DRT::Element::hex27,XFEM::xfem_assembly>(
                         params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
                 break;
             case DRT::Element::tet4:
-                SysmatTP1<DRT::Element::tet4,XFEM::xfem_assembly>(
+                SysmatTauPressure<DRT::Element::tet4,XFEM::xfem_assembly>(
                         params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
                 break;
             case DRT::Element::tet10:
-                SysmatTP1<DRT::Element::tet10,XFEM::xfem_assembly>(
+                SysmatTauPressure<DRT::Element::tet10,XFEM::xfem_assembly>(
                         params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
                 break;
