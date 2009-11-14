@@ -2012,7 +2012,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
 
         // extract local values from the global vector
         vector<double> myvelnp(lm.size());
-        DRT::UTILS::ExtractMyValues(*state_.velnp_, myvelnp, lm);
+        DRT::UTILS::ExtractMyValues(*output_col_velnp, myvelnp, lm);
 
         const size_t numparam = eledofman.NumDofPerField(field);
         if (numparam == 0)
