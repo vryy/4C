@@ -406,14 +406,20 @@ void XFEM::InterfaceHandleXFSI::PrintStatistics() const
   if (numintersectedele > 0)
   {
     std::size_t numcells = 0;
-    std::map<int,GEO::DomainIntCells >::const_iterator entry;
-    for (entry = elementalDomainIntCells_.begin(); entry != elementalDomainIntCells_.end(); ++entry)
+    std::size_t numcellsmin = 1000;
+    std::size_t numcellsmax = 0;
+    for (std::map<int,GEO::DomainIntCells >::const_iterator entry = elementalDomainIntCells_.begin();
+        entry != elementalDomainIntCells_.end();
+        ++entry)
     {
       const GEO::DomainIntCells& cells = entry->second;
       numcells += cells.size();
+      numcellsmin = std::min(cells.size(),numcellsmin);
+      numcellsmax = std::max(cells.size(),numcellsmax);
     }
     const std::size_t avgnumcellperele = numcells/numintersectedele;
-    cout << " Avg. Number of DomainIntCells per intersected xfem element: " << avgnumcellperele << endl;
+    cout << " Number of DomainIntCells per intersected xfem element (avg,min,max): ("
+         << avgnumcellperele << "," << numcellsmin << "," << numcellsmax << ")" << endl;
   }
 }
 
