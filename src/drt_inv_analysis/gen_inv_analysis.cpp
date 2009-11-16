@@ -25,6 +25,7 @@ Maintainer: Michael Gee
 #include "../drt_mat/lung_ogden.H"
 #include "../drt_mat/lung_penalty.H"
 #include "../drt_mat/aaaneohooke.H"
+#include "../drt_mat/neohooke.H"
 #include "../drt_structure/strtimint_create.H"
 #include "../drt_mat/elasthyper.H"
 #include "../drt_matelast/elast_coupanisoexpotwo.H"
@@ -578,6 +579,16 @@ void STR::GenInvAnalysis::ReadInParameters()
         //p_(j+2) = params->nue_; // need also change resize above to invoke nue
       }
       break;
+      case INPAR::MAT::m_neohooke:
+      {
+        MAT::PAR::NeoHooke* params = dynamic_cast<MAT::PAR::NeoHooke*>(actmat->Parameter());
+        if (!params) dserror("Cannot cast material parameters");
+        int j = p_.Length();
+        p_.Resize(j+2);
+        p_(j)   = params->youngs_;
+        p_(j+1) = params->poissonratio_;
+      }
+      break;
       case INPAR::MAT::m_elasthyper:
       {
         MAT::PAR::ElastHyper* params = dynamic_cast<MAT::PAR::ElastHyper*>(actmat->Parameter());
@@ -656,6 +667,17 @@ void STR::GenInvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
         const_cast<double&>(params->beta_)   = p_cur[count+1];
         //const_cast<double&>(params->nue_)    = p_cur[count+2];
         if (!myrank) printf("MAT::PAR::AAAneohooke %20.15e %20.15e\n",p_cur[count],p_cur[count+1]);
+        count += 2;
+      }
+      break;
+      case INPAR::MAT::m_neohooke:
+      {
+        MAT::PAR::NeoHooke* params = dynamic_cast<MAT::PAR::NeoHooke*>(actmat->Parameter());
+        if (!params) dserror("Cannot cast material parameters");
+        // This is a tiny little bit brutal!!!
+        const_cast<double&>(params->youngs_)       = p_cur[count];
+        const_cast<double&>(params->poissonratio_) = p_cur[count+1];
+        if (!myrank) printf("MAT::PAR::NeoHooke %20.15e %20.15e\n",params->youngs_,params->poissonratio_);
         count += 2;
       }
       break;
