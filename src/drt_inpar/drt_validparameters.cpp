@@ -813,6 +813,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   // tolerance for inv_analysis
   DoubleParameter("INV_ANA_TOL",1.0,"tolerance for inverse analysis",&iap);
+  
+  // perturbation parameters
+  DoubleParameter("INV_ALPHA",1.0e-3,"perturbation parameters",&iap);
+  DoubleParameter("INV_BETA",1.0e-3,"perturbation parameters",&iap);
 
   // initial regularization parameter
   DoubleParameter("INV_INITREG",1.0,"initial regularization parameter",&iap);
