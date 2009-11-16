@@ -557,8 +557,8 @@ void STR::GenInvAnalysis::ReadInParameters()
   int myrank = discret_->Comm().MyPID();
   
   // loop all materials in problem
-  const map<int,RCP<MAT::PAR::Material> >& mats = 
-                                        *(DRT::Problem::Instance()->Materials()->Map());
+  map<int,RCP<MAT::PAR::Material> >& mats = const_cast<map<int,RCP<MAT::PAR::Material> >& >
+                                        (*(DRT::Problem::Instance()->Materials()->Map()));
   
   if (!myrank) printf("No. material laws considered : %d\n",mats.size());
   map<int,RCP<MAT::PAR::Material> >::const_iterator curr;
@@ -575,13 +575,55 @@ void STR::GenInvAnalysis::ReadInParameters()
         p_.Resize(j+2);
         p_(j)   = params->youngs_;
         p_(j+1) = params->beta_;
-        // p_(j+2) = params->nue_; need also change resize above to invoke nue
-        //if (!myrank) printf("MAT::PAR::AAAneohooke %20.15E %20.15E\n",p_(j),p_(j+1));
+        //p_(j+2) = params->nue_; // need also change resize above to invoke nue
       }
       break;
+      case INPAR::MAT::m_elasthyper:
+      {
+        MAT::PAR::ElastHyper* params = dynamic_cast<MAT::PAR::ElastHyper*>(actmat->Parameter());
+        if (!params) dserror("Cannot cast material parameters");
+        const int nummat               = params->nummat_;
+        const std::vector<int>* matids = params->matids_;
+        for (int i=0; i<nummat; ++i)
+        {
+          int id = (*matids)[i];
+          RCP<MAT::PAR::Material> actelastmat = mats[id];
+          switch (actelastmat->Type())
+          {
+            case INPAR::MAT::mes_isoyeoh:
+            {
+              MAT::ELASTIC::PAR::IsoYeoh* params = dynamic_cast<MAT::ELASTIC::PAR::IsoYeoh*>(actelastmat->Parameter());
+              if (!params) dserror("Cannot cast material parameters");
+              int j = p_.Length();
+              p_.Resize(j+3);
+              p_(j)   = params->c1_;
+              p_(j+1) = params->c2_;
+              p_(j+2) = params->c3_;
+            }
+            break;
+            case INPAR::MAT::mes_vologden:
+            {
+              MAT::ELASTIC::PAR::VolOgden* params = dynamic_cast<MAT::ELASTIC::PAR::VolOgden*>(actelastmat->Parameter());
+              if (!params) dserror("Cannot cast material parameters");
+              int j = p_.Length();
+              p_.Resize(j+1);
+              p_(j)   = params->kappa_;
+              // p_(j+1) = params->beta_; // need also change resize above to invoke beta_
+            }
+            break;
+            default:
+              dserror("Unknown type of elasthyper material");
+            break;
+          }
+        }
+      }
+      case INPAR::MAT::mes_isoyeoh: // at this level do nothing, its inside the INPAR::MAT::m_elasthyper block
+      break;
+      case INPAR::MAT::mes_vologden: // at this level do nothing, its inside the INPAR::MAT::m_elasthyper block
+      break;
       default:
-        // ignore unknown materials
-        //dserror("Unknown type of material");
+        // ignore unknown materials ?
+        dserror("Unknown type of material");
       break;
     }
   }
@@ -596,8 +638,8 @@ void STR::GenInvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
   discret_->Comm().Broadcast(&p_cur[0],np_,0);
 
   // loop all materials in problem
-  const map<int,RCP<MAT::PAR::Material> >& mats = 
-                                        *(DRT::Problem::Instance()->Materials()->Map());
+  map<int,RCP<MAT::PAR::Material> >& mats = const_cast<map<int,RCP<MAT::PAR::Material> >& >
+                                        (*(DRT::Problem::Instance()->Materials()->Map()));
   int count=0;
   map<int,RCP<MAT::PAR::Material> >::const_iterator curr;
   for (curr=mats.begin(); curr != mats.end(); ++curr)
@@ -613,13 +655,57 @@ void STR::GenInvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
         const_cast<double&>(params->youngs_) = p_cur[count];
         const_cast<double&>(params->beta_)   = p_cur[count+1];
         //const_cast<double&>(params->nue_)    = p_cur[count+2];
-        if (!myrank) printf("MAT::PAR::AAAneohooke %20.15E %20.15E\n",p_cur[count],p_cur[count+1]);
+        if (!myrank) printf("MAT::PAR::AAAneohooke %20.15e %20.15e\n",p_cur[count],p_cur[count+1]);
         count += 2;
       }
       break;
+      case INPAR::MAT::m_elasthyper:
+      {
+        MAT::PAR::ElastHyper* params = dynamic_cast<MAT::PAR::ElastHyper*>(actmat->Parameter());
+        if (!params) dserror("Cannot cast material parameters");
+        const int nummat               = params->nummat_;
+        const std::vector<int>* matids = params->matids_;
+        for (int i=0; i<nummat; ++i)
+        {
+          int id = (*matids)[i];
+          RCP<MAT::PAR::Material> actelastmat = mats[id];
+          switch (actelastmat->Type())
+          {
+            case INPAR::MAT::mes_isoyeoh:
+            {
+              MAT::ELASTIC::PAR::IsoYeoh* params = dynamic_cast<MAT::ELASTIC::PAR::IsoYeoh*>(actelastmat->Parameter());
+              if (!params) dserror("Cannot cast material parameters");
+              const_cast<double&>(params->c1_) = p_cur[count];
+              const_cast<double&>(params->c2_) = p_cur[count+1];
+              const_cast<double&>(params->c3_) = p_cur[count+2];
+              if (!myrank) printf("MAT::ELASTIC::PAR::IsoYeoh %20.15e %20.15e %20.15e\n",params->c1_,params->c2_,params->c3_);
+              count += 3;
+            }
+            break;
+            case INPAR::MAT::mes_vologden:
+            {
+              MAT::ELASTIC::PAR::VolOgden* params = dynamic_cast<MAT::ELASTIC::PAR::VolOgden*>(actelastmat->Parameter());
+              if (!params) dserror("Cannot cast material parameters");
+              const_cast<double&>(params->kappa_) = p_cur[count];
+              //const_cast<double&>(params->beta_) = p_cur[count+1];
+              if (!myrank) printf("MAT::ELASTIC::PAR::VolOgden %20.15e %20.15e\n",params->kappa_,params->beta_);
+              count += 1;
+            }
+            break;
+            default:
+              dserror("Unknown type of elasthyper material");
+            break;
+          }
+        }
+      }
+      break;
+      case INPAR::MAT::mes_isoyeoh: // at this level do nothing, its inside the INPAR::MAT::m_elasthyper block
+      break;
+      case INPAR::MAT::mes_vologden: // at this level do nothing, its inside the INPAR::MAT::m_elasthyper block
+      break;
       default:
-        // ignore unknown materials
-        //dserror("Unknown type of material");
+        // ignore unknown materials ?
+        dserror("Unknown type of material");
       break;
     }
   }
