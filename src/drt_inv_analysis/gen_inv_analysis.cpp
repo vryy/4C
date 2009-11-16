@@ -177,7 +177,7 @@ steps 25 nnodes 5
   
   // error: diference of the measured to the calculated curve
   error_  = 1.0E6;
-  error_o_= 1.5E6;
+  error_o_= 1.0E6;
 
   // trainings parameter
   mu_ = iap.get<double>("INV_INITREG");
@@ -215,8 +215,9 @@ void STR::GenInvAnalysis::Integrate()
 
     // pertubation of material parameter (should be relativ to the value that is perturbed)
     vector<double> perturb(np_,0.0);
-    double alpha = 1.0e-6;
-    double beta  = 1.0e-10;
+    const Teuchos::ParameterList& iap = DRT::Problem::Instance()->InverseAnalysisParams();
+    double alpha = iap.get<double>("INV_ALPHA");
+    double beta  = iap.get<double>("INV_BETA");
     for (int i=0; i<np_; ++i) 
     {
       perturb[i] = alpha + beta * p_[i];
@@ -320,6 +321,8 @@ void STR::GenInvAnalysis::CalcNewParameters(Epetra_SerialDenseMatrix& cmatrix, v
   // dependent on the # of steps
   error_o_ = error_;
   error_   = rcurve.Norm2()/sqrt(nmp_);
+  if (!numb_run_) error_o_ = error_;
+
 
   //Adjust training parameter
   mu_ *= (error_/error_o_);
@@ -445,7 +448,7 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(bool outputtofile)
     tintegrator->FullNewton();
     tintegrator->Update();
     if (outputtofile) tintegrator->Output();
-
+    if (!myrank) printf("Step %d\n",i);
     Epetra_SerialDenseVector cvector_arg = GetCalculatedCurve(*(tintegrator->Disp()));
     if (!myrank)
       for (int j=0; j<ndofs_; ++j)
@@ -577,7 +580,8 @@ void STR::GenInvAnalysis::ReadInParameters()
       }
       break;
       default:
-        dserror("Unknown type of material");
+        // ignore unknown materials
+        //dserror("Unknown type of material");
       break;
     }
   }
@@ -614,7 +618,8 @@ void STR::GenInvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
       }
       break;
       default:
-        dserror("Unknown type of material");
+        // ignore unknown materials
+        //dserror("Unknown type of material");
       break;
     }
   }
