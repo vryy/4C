@@ -1987,10 +1987,10 @@ void CONTACT::Interface::AssembleRegNormalForces(bool& localisincontact,
         cnode->Active() = true;
         localactivesetchange = true;
 
-        cout << "node #" << gid << " is now active (";
-        for( int j=0; j<dim; j++)
-          cout << " " << cnode->Dofs()[j] << " ";
-        cout << ") gap=" << gap << endl;
+        //cout << "node #" << gid << " is now active (";
+        //for( int j=0; j<dim; j++)
+        //  cout << " " << cnode->Dofs()[j] << " ";
+        //cout << ") gap=" << gap << endl;
     }
 
     else if( (cnode->Active() == true) && (lmuzawan - kappa * pp * gap < 0) )
@@ -1998,7 +1998,7 @@ void CONTACT::Interface::AssembleRegNormalForces(bool& localisincontact,
         cnode->Active() = false;
         localactivesetchange = true;
 
-        cout << "node #" << gid << " is now inactive, gap=" << gap << endl;
+        //cout << "node #" << gid << " is now inactive, gap=" << gap << endl;
     }
     //********************************************************************
 
