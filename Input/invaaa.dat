@@ -38,7 +38,7 @@ FILESTEPS                       1000
 -----------------------------------------------EIGENVALUE ANALYSIS
 --------------------------------------------------INVERSE ANALYSIS
 INV_ANALYSIS    gen                   // lung gen none
-INV_INITREG     10.0                  // initial regularization value (>0.0)
+INV_INITREG     1.0                  // initial regularization value (>0.0)
 INV_ALPHA       1.0e-3               // perturbation factors for forward finite difference
 INV_BETA        1.0e-4               // eps = alpha + beta * matparameter
 INV_ANA_TOL     0.0001                // tolerance of inv. analysis
