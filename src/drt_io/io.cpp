@@ -915,7 +915,6 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
 
     WriteCondition("SurfacePeriodic");
     WriteCondition("LinePeriodic");
-    WriteCondition("XFEMCoupling");
 
     // knotvectors for nurbs-discretisation
     WriteKnotvector();
