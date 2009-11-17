@@ -1067,6 +1067,11 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 
   if (myrank_ == 0)
   {
+    if (xparams_.get<bool>("FAST_INTEGRATION"))
+    {
+      cout << RED_LIGHT << "Using reduced itegration for integration cells!" << END_COLOR << endl;
+    }
+
     printf("+------------+------------------+---------+---------+---------+---------+---------+---------+\n");
     printf("|  step/max  |  tol     [norm]  | vel-res | pre-res | fullres | vel-inc | pre-inc | fullinc |\n");
   }
@@ -1130,8 +1135,6 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 
       discret_->SetState("nodal increment",oldinc_);
 
-      eleparams.set("interface velocity",cutterdiscret->GetState("ivelcolnp"));
-
       // reset interface force and let the elements fill it
       iforcecolnp->PutScalar(0.0);
       eleparams.set("interface force",iforcecolnp);
@@ -1142,7 +1145,6 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       eleparams.set("DLM_condensation",xparams_.get<bool>("DLM_condensation"));
       eleparams.set("INCOMP_PROJECTION",xparams_.get<bool>("INCOMP_PROJECTION"));
       eleparams.set("FAST_INTEGRATION",xparams_.get<bool>("FAST_INTEGRATION"));
-      eleparams.set("boundaryRatioLimit",xparams_.get<double>("boundaryRatioLimit"));
       eleparams.set("monolithic_FSI",false);
       eleparams.set("EMBEDDED_BOUNDARY",xparams_.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"));
 
@@ -1158,6 +1160,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
         // call standard loop over elements
         discret_->Evaluate(eleparams,sysmat_,residual_);
         discret_->ClearState();
+        //eleparams.unused(cout);
 
         // account for potential Neumann inflow terms
         if (params_.get<string>("Neumann inflow") == "yes")
@@ -1557,6 +1560,7 @@ void FLD::XFluidImplicitTimeInt::Evaluate(
   MonolithicMultiDisEvaluate(ih, discret_,cutterdiscret, eleparams,
       Cuu_, Mud_, Mdu_, Cdd_, RHSd_, sysmat_, residual_);
   discret_->ClearState();
+  eleparams.unused(cout);
 
   // finalize the system matrix
   sysmat_->Complete();
@@ -1842,8 +1846,6 @@ void FLD::XFluidImplicitTimeInt::ReadRestart(
 
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
-  // Vectors passed to the element
-  // -----------------------------
   // velocity/pressure at time n+1, n and n-1
   state_.velnp_        = LINALG::CreateVector(*dofrowmap,true);
   state_.veln_         = LINALG::CreateVector(*dofrowmap,true);
@@ -1853,13 +1855,11 @@ void FLD::XFluidImplicitTimeInt::ReadRestart(
   state_.accnp_        = LINALG::CreateVector(*dofrowmap,true);
   state_.accn_         = LINALG::CreateVector(*dofrowmap,true);
 
-  reader.ReadVector(state_.velnp_,"velnp");
-  reader.ReadVector(state_.veln_, "veln");
-  reader.ReadVector(state_.velnm_,"velnm");
+  reader.ReadVector(state_.velnp_ ,"velnp");
+  reader.ReadVector(state_.veln_  ,"veln");
+  reader.ReadVector(state_.velnm_ ,"velnm");
   reader.ReadVector(state_.accnp_ ,"accnp");
-  reader.ReadVector(state_.accn_ ,"accn");
-
-  cout << state_.velnp_ << endl;
+  reader.ReadVector(state_.accn_  ,"accn");
 
   if (discret_->Comm().NumProc() == 1 and gmshdebugout)
   {
@@ -3221,15 +3221,16 @@ void FLD::XFluidImplicitTimeInt::ProjectOldTimeStepValues(
         discret_->SetState("accn" ,state_.accn_);
 
         eleparams.set("DLM_condensation",xparams_.get<bool>("DLM_condensation"));
-        eleparams.set("FAST_INTEGRATION",xparams_.get<bool>("FAST_INTEGRATION"));
-        eleparams.set("boundaryRatioLimit",xparams_.get<double>("boundaryRatioLimit"));
-
 
         sysmat_projection_veln->Zero();
 //        sysmat_projection_accn->Zero();
         // call standard loop over elements (don't forget to build element stiffness matrix on the element level)
         discret_->Evaluate(eleparams,sysmat_projection_veln,sysmat_projection_accn,residual_veln,residual_accn,Teuchos::null);
         discret_->ClearState();
+
+        // tell me about unused parameters
+        // eleparams.unused(cout);
+
         // finalize the complete matrix
         sysmat_projection_veln->Complete();
 //        sysmat_projection_accn->Complete();

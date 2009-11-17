@@ -301,8 +301,8 @@ DRT::UTILS::GaussRule3D getXFEMGaussrule(
         {
           if (fast_integration)
           {
-            if (xeleGeoType == GEO::CARTESIAN) rule = DRT::UTILS::intrule_tet_5point;
-            else                               rule = DRT::UTILS::intrule_tet_5point;
+            if (xeleGeoType == GEO::CARTESIAN) rule = DRT::UTILS::intrule_tet_11point;
+            else                               rule = DRT::UTILS::intrule_tet_11point;
           }
           else
           {
@@ -315,12 +315,12 @@ DRT::UTILS::GaussRule3D getXFEMGaussrule(
         {
           if (fast_integration)
           {
-            if (xeleGeoType == GEO::CARTESIAN) rule = DRT::UTILS::intrule_tet_11point;
-            else                               rule = DRT::UTILS::intrule_tet_11point;
+            if (xeleGeoType == GEO::CARTESIAN) rule = DRT::UTILS::intrule_tet_24point;
+            else                               rule = DRT::UTILS::intrule_tet_24point;
           }
           else
           {
-            if (xeleGeoType == GEO::CARTESIAN) rule = DRT::UTILS::intrule_tet_24point;
+            if (xeleGeoType == GEO::CARTESIAN) rule = DRT::UTILS::intrule_tet_45point;
             else                               rule = DRT::UTILS::intrule_tet_45point;
           }
           break;
