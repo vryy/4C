@@ -60,9 +60,6 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   // call constructor for "nontrivial" objects
   discret_(actdis),
   fluidsolverparams_(DRT::Problem::Instance()->FluidSolverParams()),
-  solver_ (rcp(new LINALG::Solver(DRT::Problem::Instance()->FluidSolverParams(),
-                                  actdis->Comm(),
-                                  DRT::Problem::Instance()->ErrorFile()->Handle()))),
   params_ (params),
   xparams_(params.sublist("XFEM")),
   output_ (rcp(new IO::DiscretizationWriter(actdis))),
@@ -141,18 +138,7 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
 
   discret_->FillComplete();
 
-
   output_->WriteMesh(0,0.0);
-
-
-  // sanity check
-  if (  solver_->Params().get<string>("solver") == "aztec"
-    and solver_->Params().isSublist("ML Parameters")
-    and not xparams_.get<bool>("DLM_condensation")
-    )
-  {
-    dserror("for MLFLUID2, you need to set \"DLM_CONDENSATION  yes\" ");
-  }
 
   if (actdis->Comm().MyPID()==0)
   {
@@ -963,8 +949,8 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     discret_->Evaluate(eleparams);
   }
 
-  // since number of dofs can change, we don't allow reuse of preconditioners over timestep borders
-  solver_ = Teuchos::null;
+//  DRT::PAR::LoadBalancer balancer(discret_);
+//  balancer.Partition();
 
   ComputeInterfaceAndSetDOFs(cutterdiscret);
 
@@ -973,9 +959,9 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
   // in this case, we need a basis vector for the nullspace/kernel
   vector<DRT::Condition*> KSPcond;
   discret_->GetCondition("KrylovSpaceProjection",KSPcond);
-  int numcond = KSPcond.size();
-  int numfluid = 0;
-  for(int icond = 0; icond < numcond; icond++)
+  const std::size_t numcond = KSPcond.size();
+  std::size_t numfluid = 0;
+  for(std::size_t icond = 0; icond < numcond; icond++)
   {
     const std::string* name = KSPcond[icond]->Get<std::string>("discretization");
     if (*name == "fluid") numfluid++;
@@ -996,18 +982,22 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
   else
     dserror("Received more than one KrylovSpaceCondition for fluid field");
 
+  Teuchos::RCP<LINALG::Solver> solver =
+      rcp(new LINALG::Solver(fluidsolverparams_,
+          discret_->Comm(),
+          DRT::Problem::Instance()->ErrorFile()->Handle()));
 
+  // sanity check
+  if (  solver->Params().get<string>("solver") == "aztec"
+    and solver->Params().isSublist("ML Parameters")
+    and not xparams_.get<bool>("DLM_condensation")
+    )
+  {
+    dserror("for MLFLUID2, you need to set \"DLM_CONDENSATION  yes\" ");
+  }
 
-  solver_ = rcp(new LINALG::Solver(fluidsolverparams_,
-                                   discret_->Comm(),
-                                   DRT::Problem::Instance()->ErrorFile()->Handle()));
-  discret_->ComputeNullSpaceIfNecessary(solver_->Params());
+  discret_->ComputeNullSpaceIfNecessary(solver->Params());
 
-//  DRT::PAR::LoadBalancer balancer(discret_);
-//  balancer.Partition();
-//
-//  ComputeInterfaceAndSetDOFs(cutterdiscret);
-//
   PrepareNonlinearSolve();
 
   // ---------------------------------------------- nonlinear iteration
@@ -1410,13 +1400,13 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
         double currresidual = max(vresnorm,presnorm);
         currresidual = max(currresidual,incvelnorm_L2/velnorm_L2);
         currresidual = max(currresidual,incprenorm_L2/prenorm_L2);
-        solver_->AdaptTolerance(ittol,currresidual,adaptolbetter);
+        solver->AdaptTolerance(ittol,currresidual,adaptolbetter);
       }
 
       const int numdim = 3;
       KrylovSpaceProjection(numdim);
-      solver_->Solve(sysmat_->EpetraOperator(), incvel_, residual_, true, itnum == 1, w_, c_, project_);
-      solver_->ResetTolerance();
+      solver->Solve(sysmat_->EpetraOperator(), incvel_, residual_, true, itnum == 1, w_, c_, project_);
+      solver->ResetTolerance();
 
       // end time measurement for solver
       // to get realistic times, this barrier results in the longest
@@ -1996,6 +1986,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
     const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_pressure_disc", step, 5, screen_out, discret_->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
 
+    std::size_t numplot = 0;
     const XFEM::PHYSICS::Field field = XFEM::PHYSICS::DiscPres;
     {
       gmshfilecontent << "View \" " << "Discontinous Pressure Solution (Physical) \" {\n";
@@ -2033,11 +2024,16 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
               *cell, field, elementvalues, cellvalues);
           IO::GMSH::cellWithScalarFieldToStream(
               cell->Shape(), cellvalues, cell->CellNodalPosXYZ(), gmshfilecontent);
+          numplot++;
         }
       }
       gmshfilecontent << "};\n";
     }
     gmshfilecontent.close();
+    if (numplot == 0)
+    {
+      std::remove(filename.c_str());
+    }
     if (screen_out) std::cout << " done" << endl;
   }
 #endif
@@ -2093,6 +2089,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
       dserror("unknown boundary type");
     }
 
+    std::size_t numplot = 0;
     {
       gmshfilecontent   << "View \" " << "Discontinous Stress Solution (Physical) \" {" << endl;
       gmshfilecontentxx << "View \" " << "Discontinous Stress (xx) Solution (Physical) \" {\n";
@@ -2119,6 +2116,9 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
         const int numparam = eledofman.NumDofPerField(fieldxx);
         if (numparam == 0)
           continue;
+
+        numplot++;
+
         const vector<int>& dofposxx = eledofman.LocalDofPosPerField(fieldxx);
         const vector<int>& dofposyy = eledofman.LocalDofPosPerField(fieldyy);
         const vector<int>& dofposzz = eledofman.LocalDofPosPerField(fieldzz);
@@ -2201,6 +2201,24 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
       gmshfilecontentxy << "};\n";
       gmshfilecontentxz << "};\n";
       gmshfilecontentyz << "};\n";
+    }
+    gmshfilecontent.close();
+    gmshfilecontentxx.close();
+    gmshfilecontentyy.close();
+    gmshfilecontentzz.close();
+    gmshfilecontentxy.close();
+    gmshfilecontentxz.close();
+    gmshfilecontentyz.close();
+
+    if (numplot == 0)
+    {
+      std::remove(filename.c_str());
+      std::remove(filenamexx.c_str());
+      std::remove(filenameyy.c_str());
+      std::remove(filenamezz.c_str());
+      std::remove(filenamexy.c_str());
+      std::remove(filenamexz.c_str());
+      std::remove(filenameyz.c_str());
     }
     if (screen_out) std::cout << " done" << endl;
   }

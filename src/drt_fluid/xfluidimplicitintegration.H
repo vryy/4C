@@ -28,6 +28,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_ostream0.H"
+#include "../drt_io/io_control.H"
 #include "../drt_xfem/dof_management.H"
 
 #include "fluid_utils_mapextractor.H"
@@ -237,7 +238,11 @@ public:
 
   double Time() const { return time_; }
   int Step() const { return step_; }
-  Teuchos::RCP<LINALG::Solver> LinearSolver() { return solver_; }
+  Teuchos::RCP<LINALG::Solver> LinearSolver()
+  {
+    return rcp(new LINALG::Solver(fluidsolverparams_, discret_->Comm(),
+      DRT::Problem::Instance()->ErrorFile()->Handle()));
+  }
 
   int Itemax() const { return itemax_; }
   void SetItemax(int itemax) { itemax_ = itemax; }
@@ -374,7 +379,7 @@ protected:
   //! fluid discretization
   const Teuchos::RCP<DRT::Discretization>      discret_;
   const ParameterList&                         fluidsolverparams_;
-  Teuchos::RCP<LINALG::Solver>                 solver_;
+//  Teuchos::RCP<LINALG::Solver>                 solver_;
 
   //! Fluid-Fluid-Boundray discretization
   Teuchos::RCP<DRT::Discretization>			   FluidFluidboundarydis_;
