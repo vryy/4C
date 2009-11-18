@@ -213,6 +213,9 @@ private:
   
   //! List of current XAABBs 
   std::map<int,LINALG::Matrix<3,2> > 					elemXAABBList_;
+  
+  //! search tree type
+  GEO::TreeType                                 treetype_;
 
 
 }; //class

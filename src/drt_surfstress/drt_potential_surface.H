@@ -265,6 +265,9 @@ private:
 
   //! @name importer
   Teuchos::RCP<Epetra_Import>                 importer_;
+  
+  //! search tree type
+  GEO::TreeType                                treetype_;
 
 
 }; //class

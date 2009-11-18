@@ -32,17 +32,18 @@ POTENTIAL::VolumePotential::VolumePotential(
     const GEO::TreeType&                  treetype):
     Potential(discretRCP, discret)
 {
+  treetype_ = treetype;
   const LINALG::Matrix<3,2> rootBox = GEO::getXAABBofDis(*discretRCP_);
   DRT::UTILS::CollectElementsByConditionLabel(*discretRCP_, elementsByLabel_,"Potential" );
   
   //if(prob_dim_ == 3)
-  searchTree_->initializeTree(rootBox, elementsByLabel_, treetype);
+  searchTree_->initializeTree(rootBox, elementsByLabel_, treetype_);
   //else if (prob_dim_ == 2)
   //	searchTree_->initializeTree(rootBox, elementsByLabel_, GEO::TreeType(GEO::QUADTREE));
   //else
   //    	    dserror("problem dimension not correct");
 
-  // std::cout << "Potential manager constructor done" << endl;
+  std::cout << "Volume potential constructor done" << endl;
 }
 
 
@@ -153,7 +154,7 @@ void POTENTIAL::VolumePotential::StiffnessAndInternalForcesPotential(
 	  const double  cutOff    = cond->GetDouble("cutOff");
 	  std::map<int,std::set<int> > potentialElementIds;
 	  
-
+    /*
 	  for(int i = 0; i < DRT::UTILS::getNumberOfElementCornerNodes(element->Shape()); i++)
 	  {
 	    // compute AABB von jedem Element plus cutoff radius
@@ -165,8 +166,8 @@ void POTENTIAL::VolumePotential::StiffnessAndInternalForcesPotential(
 	    //searchElementsInCutOffRadius(eleId, potentialElementIds, cutOff);
 	    // searchElementsInCutOffRadius(discretRCP_, currentpositions_, x_node, potentialElementIds, cutOff);
 	  }
-
-	//  treeSearchElementsInCutOffRadius(discretRCP_, elemXAABBList_, element, potentialElementIds, cutOff, label);
+    */
+	  treeSearchElementsInCutOffRadius(discretRCP_, elemXAABBList_, element, potentialElementIds, cutOff, label);
 	  
 	  // initialize time variables
 	  const int    curvenum = cond->GetInt("curve");
@@ -182,6 +183,7 @@ void POTENTIAL::VolumePotential::StiffnessAndInternalForcesPotential(
 	  // TODO if poteles empty don t do assembly
 	  computeFandK(element, gaussrule, potentialElementIds, lm, K_surf, F_int, cond, label, curvefac);
 	  // cout << "stiffness stop" << endl;
+	  
 	  return;
 }
 
@@ -231,12 +233,14 @@ void POTENTIAL::VolumePotential::UpdateDisplacementsOfPotentialDiscretization(
   
   // reinitialize search tree
   const LINALG::Matrix<3,2> rootBox = GEO::getXAABBofDis(*discretRCP_, currentpositions_);
-  if(prob_dim_ == 2)
+  searchTree_->initializeTree(rootBox, elementsByLabel_, treetype_);
+  /*if(prob_dim_ == 2)
     searchTree_->initializeTree(rootBox, elementsByLabel_, GEO::TreeType(GEO::QUADTREE));
   else if(prob_dim_ == 3)
     searchTree_->initializeTree(rootBox, elementsByLabel_, GEO::TreeType(GEO::OCTTREE));
   else
     dserror("problem dimension not correct");
+  */
   
   //build boxes around every element
   // if abfrage

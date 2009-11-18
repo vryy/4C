@@ -51,11 +51,12 @@ void GEO::SearchTree::initializeTree(
 
   treeRoot_ = Teuchos::null;
   treeRoot_ = rcp(new TreeNode(NULL, max_depth_, nodeBox, treetype));
-
+  
   // insert element map into tree root node
-    if(elementsByLabel.size()>0)
+  if(elementsByLabel.size()>0)
     treeRoot_->setElementList(elementsByLabel);
-
+    
+    return;
 }
 
 
@@ -717,7 +718,7 @@ void GEO::SearchTree::TreeNode::getChildNodeBox(
       childNodeBox(2,1) = 0.0;
     }
   }
-  //  printf("created chldAABB(%f\t%f\t%f\t%f\t%f\t%f)\n", childNodeBox(0,0),childNodeBox(0,1),childNodeBox(1,0),childNodeBox(1,1),childNodeBox(2,0),childNodeBox(2,1));
+  //printf("created chldAABB(%f\t%f\t%f\t%f\t%f\t%f)\n", childNodeBox(0,0),childNodeBox(0,1),childNodeBox(1,0),childNodeBox(1,1),childNodeBox(2,0),childNodeBox(2,1));
   return;
 }
 
@@ -732,6 +733,7 @@ void GEO::SearchTree::TreeNode::insertElement(
     const int   eleId)
 {
     elementList_[label].insert(eleId);
+    return;
 }
 
 
@@ -824,14 +826,13 @@ void GEO::SearchTree::TreeNode::createChildren(
     const std::map<int,LINALG::Matrix<3,2> >&      currentXAABBs)
 {
   // create empty children
-  static LINALG::Matrix<3,2> childNodeBox;
+  LINALG::Matrix<3,2> childNodeBox;
   for(int index = 0; index < getNumChildren(); index++)
   {
     getChildNodeBox(index, childNodeBox );
     children_[index] = rcp(new TreeNode(this, (treedepth_-1), childNodeBox, treeType_));
   }
-
-  static std::vector<int> elementClassification;
+  std::vector<int> elementClassification;
   // insert elements into child node
   for (std::map<int, std::set<int> >::const_iterator labelIter = elementList_.begin(); labelIter != elementList_.end(); labelIter++)
   {
@@ -844,6 +845,7 @@ void GEO::SearchTree::TreeNode::createChildren(
   }
   // this node becomes an inner tree node
   treeNodeType_ = INNER_NODE;
+  return;
 }
 
 
@@ -1083,6 +1085,8 @@ void GEO::SearchTree::TreeNode::classifyXAABB(
     // check max_y greater than y-plane
     if (AABB(1, 1) > (yPlaneCoordinate_ - GEO::TOL7) )
     {
+      if(treeType_ == OCTTREE)
+      {
         // check max_z greater than z-plane
         if (AABB(2, 1) > (zPlaneCoordinate_ - GEO::TOL7) )
           octants.push_back(7);
@@ -1090,12 +1094,17 @@ void GEO::SearchTree::TreeNode::classifyXAABB(
         // check min_z less than z-plane
         if (AABB(2, 0) < (zPlaneCoordinate_ + GEO::TOL7) )
           octants.push_back(3);
+      }
+      else if (treeType_ == QUADTREE)
+        octants.push_back(3);
 
     }
 
     // check min_y less than y-plane
     if (AABB(1, 0) < ( yPlaneCoordinate_ + GEO::TOL7) )
     {
+      if(treeType_ == OCTTREE)
+      {
         // check max_z greater than z-plane
         if (AABB(2, 1) > ( zPlaneCoordinate_ - GEO::TOL7) )
           octants.push_back(5);
@@ -1103,6 +1112,9 @@ void GEO::SearchTree::TreeNode::classifyXAABB(
         // check min_z less than z-plane
         if (AABB(2, 0) < ( zPlaneCoordinate_ + GEO::TOL7) )
           octants.push_back(1);
+      }
+      else if(treeType_ == QUADTREE)
+        octants.push_back(1);
     }
   }
 
@@ -1112,6 +1124,8 @@ void GEO::SearchTree::TreeNode::classifyXAABB(
     // check min_y less than y-plane
     if (AABB(1, 0) < ( yPlaneCoordinate_ + GEO::TOL7) )
     {
+      if(treeType_ == OCTTREE)
+      {
         // check min_z less than z-plane
         if (AABB(2, 0) < ( zPlaneCoordinate_ + GEO::TOL7) )
           octants.push_back(0);
@@ -1119,12 +1133,17 @@ void GEO::SearchTree::TreeNode::classifyXAABB(
         // check max_z greater than z-plane
         if (AABB(2, 1) > ( zPlaneCoordinate_ - GEO::TOL7) )
           octants.push_back(4);
+      }
+      else if(treeType_ == QUADTREE)
+        octants.push_back(0);
 
     }
 
     // check max_y greater than y-plane
     if (AABB(1, 1) > ( yPlaneCoordinate_ - GEO::TOL7) )
     {
+      if(treeType_ == OCTTREE)
+      {
         // check max_z greater than z-plane
         if (AABB(2, 1) > ( zPlaneCoordinate_ - GEO::TOL7) )
           octants.push_back(6);
@@ -1132,6 +1151,10 @@ void GEO::SearchTree::TreeNode::classifyXAABB(
         // check min_z less than z-plane
         if (AABB(2, 0) < ( zPlaneCoordinate_ + GEO::TOL7) )
           octants.push_back(2);
+        
+      }
+      else if(treeType_ == QUADTREE)
+        octants.push_back(2);
 
     }
   }
@@ -1585,7 +1608,7 @@ bool GEO::SearchTree::TreeNode::classifyKDOP(
  | classifiy element in node                               peder   07/08|
  *----------------------------------------------------------------------*/
 std::vector<int> GEO::SearchTree::TreeNode::classifyElement(
-    const DRT::Element*							element,
+    const DRT::Element*							            element,
     const std::map<int,LINALG::Matrix<3,1> >& 	currentpositions
     ) const
 {
@@ -1593,15 +1616,13 @@ std::vector<int> GEO::SearchTree::TreeNode::classifyElement(
   GEO::EleGeoType eleGeoType(GEO::HIGHERORDER);
   GEO::checkRoughGeoType(element, xyze, eleGeoType);
   const LINALG::Matrix<3,2> elemXAABB(GEO::computeFastXAABB(element->Shape(), xyze, eleGeoType));
-  std::vector<int> test = classifyXAABB(elemXAABB);
-    
   return classifyXAABB(elemXAABB);
 }
 
 
 
 /*----------------------------------------------------------------------*
- | classifiy element in tree node			               u.may   07/08|
+ | classifiy element in tree node			                     u.may   07/08|
  *----------------------------------------------------------------------*/
 std::vector<int> GEO::SearchTree::TreeNode::classifyElement(
     const RCP<DRT::Element>                     element,
