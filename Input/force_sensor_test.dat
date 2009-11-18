@@ -78,12 +78,16 @@ START_FACTOR	    0.0
 SHEARAMPLITUDE      0.0 
 SHEARFREQUENCY      0.0 
 ETA		    1e-3
-KT                  0.0 // 4.045305672e-3
-DYN_CROSSLINKERS    Yes
-K_ON		    0.3	
-K_OFF               0.3
-R_LINK              0.5
-C_CROSSLINKER	    2.0
+KT                  4.045305672e-3
+DYN_CROSSLINKERS    No
+K_ON_start          0 
+K_ON_end            0
+K_OFF_start         0
+K_OFF_end           0
+N_crosslink         0
+Delta_t_search      10
+R_LINK              1.5
+C_CROSSLINKER	    1.0
 -----------------------------------------------------STRUCT SOLVER
 SOLVER         Amesos_KLU_nonsym    // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT       0            // output every so often, 0 no output
