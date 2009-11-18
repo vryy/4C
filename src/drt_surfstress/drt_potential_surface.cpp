@@ -31,7 +31,8 @@ Maintainer: Ursula Mayer
  *-------------------------------------------------------------------*/
 POTENTIAL::SurfacePotential::SurfacePotential(
     Teuchos::RCP<DRT::Discretization>   discretRCP,
-    DRT::Discretization&                discret):
+    DRT::Discretization&                discret,
+    const GEO::TreeType&                treetype):
     Potential (discretRCP, discret)  
 
 {
@@ -103,12 +104,8 @@ POTENTIAL::SurfacePotential::SurfacePotential(
   const LINALG::Matrix<3,2> rootBox = GEO::getXAABBofDis(*potentialdis_);
   DRT::UTILS::CollectElementsByConditionLabel(*potentialdis_, elementsByLabel_,"Potential" );
 
-  if(prob_dim_ == 2)
-    searchTree_->initializeTree(rootBox, elementsByLabel_, GEO::TreeType(GEO::QUADTREE));
-  else if(prob_dim_ == 3)
-    searchTree_->initializeTree(rootBox, elementsByLabel_, GEO::TreeType(GEO::OCTTREE));
-  else
-    dserror("problem dimension not correct");
+  searchTree_->initializeTree(rootBox, elementsByLabel_, treetype);
+
 
 
   // std::cout << "Potential manager constructor done" << endl;

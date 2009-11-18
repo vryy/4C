@@ -52,8 +52,9 @@ namespace GEO
 
 //! identifies tree type
 enum TreeType {
-    OCTTREE,    ///< tree is a three-dimensional octtree
-    QUADTREE    ///< tree is a two-dimensional quadtree
+    OCTTREE,        ///< tree is a three-dimensional octtree
+    QUADTREE3D,     ///< tree is a three-dimensional quadtree for pseudo 3D problems
+    QUADTREE       ///< tree is a two-dimensional quadtree
   };
 
 //! identifies node types in a tree

@@ -21,6 +21,7 @@ Maintainer: Ursula Mayer
 
 #include "../drt_surfstress/drt_potential_surface.H"
 #include "../drt_surfstress/drt_potential_volume.H"
+#include "../drt_geometry/searchtree.H"
 
 using namespace std;
 
@@ -150,6 +151,9 @@ private:
 
   //! volume
   bool                                          volume_;
+  
+  
+  GEO::TreeType                                 treetype_;
 
 }; //class
 

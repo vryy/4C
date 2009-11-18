@@ -48,7 +48,8 @@ public:
    */
   VolumePotential(
       Teuchos::RCP<DRT::Discretization>     discretRCP,
-      DRT::Discretization&                  discret
+      DRT::Discretization&                  discret,
+      const GEO::TreeType&                  treetype
       );
 
   /*!

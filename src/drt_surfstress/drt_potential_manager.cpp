@@ -18,6 +18,7 @@ Maintainer: Ursula Mayer
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_potential.H"
+#include "../drt_inpar/inpar_searchtree.H"
 #include <cstdlib>
 
 
@@ -55,10 +56,10 @@ POTENTIAL::PotentialManager::PotentialManager(
       volume_ = true;
 
   if(surface_)
-    surfacePotential_ = rcp(new POTENTIAL::SurfacePotential(discretRCP,discret));
+    surfacePotential_ = rcp(new POTENTIAL::SurfacePotential(discretRCP,discret,treetype_));
 
   if(volume_)
-    volumePotential_ = rcp(new POTENTIAL::VolumePotential(discretRCP,discret));
+    volumePotential_ = rcp(new POTENTIAL::VolumePotential(discretRCP,discret,treetype_));
 
   // construct surface potential
 /*  if( (params_.get<string>("POTENTIAL TYPE") == "Surface")
@@ -111,7 +112,7 @@ void POTENTIAL::PotentialManager::ReadParameter()
     break;
   }
     
-  cout << params_.get<string>("potential type")<< endl;
+  // cout << params_.get<string>("potential type")<< endl;
   // set approximation method for volume potentials
   switch(Teuchos::getIntegralValue<INPAR::POTENTIAL::ApproximationType>(intpot,"APPROXIMATION_TYPE"))
   {
@@ -128,8 +129,26 @@ void POTENTIAL::PotentialManager::ReadParameter()
       params_.set<string>("approximation type","None");
     break;
   }
+  //cout << params_.get<string>("approximation type")<< endl;
   
-  cout << params_.get<string>("approximation type")<< endl;
+  // parameters for search tree
+  const Teuchos::ParameterList& search_tree   = DRT::Problem::Instance()->SearchtreeParams();
+
+  switch(Teuchos::getIntegralValue<INPAR::GEO::TreeType>(search_tree,"TREE_TYPE"))
+  {
+    case INPAR::GEO::Octree3D:
+      treetype_ = GEO::OCTTREE;
+    break;
+    case INPAR::GEO::Quadtree3D:
+      treetype_ = GEO::QUADTREE3D;
+    break;
+    case INPAR::GEO::Quadtree2D:
+      treetype_ = GEO::QUADTREE;
+    break;
+    default:
+      dserror("please specify search tree type");
+    break;
+  }
   return;
 }
 

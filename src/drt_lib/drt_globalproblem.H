@@ -265,6 +265,7 @@ public:
   const Teuchos::ParameterList& ScalarTransportElectricPotentialSolverParams() const { return getParameterList()->sublist("SCALAR TRANSPORT ELECTRIC POTENTIAL SOLVER"); }
   const Teuchos::ParameterList& ArteryNetworkSolverParams() const { return getParameterList()->sublist("ARTERY NETWORK SOLVER"); }
   const Teuchos::ParameterList& ConditionNamesParams() const { return getParameterList()->sublist("CONDITION NAMES"); }
+  const Teuchos::ParameterList& SearchtreeParams() const { return getParameterList()->sublist("SEARCH TREE"); }
 
   //@}
 

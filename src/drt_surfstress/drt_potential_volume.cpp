@@ -27,100 +27,22 @@ Maintainer: Ursula Mayer
  |  ctor (public)                                          umay 05/09|
  *-------------------------------------------------------------------*/
 POTENTIAL::VolumePotential::VolumePotential(
-    Teuchos::RCP<DRT::Discretization> discretRCP,
-    DRT::Discretization& discret):
+    Teuchos::RCP<DRT::Discretization>     discretRCP,
+    DRT::Discretization&                  discret,
+    const GEO::TreeType&                  treetype):
     Potential(discretRCP, discret)
 {
-  // create discretization from potential boundary elements and distribute them
-  // on every processor
-/*  
-  vector<string> conditions_to_copy;
-  conditions_to_copy.push_back("Potential");
-
-  if(prob_dim_ == 2)
-    potentialdis_ = DRT::UTILS::CreateDiscretizationFromCondition(discretRCP_, "Potential", "PotBoundary", "BELE3", conditions_to_copy);
-  else if(prob_dim_ == 3)
-    potentialdis_ = DRT::UTILS::CreateDiscretizationFromCondition(discretRCP_, "Potential", "PotBoundary", "BELE3", conditions_to_copy);
-  else
-    dserror("problem dimension not correct");
-  dsassert(potentialdis_->NumGlobalNodes() > 0, "empty discretization detected. Potential conditions applied?");
-
-  // set new dof set
-  RCP<POTENTIAL::PotentialDofSet> pdofset = rcp(new POTENTIAL::PotentialDofSet(discretRCP_));
-  (*potentialdis_).ReplaceDofSet(pdofset);
-  (*potentialdis_).FillComplete(false, false, false);
-
-  // create node and element distribution with elements and nodes ghosted on all processors
-  const Epetra_Map noderowmap = *(potentialdis_->NodeRowMap());
-  const Epetra_Map elemrowmap = *(potentialdis_->ElementRowMap());
-
-  // put all boundary nodes and elements onto all processors
-  const Teuchos::RCP<const Epetra_Map> nodecolmap = LINALG::AllreduceEMap(*(potentialdis_->NodeRowMap()));
-  const Teuchos::RCP<const Epetra_Map> elemcolmap = LINALG::AllreduceEMap(*(potentialdis_->ElementRowMap()));
-
-  // redistribute nodes and elements to column (ghost) map
-  potentialdis_->ExportColumnNodes(*nodecolmap);
-  potentialdis_->ExportColumnElements(*elemcolmap);
-
-  // Now we are done. :)
-  // fill complete calls the assgin degrees of fredom method
-  // provided by PotentialDofSet class
-  const int err = potentialdis_->FillComplete();
-  if (err) dserror("FillComplete() returned err=%d",err);
-
-  // split dof vector of soliddiscretization into a dof vector of potential boundary condition and
-  // remaining dofs
-  DRT::UTILS::SetupNDimExtractor(*discretRCP_ ,"Potential", potboundary_);
-
-  // create potential surface dof row map using the solid parallel distribution
-  // for all potential surface elements belonging to the solid discretization on a single
-  // processor
-  const Teuchos::RCP< const Epetra_Map > potsurface_condmap_onOneProc = potboundary_.CondMap();
-  if(! potsurface_condmap_onOneProc->UniqueGIDs() ) dserror("cond_map not unique");
-  if(! (potsurface_condmap_onOneProc->PointSameAs(*(*potentialdis_).DofRowMap())))
-    dserror("maps are not point equal");
-  if(! (potsurface_condmap_onOneProc->SameAs(*(*potentialdis_).DofRowMap())))
-    dserror("maps are not equal");
-  // create disp vector for boundary discretization corresponding to the
-  // potential condition elements stored on one proc
-  idisp_onproc_    = LINALG::CreateVector(*potsurface_condmap_onOneProc,true);
-
-  // create potential surface dof col map based on the boundayr dis
-  // that is distributed redundantly on all processors
-  const Epetra_Map* potsurface_dofcolmap_total = potentialdis_->DofColMap();
-  // create disp vector for boundary discretization redundant on all procs
-  idisp_total_    = LINALG::CreateVector(*potsurface_dofcolmap_total,true);
-
-  // create importer
-  importer_ = rcp(new Epetra_Import(idisp_total_->Map(),idisp_onproc_->Map()));
-  */
-    	
-  // set up tree
-  // wenn möglich über Randelemente laufen
-      /*
-    	vector<string> conditions_to_copy;
-    	conditions_to_copy.push_back("Potential");
-    	  
-    	 if(prob_dim_ == 2)
-    	    potentialdis_ = DRT::UTILS::CreateDiscretizationFromCondition(discretRCP_, "Potential", "PotBoundary", "BELE3", conditions_to_copy);
-    	  else if(prob_dim_ == 3)
-    	    potentialdis_ = DRT::UTILS::CreateDiscretizationFromCondition(discretRCP_, "Potential", "PotBoundary", "BELE3", conditions_to_copy);
-    	  else
-    	    dserror("problem dimension not correct");
-    	  dsassert(potentialdis_->NumGlobalNodes() > 0, "empty discretization detected. Potential conditions applied?");
-    	*/
   const LINALG::Matrix<3,2> rootBox = GEO::getXAABBofDis(*discretRCP_);
   DRT::UTILS::CollectElementsByConditionLabel(*discretRCP_, elementsByLabel_,"Potential" );
   
-  if(prob_dim_ == 3)
-  	searchTree_->initializeTree(rootBox, elementsByLabel_, GEO::TreeType(GEO::OCTTREE));
-  else if (prob_dim_ == 2)
-  	searchTree_->initializeTree(rootBox, elementsByLabel_, GEO::TreeType(GEO::QUADTREE));
-  else
-      	    dserror("problem dimension not correct");
+  //if(prob_dim_ == 3)
+  searchTree_->initializeTree(rootBox, elementsByLabel_, treetype);
+  //else if (prob_dim_ == 2)
+  //	searchTree_->initializeTree(rootBox, elementsByLabel_, GEO::TreeType(GEO::QUADTREE));
+  //else
+  //    	    dserror("problem dimension not correct");
 
   // std::cout << "Potential manager constructor done" << endl;
- 
 }
 
 

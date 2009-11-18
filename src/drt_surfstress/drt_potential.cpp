@@ -375,7 +375,7 @@ void POTENTIAL::Potential::EvaluatePotentialfromCondition_Approx(
   else if (cond->Type()==DRT::Condition::VanDerWaals_Potential_Surface ||
            cond->Type()==DRT::Condition::VanDerWaals_Potential_Volume)
   {
-    const double lambda    = cond->GetDouble("lambda");
+    // const double lambda    = cond->GetDouble("lambda");
     // compute vander waals
     
   }

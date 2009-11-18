@@ -52,7 +52,6 @@ LINALG::Matrix<3,2> GEO::getXAABBofDis(
     const LINALG::Matrix<3,2> xaabbEle = GEO::computeFastXAABB(element->Shape(), xyze_element, eleGeoType);
     XAABB = mergeAABB(XAABB, xaabbEle);
   }
-
   return XAABB;
 }
 
@@ -337,7 +336,6 @@ std::map<int,std::set<int> > GEO::getElementsInRadius(
 
 
 /*----------------------------------------------------------------------*
- | FELIX MEIER																													| 
  | a set of nodes in a given radius from a element.          u.may 07/08| 
  | The radius is approximated by a box with edge                        |
  | length 2xRadius + box width																	        | 

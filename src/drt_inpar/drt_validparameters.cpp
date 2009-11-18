@@ -37,6 +37,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/inpar_thermo.H"
 #include "../drt_inpar/inpar_elch.H"
 #include "../drt_inpar/inpar_invanalysis.H"
+#include "../drt_inpar/inpar_searchtree.H"
 #include "../drt_inpar/inpar_xfem.H"
 
 /*----------------------------------------------------------------------*/
@@ -2387,6 +2388,18 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                      yesnotuple,yesnovalue,&fsidyn);
   setStringToIntegralParameter<int>("SYMMETRICPRECOND","No","Symmetric block GS preconditioner in monolithic FSI or ordinary GS",
                                      yesnotuple,yesnovalue,&fsidyn);
+  
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& search_tree = list->sublist("SEARCH TREE",false,"");
+  
+  setStringToIntegralParameter<INPAR::GEO::TreeType>("TREE_TYPE","notree","set tree type",
+                                   tuple<std::string>("notree","octree3d","quadtree3d","quadtree2d"),
+                                   tuple<INPAR::GEO::TreeType>(
+                                     INPAR::GEO::Notree,
+                                     INPAR::GEO::Octree3D,
+                                     INPAR::GEO::Quadtree3D,
+                                     INPAR::GEO::Quadtree2D),
+                                     &search_tree);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& xfem_general = list->sublist("XFEM GENERAL",false,"");
