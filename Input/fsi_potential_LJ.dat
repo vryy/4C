@@ -452,6 +452,8 @@ ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1 1
 PARTITION                       Cut_Elements
 SOLVER                          UMFPACK
+-------------------------------------------------------SEARCH TREE
+TREE_TYPE                       quadtree2d
 -------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  Yes
 ---------------------------------------------------------MATERIALS
