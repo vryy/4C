@@ -78,7 +78,7 @@ START_FACTOR	    0.0
 SHEARAMPLITUDE      0.0 
 SHEARFREQUENCY      0.0 
 ETA		    1e-3
-KT                  4.045305672e-3
+KT                  0.0
 DYN_CROSSLINKERS    No
 K_ON_start          0 
 K_ON_end            0
@@ -184,7 +184,7 @@ MAT 1 MAT_Struct_StVenantKirchhoff  YOUNG 1.3e9 NUE 0.3 DENS 1.384e-9 THEXPANS 0
 ------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC sin(2*pi*20*t) t1 0.0 t2 100
 ------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 6 POSITION dispx NAME ux VALUE  0                     TOLERANCE 1e-8
+STRUCTURE DIS 1 NODE 6 POSITION dispx NAME ux VALUE  0                      TOLERANCE 1e-8
 STRUCTURE DIS 1 NODE 6 POSITION dispy NAME uy VALUE  0                      TOLERANCE 1e-8
 STRUCTURE DIS 1 NODE 6 POSITION dispz NAME uz VALUE -3.5104933496930342e-02 TOLERANCE 1e-8
 ---------------------------------------------------------------END
