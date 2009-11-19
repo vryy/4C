@@ -467,8 +467,8 @@ void STR::TimIntImpl::ApplyForceStiffContact
 
     // make contact modifications to lhs and rhs
     contactman_->GetStrategy().SetState("displacement",disn_);
-    contactman_->GetStrategy().InitializeMortar();
-    contactman_->GetStrategy().EvaluateMortar();
+    contactman_->GetStrategy().InitEvalInterface();
+    contactman_->GetStrategy().InitEvalMortar();
     contactman_->GetStrategy().UpdateActiveSetSemiSmooth();
     contactman_->GetStrategy().Initialize();
     contactman_->GetStrategy().Evaluate(mat,fres_);

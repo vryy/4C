@@ -43,6 +43,7 @@ Maintainer: Alexander Popp
 #include "drt_contact_interface.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_sparsematrix.H"
+#include "../drt_io/io.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -201,6 +202,20 @@ class AbstractStrategy
     */
     inline bool& IsInContact() { return isincontact_; }
 
+    
+    /*!
+    \brief Return global self contact status
+    
+    Note that at the moment this only gives information about the
+    POTENTIAL self contact of the global problem and not about
+    an actual self contact occurring.
+    
+    TODO: automatically recognize ACTUAL self contact
+     
+    */
+    inline bool& IsSelfContact() { return isselfcontact_; }
+    
+    
     //@}
 
     //! @name Evaluation methods
@@ -219,21 +234,52 @@ class AbstractStrategy
     void SetState(const string& statename, const RCP<Epetra_Vector> vec);
 
     /*!
-    \brief Initialize general Mortar related quantities for the next Newton step
+    \brief Update global master and slave sets
+    
+    This becomes necessary for self contact simulations, because in a
+    self contact interface master and slave status are assigned dynamically
+    and thus the global maps change constantly.
+    
+    */    
+    void UpdateMasterSlaveSetsGlobal();
+    
+    /*!
+    \brief Initialize and evaluate interface for the next Newton step
      
     This method calls Initialize() on all contact interfaces, which
     resets all kind of nodal quantities like normal vector, weighted
-    gap or Mortar and linearization maps. It also resets the global
-    Mortar matrices D and M and the global gap vector g.
-     
-    Note: Only quantities common to all subsequent solving strategies are
-    initialized here. In case they need additional Mortar variables,
-    use the overloaded function call in the derived class and refer
-    back to this function.
+    gap or Mortar and linearization maps. It then calls Evaluate() on
+    all contact interfaces, which does all the geometric contact stuff.
+    Concretely, this is an evaluation of all involved quantites at nodal
+    level plus the setup of all corresponding linearizations. 
+    It includes the nodal normal calculations, contact search, projection
+    and overlap detection, integration of the  Mortar terms D, M and of the
+    weighted gap. Additionally, the linearizations of geometrical quantities
+    (delta_n, delta_t, delta_D, delta_M) are calculated.
          
     */
-    virtual void InitializeMortar();
-
+    void InitEvalInterface();
+    
+    /*!
+    \brief Initialize and evaluate Mortar stuff for the next Newton step
+     
+    This method first checks if we are dealing with self contact and updates
+    the interface slave and master sets if so. Then it resets the global
+    Mortar matrices D and M and the global gap vector g accordingly.
+    
+    The nodal quantites computed in InitEvalInterface() are then assembled
+    to global matrices and vectors respectively. No setup of the global system
+    is to be done here yet, so there is no need to pass in the effective
+    stiffness K or the effective load vector f.
+    
+    Note: Only quantities common to all subsequent solving strategies (Lagrange,
+    Penalty, Augmented) are initialized here. In case they need additional mortar
+    variables, use the overloaded function call in the derived class and refer
+    back to this function.
+     
+    */
+    void InitEvalMortar();
+        
     /*!
     \brief Initialize general contact variables for next Newton step
      
@@ -257,25 +303,6 @@ class AbstractStrategy
      
     */
     void Evaluate(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff);
-    
-    /*!
-    \brief Evaluate Mortar related quantites
-     
-    This method does all the geometric contact stuff that has not
-    yet to do with the active / inactive node sets. Concretely it
-    calls Evaluate() on all interfaces, which does a evaluation of
-    all involved quantites at a nodal level plus
-    the setup of all corresponding linearizations. 
-    It includes the nodal normal calculations, 
-    contact search, projection and overlap detection, integration of the 
-    Mortar terms D, M and of the weighted gap. Additionally, the linearizations     
-    of geometrical quantities (delta_n, delta_t, delta_D, delta_M) are calculated.
-    These nodal quantites are then assembled to global matrices and vectors respectively. 
-    No setup of the global system is to be done here yet, so there is no need to pass
-    in the effective stiffness K or the effective load vector f.
-     
-    */
-    void EvaluateMortar();
     
     /*!
     \brief Evaluate relative movement of contact bodies
@@ -445,12 +472,11 @@ class AbstractStrategy
     \brief Perform a write restart
     
     A write restart is initiated by the contact manager. However, the manager has no
-    direct access to the nodal quantities. Hence, a portion of the restart has to be
+    direct access to the nodal quantities. Hence, all the restart action has to be
     performed on the level of the contact algorithm, for short: here's the right place. 
     
     */
-    void DoReadRestart(RCP<Epetra_Vector> activetoggle, RCP<Epetra_Vector> sliptoggle,
-                       RCP<Epetra_Vector> dis);
+    void DoReadRestart(IO::DiscretizationReader& reader, RCP<Epetra_Vector> dis);
 
     //@}
     
@@ -538,6 +564,7 @@ class AbstractStrategy
     bool activesetconv_; // convergence flag for active set
     int activesetsteps_; // no. of active sets in this time/load step
     bool isincontact_;   // flag indicating global contact status
+    bool isselfcontact_; // flag indicating potential self contact
 
 }; // class AbstractStrategy
 } // namespace CONTACT

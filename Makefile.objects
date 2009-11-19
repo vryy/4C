@@ -245,6 +245,7 @@ OBJS_DRT_CONTACT_LIB = \
                 src/drt_contact/drt_contact_integrator.o \
                 src/drt_contact/drt_contact_integrator_tools.o \
                 src/drt_contact/drt_contact_binarytree.o \
+                src/drt_contact/drt_contact_binarytree_self.o \
                 src/drt_contact/drt_contact_abstract_strategy.o \
                 src/drt_contact/drt_contact_penalty_strategy.o \
                 src/drt_contact/drt_contact_lagrange_strategy.o

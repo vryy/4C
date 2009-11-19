@@ -334,8 +334,8 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
     {
       contactmanager_->GetStrategy().SetState("displacement",disn_);
 
-      contactmanager_->GetStrategy().InitializeMortar();
-      contactmanager_->GetStrategy().EvaluateMortar();
+      contactmanager_->GetStrategy().InitEvalInterface();
+      contactmanager_->GetStrategy().InitEvalMortar();
 
       contactmanager_->GetStrategy().Initialize();
       contactmanager_->GetStrategy().Evaluate(SystemMatrix(),fresm_);
@@ -583,8 +583,8 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
       {
         contactmanager_->GetStrategy().SetState("displacement",disn_);
 
-        contactmanager_->GetStrategy().InitializeMortar();
-        contactmanager_->GetStrategy().EvaluateMortar();
+        contactmanager_->GetStrategy().InitEvalInterface();
+        contactmanager_->GetStrategy().InitEvalMortar();
 
         contactmanager_->GetStrategy().Initialize();
         contactmanager_->GetStrategy().Evaluate(SystemMatrix(),fresm_);
@@ -963,8 +963,8 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
     {
       contactmanager_->GetStrategy().SetState("displacement",disn_);
 
-      contactmanager_->GetStrategy().InitializeMortar();
-      contactmanager_->GetStrategy().EvaluateMortar();
+      contactmanager_->GetStrategy().InitEvalInterface();
+      contactmanager_->GetStrategy().InitEvalMortar();
 
       // this is the correct place to update the active set!!!
       // (on the one hand we need the new weighted gap vector g, which is
@@ -1220,8 +1220,8 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
       {
         contactmanager_->GetStrategy().SetState("displacement",disn_);
 
-        contactmanager_->GetStrategy().InitializeMortar();
-        contactmanager_->GetStrategy().EvaluateMortar();
+        contactmanager_->GetStrategy().InitEvalInterface();
+        contactmanager_->GetStrategy().InitEvalMortar();
 
         // NO update of the active set here, as this would change the
         // system and thus the residual! During line search the active

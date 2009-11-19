@@ -136,8 +136,8 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   {
   	// set state and do mortar calculation
     contactmanager_->GetStrategy().SetState("displacement",disn_);
-    contactmanager_->GetStrategy().InitializeMortar();
-    contactmanager_->GetStrategy().EvaluateMortar();
+    contactmanager_->GetStrategy().InitEvalInterface();
+    contactmanager_->GetStrategy().InitEvalMortar();
 
     // store contact state to contact nodes (active or inactive)
     contactmanager_->GetStrategy().StoreNodalQuantities(AbstractStrategy::activeold);
@@ -402,8 +402,8 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   //------------------------- make contact modifications to lhs and rhs
   contactmanager_->GetStrategy().SetState("displacement",disn_);
 
-  contactmanager_->GetStrategy().InitializeMortar();
-  contactmanager_->GetStrategy().EvaluateMortar();
+  contactmanager_->GetStrategy().InitEvalInterface();
+  contactmanager_->GetStrategy().InitEvalMortar();
   
   // friction
   // here the relative movement of the contact bodies is evaluated
@@ -505,8 +505,8 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   {
   	// set state and do mortar calculation
     contactmanager_->GetStrategy().SetState("displacement",disn_);
-    contactmanager_->GetStrategy().InitializeMortar();
-    contactmanager_->GetStrategy().EvaluateMortar();
+    contactmanager_->GetStrategy().InitEvalInterface();
+    contactmanager_->GetStrategy().InitEvalMortar();
 
     // store contact state to contact nodes (active or inactive)
     contactmanager_->GetStrategy().StoreNodalQuantities(AbstractStrategy::activeold);
@@ -692,8 +692,8 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   //-------------------------- make contact modifications to lhs and rhs
   contactmanager_->GetStrategy().SetState("displacement",disn_);
 
-  contactmanager_->GetStrategy().InitializeMortar();
-  contactmanager_->GetStrategy().EvaluateMortar();
+  contactmanager_->GetStrategy().InitEvalInterface();
+  contactmanager_->GetStrategy().InitEvalMortar();
   
   // friction
   // here the relative movement of the contact bodies is evaluated
@@ -954,8 +954,8 @@ void CONTACT::ContactStruGenAlpha::ApplyExternalForce(  const STR::UTILS::MapExt
   //-------------------------- make contact modifications to lhs and rhs
   contactmanager_->GetStrategy().SetState("displacement",disn_);
 
-  contactmanager_->GetStrategy().InitializeMortar();
-  contactmanager_->GetStrategy().EvaluateMortar();
+  contactmanager_->GetStrategy().InitEvalInterface();
+  contactmanager_->GetStrategy().InitEvalMortar();
   
   contactmanager_->GetStrategy().Initialize();
   contactmanager_->GetStrategy().Evaluate(SystemMatrix(),fresm_);
@@ -1320,8 +1320,8 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
     {
       contactmanager_->GetStrategy().SetState("displacement",disn_);
 
-      contactmanager_->GetStrategy().InitializeMortar();
-      contactmanager_->GetStrategy().EvaluateMortar();
+      contactmanager_->GetStrategy().InitEvalInterface();
+      contactmanager_->GetStrategy().InitEvalMortar();
 
       // friction
       // here the relative movement of the contact bodies is evaluated
@@ -1714,11 +1714,11 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
       cout << "\n***\nContact.SetState: " << t_end31 << " seconds";
       const double t_start32 = ds_cputime();
 #endif // #ifdef CONTACTTIME
-      contactmanager_->GetStrategy().InitializeMortar();
+      contactmanager_->GetStrategy().InitEvalInterface();
 #ifdef CONTACTTIME
       const double t_end321 = ds_cputime()-t_start32;
 #endif // #ifdef CONTACTTIME
-      contactmanager_->GetStrategy().EvaluateMortar();
+      contactmanager_->GetStrategy().InitEvalMortar();
 #ifdef CONTACTTIME
       const double t_end322 = ds_cputime()-t_start32;
       cout << "\nContact.InitMortar: " << t_end321 << " seconds";

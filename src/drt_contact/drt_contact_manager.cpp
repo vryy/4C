@@ -92,7 +92,17 @@ discret_(discret)
   
   vector<DRT::Condition*> contactconditions(0);
   Discret().GetCondition("Contact",contactconditions);
-  if ((int)contactconditions.size()<=1)  dserror("Not enough contact conditions in discretization");
+  
+  // there must be more than one contact condition
+  // unless we have a self contact problem!
+  if ((int)contactconditions.size()<1)
+    dserror("Not enough contact conditions in discretization");
+  if ((int)contactconditions.size()==1)
+  {
+    const string* side = contactconditions[0]->Get<string>("Side");
+    if (*side != "Selfcontact")
+      dserror("Not enough contact conditions in discretization");
+  }
 
   // find all pairs of matching contact conditions
   // there is a maximum of (conditions / 2) groups
@@ -112,6 +122,10 @@ discret_(discret)
     int groupid1 = (*group1v)[0];
     bool foundit = false;
 
+    // only one surface per group is ok for self contact
+    const string* side = contactconditions[i]->Get<string>("Side");
+    if (*side == "Selfcontact") foundit = true;
+        
     for (int j=0; j<(int)contactconditions.size(); ++j)
     {
       if (j==i) continue; // do not detect contactconditions[i] again
@@ -143,17 +157,12 @@ discret_(discret)
     foundgroups.push_back(groupid1);
     ++numgroupsfound;
 
-    // create an empty interface and store it local vector
-    interfaces.push_back(rcp(new CONTACT::Interface(groupid1,Comm(),dim,cparams)));
-        
-    // get it again
-    RCP<CONTACT::Interface> interface = interfaces[(int)interfaces.size()-1];
-
     // find out which sides are Master and Slave
     bool hasslave = false;
     bool hasmaster = false;
     vector<const string*> sides((int)currentgroup.size());
     vector<bool> isslave((int)currentgroup.size());
+    vector<bool> isself((int)currentgroup.size());
 
     for (int j=0;j<(int)sides.size();++j)
     {
@@ -162,11 +171,20 @@ discret_(discret)
       {
         hasslave = true;
         isslave[j] = true;
+        isself[j] = false;
       }
       else if (*sides[j] == "Master")
       {
         hasmaster = true;
         isslave[j] = false;
+        isself[j] = false;
+      }
+      else if (*sides[j] == "Selfcontact")
+      {
+        hasmaster = true;
+        hasslave = true;
+        isslave[j] = false;
+        isself[j] = true;
       }
       else
         dserror("ERROR: ContactManager: Unknown contact side qualifier!");
@@ -175,6 +193,13 @@ discret_(discret)
     if (!hasslave) dserror("Slave side missing in contact condition group!");
     if (!hasmaster) dserror("Master side missing in contact condition group!");
 
+    // check for self contact group
+    if (isself[0])
+    {
+      for (int j=1;j<(int)isself.size();++j)
+        if (!isself[j]) dserror("Inconsistent definition of self contact condition group!");
+    }
+        
     // find out which sides are initialized as Active
     vector<const string*> active((int)currentgroup.size());
     vector<bool> isactive((int)currentgroup.size());
@@ -196,9 +221,22 @@ discret_(discret)
         else if (*active[j] == "Inactive") isactive[j] = false;
         else                               dserror("ERROR: Unknown contact init qualifier!");
       }
+      else if (*sides[j] == "Selfcontact")
+      {
+        // Selfcontact surfs must NOT be initialized as "Active" as this makes no sense
+        if (*active[j] == "Active")        dserror("ERROR: Selfcontact surface cannot be active!");
+        else if (*active[j] == "Inactive") isactive[j] = false;
+        else                               dserror("ERROR: Unknown contact init qualifier!");
+      }
       else
         dserror("ERROR: ContactManager: Unknown contact side qualifier!");
     }
+
+    // create an empty interface and store it in this Manager
+    interfaces.push_back(rcp(new CONTACT::Interface(groupid1,Comm(),dim,cparams,isself[0])));
+    
+    // get it again
+    RCP<CONTACT::Interface> interface = interfaces[(int)interfaces.size()-1];
 
     // note that the nodal ids are unique because they come from
     // one global problem discretization conatining all nodes of the
@@ -456,20 +494,8 @@ void CONTACT::Manager::WriteRestart(IO::DiscretizationWriter& output)
 void CONTACT::Manager::ReadRestart(IO::DiscretizationReader& reader,
                                    RCP<Epetra_Vector> dis)
 {
-  // read restart information for contact
-  reader.ReadVector(GetStrategy().LagrMultOld(),"lagrmultold");
-  reader.ReadVector(GetStrategy().LagrMult(),"lagrmultold");
-  
-  GetStrategy().StoreNodalQuantities(AbstractStrategy::lmold);
-  GetStrategy().StoreNodalQuantities(AbstractStrategy::lmcurrent);
-
-  RCP<Epetra_Vector> activetoggle =rcp(new Epetra_Vector(*(GetStrategy().SlaveRowNodes())));
-  reader.ReadVector(activetoggle,"activetoggle");
-
-  RCP<Epetra_Vector> sliptoggle =rcp(new Epetra_Vector(*(GetStrategy().SlaveRowNodes())));
-  reader.ReadVector(sliptoggle,"sliptoggle");
-
-  GetStrategy().DoReadRestart(activetoggle, sliptoggle, dis);
+  // let strategy object do all the work
+  GetStrategy().DoReadRestart(reader, dis);
   
   return;
 }

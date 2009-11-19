@@ -48,6 +48,7 @@ Maintainer: Michael Gee
 #include "drt_cdofset.H"
 #include "contactdefines.H"
 #include "drt_contact_binarytree.H"
+#include "drt_contact_binarytree_self.H"
 #include "../drt_lib/linalg_utils.H"
 
 /*----------------------------------------------------------------------*
@@ -55,12 +56,14 @@ Maintainer: Michael Gee
  *----------------------------------------------------------------------*/
 CONTACT::Interface::Interface(const int id, const Epetra_Comm& comm,
                               const int dim,
-                              const Teuchos::ParameterList& icontact) :
+                              const Teuchos::ParameterList& icontact,
+                              bool selfcontact) :
 id_(id),
 comm_(comm),
 dim_(dim),
 icontact_(icontact),
-shapefcn_(Interface::Undefined)
+shapefcn_(Interface::Undefined),
+selfcontact_(selfcontact)
 {
   RCP<Epetra_Comm> com = rcp(Comm().Clone());
   if (Dim()!=2 && Dim()!=3) dserror("ERROR: Contact problem must be 2D or 3D");
@@ -161,10 +164,12 @@ void CONTACT::Interface::FillComplete()
   }
 #endif // #ifdef CONTACTBOUNDMOD
 
-  // get standard nodal column map
-  RCP<Epetra_Map> oldnodecolmap = rcp (new Epetra_Map(*(Discret().NodeColMap() )));
-  // get standard element column map
-  RCP<Epetra_Map> oldelecolmap = rcp (new Epetra_Map(*(Discret().ElementColMap() )));
+  // later we will export node and element column map to FULL overlap,
+  // thus store the standard column maps first
+  // get standard nodal column map (overlap=1)
+  oldnodecolmap_ = rcp (new Epetra_Map(*(Discret().NodeColMap())));
+  // get standard element column map (overlap=1)
+  oldelecolmap_ = rcp (new Epetra_Map(*(Discret().ElementColMap())));
 
   // create interface local communicator
   // find all procs that have business on this interface (own nodes/elements)
@@ -301,6 +306,63 @@ void CONTACT::Interface::FillComplete()
     Discret().FillComplete(true,false,false);
   }
 
+  // need row and column maps of slave and master nodes / elements / dofs
+  // separately so we can easily adress them
+  UpdateMasterSlaveSets();
+
+  // get out of here if not participating in interface
+  if (!lComm()) return;
+
+  // warning
+#ifdef CONTACTGMSHCTN
+  if (Dim()==3 && Comm().MyPID()==0)
+  {
+    cout << "\n******************************************************************\n";
+    cout << "GMSH output of all contact tree nodes in 3D needs a lot of memory!\n";
+    cout << "******************************************************************\n";
+  }
+#endif //CONTACTGMSHCTN
+
+  // binary tree search
+  if (SearchAlg()==INPAR::CONTACT::search_binarytree)
+  {
+    //*****SELF CONTACT*****
+    if (SelfContact())
+    {
+      // create binary tree object for self contact search
+      binarytreeself_ = rcp(new CONTACT::BinaryTreeSelf(Discret(),selefullmap_,melefullmap_,Dim(),SearchParam()));
+      
+    }
+    //*****TWO BODY CONTACT*****
+    else
+    {
+      // create binary tree object for contact search
+  	  binarytree_ = rcp(new CONTACT::BinaryTree(Discret(),selecolmap_,melefullmap_,Dim(),SearchParam()));
+  	  
+  	  // setup binary tree
+  	  binarytree_->SetupTree();
+  
+  	  // initialize active contact nodes via binarytree
+  	  // binarytree_->SearchContactInit(binarytree_->Sroot(), binarytree_->Mroot());
+    }
+  }
+  // no binary tree search
+  else
+  {
+    if (SelfContact()) dserror("ERROR: Binarytree search needed for self contact");
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  update master and slave sets (nodes etc.)                 popp 11/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::Interface::UpdateMasterSlaveSets()
+{
+  //********************************************************************
+  // NODES
+  //********************************************************************
   // need row and column maps of slave and master nodes separately so we
   // can easily adress them
   {
@@ -322,7 +384,7 @@ void CONTACT::Interface::FillComplete()
       int gid = nodecolmap->GID(i);
       bool isslave = dynamic_cast<CONTACT::CNode*>(Discret().gNode(gid))->IsSlave();
       bool isonbound = dynamic_cast<CONTACT::CNode*>(Discret().gNode(gid))->IsOnBound();
-      if (oldnodecolmap->MyGID(gid))
+      if (oldnodecolmap_->MyGID(gid))
       {
         if (isslave || isonbound) scb.push_back(gid);
         if (isslave) sc.push_back(gid);
@@ -349,6 +411,9 @@ void CONTACT::Interface::FillComplete()
     mnodefullmapnobound_ = rcp(new Epetra_Map(-1,(int)mcfullb.size(),&mcfullb[0],0,Comm()));
   }
 
+  //********************************************************************
+  // ELEMENTS
+  //********************************************************************
   // do the same business for elements
   // (get row and column maps of slave and master elements seperately)
   {
@@ -366,7 +431,7 @@ void CONTACT::Interface::FillComplete()
     {
       int gid = elecolmap->GID(i);
       bool isslave = dynamic_cast<CONTACT::CElement*>(Discret().gElement(gid))->IsSlave();
-      if (oldelecolmap->MyGID(gid))
+      if (oldelecolmap_->MyGID(gid))
       {
         if (isslave) sc.push_back(gid);
         else         mc.push_back(gid);
@@ -385,7 +450,10 @@ void CONTACT::Interface::FillComplete()
     melefullmap_ = rcp(new Epetra_Map(-1,(int)mcfull.size(),&mcfull[0],0,Comm()));
     melecolmap_ = rcp(new Epetra_Map(-1,(int)mc.size(),&mc[0],0,Comm()));
   }
-
+  
+  //********************************************************************
+  // DOFS
+  //********************************************************************
   // do the same business for dofs
   // (get row and column maps of slave and master dofs seperately)
   {
@@ -407,7 +475,7 @@ void CONTACT::Interface::FillComplete()
       CNode* cnode = static_cast<CNode*>(node);
       bool isslave = cnode->IsSlave();
 
-      if (oldnodecolmap->MyGID(gid))
+      if (oldnodecolmap_->MyGID(gid))
       {
         if (isslave)
           for (int j=0;j<cnode->NumDof();++j)
@@ -440,28 +508,6 @@ void CONTACT::Interface::FillComplete()
     mdofrowmap_ = rcp(new Epetra_Map(-1,(int)mr.size(),&mr[0],0,Comm()));
     mdoffullmap_ = rcp(new Epetra_Map(-1,(int)mcfull.size(),&mcfull[0],0,Comm()));
     mdofcolmap_ = rcp(new Epetra_Map(-1,(int)mc.size(),&mc[0],0,Comm()));
-  }
-
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
-  // warning
-#ifdef CONTACTGMSHCTN
-  if (Dim()==3 && Comm().MyPID()==0)
-  {
-    cout << "\n******************************************************************\n";
-    cout << "GMSH output of all contact tree nodes in 3D needs a lot of memory!\n";
-    cout << "******************************************************************\n";
-  }
-#endif //CONTACTGMSHCTN
-
-  if (SearchAlg()==INPAR::CONTACT::search_binarytree)
-  {
-    // create binary tree object for contact search
-	  binarytree_ = rcp(new CONTACT::BinaryTree(Discret(),selecolmap_,melefullmap_,Dim(),SearchParam()));
-
-	  // initialize active contact nodes via binarytree
-	  // binarytree_->SearchContactInit(binarytree_->Sroot(), binarytree_->Mroot());
   }
 
   return;
@@ -1111,12 +1157,34 @@ bool CONTACT::Interface::EvaluateContactSearchBinarytree()
   if (!lComm()) return true;
 
   // *********************************************************************
-  // Possible versions:
+  // Possible versions for self contact:
+  // *********************************************************************
+  //
+  // 1) Combined Update and Contact Search
+  // -> In this case we only have to call SearchContactCombined(), which
+  //    does both bottom-up update and search. Then the dynamics master/slave
+  //    assignment routine UpdateMasterSlaveSets() is called.
+  //
+  // *********************************************************************
+  if (SelfContact())
+  {
+    // calculate minimal element length
+    binarytreeself_->SetEnlarge(false);
+        
+    // search for contact with an combined algorithm
+    binarytreeself_->SearchContactCombined();
+    
+    // update master/slave sets of interface
+    UpdateMasterSlaveSets();
+  }
+  
+  // *********************************************************************
+  // Possible versions for 2-body contact:
   // *********************************************************************
   //
   // 1) Combined Update and Contact Search
   // -> In this case we only have to call SearchCOntactCombined(), which
-  //    doed buth top-down update (where necessary) and search
+  //    does buth top-down update (where necessary) and search.
   //
   // 2) Separate Update and Contact Search
   // -> In this case we have to explicitly call and updating routine, i.e.
@@ -1125,31 +1193,31 @@ bool CONTACT::Interface::EvaluateContactSearchBinarytree()
   //    update makes more sense here!
   //
   // *********************************************************************
+  else
+  {
+    // calculate minimal element length
+    binarytree_->SetEnlarge(false);
+      
+    // update tree in a top down way
+    //binarytree_->UpdateTreeTopDown();
 
-	// calculate minimal element length
-	binarytree_->SetEnlarge(false);
+    // update tree in a bottom up way
+    //binarytree_->UpdateTreeBottomUp();
 
-	// call update routine for binary tree class
+  #ifdef CONTACTGMSHCTN
+    for (int i=0;i<(int)(binarytree_->ContactMap().size());i++)
+      binarytree_->ContactMap()[i].clear();
+    binarytree_->ContactMap().clear();
+    binarytree_->ContactMap().resize(2);
+  #endif //CONTACTGMSHCTN
 
-	// update tree in a top down way
-	//binarytree_->UpdateTreeTopDown();
+    // search for contact with a separate algorithm
+    //binarytree_->SearchContactSeparate();
 
-	// update tree in a bottom up way
-	//binarytree_->UpdateTreeBottomUp();
-
-#ifdef CONTACTGMSHCTN
-  for (int i=0;i<(int)(binarytree_->ContactMap().size());i++)
-    binarytree_->ContactMap()[i].clear();
-  binarytree_->ContactMap().clear();
-  binarytree_->ContactMap().resize(2);
-#endif //CONTACTGMSHCTN
-
-  // search for contact with a separate algorithm
-	//binarytree_->SearchContactSeparate();
-
-  // search for contact with an combined algorithm
-  binarytree_->SearchContactCombined();
-
+    // search for contact with an combined algorithm
+    binarytree_->SearchContactCombined();
+  }
+  
 	return true;
 }
 

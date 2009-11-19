@@ -154,10 +154,13 @@ public:
   /*!
   \brief Modify slave / master status of current node
 
-  This belated modification is necessary to be able to deal
-  with boundary nodes on the slave side of the interface. Their
-  status is changed to master, thy do NOT carry Lagrange multi-
-  pliers and their neighbors' dual shape fct. are modified!
+  This changing of contact topology becomes necessary for self contact
+  simulations, where slave and master status are assigned dynamically
+  
+  This belated modification is also necessary to be able to deal with
+  boundary nodes on the slave side of the interface. Their status is
+  changed to master, thy do NOT carry Lagrange multipliers and their
+  neighbors' dual shape fct. are modified!
   */
   inline virtual bool& SetSlave() { return isslave_; }
 

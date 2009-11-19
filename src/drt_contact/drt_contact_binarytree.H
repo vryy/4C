@@ -53,6 +53,299 @@ namespace CONTACT
 
 // forward declarations
 
+//! @name Enums and Friends
+enum BinaryTreeNodeType
+{
+  SLAVE_INNER,        ///< indicates a slave inner node (has children)
+  SLAVE_LEAF,         ///< indicates a slave leaf node (no further children)
+  MASTER_INNER,       ///< indicates a master inner node (has children)
+  MASTER_LEAF,        ///< indicates a master leaf node (no further children)
+  NOSLAVE_ELEMENTS,   ///< inidicates that there are no slave elements on this (root) treenode
+  NOMASTER_ELEMENTS,  ///< inidicates that there are no master elements on this (root) treenode
+  UNDEFINED           ///< indiactes an undefined tree node
+};
+
+//@}
+  
+/*!
+\brief A class representing one tree node of the binary search tree
+
+Refer also to the Semesterarbeit of Thomas Eberl, 2009
+
+\author popp (popp@lnm.mw.tum.de)
+*/
+class BinaryTreeNode
+{
+public:
+  
+  /*!
+  \brief constructor of a tree node
+
+  \param type        type of BinaryTreeNode
+  \param discret     contact interface discretization
+  \param parent      points to parent tree node
+  \param elelist     list of all elements in BinaryTreeNode
+  \param dopnormals  reference to DOP normals
+  \param kdop        refernece to no. of vertices
+  \param dim         dimension of problem
+  \param layer       current layer of treenode
+  \param ...map      references to maps
+
+  */
+  BinaryTreeNode(BinaryTreeNodeType type, DRT::Discretization& discret,
+                 RCP<BinaryTreeNode> parent, vector<int> elelist,
+                 const Epetra_SerialDenseMatrix& dopnormals, const int& kdop,
+                 const int& dim, const int layer,
+                 vector<vector<RCP<BinaryTreeNode> > > & streenodesmap,
+                 vector<vector<RCP<BinaryTreeNode> > > & mtreenodesmap,
+                 vector<vector<RCP<BinaryTreeNode> > > & sleafsmap,
+                 vector<vector<RCP<BinaryTreeNode> > > & mleafsmap);
+
+  /*!
+  \brief Destructor
+
+  */
+  virtual ~BinaryTreeNode() {};
+
+  //! @name Evaluation methods
+
+  /*!
+  \brief Calculate slabs of dop in initialization
+
+  */
+  void CalculateSlabsDop(bool isinit);
+
+  /*!
+  \brief Update slabs of current treenode in bottom up way
+
+  */
+  void UpdateSlabsBottomUp(double & eps);
+
+  /*!
+  \brief Initialize Tree
+
+  */
+  void InitializeTree(double& eps);
+
+  /*!
+  \brief Enlarge geometry of a Treenode by an offset, dependent on size
+
+  */
+  void EnlargeGeometry(double& eps);
+
+  /*!
+  \brief Divide a TreeNode into two child nodes
+
+  */
+  void DivideTreeNode();
+
+  /*!
+  \brief Print type of TreeNode to std::cout
+
+  */
+  void PrintType();
+
+  /*!
+  \brief Print slabs to std::cout
+
+  */
+  void PrintSlabs();
+
+  /*!
+  \brief Set slabs of current treenode
+
+  */
+  void SetSlabs(Epetra_SerialDenseMatrix& newslabs);
+
+  //@}
+
+  //! @name Access and modification methods
+
+  /*!
+  \brief Get communicator
+
+  */
+  virtual const Epetra_Comm& Comm() const { return idiscret_.Comm();}
+
+  /*!
+  \brief Get discretization of the interface
+
+  */
+  virtual inline DRT::Discretization& Discret() const { return idiscret_; }
+
+  /*!
+  \brief Return type of treenode
+
+  */
+  virtual inline BinaryTreeNodeType Type() const { return type_; }
+  
+  /*!
+  \brief Set type of treenode
+
+  */
+  virtual inline void SetType(CONTACT::BinaryTreeNodeType type) { type_ = type; }
+
+  /*!
+  \brief Return pointer to right child
+
+  */
+  virtual inline RCP<BinaryTreeNode> Rightchild() const { return rightchild_; }
+
+  /*!
+  \brief Return pointer to left child
+
+  */
+  virtual inline RCP<BinaryTreeNode> Leftchild() const { return leftchild_; }
+
+  /*!
+  \brief Return pointer to parent
+
+  */
+  virtual inline RCP<BinaryTreeNode> Parent() const { return parent_; }
+
+  /*!
+  \brief Set children of a treenode
+
+  */
+  void SetChildren(RCP<BinaryTreeNode> leftchild,RCP<BinaryTreeNode> rightchild);
+  
+  /*!
+  \brief Set parent of treenode
+
+  */
+  virtual inline void SetParent(RCP<BinaryTreeNode> parent) { parent_=parent; }
+    
+  /*!
+  \brief Return slabs of DOP
+
+  */
+  virtual inline Epetra_SerialDenseMatrix Slabs() const { return slabs_; }
+
+  /*!
+  \brief Return nomals of DOP
+
+  */
+  virtual inline Epetra_SerialDenseMatrix Dopnormals() const { return dopnormals_; }
+
+  /*!
+  \brief Return number of k-DOP vertices
+
+  */
+  virtual inline int Kdop() const { return kdop_; }
+      
+  /*!
+  \brief Return layer of current TreeNode
+
+  */
+  virtual inline int Layer() const { return layer_; }
+  
+  /*!
+  \brief Set layer of current TreeNode
+  
+  */
+  virtual inline void SetLayer(int layer) { layer_ = layer; }
+
+  /*!
+  \brief Return pointer to element list of TreeNode
+
+  */
+  virtual inline vector<int> Elelist() const { return elelist_; }
+  
+  /*!
+  \brief Return dim of Problem
+
+  */
+  virtual inline const int& Dim() { return dim_; }
+
+  //@}
+
+  //! @name Visualization methods (GMSH)
+
+  /*!
+  \brief Print slabs of DOP to file for GMSH output
+  \param filename     filename to which treenodes are plotted
+
+  */
+  void PrintDopsForGmsh(std::string filename);
+
+  /*!
+  \brief Plot a point in GMSH to given file
+
+  */
+  void PlotGmshPoint(std::string filename, double* position0, int nr);
+
+  /*!
+  \brief Plot n quadrangle in GMSH to given file
+
+  */
+  void PlotGmshQuadrangle(std::string filename, double* position0, double* position1,
+                                                double* position2, double* position3);
+
+
+  /*!
+  \brief Plot a triangle in GMSH to given file
+
+  */
+  void PlotGmshTriangle(std::string filename, double* position0, double* position1,
+                                                                 double* position2);
+
+  
+  virtual inline vector<vector<RCP<BinaryTreeNode> > >& Streenodesmap() { return streenodesmap_; }
+  virtual inline vector<vector<RCP<BinaryTreeNode> > >& Mtreenodesmap() { return mtreenodesmap_; }
+  virtual inline vector<vector<RCP<BinaryTreeNode> > >& Sleafsmap() { return sleafsmap_; }
+  virtual inline vector<vector<RCP<BinaryTreeNode> > >& Mleafsmap() { return mleafsmap_; }
+  //@}
+    
+private:
+
+  //! type of BinaryTreeNode
+  CONTACT::BinaryTreeNodeType type_;
+
+  //! contact interface discretization
+  DRT::Discretization& idiscret_;
+
+  //! pointer to the parent BinaryTreeNode
+  RCP<BinaryTreeNode> parent_;
+
+  //! pointer to the left child TreeNode
+  RCP<BinaryTreeNode> leftchild_;
+
+  //! pointer to the right child TreeNode
+  RCP<BinaryTreeNode> rightchild_;
+
+  //! geometry slabs of TreeNode, saved as Min|Max
+  Epetra_SerialDenseMatrix slabs_;
+
+  //! list with all elements of BinaryTreeNode
+  vector<int> elelist_;
+
+  //! reference to DOP normals
+  const Epetra_SerialDenseMatrix& dopnormals_;
+
+  //! reference to no. of vertices
+  const int& kdop_;
+
+  //! reference to dim. of problem
+  const int& dim_;
+
+  //! layer of TreeNode in Tree (0=rootnode!)
+  int layer_;
+
+  //! reference to map of all slave treenodes, sorted by layer
+  vector<vector<RCP<BinaryTreeNode> > > & streenodesmap_; 
+
+  //! reference to map of all master treenodes, sorted by layer
+  vector<vector<RCP<BinaryTreeNode> > > &  mtreenodesmap_;
+
+  //! reference to map of all slave leaf treenodes
+  vector<vector<RCP<BinaryTreeNode> > > & sleafsmap_; 
+
+  //! reference to map of all master leaf treenodes
+  vector<vector<RCP<BinaryTreeNode> > > &  mleafsmap_;
+  
+}; // class BinaryTreeNode
+
+
 /*!
 \brief A class for performing contact search in 2D/3D based on binary trees
 
@@ -63,255 +356,7 @@ Refer also to the Semesterarbeit of Thomas Eberl, 2009
 class BinaryTree
 {
 public:
-
-    //! @name Enums and Friends
-  enum BinaryTreeNodeType
-  {
-    SLAVE_INNER,        ///< indicates a slave inner node (has children)
-    SLAVE_LEAF,         ///< indicates a slave leaf node (no further children)
-    MASTER_INNER,       ///< indicates a master inner node (has children)
-    MASTER_LEAF,        ///< indicates a master leaf node (no further children)
-    NOSLAVE_ELEMENTS,   ///< inidicates that there are no slave elements on this (root) treenode
-    NOMASTER_ELEMENTS,  ///< inidicates that there are no master elements on this (root) treenode
-    UNDEFINED           ///< indiactes an undefined tree node
-  };
-
-  //@}
-
-private:
-
-  /*!
-  \brief A class representing one tree node of the binary search tree
-
-  \author popp (popp@lnm.mw.tum.de)
-  */
-  class BinaryTreeNode
-  {
-  private:
-
-    //! type of BinaryTreeNode
-    BinaryTreeNodeType type_;
-
-    //! contact interface discretization
-    DRT::Discretization& idiscret_;
-
-    //! pointer to the parent BinaryTreeNode
-    RCP<BinaryTreeNode> parent_;
-
-    //! pointer to the left child TreeNode
-    RCP<BinaryTreeNode> leftchild_;
-
-    //! pointer to the right child TreeNode
-    RCP<BinaryTreeNode> rightchild_;
-
-    //! geometry slabs of TreeNode, saved as Min|Max
-    Epetra_SerialDenseMatrix slabs_;
-
-    //! list with all elements of BinaryTreeNode
-    vector<int> elelist_;
-
-    //! reference to DOP normals
-    const Epetra_SerialDenseMatrix& dopnormals_;
-
-    //! reference to no. of vertices
-    const int& kdop_;
-
-    //! reference to dim. of problem
-    const int& dim_;
-
-    //! layer of TreeNode in Tree (0=rootnode!)
-    const int layer_;
-
-    //! reference to map of all slave treenodes, sorted by layer
-    vector<vector<RCP<BinaryTreeNode> > > & streenodesmap_;	
-
-    //! reference to map of all master treenodes, sorted by layer
-    vector<vector<RCP<BinaryTreeNode> > > &  mtreenodesmap_;
-
-    //! reference to map of all slave leaf treenodes
-    vector<vector<RCP<BinaryTreeNode> > > & sleafsmap_;	
-
-    //! reference to map of all master leaf treenodes
-    vector<vector<RCP<BinaryTreeNode> > > &  mleafsmap_;
-
-
-  public:
-
-    /*!
-    \brief constructor of a tree node
-
-    \param type        type of BinaryTreeNode
-    \param discret     contact interface discretization
-    \param parent      points to parent tree node
-    \param elelist     list of all elements in BinaryTreeNode
-    \param dopnormals  reference to DOP normals
-    \param kdop        refernece to no. of vertices
-    \param dim				 dimension of problem
-    \param layer			 current layer of treenode
-    \param ...map			 references to maps
-
-    */
-    BinaryTreeNode(BinaryTreeNodeType type, DRT::Discretization& discret,
-                   RCP<BinaryTreeNode> parent, vector<int> elelist,
-                   const Epetra_SerialDenseMatrix& dopnormals, const int& kdop,
-                   const int& dim, const int layer,
-                   vector<vector<RCP<BinaryTreeNode> > > & streenodesmap,
-                   vector<vector<RCP<BinaryTreeNode> > > & mtreenodesmap,
-                   vector<vector<RCP<BinaryTreeNode> > > & sleafsmap,
-                   vector<vector<RCP<BinaryTreeNode> > > & mleafsmap);
-
-    /*!
-    \brief Destructor
-
-    */
-    virtual ~BinaryTreeNode() {};
-
-    //! @name Evaluation methods
-
-    /*!
-    \brief Calculate slabs of dop in initialization
-
-    */
-    void CalculateSlabsDop(bool isinit);
-
-    /*!
-    \brief Update slabs of current treenode in bottom up way
-
-    */
-    void UpdateSlabsBottomUp(double & eps);
-
-    /*!
-    \brief Initialize Tree
-
-    */
-    void InitializeTree(double& eps);
-
-    /*!
-    \brief Enlarge geometry of a Treenode by an offset, dependent on size
-
-    */
-    void EnlargeGeometry(double& eps);
-
-    /*!
-    \brief Divide a TreeNode into two child nodes
-
-    */
-    void DivideTreeNode();
-
-    /*!
-    \brief Print type of TreeNode to std::cout
-
-    */
-    void PrintType();
-
-    /*!
-    \brief Print slabs to std::cout
-
-    */
-    void PrintSlabs();
-
-    /*!
-    \brief Set slabs of current treenode
-
-    */
-    void SetSlabs(Epetra_SerialDenseMatrix& newslabs);
-
-    //@}
-
-    //! @name Access methods
-
-    /*!
-    \brief Get communicator
-
-    */
-    virtual const Epetra_Comm& Comm() const { return idiscret_.Comm();}
-
-    /*!
-    \brief Get discretization of the interface
-
-    */
-    virtual inline DRT::Discretization& Discret() const { return idiscret_; }
-
-    /*!
-    \brief Return pointer to type of treenode
-
-    */
-    virtual inline BinaryTreeNodeType Type() const { return type_; }
-
-    /*!
-    \brief Return pointer to right child
-
-    */
-    virtual inline RCP<BinaryTreeNode> Rightchild() const { return rightchild_; }
-
-    /*!
-    \brief Return pointer to left child
-
-    */
-    virtual inline RCP<BinaryTreeNode> Leftchild() const { return leftchild_; }
-
-    /*!
-    \brief Return pointer to parent
-
-    */
-    virtual inline RCP<BinaryTreeNode> Parent() const { return parent_; }
-
-    /*!
-    \brief Return pointer to slabs of DOP
-
-    */
-    virtual inline Epetra_SerialDenseMatrix Slabs() const { return slabs_; }
-
-    /*!
-    \brief Return layer of current TreeNode
-
-    */
-    virtual inline int Layer() const { return layer_; }
-
-    /*!
-    \brief Return pointer to element list of TreeNode
-
-    */
-    virtual inline vector<int> Elelist() const { return elelist_; }
-
-    //@}
-
-    //! @name Visualization methods (GMSH)
-
-    /*!
-    \brief Print slabs of DOP to file for GMSH output
-    \param filename     filename to which treenodes are plotted
-
-    */
-    void PrintDopsForGmsh(std::string filename);
-
-    /*!
-    \brief Plot a point in GMSH to given file
-
-    */
-    void PlotGmshPoint(std::string filename, double* position0, int nr);
-
-    /*!
-    \brief Plot n quadrangle in GMSH to given file
-
-    */
-    void PlotGmshQuadrangle(std::string filename, double* position0, double* position1,
-                                                  double* position2, double* position3);
-
-
-    /*!
-    \brief Plot a triangle in GMSH to given file
-
-    */
-    void PlotGmshTriangle(std::string filename, double* position0, double* position1,
-                                                                   double* position2);
-
-    //@}
-
-  }; // class BinaryTreeNode
-
-public:
-
+  
   /*!
   \brief Standard constructor
 
@@ -417,24 +462,30 @@ public:
   \brief Return minimal element length
 
   */
-  virtual inline double & MinLengthEle() { return minlengthele_; }
+  virtual inline double& MinLengthEle() { return minlengthele_; }
 
   /*!
   \brief Return factor "eps" to enlarge dops
 
   */
-  virtual inline double & Eps() { return eps_; }
+  virtual inline double& Eps() { return eps_; }
 
   /*!
   \brief Return factor "enlarge" to enlarge dops
 
   */
-  virtual inline double & Enlarge() { return enlarge_; }
+  virtual inline double& Enlarge() { return enlarge_; }
 
   //@}
 
   //! @name Evaluation methods
 
+  /*!
+  \brief Setup binary tree after construction
+
+  */
+  virtual void SetupTree();
+    
   /*!
   \brief Calculate minimal element length / inflation factor "enlarge"
 

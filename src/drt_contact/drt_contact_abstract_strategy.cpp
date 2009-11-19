@@ -66,8 +66,30 @@ alphaf_(alphaf),
 problemrowmap_(problemrowmap),
 activesetconv_(false),
 activesetsteps_(1),
-isincontact_(false)
+isincontact_(false),
+isselfcontact_(false)
 {
+  // set potential global self contact status
+  // (this is TRUE if at least one contact interface is a self contact interface)
+  bool selfcontact = 0;
+  for (int i=0;i<(int)interface_.size();++i)
+    if (interface_[i]->SelfContact()) ++selfcontact;
+  
+  if (selfcontact) isselfcontact_=true;
+  
+  // check for infeasible self contact combinations
+  INPAR::CONTACT::SolvingStrategy stype =
+        Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(params,"STRATEGY");
+  
+  if (selfcontact && stype != INPAR::CONTACT::solution_lagmult)
+    dserror("ERROR: Self contact only implemented for Lagrange multiplier strategy!");
+  
+  INPAR::CONTACT::ContactType ctype =
+        Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(params,"CONTACT");
+  
+  if (selfcontact > 0 && ctype != INPAR::CONTACT::contact_normal)
+    dserror("ERROR: Self contact only implemented for frictionless contact!");
+  
   // ------------------------------------------------------------------------
   // setup global accessible Epetra_Maps
   // ------------------------------------------------------------------------                     
@@ -149,17 +171,55 @@ void CONTACT::AbstractStrategy::SetState(const string& statename, const RCP<Epet
 }
 
 /*----------------------------------------------------------------------*
- | initialize Mortar stuff for next Newton step               popp 06/09|
+ | update global master and slave sets (public)               popp 11/09|
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::InitializeMortar()
-{ 
-  // initialize / reset interfaces
+void CONTACT::AbstractStrategy::UpdateMasterSlaveSetsGlobal()
+{
+  // reset global slave / master Epetra Maps
+  gsnoderowmap_   = rcp(new Epetra_Map(0,0,Comm()));
+  gsdofrowmap_   = rcp(new Epetra_Map(0,0,Comm()));
+  gmdofrowmap_   = rcp(new Epetra_Map(0,0,Comm()));
+  
+  // setup global slave / master Epetra_Maps
+  // (this is done by looping over all interfaces and merging)
+  for (int i=0;i<(int)interface_.size();++i)
+  {
+    gsnoderowmap_ = LINALG::MergeMap(gsnoderowmap_,interface_[i]->SlaveRowNodes());
+    gsdofrowmap_ = LINALG::MergeMap(gsdofrowmap_,interface_[i]->SlaveRowDofs());
+    gmdofrowmap_ = LINALG::MergeMap(gmdofrowmap_,interface_[i]->MasterRowDofs());
+  }
+  
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | initialize + evaluate interface for next Newton step       popp 11/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::AbstractStrategy::InitEvalInterface()
+{
+  // for all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
   {
+    // initialize / reset interfaces
     interface_[i]->Initialize();
+    
+    // evaluate interfaces
+    interface_[i]->Evaluate();
   }
+    
+  return;
+}
 
-  // inititialize Dold and Mold if not done already
+/*----------------------------------------------------------------------*
+ | initialize + evaluate mortar stuff for next Newton step    popp 11/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::AbstractStrategy::InitEvalMortar()
+{
+  // for self contact, slave and master sets may have changed,
+  // thus we have to update them befor initialiting D,M etc.
+  if (IsSelfContact()) UpdateMasterSlaveSetsGlobal();
+  
+  // intitialize Dold and Mold if not done already
   if (dold_==null)
   {
     dold_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
@@ -170,36 +230,24 @@ void CONTACT::AbstractStrategy::InitializeMortar()
   {
     mold_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
     mold_->Zero();
-    mold_->Complete(*gmdofrowmap_, *gsdofrowmap_);
+    mold_->Complete(*gmdofrowmap_,*gsdofrowmap_);
   }
-
+   
   // (re)setup global Mortar LINALG::SparseMatrices and Epetra_Vectors
-  dmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
-  mmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
-  g_ = LINALG::CreateVector(*gsnoderowmap_, true);
-
+  dmatrix_    = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
+  mmatrix_    = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
+  g_          = LINALG::CreateVector(*gsnoderowmap_,true);
+   
   // (re)setup global matrices containing fc derivatives
   lindmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
   linmmatrix_ = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
-}
-
-/*----------------------------------------------------------------------*
- | evaluate Mortar matrices D,M & gap g~ only                 popp 06/08|
- *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::EvaluateMortar()
-{
-  /**********************************************************************/
-  /* evaluate interfaces                                                */
-  /* (nodal normals, projections, Mortar integration, Mortar assembly)  */
-  /**********************************************************************/
+  
+  // for all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
   {
-    // evaluate D-, derivD- and M-, derivM-matrices, store them in nodes
-    interface_[i]->Evaluate();
-    
     // assemble D-, M-matrix and g-vector, store them globally
-    interface_[i]->AssembleDMG(*dmatrix_, *mmatrix_, *g_);
-
+    interface_[i]->AssembleDMG(*dmatrix_,*mmatrix_,*g_);
+    
 #ifdef CONTACTFDMORTARD
   // FD check of Mortar matrix D derivatives
   cout << " -- CONTACTFDMORTARD -----------------------------------" << endl;
@@ -219,11 +267,11 @@ void CONTACT::AbstractStrategy::EvaluateMortar()
   cout << " -- CONTACTFDMORTARM -----------------------------------" << endl;
 #endif // #ifdef CONTACTFDMORTARM
   }
-
+  
   // FillComplete() global Mortar matrices
   dmatrix_->Complete();
-  mmatrix_->Complete(*gmdofrowmap_, *gsdofrowmap_);
-
+  mmatrix_->Complete(*gmdofrowmap_,*gsdofrowmap_);
+    
   return;
 }
 
@@ -324,7 +372,7 @@ void CONTACT::AbstractStrategy::StoreNodalQuantities(AbstractStrategy::QuantityT
   for (int i=0; i<(int)interface_.size(); ++i)
   {
     // currently this only works safely for 1 interface
-    if (i>0) dserror("ERROR: StoreNodalQuantities: Double active node check needed for n interfaces!");
+    //if (i>0) dserror("ERROR: StoreNodalQuantities: Double active node check needed for n interfaces!");
 
     // get global quantity to be stored in nodes
     RCP<Epetra_Vector> vectorglobal = null;
@@ -458,18 +506,19 @@ void CONTACT::AbstractStrategy::StoreNodalQuantities(AbstractStrategy::QuantityT
 }
 
 /*----------------------------------------------------------------------*
- |  Output vector for normal and tangential contact stresses gitterle 08/09|
+ |  Output vector of normal/tang. contact stresses        gitterle 08/09|
  *----------------------------------------------------------------------*/
 void CONTACT::AbstractStrategy::OutputStresses ()
 {
+  // reset contact stress class variables
+  stressnormal_ = rcp(new Epetra_Vector(*gsdofrowmap_));
+  stresstangential_ = rcp(new Epetra_Vector(*gsdofrowmap_));
+      
   // loop over all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
   {
     // currently this only works safely for 1 interface
-    if (i>0) dserror("ERROR: OutputStresses: Double active node check needed for n interfaces!");
-
-    RCP<Epetra_Vector> contactnormalstresses = rcp(new Epetra_Vector(*gsdofrowmap_));
-    RCP<Epetra_Vector> contacttangentialstresses = rcp(new Epetra_Vector(*gsdofrowmap_));
+    //if (i>0) dserror("ERROR: OutputStresses: Double active node check needed for n interfaces!");
     
     // loop over all slave row nodes on the current interface
     for (int j=0; j<interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
@@ -509,21 +558,17 @@ void CONTACT::AbstractStrategy::OutputStresses ()
       // normal stress components     
       for (int dof=0;dof<dim;++dof)
       {
-        locindex[dof] = (contactnormalstresses->Map()).LID(cnode->Dofs()[dof]);
-        (*contactnormalstresses)[locindex[dof]] = lmn*nn[dof];
+        locindex[dof] = (stressnormal_->Map()).LID(cnode->Dofs()[dof]);
+        (*stressnormal_)[locindex[dof]] = -lmn*nn[dof];
       }
       
       // tangential stress components
       for (int dof=0;dof<dim;++dof)
       {
-        locindex[dof] = (contacttangentialstresses->Map()).LID(cnode->Dofs()[dof]);
-        (*contacttangentialstresses)[locindex[dof]] = lmt1*nt1[dof]+lmt2*nt2[dof];
+        locindex[dof] = (stresstangential_->Map()).LID(cnode->Dofs()[dof]);
+        (*stresstangential_)[locindex[dof]] = -lmt1*nt1[dof]-lmt2*nt2[dof];
       }
     }
-    
-    // store it vectors
-    stressnormal_->Update(-1.0,*contactnormalstresses,0.0);
-    stresstangential_->Update(-1.0,*contacttangentialstresses,0.0);
   }
 
   return;
@@ -538,7 +583,7 @@ void CONTACT::AbstractStrategy::StoreDirichletStatus(RCP<LINALG::MapExtractor> d
   for (int i=0; i<(int)interface_.size(); ++i)
   {
     // currently this only works safely for 1 interface
-    if (i>0) dserror("ERROR: StoreDirichletStatus: Double active node check needed for n interfaces!");
+    //if (i>0) dserror("ERROR: StoreDirichletStatus: Double active node check needed for n interfaces!");
 
     // loop over all slave row nodes on the current interface
     for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)
@@ -572,8 +617,7 @@ void CONTACT::AbstractStrategy::StoreDMToNodes(AbstractStrategy::QuantityType ty
   for (int i=0; i<(int)interface_.size(); ++i)
   {
     // currently this only works safely for 1 interface
-    if (i>0)
-      dserror("ERROR: StoreDMToNodes: Double active node check needed for n interfaces!");
+    //if (i>0) dserror("ERROR: StoreDMToNodes: Double active node check needed for n interfaces!");
 
     // loop over all slave row nodes on the current interface
     for (int j=0; j<interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
@@ -639,9 +683,10 @@ void CONTACT::AbstractStrategy::Update(int istep)
 {
   // store Lagrange multipliers, D and M
   // (we need this for interpolation of the next generalized mid-point)
-  RCP<Epetra_Vector> z = LagrMult();
-  RCP<Epetra_Vector> zold = LagrMultOld();
-  zold->Update(1.0,*z,0.0);
+  // in the case of self contact, the size of z may have changed
+  if (IsSelfContact()) zold_ = rcp(new Epetra_Vector(*gsdofrowmap_));
+  
+  zold_->Update(1.0,*z_,0.0);
   StoreNodalQuantities(AbstractStrategy::lmold);
   StoreDM("old");
 
@@ -690,33 +735,64 @@ void CONTACT::AbstractStrategy::DoWriteRestart(RCP<Epetra_Vector>& activetoggle,
 /*----------------------------------------------------------------------*
  |  read restart information for contact                      popp 03/08|
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::DoReadRestart(RCP<Epetra_Vector> activetoggle, RCP<Epetra_Vector> sliptoggle,
+void CONTACT::AbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader,
                                               RCP<Epetra_Vector> dis)
 {
-  // loop over all interfaces
+  // set restart displacement state
+  SetState("displacement", dis);
+  
+  // evaluate interface and restart mortar quantities
+  // in the case of SELF CONTACT, also re-setup master/slave maps
+  InitEvalInterface();
+  InitEvalMortar(); 
+  
+  // read restart information on actice set and slip set
+  RCP<Epetra_Vector> activetoggle =rcp(new Epetra_Vector(*gsnoderowmap_));
+  reader.ReadVector(activetoggle,"activetoggle");
+  RCP<Epetra_Vector> sliptoggle =rcp(new Epetra_Vector(*gsnoderowmap_));
+  reader.ReadVector(sliptoggle,"sliptoggle");
+
+  // store restart information on active set and slip set  
+  // into nodes, therefore first loop over all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
   {
     // loop over all slave nodes on the current interface
-    for (int j=0; j<interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
+    for (int j=0; j<(interface_[i]->SlaveRowNodes())->NumMyElements(); ++j)
     {
-      if ((*activetoggle)[j]==1)
+      int gid = (interface_[i]->SlaveRowNodes())->GID(j);
+      int dof = (activetoggle->Map()).LID(gid);
+      
+      if ((*activetoggle)[dof]==1)
       {
-        int gid = interface_[i]->SlaveRowNodes()->GID(j);
         DRT::Node* node = interface_[i]->Discret().gNode(gid);
-        if (!node)
-          dserror("ERROR: Cannot find node with gid %", gid);
+        if (!node) dserror("ERROR: Cannot find node with gid %", gid);
         CNode* cnode = static_cast<CNode*>(node);
-
+        
         // set value active / inactive in cnode
         cnode->Active()=true;
 
         // set value stick / slip in cnode
-        if ((*sliptoggle)[j]==1)
+        if ((*sliptoggle)[dof]==1)
           cnode->Slip()=true;
       }
     }
   }
-
+ 
+  // read restart information on Lagrange multipliers
+  z_ = rcp(new Epetra_Vector(*gsdofrowmap_));
+  zold_ = rcp(new Epetra_Vector(*gsdofrowmap_));
+  reader.ReadVector(LagrMultOld(),"lagrmultold");
+  reader.ReadVector(LagrMult(),"lagrmultold");
+  
+  // store restart information on Lagrange multipliers into nodes
+  StoreNodalQuantities(AbstractStrategy::lmold);
+  StoreNodalQuantities(AbstractStrategy::lmcurrent);
+    
+  // store restart Mortar quantities into nodes
+  StoreDM("old");
+  StoreNodalQuantities(AbstractStrategy::activeold);
+  StoreDMToNodes(AbstractStrategy::dm);
+    
   // update active sets of all interfaces
   // (these maps are NOT allowed to be overlapping !!!)
   for (int i=0; i<(int)interface_.size(); ++i)
@@ -732,23 +808,14 @@ void CONTACT::AbstractStrategy::DoReadRestart(RCP<Epetra_Vector> activetoggle, R
   }
 
   // update flag for global contact status
-  if (gactivenodes_->NumGlobalElements())
-    IsInContact()=true;
-
-  // build restart Mortar matrices D and M
-  SetState("displacement", dis);
-  InitializeMortar();
-  EvaluateMortar();
-  StoreDM("old");
-  StoreNodalQuantities(AbstractStrategy::activeold);
-  StoreDMToNodes(AbstractStrategy::dm);
+  if (gactivenodes_->NumGlobalElements()) IsInContact()=true;
   
   return;
 }
 
 
 /*----------------------------------------------------------------------*
- |  Compute contact forces                                    popp 02/08|
+ |  Compute contact forces (for debugging only)               popp 02/08|
  *----------------------------------------------------------------------*/
 void CONTACT::AbstractStrategy::ContactForces(RCP<Epetra_Vector> fresm)
 {
@@ -764,11 +831,29 @@ void CONTACT::AbstractStrategy::ContactForces(RCP<Epetra_Vector> fresm)
   RCP<Epetra_Vector> fcmastertemp = rcp(new Epetra_Vector(mmatrix_->DomainMap()));
   RCP<Epetra_Vector> fcslavetempend = rcp(new Epetra_Vector(dold_->RowMap()));
   RCP<Epetra_Vector> fcmastertempend = rcp(new Epetra_Vector(mold_->DomainMap()));
-  dmatrix_->Multiply(false, *z_, *fcslavetemp);
-  mmatrix_->Multiply(true, *z_, *fcmastertemp);
-  dold_->Multiply(false, *zold_, *fcslavetempend);
-  mold_->Multiply(true, *zold_, *fcmastertempend);
-
+  
+  // for self contact, slave and master sets may have changed,
+  // thus we have to export z and zold to new D and M dimensions
+  if (IsSelfContact())
+  {
+    RCP<Epetra_Vector> zexp = rcp(new Epetra_Vector(dmatrix_->RowMap()));
+    RCP<Epetra_Vector> zoldexp = rcp(new Epetra_Vector(dold_->RowMap()));
+    LINALG::Export(*z_,*zexp);
+    LINALG::Export(*zold_,*zoldexp);
+    dmatrix_->Multiply(false,*zexp,*fcslavetemp);
+    mmatrix_->Multiply(true,*zexp,*fcmastertemp);
+    dold_->Multiply(false,*zoldexp,*fcslavetempend);
+    mold_->Multiply(true,*zoldexp,*fcmastertempend);
+  }
+  // if there is no self contact everything is ok
+  else
+  {
+    dmatrix_->Multiply(false, *z_, *fcslavetemp);
+    mmatrix_->Multiply(true, *z_, *fcmastertemp);
+    dold_->Multiply(false, *zold_, *fcslavetempend);
+    mold_->Multiply(true, *zold_, *fcmastertempend);
+  }
+  
   // export the contact forces to full dof layout
   RCP<Epetra_Vector> fcslave = rcp(new Epetra_Vector(*problemrowmap_));
   RCP<Epetra_Vector> fcmaster = rcp(new Epetra_Vector(*problemrowmap_));
@@ -1042,7 +1127,7 @@ void CONTACT::AbstractStrategy::PrintActiveSet()
   // loop over all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
   {
-    if (i>0) dserror("ERROR: PrintActiveSet: Double active node check needed for n interfaces!");
+    //if (i>0) dserror("ERROR: PrintActiveSet: Double active node check needed for n interfaces!");
 
     // loop over all slave nodes on the current interface
     for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)

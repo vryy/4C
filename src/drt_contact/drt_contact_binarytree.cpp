@@ -50,8 +50,8 @@ Maintainer: Alexander Popp
 /*----------------------------------------------------------------------*
  |  ctor BinaryTreeNode (public)                              popp 10/08|
  *----------------------------------------------------------------------*/
-CONTACT::BinaryTree::BinaryTreeNode::BinaryTreeNode(
-                     BinaryTreeNodeType type,
+CONTACT::BinaryTreeNode::BinaryTreeNode(
+                     CONTACT::BinaryTreeNodeType type,
                      DRT::Discretization& discret,
                      RCP<BinaryTreeNode> parent,
                      vector<int> elelist,
@@ -86,7 +86,7 @@ mleafsmap_(mleafsmap)
 /*----------------------------------------------------------------------*
  | Initialize tree (public)       								            popp 10/08|
  *----------------------------------------------------------------------*/
-void CONTACT::BinaryTree::BinaryTreeNode::InitializeTree(double& enlarge)
+void CONTACT::BinaryTreeNode::InitializeTree(double& enlarge)
 {
 	// return if proc. has no elements!
 	if (elelist_.size()==0) return;
@@ -146,7 +146,7 @@ void CONTACT::BinaryTree::BinaryTreeNode::InitializeTree(double& enlarge)
 /*----------------------------------------------------------------------*
  | Calculate slabs of DOP out of node postions (public)       popp 10/08|
  *----------------------------------------------------------------------*/
-void CONTACT::BinaryTree::BinaryTreeNode::CalculateSlabsDop(bool isinit)
+void CONTACT::BinaryTreeNode::CalculateSlabsDop(bool isinit)
 {
 	// initialize slabs
 	for (int j=0; j<kdop_/2; j++)
@@ -231,7 +231,7 @@ void CONTACT::BinaryTree::BinaryTreeNode::CalculateSlabsDop(bool isinit)
 /*----------------------------------------------------------------------*
  | Update slabs bottom up (public)												    popp 10/08|
  *----------------------------------------------------------------------*/
-void CONTACT::BinaryTree::BinaryTreeNode::UpdateSlabsBottomUp(double & enlarge)
+void CONTACT::BinaryTreeNode::UpdateSlabsBottomUp(double & enlarge)
 {
 	// if current treenode is inner node
 	if (type_==0||type_==2)
@@ -338,7 +338,7 @@ void CONTACT::BinaryTree::BinaryTreeNode::UpdateSlabsBottomUp(double & enlarge)
 /*----------------------------------------------------------------------*
  | Divide treenode (public)   								   						  popp 10/08|
  *----------------------------------------------------------------------*/
-void CONTACT::BinaryTree::BinaryTreeNode::DivideTreeNode()
+void CONTACT::BinaryTreeNode::DivideTreeNode()
 {
   // map of elements belonging to left / right child treenode
 	vector<int> leftelements(0);	
@@ -521,7 +521,7 @@ void CONTACT::BinaryTree::BinaryTreeNode::DivideTreeNode()
 /*----------------------------------------------------------------------*
  | Print type of treenode to std::cout (public)					      popp 10/08|
  *----------------------------------------------------------------------*/
-void CONTACT::BinaryTree::BinaryTreeNode::PrintType()
+void CONTACT::BinaryTreeNode::PrintType()
 {
 	if (type_==0)
 		cout << endl << "SLAVE_INNER ";
@@ -542,7 +542,7 @@ void CONTACT::BinaryTree::BinaryTreeNode::PrintType()
 /*----------------------------------------------------------------------*
  | Print slabs to std::cout (public)   									      popp 10/08|
  *----------------------------------------------------------------------*/
-void CONTACT::BinaryTree::BinaryTreeNode::PrintSlabs()
+void CONTACT::BinaryTreeNode::PrintSlabs()
 {
 	 cout << endl << Comm().MyPID() << "************************************************************";
 	 PrintType();
@@ -555,7 +555,7 @@ void CONTACT::BinaryTree::BinaryTreeNode::PrintSlabs()
 /*----------------------------------------------------------------------*
  | Print slabs of dop to file for Gmsh (public)						    popp 10/08|
  *----------------------------------------------------------------------*/
-void CONTACT::BinaryTree::BinaryTreeNode::PrintDopsForGmsh(std::string filename)
+void CONTACT::BinaryTreeNode::PrintDopsForGmsh(std::string filename)
 {
   FILE* fp = NULL;
 	std::ostringstream currentfilename;
@@ -796,7 +796,7 @@ void CONTACT::BinaryTree::BinaryTreeNode::PrintDopsForGmsh(std::string filename)
 /*----------------------------------------------------------------------*
  | Return coords for gmshpoint of 18DOP(public)               popp 10/08|
  *----------------------------------------------------------------------*/
-void CONTACT::BinaryTree::BinaryTreeNode::PlotGmshPoint(  std::string filename, double* position0, int nr)
+void CONTACT::BinaryTreeNode::PlotGmshPoint(  std::string filename, double* position0, int nr)
 {
   FILE* fp = NULL;
   fp = fopen(filename.c_str(), "a");
@@ -820,7 +820,7 @@ void CONTACT::BinaryTree::BinaryTreeNode::PlotGmshPoint(  std::string filename, 
 /*----------------------------------------------------------------------*
  | Plot quadrangle in gmsh(public)                            popp 10/08|
  *----------------------------------------------------------------------*/
-void CONTACT::BinaryTree::BinaryTreeNode::PlotGmshQuadrangle( std::string filename, double* position0,
+void CONTACT::BinaryTreeNode::PlotGmshQuadrangle( std::string filename, double* position0,
                                                               double* position1,double* position2,
                                                               double* position3)
 {
@@ -844,7 +844,7 @@ void CONTACT::BinaryTree::BinaryTreeNode::PlotGmshQuadrangle( std::string filena
 /*----------------------------------------------------------------------*
  | Plot triangle in gmsh(public)                              popp 10/08|
  *----------------------------------------------------------------------*/
-void CONTACT::BinaryTree::BinaryTreeNode::PlotGmshTriangle( std::string filename, double* position0,
+void CONTACT::BinaryTreeNode::PlotGmshTriangle( std::string filename, double* position0,
                                                               double* position1,double* position2)
 {
   FILE* fp = NULL;
@@ -866,7 +866,7 @@ void CONTACT::BinaryTree::BinaryTreeNode::PlotGmshTriangle( std::string filename
 /*----------------------------------------------------------------------*
  | Set slabs of current treenode with new slabs(public)       popp 10/08|
  *----------------------------------------------------------------------*/
-void CONTACT::BinaryTree::BinaryTreeNode::SetSlabs(Epetra_SerialDenseMatrix& newslabs)
+void CONTACT::BinaryTreeNode::SetSlabs(Epetra_SerialDenseMatrix& newslabs)
 {
 	for (int i=0;i<kdop_/2;++i)
 	{
@@ -878,7 +878,7 @@ void CONTACT::BinaryTree::BinaryTreeNode::SetSlabs(Epetra_SerialDenseMatrix& new
 /*----------------------------------------------------------------------*
  | Enlarge geometry of treenode (public)   		     		        popp 10/08|
  *----------------------------------------------------------------------*/
-void CONTACT::BinaryTree::BinaryTreeNode::EnlargeGeometry(double& enlarge)
+void CONTACT::BinaryTreeNode::EnlargeGeometry(double& enlarge)
 {
 	//PrintSlabs();
 	// scale slabs with Scalar enlarge
@@ -904,6 +904,16 @@ selements_(selements),
 melements_(melements),
 dim_(dim),
 eps_(eps)
+{
+  // constructor itself is empty
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  ctor BinaryTree(public)                                   popp 10/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::BinaryTree::SetupTree()
 {
   // initialize sizes
   streenodesmap_.resize(1);
@@ -972,7 +982,7 @@ eps_(eps)
   // check slave root node case
   if (slist.size()>=2)
   {
-    sroot_ = rcp(new BinaryTreeNode(SLAVE_INNER,idiscret_,sroot_ ,slist,DopNormals(),
+    sroot_ = rcp(new BinaryTreeNode(CONTACT::SLAVE_INNER,idiscret_,sroot_ ,slist,DopNormals(),
              Kdop(),Dim(),0,streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
 
     // do initialization
@@ -981,7 +991,7 @@ eps_(eps)
   }
   else if (slist.size()==1)
   {
-    sroot_ = rcp(new BinaryTreeNode(SLAVE_LEAF,idiscret_,sroot_,slist,DopNormals(),
+    sroot_ = rcp(new BinaryTreeNode(CONTACT::SLAVE_LEAF,idiscret_,sroot_,slist,DopNormals(),
              Kdop(),Dim(),0,streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
 
     // trivial initialization
@@ -990,7 +1000,7 @@ eps_(eps)
   }
   else
   {
-    sroot_ = rcp(new BinaryTreeNode(NOSLAVE_ELEMENTS,idiscret_,sroot_,slist,DopNormals(),
+    sroot_ = rcp(new BinaryTreeNode(CONTACT::NOSLAVE_ELEMENTS,idiscret_,sroot_,slist,DopNormals(),
              Kdop(),Dim(),0,streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
 
     // trivial initialization
@@ -1000,7 +1010,7 @@ eps_(eps)
   // check master root node case
   if (mlist.size()>=2)
   {
-    mroot_ = rcp(new BinaryTreeNode(MASTER_INNER,idiscret_,mroot_,mlist,DopNormals(),
+    mroot_ = rcp(new BinaryTreeNode(CONTACT::MASTER_INNER,idiscret_,mroot_,mlist,DopNormals(),
              Kdop(),Dim(),0,streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
 
     // do initialization
@@ -1009,7 +1019,7 @@ eps_(eps)
   }
   else if (mlist.size()==1)
   {
-    mroot_ = rcp(new BinaryTreeNode(MASTER_LEAF,idiscret_,mroot_,mlist,DopNormals(),
+    mroot_ = rcp(new BinaryTreeNode(CONTACT::MASTER_LEAF,idiscret_,mroot_,mlist,DopNormals(),
              Kdop(),Dim(),0,streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
 
     // trivial initialization
@@ -1018,7 +1028,7 @@ eps_(eps)
   }
   else
   {
-    mroot_ = rcp(new BinaryTreeNode(NOMASTER_ELEMENTS,idiscret_,mroot_,mlist,DopNormals(),
+    mroot_ = rcp(new BinaryTreeNode(CONTACT::NOMASTER_ELEMENTS,idiscret_,mroot_,mlist,DopNormals(),
              Kdop(),Dim(),0,streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
 
     // trivial initialization / error

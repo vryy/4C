@@ -60,12 +60,12 @@ AbstractStrategy(problemrowmap, params, interface, dim, comm, alphaf)
 }
 
 /*----------------------------------------------------------------------*
- |  initialize Mortar stuff for next Newton step              popp 06/09|
+ |  initialize + evaulate mortar stuff for next Newton step   popp 06/09|
  *----------------------------------------------------------------------*/
-void CONTACT::LagrangeStrategy::InitializeMortar()
+void CONTACT::LagrangeStrategy::InitEvalMortar()
 {
   // refer call to parent class
-  AbstractStrategy::InitializeMortar();
+  AbstractStrategy::InitEvalMortar();
 
   // this is lagrange specific
   mhatmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
@@ -1127,10 +1127,27 @@ void CONTACT::LagrangeStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
   }
 
   // fm: add alphaf * old contact forces (t_n)
-  RCP<Epetra_Vector> tempvecm = rcp(new Epetra_Vector(*gmdofrowmap_));
-  mold_->Multiply(true,*zold_,*tempvecm);
-  fm->Update(alphaf_,*tempvecm,1.0);
-
+  
+  // for self contact, slave and master sets may have changed,
+  // thus we have to export the product Mold^T * zold to fit
+  if (IsSelfContact())
+  {
+    RCP<Epetra_Vector> tempvecm = rcp(new Epetra_Vector(*gmdofrowmap_));
+    RCP<Epetra_Vector> tempvecm2  = rcp(new Epetra_Vector(mold_->DomainMap()));
+    RCP<Epetra_Vector> zoldexp  = rcp(new Epetra_Vector(mold_->RowMap()));
+    LINALG::Export(*zold_,*zoldexp);
+    mold_->Multiply(true,*zoldexp,*tempvecm2);
+    LINALG::Export(*tempvecm2,*tempvecm);
+    fm->Update(alphaf_,*tempvecm,1.0);
+  }
+  // if there is no self contact everything is ok
+  else
+  {
+    RCP<Epetra_Vector> tempvecm = rcp(new Epetra_Vector(*gmdofrowmap_));
+    mold_->Multiply(true,*zold_,*tempvecm);
+    fm->Update(alphaf_,*tempvecm,1.0); 
+  }
+  
   // fm: add T(mbaractive)*fa
   RCP<Epetra_Vector> fmmod = rcp(new Epetra_Vector(*gmdofrowmap_));
   mhata->Multiply(true,*fa,*fmmod);
@@ -1275,24 +1292,57 @@ void CONTACT::LagrangeStrategy::Recover(RCP<Epetra_Vector> disi)
   /**********************************************************************/
   /* Update Lagrange multipliers z_n+1                                  */
   /**********************************************************************/
-  // approximate update
-  //invd_->Multiply(false,*fs_,*z_);
-
-  // full update
-  z_->Update(1.0,*fs_,0.0);
-  RCP<Epetra_Vector> mod = rcp(new Epetra_Vector(*gsdofrowmap_));
-  kss_->Multiply(false,*disis,*mod);
-  z_->Update(-1.0,*mod,1.0);
-  ksm_->Multiply(false,*disim,*mod);
-  z_->Update(-1.0,*mod,1.0);
-  ksn_->Multiply(false,*disin,*mod);
-  z_->Update(-1.0,*mod,1.0);
-  dold_->Multiply(false,*zold_,*mod);
-  z_->Update(-alphaf_,*mod,1.0);
-  RCP<Epetra_Vector> zcopy = rcp(new Epetra_Vector(*z_));
-  invd_->Multiply(false,*zcopy,*z_);
-  z_->Scale(1/(1-alphaf_));
-
+  
+  // for self contact, slave and master sets may have changed,
+  // thus we have to export the products Dold * zold and Mold^T * zold to fit
+  if (IsSelfContact())
+  {    
+    // approximate update
+    //z_ = rcp(new Epetra_Vector(*gsdofrowmap_));
+    //invd_->Multiply(false,*fs_,*z_);
+    
+    // full update
+    z_ = rcp(new Epetra_Vector(*gsdofrowmap_));
+    z_->Update(1.0,*fs_,0.0);
+    RCP<Epetra_Vector> mod = rcp(new Epetra_Vector(*gsdofrowmap_));
+    kss_->Multiply(false,*disis,*mod);
+    z_->Update(-1.0,*mod,1.0);
+    ksm_->Multiply(false,*disim,*mod);
+    z_->Update(-1.0,*mod,1.0);
+    ksn_->Multiply(false,*disin,*mod);
+    z_->Update(-1.0,*mod,1.0);  
+    RCP<Epetra_Vector> mod2 = rcp(new Epetra_Vector((dold_->RowMap())));
+    LINALG::Export(*zold_,*mod2);
+    RCP<Epetra_Vector> mod3 = rcp(new Epetra_Vector((dold_->RowMap())));
+    dold_->Multiply(false,*mod2,*mod3);
+    RCP<Epetra_Vector> mod4 = rcp(new Epetra_Vector(*gsdofrowmap_));
+    LINALG::Export(*mod3,*mod4);
+    z_->Update(-alphaf_,*mod4,1.0);
+    RCP<Epetra_Vector> zcopy = rcp(new Epetra_Vector(*z_));
+    invd_->Multiply(false,*zcopy,*z_);
+    z_->Scale(1/(1-alphaf_));
+  }
+  else
+  {
+    // approximate update
+    //invd_->Multiply(false,*fs_,*z_);
+  
+    // full update
+    z_->Update(1.0,*fs_,0.0);
+    RCP<Epetra_Vector> mod = rcp(new Epetra_Vector(*gsdofrowmap_));
+    kss_->Multiply(false,*disis,*mod);
+    z_->Update(-1.0,*mod,1.0);
+    ksm_->Multiply(false,*disim,*mod);
+    z_->Update(-1.0,*mod,1.0);
+    ksn_->Multiply(false,*disin,*mod);
+    z_->Update(-1.0,*mod,1.0);
+    dold_->Multiply(false,*zold_,*mod);
+    z_->Update(-alphaf_,*mod,1.0);
+    RCP<Epetra_Vector> zcopy = rcp(new Epetra_Vector(*z_));
+    invd_->Multiply(false,*zcopy,*z_);
+    z_->Scale(1/(1-alphaf_));
+  }
+  
   // store updated LM into nodes
   StoreNodalQuantities(AbstractStrategy::lmupdate);
 

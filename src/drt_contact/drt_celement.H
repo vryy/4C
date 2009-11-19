@@ -255,6 +255,16 @@ public:
   */
   virtual inline bool IsSlave() { return isslave_; }
 
+  
+  /*!
+  \brief Change slave (true) or master status
+  
+  This changing of contact topology becomes necessary for self contact
+  simulations, where slave and master status are assigned dynamically
+  
+  */
+  virtual inline bool& SetSlave() { return isslave_; }
+    
   /*!
   \brief Return ansatz type (true = quad) of element
 

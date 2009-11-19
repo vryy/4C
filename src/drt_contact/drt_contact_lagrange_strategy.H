@@ -77,15 +77,10 @@ class LagrangeStrategy : public AbstractStrategy
     virtual ~LagrangeStrategy() {};
 
     /*!
-    \brief Initialize Mortar stuff for next Newton step
-
-    This method calls Initialize() on all contact interfaces, which
-    resets all kind of nodal quantities like normal vector, weighted
-    gap or Mortar and linearization maps. It also resets the global
-    Mortar matrices D and M and the global gap vector g.
+    \brief Initialize and evaluate interface for the next Newton step
 
     */
-    void InitializeMortar();
+    void InitEvalMortar();
 
     /*!
     \brief Initialize general contact variables for next Newton step

@@ -293,8 +293,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     Teuchos::rcp(
       new StringConditionComponent(
         "Side","Master",
-        Teuchos::tuple<std::string>("Master","Slave"),
-        Teuchos::tuple<std::string>("Master","Slave"))));
+        Teuchos::tuple<std::string>("Master","Slave","Selfcontact"),
+        Teuchos::tuple<std::string>("Master","Slave","Selfcontact"))));
   contactcomponents.push_back(
     Teuchos::rcp(
       new StringConditionComponent(

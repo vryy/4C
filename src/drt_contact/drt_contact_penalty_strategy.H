@@ -112,10 +112,10 @@ class PenaltyStrategy : public AbstractStrategy
   void SaveReferenceState(const RCP<Epetra_Vector> dis);
   
   /*!
-  \brief Initialize general Mortar stuff for the next Newton step
+  \brief Initialize and evaluate interface for the next Newton step
    
   */
-  void InitializeMortar();
+  void InitEvalMortar();
   
   /*!
   \brief Initialize general contact variables for next Newton step

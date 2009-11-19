@@ -47,6 +47,7 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_sparsematrix.H"
 #include "../drt_contact/drt_contact_binarytree.H"
+#include "../drt_contact/drt_contact_binarytree_self.H"
 #include "../drt_inpar/inpar_contact.H"
 
 using namespace std;
@@ -95,10 +96,12 @@ public:
   \param id (in): Unique interface id
   \param comm (in): A communicator object
   \param dim (in): Global problem dimension
+  \param icontact (in): Global contact parameter list
+  \param selfcontact (in): Flag for self contact status (default=false)
  
   */
   explicit Interface(const int id, const Epetra_Comm& comm, const int dim,
-                     const Teuchos::ParameterList& icontact);
+                     const Teuchos::ParameterList& icontact, bool selfcontact = false);
     
   /*!
   \brief Destructor
@@ -170,6 +173,34 @@ public:
   virtual inline const double SearchParam()
   {return icontact_.get<double>("SEARCH_PARAM");};
 
+  /*!
+  \brief Get self contact status of this interface
+
+  */
+  virtual inline const bool& SelfContact() { return selfcontact_;}
+  
+  /*!
+  \brief Get column map of all interface nodes (Filled()==true is prerequisite)
+
+  */
+  virtual const RCP<Epetra_Map> OldColNodes() const
+  {
+    if (Filled()) return oldnodecolmap_;
+    else dserror("CONTACT::Interface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
+  
+  /*!
+  \brief Get column map of all interface elements (Filled()==true is prerequisite)
+
+  */
+  virtual const RCP<Epetra_Map> OldColElements() const
+  {
+    if (Filled()) return oldelecolmap_;
+    else dserror("CONTACT::Interface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
+      
   /*!
   \brief Get row map of slave nodes (Filled()==true is prerequisite)
 
@@ -498,6 +529,18 @@ public:
   */
   virtual void FillComplete();
 
+  /*!
+  \brief Update interface master and slave sets
+  
+  This update is usually only done ONCE during FillComplete() in
+  the intialization phase and sets up the slave and master sets
+  (elements, nodes, dofs) for the whole simulation. Yet, in the
+  case of self contact the sets need to be updated again and again
+  during simulation time, as the slave/master status is assigned dynamically.
+
+  */
+  virtual void UpdateMasterSlaveSets();
+  
   /*!
   \brief Initialize / reset interface for contact
 
@@ -867,7 +910,11 @@ protected:
   int                         dim_;           // dimension of problem (2D or 3D)
   Teuchos::ParameterList      icontact_;      // containing contact input parameters of interface
   ShapeFcnType                shapefcn_;      // employed type of shape function set
+  bool                        selfcontact_;   // flag indicating if this is a self contact interface
   
+  RCP<Epetra_Map>             oldnodecolmap_; // column map of all interface nodes (overlap=1)
+  RCP<Epetra_Map>             oldelecolmap_;  // column map of all interface elements (overlap=1)
+    
   RCP<Epetra_Map>             snoderowmap_;   // row map of all slave nodes
   RCP<Epetra_Map>             snodecolmap_;   // column map of all slave nodes
   RCP<Epetra_Map>             snodefullmap_;  // fully overlapping column map of all slave nodes
@@ -901,9 +948,10 @@ protected:
   RCP<Epetra_Map>             activet_;       // row map of global T-matrix
   RCP<Epetra_Map>             slipt_;         // row map of part of T-matrix (slip nodes)
 
-  RCP<CONTACT::BinaryTree>    binarytree_;    // binary tree for contact search
+  RCP<CONTACT::BinaryTree>       binarytree_;     // binary tree for contact search
+  RCP<CONTACT::BinaryTreeSelf>   binarytreeself_; // binary tree for self contact search
 
-  Epetra_SerialDenseMatrix    contactsegs_;   // contains coordinates of all contact segments (gmsh)
+  Epetra_SerialDenseMatrix       contactsegs_;    // contains coordinates of all contact segments (gmsh)
 
 }; // class Interface
 } // namespace CONTACT
