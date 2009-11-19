@@ -40,9 +40,9 @@ FLUID_SOL              No
 FLUID_STRESS           No
 FLUID_VIS              No
 ALE_DISP               No
-THERM_HEATFLUX         None
+THERM_HEATFLUX         Initial              // None, Current, Initial
 THERM_TEMPERATURE      Yes
-THERM_TEMPGRAD         None
+THERM_TEMPGRAD         Initial              // None, Current, Initial
 FILESTEPS              1000
 ------------------------------------------------------------STATIC
 -----------------------------------------------EIGENVALUE ANALYSIS
@@ -65,73 +65,25 @@ FILESTEPS              1000
 --------------------------------------------------------ALE SOLVER
 ----------------------------------------------------THERMAL DYNAMIC
 ADAPTCONV                       No
-//
-// The linear solver shall be this much better than the current nonlinear residual in the nonlinear convergence limit
 ADAPTCONV_BETTER                0.1
-//
-// Go on with time integration even if Newton-Raphson iteration failed
-//     Yes,No,yes,no,YES,NO
 DIVERCONT                       No
-//
-// type of time integration control
-//     Statics,OneStepTheta,GEMM
-DYNAMICTYP                      Statics
-//
-// type of norm to be applied to residuals
-//     L1,L2,Rms,Inf
-ITERNORM                        L2
-//
-// maximum number of iterations allowed for Newton-Raphson iteration before failure
+DYNAMICTYP                      Statics     //     Statics,OneStepTheta,GEMM
+ITERNORM                        L2          //     L1,L2,Rms,Inf
 MAXITER                         50
-//
-// maximum time
 MAXTIME                         5
-//
-// minimum number of iterations to be done within Newton-Raphson loop
 MINITER                         0
-//
-// Nonlinear solution technique
-//     vague,fullnewton
 NLNSOL                          fullnewton
-//
-// binary operator to combine temperature and residual force values
-//     And,Or
-NORMCOMBI_RESFTEMP              And
-//
-// type of norm for residual convergence check
-//     Abs,Rel,Mix
-NORM_RESF                       Abs
-//
-// type of norm for temperature convergence check
-//     Abs,Rel,Mix
-NORM_TEMP                       Abs
-//
-// maximum number of steps
+NORMCOMBI_RESFTEMP              And         //     And,Or
+NORM_RESF                       Abs         //     Abs,Rel,Mix
+NORM_TEMP                       Abs         //     Abs,Rel,Mix
 NUMSTEP                         1
-//
-// Predictor of iterative solution techniques
-//     Vague,ConstTemp,ConstTempRateTangTemp
-PREDICT                         ConstTemp
-//
-// save heat fluxes and other element quantities every RESEVRYELEM steps
+PREDICT                         ConstTemp   //     Vague,ConstTemp,ConstTempRateTangTemp
 RESEVRYELEM                     1
-//
-// save temperature and other global quantities every RESEVRYGLOB steps
 RESEVRYGLOB                     1
-//
-// write restart possibility every RESTARTEVRY steps
 RESTARTEVRY                     1
-//
-// time step size
 TIMESTEP                        0.05
-//
-// tolerance in the residual norm for the Newton iteration
-TOLRES                         1e-08
-//
-// tolerance in the temperature norm of the Newton iteration
+TOLRES                          1e-08
 TOLTEMP                         1e-10
-//
-// linear solver for thermal problems
 ----------------------------------------------------THERMAL SOLVER
 AZBDIAG                         0
 AZCONV                          AZ_r0
@@ -139,86 +91,32 @@ AZDROP                          0
 AZFILL                          1
 AZGFILL                         0
 AZGRAPH                         0
-//
-// max iterations
 AZITER                          1000
-//
-// damping for GaussSeidel and jacobi type methods
 AZOMEGA                         0
-//
-// The number of iterations between each output of the solver's progress.
 AZOUTPUT                        0
-//
-// The amount of overlap used for the internal "ilu" and "ilut" preconditioners.
 AZOVERLAP                       0
-//
-// The order for of the polynomials used for the "Polynomial" and
-// "Least-squares Polynomial" internal preconditioners.
 AZPOLY                          3
 AZPREC                          ILU
-//
-// how often to recompute some preconditioners
 AZREUSE                         0
-//
-// scaling of the system
-//     none,sym,infnorm
-AZSCAL                          none
-//
-// Type of linear solver algorithm to use.
-//     CG,GMRES,CGS,TFQMR,BiCGSTAB,LU
-AZSOLVE                         GMRES
+AZSCAL                          none        //     none,sym,infnorm
+AZSOLVE                         GMRES       //     CG,GMRES,CGS,TFQMR,BiCGSTAB,LU
 AZSUB                           300
-//
-// tolerance in (un)scaled residual
 AZTOL                           1e-08
-//
-// threshold tau for downwinding
 DWINDTAU                        1.5
-//
-// objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_AGG_SIZE                     27
-//
-//     UC,METIS,VBMETIS,MIS
-ML_COARSEN                      UC
-//
-// damping coarse grid
+ML_AGG_SIZE                     27          // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
+ML_COARSEN                      UC          //     UC,METIS,VBMETIS,MIS
 ML_DAMPCOARSE                   1
-//
-// damping fine grid
 ML_DAMPFINE                     1
-//
-// damping med grids
 ML_DAMPMED                      1
-//
-// ML stop coarsening when coarse ndof smaller then this
 ML_MAXCOARSESIZE                5000
-//
-// ML max number of levels
 ML_MAXLEVEL                     5
-//
-// ML print-out level (0-10)
 ML_PRINT                        0
-//
-// damping factor for prolongator smoother (usually 1.33 or 0.0)
-ML_PROLONG_SMO                  0
-//
-// threshold for prolongator smoother/aggregation
+ML_PROLONG_SMO                  0           // damping factor for prolongator smoother (usually 1.33 or 0.0)
 ML_PROLONG_THRES                0
-//
-//     SGS,Jacobi,Chebychev,MLS,ILU,KLU,Superlu,GS,DGS
-ML_SMOOTHERCOARSE               KLU
-//
-//     SGS,Jacobi,Chebychev,MLS,ILU,KLU,Superlu,GS,DGS
-ML_SMOOTHERFINE                 ILU
-//
-//     SGS,Jacobi,Chebychev,MLS,ILU,KLU,Superlu,GS,DGS
-ML_SMOOTHERMED                  ILU
-//
-// no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_SMOTIMES                     1 1 1 1 1
-//
-// unused
-//     Cut_Elements
+ML_SMOOTHERCOARSE               KLU         //     SGS,Jacobi,Chebychev,MLS,ILU,KLU,Superlu,GS,DGS
+ML_SMOOTHERFINE                 ILU         //     SGS,Jacobi,Chebychev,MLS,ILU,KLU,Superlu,GS,DGS
+ML_SMOOTHERMED                  ILU         //     SGS,Jacobi,Chebychev,MLS,ILU,KLU,Superlu,GS,DGS
+ML_SMOTIMES                     1 1 1 1 1   // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
 PARTITION                       Cut_Elements
 SOLVER                          UMFPACK
 ------------------------------------------------DESIGN DESCRIPTION
