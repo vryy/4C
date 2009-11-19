@@ -256,6 +256,15 @@ public:
 
   */
   virtual inline const int& Dim() { return dim_; }
+  
+  /*!
+  \brief Return different maps of tree nodes
+
+  */
+  virtual inline vector<vector<RCP<BinaryTreeNode> > >& Streenodesmap() { return streenodesmap_; }
+  virtual inline vector<vector<RCP<BinaryTreeNode> > >& Mtreenodesmap() { return mtreenodesmap_; }
+  virtual inline vector<vector<RCP<BinaryTreeNode> > >& Sleafsmap() { return sleafsmap_; }
+  virtual inline vector<vector<RCP<BinaryTreeNode> > >& Mleafsmap() { return mleafsmap_; }
 
   //@}
 
@@ -275,12 +284,11 @@ public:
   void PlotGmshPoint(std::string filename, double* position0, int nr);
 
   /*!
-  \brief Plot n quadrangle in GMSH to given file
+  \brief Plot a quadrangle in GMSH to given file
 
   */
   void PlotGmshQuadrangle(std::string filename, double* position0, double* position1,
                                                 double* position2, double* position3);
-
 
   /*!
   \brief Plot a triangle in GMSH to given file
@@ -289,11 +297,6 @@ public:
   void PlotGmshTriangle(std::string filename, double* position0, double* position1,
                                                                  double* position2);
 
-  
-  virtual inline vector<vector<RCP<BinaryTreeNode> > >& Streenodesmap() { return streenodesmap_; }
-  virtual inline vector<vector<RCP<BinaryTreeNode> > >& Mtreenodesmap() { return mtreenodesmap_; }
-  virtual inline vector<vector<RCP<BinaryTreeNode> > >& Sleafsmap() { return sleafsmap_; }
-  virtual inline vector<vector<RCP<BinaryTreeNode> > >& Mleafsmap() { return mleafsmap_; }
   //@}
     
 private:
@@ -537,10 +540,11 @@ public:
   \brief Evaluate Binary search tree for separate update and search
 
   */
-  void EvaluateSearchContactSeparate(RCP<BinaryTreeNode> streenode, RCP<BinaryTreeNode> mtreenode);
+  void EvaluateSearchContactSeparate(RCP<BinaryTreeNode> streenode,
+                                     RCP<BinaryTreeNode> mtreenode);
 
   /*!
-  \brief Search for contact between TreeNodes and automatically update treeEvaluate Binary search tree for combined search and update
+  \brief Evaluate Binary search tree for combined search and update
 
   */
   void SearchContactCombined(){// if proc has no slave elements --> return;
@@ -556,7 +560,8 @@ public:
   \brief Evaluate Binary search tree for combined search and update
 
   */
-  void EvaluateSearchContactCombined(RCP<BinaryTreeNode> streenode, RCP<BinaryTreeNode> mtreenode);
+  void EvaluateSearchContactCombined(RCP<BinaryTreeNode> streenode,
+                                     RCP<BinaryTreeNode> mtreenode);
 
   //@}
 
@@ -571,10 +576,10 @@ protected:
   RCP<Epetra_Map>           					   selements_;      // all slave elements on surface (column map)
   RCP<Epetra_Map>           					   melements_;      // all master elements on surface (full map)
   vector<vector<RCP<BinaryTreeNode> > >  streenodesmap_;	// map of all slave treenodes, sorted by layers
-  vector<vector<RCP<BinaryTreeNode> > >  mtreenodesmap_;	// map of all slave treenodes, sorted by layers
+  vector<vector<RCP<BinaryTreeNode> > >  mtreenodesmap_;	// map of all master treenodes, sorted by layers
   vector<vector<RCP<BinaryTreeNode> > >  contactmap_;			// map of all treenodes, that are in contact, st/mt
   vector<vector<RCP<BinaryTreeNode> > >  sleafsmap_;			// map of all slave leaf treenodes, [0]=leftchild,[1]=rightchild
-  vector<vector<RCP<BinaryTreeNode> > >  mleafsmap_;			// map of all slave leaf treenodes, [0]=leftchild,[1]=rightlchild
+  vector<vector<RCP<BinaryTreeNode> > >  mleafsmap_;			// map of all master leaf treenodes, [0]=leftchild,[1]=rightlchild
   RCP<BinaryTreeNode>       					   sroot_;          // slave root treenode
   RCP<BinaryTreeNode>       					   mroot_;          // master root treenode
   double															   minlengthele_;		// minimum of length of fe-elements
@@ -586,7 +591,6 @@ protected:
 
 }; // class BinaryTree
 }  // namespace CONTACT
-
 
 #endif  // #ifndef DRT_CONTACT_BINARYTREE_H
 #endif  // #ifdef CCADISCRET
