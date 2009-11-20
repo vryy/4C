@@ -213,7 +213,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
 
     // access parameters of the condition
     const std::string* kinetics = cond->Get<std::string>("kinetic model");
-    const int    reactantid = cond->GetInt("matid");
+    const int    speciesid = cond->GetInt("species");
     double       pot0 = cond->GetDouble("pot");
     const int    curvenum = cond->GetInt("curve");
     const double alphaa = cond->GetDouble("alpha_a");
@@ -260,7 +260,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
 # if 0
       // print all parameters read from the current condition
       cout<<"kinetic model  = "<<*kinetics<<endl;
-      cout<<"reactant id    = "<<reactantid<<endl;
+      cout<<"react. species = "<<speciesid<<endl;
       cout<<"pot0(mod.)     = "<<pot0<<endl;
       cout<<"curvenum       = "<<curvenum<<endl;
       cout<<"alpha_a        = "<<alphaa<<endl;
@@ -279,7 +279,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
           elevec1_epetra,
           ephinp,
           mat,
-          reactantid,
+          speciesid,
           *kinetics,
           pot0,
           alphaa,
@@ -761,7 +761,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
     Epetra_SerialDenseVector& erhs,
     const vector<double>&   ephinp,
     Teuchos::RCP<const MAT::Material> material,
-    const int                rctid,
+    const int            speciesid,
     const std::string     kinetics,
     const double              pot0,
     const double            alphaa,
@@ -782,6 +782,9 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
   // in the ALE case add nodal displacements
   if (isale_) xyze_ += edispnp_;
 
+  // index of reactive species (starting from zero)
+  const int k = speciesid-1;
+
   if (iselch) // this is not necessary for secondary current distributions
   {
     // get valence of the single(!) reactant
@@ -789,10 +792,8 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
     {
       const MAT::MatList* actmat = static_cast<const MAT::MatList*>(material.get());
 
-      if (actmat->MatID(0) != rctid)
-        dserror("active species is not first scalar in material list!");
-      // the active species is the FIRST material in the material list. ALWAYS!
-      Teuchos::RCP<const MAT::Material> singlemat = actmat->MaterialById(rctid);
+      const int matid = actmat->MatID(k);
+      Teuchos::RCP<const MAT::Material> singlemat = actmat->MaterialById(matid);
       if (singlemat->MaterialType() == INPAR::MAT::m_ion)
       {
         const MAT::Ion* actsinglemat = static_cast<const MAT::Ion*>(singlemat.get());
@@ -817,7 +818,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
   {
     for (int inode=0; inode< iel;++inode)
     {
-      conreact(inode) = ephinp[inode*numdofpernode_];
+      conreact(inode) = ephinp[inode*numdofpernode_+k];
       pot(inode) = ephinp[inode*numdofpernode_+numscal_];
     }
   }
@@ -836,6 +837,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
   double potint;
   // a 'working variable'
   double fac_fz_i0_funct_vi;
+
 
  /*----------------------------------------------------------------------*
   |               start loop over integration points                     |
@@ -890,11 +892,11 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
           // ---------------------matrix
           for (int ui=0; ui<iel; ++ui)
           {
-            emat(vi*numdofpernode_,ui*numdofpernode_) += fac_fz_i0_funct_vi*concterm*funct_(ui)*expterm;
-            emat(vi*numdofpernode_,ui*numdofpernode_+numscal_) += fac_fz_i0_funct_vi*pow_conint_gamma_k*(((-alphaa)*frt*exp(alphaa*frt*eta))+((-alphac)*frt*exp((-alphac)*frt*eta)))*funct_(ui);
+            emat(vi*numdofpernode_+k,ui*numdofpernode_+k) += fac_fz_i0_funct_vi*concterm*funct_(ui)*expterm;
+            emat(vi*numdofpernode_+k,ui*numdofpernode_+numscal_) += fac_fz_i0_funct_vi*pow_conint_gamma_k*(((-alphaa)*frt*exp(alphaa*frt*eta))+((-alphac)*frt*exp((-alphac)*frt*eta)))*funct_(ui);
           }
           // ------------right-hand-side
-          erhs[vi*numdofpernode_] -= fac_fz_i0_funct_vi*pow_conint_gamma_k*expterm;
+          erhs[vi*numdofpernode_+k] -= fac_fz_i0_funct_vi*pow_conint_gamma_k*expterm;
         }
         } // if (kinetics=="Butler-Volmer")
         if (kinetics=="Butler-Volmer-Yang1997")
@@ -912,11 +914,11 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
             // ---------------------matrix
             for (int ui=0; ui<iel; ++ui)
             {
-              emat(vi*numdofpernode_,ui*numdofpernode_) += fac_fz_i0_funct_vi*funct_(ui)*(-(concterm*exp((-alphac)*frt*eta)));
-              emat(vi*numdofpernode_,ui*numdofpernode_+numscal_) += fac_fz_i0_funct_vi*(((-alphaa)*frt*exp(alphaa*frt*eta))+(pow_conint_gamma_k*(-alphac)*frt*exp((-alphac)*frt*eta)))*funct_(ui);
+              emat(vi*numdofpernode_+k,ui*numdofpernode_+k) += fac_fz_i0_funct_vi*funct_(ui)*(-(concterm*exp((-alphac)*frt*eta)));
+              emat(vi*numdofpernode_+k,ui*numdofpernode_+numscal_) += fac_fz_i0_funct_vi*(((-alphaa)*frt*exp(alphaa*frt*eta))+(pow_conint_gamma_k*(-alphac)*frt*exp((-alphac)*frt*eta)))*funct_(ui);
             }
             // ------------right-hand-side
-            erhs[vi*numdofpernode_] -= fac_fz_i0_funct_vi*(exp(alphaa*frt*eta)-(pow_conint_gamma_k*exp((-alphac)*frt*eta)));
+            erhs[vi*numdofpernode_+k] -= fac_fz_i0_funct_vi*(exp(alphaa*frt*eta)-(pow_conint_gamma_k*exp((-alphac)*frt*eta)));
           }
         } // if (kinetics=="Butler-Volmer-Yang1997")
       }
@@ -928,10 +930,10 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
           // ---------------------matrix
           for (int ui=0; ui<iel; ++ui)
           {
-            emat(vi*numdofpernode_,ui*numdofpernode_+numscal_) += fac_fz_i0_funct_vi*(-alphaa)*frt*funct_(ui);
+            emat(vi*numdofpernode_+k,ui*numdofpernode_+numscal_) += fac_fz_i0_funct_vi*(-alphaa)*frt*funct_(ui);
           }
           // ------------right-hand-side
-          erhs[vi*numdofpernode_] -= fac_fz_i0_funct_vi*(alphaa*frt*eta + 1.0);
+          erhs[vi*numdofpernode_+k] -= fac_fz_i0_funct_vi*(alphaa*frt*eta + 1.0);
         }
       }
       else

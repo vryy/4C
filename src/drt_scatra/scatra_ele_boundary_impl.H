@@ -162,12 +162,12 @@ public:
 
     //! evaluate an electrode kinetics boundary condition
     void EvaluateElectrodeKinetics(
-       const DRT::Element*        ele,   ///< the actual boundary element
+       const DRT::Element*        ele,  ///< the actual boundary element
        Epetra_SerialDenseMatrix& emat,  ///< element-matrix
        Epetra_SerialDenseVector& erhs,  ///< element-rhs
        const vector<double>&   ephinp,  ///< actual conc. and pot. values
        Teuchos::RCP<const MAT::Material> material,  ///< the material
-       const int           reactantid,  ///< MATERIAL id of reactive species
+       const int            speciesid,  ///< id of reactive species (1,2,...)
        const std::string     kinetics,  ///< desired electrode kinetics model
        const double              pot0,  ///< actual electrode potential on metal side
        const double            alphaa,  ///< anodic factor in Butler-Volmer model

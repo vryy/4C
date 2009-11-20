@@ -1316,8 +1316,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
         "kinetic model","Butler-Volmer",
         Teuchos::tuple<std::string>("Butler-Volmer","Butler-Volmer-Yang1997","Tafel","linear"),
         Teuchos::tuple<std::string>("Butler-Volmer","Butler-Volmer-Yang1997","Tafel","linear"))));
-  eleccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("matid")));
-  eleccomponents.push_back(Teuchos::rcp(new IntConditionComponent("matid")));
+  eleccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("species")));
+  eleccomponents.push_back(Teuchos::rcp(new IntConditionComponent("species")));
   eleccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("pot")));
   eleccomponents.push_back(Teuchos::rcp(new RealConditionComponent("pot")));
   eleccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("curve")));
