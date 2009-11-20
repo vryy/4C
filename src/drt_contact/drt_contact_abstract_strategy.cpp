@@ -838,8 +838,8 @@ void CONTACT::AbstractStrategy::ContactForces(RCP<Epetra_Vector> fresm)
   {
     RCP<Epetra_Vector> zexp = rcp(new Epetra_Vector(dmatrix_->RowMap()));
     RCP<Epetra_Vector> zoldexp = rcp(new Epetra_Vector(dold_->RowMap()));
-    LINALG::Export(*z_,*zexp);
-    LINALG::Export(*zold_,*zoldexp);
+    if (dmatrix_->RowMap().NumGlobalElements()) LINALG::Export(*z_,*zexp);
+    if (dold_->RowMap().NumGlobalElements()) LINALG::Export(*zold_,*zoldexp);
     dmatrix_->Multiply(false,*zexp,*fcslavetemp);
     mmatrix_->Multiply(true,*zexp,*fcmastertemp);
     dold_->Multiply(false,*zoldexp,*fcslavetempend);

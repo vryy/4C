@@ -952,9 +952,22 @@ void CONTACT::LagrangeStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
   // temporarily we need the group sm
   RCP<Epetra_Vector> fsm;
 
-  // do the vector splitting smn -> sm+n -> s+m+n
+  // do the vector splitting smn -> sm+n
   LINALG::SplitVector(*feff,*gsmdofs,fsm,*gndofrowmap_,fn);
-  LINALG::SplitVector(*fsm,*gsdofrowmap_,fs,*gmdofrowmap_,fm);
+
+  // we want to split fsm into 2 groups s,m
+  fs = rcp(new Epetra_Vector(*gsdofrowmap_));
+  fm = rcp(new Epetra_Vector(*gmdofrowmap_));
+  
+  // do the vector splitting sm -> s+m
+  if (!gsdofrowmap_->NumGlobalElements())
+    *fm = *fsm;
+  else if (!gmdofrowmap_->NumGlobalElements())
+    *fs = *fsm;
+  else
+  {
+    LINALG::SplitVector(*fsm,*gsdofrowmap_,fs,*gmdofrowmap_,fm);
+  }  
 
   // store some stuff for static condensation of LM
   fs_   = fs;
@@ -1135,9 +1148,9 @@ void CONTACT::LagrangeStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
     RCP<Epetra_Vector> tempvecm = rcp(new Epetra_Vector(*gmdofrowmap_));
     RCP<Epetra_Vector> tempvecm2  = rcp(new Epetra_Vector(mold_->DomainMap()));
     RCP<Epetra_Vector> zoldexp  = rcp(new Epetra_Vector(mold_->RowMap()));
-    LINALG::Export(*zold_,*zoldexp);
+    if (mold_->RowMap().NumGlobalElements()) LINALG::Export(*zold_,*zoldexp);
     mold_->Multiply(true,*zoldexp,*tempvecm2);
-    LINALG::Export(*tempvecm2,*tempvecm);
+    if (gmdofrowmap_->NumGlobalElements()) LINALG::Export(*tempvecm2,*tempvecm);
     fm->Update(alphaf_,*tempvecm,1.0);
   }
   // if there is no self contact everything is ok
@@ -1267,15 +1280,15 @@ void CONTACT::LagrangeStrategy::Recover(RCP<Epetra_Vector> disi)
 {
   // extract slave displacements from disi
   RCP<Epetra_Vector> disis = rcp(new Epetra_Vector(*gsdofrowmap_));
-  LINALG::Export(*disi, *disis);
+  if (gsdofrowmap_->NumGlobalElements()) LINALG::Export(*disi, *disis);
 
   // extract master displacements from disi
   RCP<Epetra_Vector> disim = rcp(new Epetra_Vector(*gmdofrowmap_));
-  LINALG::Export(*disi, *disim);
+  if (gmdofrowmap_->NumGlobalElements()) LINALG::Export(*disi, *disim);
   
   // extract other displacements from disi
   RCP<Epetra_Vector> disin = rcp(new Epetra_Vector(*gndofrowmap_));
-  LINALG::Export(*disi,*disin);
+  if (gndofrowmap_->NumGlobalElements()) LINALG::Export(*disi,*disin);
 
   //  // recover incremental jump (for active set)
   //  incrjump_ = rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -1312,11 +1325,11 @@ void CONTACT::LagrangeStrategy::Recover(RCP<Epetra_Vector> disi)
     ksn_->Multiply(false,*disin,*mod);
     z_->Update(-1.0,*mod,1.0);  
     RCP<Epetra_Vector> mod2 = rcp(new Epetra_Vector((dold_->RowMap())));
-    LINALG::Export(*zold_,*mod2);
+    if (dold_->RowMap().NumGlobalElements()) LINALG::Export(*zold_,*mod2);
     RCP<Epetra_Vector> mod3 = rcp(new Epetra_Vector((dold_->RowMap())));
     dold_->Multiply(false,*mod2,*mod3);
     RCP<Epetra_Vector> mod4 = rcp(new Epetra_Vector(*gsdofrowmap_));
-    LINALG::Export(*mod3,*mod4);
+    if (gsdofrowmap_->NumGlobalElements()) LINALG::Export(*mod3,*mod4);
     z_->Update(-alphaf_,*mod4,1.0);
     RCP<Epetra_Vector> zcopy = rcp(new Epetra_Vector(*z_));
     invd_->Multiply(false,*zcopy,*z_);

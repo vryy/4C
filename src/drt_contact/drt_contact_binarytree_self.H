@@ -453,7 +453,7 @@ public:
     {
       if (edge1->GreaterNode() < edge2->GreaterNode()) 
         return true;
-      else if(edge1->GreaterNode() == edge2->GreaterNode())
+      else if (edge1->GreaterNode() == edge2->GreaterNode())
       {
         if (edge1->LesserNode() < edge2->LesserNode())
           return true;
@@ -549,9 +549,9 @@ public:
     RCP<BinaryTreeSelfNode> node1 = treenode->GetNode1();
     RCP<BinaryTreeSelfNode> node2 = treenode->GetNode2();
     
-    if (this->GetNode1() == node1 or this->GetNode2() == node1)
+    if (GetNode1() == node1 or GetNode2() == node1)
       return node1;
-    else if (this->GetNode1() == node2 or this->GetNode2() == node2)
+    else if (GetNode1() == node2 or GetNode2() == node2)
        return node2;
     else
       return null;
@@ -774,7 +774,6 @@ protected:
   map<int,vector<int> >                      contactpairs_;   // contacting elements (key: GID, argument: GIDs of partners)
   map<int,vector<RCP<BinaryTreeSelfNode> > > adjacencymatrix_;// map of adjacent elements, sorted by global id (only needed in 3D)
   map<int, RCP<BinaryTreeSelfNode> >         leafsmap_;       // map of all leaf nodes, sorted by global id
-  
      
 }; // class BinaryTreeSelf
 }  // namespace CONTACT
