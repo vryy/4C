@@ -905,16 +905,6 @@ melements_(melements),
 dim_(dim),
 eps_(eps)
 {
-  // constructor itself is empty
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  ctor BinaryTree(public)                                   popp 10/08|
- *----------------------------------------------------------------------*/
-void CONTACT::BinaryTree::SetupTree()
-{
   // initialize sizes
   streenodesmap_.resize(1);
   mtreenodesmap_.resize(1);

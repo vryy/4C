@@ -482,12 +482,6 @@ public:
   //@}
 
   //! @name Evaluation methods
-
-  /*!
-  \brief Setup binary tree after construction
-
-  */
-  virtual void SetupTree();
     
   /*!
   \brief Calculate minimal element length / inflation factor "enlarge"

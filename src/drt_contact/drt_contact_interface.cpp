@@ -329,19 +329,23 @@ void CONTACT::Interface::FillComplete()
     //*****SELF CONTACT*****
     if (SelfContact())
     {
+      // set state in interface to intialize all kinds of quantities
+      RCP<Epetra_Vector> zero =rcp(new Epetra_Vector(*idiscret_->DofRowMap()));
+      SetState("displacement",zero);
+      
+      // create fully overlapping map of all contact elements
+      RCP<Epetra_Map> elefullmap = rcp(new Epetra_Map(*idiscret_->ElementColMap()));
+      
       // create binary tree object for self contact search
-      binarytreeself_ = rcp(new CONTACT::BinaryTreeSelf(Discret(),selefullmap_,melefullmap_,Dim(),SearchParam()));
+      binarytreeself_ = rcp(new CONTACT::BinaryTreeSelf(Discret(),elefullmap,Dim(),SearchParam()));
       
     }
     //*****TWO BODY CONTACT*****
     else
     {
-      // create binary tree object for contact search
+      // create binary tree object for contact search and setup tree
   	  binarytree_ = rcp(new CONTACT::BinaryTree(Discret(),selecolmap_,melefullmap_,Dim(),SearchParam()));
   	  
-  	  // setup binary tree
-  	  binarytree_->SetupTree();
-  
   	  // initialize active contact nodes via binarytree
   	  // binarytree_->SearchContactInit(binarytree_->Sroot(), binarytree_->Mroot());
     }
