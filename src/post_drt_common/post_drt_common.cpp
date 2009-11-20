@@ -573,7 +573,10 @@ void PostProblem::read_meshes()
           currfield.discretization()->UnPackCondition(cond_pbcssurf, "SurfacePeriodic");
         }
         else
-          dserror("condition name '%s' not supported", condname);
+        {
+          printf("condition name '%s' not supported, continue anyway", condname);
+//          dserror("condition name '%s' not supported", condname);
+        }
       }
 
       // to avoid building dofmanagers, in output mode elements answer
