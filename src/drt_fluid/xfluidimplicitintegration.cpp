@@ -1019,7 +1019,6 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
   double dtsolve = 0.0;
   double dtele   = 0.0;
 
-  // action for elements
   if (timealgo_!=timeint_stationary and theta_ < 1.0)
   {
     cout0_ << "* Warning! Works reliable only for Backward Euler time discretization! *" << endl;
@@ -1059,7 +1058,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
   {
     if (xparams_.get<bool>("FAST_INTEGRATION"))
     {
-      cout << RED_LIGHT << "Using reduced itegration for integration cells!" << END_COLOR << endl;
+      cout << RED_LIGHT << "Using reduced integration for integration cells!" << END_COLOR << endl;
     }
 
     printf("+------------+------------------+---------+---------+---------+---------+---------+---------+\n");
@@ -1279,7 +1278,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       {
         printf("|  %3d/%3d   | %9.2E[L_2 ]  | %7.1e | %7.1e | %7.1e |    --   |    --   |    --   |",
                itnum,itemax,ittol,vresnorm,presnorm,fullresnorm);
-        printf(" (      --    , te=%9.2E)",dtele);
+        printf(" (      --    , te=%9.2e)",dtele);
       }
     }
     /* ordinary case later iteration steps:
@@ -1431,6 +1430,10 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 
   oldinc_ = Teuchos::null;
   incvel_ = Teuchos::null;
+  residual_ = Teuchos::null;
+  w_ = Teuchos::null;
+  c_ = Teuchos::null;
+  zeros_ = Teuchos::null;
   sysmat_ = Teuchos::null;
 
 } // FluidImplicitTimeInt::NonlinearSolve
@@ -3304,8 +3307,8 @@ void FLD::XFluidImplicitTimeInt::ProjectOldTimeStepValues(
       }
 
 #if 1
-      // get a copy on columnmn parallel distribution
-      Teuchos::RCP<const Epetra_Vector> output_col_velnp = DRT::UTILS::GetColVersionOfRowVector(discret_, state_.velnp_);
+      // get a copy on column parallel distribution
+      Teuchos::RCP<const Epetra_Vector> output_col_veln = DRT::UTILS::GetColVersionOfRowVector(discret_, state_.veln_);
       bool screen_out = true;
       if ((this->physprob_.fieldset_.find(XFEM::PHYSICS::Pres) != this->physprob_.fieldset_.end()))
       {
@@ -3315,7 +3318,7 @@ void FLD::XFluidImplicitTimeInt::ProjectOldTimeStepValues(
         const XFEM::PHYSICS::Field field = XFEM::PHYSICS::Pres;
 
         {
-          gmshfilecontent << "View \" " << "Pressure Solution (Physical) \" {\n";
+          gmshfilecontent << "View \" " << "Projected Pressure Solution n (Physical) \" {\n";
           for (int i=0; i<discret_->NumMyColElements(); ++i)
           {
             const DRT::Element* actele = discret_->lColElement(i);
@@ -3328,15 +3331,15 @@ void FLD::XFluidImplicitTimeInt::ProjectOldTimeStepValues(
             actele->LocationVector(*(discret_), lm, lmowner);
 
             // extract local values from the global vector
-            vector<double> myvelnp(lm.size());
-            DRT::UTILS::ExtractMyValues(*output_col_velnp, myvelnp, lm);
+            vector<double> myveln(lm.size());
+            DRT::UTILS::ExtractMyValues(*output_col_veln, myveln, lm);
 
             const int numparam = eledofman.NumDofPerField(field);
             const vector<int>& dofpos = eledofman.LocalDofPosPerField(field);
 
             LINALG::SerialDenseVector elementvalues(numparam);
             for (int iparam=0; iparam<numparam; ++iparam)
-              elementvalues(iparam) = myvelnp[dofpos[iparam]];
+              elementvalues(iparam) = myveln[dofpos[iparam]];
 
             const GEO::DomainIntCells& domainintcells =
                 dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(actele);
