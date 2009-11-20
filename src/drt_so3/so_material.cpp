@@ -56,6 +56,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/itskov.H"
 #include "../drt_mat/protein.H"
 #include "../drt_mat/elasthyper.H"
+#include "../drt_mat/holzapfelcardiovascular.H"
 
 
 using namespace std; // cout etc.
@@ -359,6 +360,15 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       return;
       break;
     }
+    case INPAR::MAT::m_holzapfelcardiovascular: /*------- Anisotropic Fiber Material for arteries */
+    {
+      MAT::HolzapfelCardio* holzcard = static_cast <MAT::HolzapfelCardio*>(mat.get());
+      holzcard->Evaluate(glstrain,gp,cmat,stress);
+      //holzcard->UpdateFiberDirs(gp,defgrd);
+      *density = holzcard->Density();
+      return;
+      break;
+    }
     default:
       dserror("Unknown type of material");
     break;
@@ -481,6 +491,14 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
       MAT::ElastHyper* hyper = static_cast <MAT::ElastHyper*>(mat.get());
       hyper->Evaluate(*glstrain,*cmat,*stress);
       *density = hyper->Density();
+      return;
+      break;
+    }
+    case INPAR::MAT::m_holzapfelcardiovascular: /*------- Anisotropic Fiber Material for arteries */
+    {
+      MAT::HolzapfelCardio* holzcard = static_cast <MAT::HolzapfelCardio*>(mat.get());
+      holzcard->Evaluate(glstrain,gp,cmat,stress);
+      *density = holzcard->Density();
       return;
       break;
     }
@@ -716,6 +734,14 @@ void DRT::ELEMENTS::So_hex27::soh27_mat_sel(
       return;
       break;
     }
+    case INPAR::MAT::m_holzapfelcardiovascular: /*------- Anisotropic Fiber Material for arteries */
+    {
+      MAT::HolzapfelCardio* holzcard = static_cast <MAT::HolzapfelCardio*>(mat.get());
+      holzcard->Evaluate(glstrain,gp,cmat,stress);
+      *density = holzcard->Density();
+      return;
+      break;
+    }
     default:
       dserror("Unknown type of material");
     break;
@@ -903,6 +929,14 @@ void DRT::ELEMENTS::So_hex20::soh20_mat_sel(
       MAT::ElastHyper* hyper = static_cast <MAT::ElastHyper*>(mat.get());
       hyper->Evaluate(*glstrain,*cmat,*stress);
       *density = hyper->Density();
+      return;
+      break;
+    }
+    case INPAR::MAT::m_holzapfelcardiovascular: /*------- Anisotropic Fiber Material for arteries */
+    {
+      MAT::HolzapfelCardio* holzcard = static_cast <MAT::HolzapfelCardio*>(mat.get());
+      holzcard->Evaluate(glstrain,gp,cmat,stress);
+      *density = holzcard->Density();
       return;
       break;
     }

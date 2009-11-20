@@ -185,6 +185,7 @@ using namespace std;
 #define ParObject_MixFrac               (int)171
 #define ParObject_Thermo                (int)172
 #define ParObject_ThermoBoundary        (int)173
+#define ParObject_HolzapfelCardio       (int)174
 
 namespace DRT
 {

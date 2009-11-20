@@ -52,6 +52,7 @@ Maintainer: Lena Wiechert
 #include "elasthyper.H"
 #include "cnst_1d_art.H"
 #include "fourieriso.H"
+#include "holzapfelcardiovascular.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -327,6 +328,13 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
       curmat->SetParameter(new MAT::PAR::FourierIso(curmat));
     MAT::PAR::FourierIso* params = static_cast<MAT::PAR::FourierIso*>(curmat->Parameter());
     return Teuchos::rcp(new FourierIso(params));
+  }
+  case INPAR::MAT::m_holzapfelcardiovascular:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::HolzapfelCardio(curmat));
+    MAT::PAR::HolzapfelCardio* params = static_cast<MAT::PAR::HolzapfelCardio*>(curmat->Parameter());
+    return Teuchos::rcp(new HolzapfelCardio(params));
   }
   case INPAR::MAT::m_pl_mises_3D:
   case INPAR::MAT::m_pl_mises:

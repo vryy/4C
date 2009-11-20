@@ -22,6 +22,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/viscoanisotropic.H"
 #include "../drt_mat/anisotropic_balzani.H"
 #include "../drt_mat/elasthyper.H"
+#include "../drt_mat/holzapfelcardiovascular.H"
 
 // inverse design object
 #if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
@@ -434,7 +435,8 @@ void DRT::ELEMENTS::So_hex8::VisNames(map<string,int>& names)
   }
   if ((Material()->MaterialType() == INPAR::MAT::m_artwallremod) ||
       (Material()->MaterialType() == INPAR::MAT::m_viscoanisotropic)||
-      (Material()->MaterialType() == INPAR::MAT::m_anisotropic_balzani))
+      (Material()->MaterialType() == INPAR::MAT::m_anisotropic_balzani)||
+      (Material()->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular))
   {
     string fiber = "Fiber1";
     names[fiber] = 3; // 3-dim vector
@@ -618,6 +620,20 @@ bool DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
     } else {
       return false;
     }
+    }
+  }
+  if (Material()->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular){
+    MAT::HolzapfelCardio* art = static_cast <MAT::HolzapfelCardio*>(Material().get());
+    vector<double> a1 = art->Geta1()->at(0);  // get a1 of first gp
+    vector<double> a2 = art->Geta2()->at(0);  // get a2 of first gp
+    if (name == "Fiber1"){
+      if ((int)data.size()!=3) dserror("size mismatch");
+      data[0] = a1[0]; data[1] = a1[1]; data[2] = a1[2];
+    } else if (name == "Fiber2"){
+      if ((int)data.size()!=3) dserror("size mismatch");
+      data[0] = a2[0]; data[1] = a2[1]; data[2] = a2[2];
+    } else {
+      return false;
     }
   }
 

@@ -19,6 +19,7 @@ Maintainer: Thomas Kloeppel
 #include "../drt_mat/visconeohooke.H"
 #include "../drt_mat/charmm.H"
 #include "../drt_mat/aaaraghavanvorp_damage.H"
+#include "../drt_mat/holzapfelcardiovascular.H"
 #include "../drt_lib/drt_linedefinition.H"
 
 
@@ -39,19 +40,19 @@ bool DRT::ELEMENTS::So_hex27::ReadElement(const std::string& eletype,
   case INPAR::MAT::m_artwallremod:
   {
     MAT::ArtWallRemod* remo = static_cast <MAT::ArtWallRemod*>(Material().get());
-    remo->Setup(NUMGPT_SOH8, this->Id(), linedef);
+    remo->Setup(NUMGPT_SOH27, this->Id(), linedef);
     break;
   }
   case INPAR::MAT::m_viscoanisotropic:
   {
     MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(Material().get());
-    visco->Setup(NUMGPT_SOH8, linedef);
+    visco->Setup(NUMGPT_SOH27, linedef);
     break;
   }
   case INPAR::MAT::m_visconeohooke:
   {
     MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(Material().get());
-    visco->Setup(NUMGPT_SOH8);
+    visco->Setup(NUMGPT_SOH27);
     break;
   }
   case INPAR::MAT::m_charmm:
@@ -65,8 +66,15 @@ bool DRT::ELEMENTS::So_hex27::ReadElement(const std::string& eletype,
     double strength = 0.0; // section for extracting the element strength
     linedef->ExtractDouble("STRENGTH",strength);
     MAT::AAAraghavanvorp_damage* aaadamage = static_cast <MAT::AAAraghavanvorp_damage*>(Material().get());
-    aaadamage->Setup(NUMGPT_SOH8,strength);
-    //aaadamage->Setup(NUMGPT_SOH8);
+    aaadamage->Setup(NUMGPT_SOH27,strength);
+    //aaadamage->Setup(NUMGPT_SOH27);
+    break;
+  }
+  case INPAR::MAT::m_holzapfelcardiovascular:
+  {
+  	MAT::HolzapfelCardio* holzcard = static_cast <MAT::HolzapfelCardio*>(Material().get());
+  	holzcard->Setup(NUMGPT_SOH27, linedef);
+  	break;
   }
   default:
     // Do nothing. Simple material.
@@ -152,7 +160,10 @@ bool DRT::ELEMENTS::So_hex27::ReadElement()
     if (ierr!=1) dserror("Reading of SO_SH8 element strength failed");
     MAT::AAAraghavanvorp_damage* aaadamage = static_cast <MAT::AAAraghavanvorp_damage*>(Material().get());
     // aaadamage->Setup(NUMGPT_SOH8);
-    aaadamage->Setup(NUMGPT_SOH8,strength);
+    aaadamage->Setup(NUMGPT_SOH27,strength);
+  } else if (Material()->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular){
+	MAT::HolzapfelCardio* holzcard = static_cast <MAT::HolzapfelCardio*>(Material().get());
+	holzcard->Setup(NUMGPT_SOH27, linedef);
   }
 
 

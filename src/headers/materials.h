@@ -73,6 +73,7 @@ typedef struct _MATERIAL
      struct _BIOCELL             *biocell;       /* Biological Cell model */
      struct _ION                 *ion;           /* material properties of an ion species in an electrolyte solution */
      struct _CNST_ART            *cnst_art;      /* 1D_Artery with constant material and geometric properties */
+     struct _HOLZAPFELCARDIO     *holzapfelcardiovascular; /* anisotropic fiber material for arteries */
      }                           m;             /* union pointer to material specific structure */
 
 } MATERIAL;
@@ -902,5 +903,18 @@ typedef struct _CNST_ART
      DOUBLE                    pext2;          /* artery fixed external pressure 2 */
 
 } CNST_ART;
+/*----------------------------------------------------------------------*
+ | Anisotropic Fiber material for arteries                     st 11/09 |
+ *----------------------------------------------------------------------*/
+typedef struct _HOLZAPFELCARDIO
+{
+     DOUBLE                    kappa;
+     DOUBLE                    mue;
+     DOUBLE                    density;
+     DOUBLE                    k1;
+     DOUBLE                    k2;
+     DOUBLE                    gamma;
+     DOUBLE                    minstretch;
+} HOLZAPFELCARDIO;
 
 #endif

@@ -140,6 +140,7 @@ extern "C"
 #include "../drt_mat/elasthyper.H"
 #include "../drt_mat/cnst_1d_art.H"
 #include "../drt_mat/fourieriso.H"
+#include "../drt_mat/holzapfelcardiovascular.H"
 #include "../drt_mat/itskov.H"
 #include "../drt_contact/drt_cnode.H"
 #include "../drt_contact/drt_celement.H"
@@ -916,6 +917,12 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
       MAT::FourierIso* fourieriso = new MAT::FourierIso();
       fourieriso->Unpack(data);
       return fourieriso;
+    }
+    case ParObject_HolzapfelCardio:
+    {
+      MAT::HolzapfelCardio* holzapfelcard = new MAT::HolzapfelCardio();
+      holzapfelcard->Unpack(data);
+      return holzapfelcard;
     }
     case ParObject_CNode:
     {

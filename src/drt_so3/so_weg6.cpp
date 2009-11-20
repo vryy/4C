@@ -19,6 +19,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_mat/artwallremod.H"
+#include "../drt_mat/holzapfelcardiovascular.H"
 
 using namespace DRT::UTILS;
 
@@ -292,7 +293,9 @@ void DRT::ELEMENTS::So_weg6::VisNames(map<string,int>& names)
 {
   // Put the owner of this element into the file (use base class method for this)
   DRT::Element::VisNames(names);
-  if (Material()->MaterialType() == INPAR::MAT::m_artwallremod){
+  if ((Material()->MaterialType() == INPAR::MAT::m_artwallremod) ||
+	  (Material()->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular))
+  {
     string fiber = "Fiber1";
     names[fiber] = 3; // 3-dim vector
     fiber = "Fiber2";
@@ -328,8 +331,22 @@ bool DRT::ELEMENTS::So_weg6::VisData(const string& name, vector<double>& data)
       cout << name << endl;
       dserror("Unknown VisData!");
     }
- }
-
+    
+  }
+  if (Material()->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular){
+    MAT::HolzapfelCardio* art = static_cast <MAT::HolzapfelCardio*>(Material().get());
+    vector<double> a1 = art->Geta1()->at(0);  // get a1 of first gp
+    vector<double> a2 = art->Geta2()->at(0);  // get a2 of first gp
+    if (name == "Fiber1"){
+      if ((int)data.size()!=3) dserror("size mismatch");
+      data[0] = a1[0]; data[1] = a1[1]; data[2] = a1[2];
+    } else if (name == "Fiber2"){
+      if ((int)data.size()!=3) dserror("size mismatch");
+      data[0] = a2[0]; data[1] = a2[1]; data[2] = a2[2];
+    } else {
+      return false;
+    }
+  }
 
   return true;
 }

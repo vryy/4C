@@ -173,7 +173,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"SUTHTEMP","Sutherland temperature (K)");
     AddNamedReal(m,"SHC","specific heat capacity at constant pressure (J/(kg*K))");
     AddNamedReal(m,"PRANUM","Prandtl number");
-    AddNamedReal(m,"THERMPRESS","(initial) thermodynamic pressure (J/m³)");
+    AddNamedReal(m,"THERMPRESS","(initial) thermodynamic pressure (J/mï¿½)");
     AddNamedReal(m,"GASCON","specific gas constant R (J/(kg*K))");
 
     AppendMaterialDefinition(matlist,m);
@@ -217,7 +217,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"PREEXCON","pre-exponential constant (1/s)");
     AddNamedReal(m,"TEMPEXP","exponent of temperature dependence");
     AddNamedReal(m,"ACTEMP","activation temperature (K)");
-    AddNamedReal(m,"THERMPRESS","(initial) thermodynamic pressure (J/m³)");
+    AddNamedReal(m,"THERMPRESS","(initial) thermodynamic pressure (J/mï¿½)");
     AddNamedReal(m,"GASCON","specific gas constant R (J/(kg*K))");
 
     AppendMaterialDefinition(matlist,m);
@@ -1150,6 +1150,26 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AppendMaterialDefinition(matlist,m);
   }
+  /*----------------------------------------------------------------------*/
+  /*----------------------------------------------------------------------*/
+  // anisotropic fiber material for arteries
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_HOLZAPFELCARDIO",
+                                            "anisotropic fiber material for arteries",
+                                            INPAR::MAT::m_holzapfelcardiovascular));
+
+    AddNamedReal(m,"KAPPA","dilatation modulus");
+    AddNamedReal(m,"MUE","Shear Modulus");
+    AddNamedReal(m,"DENS","Density");
+    AddNamedReal(m,"K1","Parameter for linear fiber stiffness");
+    AddNamedReal(m,"K2","Parameter for exponetial fiber stiffness");
+    AddNamedReal(m,"GAMMA","angle between fibers");
+    AddNamedReal(m,"MINSTRETCH","minimal principal stretch fibers do respond to");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+  
   /*----------------------------------------------------------------------*/
   // deliver
   return vm;

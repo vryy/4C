@@ -20,6 +20,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/charmm.H"
 #include "../drt_mat/elasthyper.H"
 #include "../drt_mat/aaaraghavanvorp_damage.H"
+#include "../drt_mat/holzapfelcardiovascular.H"
 #include "../drt_lib/drt_linedefinition.H"
 
 
@@ -59,6 +60,9 @@ bool DRT::ELEMENTS::So_hex8::ReadElement(const std::string& eletype,
     MAT::AAAraghavanvorp_damage* aaadamage = static_cast <MAT::AAAraghavanvorp_damage*>(Material().get());
     aaadamage->Setup(NUMGPT_SOH8,strength);
     //aaadamage->Setup(NUMGPT_SOH8);
+  } else if (Material()->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular){
+	MAT::HolzapfelCardio* holzcard = static_cast <MAT::HolzapfelCardio*>(Material().get());
+	holzcard->Setup(NUMGPT_SOH8, linedef);
   }
 
   // temporary variable for read-in
@@ -156,6 +160,10 @@ bool DRT::ELEMENTS::So_hex8::ReadElement()
          //aaadamage->Setup(NUMGPT_SOH8);
 
         }
+  else if (Material()->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular){
+  	MAT::HolzapfelCardio* holzcard = static_cast <MAT::HolzapfelCardio*>(Material().get());
+  	holzcard->Setup(NUMGPT_SOH8, linedef);
+    }
 
   // read possible gaussian points, obsolete for computation
   int ngp[3];

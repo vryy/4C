@@ -16,6 +16,7 @@ Maintainer: Moritz Frenzel
 #include "so_weg6.H"
 #include "../drt_mat/artwallremod.H"
 #include "../drt_mat/viscoanisotropic.H"
+#include "../drt_mat/holzapfelcardiovascular.H"
 #include "../drt_lib/drt_linedefinition.H"
 
 
@@ -37,6 +38,9 @@ bool DRT::ELEMENTS::So_weg6::ReadElement(const std::string& eletype,
   } else if (Material()->MaterialType() == INPAR::MAT::m_viscoanisotropic){
     MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(Material().get());
     visco->Setup(NUMGPT_WEG6, linedef);
+  } else if (Material()->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular){
+    MAT::HolzapfelCardio* holzcard = static_cast <MAT::HolzapfelCardio*>(Material().get());
+    holzcard->Setup(NUMGPT_WEG6, linedef);
   }
 
   std::string buffer;
@@ -98,6 +102,9 @@ bool DRT::ELEMENTS::So_weg6::ReadElement()
   } else if (Material()->MaterialType() == INPAR::MAT::m_viscoanisotropic){
     MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(Material().get());
     visco->Setup(NUMGPT_WEG6);
+  } else if (Material()->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular){
+    MAT::HolzapfelCardio* holzcard = static_cast <MAT::HolzapfelCardio*>(Material().get());
+    holzcard->Setup(NUMGPT_WEG6, linedef);
   }
 
 

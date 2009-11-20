@@ -309,7 +309,8 @@ typedef enum _MATERIAL_TYP
                        m_matlist,       /* collection of single materials (used for scalar transport problems)*/
                        m_biocell,       /* biological cell model */
                        m_ion,           /* properties of an ion species in an electrolyte solution */
-                       m_cnst_art      /* 1D_Artery with constant material and geometric properties */
+                       m_cnst_art,      /* 1D_Artery with constant material and geometric properties */
+                       m_holzapfelcardiovascular /* anisotropic fiber material for arteries */
 } MATERIAL_TYP;
 #endif
 /*----------------------------------------------------------------------*
