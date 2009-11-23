@@ -360,7 +360,7 @@ Teuchos::RCP<Epetra_Vector> XFEM::DofManager::transformXFEMtoStandardVector(
       // get set of field enrichments for this node
       const std::set<FieldEnr> fieldenrset = nodeentry->second;
       // build a standard enrichment (label = 0)
-      const XFEM::Enrichment stdenr(0,XFEM::Enrichment::typeStandard);
+      const XFEM::Enrichment stdenr(XFEM::Enrichment::typeStandard,0);
 
       size_t idof = 0;
       // loop over desired physical output fields

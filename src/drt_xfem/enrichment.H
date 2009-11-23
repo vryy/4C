@@ -59,8 +59,8 @@ namespace XFEM
       //! default constructor
       explicit Enrichment(
       ) :
-        xfemconditionlabel_(-1), // means undefined
-        type_(typeUndefined)
+        type_(typeUndefined),
+        xfemconditionlabel_(-1)  // means undefined
       {
         //dserror("Enrichment() -> please don't call me!");
         return;
@@ -68,11 +68,11 @@ namespace XFEM
 
       //! constructor
       explicit Enrichment(
-          const int      xfemconditionlabel,   ///< unique label identifying the xfem interface
-          const EnrType  type                  ///< enrichment type
+          const EnrType  type,                 ///< enrichment type
+          const int      xfemconditionlabel    ///< unique label identifying the xfem interface
       ) :
-        xfemconditionlabel_(xfemconditionlabel),
-        type_(type)
+        type_(type),
+        xfemconditionlabel_(xfemconditionlabel)
       {
         return;
       }
@@ -81,8 +81,8 @@ namespace XFEM
       Enrichment(
           const Enrichment& other
       ) :
-        xfemconditionlabel_(other.xfemconditionlabel_),
-        type_(other.type_)
+        type_(other.type_),
+        xfemconditionlabel_(other.xfemconditionlabel_)
       {
         dsassert(&other != this, "self copy not allowed");
         return;
@@ -437,10 +437,10 @@ namespace XFEM
 
     private:
 
-      //! a global id used to distinguish several surfaces within one element
-      int xfemconditionlabel_;
       //! the specific type of enrichment
       EnrType type_;
+      //! a global id used to distinguish several surfaces within one element
+      int xfemconditionlabel_;
   };
 
 }

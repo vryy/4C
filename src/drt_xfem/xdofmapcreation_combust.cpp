@@ -39,7 +39,7 @@ bool XFEM::ApplyJumpEnrichment(
     std::map<int, std::set<XFEM::FieldEnr> >& nodeDofMap)
 {
   // type of enrichment determined by name of function; label (first argument) = 0
-  const XFEM::Enrichment jumpenr(0, XFEM::Enrichment::typeJump);
+  const XFEM::Enrichment jumpenr(XFEM::Enrichment::typeJump, 0);
 
 //  const double volumeratio = XFEM::DomainCoverageRatio(*xfemele,ih);
 //  const bool almost_empty_element = (fabs(1.0-volumeratio) < volumeRatioLimit);
@@ -110,7 +110,7 @@ bool XFEM::ApplyKinkEnrichment(
   // type of enrichment determined by name of function; label (first argument) = 0
   // kann ich für mehr als ein Interfacestück je Element diese mit label = 0 bis n-1
   // durchnummerieren
-  const XFEM::Enrichment kinkenr(0, XFEM::Enrichment::typeKink);
+  const XFEM::Enrichment kinkenr(XFEM::Enrichment::typeKink, 0);
 
 //  const double volumeratio = XFEM::DomainCoverageRatio(*xfemele,ih);
 //  const bool almost_empty_element = (fabs(1.0-volumeratio) < volumeRatioLimit);
@@ -313,7 +313,7 @@ void XFEM::ApplyStandardEnrichmentCombust(
     std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet)
 {
   // type of enrichment determined by name of function; label (first argument) = 0
-  const XFEM::Enrichment stdenr(0, XFEM::Enrichment::typeStandard);
+  const XFEM::Enrichment stdenr(XFEM::Enrichment::typeStandard, 0);
 
   // standard enrichments for all nodes of element
   // remark: standard enrichments are added to already existing jump enrichments;

@@ -115,11 +115,10 @@ namespace XFEM
         AddtoPack(data,UniqueParObjectId());
         AddtoPack(data,gid_);
         AddtoPack(data,fieldenr_.getField());
-        const int label = fieldenr_.getEnrichment().XFEMConditionLabel();
-        AddtoPack(data,label);
-
         const XFEM::Enrichment::EnrType enrtype = fieldenr_.getEnrichment().Type();
         AddtoPack(data,enrtype);
+        const int label = fieldenr_.getEnrichment().XFEMConditionLabel();
+        AddtoPack(data,label);
       }
 
       //! unpack all content from char array
@@ -137,20 +136,20 @@ namespace XFEM
         PHYSICS::Field field;
         ExtractfromPack(position,data,field);
 
-        // read xfem condition label
-        int label;
-        ExtractfromPack(position,data,label);
-
         // read enrichment type
         XFEM::Enrichment::EnrType enrtype;
         ExtractfromPack(position,data,enrtype);
+
+        // read xfem condition label
+        int label;
+        ExtractfromPack(position,data,label);
 
         // check correct reading
         if (position != (int)data.size())
           dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
 
         // create my enriched field
-        fieldenr_ = FieldEnr(field,Enrichment(label,enrtype));
+        fieldenr_ = FieldEnr(field,Enrichment(enrtype,label));
 
         return;
       }

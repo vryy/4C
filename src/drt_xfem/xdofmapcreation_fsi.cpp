@@ -48,7 +48,7 @@ static bool ApplyElementEnrichments(
 
   bool skipped_element = false;
 
-  const XFEM::Enrichment enr(label, enrtype);
+  const XFEM::Enrichment enr(enrtype, label);
   if ( not almost_zero_surface)
   {
       map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>::const_iterator fielditer;
@@ -122,7 +122,7 @@ static bool ApplyNodalEnrichmentsVoidFSI(
       const double volumeratio = XFEM::DomainCoverageRatio(*xfemele,ih);
       const bool almost_empty_element = (fabs(1.0-volumeratio) < volumeRatioLimit);
 
-      const XFEM::Enrichment voidenr(-1, XFEM::Enrichment::typeVoidFSI);
+      const XFEM::Enrichment voidenr(XFEM::Enrichment::typeVoidFSI, -1);
 
       bool skipped_element = false;
 
@@ -225,7 +225,7 @@ static bool ApplyNodalEnrichmentsVoid(
   const double volumeratio = XFEM::DomainCoverageRatio(*xfemele,ih);
   const bool almost_empty_element = (fabs(1.0-volumeratio) < volumeRatioLimit);
 
-  const XFEM::Enrichment voidenr(label, enrtype);
+  const XFEM::Enrichment voidenr(enrtype, label);
 
   bool skipped_element = false;
 
@@ -441,7 +441,7 @@ static bool ApplyElementVoidEnrichments(
 
   bool skipped_element = false;
 
-  const XFEM::Enrichment enr(label, enrtype);
+  const XFEM::Enrichment enr(enrtype, label);
   //  const XFEM::Enrichment stdenr(0, XFEM::Enrichment::typeStandard);
   if ( not almost_zero_surface)
   {
@@ -615,8 +615,7 @@ static void processStandardEnrichmentNodalBasedApproach(
     const std::set<XFEM::PHYSICS::Field>&         fieldset,
     std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet)
 {
-  const int standard_label = 0;
-  const XFEM::Enrichment enr_std(standard_label, XFEM::Enrichment::typeStandard);
+  const XFEM::Enrichment enr_std(XFEM::Enrichment::typeStandard, 0);
   for (int i=0; i<ih.xfemdis()->NumMyColNodes(); ++i)
   {
     const DRT::Node* node = ih.xfemdis()->lColNode(i);
