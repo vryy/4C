@@ -756,6 +756,12 @@ void XFEM::createDofMapFSI(
 
   };
 
+#ifdef PARALLEL
+  // first sync to get VoidFSI enrichments onto all processors, such that
+  // Void enrichments can be applied correctly
+  syncNodalDofs(ih, nodalDofSet);
+#endif
+
   // now, all nodal void enrichments as well as the element erichments can be applied
   for (int i=0; i<ih.xfemdis()->NumMyColElements(); ++i)
   {
