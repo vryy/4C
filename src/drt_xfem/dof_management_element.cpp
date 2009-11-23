@@ -85,8 +85,8 @@ void XFEM::ElementDofManager::ComputeDependentInfo(
        tmp != nodalDofSet.end();
        ++tmp)
   {
-    const int gid = tmp->first;
-    nodalNumDof_[gid] = tmp->second.size();
+    const int nodegid = tmp->first;
+    nodalNumDof_[nodegid] = tmp->second.size();
   }
 
   // set number of parameters per field to zero
@@ -121,8 +121,8 @@ void XFEM::ElementDofManager::ComputeDependentInfo(
   const int* nodeids = ele.NodeIds();
   for (std::size_t inode=0; inode<(size_t)ele.NumNode(); ++inode)
   {
-    const int gid = nodeids[inode];
-    map<int, const set <XFEM::FieldEnr> >::const_iterator entry = nodalDofSet.find(gid);
+    const int nodegid = nodeids[inode];
+    map<int, const set <XFEM::FieldEnr> >::const_iterator entry = nodalDofSet.find(nodegid);
     if (entry == nodalDofSet.end())
       dserror("impossible ;-)");
     const std::set<XFEM::FieldEnr> lenrfieldset = entry->second;
