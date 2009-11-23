@@ -482,7 +482,7 @@ namespace DRT
 int DRT::Container::GetInt(const string& name) const
 {
   const vector<int>* vecptr = Get<vector<int> >(name);
-  if(vecptr==NULL) dserror("An integer cannot be read from the container.");
+  if(vecptr==NULL) dserror("Integer %s cannot be read from the container.",name.c_str());
   if( vecptr->size()!=1 ) dserror("Trying to read integer from vector of wrong length.");
   return (*vecptr)[0];
 }
@@ -494,7 +494,7 @@ int DRT::Container::GetInt(const string& name) const
 double DRT::Container::GetDouble(const string& name) const
 {
   const vector<double>* vecptr = Get<vector<double> >(name);
-  if(vecptr==NULL) dserror("A double cannot be read from the container.");
+  if(vecptr==NULL) dserror("Double %s cannot be read from the container.",name.c_str());
   if( vecptr->size()!=1 ) dserror("Trying to read double from vector of wrong length.");
   return (*vecptr)[0];
 }
