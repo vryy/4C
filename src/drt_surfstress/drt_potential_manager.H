@@ -73,6 +73,22 @@ public:
       RefCountPtr<LINALG::SparseMatrix>   stiff);
 
   
+  /*!
+    \brief TEST Call discretization to calculate additional contributions
+    due to interfacial energy
+
+    \param p (in): parameter list
+    \param fint (out): internal forces
+    \param stiff (out): stiffness matrix
+   */
+  void TestEvaluatePotential( 
+      ParameterList&                    p,
+      RefCountPtr<Epetra_Vector>        disp,
+      RefCountPtr<Epetra_Vector>        fint,
+      RefCountPtr<LINALG::SparseMatrix> stiff,
+      const double                      time
+      );
+  
   
   void StiffnessAndInternalForcesPotential(
       const DRT::Element*             element,

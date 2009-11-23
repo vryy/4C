@@ -81,14 +81,23 @@ public:
       Epetra_SerialDenseMatrix&         K_surf,
       Epetra_SerialDenseVector&         fint);
   
-  void StiffnessAndInternalForcesPotentialApprox(
+  
+  void StiffnessAndInternalForcesPotentialApprox1(
         const DRT::Element*               element,
         const DRT::UTILS::GaussRule2D&    gaussrule,
         ParameterList&                    params,
         vector<int>&                      lm,
         Epetra_SerialDenseMatrix&         K_surf,
         Epetra_SerialDenseVector&         fint);
-
+  
+  
+  void StiffnessAndInternalForcesPotentialApprox2(
+        const DRT::Element*               element,
+        const DRT::UTILS::GaussRule2D&    gaussrule,
+        ParameterList&                    params,
+        vector<int>&                      lm,
+        Epetra_SerialDenseMatrix&         K_surf,
+        Epetra_SerialDenseVector&         fint);
 
   /*!
     \brief Routine to calculate additional internal forces and
@@ -107,6 +116,25 @@ public:
       vector<int>&                      lm,
       Epetra_SerialDenseMatrix&         K_surf,
       Epetra_SerialDenseVector&         fint);
+  
+  
+  /*!
+    \brief TEST Routine to calculate additional internal forces and
+    stiffnesses due to interfacial phenomena for line elements
+
+    \param element    (in)  : element
+    \param gaussrule  (in)  : gaussrule of element
+    \param params     (in)  : first partial derivatives of surface area
+    \param K_surf     (out) : element stiffness matrix
+    \param fint       (out) : element internal force vector
+   */
+  void TestEvaluatePotential(
+      ParameterList&                    p,
+      RefCountPtr<Epetra_Vector>        disp,
+      RefCountPtr<Epetra_Vector>        fint,
+      RefCountPtr<LINALG::SparseMatrix> stiff,
+      const double                      time
+  );
 
 
 private:
@@ -140,7 +168,19 @@ private:
       const double                     curvefac
       );
   
-  void computeFandK_Approx(
+  void computeFandK_Approx1(
+        const DRT::Element*              actEle,
+        const DRT::UTILS::GaussRule2D&   gaussrule,
+        std::map<int,std::set<int> >&    potElements,
+        vector<int>&                     lm,
+        Epetra_SerialDenseMatrix&        K_surf,
+        Epetra_SerialDenseVector&        F_int,
+        RefCountPtr<DRT::Condition>      cond,
+        const int                        label,
+        const double                     curvefac);
+  
+  
+  void computeFandK_Approx2(
         const DRT::Element*              actEle,
         const DRT::UTILS::GaussRule2D&   gaussrule,
         std::map<int,std::set<int> >&    potElements,
@@ -152,45 +192,59 @@ private:
         const double                     curvefac);
 
 
-  /*!
-  \brief  compute internal force and stiffness matrix
-          for line elements
-   */
-  void computeFandK(
-      const DRT::Element*              actEle,
-      const DRT::UTILS::GaussRule1D&   gaussrule,
-      std::map<int,std::set<int> >&    potElements,
-      vector<int>&                     lm,
-      Epetra_SerialDenseMatrix&        K_surf,
-      Epetra_SerialDenseVector&        F_int,
-      RefCountPtr<DRT::Condition>      cond,
-      const int                        label,
-      const double                     curvefac
-      );
+    /*!
+    \brief  compute internal force and stiffness matrix
+            for line elements
+     */
+    void computeFandK(
+        const DRT::Element*              actEle,
+        const DRT::UTILS::GaussRule1D&   gaussrule,
+        std::map<int,std::set<int> >&    potElements,
+        vector<int>&                     lm,
+        Epetra_SerialDenseMatrix&        K_surf,
+        Epetra_SerialDenseVector&        F_int,
+        RefCountPtr<DRT::Condition>      cond,
+        const int                        label,
+        const double                     curvefac
+        );
 
 
-  //! compute integration factors for surface elements
-  double ComputeFactor(
-      const DRT::Element*                     element,
-      LINALG::SerialDenseVector&              funct,
-      LINALG::SerialDenseMatrix&              deriv,
-      const DRT::UTILS::IntegrationPoints2D&  intpoints,
-      const int                               gp,
-      LINALG::Matrix<3,1>&                    x_gp,     
-      const double                            curve_fac
-      );
-  
-  double ComputeFactorApprox(
+    //! compute integration factors for surface elements
+    double ComputeFactor(
         const DRT::Element*                     element,
         LINALG::SerialDenseVector&              funct,
         LINALG::SerialDenseMatrix&              deriv,
-        LINALG::SerialDenseMatrix& 				FInvers,
+        const DRT::UTILS::IntegrationPoints2D&  intpoints,
+        const int                               gp,
+        LINALG::Matrix<3,1>&                    x_gp,     
+        const double                            curve_fac
+    );
+
+    
+    double ComputeFactorApprox1(
+        const DRT::Element*                     element,
+        LINALG::SerialDenseVector&              funct,
+        LINALG::SerialDenseMatrix&              deriv,
+        LINALG::SerialDenseMatrix& 				      FInvers,
         const DRT::UTILS::IntegrationPoints2D&  intpoints,
         const int                               gp,
         LINALG::Matrix<3,1>&                    x_gp,
         LINALG::Matrix<3,1>&                    X_gp,
         const double                            curve_fac        
-        );
+    );
+    
+    
+    double ComputeFactorApprox2(
+        const DRT::Element*                     element,
+        LINALG::SerialDenseVector&              funct,
+        LINALG::SerialDenseMatrix&              deriv,
+        LINALG::SerialDenseMatrix&              FInvers,
+        const DRT::UTILS::IntegrationPoints2D&  intpoints,
+        const int                               gp,
+        LINALG::Matrix<3,1>&                    x_gp,
+        LINALG::Matrix<3,1>&                    X_gp,
+        const double                            curve_fac        
+    );
 
 
   //! compute integration factors for line elements
@@ -241,7 +295,33 @@ private:
       const LINALG::Matrix<3,1>&              normal_gp,
       const LINALG::Matrix<3,1>&              normal_pot_gp
       );
-
+  
+  //! TEST compute potential forces and center of gravity
+  void FintSumAndCenterOfGravityVector(  
+      LINALG::Matrix<3,1>&        fint_sum_Body,
+      LINALG::Matrix<3,1>&        Schwerpunkt_Body,
+      RefCountPtr<Epetra_Vector>  fint,
+      RefCountPtr<Epetra_Vector>  disp,
+      int                         gidBegin,
+      int                         gidEnd,
+      int                         dofBegin,
+      int                         dofEnd
+      );
+  
+  //! TEST update displacements
+  void UpdateDisplacements(
+      Teuchos::RCP<Epetra_Vector>     idisp_solid,
+      const DRT::Element*             element,
+      LINALG::SerialDenseMatrix&      xyze
+      );
+  
+  //! TEST write output
+  void AusgabedateiSchreiben(
+      double            dDistance,
+      double            dForce1,
+      double            dForce2,
+      const double      time
+      );
 
   //! name@ Private Attributes 
 

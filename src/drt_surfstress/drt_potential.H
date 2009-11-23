@@ -216,7 +216,7 @@ protected:
   \brief  compute first and second derivative of the Zeta potential
           for 3D problems
    */
-  void EvaluateZetaPotential(
+  void EvaluateElectrostaticRepulsion(
     const double                  zeta_param_1,
     const double                  zeta_param_2,
     const LINALG::Matrix<3,1>&    x,
@@ -230,7 +230,7 @@ protected:
     \brief  compute first and second derivative of the Zeta potential
             for 2D problems
    */
-  void EvaluateZetaPotential(
+  void EvaluateElectrostaticRepulsion(
     const double                  zeta_param_1,   //depth
     const double                  zeta_param_2,   //rootdist
     const LINALG::Matrix<2,1>&    x,
@@ -240,6 +240,32 @@ protected:
     );
 
 
+  /*!
+    \brief  compute first and second derivative of the Van-Der-Waals potential
+            for 3D problems
+   */
+  void EvaluateVanDerWaals(
+      const double                  lambda,
+      const LINALG::Matrix<3,1>&    x,
+      const LINALG::Matrix<3,1>&    y,
+      LINALG::Matrix<3,1>&          potderiv1,
+      LINALG::Matrix<3,3>&          potderiv2
+      );
+  
+  
+  /*!
+    \brief  compute first and second derivative of the Van-Der-Waals potential
+            for 3D problems (volume approximation)
+   */
+  void EvaluateVanDerWaals_Approx(
+      const double                  lambda,
+      const LINALG::Matrix<3,1>&    x,
+      const LINALG::Matrix<3,1>&    y,
+      LINALG::Matrix<3,1>&          potderiv1,
+      LINALG::Matrix<3,3>&          potderiv2
+  );
+  
+  
   /*!
   \brief  computes distance related structures 3D
    */

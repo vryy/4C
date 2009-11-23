@@ -294,13 +294,21 @@ void POTENTIAL::Potential::EvaluatePotentialfromCondition(
     EvaluateLennardJonesPotential(depth, rootDist, x, y, potderiv1, potderiv2);
 
   }
+  else if (cond->Type()==DRT::Condition::VanDerWaals_Potential_Surface ||
+           cond->Type()==DRT::Condition::VanDerWaals_Potential_Volume)
+  {
+    const double lambda    = cond->GetDouble("lambda");
+    // compute vander waals
+    EvaluateVanDerWaals(lambda,x, y, potderiv1, potderiv2); 
+    
+  }
   else if (cond->Type()==DRT::Condition::ElectroRepulsion_Potential_Surface || 
            cond->Type()==DRT::Condition::ElectroRepulsion_Potential_Line)
   {
     const double zeta_param_1 = cond->GetDouble("zeta_param_1");
     const double zeta_param_2 = cond->GetDouble("zeta_param_2");
 
-    EvaluateZetaPotential(zeta_param_1, zeta_param_2, x, y, potderiv1, potderiv2);
+    EvaluateElectrostaticRepulsion(zeta_param_1, zeta_param_2, x, y, potderiv1, potderiv2);
   }
   else
   {
@@ -339,7 +347,7 @@ void POTENTIAL::Potential::EvaluatePotentialfromCondition(
     const double zeta_param_1 = cond->GetDouble("zeta_param_1");
     const double zeta_param_2 = cond->GetDouble("zeta_param_2");
 
-    EvaluateZetaPotential(zeta_param_1, zeta_param_2, x, y, potderiv1, potderiv2);
+    EvaluateElectrostaticRepulsion(zeta_param_1, zeta_param_2, x, y, potderiv1, potderiv2);
   }
   else
   {
@@ -374,9 +382,10 @@ void POTENTIAL::Potential::EvaluatePotentialfromCondition_Approx(
   }
   else if (cond->Type()==DRT::Condition::VanDerWaals_Potential_Surface ||
            cond->Type()==DRT::Condition::VanDerWaals_Potential_Volume)
-  {
-    // const double lambda    = cond->GetDouble("lambda");
-    // compute vander waals
+  {   
+    const double lambda    = cond->GetDouble("lambda");    
+    EvaluateVanDerWaals_Approx(lambda,x, y, potderiv1, potderiv2);
+    
     
   }
   else
@@ -385,7 +394,6 @@ void POTENTIAL::Potential::EvaluatePotentialfromCondition_Approx(
   }
   return;
 }
-
 
 
 
@@ -504,28 +512,32 @@ void POTENTIAL::Potential::EvaluateLennardJonesPotential_Approx(
   //----------------------------------------------------------------------
   // evaluate 1.derivative dphi/du_i
   //----------------------------------------------------------------------
-  double Fs = (12*depth*rootDist)*(((1.0/110.0)*pow((double)(rootDist/distance),11))
-            - (1.0/20.0)*(pow((double)(rootDist/distance), 5)));
+  
+  //dpotdr entspricht -Fs
+  double dpotdr = (12*depth*rootDist)*((1.0/20.0)*(pow((double)(rootDist/distance), 5))-(1.0/110.0)*pow((double)(rootDist/distance),11));
   
   
   for(int i = 0; i < 3; i++)
-    potderiv1(i) = Fs*distance_unit(i);
+    potderiv1(i) = dpotdr*distance_unit(i);
   //cout<<"dpotdr  "<<dpotdr<<endl; 
 
   //----------------------------------------------------------------------
   // evaluate 2.derivative dphi/du_i d_uiI  (this is not a mistake !!!!)
   //----------------------------------------------------------------------
-  const double Fsdr = (12*depth)*((0.25*pow((double)(rootDist/distance), 6))
-                     -(0.1*pow((double)(rootDist/distance),12)));
+  
+  //dpotdrdr entspricht -Fsdr
+  const double dpotdrdr = (12*depth)*((0.1*pow((double)(rootDist/distance),12))
+                -(0.25*pow((double)(rootDist/distance), 6)));
+                     
   for(int i = 0; i < 3; i++)
     for(int j = 0; j < 3; j++)
       potderiv2(i,j) = 0.0;
 
   for(int i = 0; i < 3; i++)
   {
-      potderiv2(i,i) += Fs/distance;
+      potderiv2(i,i) += dpotdr/distance;
       for(int j = 0; j < 3; j++)
-        potderiv2(i,j) += (Fsdr - (Fs/distance))*du_tensor_du(i,j);
+        potderiv2(i,j) += (dpotdrdr - (dpotdr/distance))*du_tensor_du(i,j);
   }
 }
 
@@ -537,7 +549,7 @@ void POTENTIAL::Potential::EvaluateLennardJonesPotential_Approx(
 | evaluate Zeta potential                                            |
 | not yet the correct formula, just an exponantial function          |
 *--------------------------------------------------------------------*/
-void POTENTIAL::Potential::EvaluateZetaPotential(
+void POTENTIAL::Potential::EvaluateElectrostaticRepulsion(
     const double                  zeta_param_1,   //depth
     const double                  zeta_param_2,   //rootdist
     const LINALG::Matrix<3,1>&    x,
@@ -583,7 +595,7 @@ void POTENTIAL::Potential::EvaluateZetaPotential(
 | evaluate Zeta potential 2D                                         |
 | not yet the correct formula, just an exponantial function          |
 *--------------------------------------------------------------------*/
-void POTENTIAL::Potential::EvaluateZetaPotential(
+void POTENTIAL::Potential::EvaluateElectrostaticRepulsion(
     const double                  zeta_param_1,   //depth
     const double                  zeta_param_2,   //rootdist
     const LINALG::Matrix<2,1>&    x,
@@ -622,6 +634,98 @@ void POTENTIAL::Potential::EvaluateZetaPotential(
   }
 }
 
+
+
+/*-------------------------------------------------------------------*
+| (protected)                                             umay  23/10|
+|                                                                    |
+| evaluate Van der Waals potential  3D                                 |
+*--------------------------------------------------------------------*/
+void POTENTIAL::Potential::EvaluateVanDerWaals(
+    const double                  lambda,
+    const LINALG::Matrix<3,1>&    x,
+    const LINALG::Matrix<3,1>&    y,
+    LINALG::Matrix<3,1>&          potderiv1,
+    LINALG::Matrix<3,3>&          potderiv2)
+{
+// evaluate distance related stuff
+  double          distance      = 0.0;
+  LINALG::Matrix<3,1>       distance_vec(true);
+  LINALG::Matrix<3,1>       distance_unit(true);
+  LINALG::Matrix<3,3>       du_tensor_du;
+  computeDistance(x,y, du_tensor_du, distance_vec, distance_unit, distance);
+
+  //----------------------------------------------------------------------
+  // evaluate 1.derivative dphi/du_i
+  //----------------------------------------------------------------------
+  const double dpotdr = (6.0*lambda)*(pow((double)(1.0/distance), 7));
+  for(int i = 0; i < 3; i++)
+    potderiv1(i) = dpotdr*distance_unit(i);
+
+  //----------------------------------------------------------------------
+  // evaluate 2.derivative dphi/du_i d_uiI  (this is not a mistake !!!!)
+  //----------------------------------------------------------------------
+  const double dpotdrdr = -42.0*lambda*pow((double)(1.0/distance), 8);
+  for(int i = 0; i < 3; i++)
+    for(int j = 0; j < 3; j++)
+      potderiv2(i,j) = 0.0;
+
+  for(int i = 0; i < 3; i++)
+  {
+      potderiv2(i,i) += dpotdr/distance;
+      for(int j = 0; j < 3; j++)
+        potderiv2(i,j) += (dpotdrdr - (dpotdr/distance))*du_tensor_du(i,j);
+  }
+}
+
+
+/*-------------------------------------------------------------------*
+| (protected)                                             umay  11/09|
+|                                                                    |
+| evaluate Van der Waals potential    (for volume approximation) 3D  |
+*--------------------------------------------------------------------*/
+void POTENTIAL::Potential::EvaluateVanDerWaals_Approx(
+    const double                  lambda,
+    const LINALG::Matrix<3,1>&    x,
+    const LINALG::Matrix<3,1>&    y,
+    LINALG::Matrix<3,1>&          potderiv1,
+    LINALG::Matrix<3,3>&          potderiv2)
+{
+// evaluate distance related stuff
+  double          distance      = 0.0;
+  LINALG::Matrix<3,1>       distance_vec(true);
+  LINALG::Matrix<3,1>       distance_unit(true);
+  LINALG::Matrix<3,3>       du_tensor_du;
+  computeDistance(x,y, du_tensor_du, distance_vec, distance_unit, distance);
+
+  //----------------------------------------------------------------------
+  // evaluate 1.derivative 
+  //----------------------------------------------------------------------
+  //dotdr entspricht -Fs
+  double dpotdr = (3.0/10.0)*lambda*(pow((double)(1.0/distance), 5));
+  
+  
+  for(int i = 0; i < 3; i++)
+    potderiv1(i) = dpotdr*distance_unit(i);
+  //cout<<"dpotdr  "<<dpotdr<<endl; 
+
+  //----------------------------------------------------------------------
+  // evaluate 2. derivative
+  //----------------------------------------------------------------------
+  
+  //dpotdrdr entspricht -Fsdr
+  const double dpotdrdr = -(3.0/2.0)*lambda*(pow((double)(1.0/distance), 6));
+  for(int i = 0; i < 3; i++)
+    for(int j = 0; j < 3; j++)
+      potderiv2(i,j) = 0.0;
+
+  for(int i = 0; i < 3; i++)
+  {
+      potderiv2(i,i) += dpotdr/distance;
+      for(int j = 0; j < 3; j++)
+        potderiv2(i,j) += (dpotdrdr - (dpotdr/distance))*du_tensor_du(i,j);
+  }
+}
 
 
 /*-------------------------------------------------------------------*

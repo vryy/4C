@@ -61,18 +61,6 @@ POTENTIAL::PotentialManager::PotentialManager(
   if(volume_)
     volumePotential_ = rcp(new POTENTIAL::VolumePotential(discretRCP,discret,treetype_));
 
-  // construct surface potential
-/*  if( (params_.get<string>("POTENTIAL TYPE") == "Surface")
-    || (params_.get<string>("POTENTIAL TYPE") == "SurfaceVolume"))
-  {
-
-  }
-
-  // construct volume potential
-  if( (params_.get<string>("POTENTIAL TYPE") == "Volume")
-    || (params_.get<string>("POTENTIAL TYPE") == "SurfaceVolume"))
-  {}
-*/
   cout << "Potential manager constructed" << endl;
   return;
 }
@@ -174,6 +162,26 @@ void POTENTIAL::PotentialManager::EvaluatePotential(  ParameterList&            
 
 
 /*-------------------------------------------------------------------*
+| (public)                                                 umay 06/08|
+|                                                                    |
+| Call discretization to evaluate additional contributions due to    |
+| potential forces                                                   |
+*--------------------------------------------------------------------*/
+void POTENTIAL::PotentialManager::TestEvaluatePotential(  ParameterList&                    p,
+                                                          RefCountPtr<Epetra_Vector>        disp,
+                                                          RefCountPtr<Epetra_Vector>        fint,
+                                                          RefCountPtr<LINALG::SparseMatrix> stiff,
+                                                          const double                      time)
+{
+  if(surface_)
+    surfacePotential_->TestEvaluatePotential(p, disp, fint, stiff, time);
+  //if(volume_)
+  //  volumePotential_->EvaluatePotential(p, disp, fint, stiff);
+  return;
+}
+
+
+/*-------------------------------------------------------------------*
 | (public)                                                umay  06/08|
 |                                                                    |
 | Calculate additional internal forces and corresponding stiffness   |
@@ -199,8 +207,9 @@ void POTENTIAL::PotentialManager::StiffnessAndInternalForcesPotential(
   	 dserror("problem dimension not correct");
   }
   else if( params_.get<string>("approximation type")== "Surface_approx" )
-    surfacePotential_->StiffnessAndInternalForcesPotentialApprox(element, gaussrule, eleparams, lm, K_stiff, F_int);
-  //else if( params_.get<string>("approximation type")== "point_approx" )
+    surfacePotential_->StiffnessAndInternalForcesPotentialApprox1(element, gaussrule, eleparams, lm, K_stiff, F_int);
+  else if( params_.get<string>("approximation type")== "point_approx" )
+    surfacePotential_->StiffnessAndInternalForcesPotentialApprox2(element, gaussrule, eleparams, lm, K_stiff, F_int);
   else
     dserror("no approximation type specified");
       

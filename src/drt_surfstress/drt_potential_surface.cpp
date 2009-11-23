@@ -19,6 +19,7 @@ Maintainer: Ursula Mayer
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_geometry/element_normals.H"
+#include "../drt_geometry/element_volume.H"
 #include <cstdlib>
 
 
@@ -189,10 +190,12 @@ void POTENTIAL::SurfacePotential::StiffnessAndInternalForcesPotential(
 
 
 /*-------------------------------------------------------------------*
-| 	VON MIR GESCHRIEBEN                                              |
+| (public)                                                umay  11/09|
+|                                                                    |
+| Calculate additional internal forces and corresponding stiffness   |
+| on element level (volume approximation 1)                          |
 *--------------------------------------------------------------------*/
-
-void POTENTIAL::SurfacePotential::StiffnessAndInternalForcesPotentialApprox(
+void POTENTIAL::SurfacePotential::StiffnessAndInternalForcesPotentialApprox1(
     const DRT::Element*             element,
     const DRT::UTILS::GaussRule2D&  gaussrule,
     ParameterList&                  params,
@@ -236,7 +239,63 @@ void POTENTIAL::SurfacePotential::StiffnessAndInternalForcesPotentialApprox(
     curvefac      = DRT::Problem::Instance()->Curve(curvenum).f(time);
 
   // compute internal force and stiffness matrix  
-  computeFandK_Approx(element, gaussrule, potentialElementIds, lm, K_surf, F_int, cond, label, curvefac);
+  computeFandK_Approx1(element, gaussrule, potentialElementIds, lm, K_surf, F_int, cond, label, curvefac);
+  // cout << "stiffness stop" << endl;
+  return;
+}
+
+
+/*-------------------------------------------------------------------*
+| (public)                                                umay  11/09|
+|                                                                    |
+| Calculate additional internal forces and corresponding stiffness   |
+| on element level (volume approximation 2)                          |
+*--------------------------------------------------------------------*/
+void POTENTIAL::SurfacePotential::StiffnessAndInternalForcesPotentialApprox2(
+    const DRT::Element*             element,
+    const DRT::UTILS::GaussRule2D&  gaussrule,
+    ParameterList&                  params,
+    vector<int>&                    lm,
+    Epetra_SerialDenseMatrix&       K_surf,
+    Epetra_SerialDenseVector&       F_int
+    )
+{
+  
+  //hier muss das genäherte Potential initialisiert werden  
+  // initialize Lennard Jones potential constant variables
+  RefCountPtr<DRT::Condition> cond = params.get<RefCountPtr<DRT::Condition> >("condition",null);
+
+  // find nodal ids influencing a given element
+  const int     label     = cond->GetInt("label");    //jeder Körper besitzt ein label
+  const double  cutOff    = cond->GetDouble("cutOff");
+  std::map<int,std::set<int> > potentialElementIds;
+  for(int i = 0; i < DRT::UTILS::getNumberOfElementCornerNodes(element->Shape()); i++)
+  {
+    const DRT::Node* node = element->Nodes()[i];
+    //Momentane Position des Knotens wird als Vektor zurückggeben
+    const LINALG::Matrix<3,1> x_node = currentpositions_.find(node->Id())->second;  
+    // octtree search
+    //für jeden Knoten wird eine Baumsuche gestartet
+    //eingentlich uneffektiv
+    treeSearchElementsInCutOffRadius(potentialdis_, currentpositions_, x_node, potentialElementIds, cutOff, label);    
+  }
+
+  // initialize time variables
+  //noch nicht ganz klar, was einzelne Variablen darstellen
+  const int    curvenum = cond->GetInt("curve");
+  const double time     = params.get<double>("total time",-1.0);
+  //const double dt     = params.get<double>("delta time",0.0);
+  
+  const double t_end    = DRT::Problem::Instance()->Curve(curvenum).end();
+  double curvefac       = 1.0;
+
+  //Last wird langsam hochgefahren durch Doppelcosiunsfuktion
+  //errechnet Wert der Doppelcosinusfuktion zum Zeitpunkt "time"  
+  if (time <= t_end)  
+    curvefac      = DRT::Problem::Instance()->Curve(curvenum).f(time);
+
+  // compute internal force and stiffness matrix  
+  computeFandK_Approx2(element, gaussrule, potentialElementIds, lm, K_surf, F_int, cond, label, curvefac);
   // cout << "stiffness stop" << endl;
   return;
 }
@@ -494,7 +553,7 @@ void POTENTIAL::SurfacePotential::computeFandK(
 | compute internal force vector and stiffness matrix (surface)       |
 | approximation                                                      |
 *--------------------------------------------------------------------*/
-void POTENTIAL::SurfacePotential::computeFandK_Approx(
+void POTENTIAL::SurfacePotential::computeFandK_Approx1(
    const DRT::Element*              actEle,
    const DRT::UTILS::GaussRule2D&   gaussrule,
    std::map<int,std::set<int> >&    potElements,
@@ -538,7 +597,7 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx(
     LINALG::SerialDenseMatrix 	FInvers(3,3);
     LINALG::Matrix<3,1>         x_gp(true);
     LINALG::Matrix<3,1>         X_gp(true);    
-    const double fac = ComputeFactorApprox(actEle, funct, deriv, FInvers, intpoints, gp, x_gp, X_gp, curvefac);    
+    const double fac = ComputeFactorApprox1(actEle, funct, deriv, FInvers, intpoints, gp, x_gp, X_gp, curvefac);    
     // compute normal n_gp to act ele in x_gp
     LINALG::Matrix<3,1> n_gp = ComputeNormalInGP(actEle, x_gp);
     //Normale auf das aktive Element in gp_X berechnen
@@ -582,7 +641,7 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx(
            LINALG::Matrix<3,1>        X_pot_gp(true);
            LINALG::Matrix<3,1>        x_pot_gp(true); 
            
-           const double fac_pot = ComputeFactorApprox(element_pot, funct_pot, deriv_pot, FInvers_pot, intpoints_pot,
+           const double fac_pot = ComputeFactorApprox1(element_pot, funct_pot, deriv_pot, FInvers_pot, intpoints_pot,
         		   									  gp_pot, x_pot_gp, X_pot_gp, curvefac);
 
            // compute normal of surface element in x_pot_gp
@@ -687,6 +746,210 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx(
 
   return;
 }
+
+
+
+/*-------------------------------------------------------------------*
+| (private)                                               umay  10/09|
+|                                                                    |
+| compute internal force vector and stiffness matrix (surface)       |
+| approximation                                                      |
+*--------------------------------------------------------------------*/
+void POTENTIAL::SurfacePotential::computeFandK_Approx2(
+   const DRT::Element*              actEle,
+   const DRT::UTILS::GaussRule2D&   gaussrule,
+   std::map<int,std::set<int> >&    potElements,
+   vector<int>&                     lm,
+   Epetra_SerialDenseMatrix&        K_surf,
+   Epetra_SerialDenseVector&        F_int,
+   RefCountPtr<DRT::Condition>      cond,
+   const int                        label,
+   const double                     curvefac
+   )
+{   
+  // determine global row indices (lmrow) and global colum indices (lm)
+  vector<int> lmrow = lm;
+  CollectLmcol(potentialdis_, potElements, lm);
+  // resize matrix and vector and zero out
+  const int ndofrow    = lmrow.size();
+  const int ndofcol    = lm.size();
+  F_int.Size(ndofrow);
+  K_surf.Shape(ndofrow, ndofcol);
+
+  // number of atoms (~0.2 nm) per surface area in reference configuration
+  // here equal for all bodies in n/µm^2
+  const double beta = cond->GetDouble("beta"); // = 50 e21;
+  
+  //gaussrule sagt, wieviel gausspunkte verwendet werden sollen
+  //intpoints enthält die Koordinaten und die Gewichtungsfaktoren 
+  const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule);
+
+  //----------------------------------------------------------------------
+  // loop over all gauss points of the actual element
+  //----------------------------------------------------------------------
+  
+  //nquad ist Attribut, bei vier Gausspunkten also 4 
+  for (int gp = 0; gp < intpoints.nquad; gp++)
+  {
+    // compute func, deriv, x_gp and factor
+    // zusätzlich Berechnung von FInvers und X_gp 
+  const int numnode = actEle->NumNode();
+    LINALG::SerialDenseVector   funct(numnode);   
+    LINALG::SerialDenseMatrix   deriv(2,numnode);
+    LINALG::SerialDenseMatrix   FInvers(3,3);
+    LINALG::Matrix<3,1>         x_gp(true);
+    LINALG::Matrix<3,1>         X_gp(true);    
+    const double fac = ComputeFactorApprox2(actEle, funct, deriv, FInvers, intpoints, gp, x_gp, X_gp, curvefac);    
+    // compute normal n_gp to act ele in x_gp
+    LINALG::Matrix<3,1> n_gp = ComputeNormalInGP(actEle, x_gp);
+    //Normale auf das aktive Element in gp_X berechnen
+    LINALG::Matrix<3,1> N_gp = ComputeNormalInGP_Initialconf(actEle, X_gp);     
+   
+
+    //----------------------------------------------------------------------
+    // run over all influencing elements called element_pot
+    //----------------------------------------------------------------------
+        
+    //Schleife über die verschiedenen Körper, die nicht gleich dem eigenen label sind?  
+    for(std::map<int, std::set<int> >::const_iterator labelIter = potElements.begin(); labelIter != potElements.end(); labelIter++)    
+      
+      //Schleife über die potentiellen Elemente
+      for(std::set<int>::const_iterator eleIter = (labelIter->second).begin(); eleIter != (labelIter->second).end(); eleIter++)
+      {
+         const DRT::Element* element_pot = potentialdis_->gElement(*eleIter);
+
+         // obtain current potential dofs         
+         vector<int> lmpot;
+         vector<int> lmowner;
+         element_pot->LocationVector(*potentialdis_,lmpot,lmowner);
+
+         // obtain Gaussrule and integration points
+         //warum muss Gaussregel so kompliziert hergeholt werden?
+         DRT::UTILS::GaussRule2D rule_pot = DRT::UTILS::intrule2D_undefined;
+         GetGaussRule2D(element_pot->Shape(), rule_pot);
+         //hier werden wieder die Gausspunkte + Gewichtungsfaktoren gespeichert
+         const DRT::UTILS::IntegrationPoints2D intpoints_pot(rule_pot);
+         //----------------------------------------------------------------------
+         // run over all gauss points of a influencing element
+         //----------------------------------------------------------------------
+         for (int gp_pot = 0; gp_pot < intpoints_pot.nquad; gp_pot++)
+         {
+           // compute func, deriv, x_gp and factor
+           //Zusätzlich FInvers_pot und X_pot_gp
+           const int numnode_pot = element_pot->NumNode();
+           LINALG::SerialDenseVector  funct_pot(numnode_pot);
+           LINALG::SerialDenseMatrix  deriv_pot(2,numnode_pot);
+           LINALG::SerialDenseMatrix  FInvers_pot(3,3);
+           LINALG::Matrix<3,1>        X_pot_gp(true);
+           LINALG::Matrix<3,1>        x_pot_gp(true); 
+           
+           const double fac_pot = ComputeFactorApprox2(element_pot, funct_pot, deriv_pot, FInvers_pot, intpoints_pot,
+                                  gp_pot, x_pot_gp, X_pot_gp, curvefac);
+
+           // compute normal of surface element in x_pot_gp
+           LINALG::Matrix<3,1> n_pot_gp = ComputeNormalInGP(element_pot, x_pot_gp);
+           //Normale in Gausspunkt für potentielles Element berechnen
+           LINALG::Matrix<3,1> N_pot_gp = ComputeNormalInGP_Initialconf(element_pot, X_pot_gp);
+           
+           // evaluate Lennard Jones potential and its derivatives
+           LINALG::Matrix<3,1>  potderiv1;
+           LINALG::Matrix<3,3>  potderiv2;
+
+           bool validContribution = false;           
+           // contact
+           //fabs(cond->GetDouble("exvollength")) > 1e-7
+           //was soll das sein?
+           if(fabs(cond->GetDouble("exvollength")) > 1e-7)
+           {
+             double exvollength = cond->GetDouble("exvollength");
+             LINALG::Matrix<3,1> x_gp_con(true);
+             LINALG::Matrix<3,1> x_pot_gp_con(true);
+             x_gp_con = x_gp;
+             x_pot_gp_con = x_pot_gp;
+
+             //Add: this = scalarThis * this + scalarOther * other.
+             x_gp_con.Update( (-1.0)*exvollength, n_gp, 1.0);
+             x_pot_gp_con.Update( (-1.0)*exvollength, n_pot_gp, 1.0);
+
+             EvaluatePotentialfromCondition(cond, x_gp_con, x_pot_gp_con, potderiv1, potderiv2);
+             validContribution = DetermineValidContribution(x_gp_con, x_pot_gp_con, n_gp, n_pot_gp);
+           }          
+           else
+           { 
+           //Testet welches Potential verwendet wird Zeta oder LJ
+           //potderiv1 speichert dF/dr*Einheitsdistanz potderiv2 entsprechend
+             EvaluatePotentialfromCondition(cond, x_gp, x_pot_gp, potderiv1, potderiv2);
+             //Testen ob die Elemente auf sich gegenüber liegenden Flächen liegen
+             //Noch prüfen, ob das bei mir nötig ist!!!
+             //validContribution = DetermineValidContribution(x_gp, x_pot_gp, n_gp, n_pot_gp);
+           }    
+           
+          // if valid contribution           
+          //if(validContribution)
+          //{
+             //cout << "potderiv1 = " << potderiv1 << endl;
+             //cout << "potderiv2 = " << potderiv2 << endl;
+             const int numdof = 3;
+             //Zwischen speichert F_Invers*N
+             LINALG::SerialDenseVector  Zwischen (3);
+             LINALG::SerialDenseVector  Zwischen_pot (3);
+             LINALG::SerialDenseVector  N_gp_SD (3);
+             LINALG::SerialDenseVector  N_pot_gp_SD (3);
+             LINALG::Matrix<3,1>      Einheitsabstand(true);
+             double Teta=0;
+             double Teta_pot=0;
+             
+             //Überschreiben von Matix<> in SerialDenseMatrix
+             for(int i=0;i<3;i++)
+             {
+               N_gp_SD(i)=N_gp(i);
+               N_pot_gp_SD(i)=N_pot_gp(i);
+             }             
+             //Berechnung der zusätzlichen Teta Terme
+             Zwischen.Multiply('T','N',1.0,FInvers,N_gp_SD,0.0);
+             Zwischen_pot.Multiply('T','N',1.0,FInvers_pot,N_pot_gp_SD,0.0);
+             computeDistanceVector(x_gp, x_pot_gp,Einheitsabstand);
+             
+             for(int i=0;i<3;i++)
+             {
+               Teta+=Einheitsabstand(i)*Zwischen(i);
+               Teta_pot+=Einheitsabstand(i)*Zwischen_pot(i);
+             }  
+             
+             // computation of internal forces (possibly with non-local values)
+             for (int inode = 0; inode < numnode; inode++)
+               {for(int dim = 0; dim < 3; dim++)
+               //muss hier nicht noch irgendwo -1 hin?  
+                 F_int[inode*numdof+dim] += funct(inode)*beta*fac*Teta*(beta*potderiv1(dim)*fac_pot*Teta_pot);}                                
+                           
+             // computation of stiffness matrix (possibly with non-local values)
+             for (int inode = 0;inode < numnode; ++inode)
+               for(int dim = 0; dim < 3; dim++)
+               {
+                 // k,ii
+                 for (int jnode = 0; jnode < numnode; ++jnode)
+                   {for(int dim_pot = 0; dim_pot < 3; dim_pot++)
+                     K_surf(inode*numdof+dim, jnode*numdof+dim_pot) +=
+                       funct(inode)*beta*fac*Teta*(beta*potderiv2(dim,dim_pot)*funct(jnode)*fac_pot*Teta_pot);}
+
+                 // k,ij
+                 for (int jnode = 0;jnode < numnode_pot; ++jnode)
+                   for(int dim_pot = 0; dim_pot < 3; dim_pot++)
+                     {K_surf(inode*numdof+dim, GetLocalIndex(lm,lmpot[jnode*numdof+dim_pot]) ) +=
+                        funct(inode)*beta*fac*Teta*(beta*(-1)*potderiv2(dim,dim_pot)*funct_pot(jnode)*fac_pot*Teta_pot);}
+
+                }             
+             //K_surf.Print(cout);
+             //}// valid contribution             
+         } // loop over all gauss points of the potential element
+      } // loop over all potential elements    
+  } // loop over all gauss points of the actual element
+  //F_int.Print(cout);  
+
+  return;
+}
+
+
 
 
 /*-------------------------------------------------------------------*
@@ -863,11 +1126,11 @@ double POTENTIAL::SurfacePotential::ComputeFactor(
   return factor;
 }
 
+
 /*-------------------------------------------------------------------*
 | 	VON MIR GESCHRIEBEN                                              |
 *--------------------------------------------------------------------*/
-
-double POTENTIAL::SurfacePotential::ComputeFactorApprox(
+double POTENTIAL::SurfacePotential::ComputeFactorApprox1(
     const DRT::Element*                     element,
     LINALG::SerialDenseVector&              funct,
     LINALG::SerialDenseMatrix&              deriv,
@@ -967,6 +1230,126 @@ double POTENTIAL::SurfacePotential::ComputeFactorApprox(
   FInvers.Multiply('N','N',-1.0,dudrs,dxyzdrsInvers,0.0);
   for(int i=0;i<3;i++) 
 	  FInvers(i,i)+=1;
+  
+  x_gp = 0.0;
+  // compute gauss point in physical coordinates
+  for (int inode = 0; inode < numnode; inode++)
+    for(int dim = 0; dim < 3; dim++)
+      x_gp(dim) += funct(inode)*x(inode,dim);
+  
+  X_gp = 0.0;
+    // Gausspunkt in Referenzkonfiguration berechnen
+    for (int inode = 0; inode < numnode; inode++)
+      for(int dim = 0; dim < 3; dim++)
+        X_gp(dim) += funct(inode)*X(inode,dim);       
+    return factor;    
+}
+
+
+
+/*-------------------------------------------------------------------*
+|   VON MIR GESCHRIEBEN                                              |
+*--------------------------------------------------------------------*/
+double POTENTIAL::SurfacePotential::ComputeFactorApprox2(
+    const DRT::Element*                     element,
+    LINALG::SerialDenseVector&              funct,
+    LINALG::SerialDenseMatrix&              deriv,
+    LINALG::SerialDenseMatrix&        FInvers,
+    const DRT::UTILS::IntegrationPoints2D&  intpoints,
+    const int                               gp,    
+    LINALG::Matrix<3,1>&                    x_gp,
+    LINALG::Matrix<3,1>&                    X_gp,
+    const double                            curve_fac)
+{
+
+  const int numnode = element->NumNode();
+  //§1 und §2 Komponenter des Gauspunktes wird gespeichert
+  const double e0 = intpoints.qxg[gp][0];
+  const double e1 = intpoints.qxg[gp][1];
+
+  // get shape functions and derivatives of the element
+  //werte der shape funktions am gp werden in funct gespeichert 
+  DRT::UTILS::shape_function_2D(funct,e0,e1,element->Shape());
+  //werte der ersten Ableitung der shape functions in gp wird in Matrix deriv gespeichert
+  DRT::UTILS::shape_function_2D_deriv1(deriv,e0,e1,element->Shape());
+
+  LINALG::SerialDenseMatrix dXYZdrs(2,3); //2 Reihen 3 Spalten
+  
+  LINALG::SerialDenseMatrix X(numnode,3);
+  //Die räumlichen Knotenkoordinaten des aktiven Elements werden gespeichert
+  ReferenceConfiguration(element,X,3);
+
+  LINALG::SerialDenseMatrix x(numnode,3);
+  //Die materiellen Knotenkoordinaten des aktiven Elements werden gespeichert
+  SpatialConfiguration(currentpositions_, element,x,3);
+  
+  dXYZdrs.Multiply('N','N',1.0,deriv,X,0.0);
+  LINALG::SerialDenseMatrix  metrictensor(2,2);
+  //Jakobi-Matrix Referenzkonfig in Parameterraum  
+  metrictensor.Multiply('N','T',1.0,dXYZdrs,dXYZdrs,0.0);
+
+  // detA maps the reference configuration to the parameter space domain
+  const double detA = sqrt(  metrictensor(0,0)*metrictensor(1,1)
+                            -metrictensor(0,1)*metrictensor(1,0));
+  double factor = intpoints.qwgt[gp] * detA * curve_fac;
+  
+  //Berechnung Inverser Deformationsgradient 
+  LINALG::SerialDenseMatrix dudrs(3,2);
+  LINALG::SerialDenseMatrix dxyzdrs(3,2);
+  LINALG::SerialDenseMatrix dxyzdrsInvers(2,3);
+  LINALG::SerialDenseMatrix u(numnode,3);
+  for(int i=0; i<numnode; i++)
+  {
+    for (int j=0; j<3; j++)     
+      u(i,j)=x(i,j)-X(i,j);
+  }
+  //Ableitung von u nach Parameterraum, keine quadratische Matrix
+  dudrs.Multiply('T','T',1.0,u,deriv,0.0);
+  
+  //Berechnung Pseudoinverse  
+  dxyzdrs.Multiply('T','T',1.0,x,deriv,0.0);
+    
+  LINALG::SerialDenseMatrix W (2,1);  
+  LINALG::SerialDenseMatrix V (2,2);
+  LINALG::SerialDenseMatrix AInvers(2,3);
+   
+  //sigular value decomposition  
+  GEO::svdcmpSerialDense(dxyzdrs,W,V);
+  
+  /*
+  //Test ob dxyzdrs richtig zerlegt wurde
+  LINALG::SerialDenseMatrix  Test (3,2);
+  LINALG::SerialDenseMatrix  Zwischenergebnis (2,2);
+    
+    for (int i=0;i<2;i++)
+    {
+      for (int j=0;j<2;j++)
+        Zwischenergebnis(i,j)=VSD(j,i)*WSD(i,1);
+    }
+    Test.Multiply('N','N',1.0,dxyzdrs,Zwischenergebnis,0.0);
+    cout<<"Test"<<endl;
+    Test.Print(cout);
+   */      
+  
+  //V*WInvers ausrechnen und in V Speichern  
+  for(int i=0;i<2;i++)
+    {
+      //Verhindern, dass durch Null geteilt wird
+      if(W(i,0)!=0.0)       
+          W(i,0)=(1/W(i,0));        
+      for (int j=0;j<2;j++)     
+        V(j,i)*=W(i,0); 
+      
+    } 
+  
+  AInvers.Multiply('N','T',1.0,V,dxyzdrs,0.0);  
+  //Berechung Pseudoinverse Ende   
+  
+  //Berechnen des Inversen Deformationsgradieneten FInvers  
+  
+  FInvers.Multiply('N','N',-1.0,dudrs,dxyzdrsInvers,0.0);
+  for(int i=0;i<3;i++) 
+    FInvers(i,i)+=1;
   
   x_gp = 0.0;
   // compute gauss point in physical coordinates
@@ -1155,6 +1538,208 @@ bool POTENTIAL::SurfacePotential::DetermineValidContribution(
   return false;
 }
 
+
+
+
+///////////////////////// test potential //////////////////////////////////////
+
+/*-------------------------------------------------------------------*
+| (public)                                                 umay 11/09|
+|                                                                    |
+| Call discretization to evaluate additional contributions due to    |
+| potential forces                                                   |
+*--------------------------------------------------------------------*/
+void POTENTIAL::SurfacePotential::TestEvaluatePotential(ParameterList& p,
+                                                      RefCountPtr<Epetra_Vector> disp,
+                                                      RefCountPtr<Epetra_Vector> fint,
+                                                      RefCountPtr<LINALG::SparseMatrix> stiff,
+                                                      const double time)
+{
+  
+  // action for elements
+  p.set("action","calc_potential_stiff");
+
+  discret_.ClearState();
+  discret_.SetState("displacement",disp);
+
+  EvaluatePotentialCondition(p,stiff,null,fint,null,null,"Potential");
+  
+  // center of gravity   
+    
+  //Speichert Gesammtkraft auf einzelnen Körper
+  LINALG::Matrix<3,1> fint_sum_Body1 (true);
+  LINALG::Matrix<3,1> fint_sum_Body2 (true);
+  //Speichert den Schwerpunkt der einzelnen Körper
+  LINALG::Matrix<3,1> Schwerpunkt_Body1 (true);
+  LINALG::Matrix<3,1> Schwerpunkt_Body2 (true);  
+  //Distanzvektor zwischen den Schwerpunkten
+  LINALG::Matrix<3,1> DistanceVector (true);  
+ 
+  //Schleife über die Elemente des ersten Körpers, muss je nach Geometrie angepasst werde
+  FintSumAndCenterOfGravityVector(fint_sum_Body1, Schwerpunkt_Body1, fint, disp, 0, 1080 , 0, 3645);
+  //FintSumAndCenterOfGravityVector(fint_sum_Body1, Schwerpunkt_Body1, fint, disp, 0, 2048 , 0, 6819);
+  FintSumAndCenterOfGravityVector(fint_sum_Body2, Schwerpunkt_Body2, fint, disp, 1080, 2160 , 3645, 7290);
+  //FintSumAndCenterOfGravityVector(fint_sum_Body2, Schwerpunkt_Body2, fint, disp, 2048, 4096 , 6819, 13638);  
+    
+  //Abstandsvektor zeigt von Körper 1 nach Körper 2
+  for(int i=0; i<3; i++)
+    DistanceVector(i) = Schwerpunkt_Body2(i) - Schwerpunkt_Body1(i);
+  
+  
+    
+  double dDistance = DistanceVector.Norm2();
+  double dForce1 = fint_sum_Body1.Norm2();
+  double dForce2 = fint_sum_Body2.Norm2();
+  cout<<endl<<endl<<"Abstand:"<<dDistance<<endl;  
+  
+ 
+  fint_sum_Body1.Print(cout);
+  cout<<"Kraft1:"<<dForce1<<endl;
+  cout<<"Kraft2:"<<dForce2<<endl;
+  AusgabedateiSchreiben(dDistance, dForce1, dForce2, time);
+
+  return;
+}
+
+
+
+/*-------------------------------------------------------------------*
+| (public)                                                 umay 11/09|
+|                                                                    |
+| compute potential forces and center of gravity                     |
+*--------------------------------------------------------------------*/
+//Rechnet Schwerpunkt des Körpers und die im Schwerpunkt wirkende Kraft aus
+void POTENTIAL::SurfacePotential::FintSumAndCenterOfGravityVector(  LINALG::Matrix<3,1>& fint_sum_Body,
+                                  LINALG::Matrix<3,1>& Schwerpunkt_Body,
+                                  RefCountPtr<Epetra_Vector> fint,
+                                  RefCountPtr<Epetra_Vector> disp,
+                                  int gidBegin,
+                                  int gidEnd,
+                                  int dofBegin,
+                                  int dofEnd)
+{
+  double Volumen_Body=0;
+  
+  for(int gid=gidBegin; gid < gidEnd ; gid++)
+    {
+      const DRT::Element* element = discret_.gElement(gid);
+      int iNode = element->NumNode();
+      int dim = 3;
+      LINALG::SerialDenseMatrix xyze(dim , iNode);      
+            
+      UpdateDisplacements(disp, element, xyze);    
+      
+      //xsi = [0,0,0] weil Elementschwerpunkt im Parameterraum im Ursprung
+      double VolElement=0;
+      LINALG::Matrix<3,1> xsi(true);
+      LINALG::Matrix<3,1> x(true);
+      
+      GEO::elementToCurrentCoordinatesT<DRT::Element::hex8>(xyze, xsi, x);
+      VolElement = GEO::ElementVolumeT<DRT::Element::hex8>(xyze);    
+      //Schwerpunkt multipliziert mit Elementvolumen
+      x.Scale(VolElement);
+      
+      //Aufsummieren des Volumens und (Elementvolumen x Schwerpunktelement)
+      Volumen_Body += VolElement;
+      Schwerpunkt_Body += x;
+    }
+  
+  cout<<"Volumen:"<<Volumen_Body<<endl;
+  
+  Schwerpunkt_Body.Scale(1/Volumen_Body); 
+    
+  // total force in center of gravity
+    
+  for(int j=0; j<3; j++)
+    for(int i=j+dofBegin; i< dofEnd; i+=3)
+        {
+            fint_sum_Body(j) += fint->operator[] (i);     
+          }
+    
+   return;
+}
+
+
+/*-------------------------------------------------------------------*
+| (public)                                                 umay 11/09|
+|                                                                    |
+| TEST update displacements                                          |
+*--------------------------------------------------------------------*/
+//Rechnet die aktuellen Kontenpositionen eines Elements aus und speichet sie in xyze
+void POTENTIAL::SurfacePotential::UpdateDisplacements(
+    Teuchos::RCP<Epetra_Vector>     idisp_solid,
+    const DRT::Element*             element,
+    LINALG::SerialDenseMatrix&      xyze)
+{
+  const DRT::Node*const* node = element->Nodes();
+  
+  for (int i=0; i< element->NumNode(); i++)
+  {
+    vector<int> lm;
+    lm.reserve(3);
+    discretRCP_->Dof(node[i], lm);
+    vector<double> mydisp(3);
+    
+    //Updaten der Knotenpositonen und speichern in xyze
+    DRT::UTILS::ExtractMyValues(*idisp_solid,mydisp,lm);
+    xyze(0,i) = node[i]->X()[0] + mydisp[0];
+    xyze(1,i) = node[i]->X()[1] + mydisp[1];
+    xyze(2,i) = node[i]->X()[2] + mydisp[2];    
+  }
+  
+  return;  
+}
+
+
+/*-------------------------------------------------------------------*
+| (public)                                                 umay 11/09|
+|                                                                    |
+| test output                                                        |
+*--------------------------------------------------------------------*/
+void POTENTIAL::SurfacePotential::AusgabedateiSchreiben(double dDistance,
+                            double dForce1,
+                            double dForce2,
+                            const double time)
+{
+  ofstream AusgabeDatei("AnalytischeLoesung2.txt",ios_base::app);
+  
+  if(AusgabeDatei.good())
+  {   
+    AusgabeDatei<<time<<"\t\t\t"<<dForce1<<"\t\t\t"<<dDistance<<endl;   
+  }
+  
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/* TEST evaluate _certain_ potential forces and stiffness
+ * evaluation happens internal-force like */
+/*
+void STR::TimIntImpl::TestForceStiffPotential
+(
+  const double time,
+  const Teuchos::RCP<Epetra_Vector> dis
+)
+{
+  // potential force loads (but on internal force vector side)
+  if (potman_ != Teuchos::null)
+  {     
+    ParameterList p; // create the parameters for manager
+    p.set("pot_man", potman_);
+    p.set("total time", time);    
+    
+    Teuchos::RefCountPtr<LINALG::SparseMatrix> stiff_test=Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_,81,true,false, LINALG::SparseMatrix::FE_MATRIX));
+    Teuchos::RefCountPtr<Epetra_Vector> fint_test=LINALG::CreateVector(*dofrowmap_, true);
+    fint_test->PutScalar(0.0);        
+    stiff_test->Zero();   
+    
+    potman_->TestEvaluatePotential(p, dis, fint_test, stiff_test, time);
+  }
+  // wooop
+  return;
+} 
+*/
 
 #endif
 
