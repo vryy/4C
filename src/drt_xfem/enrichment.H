@@ -23,9 +23,9 @@ namespace XFEM
 {
 
   /*!
-   * \brief Corresponds to a specific enrichment with unique id and type
+   * \brief Corresponds to a specific enrichment with unique type and id
    *
-   * Implements a tuple of (iface_label, enrtype) and is sorted in that order
+   * Implements a tuple of (enrtype, iface_label) and is sorted in that order
    */
   class Enrichment
   {
@@ -39,8 +39,8 @@ namespace XFEM
         typeUndefined, ///< a default value, for which all functions should fail/crash
         typeStandard,  ///< standard enrichment  - corresponds to the standard finite element method
         typeJump,      ///< jump enrichment - Heaviside function from +1 (in Omega+) to -1 (in Omega-)
-        typeVoid,      ///< void enrichment - Heaviside function from +1 (in Omega+) to  0 (in Omega-)
         typeVoidFSI,   ///< void enrichment - Heaviside function from +1 (in Omega+) to  0 (in Omega-), only distinguish between inside (==0) and outside (>0), not with respect to different labels normal
+        typeVoid,      ///< void enrichment - Heaviside function from +1 (in Omega+) to  0 (in Omega-)
         typeKink       ///< kink enrichment - TODO: discription missing
       };
 
@@ -129,17 +129,17 @@ namespace XFEM
       }
 
       /*! less than operator
-       *  Enrichments are ordered first by their condition label, then by type
+       *  Enrichments are ordered first by their type, then by condition label
        */
       bool operator <(const Enrichment& rhs) const
       {
-        if (xfemconditionlabel_ < rhs.xfemconditionlabel_)
+        if (type_ < rhs.type_)
           return true;
-        else if (xfemconditionlabel_ > rhs.xfemconditionlabel_)
+        else if (type_ > rhs.type_)
           return false;
         else
         {
-          if (type_ < rhs.type_)
+          if (xfemconditionlabel_ < rhs.xfemconditionlabel_)
             return true;
           else
             return false;
