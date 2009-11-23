@@ -81,8 +81,8 @@ isselfcontact_(false)
   INPAR::CONTACT::SolvingStrategy stype =
         Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(params,"STRATEGY");
   
-  if (selfcontact && stype != INPAR::CONTACT::solution_lagmult)
-    dserror("ERROR: Self contact only implemented for Lagrange multiplier strategy!");
+  if (selfcontact && stype == INPAR::CONTACT::solution_auglag)
+    dserror("ERROR: Self contact only implemented for Lagrange multiplier or penalty strategy!");
   
   INPAR::CONTACT::ContactType ctype =
         Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(params,"CONTACT");

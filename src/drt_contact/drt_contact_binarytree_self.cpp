@@ -796,219 +796,221 @@ eps_(eps)
      
     // first treenode of one dual edge which includes current element
     // is the element itself saved as a treenode
-    RCP<BinaryTreeSelfNode> node1_=leafsmap_[gid];
-     
-     vector<int> nodeIds;
-     if(dim_==2)
-     {
-       //get the FE-nodes of the element and save them as endnodes of the treenode
-       nodeIds.clear();
-       nodeIds.push_back(element->NodeIds()[0]);
-       nodeIds.push_back(element->NodeIds()[1]);
-       node1_->SetEndnodes(nodeIds);
-     }
+    RCP<BinaryTreeSelfNode> node1=leafsmap_[gid];  
     
-     for(int j=0; j<element->NumNode();j++)
-     {//all nodes
-        DRT::Node* node =nodes[j];
-        if (!node) dserror("ERROR: Null pointer!");
-        
-        //adjacent elements of current node
-        DRT::Element** adjElements = node->Elements();
-        if (!adjElements) dserror("ERROR: Null pointer!");
-        
-        int numE =node->NumElement();
-                
-        for(int k=0;k<numE;k++)
-        {
-           int eleID=adjElements[k]->Id();
-           
-           // if node adjacent element isn't the currently considered element, it could be a neighbour
-           if(eleID!=gid)
-           {
-             //if there haven't been any possibly adjacent elements saved yet
-             if(possadjids.size()==0)
-             {
-
-               //in 2D one common node implies adjacency
-               if(dim_==2)
-               {
-                 //get second node from leafsmap
-                 RCP<BinaryTreeSelfNode> node2_ = leafsmap_[eleID];
-                 if(node2_ == null)
-                   dserror("adjacent leaf tree node not found in leafsmap!!");
-                 
-                 //get the FE-nodes of the element and save them as endnodes of the treenode
-                 vector<int> nodeIds;
-                 nodeIds.clear();
-                 nodeIds.push_back(adjElements[k]->NodeIds()[0]);
-                 nodeIds.push_back(adjElements[k]->NodeIds()[1]);
-                 node2_->SetEndnodes( nodeIds );
-                 
-                 //add tree node in list of adjacent tree nodes of curren tree node
-                 adjtreenodes.push_back(node2_);
-                 adjids.push_back(eleID);
-                 
-                 //create edge and add it to the list
-                 RCP<DualEdge> edge = rcp(new DualEdge(node1_,node2_,Dim()));
-                 adjdualedges.push_back(edge);
-               }
-               else//dim==3
-               {
-                 //get second node from leafsmap
-                 RCP<BinaryTreeSelfNode> node2_ = leafsmap_[eleID];
-                 possadjids.push_back(eleID);
-                 adjtreenodes.push_back(node2_);
-               }
-
-             }
-             
-             else//possadjids not empty
-             {
-               bool saved=false;
-                
-               //in 2D one common node implies adjacency
-               if(dim_==2)
-               {
-                 //get second node from leafsmap
-                 RCP<BinaryTreeSelfNode> node2_ = leafsmap_[eleID];
-                 if(node2_ == null)
-                   dserror("adjacent tree node not found in leafsmap!!");
-                 
-                 //get the FE-nodes of the element and save them as endnodes of the treenode
-                 nodeIds.clear();
-                 nodeIds.push_back(adjElements[k]->NodeIds()[0]);
-                 nodeIds.push_back(adjElements[k]->NodeIds()[1]);
-                 node2_->SetEndnodes( nodeIds );
-                 
-                 //add tree node in list of adjacent tree nodes of curren tree node
-                 adjtreenodes.push_back(node2_);
-                 adjids.push_back(eleID);
-                 
-                 //create edge and add it to the list
-                 RCP<DualEdge> edge = rcp(new DualEdge(node1_,node2_,Dim()));
-                 adjdualedges.push_back(edge);
-               }
-               else//dim==3: adjacent elements have at least 2 common nodes
-               {
-                 //get second node from leafsmap
-                 RCP<BinaryTreeSelfNode> node2_ = leafsmap_[eleID];
-                 for(int l=0; l<(int)possadjids.size();l++)
-                 {
-                   //check if possibly adjacent element is already in the list
-                   //if true, there are 2 common nodes, which means it is a neighbour
-                   if(eleID==possadjids[l] )
-                   {
-                     saved=true;
-
-                     if(node2_ == null)
-                       dserror("adjacent tree node not found in leafsmap!!");
-                     
-                     //add tree node in list of adjacent tree nodes of curren tree node
-                     //adjtreenodes.push_back(node2_);
-                     adjids.push_back(eleID);
-                     
-                     //create edge and add it to the list
-                     RCP<DualEdge> edge = rcp(new DualEdge(node1_,node2_,Dim()));
-                     adjdualedges.push_back(edge);
-                     break;
-                   }
-                 }
-                 if(!saved)
-                  {
-                       possadjids.push_back(eleID);
-                       adjtreenodes.push_back(node2_);
-                  }
-               }
-             }
-           }
-        } // all adjacent elements
-      }//all nodes
-     
-     //add the vector of adjacent tree nodes to the adjcencymatrix
-     //we only need the matrix in 3D, because in 2D the adjacencytest works by
-     //comparing endnodes
-     if(dim_==3)
-       adjacencymatrix_[gid]=adjtreenodes;
-     //get adjacent dual edges
-     for(int k=0; k<(int)adjdualedges.size();k++ )
-     {
-       for(int j=0; j<(int)adjdualedges.size();j++ )
-       {
-         if(j!=k)
-           {
-           //cout<<"aufbau dualer Graph";
-           adjdualedges[k]->CommonNode(adjdualedges[j]);
-            dualgraph[adjdualedges[k]].push_back(adjdualedges[j]);
-           }
-       }
-     }
-   }//all elements
-
-   
-    // plot adjacencymatrix
-    
-   //map<int,vector<RCP<BinaryTreeSelfNode> > > ::iterator iter2 = adjacencymatrix_.begin(),
-                                    //  iter2_end = adjacencymatrix_.end();
-    /*
-    cout <<"\n"<< leafsmap_.size()<<" elements in leafsmap\n"; 
-    cout << adjacencymatrix_.size()<<" elements in adjazencymatrix\n";
-    
-    
-    while(iter2 != iter2_end)
+    // for 2D only: get the finite element nodes of the  element
+    // and save them as endnodes of the treenode    
+    if(dim_==2)
     {
-      cout << "element "<<(*iter2).first<<": ";
-      //int adj_cnt= 0 ;
-      
-      vector<RCP<BinaryTreeSelfNode > >  adj_ = (*iter2).second;
-      cout<< adj_.size()<<" elements: ";
-      for (int i = 0;i<(int)adj_.size();i++ )
-      {
-        cout<< adj_[i]->Elelist()[0]<<" ";
-      }
-      cout<<"\n";
-      ++iter2;
-    }*/
-
-    // plot dual graph
-   
-    /*
-    cout << "\n" <<leafsmap_.size()<<" elements in leafmap\n";
-    cout << dualgraph.size()<<" edges in dual graph\n";
-
-   map<RCP<DualEdge>,vector<RCP<DualEdge> > > ::iterator iter3 = (*dualGraph)_.begin(),
-                                               iter3_end = (*dualGraph)_.end();
+      vector<int> nodeIds;
+      nodeIds.push_back(element->NodeIds()[0]);
+      nodeIds.push_back(element->NodeIds()[1]);
+      node1->SetEndnodes(nodeIds);
+    }
+    
+    // loop over all nodes of current element
+    for(int j=0; j<element->NumNode();j++)
+    {
+      DRT::Node* node =nodes[j];
+      if (!node) dserror("ERROR: Null pointer!");
+        
+      // adjacent elements of current node
+      int numE =node->NumElement();
+      DRT::Element** adjElements = node->Elements();
+      if (!adjElements) dserror("ERROR: Null pointer!");
        
-
-  //cout << (*dualGraph)_.max_size()<< " maximal\n";
-  int cnt=0;
-  while(iter3 != iter3_end)
-  {
-    cout << "\n Kante "<<cnt<<": "<<((*iter3).first)->GetNode1()->Elelist()[0]<< " "
-          << ((*iter3).first)->GetNode2()->Elelist()[0]<<"\n";
-    cout<< "Kosten: "<<((*iter3).first)->Costs()<<"\n";
-
-    vector<RCP<DualEdge> > edges_ = (*iter3).second;
-    cout<< edges_.size()<<" NachbarKanten: ";
-    for (int i = 0;i<(int)edges_.size();i++ )
+      // loop over all adjacent elements of current node
+      for(int k=0;k<numE;++k)
+      {
+        int eleID=adjElements[k]->Id();
+           
+        // if eleID isn't the currently considered element, it could be a neighbour
+        if (eleID!=gid)
+        {
+          // if there are not yet any possibly adjacent elements
+          if (possadjids.size()==0)
+          {
+            // in 2D one common node implies adjacency
+            if(dim_==2)
+            {
+              // get second node from leafsmap
+              RCP<BinaryTreeSelfNode> node2 = leafsmap_[eleID];
+              if (node2 == null) dserror("adjacent leaf tree node not found in leafsmap!!");
+              
+              // get the finite element nodes of the element equal to treenode 2
+              // and save them as endnodes of the treenode
+              vector<int> nodeIds;
+              nodeIds.clear();
+              nodeIds.push_back(adjElements[k]->NodeIds()[0]);
+              nodeIds.push_back(adjElements[k]->NodeIds()[1]);
+              node2->SetEndnodes( nodeIds );
+              
+              // add treenode in list of adjacent treenodes of current treenode
+              adjtreenodes.push_back(node2);
+              adjids.push_back(eleID);
+              
+              // create edge and add it to the list
+              RCP<DualEdge> edge = rcp(new DualEdge(node1,node2,Dim()));
+              adjdualedges.push_back(edge);
+            }
+            // in 3D adjacency is more complicated
+            else
+            {
+              // get second node from leafsmap
+              RCP<BinaryTreeSelfNode> node2 = leafsmap_[eleID];
+              adjtreenodes.push_back(node2);
+              possadjids.push_back(eleID);
+            }
+          }
+          
+          // if there are already possibly adjacent elements in possasdjids
+          else
+          {
+            bool saved=false;
+             
+            // in 2D one common node implies adjacency
+            if(dim_==2)
+            {
+              //get second node from leafsmap
+              RCP<BinaryTreeSelfNode> node2 = leafsmap_[eleID];
+              if (node2 == null) dserror("adjacent tree node not found in leafsmap!!");
+              
+              // get the finite element nodes of the element equal to treenode 2
+              // and save them as endnodes of the treenode
+              vector<int> nodeIds;
+              nodeIds.push_back(adjElements[k]->NodeIds()[0]);
+              nodeIds.push_back(adjElements[k]->NodeIds()[1]);
+              node2->SetEndnodes(nodeIds);
+              
+              // add treenode in list of adjacent treenodes of current treenode
+              adjtreenodes.push_back(node2);
+              adjids.push_back(eleID);
+              
+              // create edge and add it to the list
+              RCP<DualEdge> edge = rcp(new DualEdge(node1,node2,Dim()));
+              adjdualedges.push_back(edge);
+            }            
+            // in 3D adjacency is more complicated
+            // (adjacent elements have at least 2 common nodes)
+            else
+            {
+              // get second node from leafsmap
+              RCP<BinaryTreeSelfNode> node2 = leafsmap_[eleID];
+              
+              for (int l=0;l<(int)possadjids.size();++l)
+              {
+                // check if possibly adjacent element is already in the list
+                // if true, there are 2 common nodes, which means it is a neighbour
+                if (eleID==possadjids[l])
+                {
+                  saved=true;
+                  if (node2 == null) dserror("adjacent tree node not found in leafsmap!!");
+                  
+                  // add treenode in list of adjacent treenodes of current treenode
+                  // adjtreenodes.push_back(node2);
+                  adjids.push_back(eleID);
+                  
+                  // create edge and add it to the list
+                  RCP<DualEdge> edge = rcp(new DualEdge(node1,node2,Dim()));
+                  adjdualedges.push_back(edge);
+                  break;
+                }
+              }
+              
+              // possibly adjacent element is not yet in the list --> add
+              if (!saved)
+              {
+                possadjids.push_back(eleID);
+                adjtreenodes.push_back(node2);
+              }
+            } // else 3D
+          } // else possadjids empty
+        } // if eleID!=gid
+      } // all adjacent elements
+    } // all nodes
+     
+    // add the vector of adjacent tree nodes to the adjcencymatrix
+    // we only need the matrix in 3D, because in 2D the adjacencytest works by
+    // comparing endnodes only
+    if (dim_==3) adjacencymatrix_[gid]=adjtreenodes;
+    
+    //get adjacent dual edges
+    for(int k=0;k<(int)adjdualedges.size();++k)
     {
-      cout<< edges_[i]->GetNode1()->Elelist()[0]<<" ";
-      cout<< edges_[i]->GetNode2()->Elelist()[0]<<" ";
-      cout<< "Kosten: "<<edges_[i]->Costs()<< " \n";
+      for(int j=0;j<(int)adjdualedges.size();++j)
+      {
+        if (j!=k)
+        {
+          adjdualedges[k]->CommonNode(adjdualedges[j]);
+          dualgraph[adjdualedges[k]].push_back(adjdualedges[j]);
+        }
+      }
+    }
+  } // all elements
+   
+  // plot adjacencymatrix
+  /*
+  map<int,vector<RCP<BinaryTreeSelfNode> > > ::iterator iter2 = adjacencymatrix_.begin();
+  map<int,vector<RCP<BinaryTreeSelfNode> > > ::iterator iter2_end = adjacencymatrix_.end();
+    
+  cout << "\n" << leafsmap_.size() << " elements in leafsmap\n"; 
+  cout << adjacencymatrix_.size() << " elements in adjazencymatrix\n";
+  
+  
+  while (iter2 != iter2_end)
+  {
+    cout << "element " << (*iter2).first << ": ";
+    //int adj_cnt= 0 ;
+    
+    vector<RCP<BinaryTreeSelfNode > >  adj_ = (*iter2).second;
+    cout << adj_.size() << " elements: ";
+    for (int i=0;i<(int)adj_.size();++i)
+      cout << adj_[i]->Elelist()[0] << " ";
+    cout << "\n";
+    ++iter2;
+  }
+  */
+
+  // plot dual graph
+  /*
+  cout << "\n" <<leafsmap_.size() << " elements in leafmap\n";
+  cout << dualgraph.size() << " edges in dual graph\n";
+
+  map<RCP<DualEdge>,vector<RCP<DualEdge> > > ::iterator iter3 = (*dualGraph)_.begin();
+  map<RCP<DualEdge>,vector<RCP<DualEdge> > > ::iterator iter3_end = (*dualGraph)_.end(); 
+
+  cout << (*dualGraph)_.max_size() << " maximal\n";
+  int cnt = 0;
+  
+  while (iter3 != iter3_end)
+  {
+    cout << "\n Kante " << cnt << ": " << ((*iter3).first)->GetNode1()->Elelist()[0] << " "
+         << ((*iter3).first)->GetNode2()->Elelist()[0] << "\n";
+    cout << "Kosten: " << ((*iter3).first)->Costs() << "\n";
+
+    vector<RCP<DualEdge> > edges = (*iter3).second;
+    cout << edges.size() << " NachbarKanten: ";
+    for (int i=0;i<(int)edges.size();++i)
+    {
+      cout << edges[i]->GetNode1()->Elelist()[0] << " ";
+      cout << edges[i]->GetNode2()->Elelist()[0] << " ";
+      cout << "Kosten: " << edges[i]->Costs() << " \n";
     }
 
-    cout<<"\n";
+    cout << "\n";
     ++iter3;
-    cnt++;
-  }*/
+    ++cnt;
+  }
+  */
 
-   InitializeTreeBottomUp(&dualgraph);
+  // now initialze BinaryTreeSelf in a bottom-up way based on dualgraph
+  InitializeTreeBottomUp(&dualgraph);
    
-   return;
+  return;
 }
 
 /*----------------------------------------------------------------------*
- | Find min. length of contact elements (public)              popp 11/09|
+ | Find minimal length of contact elements (public)           popp 11/09|
  *----------------------------------------------------------------------*/
 void CONTACT::BinaryTreeSelf::SetEnlarge(bool isinit)
 {
@@ -1035,256 +1037,243 @@ void CONTACT::BinaryTreeSelf::SetEnlarge(bool isinit)
 }
 
 /*----------------------------------------------------------------------*
- | Initialize tree Bottum Up (public)                                   popp 05/09|
+ | Initialize tree bottum-up based on dual graph (public)     popp 11/09|
  *----------------------------------------------------------------------*/
 void CONTACT::BinaryTreeSelf::InitializeTreeBottomUp(map <RCP<DualEdge>,vector <RCP<DualEdge> > > *dualGraph)
 {
   // temporary vector collecting root nodes  
   vector<RCP<BinaryTreeSelfNode> > roots(0);
   
-  while( !(*dualGraph).empty() )
+  // the idea is to empty the dual graph step by step
+  while (!(*dualGraph).empty())
   {
-    //get the edge with lowest costs(=the first edge in the dual graph as the map is
-    // automatically sorted by the costs)  to contract it
-    map <RCP<DualEdge>,vector <RCP<DualEdge> > > ::iterator iter = (*dualGraph).begin(),
-                                                                               iter_end = (*dualGraph).end();
-    RCP<DualEdge> contractedEdge_ = (*iter).first;
-    RCP<BinaryTreeSelfNode> node1_ = contractedEdge_->GetNode1();
-    RCP<BinaryTreeSelfNode> node2_ = contractedEdge_->GetNode2();
+    // get the edge with lowest costs (= the first edge in the dual graph as
+    // the map is automatically sorted by the costs)  to contract it
+    map <RCP<DualEdge>,vector <RCP<DualEdge> > > ::iterator iter = (*dualGraph).begin();
+    map <RCP<DualEdge>,vector <RCP<DualEdge> > > ::iterator iter_end = (*dualGraph).end();
+    RCP<DualEdge> contractedEdge = (*iter).first;
+    RCP<BinaryTreeSelfNode> node1 = contractedEdge->GetNode1();
+    RCP<BinaryTreeSelfNode> node2 = contractedEdge->GetNode2();
       
-    //combine list of elements of both tree nodes to get new list
-    vector<int> list = node1_->Elelist();
-    vector<int> list2 = node2_->Elelist();
-    for(int i=0; i< (int)( node2_->Elelist().size() ) ;i++)
-    {
+    // combine list of elements of both tree nodes to get new list
+    vector<int> list = node1->Elelist();
+    vector<int> list2 = node2->Elelist();
+    for (int i=0;i<(int)(node2->Elelist().size());++i)
       list.push_back(list2[i]);
-    }
   
-     //define new tree node
-    RCP<BinaryTreeSelfNode> newNode_ = rcp(new BinaryTreeSelfNode(SELF_INNER,idiscret_,null,list,DopNormals(),SampleVectors(),
-          Kdop(),Dim(),Nvectors(),-1,treenodes_)); 
-    newNode_->SetChildren(node1_,node2_);
-    node1_->SetParent(newNode_);
-    node2_->SetParent(newNode_);
+    // define new tree node
+    RCP<BinaryTreeSelfNode> newNode = rcp(new BinaryTreeSelfNode(SELF_INNER,idiscret_,null,list,
+                            DopNormals(),SampleVectors(),Kdop(),Dim(),Nvectors(),-1,treenodes_)); 
+    newNode->SetChildren(node1,node2);
+    node1->SetParent(newNode);
+    node2->SetParent(newNode);
 
-    //in 2D we save the endnodes as adjacencycriterion
-    if (dim_==2) newNode_->UpdateEndnodes();
+    // in 2D we simply save the endnodes as adjacency criterion
+    if (dim_==2) newNode->UpdateEndnodes();
+           
+    // update dualGraph
+    // this means we have to create new edges, which include the new treenode and
+    // delete the edges, which are adjacent to the contracted edge and update
+    // their neighbours
+    // additionally we have to check if the tree is nearly complete
     
-          
-    //update dualGraph
-    //this means we have to create new edges, which include the new treenode and
-    //delete the edges, which are adjacent to the contracted edge and update
-    //their neighbours
-    //additionally we have to check if the tree is nearly complete
-    
-    //get the adjacent edges of the contracted edge
+    // get the adjacent edges of the contracted edge
     vector<RCP<DualEdge> > adjEdges = (*iter).second;
     
-    //check if the new treenode includes whole selfcontact-surface
-    //in this case the treenode has saved itself as adjacent edge
-    if( adjEdges[0] == contractedEdge_)
+    // check if the new treenode includes whole selfcontact-surface
+    // in this case the treenode has saved itself as adjacent edge
+    if (adjEdges[0] == contractedEdge)
     {
-      //save the tree node as root and leave the loop
-      roots.push_back(newNode_);
-      (*dualGraph).erase(contractedEdge_);
+      // save the tree node as root and leave the loop
+      roots.push_back(newNode);
+      (*dualGraph).erase(contractedEdge);
       break;
     }
     
-    //vector of all new edges
+    // vector of all new edges
     vector<RCP<DualEdge> > newAdjEdges;
     
-    //when contracting an edge, we need to update all adjacent edges
-    for(int j = 0; j<(int)adjEdges.size() ; j++)
+    // when contracting an edge, we need to update all adjacent edges
+    for (int j=0;j<(int)adjEdges.size();++j)
     {
-      RCP<DualEdge> newEdge_;
+      // define new edge
+      RCP<DualEdge> newEdge;
       
-      //define new edge
-      if(adjEdges[j]->GetNode1() != node1_ and adjEdges[j]->GetNode1() !=  node2_ )
-        newEdge_ = rcp (new DualEdge( newNode_,adjEdges[j]->GetNode1(),Dim() ) );
+      if (adjEdges[j]->GetNode1() != node1 && adjEdges[j]->GetNode1() !=  node2)
+        newEdge = rcp(new DualEdge(newNode,adjEdges[j]->GetNode1(),Dim()));
       
-      else if (adjEdges[j]->GetNode2() != node1_ and adjEdges[j]->GetNode2() !=  node2_)
-        newEdge_ = rcp (new DualEdge(newNode_, adjEdges[j]->GetNode2(),Dim() ));
+      else if (adjEdges[j]->GetNode2() != node1 && adjEdges[j]->GetNode2() !=  node2)
+        newEdge = rcp(new DualEdge(newNode,adjEdges[j]->GetNode2(),Dim()));
       
-      else 
-        dserror("tried to contract equal tree nodes!!");
+      else dserror("ERROR: Tried to contract identical tree nodes!!");
    
-      //get the neighbours of the new edges
-      vector<RCP<DualEdge> > adjEdgesOfNeighbour = (*dualGraph)[adjEdges[j] ];
+      // get the neighbours of the new edges
+      vector<RCP<DualEdge> > adjEdgesOfNeighbour = (*dualGraph)[adjEdges[j]];
       
-      //if there are two adjacent surfaces left.
-      //the new edge contains the whole self-contact surface.
-      //in this case we save the edge as neighbour of itself
-      if(adjEdges.size() ==1 and adjEdgesOfNeighbour.size() == 1)
-        (*dualGraph)[newEdge_].push_back(newEdge_);
+      // if there are two adjacent surfaces left,
+      // the new edge contains the whole self-contact surface.
+      // in this case we save the edge as neighbour of itself
+      if (adjEdges.size()==1 && adjEdgesOfNeighbour.size()==1)
+        (*dualGraph)[newEdge].push_back(newEdge);
       
-      //otherwise we need to update the neighbours of the adjacent edges:
-      //first add all neighbours of the current adjacent edge -except the contracted edge-
-      //as neighbour of newedge and delete the old adjacent edge
+      // otherwise we need to update the neighbours of the adjacent edges:
+      // first add all neighbours of the current adjacent edge -except the contracted edge-
+      // as neighbour of newedge and delete the old adjacent edge
       else
       {
-        if(dim_==2)
+        // two-dimensional case
+        if (dim_==2)
         {
-          //in 2D every edge has 2 neighbours at the most
-          newAdjEdges.push_back(newEdge_);
-          for(int k = 0; k<(int)adjEdgesOfNeighbour.size() ; k++)
+          // in 2D every edge has 2 neighbours at the most
+          newAdjEdges.push_back(newEdge);
+          for (int k=0;k<(int)adjEdgesOfNeighbour.size();++k)
           {
-            if(adjEdgesOfNeighbour[k] != contractedEdge_)
+            if (adjEdgesOfNeighbour[k] != contractedEdge)
             {
-              //save the neighbours of the old edge as neighbours of the new one
-              (*dualGraph)[newEdge_].push_back(adjEdgesOfNeighbour[k]);
+              // save the neighbours of the old edge as neighbours of the new one
+              (*dualGraph)[newEdge].push_back(adjEdgesOfNeighbour[k]);
               
-              //we have to update all neighbours of our old edge
-              map<RCP<DualEdge>,vector<RCP<DualEdge> > > 
-              ::iterator edge_iter = (*dualGraph).find(adjEdgesOfNeighbour[k]);
+              // we have to update all neighbours of our old edge
+              map<RCP<DualEdge>,vector<RCP<DualEdge> > > ::iterator edge_iter = (*dualGraph).find(adjEdgesOfNeighbour[k]);
               
-              //find the old edge in the list of neighbours and replace it
-              //by the new edge
-              for(int a = 0; a<(int)edge_iter->second.size() ; a++)
+              // find the old edge in the list of neighbours and replace it by the new edge
+              for (int a=0;a<(int)edge_iter->second.size();++a)
               {
-                if(edge_iter->second.at(a) == adjEdges[j])
-                  edge_iter->second.at(a) = newEdge_;
+                if (edge_iter->second.at(a) == adjEdges[j])
+                  edge_iter->second.at(a) = newEdge;
               }
             } 
           }
         }
-        
-        else //dim_==3
+        // three-dimensional case
+        else
         {
-          //in 3D every edge con have a arbirary number of neighbours which 
-          //could also be adjacent to each other (3 edges form a "ring").
-          //We have to check if the new edge has already been created. 
-          //(in 2D this occures only when the tree is almost finished, 3D this 
-          // could happen any time)
+          // in 3D every edge can have a arbirary number of neighbours which 
+          // could also be adjacent to each other (3 edges form a "ring").
+          // We have to check if the new edge has already been created. 
+          // (in 2D this occurs only when the tree is almost finished, in 3D
+          // this could happen any time)
  
-          bool issaved=false;
-          for(int n=0;n<(int)newAdjEdges.size();n++)
+          bool issaved = false;
+          for (int n=0;n<(int)newAdjEdges.size();++n)
           {
-            if(newAdjEdges[n]==newEdge_)
+            if (newAdjEdges[n]==newEdge)
             {
               issaved=true;
               break;
             }
           }
-          //save the neighbours of the old edge as neighbours of the new one
-          if(!issaved)
-            newAdjEdges.push_back(newEdge_);
           
-          //we have to update all neighbours of the old/new edge
-          //we just update those edges wich aren't adjacent edges of the contracted
-          //edge, as we have to update those seperately
+          // save the neighbours of the old edge as neighbours of the new one
+          if (!issaved) newAdjEdges.push_back(newEdge);
           
-          //get the common (tree)node of the contracted edge and the old edge 
-          RCP<BinaryTreeSelfNode> commonnode_ = contractedEdge_->CommonNode(adjEdges[j]);
+          // we have to update all neighbours of the old/new edge
+          // we just update those edges wich aren't adjacent edges of the contracted
+          // edge, as we have to update those seperately
           
-          //loop over all neighbours of old edge
-          for(int k = 0; k<(int)adjEdgesOfNeighbour.size() ; k++)
+          // get the common (tree)node of the contracted edge and the old edge 
+          RCP<BinaryTreeSelfNode> commonnode = contractedEdge->CommonNode(adjEdges[j]);
+          
+          // loop over all neighbours of old edge
+          for(int k=0;k<(int)adjEdgesOfNeighbour.size();++k)
           {
-            //check if it the current edge is not the contracted edge
-            //or a neigbour of the contracted edge (we do not need to update these
-            // edges now)
-            if(adjEdgesOfNeighbour[k] != contractedEdge_ and
-                adjEdges[j]->CommonNode(adjEdgesOfNeighbour[k]) != commonnode_ )
+            // check if it the current edge is not the contracted edge
+            // or a neigbour of the contracted edge (we do not need to update
+            // these edges now)
+            if (adjEdgesOfNeighbour[k] != contractedEdge &&
+                adjEdges[j]->CommonNode(adjEdgesOfNeighbour[k]) != commonnode )
             {
-              //if the current edge (=neighbour of the new and old edge) is not a
+              // if the current edge (=neighbour of the new and old edge) is not a
               // neighbour of the contracted edge, they do not have a common node
-                RCP<BinaryTreeSelfNode> commonnode2_=contractedEdge_->CommonNode(adjEdgesOfNeighbour[k]);
+              RCP<BinaryTreeSelfNode> commonnode2 = contractedEdge->CommonNode(adjEdgesOfNeighbour[k]);
                 
-                if(commonnode2_==null)
+              // now we want to save the current edge as neighbour of the new edge
+              if (commonnode2==null)
+              {
+                // first find the new edge in the dual graph
+                map<RCP<DualEdge>,vector<RCP<DualEdge> > > ::iterator edge_iter1 = (*dualGraph).find(newEdge);
+                map<RCP<DualEdge>,vector<RCP<DualEdge> > > ::iterator end =(*dualGraph).end();
+                
+                // if the edge has been found, check if the current edge has
+                // already been saved as neighbour
+                if (edge_iter1 != end)
                 {
-                  //new we want to save the current edge as neighbour of the new edge
-                  
-                  //first find the new edge in the dual graph
-                  map<RCP<DualEdge>,vector<RCP<DualEdge> > > 
-                  ::iterator edge_iter1 = (*dualGraph).find(newEdge_),end =(*dualGraph).end();
-                  //if the edge has been found, check if the current edge has
-                  //already been saved as neighbour
-                  if(edge_iter1 != end)
+                  bool edgesaved = false;
+                  for(int z=0;z<(int)edge_iter1->second.size();++z)
                   {
-                    bool edgesaved=false;
-                    for(int z=0; z<(int)edge_iter1->second.size();z++)
-                    {
-                      if(edge_iter1->second.at(z) == adjEdgesOfNeighbour[k])
-                        edgesaved=true;
-                    }
-                  //if not saved, save it
-                    if(!edgesaved)
-                      edge_iter1->second.push_back(adjEdgesOfNeighbour[k]);
+                    if (edge_iter1->second.at(z) == adjEdgesOfNeighbour[k])
+                      edgesaved=true;
                   }
-                  //if the new edge itself hasn't been saved yet,
-                  // the neighbour hasn't been saved too
-                  else 
-                    (*dualGraph)[newEdge_].push_back(adjEdgesOfNeighbour[k]);
+                  // if not yet saved, save it
+                  if (!edgesaved) edge_iter1->second.push_back(adjEdgesOfNeighbour[k]);
+                }
                 
-                  //find the old edge in the list of neighbours and replace it
-                  //by the new edge
-                  
-                  //find the current edge in the dual graph
-                  map<RCP<DualEdge>,vector<RCP<DualEdge> > > 
-                  ::iterator edge_iter2 = (*dualGraph).find(adjEdgesOfNeighbour[k]);
-           
-                  bool egdeerased=false;
-                  bool newedgesaved=false;
-                  
-                  //loop over all neighbours of the current edge
-                  vector<RCP<DualEdge> >  ::iterator adjIter = edge_iter2->second.begin();
-                  while( adjIter != edge_iter2->second.end() )
+                // if the new edge itself hasn't been saved yet,
+                // the neighbour hasn't been saved either
+                else  (*dualGraph)[newEdge].push_back(adjEdgesOfNeighbour[k]);
+              
+                // find the old edge in the list of neighbours and replace it
+                // by the new edge
+                
+                // find the current edge in the dual graph
+                map<RCP<DualEdge>,vector<RCP<DualEdge> > > ::iterator edge_iter2 = (*dualGraph).find(adjEdgesOfNeighbour[k]);
+         
+                bool egdeerased = false;
+                bool newedgesaved = false;
+                
+                // loop over all neighbours of the current edge
+                vector<RCP<DualEdge> > ::iterator adjIter = edge_iter2->second.begin();
+                while (adjIter != edge_iter2->second.end())
+                {
+                  if (*adjIter == adjEdges[j])
                   {
-                    if (*adjIter == adjEdges[j])
-                    {
-                      //erase the old edge
-                      adjIter = edge_iter2->second.erase( adjIter );
-                      egdeerased=true;
-                    }
-                    else
-                    {
-                      if(*adjIter == newEdge_)
-                        newedgesaved=true;
-                      ++adjIter;
-                    }
+                    // erase the old edge
+                    adjIter = edge_iter2->second.erase(adjIter);
+                    egdeerased = true;
                   }
-                  //as we could update the same edge several times (only in 3D), 
-                  //we only save the new edge as neighbour if not already done so
-                  if(egdeerased and !newedgesaved)
+                  else
                   {
-                    edge_iter2->second.push_back(newEdge_);
+                    if (*adjIter == newEdge) newedgesaved=true;
+                    ++adjIter;
                   }
                 }
-              
+                
+                // as we could update the same edge several times (only in 3D), 
+                // we only save the new edge as neighbour if not already done so
+                if (egdeerased && !newedgesaved) edge_iter2->second.push_back(newEdge);
+              }
             } 
-          }//loop over all adjacent edges of neighbours
+          } // loop over all adjacent edges of neighbours
           
-          //if three dual edges are forming a "ring" there will be just one edge left, so
+          // if three dual edges are forming a "ring" there will be just one edge left, so
           // we save this egde as neighbour of itself (in 2D we do not need to consider
           // this case seperately)
-          if((*dualGraph).size() == 3 and newAdjEdges.size() == 1 )
+          if ((*dualGraph).size()==3 && newAdjEdges.size()==1)
           {
-            map<RCP<DualEdge>,vector<RCP<DualEdge> > > 
-                            ::iterator edge_iter3 = (*dualGraph).find(newAdjEdges[0])
-                                                    ,end =(*dualGraph).end();
-            if(edge_iter3 == end)
-              (*dualGraph)[newEdge_].push_back(newEdge_);
+            map<RCP<DualEdge>,vector<RCP<DualEdge> > > ::iterator edge_iter3 = (*dualGraph).find(newAdjEdges[0]);
+            map<RCP<DualEdge>,vector<RCP<DualEdge> > > ::iterator end =(*dualGraph).end();
+            
+            if (edge_iter3 == end) (*dualGraph)[newEdge].push_back(newEdge);
           }
-         }//3D
-        }//else-block (not 2 adjacent treenodes left)
-    }//loop over all adjacent edges
+        } // 3D
+      } // else-block (not 2 adjacent treenodes left)
+    } // loop over all adjacent edges
     
-    //delete all adjacent edges of contracted edge
-    for(int j = 0; j<(int)adjEdges.size() ; j++)
-    {
-          (*dualGraph).erase(adjEdges[j]);
-    }
+    // delete all adjacent edges of contracted edge
+    for (int j=0;j<(int)adjEdges.size();++j)
+      (*dualGraph).erase(adjEdges[j]);
     
-    //now all new adjacent edges have been created. 
-    //save all adjacent edges as neigbour, respectively
-    for(int l=0; l<(int)newAdjEdges.size() ; l++)
+    // now all new adjacent edges have been created.
+    // save all adjacent edges as neigbour, respectively
+    for (int l=0;l<(int)newAdjEdges.size();++l)
     {
-      for(int m=0; m<(int)newAdjEdges.size() ; m++)
-        if(l != m and newAdjEdges[l]!=newAdjEdges[m])
+      for (int m=0;m<(int)newAdjEdges.size();++m)
+        if (l!=m && newAdjEdges[l]!=newAdjEdges[m])
           (*dualGraph)[ newAdjEdges[l] ].push_back(newAdjEdges[m]); 
     }
 
-    //delete the contraceted edge    
-    (*dualGraph).erase(contractedEdge_);
+    // delete the contraceted edge    
+    (*dualGraph).erase(contractedEdge);
    
   } // while(!(*dualGraph).empty())
   
@@ -1292,7 +1281,7 @@ void CONTACT::BinaryTreeSelf::InitializeTreeBottomUp(map <RCP<DualEdge>,vector <
   if ((int)roots.size() == 0) dserror("ERROR: No root treenode found!");
   if ((int)roots.size() > 1)  dserror("ERROR: Disconnected self contact surface!"); 
   root_=roots[0];
-  root_-> CompleteTree(0,enlarge_);
+  root_->CompleteTree(0,enlarge_);
     
   // in 3D we have to calculate adjacent treenodes
   if (dim_== 3)

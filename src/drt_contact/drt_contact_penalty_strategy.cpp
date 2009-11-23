@@ -345,7 +345,10 @@ void CONTACT::PenaltyStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
   
 #ifndef FDCHECKS
   {
-    RCP<Epetra_Vector> fcmdold = rcp(new Epetra_Vector(*gsdofrowmap_));
+    // we initialize fcmdold with dold-rowmap instead of gsdofrowmap
+    // (this way, possible self contact is automatically included)
+    
+    RCP<Epetra_Vector> fcmdold = rcp(new Epetra_Vector(dold_->RowMap()));
     dold_->Multiply(false, *zold_, *fcmdold);
     RCP<Epetra_Vector> fcmdoldtemp = rcp(new Epetra_Vector(*problemrowmap_));
     LINALG::Export(*fcmdold, *fcmdoldtemp);
@@ -353,7 +356,10 @@ void CONTACT::PenaltyStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
   }
 
   {
-    RCP<Epetra_Vector> fcmmold = LINALG::CreateVector(*gmdofrowmap_, true);
+    // we initialize fcmmold with mold-domainmap instead of gmdofrowmap
+    // (this way, possible self contact is automatically included)
+    
+    RCP<Epetra_Vector> fcmmold = rcp(new Epetra_Vector(mold_->DomainMap()));
     mold_->Multiply(true, *zold_, *fcmmold);
     RCP<Epetra_Vector> fcmmoldtemp = rcp(new Epetra_Vector(*problemrowmap_));
     LINALG::Export(*fcmmold, *fcmmoldtemp);
