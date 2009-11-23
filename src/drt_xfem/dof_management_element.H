@@ -163,7 +163,7 @@ namespace XFEM
       //! used in constructor
       void ComputeDependentInfo(
           const DRT::Element& ele,
-          const map<int, const std::set<XFEM::FieldEnr> >&  nodalDofSet,
+          const map<int, const std::set<XFEM::FieldEnr> >&  nodalDofSet, ///< map<NodeGid,set<FieldEnr>>
           const std::set<XFEM::FieldEnr>& enrfieldset,
           const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz
       );
