@@ -720,12 +720,13 @@ void CONTACT::AbstractStrategy::DoWriteRestart(RCP<Epetra_Vector>& activetoggle,
       if (!node)
         dserror("ERROR: Cannot find node with gid %", gid);
       CNode* cnode = static_cast<CNode*>(node);
-
+      int dof = (activetoggle->Map()).LID(gid);
+      
       // set value active / inactive in toggle vector
       if (cnode->Active())
-        (*activetoggle)[j]=1;
+        (*activetoggle)[dof]=1;
       if (cnode->Slip())
-        (*sliptoggle)[j]=1;
+        (*sliptoggle)[dof]=1;
     }
   }
 
