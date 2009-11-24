@@ -78,15 +78,7 @@ isselfcontact_(false)
   if (selfcontact) isselfcontact_=true;
   
   // check for infeasible self contact combinations
-  INPAR::CONTACT::SolvingStrategy stype =
-        Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(params,"STRATEGY");
-  
-  if (selfcontact && stype == INPAR::CONTACT::solution_auglag)
-    dserror("ERROR: Self contact only implemented for Lagrange multiplier or penalty strategy!");
-  
-  INPAR::CONTACT::ContactType ctype =
-        Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(params,"CONTACT");
-  
+  INPAR::CONTACT::ContactType ctype = Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(params,"CONTACT");
   if (selfcontact > 0 && ctype != INPAR::CONTACT::contact_normal)
     dserror("ERROR: Self contact only implemented for frictionless contact!");
   
@@ -782,13 +774,22 @@ void CONTACT::AbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader,
   // read restart information on Lagrange multipliers
   z_ = rcp(new Epetra_Vector(*gsdofrowmap_));
   zold_ = rcp(new Epetra_Vector(*gsdofrowmap_));
-  reader.ReadVector(LagrMultOld(),"lagrmultold");
   reader.ReadVector(LagrMult(),"lagrmultold");
+  reader.ReadVector(LagrMultOld(),"lagrmultold");
   
   // store restart information on Lagrange multipliers into nodes
-  StoreNodalQuantities(AbstractStrategy::lmold);
   StoreNodalQuantities(AbstractStrategy::lmcurrent);
-    
+  StoreNodalQuantities(AbstractStrategy::lmold);
+  
+  // only for Augmented strategy
+  INPAR::CONTACT::SolvingStrategy st = Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(),"STRATEGY");
+  if (st == INPAR::CONTACT::solution_auglag)
+  {
+    zuzawa_ = rcp(new Epetra_Vector(*gsdofrowmap_));
+    reader.ReadVector(LagrMultUzawa(),"lagrmultold");
+    StoreNodalQuantities(AbstractStrategy::lmuzawa);
+  }
+  
   // store restart Mortar quantities into nodes
   StoreDM("old");
   StoreNodalQuantities(AbstractStrategy::activeold);
