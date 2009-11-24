@@ -98,7 +98,7 @@ Maintainer: Alexander Popp
 
 // CONTACT PROJECTION AND INTEGRATION (2D)
 #define CONTACTPROJTOL 0.05     /* projection tolerance for overlap (2D)*/
-#define CONTACTPROJLIM 1.0e-8   /* exact projection tolerance (2D) */
+#define CONTACTPROJLIM 1.0e-8   /* exact projection limit (no tolerance!) (2D) */
 
 // CONTACT PROJECTION AND INTEGRATION (3D)
 #define CONTACTCLIPTOL 1.0e-12  /* tolerance for polygon clipping (3D) */
