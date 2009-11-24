@@ -814,15 +814,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   // tolerance for inv_analysis
   DoubleParameter("INV_ANA_TOL",1.0,"tolerance for inverse analysis",&iap);
-  
+
   // perturbation parameters
   DoubleParameter("INV_ALPHA",1.0e-3,"perturbation parameters",&iap);
   DoubleParameter("INV_BETA",1.0e-3,"perturbation parameters",&iap);
 
   // initial regularization parameter
   DoubleParameter("INV_INITREG",1.0,"initial regularization parameter",&iap);
-  
-  
+
+
   setNumericStringParameter("MONITORFILE","none.monitor",
                             "filename of file containing measured displacements",
                             &iap);
@@ -2097,7 +2097,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                      INPAR::ELCH::natural_convection_substance,
                                      INPAR::ELCH::natural_convection_ion),
                                &elchcontrol);
-
+  BoolParameter("GALVANOSTATIC","No","flag for galvanostatic mode",&elchcontrol);
+  DoubleParameter("GSTATABSTOL",1e-4,"Convergence check tolerance for galvanostatic mode",&elchcontrol);
+  IntParameter("GSTATFUNCNO",-1,"function number defining the imposed current curve",&elchcontrol);
+  IntParameter("GSTATITEMAX",10,"maximum number of iterations for galvanostatic mode",&elchcontrol);
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& combustcontrol = list->sublist("COMBUSTION CONTROL",false,
       "control parameters for a combustion problem");
@@ -2388,10 +2391,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                      yesnotuple,yesnovalue,&fsidyn);
   setStringToIntegralParameter<int>("SYMMETRICPRECOND","No","Symmetric block GS preconditioner in monolithic FSI or ordinary GS",
                                      yesnotuple,yesnovalue,&fsidyn);
-  
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& search_tree = list->sublist("SEARCH TREE",false,"");
-  
+
   setStringToIntegralParameter<INPAR::GEO::TreeType>("TREE_TYPE","notree","set tree type",
                                    tuple<std::string>("notree","octree3d","quadtree3d","quadtree2d"),
                                    tuple<INPAR::GEO::TreeType>(
