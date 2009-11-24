@@ -1321,151 +1321,165 @@ void CONTACT::BinaryTreeSelf::InitializeTreeBottomUp(map <RCP<DualEdge>,vector <
 }
 
 /*----------------------------------------------------------------------*
- | set adjacent tree nodes of leaf-nodes in the lowest layer (3D-SC) (public)    popp 07/09|
+ | Set adjacent treenodes of leaf-nodes in lowest layer (3D)  popp 11/09|
  *----------------------------------------------------------------------*/
 void CONTACT::BinaryTreeSelf::CalculateAdjacentLeaves()
 {
-  //get the adjacent treenodes of each treenode in the lowest layer
-  //and save the adjacent leafs which are in the same layer
+  // get the adjacent treenodes of each treenode in the lowest layer
+  // and save the adjacent leafs which are in the same layer
   int maxlayer = treenodes_.size()-1;
-  map<int, RCP<BinaryTreeSelfNode> > ::iterator leafiter = leafsmap_.begin(),
-                            leafiter_end = leafsmap_.end();
-  while(leafiter != leafiter_end)
+  map<int, RCP<BinaryTreeSelfNode> > ::iterator leafiter = leafsmap_.begin();
+  map<int, RCP<BinaryTreeSelfNode> > ::iterator leafiter_end = leafsmap_.end();
+  
+  // loop over all leaf treenodes
+  while (leafiter != leafiter_end)
   {
-    if(leafiter->second->Layer() == maxlayer)
+    // do only if in lowest layer
+    if (leafiter->second->Layer() == maxlayer)
     {
-      vector<RCP<BinaryTreeSelfNode> > adjtnodessamelayer_;
-      vector<RCP<BinaryTreeSelfNode> > adjtnodes_=adjacencymatrix_[leafiter->first];
-      for(int i=0; i<(int)adjtnodes_.size();i++)
+      vector<RCP<BinaryTreeSelfNode> > adjtnodessamelayer;
+      vector<RCP<BinaryTreeSelfNode> > adjtnodes=adjacencymatrix_[leafiter->first];
+      
+      // search for adjacent treenodes in lowest layer
+      for (int i=0;i<(int)adjtnodes.size();++i)
       {
-        if(adjtnodes_[i]->Layer() == maxlayer)
-          adjtnodessamelayer_.push_back(adjtnodes_[i]);
+        if (adjtnodes[i]->Layer() == maxlayer)
+          adjtnodessamelayer.push_back(adjtnodes[i]);
       }
-      leafiter->second->SetAdjacentTnodes(adjtnodessamelayer_);
+      
+      // store in current treenode
+      leafiter->second->SetAdjacentTnodes(adjtnodessamelayer);
     }
-    leafiter++;
+    
+    // increment iterator
+    ++leafiter;
   }
     
   return;
 }
 
 /*----------------------------------------------------------------------*
- | set adjacent tree nodes of the tree (3D-SC) (public)    popp 07/09|
+ | Set adjacent treenodes of the whole tree (3D)              popp 11/09|
  *----------------------------------------------------------------------*/
 void CONTACT::BinaryTreeSelf::CalculateAdjacentTnodes()
 {
-  //calculate adjacent treenodes in the same layer of the each treenode above the leaf-layer
-  //they are calculated in a bottom up way, so the adjacent treenodes of the
-  //lowest layer must have been calculated 
-  
+  // calculate adjacent treenodes in the same layer of the each treenode
+  // above leaf-layer in a bottom up way, so that the adjacent treenodes of
+  // the lowest layer MUST have been calculated before (see above) 
   int maxlayer = treenodes_.size();
-  for(int i = maxlayer-2; i >= 0;i--)
+  
+  // loop over all layers (bottom-up, starting in 2nd lowest layer)
+  for (int i=maxlayer-2; i>=0; --i)
   {
+    // loop over all treenodes of this layer
     for(int j=0; j< (int)treenodes_.at(i).size();j++)
     {
-      //vector of adjacent treenodes
-      vector<RCP<BinaryTreeSelfNode> > adjtnodes_;
+      // vector of adjacent treenodes
+      vector<RCP<BinaryTreeSelfNode> > adjtnodes;
       
-      if(treenodes_[i][j]->Type() != SELF_LEAF)
+      //******************************************************************
+      // CASE 1: treenode is an inner node
+      //******************************************************************
+      if (treenodes_[i][j]->Type() != SELF_LEAF)
       {
-        //get the adjacent treenodes of the children
-        vector<RCP<BinaryTreeSelfNode> > adjofleftchild_ = treenodes_[i][j]
-                                                       ->Leftchild()->AdjacentTreenodes(),
-                                    adjofrightchild_ = treenodes_[i][j]
-                                                       ->Rightchild()->AdjacentTreenodes();
+        // get the adjacent treenodes of the children
+        vector<RCP<BinaryTreeSelfNode> > adjofleftchild = treenodes_[i][j]->Leftchild()->AdjacentTreenodes();
+        vector<RCP<BinaryTreeSelfNode> > adjofrightchild = treenodes_[i][j]->Rightchild()->AdjacentTreenodes();
         
-        //check the adjacent treenodes of the left child
-        for(int k=0;k< (int)adjofleftchild_.size();k++)
+        // check the adjacent treenodes of the left child
+        for (int k=0;k<(int)adjofleftchild.size();++k)
         {
-          //check if the parent of the adjacent node of the child has already been saved
-          if(adjofleftchild_[k] != treenodes_[i][j]->Rightchild())
+          // check if the parent of the adjacent node of the child has already been saved
+          if (adjofleftchild[k] != treenodes_[i][j]->Rightchild())
           {
-            bool issaved=false;
-            for(int l=0;l<(int)adjtnodes_.size();l++)
+            bool issaved = false;
+            for (int l=0;l<(int)adjtnodes.size();++l)
             {
-              if(adjtnodes_[l] == null)
-                dserror("null pointer");
-              if(adjofleftchild_[k]->Parent() == adjtnodes_[l])
+              if (adjtnodes[l] == null) dserror("null pointer");
+              if (adjofleftchild[k]->Parent() == adjtnodes[l])
               {
                 issaved=true;
                 break;
               }
             }
             
-            if(!issaved)
-              adjtnodes_.push_back(adjofleftchild_[k]->Parent());
+            if (!issaved) adjtnodes.push_back(adjofleftchild[k]->Parent());
           }
         }
         
-        //check the adjacent treenodes of the right child
-        for(int k=0;k< (int)adjofrightchild_.size();k++)
+        // check the adjacent treenodes of the right child
+        for (int k=0;k<(int)adjofrightchild.size();++k)
         {
-          //check if the parent of the adjacent node of the child has already been saved
-          if(adjofrightchild_[k] != treenodes_[i][j]->Leftchild())
+          // check if the parent of the adjacent node of the child has already been saved
+          if (adjofrightchild[k] != treenodes_[i][j]->Leftchild())
           {
-            bool issaved=false;
-            for(int m=0;m<(int)adjtnodes_.size();m++)
+            bool issaved = false;
+            for (int m=0;m<(int)adjtnodes.size();++m)
             {
-              if(adjofrightchild_[k]->Parent() == adjtnodes_[m])
+              if (adjtnodes[m] == null) dserror("null pointer");
+              if (adjofrightchild[k]->Parent() == adjtnodes[m])
               {
                 issaved=true;
                 break;
               }
             }
-            if(!issaved)
-              adjtnodes_.push_back(adjofrightchild_[k]->Parent());
+            
+            if(!issaved) adjtnodes.push_back(adjofrightchild[k]->Parent());
           }
         }
         
-        treenodes_[i][j]->SetAdjacentTnodes(adjtnodes_);  
-        
+        // finally set adjacent treenodes of current treenode
+        treenodes_[i][j]->SetAdjacentTnodes(adjtnodes);    
       }
       
-      else //tree node is a leaf, which is not in the lowest layer
+      //******************************************************************
+      // CASE 2: treenode is a leaf node above the lowest layer
+      //******************************************************************
+      else
       {
-        //get the adjacent leaf nodes from the adjacencymatrix
+        // get the adjacent leaf nodes from the adjacencymatrix
         int gid = treenodes_[i][j]->Elelist()[0];
-        if(adjacencymatrix_.find(gid)==adjacencymatrix_.end())
-          dserror("element not in adjazencymatrix!!");
-        vector<RCP<BinaryTreeSelfNode> > adjleafs_=adjacencymatrix_[gid];
+        if (adjacencymatrix_.find(gid)==adjacencymatrix_.end()) dserror("element not in adjacencymatrix!!");
+        vector<RCP<BinaryTreeSelfNode> > adjleafs = adjacencymatrix_[gid];
         
-        for(int n=0; n<(int)adjleafs_.size();n++)
+        // loop over all adjacent leaf nodes
+        for (int n=0;n<(int)adjleafs.size();++n)
         {
-          //for each adjacent leaf find the parent, which is on the same layer
-          //as the current treenode
-            RCP<BinaryTreeSelfNode>  adjtnode = adjleafs_[n];
-            int diff= adjleafs_[n]->Layer()-i;
-            if(diff>=0)
+          // for each adjacent leaf find the parent, which is on the
+          // same layer as the current treenode
+          RCP<BinaryTreeSelfNode>  adjtnode = adjleafs[n];
+          int diff = adjleafs[n]->Layer() - i;
+          
+          // go through layers
+          if (diff >= 0)
+          {
+            while (diff > 0)
             {
-              while(diff > 0)
-              {
-                adjtnode = adjtnode->Parent();
-                diff--;
-              }
-              
-              //check if the treenode has already been saved as adjacent node
-              bool issaved=false;
-              for(int p=0;p<(int)adjtnodes_.size();p++)
-              {
-                
-                if(adjtnode==null)
-                  dserror("null vector!!");
-                
-                if(adjtnode == adjtnodes_[p])
-                {
-                  issaved=true;
-                  break;
-                }
-              }
-              if(!issaved)
-                adjtnodes_.push_back(adjtnode);
+              adjtnode = adjtnode->Parent();
+              --diff;
             }
+            
+            // check if the treenode has already been saved as adjacent node
+            bool issaved = false;
+            for (int p=0;p<(int)adjtnodes.size();++p)
+            {
+              if (adjtnode==null) dserror("null vector!!");
+              if (adjtnode == adjtnodes[p])
+              {
+                issaved=true;
+                break;
+              }
+            }
+            
+            if (!issaved) adjtnodes.push_back(adjtnode);
+          }
         }
-        //save the found treenodes as adjacent treenodes
-        treenodes_[i][j]->SetAdjacentTnodes(adjtnodes_);  
+        
+        // finally set adjacent treenodes of current treenode
+        treenodes_[i][j]->SetAdjacentTnodes(adjtnodes);  
       }
-    }
-  }
+    } // all treenodes of current layer
+  } // all tree layers
   
   return;
 }
@@ -1784,50 +1798,65 @@ void CONTACT::BinaryTreeSelf::MasterSlaveSorting(int eleID,bool isslave)
 }
                                                       
 /*----------------------------------------------------------------------*
- | Search for contact between TreeNodes and automatically update 
- | treeEvaluate Binary search tree for combined search and update (public) popp 06/09|
+ | Combined update, contact search and master/slave sorting   popp 11/09|
  *----------------------------------------------------------------------*/
 void CONTACT::BinaryTreeSelf::SearchContactCombined()
 {
-  contactpairs_.clear();
-
+  // check is root node available
   if (root_==null) dserror("ERROR: No root node for search!");
   
+  // reset contact pairs from last iteration
+  contactpairs_.clear();
+
+  //**********************************************************************
+  // STEP 1: update geometry (DOPs and sample vectors)
+  //**********************************************************************
   root_->CalculateSlabsDop(false);
   root_->EnlargeGeometry(enlarge_);
-  
   UpdateNormals();
 
+  //**********************************************************************
+  // STEP 2: recursive search for self contact starting at root node
+  //**********************************************************************
   SearchSelfContact(root_);
   
-  //Slave/master facet sorting
- 
-  //set all contact elements and nodes on the surface to master
-  map<int, RCP<BinaryTreeSelfNode> > ::iterator leafiter = leafsmap_.begin(),
-                               leafiter_end = leafsmap_.end();
-  while(leafiter != leafiter_end)
+  //**********************************************************************
+  // STEP 3: slave and master facet sorting
+  //**********************************************************************
+  
+  // first (re)set all contact elements and nodes to master
+  map<int, RCP<BinaryTreeSelfNode> > ::iterator leafiter = leafsmap_.begin();
+  map<int, RCP<BinaryTreeSelfNode> > ::iterator leafiter_end = leafsmap_.end();
+  
+  // loop over all leaf treenodes
+  while (leafiter != leafiter_end)
   {
     int gid = leafiter->first;
     DRT::Element* element= idiscret_.gElement(gid);
     CONTACT::CElement* celement = static_cast<CONTACT::CElement*>(element);
     
-    if(celement->IsSlave() == true)
+    if (celement->IsSlave() == true)
     {
-      celement->SetSlave()=false;
-      for(int i=0; i<(int)element->NumNode();i++)
+      // reset element to master
+      celement->SetSlave() = false;
+      
+      // reset nodes to master
+      for (int i=0;i<(int)element->NumNode();++i)
       {
         DRT::Node* node = element->Nodes()[i];
         CONTACT::CNode* cnode = static_cast<CONTACT::CNode*>(node);
-        cnode->SetSlave()=false;
+        cnode->SetSlave() = false;
       }
     }
 
-    leafiter++;
+    // increment iterator
+    ++leafiter;
   }
   
-  while(!contactpairs_.empty())
+  // now do new slave and master sorting
+  while (!contactpairs_.empty())
   { 
-    DRT::Element* element= idiscret_.gElement(contactpairs_.begin()->first);
+    DRT::Element* element = idiscret_.gElement(contactpairs_.begin()->first);
     CONTACT::CElement* celement = static_cast<CONTACT::CElement*>(element);
     MasterSlaveSorting(contactpairs_.begin()->first,celement->IsSlave());
   }
@@ -1836,61 +1865,28 @@ void CONTACT::BinaryTreeSelf::SearchContactCombined()
 }
 
 /*----------------------------------------------------------------------*
- | Update normals and qualified sample vectors of the whole tree(public) popp 06/09|
+ | Update normals and qualified sample vectors                popp 11/09|
  *----------------------------------------------------------------------*/
 void CONTACT::BinaryTreeSelf::UpdateNormals()
 {
-  //first update normals and sample vectors of all leaf-nodes
+  // first update normals and sample vectors of all leaf-nodes
+  map<int, RCP<BinaryTreeSelfNode> > ::iterator iter = leafsmap_.begin();
+  map<int, RCP<BinaryTreeSelfNode> > ::iterator iter_end = leafsmap_.end();
   
-  map<int, RCP<BinaryTreeSelfNode> > ::iterator iter = leafsmap_.begin(),
-                               iter_end = leafsmap_.end();
-  while(iter != iter_end)
+  while (iter != iter_end)
   {
     iter->second->CalculateQualifiedVectors();
-    iter++;
+    ++iter;
   }
   
-  //update the rest of the tree in a bottom up way
-  for(int i=(int)treenodes_.size()-1; i>=0; i--)
+  // now update the rest of the tree layer by layer in a bottom-up way
+  for (int i=(int)treenodes_.size()-1; i>=0; --i)
   {
-    for(int j=0; j<(int)treenodes_[i].size();j++)
-      if(treenodes_[i][j]->Type() != SELF_LEAF)
+    for (int j=0; j<(int)treenodes_[i].size(); ++j)
+      if (treenodes_[i][j]->Type() != SELF_LEAF)
         treenodes_[i][j]->UpdateQualifiedVectorsBottomUp();
   }
   
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | Update normals and qualified sample vectors of one treenode(public) popp 08/09|
- *----------------------------------------------------------------------*/
-void CONTACT::BinaryTreeSelf::UpdateQualifiedVectors(RCP<BinaryTreeSelfNode> treenode)
-{
-  vector<bool> qualifiedvectors;
-
-  qualifiedvectors.resize(nvectors_);
-  
-  map<int, RCP<BinaryTreeSelfNode> >   leafsmap =   leafsmap_; 
-  for(int j=0; j<(int)treenode->Elelist().size();j++)
-  {
-    leafsmap[treenode->Elelist()[j]]->CalculateQualifiedVectors();
-  }
-  
-  for(int i =0; i<(int)qualifiedvectors.size(); i++)
-  {
-    bool isvalid=true;
-    for(int j=0; j<(int)treenode->Elelist().size();j++)
-    {
-      RCP<BinaryTreeSelfNode> leaf = leafsmap[treenode->Elelist()[j]];
-      if( !(leaf->QualifiedVectors()[i]) )
-      {
-        isvalid = false;
-        break;
-      }
-    }
-    qualifiedvectors.at(i) = isvalid;
-  }
-  treenode->SetQualifiedVectors(qualifiedvectors);
   return;
 }
 

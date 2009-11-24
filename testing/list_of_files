@@ -207,6 +207,7 @@ Input/contact2D_slidingblock_tresca.dat                 x        x        x     
 Input/contact2D_slidingblock_coulomb.dat                x        x        x        -        -        -
 Input/contact2D_twobeamsvertical.dat                    x        x        x        -        -        -
 Input/contact2D_twobeamshorizontal.dat                  x        x        x        -        -        -
+Input/contact2D_self.dat                                x        x        x        -        -        -
 Input/contact3D_lin.dat                                 x        x        x        -        -        -
 Input/contact3D_lin_penalty.dat                         x        x        x        -        -        -
 Input/contact3D_lin_augmented.dat                       x        x        x        -        -        -

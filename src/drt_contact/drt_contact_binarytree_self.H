@@ -743,12 +743,6 @@ public:
       
   */ 
   void UpdateNormals();
-   
-  /*!
-  \brief Update normals and qualified sample vectors of one treenode
-      
-  */ 
-  void UpdateQualifiedVectors(RCP<BinaryTreeSelfNode> treenode);
 
   //@}
       
