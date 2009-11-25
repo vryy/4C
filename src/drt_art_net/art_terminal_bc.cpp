@@ -438,7 +438,7 @@ void ART::UTILS::SolveExplWindkesselBC(RefCountPtr<DRT::Discretization> actdis,
 
 
     // calculate the initial wave speed
-    const double co = sqrt(beta/(2.0*dens*Ao));
+    //    const double co = sqrt(beta/(2.0*dens*Ao));
 
     // -----------------------------------------------------------------
     // Find the type of windkessel model
@@ -450,7 +450,7 @@ void ART::UTILS::SolveExplWindkesselBC(RefCountPtr<DRT::Discretization> actdis,
       // Read in the wind kessel parameters
       // ---------------------------------------------------------------
       // define a terminal resistance
-      double R, Rf, Pout, dFdA;
+      double R, Pout, dFdA;
       // read in the reflection value
       if ((*curve)[1]>=0)
       {

@@ -288,10 +288,10 @@ ART::UTILS::ArtJunctionBc::ArtJunctionBc( RCP<DRT::Discretization>  actdis,
                                           double dta,
                                           int condid,
                                           int numcond):
+  condid_(condid),
   discret_(actdis),
   output_ (output),
-  IOart_flag_(IOart_flag),
-  condid_(condid)
+  IOart_flag_(IOart_flag)
 {
   //----------------------------------------------------------------------
   // Check whether all the nodes have simillar flow direction
@@ -299,7 +299,7 @@ ART::UTILS::ArtJunctionBc::ArtJunctionBc( RCP<DRT::Discretization>  actdis,
   //----------------------------------------------------------------------
   int IOartFlag = IOart_flag_[0];
   bool IOartFlags_are_fine = false;
-  for(int i=1; i<IOart_flag_.size(); i++)
+  for(unsigned int i=1; i<IOart_flag_.size(); i++)
   {
     if(IOart_flag_[i]!= IOartFlag)
     {
@@ -611,7 +611,7 @@ void ART::UTILS::ArtJunctionBc::Jacobian_Eval( Epetra_SerialDenseMatrix & Jacobi
   // fill the entities that have to do with the pressure conservation
   const double P_u = rho[0]*(Q[0]/A[0]);
   const double P_A = 0.5*beta[0]/(Ao[0]*sqrt(A[0]));
-  for(int i=1;i<nodes_.size();i++)
+  for(unsigned int i=1;i<nodes_.size();i++)
   {
     Jacobian(i+nodes_.size(),0              ) =  P_u;
     Jacobian(i+nodes_.size(),i              ) = -rho[i]*Q[i]/A[i];

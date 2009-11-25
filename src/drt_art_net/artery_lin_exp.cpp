@@ -1066,7 +1066,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
       // fill the required parameters to solve the inlet BC
       // -----------------------------------------------------------------------------
       ParameterList Cparams;
-      Cparams.set<int>   ("in out flag",TermIO);
+      Cparams.set<int>   ("in out flag",int(TermIO));
       Cparams.set<double>("total time", params.get<double>("total time"));
       Cparams.set<double>("artery beta",beta);
       Cparams.set<double>("artery area",area0_(i));

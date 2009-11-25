@@ -98,7 +98,7 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization> actdi
   // -------------------------------------------------------------------
   const Epetra_Map* dofrowmap  = discret_->DofRowMap();
 
-  const Epetra_Map* dofcolmap  = discret_->DofColMap();
+  //  const Epetra_Map* dofcolmap  = discret_->DofColMap();
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
@@ -332,7 +332,7 @@ void ART::ArtNetExplicitTimeInt::Solve()
   // -------------------------------------------------------------------
 
   // get cpu time
-  const double tcpuele = ds_cputime();
+  //  const double tcpuele = ds_cputime();
   {
     // time measurement: element
     TEUCHOS_FUNC_TIME_MONITOR("      + element calls");
@@ -486,7 +486,7 @@ void ART::ArtNetExplicitTimeInt::AssembleMatAndRHS()
   TEUCHOS_FUNC_TIME_MONITOR("      + element calls");
 
   // get cpu time
-  const double tcpu=ds_cputime();
+  //  const double tcpu=ds_cputime();
 
 } // ArtNetExplicitTimeInt::AssembleMatAndRHS
 

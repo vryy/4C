@@ -35,7 +35,7 @@ Maintainer: Mahmoud Ismail
  |                                                                      |
  | ...................................................................  |
  |                                                                      |
- | The gnuplot format exporter will export the resuts (DOFs) of each    |
+ | The gnuplot format exporter will export the results (DOFs) of each   |
  | artery in a different file.                                          |
  | Each artery is defined as a set of elements that belong to a similar |
  | design line (DLINE)                                                  |
@@ -64,7 +64,6 @@ ART::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper( RCP<DRT::Discretizat
   // -------------------------------------------------------------------
   vector<DRT::Condition*> myConditions;
   discret_->GetCondition("ArtWriteGnuplotCond",myConditions);
-
   int numofcond = myConditions.size();
 
   // -------------------------------------------------------------------
@@ -75,7 +74,7 @@ ART::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper( RCP<DRT::Discretizat
   {
     // Start by creating a map of classes that will export the wanted arteries
     int Artery_Number;
-    for(int i=0; i<myConditions.size(); i++)
+    for(unsigned int i=0; i<myConditions.size(); i++)
     {
       // ---------------------------------------------------------------
       // Read in the artery number and the nodes assosiated with the
@@ -83,6 +82,80 @@ ART::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper( RCP<DRT::Discretizat
       // ---------------------------------------------------------------
       Artery_Number = myConditions[i]->GetInt("ArteryNumber");
       const vector<int> * nodes = myConditions[i]->Nodes();
+
+      // ---------------------------------------------------------------
+      // Sort all nodes so such that inlet node is the first and outlet
+      // node is the last
+      // ---------------------------------------------------------------
+      
+      // step (1) find both inlet and outlet nodes
+      DRT::Node* nd;
+      DRT::Node* ndi; // ith node
+      DRT::Node* ndl; // last node
+      //      cout<<"finding nodes"<<endl;
+      for(unsigned int n=0; n<nodes->size();n++)
+      {
+        nd = actdis->gNode((*nodes)[n]);
+        if (nd->GetCondition("ArtInOutCond"))
+        {
+          string TerminalType = *(nd->GetCondition("ArtInOutCond")->Get<string>("terminaltype"));
+          if(TerminalType == "inlet")
+            ndi = nd;
+          else
+            ndl = nd;
+        }
+      }
+      //      cout<<"nodes found"<<endl;
+      if(ndl == NULL)
+        dserror("artery %d has no outlet node!",Artery_Number);
+      if(ndi == NULL)
+        dserror("artery %d has no inlet node!",Artery_Number);
+
+      //    cout<<"Before defs"<<endl;
+      // loop over all nodes
+      vector<int> * sorted_nodes = new vector<int>;
+      DRT::Element ** Elements = ndi->Elements();
+      //    cout<<"ndi Elements extracted"<<endl;
+      DRT::Element * Elem_i;
+      if (ndi->NumElement()!=1)
+        dserror("artery %d must have one element connected to the inlet node!",Artery_Number);
+      //    cout<<"H1"<<endl;
+      Elem_i = & Elements[0][0];
+      //    cout<<"H2"<<endl;
+
+      sorted_nodes->push_back(ndi->Id());
+      //    cout<<"After defs"<<endl;
+      for(unsigned int n=0; n<nodes->size()-2;n++)
+      {
+        //      cout<<"LOOPING: "<<n<<endl;
+        //      cout<<*ndi<<endl;
+        //      cout<<"pushed back"<<endl;
+        // find the next node!
+        nd = Elem_i->Nodes()[0];
+        //      cout<<"this is funny"<<endl;
+        //      cout<<"nd * "<<nd;
+        //      cout<<"nd "<<*nd<<endl;
+        if (Elem_i->Nodes()[0]->Id() != ndi->Id())
+        ndi = Elem_i->Nodes()[0];
+        else
+        ndi = Elem_i->Nodes()[1];
+        if (ndi->NumElement()!=2)
+          dserror("artery %d must have two elements connected to any internal node!",Artery_Number);
+        //      cout<<"node found"<<endl;
+        // find the next element
+        Elements = ndi->Elements();
+        //      cout<<"Elements * "<<Elements<<endl;
+        //      cout<<Elements[0][0]<<endl;
+        //      cout<<Elements[1][0]<<endl;
+        //      cout<<*Elem_i<<endl;
+        if (Elements[0][0].Id()!= Elem_i->Id())
+        Elem_i = Elements[0];
+        else
+        Elem_i = Elements[1];
+        sorted_nodes->push_back(ndi->Id());        
+      }
+      
+      sorted_nodes->push_back(ndl->Id());
 
       // ---------------------------------------------------------------
       // Allocate the gnuplot export condition
@@ -95,13 +168,21 @@ ART::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper( RCP<DRT::Discretizat
       // condition exists more than once, which shouldn't be allowed
       // ---------------------------------------------------------------
       bool inserted  = agmap_.insert( make_pair( Artery_Number, artgnu_c ) ).second;
-      bool inserted2 = agnode_map_.insert(make_pair(Artery_Number, nodes)).second;
+      bool inserted2 = agnode_map_.insert(make_pair(Artery_Number, sorted_nodes)).second;
 
       if(!inserted || !inserted2)
         dserror("Each artery must have a unique artery number, please correct your input file\n");
+
+      cout<<"----------------------------------------------------------"<<endl;
+      cout<<"Artery["<<Artery_Number<<"] has the following sorted nodes"<<endl;
+      for(unsigned int n=0; n<sorted_nodes->size();n++)
+      {
+        cout<<(*sorted_nodes)[n]<<"\t";
+      }
+      cout<<"----------------------------------------------------------"<<endl;
     }
   }
-
+  //throw;
 }
 
 
@@ -208,7 +289,7 @@ void ART::UTILS::ArtWriteGnuplot::Write(RCP<DRT::Discretization>  discret,
   double dL, time;
   int ElemNum;
 
-  for(int i =0; i<nodes->size()-1; i++)
+  for(unsigned int i =0; i<nodes->size()-1; i++)
   {  
 
     // get the elements connected to the node
@@ -251,22 +332,22 @@ void ART::UTILS::ArtWriteGnuplot::Write(RCP<DRT::Discretization>  discret,
 
     // export the degrees of freedom
     (*fout_)<<time<<"\t"<<L<<"\t";
-    for (int j =0; j <lm.size()/2; j++)
+    for (unsigned int j =0; j <lm.size()/2; j++)
     {
       (*fout_)<<myqanp[j]<<"\t";
     }
-    (*fout_)<<endl;
+    (*fout_)<<nd->Id()<<endl;
     // Update L
     L+=dL;
     // export the dof of the final node
     if(i==nodes->size()-2)
     {
       (*fout_)<<time<<"\t"<<L<<"\t";
-      for (int j =lm.size()/2; j <lm.size(); j++)
+      for (unsigned int j =lm.size()/2; j <lm.size(); j++)
       {
         (*fout_)<<myqanp[j]<<"\t";
       }
-      (*fout_)<<endl;
+      (*fout_)<<nd->Id()<<endl;
     }
   }
   (*fout_)<<endl;

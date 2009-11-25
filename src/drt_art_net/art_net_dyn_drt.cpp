@@ -72,7 +72,7 @@ void dyn_art_net_drt()
   // -------------------------------------------------------------------
   const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
   const Teuchos::ParameterList& probsize = DRT::Problem::Instance()->ProblemSizeParams();
-  const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
+  //  const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
   const Teuchos::ParameterList& artdyn   = DRT::Problem::Instance()->ArterialDynamicParams();
 
   if (actdis->Comm().MyPID()==0)
