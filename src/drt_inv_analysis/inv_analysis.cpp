@@ -131,12 +131,18 @@ STR::InvAnalysis::InvAnalysis(Teuchos::RCP<DRT::Discretization> dis,
 /* analyse */
 void STR::InvAnalysis::Integrate()
 {
-  int max_itter = 100;
+  const Teuchos::ParameterList& iap = DRT::Problem::Instance()->InverseAnalysisParams();
+  double alpha  = iap.get<double>("INV_ALPHA");
+  double beta   = iap.get<double>("INV_BETA");
+  int max_itter = iap.get<double>("INV_ANA_MAX_RUN");
   output_->NewResultFile((numb_run_-1));
   // fitting loop
   do
   {
-    double inc = 10e-5;
+    vector<double> inc(np_, 0.0);
+    for (int i=0; i<np_;i++)
+      inc[i] = alpha + beta * p_[i];
+
     Epetra_SerialDenseMatrix cmatrix(nmp_, np_+1);
 
     if (discret_->Comm().MyPID()==0)
@@ -147,7 +153,7 @@ void STR::InvAnalysis::Integrate()
         cout << "------------------------------- run "<< i+1 << " of: " << np_+1 <<"---------------------------------" <<endl;
       Epetra_SerialDenseVector p_cur = p_;
       if (i!= np_)
-        p_cur[i]=p_[i] + inc;
+        p_cur[i]=p_[i] + inc[i];
       SetParameters(p_cur);
       Epetra_SerialDenseVector cvector = CalcCvector();
       for (int j=0; j<nmp_;j++)
@@ -173,7 +179,6 @@ void STR::InvAnalysis::Integrate()
     discret_->Comm().Broadcast(&error_o_,1,0);
     discret_->Comm().Broadcast(&error_,1,0);
     discret_->Comm().Broadcast(&numb_run_,1,0);
-
   }while(numb_run_<max_itter && error_>tol_) ;      // while (abs(error_o_-error_)>0.001 && error_>tol_ && numb_run_<max_itter);
 
   cout << "Just before printout " << endl;
@@ -189,7 +194,7 @@ void STR::InvAnalysis::Integrate()
   return;
 }
 
-void STR::InvAnalysis::CalcNewParameters(Epetra_SerialDenseMatrix cmatrix,  double inc)
+void STR::InvAnalysis::CalcNewParameters(Epetra_SerialDenseMatrix cmatrix,  vector<double> inc)
 {
   // initalization of the Jacobi and storage matrix
   Epetra_SerialDenseMatrix J(nmp_, np_);
@@ -200,7 +205,7 @@ void STR::InvAnalysis::CalcNewParameters(Epetra_SerialDenseMatrix cmatrix,  doub
 
   for (int i=0; i<nmp_; i++)
     for (int j=0; j<np_; j++)
-      J(i, j) = (cmatrix(i, j)-cmatrix(i, np_)) / inc;     //calculating J(p)
+      J(i, j) = (cmatrix(i, j)-cmatrix(i, np_)) / inc[j];     //calculating J(p)
 
   sto.Multiply('T',  'N',  1,  J, J,  0);     //calculating J.T*J
 
@@ -221,13 +226,11 @@ void STR::InvAnalysis::CalcNewParameters(Epetra_SerialDenseMatrix cmatrix,  doub
   error_o_   = error_;
   error_   = rcurve.Norm2()/sqrt(nmp_);
 
-  { //Adjust training parameter
-    if (numb_run_%10==0)
-      mu_=1.;
-    else if (error_o_<error_)
-      mu_ += mup_;
-    else  mu_ -= mum_;
-  }
+  //Adjust training parameter
+  mu_ *= (error_/error_o_);
+  if (numb_run_==0)
+    mu_=1.;
+
   PrintStorage(cmatrix,  delta_p);
   return;
 }
@@ -311,7 +314,6 @@ Epetra_SerialDenseVector STR::InvAnalysis::GetCalculatedCurve()
     //nodes of the pulling direction
     const vector<int>* ia_nd_ps  = invanacond[0]->Nodes();
 
-    cout << " MyPID: " << discret_->Comm().MyPID() << endl;
     for (vector<int>::const_iterator inodegid = ia_nd_ps->begin();
                                      inodegid !=ia_nd_ps->end();
                                    ++inodegid)
