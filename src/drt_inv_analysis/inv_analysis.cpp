@@ -134,7 +134,7 @@ void STR::InvAnalysis::Integrate()
   const Teuchos::ParameterList& iap = DRT::Problem::Instance()->InverseAnalysisParams();
   double alpha  = iap.get<double>("INV_ALPHA");
   double beta   = iap.get<double>("INV_BETA");
-  int max_itter = iap.get<double>("INV_ANA_MAX_RUN");
+  int max_itter = iap.get<int>("INV_ANA_MAX_RUN");
   output_->NewResultFile((numb_run_-1));
   // fitting loop
   do
