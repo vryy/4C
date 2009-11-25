@@ -174,7 +174,7 @@ void STR::InvAnalysis::Integrate()
     discret_->Comm().Broadcast(&error_,1,0);
     discret_->Comm().Broadcast(&numb_run_,1,0);
 
-  }while(numb_run_<max_itter && error_<tol_) ;      // while (abs(error_o_-error_)>0.001 && error_>tol_ && numb_run_<max_itter);
+  }while(numb_run_<max_itter && error_>tol_) ;      // while (abs(error_o_-error_)>0.001 && error_>tol_ && numb_run_<max_itter);
 
   cout << "Just before printout " << endl;
   discret_->Comm().Barrier();
@@ -311,20 +311,20 @@ Epetra_SerialDenseVector STR::InvAnalysis::GetCalculatedCurve()
     //nodes of the pulling direction
     const vector<int>* ia_nd_ps  = invanacond[0]->Nodes();
 
-    //nodes to determine the compression
-    const vector<int>* ia_nd_fs_p = invanacond[1]->Nodes();
-    const vector<int>* ia_nd_fs_n = invanacond[2]->Nodes();
-
-    for (vector<int>::const_iterator inode = ia_nd_ps->begin();
-                                     inode !=ia_nd_ps->end();
-                                   ++inode)
+    cout << " MyPID: " << discret_->Comm().MyPID() << endl;
+    for (vector<int>::const_iterator inodegid = ia_nd_ps->begin();
+                                     inodegid !=ia_nd_ps->end();
+                                   ++inodegid)
     {
-      const DRT::Node* node = discret_->gNode(*inode);
-      if (node->Owner() == discret_->Comm().MyPID())
+      if (discret_->HaveGlobalNode(*inodegid))
       {
-        vector<int> lm = discret_->Dof(node);
-        const double disp_x = (*disp)[disp->Map().LID(lm[0])];
-        cvector_arg[0] += disp_x;
+        if (discret_->gNode(*inodegid)->Owner() == discret_->Comm().MyPID())
+        {
+          const DRT::Node* node = discret_->gNode(*inodegid);
+          vector<int> lm = discret_->Dof(node);
+          const double disp_x = (*disp)[disp->Map().LID(lm[0])];
+          cvector_arg[0] += disp_x;
+        }
       }
     }
 
@@ -334,30 +334,40 @@ Epetra_SerialDenseVector STR::InvAnalysis::GetCalculatedCurve()
       cvector_arg[0] = test/(*ia_nd_ps).size();
     }
 
-    for (vector<int>::const_iterator inode = ia_nd_fs_p->begin();
-                                     inode !=ia_nd_fs_p->end();
-                                   ++inode)
+
+    //nodes to determine the compression
+    const vector<int>* ia_nd_fs_p = invanacond[1]->Nodes();
+    const vector<int>* ia_nd_fs_n = invanacond[2]->Nodes();
+
+    for (vector<int>::const_iterator inodegid = ia_nd_fs_p->begin();
+                                     inodegid !=ia_nd_fs_p->end();
+                                   ++inodegid)
     {
-      const DRT::Node* node = discret_->gNode(*inode);
-      if (node->Owner() == discret_->Comm().MyPID())
+      if (discret_->HaveGlobalNode(*inodegid))
       {
-        vector<int> lm = discret_->Dof(node);
-        const double disp_y = (*disp)[disp->Map().LID(lm[1])];
-        cvector_arg[1] += disp_y;
+        if (discret_->gNode(*inodegid)->Owner() == discret_->Comm().MyPID())
+        {
+          const DRT::Node* node = discret_->gNode(*inodegid);
+          vector<int> lm = discret_->Dof(node);
+          const double disp_y = (*disp)[disp->Map().LID(lm[1])];
+          cvector_arg[1] += disp_y;
+        }
       }
     }
 
-
-    for (vector<int>::const_iterator inode = ia_nd_fs_n->begin();
-                                     inode !=ia_nd_fs_n->end();
-                                   ++inode)
+    for (vector<int>::const_iterator inodegid = ia_nd_fs_n->begin();
+                                     inodegid !=ia_nd_fs_n->end();
+                                   ++inodegid)
     {
-      const DRT::Node* node = discret_->gNode(*inode);
-      if (node->Owner() == discret_->Comm().MyPID())
+      if (discret_->HaveGlobalNode(*inodegid))
       {
-        vector<int> lm = discret_->Dof(node);
-        const double disp_y = (*disp)[disp->Map().LID(lm[1])];
-        cvector_arg[1] -= disp_y;
+        if (discret_->gNode(*inodegid)->Owner() == discret_->Comm().MyPID())
+        {
+          const DRT::Node* node = discret_->gNode(*inodegid);
+          vector<int> lm = discret_->Dof(node);
+          const double disp_y = (*disp)[disp->Map().LID(lm[1])];
+          cvector_arg[1] -= disp_y;
+        }
       }
     }
 
