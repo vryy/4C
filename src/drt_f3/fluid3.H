@@ -1197,7 +1197,9 @@ private:
   \param params (in/out)    : ParameterList for communication between control routine
                               and elements
   */
-  void AreaCaculation(ParameterList& params);
+  void AreaCaculation(ParameterList& params,
+                      DRT::Discretization& discretization,
+                      vector<int>&               lm);
 
  /*!
   brief integrate elemental flow rates over a surface

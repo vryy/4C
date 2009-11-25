@@ -97,7 +97,7 @@ int DRT::ELEMENTS::Fluid3Surface::Evaluate(     ParameterList&            params
     }
     case areacalc:
     {
-        AreaCaculation(params);
+      AreaCaculation(params, discretization,lm);
         break;
     }
     case flowratecalc:
@@ -1812,7 +1812,9 @@ void DRT::ELEMENTS::Fluid3Surface::ElementSurfaceTension(ParameterList& params,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Fluid3Surface::AreaCaculation(ParameterList& params)
+void DRT::ELEMENTS::Fluid3Surface::AreaCaculation(ParameterList& params,
+                                                  DRT::Discretization& discretization,
+                                                  vector<int>&               lm)
 {
   const int iel   = this->NumNode();
   const DiscretizationType distype = this->Shape();
@@ -1888,6 +1890,35 @@ void DRT::ELEMENTS::Fluid3Surface::AreaCaculation(ParameterList& params)
     xyze(1,i)=this->Nodes()[i]->X()[1];
     xyze(2,i)=this->Nodes()[i]->X()[2];
   }
+
+
+#ifdef D_ALE_BFLOW
+  // Add the deformation of the ALE mesh to the nodes coordinates
+  // displacements
+  RCP<const Epetra_Vector>      dispnp;
+  vector<double>                mydispnp;
+
+  if (parent_->IsAle())
+  {
+    dispnp = discretization.GetState("dispnp");
+    if (dispnp!=null)
+    {
+      mydispnp.resize(lm.size());
+      DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
+    }
+
+    dsassert(mydispnp.size()!=0,"paranoid");
+    for (int i=0;i<iel;++i)
+    {
+      const int fi=4*i;
+
+      xyze(0,i)+=mydispnp[  fi];
+      xyze(1,i)+=mydispnp[1+fi];
+      xyze(2,i)+=mydispnp[2+fi];
+    }
+  }
+
+#endif // D_ALE_BFLOW
 
   const IntegrationPoints2D  intpoints(gaussrule);
   for (int gpid=0; gpid<intpoints.nquad; gpid++)
@@ -1984,6 +2015,32 @@ void DRT::ELEMENTS::Fluid3Surface::FlowRateParameterCalculation(ParameterList& p
     xyze(1,i)=this->Nodes()[i]->X()[1];
     xyze(2,i)=this->Nodes()[i]->X()[2];
   }
+
+#ifdef D_ALE_BFLOW
+  // Add the deformation of the ALE mesh to the nodes coordinates
+  // displacements
+  RCP<const Epetra_Vector>      dispnp;
+  vector<double>                mydispnp;
+
+  if (parent_->IsAle())
+  {
+    dispnp = discretization.GetState("dispnp");
+    if (dispnp!=null)
+    {
+      mydispnp.resize(lm.size());
+      DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
+    }
+    dsassert(mydispnp.size()!=0,"paranoid");
+    for (int i=0;i<iel;++i)
+    {
+      const int fi=4*i;
+
+      xyze(0,i)+=mydispnp[  fi];
+      xyze(1,i)+=mydispnp[1+fi];
+      xyze(2,i)+=mydispnp[2+fi];
+    }
+  }
+#endif // D_ALE_BFLOW
 
   // Determine normal to this element
   std::vector<double> dist1(3), dist2(3), normal(3);

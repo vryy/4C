@@ -474,6 +474,13 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   thermpressam_   = 1.0;
   thermpressdtam_ = 0.0;
 
+#ifdef D_ALE_BFLOW
+  if (alefluid_)
+  {
+    discret_->ClearState();
+    discret_->SetState("dispnp", dispnp_);
+  }
+#endif // D_ALE_BFLOW
   // construct impedance bc wrapper
   impedancebc_ = rcp(new UTILS::FluidImpedanceWrapper(discret_, output_, dta_) );
 
@@ -2383,6 +2390,13 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
   discret_->ClearState();
   discret_->SetState("velnp",velnp_);
   discret_->SetState("hist",hist_);
+
+#ifdef D_ALE_BFLOW
+  if (alefluid_)
+  {
+    discret_->SetState("dispnp", dispn_);
+  }
+#endif //D_ALE_BFLOW
 
   impedancebc_->FlowRateCalculation(time_,dta_);
   impedancebc_->OutflowBoundary(time_,dta_,theta_);

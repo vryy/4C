@@ -317,3 +317,8 @@ fi
 if grep '^[[:blank:]]*D_ARTNET' "$definefile" 2>&1 > /dev/null ; then
     OBJECTS="$OBJECTS \$(OBJS_DRT_ARTNET) \$(OBJS_DRT_ARTNET_LIB)"
 fi
+
+# ALE EFFECTS ON THE BOUNDARY VOLUMETRIC FLOW RATE
+if grep '^[[:blank:]]*D_ALE_BFLOW' "$definefile" 2>&1 > /dev/null ; then
+    OBJECTS="$OBJECTS \$(OBJS_DRT_ALE_BFLOW)"
+fi
