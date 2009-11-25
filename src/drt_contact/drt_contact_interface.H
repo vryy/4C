@@ -656,6 +656,12 @@ public:
   virtual void AssembleRelMov(Epetra_Vector& jumpglobal);
 
   /*!
+  \brief Evaluate L2 Norm of tangential contact conditions 
+  
+  */
+  virtual void EvaluateTangentNorm(double& cnormtan);
+
+  /*!
   \brief Assemble gap-computed lagrange multipliers and nodal linlambda derivatives into nodal quantities
   using the Macauley bracket
   
@@ -680,8 +686,14 @@ public:
   \brief Assemble geometry dependent, tangential lagrange multipliers 
   and their derivatives in the penalty case
   */ 
-  virtual void AssembleRegTangentForces();
-    
+  virtual void AssembleRegTangentForcesPenalty();
+
+  /*!
+  \brief Assemble geometry dependent, tangential lagrange multipliers 
+  and their derivatives in the augmented lagrange case
+  */ 
+  virtual void AssembleRegTangentForcesAugmented();
+  
   /*!
   \brief Assemble lagrange multipliers into global z vector (penalty strategy)
   

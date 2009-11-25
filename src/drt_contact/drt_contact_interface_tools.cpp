@@ -5863,7 +5863,6 @@ void CONTACT::Interface::FDCheckPenaltyTracFric()
   double frcoeff = IParams().get<double>("FRCOEFF");
   double ppnor = IParams().get<double>("PENALTYPARAM");
   double pptan = IParams().get<double>("PENALTYPARAMTAN");
-
   
    // create storage for values of complementary function C
   int nrow = snoderowmap_->NumMyElements();
@@ -5878,89 +5877,114 @@ void CONTACT::Interface::FDCheckPenaltyTracFric()
   // loop over proc's slave nodes
   for (int i=0; i<snoderowmap_->NumMyElements();++i)
   {  	
-  	int gid = snoderowmap_->GID(i);
+    int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     CNode* cnode = static_cast<CNode*>(node);
     
-     // get some informatiom form the node
-     double gap = cnode->Getg();
-     int dim = cnode->NumDof();
-     double kappa = cnode->Kappa();
-     double* n = cnode->n();
+    // get some informatiom form the node
+    double gap = cnode->Getg();
+    int dim = cnode->NumDof();
+    double kappa = cnode->Kappa();
+    double* n = cnode->n();
 
-     // evaluate traction
-     Epetra_SerialDenseMatrix jumpvec(dim,1);
-     Epetra_SerialDenseMatrix tanplane(dim,dim);
-     vector<double> trailtraction(dim);
-     vector<double> tractionold(dim);
-     double magnitude = 0;
+    // evaluate traction
+    Epetra_SerialDenseMatrix jumpvec(dim,1);
+    Epetra_SerialDenseMatrix tanplane(dim,dim);
+    vector<double> trailtraction(dim);
+    vector<double> tractionold(dim);
+    double magnitude = 0;
 
-     // fill vectors and matrices
-     for (int j=0;j<dim;j++)
-     {
-     	 jumpvec(j,0) = cnode->jump()[j];
-       tractionold[j] = cnode->tractionold()[j];
+    // fill vectors and matrices
+    for (int j=0;j<dim;j++)
+    {
+      jumpvec(j,0) = cnode->jump()[j];
+      tractionold[j] = cnode->tractionold()[j];
+    }
+
+    if (dim==3)
+    {
+      tanplane(0,0)= 1-(n[0]*n[0]);
+      tanplane(0,1)=  -(n[0]*n[1]);
+      tanplane(0,2)=  -(n[0]*n[2]);
+      tanplane(1,0)=  -(n[1]*n[0]);
+      tanplane(1,1)= 1-(n[1]*n[1]);
+      tanplane(1,2)=  -(n[1]*n[2]);
+
+      tanplane(2,0)=  -(n[2]*n[0]);
+      tanplane(2,1)=  -(n[2]*n[1]);
+      tanplane(2,2)= 1-(n[2]*n[2]);
+    }
+    else if (dim==2)
+    {
+      tanplane(0,0)= 1-(n[0]*n[0]);
+      tanplane(0,1)=  -(n[0]*n[1]);
+
+      tanplane(1,0)=  -(n[1]*n[0]);
+      tanplane(1,1)= 1-(n[1]*n[1]);
+    }
+    else
+      dserror("Error: Unknown dimension.");
+
+    // Evaluate frictional trail traction
+    Epetra_SerialDenseMatrix temptrac(dim,1);
+    temptrac.Multiply('N','N',kappa*pptan,tanplane,jumpvec,0.0);
+     
+    //Lagrange multiplier in normal direction
+    double lmuzawan = 0.0;
+    for (int j=0;j<dim;++j)
+    lmuzawan += cnode->lmuzawa()[j]*cnode->n()[j];
+     
+    // Lagrange multiplier from Uzawa algorithm
+    Epetra_SerialDenseMatrix lmuzawa(dim,1);
+    for (int k=0;k<dim;++k)
+      lmuzawa(k,0) = cnode->lmuzawa()[k];
+          
+    // Lagrange multiplier in tangential direction
+    Epetra_SerialDenseMatrix lmuzawatan(dim,1);     
+    lmuzawatan.Multiply('N','N',1,tanplane,lmuzawa,0.0);
+
+    if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(IParams(),"STRATEGY")== INPAR::CONTACT::solution_penalty)
+    {
+      for (int j=0;j<dim;j++)
+      {
+     	  trailtraction[j]=tractionold[j]+temptrac(j,0);
+        magnitude += (trailtraction[j]*trailtraction[j]);
+      }
+    }
+    else 
+    {
+      for (int j=0;j<dim;j++)
+      {
+     	  trailtraction[j] = lmuzawatan(j,0) + temptrac(j,0);
+        magnitude += (trailtraction[j]*trailtraction[j]);
+      }
+    }
+    	 
+    // evaluate magnitude of trailtraction
+    magnitude = sqrt(magnitude);
+
+    // evaluate maximal tangential traction
+    double maxtantrac = frcoeff*(lmuzawan - kappa * ppnor * gap);
+
+    if(cnode->Active()==true and cnode->Slip()==false)
+    {
+      reftrac1[i] = n[0]*(lmuzawan - kappa * ppnor * gap)+trailtraction[0];
+      reftrac2[i] = n[1]*(lmuzawan - kappa * ppnor * gap)+trailtraction[1];
+      reftrac3[i] = n[2]*(lmuzawan - kappa * ppnor * gap)+trailtraction[2];
+    }
+    if(cnode->Active()==true and cnode->Slip()==true)
+    {
+      // compute lagrange multipliers and store into node
+      reftrac1[i] = n[0]*(lmuzawan - kappa * ppnor * gap)+trailtraction[0]*maxtantrac/magnitude;
+      reftrac2[i] = n[1]*(lmuzawan - kappa * ppnor * gap)+trailtraction[1]*maxtantrac/magnitude;
+      reftrac3[i] = n[2]*(lmuzawan - kappa * ppnor * gap)+trailtraction[2]*maxtantrac/magnitude;
      }
+   } // loop over procs slave nodes
 
-     if (dim==3)
-     {
-       tanplane(0,0)= 1-(n[0]*n[0]);
-       tanplane(0,1)=  -(n[0]*n[1]);
-       tanplane(0,2)=  -(n[0]*n[2]);
-       tanplane(1,0)=  -(n[1]*n[0]);
-       tanplane(1,1)= 1-(n[1]*n[1]);
-       tanplane(1,2)=  -(n[1]*n[2]);
-
-       tanplane(2,0)=  -(n[2]*n[0]);
-       tanplane(2,1)=  -(n[2]*n[1]);
-       tanplane(2,2)= 1-(n[2]*n[2]);
-     }
-     else if (dim==2)
-     {
-       tanplane(0,0)= 1-(n[0]*n[0]);
-       tanplane(0,1)=  -(n[0]*n[1]);
-
-       tanplane(1,0)=  -(n[1]*n[0]);
-       tanplane(1,1)= 1-(n[1]*n[1]);
-     }
-     else
-       dserror("Error: Unknown dimension.");
-
-     // Evaluate frictional trail traction
-     Epetra_SerialDenseMatrix temptrac(dim,1);
-     temptrac.Multiply('N','N',kappa*pptan,tanplane,jumpvec,0.0);
-
-     for (int j=0;j<dim;j++)
-     {
-     	trailtraction[j]=tractionold[j]+temptrac(j,0);
-       magnitude += (trailtraction[j]*trailtraction[j]);
-     }
-
-     // evaluate magnitude of trailtraction
-     magnitude = sqrt(magnitude);
-
-     // evaluate maximal tangential traction
-     double maxtantrac = -frcoeff*kappa * ppnor * gap;
-
-     if(cnode->Active()==true and cnode->Slip()==false)
-     {
-         reftrac1[i] = n[0]*(- kappa * ppnor * gap)+trailtraction[0];
-         reftrac2[i] = n[1]*(- kappa * ppnor * gap)+trailtraction[1];
-         reftrac3[i] = n[2]*(- kappa * ppnor * gap)+trailtraction[2];
-     }
-     if(cnode->Active()==true and cnode->Slip()==true)
-     {
-     	// compute lagrange multipliers and store into node
-       	reftrac1[i] = n[0]*(- kappa * ppnor * gap)+maxtantrac/magnitude*trailtraction[0];
-       	reftrac2[i] = n[1]*(- kappa * ppnor * gap)+maxtantrac/magnitude*trailtraction[1];
-       	reftrac3[i] = n[2]*(- kappa * ppnor * gap)+maxtantrac/magnitude*trailtraction[2];
-     }
-  } // loop over procs slave nodes
-
-  // global loop to apply FD scheme to all slave dofs (=3*nodes)
-  for (int fd=0; fd<3*snodefullmap_->NumMyElements();++fd)
-  {
+    // global loop to apply FD scheme to all slave dofs (=3*nodes)
+    for (int fd=0; fd<3*snodefullmap_->NumMyElements();++fd)
+    {
     // Initialize
     Initialize();
 
@@ -6065,40 +6089,65 @@ void CONTACT::Interface::FDCheckPenaltyTracFric()
       // Evaluate frictional trail traction
       Epetra_SerialDenseMatrix temptrac(dim,1);
       temptrac.Multiply('N','N',kappa*pptan,tanplane,jumpvec,0.0);
+      
+      //Lagrange multiplier in normal direction
+      double lmuzawan = 0.0;
+      for (int j=0;j<dim;++j)
+        lmuzawan += kcnode->lmuzawa()[j]*kcnode->n()[j];
+      
+      // Lagrange multiplier from Uzawa algorithm
+      Epetra_SerialDenseMatrix lmuzawa(dim,1);
+      for (int j=0;j<dim;++j)
+        lmuzawa(j,0) = kcnode->lmuzawa()[j];
+           
+      // Lagrange multiplier in tangential direction
+      Epetra_SerialDenseMatrix lmuzawatan(dim,1);     
+      lmuzawatan.Multiply('N','N',1,tanplane,lmuzawa,0.0);
 
-      for (int j=0;j<dim;j++)
+      if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(IParams(),"STRATEGY")== INPAR::CONTACT::solution_penalty)
       {
-      	trailtraction[j]=tractionold[j]+temptrac(j,0);
-        magnitude += (trailtraction[j]*trailtraction[j]);
+      	for (int j=0;j<dim;j++)
+        {
+      	  trailtraction[j]=tractionold[j]+temptrac(j,0);
+          magnitude += (trailtraction[j]*trailtraction[j]);
+        }
+      }
+      else 
+      {
+        for (int j=0;j<dim;j++)
+        {
+      	  trailtraction[j] = lmuzawatan(j,0)+temptrac(j,0); 
+          magnitude += (trailtraction[j]*trailtraction[j]);
+        }
       }
 
       // evaluate magnitude of trailtraction
       magnitude = sqrt(magnitude);
 
       // evaluate maximal tangential traction
-      double maxtantrac = -frcoeff*kappa * ppnor * gap;
+      double maxtantrac = frcoeff*(lmuzawan- kappa * ppnor * gap);
 
       if(kcnode->Active()==true and kcnode->Slip()==false)
       {
-          newtrac1[k] = n[0]*(- kappa * ppnor * gap)+trailtraction[0];
-          newtrac2[k] = n[1]*(- kappa * ppnor * gap)+trailtraction[1];
-          newtrac3[k] = n[2]*(- kappa * ppnor * gap)+trailtraction[2];
+        newtrac1[k] = n[0]*(lmuzawan - kappa * ppnor * gap)+trailtraction[0];
+        newtrac2[k] = n[1]*(lmuzawan - kappa * ppnor * gap)+trailtraction[1];
+        newtrac3[k] = n[2]*(lmuzawan - kappa * ppnor * gap)+trailtraction[2];
       }
       if(kcnode->Active()==true and kcnode->Slip()==true)
       {
        	// compute lagrange multipliers and store into node
-      	newtrac1[k] = n[0]*(- kappa * ppnor * gap)+maxtantrac/magnitude*trailtraction[0];
-      	newtrac2[k] = n[1]*(- kappa * ppnor * gap)+maxtantrac/magnitude*trailtraction[1];
-      	newtrac3[k] = n[2]*(- kappa * ppnor * gap)+maxtantrac/magnitude*trailtraction[2];
+      	newtrac1[k] = n[0]*(lmuzawan - kappa * ppnor * gap)+trailtraction[0]*maxtantrac/magnitude;
+      	newtrac2[k] = n[1]*(lmuzawan - kappa * ppnor * gap)+trailtraction[1]*maxtantrac/magnitude;
+      	newtrac3[k] = n[2]*(lmuzawan - kappa * ppnor * gap)+trailtraction[2]*maxtantrac/magnitude;
       }
-
+      
       // print results (derivatives) to screen
       if (abs(newtrac1[k]-reftrac1[k]) > 1e-12)
       {
         //cout << "SlipCon-FD-derivative for node S" << kcnode->Id() << endl;
         //cout << "Ref-G: " << refG[k] << endl;
         //cout << "New-G: " << newG[k] << endl;
-        cout << "Deriv:      " <<  kcnode->Dofs()[0] << " " << snode->Dofs()[fd%3] << " " << (newtrac1[k]-reftrac1[k])/delta << endl;
+        cout << "Deriv0:      " <<  kcnode->Dofs()[0] << " " << snode->Dofs()[fd%3] << " " << (newtrac1[k]-reftrac1[k])/delta << endl;
         //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetDerivG()[snode->Dofs()[fd%3]] << endl;
         //if (abs(kcnode->GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
         //  cout << "***WARNING*****************************************************************************" << endl;
@@ -6110,7 +6159,7 @@ void CONTACT::Interface::FDCheckPenaltyTracFric()
         //cout << "SlipCon-FD-derivative for node S" << kcnode->Id() << endl;
         //cout << "Ref-G: " << refG[k] << endl;
         //cout << "New-G: " << newG[k] << endl;
-        cout << "Deriv:      " <<  kcnode->Dofs()[1] << " "<< snode->Dofs()[fd%3] << " " << (newtrac2[k]-reftrac2[k])/delta << endl;
+        cout << "Deriv1:      " <<  kcnode->Dofs()[1] << " "<< snode->Dofs()[fd%3] << " " << (newtrac2[k]-reftrac2[k])/delta << endl;
         //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetDerivG()[snode->Dofs()[fd%3]] << endl;
         //if (abs(kcnode->GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
         //  cout << "***WARNING*****************************************************************************" << endl;
@@ -6122,7 +6171,7 @@ void CONTACT::Interface::FDCheckPenaltyTracFric()
         //cout << "SlipCon-FD-derivative for node S" << kcnode->Id() << endl;
         //cout << "Ref-G: " << refG[k] << endl;
         //cout << "New-G: " << newG[k] << endl;
-        cout << "Deriv:      " <<  kcnode->Dofs()[2] << " " << snode->Dofs()[fd%3] << " " << (newtrac3[k]-reftrac3[k])/delta << endl;
+        cout << "Deriv2:      " <<  kcnode->Dofs()[2] << " " << snode->Dofs()[fd%3] << " " << (newtrac3[k]-reftrac3[k])/delta << endl;
         //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetDerivG()[snode->Dofs()[fd%3]] << endl;
         //if (abs(kcnode->GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
         //  cout << "***WARNING*****************************************************************************" << endl;
@@ -6253,30 +6302,55 @@ void CONTACT::Interface::FDCheckPenaltyTracFric()
       Epetra_SerialDenseMatrix temptrac(dim,1);
       temptrac.Multiply('N','N',kappa*pptan,tanplane,jumpvec,0.0);
 
-      for (int j=0;j<dim;j++)
+      //Lagrange multiplier in normal direction
+      double lmuzawan = 0.0;
+      for (int j=0;j<dim;++j)
+        lmuzawan += kcnode->lmuzawa()[j]*kcnode->n()[j];
+      
+      // Lagrange multiplier from Uzawa algorithm
+      Epetra_SerialDenseMatrix lmuzawa(dim,1);
+      for (int j=0;j<dim;++j)
+        lmuzawa(j,0) = kcnode->lmuzawa()[j];
+           
+      // Lagrange multiplier in tangential direction
+      Epetra_SerialDenseMatrix lmuzawatan(dim,1);     
+      lmuzawatan.Multiply('N','N',1,tanplane,lmuzawa,0.0);
+
+      if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(IParams(),"STRATEGY")== INPAR::CONTACT::solution_penalty)
       {
-      	trailtraction[j]=tractionold[j]+temptrac(j,0);
-        magnitude += (trailtraction[j]*trailtraction[j]);
+      	for (int j=0;j<dim;j++)
+        {
+      	  trailtraction[j]=tractionold[j]+temptrac(j,0);
+          magnitude += (trailtraction[j]*trailtraction[j]);
+        }
+      }
+      else 
+      {
+        for (int j=0;j<dim;j++)
+        {
+      	  trailtraction[j] = lmuzawatan(j,0)+temptrac(j,0); 
+          magnitude += (trailtraction[j]*trailtraction[j]);
+        }
       }
 
       // evaluate magnitude of trailtraction
       magnitude = sqrt(magnitude);
 
       // evaluate maximal tangential traction
-      double maxtantrac = -frcoeff*kappa * ppnor * gap;
+      double maxtantrac = frcoeff*(lmuzawan- kappa * ppnor * gap);
 
       if(kcnode->Active()==true and kcnode->Slip()==false)
       {
-          newtrac1[k] = n[0]*(- kappa * ppnor * gap)+trailtraction[0];
-          newtrac2[k] = n[1]*(- kappa * ppnor * gap)+trailtraction[1];
-          newtrac3[k] = n[2]*(- kappa * ppnor * gap)+trailtraction[2];
+        newtrac1[k] = n[0]*(lmuzawan - kappa * ppnor * gap)+trailtraction[0];
+        newtrac2[k] = n[1]*(lmuzawan - kappa * ppnor * gap)+trailtraction[1];
+        newtrac3[k] = n[2]*(lmuzawan - kappa * ppnor * gap)+trailtraction[2];
       }
       if(kcnode->Active()==true and kcnode->Slip()==true)
       {
        	// compute lagrange multipliers and store into node
-      	newtrac1[k] = n[0]*(- kappa * ppnor * gap)+maxtantrac/magnitude*trailtraction[0];
-      	newtrac2[k] = n[1]*(- kappa * ppnor * gap)+maxtantrac/magnitude*trailtraction[1];
-      	newtrac3[k] = n[2]*(- kappa * ppnor * gap)+maxtantrac/magnitude*trailtraction[2];
+      	newtrac1[k] = n[0]*(lmuzawan - kappa * ppnor * gap)+trailtraction[0]*maxtantrac/magnitude;
+      	newtrac2[k] = n[1]*(lmuzawan - kappa * ppnor * gap)+trailtraction[1]*maxtantrac/magnitude;
+      	newtrac3[k] = n[2]*(lmuzawan - kappa * ppnor * gap)+trailtraction[2]*maxtantrac/magnitude;
       }
 
       // print results (derivatives) to screen

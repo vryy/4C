@@ -63,12 +63,11 @@ AbstractStrategy(problemrowmap, params, interface, dim, comm, alphaf)
   INPAR::CONTACT::ContactFrictionType ftype =
     Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(Params(),"FRICTION");
   
-  if (ftype != INPAR::CONTACT::friction_none)
-    cout << "Warning: Frictional contact not completely implemented as Penalty Strategy yet." << endl;
-  
   // initialize constraint norm and initial penalty
   constrnorm_ = 0.0;
+  constrnormtan_ = 0.0;
   initialpenalty_ = Params().get<double>("PENALTYPARAM");
+  initialpenaltytan_ = Params().get<double>("PENALTYPARAMTAN");
 }
                                        
 /*----------------------------------------------------------------------*
@@ -189,8 +188,14 @@ void CONTACT::PenaltyStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
     // evaluate lagrange multipliers (regularized forces) in tangential direction
     INPAR::CONTACT::ContactFrictionType ftype =
       Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(Params(),"FRICTION");
-    if(ftype==INPAR::CONTACT::friction_coulomb )  
-      interface_[i]->AssembleRegTangentForces();
+    INPAR::CONTACT::SolvingStrategy soltype =
+      Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(),"STRATEGY");
+    
+    if(ftype==INPAR::CONTACT::friction_coulomb and soltype==INPAR::CONTACT::solution_penalty)  
+      interface_[i]->AssembleRegTangentForcesPenalty();
+
+    if(ftype==INPAR::CONTACT::friction_coulomb and soltype==INPAR::CONTACT::solution_auglag)  
+      interface_[i]->AssembleRegTangentForcesAugmented();
     
     isincontact = isincontact || localisincontact;
     activesetchange = activesetchange || localactivesetchange;
@@ -267,9 +272,9 @@ void CONTACT::PenaltyStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
     if( IsInContact() )
     {
     	if(ftype==INPAR::CONTACT::friction_coulomb )
-      {	
-    	  cout << "LINZMATRIX" << *linzmatrix_ << endl;
-      	interface_[i]->FDCheckPenaltyTracFric();
+      {
+    		cout << "LINZMATRIX" << *linzmatrix_ << endl;
+    	  interface_[i]->FDCheckPenaltyTracFric();
       }
       else if (ftype==INPAR::CONTACT::friction_none)
       {	
@@ -522,11 +527,15 @@ void CONTACT::PenaltyStrategy::ResetPenalty()
 {
   // reset penalty parameter in strategy
   Params().set<double>("PENALTYPARAM",InitialPenalty());
+  Params().set<double>("PENALTYPARAMTAN",InitialPenaltyTan());
+  
   
   // reset penalty parameter in all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
+  {	
     interface_[i]->IParams().set<double>("PENALTYPARAM",InitialPenalty());
-        
+    interface_[i]->IParams().set<double>("PENALTYPARAMTAN",InitialPenaltyTan());
+  }      
   return;
 }
 
@@ -537,19 +546,26 @@ void CONTACT::PenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
 {
   // initialize parameters
   double cnorm = 0.0;
+  double cnormtan = 0.0;
   bool updatepenalty = false;
+  bool updatepenaltytan = false;
   double ppcurr = Params().get<double>("PENALTYPARAM");
+  double ppcurrtan = Params().get<double>("PENALTYPARAMTAN");
+  INPAR::CONTACT::ContactType ctype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(Params(),"CONTACT");
       
   // gactivenodes_ is undefined
   if (gactivenodes_==Teuchos::null)
   {
     ConstraintNorm()=0;
+    ConstraintNormTan()=0;
   }
   
   // gactivenodes_ has no elements
   else if (gactivenodes_->NumGlobalElements()==0)
   {
     ConstraintNorm()=0;
+    ConstraintNormTan()=0;
   }
   
   // gactivenodes_ has at least one element
@@ -562,6 +578,15 @@ void CONTACT::PenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
     // compute constraint norm
     gact->Norm2(&cnorm);
     
+    // Evaluate norm in tangential direction for frictional contact
+    if (ctype!=INPAR::CONTACT::contact_normal)
+    {
+      for (int i=0; i<(int)interface_.size(); ++i)
+        interface_[i]->EvaluateTangentNorm(cnormtan);
+      
+      cnormtan = sqrt(cnormtan);
+    }
+  
     //********************************************************************
     // adaptive update of penalty parameter
     // (only for Augmented Lagrange strategy)
@@ -590,22 +615,45 @@ void CONTACT::PenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
         }
       }
     }
-    //********************************************************************
     
+    if (soltype==INPAR::CONTACT::solution_auglag and ctype!=INPAR::CONTACT::contact_normal)
+    {
+      if ((uzawaiter >= 2) && (cnormtan > 0.25 * ConstraintNorm()))
+      {
+        updatepenaltytan = true;
+        
+        // update penalty parameter in strategy
+        Params().set<double>("PENALTYPARAMTAN",10*ppcurrtan);
+        
+        // update penalty parameter in all interfaces
+        for (int i=0; i<(int)interface_.size(); ++i)
+        {
+          double ippcurrtan = interface_[i]->IParams().get<double>("PENALTYPARAMTAN");
+          if (ippcurrtan != ppcurrtan) dserror("Something wrong with penalty parameter");
+          interface_[i]->IParams().set<double>("PENALTYPARAMTAN",10*ippcurrtan);
+        }
+      }
+    }
+    
+    //********************************************************************
     // update constraint norm
     ConstraintNorm() = cnorm;
+    ConstraintNormTan() = cnormtan;
   }
   
   // output to screen
   if (Comm().MyPID()==0)
   {
     cout << "********************************************\n";
-    cout << "Constraint Norm: " << cnorm << "\n";
+    cout << "Normal Constraint Norm: " << cnorm << "\n";
+    if (ctype != INPAR::CONTACT::contact_normal)
+      cout << "Tangential Constraint Norm: " << cnormtan << "\n";
     if (updatepenalty)
-      cout << "Updated penalty parameter: " << ppcurr << " -> " << Params().get<double>("PENALTYPARAM") << "\n";
+      cout << "Updated normal penalty parameter: " << ppcurr << " -> " << Params().get<double>("PENALTYPARAM") << "\n";
+    if (updatepenaltytan == true and ctype != INPAR::CONTACT::contact_normal)
+     cout << "Updated tangential penalty parameter: " << ppcurrtan << " -> " << Params().get<double>("PENALTYPARAMTAN") << "\n";
     cout << "********************************************\n\n";
   }
-    
   return;
 }
 

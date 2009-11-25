@@ -1719,7 +1719,9 @@ void CONTACT::Interface::EvaluateRelMov()
   if (!lComm())
     return;
 
+  // parameters
   double cn = IParams().get<double>("SEMI_SMOOTH_CN");
+  double pp = IParams().get<double>("PENALTYPARAM");
   
   // loop over all slave row nodes on the current interface
   for (int i=0; i<SlaveRowNodes()->NumMyElements(); ++i)
@@ -1742,6 +1744,12 @@ void CONTACT::Interface::EvaluateRelMov()
     for(int dim=0;dim<Dim();dim++)
       jump[dim] = 0;
     
+    double lmuzawan = 0.0;
+    for (int k=0;k<dim;++k)
+      lmuzawan += cnode->lmuzawa()[k]*cnode->n()[k];
+    
+    double kappa = cnode->Kappa();
+    
     // evaluate jump (relative displacement) of this node
     // only when the node is going to be active, otherwise,
     // this value isn't needed.
@@ -1761,8 +1769,12 @@ void CONTACT::Interface::EvaluateRelMov()
     {
     	if(nz - cn*gap > 0) activeinfuture = true;
     }	
+    else if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(IParams(),"STRATEGY")== INPAR::CONTACT::solution_auglag)
+    {
+    	if(lmuzawan - kappa * pp * gap >= 0) activeinfuture = true;
+    }	    
     else
-    	dserror("Error in Interface::EvaluateRelMov(): Not implemented for this solution strategy!");
+    	dserror("Error in Interface::EvaluateRelMov(): Solution strategy not known!");
                               
     if(activeinfuture==true)
     {	 
@@ -1987,6 +1999,74 @@ void CONTACT::Interface::AssembleRelMov(Epetra_Vector& jumpglobal)
 }
 
 /*----------------------------------------------------------------------*
+ |  Evaluate L2 Norm of tangential contact conditions     gitterle 11/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::Interface::EvaluateTangentNorm(double& cnormtan)
+{
+  // get out of here if not participating in interface
+  if (!lComm())
+    return;
+
+  cnormtan=0;
+  
+  // loop over all slave row nodes on the current interface
+  for (int i=0; i<SlaveRowNodes()->NumMyElements(); ++i)
+  {
+    int gid = SlaveRowNodes()->GID(i);
+    DRT::Node* node = Discret().gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    CNode* cnode = static_cast<CNode*>(node);
+    
+    // get some information form node
+    double* n = cnode->n();
+    int dim = cnode->NumDof();
+
+    // tangential plane
+    Epetra_SerialDenseMatrix tanplane(dim,dim); 
+    if (dim==3)
+    {
+      tanplane(0,0)= 1-(n[0]*n[0]);
+      tanplane(0,1)=  -(n[0]*n[1]);
+      tanplane(0,2)=  -(n[0]*n[2]);
+      tanplane(1,0)=  -(n[1]*n[0]);
+      tanplane(1,1)= 1-(n[1]*n[1]);
+      tanplane(1,2)=  -(n[1]*n[2]);
+
+      tanplane(2,0)=  -(n[2]*n[0]);
+      tanplane(2,1)=  -(n[2]*n[1]);
+      tanplane(2,2)= 1-(n[2]*n[2]);
+    }
+    else if (dim==2)
+    {
+      tanplane(0,0)= 1-(n[0]*n[0]);
+      tanplane(0,1)=  -(n[0]*n[1]);
+
+      tanplane(1,0)=  -(n[1]*n[0]);
+      tanplane(1,1)= 1-(n[1]*n[1]);
+    }
+    else
+      dserror("Error in AssembleTangentForces: Unknown dimension.");
+ 
+    // jump vector
+    Epetra_SerialDenseMatrix jumpvec(dim,1);
+    for (int i=0;i<dim;i++)
+      jumpvec(i,0) = cnode->jump()[i];	
+    
+    // evaluate jump in tangential direction
+    Epetra_SerialDenseMatrix jumptan(dim,1);
+    jumptan.Multiply('N','N',1,tanplane,jumpvec,0.0);
+    
+    // norm of tangential jumps for stick nodes
+    if (cnode->Active()== true and cnode->Slip()==false)
+    {    	
+     	for( int j=0;j<cnode->NumDof();++j)
+        cnormtan+=jumptan(j,0)*jumptan(j,0);
+    }
+  } // loop over slave nodes
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  Evaluate regularized normal forces (nodes)                 popp 05/09|
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::AssembleRegNormalForces(bool& localisincontact,
@@ -2126,7 +2206,7 @@ void CONTACT::Interface::AssembleRegNormalForces(bool& localisincontact,
 /*----------------------------------------------------------------------*
  |  Evaluate regularized tangential forces                 gitterle 10/09|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::AssembleRegTangentForces()
+void CONTACT::Interface::AssembleRegTangentForcesPenalty()
 {
   // get out of here if not participating in interface
   if (!lComm())
@@ -2151,48 +2231,64 @@ void CONTACT::Interface::AssembleRegTangentForces()
     double kappa = cnode->Kappa();
     double* n = cnode->n();
 
+    // Lagrange multiplier from Uzawa algorithm
+    Epetra_SerialDenseMatrix lmuzawa(dim,1);
+    for (int k=0;k<dim;++k)
+      lmuzawa(k,0) = cnode->lmuzawa()[k];
+  
+    // Lagrange multiplier in normal direction
+    double lmuzawan = 0.0;
+    for (int k=0;k<dim;++k)
+      lmuzawan += cnode->lmuzawa()[k]*cnode->n()[k];
+    
+    // tangential plane
+    Epetra_SerialDenseMatrix tanplane(dim,dim); 
+    if (dim==3)
+     {
+       tanplane(0,0)= 1-(n[0]*n[0]);
+       tanplane(0,1)=  -(n[0]*n[1]);
+       tanplane(0,2)=  -(n[0]*n[2]);
+       tanplane(1,0)=  -(n[1]*n[0]);
+       tanplane(1,1)= 1-(n[1]*n[1]);
+       tanplane(1,2)=  -(n[1]*n[2]);
+
+       tanplane(2,0)=  -(n[2]*n[0]);
+       tanplane(2,1)=  -(n[2]*n[1]);
+       tanplane(2,2)= 1-(n[2]*n[2]);
+     }
+     else if (dim==2)
+     {
+       tanplane(0,0)= 1-(n[0]*n[0]);
+       tanplane(0,1)=  -(n[0]*n[1]);
+
+       tanplane(1,0)=  -(n[1]*n[0]);
+       tanplane(1,1)= 1-(n[1]*n[1]);
+     }
+     else
+       dserror("Error in AssembleTangentForces: Unknown dimension.");
+    
+    // Lagrange multiplier in tangential direction
+    Epetra_SerialDenseMatrix lmuzawatan(dim,1);     
+    lmuzawatan.Multiply('N','N',1,tanplane,lmuzawa,0.0);
+ 
     // evaluate traction
     Epetra_SerialDenseMatrix jumpvec(dim,1);
-    Epetra_SerialDenseMatrix tanplane(dim,dim);
-    vector<double> trailtraction(dim);
-    vector<double> tractionold(dim);
-    double magnitude = 0;
 
-    // fill vectors and matrices
     for (int i=0;i<dim;i++)
-    {
-    	jumpvec(i,0) = cnode->jump()[i];
-      tractionold[i] = cnode->tractionold()[i];
-    }
-
-    if (dim==3)
-    {
-      tanplane(0,0)= 1-(n[0]*n[0]);
-      tanplane(0,1)=  -(n[0]*n[1]);
-      tanplane(0,2)=  -(n[0]*n[2]);
-      tanplane(1,0)=  -(n[1]*n[0]);
-      tanplane(1,1)= 1-(n[1]*n[1]);
-      tanplane(1,2)=  -(n[1]*n[2]);
-
-      tanplane(2,0)=  -(n[2]*n[0]);
-      tanplane(2,1)=  -(n[2]*n[1]);
-      tanplane(2,2)= 1-(n[2]*n[2]);
-    }
-    else if (dim==2)
-    {
-      tanplane(0,0)= 1-(n[0]*n[0]);
-      tanplane(0,1)=  -(n[0]*n[1]);
-
-      tanplane(1,0)=  -(n[1]*n[0]);
-      tanplane(1,1)= 1-(n[1]*n[1]);
-    }
-    else
-      dserror("Error in AssembleTangentForces: Unknown dimension.");
-
-    // Evaluate frictional trail traction
+      jumpvec(i,0) = cnode->jump()[i];
+ 
+    // evaluate kappa.pptan.jumptan
     Epetra_SerialDenseMatrix temptrac(dim,1);
     temptrac.Multiply('N','N',kappa*pptan,tanplane,jumpvec,0.0);
-
+      
+    // fill vector tractionold
+    vector<double> tractionold(dim);
+    for (int i=0;i<dim;i++)
+    	tractionold[i] = cnode->tractionold()[i];
+ 
+    // Evaluate trailtraction (tractionold+temptrac in penalty case)
+    vector<double> trailtraction(dim);
+    double magnitude = 0;
     for (int i=0;i<dim;i++)
     {
     	trailtraction[i]=tractionold[i]+temptrac(i,0);
@@ -2203,7 +2299,7 @@ void CONTACT::Interface::AssembleRegTangentForces()
     magnitude = sqrt(magnitude);
 
     // evaluate maximal tangential traction
-    double maxtantrac = -frcoeff*kappa * ppnor * gap;
+    double maxtantrac = frcoeff*(lmuzawan - kappa * ppnor * gap);
 
     if(cnode->Active()==false)
     {
@@ -2446,6 +2542,354 @@ void CONTACT::Interface::AssembleRegTangentForces()
           }
         }
 	    }
+    } // if Slip == true
+    else
+    {
+      // clear tractions
+      for( int j=0;j<dim;++j) cnode->lm()[j] = 0;
+      // clear derivz
+      cnode->GetDerivZ().clear();
+    }
+  } // loop over active nodes
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Evaluate regularized tangential forces (Aug. Lagr.)    gitterle 10/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::Interface::AssembleRegTangentForcesAugmented()
+{
+  // get out of here if not participating in interface
+  if (!lComm())
+    return;
+  
+  // penalty parameter in tangential direction
+  double ppnor = IParams().get<double>("PENALTYPARAM");
+  double pptan = IParams().get<double>("PENALTYPARAMTAN");
+  
+  double frcoeff = IParams().get<double>("FRCOEFF");
+
+  // loop over all slave row nodes on the current interface
+  for (int i=0; i<SlaveRowNodes()->NumMyElements(); ++i)
+  {
+    int gid = SlaveRowNodes()->GID(i);
+    DRT::Node* node = Discret().gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    CNode* cnode = static_cast<CNode*>(node);
+
+    // get some informatiom form the node
+    double gap = cnode->Getg();
+    int dim = cnode->NumDof();
+    double kappa = cnode->Kappa();
+    double* n = cnode->n();
+
+    // Lagrange multiplier from Uzawa algorithm
+    Epetra_SerialDenseMatrix lmuzawa(dim,1);
+    for (int k=0;k<dim;++k)
+      lmuzawa(k,0) = cnode->lmuzawa()[k];
+  
+    // Lagrange multiplier in normal direction
+    double lmuzawan = 0.0;
+    for (int k=0;k<dim;++k)
+      lmuzawan += cnode->lmuzawa()[k]*cnode->n()[k];
+    
+    // tangential plane
+    Epetra_SerialDenseMatrix tanplane(dim,dim); 
+    if (dim==3)
+    {
+      tanplane(0,0)= 1-(n[0]*n[0]);
+      tanplane(0,1)=  -(n[0]*n[1]);
+      tanplane(0,2)=  -(n[0]*n[2]);
+      tanplane(1,0)=  -(n[1]*n[0]);
+      tanplane(1,1)= 1-(n[1]*n[1]);
+      tanplane(1,2)=  -(n[1]*n[2]);
+
+      tanplane(2,0)=  -(n[2]*n[0]);
+      tanplane(2,1)=  -(n[2]*n[1]);
+      tanplane(2,2)= 1-(n[2]*n[2]);
+    }
+    else if (dim==2)
+    {
+      tanplane(0,0)= 1-(n[0]*n[0]);
+      tanplane(0,1)=  -(n[0]*n[1]);
+
+      tanplane(1,0)=  -(n[1]*n[0]);
+      tanplane(1,1)= 1-(n[1]*n[1]);
+    }
+    else
+      dserror("Error in AssembleTangentForces: Unknown dimension.");
+    
+    // Lagrange multiplier in tangential direction
+    Epetra_SerialDenseMatrix lmuzawatan(dim,1);     
+    lmuzawatan.Multiply('N','N',1,tanplane,lmuzawa,0.0);
+    
+    // evaluate traction
+    Epetra_SerialDenseMatrix jumpvec(dim,1);
+
+    for (int i=0;i<dim;i++)
+      jumpvec(i,0) = cnode->jump()[i];
+ 
+    // evaluate kappa.pptan.jumptan
+    Epetra_SerialDenseMatrix temptrac(dim,1);
+    temptrac.Multiply('N','N',kappa*pptan,tanplane,jumpvec,0.0);
+      
+    // Evaluate trailtraction 
+    vector<double> trailtraction(dim);
+    double magnitude = 0;
+    for (int i=0;i<dim;i++)
+    {
+    	trailtraction[i]=lmuzawatan(i,0)+temptrac(i,0);
+      magnitude += (trailtraction[i]*trailtraction[i]);
+    }
+
+    // evaluate magnitude of trailtraction
+    magnitude = sqrt(magnitude);
+
+    // evaluate maximal tangential traction
+    double maxtantrac = frcoeff*(lmuzawan - kappa * ppnor * gap);
+
+    if(cnode->Active()==false)
+    {
+    }
+    else if (cnode->Active()==true && (abs(maxtantrac) - magnitude) >= 0)
+    {
+    	//cout << "Node " << gid << " is stick" << endl;
+    	cnode->Slip() = false;
+
+      // compute lagrange multipliers and store into node
+      for( int j=0;j<dim;++j)
+        cnode->lm()[j] = n[j]*(lmuzawan - kappa * ppnor * gap)+trailtraction[j];
+    }
+    else
+    {
+    	//cout << "Node " << gid << " is slip" << endl;
+    	cnode->Slip() = true;
+    	
+     	// compute lagrange multipliers and store into node
+      for( int j=0;j<dim;++j)
+        cnode->lm()[j] = n[j]*(lmuzawan - kappa * ppnor * gap)+trailtraction[j]*maxtantrac/magnitude;
+    }
+ 	
+    // linearization of contact forces (lagrange multipliers)
+    // this consists the linearization of the tangential part,
+    // the normal part was already done in AssembleRegNormalTraction
+    
+    // stick nodes
+    if(cnode->Active() == true && cnode->Slip() == false)
+    { 
+	    /***************************************** tanplane.deriv(jump) ***/
+	    vector<map<int,double> >& derivjump = cnode->GetDerivJump();
+	    map<int,double>::iterator colcurr;
+	
+	    // loop over dimensions
+	    for (int dimrow=0;dimrow<cnode->NumDof();++dimrow)
+	    {
+	    	for (int dim=0;dim<cnode->NumDof();++dim)
+	    	{	
+	        // loop over all entries of the current derivative map 
+	        for (colcurr=derivjump[dim].begin();colcurr!=derivjump[dim].end();++colcurr)
+	        {
+	      	  int col = colcurr->first;
+	          double val =pptan*kappa*(colcurr->second)*tanplane(dimrow,dim);
+	          cnode->AddDerivZValue(dimrow,col,val);
+	        }
+	    	}
+	    }
+	
+	    /******************************* deriv(tanplane).(lmuzawa+jump) ***/
+	    vector<map<int,double> >& derivn = cnode->GetDerivN();
+	
+	    // loop over dimensions
+	    for (int dimrow=0;dimrow<cnode->NumDof();++dimrow)
+	    {
+	      // loop over all entries of the current derivative map 
+	      for (colcurr=derivn[dimrow].begin();colcurr!=derivn[dimrow].end();++colcurr)
+	      {
+	      	for (int dim =0;dim<cnode->NumDof();++dim)
+	      	{
+	      		int col = colcurr->first;
+	          double val =-pptan*kappa*(colcurr->second)*n[dim]*(cnode->jump()[dim]);
+	          val = val - (colcurr->second)*n[dim]*(cnode->lmuzawa()[dim]);
+	          cnode->AddDerivZValue(dimrow,col,val);
+	      	}
+	      }
+	    }
+	
+	    // loop over dimensions
+	    for (int dim=0;dim<cnode->NumDof();++dim)
+	    {
+	      // loop over all entries of the current derivative map 
+	      for (colcurr=derivn[dim].begin();colcurr!=derivn[dim].end();++colcurr)
+	      {
+	      	for (int dimrow =0;dimrow<cnode->NumDof();++dimrow)
+	      	{
+	      		int col = colcurr->first;
+	          double val =-pptan*kappa*(colcurr->second)*n[dimrow]*(cnode->jump()[dim]);
+	          val = val-(colcurr->second)*n[dimrow]*(cnode->lmuzawa()[dim]);
+	          cnode->AddDerivZValue(dimrow,col,val);
+	      	}
+	      }
+      }
+    }
+
+    // slip nodes
+    else if (cnode->Active() == true && cnode->Slip()== true)
+    {
+    	/***************************************** tanplane.deriv(jump) ***/
+    	vector<map<int,double> >& derivjump = cnode->GetDerivJump();
+	    map<int,double>::iterator colcurr;
+	
+	    // loop over dimensions
+	    for (int dimrow=0;dimrow<cnode->NumDof();++dimrow)
+	    {
+	    	for (int dim=0;dim<cnode->NumDof();++dim)
+	    	{	
+	        // loop over all entries of the current derivative map 
+	        for (colcurr=derivjump[dim].begin();colcurr!=derivjump[dim].end();++colcurr)
+	        {
+	     		  int col = colcurr->first;
+	          double val =pptan*kappa*(colcurr->second)*tanplane(dimrow,dim)*maxtantrac/magnitude;
+	 	        cnode->AddDerivZValue(dimrow,col,val);
+	        }
+	    	}
+      }
+	
+      /******************************* deriv(tanplane).(lmuzawa+jump) ***/
+      vector<map<int,double> >& derivn = cnode->GetDerivN();
+	
+	    // loop over dimensions
+	    for (int dimrow=0;dimrow<cnode->NumDof();++dimrow)
+	    {
+	      // loop over all entries of the current derivative map 
+	      for (colcurr=derivn[dimrow].begin();colcurr!=derivn[dimrow].end();++colcurr)
+	      {
+	        for (int dim =0;dim<cnode->NumDof();++dim)
+	        {
+	          int col = colcurr->first;
+	          double val =-pptan*kappa*(colcurr->second)*n[dim]*cnode->jump()[dim];
+	          val = (val - (colcurr->second)*n[dim]*(cnode->lmuzawa()[dim]))*maxtantrac/magnitude;
+	          cnode->AddDerivZValue(dimrow,col,val);
+	        }
+	      }
+	    }
+	
+	    // loop over dimensions
+	    for (int dim=0;dim<cnode->NumDof();++dim)
+	    {
+	      // loop over all entries of the current derivative map 
+	      for (colcurr=derivn[dim].begin();colcurr!=derivn[dim].end();++colcurr)
+	      {
+	        for (int dimrow =0;dimrow<cnode->NumDof();++dimrow)
+	        {
+	          int col = colcurr->first;
+	          double val =-pptan*kappa*(colcurr->second)*n[dimrow]*cnode->jump()[dim];
+	          val = (val-(colcurr->second)*n[dimrow]*(cnode->lmuzawa()[dim]))*maxtantrac/magnitude;
+	          cnode->AddDerivZValue(dimrow,col,val);
+	        }
+	      }
+	    }
+    	   
+	    /******************** tanplane.jump.deriv(maxtantrac)/magnitude ***/
+      map<int,double>& derivg = cnode->GetDerivG();
+      map<int,double>::iterator gcurr;
+
+      for( int j=0;j<cnode->NumDof();++j)
+      {
+        for( gcurr = derivg.begin(); gcurr != derivg.end(); ++gcurr )
+        {  
+        	cnode->AddDerivZValue(j,gcurr->first,- frcoeff*kappa*ppnor*(gcurr->second)*trailtraction[j]/magnitude);
+        } 
+      }
+            
+      for( int j=0;j<cnode->NumDof();++j)
+      {
+        for( colcurr = (derivn[j]).begin(); colcurr != (derivn[j]).end(); ++colcurr )
+        {   
+        	for( int k=0;k<cnode->NumDof();++k)
+        	{
+        		double val = frcoeff*(colcurr->second)*lmuzawa(j,0)*trailtraction[k]/magnitude;
+        		cnode->AddDerivZValue(k,colcurr->first,val);
+        	}  
+        }      
+      }
+ 
+      /******************** tanplane.jump.maxtantrac/deriv(magnitude) ***/
+      // vector double temp
+      vector <double> temp(cnode->NumDof()); 
+	      for (int dim=0;dim<cnode->NumDof();++dim)
+          temp[dim] = -maxtantrac/(magnitude*magnitude)*trailtraction[dim];	
+
+      // loop over dimensions
+      for (int dimout=0;dimout<cnode->NumDof();++dimout)
+      {
+      	double traction = 0;
+      	for (int dim=0;dim<cnode->NumDof();++dim)
+      	  traction += tanplane(dimout,dim)*(lmuzawa(dim,0)+cnode->jump()[dim]*kappa*pptan);
+       	
+        for (int dim=0;dim<cnode->NumDof();++dim)
+ 	      {	
+	        // loop over all entries of the current derivative map 
+	        for (colcurr=derivjump[dim].begin();colcurr!=derivjump[dim].end();++colcurr)
+	        {
+	          int col = colcurr->first;
+	      	  double val = tanplane(dimout,dim)*pptan*kappa*(colcurr->second)*traction/magnitude;
+	        
+	          for(int dimrow=0;dimrow<cnode->NumDof();++dimrow)
+	      	  {
+	      	    double val1 = val*temp[dimrow]; 
+	      	    cnode->AddDerivZValue(dimrow,col,val1);
+	        	}
+	        }  
+	      }
+	    }
+  
+      // loop over dimensions
+	    for (int dimout=0;dimout<cnode->NumDof();++dimout)
+	    {
+	      double traction = 0;
+	      for (int dim=0;dim<cnode->NumDof();++dim)
+    	    traction += tanplane(dimout,dim)*(lmuzawa(dim,0)+cnode->jump()[dim]*kappa*pptan);
+	    	
+	      // loop over all entries of the current derivative map 
+	      for (colcurr=derivn[dimout].begin();colcurr!=derivn[dimout].end();++colcurr)
+        {
+	        int col = colcurr->first;
+	        		        
+	        for (int dim=0;dim<cnode->NumDof();++dim)
+	        {
+	        	double val =-colcurr->second*n[dim]*(lmuzawa(dim,0)+cnode->jump()[dim]*pptan*kappa)*traction/magnitude;	        	
+	        	for(int dimrow=0;dimrow<cnode->NumDof();++dimrow)
+          	{
+         	    double val1 = val*temp[dimrow];
+        	  	cnode->AddDerivZValue(dimrow,col,val1);
+         	  }
+	        }
+	      }
+  		}
+
+	    // loop over dimensions
+		  for (int dimout=0;dimout<cnode->NumDof();++dimout)
+		  {
+		    double traction = 0;
+		    for (int dim=0;dim<cnode->NumDof();++dim)
+    	    traction += tanplane(dimout,dim)*(lmuzawa(dim,0)+cnode->jump()[dim]*kappa*pptan);
+		    	
+	      for (int dim=0;dim<cnode->NumDof();++dim)
+	      {
+  		    // loop over all entries of the current derivative map 
+  	      for (colcurr=derivn[dim].begin();colcurr!=derivn[dim].end();++colcurr)
+	        {
+		        int col = colcurr->first;
+		     	  double val =-colcurr->second*n[dimout]*(lmuzawa(dim,0)+cnode->jump()[dim]*pptan*kappa)*traction/magnitude;
+	      
+		      	for(int dimrow=0;dimrow<cnode->NumDof();++dimrow)
+			      {
+	  	        double val1 = val*temp[dimrow];
+		     	  	cnode->AddDerivZValue(dimrow,col,val1);
+		        }
+          }
+        }
+      }
     } // if Slip == true
     else
     {

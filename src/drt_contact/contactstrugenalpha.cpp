@@ -409,8 +409,10 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   // here the relative movement of the contact bodies is evaluated
   // therefore the current configuration and the according mortar
   // matrices are needed
-  // it is only evaluated (resetted) for penalty strategy  
-  if (strattype == INPAR::CONTACT::solution_penalty)
+  // it is only evaluated (resetted) for penalty strategy and 
+  // augmented lagrange strategy
+  if (strattype == INPAR::CONTACT::solution_penalty
+  		or strattype == INPAR::CONTACT::solution_auglag)
   { 
     if(ctype != INPAR::CONTACT::contact_normal)
       contactmanager_->GetStrategy().EvaluateRelMov(disi_);
@@ -699,8 +701,10 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   // here the relative movement of the contact bodies is evaluated
   // therefore the current configuration and the according mortar
   // matrices are needed
-  // it is only evaluated (resetted) for penalty strategy  
-  if (strattype == INPAR::CONTACT::solution_penalty)
+  // it is only evaluated (resetted) for penalty strategy 
+  // augmented lagrange strategy
+  if (strattype == INPAR::CONTACT::solution_penalty
+  		or strattype == INPAR::CONTACT::solution_auglag)
   { 
     if(ctype != INPAR::CONTACT::contact_normal)
       contactmanager_->GetStrategy().EvaluateRelMov(disi_);
@@ -2414,7 +2418,7 @@ void CONTACT::ContactStruGenAlpha::Integrate()
         strategy.UpdateAugmentedLagrange();
         strategy.StoreNodalQuantities(AbstractStrategy::lmuzawa);
 
-      } while (strategy.ConstraintNorm() >= eps);
+      } while (strategy.ConstraintNorm() >= eps or strategy.ConstraintNormTan() >= eps );
 
       UpdateandOutput();
       double time = params_.get<double>("total time", 0.0);

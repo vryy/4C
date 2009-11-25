@@ -130,9 +130,6 @@ isselfcontact_(false)
   mold_->Zero();
   mold_->Complete(*gmdofrowmap_, *gsdofrowmap_);
 
-  // friction: setup vector of displacement jumps (slave dof) 
-  jump_ = rcp(new Epetra_Vector(*gsdofrowmap_));
-  
   // output contact stress vectors 
   stressnormal_ = rcp(new Epetra_Vector(*gsdofrowmap_));
   stresstangential_ = rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -226,10 +223,11 @@ void CONTACT::AbstractStrategy::InitEvalMortar()
   }
    
   // (re)setup global Mortar LINALG::SparseMatrices and Epetra_Vectors
-  dmatrix_    = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
-  mmatrix_    = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
-  g_          = LINALG::CreateVector(*gsnoderowmap_,true);
-   
+  dmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
+  mmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
+  g_       = LINALG::CreateVector(*gsnoderowmap_, true);
+  jump_    = rcp(new Epetra_Vector(*gsdofrowmap_));
+
   // (re)setup global matrices containing fc derivatives
   lindmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
   linmmatrix_ = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));

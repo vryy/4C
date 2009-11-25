@@ -87,13 +87,25 @@ class PenaltyStrategy : public AbstractStrategy
   
   */
   double& ConstraintNorm() { return constrnorm_;}
+
+  /*!
+  \brief Return L2-norm of tangential constraints
+  
+  */
+  double& ConstraintNormTan() { return constrnormtan_;}
   
   /*!
-  \brief Return initial penalty parameter
+  \brief Return initial penalty parameter for normal direction
   
   */
   double& InitialPenalty() { return initialpenalty_;}
-    
+
+  /*!
+  \brief Return initial penalty parameter for tangential direction
+  
+  */
+  double& InitialPenaltyTan() { return initialpenaltytan_;}
+  
   //@}
 
   //! @name Evaluation methods
@@ -206,9 +218,11 @@ class PenaltyStrategy : public AbstractStrategy
   
 protected:
     
-  RCP<LINALG::SparseMatrix> linzmatrix_;     // global matrix LinZ with derivatives of LM
-  double                    constrnorm_;     // L2-norm of contact constraints
-  double                    initialpenalty_; // initial penalty parameter
+  RCP<LINALG::SparseMatrix> linzmatrix_;         // global matrix LinZ with derivatives of LM
+  double                    constrnorm_;         // L2-norm of normal contact constraints
+  double                    constrnormtan_;      // L2-norm of tangential contact constraints
+  double                    initialpenalty_;     // initial penalty parameter
+  double                    initialpenaltytan_;  // initial tangential penalty parameter   
   
 
 }; // class PenaltyStrategy
