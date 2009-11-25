@@ -270,6 +270,26 @@ private:
   //! Real impedance values in the time domain
   vector<double> impvalues_;   // real impedance values
 
+  //! Information associated with requency indipendent windkessel
+  //! Flow in at time step n+1
+  double Qin_np_;
+
+  //! Pressure in at time step n+1
+  double Pin_np_;
+
+  //! Pressure in at time step n
+  double Pin_n_;
+
+  //! Capcitors Pressure in at time step n+1
+  double Pc_np_;
+
+  //! Capcitors Pressure in at time step n
+  double Pc_n_;
+
+  // Flag which indicated whether precalibrating bc is defined
+  bool   IsPrecalibrated_;
+
+
 };  // class FluidImpedanceBc
 
 }

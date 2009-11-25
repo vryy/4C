@@ -230,27 +230,38 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(RefCountPtr<DRT::Discretization> 
   discret_(actdis),
   output_ (output)
 {
+  // ---------------------------------------------------------------------
+  // read in all impedance conditions
+  // ---------------------------------------------------------------------
   vector<DRT::Condition*> impedancecond;
   discret_->GetCondition("ImpedanceCond",impedancecond);
 
   // ---------------------------------------------------------------------
+  // read in all possible impedance calibrating conditions
+  // ---------------------------------------------------------------------
+  vector<DRT::Condition*> impedance_calb_cond;
+  discret_->GetCondition("ImpedanceCalbCond",impedance_calb_cond);
+  IsPrecalibrated_ = false;
+ 
+  // ---------------------------------------------------------------------
   // get time period length, steps per cycle and initialise flowratespos
   // ---------------------------------------------------------------------
-  period_ = (impedancecond[numcond])->GetDouble("timeperiod");
-  cyclesteps_ = (int)(period_/dta+0.5);
+  period_       = (impedancecond[numcond])->GetDouble("timeperiod");
+  cyclesteps_   = (int)(period_/dta+0.5);
   flowratespos_ = 0;
-  dta_ = dta;
-
+  dta_          = dta;
+  
   // ---------------------------------------------------------------------
   // get relevant data from impedance condition
   // ---------------------------------------------------------------------
   treetype_ = *((impedancecond[numcond])->Get<string>("tree"));
   termradius_ = (impedancecond[numcond])->GetDouble("termradius");
-  // 'material' parameters required for artery tree
+
+  // 'material' parameters required for artery tree and for 3 element windkessel
   k1_ = (impedancecond[numcond])->GetDouble("k1");
   k2_ = (impedancecond[numcond])->GetDouble("k2");
   k3_ = (impedancecond[numcond])->GetDouble("k3");
-
+  
   // ---------------------------------------------------------------------
   // get the processor ID from the communicator
   // ---------------------------------------------------------------------
@@ -262,21 +273,58 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(RefCountPtr<DRT::Discretization> 
   //                 local <-> global dof numbering
   // ---------------------------------------------------------------------
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  impedancetbc_ = LINALG::CreateVector(*dofrowmap,true);    
 
-  flowrates_    = rcp(new vector<double>);
-  impedancetbc_ = LINALG::CreateVector(*dofrowmap,true);
+  if(treetype_ == "windkessel_freq_indp")
+  {
+    // initialize all of the variables
+    Pin_n_  = 0.0;
+    Pin_np_ = 0.0;
+    Pc_n_   = 0.0;
+    Pc_np_  = 0.0;
 
-  // ---------------------------------------------------------------------
-  // determine area of actual outlet and get material data
-  // ---------------------------------------------------------------------
-  double density=0.0, viscosity=0.0;
-  double area = Area(density,viscosity,condid);
+    for(unsigned int i = 0; i<impedance_calb_cond.size(); i++)
+    {
+      if(impedance_calb_cond[i]->GetInt("ConditionID") == condid)
+      {
+        IsPrecalibrated_ = true;
+        Pin_n_  = impedance_calb_cond[i]->GetDouble("Pin_n");
+        Pin_np_ = impedance_calb_cond[i]->GetDouble("Pin_np");
+        Pc_n_   = impedance_calb_cond[i]->GetDouble("Pc_n");
+        Pc_np_  = impedance_calb_cond[i]->GetDouble("Pc_np");
+      }
+    }
+    
+    Qin_np_ = (Pin_np_ - Pc_np_)/k1_;
+    // This par might look little messy but could be fixed in the future
+    if (myrank_ == 0)
+    {
+      printf(" Pin initially is: %f  --  %f",Pin_n_,Pin_np_);
+      printf("Frequency independent windkessel condition(%d) with:\n",condid);
+      printf("          R1 = %f\n",k1_);
+      printf("          R2 = %f\n",k2_);
+      printf("          C  = %f\n",k3_);
+      printf("          Pc(initialt)= %f:\n",termradius_);
+    }
+  }
+  else
+  {
+    
+    flowrates_    = rcp(new vector<double>);
 
-  // ---------------------------------------------------------------------
-  // calculate impedance values and fill vector 'impvalues_'
-  // ---------------------------------------------------------------------
-  impvalues_.resize(cyclesteps_);
-  Impedances(area,density,viscosity);
+   
+    // ---------------------------------------------------------------------
+    // determine area of actual outlet and get material data
+    // ---------------------------------------------------------------------
+    double density=0.0, viscosity=0.0;
+    double area = Area(density,viscosity,condid);
+    
+    // ---------------------------------------------------------------------
+    // calculate impedance values and fill vector 'impvalues_'
+    // ---------------------------------------------------------------------
+    impvalues_.resize(cyclesteps_);
+    Impedances(area,density,viscosity);
+  }
 
   return;
 }
@@ -298,22 +346,41 @@ void FLD::UTILS::FluidImpedanceBc::WriteRestart( IO::DiscretizationWriter&  outp
 
   std::stringstream stream1, stream2, stream3;
 
-  stream1 << "flowratesId" << condnum;
 
-  // write the flowrates of the previous period
-  output.WriteRedundantDoubleVector(stream1.str(),flowrates_);
+  if(treetype_ == "windkessel_freq_indp")
+  {
+    stream1 << "Pin_n" << condnum;
+    // write the input pressure at time step n
+    output.WriteDouble(stream1.str(), Pin_n_);
+    stream1 << "Pc_n" << condnum;
+    // write the capacitor pressure at time step n
+    output.WriteDouble(stream1.str(), Pc_n_);
+    stream1 << "Pin_np" << condnum;
+    // write the input pressure at time step n
+    output.WriteDouble(stream1.str(), Pin_np_);
+    stream1 << "Pc_np" << condnum;
+    // write the capacitor pressure at time step n
+    output.WriteDouble(stream1.str(), Pc_np_);
+  }
+  else
+  {
+    stream1 << "flowratesId" << condnum;
+    // write the flowrates of the previous period
+    output.WriteRedundantDoubleVector(stream1.str(),flowrates_);
 
-  // also write flowratesposition of this outlet
-  stream2 << "flowratesposId" << condnum;
-  output.WriteInt(stream2.str(), flowratespos_);
+    // also write flowratesposition of this outlet
+    stream2 << "flowratesposId" << condnum;
+    output.WriteInt(stream2.str(), flowratespos_);
 
+    // write cyclesteps_
+    output.WriteInt("ImpedanceBC_cyclesteps", cyclesteps_);
+  }
   // also write vector impedancetbc_ (previously missing, gee)
   stream3 << "impedancetbc" << condnum;
   output.WriteVector(stream3.str(), impedancetbc_);
-
-  // write time step size dta_ and cyclesteps_
-  output.WriteInt("ImpedanceBC_cyclesteps", cyclesteps_);
+  // write time step size dta_
   output.WriteDouble("ImpedanceBC_dta", dta_);
+
 
   return;
 }
@@ -331,112 +398,148 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
 {
   // condnum contains the number of the present condition
   // condition Id numbers must not change at restart!!!!
-
   std::stringstream stream1, stream2, stream3;
-  stream1 << "flowratesId" << condnum;
-  stream2 << "flowratesposId" << condnum;
-
-  flowratespos_ = reader.ReadInt(stream2.str());
-
-  reader.ReadRedundantDoubleVector(flowrates_ ,stream1.str());
-
-  // check if vector of flowrates is not empty
-  if (flowrates_->size() == 0)
-    dserror("could not re-read vector of flowrates");
 
   // also read vector impedancetbc_ (previously missing, gee)
   stream3 << "impedancetbc" << condnum;
   reader.ReadVector(impedancetbc_,stream3.str());
 
-  // old time step size
-  double odta = reader.ReadDouble("ImpedanceBC_dta");
-  // new time step size
-  double ndta = dta_;
-  // old cyclesteps_ (no steps in a cycle)
-  int oncycle = reader.ReadInt("ImpedanceBC_cyclesteps");
-  // new cyclesteps_ (no steps in a cycle)
-  int nncycle = cyclesteps_;
-
-
-  // if the time step size has changed, need to interpolate flowrates
-  // accordingly
-#if 1
-  if (dta_ == odta)
+  if(treetype_ == "windkessel_freq_indp")
   {
-    if (!myrank_)
+    if (IsPrecalibrated_)
+      return;
+    stream1 << "Pin_n" << condnum;
+    // read the input pressure at time step n
+    Pin_n_ = reader.ReadDouble(stream1.str());
+    stream1 << "Pc_n" << condnum;
+    // read the capacitor pressure at time step n
+    Pc_n_  = reader.ReadDouble(stream1.str());
+    stream1 << "Pin_np" << condnum;
+    // read the input pressure at time step n
+    Pin_np_ = reader.ReadDouble(stream1.str());
+    stream1 << "Pc_np" << condnum;
+    // read the capacitor pressure at time step n
+    Pc_np_  = reader.ReadDouble(stream1.str());
+
+    // old time step size
+    double odta = reader.ReadDouble("ImpedanceBC_dta");
+    // new time step size
+    //    double ndta = dta_;
+    if (dta_ == odta)
+    {
+      if (!myrank_)
       printf("Impedance restart old and new time step are the same - life is good\n");
-    return;
+      return;
+    }
+    // Get the new Pc_n and Pin_n through linear interpolation mapping
+    double t = odta - dta_;
+    Pc_n_  = (odta - t)/odta*Pc_n_  + t/odta*Pc_np_;
+    Pin_n_ = (odta - t)/odta*Pin_n_ + t/odta*Pin_np_;
   }
+  else
+  {
+    stream1 << "flowratesId" << condnum;
+    stream2 << "flowratesposId" << condnum;
+      
+    flowratespos_ = reader.ReadInt(stream2.str());
+    
+    reader.ReadRedundantDoubleVector(flowrates_ ,stream1.str());
+    
+    // check if vector of flowrates is not empty
+    if (flowrates_->size() == 0)
+    dserror("could not re-read vector of flowrates");
+    
+    
+    // old time step size
+    double odta = reader.ReadDouble("ImpedanceBC_dta");
+    // new time step size
+    double ndta = dta_;
+    // old cyclesteps_ (no steps in a cycle)
+    int oncycle = reader.ReadInt("ImpedanceBC_cyclesteps");
+    // new cyclesteps_ (no steps in a cycle)
+    int nncycle = cyclesteps_;
+
+
+    // if the time step size has changed, need to interpolate flowrates
+    // accordingly
+#if 1
+    if (dta_ == odta)
+    {
+      if (!myrank_)
+      printf("Impedance restart old and new time step are the same - life is good\n");
+      return;
+    }
 #endif
 
-  // time of restart
-  double t = reader.ReadDouble("time");
-  // old number of flowrates in vector
-  int onfr = (int)flowrates_->size();
-  // new number of flowrates in vector
-  int nnfr = (int)(onfr*odta/ndta);
-  // old current position (valid for first and subsequent periods)
-  //int opos = flowratespos_ % oncycle;
-  int opos = flowratespos_;
-  // current time within period is opos * odta
-  double tinperiod = opos * odta;
-  // new flowratesposition = (opos*odta)/ndta
-  //int npos = (int)(tinperiod / ndta);
-  int npos = (int)(t / ndta + 0.5);
-
-  if (!myrank_)
-  {
-    printf("Impedance restart with time step change:\n");
-    printf("time               %10.5e \n",t);
-    printf("time in period     %10.5e \n",tinperiod);
-    printf("old time step      %10.5e \n",odta);
-    printf("new time step      %10.5e \n",ndta);
-    printf("old steps in cycle        %d \n",oncycle);
-    printf("new steps in cycle        %d \n",nncycle);
-    printf("old length of flowrates   %d \n",onfr);
-    printf("new length of flowrates   %d \n",nnfr);
-    printf("old position in flowrates %d \n",opos);
-    printf("new position in flowrates %d \n",npos);
-    fflush(stdout);
-  }
-
-  RCP<std::vector<double> > rcpfr = rcp(new vector<double>(nnfr,0.0));
-  std::vector<double>& fr = *rcpfr;
-
-  // loop through the new time intervals
-  for (int i=0; i<nnfr; ++i)
-  {
-    const double acttime = (i+1)*ndta; // time we interpolate to
-    int j=0;
-    while ((j+1)*odta<=acttime) ++j;
-    const double x1 = j*odta;
-    const double x2 = (j+1)*odta;
-    double y1;
-    if (j-1<0)
+    // time of restart
+    double t = reader.ReadDouble("time");
+    // old number of flowrates in vector
+    int onfr = (int)flowrates_->size();
+    // new number of flowrates in vector
+    int nnfr = (int)(onfr*odta/ndta);
+    // old current position (valid for first and subsequent periods)
+    //int opos = flowratespos_ % oncycle;
+    int opos = flowratespos_;
+    // current time within period is opos * odta
+    double tinperiod = opos * odta;
+    // new flowratesposition = (opos*odta)/ndta
+    //int npos = (int)(tinperiod / ndta);
+    int npos = (int)(t / ndta + 0.5);
+    
+    if (!myrank_)
     {
-      if (t <= period_) y1 = 0.0;                    // within first period starting value
-      else              y1 = (*flowrates_)[onfr-1];  // subsequent periods starting value
+      printf("Impedance restart with time step change:\n");
+      printf("time               %10.5e \n",t);
+      printf("time in period     %10.5e \n",tinperiod);
+      printf("old time step      %10.5e \n",odta);
+      printf("new time step      %10.5e \n",ndta);
+      printf("old steps in cycle        %d \n",oncycle);
+      printf("new steps in cycle        %d \n",nncycle);
+      printf("old length of flowrates   %d \n",onfr);
+      printf("new length of flowrates   %d \n",nnfr);
+      printf("old position in flowrates %d \n",opos);
+      printf("new position in flowrates %d \n",npos);
+      fflush(stdout);
     }
-    else
+    
+    RCP<std::vector<double> > rcpfr = rcp(new vector<double>(nnfr,0.0));
+    std::vector<double>& fr = *rcpfr;
+    
+    // loop through the new time intervals
+    for (int i=0; i<nnfr; ++i)
+    {
+      const double acttime = (i+1)*ndta; // time we interpolate to
+      int j=0;
+      while ((j+1)*odta<=acttime) ++j;
+      const double x1 = j*odta;
+      const double x2 = (j+1)*odta;
+      double y1;
+      if (j-1<0)
+      {
+        if (t <= period_) y1 = 0.0;                    // within first period starting value
+        else              y1 = (*flowrates_)[onfr-1];  // subsequent periods starting value
+      }
+      else
       y1 = (*flowrates_)[j-1];
-    double y2;
-    if (j>=onfr) y2 = 0.0;
-    else         y2 = (*flowrates_)[j];
-    const double a = (y1-y2)/(x1-x2);
-    const double b = y2 - a*x2;
-    fr[i] = a * acttime + b;
-    //if (myrank_==0) printf("j %4d      x1 %10.5e y1 %15.10e\n",j,x1,y1);
-    //if (myrank_==0) printf("i %4d acttime %10.5e fr %15.10e\n",i,acttime,fr[i]);
-    //if (myrank_==0) printf("j %4d      x2 %10.5e y2 %15.10e\n\n",j,x2,y2);
+      double y2;
+      if (j>=onfr) y2 = 0.0;
+      else         y2 = (*flowrates_)[j];
+      const double a = (y1-y2)/(x1-x2);
+      const double b = y2 - a*x2;
+      fr[i] = a * acttime + b;
+      //if (myrank_==0) printf("j %4d      x1 %10.5e y1 %15.10e\n",j,x1,y1);
+      //if (myrank_==0) printf("i %4d acttime %10.5e fr %15.10e\n",i,acttime,fr[i]);
+      //if (myrank_==0) printf("j %4d      x2 %10.5e y2 %15.10e\n\n",j,x2,y2);
+    }
+
+    // store new values in class
+    flowratespos_ = npos;
+    flowrates_    = rcpfr;
+    
+    // finally, recompute the outflow boundary condition from last step
+    // this way the vector need not to be stored
+    OutflowBoundary(t,ndta,0.66,condnum);
   }
-
-  // store new values in class
-  flowratespos_ = npos;
-  flowrates_    = rcpfr;
-
-  // finally, recompute the outflow boundary condition from last step
-  // this way the vector need not to be stored
-  OutflowBoundary(t,ndta,0.66,condnum);
 
   return;
 }
@@ -669,23 +772,29 @@ void FLD::UTILS::FluidImpedanceBc::FlowRateCalculation(double time, double dta, 
   double parflowrate = 0.0;
   discret_->Comm().SumAll(&actflowrate,&parflowrate,1);
 
-  // fill vector of flowrates calculated within the last cycle
-  if (time <= period_) // we are within the very first cycle
+  if(treetype_ == "windkessel_freq_indp")
   {
-    // we are now in the initial fill-in phase
-    // new data is appended to our flowrates vector
-    flowrates_->push_back(parflowrate);
-    flowratespos_++;
+    Qin_np_ = parflowrate;
   }
   else
   {
-    // we are now in the post-initial phase
-    // replace the element that was computed exactly a cycle ago
-    int pos = flowratespos_ % cyclesteps_;
-    (*flowrates_)[pos] = parflowrate;
-    flowratespos_++;
+    // fill vector of flowrates calculated within the last cycle
+    if (time <= period_) // we are within the very first cycle
+    {
+      // we are now in the initial fill-in phase
+      // new data is appended to our flowrates vector
+      flowrates_->push_back(parflowrate);
+      flowratespos_++;
+    }
+    else
+    {
+      // we are now in the post-initial phase
+      // replace the element that was computed exactly a cycle ago
+      int pos = flowratespos_ % cyclesteps_;
+      (*flowrates_)[pos] = parflowrate;
+      flowratespos_++;
+    }
   }
-
   if (myrank_ == 0)
   {
     cout << "Impedance condition Id: " << condid << " current Flowrate = " << parflowrate << endl;
@@ -721,27 +830,41 @@ void FLD::UTILS::FluidImpedanceBc::FlowRateCalculation(double time, double dta, 
 */
 void FLD::UTILS::FluidImpedanceBc::OutflowBoundary(double time, double dta, double theta,int condid)
 {
-  // evaluate convolution integral
   double pressure=0.0;
-
-  // the convolution integral
-  for (int j=0; j<cyclesteps_; j++)
+  if(treetype_ == "windkessel_freq_indp")
   {
-    int qindex = ( flowratespos_+j ) % cyclesteps_;
+    double R1 = k1_;
+    double R2 = k2_;
+    double C  = k3_;
+    double Qc_n   = (Pin_n_ - Pc_n_)/R1 - Pc_n_/R2;
+    double Pceq_n =  Pc_n_ + dta/(2.0*C)*Qc_n;
+    Pc_np_  = (Qin_np_ + Pceq_n*2.0*C/dta)/(2.0*C/dta + 1.0/R2);
+    Pin_np_ = Pc_n_ + Qin_np_*R1;
 
-    // flowrate is zero if not yet a full cycle is calculated
-    double actflowrate;
-    if (qindex > (int)flowrates_->size()-1)
+    pressure = Pin_np_;
+  }
+  else
+  {  
+    // evaluate convolution integral
+    
+    // the convolution integral
+    for (int j=0; j<cyclesteps_; j++)
+    {
+      int qindex = ( flowratespos_+j ) % cyclesteps_;
+      
+      // flowrate is zero if not yet a full cycle is calculated
+      double actflowrate = 0.0;
+      if (qindex > (int)flowrates_->size()-1)
       actflowrate = 0.0;
-    else
+      else
       actflowrate = (*flowrates_)[qindex];
 
-    int zindex = -1-j+cyclesteps_;
-    pressure += impvalues_[zindex] * actflowrate * dta; // units: pressure x time
+      int zindex = -1-j+cyclesteps_;
+      pressure += impvalues_[zindex] * actflowrate * dta; // units: pressure x time
+    }
+    
+    pressure = pressure/period_; // this cures the dimension; missing in Olufsen paper
   }
-
-  pressure = pressure/period_; // this cures the dimension; missing in Olufsen paper
-
   // call the element to apply the pressure
   ParameterList eleparams;
   // action for elements
@@ -790,6 +913,8 @@ void FLD::UTILS::FluidImpedanceBc::OutflowBoundary(double time, double dta, doub
 void FLD::UTILS::FluidImpedanceBc::UpdateResidual(RCP<Epetra_Vector>  residual )
 {
   residual->Update(1.0,*impedancetbc_,1.0);
+  Pin_n_ = Pin_np_;
+  Pc_n_  = Pc_np_;
 /*
   double norm = 0.0;
   impedancetbc_->Norm2(&norm);

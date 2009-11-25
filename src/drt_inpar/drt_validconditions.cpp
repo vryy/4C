@@ -1232,9 +1232,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   impedancebc->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
   AddNamedReal(impedancebc,"timeperiod");
   impedancebc->AddComponent(Teuchos::rcp(new StringConditionComponent("tree", "lung",
-    Teuchos::tuple<std::string>("lung","artery","windkessel"),
-    Teuchos::tuple<std::string>("lung","artery","windkessel"),
-    true)));
+                                                                      Teuchos::tuple<std::string>("lung","artery","windkessel","windkessel_freq_indp"),
+                                                                      Teuchos::tuple<std::string>("lung","artery","windkessel","windkessel_freq_indp"),
+                                                                      true)));
   AddNamedReal(impedancebc,"termradius");
   impedancebc->AddComponent(Teuchos::rcp(new RealConditionComponent("k1")));
   impedancebc->AddComponent(Teuchos::rcp(new RealConditionComponent("k2")));
@@ -1242,6 +1242,28 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   condlist.push_back(impedancebc);
 
+  /*--------------------------------------------------------------------*/
+  // Frequency indipendent precalibrated impedance condition
+
+  Teuchos::RCP<ConditionDefinition> impedance_calb_bc =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURF IMPEDANCE CALIBRATION CONDITIONS",
+                                         "ImpedanceCalbCond",
+                                         "Impedance calibration boundary condition",
+                                         DRT::Condition::Impedance_Calb_Cond,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  impedance_calb_bc->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+  impedance_calb_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("tree", "windkessel_freq_indp",
+                                                                            Teuchos::tuple<std::string>("windkessel_freq_indp"),
+                                                                            Teuchos::tuple<std::string>("windkessel_freq_indp"),
+                                                                            true)));
+  AddNamedReal(impedance_calb_bc,"Pin_n");
+  AddNamedReal(impedance_calb_bc,"Pin_np");
+  AddNamedReal(impedance_calb_bc,"Pc_n");
+  AddNamedReal(impedance_calb_bc,"Pc_np");
+
+  condlist.push_back(impedance_calb_bc);
   /*--------------------------------------------------------------------*/
   // Multi point constraint in 3D for a node over a plane
 
