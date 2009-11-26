@@ -94,7 +94,7 @@ INV_ALPHA 10e-6
 INV_BETA  10e-2
 
 INV_ANA_TOL       1.
-INV_ANA_MAX_RUN   10.
+INV_ANA_MAX_RUN   10
 -----------------------------------------------------STRUCT SOLVER
 SOLVER         UMFPACK    // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 PARTITION      Cut_Elements
