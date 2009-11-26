@@ -927,13 +927,13 @@ void DRT::ELEMENTS::XFluid3::CondenseElementStressAndStoreOldIterationStep(
     {
       LINALG::SerialDenseMatrix GusKssinv(nu,ns); // temporary Gus.Kss^{-1}
 
-      // KusKssinv(i,j) = Kus(i,k)*Kssinv(k,j);
+      // GusKssinv(i,j) = Gus(i,k)*Kssinv(k,j);
       blas.GEMM('N','N',nu,ns,ns,1.0,Gus.A(),Gus.LDA(),Kssinv.A(),Kssinv.LDA(),0.0,GusKssinv.A(),GusKssinv.LDA());
 
-      // elemat1(i,j) += - KusKssinv(i,k)*Ksu(k,j);
+      // elemat1(i,j) += - GusKssinv(i,k)*Ksu(k,j);   // note that elemat1 = Cuu below
       blas.GEMM('N','N',nu,nu,ns,-1.0,GusKssinv.A(),GusKssinv.LDA(),KGsu.A(),KGsu.LDA(),1.0,elemat1.A(),elemat1.LDA());
 
-      // elevec1(i) += - KusKssinv(i,j)*fs(j);
+      // elevec1(i) += - GusKssinv(i,j)*fs(j);
       blas.GEMV('N', nu, ns,-1.0, GusKssinv.A(), GusKssinv.LDA(), fs.A(), 1.0, elevec1.A());
 
       if (monolithic_FSI)
@@ -955,15 +955,15 @@ void DRT::ELEMENTS::XFluid3::CondenseElementStressAndStoreOldIterationStep(
           }
         }
 
-        LINALG::SerialDenseMatrix GdsKssinv(nd,ns); // temporary Kds.Kss^{-1}
+        LINALG::SerialDenseMatrix GdsKssinv(nd,ns); // temporary Gds.Kss^{-1}
 
-        // KdsKssinv(i,j) = Kds(i,k)*Kssinv(k,j);
+        // GdsKssinv(i,j) = Kds(i,k)*Kssinv(k,j);
         blas.GEMM('N','N',nd,ns,ns,1.0,Gds.A(),Gds.LDA(),Kssinv.A(),Kssinv.LDA(),0.0,GdsKssinv.A(),GdsKssinv.LDA());
 
 //        for (size_t i=0;i<nu;i++)
 //          for (size_t j=0;j<nu;j++)
 //            for (size_t k=0;k<ns;k++)
-//              Cuu(i,j) += KusKssinv(i,k)*Ksu(k,j);
+//              Cuu(i,j) += KusKssinv(i,k)*Ksu(k,j); has been included already in elemat1
         for (size_t i=0;i<nu;i++)
           for (size_t j=0;j<nd;j++)
             for (size_t k=0;k<ns;k++)
