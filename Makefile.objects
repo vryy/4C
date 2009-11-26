@@ -1079,6 +1079,7 @@ OBJS_DRT_MAT_LIB = src/drt_mat/matpar_bundle.o \
                 src/drt_mat/lung_penalty.o \
                 src/drt_mat/lung_ogden.o \
                 src/drt_mat/neohooke.o \
+                src/drt_mat/plasticneohooke.o \
                 src/drt_mat/visconeohooke.o \
                 src/drt_mat/viscoanisotropic.o \
                 src/drt_mat/aaaneohooke.o \

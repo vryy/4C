@@ -24,6 +24,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/visconeohooke.H"
 #include "../drt_mat/viscoanisotropic.H"
 #include "../drt_mat/aaaraghavanvorp_damage.H"
+#include "../drt_mat/plasticneohooke.H"
 #include "../drt_surfstress/drt_potential_manager.H"
 
 // inverse design object
@@ -312,6 +313,11 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
         MAT::AAAraghavanvorp_damage* aaadamage = static_cast <MAT::AAAraghavanvorp_damage*>(mat.get());
         aaadamage->Update();
       }
+      else if (mat->MaterialType() == INPAR::MAT::m_plneohooke)
+      {
+        MAT::PlasticNeoHooke* plastic = static_cast <MAT::PlasticNeoHooke*>(mat.get());
+        plastic->Update();
+      }
     }
     break;
 
@@ -362,6 +368,11 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
         MAT::AAAraghavanvorp_damage* aaadamage = static_cast <MAT::AAAraghavanvorp_damage*>(mat.get());
         aaadamage->Update();
       }
+      else if (mat->MaterialType() == INPAR::MAT::m_plneohooke)
+      {
+        MAT::PlasticNeoHooke* plastic = static_cast <MAT::PlasticNeoHooke*>(mat.get());
+        plastic->Update();
+      }
     }
     break;
 
@@ -396,6 +407,11 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       {
         MAT::AAAraghavanvorp_damage* aaadamage = static_cast <MAT::AAAraghavanvorp_damage*>(mat.get());
         aaadamage->Reset();
+      }
+      else if (mat->MaterialType() == INPAR::MAT::m_plneohooke)
+      {
+        MAT::PlasticNeoHooke* plastic = static_cast <MAT::PlasticNeoHooke*>(mat.get());
+        plastic->Update();
       }
     }
     break;

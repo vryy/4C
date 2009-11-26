@@ -22,6 +22,7 @@ Maintainer: Lena Wiechert
 #include "stvenantkirchhoff.H"
 #include "micromaterial.H"
 #include "neohooke.H"
+#include "plasticneohooke.H"
 #include "aaaneohooke.H"
 #include "aaaraghavanvorp_damage.H"
 #include "logneohooke.H"
@@ -156,6 +157,13 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
       curmat->SetParameter(new MAT::PAR::NeoHooke(curmat));
     MAT::PAR::NeoHooke* params = static_cast<MAT::PAR::NeoHooke*>(curmat->Parameter());
     return Teuchos::rcp(new NeoHooke(params));
+  }
+  case INPAR::MAT::m_plneohooke:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::PlasticNeoHooke(curmat));
+    MAT::PAR::PlasticNeoHooke* params = static_cast<MAT::PAR::PlasticNeoHooke*>(curmat->Parameter());
+    return Teuchos::rcp(new PlasticNeoHooke(params));
   }
   case INPAR::MAT::m_aaaneohooke:
   {

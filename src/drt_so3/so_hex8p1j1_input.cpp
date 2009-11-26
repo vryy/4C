@@ -20,6 +20,7 @@ Maintainer: Lena Wiechert
 #endif
 
 #include "so_hex8p1j1.H"
+#include "../drt_mat/plasticneohooke.H"
 #include "../drt_lib/drt_linedefinition.H"
 
 
@@ -34,6 +35,13 @@ bool DRT::ELEMENTS::So_Hex8P1J1::ReadElement(const std::string& eletype,
   linedef->ExtractInt("MAT",material);
   SetMaterial(material);
 
+  // special element-dependent input of material parameters
+  if (Material()->MaterialType() == INPAR::MAT::m_plneohooke)
+  {
+    MAT::PlasticNeoHooke* plastic = static_cast <MAT::PlasticNeoHooke*>(Material().get());
+    plastic->Setup(NUMGPT_SOH8);
+  }
+    
   return true;
 }
 

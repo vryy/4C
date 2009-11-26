@@ -45,6 +45,7 @@ namespace INPAR
       m_stvenpor,    ///< porous St.Venant Kirchhoff material
       m_pl_por_mises,///< porous von Mises material
       m_neohooke,    ///< Neo-Hooke material
+      m_plneohooke,  ///< Neo-Hooke elasticy and von Mises plasticity
       m_aaaneohooke, ///< quasi Neo-Hooke material for aneurysmatic artery wall
       m_aaaraghavanvorp_damage, ///< quasi Neo-Hooke material for aneurysmatic artery wall with damage
       m_compogden,   ///< compressible Ogden material (with shell8)

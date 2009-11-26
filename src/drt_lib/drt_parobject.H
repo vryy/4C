@@ -186,6 +186,7 @@ using namespace std;
 #define ParObject_Thermo                (int)172
 #define ParObject_ThermoBoundary        (int)173
 #define ParObject_HolzapfelCardio       (int)174
+#define ParObject_PlasticNeoHooke       (int)175
 
 namespace DRT
 {

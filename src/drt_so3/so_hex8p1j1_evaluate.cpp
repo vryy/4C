@@ -27,6 +27,7 @@ Maintainer: Lena Wiechert
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/linalg_serialdensematrix.H"
 #include "../drt_lib/linalg_serialdensevector.H"
+#include "../drt_mat/plasticneohooke.H"
 
 #include <Epetra_SerialComm.h>
 
@@ -251,6 +252,14 @@ int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(
     {
       p_o_(0,0)= p_(0,0);
       t_o_(0,0)= t_(0,0);
+      
+      // Update of history for plastic material
+      RCP<MAT::Material> mat = Material();
+      if (mat->MaterialType() == INPAR::MAT::m_plneohooke)
+      {
+        MAT::PlasticNeoHooke* plastic = static_cast <MAT::PlasticNeoHooke*>(mat.get());
+        plastic->Update();
+      }
     }
     break;
 
@@ -259,12 +268,28 @@ int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(
       double alphaf = params.get<double>("alpha f", 0.0);  // generalised-alpha TIS parameter alpha_f
       p_o_(0,0) = (1.0 - alphaf) * p_(0,0) + alphaf * p_o_(0,0);
       t_o_(0,0) = (1.0 - alphaf) * t_(0,0) + alphaf * t_o_(0,0);
+      
+      // Update of history for plastic material
+      RCP<MAT::Material> mat = Material();
+      if (mat->MaterialType() == INPAR::MAT::m_plneohooke)
+      {
+        MAT::PlasticNeoHooke* plastic = static_cast <MAT::PlasticNeoHooke*>(mat.get());
+        plastic->Update();
+      }
     }
     break;
 
     case calc_struct_reset_istep:
     {
       // do something with internal parameters
+      
+      // Update of history for plastic material
+      RCP<MAT::Material> mat = Material();
+      if (mat->MaterialType() == INPAR::MAT::m_plneohooke)
+      {
+        MAT::PlasticNeoHooke* plastic = static_cast <MAT::PlasticNeoHooke*>(mat.get());
+        plastic->Update();
+      }
     }
     break;
 

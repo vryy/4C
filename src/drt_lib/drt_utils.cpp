@@ -142,6 +142,7 @@ extern "C"
 #include "../drt_mat/fourieriso.H"
 #include "../drt_mat/holzapfelcardiovascular.H"
 #include "../drt_mat/itskov.H"
+#include "../drt_mat/plasticneohooke.H"
 #include "../drt_contact/drt_cnode.H"
 #include "../drt_contact/drt_celement.H"
 #include "../drt_art_net/artery.H"
@@ -991,6 +992,12 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
     }
     break;
 #endif
+    case ParObject_PlasticNeoHooke:
+    {
+      MAT::PlasticNeoHooke* plastic = new MAT::PlasticNeoHooke();
+      plastic->Unpack(data);
+      return plastic;
+    }
     default:
       dserror("Unknown type of ParObject instance: %d",type);
     break;

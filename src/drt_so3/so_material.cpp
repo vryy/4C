@@ -57,6 +57,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/protein.H"
 #include "../drt_mat/elasthyper.H"
 #include "../drt_mat/holzapfelcardiovascular.H"
+#include "../drt_mat/plasticneohooke.H"
 
 
 using namespace std; // cout etc.
@@ -369,6 +370,17 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       return;
       break;
     }
+    case INPAR::MAT::m_plneohooke: /*----------------- Plastic NeoHookean Material */
+    {
+      MAT::PlasticNeoHooke* plastic = static_cast <MAT::PlasticNeoHooke*>(mat.get());
+      /* Initialization moved to element input. So we can be sure, that material is initialized. */
+      //if (!plastic->Initialized())
+      //  plastic->Setup(NUMGPT_SOH8);
+      plastic->Evaluate(defgrd,gp,params,cmat,stress);
+      *density = plastic->Density();
+      return;
+      break;
+    } 
     default:
       dserror("Unknown type of material");
     break;
