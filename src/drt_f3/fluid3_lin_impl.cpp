@@ -206,10 +206,8 @@ int DRT::ELEMENTS::Fluid3lin_Impl<distype>::Evaluate(
     echist(i,0) = myhist[3+(i*4)];
   }
 
-  // set parameter for potential low-Mach-number solver
-  string lomastr  =params.get<string>("low-Mach-number solver");
-  bool loma   = false;
-  if(lomastr  =="Yes") loma  =true;
+  // set parameter for potential type of fluid flow
+  INPAR::FLUID::PhysicalType physicaltype = params.get<INPAR::FLUID::PhysicalType>("Physical Type");
 
   // get control parameter
   const double time = params.get<double>("total time",-1.0);
@@ -231,7 +229,7 @@ int DRT::ELEMENTS::Fluid3lin_Impl<distype>::Evaluate(
          mat,
          time,
          timefac,
-         loma);
+         physicaltype);
 
   return 0;
 }
@@ -258,7 +256,7 @@ void DRT::ELEMENTS::Fluid3lin_Impl<distype>::Sysmat(
   Teuchos::RCP<const MAT::Material>                    material,
   double                                               time,
   double                                               timefac,
-  bool                                                 loma
+  INPAR::FLUID::PhysicalType						   physicaltype
   )
 {
   const double numnode = iel;
@@ -448,7 +446,7 @@ void DRT::ELEMENTS::Fluid3lin_Impl<distype>::Sysmat(
         viscs2_(8,i) = 0.5 * (derxy2_(0,i) + derxy2_(1,i) + 2.0 * derxy2_(2,i));
       }
 
-      if (loma)
+      if(physicaltype == INPAR::FLUID::loma)
       {
         /*--- subtraction for low-Mach-number flow: div((1/3)*(div u)*I) */
         /*   /                            \
@@ -551,7 +549,7 @@ void DRT::ELEMENTS::Fluid3lin_Impl<distype>::Sysmat(
 					    +derxy_(1, ui)*derxy_(1, vi)
 					    +2.0*derxy_(2, ui)*derxy_(2, vi)) ;
 
-        if (loma)
+	    if (physicaltype == INPAR::FLUID::loma)
         {
           aux = -(2.0/3.0)*visc*timefacfac;
           /* viscosity term - subtraction for low-Mach-number flow */
@@ -721,7 +719,7 @@ void DRT::ELEMENTS::Fluid3lin_Impl<distype>::Sysmat(
       eforce(vi*4 + 2) += aux*rhsmom_(2) ;
 
       /* rhs term of continuity equation */
-      if (loma) eforce(vi*4 + 3) += fac*functdens_(vi)*rhscon_ ;
+      if (physicaltype == INPAR::FLUID::loma) eforce(vi*4 + 3) += fac*functdens_(vi)*rhscon_ ;
 
       //-------------------------------------------------------------------
       //                           STABILISATION PART
@@ -736,7 +734,7 @@ void DRT::ELEMENTS::Fluid3lin_Impl<distype>::Sysmat(
       eforce(vi*4 + 1) += aux*rhsmom_(1) ;
       eforce(vi*4 + 2) += aux*rhsmom_(2) ;
 
-      if (loma)
+      if (physicaltype == INPAR::FLUID::loma)
       {
         // continuity stabilisation of rhs term of continuity equation
         aux = timetau_C*rhscon_;

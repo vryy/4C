@@ -195,7 +195,7 @@ int DRT::ELEMENTS::Fluid2Impl<distype>::Evaluate(
     dserror("Negative time-integration parameter or time-step length supplied");
 
   // ---------------------------------------------------------------------
-  // get control parameters for linearization, low-Mach-number solver
+  // get control parameters for linearization, physical type of the fluid flow
   // and form of convective term
   //----------------------------------------------------------------------
   string newtonstr   = params.get<string>("Linearisation");
@@ -204,7 +204,7 @@ int DRT::ELEMENTS::Fluid2Impl<distype>::Evaluate(
   bool conservative = false;
   if (newtonstr=="Newton")          newton       = true;
   if (convformstr =="conservative") conservative = true;
-  bool loma = params.get<bool>("low-Mach-number solver");
+  INPAR::FLUID::PhysicalType physicaltype = params.get<INPAR::FLUID::PhysicalType>("Physical Type");
 
   // ---------------------------------------------------------------------
   // get control parameters for stabilization and higher-order elements
@@ -477,7 +477,6 @@ int DRT::ELEMENTS::Fluid2Impl<distype>::Evaluate(
          time,
          timefac,
          newton,
-         loma,
          conservative,
          is_genalpha,
          higher_order_ele,
@@ -492,6 +491,7 @@ int DRT::ELEMENTS::Fluid2Impl<distype>::Evaluate(
          reynolds,
          whichtau,
          turb_mod_action,
+         physicaltype,
          Cs);
 
   //rotate matrices and vectors if we have a rotationally symmetric problem
@@ -525,7 +525,6 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
   double                                  time,
   double                                  timefac,
   const bool                              newton,
-  const bool                              loma,
   const bool                              conservative,
   const bool                              is_genalpha,
   const bool                              higher_order_ele,
@@ -540,6 +539,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
   const enum Fluid2::StabilisationAction  reynolds,
   const enum Fluid2::TauType              whichtau,
   const enum Fluid2::TurbModelAction      turb_mod_action,
+  const enum INPAR::FLUID::PhysicalType   physicaltype,
   double&                                 Cs
   )
 {
@@ -581,7 +581,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
   // get material parameters at element center
   //----------------------------------------------------------------------
   if (not mat_gp_ or not tau_gp_)
-    GetMaterialParams(material,evelaf,escaaf,escaam,is_genalpha);
+    GetMaterialParams(material,evelaf,escaaf,escaam,is_genalpha,physicaltype);
 
   if (not tau_gp_)
   {
@@ -620,7 +620,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
     //----------------------------------------------------------------------
     // get material parameters (evaluation at integration point)
     //----------------------------------------------------------------------
-    if (mat_gp_) GetMaterialParams(material,evelaf,escaaf,escaam,is_genalpha);
+    if (mat_gp_) GetMaterialParams(material,evelaf,escaaf,escaam,is_genalpha,physicaltype);
 
     // get velocity at integration point
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
@@ -701,8 +701,10 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
                with N_x .. x-line of N
                N_y .. y-line of N                                      */
 
+      // varying density: div u = 0
+      // therefore, no stabilization of the second term
       double prefac;
-      if (loma)
+      if (physicaltype == INPAR::FLUID::loma)
       {
         prefac = 1.0/3.0;
         derxy2_.Scale(prefac);
@@ -818,7 +820,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
       // "incompressible" part of continuity residual: velocity divergence
       conres_old_ = vdiv_;
 
-      if (loma)
+      if (physicaltype == INPAR::FLUID::loma)
       {
         // time derivative of scalar at n+alpha_M
         const double tder_sca = funct_.Dot(escadtam);
@@ -846,7 +848,14 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
     {
       // rhs of momentum equation:
       // density*timefac*bodyforce at n+1 + density*histmom at n
-      rhsmom_.Update(densn_,histmom_,densaf_*timefac,bodyforce_);
+
+      // in the case of a Boussinesq approximation: f = (rho - rho_0)/rho_0 *g
+      // else: 										f = rho * g
+      if(physicaltype == INPAR::FLUID::boussinesq)
+      {
+        rhsmom_.Update(densn_,histmom_,deltadens_*timefac,bodyforce_);
+      }
+      else rhsmom_.Update(densn_,histmom_,densaf_*timefac,bodyforce_);
 
       // modify integration factor for Galerkin rhs
       rhsfac *= timefac;
@@ -876,7 +885,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
       // "incompressible" part of continuity residual: velocity divergence
       conres_old_ = timefac*vdiv_;
 
-      if (loma)
+      if (physicaltype == INPAR::FLUID::loma or physicaltype == INPAR::FLUID::varying_density)
       {
         // get velocity derivatives at n
         vderxyn_.MultiplyNT(eveln,derxy_);
@@ -1037,7 +1046,9 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
           const int fui   = 3*ui;
           const int fuip  = fui+1;
           double v = timefacfac*densaf_*funct_(ui)*vdiv_;
-          if (loma) v -= timefacfac*densaf_*scaconvfacaf_*conv_scaaf_;
+          if (physicaltype == INPAR::FLUID::loma) v -= timefacfac*densaf_*scaconvfacaf_*conv_scaaf_;
+          // only with linear density-concentration correlation
+          else if(physicaltype == INPAR::FLUID::varying_density) v += timefacfac*conv_scaaf_;
           for (int vi=0; vi<numnode; ++vi)
           {
             const int fvi   = 3*vi;
@@ -1083,7 +1094,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
             }
           }
 
-          if (loma)
+          if (physicaltype == INPAR::FLUID::loma)
           {
             for (int vi=0; vi<numnode; ++vi)
             {
@@ -1110,6 +1121,33 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
               }
             }
           }
+          if (physicaltype == INPAR::FLUID::varying_density)
+          {
+        	for (int vi=0; vi<numnode; ++vi)
+        	  {
+				const int fvi   = 3*vi;
+				const int fvip  = fvi+1;
+				const double v0 = +timefacfac*grad_scaaf_(0)*velint_(0)*funct_(vi);
+				const double v1 = +timefacfac*grad_scaaf_(1)*velint_(1)*funct_(vi);
+				for (int ui=0; ui<numnode; ++ui)
+				{
+				  const int fui   = 3*ui;
+				  const int fuip  = fui+1;
+				  /*  convection, reactive part (conservative addition) */
+				  /*
+				  /                           \
+				  |  n+1  /             \      |
+				  | u    | Du*nabla rho | , v  |
+				  |  (i)  \            /       |
+				  \                           /
+				  */
+				  estif(fvi,  fui  ) += v0*funct_(ui) ;
+				  estif(fvi,  fuip ) += v0*funct_(ui) ;
+				  estif(fvip, fui  ) += v1*funct_(ui) ;
+				  estif(fvip, fuip ) += v1*funct_(ui) ;
+				}
+        	  }
+          }
         }
 
         for (int vi=0; vi<numnode; ++vi)
@@ -1121,7 +1159,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
           eforce(fvi + 1) += v*velint_(1) ;
         }
 
-        if (loma)
+        if (physicaltype == INPAR::FLUID::loma)
         {
           for (int vi=0; vi<numnode; ++vi)
           {
@@ -1132,6 +1170,18 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
             eforce(fvi + 1) += v*velint_(1) ;
           }
         }
+        if (physicaltype == INPAR::FLUID::varying_density)
+        {
+          for (int vi=0; vi<numnode; ++vi)
+          {
+            const int fvi   = 3*vi;
+            /* convection (conservative addition) on rhs for varying_density flow */
+            double v = -rhsfac*conv_scaaf_*funct_(vi);
+            eforce(fvi    ) += v*velint_(0) ;
+            eforce(fvi + 1) += v*velint_(1) ;
+          }
+        }
+
       }
 
       //----------------------------------------------------------------------
@@ -1263,7 +1313,8 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
       // 1) subtracted viscosity term including right-hand-side contribution
       // 2) additional rhs term of continuity equation
       //----------------------------------------------------------------------
-      if (loma)
+
+      if (physicaltype == INPAR::FLUID::loma)
       {
         const double v = -(2.0/3.0)*visceff_*timefacfac ;
         for (int ui=0; ui<numnode; ++ui)
@@ -2281,7 +2332,8 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::GetMaterialParams(
   const LINALG::Matrix<2,iel>&       evelaf,
   const LINALG::Matrix<iel,1>&       escaaf,
   const LINALG::Matrix<iel,1>&       escaam,
-  const bool                         is_genalpha
+  const bool                         is_genalpha,
+  const enum INPAR::FLUID::PhysicalType  physicaltype
 )
 {
 // initially set density values and values with respect to continuity rhs
@@ -2300,6 +2352,22 @@ if (material->MaterialType() == INPAR::MAT::m_fluid)
 
   // get constant viscosity
   visc_ = actmat->Viscosity();
+
+  // varying density: provide density at the gauss points
+  if (physicaltype == INPAR::FLUID::varying_density)
+  {
+	  densaf_ = funct_.Dot(escaaf);
+	  densam_ = densaf_;
+
+	  densn_ = funct_.Dot(escaam);
+  }
+  // Boussinesq approximation: calculation of delta rho
+  else if(physicaltype == INPAR::FLUID::boussinesq)
+  {
+	  const double density_0 = actmat->Density();
+	  deltadens_ =  (funct_.Dot(escaaf)- density_0)/ density_0;
+  }
+
 }
 else if (material->MaterialType() == INPAR::MAT::m_carreauyasuda)
 {

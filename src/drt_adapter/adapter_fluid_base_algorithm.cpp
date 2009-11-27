@@ -141,8 +141,9 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // number of degrees of freedom
   fluidtimeparams->set<int>              ("number of velocity degrees of freedom" ,probsize.get<int>("DIM"));
 
-  // ---------------------------- low-Mach-number or incompressible flow
-  fluidtimeparams->set<string>("low-Mach-number solver"   ,fdyn.get<string>("LOWMACH"));
+  // physical type of the fluid (incompressible, Boussinesq Approximation, varying density, loma)
+  fluidtimeparams->set<INPAR::FLUID::PhysicalType>("Physical Type",
+			  Teuchos::getIntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE"));
 
   // ------------------------------------------------ basic scheme, i.e.
   // --------------------- solving nonlinear or linearised flow equation

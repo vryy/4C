@@ -49,8 +49,7 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
   if (numdim!=3)
     dserror("Evaluation of turbulence statistics only for 3d flow problems!");
 
-  // type of solver: low-Mach-number or incompressible solver
-  string loma_ = params_.get<string>("low-Mach-number solver","No");
+  INPAR::FLUID::PhysicalType physicaltype = params_.get<INPAR::FLUID::PhysicalType>("Physical Type");
 
   //----------------------------------------------------------------------
   // allocate some (toggle) vectors
@@ -496,7 +495,7 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
   {
     std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
 
-    if (loma_ != "No")
+    if (physicaltype == INPAR::FLUID::loma)
     {
       s.append(".loma_statistics");
 

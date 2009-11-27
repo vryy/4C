@@ -48,6 +48,7 @@ Maintainer: Peter Gamnitzer
 #include "drt_periodicbc.H"
 #include "../drt_lib/drt_nodematchingoctree.H"
 #include "../drt_lib/drt_function.H"
+#include "../drt_inpar/inpar_fluid.H"
 
 #include "Epetra_Vector.h"
 #include "Epetra_Operator.h"
@@ -468,8 +469,8 @@ protected:
   int dumperiod_;
   //@}
 
-  /// flag for low-Mach-number solver (no: standard incompressible solver)
-  bool loma_;
+  /// flag for physical type of fluid flow (standard: incompressible)
+  enum INPAR::FLUID::PhysicalType physicaltype_;
 
   /// flag for special flow: currently channel flow or flow in a lid-driven cavity
   string special_flow_;

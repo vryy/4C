@@ -43,6 +43,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
 #include "../drt_inpar/drt_validparameters.H"
+#include "../drt_inpar/inpar_fluid.H"
 
 /*----------------------------------------------------------------------*
   |                                                       m.gee 06/01    |
@@ -120,8 +121,9 @@ void dyn_fluid_drt()
 	// number of degrees of freedom
 	fluidtimeparams.set<int> ("number of velocity degrees of freedom" ,probsize.get<int>("DIM"));
 
-	// ---------------------------- low-Mach-number or incompressible flow
-	fluidtimeparams.set<string> ("low-Mach-number solver"   ,fdyn.get<string>("LOWMACH"));
+	// physical type of fluid flow (incompressible, varying density, loma, Boussinesq approximation)
+	fluidtimeparams.set<INPAR::FLUID::PhysicalType> ("Physical Type",
+							Teuchos::getIntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE"));
 
 	// ------------------------------------------------ basic scheme, i.e.
 	// --------------------- solving nonlinear or linearised flow equation

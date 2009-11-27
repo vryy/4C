@@ -300,7 +300,7 @@ void ELCH::Algorithm::UpdateConvection()
 
   // Fluid field is solved once more to synchronizes the density and velocity field
   // Not a large influence since solution should be converged: Delta v in the range of 10E-6
-  FluidField().NonlinearSolve();
+  // FluidField().NonlinearSolve();
 
   int numscal = 1;
 

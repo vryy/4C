@@ -40,8 +40,8 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   //----------------------------------------------------------------------
   // switches, control parameters, material parameters
 
-  // type of solver: low-Mach-number or incompressible solver
-  loma_ = params_.get<string>("low-Mach-number solver","No");
+  // type of fluid flow solver: incompressible, Boussinesq approximation, varying density, loma
+  physicaltype_ = params.get<INPAR::FLUID::PhysicalType>("Physical Type");
 
   // get the plane normal direction from the parameterlist
   {
@@ -65,7 +65,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     }
   }
 
-  if (loma_ == "No")
+  if(physicaltype_ == INPAR::FLUID::loma)
   {
      // get fluid viscosity from material definition --- for computation
      // of ltau
@@ -91,7 +91,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
 
   meanvelnp_     = LINALG::CreateVector(*dofrowmap,true);
   // this vector is only necessary for low-Mach-number flow
-  if (loma_ != "No") meanscanp_ = LINALG::CreateVector(*dofrowmap,true);
+  if(physicaltype_ == INPAR::FLUID::loma) meanscanp_ = LINALG::CreateVector(*dofrowmap,true);
 
   toggleu_      = LINALG::CreateVector(*dofrowmap,true);
   togglev_      = LINALG::CreateVector(*dofrowmap,true);
@@ -907,7 +907,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   {
     std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
 
-    if (loma_ != "No")
+    if (physicaltype_ == INPAR::FLUID::loma)
     {
       s.append(".loma_statistics");
 
@@ -3183,7 +3183,7 @@ void FLD::TurbulenceStatisticsCha::ClearStatistics()
   }
 
   meanvelnp_->PutScalar(0.0);
-  if (loma_ != "No") meanscanp_->PutScalar(0.0);
+  if (physicaltype_ == INPAR::FLUID::loma) meanscanp_->PutScalar(0.0);
 
   // reset smapling for dynamic Smagorinsky model
   if (smagorinsky_)

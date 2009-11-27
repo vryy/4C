@@ -63,6 +63,7 @@ Input/condif1_straight_convection.dat                   x        x        x     
 Input/dyn_shell_dirich.dat                              x        x        x        x        -        -
 Input/dyn_shell_neum.dat                                x        x        x        x        -        -
 Input/elch_Kwok_Wu.dat                                  x        x        x        x        -        -
+Input/elch_natconv.dat									x		 x		  x		   x
 Input/elch_pper_butlervolmer.dat                        x        x        x        x        -        -
 Input/elch_pper_primary_current_distribution.dat        x        x        x        x        -        -
 Input/elch_pper_secondary_current_distribution.dat      x        x        x        x        -        -

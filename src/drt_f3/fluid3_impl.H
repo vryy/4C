@@ -23,6 +23,10 @@ Maintainer: Ulrich Kuettler
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_lib/linalg_serialdensematrix.H"
 #include "../drt_fluid/fluid_rotsym_periodicbc.H"
+#include "../drt_inpar/inpar_fluid.H"
+
+#include "../drt_inpar/inpar_fluid.H"
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 namespace DRT
 {
@@ -185,7 +189,6 @@ namespace ELEMENTS
                 double                                   time,
                 double                                   timefac,
                 const bool                               newton,
-                const bool                               loma,
                 const bool                               conservative,
                 const bool                               is_genalpha,
                 const bool                               higher_order_ele,
@@ -200,6 +203,7 @@ namespace ELEMENTS
                 const enum Fluid3::StabilisationAction   reynolds,
                 const enum Fluid3::TauType               whichtau,
                 const enum Fluid3::TurbModelAction       turb_mod_action,
+                const enum INPAR::FLUID::PhysicalType	 physicaltype,
                 double&                                  Cs,
                 double&                                  Cs_delta_sq,
                 double&                                  l_tau);
@@ -235,7 +239,8 @@ namespace ELEMENTS
                            const LINALG::Matrix<3,iel>&       evelaf,
                            const LINALG::Matrix<iel,1>&       escaaf,
                            const LINALG::Matrix<iel,1>&       escaam,
-                           const bool                         is_genalpha);
+                           const bool                         is_genalpha,
+                           const enum INPAR::FLUID::PhysicalType	 physicaltype);
 
     /*!
       \brief calculate (all-scale) subgrid viscosity
@@ -435,6 +440,8 @@ namespace ELEMENTS
     double densam_;
     //! density at t_(n)
     double densn_;
+    //! delta density for Boussinesq Approximation
+    double deltadens_;
     //! factor for scalar time derivative
     double scadtfac_;
     //! factor for convective scalar term at t_(n+alpha_F) or t_(n+1)
@@ -462,7 +469,6 @@ namespace ELEMENTS
     //! for the handling of rotationally symmetric periodic boundary conditions
     RCP<FLD::RotationallySymmetricPeriodicBC<distype> > rotsymmpbc_;
   };
-
 }
 }
 

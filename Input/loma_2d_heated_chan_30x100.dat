@@ -39,7 +39,7 @@ NUMTHERMDIS  0
 ------------------------------------------------STRUCTURAL CONTACT
 ----------------------------------------------STATISTICAL MECHANICS
 -----------------------------------------------------FLUID DYNAMIC
-LOWMACH          Yes
+PHYSICAL_TYPE 	 Loma
 DYNAMICTYP       Nlin_Time_Int
 INITIALFIELD     field_by_function
 RESSTEP          -1

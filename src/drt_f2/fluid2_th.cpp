@@ -25,6 +25,7 @@ Created on: Jun 3, 2009
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_gder2.H"
 #include "../drt_lib/drt_condition_utils.H"
+#include "../drt_inpar/inpar_fluid.H"
 
 #include "../drt_lib/drt_discret.H"
 
@@ -405,11 +406,12 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcImpulseEqnImplicit(Fluid2* ele,
   const double time = params.get<double>("total time",-1.0);
 
   bool newton = false;
-  bool loma = false;
+  // bool loma = false;
   string newtonstr = params.get<string>("Linearisation");
-  string lomastr = params.get<string>("low-Mach-number solver");
+  // string lomastr = params.get<string>("low-Mach-number solver");
   if(newtonstr=="Newton") newton = true;
-  if(lomastr=="Yes") loma = true;
+  // if(lomastr=="Yes") loma = true;
+  INPAR::FLUID::PhysicalType physicaltype = params.get<INPAR::FLUID::PhysicalType>("Physical Type");
 
   // stabilization
   ParameterList& stablist = params.sublist("STABILIZATION");
@@ -667,8 +669,8 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcImpulseEqnImplicit(Fluid2* ele,
 
     /* momentum and velocity divergence: */
     mdiv_ = mderxy_(0, 0) + mderxy_(1, 1);
-    if (loma) vdiv_ = vderxy_(0, 0) + vderxy_(1, 1);
-
+    if (physicaltype == INPAR::FLUID::loma) vdiv_ = vderxy_(0, 0) + vderxy_(1, 1);
+    //if (loma) vdiv_ = vderxy_(0, 0) + vderxy_(1, 1);
 
     {
       ////////////////// GALERKIN ANTEIL ///////////////////////
@@ -954,11 +956,12 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcImpulseEqnSemiImplicit(Fluid2* ele,
   const double time = params.get<double>("total time",-1.0);
 
   bool newton = false;
-  bool loma = false;
+  // bool loma = false;
   string newtonstr = params.get<string>("Linearisation");
-  string lomastr = params.get<string>("low-Mach-number solver");
+  //string lomastr = params.get<string>("low-Mach-number solver");
   if(newtonstr=="Newton") newton = true;
-  if(lomastr=="Yes") loma = true;
+  // if(lomastr=="Yes") loma = true;
+  INPAR::FLUID::PhysicalType physicaltype = params.get<INPAR::FLUID::PhysicalType>("Physical Type");
 
   ParameterList& stablist = params.sublist("STABILIZATION");
 
@@ -1223,7 +1226,8 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcImpulseEqnSemiImplicit(Fluid2* ele,
 
     /* momentum and velocity divergence: */
     mdiv_ = mderxy_(0, 0) + mderxy_(1, 1);
-    if (loma) vdiv_ = vderxy_(0, 0) + vderxy_(1, 1);
+    if (physicaltype == INPAR::FLUID::loma) vdiv_ = vderxy_(0, 0) + vderxy_(1, 1);
+    //if (loma) vdiv_ = vderxy_(0, 0) + vderxy_(1, 1);
 
 
     {
@@ -1507,12 +1511,13 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcSysmatAndResidual(Fluid2* ele,
   const double time = params.get<double>("total time",-1.0);
 
   bool newton = false;
-  bool loma = false;
+  // bool loma = false;
   string newtonstr = params.get<string>("Linearisation");
   if(newtonstr=="Newton") newton = true;
   //string lomastr = params.get<string>("low-Mach-number solver");  // isn't supported anymore
   //if(lomastr=="Yes") loma = true;
-  loma = false;
+  // loma = false;
+  INPAR::FLUID::PhysicalType physicaltype = params.get<INPAR::FLUID::PhysicalType>("Physical Type");
 
   ParameterList& stablist = params.sublist("STABILIZATION");
 
@@ -1775,7 +1780,8 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcSysmatAndResidual(Fluid2* ele,
 
     // momentum and velocity divergence:
     mdiv_ = mderxy_(0, 0) + mderxy_(1, 1);
-    if (loma) vdiv_ = vderxy_(0, 0) + vderxy_(1, 1);
+    if (physicaltype == INPAR::FLUID::loma) vdiv_ = vderxy_(0, 0) + vderxy_(1, 1);
+    // if (loma) vdiv_ = vderxy_(0, 0) + vderxy_(1, 1);
 
     /////////////////////////////////
     // build fluid matrix
@@ -2095,11 +2101,12 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcResidual(Fluid2* ele,
   const double time = params.get<double>("total time",-1.0);
 
   bool newton = false;
-  bool loma = false;
+  // bool loma = false;
   string newtonstr = params.get<string>("Linearisation");
-  string lomastr = params.get<string>("low-Mach-number solver");
+  // string lomastr = params.get<string>("low-Mach-number solver");
   if(newtonstr=="Newton") newton = true;
-  if(lomastr=="Yes") loma = true;
+  // if(lomastr=="Yes") loma = true;
+  INPAR::FLUID::PhysicalType physicaltype = params.get<INPAR::FLUID::PhysicalType>("Physical Type");
 
   ParameterList& stablist = params.sublist("STABILIZATION");
 
@@ -2357,7 +2364,8 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcResidual(Fluid2* ele,
 
     /* momentum and velocity divergence: */
     mdiv_ = mderxy_(0, 0) + mderxy_(1, 1);
-    if (loma) vdiv_ = vderxy_(0, 0) + vderxy_(1, 1);
+    if (physicaltype == INPAR::FLUID::loma) vdiv_ = vderxy_(0, 0) + vderxy_(1, 1);
+    // if (loma) vdiv_ = vderxy_(0, 0) + vderxy_(1, 1);
 
     /////////////////////////////////
     // get rhs

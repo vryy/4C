@@ -68,6 +68,8 @@ Maintainer: Peter Gamnitzer
 
 #include "../drt_nurbs_discret/drt_apply_nurbs_initial_condition.H"
 
+#include "../drt_inpar/inpar_fluid.H"
+
 #ifdef PARALLEL
 #include "Epetra_MpiComm.h"
 #else
@@ -982,6 +984,9 @@ private:
   //! count cpu time for filtering (in case of a dynamic Smagorinsky model) on proc
   double                    dtfilter_;
   //@}
+
+  //! flag for type of fluid flow (standard: incompressible; else: Boussinesq approximation, varying denstiy, loma)
+  INPAR::FLUID::PhysicalType	physicaltype_;
 
 };
 

@@ -1158,13 +1158,20 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn = list->sublist("FLUID DYNAMIC",false,"");
 
-  setStringToIntegralParameter<int>("LOWMACH","No",
-                               "low-mach-number or incompressible flow",
-                               tuple<std::string>(
-                                 "No",
-                                 "Yes"
+  // physical type of fluid flow (incompressible, varying density, loma, Boussinesq approximation)
+  setStringToIntegralParameter<INPAR::FLUID::PhysicalType>("PHYSICAL_TYPE","Incompressible",
+                               "Physical Type",
+                               tuple<string>(
+                                 "Incompressible",
+                                 "Varying_density",
+                                 "Loma",
+                                 "Boussinesq"
                                  ),
-                               tuple<int>(0,1),
+                               tuple<INPAR::FLUID::PhysicalType>(
+                                     INPAR::FLUID::incompressible,
+                                     INPAR::FLUID::varying_density,
+                                     INPAR::FLUID::loma,
+									 INPAR::FLUID::boussinesq),
                                &fdyn);
 
   setStringToIntegralParameter<int>("DYNAMICTYP","Nlin_Time_Int",

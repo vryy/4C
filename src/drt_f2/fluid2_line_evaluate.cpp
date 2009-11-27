@@ -27,6 +27,7 @@ Maintainer: Peter Gmanitzer
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/carreauyasuda.H"
 #include "../drt_mat/modpowerlaw.H"
+#include "../drt_inpar/inpar_fluid.H"
 
 
 using namespace DRT::UTILS;
@@ -200,8 +201,8 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
   // get constant density (only relevant for incompressible flow)
   //const double inc_dens = params.get("inc_density",0.0);
 
-  // get flag for low-Mach-number solver
-  const bool loma  = params.get<bool>("low-Mach-number solver",false);
+  // get flag for type of fluid flow
+  INPAR::FLUID::PhysicalType physicaltype = params.get<INPAR::FLUID::PhysicalType>("Physical Type");
 
   // get discretization type
   const DiscretizationType distype = this->Shape();
@@ -362,7 +363,7 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
 
     // compute temperature and density for low-Mach-number flow
     double dens = 1.0;
-    if (loma)
+    if (physicaltype == INPAR::FLUID::loma)
     {
       double temp = 0.0;
       for (int i=0;i<2;++i)
@@ -441,8 +442,8 @@ void DRT::ELEMENTS::Fluid2Line::NeumannInflow(
   const double timefac = params.get<double>("thsl",-1.0);
   if (timefac < 0.0) dserror("No thsl supplied");
 
-  // get flag for low-Mach-number solver
-  const bool loma  = params.get<bool>("low-Mach-number solver",false);
+  // get flag for type of fluid flow
+  INPAR::FLUID::PhysicalType physicaltype = params.get<INPAR::FLUID::PhysicalType>("Physical Type");
 
   // get discretization type
   const DiscretizationType distype = this->Shape();
@@ -606,7 +607,7 @@ void DRT::ELEMENTS::Fluid2Line::NeumannInflow(
 
       // compute temperature and density for low-Mach-number flow
       double dens = 1.0;
-      if (loma)
+      if (physicaltype == INPAR::FLUID::loma)
       {
         double temp = 0.0;
         for (int i=0;i<2;++i)

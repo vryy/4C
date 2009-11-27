@@ -258,8 +258,8 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
   // get constant density (only relevant for incompressible flow)
   //const double inc_dens = params.get("inc_density",0.0);
 
-  // get flag for low-Mach-number solver
-  const bool loma  = params.get<bool>("low-Mach-number solver",false);
+  // get flag for type of fluid flow
+  const INPAR::FLUID::PhysicalType physicaltype = params.get<INPAR::FLUID::PhysicalType>("Physical Type");
 
   // get discretization type
   const DiscretizationType distype = this->Shape();
@@ -416,7 +416,7 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
 
     // compute temperature and density for low-Mach-number flow
     double dens = 1.0;
-    if (loma)
+    if (physicaltype == INPAR::FLUID::loma)
     {
       double temp = 0.0;
       for (int i=0;i<3;++i)
@@ -953,8 +953,8 @@ void DRT::ELEMENTS::Fluid3Surface::NeumannInflow(
   const double timefac = params.get<double>("thsl",-1.0);
   if (timefac < 0.0) dserror("No thsl supplied");
 
-  // get flag for low-Mach-number solver
-  const bool loma = params.get<bool>("low-Mach-number solver");
+  // get flag for type of fluid flow
+  const INPAR::FLUID::PhysicalType physicaltype = params.get<INPAR::FLUID::PhysicalType>("Physical Type");
 
   // get discretization type
   const DiscretizationType distype = this->Shape();
@@ -1092,7 +1092,7 @@ void DRT::ELEMENTS::Fluid3Surface::NeumannInflow(
 
       // compute temperature and density for low-Mach-number flow
       double dens = 1.0;
-      if (loma)
+      if(physicaltype == INPAR::FLUID::loma)
       {
         double temp = 0.0;
         for (int i=0;i<3;++i)

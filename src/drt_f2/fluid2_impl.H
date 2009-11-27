@@ -24,6 +24,9 @@ Maintainer: Volker Gravemeier
 #include "../drt_lib/linalg_fixedsizematrix.H"
 #include "../drt_fluid/fluid_rotsym_periodicbc.H"
 
+#include "../drt_inpar/inpar_fluid.H"
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 namespace DRT
 {
 namespace ELEMENTS
@@ -178,7 +181,6 @@ namespace ELEMENTS
                 double                                   time,
                 double                                   timefac,
                 const bool                               newton,
-                const bool                               loma,
                 const bool                               conservative,
                 const bool                               is_genalpha,
                 const bool                               higher_order_ele,
@@ -193,6 +195,7 @@ namespace ELEMENTS
                 const enum Fluid2::StabilisationAction   reynolds,
                 const enum Fluid2::TauType               whichtau,
                 const enum Fluid2::TurbModelAction       turb_mod_action,
+                const enum INPAR::FLUID::PhysicalType	 physicaltype,
                 double&                                  Cs);
 
    private:
@@ -225,7 +228,8 @@ namespace ELEMENTS
                            const LINALG::Matrix<2,iel>&       evelaf,
                            const LINALG::Matrix<iel,1>&       escaaf,
                            const LINALG::Matrix<iel,1>&       escaam,
-                           const bool                         is_genalpha);
+                           const bool                         is_genalpha,
+                           const enum INPAR::FLUID::PhysicalType 	physicaltype);
 
     /*!
       \brief calculate (all-scale) subgrid viscosity
@@ -421,6 +425,8 @@ namespace ELEMENTS
     double densam_;
     //! density at t_(n)
     double densn_;
+    //! Boussinesq Approximation Delta density
+    double deltadens_;
     //! factor for scalar time derivative
     double scadtfac_;
     //! factor for convective scalar term at t_(n+alpha_F) or t_(n+1)

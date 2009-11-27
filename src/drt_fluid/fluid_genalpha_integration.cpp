@@ -141,6 +141,8 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   itenum_    = 0;
   itemax_    = params_.get<int>   ("max nonlin iter steps");
 
+  physicaltype_ = params_.get<INPAR::FLUID::PhysicalType>("Physical Type");
+
   //--------------------------------------------------------------------
   // init some class variables (algorithm)
 
@@ -802,6 +804,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaApplyDirichletAndNeumann()
   // evaluate Neumann conditions
   eleparams.set("total time",time_-(1-alphaF_)*dt_);
   eleparams.set("thsl",1.);
+  eleparams.set("Physical Type", physicaltype_);
 
   neumann_loads_->PutScalar(0.0);
   discret_->SetState("scanp",scanp_);
@@ -1253,6 +1256,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
     discret_->SetState("scanp",scanp_);
     eleparams.set("thsl",1.);
     eleparams.set("outflow stabilization",outflow_stab_);
+    eleparams.set("Physical Type",physicaltype_);
 
     outflow_stabil_->PutScalar(0.0);
     discret_->EvaluateNeumann(eleparams,*outflow_stabil_);

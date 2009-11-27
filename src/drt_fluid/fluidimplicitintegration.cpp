@@ -80,10 +80,9 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // -------------------------------------------------------------------
   // get the basic parameters first
   // -------------------------------------------------------------------
-  // type of solver: low-Mach-number or incompressible solver
-  loma_ = false;
-  string lomayesno = params_.get<string>("low-Mach-number solver","No");
-  if (lomayesno =="Yes") loma_ = true;
+
+  // physical type of fluid flow (incompressible, varying density, loma, Boussinesq approximation)
+  physicaltype_ = params_.get<INPAR::FLUID::PhysicalType>("Physical Type");
   // type of time-integration
   timealgo_ = params_.get<FLUID_TIMEINTTYPE>("time int algo");
   // time-step size
@@ -129,7 +128,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
 
   // conservative formulation currently not supported in low-Mach-number case
   // when using generalized-alpha time-integration scheme
-  if (loma_ and timealgo_==timeint_afgenalpha and convform_ == "conservative")
+  if (physicaltype_ == INPAR::FLUID::loma and timealgo_==timeint_afgenalpha and convform_ == "conservative")
      dserror("conservative formulation currently not supported for low-Mach-number flow within generalized-alpha time-integration scheme");
 
   // fine-scale subgrid viscosity?
@@ -444,7 +443,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // set density variable to 1.0 and get gas constant for low-Mach-number
   // flow and get constant density variable for incompressible flow
   // ---------------------------------------------------------------------
-  if (loma_)
+  if (physicaltype_ == INPAR::FLUID::loma or physicaltype_ == INPAR::FLUID::varying_density)
   {
     // set density variable to 1.0 for low-Mach-number flow
     density_ = 1.0;
@@ -452,6 +451,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
     // get gas constant
     ParameterList eleparams;
     eleparams.set("action","get_gas_constant");
+    eleparams.set("Physical Type", physicaltype_);
     discret_->Evaluate(eleparams,null,null,null,null,null);
     gasconstant_ = eleparams.get("gas constant", 1.0);
     // potential check here -> currently not executed
@@ -462,6 +462,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
     // get constant density variable for incompressible flow
     ParameterList eleparams;
     eleparams.set("action","get_density");
+    eleparams.set("Physical Type", physicaltype_);
     discret_->Evaluate(eleparams,null,null,null,null,null);
     density_ = eleparams.get("density", 1.0);
     if (density_ < EPS15) dserror("received zero or negative density value");
@@ -719,7 +720,7 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
     discret_->ClearState();
 
     // set all parameters and states required for Neumann conditions
-    eleparams.set("low-Mach-number solver",loma_);
+    eleparams.set("Physical Type",physicaltype_);
     eleparams.set("thermpress at n+1",thermpressaf_);
     if (timealgo_==timeint_afgenalpha)
     {
@@ -896,7 +897,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       eleparams.set("form of convective term",convform_);
       eleparams.set("fs subgrid viscosity",fssgv_);
       eleparams.set("Linearisation",newton_);
-      eleparams.set("low-Mach-number solver",loma_);
+      eleparams.set("Physical Type", physicaltype_);
 
       // parameters for stabilization
       eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
@@ -997,7 +998,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           // action for elements
           condparams.set("action","calc_Neumann_inflow");
           condparams.set("thsl",theta_*dta_);
-          condparams.set("low-Mach-number solver",loma_);
+          condparams.set("Physical Type",physicaltype_);
           condparams.set("thermpress at n+alpha_F/n+1",thermpressaf_);
 
           // set vector values needed by elements
@@ -1551,7 +1552,7 @@ void FLD::FluidImplicitTimeInt::LinearSolve()
     // other parameters that might be needed by the elements
     eleparams.set("total time",time_);
     eleparams.set("thsl",theta_*dta_);
-    eleparams.set("low-Mach-number solver",loma_);
+    eleparams.set("Physical Type",physicaltype_);
 
     eleparams.set("thermpress at n+alpha_F/n+1",thermpressaf_);
     eleparams.set("thermpress at n+alpha_M/n",thermpressam_);
@@ -2060,7 +2061,7 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   eleparams.set("form of convective term",convform_);
   eleparams.set("fs subgrid viscosity",fssgv_);
   eleparams.set("Linearisation",newton_);
-  eleparams.set("low-Mach-number solver",loma_);
+  eleparams.set("Physical Type", physicaltype_);
 
   // parameters for stabilization
   eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
@@ -2128,7 +2129,7 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
     // action for elements
     condparams.set("action","calc_Neumann_inflow");
     condparams.set("thsl",theta_*dta_);
-    condparams.set("low-Mach-number solver",loma_);
+    condparams.set("Physical Type", physicaltype_);
     condparams.set("thermpress at n+alpha_F/n+1",thermpressaf_);
 
     // set vector values needed by elements
@@ -2235,7 +2236,7 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   eleparams.set("form of convective term",convform_);
   eleparams.set("fs subgrid viscosity",fssgv_);
   eleparams.set("Linearisation",newton_);
-  eleparams.set("low-Mach-number solver",loma_);
+  eleparams.set("Physical Type", physicaltype_);
 
   // parameters for stabilization
   eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
@@ -2644,7 +2645,7 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
   eleparams.set("form of convective term",convform_);
   eleparams.set("fs subgrid viscosity","No");
   eleparams.set("Linearisation",newton_);
-  eleparams.set("low-Mach-number solver",loma_);
+  eleparams.set("Physical Type", physicaltype_);
 
   // parameters for stabilization
   eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
@@ -3215,6 +3216,8 @@ void FLD::FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
     // actual time for elements
     eleparams.set("total time",time_);
 
+    eleparams.set("Physical Type", physicaltype_);
+
     // set vector values needed by elements
     discret_->ClearState();
     discret_->SetState("u and p at time n+1 (converged)",velnp_);
@@ -3307,7 +3310,7 @@ void FLD::FluidImplicitTimeInt::SolveStationaryProblem()
       eleparams.set("thsl",1.0); // no timefac in stationary case
       eleparams.set("form of convective term",convform_);
       eleparams.set("fs subgrid viscosity",fssgv_);
-      eleparams.set("low-Mach-number solver",loma_);
+      eleparams.set("Physical Type", physicaltype_);
 
       eleparams.set("thermodynamic pressure",thermpressaf_);
 
@@ -3570,7 +3573,7 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
     eleparams.set("omtheta",omtheta_);
     eleparams.set("Linearisation",newton_);
     eleparams.set("form of convective term",convform_);
-    eleparams.set("low-Mach-number solver",loma_);
+    eleparams.set("Physical Type", physicaltype_);
 
     // parameters for stabilization
     eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");

@@ -20,6 +20,7 @@ Maintainer: Christiane Foerster
 #define FLUID3_LIN_IMPL_H
 
 #include "fluid3.H"
+#include "../drt_inpar/inpar_fluid.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 //#include <blitz/array.h>
 
@@ -172,7 +173,7 @@ namespace ELEMENTS
                 Teuchos::RCP<const MAT::Material>                    material,
                 double                                               time,
                 double                                               timefac,
-                bool                                                 loma);
+                INPAR::FLUID::PhysicalType							 physicaltype);
 
   private:
 

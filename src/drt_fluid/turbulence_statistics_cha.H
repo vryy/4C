@@ -72,6 +72,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 #include "../drt_nurbs_discret/drt_control_point.H"
 #include "../drt_lib/linalg_utils.H"
+#include "../drt_inpar/inpar_fluid.H"
 
 #include "../drt_mat/newtonianfluid.H"
 
@@ -292,8 +293,8 @@ private:
   //! number of records written
   int                              countrecord_;
 
-  //! flag for low-Mach-number flow
-  string                           loma_;
+  /// flag for physical type of fluid flow (standard: incompressible)
+  INPAR::FLUID::PhysicalType 		physicaltype_;
 
   //! The discretisation (required for nodes, dofs etc;)
   RefCountPtr<DRT::Discretization> discret_;

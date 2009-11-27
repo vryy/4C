@@ -22,6 +22,15 @@ namespace INPAR
 
   namespace FLUID
   {
+	/// physical type of the fluid flow (incompressible, Boussinesq approximation, varying density, loma)
+	enum PhysicalType
+	{
+	  incompressible,
+	  boussinesq,
+	  varying_density,
+      loma
+	};
+
     /// type of stabilization parameter definition
     enum TauType
     {
