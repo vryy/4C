@@ -91,7 +91,6 @@ GRIDVEL                         1
 INITIALFIELD                    zero_field
 ITEMAX                          10
 LIFTDRAG                        No
-LOWMACH                         No
 MAXTIME                         1000
 NONLINITER                      fixed_point_like
 NUMSTASTEPS                     0

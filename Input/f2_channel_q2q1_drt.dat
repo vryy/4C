@@ -94,7 +94,6 @@ KIND                None  // None ZienkiewiczXie AdamsBashforth2
 ------------------------------------------------STRUCTURAL CONTACT
 ------------------------------------------------STATISTICAL MECHANICS
 -----------------------------------------------------FLUID DYNAMIC
-LOWMACH          No
 DYNAMICTYP       Nlin_Time_Int
 FLUID_SOLVER	 Pressure Correction SemiImplicit
 INITIALFIELD     zero_field
