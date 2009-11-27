@@ -242,7 +242,7 @@ fsisurface_(NULL)
   vector<DRT::Condition*> locsysconditions(0);
   discret_.GetCondition("Locsys",locsysconditions);
   if (locsysconditions.size()) locsysmanager_ = rcp(new DRT::UTILS::LocsysManager(discret_));
-    
+
   //-------------------------------------------- calculate external forces
   {
     ParameterList p;
@@ -4170,15 +4170,27 @@ void StruGenAlpha::UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
     // set vector values needed by elements
     discret_.ClearState();
     discret_.SetState("residual displacement",zeros_);
-    discret_.SetState("displacement",zeros_);
-    discret_.SetState("velocity",zeros_);
-    Teuchos::RCP<LINALG::SparseMatrix> stiff = Teuchos::rcp(new LINALG::SparseMatrix(*discret_.DofRowMap(),81,true,true));
-    Teuchos::RCP<Epetra_Vector> fint = LINALG::CreateVector(*discret_.DofRowMap(),true);
-    discret_.Evaluate(p,stiff,mass_,fint,null,null);
+    discret_.SetState("displacement",dis_);
+    discret_.SetState("velocity",vel_);
+    discret_.Evaluate(p,stiff_,mass_,fint_,null,null);
     discret_.ClearState();
+  }
 
-    // close mass matrix
-    mass_->Complete();
+  // close mass and stiffness matrix
+  mass_->Complete();
+  stiff_->Complete();
+
+  // build damping matrix if desired
+  bool damping = params_.get<bool>  ("damping",false);
+  const bool dynkindstat = ( params_.get<string>("DYNAMICTYP") == "Static" );
+  if (damping and !dynkindstat)
+  {
+    double kdamp   = params_.get<double>("damping factor K",0.0);
+    double mdamp   = params_.get<double>("damping factor M",0.0);
+    damp_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(domainmaps,rangemaps,81,false,true));
+    damp_->Add(*stiff_,false,kdamp,0.0);
+    damp_->Add(*mass_,false,mdamp,1.0);
+    damp_->Complete();
   }
 
   bool loadlin = params_.get<bool>("LOADLIN",false);
@@ -4187,8 +4199,6 @@ void StruGenAlpha::UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
     fextlin_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(domainmaps,rangemaps,81,false,true));
     fextlinold_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(domainmaps,rangemaps,81,false,true));
   }
-  bool damping = params_.get<bool>  ("damping",false);
-  if (damping) damp_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(domainmaps,rangemaps,81,false,true));
 }
 
 
