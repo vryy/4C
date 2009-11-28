@@ -71,6 +71,9 @@ FLD::FluidProjectionMethod::FluidProjectionMethod(RefCountPtr<DRT::Discretizatio
     alphaF_   = params_.get<double>("alpha_F");
     gamma_    = params_.get<double>("gamma");
 
+    // physical type of fluid flow (incompressible, varying density, loma, Boussinesq approximation)
+    physicaltype_ = params_.get<INPAR::FLUID::PhysicalType>("Physical Type");
+
     // number of steps for starting algorithm
     numstasteps_ = params_.get<int> ("number of start steps");
     // starting algorithm only for af-generalized-alpha so far
@@ -794,7 +797,7 @@ void FLD::FluidProjectionMethod::SolveImpulseEqn()
         eleparams.set("dt",dta_);
         eleparams.set("fs subgrid viscosity","no");
         eleparams.set("Linearisation",newton_);
-        eleparams.set("low-Mach-number solver","no");
+        eleparams.set("Physical Type", physicaltype_);
         eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
         eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
 
@@ -1063,7 +1066,7 @@ void FLD::FluidProjectionMethod::SolveImpulseEqnSemi()
     eleparams.set("dt",dta_);
     eleparams.set("fs subgrid viscosity","no");
     eleparams.set("Linearisation",newton_);
-    eleparams.set("low-Mach-number solver","no");
+    eleparams.set("Physical Type", physicaltype_);
     eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
     eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
 
@@ -1262,7 +1265,7 @@ void FLD::FluidProjectionMethod::CalcResidual()
     eleparams.set("dt",dta_);
     eleparams.set("fs subgrid viscosity","no");
     eleparams.set("Linearisation",newton_);
-    eleparams.set("low-Mach-number solver","no");
+    eleparams.set("Physical Type", physicaltype_);
     eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
     eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
 

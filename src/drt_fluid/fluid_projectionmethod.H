@@ -31,6 +31,7 @@ wiesner@lnm.mw.tum.de
 #include "../drt_lib/linalg_mapextractor.H"
 #include "../drt_lib/linalg_sparsematrix.H"
 #include "../drt_io/io.H"
+#include "../drt_inpar/inpar_fluid.H"
 
 #include "../drt_lib/drt_nodematchingoctree.H"
 #include "../drt_lib/drt_function.H"
@@ -224,6 +225,9 @@ protected:
 
   /// row dof map extractor
   const UTILS::MapExtractor* surfacesplitter_;
+
+  /// flag for flow type (incompressible, Boussinesq approximation, varying density, loma)
+  enum INPAR::FLUID::PhysicalType 	physicaltype_;
 };
 
 } // end namespace FLD
