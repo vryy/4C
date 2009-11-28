@@ -37,7 +37,6 @@ GRIDVEL                         1
 INITIALFIELD                    zero_field
 ITEMAX                          10
 LIFTDRAG                        No
-LOWMACH                         No
 MAXTIME                         100000
 NEUMANNINFLOW                   no
 NONLINITER                      Newton

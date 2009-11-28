@@ -158,7 +158,6 @@ GRIDVEL                         1
 INITIALFIELD                    zero_field
 ITEMAX                          10
 LIFTDRAG                        No
-LOWMACH                         No
 MAXTIME                         1000
 NEUMANNINFLOW                   no
 NONLINITER                      fixed_point_like
