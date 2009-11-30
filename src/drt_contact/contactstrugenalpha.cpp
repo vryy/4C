@@ -2231,7 +2231,7 @@ void CONTACT::ContactStruGenAlpha::Integrate()
   else dserror("Unknown type of predictor");
 
   // unknown types of nonlinear iteration schemes
-  if (equil != "full newton" && equil != "line search newton")
+  if (equil != "full newton" && equil != "line search newton" && equil != "ptc")
     dserror("Unknown type of equilibrium iteration");
 
   //********************************************************************
@@ -2285,6 +2285,7 @@ void CONTACT::ContactStruGenAlpha::Integrate()
         // LOOP2: nonlinear iteration (Newton)
         if (equil=="full newton") SemiSmoothNewton();
         else if (equil=="line search newton") SemiSmoothNewtonLineSearch();
+        else if (equil=="ptc") dserror("ERROR: No semi-smooth PTC available!");
 
         UpdateandOutput();
 
@@ -2321,6 +2322,7 @@ void CONTACT::ContactStruGenAlpha::Integrate()
           // LOOP3: nonlinear iteration (Newton)
           if (equil=="full newton") FullNewton();
           else if (equil=="line search newton") FullNewtonLineSearch();
+          else if (equil=="ptc") PTC();
 
           // update of active set (fixed-point)
           contactmanager_->GetStrategy().UpdateActiveSet();
@@ -2359,6 +2361,7 @@ void CONTACT::ContactStruGenAlpha::Integrate()
       // LOOP2: nonlinear iteration (Newton)
       if (equil=="full newton") FullNewton();
       else if (equil=="line search newton") FullNewtonLineSearch();
+      else if (equil=="ptc") PTC();
 
       strategy.UpdateConstraintNorm();
       UpdateandOutput();
@@ -2410,6 +2413,7 @@ void CONTACT::ContactStruGenAlpha::Integrate()
         // LOOP3: nonlinear iteration (Newton)
         if (equil=="full newton") FullNewton();
         else if (equil=="line search newton") FullNewtonLineSearch();
+        else if (equil=="ptc") PTC();
 
         // update constraint norm and penalty parameter
         strategy.UpdateConstraintNorm(uzawaiter);

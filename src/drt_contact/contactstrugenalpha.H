@@ -128,6 +128,16 @@ public:
 
   */
   void FullNewtonLineSearch();
+  
+  /*!
+  \brief do pseudo transient continuation nonlinear iteration
+
+  Pseudo transient continuation is a variant of full newton that has a
+  larger convergence radius than newton and is therefore more stable and/or
+  can do larger time steps.
+
+  */
+  void PTC();
 
   /*!
   \brief do semi-smooth full Newton iteration
