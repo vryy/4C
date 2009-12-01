@@ -74,6 +74,7 @@ typedef struct _MATERIAL
      struct _ION                 *ion;           /* material properties of an ion species in an electrolyte solution */
      struct _CNST_ART            *cnst_art;      /* 1D_Artery with constant material and geometric properties */
      struct _HOLZAPFELCARDIO     *holzapfelcardiovascular; /* anisotropic fiber material for arteries */
+     struct _HUMPHREYCARDIO      *humphreycardiovascular;  /* anisotropic material for arteries cf Humphrey */
      }                           m;             /* union pointer to material specific structure */
 
 } MATERIAL;
@@ -916,5 +917,21 @@ typedef struct _HOLZAPFELCARDIO
      DOUBLE                    gamma;
      DOUBLE                    minstretch;
 } HOLZAPFELCARDIO;
+/*----------------------------------------------------------------------*
+ | Anisotropic material for arteries cf Humphrey               st 11/09 |
+ *----------------------------------------------------------------------*/
+typedef struct _HUMPHREYCARDIO
+{
+     DOUBLE                    kappa;
+     DOUBLE                    mue;
+     DOUBLE                    density;
+     DOUBLE                    k1c;
+     DOUBLE                    k2c;
+     DOUBLE                    k1m;
+     DOUBLE                    k2m;
+     DOUBLE                    phie;
+     DOUBLE                    phic;
+     DOUBLE                    phim;
+} HUMPHREYCARDIO;
 
 #endif

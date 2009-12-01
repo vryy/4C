@@ -58,6 +58,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/elasthyper.H"
 #include "../drt_mat/holzapfelcardiovascular.H"
 #include "../drt_mat/plasticneohooke.H"
+#include "../drt_mat/humphreycardiovascular.H"
 
 
 using namespace std; // cout etc.
@@ -370,6 +371,15 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       return;
       break;
     }
+    case INPAR::MAT::m_humphreycardiovascular: /*------- Anisotropic Material for arteries cf Humphrey */
+    {
+      MAT::HumphreyCardio* humcard = static_cast <MAT::HumphreyCardio*>(mat.get());
+      humcard->Evaluate(glstrain,gp,cmat,stress);
+      //humcard->UpdateFiberDirs(gp,defgrd);
+      *density = humcard->Density();
+      return;
+      break;
+    }
     case INPAR::MAT::m_plneohooke: /*----------------- Plastic NeoHookean Material */
     {
       MAT::PlasticNeoHooke* plastic = static_cast <MAT::PlasticNeoHooke*>(mat.get());
@@ -511,6 +521,14 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
       MAT::HolzapfelCardio* holzcard = static_cast <MAT::HolzapfelCardio*>(mat.get());
       holzcard->Evaluate(glstrain,gp,cmat,stress);
       *density = holzcard->Density();
+      return;
+      break;
+    }
+    case INPAR::MAT::m_humphreycardiovascular: /*------- Anisotropic Material for arteries cf Humphrey */
+    {
+      MAT::HumphreyCardio* humcard = static_cast <MAT::HumphreyCardio*>(mat.get());
+      humcard->Evaluate(glstrain,gp,cmat,stress);
+      *density = humcard->Density();
       return;
       break;
     }
@@ -754,6 +772,14 @@ void DRT::ELEMENTS::So_hex27::soh27_mat_sel(
       return;
       break;
     }
+    case INPAR::MAT::m_humphreycardiovascular: /*------- Anisotropic Material for arteries cf Humphrey */
+    {
+      MAT::HumphreyCardio* humcard = static_cast <MAT::HumphreyCardio*>(mat.get());
+      humcard->Evaluate(glstrain,gp,cmat,stress);
+      *density = humcard->Density();
+      return;
+      break;
+    }
     default:
       dserror("Unknown type of material");
     break;
@@ -949,6 +975,14 @@ void DRT::ELEMENTS::So_hex20::soh20_mat_sel(
       MAT::HolzapfelCardio* holzcard = static_cast <MAT::HolzapfelCardio*>(mat.get());
       holzcard->Evaluate(glstrain,gp,cmat,stress);
       *density = holzcard->Density();
+      return;
+      break;
+    }
+    case INPAR::MAT::m_humphreycardiovascular: /*------- Anisotropic Material for arteries cf Humphrey */
+    {
+      MAT::HumphreyCardio* humcard = static_cast <MAT::HumphreyCardio*>(mat.get());
+      humcard->Evaluate(glstrain,gp,cmat,stress);
+      *density = humcard->Density();
       return;
       break;
     }

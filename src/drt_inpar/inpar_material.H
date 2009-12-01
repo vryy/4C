@@ -108,6 +108,7 @@ namespace INPAR
       mes_isovarga,  ///< isotropic isochoric Varga material
       m_cnst_art,            ///< 1D_Artery constant material properties
       m_holzapfelcardiovascular,   ///< anisotropic fiber material for arteries
+      m_humphreycardiovascular,   ///< anisotropic material for arteries cf Humphrey
       m_none          ///< undefined
     };
 

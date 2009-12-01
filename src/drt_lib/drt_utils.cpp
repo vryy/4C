@@ -141,6 +141,7 @@ extern "C"
 #include "../drt_mat/cnst_1d_art.H"
 #include "../drt_mat/fourieriso.H"
 #include "../drt_mat/holzapfelcardiovascular.H"
+#include "../drt_mat/humphreycardiovascular.H"
 #include "../drt_mat/itskov.H"
 #include "../drt_mat/plasticneohooke.H"
 #include "../drt_contact/drt_cnode.H"
@@ -924,6 +925,12 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
       MAT::HolzapfelCardio* holzapfelcard = new MAT::HolzapfelCardio();
       holzapfelcard->Unpack(data);
       return holzapfelcard;
+    }
+    case ParObject_HumphreyCardio:
+    {
+      MAT::HumphreyCardio* humcard = new MAT::HumphreyCardio();
+      humcard->Unpack(data);
+      return humcard;
     }
     case ParObject_CNode:
     {

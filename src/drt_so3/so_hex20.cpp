@@ -22,6 +22,7 @@ Maintainer: Thomas Kloeppel
 #include "../drt_mat/viscoanisotropic.H"
 #include "../drt_mat/anisotropic_balzani.H"
 #include "../drt_mat/holzapfelcardiovascular.H"
+#include "../drt_mat/humphreycardiovascular.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                                       |
@@ -337,6 +338,17 @@ void DRT::ELEMENTS::So_hex20::VisNames(map<string,int>& names)
     fiber = "Fiber2";
     names[fiber] = 3; // 3-dim vector
   }
+  if (Material()->MaterialType() == INPAR::MAT::m_humphreycardiovascular)
+  {
+    string fiber = "Fiber1";
+    names[fiber] = 3; // 3-dim vector
+    fiber = "Fiber2";
+    names[fiber] = 3;
+    fiber = "Fiber3";
+    names[fiber] = 3;
+    fiber = "Fiber4";
+    names[fiber] = 3;
+  }
 
   return;
 }
@@ -495,6 +507,28 @@ bool DRT::ELEMENTS::So_hex20::VisData(const string& name, vector<double>& data)
     } else if (name == "Fiber2"){
       if ((int)data.size()!=3) dserror("size mismatch");
       data[0] = a2[0]; data[1] = a2[1]; data[2] = a2[2];
+    } else {
+      return false;
+    }
+  }
+  if (Material()->MaterialType() == INPAR::MAT::m_humphreycardiovascular){
+    MAT::HumphreyCardio* art = static_cast <MAT::HumphreyCardio*>(Material().get());
+    vector<double> a1 = art->Geta1()->at(0);  // get a1 of first gp
+    vector<double> a2 = art->Geta2()->at(0);  // get a2 of first gp
+    vector<double> a3 = art->Geta3()->at(0);  // get a3 of first gp
+    vector<double> a4 = art->Geta4()->at(0);  // get a4 of first gp
+    if (name == "Fiber1"){
+      if ((int)data.size()!=3) dserror("size mismatch");
+      data[0] = a1[0]; data[1] = a1[1]; data[2] = a1[2];
+    } else if (name == "Fiber2"){
+      if ((int)data.size()!=3) dserror("size mismatch");
+      data[0] = a2[0]; data[1] = a2[1]; data[2] = a2[2];
+    } else if (name == "Fiber3"){
+      if ((int)data.size()!=3) dserror("size mismatch");
+      data[0] = a3[0]; data[1] = a3[1]; data[2] = a3[2];
+    } else if (name == "Fiber4"){
+      if ((int)data.size()!=3) dserror("size mismatch");
+      data[0] = a4[0]; data[1] = a4[1]; data[2] = a4[2];
     } else {
       return false;
     }

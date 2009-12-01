@@ -1183,9 +1183,32 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"MUE","Shear Modulus");
     AddNamedReal(m,"DENS","Density");
     AddNamedReal(m,"K1","Parameter for linear fiber stiffness");
-    AddNamedReal(m,"K2","Parameter for exponetial fiber stiffness");
+    AddNamedReal(m,"K2","Parameter for exponential fiber stiffness");
     AddNamedReal(m,"GAMMA","angle between fibers");
     AddNamedReal(m,"MINSTRETCH","minimal principal stretch fibers do respond to");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+  
+  /*----------------------------------------------------------------------*/
+  /*----------------------------------------------------------------------*/
+  // anisotropic material for arteries cf Humphrey
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_HUMPHREYCARDIO",
+                                            "anisotropic material for arteries cf Humphrey",
+                                            INPAR::MAT::m_humphreycardiovascular));
+
+    AddNamedReal(m,"KAPPA","dilatation modulus");
+    AddNamedReal(m,"MUE","Shear Modulus");
+    AddNamedReal(m,"DENS","Density");
+    AddNamedReal(m,"K1C","Parameter for linear fiber stiffness of collagen");
+    AddNamedReal(m,"K2C","Parameter for exponential fiber stiffness of collagen");
+    AddNamedReal(m,"K1M","Parameter for linear fiber stiffness of smooth muscle");
+    AddNamedReal(m,"K2M","Parameter for exponential fiber stiffness of smooth muscle");
+    AddNamedReal(m,"PHIE","mass fraction of elastin");
+    AddNamedReal(m,"PHIC","mass fraction of collagen");
+    AddNamedReal(m,"PHIM","mass fraction of smooth muscle");
 
     AppendMaterialDefinition(matlist,m);
   }
