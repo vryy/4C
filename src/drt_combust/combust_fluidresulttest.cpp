@@ -30,8 +30,13 @@ Maintainer: Axel Gerstenberger
 /*----------------------------------------------------------------------*/
 FLD::CombustFluidResultTest::CombustFluidResultTest(CombustFluidImplicitTimeInt& fluid)
 {
-  fluiddis_=fluid.discret_;
-  mysol_   =fluid.state_.velnp_ ;
+  fluiddis_ = fluid.discret_;
+  fluidstddofset_ = fluid.standarddofset_;
+  // transform XFEM velnp vector to (standard FEM) velnp vector
+  Teuchos::RCP<Epetra_Vector> velnp_std = fluid.dofmanagerForOutput_->transformXFEMtoStandardVector(
+      *fluid.state_.velnp_, *fluid.standarddofset_, fluid.state_.nodalDofDistributionMap_, fluid.physprob_.xfemfieldset_);
+  mysol_ = velnp_std;
+
 }
 
 
@@ -50,34 +55,34 @@ void FLD::CombustFluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int&
 
   if (fluiddis_->HaveGlobalNode(node))
   {
-    DRT::Node* actnode = fluiddis_->gNode(node);
+    const DRT::Node* actnode = fluiddis_->gNode(node);
 
-    // Strange! It seems we might actually have a global node around
-    // even if it does not belong to us. But here we are just
-    // interested in our nodes!
+    // Test only, if actnode is a row node
     if (actnode->Owner() != fluiddis_->Comm().MyPID())
       return;
 
     double result = 0.;
 
-    const Epetra_BlockMap& velnpmap = mysol_->Map();
+    // get map of the standard fluid dofset (no XFEM dofs)
+    const Epetra_Map& velnpmap = *fluidstddofset_->DofRowMap();
 
     const int numdim = DRT::Problem::Instance()->ProblemSizeParams().get<int>("DIM");
 
-    // TODO: use the Dofmanager here
     std::string position;
     res.ExtractString("POSITION",position);
     if (position=="velx")
     {
-      result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(actnode,0))];
+      result = (*mysol_)[velnpmap.LID(fluidstddofset_->Dof(actnode,0))];
     }
     else if (position=="vely")
     {
-      result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(actnode,1))];
+      result = (*mysol_)[velnpmap.LID(fluidstddofset_->Dof(actnode,1))];
     }
     else if (position=="velz")
     {
-      result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(actnode,2))];
+      if (numdim==2)
+        dserror("Cannot test result for velz in 2D case.");
+      result = (*mysol_)[velnpmap.LID(fluidstddofset_->Dof(actnode,2))];
     }
     else if (position=="pressure")
     {
@@ -85,13 +90,13 @@ void FLD::CombustFluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int&
       {
         if (fluiddis_->NumDof(actnode)<3)
           dserror("too few dofs at node %d for pressure testing",actnode->Id());
-        result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(actnode,2))];
+        result = (*mysol_)[velnpmap.LID(fluidstddofset_->Dof(actnode,2))];
       }
       else
       {
         if (fluiddis_->NumDof(actnode)<4)
           dserror("too few dofs at node %d for pressure testing",actnode->Id());
-        result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(actnode,3))];
+        result = (*mysol_)[velnpmap.LID(fluidstddofset_->Dof(actnode,3))];
       }
     }
     else

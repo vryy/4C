@@ -52,6 +52,8 @@ private:
 
   /// pointer to fluid discretization
   Teuchos::RCP<DRT::Discretization> fluiddis_;
+  /// pointer to standard (no XFEM) fluid dofset
+  Teuchos::RCP<const DRT::DofSet>   fluidstddofset_;
   /// pointer to unknown vector with values
   Teuchos::RCP<Epetra_Vector>       mysol_;
 };
