@@ -354,9 +354,6 @@ void FLD::CombustFluidImplicitTimeInt::PrepareNonlinearSolve()
     discret_->ClearState();
 
     // evaluate Neumann conditions
-    eleparams.set("total time",time_);
-    eleparams.set("thsl",theta_*dta_);
-
     neumann_loads_->PutScalar(0.0);
     discret_->EvaluateNeumann(eleparams,*neumann_loads_);
     discret_->ClearState();
@@ -416,7 +413,11 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
 
   // get old dofmap, compute new one and get the new one, too
   const Epetra_Map olddofrowmap = *discret_->DofRowMap();
-  discret_->FillComplete(true,false,false);
+  // assign degrees of freedom
+  // remark: - assign degrees of freedom (first slot)
+  //         - build geometry for (Neumann) boundary conditions (third slot);
+  //           without Neumann boundary conditions Fillcomplete(true,false,false) will also work
+  discret_->FillComplete(true,false,true);
   const Epetra_Map& newdofrowmap = *discret_->DofRowMap();
 
   discret_->ComputeNullSpaceIfNecessary(solver_.Params());

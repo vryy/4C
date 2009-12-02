@@ -20,6 +20,7 @@ Maintainer: Florian Henke
 #include "../drt_f3/xfluid3_utils.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_timecurve.H"
+#include "../drt_fem_general/drt_utils_boundary_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
 
@@ -87,9 +88,8 @@ int DRT::ELEMENTS::Combust3Surface::EvaluateNeumann(
     Epetra_SerialDenseVector& elevec1,
     Epetra_SerialDenseMatrix* elemat1)
 {
+  std::cout << "/!\\ warning === Neumann boundary conditions in XFEM problems are not implemented in a general way!" << std::endl;
   // there are 3 velocities and 1 pressure
-  return 0;
-#if 0
   const int numdf = 4;
 
   const double thsl = params.get("thsl",0.0);
@@ -112,24 +112,25 @@ int DRT::ELEMENTS::Combust3Surface::EvaluateNeumann(
   // get values and switches from the condition
   const vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");
   const vector<double>* val   = condition.Get<vector<double> >("val"  );
+  const vector<int>*    func  = condition.Get<vector<int> >   ("funct");
 
   // set number of nodes
   const int iel   = this->NumNode();
 
-  GaussRule2D  gaussrule = intrule2D_undefined;
+  DRT::UTILS::GaussRule2D  gaussrule = DRT::UTILS::intrule2D_undefined;
   switch(distype)
   {
   case quad4:
-      gaussrule = intrule_quad_4point;
+      gaussrule = DRT::UTILS::intrule_quad_4point;
       break;
   case quad8: case quad9:
-      gaussrule = intrule_quad_9point;
+      gaussrule = DRT::UTILS::intrule_quad_9point;
       break;
   case tri3 :
-      gaussrule = intrule_tri_3point;
+      gaussrule = DRT::UTILS::intrule_tri_3point;
       break;
   case tri6:
-      gaussrule = intrule_tri_6point;
+      gaussrule = DRT::UTILS::intrule_tri_6point;
       break;
   default:
       dserror("shape type unknown!\n");
@@ -157,19 +158,19 @@ int DRT::ELEMENTS::Combust3Surface::EvaluateNeumann(
   /*----------------------------------------------------------------------*
   |               start loop over integration points                     |
   *----------------------------------------------------------------------*/
-  const IntegrationPoints2D  intpoints(gaussrule);
+  const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule);
   for (int gpid=0; gpid<intpoints.nquad; gpid++)
   {
     const double e0 = intpoints.qxg[gpid][0];
     const double e1 = intpoints.qxg[gpid][1];
 
     // get shape functions and derivatives in the plane of the element
-    shape_function_2D(funct, e0, e1, distype);
-    shape_function_2D_deriv1(deriv, e0, e1, distype);
+    DRT::UTILS::shape_function_2D(funct, e0, e1, distype);
+    DRT::UTILS::shape_function_2D_deriv1(deriv, e0, e1, distype);
 
     // compute measure tensor for surface element and the infinitesimal
     // area element drs for the integration
-    f3_metric_tensor_for_surface(xyze,deriv,metrictensor,&drs);
+    DRT::UTILS::ComputeMetricTensorForSurface(xyze,deriv,metrictensor,&drs);
 
     // values are multiplied by the product from inf. area element,
     // the gauss weight, the timecurve factor and the constant
@@ -177,19 +178,44 @@ int DRT::ELEMENTS::Combust3Surface::EvaluateNeumann(
     // one step theta, 2/3 for bdf with dt const.)
     const double fac = intpoints.qwgt[gpid] * drs * curvefac * thsl;
 
+    // factor given by spatial function
+    double functfac = 1.0;
+    // determine coordinates of current Gauss point
+    double coordgp[3];
+    coordgp[0]=0.0;
+    coordgp[1]=0.0;
+    coordgp[2]=0.0;
+    for (int i = 0; i< iel; i++)
+    {
+      coordgp[0] += xyze(0,i) * funct[i];
+      coordgp[1] += xyze(1,i) * funct[i];
+      coordgp[2] += xyze(2,i) * funct[i];
+    }
+
+    int functnum = -1;
+    const double* coordgpref = &coordgp[0]; // needed for function evaluation
+
     for (int node=0;node<iel;++node)
     {
       for(int dim=0;dim<3;dim++)
       {
-        elevec1[node*numdf+dim]+=
-          funct[node] * (*onoff)[dim] * (*val)[dim] * fac;
+        if (func) functnum = (*func)[dim];
+        {
+          if (functnum>0)
+          {
+            // evaluate function at current gauss point
+            functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dim,coordgpref,time,NULL);
+          }
+          else
+            functfac = 1.0;
+        }
+        elevec1[node*numdf+dim]+= funct[node]*(*onoff)[dim]*(*val)[dim]*fac*functfac;
       }
     }
 
   } /* end of loop over integration points gpid */
 
   return 0;
-#endif
 }
 
 

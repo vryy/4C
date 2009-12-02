@@ -55,6 +55,7 @@ int DRT::ELEMENTS::Combust3Line::EvaluateNeumann(
         Epetra_SerialDenseVector& elevec1,
         Epetra_SerialDenseMatrix* elemat1)
 {
+  std::cout << "/!\\ warning === Neumann boundary conditions in XFEM problems are not implemented in a general way!" << std::endl;
   dserror("Neumann condition on line not implemented");
   return 0;
 }
