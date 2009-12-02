@@ -267,7 +267,7 @@ void MAT::ElastHyper::InvariantsPrincipal(
   // 2nd invariant
   prinv(1) = 0.5*( prinv(0)*prinv(0)
                    - rcg(0)*rcg(0) - rcg(1)*rcg(1) - rcg(2)*rcg(2)
-                   - 2.0*rcg(3)*rcg(3) - 2.0*rcg(4)*rcg(4) - 2.0*rcg(5)*rcg(5) );
+                   - .5*rcg(3)*rcg(3) - .5*rcg(4)*rcg(4) - .5*rcg(5)*rcg(5) );
   // 3rd invariant, determinant
   prinv(2) = rcg(0)*rcg(1)*rcg(2)
     + 0.25 * rcg(3)*rcg(4)*rcg(5)
@@ -307,7 +307,7 @@ void MAT::ElastHyper::InvariantsPrincipalAniso(
   // 2nd invariant
   prinv(1) = 0.5*( prinv(0)*prinv(0)
                    - rcg(0)*rcg(0) - rcg(1)*rcg(1) - rcg(2)*rcg(2)
-                   - 2.0*rcg(3)*rcg(3) - 2.0*rcg(4)*rcg(4) - 2.0*rcg(5)*rcg(5) );
+                   - .5*rcg(3)*rcg(3) - .5*rcg(4)*rcg(4) - .5*rcg(5)*rcg(5) );
   // 3rd invariant, determinant
   prinv(2) = rcg(0)*rcg(1)*rcg(2)
     + 0.25 * rcg(3)*rcg(4)*rcg(5)
