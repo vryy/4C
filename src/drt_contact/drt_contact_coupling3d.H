@@ -277,7 +277,17 @@ public:
   If they are not close, then coupling is stopped for the pair.
 
   */
-  virtual bool RoughCheck();
+  virtual bool RoughCheckCenters();
+  
+  /*!
+  \brief Checks roughly whether the two elements are near (3D)
+
+  This methods computes the distance of all master nodes to the
+  slave element (auxiliary plane). If they are not close, then
+  coupling is stopped for the pair.
+
+  */
+  virtual bool RoughCheckNodes();
 
   /*!
   \brief Build auxiliary plane from slave element (3D)
@@ -359,13 +369,19 @@ public:
   This makes the algorithm FAR MORE ROBUST than the old approach above.
   Returns a vector of vertices defining the clipped polygon.
 
+  In some cases, projection of the master element may lead to a non-convex
+  input polygon poly2list, which leads to a dserror. Before the error is
+  thrown, this method (similarly to RoughCheck()) again checks if the two
+  elements to tbe clipped are close to each other at all and returns a
+  boolean flag. If they are not close, then coupling is stopped for the pair.
+  
   \param poly1list (in): vector of vertex objects for input polygon 1 (slave)
   \param poly2list (in): vector of vertex objects for input polygon 2 (master)
   \param respoly (out): vector of vertex objects for result polygon
   \param tol (in): clipping tolerance for close vertices detection
 
   */
-  virtual void PolygonClippingConvexHull(vector<Vertex>& poly1list,
+  virtual bool PolygonClippingConvexHull(vector<Vertex>& poly1list,
                                          vector<Vertex>& poly2list,
                                          vector<Vertex>& respoly,
                                          double& tol);
