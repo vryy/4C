@@ -86,7 +86,7 @@ UPRES                           1
 TEMPERATURE                     300.0 
 GALVANOSTATIC                   Yes
 GSTATCONVTOL                    1e-6
-GSTATFUNCNO                     4
+GSTATCURVENO                    4
 GSTATITEMAX                     20
 -------------------------------------------------------FSI DYNAMIC
 -------------------------------------------------------SSI DYNAMIC

@@ -1607,7 +1607,7 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
       // OutputSingleElectrodeInfo(cond[0],0,true,true,actualcurrent,pottangent);
 
       int gstatitemax = (extraparams_->sublist("ELCH CONTROL").get<int>("GSTATITEMAX"));
-      const int curvenum = extraparams_->sublist("ELCH CONTROL").get<int>("GSTATFUNCNO");
+      const int curvenum = extraparams_->sublist("ELCH CONTROL").get<int>("GSTATCURVENO");
       const double tol = extraparams_->sublist("ELCH CONTROL").get<double>("GSTATCONVTOL");
 
       double targetcurrent = DRT::Problem::Instance()->Curve(curvenum-1).f(time_);

@@ -2107,7 +2107,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &elchcontrol);
   BoolParameter("GALVANOSTATIC","No","flag for galvanostatic mode",&elchcontrol);
   DoubleParameter("GSTATCONVTOL",1e-5,"Convergence check tolerance for galvanostatic mode",&elchcontrol);
-  IntParameter("GSTATFUNCNO",-1,"function number defining the imposed current curve",&elchcontrol);
+  IntParameter("GSTATCURVENO",-1,"function number defining the imposed current curve",&elchcontrol);
   IntParameter("GSTATITEMAX",10,"maximum number of iterations for galvanostatic mode",&elchcontrol);
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& combustcontrol = list->sublist("COMBUSTION CONTROL",false,
