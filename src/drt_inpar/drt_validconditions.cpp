@@ -1354,6 +1354,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   eleccomponents.push_back(Teuchos::rcp(new RealConditionComponent("gamma")));
   eleccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("refcon")));
   eleccomponents.push_back(Teuchos::rcp(new RealConditionComponent("refcon")));
+  eleccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("dlcap")));
+  eleccomponents.push_back(Teuchos::rcp(new RealConditionComponent("dlcap")));
 
   Teuchos::RCP<ConditionDefinition> lineelec =
     Teuchos::rcp(new ConditionDefinition("ELECTRODE KINETICS LINE CONDITIONS",

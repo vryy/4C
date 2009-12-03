@@ -57,6 +57,9 @@ SCATRA::TimIntOneStepTheta::TimIntOneStepTheta(
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no)
     fsphinp_ = LINALG::CreateVector(*dofrowmap,true);
 
+  // initialize time-dependent electrode kinetics variables (galvanostatic mode)
+  ElectrodeKineticsTimeUpdate(true);
+
   return;
 }
 
@@ -319,6 +322,8 @@ void SCATRA::TimIntOneStepTheta::Update()
   // last step
   phidtn_->Update(1.0,*phidtnp_,0.0);
 
+  ElectrodeKineticsTimeUpdate();
+
   return;
 }
 
@@ -395,6 +400,43 @@ void SCATRA::TimIntOneStepTheta::PrepareFirstTimeStep()
   // compute time derivative of phi at time t=0
   CalcInitialPhidt();
 
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | update of time-dependent variables for electrode kinetics  gjb 11/09 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntOneStepTheta::ElectrodeKineticsTimeUpdate(const bool init)
+{
+  if (prbtype_ == "elch")
+  {
+    if (Teuchos::getIntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
+    {
+      vector<DRT::Condition*> cond;
+      discret_->GetCondition("ElectrodeKinetics",cond);
+      for (size_t i=0; i < cond.size(); i++) // we update simply every condition!
+      {
+        double potnp = cond[i]->GetDouble("pot");
+        if (init) // create and initialize additional b.c. entries if desired
+        {
+          cond[i]->Add("potn",potnp);
+          cond[i]->Add("potdtn",0.0);
+          cond[i]->Add("pothist",0.0);
+        }
+        double potn = cond[i]->GetDouble("potn");
+        double potdtn = cond[i]->GetDouble("potdtn");
+        // update the time derivative
+        potdtn = (1/(theta_*dta_))*(potnp- potn) + (1 - (1/theta_))*dta_*potdtn;
+        cond[i]->Add("potdtn",potdtn);
+        // shift status variables
+        cond[i]->Add("potn",potnp);
+        // prepare old part of rhs for galvanostatic mode
+        double pothist = potn + theta_*dta_*potdtn;
+        cond[i]->Add("pothist",pothist);
+      }
+    }
+  }
   return;
 }
 

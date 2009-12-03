@@ -123,6 +123,9 @@ protected:
   /// return the right time-scaling-factor for the true residual
   double ResidualScaling() const { return 1.0/(dta_*theta_); }
 
+  /// update time-dependent electrode state variables at the end of an time step
+  void ElectrodeKineticsTimeUpdate(const bool init = false);
+
 private:
 
   /// solution vector phi at time n-1

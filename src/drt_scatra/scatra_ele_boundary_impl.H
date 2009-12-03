@@ -184,15 +184,20 @@ public:
         const DRT::Element*        ele,  ///< the actual boundary element
         ParameterList&          params,  ///< the parameter list
         const vector<double>&   ephinp,  ///< actual conc. and pot. values
+        const vector<double>&    ehist,  ///< history term for electric potential
         const std::string     kinetics,  ///< desired electrode kinetics model
-        const double              pot0,  ///< actual electrode potential on metal side
+        const int            speciesid,  ///< id of reactive species (1,2,...)
+        const double              pot0,  ///< actual electrode potential on metal side at t_{n+1}
+        const double       pot0histint,  ///< electrode potential on metal side at t_n
         const double            alphaa,  ///< anodic factor in Butler-Volmer model
         const double            alphac,  ///< cathodic factor in Butler-Volmer model
         const double                i0,  ///< exchange current density
         const double               frt,  ///< factor F/RT
         const double             gamma,  ///< exponent for concentration dependency
         const double            refcon,  ///< reference concentration of reactive ion species
-        const bool              iselch   ///< problemtype elch or scatra
+        const bool              iselch,  ///< problemtype elch or scatra
+        const double           timefac,  ///< factor due to time discretization
+        const double     dlcapacitance   ///< capacitance of electric double-layer
     );
 
      //! integral of shape functions over boundary surface

@@ -229,8 +229,19 @@ public:
   /// routine to return scalar field convective velocity at time step n+1
   Teuchos::RCP<Epetra_MultiVector> ConVel() { return convel_; }
 
-  /// output of electrode information to screen
-  void OutputElectrodeInfo();
+  /// output of all electrode information to screen and/or file (default: 2x true)
+  void OutputElectrodeInfo(bool printtoscreen = true, bool printtofile = true);
+
+  /// output of electrode information for a single boundary condition
+  void OutputSingleElectrodeInfo(
+      DRT::Condition* condition,///< pointer to the condition
+      const int  condid,        ///< condition id
+      const bool printtoscreen, ///< flag for output to screen
+      const bool printtofile,   ///< flag for output to file
+      double& currentsum,       ///< net current over all boundaries (out)
+      double& pottangent,       ///< tangent of current w.r.t. electrode potential (out)
+      double& currresidual      ///< neg. residual of current equation (out)
+      );
 
 //REINHARD
   /// preliminary: reinitialize level set function
@@ -317,6 +328,9 @@ public:
 
   /// computes conductivity of an electrolyte solution (ELCH)
   double ComputeConductivity();
+
+  /// apply galvanostatic control (update electrode potential) (ELCH)
+  bool ApplyGalvanostaticControl();
 
 protected:
 
@@ -409,6 +423,9 @@ protected:
 
   //! compute outward pointing unit normal vectors at given bc's
   RCP<Epetra_MultiVector> ComputeNormalVectors(const vector<string>& condnames);
+
+  //! update time-dependent electrode state variables at the end of an time step
+  virtual void ElectrodeKineticsTimeUpdate(const bool init = false) = 0;
 
   /// the scalar transport discretization
   RCP<DRT::Discretization>   discret_;
@@ -614,7 +631,13 @@ protected:
   /// the last step number when fluxes have been computed
   int lastfluxoutputstep_;
 
-  // unit outer normal vector field for flux output
+  /// number of iterations in galvanostatic mode (ELCH)
+  int gstatnumite_;
+
+  /// value of electric potential increment in galvanostatic mode (ELCH)
+  double gstatincrement_;
+
+  /// unit outer normal vector field for flux output
   RCP<Epetra_MultiVector> normals_;
 
   /// densification coefficients for ELCH natural convection
@@ -623,10 +646,11 @@ protected:
   /// initial concentrations of the electrolyte solution (ELCH)
   vector<double> c0_;
 
+  /// flag for Krylov space projection
   bool                             project_;
-  //! integrated basis vector (for each undetermined component)
+  /// integrated basis vector (for each undetermined component)
   Teuchos::RCP<Epetra_MultiVector> w_;
-  //! basis vector for nullspace (vector of ones for each undetermined component)
+  /// basis vector for nullspace (vector of ones for each undetermined component)
   Teuchos::RCP<Epetra_MultiVector> c_;
 
 }; // class ScaTraTimIntImpl

@@ -90,7 +90,9 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   tpn_      (1.0),
   errfile_  (extraparams_->get<FILE*>("err file")),
   initialvelset_(false),
-  lastfluxoutputstep_(-1)
+  lastfluxoutputstep_(-1),
+  gstatnumite_(0),
+  gstatincrement_(0.0)
 {
   // -------------------------------------------------------------------
   // determine whether linear incremental or nonlinear solver
@@ -424,6 +426,10 @@ void SCATRA::ScaTraTimIntImpl::TimeLoop()
   // write out inital state
   // Output();
 
+  // provide information about initial state
+  OutputElectrodeInfo();
+  OutputMeanScalars();
+
   // compute error for problems with analytical solution (initial field!)
   EvaluateErrorComparedToAnalyticalSol();
 
@@ -628,6 +634,10 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
   // time measurement: nonlinear iteration
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:   + nonlin. iteration/lin. solve");
 
+  bool stopgalvanostat(false);
+  gstatnumite_=1;
+  while (!stopgalvanostat) // galvanostatic control (ELCH)
+  {
   // out to screen
   PrintTimeStepInfo();
   if (myrank_ == 0)
@@ -763,6 +773,10 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
    */
 
   } // nonlinear iteration
+
+  stopgalvanostat = ApplyGalvanostaticControl();
+  } // galvanostatic control
+
   return;
 }
 

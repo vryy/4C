@@ -55,20 +55,20 @@ DRT::ELEMENTS::ScaTraBoundaryImplInterface* DRT::ELEMENTS::ScaTraBoundaryImplInt
       cp4 = new ScaTraBoundaryImpl<DRT::Element::quad4>(numdofpernode,numscal);
       return cp4;
   }
-  /*  case DRT::Element::quad8:
+  case DRT::Element::quad8:
   {
     static ScaTraBoundaryImpl<DRT::Element::quad8>* cp8;
     if (cp8==NULL)
-      cp8 = new ScaTraImpl<DRT::Element::quad8>(numdofpernode,numscal);
+      cp8 = new ScaTraBoundaryImpl<DRT::Element::quad8>(numdofpernode,numscal);
     return cp8;
   }
   case DRT::Element::quad9:
   {
     static ScaTraBoundaryImpl<DRT::Element::quad9>* cp9;
     if (cp9==NULL)
-      cp9 = new ScaTraImpl<DRT::Element::quad9>(numdofpernode,numscal);
+      cp9 = new ScaTraBoundaryImpl<DRT::Element::quad9>(numdofpernode,numscal);
     return cp9;
-  }*/
+  }
   case DRT::Element::tri3:
   {
     static ScaTraBoundaryImpl<DRT::Element::tri3>* cp3;
@@ -98,7 +98,7 @@ DRT::ELEMENTS::ScaTraBoundaryImplInterface* DRT::ELEMENTS::ScaTraBoundaryImplInt
     return cl3;
   }*/
   default:
-    dserror("Shape %d (%d nodes) not supported", ele->Shape(), ele->NumNode());
+    dserror("Element shape %d (%d nodes) not activated. Just do it.", ele->Shape(), ele->NumNode());
   }
   return NULL;
 }
@@ -219,10 +219,12 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     const double alphaa = cond->GetDouble("alpha_a");
     const double alphac = cond->GetDouble("alpha_c");
     double       i0 = cond->GetDouble("i0");
-    if (i0>0.0) dserror("i0 is positive, ergo not pointing INTO the domain: %f",i0);
+    if (i0 >EPS14) dserror("i0 is positive, ergo not pointing INTO the domain: %f",i0);
     const double gamma = cond->GetDouble("gamma");
     const double refcon = cond->GetDouble("refcon");
     if (refcon < EPS12) dserror("reference concentration is too small: %f",refcon);
+    const double dlcapacitance = cond->GetDouble("dlcap");
+    if (dlcapacitance < -EPS12) dserror("double-layer capacitance is negative: %f",dlcapacitance);
     const double frt = params.get<double>("frt"); // = F/RT
 
     // get control parameter from parameter list
@@ -262,6 +264,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
       cout<<"kinetic model  = "<<*kinetics<<endl;
       cout<<"react. species = "<<speciesid<<endl;
       cout<<"pot0(mod.)     = "<<pot0<<endl;
+      cout<<"pot0n          = "<<pot0n<<endl;
       cout<<"curvenum       = "<<curvenum<<endl;
       cout<<"alpha_a        = "<<alphaa<<endl;
       cout<<"alpha_c        = "<<alphac<<endl;
@@ -295,19 +298,47 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     {
       // NOTE: add integral value only for elements which are NOT ghosted!
       if(ele->Owner() == discretization.Comm().MyPID())
-      { ElectrodeStatus(
+      {
+        // get actual values of transported scalars
+        RefCountPtr<const Epetra_Vector> hist = discretization.GetState("hist");
+        if (hist==null) dserror("Cannot get state vector 'hist'");
+        // extract local values from the global vector
+        vector<double> ehist(lm.size());
+        DRT::UTILS::ExtractMyValues(*hist,ehist,lm);
+
+        double pot0hist(0.0);
+        if (not is_stationary)
+        {
+          // One-step-Theta:    timefac = theta*dt
+          // BDF2:              timefac = 2/3 * dt
+          // generalized-alpha: timefac = (gamma*alpha_F/alpha_M) * dt
+          timefac = params.get<double>("time factor");
+          alphaF = params.get<double>("alpha_F");
+          timefac *= alphaF;
+          if (timefac < 0.0) dserror("time factor is negative.");
+          // access history of electrode potential
+          if (dlcapacitance > EPS14)
+            pot0hist = cond->GetDouble("pothist");
+        }
+
+        ElectrodeStatus(
             ele,
             params,
             ephinp,
+            ehist,
             *kinetics,
+            speciesid,
             pot0,
+            pot0hist,
             alphaa,
             alphac,
             i0,
             frt,
             gamma,
             refcon,
-            iselch);}
+            iselch,
+            timefac,
+            dlcapacitance);}
     }
   }
   else if (action =="calc_therm_press")
@@ -995,15 +1026,20 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
     const DRT::Element*        ele,
     ParameterList&          params,
     const vector<double>&   ephinp,
+    const vector<double>&    ehist,
     const std::string     kinetics,
+    const int            speciesid,
     const double              pot0,
+    const double          pot0hist,
     const double            alphaa,
     const double            alphac,
     const double                i0,
     const double               frt,
     const double             gamma,
     const double            refcon,
-    const bool              iselch
+    const bool              iselch,
+    const double           timefac,
+    const double     dlcapacitance
 )
 {
   // get node coordinates (we have a nsd_+1 dimensional domain!)
@@ -1017,6 +1053,9 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
   double boundaryint      = params.get<double>("boundaryintegral");
   double overpotentialint = params.get<double>("overpotentialintegral");
   double concentrationint = params.get<double>("concentrationintegral");
+  double currderiv        = params.get<double>("currentderiv");
+  double chargingcurrent  = params.get<double>("chargingcurrent");
+  double currentresidual  = params.get<double>("currentresidual");
 
   // integrations points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
@@ -1026,12 +1065,14 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
 
   // el. potential values at element nodes
   LINALG::Matrix<iel,1> pot(true);
+  LINALG::Matrix<iel,1> pothist(true);
   if(iselch)
   {
     for (int inode=0; inode< iel;++inode)
     {
-      conreact(inode) = ephinp[inode*numdofpernode_];
+      conreact(inode) = ephinp[inode*numdofpernode_+(speciesid-1)];
       pot(inode) = ephinp[inode*numdofpernode_+numscal_];
+      pothist(inode) = ehist[inode*numdofpernode_+numscal_];
     }
   }
   else
@@ -1040,6 +1081,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
     {
       conreact(inode) = 1.0;
       pot(inode) = ephinp[inode*numdofpernode_];
+      pothist(inode) = ehist[inode*numdofpernode_];
     }
   }
 
@@ -1047,6 +1089,8 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
   double conint;
   // el. potential at integration point
   double potint;
+  // history term of el. potential at integration point
+  double pothistint;
 
   // loop over integration points
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
@@ -1056,9 +1100,13 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
     // elch-specific values at integration point:
     conint = funct_.Dot(conreact);
     potint = funct_.Dot(pot);
+    pothistint = funct_.Dot(pothist);
 
     // surface overpotential eta at integration point
     const double eta = (pot0 - potint);
+
+    // linearization of current w.r.t applied electrode potential "pot0"
+    double linea(0.0);
 
     if ((kinetics=="Butler-Volmer") or (kinetics=="Butler-Volmer-Yang1997"))
     {
@@ -1068,25 +1116,50 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
         if (kinetics=="Butler-Volmer")
         {
           expterm = pow(conint/refcon,gamma) * (exp(alphaa*frt*eta)-exp((-alphac)*frt*eta));
+          linea = pow(conint/refcon,gamma) * frt*((alphaa*exp(alphaa*frt*eta))+ (alphac*exp((-alphac)*frt*eta)));
         }
         if (kinetics=="Butler-Volmer-Yang1997")
         {
           if (((conint/refcon)<EPS13) && (gamma < 1.0))
           {// prevents NaN's in the current density evaluation
             expterm = (exp(alphaa*frt*eta)-(pow(EPS13/refcon,gamma)*exp((-alphac)*frt*eta)));
+            linea = ((alphaa)*frt*exp(alphaa*frt*eta))+(pow(EPS13/refcon,gamma)*alphac*frt*exp((-alphac)*frt*eta));
           }
           else
+          {
             expterm = (exp(alphaa*frt*eta)-(pow(conint/refcon,gamma)*exp((-alphac)*frt*eta)));
+            linea = ((alphaa)*frt*exp(alphaa*frt*eta))+(pow(conint/refcon,gamma)*alphac*frt*exp((-alphac)*frt*eta));
+          }
         }
       }
       else // secondary current distribution
+      {
         expterm = exp(alphaa*eta)-exp((-alphac)*eta);
+        linea = (alphaa*exp(alphaa*eta))+(alphac*exp((-alphac)*eta));
+      }
 
       // compute integrals
       overpotentialint += eta * fac_;
       currentintegral += (-i0) * expterm * fac_; // the negative(!) normal flux density
       boundaryint += fac_;
       concentrationint += conint*fac_;
+
+      // tangent and rhs for galvanostatic problems
+      currderiv += i0*linea*timefac*fac_;
+      currentresidual += (-i0) * expterm * timefac *fac_;
+
+      if (dlcapacitance > EPS12)
+      {
+      // add contributions due to double-layer capacitance
+        chargingcurrent += dlcapacitance*(pot0-pot0hist)*fac_;
+        chargingcurrent += dlcapacitance*(-potint+pothistint)*fac_;
+
+        currderiv -= dlcapacitance*fac_;
+
+        currentresidual += dlcapacitance*(pot0-pot0hist)*fac_;
+        currentresidual += fac_*dlcapacitance*(-potint+pothistint);
+      }
+
     }
     else if (iselch && (kinetics=="linear")) // linear: i_n = i_0*(alphaa*frt*eta + 1.0)
     {
@@ -1106,6 +1179,9 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
   params.set<double>("boundaryintegral",boundaryint);
   params.set<double>("overpotentialintegral",overpotentialint);
   params.set<double>("concentrationintegral",concentrationint);
+  params.set<double>("currentderiv",currderiv);
+  params.set<double>("chargingcurrent",chargingcurrent);
+  params.set<double>("currentresidual",currentresidual);
 
 } //ScaTraBoundaryImpl<distype>::ElectrodeStatus
 

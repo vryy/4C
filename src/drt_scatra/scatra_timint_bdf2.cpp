@@ -60,6 +60,9 @@ SCATRA::TimIntBDF2::TimIntBDF2(
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no)
     fsphinp_ = LINALG::CreateVector(*dofrowmap,true);
 
+  // initialize time-dependent electrode kinetics variables (galvanostatic mode)
+  ElectrodeKineticsTimeUpdate(true);
+
   return;
 }
 
@@ -377,6 +380,8 @@ void SCATRA::TimIntBDF2::Update()
   phinm_->Update(1.0,*phin_ ,0.0);
   phin_ ->Update(1.0,*phinp_,0.0);
 
+  ElectrodeKineticsTimeUpdate();
+
   return;
 }
 
@@ -442,6 +447,53 @@ void SCATRA::TimIntBDF2::ReadRestart(int step)
 void SCATRA::TimIntBDF2::PrepareFirstTimeStep()
 {
   ApplyDirichletBC(time_, phin_,Teuchos::null);
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | update of time-dependent variables for electrode kinetics  gjb 11/09 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntBDF2::ElectrodeKineticsTimeUpdate(const bool init)
+{
+  if (prbtype_ == "elch")
+  {
+    if (Teuchos::getIntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
+    {
+      vector<DRT::Condition*> cond;
+      discret_->GetCondition("ElectrodeKinetics",cond);
+      for (size_t i=0; i < cond.size(); i++) // we update simply every condition!
+      {
+        double potnp = cond[i]->GetDouble("pot");
+        if (init) // create and initialize additional b.c. entries if desired
+        {
+          cond[i]->Add("potn",potnp);
+          cond[i]->Add("potnm",potnp);
+          cond[i]->Add("pothist",0.0);
+        }
+        double potn = cond[i]->GetDouble("potn");
+        // shift status variables
+        cond[i]->Add("potnm",potn);
+        cond[i]->Add("potn",potnp);
+
+        // prepare old part of rhs for galvanostatic mode
+        double pothist(0.0);
+        if (step_>1)
+        {
+          double omega = dta_/dtp_;
+          double fact1 = (1.0 + omega)*(1.0 + omega)/(1.0 + (2.0*omega));
+          double fact2 = -(omega*omega)/(1+ (2.0*omega));
+          pothist= fact1*potnp + fact2*potn; // potnp is the potn of the next time step, etc.
+        }
+        else
+        {
+          // for start-up of BDF2 we do one step with backward Euler
+          pothist=potnp;
+        }
+        cond[i]->Add("pothist",pothist);
+      }
+    }
+  }
   return;
 }
 

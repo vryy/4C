@@ -60,6 +60,9 @@ SCATRA::TimIntGenAlpha::TimIntGenAlpha(
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no)
     fsphiaf_ = LINALG::CreateVector(*dofrowmap,true);
 
+  // initialize time-dependent electrode kinetics variables (galvanostatic mode)
+  ElectrodeKineticsTimeUpdate(true);
+
   return;
 }
 
@@ -381,6 +384,9 @@ void SCATRA::TimIntGenAlpha::Update()
   // last step
   phidtn_->Update(1.0,*phidtnp_,0.0);
 
+  // perform update of time-dependent electrode variables
+  ElectrodeKineticsTimeUpdate();
+
   return;
 }
 
@@ -448,6 +454,20 @@ void SCATRA::TimIntGenAlpha::PrepareFirstTimeStep()
   // compute time derivative of phi at time t=0
   CalcInitialPhidt();
 
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | update of time-dependent variables for electrode kinetics  gjb 11/09 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntGenAlpha::ElectrodeKineticsTimeUpdate(const bool init)
+{
+  if (prbtype_ == "elch")
+  {
+    if (Teuchos::getIntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
+      dserror("Galvanostatic mode for GenAlpha not yet supported.");
+  }
   return;
 }
 

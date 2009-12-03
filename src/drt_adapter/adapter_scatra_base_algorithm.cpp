@@ -87,11 +87,11 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   // -------------------------------------------------------------------
   // set parameters in list required for all schemes
   // -------------------------------------------------------------------
-  // make a copy (inside an rcp)
+  // make a copy (inside an rcp) containing also all sublists
   RCP<ParameterList> scatratimeparams= rcp(new ParameterList(scatradyn));
 
   // -------------------------------------------------------------------
-  // overrule certain parameters
+  // overrule certain parameters for coupled problems
   // -------------------------------------------------------------------
   // the default time step size
   scatratimeparams->set<double>   ("TIMESTEP"    ,prbdyn.get<double>("TIMESTEP"));
@@ -115,19 +115,10 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   extraparams->set<string>("problem type",DRT::Problem::Instance()->ProblemType());
 
   // ------------------------------pointer to the error file (for output)
-  extraparams->set<FILE*>    ("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
+  extraparams->set<FILE*>("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
 
   // ----------------Eulerian or ALE formulation of transport equation(s)
   extraparams->set<bool>("isale",isale);
-
-  // -----------------------------sublist containing level set parameters
-/*  const INPAR::SCATRA::ScaTraType scatratype
-    = getIntegralValue<INPAR::SCATRA::ScaTraType>(scatradyn,"SCATRATYPE");
-  if(scatratype == INPAR::SCATRA::scatratype_levelset);
-  {
-    scatratimeparams->sublist("LEVELSET")=scatradyn.sublist("LEVELSET");
-  }
-  */
 
   // --------------sublist for combustion-specific gfunction parameters
   /* This sublist COMBUSTION DYNAMIC/GFUNCTION contains parameters for the gfunction field
@@ -150,6 +141,9 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
         Teuchos::getIntegralValue<INPAR::ELCH::NatConv>(prbdyn,"NATURAL_CONVECTION"));
     // temperature of electrolyte solution
     extraparams->set<double>("TEMPERATURE",prbdyn.get<double>("TEMPERATURE"));
+
+    // we provide all available electrochemistry-related parameters
+    extraparams->sublist("ELCH CONTROL")=prbdyn;
 
     // create a 2nd solver for block-preconditioning if chosen from input
     if (Teuchos::getIntegralValue<int>(scatradyn,"BLOCKPRECOND"))

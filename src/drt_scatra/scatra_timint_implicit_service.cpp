@@ -824,43 +824,25 @@ void SCATRA::ScaTraTimIntImpl::OutputMeanScalars()
 /*----------------------------------------------------------------------*
  |  output of electrode status information to screen         gjb  01/09 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::OutputElectrodeInfo()
+void SCATRA::ScaTraTimIntImpl::OutputElectrodeInfo(
+    bool printtoscreen,
+    bool printtofile)
 {
-  // set vector values needed by elements
-  discret_->ClearState();
-  discret_->SetState("phinp",phinp_);
-  // set action for elements
-  ParameterList eleparams;
-  eleparams.set("action","calc_elch_electrode_kinetics");
-  eleparams.set("calc_status",true); // just want to have a status ouput!
-  eleparams.set("iselch",(prbtype_=="elch")); // a boolean
-  eleparams.set("problem type",prbtype_);
-  eleparams.set("frt",frt_);
-
-  //provide displacement field in case of ALE
-  eleparams.set("isale",isale_);
-  if (isale_)
-    AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
-
-  // add element parameters according to time-integration scheme
-  AddSpecificTimeIntegrationParameters(eleparams);
-
-  // calculate normal flux vector field only for these boundary conditions:
+  // evaluate the following type of boundary conditions:
   std::string condname("ElectrodeKinetics");
-
-  double sum(0.0);
-
   vector<DRT::Condition*> cond;
   discret_->GetCondition(condname,cond);
 
   // leave method, if there's nothing to do!
   if (!cond.size()) return;
 
-  if (myrank_ == 0)
+  double sum(0.0);
+
+  if ((myrank_ == 0) and printtoscreen)
   {
     cout<<"Status of '"<<condname<<"':\n"
-    <<"++----+---------------------+------------------+----------------------+--------------------+----------------+----------------+"<<endl;
-    printf("|| ID |    Total current    | Area of boundary | Mean current density | Mean overpotential | Electrode pot. | Mean Concentr. |\n");
+    <<"++----+---------------------+------------------+----------------------+--------------------+----------------+----------------+----------------+"<<endl;
+    printf("|| ID |    Total current    | Area of boundary | Mean current density | Mean overpotential | Electrode pot. | Mean Concentr. | Total DL curr. |\n");
   }
 
   // first, add to all conditions of interest a ConditionID
@@ -882,54 +864,137 @@ void SCATRA::ScaTraTimIntImpl::OutputElectrodeInfo()
   // now we evaluate the conditions and separate via ConditionID
   for (int condid = 0; condid < (int) cond.size(); condid++)
   {
-    // calculate integral of normal fluxes over indicated boundary and it's area
-    eleparams.set("currentintegral",0.0);
-    eleparams.set("boundaryintegral",0.0);
-    eleparams.set("overpotentialintegral",0.0);
-    eleparams.set("concentrationintegral",0.0);
+    double currtangent(0.0); // this value remains unused here!
+    double currresidual(0.0); // this value remains unused here!
 
-    // would be nice to have a EvaluateScalar for conditions!!!
-    discret_->EvaluateCondition(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,condname,condid);
+    OutputSingleElectrodeInfo(
+        cond[condid],
+        condid,
+        printtoscreen,
+        printtofile,
+        sum,
+        currtangent,
+        currresidual);
+  } // loop over condid
 
-    // get integral of current on this proc
-    double currentintegral = eleparams.get<double>("currentintegral");
-    // get area of the boundary on this proc
-    double boundaryint = eleparams.get<double>("boundaryintegral");
-    // get integral of overpotential on this proc
-    double overpotentialint = eleparams.get<double>("overpotentialintegral");
-    // get integral of reactant concentration on this proc
-    double cint = eleparams.get<double>("concentrationintegral");
+  if ((myrank_==0) and printtoscreen)
+  {
+    cout<<"++----+---------------------+------------------+----------------------+--------------------+----------------+----------------+----------------+"<<endl;
+    // print out the net total current for all indicated boundaries
+    printf("Net total current over boundary: %10.3E\n\n",sum);
+  }
 
-    // care for the parallel case
-    double parcurrentintegral = 0.0;
-    discret_->Comm().SumAll(&currentintegral,&parcurrentintegral,1);
-    double parboundaryint = 0.0;
-    discret_->Comm().SumAll(&boundaryint,&parboundaryint,1);
-    double paroverpotentialint = 0.0;
-    discret_->Comm().SumAll(&overpotentialint,&paroverpotentialint,1);
-    double parcint = 0.0;
-    discret_->Comm().SumAll(&cint,&parcint,1);
+  // clean up
+  discret_->ClearState();
 
-    // access some parameters of the actual condition
-    double pot = cond[condid]->GetDouble("pot");
-    const int curvenum = cond[condid]->GetInt("curve");
-    if (curvenum>=0)
+  return;
+} // ScaTraImplicitTimeInt::OutputElectrodeInfo
+
+
+/*----------------------------------------------------------------------*
+ |  get electrode status for single boundary condition       gjb  11/09 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::OutputSingleElectrodeInfo(
+    DRT::Condition* condition,
+    const int condid,
+    const bool printtoscreen,
+    const bool printtofile,
+    double& currentsum,
+    double& currtangent,
+    double& currresidual)
+{
+  // set vector values needed by elements
+  discret_->ClearState();
+  discret_->SetState("phinp",phinp_);
+  discret_->SetState("hist",hist_);
+
+  // set action for elements
+  ParameterList eleparams;
+  eleparams.set("action","calc_elch_electrode_kinetics");
+  eleparams.set("calc_status",true); // just want to have a status ouput!
+  eleparams.set("iselch",(prbtype_=="elch")); // a boolean
+  eleparams.set("problem type",prbtype_);
+  eleparams.set("frt",frt_);
+
+  //provide displacement field in case of ALE
+  eleparams.set("isale",isale_);
+  if (isale_)
+    AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+
+  // add element parameters according to time-integration scheme
+  AddSpecificTimeIntegrationParameters(eleparams);
+
+  // values to be computed
+  eleparams.set("currentintegral",0.0);
+  eleparams.set("boundaryintegral",0.0);
+  eleparams.set("overpotentialintegral",0.0);
+  eleparams.set("concentrationintegral",0.0);
+  eleparams.set("currentderiv",0.0);
+  eleparams.set("chargingcurrent",0.0);
+  eleparams.set("currentresidual",0.0);
+
+  // would be nice to have a EvaluateScalar for conditions!!!
+  discret_->EvaluateCondition(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,"ElectrodeKinetics",condid);
+
+  // get integral of current on this proc
+  double currentintegral = eleparams.get<double>("currentintegral");
+  // get area of the boundary on this proc
+  double boundaryint = eleparams.get<double>("boundaryintegral");
+  // get integral of overpotential on this proc
+  double overpotentialint = eleparams.get<double>("overpotentialintegral");
+  // get integral of reactant concentration on this proc
+  double cint = eleparams.get<double>("concentrationintegral");
+  // tangent of current w.r.t. electrode potential on this proc
+  double currderiv = eleparams.get<double>("currentderiv");
+  // get integral of charging current density on this proc
+  double chargingcurrent = eleparams.get<double>("chargingcurrent");
+  //
+  double currentresidual = eleparams.get<double>("currentresidual");
+
+  // care for the parallel case
+  double parcurrentintegral = 0.0;
+  discret_->Comm().SumAll(&currentintegral,&parcurrentintegral,1);
+  double parboundaryint = 0.0;
+  discret_->Comm().SumAll(&boundaryint,&parboundaryint,1);
+  double paroverpotentialint = 0.0;
+  discret_->Comm().SumAll(&overpotentialint,&paroverpotentialint,1);
+  double parcint = 0.0;
+  discret_->Comm().SumAll(&cint,&parcint,1);
+  double parcurrderiv = 0.0;
+  discret_->Comm().SumAll(&currderiv,&parcurrderiv ,1);
+  double parchargingcurrent = 0.0;
+  discret_->Comm().SumAll(&chargingcurrent,&parchargingcurrent ,1);
+  double parcurrentresidual = 0.0;
+  discret_->Comm().SumAll(&currentresidual,&parcurrentresidual ,1);
+
+  // access some parameters of the actual condition
+  double pot = condition->GetDouble("pot");
+  const int curvenum = condition->GetInt("curve");
+  if (curvenum>=0)
+  {
+    const double curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time_);
+    // adjust potential at metal side accordingly
+    pot *= curvefac;
+  }
+
+  // specify some return values
+  currentsum += (parcurrentintegral); //+parchargingcurrent); // sum of currents
+  currtangent  = parcurrderiv;       // tangent w.r.t. electrode potential on metal side
+  currresidual = parcurrentresidual;
+
+  // clean up
+  discret_->ClearState();
+
+  // print out results to screen/file if desired
+  if (myrank_ == 0)
+  {
+    if (printtoscreen) // print out results to screen
     {
-      const double curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time_);
-      // adjust potential at metal side accordingly
-      pot *= curvefac;
+      printf("|| %2d |     %10.3E      |    %10.3E    |      %10.3E      |     %10.3E     |   %10.3E   |   %10.3E   |   %10.3E   |\n",
+          condid,parcurrentintegral,parboundaryint,parcurrentintegral/parboundaryint,paroverpotentialint/parboundaryint, pot, parcint/parboundaryint,parchargingcurrent);
     }
 
-    // print out results to screen
-    if (myrank_ == 0)
-    {
-      printf("|| %2d |     %10.3E      |    %10.3E    |      %10.3E      |     %10.3E     |   %10.3E   |   %10.3E   |\n",
-        condid,parcurrentintegral,parboundaryint,parcurrentintegral/parboundaryint,paroverpotentialint/parboundaryint, pot, parcint/parboundaryint);
-    }
-    sum+=parcurrentintegral;
-
-    // print out results to file as well
-    if (myrank_ == 0)
+    if (printtofile)// write results to file
     {
       ostringstream temp;
       temp << condid;
@@ -940,34 +1005,21 @@ void SCATRA::ScaTraTimIntImpl::OutputElectrodeInfo()
       if (Step() <= 1)
       {
         f.open(fname.c_str(),std::fstream::trunc);
-        f << "#| ID | Step | Time | Total current | Area of boundary | Mean current density | Mean overpotential | Electrode pot. | Mean Concentr. |\n";
+        f << "#| ID | Step | Time | Total current | Area of boundary | Mean current density | Mean overpotential | Electrode pot. | Mean Concentr. | Total DL curr. |\n";
       }
       else
         f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
 
       f << condid << " " << Step() << " " << Time() << " " << parcurrentintegral << " " << parboundaryint
       << " " << parcurrentintegral/parboundaryint << " " << paroverpotentialint/parboundaryint << " "
-      << pot << " " << parcint/parboundaryint << "\n";
+      << pot << " " << parcint/parboundaryint << " " << parchargingcurrent <<"\n";
       f.flush();
       f.close();
     }
-
-  } // loop over condid
-
-  if (myrank_==0)
-    cout<<"++----+---------------------+------------------+----------------------+--------------------+----------------+----------------+"<<endl;
-
-  // print out the net total current for all indicated boundaries
-  if (myrank_ == 0)
-    printf("Net total current over boundary: %10.3E\n\n",sum);
-
-  // clean up
-  discret_->ClearState();
+  } // if (myrank_ == 0)
 
   return;
-} // ScaTraImplicitTimeInt::OutputElectrodeInfo
-
-
+}
 
 
 /*----------------------------------------------------------------------*
@@ -1524,6 +1576,101 @@ double SCATRA::ScaTraTimIntImpl::ComputeConductivity()
   discret_->ClearState();
 
   return sigma(0);
+}
+
+
+/*----------------------------------------------------------------------*
+ | apply galvanostatic control                                gjb 11/09 |
+ *----------------------------------------------------------------------*/
+bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
+{
+  // for galvanostatic ELCH applications we have to adjust the
+  // applied cell voltage and continue Newton-Raphson iterations until
+  // we reach the desired value for the electric current.
+
+  // leave method, if there's nothing to do!
+  if (prbtype_ != "elch") return true;
+
+  if (Teuchos::getIntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
+  {
+    vector<DRT::Condition*> cond;
+    discret_->GetCondition("ElectrodeKinetics",cond);
+    if (!cond.empty())
+    {
+      double actualcurrent(0.0);
+      double currtangent(0.0);
+      double currresidual(0.0);
+      // note: only the potential at the boundary with id 0 will be adjusted up to now!!
+      OutputSingleElectrodeInfo(cond[0],0,false,false,actualcurrent,currtangent,currresidual);
+
+      // DEBUG: (write intermediated steps also to file and screen)
+      // OutputSingleElectrodeInfo(cond[0],0,true,true,actualcurrent,pottangent);
+
+      int gstatitemax = (extraparams_->sublist("ELCH CONTROL").get<int>("GSTATITEMAX"));
+      const int curvenum = extraparams_->sublist("ELCH CONTROL").get<int>("GSTATFUNCNO");
+      const double tol = extraparams_->sublist("ELCH CONTROL").get<double>("GSTATCONVTOL");
+
+      double targetcurrent = DRT::Problem::Instance()->Curve(curvenum-1).f(time_);
+      double timefac = 1.0/ResidualScaling();
+      double newtonrhs = currresidual - (timefac*targetcurrent);
+      double potold = cond[0]->GetDouble("pot");
+
+      if (myrank_==0)
+      {
+        cout<<"\nGALVANOSTATIC MODE:\n";
+        cout<<"iteration "<<gstatnumite_<<" / "<<gstatitemax<<endl;
+        cout<<"  actual reaction current = "<<actualcurrent<<endl;
+        cout<<"  required total current  = "<<targetcurrent<<endl;
+        cout<<"  negative residual (rhs) = "<<newtonrhs<<endl;
+      }
+
+      if (gstatnumite_ > gstatitemax)
+      {
+        if (myrank_==0)
+        {
+          cout<<"  --> maximum number iterations reached. Not yet converged!"<<endl<<endl;
+        }
+        return true; // we proceed to next time step
+      }
+      else if (abs(newtonrhs)< EPS15)
+      {
+        if (myrank_==0)
+        {
+          cout<<"  --> residual is already completely zero."<<endl<<endl;
+        }
+        return true; // we proceed to next time step
+      }
+      else if ((gstatnumite_ > 1) and (abs(gstatincrement_)< (1+abs(potold))*tol)) // < ATOL + |pot|* RTOL
+      {
+        if (myrank_==0)
+        {
+          cout<<"  --> converged: |"<<gstatincrement_<<"| < "<<(1+abs(potold))*tol<<endl<<endl;
+        }
+
+        return true; // galvanostatic control has converged
+      }
+      else
+      {
+        gstatnumite_++;
+        if (abs(currtangent)<EPS12)
+          dserror("Tangent in galvanostatic control is near zero: %f",currtangent);
+        // Newton step:  Jacobian * \Delta pot = - Residual
+        gstatincrement_ = newtonrhs/currtangent;
+        // update electric potential
+        double potnew = potold + gstatincrement_;
+        if (myrank_==0)
+        {
+          cout<< "  old electrode potential = "<<potold<<endl;
+          cout<< "  new electrode potential = "<<potnew<<endl<<endl;
+        }
+        // replace potential value of the boundary condition (on all processors)
+        cond[0]->Add("pot",potnew);
+        return false; // not yet converged -> continue Newton iteration with updated potential
+      }
+    }
+  }
+
+  return true;
 }
 
 
