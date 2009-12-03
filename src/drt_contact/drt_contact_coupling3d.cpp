@@ -86,10 +86,10 @@ mele_(mele)
  *----------------------------------------------------------------------*/
 bool CONTACT::Coupling3d::EvaluateCoupling()
 {
-  // rough check whether elements are "near"
+  // rough check whether element centers are "near"
   // whether or not quadratic 3d coupling is performed, we only
   // check the distance of the parent slave and master elements
-  bool near = RoughCheck();
+  bool near = RoughCheckCenters();
   if (!near) return false;
 
   // tolerance for polygon clipping
@@ -190,8 +190,15 @@ bool CONTACT::Coupling3d::EvaluateCoupling()
   // *******************************************************************
 
   // do polygon clipping (NEW version)
-  PolygonClippingConvexHull(SlaveVertices(),MasterVertices(),Clip(),tol);
+  bool clip = PolygonClippingConvexHull(SlaveVertices(),MasterVertices(),Clip(),tol);
   int clipsize = (int)(Clip().size());
+  
+  // within polygon clipping we may have performed a second rough check
+  // if the two elements are really "near" (NOTE: this has only been done
+  // if problems occured within polygon clipping, i.e. the projected master 
+  // element being non-convex. In the standard case, bool clip is simply true)
+  // --> this way, robustness of coupling is further increased!
+  if (!clip) return false;
 
   // proceed only if clipping polygon is at least a triangle
   bool overlap = false;
@@ -212,9 +219,9 @@ bool CONTACT::Coupling3d::EvaluateCoupling()
 }
 
 /*----------------------------------------------------------------------*
- |  Rough check if elements are near (3D)                     popp 11/08|
+ |  Rough check if elements are near (with centers)           popp 11/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::Coupling3d::RoughCheck()
+bool CONTACT::Coupling3d::RoughCheckCenters()
 {
   double sme = SlaveElement().MaxEdgeSize();
   double mme = MasterElement().MaxEdgeSize();
@@ -243,6 +250,41 @@ bool CONTACT::Coupling3d::RoughCheck()
   double cdist = sqrt((mc[0]-sc[0])*(mc[0]-sc[0])+(mc[1]-sc[1])*(mc[1]-sc[1])+(mc[2]-sc[2])*(mc[2]-sc[2]));
   if (cdist>=near) return false;
   else return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Rough check if elements are near (with master nodes)      popp 11/09|
+ *----------------------------------------------------------------------*/
+bool CONTACT::Coupling3d::RoughCheckNodes()
+{
+  // project master nodes onto auxiliary plane
+  int nnodes = MasterIntElement().NumNode();
+  DRT::Node** mynodes = MasterIntElement().Nodes();
+  if (!mynodes) dserror("ERROR: RoughCheckNodes: Null pointer!");
+  
+  // prepare check
+  bool near = false;
+  double sme = SlaveElement().MaxEdgeSize();
+  double mme = MasterElement().MaxEdgeSize();
+  double limit = 0.3 * max(sme,mme);
+  
+  for (int i=0;i<nnodes;++i)
+  {
+    CNode* mycnode = static_cast<CNode*> (mynodes[i]);
+    if (!mycnode) dserror("ERROR: RoughCheckNodes: Null pointer!");
+
+    // first build difference of point and element center
+    // and then dot product with unit normal at center
+    double dist = (mycnode->xspatial()[0]-Auxc()[0])*Auxn()[0]
+                + (mycnode->xspatial()[1]-Auxc()[1])*Auxn()[1]
+                + (mycnode->xspatial()[2]-Auxc()[2])*Auxn()[2];
+
+    // only near if at least one node is "close" to auxiliary plane
+    // (signed distance in order to capture intrusion correctly)
+    if (dist < limit) near = true;
+  }
+
+  return near;
 }
 
 /*----------------------------------------------------------------------*
@@ -1430,7 +1472,7 @@ void CONTACT::Coupling3d::PolygonClipping(vector<Vertex>& poly1,
 /*----------------------------------------------------------------------*
  |  Clipping of two polygons (NEW version)                    popp 11/09|
  *----------------------------------------------------------------------*/
-void CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
+bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
                                                     vector<Vertex>& poly2,
                                                     vector<Vertex>& respoly,
                                                     double& tol)
@@ -1569,7 +1611,18 @@ void CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
 
     // check scalar product
     double check = n[0]*nextedge[0]+n[1]*nextedge[1]+n[2]*nextedge[2];
-    if (check>0) dserror("ERROR: Input polygon 2 not convex");
+    if (check>0) 
+    {
+      // this may happen, so do NOT throw an error immediately
+      // but instead check if the two elements to be clipped are
+      // close to each other at all. If so, then really throw the
+      // dserror, if not, simply continue with the next pair!
+      cout << "***WARNING*** Input polygon 2 not convex!" << endl;
+      bool nearcheck = RoughCheckNodes();
+      
+      if (nearcheck) dserror("ERROR: Input polygon 2 not convex, but close pair!");
+      else return false;
+    }
   }
 
   // print final input polygons to screen
@@ -2496,7 +2549,7 @@ void CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
     fclose(fp);
   }
 
-  return;  
+  return true;  
 }
 
 /*----------------------------------------------------------------------*

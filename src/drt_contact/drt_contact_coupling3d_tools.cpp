@@ -70,7 +70,7 @@ mele_(mele)
     dserror("ERROR: FD check for 3D mortar coupling not yet impl. for quadratic elements");
 
   // rough check whether elements are "near"
-  bool near = RoughCheck();
+  bool near = RoughCheckCenters();
   if (!near) return;
 
   // map to store projection parameter alpha for each master node
@@ -233,7 +233,7 @@ mele_(mele)
     dserror("ERROR: FD check for 3D mortar coupling not yet impl. for quadratic elements");
 
   // rough check whether elements are "near"
-  bool near = RoughCheck();
+  bool near = RoughCheckCenters();
   if (!near) return;
 
   // map to store projection parameter alpha for each master node
