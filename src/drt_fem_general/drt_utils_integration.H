@@ -45,6 +45,7 @@ Maintainer: Axel Gerstenberger
 
 #include <string>
 #include <sstream>
+#include <iostream>
 
 namespace DRT
 {
@@ -81,6 +82,40 @@ enum GaussRule3D
     intrule_pyramid_1point,         ///< GAUSS INTEGRATION, DEG.OF PRECISION ?
     intrule_pyramid_8point          ///< GAUSS INTEGRATION, DEG.OF PRECISION ?
 };
+
+/// allow to verify the openness of an integration rule
+///
+/// \note: Open means that no integration point is on the boundary of the integrated domain
+inline bool IntRuleIsOpen(DRT::UTILS::GaussRule3D intrule)
+{
+  switch (intrule)
+  {
+  case intrule_hex_1point:             return true;
+  case intrule_hex_8point:             return true;
+  case intrule_hex_27point:            return true;
+  case intrule_tet_1point:             return true;
+  case intrule_tet_4point:             return true;
+  case intrule_tet_4point_gauss_radau: return false;
+  case intrule_tet_5point:             return true;
+  case intrule_tet_10point:            return false;
+  case intrule_tet_11point:            return true;
+  case intrule_tet_15point:            return false;
+  case intrule_tet_24point:            return true;
+  case intrule_tet_64point_peano:      return true;
+  case intrule_tet_45point:            return true;
+  case intrule_tet_125point_peano:     return true;
+  case intrule_tet_343point_peano:     return true;
+  case intrule_tet_729point_peano:     return true;
+  case intrule_wedge_1point:           return true;
+  case intrule_wedge_6point:           return true;
+  case intrule_wedge_9point:           return true;
+  case intrule_pyramid_1point:         return true;
+  case intrule_pyramid_8point:         return true;
+  default:
+    std::cout << "Integration rule not categorized" << std::endl;
+    exit(1);
+  }
+}
 
 
 //! supported 2d integration rules
@@ -121,9 +156,8 @@ enum GaussRule1D
     intrule_line_8point,           ///< degree of precision: 15 (open)
     intrule_line_9point,           ///< degree of precision: 17 (open)
     intrule_line_10point,          ///< degree of precision: 19 (open)
-    intrule_line_lobatto2point,    ///< degree of precision: 1  (open)
-    intrule_line_lobatto3point     ///< degree of precision: 3  (open)
-
+    intrule_line_lobatto2point,    ///< degree of precision: 1  (closed)
+    intrule_line_lobatto3point     ///< degree of precision: 3  (closed)
 };
 
 
@@ -200,14 +234,17 @@ struct IntegrationPoints3D
 {
   /// constructor
   explicit IntegrationPoints3D(
-      const GaussRule3D gaussrule   ///< 3d rule
+      const GaussRule3D intrule      ///< 3d rule
       );
 private:
   static const int max_nquad = 729;  ///< size of c array
+  DRT::UTILS::GaussRule3D intrule_;  ///< associated integration rule name
 public:
   int           nquad;               ///< number of gausspoints
   double        qxg[max_nquad][3];   ///< coordinates
   double        qwgt[max_nquad];     ///< weights
+  /// get used integration rule
+  DRT::UTILS::GaussRule3D GetIntRule() const { return intrule_; };
 };
 
 /*!
@@ -223,14 +260,17 @@ struct IntegrationPoints2D
 {
   /// constructor
   explicit IntegrationPoints2D(
-      const GaussRule2D gaussrule   ///< 2d rule
+      const GaussRule2D intrule       ///< 2d rule
       );
 private:
   static const int max_nquad = 64;    ///< size of c array
+  DRT::UTILS::GaussRule2D intrule_;   ///< associated integration rule name
 public:
   int           nquad;                ///< number of gausspoints
   double        qxg[max_nquad][2];    ///< coordinates
   double        qwgt[max_nquad];      ///< weights
+  /// get used integration rule
+  DRT::UTILS::GaussRule2D GetIntRule() const { return intrule_; };
 };
 
 /*!
@@ -247,14 +287,17 @@ struct IntegrationPoints1D
 {
   /// constructor
   explicit IntegrationPoints1D(
-      const GaussRule1D gaussrule   ///< 1d rule
+      const GaussRule1D intrule       ///< 1d rule
       );
 private:
   static const int max_nquad = 10;    ///< size of c array
+  DRT::UTILS::GaussRule1D intrule_;   ///< associated integration rule name
 public:
   int           nquad;                ///< number of integration points
   double        qxg[max_nquad][1];    ///< coordinates
   double        qwgt[max_nquad];      ///< weights
+  /// get used integration rule
+  DRT::UTILS::GaussRule1D GetIntRule() const { return intrule_; };
 };
 
 

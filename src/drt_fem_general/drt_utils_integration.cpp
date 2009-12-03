@@ -48,6 +48,8 @@ Maintainer: Axel Gerstenberger
 
 
 DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule)
+:
+  intrule_(gaussrule)
 {
   const double Q12  = 1.0/2.0;
   const double Q14  = 1.0/4.0;
@@ -3304,6 +3306,8 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
 
 
 DRT::UTILS::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule)
+:
+  intrule_(gaussrule)
 {
   switch(gaussrule)
   {
@@ -3863,6 +3867,8 @@ DRT::UTILS::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule
 
 
 DRT::UTILS::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gaussrule)
+:
+  intrule_(gaussrule)
 {
   switch(gaussrule)
   {
