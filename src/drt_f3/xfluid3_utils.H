@@ -306,7 +306,7 @@ DRT::UTILS::GaussRule3D getXFEMGaussrule(
           }
           else
           {
-            if (xeleGeoType == GEO::CARTESIAN) rule = DRT::UTILS::intrule_tet_15point;
+            if (xeleGeoType == GEO::CARTESIAN) rule = DRT::UTILS::intrule_tet_24point;
             else                               rule = DRT::UTILS::intrule_tet_24point;
           }
           break;
@@ -377,6 +377,9 @@ DRT::UTILS::GaussRule3D getXFEMGaussrule(
       dserror("gaussrule only for tetrahedral integration cells defined. Please add additional rules here!");
     }
   }
+
+  if (not DRT::UTILS::IntRuleIsOpen(rule))
+    dserror("You have to use an open integration rule for XFEM volume integrals!");
 
   return rule;
 }
@@ -456,8 +459,8 @@ DRT::UTILS::GaussRule3D getXFEMGaussruleKinkEnr(
 //! interpolate from nodal vector array to integration point vector using the shape function
 template <class M, class VS>
 LINALG::Matrix<3,1> interpolateVectorFieldToIntPoint(
-    const M&  eleVectorField,       ///< array with nodal vector values
-    const VS& shp,                  ///< array with nodal shape function
+    const M&  eleVectorField,       ///< array with nodal vector values of shape (nsd, numparam)
+    const VS& shp,                  ///< array with nodal shape function         (numparam)
     const int numparam              ///< number of parameters
     )
 {
