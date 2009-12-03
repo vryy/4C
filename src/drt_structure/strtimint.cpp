@@ -976,6 +976,58 @@ void STR::TimInt::UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
   mass_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(domainmaps,rangemaps,81,false,true));
   if (damping_ == INPAR::STR::damp_rayleigh)
     damp_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(domainmaps,rangemaps,81,false,true));
+
+  // recalculate mass and damping matrices
+
+  Teuchos::RCP<Epetra_Vector> fint
+    = LINALG::CreateVector(*dofrowmap_, true); // internal force
+
+  stiff_->Zero();
+  mass_->Zero();
+
+  {
+    // create the parameters for the discretization
+    ParameterList p;
+    // action for elements
+    p.set("action", "calc_struct_nlnstiffmass");
+    // other parameters that might be needed by the elements
+    p.set("total time", (*time_)[0]);
+    p.set("delta time", (*dt_)[0]);
+    if (pressure_ != Teuchos::null) p.set("volume", 0.0);
+    // set vector values needed by elements
+    discret_->ClearState();
+    discret_->SetState("residual displacement", zeros_);
+    discret_->SetState("displacement", (*dis_)(0));
+    if (damping_ == INPAR::STR::damp_material) discret_->SetState("velocity", (*vel_)(0));
+    discret_->Evaluate(p, stiff_, mass_, fint, Teuchos::null, Teuchos::null);
+    discret_->ClearState();
+  }
+
+  // finish mass matrix
+  mass_->Complete();
+
+  // close stiffness matrix
+  stiff_->Complete();
+
+  // build Rayleigh damping matrix if desired
+  if (damping_ == INPAR::STR::damp_rayleigh)
+  {
+    damp_->Add(*stiff_, false, dampk_, 0.0);
+    damp_->Add(*mass_, false, dampm_, 1.0);
+    damp_->Complete();
+  }
+
+  // in case of C0 pressure field, we need to get rid of
+  // pressure equations
+  if (pressure_ != Teuchos::null)
+  {
+    mass_->ApplyDirichlet(*(pressure_->CondMap()));
+  }
+
+  // We need to reset the stiffness matrix because its graph (topology)
+  // is not finished yet in case of constraints and posssibly other side
+  // effects (basically managers).
+  stiff_->Reset();
 }
 
 
