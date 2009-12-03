@@ -66,11 +66,11 @@ VELFUNCNO                       1
 VELOCITYFIELD                   function 
 WRITEFLUX                       totalflux_boundary
 UPRES                           1
-BLOCKPRECOND                    No //Yes
+BLOCKPRECOND                    Yes
 MATID                           5
 SOLVERTYPE                      nonlinear
 OUTMEAN                         Yes
-CONVFORM                        conservative //convective //
+CONVFORM                        convective
 --------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-6
 ITEMAX                          20
@@ -94,17 +94,17 @@ GSTATITEMAX                     20
 -------------------------------------------------------TSI DYNAMIC
 ------------------------------------------------------FLUID SOLVER
 -------------------------------------------SCALAR TRANSPORT SOLVER
-SOLVER         UMFPACK //Aztec_MSR          // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT       10                  // output every so often, 0 no output
+SOLVER         Aztec_MSR          // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+AZOUTPUT       0                  // output every so often, 0 no output
 AZSOLVE        GMRES              // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC         ML                 // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
+AZPREC         ILU                // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
 AZREUSE        0                  // how often to recompute some preconditioners
 AZDROP         0.0                // drop tolerance for ILUT
 AZFILL         1.0                // fill-in for ILUT
 AZGFILL        0                  // graph fill for ILU
 AZTOL          1.0E-5             // tolerance in (un)scaled residual
 AZCONV         AZ_r0              // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
-AZITER         150               // max iterations
+AZITER         1000               // max iterations
 AZSUB          40                 // size of krylov space for gmres
 AZOMEGA        1.0                // damping factor for Jacobi/GaussSeidel type preconditioners
 AZGRAPH        1                  // unused
@@ -130,9 +130,9 @@ ML_DAMPCOARSE     1.0             // damping coarse grid
 PARTITION         Cut_Elements
 -----------------------SCALAR TRANSPORT ELECTRIC POTENTIAL SOLVER
 SOLVER         Aztec_MSR          // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT       10                  // output every so often, 0 no output
+AZOUTPUT       0                  // output every so often, 0 no output
 AZSOLVE        GMRES              // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC         ML                 // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
+AZPREC         ILU                // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
 AZREUSE        0                  // how often to recompute some preconditioners
 AZDROP         0.0                // drop tolerance for ILUT
 AZFILL         1.0                // fill-in for ILUT
