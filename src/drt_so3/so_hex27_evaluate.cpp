@@ -187,33 +187,22 @@ int DRT::ELEMENTS::So_hex27::Evaluate(ParameterList& params,
 
       if (stresstype=="ndxyz")
       {
-        dserror("No nodal stress output for Hex27 available yet!");
         // extrapolate stresses/strains at Gauss points to nodes
         LINALG::Matrix<NUMNOD_SOH27,NUMSTR_SOH27> nodalstresses;
         soh27_expol(gpstress,nodalstresses);
 
-        // average nodal stresses/strains between elements
-        // -> divide by number of adjacent elements
-        vector<int> numadjele(NUMNOD_SOH27);
-
-        DRT::Node** nodes = Nodes();
+        // separate normal and shear stresses in element vectors
         for (int i=0;i<NUMNOD_SOH27;++i)
         {
-          DRT::Node* node = nodes[i];
-          numadjele[i]=node->NumElement();
-        }
-
-        for (int i=0;i<NUMNOD_SOH27;++i)
-        {
-          elevec1(3*i)=nodalstresses(i,0)/numadjele[i];
-          elevec1(3*i+1)=nodalstresses(i,1)/numadjele[i];
-          elevec1(3*i+2)=nodalstresses(i,2)/numadjele[i];
+          elevec1(NODDOF_SOH27*i)=nodalstresses(i,0);
+          elevec1(NODDOF_SOH27*i+1)=nodalstresses(i,1);
+          elevec1(NODDOF_SOH27*i+2)=nodalstresses(i,2);
         }
         for (int i=0;i<NUMNOD_SOH27;++i)
         {
-          elevec2(3*i)=nodalstresses(i,3)/numadjele[i];
-          elevec2(3*i+1)=nodalstresses(i,4)/numadjele[i];
-          elevec2(3*i+2)=nodalstresses(i,5)/numadjele[i];
+          elevec2(NODDOF_SOH27*i)=nodalstresses(i,3);
+          elevec2(NODDOF_SOH27*i+1)=nodalstresses(i,4);
+          elevec2(NODDOF_SOH27*i+2)=nodalstresses(i,5);
         }
       }
       else if (stresstype=="cxyz")
@@ -243,26 +232,20 @@ int DRT::ELEMENTS::So_hex27::Evaluate(ParameterList& params,
         LINALG::Matrix<NUMNOD_SOH27,NUMSTR_SOH27> nodalstresses;
         soh27_expol(gpstress,nodalstresses);
 
-        // average nodal stresses/strains between elements
-        // -> divide by number of adjacent elements
-        vector<int> numadjele(NUMNOD_SOH27);
-
-        DRT::Node** nodes = Nodes();
-        for (int i=0;i<NUMNOD_SOH27;++i){
-          DRT::Node* node=nodes[i];
-          numadjele[i]=node->NumElement();
+        // separate normal and shear stresses in element vectors
+        for (int i=0;i<NUMNOD_SOH27;++i)
+        {
+          elevec1(NODDOF_SOH27*i)=nodalstresses(i,0);
+          elevec1(NODDOF_SOH27*i+1)=nodalstresses(i,1);
+          elevec1(NODDOF_SOH27*i+2)=nodalstresses(i,2);
         }
-
-        for (int i=0;i<NUMNOD_SOH27;++i){
-          elevec1(3*i)=nodalstresses(i,0)/numadjele[i];
-          elevec1(3*i+1)=nodalstresses(i,1)/numadjele[i];
-          elevec1(3*i+2)=nodalstresses(i,2)/numadjele[i];
+        for (int i=0;i<NUMNOD_SOH27;++i)
+        {
+          elevec2(NODDOF_SOH27*i)=nodalstresses(i,3);
+          elevec2(NODDOF_SOH27*i+1)=nodalstresses(i,4);
+          elevec2(NODDOF_SOH27*i+2)=nodalstresses(i,5);
         }
-        for (int i=0;i<NUMNOD_SOH27;++i){
-          elevec2(3*i)=nodalstresses(i,3)/numadjele[i];
-          elevec2(3*i+1)=nodalstresses(i,4)/numadjele[i];
-          elevec2(3*i+2)=nodalstresses(i,5)/numadjele[i];
-        }
+        
         RCP<Epetra_MultiVector> elestress=params.get<RCP<Epetra_MultiVector> >("elestress",null);
         if (elestress==null)
           dserror("No element stress/strain vector available");

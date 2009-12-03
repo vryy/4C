@@ -23,6 +23,7 @@ Maintainer: Thomas Kloeppel
 #include "../drt_mat/anisotropic_balzani.H"
 #include "../drt_mat/holzapfelcardiovascular.H"
 #include "../drt_mat/humphreycardiovascular.H"
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                                       |
@@ -169,10 +170,13 @@ void DRT::ELEMENTS::So_hex20::Print(ostream& os) const
 
 
 /*----------------------------------------------------------------------*
- |  extrapolation of quantities at the GPs to the nodes                 |
+ |  extrapolation of quantities at the GPs to the nodes      popp 12/09 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex20::soh20_expol(LINALG::Matrix<NUMGPT_SOH20,NUMSTR_SOH20>& stresses,
-                                        LINALG::Matrix<NUMNOD_SOH20,NUMSTR_SOH20>& nodalstresses)
+void DRT::ELEMENTS::So_hex20::soh20_expol
+(
+    LINALG::Matrix<NUMGPT_SOH20,NUMSTR_SOH20>& stresses,
+    LINALG::Matrix<NUMNOD_SOH20,NUMSTR_SOH20>& nodalstresses
+)
 {
   static LINALG::Matrix<NUMNOD_SOH20,NUMGPT_SOH20> expol;
   static bool isfilled;
@@ -184,55 +188,41 @@ void DRT::ELEMENTS::So_hex20::soh20_expol(LINALG::Matrix<NUMGPT_SOH20,NUMSTR_SOH
   }
   else
   {
-    double sq3=sqrt(3.0);
-    expol(0,0)=1.25+0.75*sq3;
-    expol(0,1)=-0.25-0.25*sq3;
-    expol(0,2)=-0.25+0.25*sq3;
-    expol(0,3)=-0.25-0.25*sq3;
-    expol(0,4)=-0.25-0.25*sq3;
-    expol(0,5)=-0.25+0.25*sq3;
-    expol(0,6)=1.25-0.75*sq3;
-    expol(0,7)=-0.25+0.25*sq3;
-    expol(1,1)=1.25+0.75*sq3;
-    expol(1,2)=-0.25-0.25*sq3;
-    expol(1,3)=-0.25+0.25*sq3;
-    expol(1,4)=-0.25+0.25*sq3;
-    expol(1,5)=-0.25-0.25*sq3;
-    expol(1,6)=-0.25+0.25*sq3;
-    expol(1,7)=1.25-0.75*sq3;
-    expol(2,2)=1.25+0.75*sq3;
-    expol(2,3)=-0.25-0.25*sq3;
-    expol(2,4)=1.25-0.75*sq3;
-    expol(2,5)=-0.25+0.25*sq3;
-    expol(2,6)=-0.25-0.25*sq3;
-    expol(2,7)=-0.25+0.25*sq3;
-    expol(3,3)=1.25+0.75*sq3;
-    expol(3,4)=-0.25+0.25*sq3;
-    expol(3,5)=1.25-0.75*sq3;
-    expol(3,6)=-0.25+0.25*sq3;
-    expol(3,7)=-0.25-0.25*sq3;
-    expol(4,4)=1.25+0.75*sq3;
-    expol(4,5)=-0.25-0.25*sq3;
-    expol(4,6)=-0.25+0.25*sq3;
-    expol(4,7)=-0.25-0.25*sq3;
-    expol(5,5)=1.25+0.75*sq3;
-    expol(5,6)=-0.25-0.25*sq3;
-    expol(5,7)=-0.25+0.25*sq3;
-    expol(6,6)=1.25+0.75*sq3;
-    expol(6,7)=-0.25-0.25*sq3;
-    expol(7,7)=1.25+0.75*sq3;
-
-    for (int i=0;i<NUMNOD_SOH20;++i)
+    // get gaussian points
+    const DRT::UTILS::IntegrationPoints3D intpoints(DRT::UTILS::intrule_hex_27point);
+    
+    // loop over all nodes
+    for (int ip=0; ip<NUMNOD_SOH20; ++ip)
     {
-      for (int j=0;j<i;++j)
-      {
-        expol(i,j)=expol(j,i);
-      }
+      // gaussian coordinates
+      const double e1 = intpoints.qxg[ip][0];
+      const double e2 = intpoints.qxg[ip][1];
+      const double e3 = intpoints.qxg[ip][2];
+
+      // coordinates of node in the fictitious GP element
+      double e1expol;
+      double e2expol;
+      double e3expol;
+
+      if (e1!=0) e1expol = 1/e1;
+      else       e1expol = 0;  
+      if (e2!=0) e2expol = 1/e2;
+      else       e2expol = 0;  
+      if (e3!=0) e3expol = 1/e3;
+      else       e3expol = 0;  
+
+      // shape functions for the extrapolated coordinates
+      // (yes, we REALLY mean DiscretizationType hex27 here!) 
+      LINALG::Matrix<NUMGPT_SOH20,1> funct;
+      DRT::UTILS::shape_function_3D(funct,e1expol,e2expol,e3expol,hex27);
+      
+      // extrapolation matrix
+      for (int i=0;i<NUMGPT_SOH20;++i) expol(ip,i) = funct(i);
     }
-
-    //nodalstresses.Multiply('N','N',1.0,expol,stresses,0.0);
+    
+    // do extrapolation
     nodalstresses.Multiply(expol, stresses);
-
+          
     isfilled = true;
   }
 }
