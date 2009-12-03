@@ -386,7 +386,7 @@ public:
       vderxy.MultiplyNT(evel,derxy);
 
       vdiv = 0.0;
-      // compute vel,x  + vel,y +  vel,z at integration point
+      // compute vel x,x  + vel y,y +  vel z,z at integration point
       for (int j = 0; j<nsd_; ++j)
       {
         vdiv += vderxy(j,j);

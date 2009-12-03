@@ -61,7 +61,7 @@ DRT::ELEMENTS::ScaTraImplInterface* DRT::ELEMENTS::ScaTraImplInterface::Impl(DRT
       ch8 = new ScaTraImpl<DRT::Element::hex8>(numdofpernode,numscal);
     return ch8;
   }
-/*  case DRT::Element::hex20:
+  case DRT::Element::hex20:
   {
     static ScaTraImpl<DRT::Element::hex20>* ch20;
     if (ch20==NULL)
@@ -74,7 +74,7 @@ DRT::ELEMENTS::ScaTraImplInterface* DRT::ELEMENTS::ScaTraImplInterface::Impl(DRT
     if (ch27==NULL)
       ch27 = new ScaTraImpl<DRT::Element::hex27>(numdofpernode,numscal);
     return ch27;
-  }*/
+  }
   case DRT::Element::tet4:
   {
     static ScaTraImpl<DRT::Element::tet4>* ct4;
@@ -989,6 +989,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
 
       // convective part in convective form: u_x*N,x+ u_y*N,y
       conv_.MultiplyTN(derxy_,velint_);
+
+      // momentum divergence required for conservative form
+      if (conservative_) GetVelocityDivergence(vdiv_,evelnp_,derxy_);
 
       //--------------------------------------------------------------------
       // calculation of subgrid diffusivity and stabilization parameter(s)
@@ -2370,7 +2373,17 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
       // get Euclidean norm of (weighted) velocity at element center
       double vel_norm = velint_.Norm2();
 
+#if 0
       // element Peclet number relating convective and diffusive forces
+double resdiffus(0.0);
+      if (k==0) resdiffus = 0.00628095; //0.01125;
+      if (k==1) resdiffus = 0.0211878;
+      if (k==2) resdiffus = 0.03075393; //3075393;
+       cout<<"resdiffus  for k "<<k <<" is = "<<resdiffus<<endl;
+
+
+      double epe = 0.5 * densnp_[k] * vel_norm * h / resdiffus;
+#endif
       double epe = 0.5 * densnp_[k] * vel_norm * h / diffus;
       const double pp = exp(epe);
       const double pm = exp(-epe);
@@ -3607,6 +3620,13 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
         /* convective term */
         emat(fvi, fui) += timefacfac_funct_vi*conv_(ui) ;
 
+        // addition to convective term for conservative form
+        if (conservative_)
+        {
+          // convective term using current scalar value
+          emat(fvi,fui) += timefacfac_funct_vi*vdiv_*funct_(ui);
+        }
+
         /* diffusive term */
         double laplawf(0.0);
         GetLaplacianWeakForm(laplawf, derxy_,ui,vi);
@@ -3732,6 +3752,14 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
 
       // convective term
       erhs[fvi] -= timefacfac*funct_(vi)*conv_ephinp_k;
+
+      // addition to convective term for conservative form
+      // (not included in residual)
+      if (conservative_)
+      {
+        // convective term in conservative form
+        erhs[fvi] -= timefacfac*funct_(vi)*funct_ephinp_k*vdiv_;
+      }
 
       // diffusive term
       double laplawf(0.0);
