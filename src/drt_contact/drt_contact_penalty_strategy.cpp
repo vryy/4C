@@ -59,10 +59,6 @@ AbstractStrategy(problemrowmap, params, interface, dim, comm, alphaf)
   dserror("Contact Boundary Modification not implemented for Penalty Methods.");
 #endif
   
-  // check if friction should be applied
-  INPAR::CONTACT::ContactFrictionType ftype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(Params(),"FRICTION");
-  
   // initialize constraint norm and initial penalty
   constrnorm_ = 0.0;
   constrnormtan_ = 0.0;
