@@ -24,7 +24,8 @@ ELCH::MovingBoundaryAlgorithm::MovingBoundaryAlgorithm(
     const Teuchos::ParameterList& prbdyn
     )
 :  ScaTraFluidAleCouplingAlgorithm(comm,prbdyn,"FSICoupling"),
-   outmean_(Teuchos::getIntegralValue<int>(prbdyn,"OUTMEAN"))
+   molarvolume_(prbdyn.get<double>("MOLARVOLUME")),
+   idispn_(FluidField().ExtractInterfaceVeln())
 {
   return;
 }
@@ -54,11 +55,17 @@ void ELCH::MovingBoundaryAlgorithm::TimeLoop()
     // prepare next time step
     PrepareTimeStep();
 
-    // solve nonlinear Navier-Stokes system on a deforming mesh
-    DoFluidStep();
+    for(int i = 0; i<2 ; i++)
+    {
+      if (Comm().MyPID()==0)
+        cout<<"!!!!!!!!!! Sub-Iteration i = "<<i<<endl;
 
-    // solve transport equations for ion concentrations and electric potential
-    DoTransportStep();
+      // solve nonlinear Navier-Stokes system on a deforming mesh
+      DoFluidStep();
+
+      // solve transport equations for ion concentrations and electric potential
+      DoTransportStep();
+    }
 
     // update all single field solvers
     Update();
@@ -103,26 +110,56 @@ void ELCH::MovingBoundaryAlgorithm::PrepareTimeStep()
 /*----------------------------------------------------------------------*/
 void ELCH::MovingBoundaryAlgorithm::DoFluidStep()
 {
-
   Teuchos::RCP<Epetra_Vector> iveln_ = FluidField().ExtractInterfaceVeln();
-//  Teuchos::RCP<Epetra_Vector> idisp_ = new FluidField().ExtractInterfaceVeln();
-  const Teuchos::RCP<Epetra_Vector> idispn_ = rcp(new Epetra_Vector(*(FluidField().ExtractInterfaceVeln())));
 
-  for (int lid = 0; lid < iveln_->MyLength(); ++lid)
+  // calculate normal flux vector field only at FSICoupling boundaries
+  vector<std::string> condnames;
+  condnames.push_back("FSICoupling");
+  condnames.push_back("ElectrodeKinetics");
+  Teuchos::RCP<Epetra_MultiVector> flux = ScaTraField().CalcFluxAtBoundary(condnames);
+
+  RCP<DRT::Discretization> fluiddis = FluidField().Discretization();
+
+  // number of dof per node in ScaTra
+  RCP<DRT::Discretization> scatradis = ScaTraField().Discretization();
+  int numscatradof = scatradis->NumDof(scatradis->lRowNode(0));
+
+  // id of the reacting species
+  int reactingspeciesid = 0; // default
+
+  // loop over all local nodes of scatra discretization
+  for (int lnodeid=0; lnodeid < fluiddis->NumMyRowNodes(); lnodeid++)
   {
-    if ((lid%3 == 0))
+    // Here we rely on the fact that the scatra discretization
+    // is a clone of the fluid mesh. => a scatra node has the same
+    // local (and global) ID as its corresponding fluid node!
+
+    // get the processor's local fluid node with the same lnodeid
+    DRT::Node* fluidlnode = fluiddis->lRowNode(lnodeid);
+    // get the degrees of freedom associated with this fluid node
+    vector<int> fluidnodedofs = fluiddis->Dof(fluidlnode);
+    // determine number of space dimensions (numdof - pressure dof)
+    const int numdim = ((int) fluidnodedofs.size()) -1;
+
+    vector<double> Values(numdim);
+
+    for(int index=0;index<numdim;++index)
     {
-      iveln_->ReplaceMyValue(lid+1,0,0.0025);
-      double disp = 0.0025*Time();
-      idispn_->ReplaceMyValue(lid+1,0,disp);
+      const int pos = lnodeid*numscatradof+reactingspeciesid;
+      // interface growth has opposite direction of mass flow -> minus sign
+      Values[index] = (-molarvolume_)*((*flux)[index])[pos];
     }
-    else
-    {
-      //idispn_->ReplaceMyValue(lid+1,0,0.0);
-      //iveln_->ReplaceMyValue(lid+1,0,0.0);
-    }
+
+    // now insert only the first numdim entries (nothing will happen for
+    // nodes not belonging to the FSI-Coupling -> error == 1)
+    int error = iveln_->ReplaceGlobalValues(numdim,&Values[0],&fluidnodedofs[0]);
   }
-  //cout << *idisp_;
+
+  // have to compute the approximate displacement from interface velocity
+  double timescale = 1./FluidField().TimeScaling();
+  idispn_->Update(Dt(),*iveln_,timescale);
+
+  iveln_->PutScalar(0.0);
 
   // solve nonlinear Navier-Stokes system on a moving mesh
   FluidAleNonlinearSolve(idispn_,iveln_);
@@ -143,14 +180,22 @@ void ELCH::MovingBoundaryAlgorithm::DoTransportStep()
 
   // transfer actual velocity fields
   ScaTraField().SetVelocityField(
-      FluidField().Velnp(),
+      FluidField().ConvectiveVel(), // = velnp - grid velocity
       FluidField().Hist(),
       Teuchos::null,
       FluidField().Discretization()
   );
+
+  // transfer moving mesh data
+  ScaTraField().ApplyMeshMovement(
+      FluidField().Dispnp(),
+      FluidField().Discretization()
+  );
+
   // solve coupled transport equations for ion concentrations and electric
   // potential
   ScaTraField().NonlinearSolve();
+
   return;
 }
 
@@ -171,15 +216,10 @@ void ELCH::MovingBoundaryAlgorithm::Output()
 {
   // Note: The order is important here! In here control file entries are
   // written. And these entries define the order in which the filters handle
-  // the Discretizations, which in turn defines the dof number ordering of the
-  // Discretizations.
+  // the discretizations, which in turn defines the dof number ordering of the
+  // discretizations.
   FluidField().StatisticsAndOutput();
   ScaTraField().Output();
-  if (outmean_)
-  {
-    ScaTraField().OutputElectrodeInfo();
-    ScaTraField().OutputMeanScalars();
-  }
   AleField().Output();
 
   return;

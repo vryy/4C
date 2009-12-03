@@ -53,14 +53,17 @@ ELCH::Algorithm::~Algorithm()
 /*----------------------------------------------------------------------*/
 void ELCH::Algorithm::TimeLoop()
 {
-  // write out inital state
+  // write out initial state
   // Output();
 
   // provide information about initial state
   ScaTraField().OutputElectrodeInfo();
   ScaTraField().OutputMeanScalars();
 
-  // ELCH algorithm without natural convection
+  // compute error for problems with analytical solution (initial field!)
+  ScaTraField().EvaluateErrorComparedToAnalyticalSol();
+
+  // switch ELCH algorithm
   if (natconv_ == INPAR::ELCH::natural_convection_no)
     TimeLoopElch();       // one-way coupling
   else
@@ -74,9 +77,6 @@ return;
 /*----------------------------------------------------------------------*/
 void ELCH::Algorithm::TimeLoopElch()
 {
-    // compute error for problems with analytical solution
-    ScaTraField().EvaluateErrorComparedToAnalyticalSol();
-
     // time loop
     while (NotFinished())
     {

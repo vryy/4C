@@ -71,8 +71,11 @@ namespace ELCH
 
   private:
 
-    /// flag for printing out mean values of concentrations and density
-    const bool outmean_;
+    // molar volume for flux to shape change conversion (unit: m^3/mol )
+    const double molarvolume_;
+
+    /// interface displacement
+    RCP<Epetra_Vector> idispn_;
 
   };
 
