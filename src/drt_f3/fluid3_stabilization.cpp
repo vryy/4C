@@ -22,7 +22,7 @@ void FLD::UTILS::computeStabilizationParams(
     const LINALG::Matrix<3,1>& gpvelnp,  /// velocity at Gaussian point
     const LINALG::Matrix<3,3>& xji,      /// inverse of transposed Jacobian matrix
     const bool   instationary,
-    const double dynvisc,                /// dyamic viscosity
+    const double dynvisc,                /// dynamic viscosity
     const double dens,                   /// density
     const double vel_norm,
     const double strle,
