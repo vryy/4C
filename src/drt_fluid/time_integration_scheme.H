@@ -77,13 +77,13 @@ namespace TIMEINT_THETA_BDF2
                         +-                                      -+
   */
   void ExplicitPredictor(
-      const Teuchos::RCP<Epetra_Vector>&   veln,
-      const Teuchos::RCP<Epetra_Vector>&   velnm,
-      const Teuchos::RCP<Epetra_Vector>&   accn,
-      const FLUID_TIMEINTTYPE              timealgo,
-      const double                         dta,
-      const double                         dtp,
-      Teuchos::RCP<Epetra_Vector>&         velnp
+      const Teuchos::RCP<const Epetra_Vector>   veln,
+      const Teuchos::RCP<const Epetra_Vector>   velnm,
+      const Teuchos::RCP<const Epetra_Vector>   accn,
+      const FLUID_TIMEINTTYPE                   timealgo,
+      const double                              dta,
+      const double                              dtp,
+      const Teuchos::RCP<Epetra_Vector>         velnp
   );
 
   /*!
@@ -92,16 +92,16 @@ namespace TIMEINT_THETA_BDF2
          for incompressible and low-Mach-number flow
   */
   void CalculateAcceleration(
-      const Teuchos::RCP<Epetra_Vector>&   velnp,    ///< velocity at     n+1
-      const Teuchos::RCP<Epetra_Vector>&   veln,     ///< velocity at     n
-      const Teuchos::RCP<Epetra_Vector>&   velnm,    ///< velocity at     n-1
-      const Teuchos::RCP<Epetra_Vector>&   accn ,    ///< acceleration at n-1
-      const FLUID_TIMEINTTYPE              timealgo, ///< time integration id
-      const int                            step,     ///< time step
-      const double                         theta,    ///< factor for OST method
-      const double                         dta,      ///< time step size (delta t) n
-      const double                         dtp,      ///< previous time step size (delta t) n-1
-      Teuchos::RCP<Epetra_Vector>&         accnp     ///< acceleration at n+1
+      const Teuchos::RCP<const Epetra_Vector>    velnp,    ///< velocity at     n+1
+      const Teuchos::RCP<const Epetra_Vector>    veln,     ///< velocity at     n
+      const Teuchos::RCP<const Epetra_Vector>    velnm,    ///< velocity at     n-1
+      const Teuchos::RCP<const Epetra_Vector>    accn ,    ///< acceleration at n-1
+      const FLUID_TIMEINTTYPE                    timealgo, ///< time integration id
+      const int                                  step,     ///< time step
+      const double                               theta,    ///< factor for OST method
+      const double                               dta,      ///< time step size (delta t) n
+      const double                               dtp,      ///< previous time step size (delta t) n-1
+      const Teuchos::RCP<Epetra_Vector>          accnp     ///< acceleration at n+1
   );
 
 }

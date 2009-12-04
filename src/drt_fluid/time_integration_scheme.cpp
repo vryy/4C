@@ -81,13 +81,13 @@ void FLD::TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void FLD::TIMEINT_THETA_BDF2::ExplicitPredictor(
-    const Teuchos::RCP<Epetra_Vector>&   veln,
-    const Teuchos::RCP<Epetra_Vector>&   velnm,
-    const Teuchos::RCP<Epetra_Vector>&   accn,
-    const FLUID_TIMEINTTYPE              timealgo,
-    const double                         dta,
-    const double                         dtp,
-    Teuchos::RCP<Epetra_Vector>&         velnp
+    const Teuchos::RCP<const Epetra_Vector>    veln,
+    const Teuchos::RCP<const Epetra_Vector>    velnm,
+    const Teuchos::RCP<const Epetra_Vector>    accn,
+    const FLUID_TIMEINTTYPE                    timealgo,
+    const double                               dta,
+    const double                               dtp,
+    const Teuchos::RCP<Epetra_Vector>          velnp
 )
 {
   switch (timealgo)
@@ -123,16 +123,16 @@ void FLD::TIMEINT_THETA_BDF2::ExplicitPredictor(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void FLD::TIMEINT_THETA_BDF2::CalculateAcceleration(
-    const Teuchos::RCP<Epetra_Vector>&   velnp,
-    const Teuchos::RCP<Epetra_Vector>&   veln,
-    const Teuchos::RCP<Epetra_Vector>&   velnm,
-    const Teuchos::RCP<Epetra_Vector>&   accn,
-    const FLUID_TIMEINTTYPE              timealgo,
-    const int                            step,
-    const double                         theta,
-    const double                         dta,
-    const double                         dtp,
-    Teuchos::RCP<Epetra_Vector>&         accnp
+    const Teuchos::RCP<const Epetra_Vector>    velnp,
+    const Teuchos::RCP<const Epetra_Vector>    veln,
+    const Teuchos::RCP<const Epetra_Vector>    velnm,
+    const Teuchos::RCP<const Epetra_Vector>    accn,
+    const FLUID_TIMEINTTYPE                    timealgo,
+    const int                                  step,
+    const double                               theta,
+    const double                               dta,
+    const double                               dtp,
+    const Teuchos::RCP<Epetra_Vector>          accnp
 )
 {
   if (step == 1)
