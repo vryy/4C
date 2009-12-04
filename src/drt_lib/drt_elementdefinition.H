@@ -52,6 +52,7 @@ namespace INPUT
     void SetupConstrele2Lines();
     void SetupConstrele3Lines();
     void SetupPtet4Lines();
+    void SetupNStet4Lines();
     void SetupShell8Lines();
     void SetupSolid3Lines();
     void SetupSolidh20Lines();

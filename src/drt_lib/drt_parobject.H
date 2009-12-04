@@ -52,6 +52,8 @@ using namespace std;
 #define ParObject_Ale3                  (int)24
 #define ParObject_Ale3Register          (int)25
 #define ParObject_Ale3Surface           (int)26
+#define ParObject_NStet                 (int)27
+#define ParObject_NStetRegister         (int)28
 // missing ints result from removed Condif2 elements
 #define ParObject_Sosh8Register         (int)34
 #define ParObject_Ale2                  (int)35

@@ -104,6 +104,7 @@ extern "C"
 #include "../drt_so3/so_sh8p8.H"
 #include "../drt_so3/so_tet4.H"
 #include "../drt_so3/so_ptet.H"
+#include "../drt_so3/so_nstet.H"
 #include "../drt_so3/so_tet10.H"
 #include "../drt_so3/so_weg6.H"
 #include "../drt_so3/so_shw6.H"
@@ -693,6 +694,21 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
       return object;
     }
     break;
+    case ParObject_NStet:
+    {
+      DRT::ELEMENTS::NStet* object = new DRT::ELEMENTS::NStet(-1,-1);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+    case ParObject_NStetRegister:
+    {
+      DRT::ELEMENTS::NStetRegister* object =
+                new DRT::ELEMENTS::NStetRegister(DRT::Element::element_nstet);
+      object->Unpack(data);
+      return object;
+    }
+    break;
     case ParObject_So_Hex8P1J1:
     {
       DRT::ELEMENTS::So_Hex8P1J1* object = new DRT::ELEMENTS::So_Hex8P1J1(-1,-1);
@@ -1042,6 +1058,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     so_hex20,
     so_tet4,
     ptet,
+    nstet,
     so_tet10,
     so_weg6,
     so_shw6,
@@ -1083,6 +1100,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
   else if (eletype=="SOLIDH20") type = so_hex20;
   else if (eletype=="SOLIDT4") type = so_tet4;
   else if (eletype=="PTET4") type = ptet;
+  else if (eletype=="NSTET4") type = nstet;
   else if (eletype=="SOLIDT10") type = so_tet10;
   else if (eletype=="SOLIDW6") type = so_weg6;
   else if (eletype=="SOLIDSHW6") type = so_shw6;
@@ -1350,6 +1368,12 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     case ptet:
     {
       RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Ptet(id,owner));
+      return ele;
+    }
+    break;
+    case nstet:
+    {
+      RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::NStet(id,owner));
       return ele;
     }
     break;

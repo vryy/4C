@@ -28,6 +28,7 @@ void DRT::INPUT::ElementDefinition::PrintElementDatHeaderToStream(std::ostream& 
   //PrintElementLines(stream,"CONSTRELE2");
   //PrintElementLines(stream,"CONSTRELE3");
   PrintElementLines(stream,"PTET4");
+  PrintElementLines(stream,"NSTET4");
   PrintElementLines(stream,"SHELL8");
   PrintElementLines(stream,"SOLID3");
   PrintElementLines(stream,"SOLIDH20");
@@ -123,6 +124,7 @@ void DRT::INPUT::ElementDefinition::SetupValidElementLines()
 //   SetupConstrele2Lines();
 //   SetupConstrele3Lines();
   SetupPtet4Lines();
+  SetupNStet4Lines();
   SetupShell8Lines();
   SetupSolid3Lines();
   SetupSolidh20Lines();
@@ -415,6 +417,18 @@ void DRT::INPUT::ElementDefinition::SetupPtet4Lines()
     ;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::INPUT::ElementDefinition::SetupNStet4Lines()
+{
+  std::map<std::string,LineDefinition>& defs = definitions_["NSTET4"];
+
+  defs["TET4"]
+    .AddIntVector("TET4",4)
+    .AddNamedInt("MAT")
+    .AddNamedString("STAB")
+    ;
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

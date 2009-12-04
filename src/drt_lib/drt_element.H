@@ -129,6 +129,7 @@ public:
     element_ale2line,
     element_so_tet4,
     element_ptet,
+    element_nstet,
     element_so_tet10,
     element_so_weg6,
     element_sodisp,
