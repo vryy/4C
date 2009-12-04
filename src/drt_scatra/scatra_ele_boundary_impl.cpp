@@ -1054,7 +1054,6 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
   double overpotentialint = params.get<double>("overpotentialintegral");
   double concentrationint = params.get<double>("concentrationintegral");
   double currderiv        = params.get<double>("currentderiv");
-  double chargingcurrent  = params.get<double>("chargingcurrent");
   double currentresidual  = params.get<double>("currentresidual");
 
   // integrations points and weights
@@ -1151,11 +1150,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
       if (dlcapacitance > EPS12)
       {
       // add contributions due to double-layer capacitance
-        chargingcurrent += dlcapacitance*(pot0-pot0hist)*fac_;
-        chargingcurrent += dlcapacitance*(-potint+pothistint)*fac_;
-
         currderiv -= dlcapacitance*fac_;
-
         currentresidual += dlcapacitance*(pot0-pot0hist)*fac_;
         currentresidual += fac_*dlcapacitance*(-potint+pothistint);
       }
@@ -1180,7 +1175,6 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
   params.set<double>("overpotentialintegral",overpotentialint);
   params.set<double>("concentrationintegral",concentrationint);
   params.set<double>("currentderiv",currderiv);
-  params.set<double>("chargingcurrent",chargingcurrent);
   params.set<double>("currentresidual",currentresidual);
 
 } //ScaTraBoundaryImpl<distype>::ElectrodeStatus

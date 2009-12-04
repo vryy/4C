@@ -841,8 +841,8 @@ void SCATRA::ScaTraTimIntImpl::OutputElectrodeInfo(
   if ((myrank_ == 0) and printtoscreen)
   {
     cout<<"Status of '"<<condname<<"':\n"
-    <<"++----+---------------------+------------------+----------------------+--------------------+----------------+----------------+----------------+"<<endl;
-    printf("|| ID |    Total current    | Area of boundary | Mean current density | Mean overpotential | Electrode pot. | Mean Concentr. | Total DL curr. |\n");
+    <<"++----+---------------------+------------------+----------------------+--------------------+----------------+----------------+"<<endl;
+    printf("|| ID |    Total current    | Area of boundary | Mean current density | Mean overpotential | Electrode pot. | Mean Concentr. |\n");
   }
 
   // first, add to all conditions of interest a ConditionID
@@ -879,7 +879,7 @@ void SCATRA::ScaTraTimIntImpl::OutputElectrodeInfo(
 
   if ((myrank_==0) and printtoscreen)
   {
-    cout<<"++----+---------------------+------------------+----------------------+--------------------+----------------+----------------+----------------+"<<endl;
+    cout<<"++----+---------------------+------------------+----------------------+--------------------+----------------+----------------+"<<endl;
     // print out the net total current for all indicated boundaries
     printf("Net total current over boundary: %10.3E\n\n",sum);
   }
@@ -930,7 +930,6 @@ void SCATRA::ScaTraTimIntImpl::OutputSingleElectrodeInfo(
   eleparams.set("overpotentialintegral",0.0);
   eleparams.set("concentrationintegral",0.0);
   eleparams.set("currentderiv",0.0);
-  eleparams.set("chargingcurrent",0.0);
   eleparams.set("currentresidual",0.0);
 
   // would be nice to have a EvaluateScalar for conditions!!!
@@ -946,9 +945,7 @@ void SCATRA::ScaTraTimIntImpl::OutputSingleElectrodeInfo(
   double cint = eleparams.get<double>("concentrationintegral");
   // tangent of current w.r.t. electrode potential on this proc
   double currderiv = eleparams.get<double>("currentderiv");
-  // get integral of charging current density on this proc
-  double chargingcurrent = eleparams.get<double>("chargingcurrent");
-  //
+  // get negative current residual (rhs of galvanostatic balance equation)
   double currentresidual = eleparams.get<double>("currentresidual");
 
   // care for the parallel case
@@ -962,8 +959,6 @@ void SCATRA::ScaTraTimIntImpl::OutputSingleElectrodeInfo(
   discret_->Comm().SumAll(&cint,&parcint,1);
   double parcurrderiv = 0.0;
   discret_->Comm().SumAll(&currderiv,&parcurrderiv ,1);
-  double parchargingcurrent = 0.0;
-  discret_->Comm().SumAll(&chargingcurrent,&parchargingcurrent ,1);
   double parcurrentresidual = 0.0;
   discret_->Comm().SumAll(&currentresidual,&parcurrentresidual ,1);
 
@@ -978,8 +973,8 @@ void SCATRA::ScaTraTimIntImpl::OutputSingleElectrodeInfo(
   }
 
   // specify some return values
-  currentsum += (parcurrentintegral); //+parchargingcurrent); // sum of currents
-  currtangent  = parcurrderiv;       // tangent w.r.t. electrode potential on metal side
+  currentsum += parcurrentintegral; // sum of currents
+  currtangent  = parcurrderiv;      // tangent w.r.t. electrode potential on metal side
   currresidual = parcurrentresidual;
 
   // clean up
@@ -990,8 +985,8 @@ void SCATRA::ScaTraTimIntImpl::OutputSingleElectrodeInfo(
   {
     if (printtoscreen) // print out results to screen
     {
-      printf("|| %2d |     %10.3E      |    %10.3E    |      %10.3E      |     %10.3E     |   %10.3E   |   %10.3E   |   %10.3E   |\n",
-          condid,parcurrentintegral,parboundaryint,parcurrentintegral/parboundaryint,paroverpotentialint/parboundaryint, pot, parcint/parboundaryint,parchargingcurrent);
+      printf("|| %2d |     %10.3E      |    %10.3E    |      %10.3E      |     %10.3E     |   %10.3E   |   %10.3E   |\n",
+          condid,parcurrentintegral,parboundaryint,parcurrentintegral/parboundaryint,paroverpotentialint/parboundaryint, pot, parcint/parboundaryint);
     }
 
     if (printtofile)// write results to file
@@ -1005,14 +1000,14 @@ void SCATRA::ScaTraTimIntImpl::OutputSingleElectrodeInfo(
       if (Step() <= 1)
       {
         f.open(fname.c_str(),std::fstream::trunc);
-        f << "#| ID | Step | Time | Total current | Area of boundary | Mean current density | Mean overpotential | Electrode pot. | Mean Concentr. | Total DL curr. |\n";
+        f << "#| ID | Step | Time | Total current | Area of boundary | Mean current density | Mean overpotential | Electrode pot. | Mean Concentr. |\n";
       }
       else
         f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
 
       f << condid << " " << Step() << " " << Time() << " " << parcurrentintegral << " " << parboundaryint
       << " " << parcurrentintegral/parboundaryint << " " << paroverpotentialint/parboundaryint << " "
-      << pot << " " << parcint/parboundaryint << " " << parchargingcurrent <<"\n";
+      << pot << " " << parcint/parboundaryint << " " <<"\n";
       f.flush();
       f.close();
     }
