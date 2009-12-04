@@ -657,7 +657,7 @@ void DRT::ELEMENTS::InvDesign::soh8_nlnstiffmass(
   for (int gp=0; gp<NUMGPT_SOH8; ++gp)
   {
     //----------------------------------- get inverse of Jacobian mapping
-    const double                             detj = ele->detJ_[gp];
+    const double detj = ele->detJ_[gp];
     LINALG::Matrix<3,3>& invj = ele->invJ_[gp];
 
     //------------------------------ compute derivs wrt to spatial coords
@@ -890,7 +890,7 @@ void DRT::ELEMENTS::InvDesign::soh8_nlnstiffmass(
     //*******************************************************************
     // Strictly, inverse design analysis is stationary and should not have
     // a mass term. Loosely, if no Dirichlet-BCs are present a small
-    // mass term might be used. Note that we use density by unit deformed
+    // mass term might be used. Note that we use density per unit deformed
     // volume here!
     if (massmatrix)
     {
