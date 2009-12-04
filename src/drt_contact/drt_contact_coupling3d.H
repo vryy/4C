@@ -515,7 +515,7 @@ public:
   void Sort(double* dlist, int N, int* list2);
 
   /*!
-  \brief Template to swap 2 <kind> instances
+  \brief Template to swap 2 instances of type kind
   
   */
   template<typename kind>
