@@ -116,6 +116,8 @@ STEPSIZEMAX                     0
 STEPSIZEMIN                     0
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_PlasticNeoHooke YOUNG 206.9 NUE 0.29 DENS 0.0 ISOHARD 0.12924 YIELD 0.45 INFYIELD 0.715 EXP 16.93 KINHARD 0.0
+//MAT 1 MAT_Struct_PlasticNeoHooke YOUNG 206.9 NUE 0.29 DENS 0.0 ISOHARD 0 YIELD 1.0e20 INFYIELD 0 EXP 0 KINHARD 0.0
+//MAT 1 MAT_Struct_NeoHooke YOUNG 206.9 NUE 0.29 DENS 0.0
 -------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC -0.07*t t1 0.0 t2 100000000.0
