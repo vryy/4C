@@ -240,62 +240,111 @@ void DRT::ELEMENTS::Wall1::w1_expol
     Epetra_SerialDenseVector& elevec2
 )
 {
-  const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
-  const DiscretizationType dt = this->Shape();
+  // get gaussian points
+  const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
   const int numgp = intpoints.nquad;
   const int numnode = NumNode();
-  Epetra_SerialDenseVector funct(numnode);
 
   static Epetra_SerialDenseMatrix expol(numnode,numgp);
   static bool isfilled;
 
   if (isfilled==false)
-  {
-  	// tri3, quad4, tri6, quad8 and quad9
-    if (dt==tri3 or dt==tri6 or dt==quad4 or dt==quad8 or dt==quad9)
+  {  
+    const DiscretizationType dt = Shape();
+    Epetra_SerialDenseVector funct(numgp);
+      
+  	// quad4, quad8 and quad9
+    if (dt==quad4 or dt==quad8 or dt==quad9)
     {
-    	// loop over gaussian points
-      for (int ip=0; ip<intpoints.nquad; ++ip)
+      // loop over all nodes
+      for (int ip=0; ip<numnode; ++ip)
       {
         // gaussian coordinates
         const double e1 = intpoints.qxg[ip][0];
         const double e2 = intpoints.qxg[ip][1];
 
-        // coordinates of the extrapolated points
+        // coordinates of node in the fictitious GP element
         double e1expol;
         double e2expol;
 
-        if (e1!=0)
-        {
-        	e1expol = 1/e1;
-        }	
-        else
-        {
-        	e1expol = 0;	
-        }
-
-        if (e2!=0)
-        {
-        e2expol = 1/e2;
-        }	
-        else
-        {
-        e2expol = 0;	
-        }
+        if (e1!=0) e1expol = 1/e1;
+        else       e1expol = 0;
+        if (e2!=0) e2expol = 1/e2;	
+        else       e2expol = 0;	
 
         // shape functions for the extrapolated coordinates
-        DRT::UTILS::shape_function_2D(funct,e1expol,e2expol,dt);
+        switch(numgp)
+        {
+          case 4:
+          {
+            DRT::UTILS::shape_function_2D(funct,e1expol,e2expol,quad4);
+            break;
+          }
+          case 9:
+          {
+            DRT::UTILS::shape_function_2D(funct,e1expol,e2expol,quad9);
+            break;
+          }
+          default:
+          {
+            dserror("ERROR: Quad4/8/9 nodal stress output only for 4 or 9 Gauss points!");
+            break;
+          }
+        }
 
         // extrapolation matrix
-        for(int i=0;i<numnode;++i)
-        {
-        	expol(ip,i)=funct(i);
-        }
+        for(int i=0;i<numgp;++i) expol(ip,i) = funct(i);
       }
-      isfilled = true;
     }
-
-    else dserror("extrapolation not yet implemented for this element type");
+    
+    // tri3
+    else if (dt==tri3)
+    {
+      // extrapolation matrix
+      for (int ip=0;ip<numnode;++ip)
+        for(int i=0;i<numgp;++i)
+          expol(ip,i) = 1.0/numgp;
+    }
+    
+    // tri6
+    else if (dt==tri6)
+    {
+      // loop over all nodes
+      for (int ip=0; ip<numnode; ++ip)
+      {
+        // gaussian coordinates
+        const double e1 = intpoints.qxg[ip][0];
+        const double e2 = intpoints.qxg[ip][1];
+        
+        // coordinates of node in the fictitious GP element
+        double e1expol = 2*e1 - 1.0/3.0;
+        double e2expol = 2*e2 - 1.0/3.0;
+        
+        // shape functions for the extrapolated coordinates
+        switch(numgp)
+        {
+          case 3:
+          {
+            DRT::UTILS::shape_function_2D(funct,e1expol,e2expol,tri3);
+            break;
+          }
+          default:
+          {
+            dserror("ERROR: Tri6 nodal stresses only implemented for 3 Gauss points!");
+            break;
+          }
+        }
+        
+        // extrapolation matrix
+        for(int i=0;i<numgp;++i) expol(ip,i) = funct(i);
+      }
+    }
+ 
+    // else
+    else dserror("extrapolation not implemented for this element type");
+    
+    // set isfilled
+    isfilled = true;
   }
 
   Epetra_SerialDenseMatrix nodalstresses(numnode,Wall1::numstr_);
@@ -304,13 +353,13 @@ void DRT::ELEMENTS::Wall1::w1_expol
   // distribute nodal stresses to elevectors for assembling
   for (int i=0;i<numnode;++i)
   {
-    elevec1(2*i)=nodalstresses(i,0);
-    elevec1(2*i+1)=nodalstresses(i,1);
+    elevec1(noddof_*i)=nodalstresses(i,0);
+    elevec1(noddof_*i+1)=nodalstresses(i,1);
   }
   for (int i=0;i<numnode;++i)
   {
-    elevec2(2*i)=nodalstresses(i,2);
-    elevec2(2*i+1)=nodalstresses(i,3);
+    elevec2(noddof_*i)=nodalstresses(i,2);
+    elevec2(noddof_*i+1)=nodalstresses(i,3);
   }
 
 }
