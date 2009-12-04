@@ -45,13 +45,13 @@ void FLD::XFluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr,
   if (dis != 1)
     dserror("fix me: only one fluid discretization supported for testing");
 
-  int node;
-  res.ExtractInt("NODE",node);
-  node -= 1;
+  int nodeGid;
+  res.ExtractInt("NODE",nodeGid);
+  nodeGid -= 1;
 
-  if (fluiddis_->HaveGlobalNode(node))
+  if (fluiddis_->HaveGlobalNode(nodeGid))
   {
-    const DRT::Node* actnode = fluiddis_->gNode(node);
+    const DRT::Node* actnode = fluiddis_->gNode(nodeGid);
 
     // Test only, if actnode is a row node
     if (actnode->Owner() != fluiddis_->Comm().MyPID())
@@ -112,6 +112,8 @@ void FLD::XFluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr,
     nerr += CompareValues(result, res);
     test_count++;
   }
+  else
+    dserror("XFluidResultTest::TestNode: unknown node Gid %d!!!", nodeGid);
 }
 
 
