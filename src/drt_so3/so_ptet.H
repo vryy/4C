@@ -42,6 +42,7 @@ using namespace Teuchos;
 #define NUMGPT_PTET       1    ///< total gauss points per element
 #define NUMDIM_PTET       3    ///< number of dimensions
 #define NUMCOORD_PTET     4    ///< number of shape function cooordinates (ksi1-ksi4)
+
 #define ALPHA_PTET      0.1    ///< stabilization parameter
 
 namespace DRT
@@ -466,10 +467,10 @@ protected:
   //! volume of element
   double                                                   V_;
   //! derivs of shape functions wrt to material coords
-  LINALG::Matrix<NUMNOD_PTET,NUMDIM_PTET>   nxyz_;
-  //! element's def-gradient
+  LINALG::Matrix<NUMNOD_PTET,NUMDIM_PTET>                  nxyz_;
+  //! element's def-gradient and flag indicating age of it
   bool                                                     FisNew_;
-  LINALG::Matrix<NUMDIM_PTET,NUMDIM_PTET>   F_;
+  LINALG::Matrix<NUMDIM_PTET,NUMDIM_PTET>                  F_;
   //! ptr to this element's register class
   DRT::ELEMENTS::PtetRegister*                             myregister_;
 
@@ -504,8 +505,7 @@ protected:
   inline void ShapeFunctionDerivatives(LINALG::Matrix<NUMNOD_PTET,NUMCOORD_PTET>& deriv)
   {
     // Ni,j = 1.0 for i==j, otherwise 0.0
-    const int size = deriv.M()*deriv.N();
-    for (int i=0; i<size; ++i) deriv.A()[i] = 0.0;
+    deriv.Clear();
     deriv(0,0) = 1.0;
     deriv(1,1) = 1.0;
     deriv(2,2) = 1.0;

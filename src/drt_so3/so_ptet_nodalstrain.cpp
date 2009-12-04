@@ -408,7 +408,6 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix*    
 
   //-----------------------------------------------------------------------
   // build averaged deformation gradient and volume of node
-  // this can make get rid of FnodeL and VnodeL
   LINALG::Matrix<3,3> FnodeL(true);
   double VnodeL = 0.0;
   for (int i=0; i<neleinpatch; ++i)
@@ -436,11 +435,14 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix*    
   for (int ele=0; ele<neleinpatch; ++ele)
   {
     // current element
-    DRT::ELEMENTS::Ptet*      actele = adjele[ele];
+    DRT::ELEMENTS::Ptet* actele = adjele[ele];
+    
     // spatial deriv of that element
-    LINALG::Matrix<NUMNOD_PTET,NUMDIM_PTET>& nxyz   = actele->nxyz_;
+    LINALG::Matrix<NUMNOD_PTET,NUMDIM_PTET>& nxyz = actele->nxyz_;
+    
     // volume of that element assigned to node L
     double V = actele->Volume()/NUMNOD_PTET;
+    
     // def-gradient of the element
     LINALG::Matrix<NUMDIM_PTET,NUMDIM_PTET>& F = actele->F_;
 
@@ -666,7 +668,7 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix*    
     for (int ele=0; ele<neleinpatch; ++ele)
     {
       // current element
-      DRT::ELEMENTS::Ptet*      actele = adjele[ele];
+      DRT::ELEMENTS::Ptet* actele = adjele[ele];
       // spatial deriv of that element
       LINALG::Matrix<NUMNOD_PTET,NUMDIM_PTET>& nxyz   = actele->nxyz_;
       // volume of actele assigned to node L
