@@ -501,16 +501,16 @@ void FLD::XFluidImplicitTimeInt::PrepareTimeStep()
   //
   // We cannot have a predictor in case of monolithic FSI here. There needs to
   // be a way to turn this off.
-  if (extrapolationpredictor_)
-  {
-    if (step_>1)
-    {
-      TIMEINT_THETA_BDF2::ExplicitPredictor(
-          state_.veln_, state_.velnm_, state_.accn_,
-          timealgo_, dta_, dtp_,
-          state_.velnp_);
-    }
-  }
+//  if (extrapolationpredictor_)
+//  {
+//    if (step_>1)
+//    {
+//      TIMEINT_THETA_BDF2::ExplicitPredictor(
+//          state_.veln_, state_.velnm_, state_.accn_,
+//          timealgo_, dta_, dtp_,
+//          state_.velnp_);
+//    }
+//  }
 }
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -682,6 +682,14 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInter
     dofswitch.mapVectorToNewDofDistribution(state_.velnp_);
     dofswitch.mapVectorToNewDofDistribution(state_.veln_);
     dofswitch.mapVectorToNewDofDistribution(state_.velnm_);
+
+    // if dofs appear, extrapolate fromthe interface to the newlz created dofs
+    if (Step() > 1)
+    {
+      dofswitch.extrapolateOldTimeStepValues(ih_np_->cutterdis(), *ih_np_->cutterposn(), ih_np_->cutterdis()->GetState("ivelcoln") , state_.veln_ );
+      dofswitch.extrapolateOldTimeStepValues(ih_np_->cutterdis(), *ih_np_->cutterposn(), ih_np_->cutterdis()->GetState("ivelcolnm"), state_.velnm_);
+      dofswitch.extrapolateOldTimeStepValues(ih_np_->cutterdis(), *ih_np_->cutterposn(), ih_np_->cutterdis()->GetState("iacccoln") , state_.accn_ );
+    }
   }
 
   // --------------------------------------------------
@@ -1145,11 +1153,32 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
            !=
            "L_2_norm_without_residual_at_itemax"))
       {
+
+//        std::ofstream f;
+//        const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName() + ".gpaccn.pos";
+//        f.open(fname.c_str());
+//        f << "View \"gpaccn\" {\n";
+//        f.close();
+//
+//        std::ofstream fv;
+//        const std::string fvname = DRT::Problem::Instance()->OutputControlFile()->FileName() + ".gpveln.pos";
+//        fv.open(fvname.c_str());
+//        fv << "View \"gpveln\" {\n";
+//        fv.close();
+
         sysmat_->Zero();
         // call standard loop over elements
         discret_->Evaluate(eleparams,sysmat_,residual_);
         discret_->ClearState();
         //eleparams.unused(cout);
+
+//        f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+//        f << "};\n";
+//        f.close();
+//        fv.open(fvname.c_str(),std::fstream::ate | std::fstream::app);
+//        fv << "};\n";
+//        fv.close();
+
 
         // account for potential Neumann inflow terms
         if (params_.get<string>("Neumann inflow") == "yes")
@@ -1422,6 +1451,13 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     //------------------- store nodal increment for element stress update
     oldinc_->Update(1.0,*incvel_,0.0);
   }
+
+  // compute acceleration at n+1
+  TIMEINT_THETA_BDF2::CalculateAcceleration(
+      state_.velnp_, state_.veln_, state_.velnm_, state_.accn_,
+          timealgo_, step_, theta_, dta_, dtp_,
+          state_.accnp_);
+
 
   // macht der FSI algorithmus
   iforcecolnp->Scale(-ResidualScaling());
@@ -1888,7 +1924,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
   {
     cout << "XFluidImplicitTimeInt::OutputToGmsh()" << endl;
 
-    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_pressure", step, 5, screen_out, discret_->Comm().MyPID());
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("sol_field_pres", step, 5, screen_out, discret_->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
 
     const XFEM::PHYSICS::Field field = XFEM::PHYSICS::Pres;
@@ -2229,11 +2265,11 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
 
   if (this->physprob_.fieldset_.find(XFEM::PHYSICS::Velx) != this->physprob_.fieldset_.end())
   {
-    PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.velnp_), "solution_field_velocity_np","Velocity Solution (Physical) n+1",true, step, time);
-    PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.veln_),  "solution_field_velocity_n","Velocity Solution (Physical) n",false, step, time);
-//    PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.velnm_), "solution_field_velocity_nm","Velocity Solution (Physical) n-1",false, step, time);
-    PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.accnp_), "solution_field_acceleration_np","Acceleration Solution (Physical) n+1",false, step, time);
-    PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.accn_),  "solution_field_acceleration_n","Acceleration Solution (Physical) n",false, step, time);
+    PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.velnp_), "sol_field_vel_np","Velocity Solution (Physical) n+1",true, step, time);
+    PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.veln_),  "sol_field_vel_n","Velocity Solution (Physical) n",true, step, time);
+//    PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.velnm_), "sol_field_vel_nm","Velocity Solution (Physical) n-1",false, step, time);
+    PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.accnp_), "sol_field_acc_np","Acceleration Solution (Physical) n+1",true, step, time);
+    PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.accn_),  "sol_field_acc_n","Acceleration Solution (Physical) n",true, step, time);
   }
 }
 
@@ -2335,21 +2371,15 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
 //        if (elegid == 14 and elementvalues.N() > 0 and plot_to_gnuplot)
         if (actele->Id() == 1 and elementvalues.N() > 0 and plot_to_gnuplot)
         {
-          //std::cout << elementvalues << std::endl;
           std::ofstream f;
-          const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
-                                  + ".outflowvel.txt";
+          const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName() + "."+ filestr + ".outflow_gnuplot.txt";
           if (step <= 1)
             f.open(fname.c_str(),std::fstream::trunc);
           else
             f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
-
-          //f << time_ << " " << (-1.5*std::sin(0.1*2.0*time_* M_PI) * M_PI*0.1) << "  " << elementvalues(0,0) << endl;
           f << time << "  " << elementvalues(0,0) << "\n";
-
           f.close();
         }
-
       }
       gmshfilecontent << "};\n";
     }
@@ -3213,9 +3243,9 @@ void FLD::XFluidImplicitTimeInt::ProjectOldTimeStepValues(
   const double tcpu=ds_cputime();
 
       Teuchos::RCP<LINALG::SparseOperator> sysmat_projection_veln = Teuchos::rcp(new LINALG::SparseMatrix(*discret_->DofRowMap(),0,false,true));
-      Teuchos::RCP<LINALG::SparseOperator> sysmat_projection_accn = Teuchos::null;//Teuchos::rcp(new LINALG::SparseMatrix(*discret_->DofRowMap(),0,false,true));
+      Teuchos::RCP<LINALG::SparseOperator> sysmat_projection_accn = Teuchos::rcp(new LINALG::SparseMatrix(*discret_->DofRowMap(),0,false,true));
       Teuchos::RCP<Epetra_Vector>    residual_veln = LINALG::CreateVector(*discret_->DofRowMap(),true);
-      Teuchos::RCP<Epetra_Vector>    residual_accn = Teuchos::null;//LINALG::CreateVector(*discret_->DofRowMap(),true);
+      Teuchos::RCP<Epetra_Vector>    residual_accn = LINALG::CreateVector(*discret_->DofRowMap(),true);
       {
         const double telebegin=ds_cputime();
         ////////////////////////
@@ -3244,7 +3274,7 @@ void FLD::XFluidImplicitTimeInt::ProjectOldTimeStepValues(
         eleparams.set("DLM_condensation",xparams_.get<bool>("DLM_condensation"));
 
         sysmat_projection_veln->Zero();
-//        sysmat_projection_accn->Zero();
+        sysmat_projection_accn->Zero();
         // call standard loop over elements (don't forget to build element stiffness matrix on the element level)
         discret_->Evaluate(eleparams,sysmat_projection_veln,sysmat_projection_accn,residual_veln,residual_accn,Teuchos::null);
         discret_->ClearState();
@@ -3254,7 +3284,7 @@ void FLD::XFluidImplicitTimeInt::ProjectOldTimeStepValues(
 
         // finalize the complete matrix
         sysmat_projection_veln->Complete();
-//        sysmat_projection_accn->Complete();
+        sysmat_projection_accn->Complete();
 
         discret_->Comm().Barrier();
         const double dtele = ds_cputime()-telebegin;
@@ -3274,10 +3304,10 @@ void FLD::XFluidImplicitTimeInt::ProjectOldTimeStepValues(
 
         // blank residual DOFs which are Dirichlet Conditions
         combinedDBCmapextractor->InsertCondVector(combinedDBCmapextractor->ExtractCondVector(state_.veln_), residual_veln);
-  //      dbcmaps_projection->InsertCondVector(dbcmaps_projection->ExtractCondVector(state_.accn_), residual_accn);
+        combinedDBCmapextractor->InsertCondVector(combinedDBCmapextractor->ExtractCondVector(state_.accn_), residual_accn);
 
         LINALG::ApplyDirichlettoSystem(sysmat_projection_veln,state_.veln_,residual_veln,state_.veln_,*(combinedDBCmapextractor->CondMap()));
-  //      LINALG::ApplyDirichlettoSystem(sysmat_projection_accn,state_.accn_,residual_accn,state_.accn_,*(dbcmaps_projection->CondMap()));
+        LINALG::ApplyDirichlettoSystem(sysmat_projection_accn,state_.accn_,residual_accn,state_.accn_,*(combinedDBCmapextractor->CondMap()));
         discret_->Comm().Barrier();
         const double dtDBC = ds_cputime()-tDBCbegin;
         cout << " Time needed for DBC computation and application: " << dtDBC << " s." << endl;
@@ -3287,19 +3317,23 @@ void FLD::XFluidImplicitTimeInt::ProjectOldTimeStepValues(
         discret_->Comm().Barrier();
         const double tsolvebegin = ds_cputime();
 
-        Teuchos::RCP<LINALG::Solver> solver = rcp(new LINALG::Solver(DRT::Problem::Instance()->XFluidProjectionSolverParams(),
+        Teuchos::RCP<LINALG::Solver> solver = Teuchos::null;
+
+        solver = rcp(new LINALG::Solver(DRT::Problem::Instance()->XFluidProjectionSolverParams(),
+            discret_->Comm(),
+            DRT::Problem::Instance()->ErrorFile()->Handle()));
+        discret_->ComputeNullSpaceIfNecessary(solver->Params());
+        solver->Solve(sysmat_projection_accn->EpetraOperator(), state_.accn_, residual_accn, true, true);
+        solver->ResetTolerance();
+        solver = Teuchos::null;
+
+        solver = rcp(new LINALG::Solver(DRT::Problem::Instance()->XFluidProjectionSolverParams(),
             discret_->Comm(),
             DRT::Problem::Instance()->ErrorFile()->Handle()));
         discret_->ComputeNullSpaceIfNecessary(solver->Params(),true);
         solver->Solve(sysmat_projection_veln->EpetraOperator(), state_.veln_, residual_veln, true, true);
         solver->ResetTolerance();
-
-//        solver = rcp(new LINALG::Solver(fluidsolverparams_,
-//            discret_->Comm(),
-//            DRT::Problem::Instance()->ErrorFile()->Handle()));
-//        discret_->ComputeNullSpaceIfNecessary(solver->Params());
-//        solver->Solve(sysmat_projection_accn->EpetraOperator(), state_.accn_, residual_accn, true, true);
-//        solver->ResetTolerance();
+        solver = Teuchos::null;
 
         discret_->Comm().Barrier();
         const double dtsolve = ds_cputime()-tsolvebegin;
@@ -3312,7 +3346,7 @@ void FLD::XFluidImplicitTimeInt::ProjectOldTimeStepValues(
       bool screen_out = true;
       if ((this->physprob_.fieldset_.find(XFEM::PHYSICS::Pres) != this->physprob_.fieldset_.end()))
       {
-        const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_pressure_projected", Step(), 5, screen_out, discret_->Comm().MyPID());
+        const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("sol_field_pres_projected", Step(), 5, screen_out, discret_->Comm().MyPID());
         std::ofstream gmshfilecontent(filename.c_str());
 
         const XFEM::PHYSICS::Field field = XFEM::PHYSICS::Pres;
@@ -3358,8 +3392,8 @@ void FLD::XFluidImplicitTimeInt::ProjectOldTimeStepValues(
         gmshfilecontent.close();
         if (screen_out) std::cout << " done" << endl;
       }
-      PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.veln_),  "solution_field_velocity_projected_n","Velocity Solution (Physical) n",false, Step(), Time());
-//      PlotVectorFieldToGmsh(state_.accn_,  "solution_field_acceleration_projected_n","Velocity Solution (Physical) n",false, Step(), Time());
+      PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.veln_),  "sol_field_veln_projected","Velocity Solution (Physical) n",false, Step(), Time());
+//      PlotVectorFieldToGmsh(state_.accn_,  "sol_field_accn_projected","Velocity Solution (Physical) n",false, Step(), Time());
 #endif
       discret_->Comm().Barrier();
       const double dtsolve = ds_cputime()-tcpu;

@@ -15,6 +15,7 @@ Maintainer: Axel Gerstenberger
 #define DOF_DISTRIBUTION_SWITCHER_H
 
 #include "interfacexfsi.H"
+#include "dofkey.H"
 
 
 namespace XFEM
@@ -30,8 +31,8 @@ namespace XFEM
 
     //! constructor
     explicit DofDistributionSwitcher(
-        const RCP<XFEM::InterfaceHandle>&    ih,
-        const RCP<XFEM::DofManager>&         dofman,
+        const RCP<XFEM::InterfaceHandle>     ih,
+        const RCP<XFEM::DofManager>          dofman,
         const Epetra_Map&                    olddofrowmap,
         const Epetra_Map&                    newdofrowmap,
         const map<DofKey<onNode>, DofGID>&   oldNodalDofDistrib,
@@ -48,15 +49,8 @@ namespace XFEM
       oldElementalDofDistrib_(oldElementalDofDistrib),
       newElementalDofDistrib_(newElementalDofDistrib)
     {
-//        // derive information for dofkeys per node
-//        map<DofKey<onNode>, DofPos>::const_iterator dofkeyiter;
-//        for (dofkeyiter = oldNodalDofDistrib.begin(); dofkeyiter != oldNodalDofDistrib.end(); ++dofkeyiter)
-//        {
-//          const DofKey<onNode> dofkey = dofkeyiter->first;
-//          const int gid = dofkey.getGid();
-//          const XFEM::FieldEnr fieldenr = dofkey.getFieldEnr();
-//          oldEnrFieldSetNode_[gid].insert(fieldenr);
-//        }
+      extractDofKeysForInitialization(unknownFieldEnr_);
+      cout << "Number of nodes with missing nodal unknowns: " << unknownFieldEnr_.size() << endl;
       return;
     }
 
@@ -78,6 +72,16 @@ namespace XFEM
         Teuchos::RCP<Epetra_Vector>&     vector
     ) const;
 
+    void extractDofKeysForInitialization(
+        std::map<int, set<XFEM::FieldEnr> >& unknownFieldEnr
+    ) const;
+
+    void extrapolateOldTimeStepValues(
+        const RCP<DRT::Discretization>    bdis,
+        const std::map<int,LINALG::Matrix<3,1> >&  cutterposnp,
+        const RCP<const Epetra_Vector>    ivector,
+        RCP<Epetra_Vector>                state_vector
+    ) const;
 
     //! switch from old to new dof distribution
     void generateTransferInformation(
@@ -104,6 +108,8 @@ namespace XFEM
     const map<DofKey<onNode>, DofGID>    newNodalDofDistrib_;      ///< new positions of dof in Epetra Vector per nodal dofkey
     const map<DofKey<onElem>, DofGID>    oldElementalDofDistrib_;  ///< old positions of dof in Epetra Vector per element dofkey
     const map<DofKey<onElem>, DofGID>    newElementalDofDistrib_;  ///< new positions of dof in Epetra Vector per element dofkey
+
+    std::map<int, set<XFEM::FieldEnr> >      unknownFieldEnr_;
     //    map<int,std::set<XFEM::FieldEnr> >   oldEnrFieldSetNode_;      ///< old enriched fields per node
   };
 

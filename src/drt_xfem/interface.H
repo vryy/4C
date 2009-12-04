@@ -95,24 +95,52 @@ namespace XFEM
     GEO::BoundaryIntCells GetBoundaryIntCells(const int   gid) const;
 
     //! get domain information at x_in at timestep n+1
-    virtual int PositionWithinConditionNP(const LINALG::Matrix<3,1>& x_in) const;
+    virtual int PositionWithinConditionNP(
+        const LINALG::Matrix<3,1>& x_in
+        ) const;
 
     //! get domain information at x_in at timestep n
-    virtual int PositionWithinConditionN(const LINALG::Matrix<3,1>& x_in) const;
+    virtual int PositionWithinConditionN(
+        const LINALG::Matrix<3,1>& x_in
+        ) const;
 
     //! get domain information at x_in at timestep n+1
-    virtual int PositionWithinConditionNP(const LINALG::Matrix<3,1>&     x_in,
-                                          GEO::NearestObject&  nearestobject) const;
+    virtual int PositionWithinConditionNP(
+        const LINALG::Matrix<3,1>&     x_in,
+        GEO::NearestObject&  nearestobject
+        ) const;
 
     //! get domain information at x_in at timestep n
-    virtual int PositionWithinConditionN(const LINALG::Matrix<3,1>&     x_in,
-                                         GEO::NearestObject&  nearestobject) const;
+    virtual int PositionWithinConditionN(
+        const LINALG::Matrix<3,1>&     x_in,
+        GEO::NearestObject&  nearestobject
+        ) const;
 
     //! get domain information at x_in at timestep n+1 for interface named label
-    virtual int PositionWithRespectToInterfaceNP(const LINALG::Matrix<3,1>& x_in, const int label) const;
+    virtual int PositionWithRespectToInterfaceNP(
+        const LINALG::Matrix<3,1>& x_in,
+        const int label
+        ) const;
 
     //! get domain information at x_in at timestep n for interface named label
-    virtual int PositionWithRespectToInterfaceN(const LINALG::Matrix<3,1>& x_in, const int label) const;
+    virtual int PositionWithRespectToInterfaceN(
+        const LINALG::Matrix<3,1>& x_in,
+        const int label
+        ) const;
+
+    //! get domain information at x_in at timestep n+1 for interface named label
+    virtual int PositionWithRespectToInterfaceNP(
+        const LINALG::Matrix<3,1>&     x_in,
+        const int label,
+        GEO::NearestObject&  nearestobject
+        ) const;
+
+    //! get domain information at x_in at timestep n for interface named label
+    virtual int PositionWithRespectToInterfaceN(
+        const LINALG::Matrix<3,1>&     x_in,
+        const int label,
+        GEO::NearestObject&  nearestobject
+        ) const;
 
     //! get the label to which the boundary element belongs
     virtual int GetLabelPerBoundaryElementId(const int boundaryEleId) const

@@ -313,6 +313,27 @@ int XFEM::InterfaceHandleXFSI::PositionWithRespectToInterfaceN(
   return octTreePerLabeln_.find(label)->second->queryXFEMFSIPointType(*(cutterdis_), cutterposn_, currentXAABBs_, x_in);
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int XFEM::InterfaceHandleXFSI::PositionWithRespectToInterfaceNP(
+    const LINALG::Matrix<3,1>&        x_in,
+    const int label,
+    GEO::NearestObject&               nearestobject) const
+{
+  return octTreePerLabelnp_.find(label)->second->queryFSINearestObject(*(cutterdis_), cutterposnp_, currentXAABBs_, x_in, nearestobject);
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int XFEM::InterfaceHandleXFSI::PositionWithRespectToInterfaceN(
+    const LINALG::Matrix<3,1>&        x_in,
+    const int label,
+    GEO::NearestObject&               nearestobject) const
+{
+  return octTreePerLabeln_.find(label)->second->queryFSINearestObject(*(cutterdis_), cutterposn_, currentXAABBs_, x_in, nearestobject);
+}
+
 
 /*----------------------------------------------------------------------*
  * generate space time layer

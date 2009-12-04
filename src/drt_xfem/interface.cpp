@@ -34,7 +34,7 @@ XFEM::InterfaceHandle::InterfaceHandle(
     ) :
       xfemdis_(xfemdis),
       octTreenp_(rcp( new GEO::SearchTree(20))),
-      octTreen_(rcp( new GEO::SearchTree(20)))
+      octTreen_(rcp( new GEO::SearchTree(1))) //TODO: searchtree does not return nearest object for max-depth=20. Find out. This is needed for time step update, where I extrapolate from the nearest object...
 {
   return;
 }
@@ -105,8 +105,9 @@ int XFEM::InterfaceHandle::PositionWithRespectToInterfaceN(
 /*----------------------------------------------------------------------*
  * implement this member function in derived classes!
  *----------------------------------------------------------------------*/
-int XFEM::InterfaceHandle::PositionWithinConditionNP(const LINALG::Matrix<3,1>&     x_in,
-                                                     GEO::NearestObject&  nearestobject) const
+int XFEM::InterfaceHandle::PositionWithinConditionNP(
+    const LINALG::Matrix<3,1>&     x_in,
+    GEO::NearestObject&  nearestobject) const
 {
   dserror("not implemented for the InterfaceHandle base class");
   return 0;
@@ -117,8 +118,36 @@ int XFEM::InterfaceHandle::PositionWithinConditionNP(const LINALG::Matrix<3,1>& 
 /*----------------------------------------------------------------------*
  * implement this member function in derived classes!
  *----------------------------------------------------------------------*/
-int XFEM::InterfaceHandle::PositionWithinConditionN(const LINALG::Matrix<3,1>&     x_in,
-                                                    GEO::NearestObject&  nearestobject) const
+int XFEM::InterfaceHandle::PositionWithinConditionN(
+    const LINALG::Matrix<3,1>&     x_in,
+    GEO::NearestObject&  nearestobject) const
+{
+  dserror("not implemented for the InterfaceHandle base class");
+  return 0;
+}
+
+
+/*----------------------------------------------------------------------*
+ * implement this member function in derived classes!
+ *----------------------------------------------------------------------*/
+int XFEM::InterfaceHandle::PositionWithRespectToInterfaceNP(
+    const LINALG::Matrix<3,1>&     x_in,
+    const int label,
+    GEO::NearestObject&  nearestobject) const
+{
+  dserror("not implemented for the InterfaceHandle base class");
+  return 0;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ * implement this member function in derived classes!
+ *----------------------------------------------------------------------*/
+int XFEM::InterfaceHandle::PositionWithRespectToInterfaceN(
+    const LINALG::Matrix<3,1>&     x_in,
+    const int label,
+    GEO::NearestObject&  nearestobject) const
 {
   dserror("not implemented for the InterfaceHandle base class");
   return 0;

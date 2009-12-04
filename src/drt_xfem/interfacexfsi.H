@@ -40,6 +40,16 @@ namespace XFEM
     //! return pointer to the intersecting discretization
     const Teuchos::RCP<DRT::Discretization> cutterdis() const {return cutterdis_;};
 
+    const std::map<int,LINALG::Matrix<3,1> >* cutterposnp()
+    {
+      return &cutterposnp_;
+    }
+
+    const std::map<int,LINALG::Matrix<3,1> >* cutterposn()
+    {
+      return &cutterposn_;
+    }
+
     //! get pointer to boundary element
     const DRT::Element* GetBoundaryEle(
             const int element_gid   ///< unique global element id of a boundary element
@@ -67,10 +77,14 @@ namespace XFEM
     }
 
     //! get domain information at x_in at timestep n+1
-    virtual int PositionWithinConditionNP(const LINALG::Matrix<3,1>&    x_in) const;
+    virtual int PositionWithinConditionNP(
+        const LINALG::Matrix<3,1>&        x_in
+        ) const;
 
     //! get domain information at x_in at timestep n
-    virtual int PositionWithinConditionN(const LINALG::Matrix<3,1>&     x_in) const;
+    virtual int PositionWithinConditionN(
+        const LINALG::Matrix<3,1>&        x_in
+        ) const;
 
     //! get domain information at x_in at timestep n+1
     virtual int PositionWithinConditionNP(
@@ -86,14 +100,28 @@ namespace XFEM
 
     //! get domain information at x_in at timestep n+1 for interface named label
     virtual int PositionWithRespectToInterfaceNP(
-        const LINALG::Matrix<3,1>&    x_in,
+        const LINALG::Matrix<3,1>&        x_in,
         const int label
         ) const;
 
     //! get domain information at x_in at timestep n for interface named label
     virtual int PositionWithRespectToInterfaceN(
-        const LINALG::Matrix<3,1>&     x_in,
+        const LINALG::Matrix<3,1>&        x_in,
         const int label
+        ) const;
+
+    //! get domain information at x_in at timestep n+1 for interface named label
+    virtual int PositionWithRespectToInterfaceNP(
+        const LINALG::Matrix<3,1>&        x_in,
+        const int label,
+        GEO::NearestObject&               nearestobject
+        ) const;
+
+    //! get domain information at x_in at timestep n for interface named label
+    virtual int PositionWithRespectToInterfaceN(
+        const LINALG::Matrix<3,1>&        x_in,
+        const int label,
+        GEO::NearestObject&               nearestobject
         ) const;
 
     //! find space time layer cell
