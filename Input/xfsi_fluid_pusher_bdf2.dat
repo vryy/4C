@@ -97,7 +97,7 @@ SIMPLER          No
 -------------------------------------------------------FSI DYNAMIC
 MAXTIME      2.0
 TIMESTEP     0.01
-NUMSTEP      30
+NUMSTEP      130
 UPRES        1
 RESTARTEVRY  5
 IALE         Pseudo_Structure

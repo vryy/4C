@@ -17,10 +17,16 @@ Maintainer: Axel Gerstenberger
 #ifndef ADAPTER_XFLUID_IMPL_H
 #define ADAPTER_XFLUID_IMPL_H
 
+#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_ParameterList.hpp>
+
+#include <Epetra_Vector.h>
+#include <Epetra_Map.h>
+#include <Epetra_Operator.h>
+
 #include "../drt_fluid/xfluidimplicitintegration.H"
 
 #include "adapter_fluid.H"
-
 
 
 // Algorithm adapter classes for use in multi-field problems
@@ -71,14 +77,14 @@ namespace ADAPTER {
 
     virtual Teuchos::RCP<const Epetra_Vector> InitialGuess();
     virtual Teuchos::RCP<const Epetra_Vector> RHS();
-    virtual Teuchos::RCP<const Epetra_Vector> TrueResidual(){ dserror("not implemented"); return null; };
+    virtual Teuchos::RCP<const Epetra_Vector> TrueResidual();
     virtual Teuchos::RCP<const Epetra_Vector> Velnp();
-    virtual Teuchos::RCP<const Epetra_Vector> Velaf(){ dserror("not implemented"); return null; };
+    virtual Teuchos::RCP<const Epetra_Vector> Velaf();
     virtual Teuchos::RCP<const Epetra_Vector> Veln();
-    virtual Teuchos::RCP<const Epetra_Vector> Accam(){ dserror("not implemented"); return null; };
-    virtual Teuchos::RCP<const Epetra_Vector> Hist(){ dserror("not implemented"); return null; };
-    virtual Teuchos::RCP<const Epetra_Vector> ConvectiveVel(){ dserror("not implemented"); return null; };
+    virtual Teuchos::RCP<const Epetra_Vector> Accam();
+    virtual Teuchos::RCP<const Epetra_Vector> Hist();
     virtual Teuchos::RCP<const Epetra_Vector> Dispnp();
+    virtual Teuchos::RCP<const Epetra_Vector> ConvectiveVel();
     virtual Teuchos::RCP<const Epetra_Map>    DofRowMap();
     virtual Teuchos::RCP<LINALG::SparseMatrix>SystemMatrix();
     virtual map<std::string, Teuchos::RCP<LINALG::SparseMatrix> > CouplingMatrices();
@@ -98,11 +104,13 @@ namespace ADAPTER {
     virtual void Output();
 
     virtual void NonlinearSolve();
+    virtual void Predictor();
+    virtual void MultiCorrector();
+
 
     /// get the linear solver object used for this field
     virtual Teuchos::RCP<LINALG::Solver> LinearSolver() { return fluid_.LinearSolver(); }
 
-    /// the interface map contains all velocity dofs at the interface
     virtual Teuchos::RCP<const Epetra_Map>    InnerVelocityRowMap();
     virtual Teuchos::RCP<const Epetra_Map>    VelocityRowMap();
     virtual Teuchos::RCP<const Epetra_Map>    PressureRowMap();
@@ -116,7 +124,7 @@ namespace ADAPTER {
     virtual double TimeScaling() const;
 
     /// communication object at the interface
-    virtual const FLD::UTILS::MapExtractor&  Interface() const { return interface_; }
+    virtual const FLD::UTILS::MapExtractor& Interface() const { return interface_; }
 
     virtual void ReadRestart(int step);
     virtual double Time() const;
@@ -128,8 +136,7 @@ namespace ADAPTER {
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForcesRobin();
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceFluidVelocity();
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln();
-    virtual Teuchos::RCP<Epetra_Vector> ExtractFreeSurfaceVeln()  { dserror("not implemented!");
-      return Teuchos::null; };
+    virtual Teuchos::RCP<Epetra_Vector> ExtractFreeSurfaceVeln()  { dserror("not implemented!"); return Teuchos::null; };
     virtual void ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel);
     virtual void ApplyInterfaceRobinValue(Teuchos::RCP<Epetra_Vector> ivel, Teuchos::RCP<Epetra_Vector> iforce);
     virtual void ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> fluiddisp);
@@ -153,12 +160,6 @@ namespace ADAPTER {
     virtual Teuchos::RCP<Epetra_Vector>   IntegrateInterfaceShape();
 
     virtual void UseBlockMatrix(bool splitmatrix)  { dserror("not implemented!"); return; };
-
-    /// predictor
-    virtual void Predictor();
-
-    /// (multiple) corrector
-    virtual void MultiCorrector();
 
     /// linear fluid solve with just a interface load
     /*!
@@ -211,7 +212,7 @@ namespace ADAPTER {
     /// the actual fluid algorithm
     FLD::XFluidImplicitTimeInt             fluid_;
 
-    /// the interface map setup for interface <-> full translation
+    /// the interface map setup for fsi interface, free surface, interior translation
     FLD::UTILS::MapExtractor               interface_;
 
     /// ALE dof map

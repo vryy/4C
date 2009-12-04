@@ -30,9 +30,6 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_geometry/intersection_service.H"
 #include "../drt_geometry/element_volume.H"
-// only for intersection tests without xfem
-// #include "../drt_surfstress/drt_potential_manager.H"
-
 
 
 /*----------------------------------------------------------------------*/
@@ -59,7 +56,7 @@ ADAPTER::XFluidImpl::XFluidImpl(
     cout << "Empty boundary discretization detected. No FSI coupling will be performed..." << endl;
   }
 
-  // sanity check
+  // sanity check (does not work for thin objects)
   vector< DRT::Condition * >      conditions;
   boundarydis_->GetCondition ("XFEMCoupling", conditions);
   const std::size_t numxfemcond = conditions.size();
@@ -131,10 +128,25 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::RHS()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::TrueResidual()
+{
+  return fluid_.TrueResidual();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::Velnp()
 {
-  dserror("not implemented");
   return fluid_.Velnp();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::Velaf()
+{
+  return Teuchos::null;
 }
 
 
@@ -142,8 +154,23 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::Velnp()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::Veln()
 {
-  dserror("not implemented");
   return fluid_.Veln();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::Accam()
+{
+  return Teuchos::null;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::Hist()
+{
+  return Teuchos::null;
 }
 
 
@@ -151,10 +178,16 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::Veln()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::Dispnp()
 {
-  dserror("not implemented");
-  return null;
+  return Teuchos::null;
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::ConvectiveVel()
+{
+  return Teuchos::null; // no moving mesh present
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -235,8 +268,6 @@ Teuchos::RCP<const LINALG::MapExtractor> ADAPTER::XFluidImpl::GetDBCMapExtractor
 /*----------------------------------------------------------------------*/
 void ADAPTER::XFluidImpl::PrepareTimeStep()
 {
-  fluid_.PrepareTimeStep();
-
   // update acceleration n
   iaccn_->Update(1.0,*iaccnp_,0.0);
 
@@ -248,6 +279,8 @@ void ADAPTER::XFluidImpl::PrepareTimeStep()
 
   // update displacement n
   idispn_->Update(1.0,*idispnp_,0.0);
+
+  fluid_.PrepareTimeStep();
 }
 
 
@@ -295,25 +328,38 @@ void ADAPTER::XFluidImpl::ComputeInterfaceAccelerationsAndVelocities()
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
   const double dt = fsidyn.get<double>("TIMESTEP");
 
-#if 0
-  double theta = 1.0;
+  // use only one of these switches
+//#define USE_FSI_VEL_AND_COMPUTE_ONLY_ACCNP
+#define COMPUTE_VEL_AND_ACCNP_VIA_BETA_NEWMARK
+//#define COMPUTE_VEL_AND_ACCNP_VIA_ONE_STEP_THETA
+
+#ifdef USE_FSI_VEL_AND_COMPUTE_ONLY_ACCNP
+  double theta = 0.66;
   if (Step() == 1)
     theta = 1.0;
   iaccnp_->Update(-(1.0-theta)/(theta),*iaccn_,0.0);
   iaccnp_->Update(1.0/(theta*dt),*ivelnp_,-1.0/(theta*dt),*iveln_,1.0);
-
-#else
+#endif
+#ifdef COMPUTE_VEL_AND_ACCNP_VIA_BETA_NEWMARK
   double beta;
   double gamma;
-  if (Teuchos::getIntegralValue<int>(fsidyn,"SECONDORDER") == 1 )
+  if (Teuchos::getIntegralValue<int>(fsidyn,"SECONDORDER") == 1)
   {
-    gamma = 0.5;
-    beta = gamma/2.0;
+    if (Step() == 1)
+    {
+      gamma = 1.0;
+      beta = gamma/2.0;
+    }
+    else
+    {
+      gamma = 0.66;
+      beta = gamma/2.0;
+    }
   }
   else
   {
-    gamma = 0.5;
-    beta = 1.0/6.0;
+    gamma = 1.0;
+    beta = gamma/2.0;
   }
 
   // compute acceleration at timestep n+1
@@ -324,7 +370,37 @@ void ADAPTER::XFluidImpl::ComputeInterfaceAccelerationsAndVelocities()
   // compute velocity at timestep n+1
   ivelnp_->Update(1.0,*iveln_,0.0);
   ivelnp_->Update(gamma*dt,*iaccnp_,(1-gamma)*dt,*iaccn_,1.0);
+#endif
+#ifdef COMPUTE_VEL_AND_ACCNP_VIA_ONE_STEP_THETA
 
+  double theta_vel = 0.5;
+  double theta_acc = 0.66;
+  if (Teuchos::getIntegralValue<int>(fsidyn,"SECONDORDER") == 1)
+  {
+    if (Step() == 1)
+    {
+      theta_vel = 1.0;
+      theta_acc = 1.0;
+    }
+    else
+    {
+      theta_vel = 0.66;
+      theta_acc = 0.66;
+    }
+  }
+  else
+  {
+    theta_vel = 1.0;
+    theta_acc = 1.0;
+  }
+
+  // compute velocity at timestep n+1
+  ivelnp_->Update(-(1.0-theta_vel)/theta_vel,*iveln_,0.0);
+  ivelnp_->Update(1.0/(theta_vel*dt),*idispnp_,-1.0/(theta_vel*dt),*idispn_,1.0);
+
+  // compute acceleration at timestep n+1
+  iaccnp_->Update(-(1.0-theta_acc)/theta_acc,*iaccn_,0.0);
+  iaccnp_->Update(1.0/(theta_acc*dt),*ivelnp_,-1.0/(theta_acc*dt),*iveln_,1.0);
 #endif
 
 }
@@ -378,12 +454,12 @@ void ADAPTER::XFluidImpl::Output()
   // print redundant arrays on proc 0
   if (boundarydis_->Comm().MyPID() == 0)
   {
-    PrintInterfaceVectorField(idispnpcol, ivelnpcol  , "solution_iface_velnp", "interface velocity n+1");
-    PrintInterfaceVectorField(idispnpcol, ivelncol   , "solution_iface_veln" , "interface velocity n");
-    PrintInterfaceVectorField(idispnpcol, iaccnpcol  , "solution_iface_accnp", "interface acceleration n+1");
-    PrintInterfaceVectorField(idispnpcol, iaccncol   , "solution_iface_accn" , "interface acceleration n");
-    PrintInterfaceVectorField(idispnpcol, idispnpcol , "solution_iface_disp" , "interface displacement n+1");
-    PrintInterfaceVectorField(idispnpcol, itruerescol, "solution_iface_force", "interface force");
+    PrintInterfaceVectorField(idispnpcol, ivelnpcol  , "sol_iface_velnp", "interface velocity n+1");
+    PrintInterfaceVectorField(idispnpcol, ivelncol   , "sol_iface_veln" , "interface velocity n");
+    PrintInterfaceVectorField(idispnpcol, iaccnpcol  , "sol_iface_accnp", "interface acceleration n+1");
+    PrintInterfaceVectorField(idispnpcol, iaccncol   , "sol_iface_accn" , "interface acceleration n");
+    PrintInterfaceVectorField(idispnpcol, idispnpcol , "sol_iface_disp" , "interface displacement n+1");
+    PrintInterfaceVectorField(idispnpcol, itruerescol, "sol_iface_force", "interface force");
   }
 
   if (boundarydis_->Comm().MyPID() == 0 && itruerescol->MyLength() >= 3)
@@ -430,6 +506,51 @@ void ADAPTER::XFluidImpl::Output()
 
     f.close();
   }
+
+  if (boundarydis_->Comm().MyPID() == 0 && ivelnpcol->MyLength() >= 3)
+  {
+    std::ofstream f;
+    const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
+                            + ".outifaceveln.txt";
+    if (Step() <= 1)
+      f.open(fname.c_str(),std::fstream::trunc);
+    else
+      f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+
+    f << Time() << " " << (*ivelncol)[0] << "  " << "\n";
+
+    f.close();
+  }
+
+  if (boundarydis_->Comm().MyPID() == 0 && iaccnpcol->MyLength() >= 3)
+  {
+    std::ofstream f;
+    const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
+                            + ".outifaceaccnp.txt";
+    if (Step() <= 1)
+      f.open(fname.c_str(),std::fstream::trunc);
+    else
+      f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+
+    f << Time() << " " << (*iaccnpcol)[0] << "  " << "\n";
+
+    f.close();
+  }
+
+  if (boundarydis_->Comm().MyPID() == 0 && iaccncol->MyLength() >= 3)
+  {
+    std::ofstream f;
+    const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
+                            + ".outifaceaccn.txt";
+    if (Step() <= 1)
+      f.open(fname.c_str(),std::fstream::trunc);
+    else
+      f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+
+    f << Time() << " " << (*iaccncol)[0] << "  " << "\n";
+
+    f.close();
+  }
 }
 
 
@@ -445,7 +566,7 @@ void ADAPTER::XFluidImpl::PrintInterfaceVectorField(
   const bool screen_out = true;
   if (gmshdebugout)
   {
-    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filestr, Step(), 5, screen_out);
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filestr, Step(), 5, screen_out, boundarydis_->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
 
     {
@@ -622,10 +743,6 @@ double ADAPTER::XFluidImpl::TimeScaling() const
 /*----------------------------------------------------------------------*/
 void ADAPTER::XFluidImpl::ReadRestart(int step)
 {
-  // create interface DOF vectors using the fluid parallel distribution
-  Teuchos::RCP<Epetra_Vector> idispcolnp = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
-  Teuchos::RCP<Epetra_Vector> idispcoln  = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
-
   IO::DiscretizationReader reader(boundarydis_,step);
   reader.ReadDouble("time");
   reader.ReadInt("step");
@@ -637,6 +754,10 @@ void ADAPTER::XFluidImpl::ReadRestart(int step)
   reader.ReadVector(ivelnm_, "ivelnm");
   reader.ReadVector(iaccn_, "iaccn");
   reader.ReadVector(itrueresnp_, "itrueresnp");
+
+  // create interface DOF vectors using the fluid parallel distribution
+  Teuchos::RCP<Epetra_Vector> idispcolnp = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
+  Teuchos::RCP<Epetra_Vector> idispcoln  = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
 
   // map to fluid parallel distribution
   LINALG::Export(*idispnp_,*idispcolnp);
@@ -844,7 +965,12 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidImpl::ExtractInterfaceFluidVelocity()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidImpl::ExtractInterfaceVeln()
 {
-  return interface_.ExtractFSICondVector(iveln_);
+  // it depends, when this method is called, and when velnp is updated
+  // the FSI algorithm expects first an time update and then asks for the old time step velocity
+  // meaning that it gets the velocity from the new time step
+  // not clear? exactly! thats why the FSI time update should be more clear about it
+  // needs discussion with the FSI people
+  return interface_.ExtractFSICondVector(ivelnp_);
 }
 
 
