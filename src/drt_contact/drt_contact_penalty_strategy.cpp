@@ -54,18 +54,18 @@ CONTACT::PenaltyStrategy::PenaltyStrategy(RCP<Epetra_Map> problemrowmap,
                                           RCP<Epetra_Comm> comm, double alphaf) :
 AbstractStrategy(problemrowmap, params, interface, dim, comm, alphaf)
 {
-  // check if prerequisites for penalty strategies are met                                           
+  // check if prerequisites for penalty strategies are met
 #ifdef CONTACTBOUNDMOD
   dserror("Contact Boundary Modification not implemented for Penalty Methods.");
 #endif
-  
+
   // initialize constraint norm and initial penalty
   constrnorm_ = 0.0;
   constrnormtan_ = 0.0;
   initialpenalty_ = Params().get<double>("PENALTYPARAM");
   initialpenaltytan_ = Params().get<double>("PENALTYPARAMTAN");
 }
-                                       
+
 /*----------------------------------------------------------------------*
  |  save the gap-scaling kappa from reference config          popp 06/09|
  *----------------------------------------------------------------------*/
@@ -73,7 +73,7 @@ void CONTACT::PenaltyStrategy::SaveReferenceState(const RCP<Epetra_Vector> dis)
 {
   // initialize the displacement field
   SetState("displacement", dis);
-  
+
   // kappa will be the shape function integral on the slave sides
   // (1) build the nodal information
   for (int i=0; i<(int)interface_.size(); ++i)
@@ -88,7 +88,7 @@ void CONTACT::PenaltyStrategy::SaveReferenceState(const RCP<Epetra_Vector> dis)
 
     // do the computation of nodal shape function integral
     // (for convenience, the results will be stored in nodal gap)
-    
+
     // loop over proc's slave elements of the interface for integration
     // use standard column map to include processor's ghosted elements
     for (int j=0; j<interface_[i]->SlaveColElements()->NumMyElements(); ++j)
@@ -98,10 +98,10 @@ void CONTACT::PenaltyStrategy::SaveReferenceState(const RCP<Epetra_Vector> dis)
       if (!ele1)
         dserror("ERROR: Cannot find slave element with gid %",gid1);
       CElement* selement = static_cast<CElement*>(ele1);
-      
+
       interface_[i]->IntegrateKappaPenalty(*selement);
     }
-    
+
     // loop over all slave row nodes on the current interface
     for (int j=0; j<interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
     {
@@ -114,7 +114,7 @@ void CONTACT::PenaltyStrategy::SaveReferenceState(const RCP<Epetra_Vector> dis)
       // get nodal weighted gap
       // (this is where we stored the shape function integrals)
       double gap = cnode->Getg();
-      
+
       // store kappa as the inverse of gap
       // (this removes the scaling introduced by weighting the gap!!!)
       cnode->Kappa() = 1.0/gap;
@@ -142,7 +142,7 @@ void CONTACT::PenaltyStrategy::Initialize()
   linzmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
 
   z_ = LINALG::CreateVector(*gsdofrowmap_, true);
-  
+
   return;
 }
 
@@ -156,43 +156,45 @@ void CONTACT::PenaltyStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
   // uncomment this if you want to do finite difference checks
   // when enabled, kc1 and kc2 as part of kteff and fc as part of
   // feff is stored separately so they can be checked on their own
-  
+
 //#define FDCHECKS
-  
+
   // FIXME: Currently only the old LINALG::Multiply method is used,
   // because there are still problems with the transposed version of
   // MLMultiply if a row has no entries! One day we should use ML...
-	
-	// in the beginning of this function, the regularized contact forces 
-	// in normal and tangential direction are evaluated from geometric 
-	// measures (gap and relative tangential velocity). Here, also active and 
+
+	// in the beginning of this function, the regularized contact forces
+	// in normal and tangential direction are evaluated from geometric
+	// measures (gap and relative tangential velocity). Here, also active and
 	// slip nodes are detected. Then, the insertion of the according stiffness
 	// blocks takes place.
-	
+
   bool isincontact = false;
   bool activesetchange = false;
-  
+
   for (int i=0; i<(int)interface_.size(); ++i)
   {
     bool localisincontact = false;
     bool localactivesetchange = false;
-    
+
     // evaluate lagrange multipliers (regularized forces) in normal direction
     // and nodal derivz matrix values, store them in nodes
     interface_[i]->AssembleRegNormalForces(localisincontact, localactivesetchange);
-    
+
     // evaluate lagrange multipliers (regularized forces) in tangential direction
     INPAR::CONTACT::ContactFrictionType ftype =
       Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(Params(),"FRICTION");
     INPAR::CONTACT::SolvingStrategy soltype =
       Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(),"STRATEGY");
-    
-    if(ftype==INPAR::CONTACT::friction_coulomb and soltype==INPAR::CONTACT::solution_penalty)  
+
+    if((ftype==INPAR::CONTACT::friction_coulomb or ftype==INPAR::CONTACT::friction_stick)
+    	  and soltype==INPAR::CONTACT::solution_penalty)
       interface_[i]->AssembleRegTangentForcesPenalty();
 
-    if(ftype==INPAR::CONTACT::friction_coulomb and soltype==INPAR::CONTACT::solution_auglag)  
+    if((ftype==INPAR::CONTACT::friction_coulomb or ftype==INPAR::CONTACT::friction_stick)
+    	  and soltype==INPAR::CONTACT::solution_auglag)
       interface_[i]->AssembleRegTangentForcesAugmented();
-    
+
     isincontact = isincontact || localisincontact;
     activesetchange = activesetchange || localactivesetchange;
   }
@@ -201,7 +203,7 @@ void CONTACT::PenaltyStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
   int globalcontact, globalchange = 0;
   int localcontact = isincontact;
   int localchange = activesetchange;
-  
+
   Comm().SumAll(&localcontact, &globalcontact, 1);
   Comm().SumAll(&localchange, &globalchange, 1);
 
@@ -209,17 +211,17 @@ void CONTACT::PenaltyStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
     isincontact_=true;
   else
     isincontact_ = false;
-  
+
   if( (Comm().MyPID()==0) && (globalchange>=1) )
     cout << "ACTIVE SET HAS CHANGED..." << endl;
-  
+
   // (re)setup active global Epetra_Maps
   // the map of global active nodes is needed for the penalty case, too.
   // this is due to the fact that we want to monitor the constraint norm
   // of the active nodes
   gactivenodes_ = null;
   gslipnodes_ = null;
-  
+
   // update active sets of all interfaces
   // (these maps are NOT allowed to be overlapping !!!)
   for (int i=0;i<(int)interface_.size();++i)
@@ -228,12 +230,12 @@ void CONTACT::PenaltyStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
     gactivenodes_ = LINALG::MergeMap(gactivenodes_,interface_[i]->ActiveNodes(),false);
     gslipnodes_ = LINALG::MergeMap(gslipnodes_,interface_[i]->SlipNodes(),false);
   }
-  
+
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
   if( ! IsInContact() )
     return;
-  
+
   // since we will modify kteff by adding additional stiffness entries,
   // we have to uncomplete it
   // TODO move the call of EvaluateContact in ContactStruGenAlpha before the completion of kteff to avoid this
@@ -252,12 +254,12 @@ void CONTACT::PenaltyStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
     // assemble global derivatives of mortar D and M matrices
     interface_[i]->AssembleLinDM(*lindmatrix_, *linmmatrix_);
   }
-  
+
   // FillComplete() global matrices LinD, LinM, LinZ
   lindmatrix_->Complete(*gsmdofs, *gsdofrowmap_);
   linmmatrix_->Complete(*gsmdofs, *gmdofrowmap_);
   linzmatrix_->Complete(*gsmdofs, *gsdofrowmap_);
-  
+
 #ifdef CONTACTFDPENALTYDERIVTRAC
   INPAR::CONTACT::ContactFrictionType ftype =
     Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(Params(),"FRICTION");
@@ -273,7 +275,7 @@ void CONTACT::PenaltyStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
     	  interface_[i]->FDCheckPenaltyTracFric();
       }
       else if (ftype==INPAR::CONTACT::friction_none)
-      {	
+      {
         cout << "-- CONTACTFDDERIVZ --------------------" << endl;
         interface_[i]->FDCheckPenaltyTracNor();
         cout << "-- CONTACTFDDERIVZ --------------------" << endl;
@@ -285,11 +287,11 @@ void CONTACT::PenaltyStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
 #endif
 
 #ifdef FDCHECKS
-  // for debugging purposes kc is stored separately 
+  // for debugging purposes kc is stored separately
   RCP<LINALG::SparseMatrix> kc1 = rcp(new LINALG::SparseMatrix(*gsmdofs,81,true,true));
   RCP<LINALG::SparseMatrix> kc2 = rcp(new LINALG::SparseMatrix(*gsmdofs,81,true,true));
 #endif
-  
+
   // **********************************************************************
   // Build Contact Stiffness #1
   // **********************************************************************
@@ -319,7 +321,7 @@ void CONTACT::PenaltyStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
   dtilde = LINALG::Multiply(*dmatrix_, false, *linzmatrix_, false);
   // do the multiplication mtilde = -M(transpose) * LinZ
   mtilde = LINALG::Multiply(*mmatrix_, true, *linzmatrix_, false);
-  
+
   // add to kteff
 #ifndef FDCHECKS
   kteff->Add(*dtilde, false, 1.0-alphaf_, 1.0);
@@ -328,7 +330,7 @@ void CONTACT::PenaltyStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
   kc2->Add(*dtilde, false, 1.0-alphaf_, 1.0);
   kc2->Add(*mtilde, false, -(1.0-alphaf_), 1.0);
 #endif
-  
+
   // finalize the stiffness matrix
 #ifdef FDCHECKS
   kc1->Complete();
@@ -336,19 +338,19 @@ void CONTACT::PenaltyStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
   kteff->Add(*kc1, false, 1.0, 1.0);
   kteff->Add(*kc2, false, 1.0, 1.0);
 #endif
-  
+
   kteff->Complete();
-  
+
   // **********************************************************************
   // Build RHS
   // **********************************************************************
   // feff += -alphaf * fc,n - (1-alphaf) * fc,n+1,k
-  
+
 #ifndef FDCHECKS
   {
     // we initialize fcmdold with dold-rowmap instead of gsdofrowmap
     // (this way, possible self contact is automatically included)
-    
+
     RCP<Epetra_Vector> fcmdold = rcp(new Epetra_Vector(dold_->RowMap()));
     dold_->Multiply(false, *zold_, *fcmdold);
     RCP<Epetra_Vector> fcmdoldtemp = rcp(new Epetra_Vector(*problemrowmap_));
@@ -359,7 +361,7 @@ void CONTACT::PenaltyStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
   {
     // we initialize fcmmold with mold-domainmap instead of gmdofrowmap
     // (this way, possible self contact is automatically included)
-    
+
     RCP<Epetra_Vector> fcmmold = rcp(new Epetra_Vector(mold_->DomainMap()));
     mold_->Multiply(true, *zold_, *fcmmold);
     RCP<Epetra_Vector> fcmmoldtemp = rcp(new Epetra_Vector(*problemrowmap_));
@@ -382,11 +384,11 @@ void CONTACT::PenaltyStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
     LINALG::Export(*fcmm, *fcmmtemp);
     feff->Update(1-alphaf_, *fcmmtemp, 1.0);
     }
-  
+
 #else
-  // for debugging purposes fc is stored separately 
+  // for debugging purposes fc is stored separately
   RCP<Epetra_Vector> fc = rcp( new Epetra_Vector(*gsmdofs));
-  
+
   {
     RCP<Epetra_Vector> fcmdold = rcp(new Epetra_Vector(*gsdofrowmap_));
     dold_->Multiply(false, *zold_, *fcmdold);
@@ -423,7 +425,7 @@ void CONTACT::PenaltyStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
   LINALG::Export(*fc, *fctemp);
   feff->Update(1.0, *fctemp, 1.0);
 #endif
-  
+
 #ifdef CONTACTFDGAP
    // FD check of weighted gap g derivatives (non-penetr. condition)
 
@@ -433,34 +435,34 @@ void CONTACT::PenaltyStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
   cout << "-- CONTACTFDGAP -----------------------------" << endl;
 
 #endif // #ifdef CONTACTFDGAP
-  
+
 #ifdef CONTACTFDPENALTYKTEFF
   // check assembled contact tangent stiffness matrix
-  
+
   RCP<LINALG::SparseMatrix> kc = rcp(new LINALG::SparseMatrix(*gsmdofs,81,true,true));
   kc->Add(*kc1, false, 1.0, 1.0);
   kc->Add(*kc2, false, 1.0, 1.0);
   kc->Complete();
-  
+
   cout << "-- CONTACTFDPENALTYKTEFF --------------------" << endl;
   //cout << "KC:" << endl;
   //cout << *kc  << endl;
   interface_[0]->FDCheckPenaltyKTeff(kc, fc, dold_, mold_, zold_, gsmdofs, alphaf_);
   cout << "-- CONTACTFDPENALTYKTEFF --------------------" << endl;
-  
+
 #endif
-  
+
 #ifdef CONTACTFDPENALTYKC1
   // check assembled contact tangent stiffness matrix, 1st part (LinD, LinM)
-  
+
   bool lind = true;
   bool linm = false;
-  
+
   cout << "-- CONTACTFDPENALTYKC1 ----------------------" << endl;
-  
+
   cout << "zvector: " << *z_ << endl;
   cout << "linzmatrix: " << *linzmatrix_ << endl;
-  
+
   if( lind )
   {
     cout << "lindmatrix: " << *lindmatrix_ << endl;
@@ -469,7 +471,7 @@ void CONTACT::PenaltyStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
     cout << "reffcd: " << *reffcd << endl;
     interface_[0]->FDCheckPenaltyLinD(lindmatrix_, reffcd);
   }
-  
+
   if( linm )
   {
     cout << "linmmatrix: " << *linmmatrix_ << endl;
@@ -479,10 +481,10 @@ void CONTACT::PenaltyStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
     cout << "reffcm: " << *reffcm << endl;
     interface_[0]->FDCheckPenaltyLinM(linmmatrix_, reffcm);
   }
-  
+
   cout << "-- CONTACTFDPENALTYKC1 ----------------------" << endl;
-  
-#endif  
+
+#endif
 
   return;
 }
@@ -494,24 +496,24 @@ void CONTACT::PenaltyStrategy::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
                                                RCP<Epetra_Vector> feff)
 {
   // this is almost the same as in the frictionless contact
-	// whereas we chose the EvaluateContact routine with 
+	// whereas we chose the EvaluateContact routine with
 	// one difference
 
   // check if friction should be applied
   INPAR::CONTACT::ContactFrictionType ftype =
     Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(Params(),"FRICTION");
-	
+
 	// coulomb friction case
-	if(ftype == INPAR::CONTACT::friction_coulomb)
+	if(ftype == INPAR::CONTACT::friction_coulomb or
+		 ftype == INPAR::CONTACT::friction_stick)
 	{
 		EvaluateContact(kteff,feff);
-  }	
-  else if (ftype == INPAR::CONTACT::friction_tresca ||
-           ftype == INPAR::CONTACT::friction_stick)
+  }
+  else if (ftype == INPAR::CONTACT::friction_tresca)
 	{
 	  dserror("Error in AbstractStrategy::Evaluate: Penalty Strategy for"
-	         " Stick and Tresca friction not yet implemented"); 		
-	} 		
+	         " Tresca friction not yet implemented");
+	}
 	else
 	  dserror("Error in AbstractStrategy::Evaluate: Unknown friction type");
 }
@@ -524,14 +526,14 @@ void CONTACT::PenaltyStrategy::ResetPenalty()
   // reset penalty parameter in strategy
   Params().set<double>("PENALTYPARAM",InitialPenalty());
   Params().set<double>("PENALTYPARAMTAN",InitialPenaltyTan());
-  
-  
+
+
   // reset penalty parameter in all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
-  {	
+  {
     interface_[i]->IParams().set<double>("PENALTYPARAM",InitialPenalty());
     interface_[i]->IParams().set<double>("PENALTYPARAMTAN",InitialPenaltyTan());
-  }      
+  }
   return;
 }
 
@@ -549,47 +551,47 @@ void CONTACT::PenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
   double ppcurrtan = Params().get<double>("PENALTYPARAMTAN");
   INPAR::CONTACT::ContactType ctype =
     Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(Params(),"CONTACT");
-      
+
   // gactivenodes_ is undefined
   if (gactivenodes_==Teuchos::null)
   {
     ConstraintNorm()=0;
     ConstraintNormTan()=0;
   }
-  
+
   // gactivenodes_ has no elements
   else if (gactivenodes_->NumGlobalElements()==0)
   {
     ConstraintNorm()=0;
     ConstraintNormTan()=0;
   }
-  
+
   // gactivenodes_ has at least one element
   else
   {
     // export weighted gap vector to gactiveN-map
     RCP<Epetra_Vector> gact = LINALG::CreateVector(*gactivenodes_,true);
     if (gact->GlobalLength()) LINALG::Export(*g_,*gact);
-    
+
     // compute constraint norm
     gact->Norm2(&cnorm);
-    
+
     // Evaluate norm in tangential direction for frictional contact
     if (ctype!=INPAR::CONTACT::contact_normal)
     {
       for (int i=0; i<(int)interface_.size(); ++i)
         interface_[i]->EvaluateTangentNorm(cnormtan);
-      
+
       cnormtan = sqrt(cnormtan);
     }
-  
+
     //********************************************************************
     // adaptive update of penalty parameter
     // (only for Augmented Lagrange strategy)
     //********************************************************************
     INPAR::CONTACT::SolvingStrategy soltype =
       Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(),"STRATEGY");
-    
+
     if (soltype==INPAR::CONTACT::solution_auglag)
     {
       // check convergence of cnorm and update penalty parameter
@@ -598,10 +600,10 @@ void CONTACT::PenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
       if ((uzawaiter >= 2) && (cnorm > 0.25 * ConstraintNorm()))
       {
         updatepenalty = true;
-        
+
         // update penalty parameter in strategy
         Params().set<double>("PENALTYPARAM",10*ppcurr);
-        
+
         // update penalty parameter in all interfaces
         for (int i=0; i<(int)interface_.size(); ++i)
         {
@@ -611,16 +613,16 @@ void CONTACT::PenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
         }
       }
     }
-    
+
     if (soltype==INPAR::CONTACT::solution_auglag and ctype!=INPAR::CONTACT::contact_normal)
     {
       if ((uzawaiter >= 2) && (cnormtan > 0.25 * ConstraintNorm()))
       {
         updatepenaltytan = true;
-        
+
         // update penalty parameter in strategy
         Params().set<double>("PENALTYPARAMTAN",10*ppcurrtan);
-        
+
         // update penalty parameter in all interfaces
         for (int i=0; i<(int)interface_.size(); ++i)
         {
@@ -630,13 +632,13 @@ void CONTACT::PenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
         }
       }
     }
-    
+
     //********************************************************************
     // update constraint norm
     ConstraintNorm() = cnorm;
     ConstraintNormTan() = cnormtan;
   }
-  
+
   // output to screen
   if (Comm().MyPID()==0)
   {
@@ -660,7 +662,7 @@ void CONTACT::PenaltyStrategy::UpdateAugmentedLagrange()
 {
   // store current LM into Uzawa LM
   zuzawa_ = rcp(new Epetra_Vector(*z_));
-  
+
   return;
 }
 

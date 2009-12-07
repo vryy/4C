@@ -79,7 +79,7 @@ Maintainer: Alexander Popp
 
 // 3D DEBGUGGING OPTIONS
 //#define CONTACTFDVERTEX3D         /* flag for FD check of vertices in 3D */
-//#define CONTACTFDGP3D             /* flag for FD check of GP + Jacs in 3D */ 
+//#define CONTACTFDGP3D             /* flag for FD check of GP + Jacs in 3D */
 
 // GMSH DEBUGGING OPTIONS
 //#define CONTACTGMSH1              /* flag for gmsh output in each time step */

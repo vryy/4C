@@ -56,7 +56,7 @@ CONTACT::LagrangeStrategy::LagrangeStrategy(RCP<Epetra_Map> problemrowmap,
                                             RCP<Epetra_Comm> comm, double alphaf) :
 AbstractStrategy(problemrowmap, params, interface, dim, comm, alphaf)
 {
-  // empty constructor                                       
+  // empty constructor
 }
 
 /*----------------------------------------------------------------------*
@@ -69,7 +69,7 @@ void CONTACT::LagrangeStrategy::InitEvalMortar()
 
   // this is lagrange specific
   mhatmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
-  
+
   return;
 }
 
@@ -378,7 +378,7 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff
   invda->Scale(1/(1-alphaf_));
   invdsl->Scale(1/(1-alphaf_));
   invdst->Scale(1/(1-alphaf_));
-  
+
   RCP<LINALG::SparseMatrix> dolda, doldi;
   LINALG::SplitMatrix2x2(dold_,gactivedofs_,gidofs,gactivedofs_,gidofs,dolda,tempmtx1,tempmtx2,doldi);
 
@@ -487,19 +487,19 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff
   // add ltmatirx to kslslmod
   kslslmod->Add(*ltmatrix,false,1.0,1.0);
   kslslmod->Complete(kslsl->DomainMap(),kslsl->RowMap());
-  
+
   // slstmod: multiply with tslmatrix
   RCP<LINALG::SparseMatrix> kslstmod = LINALG::Multiply(*tslmatrix,false,*invdsl,false,true);
   kslstmod = LINALG::Multiply(*kslstmod,false,*kslst,false,true);
 #else
-  
+
   // blocks for complementary conditions (stick nodes) - from LM
-  
+
   // kstn: multiply with linstickLM
   RCP<LINALG::SparseMatrix> kstnmod = LINALG::Multiply(*linstickLM_,false,*invdst,false,true);
   kstnmod = LINALG::Multiply(*kstnmod,false,*kstn,false,true);
   kstnmod->Complete(kstn->DomainMap(),kstn->RowMap());
-  
+
   // kstm: multiply with linstickLM
   RCP<LINALG::SparseMatrix> kstmmod = LINALG::Multiply(*linstickLM_,false,*invdst,false,true);
   kstmmod = LINALG::Multiply(*kstmmod,false,*kstm,false,false);
@@ -521,12 +521,12 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff
   kststmod->Complete(kstst->DomainMap(),kstst->RowMap());
 
   // blocks for complementary conditions (slip nodes) - from LM
-  
+
   // ksln: multiply with linslipLM
   RCP<LINALG::SparseMatrix> kslnmod = LINALG::Multiply(*linslipLM_,false,*invdsl,false,true);
   kslnmod = LINALG::Multiply(*kslnmod,false,*ksln,false,true);
   kslnmod->Complete(ksln->DomainMap(),ksln->RowMap());
-  
+
   // kslm: multiply with linslipLM
   RCP<LINALG::SparseMatrix> kslmmod = LINALG::Multiply(*linslipLM_,false,*invdsl,false,true);
   kslmmod = LINALG::Multiply(*kslmmod,false,*kslm,false,false);
@@ -617,12 +617,12 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff
   // (this had to wait as we had to modify fm first)
   RCP<Epetra_Vector> fstmod = rcp(new Epetra_Vector(*gstickt));
   RCP<LINALG::SparseMatrix> temp1 = LINALG::Multiply(*linstickLM_,false,*invdst,false,true);
-  
+
   if(gstickdofs->NumGlobalElements())
   {
     temp1->Multiply(false,*fst,*fstmod);
-  }  
-  
+  }
+
   // fsl: mutliply with linslipLM
   // (this had to wait as we had to modify fm first)
   RCP<Epetra_Vector> fslmod = rcp(new Epetra_Vector(*gslipt_));
@@ -667,10 +667,10 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff
     {
       RCP<LINALG::SparseMatrix> deriv1 = rcp(new LINALG::SparseMatrix(*gactivet_,81));
       RCP<LINALG::SparseMatrix> deriv2 = rcp(new LINALG::SparseMatrix(*gactivet_,81));
-  
+
       deriv1->Add(*linstickLM_,false,1.0,1.0);
       deriv1->Complete(*gsmdofs,*gactivet_);
-      
+
       deriv2->Add(*linstickDIS_,false,1.0,1.0);
       deriv2->Complete(*gsmdofs,*gactivet_);
 
@@ -763,7 +763,7 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff
   if (gslipt_->NumGlobalElements())
   {
     kteffnew->Add(*linslipDIS_,false,-1.0,+1.0);
-    
+
     RCP<Epetra_Vector> linslipRHSexp = rcp(new Epetra_Vector(*problemrowmap_));
     LINALG::Export(*linslipRHS_,*linslipRHSexp);
     feffnew->Update(-1.0,*linslipRHSexp,1.0);
@@ -785,7 +785,7 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff
    if (gstickt->NumGlobalElements()) kteffnew->Add(*kstimod,false,1.0,1.0);
    if (gstickt->NumGlobalElements()) kteffnew->Add(*kstslmod,false,1.0,1.0);
    if (gstickt->NumGlobalElements()) kteffnew->Add(*kststmod,false,1.0,1.0);
-   
+
   // add a submatrices to kteffnew
   if (gslipt_->NumGlobalElements()) kteffnew->Add(*kslnmod,false,1.0,1.0);
   if (gslipt_->NumGlobalElements()) kteffnew->Add(*kslmmod,false,1.0,1.0);
@@ -815,7 +815,7 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff
   RCP<Epetra_Vector> fstmodexp = rcp(new Epetra_Vector(*problemrowmap_));
   LINALG::Export(*fstmod,*fstmodexp);
   if (gstickdofs->NumGlobalElements())feffnew->Update(1.0,*fstmodexp,+1.0);
-  
+
   // add a subvector to feffnew
   RCP<Epetra_Vector> fslmodexp = rcp(new Epetra_Vector(*problemrowmap_));
   LINALG::Export(*fslmod,*fslmodexp);
@@ -958,7 +958,7 @@ void CONTACT::LagrangeStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
   // we want to split fsm into 2 groups s,m
   fs = rcp(new Epetra_Vector(*gsdofrowmap_));
   fm = rcp(new Epetra_Vector(*gmdofrowmap_));
-  
+
   // do the vector splitting sm -> s+m
   if (!gsdofrowmap_->NumGlobalElements())
     *fm = *fsm;
@@ -967,7 +967,7 @@ void CONTACT::LagrangeStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
   else
   {
     LINALG::SplitVector(*fsm,*gsdofrowmap_,fs,*gmdofrowmap_,fm);
-  }  
+  }
 
   // store some stuff for static condensation of LM
   fs_   = fs;
@@ -1140,7 +1140,7 @@ void CONTACT::LagrangeStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
   }
 
   // fm: add alphaf * old contact forces (t_n)
-  
+
   // for self contact, slave and master sets may have changed,
   // thus we have to export the product Mold^T * zold to fit
   if (IsSelfContact())
@@ -1158,9 +1158,9 @@ void CONTACT::LagrangeStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
   {
     RCP<Epetra_Vector> tempvecm = rcp(new Epetra_Vector(*gmdofrowmap_));
     mold_->Multiply(true,*zold_,*tempvecm);
-    fm->Update(alphaf_,*tempvecm,1.0); 
+    fm->Update(alphaf_,*tempvecm,1.0);
   }
-  
+
   // fm: add T(mbaractive)*fa
   RCP<Epetra_Vector> fmmod = rcp(new Epetra_Vector(*gmdofrowmap_));
   mhata->Multiply(true,*fa,*fmmod);
@@ -1285,7 +1285,7 @@ void CONTACT::LagrangeStrategy::Recover(RCP<Epetra_Vector> disi)
   // extract master displacements from disi
   RCP<Epetra_Vector> disim = rcp(new Epetra_Vector(*gmdofrowmap_));
   if (gmdofrowmap_->NumGlobalElements()) LINALG::Export(*disi, *disim);
-  
+
   // extract other displacements from disi
   RCP<Epetra_Vector> disin = rcp(new Epetra_Vector(*gndofrowmap_));
   if (gndofrowmap_->NumGlobalElements()) LINALG::Export(*disi,*disin);
@@ -1294,7 +1294,7 @@ void CONTACT::LagrangeStrategy::Recover(RCP<Epetra_Vector> disi)
   //  incrjump_ = rcp(new Epetra_Vector(*gsdofrowmap_));
   //  mhatmatrix_->Multiply(false,*disim,*incrjump_);
   //  incrjump_->Update(1.0,*disis,-1.0);
-  //  
+  //
   //  // friction
   //  // sum up incremental jumps from active set nodes
   //  jump_->Update(1.0,*incrjump_,1.0);
@@ -1305,15 +1305,15 @@ void CONTACT::LagrangeStrategy::Recover(RCP<Epetra_Vector> disi)
   /**********************************************************************/
   /* Update Lagrange multipliers z_n+1                                  */
   /**********************************************************************/
-  
+
   // for self contact, slave and master sets may have changed,
   // thus we have to export the products Dold * zold and Mold^T * zold to fit
   if (IsSelfContact())
-  {    
+  {
     // approximate update
     //z_ = rcp(new Epetra_Vector(*gsdofrowmap_));
     //invd_->Multiply(false,*fs_,*z_);
-    
+
     // full update
     z_ = rcp(new Epetra_Vector(*gsdofrowmap_));
     z_->Update(1.0,*fs_,0.0);
@@ -1323,7 +1323,7 @@ void CONTACT::LagrangeStrategy::Recover(RCP<Epetra_Vector> disi)
     ksm_->Multiply(false,*disim,*mod);
     z_->Update(-1.0,*mod,1.0);
     ksn_->Multiply(false,*disin,*mod);
-    z_->Update(-1.0,*mod,1.0);  
+    z_->Update(-1.0,*mod,1.0);
     RCP<Epetra_Vector> mod2 = rcp(new Epetra_Vector((dold_->RowMap())));
     if (dold_->RowMap().NumGlobalElements()) LINALG::Export(*zold_,*mod2);
     RCP<Epetra_Vector> mod3 = rcp(new Epetra_Vector((dold_->RowMap())));
@@ -1339,7 +1339,7 @@ void CONTACT::LagrangeStrategy::Recover(RCP<Epetra_Vector> disi)
   {
     // approximate update
     //invd_->Multiply(false,*fs_,*z_);
-  
+
     // full update
     z_->Update(1.0,*fs_,0.0);
     RCP<Epetra_Vector> mod = rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -1355,11 +1355,11 @@ void CONTACT::LagrangeStrategy::Recover(RCP<Epetra_Vector> disi)
     invd_->Multiply(false,*zcopy,*z_);
     z_->Scale(1/(1-alphaf_));
   }
-  
+
   // store updated LM into nodes
   StoreNodalQuantities(AbstractStrategy::lmupdate);
 
-  /* 
+  /*
    // CHECK OF CONTACT COUNDARY CONDITIONS---------------------------------
    #ifdef DEBUG
    //debugging (check for z_i = 0)
@@ -1370,18 +1370,18 @@ void CONTACT::LagrangeStrategy::Recover(RCP<Epetra_Vector> disi)
    LINALG::Export(*z_,*zinactive);
    cout << *zinactive << endl;
    }
-   
+
    bool fulllin = Teuchos::getIntegralValue<int>(Params(),"FULL_LINEARIZATION");
-   
+
    // debugging (check for N*[d_a] = g_a and T*z_a = 0)
    if (gactivedofs_->NumGlobalElements())
-   { 
+   {
    RCP<Epetra_Vector> activejump = rcp(new Epetra_Vector(*gactivedofs_));
    RCP<Epetra_Vector> gtest = rcp(new Epetra_Vector(*gactiven_));
    RCP<Epetra_Vector> gtest2 = rcp(new Epetra_Vector(*gactiven_));
    LINALG::Export(*incrjump_,*activejump);
    nmatrix_->Multiply(false,*activejump,*gtest);
-   
+
    RCP<Epetra_Map> gsmdofs = LINALG::MergeMap(gsdofrowmap_,gmdofrowmap_,false);
    RCP<Epetra_Vector> disism = rcp(new Epetra_Vector(*gsmdofs));
    LINALG::Export(*disi,*disism);
@@ -1391,7 +1391,7 @@ void CONTACT::LagrangeStrategy::Recover(RCP<Epetra_Vector> disi)
    gtest->Update(1.0,*gtest2,1.0);
    }
    cout << *gtest << endl << *g_ << endl;
-   
+
    RCP<Epetra_Vector> zactive = rcp(new Epetra_Vector(*gactivedofs_));
    RCP<Epetra_Vector> zerotest = rcp(new Epetra_Vector(*gactivet_));
    RCP<Epetra_Vector> zerotest2 = rcp(new Epetra_Vector(*gactivet_));
@@ -1520,7 +1520,7 @@ void CONTACT::LagrangeStrategy::UpdateActiveSet()
         // friction
         else
         {
-          // friction tresca          
+          // friction tresca
           if(ftype == INPAR::CONTACT::friction_tresca)
           {
             double frbound = Params().get<double>("FRBOUND");
@@ -1545,7 +1545,7 @@ void CONTACT::LagrangeStrategy::UpdateActiveSet()
               else
               {
 #ifdef CONTACTSLIPFIRST
-                if(cnode->ActiveOld()==false)         
+                if(cnode->ActiveOld()==false)
                 {}
                 else
                 {
@@ -1585,7 +1585,7 @@ void CONTACT::LagrangeStrategy::UpdateActiveSet()
               else
               {
 #ifdef CONTACTSLIPFIRST
-                if(cnode->ActiveOld()==false)         
+                if(cnode->ActiveOld()==false)
                 {}
                 else
                 {
@@ -1784,27 +1784,27 @@ void CONTACT::LagrangeStrategy::UpdateActiveSetSemiSmooth()
       vector<double> tz (Dim()-1,0);
       vector<double> tjump (Dim()-1,0);
       double euclidean = 0.0;
-      
+
       if(ftype == INPAR::CONTACT::friction_tresca || ftype == INPAR::CONTACT::friction_coulomb)
        {
        	// compute tangential parts and of Lagrange multiplier and incremental jumps
        	for (int i=0;i<Dim();++i)
-       	{	
+       	{
        		tz[0] += cnode->txi()[i]*cnode->lm()[i];
            if(Dim()==3) tz[1] += cnode->teta()[i]*cnode->lm()[i];
-           
+
            tjump[0] += cnode->txi()[i]*cnode->jump()[i];
            if(Dim()==3) tjump[1] += cnode->teta()[i]*cnode->jump()[i];
-       	} 
-       	
+       	}
+
        	// evaluate euclidean norm |tz+ct.tjump|
-       	vector<double> sum (Dim()-1,0); 
+       	vector<double> sum (Dim()-1,0);
        	sum[0] = tz[0]+ct*tjump[0];
        	if (Dim()==3) sum[1] = tz[1]+ct*tjump[1];
        	if (Dim()==2) euclidean = abs(sum[0]);
        	if (Dim()==3) euclidean = sqrt(sum[0]*sum[0]+sum[1]*sum[1]);
        }
-      
+
       // check nodes of inactive set *************************************
       if (cnode->Active()==false)
       {
@@ -1817,7 +1817,7 @@ void CONTACT::LagrangeStrategy::UpdateActiveSetSemiSmooth()
         if (nz - cn*wgap > 0)
         {
           cnode->Active() = true;
-          
+
           //friction
           if(ftype == INPAR::CONTACT::friction_tresca || ftype == INPAR::CONTACT::friction_coulomb)
           {
@@ -1828,7 +1828,7 @@ void CONTACT::LagrangeStrategy::UpdateActiveSetSemiSmooth()
         if (cnode->ActiveOld()==false) cnode->Slip() = true;
 #endif
           }
-          
+
           activesetconv_ = false;
         }
       }
@@ -1890,7 +1890,7 @@ void CONTACT::LagrangeStrategy::UpdateActiveSetSemiSmooth()
               else
               {
 #ifdef CONTACTSLIPFIRST
-                if(cnode->ActiveOld()==false)         
+                if(cnode->ActiveOld()==false)
                 {}
                 else
                 {
@@ -1929,14 +1929,14 @@ void CONTACT::LagrangeStrategy::UpdateActiveSetSemiSmooth()
               // check (euclidean)-frbound > 0
 #ifdef CONTACTCOMPHUEBER
               if(euclidean-frcoeff*(nz-cn*wgap) > 0) {}
-#else             
+#else
               if(euclidean-frcoeff*nz > 0) {}
 #endif
               // do nothing (slip was correct)
               else
               {
 #ifdef CONTACTSLIPFIRST
-                if(cnode->ActiveOld()==false)         
+                if(cnode->ActiveOld()==false)
                 {}
                 else
                 {

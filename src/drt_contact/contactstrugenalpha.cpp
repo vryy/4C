@@ -409,11 +409,11 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   // here the relative movement of the contact bodies is evaluated
   // therefore the current configuration and the according mortar
   // matrices are needed
-  // it is only evaluated (resetted) for penalty strategy and 
+  // it is only evaluated (resetted) for penalty strategy and
   // augmented lagrange strategy
   if (strattype == INPAR::CONTACT::solution_penalty
   		or strattype == INPAR::CONTACT::solution_auglag)
-  { 
+  {
     if(ctype != INPAR::CONTACT::contact_normal)
       contactmanager_->GetStrategy().EvaluateRelMov(disi_);
   }
@@ -499,7 +499,7 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   // first time step
   INPAR::CONTACT::ContactType ctype =
     Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(contactmanager_->GetStrategy().Params(),"CONTACT");
-  
+
   INPAR::CONTACT::SolvingStrategy strattype =
       Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(contactmanager_->GetStrategy().Params(),"STRATEGY");
 
@@ -696,16 +696,16 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
 
   contactmanager_->GetStrategy().InitEvalInterface();
   contactmanager_->GetStrategy().InitEvalMortar();
-  
+
   // friction
   // here the relative movement of the contact bodies is evaluated
   // therefore the current configuration and the according mortar
   // matrices are needed
-  // it is only evaluated (resetted) for penalty strategy 
+  // it is only evaluated (resetted) for penalty strategy
   // augmented lagrange strategy
   if (strattype == INPAR::CONTACT::solution_penalty
   		or strattype == INPAR::CONTACT::solution_auglag)
-  { 
+  {
     if(ctype != INPAR::CONTACT::contact_normal)
       contactmanager_->GetStrategy().EvaluateRelMov(disi_);
   }
@@ -960,7 +960,7 @@ void CONTACT::ContactStruGenAlpha::ApplyExternalForce(  const STR::UTILS::MapExt
 
   contactmanager_->GetStrategy().InitEvalInterface();
   contactmanager_->GetStrategy().InitEvalMortar();
-  
+
   contactmanager_->GetStrategy().Initialize();
   contactmanager_->GetStrategy().Evaluate(SystemMatrix(),fresm_);
 
@@ -1975,7 +1975,7 @@ void CONTACT::ContactStruGenAlpha::Update()
 
   	// store nodal entries of D and M to old ones
     contactmanager_->GetStrategy().StoreDMToNodes(AbstractStrategy::dm);
-    
+
     // store nodal entries form penalty contact tractions to old ones
     contactmanager_->GetStrategy().StoreDMToNodes(AbstractStrategy::pentrac);
 

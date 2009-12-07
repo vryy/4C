@@ -1199,9 +1199,9 @@ void CONTACT::AbstractStrategy::PrintActiveSet()
       if(cnode->Active())
       {
         if(cnode->Slip())
-          cout << "SLIP " << gid << " Normal " << nz << " Tangential " << zt << " Movement x " << cnode->xspatial()[0] - cnode->X()[0] << endl;
+          cout << "SLIP " << gid << " Normal " << nz << " Tangential " << zt << endl;
         else
-         cout << "STICK " << gid << " Normal " << nz << " Tangential " << zt << " Movement x " << cnode->xspatial()[0] - cnode->X()[0] << endl;
+         cout << "STICK " << gid << " Normal " << nz << " Tangential " << zt << endl;
       }
     }
   }
