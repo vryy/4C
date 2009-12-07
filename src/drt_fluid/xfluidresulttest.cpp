@@ -112,8 +112,6 @@ void FLD::XFluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr,
     nerr += CompareValues(result, res);
     test_count++;
   }
-  else
-    dserror("XFluidResultTest::TestNode: unknown node Gid %d!!!", nodeGid);
 }
 
 
