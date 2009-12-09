@@ -650,62 +650,62 @@ public:
   virtual void EvaluateRelMov();
   
   /*!
-  \brief Assemble jump vector into global jump vector 
-  
+  \brief Assemble jump vector into global jump vector
+
   */
   virtual void AssembleRelMov(Epetra_Vector& jumpglobal);
 
   /*!
-  \brief Evaluate L2 Norm of tangential contact conditions 
-  
+  \brief Evaluate L2 Norm of tangential contact conditions
+
   */
   virtual void EvaluateTangentNorm(double& cnormtan);
 
   /*!
   \brief Assemble gap-computed lagrange multipliers and nodal linlambda derivatives into nodal quantities
   using the Macauley bracket
-  
+
   When dealing with penalty methods, the lagrange multipliers are not independent variables anymore.
   Instead, they can be computed in terms of the weighted gap and the penalty parameter.
   This is done here so every node stores the correct lm and thus we integrate smoothly into the overlaying algorithm.
-  
+
   Additionally, we use the performed loop over all nodes to store the nodal derivlambda_j matrix right there.
-  
-  As a result, the function notifies the calling routine if any negative gap was detected 
+
+  As a result, the function notifies the calling routine if any negative gap was detected
   and thus wether the interface is in contact or not. In consequence, after calling this routine
   from within the penalty strategy object, the contact status is known at a global level.
-  
+
   Note: To be able to perform this computation, weighted gaps and normals have to be available within every node!
   Since this computation is done via Interface::Evaluate() in the Integrator class,
   these corresponding methods have to be called before AssembleMacauley()!
-  
-  */ 
+
+  */
   virtual void AssembleRegNormalForces(bool& localisincontact, bool& localactivesetchange);
-  
+
   /*!
-  \brief Assemble geometry dependent, tangential lagrange multipliers 
+  \brief Assemble geometry dependent, tangential lagrange multipliers
   and their derivatives in the penalty case
-  */ 
+  */
   virtual void AssembleRegTangentForcesPenalty();
 
   /*!
-  \brief Assemble geometry dependent, tangential lagrange multipliers 
+  \brief Assemble geometry dependent, tangential lagrange multipliers
   and their derivatives in the augmented lagrange case
-  */ 
+  */
   virtual void AssembleRegTangentForcesAugmented();
-  
+
   /*!
   \brief Assemble lagrange multipliers into global z vector (penalty strategy)
-  
+
   */
   virtual void AssembleLM(Epetra_Vector& zglobal);
-  
+
   /*
   \brief Assemble LM derivatives into global matrix (penalty strategy)
- 
+
   */
   virtual void AssembleLinZ(LINALG::SparseMatrix& lambdaglobal);
-  
+
   /*!
   \brief Assemble Mortar matrices and weighted gap
 
@@ -720,14 +720,6 @@ public:
   */
   virtual void AssembleNT(LINALG::SparseMatrix& nglobal,
                           LINALG::SparseMatrix& tglobal);
-
-  /*!
-  \brief Assemble matrix L and vector R for Tresca friction (slip)
-
-  */
-  virtual void AssembleTresca(LINALG::SparseMatrix& lglobal,
-                              Epetra_Vector& rglobal,
-                              double& frbound, double& ct);
 
   /*!
   \brief Assemble matrix S containing linearizations

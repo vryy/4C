@@ -349,16 +349,16 @@ discret_(discret)
   INPAR::CONTACT::SolvingStrategy stype =
       Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(cparams,"STRATEGY");
   if (stype == INPAR::CONTACT::solution_lagmult)
-    strategy_ = rcp(new LagrangeStrategy(problemrowmap,cparams,interfaces,dim,comm_,alphaf)); 
+    strategy_ = rcp(new LagrangeStrategy(problemrowmap,cparams,interfaces,dim,comm_,alphaf));
   else if (stype == INPAR::CONTACT::solution_penalty)
     strategy_ = rcp(new PenaltyStrategy(problemrowmap,cparams,interfaces,dim,comm_,alphaf));
   else if (stype == INPAR::CONTACT::solution_auglag)
     strategy_ = rcp(new PenaltyStrategy(problemrowmap,cparams,interfaces,dim,comm_,alphaf));
   else
     dserror("Unrecognized strategy");
-  if(Comm().MyPID()==0) cout << "done!" << endl << endl;  
+  if(Comm().MyPID()==0) cout << "done!" << endl << endl;
   // **** initialization of row/column maps moved to AbstractStrategy **** //
-  // since the manager does not operate over nodes, elements, dofs anymore 
+  // since the manager does not operate over nodes, elements, dofs anymore
   // ********************************************************************* //
 
   // print contact parameter list to screen
@@ -439,7 +439,7 @@ bool CONTACT::Manager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   
   if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(input,"CONTACT") == INPAR::CONTACT::contact_frictional &&
   		                                              Teuchos::getIntegralValue<int>(input,"SEMI_SMOOTH_NEWTON")!=1 &&
-  	                                                dim==3) 
+  	                                                dim==3)
   	dserror("3D frictional contact only applied for Semi-smooth Newton");
  
 #ifndef CONTACTCOMPHUEBER
@@ -447,13 +447,7 @@ bool CONTACT::Manager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
                                                    dim==3)  
   	dserror("3D frictional contact without flag CONTACTCOMPHUEBER not yet implemented");
 #endif
-   
-#ifdef CONTACTSLIPFIRST
-  if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(input,"CONTACT") == INPAR::CONTACT::contact_frictional &&
-  		                                             dim==3)  
-    dserror("3D frictional contact with flag CONTACTSLIPFIRST not yet implemented");
-#endif  
-  
+
 #ifdef CONTACTRELVELMATERIAL
   // check full linearization
   bool fulllin   = Teuchos::getIntegralValue<int>(input,"FULL_LINEARIZATION");

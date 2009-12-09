@@ -145,22 +145,11 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff
   /* and global matrix t with tangent vectors of active nodes           */
   /* and global matrix s with normal derivatives of active nodes        */
   /* and global matrix linstick with derivatives of stick nodes         */
-  /* and global matrix l and vector r for frictional contact            */
+  /* and global matrix linslip with derivatives of slip nodes           */
   /**********************************************************************/
   // here and for the splitting later, we need the combined sm rowmap
   // (this map is NOT allowed to have an overlap !!!)
   RCP<Epetra_Map> gsmdofs = LINALG::MergeMap(gsdofrowmap_,gmdofrowmap_,false);
-
-  // read tresca friction bound
-  double frbound = Params().get<double>("FRBOUND");
-
-  // read weighting factor ct
-  // (this is necessary in semi-smooth Newton case, as the search for the
-  // active set is now part of the Newton iteration. Thus, we do not know
-  // the active / inactive status in advance and we can have a state in
-  // which both firctional conditions are violated. Here we have to weigh
-  // the two violations via ct!
-  double ct = Params().get<double>("SEMI_SMOOTH_CT");
 
   for (int i=0; i<(int)interface_.size(); ++i)
   {
@@ -169,7 +158,6 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff
     interface_[i]->AssembleLinDM(*lindmatrix_,*linmmatrix_);
     interface_[i]->AssembleLinStick(*linstickLM_,*linstickDIS_,*linstickRHS_);
     interface_[i]->AssembleLinSlip(*linslipLM_,*linslipDIS_,*linslipRHS_);
-    interface_[i]->AssembleTresca(*lmatrix_,*r_,frbound,ct);
   }
 
   // FillComplete() global matrices N and T and L
@@ -1479,7 +1467,7 @@ void CONTACT::LagrangeStrategy::UpdateActiveSet()
         {
           cnode->Active() = true;
           activesetconv_ = false;
-#ifdef CONTACTSLIPFIRST
+#ifdef CONTACTFRICTIONLESSFIRST
        if (cnode->ActiveOld()==false) cnode->Slip() = true;
 #endif
         }
@@ -1544,7 +1532,7 @@ void CONTACT::LagrangeStrategy::UpdateActiveSet()
                 // do nothing (slip was correct)
               else
               {
-#ifdef CONTACTSLIPFIRST
+#ifdef CONTACTFRICTIONLESSFIRST
                 if(cnode->ActiveOld()==false)
                 {}
                 else
@@ -1584,7 +1572,7 @@ void CONTACT::LagrangeStrategy::UpdateActiveSet()
                 // do nothing (slip was correct)
               else
               {
-#ifdef CONTACTSLIPFIRST
+#ifdef CONTACTFRICTIONLESSFIRST
                 if(cnode->ActiveOld()==false)
                 {}
                 else
@@ -1824,7 +1812,7 @@ void CONTACT::LagrangeStrategy::UpdateActiveSetSemiSmooth()
           	// nodes coming into contact
             cnode->Slip() = true;
 
-#ifdef CONTACTSLIPFIRST
+#ifdef CONTACTFRICTIONLESSFIRST
         if (cnode->ActiveOld()==false) cnode->Slip() = true;
 #endif
           }
@@ -1889,7 +1877,7 @@ void CONTACT::LagrangeStrategy::UpdateActiveSetSemiSmooth()
                // do nothing (slip was correct)
               else
               {
-#ifdef CONTACTSLIPFIRST
+#ifdef CONTACTFRICTIONLESSFIRST
                 if(cnode->ActiveOld()==false)
                 {}
                 else
@@ -1935,7 +1923,7 @@ void CONTACT::LagrangeStrategy::UpdateActiveSetSemiSmooth()
               // do nothing (slip was correct)
               else
               {
-#ifdef CONTACTSLIPFIRST
+#ifdef CONTACTFRICTIONLESSFIRST
                 if(cnode->ActiveOld()==false)
                 {}
                 else
