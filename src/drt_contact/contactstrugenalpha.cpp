@@ -415,7 +415,7 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   		or strattype == INPAR::CONTACT::solution_auglag)
   {
     if(ctype != INPAR::CONTACT::contact_normal)
-      contactmanager_->GetStrategy().EvaluateRelMov(disi_);
+      contactmanager_->GetStrategy().EvaluateRelMov();
   }
   contactmanager_->GetStrategy().Initialize();
   contactmanager_->GetStrategy().Evaluate(SystemMatrix(),fresm_);
@@ -707,7 +707,7 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   		or strattype == INPAR::CONTACT::solution_auglag)
   {
     if(ctype != INPAR::CONTACT::contact_normal)
-      contactmanager_->GetStrategy().EvaluateRelMov(disi_);
+      contactmanager_->GetStrategy().EvaluateRelMov();
   }
 
   contactmanager_->GetStrategy().Initialize();
@@ -1334,7 +1334,7 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
       INPAR::CONTACT::ContactType ctype =
         Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(contactmanager_->GetStrategy().Params(),"CONTACT");
       if(ctype != INPAR::CONTACT::contact_normal)
-        contactmanager_->GetStrategy().EvaluateRelMov(disi_);
+        contactmanager_->GetStrategy().EvaluateRelMov();
 
       contactmanager_->GetStrategy().Initialize();
       contactmanager_->GetStrategy().Evaluate(SystemMatrix(),fresm_);
@@ -1736,7 +1736,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
       INPAR::CONTACT::ContactType ctype =
         Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(contactmanager_->GetStrategy().Params(),"CONTACT");
       if(ctype != INPAR::CONTACT::contact_normal)
-        contactmanager_->GetStrategy().EvaluateRelMov(disi_);
+        contactmanager_->GetStrategy().EvaluateRelMov();
 
       // this is the correct place to update the active set!!!
       // (on the one hand we need the new weighted gap vector g, which is

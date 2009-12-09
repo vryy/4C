@@ -90,7 +90,6 @@ ostream& operator << (ostream& os, const CONTACT::Interface& interface)
   return os;
 }
 
-
 /*----------------------------------------------------------------------*
  |  print interface (public)                                 mwgee 10/07|
  *----------------------------------------------------------------------*/

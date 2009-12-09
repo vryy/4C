@@ -84,7 +84,7 @@ isselfcontact_(false)
   
   // ------------------------------------------------------------------------
   // setup global accessible Epetra_Maps
-  // ------------------------------------------------------------------------                     
+  // ------------------------------------------------------------------------
 
   // merge interface maps to global maps
   for (int i=0; i<(int)interface_.size(); ++i)
@@ -108,14 +108,14 @@ isselfcontact_(false)
   }
 
   // setup global non-slave-or-master dof map
-  // (this is done by splitting from the dicretization dof map) 
+  // (this is done by splitting from the dicretization dof map)
   gndofrowmap_ = LINALG::SplitMap(*problemrowmap_, *gsdofrowmap_);
   gndofrowmap_ = LINALG::SplitMap(*gndofrowmap_, *gmdofrowmap_);
 
   
   // ------------------------------------------------------------------------
   // setup global accessible vectors and matrices
-  // ------------------------------------------------------------------------   
+  // ------------------------------------------------------------------------
 
   // setup Lagrange muliplier vectors
   z_ = rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -130,7 +130,7 @@ isselfcontact_(false)
   mold_->Zero();
   mold_->Complete(*gmdofrowmap_, *gsdofrowmap_);
 
-  // output contact stress vectors 
+  // output contact stress vectors
   stressnormal_ = rcp(new Epetra_Vector(*gsdofrowmap_));
   stresstangential_ = rcp(new Epetra_Vector(*gsdofrowmap_));
 }
@@ -143,7 +143,7 @@ ostream& operator << (ostream& os, const CONTACT::AbstractStrategy& strategy)
   strategy.Print(os);
   return os;
 }
-                                            
+
 /*----------------------------------------------------------------------*
  | set current and old deformation state                     popp 06/09 |
  *----------------------------------------------------------------------*/
@@ -155,7 +155,7 @@ void CONTACT::AbstractStrategy::SetState(const string& statename, const RCP<Epet
     for (int i=0; i<(int)interface_.size(); ++i)
       interface_[i]->SetState(statename, vec);
   }
-  
+
   return;
 }
 
@@ -168,7 +168,7 @@ void CONTACT::AbstractStrategy::UpdateMasterSlaveSetsGlobal()
   gsnoderowmap_   = rcp(new Epetra_Map(0,0,Comm()));
   gsdofrowmap_   = rcp(new Epetra_Map(0,0,Comm()));
   gmdofrowmap_   = rcp(new Epetra_Map(0,0,Comm()));
-  
+
   // setup global slave / master Epetra_Maps
   // (this is done by looping over all interfaces and merging)
   for (int i=0;i<(int)interface_.size();++i)
@@ -177,7 +177,7 @@ void CONTACT::AbstractStrategy::UpdateMasterSlaveSetsGlobal()
     gsdofrowmap_ = LINALG::MergeMap(gsdofrowmap_,interface_[i]->SlaveRowDofs());
     gmdofrowmap_ = LINALG::MergeMap(gmdofrowmap_,interface_[i]->MasterRowDofs());
   }
-  
+
   return;
 }
 
@@ -191,11 +191,11 @@ void CONTACT::AbstractStrategy::InitEvalInterface()
   {
     // initialize / reset interfaces
     interface_[i]->Initialize();
-    
+
     // evaluate interfaces
     interface_[i]->Evaluate();
   }
-    
+
   return;
 }
 
@@ -207,7 +207,7 @@ void CONTACT::AbstractStrategy::InitEvalMortar()
   // for self contact, slave and master sets may have changed,
   // thus we have to update them befor initialiting D,M etc.
   if (IsSelfContact()) UpdateMasterSlaveSetsGlobal();
-  
+
   // intitialize Dold and Mold if not done already
   if (dold_==null)
   {
@@ -221,7 +221,7 @@ void CONTACT::AbstractStrategy::InitEvalMortar()
     mold_->Zero();
     mold_->Complete(*gmdofrowmap_,*gsdofrowmap_);
   }
-   
+
   // (re)setup global Mortar LINALG::SparseMatrices and Epetra_Vectors
   dmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
   mmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
@@ -231,13 +231,13 @@ void CONTACT::AbstractStrategy::InitEvalMortar()
   // (re)setup global matrices containing fc derivatives
   lindmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
   linmmatrix_ = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
-  
+
   // for all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
   {
     // assemble D-, M-matrix and g-vector, store them globally
     interface_[i]->AssembleDMG(*dmatrix_,*mmatrix_,*g_);
-    
+
 #ifdef CONTACTFDMORTARD
   // FD check of Mortar matrix D derivatives
   cout << " -- CONTACTFDMORTARD -----------------------------------" << endl;
@@ -257,69 +257,19 @@ void CONTACT::AbstractStrategy::InitEvalMortar()
   cout << " -- CONTACTFDMORTARM -----------------------------------" << endl;
 #endif // #ifdef CONTACTFDMORTARM
   }
-  
+
   // FillComplete() global Mortar matrices
   dmatrix_->Complete();
   mmatrix_->Complete(*gmdofrowmap_,*gsdofrowmap_);
-    
+
   return;
 }
 
 /*----------------------------------------------------------------------*
  | evaluate relative movement of contact bodies            gitterle 10/09|
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::EvaluateRelMov(RCP<Epetra_Vector> disi)
+void CONTACT::AbstractStrategy::EvaluateRelMov()
 {
-#ifdef CONTACTRELVELMATERIAL
-  
-  // extract slave displacements from disi
-  RCP<Epetra_Vector> disis = rcp(new Epetra_Vector(*gsdofrowmap_));
-  LINALG::Export(*disi,*disis);
-
-  // extract master displacements from disi
-  RCP<Epetra_Vector> disim = rcp(new Epetra_Vector(*gmdofrowmap_));
-  LINALG::Export(*disi,*disim);
-
-  /**********************************************************************/
-  /* Multiply Mortar matrices: m^ = inv(d) * m                          */
-  /**********************************************************************/
-  RCP<LINALG::SparseMatrix> invd = rcp(new LINALG::SparseMatrix(*dmatrix_));
-  RCP<Epetra_Vector> diag = LINALG::CreateVector(*gsdofrowmap_,true);
-  int err = 0;
-
-  // extract diagonal of invd into diag
-  invd->ExtractDiagonalCopy(*diag);
-
-  // set zero diagonal values to dummy 1.0
-  for (int i=0;i<diag->MyLength();++i)
-    if ((*diag)[i]==0.0) (*diag)[i]=1.0;
-
-  // scalar inversion of diagonal values
-  err = diag->Reciprocal(*diag);
-  if (err>0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
-
-  // re-insert inverted diagonal into invd
-  err = invd->ReplaceDiagonalValues(*diag);
-  // we cannot use this check, as we deliberately replaced zero entries
-  //if (err>0) dserror("ERROR: ReplaceDiagonalValues: Missing diagonal entry!");
-
-  // do the multiplication M^ = inv(D) * M
-  mhatmatrix_ = LINALG::Multiply(*invd,false,*mmatrix_,false);
-
-  // recover incremental jump (for active set)
-  incrjump_ = rcp(new Epetra_Vector(*gsdofrowmap_));
-  mhatmatrix_->Multiply(false,*disim,*incrjump_);
-  incrjump_->Update(1.0,*disis,-1.0);
-
-  // sum up incremental jumps from active set nodes
-  jump_->Update(1.0,*incrjump_,1.0);
-  
-  // friction
-  // store updaded jumps to nodes
-  StoreNodalQuantities(AbstractStrategy::jump);
-
-#else
-
   // do the evaluation on the interface
   // loop over all slave row nodes on the current interface
   for (int i=0; i<(int)interface_.size(); ++i)
@@ -327,9 +277,6 @@ void CONTACT::AbstractStrategy::EvaluateRelMov(RCP<Epetra_Vector> disi)
     interface_[i]->EvaluateRelMov();
     interface_[i]->AssembleRelMov(*jump_);
   }
-  
-#endif
-
   return;
 }
 
@@ -475,7 +422,7 @@ void CONTACT::AbstractStrategy::StoreNodalQuantities(AbstractStrategy::QuantityT
           // (this is what we wanted to enforce anyway before condensation)
           if (cnode->Active()==false)
             (*vectorinterface)[locindex[dof]] = 0.0;
-                    
+
           // store updated LM into node
           cnode->lm()[dof] = (*vectorinterface)[locindex[dof]];
           break;
@@ -503,13 +450,13 @@ void CONTACT::AbstractStrategy::OutputStresses ()
   // reset contact stress class variables
   stressnormal_ = rcp(new Epetra_Vector(*gsdofrowmap_));
   stresstangential_ = rcp(new Epetra_Vector(*gsdofrowmap_));
-      
+
   // loop over all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
   {
     // currently this only works safely for 1 interface
     //if (i>0) dserror("ERROR: OutputStresses: Double active node check needed for n interfaces!");
-    
+
     // loop over all slave row nodes on the current interface
     for (int j=0; j<interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
     {
@@ -539,19 +486,19 @@ void CONTACT::AbstractStrategy::OutputStresses ()
         lmt1 += nt1[j]* cnode->lm()[j];
         lmt2 += nt2[j]* cnode->lm()[j];
       }
-      
+
       // find indices for DOFs of current node in Epetra_Vector
       // and put node values (normal and tangential stress components) at these DOFs
-      
+
       vector<int> locindex(dim);
-      
-      // normal stress components     
+
+      // normal stress components
       for (int dof=0;dof<dim;++dof)
       {
         locindex[dof] = (stressnormal_->Map()).LID(cnode->Dofs()[dof]);
         (*stressnormal_)[locindex[dof]] = -lmn*nn[dof];
       }
-      
+
       // tangential stress components
       for (int dof=0;dof<dim;++dof)
       {
@@ -675,7 +622,7 @@ void CONTACT::AbstractStrategy::Update(int istep)
   // (we need this for interpolation of the next generalized mid-point)
   // in the case of self contact, the size of z may have changed
   if (IsSelfContact()) zold_ = rcp(new Epetra_Vector(*gsdofrowmap_));
-  
+
   zold_->Update(1.0,*z_,0.0);
   StoreNodalQuantities(AbstractStrategy::lmold);
   StoreDM("old");
@@ -687,7 +634,7 @@ void CONTACT::AbstractStrategy::Update(int istep)
   // reset active set status for next time step
   ActiveSetConverged() = false;
   ActiveSetSteps() = 1;
-  
+
   return;
 }
 
@@ -711,7 +658,7 @@ void CONTACT::AbstractStrategy::DoWriteRestart(RCP<Epetra_Vector>& activetoggle,
         dserror("ERROR: Cannot find node with gid %", gid);
       CNode* cnode = static_cast<CNode*>(node);
       int dof = (activetoggle->Map()).LID(gid);
-      
+
       // set value active / inactive in toggle vector
       if (cnode->Active())
         (*activetoggle)[dof]=1;
@@ -731,19 +678,19 @@ void CONTACT::AbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader,
 {
   // set restart displacement state
   SetState("displacement", dis);
-  
+
   // evaluate interface and restart mortar quantities
   // in the case of SELF CONTACT, also re-setup master/slave maps
   InitEvalInterface();
-  InitEvalMortar(); 
-  
+  InitEvalMortar();
+
   // read restart information on actice set and slip set
   RCP<Epetra_Vector> activetoggle =rcp(new Epetra_Vector(*gsnoderowmap_));
   reader.ReadVector(activetoggle,"activetoggle");
   RCP<Epetra_Vector> sliptoggle =rcp(new Epetra_Vector(*gsnoderowmap_));
   reader.ReadVector(sliptoggle,"sliptoggle");
 
-  // store restart information on active set and slip set  
+  // store restart information on active set and slip set
   // into nodes, therefore first loop over all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
   {
@@ -752,13 +699,13 @@ void CONTACT::AbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader,
     {
       int gid = (interface_[i]->SlaveRowNodes())->GID(j);
       int dof = (activetoggle->Map()).LID(gid);
-      
+
       if ((*activetoggle)[dof]==1)
       {
         DRT::Node* node = interface_[i]->Discret().gNode(gid);
         if (!node) dserror("ERROR: Cannot find node with gid %", gid);
         CNode* cnode = static_cast<CNode*>(node);
-        
+
         // set value active / inactive in cnode
         cnode->Active()=true;
 
@@ -768,17 +715,17 @@ void CONTACT::AbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader,
       }
     }
   }
- 
+
   // read restart information on Lagrange multipliers
   z_ = rcp(new Epetra_Vector(*gsdofrowmap_));
   zold_ = rcp(new Epetra_Vector(*gsdofrowmap_));
   reader.ReadVector(LagrMult(),"lagrmultold");
   reader.ReadVector(LagrMultOld(),"lagrmultold");
-  
+
   // store restart information on Lagrange multipliers into nodes
   StoreNodalQuantities(AbstractStrategy::lmcurrent);
   StoreNodalQuantities(AbstractStrategy::lmold);
-  
+
   // only for Augmented strategy
   INPAR::CONTACT::SolvingStrategy st = Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(),"STRATEGY");
   if (st == INPAR::CONTACT::solution_auglag)
@@ -787,12 +734,12 @@ void CONTACT::AbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader,
     reader.ReadVector(LagrMultUzawa(),"lagrmultold");
     StoreNodalQuantities(AbstractStrategy::lmuzawa);
   }
-  
+
   // store restart Mortar quantities into nodes
   StoreDM("old");
   StoreNodalQuantities(AbstractStrategy::activeold);
   StoreDMToNodes(AbstractStrategy::dm);
-    
+
   // update active sets of all interfaces
   // (these maps are NOT allowed to be overlapping !!!)
   for (int i=0; i<(int)interface_.size(); ++i)
@@ -809,7 +756,7 @@ void CONTACT::AbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader,
 
   // update flag for global contact status
   if (gactivenodes_->NumGlobalElements()) IsInContact()=true;
-  
+
   return;
 }
 
@@ -831,7 +778,7 @@ void CONTACT::AbstractStrategy::ContactForces(RCP<Epetra_Vector> fresm)
   RCP<Epetra_Vector> fcmastertemp = rcp(new Epetra_Vector(mmatrix_->DomainMap()));
   RCP<Epetra_Vector> fcslavetempend = rcp(new Epetra_Vector(dold_->RowMap()));
   RCP<Epetra_Vector> fcmastertempend = rcp(new Epetra_Vector(mold_->DomainMap()));
-  
+
   // for self contact, slave and master sets may have changed,
   // thus we have to export z and zold to new D and M dimensions
   if (IsSelfContact())
@@ -853,7 +800,7 @@ void CONTACT::AbstractStrategy::ContactForces(RCP<Epetra_Vector> fresm)
     dold_->Multiply(false, *zold_, *fcslavetempend);
     mold_->Multiply(true, *zold_, *fcmastertempend);
   }
-  
+
   // export the contact forces to full dof layout
   RCP<Epetra_Vector> fcslave = rcp(new Epetra_Vector(*problemrowmap_));
   RCP<Epetra_Vector> fcmaster = rcp(new Epetra_Vector(*problemrowmap_));
@@ -1168,10 +1115,10 @@ void CONTACT::AbstractStrategy::PrintActiveSet()
           jumptxi += cnode->txi()[k] * cnode->jump()[k];
           jumpteta += cnode->teta()[k] * cnode->jump()[k];
         }
-      
+
         zt = sqrt(ztxi*ztxi+zteta*zteta);
-        
-        // check for dimensions        
+
+        // check for dimensions
         if (Dim()==2 and abs(jumpteta)>0.0001)
         {
         	dserror("Error: Jumpteta should be zero for 2D");
@@ -1193,7 +1140,7 @@ void CONTACT::AbstractStrategy::PrintActiveSet()
           printf("ACTIVE:   %d \t wgap: %e \t lm: %e \n",gid,wgap,nz);
           fflush(stdout);
         }
-        
+
       }
       else
       if(cnode->Active())

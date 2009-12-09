@@ -355,11 +355,6 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff
   LINALG::SplitMatrix2x2(mhatmatrix_,gactivedofs_,gidofs,gmdofrowmap_,tempmap,mhata,tempmtx1,tempmtx2,tempmtx3);
   mhata_=mhata;
 
-#ifdef CONTACTRELVELMATERIAL
-  RCP<LINALG::SparseMatrix> mhatsl;
-  LINALG::SplitMatrix2x2(mhatmatrix_,gslipdofs_,gstdofs,gmdofrowmap_,tempmap,mhatsl,tempmtx2,mhatst,tempmtx3);
-#endif
-
   RCP<LINALG::SparseMatrix> invda, invdsl, invdst;
   LINALG::SplitMatrix2x2(invd_,gactivedofs_,gidofs,gactivedofs_,gidofs,invda,tempmtx1,tempmtx2,tempmtx3);
   LINALG::SplitMatrix2x2(invd_,gslipdofs_,gstdofs,gslipdofs_,gstdofs,invdsl,tempmtx1,tempmtx2,invdst);
@@ -437,51 +432,9 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff
   // n*mbaractive: do the multiplication
   RCP<LINALG::SparseMatrix> nmhata = LINALG::Multiply(*nmatrix_,false,*mhata,false,true);
 
-#ifdef CONTACTRELVELMATERIAL
-
-  // t*mbarstick: do the multiplication
-  RCP<LINALG::SparseMatrix> tmhatst = LINALG::Multiply(*tstmatrix,false,*mhatst,false,true);
-#endif
-
  // nmatrix: nothing to do
 
-#ifdef CONTACTRELVELMATERIAL
-  // ksln: multiply with tslmatrix
-  RCP<LINALG::SparseMatrix> kslnmod = LINALG::Multiply(*tslmatrix,false,*invdsl,false,true);
-  kslnmod = LINALG::Multiply(*kslnmod,false,*ksln,false,true);
-
-  // kslm: multiply with tslmatrix
-  RCP<LINALG::SparseMatrix> kslmmod = LINALG::Multiply(*tslmatrix,false,*invdsl,false,true);
-  kslmmod = LINALG::Multiply(*kslmmod,false,*kslm,false,false);
-
-  // lmatrix: multiply with tslmatrix, also multiply with mhatslip
-  // L.Tsl.Mhatsl
-
-  RCP<LINALG::SparseMatrix> ltmatrix = LINALG::Multiply(*lmatrix_,false,*tslmatrix,false,true);
-  RCP<LINALG::SparseMatrix> ltmatrixmb = LINALG::Multiply(*ltmatrix,false,*mhatsl,false,true);
-
-  // subtract ltmatrixmb from kslmmod
-  kslmmod->Add(*ltmatrixmb,false,-1.0,1.0);
-  kslmmod->Complete(kslm->DomainMap(),kslm->RowMap());
-
-  // ksli: multiply with tslmatrix
-  RCP<LINALG::SparseMatrix> kslimod = LINALG::Multiply(*tslmatrix,false,*invdsl,false,true);
-  kslimod = LINALG::Multiply(*kslimod,false,*ksli,false,true);
-
-  // kslsl: multiply with tslmatrix
-  RCP<LINALG::SparseMatrix> kslslmod = LINALG::Multiply(*tslmatrix,false,*invdsl,false,true);
-  kslslmod = LINALG::Multiply(*kslslmod,false,*kslsl,false,true);
-
-  // add ltmatirx to kslslmod
-  kslslmod->Add(*ltmatrix,false,1.0,1.0);
-  kslslmod->Complete(kslsl->DomainMap(),kslsl->RowMap());
-
-  // slstmod: multiply with tslmatrix
-  RCP<LINALG::SparseMatrix> kslstmod = LINALG::Multiply(*tslmatrix,false,*invdsl,false,true);
-  kslstmod = LINALG::Multiply(*kslstmod,false,*kslst,false,true);
-#else
-
-  // blocks for complementary conditions (stick nodes) - from LM
+ // blocks for complementary conditions (stick nodes) - from LM
 
   // kstn: multiply with linstickLM
   RCP<LINALG::SparseMatrix> kstnmod = LINALG::Multiply(*linstickLM_,false,*invdst,false,true);
@@ -534,7 +487,6 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff
   RCP<LINALG::SparseMatrix> kslstmod = LINALG::Multiply(*linslipLM_,false,*invdsl,false,true);
   kslstmod = LINALG::Multiply(*kslstmod,false,*kslst,false,true);
   kslstmod->Complete(kslst->DomainMap(),kslst->RowMap());
-#endif
 
   // fn: nothing to do
 
@@ -584,23 +536,6 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff
   mhata->Multiply(true,*fa,*fmmod);
   fmmod->Update(1.0,*fm,1.0);
 
-#ifdef CONTACTRELVELMATERIAL
-
-  // fsl: mutliply with tmatrix
-  // (this had to wait as we had to modify fm first)
-  RCP<Epetra_Vector> fslmod = rcp(new Epetra_Vector(*gslipt_));
-  RCP<LINALG::SparseMatrix> temp = LINALG::Multiply(*tslmatrix,false,*invdsl,false,true);
-
-  if(gslipdofs_->NumGlobalElements())
-  {
-  temp->Multiply(false,*fsl,*fslmod);
-
-  // friction
-  // add r to fslmod
-  fslmod->Update(1.0,*r_,1.0);
-  }
-#else
-
   // fst: mutliply with linstickLM
   // (this had to wait as we had to modify fm first)
   RCP<Epetra_Vector> fstmod = rcp(new Epetra_Vector(*gstickt));
@@ -620,7 +555,6 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff
   {
     temp->Multiply(false,*fsl,*fslmod);
   }
-#endif
 
   // gactive: nothing to do
 
@@ -725,24 +659,11 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff
     if (gactiven_->NumGlobalElements()) kteffnew->Add(*nmhata,false,-1.0,1.0);
   }
 
-#ifdef CONTACTRELVELMATERIAL
-
-  // add matrix t to kteffnew
-  if(tstmatrix!=null) kteffnew->Add(*tstmatrix,false,1.0,1.0);
-
-
-  // add matrix tmhatst to kteffnew
-  if(tmhatst!=null) kteffnew->Add(*tmhatst,false,-1.0,1.0);
-#endif
-
   // add full linearization terms to kteffnew
  if (fulllin)
   {
    if (gactiven_->NumGlobalElements()) kteffnew->Add(*smatrix_,false,-1.0,1.0);
   }
-
-#ifdef CONTACTRELVELMATERIAL
-#else
 
   // add terms of linearization of sick condition to kteffnew
   if (gstickt->NumGlobalElements()) kteffnew->Add(*linstickDIS_,false,-1.0,1.0);
@@ -756,7 +677,6 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff
     LINALG::Export(*linslipRHS_,*linslipRHSexp);
     feffnew->Update(-1.0,*linslipRHSexp,1.0);
   }
-#endif
 
   // add terms of linearization feffnew
   // this is done also for evalutating the relative velocity with material

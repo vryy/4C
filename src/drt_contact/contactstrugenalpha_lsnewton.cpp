@@ -1336,7 +1336,7 @@ void CONTACT::ContactStruGenAlpha::PTC()
   bool structrobin = params_.get<bool>  ("structrobin"            ,false);
   if (!errfile) printerr = false;
   bool dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
-  
+
   //------------------------------ turn adaptive solver tolerance on/off
   const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
   const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
@@ -1404,7 +1404,7 @@ void CONTACT::ContactStruGenAlpha::PTC()
 
     //--------------------------------------- recover disi and Lag. Mult.
     contactmanager_->GetStrategy().Recover(disi_);
-        
+
     //---------------------------------- update mid configuration values
     // displacements
     // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
@@ -1495,7 +1495,7 @@ void CONTACT::ContactStruGenAlpha::PTC()
       discret_.Evaluate(p,stiff_,null,fint_,null,null);
 #endif
       discret_.ClearState();
-      
+
       // include potential conditions in fint_ and stiff_
       if (pot_man_!=null)
       {
@@ -1537,7 +1537,7 @@ void CONTACT::ContactStruGenAlpha::PTC()
     //     + F_int(D_{n+1-alpha_f})
     //     + F_c(D_{n+1-alpha_f})
     //     - F_{ext;n+1-alpha_f}
-    
+
     if (dynkindstat)
     {
       // static residual
@@ -1564,7 +1564,7 @@ void CONTACT::ContactStruGenAlpha::PTC()
 #else
     fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
 #endif
-    
+
     //---------------------------------------------- build effective lhs
     // (using matrix stiff_ as effective matrix)
     // (again without contact, this is just Gen-alpha stuff here)
@@ -1604,7 +1604,7 @@ void CONTACT::ContactStruGenAlpha::PTC()
       INPAR::CONTACT::ContactType ctype =
         Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(contactmanager_->GetStrategy().Params(),"CONTACT");
       if(ctype != INPAR::CONTACT::contact_normal)
-        contactmanager_->GetStrategy().EvaluateRelMov(disi_);
+        contactmanager_->GetStrategy().EvaluateRelMov();
 
       contactmanager_->GetStrategy().Initialize();
       contactmanager_->GetStrategy().Evaluate(SystemMatrix(),fresm_);
@@ -1625,7 +1625,7 @@ void CONTACT::ContactStruGenAlpha::PTC()
       fresm_->Multiply(1.0,*invtoggle_,fresmdbc,0.0);
       if (locsysmanager_ != null) locsysmanager_->RotateLocalToGlobal(fresm_);
     }
-        
+
     // compute inf norm of residual
     double np;
     fresm_->NormInf(&np);
@@ -1633,7 +1633,7 @@ void CONTACT::ContactStruGenAlpha::PTC()
     //---------------------------------------------- build residual norm
     disi_->Norm2(&disinorm);
     fresm_->Norm2(&fresmnorm);
-    
+
     // a short message
     if (!myrank_ and (printscreen or printerr))
     {
@@ -1656,7 +1656,7 @@ void CONTACT::ContactStruGenAlpha::PTC()
       nc = 1000;
     }
     // *******************************************************************
-    
+
     // SER step size control
     dti *= (np/nc);
     dti = max(dti,0.0);
@@ -1719,7 +1719,7 @@ void CONTACT::ContactStruGenAlpha::PTC()
   }
 
   params_.set<int>("num iterations",numiter);
-    
+
 
   return;
 } // ContactStruGenAlpha::PTC()

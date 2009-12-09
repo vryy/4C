@@ -46,7 +46,6 @@ Maintainer: Alexander Popp
 /************************************************************************/
 
 #define CONTACTONEMORTARLOOP        /* flag for computing D and M in one loop */
-//#define CONTACTRELVELMATERIAL     /* rel. velocity with dif. of material vel */
 //#define CONTACTFRICTIONLESSFIRST  /* flag for frictionless contact in first contact step */
 //#define CONTACTBOUNDMOD           /* flag for modification of boundary nodes */
 //#define CONTACTPETROVGALERKIN     /* flag for PetrovGalerkin approach for LM */

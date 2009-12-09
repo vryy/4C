@@ -58,9 +58,9 @@ discret_(discret)
 {
   // overwrite base class communicator
   comm_ = rcp(Discret().Comm().Clone());
-  
+
   // welcome message
-  
+
   // create some local variables (later to be stored in strategy)
   RCP<Epetra_Map> problemrowmap = rcp(new Epetra_Map(*(Discret().DofRowMap())));
   const Teuchos::ParameterList& psize = DRT::Problem::Instance()->ProblemSizeParams();
@@ -89,10 +89,10 @@ discret_(discret)
     cout << "Building contact interface(s)...............";
     fflush(stdout);
   }
-  
+
   vector<DRT::Condition*> contactconditions(0);
   Discret().GetCondition("Contact",contactconditions);
-  
+
   // there must be more than one contact condition
   // unless we have a self contact problem!
   if ((int)contactconditions.size()<1)
@@ -125,7 +125,7 @@ discret_(discret)
     // only one surface per group is ok for self contact
     const string* side = contactconditions[i]->Get<string>("Side");
     if (*side == "Selfcontact") foundit = true;
-        
+
     for (int j=0; j<(int)contactconditions.size(); ++j)
     {
       if (j==i) continue; // do not detect contactconditions[i] again
@@ -199,7 +199,7 @@ discret_(discret)
       for (int j=1;j<(int)isself.size();++j)
         if (!isself[j]) dserror("Inconsistent definition of self contact condition group!");
     }
-        
+
     // find out which sides are initialized as Active
     vector<const string*> active((int)currentgroup.size());
     vector<bool> isactive((int)currentgroup.size());
@@ -234,7 +234,7 @@ discret_(discret)
 
     // create an empty interface and store it in this Manager
     interfaces.push_back(rcp(new CONTACT::Interface(groupid1,Comm(),dim,cparams,isself[0])));
-    
+
     // get it again
     RCP<CONTACT::Interface> interface = interfaces[(int)interfaces.size()-1];
 
@@ -338,7 +338,7 @@ discret_(discret)
 
   } // for (int i=0; i<(int)contactconditions.size(); ++i)
   if(Comm().MyPID()==0) cout << "done!" << endl;
-  
+
   // create the solver strategy object
   // and pass all necessary data to it
   if(Comm().MyPID()==0)
@@ -363,7 +363,7 @@ discret_(discret)
 
   // print contact parameter list to screen
   if (Comm().MyPID()==0) cout << GetStrategy().Params() << endl;
-  
+
   return;
 }
 
@@ -375,7 +375,7 @@ bool CONTACT::Manager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
 {
   // read parameter list from DRT::Problem
   const Teuchos::ParameterList& input = DRT::Problem::Instance()->StructuralContactParams();
-  
+
   const Teuchos::ParameterList& psize = DRT::Problem::Instance()->ProblemSizeParams();
   int dim = psize.get<int>("DIM");
 
@@ -385,15 +385,15 @@ bool CONTACT::Manager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_penalty &&
                                                  input.get<double>("PENALTYPARAM") <= 0.0)
       dserror("Penalty parameter eps = 0, must be greater than 0");
-  
+
   if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_auglag &&
                                                  input.get<int>("UZAWAMAXSTEPS") < 2)
       dserror("Maximum number of Uzawa / Augmentation steps must be at least 2");
-  
+
   if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_auglag &&
                                                  input.get<double>("UZAWACONSTRTOL") <= 0.0)
       dserror("Constraint tolerance for Uzawa / Augmentation scheme must be greater than 0");
-  
+
   if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(input,"CONTACT")   == INPAR::CONTACT::contact_normal &&
       Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(input,"FRICTION") != INPAR::CONTACT::friction_none)
     dserror("Friction law supplied for normal contact");
@@ -421,38 +421,31 @@ bool CONTACT::Manager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactSearchAlgorithm>(input,"SEARCH_ALGORITHM") == INPAR::CONTACT::search_bfnode &&
                                                                 input.get<double>("SEARCH_PARAM") == 0.0)
     dserror("Search radius sp = 0, must be greater than 0 for node-based search");
-  
+
   // *********************************************************************
   // not (yet) implemented combinations
   // *********************************************************************
   if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_lagmult &&
       Teuchos::getIntegralValue<INPAR::CONTACT::ShapeFcn>(input,"SHAPEFCN") != INPAR::CONTACT::shape_dual )
       dserror("Lagrange multiplier strategy only implemented for dual shape fct.");
-  
+
   if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_penalty &&
       Teuchos::getIntegralValue<INPAR::CONTACT::ShapeFcn>(input,"SHAPEFCN") != INPAR::CONTACT::shape_standard )
       dserror("Penalty strategy only implemented for standard shape fct.");
-  
+
   if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(input,"FRICTION") == INPAR::CONTACT::friction_tresca &&
                                                    dim==3)
     dserror("3D frictional contact after Tresca's law not yet implemented");
-  
+
   if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(input,"CONTACT") == INPAR::CONTACT::contact_frictional &&
   		                                              Teuchos::getIntegralValue<int>(input,"SEMI_SMOOTH_NEWTON")!=1 &&
   	                                                dim==3)
   	dserror("3D frictional contact only applied for Semi-smooth Newton");
- 
+
 #ifndef CONTACTCOMPHUEBER
   if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(input,"CONTACT") == INPAR::CONTACT::contact_frictional &&
-                                                   dim==3)  
+                                                   dim==3)
   	dserror("3D frictional contact without flag CONTACTCOMPHUEBER not yet implemented");
-#endif
-
-#ifdef CONTACTRELVELMATERIAL
-  // check full linearization
-  bool fulllin   = Teuchos::getIntegralValue<int>(input,"FULL_LINEARIZATION");
-  if (fulllin) dserror ("Full linearization only running for evaluating\n"
-  		                  "the relative velocity with change of projection");
 #endif
 
   // *********************************************************************
@@ -480,7 +473,7 @@ void CONTACT::Manager::WriteRestart(IO::DiscretizationWriter& output)
 
   // quantities to be written for restart
   GetStrategy().DoWriteRestart(activetoggle, sliptoggle);
-    
+
   // write restart information for contact
   output.WriteVector("lagrmultold",GetStrategy().LagrMultOld());
   output.WriteVector("activetoggle",activetoggle);
@@ -497,7 +490,7 @@ void CONTACT::Manager::ReadRestart(IO::DiscretizationReader& reader,
 {
   // let strategy object do all the work
   GetStrategy().DoReadRestart(reader, dis);
-  
+
   return;
 }
 

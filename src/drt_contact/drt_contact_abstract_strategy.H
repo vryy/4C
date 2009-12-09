@@ -55,9 +55,9 @@ namespace CONTACT
 
 /*!
 \brief Main abstract class for contact solution strategies
- 
+
 This is the templating abstract class for all contact solution algorithms.
-Every solution algorithm has to fit into the set of functions and calls definied herein 
+Every solution algorithm has to fit into the set of functions and calls definied herein
 and has to be specified in a corresponding subclass defining the concrete algorithmic steps.
 
 Refer also to the Semesterarbeit of Bernd Budich, 2009
@@ -84,9 +84,9 @@ class AbstractStrategy
 
     /*!
     \brief Standard Constructor
-     
-    Creates the strategy object and initializes all global variables, including 
-    all necessary Epetra_Maps and global vector and matrix quantities. 
+
+    Creates the strategy object and initializes all global variables, including
+    all necessary Epetra_Maps and global vector and matrix quantities.
 
     */
     explicit AbstractStrategy(RCP<Epetra_Map> problemrowmap, Teuchos::ParameterList params,
@@ -98,18 +98,18 @@ class AbstractStrategy
 
     */
     virtual ~AbstractStrategy() {};
-    
+
     //! @name Access methods
-    
+
     /*!
     \brief Get contact parameter list
 
     */
     inline Teuchos::ParameterList& Params() { return scontact_; }
-    
+
     /*!
     \brief Get problem dimension
-     
+
     */
     inline const int& Dim() { return dim_; }
 
@@ -121,55 +121,55 @@ class AbstractStrategy
 
     /*!
     \brief Return global slave dof row map
-     
+
     */
     inline const RCP<Epetra_Map> SlaveRowDofs() { return gsdofrowmap_; }
-    
+
     /*!
     \brief Return global slave node row map
-     
+
     */
     inline const RCP<Epetra_Map> SlaveRowNodes() { return gsnoderowmap_; }
 
     /*!
     \brief Return row map of global problem
-     
+
     */
     inline const RCP<Epetra_Map> ProblemRowMap() { return problemrowmap_; }
-  
+
     /*!
     \brief Return convergence status of active set loop
-     
+
     */
     inline bool& ActiveSetConverged() { return activesetconv_; }
-     
+
     /*!
     \brief Return no. of active sets in this time/load step
-     
+
     */
     inline int& ActiveSetSteps() { return activesetsteps_; }
 
     /*!
     \brief Return contact force vector
-     
+
     */
     inline RCP<Epetra_Vector> GetContactForces() { return fc_; }
 
     /*!
     \brief Return Lagrange multiplier vector (t_n+1)
-     
+
     */
     inline RCP<Epetra_Vector> LagrMult() { return z_; }
 
     /*!
     \brief Return old Lagrange multiplier vector (t_n)
-     
+
     */
     inline RCP<Epetra_Vector> LagrMultOld() { return zold_; }
-    
+
     /*!
     \brief Return Lagrange multiplier vector from last Uzawa step
-     
+
     */
     inline RCP<Epetra_Vector> LagrMultUzawa()
     {
@@ -180,210 +180,210 @@ class AbstractStrategy
 
     /*!
     \brief Return jump vector (t_n+1)
-     
+
     */
     inline RCP<Epetra_Vector> Jump() { return jump_; }
 
     /*!
     \brief Return vector of normal contact stresses (t_n+1)
-     
+
     */
     inline RCP<Epetra_Vector> ContactNorStress() { return stressnormal_; }
 
     /*!
     \brief Return vector of tangential contact stresses (t_n+1)
-     
+
     */
     inline RCP<Epetra_Vector> ContactTanStress() { return stresstangential_; }
-    
+
     /*!
     \brief Return current global contact status
-     
+
     */
     inline bool& IsInContact() { return isincontact_; }
 
-    
+
     /*!
     \brief Return global self contact status
-    
+
     Note that at the moment this only gives information about the
     POTENTIAL self contact of the global problem and not about
     an actual self contact occurring.
-    
+
     TODO: automatically recognize ACTUAL self contact
-     
+
     */
     inline bool& IsSelfContact() { return isselfcontact_; }
-    
-    
+
+
     //@}
 
     //! @name Evaluation methods
 
     /*!
     \brief Set current deformation state
-     
+
     All interfaces are called to set the current deformation state
     (u, xspatial) in their nodes. Additionally, the new contact
     element areas are computed.
-     
+
     \param statename (in): string defining which quantity to set (either "displacement" or "olddisplacement")
     \param vec (in): current global state of the quantity defined by statename
-     
+
     */
     void SetState(const string& statename, const RCP<Epetra_Vector> vec);
 
     /*!
     \brief Update global master and slave sets
-    
+
     This becomes necessary for self contact simulations, because in a
     self contact interface master and slave status are assigned dynamically
     and thus the global maps change constantly.
-    
-    */    
+
+    */
     void UpdateMasterSlaveSetsGlobal();
-    
+
     /*!
     \brief Initialize and evaluate interface for the next Newton step
-     
+
     This method calls Initialize() on all contact interfaces, which
     resets all kind of nodal quantities like normal vector, weighted
     gap or Mortar and linearization maps. It then calls Evaluate() on
     all contact interfaces, which does all the geometric contact stuff.
     Concretely, this is an evaluation of all involved quantites at nodal
-    level plus the setup of all corresponding linearizations. 
+    level plus the setup of all corresponding linearizations.
     It includes the nodal normal calculations, contact search, projection
     and overlap detection, integration of the  Mortar terms D, M and of the
     weighted gap. Additionally, the linearizations of geometrical quantities
     (delta_n, delta_t, delta_D, delta_M) are calculated.
-         
+
     */
     void InitEvalInterface();
-    
+
     /*!
     \brief Initialize and evaluate Mortar stuff for the next Newton step
-     
+
     This method first checks if we are dealing with self contact and updates
     the interface slave and master sets if so. Then it resets the global
     Mortar matrices D and M and the global gap vector g accordingly.
-    
+
     The nodal quantites computed in InitEvalInterface() are then assembled
     to global matrices and vectors respectively. No setup of the global system
     is to be done here yet, so there is no need to pass in the effective
     stiffness K or the effective load vector f.
-    
+
     Note: Only quantities common to all subsequent solving strategies (Lagrange,
     Penalty, Augmented) are initialized here. In case they need additional mortar
     variables, use the overloaded function call in the derived class and refer
     back to this function.
-     
+
     */
     void InitEvalMortar();
-        
+
     /*!
     \brief Initialize general contact variables for next Newton step
-     
+
     This method initializes all global quantities that have to do with
     contact directly, or to be more precise with the active set.
-    
+
     Note: Since this is specific for different solving strategies,
-    this has to be implemented in derived classes. 
-     
+    this has to be implemented in derived classes.
+
     */
     virtual void Initialize() = 0;
 
     /*!
     \brief Evaluate contact
-     
+
     This is just a tiny control routine, deciding which Evaluate-routine
     of those listed below is to be called (based on input-file information)
-     
+
     \param kteff (in/out): effective stiffness matrix (without -> with contact)
     \param feff (in/out): effective residual / force vector (without -> with contact)
-     
+
     */
     void Evaluate(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff);
-    
+
     /*!
     \brief Evaluate relative movement of contact bodies
-     
-    This is for evaluating the relative movement of contact bodies. This 
+
+    This is for evaluating the relative movement of contact bodies. This
     can either be done with regarding the different movement of material points
-    or regarding the change of mortar projection. The second possibility 
-    is definitely objective wheras the first possibility is objective 
-    only when the gap is zero.         
-    
+    or regarding the change of mortar projection. The second possibility
+    is definitely objective wheras the first possibility is objective
+    only when the gap is zero.
+
     */
-  
-    void EvaluateRelMov(RCP<Epetra_Vector> disi);
+
+    void EvaluateRelMov();
 
     /*!
     \brief Evaluate contact
-     
+
     This is the main routine of our contact algorithms on a global level.
     It contains the setup of the global linear system including contact.
     This makes modifications to the effective stiffness K and the effective
     load vector f necessary.
-     
+
     Note: No basis transformation is applied to the displacement variables:
     delta_d_slave and delta_d_master are used directly as unknowns!
-     
+
     \param kteff (in/out): effective stiffness matrix (without -> with contact)
     \param feff (in/out): effective residual / force vector (without -> with contact)
-     
+
     */
     virtual void EvaluateContact(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff) = 0;
 
     /*!
     \brief Evaluate Friction
-     
+
     This is the main routine of our frictional contact algorithm on a global level.
     It contains the setup of the global linear system including frictional contact.
     This makes modifications to the effective stiffness K and the effective
     load vector f necessary.
-     
+
     Note: No basis transformation is applied to the displacement variables:
     delta_d_slave and delta_d_master are used directly as unknowns!
-     
+
     \param kteff (in/out): effective stiffness matrix (without -> with contact)
     \param feff (in/out): effective residual / force vector (without -> with contact)
-     
+
     */
     virtual void EvaluateFriction(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff) = 0;
 
     /*!
     \brief Recovery method
-     
+
     Recovery is needed for the specialization of lagrangian multiplier approach.
     See LagrangeStrategy::Recover for details.
-     
+
     \param disi (in): displacement increment of current Newton step solution
-     
+
     */
     virtual void Recover(RCP<Epetra_Vector> disi) = 0;
 
     /*!
     \brief Update active set and check for convergence
-     
+
     ActiveSet technology is needed for the specialization of lagrangian multiplier approach.
     See LAgrangeStrategy::UpdateActiveSet for details.
-     
+
     */
     virtual void UpdateActiveSet() = 0;
 
     /*!
     \brief Update active set and check for convergence
-     
+
     ActiveSet technology is needed for the specialization of lagrangian multiplier approach.
     See LAgrangeStrategy::UpdateActiveSet for details.
-     
+
     */
     virtual void UpdateActiveSetSemiSmooth() = 0;
 
     //@}
-    
+
     //! @name Quantity control methods
-    
+
     /*!
     \brief Get some nodal quantity globally and store into CNodes
 
@@ -405,13 +405,13 @@ class AbstractStrategy
     /*!
     \brief Evaluate contact stresses in normal direction and tangential plane
 
-    This is called at the end of each time or load step. It calculates 
-    the stress vector in normal direction and the stress vector in the 
+    This is called at the end of each time or load step. It calculates
+    the stress vector in normal direction and the stress vector in the
     tangential plane.
 
     */
     void OutputStresses ();
-    
+
     /*!
     \brief Get dirichlet B.C. status and store into CNodes
 
@@ -422,20 +422,20 @@ class AbstractStrategy
 
     */
     void StoreDirichletStatus(RCP<LINALG::MapExtractor> dbcmaps);
-      
+
     /*!
     \brief Store current (contact) nodal entries of D and M to old ones
-     
+
     Contact nodes own their current entries and old ones (last converged
     state) from the mortar matrices D and M. This function writes the
-    current ones to the old ones.  
-     
+    current ones to the old ones.
+
     */
     void StoreDMToNodes(AbstractStrategy::QuantityType type);
 
     /*!
     \brief Update Mortar matrices D and M
-     
+
     The string input parameter defines in which direction the conversion
     is to be performed. Currently only the possibilities "old" and "current"
     exist, with "old" meaning the Mortar matrices of the last time / load step
@@ -444,12 +444,12 @@ class AbstractStrategy
     current Mortar matrices, which when called will be reset to the last
     converged values D_n and M_n (this happens in the predictor step when
     the active set has not yet converged!).
-     
+
     \param state (in): string defining in which direction to convert D and M
-     
+
     */
     void StoreDM(const string& state);
-    
+
     /*!
     \brief Update contact at end of time step
 
@@ -457,42 +457,42 @@ class AbstractStrategy
 
     */
     void Update(int istep);
-      
+
     /*!
     \brief Perform a write restart
-    
+
     A write restart is initiated by the contact manager. However, the manager has no
     direct access to the nodal quantities. Hence, a portion of the restart has to be
-    performed on the level of the contact algorithm, for short: here's the right place. 
-    
+    performed on the level of the contact algorithm, for short: here's the right place.
+
     */
     void DoWriteRestart(RCP<Epetra_Vector>& activetoggle, RCP<Epetra_Vector>& sliptoggle);
 
     /*!
     \brief Perform a write restart
-    
+
     A write restart is initiated by the contact manager. However, the manager has no
     direct access to the nodal quantities. Hence, all the restart action has to be
-    performed on the level of the contact algorithm, for short: here's the right place. 
-    
+    performed on the level of the contact algorithm, for short: here's the right place.
+
     */
     void DoReadRestart(IO::DiscretizationReader& reader, RCP<Epetra_Vector> dis);
 
     //@}
-    
+
     //! @name Debugging methods
-    
+
     /*!
     \brief Compute contact force vector
-     
+
     Compute current contact forces at n+1-alphaf using current Lagrange
     multiplier values and current Mortar matrices D and M at n+1. When
     doing dynamics with alpha_f > 0, this also uses the old LM and Mortar
     matrices of the last converged time / load step n (TR-like interpolation).
-     
+
     \param fresm (in): residual / force vector at state n+1 of current Newton step
     Note that we only pass in fresm for debugging purposes!
-     
+
     */
     virtual void ContactForces(RCP<Epetra_Vector> fresm);
 
@@ -501,22 +501,22 @@ class AbstractStrategy
 
     */
     virtual void Print(ostream& os) const;
-    
+
     /*!
     \brief Print current active set to screen for debugging purposes
-     
+
     */
     virtual void PrintActiveSet();
 
     /*!
     \brief Visualize contact stuff with gmsh
-     
+
     \param step (in): current time step index
     \param iter (in): current iteration index
-    
+
     */
     void VisualizeGmsh(const int step, const int iter = 0);
-    
+
     //@}
 
   protected:
