@@ -1943,7 +1943,7 @@ void SysmatCombustDomain(
         //------------------------------------------------------------------------------------------
         // get Gaussian points for this integration cell
         //------------------------------------------------------------------------------------------
-        const DRT::UTILS::GaussRule3D gaussrule = XFLUID::getXFEMGaussrule<DISTYPE>(ele, xyze, ele->Intersected(), cell->Shape(),false);
+        const DRT::UTILS::GaussRule3D gaussrule = XFLUID::getXFEMGaussrule<DISTYPE>(ele, xyze, ele->Intersected(), cell->Shape());
         const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
         //------------------------------------------------------------------------------------------
         // integration loop over Gaussian points

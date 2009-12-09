@@ -1064,13 +1064,12 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 
   if (myrank_ == 0)
   {
-    if (xparams_.get<bool>("FAST_INTEGRATION"))
+    if (timealgo_==timeint_stationary)
     {
-      cout << RED_LIGHT << "Using reduced integration for integration cells!" << END_COLOR << endl;
+      std::cout << "Stationary computation!\n";
     }
-
-    printf("+------------+------------------+---------+---------+---------+---------+---------+---------+\n");
-    printf("|  step/max  |  tol     [norm]  | vel-res | pre-res | fullres | vel-inc | pre-inc | fullinc |\n");
+    std::cout << "+------------+------------------+---------+---------+---------+---------+---------+---------+\n";
+    std::cout << "|  step/max  |  tol     [norm]  | vel-res | pre-res | fullres | vel-inc | pre-inc | fullinc |" << std::endl;
   }
 
   const Teuchos::RCP<Epetra_Vector> iforcecolnp = LINALG::CreateVector(*cutterdiscret->DofColMap(),true);
@@ -1141,7 +1140,6 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 
       eleparams.set("DLM_condensation",xparams_.get<bool>("DLM_condensation"));
       eleparams.set("INCOMP_PROJECTION",xparams_.get<bool>("INCOMP_PROJECTION"));
-      eleparams.set("FAST_INTEGRATION",xparams_.get<bool>("FAST_INTEGRATION"));
       eleparams.set("monolithic_FSI",false);
       eleparams.set("EMBEDDED_BOUNDARY",xparams_.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"));
 
@@ -1580,7 +1578,6 @@ void FLD::XFluidImplicitTimeInt::Evaluate(
 
   eleparams.set("DLM_condensation",xparams_.get<bool>("DLM_condensation"));
   eleparams.set("INCOMP_PROJECTION",xparams_.get<bool>("INCOMP_PROJECTION"));
-  eleparams.set("FAST_INTEGRATION",xparams_.get<bool>("FAST_INTEGRATION"));
   eleparams.set("boundaryRatioLimit",xparams_.get<double>("boundaryRatioLimit"));
   eleparams.set<bool>("monolithic_FSI",true);
 
@@ -2130,7 +2127,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
 
     std::size_t numplot = 0;
     {
-      gmshfilecontent   << "View \" " << "Discontinous Stress Solution (Physical) \" {" << endl;
+      gmshfilecontent   << "View \" " << "Discontinous Stress Solution (Physical) \" {\n";
       gmshfilecontentxx << "View \" " << "Discontinous Stress (xx) Solution (Physical) \" {\n";
       gmshfilecontentyy << "View \" " << "Discontinous Stress (yy) Solution (Physical) \" {\n";
       gmshfilecontentzz << "View \" " << "Discontinous Stress (zz) Solution (Physical) \" {\n";

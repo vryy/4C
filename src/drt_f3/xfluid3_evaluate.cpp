@@ -1052,7 +1052,7 @@ void integrateShapefunctionT(
         dofman,
         cellcenter_xyz, false, -1);
 
-    const DRT::UTILS::GaussRule3D gaussrule = XFLUID::getXFEMGaussrule<DISTYPE>(ele, xyze, ih->ElementIntersected(ele->Id()),cell->Shape(),false);
+    const DRT::UTILS::GaussRule3D gaussrule = XFLUID::getXFEMGaussrule<DISTYPE>(ele, xyze, ih->ElementIntersected(ele->Id()),cell->Shape());
 
     // gaussian points
     const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);

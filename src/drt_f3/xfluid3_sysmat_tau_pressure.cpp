@@ -30,7 +30,6 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/enrichment_utils.H"
 #include "../drt_xfem/xfem_element_utils.H"
 #include "../drt_fluid/time_integration_element.H"
-#include "../drt_xfem/spacetime_boundary.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_function.H"
 #include "../drt_fem_general/drt_utils_gder2.H"
@@ -830,17 +829,9 @@ void SysmatDomainTauPressure(
     // space dimension for 3d fluid element
     const size_t nsd = 3;
 
-    const bool incomp_projection = params.get<bool>("INCOMP_PROJECTION");
-
     // get node coordinates of the current element
     static LINALG::Matrix<nsd,numnode> xyze;
     GEO::fillInitialPositionArray<DISTYPE>(ele, xyze);
-
-    // get interface velocities and accelerations
-    const Epetra_Vector& ivelcolnp = *ih->cutterdis()->GetState("ivelcolnp");
-    const Epetra_Vector& ivelcoln  = *ih->cutterdis()->GetState("ivelcoln");
-    const Epetra_Vector& ivelcolnm = *ih->cutterdis()->GetState("ivelcolnm");
-    const Epetra_Vector& iacccoln  = *ih->cutterdis()->GetState("iacccoln");
 
     // dead load in element nodes
     //////////////////////////////////////////////////// , LINALG::SerialDenseMatrix edeadng_(BodyForce(ele->Nodes(),time));
@@ -865,18 +856,6 @@ void SysmatDomainTauPressure(
     const bool tauele_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, Tauxx, 0) > 0);
     const bool discpres_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, DiscPres, 0) > 0);
     if (tauele_unknowns_present != discpres_unknowns_present) dserror("you need disc. pressure unknowns, if you use stress unknowns");
-    //cout << "discpres_unknowns_present: " << discpres_unknowns_present << endl;
-//    const bool velocity_unknowns_present = (getNumParam<ASSTYPE>(dofman, Velx, 1) > 0);
-//    const bool pressure_unknowns_present = (getNumParam<ASSTYPE>(dofman, Pres, 1) > 0);
-//    cout << endl;
-//    if (ASSTYPE == XFEM::standard_assembly)
-//        cout << "standard assembly" << endl;
-//    else
-//        cout << "xfem assembly" << endl;
-//
-//    cout << "stress unknowns present  : " << stress_unknowns_present << endl;
-//    cout << "velocity unknowns present: " << velocity_unknowns_present << endl;
-//    cout << "pressure unknowns present: " << pressure_unknowns_present << endl;
 
 
     // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
@@ -906,7 +885,7 @@ void SysmatDomainTauPressure(
               dofman,
               cellcenter_xyz, false, -1);
 
-        const DRT::UTILS::GaussRule3D gaussrule = XFLUID::getXFEMGaussrule<DISTYPE>(ele, xyze, ih->ElementIntersected(ele->Id()),cell->Shape(),params.get<bool>("FAST_INTEGRATION"));
+        const DRT::UTILS::GaussRule3D gaussrule = XFLUID::getXFEMGaussrule<DISTYPE>(ele, xyze, ih->ElementIntersected(ele->Id()),cell->Shape());
 
         // gaussian points
         const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
@@ -1133,56 +1112,12 @@ void SysmatDomainTauPressure(
 
             // get velocities and accelerations at integration point
             const LINALG::Matrix<nsd,1> gpvelnp = XFLUID::interpolateVectorFieldToIntPoint(evelnp, shp.d0, numparamvelx);
-            LINALG::Matrix<nsd,1> gpveln  = XFLUID::interpolateVectorFieldToIntPoint(eveln , shp.d0, numparamvelx);
-            LINALG::Matrix<nsd,1> gpvelnm = XFLUID::interpolateVectorFieldToIntPoint(evelnm, shp.d0, numparamvelx);
-            LINALG::Matrix<nsd,1> gpaccn  = XFLUID::interpolateVectorFieldToIntPoint(eaccn , shp.d0, numparamvelx);
-
-            double dtstar = -10000.0;
-            if (incomp_projection)
-            {
-              dtstar = dt;
-            }
-            else
-            {
-              const int labelnp = ih->PositionWithinConditionNP(cellcenter_xyz);
-              const bool is_in_fluid = (labelnp == 0);
-              const bool was_in_fluid = (ih->PositionWithinConditionN(posx_gp) == 0);
-
-              XFLUID::TimeFormulation timeformulation = XFLUID::Eulerian;
-//            double dtstar = dt;
-              if (timealgo != timeint_stationary)
-              {
-                if (is_in_fluid and not was_in_fluid)
-                {
-                  timeformulation = XFLUID::ReducedTimeStepSize;
-                  const bool valid_spacetime_cell_found = XFLUID::modifyOldTimeStepsValues<DISTYPE>(ele, ih, xyze, posXiDomain, labelnp, dt, ivelcolnp, ivelcoln, ivelcolnm, iacccoln, gpveln, gpvelnm, gpaccn, dtstar);
-                  if (not valid_spacetime_cell_found)
-                  {
-                    cout << "not valid_spacetime_cell_found" << endl;
-                    continue;
-                  }
-                }
-                else
-                {
-                  timeformulation = XFLUID::Eulerian;
-                  dtstar = dt;
-                }
-              }
-              else
-              {
-                dtstar = dt;
-              }
-            }
-            if (dtstar == -10000.0)
-              dserror("something went wrong!");
+            const LINALG::Matrix<nsd,1> gpveln  = XFLUID::interpolateVectorFieldToIntPoint(eveln , shp.d0, numparamvelx);
+            const LINALG::Matrix<nsd,1> gpvelnm = XFLUID::interpolateVectorFieldToIntPoint(evelnm, shp.d0, numparamvelx);
+            const LINALG::Matrix<nsd,1> gpaccn  = XFLUID::interpolateVectorFieldToIntPoint(eaccn , shp.d0, numparamvelx);
 
             // time integration constant
-            const double timefac = FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dtstar, theta);
-
-
-//            cout << gpvelnp << endl;
-//            cout << evelnp << endl;
-//            cout << shp << endl;
+            const double timefac = FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dt, theta);
 
             // get history data (n) at integration point
 //            LINALG::Matrix<3,1> histvec;
@@ -1194,7 +1129,7 @@ void SysmatDomainTauPressure(
 //                    histvec(isd) += evelnp_hist(isd,iparam)*shp.d0(iparam);
 //            }
             const LINALG::Matrix<nsd,1> histvec = FLD::TIMEINT_THETA_BDF2::GetOldPartOfRighthandside(
-                gpveln, gpvelnm, gpaccn, timealgo, dtstar, theta);
+                gpveln, gpvelnm, gpaccn, timealgo, dt, theta);
 
             // get velocity (np,i) derivatives at integration point
             // vderxy = enr_derxy(j,k)*evelnp(i,k);
@@ -1291,7 +1226,7 @@ void SysmatDomainTauPressure(
             double tau_stab_Mp = 0.0;
             double tau_stab_C  = 0.0;
             FLD::UTILS::computeStabilizationParams(gpvelnp, xji,
-                instationary, dynvisc, dens, vel_norm, strle, hk, mk, FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dtstar, theta),
+                instationary, dynvisc, dens, vel_norm, strle, hk, mk, FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dt, theta),
                 dt, INPAR::FLUID::tautype_franca_barrenechea_valentin_wall,
                 tau_stab_M, tau_stab_Mp, tau_stab_C);
 

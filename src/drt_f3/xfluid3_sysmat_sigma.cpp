@@ -30,11 +30,14 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/enrichment_utils.H"
 #include "../drt_xfem/xfem_element_utils.H"
 #include "../drt_fluid/time_integration_element.H"
-#include "../drt_xfem/spacetime_boundary.H"
+//#include "../drt_xfem/spacetime_boundary.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_function.H"
 #include "../drt_fem_general/drt_utils_gder2.H"
 #include "../drt_fem_general/drt_utils_shapefunctions_service.H"
+
+//#include "../drt_io/io_control.H"
+//#include "../drt_io/io_gmsh.H"
 
   using namespace XFEM::PHYSICS;
 
@@ -752,17 +755,20 @@ void SysmatDomainSigma(
     // space dimension for 3d fluid element
     const size_t nsd = 3;
 
-    const bool incomp_projection = params.get<bool>("INCOMP_PROJECTION");
-
+//#ifdef SPACETIMECELL
+//    const bool incomp_projection = params.get<bool>("INCOMP_PROJECTION");
+//#endif
     // get node coordinates of the current element
     static LINALG::Matrix<nsd,numnode> xyze;
     GEO::fillInitialPositionArray<DISTYPE>(ele, xyze);
 
-    // get interface velocities and accelerations
-    const Epetra_Vector& ivelcolnp = *ih->cutterdis()->GetState("ivelcolnp");
-    const Epetra_Vector& ivelcoln  = *ih->cutterdis()->GetState("ivelcoln");
-    const Epetra_Vector& ivelcolnm = *ih->cutterdis()->GetState("ivelcolnm");
-    const Epetra_Vector& iacccoln  = *ih->cutterdis()->GetState("iacccoln");
+//#ifdef SPACETIMECELL
+//    // get interface velocities and accelerations
+//    const Epetra_Vector& ivelcolnp = *ih->cutterdis()->GetState("ivelcolnp");
+//    const Epetra_Vector& ivelcoln  = *ih->cutterdis()->GetState("ivelcoln");
+//    const Epetra_Vector& ivelcolnm = *ih->cutterdis()->GetState("ivelcolnm");
+//    const Epetra_Vector& iacccoln  = *ih->cutterdis()->GetState("iacccoln");
+//#endif
 
     // dead load in element nodes
     //////////////////////////////////////////////////// , LINALG::SerialDenseMatrix edeadng_(BodyForce(ele->Nodes(),time));
@@ -784,18 +790,6 @@ void SysmatDomainSigma(
 
     // figure out whether we have stress unknowns at all
     const bool tauele_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, Sigmaxx, 0) > 0);
-//    const bool velocity_unknowns_present = (getNumParam<ASSTYPE>(dofman, Velx, 1) > 0);
-//    const bool pressure_unknowns_present = (getNumParam<ASSTYPE>(dofman, Pres, 1) > 0);
-//    cout << endl;
-//    if (ASSTYPE == XFEM::standard_assembly)
-//        cout << "standard assembly" << endl;
-//    else
-//        cout << "xfem assembly" << endl;
-//
-//    cout << "stress unknowns present  : " << stress_unknowns_present << endl;
-//    cout << "velocity unknowns present: " << velocity_unknowns_present << endl;
-//    cout << "pressure unknowns present: " << pressure_unknowns_present << endl;
-
 
     // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
     //const int numparamvelx = getNumParam<ASSTYPE>(dofman, Velx, numnode);
@@ -823,9 +817,9 @@ void SysmatDomainSigma(
               dofman,
               cellcenter_xyz, false, -1);
 
-        const DRT::UTILS::GaussRule3D gaussrule = XFLUID::getXFEMGaussrule<DISTYPE>(ele, xyze, ih->ElementIntersected(ele->Id()),cell->Shape(),params.get<bool>("FAST_INTEGRATION"));
+        const DRT::UTILS::GaussRule3D gaussrule = XFLUID::getXFEMGaussrule<DISTYPE>(ele, xyze, ih->ElementIntersected(ele->Id()),cell->Shape());
 
-        // gaussian points
+        // integration points
         const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
 
         // integration loop
@@ -1011,56 +1005,44 @@ void SysmatDomainSigma(
 
             // get velocities and accelerations at integration point
             const LINALG::Matrix<nsd,1> gpvelnp = XFLUID::interpolateVectorFieldToIntPoint(evelnp, shp.d0, numparamvelx);
-            LINALG::Matrix<nsd,1> gpveln  = XFLUID::interpolateVectorFieldToIntPoint(eveln , shp.d0, numparamvelx);
-            LINALG::Matrix<nsd,1> gpvelnm = XFLUID::interpolateVectorFieldToIntPoint(evelnm, shp.d0, numparamvelx);
-            LINALG::Matrix<nsd,1> gpaccn  = XFLUID::interpolateVectorFieldToIntPoint(eaccn , shp.d0, numparamvelx);
-
-            double dtstar = -10000.0;
-            if (incomp_projection)
-            {
-              dtstar = dt;
-            }
-            else
-            {
-              const int labelnp = ih->PositionWithinConditionNP(cellcenter_xyz);
-              const bool is_in_fluid = (labelnp == 0);
-              const bool was_in_fluid = (ih->PositionWithinConditionN(posx_gp) == 0);
-
-              XFLUID::TimeFormulation timeformulation = XFLUID::Eulerian;
-//            double dtstar = dt;
-              if (timealgo != timeint_stationary)
-              {
-                if (is_in_fluid and not was_in_fluid)
-                {
-                  timeformulation = XFLUID::ReducedTimeStepSize;
-                  const bool valid_spacetime_cell_found = XFLUID::modifyOldTimeStepsValues<DISTYPE>(ele, ih, xyze, posXiDomain, labelnp, dt, ivelcolnp, ivelcoln, ivelcolnm, iacccoln, gpveln, gpvelnm, gpaccn, dtstar);
-                  if (not valid_spacetime_cell_found)
-                  {
-                    cout << "not valid_spacetime_cell_found" << endl;
-                    continue;
-                  }
-                }
-                else
-                {
-                  timeformulation = XFLUID::Eulerian;
-                  dtstar = dt;
-                }
-              }
-              else
-              {
-                dtstar = dt;
-              }
-            }
-            if (dtstar == -10000.0)
-              dserror("something went wrong!");
+            const LINALG::Matrix<nsd,1> gpveln  = XFLUID::interpolateVectorFieldToIntPoint(eveln , shp.d0, numparamvelx);
+            const LINALG::Matrix<nsd,1> gpvelnm = XFLUID::interpolateVectorFieldToIntPoint(evelnm, shp.d0, numparamvelx);
+            const LINALG::Matrix<nsd,1> gpaccn  = XFLUID::interpolateVectorFieldToIntPoint(eaccn , shp.d0, numparamvelx);
 
             // time integration constant
-            const double timefac = FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dtstar, theta);
+            const double timefac = FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dt, theta);
 
-
-//            cout << gpvelnp << endl;
-//            cout << evelnp << endl;
-//            cout << shp << endl;
+//            if (abs(gpaccn(0)) < 0.0001)
+//            {
+//              cout << "gpveln " << gpveln << endl;
+//              cout << "gpaccn " << gpaccn << endl;
+//            }
+//
+//
+//            LINALG::Matrix<3,1> gmsh_pos(true);
+//            gmsh_pos(0,0) = posx_gp(0);
+//            gmsh_pos(1,0) = posx_gp(1);
+//            gmsh_pos(2,0) = posx_gp(2);
+//            LINALG::Matrix<3,1> gmsh_accn(true);
+//            gmsh_accn(0,0) = gpaccn(0);
+//            gmsh_accn(1,0) = gpaccn(1);
+//            gmsh_accn(2,0) = gpaccn(2);
+//            LINALG::Matrix<3,1> gmsh_veln(true);
+//            gmsh_veln(0,0) = gpveln(0);
+//            gmsh_veln(1,0) = gpveln(1);
+//            gmsh_veln(2,0) = gpveln(2);
+//
+//            std::ofstream f;
+//            const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName() + ".gpaccn.pos";
+//            f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+//            IO::GMSH::cellWithVectorFieldToStream(DRT::Element::point1, gmsh_accn, gmsh_pos, f);
+//            f.close();
+//
+//            std::ofstream fv;
+//            const std::string fvname = DRT::Problem::Instance()->OutputControlFile()->FileName() + ".gpveln.pos";
+//            fv.open(fvname.c_str(),std::fstream::ate | std::fstream::app);
+//            IO::GMSH::cellWithVectorFieldToStream(DRT::Element::point1, gmsh_veln, gmsh_pos, fv);
+//            fv.close();
 
             // get history data (n) at integration point
 //            LINALG::Matrix<3,1> histvec;
@@ -1072,7 +1054,7 @@ void SysmatDomainSigma(
 //                    histvec(isd) += evelnp_hist(isd,iparam)*shp.d0(iparam);
 //            }
             const LINALG::Matrix<nsd,1> histvec = FLD::TIMEINT_THETA_BDF2::GetOldPartOfRighthandside(
-                gpveln, gpvelnm, gpaccn, timealgo, dtstar, theta);
+                gpveln, gpvelnm, gpaccn, timealgo, dt, theta);
 
             // get velocity (np,i) derivatives at integration point
             // vderxy = enr_derxy(j,k)*evelnp(i,k);
@@ -1164,7 +1146,7 @@ void SysmatDomainSigma(
             double tau_stab_Mp = 0.0;
             double tau_stab_C  = 0.0;
             FLD::UTILS::computeStabilizationParams(gpvelnp, xji,
-                instationary, dynvisc, dens, vel_norm, strle, hk, mk, FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dtstar, theta),
+                instationary, dynvisc, dens, vel_norm, strle, hk, mk, FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dt, theta),
                 dt, INPAR::FLUID::tautype_franca_barrenechea_valentin_wall,
                 tau_stab_M, tau_stab_Mp, tau_stab_C);
 

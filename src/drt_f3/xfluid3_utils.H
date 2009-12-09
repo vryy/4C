@@ -280,8 +280,7 @@ DRT::UTILS::GaussRule3D getXFEMGaussrule(
     const DRT::Element*                     xele,
     const M&                                xyze_element,
     const bool                              intersected,
-    const DRT::Element::DiscretizationType  celldistype,
-    const bool                              fast_integration
+    const DRT::Element::DiscretizationType  celldistype
     )
 {
   DRT::UTILS::GaussRule3D rule = DRT::UTILS::intrule3D_undefined;
@@ -299,44 +298,20 @@ DRT::UTILS::GaussRule3D getXFEMGaussrule(
       {
         case DRT::Element::hex8:
         {
-          if (fast_integration)
-          {
-            if (xeleGeoType == GEO::CARTESIAN) rule = DRT::UTILS::intrule_tet_11point;
-            else                               rule = DRT::UTILS::intrule_tet_11point;
-          }
-          else
-          {
-            if (xeleGeoType == GEO::CARTESIAN) rule = DRT::UTILS::intrule_tet_24point;
-            else                               rule = DRT::UTILS::intrule_tet_24point;
-          }
+          if (xeleGeoType == GEO::CARTESIAN) rule = DRT::UTILS::intrule_tet_24point;
+          else                               rule = DRT::UTILS::intrule_tet_24point;
           break;
         }
         case DRT::Element::hex20:
         {
-          if (fast_integration)
-          {
-            if (xeleGeoType == GEO::CARTESIAN) rule = DRT::UTILS::intrule_tet_24point;
-            else                               rule = DRT::UTILS::intrule_tet_24point;
-          }
-          else
-          {
-            if (xeleGeoType == GEO::CARTESIAN) rule = DRT::UTILS::intrule_tet_45point;
-            else                               rule = DRT::UTILS::intrule_tet_45point;
-          }
+          if (xeleGeoType == GEO::CARTESIAN) rule = DRT::UTILS::intrule_tet_45point;
+          else                               rule = DRT::UTILS::intrule_tet_45point;
           break;
         }
         case DRT::Element::hex27:
         {
-          if (fast_integration)
-          {
-            if (xeleGeoType == GEO::CARTESIAN) rule = DRT::UTILS::intrule_tet_45point;
-            else                               rule = DRT::UTILS::intrule_tet_45point;
-          }
-          else
-          {
-            if (xeleGeoType == GEO::CARTESIAN) rule = DRT::UTILS::intrule_tet_343point_peano;
-            else                               rule = DRT::UTILS::intrule_tet_343point_peano;
-          }
+          if (xeleGeoType == GEO::CARTESIAN) rule = DRT::UTILS::intrule_tet_343point_peano;
+          else                               rule = DRT::UTILS::intrule_tet_343point_peano;
           break;
         }
         case DRT::Element::tet4:

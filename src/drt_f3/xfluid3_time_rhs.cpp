@@ -194,11 +194,11 @@ void SysmatDomain4(
     static LINALG::Matrix<nsd,numnode> xyze;
     GEO::fillInitialPositionArray<DISTYPE>(ele, xyze);
 
-    // get interface velocities and accelerations
-    const Epetra_Vector& ivelcolnp = *ih->cutterdis()->GetState("ivelcolnp");
-    const Epetra_Vector& ivelcoln  = *ih->cutterdis()->GetState("ivelcoln");
-    const Epetra_Vector& ivelcolnm = *ih->cutterdis()->GetState("ivelcolnm");
-    const Epetra_Vector& iacccoln  = *ih->cutterdis()->GetState("iacccoln");
+//    // get interface velocities and accelerations
+//    const Epetra_Vector& ivelcolnp = *ih->cutterdis()->GetState("ivelcolnp");
+//    const Epetra_Vector& ivelcoln  = *ih->cutterdis()->GetState("ivelcoln");
+//    const Epetra_Vector& ivelcolnm = *ih->cutterdis()->GetState("ivelcolnm");
+//    const Epetra_Vector& iacccoln  = *ih->cutterdis()->GetState("iacccoln");
 
     // dead load in element nodes
     //////////////////////////////////////////////////// , LINALG::SerialDenseMatrix edeadng_(BodyForce(ele->Nodes(),time));
@@ -244,7 +244,6 @@ void SysmatDomain4(
     {
         const LINALG::Matrix<nsd,1> cellcenter_xyz(cell->GetPhysicalCenterPosition());
 
-        int labelnp = 0;
 
 //        if (ASSTYPE == XFEM::xfem_assembly)
 //        {
@@ -268,7 +267,7 @@ void SysmatDomain4(
               dofman,
               cellcenter_xyz, false, -1);
 
-        const DRT::UTILS::GaussRule3D gaussrule = XFLUID::getXFEMGaussrule<DISTYPE>(ele, xyze, ih->ElementIntersected(ele->Id()),cell->Shape(),false);
+        const DRT::UTILS::GaussRule3D gaussrule = XFLUID::getXFEMGaussrule<DISTYPE>(ele, xyze, ih->ElementIntersected(ele->Id()),cell->Shape());
 
         // gaussian points
         const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
@@ -444,41 +443,41 @@ void SysmatDomain4(
 
             // get velocities and accelerations at integration point
             const LINALG::Matrix<nsd,1> gpvelnp = XFLUID::interpolateVectorFieldToIntPoint(evelnp, shp.d0, numparamvelx);
-            LINALG::Matrix<nsd,1> gpveln  = XFLUID::interpolateVectorFieldToIntPoint(eveln , shp.d0, numparamvelx);
-            LINALG::Matrix<nsd,1> gpvelnm = XFLUID::interpolateVectorFieldToIntPoint(evelnm, shp.d0, numparamvelx);
-            LINALG::Matrix<nsd,1> gpaccn  = XFLUID::interpolateVectorFieldToIntPoint(eaccn , shp.d0, numparamvelx);
+            const LINALG::Matrix<nsd,1> gpveln  = XFLUID::interpolateVectorFieldToIntPoint(eveln , shp.d0, numparamvelx);
+            const LINALG::Matrix<nsd,1> gpvelnm = XFLUID::interpolateVectorFieldToIntPoint(evelnm, shp.d0, numparamvelx);
+            const LINALG::Matrix<nsd,1> gpaccn  = XFLUID::interpolateVectorFieldToIntPoint(eaccn , shp.d0, numparamvelx);
 
-
-            const bool was_in_fluid = (ih->PositionWithinConditionN(posx_gp) == 0);
-
-            XFLUID::TimeFormulation timeformulation = XFLUID::Eulerian;
-            double dtstar = -10000.0;
-//            double dtstar = dt;
-            if (timealgo != timeint_stationary)
-            {
-              if (not was_in_fluid)
-              {
-                timeformulation = XFLUID::ReducedTimeStepSize;
-                const bool valid_spacetime_cell_found = XFLUID::modifyOldTimeStepsValues<DISTYPE>(ele, ih, xyze, posXiDomain, labelnp, dt, ivelcolnp, ivelcoln, ivelcolnm, iacccoln, gpveln, gpvelnm, gpaccn, dtstar);
-                if (not valid_spacetime_cell_found)
-                {
-                  cout << "not valid_spacetime_cell_found" << endl;
-                  continue;
-                }
-              }
-              else
-              {
-                timeformulation = XFLUID::Eulerian;
-                dtstar = dt;
-              }
-            }
-            else
-            {
-              dtstar = dt;
-            }
-
-            if (dtstar == -10000.0)
-              dserror("something went wrong!");
+//            const bool is_in_fluid = (ih->PositionWithinConditionNP(cellcenter_xyz) == 0);
+//            const bool was_in_fluid = (ih->PositionWithinConditionN(posx_gp) == 0);
+//
+//            XFLUID::TimeFormulation timeformulation = XFLUID::Eulerian;
+//            double dtstar = -10000.0;
+////            double dtstar = dt;
+//            if (timealgo != timeint_stationary)
+//            {
+//              if (not was_in_fluid)
+//              {
+//                timeformulation = XFLUID::ReducedTimeStepSize;
+//                const bool valid_spacetime_cell_found = XFLUID::modifyOldTimeStepsValues<DISTYPE>(ele, ih, xyze, posXiDomain, is_in_fluid, was_in_fluid, dt, ivelcolnp, ivelcoln, ivelcolnm, iacccoln, gpveln, gpvelnm, gpaccn, dtstar);
+//                if (not valid_spacetime_cell_found)
+//                {
+//                  cout << "not valid_spacetime_cell_found" << endl;
+//                  continue;
+//                }
+//              }
+//              else
+//              {
+//                timeformulation = XFLUID::Eulerian;
+//                dtstar = dt;
+//              }
+//            }
+//            else
+//            {
+//              dtstar = dt;
+//            }
+//
+//            if (dtstar == -10000.0)
+//              dserror("something went wrong!");
 
             // time integration constant
 //            const double timefac = FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dtstar, theta);
@@ -498,7 +497,7 @@ void SysmatDomain4(
 //                    histvec(isd) += evelnp_hist(isd,iparam)*shp.d0(iparam);
 //            }
             const LINALG::Matrix<nsd,1> histvec = FLD::TIMEINT_THETA_BDF2::GetOldPartOfRighthandside(
-                gpveln, gpvelnm, gpaccn, timealgo, dtstar, theta);
+                gpveln, gpvelnm, gpaccn, timealgo, dt, theta);
 
             //////////////////////////////////////
             // now build single stiffness terms //

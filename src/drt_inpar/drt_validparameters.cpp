@@ -2421,8 +2421,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  yesnotuple,yesnovalue,&xfem_general);
   setStringToIntegralParameter<int>("INCOMP_PROJECTION","No","Do you want to project the old velocity to an incompressible velocity field?",
                                yesnotuple,yesnovalue,&xfem_general);
-  setStringToIntegralParameter<int>("FAST_INTEGRATION","No","Do you want to save gausspoints to speed up computation?",
-                                   yesnotuple,yesnovalue,&xfem_general);
   setStringToIntegralParameter<int>("CONDEST","No","Do you want to estimate the condition number? It is somewhat costly.",
                                    yesnotuple,yesnovalue,&xfem_general);
   DoubleParameter("volumeRatioLimit",1.0e-2,"don't enrich nodes of elements, when less than this fraction of the element is on one side of the interface",&xfem_general);

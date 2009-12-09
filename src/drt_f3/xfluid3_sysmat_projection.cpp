@@ -275,9 +275,9 @@ void SysmatDomainProjection(
 
     // get interface velocities and accelerations
 //    const Epetra_Vector& ivelcolnp = *ih->cutterdis()->GetState("ivelcolnp");
-    const Epetra_Vector& ivelcoln  = *ih->cutterdis()->GetState("ivelcoln");
+//    const Epetra_Vector& ivelcoln  = *ih->cutterdis()->GetState("ivelcoln");
 //    const Epetra_Vector& ivelcolnm = *ih->cutterdis()->GetState("ivelcolnm");
-    const Epetra_Vector& iacccoln  = *ih->cutterdis()->GetState("iacccoln");
+//    const Epetra_Vector& iacccoln  = *ih->cutterdis()->GetState("iacccoln");
 
     // dead load in element nodes
     //////////////////////////////////////////////////// , LINALG::SerialDenseMatrix edeadng_(BodyForce(ele->Nodes(),time));
@@ -336,7 +336,7 @@ void SysmatDomainProjection(
               dofman,
               cellcenter_xyz, false, -1);
 
-        const DRT::UTILS::GaussRule3D gaussrule = XFLUID::getXFEMGaussrule<DISTYPE>(ele, xyze, ih->ElementIntersected(ele->Id()),cell->Shape(),false);
+        const DRT::UTILS::GaussRule3D gaussrule = XFLUID::getXFEMGaussrule<DISTYPE>(ele, xyze, ih->ElementIntersected(ele->Id()),cell->Shape());
 
         // gaussian points
         const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
@@ -448,31 +448,31 @@ void SysmatDomainProjection(
 
             // get velocities and accelerations at integration point
 //            const LINALG::Matrix<nsd,1> gpvelnp = XFLUID::interpolateVectorFieldToIntPoint(evelnp, shp.d0, numparamvelx);
-            LINALG::Matrix<nsd,1> u2_proj  = XFLUID::interpolateVectorFieldToIntPoint(eveln , shp.d0, numparamvelx);\
+            LINALG::Matrix<nsd,1> u2_proj  = XFLUID::interpolateVectorFieldToIntPoint(eveln , shp.d0, numparamvelx);
 //            cout << u2_proj << endl;
 //            LINALG::Matrix<nsd,1> gpvelnm = XFLUID::interpolateVectorFieldToIntPoint(evelnm, shp.d0, numparamvelx);
             LINALG::Matrix<nsd,1> a2_proj  = XFLUID::interpolateVectorFieldToIntPoint(eaccn , shp.d0, numparamvelx);
 
 
-            const bool was_in_fluid = (ih->PositionWithinConditionN(posx_gp) == 0);
-
-            XFLUID::TimeFormulation timeformulation = XFLUID::Eulerian;
-//            double dtstar = dt;
-
-            if (not was_in_fluid)
-            {
-              timeformulation = XFLUID::ReducedTimeStepSize;
-              const bool valid_spacetime_cell_found = XFLUID::ProjectSpaceTimeValuesToNewMesh<DISTYPE>(ele, ih, xyze, posXiDomain, labelnp, ivelcoln, iacccoln, u2_proj, a2_proj);
-              if (not valid_spacetime_cell_found)
-              {
-                cout << "not valid_spacetime_cell_found" << endl;
-                continue;
-              }
-            }
-            else
-            {
-              timeformulation = XFLUID::Eulerian;
-            }
+//            const bool was_in_fluid = (ih->PositionWithinConditionN(posx_gp) == 0);
+//
+//            XFLUID::TimeFormulation timeformulation = XFLUID::Eulerian;
+////            double dtstar = dt;
+//
+//            if (not was_in_fluid)
+//            {
+//              timeformulation = XFLUID::ReducedTimeStepSize;
+//              const bool valid_spacetime_cell_found = XFLUID::ProjectSpaceTimeValuesToNewMesh<DISTYPE>(ele, ih, xyze, posXiDomain, labelnp, ivelcoln, iacccoln, u2_proj, a2_proj);
+//              if (not valid_spacetime_cell_found)
+//              {
+//                cout << "not valid_spacetime_cell_found" << endl;
+//                continue;
+//              }
+//            }
+//            else
+//            {
+//              timeformulation = XFLUID::Eulerian;
+//            }
 
 
 
@@ -565,7 +565,7 @@ void SysmatDomainProjection(
                 assembler_veln.template Matrix<Pres,Pres>(shp.dz, ttimetauMp, shp.dz);
             }
 
-#if 0
+#if 1
             // acceleration
 
             /* inertia (contribution to mass matrix) */

@@ -20,14 +20,6 @@ Maintainer: Axel Gerstenberger
 namespace XFLUID
 {
 
-  enum TimeFormulation
-  {
-    Lagrangean,      ///< material time derivative -> partial time derivative
-    Eulerian,        ///< material time derivative -> partial time derivative plus convective term
-    ReducedTimeStepSize
-  };
-
-
   /// generate old velocity/acceleration values, if integration point was in a void during the last time step
   inline LINALG::Matrix<3,1> getIntegrationPointValueFromBoundary(
       const Teuchos::RCP<DRT::Discretization>&   boundarydis,   ///< connection to the boundary dis
@@ -72,7 +64,8 @@ namespace XFLUID
       const Teuchos::RCP<XFEM::InterfaceHandleXFSI>&  ih,   ///< connection to the interface handler
       const M&                                   xyze,
       const LINALG::Matrix<3,1>&                 posXiDomain,
-      const int                                  labelnp,
+      const bool                                 is_in_fluid,
+      const bool                                 was_in_fluid,
       double                                     dt,
       const Epetra_Vector&                       ivelcolnp,
       const Epetra_Vector&                       ivelcoln,
@@ -80,8 +73,7 @@ namespace XFLUID
       const Epetra_Vector&                       iacccoln,
       LINALG::Matrix<3,1>&                       gpveln,
       LINALG::Matrix<3,1>&                       gpvelnm,
-      LINALG::Matrix<3,1>&                       gpaccn,
-      double&                                    dtstar
+      LINALG::Matrix<3,1>&                       gpaccn
   )
   {
     const std::size_t nsd = 3;
@@ -90,16 +82,12 @@ namespace XFLUID
     LINALG::Matrix<nsd,1> posx_gp;
     GEO::elementToCurrentCoordinatesT<DISTYPE>(xyze, posXiDomain, posx_gp);
 
-    const bool is_in_fluid = (0 == labelnp);
-
     if (not is_in_fluid)
     {
       std::cout << "should I arrive here?" << std::endl;
       exit(1);
 //      return false;
     }
-
-    const bool was_in_fluid = (ih->PositionWithinConditionN(posx_gp) == 0);
 
     const bool in_space_time_slab_area = (is_in_fluid and (not was_in_fluid));
 
@@ -125,8 +113,6 @@ namespace XFLUID
           cout << slab.toString() << endl << endl;
           dserror("wrong value of delta_slab");
         }
-        dtstar = dt;// * (delta_slab);
-//        cout << rst(2) <<  "  " << delta_slab << " " << dtstar << endl;
 
         const DRT::Element* boundaryele = ih->cutterdis()->gElement(slab.getBeleId());
         const size_t numnode_boundary = boundaryele->NumNode();
@@ -180,12 +166,10 @@ namespace XFLUID
       else
       {
 //        cout << "did not find cell" << endl;
-        dtstar = dt;
       }
     }
     else
     {
-      dtstar = dt;
     }
     return true;
   }
@@ -246,7 +230,6 @@ namespace XFLUID
             cout << slab.toString() << endl << endl;
             dserror("wrong value of delta_slab");
           }
-  //        cout << rst(2) <<  "  " << delta_slab << " " << dtstar << endl;
 
           const DRT::Element* boundaryele = ih->cutterdis()->gElement(slab.getBeleId());
           const size_t numnode_boundary = boundaryele->NumNode();
