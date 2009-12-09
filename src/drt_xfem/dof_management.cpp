@@ -460,16 +460,16 @@ void XFEM::DofManager::toGmsh(
     std::ofstream gmshfilecontent(filename.c_str());
     {
       // draw elements with associated gid
-      gmshfilecontent << "View \" " << "Element->Id() \" {" << endl;
+      gmshfilecontent << "View \" " << "Element->Id() \" {\n";
       for (int i=0; i<ih_->xfemdis()->NumMyColElements(); ++i)
       {
         const DRT::Element* actele = ih_->xfemdis()->lColElement(i);
         IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, gmshfilecontent);
       };
-      gmshfilecontent << "};" << endl;
+      gmshfilecontent << "};\n";
     }
     {
-      gmshfilecontent << "View \" " << " Stress unknowns in element \" {" << endl;
+      gmshfilecontent << "View \" " << " Stress unknowns in element \" {\n";
       for (int i=0; i<ih_->xfemdis()->NumMyColElements(); ++i)
       {
         const DRT::Element* actele = ih_->xfemdis()->lColElement(i);

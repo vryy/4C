@@ -495,7 +495,7 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
     const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("domains", step, 5, screen_out, xfemdis_->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
     {
-      gmshfilecontent << "View \" " << "Domains using CellCenter of Elements and Integration Cells \" {" << endl;
+      gmshfilecontent << "View \" " << "Domains using CellCenter of Elements and Integration Cells \" {\n";
 
       for (int i=0; i<xfemdis_->NumMyColElements(); ++i)
       {
@@ -511,7 +511,7 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
           IO::GMSH::cellWithScalarToStream(cell->Shape(), color, cellpos, gmshfilecontent);
         };
       };
-      gmshfilecontent << "};" << endl;
+      gmshfilecontent << "};\n";
     }
     gmshfilecontent.close();
     if (screen_out) cout << " done" << endl;
@@ -529,7 +529,7 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
       const Teuchos::RCP<GEO::SearchTree> tree = entry->second;
 
 
-      gmshfilecontent << "View \" " << "Domains using CellCenter of Elements and Integration Cells \" {" << endl;
+      gmshfilecontent << "View \" " << "Domains using CellCenter of Elements and Integration Cells \" {\n";
 
       for (int i=0; i<xfemdis_->NumMyColElements(); ++i)
       {
@@ -546,7 +546,7 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
           IO::GMSH::cellWithScalarToStream(cell->Shape(), color, cellpos, gmshfilecontent);
         };
       };
-      gmshfilecontent << "};" << endl;
+      gmshfilecontent << "};\n";
     }
     gmshfilecontent.close();
     if (screen_out) cout << " done" << endl;
@@ -557,7 +557,7 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
     const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("spacetime", step, 5, screen_out, xfemdis_->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
     {
-      gmshfilecontent << "View \" " << "SpaceTime cells \" {" << endl;
+      gmshfilecontent << "View \" " << "SpaceTime cells \" {\n";
       LINALG::SerialDenseVector vals(8);
       vals(0) = 0.0;vals(1) = 0.0;vals(2) = 0.0;vals(3) = 0.0;
       vals(4) = 1.0;vals(5) = 1.0;vals(6) = 1.0;vals(7) = 1.0;
@@ -567,7 +567,7 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
 
         IO::GMSH::cellWithScalarFieldToStream(DRT::Element::hex8, vals, slabitem.get_xyzt(), gmshfilecontent);
       }
-      gmshfilecontent << "};" << endl;
+      gmshfilecontent << "};\n";
     }
     gmshfilecontent.close();
     if (screen_out) cout << " done" << endl;
@@ -580,7 +580,7 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
     const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("points", step, 5, screen_out, xfemdis_->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
     {
-      gmshfilecontent << "View \" " << "CellCenter of Elements and Integration Cells \" {" << endl;
+      gmshfilecontent << "View \" " << "CellCenter of Elements and Integration Cells \" {\n";
 
       for (int i=0; i<xfemdis_->NumMyColElements(); ++i)
       {
@@ -599,7 +599,7 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
           IO::GMSH::cellWithScalarToStream(DRT::Element::point1, (actele->Id()), point, gmshfilecontent);
         };
       };
-      gmshfilecontent << "};" << endl;
+      gmshfilecontent << "};\n";
     }
     gmshfilecontent.close();
     cout << " done" << endl;
