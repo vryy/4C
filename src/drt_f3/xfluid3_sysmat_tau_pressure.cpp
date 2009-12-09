@@ -887,7 +887,7 @@ void SysmatDomainTauPressure(
 
         const DRT::UTILS::GaussRule3D gaussrule = XFLUID::getXFEMGaussrule<DISTYPE>(ele, xyze, ih->ElementIntersected(ele->Id()),cell->Shape());
 
-        // gaussian points
+        // integration points
         const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
 
         // integration loop
@@ -1180,16 +1180,6 @@ void SysmatDomainTauPressure(
               gradp(1) += shp.dy(iparam)*eprenp(iparam);
               gradp(2) += shp.dz(iparam)*eprenp(iparam);
             }
-
-//            // get discont. pressure gradients
-//            LINALG::Matrix<3,1> graddiscp;
-//            //gradp = enr_derxy(i,j)*eprenp(j);
-//            for (int isd = 0; isd < nsd; ++isd)
-//            {
-//                graddiscp(isd) = 0.0;
-//                for (int iparam = 0; iparam < numparamdiscpres; ++iparam)
-//                    graddiscp(isd) += enr_derxy_discpres(isd,iparam)*ediscprenp(iparam);
-//            }
 
             // get pressure
             double pres = 0.0;

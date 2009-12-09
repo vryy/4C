@@ -30,14 +30,10 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/enrichment_utils.H"
 #include "../drt_xfem/xfem_element_utils.H"
 #include "../drt_fluid/time_integration_element.H"
-//#include "../drt_xfem/spacetime_boundary.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_function.H"
 #include "../drt_fem_general/drt_utils_gder2.H"
 #include "../drt_fem_general/drt_utils_shapefunctions_service.H"
-
-//#include "../drt_io/io_control.H"
-//#include "../drt_io/io_gmsh.H"
 
   using namespace XFEM::PHYSICS;
 
@@ -755,20 +751,9 @@ void SysmatDomainSigma(
     // space dimension for 3d fluid element
     const size_t nsd = 3;
 
-//#ifdef SPACETIMECELL
-//    const bool incomp_projection = params.get<bool>("INCOMP_PROJECTION");
-//#endif
     // get node coordinates of the current element
     static LINALG::Matrix<nsd,numnode> xyze;
     GEO::fillInitialPositionArray<DISTYPE>(ele, xyze);
-
-//#ifdef SPACETIMECELL
-//    // get interface velocities and accelerations
-//    const Epetra_Vector& ivelcolnp = *ih->cutterdis()->GetState("ivelcolnp");
-//    const Epetra_Vector& ivelcoln  = *ih->cutterdis()->GetState("ivelcoln");
-//    const Epetra_Vector& ivelcolnm = *ih->cutterdis()->GetState("ivelcolnm");
-//    const Epetra_Vector& iacccoln  = *ih->cutterdis()->GetState("iacccoln");
-//#endif
 
     // dead load in element nodes
     //////////////////////////////////////////////////// , LINALG::SerialDenseMatrix edeadng_(BodyForce(ele->Nodes(),time));
@@ -1012,38 +997,6 @@ void SysmatDomainSigma(
             // time integration constant
             const double timefac = FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dt, theta);
 
-//            if (abs(gpaccn(0)) < 0.0001)
-//            {
-//              cout << "gpveln " << gpveln << endl;
-//              cout << "gpaccn " << gpaccn << endl;
-//            }
-//
-//
-//            LINALG::Matrix<3,1> gmsh_pos(true);
-//            gmsh_pos(0,0) = posx_gp(0);
-//            gmsh_pos(1,0) = posx_gp(1);
-//            gmsh_pos(2,0) = posx_gp(2);
-//            LINALG::Matrix<3,1> gmsh_accn(true);
-//            gmsh_accn(0,0) = gpaccn(0);
-//            gmsh_accn(1,0) = gpaccn(1);
-//            gmsh_accn(2,0) = gpaccn(2);
-//            LINALG::Matrix<3,1> gmsh_veln(true);
-//            gmsh_veln(0,0) = gpveln(0);
-//            gmsh_veln(1,0) = gpveln(1);
-//            gmsh_veln(2,0) = gpveln(2);
-//
-//            std::ofstream f;
-//            const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName() + ".gpaccn.pos";
-//            f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
-//            IO::GMSH::cellWithVectorFieldToStream(DRT::Element::point1, gmsh_accn, gmsh_pos, f);
-//            f.close();
-//
-//            std::ofstream fv;
-//            const std::string fvname = DRT::Problem::Instance()->OutputControlFile()->FileName() + ".gpveln.pos";
-//            fv.open(fvname.c_str(),std::fstream::ate | std::fstream::app);
-//            IO::GMSH::cellWithVectorFieldToStream(DRT::Element::point1, gmsh_veln, gmsh_pos, fv);
-//            fv.close();
-
             // get history data (n) at integration point
 //            LINALG::Matrix<3,1> histvec;
 //            //histvec = enr_funct(j)*evelnp_hist(i,j);
@@ -1105,16 +1058,6 @@ void SysmatDomainSigma(
               gradp(1) += shp.dy(iparam)*eprenp(iparam);
               gradp(2) += shp.dz(iparam)*eprenp(iparam);
             }
-
-//            // get discont. pressure gradients
-//            LINALG::Matrix<3,1> graddiscp;
-//            //gradp = enr_derxy(i,j)*eprenp(j);
-//            for (int isd = 0; isd < nsd; ++isd)
-//            {
-//                graddiscp(isd) = 0.0;
-//                for (int iparam = 0; iparam < numparamdiscpres; ++iparam)
-//                    graddiscp(isd) += enr_derxy_discpres(isd,iparam)*ediscprenp(iparam);
-//            }
 
             // get pressure
             double pres = 0.0;
