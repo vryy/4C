@@ -278,7 +278,7 @@ class AbstractStrategy
     back to this function.
 
     */
-    void InitEvalMortar();
+    virtual void InitEvalMortar();
 
     /*!
     \brief Initialize general contact variables for next Newton step
