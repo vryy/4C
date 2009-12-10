@@ -125,15 +125,6 @@ void CONTACT::PenaltyStrategy::SaveReferenceState(const RCP<Epetra_Vector> dis)
 }
 
 /*----------------------------------------------------------------------*
- |  initialize + evaluate mortar stuff for next Newton step   popp 06/09|
- *----------------------------------------------------------------------*/
-void CONTACT::PenaltyStrategy::InitEvalMortar()
-{
-  // refer call to parent class
-  AbstractStrategy::InitEvalMortar();
-}
-
-/*----------------------------------------------------------------------*
  | initialize global contact variables for next Newton step   popp 06/09|
  *----------------------------------------------------------------------*/
 void CONTACT::PenaltyStrategy::Initialize()

@@ -272,13 +272,8 @@ class AbstractStrategy
     is to be done here yet, so there is no need to pass in the effective
     stiffness K or the effective load vector f.
 
-    Note: Only quantities common to all subsequent solving strategies (Lagrange,
-    Penalty, Augmented) are initialized here. In case they need additional mortar
-    variables, use the overloaded function call in the derived class and refer
-    back to this function.
-
     */
-    virtual void InitEvalMortar();
+    void InitEvalMortar();
 
     /*!
     \brief Initialize general contact variables for next Newton step

@@ -124,12 +124,6 @@ class PenaltyStrategy : public AbstractStrategy
   void SaveReferenceState(const RCP<Epetra_Vector> dis);
   
   /*!
-  \brief Initialize and evaluate interface for the next Newton step
-   
-  */
-  void InitEvalMortar();
-  
-  /*!
   \brief Initialize general contact variables for next Newton step
        
   For a penalty strategy this involves the derivative matrix for the regularized lagrange multipliers.

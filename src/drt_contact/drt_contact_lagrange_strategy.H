@@ -77,12 +77,6 @@ class LagrangeStrategy : public AbstractStrategy
     virtual ~LagrangeStrategy() {};
 
     /*!
-    \brief Initialize and evaluate interface for the next Newton step
-
-    */
-    void InitEvalMortar();
-
-    /*!
     \brief Initialize general contact variables for next Newton step
      
     For a lagrangian strategy this includes the global normal / tangent matrices N and T, 

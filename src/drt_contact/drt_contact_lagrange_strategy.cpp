@@ -60,20 +60,6 @@ AbstractStrategy(problemrowmap, params, interface, dim, comm, alphaf)
 }
 
 /*----------------------------------------------------------------------*
- |  initialize + evaulate mortar stuff for next Newton step   popp 06/09|
- *----------------------------------------------------------------------*/
-void CONTACT::LagrangeStrategy::InitEvalMortar()
-{
-  // refer call to parent class
-  AbstractStrategy::InitEvalMortar();
-
-  // this is lagrange specific
-  mhatmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
  | initialize global contact variables for next Newton step   popp 06/09|
  *----------------------------------------------------------------------*/
 void CONTACT::LagrangeStrategy::Initialize()
