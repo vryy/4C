@@ -238,6 +238,7 @@ public:
 
   double Time() const { return time_; }
   int Step() const { return step_; }
+  double Theta() const { return theta_; }
   Teuchos::RCP<LINALG::Solver> LinearSolver()
   {
     return rcp(new LINALG::Solver(fluidsolverparams_, discret_->Comm(),
@@ -256,7 +257,7 @@ public:
   /// introduce surface split extractor object
   /*!
     This method must (and will) be called during setup with a properly
-    initialized extractor object iff we are on an ale mesh.
+    initialized extractor object if we are on an ale mesh.
    */
   void SetSurfaceSplitter(const UTILS::MapExtractor* surfacesplitter) { surfacesplitter_ = surfacesplitter; }
 
