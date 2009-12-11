@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file drt_parobject.H
 
-drt_parser.cpp<pre>
+<pre>
 Maintainer: Michael Gee
             gee@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
@@ -447,7 +447,7 @@ public:
     AddtoPack(data, j);
     AddtoPack(data, stuff.A(), stuff.M()*stuff.N()*sizeof(double));
   }
-  
+
   /*!
   \brief Add stuff to the end of a char vector data
 
@@ -455,21 +455,21 @@ public:
   \param data (in/out) : char string stuff shall be added to
   \param stuff (in)    : vector of matrices that get's added to data
 
-  */  
+  */
   template<unsigned i, unsigned j>
   static void AddtoPack(vector< char > & data,const vector<LINALG::Matrix<i,j> > stuff)
   {
     //add length of vector to be packed so that later the vector can be restored with correct length when unpacked
     int vectorlength = stuff.size();
     AddtoPack(data,vectorlength);
-    
+
     //pointer to the first element of the first matrix in the vector stuff
     const double* A = (stuff[0]).A();
-    
+
     //add all data in vector to pack
     AddtoPack(data,A,vectorlength*i*j*sizeof(double));
-    
-    return;   
+
+    return;
   }
 
   /*!
@@ -601,7 +601,7 @@ public:
       dserror("second dimension mismatch");
     ExtractfromPack(position, data, stuff.A(), stuff.M()*stuff.N()*sizeof(double));
   }
-  
+
   /*!
   \brief Extract stuff from a char vector data and increment position
 
@@ -618,21 +618,21 @@ public:
     //get length of vector to be extracted and allocate according amount of memory for all extracted data
     int vectorlength;
     ExtractfromPack(position,data,vectorlength);
-    
+
     //resize vector stuff appropriately
     stuff.resize(vectorlength);
-    
+
     /*continue extracting if and only if vector has at least length one and the matrices in the vector have
      *at least one line and column, respectively (otherwise no data to be extracted)*/
     if(i*j*vectorlength)
-    { 
+    {
       //pointer to the first element of the first matrix in the vector stuff
-      double* A = (stuff[0]).A(); 
+      double* A = (stuff[0]).A();
 
       //actual extraction of data
       ExtractfromPack(position,data,A,vectorlength*i*j*sizeof(double));
     }
-    
+
     return;
 
   }
