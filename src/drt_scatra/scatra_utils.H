@@ -19,26 +19,50 @@ Maintainer: Georg Bauer
 #define SCATRA_UTILS_H
 
 #include "../drt_lib/linalg_blocksparsematrix.H"
+#include "../drt_lib/drt_condition_utils.H"
 
 
 namespace SCATRA
 {
 
 /*!
-\brief automatically create a matching scalar transport discretization
-       from existing fluid discretization
+\brief implementation of special clone strategy for automatic generation
+       of scatra from a given fluid discretization
 
-*/
-void CreateScaTraDiscretization(
-    Teuchos::RCP<DRT::Discretization>& fluiddis,  ///< RCP to fluid discretization
-    Teuchos::RCP<DRT::Discretization>& scatradis, ///< RCP to empty scalar transport discretization
-    const std::map<string,string>& conditions_to_copy,  ///< condition names to copy (and new names)
-    const int matid, ///< ID of the material which generated elements will get
-    const bool makequadratic                            ///< increase polynomial order
-    );
+ */
+class ScatraFluidCloneStrategy
+{
+public:
+
+  /// constructor
+  explicit ScatraFluidCloneStrategy(){}
+  /// destructor
+  virtual ~ScatraFluidCloneStrategy() {}
+
+protected:
+
+  /// determine element type string and whether element is copied or not
+  bool DetermineEleType(vector<string>& eletype);
+
+  /// set element-specific data (material etc.)
+  void SetElementData(RCP<DRT::Element> newele, DRT::Element* oldele,const int matid);
+
+  /// returns conditions names to be copied (source and target name)
+  map<string,string> ConditionToCopy();
+
+  /// check for correct material
+  void CheckMaterialType(const int matid);
+
+private:
+
+}; // class ScatraFluidCloneStrategy
 
 
-  /// concentrations-el.potential/species-temperature split strategy
+
+/*!
+\brief concentrations-el.potential/species-temperature split strategy
+
+ */
   class SplitStrategy
   {
   public:

@@ -23,6 +23,7 @@ Maintainer: Volker Gravemeier
 #include "passive_scatra_algorithm.H"
 #include "scatra_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 #include "scatra_resulttest.H"
 
@@ -47,7 +48,7 @@ void scatra_dyn(int disnumff, int disnumscatra, int restart)
 #endif
 
   // access the problem-specific parameter list
-  const Teuchos::ParameterList& scatradyn     = DRT::Problem::Instance()->ScalarTransportDynamicParams();
+  const Teuchos::ParameterList& scatradyn = DRT::Problem::Instance()->ScalarTransportDynamicParams();
 
   // access the fluid discretization
   RefCountPtr<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(disnumff,0);
@@ -97,23 +98,16 @@ void scatra_dyn(int disnumff, int disnumscatra, int restart)
       if (scatradis->NumGlobalNodes()==0)
       {
         Epetra_Time time(comm);
-        std::map<string,string> conditions_to_copy;
-        conditions_to_copy.insert(pair<string,string>("TransportDirichlet","Dirichlet"));
-        conditions_to_copy.insert(pair<string,string>("TransportPointNeumann","PointNeumann"));
-        conditions_to_copy.insert(pair<string,string>("TransportLineNeumann","LineNeumann"));
-        conditions_to_copy.insert(pair<string,string>("TransportSurfaceNeumann","SurfaceNeumann"));
-        conditions_to_copy.insert(pair<string,string>("TransportVolumeNeumann","VolumeNeumann"));
-        // when the fluid problem is periodic we also expect the mass transport to be so:
-        conditions_to_copy.insert(pair<string,string>("LinePeriodic","LinePeriodic"));
-        conditions_to_copy.insert(pair<string,string>("SurfacePeriodic","SurfacePeriodic"));
-        // a hack:
-        conditions_to_copy.insert(pair<string,string>("FluidStressCalc","FluxCalculation"));
 
         // fetch the desired material id for the transport elements
         const int matid = scatradyn.get<int>("MATID");
+        // create the scatra discretization
+        {
+        Teuchos::RCP<DRT::UTILS::DiscretizationCreator<SCATRA::ScatraFluidCloneStrategy> > clonewizard =
+              Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<SCATRA::ScatraFluidCloneStrategy>() );
 
-        SCATRA::CreateScaTraDiscretization(fluiddis,scatradis,conditions_to_copy,matid,false);
-
+        clonewizard->CreateMatchingDiscretization(fluiddis,scatradis,matid);
+        }
         if (comm.MyPID()==0)
         cout<<"Created scalar transport discretization from fluid field in...."
         <<time.ElapsedTime() << " secs\n\n";

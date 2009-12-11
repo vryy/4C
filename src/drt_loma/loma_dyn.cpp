@@ -30,6 +30,7 @@ Maintainer: Volker Gravemeier
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_utils_createdis.H"
 #include <Epetra_Time.h>
 
 
@@ -102,25 +103,17 @@ void loma_dyn(int disnumff,int disnumscatra, int restart)
     if (scatradis->NumGlobalNodes()==0)
     {
       Epetra_Time time(comm);
-      std::map<string,string> conditions_to_copy;
-      conditions_to_copy.insert(pair<string,string>("LineNeumann","FluidLineNeumann"));
-      conditions_to_copy.insert(pair<string,string>("SurfaceNeumann","FluidSurfaceNeumann"));
-      conditions_to_copy.insert(pair<string,string>("VolumeNeumann","FluidVolumeNeumann"));
-      conditions_to_copy.insert(pair<string,string>("TransportDirichlet","Dirichlet"));
-      conditions_to_copy.insert(pair<string,string>("TransportPointNeumann","PointNeumann"));
-      conditions_to_copy.insert(pair<string,string>("TransportLineNeumann","LineNeumann"));
-      conditions_to_copy.insert(pair<string,string>("TransportSurfaceNeumann","SurfaceNeumann"));
-      conditions_to_copy.insert(pair<string,string>("TransportVolumeNeumann","VolumeNeumann"));
-      conditions_to_copy.insert(pair<string,string>("LinePeriodic","LinePeriodic"));
-      conditions_to_copy.insert(pair<string,string>("SurfacePeriodic","SurfacePeriodic"));
-      conditions_to_copy.insert(pair<string,string>("TransportNeumannInflow","TransportNeumannInflow"));
-      conditions_to_copy.insert(pair<string,string>("FluidStressCalc","FluxCalculation"));
 
       // fetch the desired material id for the transport elements
       const int matid = scatradyn.get<int>("MATID");
 
       // create the scatra discretization
-      SCATRA::CreateScaTraDiscretization(fluiddis,scatradis,conditions_to_copy,matid,false);
+      {
+      Teuchos::RCP<DRT::UTILS::DiscretizationCreator<SCATRA::ScatraFluidCloneStrategy> > clonewizard =
+            Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<SCATRA::ScatraFluidCloneStrategy>() );
+
+      clonewizard->CreateMatchingDiscretization(fluiddis,scatradis,matid);
+      }
       if (comm.MyPID()==0)
         cout<<"Created scalar transport discretization from fluid field in...."
         <<time.ElapsedTime() << " secs\n\n";

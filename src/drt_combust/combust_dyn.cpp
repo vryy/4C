@@ -20,6 +20,7 @@ Maintainer: Florian Henke
 #endif
 
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_inpar/inpar_fluid.H"
 #include "combust_dyn.H"
 #include "combust_utils.H"
@@ -73,21 +74,18 @@ void combust_dyn()
   if (gfuncdis->NumGlobalNodes()==0)
   {
     Epetra_Time time(comm);
-    std::map<string,string> conditions_to_copy;
-    conditions_to_copy.insert(pair<string,string>("TransportDirichlet","Dirichlet"));
-    conditions_to_copy.insert(pair<string,string>("TransportPointNeumann","PointNeumann"));
-    conditions_to_copy.insert(pair<string,string>("TransportLineNeumann","LineNeumann"));
-    conditions_to_copy.insert(pair<string,string>("TransportSurfaceNeumann","SurfaceNeumann"));
-    conditions_to_copy.insert(pair<string,string>("TransportVolumeNeumann","VolumeNeumann"));
-    conditions_to_copy.insert(pair<string,string>("SurfacePeriodic","SurfacePeriodic"));
-    conditions_to_copy.insert(pair<string,string>("FluidStressCalc","FluxCalculation")); // a hack
 
     // access the scalar transport parameter list
     const Teuchos::ParameterList& scatracontrol = DRT::Problem::Instance()->ScalarTransportDynamicParams();
     const int matid = scatracontrol.get<int>("MATID");
 
-    SCATRA::CreateScaTraDiscretization(fluiddis,gfuncdis,conditions_to_copy,matid,false);
+    // create the scatra discretization
+    {
+    Teuchos::RCP<DRT::UTILS::DiscretizationCreator<SCATRA::ScatraFluidCloneStrategy> > clonewizard =
+          Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<SCATRA::ScatraFluidCloneStrategy>() );
 
+    clonewizard->CreateMatchingDiscretization(fluiddis,gfuncdis,matid);
+    }
     if (comm.MyPID()==0)
       cout<<"Created G-function discretization from fluid discretization in...."
           <<time.ElapsedTime() << " secs\n\n";
