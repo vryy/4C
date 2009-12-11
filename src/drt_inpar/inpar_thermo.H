@@ -163,7 +163,7 @@ namespace THR
     }
   }
 
-   /// type of norm to check for convergence
+  /// type of norm to check for convergence
   enum ConvNorm
   {
     convnorm_abs,         ///< absolute norm
@@ -247,7 +247,7 @@ namespace THR
 
   //@}
 
-   /// @name General
+  /// @name General
   //@{
 
   /// type of vector norm used for error/residual vectors

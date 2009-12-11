@@ -18,6 +18,9 @@ Maintainer: Caroline Danowski
 #ifdef CCADISCRET
 #ifdef D_THERMO
 
+/*----------------------------------------------------------------------*
+ | headers                                                   dano 08/09 |
+ *----------------------------------------------------------------------*/
 #include "../drt_inpar/inpar_thermo.H"
 
 #include "thermo_ele_impl.H"

@@ -5,8 +5,7 @@
 
 
 the input line should read
-  MAT 1 MAT_Struct_FourierIso YOUNG 1.044E7 NUE 0.3 DENS 1.0
-
+  MAT 1   THERM_FourierIso   CAPA 420 CONDUCT 52
 <pre>
 Maintainer: Burkhard Bornemann
             bornemann@lnm.mw.tum.de

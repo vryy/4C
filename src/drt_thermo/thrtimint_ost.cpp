@@ -215,9 +215,12 @@ double THR::TimIntOneStepTheta::CalcRefNormForce()
   double freactnorm = 0.0;
   freactnorm = THR::AUX::CalculateVectorNorm(iternorm_, freact_);
 
+  // norm of stored forces
+  double fcapnorm = 0.0;
+  fcapnorm = THR::AUX::CalculateVectorNorm(iternorm_, fcap_);
+
   // return char norm
-//  return max(fviscnorm, max(finertnorm, max(fintnorm, max(fextnorm, freactnorm))));
-  return max(fintnorm, max(fextnorm, freactnorm));
+  return max(fcapnorm, max(fintnorm, max(fextnorm, freactnorm)));
 }
 
 /*----------------------------------------------------------------------*

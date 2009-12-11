@@ -50,6 +50,7 @@ namespace ELEMENTS
     TemperImplInterface() {}
     /// Empty destructor
     virtual ~TemperImplInterface() {}
+
     /// Evaluate the element
     //!  This class does not provide a definition for this function, it
     //!  must be defined in TemperImpl.
@@ -70,12 +71,12 @@ namespace ELEMENTS
     //!  This class does not provide a definition for this function, it
     //!  must be defined in TemperImpl.
     virtual int EvaluateNeumann(
-      DRT::Element*              ele,
-      Teuchos::ParameterList&    params,
-      DRT::Discretization&       discretization,
-      std::vector<int>&          lm,
-      Epetra_SerialDenseVector&  elevec1_epetra,
-      Epetra_SerialDenseMatrix*  elemat1_epetra
+      DRT::Element* ele,
+      Teuchos::ParameterList& params,
+      DRT::Discretization&  discretization,
+      std::vector<int>& lm,
+      Epetra_SerialDenseVector& elevec1_epetra,
+      Epetra_SerialDenseMatrix* elemat1_epetra
       ) = 0;
 
     /// Internal implementation class for thermo elements
@@ -153,7 +154,7 @@ namespace ELEMENTS
       Epetra_SerialDenseMatrix* elemat1_epetra
       );
 
-     private:
+  private:
 
     //! Calculate element vectors (internal/external) and a few matrices
     void CalculateFintCondCapa(
