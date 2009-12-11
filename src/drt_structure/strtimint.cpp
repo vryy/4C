@@ -211,10 +211,6 @@ STR::TimInt::TimInt
     discret_->GetCondition("Contact",contactconditions);
     if (contactconditions.size())
     {
-      // contact and constraints together still needs discussion
-      if (conman_->HaveConstraint())
-        dserror("ERROR: Constraints and contact cannot be treated at the same time yet");
-
       // store integration parameter alphaf into cmanager as well
       // for all cases except GenAlpha / GEMM this is zero
       double alphaf = 0.0;
@@ -228,6 +224,16 @@ STR::TimInt::TimInt
 
       // store DBC status in contact nodes
       contactman_->GetStrategy().StoreDirichletStatus(dbcmaps_);
+      
+      // contact and constraints together still needs discussion
+      if (conman_->HaveConstraint())
+        dserror("ERROR: Constraints and contact cannot be treated at the same time yet");
+
+      // only dual Lagrange approach in new STI so far
+      INPAR::CONTACT::SolvingStrategy soltype =
+      Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(contactman_->GetStrategy().Params(),"STRATEGY");
+      if (soltype != INPAR::CONTACT::solution_lagmult)
+        dserror("ERROR: Contact in new STI only implemented for dual Lagrange strategy");
     }
   }
 
