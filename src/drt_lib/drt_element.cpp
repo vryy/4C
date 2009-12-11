@@ -377,6 +377,93 @@ DRT::Condition* DRT::Element::GetCondition(const string& name) const
  |  Get degrees of freedom used by this element                (public) |
  |                                                            gee 12/06 |
  *----------------------------------------------------------------------*/
+void DRT::Element::LocationVector(const Discretization& dis, LocationArray& la, bool doDirichlet) const
+{
+  const int numnode = NumNode();
+  const DRT::Node*const* nodes = Nodes();
+
+  la.Clear();
+
+  // we need to look at all DofSets of our Discretization
+  for (int dofset=0; dofset<la.Size(); ++dofset)
+  {
+    vector<int>& lm       = la[dofset].lm_;
+    vector<int>& lmdirich = la[dofset].lmdirich_;
+    vector<int>& lmowner  = la[dofset].lmowner_;
+
+    // fill the vector with nodal dofs
+    if (nodes)
+    {
+      for (int i=0; i<numnode; ++i)
+      {
+        const vector<int>* flag = NULL;
+        if (doDirichlet)
+        {
+          DRT::Condition* dirich = nodes[i]->GetCondition("Dirichlet");
+          if (dirich)
+          {
+            if (dirich->Type()!=DRT::Condition::PointDirichlet &&
+                dirich->Type()!=DRT::Condition::LineDirichlet &&
+                dirich->Type()!=DRT::Condition::SurfaceDirichlet &&
+                dirich->Type()!=DRT::Condition::VolumeDirichlet)
+              dserror("condition with name dirichlet is not of type Dirichlet");
+            flag = dirich->Get<vector<int> >("onoff");
+          }
+        }
+        const int owner = nodes[i]->Owner();
+        vector<int> dof = dis.Dof(dofset,nodes[i]);
+        const int size = NumDofPerNode(dofset,*(nodes[i]));
+        for (int j=0; j<size; ++j)
+        {
+          if (doDirichlet)
+          {
+            if (flag && (*flag)[j])
+              lmdirich.push_back(1);
+            else
+              lmdirich.push_back(0);
+          }
+          lmowner.push_back(owner);
+          lm.push_back(dof[j]);
+        }
+      }
+    }
+
+    // fill the vector with element dofs
+    const vector<int>* flag = NULL;
+    if (doDirichlet)
+    {
+      DRT::Condition* dirich = GetCondition("Dirichlet");
+      if (dirich)
+      {
+        if (dirich->Type()!=DRT::Condition::PointDirichlet &&
+            dirich->Type()!=DRT::Condition::LineDirichlet &&
+            dirich->Type()!=DRT::Condition::SurfaceDirichlet &&
+            dirich->Type()!=DRT::Condition::VolumeDirichlet)
+          dserror("condition with name dirichlet is not of type Dirichlet");
+        flag = dirich->Get<vector<int> >("onoff");
+      }
+    }
+    const int owner = Owner();
+    vector<int> dof = dis.Dof(dofset,this);
+    for (unsigned j=0; j<dof.size(); ++j)
+    {
+      if (flag && (*flag)[j])
+        lmdirich.push_back(1);
+      else
+        lmdirich.push_back(0);
+      lmowner.push_back(owner);
+      lm.push_back(dof[j]);
+    }
+  }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Get degrees of freedom used by this element                (public) |
+ |                                                            gee 12/06 |
+ *----------------------------------------------------------------------*/
 void DRT::Element::LocationVector(const Discretization& dis,
                                   vector<int>& lm, vector<int>& lmdirich,
                                   vector<int>& lmowner) const
@@ -474,6 +561,21 @@ void DRT::Element::LocationVector(const Discretization& dis, vector<int>& lm, ve
   dis.Dof(this,lm);
   lmowner.resize(lm.size(),Owner());
   return;
+}
+
+/*----------------------------------------------------------------------*
+ |  evaluate element dummy (public)                          mwgee 12/06|
+ *----------------------------------------------------------------------*/
+int DRT::Element::Evaluate(ParameterList&            params,
+                           DRT::Discretization&      discretization,
+                           LocationArray&            la,
+                           Epetra_SerialDenseMatrix& elemat1,
+                           Epetra_SerialDenseMatrix& elemat2,
+                           Epetra_SerialDenseVector& elevec1,
+                           Epetra_SerialDenseVector& elevec2,
+                           Epetra_SerialDenseVector& elevec3)
+{
+  return Evaluate(params,discretization,la[0].lm_,elemat1,elemat2,elevec1,elevec2,elevec3);
 }
 
 /*----------------------------------------------------------------------*

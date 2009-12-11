@@ -26,13 +26,16 @@ sourcedis_(sourcedis)
   return;
 }
 
-int UTILS::MPCDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, const int start)
+int UTILS::MPCDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, const unsigned dspos, const int start)
 {
 
   // first, we call the standard AssignDegreesOfFreedom from the base class
-  int count = DRT::DofSet::AssignDegreesOfFreedom(dis,start);
+  int count = DRT::DofSet::AssignDegreesOfFreedom(dis,dspos,start);
 
   TransferDegreesOfFreedom(*sourcedis_, dis, start);
+
+  // tell all proxies (again!)
+  NotifyAssigned();
 
   return count;
 }

@@ -110,6 +110,7 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
                 src/drt_lib/drt_materialdefinition.o \
                 src/drt_lib/drt_dofset.o \
                 src/drt_lib/drt_dofset_base.o \
+                src/drt_lib/drt_dofset_proxy.o \
                 src/drt_lib/drt_linedefinition.o \
                 src/drt_lib/drt_elementdefinition.o \
                 src/drt_lib/drt_resulttest.o \

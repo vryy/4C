@@ -139,7 +139,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   // store a dofset with the complete fluid unknowns
   standarddofset_ = Teuchos::rcp(new DRT::DofSet());
   standarddofset_->Reset();
-  standarddofset_->AssignDegreesOfFreedom(*discret_,0);
+  standarddofset_->AssignDegreesOfFreedom(*discret_,0,0);
   // split based on complete fluid field
   FLD::UTILS::SetupFluidSplit(*discret_,*standarddofset_,3,velpressplitterForOutput_);
 

@@ -78,6 +78,9 @@ public:
   virtual ~PBCDofSet();
 
 
+  /// create a copy of this object
+  virtual Teuchos::RCP<DofSet> Clone() { return Teuchos::rcp(new PBCDofSet(*this)); }
+
 
   //! @name Construction
 
@@ -101,7 +104,7 @@ public:
   \return int highest dof number assigned up to now
 
   */
-  virtual int AssignDegreesOfFreedom(const DRT::Discretization& dis, const int start);
+  virtual int AssignDegreesOfFreedom(const DRT::Discretization& dis, const unsigned dspos, const int start);
 
   //@}
 

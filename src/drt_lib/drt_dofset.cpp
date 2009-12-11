@@ -46,6 +46,7 @@ Maintainer: Ulrrich Kuettler
 #include <numeric>
 
 #include "drt_dofset.H"
+#include "drt_dofset_proxy.H"
 #include "drt_discret.H"
 #include "drt_utils.H"
 
@@ -58,7 +59,7 @@ Maintainer: Ulrrich Kuettler
  |  ctor (public)                                             ukue 04/07|
  *----------------------------------------------------------------------*/
 DRT::DofSet::DofSet()
- : DRT::DofSetBase()
+  : DRT::DofSetBase(), filled_(false)
 {
   return;
 }
@@ -69,7 +70,10 @@ DRT::DofSet::DofSet()
  *----------------------------------------------------------------------*/
 DRT::DofSet::~DofSet()
 {
-  static_dofsets_.remove(this);
+  for (std::list<DofSetProxy*>::iterator i=proxies_.begin(); i!=proxies_.end(); ++i)
+  {
+    (*i)->Disconnect(this);
+  }
   return;
 }
 
@@ -141,13 +145,18 @@ void DRT::DofSet::Reset()
   numdfcolelements_ = null;
   idxcolnodes_ = null;
   idxcolelements_ = null;
+
+  filled_ = false;
+
+  // tell all proxies
+  NotifyReset();
 }
 
 
 /*----------------------------------------------------------------------*
  |  setup everything  (public)                                ukue 04/07|
  *----------------------------------------------------------------------*/
-int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const int start)
+int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigned dspos, const int start)
 {
   if (!dis.Filled()) dserror("discretization Filled()==false");
   if (!dis.NodeRowMap()->UniqueGIDs()) dserror("Nodal row map is not unique");
@@ -226,7 +235,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const int sta
     DRT::Element** myele = actnode->Elements();
     int numdf=0;
     for (int j=0; j<numele; ++j)
-      numdf = max(numdf,myele[j]->NumDofPerNode(*actnode));
+      numdf = max(numdf,myele[j]->NumDofPerNode(dspos,*actnode));
     const int gid = actnode->Id();
     sredundantnodes[nidx[gid]] = numdf;
     lnumdof += numdf;
@@ -310,7 +319,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const int sta
   {
     DRT::Element* actele = dis.lRowElement(i);
     const int gid = actele->Id();
-    int numdf = actele->NumDofPerElement();
+    int numdf = actele->NumDofPerElement(dspos);
     sredundantelements[eidx[gid]] = numdf;
     localelenumdf[i] = numdf;
     lnumdof += numdf;
@@ -374,7 +383,46 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const int sta
 
   dofcolmap_ = rcp(new Epetra_Map(-1,localcoldofs.size(),&localcoldofs[0],0,dis.Comm()));
 
+  filled_ = true;
+
+  // tell all proxies
+  NotifyAssigned();
+
   return count;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::DofSet::RegisterProxy(DofSetProxy* proxy)
+{
+  proxies_.push_back(proxy);
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::DofSet::UnregisterProxy(DofSetProxy* proxy)
+{
+  proxies_.remove(proxy);
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::DofSet::NotifyAssigned()
+{
+  for (std::list<DofSetProxy*>::iterator i=proxies_.begin(); i!=proxies_.end(); ++i)
+    (*i)->NotifyAssigned();
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::DofSet::NotifyReset()
+{
+  for (std::list<DofSetProxy*>::iterator i=proxies_.begin(); i!=proxies_.end(); ++i)
+    (*i)->NotifyReset();
 }
 
 

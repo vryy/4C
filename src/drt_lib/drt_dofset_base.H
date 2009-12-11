@@ -65,6 +65,7 @@ written into.
 */
 class DofSetBase
 {
+  friend class DofSetProxy;
 public:
 
   /*!
@@ -119,6 +120,8 @@ protected:
 
   /// unique column map of degrees of freedom (node and element dofs))
   Teuchos::RCP<Epetra_Map>                       dofcolmap_;
+
+private:
 
   /// store dofset in static list, if derived class chooses so using AddDofSettoList()
   /*!

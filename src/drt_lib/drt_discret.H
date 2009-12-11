@@ -44,7 +44,7 @@ Maintainer: Michael Gee
 #ifndef DISCRET_H
 #define DISCRET_H
 
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "Epetra_Comm.h"
 #include "Epetra_Map.h"
 #include "Epetra_Vector.h"
@@ -75,6 +75,69 @@ namespace DRT
 /*!
 \brief A class to manage a discretization in parallel
 
+A discretization describes a discretized physical domain including any
+boundary conditions. This is a huge concept that includes four different parts
+
+- a mesh consisting of elements and nodes
+- a number of sets of degrees of freedom (dofsets)
+- conditions that point to nodes (nodal clouds) but really mean dofs
+- state vectors that belong to one of the dofsets
+
+<h3>Parallelization</h3>
+
+A huge point with the discretization is its parallel distribution. In normal
+circumstances each processor will hole a slice of the distribution. There will
+be some overlapping elements. This is known as ghosting as all elements belong
+to exactly one processor and may appear as ghosts (guests) on other processors
+as well.
+
+The parallel distribution is handled via Epetra_Map objects. There are
+row-maps that are unique without any overlap. There are column-maps that
+extend the row-maps with the overlap information. Elements, nodes and dofs are
+managed by using maps. That is all three items have a globally unique id,
+oftentimes called gid. Global ids are arbitrary numbers. Appart from the fact
+that these numbers are unique there comes no guarantee whatsoever with these
+numbers. You must never use the numerical value of a gid.
+
+In addition to the gids there are local id, called lids. These are always
+consecutive numbers starting from 0. Local ids just count local items. See
+Epetra_Map for details.
+
+<h3>Initialization</h3>
+
+The initialization of a discretization is a major effort since the parallel
+distribution needs to be established. Normally the discretization is read from
+a dat-file with the help of DRT::DatFileReader and related classes. The
+discretization class comes with a bunch of helper method for its setup phase.
+
+<h3>Filled-State</h3>
+
+A discretization can be in its filled or non-filled state. After construction
+a discretization starts in its non-filled state. In the non-filled state there
+are no lids calculated yet. The discretization is not fit for any calculation.
+
+A call for FillComplete() fills the discretization, that is brings it to its
+filled state. Now all lids are available. See below for details.
+
+<h3>DofSets</h3>
+
+A discretization can have multiple dof sets. At construction time the first
+DofSet is created. Further dof sets can be added later on.
+
+The first DofSet is always special as it describes the set of unknowns of this
+discretization. These are the values that are to be calculated later
+on. Additional dof sets can describe additional sets of variables that
+supplement the calculation. In normal single field calculations only one
+DofSet is needed.
+
+For multifield calculations with volume coupled fully overlapping matching
+discretizations that share the same parallel distribution (that is different
+fields that are discretized with the same mesh -- a rather special case that
+turns out to be quite common) there is the DofSetProxy class that can be used
+to introduce the DofSet of the respective other field.
+
+<h3>Misc</h3>
+
 The \ref DRT::Discretization class supports the ostream& operator <<
 
 \author gee (gee@lnm.mw.tum.de)
@@ -89,7 +152,7 @@ public:
   \param name (in): name of this discretization
   \param comm (in): An epetra comm object associated with this discretization
   */
-  Discretization(const string name, RefCountPtr<Epetra_Comm> comm);
+  Discretization(const string name, RCP<Epetra_Comm> comm);
 
   /*!
   \brief Destructor
@@ -122,6 +185,8 @@ public:
   */
   virtual inline bool HaveDofs() const {return havedof_;}
 
+  /// @name Dof query methods for single dof set discretizations
+
   /*!
   \brief Get number of dofs for given node.
 
@@ -131,7 +196,7 @@ public:
   \param node (in)      : the node those number of dofs are requested
   */
   virtual int NumDof(const Node* node) const
-    { dsassert(havedof_,"no dofs assigned"); return dofsets_[currentdofset_]->NumDof(node); }
+  { dsassert(dofsets_.size()==1,"expect just one dof set"); return NumDof(0,node); }
 
   /*!
   \brief Get number of dofs for given element.
@@ -142,7 +207,7 @@ public:
   \param element (in)      : the element those number of dofs are requested
   */
   virtual int NumDof(const Element* element) const
-    { dsassert(havedof_,"no dofs assigned"); return dofsets_[currentdofset_]->NumDof(element); }
+  { dsassert(dofsets_.size()==1,"expect just one dof set"); return NumDof(0,element); }
 
   /*!
   \brief Get the gid of a dof for given node.
@@ -154,7 +219,7 @@ public:
   \param dof (in)       : the node local dof number
   */
   virtual int Dof(const Node* node, const int dof) const
-    { dsassert(havedof_,"no dofs assigned"); return dofsets_[currentdofset_]->Dof(node,dof); }
+  { dsassert(dofsets_.size()==1,"expect just one dof set"); return Dof(0,node,dof); }
 
   /*!
   \brief Get the gid of a dof for given element.
@@ -166,7 +231,7 @@ public:
   \param dof (in)          : the element local dof number
   */
   virtual int Dof(const Element* element, const int dof) const
-    { dsassert(havedof_,"no dofs assigned"); return dofsets_[currentdofset_]->Dof(element,dof); }
+  { dsassert(dofsets_.size()==1,"expect just one dof set"); return Dof(0,element,dof); }
 
   /*!
   \brief Get the gid of all dofs of a node.
@@ -178,7 +243,7 @@ public:
   \param node (in)      : the node
   */
   virtual vector<int> Dof(const Node* node) const
-    { dsassert(havedof_,"no dofs assigned"); return dofsets_[currentdofset_]->Dof(node); }
+  { dsassert(dofsets_.size()==1,"expect just one dof set"); return Dof(0,node); }
 
   /*!
   \brief Get the gid of all dofs of a element.
@@ -190,7 +255,7 @@ public:
   \param element (in)      : the element
   */
   virtual vector<int> Dof(const Element* element) const
-    { dsassert(havedof_,"no dofs assigned"); return dofsets_[currentdofset_]->Dof(element); }
+  { dsassert(dofsets_.size()==1,"expect just one dof set"); return Dof(0,element); }
 
   /*!
   \brief Get the gid of all dofs of a node.
@@ -203,7 +268,7 @@ public:
   \param lm (in/out)    : lm vector the dofs are appended to
   */
   virtual void Dof(const Node* node, vector<int>& lm) const
-  { dsassert(havedof_,"no dofs assigned"); dofsets_[currentdofset_]->Dof(node,lm); }
+  { dsassert(dofsets_.size()==1,"expect just one dof set"); Dof((unsigned)0,node,lm); }
 
   /*!
   \brief Get the gid of all dofs of a node.
@@ -217,7 +282,7 @@ public:
   \param lm (in/out)    : lm vector the dofs are appended to
   */
   virtual void Dof(const Element* element, const Node* node, vector<int>& lm) const
-  { dsassert(havedof_,"no dofs assigned"); dofsets_[currentdofset_]->Dof(element,node,lm); }
+  { dsassert(dofsets_.size()==1,"expect just one dof set"); Dof(0,element,node,lm); }
 
   /*!
   \brief Get the gid of all dofs of a element.
@@ -230,7 +295,7 @@ public:
   \param lm (in/out)    : lm vector the dofs are appended to
   */
   virtual void Dof(const Element* element, vector<int>& lm) const
-  { dsassert(havedof_,"no dofs assigned"); dofsets_[currentdofset_]->Dof(element,lm); }
+  { dsassert(dofsets_.size()==1,"expect just one dof set"); Dof(0,element,lm); }
 
   /*!
   \brief Get the gid of all dofs of a node.
@@ -244,22 +309,13 @@ public:
   \param lm (in/out)    : lm vector the dofs are appended to
   */
   virtual void Dof(const Node* node, const unsigned startindex, vector<int>& lm) const
-  { dsassert(havedof_,"no dofs assigned"); dofsets_[currentdofset_]->Dof(node,startindex,lm); }
-
-  /*!
-  \brief Print this discretization to os (Filled()==true NOT prerequisite)
-         (ostream << also supported)
-
-  \note This is a collective call
-  */
-  virtual void Print(ostream& os) const;
-
+  { dsassert(dofsets_.size()==1,"expect just one dof set"); Dof(0,node,startindex,lm); }
 
   /*!
   \brief Replace the dofset associated with the discretisation by a new dofset.
                  Sets havedof_ to false.
   */
-  virtual void ReplaceDofSet(RefCountPtr<DofSet> newdofset);
+  virtual void ReplaceDofSet(RCP<DofSet> newdofset);
 
   /*!
   \brief Get degree of freedom row map (Filled()==true prerequisite)
@@ -284,6 +340,192 @@ public:
 
   */
   virtual const Epetra_Map* DofColMap() const;
+
+  //@}
+
+  /// @name Dof query methods for multi dof set discretizations
+
+  /*!
+  \brief Get number of dofs for given node.
+
+  Ask the current DofSet for the number of dofs of this node.
+  There is a variable number of DofSets and one is currently selected.
+  - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+  \param nds (in)       : number of dofset
+  \param node (in)      : the node those number of dofs are requested
+  */
+  virtual int NumDof(unsigned nds, const Node* node) const
+  { dsassert(nds<dofsets_.size(),"undefined dof set"); dsassert(havedof_,"no dofs assigned"); return dofsets_[nds]->NumDof(node); }
+
+  /*!
+  \brief Get number of dofs for given element.
+
+  Ask the current DofSet for the number of dofs of this element.
+  There is a variable number of DofSets and one is currently selected.
+  - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+  \param nds (in)          : number of dofset
+  \param element (in)      : the element those number of dofs are requested
+  */
+  virtual int NumDof(unsigned nds, const Element* element) const
+  { dsassert(nds<dofsets_.size(),"undefined dof set"); dsassert(havedof_,"no dofs assigned"); return dofsets_[nds]->NumDof(element); }
+
+  /*!
+  \brief Get the gid of a dof for given node.
+
+  Ask the current DofSet for the gid of the dof of this node.
+  There is a variable number of DofSets and one is currently selected.
+  - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+  \param nds (in)       : number of dofset
+  \param node (in)      : the node
+  \param dof (in)       : the node local dof number
+  */
+  virtual int Dof(unsigned nds, const Node* node, const int dof) const
+  { dsassert(nds<dofsets_.size(),"undefined dof set"); dsassert(havedof_,"no dofs assigned"); return dofsets_[nds]->Dof(node,dof); }
+
+  /*!
+  \brief Get the gid of a dof for given element.
+
+  Ask the current DofSet for the gid of the dof of this element.
+  There is a variable number of DofSets and one is currently selected.
+  - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+  \param nds (in)          : number of dofset
+  \param element (in)      : the element
+  \param dof (in)          : the element local dof number
+  */
+  virtual int Dof(unsigned nds, const Element* element, const int dof) const
+  { dsassert(nds<dofsets_.size(),"undefined dof set"); dsassert(havedof_,"no dofs assigned"); return dofsets_[nds]->Dof(element,dof); }
+
+  /*!
+  \brief Get the gid of all dofs of a node.
+
+  Ask the current DofSet for the gids of the dofs of this node. The
+  required vector is created and filled on the fly. So better keep it
+  if you need more than one dof gid.
+  - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+  \param nds (in)       : number of dofset
+  \param node (in)      : the node
+  */
+  virtual vector<int> Dof(unsigned nds, const Node* node) const
+  { dsassert(nds<dofsets_.size(),"undefined dof set"); dsassert(havedof_,"no dofs assigned"); return dofsets_[nds]->Dof(node); }
+
+  /*!
+  \brief Get the gid of all dofs of a element.
+
+  Ask the current DofSet for the gids of the dofs of this element. The
+  required vector is created and filled on the fly. So better keep it
+  if you need more that one dof gid.
+  - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+  \param nds (in)       : number of dofset
+  \param element (in)      : the element
+  */
+  virtual vector<int> Dof(unsigned nds, const Element* element) const
+  { dsassert(nds<dofsets_.size(),"undefined dof set"); dsassert(havedof_,"no dofs assigned"); return dofsets_[nds]->Dof(element); }
+
+  /*!
+  \brief Get the gid of all dofs of a node.
+
+  Ask the current DofSet for the gids of the dofs of this node. The
+  required vector is created and filled on the fly. So better keep it
+  if you need more than one dof gid.
+  - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+  \param nds (in)       : number of dofset
+  \param node (in)      : the node
+  \param lm (in/out)    : lm vector the dofs are appended to
+  */
+  virtual void Dof(unsigned nds, const Node* node, vector<int>& lm) const
+  { dsassert(nds<dofsets_.size(),"undefined dof set"); dsassert(havedof_,"no dofs assigned"); dofsets_[nds]->Dof(node,lm); }
+
+  /*!
+  \brief Get the gid of all dofs of a node.
+
+  Ask the current DofSet for the gids of the dofs of this node. The
+  required vector is created and filled on the fly. So better keep it
+  if you need more than one dof gid.
+  - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+  \param nds (in)       : number of dofset
+  \param element (in)   : the element operated on
+  \param node (in)      : the node
+  \param lm (in/out)    : lm vector the dofs are appended to
+  */
+  virtual void Dof(unsigned nds, const Element* element, const Node* node, vector<int>& lm) const
+  { dsassert(nds<dofsets_.size(),"undefined dof set"); dsassert(havedof_,"no dofs assigned"); dofsets_[nds]->Dof(element,node,lm); }
+
+  /*!
+  \brief Get the gid of all dofs of a element.
+
+  Ask the current DofSet for the gids of the dofs of this element. The
+  required vector is created and filled on the fly. So better keep it
+  if you need more that one dof gid.
+  - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+  \param nds (in)       : number of dofset
+  \param element (in)      : the element
+  \param lm (in/out)    : lm vector the dofs are appended to
+  */
+  virtual void Dof(unsigned nds, const Element* element, vector<int>& lm) const
+  { dsassert(nds<dofsets_.size(),"undefined dof set"); dsassert(havedof_,"no dofs assigned"); dofsets_[nds]->Dof(element,lm); }
+
+  /*!
+  \brief Get the gid of all dofs of a node.
+
+  Ask the current DofSet for the gids of the dofs of this node. The
+  required vector is created and filled on the fly. So better keep it
+  if you need more than one dof gid.
+  - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+  \param nds (in)       : number of dofset
+  \param node (in)      : the node
+  \param startindex (in): first index of vector at which will be written to end
+  \param lm (in/out)    : lm vector the dofs are appended to
+  */
+  virtual void Dof(unsigned nds, const Node* node, const unsigned startindex, vector<int>& lm) const
+  { dsassert(nds<dofsets_.size(),"undefined dof set"); dsassert(havedof_,"no dofs assigned"); dofsets_[nds]->Dof(node,startindex,lm); }
+
+  /*!
+  \brief Replace the dofset associated with the discretisation by a new dofset.
+                 Sets havedof_ to false.
+  */
+  virtual void ReplaceDofSet(unsigned nds, Teuchos::RCP<DofSet> newdofset);
+
+  /*!
+  \brief Add a new dofset to the discretisation.
+
+  Sets havedof_ to false only if the new dofset is not properly filled yet.
+  */
+  virtual int AddDofSet(Teuchos::RCP<DofSet> newdofset);
+
+  /*!
+  \brief Get degree of freedom row map (Filled()==true prerequisite)
+
+  Return ptr to degree of freedom row distribution map of this discretization.
+  If it does not exist yet, build it.
+
+  - Filled()==true prerequisite
+  - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+
+  */
+  virtual const Epetra_Map* DofRowMap(unsigned nds) const;
+
+  /*!
+  \brief Get degree of freedom column map (Filled()==true prerequisite)
+
+  Return ptr to degree of freedom column distribution map of this discretization.
+  If it does not exist yet, build it.
+
+  - Filled()==true prerequisite
+  - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+
+  */
+  virtual const Epetra_Map* DofColMap(unsigned nds) const;
+
+  //@}
+
+  /*!
+  \brief Print this discretization to os (Filled()==true NOT prerequisite)
+         (ostream << also supported)
+
+  \note This is a collective call
+  */
+  virtual void Print(ostream& os) const;
+
 
   /*!
   \brief Get map associated with the distribution of the ownership of nodes
@@ -630,7 +872,7 @@ public:
            NOT be overwritten but stored twice in the discretization
 
   */
-  virtual void SetCondition(const string& name,RefCountPtr<Condition> cond);
+  virtual void SetCondition(const string& name,RCP<Condition> cond);
 
   /*!
   \brief Get all conditions with a certain name
@@ -739,8 +981,8 @@ public:
   */
   virtual void BuildElementRowColumn(const Epetra_Map& noderowmap,
                                      const Epetra_Map& nodecolmap,
-                                     RefCountPtr<Epetra_Map>& elerowmap,
-                                     RefCountPtr<Epetra_Map>& elecolmap) const;
+                                     RCP<Epetra_Map>& elerowmap,
+                                     RCP<Epetra_Map>& elecolmap) const;
 
   /*!
   \brief Export the nodes to a different parallel layout
@@ -860,7 +1102,7 @@ public:
   \return Graph of discretization distributed across processors according to
           the discretization distribution
   */
-  virtual RefCountPtr<Epetra_CrsGraph> BuildNodeGraph() const;
+  virtual RCP<Epetra_CrsGraph> BuildNodeGraph() const;
 
   //@}
 
@@ -877,14 +1119,76 @@ public:
   If the vector is supplied in DofColMap() a reference to it will be stored.
   If the vector is NOT supplied in DofColMap(), but in DofRowMap(),
    a vector with column map is allocated and the supplied vector is exported to it.
-  Everything is stored/referenced using RefCountPtr.
+  Everything is stored/referenced using RCP.
+
+  \param nds (in): number of dofset
+  \param name (in): Name of data
+  \param state (in): vector of some data
+
+  \note This class will not take ownership or in any way modify the solution vector.
+  */
+  virtual void SetState(unsigned nds,const string& name,RCP<const Epetra_Vector> state);
+
+  /*!
+  \brief Get a reference to a data vector
+
+  Providing a name of a solution state, get a reference to the solution vector.
+  If a vector under the provided name does not exist, the method will throw
+  a lethal error message.
+
+  \param nds (in): number of dofset
+  \param name (in): Name of solution state
+
+  \return Reference to solution state
+  */
+  virtual RCP<const Epetra_Vector> GetState(unsigned nds,const string& name) const
+  {
+    dsassert(nds<dofsets_.size(),"undefined dof set");
+    map<string,RCP<const Epetra_Vector> >::const_iterator fool = state_[nds].find(name);
+    if (fool==state_[nds].end()) dserror("Cannot find state %s",&name[0]);
+    else return fool->second;
+    return null;
+  }
+
+  /*!
+    \brief Tell whether a state vector has been set
+    \param nds (in): number of dofset
+    \param name (in): Name of solution state
+   */
+  virtual bool HasState(unsigned nds,const string& name) const
+  {
+    dsassert(nds<dofsets_.size(),"undefined dof set");
+    map<string,RCP<const Epetra_Vector> >::const_iterator fool = state_[nds].find(name);
+    return fool!=state_[nds].end();
+  }
+
+  /*!
+  \brief Clear solution state references
+
+  The method deletes all references to any solution data
+  */
+  virtual void ClearState()
+  { state_.clear(); return; }
+
+  /*!
+  \brief Set a reference to a data vector
+
+  Using this method, a reference to a vector can
+  be supplied to the discretization. The elements can access
+  this vector by using the name of that vector.
+  The method expects state to be either of dof row map or of
+  dof column map.
+  If the vector is supplied in DofColMap() a reference to it will be stored.
+  If the vector is NOT supplied in DofColMap(), but in DofRowMap(),
+   a vector with column map is allocated and the supplied vector is exported to it.
+  Everything is stored/referenced using RCP.
 
   \param name (in): Name of data
   \param state (in): vector of some data
 
   \note This class will not take ownership or in any way modify the solution vector.
   */
-  virtual void SetState(const string& name,RefCountPtr<const Epetra_Vector> state);
+  virtual void SetState(const string& name,RCP<const Epetra_Vector> state) { SetState(0,name,state); }
 
   /*!
   \brief Get a reference to a data vector
@@ -897,31 +1201,13 @@ public:
 
   \return Reference to solution state
   */
-  virtual RefCountPtr<const Epetra_Vector> GetState(const string& name) const
-  {
-    map<string,RefCountPtr<const Epetra_Vector> >::const_iterator fool = state_.find(name);
-    if (fool==state_.end()) dserror("Cannot find state %s",&name[0]);
-    else return fool->second;
-    return null;
-  }
+  virtual RCP<const Epetra_Vector> GetState(const string& name) const { return GetState(0,name); }
 
   /*!
     \brief Tell whether a state vector has been set
     \param name (in): Name of solution state
    */
-  virtual bool HasState(const string& name) const
-  {
-    map<string,RefCountPtr<const Epetra_Vector> >::const_iterator fool = state_.find(name);
-    return fool!=state_.end();
-  }
-
-  /*!
-  \brief Clear solution state references
-
-  The method deletes all references to any solution data
-  */
-  virtual void ClearState()
-  { state_.clear(); return; }
+  virtual bool HasState(const string& name) const { return HasState(0,name); }
 
   /*!
   \brief Call elements to evaluate
@@ -1130,7 +1416,7 @@ public:
   virtual void EvaluateCondition
   (
     ParameterList& params,  ///< List of parameters for use at element level
-    RefCountPtr<Epetra_Vector> systemvector1, ///< Vector to assemble BCs to.(NOT initialized to zero by this method)
+    RCP<Epetra_Vector> systemvector1, ///< Vector to assemble BCs to.(NOT initialized to zero by this method)
     const string& condstring, ///< Name of condition to be evaluated
     const int condid=-1  ///< condition ID
   );
@@ -1277,7 +1563,7 @@ public:
 
     \note Filled()=true is a prerequisite
    */
-  RefCountPtr<vector<char> > PackMyElements() const;
+  RCP<vector<char> > PackMyElements() const;
 
   /*!
     \brief Pack local nodes (row map) into buffer.
@@ -1287,7 +1573,7 @@ public:
 
     \note Filled()=true is a prerequisite
    */
-  RefCountPtr<vector<char> > PackMyNodes() const;
+  RCP<vector<char> > PackMyNodes() const;
 
     /*!
     \brief Pack condition (this is done by one processor, since data is redundant).
@@ -1297,7 +1583,7 @@ public:
 
     \note Filled()=true is a prerequisite
    */
-  RefCountPtr<vector<char> > PackCondition(
+  RCP<vector<char> > PackCondition(
           const string condname     ///< name of condition as it is used in GetCondition() or SetCondition()
           ) const;
 
@@ -1311,7 +1597,7 @@ public:
 
     \note Sets Filled()=false
    */
-  void UnPackMyElements(RefCountPtr<vector<char> > e);
+  void UnPackMyElements(RCP<vector<char> > e);
 
   /*!
     \brief Unpack nodal buffer and create local nodes.
@@ -1323,7 +1609,7 @@ public:
 
     \note Sets Filled()=false
    */
-  void UnPackMyNodes(RefCountPtr<vector<char> > e);
+  void UnPackMyNodes(RCP<vector<char> > e);
 
   /*!
     \brief Unpack one condition.
@@ -1336,7 +1622,7 @@ public:
 
     \note Sets Filled()=false
    */
-  void UnPackCondition(const RefCountPtr<vector<char> > e, const string condname);
+  void UnPackCondition(const RCP<vector<char> > e, const string condname);
 
   //@}
 
@@ -1452,7 +1738,7 @@ private:
 
   \return last dof assigned + 1
   */
-  virtual int AssignDegreesOfFreedom(const int start);
+  virtual int AssignDegreesOfFreedom(int start);
 
   /*!
   \brief Initialize element routines
@@ -1476,19 +1762,19 @@ private:
   \brief Build the geometry of lines for a certain line condition
 
   */
-  virtual void BuildLinesinCondition(const string name,RefCountPtr<DRT::Condition> cond);
+  virtual void BuildLinesinCondition(const string name,RCP<DRT::Condition> cond);
 
   /*!
   \brief Build the geometry of surfaces for a certain surface condition
 
   */
-  virtual void BuildSurfacesinCondition(const string name,RefCountPtr<DRT::Condition> cond);
+  virtual void BuildSurfacesinCondition(const string name,RCP<DRT::Condition> cond);
 
   /*!
   \brief Build the geometry of volumes for a certain volume condition
 
   */
-  virtual void BuildVolumesinCondition(const string name,RefCountPtr<DRT::Condition> cond);
+  virtual void BuildVolumesinCondition(const string name,RCP<DRT::Condition> cond);
 
   /*!
   \brief Request for associated volume elements necessary for certain
@@ -1519,13 +1805,12 @@ protected:
   vector<DRT::Node*>                    nodecolptr_;        // vector of pointers to column nodes for faster access
   map<int,RCP<DRT::Node> >              node_;              // map of nodes
 
-  map<string,RCP<const Epetra_Vector> > state_;             // map of references to solution states
+  vector<map<string,RCP<const Epetra_Vector> > > state_;    // map of references to solution states
   map<int,RCP<ElementRegister> >        elementregister_;   // register for types of elements in this discretization
 
   multimap<string,RCP<Condition> >      condition_;         // some conditions e.g. BCs
 
   vector<RCP<DofSet> >                  dofsets_;           // set of DofSets
-  int                                   currentdofset_;     // number of the DofSet we are currently working with
 }; // class Discretization
 } // namespace DRT
 

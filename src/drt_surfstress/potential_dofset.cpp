@@ -27,13 +27,16 @@ sourcedis_(sourcedis)
 
 
 /// Assign dof numbers for new discretization using dof numbering from source discretization.
-int POTENTIAL::PotentialDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, const int start)
+int POTENTIAL::PotentialDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, const unsigned dspos, const int start)
 {
 
   // first, we call the standard AssignDegreesOfFreedom from the base class
-  int count = DRT::DofSet::AssignDegreesOfFreedom(dis,start);
+  int count = DRT::DofSet::AssignDegreesOfFreedom(dis,dspos,start);
 
   TransferDegreesOfFreedom(*sourcedis_, dis, start);
+
+  // tell all proxies (again!)
+  NotifyAssigned();
 
   return count;
 }

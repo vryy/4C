@@ -68,7 +68,6 @@ UTILS::ConstraintDofSet::ConstraintDofSet()
  *----------------------------------------------------------------------*/
 UTILS::ConstraintDofSet::~ConstraintDofSet()
 {
-  static_dofsets_.remove(this);
   return;
 }
 

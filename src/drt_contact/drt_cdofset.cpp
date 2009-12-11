@@ -58,10 +58,10 @@ DRT::DofSet()
 /*----------------------------------------------------------------------*
  |  setup everything  (public)                                ukue 04/07|
  *----------------------------------------------------------------------*/
-int CONTACT::CDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, const int start)
+int CONTACT::CDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, const unsigned dspos, const int start)
 {
   // first, we call the standard AssignDegreesOfFreedom from the base class
-  int count = DRT::DofSet::AssignDegreesOfFreedom(dis,start);
+  int count = DRT::DofSet::AssignDegreesOfFreedom(dis,dspos,start);
 
   // we'll get ourselves the row and column dof maps from the base class
   // and later replace them with our own version of them
@@ -108,6 +108,9 @@ int CONTACT::CDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, con
   // replace the old maps by our new ones (note: automatically deletes old ones)
   dofrowmap_ = newdofrowmap;
   dofcolmap_ = newdofcolmap;
+
+  // tell all proxies (again!)
+  NotifyAssigned();
 
   return count;
 }

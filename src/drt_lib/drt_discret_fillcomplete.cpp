@@ -79,35 +79,6 @@ void DRT::Discretization::Reset(bool killdofs)
     fool->second->ClearGeometry();
   }
 
-#if 0
-  // Remove ghost nodes and elements as well. Does not work!
-
-  int myrank = comm_->MyPID();
-  for (std::map<int,Teuchos::RCP<DRT::Node> >::iterator curr=node_.begin(); curr!=node_.end();)
-  {
-    if (curr->second->Owner() != myrank)
-    {
-      node_.erase(curr++);
-    }
-    else
-    {
-      ++curr;
-    }
-  }
-
-  for (std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr=element_.begin(); curr!=element_.end();)
-  {
-    if (curr->second->Owner() != myrank)
-    {
-      element_.erase(curr++);
-    }
-    else
-    {
-      ++curr;
-    }
-  }
-#endif
-
   return;
 }
 
@@ -430,14 +401,16 @@ void DRT::Discretization::BuildNodeToElementPointers()
 /*----------------------------------------------------------------------*
  |  set degrees of freedom (public)                          mwgee 03/07|
  *----------------------------------------------------------------------*/
-int DRT::Discretization::AssignDegreesOfFreedom(const int start)
+int DRT::Discretization::AssignDegreesOfFreedom(int start)
 {
   if (!Filled()) dserror("Filled()==false");
   if (!NodeRowMap()->UniqueGIDs()) dserror("Nodal row map is not unique");
   if (!ElementRowMap()->UniqueGIDs()) dserror("Element row map is not unique");
 
+  for (unsigned i=0; i<dofsets_.size(); ++i)
+    start = dofsets_[i]->AssignDegreesOfFreedom(*this,i,start);
   havedof_ = true;
-  return dofsets_[currentdofset_]->AssignDegreesOfFreedom(*this,start);
+  return start;
 }
 
 

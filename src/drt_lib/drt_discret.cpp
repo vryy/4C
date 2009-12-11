@@ -55,12 +55,11 @@ Maintainer: Michael Gee
  |  ctor (public)                                            mwgee 11/06|
  |  comm             (in)  a communicator object                        |
  *----------------------------------------------------------------------*/
-DRT::Discretization::Discretization(const string name, RefCountPtr<Epetra_Comm> comm) :
+DRT::Discretization::Discretization(const string name, RCP<Epetra_Comm> comm) :
 name_(name),
 comm_(comm),
 filled_(false),
-havedof_(false),
-currentdofset_(0)
+havedof_(false)
 {
   dofsets_.push_back(rcp(new DofSet()));
 }
@@ -76,18 +75,17 @@ state_(old.state_)
   Reset();
 
   // deep copy elements
-  map<int,RefCountPtr<DRT::Element> >::const_iterator ecurr;
+  map<int,RCP<DRT::Element> >::const_iterator ecurr;
   for (ecurr=old.element_.begin(); ecurr!=old.element_.end(); ++ecurr)
     element_[ecurr->first] = rcp(ecurr->second->Clone());
 
   // deep copy nodes
-  map<int,RefCountPtr<DRT::Node> >::const_iterator ncurr;
+  map<int,RCP<DRT::Node> >::const_iterator ncurr;
   for (ncurr=old.node_.begin(); ncurr!=old.node_.end(); ++ncurr)
     node_[ncurr->first] = rcp(ncurr->second->Clone());
 
-  currentdofset_ = old.currentdofset_;
   for (unsigned i=0; i<old.dofsets_.size(); ++i)
-    dofsets_.push_back(rcp(new DRT::DofSet::DofSet(*(old.dofsets_[i]))));
+    dofsets_.push_back(old.dofsets_[i]->Clone());
 
   // do fillcomplete if old was fillcomplete
   if (old.Filled()) FillComplete();
@@ -121,19 +119,19 @@ void DRT::Discretization::CheckFilledGlobally()
 {
   //global filled flag (is true / one if and only if filled_ == true on each processor
   int globalfilled = 0;
-  
+
   //convert filled_ flag on this procesor  into integer (no Epetra communicator for type bool)
   int localfilled = (int)filled_;
-  
+
   /*the global filled flag is set to the minimal value of any local filled flag
    * i.e. if on any processor filled_ == false, the flag globalfilled is set to
    * zero*/
   Comm().MinAll(&localfilled,&globalfilled,1);
-  
+
   //if not Filled() == true on all the processors call Reset()
   if(!globalfilled)
     Reset();
-    
+
   return;
 }
 
@@ -306,7 +304,7 @@ int DRT::Discretization::NumMyColNodes() const
  *----------------------------------------------------------------------*/
 bool DRT::Discretization::HaveGlobalElement(int gid) const
 {
-  map<int,RefCountPtr<DRT::Element> >:: const_iterator curr = element_.find(gid);
+  map<int,RCP<DRT::Element> >:: const_iterator curr = element_.find(gid);
   if (curr == element_.end()) return false;
   else                        return true;
 }
@@ -317,7 +315,7 @@ bool DRT::Discretization::HaveGlobalElement(int gid) const
 DRT::Element* DRT::Discretization::gElement(int gid) const
 {
 #ifdef DEBUG
-  map<int,RefCountPtr<DRT::Element> >:: const_iterator curr = element_.find(gid);
+  map<int,RCP<DRT::Element> >:: const_iterator curr = element_.find(gid);
   if (curr == element_.end()) dserror("Element with gobal id gid=%d not stored on this proc",gid);
   else return curr->second.get();
   return NULL;
@@ -331,7 +329,7 @@ DRT::Element* DRT::Discretization::gElement(int gid) const
  *----------------------------------------------------------------------*/
 bool DRT::Discretization::HaveGlobalNode(int gid) const
 {
-  map<int,RefCountPtr<DRT::Node> >:: const_iterator curr = node_.find(gid);
+  map<int,RCP<DRT::Node> >:: const_iterator curr = node_.find(gid);
   if (curr == node_.end()) return false;
   else                     return true;
 }
@@ -342,7 +340,7 @@ bool DRT::Discretization::HaveGlobalNode(int gid) const
 DRT::Node* DRT::Discretization::gNode(int gid) const
 {
 #ifdef DEBUG
-  map<int,RefCountPtr<DRT::Node> >:: const_iterator curr = node_.find(gid);
+  map<int,RCP<DRT::Node> >:: const_iterator curr = node_.find(gid);
   if (curr == node_.end()) dserror("Node with global id gid=%d not stored on this proc",gid);
   else                     return curr->second.get();
   return NULL;
@@ -375,12 +373,12 @@ void DRT::Discretization::Print(ostream& os) const
   else
   {
     int nummynodes = 0;
-    map<int,RefCountPtr<DRT::Node> >::const_iterator ncurr;
+    map<int,RCP<DRT::Node> >::const_iterator ncurr;
     for (ncurr=node_.begin(); ncurr != node_.end(); ++ncurr)
       if (ncurr->second->Owner() == Comm().MyPID()) nummynodes++;
 
     int nummyele   = 0;
-    map<int,RefCountPtr<DRT::Element> >::const_iterator ecurr;
+    map<int,RCP<DRT::Element> >::const_iterator ecurr;
     for (ecurr=element_.begin(); ecurr != element_.end(); ++ecurr)
       if (ecurr->second->Owner() == Comm().MyPID()) nummyele++;
 
@@ -409,7 +407,7 @@ void DRT::Discretization::Print(ostream& os) const
     {
       if ((int)element_.size())
         os << "-------------------------- Proc " << proc << " :\n";
-      map<int,RefCountPtr<DRT::Element> >:: const_iterator curr;
+      map<int,RCP<DRT::Element> >:: const_iterator curr;
       for (curr = element_.begin(); curr != element_.end(); ++curr)
       {
         os << *(curr->second);
@@ -435,7 +433,7 @@ void DRT::Discretization::Print(ostream& os) const
     {
       if ((int)node_.size())
         os << "-------------------------- Proc " << proc << " :\n";
-      map<int,RefCountPtr<DRT::Node> >:: const_iterator curr;
+      map<int,RCP<DRT::Node> >:: const_iterator curr;
       for (curr = node_.begin(); curr != node_.end(); ++curr)
       {
         os << *(curr->second);
@@ -465,7 +463,7 @@ void DRT::Discretization::Print(ostream& os) const
       if (numcond)
       {
         os << numcond << " Conditions:\n";
-        map<string,RefCountPtr<Condition> >::const_iterator curr;
+        map<string,RCP<Condition> >::const_iterator curr;
         for (curr=condition_.begin(); curr != condition_.end(); ++curr)
         {
           os << curr->first << " ";
@@ -480,24 +478,65 @@ void DRT::Discretization::Print(ostream& os) const
 }
 
 /*----------------------------------------------------------------------*
+ |  get dof row map (public)                                 mwgee 12/06|
+ *----------------------------------------------------------------------*/
+const Epetra_Map* DRT::Discretization::DofRowMap(unsigned nds) const
+{
+  dsassert(nds<dofsets_.size(),"undefined dof set");
+  if (!Filled()) dserror("FillComplete was not called on this discretization");
+  if (!HaveDofs()) dserror("AssignDegreesOfFreedom() not called on this discretization");
+
+  return dofsets_[nds]->DofRowMap();
+}
+
+
+/*----------------------------------------------------------------------*
+ |  get dof column map (public)                              mwgee 12/06|
+ *----------------------------------------------------------------------*/
+const Epetra_Map* DRT::Discretization::DofColMap(unsigned nds) const
+{
+  dsassert(nds<dofsets_.size(),"undefined dof set");
+  if (!Filled()) dserror("FillComplete was not called on this discretization");
+  if (!HaveDofs()) dserror("AssignDegreesOfFreedom() not called on this discretization");
+
+  return dofsets_[nds]->DofColMap();
+}
+
+
+/*----------------------------------------------------------------------*
  |  replace the dofset of the discretisation (public)        gammi 05/07|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::ReplaceDofSet(RefCountPtr<DofSet> newdofset)
+void DRT::Discretization::ReplaceDofSet(unsigned nds, Teuchos::RCP<DofSet> newdofset)
 {
+  dsassert(nds<dofsets_.size(),"undefined dof set");
   havedof_ = false;
-  dofsets_[currentdofset_] = newdofset;
+  dofsets_[nds] = newdofset;
   return;
 }
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int DRT::Discretization::AddDofSet(Teuchos::RCP<DofSet> newdofset)
+{
+  // if we already have our dofs here and we add a properly filled (proxy)
+  // DofSet, we do not need (and do not want) to refill.
+  havedof_ = havedof_ and newdofset->Filled();
+  dofsets_.push_back(newdofset);
+  return dofsets_.size()-1;
+}
+
 
 /*----------------------------------------------------------------------*
  |  get dof row map (public)                                 mwgee 12/06|
  *----------------------------------------------------------------------*/
 const Epetra_Map* DRT::Discretization::DofRowMap() const
 {
+  dsassert(dofsets_.size()==1,"expect just one dof set");
   if (!Filled()) dserror("FillComplete was not called on this discretization");
   if (!HaveDofs()) dserror("AssignDegreesOfFreedom() not called on this discretization");
 
-  return dofsets_[currentdofset_]->DofRowMap();
+  return dofsets_[0]->DofRowMap();
 }
 
 
@@ -506,36 +545,50 @@ const Epetra_Map* DRT::Discretization::DofRowMap() const
  *----------------------------------------------------------------------*/
 const Epetra_Map* DRT::Discretization::DofColMap() const
 {
+  dsassert(dofsets_.size()==1,"expect just one dof set");
   if (!Filled()) dserror("FillComplete was not called on this discretization");
   if (!HaveDofs()) dserror("AssignDegreesOfFreedom() not called on this discretization");
 
-  return dofsets_[currentdofset_]->DofColMap();
+  return dofsets_[0]->DofColMap();
 }
 
+/*----------------------------------------------------------------------*
+ |  replace the dofset of the discretisation (public)        gammi 05/07|
+ *----------------------------------------------------------------------*/
+void DRT::Discretization::ReplaceDofSet(RCP<DofSet> newdofset)
+{
+  dsassert(dofsets_.size()==1,"expect just one dof set");
+  havedof_ = false;
+  dofsets_[0] = newdofset;
+  return;
+}
 
 /*----------------------------------------------------------------------*
  |  set a reference to a data vector (public)                mwgee 12/06|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::SetState(const string& name,RefCountPtr<const Epetra_Vector> state)
+void DRT::Discretization::SetState(unsigned nds,const string& name,RCP<const Epetra_Vector> state)
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::SetState");
 
   if (!HaveDofs()) dserror("FillComplete() was not called");
-  const Epetra_Map* colmap = DofColMap();
+  const Epetra_Map* colmap = DofColMap(nds);
   const Epetra_BlockMap& vecmap = state->Map();
+
+  if (state_.size()<=nds)
+    state_.resize(nds+1);
 
   // if it's already in column map just set a reference
   // This is a rought test, but it might be ok at this place. It is an
   // error anyway to hand in a vector that is not related to our dof
   // maps.
   if (vecmap.PointSameAs(*colmap))
-    state_[name] = state;
+    state_[nds][name] = state;
   // if it's not in column map export and allocate
   else
   {
-    RefCountPtr<Epetra_Vector> tmp = LINALG::CreateVector(*colmap,false);
+    RCP<Epetra_Vector> tmp = LINALG::CreateVector(*colmap,false);
     LINALG::Export(*state,*tmp);
-    state_[name] = tmp;
+    state_[nds][name] = tmp;
   }
   return;
 }
@@ -544,9 +597,9 @@ void DRT::Discretization::SetState(const string& name,RefCountPtr<const Epetra_V
  |  Set a condition of a certain name                          (public) |
  |                                                            gee 01/07 |
  *----------------------------------------------------------------------*/
-void DRT::Discretization::SetCondition(const string& name,RefCountPtr<Condition> cond)
+void DRT::Discretization::SetCondition(const string& name,RCP<Condition> cond)
 {
-  condition_.insert(pair<string,RefCountPtr<Condition> >(name,cond));
+  condition_.insert(pair<string,RCP<Condition> >(name,cond));
   filled_ = false;
   return;
 }
@@ -559,12 +612,12 @@ void DRT::Discretization::GetCondition(const string& name,vector<DRT::Condition*
 {
   const int num = condition_.count(name);
   out.resize(num);
-  multimap<string,RefCountPtr<Condition> >::const_iterator startit =
+  multimap<string,RCP<Condition> >::const_iterator startit =
                                          condition_.lower_bound(name);
-  multimap<string,RefCountPtr<Condition> >::const_iterator endit =
+  multimap<string,RCP<Condition> >::const_iterator endit =
                                          condition_.upper_bound(name);
   int count=0;
-  multimap<string,RefCountPtr<Condition> >::const_iterator curr;
+  multimap<string,RCP<Condition> >::const_iterator curr;
   for (curr=startit; curr!=endit; ++curr)
     out[count++] = curr->second.get();
   if (count != num) dserror("Mismatch in number of conditions found");
@@ -577,7 +630,7 @@ void DRT::Discretization::GetCondition(const string& name,vector<DRT::Condition*
  *----------------------------------------------------------------------*/
 DRT::Condition* DRT::Discretization::GetCondition(const string& name) const
 {
-  multimap<string,RefCountPtr<Condition> >::const_iterator curr =
+  multimap<string,RCP<Condition> >::const_iterator curr =
                                          condition_.find(name);
   if (curr==condition_.end()) return NULL;
   curr = condition_.lower_bound(name);
@@ -589,10 +642,10 @@ DRT::Condition* DRT::Discretization::GetCondition(const string& name) const
  |  Pack local elements (row map) into buffer                  (public) |
  |                                                          m.kue 02/07 |
  *----------------------------------------------------------------------*/
-RefCountPtr<vector<char> > DRT::Discretization::PackMyElements() const
+RCP<vector<char> > DRT::Discretization::PackMyElements() const
 {
   if (!Filled()) dserror("FillComplete was not called on this discretization");
-  RefCountPtr<vector<char> > block = rcp(new vector<char>);
+  RCP<vector<char> > block = rcp(new vector<char>);
   for (vector<DRT::Element*>::const_iterator i=elerowptr_.begin();
        i!=elerowptr_.end();
        ++i)
@@ -609,10 +662,10 @@ RefCountPtr<vector<char> > DRT::Discretization::PackMyElements() const
  |  Pack local nodes (row map) into buffer                     (public) |
  |                                                          m.kue 02/07 |
  *----------------------------------------------------------------------*/
-RefCountPtr<vector<char> > DRT::Discretization::PackMyNodes() const
+RCP<vector<char> > DRT::Discretization::PackMyNodes() const
 {
   if (!Filled()) dserror("FillComplete was not called on this discretization");
-  RefCountPtr<vector<char> > block = rcp(new vector<char>);
+  RCP<vector<char> > block = rcp(new vector<char>);
   for (vector<DRT::Node*>::const_iterator i=noderowptr_.begin();
        i!=noderowptr_.end();
        ++i)
@@ -629,7 +682,7 @@ RefCountPtr<vector<char> > DRT::Discretization::PackMyNodes() const
  |  Pack condition into buffer                                 (public) |
  |                                                          a.ger 11/07 |
  *----------------------------------------------------------------------*/
-RefCountPtr<vector<char> > DRT::Discretization::PackCondition(const string condname) const
+RCP<vector<char> > DRT::Discretization::PackCondition(const string condname) const
 {
   if (!Filled()) dserror("FillComplete was not called on this discretization");
 
@@ -637,7 +690,7 @@ RefCountPtr<vector<char> > DRT::Discretization::PackCondition(const string condn
   vector<DRT::Condition*> cond;
   GetCondition(condname,cond);
 
-  RefCountPtr<vector<char> > block = rcp(new vector<char>);
+  RCP<vector<char> > block = rcp(new vector<char>);
   for (vector<DRT::Condition*>::const_iterator i = cond.begin();
        i!=cond.end();
        ++i)
@@ -654,7 +707,7 @@ RefCountPtr<vector<char> > DRT::Discretization::PackCondition(const string condn
  |  Unpack element buffer and create local elements            (public) |
  |                                                          m.kue 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Discretization::UnPackMyElements(RefCountPtr<vector<char> > e)
+void DRT::Discretization::UnPackMyElements(RCP<vector<char> > e)
 {
   int index = 0;
   while (index < static_cast<int>(e->size()))
@@ -678,7 +731,7 @@ void DRT::Discretization::UnPackMyElements(RefCountPtr<vector<char> > e)
  |  Unpack nodal buffer and create local nodes                 (public) |
  |                                                          m.kue 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Discretization::UnPackMyNodes(RefCountPtr<vector<char> > e)
+void DRT::Discretization::UnPackMyNodes(RCP<vector<char> > e)
 {
   int index = 0;
   while (index < static_cast<int>(e->size()))
@@ -703,7 +756,7 @@ void DRT::Discretization::UnPackMyNodes(RefCountPtr<vector<char> > e)
  |                                                          a.ger 02/07 |
  *----------------------------------------------------------------------*/
 void DRT::Discretization::UnPackCondition(
-        const RefCountPtr<vector<char> > e,
+        const RCP<vector<char> > e,
         const string condname)
 {
   int index = 0;

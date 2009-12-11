@@ -41,9 +41,13 @@ namespace POTENTIAL
     */
     virtual ~PotentialDofSet() { return; }
 
+    /// create a copy of this object
+    virtual Teuchos::RCP<DofSet> Clone() { dserror("not supported"); return Teuchos::null; }
+
     /// Assign dof numbers to all elements and nodes of the discretization.
     virtual int AssignDegreesOfFreedom(
             const DRT::Discretization& dis,
+            const unsigned dspos,
             const int start);
 
     /// Assign dof numbers for new discretization using dof numbering from source discretization.

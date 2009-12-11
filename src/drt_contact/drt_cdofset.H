@@ -74,12 +74,15 @@ public:
   */
   virtual ~CDofSet() { return; }
 
+  /// create a copy of this object
+  virtual Teuchos::RCP<DofSet> Clone() { return Teuchos::rcp(new CDofSet(*this)); }
+
   //@}
 
   //! @name Construction
 
   /// Assign dof numbers to all elements and nodes of the discretization.
-  virtual int AssignDegreesOfFreedom(const DRT::Discretization& dis, const int start);
+  virtual int AssignDegreesOfFreedom(const DRT::Discretization& dis, const unsigned dspos, const int start);
 
   //@}
 

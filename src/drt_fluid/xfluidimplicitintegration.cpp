@@ -150,7 +150,7 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
 
   // store a dofset with the complete fluid unknowns
   dofset_out_.Reset();
-  dofset_out_.AssignDegreesOfFreedom(*discret_,0);
+  dofset_out_.AssignDegreesOfFreedom(*discret_,0,0);
   // split based on complete fluid field
   FLD::UTILS::SetupFluidSplit(*discret_,dofset_out_,3,velpressplitterForOutput_);
 

@@ -42,7 +42,7 @@ Maintainer: Michael Gee
 #define ELEMENT_H
 
 
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 using namespace std;
@@ -193,6 +193,74 @@ public:
 
   //@}
 
+
+  /// Location data for one dof set
+  /*!
+    A helper that manages location vectors. Required since there can be an
+    arbitrary number of location vectors, matching the number of dofsets in
+    the discretization.
+
+    \author u.kue
+    \date 12/09
+   */
+  class LocationData
+  {
+  public:
+
+    /// clear all vectors
+    void Clear() { lm_.clear(); lmdirich_.clear(); lmowner_.clear(); }
+
+    /// return number of dofs collected
+    int Size() const { return lm_.size(); }
+
+    /// global dof numbers of elemental dofs
+    vector<int> lm_;
+
+    /// Dirichlet on/off flags
+    vector<int> lmdirich_;
+
+    /// Owner of dof (that is owner of node or element the dof belongs to)
+    vector<int> lmowner_;
+  };
+
+
+  /// Location data for all dof sets
+  /*!
+    A helper that manages location vectors. Required since there can be an
+    arbitrary number of location vectors, matching the number of dofsets in
+    the discretization.
+
+    \author u.kue
+    \date 12/09
+   */
+  class LocationArray
+  {
+  public:
+
+    /// constructed with number of dofsets in discretization
+    explicit LocationArray(int size)
+      : data_(size)
+    {
+    }
+
+    /// clear all location entries
+    void Clear()
+    {
+      for (unsigned i=0; i<data_.size(); ++i)
+        data_[i].Clear();
+    }
+
+    /// access location entry
+    LocationData& operator[](int i) { return data_[i]; }
+
+    /// number of location entries, that is number of dofsets in discretization
+    int Size() const { return data_.size(); }
+
+  private:
+    std::vector<LocationData> data_;
+  };
+
+
   //! @name Constructors and destructors and related methods
 
   /*!
@@ -262,7 +330,7 @@ public:
   The ElementRegister class is then used to hold track of what type of
   elements are in one discretization.
   */
-  virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const = 0;
+  virtual RCP<DRT::ElementRegister> ElementRegister() const = 0;
 
   //@}
 
@@ -356,7 +424,7 @@ public:
 
 
   /*!
-  \brief Get vector of RefCountPtrs to the lines of this element
+  \brief Get vector of RCPs to the lines of this element
 
   This is a base class dummy routine that always returns NULL.
   The derived element class is expected to allocate and store
@@ -378,7 +446,7 @@ public:
   //virtual const Element*const* Lines() const { dserror("unexpected base method called."); return NULL; }
 
   /*!
-  \brief Get vector of RefCountPtrs to the surfaces of this element
+  \brief Get vector of RCPs to the surfaces of this element
 
   This is a base class dummy routine that always returns NULL.
   The derived element class is expected to allocate and store
@@ -400,7 +468,7 @@ public:
   //virtual const Element*const* Surfaces() const { dserror("unexpected base method called."); return NULL; }
 
   /*!
-  \brief Get vector of RefCountPtrs to the volumes of this element
+  \brief Get vector of RCPs to the volumes of this element
 
   This is a base class dummy routine that always returns NULL.
   The derived element class is expected to allocate and store
@@ -426,6 +494,28 @@ public:
   The element decides how many degrees of freedom its nodes must have.
   As this may vary along a simulation, the element can redecide the
   number of degrees of freedom per node along the way for each of it's nodes
+  separately.
+
+  This method is used by the DRT::Discretization to determine how many
+  degrees of freedom should be assigned to each node. The discretization will
+  assign a node the max number of dofs the adjacent elements demand by this
+  method.
+
+  */
+  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node) const
+  {
+    if (nds==0)
+      return NumDofPerNode(node);
+    dserror("only one dof set supported");
+    return -1;
+  }
+
+  /*!
+  \brief Get number of degrees of freedom of a certain node
+
+  The element decides how many degrees of freedom its nodes must have.
+  As this may vary along a simulation, the element can redecide the
+  number of degrees of freedom per node along the way for each of it's nodes
   separately.<br>
   This method is used by the DRT::Discretization to determine how many
   degrees of freedom should be assigned to each node. The discretization will
@@ -433,7 +523,35 @@ public:
   method.
 
   */
-  virtual int NumDofPerNode(const DRT::Node& node) const = 0;
+  virtual int NumDofPerNode(const DRT::Node& node) const
+  {
+    dserror("not implemented");
+    return -1;
+  }
+
+  /*!
+  \brief Get number of degrees of freedom per element
+
+  The element decides how many element degrees of freedom it has.
+  It can redecide along the way of a simulation.
+
+  Usually, a standard finite element would not have element degrees of
+  freedom and would therefore return zero here.
+
+  \note Element degrees of freedom mentioned here are dofs that are supposed
+        to be visible at the global system level. Purely internal
+        element dofs that are condensed internally should NOT be considered.
+        The DRT::Discretization will use this method to determine how many degrees
+        of freedom it should include in the degree of freedom row and column map
+        for the global system of equations.
+  */
+  virtual int NumDofPerElement(const unsigned nds) const
+  {
+    if (nds==0)
+      return NumDofPerElement();
+    dserror("only one dof set supported");
+    return -1;
+  }
 
   /*!
   \brief Get number of degrees of freedom per element
@@ -450,7 +568,11 @@ public:
         of freedom it should include in the degree of freedom row and column map
         for the global system of equations.
   */
-  virtual int NumDofPerElement() const = 0;
+  virtual int NumDofPerElement() const
+  {
+    dserror("not implemented");
+    return -1;
+  }
 
   /*!
   \brief Print this element
@@ -464,7 +586,7 @@ public:
   \brief Return the material of this element
 
   */
-  RefCountPtr<MAT::Material> Material() const { return mat_; }
+  RCP<MAT::Material> Material() const { return mat_; }
 
   /*!
   \brief Query names of element data to be visualized using BINIO
@@ -636,8 +758,8 @@ public:
            NOT be overwritten but stored twice in the element
 
   */
-  virtual void SetCondition(const string& name,RefCountPtr<Condition> cond)
-  { condition_.insert(pair<string,RefCountPtr<Condition> >(name,cond)); return; }
+  virtual void SetCondition(const string& name,RCP<Condition> cond)
+  { condition_.insert(pair<string,RCP<Condition> >(name,cond)); return; }
 
   /*!
   \brief Get all conditions with a certain name
@@ -675,6 +797,32 @@ public:
   //@}
 
   //! @name Evaluation methods
+
+  /*!
+  \brief Return the location vector of this element
+
+  The method computes degrees of freedom this element adresses.
+  Degree of freedom ordering is as follows:<br>
+  First all degrees of freedom of adjacent nodes are numbered in
+  local nodal order, then the element internal degrees of freedom are
+  given if present.<br>
+  If a derived element has to use a different ordering scheme,
+  it is welcome to overload this method as the assembly routines actually
+  don't care as long as matrices and vectors evaluated by the element
+  match the ordering, which is implicitly assumed.<br>
+  Length of the output vector matches number of degrees of freedom
+  exactly.<br>
+
+  \note The degrees of freedom returned are not neccessarily only nodal dofs.
+        Depending on the element implementation, output might also include
+        element dofs.
+
+  \param dis (in)      : the discretization this element belongs to
+  \param la (out)      : location data for all dofsets of the discretization
+  \param doDirichlet (in): whether to get the Dirichlet flags
+
+  */
+  virtual void LocationVector(const Discretization& dis, LocationArray& la, bool doDirichlet) const;
 
   /*!
   \brief Return the location vector of this element
@@ -734,6 +882,41 @@ public:
 
   */
   virtual void LocationVector(const Discretization& dis, vector<int>& lm, vector<int>& lmowner) const;
+
+  /*!
+  \brief Evaluate an element
+
+  An element derived from this class uses the Evaluate method to receive commands
+  and parameters from some control routine in params and evaluates element matrices and
+  vectors accoring to the command in params.
+
+  \note This class implements a dummy of this method that prints a warning and
+        returns false.
+
+  \param params (in/out)    : ParameterList for communication between control routine
+                              and elements
+  \param discretization (in): A reference to the underlying discretization
+  \param la (in)            : location data for all dofsets of the discretization
+  \param elemat1 (out)      : matrix to be filled by element depending on commands
+                              given in params
+  \param elemat2 (out)      : matrix to be filled by element depending on commands
+                              given in params
+  \param elevec1 (out)      : vector to be filled by element depending on commands
+                              given in params
+  \param elevec2 (out)      : vector to be filled by element depending on commands
+                              given in params
+  \param elevec3 (out)      : vector to be filled by element depending on commands
+                              given in params
+  \return 0 if successful, negative otherwise
+  */
+  virtual int Evaluate(ParameterList&            params,
+                       DRT::Discretization&      discretization,
+                       LocationArray&            la,
+                       Epetra_SerialDenseMatrix& elemat1,
+                       Epetra_SerialDenseMatrix& elemat2,
+                       Epetra_SerialDenseVector& elevec1,
+                       Epetra_SerialDenseVector& elevec2,
+                       Epetra_SerialDenseVector& elevec3);
 
   /*!
   \brief Evaluate an element
@@ -813,7 +996,7 @@ public:
 
   \param nodes (in): A map of all nodes of a discretization
   */
-  virtual bool BuildNodalPointers(map<int,RefCountPtr<DRT::Node> >& nodes);
+  virtual bool BuildNodalPointers(map<int,RCP<DRT::Node> >& nodes);
 
   /*!
   \brief Build pointer vector from vector of nodal pointers
@@ -842,7 +1025,7 @@ public:
 
   \param elements (in): A map of all elements of a discretization
   */
-  virtual bool BuildElementPointers(map<int,RefCountPtr<DRT::Element> >& elements) {return true;}
+  virtual bool BuildElementPointers(map<int,RCP<DRT::Element> >& elements) {return true;}
 
   //@}
 

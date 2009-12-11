@@ -99,8 +99,7 @@ void DRT::Discretization::Evaluate(
   EnterElementLoop();
 #endif
 
-  vector<int> lm;
-  vector<int> lmowner;
+  Element::LocationArray la(dofsets_.size());
 
   // loop over column elements
   const int numcolele = NumMyColElements();
@@ -111,9 +110,7 @@ void DRT::Discretization::Evaluate(
     {
     TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate LocationVector");
     // get element location vector, dirichlet flags and ownerships
-    lm.clear();
-    lmowner.clear();
-    actele->LocationVector(*this,lm,lmowner);
+    actele->LocationVector(*this,la,false);
     }
 
     {
@@ -121,7 +118,7 @@ void DRT::Discretization::Evaluate(
 
     // get dimension of element matrices and vectors
     // Reshape element matrices and vectors and init to zero
-    const int eledim = (int)lm.size();
+    const int eledim = la[0].Size();
     if (assemblemat1)
     {
       if (elematrix1.M()!=eledim or elematrix1.N()!=eledim)
@@ -166,7 +163,7 @@ void DRT::Discretization::Evaluate(
     {
       TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate elements");
     // call the element evaluate method
-    int err = actele->Evaluate(params,*this,lm,elematrix1,elematrix2,
+    int err = actele->Evaluate(params,*this,la,elematrix1,elematrix2,
                                elevector1,elevector2,elevector3);
     if (err) dserror("Proc %d: Element %d returned err=%d",Comm().MyPID(),actele->Id(),err);
     }
@@ -174,11 +171,11 @@ void DRT::Discretization::Evaluate(
     {
       TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate assemble");
       int eid = actele->Id();
-      if (assemblemat1) systemmatrix1->Assemble(eid,elematrix1,lm,lmowner);
-      if (assemblemat2) systemmatrix2->Assemble(eid,elematrix2,lm,lmowner);
-      if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
-      if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,lm,lmowner);
-      if (assemblevec3) LINALG::Assemble(*systemvector3,elevector3,lm,lmowner);
+      if (assemblemat1) systemmatrix1->Assemble(eid,elematrix1,la[0].lm_,la[0].lmowner_);
+      if (assemblemat2) systemmatrix2->Assemble(eid,elematrix2,la[0].lm_,la[0].lmowner_);
+      if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,la[0].lm_,la[0].lmowner_);
+      if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,la[0].lm_,la[0].lmowner_);
+      if (assemblevec3) LINALG::Assemble(*systemvector3,elevector3,la[0].lm_,la[0].lmowner_);
     }
 
 #ifdef THROWELEMENTERRORS
@@ -228,7 +225,7 @@ void DRT::Discretization::Evaluate(
   Epetra_SerialDenseVector elevector2;
   Epetra_SerialDenseVector elevector3;
 
-  vector<int> lm;
+  Element::LocationArray la(dofsets_.size());
 
   // loop over column elements
   const int numcolele = NumMyColElements();
@@ -237,7 +234,7 @@ void DRT::Discretization::Evaluate(
     DRT::Element* actele = lColElement(i);
 
     // call the element evaluate method
-    const int err = actele->Evaluate(params,*this,lm,elematrix1,elematrix2,
+    const int err = actele->Evaluate(params,*this,la,elematrix1,elematrix2,
                                elevector1,elevector2,elevector3);
     if (err)
       dserror("Proc %d: Element %d returned err=%d",Comm().MyPID(),actele->Id(),err);
@@ -973,7 +970,7 @@ void DoDirichletConditionXFEM(DRT::Condition&             cond,
 void DRT::Discretization::EvaluateCondition
 (
   ParameterList& params,
-  RefCountPtr<Epetra_Vector> systemvector,
+  RCP<Epetra_Vector> systemvector,
   const string& condstring,
   const int condid
 )
@@ -1021,7 +1018,7 @@ void DRT::Discretization::EvaluateCondition
   const double time = params.get("total time",-1.0);
   if (time<0.0) usetime = false;
 
-  multimap<string,RefCountPtr<Condition> >::iterator fool;
+  multimap<string,RCP<Condition> >::iterator fool;
 
   const bool assemblemat1 = systemmatrix1!=Teuchos::null;
   const bool assemblemat2 = systemmatrix2!=Teuchos::null;
@@ -1039,12 +1036,12 @@ void DRT::Discretization::EvaluateCondition
       DRT::Condition& cond = *(fool->second);
       if (condid == -1 || condid ==cond.GetInt("ConditionID"))
       {
-        map<int,RefCountPtr<DRT::Element> >& geom = cond.Geometry();
+        map<int,RCP<DRT::Element> >& geom = cond.Geometry();
         // if (geom.empty()) dserror("evaluation of condition with empty geometry");
         // no check for empty geometry here since in parallel computations
         // can exist processors which do not own a portion of the elements belonging
         // to the condition geometry
-        map<int,RefCountPtr<DRT::Element> >::iterator curr;
+        map<int,RCP<DRT::Element> >::iterator curr;
 
         // Evaluate Loadcurve if defined. Put current load factor in parameterlist
         const vector<int>*    curve  = cond.Get<vector<int> >("curve");
@@ -1067,7 +1064,7 @@ void DRT::Discretization::EvaluateCondition
         {
           params.set("LoadCurveFactor",curvefac);
         }
-        params.set<RefCountPtr<DRT::Condition> >("condition", fool->second);
+        params.set<RCP<DRT::Condition> >("condition", fool->second);
 
         // define element matrices and vectors
         Epetra_SerialDenseMatrix elematrix1;
@@ -1129,7 +1126,7 @@ void DRT::Discretization::EvaluateConditionUsingParentData(
   if (!Filled()) dserror("FillComplete() was not called");
   if (!HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
 
-  multimap<string,RefCountPtr<Condition> >::iterator fool;
+  multimap<string,RCP<Condition> >::iterator fool;
 
   const bool assemblemat1 = systemmatrix1!=Teuchos::null;
   const bool assemblemat2 = systemmatrix2!=Teuchos::null;
@@ -1147,17 +1144,17 @@ void DRT::Discretization::EvaluateConditionUsingParentData(
       DRT::Condition& cond = *(fool->second);
       if (condid == -1 || condid ==cond.GetInt("ConditionID"))
       {
-	map<int,RefCountPtr<DRT::Element> >& geom = cond.Geometry();
+	map<int,RCP<DRT::Element> >& geom = cond.Geometry();
 	// no check for empty geometry here since in parallel computations
 	// can exist processors which do not own a portion of the elements belonging
 	// to the condition geometry
 
-	map<int,RefCountPtr<DRT::Element> >::iterator curr;
+	map<int,RCP<DRT::Element> >::iterator curr;
 
 	// stuff the whole condition into the parameterlist
 	// --- we want to be able to access boundary values
 	// on the element level
-	params.set<RefCountPtr<DRT::Condition> >("condition", fool->second);
+	params.set<RCP<DRT::Condition> >("condition", fool->second);
 
 	// define element matrices and vectors
 	Epetra_SerialDenseMatrix elematrix1;
@@ -1180,11 +1177,11 @@ void DRT::Discretization::EvaluateConditionUsingParentData(
 	  // the parameterlist --- the element will fill
 	  // them since only the element implementation
 	  // knows its parent
-	  RefCountPtr<vector<int> > plm     =rcp(new vector<int>);
-	  RefCountPtr<vector<int> > plmowner=rcp(new vector<int>);
+	  RCP<vector<int> > plm     =rcp(new vector<int>);
+	  RCP<vector<int> > plmowner=rcp(new vector<int>);
 
-	  params.set<RefCountPtr<vector<int> > >("plm",plm);
-	  params.set<RefCountPtr<vector<int> > >("plmowner",plmowner);
+	  params.set<RCP<vector<int> > >("plm",plm);
+	  params.set<RCP<vector<int> > >("plmowner",plmowner);
 
 	  // call the element specific evaluate method
 	  int err = curr->second->Evaluate(params,*this,lm,elematrix1,elematrix2,

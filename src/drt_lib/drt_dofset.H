@@ -62,7 +62,7 @@ namespace DRT
 {
 
 class Discretization;
-
+class DofSetProxy;
 
 /*!
 \brief A set of degrees of freedom
@@ -133,6 +133,7 @@ reason to deep copy any of the local map and vector variables.
 */
 class DofSet: public DofSetBase
 {
+  friend class DofSetProxy;
 public:
 
   /*!
@@ -147,6 +148,8 @@ public:
   */
   virtual ~DofSet();
 
+  /// create a copy of this object
+  virtual Teuchos::RCP<DofSet> Clone() { return Teuchos::rcp(new DofSet(*this)); }
 
   //! @name Access methods
 
@@ -274,19 +277,47 @@ public:
   */
   virtual void Print(ostream& os) const ;
 
+  virtual bool Filled() const { return filled_; }
+
   //@}
 
   //! @name Construction
 
   /// Assign dof numbers using all elements and nodes of the discretization.
-  virtual int AssignDegreesOfFreedom(const Discretization& dis, const int start);
+  virtual int AssignDegreesOfFreedom(const Discretization& dis, const unsigned dspos, const int start);
 
   /// reset all internal variables
   virtual void Reset();
 
   //@}
 
+private:
+
+  //! @name Proxy management
+  /// Proxies need to know about changes to the DofSet.
+
+  /// Register new proxy to notify
+  void RegisterProxy(DofSetProxy* proxy);
+
+  /// Remove proxy from list
+  void UnregisterProxy(DofSetProxy* proxy);
+
+  //@}
+
 protected:
+
+  //! @name Proxy management
+
+  /// Notify proxies of new dofs
+  void NotifyAssigned();
+
+  /// Notify proxies of reset
+  void NotifyReset();
+
+  //@}
+
+  /// filled flag
+  bool filled_;
 
   /// number of dofs for each node
   RefCountPtr<Epetra_IntVector>                 numdfcolnodes_;
@@ -300,6 +331,8 @@ protected:
   /// column map lid of first dof for each element
   RefCountPtr<Epetra_IntVector>                 idxcolelements_;
 
+  /// list of my proxies
+  std::list<DofSetProxy*> proxies_;
 }; // class DofSet
 } // namespace DRT
 
