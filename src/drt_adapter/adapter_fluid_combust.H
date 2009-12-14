@@ -221,14 +221,6 @@ namespace ADAPTER
 
   private:
 
-    /// print vector field at interface
-    void PrintInterfaceVectorField(
-        const Teuchos::RCP<Epetra_Vector>   displacementfield,
-        const Teuchos::RCP<Epetra_Vector>   vectorfield,
-        const std::string filestr,
-        const std::string name_in_gmsh
-        );
-
     /// implicit fluid time integration scheme
     FLD::CombustFluidImplicitTimeInt             fluid_;
 
