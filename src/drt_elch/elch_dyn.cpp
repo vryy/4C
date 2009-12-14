@@ -137,7 +137,12 @@ void elch_dyn(int disnumff,int disnumscatra,int disnumale,int restart)
       if (aledis->NumGlobalNodes()==0)
       {
         Epetra_Time time(comm);
-        FSI::UTILS::CreateAleDiscretization();
+        {
+          Teuchos::RCP<DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy> > alecreator =
+            Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy>() );
+
+          alecreator->CreateMatchingDiscretization(fluiddis,aledis,-1);
+        }
 
         if(comm.MyPID()==0)
         {

@@ -157,6 +157,7 @@ FSI::UTILS::ShiftMap(Teuchos::RCP<const Epetra_Map> emap,
 /*----------------------------------------------------------------------*/
 // create ale discretization parallel to the fluid one
 /*----------------------------------------------------------------------*/
+/*
 void FSI::UTILS::CreateAleDiscretization()
 {
   RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(genprob.numff,0);
@@ -504,5 +505,129 @@ void FSI::UTILS::CreateAleDiscretization()
 
 
 }
+*/
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::map<string,string> FSI::UTILS::AleFluidCloneStrategy::ConditionsToCopy()
+{
+  std::map<string,string> conditions_to_copy;
+
+  conditions_to_copy.insert(pair<string,string>("ALEDirichlet","Dirichlet"));
+  conditions_to_copy.insert(pair<string,string>("FSICoupling","FSICoupling"));
+  conditions_to_copy.insert(pair<string,string>("FREESURFCoupling","FREESURFCoupling"));
+  conditions_to_copy.insert(pair<string,string>("StructAleCoupling","StructAleCoupling"));
+  conditions_to_copy.insert(pair<string,string>("LinePeriodic","LinePeriodic"));
+  conditions_to_copy.insert(pair<string,string>("SurfacePeriodic","SurfacePeriodic"));
+  conditions_to_copy.insert(pair<string,string>("ElectrodeKinetics","ElectrodeKinetics"));
+
+  return conditions_to_copy;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::UTILS::AleFluidCloneStrategy::CheckMaterialType(const int matid)
+{
+  // no check implemented for ALE materials!
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::UTILS::AleFluidCloneStrategy::SetElementData(
+    RCP<DRT::Element> newele,
+    DRT::Element* oldele,
+    const int matid,
+    const bool nurbsdis)
+{
+  // We must not add a new material type here because that might move
+  // the internal material vector. And each element material might
+  // have a pointer to that vector. Too bad.
+  // So we search for a StVenantKirchhoff material and take the first
+  // one we find.
+  // => matid from outside remains unused!
+  const int matnr = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_stvenant);
+  if (matnr==-1)
+    dserror("No StVenantKirchhoff material defined. Cannot generate ale mesh.");
+
+#ifdef D_ALE
+    if(nurbsdis==false)
+    {
+      DRT::ELEMENTS::Ale2* ale2 = dynamic_cast<DRT::ELEMENTS::Ale2*>(newele.get());
+      if (ale2!=NULL)
+      {
+        ale2->SetMaterial(matnr);
+      }
+      else
+      {
+        DRT::ELEMENTS::Ale3* ale3 = dynamic_cast<DRT::ELEMENTS::Ale3*>(newele.get());
+        if (ale3!=NULL)
+        {
+          ale3->SetMaterial(matnr);
+        }
+        else
+        {
+          dserror("unsupported ale element type '%s'", typeid(*newele).name());
+        }
+      }
+    }
+    else
+    {
+      DRT::ELEMENTS::NURBS::Ale2Nurbs* ale2 = dynamic_cast<DRT::ELEMENTS::NURBS::Ale2Nurbs*>(newele.get());
+      if (ale2!=NULL)
+      {
+        ale2->SetMaterial(matnr);
+      }
+      else
+      {
+        dserror("unsupported ale element type '%s'", typeid(*newele).name());
+      }
+    }
+#endif
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool FSI::UTILS::AleFluidCloneStrategy::DetermineEleType(
+    DRT::Element* actele,
+    const bool ismyele,
+    vector<string>& eletype)
+{
+  bool isale = false;
+  bool found = false;
+
+#ifdef D_FLUID2
+    DRT::ELEMENTS::Fluid2* f2 = dynamic_cast<DRT::ELEMENTS::Fluid2*>(actele);
+    if (not found and f2!=NULL)
+    {
+      found = true;
+      isale = f2->IsAle();
+      if (isale and ismyele)
+        eletype.push_back("ALE2");
+    }
+#endif
+
+#ifdef D_FLUID3
+    DRT::ELEMENTS::Fluid3* f3 = dynamic_cast<DRT::ELEMENTS::Fluid3*>(actele);
+    if (not found and f3!=NULL)
+    {
+      found = true;
+      isale = f3->IsAle();
+      if (isale and ismyele)
+        eletype.push_back("ALE3");
+    }
+#endif
+
+    if (not found)
+      dserror("unsupported fluid element type '%s'", typeid(*actele).name());
+
+  return isale;
+}
+
+
 
 #endif

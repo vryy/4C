@@ -42,13 +42,17 @@ public:
 protected:
 
   /// determine element type string and whether element is copied or not
-  bool DetermineEleType(vector<string>& eletype);
+  bool DetermineEleType(DRT::Element* actele, const bool ismyele, vector<string>& eletype);
 
   /// set element-specific data (material etc.)
-  void SetElementData(RCP<DRT::Element> newele, DRT::Element* oldele,const int matid);
+  void SetElementData(
+      RCP<DRT::Element> newele,
+      DRT::Element* oldele,
+      const int matid,
+      const bool isnurbs);
 
   /// returns conditions names to be copied (source and target name)
-  map<string,string> ConditionToCopy();
+  map<string,string> ConditionsToCopy();
 
   /// check for correct material
   void CheckMaterialType(const int matid);

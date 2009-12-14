@@ -21,6 +21,7 @@ Maintainer: Georg Bauer
 
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_nurbs_discret/drt_nurbs_discret.H"
 
 namespace DRT
 {
@@ -45,8 +46,13 @@ protected:
       Teuchos::RCP<DRT::Discretization> targetdis,
       set<int>& rownodeset,
       set<int>& colnodeset,
-      RefCountPtr<Epetra_Map>& targetnoderowmap_,
-      RefCountPtr<Epetra_Map>& targetnodecolmap_);
+      const bool isnurbsdis);
+
+  RCP<Epetra_Map> CreateNodeRowMap(
+      set<int>& rownodeset,Teuchos::RCP<DRT::Discretization> targetdis);
+
+  RCP<Epetra_Map> CreateNodeColMap(
+      set<int>& colnodeset,Teuchos::RCP<DRT::Discretization> targetdis);
 
   void InitialChecks(
       Teuchos::RCP<DRT::Discretization> sourcedis,
@@ -57,7 +63,9 @@ protected:
       Teuchos::RCP<DRT::Discretization> targetdis,
       const map<string,string>& conditions_to_copy);
 
-  void Finalize(Teuchos::RCP<DRT::Discretization> targetdis);
+  void Finalize(
+      const Teuchos::RCP<DRT::Discretization> sourcedis,
+      Teuchos::RCP<DRT::Discretization> targetdis);
 
 
 protected:
@@ -89,19 +97,29 @@ public:
       const int matid ///< ID of the material which generated elements will get
       )
   {
-    InitialChecks(sourcedis,targetdis);
+    // try to cast sourcedis to NurbsDiscretisation
+    DRT::NURBS::NurbsDiscretization* nurbsdis =
+      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*(sourcedis)));
+    bool isnurbsdis(nurbsdis!=NULL);
 
+    // check and analyze source discretization
+    InitialChecks(sourcedis,targetdis);
     AnalyzeSourceDis(sourcedis,eletype_,egid_,rownodeset_,colnodeset_);
 
-    CreateNodes(sourcedis,targetdis,rownodeset_,colnodeset_,targetnoderowmap_,targetnodecolmap_);
+    // do the node business
+    CreateNodes(sourcedis,targetdis,rownodeset_,colnodeset_,isnurbsdis);
+    targetnoderowmap_ = CreateNodeRowMap(rownodeset_,targetdis);
+    targetnodecolmap_ = CreateNodeColMap(colnodeset_,targetdis);
 
-    CreateElements(sourcedis,targetdis,matid);
+    // create elements
+    CreateElements(sourcedis,targetdis,matid,isnurbsdis);
 
-    map<string,string> conditions_to_copy = CloneStrategy::ConditionToCopy();
-
+    // copy desired conditions from source to target discretization
+    map<string,string> conditions_to_copy = CloneStrategy::ConditionsToCopy();
     CopyConditions(sourcedis,targetdis,conditions_to_copy);
 
-    Finalize(targetdis);
+    // call Redistribute, FillComplete etc.
+    Finalize(sourcedis,targetdis);
   };
 
 private:
@@ -129,7 +147,7 @@ private:
 
       // we get the element type string and a boolean if this element
       // is considered! (see submeshes for Fluid-ALE case!)
-      if(CloneStrategy::DetermineEleType(eletype_))
+      if(CloneStrategy::DetermineEleType(actele, ismyele, eletype_))
       {
         if (ismyele)
           egid.push_back(actele->Id());
@@ -152,7 +170,8 @@ private:
   void CreateElements(
       Teuchos::RCP<DRT::Discretization> sourcedis,
       Teuchos::RCP<DRT::Discretization> targetdis,
-      const int matid)
+      const int matid,
+      const bool isnurbsdis)
   {
     // now do the elements
 
@@ -161,32 +180,53 @@ private:
     // prepare some variables we need
     int myrank = targetdis->Comm().MyPID();
 
-    // construct scalar transport elements
+    // construct new elements
     // The order of the elements might be different from that of the
-    // fluid elements. We don't care. There are no dofs to these elements.
-    for (unsigned i=0; i<egid_.size(); ++i)
+    // source elements. We don't care. There are no dofs to these elements.
+    for (std::size_t i=0; i<egid_.size(); ++i)
     {
-      DRT::Element* fluidele = sourcedis->gElement(egid_[i]);
+      DRT::Element* sourceele = sourcedis->gElement(egid_[i]);
 
-      // create a scalar transport element with the same global element id
-      RCP<DRT::Element> newele = DRT::UTILS::Factory(eletype_[i],"Polynomial",egid_[i],myrank);
+      string approxtype = "Polynomial";
+      if(isnurbsdis)
+      {
+        if(sourceele->NumNode()==9)
+        {
+          approxtype="NURBS9";
+        }
+        else if(sourceele->NumNode()==4)
+        {
+          approxtype="NURBS4";
+        }
+        else if(sourceele->NumNode()==27)
+        {
+          approxtype="NURBS27";
+        }
+        else
+        {
+          dserror("unknown type of nurbs element\n");
+        }
+      }
+
+      // create a new element of desired type with the same global element id
+      RCP<DRT::Element> newele = DRT::UTILS::Factory(eletype_[i],approxtype,egid_[i],myrank);
 
       // get global node ids of fluid element
       vector<int> nids;
-      nids.reserve(fluidele->NumNode());
-      transform(fluidele->Nodes(), fluidele->Nodes()+fluidele->NumNode(),
+      nids.reserve(sourceele->NumNode());
+      transform(sourceele->Nodes(), sourceele->Nodes()+sourceele->NumNode(),
                 back_inserter(nids), mem_fun(&DRT::Node::Id));
 
-      // set the same global node ids to the new scalar transport element
+      // set the same global node ids to the new element
       newele->SetNodeIds(nids.size(), &nids[0]);
 
       // We need to set material and gauss points to complete element setup.
       // This is again really ugly as we have to extract the actual
       // element type in order to access the material property
       // note: SetMaterial() was reimplemented by the transport element!
-      CloneStrategy::SetElementData(newele,fluidele,matid);
+      CloneStrategy::SetElementData(newele,sourceele,matid,isnurbsdis);
 
-      // add new scalar transport element to discretization
+      // add new element to discretization
       targetdis->AddElement(newele);
     }
   }

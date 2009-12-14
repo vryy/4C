@@ -30,6 +30,7 @@
 
 #include "../drt_inpar/inpar_fsi.H"
 #include "../drt_lib/drt_resulttest.H"
+#include "../drt_lib/drt_utils_createdis.H"
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -70,7 +71,14 @@ void fluid_ale_drt()
   // create ale elements if the ale discretization is empty
   if (aledis->NumGlobalNodes()==0)
   {
-    FSI::UTILS::CreateAleDiscretization();
+    {
+      RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(genprob.numff,0);
+
+      Teuchos::RCP<DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy> > alecreator =
+        Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy>() );
+
+      alecreator->CreateMatchingDiscretization(fluiddis,aledis,-1);
+    }
 
     if (comm.MyPID()==0)
     {
@@ -147,7 +155,15 @@ void fluid_freesurf_drt()
   // create ale elements if the ale discretization is empty
   RCP<DRT::Discretization> aledis = problem->Dis(genprob.numaf,0);
   if (aledis->NumGlobalNodes()==0)
-    FSI::UTILS::CreateAleDiscretization();
+  {
+    RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(genprob.numff,0);
+
+    Teuchos::RCP<DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy> > alecreator =
+      Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy>() );
+
+    alecreator->CreateMatchingDiscretization(fluiddis,aledis,-1);
+  }
+    //FSI::UTILS::CreateAleDiscretization();
 
   const Teuchos::ParameterList& fsidyn   = problem->FSIDynamicParams();
 
@@ -229,7 +245,15 @@ void fsi_ale_drt()
   // create ale elements if the ale discretization is empty
   RCP<DRT::Discretization> aledis = problem->Dis(genprob.numaf,0);
   if (aledis->NumGlobalNodes()==0)
-    FSI::UTILS::CreateAleDiscretization();
+  {
+    RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(genprob.numff,0);
+
+    Teuchos::RCP<DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy> > alecreator =
+      Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy>() );
+
+    alecreator->CreateMatchingDiscretization(fluiddis,aledis,-1);
+  }
+  //FSI::UTILS::CreateAleDiscretization();
 
   const Teuchos::ParameterList& fsidyn   = problem->FSIDynamicParams();
 

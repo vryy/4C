@@ -30,7 +30,7 @@ Maintainer: Georg Bauer
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::map<string,string> SCATRA::ScatraFluidCloneStrategy::ConditionToCopy()
+std::map<string,string> SCATRA::ScatraFluidCloneStrategy::ConditionsToCopy()
 {
   std::map<string,string> conditions_to_copy;
 
@@ -75,7 +75,11 @@ if ((mtype != INPAR::MAT::m_scatra) &&
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SCATRA::ScatraFluidCloneStrategy::SetElementData(RCP<DRT::Element> newele, DRT::Element* oldele, const int matid)
+void SCATRA::ScatraFluidCloneStrategy::SetElementData(
+    RCP<DRT::Element> newele,
+    DRT::Element* oldele,
+    const int matid,
+    const bool isnurbsdis)
 {
   // We need to set material and possibly other things to complete element setup.
   // This is again really ugly as we have to extract the actual
@@ -100,8 +104,13 @@ void SCATRA::ScatraFluidCloneStrategy::SetElementData(RCP<DRT::Element> newele, 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool SCATRA::ScatraFluidCloneStrategy::DetermineEleType(vector<string>& eletype)
+bool SCATRA::ScatraFluidCloneStrategy::DetermineEleType(
+    DRT::Element* actele,
+    const bool ismyele,
+    vector<string>& eletype)
 {
+  // note: ismyele, actele remain unused here! Used only for ALE creation
+
   // we only support transport elements here
   eletype.push_back("TRANSP");
 

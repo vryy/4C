@@ -53,45 +53,81 @@ void DRT::UTILS::DiscretizationCreatorBase::CreateNodes(
     Teuchos::RCP<DRT::Discretization> targetdis,
     set<int>& rownodeset,
     set<int>& colnodeset,
-    RefCountPtr<Epetra_Map>& scatranoderowmap,
-    RefCountPtr<Epetra_Map>& scatranodecolmap
+    const bool isnurbsdis
     )
 {
   // prepare some variables we need
   int myrank = targetdis->Comm().MyPID();
   const Epetra_Map* sourcenoderowmap = sourcedis->NodeRowMap();
 
-  // construct nodes in the new discretization
-  for (int i=0; i<sourcenoderowmap->NumMyElements(); ++i)
+  // construct nodes / control points in the new discretization
+  if (isnurbsdis==false)
   {
-    int gid = sourcenoderowmap->GID(i);
-    if (rownodeset.find(gid)!=rownodeset.end())
+    for (int i=0; i<sourcenoderowmap->NumMyElements(); ++i)
     {
-      DRT::Node* fluidnode = sourcedis->lRowNode(i);
-      targetdis->AddNode(rcp(new DRT::Node(gid, fluidnode->X(), myrank)));
+      int gid = sourcenoderowmap->GID(i);
+      if (rownodeset.find(gid)!=rownodeset.end())
+      {
+        DRT::Node* fluidnode = sourcedis->lRowNode(i);
+        targetdis->AddNode(rcp(new DRT::Node(gid, fluidnode->X(), myrank)));
+      }
+    }
+  }
+  else
+  {
+    for (int i=0; i<sourcenoderowmap->NumMyElements(); ++i)
+    {
+      const int gid = sourcenoderowmap->GID(i);
+      if (rownodeset.find(gid)!=rownodeset.end())
+      {
+        DRT::NURBS::ControlPoint* fluidnode
+        =
+          dynamic_cast<DRT::NURBS::ControlPoint* >(sourcedis->lRowNode(i));
+          targetdis->AddNode(rcp(new DRT::NURBS::ControlPoint(gid, fluidnode->X(),fluidnode->W(),myrank)));
+      }
     }
   }
 
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+RCP<Epetra_Map> DRT::UTILS::DiscretizationCreatorBase::CreateNodeRowMap(
+    set<int>& rownodeset,Teuchos::RCP<DRT::Discretization> targetdis)
+{
   // we get the node maps almost for free
-  vector<int> scatranoderowvec(rownodeset.begin(), rownodeset.end());
+  vector<int> targetnoderowvec(rownodeset.begin(), rownodeset.end());
   rownodeset.clear();
 
-  scatranoderowmap = rcp(new Epetra_Map(-1,
-                                        scatranoderowvec.size(),
-                                        &scatranoderowvec[0],
-                                        0,
-                                        targetdis->Comm()));
-  scatranoderowvec.clear();
+  RCP<Epetra_Map> targetnoderowmap = rcp(new Epetra_Map(-1,
+      targetnoderowvec.size(),
+      &targetnoderowvec[0],
+      0,
+      targetdis->Comm()));
+  targetnoderowvec.clear();
 
-  vector<int> scatranodecolvec(colnodeset.begin(), colnodeset.end());
+  return targetnoderowmap ;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+RCP<Epetra_Map> DRT::UTILS::DiscretizationCreatorBase::CreateNodeColMap(
+    set<int>& colnodeset,Teuchos::RCP<DRT::Discretization> targetdis)
+{
+  // we get the node maps almost for free
+  vector<int> targetnodecolvec(colnodeset.begin(), colnodeset.end());
   colnodeset.clear();
-  scatranodecolmap = rcp(new Epetra_Map(-1,
-                                        scatranodecolvec.size(),
-                                        &scatranodecolvec[0],
-                                        0,
-                                        targetdis->Comm()));
-  scatranodecolvec.clear();
-  return;
+  RCP<Epetra_Map> targetnodecolmap = rcp(new Epetra_Map(-1,
+      targetnodecolvec.size(),
+      &targetnodecolvec[0],
+      0,
+      targetdis->Comm()));
+  targetnodecolvec.clear();
+
+  return targetnodecolmap;
 }
 
 
@@ -124,15 +160,50 @@ void DRT::UTILS::DiscretizationCreatorBase::CopyConditions(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::UTILS::DiscretizationCreatorBase::Finalize(
+    const Teuchos::RCP<DRT::Discretization> sourcedis,
     Teuchos::RCP<DRT::Discretization> targetdis)
 {
   // redistribute nodes to column (ghost) map
   DRT::UTILS::RedistributeWithNewNodalDistribution(*targetdis, *targetnoderowmap_, *targetnodecolmap_);
   targetdis->FillComplete();
 
+  // extra work for NURBS discretizations
+
+  // try to cast sourcedis to NurbsDiscretisation
+  DRT::NURBS::NurbsDiscretization* nurbsdis
+    =
+    dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*(sourcedis)));
+
+  if(nurbsdis!=NULL)
+  {
+    DRT::NURBS::NurbsDiscretization* targetnurbsdis
+      =
+      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*(targetdis)));
+
+    if(targetnurbsdis==NULL)
+    {
+      dserror("Nurbs source discretization but no nurbs target discretization\n");
+    }
+
+    Teuchos::RCP<DRT::NURBS::Knotvector> knots
+      =
+      Teuchos::rcp(new DRT::NURBS::Knotvector(*(nurbsdis->GetKnotVector())));
+
+    // reset offsets
+    int smallest_gid_in_dis=targetnurbsdis->ElementRowMap()->MinAllGID();
+    knots->FinishKnots(smallest_gid_in_dis);
+
+    targetnurbsdis->SetKnotVector(knots);
+  }
+
   // all done ;-)
   return;
 }
+
+
+// finally do knot vectors in the nurbs case
+
+
 
 
 
