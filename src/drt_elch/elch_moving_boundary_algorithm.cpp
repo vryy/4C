@@ -152,7 +152,8 @@ void ELCH::MovingBoundaryAlgorithm::DoFluidStep()
 
     // now insert only the first numdim entries (nothing will happen for
     // nodes not belonging to the FSI-Coupling -> error == 1)
-    int error = iveln_->ReplaceGlobalValues(numdim,&Values[0],&fluidnodedofs[0]);
+ //int error = iveln_->ReplaceGlobalValues(numdim,&Values[0],&fluidnodedofs[0]);
+    iveln_->ReplaceGlobalValues(numdim,&Values[0],&fluidnodedofs[0]);
   }
 
   // have to compute the approximate displacement from interface velocity
