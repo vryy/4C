@@ -399,6 +399,12 @@ protected:
   /// write state vectors (phinp and convective velocity) to BINIO
   void OutputState();
 
+  /// write state vectors (phinp and convective velocity) to Gmsh postprocessing files
+  void OutputToGmsh(
+      const int step,
+      const double time
+  ) const;
+
   /// write additional data required for restart
   virtual void OutputRestart() = 0;
 
@@ -492,6 +498,9 @@ protected:
 
   /// flag for printing out mean values of scalars
   const bool outmean_;
+
+  /// boolean to write Gmsh postprocessing files (input parameter)
+  const bool outputgmsh_;
 
   /// time step size
   double dta_;

@@ -32,6 +32,7 @@ Maintainer: Georg Bauer
 // for printing electrode status to file
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
+#include "../drt_io/io_gmsh.H"
 //access to the material data (ELCH)
 #include "../drt_mat/material.H"
 #include "../drt_mat/ion.H"
@@ -46,7 +47,7 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidt()
   // time measurement:
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + calc inital phidt");
   if (myrank_ == 0)
-    std::cout<<"SCATRA: calculating initial time derivative of phi\n"<<endl;
+    std::cout<<"SCATRA: calculating initial time derivative of phi"<<endl;
 
   // are we really at step 0?
   dsassert(step_==0,"Step counter is not 0");
@@ -734,6 +735,39 @@ bool SCATRA::ScaTraTimIntImpl::LomaConvergenceCheck(int          itnum,
   }
 
   return stopnonliniter;
+}
+
+
+/*----------------------------------------------------------------------*
+ | write state vectors to Gmsh postprocessing files        henke   12/09|
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::OutputToGmsh(
+    const int step,
+    const double time
+    ) const
+{
+  // turn on/off screen output for writing process of Gmsh postprocessing file
+  const bool screen_out = true;
+
+  // create Gmsh postprocessing file
+  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_scalar", step, 50, screen_out, discret_->Comm().MyPID());
+  std::ofstream gmshfilecontent(filename.c_str());
+  {
+    // add 'View' to Gmsh postprocessing file
+    gmshfilecontent << "View \" " << "Phinp \" {" << endl;
+    // draw scalar field 'Phinp' for every element
+    IO::GMSH::ScalarFieldToGmsh(discret_,phinp_,gmshfilecontent);
+    gmshfilecontent << "};" << endl;
+  }
+  {
+    // add 'View' to Gmsh postprocessing file
+    gmshfilecontent << "View \" " << "Convective Velocity \" {" << endl;
+    // draw vector field 'Convective Velocity' for every element
+    IO::GMSH::VectorFieldNodeBasedToGmsh(discret_,convel_,gmshfilecontent);
+    gmshfilecontent << "};" << endl;
+  }
+  gmshfilecontent.close();
+  if (screen_out) std::cout << " done" << endl;
 }
 
 

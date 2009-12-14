@@ -39,6 +39,27 @@ namespace IO
         const DRT::Element::DiscretizationType distype   ///< element shape
       );
 
+    //! write scalar field to Gmsh postprocessing file
+    void ScalarFieldToGmsh(
+        const Teuchos::RCP<DRT::Discretization> discret,
+        const Teuchos::RCP<Epetra_Vector>       scalarfield,
+        std::ostream&                           s
+        );
+
+    //! write dof-based vector field to Gmsh postprocessing file
+    void VectorFieldDofBasedToGmsh(
+        const Teuchos::RCP<DRT::Discretization> discret,
+        const Teuchos::RCP<Epetra_Vector>       vectorfield,
+        std::ostream&                           s
+        );
+
+    //! write node-based vector field to Gmsh postprocessing file
+    void VectorFieldNodeBasedToGmsh(
+        const Teuchos::RCP<DRT::Discretization> discret,
+        const Teuchos::RCP<Epetra_MultiVector>  vectorfield,
+        std::ostream&                           s
+        );
+
     //! take an array (3,numnode) and translate it to the coordinate section of a Gmsh element entry
     template<class M> void CoordinatesToStream(
         const M&                               coord,     ///< position array (3, numnode)
@@ -68,9 +89,10 @@ namespace IO
       return;
     }
 
-    //! take a double value and translate it to the value section of an Gmsh element entry -> gives a constant value over the element
+    //! take a double value and translate it to the value section of an Gmsh element entry
+    //! -> gives a constant value over the element; used to plot the mesh without any physical field
     void ScalarToStream(
-        const double                           scalar,
+        const double                           scalar,      ///< constant (arbitrary) value assigned to elements
         const DRT::Element::DiscretizationType distype,     ///< element shape
         std::ostream&                          s
     );
@@ -79,7 +101,7 @@ namespace IO
     template<class V> void ScalarFieldToStream(
         const V&                               scalarfield,
         const DRT::Element::DiscretizationType distype,      ///< element shape
-        std::ostream&                     s
+        std::ostream&                          s
     )
     {
       s.setf(ios::scientific,ios::floatfield);

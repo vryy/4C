@@ -16,6 +16,8 @@ Maintainer: Axel Gerstenberger
 #include "io_gmsh.H"
 #include "io_control.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_utils.H"
+#include "../drt_lib/linalg_utils.H"  // LINALG::Export
 #include "../drt_geometry/intersection_service.H"
 
 
@@ -66,6 +68,169 @@ int IO::GMSH::distypeToGmshNumNode(
       dserror("distypeToGmshNumNode: distype not supported for printout!");
   }
   return -1;
+}
+
+/*------------------------------------------------------------------------------------------------*
+ | write scalar field to Gmsh postprocessing file                                     henke 12/09 |
+ *------------------------------------------------------------------------------------------------*/
+void IO::GMSH::ScalarFieldToGmsh(
+    const Teuchos::RCP<DRT::Discretization> discret,
+    const Teuchos::RCP<Epetra_Vector>       scalarfield_row,
+    std::ostream&                           s
+)
+{
+#ifdef PARALLEL
+  // tranform solution vector from DofRowMap to DofColMap
+  const Teuchos::RCP<const Epetra_Vector> scalarfield = DRT::UTILS::GetColVersionOfRowVector(discret,scalarfield_row);
+#else
+  const Teuchos::RCP<const Epetra_Vector> scalarfield = scalarfield_row;
+#endif
+
+  // loop all row elements on this processor
+  for (int iele=0; iele<discret->NumMyRowElements(); ++iele)
+  {
+    const DRT::Element* ele = discret->lRowElement(iele);
+    const DRT::Element::DiscretizationType distype = ele->Shape();
+    const int numnode = distypeToGmshNumNode(distype);
+
+    LINALG::SerialDenseMatrix xyze(3,numnode);
+
+    const DRT::Node*const* nodes = ele->Nodes();
+    for(int inode = 0; inode < numnode; ++inode)
+    {
+      xyze(0,inode) = nodes[inode]->X()[0];
+      xyze(1,inode) = nodes[inode]->X()[1];
+      xyze(2,inode) = nodes[inode]->X()[2];
+    }
+
+    s << "S"; // scalar field indicator
+    s << distypeToGmshElementHeader(distype);
+
+    // write node coordinates to Gmsh stream
+    CoordinatesToStream(xyze, distype, s);
+
+    std::vector<int> lm;
+    std::vector<int> lmowner;
+    ele->LocationVector(*discret, lm, lmowner);
+
+    // extract local values from the global vector
+    Epetra_SerialDenseVector myscalarfield(lm.size());
+    DRT::UTILS::ExtractMyValues(*scalarfield, myscalarfield, lm);
+
+    // write scalar field to Gmsh stream
+    ScalarFieldToStream(myscalarfield, distype, s);
+
+    s << "\n";
+  }
+}
+
+/*------------------------------------------------------------------------------------------------*
+ | write dof-based vector field to Gmsh postprocessing file                           henke 12/09 |
+ *------------------------------------------------------------------------------------------------*/
+void IO::GMSH::VectorFieldDofBasedToGmsh(
+    const Teuchos::RCP<DRT::Discretization> discret,
+    const Teuchos::RCP<Epetra_Vector>       vectorfield_row,
+    std::ostream&                           s
+)
+{
+#ifdef PARALLEL
+  // tranform solution vector from DofRowMap to DofColMap
+  const Teuchos::RCP<const Epetra_Vector> vectorfield = DRT::UTILS::GetColVersionOfRowVector(discret,vectorfield_row);
+#else
+  const Teuchos::RCP<const Epetra_Vector> vectorfield = vectorfield_row;
+#endif
+
+  // loop all row elements on this processor
+  for (int iele=0; iele<discret->NumMyRowElements(); ++iele)
+  {
+    const DRT::Element* ele = discret->lRowElement(iele);
+    const DRT::Element::DiscretizationType distype = ele->Shape();
+    const int numnode = distypeToGmshNumNode(distype);
+
+    LINALG::SerialDenseMatrix xyze(3,numnode);
+
+    const DRT::Node*const* nodes = ele->Nodes();
+    for(int inode = 0; inode < numnode; ++inode)
+    {
+      xyze(0,inode) = nodes[inode]->X()[0];
+      xyze(1,inode) = nodes[inode]->X()[1];
+      xyze(2,inode) = nodes[inode]->X()[2];
+    }
+
+    s << "V"; // vector field indicator
+    s << distypeToGmshElementHeader(distype);
+
+    // write node coordinates to Gmsh stream
+    CoordinatesToStream(xyze, distype, s);
+
+    std::vector<int> lm;
+    std::vector<int> lmowner;
+    ele->LocationVector(*discret, lm, lmowner);
+
+    // extract local values from the global vector
+    Epetra_SerialDenseVector myvectorfield(lm.size());
+    DRT::UTILS::ExtractMyValues(*vectorfield, myvectorfield, lm);
+
+    // write vector field to Gmsh stream
+    // remark: only the first 3 components are written to the Gmsh postprocessing file
+    //         -> e.g. pressure in velnp_ fluid state vector is not written ('myvectorfield': velx,vely,velz,pressure)
+    VectorFieldToStream(myvectorfield, distype, s);
+
+    s << "\n";
+  }
+}
+
+/*------------------------------------------------------------------------------------------------*
+ | write node-based vector field to Gmsh postprocessing file                          henke 12/09 |
+ *------------------------------------------------------------------------------------------------*/
+void IO::GMSH::VectorFieldNodeBasedToGmsh(
+    const Teuchos::RCP<DRT::Discretization> discret,
+    const Teuchos::RCP<Epetra_MultiVector>  vectorfield_row,
+    std::ostream&                           s
+)
+{
+#ifdef PARALLEL
+  // tranform solution vector from NodeRowMap to NodeColMap
+  // remark: DRT::UTILS::GetColVersionOfRowVector() does only work for Epetra_Vectors on DofRowMap
+  //         something similar is done in COMBUST::FlameFront::ProcessFlameFront, although not for Epetra_MultiVectors
+  const Teuchos::RCP<Epetra_MultiVector> vectorfield = rcp(new Epetra_MultiVector(*discret->NodeColMap(),3,true));
+  LINALG::Export(*vectorfield_row,*vectorfield);
+#else
+  const Teuchos::RCP<Epetra_MultiVector> vectorfield = vectorfield_row;
+#endif
+
+  // loop all row elements on this processor
+  for (int iele=0; iele<discret->NumMyRowElements(); ++iele)
+  {
+    const DRT::Element* ele = discret->lRowElement(iele);
+    const DRT::Element::DiscretizationType distype = ele->Shape();
+    const int numnode = distypeToGmshNumNode(distype);
+
+    LINALG::SerialDenseMatrix xyze(3,numnode);
+
+    const DRT::Node*const* nodes = ele->Nodes();
+    for(int inode = 0; inode < numnode; ++inode)
+    {
+      xyze(0,inode) = nodes[inode]->X()[0];
+      xyze(1,inode) = nodes[inode]->X()[1];
+      xyze(2,inode) = nodes[inode]->X()[2];
+    }
+
+    s << "V"; // vector field indicator
+    s << distypeToGmshElementHeader(distype);
+
+    // write node coordinates to Gmsh stream
+    CoordinatesToStream(xyze, distype, s);
+
+    // extract local values from the global vector
+    Epetra_SerialDenseMatrix myvectorfield(3,numnode);
+    DRT::UTILS::ExtractMyNodeBasedValues(ele, myvectorfield, vectorfield, 3);
+
+    // write vector field to Gmsh stream
+    VectorFieldToStream(myvectorfield, distype, s);
+
+    s << "\n";
+  }
 }
 
 void IO::GMSH::ScalarToStream(

@@ -156,6 +156,7 @@ namespace UTILS
   */
   void ExtractMyValues(const Epetra_Vector& global, vector<double>& local, const vector<int>& lm);
 
+  void ExtractMyValues(const Epetra_Vector& global, Epetra_SerialDenseVector& local, const vector<int>& lm);
 
   /// Locally extract a subset of values from a (column)-nodemap-based Epetra_MultiVector
   /*  \author henke

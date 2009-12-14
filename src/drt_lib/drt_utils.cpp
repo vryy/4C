@@ -1664,6 +1664,25 @@ void DRT::UTILS::ExtractMyValues(const Epetra_Vector& global,
 
 
 /*----------------------------------------------------------------------*
+ |  locally extract a subset of values  (public)             henke 12/09|
+ *----------------------------------------------------------------------*/
+void DRT::UTILS::ExtractMyValues(const Epetra_Vector&      global,
+                                 Epetra_SerialDenseVector& local,
+                                 const vector<int>&        lm)
+{
+  const size_t ldim = lm.size();
+  local.Size(ldim);
+  for (size_t i=0; i<ldim; ++i)
+  {
+    const int lid = global.Map().LID(lm[i]);
+    if (lid<0) dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",global.Comm().MyPID(),lm[i]);
+    local[i] = global[lid];
+  }
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
  | extract local values from global node-based (multi) vector           |
  |                                                          henke 06/09 |
  *----------------------------------------------------------------------*/
@@ -1828,5 +1847,6 @@ Teuchos::RCP<const Epetra_Vector> DRT::UTILS::GetColVersionOfRowVector(
     return tmp;
   }
 }
+
 
 #endif  // #ifdef CCADISCRET

@@ -80,6 +80,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   uprestart_(params_->get<int>("RESTARTEVRY")),
   writeflux_(Teuchos::getIntegralValue<INPAR::SCATRA::FluxType>(*params,"WRITEFLUX")),
   outmean_  (Teuchos::getIntegralValue<int>(*params,"OUTMEAN")),
+  outputgmsh_(Teuchos::getIntegralValue<int>(*params,"OUTPUT_GMSH")),
   dta_      (params_->get<double>("TIMESTEP")),
   dtp_      (params_->get<double>("TIMESTEP")),
   cdvel_    (Teuchos::getIntegralValue<INPAR::SCATRA::VelocityField>(*params,"VELOCITYFIELD")),
@@ -1162,6 +1163,9 @@ void SCATRA::ScaTraTimIntImpl::Output()
 
     // write state vectors
     OutputState();
+
+    // write output to Gmsh postprocessing files
+    if (outputgmsh_) OutputToGmsh(step_, time_);
 
     // add restart data
     if (step_%uprestart_==0) OutputRestart();
