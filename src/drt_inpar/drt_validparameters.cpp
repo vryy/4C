@@ -1836,6 +1836,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &scatradyn);
 
   BoolParameter("OUTMEAN","No","Output of mean values for scalars and density",&scatradyn);
+  BoolParameter("OUTPUT_GMSH","No","Do you want to write Gmsh postprocessing files?",&scatradyn);
 
   setStringToIntegralParameter<INPAR::SCATRA::ConvForm>("CONVFORM","convective","form of convective term",
                                tuple<std::string>(
