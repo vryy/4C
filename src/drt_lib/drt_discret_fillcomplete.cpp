@@ -407,9 +407,14 @@ int DRT::Discretization::AssignDegreesOfFreedom(int start)
   if (!NodeRowMap()->UniqueGIDs()) dserror("Nodal row map is not unique");
   if (!ElementRowMap()->UniqueGIDs()) dserror("Element row map is not unique");
 
+  // Set the havedof flag before dofs are assigned. Some dof set
+  // implementations do query the discretization after the assignment has been
+  // done and this query demands the havedof flag to be set. An unexpected
+  // implicit dependency here.
+  havedof_ = true;
+
   for (unsigned i=0; i<dofsets_.size(); ++i)
     start = dofsets_[i]->AssignDegreesOfFreedom(*this,i,start);
-  havedof_ = true;
   return start;
 }
 
