@@ -197,8 +197,6 @@ private:
     LINALG::Matrix<iel,1>   pfunct_;
     //! array for density-weighted shape functions
     LINALG::Matrix<iel,1> densfunct_;
-    //! array for shape functions divided by density
-    LINALG::Matrix<iel,1> functdens_;
     //! array for shape function derivatives w.r.t r,s,t
     LINALG::Matrix<2,iel> deriv_;
     //! array for second derivatives of shape function w.r.t r,s,t

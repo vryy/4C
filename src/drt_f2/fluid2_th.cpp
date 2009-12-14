@@ -71,7 +71,6 @@ xyze_(),
 edeadng_(),
 funct_(),
 densfunct_(),
-functdens_(),
 deriv_(),
 deriv2_(),
 xjm_(),
@@ -542,7 +541,6 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcImpulseEqnImplicit(Fluid2* ele,
     for (int inode=0; inode<iel; inode++)
     {
       densfunct_(inode) = edensnp(inode)*funct_(inode);
-      functdens_(inode) = funct_(inode)/edensnp(inode);
 
       densderxy_(0,inode) = edensnp(inode)*derxy_(0,inode);
       densderxy_(1,inode) = edensnp(inode)*derxy_(1,inode);
@@ -1092,7 +1090,6 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcImpulseEqnSemiImplicit(Fluid2* ele,
     for (int inode=0; inode<iel; inode++)
     {
       densfunct_(inode) = edensnp(inode)*funct_(inode);
-      functdens_(inode) = funct_(inode)/edensnp(inode);
 
       densderxy_(0,inode) = edensnp(inode)*derxy_(0,inode);
       densderxy_(1,inode) = edensnp(inode)*derxy_(1,inode);
@@ -1643,7 +1640,6 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcSysmatAndResidual(Fluid2* ele,
     for (int inode=0; inode<iel; inode++)
     {
       densfunct_(inode) = edensnp(inode)*funct_(inode);
-      functdens_(inode) = funct_(inode)/edensnp(inode);
 
       densderxy_(0,inode) = edensnp(inode)*derxy_(0,inode);
       densderxy_(1,inode) = edensnp(inode)*derxy_(1,inode);
@@ -2230,7 +2226,6 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcResidual(Fluid2* ele,
     for (int inode=0; inode<iel; inode++)
     {
       densfunct_(inode) = edensnp(inode)*funct_(inode);
-      functdens_(inode) = funct_(inode)/edensnp(inode);
 
       densderxy_(0,inode) = edensnp(inode)*derxy_(0,inode);
       densderxy_(1,inode) = edensnp(inode)*derxy_(1,inode);
