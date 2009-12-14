@@ -1144,6 +1144,8 @@ public:
   virtual RCP<const Epetra_Vector> GetState(unsigned nds,const string& name) const
   {
     dsassert(nds<dofsets_.size(),"undefined dof set");
+    if (state_.size()<=nds)
+      return null;
     map<string,RCP<const Epetra_Vector> >::const_iterator fool = state_[nds].find(name);
     if (fool==state_[nds].end()) dserror("Cannot find state %s",&name[0]);
     else return fool->second;
@@ -1158,6 +1160,8 @@ public:
   virtual bool HasState(unsigned nds,const string& name) const
   {
     dsassert(nds<dofsets_.size(),"undefined dof set");
+    if (state_.size()<=nds)
+      return false;
     map<string,RCP<const Epetra_Vector> >::const_iterator fool = state_[nds].find(name);
     return fool!=state_[nds].end();
   }
