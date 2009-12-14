@@ -2622,11 +2622,6 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
       (node->GetDerivTeta())[j].clear();
     (node->GetDerivTeta()).resize(0);
 
-    // reset closest node
-    // (FIXME: at the moment we do not need this info. in the next
-    // iteration, but it might be helpful for accelerated search!!!)
-    node->ClosestNode() = -1;
-
     // reset nodal Mortar maps
     for (int j=0;j<(int)((node->GetD()).size());++j)
       (node->GetD())[j].clear();
