@@ -72,6 +72,8 @@ namespace LINALG
 namespace DRT
 {
 
+  class DofSetProxy;
+
 /*!
 \brief A class to manage a discretization in parallel
 
@@ -491,6 +493,11 @@ public:
   Sets havedof_ to false only if the new dofset is not properly filled yet.
   */
   virtual int AddDofSet(Teuchos::RCP<DofSet> newdofset);
+
+  /*!
+  \brief Get proxy to main dof set.
+  */
+  virtual Teuchos::RCP<DofSet> GetDofSetProxy();
 
   /*!
   \brief Get degree of freedom row map (Filled()==true prerequisite)

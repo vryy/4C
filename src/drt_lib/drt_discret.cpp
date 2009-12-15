@@ -49,6 +49,7 @@ Maintainer: Michael Gee
 #include "drt_exporter.H"
 #include "drt_dserror.H"
 #include "linalg_utils.H"
+#include "drt_dofset_proxy.H"
 
 
 /*----------------------------------------------------------------------*
@@ -524,6 +525,14 @@ int DRT::Discretization::AddDofSet(Teuchos::RCP<DofSet> newdofset)
   havedof_ = havedof_ and newdofset->Filled();
   dofsets_.push_back(newdofset);
   return dofsets_.size()-1;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::DofSet> DRT::Discretization::GetDofSetProxy()
+{
+  return Teuchos::rcp(new DofSetProxy(&*dofsets_[0]));
 }
 
 
