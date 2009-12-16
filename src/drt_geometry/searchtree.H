@@ -600,6 +600,24 @@ public:
         std::map<int, std::set<int> >&              elementset,
         const int                                   label
         );
+    
+    
+    /*! 
+     \brief   returns a vector of elements whose XAABB s are
+              intersecting with the XAABB of a given volume element
+     \param dis                  discretization
+     \param currentpositions     current nodal positions in discretization
+     \return set of node gids
+     */
+    void queryPotentialElements_Approx2(
+        const DRT::Discretization&                             dis,
+        const std::map<int,LINALG::Matrix<3,1> >&              currentpositions,
+        const LINALG::Matrix<3,2>&                             eleXAABB,
+        const std::vector< LINALG::Matrix<3,1> >&              gaussPoints,
+        std::vector<std::map<int, GEO::NearestObject > >&      potentialObjectsAtGP,
+        const double                                           cutoff,
+        const int                                              projectiontype
+    );
 
 
   /*!
@@ -867,6 +885,24 @@ public:
        std::map<int, std::set<int> >&        		   elementset,
        const int                                   label
        );
+   
+   
+   /*! 
+    \brief   returns a vector of elements whose XAABB s are
+             intersecting with the XAABB of a given volume element
+    \param dis                  discretization
+    \param currentpositions     current nodal positions in discretization
+    \return set of node gids
+     */
+    void queryPotentialElements_Approx2(
+        const DRT::Discretization&                            dis,
+        const std::map<int,LINALG::Matrix<3,1> >&             currentpositions,
+        const LINALG::Matrix<3,2>&                            eleXAABB,
+        const std::vector< LINALG::Matrix<3,1> >&             gaussPoints,
+        std::vector< std::map<int, GEO::NearestObject > >&    potentialObjectsAtGP,
+        const double                                          cutoff,
+        const int                                             projectiontype
+        );
 
   /*!
   \brief returns a vector of gids of contact elements whose AABBs intersect with

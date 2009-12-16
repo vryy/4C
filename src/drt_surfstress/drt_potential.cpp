@@ -363,7 +363,7 @@ void POTENTIAL::Potential::EvaluatePotentialfromCondition(
 |                                                                    |
 | evaluate potential (approximation)                                 |
 *--------------------------------------------------------------------*/
-void POTENTIAL::Potential::EvaluatePotentialfromCondition_Approx(
+void POTENTIAL::Potential::EvaluatePotentialfromCondition_Approx1(
     RefCountPtr<DRT::Condition>   cond,
     const LINALG::Matrix<3,1>&    x,
     const LINALG::Matrix<3,1>&    y,
@@ -377,14 +377,50 @@ void POTENTIAL::Potential::EvaluatePotentialfromCondition_Approx(
     const double depth    = cond->GetDouble("depth");
     const double rootDist = cond->GetDouble("rootDist");
 
-    EvaluateLennardJonesPotential_Approx(depth, rootDist, x, y, potderiv1, potderiv2);
+    EvaluateLennardJonesPotential_Approx1(depth, rootDist, x, y, potderiv1, potderiv2);
 
   }
   else if (cond->Type()==DRT::Condition::VanDerWaals_Potential_Surface ||
            cond->Type()==DRT::Condition::VanDerWaals_Potential_Volume)
   {   
     const double lambda    = cond->GetDouble("lambda");    
-    EvaluateVanDerWaals_Approx(lambda,x, y, potderiv1, potderiv2);
+    EvaluateVanDerWaals_Approx1(lambda,x, y, potderiv1, potderiv2);
+    
+    
+  }
+  else
+  {
+    dserror("cannot evaluate potential - condition unknown");
+  }
+  return;
+}
+/*-------------------------------------------------------------------*
+| (protected)                                             umay  10/09|
+|                                                                    |
+| evaluate potential (approximation)                                 |
+*--------------------------------------------------------------------*/
+void POTENTIAL::Potential::EvaluatePotentialfromCondition_Approx2(
+    RefCountPtr<DRT::Condition>   cond,
+    const LINALG::Matrix<3,1>&    x,
+    const LINALG::Matrix<3,1>&    y,
+    LINALG::Matrix<3,1>&          Fs,
+    LINALG::Matrix<3,3>&          Fsderiv)
+{
+
+  if (cond->Type()==DRT::Condition::LJ_Potential_Volume || 
+      cond->Type()==DRT::Condition::LJ_Potential_Surface)
+  {
+    const double depth    = cond->GetDouble("depth");
+    const double rootDist = cond->GetDouble("rootDist");
+
+    EvaluateLennardJonesPotential_Approx2(depth, rootDist, x, y, Fs, Fsderiv);
+
+  }
+  else if (cond->Type()==DRT::Condition::VanDerWaals_Potential_Surface ||
+           cond->Type()==DRT::Condition::VanDerWaals_Potential_Volume)
+  {   
+    const double lambda    = cond->GetDouble("lambda");    
+    EvaluateVanDerWaals_Approx2(lambda,x, y, Fs, Fsderiv);
     
     
   }
@@ -493,7 +529,7 @@ void POTENTIAL::Potential::EvaluateLennardJonesPotential(
 |                                                                    |
 | evaluate Lennard Jones potential    (for volume approximation)     |
 *--------------------------------------------------------------------*/
-void POTENTIAL::Potential::EvaluateLennardJonesPotential_Approx(
+void POTENTIAL::Potential::EvaluateLennardJonesPotential_Approx1(
     const double                  depth,
     const double                  rootDist,
     const LINALG::Matrix<3,1>&    x,
@@ -539,6 +575,52 @@ void POTENTIAL::Potential::EvaluateLennardJonesPotential_Approx(
       for(int j = 0; j < 3; j++)
         potderiv2(i,j) += (dpotdrdr - (dpotdr/distance))*du_tensor_du(i,j);
   }
+}
+
+/*-------------------------------------------------------------------*
+| (protected)                                             umay  09/09|
+|                                                                    |
+| evaluate Lennard Jones potential    (for volume approximation)     |
+*--------------------------------------------------------------------*/
+void POTENTIAL::Potential::EvaluateLennardJonesPotential_Approx2(
+    const double                  depth,
+    const double                  rootDist,
+    const LINALG::Matrix<3,1>&    x,
+    const LINALG::Matrix<3,1>&    y,
+    LINALG::Matrix<3,1>&          Fs,
+    LINALG::Matrix<3,3>&          Fsderiv)
+{
+	// evaluate distance related stuff
+	double          		  distance      = 0.0;
+	LINALG::Matrix<3,1>       distance_vec(true);
+	//Normalenvektor
+	LINALG::Matrix<3,1>       n(true);
+	LINALG::Matrix<3,3>       dn_tensor_dn;
+	computeDistance(x,y, dn_tensor_dn, distance_vec, n, distance);
+		  
+	//dpotdr entspricht -Fs
+	double F = 3.141592654*depth*pow(rootDist,3)*( (1.0/45.0)*pow((double)(rootDist/distance), 9) - (1.0/3.0)*pow((double)(rootDist/distance), 3) );
+		  
+		  
+	for(int i = 0; i < 3; i++)
+		Fs(i) = F*n(i);	 
+
+	//----------------------------------------------------------------------
+	// evaluate 1. derivative
+	//----------------------------------------------------------------------	  
+		  
+	const double dFdr = 3.141592654*depth*pow(rootDist,2)*(pow((double)(rootDist/distance), 4)-(1.0/5.0)*pow((double)(rootDist/distance), 10));
+		  
+	for(int i = 0; i < 3; i++)
+		for(int j = 0; j < 3; j++)
+			Fsderiv(i,j) = 0.0;
+
+	for(int i = 0; i < 3; i++)
+	{
+		Fsderiv(i,i) += F/distance;
+		for(int j = 0; j < 3; j++)
+		Fsderiv(i,j) += (dFdr - (F/distance))*dn_tensor_dn(i,j);
+	}
 }
 
 
@@ -684,7 +766,7 @@ void POTENTIAL::Potential::EvaluateVanDerWaals(
 |                                                                    |
 | evaluate Van der Waals potential    (for volume approximation) 3D  |
 *--------------------------------------------------------------------*/
-void POTENTIAL::Potential::EvaluateVanDerWaals_Approx(
+void POTENTIAL::Potential::EvaluateVanDerWaals_Approx1(
     const double                  lambda,
     const LINALG::Matrix<3,1>&    x,
     const LINALG::Matrix<3,1>&    y,
@@ -725,6 +807,52 @@ void POTENTIAL::Potential::EvaluateVanDerWaals_Approx(
       for(int j = 0; j < 3; j++)
         potderiv2(i,j) += (dpotdrdr - (dpotdr/distance))*du_tensor_du(i,j);
   }
+}
+
+/*-------------------------------------------------------------------*
+| (protected)                                             umay  11/09|
+|                                                                    |
+| evaluate Van der Waals potential    (for volume approximation) 3D  |
+*--------------------------------------------------------------------*/
+void POTENTIAL::Potential::EvaluateVanDerWaals_Approx2(
+    const double                  lambda,
+    const LINALG::Matrix<3,1>&    x,
+    const LINALG::Matrix<3,1>&    y,
+    LINALG::Matrix<3,1>&          Fs,
+    LINALG::Matrix<3,3>&          Fsderiv
+    )
+{
+	  // evaluate distance related stuff
+	  double          			distance      = 0.0;
+	  LINALG::Matrix<3,1>       distance_vec(true);
+	  //Normalenvektor
+	  LINALG::Matrix<3,1>       n(true);
+	  LINALG::Matrix<3,3>       dn_tensor_dn;
+	  computeDistance(x,y, dn_tensor_dn, distance_vec, n, distance);
+	  
+	  //dpotdr entspricht -Fs
+	  double F = (-1.0)*lambda*3.141592654*(1.0/6.0)*(pow((double)(1.0/distance), 3));
+	  
+	  
+	  for(int i = 0; i < 3; i++)
+	    Fs(i) = F*n(i);	 
+
+	  //----------------------------------------------------------------------
+	  // evaluate 1. derivative
+	  //----------------------------------------------------------------------	  
+	  
+	  const double dFdr = (1.0/2.0)*3.141592654*lambda*(pow((double)(1.0/distance), 4));
+	  
+	  for(int i = 0; i < 3; i++)
+	    for(int j = 0; j < 3; j++)
+	      Fsderiv(i,j) = 0.0;
+
+	  for(int i = 0; i < 3; i++)
+	  {
+	      Fsderiv(i,i) += F/distance;
+	      for(int j = 0; j < 3; j++)
+	        Fsderiv(i,j) += (dFdr - (F/distance))*dn_tensor_dn(i,j);
+	  }
 }
 
 

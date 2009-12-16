@@ -111,8 +111,21 @@ private:
   \brief Update displacements
    */
   void UpdateDisplacementsOfPotentialDiscretization(
-    Teuchos::RCP<Epetra_Vector>   idisp_solid
+    Teuchos::RCP<const Epetra_Vector>   idisp_solid
     );
+  
+  
+  /*!
+  \brief parallel volume tree search
+   */
+  void treeSearchVolumeParallel(
+      const Teuchos::RCP<DRT::Discretization>     potentialdis,
+      std::map<int,LINALG::Matrix<3,2> >&         elemXAABBList,
+      const DRT::Element*                         element,
+      std::map<int,std::set<int> >&               potentialElementIds,
+      const double                                radius,
+      const int                                   label
+      );
 
 
   /*!
@@ -215,7 +228,10 @@ private:
   std::map<int,LINALG::Matrix<3,2> > 					elemXAABBList_;
   
   //! search tree type
-  GEO::TreeType                                 treetype_;
+  GEO::TreeType                               treetype_;
+  
+  Teuchos::RCP<const Epetra_Vector>           disp_col_;
+                      
 
 
 }; //class

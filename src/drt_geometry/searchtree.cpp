@@ -293,7 +293,8 @@ void GEO::SearchTree::queryPotentialElements(
   	dserror("tree is not yet initialized !!!");
 
   if(!intersectionOfXAABB<3>(treeRoot_->getNodeBox(), eleXAABB))
-  	dserror("eleXAABB not inside NodeBox!!!");
+    return;
+  //	dserror("eleXAABB not inside NodeBox!!!");
 
   if(!(treeRoot_->getElementList().empty()))
     treeRoot_->queryPotentialElements(currentXAABBs, eleXAABB, elementset, label);
@@ -301,6 +302,37 @@ void GEO::SearchTree::queryPotentialElements(
   return;
 }
 
+
+
+/*----------------------------------------------------------------------*
+ | returns a vector of elements whose XAABB s are            u.may 10/09|
+ | intersecting with the XAABB of a given volume element                |
+ *----------------------------------------------------------------------*/
+void GEO::SearchTree::queryPotentialElements_Approx2(
+    const DRT::Discretization&                            dis,
+    const std::map<int,LINALG::Matrix<3,1> >&             currentpositions,
+    const LINALG::Matrix<3,2>&                            eleXAABB,
+    const std::vector< LINALG::Matrix<3,1> >&             gaussPoints,
+    std::vector< std::map<int, GEO::NearestObject> >&     potentialObjectsAtGP,
+    const double                                          cutoff,
+    const int                                             projectiontype)
+{
+  TEUCHOS_FUNC_TIME_MONITOR("SearchTree - queryTime");
+
+  potentialObjectsAtGP.clear();
+
+  if(treeRoot_ == Teuchos::null)
+    dserror("tree is not yet initialized !!!");
+
+  if(!intersectionOfXAABB<3>(treeRoot_->getNodeBox(), eleXAABB))
+    dserror("eleXAABB not inside NodeBox!!!");
+
+  if(!(treeRoot_->getElementList().empty()))
+    treeRoot_->queryPotentialElements_Approx2(dis, currentpositions, eleXAABB, gaussPoints, 
+                                              potentialObjectsAtGP, cutoff, projectiontype);
+
+  return;
+}
 
 
 /*----------------------------------------------------------------------*
@@ -742,7 +774,7 @@ void GEO::SearchTree::TreeNode::insertElement(
  | create children                                         u.may   08/08|
  *----------------------------------------------------------------------*/
 void GEO::SearchTree::TreeNode::createChildren(
-    const DRT::Discretization&						dis,
+    const DRT::Discretization&						      dis,
     const std::map<int,LINALG::Matrix<3,1> >&		currentpositions)
 {
   // create empty children
@@ -2138,6 +2170,76 @@ void GEO::SearchTree::TreeNode::queryPotentialElements(
       else
       {
         GEO::getPotentialElements(currentXAABBs, eleXAABB,  elementList_, elementset, label);
+        return;
+      }
+      break;
+    }
+    default:
+      dserror("should not get here\n");
+  }
+  return;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ | returns a set of elements whose XAABB s are               u.may 10/09|
+ | intersecting with the XAABB of a given volume element                |
+ *----------------------------------------------------------------------*/
+void GEO::SearchTree::TreeNode::queryPotentialElements_Approx2(
+    const DRT::Discretization&                            dis,
+    const std::map<int,LINALG::Matrix<3,1> >&             currentpositions,
+    const LINALG::Matrix<3,2>&                            eleXAABB,
+    const std::vector< LINALG::Matrix<3,1> >&             gaussPoints,
+    std::vector< std::map<int, GEO::NearestObject > >&    potentialObjectsAtGP,
+    const double                                          cutoff,
+    const int                                             projectiontype)
+{
+  
+  switch(treeNodeType_)
+  {
+    case INNER_NODE:
+    {
+      int index = -1;
+      if(classifyXAABB(index,eleXAABB))
+      {
+        children_[index]->queryPotentialElements_Approx2( dis, currentpositions, eleXAABB, gaussPoints, 
+            potentialObjectsAtGP, cutoff, projectiontype);
+        return;
+      }
+      else
+      {
+        GEO::getPotentialObjects(dis, currentpositions, elementList_, gaussPoints, potentialObjectsAtGP, cutoff, projectiontype);
+        return;
+      }
+      break;
+    }
+    case LEAF_NODE:
+    {
+      if(elementList_.empty())
+        return;
+
+      // max depth reached, counts reverse
+      if(treedepth_ <= 0 || (elementList_.begin()->second).size() == 1)
+      {
+        GEO::getPotentialObjects(dis, currentpositions, elementList_, gaussPoints, 
+                                         potentialObjectsAtGP, cutoff, projectiontype);
+        return;
+      }
+      // dynamically grow tree otherwise, create children and set label for empty children
+      // search in apropriate child node
+      int index = -1;
+      if(classifyXAABB(index,eleXAABB))
+      {
+        createChildren(dis, currentpositions);
+        children_[index]->queryPotentialElements_Approx2( dis, currentpositions, eleXAABB, gaussPoints, 
+                                                          potentialObjectsAtGP, cutoff, projectiontype);
+        return;
+      }
+      else
+      {
+        GEO::getPotentialObjects(dis, currentpositions, elementList_, gaussPoints, 
+                                   potentialObjectsAtGP, cutoff, projectiontype);
         return;
       }
       break;

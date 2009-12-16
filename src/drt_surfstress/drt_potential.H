@@ -162,13 +162,24 @@ protected:
   /*!
     \brief  select correct potential out of condition
      */
-  void EvaluatePotentialfromCondition_Approx(
+  void EvaluatePotentialfromCondition_Approx1(
       RefCountPtr<DRT::Condition>   cond,
       const LINALG::Matrix<3,1>&    x,
       const LINALG::Matrix<3,1>&    y,
       LINALG::Matrix<3,1>&          potderiv1,
       LINALG::Matrix<3,3>&          potderiv2
       );
+  
+  /*!
+      \brief  select correct potential out of condition
+       */
+    void EvaluatePotentialfromCondition_Approx2(
+        RefCountPtr<DRT::Condition>   cond,
+        const LINALG::Matrix<3,1>&    x,
+        const LINALG::Matrix<3,1>&    y,
+        LINALG::Matrix<3,1>&          Fs,
+        LINALG::Matrix<3,3>&          Fsderiv
+        );
 
 
   /*!
@@ -202,7 +213,7 @@ protected:
   /*!
      \brief  compute first and second derivative of the approximated Lennard-Jones  potential
      */
-  void EvaluateLennardJonesPotential_Approx(
+  void EvaluateLennardJonesPotential_Approx1(
       const double                  depth,
       const double                  rootDist,
       const LINALG::Matrix<3,1>&    x,
@@ -210,6 +221,18 @@ protected:
       LINALG::Matrix<3,1>&          potderiv1,
       LINALG::Matrix<3,3>&          potderiv2
       );
+  
+  /*!
+       \brief  compute first and second derivative of the approximated Lennard-Jones  potential
+       */
+    void EvaluateLennardJonesPotential_Approx2(
+        const double                  depth,
+        const double                  rootDist,
+        const LINALG::Matrix<3,1>&    x,
+        const LINALG::Matrix<3,1>&    y,
+        LINALG::Matrix<3,1>&          Fs,
+        LINALG::Matrix<3,3>&          Fsderiv
+        );
 
 
   /*!
@@ -257,13 +280,25 @@ protected:
     \brief  compute first and second derivative of the Van-Der-Waals potential
             for 3D problems (volume approximation)
    */
-  void EvaluateVanDerWaals_Approx(
+  void EvaluateVanDerWaals_Approx1(
       const double                  lambda,
       const LINALG::Matrix<3,1>&    x,
       const LINALG::Matrix<3,1>&    y,
       LINALG::Matrix<3,1>&          potderiv1,
       LINALG::Matrix<3,3>&          potderiv2
   );
+  
+  /*!
+      \brief  compute first and second derivative of the Van-Der-Waals potential
+              for 3D problems (volume approximation)
+     */
+    void EvaluateVanDerWaals_Approx2(
+        const double                  lambda,
+        const LINALG::Matrix<3,1>&    x,
+        const LINALG::Matrix<3,1>&    y,
+        LINALG::Matrix<3,1>&          Fs,
+        LINALG::Matrix<3,3>&          Fsderiv
+    );
   
   
   /*!

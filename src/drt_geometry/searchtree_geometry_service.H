@@ -151,6 +151,29 @@ namespace GEO
       const std::map<int, std::set<int> >&      elementList,
       GEO::NearestObject&                       nearestObject
       );
+  
+  
+  
+  void getPotentialObjects(
+      const DRT::Discretization&                          dis,
+      const std::map<int,LINALG::Matrix<3,1> >&           currentpositions,
+      const std::map<int, std::set<int> >&                elementList,
+      const std::vector <LINALG::Matrix<3,1> >&           gaussPoints,
+      std::vector< std::map<int, GEO::NearestObject> >&   potentialObjects,
+      const double                                        cutoff_radius,
+      const int                                           projectiontype
+  );
+  
+  
+  void fillPotObjectsInNode(
+      const DRT::Discretization&                          dis,
+      const std::map<int,LINALG::Matrix<3,1> >&           currentpositions,
+      const std::map<int, std::set<int> >&                elementList,
+      const std::vector <LINALG::Matrix<3,1> >&           gaussPoints,
+      std::vector< std::map<int, GEO::NearestObject> >&   potObjects,
+      const double                                        cutoff_radius,
+      const int                                           projectiontype
+      );
 
 
   /*!

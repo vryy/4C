@@ -208,7 +208,7 @@ void POTENTIAL::PotentialManager::StiffnessAndInternalForcesPotential(
   }
   else if( params_.get<string>("approximation type")== "Surface_approx" )
     surfacePotential_->StiffnessAndInternalForcesPotentialApprox1(element, gaussrule, eleparams, lm, K_stiff, F_int);
-  else if( params_.get<string>("approximation type")== "point_approx" )
+  else if( params_.get<string>("approximation type")== "Point_approx" )
     surfacePotential_->StiffnessAndInternalForcesPotentialApprox2(element, gaussrule, eleparams, lm, K_stiff, F_int);
   else
     dserror("no approximation type specified");

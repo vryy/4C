@@ -35,18 +35,15 @@ POTENTIAL::VolumePotential::VolumePotential(
   treetype_ = treetype;
   const LINALG::Matrix<3,2> rootBox = GEO::getXAABBofDis(*discretRCP_);
   DRT::UTILS::CollectElementsByConditionLabel(*discretRCP_, elementsByLabel_,"Potential" );
-  
-  //if(prob_dim_ == 3)
   searchTree_->initializeTree(rootBox, elementsByLabel_, treetype_);
-  //else if (prob_dim_ == 2)
-  //	searchTree_->initializeTree(rootBox, elementsByLabel_, GEO::TreeType(GEO::QUADTREE));
-  //else
-  //    	    dserror("problem dimension not correct");
-
+  
+  const Epetra_Map* dofcolmap = discretRCP_->DofColMap();
+  disp_col_ = LINALG::CreateVector(*dofcolmap, true);
+  
   std::cout << "Volume potential constructor done" << endl;
 }
 
-
+    
 
 /*-------------------------------------------------------------------*
 | (public)                                                 umay 06/08|
@@ -54,22 +51,22 @@ POTENTIAL::VolumePotential::VolumePotential(
 | Call discretization to evaluate additional contributions due to    |
 | potential forces                                                   |
 *--------------------------------------------------------------------*/
-void POTENTIAL::VolumePotential::EvaluatePotential(  ParameterList& p,
-                                                  RefCountPtr<Epetra_Vector> disp,
-                                                  RefCountPtr<Epetra_Vector> fint,
-                                                  RefCountPtr<LINALG::SparseMatrix> stiff)
+void POTENTIAL::VolumePotential::EvaluatePotential( ParameterList& p,
+                                                    RefCountPtr<Epetra_Vector> disp,
+                                                    RefCountPtr<Epetra_Vector> fint,
+                                                    RefCountPtr<LINALG::SparseMatrix> stiff)
 {
   // action for elements
   p.set("action","calc_potential_stiff");
 
   discret_.ClearState();
   discret_.SetState("displacement",disp);
+  disp_col_ = discret_.GetState("displacement");
   
   // update displacement for volume discretization discretRCP
-  UpdateDisplacementsOfPotentialDiscretization(disp);
+  UpdateDisplacementsOfPotentialDiscretization(disp_col_);
 
   EvaluatePotentialCondition(p,stiff,null,fint,null,null,"Potential");
-
   return;
 }
 
@@ -111,6 +108,7 @@ void POTENTIAL::VolumePotential::StiffnessAndInternalForcesPotential(
   }
   */
   treeSearchElementsInCutOffRadius(discretRCP_, elemXAABBList_, element, potentialElementIds, cutOff, label);
+  // paralleltree search
   
   // initialize time variables
   const int    curvenum = cond->GetInt("curve");
@@ -154,6 +152,9 @@ void POTENTIAL::VolumePotential::StiffnessAndInternalForcesPotential(
 	  const double  cutOff    = cond->GetDouble("cutOff");
 	  std::map<int,std::set<int> > potentialElementIds;
 	  
+#ifdef PARALLEL
+	  treeSearchVolumeParallel(discretRCP_, elemXAABBList_, element, potentialElementIds, cutOff, label);
+#endif	  
     /*
 	  for(int i = 0; i < DRT::UTILS::getNumberOfElementCornerNodes(element->Shape()); i++)
 	  {
@@ -167,7 +168,7 @@ void POTENTIAL::VolumePotential::StiffnessAndInternalForcesPotential(
 	    // searchElementsInCutOffRadius(discretRCP_, currentpositions_, x_node, potentialElementIds, cutOff);
 	  }
     */
-	  treeSearchElementsInCutOffRadius(discretRCP_, elemXAABBList_, element, potentialElementIds, cutOff, label);
+	  // treeSearchElementsInCutOffRadius(discretRCP_, elemXAABBList_, element, potentialElementIds, cutOff, label);
 	  
 	  // initialize time variables
 	  const int    curvenum = cond->GetInt("curve");
@@ -196,17 +197,9 @@ void POTENTIAL::VolumePotential::StiffnessAndInternalForcesPotential(
 | from solid discretization                                          |
 *--------------------------------------------------------------------*/
 void POTENTIAL::VolumePotential::UpdateDisplacementsOfPotentialDiscretization(
-    Teuchos::RCP<Epetra_Vector>     idisp_solid
+    Teuchos::RCP<const Epetra_Vector>     idisp_solid
     )
 {
-  // extract displacements associated with potential elements from solid discretization
-  //idisp_onproc_ = potboundary_.ExtractCondVector(idisp_solid);
-  //idisp_total_->Scale(0.0);
-
-  // import
-  // int err = idisp_total_->Import((*idisp_onproc_), (*importer_),Insert);
-  // if(err) dserror("Import using importer returned err=%d",err);
-
   currentpositions_.clear();
   
   // run over volume discretization
@@ -229,18 +222,9 @@ void POTENTIAL::VolumePotential::UpdateDisplacementsOfPotentialDiscretization(
     }
   }
 
-  //hier muss noch eine Abfrage rein welcher Suchbaum verwendet wird, bei dem alten Suchb. wird die Abfrage neg.
-  
   // reinitialize search tree
   const LINALG::Matrix<3,2> rootBox = GEO::getXAABBofDis(*discretRCP_, currentpositions_);
   searchTree_->initializeTree(rootBox, elementsByLabel_, treetype_);
-  /*if(prob_dim_ == 2)
-    searchTree_->initializeTree(rootBox, elementsByLabel_, GEO::TreeType(GEO::QUADTREE));
-  else if(prob_dim_ == 3)
-    searchTree_->initializeTree(rootBox, elementsByLabel_, GEO::TreeType(GEO::OCTTREE));
-  else
-    dserror("problem dimension not correct");
-  */
   
   //build boxes around every element
   // if abfrage
@@ -256,6 +240,7 @@ void POTENTIAL::VolumePotential::UpdateDisplacementsOfPotentialDiscretization(
 }
 
 
+
 /*-------------------------------------------------------------------*
 | (protected)                                             umay  09/09|
 | serial version of search method                                    |
@@ -263,8 +248,8 @@ void POTENTIAL::VolumePotential::UpdateDisplacementsOfPotentialDiscretization(
 | checks, if a node lies within a given cut off radius               |
 | in this case the element ids of adjacent elements are stored       |
 *--------------------------------------------------------------------*/
-/*
-void POTENTIAL::Potential::treeSearchVolumParallel(
+#ifdef PARALLEL
+void POTENTIAL::VolumePotential::treeSearchVolumeParallel(
     const Teuchos::RCP<DRT::Discretization>     potentialdis,
     std::map<int,LINALG::Matrix<3,2> >&         elemXAABBList,
     const DRT::Element*                         element,
@@ -272,9 +257,12 @@ void POTENTIAL::Potential::treeSearchVolumParallel(
     const double                                radius,
     const int                                   label)
 {
-
   LINALG::Matrix<3,2> eleXAABB = elemXAABBList[element->LID()];
 
+  MPI_Barrier(MPI_COMM_WORLD);
+  
+  cout << "parallel search" << endl;
+  flush(cout);
   // enlarge box by cut off radius
   for(int dim = 0; dim < 3; dim++)
   {
@@ -282,51 +270,101 @@ void POTENTIAL::Potential::treeSearchVolumParallel(
     eleXAABB(dim,1) = eleXAABB(dim,1) + radius;
   }
   
-  1. local search
+  //1. local search
   searchTree_->queryPotentialElements(elemXAABBList, eleXAABB, potentialElementIds, label);
   
-  create empty element list for each proc
+  int numprocs = 0;
+  int myrank = 0;
   
-  for(int i = 0; i < num_procs-1; i++)
+  MPI_Comm_size (MPI_COMM_WORLD, &numprocs);
+  MPI_Comm_rank (MPI_COMM_WORLD, &myrank);
+  
+  
+  int forward = 0;
+  int backward = 0;
+  
+  //where is my destination and source
+  if (myrank==0)              //first processor
   {
-  
-    MPI_Barrier();
-  
-    2. Receive incoming eleXAABB from previous processor
-    MPI_Receive();
-  
-    3. send eleXAABB to the next processor
-    MPI_Send();
-    
-    
-    // send elementlist to next proc
-    // receive elelist from previous proc
-    
-    searchTree_->queryPotentialElements(elemXAABBList, eleXAABB, potentialElementIds, label);
-    
-    // get elements with potentialElementIds 
-    // pack elements
-    // store in element list
+    forward=myrank+1;
+    backward=numprocs-1;
   }
+  else if (myrank==(numprocs-1))   //last processor
+  {
+    forward=0;
+    backward=myrank-1;
+  }
+  else if (myrank!=0 && myrank!=(numprocs-1))  //neither first nor last processor
+  {
+    forward=myrank+1;
+    backward=myrank-1;
+  }
+  else
+    dserror("something is wrong with myrank and numprocs");
   
-  2. Receive incoming eleXAABB from previous processor
-  MPI_Receive();
+  // MPI_Finalize();
+  // exit(1);
+  
+  std::map<int,std::set<int> > potentialElementIdsParallel;
+  
+  // send füllen
+  std::vector<double> eleXAABB_send(6,0.0);
+  std::vector<double> eleXAABB_recv(6,0.0);
+  
+  // 2. Send eleXAABB to the next processor and 3. Receive incoming eleXAABB from previous processor
+  //MPI_Sendrecv(&eleXAABB_send[0], /*Num of Ele to send*/, /*outgoing eletype*/, forward, tag, 
+  //             &eleXAABB_recv[0], /*Num of Ele to recv*/, /*incoming eletype*/, backward, tag, comm, ierr);
+  
+  
+  
+  
+  
+  // eleXAABB = eleXAABB_recv
+  searchTree_->queryPotentialElements(elemXAABBList, eleXAABB, potentialElementIdsParallel, label);
+  
+  // ele list erstellen basierend auf potentialElementIdsParallel
+  
+  for(int i = 0; i < numprocs-2; i++)
+  {   
+    // MPI_Barrier(MPI_COMM_WORLD);
+  
+ // 2. Send eleXAABB to the next processor and 3. Receive incoming eleXAABB from previous processor
+    //MPI_Sendrecv(&eleXAABB_send[0], 6, MPI_DOUBLE, forward, tag, 
+    //      &eleXAABB_recv[0], 6, MPI_DOUBLE, backward, tag, MPI_COMM_WORLD, ierr);
+  
+    
+//  4. Send parallelpotentialElementIds to the next processor 5. Recieve incoming parallelpotentialElementIds from previous processor
+    //MPI_Sendrecv(/*potentialElementIdsParallel*/, /*Num of Ele to send*/, /*outgoing eletype*/, forward, tag, 
+    //             /*potentialElementIdsParallelRecv*/, /*Num of Ele to recv*/, /*incoming eletype*/, backward, tag, comm, ierr);
+    
+    //eleleXAABBParallel=eleXAABB;
+    searchTree_->queryPotentialElements(elemXAABBList, eleXAABB, potentialElementIdsParallel, label);
+    
+    //potentialElementIdsParallel = potentialElementIdsParallelRecv + potentialElementIdsParallel;
 
-  3. send eleXAABB to the next processor
-  MPI_Send();
+  }
+
+  // MPI_Sendrecv(/*eleXAABBParallel*/, /*Num of Ele to send*/, /*outgoing eletype*/, forward, tag, 
+  //             /*eleXAABB*/, /*Num of Ele to recv*/, /*incoming eletype*/, backward, tag, comm, ierr);
   
-   // send elementlist to next proc
-   // receive elelist from previous proc
+  // MPI_Sendrecv(/*potentialElementIdsParallel*/, /*Num of Ele to send*/, /*outgoing eletype*/, forward, tag, 
+   //            /*potentialElementIdsParallelRecv*/, /*Num of Ele to recv*/, /*incoming eletype*/, backward, tag, comm, ierr);
+      
+  //potentialElementIds = potentialElementIds + potentialElementIdsParallelRecv;
+  
+  
+  
+  
+  MPI_Barrier(MPI_COMM_WORLD);
 
   return;
 }
-*/
-
+#endif
 
 /*-------------------------------------------------------------------*
 | (private)                                               umay  08/08|
 |                                                                    |
-| compute internal force vector and stiffness matrix (volume)       |
+| compute internal force vector and stiffness matrix (volume)        |
 *--------------------------------------------------------------------*/
 void POTENTIAL::VolumePotential::computeFandK(
    const DRT::Element*              actEle,
@@ -697,5 +735,78 @@ void POTENTIAL::VolumePotential::GetGaussRule2D(
   return;
 }
 
+
+
+/*-------------------------------------------------------------------*
+| (protected)                                             umay  09/09|
+| serial version of search method                                    |
+| method runs over all nodes of the boundary discretization and      |
+| checks, if a node lies within a given cut off radius               |
+| in this case the element ids of adjacent elements are stored       |
+*--------------------------------------------------------------------*/
+/*
+void POTENTIAL::Potential::treeSearchVolumParallel(
+    const Teuchos::RCP<DRT::Discretization>     potentialdis,
+    std::map<int,LINALG::Matrix<3,2> >&         elemXAABBList,
+    const DRT::Element*                         element,
+    std::map<int,std::set<int> >&               potentialElementIds,
+    const double                                radius,
+    const int                                   label)
+{
+
+  LINALG::Matrix<3,2> eleXAABB = elemXAABBList[element->LID()];
+
+  // enlarge box by cut off radius
+  for(int dim = 0; dim < 3; dim++)
+  {
+    eleXAABB(dim,0) = eleXAABB(dim,0) - radius;
+    eleXAABB(dim,1) = eleXAABB(dim,1) + radius;
+  }
+  
+  1. local search
+  searchTree_->queryPotentialElements(elemXAABBList, eleXAABB, potentialElementIds, label);
+  
+  create empty element list for each proc
+  
+  for(int i = 0; i < num_procs-1; i++)
+  {
+  
+    MPI_Barrier();
+  
+    2. Receive incoming eleXAABB from previous processor
+    MPI_Receive();
+  
+    3. send eleXAABB to the next processor
+    MPI_Send();
+    
+    
+    // send elementlist to next proc
+    // receive elelist from previous proc
+    
+    searchTree_->queryPotentialElements(elemXAABBList, eleXAABB, potentialElementIds, label);
+    
+    // get elements with potentialElementIds 
+    // pack elements
+    // store in element list
+  }
+  
+  2. Receive incoming eleXAABB from previous processor
+  MPI_Receive();
+
+  3. send eleXAABB to the next processor
+  MPI_Send();
+  
+   // send elementlist to next proc
+   // receive elelist from previous proc
+
+  return;
+}
+*/
+
+
+
 #endif
+
+
+
 

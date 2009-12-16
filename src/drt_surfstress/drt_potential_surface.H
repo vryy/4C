@@ -18,6 +18,7 @@ Maintainer: Ursula Mayer
 
 
 #include "../drt_surfstress/drt_potential.H"
+#include "../drt_geometry/searchtree_nearestobject.H"
 
 
 using namespace std;
@@ -26,6 +27,15 @@ using namespace Teuchos;
 
 namespace POTENTIAL
 {
+
+//! identifies projection type
+enum ProjectionType {
+    CLOSESTPOINT,             ///< closest point projection
+    CLOSESTPOINT_MY90,        ///< projection such that normal on my structure
+    CLOSESTPOINT_OTHER90      ///< projection such that normal on other structure
+  };
+
+
 /*!
 \brief  Class controlling surface stresses due to potential forces
 */
@@ -181,15 +191,16 @@ private:
   
   
   void computeFandK_Approx2(
-        const DRT::Element*              actEle,
-        const DRT::UTILS::GaussRule2D&   gaussrule,
-        std::map<int,std::set<int> >&    potElements,
-        vector<int>&                     lm,
-        Epetra_SerialDenseMatrix&        K_surf,
-        Epetra_SerialDenseVector&        F_int,
-        RefCountPtr<DRT::Condition>      cond,
-        const int                        label,
-        const double                     curvefac);
+      const DRT::Element*                                      actEle,
+      const DRT::UTILS::GaussRule2D&                           gaussrule,  
+      const std::vector< std::map<int, GEO::NearestObject> >&  potentialObjects,
+      vector<int>&                                             lm,
+      Epetra_SerialDenseMatrix&                                K_surf,
+      Epetra_SerialDenseVector&                                F_int,
+      RefCountPtr<DRT::Condition>                              cond,
+      const int                                                label,
+      const double                                             curvefac
+  );
 
 
     /*!
@@ -219,9 +230,10 @@ private:
         LINALG::Matrix<3,1>&                    x_gp,     
         const double                            curve_fac
     );
+   
 
     
-    double ComputeFactorApprox1(
+    double ComputeFactorApprox(
         const DRT::Element*                     element,
         LINALG::SerialDenseVector&              funct,
         LINALG::SerialDenseMatrix&              deriv,
@@ -231,21 +243,8 @@ private:
         LINALG::Matrix<3,1>&                    x_gp,
         LINALG::Matrix<3,1>&                    X_gp,
         const double                            curve_fac        
-    );
+    );    
     
-    
-    double ComputeFactorApprox2(
-        const DRT::Element*                     element,
-        LINALG::SerialDenseVector&              funct,
-        LINALG::SerialDenseMatrix&              deriv,
-        LINALG::SerialDenseMatrix&              FInvers,
-        const DRT::UTILS::IntegrationPoints2D&  intpoints,
-        const int                               gp,
-        LINALG::Matrix<3,1>&                    x_gp,
-        LINALG::Matrix<3,1>&                    X_gp,
-        const double                            curve_fac        
-    );
-
 
   //! compute integration factors for line elements
   double ComputeFactor(
@@ -258,18 +257,43 @@ private:
       const double                            curve_fac
       );
 
+  
+  
+  std::vector< std::map<int, GEO::NearestObject> >  GetPotentialObjectsAtGP(
+      const DRT::Element*                 element, 
+      const DRT::UTILS::GaussRule2D&      gaussrule,
+      const double                        cutoff
+      );
+  
+  
+  std::vector< LINALG::Matrix<3,1> > ComputeGP(
+      const DRT::Element*                     element,
+      const DRT::UTILS::IntegrationPoints2D&  intpoints
+      );
 
   //! returns gauss rule for given distype
   void GetGaussRule2D(
       const DRT::Element::DiscretizationType& distype,
       DRT::UTILS::GaussRule2D&                rule_pot
       );
+  
+  
+  //! rechnet Normale und det des Deformatinsgradienten in xp
+  double ComputeNormalAndDetFinXp(
+      const DRT::Element*                     element,
+      const LINALG::Matrix<3,1>&              xp,
+      LINALG::Matrix<3,1>& 					  np);
 
 
   //! compute surface normal in gaussian point
   LINALG::Matrix<3,1> ComputeNormalInGP(
       const DRT::Element*                     element,
       const LINALG::Matrix<3,1>&              x_gp
+      );
+  
+  //! evaluate potObject and returns closest point and associated element
+  int DetermineElement( 
+      const GEO::NearestObject&       potObject
       );
   
   /*!
@@ -329,7 +353,7 @@ private:
   std::map<int,LINALG::Matrix<3,1> >          currentpositions_;
 
   //! for each potential condition label there is a set of boundary elements
-  std::map<int,std::set<int> >                 elementsByLabel_;
+  std::map<int,std::set<int> >                elementsByLabel_;
 
   //! map extrator potential boundary
   LINALG::MapExtractor                        potboundary_;
@@ -347,7 +371,7 @@ private:
   Teuchos::RCP<Epetra_Import>                 importer_;
   
   //! search tree type
-  GEO::TreeType                                treetype_;
+  GEO::TreeType                               treetype_;
 
 
 }; //class
