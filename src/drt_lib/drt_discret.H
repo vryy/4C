@@ -1723,18 +1723,6 @@ private:
   virtual void BuildElementToElementPointers();
 
   /*!
-  \brief (Re)create a map of ElementRegister objects
-
-  (Re)creates the map elementregister_ containing ONE register class
-  for each type of element present in this discretization.
-  The register class will be called from FillComplete() to initialize
-  the finite elements of a certain type.
-
-  */
-  virtual void BuildElementRegister();
-
-
-  /*!
   \brief Assign degrees of freedom to discretization (Filled()==true prerequisite)
 
   Assign nodes and elements their no. of degrees of freedom as aquired
@@ -1751,18 +1739,30 @@ private:
   */
   virtual int AssignDegreesOfFreedom(int start);
 
+public:
+  /*!
+  \brief (Re)create a map of ElementRegister objects
+
+  (Re)creates the map elementregister_ containing ONE register class
+  for each type of element present in this discretization.
+  The register class will be called from FillComplete() to initialize
+  the finite elements of a certain type.
+
+  */
+  virtual void BuildElementRegister();
+  
   /*!
   \brief Initialize element routines
 
   Loops through the ElementRegister map elementregister_ and call the
   initialize method of each of the ElementRegister classes present.
 
-
-  \note InitializeElements might be called more then once!
+  \note InitializeElements might be called more than once!
 
   */
   virtual void InitializeElements();
 
+private:
   /*!
   \brief Build the geometry for boundary conditions
 
