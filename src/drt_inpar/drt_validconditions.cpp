@@ -885,6 +885,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   AddNamedReal(vanderwaals_potential_volume,"lambda");
   AddNamedReal(vanderwaals_potential_volume,"cutOff");
   AddNamedReal(vanderwaals_potential_volume,"beta");
+  AddNamedReal(vanderwaals_potential_volume,"exvollength");
 
   condlist.push_back(vanderwaals_potential_volume);
 
@@ -904,6 +905,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   AddNamedReal(vanderwaals_potential_surface,"lambda");
   AddNamedReal(vanderwaals_potential_surface,"cutOff");
   AddNamedReal(vanderwaals_potential_surface,"beta");
+  AddNamedReal(vanderwaals_potential_surface,"exvollength");
 
   condlist.push_back(vanderwaals_potential_surface);
 
@@ -924,6 +926,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   AddNamedReal(vanderwaals_potential_line,"lambda");
   AddNamedReal(vanderwaals_potential_line,"cutOff");
   AddNamedReal(vanderwaals_potential_line,"beta");
+  AddNamedReal(vanderwaals_potential_line,"exvollength");
 
   condlist.push_back(vanderwaals_potential_line);
 
