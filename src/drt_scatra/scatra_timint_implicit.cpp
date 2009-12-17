@@ -86,6 +86,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   cdvel_    (Teuchos::getIntegralValue<INPAR::SCATRA::VelocityField>(*params,"VELOCITYFIELD")),
   convform_ (Teuchos::getIntegralValue<INPAR::SCATRA::ConvForm>(*params,"CONVFORM")),
   neumanninflow_(Teuchos::getIntegralValue<int>(*params,"NEUMANNINFLOW")),
+  skipinitder_(Teuchos::getIntegralValue<int>(*params,"SKIPINITDER")),
   fssgd_    (Teuchos::getIntegralValue<INPAR::SCATRA::FSSUGRDIFF>(*params,"FSSUGRDIFF")),
   frt_      (0.0),
   tpn_      (1.0),
@@ -517,7 +518,7 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
   // -------------------------------------------------------------------
   //                       initialization
   // -------------------------------------------------------------------
-  if (step_ == 0)
+  if (step_ == 0 and not skipinitder_)
   {
     // if initial velocity field has not been set here, the initial time derivative of phi will be
     // calculated wrongly for some time integration schemes

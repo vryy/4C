@@ -525,6 +525,9 @@ protected:
   /// flag for potential Neumann inflow
   bool neumanninflow_;
 
+  /// flag for potentially skiping computation of initial time derivative
+  bool skipinitder_;
+
   /// fine-scale subgrid-viscosity flag
   INPAR::SCATRA::FSSUGRDIFF fssgd_;
 

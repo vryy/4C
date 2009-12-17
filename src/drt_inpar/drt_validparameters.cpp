@@ -1851,6 +1851,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   BoolParameter("NEUMANNINFLOW",
       "no","Flag to (de)activate potential Neumann inflow term(s)",&scatradyn);
 
+  BoolParameter("SKIPINITDER",
+      "no","Flag to skip computation of initial time derivative",&scatradyn);
+
   setStringToIntegralParameter<INPAR::SCATRA::FSSUGRDIFF>("FSSUGRDIFF",
                                "No",
                                "fine-scale subgrid diffusivity",
