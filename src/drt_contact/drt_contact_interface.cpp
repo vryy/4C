@@ -724,22 +724,6 @@ void CONTACT::Interface::Evaluate()
   // get out of here if not participating in interface
   if (!lComm()) return;
 
-  //**********************************************************************
-  // contact search algorithm
-  //**********************************************************************
-  //lComm()->Barrier();
-  //const double t_start = ds_cputime();
-
-  if (SearchAlg()==INPAR::CONTACT::search_bfnode)          EvaluateContactSearch();
-  else if (SearchAlg()==INPAR::CONTACT::search_bfele)      EvaluateContactSearchBruteForce(SearchParam());
-  else if (SearchAlg()==INPAR::CONTACT::search_binarytree) EvaluateContactSearchBinarytree();
-  else                                                     dserror("ERROR: Invalid contact search algorithm");
-
-  //lComm()->Barrier();
-  //const double t_end = ds_cputime()-t_start;
-  //if (lComm()->MyPID()==0)
-  //  cout << "Search Time (overall): " << t_end << " seconds\n";
-
 #ifdef CONTACTFDNORMAL
   // FD check of normal derivatives
   FDCheckNormalDeriv();
@@ -758,6 +742,22 @@ void CONTACT::Interface::Evaluate()
     // build averaged normal at each slave node
     cnode->BuildAveragedNormal();
   }
+  
+  //**********************************************************************
+  // contact search algorithm
+  //**********************************************************************
+  //lComm()->Barrier();
+  //const double t_start = ds_cputime();
+
+  if (SearchAlg()==INPAR::CONTACT::search_bfnode)          EvaluateContactSearch();
+  else if (SearchAlg()==INPAR::CONTACT::search_bfele)      EvaluateContactSearchBruteForce(SearchParam());
+  else if (SearchAlg()==INPAR::CONTACT::search_binarytree) EvaluateContactSearchBinarytree();
+  else                                                     dserror("ERROR: Invalid contact search algorithm");
+
+  //lComm()->Barrier();
+  //const double t_end = ds_cputime()-t_start;
+  //if (lComm()->MyPID()==0)
+  //  cout << "Search Time (overall): " << t_end << " seconds\n";
 
 #ifdef CONTACTFDVERTEX3D
   // define test variable for FDVertex
