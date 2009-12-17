@@ -805,14 +805,6 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
 
       params.set("thermodynamic pressure",actmat->ThermPress());
     }
-    else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
-    {
-      const MAT::ArrheniusPV* actmat = static_cast<const MAT::ArrheniusPV*>(material.get());
-
-      params.set("flame parameter beta",     actmat->ComputeBeta());
-      params.set("diffusive flame thickness",actmat->ComputeDiffFlameThickness());
-      params.set("thermodynamic pressure",0.0);
-    }
     else params.set("thermodynamic pressure",0.0);
   }
   else

@@ -1289,7 +1289,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "field_from_file",
                                  "field_by_function",
                                  "disturbed_field_from_function",
-                                 "COUNTERVORT",
+                                 "FLAME_VORTEX_INTERACTION",
                                  "SOLWAVE",
                                  "WAVEBREAKING",
                                  "BELTRAMI-FLOW",
@@ -1794,7 +1794,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "field_by_condition",
                                  "disturbed_field_by_function",
                                  "1D_DISCONTPV",
-                                 "FVI_FERECHPRO",
+                                 "FLAME_VORTEX_INTERACTION",
                                  "RAYTAYMIXFRAC"),
                                tuple<INPAR::SCATRA::InitialField>(
                                    INPAR::SCATRA::initfield_zero_field,
@@ -1802,7 +1802,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    INPAR::SCATRA::initfield_field_by_condition,
                                    INPAR::SCATRA::initfield_disturbed_field_by_function,
                                    INPAR::SCATRA::initfield_DISCONTPV_1D,
-                                   INPAR::SCATRA::initfield_FVI_FERECHPRO,
+                                   INPAR::SCATRA::initfield_FLAME_VORTEX_INTERACTION,
                                    INPAR::SCATRA::initfield_RAYTAYMIXFRAC),
                                &scatradyn);
 

@@ -2907,7 +2907,8 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
       }
     }
   }
-  // special initial function: two counter-rotating vortices (2-D)
+  // special initial function: two counter-rotating vortices (2-D) and flame front
+  // for flame-vortex interaction problem
   else if (whichinitialfield == 4)
   {
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
@@ -2924,9 +2925,43 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
     // check whether present flow is indeed two-dimensional
     if (numdim_!=2) dserror("Counter-rotating vortices are a two-dimensional flow!");
 
-    // set vortex strength C, (squared) vortex radius R and define variables
-    const double C = 70.0;
+    // set laminar burning velocity, vortex strength C (scaled by laminar
+    // burning velocity and (squared) vortex radius R
+    const double sl = 1.0;
+    const double C = 70.0*sl;
     const double R_squared = 16.0;
+
+    // set density in unburnt and burnt phase and initialize actual density
+    const double densu = 1.161;
+    // -> for "pure fluid" computation: rhob = rhou = 1.161
+    //const double densb = 1.161;
+    const double densb = 0.157;
+    double dens = 1.161;
+
+    // initialize progress variable
+    double pv = 0.0;
+
+    // variables for evaluation of progress-variable profile
+    // locations separating region 1 from region 2 and region 2 from region 3
+    const double loc12 = 98.5;
+    const double loc23 = 103.0;
+
+    // define parameters for region 1 (exponential function for curve fitting)
+    const double beta1  = 1.65;
+    const double delta1 = 1.0;
+    const double trans1 = 100.0;
+
+    // define parameters for region 2 (linear function for curve fitting)
+    const double abs2 = 0.0879;
+    const double fac2 = 0.139309333;
+    const double trans2 = 98.5;
+
+    // define parameters for region 3 (exponential function for curve fitting)
+    const double beta3  = 3.506209;
+    const double delta3 = 4.28875;
+    const double trans3 = 103.0;
+
+    // set (scaled) vortex strength C, (squared) vortex radius R and define variables
     double r_squared_left;
     double r_squared_right;
 
@@ -2957,11 +2992,27 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
       r_squared_right = ((xy[0]-xy0_right[0])*(xy[0]-xy0_right[0])
                         +(xy[1]-xy0_right[1])*(xy[1]-xy0_right[1]))/R_squared;
 
+      // compute value of progress variable
+      if (xy[1] < loc12-EPS10)
+        pv = (1.0-(1.0/beta1))*exp((xy[1]-trans1)/delta1);
+      else if (xy[1] > loc23+EPS10)
+        pv = 1.0-(exp((1.0-beta3)*(xy[1]-trans3)/delta3)/beta3);
+      else
+        pv = fac2*(xy[1]-trans2) + abs2;
+
+      // compute current density
+      dens = densu+(densb-densu)*pv;
+
       // compute initial velocity components
-      u[0] = (C/R_squared)*((xy[1]-xy0_left[1])*exp(-r_squared_left/2.0)
-                           +(xy[1]-xy0_right[1])*exp(-r_squared_right/2.0));
-      u[1] = -(C/R_squared)*((xy[0]-xy0_left[0])*exp(-r_squared_left/2.0)
-                            +(xy[0]-xy0_right[0])*exp(-r_squared_right/2.0));
+      // including initial velocity distribution velocity in x2-direction
+      u[0] = (C/R_squared)*(-(xy[1]-xy0_left[1])*exp(-r_squared_left/2.0)
+                            +(xy[1]-xy0_right[1])*exp(-r_squared_right/2.0));
+      u[1] = (C/R_squared)*( (xy[0]-xy0_left[0])*exp(-r_squared_left/2.0)
+                            -(xy[0]-xy0_right[0])*exp(-r_squared_right/2.0))
+                            + sl*densu/dens;
+
+      // velocity profile due to flame without vortices:
+      //u[1] = sl*densu/dens;
 
       // set initial velocity components
       for(int nveldof=0;nveldof<numdim_;nveldof++)

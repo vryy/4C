@@ -1576,23 +1576,34 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
     }
     break;
   }
-  // analytical reactive profile in x2-direction due to Ferziger and Echekki (1993)
+  // reconstructed initial profile for progress variable in x2-direction from
+  // Lessani and Papalexandris (2006), also used in Moureau et al. (2007, 2009),
   // for two-dimensional flame-vortex interaction problem (x2=0-200)
-  case INPAR::SCATRA::initfield_FVI_FERECHPRO:
+  case INPAR::SCATRA::initfield_FLAME_VORTEX_INTERACTION:
   {
-    // get flame parameter beta and diffusive flame thickness
-    ParameterList eleparams;
-    eleparams.set("action","get_material_parameters");
-    eleparams.set("isale",isale_);
-    discret_->Evaluate(eleparams,null,null,null,null,null);
-    const double beta  = eleparams.get("flame parameter beta", 1.0);
-    const double delta = eleparams.get("diffusive flame thickness", 0.0);
-    if (delta < EPS15) dserror("Diffusive flame thickness is zero or negative!");
+    // locations separating region 1 from region 2 and region 2 from region 3
+    const double loc12 = 98.5;
+    const double loc23 = 103.0;
 
-    // define flame location in x2-direction
-    const double floc = 100.0;
+    // define parameters for region 1 (exponential function for curve fitting)
+    const double beta1  = 1.65;
+    const double delta1 = 1.0;
+    const double trans1 = 100.0;
+
+    // define parameters for region 2 (linear function for curve fitting)
+    const double abs2 = 0.0879;
+    const double fac2 = 0.139309333;
+    const double trans2 = 98.5;
+
+    // define parameters for region 3 (exponential function for curve fitting)
+    const double beta3  = 3.506209;
+    const double delta3 = 4.28875;
+    const double trans3 = 103.0;
 
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+    // define variable
+    double initialval = 0.0;
 
     // loop all nodes on the processor
     for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
@@ -1611,9 +1622,12 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
         const int dofgid = nodedofset[k];
         int doflid = dofrowmap->LID(dofgid);
 
-        double initialval = 0.0;
-        if (x2 < floc-EPS10) initialval = (1.0-(1.0/beta))*exp((x2-floc)/delta);
-        else                 initialval = 1.0-(exp((1.0-beta)*(x2-floc)/delta)/beta);
+        if (x2 < loc12-EPS10)
+          initialval = (1.0-(1.0/beta1))*exp((x2-trans1)/delta1);
+        else if (x2 > loc23+EPS10)
+          initialval = 1.0-(exp((1.0-beta3)*(x2-trans3)/delta3)/beta3);
+        else
+          initialval = fac2*(x2-trans2) + abs2;
 
         phin_->ReplaceMyValues(1,&initialval,&doflid);
         // initialize also the solution vector. These values are a pretty good guess for the
