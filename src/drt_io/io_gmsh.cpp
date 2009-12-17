@@ -39,6 +39,8 @@ std::string IO::GMSH::distypeToGmshElementHeader(
     case DRT::Element::tri6:    return "T";  break;
     case DRT::Element::line2:   return "L";  break;
     case DRT::Element::line3:   return "L2"; break;
+    case DRT::Element::wedge6:  return "I";  break;
+    case DRT::Element::wedge15: return "I";  break;
     default:
       dserror("distypeToGmshElementHeader: distype not supported for printout!");
   }
@@ -51,19 +53,21 @@ int IO::GMSH::distypeToGmshNumNode(
 {
   switch (distype)
   {
-    case DRT::Element::hex8:   return 8;  break;
-    case DRT::Element::hex20:  return 8;  break;
-    case DRT::Element::hex27:  return 8;  break;
-    case DRT::Element::tet4:   return 4;  break;
-    case DRT::Element::tet10:  return 4;  break;
-    case DRT::Element::point1: return 1;  break;
-    case DRT::Element::quad4:  return 4;  break;
-    case DRT::Element::quad8:  return 4;  break;
-    case DRT::Element::quad9:  return 4;  break;
-    case DRT::Element::tri3:   return 3;  break;
-    case DRT::Element::tri6:   return 3;  break;
-    case DRT::Element::line2:  return 2;  break;
-    case DRT::Element::line3:  return 3;  break;
+    case DRT::Element::hex8:    return 8;  break;
+    case DRT::Element::hex20:   return 8;  break;
+    case DRT::Element::hex27:   return 8;  break;
+    case DRT::Element::tet4:    return 4;  break;
+    case DRT::Element::tet10:   return 4;  break;
+    case DRT::Element::point1:  return 1;  break;
+    case DRT::Element::quad4:   return 4;  break;
+    case DRT::Element::quad8:   return 4;  break;
+    case DRT::Element::quad9:   return 4;  break;
+    case DRT::Element::tri3:    return 3;  break;
+    case DRT::Element::tri6:    return 3;  break;
+    case DRT::Element::line2:   return 2;  break;
+    case DRT::Element::line3:   return 3;  break;
+    case DRT::Element::wedge6:  return 6;  break;
+    case DRT::Element::wedge15: return 6;  break;
     default:
       dserror("distypeToGmshNumNode: distype not supported for printout!");
   }
