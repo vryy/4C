@@ -588,14 +588,14 @@ void CONTACT::DualEdge::CalculateCosts()
     {
       int gid = (node1_->Elelist()).at(l);
       CElement* celement= static_cast<CElement*> (node1_->Discret().gElement(gid));
-      area = area + celement->ComputeArea();
+      area = area + celement->Area();
     }
     
     for (int l=0;l<(int)(node2_->Elelist().size());++l)
     {
       int gid = node2_->Elelist()[l];
       CElement* celement= static_cast<CElement*> (node2_->Discret().gElement(gid));
-      area = area + celement->ComputeArea();
+      area = area + celement->Area();
     }
 
     // compute maximal k-DOP area for dual edge
