@@ -195,16 +195,14 @@ public:
   inline virtual bool& SetBound() { return isonbound_; }
 
   /*!
-  \brief Return D.B.C. status of this node's dofs (length 3)
-  */
-  virtual inline bool* Dbc() { return dbc_; }
-
-  /*!
   \brief Return D.B.C. status of this node (true if at least one dof with D.B.C)
   */
-  virtual inline bool IsDbc() const { bool globaldbc = false;
-                                      for(int i=0;i<NumDof();++i) globaldbc += dbc_[i];
-                                      return globaldbc; }
+  inline virtual bool IsDbc() const { return isdbc_; }
+  
+  /*!
+  \brief Set D.B.C. status of current node
+  */
+  inline virtual bool& SetDbc() { return isdbc_; }
 
   /*!
   \brief Get number of degrees of freedom
@@ -622,9 +620,10 @@ protected:
   bool            isslave_;        // true if cnode is on slave side of contact problem
   bool            initactive_;     // true if node is initialized as active node
   bool            isonbound_;      // true if cnode is on slave side boundary
-  bool            dbc_[3];         // true if D.B.C. is applied on dofs_[i]
+  bool            isdbc_;          // true if cnode has D.B.C.applied to at least one dof
   int             numdof_;         // number of degrees of freedom (length of dofs_)
   vector<int>     dofs_;           // degrees of freedom of this node
+  
   double          n_[3];           // nodal normal for contact methods
   double          txi_[3];         // nodal tangent t_xi for contact methods
   double          teta_[3];        // nodal tangent t_eta for contact methods
@@ -634,6 +633,7 @@ protected:
   double          lmold_[3];       // old Lagrange multiplier value (last converged state n)
   double          lmuzawa_[3];     // Uzawa Lagrange multiplier value (last Uzawa step k)
   double          jump_[3];        // summation of incremental jumps per time step
+  
   int             closestnode_;    // closest node id on the other side of interface
   bool            hasproj_;        // true if feasible projection within search set (slave nodes only)
   bool            active_;         // true if cnode is in contact (active set strategy)

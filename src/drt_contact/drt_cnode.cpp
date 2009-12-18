@@ -54,6 +54,7 @@ DRT::Node(id,coords,owner),
 isslave_(isslave),
 initactive_(initactive),
 isonbound_(false),
+isdbc_(false),
 numdof_(numdof),
 dofs_(dofs),
 closestnode_(-1),
@@ -65,7 +66,6 @@ grow_(1.0e12)
 {
   for (int i=0;i<3;++i)
   {
-    Dbc()[i]=false;
     n()[i]=0.0;
     txi()[i]=0.0;
     teta()[i]=0.0;
@@ -92,6 +92,7 @@ DRT::Node(old),
 isslave_(old.isslave_),
 initactive_(old.initactive_),
 isonbound_(old.isonbound_),
+isdbc_(old.isdbc_),
 numdof_(old.numdof_),
 dofs_(old.dofs_),
 closestnode_(old.closestnode_),
@@ -110,7 +111,6 @@ grow_(old.grow_)
 {
   for (int i=0;i<3;++i)
   {
-    Dbc()[i]=old.dbc_[i];
     n()[i]=old.n_[i];
     txi()[i]=old.txi_[i];
     teta()[i]=old.teta_[i];
@@ -187,8 +187,8 @@ void CONTACT::CNode::Pack(vector<char>& data) const
   AddtoPack(data,initactive_);
   // add isonbound_
   AddtoPack(data,isonbound_);
-  // add dbc_
-  AddtoPack(data,dbc_,3);
+  // add isdbc_
+  AddtoPack(data,isdbc_);
   // add numdof_
   AddtoPack(data,numdof_);
   // add dofs_
@@ -250,8 +250,8 @@ void CONTACT::CNode::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,initactive_);
   // isonbound_
   ExtractfromPack(position,data,isonbound_);
-  // dbc_
-  ExtractfromPack(position,data,dbc_,3);
+  // isdbc_
+  ExtractfromPack(position,data,isdbc_);
   // numdof_
   ExtractfromPack(position,data,numdof_);
   // dofs_
