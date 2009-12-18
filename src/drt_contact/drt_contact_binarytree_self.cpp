@@ -251,11 +251,12 @@ void CONTACT::BinaryTreeSelfNode::CalculateSlabsDop(bool isinit)
     int gid = Elelist()[i];
     DRT::Element* element= idiscret_.gElement(gid);
     if (!element) dserror("ERROR: Cannot find element with gid %\n",gid);
-    DRT::Node** nodes = element->Nodes();
+    CElement* celement=static_cast<CElement*>(element);
+    DRT::Node** nodes = celement->Nodes();
     if (!nodes) dserror("ERROR: Null pointer!");
     
     // calculate slabs for every node on every element
-    for (int k=0;k<element->NumNode();++k)
+    for (int k=0;k<celement->NumNode();++k)
     {
       CNode* cnode=static_cast<CNode*>(nodes[k]);
       if (!cnode) dserror("ERROR: Null pointer!");
@@ -285,14 +286,21 @@ void CONTACT::BinaryTreeSelfNode::CalculateSlabsDop(bool isinit)
       }
       
       // if update for contactsearch --> add auxiliary positions
-      if ((!isinit) && (type_==SELF_INNER || type_==SELF_LEAF))
+      if (!isinit)
       {
+        // calculate element normal at current node
+        double xi[2] = {0.0, 0.0};
+        double normal[3] = {0.0, 0.0, 0.0};
+        celement->LocalCoordinatesOfNode(k,xi);
+        celement->ComputeUnitNormalAtXi(xi,normal);
+        
+        // now the auxiliary position
         double auxpos[3] = {0.0, 0.0, 0.0};
         double scalar = 0.0;
         for (int j=0;j<dim_;++j)
-          scalar = scalar + (cnode->X()[j]+cnode->uold()[j]-cnode->xspatial()[j])*cnode->n()[j];
+          scalar = scalar + (cnode->X()[j]+cnode->uold()[j]-cnode->xspatial()[j])*normal[j];
         for (int j=0;j<dim_;++j)
-          auxpos[j] = cnode->xspatial()[j] + scalar*cnode->n()[j];
+          auxpos[j] = cnode->xspatial()[j] + scalar*normal[j];
 
         for (int j=0;j<kdop_/2;++j)
         {
@@ -355,11 +363,12 @@ void CONTACT::BinaryTreeSelfNode::UpdateSlabsBottomUp(double & enlarge)
     int gid = Elelist()[0];
     DRT::Element* element= idiscret_.gElement(gid);
     if (!element) dserror("ERROR: Cannot find element with gid %\n",gid);
-    DRT::Node** nodes = element->Nodes();
+    CElement* celement=static_cast<CElement*>(element);
+    DRT::Node** nodes = celement->Nodes();
     if (!nodes) dserror("ERROR: Null pointer!");
     
     // update slabs for every node
-    for (int k=0;k<element->NumNode();++k)
+    for (int k=0;k<celement->NumNode();++k)
     {
       CNode* cnode=static_cast<CNode*>(nodes[k]);
       if (!cnode) dserror("ERROR: Null pointer!");
@@ -384,13 +393,20 @@ void CONTACT::BinaryTreeSelfNode::UpdateSlabsBottomUp(double & enlarge)
         if (dcurrent < slabs_(j,0)) slabs_(j,0) = dcurrent;
       }
       
-      // enlarge slabs with aux. position   
+      // enlarge slabs with aux. position
+      // first calculate element normal at current node
+      double xi[2] = {0.0, 0.0};
+      double normal[3] = {0.0, 0.0, 0.0};
+      celement->LocalCoordinatesOfNode(k,xi);
+      celement->ComputeUnitNormalAtXi(xi,normal);
+      
+      // now the auxiliary position
       double auxpos[3] = {0.0, 0.0, 0.0};
       double scalar = 0.0;
       for (int j=0;j<dim_;++j)
-        scalar = scalar + (cnode->X()[j]+cnode->uold()[j]-cnode->xspatial()[j])*cnode->n()[j];
+        scalar = scalar + (cnode->X()[j]+cnode->uold()[j]-cnode->xspatial()[j])*normal[j];
       for (int j=0;j<dim_;++j)
-        auxpos[j] = cnode->xspatial()[j] + scalar*cnode->n()[j];
+        auxpos[j] = cnode->xspatial()[j] + scalar*normal[j];
 
       for (int j=0;j<kdop_/2;++j)
       {

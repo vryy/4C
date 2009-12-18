@@ -1904,7 +1904,7 @@ void CONTACT::ContactStruGenAlpha::Update()
 #endif
 
   // update contact
-  contactmanager_->GetStrategy().Update(istep);
+  contactmanager_->GetStrategy().Update(istep,dis_);
 
   /*
   Teuchos::RCP<Epetra_Vector> linmom = LINALG::CreateVector(*(discret_.DofRowMap()), true);
@@ -1969,7 +1969,6 @@ void CONTACT::ContactStruGenAlpha::Update()
     Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(contactmanager_->GetStrategy().Params(),"CONTACT");
   if(ctype != INPAR::CONTACT::contact_normal)
   {
-
   	// store contact state to contact nodes (active or inactive)
     contactmanager_->GetStrategy().StoreNodalQuantities(AbstractStrategy::activeold);
 
@@ -1978,9 +1977,6 @@ void CONTACT::ContactStruGenAlpha::Update()
 
     // store nodal entries form penalty contact tractions to old ones
     contactmanager_->GetStrategy().StoreDMToNodes(AbstractStrategy::pentrac);
-
-    // store the displacements to contact nodes
-    contactmanager_->GetStrategy().SetState("olddisplacement",dis_);
   }
 
 #ifdef PRESTRESS

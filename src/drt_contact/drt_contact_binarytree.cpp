@@ -161,11 +161,12 @@ void CONTACT::BinaryTreeNode::CalculateSlabsDop(bool isinit)
     int gid = Elelist()[i];
     DRT::Element* element= idiscret_.gElement(gid);
     if (!element) dserror("ERROR: Cannot find element with gid %\n",gid);
-    DRT::Node** nodes = element->Nodes();
+    CElement* celement=static_cast<CElement*>(element);
+    DRT::Node** nodes = celement->Nodes();
     if (!nodes) dserror("ERROR: Null pointer!");
 
     // calculate slabs for every node on every element
-    for (int k=0;k<element->NumNode();k++)
+    for (int k=0;k<celement->NumNode();k++)
     {
       CNode* cnode=static_cast<CNode*>(nodes[k]);
       if (!cnode) dserror("ERROR: Null pointer!");
@@ -194,15 +195,22 @@ void CONTACT::BinaryTreeNode::CalculateSlabsDop(bool isinit)
 	      if (dcurrent < slabs_(j,0)) slabs_(j,0) = dcurrent;
 		  }
 			
-	    // if update for contactsearch and current node is slave --> add auxiliary positions
-			if ((!isinit) && (type_==0||type_==1))
+	    // if update for contactsearch --> add auxiliary positions
+			if (!isinit)
   		{
+			  // calculate element normal at current node
+			  double xi[2] = {0.0, 0.0};
+			  double normal[3] = {0.0, 0.0, 0.0};
+			  celement->LocalCoordinatesOfNode(k,xi);
+			  celement->ComputeUnitNormalAtXi(xi,normal);
+
+			  // now the auxiliary position
 	  		double auxpos [3] = {0.0, 0.0, 0.0};
 		  	double scalar=0.0;
 		  	for (int j=0;j<dim_;j++)
-		  		scalar=scalar+(cnode->X()[j]+cnode->uold()[j]-cnode->xspatial()[j])*cnode->n()[j];
+		  		scalar=scalar+(cnode->X()[j]+cnode->uold()[j]-cnode->xspatial()[j])*normal[j];
 	  		for (int j=0;j<dim_;j++)
-	  			auxpos[j]=cnode->xspatial()[j]+scalar*cnode->n()[j];
+	  			auxpos[j]=cnode->xspatial()[j]+scalar*normal[j];
 
 	  		for(int j=0; j<kdop_/2;j++)
 	  		{
@@ -266,11 +274,12 @@ void CONTACT::BinaryTreeNode::UpdateSlabsBottomUp(double & enlarge)
     int gid = Elelist()[0];
     DRT::Element* element= idiscret_.gElement(gid);
     if (!element) dserror("ERROR: Cannot find element with gid %\n",gid);
-    DRT::Node** nodes = element->Nodes();
+    CElement* celement=static_cast<CElement*>(element);
+    DRT::Node** nodes = celement->Nodes();
     if (!nodes) dserror("ERROR: Null pointer!");
 
     // update slabs for every node
-    for (int k=0;k<element->NumNode();++k)
+    for (int k=0;k<celement->NumNode();++k)
     {
       CNode* cnode=static_cast<CNode*>(nodes[k]);
       if (!cnode) dserror("ERROR: Null pointer!");
@@ -295,30 +304,34 @@ void CONTACT::BinaryTreeNode::UpdateSlabsBottomUp(double & enlarge)
         if (dcurrent < slabs_(j,0)) slabs_(j,0) = dcurrent;
       }
 
-      // if current treenode is slave leaf --> enlarge slabs with auxiliary position
-      if (type_==1)
+      // enlarge slabs with auxiliary position
+      // first calculate element normal at current node
+      double xi[2] = {0.0, 0.0};
+      double normal[3] = {0.0, 0.0, 0.0};
+      celement->LocalCoordinatesOfNode(k,xi);
+      celement->ComputeUnitNormalAtXi(xi,normal);
+              
+      // now the auxiliary position
+      double auxpos [3] = {0.0, 0.0, 0.0};
+      double scalar=0.0;
+      for (int j=0;j<dim_;j++)
+        scalar=scalar+(cnode->X()[j]+cnode->uold()[j]-cnode->xspatial()[j])*normal[j];
+      for (int j=0;j<dim_;j++)
+        auxpos[j]=cnode->xspatial()[j]+scalar*normal[j];
+
+      for(int j=0; j<kdop_/2;j++)
       {
-        double auxpos [3] = {0.0, 0.0, 0.0};
-        double scalar=0.0;
-        for (int j=0;j<dim_;j++)
-          scalar=scalar+(cnode->X()[j]+cnode->uold()[j]-cnode->xspatial()[j])*cnode->n()[j];
-        for (int j=0;j<dim_;j++)
-          auxpos[j]=cnode->xspatial()[j]+scalar*cnode->n()[j];
+        //= ax+by+cz=d/sqrt(aa+bb+cc)
+        double num = dopnormals_(j,0)*auxpos[0]
+                   + dopnormals_(j,1)*auxpos[1]
+                   + dopnormals_(j,2)*auxpos[2];
+        double denom = sqrt((dopnormals_(j,0)*dopnormals_(j,0))
+                           +(dopnormals_(j,1)*dopnormals_(j,1))
+                           +(dopnormals_(j,2)*dopnormals_(j,2)));
+        double dcurrent = num/denom;
 
-        for(int j=0; j<kdop_/2;j++)
-        {
-          //= ax+by+cz=d/sqrt(aa+bb+cc)
-          double num = dopnormals_(j,0)*auxpos[0]
-                     + dopnormals_(j,1)*auxpos[1]
-                     + dopnormals_(j,2)*auxpos[2];
-          double denom = sqrt((dopnormals_(j,0)*dopnormals_(j,0))
-                             +(dopnormals_(j,1)*dopnormals_(j,1))
-                             +(dopnormals_(j,2)*dopnormals_(j,2)));
-          double dcurrent = num/denom;
-
-          if (dcurrent > slabs_(j,1)) slabs_(j,1) = dcurrent;
-          if (dcurrent < slabs_(j,0)) slabs_(j,0) = dcurrent;
-        }
+        if (dcurrent > slabs_(j,1)) slabs_(j,1) = dcurrent;
+        if (dcurrent < slabs_(j,0)) slabs_(j,0) = dcurrent;
       }
     }
 	

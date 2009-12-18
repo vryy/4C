@@ -619,7 +619,7 @@ void CONTACT::AbstractStrategy::StoreDM(const string& state)
 /*----------------------------------------------------------------------*
  |  Update and output contact at end of time step             popp 06/09|
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::Update(int istep)
+void CONTACT::AbstractStrategy::Update(int istep, RCP<Epetra_Vector> dis)
 {
   // store Lagrange multipliers, D and M
   // (we need this for interpolation of the next generalized mid-point)
@@ -630,6 +630,11 @@ void CONTACT::AbstractStrategy::Update(int istep)
   StoreNodalQuantities(AbstractStrategy::lmold);
   StoreDM("old");
 
+  // old displacements in nodes
+  // (this is NOT only needed for friction but also for calculating
+  // the auxiliary positions in binarytree contact search)
+  SetState("olddisplacement",dis);
+  
 #ifdef CONTACTGMSH1
   VisualizeGmsh(istep);
 #endif // #ifdef CONTACTGMSH1

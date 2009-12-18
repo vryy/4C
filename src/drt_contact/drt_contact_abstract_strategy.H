@@ -449,9 +449,10 @@ class AbstractStrategy
     \brief Update contact at end of time step
 
     \param iter (in): step index for gmsh file creation
+    \param dis (in):  current displacements (-> old displacements)
 
     */
-    void Update(int istep);
+    void Update(int istep, RCP<Epetra_Vector> dis);
 
     /*!
     \brief Perform a write restart
