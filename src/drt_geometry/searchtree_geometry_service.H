@@ -77,6 +77,31 @@ namespace GEO
   
   
   /*!
+  \brief Returns the eXtendedAxisAlignedBoundingBox of a discretization,
+         in reference configuration
+  \param dis                  discretization
+  \return  XAxisAlignedBoundingBox
+   */
+  LINALG::Matrix<3,2> getXAABBofDisPar(
+      const DRT::Discretization&                dis,
+      const std::map<int,LINALG::Matrix<3,1> >& currentpositions,
+      double                                    cutoff
+      );
+  
+  
+  /*!
+  \brief Returns the eXtendedAxisAlignedBoundingBox of a discretization,
+         in reference configuration
+  \param dis                  discretization
+  \return  XAxisAlignedBoundingBox
+   */
+  LINALG::Matrix<3,2> getXAABBofDisPar(
+      const DRT::Discretization&    dis,
+      double                        cutoff
+      );
+  
+  
+  /*!
   \brief Returns the eXtendedAxisAlignedBoundingBox of given elements
   \param elements 		  	  elements the box is around, enlarged a little bit for enclosing all slave nodes 
   \param currentpositions     current nodal positions of elements

@@ -29,10 +29,16 @@ POTENTIAL::VolumePotential::VolumePotential(
     Teuchos::RCP<DRT::Discretization>     discretRCP,
     DRT::Discretization&                  discret,
     const GEO::TreeType&                  treetype):
-    Potential(discretRCP, discret)
+    Potential(discretRCP, discret),
+    treetype_(treetype)
 {
-  treetype_ = treetype;
+  //treetype_ = treetype;
+#ifdef PARALLEL
+  double cutoff =  (discretRCP_->GetCondition("Potential"))->GetDouble("cutOff");
+  const LINALG::Matrix<3,2> rootBox = GEO::getXAABBofDisPar(*discretRCP_,cutoff);
+#else
   const LINALG::Matrix<3,2> rootBox = GEO::getXAABBofDis(*discretRCP_);
+#endif
   DRT::UTILS::CollectElementsByConditionLabel(*discretRCP_, elementsByLabel_,"Potential" );
   searchTree_->initializeTree(rootBox, elementsByLabel_, treetype_);
   
@@ -294,8 +300,8 @@ void POTENTIAL::VolumePotential::TreeSearch(
     {
       eleXAABB_LG(dim, 0) = eleXAABB_recv[dim];
       eleXAABB_LG(dim, 1) = eleXAABB_recv[dim+3];
-      cout << "eleXAABB_LG(dim, 0) = " << eleXAABB_LG(dim, 0) <<  endl;
-      cout << "eleXAABB_LG(dim, 1) = " << eleXAABB_LG(dim, 1) <<  endl;
+      cout << "eleXAABB_LG(dim, 0) = " << eleXAABB_LG(dim, 0) << "myrank = " << myrank <<  endl;
+      cout << "eleXAABB_LG(dim, 1) = " << eleXAABB_LG(dim, 1) << "myrank = " << myrank <<  endl;
     }
     searchTree_->queryPotentialElements(elemXAABBList, eleXAABB_LG, potEleGids, label);
     

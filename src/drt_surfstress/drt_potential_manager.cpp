@@ -128,7 +128,7 @@ void POTENTIAL::PotentialManager::ReadParameter()
       treetype_ = GEO::OCTTREE;
     break;
     case INPAR::GEO::Quadtree3D:
-      treetype_ = GEO::QUADTREE3D;
+      treetype_ = GEO::QUADTREE;
     break;
     case INPAR::GEO::Quadtree2D:
       treetype_ = GEO::QUADTREE;

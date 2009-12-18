@@ -94,6 +94,78 @@ LINALG::Matrix<3,2> GEO::getXAABBofEles(
   
   return XAABB;
 }
+
+
+
+/*----------------------------------------------------------------------*
+ | delivers a axis-aligned bounding box for a given          u.may 12/09|
+ | discretization                                                       |
+ *----------------------------------------------------------------------*/
+LINALG::Matrix<3,2> GEO::getXAABBofDisPar(
+    const DRT::Discretization&                dis,
+    const std::map<int,LINALG::Matrix<3,1> >& currentpositions,
+    double                                    cutoff)
+{
+  LINALG::Matrix<3,2> XAABB(true);
+  if (dis.NumGlobalElements() == 0)
+    return XAABB;
+
+  if (dis.NumMyColElements() == 0){
+    dserror("boundary should be ghosted and xfem discretization balanced, such that there are at least some xfem elements!");
+    }
+
+  // initialize XAABB as rectangle around the first point of dis
+  const int nodeid = dis.lColElement(0)->Nodes()[0]->Id();
+  const LINALG::Matrix<3,1> pos = currentpositions.find(nodeid)->second;
+  for(int dim=0; dim<3; ++dim)
+  {
+    XAABB(dim, 0) = pos(dim) - GEO::TOL7;
+    XAABB(dim, 1) = pos(dim) + GEO::TOL7;
+  }
+
+  // TODO make more efficient by cahcking nodes
+  // loop over elements and merge XAABB with their eXtendedAxisAlignedBoundingBox
+  for (int j=0; j< dis.NumMyColElements(); ++j)
+  {
+    const DRT::Element* element = dis.lColElement(j);
+    const LINALG::SerialDenseMatrix xyze_element(GEO::getCurrentNodalPositions(element,currentpositions));
+    GEO::EleGeoType eleGeoType(GEO::HIGHERORDER);
+    GEO::checkRoughGeoType(element, xyze_element, eleGeoType);
+    const LINALG::Matrix<3,2> xaabbEle = GEO::computeFastXAABB(element->Shape(), xyze_element, eleGeoType);
+    XAABB = mergeAABB(XAABB, xaabbEle);
+  }
+  //enlarge box by 5 times the cutoff-radius
+  for(int dim=0; dim<3; ++dim)
+    {
+      XAABB(dim, 0) = XAABB(dim,0) - 5*cutoff;
+      XAABB(dim, 1) = XAABB(dim,1) + 5*cutoff;
+    }
+  return XAABB;
+}
+
+
+/*----------------------------------------------------------------------*
+ | delivers a axis-aligned bounding box for a given                     |
+ | discretization in reference configuration                            |
+ *----------------------------------------------------------------------*/
+LINALG::Matrix<3,2> GEO::getXAABBofDisPar(
+    const DRT::Discretization&    dis,
+    double                        cutoff)
+{
+  std::map<int,LINALG::Matrix<3,1> > currentpositions;
+
+  for (int lid = 0; lid < dis.NumMyColNodes(); ++lid)
+  {
+    const DRT::Node* node = dis.lColNode(lid);
+    LINALG::Matrix<3,1> currpos;
+    currpos(0) = node->X()[0];
+    currpos(1) = node->X()[1];
+    currpos(2) = node->X()[2];
+    currentpositions[node->Id()] = currpos;
+  }
+
+  return getXAABBofDisPar(dis, currentpositions, cutoff);
+}
   			
 
 
