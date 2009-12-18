@@ -239,13 +239,39 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"PREEXCON","pre-exponential constant (1/s)");
     AddNamedReal(m,"TEMPEXP","exponent of temperature dependence");
     AddNamedReal(m,"ACTEMP","activation temperature (K)");
-    AddNamedReal(m,"FLAMESPEED","flame speed (m/s)");
     AddNamedReal(m,"UNBSHC","specific heat capacity of unburnt phase (J/(kg*K))");
     AddNamedReal(m,"BURSHC","specific heat capacity of burnt phase (J/(kg*K))");
     AddNamedReal(m,"UNBTEMP","temperature of unburnt phase (K)");
     AddNamedReal(m,"BURTEMP","temperature of burnt phase (K)");
     AddNamedReal(m,"UNBDENS","density of unburnt phase (kg/m�)");
     AddNamedReal(m,"BURDENS","density of burnt phase (kg/m�)");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // material according to Sutherland law with simplified chemical
+  // kinetics due to Ferziger and Echekki (1993) (original version and
+  // modification by Poinsot and Veynante (2005)) (progress variable)
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_ferech_pv",
+                                            "material with Ferziger-Echekki (1993) chemical kinetics (progress variable)",
+                                            INPAR::MAT::m_ferech_pv));
+
+    AddNamedReal(m,"REFVISC","reference dynamic viscosity (kg/(m*s))");
+    AddNamedReal(m,"REFTEMP","reference temperature (K)");
+    AddNamedReal(m,"SUTHTEMP","Sutherland temperature (K)");
+    AddNamedReal(m,"PRANUM","Prandtl number");
+    AddNamedReal(m,"REACRATECON","reaction-rate constant (1/s)");
+    AddNamedReal(m,"PVCRIT","critical value of progress variable");
+    AddNamedReal(m,"UNBSHC","specific heat capacity of unburnt phase (J/(kg*K))");
+    AddNamedReal(m,"BURSHC","specific heat capacity of burnt phase (J/(kg*K))");
+    AddNamedReal(m,"UNBTEMP","temperature of unburnt phase (K)");
+    AddNamedReal(m,"BURTEMP","temperature of burnt phase (K)");
+    AddNamedReal(m,"UNBDENS","density of unburnt phase (kg/m�)");
+    AddNamedReal(m,"BURDENS","density of burnt phase (kg/m�)");
+    AddNamedReal(m,"MOD","modification factor (0.0=original, 1.0=modified)");
 
     AppendMaterialDefinition(matlist,m);
   }

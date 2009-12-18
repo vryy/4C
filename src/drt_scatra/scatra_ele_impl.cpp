@@ -23,6 +23,7 @@ Maintainer: Georg Bauer
 #include "../drt_mat/arrhenius_spec.H"
 #include "../drt_mat/arrhenius_temp.H"
 #include "../drt_mat/arrhenius_pv.H"
+#include "../drt_mat/ferech_pv.H"
 #include "../drt_mat/ion.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -1793,6 +1794,58 @@ else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
 
   // compute reaction coefficient for progress variable
   reacoeff_[0] = actmat->ComputeReactionCoeff(tempnp);
+
+  // compute right-hand side contribution for progress variable
+  // -> equal to reaction coefficient
+  reatemprhs_[0] = reacoeff_[0];
+
+  // set reaction flag to true
+  reaction_ = true;
+
+  // get also fluid viscosity if subgrid-scale velocity is to be included
+  if (sgvel_) visc_ = actmat->ComputeViscosity(tempnp);
+}
+else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
+{
+  const MAT::FerEchPV* actmat = static_cast<const MAT::FerEchPV*>(material.get());
+
+  dsassert(numdofpernode_==1,"more than 1 dof per node for progress-variable material");
+
+  // get progress variable at n+1 or n+alpha_F
+  const double provarnp = funct_.Dot(ephinp_[0]);
+
+  // get specific heat capacity at constant pressure and
+  // compute temperature based on progress variable
+  shcacp_ = actmat->ComputeShc(provarnp);
+  const double tempnp = actmat->ComputeTemperature(provarnp);
+
+  // compute density at n+1 or n+alpha_F
+  densnp_[0] = actmat->ComputeDensity(provarnp);
+
+  if (is_genalpha_)
+  {
+    // compute density at n+alpha_M
+    const double provaram = funct_.Dot(ephiam_[0]);
+    densam_[0] = actmat->ComputeDensity(provaram);
+
+    if (not is_incremental_)
+    {
+      // compute density at n
+      const double provarn = funct_.Dot(ephin_[0]);
+      densn_[0] = actmat->ComputeDensity(provarn);
+    }
+    else densn_[0] = 1.0;
+  }
+  else densam_[0] = densnp_[0];
+
+  // factor for density gradient: unburnt-burnt density difference
+  densgradfac_[0] = actmat->BurDens() - actmat->UnbDens();
+
+  // compute diffusivity according to Sutherland law
+  diffus_[0] = actmat->ComputeDiffusivity(tempnp);
+
+  // compute reaction coefficient for progress variable
+  reacoeff_[0] = actmat->ComputeReactionCoeff(provarnp);
 
   // compute right-hand side contribution for progress variable
   // -> equal to reaction coefficient
@@ -4098,6 +4151,28 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
   else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
   {
     const MAT::ArrheniusPV* actmat = static_cast<const MAT::ArrheniusPV*>(material.get());
+
+    // compute progress variable
+    double provar = 0.0;
+    for (int i=0; i<iel; ++i)
+    {
+      provar += funct_(i)*ephinp[i];
+    }
+
+    // get specific heat capacity at constant pressure and
+    // compute temperature based on progress variable
+    shcacp_ = actmat->ComputeShc(provar);
+    const double temp = actmat->ComputeTemperature(provar);
+
+    // compute thermal conductivity according to Sutherland law
+    diffus = shcacp_*actmat->ComputeDiffusivity(temp);
+
+    // compute density at n+1 or n+alpha_F
+    dens = actmat->ComputeDensity(provar);
+  }
+  else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
+  {
+    const MAT::FerEchPV* actmat = static_cast<const MAT::FerEchPV*>(material.get());
 
     // compute progress variable
     double provar = 0.0;

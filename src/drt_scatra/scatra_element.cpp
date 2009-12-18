@@ -72,7 +72,8 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
   if(mat->MaterialType() == INPAR::MAT::m_scatra or
      mat->MaterialType() == INPAR::MAT::m_mixfrac or
      mat->MaterialType() == INPAR::MAT::m_sutherland or
-     mat->MaterialType() == INPAR::MAT::m_arrhenius_pv)
+     mat->MaterialType() == INPAR::MAT::m_arrhenius_pv or
+     mat->MaterialType() == INPAR::MAT::m_ferech_pv)
   {
     numdofpernode_=1; // we only have a single scalar
   }

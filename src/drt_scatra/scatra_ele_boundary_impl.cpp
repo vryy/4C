@@ -32,6 +32,7 @@ Maintainer: Georg Bauer
 #include "../drt_mat/arrhenius_spec.H"
 #include "../drt_mat/arrhenius_temp.H"
 #include "../drt_mat/arrhenius_pv.H"
+#include "../drt_mat/ferech_pv.H"
 #include "../drt_mat/ion.H"
 #include "../drt_mat/matlist.H"
 
@@ -692,6 +693,16 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
         else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
         {
           const MAT::ArrheniusPV* actmat = static_cast<const MAT::ArrheniusPV*>(material.get());
+
+          // compute progress variable
+          const double provar = funct_.Dot(ephinp[k]);
+
+          // compute density
+          dens = actmat->ComputeDensity(provar);
+        }
+        else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
+        {
+          const MAT::FerEchPV* actmat = static_cast<const MAT::FerEchPV*>(material.get());
 
           // compute progress variable
           const double provar = funct_.Dot(ephinp[k]);

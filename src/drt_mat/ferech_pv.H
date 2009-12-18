@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file arrhenius_pv.H
+\file ferech_pv.H
 
 <pre>
 Maintainer: Volker Gravemeier
@@ -10,8 +10,8 @@ Maintainer: Volker Gravemeier
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifndef ARRHENIUS_PV_H
-#define ARRHENIUS_PV_H
+#ifndef FERECH_PV_H
+#define FERECH_PV_H
 
 #ifdef CCADISCRET
 
@@ -25,18 +25,20 @@ namespace MAT
   {
 
     /*----------------------------------------------------------------------*/
-    /// parameters for scalar transport material with Arrhenius-type chemical kinetics (progress variable)
-    class ArrheniusPV : public Parameter
+    /// parameters for scalar transport material with simplified chemical
+    /// kinetics due to Ferziger and Echekki (1993) (original version and
+    /// modification by Poinsot and Veynante (2005)) (progress variable)
+    class FerEchPV : public Parameter
     {
     public:
 
       /// standard constructor
-      ArrheniusPV(
+      FerEchPV(
         Teuchos::RCP<MAT::PAR::Material> matdata
         );
 
       /// destructor
-      virtual ~ArrheniusPV() { ; }
+      virtual ~FerEchPV() { ; }
 
       /// @name material parameters
       //@{
@@ -49,12 +51,10 @@ namespace MAT
       const double suthtemp_;
       /// Prandtl number
       const double pranum_;
-      /// pre-exponential constant
-      const double preexcon_;
-      /// exponent of temperature dependence
-      const double tempexp_;
-      /// activation temperature
-      const double actemp_;
+      /// reaction-rate constant
+      const double reacratecon_;
+      /// critical value of progress variable
+      const double pvcrit_;
       /// specific heat capacity of unburnt phase
       const double unbshc_;
       /// specific heat capacity of burnt phase
@@ -67,24 +67,28 @@ namespace MAT
       const double unbdens_;
       /// density of burnt phase
       const double burdens_;
+      /// modification factor (0.0=original, 1.0=modified)
+      const double mod_;
 
       //@}
 
-    };  // class ArrheniusPV
+    };  // class FerEchPV
 
   }  // namespace PAR
 
   /*----------------------------------------------------------------------*/
-  /// wrapper for scalar transport material with Arrhenius-type chemical kinetics (progress variable)
-  class ArrheniusPV : public Material
+  /// wrapper for scalar transport material with simplified chemical
+  /// kinetics due to Ferziger and Echekki (1993) (original version and
+  /// modification by Poinsot and Veynante (2005)) (progress variable)
+  class FerEchPV : public Material
   {
   public:
 
     /// construct empty material object
-    ArrheniusPV();
+    FerEchPV();
 
     /// construct the material object given material parameters
-    explicit ArrheniusPV(MAT::PAR::ArrheniusPV* params);
+    explicit FerEchPV(MAT::PAR::FerEchPV* params);
 
     //! @name Packing and Unpacking
 
@@ -95,7 +99,7 @@ namespace MAT
       top of drt_parobject.H (this file) and should return it in this method.
     */
 
-    virtual int UniqueParObjectId() const { return ParObject_ArrheniusPV; }
+    virtual int UniqueParObjectId() const { return ParObject_FerEchPV; }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -126,7 +130,7 @@ namespace MAT
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_arrhenius_pv; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_ferech_pv; }
 
     /// compute temperature
     double ComputeTemperature(const double provar) const;
@@ -157,12 +161,10 @@ namespace MAT
     double SuthTemp() const { return params_->suthtemp_; }
     /// Prandtl number
     double PraNum() const { return params_->pranum_; }
-    /// pre-exponential constant
-    double PreExCon() const { return params_->preexcon_; }
-    /// exponent of temperature dependence
-    double TempExp() const { return params_->tempexp_; }
-    /// activation temperature
-    double AcTemp() const { return params_->actemp_; }
+    /// reaction-rate constant
+    double ReacRateCon() const { return params_->reacratecon_; }
+    /// critical value of progress variable
+    double PvCrit() const { return params_->pvcrit_; }
     /// specific heat capacity of unburnt phase
     double UnbShc() const { return params_->unbshc_; }
     /// specific heat capacity of burnt phase
@@ -175,13 +177,15 @@ namespace MAT
     double UnbDens() const { return params_->unbdens_; }
     /// density of burnt phase
     double BurDens() const { return params_->burdens_; }
+    /// modification factor (0.0=original, 1.0=modified)
+    double Mod() const { return params_->mod_; }
 
     //@}
 
   private:
 
     /// my material parameters
-    MAT::PAR::ArrheniusPV* params_;
+    MAT::PAR::FerEchPV* params_;
   };
 
 }

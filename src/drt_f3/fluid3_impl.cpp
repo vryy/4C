@@ -22,6 +22,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_mat/mixfrac.H"
 #include "../drt_mat/sutherland.H"
 #include "../drt_mat/arrhenius_pv.H"
+#include "../drt_mat/ferech_pv.H"
 #include "../drt_mat/carreauyasuda.H"
 #include "../drt_mat/modpowerlaw.H"
 #include "../drt_lib/drt_timecurve.H"
@@ -3316,6 +3317,50 @@ else if (material->MaterialType() == INPAR::MAT::m_sutherland)
 else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
 {
   const MAT::ArrheniusPV* actmat = static_cast<const MAT::ArrheniusPV*>(material.get());
+
+  // get progress variable at n+alpha_F or n+1
+  const double provaraf = funct_.Dot(escaaf);
+
+  // compute temperature based on progress variable at n+alpha_F or n+1
+  const double tempaf = actmat->ComputeTemperature(provaraf);
+
+  // compute viscosity according to Sutherland law
+  visc_ = actmat->ComputeViscosity(tempaf);
+
+  // compute density at n+alpha_F or n+1 based on progress variable
+  densaf_ = actmat->ComputeDensity(provaraf);
+
+  // factor for convective scalar term at n+alpha_F or n+1
+  scaconvfacaf_ = (actmat->UnbDens()-actmat->BurDens())/densaf_;
+
+  if (is_genalpha)
+  {
+    // compute density at n+alpha_M based on progress variable
+    const double provaram = funct_.Dot(escaam);
+    densam_ = actmat->ComputeDensity(provaram);
+
+    // factor for scalar time derivative at n+alpha_M
+    scadtfac_ = (actmat->UnbDens()-actmat->BurDens())/densam_;
+  }
+  else
+  {
+    // compute density at n based on progress variable
+    const double provarn = funct_.Dot(escaam);
+    densn_ = actmat->ComputeDensity(provarn);
+
+    // factor for convective scalar term at n
+    scaconvfacn_ = (actmat->UnbDens()-actmat->BurDens())/densn_;
+
+    // set density at n+1 at location n+alpha_M as well
+    densam_ = densaf_;
+
+    // factor for scalar time derivative
+    scadtfac_ = dt_*(actmat->UnbDens()-actmat->BurDens())/densam_;
+  }
+}
+else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
+{
+  const MAT::FerEchPV* actmat = static_cast<const MAT::FerEchPV*>(material.get());
 
   // get progress variable at n+alpha_F or n+1
   const double provaraf = funct_.Dot(escaaf);

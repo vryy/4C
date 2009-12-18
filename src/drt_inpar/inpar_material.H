@@ -59,6 +59,7 @@ namespace INPAR
       m_arrhenius_spec, ///< material with Arrhenius-type chemical kinetics (species)
       m_arrhenius_temp, ///< material with Arrhenius-type chemical kinetics (temperature)
       m_arrhenius_pv,   ///< material with Arrhenius-type chemical kinetics (progress variable)
+      m_ferech_pv,   ///< material with simplified chemical kinetics due to Ferziger and Echekki (1993) with a modification by Poinsot and Veynante (2005) (progress variable)
       m_pl_hash,     ///< elpl. hashin delamination material
       m_el_orth,     ///< elastic orthotropic material
       m_mfoc,        ///< open cell metal foam

@@ -133,6 +133,7 @@ extern "C"
 #include "../drt_mat/arrhenius_spec.H"
 #include "../drt_mat/arrhenius_temp.H"
 #include "../drt_mat/arrhenius_pv.H"
+#include "../drt_mat/ferech_pv.H"
 #include "../drt_mat/carreauyasuda.H"
 #include "../drt_mat/modpowerlaw.H"
 #include "../drt_mat/biocell.H"
@@ -887,6 +888,12 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
       MAT::ArrheniusPV* arrhenius_pv = new MAT::ArrheniusPV();
       arrhenius_pv->Unpack(data);
       return arrhenius_pv;
+    }
+    case ParObject_FerEchPV:
+    {
+      MAT::FerEchPV* ferech_pv = new MAT::FerEchPV();
+      ferech_pv->Unpack(data);
+      return ferech_pv;
     }
     case ParObject_CarreauYasuda:
     {

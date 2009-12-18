@@ -68,6 +68,7 @@ if ((mtype != INPAR::MAT::m_scatra) &&
     (mtype != INPAR::MAT::m_mixfrac) &&
     (mtype != INPAR::MAT::m_sutherland) &&
     (mtype != INPAR::MAT::m_arrhenius_pv) &&
+    (mtype != INPAR::MAT::m_ferech_pv) &&
     (mtype != INPAR::MAT::m_matlist))
   dserror("Material with ID %d is not admissible for scalar transport elements",matid);
 }

@@ -190,6 +190,7 @@ using namespace std;
 #define ParObject_HolzapfelCardio       (int)174
 #define ParObject_PlasticNeoHooke       (int)175
 #define ParObject_HumphreyCardio        (int)176
+#define ParObject_FerEchPV              (int)177
 
 namespace DRT
 {

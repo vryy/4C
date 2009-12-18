@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file arrhenius_pv.cpp
+\file ferech_pv.cpp
 
 <pre>
 Maintainer: Volker Gravemeier
@@ -14,12 +14,12 @@ Maintainer: Volker Gravemeier
 
 #include <vector>
 
-#include "arrhenius_pv.H"
+#include "ferech_pv.H"
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::ArrheniusPV::ArrheniusPV(
+MAT::PAR::FerEchPV::FerEchPV(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : Parameter(matdata),
@@ -27,22 +27,22 @@ MAT::PAR::ArrheniusPV::ArrheniusPV(
   reftemp_(matdata->GetDouble("REFTEMP")),
   suthtemp_(matdata->GetDouble("SUTHTEMP")),
   pranum_(matdata->GetDouble("PRANUM")),
-  preexcon_(matdata->GetDouble("PREEXCON")),
-  tempexp_(matdata->GetDouble("TEMPEXP")),
-  actemp_(matdata->GetDouble("ACTEMP")),
+  reacratecon_(matdata->GetDouble("REACRATECON")),
+  pvcrit_(matdata->GetDouble("PVCRIT")),
   unbshc_(matdata->GetDouble("UNBSHC")),
   burshc_(matdata->GetDouble("BURSHC")),
   unbtemp_(matdata->GetDouble("UNBTEMP")),
   burtemp_(matdata->GetDouble("BURTEMP")),
   unbdens_(matdata->GetDouble("UNBDENS")),
-  burdens_(matdata->GetDouble("BURDENS"))
+  burdens_(matdata->GetDouble("BURDENS")),
+  mod_(matdata->GetDouble("MOD"))
 {
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::ArrheniusPV::ArrheniusPV()
+MAT::FerEchPV::FerEchPV()
   : params_(NULL)
 {
 }
@@ -50,7 +50,7 @@ MAT::ArrheniusPV::ArrheniusPV()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::ArrheniusPV::ArrheniusPV(MAT::PAR::ArrheniusPV* params)
+MAT::FerEchPV::FerEchPV(MAT::PAR::FerEchPV* params)
   : params_(params)
 {
 }
@@ -58,7 +58,7 @@ MAT::ArrheniusPV::ArrheniusPV(MAT::PAR::ArrheniusPV* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ArrheniusPV::Pack(vector<char>& data) const
+void MAT::FerEchPV::Pack(vector<char>& data) const
 {
   data.resize(0);
 
@@ -74,7 +74,7 @@ void MAT::ArrheniusPV::Pack(vector<char>& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ArrheniusPV::Unpack(const vector<char>& data)
+void MAT::FerEchPV::Unpack(const vector<char>& data)
 {
   int position = 0;
   // extract type
@@ -91,7 +91,7 @@ void MAT::ArrheniusPV::Unpack(const vector<char>& data)
     const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
   MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
   if (mat->Type() == MaterialType())
-    params_ = static_cast<MAT::PAR::ArrheniusPV*>(mat);
+    params_ = static_cast<MAT::PAR::FerEchPV*>(mat);
   else
       dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
   }
@@ -106,7 +106,7 @@ void MAT::ArrheniusPV::Unpack(const vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::ArrheniusPV::ComputeTemperature(const double provar) const
+double MAT::FerEchPV::ComputeTemperature(const double provar) const
 {
   const double temperature = UnbTemp() + provar * (BurTemp() - UnbTemp());
 
@@ -115,7 +115,7 @@ double MAT::ArrheniusPV::ComputeTemperature(const double provar) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::ArrheniusPV::ComputeDensity(const double provar) const
+double MAT::FerEchPV::ComputeDensity(const double provar) const
 {
   const double density = UnbDens() + provar * (BurDens() - UnbDens());
 
@@ -124,7 +124,7 @@ double MAT::ArrheniusPV::ComputeDensity(const double provar) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::ArrheniusPV::ComputeShc(const double provar) const
+double MAT::FerEchPV::ComputeShc(const double provar) const
 {
   const double shc = UnbShc() + provar * (BurShc() - UnbShc());
 
@@ -133,7 +133,7 @@ double MAT::ArrheniusPV::ComputeShc(const double provar) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::ArrheniusPV::ComputeViscosity(const double temp) const
+double MAT::FerEchPV::ComputeViscosity(const double temp) const
 {
   const double visc = pow((temp/RefTemp()),1.5)*((RefTemp()+SuthTemp())/(temp+SuthTemp()))*RefVisc();
 
@@ -142,18 +142,35 @@ double MAT::ArrheniusPV::ComputeViscosity(const double temp) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::ArrheniusPV::ComputeDiffusivity(const double temp) const
+double MAT::FerEchPV::ComputeDiffusivity(const double temp) const
 {
-  const double diffus = pow((temp/RefTemp()),1.5)*((RefTemp()+SuthTemp())/(temp+SuthTemp()))*RefVisc()/PraNum();
+  // Sutherland law
+  //const double diffus = pow((temp/RefTemp()),1.5)*((RefTemp()+SuthTemp())/(temp+SuthTemp()))*RefVisc()/PraNum();
+
+  // modified version by Poinsot and Veynante (1993)
+  double diffus = RefVisc()/PraNum();
+
+  // original version by Ferziger and Echekki (1993)
+  if (Mod() < (1.0-EPS15)) diffus *= temp/RefTemp();
 
   return diffus;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::ArrheniusPV::ComputeReactionCoeff(const double temp) const
+double MAT::FerEchPV::ComputeReactionCoeff(const double provar) const
 {
-  const double reacoeff = -PreExCon()*pow(temp,TempExp())*exp(-AcTemp()/temp);
+  double reacoeff = 0.0;
+
+  // Heaviside function loop
+  if (provar > PvCrit())
+  {
+    // original version by Ferziger and Echekki (1993)
+    reacoeff = ReacRateCon();
+
+    // modified version by Poinsot and Veynante (1993)
+    if (Mod() > EPS15) reacoeff *= UnbDens()/(UnbDens() + provar * (BurDens() - UnbDens()));
+  }
 
   return reacoeff;
 }
