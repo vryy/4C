@@ -646,12 +646,9 @@ void CONTACT::Interface::SetState(const string& statename, const RCP<Epetra_Vect
       if (mydisp.size()<3)
         mydisp.resize(3);
 
-      // set current configuration and displacement
+      // set current configuration
       for (int j=0;j<3;++j)
-      {
-        node->u()[j]=mydisp[j];
         node->xspatial()[j]=node->X()[j]+mydisp[j];
-      }
     }
 
     // loop over all elements to set current element length / area

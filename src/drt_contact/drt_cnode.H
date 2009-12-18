@@ -222,11 +222,6 @@ public:
   virtual inline double* xspatial() { return xspatial_; }
 
   /*!
-  \brief Return current displacements (length 3)
-  */
-  virtual inline double* u() { return u_; }
-
-  /*!
   \brief Return old displacement (length 3)
   */
   virtual inline double* uold() { return uold_; }
@@ -634,7 +629,6 @@ protected:
   double          txi_[3];         // nodal tangent t_xi for contact methods
   double          teta_[3];        // nodal tangent t_eta for contact methods
   double          xspatial_[3];    // current configuration
-  double          u_[3];           // current displacement
   double          uold_[3];        // old displacement (last converged state)
   double          lm_[3];          // current Lagrange multiplier value (n+1)
   double          lmold_[3];       // old Lagrange multiplier value (last converged state n)

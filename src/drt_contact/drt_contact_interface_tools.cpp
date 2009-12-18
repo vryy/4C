@@ -800,17 +800,14 @@ void CONTACT::Interface::FDCheckNormalDeriv()
     if (i%3==0)
     {
       snode->xspatial()[0] += delta;
-      snode->u()[0] += delta;
     }
     else if (i%3==1)
     {
       snode->xspatial()[1] += delta;
-      snode->u()[1] += delta;
     }
     else
     {
       snode->xspatial()[2] += delta;
-      snode->u()[2] += delta;
     }
 
     // loop over all elements to set current element length / area
@@ -957,17 +954,15 @@ void CONTACT::Interface::FDCheckNormalDeriv()
     if (i%3==0)
     {
       snode->xspatial()[0] -= delta;
-      snode->u()[0] -= delta;
     }
     else if (i%3==1)
     {
       snode->xspatial()[1] -= delta;
-      snode->u()[1] -= delta;
     }
     else
     {
       snode->xspatial()[2] -= delta;
-      snode->u()[2] -= delta;
+
     }
   }
 
@@ -1054,17 +1049,14 @@ void CONTACT::Interface::FDCheckNormalDeriv()
 //    if (i%3==0)
 //    {
 //      snode->xspatial()[0] += delta;
-//      snode->u()[0] += delta;
 //    }
 //    else if (i%3==1)
 //    {
 //      snode->xspatial()[1] += delta;
-//      snode->u()[1] += delta;
 //    }
 //    else
 //    {
 //      snode->xspatial()[2] += delta;
-//      snode->u()[2] += delta;
 //    }
 //
 //    // loop over all elements to set current element length / area
@@ -1104,17 +1096,14 @@ void CONTACT::Interface::FDCheckNormalDeriv()
 //    if (i%3==0)
 //    {
 //      snode->xspatial()[0] -= delta;
-//      snode->u()[0] -= delta;
 //    }
 //    else if (i%3==1)
 //    {
 //      snode->xspatial()[1] -= delta;
-//      snode->u()[1] -= delta;
 //    }
 //    else
 //    {
 //      snode->xspatial()[2] -= delta;
-//      snode->u()[2] -= delta;
 //    }
 //  }
 //
@@ -1210,15 +1199,14 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
     if (fd%3==0)
     {
       snode->xspatial()[0] += delta;
-      snode->u()[0] += delta;
-    } else if (fd%3==1)
+    }
+    else if (fd%3==1)
     {
       snode->xspatial()[1] += delta;
-      snode->u()[1] += delta;
-    } else
+    }
+    else
     {
       snode->xspatial()[2] += delta;
-      snode->u()[2] += delta;
     }
 
     // loop over all elements to set current element length / area
@@ -1292,15 +1280,14 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
     if (fd%3==0)
     {
       snode->xspatial()[0] -= delta;
-      snode->u()[0] -= delta;
-    } else if (fd%3==1)
+    }
+    else if (fd%3==1)
     {
       snode->xspatial()[1] -= delta;
-      snode->u()[1] -= delta;
-    } else
+    }
+    else
     {
       snode->xspatial()[2] -= delta;
-      snode->u()[2] -= delta;
     }
     
     cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << endl;
@@ -1331,15 +1318,14 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
     if (fd%3==0)
     {
       mnode->xspatial()[0] += delta;
-      mnode->u()[0] += delta;
-    } else if (fd%3==1)
+    }
+    else if (fd%3==1)
     {
       mnode->xspatial()[1] += delta;
-      mnode->u()[1] += delta;
-    } else
+    }
+    else
     {
       mnode->xspatial()[2] += delta;
-      mnode->u()[2] += delta;
     }
 
     // loop over all elements to set current element length / area
@@ -1413,15 +1399,14 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
     if (fd%3==0)
     {
       mnode->xspatial()[0] -= delta;
-      mnode->u()[0] -= delta;
-    } else if (fd%3==1)
+    }
+    else if (fd%3==1)
     {
       mnode->xspatial()[1] -= delta;
-      mnode->u()[1] -= delta;
-    } else
+    }
+    else
     {
       mnode->xspatial()[2] -= delta;
-      mnode->u()[2] -= delta;
     }
     
     cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << endl;
@@ -1520,15 +1505,14 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
     if (fd%3==0)
     {
       snode->xspatial()[0] += delta;
-      snode->u()[0] += delta;
-    } else if (fd%3==1)
+    }
+    else if (fd%3==1)
     {
       snode->xspatial()[1] += delta;
-      snode->u()[1] += delta;
-    } else
+    }
+    else
     {
       snode->xspatial()[2] += delta;
-      snode->u()[2] += delta;
     }
 
     // loop over all elements to set current element length / area
@@ -1602,15 +1586,14 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
     if (fd%3==0)
     {
       snode->xspatial()[0] -= delta;
-      snode->u()[0] -= delta;
-    } else if (fd%3==1)
+    }
+    else if (fd%3==1)
     {
       snode->xspatial()[1] -= delta;
-      snode->u()[1] -= delta;
-    } else
+    }
+    else
     {
       snode->xspatial()[2] -= delta;
-      snode->u()[2] -= delta;
     }
     
     cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << endl;
@@ -1641,15 +1624,14 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
     if (fd%3==0)
     {
       mnode->xspatial()[0] += delta;
-      mnode->u()[0] += delta;
-    } else if (fd%3==1)
+    }
+    else if (fd%3==1)
     {
       mnode->xspatial()[1] += delta;
-      mnode->u()[1] += delta;
-    } else
+    }
+    else
     {
       mnode->xspatial()[2] += delta;
-      mnode->u()[2] += delta;
     }
 
     // loop over all elements to set current element length / area
@@ -1723,15 +1705,14 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
     if (fd%3==0)
     {
       mnode->xspatial()[0] -= delta;
-      mnode->u()[0] -= delta;
-    } else if (fd%3==1)
+    }
+    else if (fd%3==1)
     {
       mnode->xspatial()[1] -= delta;
-      mnode->u()[1] -= delta;
-    } else
+    }
+    else
     {
       mnode->xspatial()[2] -= delta;
-      mnode->u()[2] -= delta;
     }
     
     cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << endl;
@@ -1852,17 +1833,14 @@ void CONTACT::Interface::FDCheckGapDeriv()
     if (fd%3==0)
     {
       snode->xspatial()[0] += delta;
-      snode->u()[0] += delta;
     }
     else if (fd%3==1)
     {
       snode->xspatial()[1] += delta;
-      snode->u()[1] += delta;
     }
     else
     {
       snode->xspatial()[2] += delta;
-      snode->u()[2] += delta;
     }
 
     // loop over all elements to set current element length / area
@@ -1948,17 +1926,14 @@ void CONTACT::Interface::FDCheckGapDeriv()
     if (fd%3==0)
     {
       snode->xspatial()[0] -= delta;
-      snode->u()[0] -= delta;
     }
     else if (fd%3==1)
     {
       snode->xspatial()[1] -= delta;
-      snode->u()[1] -= delta;
     }
     else
     {
       snode->xspatial()[2] -= delta;
-      snode->u()[2] -= delta;
     }
   }
 
@@ -1988,17 +1963,14 @@ void CONTACT::Interface::FDCheckGapDeriv()
     if (fd%3==0)
     {
       mnode->xspatial()[0] += delta;
-      mnode->u()[0] += delta;
     }
     else if (fd%3==1)
     {
       mnode->xspatial()[1] += delta;
-      mnode->u()[1] += delta;
     }
     else
     {
       mnode->xspatial()[2] += delta;
-      mnode->u()[2] += delta;
     }
 
     // loop over all elements to set current element length / area
@@ -2085,17 +2057,14 @@ void CONTACT::Interface::FDCheckGapDeriv()
     if (fd%3==0)
     {
       mnode->xspatial()[0] -= delta;
-      mnode->u()[0] -= delta;
     }
     else if (fd%3==1)
     {
       mnode->xspatial()[1] -= delta;
-      mnode->u()[1] -= delta;
     }
     else
     {
       mnode->xspatial()[2] -= delta;
-      mnode->u()[2] -= delta;
     }
   }
 
@@ -2228,17 +2197,14 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     if (fd%3==0)
     {
       snode->xspatial()[0] += delta;
-      snode->u()[0] += delta;
     }
     else if (fd%3==1)
     {
       snode->xspatial()[1] += delta;
-      snode->u()[1] += delta;
     }
     else
     {
       snode->xspatial()[2] += delta;
-      snode->u()[2] += delta;
     }
 
     // loop over all elements to set current element length / area
@@ -2354,17 +2320,14 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     if (fd%3==0)
     {
       snode->xspatial()[0] -= delta;
-      snode->u()[0] -= delta;
     }
     else if (fd%3==1)
     {
       snode->xspatial()[1] -= delta;
-      snode->u()[1] -= delta;
     }
     else
     {
       snode->xspatial()[2] -= delta;
-      snode->u()[2] -= delta;
     }
   }
 
@@ -2452,17 +2415,14 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     if (fd%3==0)
     {
       mnode->xspatial()[0] += delta;
-      mnode->u()[0] += delta;
     }
     else if (fd%3==1)
     {
       mnode->xspatial()[1] += delta;
-      mnode->u()[1] += delta;
     }
     else
     {
       mnode->xspatial()[2] += delta;
-      mnode->u()[2] += delta;
     }
 
     // loop over all elements to set current element length / area
@@ -2578,17 +2538,14 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     if (fd%3==0)
     {
       mnode->xspatial()[0] -= delta;
-      mnode->u()[0] -= delta;
     }
     else if (fd%3==1)
     {
       mnode->xspatial()[1] -= delta;
-      mnode->u()[1] -= delta;
     }
     else
     {
       mnode->xspatial()[2] -= delta;
-      mnode->u()[2] -= delta;
     }
   }
 
@@ -2967,17 +2924,14 @@ void CONTACT::Interface::FDCheckStickDeriv()
     if (fd%3==0)
     {
       snode->xspatial()[0] += delta;
-      snode->u()[0] += delta;
     }
     else if (fd%3==1)
     {
       snode->xspatial()[1] += delta;
-      snode->u()[1] += delta;
     }
     else
     {
       snode->xspatial()[2] += delta;
-      snode->u()[2] += delta;
     }
 
     // loop over all elements to set current element length / area
@@ -3083,17 +3037,14 @@ void CONTACT::Interface::FDCheckStickDeriv()
     if (fd%3==0)
     {
       snode->xspatial()[0] -= delta;
-      snode->u()[0] -= delta;
     }
     else if (fd%3==1)
     {
       snode->xspatial()[1] -= delta;
-      snode->u()[1] -= delta;
     }
     else
     {
       snode->xspatial()[2] -= delta;
-      snode->u()[2] -= delta;
     }
   } // loop over procs slave nodes
 
@@ -3123,17 +3074,14 @@ void CONTACT::Interface::FDCheckStickDeriv()
     if (fd%3==0)
     {
       mnode->xspatial()[0] += delta;
-      mnode->u()[0] += delta;
     }
     else if (fd%3==1)
     {
       mnode->xspatial()[1] += delta;
-      mnode->u()[1] += delta;
     }
     else
     {
       mnode->xspatial()[2] += delta;
-      mnode->u()[2] += delta;
     }
 
     // loop over all elements to set current element length / area
@@ -3240,17 +3188,14 @@ void CONTACT::Interface::FDCheckStickDeriv()
     if (fd%3==0)
     {
       mnode->xspatial()[0] -= delta;
-      mnode->u()[0] -= delta;
     }
     else if (fd%3==1)
     {
       mnode->xspatial()[1] -= delta;
-      mnode->u()[1] -= delta;
     }
     else
     {
       mnode->xspatial()[2] -= delta;
-      mnode->u()[2] -= delta;
     }
   }
 
@@ -3563,17 +3508,14 @@ void CONTACT::Interface::FDCheckSlipDeriv()
     if (fd%3==0)
     {
       snode->xspatial()[0] += delta;
-      snode->u()[0] += delta;
     }
     else if (fd%3==1)
     {
       snode->xspatial()[1] += delta;
-      snode->u()[1] += delta;
     }
     else
     {
       snode->xspatial()[2] += delta;
-      snode->u()[2] += delta;
     }
 
     // loop over all elements to set current element length / area
@@ -3708,17 +3650,14 @@ void CONTACT::Interface::FDCheckSlipDeriv()
     if (fd%3==0)
     {
       snode->xspatial()[0] -= delta;
-      snode->u()[0] -= delta;
     }
     else if (fd%3==1)
     {
       snode->xspatial()[1] -= delta;
-      snode->u()[1] -= delta;
     }
     else
     {
       snode->xspatial()[2] -= delta;
-      snode->u()[2] -= delta;
     }
   } // loop over procs slave nodes
 
@@ -3746,17 +3685,14 @@ void CONTACT::Interface::FDCheckSlipDeriv()
     if (fd%3==0)
     {
       mnode->xspatial()[0] += delta;
-      mnode->u()[0] += delta;
     }
     else if (fd%3==1)
     {
       mnode->xspatial()[1] += delta;
-      mnode->u()[1] += delta;
     }
     else
     {
       mnode->xspatial()[2] += delta;
-      mnode->u()[2] += delta;
     }
 
     // loop over all elements to set current element length / area
@@ -3891,17 +3827,14 @@ void CONTACT::Interface::FDCheckSlipDeriv()
     if (fd%3==0)
     {
       mnode->xspatial()[0] -= delta;
-      mnode->u()[0] -= delta;
     }
     else if (fd%3==1)
     {
       mnode->xspatial()[1] -= delta;
-      mnode->u()[1] -= delta;
     }
     else
     {
       mnode->xspatial()[2] -= delta;
-      mnode->u()[2] -= delta;
     }
   }
 
@@ -4027,17 +3960,14 @@ void CONTACT::Interface::FDCheckVertex3DDeriv(vector<vector<double> >& testv)
     if (fd%3==0)
     {
       snode->xspatial()[0] += delta;
-      snode->u()[0] += delta;
     }
     else if (fd%3==1)
     {
       snode->xspatial()[1] += delta;
-      snode->u()[1] += delta;
     }
     else
     {
       snode->xspatial()[2] += delta;
-      snode->u()[2] += delta;
     }
 
     // loop over all elements to set current element length / area
@@ -4143,17 +4073,14 @@ void CONTACT::Interface::FDCheckVertex3DDeriv(vector<vector<double> >& testv)
     if (fd%3==0)
     {
       snode->xspatial()[0] -= delta;
-      snode->u()[0] -= delta;
     }
     else if (fd%3==1)
     {
       snode->xspatial()[1] -= delta;
-      snode->u()[1] -= delta;
     }
     else
     {
       snode->xspatial()[2] -= delta;
-      snode->u()[2] -= delta;
     }
   }
 
@@ -4245,17 +4172,14 @@ void CONTACT::Interface::FDCheckVertex3DDeriv(vector<vector<double> >& testv)
     if (fd%3==0)
     {
       mnode->xspatial()[0] += delta;
-      mnode->u()[0] += delta;
     }
     else if (fd%3==1)
     {
       mnode->xspatial()[1] += delta;
-      mnode->u()[1] += delta;
     }
     else
     {
       mnode->xspatial()[2] += delta;
-      mnode->u()[2] += delta;
     }
 
     // loop over all elements to set current element length / area
@@ -4361,17 +4285,14 @@ void CONTACT::Interface::FDCheckVertex3DDeriv(vector<vector<double> >& testv)
     if (fd%3==0)
     {
       mnode->xspatial()[0] -= delta;
-      mnode->u()[0] -= delta;
     }
     else if (fd%3==1)
     {
       mnode->xspatial()[1] -= delta;
-      mnode->u()[1] -= delta;
     }
     else
     {
       mnode->xspatial()[2] -= delta;
-      mnode->u()[2] -= delta;
     }
   }
 
@@ -4647,17 +4568,14 @@ void CONTACT::Interface::FDCheckGP3DDeriv(vector<vector<double> >& testgps,
     if (fd%3==0)
     {
       snode->xspatial()[0] += delta;
-      snode->u()[0] += delta;
     }
     else if (fd%3==1)
     {
       snode->xspatial()[1] += delta;
-      snode->u()[1] += delta;
     }
     else
     {
       snode->xspatial()[2] += delta;
-      snode->u()[2] += delta;
     }
 
     // loop over all elements to set current element length / area
@@ -4936,17 +4854,14 @@ void CONTACT::Interface::FDCheckGP3DDeriv(vector<vector<double> >& testgps,
     if (fd%3==0)
     {
       snode->xspatial()[0] -= delta;
-      snode->u()[0] -= delta;
     }
     else if (fd%3==1)
     {
       snode->xspatial()[1] -= delta;
-      snode->u()[1] -= delta;
     }
     else
     {
       snode->xspatial()[2] -= delta;
-      snode->u()[2] -= delta;
     }
   }
 
@@ -5036,17 +4951,14 @@ void CONTACT::Interface::FDCheckGP3DDeriv(vector<vector<double> >& testgps,
     if (fd%3==0)
     {
       mnode->xspatial()[0] += delta;
-      mnode->u()[0] += delta;
     }
     else if (fd%3==1)
     {
       mnode->xspatial()[1] += delta;
-      mnode->u()[1] += delta;
     }
     else
     {
       mnode->xspatial()[2] += delta;
-      mnode->u()[2] += delta;
     }
 
     // loop over all elements to set current element length / area
@@ -5325,17 +5237,14 @@ void CONTACT::Interface::FDCheckGP3DDeriv(vector<vector<double> >& testgps,
     if (fd%3==0)
     {
       mnode->xspatial()[0] -= delta;
-      mnode->u()[0] -= delta;
     }
     else if (fd%3==1)
     {
       mnode->xspatial()[1] -= delta;
-      mnode->u()[1] -= delta;
     }
     else
     {
       mnode->xspatial()[2] -= delta;
-      mnode->u()[2] -= delta;
     }
   }
 
@@ -5610,15 +5519,14 @@ void CONTACT::Interface::FDCheckPenaltyTracNor()
     if (fd%3==0)
     {
       snode->xspatial()[0] += delta;
-      snode->u()[0] += delta;
-    } else if (fd%3==1)
+    }
+    else if (fd%3==1)
     {
       snode->xspatial()[1] += delta;
-      snode->u()[1] += delta;
-    } else
+    }
+    else
     {
       snode->xspatial()[2] += delta;
-      snode->u()[2] += delta;
     }
 
     // loop over all elements to set current element length / area
@@ -5688,16 +5596,14 @@ void CONTACT::Interface::FDCheckPenaltyTracNor()
     if (fd%3==0)
     {
       snode->xspatial()[0] -= delta;
-      snode->u()[0] -= delta;
-    } else if (fd%3==1)
+    }
+    else if (fd%3==1)
     {
       snode->xspatial()[1] -= delta;
-      snode->u()[1] -= delta;
     }
     else
     {
       snode->xspatial()[2] -= delta;
-      snode->u()[2] -= delta;
     }
   }
   cout << "\n ******************** GENERATED " << w << " WARNINGS ***************** \n" << endl;
@@ -5727,17 +5633,15 @@ void CONTACT::Interface::FDCheckPenaltyTracNor()
     if (fd%3==0)
     {
       mnode->xspatial()[0] += delta;
-      mnode->u()[0] += delta;
-    } else if (fd%3==1)
+    }
+    else if (fd%3==1)
     {
       mnode->xspatial()[1] += delta;
-      mnode->u()[1] += delta;
     }
     else
-     {
-       mnode->xspatial()[2] += delta;
-       mnode->u()[2] += delta;
-     }
+    {
+      mnode->xspatial()[2] += delta;
+    }
 
     // loop over all elements to set current element length / area
     // (use fully overlapping column map)
@@ -5807,16 +5711,14 @@ void CONTACT::Interface::FDCheckPenaltyTracNor()
     if (fd%3==0)
     {
       mnode->xspatial()[0] -= delta;
-      mnode->u()[0] -= delta;
-    } else if (fd%3==1)
+    }
+    else if (fd%3==1)
     {
       mnode->xspatial()[1] -= delta;
-      mnode->u()[1] -= delta;
     }
     else
     {
       mnode->xspatial()[2] -= delta;
-      mnode->u()[2] -= delta;
     }
     
   }
@@ -6001,17 +5903,14 @@ void CONTACT::Interface::FDCheckPenaltyTracFric()
     if (fd%3==0)
     {
       snode->xspatial()[0] += delta;
-      snode->u()[0] += delta;
     }
     else if (fd%3==1)
     {
       snode->xspatial()[1] += delta;
-      snode->u()[1] += delta;
     }
     else
     {
       snode->xspatial()[2] += delta;
-      snode->u()[2] += delta;
     }
 
     // loop over all elements to set current element length / area
@@ -6176,17 +6075,14 @@ void CONTACT::Interface::FDCheckPenaltyTracFric()
     if (fd%3==0)
     {
       snode->xspatial()[0] -= delta;
-      snode->u()[0] -= delta;
     }
     else if (fd%3==1)
     {
       snode->xspatial()[1] -= delta;
-      snode->u()[1] -= delta;
     }
     else
     {
       snode->xspatial()[2] -= delta;
-      snode->u()[2] -= delta;
     }
   } // loop over procs slave nodes
 
@@ -6214,17 +6110,14 @@ void CONTACT::Interface::FDCheckPenaltyTracFric()
     if (fd%3==0)
     {
       mnode->xspatial()[0] += delta;
-      mnode->u()[0] += delta;
     }
     else if (fd%3==1)
     {
       mnode->xspatial()[1] += delta;
-      mnode->u()[1] += delta;
     }
     else
     {
       mnode->xspatial()[2] += delta;
-      mnode->u()[2] += delta;
     }
 
     // loop over all elements to set current element length / area
@@ -6388,17 +6281,14 @@ void CONTACT::Interface::FDCheckPenaltyTracFric()
     if (fd%3==0)
     {
       mnode->xspatial()[0] -= delta;
-      mnode->u()[0] -= delta;
     }
     else if (fd%3==1)
     {
       mnode->xspatial()[1] -= delta;
-      mnode->u()[1] -= delta;
     }
     else
     {
       mnode->xspatial()[2] -= delta;
-      mnode->u()[2] -= delta;
     }
   }
 
@@ -6450,11 +6340,10 @@ void CONTACT::Interface::FDCheckPenaltyKTeff(RCP<LINALG::SparseMatrix> kc, RCP<E
     if (fd%2==0)
     {
       snode->xspatial()[0] += delta;
-      snode->u()[0] += delta;
-    } else if (fd%2==1)
+    }
+    else if (fd%2==1)
     {
       snode->xspatial()[1] += delta;
-      snode->u()[1] += delta;
     }
 
     // loop over all elements to set current element length / area
@@ -6603,11 +6492,10 @@ void CONTACT::Interface::FDCheckPenaltyKTeff(RCP<LINALG::SparseMatrix> kc, RCP<E
     if (fd%2==0)
     {
       snode->xspatial()[0] -= delta;
-      snode->u()[0] -= delta;
-    } else if (fd%2==1)
+    }
+    else if (fd%2==1)
     {
       snode->xspatial()[1] -= delta;
-      snode->u()[1] -= delta;
     }
     
     cout << " **************** GENERATED " << w << " WARNINGS IN TOTAL ********************"<< endl;
@@ -6642,12 +6530,11 @@ void CONTACT::Interface::FDCheckPenaltyKTeff(RCP<LINALG::SparseMatrix> kc, RCP<E
     if (fd%2==0)
     {
       mnode->xspatial()[0] += delta;
-      mnode->u()[0] += delta;
       dof = mnode->Dofs()[0];
-    } else if (fd%2==1)
+    }
+    else if (fd%2==1)
     {
       mnode->xspatial()[1] += delta;
-      mnode->u()[1] += delta;
       dof = mnode->Dofs()[1];
     }
 
@@ -6810,11 +6697,10 @@ void CONTACT::Interface::FDCheckPenaltyKTeff(RCP<LINALG::SparseMatrix> kc, RCP<E
     if (fd%2==0)
     {
       mnode->xspatial()[0] -= delta;
-      mnode->u()[0] -= delta;
-    } else if (fd%2==1)
+    }
+    else if (fd%2==1)
     {
       mnode->xspatial()[1] -= delta;
-      mnode->u()[1] -= delta;
     }
     
     cout << " **************** GENERATED " << w << " WARNINGS IN TOTAL ********************"<< endl;
@@ -6885,11 +6771,10 @@ void CONTACT::Interface::FDCheckPenaltyLinD(RCP<LINALG::SparseMatrix> lindmatrix
     if (fd%2==0)
     {
       snode->xspatial()[0] += delta;
-      snode->u()[0] += delta;
-    } else if (fd%2==1)
+    }
+    else if (fd%2==1)
     {
       snode->xspatial()[1] += delta;
-      snode->u()[1] += delta;
     }
 
     // loop over all elements to set current element length / area
@@ -6996,11 +6881,10 @@ void CONTACT::Interface::FDCheckPenaltyLinD(RCP<LINALG::SparseMatrix> lindmatrix
     if (fd%2==0)
     {
       snode->xspatial()[0] -= delta;
-      snode->u()[0] -= delta;
-    } else if (fd%2==1)
+    }
+    else if (fd%2==1)
     {
       snode->xspatial()[1] -= delta;
-      snode->u()[1] -= delta;
     }
     
     cout << " **************** GENERATED " << w << " WARNINGS IN TOTAL ********************"<< endl;
@@ -7072,11 +6956,10 @@ void CONTACT::Interface::FDCheckPenaltyLinM(RCP<LINALG::SparseMatrix> linmmatrix
     if (fd%2==0)
     {
       snode->xspatial()[0] += delta;
-      snode->u()[0] += delta;
-    } else if (fd%2==1)
+    }
+    else if (fd%2==1)
     {
       snode->xspatial()[1] += delta;
-      snode->u()[1] += delta;
     }
 
     // loop over all elements to set current element length / area
@@ -7184,11 +7067,10 @@ void CONTACT::Interface::FDCheckPenaltyLinM(RCP<LINALG::SparseMatrix> linmmatrix
     if (fd%2==0)
     {
       snode->xspatial()[0] -= delta;
-      snode->u()[0] -= delta;
-    } else if (fd%2==1)
+    }
+    else if (fd%2==1)
     {
       snode->xspatial()[1] -= delta;
-      snode->u()[1] -= delta;
     }
     
     cout << " **************** GENERATED " << w << " WARNINGS IN TOTAL ********************"<< endl;
@@ -7221,11 +7103,10 @@ void CONTACT::Interface::FDCheckPenaltyLinM(RCP<LINALG::SparseMatrix> linmmatrix
     if (fd%2==0)
     {
       mnode->xspatial()[0] += delta;
-      mnode->u()[0] += delta;
-    } else if (fd%2==1)
+    }
+    else if (fd%2==1)
     {
       mnode->xspatial()[1] += delta;
-      mnode->u()[1] += delta;
     }
 
     // loop over all elements to set current element length / area
@@ -7333,11 +7214,10 @@ void CONTACT::Interface::FDCheckPenaltyLinM(RCP<LINALG::SparseMatrix> linmmatrix
     if (fd%2==0)
     {
       mnode->xspatial()[0] -= delta;
-      mnode->u()[0] -= delta;
-    } else if (fd%2==1)
+    }
+    else if (fd%2==1)
     {
       mnode->xspatial()[1] -= delta;
-      mnode->u()[1] -= delta;
     }
     
     cout << " **************** GENERATED " << w << " WARNINGS IN TOTAL ********************"<< endl;

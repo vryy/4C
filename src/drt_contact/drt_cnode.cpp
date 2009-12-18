@@ -69,7 +69,6 @@ grow_(1.0e12)
     n()[i]=0.0;
     txi()[i]=0.0;
     teta()[i]=0.0;
-    u()[i]=0.0;
     uold()[i]=0.0;
     traction()[i]=0.0;
     tractionold()[i]=0.0;
@@ -115,7 +114,6 @@ grow_(old.grow_)
     n()[i]=old.n_[i];
     txi()[i]=old.txi_[i];
     teta()[i]=old.teta_[i];
-    u()[i]=old.u_[i];
     uold()[i]=old.uold_[i];
     traction()[i]=old.traction_[i];
     tractionold()[i]=old.tractionold_[i];
@@ -203,8 +201,6 @@ void CONTACT::CNode::Pack(vector<char>& data) const
   AddtoPack(data,txi_,3);
   // add teta_
   AddtoPack(data,teta_,3);
-  // add u_
-  AddtoPack(data,u_,3);
   // add uold_
   AddtoPack(data,uold_,3);
   // add traction_
@@ -268,8 +264,6 @@ void CONTACT::CNode::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,txi_,3);
   // teta_
   ExtractfromPack(position,data,teta_,3);
-  // u_
-  ExtractfromPack(position,data,u_,3);
   // uold_
   ExtractfromPack(position,data,uold_,3);
   // traction_
