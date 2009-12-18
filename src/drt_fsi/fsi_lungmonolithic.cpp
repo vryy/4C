@@ -389,6 +389,7 @@ void FSI::LungMonolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
 
   cout << "CurrFlowRates_:\n" << *CurrFlowRates_ << endl;
   cout << "CurrVols_:\n" << *CurrVols_ << endl;
+  cout << "LagrMultVec_:\n" << *LagrMultVec_ << endl;
 }
 
 

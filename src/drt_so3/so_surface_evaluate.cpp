@@ -682,9 +682,6 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
         if (cond==null)
           dserror("Condition not available in Solid3 Surface");
 
-        if (distype!=quad4)
-          cout << "Surface Stresses were only tested for quad4 surfaces! Use with caution!" << endl;
-
         double time = params.get<double>("total time",-1.0);
         double dt = params.get<double>("delta time",0.0);
         bool newstep = params.get<bool>("newstep", false);
@@ -750,8 +747,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
         {
           int curvenum = cond->GetInt("curve");
           double const_gamma = cond->GetDouble("gamma");
-          RCP<Epetra_SerialDenseVector> Adiffnew = rcp(new Epetra_SerialDenseVector);
-          surfstressman->StiffnessAndInternalForces(curvenum, A, Adiff, Adiff2, 0., Adiffnew, elevector1, elematrix1, this->Id(),
+          surfstressman->StiffnessAndInternalForces(curvenum, A, Adiff, Adiff2, 0., Adiff, elevector1, elematrix1, this->Id(),
                                                     time, dt, 1, const_gamma, 0.0, 0.0, 0.0, 0.0, 0.0,
                                                     0.0, 0.0, 0.0, 0.0, newstep);
         }
