@@ -361,7 +361,7 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
     // compute infinitesimal line element dr for integration along the line
     const double dr = sqrt(der_par(0)*der_par(0)+der_par(1)*der_par(1));
 
-    // compute temperature and density for low-Mach-number flow
+    // compute temperature and density for low-Mach-number and varying density flow
     double dens = 1.0;
     if (physicaltype == INPAR::FLUID::loma)
     {
@@ -371,6 +371,15 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
         temp += funct(i)*escanp(i);
       }
       dens = thermpress/(gasconstant*temp);
+    }
+    else if(physicaltype == INPAR::FLUID::varying_density)
+    {
+      double temp = 0.0;
+      for (int i = 0; i < 2; i++)
+      {
+    	  temp += funct(i)*escanp(i);
+      }
+      dens = temp;
     }
 
     // values are multiplied by the product from inf. area element,

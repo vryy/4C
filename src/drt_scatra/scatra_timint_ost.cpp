@@ -315,6 +315,9 @@ void SCATRA::TimIntOneStepTheta::UpdateThermPressureTimeDerivative()
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntOneStepTheta::Update()
 {
+  // at first calculate time derivative n+1 (always!!), then update solution
+  UpdateTimeDerivative();
+
   // solution of this step becomes most recent solution of the last step
   phin_ ->Update(1.0,*phinp_,0.0);
 

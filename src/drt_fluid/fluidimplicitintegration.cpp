@@ -2474,6 +2474,12 @@ void FLD::FluidImplicitTimeInt::Output()
     //output_.WriteVector("residual", trueresidual_);
     if (alefluid_) output_.WriteVector("dispnp", dispnp_);
 
+    if (physicaltype_ == INPAR::FLUID::varying_density or physicaltype_ == INPAR::FLUID::boussinesq)
+    {
+    	Teuchos::RCP<Epetra_Vector> scalar_field = velpressplitter_.ExtractCondVector(scaaf_);
+    	output_.WriteVector("scalar_field", scalar_field);
+    }
+
     //only perform stress calculation when output is needed
     if (writestresses_)
     {
@@ -3151,9 +3157,27 @@ void FLD::FluidImplicitTimeInt::SetIterLomaFields(
 
     Values[numdim_] = (*scalaram)[scalarloc];
     scaam_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
+  }
 
-    Values[numdim_] = (*scalardtam)[scalarloc];
-    accam_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
+  if (scalardtam != Teuchos::null)
+  {
+    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+    {
+      const int scalarloc = lnodeid*numscal + numscal - 1;
+      Indices[numdim_] = lnodeid*numdof + numdim_;
+
+      Values[numdim_] = (*scalardtam)[scalarloc];
+      accam_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
+    }
+  }
+  else
+  {
+    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+    {
+      Indices[numdim_] = lnodeid*numdof + numdim_;
+      Values[numdim_] = 0;
+      accam_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
+    }
   }
 
   //--------------------------------------------------------------------------

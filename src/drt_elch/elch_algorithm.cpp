@@ -175,12 +175,11 @@ void ELCH::Algorithm::PrepareTimeStep()
 /*----------------------------------------------------------------------*/
 void ELCH::Algorithm::PrepareTimeStepConvection()
 {
-  /// LOMA functions are used for ELCH algorithm
-  // only OST time integration scheme implemented:
+  // OST/BDF2 time integration schemes are implemented
   // pass density to fluid discretization at time steps n+1 and n
-  // density time derivative is not used for OST (pass zero vector)
-  // thermodynamic pressure values are set to 1.0 and its derivative to
-  // 0.0
+  // density time derivative is not used for OST and BDF2 (pass zero vector)
+  // thermodynamic pressure values are set to 1.0 and its derivative to 0.0
+
   int numscal = 1;
 
   switch((FluidField().TimIntScheme()))
@@ -192,7 +191,7 @@ void ELCH::Algorithm::PrepareTimeStepConvection()
     FluidField().SetIterLomaFields(
         ScaTraField().DensElchNp(),
         ScaTraField().DensElchN(),
-        ScaTraField().DensElchNp(),
+        Teuchos::null,
         1.0,
         1.0,
         0.0,
@@ -273,10 +272,6 @@ void ELCH::Algorithm::DoTransportStep()
 void ELCH::Algorithm::Update()
 {
   FluidField().Update();
-
-  // update scalar time derivative
-  ScaTraField().UpdateTimeDerivative();
-
   ScaTraField().Update();
   return;
 }
@@ -286,22 +281,17 @@ void ELCH::Algorithm::Update()
 /*----------------------------------------------------------------------*/
 void ELCH::Algorithm::UpdateConvection()
 {
+  // Update ScaTra fields
   ScaTraField().Update();
 
-  // Old version:
-  // ScaTraField().UpdateDensityElch();
-
-  // LOMA functions are used for ELCH algorithm
-  // only OST time integration scheme implemented:
+  // OST/BDF2 time integration schemes are implemented
   // pass density to fluid discretization at time steps n+1 and n
-  // density time derivative is not used for OST (pass zero vector)
-  // thermodynamic pressure values are set to 1.0 and its derivative to
-  // 0.0
+  // density time derivative is not used for OST and BDF2 (pass zero vector)
+  // thermodynamic pressure values are set to 1.0 and its derivative to 0.0
 
-  // Fluid field is solved once more to synchronizes the density and velocity field
-  // Not a large influence since solution should be converged: Delta v in the range of 10E-6
-  // FluidField().NonlinearSolve();
-
+  // here SetIterLomaFields is only necessary if the density is used to update the accelerations
+  // otherwise it is a redundant step since the density is multiplied to the history vector in the element
+  /*
   int numscal = 1;
 
   switch((FluidField().TimIntScheme()))
@@ -313,7 +303,7 @@ void ELCH::Algorithm::UpdateConvection()
     FluidField().SetIterLomaFields(
         ScaTraField().DensElchNp(),
         ScaTraField().DensElchN(),
-        ScaTraField().DensElchNp(),
+        Teuchos::null,
         1.0,
         1.0,
         0.0,
@@ -322,6 +312,7 @@ void ELCH::Algorithm::UpdateConvection()
   }
   default: dserror("Selected time integration scheme is not available");
   }
+  */
 
   FluidField().Update();
 
@@ -389,22 +380,18 @@ void ELCH::Algorithm::OuterIterationConvection()
     conpotincnp_->Update(1.0,*ScaTraField().Phinp(),0.0);
     velincnp_->Update(1.0,*FluidField().ExtractVelocityPart(FluidField().Velnp()),0.0);
 
-    // Density derivative is not used for OST, BDF2 and convective formulation
-    int numscal = 1;
-    if (itnum != 1)
-    FluidField().SetTimeLomaFields(ScaTraField().DensElchNp(),0.0,null,numscal);
-
     // solve nonlinear Navier-Stokes system with body forces
     DoFluidStep();
 
     // solve nonlinear electrochemical transport equation
     DoTransportStep();
-    //DoFluidStep();
 
     // compute new denselchnp_ and pass it to the fluid discretisation
-    // LOMA functions are used in the ELCH algorithm
     // pass actual density field to fluid discretisation
+    // Density derivative is not used for OST, BDF2 and convective formulation
     ScaTraField().ComputeDensity(density0_);
+    int numscal = 1;
+    FluidField().SetTimeLomaFields(ScaTraField().DensElchNp(),0.0,Teuchos::null,numscal);
 
     // convergence check based on incremental values
     stopnonliniter = ConvergenceCheck(itnum,itmax_,ittol_);
