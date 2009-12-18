@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file  potential_dofset.cpp
+\file  drt_potential_dofset.cpp
 
 \brief A set of degrees of freedom for potential discretizations
 
@@ -13,7 +13,7 @@ Maintainer: Ursula Mayer
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#include "potential_dofset.H"
+#include "drt_potential_dofset.H"
 #include "../drt_lib/linalg_utils.H"
 
 

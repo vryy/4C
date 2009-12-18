@@ -33,7 +33,8 @@ Maintainer: Ursula Mayer
 #include "../drt_geometry/searchtree.H"
 #include "../drt_geometry/intersection_service.H"
 #include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_surfstress/potential_dofset.H"
+#include "../drt_surfstress/drt_potential_dofset.H"
+#include "../drt_surfstress/drt_potential_container.H"
 
 
 
@@ -313,6 +314,7 @@ protected:
       double&                     distance
       );
   
+  
   /*!
     \brief  computes distance related structures 2D
      */
@@ -334,6 +336,17 @@ protected:
       std::map<int,std::set<int> >&               potentialElementIds,
       vector<int>&                                lmcol
       );
+  
+  
+  /*!
+    \brief  collect global column indices for stiffness matrices with loacl and non-local entries
+     */
+  void CollectLmcol(
+      const Teuchos::RCP<DRT::Discretization>                       potentialdis,
+      std::map<int,std::set<int> >&                                 potentialElementIds,
+      std::map<int,std::vector<PotentialElementContainer> >&        nonlocalPecs,
+      vector<int>&                                                  lmcol
+      );
 
 
   //! get local index
@@ -351,6 +364,13 @@ protected:
       ) const;
 
 
+   //! compute element nodes in reference configuration
+   LINALG::SerialDenseMatrix ReferenceConfiguration(
+    const DRT::Element*                         element,
+    const int                                   numdim
+    ) const;
+
+
   //! compute element nodes in spatial configuration
   void SpatialConfiguration(
       const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
@@ -358,6 +378,20 @@ protected:
       LINALG::SerialDenseMatrix&                  x,
       const int                                   numdim
       ) const;
+
+
+  //! compute element nodes in spatial configuration
+  LINALG::SerialDenseMatrix SpatialConfiguration(
+    const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
+    const DRT::Element*                         element,
+    const int                                   numdim
+    ) const;
+
+   
+  //! get time curve factor
+  double GetTimeCurveFactor(
+    ParameterList&                        params
+	  );
 
 
   //! name@ Protected Attributes

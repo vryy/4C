@@ -576,8 +576,7 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx1(
     LINALG::Matrix<3,1> n_gp = ComputeNormalInGP(actEle, x_gp);
     //Normale auf das aktive Element in gp_X berechnen
     LINALG::Matrix<3,1> N_gp = ComputeNormalInGP_Initialconf(actEle, X_gp);     
-   
-
+  
     //----------------------------------------------------------------------
     // run over all influencing elements called element_pot
     //----------------------------------------------------------------------

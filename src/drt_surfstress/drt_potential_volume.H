@@ -25,11 +25,6 @@ Maintainer: Ursula Mayer
 
 #include "../drt_surfstress/drt_potential.H"
 
-
-using namespace std;
-using namespace Teuchos;
-
-
 namespace POTENTIAL
 {
 /*!
@@ -52,11 +47,13 @@ public:
       const GEO::TreeType&                  treetype
       );
 
+  
   /*!
     \brief Destructor
    */
   ~VolumePotential(){};
 
+  
   /*!
     \brief Call discretization to calculate additional contributions
     due to interfacial energy
@@ -71,6 +68,16 @@ public:
       RefCountPtr<LINALG::SparseMatrix> stiff);
   
   
+  /*!
+    \brief Routine to calculate additional internal forces and
+    stiffnesses due to interfacial phenomena for surface elements
+
+    \param element    (in)  : element
+    \param gaussrule  (in)  : gaussrule of element
+    \param params     (in)  : first partial derivatives of surface area
+    \param K_surf     (out) : element stiffness matrix
+    \param fint       (out) : element internal force vector
+   */
   void StiffnessAndInternalForcesPotential(
       const DRT::Element*             element,
       const DRT::UTILS::GaussRule3D&  gaussrule,
@@ -80,7 +87,7 @@ public:
       Epetra_SerialDenseVector&       F_int
       );
   
-
+  
   /*!
     \brief Routine to calculate additional internal forces and
     stiffnesses due to interfacial phenomena for surface elements
@@ -100,6 +107,7 @@ public:
       Epetra_SerialDenseVector&         fint);
 
 
+  
 private:
 
   //don't want = operator and cctor
@@ -114,52 +122,86 @@ private:
     Teuchos::RCP<const Epetra_Vector>   idisp_solid
     );
   
-  
+
   /*!
   \brief parallel volume tree search
    */
-  void treeSearchVolumeParallel(
-      const Teuchos::RCP<DRT::Discretization>     potentialdis,
-      std::map<int,LINALG::Matrix<3,2> >&         elemXAABBList,
-      const DRT::Element*                         element,
-      std::map<int,std::set<int> >&               potentialElementIds,
-      const double                                radius,
-      const int                                   label
-      );
+  void TreeSearch(
+      const Teuchos::RCP<DRT::Discretization>                   potentialdis,
+      std::map<int,LINALG::Matrix<3,2> >&                       elemXAABBList,
+      const DRT::Element*                                       element,
+      std::map<int,std::set<int> >&                             localEleIds,
+      std::map<int,std::vector<PotentialElementContainer> >&    nonlocalPecs,
+      const double                                              radius,
+      const int                                                 label
+  );
 
 
   /*!
   \brief  compute internal force and stiffness matrix
           for volume elements
    */
-  void computeFandK(
-      const DRT::Element*              actEle,
-      const DRT::UTILS::GaussRule3D&   gaussrule,
-      std::map<int,std::set<int> >&    potElements,
-      vector<int>&                     lm,
-      Epetra_SerialDenseMatrix&        K_surf,
-      Epetra_SerialDenseVector&        F_int,
-      RefCountPtr<DRT::Condition>      cond,
-      const int                        label,
-      const double                     curvefac
-      );
-  
-  
+  void ComputeFandK(
+      const DRT::Element*                     actEle,
+      const DRT::UTILS::GaussRule3D&          gaussrule,
+      std::map<int,std::set<int> >&           potElements,
+      vector<int>&                            lm,
+      Epetra_SerialDenseMatrix&               K_surf,
+      Epetra_SerialDenseVector&               F_int,
+      RefCountPtr<DRT::Condition>             cond,
+      const int                               label,
+      const double                            curvefac
+  );
+
+
   /*!
-  \brief  compute internal force and stiffness matrix
-          for surface elements
+    \brief  compute internal force and stiffness matrix
+            for local volume elements and nonlocal volume pecs
    */
-  void computeFandK(
-      const DRT::Element*              actEle,
-      const DRT::UTILS::GaussRule2D&   gaussrule,
-      std::map<int,std::set<int> >&    potElements,
-      vector<int>&                     lm,
-      Epetra_SerialDenseMatrix&        K_surf,
-      Epetra_SerialDenseVector&        F_int,
-      RefCountPtr<DRT::Condition>      cond,
-      const int                        label,
-      const double                     curvefac
-      );
+  void ComputeFandK(
+      const DRT::Element*                                             actEle,
+      const DRT::UTILS::GaussRule3D&                                  gaussrule,
+      std::map<int,std::set<int> >&                                   localEleIds,
+      std::map<int,std::vector<PotentialElementContainer> >&          nonlocalPecs,
+      vector<int>&                                                    lm,
+      Epetra_SerialDenseMatrix&                                       K_surf,
+      Epetra_SerialDenseVector&                                       F_int,
+      RefCountPtr<DRT::Condition>                                     cond,
+      const int                                                       label,
+      const double                                                    curvefac
+  );
+
+
+  //! compute integration factors for volume pecs
+  void ComputeFandK(
+      const DRT::Element*                     actEle,
+      const DRT::UTILS::GaussRule2D&          gaussrule,
+      std::map<int,std::set<int> >&           potElements,
+      vector<int>&                            lm,
+      Epetra_SerialDenseMatrix&               K_surf,
+      Epetra_SerialDenseVector&               F_int,
+      RefCountPtr<DRT::Condition>             cond,
+      const int                               label,
+      const double                            curvefac
+  );
+
+
+  /*!
+      \brief  compute internal force and stiffness matrix
+              for local surface elements and nonlocal surface pecs
+   */
+  void ComputeFandK(
+      const DRT::Element*                                         actEle,
+      const DRT::UTILS::GaussRule2D&                              gaussrule,
+      std::map<int,std::set<int> >&                               localEleIds,
+      std::map<int,std::vector<PotentialElementContainer> >&      nonlocalPecs,
+      vector<int>&                                                lm,
+      Epetra_SerialDenseMatrix&                                   K_surf,
+      Epetra_SerialDenseVector&                                   F_int,
+      RefCountPtr<DRT::Condition>                                 cond,
+      const int                                                   label,
+      const double                                                curvefac
+  );
 
   
   //! compute integration factors for volume elements
@@ -172,9 +214,21 @@ private:
       LINALG::Matrix<3,1>&                    x_gp,
       const double                            curve_fac
       );
+  
+  
+  //! compute integration factors for volume pecs
+  double ComputeFactor(
+      PotentialElementContainer&              pec,
+      LINALG::SerialDenseVector&              funct,
+      LINALG::SerialDenseMatrix&              deriv,
+      const DRT::UTILS::IntegrationPoints3D&  intpoints,
+      const int                               gp,
+      LINALG::Matrix<3,1>&                    x_gp,
+      const double                            curve_fac
+      );
 
 
-  //! compute integration factors for surface elements
+  //! compute integration factors for surface elements 
   double ComputeFactor(
       const DRT::Element*                     element,
       LINALG::SerialDenseVector&              funct,
@@ -184,7 +238,18 @@ private:
       LINALG::Matrix<2,1>&                    x_gp,
       const double                            curve_fac
       );
-
+  
+  
+  //! compute integration factors for surface pecs
+  double ComputeFactor(
+      PotentialElementContainer&              pec,
+      LINALG::SerialDenseVector&              funct,
+      LINALG::SerialDenseMatrix&              deriv,
+      const DRT::UTILS::IntegrationPoints2D&  intpoints,
+      const int                               gp,
+      LINALG::Matrix<2,1>&                    x_gp,
+      const double                            curve_fac
+      );
 
 
   //! returns gauss rule for given distype

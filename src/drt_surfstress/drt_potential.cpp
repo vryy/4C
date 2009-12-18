@@ -958,6 +958,42 @@ void POTENTIAL::Potential::CollectLmcol(
 
 
 
+/*----------------------------------------------------------------------*
+ |  determine global column indices for the stiffness matrix u.may 08/08|
+ |  with nonlocal entries                                               |
+ *----------------------------------------------------------------------*/
+void POTENTIAL::Potential::CollectLmcol(
+    const Teuchos::RCP<DRT::Discretization>                       potentialdis,
+    std::map<int,std::set<int> >&                                 potentialElementIds,
+    std::map<int,std::vector<PotentialElementContainer> >&        nonlocalPecs,
+    vector<int>&                                                  lmcol)
+{
+  CollectLmcol(potentialdis, potentialElementIds, lmcol);
+
+  for(std::map<int, std::vector<PotentialElementContainer> >::iterator labelIter = nonlocalPecs.begin(); labelIter != nonlocalPecs.end(); labelIter++)
+    for(std::vector<PotentialElementContainer>::iterator pecIter = (labelIter->second).begin(); pecIter != (labelIter->second).end(); pecIter++)
+    {
+      std::vector<int> lm = (*pecIter).GetLm();
+      for(int i = 0; i < (int) lm.size(); i++)
+      {
+        bool alreadyInserted = false;
+        for(int j = 0; j < (int) lmcol.size(); j++)
+        {
+          if(lm[i]==lmcol[j])
+          {
+            alreadyInserted = true;
+            break;
+          }
+        }
+        if(!alreadyInserted)
+          lmcol.push_back(lm[i]);
+      }
+    }
+  return;
+}
+
+
+
 /*-------------------------------------------------------------------*
 | (protected)                                             umay  07/08|
 |                                                                    |
@@ -1000,6 +1036,22 @@ void POTENTIAL::Potential::ReferenceConfiguration(
 }
 
 
+/*----------------------------------------------------------------------*
+ |  get nodal coordinates in reference configuration         u.may 08/08|
+ *----------------------------------------------------------------------*/
+LINALG::SerialDenseMatrix POTENTIAL::Potential::ReferenceConfiguration(
+    const DRT::Element*                         element,
+    const int                                   numdim) const
+{
+  const int numnode = element->NumNode();
+  LINALG::SerialDenseMatrix 	X(numnode,numdim);
+  for (int i=0; i<numnode; ++i)
+    for (int j = 0; j < numdim; ++j)
+      X(i,j) = element->Nodes()[i]->X()[j];
+
+  return X;
+}
+
 
 /*----------------------------------------------------------------------*
  |  get nodal coordinates in spatial configuration           u.may 08/08|
@@ -1019,6 +1071,43 @@ void POTENTIAL::Potential::SpatialConfiguration(
 
 
 
+/*----------------------------------------------------------------------*
+ |  get nodal coordinates in spatial configuration           u.may 08/08|
+ *----------------------------------------------------------------------*/
+LINALG::SerialDenseMatrix POTENTIAL::Potential::SpatialConfiguration(
+    const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
+    const DRT::Element*                         element,
+    const int                                   numdim) const
+{
+  const int numnode = element->NumNode();
+  LINALG::SerialDenseMatrix 	x(numnode,numdim);
+  for (int i=0; i<numnode; ++i)
+    for (int j = 0; j < numdim; ++j)
+      x(i,j) = currentpositions.find(element->NodeIds()[i])->second(j);
+
+  return x;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  get time curve factor			                               u.may 12/09|
+ *----------------------------------------------------------------------*/
+double POTENTIAL::Potential::GetTimeCurveFactor(
+    ParameterList&                  params)
+{
+  RefCountPtr<DRT::Condition> cond = params.get<RefCountPtr<DRT::Condition> >("condition",null);
+  const int    curvenum = cond->GetInt("curve");
+  const double time     = params.get<double>("total time",-1.0);
+  //const double dt     = params.get<double>("delta time",0.0);
+  const double t_end    = DRT::Problem::Instance()->Curve(curvenum).end();
+  double curvefac       = 1.0;
+  // apply potential forces gradually
+  if (time <= t_end)
+    curvefac      = DRT::Problem::Instance()->Curve(curvenum).f(time);
+
+  return curvefac;
+}
 
 #endif
 

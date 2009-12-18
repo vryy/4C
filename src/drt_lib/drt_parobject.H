@@ -191,7 +191,10 @@ using namespace std;
 #define ParObject_PlasticNeoHooke       (int)175
 #define ParObject_HumphreyCardio        (int)176
 #define ParObject_FerEchPV              (int)177
+#define ParObject_Pec                   (int)178
 
+
+  
 namespace DRT
 {
 
