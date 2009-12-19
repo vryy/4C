@@ -149,7 +149,7 @@ namespace FLD
       // do the time integration independent setup
       Setup();
     }
-    if(fluid.special_flow_=="rotating_circular_cylinder_nurbs")
+    else if(fluid.special_flow_=="rotating_circular_cylinder_nurbs")
     {
       flow_=rotating_circular_cylinder_nurbs;
 
@@ -380,8 +380,18 @@ namespace FLD
          params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
          ==
          "Smagorinsky_with_van_Driest_damping"
+         ||
+         params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
+         ==
+         "Smagorinsky"
         )
       {
+        if(discret_->Comm().MyPID()==0)
+        {
+          cout << "                             Initialising output for Smagorinsky type models\n\n\n";
+          fflush(stdout);
+        }
+
         smagorinsky_=true;
       }
     }
@@ -468,7 +478,6 @@ namespace FLD
       case channel_flow_of_height_2:
       case loma_channel_flow_of_height_2:
       {
-
         // add computed dynamic Smagorinsky quantities
         // (effective viscosity etc. used during the computation)
         if(smagorinsky_) statistics_channel_->AddDynamicSmagorinskyQuantities();
