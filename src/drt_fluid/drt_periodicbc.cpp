@@ -279,6 +279,13 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
       // possible angles of rotation for slave plane for each pbc pair
       vector<double> rotangles(numpbcpairs_);
 
+      // absolute node matching tolerance for octree
+      double abs_tol=0.0;
+
+      // a toggle to indicate whether tolerance for octree was already set,
+      // if so check if all values are equal
+      bool tol_set=false;
+
       //----------------------------------------------------
       // in the following, we loop all periodic boundary
       // conditions which have the prescribed periodic
@@ -291,6 +298,7 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
       // loop pairs of periodic boundary conditions
       for (int pbcid=0;pbcid<numpbcpairs_;++pbcid)
       {
+
         //--------------------------------------------------
         // get master and slave condition pair with id pbcid
 
@@ -389,27 +397,44 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
             {
               dserror("pbc is neither master nor slave");
             }
+
+            // set tolerance for octree
+            const double tol = (mysurfpbcs_[numcond])->GetDouble("Tolerance for nodematching in octree");
+            
+            if(!tol_set)
+            {
+              abs_tol = tol;
+
+              tol_set=true;
+            }
+            else
+            {
+              if(fabs(abs_tol-tol)>1e-5)
+              {
+                dserror("none matching tolerances %12.5e neq %12.5e for nodmatching octree. All values in direction %s have to match\n",abs_tol,tol,(*thisplane).c_str());
+              }
+            }
           } // end if i am the right condition in the right layer
         } // end loop over conditions
       } // end loop pairs of periodic boundary conditions
 
 
-        //--------------------------------------------------
-        // vector specifying the plane of this pair
-        //
-        //     |                           |
-        //     |                           |
-        //     |      parallel planes      |
-        //     |-------------------------->|
-        //     |                           |
-        //     |                           |
-        //     |                           |
-        //   slave                      master
-        //
-        //
-
-        // we transform the three strings "xy", "xz", "yz" into integer
-        // values dofsforpbcplanename
+      //--------------------------------------------------
+      // vector specifying the plane of this pair
+      //
+      //     |                           |
+      //     |                           |
+      //     |      parallel planes      |
+      //     |-------------------------->|
+      //     |                           |
+      //     |                           |
+      //     |                           |
+      //   slave                      master
+      //
+      //
+      
+      // we transform the three strings "xy", "xz", "yz" into integer
+      // values dofsforpbcplanename
       vector<int> dofsforpbcplane(2);
 
       // this is a char-operation:
@@ -472,7 +497,8 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
         masternodeids,
         slavenodeids ,
         dofsforpbcplane,
-        rotangles[0]);
+        rotangles[0],
+        abs_tol);
       // time measurement --- this causes the TimeMonitor tm1 to stop here
       tm1_ref_ = null;
 
@@ -550,13 +576,14 @@ void PeriodicBoundaryConditions::CreateNodeCouplingForSinglePBC(
   const vector <int>     masternodeids,
   const vector <int>     slavenodeids,
   const vector <int>     dofsforpbcplane,
-  const double           rotangle
+  const double           rotangle,
+  const double           abstol
   )
 {
 
 
   // these are just parameter definitions for the octree search algorithm
-  double tol            = 1E-9;
+  double tol            = abstol;
   int    maxnodeperleaf = 250;
 
   //----------------------------------------------------------------------

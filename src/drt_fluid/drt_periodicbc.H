@@ -220,7 +220,8 @@ protected:
     const vector <int>     masternodeids,
     const vector <int>     slavenodeids,
     const vector <int>     dofsforpbcplane,
-    const double           rotangle);
+    const double           rotangle,
+    const double           abstol);
 
   /*!
   \brief Add the connectivity from this condition (midtosid, on input)

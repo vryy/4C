@@ -412,6 +412,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   pbccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("ANGLE")));
   pbccomponents.push_back(Teuchos::rcp(new RealConditionComponent("Angle of rotation")));
 
+  pbccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("ABSTREETOL")));
+  pbccomponents.push_back(Teuchos::rcp(new RealConditionComponent("Tolerance for nodematching in octree")));
+
   Teuchos::RCP<ConditionDefinition> lineperiodic =
     Teuchos::rcp(new ConditionDefinition("DESIGN LINE PERIODIC BOUNDARY CONDITIONS",
                                          "LinePeriodic",
