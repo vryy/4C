@@ -334,9 +334,9 @@ void SCATRA::TimIntGenAlpha::ComputeThermPressure()
 
 
 /*----------------------------------------------------------------------*
- | update time derivative                                      vg 09/09 |
+ | compute time derivative                                     vg 09/09 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::UpdateTimeDerivative()
+void SCATRA::TimIntGenAlpha::ComputeTimeDerivative()
 {
   // time derivative of phi:
   // phidt(n+1) = (phi(n+1)-phi(n)) / (gamma*dt) + (1-(1/gamma))*phidt(n)
@@ -354,9 +354,9 @@ void SCATRA::TimIntGenAlpha::UpdateTimeDerivative()
 
 
 /*----------------------------------------------------------------------*
- | update time derivative of thermodynamic pressure            vg 09/09 |
+ | compute time derivative of thermodynamic pressure           vg 09/09 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::UpdateThermPressureTimeDerivative()
+void SCATRA::TimIntGenAlpha::ComputeThermPressureTimeDerivative()
 {
   // time derivative of thermodynamic pressure:
   // tpdt(n+1) = (tp(n+1)-tp(n)) / (gamma*dt) + (1-(1/gamma))*tpdt(n)
@@ -370,12 +370,15 @@ void SCATRA::TimIntGenAlpha::UpdateThermPressureTimeDerivative()
 
 /*----------------------------------------------------------------------*
  | current solution becomes most recent solution of next timestep       |
- | and computation of acceleration for next time step          vg 11/08 |
+ |                                                             vg 11/08 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntGenAlpha::Update()
 {
   // set history variable to zero for not spoiling flux calculation
   if (not incremental_) hist_->PutScalar(0.0);
+
+  // compute time derivative at time n+1
+  ComputeTimeDerivative();
 
   // solution of this step becomes most recent solution of last step
   phin_->Update(1.0,*phinp_,0.0);

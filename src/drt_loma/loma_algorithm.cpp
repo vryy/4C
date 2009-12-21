@@ -194,9 +194,6 @@ void LOMA::Algorithm::GenAlphaOuterLoop()
   if (Comm().MyPID()==0) cout<<"\n************************\n     SCALAR SOLVER\n************************\n";
   ScaTraField().Solve();
 
-  // update scalar time derivative after first SCATRA solution
-  ScaTraField().UpdateTimeDerivative();
-
   while (stopnonliniter==false)
   {
     itnum++;
@@ -204,28 +201,33 @@ void LOMA::Algorithm::GenAlphaOuterLoop()
     // store scalar from first solution for convergence check
     ScaTraField().ScalIncNp()->Update(1.0,*ScaTraField().Phinp(),0.0);
 
+    // compute scalar time derivative
+    ScaTraField().ComputeTimeDerivative();
+
     // compute scalar values at intermediate time steps
     ScaTraField().ComputeIntermediateValues();
 
-    // in case of non-constant thermodynamic pressure: compute and update
+    // in case of non-constant thermodynamic pressure: compute
     if (consthermpress_=="No_energy")
     {
+      // compute thermodynamic pressure
       ScaTraField().ComputeThermPressure();
 
-      // update time derivative of thermodynamic pressure after solution
-      ScaTraField().UpdateThermPressureTimeDerivative();
+      // compute time derivative of thermodynamic pressure
+      ScaTraField().ComputeThermPressureTimeDerivative();
 
-      // compute values of therm. pressure at intermediate time steps
+      // compute values at intermediate time steps
       ScaTraField().ComputeThermPressureIntermediateValues();
     }
     else if (consthermpress_=="No_mass")
     {
+      // compute thermodynamic pressure
       ScaTraField().ComputeThermPressureFromMassCons();
 
-      // update time derivative of thermodynamic pressure after solution
-      ScaTraField().UpdateThermPressureTimeDerivative();
+      // compute time derivative of thermodynamic pressure
+      ScaTraField().ComputeThermPressureTimeDerivative();
 
-      // compute values of therm. pressure at intermediate time steps
+      // compute values at intermediate time steps
       ScaTraField().ComputeThermPressureIntermediateValues();
     }
 
@@ -254,10 +256,7 @@ void LOMA::Algorithm::GenAlphaOuterLoop()
     if (Comm().MyPID()==0) cout<<"\n************************\n     SCALAR SOLVER\n************************\n";
     ScaTraField().Solve();
 
-    // update scalar time derivative after SCATRA solution
-    ScaTraField().UpdateTimeDerivative();
-
-    // check convergence of temperature field
+    // check convergence of scalar field
     stopnonliniter = ScaTraField().LomaConvergenceCheck(itnum,itmax_,ittol_);
   }
 
@@ -294,9 +293,6 @@ void LOMA::Algorithm::OSTBDF2OuterLoop()
   if (Comm().MyPID()==0) cout<<"\n************************\n     SCALAR SOLVER\n************************\n";
   ScaTraField().Solve();
 
-  // update scalar time derivative after first SCATRA solution
-  ScaTraField().UpdateTimeDerivative();
-
   while (stopnonliniter==false)
   {
     itnum++;
@@ -304,20 +300,25 @@ void LOMA::Algorithm::OSTBDF2OuterLoop()
     // store scalar from first solution for convergence check
     ScaTraField().ScalIncNp()->Update(1.0,*ScaTraField().Phinp(),0.0);
 
+    // compute scalar time derivative
+    ScaTraField().ComputeTimeDerivative();
+
     // in case of non-constant thermodynamic pressure: compute and update
     if (consthermpress_=="No_energy")
     {
+      // compute thermodynamic pressure
       ScaTraField().ComputeThermPressure();
 
-      // update time derivative of thermodynamic pressure after solution
-      ScaTraField().UpdateThermPressureTimeDerivative();
+      // compute time derivative of thermodynamic pressure
+      ScaTraField().ComputeThermPressureTimeDerivative();
     }
     else if (consthermpress_=="No_mass")
     {
+      // compute thermodynamic pressure
       ScaTraField().ComputeThermPressureFromMassCons();
 
-      // update time derivative of thermodynamic pressure after solution
-      ScaTraField().UpdateThermPressureTimeDerivative();
+      // compute time derivative of thermodynamic pressure
+      ScaTraField().ComputeThermPressureTimeDerivative();
     }
 
     // set scalar and thermodynamic pressure values as well as time derivatives
@@ -344,9 +345,6 @@ void LOMA::Algorithm::OSTBDF2OuterLoop()
     // solve scalar transport equation
     if (Comm().MyPID()==0) cout<<"\n************************\n     SCALAR SOLVER\n************************\n";
     ScaTraField().Solve();
-
-    // update scalar time derivative after SCATRA solution
-    ScaTraField().UpdateTimeDerivative();
 
     // check convergence of temperature field
     stopnonliniter = ScaTraField().LomaConvergenceCheck(itnum,itmax_,ittol_);

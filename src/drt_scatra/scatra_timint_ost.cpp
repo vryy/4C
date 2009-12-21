@@ -275,9 +275,9 @@ void SCATRA::TimIntOneStepTheta::ComputeThermPressure()
 
 
 /*----------------------------------------------------------------------*
- | update time derivative                                      vg 09/09 |
+ | compute time derivative                                     vg 09/09 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::UpdateTimeDerivative()
+void SCATRA::TimIntOneStepTheta::ComputeTimeDerivative()
 {
   // time derivative of phi:
   // phidt(n+1) = (phi(n+1)-phi(n)) / (theta*dt) + (1-(1/theta))*phidt(n)
@@ -295,9 +295,9 @@ void SCATRA::TimIntOneStepTheta::UpdateTimeDerivative()
 
 
 /*----------------------------------------------------------------------*
- | update time derivative of thermodynamic pressure            vg 09/09 |
+ | compute time derivative of thermodynamic pressure           vg 09/09 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::UpdateThermPressureTimeDerivative()
+void SCATRA::TimIntOneStepTheta::ComputeThermPressureTimeDerivative()
 {
   // time derivative of thermodynamic pressure:
   // tpdt(n+1) = (tp(n+1)-tp(n))/(theta*dt)+((theta-1)/theta)*tpdt(n)
@@ -315,8 +315,8 @@ void SCATRA::TimIntOneStepTheta::UpdateThermPressureTimeDerivative()
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntOneStepTheta::Update()
 {
-  // at first calculate time derivative n+1 (always!!), then update solution
-  UpdateTimeDerivative();
+  // compute time derivative at time n+1
+  ComputeTimeDerivative();
 
   // solution of this step becomes most recent solution of the last step
   phin_ ->Update(1.0,*phinp_,0.0);

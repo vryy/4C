@@ -193,11 +193,11 @@ public:
   /// check convergence for low-Mach-number flow
   bool LomaConvergenceCheck(int itnum, int itmax, const double ittol);
 
-  ///  update time derivative
-  virtual void UpdateTimeDerivative() = 0;
+  ///  compute time derivative
+  virtual void ComputeTimeDerivative() = 0;
 
-  ///  update time derivative of thermodynamic pressure after solution
-  virtual void UpdateThermPressureTimeDerivative() = 0;
+  ///  compute time derivative of thermodynamic pressure after solution
+  virtual void ComputeThermPressureTimeDerivative() = 0;
 
   /// update thermodynamic pressure and time derivative for low-Mach-number flow
   virtual void UpdateThermPressure() = 0;

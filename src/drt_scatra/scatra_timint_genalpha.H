@@ -48,11 +48,11 @@ public:
   /// compute thermodynamic pressure and time derivative for low-Mach-number flow
   void ComputeThermPressure();
 
-  ///  update time derivative after solution
-  void UpdateTimeDerivative();
+  ///  compute scalar time derivative
+  void ComputeTimeDerivative();
 
-  ///  update time derivative of thermodynamic pressure after solution
-  void UpdateThermPressureTimeDerivative();
+  ///  compute time derivative of thermodynamic pressure
+  void ComputeThermPressureTimeDerivative();
 
   /// Update the solution after convergence of the nonlinear iteration.
   /// Current solution becomes old solution of next timestep.

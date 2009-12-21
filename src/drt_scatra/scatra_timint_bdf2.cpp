@@ -314,9 +314,9 @@ void SCATRA::TimIntBDF2::ComputeThermPressure()
 
 
 /*----------------------------------------------------------------------*
- | update time derivative                                      vg 09/09 |
+ | compute time derivative                                     vg 09/09 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntBDF2::UpdateTimeDerivative()
+void SCATRA::TimIntBDF2::ComputeTimeDerivative()
 {
   if (step_ == 1)
   {
@@ -345,9 +345,9 @@ void SCATRA::TimIntBDF2::UpdateTimeDerivative()
 
 
 /*----------------------------------------------------------------------*
- | update time derivative of thermodynamic pressure            vg 09/09 |
+ | compute time derivative of thermodynamic pressure           vg 09/09 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntBDF2::UpdateThermPressureTimeDerivative()
+void SCATRA::TimIntBDF2::ComputeThermPressureTimeDerivative()
 {
   if (step_ == 1)
   {

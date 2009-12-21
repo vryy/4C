@@ -465,11 +465,6 @@ void SCATRA::ScaTraTimIntImpl::TimeLoop()
 //end REINHARD
 
     // -------------------------------------------------------------------
-    //                update time derivative after solution
-    // -------------------------------------------------------------------
-    UpdateTimeDerivative();
-
-    // -------------------------------------------------------------------
     //                         update solution
     //        current solution becomes old solution of next timestep
     // -------------------------------------------------------------------
