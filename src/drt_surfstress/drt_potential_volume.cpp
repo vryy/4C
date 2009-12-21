@@ -44,7 +44,7 @@ POTENTIAL::VolumePotential::VolumePotential(
   
   const Epetra_Map* dofcolmap = discretRCP_->DofColMap();
   disp_col_ = LINALG::CreateVector(*dofcolmap, true);
-
+  
   std::cout << "Volume potential constructor done" << endl;
 }
 
@@ -71,7 +71,8 @@ void POTENTIAL::VolumePotential::EvaluatePotential( ParameterList& p,
   // update displacement for volume discretization discretRCP
   UpdateDisplacementsOfPotentialDiscretization(disp_col_);
 
-  EvaluatePotentialCondition(p,stiff,null,fint,null,null,"Potential");
+  //EvaluateVolumePotentialCondition(p,stiff,null,fint,null,null,"Potential");
+  EvaluateVolumePotentialCondition(p,stiff,null,fint,null,null,"Potential");
   return;
 }
 
@@ -103,7 +104,7 @@ void POTENTIAL::VolumePotential::StiffnessAndInternalForcesPotential(
 
   // tree search
   TreeSearch(discretRCP_, elemXAABBList_, element, localEleIds, nonlocalPecs, cutOff, label); 
-
+  
   // compute internal force and stiffness matrix
   // TODO if poteles empty don t do assembly
   ComputeFandK(element, gaussrule, localEleIds, nonlocalPecs, lm, K_surf, F_int, cond, label, curvefac);
@@ -278,8 +279,10 @@ void POTENTIAL::VolumePotential::TreeSearch(
   int numEle_send = 0;
   int numEle_recv = 0;
   std::vector<char> data_send(1,'d');
-  std::vector<char> data_recv;
+  std::vector<char> data_recv(1,'d');
   MPI_Status status;
+  int label_send = label;
+  int label_recv = 0;
 
   for(int i_proc = 0; i_proc < numprocs; i_proc++)
   {  
@@ -290,8 +293,14 @@ void POTENTIAL::VolumePotential::TreeSearch(
 
     if (err != 0)
       dserror("mpi sendrecv error %d", err);
-
     eleXAABB_send = eleXAABB_recv;
+
+
+    MPI_Sendrecv( &label_send, 1, MPI_INT, forward,   tag_send, 
+                  &label_recv, 1, MPI_INT, backward,  tag_recv, 
+                  MPI_COMM_WORLD, &status);
+    label_send = label_recv;
+  
 
     // search for gids of potential elements on the current proc
     std::map<int,std::set<int> > potEleGids;
@@ -300,16 +309,14 @@ void POTENTIAL::VolumePotential::TreeSearch(
     {
       eleXAABB_LG(dim, 0) = eleXAABB_recv[dim];
       eleXAABB_LG(dim, 1) = eleXAABB_recv[dim+3];
-      cout << "eleXAABB_LG(dim, 0) = " << eleXAABB_LG(dim, 0) << "myrank = " << myrank <<  endl;
-      cout << "eleXAABB_LG(dim, 1) = " << eleXAABB_LG(dim, 1) << "myrank = " << myrank <<  endl;
     }
-    searchTree_->queryPotentialElements(elemXAABBList, eleXAABB_LG, potEleGids, label);
     
+    searchTree_->queryPotentialElements(elemXAABBList, eleXAABB_LG, potEleGids, label_recv);
+ 
     // loop over labelIter->first
     for(std::map<int, std::set<int> >::const_iterator labelIter = potEleGids.begin(); labelIter != potEleGids.end(); labelIter++)
       for(std::set<int>::const_iterator eleIter = (labelIter->second).begin(); eleIter != (labelIter->second).end(); eleIter++)
       {
-        cout << "eleId" <<  *eleIter << endl;
         DRT::Element* element = discretRCP_->gElement(*eleIter);
         vector<int> lmowner;
         vector<int> lm;
@@ -317,7 +324,6 @@ void POTENTIAL::VolumePotential::TreeSearch(
 
         RCP<PotentialElementContainer> pec = rcp( new PotentialElementContainer(
             element->Id(),
-            element->Owner(),
             element->Shape(),
             labelIter->first,
             SpatialConfiguration(currentpositions_,element,prob_dim_),
@@ -327,7 +333,6 @@ void POTENTIAL::VolumePotential::TreeSearch(
         pec->Pack(data_send);
         numEle_send++;
       }
-
     potEleGids.clear();
     
     // send number of elements
@@ -339,6 +344,7 @@ void POTENTIAL::VolumePotential::TreeSearch(
     // let the next proc now about the data size he will receive
     int data_size_send =  (int) data_send.size();
     int data_size_recv = 0;
+    data_recv.clear();
     MPI_Sendrecv(&data_size_send, 1, MPI_INT, forward,  tag_send, 
                  &data_size_recv, 1, MPI_INT, backward, tag_recv, 
                  MPI_COMM_WORLD, &status);
@@ -350,27 +356,32 @@ void POTENTIAL::VolumePotential::TreeSearch(
                  MPI_COMM_WORLD, &status);
     data_send = data_recv;
     data_recv.clear();
-  }
+    
+  } // loop over numprocs
 
+  
   // unpack elements after returning to the starting processor
   // store in potentialElements 
   std::set<int> pecIds;
   int position = 1;  // jump over dummy
-  for(int i_ele = 0; i_ele < numEle_send; i_ele++)
+  
+  for(int i_ele = 0; i_ele < numEle_send; ++i_ele)
   {
-    PotentialElementContainer pec;
-    pec.Unpack(data_send, position);
+    RCP<PotentialElementContainer> pec = rcp( new PotentialElementContainer());
+    //PotentialElementContainer pec;
+    pec->Unpack(data_send, position);
     // std::map<int, std::set<PotentialElementContainer>  set because some of the
     // elements are sends a few times since loop over col elements
-    if(pecIds.find(pec.Id()) == pecIds.end()) // not yet store store pec
+    if(pecIds.find(pec->Id()) == pecIds.end()) // not yet store store pec
     {
-      nonlocalPecs[pec.Body_label()].push_back(pec);
-      pecIds.insert(pec.Id());
+      nonlocalPecs[pec->Body_label()].push_back(*pec);
+      pecIds.insert(pec->Id());
     }
   }
-
+ 
   if(position != (int) data_send.size())
-    dserror("something is wrong with the data vector");
+    dserror("something is wrong with the data vector on proc %d", myrank);
+
 #endif
   
   return;
@@ -416,12 +427,11 @@ void POTENTIAL::VolumePotential::ComputeFandK(
   {
     // compute func, deriv, x_gp and factor
     const int numnode = actEle->NumNode();
-    LINALG::SerialDenseVector   funct(numnode);
-    LINALG::SerialDenseMatrix   deriv(3,numnode);
+    Epetra_SerialDenseVector funct(numnode);
+    Epetra_SerialDenseMatrix deriv(3,numnode);
     LINALG::Matrix<3,1>         x_gp(true);
 
     const double fac = ComputeFactor(actEle, funct, deriv, intpoints, gp, x_gp, curvefac);
-
     //----------------------------------------------------------------------
     // run over all influencing elements called element_pot
     //----------------------------------------------------------------------
@@ -446,8 +456,8 @@ void POTENTIAL::VolumePotential::ComputeFandK(
          {
            // compute func, deriv, x_gp and factor
            const int numnode_pot = element_pot->NumNode();
-           LINALG::SerialDenseVector  funct_pot(numnode_pot);
-           LINALG::SerialDenseMatrix  deriv_pot(3,numnode_pot);
+           Epetra_SerialDenseVector funct_pot(numnode_pot);
+           Epetra_SerialDenseMatrix deriv_pot(3,numnode_pot);
            LINALG::Matrix<3,1>        x_pot_gp(true);
 
            const double fac_pot = ComputeFactor(element_pot, funct_pot, deriv_pot, intpoints_pot,
@@ -532,12 +542,11 @@ void POTENTIAL::VolumePotential::ComputeFandK(
   {
     // compute func, deriv, x_gp and factor
     const int numnode = actEle->NumNode();
-    LINALG::SerialDenseVector   funct(numnode);
-    LINALG::SerialDenseMatrix   deriv(3,numnode);
+    Epetra_SerialDenseVector funct(numnode);
+    Epetra_SerialDenseMatrix deriv(3,numnode);
     LINALG::Matrix<3,1>         x_gp(true);
 
     const double fac = ComputeFactor(actEle, funct, deriv, intpoints, gp, x_gp, curvefac);
-
     //----------------------------------------------------------------------
     // run over all influencing elements called element_pot
     //----------------------------------------------------------------------
@@ -562,8 +571,8 @@ void POTENTIAL::VolumePotential::ComputeFandK(
          {
            // compute func, deriv, x_gp and factor
            const int numnode_pot = element_pot->NumNode();
-           LINALG::SerialDenseVector  funct_pot(numnode_pot);
-           LINALG::SerialDenseMatrix  deriv_pot(3,numnode_pot);
+           Epetra_SerialDenseVector funct_pot(numnode_pot);
+           Epetra_SerialDenseMatrix deriv_pot(3,numnode_pot);
            LINALG::Matrix<3,1>        x_pot_gp(true);
 
            const double fac_pot = ComputeFactor(element_pot, funct_pot, deriv_pot, intpoints_pot,
@@ -574,7 +583,7 @@ void POTENTIAL::VolumePotential::ComputeFandK(
            LINALG::Matrix<3,3>  potderiv2;
 
            EvaluatePotentialfromCondition(cond, x_gp, x_pot_gp, potderiv1, potderiv2);
-         
+           
            const int numdof = 3;
 	
            // computation of internal forces (possibly with non-local values)
@@ -601,67 +610,84 @@ void POTENTIAL::VolumePotential::ComputeFandK(
 	            }
 	         } // loop over all gauss points of the potential element
       } // loop over all potential elements
+     
 
-      //----------------------------------------------------------------------
+    //----------------------------------------------------------------------
     // run over all influencing elements from different procs
     //----------------------------------------------------------------------
     for(std::map<int, std::vector<POTENTIAL::PotentialElementContainer> >::iterator labelIter = nonlocalPecs.begin(); 
-          labelIter != nonlocalPecs.end(); labelIter++)
+    labelIter != nonlocalPecs.end(); labelIter++)
       for(std::vector<POTENTIAL::PotentialElementContainer>::iterator pecIter = (labelIter->second).begin(); 
-          pecIter != (labelIter->second).end(); pecIter++)
-      {
-         // obtain current potential dofs
-         vector<int> lmpot = (*pecIter).GetLm();
-       
-         // obtain Gaussrule and integration points
-         DRT::UTILS::GaussRule3D rule_pot = DRT::UTILS::intrule3D_undefined;
-         GetGaussRule3D((*pecIter).Shape(), rule_pot);
-         const DRT::UTILS::IntegrationPoints3D intpoints_pot(rule_pot);
-         //----------------------------------------------------------------------
-         // run over all gauss points of a influencing element
-         //----------------------------------------------------------------------
-         for (int gp_pot = 0; gp_pot < intpoints_pot.nquad; gp_pot++)
-         {
-           // compute func, deriv, x_gp and factor
-           const int numnode_pot = (*pecIter).NumNode();
-           LINALG::SerialDenseVector  funct_pot(numnode_pot);
-           LINALG::SerialDenseMatrix  deriv_pot(3,numnode_pot);
-           LINALG::Matrix<3,1>        x_pot_gp(true);
+      pecIter != (labelIter->second).end(); pecIter++)
+      { /*
+        cout << "gid = " << (*pecIter).Id() << endl;
+        cout << "owner = " << (*pecIter).Owner() << endl;
+        cout << "shape = " << (*pecIter).Shape() << endl;
+        cout << "bodylabel = " << (*pecIter).Body_label() << endl;
+        (*pecIter).GetSpatialConfiguration().Print(cout); cout << endl;
+        (*pecIter).GetReferenceConfiguration().Print(cout); cout << endl;
+        cout << (*pecIter).GetLm().size() << endl;
+        for(int i_lm = 0; i_lm < (*pecIter).GetLm().size(); i_lm++)
+		  cout << "lm = " << (*pecIter).GetLm()[i_lm];
 
-           const double fac_pot = ComputeFactor(*pecIter, funct_pot, deriv_pot, intpoints_pot,
-                                                gp_pot, x_pot_gp, curvefac);
+        cout << endl; 
+        */ 
+        // obtain current potential dofs
+        vector<int> lmpot = (*pecIter).GetLm();
 
-           // evaluate Lennard Jones potential and its derivatives
-           LINALG::Matrix<3,1>  potderiv1;
-           LINALG::Matrix<3,3>  potderiv2;
+        // obtain Gaussrule and integration points
+        DRT::UTILS::GaussRule3D rule_pot = DRT::UTILS::intrule3D_undefined;
+        GetGaussRule3D((*pecIter).Shape(), rule_pot);
+        const DRT::UTILS::IntegrationPoints3D intpoints_pot(rule_pot);
+        //----------------------------------------------------------------------
+        // run over all gauss points of a influencing element
+        //----------------------------------------------------------------------
+        for (int gp_pot = 0; gp_pot < intpoints_pot.nquad; gp_pot++)
+        {
+          // compute func, deriv, x_gp and factor
+          const int numnode_pot = (*pecIter).NumNode();
+          Epetra_SerialDenseVector  funct_pot(numnode_pot);
+          Epetra_SerialDenseMatrix  deriv_pot(3,numnode_pot);
+          LINALG::Matrix<3,1>        x_pot_gp(true);
+          
+          const double fac_pot = ComputeFactor(*pecIter, funct_pot, deriv_pot, intpoints_pot,
+                                              gp_pot, x_pot_gp, curvefac);          
+          
+                 
+          // evaluate Lennard Jones potential and its derivatives
+          LINALG::Matrix<3,1>  potderiv1;
+          LINALG::Matrix<3,3>  potderiv2;
 
-           EvaluatePotentialfromCondition(cond, x_gp, x_pot_gp, potderiv1, potderiv2);
-         
-           const int numdof = 3;
-	
-           // computation of internal forces (possibly with non-local values)
-           for (int inode = 0; inode < numnode; inode++)
-             for(int dim = 0; dim < 3; dim++)
-			     F_int[inode*numdof+dim] += funct(inode)*beta*fac*(beta*potderiv1(dim)*fac_pot);
-	
-	         // computation of stiffness matrix (possibly with non-local values)
-	         for (int inode = 0;inode < numnode; ++inode)
-	           for(int dim = 0; dim < 3; dim++)
-	           {
-	             // k,ii
-	             for (int jnode = 0; jnode < numnode; ++jnode)
-	               for(int dim_pot = 0; dim_pot < 3; dim_pot++)
-	                 K_surf(inode*numdof+dim, jnode*numdof+dim_pot) +=
-	                   funct(inode)*beta*fac*(beta*potderiv2(dim,dim_pot)*funct(jnode)*fac_pot);
-	
-	             // k,ij
-	             for (int jnode = 0;jnode < numnode_pot; ++jnode)
-	               for(int dim_pot = 0; dim_pot < 3; dim_pot++)
-	                 K_surf(inode*numdof+dim, GetLocalIndex(lm,lmpot[jnode*numdof+dim_pot]) ) +=
-	                    funct(inode)*beta*fac*(beta*(-1)*potderiv2(dim,dim_pot)*funct_pot(jnode)*fac_pot);
-	
-	            }
-	         } // loop over all gauss points of the potential element
+          EvaluatePotentialfromCondition(cond, x_gp, x_pot_gp, potderiv1, potderiv2);
+          //potderiv1.Print(cout);
+          //potderiv2.Print(cout);         
+
+          const int numdof = 3;
+          // computation of internal forces (possibly with non-local values)
+          for (int inode = 0; inode < numnode; inode++)
+            for(int dim = 0; dim < 3; dim++)
+              F_int[inode*numdof+dim] += funct(inode)*beta*fac*(beta*potderiv1(dim)*fac_pot);
+
+          //F_int.Print(cout);
+          // computation of stiffness matrix (possibly with non-local values)
+          for (int inode = 0;inode < numnode; ++inode)
+            for(int dim = 0; dim < 3; dim++)
+            {
+              // k,ii
+              for (int jnode = 0; jnode < numnode; ++jnode)
+                for(int dim_pot = 0; dim_pot < 3; dim_pot++)
+                  K_surf(inode*numdof+dim, jnode*numdof+dim_pot) +=
+                    funct(inode)*beta*fac*(beta*potderiv2(dim,dim_pot)*funct(jnode)*fac_pot);
+
+              // k,ij
+              for (int jnode = 0;jnode < numnode_pot; ++jnode)
+                for(int dim_pot = 0; dim_pot < 3; dim_pot++)
+                  K_surf(inode*numdof+dim, GetLocalIndex(lm,lmpot[jnode*numdof+dim_pot]) ) +=
+                    funct(inode)*beta*fac*(beta*(-1)*potderiv2(dim,dim_pot)*funct_pot(jnode)*fac_pot);
+
+            }
+          //K_surf.Print(cout);
+        } // loop over all gauss points of the potential element
       } // loop over all potential elements
   } // loop over all gauss points of the actual element
 
@@ -706,8 +732,8 @@ void POTENTIAL::VolumePotential::ComputeFandK(
   {
     // compute func, deriv, x_gp and factor
     const int numnode = actEle->NumNode();
-    LINALG::SerialDenseVector   funct(numnode);
-    LINALG::SerialDenseMatrix   deriv(2,numnode);
+    Epetra_SerialDenseVector   funct(numnode);
+    Epetra_SerialDenseMatrix   deriv(2,numnode);
     LINALG::Matrix<2,1>         x_gp(true);
 
     const double fac = ComputeFactor(actEle, funct, deriv, intpoints, gp, x_gp, curvefac);
@@ -736,8 +762,8 @@ void POTENTIAL::VolumePotential::ComputeFandK(
          {
            // compute func, deriv, x_gp and factor
            const int numnode_pot = element_pot->NumNode();
-           LINALG::SerialDenseVector  funct_pot(numnode_pot);
-           LINALG::SerialDenseMatrix  deriv_pot(2,numnode_pot);
+           Epetra_SerialDenseVector  funct_pot(numnode_pot);
+           Epetra_SerialDenseMatrix  deriv_pot(2,numnode_pot);
            LINALG::Matrix<2,1>        x_pot_gp(true);
 
            const double fac_pot = ComputeFactor(element_pot, funct_pot, deriv_pot, intpoints_pot,
@@ -821,8 +847,8 @@ void POTENTIAL::VolumePotential::ComputeFandK(
   {
     // compute func, deriv, x_gp and factor
     const int numnode = actEle->NumNode();
-    LINALG::SerialDenseVector   funct(numnode);
-    LINALG::SerialDenseMatrix   deriv(2,numnode);
+    Epetra_SerialDenseVector funct(numnode);
+    Epetra_SerialDenseMatrix deriv(2,numnode);
     LINALG::Matrix<2,1>         x_gp(true);
 
     const double fac = ComputeFactor(actEle, funct, deriv, intpoints, gp, x_gp, curvefac);
@@ -851,8 +877,8 @@ void POTENTIAL::VolumePotential::ComputeFandK(
          {
            // compute func, deriv, x_gp and factor
            const int numnode_pot = element_pot->NumNode();
-           LINALG::SerialDenseVector  funct_pot(numnode_pot);
-           LINALG::SerialDenseMatrix  deriv_pot(2,numnode_pot);
+           Epetra_SerialDenseVector funct_pot(numnode_pot);
+           Epetra_SerialDenseMatrix deriv_pot(2,numnode_pot);
            LINALG::Matrix<2,1>        x_pot_gp(true);
 
            const double fac_pot = ComputeFactor(element_pot, funct_pot, deriv_pot, intpoints_pot,
@@ -911,8 +937,8 @@ void POTENTIAL::VolumePotential::ComputeFandK(
         {
           // compute func, deriv, x_gp and factor
           const int numnode_pot = (*pecIter).NumNode();
-          LINALG::SerialDenseVector  funct_pot(numnode_pot);
-          LINALG::SerialDenseMatrix  deriv_pot(2,numnode_pot);
+          Epetra_SerialDenseVector funct_pot(numnode_pot);
+          Epetra_SerialDenseMatrix deriv_pot(2,numnode_pot);
           LINALG::Matrix<2,1>        x_pot_gp(true);
 
           const double fac_pot = ComputeFactor(*pecIter, funct_pot, deriv_pot, intpoints_pot,
@@ -961,8 +987,8 @@ void POTENTIAL::VolumePotential::ComputeFandK(
  *----------------------------------------------------------------------*/
 double POTENTIAL::VolumePotential::ComputeFactor(
     const DRT::Element*                     element,
-    LINALG::SerialDenseVector&              funct,
-    LINALG::SerialDenseMatrix&              deriv,
+    Epetra_SerialDenseVector&               funct,
+    Epetra_SerialDenseMatrix&               deriv,
     const DRT::UTILS::IntegrationPoints3D&  intpoints,
     const int                               gp,
     LINALG::Matrix<3,1>&                    x_gp,
@@ -978,9 +1004,8 @@ double POTENTIAL::VolumePotential::ComputeFactor(
   DRT::UTILS::shape_function_3D(funct,e0,e1,e2,element->Shape());
   DRT::UTILS::shape_function_3D_deriv1(deriv,e0,e1,e2,element->Shape());
 
-  
-  LINALG::SerialDenseMatrix Jacobi(3,3);
-  LINALG::SerialDenseMatrix X(numnode,3);
+  Epetra_SerialDenseMatrix Jacobi(3,3);
+  Epetra_SerialDenseMatrix X(numnode,3);
   ReferenceConfiguration(element,X,3);		
   LINALG::SerialDenseMatrix x(numnode,3);
   SpatialConfiguration(currentpositions_,element,x,3);	
@@ -1012,8 +1037,8 @@ double POTENTIAL::VolumePotential::ComputeFactor(
  *----------------------------------------------------------------------*/
 double POTENTIAL::VolumePotential::ComputeFactor(
     PotentialElementContainer&	            pec,
-    LINALG::SerialDenseVector&              funct,
-    LINALG::SerialDenseMatrix&              deriv,
+    Epetra_SerialDenseVector&               funct,
+    Epetra_SerialDenseMatrix&               deriv,
     const DRT::UTILS::IntegrationPoints3D&  intpoints,
     const int                               gp,
     LINALG::Matrix<3,1>&                    x_gp,
@@ -1029,9 +1054,10 @@ double POTENTIAL::VolumePotential::ComputeFactor(
   DRT::UTILS::shape_function_3D(funct,e0,e1,e2,pec.Shape());
   DRT::UTILS::shape_function_3D_deriv1(deriv,e0,e1,e2,pec.Shape());
 
-  LINALG::SerialDenseMatrix Jacobi(3,3);
-  LINALG::SerialDenseMatrix X = pec.GetReferenceConfiguration();
-  LINALG::SerialDenseMatrix x = pec.GetSpatialConfiguration();
+  Epetra_SerialDenseMatrix Jacobi(3,3);
+  Epetra_SerialDenseMatrix X = pec.GetReferenceConfiguration();
+  Epetra_SerialDenseMatrix x = pec.GetSpatialConfiguration();
+  
   Jacobi.Multiply('N','N',1.0,deriv,X,0.0);
 
   // detA maps the reference configuration to the parameter space domain
@@ -1050,6 +1076,7 @@ double POTENTIAL::VolumePotential::ComputeFactor(
     for(int dim = 0; dim < 3; dim++)
       x_gp(dim) += funct(inode)*x(inode,dim);
 
+
   return factor;
 }
 
@@ -1059,8 +1086,8 @@ double POTENTIAL::VolumePotential::ComputeFactor(
  *----------------------------------------------------------------------*/
 double POTENTIAL::VolumePotential::ComputeFactor(
     const DRT::Element*                     element,
-    LINALG::SerialDenseVector&              funct,
-    LINALG::SerialDenseMatrix&              deriv,
+    Epetra_SerialDenseVector&               funct,
+    Epetra_SerialDenseMatrix&               deriv,
     const DRT::UTILS::IntegrationPoints2D&  intpoints,
     const int                               gp,
     LINALG::Matrix<2,1>&                    x_gp,
@@ -1075,8 +1102,8 @@ double POTENTIAL::VolumePotential::ComputeFactor(
   DRT::UTILS::shape_function_2D(funct,e0,e1,element->Shape());
   DRT::UTILS::shape_function_2D_deriv1(deriv,e0,e1,element->Shape());
 
-  LINALG::SerialDenseMatrix Jacobi(2,2);
-  LINALG::SerialDenseMatrix X(numnode,2);
+  Epetra_SerialDenseMatrix Jacobi(2,2);
+  Epetra_SerialDenseMatrix X(numnode,2);
   ReferenceConfiguration(element,X,2);
   LINALG::SerialDenseMatrix x(numnode,2);
   SpatialConfiguration(currentpositions_,element,x,2);
@@ -1105,8 +1132,8 @@ double POTENTIAL::VolumePotential::ComputeFactor(
  *----------------------------------------------------------------------*/
 double POTENTIAL::VolumePotential::ComputeFactor(
     PotentialElementContainer&              pec,
-    LINALG::SerialDenseVector&              funct,
-    LINALG::SerialDenseMatrix&              deriv,
+    Epetra_SerialDenseVector&               funct,
+    Epetra_SerialDenseMatrix&               deriv,
     const DRT::UTILS::IntegrationPoints2D&  intpoints,
     const int                               gp,
     LINALG::Matrix<2,1>&                    x_gp,
@@ -1119,10 +1146,11 @@ double POTENTIAL::VolumePotential::ComputeFactor(
   // get shape functions and derivatives of the element
   DRT::UTILS::shape_function_2D(funct,e0,e1,pec.Shape());
   DRT::UTILS::shape_function_2D_deriv1(deriv,e0,e1,pec.Shape());
-
-  LINALG::SerialDenseMatrix Jacobi(2,2);
-  LINALG::SerialDenseMatrix X = pec.GetReferenceConfiguration();
-  LINALG::SerialDenseMatrix x = pec.GetSpatialConfiguration();
+  
+  Epetra_SerialDenseMatrix Jacobi(2,2);
+  Epetra_SerialDenseMatrix X = pec.GetReferenceConfiguration();
+  Epetra_SerialDenseMatrix x = pec.GetSpatialConfiguration();
+  
   Jacobi.Multiply('N','N',1.0,deriv,X,0.0);
 
   // detA maps the reference configuration to the parameter space domain
@@ -1137,7 +1165,6 @@ double POTENTIAL::VolumePotential::ComputeFactor(
 
   return factor;
 }
-
 
 
 /*----------------------------------------------------------------------*

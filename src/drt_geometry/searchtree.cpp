@@ -313,8 +313,9 @@ void GEO::SearchTree::queryPotentialElements_Approx2(
     const std::map<int,LINALG::Matrix<3,1> >&             currentpositions,
     const LINALG::Matrix<3,2>&                            eleXAABB,
     const std::vector< LINALG::Matrix<3,1> >&             gaussPoints,
-    std::vector< std::map<int, GEO::NearestObject> >&     potentialObjectsAtGP,
+    std::map< int, std::map<int, GEO::NearestObject> >&   potentialObjectsAtGP,
     const double                                          cutoff,
+    const int                                             label,
     const int                                             projectiontype)
 {
   TEUCHOS_FUNC_TIME_MONITOR("SearchTree - queryTime");
@@ -329,7 +330,7 @@ void GEO::SearchTree::queryPotentialElements_Approx2(
 
   if(!(treeRoot_->getElementList().empty()))
     treeRoot_->queryPotentialElements_Approx2(dis, currentpositions, eleXAABB, gaussPoints, 
-                                              potentialObjectsAtGP, cutoff, projectiontype);
+                                              potentialObjectsAtGP, cutoff, label, projectiontype);
 
   return;
 }
@@ -2191,8 +2192,9 @@ void GEO::SearchTree::TreeNode::queryPotentialElements_Approx2(
     const std::map<int,LINALG::Matrix<3,1> >&             currentpositions,
     const LINALG::Matrix<3,2>&                            eleXAABB,
     const std::vector< LINALG::Matrix<3,1> >&             gaussPoints,
-    std::vector< std::map<int, GEO::NearestObject > >&    potentialObjectsAtGP,
+    std::map< int, std::map<int, GEO::NearestObject> >&   potentialObjectsAtGP,
     const double                                          cutoff,
+    const int                                             label,
     const int                                             projectiontype)
 {
   
@@ -2204,12 +2206,12 @@ void GEO::SearchTree::TreeNode::queryPotentialElements_Approx2(
       if(classifyXAABB(index,eleXAABB))
       {
         children_[index]->queryPotentialElements_Approx2( dis, currentpositions, eleXAABB, gaussPoints, 
-            potentialObjectsAtGP, cutoff, projectiontype);
+            potentialObjectsAtGP, cutoff, label,projectiontype);
         return;
       }
       else
       {
-        GEO::getPotentialObjects(dis, currentpositions, elementList_, gaussPoints, potentialObjectsAtGP, cutoff, projectiontype);
+        GEO::getPotentialObjects(dis, currentpositions, elementList_, gaussPoints, potentialObjectsAtGP, cutoff, label, projectiontype);
         return;
       }
       break;
@@ -2223,7 +2225,7 @@ void GEO::SearchTree::TreeNode::queryPotentialElements_Approx2(
       if(treedepth_ <= 0 || (elementList_.begin()->second).size() == 1)
       {
         GEO::getPotentialObjects(dis, currentpositions, elementList_, gaussPoints, 
-                                         potentialObjectsAtGP, cutoff, projectiontype);
+                                         potentialObjectsAtGP, cutoff, label, projectiontype);
         return;
       }
       // dynamically grow tree otherwise, create children and set label for empty children
@@ -2233,13 +2235,13 @@ void GEO::SearchTree::TreeNode::queryPotentialElements_Approx2(
       {
         createChildren(dis, currentpositions);
         children_[index]->queryPotentialElements_Approx2( dis, currentpositions, eleXAABB, gaussPoints, 
-                                                          potentialObjectsAtGP, cutoff, projectiontype);
+                                                          potentialObjectsAtGP, cutoff, label, projectiontype);
         return;
       }
       else
       {
         GEO::getPotentialObjects(dis, currentpositions, elementList_, gaussPoints, 
-                                   potentialObjectsAtGP, cutoff, projectiontype);
+                                   potentialObjectsAtGP, cutoff, label, projectiontype);
         return;
       }
       break;

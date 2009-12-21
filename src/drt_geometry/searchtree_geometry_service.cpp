@@ -370,12 +370,13 @@ void GEO::getPotentialObjects(
     const std::map<int,LINALG::Matrix<3,1> >&           currentpositions,
     const std::map<int, std::set<int> >&                elementList,
     const std::vector <LINALG::Matrix<3,1> >&           gaussPoints,
-    std::vector< std::map<int, GEO::NearestObject> >&   potentialObjects,
+    std::map< int, std::map<int, GEO::NearestObject> >& potObjects,
     const double                                        cutoff_radius,
+    const int                                           label,
     const int                                           projectiontype)
 {
   // find nearest object for each structure 
-  fillPotObjectsInNode(dis, currentpositions, elementList, gaussPoints, potentialObjects, cutoff_radius, projectiontype);
+  fillPotObjectsInNode(dis, currentpositions, elementList, gaussPoints, potObjects, cutoff_radius, label, projectiontype);
   return;
 }
 
@@ -667,12 +668,13 @@ void GEO::fillPotObjectsInNode(
     const std::map<int,LINALG::Matrix<3,1> >&           currentpositions,
     const std::map<int, std::set<int> >&                elementList,
     const std::vector <LINALG::Matrix<3,1> >&           gaussPoints,
-    std::vector< std::map<int, GEO::NearestObject> >&   potObjects,
+    std::map< int, std::map<int, GEO::NearestObject> >& potObjects,
     const double                                        cutoff_radius,
+    const int                                           label,
     const int                                           projectiontype)
 {
 
-  //potObjects.clear();
+  potObjects.clear();
   // run over all surface elements
   
   for(unsigned int i_gp = 0; i_gp < gaussPoints.size(); i_gp++)
@@ -681,53 +683,64 @@ void GEO::fillPotObjectsInNode(
     
     for(std::map<int, std::set<int> >::const_iterator labelIter = elementList.begin(); labelIter != elementList.end(); labelIter++)
     {
-      bool pointFound = false;
-      double distance = GEO::LARGENUMBER;
-      LINALG::Matrix<3,1> normal(true);
-      LINALG::Matrix<3,1> x_surface(true);
-      std::set<int>  nodeList;
-      GEO::NearestObject nearestObject;
-      
-      for(std::set<int>::const_iterator eleIter = (labelIter->second).begin(); eleIter != (labelIter->second).end(); eleIter++)
+      if(labelIter->first!=label)
       {
-        // not const because otherwise no lines can be obtained
-        DRT::Element* element = dis.gElement(*eleIter);
-        pointFound = GEO::getDistanceToSurface(element, currentpositions, gaussPoints[i_gp], x_surface, distance);
-        if(pointFound && distance < cutoff_radius)
+        bool pointFound = false;
+        double distance = GEO::LARGENUMBER;
+        double min_distance = GEO::LARGENUMBER;
+        LINALG::Matrix<3,1> normal(true);
+        LINALG::Matrix<3,1> x_surface(true);
+        std::set<int>  nodeList;
+        GEO::NearestObject nearestObject;
+        
+        for(std::set<int>::const_iterator eleIter = (labelIter->second).begin(); eleIter != (labelIter->second).end(); eleIter++)
         {
-          pointFound = false;
-          nearestObject.setSurfaceObjectType(*eleIter, labelIter->first, x_surface);
-        }
-  
-        // run over all line elements
-        const std::vector<Teuchos::RCP< DRT::Element> > eleLines = element->Lines();
-        for(int i_lines = 0; i_lines < element->NumLine(); i_lines++)
-        {
-          pointFound = GEO::getDistanceToLine(eleLines[i_lines].get(), currentpositions, gaussPoints[i_gp], x_surface, distance);
-          if(pointFound && distance < cutoff_radius)
+          // not const because otherwise no lines can be obtained
+          DRT::Element* element = dis.gElement(*eleIter);
+          pointFound = GEO::getDistanceToSurface(element, currentpositions, gaussPoints[i_gp], x_surface, distance);
+          if(pointFound && distance < cutoff_radius && distance < min_distance)
           {
             pointFound = false;
-            nearestObject.setLineObjectType(i_lines, *eleIter, labelIter->first, x_surface);
+            min_distance = distance;
+            nearestObject.setSurfaceObjectType(*eleIter, labelIter->first, x_surface);
+          }
+    
+          // run over all line elements
+          const std::vector<Teuchos::RCP< DRT::Element> > eleLines = element->Lines();
+          for(int i_lines = 0; i_lines < element->NumLine(); i_lines++)
+          {
+            pointFound = GEO::getDistanceToLine(eleLines[i_lines].get(), currentpositions, gaussPoints[i_gp], x_surface, distance);
+            if(pointFound && distance < cutoff_radius && distance < min_distance)
+            {
+              pointFound = false;
+              min_distance = distance;
+              nearestObject.setLineObjectType(i_lines, *eleIter, labelIter->first, x_surface);
+            }
+          }
+          // collect nodes
+          for(int i_node = 0; i_node < DRT::UTILS::getNumberOfElementCornerNodes(element->Shape()); i_node++)
+            nodeList.insert(element->NodeIds()[i_node]);
+        } // loop over structure
+    
+        // run over all nodes
+        for (std::set<int>::const_iterator nodeIter = nodeList.begin(); nodeIter != nodeList.end(); nodeIter++)
+        {
+          const DRT::Node* node = dis.gNode(*nodeIter);
+          GEO::getDistanceToPoint(node, currentpositions, gaussPoints[i_gp], distance);
+          if (distance < cutoff_radius && distance < min_distance)
+          {
+            min_distance = distance;
+            nearestObject.setNodeObjectType(*nodeIter, labelIter->first, currentpositions.find(node->Id())->second);
           }
         }
-        // collect nodes
-        for(int i_node = 0; i_node < DRT::UTILS::getNumberOfElementCornerNodes(element->Shape()); i_node++)
-          nodeList.insert(element->NodeIds()[i_node]);
-      } // loop over structure
-  
-      // run over all nodes
-      for (std::set<int>::const_iterator nodeIter = nodeList.begin(); nodeIter != nodeList.end(); nodeIter++)
-      {
-        const DRT::Node* node = dis.gNode(*nodeIter);
-        GEO::getDistanceToPoint(node, currentpositions, gaussPoints[i_gp], distance);
-        if (distance < cutoff_radius)
-          nearestObject.setNodeObjectType(*nodeIter, labelIter->first, currentpositions.find(node->Id())->second);
-
-      }
-      if(nearestObject.getObjectType() != GEO::NOTYPE)
-        potObjectsAtGaussPoint[labelIter->first] = nearestObject;
+        
+        if(nearestObject.getObjectType() != GEO::NOTYPE_OBJECT)
+          potObjectsAtGaussPoint[labelIter->first] = nearestObject;
+        
+      }// labelIter->first != label
     } // loop over structures
-    potObjects.push_back(potObjectsAtGaussPoint);
+    if(potObjectsAtGaussPoint.size() != 0)
+      potObjects[i_gp] = potObjectsAtGaussPoint;
   }  // loop over gaussian points
   
   return;

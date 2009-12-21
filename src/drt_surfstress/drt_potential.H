@@ -16,6 +16,10 @@ Maintainer: Ursula Mayer
 #ifndef DRT_POTENTIAL_H_
 #define DRT_POTENTIAL_H_
 
+#ifdef PARALLEL
+#include "mpi.h"
+#endif
+
 #include <Teuchos_RefCountPtr.hpp>
 #include <Teuchos_ParameterList.hpp>
 
@@ -135,6 +139,16 @@ protected:
       const string&                           condstring
       );
 
+  
+  void EvaluateVolumePotentialCondition(
+      ParameterList&                          params,
+      RefCountPtr<LINALG::SparseMatrix>       systemmatrix1,
+      RefCountPtr<LINALG::SparseMatrix>       systemmatrix2,
+      RefCountPtr<Epetra_Vector>              systemvector1,
+      Teuchos::RCP<Epetra_Vector>             systemvector2,
+      Teuchos::RCP<Epetra_Vector>             systemvector3,
+      const string&                           condstring
+      );
 
   /*!
   \brief  select correct potential out of condition
@@ -347,6 +361,19 @@ protected:
       std::map<int,std::vector<PotentialElementContainer> >&        nonlocalPecs,
       vector<int>&                                                  lmcol
       );
+  
+  
+  void CollectLmcol(
+      const Teuchos::RCP<DRT::Discretization>                       potentialdis,
+      const std::map< int, std::map<int, GEO::NearestObject> >&     potentialObjectsAtGP,
+      vector<int> &                                                 lmcol
+      );
+  
+  
+  int GetElementId( 
+      const Teuchos::RCP<DRT::Discretization>         potentialdis,
+      const GEO::NearestObject&                       potObject
+      );
 
 
   //! get local index
@@ -354,34 +381,34 @@ protected:
       vector<int>&    lmcol,
       int             value
       );
-
-
+  
+  
   //! compute element nodes in reference configuration
   void ReferenceConfiguration(
       const DRT::Element*         element,
-      LINALG::SerialDenseMatrix&  X,
+      Epetra_SerialDenseMatrix&  X,
       const int                   numdim
       ) const;
 
 
    //! compute element nodes in reference configuration
-   LINALG::SerialDenseMatrix ReferenceConfiguration(
+  Epetra_SerialDenseMatrix ReferenceConfiguration(
     const DRT::Element*                         element,
     const int                                   numdim
     ) const;
-
-
+  
+  
   //! compute element nodes in spatial configuration
   void SpatialConfiguration(
       const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
       const DRT::Element*                         element,
-      LINALG::SerialDenseMatrix&                  x,
+      Epetra_SerialDenseMatrix&                   x,
       const int                                   numdim
       ) const;
 
 
   //! compute element nodes in spatial configuration
-  LINALG::SerialDenseMatrix SpatialConfiguration(
+  Epetra_SerialDenseMatrix SpatialConfiguration(
     const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
     const DRT::Element*                         element,
     const int                                   numdim

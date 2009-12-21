@@ -423,9 +423,9 @@ namespace GEO
     //Selbe Funktion wie svdcmp nur SerialDenseMatrizen als Eingabeparameter
 
  void svdcmpSerialDense(
-         LINALG::SerialDenseMatrix&  A,
-         LINALG::SerialDenseMatrix&  W,
-         LINALG::SerialDenseMatrix&  V
+     Epetra_SerialDenseMatrix&  A,
+     Epetra_SerialDenseMatrix&  W,
+     Epetra_SerialDenseMatrix&  V
          );
 
     /*!

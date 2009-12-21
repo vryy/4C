@@ -118,9 +118,9 @@ void GEO::test_svdcmp(
 }  
 
 void GEO::svdcmpSerialDense(
-         LINALG::SerialDenseMatrix&  A,
-         LINALG::SerialDenseMatrix&  W,
-         LINALG::SerialDenseMatrix&  V
+         Epetra_SerialDenseMatrix&  A,
+         Epetra_SerialDenseMatrix&  W,
+         Epetra_SerialDenseMatrix&  V
          )
   {
    //Dimensionen der Matrix A herausfinden

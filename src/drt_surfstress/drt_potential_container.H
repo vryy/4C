@@ -47,11 +47,10 @@ public:
    */
   PotentialElementContainer (
       const int                               gid,
-      const int                               owner,
       const DRT::Element::DiscretizationType  distype,
       const int                               body_label,
-      const LINALG::SerialDenseMatrix&        xyz_e,
-      const LINALG::SerialDenseMatrix&        XYZ_e,
+      const Epetra_SerialDenseMatrix&         xyz_e,
+      const Epetra_SerialDenseMatrix&         XYZ_e,
       const std::vector<int>&      	          lm);
 
 
@@ -70,7 +69,7 @@ public:
     \brief Destructor
 
    */
-  virtual ~PotentialElementContainer () { return; }
+  virtual ~PotentialElementContainer ();
   
   //! unique par object
   virtual int UniqueParObjectId() const {return ParObject_Pec;}
@@ -87,9 +86,6 @@ public:
   //! returns global Id of an element
   int Id() {return gid_;}
   
-  //! returns owner of an element
-  int Owner() {return owner_;}
-  
   //! returns discretization type of an element
   DRT::Element::DiscretizationType Shape() {return distype_;}
   
@@ -100,13 +96,13 @@ public:
   int NumDofs() {return (int) lm_.size();}
   
   //! returns number of dofs of an element
-  int NumNode() {return xyz_e_.M()*xyz_e_.N();}
+  int NumNode() {return xyz_e_.M();}
   
   //! returns spatial configuration
-  LINALG::SerialDenseMatrix GetSpatialConfiguration(){return xyz_e_;}
+  Epetra_SerialDenseMatrix GetSpatialConfiguration(){return xyz_e_;}
 
   //! returns reference configuration
-  LINALG::SerialDenseMatrix GetReferenceConfiguration(){return XYZ_e_;}
+  Epetra_SerialDenseMatrix GetReferenceConfiguration(){return XYZ_e_;}
   
   //! returns global degrees of freedom
   std::vector<int> GetLm(){return lm_;}
@@ -117,9 +113,6 @@ private:
   //! global Id of an element
   int                                   gid_;
 
-  //! owner of an element
-  int                                   owner_;
-
   //! shape of an element
   DRT::Element::DiscretizationType      distype_;
 
@@ -127,10 +120,10 @@ private:
   int                                   body_label_;
 
   //! nodal values in spatial configuration of an element
-  LINALG::SerialDenseMatrix             xyz_e_;
+  Epetra_SerialDenseMatrix             xyz_e_;
 
   //! nodal values in reference configuration of an element
-  LINALG::SerialDenseMatrix              XYZ_e_;
+  Epetra_SerialDenseMatrix              XYZ_e_;
 
   //! global dof ids
   std::vector<int>       		             lm_;

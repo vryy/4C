@@ -613,8 +613,9 @@ public:
         const std::map<int,LINALG::Matrix<3,1> >&              currentpositions,
         const LINALG::Matrix<3,2>&                             eleXAABB,
         const std::vector< LINALG::Matrix<3,1> >&              gaussPoints,
-        std::vector<std::map<int, GEO::NearestObject > >&      potentialObjectsAtGP,
+        std::map< int, std::map<int, GEO::NearestObject> >&   potentialObjectsAtGP,
         const double                                           cutoff,
+        const int                                             label,
         const int                                              projectiontype
     );
 
@@ -898,8 +899,9 @@ public:
         const std::map<int,LINALG::Matrix<3,1> >&             currentpositions,
         const LINALG::Matrix<3,2>&                            eleXAABB,
         const std::vector< LINALG::Matrix<3,1> >&             gaussPoints,
-        std::vector< std::map<int, GEO::NearestObject > >&    potentialObjectsAtGP,
+        std::map< int, std::map<int, GEO::NearestObject> >&   potentialObjectsAtGP,
         const double                                          cutoff,
+        const int                                             label,
         const int                                             projectiontype
         );
 

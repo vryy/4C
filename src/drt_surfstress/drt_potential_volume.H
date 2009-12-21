@@ -207,8 +207,8 @@ private:
   //! compute integration factors for volume elements
   double ComputeFactor(
       const DRT::Element*                     element,
-      LINALG::SerialDenseVector&              funct,
-      LINALG::SerialDenseMatrix&              deriv,
+      Epetra_SerialDenseVector&              funct,
+      Epetra_SerialDenseMatrix&              deriv,
       const DRT::UTILS::IntegrationPoints3D&  intpoints,
       const int                               gp,
       LINALG::Matrix<3,1>&                    x_gp,
@@ -219,8 +219,8 @@ private:
   //! compute integration factors for volume pecs
   double ComputeFactor(
       PotentialElementContainer&              pec,
-      LINALG::SerialDenseVector&              funct,
-      LINALG::SerialDenseMatrix&              deriv,
+      Epetra_SerialDenseVector&              funct,
+      Epetra_SerialDenseMatrix&              deriv,
       const DRT::UTILS::IntegrationPoints3D&  intpoints,
       const int                               gp,
       LINALG::Matrix<3,1>&                    x_gp,
@@ -231,8 +231,8 @@ private:
   //! compute integration factors for surface elements 
   double ComputeFactor(
       const DRT::Element*                     element,
-      LINALG::SerialDenseVector&              funct,
-      LINALG::SerialDenseMatrix&              deriv,
+      Epetra_SerialDenseVector&              funct,
+      Epetra_SerialDenseMatrix&              deriv,
       const DRT::UTILS::IntegrationPoints2D&  intpoints,
       const int                               gp,
       LINALG::Matrix<2,1>&                    x_gp,
@@ -243,8 +243,8 @@ private:
   //! compute integration factors for surface pecs
   double ComputeFactor(
       PotentialElementContainer&              pec,
-      LINALG::SerialDenseVector&              funct,
-      LINALG::SerialDenseMatrix&              deriv,
+      Epetra_SerialDenseVector&              funct,
+       Epetra_SerialDenseMatrix&              deriv,
       const DRT::UTILS::IntegrationPoints2D&  intpoints,
       const int                               gp,
       LINALG::Matrix<2,1>&                    x_gp,

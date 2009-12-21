@@ -191,15 +191,15 @@ private:
   
   
   void computeFandK_Approx2(
-      const DRT::Element*                                      actEle,
-      const DRT::UTILS::GaussRule2D&                           gaussrule,  
-      const std::vector< std::map<int, GEO::NearestObject> >&  potentialObjects,
-      vector<int>&                                             lm,
-      Epetra_SerialDenseMatrix&                                K_surf,
-      Epetra_SerialDenseVector&                                F_int,
-      RefCountPtr<DRT::Condition>                              cond,
-      const int                                                label,
-      const double                                             curvefac
+      const DRT::Element*                                         actEle,
+      const DRT::UTILS::GaussRule2D&                              gaussrule,  
+      const std::map< int, std::map<int, GEO::NearestObject> >&   potentialObjects,
+      vector<int>&                                                lm,
+      Epetra_SerialDenseMatrix&                                   K_surf,
+      Epetra_SerialDenseVector&                                   F_int,
+      RefCountPtr<DRT::Condition>                                 cond,
+      const int                                                   label,
+      const double                                                curvefac
   );
 
 
@@ -223,8 +223,8 @@ private:
     //! compute integration factors for surface elements
     double ComputeFactor(
         const DRT::Element*                     element,
-        LINALG::SerialDenseVector&              funct,
-        LINALG::SerialDenseMatrix&              deriv,
+        Epetra_SerialDenseVector&              funct,
+        Epetra_SerialDenseMatrix&              deriv,
         const DRT::UTILS::IntegrationPoints2D&  intpoints,
         const int                               gp,
         LINALG::Matrix<3,1>&                    x_gp,     
@@ -235,9 +235,9 @@ private:
     
     double ComputeFactorApprox(
         const DRT::Element*                     element,
-        LINALG::SerialDenseVector&              funct,
-        LINALG::SerialDenseMatrix&              deriv,
-        LINALG::SerialDenseMatrix& 				      FInvers,
+        Epetra_SerialDenseVector&              funct,
+        Epetra_SerialDenseMatrix&              deriv,
+        Epetra_SerialDenseMatrix& 				      FInvers,
         const DRT::UTILS::IntegrationPoints2D&  intpoints,
         const int                               gp,
         LINALG::Matrix<3,1>&                    x_gp,
@@ -249,8 +249,8 @@ private:
   //! compute integration factors for line elements
   double ComputeFactor(
       const DRT::Element*                     element,
-      LINALG::SerialDenseVector&              funct,
-      LINALG::SerialDenseMatrix&              deriv,
+      Epetra_SerialDenseVector&              funct,
+      Epetra_SerialDenseMatrix&              deriv,
       const DRT::UTILS::IntegrationPoints1D&  intpoints,
       const int                               gp,
       LINALG::Matrix<3,1>&                    x_gp,
@@ -259,9 +259,10 @@ private:
 
   
   
-  std::vector< std::map<int, GEO::NearestObject> >  GetPotentialObjectsAtGP(
+  std::map< int, std::map<int, GEO::NearestObject> > GetPotentialObjectsAtGP(
       const DRT::Element*                 element, 
       const DRT::UTILS::GaussRule2D&      gaussrule,
+      const int                           label,
       const double                        cutoff
       );
   
@@ -290,12 +291,7 @@ private:
       const DRT::Element*                     element,
       const LINALG::Matrix<3,1>&              x_gp
       );
-  
-  //! evaluate potObject and returns closest point and associated element
-  int DetermineElement( 
-      const GEO::NearestObject&       potObject
-      );
-  
+    
   /*!
     \brief  computes unit distance vector
     */

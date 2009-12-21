@@ -24,7 +24,6 @@ Maintainer: Ursula Mayer
 POTENTIAL::PotentialElementContainer::PotentialElementContainer():
   ParObject(),
   gid_(-1),
-  owner_(-1),
   distype_(DRT::Element::dis_none),
   body_label_(-1)
 {
@@ -42,15 +41,13 @@ POTENTIAL::PotentialElementContainer::PotentialElementContainer():
  *----------------------------------------------------------------------*/
 POTENTIAL::PotentialElementContainer::PotentialElementContainer(
     const int                                 gid,
-    const int                                 owner,
     const DRT::Element::DiscretizationType    distype,
     const int                                 body_label,
-    const LINALG::SerialDenseMatrix&          xyz_e,
-    const LINALG::SerialDenseMatrix&          XYZ_e,
+    const Epetra_SerialDenseMatrix&           xyz_e,
+    const Epetra_SerialDenseMatrix&           XYZ_e,
     const std::vector<int>&      	            lm):
       ParObject(),
   gid_(gid),
-  owner_(owner),
   distype_(distype),
   body_label_(body_label),
   xyz_e_(xyz_e),
@@ -60,6 +57,15 @@ POTENTIAL::PotentialElementContainer::PotentialElementContainer(
   return;
 }
 
+    
+    
+/*----------------------------------------------------------------------*
+ |  dtor (public)                                           u.may 12/09 |
+ *----------------------------------------------------------------------*/
+POTENTIAL::PotentialElementContainer::~PotentialElementContainer()
+{
+  return;
+}
 
 
 /*----------------------------------------------------------------------*
@@ -67,10 +73,9 @@ POTENTIAL::PotentialElementContainer::PotentialElementContainer(
  |                                                          u.may 12/09 |
  *----------------------------------------------------------------------*/
 POTENTIAL::PotentialElementContainer::PotentialElementContainer(
-	const POTENTIAL::PotentialElementContainer&  old):
+	const PotentialElementContainer&  old):
 	  ParObject(old),
   gid_(old.gid_),
-  owner_(old.owner_),
   distype_(old.distype_),
   body_label_(old.body_label_),
   xyz_e_(old.xyz_e_),
@@ -92,8 +97,6 @@ void POTENTIAL::PotentialElementContainer::Pack(vector<char>& data) const
 
   // global id gid_
   AddtoPack(data, gid_);
-  // owner 
-  AddtoPack(data, owner_);
   // distype  
   AddtoPack(data, distype_);
   // body_label_
@@ -120,10 +123,10 @@ void POTENTIAL::PotentialElementContainer::Unpack(
   int position = 0;
   // gid
   ExtractfromPack(position,data, gid_);
-  // owner_
-  ExtractfromPack(position,data, owner_);
   // distype_
   ExtractfromPack(position,data, distype_);
+  // body_label_
+  ExtractfromPack(position,data, body_label_);
   // xyz_e_
   ExtractfromPack(position,data, xyz_e_);
   // XYZ_e_
@@ -148,10 +151,10 @@ void POTENTIAL::PotentialElementContainer::Unpack(
 {
   // gid
   ExtractfromPack(position,data, gid_);
-  // owner_
-  ExtractfromPack(position,data, owner_);
   // distype_
   ExtractfromPack(position,data, distype_);
+  // body_label_
+  ExtractfromPack(position,data, body_label_);
   // xyz_e_
   ExtractfromPack(position,data, xyz_e_);
   // XYZ_e_
