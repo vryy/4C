@@ -63,7 +63,7 @@ Input/condif1_straight_convection.dat                   x        x        x     
 Input/dyn_shell_dirich.dat                              x        x        x        x        -        -
 Input/dyn_shell_neum.dat                                x        x        x        x        -        -
 Input/elch_Kwok_Wu.dat                                  x        x        x        x        -        -
-Input/elch_Kwok_Wu_BDF2.dat                             -        -        x        x        -        -
+Input/elch_Kwok_Wu_BDF2.dat                             -        x        x        x        -        -
 Input/elch_natconv.dat                                  x        x        x        x        -        -
 Input/elch_pper_butlervolmer.dat                        x        x        x        x        -        -
 Input/elch_pper_primary_current_distribution.dat        x        x        x        x        -        -
@@ -147,7 +147,7 @@ Input/fsi_ow32x32_drt_ga_mfsi.dat                       x        x        x     
 Input/fsi_ow3D_sd.dat                                   x        x        x        x        -        -
 Input/fsi_ow3D_sd_is.dat                                x        x        x        x        -        -
 Input/fsi_ow3D_usfem.dat                                x        x        x        x        -        -
-Input/fsi_ow3D_mtr_drt.dat                              x        x        x        x        -        -       
+Input/fsi_ow3D_mtr_drt.dat                              x        x        x        x        -        -
 Input/fsi_tank3D.dat                                    x        -        x        -        -        -
 Input/fsi_tank3D_par.dat                                -        -        -        -        -        -
 Input/fsi-pw-mfsi-be.dat                                x        x        x        -        x        x
@@ -256,7 +256,7 @@ Input/sotet4_patchtest.dat                              x        x        x     
 Input/sotet10_patchtest.dat                             x        x        x        -        -        -
 Input/loma_2d_heated_chan_30x100.dat                    x        x        x        x        -        -
 Input/scatra_graetz_problem_system.dat                  x        x        x        -        -        -
-Input/scatra_graetz_problem_system_ost.dat              -        -        x        x        -        -
+Input/scatra_graetz_problem_system_ost.dat              -        x        x        x        -        -
 Input/scatra_gaussian_hill_pbc.dat                      x        x        x        -        -        -
 Input/scatra_gaussian_hill_pbc_genalpha.dat             x        x        x        -        -        -
 Input/scatra_gaussian_hill_pbc_gena_cons.dat            x        x        x        -        -        -
