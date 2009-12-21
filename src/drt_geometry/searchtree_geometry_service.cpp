@@ -724,14 +724,12 @@ void GEO::fillPotObjectsInNode(
           nearestObject.setNodeObjectType(*nodeIter, labelIter->first, currentpositions.find(node->Id())->second);
 
       }
-      potObjectsAtGaussPoint[labelIter->first] = nearestObject;
+      if(nearestObject.getObjectType() != GEO::NOTYPE)
+        potObjectsAtGaussPoint[labelIter->first] = nearestObject;
     } // loop over structures
     potObjects.push_back(potObjectsAtGaussPoint);
   }  // loop over gaussian points
   
-  if(potObjects.size()==0)
-      dserror("no nearest object obtained");
-
   return;
 }
 
