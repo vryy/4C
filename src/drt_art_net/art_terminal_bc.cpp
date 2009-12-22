@@ -88,7 +88,10 @@ void ART::UTILS::SolvePrescribedTerminalBC(RefCountPtr<DRT::Discretization> actd
     dserror("forced reflection (Rf = %f) should always belong to the range :[0  1.0]",Rf);
   }
   else
+  {
     dserror("%s is not defined as a 1D artery's inlet BC type",Type.c_str());
+    exit(1);
+  }
 
   // -------------------------------------------------------------------
   // Read in the value of the applied BC
@@ -100,7 +103,10 @@ void ART::UTILS::SolvePrescribedTerminalBC(RefCountPtr<DRT::Discretization> actd
     BCin = (*vals)[0]*curvefac;
   }
   else
+  {
     dserror("no inlet boundary condition defined!");
+    exit(1);
+  }
 
   // -------------------------------------------------------------------
   // Read in the parameters asosciated with the artery terminal to whom
@@ -569,7 +575,7 @@ void ART::UTILS::SolveExplWindkesselBC(RefCountPtr<DRT::Discretization> actdis,
       // ---------------------------------------------------------------
 
       // define the 3 element windkessel parameters
-      double Pout, R1, C, R2, Poutnm;
+      double Pout, C, R2;
 
       // Read in the periferal pressure of the wind kessel model
       if ((*curve)[0]>=0)
@@ -582,6 +588,7 @@ void ART::UTILS::SolveExplWindkesselBC(RefCountPtr<DRT::Discretization> actdis,
         Pout = (*vals)[2];
       }
       // Read in Pout at time step n-1
+      double Poutnm;
       if ((*curve)[0]>=0)
       {
         double t;
@@ -590,13 +597,14 @@ void ART::UTILS::SolveExplWindkesselBC(RefCountPtr<DRT::Discretization> actdis,
         else 
           t = time -dt;
         curvefac = DRT::Problem::Instance()->Curve((*curve)[0]).f(t);
-        Pout = (*vals)[0]*curvefac;
+        Poutnm = (*vals)[0]*curvefac;
       }
       else
       {
-        Pout = (*vals)[2];
+        Poutnm = (*vals)[2];
       }
       // read in the source resistance value
+      double R1;
       if ((*curve)[1]>=0)
       {
         curvefac = DRT::Problem::Instance()->Curve((*curve)[1]).f(time);
