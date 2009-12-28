@@ -114,7 +114,6 @@ void POTENTIAL::VolumePotential::EvaluateVolumePotentialCondition(
 #else
     Epetra_SerialComm comm;
 #endif
-    int myrank = comm.MyPID();
     
    // get conditions 
    vector<DRT::Condition*> potentialcond;
@@ -618,7 +617,6 @@ void POTENTIAL::VolumePotential::ComputeFandK(
   // number of atoms (~0.2 nm) per surface area in reference configuration
   // here equal for all bodies in n/µm^2
   const double beta   = cond->GetDouble("beta");	
-  const int    label  = cond->GetInt("label");
   const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
 
   //----------------------------------------------------------------------
@@ -798,7 +796,6 @@ void POTENTIAL::VolumePotential::ComputeFandK(
   // number of atoms (~0.2 nm) per volume area in reference configuration
   // here equal for all bodies in n/µm^2
   const double  beta    = cond->GetDouble("beta");
-  const int     label   = cond->GetInt("label");
   const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule);
 
   //----------------------------------------------------------------------
