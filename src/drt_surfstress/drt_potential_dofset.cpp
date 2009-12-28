@@ -65,7 +65,7 @@ void POTENTIAL::PotentialDofSet::TransferDegreesOfFreedom(
     {
       const DRT::Node* newnode = newdis.lRowNode(inode);
       if(!sourcedis.HaveGlobalNode(newnode->Id()))
-        dserror("source dis does not node");
+        dserror("source dis does not have node");
 
       const DRT::Node* sourcenode = sourcedis.gNode(newnode->Id());
       const vector<int> dofs = sourcedis.Dof(sourcenode);
