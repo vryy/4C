@@ -1149,6 +1149,9 @@ OBJS_DRT_SURFSTRESS = src/drt_surfstress/drt_surfstress_manager.o \
                       src/drt_surfstress/drt_potential_volume.o \
                       src/drt_surfstress/drt_potential_manager.o
                       
+#               intermolecular interaction phenomena                   
+OBJS_DRT_POTENTIAL =
+                      
 #               structure-structure interaction
 OBJS_SSI      = src/ssi_full/ssi_dyn.o \
                 src/ssi_full/ssi_coupling.o \
