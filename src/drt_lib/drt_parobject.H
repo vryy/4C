@@ -167,6 +167,8 @@ using namespace std;
 #define ParObject_Torsion3              (int)151
 #define ParObject_Torsion3Register      (int)152
 #define ParObject_ElastHyper            (int)153
+#define ParObject_Bele2                 (int)154
+#define ParObject_Bele2Register         (int)155
 #define ParObject_ArteryRegister        (int)158
 #define ParObject_Artery                (int)159
 #define ParObject_Cnst_1d_art           (int)160

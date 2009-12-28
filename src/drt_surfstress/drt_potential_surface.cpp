@@ -21,10 +21,8 @@ Maintainer: Ursula Mayer
 #include "../drt_geometry/element_normals.H"
 #include "../drt_geometry/element_volume.H"
 #include "../drt_geometry/intersection_service_templates.H"
+#include "../drt_bele3/bele2.H"
 #include <cstdlib>
-
-
-
 
 
 
@@ -46,7 +44,7 @@ POTENTIAL::SurfacePotential::SurfacePotential(
   conditions_to_copy.push_back("Potential");
 
   if(prob_dim_ == 2)
-    potentialdis_ = DRT::UTILS::CreateDiscretizationFromCondition(discretRCP_, "Potential", "PotBoundary", "BELE3LINE", conditions_to_copy);
+    potentialdis_ = DRT::UTILS::CreateDiscretizationFromCondition(discretRCP_, "Potential", "PotBoundary", "BELE2", conditions_to_copy);
   else if(prob_dim_ == 3)
     potentialdis_ = DRT::UTILS::CreateDiscretizationFromCondition(discretRCP_, "Potential", "PotBoundary", "BELE3", conditions_to_copy);
   else
