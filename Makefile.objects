@@ -1466,11 +1466,5 @@ OBJS_DRT_ALE_BFLOW =
 OBJS_DRT_BELE3_LIB = src/drt_bele3/bele3.o \
                   src/drt_bele3/bele3_line.o \
                   src/drt_bele3/bele3_line_evaluate.o \
-                  src/drt_bele3/bele3_evaluate.o \
-                  src/drt_bele3/vele3.o \
-                  src/drt_bele3/vele3_line.o \
-                  src/drt_bele3/vele3_line_evaluate.o \
-                  src/drt_bele3/vele3_surface.o \
-                  src/drt_bele3/vele3_surface_evaluate.o \
-                  src/drt_bele3/vele3_evaluate.o
+                  src/drt_bele3/bele3_evaluate.o 
    
