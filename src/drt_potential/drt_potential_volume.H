@@ -23,7 +23,7 @@ Maintainer: Ursula Mayer
 #include "mpi.h"
 #endif
 
-#include "../drt_surfstress/drt_potential.H"
+#include "../drt_potential/drt_potential.H"
 
 namespace POTENTIAL
 {

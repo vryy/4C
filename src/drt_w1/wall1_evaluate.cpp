@@ -38,7 +38,7 @@ Maintainer: Markus Gitterle
 #include "Epetra_SerialDenseSolver.h"
 
 #include "../drt_mat/stvenantkirchhoff.H"
-#include "../drt_surfstress/drt_potential_manager.H"
+#include "../drt_potential/drt_potential_manager.H"
 
 /*----------------------------------------------------------------------*/
 // namespaces

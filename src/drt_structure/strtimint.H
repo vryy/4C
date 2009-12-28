@@ -47,7 +47,7 @@ Maintainer: Burkhard Bornemann
 #include "../drt_constraint/constraintsolver.H"
 #include "../drt_lib/drt_locsys.H"
 #include "../drt_surfstress/drt_surfstress_manager.H"
-#include "../drt_surfstress/drt_potential_manager.H"
+#include "../drt_potential/drt_potential_manager.H"
 #include "../drt_contact/drt_contact_manager.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_fluid/drt_periodicbc.H"

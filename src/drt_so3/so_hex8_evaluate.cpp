@@ -25,7 +25,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/viscoanisotropic.H"
 #include "../drt_mat/aaaraghavanvorp_damage.H"
 #include "../drt_mat/plasticneohooke.H"
-#include "../drt_surfstress/drt_potential_manager.H"
+#include "../drt_potential/drt_potential_manager.H"
 
 // inverse design object
 #if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)

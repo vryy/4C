@@ -23,7 +23,7 @@ Maintainer: Michael Gee
 #include "../drt_lib/linalg_serialdensevector.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_surfstress/drt_surfstress_manager.H"
-#include "../drt_surfstress/drt_potential_manager.H"
+#include "../drt_potential/drt_potential_manager.H"
 #include "../drt_statmech/bromotion_manager.H"
 
 #include "Sacado.hpp"

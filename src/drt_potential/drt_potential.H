@@ -37,8 +37,8 @@ Maintainer: Ursula Mayer
 #include "../drt_geometry/searchtree.H"
 #include "../drt_geometry/intersection_service.H"
 #include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_surfstress/drt_potential_dofset.H"
-#include "../drt_surfstress/drt_potential_container.H"
+#include "../drt_potential/drt_potential_dofset.H"
+#include "../drt_potential/drt_potential_container.H"
 
 
 

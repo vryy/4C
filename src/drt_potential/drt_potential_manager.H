@@ -19,8 +19,8 @@ Maintainer: Ursula Mayer
 #include <Teuchos_RefCountPtr.hpp>
 #include <Teuchos_ParameterList.hpp>
 
-#include "../drt_surfstress/drt_potential_surface.H"
-#include "../drt_surfstress/drt_potential_volume.H"
+#include "../drt_potential/drt_potential_surface.H"
+#include "../drt_potential/drt_potential_volume.H"
 #include "../drt_geometry/searchtree.H"
 
 using namespace std;

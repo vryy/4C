@@ -1141,16 +1141,15 @@ OBJS_DRT_MAT  = src/drt_mat/micromaterialgp_static.o \
 OBJS_DRT_STRU_MULTI = src/drt_stru_multi/microstatic.o \
                       src/drt_stru_multi/convert_mat.o
 #               surface stresses due to interfacial phenomena
-OBJS_DRT_SURFSTRESS = src/drt_surfstress/drt_surfstress_manager.o \
-		      src/drt_surfstress/drt_potential_container.o \
-                      src/drt_surfstress/drt_potential_dofset.o \
-                      src/drt_surfstress/drt_potential.o \
-                      src/drt_surfstress/drt_potential_surface.o \
-                      src/drt_surfstress/drt_potential_volume.o \
-                      src/drt_surfstress/drt_potential_manager.o
-                      
+OBJS_DRT_SURFSTRESS = src/drt_surfstress/drt_surfstress_manager.o 
+          
 #               intermolecular interaction phenomena                   
-OBJS_DRT_POTENTIAL =
+OBJS_DRT_POTENTIAL =  src/drt_potential/drt_potential_container.o \
+                      src/drt_potential/drt_potential_dofset.o \
+                      src/drt_potential/drt_potential.o \
+                      src/drt_potential/drt_potential_surface.o \
+                      src/drt_potential/drt_potential_volume.o \
+                      src/drt_potential/drt_potential_manager.o
                       
 #               structure-structure interaction
 OBJS_SSI      = src/ssi_full/ssi_dyn.o \

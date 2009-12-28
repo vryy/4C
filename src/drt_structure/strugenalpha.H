@@ -26,7 +26,7 @@ Maintainer: Michael Gee
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_constraint/constraintsolver.H"
 #include "../drt_surfstress/drt_surfstress_manager.H"
-#include "../drt_surfstress/drt_potential_manager.H"
+#include "../drt_potential/drt_potential_manager.H"
 #include "../drt_lib/drt_locsys.H"
 #include "structure_utils_mapextractor.H"
 

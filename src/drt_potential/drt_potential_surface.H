@@ -17,7 +17,7 @@ Maintainer: Ursula Mayer
 #define DRT_POTENTIAL_SURFACE_H_
 
 
-#include "../drt_surfstress/drt_potential.H"
+#include "../drt_potential/drt_potential.H"
 #include "../drt_geometry/searchtree_nearestobject.H"
 
 

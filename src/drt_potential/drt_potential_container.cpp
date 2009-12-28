@@ -13,7 +13,7 @@ Maintainer: Ursula Mayer
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#include "../drt_surfstress/drt_potential_container.H"
+#include "../drt_potential/drt_potential_container.H"
 #include "../drt_lib/drt_element.H"
 
 
