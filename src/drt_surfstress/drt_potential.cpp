@@ -35,10 +35,10 @@ POTENTIAL::Potential::Potential(
     DRT::Discretization&                discret):
     discretRCP_(discretRCP),
     discret_(discret),
+    searchTree_(rcp(new GEO::SearchTree(8))),
     prob_dim_(genprob.ndim)
 
 {
-  searchTree_ = rcp(new GEO::SearchTree(8));
   return;
 }
 
@@ -269,188 +269,6 @@ void POTENTIAL::Potential::EvaluatePotentialCondition(
   } // for(vector<DRT::Condition*>::iterator condIter = potentialcond->begin() ; condIter != potentialcond->end(); ++ condIter)
   return;
 } // end of EvaluatePotentialCondition
-
-
-
-
-/*-------------------------------------------------------------------*
-| (private)                                               umay  08/08|
-|                                                                    |
-| evaluate potential conditions based on a Epetra_FecrsMatrix        |
-*--------------------------------------------------------------------*/
-void POTENTIAL::Potential::EvaluateVolumePotentialCondition(
-    ParameterList&                          params,
-    RefCountPtr<LINALG::SparseMatrix>       systemmatrix1,
-    RefCountPtr<LINALG::SparseMatrix>       systemmatrix2,
-    RefCountPtr<Epetra_Vector>              systemvector1,
-    Teuchos::RCP<Epetra_Vector>             systemvector2,
-    Teuchos::RCP<Epetra_Vector>             systemvector3,
-    const string&                           condstring)
-{
-  if (!discret_.Filled()) dserror("FillComplete() was not called");
-  if (!discret_.HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
-
-  // get the current time
-  bool usetime = true;
-  const double time = params.get("total time",-1.0);
-  if (time < 0.0) usetime = false;
-  
-  if(time < 0.0)
-    cout <<  "no time curve set " << endl;
-
-  const bool assemblemat1 = systemmatrix1!=Teuchos::null;
-  const bool assemblemat2 = systemmatrix2!=Teuchos::null;
-  const bool assemblevec1 = systemvector1!=Teuchos::null;
-  const bool assemblevec2 = systemvector2!=Teuchos::null;
-  const bool assemblevec3 = systemvector3!=Teuchos::null;
-  
-  
-#ifdef PARALLEL
-    Epetra_MpiComm comm(MPI_COMM_WORLD);
-#else
-    Epetra_SerialComm comm;
-#endif
-    int myrank = comm.MyPID();
-    
-   // get conditions 
-   vector<DRT::Condition*> potentialcond;
-   discret_.GetCondition(condstring, potentialcond);
-  
-   int num_local_ele = 0;
-   int dummy_Id = -1;
-   int geom_count = -1; // start with -1 since the first geom is 0
-   for(vector<DRT::Condition*>::iterator condIter = potentialcond.begin() ; condIter != potentialcond.end(); ++ condIter)
-   {
-     map<int,RefCountPtr<DRT::Element> >& geom = (*condIter)->Geometry();
-     num_local_ele += (int) geom.size();
-     if((int) geom.size() != 0)
-     {
-       dummy_Id = (geom.begin()->second)->Id();
-       geom_count++;
-     }
-   }
-   
-   int num_max_ele = 0;
-   comm.MaxAll(&num_local_ele,&num_max_ele,1 );
-   int num_dummy_ele = num_max_ele - num_local_ele;
-   
-   if(dummy_Id == -1)
-     dserror("no condition on proc %d", comm.MyPID());
-   
-  //----------------------------------------------------------------------
-  // loop through potential conditions and evaluate them
-  //----------------------------------------------------------------------
-   for(vector<DRT::Condition*>::iterator condIter = potentialcond.begin() ; condIter != potentialcond.end(); ++ condIter)
-   {
-     map<int,RefCountPtr<DRT::Element> >& geom = (*condIter)->Geometry();
-     // if (geom.empty()) dserror("evaluation of condition with empty geometry");
-     // no check for empty geometry here since in parallel computations
-     // can exist processors which do not own a portion of the elements belonging
-     // to the condition geometry
-     map<int,RefCountPtr<DRT::Element> >::iterator curr;
-
-     // Evaluate Loadcurve if defined. Put current load factor in parameterlist
-     const vector<int>*    curve  = (*condIter)->Get<vector<int> >("curve");
-     int                   curvenum = -1;
-     if (curve) curvenum = (*curve)[0];
-     double                curvefac = 1.0;
-     if (curvenum>=0 && usetime)
-       curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
-
-     params.set("LoadCurveFactor",curvefac);
-
-     params.set<RefCountPtr<DRT::Condition> >("condition", Teuchos::rcp(*condIter,false));
-
-     // define element matrices and vectors
-     Epetra_SerialDenseMatrix elematrix1;
-     Epetra_SerialDenseMatrix elematrix2;
-     Epetra_SerialDenseVector elevector1;
-     Epetra_SerialDenseVector elevector2;
-     Epetra_SerialDenseVector elevector3;
-
-     for (curr=geom.begin(); curr!=geom.end(); ++curr)
-     {
-       // get element location vector and ownerships
-       vector<int> lm;
-       vector<int> lmowner;
-       curr->second->LocationVector(discret_,lm,lmowner);
-       const int rowsize = lm.size();
-
-       // Reshape element matrices and vectors and init to zero in element->evaluate
-       // call the element specific evaluate method
-       int err = curr->second->Evaluate( params,discret_,lm, elematrix1,elematrix2,
-           elevector1,elevector2,elevector3);
-
-
-       if (err) dserror("error while evaluating elements");
-
-       // specify lm row and lm col
-       vector<int> lmrow;
-       vector<int> lmcol;
-       // only local values appeared
-       if((int) lm.size() == rowsize)
-       {
-         lmrow.resize(lm.size());
-         lmcol.resize(lm.size());
-         lmrow = lm;
-         lmcol = lm;
-       }
-       // non-local values appeared
-       else if((int) lm.size() > rowsize)
-       {
-         for(int i = 0; i < rowsize; i++)
-           lmrow.push_back(lm[i]);
-
-         lmcol.resize(lm.size());
-         lmcol = lm;
-       }
-       else
-         dserror("lm is not properly filled");
-
-       // assembly
-       int eid = curr->second->Id();
-       if (assemblemat1) systemmatrix1->FEAssemble(eid,elematrix1,lmrow,lmcol);
-       if (assemblemat2) systemmatrix2->FEAssemble(eid,elematrix2,lmrow,lmcol);
-
-       if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,lmrow,lmowner);
-       if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,lmrow,lmowner);
-       if (assemblevec3) LINALG::Assemble(*systemvector3,elevector3,lmrow,lmowner);
-     } 
-   } // for(vector<DRT::Condition*>::iterator condIter = potentialcond->begin() ; condIter != potentialcond->end(); ++ condIter)
-
-   // loop over dummy elements
-   const vector<int>*    curve  = potentialcond[geom_count]->Get<vector<int> >("curve");
-   int                   curvenum = -1;
-   if (curve) curvenum = (*curve)[0];
-   double                curvefac = 1.0;
-   if (curvenum>=0 && usetime)
-     curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
-
-   params.set("LoadCurveFactor",curvefac);
-   params.set<RefCountPtr<DRT::Condition> >("condition", Teuchos::rcp(potentialcond[geom_count],false));
-
-   // define element matrices and vectors
-   Epetra_SerialDenseMatrix elematrix1;
-   Epetra_SerialDenseMatrix elematrix2;
-   Epetra_SerialDenseVector elevector1;
-   Epetra_SerialDenseVector elevector2;
-   Epetra_SerialDenseVector elevector3;
-
-   for (int i_dummy = 0; i_dummy < num_dummy_ele; i_dummy++)
-   {
-     vector<int> lm;
-     vector<int> lmowner;
-     DRT::Element * element = discret_.gElement(dummy_Id);
-     element->LocationVector(discret_,lm,lmowner);
-     // call a dummy element for parallel tree search
-     int err = element->Evaluate( params, discret_,lm, elematrix1,elematrix2,
-         elevector1,elevector2,elevector3);
-     if (err) dserror("error while evaluating elements"); 
-   }
-      
-  return;
-} // end of EvaluateVolumePotentialCondition
-
 
 
 /*-------------------------------------------------------------------*
@@ -1284,7 +1102,7 @@ int POTENTIAL::Potential::GetLocalIndex(
  *----------------------------------------------------------------------*/
 void POTENTIAL::Potential::ReferenceConfiguration(
     const DRT::Element*                         element,
-    Epetra_SerialDenseMatrix&                  X,
+    Epetra_SerialDenseMatrix&                   X,
     const int                                   numdim) const
 {
   const int numnode = element->NumNode();
@@ -1294,6 +1112,8 @@ void POTENTIAL::Potential::ReferenceConfiguration(
 
   return;
 }
+
+
 
 /*----------------------------------------------------------------------*
  |  get nodal coordinates in reference configuration         u.may 08/08|
@@ -1319,7 +1139,7 @@ Epetra_SerialDenseMatrix POTENTIAL::Potential::ReferenceConfiguration(
 void POTENTIAL::Potential::SpatialConfiguration(
     const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
     const DRT::Element*                         element,
-    Epetra_SerialDenseMatrix&                  x,
+    Epetra_SerialDenseMatrix&                   x,
     const int                                   numdim) const
 {
   const int numnode = element->NumNode();
@@ -1328,6 +1148,8 @@ void POTENTIAL::Potential::SpatialConfiguration(
       x(i,j) = currentpositions.find(element->NodeIds()[i])->second(j);
   return;
 }
+
+
 
 /*----------------------------------------------------------------------*
  |  get nodal coordinates in spatial configuration           u.may 08/08|
@@ -1357,7 +1179,6 @@ double POTENTIAL::Potential::GetTimeCurveFactor(
   RefCountPtr<DRT::Condition> cond = params.get<RefCountPtr<DRT::Condition> >("condition",null);
   const int    curvenum = cond->GetInt("curve");
   const double time     = params.get<double>("total time",-1.0);
-  //const double dt     = params.get<double>("delta time",0.0);
   const double t_end    = DRT::Problem::Instance()->Curve(curvenum).end();
   double curvefac       = 1.0;
   // apply potential forces gradually

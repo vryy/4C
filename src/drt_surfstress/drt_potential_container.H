@@ -82,6 +82,9 @@ public:
 
   //! unpacks the potential element container from a vector<char>
   void Unpack(const vector<char>& data, int& position);
+  
+  //! print
+  void Print();
 
   //! returns global Id of an element
   int Id() {return gid_;}
@@ -111,22 +114,22 @@ public:
 private:
 
   //! global Id of an element
-  int                                   gid_;
+  int                                         gid_;
 
   //! shape of an element
-  DRT::Element::DiscretizationType      distype_;
+  DRT::Element::DiscretizationType            distype_;
 
   //! label of an element
-  int                                   body_label_;
+  int                                         body_label_;
 
   //! nodal values in spatial configuration of an element
-  Epetra_SerialDenseMatrix             xyz_e_;
+  Epetra_SerialDenseMatrix                    xyz_e_;
 
   //! nodal values in reference configuration of an element
-  Epetra_SerialDenseMatrix              XYZ_e_;
+  Epetra_SerialDenseMatrix                    XYZ_e_;
 
   //! global dof ids
-  std::vector<int>       		             lm_;
+  std::vector<int>                            lm_;
 
   // assignment operator
   //virtual PotentialElementContainer operator = (const PotentialElementContainer& old);

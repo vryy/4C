@@ -58,7 +58,6 @@ POTENTIAL::PotentialElementContainer::PotentialElementContainer(
 }
 
     
-    
 /*----------------------------------------------------------------------*
  |  dtor (public)                                           u.may 12/09 |
  *----------------------------------------------------------------------*/
@@ -86,15 +85,12 @@ POTENTIAL::PotentialElementContainer::PotentialElementContainer(
 }
 
 
-
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                          u.may 12/09 |
  *----------------------------------------------------------------------*/
 void POTENTIAL::PotentialElementContainer::Pack(vector<char>& data) const
 {
-  // TODO check if data.resize(0);
-
   // global id gid_
   AddtoPack(data, gid_);
   // distype  
@@ -112,7 +108,6 @@ void POTENTIAL::PotentialElementContainer::Pack(vector<char>& data) const
 }
 
 
-
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
  |                                                          u.may 12/09 |
@@ -120,25 +115,9 @@ void POTENTIAL::PotentialElementContainer::Pack(vector<char>& data) const
 void POTENTIAL::PotentialElementContainer::Unpack(
   const vector<char>&     data)
 {
-  int position = 0;
-  // gid
-  ExtractfromPack(position,data, gid_);
-  // distype_
-  ExtractfromPack(position,data, distype_);
-  // body_label_
-  ExtractfromPack(position,data, body_label_);
-  // xyz_e_
-  ExtractfromPack(position,data, xyz_e_);
-  // XYZ_e_
-  ExtractfromPack(position,data, XYZ_e_);
-  // lm_
-  ExtractfromPack(position,data, lm_);
-
-  if (position != (int)data.size())
-    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+  dserror("this unpack method is not used");
   return;
 }
-
 
 
 /*----------------------------------------------------------------------*
@@ -162,11 +141,32 @@ void POTENTIAL::PotentialElementContainer::Unpack(
   // lm_
   ExtractfromPack(position,data, lm_);
 
-  // if (position != (int)data.size())
-  //  dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
 }
 
+
+/*----------------------------------------------------------------------*
+ |  Print                                                      (public) |
+ |                                                          u.may 12/09 |
+ *----------------------------------------------------------------------*/
+void POTENTIAL::PotentialElementContainer::Print()
+{
+  cout << "Print: Potential Element Container "           << endl;
+  cout << "PEC: global Id = "             << gid_         << endl;
+  cout << "PEC: discretization type = "   << distype_     << endl;
+  cout << "PEC: label = "                 << body_label_  << endl;
+  cout << "PEC: number of nodes = "       << xyz_e_.M()   << endl;
+  cout << endl; 
+  cout << "PEC: spatial configuration";
+  xyz_e_.Print(cout); cout << endl;
+  cout << "PEC: reference configuration";
+  XYZ_e_.Print(cout); cout << endl;
+  
+  cout << "PEC: global dof ids " << endl;
+  for(int i_lm = 0; i_lm < (int) lm_.size(); i_lm++)
+    cout << "lm[" << i_lm << "] =      " << lm_[i_lm] << endl;
+  cout << endl; 
+}
 
 #endif  // #ifdef CCADISCRET
 

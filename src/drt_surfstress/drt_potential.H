@@ -139,16 +139,6 @@ protected:
       const string&                           condstring
       );
 
-  
-  void EvaluateVolumePotentialCondition(
-      ParameterList&                          params,
-      RefCountPtr<LINALG::SparseMatrix>       systemmatrix1,
-      RefCountPtr<LINALG::SparseMatrix>       systemmatrix2,
-      RefCountPtr<Epetra_Vector>              systemvector1,
-      Teuchos::RCP<Epetra_Vector>             systemvector2,
-      Teuchos::RCP<Epetra_Vector>             systemvector3,
-      const string&                           condstring
-      );
 
   /*!
   \brief  select correct potential out of condition

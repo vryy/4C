@@ -83,7 +83,7 @@ public:
       const DRT::UTILS::GaussRule3D&  gaussrule,
       ParameterList&                  params,
       vector<int>&                    lm,
-      Epetra_SerialDenseMatrix&       K_surf,
+      Epetra_SerialDenseMatrix&       K_stiff,
       Epetra_SerialDenseVector&       F_int
       );
   
@@ -103,7 +103,7 @@ public:
       const DRT::UTILS::GaussRule2D&    gaussrule,
       ParameterList&                    params,
       vector<int>&                      lm,
-      Epetra_SerialDenseMatrix&         K_surf,
+      Epetra_SerialDenseMatrix&         K_stiff,
       Epetra_SerialDenseVector&         fint);
 
 
@@ -122,38 +122,43 @@ private:
     Teuchos::RCP<const Epetra_Vector>   idisp_solid
     );
   
+  
+  void EvaluateVolumePotentialCondition(
+      ParameterList&                          params,
+      RefCountPtr<LINALG::SparseMatrix>       systemmatrix1,
+      RefCountPtr<LINALG::SparseMatrix>       systemmatrix2,
+      RefCountPtr<Epetra_Vector>              systemvector1,
+      Teuchos::RCP<Epetra_Vector>             systemvector2,
+      Teuchos::RCP<Epetra_Vector>             systemvector3,
+      const string&                           condstring
+      );
+  
 
   /*!
-  \brief parallel volume tree search
-   */
+    \brief parallel volume tree search
+     */
   void TreeSearch(
-      const Teuchos::RCP<DRT::Discretization>                   potentialdis,
-      std::map<int,LINALG::Matrix<3,2> >&                       elemXAABBList,
-      const DRT::Element*                                       element,
-      std::map<int,std::set<int> >&                             localEleIds,
-      std::map<int,std::vector<PotentialElementContainer> >&    nonlocalPecs,
-      const double                                              radius,
-      const int                                                 label
-  );
-
-
+      const DRT::Element*      element,
+      const double             radius,
+      const int                label);
+  
+  
   /*!
-  \brief  compute internal force and stiffness matrix
-          for volume elements
+    \brief parallel volume dummy tree search
+     */
+  void TreeSearchDummy();
+  
+  
+  /*!
+  \brief volume tree search
    */
-  void ComputeFandK(
-      const DRT::Element*                     actEle,
-      const DRT::UTILS::GaussRule3D&          gaussrule,
-      std::map<int,std::set<int> >&           potElements,
-      vector<int>&                            lm,
-      Epetra_SerialDenseMatrix&               K_surf,
-      Epetra_SerialDenseVector&               F_int,
-      RefCountPtr<DRT::Condition>             cond,
-      const int                               label,
-      const double                            curvefac
-  );
+  void TreeSearchElement(
+      const LINALG::Matrix<3,2>&                              eleXAABB,
+      const int                                               label,
+      const bool                                              dummy
+      );
 
-
+  
   /*!
     \brief  compute internal force and stiffness matrix
             for local volume elements and nonlocal volume pecs
@@ -161,28 +166,11 @@ private:
   void ComputeFandK(
       const DRT::Element*                                             actEle,
       const DRT::UTILS::GaussRule3D&                                  gaussrule,
-      std::map<int,std::set<int> >&                                   localEleIds,
-      std::map<int,std::vector<PotentialElementContainer> >&          nonlocalPecs,
       vector<int>&                                                    lm,
-      Epetra_SerialDenseMatrix&                                       K_surf,
+      Epetra_SerialDenseMatrix&                                       K_stiff,
       Epetra_SerialDenseVector&                                       F_int,
       RefCountPtr<DRT::Condition>                                     cond,
-      const int                                                       label,
       const double                                                    curvefac
-  );
-
-
-  //! compute integration factors for volume pecs
-  void ComputeFandK(
-      const DRT::Element*                     actEle,
-      const DRT::UTILS::GaussRule2D&          gaussrule,
-      std::map<int,std::set<int> >&           potElements,
-      vector<int>&                            lm,
-      Epetra_SerialDenseMatrix&               K_surf,
-      Epetra_SerialDenseVector&               F_int,
-      RefCountPtr<DRT::Condition>             cond,
-      const int                               label,
-      const double                            curvefac
   );
 
 
@@ -193,13 +181,10 @@ private:
   void ComputeFandK(
       const DRT::Element*                                         actEle,
       const DRT::UTILS::GaussRule2D&                              gaussrule,
-      std::map<int,std::set<int> >&                               localEleIds,
-      std::map<int,std::vector<PotentialElementContainer> >&      nonlocalPecs,
       vector<int>&                                                lm,
-      Epetra_SerialDenseMatrix&                                   K_surf,
+      Epetra_SerialDenseMatrix&                                   K_stiff,
       Epetra_SerialDenseVector&                                   F_int,
       RefCountPtr<DRT::Condition>                                 cond,
-      const int                                                   label,
       const double                                                curvefac
   );
 
@@ -207,8 +192,8 @@ private:
   //! compute integration factors for volume elements
   double ComputeFactor(
       const DRT::Element*                     element,
-      Epetra_SerialDenseVector&              funct,
-      Epetra_SerialDenseMatrix&              deriv,
+      Epetra_SerialDenseVector&               funct,
+      Epetra_SerialDenseMatrix&               deriv,
       const DRT::UTILS::IntegrationPoints3D&  intpoints,
       const int                               gp,
       LINALG::Matrix<3,1>&                    x_gp,
@@ -219,8 +204,8 @@ private:
   //! compute integration factors for volume pecs
   double ComputeFactor(
       PotentialElementContainer&              pec,
-      Epetra_SerialDenseVector&              funct,
-      Epetra_SerialDenseMatrix&              deriv,
+      Epetra_SerialDenseVector&               funct,
+      Epetra_SerialDenseMatrix&               deriv,
       const DRT::UTILS::IntegrationPoints3D&  intpoints,
       const int                               gp,
       LINALG::Matrix<3,1>&                    x_gp,
@@ -231,8 +216,8 @@ private:
   //! compute integration factors for surface elements 
   double ComputeFactor(
       const DRT::Element*                     element,
-      Epetra_SerialDenseVector&              funct,
-      Epetra_SerialDenseMatrix&              deriv,
+      Epetra_SerialDenseVector&               funct,
+      Epetra_SerialDenseMatrix&               deriv,
       const DRT::UTILS::IntegrationPoints2D&  intpoints,
       const int                               gp,
       LINALG::Matrix<2,1>&                    x_gp,
@@ -243,8 +228,8 @@ private:
   //! compute integration factors for surface pecs
   double ComputeFactor(
       PotentialElementContainer&              pec,
-      Epetra_SerialDenseVector&              funct,
-       Epetra_SerialDenseMatrix&              deriv,
+      Epetra_SerialDenseVector&               funct,
+      Epetra_SerialDenseMatrix&               deriv,
       const DRT::UTILS::IntegrationPoints2D&  intpoints,
       const int                               gp,
       LINALG::Matrix<2,1>&                    x_gp,
@@ -267,35 +252,26 @@ private:
 
 
   //! name@ Private Attributes
+  //! search tree type
+  GEO::TreeType                                           treetype_;
+  
+  //! for each potential condition label there is a set of boundary elements
+  std::map<int,std::set<int> >                            elementsByLabel_;
+  
+  //! column vector of displacements 
+  Teuchos::RCP<const Epetra_Vector>                       disp_col_;
 
   //! current position of boundary elements
-  std::map<int,LINALG::Matrix<3,1> >          currentpositions_;
+  std::map<int,LINALG::Matrix<3,1> >                      currentpositions_;
 
-  //! for each potential condition label there is a set of boundary elements
-  std::map<int,std::set<int> >                elementsByLabel_;
-
-  //! potential boundary
-  LINALG::MapExtractor                        potboundary_;
-
-  //! @name local copies of input parameters
-  Teuchos::RCP<DRT::Discretization>           potentialdis_;
-
-  //! @name displacement vector of redundant boundary discretization
-  Teuchos::RCP<Epetra_Vector>                 idisp_total_;
-
-  //! @name displacement vector of boundary discretization, which is part of the local solid dis
-  Teuchos::RCP<Epetra_Vector>                 idisp_onproc_;
-
-  //! @name importer
-  Teuchos::RCP<Epetra_Import>                 importer_;
+  //! list of current XAABBs 
+  std::map<int,LINALG::Matrix<3,2> > 					            elemXAABBList_;
   
-  //! List of current XAABBs 
-  std::map<int,LINALG::Matrix<3,2> > 					elemXAABBList_;
+  //! local potential element ids
+  std::map<int,std::set<int> >                            localEleIds_;
   
-  //! search tree type
-  GEO::TreeType                               treetype_;
-  
-  Teuchos::RCP<const Epetra_Vector>           disp_col_;
+  //! nonlocal potential element containers
+  std::map<int,std::vector<PotentialElementContainer> >   nonlocalPecs_;
                       
 
 
