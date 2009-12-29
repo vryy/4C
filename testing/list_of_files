@@ -304,3 +304,5 @@ Input/thermo3D_FBC_ost.dat                              x        x        x     
 Input/thermo3D_FBC_statics.dat                          x        x        x        x        -        -
 Input/mfsi-volconstr-structsplit.dat                    x        x        x        -        x        x
 Input/mfsi-volconstr-fluidsplit.dat                     x        x        x        -        x        x
+Input/potential_vol_LJ_3D.dat                           x        x        x        x        -        -
+Input/potential_vol_LJ_2D.dat                           x        x        x        x        -        -
