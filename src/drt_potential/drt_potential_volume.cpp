@@ -165,8 +165,8 @@ void POTENTIAL::VolumePotential::EvaluateVolumePotentialCondition(
      {
        // get element location vector and ownerships
        vector<int> lm;
-       vector<int> lmowner;
-       curr->second->LocationVector(discret_,lm,lmowner);
+       vector<int> lmrowowner;
+       curr->second->LocationVector(discret_,lm,lmrowowner);
        const int rowsize = lm.size();
 
        // tree search has to be called before evaluate for each element
@@ -204,20 +204,19 @@ void POTENTIAL::VolumePotential::EvaluateVolumePotentialCondition(
 
        // assembly
        int eid = curr->second->Id();
-       if (assemblemat1) systemmatrix1->FEAssemble(eid,elematrix1,lmrow,lmcol);
-       if (assemblemat2) systemmatrix2->FEAssemble(eid,elematrix2,lmrow,lmcol);
+       if (assemblemat1) systemmatrix1->FEAssemble(eid,elematrix1,lmrow,lmrowowner,lmcol);
+       if (assemblemat2) systemmatrix2->FEAssemble(eid,elematrix2,lmrow,lmrowowner,lmcol);
 
-       if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,lmrow,lmowner);
-       if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,lmrow,lmowner);
-       if (assemblevec3) LINALG::Assemble(*systemvector3,elevector3,lmrow,lmowner);
+       if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,lmrow,lmrowowner);
+       if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,lmrow,lmrowowner);
+       if (assemblevec3) LINALG::Assemble(*systemvector3,elevector3,lmrow,lmrowowner);
      } 
    } // for(vector<DRT::Condition*>::iterator condIter = potentialcond->begin() ; condIter != potentialcond->end(); ++ condIter)
 
    // tree search over dummy elements to allow for send_recv
    for(int i_dummy = 0; i_dummy < num_dummy_ele; i_dummy++)
      TreeSearchDummy();
-
-      
+  
   return;
 } // end of EvaluateVolumePotentialCondition
 
@@ -387,10 +386,6 @@ void POTENTIAL::VolumePotential::TreeSearchDummy()
    
    // local ids and nonlocal pecs
    TreeSearchElement(eleXAABB, -1, true);
-   
-   //cout <<  "eleId = dummy " << endl;
-   //cout << endl;
-   
    return;
 } 
 
@@ -810,7 +805,6 @@ void POTENTIAL::VolumePotential::ComputeFandK(
     LINALG::Matrix<2,1>       x_gp(true);
 
     const double fac = ComputeFactor(actEle, funct, deriv, intpoints, gp, x_gp, curvefac);
-
     //----------------------------------------------------------------------
     // run over all influencing elements called element_pot
     //----------------------------------------------------------------------

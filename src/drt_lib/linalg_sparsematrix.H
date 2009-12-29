@@ -261,6 +261,7 @@ class SparseMatrix : public SparseOperator
             int eid,
             const Epetra_SerialDenseMatrix& Aele,
             const std::vector<int>& lmrow,
+            const std::vector<int>& lmrowowner,
             const std::vector<int>& lmcol);
 
     /// single value assemble used by BlockSparseMatrix

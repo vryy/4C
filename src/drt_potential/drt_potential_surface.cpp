@@ -132,10 +132,129 @@ void POTENTIAL::SurfacePotential::EvaluatePotential(  ParameterList& p,
   discret_.SetState("displacement",disp);
   UpdateDisplacementsOfPotentialDiscretization(disp);
 
-  EvaluatePotentialCondition(p,stiff,null,fint,null,null,"Potential");
+  EvaluateSurfacePotentialCondition(p,stiff,null,fint,null,null,"Potential");
 
   return;
 }
+
+
+
+/*-------------------------------------------------------------------*
+| (private)                                               umay  08/08|
+|                                                                    |
+| evaluate potential conditions based on a Epetra_FecrsMatrix        |
+*--------------------------------------------------------------------*/
+void POTENTIAL::SurfacePotential::EvaluateSurfacePotentialCondition(
+    ParameterList&                          params,
+    RefCountPtr<LINALG::SparseMatrix>       systemmatrix1,
+    RefCountPtr<LINALG::SparseMatrix>       systemmatrix2,
+    RefCountPtr<Epetra_Vector>              systemvector1,
+    Teuchos::RCP<Epetra_Vector>             systemvector2,
+    Teuchos::RCP<Epetra_Vector>             systemvector3,
+    const string&                           condstring)
+{
+  if (!discret_.Filled()) dserror("FillComplete() was not called");
+  if (!discret_.HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
+
+  // get the current time
+  bool usetime = true;
+  const double time = params.get("total time",-1.0);
+  if (time < 0.0) usetime = false;
+  
+  if(time < 0.0)
+    cout <<  "no time curve set " << endl;
+
+  const bool assemblemat1 = systemmatrix1!=Teuchos::null;
+  const bool assemblemat2 = systemmatrix2!=Teuchos::null;
+  const bool assemblevec1 = systemvector1!=Teuchos::null;
+  const bool assemblevec2 = systemvector2!=Teuchos::null;
+  const bool assemblevec3 = systemvector3!=Teuchos::null;
+
+  //----------------------------------------------------------------------
+  // loop through potential conditions and evaluate them
+  //----------------------------------------------------------------------
+  vector<DRT::Condition*> potentialcond;
+  discret_.GetCondition(condstring, potentialcond);
+  for(vector<DRT::Condition*>::iterator condIter = potentialcond.begin() ; condIter != potentialcond.end(); ++ condIter)
+  {
+    map<int,RefCountPtr<DRT::Element> >& geom = (*condIter)->Geometry();
+    // if (geom.empty()) dserror("evaluation of condition with empty geometry");
+    // no check for empty geometry here since in parallel computations
+    // can exist processors which do not own a portion of the elements belonging
+    // to the condition geometry
+    map<int,RefCountPtr<DRT::Element> >::iterator curr;
+
+    // Evaluate Loadcurve if defined. Put current load factor in parameterlist
+    const vector<int>*    curve  = (*condIter)->Get<vector<int> >("curve");
+    int                   curvenum = -1;
+    if (curve) curvenum = (*curve)[0];
+    double                curvefac = 1.0;
+    if (curvenum>=0 && usetime)
+      curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+
+    params.set("LoadCurveFactor",curvefac);
+
+    params.set<RefCountPtr<DRT::Condition> >("condition", Teuchos::rcp(*condIter,false));
+
+    // define element matrices and vectors
+    Epetra_SerialDenseMatrix elematrix1;
+    Epetra_SerialDenseMatrix elematrix2;
+    Epetra_SerialDenseVector elevector1;
+    Epetra_SerialDenseVector elevector2;
+    Epetra_SerialDenseVector elevector3;
+          
+    for (curr=geom.begin(); curr!=geom.end(); ++curr)
+    {
+      // get element location vector and ownerships
+      vector<int> lm;
+      vector<int> lmrowowner;
+      curr->second->LocationVector(discret_,lm,lmrowowner);
+      const int rowsize = lm.size();
+      
+      // Reshape element matrices and vectors and init to zero in element->evaluate
+      // call the element specific evaluate method
+      int err = curr->second->Evaluate( params,discret_,lm, elematrix1,elematrix2,
+                                        elevector1,elevector2,elevector3);
+      
+      
+      if (err) dserror("error while evaluating elements");
+            
+      // specify lm row and lm col
+      vector<int> lmrow;
+      vector<int> lmcol;
+      // only local values appeared
+      if((int) lm.size() == rowsize)
+      {
+        lmrow.resize(lm.size());
+        lmcol.resize(lm.size());
+        lmrow = lm;
+        lmcol = lm;
+      }
+      // non-local values appeared
+      else if((int) lm.size() > rowsize)
+      {
+        for(int i = 0; i < rowsize; i++)
+          lmrow.push_back(lm[i]);
+
+        lmcol.resize(lm.size());
+        lmcol = lm;
+      }
+      else
+        dserror("lm is not properly filled");
+
+      // assembly
+      int eid = curr->second->Id();
+      if (assemblemat1) systemmatrix1->FEAssemble(eid,elematrix1,lmrow,lmrowowner,lmcol);
+      if (assemblemat2) systemmatrix2->FEAssemble(eid,elematrix2,lmrow,lmrowowner,lmcol);
+
+      if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,lmrow,lmrowowner);
+      if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,lmrow,lmrowowner);
+      if (assemblevec3) LINALG::Assemble(*systemvector3,elevector3,lmrow,lmrowowner);
+    } 
+  } // for(vector<DRT::Condition*>::iterator condIter = potentialcond->begin() ; condIter != potentialcond->end(); ++ condIter)
+  return;
+} // end of EvaluatePotentialCondition
+
 
 
 
@@ -1529,7 +1648,7 @@ void POTENTIAL::SurfacePotential::TestEvaluatePotential(ParameterList& p,
   discret_.ClearState();
   discret_.SetState("displacement",disp);
 
-  EvaluatePotentialCondition(p,stiff,null,fint,null,null,"Potential");
+  EvaluateSurfacePotentialCondition(p,stiff,null,fint,null,null,"Potential");
   
   // center of gravity   
     

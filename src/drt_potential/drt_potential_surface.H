@@ -71,6 +71,17 @@ public:
                             RefCountPtr<Epetra_Vector>        disp,
                             RefCountPtr<Epetra_Vector>        fint,
                             RefCountPtr<LINALG::SparseMatrix> stiff);
+  
+  
+  
+  void EvaluateSurfacePotentialCondition(
+      ParameterList&                          params,
+      RefCountPtr<LINALG::SparseMatrix>       systemmatrix1,
+      RefCountPtr<LINALG::SparseMatrix>       systemmatrix2,
+      RefCountPtr<Epetra_Vector>              systemvector1,
+      Teuchos::RCP<Epetra_Vector>             systemvector2,
+      Teuchos::RCP<Epetra_Vector>             systemvector3,
+      const string&                           condstring);
 
 
   /*!

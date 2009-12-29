@@ -127,20 +127,6 @@ protected:
 
 
   /*!
-  \brief  evaluate potential condition based on Epetra_FECrsMatrix
-   */
-  void EvaluatePotentialCondition(
-      ParameterList&                          params,
-      RefCountPtr<LINALG::SparseMatrix>       systemmatrix1,
-      RefCountPtr<LINALG::SparseMatrix>       systemmatrix2,
-      RefCountPtr<Epetra_Vector>              systemvector1,
-      Teuchos::RCP<Epetra_Vector>             systemvector2,
-      Teuchos::RCP<Epetra_Vector>             systemvector3,
-      const string&                           condstring
-      );
-
-
-  /*!
   \brief  select correct potential out of condition
    */
   void EvaluatePotentialfromCondition(

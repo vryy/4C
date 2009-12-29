@@ -424,29 +424,62 @@ void LINALG::SparseMatrix::FEAssemble(
     int eid,
     const Epetra_SerialDenseMatrix& Aele,
     const std::vector<int>& lmrow,
+    const std::vector<int>& lmrowowner,
     const std::vector<int>& lmcol)
 {
   const int lrowdim = (int)lmrow.size();
   const int lcoldim = (int)lmcol.size();
 #ifdef DEBUG
-  if (lrowdim!=Aele.M() || lcoldim!=Aele.N())
+  if (lrowdim!=(int)lmrowowner.size() || lrowdim!=Aele.M() || lcoldim!=Aele.N())
     dserror("Mismatch in dimensions");
 #endif
 
   Teuchos::RCP<Epetra_FECrsMatrix> fe_mat = Teuchos::rcp_dynamic_cast<Epetra_FECrsMatrix>(sysmat_, true);
+  
+  const int myrank = fe_mat ->Comm().MyPID();
+  const Epetra_Map& rowmap = fe_mat->RowMap();
+  const Epetra_Map& colmap = fe_mat->ColMap();
 
   if (Filled())
   {
-    int errone = fe_mat->SumIntoGlobalValues(lrowdim, &lmrow[0], lcoldim, &lmcol[0], Aele.A(), Epetra_FECrsMatrix::COLUMN_MAJOR );
-    if (errone)
-      dserror("Epetra_FECrsMatrix::SumIntoMyValues returned error code %d",errone);
+    // no XFEM buisness see Assemble 
+    // no column check because FE_Assemble can handle columns which are not on this proc
+    
+    // loop rows of local matrix
+    std::vector<double> values(lcoldim);
+    for (int lrow=0; lrow<lrowdim; ++lrow)
+    {
+      // check ownership of row
+      if (lmrowowner[lrow] != myrank) continue;
+
+      // check whether I have that global row
+      const int rgid = lmrow[lrow];
+#ifdef DEBUG
+      const int rlid = rowmap.LID(rgid);
+      if (rlid<0) dserror("Sparse matrix A does not have global row %d",rgid);
+#endif
+
+      for (int lcol=0; lcol<lcoldim; ++lcol)
+      {
+        values[lcol] = Aele(lrow,lcol);
+      }
+      const int errone = fe_mat->SumIntoGlobalValues(1, &rgid, lcoldim, &lmcol[0], &values[0], Epetra_FECrsMatrix::COLUMN_MAJOR );
+      if (errone)
+        dserror("Epetra_FECrsMatrix::SumIntoMyValues returned error code %d",errone);
+    } // for (int lrow=0; lrow<ldim; ++lrow)
   }
   else
   {
     // loop rows of local matrix
     for (int lrow=0; lrow<lrowdim; ++lrow)
     {
+      // check ownership of row
+      if (lmrowowner[lrow] != myrank) continue;
+            
       const int rgid = lmrow[lrow];
+#ifdef DEBUG
+      if (!rowmap.MyGID(rgid)) dserror("Proc %d does not have global row %d",myrank,rgid);
+#endif
       for (int lcol=0; lcol<lcoldim; ++lcol)
       {
         double val = Aele(lrow,lcol);
@@ -454,7 +487,7 @@ void LINALG::SparseMatrix::FEAssemble(
 
         // Now that we do not rebuild the sparse mask in each step, we
         // are bound to assemble the whole thing. Zeros included.
-        int errone = fe_mat->SumIntoGlobalValues(1, &rgid, 1, &cgid, &val, Epetra_FECrsMatrix::COLUMN_MAJOR );
+        const int errone = fe_mat->SumIntoGlobalValues(1, &rgid, 1, &cgid, &val, Epetra_FECrsMatrix::COLUMN_MAJOR );
         if (errone>0)
         {
           int errtwo = fe_mat->InsertGlobalValues(1, &rgid, 1, &cgid, &val, Epetra_FECrsMatrix::COLUMN_MAJOR );
