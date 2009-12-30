@@ -436,9 +436,7 @@ void LINALG::SparseMatrix::FEAssemble(
 
   Teuchos::RCP<Epetra_FECrsMatrix> fe_mat = Teuchos::rcp_dynamic_cast<Epetra_FECrsMatrix>(sysmat_, true);
   
-  const int myrank = fe_mat ->Comm().MyPID();
-  const Epetra_Map& rowmap = fe_mat->RowMap();
-  const Epetra_Map& colmap = fe_mat->ColMap();
+  const int myrank = fe_mat->Comm().MyPID();
 
   if (Filled())
   {
@@ -454,10 +452,6 @@ void LINALG::SparseMatrix::FEAssemble(
 
       // check whether I have that global row
       const int rgid = lmrow[lrow];
-#ifdef DEBUG
-      const int rlid = rowmap.LID(rgid);
-      if (rlid<0) dserror("Sparse matrix A does not have global row %d",rgid);
-#endif
 
       for (int lcol=0; lcol<lcoldim; ++lcol)
       {
@@ -477,9 +471,7 @@ void LINALG::SparseMatrix::FEAssemble(
       if (lmrowowner[lrow] != myrank) continue;
             
       const int rgid = lmrow[lrow];
-#ifdef DEBUG
-      if (!rowmap.MyGID(rgid)) dserror("Proc %d does not have global row %d",myrank,rgid);
-#endif
+
       for (int lcol=0; lcol<lcoldim; ++lcol)
       {
         double val = Aele(lrow,lcol);
