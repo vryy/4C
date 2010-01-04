@@ -374,7 +374,7 @@ void CONTACT::PenaltyStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
     RCP<Epetra_Vector> fcmmtemp = rcp(new Epetra_Vector(*problemrowmap_));
     LINALG::Export(*fcmm, *fcmmtemp);
     feff->Update(1-alphaf_, *fcmmtemp, 1.0);
-    }
+  }
 
 #else
   // for debugging purposes fc is stored separately
@@ -525,6 +525,81 @@ void CONTACT::PenaltyStrategy::ResetPenalty()
     interface_[i]->IParams().set<double>("PENALTYPARAM",InitialPenalty());
     interface_[i]->IParams().set<double>("PENALTYPARAMTAN",InitialPenaltyTan());
   }
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | intialize second, third,... Uzawa step                     popp 01/10|
+ *----------------------------------------------------------------------*/
+void CONTACT::PenaltyStrategy::InitializeUzawa(RCP<LINALG::SparseMatrix> kteff,
+                                               RCP<Epetra_Vector> feff)
+{
+  // remove old stiffness terms
+  // (FIXME: redundant code to EvaluateContact(), expect for minus sign)
+  
+  kteff->UnComplete();
+  
+  kteff->Add(*lindmatrix_, false, -(1.0-alphaf_), 1.0);
+  kteff->Add(*linmmatrix_, false, -(1.0-alphaf_), 1.0);
+    
+  RCP<LINALG::SparseMatrix> dtilde = rcp(new LINALG::SparseMatrix(*gsdofrowmap_));
+  RCP<LINALG::SparseMatrix> mtilde = rcp(new LINALG::SparseMatrix(*gmdofrowmap_));
+  dtilde = LINALG::Multiply(*dmatrix_, false, *linzmatrix_, false);
+  mtilde = LINALG::Multiply(*mmatrix_, true, *linzmatrix_, false);
+  kteff->Add(*dtilde, false, -(1.0-alphaf_), 1.0);
+  kteff->Add(*mtilde, false, (1.0-alphaf_), 1.0);
+  
+  kteff->Complete();
+  
+  // remove old force terms
+  // (FIXME: redundant code to EvaluateContact(), expect for minus sign)
+  
+  RCP<Epetra_Vector> fcmdold = rcp(new Epetra_Vector(dold_->RowMap()));
+  dold_->Multiply(false, *zold_, *fcmdold);
+  RCP<Epetra_Vector> fcmdoldtemp = rcp(new Epetra_Vector(*problemrowmap_));
+  LINALG::Export(*fcmdold, *fcmdoldtemp);
+  feff->Update(alphaf_, *fcmdoldtemp, 1.0);
+
+  RCP<Epetra_Vector> fcmmold = rcp(new Epetra_Vector(mold_->DomainMap()));
+  mold_->Multiply(true, *zold_, *fcmmold);
+  RCP<Epetra_Vector> fcmmoldtemp = rcp(new Epetra_Vector(*problemrowmap_));
+  LINALG::Export(*fcmmold, *fcmmoldtemp);
+  feff->Update(-alphaf_, *fcmmoldtemp, 1.0);
+    
+  RCP<Epetra_Vector> fcmd = rcp(new Epetra_Vector(*gsdofrowmap_));
+  dmatrix_->Multiply(false, *z_, *fcmd);
+  RCP<Epetra_Vector> fcmdtemp = rcp(new Epetra_Vector(*problemrowmap_));
+  LINALG::Export(*fcmd, *fcmdtemp);
+  feff->Update(1-alphaf_, *fcmdtemp, 1.0);
+  
+  RCP<Epetra_Vector> fcmm = LINALG::CreateVector(*gmdofrowmap_, true);
+  mmatrix_->Multiply(true, *z_, *fcmm);
+  RCP<Epetra_Vector> fcmmtemp = rcp(new Epetra_Vector(*problemrowmap_));
+  LINALG::Export(*fcmm, *fcmmtemp);
+  feff->Update(-(1-alphaf_), *fcmmtemp, 1.0);
+  
+  // reset some matrices
+  lindmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
+  linmmatrix_ = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
+  
+  // reset nodal derivZ values
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    for (int j=0;j<interface_[i]->Discret().NumMyColNodes();++j)
+    {
+      CONTACT::CNode* node = static_cast<CONTACT::CNode*>(interface_[i]->Discret().lColNode(j));
+      for (int k=0; k<(int)((node->GetDerivZ()).size()); ++k)
+        (node->GetDerivZ())[k].clear();
+      (node->GetDerivZ()).resize(0);
+    }
+  }
+  
+  // now redo Initialize()
+  Initialize();
+  
+  // and finally redo Evaluate()
+  Evaluate(kteff,feff);
+    
   return;
 }
 

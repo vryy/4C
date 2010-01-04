@@ -2406,6 +2406,9 @@ void CONTACT::ContactStruGenAlpha::Integrate()
         if (discret_.Comm().MyPID() == 0)
           cout << "Starting Uzawa step No. " << uzawaiter << endl;
 
+        // for second, third,... Uzawa step: out-of-balance force
+        if (uzawaiter>1) strategy.InitializeUzawa(SystemMatrix(),fresm_);
+        
         // LOOP3: nonlinear iteration (Newton)
         if (equil=="full newton") FullNewton();
         else if (equil=="line search newton") FullNewtonLineSearch();

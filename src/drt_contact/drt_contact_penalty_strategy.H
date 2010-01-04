@@ -185,6 +185,20 @@ class PenaltyStrategy : public AbstractStrategy
   
   */
   void ResetPenalty();
+  
+  /*!
+  \brief Initialize Uzawa step
+  
+ 
+  This method is called at the beginning of the second, third, ... Uzawa
+  iterarion in order to create an of an out-of-balance force again. First,
+  the contact force and stiffness terms are removed from feff and kteff.
+  Then the LM and derivatives are updated (AugmentedLagrange) and the new
+  contact forces and stiffness terms are created by calling Initialize()
+  and finally Evaluate().
+     
+  */
+  void InitializeUzawa(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff);
     
   /*!
   \brief Compute L2-norm of active constraints
