@@ -652,7 +652,7 @@ void XFEM::DofManager::toGmsh(
 #if 1
   if (gmshdebugout)
   {
-      const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("eledofman_check", step, 5, screen_out);
+      const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("eledofman_check", step, 5, screen_out, ih_->xfemdis()->Comm().MyPID());
       std::ofstream gmshfilecontent(filename.c_str());
       {
         gmshfilecontent << "View \" " << " NumDofPerElement() in element \" {\n";

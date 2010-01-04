@@ -157,8 +157,8 @@ void XFEM::syncNodalDofs(
     lengthSend[0] = dataSend.size();
 
 #ifdef DEBUG
-    cout << "proc " << myrank << ": sending"<< lengthSend[0] << "bytes to proc " << dest << endl;
-    //    cout << "proc " << myrank << ": sending"<< dofkeyset.size() << " dofkeys to proc " << dest << endl;
+    cout << "proc " << myrank << ": sending "<< lengthSend[0] << " bytes to proc " << dest << endl;
+    cout << "proc " << myrank << ": sending "<< dofkeyset.size() << " dofkeys to proc " << dest << endl;
 #endif
 
     // send length of the data to be received ...
@@ -187,8 +187,8 @@ void XFEM::syncNodalDofs(
     set<XFEM::DofKey<XFEM::onNode> >       dofkeyset;
     XFEM::unpackDofKeys(dataRecv, dofkeyset);
 #ifdef DEBUG
-    cout << "proc " << myrank << ": receiving"<< lengthRecv[0] << "bytes from proc " << source << endl;
-    cout << "proc " << myrank << ": receiving"<< dofkeyset.size() << " dofkeys from proc " << source << endl;
+    cout << "proc " << myrank << ": receiving "<< lengthRecv[0] << " bytes from proc " << source << endl;
+    cout << "proc " << myrank << ": receiving "<< dofkeyset.size() << " dofkeys from proc " << source << endl;
 #endif
     // get all dofkeys whose nodegid is on this proc in the coloumnmap
     set<XFEM::DofKey<XFEM::onNode> >       relevant_dofkeyset;
