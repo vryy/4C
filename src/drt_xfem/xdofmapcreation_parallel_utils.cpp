@@ -150,6 +150,10 @@ void XFEM::syncNodalDofs(
   vector<char> dataSend;
   XFEM::packDofKeys(original_dofkeyset, dataSend);
 
+#ifdef DEBUG
+  cout << "proc " << myrank << ": sending "<< original_dofkeyset.size() << " dofkeys to proc " << dest << endl;
+#endif
+
   // send data in a circle
   for(int num = 0; num < numproc-1; num++)
   {
@@ -158,7 +162,6 @@ void XFEM::syncNodalDofs(
 
 #ifdef DEBUG
     cout << "proc " << myrank << ": sending "<< lengthSend[0] << " bytes to proc " << dest << endl;
-    cout << "proc " << myrank << ": sending "<< dofkeyset.size() << " dofkeys to proc " << dest << endl;
 #endif
 
     // send length of the data to be received ...
