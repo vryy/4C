@@ -1921,6 +1921,7 @@ bool COMBUST::FlameFront::GetIntCellDomain(
 }
 
 
+#ifdef PARALLEL
 /*------------------------------------------------------------------------------------------------*
  | export flame front to all processors                                               henke 12/09 |
  *------------------------------------------------------------------------------------------------*/
@@ -2057,6 +2058,7 @@ void COMBUST::FlameFront::ExportFlameFront(std::map<int, GEO::BoundaryIntCells>&
   std::cout << "proc " << myrank << " number of flame front pieces now available " << myflamefront.size() << std::endl;
 #endif
 }
+#endif
 
 
 /*----------------------------------------------------------------------*
