@@ -145,7 +145,6 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 
       // get pointer to vector holding G-function values at the fluid nodes
       const Teuchos::RCP<Epetra_Vector> phinp = ih_->FlameFront()->Phinp();
-
 #ifdef DEBUG
       // check if this element is the first element on this processor
       // remark:
@@ -245,7 +244,6 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 
       // get pointer to vector holding G-function values at the fluid nodes
       const Teuchos::RCP<Epetra_Vector> phinp = ih_->FlameFront()->Phinp();
-
 #ifdef DEBUG
       // check if this element is the first element on this processor
       // remark:

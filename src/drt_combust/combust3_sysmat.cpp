@@ -22,6 +22,7 @@ Maintainer: Florian Henke
 #include "combust3_utils.H"
 #include "combust3_local_assembler.H"
 #include "combust3_interpolation.H"
+#include "combust_defines.H"
 #include "../drt_f3/xfluid3_utils.H"
 #include "../drt_f3/fluid3_stabilization.H"
 #include "../drt_geometry/integrationcell_coordtrafo.H"
@@ -205,6 +206,7 @@ Maintainer: Florian Henke
   //----------------------------------------------------------------------
   //                            GALERKIN PART
 
+#ifdef COMBUST_DOM_INERTIA
   if (instationary)
   {
       // inertia term (contribution to mass matrix)
@@ -223,7 +225,9 @@ Maintainer: Florian Henke
       assembler.template Vector<Vely>(shp.d0, -densfac*gpvelnp(1));
       assembler.template Vector<Velz>(shp.d0, -densfac*gpvelnp(2));
   }
+#endif
 
+#ifdef COMBUST_DOM_CONVECTION
   // convection term, convective part
   /*
                /                       \
@@ -267,7 +271,9 @@ Maintainer: Florian Henke
       assembler.template Matrix<Velz,Vely>(shp.d0, denstimefacfac*vderxy(2,1), shp.d0);
       assembler.template Matrix<Velz,Velz>(shp.d0, denstimefacfac*vderxy(2,2), shp.d0);
   }
+#endif
 
+#ifdef COMBUST_DOM_DIFFUSION
   // viscous term
   /*
                 /                        \
@@ -305,7 +311,9 @@ Maintainer: Florian Henke
   assembler.template Vector<Velz>(shp.dx,     -dynvisc*timefacfac*(vderxy(2, 0) + vderxy(0, 2)));
   assembler.template Vector<Velz>(shp.dy,     -dynvisc*timefacfac*(vderxy(2, 1) + vderxy(1, 2)));
   assembler.template Vector<Velz>(shp.dz,     -dynvisc*timefacfac*(vderxy(2, 2) + vderxy(2, 2)));
+#endif
 
+#ifdef COMBUST_DOM_PRESSURE
   // pressure term
   /*
                   /                \
@@ -321,7 +329,10 @@ Maintainer: Florian Henke
   assembler.template Vector<Velx>(shp.dx, timefacfac*pres);
   assembler.template Vector<Vely>(shp.dy, timefacfac*pres);
   assembler.template Vector<Velz>(shp.dz, timefacfac*pres);
+#endif
 
+#ifdef COMBUST_DOM_CONTINUITY
+//  cout << "/!\\ warning === sign of continuity term has been changed to make formulation symmetric" << endl;
   // solenoidality term - continuity equation
   /*
                  /              \
@@ -336,7 +347,9 @@ Maintainer: Florian Henke
 
   const double trace_gamma = (vderxy(0,0) + vderxy(1,1) + vderxy(2,2));
   assembler.template Vector<Pres>(shp.d0, -timefacfac*trace_gamma);
+#endif
 
+#ifdef COMBUST_DOM_RHS
   // source term of the right hand side
   /*
                   /    \
@@ -348,54 +361,56 @@ Maintainer: Florian Henke
   assembler.template Vector<Velx>(shp.d0, fac*rhsint(0));
   assembler.template Vector<Vely>(shp.d0, fac*rhsint(1));
   assembler.template Vector<Velz>(shp.d0, fac*rhsint(2));
+#endif
 
+#ifdef COMBUST_AXEL
   // Hellinger-Reissner terms
-//  if (tauele_unknowns_present)
-//  {
+  if (tauele_unknowns_present)
+  {
       /*
                        /                      \
                     - |  virt tau , eps(Dtau)  |
                        \                      /
       */
-//
-//      const double reciproke_viscfac = 1.0/(2.0*visc);
-//      assembler.template Matrix<Sigmaxx,Sigmaxx>(shp_tau, -reciproke_viscfac*timefacfac, shp_tau);
-//      assembler.template Matrix<Sigmaxy,Sigmaxy>(shp_tau, -reciproke_viscfac*timefacfac*2.0, shp_tau);
-//      assembler.template Matrix<Sigmaxz,Sigmaxz>(shp_tau, -reciproke_viscfac*timefacfac*2.0, shp_tau);
-//      assembler.template Matrix<Sigmayy,Sigmayy>(shp_tau, -reciproke_viscfac*timefacfac, shp_tau);
-//      assembler.template Matrix<Sigmayz,Sigmayz>(shp_tau, -reciproke_viscfac*timefacfac*2.0, shp_tau);
-//      assembler.template Matrix<Sigmazz,Sigmazz>(shp_tau, -reciproke_viscfac*timefacfac, shp_tau);
-//
-//      assembler.template Vector<Sigmaxx>(shp_tau,  reciproke_viscfac*timefacfac*tau(0,0));
-//      assembler.template Vector<Sigmaxy>(shp_tau,  reciproke_viscfac*timefacfac*tau(0,1)*2.0);
-//      assembler.template Vector<Sigmaxz>(shp_tau,  reciproke_viscfac*timefacfac*tau(0,2)*2.0);
-//      assembler.template Vector<Sigmayy>(shp_tau,  reciproke_viscfac*timefacfac*tau(1,1));
-//      assembler.template Vector<Sigmayz>(shp_tau,  reciproke_viscfac*timefacfac*tau(1,2)*2.0);
-//      assembler.template Vector<Sigmazz>(shp_tau,  reciproke_viscfac*timefacfac*tau(2,2));
-//
+
+      const double reciproke_viscfac = 1.0/(2.0*visc);
+      assembler.template Matrix<Sigmaxx,Sigmaxx>(shp_tau, -reciproke_viscfac*timefacfac, shp_tau);
+      assembler.template Matrix<Sigmaxy,Sigmaxy>(shp_tau, -reciproke_viscfac*timefacfac*2.0, shp_tau);
+      assembler.template Matrix<Sigmaxz,Sigmaxz>(shp_tau, -reciproke_viscfac*timefacfac*2.0, shp_tau);
+      assembler.template Matrix<Sigmayy,Sigmayy>(shp_tau, -reciproke_viscfac*timefacfac, shp_tau);
+      assembler.template Matrix<Sigmayz,Sigmayz>(shp_tau, -reciproke_viscfac*timefacfac*2.0, shp_tau);
+      assembler.template Matrix<Sigmazz,Sigmazz>(shp_tau, -reciproke_viscfac*timefacfac, shp_tau);
+
+      assembler.template Vector<Sigmaxx>(shp_tau,  reciproke_viscfac*timefacfac*tau(0,0));
+      assembler.template Vector<Sigmaxy>(shp_tau,  reciproke_viscfac*timefacfac*tau(0,1)*2.0);
+      assembler.template Vector<Sigmaxz>(shp_tau,  reciproke_viscfac*timefacfac*tau(0,2)*2.0);
+      assembler.template Vector<Sigmayy>(shp_tau,  reciproke_viscfac*timefacfac*tau(1,1));
+      assembler.template Vector<Sigmayz>(shp_tau,  reciproke_viscfac*timefacfac*tau(1,2)*2.0);
+      assembler.template Vector<Sigmazz>(shp_tau,  reciproke_viscfac*timefacfac*tau(2,2));
+
       /*             /                  \
                     | virt tau , eps(Du) |
                      \                  /
       */
-//      assembler.template Matrix<Sigmaxx,Velx>(shp_tau,     timefacfac    , shp.dx);
-//      assembler.template Matrix<Sigmaxy,Velx>(shp_tau,     timefacfac    , shp.dy);
-//      assembler.template Matrix<Sigmaxy,Vely>(shp_tau,     timefacfac    , shp.dx);
-//      assembler.template Matrix<Sigmaxz,Velx>(shp_tau,     timefacfac    , shp.dz);
-//      assembler.template Matrix<Sigmaxz,Velz>(shp_tau,     timefacfac    , shp.dx);
-//      assembler.template Matrix<Sigmayy,Vely>(shp_tau,     timefacfac    , shp.dy);
-//      assembler.template Matrix<Sigmayz,Vely>(shp_tau,     timefacfac    , shp.dz);
-//      assembler.template Matrix<Sigmayz,Velz>(shp_tau,     timefacfac    , shp.dy);
-//      assembler.template Matrix<Sigmazz,Velz>(shp_tau,     timefacfac    , shp.dz);
-//
-//      assembler.template Vector<Sigmaxx>(shp_tau,    - timefacfac*vderxy(0, 0));
-//      assembler.template Vector<Sigmaxy>(shp_tau,    - timefacfac*(vderxy(0, 1) + vderxy(1, 0)));
-//      assembler.template Vector<Sigmaxz>(shp_tau,    - timefacfac*(vderxy(0, 2) + vderxy(2, 0)));
-//      assembler.template Vector<Sigmayy>(shp_tau,    - timefacfac*vderxy(1, 1));
-//      assembler.template Vector<Sigmayz>(shp_tau,    - timefacfac*(vderxy(1, 2) + vderxy(1, 2)));
-//      assembler.template Vector<Sigmazz>(shp_tau,    - timefacfac*vderxy(2, 2));
-//
-//
-//      /* pressure-pressure coupling, rectangular part */
+      assembler.template Matrix<Sigmaxx,Velx>(shp_tau,     timefacfac    , shp.dx);
+      assembler.template Matrix<Sigmaxy,Velx>(shp_tau,     timefacfac    , shp.dy);
+      assembler.template Matrix<Sigmaxy,Vely>(shp_tau,     timefacfac    , shp.dx);
+      assembler.template Matrix<Sigmaxz,Velx>(shp_tau,     timefacfac    , shp.dz);
+      assembler.template Matrix<Sigmaxz,Velz>(shp_tau,     timefacfac    , shp.dx);
+      assembler.template Matrix<Sigmayy,Vely>(shp_tau,     timefacfac    , shp.dy);
+      assembler.template Matrix<Sigmayz,Vely>(shp_tau,     timefacfac    , shp.dz);
+      assembler.template Matrix<Sigmayz,Velz>(shp_tau,     timefacfac    , shp.dy);
+      assembler.template Matrix<Sigmazz,Velz>(shp_tau,     timefacfac    , shp.dz);
+
+      assembler.template Vector<Sigmaxx>(shp_tau,    - timefacfac*vderxy(0, 0));
+      assembler.template Vector<Sigmaxy>(shp_tau,    - timefacfac*(vderxy(0, 1) + vderxy(1, 0)));
+      assembler.template Vector<Sigmaxz>(shp_tau,    - timefacfac*(vderxy(0, 2) + vderxy(2, 0)));
+      assembler.template Vector<Sigmayy>(shp_tau,    - timefacfac*vderxy(1, 1));
+      assembler.template Vector<Sigmayz>(shp_tau,    - timefacfac*(vderxy(1, 2) + vderxy(1, 2)));
+      assembler.template Vector<Sigmazz>(shp_tau,    - timefacfac*vderxy(2, 2));
+
+
+      /* pressure-pressure coupling, rectangular part */
       /*
                      /                    \
                     |                      |
@@ -403,15 +418,16 @@ Maintainer: Florian Henke
                     |                      |
                      \                    /
       */
-//      assembler.template Matrix<Sigmaxx,Pres>(shp_tau, -1.0/(2.0*visc)*timefacfac, shp.d0);
-//      assembler.template Matrix<Sigmayy,Pres>(shp_tau, -1.0/(2.0*visc)*timefacfac, shp.d0);
-//      assembler.template Matrix<Sigmazz,Pres>(shp_tau, -1.0/(2.0*visc)*timefacfac, shp.d0);
-//
-//      assembler.template Vector<Sigmaxx>(shp_tau, 1.0/(2.0*visc)*timefacfac*pres);
-//      assembler.template Vector<Sigmayy>(shp_tau, 1.0/(2.0*visc)*timefacfac*pres);
-//      assembler.template Vector<Sigmazz>(shp_tau, 1.0/(2.0*visc)*timefacfac*pres);
-//
-//  }
+      assembler.template Matrix<Sigmaxx,Pres>(shp_tau, -1.0/(2.0*visc)*timefacfac, shp.d0);
+      assembler.template Matrix<Sigmayy,Pres>(shp_tau, -1.0/(2.0*visc)*timefacfac, shp.d0);
+      assembler.template Matrix<Sigmazz,Pres>(shp_tau, -1.0/(2.0*visc)*timefacfac, shp.d0);
+
+      assembler.template Vector<Sigmaxx>(shp_tau, 1.0/(2.0*visc)*timefacfac*pres);
+      assembler.template Vector<Sigmayy>(shp_tau, 1.0/(2.0*visc)*timefacfac*pres);
+      assembler.template Vector<Sigmazz>(shp_tau, 1.0/(2.0*visc)*timefacfac*pres);
+
+  }
+#endif
 
   //----------------------------------------------------------------------
   //                 PRESSURE STABILISATION PART
@@ -419,6 +435,7 @@ Maintainer: Florian Henke
   {
       const double tauMp = tau_stab_Mp * fac;
       const double denstauMp = densnp * tauMp;
+#ifdef COMBUST_PSPG_INERTIA
       if (instationary)
       {
           /* pressure stabilisation: inertia */
@@ -433,8 +450,10 @@ Maintainer: Florian Henke
           assembler.template Matrix<Pres,Vely>(shp.dy, denstauMp, shp.d0);
           assembler.template Matrix<Pres,Velz>(shp.dz, denstauMp, shp.d0);
       }
+#endif
 
       const double denstimetauMp = timefac * tau_stab_Mp * densfac;
+#ifdef COMBUST_PSPG_CONVECTION
       /* pressure stabilisation: convection, convective part */
       /*
                 /                             \
@@ -468,7 +487,9 @@ Maintainer: Florian Henke
           assembler.template Matrix<Pres,Velz>(shp.dy, denstimetauMp*vderxy(1,2), shp.d0);
           assembler.template Matrix<Pres,Velz>(shp.dz, denstimetauMp*vderxy(2,2), shp.d0);
       }
+#endif
 
+#ifdef COMBUST_PSPG_DIFFUSION
       /* pressure stabilisation: viscosity (-L_visc_u) */
       /*
                  /                             \
@@ -489,7 +510,9 @@ Maintainer: Florian Henke
       assembler.template Matrix<Pres,Velx>(shp.dz, -2.0*dynvisc*timetauMp, enr_viscs2.xz);
       assembler.template Matrix<Pres,Vely>(shp.dz, -2.0*dynvisc*timetauMp, enr_viscs2.yz);
       assembler.template Matrix<Pres,Velz>(shp.dz, -2.0*dynvisc*timetauMp, enr_viscs2.zz);
+#endif
 
+#ifdef COMBUST_PSPG_PRESSURE
       /* pressure stabilisation: pressure( L_pres_p) */
       /*
                 /                    \
@@ -501,12 +524,14 @@ Maintainer: Florian Henke
       assembler.template Matrix<Pres,Pres>(shp.dx, timetauMp, shp.dx);
       assembler.template Matrix<Pres,Pres>(shp.dy, timetauMp, shp.dy);
       assembler.template Matrix<Pres,Pres>(shp.dz, timetauMp, shp.dz);
+#endif
 
+#ifdef COMBUST_PSPG_RHS
       // pressure stabilization
       assembler.template Vector<Pres>(shp.dx, -tauMp*res_old(0));
       assembler.template Vector<Pres>(shp.dy, -tauMp*res_old(1));
       assembler.template Vector<Pres>(shp.dz, -tauMp*res_old(2));
-
+#endif
   }
 
   //----------------------------------------------------------------------
@@ -516,6 +541,7 @@ Maintainer: Florian Henke
       const double tauMu = tau_stab_Mu * fac;
       const double denstauMu = densnp * tauMu;
       const double densdenstauMu = densnp * denstauMu;
+#ifdef COMBUST_SUPG_INERTIA
       if (instationary)
       {
           /* supg stabilisation: inertia  */
@@ -552,8 +578,11 @@ Maintainer: Florian Henke
               assembler.template Matrix<Velz,Velz>(shp.dz, densdenstauMu*gpvelnp(2), shp.d0);
           }
       }
+#endif
+
       const double denstimetauMu  = timefac * denstauMu;
       const double densdenstimetauMu  = timefac * densdenstauMu;
+#ifdef COMBUST_SUPG_CONVECTION
       /* supg stabilisation: convective part ( L_conv_u) */
       /*
            /                                          \
@@ -565,6 +594,9 @@ Maintainer: Florian Henke
       assembler.template Matrix<Velx,Velx>(enr_conv_c, densdenstimetauMu, enr_conv_c);
       assembler.template Matrix<Vely,Vely>(enr_conv_c, densdenstimetauMu, enr_conv_c);
       assembler.template Matrix<Velz,Velz>(enr_conv_c, densdenstimetauMu, enr_conv_c);
+#endif
+
+#ifdef COMBUST_SUPG_PRESSURE
       /* supg stabilisation: pressure part  ( L_pres_p) */
       /*
                 /                             \
@@ -576,7 +608,9 @@ Maintainer: Florian Henke
       assembler.template Matrix<Velx,Pres>(enr_conv_c, denstimetauMu, shp.dx);
       assembler.template Matrix<Vely,Pres>(enr_conv_c, denstimetauMu, shp.dy);
       assembler.template Matrix<Velz,Pres>(enr_conv_c, denstimetauMu, shp.dz);
+#endif
 
+#ifdef COMBUST_SUPG_DIFFUSION
       /* supg stabilisation: viscous part  (-L_visc_u) */
       /*
             /                                        \
@@ -596,10 +630,12 @@ Maintainer: Florian Henke
       assembler.template Matrix<Velz,Velx>(enr_conv_c, -2.0*dynvisc*denstimetauMu, enr_viscs2.zx);
       assembler.template Matrix<Velz,Vely>(enr_conv_c, -2.0*dynvisc*denstimetauMu, enr_viscs2.zy);
       assembler.template Matrix<Velz,Velz>(enr_conv_c, -2.0*dynvisc*denstimetauMu, enr_viscs2.zz);
+#endif
 
       if (newton)
       {
-          /* supg stabilisation: reactive part of convection and linearisation of testfunction ( L_conv_u) */
+#ifdef COMBUST_SUPG_CONVECTION
+        /* supg stabilisation: reactive part of convection and linearisation of testfunction ( L_conv_u) */
           /*
                      /                                           \
                     |    /          \   n+1    / n+1        \     |
@@ -640,7 +676,9 @@ Maintainer: Florian Henke
           assembler.template Matrix<Velz,Velx>(shp.dx, con2, shp.d0);
           assembler.template Matrix<Velz,Vely>(shp.dy, con2, shp.d0);
           assembler.template Matrix<Velz,Velz>(shp.dz, con2, shp.d0);
+#endif
 
+#ifdef COMBUST_SUPG_PRESSURE
           /* supg stabilisation: pressure part, linearisation of test function  ( L_pres_p) */
           /*
                           /                               \
@@ -660,7 +698,9 @@ Maintainer: Florian Henke
           assembler.template Matrix<Velz,Velx>(shp.dx, denstimetauMu*gradp(2), shp.d0);
           assembler.template Matrix<Velz,Vely>(shp.dy, denstimetauMu*gradp(2), shp.d0);
           assembler.template Matrix<Velz,Velz>(shp.dz, denstimetauMu*gradp(2), shp.d0);
+#endif
 
+#ifdef COMBUST_SUPG_DIFFUSION
             /* supg stabilisation: viscous part, linearisation of test function  (-L_visc_u) */
             /*
                     /                                         \
@@ -681,16 +721,16 @@ Maintainer: Florian Henke
           assembler.template Matrix<Velz,Velx>(shp.dx, -2.0*dynvisc*timetauMu*visc_old(2), shp.d0);
           assembler.template Matrix<Velz,Vely>(shp.dy, -2.0*dynvisc*timetauMu*visc_old(2), shp.d0);
           assembler.template Matrix<Velz,Velz>(shp.dz, -2.0*dynvisc*timetauMu*visc_old(2), shp.d0);
+#endif
 
+#ifdef COMBUST_SUPG_BODYFORCE
           /* supg stabilisation: bodyforce part, linearisation of test function */
-
           /*
                         /                             \
                        |              /          \     |
                      - |  rhsint   , | Du o nabla | v  |
                        |              \          /     |
                         \                             /
-
           */
           assembler.template Matrix<Velx,Velx>(shp.dx, -denstauMu*rhsint(0), shp.d0);
           assembler.template Matrix<Velx,Vely>(shp.dy, -denstauMu*rhsint(0), shp.d0);
@@ -703,12 +743,15 @@ Maintainer: Florian Henke
           assembler.template Matrix<Velz,Velx>(shp.dx, -denstauMu*rhsint(2), shp.d0);
           assembler.template Matrix<Velz,Vely>(shp.dy, -denstauMu*rhsint(2), shp.d0);
           assembler.template Matrix<Velz,Velz>(shp.dz, -denstauMu*rhsint(2), shp.d0);
+#endif
       } // if newton
 
+#ifdef COMBUST_SUPG_RHS
       // supg stabilisation
       assembler.template Vector<Velx>(enr_conv_c, -denstauMu*res_old(0));
       assembler.template Vector<Vely>(enr_conv_c, -denstauMu*res_old(1));
       assembler.template Vector<Velz>(enr_conv_c, -denstauMu*res_old(2));
+#endif
   }
 
 
@@ -716,6 +759,7 @@ Maintainer: Florian Henke
   //                     STABILISATION, CONTINUITY PART
   if(cstab)
   {
+#ifdef COMBUST_CSTAB
       const double timefac_tau_C = timefac * tau_stab_C * fac;
       const double timefac_tau_C_divunp = timefac_tau_C * (vderxy(0,0)+vderxy(1,1)+vderxy(2,2));
       /* continuity stabilisation on left hand side */
@@ -741,6 +785,7 @@ Maintainer: Florian Henke
       assembler.template Vector<Velx>(shp.dx, -timefac_tau_C_divunp);
       assembler.template Vector<Vely>(shp.dy, -timefac_tau_C_divunp);
       assembler.template Vector<Velz>(shp.dz, -timefac_tau_C_divunp);
+#endif
   } // endif cstab
 }
 
@@ -1217,7 +1262,7 @@ void SysmatTwoPhase(
             // TODO: does this have to be modified with respect to the density, as it was before?
             tau_stab_M  /= timefac;
             tau_stab_Mp /= timefac;
-
+            tau_stab_C  /= timefac;
 
             // integration factors and coefficients of single terms
             const double timefacfac = timefac * fac;
@@ -2447,11 +2492,11 @@ void SysmatCombustBoundary(
   // compute jump values
   //------------------------------------------------------------------------------------------------
   // velocity jump value
-  const double ju = (flamespeed*flamespeed*dens_minus*dens_minus)*(1/dens_plus - 1/dens_minus);
-//cout << "J_u: " << ju << endl;
+  const double ju = -flamespeed*dens_minus*(1/dens_plus - 1/dens_minus);
+cout << "J_u: " << ju << endl;
   // pressure jump value
-  const double jp = -flamespeed*dens_minus*(1/dens_plus - 1/dens_minus);
-//cout << "J_p: " << jp << endl;
+  const double jp = (flamespeed*flamespeed*dens_minus*dens_minus)*(1/dens_plus - 1/dens_minus);
+cout << "J_p: " << jp << endl;
 
   // Nitsche parameter velocity
   const double alphau = nitschevel;
@@ -2783,6 +2828,7 @@ void SysmatCombustBoundary(
       //                  burnt domain (n = n^- = -n^+)
       //--------------------------------------------------------------------------------------------
 
+#ifdef COMBUST_VISCCONSIST
       //-------------------------    |                                      |
       // viscous consistency term  + |  || v || , < 2\mu epsilon( Du ) > n  |
       //-------------------------    |                                      |
@@ -2820,7 +2866,9 @@ void SysmatCombustBoundary(
       assembler.template Vector<Velz>(shp_jump.d0, -timefacfac* (vderxy_mean_visc(2,0) + vderxy_mean_visc(0,2))*normal(0));
       assembler.template Vector<Velz>(shp_jump.d0, -timefacfac* (vderxy_mean_visc(2,1) + vderxy_mean_visc(1,2))*normal(1));
       assembler.template Vector<Velz>(shp_jump.d0, -timefacfac* (vderxy_mean_visc(2,2) + vderxy_mean_visc(2,2))*normal(2));
+#endif
 
+#ifdef COMBUST_VISCADJCONSIST
       //---------------------------------    |                                     |
       // viscous adjoint consistency term  + |  < 2\mu epsilon( v ) > n, || Du ||  |
       //---------------------------------    |                                     |
@@ -2863,18 +2911,20 @@ void SysmatCombustBoundary(
       // viscous adjoint consistency term RHS  + |  < 2\mu\rho epsilon( v ) > n, J_u  |
       //-------------------------------------    |                                    |
 
-      assembler.template Vector<Velx>(shp_mean_visc.dx, -2.0* normal(0)           *timefacfac*normal(0)*ju);
-      assembler.template Vector<Velx>(shp_mean_visc.dy, -    (normal(0)+normal(1))*timefacfac*normal(0)*ju);
-      assembler.template Vector<Velx>(shp_mean_visc.dz, -    (normal(0)+normal(2))*timefacfac*normal(0)*ju);
+//      assembler.template Vector<Velx>(shp_mean_visc.dx, -2.0* normal(0)           *timefacfac*normal(0)*ju);
+//      assembler.template Vector<Velx>(shp_mean_visc.dy, -    (normal(0)+normal(1))*timefacfac*normal(0)*ju);
+//      assembler.template Vector<Velx>(shp_mean_visc.dz, -    (normal(0)+normal(2))*timefacfac*normal(0)*ju);
+//
+//      assembler.template Vector<Vely>(shp_mean_visc.dx, -    (normal(1)+normal(0))*timefacfac*normal(1)*ju);
+//      assembler.template Vector<Vely>(shp_mean_visc.dy, -2.0* normal(1)           *timefacfac*normal(1)*ju);
+//      assembler.template Vector<Vely>(shp_mean_visc.dz, -    (normal(1)+normal(2))*timefacfac*normal(1)*ju);
+//
+//      assembler.template Vector<Velz>(shp_mean_visc.dx, -    (normal(2)+normal(0))*timefacfac*normal(2)*ju);
+//      assembler.template Vector<Velz>(shp_mean_visc.dy, -    (normal(2)+normal(1))*timefacfac*normal(2)*ju);
+//      assembler.template Vector<Velz>(shp_mean_visc.dz, -2.0* normal(2)           *timefacfac*normal(2)*ju);
+#endif
 
-      assembler.template Vector<Vely>(shp_mean_visc.dx, -    (normal(1)+normal(0))*timefacfac*normal(1)*ju);
-      assembler.template Vector<Vely>(shp_mean_visc.dy, -2.0* normal(1)           *timefacfac*normal(1)*ju);
-      assembler.template Vector<Vely>(shp_mean_visc.dz, -    (normal(1)+normal(2))*timefacfac*normal(1)*ju);
-
-      assembler.template Vector<Velz>(shp_mean_visc.dx, -    (normal(2)+normal(0))*timefacfac*normal(2)*ju);
-      assembler.template Vector<Velz>(shp_mean_visc.dy, -    (normal(2)+normal(1))*timefacfac*normal(2)*ju);
-      assembler.template Vector<Velz>(shp_mean_visc.dz, -2.0* normal(2)           *timefacfac*normal(2)*ju);
-
+#ifdef COMBUST_PRESCONSIST
       //--------------------------    |                     |
       // pressure consistency term  - |  || v ||, < Dp > n  |
       //--------------------------    |                     |
@@ -2890,7 +2940,9 @@ void SysmatCombustBoundary(
       assembler.template Vector<Velx>(shp_jump.d0, timefacfac*normal(0)*pmean);
       assembler.template Vector<Vely>(shp_jump.d0, timefacfac*normal(1)*pmean);
       assembler.template Vector<Velz>(shp_jump.d0, timefacfac*normal(2)*pmean);
+#endif
 
+#ifdef COMBUST_PRESADJCONSIST
       //----------------------------------    |                     |
       // pressure adjoint consistency term  + |  < q > n, || Du ||  |
       //----------------------------------    |                     |
@@ -2912,7 +2964,9 @@ void SysmatCombustBoundary(
       //--------------------------------------    |                |
 
       assembler.template Vector<Pres>(shp_mean.d0, timefacfac*ju);
+#endif
 
+#ifdef COMBUST_PRESJUMPRHS
       //------------------------------------------    |                |
       // pressure/flux jump (consistency) term RHS  + |  < v >, J_p*n  |
       //------------------------------------------    |                |
@@ -2920,7 +2974,9 @@ void SysmatCombustBoundary(
       assembler.template Vector<Velx>(shp_mean.d0, timefacfac*normal(0)*jp);
       assembler.template Vector<Vely>(shp_mean.d0, timefacfac*normal(1)*jp);
       assembler.template Vector<Velz>(shp_mean.d0, timefacfac*normal(2)*jp);
+#endif
 
+#ifdef COMBUST_NITSCHEVEL
       //------------------------    |                              |
       // Nitsche term (velocity)  + |  \alpha_u || v ||, || Du ||  |
       //------------------------    |                              |
@@ -2944,7 +3000,9 @@ void SysmatCombustBoundary(
       assembler.template Vector<Velx>(shp_jump.d0, alphau*timefacfac*normal(0)*ju);
       assembler.template Vector<Vely>(shp_jump.d0, alphau*timefacfac*normal(1)*ju);
       assembler.template Vector<Velz>(shp_jump.d0, alphau*timefacfac*normal(2)*ju);
+#endif
 
+#ifdef COMBUST_NITSCHEPRES
       //------------------------    |                              |
       // Nitsche term (pressure)  + |  \alpha_p || q ||, || Dp ||  |
       //------------------------    |                              |
@@ -2962,6 +3020,7 @@ void SysmatCombustBoundary(
       //----------------------------    |                         |
 
       assembler.template Vector<Pres>(shp_jump.d0, alphap*timefacfac*jp);
+#endif
 
     } // loop Gaussian points
   } // loop boundary integration cells
@@ -3028,6 +3087,8 @@ void Sysmat(
         SysmatCombustDomain<DISTYPE,ASSTYPE,NUMDOF>(
             ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, ephi, etau,
             material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, assembler);
+
+#ifndef COMBUST_DECOUPLEDXFEM
         // boundary integrals are only added for intersected elements (fully enriched elements)
         if (ele->Intersected() == true)
         {
@@ -3035,6 +3096,7 @@ void Sysmat(
             ele, ih, dofman, evelnp, eprenp, ephi, etau, material, timealgo, dt, theta, assembler,
             flamespeed,nitschevel,nitschepres);
         }
+#endif
       }
       break;
       case INPAR::COMBUST::combusttype_twophaseflow:
@@ -3047,6 +3109,26 @@ void Sysmat(
       default:
         dserror("unknown type of combustion problem");
     }
+
+//cout << endl << "stiffness matrix of element: " << ele->Id() << " columns " << estif.N() << " rows " << estif.M() << endl << endl;
+//int counter = 0;
+//for (int row=0; row<estif.M(); ++row)
+//{
+//  for (int col=0; col<estif.N(); ++col)
+//  {
+////    cout << estif(row,col);
+//    double diff = estif(row,col)-estif(col,row);
+//    if (!((diff>-1.0E-9) and (diff<+1.0E-9)))
+//    {
+//      cout << counter << " difference of entry " << estif(row,col) << " is not 0.0, but " << diff << endl;
+//      cout << "stiffness matrix entry " << estif(row,col) << " transpose " << estif(col,row) << endl;
+//    }
+//    counter++;
+//  }
+////  cout << endl;
+//}
+//dserror("STOP");
+
 }
 
 
@@ -3086,30 +3168,30 @@ void COMBUST::callSysmat(
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
                         combusttype,flamespeed,nitschevel,nitschepres);
                 break;
-            case DRT::Element::hex20:
-                Sysmat<DRT::Element::hex20,XFEM::standard_assembly>(
-                        ele, ih, eleDofManager, mystate, estif, eforce,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-                        combusttype, flamespeed, nitschevel, nitschepres);
-                break;
-            case DRT::Element::hex27:
-                Sysmat<DRT::Element::hex27,XFEM::standard_assembly>(
-                        ele, ih, eleDofManager, mystate, estif, eforce,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-                        combusttype, flamespeed, nitschevel, nitschepres);
-                break;
-            case DRT::Element::tet4:
-                Sysmat<DRT::Element::tet4,XFEM::standard_assembly>(
-                        ele, ih, eleDofManager, mystate, estif, eforce,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-                        combusttype, flamespeed, nitschevel, nitschepres);
-                break;
-            case DRT::Element::tet10:
-                Sysmat<DRT::Element::tet10,XFEM::standard_assembly>(
-                        ele, ih, eleDofManager, mystate, estif, eforce,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-                        combusttype, flamespeed, nitschevel, nitschepres);
-                break;
+//            case DRT::Element::hex20:
+//                Sysmat<DRT::Element::hex20,XFEM::standard_assembly>(
+//                        ele, ih, eleDofManager, mystate, estif, eforce,
+//                        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
+//                        combusttype, flamespeed, nitschevel, nitschepres);
+//                break;
+//            case DRT::Element::hex27:
+//                Sysmat<DRT::Element::hex27,XFEM::standard_assembly>(
+//                        ele, ih, eleDofManager, mystate, estif, eforce,
+//                        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
+//                        combusttype, flamespeed, nitschevel, nitschepres);
+//                break;
+//            case DRT::Element::tet4:
+//                Sysmat<DRT::Element::tet4,XFEM::standard_assembly>(
+//                        ele, ih, eleDofManager, mystate, estif, eforce,
+//                        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
+//                        combusttype, flamespeed, nitschevel, nitschepres);
+//                break;
+//            case DRT::Element::tet10:
+//                Sysmat<DRT::Element::tet10,XFEM::standard_assembly>(
+//                        ele, ih, eleDofManager, mystate, estif, eforce,
+//                        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
+//                        combusttype, flamespeed, nitschevel, nitschepres);
+//                break;
             default:
                 dserror("standard_assembly Sysmat not templated yet");
         };
@@ -3124,30 +3206,30 @@ void COMBUST::callSysmat(
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
                         combusttype, flamespeed, nitschevel, nitschepres);
                 break;
-            case DRT::Element::hex20:
-                Sysmat<DRT::Element::hex20,XFEM::xfem_assembly>(
-                        ele, ih, eleDofManager, mystate, estif, eforce,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-                        combusttype, flamespeed, nitschevel, nitschepres);
-                break;
-            case DRT::Element::hex27:
-                Sysmat<DRT::Element::hex27,XFEM::xfem_assembly>(
-                        ele, ih, eleDofManager, mystate, estif, eforce,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-                        combusttype, flamespeed, nitschevel, nitschepres);
-                break;
-            case DRT::Element::tet4:
-                Sysmat<DRT::Element::tet4,XFEM::xfem_assembly>(
-                        ele, ih, eleDofManager, mystate, estif, eforce,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-                        combusttype, flamespeed, nitschevel, nitschepres);
-                break;
-            case DRT::Element::tet10:
-                Sysmat<DRT::Element::tet10,XFEM::xfem_assembly>(
-                        ele, ih, eleDofManager, mystate, estif, eforce,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-                        combusttype, flamespeed, nitschevel, nitschepres);
-                break;
+//            case DRT::Element::hex20:
+//                Sysmat<DRT::Element::hex20,XFEM::xfem_assembly>(
+//                        ele, ih, eleDofManager, mystate, estif, eforce,
+//                        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
+//                        combusttype, flamespeed, nitschevel, nitschepres);
+//                break;
+//            case DRT::Element::hex27:
+//                Sysmat<DRT::Element::hex27,XFEM::xfem_assembly>(
+//                        ele, ih, eleDofManager, mystate, estif, eforce,
+//                        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
+//                        combusttype, flamespeed, nitschevel, nitschepres);
+//                break;
+//            case DRT::Element::tet4:
+//                Sysmat<DRT::Element::tet4,XFEM::xfem_assembly>(
+//                        ele, ih, eleDofManager, mystate, estif, eforce,
+//                        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
+//                        combusttype, flamespeed, nitschevel, nitschepres);
+//                break;
+//            case DRT::Element::tet10:
+//                Sysmat<DRT::Element::tet10,XFEM::xfem_assembly>(
+//                        ele, ih, eleDofManager, mystate, estif, eforce,
+//                        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
+//                        combusttype, flamespeed, nitschevel, nitschepres);
+//                break;
             default:
                 dserror("xfem_assembly Sysmat not templated yet");
         };

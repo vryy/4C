@@ -64,26 +64,42 @@ namespace COMBUST
     explicit FlameFront(
              const Teuchos::RCP<const DRT::Discretization>  fluiddis, ///< fluid discretization (combust3 elements) which will be intersected
              Teuchos::RCP<DRT::Discretization>  gfuncdis  ///< G-function discretization (condif3 elements) describing the level set function
-             );
+    );
+
     /// destructor
     ~FlameFront();
 
-    /// remote access method to vector holding G-function values
+    /// remote access method to vector on fluid NodeColMap holding G-function values
     const Teuchos::RCP<Epetra_Vector> Phinp() const { return phinp_; }
 
     /// remote access method to flame front patches
     const std::map< int,const Teuchos::RCP<const COMBUST::RefinementCell> > FlameFrontPatches() const
         { return flamefrontpatches_; }
 
-    //URSULA
-    const std::map<int,GEO::DomainIntCells> DomainIntCells() const {return elementintcells_;}
-    const std::map<int,GEO::BoundaryIntCells> BoundaryIntCells() const {return boundaryintcells_;}
-    //URSULA
+    const std::map<int,GEO::DomainIntCells> DomainIntCells() const {return myelementintcells_;}
+    const std::map<int,GEO::BoundaryIntCells> BoundaryIntCells() const {return myboundaryintcells_;}
 
     /// flame front control routine
     void ProcessFlameFront(
-           const Teuchos::ParameterList& combustdyn,
-           const Teuchos::RCP<Epetra_Vector> phinp);
+        const Teuchos::ParameterList&     combustdyn,
+        const Teuchos::RCP<Epetra_Vector> phinp
+    );
+
+    /// export boundary integration cells from this proc to parallel distribution
+    void ExportFlameFront(std::map<int, GEO::BoundaryIntCells>& myflamefront);
+
+   /// pack boundary integration cells from set into char array
+   void packBoundaryIntCells(
+       const std::map<int, GEO::BoundaryIntCells>& dofkeyset,
+       vector<char>&                               dataSend
+   );
+
+  /// unpack boundary integration cells from char array
+  void unpackBoundaryIntCells(
+      const vector<char>&                   dataRecv,
+      std::map<int, GEO::BoundaryIntCells>& dofkeyset
+  );
+
 
   private:
 
@@ -202,16 +218,14 @@ namespace COMBUST
 
     /// pointer to vector on fluid NodeColMap holding G-function values originally stored in phinp
     Teuchos::RCP<Epetra_Vector> phinp_;
-    
+
     /// variable holding the number of refinement steps
     int maxRefinementLevel_;
 
-    //URSULA
     // integration cells for each element
-    std::map<int,GEO::DomainIntCells> elementintcells_;
+    std::map<int,GEO::DomainIntCells> myelementintcells_;
     // boundary integration cells
-    std::map<int,GEO::BoundaryIntCells> boundaryintcells_;
-    //URSULA
+    std::map<int,GEO::BoundaryIntCells> myboundaryintcells_;
 
     /// map containing, for each column fluid element on this processor, the flame front geometry to
     /// be exported to the interfacehandle

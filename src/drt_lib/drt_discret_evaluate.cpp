@@ -51,6 +51,8 @@ Maintainer: Michael Gee
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 
+#include "../drt_combust/combust_defines.H"
+
 #include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------*
@@ -819,9 +821,7 @@ void DoDirichletConditionXFEM(DRT::Condition&             cond,
     if (!actnode) dserror("Cannot find global node %d",(*nodeids)[i]);
     vector<int> dofs = dis.Dof(actnode);
     const unsigned numdf = dofs.size();
-//TEST
-//    std::cout << "node: " << (*actnode).Id() << "numdof: " << numdf << std::endl;
-//TEST
+
     if (numdf==4)//StandardFEM
     {
        for (unsigned j=0; j<numdf; ++j)
@@ -888,11 +888,9 @@ void DoDirichletConditionXFEM(DRT::Condition&             cond,
     {
       for (unsigned j=0; j<numdf; ++j) // loop over all dofs (Std + Enr)
       {
-        //-------------------------------------------------------------------------------------------
-        //this is a hack to truncate a double!
+        // this is a hack to truncate a double!
         int truncj = j/2; // the closest smaller integer number is taken
-//        std::cout << "trunj " << truncj << std::endl;
-        //-------------------------------------------------------------------------------------------
+
         if ((*onoff)[truncj]==0) // if Dirichlet value is turned off in input file (0)
         {
           const int lid = (*systemvectoraux).Map().LID(dofs[j]);
@@ -906,18 +904,11 @@ void DoDirichletConditionXFEM(DRT::Condition&             cond,
         }
         const int gid = dofs[j];
         vector<double> value(deg+1,(*val)[truncj]);
-        if (j%2!=0) //if enr-DOF overwrite DCB by zero
-        {
-          for (unsigned i=0; i<deg+1; ++i)
-            value[i] = 0.0;
-        }
 
         // factor given by time curve
         std::vector<double> curvefac(deg+1, 1.0);
         int curvenum = -1;
-//TEST
-//        std::cout << "node: " << (*actnode).Id() <<"groesse curve vektor: "<< (*curve).size() << " dof index " << j << std::endl;
-//TEST
+
         if (curve) curvenum = (*curve)[truncj];
         if (curvenum>=0 && usetime)
           curvefac = DRT::Problem::Instance()->Curve(curvenum).FctDer(time,deg);
@@ -942,6 +933,88 @@ void DoDirichletConditionXFEM(DRT::Condition&             cond,
           value[i] *= functfac * curvefac[i];
         }
 
+        // overwrite Dirichlet values for XFEM dofs
+        dsassert((*onoff)[truncj]!=0,"there is no Dirichlet condition assigned to this dof!");
+        if (j%2!=0) // if XFEM dof
+        {
+          cout << "/!\\ warning === Dirichlet value of enriched dof " << j << " is set to 0.0 for node " << actnode->Id() << endl;
+          for (unsigned i=0; i<deg+1; ++i)
+          {
+            value[i] = 0.0; // previously assigned DBC value is overwritten by 0.0
+          }
+        }
+
+#ifdef COMBUST_TESTCOUETTEFLOW
+        //--------------------------------------------
+        // ugly hack for decouled Couette flow example
+        //--------------------------------------------
+        if ((*onoff)[truncj]!=0 and j==1) // if Dirichlet value is turned on in input file (1)
+        {
+//          // domain with 10 elements in x-direction
+//          if (actnode->Id() == 26 or
+//              actnode->Id() == 27 or
+//              actnode->Id() == 40 or
+//              actnode->Id() == 41)
+          // domain with 20 elements in x-direction
+          if (actnode->Id() == 96 or
+              actnode->Id() == 97 or
+              actnode->Id() == 110 or
+              actnode->Id() == 111)
+          {
+            cout << "/!\\ warning === Dirichlet value of enriched x-velocity dof is modified manually for node " << actnode->Id() << endl;
+            cout << *actnode << endl;
+            for (unsigned i=0; i<deg+1; ++i)
+            {
+              value[i] = -6.5;
+            }
+          }
+//          // domain with 10 elements in x-direction
+//          if (actnode->Id() == 98 or
+//              actnode->Id() == 99 or
+//              actnode->Id() == 112 or
+//              actnode->Id() == 113)
+          // domain with 20 elements in x-direction
+          else if (actnode->Id() == 168 or
+                   actnode->Id() == 169 or
+                   actnode->Id() == 182 or
+                   actnode->Id() == 183)
+          {
+            cout << "/!\\ warning === Dirichlet value of enriched x-velocity dof is modified manually for node " << actnode->Id() << endl;
+            cout << *actnode << endl;
+            for (unsigned i=0; i<deg+1; ++i)
+            {
+              value[i] = -2.5;
+            }
+          }
+          else // free x-velocity dof for all other Dirichlet nodes
+          {
+            cout << "/!\\ warning === no Dirichlet value set for enriched x-velocity dof of node " << actnode->Id() << endl;
+            const int lid = (*systemvectoraux).Map().LID(dofs[j]);
+            if (lid<0) dserror("Global id %d not on this proc in system vector",dofs[j]);
+            if (toggle!=Teuchos::null)
+              (*toggle)[lid] = 0.0;
+            // get rid of entry in DBC map - if it exists
+            if (dbcgids != Teuchos::null)
+              (*dbcgids).erase(dofs[j]);
+            continue; // for loop over dofs is advanced by 1 (++j)
+          }
+        }
+#endif
+
+#ifdef COMBUST_XVELFREE
+        if ((*onoff)[truncj]!=0 and j==1) // if Dirichlet value is turned on in input file (1)
+        {
+          cout << "/!\\ warning === no Dirichlet value set for enriched x-velocity dof of node " << actnode->Id() << endl;
+          const int lid = (*systemvectoraux).Map().LID(dofs[j]);
+          if (lid<0) dserror("Global id %d not on this proc in system vector",dofs[j]);
+          if (toggle!=Teuchos::null)
+            (*toggle)[lid] = 0.0;
+          // get rid of entry in DBC map - if it exists
+          if (dbcgids != Teuchos::null)
+            (*dbcgids).erase(dofs[j]);
+          continue; // for loop over dofs is advanced by 1 (++j)
+        }
+#endif
         // assign value
         const int lid = (*systemvectoraux).Map().LID(gid);
         if (lid<0) dserror("Global id %d not on this proc in system vector",gid);

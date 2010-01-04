@@ -98,9 +98,8 @@ COMBUST::InterfaceHandleCombust::~InterfaceHandleCombust()
 //! implement this function if needed for combustion!
 void COMBUST::InterfaceHandleCombust::toGmsh(const int step) const
 {
-  //dserror ("not implemented");
-//  const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
-//  const bool gmshdebugout = (bool)getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
+  const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
+  const bool gmshdebugout = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1;
 
   const bool screen_out = true;
 
@@ -108,7 +107,7 @@ void COMBUST::InterfaceHandleCombust::toGmsh(const int step) const
 
   const int myrank = xfemdis_->Comm().MyPID();
 
-  if (true)
+  if (gmshdebugout)
   {
     // debug: write both meshes to file in Gmsh format
     std::stringstream filename;
@@ -124,7 +123,7 @@ void COMBUST::InterfaceHandleCombust::toGmsh(const int step) const
     if (screen_out) cout << " done" << endl;
   }
 
-  if (true)
+  if (gmshdebugout)
   {
     std::stringstream filename;
     std::stringstream filenamedel;

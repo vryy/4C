@@ -67,31 +67,7 @@ namespace COMBUST
     int FGiter() const { return fgiter_; }
 
     /// reinitialize G-function
-    void ReinitializeGfunc(INPAR::COMBUST::ReInitialActionGfunc action);
-
-    /// build signed distance function
-    void SignedDistFunc();
-
-    /// not documented
-    void ComputeNormalVectorToFlameFront(
-          const LINALG::SerialDenseMatrix& patch,
-          LINALG::Matrix<3,1>&             normal
-     );
-
-    /// not documented
-    void ComputeDistanceToFlameFront(
-          const LINALG::Matrix<3,1>&       node,
-          const LINALG::SerialDenseMatrix& patch,
-          double&                          distance
-    );
-
-    /// not documented
-    void FindFacingPatch(
-          const LINALG::Matrix<3,1>&       node,
-          const LINALG::SerialDenseMatrix& patch,
-          bool&                            facenode,
-          double&                          vertexdist
-    );
+    void ReinitializeGfunc();
 
     /// overwrite Navier-Stokes velocity field (used for test cases)
     const Teuchos::RCP<Epetra_Vector> OverwriteFluidVel();

@@ -65,20 +65,20 @@ namespace COMBUST
 
     //! remote access method to coordinates of a refinement cell
     std::vector<std::vector<double> > GetVertexCoord() const { return vertexcoord_; }
-    
+
     //! remote access method to number of children, depends on the tree type, here 8
     const int NumOfChildren() const { return children_.size(); }
-       
+
     //! remote access method to children
     const Teuchos::RCP<COMBUST::RefinementCell> GetRefinementCell (const int index) const;
-    
+
     //! fills a vector with pointers to all refinement cells which are not further intersected
     void SearchRefinementCells (std::vector<const COMBUST::RefinementCell* >& Cells) const;
-    
+
     //! remote access method to rootcell
     const COMBUST::RefinementCell* ReturnRootCell() const;
 
-    //! map of cell edge ID and intersection point coodinates (zero G-function)
+    //! public: map of cell edge ID and intersection point coodinates (zero G-function)
     std::map<int,std::vector<double> > intersectionpoints_;
 
   private:
@@ -100,13 +100,13 @@ namespace COMBUST
 
     //! boolean indicating whether a refinement cell is intersected by the interface
     bool intersected_;
-    
+
     //! pointer to parent node
     const COMBUST::RefinementCell* parent_;
-    
+
     //! vector of pointers to the children nodes
     std::vector< Teuchos::RCP<COMBUST::RefinementCell> > children_;
-    
+
   }; // class RefinementCell
 } // namespace COMBUST
 

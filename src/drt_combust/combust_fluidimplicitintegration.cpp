@@ -221,7 +221,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
 //    if (density_ <= 0.0) dserror("received negative or zero density value from elements");
 //  }
 
-} // CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt
+}
 
 /*------------------------------------------------------------------------------------------------*
  | destructor                                                                         henke 08/08 |
@@ -949,9 +949,7 @@ void FLD::CombustFluidImplicitTimeInt::Output()
 
   if (write_visualization_data)  //write solution for visualization
   {
-//    Teuchos::RCP<Epetra_Vector> velnp_out = dofmanagerForOutput_->fillPhysicalOutputVector(
-//        *state_.velnp_, dofset_out_, state_.nodalDofDistributionMap_, physprob_.fieldset_);
-
+    // transform velocity XFEM vector to (standard FEM) output velocity vector
     Teuchos::RCP<Epetra_Vector> velnp_out = dofmanagerForOutput_->transformXFEMtoStandardVector(
         *state_.velnp_, *standarddofset_, state_.nodalDofDistributionMap_, physprob_.xfemfieldset_);
 
@@ -1108,7 +1106,7 @@ void FLD::CombustFluidImplicitTimeInt::ReadRestart(int step)
 }
 
 /*------------------------------------------------------------------------------------------------*
- | henke 08/08 |
+ | write output to Gmsh postprocessing files                                          henke 10/09 |
  *------------------------------------------------------------------------------------------------*/
 void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
     const int step,
@@ -1116,7 +1114,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
     ) const
 {
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
-  const bool gmshdebugout = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1;
+  const bool gmshdebugout = (bool)getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
 
   const bool screen_out = true;
 
@@ -1159,6 +1157,12 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
         //------------------------------------------------------------------------------------------
         // get pointer to vector holding G-function values at the fluid nodes
         const Teuchos::RCP<Epetra_Vector> phinp = flamefront_->Phinp();
+#ifdef DEBUG
+        // get map of this vector
+        const Epetra_BlockMap& phimap = phinp->Map();
+        // check, whether this map is still identical with the current node map in the discretization
+        if (not phimap.SameAs(*discret_->NodeColMap())) dserror("node column map has changed!");
+#endif
 
         size_t numnode = actele->NumNode();
         vector<double> myphinp(numnode);
@@ -1242,6 +1246,12 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
         //------------------------------------------------------------------------------------------
         // get pointer to vector holding G-function values at the fluid nodes
         const Teuchos::RCP<Epetra_Vector> phinp = flamefront_->Phinp();
+#ifdef DEBUG
+        // get map of this vector
+        const Epetra_BlockMap& phimap = phinp->Map();
+        // check, whether this map is still identical with the current node map in the discretization
+        if (not phimap.SameAs(*discret_->NodeColMap())) dserror("node column map has changed!");
+#endif
 
         size_t numnode = actele->NumNode();
         vector<double> myphinp(numnode);
@@ -1514,10 +1524,8 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
     const double time
     ) const
 {
-  cout << "PlotVectorFieldToGmsh" << endl;
-
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
-  const bool gmshdebugout = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1;
+  const bool gmshdebugout = (bool)getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
 
   const bool screen_out = true;
 
@@ -1565,6 +1573,12 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
         //------------------------------------------------------------------------------------------
         // get pointer to vector holding G-function values at the fluid nodes
         const Teuchos::RCP<Epetra_Vector> phinp = flamefront_->Phinp();
+#ifdef DEBUG
+        // get map of this vector
+        const Epetra_BlockMap& phimap = phinp->Map();
+        // check, whether this map is still identical with the current node map in the discretization
+        if (not phimap.SameAs(*discret_->NodeColMap())) dserror("node column map has changed!");
+#endif
 
         size_t numnode = actele->NumNode();
         vector<double> myphinp(numnode);
@@ -1868,7 +1882,7 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
   }
 
   return;
-} // CombustFluidImplicitTimeInt::SetInitialFlowField()
+}
 
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |

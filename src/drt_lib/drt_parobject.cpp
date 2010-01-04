@@ -128,7 +128,20 @@ void DRT::ParObject::AddtoPack(vector<char>& data, const Epetra_SerialDenseVecto
   AddtoPack(data,A,m*sizeof(double));
   return;
 }
-
+/*----------------------------------------------------------------------*
+ | a LINALG::SerialDenseMatrix specialization                  (public) |
+ |                                                          henke 12/09 |
+ *----------------------------------------------------------------------*/
+void DRT::ParObject::AddtoPack(vector<char>& data, const LINALG::SerialDenseMatrix& stuff)
+{
+  int m = stuff.M();
+  int n = stuff.N();
+  AddtoPack(data,m);
+  AddtoPack(data,n);
+  double* A = stuff.A();
+  AddtoPack(data,A,n*m*sizeof(double));
+  return;
+}
 /*----------------------------------------------------------------------*
  | a string specialization                                     (public) |
  |                                                            gee 02/07 |
@@ -209,6 +222,24 @@ void DRT::ParObject::ExtractfromPack(int& position, const vector<char>& data,
   double* a = stuff.Values();
   if(m)
     ExtractfromPack(position,data,a,m*sizeof(double));
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | a LINALG::SerialDenseMatrix specialization                  (public) |
+ |                                                          henke 12/09 |
+ *----------------------------------------------------------------------*/
+void DRT::ParObject::ExtractfromPack(int& position, const vector<char>& data,
+                                     LINALG::SerialDenseMatrix& stuff)
+{
+  int m = 0;
+  ExtractfromPack(position,data,m);
+  int n = 0;
+  ExtractfromPack(position,data,n);
+  stuff.Reshape(m,n);
+  double* a = stuff.A();
+  if(m*n)
+    ExtractfromPack(position,data,a,n*m*sizeof(double));
   return;
 }
 

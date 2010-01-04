@@ -20,6 +20,7 @@ Maintainer: Florian Henke
 #define COMBUST_DECOUPLEDXFEM   // turn on/off boundary integrals for premixed combustion system matrix
 //#define COMBUST_NITSCHE
 //#define COMBUST_AXEL
+//#define COMBUST_PROJCELLEDGES // turn on/off old method to find facing flame front patches
 //---------------------------------
 // combustion domain integral terms
 //---------------------------------
@@ -48,19 +49,19 @@ Maintainer: Florian Henke
 //-----------------------------------
 // combustion boundary integral terms
 //-----------------------------------
-//#define COMBUST_VISCCONSIST    // turn on/off
-//#define COMBUST_VISCADJCONSIST // turn on/off
-//#define COMBUST_PRESCONSIST    // turn on/off
-//#define COMBUST_PRESADJCONSIST // turn on/off pressure adjoint consistency term
-//#define COMBUST_PRESJUMPRHS    // turn on/off pressure/flux jump RHS term
-//#define COMBUST_NITSCHEVEL     // turn on/off Nitsche velocity terms
-//#define COMBUST_NITSCHEPRES    // turn on/off Nitsche pressure terms
+#define COMBUST_VISCCONSIST    // turn on/off
+#define COMBUST_VISCADJCONSIST // turn on/off
+#define COMBUST_PRESCONSIST    // turn on/off
+#define COMBUST_PRESADJCONSIST // turn on/off pressure adjoint consistency term
+#define COMBUST_PRESJUMPRHS    // turn on/off pressure/flux jump RHS term
+#define COMBUST_NITSCHEVEL     // turn on/off Nitsche velocity terms
+#define COMBUST_NITSCHEPRES    // turn on/off Nitsche pressure terms
 
 //-----------------------------
 // combustion test case options
 //-----------------------------
 //#define COMBUST_TESTCOUETTEFLOW // modify Dirichlet boundary conditions manually for Couette flow test case
-#define COMBUST_XVELFREE      // free Dirichlet boundary conditions manually for Couette flow test case
+//#define COMBUST_XVELFREE      // free Dirichlet boundary conditions manually for Couette flow test case
 
 //----------------------
 // combustion tolerances

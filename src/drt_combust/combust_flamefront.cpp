@@ -22,6 +22,14 @@ Maintainer: Florian Henke
 // #include "../drt_geometry/integrationcell.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
+#include "../drt_lib/drt_exporter.H"
+#include "../drt_lib/drt_parobject.H"
+#ifdef PARALLEL
+#include <Epetra_MpiComm.h>
+#else
+#include <Epetra_SerialComm.h>
+#endif
+
 
 // extern struct _FILES  allfiles;
 
@@ -75,17 +83,13 @@ void COMBUST::FlameFront::ProcessFlameFront(
    *
    * henke 02/09
    */
-//  if (Comm().MyPID()==0)
-  {
-    cout<<"\n--------------------------------------  PROCESS FLAME FRONT  ---------------------------------\n\n";
-  }
+  // TODO define communicator
+  //if (Comm().MyPID()==0)
+    std::cout << "\n---  processing flame front ... " << std::flush;;
 
-  //URSULA
-  //diese Maps müssen bei jeden Durchlauf von ProcessFlameFront
-  //neu gefüllt werden
-  elementintcells_.clear();
-  boundaryintcells_.clear();
-  //URSULA
+  //diese Maps müssen bei jeden Durchlauf von ProcessFlameFront neu gefüllt werden
+  myelementintcells_.clear();
+  myboundaryintcells_.clear();
 
   //------------------------------------------------------------------------------------------------
   // Rearranging vector phinp from gfuncdis DofRowMap to fluiddis NodeRowMap
@@ -191,13 +195,8 @@ void COMBUST::FlameFront::ProcessFlameFront(
     // generate interface (flame front) surface
     CaptureFlameFront(rootcell);
   }
-#ifdef PARALLEL
-  //----------------------------------------------------------------------------------------
-  // TODO: distribute flame front (boundary integration cells) to all processors (redundant)
-  //----------------------------------------------------------------------------------------
-  // syncFlameFront()
-#endif
-  return;
+
+  std::cout << "done" << std::endl;
 }
 
 
@@ -575,6 +574,13 @@ void COMBUST::FlameFront::FindIntersectionPoints(const Teuchos::RCP<COMBUST::Ref
           // store intersection point coordinate (local element coordinates) for every component dim
           coordinates[dim] = vertexcoord[lines[iline][0]][dim] - gfuncval1 / (gfuncval2 - gfuncval1)
           * (vertexcoord[lines[iline][1]][dim] - vertexcoord[lines[iline][0]][dim]);
+
+          // shift intersection point to vertex if it is very close
+          if(fabs(vertexcoord[lines[iline][0]][dim]-coordinates[dim])<1.0E-8)
+          {
+            coordinates[dim] = vertexcoord[lines[iline][0]][dim];
+            cout << "coordinates shifted to vertex" << endl;
+          }
         }
       }
 
@@ -751,10 +757,10 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
   //------------------------------------------------------------
   // store list of integration cells per element in flame front
   //------------------------------------------------------------
-  elementintcells_[cell->Ele()->Id()] = listDomainIntCellsperEle;
+  myelementintcells_[cell->Ele()->Id()] = listDomainIntCellsperEle;
   // if there exist boundary integration cells
   if(listBoundaryIntCellsperEle.size() > 0)
-    boundaryintcells_[cell->Ele()->Id()] = listBoundaryIntCellsperEle;
+    myboundaryintcells_[cell->Ele()->Id()] = listBoundaryIntCellsperEle;
 
   // TODO: temporary stuff -> clarify, remove later
   // hier muss jetzt die map "flamefrontpatches_" mit Oberflächenstückchen gefüllt werden
@@ -1073,257 +1079,257 @@ void COMBUST::FlameFront::buildFlameFrontSegments(
   for (int i=0; i<6; i++)//loop over all surfaces
   {
     // gets end points of the segment
-  std::vector<int> segmentpoints;
+    std::vector<int> segmentpoints;
 
-  for (int j=0; j<4; j++)//loop over all lines of the surface
-  {
-    // find line
-    std::map<int,int>::const_iterator it_intersectionpoint = intersectionpointsids.find(surface[i][j]);
-    if (it_intersectionpoint!=intersectionpointsids.end()) //check: is line intersected?
+    for (int j=0; j<4; j++)//loop over all lines of the surface
     {
-      //get id of the intersectionpoint and store it in segmentpoints vector
-      segmentpoints.push_back(it_intersectionpoint->second);
-    }
-  }
-
-  //std::cout << "segmentpoints size" << segmentpoints.size() << std::endl;
-
-  switch (segmentpoints.size())
-  {
-  case 0:
-  {
-    // check, if gfunc==0 at the vertices
-    // gets nodes with gfunc==0
-    std::vector<int> zeropoints;
-    std::vector<std::vector<int> > surfacepointlist = DRT::UTILS::getEleNodeNumberingSurfaces(DRT::Element::hex8);
-    for(int k=0; k<4; k++)//loop over nodes
-    {
-      if (gfuncvalues[surfacepointlist[i][k]]==0)
-        zeropoints.push_back(surfacepointlist[i][k]);
-    }
-    //std::cout << "zeropoints size" << zeropoints.size() << std::endl;
-    switch (zeropoints.size())
-    {
-    case 0: //surface not intersected
-    case 1: //surface not intersected, but one vertex touchs the interface
-    {
-      break;
-    }
-    case 2:
-      /*
-       * 2 opposite vertices with Phi=0
-       * - surface is intersected, iff Phi at the remaining vertices has different sign (segment == diagonal)
-       * - otherwise vertiches touch interface
-       * 2 neighboring vertices with Phi=0
-       * - edge touchs interface, but cell is not intersected
-       * - edge limits interface patch -> then, it is needed in TriangulateFlameFront()
-       */
-    {
-      // intersection: opposite vertices with Phi=0
-      if(((zeropoints[0]==surfacepointlist[i][0])and(zeropoints[1]==surfacepointlist[i][2])))
+      // find line
+      std::map<int,int>::const_iterator it_intersectionpoint = intersectionpointsids.find(surface[i][j]);
+      if (it_intersectionpoint!=intersectionpointsids.end()) //check: is line intersected?
       {
-        // different sign of Phi at the remaining vertices
-        if (gfuncvalues[surfacepointlist[i][1]]*gfuncvalues[surfacepointlist[i][3]]<0)
-        {
-          //store in segmentlist
-          segmentlist.insert(pair<int,std::vector<int> >(i,zeropoints));
-        }
+        //get id of the intersectionpoint and store it in segmentpoints vector
+        segmentpoints.push_back(it_intersectionpoint->second);
       }
-      else if (((zeropoints[0]==surfacepointlist[i][1])and(zeropoints[1]==surfacepointlist[i][3])))
-      {
-        if (gfuncvalues[surfacepointlist[i][0]]*gfuncvalues[surfacepointlist[i][2]]<0)
-        {
-          segmentlist.insert(pair<int,std::vector<int> >(i,zeropoints));
-        }
-      }
-      else
-      {
-        // no intersection
-        // possibly segment limits the interface
-        // store in segment list (key=-1), if it is not already contained in the segmentlist
-        if (zeropoints[0]>zeropoints[1])
-        {
-          int temp =zeropoints[1];
-          zeropoints[1] = zeropoints[0];
-          zeropoints[0] = temp;
-        }
-        //already in segmentlist?
-        bool not_in_segmentlist = true;
-        for (std::multimap<int,std::vector<int> >::iterator iter=segmentlist.equal_range(-1).first; iter!=segmentlist.equal_range(-1).second; iter++)
-        {
-          if (iter->second == zeropoints)
-            not_in_segmentlist = false;
-        }
-        if(not_in_segmentlist)
-          //store in segmentlist
-          segmentlist.insert(pair<int,std::vector<int> >(-1,zeropoints));
-      }
-      break;
     }
-    case 3:
-    {
-      // surface is not intersected, but two following edges are aligned with the interface
-      // store in segment list (key=-1), if it is not already contained in the segmentlist
 
-      // zeropoints are assigned to segments
-      // checke which vertex is missing
-      if(zeropoints[0]==surfacepointlist[i][0])
+    //std::cout << "segmentpoints size" << segmentpoints.size() << std::endl;
+
+    switch (segmentpoints.size())
+    {
+    case 0:
+    {
+      // check, if gfunc==0 at the vertices
+      // gets nodes with gfunc==0
+      std::vector<int> zeropoints;
+      std::vector<std::vector<int> > surfacepointlist = DRT::UTILS::getEleNodeNumberingSurfaces(DRT::Element::hex8);
+      for(int k=0; k<4; k++)//loop over nodes
       {
-        if(zeropoints[1]==surfacepointlist[i][1])
+        if (gfuncvalues[surfacepointlist[i][k]]==0)
+          zeropoints.push_back(surfacepointlist[i][k]);
+      }
+      //std::cout << "zeropoints size" << zeropoints.size() << std::endl;
+      switch (zeropoints.size())
+      {
+      case 0: //surface not intersected
+      case 1: //surface not intersected, but one vertex touchs the interface
+      {
+        break;
+      }
+      case 2:
+        /*
+         * 2 opposite vertices with Phi=0
+         * - surface is intersected, iff Phi at the remaining vertices has different sign (segment == diagonal)
+         * - otherwise vertiches touch interface
+         * 2 neighboring vertices with Phi=0
+         * - edge touchs interface, but cell is not intersected
+         * - edge limits interface patch -> then, it is needed in TriangulateFlameFront()
+         */
+      {
+        // intersection: opposite vertices with Phi=0
+        if(((zeropoints[0]==surfacepointlist[i][0])and(zeropoints[1]==surfacepointlist[i][2])))
         {
-          if(zeropoints[2]==surfacepointlist[i][2])
+          // different sign of Phi at the remaining vertices
+          if (gfuncvalues[surfacepointlist[i][1]]*gfuncvalues[surfacepointlist[i][3]]<0)
           {
-            //vertex 4 is missing -> no problem
+            //store in segmentlist
+            segmentlist.insert(pair<int,std::vector<int> >(i,zeropoints));
           }
-          else
+        }
+        else if (((zeropoints[0]==surfacepointlist[i][1])and(zeropoints[1]==surfacepointlist[i][3])))
+        {
+          if (gfuncvalues[surfacepointlist[i][0]]*gfuncvalues[surfacepointlist[i][2]]<0)
           {
-        	//vertex 3 is missing -> rearrange zeropoints
-            int temp = zeropoints[0];
-            zeropoints[0] = zeropoints[2];
-            zeropoints[2] = zeropoints[1];
-            zeropoints[1] = temp;
+            segmentlist.insert(pair<int,std::vector<int> >(i,zeropoints));
           }
         }
         else
         {
-        	//vertex 2 is missing -> rearrange zeropoints
-          int temp = zeropoints[0];
-          zeropoints[0] = zeropoints[1];
-          zeropoints[1] = zeropoints[2];
-          zeropoints[2] = temp;
+          // no intersection
+          // possibly segment limits the interface
+          // store in segment list (key=-1), if it is not already contained in the segmentlist
+          if (zeropoints[0]>zeropoints[1])
+          {
+            int temp =zeropoints[1];
+            zeropoints[1] = zeropoints[0];
+            zeropoints[0] = temp;
+          }
+          //already in segmentlist?
+          bool not_in_segmentlist = true;
+          for (std::multimap<int,std::vector<int> >::iterator iter=segmentlist.equal_range(-1).first; iter!=segmentlist.equal_range(-1).second; iter++)
+          {
+            if (iter->second == zeropoints)
+              not_in_segmentlist = false;
+          }
+          if(not_in_segmentlist)
+            //store in segmentlist
+            segmentlist.insert(pair<int,std::vector<int> >(-1,zeropoints));
         }
+        break;
       }
-      else
+      case 3:
       {
-        //vertex 1 is missing -> no problem
-      }
+        // surface is not intersected, but two following edges are aligned with the interface
+        // store in segment list (key=-1), if it is not already contained in the segmentlist
 
-      for (std::size_t k=0; k<zeropoints.size()-1; k++)
-      {
-        std::vector<int> segment (2);
-        segment[0] = zeropoints[k];
-        segment[1] = zeropoints[k+1];
-        if (segment[0]>segment[1])
+        // zeropoints are assigned to segments
+        // checke which vertex is missing
+        if(zeropoints[0]==surfacepointlist[i][0])
         {
-          int temp =segment[1];
-          segment[1] = segment[0];
-          segment[0] = temp;
+          if(zeropoints[1]==surfacepointlist[i][1])
+          {
+            if(zeropoints[2]==surfacepointlist[i][2])
+            {
+              //vertex 4 is missing -> no problem
+            }
+            else
+            {
+              //vertex 3 is missing -> rearrange zeropoints
+              int temp = zeropoints[0];
+              zeropoints[0] = zeropoints[2];
+              zeropoints[2] = zeropoints[1];
+              zeropoints[1] = temp;
+            }
+          }
+          else
+          {
+            //vertex 2 is missing -> rearrange zeropoints
+            int temp = zeropoints[0];
+            zeropoints[0] = zeropoints[1];
+            zeropoints[1] = zeropoints[2];
+            zeropoints[2] = temp;
+          }
         }
-        bool not_in_segmentlist = true;
-        for (std::multimap<int,std::vector<int> >::iterator iter=segmentlist.equal_range(-1).first; iter!=segmentlist.equal_range(-1).second; iter++)
+        else
         {
-          if (iter->second == segment)
-            not_in_segmentlist = false;
+          //vertex 1 is missing -> no problem
         }
-        if(not_in_segmentlist)
-          segmentlist.insert(pair<int,std::vector<int> >(-1,segment));
+
+        for (std::size_t k=0; k<zeropoints.size()-1; k++)
+        {
+          std::vector<int> segment (2);
+          segment[0] = zeropoints[k];
+          segment[1] = zeropoints[k+1];
+          if (segment[0]>segment[1])
+          {
+            int temp =segment[1];
+            segment[1] = segment[0];
+            segment[0] = temp;
+          }
+          bool not_in_segmentlist = true;
+          for (std::multimap<int,std::vector<int> >::iterator iter=segmentlist.equal_range(-1).first; iter!=segmentlist.equal_range(-1).second; iter++)
+          {
+            if (iter->second == segment)
+              not_in_segmentlist = false;
+          }
+          if(not_in_segmentlist)
+            segmentlist.insert(pair<int,std::vector<int> >(-1,segment));
+        }
+        break;
       }
+      case 4:
+        // suface is aligned with the interface -> cell is not intersected
+        // surface has to be added to BoundaryIntCells
+      {
+
+        // as all segments, limiting the interface, are already found in case 2 and 3,
+        // nothing remains to do here
+
+        break;
+      }
+      default:
+        dserror("impossible number of zero values");
+      }
+      break;
+    }
+    case 1:
+    {
+      //std::cout << "one intersection point" << std::endl;
+      //find zeropoint to build segment
+      std::vector<int> zeropoints;
+      std::vector<std::vector<int> > surfacepointlist = DRT::UTILS::getEleNodeNumberingSurfaces(DRT::Element::hex8);
+      for(int k=0; k<4; k++)//loop over nodes
+      {
+        if (gfuncvalues[surfacepointlist[i][k]]==0)
+          zeropoints.push_back(surfacepointlist[i][k]);
+      }
+      if (zeropoints.size()!=1)
+        dserror("can't build intersection segment");
+
+      std::vector<int> segment (2);
+      segment[0] = segmentpoints[0];
+      segment[1] = zeropoints[0];
+      segmentlist.insert(pair<int,std::vector<int> >(i,segment));
+
+      break;
+    }
+    case 2:
+    {
+      //store segment in segmentlist
+      segmentlist.insert(pair<int,std::vector<int> >(i,segmentpoints));
+      break;
+    }
+    case 3:
+    {
+      dserror("impossible number of intersectionpoints for hex8 element surface");
       break;
     }
     case 4:
-    // suface is aligned with the interface -> cell is not intersected
-    // surface has to be added to BoundaryIntCells
     {
-
-      // as all segments, limiting the interface, are already found in case 2 and 3,
-      // nothing remains to do here
-
-      break;
-    }
-    default:
-      dserror("impossible number of zero values");
-    }
-    break;
-  }
-  case 1:
-  {
-  //std::cout << "one intersection point" << std::endl;
-  //find zeropoint to build segment
-  std::vector<int> zeropoints;
-  std::vector<std::vector<int> > surfacepointlist = DRT::UTILS::getEleNodeNumberingSurfaces(DRT::Element::hex8);
-  for(int k=0; k<4; k++)//loop over nodes
-  {
-    if (gfuncvalues[surfacepointlist[i][k]]==0)
-      zeropoints.push_back(surfacepointlist[i][k]);
-  }
-  if (zeropoints.size()!=1)
-    dserror("can't build intersection segment");
-
-  std::vector<int> segment (2);
-  segment[0] = segmentpoints[0];
-  segment[1] = zeropoints[0];
-  segmentlist.insert(pair<int,std::vector<int> >(i,segment));
-
-    break;
-  }
-  case 2:
-  {
-    //store segment in segmentlist
-    segmentlist.insert(pair<int,std::vector<int> >(i,segmentpoints));
-    break;
-  }
-  case 3:
-  {
-    dserror("impossible number of intersectionpoints for hex8 element surface");
-    break;
-  }
-  case 4:
-  {
-    //std::cout << "4 intersection points " << std::endl;
-	// 2 segments per surface are possible for hex8 -> 4 intersection points
-	// idea to assign the intersection points to the segments:
-	//       look for maximal distance
-	//       this combination is not possible
-	//       the segments are now obtained
-    double distance;
-    double maxdist = 0.0;
-    int maxdistcounter = 0;
-    for(int k=0; k<4; k++)//loop over segmentpoints
-    {
-      std::vector<double> point1 = pointlist[segmentpoints[k]];
-      std::vector<double> point2 (3);
-      if(k<3)
+      //std::cout << "4 intersection points " << std::endl;
+      // 2 segments per surface are possible for hex8 -> 4 intersection points
+      // idea to assign the intersection points to the segments:
+      //       look for maximal distance
+      //       this combination is not possible
+      //       the segments are now obtained
+      double distance;
+      double maxdist = 0.0;
+      int maxdistcounter = 0;
+      for(int k=0; k<4; k++)//loop over segmentpoints
       {
-        std::vector<double> point2 = pointlist[segmentpoints[k+1]];
+        std::vector<double> point1 = pointlist[segmentpoints[k]];
+        std::vector<double> point2 (3);
+        if(k<3)
+        {
+          std::vector<double> point2 = pointlist[segmentpoints[k+1]];
+        }
+        else
+        {
+          std::vector<double> point2 = pointlist[segmentpoints[0]];
+        }
+        distance = sqrt((point1[0]-point2[0])*(point1[0]-point2[0])+(point1[1]-point2[1])*(point1[1]-point2[1])+(point1[2]-point2[2])*(point1[2]-point2[2]));
+        if (distance>maxdist)
+          maxdistcounter = k;
+      }
+
+      //build segment
+      //std::cout << "Maxdist" << maxdistcounter << std::endl;
+      if (maxdistcounter==0 or maxdistcounter==2)
+      {
+        std::vector<int> segment1 (2);
+        segment1[0] = segmentpoints[3];
+        segment1[1] = segmentpoints[0];
+        std::vector<int> segment2 (2);
+        segment2[0] = segmentpoints[1];
+        segment2[1] = segmentpoints[2];
+        segmentlist.insert(pair<int,std::vector<int> >(i,segment1));
+        segmentlist.insert(pair<int,std::vector<int> >(i,segment2));
       }
       else
       {
-        std::vector<double> point2 = pointlist[segmentpoints[0]];
+        std::vector<int> segment1 (2);
+        segment1[0] = segmentpoints[0];
+        segment1[1] = segmentpoints[1];
+        std::vector<int> segment2 (2);
+        segment2[0] = segmentpoints[2];
+        segment2[1] = segmentpoints[3];
+        segmentlist.insert(pair<int,std::vector<int> >(i,segment1));
+        segmentlist.insert(pair<int,std::vector<int> >(i,segment2));
       }
-      distance = sqrt((point1[0]-point2[0])*(point1[0]-point2[0])+(point1[1]-point2[1])*(point1[1]-point2[1])+(point1[2]-point2[2])*(point1[2]-point2[2]));
-      if (distance>maxdist)
-        maxdistcounter = k;
+      break;
     }
-
-    //build segment
-    //std::cout << "Maxdist" << maxdistcounter << std::endl;
-    if (maxdistcounter==0 or maxdistcounter==2)
-    {
-      std::vector<int> segment1 (2);
-      segment1[0] = segmentpoints[3];
-      segment1[1] = segmentpoints[0];
-      std::vector<int> segment2 (2);
-      segment2[0] = segmentpoints[1];
-      segment2[1] = segmentpoints[2];
-      segmentlist.insert(pair<int,std::vector<int> >(i,segment1));
-      segmentlist.insert(pair<int,std::vector<int> >(i,segment2));
+    default:
+      dserror("unexpected number of intersectionpoints!");
     }
-    else
-    {
-      std::vector<int> segment1 (2);
-      segment1[0] = segmentpoints[0];
-      segment1[1] = segmentpoints[1];
-      std::vector<int> segment2 (2);
-      segment2[0] = segmentpoints[2];
-      segment2[1] = segmentpoints[3];
-      segmentlist.insert(pair<int,std::vector<int> >(i,segment1));
-      segmentlist.insert(pair<int,std::vector<int> >(i,segment2));
-    }
-    break;
-  }
-  default:
-    dserror("unexpected number of intersectionpoints!");
-  }
   }
 
   return;
@@ -1353,7 +1359,7 @@ void COMBUST::FlameFront::buildPLC(
   std::multimap<int,std::vector<int> > segmentlist;
   std::vector<std::vector<int> >       trianglelist;
   // TODO: sollte hier eigentlich nicht mehr nötig sein da ich nur die Nummerierung der Ecken möchte
-  //ich lasse es trotzdem mal drin
+  //       ich lasse es trotzdem mal drin
 
   const DRT::Element::DiscretizationType distype = cell->Ele()->Shape();
   // global coordinates of element this cell belongs to
@@ -1379,12 +1385,13 @@ void COMBUST::FlameFront::buildPLC(
 
   // get G-function values from refinement cell
   const std::vector<double>& gfuncvalues = cell->GetGfuncValues();
-  //TEST
+
+//TEST
 //  std::cout << cell->Ele()->Id() << std::endl;
 //  std::cout<< "G-Werte" << std::endl;
 //  for (std::size_t i=0; i<gfuncvalues.size(); i++)
 //  {
-//	  std::cout<< gfuncvalues[i] << std::endl;
+//    std::cout<< gfuncvalues[i] << std::endl;
 //  }
 
   //---------------------------------------------
@@ -1629,7 +1636,7 @@ void COMBUST::FlameFront::CreateIntegrationCells(
   const int dim = 3;
   tetgenio in;
   tetgenio out;
-  char switches[] = "pQYY";    //- p     tetrahedralizes a PLC
+  char switches[] = "pQ";    //- p     tetrahedralizes a PLC
                                //-Q      no terminal output except errors
                                // YY     do not generate additional points on surfaces -> fewer cells
   tetgenio::facet *f;
@@ -1913,5 +1920,256 @@ bool COMBUST::FlameFront::GetIntCellDomain(
   return inGplus;
 }
 
+
+/*------------------------------------------------------------------------------------------------*
+ | export flame front to all processors                                               henke 12/09 |
+ *------------------------------------------------------------------------------------------------*/
+void COMBUST::FlameFront::ExportFlameFront(std::map<int, GEO::BoundaryIntCells>& myflamefront)
+{
+  //-------------------------------
+  // prepare parallel communication
+  //-------------------------------
+  // get communicator, e.g. from fluid discretization
+  const Epetra_Comm& comm = fluiddis_->Comm();
+  const int myrank = comm.MyPID();
+  const int numproc = comm.NumProc();
+
+  int size_one = 1;
+
+  DRT::Exporter exporter(comm);
+
+  // destination proc (the "next" one)
+  int dest = myrank+1;
+  if(myrank == (numproc-1))
+    dest = 0;
+
+  // source proc (the "last" one)
+  int source = myrank-1;
+  if(myrank == 0)
+    source = numproc-1;
+
+//#ifdef DEBUG
+//  cout << "number of cell groups (cut column elements) on proc " << myrank << " " << myflamefront.size() << endl;
+//  for(std::map<int, GEO::BoundaryIntCells>::const_iterator cellgroup=myflamefront.begin(); cellgroup != myflamefront.end(); ++cellgroup)
+//    {
+//      // put ID of cut element here
+//      if (cellgroup->first == 1274)
+//      {
+//        cout << "output for element 1274 packing" << endl;
+//        const size_t numcells = (cellgroup->second).size();
+//        cout << "proc " << myrank << " number of integration cells: " << numcells << endl;
+//        for (size_t icell=0; icell<numcells; ++icell)
+//        {
+//          GEO::BoundaryIntCell cell = cellgroup->second[icell];
+//          cout << "proc " << myrank << " cell " << icell << " vertexcoord " << cell.CellNodalPosXYZ();
+//        }
+//      }
+//    }
+//#endif
+
+#ifdef DEBUG
+  std::cout << "proc " << myrank << " number of flame front pieces available before export " << myflamefront.size() << std::endl;
+#endif
+
+  //-----------------------------------------------------------------
+  // pack data (my boundary integration cell groups) for initial send
+  //-----------------------------------------------------------------
+  vector<char> dataSend;
+  COMBUST::FlameFront::packBoundaryIntCells(myflamefront, dataSend);
+
+  //-----------------------------------------------
+  // send data around in a circle to all processors
+  //-----------------------------------------------
+  // loop over processors
+  for(int num = 0; num < numproc-1; num++)
+  {
+    vector<int> lengthSend(1,0);
+    lengthSend[0] = dataSend.size();
+
+#ifdef DEBUG
+    cout << "--- sending "<< lengthSend[0] << " bytes: from proc " << myrank << " to proc " << dest << endl;
+#endif
+
+    // send length of the data to be received ...
+    MPI_Request req_length_data;
+    int length_tag = 0;
+    exporter.ISend(myrank, dest, &(lengthSend[0]) , size_one, length_tag, req_length_data);
+    // ... and receive length
+    vector<int> lengthRecv(1,0);
+    exporter.Receive(source, length_tag, lengthRecv, size_one);
+    exporter.Wait(req_length_data);
+
+    // send actual data ...
+    int data_tag = 4;
+    MPI_Request req_data;
+    exporter.ISend(myrank, dest, &(dataSend[0]), lengthSend[0], data_tag, req_data);
+    // ... and receive data
+    vector<char> dataRecv(lengthRecv[0]);
+    exporter.ReceiveAny(source, data_tag, dataRecv, lengthRecv[0]);
+    exporter.Wait(req_data);
+
+#ifdef DEBUG
+    cout << "--- receiving "<< lengthRecv[0] << " bytes: to proc " << myrank << " from proc " << source << endl;
+#endif
+
+    //-----------------------------------------------
+    // unpack data (boundary integration cell groups)
+    //-----------------------------------------------
+    std::map<int, GEO::BoundaryIntCells> flamefront_recv;
+
+    COMBUST::FlameFront::unpackBoundaryIntCells(dataRecv, flamefront_recv);
+
+//#ifdef DEBUG
+//    cout << "proc " << myrank << " receiving "<< lengthRecv[0] << " bytes from proc " << source << endl;
+//    cout << "proc " << myrank << " receiving "<< flamefront_recv.size() << " flame front pieces from proc " << source << endl;
+//
+//    for(std::map<int, GEO::BoundaryIntCells>::const_iterator cellgroup=flamefront_recv.begin(); cellgroup != flamefront_recv.end(); ++cellgroup)
+//    {
+//      // put ID of cut element here
+//      if (cellgroup->first == 1274)
+//      {
+//        cout << "output for element 1274 unpacking" << endl;
+//        const size_t numcells = (cellgroup->second).size();
+//        cout << "proc " << myrank << " number of integration cells: " << numcells << endl;
+//        for (size_t icell=0; icell<numcells; ++icell)
+//        {
+//          GEO::BoundaryIntCell cell = cellgroup->second[icell];
+//          cout << "proc " << myrank << " cell " << icell << " vertexcoord " << cell.CellNodalPosXYZ();
+//        }
+//      }
+//    }
+//#endif
+
+    // add group of cells to my flame front map
+    // remark: all groups of boundary integration cells (flame front pieces within an element) are collected here
+    for (std::map<int, GEO::BoundaryIntCells>::const_iterator cellgroup = flamefront_recv.begin(); cellgroup != flamefront_recv.end(); ++cellgroup)
+    {
+      myflamefront.insert(*cellgroup);
+    }
+
+    // make received data the new 'to be sent' data
+    dataSend = dataRecv;
+
+    // processors wait for each other
+    comm.Barrier();
+  }
+#ifdef DEBUG
+  std::cout << "proc " << myrank << " number of flame front pieces now available " << myflamefront.size() << std::endl;
+#endif
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void COMBUST::FlameFront::packBoundaryIntCells(
+    const std::map<int, GEO::BoundaryIntCells>& intcellmap,
+    vector<char>&                               dataSend)
+{
+  // pack data on all processors
+  // loop entries of map (groups of boundary integration cells)
+  for(std::map<int, GEO::BoundaryIntCells>::const_iterator cellgroup=intcellmap.begin(); cellgroup != intcellmap.end(); ++cellgroup)
+  {
+    vector<char> data;
+    data.resize(0);
+
+    // pack data of all boundary integrations cells belonging to an element
+    const int elegid = cellgroup->first;
+    DRT::ParObject::AddtoPack(data,elegid);
+
+    const size_t numcells = (cellgroup->second).size();
+    DRT::ParObject::AddtoPack(data,numcells);
+
+    for (size_t icell=0; icell<numcells; ++icell)
+    {
+      GEO::BoundaryIntCell cell = cellgroup->second[icell];
+      // get all member variables from a single boundary integration cell
+      // distype of cell
+      const DRT::Element::DiscretizationType distype = cell.Shape();
+      DRT::ParObject::AddtoPack(data,distype);
+
+      // coordinates of cell vertices in (fluid) element parameter space
+//      const Epetra_SerialDenseMatrix& vertices_xi = cell.CellNodalPosXiDomain();
+      const LINALG::SerialDenseMatrix& vertices_xi = cell.CellNodalPosXiDomain();
+      DRT::ParObject::AddtoPack(data,vertices_xi);
+
+      // coordinates of cell vertices in physical space
+//      const Epetra_SerialDenseMatrix& vertices_xyz = cell.CellNodalPosXYZ();
+      const LINALG::SerialDenseMatrix& vertices_xyz = cell.CellNodalPosXYZ();
+      DRT::ParObject::AddtoPack(data,vertices_xyz);
+    }
+
+    // write packed boundary integration cell to dataSend
+    DRT::ParObject::AddtoPack(dataSend,data);
+  }
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void COMBUST::FlameFront::unpackBoundaryIntCells(
+    const vector<char>&                     dataRecv,
+    std::map<int, GEO::BoundaryIntCells>&   intcellmap)
+{
+  // pointer to current position of group of cells in global string (counts bytes)
+  int posofgroup = 0;
+
+  while (posofgroup < (int) dataRecv.size())
+  {
+    // pointer to current position in a group of cells in local string (counts bytes)
+    int posingroup = 0;
+    vector<char> data;
+    DRT::ParObject::ExtractfromPack(posofgroup, dataRecv, data);
+
+    // extract fluid element gid
+    int elegid = -1;
+    DRT::ParObject::ExtractfromPack(posingroup,data,elegid);
+    if (elegid < 0) dserror("extraction of element gid failed");
+
+    //extract number of boundary integration cells for this element
+    int numvecs = -1;
+    DRT::ParObject::ExtractfromPack(posingroup,data,numvecs);
+
+    // vector holding group of boundary integration cells belonging to this element
+    GEO::BoundaryIntCells intcellvector;
+
+    for (int icell=0; icell<numvecs; ++icell)
+    {
+      //--------------------------------------------------------------------
+      // extract all member variables for a single boundary integration cell
+      //--------------------------------------------------------------------
+      // distype of cell
+      DRT::Element::DiscretizationType distype;
+      int distypeint = -1;
+      DRT::ParObject::ExtractfromPack(posingroup,data,distypeint);
+      if (distypeint == 4)
+        distype = DRT::Element::tri3;
+      else if (distypeint == 1)
+        distype = DRT::Element::quad4;
+      else
+        dserror("unexpected distype");
+
+      LINALG::SerialDenseMatrix vertices_xi;
+      DRT::ParObject::ExtractfromPack(posingroup,data,vertices_xi);
+
+      // coordinates of cell vertices in physical space
+      LINALG::SerialDenseMatrix vertices_xyz;
+      DRT::ParObject::ExtractfromPack(posingroup,data,vertices_xyz);
+
+      //store boundary integration cells in boundaryintcelllist
+      intcellvector.push_back(GEO::BoundaryIntCell(distype, -1, vertices_xi,
+                              Teuchos::null, vertices_xyz));
+    }
+
+    // add group of cells for this element to the map
+    intcellmap.insert(make_pair(elegid,intcellvector));
+
+    // check correct reading
+    if (posingroup != (int)data.size())
+      dserror("mismatch in size of data %d <-> %d",(int)data.size(),posingroup);
+  }
+  // check correct reading
+  if (posofgroup != (int)dataRecv.size())
+    dserror("mismatch in size of data %d <-> %d",(int)dataRecv.size(),posofgroup);
+}
 
 #endif // #ifdef CCADISCRET

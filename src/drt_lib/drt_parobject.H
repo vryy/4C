@@ -192,7 +192,7 @@ using namespace std;
 #define ParObject_Pec                   (int)178
 
 
-  
+
 namespace DRT
 {
 
@@ -437,6 +437,16 @@ public:
   /*!
   \brief Add stuff to the end of a char vector data
 
+  This method is an overload of the above template for LINALG::SerialDenseMatrix
+  \param data (in/out) : char string stuff shall be added to
+  \param stuff (in)    : LINALG::SerialDenseMatrix that get's added to stuff
+
+  */
+  static void AddtoPack(vector<char>& data, const LINALG::SerialDenseMatrix& stuff);
+
+  /*!
+  \brief Add stuff to the end of a char vector data
+
   This method is an overload of the above template for Matrix
   \param data (in/out) : char string stuff shall be added to
   \param stuff (in)    : Matrix that get's added to data
@@ -590,6 +600,18 @@ public:
   \param stuff (out)       : Matrix to extract from data
 
   */
+  /*!
+  \brief Extract stuff from a char vector data and increment position
+
+  This method is an overload of the above template for stuff of type LINALG::SerialDenseMatrix
+
+  \param position (in/out) : place in data where to extract stuff. Position will be incremented by this method
+  \param data (in)         : char vector where stuff is extracted from
+  \param stuff (out)       : LINALG::SerialDenseMatrix to extract from data
+
+  */
+  static void ExtractfromPack(int& position, const vector<char>& data, LINALG::SerialDenseMatrix& stuff);
+
   template <unsigned int i, unsigned int j>
   static void ExtractfromPack(int& position, const vector<char>& data, LINALG::Matrix<i,j>& stuff)
   {

@@ -16,6 +16,7 @@ Maintainer: Florian Henke
 
 #include "combust_algorithm.H"
 #include "combust_flamefront.H"
+#include "combust_reinitializer.H"
 #include "combust_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "combust_fluidimplicitintegration.H"
@@ -23,6 +24,7 @@ Maintainer: Florian Henke
 #include "../drt_mat/matlist.H"
 #include "../drt_geometry/integrationcell.H"
 #include "../drt_lib/drt_function.H"
+#include "../drt_io/io_gmsh.H"
 
 /*------------------------------------------------------------------------------------------------*
  | constructor                                                                        henke 06/08 |
@@ -63,9 +65,9 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
   if (Comm().MyPID()==0)
   {
     if (combusttype_ == INPAR::COMBUST::combusttype_premixedcombustion)
-      std::cout << "********************* premixed combustion *********************" << std::endl;
+      std::cout << "COMBUST::Algorithm: this is a premixed combustion problem" << std::endl;
     else if (combusttype_ == INPAR::COMBUST::combusttype_twophaseflow)
-      std::cout << "********************* two-phase flow *********************" << std::endl;
+      std::cout << "COMBUST::Algorithm: this is a two-phase flow problem" << std::endl;
   }
 
   // get pointers to the discretizations from the time integration scheme of each field
@@ -90,16 +92,16 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
   // get integration cells according to initial flame front
   interfacehandle_->UpdateInterfaceHandle();
 
+  // export interface information to the fluid time integration
+  // remark: this is essential here, if DoFluidField() is not called in Timeloop() (e.g. for pure Scatra problems)
+  FluidField().ImportInterface(interfacehandle_);
+
   velnpip_ = rcp(new Epetra_Vector(*fluiddis->DofRowMap()),true);
   velnpi_ = rcp(new Epetra_Vector(*fluiddis->DofRowMap()),true);
 
   phinpip_ = rcp(new Epetra_Vector(*gfuncdis->NodeRowMap()),true);
   phinpi_ = rcp(new Epetra_Vector(*gfuncdis->NodeRowMap()),true);
 
-  if (Comm().MyPID()==0)
-  {
-    std::cout << "\n-------------------------  Initial state of coupled problem set  -----------------------------" << std::endl;
-  }
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -114,11 +116,10 @@ COMBUST::Algorithm::~Algorithm()
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::Algorithm::TimeLoop()
 {
-  if (Comm().MyPID()==0)
-    std::cout << "Combustion Algorithm Timeloop starting \n" << endl;
-
+#ifndef PARALLEL
   // compute initial volume of minus domain
   const double volume_start = interfacehandle_->ComputeVolumeMinus();
+#endif
 
   // time loop
   while (NotFinished())
@@ -143,11 +144,23 @@ void COMBUST::Algorithm::TimeLoop()
 
     } // Fluid-G-function-Interaction loop
 
-//    if (ScaTraField().Step() % reinitinterval_ == 0)
-//    {
-//      // reinitialize G-function
-//      ReinitializeGfunc(reinitializationaction_);
-//    }
+    if (ScaTraField().Step() % reinitinterval_ == 0)
+    {
+#ifndef PARALLEL
+      // compute current volume of minus domain
+      const double volume_current_before = interfacehandle_->ComputeVolumeMinus();
+      // print mass conservation check on screen
+      printMassConservationCheck(volume_start, volume_current_before);
+#endif
+      // reinitialize G-function
+      ReinitializeGfunc();
+#ifndef PARALLEL
+      // compute current volume of minus domain
+      const double volume_current_after = interfacehandle_->ComputeVolumeMinus();
+      // print mass conservation check on screen
+      printMassConservationCheck(volume_start, volume_current_after);
+#endif
+    }
 
     // update all field solvers
     UpdateTimeStep();
@@ -155,19 +168,17 @@ void COMBUST::Algorithm::TimeLoop()
     // write output to screen and files
     Output();
 
+#ifndef PARALLEL
   // compute current volume of minus domain
   const double volume_current = interfacehandle_->ComputeVolumeMinus();
-
-#ifndef PARALLEL
   // print mass conservation check on screen
   printMassConservationCheck(volume_start, volume_current);
 #endif
   } // time loop
 
+#ifndef PARALLEL
   // compute final volume of minus domain
   const double volume_end = interfacehandle_->ComputeVolumeMinus();
-
-#ifndef PARALLEL
   // print mass conservation check on screen
   printMassConservationCheck(volume_start, volume_end);
 #endif
@@ -206,8 +217,10 @@ void COMBUST::Algorithm::SolveStationaryProblem()
   if (ScaTraField().MethodName() != INPAR::SCATRA::timeint_stationary)
     dserror("Scatra time integration scheme is not stationary");
 
+#ifndef PARALLEL
   // compute initial volume of minus domain
   const double volume_start = interfacehandle_->ComputeVolumeMinus();
+#endif
 
   //--------------------------------------
   // loop over fluid and G-function fields
@@ -221,12 +234,12 @@ void COMBUST::Algorithm::SolveStationaryProblem()
     DoFluidField();
 
     // solve (non)linear G-function equation
-//    DoGfuncField();
+    DoGfuncField();
 
-    ////reinitialize G-function
+    //reinitialize G-function
     //if (fgiter_ % reinitinterval_ == 0)
     //{
-    //  ReinitializeGfunc(reinitializationaction_);
+    //ReinitializeGfunc();
     //}
 
     // update field vectors
@@ -250,10 +263,9 @@ void COMBUST::Algorithm::SolveStationaryProblem()
   // write output to screen and files (and Gmsh)
   Output();
 
+#ifndef PARALLEL
   // compute final volume of minus domain
   const double volume_end = interfacehandle_->ComputeVolumeMinus();
-
-#ifndef PARALLEL
   // print mass conservation check on screen
   printMassConservationCheck(volume_start, volume_end);
 #endif
@@ -264,341 +276,47 @@ void COMBUST::Algorithm::SolveStationaryProblem()
 /*------------------------------------------------------------------------------------------------*
  | protected: reinitialize G-function                                                 henke 06/08 |
  *------------------------------------------------------------------------------------------------*/
-void COMBUST::Algorithm::ReinitializeGfunc(INPAR::COMBUST::ReInitialActionGfunc action)
+void COMBUST::Algorithm::ReinitializeGfunc()
 {
-  /* Here, the G-function is reinitialized, because we suspect that the signed distance property has
-   * been lost due to numerical inaccuracies. There are various options to reinitialize the
-   * G-function. For the time being we use an exact, but expensive, procedure to ensure this
-   * property which computes the distance for every point. (SignedDistFunc)           henke 06/08 */
-  if (Comm().MyPID()==0)
+  // turn on/off screen output for writing process of Gmsh postprocessing file
+  const bool screen_out = true;
+  // create Gmsh postprocessing file
+  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("field_scalar_before_reinitialization", Step(), 701, screen_out, ScaTraField().Discretization()->Comm().MyPID());
+  std::ofstream gmshfilecontent(filename.c_str());
   {
-    cout<<"\n------------------------------------  REINITIALIZE G-FUNCTION  -------------------------------\n\n";
+    // add 'View' to Gmsh postprocessing file
+    gmshfilecontent << "View \" " << "Phinp \" {" << endl;
+    // draw scalar field 'Phinp' for every element
+    IO::GMSH::ScalarFieldToGmsh(ScaTraField().Discretization(),ScaTraField().Phinp(),gmshfilecontent);
+    gmshfilecontent << "};" << endl;
   }
+  gmshfilecontent.close();
+  if (screen_out) std::cout << " done" << endl;
 
-  switch (action)
-  {
-    case INPAR::COMBUST::reinitaction_none:
-      // do nothing
-      break;
-    case INPAR::COMBUST::reinitaction_byfunction:
-      // read a FUNCTION from the input file and reinitialize the G-function bz evaluating it
-      ScaTraField().SetInitialField(INPAR::SCATRA::initfield_field_by_function,combustdyn_.sublist("COMBUSTION GFUNCTION").get<int>("REINITFUNCNO"));
-      break;
-    case INPAR::COMBUST::reinitaction_signeddistancefunction:
+  // get my flame front (boundary integration cells)
+  // TODO we generate a copy of the flame front here, which is not neccessary in the serial case
+  std::map<int, GEO::BoundaryIntCells> myflamefront = interfacehandle_->GetElementalBoundaryIntCells();
+
 #ifdef PARALLEL
-  dserror("direct computation of signed distance function not available in parallel");
-#endif
-      SignedDistFunc();
-      break;
-//    case INPAR::COMBUST::sussman:
-//      // SCATRA parameters have to been set before in ScaTraFluidCouplingAlgorithm!
-//      ScaTraField().Reinitialize();
-//      break;
-    default:
-      dserror ("Unknown option to reinitialize the G-function");
-  }
-  return;
-}
-
-/*------------------------------------------------------------------------------------------------*
- | protected: build signed distance function                                          henke 06/08 |
- *------------------------------------------------------------------------------------------------*/
-void COMBUST::Algorithm::SignedDistFunc()
-{
-  /* This member function constructs a G-function field that meets the signed distance property. The
-   * algorithm assigns the value of the distance between each node and the surface defined by G=0 as
-   * a scalar value to every node in the G-function discretization.*/
-
-  // get a pointer to the G-function discretization
-  Teuchos::RCP<DRT::Discretization> gfuncdis = ScaTraField().Discretization();
-
-  const Epetra_Map* dofrowmap = gfuncdis->DofRowMap();
-
-  // loop all row nodes on the processor
-  for(int lnodeid=0; lnodeid < gfuncdis->NumMyRowNodes(); ++lnodeid)
-  {
-    // get the processor local node
-    const DRT::Node*  lnode      = gfuncdis->lRowNode(lnodeid);
-
-    // the set of degrees of freedom associated with the node
-    const vector<int> nodedofset = gfuncdis->Dof(lnode); // this should not be a vector, but a scalar
-
-#ifdef DEBUG
-    int numdofs = nodedofset.size(); // this should be 1 (scalar field!)
-    if (numdofs != 1)
-      dserror("There are more than 1 dof for a node in a scalar field!");
+  // export flame front (boundary integration cells) to all processors
+  flamefront_->ExportFlameFront(myflamefront);
 #endif
 
-    const int dofgid = nodedofset[0];
-    int doflid = dofrowmap->LID(dofgid);
+  // reinitilize G-function (level set) field
+  COMBUST::Reinitializer reinitializer(
+      combustdyn_,
+      ScaTraField(),
+      myflamefront);
 
-    //-------------------------------------------------------
-    // compute smallest distance to flame front for this node
-    //-------------------------------------------------------
-    //cout << "******************************************" << endl;
-    //cout << "reinitialization for node: " << lnode->Id() << endl;
-    //cout << "******************************************" << endl;
-    // smallest distance to the vertex of a flame front patch
-    double vertexdist = 5555.5;
-    // smallest distance to flame front
-    double mindist = 7777.7;
+  // update flame front according to reinitialized G-function field
+  flamefront_->ProcessFlameFront(combustdyn_,ScaTraField().Phinp());
 
-    // get physical coordinates of this node
-    LINALG::Matrix<3,1> nodecoord;
-    nodecoord(0) = lnode->X()[0];
-    nodecoord(1) = lnode->X()[1];
-    nodecoord(2) = lnode->X()[2];
-
-    // get boundary integration cells (flame front patches)
-    const std::map<int,GEO::BoundaryIntCells>& flamefront = interfacehandle_->GetElementalBoundaryIntCells();
-
-    //-----------------------------------------
-    // find flame front patches facing the node
-    //-----------------------------------------
-    // loop groups (vectors) of flamefront patches of all elements
-    for(std::map<int,GEO::BoundaryIntCells>::const_iterator elepatches = flamefront.begin(); elepatches != flamefront.end(); ++elepatches)
-    {
-      // number of flamefront patches for this element
-      const std::vector<GEO::BoundaryIntCell> patches = elepatches->second;
-      const int numpatch = patches.size();
-
-      // loop flame front patches of this element
-      for(int ipatch=0; ipatch<numpatch; ++ipatch)
-      {
-        // get coordinates of vertices of flame front patch
-        const LINALG::SerialDenseMatrix&  patchcoord = patches[ipatch].CellNodalPosXYZ();
-
-        // check if this patch faces this node
-        bool facenode = false;
-        FindFacingPatch(nodecoord,patchcoord,facenode,vertexdist);
-
-        // a facing patch was found
-        if (facenode == true)
-        {
-          //-------------------------------------------
-          // compute distance to this flame front patch
-          //-------------------------------------------
-          double patchdist;
-          ComputeDistanceToFlameFront(nodecoord,patchcoord,patchdist);
-
-          // overwrite smallest distance if computed patch distance is smaller
-          if (fabs(patchdist) < fabs(mindist))
-          {
-            //cout << "distance to flame front patch: " << mindist << " is overwritten by: " << patchdist << endl;
-            mindist = patchdist;
-          }
-        }
-      }
-    }
-
-    //-------------------------------------------
-    // determine smallest distance to flame front
-    //-------------------------------------------
-    // remark: variable have the following meaning here:
-    //         - "mindist" is either "patchdist" or still the default value (7777.7)
-    //         - "vertexdist" is the distance to the clostest vertex of any flame front patch
-    //
-    // case 1: a local flame front patch was found for this node -> mindist = patchdist
-    // case 2: a flame front patch was found for this node, but it is not local (curved interface);
-    //         a local patch was not found, because this node is located in the blind angle of all
-    //         local patches -> mindist = vertexdist
-    // case 3: something went wrong:  "mindist" still has default value (7777.7)
-
-    //cout << "mindist " << std::setw(18) << std::setprecision(12) << std::scientific << mindist << endl;
-    //cout << "vertexdist " << std::setw(18) << std::setprecision(12) << std::scientific << vertexdist << endl;
-    if (fabs(mindist) > fabs(vertexdist)) // case 2
-    {
-      mindist = vertexdist;
-
-      //if ((nodecoord(0) == 0.5) or (nodecoord(0) == -0.5) or
-      //    (nodecoord(1) == 0.5) or (nodecoord(1) == -0.5))
-      //{
-      //  cout << "Boundary node: ";
-      //}
-      cout << "node " << lnode->Id() << " does not face a patch (blind angle) or this patch is not local; distance: " << mindist << endl;
-    }
-    if (mindist == 7777.7) // case 3
-      dserror ("node %d was not reinitialized!", lnode->Id());
-
-    //------------------------------
-    // reinitialize G-function field
-    //------------------------------
-    // assign new values of signed distance function to the G-function field
-    ScaTraField().Phinp()->ReplaceMyValues(1,&mindist,&doflid);
-  }
+  // update interfacehandle (get integration cells) according to updated flame front
+  interfacehandle_->UpdateInterfaceHandle();
 
   return;
 }
 
-/*------------------------------------------------------------------------------------------------*
- | compute normal vector of flame front patch                                         henke 08/09 |
- *----------------------------------------------------------------------------------------------- */
-void COMBUST::Algorithm::ComputeNormalVectorToFlameFront(
-      const LINALG::SerialDenseMatrix& patch,
-      LINALG::Matrix<3,1>&             normal)
-{
-  // first point of flame front patch
-  LINALG::Matrix<3,1> point1;
-  point1(0) = patch(0,0);
-  point1(1) = patch(1,0);
-  point1(2) = patch(2,0);
-
-  // second point of flame front patch
-  LINALG::Matrix<3,1> point2;
-  point2(0) = patch(0,1);
-  point2(1) = patch(1,1);
-  point2(2) = patch(2,1);
-
-  // first edge of flame front patch
-  LINALG::Matrix<3,1> edge1;
-  edge1.Update(1.0, point2, -1.0, point1);
-
-  // third point of flame front patch
-  point2(0) = patch(0,2);
-  point2(1) = patch(1,2);
-  point2(2) = patch(2,2);
-
-  // second edge of flame front patch (if patch is triangle; if not: edge 2 is secant of polygon)
-  LINALG::Matrix<3,1> edge2;
-  edge2.Update(1.0, point2, -1.0, point1);
-
-  // compute normal vector of patch (cross product: edge1 x edge2)
-  // remark: normal vector points into unburnt domain (G<0)
-  normal(0) = (edge1(1)*edge2(2) - edge1(2)*edge2(1));
-  normal(1) = (edge1(2)*edge2(0) - edge1(0)*edge2(2));
-  normal(2) = (edge1(0)*edge2(1) - edge1(1)*edge2(0));
-
-  // compute unit (normed) normal vector
-  double norm = sqrt(normal(0)*normal(0) + normal(1)*normal(1) + normal(2)*normal(2));
-  if (norm == 0.0) dserror("norm of normal vector is zero!");
-  normal.Scale(1.0/norm);
-
-#ifdef DEBUG
-  if (!((normal(2) > 0.0-1.0E-12) and (normal(2) < 0.0+1.0E-12)))
-  {
-    cout << "z-component of normal: " << normal(2) << endl;
-    dserror ("pseudo-3D problem not symmetric anymore!");
-  }
-#endif
-
-  return;
-}
-/*------------------------------------------------------------------------------------------------*
- | compute distance directly                                                          henke 08/09 |
- *----------------------------------------------------------------------------------------------- */
-void COMBUST::Algorithm::ComputeDistanceToFlameFront(
-      const LINALG::Matrix<3,1>&       node,
-      const LINALG::SerialDenseMatrix& patch,
-      double&                          distance)
-{
-  // first point of flame front patch
-  LINALG::Matrix<3,1> point;
-  point(0) = patch(0,0);
-  point(1) = patch(1,0);
-  point(2) = patch(2,0);
-
-  // compute distance vector between node and point on flame front patch (point)
-  // remark: distance vector points towards the flame front
-  LINALG::Matrix<3,1> dist;
-  dist.Update(1.0, point, -1.0, node);
-
-  // compute normal vector of flame front patch
-  LINALG::Matrix<3,1> normal(true);
-  ComputeNormalVectorToFlameFront(patch, normal);
-
-  // project distance vector in normal direction: compute scalar product (normal * dist)
-  // remark: distance < 0 if node in unburnt domain (G<0) and vice versa
-  distance = normal(0)*dist(0) + normal(1)*dist(1) + normal(2)*dist(2);
-
-  return;
-}
-
-void::COMBUST::Algorithm::FindFacingPatch(
-       const LINALG::Matrix<3,1>&       node,
-       const LINALG::SerialDenseMatrix& patch,
-       bool&                            facenode,
-       double&                          vertexdist)
-{
-  facenode = false;
-  // number of column vectors (edges) forming flame front patch
-  const int numcol = patch.N();
-
-  // beginning point of flame front patch
-  LINALG::Matrix<3,1> vecbeg(true);
-  // end point of flame front patch
-  LINALG::Matrix<3,1> vecend(true);
-  // edge vector of flame front patch
-  LINALG::Matrix<3,1> edge(true);
-  // distance vector from beginning point to node
-  LINALG::Matrix<3,1> dist(true);
-
-  int counter = 0;
-
-  for(int iedge = 0; iedge<numcol; ++iedge)
-  {
-    // beginning point of flame front patch
-    vecbeg(0) = patch(0,iedge);
-    vecbeg(1) = patch(1,iedge);
-    vecbeg(2) = patch(2,iedge);
-
-    if(iedge == (numcol-1)) // last edge
-    {
-      // end point of edge is first point of flame front patch
-      vecend(0) = patch(0,0);
-      vecend(1) = patch(1,0);
-      vecend(2) = patch(2,0);
-    }
-    else // regular edge (not the last one)
-    {
-      // end point of flame front patch
-      vecend(0) = patch(0,iedge+1);
-      vecend(1) = patch(1,iedge+1);
-      vecend(2) = patch(2,iedge+1);
-    }
-
-    // compute edge vector of flame front patch
-    edge.Update(1.0, vecend, -1.0, vecbeg);
-    // compute distance vector from node to flame front
-    dist.Update(1.0, vecend, -1.0, node);
-
-    // compute norms of edge and distance vectors
-    double normedge = sqrt(edge(0)*edge(0) + edge(1)*edge(1) + edge(2)*edge(2));
-    double normdist = sqrt(dist(0)*dist(0) + dist(1)*dist(1) + dist(2)*dist(2));
-    if(normdist < fabs(vertexdist))
-    {
-      // compute normal vector of flame front patch
-      LINALG::Matrix<3,1> normal(true);
-      ComputeNormalVectorToFlameFront(patch, normal);
-
-      // determine sign of distance vector from node to flame front
-      double tmp = normal(0)*dist(0) + normal(1)*dist(1) + normal(2)*dist(2);
-      // tmp < 0 if node in unburnt domain (G<0) and vice versa
-      if (tmp <= 0.0)
-        vertexdist = -normdist;
-      else
-        vertexdist = normdist;
-
-      //cout << "distance to vertex is overwritten by: " << vertexdist << endl;
-    }
-
-    // divide vectors by their norms to get unit vectors
-    if (normedge == 0.0) dserror("length of edge vector is zero");
-    for (int icomp=0; icomp<3; ++icomp) edge(icomp) /= normedge;
-    if (normdist == 0.0) dserror("length of distance vector is zero");
-    for (int icomp=0; icomp<3; ++icomp) dist(icomp) /= normdist;
-
-    // compute projection of distance vector in direction of edge
-    double proj = edge(0)*dist(0) + edge(1)*dist(1) + edge(2)*dist(2);
-
-    // if (0 < projection < 1), node faces this edge of the patch
-    if((proj >= 0.0-1.0E-13) and (proj <= 1.0+1.0E-13))
-      counter += 1;
-    // if all projections face their edges, the node faces the patch
-    if(counter == numcol)
-      facenode = true;
-  }
-  return;
-}
 
 /*------------------------------------------------------------------------------------------------*
  | protected: overwrite Navier-Stokes velocity                                        henke 08/09 |
@@ -610,7 +328,7 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::OverwriteFluidVel()
   // Navier-Stokes solution velocity field is overwritten
   //----------------------------------------------------------------
   if (Comm().MyPID()==0)
-    cout << "\n\n===================== overwriting Navier-Stokes solution ======================\n\n" << endl;
+    std::cout << "\n--- overwriting Navier-Stokes solution ... " << std::flush;
 
   // get fluid (Navier-Stokes) velocity vector in standard FEM configuration (no XFEM dofs)
   const Teuchos::RCP<Epetra_Vector> convel = FluidField().ExtractInterfaceVeln();
@@ -646,6 +364,9 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::OverwriteFluidVel()
     }
     if (err != 0) dserror("error overwriting Navier-Stokes solution");
   }
+
+  if (Comm().MyPID()==0)
+    std::cout << "done" << std::endl;
 
   return convel;
 }
@@ -1037,10 +758,10 @@ void COMBUST::Algorithm::DoGfuncField()
   case INPAR::COMBUST::combusttype_premixedcombustion:
   {
     // for combustion, the velocity field is discontinuous; the relative flame velocity is added
-    const Teuchos::RCP<Epetra_Vector> convel = FluidField().ExtractInterfaceVeln();
+//    const Teuchos::RCP<Epetra_Vector> convel = FluidField().ExtractInterfaceVeln();
 
-    std::cout << "convective velocity is transferred to ScaTra" << std::endl;
-    cout << "length of convection velocity vector: " << (*convel).MyLength() << endl;
+    //std::cout << "convective velocity is transferred to ScaTra" << std::endl;
+    //cout << "length of convection velocity vector: " << (*convel).MyLength() << endl;
 #if 0
 
     Epetra_Vector convelcopy = *convel;
@@ -1063,7 +784,8 @@ void COMBUST::Algorithm::DoGfuncField()
 #endif
 
     ScaTraField().SetVelocityField(
-      ComputeFlameVel(convel,FluidField().DofSet()),
+      OverwriteFluidVel(),
+      //ComputeFlameVel(convel,FluidField().DofSet()),
       Teuchos::null,
       FluidField().DofSet(),
       FluidField().Discretization()
@@ -1128,12 +850,6 @@ void COMBUST::Algorithm::Output()
   FluidField().LiftDrag();
   ScaTraField().Output();
 
-  // debug IO
-#if 0
-  // print out convective velocity vector
-  cout<<*velocitynp_<<endl;
-#endif
-
   return;
 }
 
@@ -1141,17 +857,20 @@ void COMBUST::Algorithm::Output()
 void COMBUST::Algorithm::printMassConservationCheck(const double volume_start, const double volume_end)
 {
   // compute mass loss
-  double massloss = fabs(volume_start - volume_end) / volume_start;
+  if (volume_start == 0.0)
+    dserror("processor without 'minus domain' -> division by zero checking mass conservation!");
+  double massloss = fabs(volume_start - volume_end) / volume_start *100;
+  // TODO seems not to work reliably; error occurs in line above
   if (std::isnan(massloss))
     dserror("NaN detected in mass conservation check");
   if (Comm().MyPID()==0)
   {
-    std::cout << "\n=======================================" << endl;
+    std::cout << "---------------------------------------" << endl;
     std::cout << "           mass conservation           " << endl;
     std::cout << " initial mass: " << volume_start << endl;
     std::cout << " final mass:   " << volume_end   << endl;
-    std::cout << " mass loss:    " << massloss     << endl;
-    std::cout << "=======================================\n" << endl;
+    std::cout << " mass loss:    " << massloss << "%" << endl;
+    std::cout << "---------------------------------------" << endl;
   }
 }
 
