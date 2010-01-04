@@ -549,7 +549,8 @@ void CONTACT::PenaltyStrategy::InitializeUzawa(RCP<LINALG::SparseMatrix> kteff,
   kteff->Add(*dtilde, false, -(1.0-alphaf_), 1.0);
   kteff->Add(*mtilde, false, (1.0-alphaf_), 1.0);
   
-  kteff->Complete();
+  // we leave kteff Filled()==false here, as Evaluate() will be called below
+  // and kteff will be UnCompleted there again, anyway!
   
   // remove old force terms
   // (FIXME: redundant code to EvaluateContact(), expect for minus sign)
