@@ -283,7 +283,7 @@ void CONTACT::AbstractStrategy::EvaluateRelMov()
 /*----------------------------------------------------------------------*
  | call appropriate evaluate for contact evaluation           popp 06/09|
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::Evaluate(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff)
+void CONTACT::AbstractStrategy::Evaluate(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff)
 {
   // check if friction should be applied
   INPAR::CONTACT::ContactFrictionType ftype =

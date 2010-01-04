@@ -106,8 +106,8 @@ void CONTACT::LagrangeStrategy::Initialize()
 /*----------------------------------------------------------------------*
  | evaluate frictional contact (public)                    gitterle 06/08|
  *----------------------------------------------------------------------*/
-void CONTACT::LagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
-                                                  RCP<Epetra_Vector> feff)
+void CONTACT::LagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& kteff,
+                                                  RCP<Epetra_Vector>& feff)
 {
   // FIXME: Currently only the old LINALG::Multiply method is used,
   // because there are still problems with the transposed version of
@@ -215,7 +215,8 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff
   RCP<LINALG::SparseMatrix> tempmtx3;
 
   // split into slave/master part + structure part
-  LINALG::SplitMatrix2x2(kteff,gsmdofs,gndofrowmap_,gsmdofs,gndofrowmap_,ksmsm,ksmn,knsm,knn);
+  RCP<LINALG::SparseMatrix> kteffmatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(kteff);
+  LINALG::SplitMatrix2x2(kteffmatrix,gsmdofs,gndofrowmap_,gsmdofs,gndofrowmap_,ksmsm,ksmn,knsm,knn);
 
   // further splits into slave part + master part
   LINALG::SplitMatrix2x2(ksmsm,gsdofrowmap_,gmdofrowmap_,gsdofrowmap_,gmdofrowmap_,kss,ksm,kms,kmm);
@@ -617,7 +618,7 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff
   /**********************************************************************/
   /* Global setup of kteffnew, feffnew (including contact)              */
   /**********************************************************************/
-  RCP<LINALG::SparseMatrix> kteffnew = rcp(new LINALG::SparseMatrix(*problemrowmap_,81, true, false, kteff->GetMatrixtype()));
+  RCP<LINALG::SparseMatrix> kteffnew = rcp(new LINALG::SparseMatrix(*problemrowmap_,81,true,false,kteffmatrix->GetMatrixtype()));
   RCP<Epetra_Vector> feffnew = LINALG::CreateVector(*problemrowmap_);
 
   // add n submatrices to kteffnew
@@ -723,8 +724,8 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff
   /**********************************************************************/
   /* Replace kteff and feff by kteffnew and feffnew                     */
   /**********************************************************************/
-  *kteff = *kteffnew;
-  *feff = *feffnew;
+  kteff = kteffnew;
+  feff = feffnew;
 
   return;
 }
@@ -732,8 +733,8 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff
 /*----------------------------------------------------------------------*
  |  evaluate contact (public)                                 popp 04/08|
  *----------------------------------------------------------------------*/
-void CONTACT::LagrangeStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
-                                                RCP<Epetra_Vector> feff)
+void CONTACT::LagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kteff,
+                                                RCP<Epetra_Vector>& feff)
 {
   // FIXME: Currently only the old LINALG::Multiply method is used,
   // because there are still problems with the transposed version of
@@ -830,7 +831,8 @@ void CONTACT::LagrangeStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
   RCP<LINALG::SparseMatrix> tempmtx3;
 
   // split into slave/master part + structure part
-  LINALG::SplitMatrix2x2(kteff,gsmdofs,gndofrowmap_,gsmdofs,gndofrowmap_,ksmsm,ksmn,knsm,knn);
+  RCP<LINALG::SparseMatrix> kteffmatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(kteff);
+  LINALG::SplitMatrix2x2(kteffmatrix,gsmdofs,gndofrowmap_,gsmdofs,gndofrowmap_,ksmsm,ksmn,knsm,knn);
 
   // further splits into slave part + master part
   LINALG::SplitMatrix2x2(ksmsm,gsdofrowmap_,gmdofrowmap_,gsdofrowmap_,gmdofrowmap_,kss,ksm,kms,kmm);
@@ -1089,7 +1091,7 @@ void CONTACT::LagrangeStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
   /**********************************************************************/
   /* Global setup of kteffnew, feffnew (including contact)              */
   /**********************************************************************/
-  RCP<LINALG::SparseMatrix> kteffnew = rcp(new LINALG::SparseMatrix(*problemrowmap_,81, true, false, kteff->GetMatrixtype()));
+  RCP<LINALG::SparseMatrix> kteffnew = rcp(new LINALG::SparseMatrix(*problemrowmap_,81,true,false,kteffmatrix->GetMatrixtype()));
   RCP<Epetra_Vector> feffnew = LINALG::CreateVector(*problemrowmap_);
 
   // add n submatrices to kteffnew
@@ -1161,8 +1163,8 @@ void CONTACT::LagrangeStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
   /**********************************************************************/
   /* Replace kteff and feff by kteffnew and feffnew                     */
   /**********************************************************************/
-  *kteff = *kteffnew;
-  *feff = *feffnew;
+  kteff = kteffnew;
+  feff = feffnew;
 
   return;
 }

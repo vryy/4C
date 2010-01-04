@@ -139,14 +139,14 @@ class PenaltyStrategy : public AbstractStrategy
   stiffness contributions to kteff and extra contact forces to feff. 
   
   */
-  void EvaluateContact(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff);
+  void EvaluateContact(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff);
 
   /*!
   \brief Evaluate frictional contact
    
    This includes the evaluation of of the frictional contact forces.  
   */
-  void EvaluateFriction(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff);
+  void EvaluateFriction(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff);
 
   /*!
   \brief Recovery method
@@ -198,7 +198,7 @@ class PenaltyStrategy : public AbstractStrategy
   and finally Evaluate().
      
   */
-  void InitializeUzawa(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff);
+  void InitializeUzawa(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff);
     
   /*!
   \brief Compute L2-norm of active constraints

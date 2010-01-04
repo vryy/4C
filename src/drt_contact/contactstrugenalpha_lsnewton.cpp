@@ -338,7 +338,7 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
       contactmanager_->GetStrategy().InitEvalMortar();
 
       contactmanager_->GetStrategy().Initialize();
-      contactmanager_->GetStrategy().Evaluate(SystemMatrix(),fresm_);
+      contactmanager_->GetStrategy().Evaluate(stiff_,fresm_);
     }
 
     //--------------------------------------------------- contact forces
@@ -587,7 +587,7 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
         contactmanager_->GetStrategy().InitEvalMortar();
 
         contactmanager_->GetStrategy().Initialize();
-        contactmanager_->GetStrategy().Evaluate(SystemMatrix(),fresm_);
+        contactmanager_->GetStrategy().Evaluate(stiff_,fresm_);
       }
 
       //--------------------------------------------------- contact forces
@@ -973,7 +973,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
       contactmanager_->GetStrategy().UpdateActiveSetSemiSmooth();
 
       contactmanager_->GetStrategy().Initialize();
-      contactmanager_->GetStrategy().Evaluate(SystemMatrix(),fresm_);
+      contactmanager_->GetStrategy().Evaluate(stiff_,fresm_);
     }
 
     //--------------------------------------------------- contact forces
@@ -1228,7 +1228,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
         // set has to be kept constant!
 
         contactmanager_->GetStrategy().Initialize();
-        contactmanager_->GetStrategy().Evaluate(SystemMatrix(),fresm_);
+        contactmanager_->GetStrategy().Evaluate(stiff_,fresm_);
       }
 
       //--------------------------------------------------- contact forces
@@ -1607,7 +1607,7 @@ void CONTACT::ContactStruGenAlpha::PTC()
         contactmanager_->GetStrategy().EvaluateRelMov();
 
       contactmanager_->GetStrategy().Initialize();
-      contactmanager_->GetStrategy().Evaluate(SystemMatrix(),fresm_);
+      contactmanager_->GetStrategy().Evaluate(stiff_,fresm_);
     }
 
     //--------------------------------------------------- contact forces

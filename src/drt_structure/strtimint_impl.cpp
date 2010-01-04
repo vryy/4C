@@ -457,8 +457,6 @@ void STR::TimIntImpl::ApplyForceStiffContact
 {
   if (contactman_ != Teuchos::null)
   {
-    Teuchos::RCP<LINALG::SparseMatrix> mat = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff);
-
     // contact modifications need -fres
     fres_->Scale(-1.0);
 
@@ -471,8 +469,7 @@ void STR::TimIntImpl::ApplyForceStiffContact
     contactman_->GetStrategy().InitEvalMortar();
     contactman_->GetStrategy().UpdateActiveSetSemiSmooth();
     contactman_->GetStrategy().Initialize();
-    contactman_->GetStrategy().Evaluate(mat,fres_);
-    stiff = mat;
+    contactman_->GetStrategy().Evaluate(stiff,fres_);
 
     // evaluate contact forces
     contactman_->GetStrategy().ContactForces(frescopy);

@@ -418,7 +418,7 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
       contactmanager_->GetStrategy().EvaluateRelMov();
   }
   contactmanager_->GetStrategy().Initialize();
-  contactmanager_->GetStrategy().Evaluate(SystemMatrix(),fresm_);
+  contactmanager_->GetStrategy().Evaluate(stiff_,fresm_);
 
   //---------------------------------------------------- contact forces
   contactmanager_->GetStrategy().ContactForces(fresmcopy);
@@ -711,7 +711,7 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   }
 
   contactmanager_->GetStrategy().Initialize();
-  contactmanager_->GetStrategy().Evaluate(SystemMatrix(),fresm_);
+  contactmanager_->GetStrategy().Evaluate(stiff_,fresm_);
 
   //---------------------------------------------------- contact forces
   contactmanager_->GetStrategy().ContactForces(fresmcopy);
@@ -962,7 +962,7 @@ void CONTACT::ContactStruGenAlpha::ApplyExternalForce(  const STR::UTILS::MapExt
   contactmanager_->GetStrategy().InitEvalMortar();
 
   contactmanager_->GetStrategy().Initialize();
-  contactmanager_->GetStrategy().Evaluate(SystemMatrix(),fresm_);
+  contactmanager_->GetStrategy().Evaluate(stiff_,fresm_);
 
   //---------------------------------------------------- contact forces
   contactmanager_->GetStrategy().ContactForces(fresmcopy);
@@ -1337,7 +1337,7 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
         contactmanager_->GetStrategy().EvaluateRelMov();
 
       contactmanager_->GetStrategy().Initialize();
-      contactmanager_->GetStrategy().Evaluate(SystemMatrix(),fresm_);
+      contactmanager_->GetStrategy().Evaluate(stiff_,fresm_);
     }
 
     //--------------------------------------------------- contact forces
@@ -1752,7 +1752,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
       const double t_start34 = ds_cputime();
 #endif // #ifdef CONTACTTIME
       contactmanager_->GetStrategy().Initialize();
-      contactmanager_->GetStrategy().Evaluate(SystemMatrix(),fresm_);
+      contactmanager_->GetStrategy().Evaluate(stiff_,fresm_);
 #ifdef CONTACTTIME
       const double t_end34 = ds_cputime()-t_start34;
       cout << "\nContact.StiffFresm: " << t_end34 << " seconds";
@@ -2407,7 +2407,7 @@ void CONTACT::ContactStruGenAlpha::Integrate()
           cout << "Starting Uzawa step No. " << uzawaiter << endl;
 
         // for second, third,... Uzawa step: out-of-balance force
-        if (uzawaiter>1) strategy.InitializeUzawa(SystemMatrix(),fresm_);
+        if (uzawaiter>1) strategy.InitializeUzawa(stiff_,fresm_);
         
         // LOOP3: nonlinear iteration (Newton)
         if (equil=="full newton") FullNewton();

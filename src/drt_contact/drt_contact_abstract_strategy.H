@@ -291,13 +291,18 @@ class AbstractStrategy
     \brief Evaluate contact
 
     This is just a tiny control routine, deciding which Evaluate-routine
-    of those listed below is to be called (based on input-file information)
-
+    of those listed below is to be called (based on input-file information).
+    Note that into ALL derived Evaluate() routines, a REFERENCE to the pointer
+    on the effective stiffness matrix is handed in. This way, after building the
+    new effective stiffness matrix with contact, we can simply let the pointer
+    kteff point onto the new object. The same is true for the effective force
+    vector feff. Be careful: kteff is of type RCP<LINALG::SparseOperator>&.
+    
     \param kteff (in/out): effective stiffness matrix (without -> with contact)
     \param feff (in/out): effective residual / force vector (without -> with contact)
 
     */
-    void Evaluate(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff);
+    void Evaluate(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff);
 
     /*!
     \brief Evaluate relative movement of contact bodies
@@ -327,7 +332,7 @@ class AbstractStrategy
     \param feff (in/out): effective residual / force vector (without -> with contact)
 
     */
-    virtual void EvaluateContact(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff) = 0;
+    virtual void EvaluateContact(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff) = 0;
 
     /*!
     \brief Evaluate Friction
@@ -344,7 +349,7 @@ class AbstractStrategy
     \param feff (in/out): effective residual / force vector (without -> with contact)
 
     */
-    virtual void EvaluateFriction(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff) = 0;
+    virtual void EvaluateFriction(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff) = 0;
 
     /*!
     \brief Recovery method

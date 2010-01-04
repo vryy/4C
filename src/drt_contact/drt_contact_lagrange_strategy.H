@@ -94,13 +94,13 @@ class LagrangeStrategy : public AbstractStrategy
     results in some matrix and vector splitting and a lot of matrix-vector calculation in here!
     
     */
-    void EvaluateContact(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff);
+    void EvaluateContact(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff);
 
     /*!
     \brief Evaluate frictional contact
      
     */
-    void EvaluateFriction(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff);
+    void EvaluateFriction(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff);
 
     /*!
     \brief Recovery method

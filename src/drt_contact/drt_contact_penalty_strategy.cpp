@@ -140,8 +140,8 @@ void CONTACT::PenaltyStrategy::Initialize()
 /*----------------------------------------------------------------------*
  | evaluate contact (incl. friction) and create linear system popp 06/09|
  *----------------------------------------------------------------------*/
-void CONTACT::PenaltyStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
-                                               RCP<Epetra_Vector> feff)
+void CONTACT::PenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kteff,
+                                               RCP<Epetra_Vector>& feff)
 {
 
   // uncomment this if you want to do finite difference checks
@@ -483,8 +483,8 @@ void CONTACT::PenaltyStrategy::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
 /*----------------------------------------------------------------------*
  | evaluate frictional contact and create linear system gitterle   10/09|
  *----------------------------------------------------------------------*/
-void CONTACT::PenaltyStrategy::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
-                                               RCP<Epetra_Vector> feff)
+void CONTACT::PenaltyStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& kteff,
+                                               RCP<Epetra_Vector>& feff)
 {
   // this is almost the same as in the frictionless contact
 	// whereas we chose the EvaluateContact routine with
@@ -531,8 +531,8 @@ void CONTACT::PenaltyStrategy::ResetPenalty()
 /*----------------------------------------------------------------------*
  | intialize second, third,... Uzawa step                     popp 01/10|
  *----------------------------------------------------------------------*/
-void CONTACT::PenaltyStrategy::InitializeUzawa(RCP<LINALG::SparseMatrix> kteff,
-                                               RCP<Epetra_Vector> feff)
+void CONTACT::PenaltyStrategy::InitializeUzawa(RCP<LINALG::SparseOperator>& kteff,
+                                               RCP<Epetra_Vector>& feff)
 {
   // remove old stiffness terms
   // (FIXME: redundant code to EvaluateContact(), expect for minus sign)
