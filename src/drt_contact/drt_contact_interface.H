@@ -48,6 +48,7 @@ Maintainer: Michael Gee
 #include "../drt_lib/linalg_sparsematrix.H"
 #include "../drt_contact/drt_contact_binarytree.H"
 #include "../drt_contact/drt_contact_binarytree_self.H"
+#include "../drt_inpar/inpar_mortar.H"
 #include "../drt_inpar/inpar_contact.H"
 
 using namespace std;
@@ -163,8 +164,8 @@ public:
   \brief Get type of contact search algorithm
 
   */
-  virtual inline const INPAR::CONTACT::ContactSearchAlgorithm SearchAlg()
-  {return Teuchos::getIntegralValue<INPAR::CONTACT::ContactSearchAlgorithm>(icontact_,"SEARCH_ALGORITHM");};
+  virtual inline const INPAR::MORTAR::SearchAlgorithm SearchAlg()
+  {return Teuchos::getIntegralValue<INPAR::MORTAR::SearchAlgorithm>(icontact_,"SEARCH_ALGORITHM");};
 
   /*!
   \brief Get contact search algorithm parameter

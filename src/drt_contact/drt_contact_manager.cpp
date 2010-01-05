@@ -46,6 +46,7 @@ Maintainer: Michael Gee
 #include "drt_celement.H"
 #include "contactdefines.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_inpar/inpar_mortar.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_lib/linalg_utils.H"
 
@@ -418,19 +419,19 @@ bool CONTACT::Manager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
       Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(input,"FRICTION") != INPAR::CONTACT::friction_stick)
     dserror("Friction law other than stick supplied for mesh tying");
 
-  if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactSearchAlgorithm>(input,"SEARCH_ALGORITHM") == INPAR::CONTACT::search_bfnode &&
-                                                                input.get<double>("SEARCH_PARAM") == 0.0)
+  if (Teuchos::getIntegralValue<INPAR::MORTAR::SearchAlgorithm>(input,"SEARCH_ALGORITHM") == INPAR::MORTAR::search_bfnode &&
+                                                        input.get<double>("SEARCH_PARAM") == 0.0)
     dserror("Search radius sp = 0, must be greater than 0 for node-based search");
 
   // *********************************************************************
   // not (yet) implemented combinations
   // *********************************************************************
   if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_lagmult &&
-      Teuchos::getIntegralValue<INPAR::CONTACT::ShapeFcn>(input,"SHAPEFCN") != INPAR::CONTACT::shape_dual )
+      Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") != INPAR::MORTAR::shape_dual )
       dserror("Lagrange multiplier strategy only implemented for dual shape fct.");
 
   if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_penalty &&
-      Teuchos::getIntegralValue<INPAR::CONTACT::ShapeFcn>(input,"SHAPEFCN") != INPAR::CONTACT::shape_standard )
+      Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") != INPAR::MORTAR::shape_standard )
       dserror("Penalty strategy only implemented for standard shape fct.");
 
   if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(input,"FRICTION") == INPAR::CONTACT::friction_tresca &&
@@ -451,9 +452,9 @@ bool CONTACT::Manager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   // *********************************************************************
   // warnings
   // *********************************************************************
-  if ((Teuchos::getIntegralValue<INPAR::CONTACT::ContactSearchAlgorithm>(input,"SEARCH_ALGORITHM") == INPAR::CONTACT::search_bfele ||
-      Teuchos::getIntegralValue<INPAR::CONTACT::ContactSearchAlgorithm>(input,"SEARCH_ALGORITHM")  == INPAR::CONTACT::search_binarytree) &&
-                                                                 input.get<double>("SEARCH_PARAM") == 0.0)
+  if ((Teuchos::getIntegralValue<INPAR::MORTAR::SearchAlgorithm>(input,"SEARCH_ALGORITHM") == INPAR::MORTAR::search_bfele ||
+      Teuchos::getIntegralValue<INPAR::MORTAR::SearchAlgorithm>(input,"SEARCH_ALGORITHM")  == INPAR::MORTAR::search_binarytree) &&
+                                                         input.get<double>("SEARCH_PARAM") == 0.0)
     cout << ("Warning: Ele-based / binary tree search called without inflation of bounding volumes\n") << endl;
 
   // store ParameterList in local parameter list

@@ -51,23 +51,6 @@ namespace INPAR
       solution_penalty,  ///< penalty approach
       solution_auglag  ///< augmented lagrange approach
     };
-    
-    /// Type of employed set of shape functions
-    /// (this enum represents the input file parameter SHAPEFCN)
-    enum ShapeFcn
-    {
-      shape_standard,  ///< standard shape functions
-      shape_dual  ///< dual shape functions
-    };
-    
-    /// Type of contact search algorithm
-    /// (this enum represents the input file parameter SEARCH_ALGORITHM)
-    enum ContactSearchAlgorithm
-    {
-      search_bfnode,  ///< brute force node-based
-      search_bfele,  ///< brute force element-based
-      search_binarytree  ///< binary tree element based
-    };
 
   }  // namespace CONTACT
 

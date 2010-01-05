@@ -28,6 +28,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/inpar_solver.H"
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_combust.H"
+#include "../drt_inpar/inpar_mortar.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_statmech.H"
 #include "../drt_inpar/inpar_fsi.H"
@@ -865,11 +866,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                 INPAR::CONTACT::solution_auglag, INPAR::CONTACT::solution_auglag, INPAR::CONTACT::solution_auglag),
                 &scontact);
 
-  setStringToIntegralParameter<INPAR::CONTACT::ShapeFcn>("SHAPEFCN","Dual","Type of employed set of shape functions",
+  setStringToIntegralParameter<INPAR::MORTAR::ShapeFcn>("SHAPEFCN","Dual","Type of employed set of shape functions",
         tuple<std::string>("Dual", "dual",
             "Standard", "standard", "std"),
-            tuple<INPAR::CONTACT::ShapeFcn>(INPAR::CONTACT::shape_dual, INPAR::CONTACT::shape_dual,
-                INPAR::CONTACT::shape_standard, INPAR::CONTACT::shape_standard, INPAR::CONTACT::shape_standard),
+            tuple<INPAR::MORTAR::ShapeFcn>(INPAR::MORTAR::shape_dual, INPAR::MORTAR::shape_dual,
+                INPAR::MORTAR::shape_standard, INPAR::MORTAR::shape_standard, INPAR::MORTAR::shape_standard),
                 &scontact);
 
   DoubleParameter("PENALTYPARAM",0.0,"Penalty parameter for penalty / augmented solution strategy",&scontact);
@@ -888,14 +889,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("SEMI_SMOOTH_CN",1.0,"Weighting factor cn for semi-smooth PDASS",&scontact);
   DoubleParameter("SEMI_SMOOTH_CT",1.0,"Weighting factor ct for semi-smooth PDASS",&scontact);
 
-  setStringToIntegralParameter<INPAR::CONTACT::ContactSearchAlgorithm>("SEARCH_ALGORITHM","Binarytree","Type of contact search",
+  setStringToIntegralParameter<INPAR::MORTAR::SearchAlgorithm>("SEARCH_ALGORITHM","Binarytree","Type of contact search",
                                tuple<std::string>("BruteForceNodeBased","bruteforcenodebased",
                                                   "BruteForceEleBased","bruteforceelebased",
                                                   "BinaryTree","Binarytree","binarytree"),
-                               tuple<INPAR::CONTACT::ContactSearchAlgorithm>(INPAR::CONTACT::search_bfnode,INPAR::CONTACT::search_bfnode,
-                                          INPAR::CONTACT::search_bfele,INPAR::CONTACT::search_bfele,
-                                          INPAR::CONTACT::search_binarytree,INPAR::CONTACT::search_binarytree,
-                                          INPAR::CONTACT::search_binarytree),
+                               tuple<INPAR::MORTAR::SearchAlgorithm>(INPAR::MORTAR::search_bfnode,INPAR::MORTAR::search_bfnode,
+                                          INPAR::MORTAR::search_bfele,INPAR::MORTAR::search_bfele,
+                                          INPAR::MORTAR::search_binarytree,INPAR::MORTAR::search_binarytree,
+                                          INPAR::MORTAR::search_binarytree),
                                &scontact);
 
   DoubleParameter("SEARCH_PARAM",0.3,"Radius / Bounding volume inflation for contact search",&scontact);

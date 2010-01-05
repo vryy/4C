@@ -72,10 +72,10 @@ selfcontact_(selfcontact)
   contactsegs_.Reshape(0, 0);
 
   // overwrite shape function type
-  INPAR::CONTACT::ShapeFcn shapefcn = Teuchos::getIntegralValue<INPAR::CONTACT::ShapeFcn>(IParams(),"SHAPEFCN");
-  if (shapefcn == INPAR::CONTACT::shape_dual)
+  INPAR::MORTAR::ShapeFcn shapefcn = Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(IParams(),"SHAPEFCN");
+  if (shapefcn == INPAR::MORTAR::shape_dual)
    shapefcn_ = Interface::DualFunctions;
-  else if (shapefcn == INPAR::CONTACT::shape_standard)
+  else if (shapefcn == INPAR::MORTAR::shape_standard)
     shapefcn_ = Interface::StandardFunctions;
 
   return;
@@ -323,7 +323,7 @@ void CONTACT::Interface::FillComplete()
 #endif //CONTACTGMSHCTN
 
   // binary tree search
-  if (SearchAlg()==INPAR::CONTACT::search_binarytree)
+  if (SearchAlg()==INPAR::MORTAR::search_binarytree)
   {
     //*****SELF CONTACT*****
     if (SelfContact())
@@ -727,10 +727,10 @@ void CONTACT::Interface::Evaluate()
   //lComm()->Barrier();
   //const double t_start = ds_cputime();
 
-  if (SearchAlg()==INPAR::CONTACT::search_bfnode)          EvaluateContactSearch();
-  else if (SearchAlg()==INPAR::CONTACT::search_bfele)      EvaluateContactSearchBruteForce(SearchParam());
-  else if (SearchAlg()==INPAR::CONTACT::search_binarytree) EvaluateContactSearchBinarytree();
-  else                                                     dserror("ERROR: Invalid contact search algorithm");
+  if (SearchAlg()==INPAR::MORTAR::search_bfnode)          EvaluateContactSearch();
+  else if (SearchAlg()==INPAR::MORTAR::search_bfele)      EvaluateContactSearchBruteForce(SearchParam());
+  else if (SearchAlg()==INPAR::MORTAR::search_binarytree) EvaluateContactSearchBinarytree();
+  else                                                    dserror("ERROR: Invalid contact search algorithm");
 
   //lComm()->Barrier();
   //const double t_end = ds_cputime()-t_start;
