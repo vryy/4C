@@ -18,7 +18,7 @@ Maintainer: Alexander Popp
 namespace INPAR
 {
 
-  /// Input parameters for mortar coupling
+  /// Input parameters for MORTAR coupling
   namespace MORTAR
   {
     

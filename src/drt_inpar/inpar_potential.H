@@ -18,7 +18,7 @@ Maintainer: Ursula Mayer
 namespace INPAR
 {
 
-  /// Input parameters for structural contact
+  /// Input parameters for interaction potentials
   namespace POTENTIAL
   {
     /// Type of effects which should be considered

@@ -18,7 +18,7 @@ Maintainer: Alexander Popp
 namespace INPAR
 {
 
-  /// Input parameters for structural contact
+  /// Input parameters for structural CONTACT
   namespace CONTACT
   {
 
