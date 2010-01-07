@@ -631,10 +631,10 @@ void SCATRA::ScaTraTimIntImpl::SetupElchNatConv()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::ComputeDensity(double density)
 {
-  double densification;
+  double densification(0.0);
   for(int gnodeid=0; gnodeid<elchdensnp_->MyLength(); gnodeid++)
   {
-    densification=0;
+    densification= 0.0;
     for(int k=0; k<numscal_; k++)
     {
         /*
