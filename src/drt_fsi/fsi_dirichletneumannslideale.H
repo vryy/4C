@@ -1,8 +1,16 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_dirichletneumann.H
+\file fsi_dirichletneumannslideale.H
 
 \brief Solve FSI problems using a Dirichlet-Neumann partitioning approach
+with sliding ALE-structure interfaces
+
+
+<pre>
+Maintainer: Thomas Kloeppel
+            kloeppel@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+</pre>
 
 */
 /*----------------------------------------------------------------------*/
@@ -21,7 +29,7 @@
 
 namespace FSI {
 
-/// Dirichlet Neumann coupled interface system
+/// Dirichlet Neumann coupled sliding interface system
 /*!
   This is the algorithm class of partitioned FSI problems. Here we
   do the time loop and the coupling between fields. The fields
@@ -71,19 +79,24 @@ namespace FSI {
   Output() to finish the current step, save the result and write the
   files.
   
+  Furthermore this class contains a Remeshing() method containing the
+  the computation of rotation free ALE displacement values, remeshing 
+  of the fluid field and reevaluation of the Mortar interface. 
+  
   
 
-  \gh
-  \date 11/09
+  \author tk
+  \date 01/10
  */
 class DirichletNeumannSlideale : public DirichletNeumann
 {
 public:
 
-	//almost empty ctor within saving of important things
+	///almost empty ctor within saving of important things
   explicit DirichletNeumannSlideale(Epetra_Comm& comm);
   
-  //entry for this class in partitioned
+  ///computation of rotation free ALE displacement values, remeshing 
+  ///of the fluid field and reevaluation of the Mortar interface
   void Remeshing();
   
 protected:
@@ -98,6 +111,7 @@ protected:
   virtual Teuchos::RCP<Epetra_Vector> StructOp(Teuchos::RCP<Epetra_Vector> iforce,
                                                const FillType fillFlag);
 
+  ///predictor
   virtual Teuchos::RCP<Epetra_Vector> InitialGuess();
   
 private:

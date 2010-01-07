@@ -380,7 +380,7 @@ FSI::DirichletNeumannSlideale::FluidOp(Teuchos::RCP<Epetra_Vector> idispcurr,
 		iale->Update(1.0, *idispcurr, 0.0);
 
 		//iale reduced by old displacement dispn and instead added the real last displacements
-		//iale->Update(1.0, *FTStemp_, -1.0, *idispn, 1.0);
+		iale->Update(1.0, *FTStemp_, -1.0, *idispn, 1.0);
 		
 		MBFluidField().NonlinearSolve(StructToFluid(iale),StructToFluid(ivel));
 

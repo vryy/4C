@@ -452,15 +452,15 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requi
 
     // ==================================================================
    
-  	//Slideale action or not
+  	//In case of sliding ALE interfaces, 'remesh' fluid field 
   	INPAR::FSI::PartitionedCouplingMethod usedmethod =
        	Teuchos::getIntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn,"PARTITIONED");
 
-    if (usedmethod == INPAR::FSI::DirichletNeumannSlideale)
+  	if (usedmethod == INPAR::FSI::DirichletNeumannSlideale)
     {
       if (Comm().MyPID()==0)
       {
-        cout << "\n\n Remeshing operation for sliding fluid interface!" << endl;
+        cout << endl <<"Remeshing operation for sliding fluid interface!" << endl;
         cout << "Additional Fluid Operator:" << endl;
       }
     	Remeshing();
