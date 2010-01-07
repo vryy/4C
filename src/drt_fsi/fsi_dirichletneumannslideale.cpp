@@ -93,7 +93,7 @@ void FSI::DirichletNeumannSlideale::Remeshing()
 {
 	
   const Teuchos::ParameterList& input = DRT::Problem::Instance()->FSIDynamicParams();
-  INPAR::FSI::SlideALEProj aletype = Teuchos::getIntegralValue<INPAR::FSI::SlideALEProj>(input,"SLIPALEPROJ");
+  INPAR::FSI::SlideALEProj aletype = Teuchos::getIntegralValue<INPAR::FSI::SlideALEProj>(input,"SLIDEALEPROJ");
 	const int dim = genprob.ndim;
 	
 	//dispn and dispnp of structure, used for surface integral and velocity of the fluid in the interface 
