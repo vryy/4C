@@ -576,10 +576,15 @@ void COMBUST::FlameFront::FindIntersectionPoints(const Teuchos::RCP<COMBUST::Ref
           * (vertexcoord[lines[iline][1]][dim] - vertexcoord[lines[iline][0]][dim]);
 
           // shift intersection point to vertex if it is very close
-          if(fabs(vertexcoord[lines[iline][0]][dim]-coordinates[dim])<1.0E-8)
+          if(fabs(vertexcoord[lines[iline][0]][dim]-coordinates[dim]) < 1.0E-8)
           {
             coordinates[dim] = vertexcoord[lines[iline][0]][dim];
-            cout << "coordinates shifted to vertex" << endl;
+            cout << "coordinates shifted to vertex 1" << endl;
+          }
+          if(fabs(vertexcoord[lines[iline][1]][dim]-coordinates[dim]) < 1.0E-8)
+          {
+            coordinates[dim] = vertexcoord[lines[iline][1]][dim];
+            cout << "coordinates shifted to vertex 2" << endl;
           }
         }
       }
