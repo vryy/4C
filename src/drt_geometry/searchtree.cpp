@@ -104,7 +104,7 @@ void GEO::SearchTree::initializePointTree(
  | initialization of searchtree for SlipAle                 u.may 09/09 |
  | pay attention to the Ids, no global Ids of the discretization	      |
  *----------------------------------------------------------------------*/
-void GEO::SearchTree::initializeTreeSlipALE(
+void GEO::SearchTree::initializeTreeSlideALE(
     const LINALG::Matrix<3,2>&          nodeBox,
     map<int, RCP<DRT::Element> >&       elements,
     const TreeType                      treetype)
@@ -115,7 +115,9 @@ void GEO::SearchTree::initializeTreeSlipALE(
 
   map<int, RefCountPtr<DRT::Element> >::const_iterator elemiter;
   for (elemiter = elements.begin(); elemiter != elements.end(); ++elemiter)
+  {
     treeRoot_->insertElement(-1,elemiter->first);
+  }
 
 }
 
@@ -389,7 +391,7 @@ std::vector<int> GEO::SearchTree::searchPointsInRadius(
 /*----------------------------------------------------------------------*
  | return map of elements close to the querypoint, 			     u.may 09/09|
  *----------------------------------------------------------------------*/
-std::map<int,std::set<int> > GEO::SearchTree::searchElementsSlipALE(
+std::map<int,std::set<int> > GEO::SearchTree::searchElementsSlideALE(
     map<int, RCP<DRT::Element> >&               masterelements,
     const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
     const LINALG::Matrix<3,1>&                  querypoint)
@@ -402,7 +404,7 @@ std::map<int,std::set<int> > GEO::SearchTree::searchElementsSlipALE(
     dserror("tree is not yet initialized !!!");
 
   if(!treeRoot_->getElementList().empty())
-    treeRoot_->searchElementsSlipALE(masterelements, closeeles, currentpositions, querypoint);
+    treeRoot_->searchElementsSlideALE(masterelements, closeeles, currentpositions, querypoint);
   else
     dserror("element list is empty");
 
@@ -2318,7 +2320,7 @@ void GEO::SearchTree::TreeNode::searchMultibodyContactElements(
  | search elements close to the query point		               u.may 09/09|
  | less than 10 close elements stop the iteration			                  |
  *----------------------------------------------------------------------*/
-void GEO::SearchTree::TreeNode::searchElementsSlipALE(
+void GEO::SearchTree::TreeNode::searchElementsSlideALE(
     map<int, RCP<DRT::Element> >&			            masterelements,	
     std::map<int,std::set<int> >&			            closeeles,
     const std::map<int,LINALG::Matrix<3,1> >&	    currentpositions,
@@ -2333,7 +2335,7 @@ void GEO::SearchTree::TreeNode::searchElementsSlipALE(
       dserror("no child found\n");
     else //child node found which encloses AABB so step down
     {
-      children_[childindex]->searchElementsSlipALE(masterelements, closeeles, currentpositions, querypoint);
+      children_[childindex]->searchElementsSlideALE(masterelements, closeeles, currentpositions, querypoint);
       return;
     }
     break;
@@ -2344,7 +2346,7 @@ void GEO::SearchTree::TreeNode::searchElementsSlipALE(
       return;
 
     // max depth reached, counts reverse, current elementList includes all close elements
-    if (treedepth_ <= 0 || (elementList_.size()==1 && (elementList_.begin()->second).size() < 10) )
+    if (treedepth_ <= 0 || (elementList_.size()==1 && (elementList_.begin()->second).size() < 20) )
     {
       closeeles = getElementList();
       return;
@@ -2357,7 +2359,7 @@ void GEO::SearchTree::TreeNode::searchElementsSlipALE(
     else // child node found which encloses AABB so refine further
     {
       createChildren(masterelements, currentpositions); 
-      children_[childindex]->searchElementsSlipALE(masterelements, closeeles, currentpositions, querypoint);
+      children_[childindex]->searchElementsSlideALE(masterelements, closeeles, currentpositions, querypoint);
       return;
     }
     break;

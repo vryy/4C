@@ -623,6 +623,30 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::STR::bop_or),
                                &sdyn);
 
+//  setStringToIntegralParameter<INPAR::STR::SDC_Scale>("SDC_SCALING","no",
+//      "Scaled director conditioning for thin shell structures",
+//      tuple<std::string>(
+//        "no",
+//        "No",
+//        "NO",
+//        "Current",
+//        "Parameter",
+//        "CurrentSym",
+//        "ParameterSym"),
+//      tuple<INPAR::STR::SDC_Scale>(
+//        INPAR::STR::sdc_none,
+//        INPAR::STR::sdc_none,
+//        INPAR::STR::sdc_none,
+//        INPAR::STR::sdc_curr,
+//        INPAR::STR::sdc_para,
+//        INPAR::STR::sdc_currsym,
+//        INPAR::STR::sdc_parasym),
+//      &sdyn);
+//  
+//  DoubleParameter("SDC_FACTOR",1.0,
+//      "Scaled director conditioning factor",
+//      &sdyn);
+  
   DoubleParameter("TOLCONSTR",1.0E-08,
                   "tolerance in the constr error norm for the newton iteration",
                   &sdyn);
@@ -2213,13 +2237,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "DirichletNeumann",
                                  "RobinNeumann",
                                  "DirichletRobin",
-                                 "RobinRobin"
+                                 "RobinRobin",
+                                 "DirichletNeumannSlideALE"
                                  ),
                                tuple<INPAR::FSI::PartitionedCouplingMethod>(
                                  INPAR::FSI::DirichletNeumann,
                                  INPAR::FSI::RobinNeumann,
                                  INPAR::FSI::DirichletRobin,
-                                 INPAR::FSI::RobinRobin
+                                 INPAR::FSI::RobinRobin,
+                                 INPAR::FSI::DirichletNeumannSlideale
                                  ),
                                &fsidyn);
 
@@ -2404,6 +2430,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                      yesnotuple,yesnovalue,&fsidyn);
   setStringToIntegralParameter<int>("SYMMETRICPRECOND","No","Symmetric block GS preconditioner in monolithic FSI or ordinary GS",
                                      yesnotuple,yesnovalue,&fsidyn);
+  
+  setStringToIntegralParameter<INPAR::FSI::SlideALEProj>("SLIDEALEPROJ","Curr",
+                                 "Projection method to use for sliding FSI.",
+                                 tuple<std::string>("Curr","Ref"),
+                                 tuple<INPAR::FSI::SlideALEProj>(
+                                     INPAR::FSI::ALEprojection_curr, 
+                                     INPAR::FSI::ALEprojection_ref),
+                                 &fsidyn);
+
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& search_tree = list->sublist("SEARCH TREE",false,"");

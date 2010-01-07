@@ -249,6 +249,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(ParameterList& params,
   string action = params.get<string>("action","none");
   if (action == "none") dserror("No action supplied");
   else if (action=="calc_struct_constrarea")       act = Wall1Line::calc_struct_constrarea;
+  else if (action=="calc_struct_centerdisp")   	   act = Wall1Line::calc_struct_centerdisp;
   else if (action=="calc_struct_areaconstrstiff")  act = Wall1Line::calc_struct_areaconstrstiff;
   else if (action=="calc_potential_stiff")         act = Wall1Line::calc_potential_stiff;
   else dserror("Unknown type of action for Wall1_Line");
@@ -290,6 +291,78 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(ParameterList& params,
 
     }
     break;
+    case calc_struct_centerdisp:
+    {
+ 
+	  if(Comm.MyPID()==Owner())
+      {
+		  // element geometry update
+        RefCountPtr<const Epetra_Vector> disptotal = discretization.GetState("displacementtotal");
+        if (disptotal==null) dserror("Cannot get state vector 'displacementtotal'");
+        vector<double> mydisp(lm.size());
+        DRT::UTILS::ExtractMyValues(*disptotal,mydisp,lm);
+        const int numnod = NumNode();
+        Epetra_SerialDenseMatrix xsrefe(Wall1::numdim_,numnod);  // material coord. of element
+        Epetra_SerialDenseMatrix xscurr(Wall1::numdim_,numnod);  // current coord. of element
+        for (int i=0; i<numnod; ++i)
+        {
+          xsrefe(0,i) = Nodes()[i]->X()[0];
+          xsrefe(1,i) = Nodes()[i]->X()[1];
+
+          xscurr(0,i) = xsrefe(0,i) + mydisp[i*Wall1::noddof_];
+          xscurr(1,i) = xsrefe(1,i) + mydisp[i*Wall1::noddof_+1];
+        }
+        
+        //integration of the displacements over the surface        
+        const int dim = Wall1::numdim_;        
+        const DiscretizationType distype = Shape();
+
+       // gaussian points
+       const DRT::UTILS::GaussRule1D gaussrule = getOptimalGaussrule(distype);
+       const DRT::UTILS::IntegrationPoints1D  intpoints(gaussrule); //
+
+       // allocate vector for shape functions and for derivatives
+       LINALG::SerialDenseVector    funct(numnod);
+       LINALG::SerialDenseMatrix    deriv(1,numnod);
+      
+       RefCountPtr<const Epetra_Vector> dispincr = discretization.GetState("displacementincr");
+		vector<double> edispincr(lm.size());
+	    DRT::UTILS::ExtractMyValues(*dispincr,edispincr,lm);
+	    
+	    elevector2[0] = 0;
+	    
+	  	for (int gpid=0;gpid<intpoints.nquad;gpid++)
+	  	{
+	  		const double e1 = intpoints.qxg[gpid][0]; //coordinate of GP
+
+	  		// get values of shape functions and derivatives in the line at specific GP
+	  		DRT::UTILS::shape_function_1D(funct,e1,distype);
+		  	DRT::UTILS::shape_function_1D_deriv1(deriv,e1,distype);
+ 
+		  	double dr = w1_substitution(xscurr, deriv, NULL, numnod);
+		     
+		  	elevector2[0] += intpoints.qwgt[gpid] * dr;
+		  		
+		    for (int d=0; d<dim; d++)
+		    {
+		    	if (gpid == 0) 
+		    		elevector3[d] = 0;
+		    	
+		    	for (int j=0; j<numnod; ++j)
+		    		{
+		    			elevector3[d] +=  funct[j] * intpoints.qwgt[gpid] 
+		    	                    * edispincr[j*dim + d] * dr;
+		    		}
+		    }
+			    
+
+	  	}
+		     
+      }
+	  
+    }
+    break;
+    
     case calc_struct_areaconstrstiff:
     {
       if (distype!=line2)

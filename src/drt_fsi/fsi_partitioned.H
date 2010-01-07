@@ -37,6 +37,7 @@ Maintainer: Ulrich Kuettler
 
 #include "fsi_algorithm.H"
 
+#include "../drt_inpar/inpar_fsi.H"
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/adapter_coupling_mortar.H"
 
@@ -74,6 +75,10 @@ public:
   /// compute FSI interface residual S^{-1}(F(d)) - d
   bool computeF(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag);
 
+  bool matchingnodes() {return matchingnodes_; }
+  
+  virtual void Remeshing();
+  
 protected:
 
   //! @name Transfer helpers
@@ -131,6 +136,12 @@ protected:
 
   Teuchos::RCP<UTILS::DebugWriter> MyDebugWriter() const { return debugwriter_; }
 
+  /// return coupsfm_
+  ADAPTER::CouplingMortar& StructureFluidCouplingMortar() { return coupsfm_; }
+  
+  /// return coupsfm_
+  const ADAPTER::CouplingMortar& StructureFluidCouplingMortar() const { return coupsfm_; }
+
 private:
 
   /// create linear solver framework
@@ -147,7 +158,7 @@ private:
   /// setup list with default parameters
   void SetDefaultParameters(const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list);
 
-  /// coupling of structure and fluid at the interface, with mortar. Experimental!
+  /// coupling of structure and fluid at the interface, with mortar.
   ADAPTER::CouplingMortar         coupsfm_;
 
   /// interface displacement from time step begin

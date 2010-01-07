@@ -146,6 +146,7 @@ void DRT::Condition::Print(ostream& os) const
   else if (Type()==ImpedanceCond)                 os << "Impedance boundary condition: ";
   else if (Type()==Impedance_Calb_Cond)           os << "Impedance calibration boundary condition: ";
   else if (Type()==MPC_NodeOnPlane_3D)            os << "Multipoint constraint on a plane: ";
+  else if (Type()==MPC_NodeOnLine_3D)             os << "Multipoint constraint on a line: ";
   else if (Type()==MPC_NodeOnLine_2D)             os << "Multipoint constraint on a line: ";
   else if (Type()==LJ_Potential_Volume)           os << "Lennard-Jones potential in a volume: ";
   else if (Type()==LJ_Potential_Surface)          os << "Lennard-Jones potential on a surface: ";

@@ -25,6 +25,7 @@ namespace INPAR
     /// Type of partitioned coupling for FSI problems
     enum PartitionedCouplingMethod
     {
+      DirichletNeumannSlideale,
       DirichletNeumann,
       RobinNeumann,
       DirichletRobin,
@@ -42,6 +43,13 @@ namespace INPAR
       BGSAitken,
       BGSVectorExtrapolation,
       BGSJacobianFreeNewtonKrylov
+    };
+    
+    /// Projection methods for sliding fluid-structure interface
+    enum SlideALEProj
+    {
+      ALEprojection_curr,
+      ALEprojection_ref
     };
 
   }  // namespace FSI

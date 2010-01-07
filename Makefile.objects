@@ -336,6 +336,7 @@ OBJS_DRT_FSI  = src/drt_fsi/fsi_dyn.o \
                 src/drt_fsi/fsi_algorithm.o \
                 src/drt_fsi/fsi_partitioned.o \
                 src/drt_fsi/fsi_dirichletneumann.o \
+                src/drt_fsi/fsi_dirichletneumannslideale.o \
                 src/drt_fsi/fsi_robinneumann.o \
                 src/drt_fsi/fsi_robin.o \
                 src/drt_fsi/fsi_structureale.o \

@@ -61,7 +61,7 @@ namespace ADAPTER
 
 
     ///filling matrices
-    void Evaluate();
+    void Evaluate(RCP<Epetra_Vector> idisp);
 
     /// transfer a dof vector from master to slave
     /*!
@@ -91,12 +91,20 @@ namespace ADAPTER
 
     /// the interface dof map of the slave side
     RefCountPtr<Epetra_Map> SlaveDofMap()  const { return slavedofmap_; }
+    
+    /// the interface dof map of the slave side
+    RefCountPtr<Epetra_Map> SlaveColMap()  const { return slavecolmap_; }
+    
+    RCP<MORTAR::MortarInterface> Interface() const { return interface_;}
+
+    
 
   private:
 	
     RCP<MORTAR::MortarInterface>  interface_;    ///< interface
     RefCountPtr<Epetra_Map>       masterdofmap_; ///< map of master dofs
     RefCountPtr<Epetra_Map>       slavedofmap_;  ///< map of slave dofs without pressure
+    RefCountPtr<Epetra_Map> slavecolmap_;  ///< map of slave dofs without pressure, ghosted nodes included
 
     RefCountPtr<Epetra_CrsMatrix> D_;            ///< mortar matrix
     RefCountPtr<Epetra_CrsMatrix> Dinv_;         ///< inverse of mortar matrix #D_

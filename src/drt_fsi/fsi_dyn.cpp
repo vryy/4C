@@ -10,6 +10,7 @@
 
 #include "fsi_dyn.H"
 #include "fsi_dirichletneumann.H"
+#include "fsi_dirichletneumannslideale.H"
 #include "fsi_robinneumann.H"
 #include "fsi_robin.H"
 #include "fsi_monolithicoverlap.H"
@@ -347,7 +348,11 @@ void fsi_ale_drt()
     INPAR::FSI::PartitionedCouplingMethod method =
       Teuchos::getIntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn,"PARTITIONED");
 
-    if (method==INPAR::FSI::DirichletNeumann)
+    if (method==INPAR::FSI::DirichletNeumannSlideale)
+    {
+        fsi = Teuchos::rcp(new FSI::DirichletNeumannSlideale(comm));
+    }
+    else if (method==INPAR::FSI::DirichletNeumann)
     {
       fsi = Teuchos::rcp(new FSI::DirichletNeumann(comm));
     }

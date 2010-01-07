@@ -100,6 +100,13 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
                     slavedis.NumDof(node)-1, slavedis.Dof(node), true));
 
     interface->AddMortarNode(mrtrnode);
+    
+    // We expect to have a pressure dof at each node. Mortar
+    // couples just the displacements, so remove the pressure dof.
+
+    vector<int> dofs = slavedis.Dof(node);
+    dofs.resize(dofs.size() - 1);
+    slavemortardofs.insert(slavemortardofs.end(), dofs.begin(), dofs.end());
   }
 
   for (nodeiter = slavenodes.begin(); nodeiter != slavenodes.end(); ++nodeiter)
@@ -118,7 +125,9 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
   //build map of slave dofs and slave mortar dofs without pressure
   slavedofmap_ = rcp(
       new Epetra_Map(-1, slavedofs.size(), &slavedofs[0], 0, comm));
-
+  slavecolmap_ = rcp(
+      new Epetra_Map(-1, slavemortardofs.size(), &slavemortardofs[0], 0, comm));
+  
   //feeding master elements to the interface
   map<int, RefCountPtr<DRT::Element> >::const_iterator elemiter;
 
@@ -220,19 +229,77 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
   //store interface
   interface_ = interface;
 
-
-
   return;
 }
 
-//the next function is not used up to now
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::CouplingMortar::Evaluate()
+void ADAPTER::CouplingMortar::Evaluate(RCP<Epetra_Vector> idisp)
 {
+	
+//	  RCP<MORTAR::Interface> interface = interface_;
+	
+	  interface_->SetState("displacement", idisp);
 
-  dserror("Evaluate method for mortar coupling not implemented yet!");
+	  //in the following two steps do the hard work; thanks to CONTACT
+	  interface_->Initialize();
+	  interface_->Evaluate();
+	  
+	  //Preparation for AssembleDMG
+	  RCP<Epetra_Map> slavedofrowmap = interface_->SlaveRowDofs();
+	  RCP<Epetra_Map> masterdofrowmap = interface_->MasterRowDofs();
 
+	  RCP<LINALG::SparseMatrix> dmatrix = rcp(
+	      new LINALG::SparseMatrix(*slavedofrowmap, 10));
+
+	  RCP<LINALG::SparseMatrix> mmatrix = rcp(
+	      new LINALG::SparseMatrix(*slavedofrowmap, 100));
+
+//	  RCP<Epetra_Map> gwighting = interface_->SlaveRowNodes();
+
+//	  RCP<Epetra_Vector> g = rcp(new Epetra_Vector(*gwighting, true));
+
+	  interface_->AssembleDM(*dmatrix, *mmatrix);
+
+	  // Complete() global Mortar matrices
+	  dmatrix->Complete();
+	  mmatrix->Complete(*masterdofrowmap, *slavedofrowmap);
+
+	  D_ = dmatrix->EpetraMatrix();
+
+	  M_ = mmatrix->EpetraMatrix();
+
+	  //Build Dinv 		
+	  Dinv_ = rcp(
+	      new Epetra_CrsMatrix(Copy, D_->DomainMap(), D_->RangeMap(), 1, true));
+
+	  const Epetra_Map& Dinvmap = Dinv_->RowMap();
+	  const Epetra_Map& Dmap = D_->RowMap();
+	  for (int row = 0; row < Dinvmap.NumMyElements(); ++row)
+	  {
+	    int rowgid = Dinvmap.GID(row);
+	    int colgid = Dmap.GID(row);
+
+	    int numentries;
+	    double *values;
+	    int *indices;
+
+	    // do some validation
+
+	    if (D_->ExtractMyRowView(row, numentries, values, indices))
+	      dserror("ExtractMyRowView failed");
+	    double value = 1.0/values[0];
+	    if ( Dinv_->InsertGlobalValues(rowgid, 1, &value, &colgid) )
+	        dserror( "InsertGlobalValues failed" );
+
+	  }
+
+	  if ( Dinv_->FillComplete( D_->RangeMap(), D_->DomainMap() ) )
+	    dserror( "Filling failed" );
+
+	  //store interface	
+//	  interface_ = interface;
+	  return;
 }
 
 /*----------------------------------------------------------------------*

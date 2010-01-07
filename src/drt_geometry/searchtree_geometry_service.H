@@ -329,6 +329,44 @@ namespace GEO
     LINALG::Matrix<3,1>&                        minDistanceVec,
     GEO::NearestObject&                         nearestObject
     );
+  
+  
+  /*!
+  \brief Searches for the nearest point to the query point in elementList
+  \param dis                  discretization
+  \param elements	          list of all elements 
+  \param currentpositions     current nodal positions in discretization
+  \param elementList          element list of close elements, is looped
+  \param point                point to be examined
+  \param minDistCoords        Coords of the nearest point
+   */
+  void nearestObjectInNode(
+	  const RCP<DRT::Discretization>              dis,
+	  map<int, RCP<DRT::Element> >&				elements,
+      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
+      const std::map<int, std::set<int> >&        elementList,
+      const LINALG::Matrix<3,1>&                  point,
+      LINALG::Matrix<3,1>&                        minDistCoords
+      );
+  
+  
+  /*!
+  \brief Searches for the nearest point to the query point in elementList
+  \param masternodes          list of all nodes
+  \param masterelements	      list of all elements 
+  \param currentpositions     current nodal positions in discretization
+  \param closeeles            element list of close elements, is looped
+  \param querypoint           point to be examined
+  \param minDistCoords        Coords of the nearest point
+   */
+  void nearestObjectInNode(
+  		map<int, DRT::Node*> 						masternodes,
+  		map<int, RCP<DRT::Element> >& 				masterelements,
+  		const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
+  		const std::map<int, std::set<int> >&        closeeles,
+  		const LINALG::Matrix<3,1>&                  querypoint,
+  		LINALG::Matrix<3,1>&                        minDistCoords
+  		);
 
 
   /*!

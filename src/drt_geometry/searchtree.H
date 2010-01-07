@@ -643,7 +643,7 @@ public:
   \param currentpositions		current nodal positions in discretization
   \param querypoint				point around which should be searched 
    */
-  void searchElementsSlipALE(
+  void searchElementsSlideALE(
       map<int, RCP<DRT::Element> >&               masterelements,	 
       std::map<int,std::set<int> >&               closeeles,
       const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
@@ -749,13 +749,13 @@ public:
   
   /*!
   \brief destroys the old tree if its exists and builds the root node of a
-         new tree with elements; implemented for SlipALE problems where
+         new tree with elements; implemented for SlideALE problems where
          boundary elements are known
   \param nodebox              nodeBox
   \param elements      		  elements
   \param treetype             quadtree
    */
-  void initializeTreeSlipALE(
+  void initializeTreeSlideALE(
       const LINALG::Matrix<3,2>&        nodeBox,
       map<int, RCP<DRT::Element> >&     elements,
       const TreeType                    treetype
@@ -928,7 +928,7 @@ public:
   \param querypoint				point around which should be searched 
   \return vector of close elements
    */
-  std::map<int,std::set<int> > searchElementsSlipALE(
+  std::map<int,std::set<int> > searchElementsSlideALE(
       map<int, RCP<DRT::Element> >&               masterelements,
       const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
       const LINALG::Matrix<3,1>&                  querypoint

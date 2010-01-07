@@ -964,6 +964,7 @@ private:
   {
     none,  ///< undetermined
     calc_struct_areaconstrstiff,
+    calc_struct_centerdisp,
     calc_struct_constrarea,
     calc_potential_stiff
   };

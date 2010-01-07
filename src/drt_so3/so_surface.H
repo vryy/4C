@@ -198,7 +198,8 @@ protected:
     prestress_writerestart,
     prestress_readrestart,
     calc_brownian_motion,
-    calc_brownian_motion_damping
+    calc_brownian_motion_damping,
+    calc_struct_centerdisp
   };
 
   // don't want = operator
