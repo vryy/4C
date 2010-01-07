@@ -148,6 +148,8 @@ extern "C"
 #include "../drt_mat/plasticneohooke.H"
 #include "../drt_contact/drt_cnode.H"
 #include "../drt_contact/drt_celement.H"
+#include "../drt_mortar/mortar_node.H"
+#include "../drt_mortar/mortar_element.H"
 #include "../drt_art_net/artery.H"
 #include "drt_dserror.H"
 #include "standardtypes_cpp.H"
@@ -954,6 +956,23 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
       MAT::HumphreyCardio* humcard = new MAT::HumphreyCardio();
       humcard->Unpack(data);
       return humcard;
+    }
+    case ParObject_MortarNode:
+    {
+      double x[3];
+      vector<int> dofs(0);
+      MORTAR::MortarNode* node = new MORTAR::MortarNode(0,x,0,0,dofs,false);
+      node->Unpack(data);
+      return node;
+    }
+    case ParObject_MortarElement:
+    {
+      MORTAR::MortarElement* ele = new MORTAR::MortarElement(0,
+                                                     DRT::Element::element_mortar,
+                                                     0,DRT::Element::dis_none,
+                                                     0,NULL,false);
+      ele->Unpack(data);
+      return ele;
     }
     case ParObject_CNode:
     {

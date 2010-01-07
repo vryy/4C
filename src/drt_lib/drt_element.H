@@ -133,6 +133,7 @@ public:
     element_sodisp,
     element_structuralsurface,
     element_structuralline,
+    element_mortar,
     element_contact,
     element_so_shw6,
     element_beam2,

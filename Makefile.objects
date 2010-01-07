@@ -222,7 +222,22 @@ OBJS_DRT_CONSTRAINT_LIB      = \
                 src/drt_constraint/constraint_element3.o \
                 src/drt_constraint/constraint_element3_evaluate.o \
                 src/drt_constraint/constraint_element2.o \
-                src/drt_constraint/constraint_element2_evaluate.o
+                src/drt_constraint/constraint_element2_evaluate.o          
+#----------------------------------------------------- drt version mortar
+OBJS_DRT_MORTAR_LIB = \
+                src/drt_mortar/mortar_binarytree.o \
+                src/drt_mortar/mortar_coupling2d.o \
+                src/drt_mortar/mortar_coupling3d.o \
+                src/drt_mortar/mortar_coupling3d_classes.o \
+                src/drt_mortar/mortar_defines.o \
+                src/drt_mortar/mortar_dofset.o \
+                src/drt_mortar/mortar_element.o \
+                src/drt_mortar/mortar_element_shapefct.o \
+                src/drt_mortar/mortar_integrator.o \
+                src/drt_mortar/mortar_interface.o \
+                src/drt_mortar/mortar_node.o \
+                src/drt_mortar/mortar_projector.o
+OBJS_DRT_MORTAR =  
 #----------------------------------------------------- drt version contact
 OBJS_DRT_CONTACT = \
                 src/drt_contact/contactstrugenalpha.o \

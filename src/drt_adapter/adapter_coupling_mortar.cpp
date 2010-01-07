@@ -18,10 +18,6 @@
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_globalproblem.H"
-
-#include "../drt_contact/drt_contact_manager.H"
-#include "../drt_contact/drt_contact_interface.H"
-#include "../drt_contact/contactdefines.H"
 #include "../drt_io/io.H"
 #include "../drt_lib/linalg_utils.H"
 
@@ -62,22 +58,22 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
   if (Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") != INPAR::MORTAR::shape_dual)
     dserror("Mortar coupling adapter only works for dual shape functions");
 
-  // get problem dimension (2D or 3D) and initialize (CONTACT::) interface
+  // get problem dimension (2D or 3D) and initialize (MORTAR::) interface
   const int dim = genprob.ndim;
-  RCP<CONTACT::Interface> interface = rcp(new CONTACT::Interface(0, comm, dim, input));
+  RCP<MORTAR::MortarInterface> interface = rcp(new MORTAR::MortarInterface(0, comm, dim, input));
 
-  //feeding master nodes to the interface
+  // feeding master nodes to the interface
   vector<int> masterdofs;
   map<int, DRT::Node*>::const_iterator nodeiter;
   for (nodeiter = mastergnodes.begin(); nodeiter != mastergnodes.end(); ++nodeiter)
   {
     DRT::Node* node = nodeiter->second;
 
-    RCP<CONTACT::CNode> cnode = rcp(
-                new CONTACT::CNode(node->Id(), node->X(), node->Owner(),
-                    masterdis.NumDof(node), masterdis.Dof(node), false, true));
+    RCP<MORTAR::MortarNode> mrtrnode = rcp(
+                new MORTAR::MortarNode(node->Id(), node->X(), node->Owner(),
+                    masterdis.NumDof(node), masterdis.Dof(node), false));
 
-    interface->AddCNode(cnode);
+    interface->AddMortarNode(mrtrnode);
   }
 
   for (nodeiter = masternodes.begin(); nodeiter != masternodes.end(); ++nodeiter)
@@ -89,8 +85,7 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
   }
 
   //build map of master dofs
-  masterdofmap_ = rcp(
-      new Epetra_Map(-1, masterdofs.size(), &masterdofs[0], 0, comm));
+  masterdofmap_ = rcp(new Epetra_Map(-1, masterdofs.size(), &masterdofs[0], 0, comm));
 
   //feeding slave nodes to the interface
   vector<int> slavedofs;
@@ -100,11 +95,11 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
   {
     DRT::Node* node = nodeiter->second;
 
-    RCP<CONTACT::CNode> cnode = rcp(
-                new CONTACT::CNode(node->Id(), node->X(), node->Owner(),
-                    slavedis.NumDof(node)-1, slavedis.Dof(node), true, true));
+    RCP<MORTAR::MortarNode> mrtrnode = rcp(
+                new MORTAR::MortarNode(node->Id(), node->X(), node->Owner(),
+                    slavedis.NumDof(node)-1, slavedis.Dof(node), true));
 
-    interface->AddCNode(cnode);
+    interface->AddMortarNode(mrtrnode);
   }
 
   for (nodeiter = slavenodes.begin(); nodeiter != slavenodes.end(); ++nodeiter)
@@ -135,12 +130,12 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
   {
     RefCountPtr<DRT::Element> ele = elemiter->second;
 
-    RCP<CONTACT::CElement>
-        cele =
+    RCP<MORTAR::MortarElement>
+        mrtrele =
             rcp(
-                new CONTACT::CElement(ele->Id(), DRT::Element::element_contact, ele->Owner(), ele->Shape(), ele->NumNode(), ele->NodeIds(), false));
+                new MORTAR::MortarElement(ele->Id(), DRT::Element::element_mortar, ele->Owner(), ele->Shape(), ele->NumNode(), ele->NodeIds(), false));
 
-    interface->AddCElement(cele);
+    interface->AddMortarElement(mrtrele);
 
   }
 
@@ -148,12 +143,12 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
   for (elemiter = slaveelements.begin(); elemiter != slaveelements.end(); ++elemiter)
   {
     RefCountPtr<DRT::Element> ele = elemiter->second;
-    RCP<CONTACT::CElement>
-        cele =
+    RCP<MORTAR::MortarElement>
+        mrtrele =
             rcp(
-                new CONTACT::CElement(ele->Id() + EleOffset, DRT::Element::element_contact, ele->Owner(), ele->Shape(), ele->NumNode(), ele->NodeIds(), true));
+                new MORTAR::MortarElement(ele->Id() + EleOffset, DRT::Element::element_mortar, ele->Owner(), ele->Shape(), ele->NumNode(), ele->NodeIds(), true));
 
-    interface->AddCElement(cele);
+    interface->AddMortarElement(mrtrele);
   }
 
   //finalize the contact interface construction
@@ -170,11 +165,11 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
 
   interface->SetState("displacement", dispn);
 
-  //in the following two steps do the hard work; thanks to CONTACT
+  //in the following two steps do the hard work; thanks to MORTAR
   interface->Initialize();
   interface->Evaluate();
 
-  //Preparation for AssembleDMG
+  // preparation for AssembleDM
   RCP<Epetra_Map> slavedofrowmap = interface->SlaveRowDofs();
   RCP<Epetra_Map> masterdofrowmap = interface->MasterRowDofs();
 
@@ -184,11 +179,7 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
   RCP<LINALG::SparseMatrix> mmatrix = rcp(
       new LINALG::SparseMatrix(*slavedofrowmap, 100));
 
-  RCP<Epetra_Map> gwighting = interface->SlaveRowNodes();
-
-  RCP<Epetra_Vector> g = rcp(new Epetra_Vector(*gwighting, true));
-
-  interface->AssembleDMG(*dmatrix, *mmatrix, *g);
+  interface->AssembleDM(*dmatrix, *mmatrix);
 
   // Complete() global Mortar matrices
   dmatrix->Complete();

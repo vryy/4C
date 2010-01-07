@@ -190,7 +190,8 @@ using namespace std;
 #define ParObject_HumphreyCardio        (int)176
 #define ParObject_FerEchPV              (int)177
 #define ParObject_Pec                   (int)178
-
+#define ParObject_MortarNode            (int)179
+#define ParObject_MortarElement         (int)180
 
 
 namespace DRT
