@@ -34,35 +34,39 @@ ADAPTER::CouplingMortar::CouplingMortar()
 void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
     const DRT::Discretization& slavedis, Epetra_Comm& comm)
 {
-  // initialize maps for nodes and elements
+  // initialize maps for row nodes 
   map<int, DRT::Node*> masternodes;
   map<int, DRT::Node*> slavenodes;
 
+  // initialize maps for column nodes
   map<int, DRT::Node*> mastergnodes;
   map<int, DRT::Node*> slavegnodes;
 
+  //initialize maps for elements
   map<int, RefCountPtr<DRT::Element> > masterelements;
   map<int, RefCountPtr<DRT::Element> > slaveelements;
 
-
+  // Fill maps based on condition for master side
   DRT::UTILS::FindConditionObjects(masterdis, masternodes, mastergnodes, masterelements,
       "FSICoupling");
 
+  // Fill maps based on condition for slave side
   DRT::UTILS::FindConditionObjects(slavedis, slavenodes, slavegnodes, slaveelements,
       "FSICoupling");
 
-  //	parameter list for contact definition
+  // get structural dynamics parameter
   const Teuchos::ParameterList& input = DRT::Problem::Instance()->StructuralContactParams();
 
   // check for invalid paramater values
-  if (Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") != INPAR::MORTAR::shape_dual)
+  if (Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(DRT::Problem::Instance()->StructuralContactParams(),
+      "SHAPEFCN") != INPAR::MORTAR::shape_dual)
     dserror("Mortar coupling adapter only works for dual shape functions");
 
-  // get problem dimension (2D or 3D) and initialize (MORTAR::) interface
+  // get problem dimension (2D or 3D) and create (MORTAR::MortarInterface)
   const int dim = genprob.ndim;
   RCP<MORTAR::MortarInterface> interface = rcp(new MORTAR::MortarInterface(0, comm, dim, input));
 
-  // feeding master nodes to the interface
+  // feeding master nodes to the interface including ghosted nodes
   vector<int> masterdofs;
   map<int, DRT::Node*>::const_iterator nodeiter;
   for (nodeiter = mastergnodes.begin(); nodeiter != mastergnodes.end(); ++nodeiter)
@@ -76,6 +80,7 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
     interface->AddMortarNode(mrtrnode);
   }
 
+  // build master dof row map
   for (nodeiter = masternodes.begin(); nodeiter != masternodes.end(); ++nodeiter)
   {
     DRT::Node* node = nodeiter->second;
@@ -84,12 +89,12 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
 
   }
 
-  //build map of master dofs
-  masterdofmap_ = rcp(new Epetra_Map(-1, masterdofs.size(), &masterdofs[0], 0, comm));
+  //build Epetra_Map of master row dofs
+  masterdofrowmap_ = rcp(new Epetra_Map(-1, masterdofs.size(), &masterdofs[0], 0, comm));
 
-  //feeding slave nodes to the interface
-  vector<int> slavedofs;
-  vector<int> slavemortardofs;
+  //feeding slave nodes to the interface including ghosted nodes
+  vector<int> slaverowdofs;
+  vector<int> slavecoldofs;
 
   for (nodeiter = slavegnodes.begin(); nodeiter != slavegnodes.end(); ++nodeiter)
   {
@@ -106,9 +111,10 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
 
     vector<int> dofs = slavedis.Dof(node);
     dofs.resize(dofs.size() - 1);
-    slavemortardofs.insert(slavemortardofs.end(), dofs.begin(), dofs.end());
+    slavecoldofs.insert(slavecoldofs.end(), dofs.begin(), dofs.end());
   }
 
+  // build slave dof row map
   for (nodeiter = slavenodes.begin(); nodeiter != slavenodes.end(); ++nodeiter)
   {
     // We expect to have a pressure dof at each node. Mortar
@@ -117,16 +123,16 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
     DRT::Node* node = nodeiter->second;
     vector<int> dofs = slavedis.Dof(node);
     dofs.resize(dofs.size() - 1);
-    slavedofs.insert(slavedofs.end(), dofs.begin(), dofs.end());
+    slaverowdofs.insert(slaverowdofs.end(), dofs.begin(), dofs.end());
 
   }
   slavenodes.clear();
 
   //build map of slave dofs and slave mortar dofs without pressure
-  slavedofmap_ = rcp(
-      new Epetra_Map(-1, slavedofs.size(), &slavedofs[0], 0, comm));
-  slavecolmap_ = rcp(
-      new Epetra_Map(-1, slavemortardofs.size(), &slavemortardofs[0], 0, comm));
+  slavedofrowmap_ = rcp(
+      new Epetra_Map(-1, slaverowdofs.size(), &slaverowdofs[0], 0, comm));
+  slavedofcolmap_ = rcp(
+      new Epetra_Map(-1, slavecoldofs.size(), &slavecoldofs[0], 0, comm));
   
   //feeding master elements to the interface
   map<int, RefCountPtr<DRT::Element> >::const_iterator elemiter;
@@ -166,15 +172,12 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
   // all the following stuff has to be done once in setup
   // in order to get initial D_ and M_
 
-  // interface displacement of the first time step (=0) has to be merged from
-  // slave and master discretization
-  RCP<Epetra_Map> dofrowmap = LINALG::MergeMap(masterdofmap_,slavedofmap_, true);
-
+  // interface displacement (=0) has to be merged from slave and master discretization
+  RCP<Epetra_Map> dofrowmap = LINALG::MergeMap(masterdofrowmap_,slavedofrowmap_, true);
   RCP<Epetra_Vector> dispn = LINALG::CreateVector(*dofrowmap, true);
 
   interface->SetState("displacement", dispn);
-
-  //in the following two steps do the hard work; thanks to MORTAR
+  //in the following two steps MORTAR does all the work
   interface->Initialize();
   interface->Evaluate();
 
@@ -237,11 +240,8 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
 void ADAPTER::CouplingMortar::Evaluate(RCP<Epetra_Vector> idisp)
 {
 	
-//	  RCP<MORTAR::Interface> interface = interface_;
-	
 	  interface_->SetState("displacement", idisp);
-
-	  //in the following two steps do the hard work; thanks to CONTACT
+	  //in the following two steps MORTAR does all the work for new interface displacements 
 	  interface_->Initialize();
 	  interface_->Evaluate();
 	  
@@ -254,10 +254,6 @@ void ADAPTER::CouplingMortar::Evaluate(RCP<Epetra_Vector> idisp)
 
 	  RCP<LINALG::SparseMatrix> mmatrix = rcp(
 	      new LINALG::SparseMatrix(*slavedofrowmap, 100));
-
-//	  RCP<Epetra_Map> gwighting = interface_->SlaveRowNodes();
-
-//	  RCP<Epetra_Vector> g = rcp(new Epetra_Vector(*gwighting, true));
 
 	  interface_->AssembleDM(*dmatrix, *mmatrix);
 
@@ -297,8 +293,6 @@ void ADAPTER::CouplingMortar::Evaluate(RCP<Epetra_Vector> idisp)
 	  if ( Dinv_->FillComplete( D_->RangeMap(), D_->DomainMap() ) )
 	    dserror( "Filling failed" );
 
-	  //store interface	
-//	  interface_ = interface;
 	  return;
 }
 
@@ -309,7 +303,7 @@ RefCountPtr<Epetra_Vector> ADAPTER::CouplingMortar::MasterToSlave(RefCountPtr<
     Epetra_Vector> mv)
 {
 
-  dsassert( masterdofmap_->SameAs( mv->Map() ),
+  dsassert( masterdofrowmap_->SameAs( mv->Map() ),
       "Vector with master dof map expected" );
 
   Epetra_Vector tmp = Epetra_Vector(M_->RowMap());
@@ -317,7 +311,7 @@ RefCountPtr<Epetra_Vector> ADAPTER::CouplingMortar::MasterToSlave(RefCountPtr<
   if (M_->Multiply(false, *mv, tmp))
     dserror( "M*mv multiplication failed" );
 
-    RefCountPtr<Epetra_Vector> sv = rcp( new Epetra_Vector( *slavedofmap_ ) );
+    RefCountPtr<Epetra_Vector> sv = rcp( new Epetra_Vector( *slavedofrowmap_ ) );
 
     if ( Dinv_->Multiply( false, tmp, *sv ) )
     dserror( "D^{-1}*v multiplication failed" );
@@ -333,7 +327,7 @@ RefCountPtr<Epetra_Vector> ADAPTER::CouplingMortar::SlaveToMaster(RefCountPtr<
   Epetra_Vector tmp = Epetra_Vector(M_->RangeMap());
   copy(sv->Values(), sv->Values() + sv->MyLength(), tmp.Values());
 
-  RefCountPtr<Epetra_Vector> mv = rcp(new Epetra_Vector(*masterdofmap_));
+  RefCountPtr<Epetra_Vector> mv = rcp(new Epetra_Vector(*masterdofrowmap_));
   if (M_->Multiply(true, tmp, *mv))
     dserror( "M^{T}*sv multiplication failed" );
 

@@ -118,15 +118,14 @@ private:
 
   //! we couple based on displacements
   bool displacementcoupling_;
-  Teuchos::RCP<Epetra_Vector> idispms_;		///<displacement of master and slave interface for mortar
-  vector<double> centerdisptotal_;	///<sum over all center displacements			
-  Teuchos::RCP<Epetra_Vector> islave_;	///<displacement of slave side of the interface
-  RCP<Epetra_Vector> FTStemp_;	///<slave displacement on master side at every time step begin
+  Teuchos::RCP<Epetra_Vector> idispms_;		    ///<displacement of master and slave interface for mortar
+  vector<double> centerdisptotal_;	          ///<sum over all center displacements			
+  Teuchos::RCP<Epetra_Vector> islave_;	      ///<displacement of slave side of the interface
+  RCP<Epetra_Vector> FTStemp_;	              ///<slave displacement on master side at every time step begin
   
-  //copies of important things
-  map<int, DRT::Node*> imasternodes_;	///<masternodes (=structure) in the interface
-  map<int, RCP<DRT::Element> > imastereles_;	///<masterlelements in the interface
-  map<int, DRT::Node*> islavenodes_;	///<slavenodes (=fluid) in the interface
+  map<int, DRT::Node*> imastergnodes_;	      ///< masternodes in the interface including ghosts
+  map<int, RCP<DRT::Element> > imastereles_;	///< masterlelements in the interface
+  map<int, DRT::Node*> islavenodes_;	        ///< slavenodes (= fluid) in the interface
   
 };
 

@@ -44,7 +44,7 @@ namespace ADAPTER
     \note The force coupling in SlaveToMaster() expects interface loads on the
     fluid side and returns consistent interface forces on the structural side.
 
-    \author tk (Georg Hammerl)
+    \author tk
     \date 06/09
    */
   class CouplingMortar
@@ -87,13 +87,13 @@ namespace ADAPTER
     );
 
     /// the interface dof map of the master side
-    RefCountPtr<Epetra_Map> MasterDofMap() const { return masterdofmap_; }
+    RefCountPtr<Epetra_Map> MasterDofRowMap() const { return masterdofrowmap_; }
 
     /// the interface dof map of the slave side
-    RefCountPtr<Epetra_Map> SlaveDofMap()  const { return slavedofmap_; }
+    RefCountPtr<Epetra_Map> SlaveDofRowMap()  const { return slavedofrowmap_; }
     
     /// the interface dof map of the slave side
-    RefCountPtr<Epetra_Map> SlaveColMap()  const { return slavecolmap_; }
+    RefCountPtr<Epetra_Map> SlaveDofColMap()  const { return slavedofcolmap_; }
     
     RCP<MORTAR::MortarInterface> Interface() const { return interface_;}
 
@@ -101,10 +101,10 @@ namespace ADAPTER
 
   private:
 	
-    RCP<MORTAR::MortarInterface>  interface_;    ///< interface
-    RefCountPtr<Epetra_Map>       masterdofmap_; ///< map of master dofs
-    RefCountPtr<Epetra_Map>       slavedofmap_;  ///< map of slave dofs without pressure
-    RefCountPtr<Epetra_Map> slavecolmap_;  ///< map of slave dofs without pressure, ghosted nodes included
+    RCP<MORTAR::MortarInterface>  interface_;       ///< interface
+    RefCountPtr<Epetra_Map>       masterdofrowmap_; ///< map of master row dofs
+    RefCountPtr<Epetra_Map>       slavedofrowmap_;  ///< map of slave row dofs without pressure
+    RefCountPtr<Epetra_Map>       slavedofcolmap_;  ///< map of slave col dofs without pressure
 
     RefCountPtr<Epetra_CrsMatrix> D_;            ///< mortar matrix
     RefCountPtr<Epetra_CrsMatrix> Dinv_;         ///< inverse of mortar matrix #D_
