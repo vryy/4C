@@ -1654,7 +1654,7 @@ void LINALG::PrintVectorInMatlabFormat(std::string fname,
       int NumMyElements1 = V.Map().NumMyElements();
       int MaxElementSize1 = V.Map().MaxElementSize();
       int* MyGlobalElements1 = V.Map().MyGlobalElements();
-      int* FirstPointInElementList1;
+      int* FirstPointInElementList1(NULL);
       if (MaxElementSize1!=1) FirstPointInElementList1 = V.Map().FirstPointInElementList();
       double ** A_Pointers = V.Pointers();
 
