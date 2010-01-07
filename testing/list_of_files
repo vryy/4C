@@ -148,6 +148,9 @@ Input/fsi_ow3D_sd.dat                                   x        x        x     
 Input/fsi_ow3D_sd_is.dat                                x        x        x        x        -        -
 Input/fsi_ow3D_usfem.dat                                x        x        x        x        -        -
 Input/fsi_ow3D_mtr_drt.dat                              x        x        x        x        -        -
+Input/fsi_ring2D_sliding_up.dat                         x        x        x        x        -        -
+Input/fsi_ring2D_sliding_tot.dat                        x        x        x        x        -        -
+Input/fsi_oval3D_sliding_up.dat                         x        x        x        x        -        -
 Input/fsi_tank3D.dat                                    x        -        x        -        -        -
 Input/fsi_tank3D_par.dat                                -        -        -        -        -        -
 Input/fsi-pw-mfsi-be.dat                                x        x        x        -        x        x
