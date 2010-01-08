@@ -394,6 +394,78 @@ public:
   
   //@}
 
+  //! @name Linearization methods (for mortar contact only!)
+  
+  /*!
+  \brief Linearization of clip vertex coordinates (3D)
+
+  This method computes and returns full linearizations of all
+  clip polygon vertices. We distinguish three possible cases here,
+  namely the vertex being a slave node, a projected master node in
+  slave element parameter space or a line-clipping intersection in
+  slave element paramater space. NOT implemented for AuxPlane case!
+
+  */
+  virtual bool VertexLinearization(vector<vector<map<int,double> > >& linvertex,
+                                   map<int,double>& projpar, bool printderiv=false);
+
+  /*!
+  \brief Linearization of clip vertex coordinates (3D)
+
+  Sub-method of VertexLinearization for slave linearization.
+  ONLY necessary for for AuxPlane case!
+
+  */
+  virtual bool SlaveVertexLinearization(vector<map<int,double> >& currlin,
+                                        int sid);
+
+  /*!
+  \brief Linearization of clip vertex coordinates (3D)
+
+  Sub-method of VertexLinearization for master linearization.
+  Two versions for (a) slave parameter space (b) AuxPlane case.
+
+  */
+  virtual bool MasterVertexLinearization(Vertex& currv,
+                                         vector<map<int,double> >& currlin,
+                                         int mid, double alpha);
+  virtual bool MasterVertexLinearization(vector<map<int,double> >& currlin,
+                                         int mid);
+
+  /*!
+  \brief Linearization of clip vertex coordinates (3D)
+
+  Sub-method of VertexLinearization for lineclip linearization.
+  Two versions for (a) slave parameter space (b) AuxPlane case.
+  For the AuxPlane case version, we just combine the correct
+  slave and master vertex linearizations here, which were already
+  computed earlier in VertexLinearization3D!
+
+  */
+  virtual bool LineclipVertexLinearization(Vertex& currv,
+                                           vector<map<int,double> >& currlin,
+                                           Vertex* sv1, Vertex* sv2, Vertex* mv1, Vertex* mv2,
+                                           map<int,double>& projpar);
+  virtual bool LineclipVertexLinearization(Vertex& currv,
+                                           vector<map<int,double> >& currlin,
+                                           Vertex* sv1, Vertex* sv2, Vertex* mv1, Vertex* mv2,
+                                           vector<vector<map<int,double> > >& linsnodes,
+                                           vector<vector<map<int,double> > >& linmnodes);
+
+  /*!
+  \brief Linearization of clip vertex coordinates (3D)
+
+  This method computes and returns the full linearization of
+  the clip polygon center, which itself is obtained from the
+  clip polygon vertices by centroid formulas. NOT implemented
+  for AuxPlane case!
+
+  */
+  virtual bool CenterLinearization(const vector<vector<map<int,double> > >& linvertex,
+                                   vector<map<int,double> >& lincenter);
+  
+  //@}
+
 protected:
 
     // don't want = operator and cctor

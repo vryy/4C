@@ -235,8 +235,10 @@ OBJS_DRT_MORTAR_LIB = \
                 src/drt_mortar/mortar_element_shapefct.o \
                 src/drt_mortar/mortar_integrator.o \
                 src/drt_mortar/mortar_interface.o \
+                src/drt_mortar/mortar_manager_base.o \
                 src/drt_mortar/mortar_node.o \
-                src/drt_mortar/mortar_projector.o
+                src/drt_mortar/mortar_projector.o \
+                src/drt_mortar/mortar_strategy_base.o
 OBJS_DRT_MORTAR =  
 #----------------------------------------------------- drt version contact
 OBJS_DRT_CONTACT = \

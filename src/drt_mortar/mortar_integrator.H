@@ -217,7 +217,72 @@ public:
      RCP<Epetra_SerialDenseMatrix> dseg,
      RCP<Epetra_SerialDenseMatrix> mseg,
      RCP<Epetra_SerialDenseVector> gseg);
+
+  /*!
+  \brief Compute penalty scaling factor kappa on slave element
+
+  */
+  void IntegrateKappaPenalty(MORTAR::MortarElement& sele,
+                             double* sxia, double* sxib,
+                             RCP<Epetra_SerialDenseVector> gseg);
     
+  /*!
+  \brief Compute penalty scaling factor kappa on slave integration element
+  (special version for the 3D quadratic case)
+
+  */
+  void IntegrateKappaPenalty(MORTAR::MortarElement& sele,
+                             MORTAR::IntElement& sintele,
+                             double* sxia, double* sxib,
+                             RCP<Epetra_SerialDenseVector> gseg);
+  
+  //@}
+
+  //! @name 2D and 3D linearization methods (mortar contact only!)
+
+  /*!
+  \brief Compute directional derivative of segment end coordinates
+         Xi on a 1D slave / master overlap
+
+  */
+  void DerivXiAB2D(MORTAR::MortarElement& sele, double& sxia, double& sxib,
+                   MORTAR::MortarElement& mele, double& mxia, double& mxib,
+                   vector<map<int,double> >& derivxi,
+                   bool& startslave, bool& endslave);
+
+  /*!
+  \brief Compute directional derivative of master Gauss point
+         coordinates XiGP on a 1D slave / master overlap
+
+  */
+  void DerivXiGP2D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+                   double& sxigp, double& mxigp, const map<int,double>& derivsxi,
+                   map<int,double>& derivmxi);
+  
+  /*!
+  \brief Compute directional derivative of master Gauss point
+         coordinates XiGP on a 2D slave / master integration cell
+
+  */
+  void DerivXiGP3D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+                   double* sxigp, double* mxigp, const vector<map<int,double> >& derivsxi,
+                   vector<map<int,double> >& derivmxi, double& alpha);
+
+  /*!
+  \brief Compute directional derivative of slave / master Gauss point
+         coordinates XiGP on a 2D slave / master integration cell
+         (This is the AuxPlane version, thus master and slave are projected)
+
+  */
+  void DerivXiGP3DAuxPlane(MORTAR::MortarElement& ele, double* xigp, double* auxn,
+                   vector<map<int,double> >& derivxi, double& alpha,
+                   const vector<map<int,double> >& derivauxn,
+                   const vector<map<int,double> >& derivgp);
+  
+  //@}
+  
+  //! @name 2D and 3D assembly methods
+  
   /*!
   \brief Assemble D contribution of current overlap into slave nodes
 
@@ -243,6 +308,14 @@ public:
                     MORTAR::MortarElement& sele,
                     MORTAR::MortarElement& mele,
                     Epetra_SerialDenseMatrix& Mmod_seg);
+
+  /*!
+  \brief Assemble g~ contribution of current overlap into slave nodes
+
+  */
+  bool AssembleG(const Epetra_Comm& comm,
+                 MORTAR::MortarElement& sele,
+                 Epetra_SerialDenseVector& g_seg);
 
   //@}
 

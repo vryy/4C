@@ -569,6 +569,9 @@ bool MORTAR::Coupling2d::IntegrateOverlap(vector<double>& xiproj)
   integrator.AssembleD(Comm(),sele_,*dseg);
 #endif // #ifdef MORTARONELOOP
   integrator.AssembleM(Comm(),sele_,mele_,*mseg);
+#ifdef MORTARCONTACT
+  integrator.AssembleG(Comm(),sele_,*gseg);
+#endif
 
   /*----------------------------------------------------------------------
   // check for the modification of the M matrix for curved interfaces
