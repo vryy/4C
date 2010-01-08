@@ -135,14 +135,15 @@ double MAT::FerEchPV::ComputeShc(const double provar) const
 /*----------------------------------------------------------------------*/
 double MAT::FerEchPV::ComputeViscosity(const double temp) const
 {
-  // Sutherland law
-  //const double visc = pow((temp/RefTemp()),1.5)*((RefTemp()+SuthTemp())/(temp+SuthTemp()))*RefVisc();
-
-  // modified version by Poinsot and Veynante (1993)
+  // modified version by Poinsot and Veynante (2005): constant viscosity
   double visc = RefVisc();
 
-  // original version by Ferziger and Echekki (1993)
-  if (Mod() < (1.0-EPS15)) visc *= temp/RefTemp();
+  // original version by Ferziger and Echekki (1993): linear variation
+  if (Mod() < EPS15)
+    visc *= temp/RefTemp();
+  // modified version by Hartmann et al. (2010): Sutherland law
+  else if (Mod() > (1.0+EPS15))
+    visc *= pow((temp/RefTemp()),1.5)*((RefTemp()+SuthTemp())/(temp+SuthTemp()));
 
   return visc;
 }
@@ -151,14 +152,15 @@ double MAT::FerEchPV::ComputeViscosity(const double temp) const
 /*----------------------------------------------------------------------*/
 double MAT::FerEchPV::ComputeDiffusivity(const double temp) const
 {
-  // Sutherland law
-  //const double diffus = pow((temp/RefTemp()),1.5)*((RefTemp()+SuthTemp())/(temp+SuthTemp()))*RefVisc()/PraNum();
-
-  // modified version by Poinsot and Veynante (1993)
+  // modified version by Poinsot and Veynante (2005): constant diffusivity
   double diffus = RefVisc()/PraNum();
 
-  // original version by Ferziger and Echekki (1993)
-  if (Mod() < (1.0-EPS15)) diffus *= temp/RefTemp();
+  // original version by Ferziger and Echekki (1993): linear variation
+  if (Mod() < EPS15)
+    diffus *= temp/RefTemp();
+  // modified version by Hartmann et al. (2010): Sutherland law
+  else if (Mod() > (1.0+EPS15))
+    diffus *= pow((temp/RefTemp()),1.5)*((RefTemp()+SuthTemp())/(temp+SuthTemp()));
 
   return diffus;
 }
@@ -173,10 +175,14 @@ double MAT::FerEchPV::ComputeReactionCoeff(const double provar) const
   if (provar > PvCrit())
   {
     // original version by Ferziger and Echekki (1993)
-    reacoeff = ReacRateCon();
-
+    if (Mod() < EPS15)
+      reacoeff = ReacRateCon();
     // modified version by Poinsot and Veynante (1993)
-    if (Mod() > EPS15) reacoeff *= UnbDens()/(UnbDens() + provar * (BurDens() - UnbDens()));
+    else if (Mod() > EPS15 and Mod() < (2.0-EPS15))
+      reacoeff *= UnbDens()/(UnbDens()+provar*(BurDens()-UnbDens()));
+    else
+      // modified version by Hartmann et al. (2010)
+      reacoeff *= UnbDens()*UnbDens()/(BurDens()+provar*(UnbDens()-UnbDens()));
   }
 
   return reacoeff;
