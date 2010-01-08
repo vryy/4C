@@ -304,8 +304,10 @@ RCP<Epetra_CrsMatrix> LINALG::Multiply(const Epetra_CrsMatrix& A, bool transA,
   if (!A.Filled()) dserror("A has to be FillComplete");
   if (!B.Filled()) dserror("B has to be FillComplete");
 
-  // do a very coarse guess of nonzeros per row
-  int guessnpr = A.MaxNumEntries()*B.MaxNumEntries();
+  // do a very coarse guess of nonzeros per row (horrible memory consumption!)
+     // int guessnpr = A.MaxNumEntries()*B.MaxNumEntries();
+  // a first guess for the bandwidth of C leading to much less memory allocation:
+  const int guessnpr = max(A.MaxNumEntries(),B.MaxNumEntries());
 
   // create resultmatrix with correct rowmap
   Epetra_CrsMatrix* C = NULL;
@@ -323,7 +325,7 @@ RCP<Epetra_CrsMatrix> LINALG::Multiply(const Epetra_CrsMatrix& A, bool transA,
 
 
 /*----------------------------------------------------------------------*
- | Multiply matrices A*B                                     mwgee 02/08|
+ | Multiply matrices A*B*C                                   mwgee 02/08|
  *----------------------------------------------------------------------*/
 RCP<Epetra_CrsMatrix> LINALG::Multiply(const Epetra_CrsMatrix& A, bool transA,
                                        const Epetra_CrsMatrix& B, bool transB,

@@ -1351,19 +1351,29 @@ RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const Epetra_CrsMatrix& A,
   // we can now determine a matching column map for the result
   Epetra_Map gcmap(-1,N_local+N_rcvd,&cmap[0],0,A.Comm());
 
-  // Allocate our result matrix and fill it
-  // this is a very generous guess:
-  int guessnpr = A.MaxNumEntries()*B.MaxNumEntries();
-  RCP<Epetra_CrsMatrix> result
-    = rcp(new Epetra_CrsMatrix(Copy,A.RangeMap(),gcmap,guessnpr,false));
-
   int allocated=0;
   int rowlength;
   double* val=NULL;
   int* bindx=NULL;
   const int myrowlength = A.RowMap().NumMyElements();
   const Epetra_Map& rowmap = A.RowMap();
-  vector<int> gcid(guessnpr);
+
+  // determine the maximum bandwith for the result matrix.
+  // replaces the old, very(!) memory-consuming guess:
+  // int guessnpr = A.MaxNumEntries()*B.MaxNumEntries();
+  int educatedguess = 0;
+  for (int i=0; i<myrowlength; ++i)
+  {
+    // get local row
+    ML_get_matrix_row(ml_AtimesB,1,&i,&allocated,&bindx,&val,&rowlength,0);
+    if (rowlength>educatedguess) educatedguess = rowlength;
+  }
+
+  // allocate our result matrix and fill it
+  RCP<Epetra_CrsMatrix> result
+    = rcp(new Epetra_CrsMatrix(Copy,A.RangeMap(),gcmap,educatedguess,false));
+
+  vector<int> gcid(educatedguess);
   for (int i=0; i<myrowlength; ++i)
   {
     const int grid = rowmap.GID(i);

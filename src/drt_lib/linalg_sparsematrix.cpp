@@ -435,14 +435,14 @@ void LINALG::SparseMatrix::FEAssemble(
 #endif
 
   Teuchos::RCP<Epetra_FECrsMatrix> fe_mat = Teuchos::rcp_dynamic_cast<Epetra_FECrsMatrix>(sysmat_, true);
-  
+
   const int myrank = fe_mat->Comm().MyPID();
 
   if (Filled())
   {
-    // no XFEM buisness see Assemble 
+    // no XFEM business see Assemble
     // no column check because FE_Assemble can handle columns which are not on this proc
-    
+
     // loop rows of local matrix
     std::vector<double> values(lcoldim);
     for (int lrow=0; lrow<lrowdim; ++lrow)
@@ -469,7 +469,7 @@ void LINALG::SparseMatrix::FEAssemble(
     {
       // check ownership of row
       if (lmrowowner[lrow] != myrank) continue;
-            
+
       const int rgid = lmrow[lrow];
 
       for (int lcol=0; lcol<lcoldim; ++lcol)
@@ -1623,8 +1623,11 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::Multiply(const LINALG::SparseMatrix& 
   if (!A.Filled()) dserror("A has to be FillComplete");
   if (!B.Filled()) dserror("B has to be FillComplete");
 
-  // create resultmatrix with correct rowmap
-  const int npr = A.EpetraMatrix()->MaxNumEntries()*B.EpetraMatrix()->MaxNumEntries();
+  //const int npr = A.EpetraMatrix()->MaxNumEntries()*B.EpetraMatrix()->MaxNumEntries();
+  // a first guess for the bandwidth of C leading to much less memory consumption:
+  const int npr = max(A.MaxNumEntries(),B.MaxNumEntries());
+
+  // now create resultmatrix with correct rowmap
   Teuchos::RCP<LINALG::SparseMatrix> C;
   if (!transA)
     C = Teuchos::rcp(new SparseMatrix(A.RangeMap(),npr,A.explicitdirichlet_,A.savegraph_));
@@ -1652,8 +1655,11 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::Multiply(const LINALG::SparseMatrix& 
   if (!A.Filled()) dserror("A has to be FillComplete");
   if (!B.Filled()) dserror("B has to be FillComplete");
 
-  // create resultmatrix with correct rowmap
-  const int npr = A.EpetraMatrix()->MaxNumEntries()*B.EpetraMatrix()->MaxNumEntries();
+  //const int npr = A.EpetraMatrix()->MaxNumEntries()*B.EpetraMatrix()->MaxNumEntries();
+  // a first guess for the bandwidth of C leading to much less memory consumption:
+  const int npr = max(A.MaxNumEntries(),B.MaxNumEntries());
+
+  // now create resultmatrix C with correct rowmap
   Teuchos::RCP<LINALG::SparseMatrix> C;
   if (!transA)
     C = Teuchos::rcp(new SparseMatrix(A.RangeMap(),npr,explicitdirichlet,savegraph));

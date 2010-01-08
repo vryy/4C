@@ -253,7 +253,6 @@ void LINALG::SIMPLER_Operator::Setup(RCP<Epetra_Operator> A,
   {
     Epetra_Time ltime(A_->Comm());
     S_ = LINALG::Multiply(*diagAinv_,false,(*A_)(0,1),false,true);
-    //cout << *S_; exit(0);
     if (!myrank && SIMPLER_TIMING) printf("*** S = diagAinv * A(0,1) %10.3E\n",ltime.ElapsedTime());
     ltime.ResetStartTime();
     S_ = LINALG::MLMultiply((*A_)(1,0),*S_,false);
