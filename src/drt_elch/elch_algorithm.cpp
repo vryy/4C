@@ -185,6 +185,17 @@ void ELCH::Algorithm::PrepareTimeStepConvection()
   switch((FluidField().TimIntScheme()))
   {
   case timeint_stationary:
+  {
+    FluidField().SetIterLomaFields(
+        ScaTraField().DensElchNp(),
+        ScaTraField().DensElchNp(), // we have to provide something here
+        Teuchos::null,
+        1.0,
+        1.0,
+        0.0,
+        numscal);
+    break;
+  }
   case timeint_one_step_theta:
   case timeint_bdf2:
   {
