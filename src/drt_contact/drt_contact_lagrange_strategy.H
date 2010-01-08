@@ -76,6 +76,8 @@ class LagrangeStrategy : public AbstractStrategy
     */
     virtual ~LagrangeStrategy() {};
 
+    //! @name Evaluation methods
+    
     /*!
     \brief Initialize general contact variables for next Newton step
      
@@ -145,6 +147,27 @@ class LagrangeStrategy : public AbstractStrategy
 
     */
     void UpdateActiveSetSemiSmooth();
+    
+    //@}
+    
+    //! @name Empty methods
+      
+    /*!
+    \brief Empty methods only relevant for other strategies
+    
+    For a Lagrange strategy these are functions without functionality.
+    Call them whenever you like.
+    
+    */
+    double ConstraintNorm() {return 0.0;}
+    double ConstraintNormTan() {return 0.0;}
+    void InitializeUzawa(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff) {}
+    void ResetPenalty() {}
+    void SaveReferenceState(const RCP<Epetra_Vector> dis) {}
+    void UpdateAugmentedLagrange() {}
+    void UpdateConstraintNorm(int uzawaiter = 0) {}
+    
+    //@}
 
   protected:
 

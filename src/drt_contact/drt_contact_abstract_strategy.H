@@ -351,35 +351,6 @@ class AbstractStrategy
     */
     virtual void EvaluateFriction(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff) = 0;
 
-    /*!
-    \brief Recovery method
-
-    Recovery is needed for the specialization of lagrangian multiplier approach.
-    See LagrangeStrategy::Recover for details.
-
-    \param disi (in): displacement increment of current Newton step solution
-
-    */
-    virtual void Recover(RCP<Epetra_Vector> disi) = 0;
-
-    /*!
-    \brief Update active set and check for convergence
-
-    ActiveSet technology is needed for the specialization of lagrangian multiplier approach.
-    See LAgrangeStrategy::UpdateActiveSet for details.
-
-    */
-    virtual void UpdateActiveSet() = 0;
-
-    /*!
-    \brief Update active set and check for convergence
-
-    ActiveSet technology is needed for the specialization of lagrangian multiplier approach.
-    See LAgrangeStrategy::UpdateActiveSet for details.
-
-    */
-    virtual void UpdateActiveSetSemiSmooth() = 0;
-
     //@}
 
     //! @name Quantity control methods
@@ -481,6 +452,37 @@ class AbstractStrategy
 
     //@}
 
+    //! @name Lagrange- or Penalty-specific functions (purely virtual here)
+    
+    /*!
+    \brief Lagrange-specific functions
+
+    Recovery, UpdateActiveSet and UpdateActiveSetSemiSmooth are needed for the specialization
+    of lagrangian multiplier approach. See CONTACT::LagrangeStrategy for details.
+
+    */
+    virtual void Recover(RCP<Epetra_Vector> disi) = 0;
+    virtual void UpdateActiveSet() = 0;
+    virtual void UpdateActiveSetSemiSmooth() = 0;
+    
+    /*!
+    \brief Penalty-specific functions
+
+    ConstraintNorm, ConstraintNormTan, InitializeUzawa, ResetPenalty, SaveReferenceState,
+    UpdateAugmentedLagrange and UpdateConstraintNorm are needed for the specialization
+    of penalty approach. See CONTACT::PenaltyStrategy for details.
+
+    */
+    virtual double ConstraintNorm() = 0;
+    virtual double ConstraintNormTan() = 0;
+    virtual void InitializeUzawa(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff) = 0;
+    virtual void ResetPenalty() = 0;
+    virtual void SaveReferenceState(const RCP<Epetra_Vector> dis) = 0;
+    virtual void UpdateAugmentedLagrange() = 0;
+    virtual void UpdateConstraintNorm(int uzawaiter = 0) = 0;
+        
+    //@}
+    
     //! @name Debugging methods
 
     /*!

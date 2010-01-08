@@ -86,25 +86,25 @@ class PenaltyStrategy : public AbstractStrategy
   \brief Return L2-norm of active constraints
   
   */
-  double& ConstraintNorm() { return constrnorm_;}
+  double ConstraintNorm() { return constrnorm_;}
 
   /*!
   \brief Return L2-norm of tangential constraints
   
   */
-  double& ConstraintNormTan() { return constrnormtan_;}
+  double ConstraintNormTan() { return constrnormtan_;}
   
   /*!
   \brief Return initial penalty parameter for normal direction
   
   */
-  double& InitialPenalty() { return initialpenalty_;}
+  double InitialPenalty() { return initialpenalty_;}
 
   /*!
   \brief Return initial penalty parameter for tangential direction
   
   */
-  double& InitialPenaltyTan() { return initialpenaltytan_;}
+  double InitialPenaltyTan() { return initialpenaltytan_;}
   
   //@}
 
@@ -148,30 +148,6 @@ class PenaltyStrategy : public AbstractStrategy
   */
   void EvaluateFriction(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff);
 
-  /*!
-  \brief Recovery method
-   
-  For a penalty strategy this is a function without functionality. Call it whenever you like.
-  
-  */
-  void Recover(RCP<Epetra_Vector> disi) {}
-
-  /*!
-  \brief Update active set and check for convergence
-   
-  For a penalty strategy this is a function without functionality. Call it whenever you like.
-  
-  */
-  void UpdateActiveSet() {}
-
-  /*!
-  \brief Update active set and check for convergence
-   
-  For a penalty strategy this is a function without functionality. Call it whenever you like.
-  
-  */
-  void UpdateActiveSetSemiSmooth() {}
-  
   /*!
   \brief Reset penalty parameter to intial value
   
@@ -221,6 +197,21 @@ class PenaltyStrategy : public AbstractStrategy
   
   */
   void UpdateAugmentedLagrange();
+  
+  //@}
+
+  //! @name Empty methods
+  
+  /*!
+  \brief Empty methods only relevant for other strategies
+  
+  For a penalty strategy these are functions without functionality.
+  Call them whenever you like.
+  
+  */
+  void Recover(RCP<Epetra_Vector> disi) {}
+  void UpdateActiveSet() {}
+  void UpdateActiveSetSemiSmooth() {}
   
   //@}
   

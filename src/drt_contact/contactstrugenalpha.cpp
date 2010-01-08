@@ -2342,8 +2342,7 @@ void CONTACT::ContactStruGenAlpha::Integrate()
       cout << "===== Penalty strategy =========================================" << endl;
 
     // explicitely store gap-scaling
-    PenaltyStrategy& strategy = dynamic_cast<PenaltyStrategy&> (contactmanager_->GetStrategy());
-    strategy.SaveReferenceState(disn_);
+    contactmanager_->GetStrategy().SaveReferenceState(disn_);
 
     // LOOP1: time steps
     for (int i=step; i<nstep; ++i)
@@ -2359,7 +2358,7 @@ void CONTACT::ContactStruGenAlpha::Integrate()
       else if (equil=="line search newton") FullNewtonLineSearch();
       else if (equil=="ptc") PTC();
 
-      strategy.UpdateConstraintNorm();
+      contactmanager_->GetStrategy().UpdateConstraintNorm();
       UpdateandOutput();
       double time = params_.get<double>("total time", 0.0);
       if (time>=maxtime) break;
@@ -2375,14 +2374,13 @@ void CONTACT::ContactStruGenAlpha::Integrate()
       cout << "===== Augmented Lagrange strategy ================================" << endl;
 
     // explicitely store gap-scaling
-    PenaltyStrategy& strategy = dynamic_cast<PenaltyStrategy&> (contactmanager_->GetStrategy());
-    strategy.SaveReferenceState(disn_);
+    contactmanager_->GetStrategy().SaveReferenceState(disn_);
 
     // LOOP1: time steps
     for (int i=step; i<nstep; ++i)
     {
       // reset penalty parameter
-      strategy.ResetPenalty();
+      contactmanager_->GetStrategy().ResetPenalty();
 
       // predictor step
        if (predictor==1)
@@ -2407,7 +2405,7 @@ void CONTACT::ContactStruGenAlpha::Integrate()
           cout << "Starting Uzawa step No. " << uzawaiter << endl;
 
         // for second, third,... Uzawa step: out-of-balance force
-        if (uzawaiter>1) strategy.InitializeUzawa(stiff_,fresm_);
+        if (uzawaiter>1) contactmanager_->GetStrategy().InitializeUzawa(stiff_,fresm_);
         
         // LOOP3: nonlinear iteration (Newton)
         if (equil=="full newton") FullNewton();
@@ -2415,13 +2413,14 @@ void CONTACT::ContactStruGenAlpha::Integrate()
         else if (equil=="ptc") PTC();
 
         // update constraint norm and penalty parameter
-        strategy.UpdateConstraintNorm(uzawaiter);
+        contactmanager_->GetStrategy().UpdateConstraintNorm(uzawaiter);
 
         // store Lagrange multipliers for next Uzawa step
-        strategy.UpdateAugmentedLagrange();
-        strategy.StoreNodalQuantities(AbstractStrategy::lmuzawa);
+        contactmanager_->GetStrategy().UpdateAugmentedLagrange();
+        contactmanager_->GetStrategy().StoreNodalQuantities(AbstractStrategy::lmuzawa);
 
-      } while (strategy.ConstraintNorm() >= eps or strategy.ConstraintNormTan() >= eps );
+      } while (contactmanager_->GetStrategy().ConstraintNorm() >= eps ||
+               contactmanager_->GetStrategy().ConstraintNormTan() >= eps );
 
       UpdateandOutput();
       double time = params_.get<double>("total time", 0.0);

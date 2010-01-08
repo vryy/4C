@@ -622,15 +622,15 @@ void CONTACT::PenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
   // gactivenodes_ is undefined
   if (gactivenodes_==Teuchos::null)
   {
-    ConstraintNorm()=0;
-    ConstraintNormTan()=0;
+    constrnorm_=0;
+    constrnormtan_=0;
   }
 
   // gactivenodes_ has no elements
   else if (gactivenodes_->NumGlobalElements()==0)
   {
-    ConstraintNorm()=0;
-    ConstraintNormTan()=0;
+    constrnorm_=0;
+    constrnormtan_=0;
   }
 
   // gactivenodes_ has at least one element
@@ -702,8 +702,8 @@ void CONTACT::PenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
 
     //********************************************************************
     // update constraint norm
-    ConstraintNorm() = cnorm;
-    ConstraintNormTan() = cnormtan;
+    constrnorm_ = cnorm;
+    constrnormtan_ = cnormtan;
   }
 
   // output to screen
