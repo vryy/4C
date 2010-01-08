@@ -55,6 +55,10 @@ vector<double> cross_product3d(vector<double>,vector<double>);
 void normalize3d(vector<double>&);
 //! creates local coordinate systems for each element and returns resulting map
 map<int,map<int,vector<vector<double> > > > element_cosys(EXODUS::Centerline&,const EXODUS::Mesh&, const vector<int>&);
+/// creates local coordinate systems for each element and returns resulting map 
+///different calculation method for element normals applied in this function
+map<int,map<int,vector<vector<double> > > > element_cosys(EXODUS::Centerline&,const EXODUS::Mesh&, const vector<int>&, set<int>& );
+
 /*! creates degenerated local coordinate system in case of given centerpoint for each element and returns resulting map.
  * CoSys contains only three copies of the same vector!  */
 map<int,map<int,vector<vector<double> > > > element_degcosys
