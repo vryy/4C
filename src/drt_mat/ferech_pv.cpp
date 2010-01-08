@@ -135,7 +135,14 @@ double MAT::FerEchPV::ComputeShc(const double provar) const
 /*----------------------------------------------------------------------*/
 double MAT::FerEchPV::ComputeViscosity(const double temp) const
 {
-  const double visc = pow((temp/RefTemp()),1.5)*((RefTemp()+SuthTemp())/(temp+SuthTemp()))*RefVisc();
+  // Sutherland law
+  //const double visc = pow((temp/RefTemp()),1.5)*((RefTemp()+SuthTemp())/(temp+SuthTemp()))*RefVisc();
+
+  // modified version by Poinsot and Veynante (1993)
+  double visc = RefVisc();
+
+  // original version by Ferziger and Echekki (1993)
+  if (Mod() < (1.0-EPS15)) visc *= temp/RefTemp();
 
   return visc;
 }
