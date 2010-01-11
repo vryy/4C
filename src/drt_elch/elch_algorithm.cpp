@@ -524,7 +524,7 @@ bool ELCH::Algorithm::ConvergenceCheck( int itnum,
         if (Comm().MyPID() == 0)
         {
         printf("| Outer Iteration loop is not converged after iteration %3d/%3d             |\n", itnum,itmax);
-        printf("+---------------------------------------------------------------------- ----+");
+        printf("+---------------------------------------------------------------------------+");
         printf("\n");
         printf("\n");
         }
