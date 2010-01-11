@@ -208,6 +208,12 @@ public:
     undefined,///< no clear direction identified
     none      ///< no rearrangement
   };
+  
+  enum ANSType
+  {
+    anssosh8,
+    ansnone
+  };
 
 private:
 
@@ -220,6 +226,8 @@ protected:
   static const int num_ans = 3;             ///< number of modified ANS strains (E_rt,E_st,E_tt), here 3
   //! shell-thickness direction
   ThicknessDirection                             thickdir_;
+  
+  ANSType                                        anstype_;
 
   //! in case of changed "thin" direction this is true
   bool nodes_rearranged_;

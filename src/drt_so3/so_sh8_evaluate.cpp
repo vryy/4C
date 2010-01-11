@@ -75,10 +75,10 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
   else if (action=="calc_struct_update_imrlike")  act = So_hex8::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep")     act = So_hex8::calc_struct_reset_istep;
   else if (action=="postprocess_stress")          act = So_hex8::postprocess_stress;
-  else if (action=="eas_init_multi")                              act = So_hex8::eas_init_multi;
-  else if (action=="eas_set_multi")                               act = So_hex8::eas_set_multi;
-  else if (action=="calc_homog_dens")                             act = So_hex8::calc_homog_dens;
-  else if (action=="multi_readrestart")                           act = So_hex8::multi_readrestart;
+  else if (action=="eas_init_multi")              act = So_hex8::eas_init_multi;
+  else if (action=="eas_set_multi")               act = So_hex8::eas_set_multi;
+  else if (action=="calc_homog_dens")             act = So_hex8::calc_homog_dens;
+  else if (action=="multi_readrestart")           act = So_hex8::multi_readrestart;
   else dserror("Unknown type of action for So_hex8");
 
   // what should the element do
@@ -584,24 +584,46 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
         bop_loc(0,inode*3+dim) = derivs[gp](0,inode) * jac_cur(0,dim);
         // B_loc_ss = N_s.X_s
         bop_loc(1,inode*3+dim) = derivs[gp](1,inode) * jac_cur(1,dim);
-        // B_loc_tt = interpolation along (r x s) of ANS B_loc_tt
-        //          = (1-r)(1-s)/4 * B_ans(SP E) + (1+r)(1-s)/4 * B_ans(SP F)
-        //           +(1+r)(1+s)/4 * B_ans(SP G) + (1-r)(1+s)/4 * B_ans(SP H)
-        bop_loc(2,inode*3+dim) = 0.25*(1-r[gp])*(1-s[gp]) * B_ans_loc(0+4*num_ans,inode*3+dim)  // E
-                                +0.25*(1+r[gp])*(1-s[gp]) * B_ans_loc(0+5*num_ans,inode*3+dim)  // F
-                                +0.25*(1+r[gp])*(1+s[gp]) * B_ans_loc(0+6*num_ans,inode*3+dim)  // G
-                                +0.25*(1-r[gp])*(1+s[gp]) * B_ans_loc(0+7*num_ans,inode*3+dim);  // H
         // B_loc_rs = N_r.X_s + N_s.X_r
         bop_loc(3,inode*3+dim) = derivs[gp](0,inode) * jac_cur(1,dim)
                                 +derivs[gp](1,inode) * jac_cur(0,dim);
-        // B_loc_st = interpolation along r of ANS B_loc_st
-        //          = (1+r)/2 * B_ans(SP B) + (1-r)/2 * B_ans(SP D)
-        bop_loc(4,inode*3+dim) = 0.5*(1.0+r[gp]) * B_ans_loc(1+1*num_ans,inode*3+dim)  // B
-                                +0.5*(1.0-r[gp]) * B_ans_loc(1+3*num_ans,inode*3+dim);  // D
-        // B_loc_rt = interpolation along s of ANS B_loc_rt
-        //          = (1-s)/2 * B_ans(SP A) + (1+s)/2 * B_ans(SP C)
-        bop_loc(5,inode*3+dim) = 0.5*(1.0-s[gp]) * B_ans_loc(2+0*num_ans,inode*3+dim)  // A
-                                +0.5*(1.0+s[gp]) * B_ans_loc(2+2*num_ans,inode*3+dim);  // C
+
+        // do the ANS related stuff
+        if (anstype_==anssosh8)
+        {
+          // B_loc_tt = interpolation along (r x s) of ANS B_loc_tt
+          //          = (1-r)(1-s)/4 * B_ans(SP E) + (1+r)(1-s)/4 * B_ans(SP F)
+          //           +(1+r)(1+s)/4 * B_ans(SP G) + (1-r)(1+s)/4 * B_ans(SP H)
+          bop_loc(2,inode*3+dim) = 0.25*(1-r[gp])*(1-s[gp]) * B_ans_loc(0+4*num_ans,inode*3+dim)  // E
+                                  +0.25*(1+r[gp])*(1-s[gp]) * B_ans_loc(0+5*num_ans,inode*3+dim)  // F
+                                  +0.25*(1+r[gp])*(1+s[gp]) * B_ans_loc(0+6*num_ans,inode*3+dim)  // G
+                                  +0.25*(1-r[gp])*(1+s[gp]) * B_ans_loc(0+7*num_ans,inode*3+dim);  // H
+          // B_loc_st = interpolation along r of ANS B_loc_st
+          //          = (1+r)/2 * B_ans(SP B) + (1-r)/2 * B_ans(SP D)
+          bop_loc(4,inode*3+dim) = 0.5*(1.0+r[gp]) * B_ans_loc(1+1*num_ans,inode*3+dim)  // B
+                                  +0.5*(1.0-r[gp]) * B_ans_loc(1+3*num_ans,inode*3+dim);  // D
+
+          // B_loc_rt = interpolation along s of ANS B_loc_rt
+          //          = (1-s)/2 * B_ans(SP A) + (1+s)/2 * B_ans(SP C)
+          bop_loc(5,inode*3+dim) = 0.5*(1.0-s[gp]) * B_ans_loc(2+0*num_ans,inode*3+dim)  // A
+                                  +0.5*(1.0+s[gp]) * B_ans_loc(2+2*num_ans,inode*3+dim);  // C
+ 
+        }
+        else if (anstype_==ansnone)
+        {
+          // B_loc_tt = N_t.X_t
+          bop_loc(2,inode*3+dim) = derivs[gp](2,inode) * jac_cur(2,dim);
+          // B_loc_st = N_t.X_s + N_s.X_t
+          bop_loc(4,inode*3+dim) = derivs[gp](2,inode) * jac_cur(1,dim)
+                                  +derivs[gp](1,inode) * jac_cur(2,dim);
+
+          // B_loc_rt = N_r.X_t + N_t.X_r
+          bop_loc(5,inode*3+dim) = derivs[gp](0,inode) * jac_cur(2,dim)
+                                  +derivs[gp](2,inode) * jac_cur(0,dim);
+
+        }
+        else
+          dserror("Cannot build bop_loc based on your ANS-choice!");
       }
     }
 
@@ -613,7 +635,6 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
     bop.Multiply(TinvT,bop_loc);
 
     // local GL strain vector lstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-    // but with modified ANS strains E33, E23 and E13
     LINALG::Matrix<NUMSTR_SOH8,1> lstrain;
     // evaluate glstrains in local(parameter) coords
     // Err = 0.5 * (dx/dr * dx/dr^T - dX/dr * dX/dr^T)
@@ -629,51 +650,74 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
        +(jac_cur(0,0)*jac_cur(1,0) + jac_cur(0,1)*jac_cur(1,1) + jac_cur(0,2)*jac_cur(1,2))
        -(jac(0,0)*jac(1,0)         + jac(0,1)*jac(1,1)         + jac(0,2)*jac(1,2)));
 
-    // ANS modification of strains ************************************** ANS
-    double dxdt_A = 0.0; double dXdt_A = 0.0;
-    double dydt_B = 0.0; double dYdt_B = 0.0;
-    double dxdt_C = 0.0; double dXdt_C = 0.0;
-    double dydt_D = 0.0; double dYdt_D = 0.0;
-
-    double dzdt_E = 0.0; double dZdt_E = 0.0;
-    double dzdt_F = 0.0; double dZdt_F = 0.0;
-    double dzdt_G = 0.0; double dZdt_G = 0.0;
-    double dzdt_H = 0.0; double dZdt_H = 0.0;
-
-    // vector product of rows of jacobians at corresponding sampling point    cout << jac_cur_sps;
-    for (int dim = 0; dim < NUMDIM_SOH8; ++dim) {
-      dxdt_A += jac_cur_sps[0](0,dim) * jac_cur_sps[0](2,dim);  // g_13^A
-      dXdt_A += jac_sps[0](0,dim)     * jac_sps[0](2,dim);      // G_13^A
-      dydt_B += jac_cur_sps[1](1,dim) * jac_cur_sps[1](2,dim);  // g_23^B
-      dYdt_B += jac_sps[1](1,dim)     * jac_sps[1](2,dim);      // G_23^B
-      dxdt_C += jac_cur_sps[2](0,dim) * jac_cur_sps[2](2,dim);  // g_13^C
-      dXdt_C += jac_sps[2](0,dim)     * jac_sps[2](2,dim);      // G_13^C
-      dydt_D += jac_cur_sps[3](1,dim) * jac_cur_sps[3](2,dim);  // g_23^D
-      dYdt_D += jac_sps[3](1,dim)     * jac_sps[3](2,dim);      // G_23^D
-
-      dzdt_E += jac_cur_sps[4](2,dim) * jac_cur_sps[4](2,dim);
-      dZdt_E += jac_sps[4](2,dim)     * jac_sps[4](2,dim);
-      dzdt_F += jac_cur_sps[5](2,dim) * jac_cur_sps[5](2,dim);
-      dZdt_F += jac_sps[5](2,dim)     * jac_sps[5](2,dim);
-      dzdt_G += jac_cur_sps[6](2,dim) * jac_cur_sps[6](2,dim);
-      dZdt_G += jac_sps[6](2,dim)     * jac_sps[6](2,dim);
-      dzdt_H += jac_cur_sps[7](2,dim) * jac_cur_sps[7](2,dim);
-      dZdt_H += jac_sps[7](2,dim)     * jac_sps[7](2,dim);
+    
+    // do the ANS related stuff if wanted!
+    if (anstype_==anssosh8)
+    {
+      // ANS modification of strains ************************************** ANS
+      double dxdt_A = 0.0; double dXdt_A = 0.0;
+      double dydt_B = 0.0; double dYdt_B = 0.0;
+      double dxdt_C = 0.0; double dXdt_C = 0.0;
+      double dydt_D = 0.0; double dYdt_D = 0.0;
+  
+      double dzdt_E = 0.0; double dZdt_E = 0.0;
+      double dzdt_F = 0.0; double dZdt_F = 0.0;
+      double dzdt_G = 0.0; double dZdt_G = 0.0;
+      double dzdt_H = 0.0; double dZdt_H = 0.0;
+  
+      // vector product of rows of jacobians at corresponding sampling point    cout << jac_cur_sps;
+      for (int dim = 0; dim < NUMDIM_SOH8; ++dim) {
+        dxdt_A += jac_cur_sps[0](0,dim) * jac_cur_sps[0](2,dim);  // g_13^A
+        dXdt_A += jac_sps[0](0,dim)     * jac_sps[0](2,dim);      // G_13^A
+        dydt_B += jac_cur_sps[1](1,dim) * jac_cur_sps[1](2,dim);  // g_23^B
+        dYdt_B += jac_sps[1](1,dim)     * jac_sps[1](2,dim);      // G_23^B
+        dxdt_C += jac_cur_sps[2](0,dim) * jac_cur_sps[2](2,dim);  // g_13^C
+        dXdt_C += jac_sps[2](0,dim)     * jac_sps[2](2,dim);      // G_13^C
+        dydt_D += jac_cur_sps[3](1,dim) * jac_cur_sps[3](2,dim);  // g_23^D
+        dYdt_D += jac_sps[3](1,dim)     * jac_sps[3](2,dim);      // G_23^D
+  
+        dzdt_E += jac_cur_sps[4](2,dim) * jac_cur_sps[4](2,dim);
+        dZdt_E += jac_sps[4](2,dim)     * jac_sps[4](2,dim);
+        dzdt_F += jac_cur_sps[5](2,dim) * jac_cur_sps[5](2,dim);
+        dZdt_F += jac_sps[5](2,dim)     * jac_sps[5](2,dim);
+        dzdt_G += jac_cur_sps[6](2,dim) * jac_cur_sps[6](2,dim);
+        dZdt_G += jac_sps[6](2,dim)     * jac_sps[6](2,dim);
+        dzdt_H += jac_cur_sps[7](2,dim) * jac_cur_sps[7](2,dim);
+        dZdt_H += jac_sps[7](2,dim)     * jac_sps[7](2,dim);
+      }
+      // E33: remedy of curvature thickness locking
+      // Ett = 0.5* ( (1-r)(1-s)/4 * Ett(SP E) + ... + (1-r)(1+s)/4 * Ett(SP H) )
+      lstrain(2) = 0.5 * (
+         0.25*(1-r[gp])*(1-s[gp]) * (dzdt_E - dZdt_E)
+        +0.25*(1+r[gp])*(1-s[gp]) * (dzdt_F - dZdt_F)
+        +0.25*(1+r[gp])*(1+s[gp]) * (dzdt_G - dZdt_G)
+        +0.25*(1-r[gp])*(1+s[gp]) * (dzdt_H - dZdt_H));
+      // E23: remedy of transverse shear locking
+      // Est = (1+r)/2 * Est(SP B) + (1-r)/2 * Est(SP D)
+      lstrain(4) = 0.5*(1+r[gp]) * (dydt_B - dYdt_B) + 0.5*(1-r[gp]) * (dydt_D - dYdt_D);
+      // E13: remedy of transverse shear locking
+      // Ert = (1-s)/2 * Ert(SP A) + (1+s)/2 * Ert(SP C)
+      lstrain(5) = 0.5*(1-s[gp]) * (dxdt_A - dXdt_A) + 0.5*(1+s[gp]) * (dxdt_C - dXdt_C);
+      // ANS modification of strains ************************************** ANS
     }
-    // E33: remedy of curvature thickness locking
-    // Ett = 0.5* ( (1-r)(1-s)/4 * Ett(SP E) + ... + (1-r)(1+s)/4 * Ett(SP H) )
-    lstrain(2) = 0.5 * (
-       0.25*(1-r[gp])*(1-s[gp]) * (dzdt_E - dZdt_E)
-      +0.25*(1+r[gp])*(1-s[gp]) * (dzdt_F - dZdt_F)
-      +0.25*(1+r[gp])*(1+s[gp]) * (dzdt_G - dZdt_G)
-      +0.25*(1-r[gp])*(1+s[gp]) * (dzdt_H - dZdt_H));
-    // E23: remedy of transverse shear locking
-    // Est = (1+r)/2 * Est(SP B) + (1-r)/2 * Est(SP D)
-    lstrain(4) = 0.5*(1+r[gp]) * (dydt_B - dYdt_B) + 0.5*(1-r[gp]) * (dydt_D - dYdt_D);
-    // E13: remedy of transverse shear locking
-    // Ert = (1-s)/2 * Ert(SP A) + (1+s)/2 * Ert(SP C)
-    lstrain(5) = 0.5*(1-s[gp]) * (dxdt_A - dXdt_A) + 0.5*(1+s[gp]) * (dxdt_C - dXdt_C);
-    // ANS modification of strains ************************************** ANS
+    else if (anstype_==ansnone)
+    {
+      // No ANS!
+      // Ett = 0.5 * (dz/dt * dz/dt^T - dZ/dt * dZ/dt^T)
+      lstrain(2)= 0.5 * (
+         +(jac_cur(2,0)*jac_cur(2,0) + jac_cur(2,1)*jac_cur(2,1) + jac_cur(2,2)*jac_cur(2,2))
+         -(jac(2,0)*jac(2,0)         + jac(2,1)*jac(2,1)         + jac(2,2)*jac(2,2)));
+      // Est = (dz/ds * dy/dt^T - dZ/ds * dY/dt^T)
+      lstrain(4)= (
+         +(jac_cur(2,0)*jac_cur(1,0) + jac_cur(2,1)*jac_cur(1,1) + jac_cur(2,2)*jac_cur(1,2))
+         -(jac(2,0)*jac(1,0)         + jac(2,1)*jac(1,1)         + jac(2,2)*jac(1,2)));
+      // Est = (dz/dr * dx/dt^T - dZ/dr * dX/dt^T)
+      lstrain(5)= (
+          +(jac_cur(2,0)*jac_cur(0,0) + jac_cur(2,1)*jac_cur(0,1) + jac_cur(2,2)*jac_cur(0,2))
+          -(jac(2,0)*jac(0,0)         + jac(2,1)*jac(0,1)         + jac(2,2)*jac(0,2)));
+    }
+    else
+      dserror("Cannot build local strains based on your ANS-choice!");
 
     // transformation of local glstrains 'back' to global(material) space
     LINALG::Matrix<NUMSTR_SOH8,1> glstrain(true);
@@ -777,21 +821,38 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
           G_ij(1) = derivs[gp](1, inod) * derivs[gp](1, jnod); // ss-dir
           G_ij(3) = derivs[gp](0, inod) * derivs[gp](1, jnod)
                   + derivs[gp](1, inod) * derivs[gp](0, jnod); // rs-dir
-          // ANS modification in tt-dir
-          G_ij(2) = 0.25*(1-r[gp])*(1-s[gp]) * (*deriv_sp)[4](2,inod) * (*deriv_sp)[4](2,jnod)
-                   +0.25*(1+r[gp])*(1-s[gp]) * (*deriv_sp)[5](2,inod) * (*deriv_sp)[5](2,jnod)
-                   +0.25*(1+r[gp])*(1+s[gp]) * (*deriv_sp)[6](2,inod) * (*deriv_sp)[6](2,jnod)
-                   +0.25*(1-r[gp])*(1+s[gp]) * (*deriv_sp)[7](2,inod) * (*deriv_sp)[7](2,jnod);
-          // ANS modification in st-dir
-          G_ij(4) = 0.5*((1+r[gp]) * ((*deriv_sp)[1](1,inod) * (*deriv_sp)[1](2,jnod)
-                                     +(*deriv_sp)[1](2,inod) * (*deriv_sp)[1](1,jnod))
-                        +(1-r[gp]) * ((*deriv_sp)[3](1,inod) * (*deriv_sp)[3](2,jnod)
-                                     +(*deriv_sp)[3](2,inod) * (*deriv_sp)[3](1,jnod)));
-          // ANS modification in rt-dir
-          G_ij(5) = 0.5*((1-s[gp]) * ((*deriv_sp)[0](0,inod) * (*deriv_sp)[0](2,jnod)
-                                     +(*deriv_sp)[0](2,inod) * (*deriv_sp)[0](0,jnod))
-                        +(1+s[gp]) * ((*deriv_sp)[2](0,inod) * (*deriv_sp)[2](2,jnod)
-                                     +(*deriv_sp)[2](2,inod) * (*deriv_sp)[2](0,jnod)));
+          
+          // do the ANS related stuff if wanted!
+          if (anstype_==anssosh8)
+          {
+            // ANS modification in tt-dir
+            G_ij(2) = 0.25*(1-r[gp])*(1-s[gp]) * (*deriv_sp)[4](2,inod) * (*deriv_sp)[4](2,jnod)
+                     +0.25*(1+r[gp])*(1-s[gp]) * (*deriv_sp)[5](2,inod) * (*deriv_sp)[5](2,jnod)
+                     +0.25*(1+r[gp])*(1+s[gp]) * (*deriv_sp)[6](2,inod) * (*deriv_sp)[6](2,jnod)
+                     +0.25*(1-r[gp])*(1+s[gp]) * (*deriv_sp)[7](2,inod) * (*deriv_sp)[7](2,jnod);
+            // ANS modification in st-dir
+            G_ij(4) = 0.5*((1+r[gp]) * ((*deriv_sp)[1](1,inod) * (*deriv_sp)[1](2,jnod)
+                                       +(*deriv_sp)[1](2,inod) * (*deriv_sp)[1](1,jnod))
+                          +(1-r[gp]) * ((*deriv_sp)[3](1,inod) * (*deriv_sp)[3](2,jnod)
+                                       +(*deriv_sp)[3](2,inod) * (*deriv_sp)[3](1,jnod)));
+            // ANS modification in rt-dir
+            G_ij(5) = 0.5*((1-s[gp]) * ((*deriv_sp)[0](0,inod) * (*deriv_sp)[0](2,jnod)
+                                       +(*deriv_sp)[0](2,inod) * (*deriv_sp)[0](0,jnod))
+                          +(1+s[gp]) * ((*deriv_sp)[2](0,inod) * (*deriv_sp)[2](2,jnod)
+                                       +(*deriv_sp)[2](2,inod) * (*deriv_sp)[2](0,jnod)));
+            
+          }
+          else if (anstype_==ansnone)
+          {
+            G_ij(2) = derivs[gp](2, inod) * derivs[gp](2, jnod); // tt-dir
+            G_ij(4) = derivs[gp](2, inod) * derivs[gp](1, jnod)
+                    + derivs[gp](1, inod) * derivs[gp](2, jnod); // st-dir
+            G_ij(5) = derivs[gp](0, inod) * derivs[gp](2, jnod)
+                    + derivs[gp](2, inod) * derivs[gp](0, jnod); // rt-dir
+          }
+          else
+            dserror("Cannot build geometric stiffness matrix on your ANS-choice!");
+          
           // transformation of local(parameter) space 'back' to global(material) space
           LINALG::Matrix<NUMSTR_SOH8,1> G_ij_glob;
           G_ij_glob.Multiply(TinvT, G_ij);

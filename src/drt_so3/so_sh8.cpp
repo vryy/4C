@@ -74,6 +74,7 @@ void DRT::ELEMENTS::So_sh8::Pack(vector<char>& data) const
   // thickdir
   AddtoPack(data,thickdir_);
   AddtoPack(data,thickvec_);
+  AddtoPack(data,anstype_);
   AddtoPack(data,nodes_rearranged_);
 
   return;
@@ -97,6 +98,7 @@ void DRT::ELEMENTS::So_sh8::Unpack(const vector<char>& data)
   // thickdir
   ExtractfromPack(position,data,thickdir_);
   ExtractfromPack(position,data,thickvec_);
+  ExtractfromPack(position,data,anstype_);
   ExtractfromPack(position,data,nodes_rearranged_);
 
   if (position != (int)data.size())

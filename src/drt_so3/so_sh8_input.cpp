@@ -112,6 +112,20 @@ bool DRT::ELEMENTS::So_sh8::ReadElement(const std::string& eletype,
   else
     dserror("Reading of SO_SH8 EAS technology failed");
 
+  // read ANS technology flag
+  linedef->ExtractString("ANS",buffer);
+  if      (buffer=="sosh8")
+  {
+    anstype_ = anssosh8;
+  }
+  // no ANS technology
+  else if (buffer=="none")
+  {
+    anstype_ = ansnone;
+  }
+  else
+    dserror("Reading of SO_SH8 ANS technology failed");
+  
   linedef->ExtractString("THICKDIR",buffer);
   nodes_rearranged_ = false;
 
