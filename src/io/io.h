@@ -18,6 +18,7 @@ functions that must be called from elsewhere.
 
 */
 
+#ifndef CCADISCRET
 #ifdef BINIO
 
 #ifndef IO_H
@@ -607,5 +608,6 @@ void io_emergency_close_files();
 }
 #endif
 
+#endif
 #endif
 #endif
