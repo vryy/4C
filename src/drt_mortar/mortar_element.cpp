@@ -100,7 +100,7 @@ ostream& operator << (ostream& os, const MORTAR::MortarElement& element)
  *----------------------------------------------------------------------*/
 void MORTAR::MortarElement::Print(ostream& os) const
 {
-  os << "Contact Element ";
+  os << "Mortar Element ";
   DRT::Element::Print(os);
   if (isslave_) os << " Slave  ";
   else          os << " Master ";
