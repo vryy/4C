@@ -1,5 +1,5 @@
 /*!
-\file xdofmapcreation.cpp
+\file xdofmapcreation_parallel_utils.cpp
 
 \brief defines unknowns based on the intersection pattern from the xfem intersection
 
@@ -194,7 +194,6 @@ void XFEM::syncNodalDofs(
     cout << "proc " << myrank << ": receiving "<< dofkeyset.size() << " dofkeys from proc " << source << endl;
 #endif
     // get all dofkeys whose nodegid is on this proc in the coloumnmap
-    set<XFEM::DofKey<XFEM::onNode> >       relevant_dofkeyset;
     for (set<XFEM::DofKey<XFEM::onNode> >::const_iterator dofkey = dofkeyset.begin(); dofkey != dofkeyset.end(); ++dofkey)
     {
       const int nodegid = dofkey->getGid();

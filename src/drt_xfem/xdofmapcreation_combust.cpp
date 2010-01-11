@@ -1,5 +1,5 @@
 /*!
-\file xdofmapcreation.cpp
+\file xdofmapcreation_combust.cpp
 
 \brief defines unknowns based on the intersection pattern from the xfem intersection
 
