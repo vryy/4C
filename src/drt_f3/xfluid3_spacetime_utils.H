@@ -1,5 +1,5 @@
 /*!
-\file xfluid3_utils.H
+\file xfluid3_spacetime_utils.H
 
 <pre>
 Maintainer: Axel Gerstenberger
