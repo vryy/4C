@@ -902,6 +902,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
       {
         double pow_conint_gamma_k = 0.0;
 
+#ifdef DEBUG
         // some safety checks/ user warnings
         if ((alphaa*frt*eta) > 100.0)
           cout<<"WARNING: Exp(alpha_a...) in Butler-Volmer law is near overflow!"
@@ -909,11 +910,14 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
         if (((-alphac)*frt*eta) > 100.0)
           cout<<"WARNING: Exp(alpha_c...) in Butler-Volmer law is near overflow!"
           <<exp((-alphac)*frt*eta)<<endl;
+#endif
         if ((conint/refcon) < EPS13)
         {
-          cout<<"WARNING: Rel. Conc. in Butler-Volmer formula is zero/negative: "<<(conint/refcon)<<endl;
           pow_conint_gamma_k = pow(EPS13,gamma);
+#ifdef DEBUG
+          cout<<"WARNING: Rel. Conc. in Butler-Volmer formula is zero/negative: "<<(conint/refcon)<<endl;
           cout<<"-> Replacement value: pow(EPS,gamma) = "<< pow_conint_gamma_k <<endl;
+#endif
         }
         else
           pow_conint_gamma_k = pow(conint/refcon,gamma);
