@@ -90,7 +90,8 @@ public:
   */
   explicit Coupling3d(DRT::Discretization& idiscret, int dim, bool quad,
                       bool auxplane,
-                      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
+                      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+                      bool nonlinear = false);
 
   /*!
   \brief Constructor with shape function specification
@@ -103,7 +104,8 @@ public:
   explicit Coupling3d(const MortarInterface::ShapeFcnType shapefcn, 
                       DRT::Discretization& idiscret, int dim, bool quad,
                       bool auxplane,
-                      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
+                      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+                      bool nonlinear = false);
 
   /*!
   \brief Destructor
@@ -472,7 +474,8 @@ protected:
     Coupling3d operator = (const Coupling3d& old);
     Coupling3d(const Coupling3d& old);
 
-    const MortarInterface::ShapeFcnType shapefcn_; // employed type of shape function set
+    const MortarInterface::ShapeFcnType shapefcn_;  // employed type of shape function set
+    bool                                nonlinear_; // nonlinear version (incl. linearizations)
 
     DRT::Discretization&       idiscret_;    // discretization of the contact interface
     int                        dim_;         // problem dimension (here: 3D)
@@ -531,7 +534,8 @@ public:
   explicit Coupling3dQuad(DRT::Discretization& idiscret,
                           int dim, bool quad, bool auxplane,
                           MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-                          MORTAR::IntElement& sintele, MORTAR::IntElement& mintele);
+                          MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
+                          bool nonlinear = false);
 
   /*!
   \brief Constructor with shape function specification
@@ -545,7 +549,8 @@ public:
                           DRT::Discretization& idiscret,
                           int dim, bool quad, bool auxplane,
                           MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-                          MORTAR::IntElement& sintele, MORTAR::IntElement& mintele);
+                          MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
+                          bool nonlinear = false);
   
   /*!
   \brief Destructor

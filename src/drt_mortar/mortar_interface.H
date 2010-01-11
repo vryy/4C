@@ -475,10 +475,14 @@ public:
 
   This is the main routine of the MortarInterface class, where nodal normals
   are computed, search is performed, mortar segments are set up and the entries
-  of the mortar matrices D and M are integrated.
+  of the mortar matrices D and M are integrated. If the boolean flag "nonlinear"
+  is set to true (only for contact), then nonlinear mortar coupling is performed
+  including evaluation of the weighted gap g and linearizations of all mortar quantities.
+  
+  \param nonlinear (in): nonlinear mortar coupling flag
 
   */
-  virtual void Evaluate();
+  virtual void Evaluate(bool nonlinear = false);
 
   /*!
   \brief Brute force search algorithm for potentially coupling
@@ -508,15 +512,21 @@ public:
   not chosen. Then it integrates the Mortar matrix D on the current
   slave MortarElement sele (full integration from -1 to 1).
 
+  \param nonlinear (in): evaluate linearizations or not
+
   */
-  virtual bool IntegrateSlave(MORTAR::MortarElement& sele);
+  virtual bool IntegrateSlave(MORTAR::MortarElement& sele,
+                              bool nonlinear = false);
 
   /*!
   \brief Integrate Mortar matrix M and gap g on slave/master overlap
 
+  \param nonlinear (in): evaluate linearizations or not
+  
   */
   virtual bool IntegrateCoupling(MORTAR::MortarElement& sele,
-                                 MORTAR::MortarElement& mele);
+                                 MORTAR::MortarElement& mele,
+                                 bool nonlinear = false);
 
   /*!
   \brief Split MortarElements into IntElements for 3D quadratic coupling

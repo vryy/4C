@@ -50,8 +50,10 @@ Maintainer: Alexander Popp
  |  ctor (public)                                             popp 11/08|
  *----------------------------------------------------------------------*/
 MORTAR::Coupling3d::Coupling3d(DRT::Discretization& idiscret, int dim, bool quad,
-                               bool auxplane, MORTAR::MortarElement& sele, MORTAR::MortarElement& mele) :
+                               bool auxplane, MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+                               bool nonlinear) :
 shapefcn_(MortarInterface::Undefined),
+nonlinear_(nonlinear),
 idiscret_(idiscret),
 dim_(dim),
 quad_(quad),
@@ -68,8 +70,10 @@ mele_(mele)
  *----------------------------------------------------------------------*/
 MORTAR::Coupling3d::Coupling3d(const MortarInterface::ShapeFcnType shapefcn,
                                DRT::Discretization& idiscret, int dim, bool quad,
-                               bool auxplane, MORTAR::MortarElement& sele, MORTAR::MortarElement& mele) :
+                               bool auxplane, MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+                               bool nonlinear) :
 shapefcn_(shapefcn),
+nonlinear_(nonlinear),
 idiscret_(idiscret),
 dim_(dim),
 quad_(quad),
@@ -316,11 +320,13 @@ bool MORTAR::Coupling3d::AuxiliaryPlane()
   // we then compute the unit normal vector at the element center
   Lauxn() = SlaveIntElement().ComputeUnitNormalAtXi(loccenter,Auxn());
 
-#ifdef MORTARCONTACT
   // also compute linearization of the unit normal vector
-  SlaveIntElement().DerivUnitNormalAtXi(loccenter,GetDerivAuxn());
-#endif // #ifdef MORTARCONTACT
-
+  if (nonlinear_)
+  {
+    // TODO explicitly convert to CElement
+    //SlaveIntElement().DerivUnitNormalAtXi(loccenter,GetDerivAuxn());
+  }
+  
   //cout << "Slave Element: " << SlaveIntElement().Id() << endl;
   //cout << "->Center: " << Auxc()[0] << " " << Auxc()[1] << " " << Auxc()[2] << endl;
   //cout << "->Normal: " << Auxn()[0] << " " << Auxn()[1] << " " << Auxn()[2] << endl;
@@ -2599,12 +2605,10 @@ bool MORTAR::Coupling3d::Triangulation(map<int,double>& projpar)
   vector<vector<map<int,double> > > linvertex(clipsize,vector<map<int,double> >(3));
   vector<map<int,double> > lincenter(3);
 
-#ifdef MORTARCONTACT
   //**********************************************************************
   // (1) Linearization of clip vertex coordinates
   //**********************************************************************
-  VertexLinearization(linvertex,projpar);
-#endif // #ifdef MORTARCONTACT
+  if (nonlinear_) VertexLinearization(linvertex,projpar);
 
   //**********************************************************************
   // (2) Find center of clipping polygon (centroid formula)
@@ -2660,12 +2664,10 @@ bool MORTAR::Coupling3d::Triangulation(map<int,double>& projpar)
   for (int k=0;k<3;++k) clipcenter[k] /= fac;
   //cout << "Clipcenter: " << clipcenter[0] << " " << clipcenter[1] << " " << clipcenter[2] << endl;
 
-#ifdef MORTARCONTACT
   //**********************************************************************
   // (3) Linearization of clip center coordinates
   //**********************************************************************
-  CenterLinearization(linvertex,lincenter);
-#endif // #ifdef MORTARCONTACT
+  if (nonlinear_) CenterLinearization(linvertex,lincenter);
 
   //**********************************************************************
   // (4)Triangulation -> Intcells
@@ -2734,7 +2736,7 @@ bool MORTAR::Coupling3d::IntegrateCells()
 
   // create an integrator instance with correct NumGP and Dim
   // it is sufficient to do this once as all Intcells are triangles
-  MORTAR::Integrator integrator(shapefcn_,Cells()[0]->Shape());
+  MORTAR::Integrator integrator(shapefcn_,Cells()[0]->Shape(),nonlinear_);
 
   // loop over all integration cells
   for (int i=0;i<(int)(Cells().size());++i)
@@ -2796,21 +2798,23 @@ bool MORTAR::Coupling3d::IntegrateCells()
 #endif // #ifdef MORTARONELOOP
     integrator.AssembleM(Comm(),SlaveElement(),MasterElement(),*mseg);
 
-#ifdef MORTARCONACT
-    // for assembly of g we take into account the PetrovGalerkin idea
-    if (CouplingInAuxPlane() && Quad())
+    // also do assembly of weighted gap vector
+    if (nonlinear_)
     {
+      // for assembly of g we take into account the PetrovGalerkin idea
+      if (CouplingInAuxPlane() && Quad())
+      {
 #ifdef MORTARPETROVGALERKIN
-      // gap interpolation is based on piecewise linear approach
-      integrator.AssembleG(Comm(),SlaveIntElement(),*gseg);
+        // gap interpolation is based on piecewise linear approach
+        integrator.AssembleG(Comm(),SlaveIntElement(),*gseg);
 #else
-      // hap interpolation is based on truly quadratic approach
-      integrator.AssembleG(Comm(),SlaveElement(),*gseg);
+        // hap interpolation is based on truly quadratic approach
+        integrator.AssembleG(Comm(),SlaveElement(),*gseg);
 #endif // #ifdef MORTARPETROVGALERKIN
+      }
+      else
+        integrator.AssembleG(Comm(),SlaveElement(),*gseg);
     }
-    else
-      integrator.AssembleG(Comm(),SlaveElement(),*gseg);
-#endif // #ifdef MORTARCONTACT
   }
   return true;
 }
@@ -3269,7 +3273,6 @@ bool MORTAR::Coupling3d::MasterVertexLinearization(Vertex& currv,
   currlin[1][mrtrmnode->Dofs()[2]] += lmatrix(1,2);
 
   // (2) all slave nodes coordinates part
-  // (3) all slave nodes normals part
   for (int z=0;z<nrow;++z)
   {
     int gid = SlaveIntElement().NodeIds()[z];
@@ -3284,26 +3287,30 @@ bool MORTAR::Coupling3d::MasterVertexLinearization(Vertex& currv,
     currlin[1][snode->Dofs()[1]] -= sval[z] * lmatrix(1,1);
     currlin[1][snode->Dofs()[2]] -= sval[z] * lmatrix(1,2);
 
-#ifdef MORTARCONTACT
-    // get nodal normal derivative maps (x,y and z components)
-    vector<map<int,double> >& derivn = snode->GetDerivN();
-
-    for (CI p=derivn[0].begin();p!=derivn[0].end();++p)
+    // (3) all slave nodes normals part
+    if (nonlinear_)
     {
-      currlin[0][p->first] -= alpha * sval[z] * lmatrix(0,0) * (p->second);
-      currlin[1][p->first] -= alpha * sval[z] * lmatrix(1,0) * (p->second);
+      // TODO explicitly convert MortarNode to CNode
+      
+      // get nodal normal derivative maps (x,y and z components)
+      /*vector<map<int,double> >& derivn = snode->GetDerivN();
+  
+      for (CI p=derivn[0].begin();p!=derivn[0].end();++p)
+      {
+        currlin[0][p->first] -= alpha * sval[z] * lmatrix(0,0) * (p->second);
+        currlin[1][p->first] -= alpha * sval[z] * lmatrix(1,0) * (p->second);
+      }
+      for (CI p=derivn[1].begin();p!=derivn[1].end();++p)
+      {
+        currlin[0][p->first] -= alpha * sval[z] * lmatrix(0,1) * (p->second);
+        currlin[1][p->first] -= alpha * sval[z] * lmatrix(1,1) * (p->second);
+      }
+      for (CI p=derivn[2].begin();p!=derivn[2].end();++p)
+      {
+        currlin[0][p->first] -= alpha * sval[z] * lmatrix(0,2) * (p->second);
+        currlin[1][p->first] -= alpha * sval[z] * lmatrix(1,2) * (p->second);
+      }*/
     }
-    for (CI p=derivn[1].begin();p!=derivn[1].end();++p)
-    {
-      currlin[0][p->first] -= alpha * sval[z] * lmatrix(0,1) * (p->second);
-      currlin[1][p->first] -= alpha * sval[z] * lmatrix(1,1) * (p->second);
-    }
-    for (CI p=derivn[2].begin();p!=derivn[2].end();++p)
-    {
-      currlin[0][p->first] -= alpha * sval[z] * lmatrix(0,2) * (p->second);
-      currlin[1][p->first] -= alpha * sval[z] * lmatrix(1,2) * (p->second);
-    }
-#endif // #ifdef MORTARCONTACT
   }
 
   return true;
@@ -3801,8 +3808,9 @@ MORTAR::Coupling3dQuad::Coupling3dQuad(DRT::Discretization& idiscret, int dim, b
                                 bool auxplane,
                                 MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
                                 MORTAR::IntElement& sintele,
-                                MORTAR::IntElement& mintele) :
-MORTAR::Coupling3d(MortarInterface::Undefined,idiscret,dim,quad,auxplane,sele,mele),
+                                MORTAR::IntElement& mintele,
+                                bool nonlinear) :
+MORTAR::Coupling3d(MortarInterface::Undefined,idiscret,dim,quad,auxplane,sele,mele,nonlinear),
 sintele_(sintele),
 mintele_(mintele)
 {
@@ -3825,8 +3833,9 @@ MORTAR::Coupling3dQuad::Coupling3dQuad(const MortarInterface::ShapeFcnType shape
                                 bool auxplane,
                                 MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
                                 MORTAR::IntElement& sintele,
-                                MORTAR::IntElement& mintele) :
-MORTAR::Coupling3d(shapefcn,idiscret,dim,quad,auxplane,sele,mele),
+                                MORTAR::IntElement& mintele,
+                                bool nonlinear) :
+MORTAR::Coupling3d(shapefcn,idiscret,dim,quad,auxplane,sele,mele,nonlinear),
 sintele_(sintele),
 mintele_(mintele)
 {

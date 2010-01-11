@@ -84,7 +84,8 @@ public:
   To be able to evaluate them, the Integrator have to be created with the alternative constructor (see below). 
 
   */
-  explicit Integrator(DRT::Element::DiscretizationType eletype);
+  explicit Integrator(DRT::Element::DiscretizationType eletype,
+                      bool nonlinear = false);
 
   /*!
   \brief Constructor  with shape function specification
@@ -98,7 +99,8 @@ public:
   
   */
   explicit Integrator(const MortarInterface::ShapeFcnType shapefcn,
-                      DRT::Element::DiscretizationType eletype);
+                      DRT::Element::DiscretizationType eletype,
+                      bool nonlinear = false);
 
   /*!
   \brief Destructor
@@ -334,6 +336,7 @@ protected:
     Integrator(const Integrator& old);
 
     const MortarInterface::ShapeFcnType shapefcn_;    // employed type of shape function set
+    bool                                nonlinear_;   // nonlinear version (incl. linearizations)
     
     int                           dim_;         // dimension of problem (2D or 3D)
     int                           ngp_;         // number of Gauss points

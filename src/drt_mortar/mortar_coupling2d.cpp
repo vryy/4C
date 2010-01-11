@@ -50,8 +50,10 @@ Maintainer: Alexander Popp
  *----------------------------------------------------------------------*/
 MORTAR::Coupling2d::Coupling2d(DRT::Discretization& idiscret, int dim,
                                MORTAR::MortarElement& sele,
-                               MORTAR::MortarElement& mele) :
+                               MORTAR::MortarElement& mele,
+                               bool nonlinear) :
 shapefcn_(MortarInterface::Undefined),
+nonlinear_(nonlinear),
 idiscret_(idiscret),
 dim_(dim),
 sele_(sele),
@@ -83,8 +85,10 @@ mele_(mele)
 MORTAR::Coupling2d::Coupling2d(const MortarInterface::ShapeFcnType shapefcn,
                                DRT::Discretization& idiscret, int dim,
                                MORTAR::MortarElement& sele,
-                               MORTAR::MortarElement& mele) :
+                               MORTAR::MortarElement& mele,
+                               bool nonlinear) :
 shapefcn_(shapefcn),
+nonlinear_(nonlinear),
 idiscret_(idiscret),
 dim_(dim),
 sele_(sele),
@@ -554,7 +558,7 @@ bool MORTAR::Coupling2d::IntegrateOverlap(vector<double>& xiproj)
   double mxib = xiproj[3];
 
   // create an integrator instance with correct NumGP and Dim
-  MORTAR::Integrator integrator(shapefcn_,sele_.Shape());
+  MORTAR::Integrator integrator(shapefcn_,sele_.Shape(),nonlinear_);
 
   // do the overlap integration (integrate and linearize both M and gap)
   int nrow = sele_.NumNode();
@@ -569,9 +573,9 @@ bool MORTAR::Coupling2d::IntegrateOverlap(vector<double>& xiproj)
   integrator.AssembleD(Comm(),sele_,*dseg);
 #endif // #ifdef MORTARONELOOP
   integrator.AssembleM(Comm(),sele_,mele_,*mseg);
-#ifdef MORTARCONTACT
-  integrator.AssembleG(Comm(),sele_,*gseg);
-#endif
+  
+  // also do assembly of weighted gap vector
+  if (nonlinear_) integrator.AssembleG(Comm(),sele_,*gseg);
 
   /*----------------------------------------------------------------------
   // check for the modification of the M matrix for curved interfaces

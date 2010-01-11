@@ -48,8 +48,10 @@ Maintainer: Alexander Popp
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 08/08|
  *----------------------------------------------------------------------*/
-MORTAR::Integrator::Integrator(DRT::Element::DiscretizationType eletype) :
-shapefcn_(MortarInterface::Undefined)
+MORTAR::Integrator::Integrator(DRT::Element::DiscretizationType eletype,
+                               bool nonlinear) :
+shapefcn_(MortarInterface::Undefined),
+nonlinear_(nonlinear)
 {
   InitializeGP(eletype);
 }
@@ -58,8 +60,10 @@ shapefcn_(MortarInterface::Undefined)
  |  ctor (public)                                             popp 07/09|
  *----------------------------------------------------------------------*/
 MORTAR::Integrator::Integrator(const MortarInterface::ShapeFcnType shapefcn,
-                                DRT::Element::DiscretizationType eletype) :
-shapefcn_(shapefcn)
+                               DRT::Element::DiscretizationType eletype,
+                               bool nonlinear) :
+shapefcn_(shapefcn),
+nonlinear_(nonlinear)
 {
   InitializeGP(eletype);
 }
