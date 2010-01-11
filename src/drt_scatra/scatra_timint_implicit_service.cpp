@@ -1636,6 +1636,7 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
       // OutputSingleElectrodeInfo(cond[0],0,true,true,actualcurrent,pottangent);
 
       int gstatitemax = (extraparams_->sublist("ELCH CONTROL").get<int>("GSTATITEMAX"));
+      double gstatcurrenttol = (extraparams_->sublist("ELCH CONTROL").get<double>("GSTATCURTOL"));
       const int curvenum = extraparams_->sublist("ELCH CONTROL").get<int>("GSTATCURVENO");
       const double tol = extraparams_->sublist("ELCH CONTROL").get<double>("GSTATCONVTOL");
 
@@ -1661,11 +1662,11 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
         }
         return true; // we proceed to next time step
       }
-      else if (abs(newtonrhs)< EPS15)
+      else if (abs(newtonrhs)< gstatcurrenttol)
       {
         if (myrank_==0)
         {
-          cout<<"  --> residual is already completely zero."<<endl<<endl;
+          cout<<"  --> Newton-RHS-Residual is smaller than " << gstatcurrenttol<< "!" <<endl<<endl;
         }
         return true; // we proceed to next time step
       }
