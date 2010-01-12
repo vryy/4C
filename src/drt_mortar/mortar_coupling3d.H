@@ -119,7 +119,7 @@ public:
   \brief Get interface discretization
 
   */
-  virtual inline DRT::Discretization& Discret() const { return idiscret_; }
+  virtual DRT::Discretization& Discret() const { return idiscret_; }
 
   /*!
   \brief Get communicator
@@ -131,25 +131,25 @@ public:
   \brief Get problem dimension (here: 3D)
 
   */
-  virtual inline const int& Dim() {return dim_;};
+  virtual const int& Dim() {return dim_;};
 
   /*!
   \brief Get coupling / FE ansatz type (true = quadratic)
 
   */
-  virtual inline const bool& Quad() {return quad_;};
+  virtual const bool& Quad() {return quad_;};
 
   /*!
   \brief Get coupling slave element
 
   */
-  virtual inline MORTAR::MortarElement& SlaveElement() const { return sele_; }
+  virtual MORTAR::MortarElement& SlaveElement() const { return sele_; }
 
   /*!
   \brief Get coupling master element
 
   */
-  virtual inline MORTAR::MortarElement& MasterElement() const { return mele_; }
+  virtual MORTAR::MortarElement& MasterElement() const { return mele_; }
 
   /*!
   \brief Get coupling slave integration element
@@ -160,7 +160,7 @@ public:
   methd is overloaded by the derived class MORTAR::Coupling3dQuad!
 
   */
-  virtual inline MORTAR::MortarElement& SlaveIntElement() const { return sele_; }
+  virtual MORTAR::MortarElement& SlaveIntElement() const { return sele_; }
 
   /*!
   \brief Get coupling master integration element
@@ -171,7 +171,7 @@ public:
   methd is overloaded by the derived class MORTAR::Coupling3dQuad!
 
   */
-  virtual inline MORTAR::MortarElement& MasterIntElement() const{ return mele_; }
+  virtual MORTAR::MortarElement& MasterIntElement() const{ return mele_; }
 
   /*!
   \brief Get 3D coupling strategy (true = auxiliary plane)
@@ -182,55 +182,55 @@ public:
   on the slave surface without any auxiliary plane).
 
   */
-  virtual inline const bool& CouplingInAuxPlane() {return auxplane_;};
+  virtual const bool& CouplingInAuxPlane() {return auxplane_;};
 
   /*!
   \brief Return center of auxiliary plane
 
   */
-  virtual inline double* Auxc() { return auxc_; }
+  virtual double* Auxc() { return auxc_; }
 
   /*!
   \brief Return normal of auxiliary plane
 
   */
-  virtual inline double* Auxn() { return auxn_; }
+  virtual double* Auxn() { return auxn_; }
 
   /*!
   \brief Return length of Auxn() before normalization
 
   */
-  virtual inline double& Lauxn() {return lauxn_; }
+  virtual double& Lauxn() {return lauxn_; }
 
   /*!
   \brief Return vector of (projected) slave node vertex objects
 
   */
-  virtual inline vector<Vertex>& SlaveVertices() {return svertices_; }
+  virtual vector<Vertex>& SlaveVertices() {return svertices_; }
 
   /*!
   \brief Return vector of projected master node vertex objects
 
   */
-  virtual inline vector<Vertex>& MasterVertices() {return mvertices_; }
+  virtual vector<Vertex>& MasterVertices() {return mvertices_; }
 
   /*!
   \brief Return vector of clip polygon vertex objects
 
   */
-  virtual inline vector<Vertex>& Clip() {return clip_; }
+  virtual vector<Vertex>& Clip() {return clip_; }
 
   /*!
   \brief Return vector of integration cells
 
   */
-  virtual inline vector<RCP<Intcell> >& Cells() {return cells_; }
+  virtual vector<RCP<Intcell> >& Cells() {return cells_; }
 
   /*!
   \brief Return the 'DerivAuxn' map (vector) of this coupling pair
 
   */
-  virtual inline vector<map<int,double> >& GetDerivAuxn() { return derivauxn_; }
+  virtual vector<map<int,double> >& GetDerivAuxn() { return derivauxn_; }
 
   //@}
 
@@ -564,13 +564,13 @@ public:
   \brief Get coupling slave integration element
 
   */
-  inline MORTAR::IntElement& SlaveIntElement() const { return sintele_; }
+  MORTAR::IntElement& SlaveIntElement() const { return sintele_; }
 
   /*!
   \brief Get coupling master integration element
 
   */
-  inline MORTAR::IntElement& MasterIntElement() const { return mintele_; }
+  MORTAR::IntElement& MasterIntElement() const { return mintele_; }
 
   //@}
 

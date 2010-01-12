@@ -107,7 +107,7 @@ public:
   \brief Get interface discretization
 
   */
-  virtual inline DRT::Discretization& Discret() const { return idiscret_; }
+  virtual DRT::Discretization& Discret() const { return idiscret_; }
 
   /*!
   \brief Get communicator
@@ -119,19 +119,19 @@ public:
   \brief Get coupling slave element
 
   */
-  virtual inline MORTAR::MortarElement& SlaveElement() const { return sele_; }
+  virtual MORTAR::MortarElement& SlaveElement() const { return sele_; }
 
   /*!
   \brief Get coupling master element
 
   */
-  virtual inline MORTAR::MortarElement& MasterElement() const { return mele_; }
+  virtual MORTAR::MortarElement& MasterElement() const { return mele_; }
 
   /*!
   \brief Get problem dimension (here: 2D)
 
   */
-  virtual inline const int& Dim() {return dim_;};
+  virtual const int& Dim() {return dim_;};
 
   //@}
 

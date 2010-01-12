@@ -118,25 +118,25 @@ public:
   (dim_==2) and 2D integration (dim_==3) on the interface!
 
   */
-  virtual inline const int& Dim() {return dim_;};
+  virtual const int& Dim() {return dim_;};
 
   /*!
   \brief Return number of Gauss points for this instance
 
   */
-  inline int nGP() {return ngp_;}
+  int nGP() {return ngp_;}
 
   /*!
   \brief Return coordinates of a specific GP in 1D/2D CElement
 
   */
-  inline double Coordinate(int& gp, int dir) {return coords_(gp,dir);}
+  double Coordinate(int& gp, int dir) {return coords_(gp,dir);}
 
   /*!
   \brief Return weight of a specific GP in 1D/2D CElement
 
   */
-  inline double Weight(int& gp) {return weights_[gp];}
+  double Weight(int& gp) {return weights_[gp];}
 
   //@}
 

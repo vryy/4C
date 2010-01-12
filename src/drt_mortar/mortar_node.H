@@ -147,7 +147,7 @@ public:
   /*!
   \brief Is node on slave or master side of mortar interface
   */
-  inline virtual bool IsSlave() const { return isslave_; }
+  virtual bool IsSlave() const { return isslave_; }
 
   /*!
   \brief Modify slave / master status of current node
@@ -160,77 +160,77 @@ public:
   changed to master, thy do NOT carry Lagrange multipliers and their
   neighbors' dual shape fct. are modified!
   */
-  inline virtual bool& SetSlave() { return isslave_; }
+  virtual bool& SetSlave() { return isslave_; }
 
   /*!
   \brief Is node on boundary of slave side of mortar interface
   */
-  inline virtual bool IsOnBound() const { return isonbound_; }
+  virtual bool IsOnBound() const { return isonbound_; }
 
   /*!
   \brief Set slave side boundary status of current node
   */
-  inline virtual bool& SetBound() { return isonbound_; }
+  virtual bool& SetBound() { return isonbound_; }
 
   /*!
   \brief Return D.B.C. status of this node (true if at least one dof with D.B.C)
   */
-  inline virtual bool IsDbc() const { return isdbc_; }
+  virtual bool IsDbc() const { return isdbc_; }
   
   /*!
   \brief Set D.B.C. status of current node
   */
-  inline virtual bool& SetDbc() { return isdbc_; }
+  virtual bool& SetDbc() { return isdbc_; }
 
   /*!
   \brief Get number of degrees of freedom
   */
-  inline virtual int NumDof() const { return numdof_; }
+  virtual int NumDof() const { return numdof_; }
 
   /*!
   \brief Get predefined degrees of freedom
   */
-  inline virtual const int* Dofs() const { return &dofs_[0]; }
+  virtual const int* Dofs() const { return &dofs_[0]; }
 
   /*!
   \brief Return current configuration (length 3)
   */
-  virtual inline double* xspatial() { return xspatial_; }
+  virtual double* xspatial() { return xspatial_; }
 
   /*!
   \brief Return old displacement (length 3)
   */
-  virtual inline double* uold() { return uold_; }
+  virtual double* uold() { return uold_; }
 
   /*!
   \brief Return current nodal normal (only for slave side!) (length 3)
   */
-  virtual inline double* n() { return n_; }
+  virtual double* n() { return n_; }
   
   /*!
   \brief Return current Lagrange mutliplier in step n+1 (only for slave side!) (length 3)
   */
-  virtual inline double* lm() { return lm_; }
+  virtual double* lm() { return lm_; }
 
   /*!
   \brief Return old Lagrange mutliplier from step n (only for slave side!) (length 3)
   */
-  virtual inline double* lmold() { return lmold_; }
+  virtual double* lmold() { return lmold_; }
   
   /*!
   \brief Return Lagrange mutliplier from last Uzawa step (only for slave side!) (length 3)
   */
-  virtual inline double* lmuzawa() { return lmuzawa_; }
+  virtual double* lmuzawa() { return lmuzawa_; }
 
   /*!
   \brief Return current closest node's global id (by reference)
   */
-  virtual inline int& ClosestNode() { return closestnode_; }
+  virtual int& ClosestNode() { return closestnode_; }
 
   /*!
   \brief Return projection status of this node (only for slave side!)
   */
-  virtual inline bool& HasProj() { return hasproj_; }
+  virtual bool& HasProj() { return hasproj_; }
     
   /*!
   \brief Add a value to the 'D' map of this node
@@ -274,17 +274,17 @@ public:
   /*!
   \brief Return the 'D' map (vector) of this node
   */
-  virtual inline vector<map<int,double> >& GetD() { return drows_; }
+  virtual vector<map<int,double> >& GetD() { return drows_; }
 
   /*!
   \brief Return the 'M' map (vector) of this node
   */
-  virtual inline vector<map<int,double> >& GetM() { return mrows_; }
+  virtual vector<map<int,double> >& GetM() { return mrows_; }
 
   /*!
   \brief Return the 'Mmod' map (vector) of this node
   */
-  virtual inline vector<map<int,double> >& GetMmod() { return mmodrows_; }
+  virtual vector<map<int,double> >& GetMmod() { return mmodrows_; }
     
   //@}
 

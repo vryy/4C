@@ -98,7 +98,7 @@ public:
   \brief Get Epetra communicator
 
   */
-  inline const Epetra_Comm& Comm() const { return *comm_;}
+  const Epetra_Comm& Comm() const { return *comm_;}
   
   /*!
   \brief Return the object for the solving strategy.
@@ -107,7 +107,7 @@ public:
   have to be specialized in subclasses of StrategyBase
  
   */
-  inline MORTAR::StrategyBase& GetStrategy() { return *strategy_;}
+  MORTAR::StrategyBase& GetStrategy() { return *strategy_;}
 
 
 protected:

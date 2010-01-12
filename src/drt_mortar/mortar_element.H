@@ -245,19 +245,19 @@ public:
   \brief Return current area
 
   */
-  virtual inline double& Area() { return area_; }
+  virtual double& Area() { return area_; }
 
   /*!
   \brief Return slave (true) or master status
 
   */
-  virtual inline bool IsSlave() { return isslave_; }
+  virtual bool IsSlave() { return isslave_; }
     
   /*!
   \brief Return ansatz type (true = quad) of element
 
   */
-  virtual inline bool IsQuad()
+  virtual bool IsQuad()
   {
     if (Shape()==quad8 || Shape()==quad9 || Shape()==tri6) return true;
     else return false;
@@ -267,13 +267,13 @@ public:
   \brief Return number of potentially contacting elements
 
   */
-  virtual inline int NumSearchElements() const { return (int)searchelements_.size(); }
+  virtual int NumSearchElements() const { return (int)searchelements_.size(); }
 
   /*!
   \brief Return global ids of potentially contacting elements
 
   */
-  virtual inline vector<int>& SearchElements() {return searchelements_; }
+  virtual vector<int>& SearchElements() {return searchelements_; }
 
   //@}
 

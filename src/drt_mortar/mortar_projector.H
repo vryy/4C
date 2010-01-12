@@ -88,7 +88,7 @@ public:
   \brief Get problem dimension
 
   */
-  virtual inline const int& Dim() {return dim_;};
+  virtual const int& Dim() {return dim_;};
 
   //@}
 

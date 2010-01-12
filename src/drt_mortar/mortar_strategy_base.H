@@ -71,9 +71,9 @@ class StrategyBase
     {
       lmcurrent,
       lmold,
-      activeold,
       lmupdate,
       lmuzawa,
+      activeold,
       jump,
       dm,
       pentrac
@@ -102,25 +102,25 @@ class StrategyBase
     \brief Get parameter list
 
     */
-    inline Teuchos::ParameterList& Params() { return scontact_; }
+    Teuchos::ParameterList& Params() { return scontact_; }
 
     /*!
     \brief Get problem dimension
 
     */
-    inline const int& Dim() { return dim_; }
+    const int& Dim() { return dim_; }
 
     /*!
     \brief Get Epetra communicator
 
     */
-    inline const Epetra_Comm& Comm() const { return *comm_; }
+    const Epetra_Comm& Comm() const { return *comm_; }
 
     /*!
     \brief Return row map of global problem
 
     */
-    inline const RCP<Epetra_Map> ProblemRowMap() { return problemrowmap_; }
+    const RCP<Epetra_Map> ProblemRowMap() { return problemrowmap_; }
         
     //@}
 
@@ -131,49 +131,34 @@ class StrategyBase
     // As the base class MORTAR::StrategyBase is always called from the control routine
     // (time integrator), these functions need to be defined purely virtual here.
     
-    // Contact access methods
+    // Access methods
     
-    virtual inline bool& ActiveSetConverged() = 0;
-    virtual inline RCP<Epetra_Vector> ContactNorStress() = 0;
-    virtual inline RCP<Epetra_Vector> ContactTanStress() = 0;
     
-    virtual double& ConstraintNorm() = 0;
-    virtual double& ConstraintNormTan() = 0;
+    
+   
         
-    // Contact evaluation methods
+    // Evaluation methods
     
+    virtual double ConstraintNorm() = 0;
     virtual void ContactForces(RCP<Epetra_Vector> fresm) = 0;
-    virtual void Evaluate(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff) = 0;
-    virtual void EvaluateContact(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff) = 0;
-    virtual void EvaluateFriction(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff) = 0;
-    virtual void EvaluateRelMov() = 0;
-    virtual void InitEvalInterface() = 0;
-    virtual void InitEvalMortar() = 0;
-    virtual void Initialize() = 0;
-    virtual void OutputStresses () = 0;
+    virtual void DoReadRestart(IO::DiscretizationReader& reader, RCP<Epetra_Vector> dis) = 0;
+    virtual void Evaluate(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff, RCP<Epetra_Vector> dis) = 0;
+    virtual void EvaluateMeshtying(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff, RCP<Epetra_Vector> dis) = 0;
+    virtual void InitializeUzawa(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff) = 0;
+    virtual double InitialPenalty() = 0;
+    virtual RCP<Epetra_Vector> LagrMultOld() = 0;  
+    virtual void MeshInitialization() = 0;
+    virtual void MortarCoupling(const RCP<Epetra_Vector> dis) = 0;
     virtual void Print(ostream& os) const = 0;
     virtual void PrintActiveSet() = 0;
     virtual void Recover(RCP<Epetra_Vector> disi) = 0;
+    virtual void ResetPenalty() = 0;
     virtual void SetState(const string& statename, const RCP<Epetra_Vector> vec) = 0;
     virtual void StoreDirichletStatus(RCP<LINALG::MapExtractor> dbcmaps) = 0;
-    virtual void StoreDM(const string& state) = 0;
-    virtual void StoreDMToNodes(StrategyBase::QuantityType type) = 0;
-    virtual void StoreNodalQuantities(StrategyBase::QuantityType type) = 0;
-    virtual void Update(int istep, RCP<Epetra_Vector> dis) = 0;
-    virtual void UpdateActiveSet() = 0;
-    virtual void UpdateActiveSetSemiSmooth() = 0;
-    virtual void VisualizeGmsh(const int step, const int iter = 0) = 0;
-    
-    virtual void InitializeUzawa(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff) = 0;
-    virtual void ResetPenalty() = 0;
-    virtual void SaveReferenceState(const RCP<Epetra_Vector> dis) = 0;
+    virtual void StoreNodalQuantities(MORTAR::StrategyBase::QuantityType type) = 0;
+    virtual void Update(int istep) = 0;
     virtual void UpdateAugmentedLagrange() = 0;
     virtual void UpdateConstraintNorm(int uzawaiter = 0) = 0;
-    
-    // Meshtying evaluation methods
-    
-    virtual void MeshInitialization() = 0;
-    virtual void MortarCoupling(const RCP<Epetra_Vector> dis) = 0;
     
     //@}
 

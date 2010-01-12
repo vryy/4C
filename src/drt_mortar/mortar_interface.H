@@ -134,13 +134,13 @@ public:
   \brief Check whether interface was called FillComplete
 
   */
-  virtual inline bool Filled() const { return idiscret_->Filled();}
+  virtual bool Filled() const { return idiscret_->Filled();}
 
   /*!
   \brief Get discretization of this interface
 
   */
-  virtual inline DRT::Discretization& Discret() const { return *idiscret_; }
+  virtual DRT::Discretization& Discret() const { return *idiscret_; }
 
   /*!
   \brief Get problem dimension
@@ -150,26 +150,26 @@ public:
   (dim_==2) and 2D interfaces (dim_==3)!
 
   */
-  virtual inline const int& Dim() {return dim_;};
+  virtual const int& Dim() {return dim_;};
 
   /*!
   \brief Get interface contact parameter list
 
   */
-  virtual inline Teuchos::ParameterList& IParams() {return icontact_;};
+  virtual Teuchos::ParameterList& IParams() {return icontact_;};
 
   /*!
   \brief Get type of search algorithm
 
   */
-  virtual inline const INPAR::MORTAR::SearchAlgorithm SearchAlg()
+  virtual const INPAR::MORTAR::SearchAlgorithm SearchAlg()
   {return Teuchos::getIntegralValue<INPAR::MORTAR::SearchAlgorithm>(icontact_,"SEARCH_ALGORITHM");};
 
   /*!
   \brief Get search algorithm parameter
 
   */
-  virtual inline const double SearchParam()
+  virtual const double SearchParam()
   {return icontact_.get<double>("SEARCH_PARAM");};
   
   /*!
@@ -415,7 +415,7 @@ public:
   \return Filled()==false
 
   */
-  inline virtual void AddMortarNode(RCP<MORTAR::MortarNode> mrtrnode)
+  virtual void AddMortarNode(RCP<MORTAR::MortarNode> mrtrnode)
   { idiscret_->AddNode(mrtrnode); return; }
 
   /*!
@@ -426,7 +426,7 @@ public:
   \return Filled()==false
 
   */
-  inline virtual void AddMortarElement(RCP<MORTAR::MortarElement> mrtrele)
+  virtual void AddMortarElement(RCP<MORTAR::MortarElement> mrtrele)
   { idiscret_->AddElement(mrtrele); return; }
 
   /*!
@@ -568,7 +568,7 @@ public:
   \brief Print shape function type (enum)
 
   */
-  inline void PrintShapeFcn() { cout << shapefcn_ << endl; };
+  void PrintShapeFcn() { cout << shapefcn_ << endl; };
   
   //@}
 

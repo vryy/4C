@@ -171,37 +171,37 @@ public:
   \brief Get discretization of the interface
 
   */
-  virtual inline DRT::Discretization& Discret() const { return idiscret_; }
+  virtual DRT::Discretization& Discret() const { return idiscret_; }
 
   /*!
   \brief Return type of treenode
 
   */
-  virtual inline BinaryTreeNodeType Type() const { return type_; }
+  virtual BinaryTreeNodeType Type() const { return type_; }
   
   /*!
   \brief Set type of treenode
 
   */
-  virtual inline void SetType(MORTAR::BinaryTreeNodeType type) { type_ = type; }
+  virtual void SetType(MORTAR::BinaryTreeNodeType type) { type_ = type; }
 
   /*!
   \brief Return pointer to right child
 
   */
-  virtual inline RCP<BinaryTreeNode> Rightchild() const { return rightchild_; }
+  virtual RCP<BinaryTreeNode> Rightchild() const { return rightchild_; }
 
   /*!
   \brief Return pointer to left child
 
   */
-  virtual inline RCP<BinaryTreeNode> Leftchild() const { return leftchild_; }
+  virtual RCP<BinaryTreeNode> Leftchild() const { return leftchild_; }
 
   /*!
   \brief Return pointer to parent
 
   */
-  virtual inline RCP<BinaryTreeNode> Parent() const { return parent_; }
+  virtual RCP<BinaryTreeNode> Parent() const { return parent_; }
 
   /*!
   \brief Set children of a treenode
@@ -213,58 +213,58 @@ public:
   \brief Set parent of treenode
 
   */
-  virtual inline void SetParent(RCP<BinaryTreeNode> parent) { parent_=parent; }
+  virtual void SetParent(RCP<BinaryTreeNode> parent) { parent_=parent; }
     
   /*!
   \brief Return slabs of DOP
 
   */
-  virtual inline Epetra_SerialDenseMatrix Slabs() const { return slabs_; }
+  virtual Epetra_SerialDenseMatrix Slabs() const { return slabs_; }
 
   /*!
   \brief Return nomals of DOP
 
   */
-  virtual inline Epetra_SerialDenseMatrix Dopnormals() const { return dopnormals_; }
+  virtual Epetra_SerialDenseMatrix Dopnormals() const { return dopnormals_; }
 
   /*!
   \brief Return number of k-DOP vertices
 
   */
-  virtual inline int Kdop() const { return kdop_; }
+  virtual int Kdop() const { return kdop_; }
       
   /*!
   \brief Return layer of current TreeNode
 
   */
-  virtual inline int Layer() const { return layer_; }
+  virtual int Layer() const { return layer_; }
   
   /*!
   \brief Set layer of current TreeNode
   
   */
-  virtual inline void SetLayer(int layer) { layer_ = layer; }
+  virtual void SetLayer(int layer) { layer_ = layer; }
 
   /*!
   \brief Return pointer to element list of TreeNode
 
   */
-  virtual inline vector<int> Elelist() const { return elelist_; }
+  virtual vector<int> Elelist() const { return elelist_; }
   
   /*!
   \brief Return dim of Problem
 
   */
-  virtual inline const int& Dim() { return dim_; }
+  virtual const int& Dim() { return dim_; }
   
   /*!
   \brief Return different maps of tree nodes
 
   */
-  virtual inline vector<vector<RCP<BinaryTreeNode> > >& Streenodesmap() { return streenodesmap_; }
-  virtual inline vector<vector<RCP<BinaryTreeNode> > >& Mtreenodesmap() { return mtreenodesmap_; }
-  virtual inline vector<vector<RCP<BinaryTreeNode> > >& Sleafsmap() { return sleafsmap_; }
-  virtual inline vector<vector<RCP<BinaryTreeNode> > >& Mleafsmap() { return mleafsmap_; }
+  virtual vector<vector<RCP<BinaryTreeNode> > >& Streenodesmap() { return streenodesmap_; }
+  virtual vector<vector<RCP<BinaryTreeNode> > >& Mtreenodesmap() { return mtreenodesmap_; }
+  virtual vector<vector<RCP<BinaryTreeNode> > >& Sleafsmap() { return sleafsmap_; }
+  virtual vector<vector<RCP<BinaryTreeNode> > >& Mleafsmap() { return mleafsmap_; }
 
   //@}
 
@@ -411,73 +411,73 @@ public:
   \brief Get discretization of the interface
 
   */
-  virtual inline DRT::Discretization& Discret() const { return idiscret_; }
+  virtual DRT::Discretization& Discret() const { return idiscret_; }
 
   /*!
   \brief Get matrix of DOP normals
 
   */
-  virtual inline const Epetra_SerialDenseMatrix& DopNormals() { return dopnormals_; }
+  virtual const Epetra_SerialDenseMatrix& DopNormals() { return dopnormals_; }
 
   /*!
   \brief Get number of vertices of DOP
 
   */
-  virtual inline const int& Kdop() { return kdop_; }
+  virtual const int& Kdop() { return kdop_; }
 
   /*!
   \brief Return dim of Problem
 
   */
-  virtual inline const int& Dim() { return dim_; }
+  virtual const int& Dim() { return dim_; }
 
   /*!
   \brief Return reference to slave treenodesmap
 
   */
-  virtual inline vector<vector<RCP<BinaryTreeNode> > >& Streenodesmap() { return streenodesmap_; }
+  virtual vector<vector<RCP<BinaryTreeNode> > >& Streenodesmap() { return streenodesmap_; }
 
   /*!
   \brief Return reference to master treenodesmap
 
   */
-  virtual inline vector<vector<RCP<BinaryTreeNode> > >& Mtreenodesmap() { return mtreenodesmap_; }
+  virtual vector<vector<RCP<BinaryTreeNode> > >& Mtreenodesmap() { return mtreenodesmap_; }
 
   /*!
   \brief Return reference to coupling treenodesmap
 
   */
-  virtual inline vector<vector<RCP<BinaryTreeNode> > >& CouplingMap() { return couplingmap_; }
+  virtual vector<vector<RCP<BinaryTreeNode> > >& CouplingMap() { return couplingmap_; }
 
   /*!
   \brief Return pointer to sroot-treenode
 
   */
-  virtual inline RCP<BinaryTreeNode>& Sroot() { return sroot_; }
+  virtual RCP<BinaryTreeNode>& Sroot() { return sroot_; }
 
   /*!
   \brief Return pointer to mroot-treenode
 
   */
-  virtual inline RCP<BinaryTreeNode>& Mroot() { return mroot_; }
+  virtual RCP<BinaryTreeNode>& Mroot() { return mroot_; }
 
   /*!
   \brief Return minimal element length
 
   */
-  virtual inline double& MinLengthEle() { return minlengthele_; }
+  virtual double& MinLengthEle() { return minlengthele_; }
 
   /*!
   \brief Return factor "eps" to enlarge dops
 
   */
-  virtual inline double& Eps() { return eps_; }
+  virtual double& Eps() { return eps_; }
 
   /*!
   \brief Return factor "enlarge" to enlarge dops
 
   */
-  virtual inline double& Enlarge() { return enlarge_; }
+  virtual double& Enlarge() { return enlarge_; }
 
   //@}
 

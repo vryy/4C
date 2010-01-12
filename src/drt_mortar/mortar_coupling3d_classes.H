@@ -113,7 +113,7 @@ public:
   \brief Return local id of this IntElement
 
   */
-  inline int Lid() const { return lid_; }
+  int Lid() const { return lid_; }
 
   /*!
   \brief Get vector of ptrs to nodes
@@ -128,14 +128,14 @@ public:
   Nodes() such that the user-provided nodes are used first!
 
   */
-  virtual inline DRT::Node** Nodes()
+  virtual DRT::Node** Nodes()
   { if (quadnode_.size()) return &quadnode_[0]; else return NULL;}
 
   /*!
   \brief Get shape type of parent element
 
   */
-  virtual inline DiscretizationType ParShape() const { return parshape_;}
+  virtual DiscretizationType ParShape() const { return parshape_;}
 
   /*!
   \brief Affine map of IntElement coordinates to parent element
@@ -213,31 +213,31 @@ public:
   \brief Return ID this intcell
 
   */
-  inline int Id() const { return id_; }
+  int Id() const { return id_; }
 
   /*!
   \brief Return number of vertices of this intcell
 
   */
-  inline int NumVertices() const { return nvertices_; }
+  int NumVertices() const { return nvertices_; }
 
   /*!
   \brief Return current area
 
   */
-  virtual inline double& Area() { return area_; }
+  virtual double& Area() { return area_; }
 
   /*!
   \brief Return coordinates of intcell vertices
 
   */
-  inline const Epetra_SerialDenseMatrix& Coords() { return coords_; }
+  const Epetra_SerialDenseMatrix& Coords() { return coords_; }
 
   /*!
   \brief Return normal of auxiliary plane of this intcell
 
   */
-  virtual inline double* Auxn() { return auxn_; }
+  virtual double* Auxn() { return auxn_; }
 
   /*!
   \brief Get shape type of element
@@ -254,7 +254,7 @@ public:
   on the slave surface without any auxiliary plane).
 
   */
-  virtual inline const bool& CouplingInAuxPlane() {return auxplane_;};
+  virtual const bool& CouplingInAuxPlane() {return auxplane_;};
 
   /*!
   \brief Return one of the three 'DerivVertex' maps (vectors) of this node
@@ -266,7 +266,7 @@ public:
   is addressed by an int-variable and checked internally.
 
   */
-  virtual inline vector<map<int,double> >& GetDerivVertex(int i)
+  virtual vector<map<int,double> >& GetDerivVertex(int i)
   {
     if (i<0 || i>2) dserror("ERROR: Intcell has 3 vertex linearizations only!");
     return linvertex_[i];
@@ -276,7 +276,7 @@ public:
   \brief Return the 'DerivAuxn' map (vector) of this intcell
 
   */
-  virtual inline vector<map<int,double> >& GetDerivAuxn() { return linauxn_; }
+  virtual vector<map<int,double> >& GetDerivAuxn() { return linauxn_; }
 
   //@}
 
@@ -398,44 +398,44 @@ public:
   \brief Return vector of vertex coordinates (length 3)
 
   */
-  virtual inline vector<double>& Coord() {return coord_; }
+  virtual vector<double>& Coord() {return coord_; }
 
   /*!
   \brief Return vertex type (slave, projmaster or lineclip)
 
   */
-  virtual inline Vertex::vType& VType() {return type_; }
+  virtual Vertex::vType& VType() {return type_; }
 
   /*!
   \brief Return pointer to next vertex on polygon
 
   */
-  virtual inline Vertex* Next() {return next_; }
+  virtual Vertex* Next() {return next_; }
 
   /*!
   \brief Assign pointer to next vertex on polygon
 
   */
-  virtual inline void AssignNext(Vertex* assign) {next_=assign; return; }
+  virtual void AssignNext(Vertex* assign) {next_=assign; return; }
 
   /*!
   \brief Return pointer to previous vertex on polygon
 
   */
-  virtual inline Vertex* Prev() {return prev_; }
+  virtual Vertex* Prev() {return prev_; }
 
   /*!
   \brief Assign pointer to previous vertex on polygon
 
   */
-  virtual inline void AssignPrev(Vertex* assign) {prev_=assign; return; }
+  virtual void AssignPrev(Vertex* assign) {prev_=assign; return; }
 
   /*!
   \brief Return intersection status of this vertex
   True if vertex is an intersection point of the polygons.
 
   */
-  virtual inline bool& Intersect() {return intersect_; }
+  virtual bool& Intersect() {return intersect_; }
 
   /*!
   \brief Return entry / exit status of this vertex
@@ -444,7 +444,7 @@ public:
   respective other polygon. Irrelevant if intersect_==false.
 
   */
-  virtual inline bool& EntryExit() {if (!intersect_) dserror("EntryExit only for intersections");
+  virtual bool& EntryExit() {if (!intersect_) dserror("EntryExit only for intersections");
                                     return entryexit_; }
 
   /*!
@@ -454,14 +454,14 @@ public:
   vertex on the other polygon.
 
   */
-  virtual inline Vertex* Neighbor() {if (!intersect_) dserror("Neighbor only for intersections");
+  virtual Vertex* Neighbor() {if (!intersect_) dserror("Neighbor only for intersections");
                                      return neighbor_; }
 
   /*!
   \brief Assign pointer to neighbor on other polygon
 
   */
-  virtual inline void AssignNeighbor(Vertex* assign) {if (!intersect_) dserror("Neighbor only for intersections");
+  virtual void AssignNeighbor(Vertex* assign) {if (!intersect_) dserror("Neighbor only for intersections");
                                                       neighbor_=assign; return; }
 
   /*!
@@ -469,7 +469,7 @@ public:
   valid intersections yield an alpha in the range [0,1].
 
   */
-  virtual inline double& Alpha() {return alpha_; }
+  virtual double& Alpha() {return alpha_; }
 
   /*!
   \brief Return vector of relevant node ids (length 1 or 4)
@@ -479,7 +479,7 @@ public:
   corresponding slave and master lines which intersect!
 
   */
-  virtual inline vector<int>& Nodeids()
+  virtual vector<int>& Nodeids()
   { //if(type_==Vertex::slave && nodeids_.size()!=1) dserror("Error: Vertex Ids");
     //if(type_==Vertex::projmaster && nodeids_.size()!=1) dserror("Error: Vertex Ids");
     //if(type_==Vertex::lineclip && nodeids_.size()!=4) dserror("Error: Vertex Ids");
