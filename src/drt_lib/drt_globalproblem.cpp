@@ -165,6 +165,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--THERMAL DYNAMIC", *list);
   reader.ReadGidSection("--THERMAL DYNAMIC/GENALPHA", *list);
   reader.ReadGidSection("--THERMAL DYNAMIC/ONESTEPTHETA", *list);
+  reader.ReadGidSection("--TSI DYNAMIC", *list);
   reader.ReadGidSection("--FLUID DYNAMIC", *list);
   reader.ReadGidSection("--FLUID DYNAMIC/STABILIZATION", *list);
   reader.ReadGidSection("--FLUID DYNAMIC/TURBULENCE MODEL", *list);
@@ -868,7 +869,22 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
   }
   case prb_tsi:
   {
-    dserror("prb_tsi not yet impl.");
+    // allocate and input general old stuff....
+    if (genprob.numfld!=2) dserror("numfld != 2 for tsi problem");
+
+  //std::string distype = ptype.get<std::string>("SHAPEFCT");
+
+    structdis = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
+    thermdis  = Teuchos::rcp(new DRT::Discretization("thermo"   ,reader.Comm()));
+
+    AddDis(genprob.numsf, structdis);
+    AddDis(genprob.numtf, thermdis);
+
+    DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
+
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+//    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(thermdis, reader, "--THERMO ELEMENTS")));
+    nodereader.Read();
     break;
   }
   case prb_thermo:

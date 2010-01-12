@@ -120,6 +120,27 @@ void ADAPTER::ThermoBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterList&
   if ((actdis->Comm()).MyPID()==0)
     DRT::INPUT::PrintDefaultParameters(std::cout, *tdyn);
 
+  // -------------------------------------------------------------------
+  // set parameters in list required for all schemes
+  // -------------------------------------------------------------------
+  // make a copy (inside an rcp) containing also all sublists
+  Teuchos::RCP<Teuchos::ParameterList> tdynparams
+    = rcp(new ParameterList(DRT::Problem::Instance()->ThermalDynamicParams()));
+
+  // -------------------------------------------------------------------
+  // overrule certain parameters for coupled problems
+  // -------------------------------------------------------------------
+  // the default time step size
+  tdynparams->set<double>   ("TIMESTEP"    ,prbdyn.get<double>("TIMESTEP"));
+  // maximum simulation time
+  tdynparams->set<double>   ("MAXTIME"     ,prbdyn.get<double>("MAXTIME"));
+  // maximum number of timesteps
+  tdynparams->set<int>      ("NUMSTEP"     ,prbdyn.get<int>("NUMSTEP"));
+  // restart
+  tdynparams->set           ("RESTARTEVRY" ,prbdyn.get<int>("RESTARTEVRY"));
+  // solution output
+  tdynparams->set           ("UPRES"       ,prbdyn.get<int>("UPRES"));
+
   // add extra parameters (a kind of work-around)
   Teuchos::RCP<Teuchos::ParameterList> xparams
     = Teuchos::rcp(new Teuchos::ParameterList());

@@ -36,6 +36,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_inpar/inpar_potential.H"
 #include "../drt_inpar/inpar_thermo.H"
+#include "../drt_inpar/inpar_tsi.H"
 #include "../drt_inpar/inpar_elch.H"
 #include "../drt_inpar/inpar_invanalysis.H"
 #include "../drt_inpar/inpar_searchtree.H"
@@ -310,7 +311,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   name[ 6] = "Fluid_Structure_Interaction";                 label[ 6] = prb_fsi;
   name[ 7] = "Fluid_Structure_Interaction_XFEM";            label[ 7] = prb_fsi_xfem;
   name[ 8] = "Ale";                                         label[ 8] = prb_ale;
-  name[ 9] = "Thermal_Structure_Interaction";               label[ 9] = prb_tsi;
+  name[ 9] = "Thermo_Structure_Interaction";                label[ 9] = prb_tsi;
   name[10] = "Thermo";                                      label[10] = prb_thermo;
   name[11] = "Structure_Multiscale";                        label[11] = prb_struct_multi;
   name[12] = "Low_Mach_Number_Flow";                        label[12] = prb_loma;
@@ -1179,6 +1180,43 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
    Teuchos::ParameterList& tonesteptheta = tdyn.sublist("ONESTEPTHETA",false,"");
 
    DoubleParameter("THETA",0.5,"One-step-theta factor in (0,1]",&tonesteptheta);
+
+   /*----------------------------------------------------------------------*/
+   Teuchos::ParameterList& tsidyn = list->sublist(
+     "TSI DYNAMIC",false,
+     "Thermo Structure Interaction\n"
+     "Partitioned TSI solver with various coupling methods"
+     );
+
+   setStringToIntegralParameter<int>("DEBUGOUTPUT","No",
+                                "Output of unconverged interface values during partitioned TSI iteration.\n"
+                                "There will be a new control file for each time step.\n"
+                                "This might be helpful to understand the coupling iteration.",
+                                yesnotuple,yesnovalue,&tsidyn);
+
+   setStringToIntegralParameter<int>("COUPVARIABLE","Displacement",
+                                "Coupling variable at the interface",
+                                tuple<std::string>("Displacement","Force"),
+                                tuple<int>(0,1),
+                                &tsidyn);
+
+    // Output type
+   IntParameter("RESTARTEVRY",1,"write restart possibility every RESTARTEVRY steps",&tsidyn);
+   // Time loop control
+   IntParameter("NUMSTEP",200,"maximum number of Timesteps",&tsidyn);
+   DoubleParameter("MAXTIME",1000.0,"Total simulation time",&tsidyn);
+   DoubleParameter("TIMESTEP",0.05,"time step size dt",&tsidyn);
+   // Iterationparameters
+   DoubleParameter("CONVTOL",1e-6,"Tolerance for iteration over fields",&tsidyn);
+
+   IntParameter("ITECHAPP",1,"unused",&tsidyn);
+   IntParameter("ICHMAX",1,"unused",&tsidyn);
+   IntParameter("ISDMAX",1,"not used up to now",&tsidyn);
+   IntParameter("ITEMAX",100,"Maximum number of iterations over fields",&tsidyn);
+   IntParameter("UPPSS",1,"Increment for visualization (unused)",&tsidyn);
+   IntParameter("UPRES",1,"Increment for writing solution",&tsidyn);
+
+
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn = list->sublist("FLUID DYNAMIC",false,"");

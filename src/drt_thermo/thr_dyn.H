@@ -45,7 +45,7 @@ extern "C"
 
 /* headers and prototypes of functions also acessible from c */
 
-/*! entry point for the solution of scalar transport problems */
+/*! entry point for the solution of temperature problems */
 void thr_dyn_drt();
 
 

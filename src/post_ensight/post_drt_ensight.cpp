@@ -250,22 +250,19 @@ int main(
     {
       PostField* field = problem.get_discretization(0);
 
-//    9/11/09 changed stresstype and straintype to heatfluxtype respectively tempgradtype
       ThermoEnsightWriter writer(field, problem.outname(), problem.stresstype(), problem.straintype());
       writer.WriteFiles();
       break;
     }
-//    added the 9/11/09
     case prb_tsi:
     {
-//      the first line is missed in the prb_thermo case!
       string basename = problem.outname();
       PostField* structfield = problem.get_discretization(0);
       StructureEnsightWriter structwriter(structfield, basename, problem.stresstype(), problem.straintype());
       structwriter.WriteFiles();
 
       PostField* field = problem.get_discretization(0);
-      ThermoEnsightWriter writer(field, problem.outname(), problem.stresstype(), problem.straintype());
+      ThermoEnsightWriter writer(field, problem.outname(), problem.heatfluxtype(), problem.tempgradtype());
       writer.WriteFiles();
       break;
     }

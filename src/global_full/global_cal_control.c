@@ -77,6 +77,7 @@ extern struct _FIELD      *sm_field;
 #include "../drt_elch/elch_dyn.H"
 #include "../drt_combust/combust_dyn.H"
 #include "../drt_thermo/thr_dyn.H"
+#include "../drt_tsi/tsi_dyn.H"
 #endif
 
 /*----------------------------------------------------------------------*
@@ -344,15 +345,13 @@ case prb_thermo:
 #endif
   break;
 
-#ifdef D_TSI
 case prb_tsi:
 #ifndef CCADISCRET
-  tsi_dyn();
+  dserror("thermo-structure-interaction is not available in CCARAT");
 #else
-  dserror("tsi_dyn() with DRT not yet impl.");
+  tsi_dyn_drt();
 #endif
   break;
-#endif
 
 case prb_loma:
 #ifndef CCADISCRET

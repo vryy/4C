@@ -137,6 +137,37 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          true,
                                          DRT::Condition::Volume));
 
+  // Neumann conditions for thermo problems
+  Teuchos::RCP<ConditionDefinition> pointthermoneumann =
+    Teuchos::rcp(new ConditionDefinition("DESIGN POINT THERMO NEUMANN CONDITIONS",
+                                         "ThermoPointNeumann",
+                                         "Point Neumann",
+                                         DRT::Condition::PointNeumann,
+                                         false,
+                                         DRT::Condition::Point));
+  Teuchos::RCP<ConditionDefinition> linethermoneumann =
+    Teuchos::rcp(new ConditionDefinition("DESIGN LINE THERMO NEUMANN CONDITIONS",
+                                         "ThermoLineNeumann",
+                                         "Line Neumann",
+                                         DRT::Condition::LineNeumann,
+                                         true,
+                                         DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> surfthermoneumann =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURF THERMO NEUMANN CONDITIONS",
+                                         "ThermoSurfaceNeumann",
+                                         "Surface Neumann",
+                                         DRT::Condition::SurfaceNeumann,
+                                         true,
+                                         DRT::Condition::Surface));
+  Teuchos::RCP<ConditionDefinition> volthermoneumann =
+    Teuchos::rcp(new ConditionDefinition("DESIGN VOL THERMO NEUMANN CONDITIONS",
+                                         "ThermoVolumeNeumann",
+                                         "Volume Neumann",
+                                         DRT::Condition::VolumeNeumann,
+                                         true,
+                                         DRT::Condition::Volume));
+
+
   for (unsigned i=0; i<neumanncomponents.size(); ++i)
   {
     pointneumann->AddComponent(neumanncomponents[i]);
@@ -148,6 +179,11 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     linetransportneumann->AddComponent(neumanncomponents[i]);
     surftransportneumann->AddComponent(neumanncomponents[i]);
     voltransportneumann->AddComponent(neumanncomponents[i]);
+
+    pointthermoneumann->AddComponent(neumanncomponents[i]);
+    linethermoneumann->AddComponent(neumanncomponents[i]);
+    surfthermoneumann->AddComponent(neumanncomponents[i]);
+    volthermoneumann->AddComponent(neumanncomponents[i]);
   }
 
   condlist.push_back(pointneumann);
@@ -158,6 +194,11 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(pointtransportneumann);
   condlist.push_back(linetransportneumann);
   condlist.push_back(surftransportneumann);
+
+  condlist.push_back(pointthermoneumann);
+  condlist.push_back(linethermoneumann);
+  condlist.push_back(surfthermoneumann);
+  condlist.push_back(volthermoneumann);
 
   /*--------------------------------------------------------------------*/
   // Dirichlet
@@ -252,6 +293,37 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          false,
                                          DRT::Condition::Surface));
 
+  // Dirichlet conditions for thermo problems
+  Teuchos::RCP<ConditionDefinition> pointthermodirichlet =
+    Teuchos::rcp(new ConditionDefinition("DESIGN POINT THERMO DIRICH CONDITIONS",
+                                         "ThermoDirichlet",
+                                         "Point Dirichlet",
+                                         DRT::Condition::PointDirichlet,
+                                         false,
+                                         DRT::Condition::Point));
+  Teuchos::RCP<ConditionDefinition> linethermodirichlet =
+    Teuchos::rcp(new ConditionDefinition("DESIGN LINE THERMO DIRICH CONDITIONS",
+                                         "ThermoDirichlet",
+                                         "Line Dirichlet",
+                                         DRT::Condition::LineDirichlet,
+                                         false,
+                                         DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> surfthermodirichlet =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURF THERMO DIRICH CONDITIONS",
+                                         "ThermoDirichlet",
+                                         "Surface Dirichlet",
+                                         DRT::Condition::SurfaceDirichlet,
+                                         false,
+                                         DRT::Condition::Surface));
+  Teuchos::RCP<ConditionDefinition> volthermodirichlet =
+    Teuchos::rcp(new ConditionDefinition("DESIGN VOL THERMO DIRICH CONDITIONS",
+                                         "ThermoDirichlet",
+                                         "Volume Dirichlet",
+                                         DRT::Condition::VolumeDirichlet,
+                                         false,
+                                         DRT::Condition::Volume));
+
+
   for (unsigned i=0; i<dirichletcomponents.size(); ++i)
   {
     pointdirichlet->AddComponent(dirichletcomponents[i]);
@@ -267,6 +339,11 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     pointtransportdirichlet->AddComponent(dirichletcomponents[i]);
     linetransportdirichlet->AddComponent(dirichletcomponents[i]);
     surftransportdirichlet->AddComponent(dirichletcomponents[i]);
+
+    pointthermodirichlet->AddComponent(dirichletcomponents[i]);
+    linethermodirichlet->AddComponent(dirichletcomponents[i]);
+    surfthermodirichlet->AddComponent(dirichletcomponents[i]);
+    volthermodirichlet->AddComponent(dirichletcomponents[i]);
   }
 
   condlist.push_back(pointdirichlet);
@@ -282,6 +359,11 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(pointtransportdirichlet);
   condlist.push_back(linetransportdirichlet);
   condlist.push_back(surftransportdirichlet);
+
+  condlist.push_back(pointthermodirichlet);
+  condlist.push_back(linethermodirichlet);
+  condlist.push_back(surfthermodirichlet);
+  condlist.push_back(volthermodirichlet);
 
   /*--------------------------------------------------------------------*/
   // contact
