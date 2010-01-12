@@ -1405,6 +1405,7 @@ void STRUMULTI::MicroStatic::StaticHomogenization(LINALG::Matrix<6,1>* stress,
     int error=linprob.CheckInput();
     if (error)
       dserror("Input for linear problem inconsistent");
+#ifndef HAVENOT_UMFPACK
     Amesos_Umfpack solver(linprob);
     int err = solver.NumericFactorization();   // LU decomposition of stiff_ only once
     if (err)
@@ -1425,6 +1426,7 @@ void STRUMULTI::MicroStatic::StaticHomogenization(LINALG::Matrix<6,1>* stress,
 
       (cmatpf(i))->Multiply('N', 'N', 1.0/V0_, *D_, fexp, 0.0);
     }
+#endif
 
     // We now have to transform the calculated constitutive tensor
     // relating first Piola-Kirchhoff stresses to the deformation

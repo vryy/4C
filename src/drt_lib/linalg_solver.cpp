@@ -743,6 +743,7 @@ void LINALG::Solver::Solve_superlu(const bool reset)
  *----------------------------------------------------------------------*/
 void LINALG::Solver::Solve_umfpack(const bool reset)
 {
+#ifndef HAVENOT_UMFPACK
   if (reset || !IsFactored())
   {
     reindexer_ = rcp(new EpetraExt::LinearProblem_Reindex(NULL));
@@ -764,7 +765,8 @@ void LINALG::Solver::Solve_umfpack(const bool reset)
 
   int err = amesos_->Solve();
   if (err) dserror("Amesos::Solve returned an err");
-
+#else
+#endif
   return;
 }
 

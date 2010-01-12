@@ -47,7 +47,9 @@ Maintainer: Michael Gee
 #include "Ifpack_AdditiveSchwarz.h"
 
 #include "Amesos_Klu.h"
+#ifndef HAVENOT_UMFPACK
 #include "Amesos_Umfpack.h"
+#endif
 #include "Amesos_Lapack.h"
 
 // Trilinos is configured with SuperLUDIST only in the parallel version (not on altix)
