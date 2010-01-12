@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file xfluid3_sysmat4.cpp
+\file xfluid3_time_rhs.cpp
 
 \brief element formulations for 3d XFEM fluid element
 
@@ -179,13 +179,15 @@ void SysmatDomain4(
     const bool                          pstab,         ///< flag for stabilization
     const bool                          supg,          ///< flag for stabilization
     const bool                          cstab,         ///< flag for stabilization
-    const bool                          instationary,  ///< switch between stationary and instationary formulation
     LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>&   assembler,
     double&                             L2
 )
 {
     // number of nodes for element
     const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+
+    // switch between stationary and instationary formulation
+    const bool instationary = (timealgo != timeint_stationary);
 
     // space dimension for 3d fluid element
     const size_t nsd = 3;
@@ -563,7 +565,6 @@ void TimeRHS(
         const bool                        pstab,         ///< flag for stabilisation
         const bool                        supg,          ///< flag for stabilisation
         const bool                        cstab,         ///< flag for stabilisation
-        const bool                        instationary,  ///< switch between stationary and instationary formulation
         const bool                        ifaceForceContribution,
         const bool                        monolithic_FSI,
         double&                           L2
@@ -595,7 +596,7 @@ void TimeRHS(
 
     SysmatDomain4<DISTYPE,ASSTYPE,NUMDOF>(
         ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, etau,
-        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, assembler, L2);
+        material, timealgo, dt, theta, newton, pstab, supg, cstab, assembler, L2);
 }
 
 
@@ -620,7 +621,6 @@ void XFLUID::callTimeRHS(
         const bool                        pstab  ,
         const bool                        supg   ,
         const bool                        cstab  ,
-        const bool                        instationary,
         const bool                        ifaceForceContribution,
         const bool                        monolithic_FSI,
         double&                           L2
@@ -633,27 +633,27 @@ void XFLUID::callTimeRHS(
             case DRT::Element::hex8:
                 TimeRHS<DRT::Element::hex8,XFEM::standard_assembly>(
                         ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2);
                 break;
             case DRT::Element::hex20:
                 TimeRHS<DRT::Element::hex20,XFEM::standard_assembly>(
                         ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2);
                 break;
             case DRT::Element::hex27:
                 TimeRHS<DRT::Element::hex27,XFEM::standard_assembly>(
                         ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2);
                 break;
             case DRT::Element::tet4:
                 TimeRHS<DRT::Element::tet4,XFEM::standard_assembly>(
                         ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2);
                 break;
             case DRT::Element::tet10:
                 TimeRHS<DRT::Element::tet10,XFEM::standard_assembly>(
                         ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2);
                 break;
             default:
                 dserror("standard_assembly Sysmat not templated yet");
@@ -666,26 +666,26 @@ void XFLUID::callTimeRHS(
             case DRT::Element::hex8:
                 TimeRHS<DRT::Element::hex8,XFEM::xfem_assembly>(
                         ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2);
                 break;
             case DRT::Element::hex20:
                 TimeRHS<DRT::Element::hex20,XFEM::xfem_assembly>(
                         ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2);
                 break;
             case DRT::Element::hex27:
                 TimeRHS<DRT::Element::hex27,XFEM::xfem_assembly>(
                         ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2);
                 break;
             case DRT::Element::tet4:
                 TimeRHS<DRT::Element::tet4,XFEM::xfem_assembly>(
                         ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2);
             case DRT::Element::tet10:
                 TimeRHS<DRT::Element::tet10,XFEM::xfem_assembly>(
                         ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2);
                 break;
             default:
                 dserror("xfem_assembly Sysmat not templated yet");

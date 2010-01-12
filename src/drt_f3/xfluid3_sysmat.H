@@ -50,7 +50,6 @@ namespace XFLUID
           const bool                        pstab  ,
           const bool                        supg   ,
           const bool                        cstab  ,
-          const bool                        instationary,
           const bool                        ifaceForceContribution, ///< is xfem element a row element?
           const bool                        monolithic_FSI,
           double&                           L2
@@ -81,7 +80,6 @@ namespace XFLUID
           const bool                        pstab  ,
           const bool                        supg   ,
           const bool                        cstab  ,
-          const bool                        instationary,
           const bool                        ifaceForceContribution, ///< is xfem element a row element?
           const bool                        monolithic_FSI,
           double&                           L2
@@ -114,7 +112,6 @@ namespace XFLUID
           const bool                        pstab  ,
           const bool                        supg   ,
           const bool                        cstab  ,
-          const bool                        instationary,
           const bool                        ifaceForceContribution, ///< is xfem element a row element?
           const bool                        monolithic_FSI,
           double&                           L2
@@ -125,12 +122,12 @@ namespace XFLUID
     case INPAR::XFEM::BoundaryTypeSigma:
       XFLUID::callSysmatSigma(params, assembly_type,
           ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
-          material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
+          material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2);
       break;
     case INPAR::XFEM::BoundaryTypeTauPressure:
       XFLUID::callSysmatTauPressure(params, assembly_type,
           ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
-          material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution, monolithic_FSI, L2);
+          material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2);
       break;
     default:
       dserror("unknown boundary type");
@@ -181,7 +178,6 @@ namespace XFLUID
           const bool                        pstab  ,
           const bool                        supg   ,
           const bool                        cstab  ,
-          const bool                        instationary,
           const bool                        ifaceForceContribution, ///< is xfem element a row element?
           const bool                        monolithic_FSI,
           double&                           L2
